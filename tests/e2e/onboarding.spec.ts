@@ -19,6 +19,8 @@ const SKIP_LLM = process.env.PAPERCLIP_E2E_SKIP_LLM !== "false";
 const COMPANY_NAME = `E2E-Test-${Date.now()}`;
 const AGENT_NAME = "CEO";
 const TASK_TITLE = "E2E test task";
+const LANGUAGE_SWITCHER_SELECTOR =
+  'button[aria-label="Switch language"], button[aria-label="切换语言"]';
 
 test.use({
   // This flow asserts English copy throughout; locale switching is covered
@@ -30,9 +32,19 @@ test.describe("Onboarding wizard", () => {
   test("completes full wizard flow", async ({ page }) => {
     await page.goto("/onboarding");
 
+    const html = page.locator("html");
+    const languageSwitcher = page.locator(LANGUAGE_SWITCHER_SELECTOR).first();
+    await expect(languageSwitcher).toBeVisible({ timeout: 15_000 });
+
+    if ((await html.getAttribute("lang")) !== "en") {
+      await languageSwitcher.click();
+      await page.getByRole("button", { name: "English" }).click();
+      await expect(html).toHaveAttribute("lang", "en");
+    }
+
     const wizardHeading = page.locator("h3", { hasText: "Name your company" });
     const startOnboardingBtn = page.getByRole("button", {
-      name: "Start onboarding",
+      name: "Start Onboarding",
     });
     const newCompanyBtn = page.getByRole("button", { name: "New Company" });
 
