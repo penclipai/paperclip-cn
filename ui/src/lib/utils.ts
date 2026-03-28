@@ -19,7 +19,7 @@ export function formatUsdAmount(
   return new Intl.NumberFormat(locale, {
     style: "currency",
     currency: DISPLAY_CURRENCY,
-    currencyDisplay: locale === "en" ? "narrowSymbol" : "symbol",
+    currencyDisplay: "narrowSymbol",
     minimumFractionDigits: options?.minimumFractionDigits ?? 2,
     maximumFractionDigits: options?.maximumFractionDigits ?? 2,
   }).format(amountUsd);

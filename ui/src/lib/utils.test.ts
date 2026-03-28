@@ -28,5 +28,7 @@ describe("currency formatting helpers", () => {
     getCurrentLocaleMock.mockReturnValue("zh-CN");
 
     expect(formatCents(12_345).replace(/[^\d.]/g, "")).toBe("123.45");
+    expect(formatCents(12_345)).toContain("$");
+    expect(formatCents(12_345)).not.toContain("US$");
   });
 });
