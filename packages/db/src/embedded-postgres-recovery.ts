@@ -2,14 +2,9 @@ import { existsSync, rmSync } from "node:fs";
 import { execFile } from "node:child_process";
 import path from "node:path";
 import { promisify } from "node:util";
-import { fileURLToPath } from "node:url";
 
 const execFileAsync = promisify(execFile);
 const SHARED_MEMORY_IN_USE_PATTERN = /pre-existing shared memory block is still in use/i;
-const WORKSPACE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
-const EMBEDDED_POSTGRES_BINARY_MARKER = normalizeForMatch(
-  path.join(WORKSPACE_ROOT, "node_modules", ".pnpm", "@embedded-postgres"),
-);
 
 function normalizeForMatch(value: string): string {
   const normalized = path.resolve(value).replace(/\\/g, "/");
@@ -23,10 +18,7 @@ function normalizeTextForMatch(value: string): string {
 
 function matchesDataDir(commandLine: string, dataDir: string): boolean {
   const normalizedCommand = normalizeTextForMatch(commandLine);
-  return (
-    normalizedCommand.includes(normalizeForMatch(dataDir)) ||
-    normalizedCommand.includes(EMBEDDED_POSTGRES_BINARY_MARKER)
-  );
+  return normalizedCommand.includes(normalizeForMatch(dataDir));
 }
 
 async function listPostgresProcesses(): Promise<Array<{ pid: number; commandLine: string }>> {

@@ -16,6 +16,14 @@ describe("request locale resolution", () => {
     expect(resolveRequestLocale("fr-FR,en-US;q=0.9")).toBe("en");
   });
 
+  it("prefers the supported locale with the highest quality weight", () => {
+    expect(resolveRequestLocale("en;q=0.1,zh-CN;q=0.9")).toBe("zh-CN");
+  });
+
+  it("skips zero-quality locale candidates", () => {
+    expect(resolveRequestLocale("en;q=0,zh-CN;q=1")).toBe("zh-CN");
+  });
+
   it("falls back only after exhausting all header candidates", () => {
     expect(resolveRequestLocale("fr-FR,de-DE;q=0.9")).toBe(
       DEFAULT_UI_LOCALE,

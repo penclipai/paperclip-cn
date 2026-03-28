@@ -26,18 +26,35 @@ export function normalizeUiLocale(value: string | null | undefined): UiLocale {
   return parseSupportedUiLocale(value) ?? DEFAULT_UI_LOCALE;
 }
 
+function parseAcceptLanguageQuality(parameterSegments: string[]): number {
+  const qualityToken = parameterSegments
+    .map((segment) => segment.trim())
+    .find((segment) => segment.toLowerCase().startsWith("q="));
+  if (!qualityToken) return 1;
+
+  const quality = Number(qualityToken.slice(2));
+  if (!Number.isFinite(quality)) return 0;
+  return Math.min(1, Math.max(0, quality));
+}
+
 export function resolveUiLocaleFromHeader(headerValue: string | null | undefined): UiLocale {
   if (!headerValue) return DEFAULT_UI_LOCALE;
 
   const candidates = headerValue
     .split(",")
-    .map((segment) => segment.split(";")[0]?.trim())
-    .filter((segment): segment is string => Boolean(segment));
+    .map((segment, index) => {
+      const [localeSegment, ...parameterSegments] = segment.split(";");
+      return {
+        locale: parseSupportedUiLocale(localeSegment),
+        quality: parseAcceptLanguageQuality(parameterSegments),
+        index,
+      };
+    })
+    .filter(
+      (candidate): candidate is { locale: UiLocale; quality: number; index: number } =>
+        candidate.locale !== null && candidate.quality > 0,
+    )
+    .sort((left, right) => right.quality - left.quality || left.index - right.index);
 
-  for (const candidate of candidates) {
-    const locale = parseSupportedUiLocale(candidate);
-    if (locale && SUPPORTED_UI_LOCALES.includes(locale)) return locale;
-  }
-
-  return DEFAULT_UI_LOCALE;
+  return candidates[0]?.locale ?? DEFAULT_UI_LOCALE;
 }
