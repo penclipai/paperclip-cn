@@ -28,14 +28,21 @@ test.use({
 
 test.describe("Onboarding wizard", () => {
   test("completes full wizard flow", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/onboarding");
 
     const wizardHeading = page.locator("h3", { hasText: "Name your company" });
+    const startOnboardingBtn = page.getByRole("button", {
+      name: "Start onboarding",
+    });
     const newCompanyBtn = page.getByRole("button", { name: "New Company" });
 
     await expect(
-      wizardHeading.or(newCompanyBtn)
+      wizardHeading.or(startOnboardingBtn).or(newCompanyBtn)
     ).toBeVisible({ timeout: 15_000 });
+
+    if (await startOnboardingBtn.isVisible()) {
+      await startOnboardingBtn.click();
+    }
 
     if (await newCompanyBtn.isVisible()) {
       await newCompanyBtn.click();
