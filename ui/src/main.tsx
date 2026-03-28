@@ -2,7 +2,7 @@ import * as React from "react";
 import { StrictMode, Suspense } from "react";
 import * as ReactDOM from "react-dom";
 import { createRoot } from "react-dom/client";
-import { I18nextProvider, useTranslation } from "react-i18next";
+import { I18nextProvider } from "react-i18next";
 import { BrowserRouter } from "@/lib/router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { App } from "./App";
@@ -68,13 +68,6 @@ function AppProviders() {
   );
 }
 
-function LocalizedApp() {
-  const { i18n: activeI18n } = useTranslation();
-  const localeKey = activeI18n.resolvedLanguage ?? activeI18n.language;
-
-  return <AppProviders key={localeKey} />;
-}
-
 function AppBootstrapFallback() {
   return (
     <div
@@ -90,7 +83,7 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <I18nextProvider i18n={i18n}>
       <Suspense fallback={<AppBootstrapFallback />}>
-        <LocalizedApp />
+        <AppProviders />
       </Suspense>
     </I18nextProvider>
   </StrictMode>

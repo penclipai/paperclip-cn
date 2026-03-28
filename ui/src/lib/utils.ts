@@ -4,23 +4,11 @@ import { deriveAgentUrlKey, deriveProjectUrlKey } from "@paperclipai/shared";
 import type { BillingType, FinanceDirection, FinanceEventKind } from "@paperclipai/shared";
 import { getCurrentLocale, translateInstant } from "../i18n";
 
-// Presentation-only FX rate for zh-CN until upstream grows first-class multi-currency ledgers.
-const USD_TO_CNY_DISPLAY_RATE = 7.2;
+// Ledger and budget values remain USD-denominated; locale only affects formatting.
+const DISPLAY_CURRENCY = "USD";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
-}
-
-function isChineseLocale(locale = getCurrentLocale()) {
-  return locale === "zh-CN";
-}
-
-function convertUsdToDisplayAmount(amountUsd: number, locale = getCurrentLocale()): number {
-  return isChineseLocale(locale) ? amountUsd * USD_TO_CNY_DISPLAY_RATE : amountUsd;
-}
-
-function convertDisplayAmountToUsd(amount: number, locale = getCurrentLocale()): number {
-  return isChineseLocale(locale) ? amount / USD_TO_CNY_DISPLAY_RATE : amount;
 }
 
 export function formatUsdAmount(
@@ -28,14 +16,13 @@ export function formatUsdAmount(
   options?: { minimumFractionDigits?: number; maximumFractionDigits?: number },
 ): string {
   const locale = getCurrentLocale();
-  const currency = isChineseLocale(locale) ? "CNY" : "USD";
   return new Intl.NumberFormat(locale, {
     style: "currency",
-    currency,
-    currencyDisplay: isChineseLocale(locale) ? "symbol" : "narrowSymbol",
+    currency: DISPLAY_CURRENCY,
+    currencyDisplay: locale === "en" ? "narrowSymbol" : "symbol",
     minimumFractionDigits: options?.minimumFractionDigits ?? 2,
     maximumFractionDigits: options?.maximumFractionDigits ?? 2,
-  }).format(convertUsdToDisplayAmount(amountUsd, locale));
+  }).format(amountUsd);
 }
 
 export function formatCents(cents: number): string {
@@ -46,7 +33,7 @@ export function formatCents(cents: number): string {
 }
 
 export function formatBudgetInputValue(cents: number): string {
-  return convertUsdToDisplayAmount(cents / 100).toFixed(2);
+  return (cents / 100).toFixed(2);
 }
 
 export function parseBudgetInputValue(value: string): number | null {
@@ -54,7 +41,7 @@ export function parseBudgetInputValue(value: string): number | null {
   if (normalized.length === 0) return 0;
   const parsed = Number(normalized);
   if (!Number.isFinite(parsed) || parsed < 0) return null;
-  return Math.round(convertDisplayAmountToUsd(parsed) * 100);
+  return Math.round(parsed * 100);
 }
 
 export function formatDate(date: Date | string): string {
