@@ -4,10 +4,11 @@ import LanguageDetector from "i18next-browser-languagedetector";
 import { initReactI18next } from "react-i18next";
 import {
   DEFAULT_UI_LOCALE,
-  SUPPORTED_UI_LOCALES,
   normalizeUiLocale,
   type UiLocale,
+  SUPPORTED_UI_LOCALES,
 } from "@paperclipai/shared";
+import { convertDetectedUiLocale } from "./lib/locale-detection";
 
 export const LOCALE_STORAGE_KEY = "paperclip.locale";
 
@@ -49,7 +50,7 @@ void i18n
       order: [...resolveDetectionOrder()],
       caches: ["localStorage"],
       lookupLocalStorage: LOCALE_STORAGE_KEY,
-      convertDetectedLanguage: (value: string) => normalizeUiLocale(value),
+      convertDetectedLanguage: convertDetectedUiLocale,
     },
   });
 

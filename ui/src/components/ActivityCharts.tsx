@@ -1,5 +1,6 @@
 import type { HeartbeatRun } from "@paperclipai/shared";
 import { translateInstant } from "../i18n";
+import { translateStatusLabel } from "../lib/i18n-labels";
 
 /* ---- Utilities ---- */
 
@@ -177,19 +178,10 @@ const statusColors: Record<string, string> = {
   backlog: "#64748b",
 };
 
-const statusLabels: Record<string, string> = {
-  todo: "待办",
-  in_progress: "进行中",
-  in_review: "审核中",
-  done: "已完成",
-  blocked: "阻塞",
-  cancelled: "已取消",
-  backlog: "待规划",
-};
-
 export function IssueStatusChart({ issues }: { issues: { status: string; createdAt: Date }[] }) {
   const days = getLast14Days();
   const allStatuses = new Set<string>();
+  const instantT = translateInstant as unknown as Parameters<typeof translateStatusLabel>[0];
   const grouped = new Map<string, Record<string, number>>();
   for (const day of days) grouped.set(day, {});
   for (const issue of issues) {
@@ -229,7 +221,12 @@ export function IssueStatusChart({ issues }: { issues: { status: string; created
         })}
       </div>
       <DateLabels days={days} />
-      <ChartLegend items={statusOrder.map(s => ({ color: statusColors[s] ?? "#6b7280", label: statusLabels[s] ?? s }))} />
+      <ChartLegend
+        items={statusOrder.map((status) => ({
+          color: statusColors[status] ?? "#6b7280",
+          label: translateStatusLabel(instantT, status),
+        }))}
+      />
     </div>
   );
 }
