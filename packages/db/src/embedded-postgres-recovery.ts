@@ -110,7 +110,7 @@ export async function recoverEmbeddedPostgresStart(dataDir: string): Promise<num
   }
 
   const postmasterPidFile = path.resolve(dataDir, "postmaster.pid");
-  if (existsSync(postmasterPidFile)) {
+  if (terminated.length === matchingProcesses.length && existsSync(postmasterPidFile)) {
     rmSync(postmasterPidFile, { force: true });
   }
 

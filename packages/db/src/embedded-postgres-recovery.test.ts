@@ -1,3 +1,4 @@
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -153,5 +154,39 @@ describe("recoverEmbeddedPostgresStart", () => {
 
     await expect(recoverEmbeddedPostgresStart(requestedDataDir)).resolves.toEqual([]);
     expect(killSpy).toHaveBeenCalledWith(101);
+  });
+
+  it("preserves postmaster.pid when cleanup cannot terminate all matching processes", async () => {
+    const requestedDataDir = mkdtempSync(path.join(os.tmpdir(), "paperclip-db-"));
+    const postmasterPidFile = path.join(requestedDataDir, "postmaster.pid");
+    writeFileSync(postmasterPidFile, "101\n");
+
+    mockProcessList([
+      {
+        pid: 101,
+        commandLine: `postgres -D "${requestedDataDir}"`,
+      },
+    ]);
+
+    const killSpy = vi.spyOn(process, "kill").mockImplementation(
+      ((_: number, signal?: number | NodeJS.Signals) => {
+        if (signal === 0) {
+          return true;
+        }
+        throw Object.assign(new Error("EPERM"), { code: "EPERM" });
+      }) as typeof process.kill,
+    );
+
+    const { recoverEmbeddedPostgresStart } = await import(
+      "./embedded-postgres-recovery.js"
+    );
+
+    try {
+      await expect(recoverEmbeddedPostgresStart(requestedDataDir)).resolves.toEqual([]);
+      expect(killSpy).toHaveBeenCalledWith(101);
+      expect(existsSync(postmasterPidFile)).toBe(true);
+    } finally {
+      rmSync(requestedDataDir, { recursive: true, force: true });
+    }
   });
 });
