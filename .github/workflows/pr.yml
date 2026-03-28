@@ -20,12 +20,24 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Block manual lockfile edits
-        if: github.head_ref != 'chore/refresh-lockfile'
+      - name: Enforce lockfile policy
         run: |
           changed="$(git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}")"
+          manifest_pattern='(^|/)package\.json$|^pnpm-workspace\.yaml$|^\.npmrc$|^pnpmfile\.(cjs|js|mjs)$'
+          lockfile_changed=false
+          manifest_changed=false
+
           if printf '%s\n' "$changed" | grep -qx 'pnpm-lock.yaml'; then
-            echo "Do not commit pnpm-lock.yaml in pull requests. CI owns lockfile updates."
+            lockfile_changed=true
+          fi
+
+          if printf '%s\n' "$changed" | grep -Eq "$manifest_pattern"; then
+            manifest_changed=true
+          fi
+
+          if [ "$lockfile_changed" = true ] && [ "$manifest_changed" = false ] && [ "${{ github.head_ref }}" != 'chore/refresh-lockfile' ]; then
+            echo "pnpm-lock.yaml changed without any package-manager input changes."
+            echo "Restore the lockfile unless this is an intentional refresh-lockfile PR."
             exit 1
           fi
 
@@ -85,7 +97,15 @@ jobs:
           changed="$(git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}")"
           manifest_pattern='(^|/)package\.json$|^pnpm-workspace\.yaml$|^\.npmrc$|^pnpmfile\.(cjs|js|mjs)$'
           if printf '%s\n' "$changed" | grep -Eq "$manifest_pattern"; then
+            cp pnpm-lock.yaml pnpm-lock.yaml.before-policy
+            trap 'rm -f pnpm-lock.yaml.before-policy' EXIT
             pnpm install --lockfile-only --ignore-scripts --no-frozen-lockfile
+            if ! git diff --no-index --quiet pnpm-lock.yaml.before-policy pnpm-lock.yaml; then
+              echo "pnpm-lock.yaml is not synchronized with the manifest changes in this PR."
+              echo "Commit the resulting minimal lockfile update."
+              diff -u pnpm-lock.yaml.before-policy pnpm-lock.yaml || true
+              exit 1
+            fi
           fi
 
   verify:
