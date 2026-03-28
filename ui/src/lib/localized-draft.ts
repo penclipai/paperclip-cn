@@ -7,3 +7,15 @@ export function syncLocalizedDefaultDraft(
     ? nextDefaultValue
     : currentValue;
 }
+
+export function createLocalizedDefaultDraftUpdater(
+  previousDefaultValue: string,
+  nextDefaultValue: string,
+) {
+  return (currentValue: string) =>
+    syncLocalizedDefaultDraft(
+      currentValue,
+      previousDefaultValue,
+      nextDefaultValue,
+    );
+}

@@ -25,7 +25,9 @@ import {
 } from "../lib/model-utils";
 import { getUIAdapter } from "../adapters";
 import { defaultCreateValues } from "./agent-config-defaults";
-import { syncLocalizedDefaultDraft } from "../lib/localized-draft";
+import {
+  createLocalizedDefaultDraftUpdater,
+} from "../lib/localized-draft";
 import { parseOnboardingGoalInput } from "../lib/onboarding-goal";
 import {
   buildOnboardingIssuePayload,
@@ -191,10 +193,10 @@ export function OnboardingWizard() {
   }, [step, taskDescription, autoResizeTextarea]);
 
   useEffect(() => {
-    setTaskTitle((current) =>
-      syncLocalizedDefaultDraft(
-        current,
-        previousDefaultTaskTitleRef.current,
+    const previousDefaultTaskTitle = previousDefaultTaskTitleRef.current;
+    setTaskTitle(
+      createLocalizedDefaultDraftUpdater(
+        previousDefaultTaskTitle,
         defaultTaskTitle,
       ),
     );
@@ -202,10 +204,11 @@ export function OnboardingWizard() {
   }, [defaultTaskTitle]);
 
   useEffect(() => {
-    setTaskDescription((current) =>
-      syncLocalizedDefaultDraft(
-        current,
-        previousDefaultTaskDescriptionRef.current,
+    const previousDefaultTaskDescription =
+      previousDefaultTaskDescriptionRef.current;
+    setTaskDescription(
+      createLocalizedDefaultDraftUpdater(
+        previousDefaultTaskDescription,
         defaultTaskDescription,
       ),
     );
