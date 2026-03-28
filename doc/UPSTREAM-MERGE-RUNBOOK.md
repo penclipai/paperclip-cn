@@ -85,6 +85,8 @@ git remote -v
 - 默认 `zh-CN`
 - 语言切换器
 - `Accept-Language` / `Content-Language`
+- `Vary: Accept-Language`
+- 服务端首屏 `html lang` / locale source 注入
 - 服务端用户可见错误的 locale 处理
 
 ### 4.3 Windows 兼容改造
@@ -276,6 +278,14 @@ git merge upstream/master
 
 处理新页面时遵循 `doc/UI-LOCALIZATION.md`，不要重新发明一套词表。
 
+额外检查：
+
+- 首屏语言来源顺序有没有被冲坏
+  - `?lng=` / localStorage / 服务端 `html lang` / `navigator` / fallback
+- 服务端是否仍然返回 `Content-Language` 和 `Vary: Accept-Language`
+- 共享组件里有没有把状态、优先级、图例文案重新写死成中文或英文
+- wizard / dialog 的默认草稿在切语言时是否仍然只同步“未编辑”的默认值
+
 ### 7.3 locale JSON 审计
 
 处理方式：
@@ -290,6 +300,8 @@ git merge upstream/master
 - 有没有丢新增 key
 - 有没有把中文值回退成英文
 - 有没有把“智能体”等术语改回不一致状态
+- 有没有引入重复 key
+  - locale 文件里重复 key 会被 `JSON.parse` 静默覆盖，运行时通常只剩最后一个值
 
 ### 7.4 lockfile 审计
 
@@ -347,6 +359,18 @@ pnpm -r typecheck
 ```
 
 Windows 上如果要做干净 Linux 验证，优先 Docker，不推荐默认走 WSL。
+
+如果这次同步动到了 locale 基础设施，干净环境里至少额外验证：
+
+```sh
+pnpm test:run server/src/__tests__/ui-locale.test.ts server/src/__tests__/i18n.test.ts
+```
+
+有条件的话，再做一次浏览器侧烟雾验证：
+
+- 英文 `Accept-Language` 首次访问是否直接进入英文首屏
+- `?lng=en` 是否优先于请求头
+- 切语言后刷新页面是否保留用户选择
 
 ## 8. 高频术语回归清单
 
