@@ -25,6 +25,7 @@ import {
 } from "../lib/model-utils";
 import { getUIAdapter } from "../adapters";
 import { defaultCreateValues } from "./agent-config-defaults";
+import { syncLocalizedDefaultDraft } from "../lib/localized-draft";
 import { parseOnboardingGoalInput } from "../lib/onboarding-goal";
 import {
   buildOnboardingIssuePayload,
@@ -128,6 +129,8 @@ export function OnboardingWizard() {
   // Step 3
   const [taskTitle, setTaskTitle] = useState(defaultTaskTitle);
   const [taskDescription, setTaskDescription] = useState(defaultTaskDescription);
+  const previousDefaultTaskTitleRef = useRef(defaultTaskTitle);
+  const previousDefaultTaskDescriptionRef = useRef(defaultTaskDescription);
 
   // Auto-grow textarea for task description
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -186,6 +189,28 @@ export function OnboardingWizard() {
   useEffect(() => {
     if (step === 3) autoResizeTextarea();
   }, [step, taskDescription, autoResizeTextarea]);
+
+  useEffect(() => {
+    setTaskTitle((current) =>
+      syncLocalizedDefaultDraft(
+        current,
+        previousDefaultTaskTitleRef.current,
+        defaultTaskTitle,
+      ),
+    );
+    previousDefaultTaskTitleRef.current = defaultTaskTitle;
+  }, [defaultTaskTitle]);
+
+  useEffect(() => {
+    setTaskDescription((current) =>
+      syncLocalizedDefaultDraft(
+        current,
+        previousDefaultTaskDescriptionRef.current,
+        defaultTaskDescription,
+      ),
+    );
+    previousDefaultTaskDescriptionRef.current = defaultTaskDescription;
+  }, [defaultTaskDescription]);
 
   const {
     data: adapterModels,
