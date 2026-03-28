@@ -1322,6 +1322,7 @@
   "Human join request": "Human join request",
   "Agent join request{{suffix}}": "Agent join request{{suffix}}",
   "seededName.ceo": "CEO",
+  "seededName.cto": "CTO",
   "seededName.onboarding": "Onboarding",
   "Waiting for output...": "Waiting for output...",
   "Waiting for transcript parsing...": "Waiting for transcript parsing...",
