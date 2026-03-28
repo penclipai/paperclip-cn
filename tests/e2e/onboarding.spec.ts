@@ -20,6 +20,12 @@ const COMPANY_NAME = `E2E-Test-${Date.now()}`;
 const AGENT_NAME = "CEO";
 const TASK_TITLE = "E2E test task";
 
+test.use({
+  // This flow asserts English copy throughout; locale switching is covered
+  // separately in language-switcher.spec.ts.
+  locale: "en-US",
+});
+
 test.describe("Onboarding wizard", () => {
   test("completes full wizard flow", async ({ page }) => {
     await page.goto("/");
