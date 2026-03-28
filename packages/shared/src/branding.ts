@@ -14,12 +14,16 @@ export const BRANDING = {
   chinaWebsiteUrl: "https://paperclipai.cn",
 } as const;
 
-export function normalizeUiLocale(value: string | null | undefined): UiLocale {
-  if (!value) return DEFAULT_UI_LOCALE;
+function parseSupportedUiLocale(value: string | null | undefined): UiLocale | null {
+  if (!value) return null;
   const normalized = value.trim().toLowerCase();
   if (normalized.startsWith("zh")) return "zh-CN";
   if (normalized.startsWith("en")) return "en";
-  return DEFAULT_UI_LOCALE;
+  return null;
+}
+
+export function normalizeUiLocale(value: string | null | undefined): UiLocale {
+  return parseSupportedUiLocale(value) ?? DEFAULT_UI_LOCALE;
 }
 
 export function resolveUiLocaleFromHeader(headerValue: string | null | undefined): UiLocale {
@@ -31,8 +35,8 @@ export function resolveUiLocaleFromHeader(headerValue: string | null | undefined
     .filter((segment): segment is string => Boolean(segment));
 
   for (const candidate of candidates) {
-    const locale = normalizeUiLocale(candidate);
-    if (SUPPORTED_UI_LOCALES.includes(locale)) return locale;
+    const locale = parseSupportedUiLocale(candidate);
+    if (locale && SUPPORTED_UI_LOCALES.includes(locale)) return locale;
   }
 
   return DEFAULT_UI_LOCALE;

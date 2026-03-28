@@ -1,5 +1,5 @@
 import * as React from "react";
-import { StrictMode } from "react";
+import { StrictMode, Suspense } from "react";
 import * as ReactDOM from "react-dom";
 import { createRoot } from "react-dom/client";
 import { I18nextProvider, useTranslation } from "react-i18next";
@@ -75,10 +75,23 @@ function LocalizedApp() {
   return <AppProviders key={localeKey} />;
 }
 
+function AppBootstrapFallback() {
+  return (
+    <div
+      className="flex min-h-screen items-center justify-center bg-background text-sm text-muted-foreground"
+      aria-busy="true"
+    >
+      Loading...
+    </div>
+  );
+}
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <I18nextProvider i18n={i18n}>
-      <LocalizedApp />
+      <Suspense fallback={<AppBootstrapFallback />}>
+        <LocalizedApp />
+      </Suspense>
     </I18nextProvider>
   </StrictMode>
 );
