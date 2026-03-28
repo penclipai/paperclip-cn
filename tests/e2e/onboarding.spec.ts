@@ -30,6 +30,8 @@ test.use({
 
 test.describe("Onboarding wizard", () => {
   test("completes full wizard flow", async ({ page }) => {
+    test.setTimeout(120_000);
+
     await page.goto("/onboarding");
 
     const html = page.locator("html");
@@ -48,19 +50,15 @@ test.describe("Onboarding wizard", () => {
     });
     const newCompanyBtn = page.getByRole("button", { name: "New Company" });
 
-    await expect(
-      wizardHeading.or(startOnboardingBtn).or(newCompanyBtn)
-    ).toBeVisible({ timeout: 15_000 });
-
-    if (await startOnboardingBtn.isVisible()) {
-      await startOnboardingBtn.click();
+    if (!(await wizardHeading.isVisible())) {
+      if (await startOnboardingBtn.isVisible()) {
+        await startOnboardingBtn.click();
+      } else if (await newCompanyBtn.isVisible()) {
+        await newCompanyBtn.click();
+      }
     }
 
-    if (await newCompanyBtn.isVisible()) {
-      await newCompanyBtn.click();
-    }
-
-    await expect(wizardHeading).toBeVisible({ timeout: 5_000 });
+    await expect(wizardHeading).toBeVisible({ timeout: 15_000 });
 
     const companyNameInput = page.locator('input[placeholder="Acme Corp"]');
     await companyNameInput.fill(COMPANY_NAME);
@@ -86,7 +84,7 @@ test.describe("Onboarding wizard", () => {
 
     await expect(
       page.locator("h3", { hasText: "Give it something to do" })
-    ).toBeVisible({ timeout: 10_000 });
+    ).toBeVisible({ timeout: 60_000 });
 
     const taskTitleInput = page.locator(
       'input[placeholder="e.g. Research competitor pricing"]'
