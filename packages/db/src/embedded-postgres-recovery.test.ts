@@ -94,4 +94,64 @@ describe("recoverEmbeddedPostgresStart", () => {
     expect(killSpy).toHaveBeenCalledWith(101);
     expect(killSpy).not.toHaveBeenCalledWith(202);
   });
+
+  it("does not match postgres processes whose data dir only shares a prefix", async () => {
+    const requestedDataDir = path.resolve(os.tmpdir(), "paperclip-db");
+    const prefixedDataDir = `${requestedDataDir}2`;
+
+    mockProcessList([
+      {
+        pid: 101,
+        commandLine: `postgres -D "${requestedDataDir}"`,
+      },
+      {
+        pid: 202,
+        commandLine: `postgres -D "${prefixedDataDir}"`,
+      },
+    ]);
+
+    const killSpy = vi.spyOn(process, "kill").mockImplementation(
+      ((_: number, signal?: number | NodeJS.Signals) => {
+        if (signal === 0) {
+          throw Object.assign(new Error("ESRCH"), { code: "ESRCH" });
+        }
+        return true;
+      }) as typeof process.kill,
+    );
+
+    const { recoverEmbeddedPostgresStart } = await import(
+      "./embedded-postgres-recovery.js"
+    );
+
+    await expect(recoverEmbeddedPostgresStart(requestedDataDir)).resolves.toEqual([101]);
+    expect(killSpy).toHaveBeenCalledWith(101);
+    expect(killSpy).not.toHaveBeenCalledWith(202);
+  });
+
+  it("does not report termination success when kill is denied", async () => {
+    const requestedDataDir = path.resolve(os.tmpdir(), "paperclip-db-target");
+
+    mockProcessList([
+      {
+        pid: 101,
+        commandLine: `postgres -D "${requestedDataDir}"`,
+      },
+    ]);
+
+    const killSpy = vi.spyOn(process, "kill").mockImplementation(
+      ((_: number, signal?: number | NodeJS.Signals) => {
+        if (signal === 0) {
+          return true;
+        }
+        throw Object.assign(new Error("EPERM"), { code: "EPERM" });
+      }) as typeof process.kill,
+    );
+
+    const { recoverEmbeddedPostgresStart } = await import(
+      "./embedded-postgres-recovery.js"
+    );
+
+    await expect(recoverEmbeddedPostgresStart(requestedDataDir)).resolves.toEqual([]);
+    expect(killSpy).toHaveBeenCalledWith(101);
+  });
 });

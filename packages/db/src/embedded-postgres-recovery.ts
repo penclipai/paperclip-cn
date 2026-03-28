@@ -16,9 +16,14 @@ function normalizeTextForMatch(value: string): string {
   return process.platform === "win32" ? normalized.toLowerCase() : normalized;
 }
 
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 function matchesDataDir(commandLine: string, dataDir: string): boolean {
   const normalizedCommand = normalizeTextForMatch(commandLine);
-  return normalizedCommand.includes(normalizeForMatch(dataDir));
+  const escapedDataDir = escapeRegExp(normalizeForMatch(dataDir));
+  return new RegExp(`(?:^|[\\s"'=])${escapedDataDir}(?=$|[\\s"'=])`).test(normalizedCommand);
 }
 
 async function listPostgresProcesses(): Promise<Array<{ pid: number; commandLine: string }>> {
@@ -72,8 +77,8 @@ async function waitForProcessExit(pid: number, timeoutMs: number): Promise<boole
     try {
       process.kill(pid, 0);
       await new Promise((resolve) => setTimeout(resolve, 100));
-    } catch {
-      return true;
+    } catch (error) {
+      return (error as NodeJS.ErrnoException).code === "ESRCH";
     }
   }
   return false;
@@ -82,8 +87,8 @@ async function waitForProcessExit(pid: number, timeoutMs: number): Promise<boole
 async function terminateProcess(pid: number): Promise<boolean> {
   try {
     process.kill(pid);
-  } catch {
-    return true;
+  } catch (error) {
+    return (error as NodeJS.ErrnoException).code === "ESRCH";
   }
   return await waitForProcessExit(pid, 2_000);
 }

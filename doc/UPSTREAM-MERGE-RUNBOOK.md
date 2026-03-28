@@ -298,12 +298,13 @@ git merge upstream/master
 根据 `doc/DEVELOPING.md`：
 
 - GitHub Actions 拥有 `pnpm-lock.yaml`
-- 不要在 PR 中提交 `pnpm-lock.yaml`
+- 只有在 PR 修改了 package-manager 输入时，才应提交 `pnpm-lock.yaml`
 
 所以本仓库当前默认策略是：
 
-- 同步过程中即使临时跑了 `pnpm install`，也先把它当成本地恢复步骤
-- 只要不是仓库规则明确变化，就在提交前恢复 `pnpm-lock.yaml`
+- 如果本次同步没有改 `package.json`、`pnpm-workspace.yaml`、`.npmrc` 或 `pnpmfile.*`，就不要带上 `pnpm-lock.yaml`
+- 如果本次同步改了这些输入，并且干净环境里的 `pnpm install --frozen-lockfile` 需要 lockfile 才能通过，就必须提交最小 `pnpm-lock.yaml` diff
+- 不要把“manifest 已变、lockfile 也该变”的情况，误当成单纯本地恢复步骤
 
 检查命令：
 
@@ -311,13 +312,22 @@ git merge upstream/master
 git diff --name-only HEAD -- pnpm-lock.yaml
 ```
 
-如果 lockfile 变了，默认恢复：
+如果 lockfile 变了，先判断这次同步有没有 package-manager 输入变化。
+
+没有输入变化时，恢复 lockfile：
 
 ```sh
 git restore --staged --worktree pnpm-lock.yaml
 ```
 
-只有在仓库维护者明确修改了 lockfile 策略时，才调整这条 runbook；不要单次同步时临时例外。
+有输入变化时，再做一次依赖解析校验：
+
+```sh
+pnpm install --lockfile-only --ignore-scripts --no-frozen-lockfile
+pnpm install --frozen-lockfile
+```
+
+如果生成出的 lockfile 与工作区不一致，提交最小 `pnpm-lock.yaml` diff，而不是强行恢复。
 
 ### 7.5 干净环境验证
 
