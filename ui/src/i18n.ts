@@ -3,12 +3,23 @@ import Backend from "i18next-http-backend";
 import LanguageDetector from "i18next-browser-languagedetector";
 import { initReactI18next } from "react-i18next";
 import {
+  DEFAULT_UI_LOCALE,
   SUPPORTED_UI_LOCALES,
   normalizeUiLocale,
   type UiLocale,
 } from "@paperclipai/shared";
 
 export const LOCALE_STORAGE_KEY = "paperclip.locale";
+
+function resolveDetectionOrder() {
+  if (typeof document === "undefined") {
+    return ["querystring", "localStorage", "navigator", "htmlTag"] as const;
+  }
+
+  return document.documentElement.dataset.uiLocaleSource === "request"
+    ? ["querystring", "localStorage", "htmlTag", "navigator"] as const
+    : ["querystring", "localStorage", "navigator", "htmlTag"] as const;
+}
 
 function applyDocumentLanguage(language: string) {
   if (typeof document === "undefined") return;
@@ -20,7 +31,7 @@ void i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
-    fallbackLng: "en",
+    fallbackLng: DEFAULT_UI_LOCALE,
     supportedLngs: [...SUPPORTED_UI_LOCALES],
     load: "currentOnly",
     defaultNS: "common",
@@ -35,7 +46,7 @@ void i18n
       loadPath: "/locales/{{lng}}/common.json",
     },
     detection: {
-      order: ["querystring", "localStorage", "navigator", "htmlTag"],
+      order: [...resolveDetectionOrder()],
       caches: ["localStorage"],
       lookupLocalStorage: LOCALE_STORAGE_KEY,
       convertDetectedLanguage: (value: string) => normalizeUiLocale(value),

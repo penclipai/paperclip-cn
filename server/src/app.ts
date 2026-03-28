@@ -47,6 +47,7 @@ import { createPluginHostServiceCleanup } from "./services/plugin-host-service-c
 import { pluginRegistryService } from "./services/plugin-registry.js";
 import { createHostClientHandlers } from "@paperclipai/plugin-sdk";
 import type { BetterAuthSessionResult } from "./auth/better-auth.js";
+import { applyUiLocaleToHtml, resolveInitialUiLocale } from "./ui-locale.js";
 
 type UiMode = "none" | "static" | "vite-dev";
 
@@ -244,10 +245,16 @@ export async function createApp(
     ];
     const uiDist = candidates.find((p) => fs.existsSync(path.join(p, "index.html")));
     if (uiDist) {
-      const indexHtml = applyUiBranding(fs.readFileSync(path.join(uiDist, "index.html"), "utf-8"));
+      const indexHtmlTemplate = applyUiBranding(
+        fs.readFileSync(path.join(uiDist, "index.html"), "utf-8"),
+      );
       app.use(express.static(uiDist));
-      app.get(/.*/, (_req, res) => {
-        res.status(200).set("Content-Type", "text/html").end(indexHtml);
+      app.get(/.*/, (req, res) => {
+        const html = applyUiLocaleToHtml(
+          indexHtmlTemplate,
+          resolveInitialUiLocale(req.get("Accept-Language"), req.query?.lng),
+        );
+        res.status(200).set("Content-Type", "text/html").end(html);
       });
     } else {
       console.warn("[paperclip] UI dist not found; running in API-only mode");
@@ -277,7 +284,10 @@ export async function createApp(
       try {
         const templatePath = path.resolve(uiRoot, "index.html");
         const template = fs.readFileSync(templatePath, "utf-8");
-        const html = applyUiBranding(await vite.transformIndexHtml(req.originalUrl, template));
+        const html = applyUiLocaleToHtml(
+          applyUiBranding(await vite.transformIndexHtml(req.originalUrl, template)),
+          resolveInitialUiLocale(req.get("Accept-Language"), req.query?.lng),
+        );
         res.status(200).set({ "Content-Type": "text/html" }).end(html);
       } catch (err) {
         next(err);
