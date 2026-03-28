@@ -59,11 +59,17 @@ test.describe("Language switcher", () => {
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
     await expect(page).toHaveTitle(/Dashboard/);
     await expect(page.getByText("Documentation")).toBeVisible();
+    await page.reload();
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
+    await expect(page).toHaveTitle(/Dashboard/);
 
     await page.goto(`/${company.issuePrefix}/onboarding`);
 
     const wizardContainer = page.locator("div.fixed.inset-0.z-50.flex").first();
     await expect(wizardContainer).toBeVisible();
+    await expect(
+      wizardContainer.locator('button[aria-label="Switch language"]'),
+    ).toBeVisible();
 
     const wizardSwitcher = await openLanguageMenu(wizardContainer);
     await page.getByRole("button", { name: "简体中文" }).click();
