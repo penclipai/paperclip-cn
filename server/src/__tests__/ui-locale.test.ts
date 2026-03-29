@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_UI_LOCALE } from "@paperclipai/shared";
+import { DEFAULT_UI_LOCALE } from "@penclipai/shared";
 import { applyUiLocaleToHtml, resolveInitialUiLocale } from "../ui-locale.js";
 
 describe("UI locale helpers", () => {

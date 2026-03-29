@@ -3,6 +3,7 @@
 import { readdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join, resolve } from "node:path";
+import { WORKSPACE_SCOPE } from "./workspace-package-constants.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, "..");
@@ -92,7 +93,7 @@ function replaceWorkspaceDeps(deps, version) {
   const next = { ...deps };
 
   for (const [name, value] of Object.entries(next)) {
-    if (!name.startsWith("@paperclipai/")) continue;
+    if (!name.startsWith(WORKSPACE_SCOPE)) continue;
     if (typeof value !== "string" || !value.startsWith("workspace:")) continue;
     next[name] = version;
   }

@@ -1,7 +1,7 @@
 // @vitest-environment node
 
 import { beforeEach, describe, expect, it } from "vitest";
-import type { Approval, DashboardSummary, HeartbeatRun, Issue, JoinRequest } from "@paperclipai/shared";
+import type { Approval, DashboardSummary, HeartbeatRun, Issue, JoinRequest } from "@penclipai/shared";
 import {
   computeInboxBadgeData,
   getApprovalsForTab,

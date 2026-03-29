@@ -13,8 +13,8 @@
 > **Penclip** is the Chinese-enhanced MIT fork of [Paperclip](https://github.com/paperclipai/paperclip), maintained by `penclipai` for Chinese UX, Windows compatibility, and domestic model integrations. The GitHub repo intentionally remains `paperclip` for upstream compatibility and discovery. See [README.zh-CN](./README.zh-CN.md) for the localized overview.
 
 <p align="center">
-  <a href="https://github.com/paperclipai/paperclip/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License" /></a>
-  <a href="https://github.com/paperclipai/paperclip/stargazers"><img src="https://img.shields.io/github/stars/paperclipai/paperclip?style=flat" alt="Stars" /></a>
+  <a href="https://github.com/penclipai/paperclip/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License" /></a>
+  <a href="https://github.com/penclipai/paperclip/stargazers"><img src="https://img.shields.io/github/stars/penclipai/paperclip?style=flat" alt="Stars" /></a>
   <a href="https://discord.gg/m4HZY7xNG3"><img src="https://img.shields.io/discord/000000000?label=discord" alt="Discord" /></a>
 </p>
 
@@ -177,13 +177,13 @@ Paperclip handles the hard orchestration details correctly.
 Open source. Self-hosted. No Paperclip account required.
 
 ```bash
-npx paperclipai onboard --yes
+npx @penclipai/paperclipai onboard --yes
 ```
 
 Or manually:
 
 ```bash
-git clone https://github.com/paperclipai/paperclip.git
+git clone https://github.com/penclipai/paperclip.git
 cd paperclip
 pnpm install
 pnpm dev
@@ -267,8 +267,8 @@ We welcome contributions. See the [contributing guide](CONTRIBUTING.md) for deta
 ## Community
 
 - [Discord](https://discord.gg/m4HZY7xNG3) — Join the community
-- [GitHub Issues](https://github.com/paperclipai/paperclip/issues) — bugs and feature requests
-- [GitHub Discussions](https://github.com/paperclipai/paperclip/discussions) — ideas and RFC
+- [GitHub Issues](https://github.com/penclipai/paperclip/issues) — bugs and feature requests
+- [GitHub Discussions](https://github.com/penclipai/paperclip/discussions) — ideas and RFC
 
 <br/>
 
@@ -278,7 +278,7 @@ MIT &copy; 2026 Paperclip
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/image?repos=paperclipai/paperclip&type=date&legend=top-left)](https://www.star-history.com/?repos=paperclipai%2Fpaperclip&type=date&legend=top-left)
+[![Star History Chart](https://api.star-history.com/image?repos=penclipai/paperclip&type=date&legend=top-left)](https://www.star-history.com/?repos=penclipai%2Fpaperclip&type=date&legend=top-left)
 
 <br/>
 

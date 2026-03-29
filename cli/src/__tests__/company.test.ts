@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { CompanyPortabilityPreviewResult } from "@paperclipai/shared";
+import type { CompanyPortabilityPreviewResult } from "@penclipai/shared";
 import {
   buildCompanyDashboardUrl,
   buildDefaultImportAdapterOverrides,

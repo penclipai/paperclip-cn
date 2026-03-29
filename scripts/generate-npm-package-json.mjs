@@ -15,6 +15,10 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  SERVER_PACKAGE_NAME,
+  WORKSPACE_SCOPE,
+} from "./workspace-package-constants.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, "..");
@@ -39,7 +43,7 @@ const workspacePaths = [
 // Workspace packages that are NOT bundled and must stay as npm dependencies.
 // These get published separately and resolved at runtime.
 const externalWorkspacePackages = new Set([
-  "@paperclipai/server",
+  SERVER_PACKAGE_NAME,
 ]);
 
 // Collect all external dependencies from all workspace packages
@@ -52,10 +56,10 @@ for (const pkgPath of workspacePaths) {
   const optDeps = pkg.optionalDependencies || {};
 
   for (const [name, version] of Object.entries(deps)) {
-    if (name.startsWith("@paperclipai/") && !externalWorkspacePackages.has(name)) continue;
+    if (name.startsWith(WORKSPACE_SCOPE) && !externalWorkspacePackages.has(name)) continue;
     // For external workspace packages, read their version directly
     if (externalWorkspacePackages.has(name)) {
-      const pkgDirMap = { "@paperclipai/server": "server" };
+      const pkgDirMap = { [SERVER_PACKAGE_NAME]: "server" };
       const wsPkg = readPkg(pkgDirMap[name]);
       allDeps[name] = wsPkg.version;
       continue;

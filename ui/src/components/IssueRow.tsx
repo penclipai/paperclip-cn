@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import type { Issue } from "@paperclipai/shared";
+import type { Issue } from "@penclipai/shared";
 import { Link } from "@/lib/router";
 import { X } from "lucide-react";
 import { cn } from "../lib/utils";

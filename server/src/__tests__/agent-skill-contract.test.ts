@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   agentSkillEntrySchema,
   agentSkillSnapshotSchema,
-} from "@paperclipai/shared/validators/adapter-skills";
+} from "@penclipai/shared/validators/adapter-skills";
 
 describe("agent skill contract", () => {
   it("accepts optional provenance metadata on skill entries", () => {
@@ -31,7 +31,7 @@ describe("agent skill contract", () => {
       mode: "ephemeral",
       desiredSkills: [],
       entries: [{
-        key: "paperclipai/paperclip/paperclip",
+        key: "penclipai/paperclip/paperclip",
         runtimeName: "paperclip",
         desired: true,
         managed: true,
@@ -41,7 +41,7 @@ describe("agent skill contract", () => {
     })).toMatchObject({
       adapterType: "claude_local",
       entries: [{
-        key: "paperclipai/paperclip/paperclip",
+        key: "penclipai/paperclip/paperclip",
         state: "configured",
       }],
     });

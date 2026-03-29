@@ -1,4 +1,4 @@
-import type { Goal } from "@paperclipai/shared";
+import type { Goal } from "@penclipai/shared";
 import { useTranslation } from "react-i18next";
 import { Link } from "@/lib/router";
 import { StatusBadge } from "./StatusBadge";

@@ -3,7 +3,7 @@ import { Link } from "@/lib/router";
 import { Identity } from "./Identity";
 import { timeAgo } from "../lib/timeAgo";
 import { cn } from "../lib/utils";
-import { deriveProjectUrlKey, type ActivityEvent, type Agent } from "@paperclipai/shared";
+import { deriveProjectUrlKey, type ActivityEvent, type Agent } from "@penclipai/shared";
 import { translateEntityTypeLabel, translatePriorityLabel, translateStatusLabel } from "../lib/i18n-labels";
 import { displaySeededName } from "../lib/seeded-display";
 

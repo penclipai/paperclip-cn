@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { createServer } from "node:http";
 import { WebSocketServer } from "ws";
-import { execute, testEnvironment } from "@paperclipai/adapter-openclaw-gateway/server";
+import { execute, testEnvironment } from "@penclipai/adapter-openclaw-gateway/server";
 import {
   buildOpenClawGatewayConfig,
   parseOpenClawGatewayStdoutLine,
-} from "@paperclipai/adapter-openclaw-gateway/ui";
-import type { AdapterExecutionContext } from "@paperclipai/adapter-utils";
+} from "@penclipai/adapter-openclaw-gateway/ui";
+import type { AdapterExecutionContext } from "@penclipai/adapter-utils";
 
 function buildContext(
   config: Record<string, unknown>,

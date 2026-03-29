@@ -10,8 +10,8 @@ const repoRoot = path.resolve(__dirname, "..");
 const uiDist = path.join(repoRoot, "ui", "dist");
 const serverUiDist = path.join(repoRoot, "server", "ui-dist");
 
-console.log("  -> Building @paperclipai/ui...");
-const buildResult = spawnSync("pnpm", ["--dir", repoRoot, "--filter", "@paperclipai/ui", "build"], {
+console.log("  -> Building @penclipai/ui...");
+const buildResult = spawnSync("pnpm", ["--dir", repoRoot, "--filter", "@penclipai/ui", "build"], {
   stdio: "inherit",
   shell: process.platform === "win32",
 });

@@ -1,4 +1,4 @@
-import type { CreateConfigValues } from "@paperclipai/adapter-utils";
+import type { CreateConfigValues } from "@penclipai/adapter-utils";
 
 function parseCommaArgs(value: string): string[] {
   return value

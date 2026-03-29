@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@/lib/router";
-import { AGENT_ROLE_LABELS, type Agent, type AgentRuntimeState } from "@paperclipai/shared";
+import { AGENT_ROLE_LABELS, type Agent, type AgentRuntimeState } from "@penclipai/shared";
 import { useTranslation } from "react-i18next";
 import { agentsApi } from "../api/agents";
 import { useCompany } from "../context/CompanyContext";

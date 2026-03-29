@@ -8,7 +8,7 @@ import type {
   CompanyPortabilityExportResult,
   CompanyPortabilityManifest,
   Project,
-} from "@paperclipai/shared";
+} from "@penclipai/shared";
 import { useNavigate, useLocation } from "@/lib/router";
 import { useCompany } from "../context/CompanyContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";

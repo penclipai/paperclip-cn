@@ -1,4 +1,4 @@
-import type { UiLocale } from "@paperclipai/shared";
+import type { UiLocale } from "@penclipai/shared";
 
 export function parseSupportedDetectedLocale(value: string): UiLocale | null {
   const normalized = value.trim().toLowerCase();

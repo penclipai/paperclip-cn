@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Issue, IssueDocument } from "@paperclipai/shared";
+import type { Issue, IssueDocument } from "@penclipai/shared";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "@/lib/router";
 import { ApiError } from "../api/client";

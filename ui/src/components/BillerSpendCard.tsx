@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import type { CostByBiller, CostByProviderModel } from "@paperclipai/shared";
+import type { CostByBiller, CostByProviderModel } from "@penclipai/shared";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { QuotaBar } from "./QuotaBar";

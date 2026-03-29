@@ -20,8 +20,8 @@
  * @see PLUGIN_SPEC.md §16.2 — Plugin-to-Plugin Events
  */
 
-import type { PluginEventType } from "@paperclipai/shared";
-import type { PluginEvent, EventFilter } from "@paperclipai/plugin-sdk";
+import type { PluginEventType } from "@penclipai/shared";
+import type { PluginEvent, EventFilter } from "@penclipai/plugin-sdk";
 
 // ---------------------------------------------------------------------------
 // Internal types

@@ -1,5 +1,5 @@
 import { Router, type Request } from "express";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@penclipai/db";
 import {
   createRoutineSchema,
   createRoutineTriggerSchema,
@@ -7,7 +7,7 @@ import {
   runRoutineSchema,
   updateRoutineSchema,
   updateRoutineTriggerSchema,
-} from "@paperclipai/shared";
+} from "@penclipai/shared";
 import { validate } from "../middleware/validate.js";
 import { accessService, logActivity, routineService } from "../services/index.js";
 import { assertCompanyAccess, getActorInfo } from "./authz.js";

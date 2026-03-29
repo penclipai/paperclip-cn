@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { BudgetIncident } from "@paperclipai/shared";
+import type { BudgetIncident } from "@penclipai/shared";
 import { AlertOctagon, ArrowUpRight, PauseCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { formatBudgetInputValue, formatCents, parseBudgetInputValue } from "../lib/utils";

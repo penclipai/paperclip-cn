@@ -7,8 +7,8 @@ import { authApi } from "../api/auth";
 import { healthApi } from "../api/health";
 import { queryKeys } from "../lib/queryKeys";
 import { Button } from "@/components/ui/button";
-import { AGENT_ADAPTER_TYPES } from "@paperclipai/shared";
-import type { AgentAdapterType, JoinRequest } from "@paperclipai/shared";
+import { AGENT_ADAPTER_TYPES } from "@penclipai/shared";
+import type { AgentAdapterType, JoinRequest } from "@penclipai/shared";
 import { formatDateTime } from "../lib/utils";
 
 type JoinType = "human" | "agent";

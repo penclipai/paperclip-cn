@@ -1,13 +1,14 @@
 /**
  * esbuild configuration for building the paperclipai CLI for npm.
  *
- * Bundles all workspace packages (@paperclipai/*) into a single file.
+ * Bundles all workspace packages (@penclipai/*) into a single file.
  * External npm packages remain as regular dependencies.
  */
 
 import { readFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { SERVER_PACKAGE_NAME, WORKSPACE_SCOPE } from "../scripts/workspace-package-constants.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, "..");
@@ -25,9 +26,9 @@ const workspacePaths = [
 ];
 
 // Workspace packages that should NOT be bundled — they'll be published
-// to npm and resolved at runtime (e.g. @paperclipai/server uses dynamic import).
+// to npm and resolved at runtime (e.g. @penclipai/server uses dynamic import).
 const externalWorkspacePackages = new Set([
-  "@paperclipai/server",
+  SERVER_PACKAGE_NAME,
 ]);
 
 // Collect all external (non-workspace) npm package names
@@ -37,7 +38,7 @@ for (const p of workspacePaths) {
   for (const name of Object.keys(pkg.dependencies || {})) {
     if (externalWorkspacePackages.has(name)) {
       externals.add(name);
-    } else if (!name.startsWith("@paperclipai/")) {
+    } else if (!name.startsWith(WORKSPACE_SCOPE)) {
       externals.add(name);
     }
   }

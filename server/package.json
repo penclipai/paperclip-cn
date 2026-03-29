@@ -1,14 +1,14 @@
 {
-  "name": "@paperclipai/server",
+  "name": "@penclipai/server",
   "version": "0.3.1",
   "license": "MIT",
-  "homepage": "https://github.com/paperclipai/paperclip",
+  "homepage": "https://github.com/penclipai/paperclip",
   "bugs": {
-    "url": "https://github.com/paperclipai/paperclip/issues"
+    "url": "https://github.com/penclipai/paperclip/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/paperclipai/paperclip",
+    "url": "https://github.com/penclipai/paperclip",
     "directory": "server"
   },
   "type": "module",
@@ -40,21 +40,21 @@
     "postpack": "node ../scripts/fs-ops.mjs rm ui-dist",
     "clean": "node ../scripts/fs-ops.mjs rm dist",
     "start": "node dist/index.js",
-    "typecheck": "pnpm --filter @paperclipai/plugin-sdk build && tsc --noEmit"
+    "typecheck": "pnpm --filter @penclipai/plugin-sdk build && tsc --noEmit"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.888.0",
-    "@paperclipai/adapter-claude-local": "workspace:*",
-    "@paperclipai/adapter-codex-local": "workspace:*",
-    "@paperclipai/adapter-cursor-local": "workspace:*",
-    "@paperclipai/adapter-gemini-local": "workspace:*",
-    "@paperclipai/adapter-openclaw-gateway": "workspace:*",
-    "@paperclipai/adapter-opencode-local": "workspace:*",
-    "@paperclipai/adapter-pi-local": "workspace:*",
-    "@paperclipai/adapter-utils": "workspace:*",
-    "@paperclipai/db": "workspace:*",
-    "@paperclipai/plugin-sdk": "workspace:*",
-    "@paperclipai/shared": "workspace:*",
+    "@penclipai/adapter-claude-local": "workspace:*",
+    "@penclipai/adapter-codex-local": "workspace:*",
+    "@penclipai/adapter-cursor-local": "workspace:*",
+    "@penclipai/adapter-gemini-local": "workspace:*",
+    "@penclipai/adapter-openclaw-gateway": "workspace:*",
+    "@penclipai/adapter-opencode-local": "workspace:*",
+    "@penclipai/adapter-pi-local": "workspace:*",
+    "@penclipai/adapter-utils": "workspace:*",
+    "@penclipai/db": "workspace:*",
+    "@penclipai/plugin-sdk": "workspace:*",
+    "@penclipai/shared": "workspace:*",
     "ajv": "^8.18.0",
     "ajv-formats": "^3.0.1",
     "better-auth": "1.4.18",

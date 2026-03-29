@@ -1,6 +1,6 @@
 import { memo, useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { Link, useLocation } from "react-router-dom";
-import type { IssueComment, Agent } from "@paperclipai/shared";
+import type { IssueComment, Agent } from "@penclipai/shared";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Check, Copy, Paperclip } from "lucide-react";

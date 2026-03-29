@@ -8,7 +8,7 @@ Get Paperclip running locally in under 5 minutes.
 ## Quick Start (Recommended)
 
 ```sh
-npx paperclipai onboard --yes
+npx @penclipai/paperclipai onboard --yes
 ```
 
 This walks you through setup, configures your environment, and gets Paperclip running.
@@ -16,10 +16,10 @@ This walks you through setup, configures your environment, and gets Paperclip ru
 To start Paperclip again later:
 
 ```sh
-npx paperclipai run
+npx @penclipai/paperclipai run
 ```
 
-> **Note:** If you used `npx` for setup, always use `npx paperclipai` to run commands. The `pnpm paperclipai` form only works inside a cloned copy of the Paperclip repository (see Local Development below).
+> **Note:** If you used `npx` for setup, always use `npx @penclipai/paperclipai` to run commands. The `pnpm paperclipai` form only works inside a cloned copy of the Paperclip repository (see Local Development below).
 
 ## Local Development
 

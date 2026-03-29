@@ -1,7 +1,7 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { deriveAgentUrlKey, deriveProjectUrlKey } from "@paperclipai/shared";
-import type { BillingType, FinanceDirection, FinanceEventKind } from "@paperclipai/shared";
+import { deriveAgentUrlKey, deriveProjectUrlKey } from "@penclipai/shared";
+import type { BillingType, FinanceDirection, FinanceEventKind } from "@penclipai/shared";
 import { getCurrentLocale, translateInstant } from "../i18n";
 
 // Ledger and budget values remain USD-denominated; locale only affects formatting.

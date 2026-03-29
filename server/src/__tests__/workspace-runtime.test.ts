@@ -15,7 +15,7 @@ import {
   type RealizedExecutionWorkspace,
 } from "../services/workspace-runtime.ts";
 import { resolvePaperclipConfigPath } from "../paths.ts";
-import type { WorkspaceOperation } from "@paperclipai/shared";
+import type { WorkspaceOperation } from "@penclipai/shared";
 import type { WorkspaceOperationRecorder } from "../services/workspace-operations.ts";
 
 const execFileAsync = promisify(execFile);

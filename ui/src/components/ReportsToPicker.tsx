@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Agent } from "@paperclipai/shared";
+import type { Agent } from "@penclipai/shared";
 import {
   Popover,
   PopoverContent,

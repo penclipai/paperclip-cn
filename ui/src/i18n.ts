@@ -7,7 +7,7 @@ import {
   normalizeUiLocale,
   type UiLocale,
   SUPPORTED_UI_LOCALES,
-} from "@paperclipai/shared";
+} from "@penclipai/shared";
 import { convertDetectedUiLocale } from "./lib/locale-detection";
 
 export const LOCALE_STORAGE_KEY = "paperclip.locale";

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_UI_LOCALE, normalizeUiLocale } from "@paperclipai/shared";
+import { DEFAULT_UI_LOCALE, normalizeUiLocale } from "@penclipai/shared";
 import { resolveRequestLocale } from "../i18n.js";
 
 describe("request locale resolution", () => {

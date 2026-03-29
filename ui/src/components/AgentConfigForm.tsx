@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { AGENT_ADAPTER_TYPES } from "@paperclipai/shared";
+import { AGENT_ADAPTER_TYPES } from "@penclipai/shared";
 import type {
   Agent,
   AdapterEnvironmentTestResult,
   CompanySecret,
   EnvBinding,
-} from "@paperclipai/shared";
+} from "@penclipai/shared";
 import type { AdapterModel } from "../api/agents";
 import { agentsApi } from "../api/agents";
 import { secretsApi } from "../api/secrets";
@@ -15,9 +15,9 @@ import { assetsApi } from "../api/assets";
 import {
   DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX,
   DEFAULT_CODEX_LOCAL_MODEL,
-} from "@paperclipai/adapter-codex-local";
-import { DEFAULT_CURSOR_LOCAL_MODEL } from "@paperclipai/adapter-cursor-local";
-import { DEFAULT_GEMINI_LOCAL_MODEL } from "@paperclipai/adapter-gemini-local";
+} from "@penclipai/adapter-codex-local";
+import { DEFAULT_CURSOR_LOCAL_MODEL } from "@penclipai/adapter-cursor-local";
+import { DEFAULT_GEMINI_LOCAL_MODEL } from "@penclipai/adapter-gemini-local";
 import {
   Popover,
   PopoverContent,
@@ -51,10 +51,10 @@ import { shouldShowLegacyWorkingDirectoryField } from "../lib/legacy-agent-confi
 
 /* ---- Create mode values ---- */
 
-// Canonical type lives in @paperclipai/adapter-utils; re-exported here
+// Canonical type lives in @penclipai/adapter-utils; re-exported here
 // so existing imports from this file keep working.
-export type { CreateConfigValues } from "@paperclipai/adapter-utils";
-import type { CreateConfigValues } from "@paperclipai/adapter-utils";
+export type { CreateConfigValues } from "@penclipai/adapter-utils";
+import type { CreateConfigValues } from "@penclipai/adapter-utils";
 
 /* ---- Props ---- */
 

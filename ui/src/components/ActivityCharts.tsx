@@ -1,4 +1,4 @@
-import type { HeartbeatRun } from "@paperclipai/shared";
+import type { HeartbeatRun } from "@penclipai/shared";
 import { translateInstant } from "../i18n";
 import { translateStatusLabel } from "../lib/i18n-labels";
 

@@ -1,4 +1,4 @@
-import type { FinanceByBiller } from "@paperclipai/shared";
+import type { FinanceByBiller } from "@penclipai/shared";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCents, providerDisplayName } from "@/lib/utils";

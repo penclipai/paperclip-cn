@@ -103,7 +103,7 @@ That setup keeps CLI auth state in Docker volumes instead of your host home dire
 
 Use this when you want to mimic a fresh machine that only has Ubuntu + npm and verify:
 
-- `npx paperclipai onboard --yes` completes
+- `npx @penclipai/paperclipai onboard --yes` completes
 - the server binds to `0.0.0.0:3100` so host access works
 - onboard/run banners and startup logs are visible in your terminal
 

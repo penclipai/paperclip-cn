@@ -1,4 +1,4 @@
-import type { UiLocale } from "@paperclipai/shared";
+import type { UiLocale } from "@penclipai/shared";
 
 export {};
 

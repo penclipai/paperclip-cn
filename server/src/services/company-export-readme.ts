@@ -1,7 +1,7 @@
 /**
  * Generates README.md with Mermaid org chart for company exports.
  */
-import type { CompanyPortabilityManifest } from "@paperclipai/shared";
+import type { CompanyPortabilityManifest } from "@penclipai/shared";
 
 const ROLE_LABELS: Record<string, string> = {
   ceo: "CEO",

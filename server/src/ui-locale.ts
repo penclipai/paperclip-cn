@@ -2,7 +2,7 @@ import {
   DEFAULT_UI_LOCALE,
   resolveUiLocaleFromHeader,
   type UiLocale,
-} from "@paperclipai/shared";
+} from "@penclipai/shared";
 
 export type InitialUiLocaleSource = "query" | "request" | "default";
 

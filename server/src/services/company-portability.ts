@@ -3,7 +3,7 @@ import { promises as fs } from "node:fs";
 import { execFile } from "node:child_process";
 import path from "node:path";
 import { promisify } from "node:util";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@penclipai/db";
 import type {
   CompanyPortabilityAgentManifestEntry,
   CompanyPortabilityCollisionStrategy,
@@ -27,7 +27,7 @@ import type {
   CompanyPortabilitySidebarOrder,
   CompanyPortabilitySkillManifestEntry,
   CompanySkill,
-} from "@paperclipai/shared";
+} from "@penclipai/shared";
 import {
   ISSUE_PRIORITIES,
   ISSUE_STATUSES,
@@ -39,11 +39,11 @@ import {
   ROUTINE_TRIGGER_SIGNING_MODES,
   deriveProjectUrlKey,
   normalizeAgentUrlKey,
-} from "@paperclipai/shared";
+} from "@penclipai/shared";
 import {
   readPaperclipSkillSyncPreference,
   writePaperclipSkillSyncPreference,
-} from "@paperclipai/adapter-utils/server-utils";
+} from "@penclipai/adapter-utils/server-utils";
 import { notFound, unprocessable } from "../errors.js";
 import type { StorageService } from "../storage/types.js";
 import { accessService } from "./access.js";
@@ -181,7 +181,7 @@ function deriveManifestSkillKey(
     return `${owner}/${repo}/${slug}`;
   }
   if (sourceKind === "paperclip_bundled") {
-    return `paperclipai/paperclip/${slug}`;
+    return `penclipai/paperclip/${slug}`;
   }
   if (sourceType === "url" || sourceKind === "url") {
     try {
@@ -1865,11 +1865,11 @@ async function buildSkillSourceEntry(skill: CompanySkill) {
     const commit = await resolveBundledSkillsCommit();
     return {
       kind: "github-dir",
-      repo: "paperclipai/paperclip",
+      repo: "penclipai/paperclip",
       path: `skills/${skill.slug}`,
       commit,
       trackingRef: "master",
-      url: `https://github.com/paperclipai/paperclip/tree/master/skills/${skill.slug}`,
+      url: `https://github.com/penclipai/paperclip/tree/master/skills/${skill.slug}`,
     };
   }
 

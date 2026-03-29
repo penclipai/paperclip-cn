@@ -2,7 +2,7 @@
 
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { buildAgentMentionHref, buildProjectMentionHref } from "@paperclipai/shared";
+import { buildAgentMentionHref, buildProjectMentionHref } from "@penclipai/shared";
 import { ThemeProvider } from "../context/ThemeContext";
 import { MarkdownBody } from "./MarkdownBody";
 

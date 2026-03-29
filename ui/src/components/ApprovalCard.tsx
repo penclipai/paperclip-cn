@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Identity } from "./Identity";
 import { approvalLabel, typeIcon, defaultTypeIcon, ApprovalPayloadRenderer } from "./ApprovalPayload";
 import { timeAgo } from "../lib/timeAgo";
-import type { Approval, Agent } from "@paperclipai/shared";
+import type { Approval, Agent } from "@penclipai/shared";
 import { translateStatusLabel } from "../lib/i18n-labels";
 
 function statusIcon(status: string) {

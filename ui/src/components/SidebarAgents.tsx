@@ -20,7 +20,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import type { Agent } from "@paperclipai/shared";
+import type { Agent } from "@penclipai/shared";
 export function SidebarAgents() {
   const { t } = useTranslation();
   const [open, setOpen] = useState(true);

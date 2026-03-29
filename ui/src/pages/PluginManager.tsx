@@ -6,7 +6,7 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { PluginRecord } from "@paperclipai/shared";
+import type { PluginRecord } from "@penclipai/shared";
 import { useTranslation } from "react-i18next";
 import { Link } from "@/lib/router";
 import { AlertTriangle, FlaskConical, Plus, Power, Puzzle, Settings, Trash } from "lucide-react";
@@ -48,19 +48,19 @@ const EXAMPLE_PLUGIN_COPY: Record<
     descriptionKey: string;
   }
 > = {
-  "@paperclipai/plugin-authoring-smoke-example": {
+  "@penclipai/plugin-authoring-smoke-example": {
     description: "用于验证插件宿主与开发流程的冒烟示例插件。",
     descriptionKey: "pluginExamples.authoringSmoke.description",
   },
-  "@paperclipai/plugin-file-browser-example": {
+  "@penclipai/plugin-file-browser-example": {
     description: "示例插件，会在每个项目的侧栏添加“文件”入口，并在项目详情页提供文件浏览与编辑标签页，还支持从评论中的文件链接快速打开引用文件。",
     descriptionKey: "pluginExamples.fileBrowser.description",
   },
-  "@paperclipai/plugin-hello-world-example": {
+  "@penclipai/plugin-hello-world-example": {
     description: "参考界面插件，会在 Penclip 仪表盘中添加一个简单的“你好世界”小组件。",
     descriptionKey: "pluginExamples.helloWorld.description",
   },
-  "@paperclipai/plugin-kitchen-sink-example": {
+  "@penclipai/plugin-kitchen-sink-example": {
     description: "参考插件，在一个示例中集中演示当前 Penclip 插件 API、界面挂载点、桥接动作、事件、任务、Webhook、工具、本地工作区访问和运行诊断能力。",
     descriptionKey: "pluginExamples.kitchenSink.description",
   },
@@ -286,7 +286,7 @@ export function PluginManager() {
                 <Label htmlFor="packageName">{t("npm Package Name", { defaultValue: "npm Package Name" })}</Label>
                 <Input
                   id="packageName"
-                  placeholder="@paperclipai/plugin-example"
+                  placeholder="@penclipai/plugin-example"
                   value={installPackage}
                   onChange={(e) => setInstallPackage(e.target.value)}
                 />

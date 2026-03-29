@@ -1,4 +1,4 @@
-import { BRANDING } from "@paperclipai/shared";
+import { BRANDING } from "@penclipai/shared";
 
 export const BRAND_NAME = BRANDING.productName;
 export const BRAND_DOCS_URL = BRANDING.docsUrl;

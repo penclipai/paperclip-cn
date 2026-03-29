@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { BudgetPolicySummary } from "@paperclipai/shared";
+import type { BudgetPolicySummary } from "@penclipai/shared";
 import { AlertTriangle, PauseCircle, ShieldAlert, Wallet } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn, formatBudgetInputValue, formatCents, parseBudgetInputValue } from "../lib/utils";

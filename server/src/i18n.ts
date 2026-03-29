@@ -5,7 +5,7 @@ import {
   DEFAULT_UI_LOCALE,
   resolveUiLocaleFromHeader,
   type UiLocale,
-} from "@paperclipai/shared";
+} from "@penclipai/shared";
 
 type TranslationParams = Record<string, string | number | boolean | null | undefined>;
 type TranslationDictionary = Record<string, string>;

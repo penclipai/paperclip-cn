@@ -58,8 +58,8 @@ import {
   SlidersHorizontal,
   Trash2,
 } from "lucide-react";
-import type { ActivityEvent } from "@paperclipai/shared";
-import type { Agent, IssueAttachment } from "@paperclipai/shared";
+import type { ActivityEvent } from "@penclipai/shared";
+import type { Agent, IssueAttachment } from "@penclipai/shared";
 
 type CommentReassignment = {
   assigneeAgentId: string | null;

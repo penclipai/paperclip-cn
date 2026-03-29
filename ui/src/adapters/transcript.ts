@@ -1,4 +1,4 @@
-import { redactHomePathUserSegments, redactTranscriptEntryPaths } from "@paperclipai/adapter-utils";
+import { redactHomePathUserSegments, redactTranscriptEntryPaths } from "@penclipai/adapter-utils";
 import type { TranscriptEntry, StdoutLineParser } from "./types";
 
 export type RunLogChunk = { ts: string; stream: "stdout" | "stderr" | "system"; chunk: string };

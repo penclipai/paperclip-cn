@@ -1,7 +1,7 @@
 import { type ComponentProps, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Check, Languages } from "lucide-react";
-import { normalizeUiLocale } from "@paperclipai/shared";
+import { normalizeUiLocale } from "@penclipai/shared";
 import { cn } from "../lib/utils";
 import { Button } from "@/components/ui/button";
 import {
