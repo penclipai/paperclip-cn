@@ -322,6 +322,30 @@ describe("agent skill routes", () => {
     );
   });
 
+  it("persists required bundled skills when creating an agent without desiredSkills", async () => {
+    const res = await request(createApp())
+      .post("/api/companies/company-1/agents")
+      .send({
+        name: "QA Agent",
+        role: "engineer",
+        adapterType: "claude_local",
+        adapterConfig: {},
+      });
+
+    expect(res.status, JSON.stringify(res.body)).toBe(201);
+    expect(mockCompanySkillService.resolveRequestedSkillKeys).not.toHaveBeenCalled();
+    expect(mockAgentService.create).toHaveBeenCalledWith(
+      "company-1",
+      expect.objectContaining({
+        adapterConfig: expect.objectContaining({
+          paperclipSkillSync: expect.objectContaining({
+            desiredSkills: ["paperclipai/paperclip/paperclip"],
+          }),
+        }),
+      }),
+    );
+  });
+
   it("materializes a managed AGENTS.md for directly created local agents", async () => {
     const res = await request(createApp())
       .post("/api/companies/company-1/agents")
@@ -426,6 +450,33 @@ describe("agent skill routes", () => {
 
     expect(res.status, JSON.stringify(res.body)).toBe(201);
     expect(mockCompanySkillService.resolveRequestedSkillKeys).toHaveBeenCalledWith("company-1", ["paperclip"]);
+    expect(mockApprovalService.create).toHaveBeenCalledWith(
+      "company-1",
+      expect.objectContaining({
+        payload: expect.objectContaining({
+          desiredSkills: ["paperclipai/paperclip/paperclip"],
+          requestedConfigurationSnapshot: expect.objectContaining({
+            desiredSkills: ["paperclipai/paperclip/paperclip"],
+          }),
+        }),
+      }),
+    );
+  });
+
+  it("includes required bundled skills in hire approvals without explicit desiredSkills", async () => {
+    const db = createDb(true);
+
+    const res = await request(createApp(db))
+      .post("/api/companies/company-1/agent-hires")
+      .send({
+        name: "QA Agent",
+        role: "engineer",
+        adapterType: "claude_local",
+        adapterConfig: {},
+      });
+
+    expect(res.status, JSON.stringify(res.body)).toBe(201);
+    expect(mockCompanySkillService.resolveRequestedSkillKeys).not.toHaveBeenCalled();
     expect(mockApprovalService.create).toHaveBeenCalledWith(
       "company-1",
       expect.objectContaining({

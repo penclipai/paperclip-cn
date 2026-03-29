@@ -30,7 +30,7 @@ packages/adapters/<name>/
       build-config.ts   # CreateConfigValues -> adapterConfig JSON for agent creation form
     cli/
       index.ts          # CLI exports: formatStdoutEvent
-      format-event.ts   # Colored terminal output for `paperclipai run --watch`
+      format-event.ts   # Colored terminal output for `penclipai run --watch`
   package.json
   tsconfig.json
 ```
@@ -157,7 +157,7 @@ Guidelines:
 - Use `warn` for non-blocking but important situations.
 - Use `info` for successful checks and context.
 
-Severity policy is product-critical: warnings are not save blockers.  
+Severity policy is product-critical: warnings are not save blockers.
 Example: for `claude_local`, detected `ANTHROPIC_API_KEY` must be a `warn`, not an `error`, because Claude can still run (it just uses API-key auth instead of subscription auth).
 
 ---
@@ -395,7 +395,7 @@ The component must support both `create` mode (using `values`/`set`) and `edit` 
 
 #### `cli/format-event.ts` — Terminal Formatter
 
-Pretty-prints stdout lines for `paperclipai run --watch`. Use `picocolors` for coloring.
+Pretty-prints stdout lines for `penclipai run --watch`. Use `picocolors` for coloring.
 
 ```ts
 import pc from "picocolors";

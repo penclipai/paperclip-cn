@@ -75,6 +75,28 @@ const SESSIONED_LOCAL_ADAPTERS = new Set([
   "opencode_local",
   "pi_local",
 ]);
+const DEFAULT_AGENT_HOME_MEMORY_MARKDOWN = `# Memory
+
+Use this file for long-lived notes that should survive across heartbeats.
+`;
+
+async function writeFileIfMissing(filePath: string, contents: string): Promise<void> {
+  try {
+    await fs.writeFile(filePath, contents, { flag: "wx" });
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code !== "EEXIST") {
+      throw err;
+    }
+  }
+}
+
+export async function ensureDefaultAgentHome(agentId: string): Promise<string> {
+  const home = resolveDefaultAgentWorkspaceDir(agentId);
+  await fs.mkdir(path.join(home, "life", "archives"), { recursive: true });
+  await fs.mkdir(path.join(home, "memory"), { recursive: true });
+  await writeFileIfMissing(path.join(home, "MEMORY.md"), DEFAULT_AGENT_HOME_MEMORY_MARKDOWN);
+  return home;
+}
 
 function deriveRepoNameFromRepoUrl(repoUrl: string | null): string | null {
   const trimmed = repoUrl?.trim() ?? "";
@@ -2270,11 +2292,7 @@ export function heartbeatService(db: Db) {
       repoRef: executionWorkspace.repoRef,
       branchName: executionWorkspace.branchName,
       worktreePath: executionWorkspace.worktreePath,
-      agentHome: await (async () => {
-        const home = resolveDefaultAgentWorkspaceDir(agent.id);
-        await fs.mkdir(home, { recursive: true });
-        return home;
-      })(),
+      agentHome: await ensureDefaultAgentHome(agent.id),
     };
     context.paperclipWorkspaces = resolvedWorkspace.workspaceHints;
     const runtimeServiceIntents = (() => {

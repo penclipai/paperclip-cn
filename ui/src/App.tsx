@@ -62,7 +62,7 @@ function BootstrapPendingPage({ hasActiveInvite = false }: { hasActiveInvite?: b
             : t("app.bootstrapInviteMissing")}
         </p>
         <pre className="mt-4 overflow-x-auto rounded-md border border-border bg-muted/30 p-3 text-xs">
-{`pnpm paperclipai auth bootstrap-ceo`}
+{`pnpm penclipai auth bootstrap-ceo`}
         </pre>
       </div>
     </div>

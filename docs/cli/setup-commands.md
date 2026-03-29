@@ -5,32 +5,32 @@ summary: Onboard, run, doctor, and configure
 
 Instance setup and diagnostics commands.
 
-## `paperclipai run`
+## `penclipai run`
 
 One-command bootstrap and start:
 
 ```sh
-pnpm paperclipai run
+pnpm penclipai run
 ```
 
 Does:
 
 1. Auto-onboards if config is missing
-2. Runs `paperclipai doctor` with repair enabled
+2. Runs `penclipai doctor` with repair enabled
 3. Starts the server when checks pass
 
 Choose a specific instance:
 
 ```sh
-pnpm paperclipai run --instance dev
+pnpm penclipai run --instance dev
 ```
 
-## `paperclipai onboard`
+## `penclipai onboard`
 
 Interactive first-time setup:
 
 ```sh
-pnpm paperclipai onboard
+pnpm penclipai onboard
 ```
 
 First prompt:
@@ -41,22 +41,22 @@ First prompt:
 Start immediately after onboarding:
 
 ```sh
-pnpm paperclipai onboard --run
+pnpm penclipai onboard --run
 ```
 
 Non-interactive defaults + immediate start (opens browser on server listen):
 
 ```sh
-pnpm paperclipai onboard --yes
+pnpm penclipai onboard --yes
 ```
 
-## `paperclipai doctor`
+## `penclipai doctor`
 
 Health checks with optional auto-repair:
 
 ```sh
-pnpm paperclipai doctor
-pnpm paperclipai doctor --repair
+pnpm penclipai doctor
+pnpm penclipai doctor --repair
 ```
 
 Validates:
@@ -67,30 +67,30 @@ Validates:
 - Storage configuration
 - Missing key files
 
-## `paperclipai configure`
+## `penclipai configure`
 
 Update configuration sections:
 
 ```sh
-pnpm paperclipai configure --section server
-pnpm paperclipai configure --section secrets
-pnpm paperclipai configure --section storage
+pnpm penclipai configure --section server
+pnpm penclipai configure --section secrets
+pnpm penclipai configure --section storage
 ```
 
-## `paperclipai env`
+## `penclipai env`
 
 Show resolved environment configuration:
 
 ```sh
-pnpm paperclipai env
+pnpm penclipai env
 ```
 
-## `paperclipai allowed-hostname`
+## `penclipai allowed-hostname`
 
 Allow a private hostname for authenticated/private mode:
 
 ```sh
-pnpm paperclipai allowed-hostname my-tailscale-host
+pnpm penclipai allowed-hostname my-tailscale-host
 ```
 
 ## Local Storage Paths
@@ -106,12 +106,12 @@ pnpm paperclipai allowed-hostname my-tailscale-host
 Override with:
 
 ```sh
-PAPERCLIP_HOME=/custom/home PAPERCLIP_INSTANCE_ID=dev pnpm paperclipai run
+PAPERCLIP_HOME=/custom/home PAPERCLIP_INSTANCE_ID=dev pnpm penclipai run
 ```
 
 Or pass `--data-dir` directly on any command:
 
 ```sh
-pnpm paperclipai run --data-dir ./tmp/paperclip-dev
-pnpm paperclipai doctor --data-dir ./tmp/paperclip-dev
+pnpm penclipai run --data-dir ./tmp/paperclip-dev
+pnpm penclipai doctor --data-dir ./tmp/paperclip-dev
 ```

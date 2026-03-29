@@ -565,13 +565,13 @@ function buildAgentSnippet(input: AgentSnippetInput) {
       ? `No candidate URLs are available. Ask your user to configure a reachable hostname in Penclip, then retry.
 Suggested steps:
 - choose a hostname that resolves to the Penclip host from your runtime
-- run: pnpm paperclipai allowed-hostname <host>
+- run: pnpm penclipai allowed-hostname <host>
 - restart Penclip
 - verify with: curl -fsS http://<host>:3100/api/health
 - regenerate this invite snippet`
       : `If none are reachable, ask your user to add a reachable hostname in Penclip, restart, and retry.
 Suggested command:
-- pnpm paperclipai allowed-hostname <host>
+- pnpm penclipai allowed-hostname <host>
 Then verify with: curl -fsS <base-url>/api/health`;
 
   const resolutionLine = resolutionTestUrl

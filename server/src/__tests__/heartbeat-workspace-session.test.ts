@@ -1,16 +1,29 @@
-import { describe, expect, it } from "vitest";
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
+import { afterEach, describe, expect, it } from "vitest";
 import type { agents } from "@penclipai/db";
 import { sessionCodec as codexSessionCodec } from "@penclipai/adapter-codex-local/server";
 import { resolveDefaultAgentWorkspaceDir } from "../home-paths.js";
 import {
   buildExplicitResumeSessionOverride,
   formatRuntimeWorkspaceWarningLog,
+  ensureDefaultAgentHome,
   prioritizeProjectWorkspaceCandidatesForRun,
   parseSessionCompactionPolicy,
   resolveRuntimeSessionParamsForWorkspace,
   shouldResetTaskSessionForWake,
   type ResolvedWorkspaceForRun,
 } from "../services/heartbeat.ts";
+
+const cleanupDirs = new Set<string>();
+const originalPaperclipHome = process.env.PAPERCLIP_HOME;
+
+afterEach(async () => {
+  process.env.PAPERCLIP_HOME = originalPaperclipHome;
+  await Promise.all(Array.from(cleanupDirs).map((dir) => fs.rm(dir, { recursive: true, force: true })));
+  cleanupDirs.clear();
+});
 
 function buildResolvedWorkspace(overrides: Partial<ResolvedWorkspaceForRun> = {}): ResolvedWorkspaceForRun {
   return {
@@ -117,6 +130,27 @@ describe("resolveRuntimeSessionParamsForWorkspace", () => {
       workspaceId: "workspace-1",
     });
     expect(result.warning).toBeNull();
+  });
+});
+
+describe("ensureDefaultAgentHome", () => {
+  it("creates the expected agent-home scaffold for heartbeats", async () => {
+    const tempHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-agent-home-"));
+    cleanupDirs.add(tempHome);
+    process.env.PAPERCLIP_HOME = tempHome;
+
+    const home = await ensureDefaultAgentHome("agent-123");
+
+    const [lifeStats, archivesStats, memoryStats] = await Promise.all([
+      fs.stat(path.join(home, "life")),
+      fs.stat(path.join(home, "life", "archives")),
+      fs.stat(path.join(home, "memory")),
+    ]);
+
+    expect(lifeStats.isDirectory()).toBe(true);
+    expect(archivesStats.isDirectory()).toBe(true);
+    expect(memoryStats.isDirectory()).toBe(true);
+    await expect(fs.readFile(path.join(home, "MEMORY.md"), "utf8")).resolves.toContain("# Memory");
   });
 });
 

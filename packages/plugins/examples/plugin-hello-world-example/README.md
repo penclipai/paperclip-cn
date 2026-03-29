@@ -26,13 +26,13 @@ From the repo root, build the plugin and install it by local path:
 
 ```bash
 pnpm --filter @penclipai/plugin-hello-world-example build
-pnpm paperclipai plugin install ./packages/plugins/examples/plugin-hello-world-example
+pnpm penclipai plugin install ./packages/plugins/examples/plugin-hello-world-example
 ```
 
 **Local development notes:**
 
 - **Build first.** The host resolves the worker from the manifest `entrypoints.worker` (e.g. `./dist/worker.js`). Run `pnpm build` in the plugin directory before installing so the worker file exists.
 - **Dev-only install path.** This local-path install flow assumes a source checkout with this example package present on disk. For deployed installs, publish an npm package instead of relying on the monorepo example path.
-- **Reinstall after pulling.** If you installed a plugin by local path before the server stored `package_path`, the plugin may show status **error** (worker not found). Uninstall and install again so the server persists the path and can activate the plugin:  
-  `pnpm paperclipai plugin uninstall paperclip.hello-world-example --force` then  
-  `pnpm paperclipai plugin install ./packages/plugins/examples/plugin-hello-world-example`.
+- **Reinstall after pulling.** If you installed a plugin by local path before the server stored `package_path`, the plugin may show status **error** (worker not found). Uninstall and install again so the server persists the path and can activate the plugin:
+  `pnpm penclipai plugin uninstall paperclip.hello-world-example --force` then
+  `pnpm penclipai plugin install ./packages/plugins/examples/plugin-hello-world-example`.

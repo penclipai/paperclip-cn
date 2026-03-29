@@ -45,7 +45,7 @@ packages/adapters/<name>/
       parse-stdout.ts   # Stdout -> transcript entries for run viewer
       build-config.ts   # Form values -> adapterConfig JSON
     cli/
-      format-event.ts   # Terminal output for `paperclipai run --watch`
+      format-event.ts   # Terminal output for `penclipai run --watch`
 ```
 
 Three registries consume these modules:

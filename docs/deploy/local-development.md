@@ -29,13 +29,13 @@ No Docker or external database required. Paperclip uses embedded PostgreSQL auto
 For a first-time install:
 
 ```sh
-pnpm paperclipai run
+pnpm penclipai run
 ```
 
 This does:
 
 1. Auto-onboards if config is missing
-2. Runs `paperclipai doctor` with repair enabled
+2. Runs `penclipai doctor` with repair enabled
 3. Starts the server when checks pass
 
 ## Tailscale/Private Auth Dev Mode
@@ -57,7 +57,7 @@ pnpm dev --authenticated-private
 Allow additional private hostnames:
 
 ```sh
-pnpm paperclipai allowed-hostname dotta-macbook-pro
+pnpm penclipai allowed-hostname dotta-macbook-pro
 ```
 
 For full setup and troubleshooting, see [Tailscale Private Access](/deploy/tailscale-private-access).
@@ -94,5 +94,5 @@ pnpm dev
 Override with environment variables:
 
 ```sh
-PAPERCLIP_HOME=/custom/path PAPERCLIP_INSTANCE_ID=dev pnpm paperclipai run
+PAPERCLIP_HOME=/custom/path PAPERCLIP_INSTANCE_ID=dev pnpm penclipai run
 ```
