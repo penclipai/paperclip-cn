@@ -873,7 +873,7 @@ The plugin's UI bundle exports:
 
 ```tsx
 // dist/ui/index.tsx
-import { usePluginData, usePluginAction, MetricCard, StatusBadge } from "@penclipai/plugin-sdk/ui";
+import { usePluginData, usePluginAction, MetricCard, StatusBadge } from "@paperclipai/plugin-sdk/ui";
 
 export function DashboardWidget({ context }: PluginWidgetProps) {
   const { data, loading } = usePluginData("sync-health", { companyId: context.companyId });
@@ -905,7 +905,7 @@ export function DashboardWidget({ context }: PluginWidgetProps) {
 - The host decides **where** plugin components appear (which slots exist and when they mount).
 - The host provides the **bridge** — plugin UI cannot make arbitrary network requests or access host internals directly.
 - The host enforces **capability gates** — if a plugin's worker does not have a capability, the bridge rejects the call even if the UI requests it.
-- The host provides **design tokens and shared components** via `@penclipai/plugin-sdk/ui` so plugins can match the host's visual language without being forced to.
+- The host provides **design tokens and shared components** via `@paperclipai/plugin-sdk/ui` so plugins can match the host's visual language without being forced to.
 
 **What the plugin controls:**
 
@@ -913,7 +913,9 @@ export function DashboardWidget({ context }: PluginWidgetProps) {
 - The plugin decides **what data** to fetch and **what actions** to expose.
 - The plugin can use any React patterns (hooks, context, third-party component libraries) inside its bundle.
 
-### 19.0.1 Plugin UI SDK (`@penclipai/plugin-sdk/ui`)
+### 19.0.1 Plugin UI SDK (`@paperclipai/plugin-sdk/ui`)
+
+For cross-host compatibility, plugin source code should import the UI SDK from `@paperclipai/plugin-sdk/ui`. Penclip publishes the package under `@penclipai/plugin-sdk`, and Penclip-hosted plugins can install it via npm alias while keeping the upstream-compatible import path.
 
 The SDK includes a `ui` subpath export that plugin frontends import. This subpath provides:
 
@@ -930,7 +932,7 @@ Plugin UI bundles are loaded as standard ES modules, not iframed. This gives plu
 
 Isolation rules:
 
-- Plugin bundles must not import from host internals. They may only import from `@penclipai/plugin-sdk/ui` and their own dependencies.
+- Plugin bundles must not import from host internals. They may only import from `@paperclipai/plugin-sdk/ui` and their own dependencies.
 - Plugin bundles must not access `window.fetch` or `XMLHttpRequest` directly for host API calls. All host communication goes through the bridge.
 - The host may enforce Content Security Policy rules that restrict plugin network access to the bridge endpoint only.
 - Plugin bundles must be statically analyzable — no dynamic `import()` of URLs outside the plugin's own bundle.
@@ -987,7 +989,7 @@ Plugins may add sidebar links to:
 - global plugin settings
 - company-context plugin pages
 
-## 19.6 Shared Components In `@penclipai/plugin-sdk/ui`
+## 19.6 Shared Components In `@paperclipai/plugin-sdk/ui`
 
 The host SDK ships shared components that plugins can import to quickly build UIs that match the host's look and feel. These are convenience building blocks, not a requirement.
 
@@ -1041,7 +1043,7 @@ Error codes:
 - `TIMEOUT` — the worker did not respond within the configured timeout
 - `UNKNOWN` — unexpected bridge-level failure
 
-The `@penclipai/plugin-sdk/ui` subpath should also export an `ErrorBoundary` component that plugin authors can use to catch rendering errors without crashing the host page.
+The `@paperclipai/plugin-sdk/ui` subpath should also export an `ErrorBoundary` component that plugin authors can use to catch rendering errors without crashing the host page.
 
 ## 19.8 Plugin Settings UI
 
@@ -1523,11 +1525,20 @@ This spec directly supports the following plugin types:
 
 ### 29.2 SDK Versioning
 
-The host publishes a single SDK package for plugin authors:
+Penclip publishes a single SDK package for plugin authors:
 
 - `@penclipai/plugin-sdk` — the complete plugin SDK
 
-The package uses subpath exports to separate worker and UI concerns:
+For cross-host-compatible plugin source code, the default authoring surface remains:
+
+- `@paperclipai/plugin-sdk` — worker-side SDK (context, events, state, tools, logger, `definePlugin`, `z`)
+- `@paperclipai/plugin-sdk/ui` — frontend SDK (bridge hooks, shared components, design tokens)
+
+In Penclip installs, those compatibility imports can be satisfied by aliasing to the published package:
+
+- `@paperclipai/plugin-sdk -> npm:@penclipai/plugin-sdk`
+
+The package uses subpath exports to separate worker and UI concerns at publish time:
 
 - `@penclipai/plugin-sdk` — worker-side SDK (context, events, state, tools, logger, `definePlugin`, `z`)
 - `@penclipai/plugin-sdk/ui` — frontend SDK (bridge hooks, shared components, design tokens)
@@ -1564,7 +1575,7 @@ This matrix is published in the host docs and queryable via `GET /api/plugins/co
 
 When a new SDK version is released:
 
-1. Plugin author updates `@penclipai/plugin-sdk` dependency.
+1. Plugin author updates the `@paperclipai/plugin-sdk` compatibility dependency and, in Penclip environments, repoints its alias target to the newer published `@penclipai/plugin-sdk` version.
 2. Plugin author follows the migration guide to update code.
 3. Plugin author updates `apiVersion` and `sdkVersion` in the manifest.
 4. Plugin author publishes a new plugin version.
@@ -1584,7 +1595,7 @@ When a new SDK version is released:
 - jobs
 - webhooks
 - settings page
-- plugin UI bundle loading, host bridge, and `@penclipai/plugin-sdk/ui`
+- plugin UI bundle loading, host bridge, and `@paperclipai/plugin-sdk/ui`
 - extension slot mounting for pages, tabs, widgets, sidebar entries
 - bridge error propagation (`PluginBridgeError`)
 - auto-generated settings form from `instanceConfigSchema`
