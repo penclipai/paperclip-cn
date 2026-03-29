@@ -1,10 +1,10 @@
 {
-  "name": "@penclipai/paperclipai",
+  "name": "penclipai",
   "version": "0.3.1",
-  "description": "Paperclip CLI — orchestrate AI agent teams to run a business",
+  "description": "Penclip CLI — orchestrate AI agent teams to run a business",
   "type": "module",
   "bin": {
-    "paperclipai": "./dist/index.js"
+    "penclipai": "./dist/index.js"
   },
   "keywords": [
     "paperclip",

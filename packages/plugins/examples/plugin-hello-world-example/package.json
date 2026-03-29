@@ -19,7 +19,7 @@
     "typecheck": "pnpm --filter @penclipai/plugin-sdk build && tsc --noEmit"
   },
   "dependencies": {
-    "@penclipai/plugin-sdk": "workspace:*"
+    "@paperclipai/plugin-sdk": "workspace:@penclipai/plugin-sdk@*"
   },
   "devDependencies": {
     "@types/node": "^24.6.0",

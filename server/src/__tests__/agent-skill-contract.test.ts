@@ -31,7 +31,7 @@ describe("agent skill contract", () => {
       mode: "ephemeral",
       desiredSkills: [],
       entries: [{
-        key: "penclipai/paperclip/paperclip",
+        key: "paperclipai/paperclip/paperclip",
         runtimeName: "paperclip",
         desired: true,
         managed: true,
@@ -41,7 +41,7 @@ describe("agent skill contract", () => {
     })).toMatchObject({
       adapterType: "claude_local",
       entries: [{
-        key: "penclipai/paperclip/paperclip",
+        key: "paperclipai/paperclip/paperclip",
         state: "configured",
       }],
     });

@@ -1,4 +1,4 @@
-import type { PluginWidgetProps } from "@penclipai/plugin-sdk/ui";
+import type { PluginWidgetProps } from "@paperclipai/plugin-sdk/ui";
 
 const WIDGET_LABEL = "Hello world plugin widget";
 

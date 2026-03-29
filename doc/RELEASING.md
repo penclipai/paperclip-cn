@@ -35,7 +35,7 @@ Important constraints:
 Every stable release has four separate surfaces:
 
 1. **Verification** — the exact git SHA passes typecheck, tests, and build
-2. **npm** — `@penclipai/paperclipai` and public workspace packages are published
+2. **npm** — `penclipai` and public workspace packages are published
 3. **GitHub** — the stable release gets a git tag and GitHub Release
 4. **Website / announcements** — the stable changelog is published externally and announced
 
@@ -68,9 +68,9 @@ It:
 Users install canaries with:
 
 ```bash
-npx @penclipai/paperclipai@canary onboard
+npx penclipai@canary onboard
 # or
-npx @penclipai/paperclipai@canary onboard --data-dir "$(mktemp -d /tmp/paperclip-canary.XXXXXX)"
+npx penclipai@canary onboard --data-dir "$(mktemp -d /tmp/paperclip-canary.XXXXXX)"
 ```
 
 ### Stable
@@ -185,7 +185,7 @@ gh workflow run release-smoke.yml -f paperclip_version=latest
 
 Minimum checks:
 
-- `npx @penclipai/paperclipai@canary onboard` installs
+- `npx penclipai@canary onboard` installs
 - onboarding completes without crashes
 - authenticated login works with the smoke credentials
 - the browser lands in onboarding on a fresh instance

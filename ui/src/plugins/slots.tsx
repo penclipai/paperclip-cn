@@ -189,11 +189,11 @@ function buildPluginUiUrl(contribution: PluginUiContribution): string {
 /**
  * Import a plugin's UI entry module with bare-specifier rewriting.
  *
- * Plugin bundles are built with `external: ["@penclipai/plugin-sdk/ui", "react", "react-dom"]`,
+ * Plugin bundles are built with `external: ["@paperclipai/plugin-sdk/ui", "react", "react-dom"]`,
  * so their ESM output contains bare specifier imports like:
  *
  * ```js
- * import { usePluginData } from "@penclipai/plugin-sdk/ui";
+ * import { usePluginData } from "@paperclipai/plugin-sdk/ui";
  * import React from "react";
  * ```
  *
@@ -276,7 +276,7 @@ function getShimBlobUrl(specifier: "react" | "react-dom" | "react-dom/client" | 
  * - `import { ... } from "react";`
  * - `import React from "react";`
  * - `import * as React from "react";`
- * - `import { ... } from "@penclipai/plugin-sdk/ui";`
+ * - `import { ... } from "@paperclipai/plugin-sdk/ui";`
  *
  * Also handles re-exports:
  * - `export { ... } from "react";`
@@ -284,6 +284,10 @@ function getShimBlobUrl(specifier: "react" | "react-dom" | "react-dom/client" | 
 function rewriteBareSpecifiers(source: string): string {
   // Build a mapping of bare specifiers to blob URLs.
   const rewrites: Record<string, string> = {
+    '"@paperclipai/plugin-sdk/ui"': `"${getShimBlobUrl("sdk-ui")}"`,
+    "'@paperclipai/plugin-sdk/ui'": `'${getShimBlobUrl("sdk-ui")}'`,
+    '"@paperclipai/plugin-sdk/ui/hooks"': `"${getShimBlobUrl("sdk-ui")}"`,
+    "'@paperclipai/plugin-sdk/ui/hooks'": `'${getShimBlobUrl("sdk-ui")}'`,
     '"@penclipai/plugin-sdk/ui"': `"${getShimBlobUrl("sdk-ui")}"`,
     "'@penclipai/plugin-sdk/ui'": `'${getShimBlobUrl("sdk-ui")}'`,
     '"@penclipai/plugin-sdk/ui/hooks"': `"${getShimBlobUrl("sdk-ui")}"`,
@@ -359,7 +363,7 @@ async function importPluginModule(url: string): Promise<Record<string, unknown>>
  * exports to the correct `pluginKey:exportName` registry keys.
  *
  * Plugin modules are loaded with bare-specifier rewriting so that imports
- * of `@penclipai/plugin-sdk/ui`, `react`, and `react-dom` resolve to the
+ * of `@paperclipai/plugin-sdk/ui`, `@penclipai/plugin-sdk/ui`, `react`, and `react-dom` resolve to the
  * host-provided implementations via the bridge registry.
  *
  * Web-component registrations still work: if the module has a named export

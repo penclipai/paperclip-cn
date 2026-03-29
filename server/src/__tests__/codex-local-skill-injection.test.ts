@@ -31,7 +31,7 @@ async function createCustomSkill(root: string, skillName: string) {
 }
 
 describe("codex local adapter skill injection", () => {
-  const paperclipKey = "penclipai/paperclip/paperclip";
+  const paperclipKey = "paperclipai/paperclip/paperclip";
   const cleanupDirs = new Set<string>();
 
   afterEach(async () => {

@@ -177,7 +177,7 @@ Paperclip handles the hard orchestration details correctly.
 Open source. Self-hosted. No Paperclip account required.
 
 ```bash
-npx @penclipai/paperclipai onboard --yes
+npx penclipai onboard --yes
 ```
 
 Or manually:

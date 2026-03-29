@@ -40,6 +40,14 @@ const SUPPORTED_ADVANCED_ADAPTER_TYPES = new Set<CreateConfigValues["adapterType
   "openclaw_gateway",
 ]);
 
+function isBundledPaperclipSkill(skill: { key: string; metadata?: unknown }) {
+  const metadata =
+    typeof skill.metadata === "object" && skill.metadata !== null && !Array.isArray(skill.metadata)
+      ? skill.metadata as Record<string, unknown>
+      : null;
+  return metadata?.sourceKind === "paperclip_bundled" || skill.key.startsWith("paperclipai/paperclip/");
+}
+
 function createValuesForAdapterType(
   adapterType: CreateConfigValues["adapterType"],
 ): CreateConfigValues {
@@ -207,7 +215,7 @@ export function NewAgent() {
     });
   }
 
-  const availableSkills = (companySkills ?? []).filter((skill) => !skill.key.startsWith("penclipai/paperclip/"));
+  const availableSkills = (companySkills ?? []).filter((skill) => !isBundledPaperclipSkill(skill));
 
   function toggleSkill(key: string, checked: boolean) {
     setSelectedSkillKeys((prev) => {

@@ -100,6 +100,7 @@ type RuntimeSkillEntryOptions = {
 };
 
 const skillInventoryRefreshPromises = new Map<string, Promise<void>>();
+const PAPERCLIP_BUNDLED_SKILL_KEY_PREFIX = "paperclipai/paperclip/";
 
 const PROJECT_SCAN_DIRECTORY_ROOTS = [
   "skills",
@@ -190,6 +191,10 @@ function normalizeSkillKey(value: string | null | undefined) {
   return segments.length > 0 ? segments.join("/") : null;
 }
 
+function isBundledPaperclipSkillKey(key: string) {
+  return key.startsWith(PAPERCLIP_BUNDLED_SKILL_KEY_PREFIX);
+}
+
 export function normalizeGitHubSkillDirectory(
   value: string | null | undefined,
   fallback: string,
@@ -229,8 +234,8 @@ function uniqueImportedSkillKey(companyId: string, baseSlug: string, usedKeys: S
   return candidate;
 }
 
-function buildSkillRuntimeName(key: string, slug: string) {
-  if (key.startsWith("penclipai/paperclip/")) return slug;
+function buildSkillRuntimeName(key: string, slug: string, sourceKind: string | null = null) {
+  if (sourceKind === "paperclip_bundled" || isBundledPaperclipSkillKey(key)) return slug;
   return `${slug}--${hashSkillValue(key)}`;
 }
 
@@ -261,7 +266,7 @@ function deriveCanonicalSkillKey(
 
   const sourceKind = asString(metadata?.sourceKind);
   if (sourceKind === "paperclip_bundled") {
-    return `penclipai/paperclip/${slug}`;
+    return `paperclipai/paperclip/${slug}`;
   }
 
   const owner = normalizeSkillSlug(asString(metadata?.owner));
@@ -1997,7 +2002,8 @@ export function companySkillService(db: Db) {
     const packageDir = skill.packageDir ? normalizePortablePath(skill.packageDir) : null;
     if (!packageDir) return null;
     const catalogRoot = path.resolve(resolveManagedSkillsRoot(companyId), "__catalog__");
-    const skillDir = path.resolve(catalogRoot, buildSkillRuntimeName(skill.key, skill.slug));
+    const sourceKind = asString((isPlainRecord(skill.metadata) ? skill.metadata : null)?.sourceKind);
+    const skillDir = path.resolve(catalogRoot, buildSkillRuntimeName(skill.key, skill.slug, sourceKind));
     await fs.rm(skillDir, { recursive: true, force: true });
     await fs.mkdir(skillDir, { recursive: true });
 
@@ -2017,7 +2023,8 @@ export function companySkillService(db: Db) {
 
   async function materializeRuntimeSkillFiles(companyId: string, skill: CompanySkill) {
     const runtimeRoot = path.resolve(resolveManagedSkillsRoot(companyId), "__runtime__");
-    const skillDir = path.resolve(runtimeRoot, buildSkillRuntimeName(skill.key, skill.slug));
+    const sourceKind = asString(getSkillMeta(skill).sourceKind);
+    const skillDir = path.resolve(runtimeRoot, buildSkillRuntimeName(skill.key, skill.slug, sourceKind));
     await fs.rm(skillDir, { recursive: true, force: true });
     await fs.mkdir(skillDir, { recursive: true });
 
@@ -2034,7 +2041,8 @@ export function companySkillService(db: Db) {
 
   function resolveRuntimeSkillMaterializedPath(companyId: string, skill: CompanySkill) {
     const runtimeRoot = path.resolve(resolveManagedSkillsRoot(companyId), "__runtime__");
-    return path.resolve(runtimeRoot, buildSkillRuntimeName(skill.key, skill.slug));
+    const sourceKind = asString(getSkillMeta(skill).sourceKind);
+    return path.resolve(runtimeRoot, buildSkillRuntimeName(skill.key, skill.slug, sourceKind));
   }
 
   async function listRuntimeSkillEntries(
@@ -2057,7 +2065,7 @@ export function companySkillService(db: Db) {
       const required = sourceKind === "paperclip_bundled";
       out.push({
         key: skill.key,
-        runtimeName: buildSkillRuntimeName(skill.key, skill.slug),
+        runtimeName: buildSkillRuntimeName(skill.key, skill.slug, sourceKind),
         source,
         required,
         requiredReason: required

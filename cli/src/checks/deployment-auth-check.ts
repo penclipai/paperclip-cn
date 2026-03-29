@@ -18,7 +18,7 @@ export function deploymentAuthCheck(config: PaperclipConfig): CheckResult {
         status: "fail",
         message: `local_trusted requires loopback host binding (found ${config.server.host})`,
         canRepair: false,
-        repairHint: "Run `paperclipai configure --section server` and set host to 127.0.0.1",
+        repairHint: "Run `penclipai configure --section server` and set host to 127.0.0.1",
       };
     }
     return {
@@ -47,7 +47,7 @@ export function deploymentAuthCheck(config: PaperclipConfig): CheckResult {
       status: "fail",
       message: "auth.baseUrlMode=explicit requires auth.publicBaseUrl",
       canRepair: false,
-      repairHint: "Run `paperclipai configure --section server` and provide a base URL",
+      repairHint: "Run `penclipai configure --section server` and provide a base URL",
     };
   }
 
@@ -58,7 +58,7 @@ export function deploymentAuthCheck(config: PaperclipConfig): CheckResult {
         status: "fail",
         message: "authenticated/public requires explicit auth.publicBaseUrl",
         canRepair: false,
-        repairHint: "Run `paperclipai configure --section server` and select public exposure",
+        repairHint: "Run `penclipai configure --section server` and select public exposure",
       };
     }
     try {
@@ -78,7 +78,7 @@ export function deploymentAuthCheck(config: PaperclipConfig): CheckResult {
         status: "fail",
         message: "auth.publicBaseUrl is not a valid URL",
         canRepair: false,
-        repairHint: "Run `paperclipai configure --section server` and provide a valid URL",
+        repairHint: "Run `penclipai configure --section server` and provide a valid URL",
       };
     }
   }

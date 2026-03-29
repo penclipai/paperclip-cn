@@ -22,24 +22,27 @@ Supported categories: `connector`, `workspace`, `automation`, `ui`
 
 Generates:
 - typed manifest + worker entrypoint
-- example UI widget using the supported `@penclipai/plugin-sdk/ui` hooks
-- test file using `@penclipai/plugin-sdk/testing`
+- example UI widget using the supported `@paperclipai/plugin-sdk/ui` hooks
+- test file using `@paperclipai/plugin-sdk/testing`
 - `esbuild` and `rollup` config files using SDK bundler presets
 - dev server script for hot-reload (`paperclip-plugin-dev-server`)
 
 The scaffold intentionally uses plain React elements rather than host-provided UI kit components, because the current plugin runtime does not ship a stable shared component library yet.
 
-Inside this repo, the generated package uses `@penclipai/plugin-sdk` via `workspace:*`.
+Inside this repo, the generated package keeps compatibility imports from `@paperclipai/plugin-sdk*` and resolves them to the workspace packages published as `@penclipai/*`.
 
-Outside this repo, the scaffold snapshots `@penclipai/plugin-sdk` from your local Paperclip checkout into a `.paperclip-sdk/` tarball and points the generated package at that local file by default. You can override the SDK source explicitly:
+Outside this repo, the scaffold keeps those same compatibility imports and snapshots local compatibility tarballs into `.paperclip-sdk/` so the generated plugin can install immediately without waiting for npm publish.
+
+If you want the generated package to target already-published npm artifacts instead, pass `--published`:
 
 ```bash
 node packages/plugins/create-paperclip-plugin/dist/index.js @acme/my-plugin \
   --output /absolute/path/to/plugins \
-  --sdk-path /absolute/path/to/paperclip/packages/plugins/sdk
+  --sdk-path /absolute/path/to/paperclip/packages/plugins/sdk \
+  --published
 ```
 
-That gives you an outside-repo local development path before the SDK is published to npm.
+That keeps generated plugins compatible with both upstream Paperclip hosts and Penclip hosts without requiring dual-published packages.
 
 ## Workflow after scaffolding
 

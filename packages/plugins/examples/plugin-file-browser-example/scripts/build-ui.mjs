@@ -18,7 +18,7 @@ await esbuild.build({
     "react",
     "react-dom",
     "react/jsx-runtime",
-    "@penclipai/plugin-sdk/ui",
+    "@paperclipai/plugin-sdk/ui",
   ],
   logLevel: "info",
 });

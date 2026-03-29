@@ -209,7 +209,7 @@ ClipHub is a **separate service** from Paperclip itself. Paperclip is self-hoste
 |---|---|
 | **ClipHub Web** | Browse, search, discover, comment, star — the website |
 | **ClipHub API** | Registry API for publishing, downloading, searching programmatically |
-| **Paperclip CLI** | `paperclipai install`, `paperclipai publish`, `paperclipai cliphub sync` — built into Paperclip |
+| **Paperclip CLI** | `penclipai install`, `penclipai publish`, `penclipai cliphub sync` — built into Paperclip |
 | **Paperclip UI** | "Browse ClipHub" panel in the Paperclip web UI for discovering templates without leaving the app |
 
 ### Tech Stack
@@ -260,7 +260,7 @@ Report
 1. Open ClipHub, browse by category or search "dev shop for building SaaS"
 2. Find a template that fits — "Lean SaaS Dev Shop (CEO + CTO + 3 Engineers)"
 3. Read the description, inspect the org chart, check the comments
-4. Run `paperclipai install cliphub:acme/lean-saas-shop`
+4. Run `penclipai install cliphub:acme/lean-saas-shop`
 5. Paperclip creates the company locally with all agents pre-configured
 6. Set your API keys, adjust budgets, add your initial tasks
 7. Hit go
@@ -268,8 +268,8 @@ Report
 ### "I built something great and want to share it"
 
 1. Build and iterate on a company in Paperclip until it works well
-2. Export: `paperclipai export --template my-agency`
-3. Publish: `paperclipai publish cliphub my-agency`
+2. Export: `penclipai export --template my-agency`
+3. Publish: `penclipai publish cliphub my-agency`
 4. Fill in description, category, tags on the web UI
 5. Template is live — others can find and install it
 
@@ -285,7 +285,7 @@ Report
 
 1. Search ClipHub for agent templates: "senior python engineer"
 2. Find a well-starred agent config
-3. Install just that agent: `paperclipai install cliphub:acme/senior-python-eng --agent`
+3. Install just that agent: `penclipai install cliphub:acme/senior-python-eng --agent`
 4. Assign it to a manager in your existing company
 5. Done
 
@@ -311,7 +311,7 @@ ClipHub is to Paperclip what a package registry is to a language runtime: option
 - [ ] Template browsing (list, filter by category)
 - [ ] Template detail page (description, org chart, agent list, install command)
 - [ ] Semantic search (vector embeddings)
-- [ ] `paperclipai install cliphub:<publisher>/<slug>` CLI command
+- [ ] `penclipai install cliphub:<publisher>/<slug>` CLI command
 - [ ] GitHub OAuth authentication
 - [ ] Stars
 - [ ] Download counts
@@ -326,7 +326,7 @@ ClipHub is to Paperclip what a package registry is to a language runtime: option
 - [ ] Verified publisher badges
 - [ ] Automated security scanning of adapter configs
 - [ ] "Browse ClipHub" panel in Paperclip web UI
-- [ ] `paperclipai cliphub sync` for bulk publishing
+- [ ] `penclipai cliphub sync` for bulk publishing
 - [ ] Publisher profiles and portfolios
 
 ### Not in Scope

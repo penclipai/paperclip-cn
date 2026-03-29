@@ -40,9 +40,19 @@ That creates a package with:
 - `esbuild.config.mjs`
 - `rollup.config.mjs`
 
-Inside this monorepo, the scaffold uses `workspace:*` for `@penclipai/plugin-sdk`.
+Inside this monorepo, the scaffold keeps compatibility imports from `@paperclipai/plugin-sdk*` and resolves them to the workspace packages published as `@penclipai/*`.
 
-Outside this monorepo, the scaffold snapshots `@penclipai/plugin-sdk` from the local Paperclip checkout into a `.paperclip-sdk/` tarball so you can build and test a plugin without publishing anything to npm first.
+Outside this monorepo, the scaffold keeps those same compatibility imports and snapshots local compatibility tarballs into `.paperclip-sdk/` so the generated plugin can install immediately without waiting for npm publish.
+
+If you explicitly want published npm dependencies instead of local snapshots:
+
+```bash
+pnpm --filter @penclipai/create-paperclip-plugin build
+node packages/plugins/create-paperclip-plugin/dist/index.js @yourscope/plugin-name \
+  --output /absolute/path/to/plugin-repos \
+  --sdk-path /absolute/path/to/paperclip/packages/plugins/sdk \
+  --published
+```
 
 ## Recommended local workflow
 
@@ -96,7 +106,7 @@ UI:
 - `usePluginStream`
 - `usePluginToast`
 - `useHostContext`
-- typed slot props from `@penclipai/plugin-sdk/ui`
+- typed slot props from `@paperclipai/plugin-sdk/ui`
 
 Mount surfaces currently wired in the host include:
 

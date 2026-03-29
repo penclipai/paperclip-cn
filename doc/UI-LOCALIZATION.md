@@ -45,8 +45,8 @@
 - GitHub 仓库名 `paperclip`
 - 公开 package 的 `package.json.name`
 - `@penclipai/*` workspace 包名
-- CLI npm package spec `@penclipai/paperclipai`
-- `paperclipai` CLI 命令
+- CLI npm package spec `penclipai`
+- `penclipai` CLI 命令
 - `PAPERCLIP_*` 环境变量
 - 内部 localStorage key
 - 内部 API 路径和数据结构

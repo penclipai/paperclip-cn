@@ -19,8 +19,8 @@
     "typecheck": "pnpm --filter @penclipai/plugin-sdk build && tsc --noEmit"
   },
   "dependencies": {
-    "@penclipai/plugin-sdk": "workspace:*",
-    "@penclipai/shared": "workspace:*"
+    "@paperclipai/plugin-sdk": "workspace:@penclipai/plugin-sdk@*",
+    "@paperclipai/shared": "workspace:@penclipai/shared@*"
   },
   "devDependencies": {
     "esbuild": "^0.27.3",

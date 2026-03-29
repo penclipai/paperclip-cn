@@ -1,5 +1,5 @@
 export const WORKSPACE_SCOPE = "@penclipai/";
-export const CLI_PACKAGE_NAME = "@penclipai/paperclipai";
+export const CLI_PACKAGE_NAME = "penclipai";
 export const SERVER_PACKAGE_NAME = "@penclipai/server";
 export const UI_PACKAGE_NAME = "@penclipai/ui";
 export const SHARED_PACKAGE_NAME = "@penclipai/shared";

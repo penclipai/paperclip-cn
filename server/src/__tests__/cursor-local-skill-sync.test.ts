@@ -19,7 +19,7 @@ async function createSkillDir(root: string, name: string) {
 }
 
 describe("cursor local skill sync", () => {
-  const paperclipKey = "penclipai/paperclip/paperclip";
+  const paperclipKey = "paperclipai/paperclip/paperclip";
   const cleanupDirs = new Set<string>();
 
   afterEach(async () => {

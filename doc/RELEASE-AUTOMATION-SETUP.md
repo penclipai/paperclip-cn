@@ -33,7 +33,7 @@ Do this for every public package that Paperclip publishes.
 
 At minimum that includes:
 
-- `@penclipai/paperclipai`
+- `penclipai`
 - `@penclipai/server`
 - `@penclipai/ui`
 - public packages under `packages/`
@@ -211,7 +211,7 @@ After setup:
 Install-path check:
 
 ```bash
-npx @penclipai/paperclipai@canary onboard
+npx penclipai@canary onboard
 ```
 
 ## 12. Verify the Stable Workflow

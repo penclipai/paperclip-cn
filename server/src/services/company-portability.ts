@@ -175,13 +175,13 @@ function deriveManifestSkillKey(
   if (explicit) return explicit;
   const slug = normalizeSkillSlug(asString(frontmatter.slug) ?? fallbackSlug) ?? "skill";
   const sourceKind = asString(metadata?.sourceKind);
+  if (sourceKind === "paperclip_bundled") {
+    return `paperclipai/paperclip/${slug}`;
+  }
   const owner = normalizeSkillSlug(asString(metadata?.owner));
   const repo = normalizeSkillSlug(asString(metadata?.repo));
   if ((sourceType === "github" || sourceType === "skills_sh" || sourceKind === "github" || sourceKind === "skills_sh") && owner && repo) {
     return `${owner}/${repo}/${slug}`;
-  }
-  if (sourceKind === "paperclip_bundled") {
-    return `penclipai/paperclip/${slug}`;
   }
   if (sourceType === "url" || sourceKind === "url") {
     try {
@@ -1865,11 +1865,11 @@ async function buildSkillSourceEntry(skill: CompanySkill) {
     const commit = await resolveBundledSkillsCommit();
     return {
       kind: "github-dir",
-      repo: "penclipai/paperclip",
+      repo: "paperclipai/paperclip",
       path: `skills/${skill.slug}`,
       commit,
       trackingRef: "master",
-      url: `https://github.com/penclipai/paperclip/tree/master/skills/${skill.slug}`,
+      url: `https://github.com/paperclipai/paperclip/tree/master/skills/${skill.slug}`,
     };
   }
 

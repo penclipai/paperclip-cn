@@ -10,4 +10,4 @@ cd $PC_TEST_ROOT
 env HOME="$PC_HOME" \
   npm_config_cache="$PC_CACHE" \
   npm_config_userconfig="$PC_HOME/.npmrc" \
-  npx --yes paperclipai onboard --yes --data-dir "$PC_DATA"
+  npx --yes penclipai onboard --yes --data-dir "$PC_DATA"

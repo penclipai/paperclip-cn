@@ -266,8 +266,8 @@ importers:
 
   packages/plugins/examples/plugin-authoring-smoke-example:
     dependencies:
-      '@penclipai/plugin-sdk':
-        specifier: workspace:*
+      '@paperclipai/plugin-sdk':
+        specifier: workspace:@penclipai/plugin-sdk@*
         version: link:../../sdk
       react:
         specifier: '>=18'
@@ -318,8 +318,8 @@ importers:
       '@lezer/highlight':
         specifier: ^1.2.1
         version: 1.2.3
-      '@penclipai/plugin-sdk':
-        specifier: workspace:*
+      '@paperclipai/plugin-sdk':
+        specifier: workspace:@penclipai/plugin-sdk@*
         version: link:../../sdk
       codemirror:
         specifier: ^6.0.1
@@ -349,8 +349,8 @@ importers:
 
   packages/plugins/examples/plugin-hello-world-example:
     dependencies:
-      '@penclipai/plugin-sdk':
-        specifier: workspace:*
+      '@paperclipai/plugin-sdk':
+        specifier: workspace:@penclipai/plugin-sdk@*
         version: link:../../sdk
     devDependencies:
       '@types/node':
@@ -374,11 +374,11 @@ importers:
 
   packages/plugins/examples/plugin-kitchen-sink-example:
     dependencies:
-      '@penclipai/plugin-sdk':
-        specifier: workspace:*
+      '@paperclipai/plugin-sdk':
+        specifier: workspace:@penclipai/plugin-sdk@*
         version: link:../../sdk
-      '@penclipai/shared':
-        specifier: workspace:*
+      '@paperclipai/shared':
+        specifier: workspace:@penclipai/shared@*
         version: link:../../../shared
     devDependencies:
       '@types/node':

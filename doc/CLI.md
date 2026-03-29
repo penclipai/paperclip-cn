@@ -10,19 +10,19 @@ Paperclip CLI now supports both:
 Use repo script in development:
 
 ```sh
-pnpm paperclipai --help
+pnpm penclipai --help
 ```
 
 First-time local bootstrap + run:
 
 ```sh
-pnpm paperclipai run
+pnpm penclipai run
 ```
 
 Choose local instance:
 
 ```sh
-pnpm paperclipai run --instance dev
+pnpm penclipai run --instance dev
 ```
 
 ## Deployment Modes
@@ -31,16 +31,16 @@ Mode taxonomy and design intent are documented in `doc/DEPLOYMENT-MODES.md`.
 
 Current CLI behavior:
 
-- `paperclipai onboard` and `paperclipai configure --section server` set deployment mode in config
+- `penclipai onboard` and `penclipai configure --section server` set deployment mode in config
 - runtime can override mode with `PAPERCLIP_DEPLOYMENT_MODE`
-- `paperclipai run` and `paperclipai doctor` do not yet expose a direct `--mode` flag
+- `penclipai run` and `penclipai doctor` do not yet expose a direct `--mode` flag
 
 Target behavior (planned) is documented in `doc/DEPLOYMENT-MODES.md` section 5.
 
 Allow an authenticated/private hostname (for example custom Tailscale DNS):
 
 ```sh
-pnpm paperclipai allowed-hostname dotta-macbook-pro
+pnpm penclipai allowed-hostname dotta-macbook-pro
 ```
 
 All client commands support:
@@ -57,8 +57,8 @@ Company-scoped commands also support `--company-id <id>`.
 Use `--data-dir` on any CLI command to isolate all default local state (config/context/db/logs/storage/secrets) away from `~/.paperclip`:
 
 ```sh
-pnpm paperclipai run --data-dir ./tmp/paperclip-dev
-pnpm paperclipai issue list --data-dir ./tmp/paperclip-dev
+pnpm penclipai run --data-dir ./tmp/paperclip-dev
+pnpm penclipai issue list --data-dir ./tmp/paperclip-dev
 ```
 
 ## Context Profiles
@@ -66,32 +66,32 @@ pnpm paperclipai issue list --data-dir ./tmp/paperclip-dev
 Store local defaults in `~/.paperclip/context.json`:
 
 ```sh
-pnpm paperclipai context set --api-base http://localhost:3100 --company-id <company-id>
-pnpm paperclipai context show
-pnpm paperclipai context list
-pnpm paperclipai context use default
+pnpm penclipai context set --api-base http://localhost:3100 --company-id <company-id>
+pnpm penclipai context show
+pnpm penclipai context list
+pnpm penclipai context use default
 ```
 
 To avoid storing secrets in context, set `apiKeyEnvVarName` and keep the key in env:
 
 ```sh
-pnpm paperclipai context set --api-key-env-var-name PAPERCLIP_API_KEY
+pnpm penclipai context set --api-key-env-var-name PAPERCLIP_API_KEY
 export PAPERCLIP_API_KEY=...
 ```
 
 ## Company Commands
 
 ```sh
-pnpm paperclipai company list
-pnpm paperclipai company get <company-id>
-pnpm paperclipai company delete <company-id-or-prefix> --yes --confirm <same-id-or-prefix>
+pnpm penclipai company list
+pnpm penclipai company get <company-id>
+pnpm penclipai company delete <company-id-or-prefix> --yes --confirm <same-id-or-prefix>
 ```
 
 Examples:
 
 ```sh
-pnpm paperclipai company delete PAP --yes --confirm PAP
-pnpm paperclipai company delete 5cbe79ee-acb3-4597-896e-7662742593cd --yes --confirm 5cbe79ee-acb3-4597-896e-7662742593cd
+pnpm penclipai company delete PAP --yes --confirm PAP
+pnpm penclipai company delete 5cbe79ee-acb3-4597-896e-7662742593cd --yes --confirm 5cbe79ee-acb3-4597-896e-7662742593cd
 ```
 
 Notes:
@@ -102,21 +102,21 @@ Notes:
 ## Issue Commands
 
 ```sh
-pnpm paperclipai issue list --company-id <company-id> [--status todo,in_progress] [--assignee-agent-id <agent-id>] [--match text]
-pnpm paperclipai issue get <issue-id-or-identifier>
-pnpm paperclipai issue create --company-id <company-id> --title "..." [--description "..."] [--status todo] [--priority high]
-pnpm paperclipai issue update <issue-id> [--status in_progress] [--comment "..."]
-pnpm paperclipai issue comment <issue-id> --body "..." [--reopen]
-pnpm paperclipai issue checkout <issue-id> --agent-id <agent-id> [--expected-statuses todo,backlog,blocked]
-pnpm paperclipai issue release <issue-id>
+pnpm penclipai issue list --company-id <company-id> [--status todo,in_progress] [--assignee-agent-id <agent-id>] [--match text]
+pnpm penclipai issue get <issue-id-or-identifier>
+pnpm penclipai issue create --company-id <company-id> --title "..." [--description "..."] [--status todo] [--priority high]
+pnpm penclipai issue update <issue-id> [--status in_progress] [--comment "..."]
+pnpm penclipai issue comment <issue-id> --body "..." [--reopen]
+pnpm penclipai issue checkout <issue-id> --agent-id <agent-id> [--expected-statuses todo,backlog,blocked]
+pnpm penclipai issue release <issue-id>
 ```
 
 ## Agent Commands
 
 ```sh
-pnpm paperclipai agent list --company-id <company-id>
-pnpm paperclipai agent get <agent-id>
-pnpm paperclipai agent local-cli <agent-id-or-shortname> --company-id <company-id>
+pnpm penclipai agent list --company-id <company-id>
+pnpm penclipai agent get <agent-id>
+pnpm penclipai agent local-cli <agent-id-or-shortname> --company-id <company-id>
 ```
 
 `agent local-cli` is the quickest way to run local Claude/Codex manually as a Paperclip agent:
@@ -128,33 +128,33 @@ pnpm paperclipai agent local-cli <agent-id-or-shortname> --company-id <company-i
 Example for shortname-based local setup:
 
 ```sh
-pnpm paperclipai agent local-cli codexcoder --company-id <company-id>
-pnpm paperclipai agent local-cli claudecoder --company-id <company-id>
+pnpm penclipai agent local-cli codexcoder --company-id <company-id>
+pnpm penclipai agent local-cli claudecoder --company-id <company-id>
 ```
 
 ## Approval Commands
 
 ```sh
-pnpm paperclipai approval list --company-id <company-id> [--status pending]
-pnpm paperclipai approval get <approval-id>
-pnpm paperclipai approval create --company-id <company-id> --type hire_agent --payload '{"name":"..."}' [--issue-ids <id1,id2>]
-pnpm paperclipai approval approve <approval-id> [--decision-note "..."]
-pnpm paperclipai approval reject <approval-id> [--decision-note "..."]
-pnpm paperclipai approval request-revision <approval-id> [--decision-note "..."]
-pnpm paperclipai approval resubmit <approval-id> [--payload '{"...":"..."}']
-pnpm paperclipai approval comment <approval-id> --body "..."
+pnpm penclipai approval list --company-id <company-id> [--status pending]
+pnpm penclipai approval get <approval-id>
+pnpm penclipai approval create --company-id <company-id> --type hire_agent --payload '{"name":"..."}' [--issue-ids <id1,id2>]
+pnpm penclipai approval approve <approval-id> [--decision-note "..."]
+pnpm penclipai approval reject <approval-id> [--decision-note "..."]
+pnpm penclipai approval request-revision <approval-id> [--decision-note "..."]
+pnpm penclipai approval resubmit <approval-id> [--payload '{"...":"..."}']
+pnpm penclipai approval comment <approval-id> --body "..."
 ```
 
 ## Activity Commands
 
 ```sh
-pnpm paperclipai activity list --company-id <company-id> [--agent-id <agent-id>] [--entity-type issue] [--entity-id <id>]
+pnpm penclipai activity list --company-id <company-id> [--agent-id <agent-id>] [--entity-type issue] [--entity-id <id>]
 ```
 
 ## Dashboard Commands
 
 ```sh
-pnpm paperclipai dashboard get --company-id <company-id>
+pnpm penclipai dashboard get --company-id <company-id>
 ```
 
 ## Heartbeat Command
@@ -162,7 +162,7 @@ pnpm paperclipai dashboard get --company-id <company-id>
 `heartbeat run` now also supports context/api-key options and uses the shared client stack:
 
 ```sh
-pnpm paperclipai heartbeat run --agent-id <agent-id> [--api-base http://localhost:3100] [--api-key <token>]
+pnpm penclipai heartbeat run --agent-id <agent-id> [--api-base http://localhost:3100] [--api-key <token>]
 ```
 
 ## Local Storage Defaults
@@ -178,7 +178,7 @@ Default local instance root is `~/.paperclip/instances/default`:
 Override base home or instance with env vars:
 
 ```sh
-PAPERCLIP_HOME=/custom/home PAPERCLIP_INSTANCE_ID=dev pnpm paperclipai run
+PAPERCLIP_HOME=/custom/home PAPERCLIP_INSTANCE_ID=dev pnpm penclipai run
 ```
 
 ## Storage Configuration
@@ -186,7 +186,7 @@ PAPERCLIP_HOME=/custom/home PAPERCLIP_INSTANCE_ID=dev pnpm paperclipai run
 Configure storage provider and settings:
 
 ```sh
-pnpm paperclipai configure --section storage
+pnpm penclipai configure --section storage
 ```
 
 Supported providers:

@@ -1,5 +1,5 @@
 /**
- * esbuild configuration for building the paperclipai CLI for npm.
+ * esbuild configuration for building the penclipai CLI for npm.
  *
  * Bundles all workspace packages (@penclipai/*) into a single file.
  * External npm packages remain as regular dependencies.

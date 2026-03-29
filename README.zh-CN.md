@@ -18,7 +18,7 @@ Penclip 是 Paperclip 的中文增强版，目标是打造面向中国用户的A
 ## 快速开始
 
 ```bash
-npx @penclipai/paperclipai onboard --yes
+npx penclipai onboard --yes
 ```
 
 或者手动启动：

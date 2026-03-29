@@ -26,7 +26,7 @@
   "author": "Plugin Author",
   "license": "MIT",
   "dependencies": {
-    "@penclipai/plugin-sdk": "workspace:*"
+    "@paperclipai/plugin-sdk": "workspace:@penclipai/plugin-sdk@*"
   },
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^16.0.1",

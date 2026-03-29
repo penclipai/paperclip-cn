@@ -10,6 +10,8 @@ Official TypeScript SDK for Paperclip plugin authors.
 
 Reference: `doc/plugins/PLUGIN_SPEC.md`
 
+Penclip publishes the SDK under `@penclipai/*`, but for cross-host compatibility generated plugins should keep importing `@paperclipai/plugin-sdk*`. The scaffold defaults to local compatibility tarballs for repo-external development, and `--published` switches it to npm alias installs against `@penclipai/*`.
+
 ## Package surface
 
 | Import | Purpose |
@@ -34,7 +36,7 @@ In your plugin manifest you declare:
 ## Install
 
 ```bash
-pnpm add @penclipai/plugin-sdk
+pnpm add @paperclipai/plugin-sdk@npm:@penclipai/plugin-sdk
 ```
 
 ## Current deployment caveats
@@ -55,7 +57,7 @@ If you are authoring a plugin for others to deploy, treat npm-packaged installat
 ## Worker quick start
 
 ```ts
-import { definePlugin, runWorker } from "@penclipai/plugin-sdk";
+import { definePlugin, runWorker } from "@paperclipai/plugin-sdk";
 
 const plugin = definePlugin({
   async setup(ctx) {

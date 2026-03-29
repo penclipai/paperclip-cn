@@ -19,12 +19,12 @@
     "typecheck": "pnpm --filter @penclipai/plugin-sdk build && tsc --noEmit"
   },
   "dependencies": {
+    "@paperclipai/plugin-sdk": "workspace:@penclipai/plugin-sdk@*",
     "@codemirror/lang-javascript": "^6.2.2",
     "@codemirror/language": "^6.11.0",
     "@codemirror/state": "^6.4.0",
     "@codemirror/view": "^6.28.0",
     "@lezer/highlight": "^1.2.1",
-    "@penclipai/plugin-sdk": "workspace:*",
     "codemirror": "^6.0.1"
   },
   "devDependencies": {

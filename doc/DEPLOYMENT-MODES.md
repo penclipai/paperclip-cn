@@ -50,7 +50,7 @@ This keeps one authenticated auth stack while still separating low-friction priv
 Default onboarding remains interactive and flagless:
 
 ```sh
-pnpm paperclipai onboard
+pnpm penclipai onboard
 ```
 
 Server prompt behavior:
@@ -71,7 +71,7 @@ Server prompt behavior:
 Default doctor remains flagless:
 
 ```sh
-pnpm paperclipai doctor
+pnpm penclipai doctor
 ```
 
 Doctor reads configured mode/exposure and applies mode-aware checks. Optional override flags are secondary.
