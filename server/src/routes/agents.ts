@@ -555,24 +555,11 @@ export function agentRoutes(db: Db) {
     adapterConfig: Record<string, unknown>,
     requestedDesiredSkills: string[] | undefined,
   ) {
-    const runtimeSkillEntries = await companySkills.listRuntimeSkillEntries(companyId, {
-      materializeMissing: shouldMaterializeRuntimeSkillsForAdapter(adapterType),
-    });
-    const requiredSkills = runtimeSkillEntries
-      .filter((entry) => entry.required)
-      .map((entry) => entry.key);
     if (!requestedDesiredSkills) {
-      if (requiredSkills.length === 0) {
-        return {
-          adapterConfig,
-          desiredSkills: null as string[] | null,
-          runtimeSkillEntries,
-        };
-      }
       return {
-        adapterConfig: writePaperclipSkillSyncPreference(adapterConfig, requiredSkills),
-        desiredSkills: requiredSkills,
-        runtimeSkillEntries,
+        adapterConfig,
+        desiredSkills: null as string[] | null,
+        runtimeSkillEntries: null as Awaited<ReturnType<typeof companySkills.listRuntimeSkillEntries>> | null,
       };
     }
 
@@ -580,6 +567,12 @@ export function agentRoutes(db: Db) {
       companyId,
       requestedDesiredSkills,
     );
+    const runtimeSkillEntries = await companySkills.listRuntimeSkillEntries(companyId, {
+      materializeMissing: shouldMaterializeRuntimeSkillsForAdapter(adapterType),
+    });
+    const requiredSkills = runtimeSkillEntries
+      .filter((entry) => entry.required)
+      .map((entry) => entry.key);
     const desiredSkills = Array.from(new Set([...requiredSkills, ...resolvedRequestedSkills]));
 
     return {

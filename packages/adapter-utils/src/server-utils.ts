@@ -633,19 +633,11 @@ export function writePaperclipSkillSyncPreference(
   return next;
 }
 
-async function linkPaperclipSkill(source: string, target: string): Promise<void> {
-  const stats = await fs.stat(source);
-  if (process.platform === "win32" && stats.isDirectory()) {
-    await fs.symlink(source, target, "junction");
-    return;
-  }
-  await fs.symlink(source, target);
-}
-
 export async function ensurePaperclipSkillSymlink(
   source: string,
   target: string,
-  linkSkill: (source: string, target: string) => Promise<void> = linkPaperclipSkill,
+  linkSkill: (source: string, target: string) => Promise<void> = (linkSource, linkTarget) =>
+    fs.symlink(linkSource, linkTarget),
 ): Promise<"created" | "repaired" | "skipped"> {
   const existing = await fs.lstat(target).catch(() => null);
   if (!existing) {
