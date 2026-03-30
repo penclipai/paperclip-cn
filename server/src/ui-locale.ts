@@ -1,3 +1,4 @@
+import type { Request } from "express";
 import {
   DEFAULT_UI_LOCALE,
   resolveUiLocaleFromHeader,
@@ -24,6 +25,47 @@ function parseQueryLocale(value: unknown): UiLocale | null {
   }
   if (typeof value !== "string") return null;
   return parseSupportedUiLocale(value);
+}
+
+function parseAcceptLanguageQuality(parameterSegments: string[]): number {
+  const qualityToken = parameterSegments
+    .map((segment) => segment.trim())
+    .find((segment) => segment.toLowerCase().startsWith("q="));
+  if (!qualityToken) return 1;
+
+  const quality = Number(qualityToken.slice(2));
+  if (!Number.isFinite(quality)) return 0;
+  return Math.min(1, Math.max(0, quality));
+}
+
+function resolveExplicitUiLocaleFromHeader(headerValue: string | null | undefined): UiLocale | null {
+  if (!headerValue) return null;
+
+  const candidates = headerValue
+    .split(",")
+    .map((segment, index) => {
+      const [localeSegment, ...parameterSegments] = segment.split(";");
+      return {
+        locale: parseSupportedUiLocale(localeSegment),
+        quality: parseAcceptLanguageQuality(parameterSegments),
+        index,
+      };
+    })
+    .filter(
+      (candidate): candidate is { locale: UiLocale; quality: number; index: number } =>
+        candidate.locale !== null && candidate.quality > 0,
+    )
+    .sort((left, right) => right.quality - left.quality || left.index - right.index);
+
+  return candidates[0]?.locale ?? null;
+}
+
+export function resolveExplicitRequestUiLocale(
+  req: Pick<Request, "get" | "query">,
+): UiLocale | null {
+  const queryLocale = parseQueryLocale(req.query?.lng);
+  if (queryLocale) return queryLocale;
+  return resolveExplicitUiLocaleFromHeader(req.get("Accept-Language"));
 }
 
 export function resolveInitialUiLocale(

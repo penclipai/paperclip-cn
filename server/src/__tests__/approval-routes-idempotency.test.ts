@@ -107,4 +107,34 @@ describe("approval routes idempotent retries", () => {
     expect(res.status).toBe(200);
     expect(mockLogActivity).not.toHaveBeenCalled();
   });
+
+  it("threads explicit request locale into requester wakeups after approval", async () => {
+    mockApprovalService.approve.mockResolvedValue({
+      approval: {
+        id: "approval-1",
+        companyId: "company-1",
+        type: "hire_agent",
+        status: "approved",
+        payload: {},
+        requestedByAgentId: "agent-1",
+      },
+      applied: true,
+    });
+
+    const res = await request(createApp())
+      .post("/api/approvals/approval-1/approve")
+      .set("Accept-Language", "en-US,en;q=0.9")
+      .send({});
+
+    expect(res.status).toBe(200);
+    expect(mockHeartbeatService.wakeup).toHaveBeenCalledWith(
+      "agent-1",
+      expect.objectContaining({
+        contextSnapshot: expect.objectContaining({
+          approvalId: "approval-1",
+          requestedUiLocale: "en",
+        }),
+      }),
+    );
+  });
 });

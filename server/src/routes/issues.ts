@@ -36,6 +36,7 @@ import { assertCompanyAccess, getActorInfo } from "./authz.js";
 import { shouldWakeAssigneeOnCheckout } from "./issues-checkout-wakeup.js";
 import { isAllowedContentType, MAX_ATTACHMENT_BYTES } from "../attachment-types.js";
 import { queueIssueAssignmentWakeup } from "../services/issue-assignment-wakeup.js";
+import { resolveExplicitRequestUiLocale } from "../ui-locale.js";
 
 const MAX_ISSUE_COMMENT_LIMIT = 500;
 
@@ -856,6 +857,7 @@ export function issueRoutes(db: Db, storage: StorageService) {
     }
 
     const actor = getActorInfo(req);
+    const requestedUiLocale = resolveExplicitRequestUiLocale(req);
     const issue = await svc.create(companyId, {
       ...req.body,
       createdByAgentId: actor.agentId,
@@ -880,6 +882,7 @@ export function issueRoutes(db: Db, storage: StorageService) {
       reason: "issue_assigned",
       mutation: "create",
       contextSource: "issue.create",
+      requestedUiLocale,
       requestedByActorType: actor.actorType,
       requestedByActorId: actor.actorId,
     });
@@ -916,6 +919,7 @@ export function issueRoutes(db: Db, storage: StorageService) {
     if (!(await assertAgentRunCheckoutOwnership(req, res, existing))) return;
 
     const actor = getActorInfo(req);
+    const requestedUiLocale = resolveExplicitRequestUiLocale(req);
     const isClosed = existing.status === "done" || existing.status === "cancelled";
     const { comment: commentBody, reopen: reopenRequested, hiddenAt: hiddenAtRaw, ...updateFields } = req.body;
     if (hiddenAtRaw !== undefined) {
@@ -1042,7 +1046,11 @@ export function issueRoutes(db: Db, storage: StorageService) {
           payload: { issueId: issue.id, mutation: "update" },
           requestedByActorType: actor.actorType,
           requestedByActorId: actor.actorId,
-          contextSnapshot: { issueId: issue.id, source: "issue.update" },
+          contextSnapshot: {
+            issueId: issue.id,
+            source: "issue.update",
+            ...(requestedUiLocale ? { requestedUiLocale } : {}),
+          },
         });
       }
 
@@ -1054,7 +1062,11 @@ export function issueRoutes(db: Db, storage: StorageService) {
           payload: { issueId: issue.id, mutation: "update" },
           requestedByActorType: actor.actorType,
           requestedByActorId: actor.actorId,
-          contextSnapshot: { issueId: issue.id, source: "issue.status_change" },
+          contextSnapshot: {
+            issueId: issue.id,
+            source: "issue.status_change",
+            ...(requestedUiLocale ? { requestedUiLocale } : {}),
+          },
         });
       }
 
@@ -1083,6 +1095,7 @@ export function issueRoutes(db: Db, storage: StorageService) {
               wakeCommentId: comment.id,
               wakeReason: "issue_comment_mentioned",
               source: "comment.mention",
+              ...(requestedUiLocale ? { requestedUiLocale } : {}),
             },
           });
         }
@@ -1168,6 +1181,7 @@ export function issueRoutes(db: Db, storage: StorageService) {
     if (req.actor.type === "agent" && !checkoutRunId) return;
     const updated = await svc.checkout(id, req.body.agentId, req.body.expectedStatuses, checkoutRunId);
     const actor = getActorInfo(req);
+    const requestedUiLocale = resolveExplicitRequestUiLocale(req);
 
     await logActivity(db, {
       companyId: issue.companyId,
@@ -1197,7 +1211,11 @@ export function issueRoutes(db: Db, storage: StorageService) {
           payload: { issueId: issue.id, mutation: "checkout" },
           requestedByActorType: actor.actorType,
           requestedByActorId: actor.actorId,
-          contextSnapshot: { issueId: issue.id, source: "issue.checkout" },
+          contextSnapshot: {
+            issueId: issue.id,
+            source: "issue.checkout",
+            ...(requestedUiLocale ? { requestedUiLocale } : {}),
+          },
         })
         .catch((err) => logger.warn({ err, issueId: issue.id }, "failed to wake assignee on issue checkout"));
     }
@@ -1304,6 +1322,7 @@ export function issueRoutes(db: Db, storage: StorageService) {
     if (!(await assertAgentRunCheckoutOwnership(req, res, issue))) return;
 
     const actor = getActorInfo(req);
+    const requestedUiLocale = resolveExplicitRequestUiLocale(req);
     const reopenRequested = req.body.reopen === true;
     const interruptRequested = req.body.interrupt === true;
     const isClosed = issue.status === "done" || issue.status === "cancelled";
@@ -1445,6 +1464,7 @@ export function issueRoutes(db: Db, storage: StorageService) {
               source: "issue.comment.reopen",
               wakeReason: "issue_reopened_via_comment",
               reopenedFrom: reopenFromStatus,
+              ...(requestedUiLocale ? { requestedUiLocale } : {}),
               ...(interruptedRunId ? { interruptedRunId } : {}),
             },
           });
@@ -1467,6 +1487,7 @@ export function issueRoutes(db: Db, storage: StorageService) {
               commentId: comment.id,
               source: "issue.comment",
               wakeReason: "issue_commented",
+              ...(requestedUiLocale ? { requestedUiLocale } : {}),
               ...(interruptedRunId ? { interruptedRunId } : {}),
             },
           });
@@ -1497,6 +1518,7 @@ export function issueRoutes(db: Db, storage: StorageService) {
             wakeCommentId: comment.id,
             wakeReason: "issue_comment_mentioned",
             source: "comment.mention",
+            ...(requestedUiLocale ? { requestedUiLocale } : {}),
           },
         });
       }

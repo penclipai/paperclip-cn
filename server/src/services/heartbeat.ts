@@ -4,7 +4,7 @@ import { execFile as execFileCallback } from "node:child_process";
 import { promisify } from "node:util";
 import { and, asc, desc, eq, gt, inArray, sql } from "drizzle-orm";
 import type { Db } from "@penclipai/db";
-import type { BillingType } from "@penclipai/shared";
+import type { BillingType, UiLocale } from "@penclipai/shared";
 import {
   agents,
   agentRuntimeState,
@@ -663,6 +663,31 @@ function mergeCoalescedContextSnapshot(
     merged.wakeCommentId = commentId;
   }
   return merged;
+}
+
+function parseRequestedUiLocale(value: unknown): UiLocale | null {
+  if (typeof value !== "string") return null;
+  const normalized = value.trim().toLowerCase();
+  if (normalized.startsWith("zh")) return "zh-CN";
+  if (normalized.startsWith("en")) return "en";
+  return null;
+}
+
+export function resolveRequestedUiLocaleFromContextSnapshot(
+  contextSnapshot: Record<string, unknown> | null | undefined,
+): UiLocale | null {
+  return parseRequestedUiLocale(contextSnapshot?.requestedUiLocale);
+}
+
+export function resolveRuntimeLocalizationPromptForContextSnapshot(
+  contextSnapshot: Record<string, unknown> | null | undefined,
+  runtimeInput: Omit<Parameters<typeof resolveRuntimeLocalizationPrompt>[0], "locale"> = {},
+): string {
+  const requestedUiLocale = resolveRequestedUiLocaleFromContextSnapshot(contextSnapshot);
+  return resolveRuntimeLocalizationPrompt({
+    ...runtimeInput,
+    ...(requestedUiLocale ? { locale: requestedUiLocale } : {}),
+  });
 }
 
 function runTaskKey(run: typeof heartbeatRuns.$inferSelect) {
@@ -2296,7 +2321,7 @@ export function heartbeatService(db: Db) {
       agentHome: await ensureDefaultAgentHome(agent.id),
     };
     context.paperclipWorkspaces = resolvedWorkspace.workspaceHints;
-    const runtimeLocalizationPrompt = resolveRuntimeLocalizationPrompt();
+    const runtimeLocalizationPrompt = resolveRuntimeLocalizationPromptForContextSnapshot(context);
     if (runtimeLocalizationPrompt) {
       context.paperclipLocalizationPromptMarkdown = runtimeLocalizationPrompt;
     } else {

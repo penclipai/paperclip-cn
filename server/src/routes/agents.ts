@@ -49,6 +49,7 @@ import { redactEventPayload } from "../redaction.js";
 import { redactCurrentUserValue } from "../log-redaction.js";
 import { renderOrgChartSvg, renderOrgChartPng, type OrgNode, type OrgChartStyle, ORG_CHART_STYLES } from "./org-chart-svg.js";
 import { instanceSettingsService } from "../services/instance-settings.js";
+import { resolveExplicitRequestUiLocale } from "../ui-locale.js";
 import { runClaudeLogin } from "@penclipai/adapter-claude-local/server";
 import {
   DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX,
@@ -1948,6 +1949,7 @@ export function agentRoutes(db: Db) {
       return;
     }
 
+    const requestedUiLocale = resolveExplicitRequestUiLocale(req);
     const run = await heartbeat.wakeup(id, {
       source: req.body.source,
       triggerDetail: req.body.triggerDetail ?? "manual",
@@ -1960,6 +1962,7 @@ export function agentRoutes(db: Db) {
         triggeredBy: req.actor.type,
         actorId: req.actor.type === "agent" ? req.actor.agentId : req.actor.userId,
         forceFreshSession: req.body.forceFreshSession === true,
+        ...(requestedUiLocale ? { requestedUiLocale } : {}),
       },
     });
 
@@ -1998,12 +2001,14 @@ export function agentRoutes(db: Db) {
       return;
     }
 
+    const requestedUiLocale = resolveExplicitRequestUiLocale(req);
     const run = await heartbeat.invoke(
       id,
       "on_demand",
       {
         triggeredBy: req.actor.type,
         actorId: req.actor.type === "agent" ? req.actor.agentId : req.actor.userId,
+        ...(requestedUiLocale ? { requestedUiLocale } : {}),
       },
       "manual",
       {

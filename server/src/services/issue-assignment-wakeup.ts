@@ -1,3 +1,4 @@
+import type { UiLocale } from "@penclipai/shared";
 import { logger } from "../middleware/logger.js";
 
 type WakeupTriggerDetail = "manual" | "ping" | "callback" | "system";
@@ -24,6 +25,7 @@ export function queueIssueAssignmentWakeup(input: {
   reason: string;
   mutation: string;
   contextSource: string;
+  requestedUiLocale?: UiLocale | null;
   requestedByActorType?: "user" | "agent" | "system";
   requestedByActorId?: string | null;
   rethrowOnError?: boolean;
@@ -38,7 +40,11 @@ export function queueIssueAssignmentWakeup(input: {
       payload: { issueId: input.issue.id, mutation: input.mutation },
       requestedByActorType: input.requestedByActorType,
       requestedByActorId: input.requestedByActorId ?? null,
-      contextSnapshot: { issueId: input.issue.id, source: input.contextSource },
+      contextSnapshot: {
+        issueId: input.issue.id,
+        source: input.contextSource,
+        ...(input.requestedUiLocale ? { requestedUiLocale: input.requestedUiLocale } : {}),
+      },
     })
     .catch((err) => {
       logger.warn({ err, issueId: input.issue.id }, "failed to wake assignee on issue assignment");

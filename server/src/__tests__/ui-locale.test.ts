@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_UI_LOCALE } from "@penclipai/shared";
-import { applyUiLocaleToHtml, resolveInitialUiLocale } from "../ui-locale.js";
+import {
+  applyUiLocaleToHtml,
+  resolveExplicitRequestUiLocale,
+  resolveInitialUiLocale,
+} from "../ui-locale.js";
 
 describe("UI locale helpers", () => {
   it("lets the querystring override the request locale", () => {
@@ -22,6 +26,30 @@ describe("UI locale helpers", () => {
       locale: DEFAULT_UI_LOCALE,
       source: "default",
     });
+  });
+
+  it("extracts an explicit supported locale from Accept-Language without fallback", () => {
+    expect(
+      resolveExplicitRequestUiLocale({
+        get: () => "fr-FR,en-US;q=0.9",
+        query: {},
+      }),
+    ).toBe("en");
+  });
+
+  it("returns null when the request does not explicitly ask for a supported locale", () => {
+    expect(
+      resolveExplicitRequestUiLocale({
+        get: () => "fr-FR,de-DE;q=0.9",
+        query: {},
+      }),
+    ).toBeNull();
+    expect(
+      resolveExplicitRequestUiLocale({
+        get: () => undefined,
+        query: {},
+      }),
+    ).toBeNull();
   });
 
   it("rewrites the html locale attributes", () => {
