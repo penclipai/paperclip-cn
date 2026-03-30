@@ -915,7 +915,13 @@ export function DashboardWidget({ context }: PluginWidgetProps) {
 
 ### 19.0.1 Plugin UI SDK (`@paperclipai/plugin-sdk/ui`)
 
-For cross-host compatibility, plugin source code should import the UI SDK from `@paperclipai/plugin-sdk/ui`. Penclip publishes the package under `@penclipai/plugin-sdk`, and Penclip-hosted plugins can install it via npm alias while keeping the upstream-compatible import path.
+For cross-host compatibility, plugin source code should import the UI SDK from `@paperclipai/plugin-sdk/ui`.
+
+- Default authoring surface: `@paperclipai/plugin-sdk/ui`
+- Penclip published package identity: `@penclipai/plugin-sdk`
+- Penclip install pattern: alias the published package while keeping source imports on the compatibility surface
+
+Do not switch plugin source imports to `@penclipai/plugin-sdk/ui` unless you are intentionally dropping upstream Paperclip compatibility.
 
 The SDK includes a `ui` subpath export that plugin frontends import. This subpath provides:
 
@@ -1537,6 +1543,8 @@ For cross-host-compatible plugin source code, the default authoring surface rema
 In Penclip installs, those compatibility imports can be satisfied by aliasing to the published package:
 
 - `@paperclipai/plugin-sdk -> npm:@penclipai/plugin-sdk`
+
+Do not treat `@penclipai/plugin-sdk*` as the default source import path for plugins that should also run in upstream Paperclip.
 
 The package uses subpath exports to separate worker and UI concerns at publish time:
 

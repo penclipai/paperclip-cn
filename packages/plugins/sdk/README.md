@@ -14,6 +14,8 @@ Reference: `doc/plugins/PLUGIN_SPEC.md`
 
 The scaffold defaults to local compatibility tarballs for repo-external development, and `--published` switches it to npm alias installs against `@penclipai/*`.
 
+If you want a plugin to run in both Penclip and upstream Paperclip, keep your source imports on `@paperclipai/plugin-sdk*`. Treat `@penclipai/*` as the published package identity and alias target, not the default authoring surface.
+
 ## Package surface
 
 | Import | Purpose |

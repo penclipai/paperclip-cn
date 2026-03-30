@@ -225,7 +225,7 @@ export function runWorker(
  * ```ts
  * // worker-bootstrap.ts
  * import plugin from "./worker.js";
- * import { startWorkerRpcHost } from "@penclipai/plugin-sdk";
+ * import { startWorkerRpcHost } from "@paperclipai/plugin-sdk";
  *
  * startWorkerRpcHost({ plugin });
  * ```
