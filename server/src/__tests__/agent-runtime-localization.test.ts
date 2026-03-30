@@ -43,12 +43,15 @@ describe("resolveRuntimeLocalizationPrompt", () => {
     expect(note).not.toContain("Python / Node");
   });
 
-  it("falls back to the shared default localization language when no locale is provided", () => {
+  it("uses a neutral runtime note when no locale is provided", () => {
     const note = resolveRuntimeLocalizationPrompt({
       platform: "linux",
       shell: "/bin/bash",
     });
 
-    expect(note).toContain("默认用简体中文进行自然语言回复");
+    expect(note).toContain("Runtime note:");
+    expect(note).toContain("Detected host runtime: bash on linux.");
+    expect(note).not.toContain("默认用简体中文进行自然语言回复");
+    expect(note).not.toContain("use English for natural-language output");
   });
 });

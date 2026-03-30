@@ -1,6 +1,5 @@
 import os from "node:os";
 import {
-  DEFAULT_UI_LOCALE,
   normalizeUiLocale,
   type UiLocale,
 } from "@penclipai/shared";
@@ -125,11 +124,22 @@ function buildEnRuntimeLocalizationPrompt(environment: RuntimeEnvironmentDescrip
   ].join("\n");
 }
 
+function buildNeutralRuntimeLocalizationPrompt(environment: RuntimeEnvironmentDescriptor): string {
+  return [
+    "Runtime note:",
+    `- Detected host runtime: ${environment.labelEn}.`,
+    "- If you call the Paperclip API from a shell, do not inline Chinese or other non-ASCII JSON into command arguments. Prefer writing the payload as UTF-8 and sending it with curl --data-binary @payload.json.",
+  ].join("\n");
+}
+
 export function resolveRuntimeLocalizationPrompt(
   input: ResolveRuntimeLocalizationPromptInput = {},
 ): string {
-  const locale: UiLocale = normalizeUiLocale(input.locale ?? DEFAULT_UI_LOCALE);
+  const locale = input.locale ? normalizeUiLocale(input.locale) as UiLocale : null;
   const environment = resolveRuntimeEnvironment(input);
+  if (!locale) {
+    return buildNeutralRuntimeLocalizationPrompt(environment);
+  }
   return locale === "en"
     ? buildEnRuntimeLocalizationPrompt(environment)
     : buildZhCnRuntimeLocalizationPrompt(environment);
