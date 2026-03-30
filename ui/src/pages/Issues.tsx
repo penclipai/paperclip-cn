@@ -21,6 +21,7 @@ export function Issues() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
+  const issuesLabel = t("Issues", { defaultValue: "Issues" });
 
   const initialSearch = searchParams.get("q") ?? "";
   const participantAgentId = searchParams.get("participantAgentId") ?? undefined;
@@ -70,15 +71,15 @@ export function Issues() {
   const issueLinkState = useMemo(
     () =>
       createIssueDetailLocationState(
-        t("Issues"),
+        issuesLabel,
         `${location.pathname}${location.search}${location.hash}`,
       ),
-    [location.pathname, location.search, location.hash, t],
+    [issuesLabel, location.pathname, location.search, location.hash],
   );
 
   useEffect(() => {
-    setBreadcrumbs([{ label: t("Issues") }]);
-  }, [setBreadcrumbs, t]);
+    setBreadcrumbs([{ label: issuesLabel }]);
+  }, [issuesLabel, setBreadcrumbs]);
 
   const { data: issues, isLoading, error } = useQuery({
     queryKey: [...queryKeys.issues.list(selectedCompanyId!), "participant-agent", participantAgentId ?? "__all__"],

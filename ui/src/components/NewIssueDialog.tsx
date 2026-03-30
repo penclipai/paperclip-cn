@@ -23,6 +23,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import {
@@ -307,6 +308,7 @@ export function NewIssueDialog() {
   const stageFileInputRef = useRef<HTMLInputElement | null>(null);
   const assigneeSelectorRef = useRef<HTMLButtonElement | null>(null);
   const projectSelectorRef = useRef<HTMLButtonElement | null>(null);
+  const shouldPersistDraft = !newIssueDefaults.skipDraftPersistence;
 
   const statuses = useMemo(
     () =>
@@ -495,7 +497,7 @@ export function NewIssueDialog() {
 
   // Save draft on meaningful changes
   useEffect(() => {
-    if (!newIssueOpen) return;
+    if (!newIssueOpen || !shouldPersistDraft) return;
     scheduleSave({
       title,
       description,
@@ -524,6 +526,7 @@ export function NewIssueDialog() {
     executionWorkspaceMode,
     selectedExecutionWorkspaceId,
     newIssueOpen,
+    shouldPersistDraft,
     scheduleSave,
   ]);
 
@@ -574,6 +577,8 @@ export function NewIssueDialog() {
       setSelectedExecutionWorkspaceId(draft.selectedExecutionWorkspaceId ?? "");
       executionWorkspaceDefaultProjectId.current = restoredProjectId || null;
     } else {
+      setTitle("");
+      setDescription("");
       const defaultProjectId = newIssueDefaults.projectId ?? "";
       const defaultProject = orderedProjects.find((project) => project.id === defaultProjectId);
       setStatus(newIssueDefaults.status ?? "todo");
@@ -930,6 +935,9 @@ export function NewIssueDialog() {
           }
         }}
       >
+        <DialogTitle className="sr-only">
+          {t("newIssue.title", { defaultValue: "New issue" })}
+        </DialogTitle>
         {/* Header bar */}
         <div className="flex items-center justify-between px-4 py-2.5 border-b border-border shrink-0">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">

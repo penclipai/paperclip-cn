@@ -296,12 +296,14 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const sessionHandoffNote = asString(context.paperclipSessionHandoffMarkdown, "").trim();
   const paperclipEnvNote = renderPaperclipEnvNote(env);
   const apiAccessNote = renderApiAccessNote(env);
+  const localizationPromptNote = asString(context.paperclipLocalizationPromptMarkdown, "").trim();
   const prompt = joinPromptSections([
     instructionsPrefix,
     renderedBootstrapPrompt,
     sessionHandoffNote,
     paperclipEnvNote,
     apiAccessNote,
+    localizationPromptNote,
     renderedPrompt,
   ]);
   const promptMetrics = {
@@ -309,7 +311,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     instructionsChars: instructionsPrefix.length,
     bootstrapPromptChars: renderedBootstrapPrompt.length,
     sessionHandoffChars: sessionHandoffNote.length,
-    runtimeNoteChars: paperclipEnvNote.length + apiAccessNote.length,
+    runtimeNoteChars: paperclipEnvNote.length + apiAccessNote.length + localizationPromptNote.length,
     heartbeatPromptChars: renderedPrompt.length,
   };
 

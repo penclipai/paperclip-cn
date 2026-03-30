@@ -297,9 +297,11 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       ? renderTemplate(bootstrapPromptTemplate, templateData).trim()
       : "";
   const sessionHandoffNote = asString(context.paperclipSessionHandoffMarkdown, "").trim();
+  const localizationPromptNote = asString(context.paperclipLocalizationPromptMarkdown, "").trim();
   const userPrompt = joinPromptSections([
     renderedBootstrapPrompt,
     sessionHandoffNote,
+    localizationPromptNote,
     renderedHeartbeatPrompt,
   ]);
   const promptMetrics = {
@@ -307,6 +309,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     promptChars: userPrompt.length,
     bootstrapPromptChars: renderedBootstrapPrompt.length,
     sessionHandoffChars: sessionHandoffNote.length,
+    localizationPromptChars: localizationPromptNote.length,
     heartbeatPromptChars: renderedHeartbeatPrompt.length,
   };
 

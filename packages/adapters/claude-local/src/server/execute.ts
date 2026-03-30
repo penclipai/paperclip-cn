@@ -391,15 +391,18 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       ? renderTemplate(bootstrapPromptTemplate, templateData).trim()
       : "";
   const sessionHandoffNote = asString(context.paperclipSessionHandoffMarkdown, "").trim();
+  const localizationPromptNote = asString(context.paperclipLocalizationPromptMarkdown, "").trim();
   const prompt = joinPromptSections([
     renderedBootstrapPrompt,
     sessionHandoffNote,
+    localizationPromptNote,
     renderedPrompt,
   ]);
   const promptMetrics = {
     promptChars: prompt.length,
     bootstrapPromptChars: renderedBootstrapPrompt.length,
     sessionHandoffChars: sessionHandoffNote.length,
+    localizationPromptChars: localizationPromptNote.length,
     heartbeatPromptChars: renderedPrompt.length,
   };
 

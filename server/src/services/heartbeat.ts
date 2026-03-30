@@ -42,6 +42,7 @@ import {
 import { issueService } from "./issues.js";
 import { executionWorkspaceService } from "./execution-workspaces.js";
 import { workspaceOperationService } from "./workspace-operations.js";
+import { resolveRuntimeLocalizationPrompt } from "./agent-runtime-localization.js";
 import {
   buildExecutionWorkspaceAdapterConfig,
   gateProjectExecutionWorkspacePolicy,
@@ -2295,6 +2296,12 @@ export function heartbeatService(db: Db) {
       agentHome: await ensureDefaultAgentHome(agent.id),
     };
     context.paperclipWorkspaces = resolvedWorkspace.workspaceHints;
+    const runtimeLocalizationPrompt = resolveRuntimeLocalizationPrompt();
+    if (runtimeLocalizationPrompt) {
+      context.paperclipLocalizationPromptMarkdown = runtimeLocalizationPrompt;
+    } else {
+      delete context.paperclipLocalizationPromptMarkdown;
+    }
     const runtimeServiceIntents = (() => {
       const runtimeConfig = parseObject(resolvedConfig.workspaceRuntime);
       return Array.isArray(runtimeConfig.services)
