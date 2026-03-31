@@ -379,7 +379,7 @@ export function CompanySettings() {
       )}
 
       {/* Hiring */}
-      <div className="space-y-4">
+      <div className="space-y-4" data-testid="company-settings-team-section">
         <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
           {t("companySettings.hiring")}
         </div>
@@ -389,12 +389,13 @@ export function CompanySettings() {
             hint={t("companySettings.requireBoardApprovalHint")}
             checked={!!selectedCompany.requireBoardApprovalForNewAgents}
             onChange={(v) => settingsMutation.mutate(v)}
+            toggleTestId="company-settings-team-approval-toggle"
           />
         </div>
       </div>
 
       {/* Invites */}
-      <div className="space-y-4">
+      <div className="space-y-4" data-testid="company-settings-invites-section">
         <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
           {t("companySettings.invites")}
         </div>
@@ -407,6 +408,7 @@ export function CompanySettings() {
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Button
+              data-testid="company-settings-invites-generate-button"
               size="sm"
               onClick={() => inviteMutation.mutate()}
               disabled={inviteMutation.isPending}
@@ -420,7 +422,10 @@ export function CompanySettings() {
             <p className="text-sm text-destructive">{inviteError}</p>
           )}
           {inviteSnippet && (
-            <div className="rounded-md border border-border bg-muted/30 p-2">
+            <div
+              className="rounded-md border border-border bg-muted/30 p-2"
+              data-testid="company-settings-invites-snippet"
+            >
               <div className="flex items-center justify-between gap-2">
                 <div className="text-xs text-muted-foreground">
                   {t("companySettings.invitePromptTitle")}
@@ -437,12 +442,14 @@ export function CompanySettings() {
               </div>
               <div className="mt-1 space-y-1.5">
                 <textarea
+                  data-testid="company-settings-invites-snippet-textarea"
                   className="h-[28rem] w-full rounded-md border border-border bg-background px-2 py-1.5 font-mono text-xs outline-none"
                   value={inviteSnippet}
                   readOnly
                 />
                 <div className="flex justify-end">
                   <Button
+                    data-testid="company-settings-invites-copy-button"
                     size="sm"
                     variant="ghost"
                     onClick={async () => {
