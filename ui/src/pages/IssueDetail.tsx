@@ -1339,7 +1339,7 @@ export function IssueDetail() {
             <div className="mb-3 px-3 py-2 rounded-lg border border-border">
               <div className="text-sm font-medium text-muted-foreground mb-1">{t("Cost Summary")}</div>
               {!issueCostSummary.hasCost && !issueCostSummary.hasTokens ? (
-                <div className="text-xs text-muted-foreground">{t("No cost data yet.")}</div>
+                <div className="text-xs text-muted-foreground">{t("No cost data yet.", { defaultValue: "No cost data yet." })}</div>
               ) : (
                 <div className="flex flex-wrap gap-3 text-xs text-muted-foreground tabular-nums">
                   {issueCostSummary.hasCost && (
@@ -1349,10 +1349,10 @@ export function IssueDetail() {
                   )}
                   {issueCostSummary.hasTokens && (
                     <span>
-                      Tokens {formatTokens(issueCostSummary.totalTokens)}
+                      {t("Tokens", { defaultValue: "Tokens" })} {formatTokens(issueCostSummary.totalTokens)}
                       {issueCostSummary.cached > 0
-                        ? ` (in ${formatTokens(issueCostSummary.input)}, out ${formatTokens(issueCostSummary.output)}, cached ${formatTokens(issueCostSummary.cached)})`
-                        : ` (in ${formatTokens(issueCostSummary.input)}, out ${formatTokens(issueCostSummary.output)})`}
+                        ? ` (${t("in", { defaultValue: "in" })} ${formatTokens(issueCostSummary.input)}, ${t("out", { defaultValue: "out" })} ${formatTokens(issueCostSummary.output)}, ${t("cached", { defaultValue: "cached" })} ${formatTokens(issueCostSummary.cached)})`
+                        : ` (${t("in", { defaultValue: "in" })} ${formatTokens(issueCostSummary.input)}, ${t("out", { defaultValue: "out" })} ${formatTokens(issueCostSummary.output)})`}
                     </span>
                   )}
                 </div>

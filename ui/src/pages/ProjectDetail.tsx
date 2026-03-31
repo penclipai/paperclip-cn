@@ -26,6 +26,7 @@ import { IssuesList } from "../components/IssuesList";
 import { PageSkeleton } from "../components/PageSkeleton";
 import { PageTabBar } from "../components/PageTabBar";
 import { buildProjectWorkspaceSummaries } from "../lib/project-workspaces-tab";
+import { displaySeededName } from "../lib/seeded-display";
 import { projectRouteRef, projectWorkspaceUrl } from "../lib/utils";
 import { timeAgo } from "../lib/timeAgo";
 import { Button } from "@/components/ui/button";
@@ -577,11 +578,12 @@ export function ProjectDetail() {
     onSuccess: (updatedProject, archived) => {
       invalidateProject();
       const name = updatedProject?.name ?? project?.name ?? t("Project", { defaultValue: "Project" });
+      const displayName = displaySeededName(name);
       if (archived) {
         pushToast({
           title: t("\"{{name}}\" has been archived", {
-            name,
-            defaultValue: `"${name}" has been archived`,
+            name: displayName,
+            defaultValue: `"${displayName}" has been archived`,
           }),
           tone: "success",
         });
@@ -589,8 +591,8 @@ export function ProjectDetail() {
       } else {
         pushToast({
           title: t("\"{{name}}\" has been unarchived", {
-            name,
-            defaultValue: `"${name}" has been unarchived`,
+            name: displayName,
+            defaultValue: `"${displayName}" has been unarchived`,
           }),
           tone: "success",
         });
@@ -624,7 +626,7 @@ export function ProjectDetail() {
   useEffect(() => {
     setBreadcrumbs([
       { label: t("Projects", { defaultValue: "Projects" }), href: "/projects" },
-      { label: project?.name ?? routeProjectRef ?? t("Project", { defaultValue: "Project" }) },
+      { label: project ? displaySeededName(project.name) : routeProjectRef ?? t("Project", { defaultValue: "Project" }) },
     ]);
   }, [setBreadcrumbs, project, routeProjectRef, t]);
 

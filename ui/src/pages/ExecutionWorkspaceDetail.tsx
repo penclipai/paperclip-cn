@@ -15,6 +15,7 @@ import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { useCompany } from "../context/CompanyContext";
 import { humanizeEnumValue, translateStatusLabel } from "../lib/i18n-labels";
 import { queryKeys } from "../lib/queryKeys";
+import { displaySeededName } from "../lib/seeded-display";
 import { cn, formatDateTime, issueUrl, projectRouteRef, projectWorkspaceUrl } from "../lib/utils";
 type WorkspaceFormState = {
   name: string;
@@ -291,7 +292,7 @@ export function ExecutionWorkspaceDetail() {
     if (!workspace) return;
     const crumbs = [
       { label: t("Projects", { defaultValue: "Projects" }), href: "/projects" },
-      ...(project ? [{ label: project.name, href: `/projects/${projectRef}` }] : []),
+      ...(project ? [{ label: displaySeededName(project.name), href: `/projects/${projectRef}` }] : []),
       ...(project ? [{ label: t("Workspaces", { defaultValue: "Workspaces" }), href: `/projects/${projectRef}/workspaces` }] : []),
       { label: workspace.name },
     ];
@@ -665,7 +666,7 @@ export function ExecutionWorkspaceDetail() {
               </div>
               <Separator className="my-4" />
               <DetailRow label={t("Project", { defaultValue: "Project" })}>
-                {project ? <Link to={`/projects/${projectRef}`} className="hover:underline">{project.name}</Link> : <MonoValue value={workspace.projectId} copiedLabel={copiedLabel} />}
+                {project ? <Link to={`/projects/${projectRef}`} className="hover:underline">{displaySeededName(project.name)}</Link> : <MonoValue value={workspace.projectId} copiedLabel={copiedLabel} />}
               </DetailRow>
               <DetailRow label={t("Project workspace", { defaultValue: "Project workspace" })}>
                 {project && linkedProjectWorkspace ? (

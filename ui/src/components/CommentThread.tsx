@@ -499,7 +499,10 @@ export function CommentThread({
         <div className="space-y-3">
           <div className="flex items-center justify-between gap-2">
             <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-700 dark:text-amber-300">
-              Queued Comments ({queuedComments.length})
+              {t("Queued Comments ({{count}})", {
+                count: queuedComments.length,
+                defaultValue: `Queued Comments (${queuedComments.length})`,
+              })}
             </h4>
             {onInterruptQueued && queuedComments[0]?.queueTargetRunId ? (
               <Button
@@ -509,7 +512,9 @@ export function CommentThread({
                 disabled={interruptingQueuedRunId === queuedComments[0].queueTargetRunId}
                 onClick={() => void onInterruptQueued(queuedComments[0]!.queueTargetRunId!)}
               >
-                {interruptingQueuedRunId === queuedComments[0].queueTargetRunId ? "Interrupting..." : "Interrupt"}
+                {interruptingQueuedRunId === queuedComments[0].queueTargetRunId
+                  ? t("Interrupting...", { defaultValue: "Interrupting..." })
+                  : t("Interrupt", { defaultValue: "Interrupt" })}
               </Button>
             ) : null}
           </div>
@@ -555,7 +560,7 @@ export function CommentThread({
                 size="icon-sm"
                 onClick={() => attachInputRef.current?.click()}
                 disabled={attaching}
-                title={t("Attach image")}
+                title={t("Attach image", { defaultValue: "Attach image" })}
               >
                 <Paperclip className="h-4 w-4" />
               </Button>
@@ -568,7 +573,7 @@ export function CommentThread({
               onChange={(e) => setReopen(e.target.checked)}
               className="rounded border-border"
             />
-            {t("Re-open")}
+            {t("Re-open", { defaultValue: "Re-open" })}
           </label>
           {enableReassign && reassignOptions.length > 0 && (
             <InlineEntitySelector

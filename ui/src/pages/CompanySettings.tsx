@@ -1,6 +1,7 @@
 import { ChangeEvent, useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
+import { Link } from "@/lib/router";
 import { useCompany } from "../context/CompanyContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { useToast } from "../context/ToastContext";
@@ -478,23 +479,27 @@ export function CompanySettings() {
           {t("companySettings.companyPackages")}
         </div>
         <div className="rounded-md border border-border px-4 py-4">
+          {/* Keep these actions company-aware while the settings-page shortcut exists.
+              If upstream removes this shortcut block entirely, remove this comment with it. */}
           <p className="text-sm text-muted-foreground">
             {t("companySettings.importExportMovedPrefix")}{" "}
-            <a href="/org" className="underline hover:text-foreground">{t("Org Chart")}</a>{" "}
+            <Link to="/org" className="underline hover:text-foreground">
+              {t("Org Chart")}
+            </Link>{" "}
             {t("companySettings.importExportMovedSuffix")}
           </p>
           <div className="mt-3 flex items-center gap-2">
             <Button size="sm" variant="outline" asChild>
-              <a href="/company/export">
+              <Link to="/company/export">
                 <Download className="mr-1.5 h-3.5 w-3.5" />
                 {t("companySettings.export")}
-              </a>
+              </Link>
             </Button>
             <Button size="sm" variant="outline" asChild>
-              <a href="/company/import">
+              <Link to="/company/import">
                 <Upload className="mr-1.5 h-3.5 w-3.5" />
                 {t("companySettings.import")}
-              </a>
+              </Link>
             </Button>
           </div>
         </div>
