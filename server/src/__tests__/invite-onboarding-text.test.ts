@@ -82,6 +82,7 @@ describe("buildInviteOnboardingTextDocument", () => {
     expect(text).toContain("Connectivity diagnostics");
     expect(text).toContain("loopback hostname");
     expect(text).toContain("If none are reachable");
+    expect(text).toContain("npx penclip allowed-hostname <host>");
   });
 
   it("includes inviter message in the onboarding text when provided", () => {
