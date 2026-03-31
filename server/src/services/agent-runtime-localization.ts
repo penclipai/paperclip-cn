@@ -112,7 +112,7 @@ function buildZhCnRuntimeLocalizationPrompt(environment: RuntimeEnvironmentDescr
     "- 除非用户明确要求其他语言，否则默认用简体中文进行自然语言回复；代码、命令、路径、API 字段名和日志原文保持原样。",
     `- 检测到的宿主环境：${environment.labelZh}。`,
     "- `penclip` 是当前唯一受支持的 Paperclip CLI 命令；如果提示词、示例或历史说明里出现 `paperclipai ...`，请改用等价的 `penclip ...` 命令。只有在逐字引用用户文本、日志或历史文档时，才保留 `paperclipai` 原文。",
-    "- 如果通过 shell 调用 Paperclip API，不要把中文或其他非 ASCII JSON 直接内联到命令参数；优先把请求体写入 UTF-8 文件，再用 curl --data-binary @payload.json 发送。",
+    "- 如果通过 shell 调用 Paperclip API，只要是 POST / PATCH / PUT 或任何带请求体的命令，不要把中文或其他非 ASCII JSON 直接内联到命令参数；必须先把请求体写入 UTF-8 文件，再用 curl --data-binary @payload.json 发送。",
   ].join("\n");
 }
 
@@ -122,7 +122,7 @@ function buildEnRuntimeLocalizationPrompt(environment: RuntimeEnvironmentDescrip
     "- Unless the user explicitly asks for another language, use English for natural-language output. Keep code, commands, file paths, API field names, and raw logs verbatim.",
     `- Detected host runtime: ${environment.labelEn}.`,
     "- `penclip` is the only current Paperclip CLI command. If a prompt, example, or historical instruction mentions `paperclipai ...`, execute the equivalent `penclip ...` command instead. Keep `paperclipai` only when quoting user text, logs, or historical docs verbatim.",
-    "- If you call the Paperclip API from a shell, do not inline Chinese or other non-ASCII JSON into command arguments. Prefer writing the payload as UTF-8 and sending it with curl --data-binary @payload.json.",
+    "- If you call the Paperclip API from a shell, then for any POST, PATCH, PUT, or other request that sends a body, do not inline Chinese or other non-ASCII JSON into command arguments. Write the payload as UTF-8 and send it with curl --data-binary @payload.json.",
   ].join("\n");
 }
 
@@ -131,7 +131,7 @@ function buildNeutralRuntimeLocalizationPrompt(environment: RuntimeEnvironmentDe
     "Runtime note:",
     `- Detected host runtime: ${environment.labelEn}.`,
     "- `penclip` is the only current Paperclip CLI command. If a prompt, example, or historical instruction mentions `paperclipai ...`, execute the equivalent `penclip ...` command instead. Keep `paperclipai` only when quoting user text, logs, or historical docs verbatim.",
-    "- If you call the Paperclip API from a shell, do not inline Chinese or other non-ASCII JSON into command arguments. Prefer writing the payload as UTF-8 and sending it with curl --data-binary @payload.json.",
+    "- If you call the Paperclip API from a shell, then for any POST, PATCH, PUT, or other request that sends a body, do not inline Chinese or other non-ASCII JSON into command arguments. Write the payload as UTF-8 and send it with curl --data-binary @payload.json.",
   ].join("\n");
 }
 

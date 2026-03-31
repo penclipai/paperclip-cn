@@ -14,6 +14,7 @@ describe("resolveRuntimeLocalizationPromptForContextSnapshot", () => {
     expect(note).toContain("运行环境补充：");
     expect(note).toContain("默认用简体中文进行自然语言回复");
     expect(note).toContain("`penclip` 是当前唯一受支持的 Paperclip CLI 命令");
+    expect(note).toContain("curl --data-binary @payload.json");
   });
 
   it("uses English runtime guidance when the run context requested English", () => {
@@ -28,6 +29,7 @@ describe("resolveRuntimeLocalizationPromptForContextSnapshot", () => {
     expect(note).toContain("Runtime note:");
     expect(note).toContain("use English for natural-language output");
     expect(note).toContain("`penclip` is the only current Paperclip CLI command.");
+    expect(note).toContain("for any POST, PATCH, PUT");
   });
 
   it("keeps the neutral runtime note when the run context did not request a locale", () => {

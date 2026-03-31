@@ -14,6 +14,7 @@ describe("resolveRuntimeLocalizationPrompt", () => {
     expect(note).toContain("检测到的宿主环境：Windows PowerShell。");
     expect(note).toContain("`penclip` 是当前唯一受支持的 Paperclip CLI 命令");
     expect(note).toContain("`paperclipai ...`");
+    expect(note).toContain("POST / PATCH / PUT");
     expect(note).toContain("curl --data-binary @payload.json");
     expect(note).not.toContain("Python / Node");
   });
@@ -43,6 +44,7 @@ describe("resolveRuntimeLocalizationPrompt", () => {
     expect(note).toContain("Detected host runtime: zsh on darwin.");
     expect(note).toContain("`penclip` is the only current Paperclip CLI command.");
     expect(note).toContain("`paperclipai ...`");
+    expect(note).toContain("for any POST, PATCH, PUT");
     expect(note).toContain("curl --data-binary @payload.json");
     expect(note).not.toContain("Python / Node");
   });
