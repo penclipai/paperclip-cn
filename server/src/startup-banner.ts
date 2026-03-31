@@ -92,7 +92,7 @@ function resolveAgentJwtSecretStatus(
 
   return {
     status: "warn",
-    message: "missing (run `pnpm penclipai onboard`)",
+    message: "missing (run `pnpm penclip onboard`)",
   };
 }
 

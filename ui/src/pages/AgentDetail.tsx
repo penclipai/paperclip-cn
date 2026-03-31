@@ -1143,14 +1143,18 @@ function LatestRunCard({ runs, agentId }: { runs: HeartbeatRun[]; agentId: strin
     ? String((run.resultJson as Record<string, unknown>).summary ?? (run.resultJson as Record<string, unknown>).result ?? "")
     : translateRuntimeErrorMessage(t, run.error) ?? "";
 
-  // Extract a clean 2-3 line excerpt: first non-empty, non-header, non-list-mark lines
-  const summary = useMemo(() => {
-    if (!summaryRaw) return "";
+  // Keep this inline so empty -> populated runs do not change hook order between renders.
+  const summary = (() => {
+    if (!summaryRaw) {
+      return "";
+    }
+
     const lines = summaryRaw
       .replace(/^#{1,6}\s+/gm, "")
       .split("\n")
       .map((l) => l.trim())
       .filter((l) => l.length > 0 && !l.startsWith("---") && !l.startsWith("|") && !l.startsWith("```") && !/^[-*>]/.test(l) && !/^\d+\./.test(l));
+
     const excerpt: string[] = [];
     let chars = 0;
     for (const line of lines) {
@@ -1158,8 +1162,9 @@ function LatestRunCard({ runs, agentId }: { runs: HeartbeatRun[]; agentId: strin
       excerpt.push(line);
       chars += line.length;
     }
+
     return excerpt.join(" ");
-  }, [summaryRaw]);
+  })();
 
   return (
     <div className="space-y-3">

@@ -12,6 +12,8 @@ describe("resolveRuntimeLocalizationPrompt", () => {
     expect(note).toContain("运行环境补充：");
     expect(note).toContain("默认用简体中文进行自然语言回复");
     expect(note).toContain("检测到的宿主环境：Windows PowerShell。");
+    expect(note).toContain("`penclip` 是当前唯一受支持的 Paperclip CLI 命令");
+    expect(note).toContain("`paperclipai ...`");
     expect(note).toContain("curl --data-binary @payload.json");
     expect(note).not.toContain("Python / Node");
   });
@@ -39,6 +41,8 @@ describe("resolveRuntimeLocalizationPrompt", () => {
     expect(note).toContain("Runtime note:");
     expect(note).toContain("use English for natural-language output");
     expect(note).toContain("Detected host runtime: zsh on darwin.");
+    expect(note).toContain("`penclip` is the only current Paperclip CLI command.");
+    expect(note).toContain("`paperclipai ...`");
     expect(note).toContain("curl --data-binary @payload.json");
     expect(note).not.toContain("Python / Node");
   });
@@ -51,6 +55,7 @@ describe("resolveRuntimeLocalizationPrompt", () => {
 
     expect(note).toContain("Runtime note:");
     expect(note).toContain("Detected host runtime: bash on linux.");
+    expect(note).toContain("`penclip` is the only current Paperclip CLI command.");
     expect(note).not.toContain("默认用简体中文进行自然语言回复");
     expect(note).not.toContain("use English for natural-language output");
   });

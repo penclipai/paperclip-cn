@@ -202,7 +202,7 @@ export function DesignGuide() {
       <div>
         <h2 className="text-xl font-bold">{td("Design Guide")}</h2>
         <p className="text-sm text-muted-foreground mt-1">
-          {td("A reference for the components, styles, and interaction patterns used across Penclip.")}
+          {td("A reference for the components, styles, and interaction patterns used across Paperclip CN.")}
         </p>
       </div>
 
@@ -748,7 +748,7 @@ export function DesignGuide() {
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbLink href="#">{td("Penclip App")}</BreadcrumbLink>
+              <BreadcrumbLink href="#">{td("Paperclip CN App")}</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>

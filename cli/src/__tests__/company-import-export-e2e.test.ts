@@ -14,6 +14,21 @@ import { createStoredZipArchive } from "./helpers/zip.js";
 
 const execFileAsync = promisify(execFile);
 type ServerProcess = ReturnType<typeof spawn>;
+const PNPM_COMMAND = "pnpm";
+
+function execPnpm(args: string[], options: Parameters<typeof execFileAsync>[2]) {
+  if (process.platform === "win32") {
+    return execFileAsync(process.env.ComSpec ?? "cmd.exe", ["/d", "/s", "/c", PNPM_COMMAND, ...args], options);
+  }
+  return execFileAsync(PNPM_COMMAND, args, options);
+}
+
+function spawnPnpm(args: string[], options: Parameters<typeof spawn>[2]) {
+  if (process.platform === "win32") {
+    return spawn(process.env.ComSpec ?? "cmd.exe", ["/d", "/s", "/c", PNPM_COMMAND, ...args], options);
+  }
+  return spawn(PNPM_COMMAND, args, options);
+}
 
 async function getAvailablePort(): Promise<number> {
   return await new Promise((resolve, reject) => {
@@ -185,19 +200,18 @@ async function api<T>(baseUrl: string, pathname: string, init?: RequestInit): Pr
 
 async function runCliJson<T>(args: string[], opts: { apiBase: string; configPath: string }) {
   const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
-  const result = await execFileAsync(
-    "pnpm",
-    ["--silent", "penclipai", ...args, "--api-base", opts.apiBase, "--config", opts.configPath, "--json"],
+  const result = await execPnpm(
+    ["--silent", "penclip", ...args, "--api-base", opts.apiBase, "--config", opts.configPath, "--json"],
     {
       cwd: repoRoot,
       env: createCliEnv(),
       maxBuffer: 10 * 1024 * 1024,
     },
   );
-  const stdout = result.stdout.trim();
+  const stdout = String(result.stdout).trim();
   const jsonStart = stdout.search(/[\[{]/);
   if (jsonStart === -1) {
-    throw new Error(`CLI did not emit JSON.\nstdout:\n${result.stdout}\nstderr:\n${result.stderr}`);
+    throw new Error(`CLI did not emit JSON.\nstdout:\n${String(result.stdout)}\nstderr:\n${String(result.stderr)}`);
   }
   return JSON.parse(stdout.slice(jsonStart)) as T;
 }
@@ -211,7 +225,7 @@ async function waitForServer(
   while (Date.now() - startedAt < 30_000) {
     if (child.exitCode !== null) {
       throw new Error(
-        `penclipai run exited before healthcheck succeeded.\nstdout:\n${output.stdout.join("")}\nstderr:\n${output.stderr.join("")}`,
+        `penclip run exited before healthcheck succeeded.\nstdout:\n${output.stdout.join("")}\nstderr:\n${output.stderr.join("")}`,
       );
     }
 
@@ -230,7 +244,7 @@ async function waitForServer(
   );
 }
 
-describeEmbeddedPostgres("penclipai company import/export e2e", () => {
+describeEmbeddedPostgres("penclip company import/export e2e", () => {
   let tempRoot = "";
   let configPath = "";
   let exportDir = "";
@@ -251,9 +265,8 @@ describeEmbeddedPostgres("penclipai company import/export e2e", () => {
 
     const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
     const output = { stdout: [] as string[], stderr: [] as string[] };
-    const child = spawn(
-      "pnpm",
-      ["penclipai", "run", "--config", configPath],
+    const child = spawnPnpm(
+      ["penclip", "run", "--config", configPath],
       {
         cwd: repoRoot,
         env: createServerEnv(configPath, port, tempDb.connectionString),

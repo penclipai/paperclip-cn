@@ -1,8 +1,8 @@
-# Penclip UI 本地化指南
+# Paperclip CN UI 本地化指南
 
 ## 1. 目的
 
-这份文档记录 Penclip 中文增强版在当前仓库里的本地化策略，目标是：
+这份文档记录 Paperclip CN 中文增强版在当前仓库里的本地化策略，目标是：
 
 - 保持默认中文体验，支持中英双语切换
 - 尽量减少与上游 `origin/master` 同步时的冲突
@@ -25,7 +25,7 @@
 
 避免做这些事情：
 
-- 不要粗暴全仓 `Paperclip -> Penclip`
+- 不要粗暴全仓 `Paperclip -> Paperclip CN`
 - 不要批量把所有 inherited 文案一次性改成 `t("xxx")`
 - 不要为了中文化去改内部路径、包名、环境变量、数据库字段、API shape
 - 不要在每个页面都复制一套相似翻译逻辑
@@ -42,11 +42,11 @@
 
 下列内容属于技术标识，默认不改：
 
-- GitHub 仓库名 `paperclip`
+- GitHub 仓库名 `paperclip-cn`
 - 公开 package 的 `package.json.name`
 - `@penclipai/*` workspace 包名
-- CLI npm package spec `penclipai`
-- `penclipai` CLI 命令
+- CLI npm package spec `penclip`
+- `penclip` CLI 命令
 - `PAPERCLIP_*` 环境变量
 - 内部 localStorage key
 - 内部 API 路径和数据结构
@@ -131,18 +131,18 @@
 
 ## 4. 品牌替换边界
 
-Penclip 品牌替换必须遵守以下边界：
+Paperclip CN 品牌替换必须遵守以下边界：
 
 ### 4.1 可以替换
 
-- 用户看到的产品名称：`Paperclip -> Penclip`
-- 用户看到的组织/域名：`paperclipai -> penclipai`
+- 用户看到的产品名称：`Paperclip -> Paperclip CN`
+- 用户看到的主命令/域名：`paperclipai -> penclip`、`penclip.ing`
 - 国际镜像域名：`paperclip.ing -> penclip.ing`
 - 中文文档主域名：`paperclipai.cn`
 
 ### 4.2 不要替换
 
-- 仓库名 `paperclip`
+- 仓库名 `paperclip-cn`
 - package/workspace 名称
 - 内部路径
 - 技术常量
@@ -176,7 +176,7 @@ Penclip 品牌替换必须遵守以下边界：
 
 以下内容默认保持原样：
 
-- `Penclip`
+- `Paperclip CN`
 - `GitHub`
 - `OpenClaw`
 - `CLI` / `API` / `URL` / `Webhook`
@@ -382,7 +382,7 @@ pnpm build
 但注意：
 
 - 不是简单保留整文件“ours”
-- 而是尽量先接收上游结构，再把 Penclip 的本地化接回去
+- 而是尽量先接收上游结构，再把 Paperclip CN 的本地化接回去
 
 具体合并策略见 `doc/UPSTREAM-MERGE-RUNBOOK.md`。
 
@@ -400,7 +400,7 @@ pnpm build
 
 ## 14. 维护原则总结
 
-Penclip 的本地化不是“一次翻译完”的项目，而是一个持续同步上游的演进过程。
+Paperclip CN 的本地化不是“一次翻译完”的项目，而是一个持续同步上游的演进过程。
 
 正确做法是：
 

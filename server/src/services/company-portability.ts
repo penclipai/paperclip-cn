@@ -115,6 +115,11 @@ const DEFAULT_INCLUDE: CompanyPortabilityInclude = {
 const DEFAULT_COLLISION_STRATEGY: CompanyPortabilityCollisionStrategy = "rename";
 const execFileAsync = promisify(execFile);
 let bundledSkillsCommitPromise: Promise<string | null> | null = null;
+const BUNDLED_PAPERCLIP_SKILL_REPO = "penclipai/paperclip-cn";
+const LEGACY_BUNDLED_PAPERCLIP_SKILL_REPOS = [
+  "paperclipai/paperclip",
+  "penclipai/paperclip",
+] as const;
 
 function resolveImportMode(options?: ImportBehaviorOptions): ImportMode {
   return options?.mode ?? "board_full";
@@ -150,6 +155,19 @@ function normalizeSkillKey(value: string | null | undefined) {
   return segments.length > 0 ? segments.join("/") : null;
 }
 
+function canonicalizeBundledPaperclipSkillKey(value: string | null | undefined) {
+  const normalized = normalizeSkillKey(value);
+  if (!normalized) return null;
+  if (normalized.startsWith(`${BUNDLED_PAPERCLIP_SKILL_REPO}/`)) return normalized;
+  for (const legacyRepo of LEGACY_BUNDLED_PAPERCLIP_SKILL_REPOS) {
+    const legacyPrefix = `${legacyRepo}/`;
+    if (normalized.startsWith(legacyPrefix)) {
+      return `${BUNDLED_PAPERCLIP_SKILL_REPO}/${normalized.slice(legacyPrefix.length)}`;
+    }
+  }
+  return normalized;
+}
+
 function readSkillKey(frontmatter: Record<string, unknown>) {
   const metadata = isPlainRecord(frontmatter.metadata) ? frontmatter.metadata : null;
   const paperclip = isPlainRecord(metadata?.paperclip) ? metadata?.paperclip as Record<string, unknown> : null;
@@ -176,7 +194,7 @@ function deriveManifestSkillKey(
   const slug = normalizeSkillSlug(asString(frontmatter.slug) ?? fallbackSlug) ?? "skill";
   const sourceKind = asString(metadata?.sourceKind);
   if (sourceKind === "paperclip_bundled") {
-    return `paperclipai/paperclip/${slug}`;
+    return `${BUNDLED_PAPERCLIP_SKILL_REPO}/${slug}`;
   }
   const owner = normalizeSkillSlug(asString(metadata?.owner));
   const repo = normalizeSkillSlug(asString(metadata?.repo));
@@ -1865,11 +1883,11 @@ async function buildSkillSourceEntry(skill: CompanySkill) {
     const commit = await resolveBundledSkillsCommit();
     return {
       kind: "github-dir",
-      repo: "paperclipai/paperclip",
+      repo: BUNDLED_PAPERCLIP_SKILL_REPO,
       path: `skills/${skill.slug}`,
       commit,
       trackingRef: "master",
-      url: `https://github.com/paperclipai/paperclip/tree/master/skills/${skill.slug}`,
+      url: `https://github.com/${BUNDLED_PAPERCLIP_SKILL_REPO}/tree/master/skills/${skill.slug}`,
     };
   }
 
@@ -2437,7 +2455,8 @@ function buildManifestFromPackageFiles(
         sourceKind: "catalog",
       };
     }
-    const key = deriveManifestSkillKey(frontmatter, slug, normalizedMetadata, sourceType, sourceLocator);
+    const derivedKey = deriveManifestSkillKey(frontmatter, slug, normalizedMetadata, sourceType, sourceLocator);
+    const key = canonicalizeBundledPaperclipSkillKey(derivedKey) ?? derivedKey;
 
     manifest.skills.push({
       key,

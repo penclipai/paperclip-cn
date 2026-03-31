@@ -241,11 +241,11 @@ This on-disk model is the reason the current implementation expects a persistent
 
 Paperclip should add CLI commands:
 
-- `pnpm penclipai plugin list`
-- `pnpm penclipai plugin install <package[@version]>`
-- `pnpm penclipai plugin uninstall <plugin-id>`
-- `pnpm penclipai plugin upgrade <plugin-id> [version]`
-- `pnpm penclipai plugin doctor <plugin-id>`
+- `pnpm penclip plugin list`
+- `pnpm penclip plugin install <package[@version]>`
+- `pnpm penclip plugin uninstall <plugin-id>`
+- `pnpm penclip plugin upgrade <plugin-id> [version]`
+- `pnpm penclip plugin doctor <plugin-id>`
 
 These commands are instance-level operations.
 
@@ -918,8 +918,8 @@ export function DashboardWidget({ context }: PluginWidgetProps) {
 For cross-host compatibility, plugin source code should import the UI SDK from `@paperclipai/plugin-sdk/ui`.
 
 - Default authoring surface: `@paperclipai/plugin-sdk/ui`
-- Penclip published package identity: `@penclipai/plugin-sdk`
-- Penclip install pattern: alias the published package while keeping source imports on the compatibility surface
+- Paperclip CN published package identity: `@penclipai/plugin-sdk`
+- Paperclip CN install pattern: alias the published package while keeping source imports on the compatibility surface
 
 Do not switch plugin source imports to `@penclipai/plugin-sdk/ui` unless you are intentionally dropping upstream Paperclip compatibility.
 
@@ -1326,7 +1326,7 @@ When a plugin is uninstalled, the host must handle plugin-owned data explicitly.
 3. Plugin-owned data (`plugin_state`, `plugin_entities`, `plugin_jobs`, `plugin_job_runs`, `plugin_webhook_deliveries`, `plugin_config`) is retained for a configurable grace period (default: 30 days).
 4. During the grace period, the operator can reinstall the same plugin and recover its state.
 5. After the grace period, the host purges all plugin-owned data for the uninstalled plugin.
-6. The operator may force-purge immediately via CLI: `pnpm penclipai plugin purge <plugin-id>`.
+6. The operator may force-purge immediately via CLI: `pnpm penclip plugin purge <plugin-id>`.
 
 ### 25.2 Upgrade Data Considerations
 
@@ -1489,7 +1489,7 @@ expect(data.syncedCount).toBeGreaterThan(0);
 
 For developing a plugin against a running Paperclip instance:
 
-- The operator installs the plugin from a local path: `pnpm penclipai plugin install ./path/to/plugin`
+- The operator installs the plugin from a local path: `pnpm penclip plugin install ./path/to/plugin`
 - The host watches the plugin directory for changes and restarts the worker on rebuild.
 - `devUiUrl` in plugin config can point to a local Vite dev server for UI hot-reload.
 - The plugin settings page shows real-time logs from the worker for debugging.
@@ -1531,7 +1531,7 @@ This spec directly supports the following plugin types:
 
 ### 29.2 SDK Versioning
 
-Penclip publishes a single SDK package for plugin authors:
+Paperclip CN publishes a single SDK package for plugin authors:
 
 - `@penclipai/plugin-sdk` — the complete plugin SDK
 
@@ -1540,7 +1540,7 @@ For cross-host-compatible plugin source code, the default authoring surface rema
 - `@paperclipai/plugin-sdk` — worker-side SDK (context, events, state, tools, logger, `definePlugin`, `z`)
 - `@paperclipai/plugin-sdk/ui` — frontend SDK (bridge hooks, shared components, design tokens)
 
-In Penclip installs, those compatibility imports can be satisfied by aliasing to the published package:
+In Paperclip CN installs, those compatibility imports can be satisfied by aliasing to the published package:
 
 - `@paperclipai/plugin-sdk -> npm:@penclipai/plugin-sdk`
 
@@ -1583,7 +1583,7 @@ This matrix is published in the host docs and queryable via `GET /api/plugins/co
 
 When a new SDK version is released:
 
-1. Plugin author updates the `@paperclipai/plugin-sdk` compatibility dependency and, in Penclip environments, repoints its alias target to the newer published `@penclipai/plugin-sdk` version.
+1. Plugin author updates the `@paperclipai/plugin-sdk` compatibility dependency and, in Paperclip CN environments, repoints its alias target to the newer published `@penclipai/plugin-sdk` version.
 2. Plugin author follows the migration guide to update code.
 3. Plugin author updates `apiVersion` and `sdkVersion` in the manifest.
 4. Plugin author publishes a new plugin version.

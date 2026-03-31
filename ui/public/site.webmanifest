@@ -1,8 +1,8 @@
 {
   "id": "/",
-  "name": "Penclip",
-  "short_name": "Penclip",
-  "description": "Penclip · 中文增强版AI自治项目管理与智能体协同平台",
+  "name": "Paperclip CN",
+  "short_name": "Paperclip CN",
+  "description": "Paperclip CN · 中文增强版AI自治项目管理与智能体协同平台",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

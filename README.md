@@ -1,20 +1,20 @@
 <p align="center">
-  <img src="doc/assets/header.png" alt="Penclip — runs your business" width="720" />
+  <img src="doc/assets/header.png" alt="Paperclip CN — runs your business" width="720" />
 </p>
 
 <p align="center">
   <a href="#quickstart"><strong>Quickstart</strong></a> &middot;
   <a href="https://penclip.ing/docs"><strong>Docs</strong></a> &middot;
-  <a href="https://github.com/penclipai/paperclip"><strong>GitHub</strong></a> &middot;
+  <a href="https://github.com/penclipai/paperclip-cn"><strong>GitHub</strong></a> &middot;
   <a href="./README.zh-CN.md"><strong>中文 README</strong></a> &middot;
   <a href="https://discord.gg/m4HZY7xNG3"><strong>Discord</strong></a>
 </p>
 
-> **Penclip** is the Chinese-enhanced MIT fork of [Paperclip](https://github.com/paperclipai/paperclip), maintained by `penclipai` for Chinese UX, Windows compatibility, and domestic model integrations. The GitHub repo intentionally remains `paperclip` for upstream compatibility and discovery. See [README.zh-CN](./README.zh-CN.md) for the localized overview.
+> **Paperclip CN** is the Chinese-enhanced MIT fork of [Paperclip](https://github.com/paperclipai/paperclip), maintained by `penclipai` for Chinese UX, Windows compatibility, and domestic model integrations. The public fork now lives at `penclipai/paperclip-cn`. See [README.zh-CN](./README.zh-CN.md) for the localized overview.
 
 <p align="center">
-  <a href="https://github.com/penclipai/paperclip/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License" /></a>
-  <a href="https://github.com/penclipai/paperclip/stargazers"><img src="https://img.shields.io/github/stars/penclipai/paperclip?style=flat" alt="Stars" /></a>
+  <a href="https://github.com/penclipai/paperclip-cn/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License" /></a>
+  <a href="https://github.com/penclipai/paperclip-cn/stargazers"><img src="https://img.shields.io/github/stars/penclipai/paperclip-cn?style=flat" alt="Stars" /></a>
   <a href="https://discord.gg/m4HZY7xNG3"><img src="https://img.shields.io/discord/000000000?label=discord" alt="Discord" /></a>
 </p>
 
@@ -26,13 +26,13 @@
 
 <br/>
 
-## What is Paperclip?
+## What is Paperclip CN?
 
 # Open-source orchestration for zero-human companies
 
-**If OpenClaw is an _employee_, Paperclip is the _company_**
+**If OpenClaw is an _employee_, Paperclip CN is the _company_**
 
-Paperclip is a Node.js server and React UI that orchestrates a team of AI agents to run a business. Bring your own agents, assign goals, and track your agents' work and costs from one dashboard.
+Paperclip CN is a Node.js server and React UI that orchestrates a team of AI agents to run a business. Bring your own agents, assign goals, and track your agents' work and costs from one dashboard.
 
 It looks like a task manager — but under the hood it has org charts, budgets, governance, goal alignment, and agent coordination.
 
@@ -177,14 +177,14 @@ Paperclip handles the hard orchestration details correctly.
 Open source. Self-hosted. No Paperclip account required.
 
 ```bash
-npx penclipai onboard --yes
+npx penclip onboard --yes
 ```
 
 Or manually:
 
 ```bash
-git clone https://github.com/penclipai/paperclip.git
-cd paperclip
+git clone https://github.com/penclipai/paperclip-cn.git
+cd paperclip-cn
 pnpm install
 pnpm dev
 ```
@@ -267,8 +267,8 @@ We welcome contributions. See the [contributing guide](CONTRIBUTING.md) for deta
 ## Community
 
 - [Discord](https://discord.gg/m4HZY7xNG3) — Join the community
-- [GitHub Issues](https://github.com/penclipai/paperclip/issues) — bugs and feature requests
-- [GitHub Discussions](https://github.com/penclipai/paperclip/discussions) — ideas and RFC
+- [GitHub Issues](https://github.com/penclipai/paperclip-cn/issues) — bugs and feature requests
+- [GitHub Discussions](https://github.com/penclipai/paperclip-cn/discussions) — ideas and RFC
 
 <br/>
 
@@ -278,7 +278,7 @@ MIT &copy; 2026 Paperclip
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/image?repos=penclipai/paperclip&type=date&legend=top-left)](https://www.star-history.com/?repos=penclipai%2Fpaperclip&type=date&legend=top-left)
+[![Star History Chart](https://api.star-history.com/image?repos=penclipai/paperclip-cn&type=date&legend=top-left)](https://www.star-history.com/?repos=penclipai%2Fpaperclip-cn&type=date&legend=top-left)
 
 <br/>
 

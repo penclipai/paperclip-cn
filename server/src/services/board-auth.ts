@@ -164,7 +164,7 @@ export function boardAuthService(db: Db) {
     const challengeSecret = createCliAuthSecret();
     const pendingBoardToken = createBoardApiToken();
     const expiresAt = cliAuthChallengeExpiresAt();
-    const labelBase = input.clientName?.trim() || "penclipai cli";
+    const labelBase = input.clientName?.trim() || "penclip cli";
     const pendingKeyName =
       input.requestedAccess === "instance_admin_required"
         ? `${labelBase} (instance admin)`

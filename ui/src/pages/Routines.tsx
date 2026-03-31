@@ -161,7 +161,7 @@ export function Routines() {
         title: t("Failed to update routine", { defaultValue: "Failed to update routine" }),
         body: mutationError instanceof Error
           ? mutationError.message
-          : t("Penclip could not update the routine.", { defaultValue: "Penclip could not update the routine." }),
+          : t("Paperclip CN could not update the routine.", { defaultValue: "Paperclip CN could not update the routine." }),
         tone: "error",
       });
     },
@@ -186,7 +186,7 @@ export function Routines() {
         title: t("Routine run failed", { defaultValue: "Routine run failed" }),
         body: mutationError instanceof Error
           ? mutationError.message
-          : t("Penclip could not start the routine run.", { defaultValue: "Penclip could not start the routine run." }),
+          : t("Paperclip CN could not start the routine run.", { defaultValue: "Paperclip CN could not start the routine run." }),
         tone: "error",
       });
     },
@@ -476,8 +476,8 @@ export function Routines() {
 
           <div className="flex flex-col gap-3 border-t border-border/60 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="text-sm text-muted-foreground">
-              {t("After creation, Penclip takes you straight to trigger setup for schedules, webhooks, or internal runs.", {
-                defaultValue: "After creation, Penclip takes you straight to trigger setup for schedules, webhooks, or internal runs.",
+              {t("After creation, Paperclip CN takes you straight to trigger setup for schedules, webhooks, or internal runs.", {
+                defaultValue: "After creation, Paperclip CN takes you straight to trigger setup for schedules, webhooks, or internal runs.",
               })}
             </div>
             <div className="flex flex-col gap-2 sm:items-end">

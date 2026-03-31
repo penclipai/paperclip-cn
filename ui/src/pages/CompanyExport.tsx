@@ -476,7 +476,7 @@ function generateReadmeFromSelection(
   lines.push(`## ${translate("companyExport.readme.gettingStarted")}`);
   lines.push("");
   lines.push("```bash");
-  lines.push("pnpm penclipai company import this-github-url-or-folder");
+  lines.push("npx penclip company import this-github-url-or-folder");
   lines.push("```");
   lines.push("");
   lines.push(translate("companyExport.readme.moreInfo"));

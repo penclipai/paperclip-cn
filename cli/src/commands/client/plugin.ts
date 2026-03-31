@@ -137,9 +137,9 @@ export function registerPluginCommands(program: Command): void {
       .description(
         "Install a plugin from a local path or npm package.\n" +
           "  Examples:\n" +
-          "    penclipai plugin install ./my-plugin              # local path\n" +
-          "    penclipai plugin install @acme/plugin-linear      # npm package\n" +
-          "    penclipai plugin install @acme/plugin-linear@1.2  # pinned version",
+          "    penclip plugin install ./my-plugin              # local path\n" +
+          "    penclip plugin install @acme/plugin-linear      # npm package\n" +
+          "    penclip plugin install @acme/plugin-linear@1.2  # pinned version",
       )
       .option("-l, --local", "Treat <package> as a local filesystem path", false)
       .option("--version <version>", "Specific npm version to install (npm packages only)")
@@ -363,7 +363,7 @@ export function registerPluginCommands(program: Command): void {
             console.log(
               `${pc.bold(ex.displayName)}  ${pc.dim(ex.pluginKey)}\n` +
                 `  ${ex.description}\n` +
-                `  ${pc.cyan(`penclipai plugin install ${ex.localPath}`)}`,
+                `  ${pc.cyan(`penclip plugin install ${ex.localPath}`)}`,
             );
           }
         } catch (err) {

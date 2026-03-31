@@ -5,10 +5,12 @@ summary: CLI installation and setup
 
 The Paperclip CLI handles instance setup, diagnostics, and control-plane operations.
 
+Examples on this page use the installed `penclip` command. If you are running without installing first, prefix the command with `npx`.
+
 ## Usage
 
 ```sh
-pnpm penclipai --help
+penclip --help
 ```
 
 ## Global Options
@@ -29,7 +31,7 @@ Company-scoped commands also accept `--company-id <id>`.
 For clean local instances, pass `--data-dir` on the command you run:
 
 ```sh
-pnpm penclipai run --data-dir ./tmp/paperclip-dev
+penclip run --data-dir ./tmp/paperclip-dev
 ```
 
 ## Context Profiles
@@ -38,22 +40,22 @@ Store defaults to avoid repeating flags:
 
 ```sh
 # Set defaults
-pnpm penclipai context set --api-base http://localhost:3100 --company-id <id>
+penclip context set --api-base http://localhost:3100 --company-id <id>
 
 # View current context
-pnpm penclipai context show
+penclip context show
 
 # List profiles
-pnpm penclipai context list
+penclip context list
 
 # Switch profile
-pnpm penclipai context use default
+penclip context use default
 ```
 
 To avoid storing secrets in context, use an env var:
 
 ```sh
-pnpm penclipai context set --api-key-env-var-name PAPERCLIP_API_KEY
+penclip context set --api-key-env-var-name PAPERCLIP_API_KEY
 export PAPERCLIP_API_KEY=...
 ```
 

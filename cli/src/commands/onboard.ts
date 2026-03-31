@@ -235,7 +235,7 @@ function canCreateBootstrapInviteImmediately(config: Pick<PaperclipConfig, "data
 
 export async function onboard(opts: OnboardOptions): Promise<void> {
   printPaperclipCliBanner();
-  p.intro(pc.bgCyan(pc.black(" penclipai onboard ")));
+  p.intro(pc.bgCyan(pc.black(" penclip onboard ")));
   const configPath = resolveConfigPath(opts.config);
   const instance = describeLocalInstancePaths(resolvePaperclipInstanceId());
   p.log.message(
@@ -309,7 +309,7 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
         await db.execute("SELECT 1");
         s.stop("Database connection successful");
       } catch {
-        s.stop(pc.yellow("Could not connect to database — you can fix this later with `penclipai doctor`"));
+        s.stop(pc.yellow("Could not connect to database — you can fix this later with `penclip doctor`"));
       }
     }
 
@@ -447,9 +447,9 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
 
   p.note(
     [
-      `Run: ${pc.cyan("penclipai run")}`,
-      `Reconfigure later: ${pc.cyan("penclipai configure")}`,
-      `Diagnose setup: ${pc.cyan("penclipai doctor")}`,
+      `Run: ${pc.cyan("penclip run")}`,
+      `Reconfigure later: ${pc.cyan("penclip configure")}`,
+      `Diagnose setup: ${pc.cyan("penclip doctor")}`,
     ].join("\n"),
     "Next commands",
   );
@@ -481,8 +481,8 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
     p.log.info(
       [
         "Bootstrap CEO invite will be created after the server starts.",
-        `Next: ${pc.cyan("penclipai run")}`,
-        `Then: ${pc.cyan("penclipai auth bootstrap-ceo")}`,
+        `Next: ${pc.cyan("penclip run")}`,
+        `Then: ${pc.cyan("penclip auth bootstrap-ceo")}`,
       ].join("\n"),
     );
   }

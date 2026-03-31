@@ -14,7 +14,7 @@ pnpm test
 ## Install Into Paperclip
 
 ```bash
-pnpm penclipai plugin install ./
+pnpm penclip plugin install ./
 ```
 
 ## Build Options

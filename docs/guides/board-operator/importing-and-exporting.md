@@ -34,7 +34,7 @@ my-company/
 Export a company into a portable folder:
 
 ```sh
-penclipai company export <company-id> --out ./my-export
+penclip company export <company-id> --out ./my-export
 ```
 
 ### Options
@@ -53,13 +53,13 @@ penclipai company export <company-id> --out ./my-export
 
 ```sh
 # Export company with agents and projects
-penclipai company export abc123 --out ./backup --include company,agents,projects
+penclip company export abc123 --out ./backup --include company,agents,projects
 
 # Export everything including tasks and skills
-penclipai company export abc123 --out ./full-export --include company,agents,projects,tasks,skills
+penclip company export abc123 --out ./full-export --include company,agents,projects,tasks,skills
 
 # Export only specific skills
-penclipai company export abc123 --out ./skills-only --include skills --skills review,deploy
+penclip company export abc123 --out ./skills-only --include skills --skills review,deploy
 ```
 
 ### What Gets Exported
@@ -79,17 +79,17 @@ Import from a local directory, GitHub URL, or GitHub shorthand:
 
 ```sh
 # From a local folder
-penclipai company import ./my-export
+penclip company import ./my-export
 
 # From a GitHub URL
-penclipai company import https://github.com/org/repo
+penclip company import https://github.com/org/repo
 
 # From a GitHub subfolder
-penclipai company import https://github.com/org/repo/tree/main/companies/acme
+penclip company import https://github.com/org/repo/tree/main/companies/acme
 
 # From GitHub shorthand
-penclipai company import org/repo
-penclipai company import org/repo/companies/acme
+penclip company import org/repo
+penclip company import org/repo/companies/acme
 ```
 
 ### Options
@@ -131,7 +131,7 @@ When running interactively (no `--yes` or `--json` flags), the import command sh
 Always preview first with `--dry-run`:
 
 ```sh
-penclipai company import org/repo --target existing --company-id abc123 --dry-run
+penclip company import org/repo --target existing --company-id abc123 --dry-run
 ```
 
 The preview shows:
@@ -147,7 +147,7 @@ Imported agents always land with timer heartbeats disabled. Assignment/on-demand
 **Clone a company template from GitHub:**
 
 ```sh
-penclipai company import org/company-templates/engineering-team \
+penclip company import org/company-templates/engineering-team \
   --target new \
   --new-company-name "My Engineering Team"
 ```
@@ -155,7 +155,7 @@ penclipai company import org/company-templates/engineering-team \
 **Add agents from a package into your existing company:**
 
 ```sh
-penclipai company import ./shared-agents \
+penclip company import ./shared-agents \
   --target existing \
   --company-id abc123 \
   --include agents \
@@ -165,13 +165,13 @@ penclipai company import ./shared-agents \
 **Import a specific branch or tag:**
 
 ```sh
-penclipai company import org/repo --ref v2.0.0 --dry-run
+penclip company import org/repo --ref v2.0.0 --dry-run
 ```
 
 **Non-interactive import (CI/scripts):**
 
 ```sh
-penclipai company import ./package \
+penclip company import ./package \
   --target new \
   --yes \
   --json

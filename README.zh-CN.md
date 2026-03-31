@@ -1,31 +1,31 @@
-> **Penclip** 是 [Paperclip](https://github.com/paperclipai/paperclip) 的**官方授权中文增强 Fork**（MIT 许可）。
-> GitHub 仓库：https://github.com/penclipai/paperclip
+> **Paperclip CN** 是 [Paperclip](https://github.com/paperclipai/paperclip) 的**官方授权中文增强 Fork**（MIT 许可）。
+> GitHub 仓库：https://github.com/penclipai/paperclip-cn
 > 由 penclipai 团队独立维护，专注于中国用户体验与国产大模型支持。
 > 原项目版权归 paperclipai 所有，本项目持续同步上游更新。
 
-# Penclip
+# Paperclip CN
 
-Penclip 是 Paperclip 的中文增强版，目标是打造面向中国用户的AI自治项目管理与智能体协同平台。
+Paperclip CN 是 Paperclip 的中文增强版，目标是打造面向中国用户的AI自治项目管理与智能体协同平台。
 
 当前增强方向：
 
 - 完整中文界面与中英双语切换
 - 默认 `zh-CN` 本地化体验
 - Windows 开发、构建与运行兼容
-- Penclip 品牌与中文站点入口
+- Paperclip CN 品牌与中文站点入口
 - 为后续国产大模型接入预留基础设施
 
 ## 快速开始
 
 ```bash
-npx penclipai onboard --yes
+npx penclip onboard --yes
 ```
 
 或者手动启动：
 
 ```bash
-git clone https://github.com/penclipai/paperclip.git
-cd paperclip
+git clone https://github.com/penclipai/paperclip-cn.git
+cd paperclip-cn
 pnpm install
 pnpm dev
 ```

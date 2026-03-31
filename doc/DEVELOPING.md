@@ -53,7 +53,7 @@ This runs dev as `authenticated/private` and binds the server to `0.0.0.0` for p
 Allow additional private hostnames (for example custom Tailscale hostnames):
 
 ```sh
-pnpm penclipai allowed-hostname dotta-macbook-pro
+pnpm penclip allowed-hostname dotta-macbook-pro
 ```
 
 ## One-Command Local Run
@@ -61,13 +61,13 @@ pnpm penclipai allowed-hostname dotta-macbook-pro
 For a first-time local install, you can bootstrap and run in one command:
 
 ```sh
-pnpm penclipai run
+pnpm penclip run
 ```
 
-`penclipai run` does:
+`penclip run` does:
 
 1. auto-onboard if config is missing
-2. `penclipai doctor` with repair enabled
+2. `penclip doctor` with repair enabled
 3. starts the server when checks pass
 
 ## Docker Quickstart (No local Node install)
@@ -106,7 +106,7 @@ The server will automatically use embedded PostgreSQL and persist data at:
 Override home and instance:
 
 ```sh
-PAPERCLIP_HOME=/custom/path PAPERCLIP_INSTANCE_ID=dev pnpm penclipai run
+PAPERCLIP_HOME=/custom/path PAPERCLIP_INSTANCE_ID=dev pnpm penclip run
 ```
 
 No Docker or external database is required for this mode.
@@ -120,7 +120,7 @@ For local development, the default storage provider is `local_disk`, which persi
 Configure storage provider/settings:
 
 ```sh
-pnpm penclipai configure --section storage
+pnpm penclip configure --section storage
 ```
 
 ## Default Agent Workspaces
@@ -142,9 +142,9 @@ When developing from multiple git worktrees, do not point two Paperclip servers 
 Instead, create a repo-local Paperclip config plus an isolated instance for the worktree:
 
 ```sh
-penclipai worktree init
+penclip worktree init
 # or create the git worktree and initialize it in one step:
-pnpm penclipai worktree:make paperclip-pr-432
+pnpm penclip worktree:make paperclip-pr-432
 ```
 
 This command:
@@ -161,7 +161,7 @@ Seed modes:
 - `full` makes a full logical clone of the source instance
 - `--no-seed` creates an empty isolated instance
 
-After `worktree init`, both the server and the CLI auto-load the repo-local `.paperclip/.env` when run inside that worktree, so normal commands like `pnpm dev`, `penclipai doctor`, and `penclipai db:backup` stay scoped to the worktree instance.
+After `worktree init`, both the server and the CLI auto-load the repo-local `.paperclip/.env` when run inside that worktree, so normal commands like `pnpm dev`, `penclip doctor`, and `penclip db:backup` stay scoped to the worktree instance.
 
 That repo-local env also sets:
 
@@ -174,14 +174,14 @@ The server/UI use those values for worktree-specific branding such as the top ba
 Print shell exports explicitly when needed:
 
 ```sh
-penclipai worktree env
+penclip worktree env
 # or:
-eval "$(penclipai worktree env)"
+eval "$(penclip worktree env)"
 ```
 
 ### Worktree CLI Reference
 
-**`pnpm penclipai worktree init [options]`** — Create repo-local config/env and an isolated instance for the current worktree.
+**`pnpm penclip worktree init [options]`** — Create repo-local config/env and an isolated instance for the current worktree.
 
 | Option | Description |
 |---|---|
@@ -200,25 +200,25 @@ eval "$(penclipai worktree env)"
 Examples:
 
 ```sh
-penclipai worktree init --no-seed
-penclipai worktree init --seed-mode full
-penclipai worktree init --from-instance default
-penclipai worktree init --from-data-dir ~/.paperclip
-penclipai worktree init --force
+penclip worktree init --no-seed
+penclip worktree init --seed-mode full
+penclip worktree init --from-instance default
+penclip worktree init --from-data-dir ~/.paperclip
+penclip worktree init --force
 ```
 
 Repair an already-created repo-managed worktree and reseed its isolated instance from the main default install:
 
 ```sh
 cd ~/.paperclip/worktrees/PAP-884-ai-commits-component
-pnpm penclipai worktree init --force --seed-mode minimal \
+pnpm penclip worktree init --force --seed-mode minimal \
   --name PAP-884-ai-commits-component \
   --from-config ~/.paperclip/instances/default/config.json
 ```
 
 That rewrites the worktree-local `.paperclip/config.json` + `.paperclip/.env`, recreates the isolated instance under `~/.paperclip-worktrees/instances/<worktree-id>/`, and preserves the git worktree contents themselves.
 
-**`pnpm penclipai worktree:make <name> [options]`** — Create `~/NAME` as a git worktree, then initialize an isolated Paperclip instance inside it. This combines `git worktree add` with `worktree init` in a single step.
+**`pnpm penclip worktree:make <name> [options]`** — Create `~/NAME` as a git worktree, then initialize an isolated Paperclip instance inside it. This combines `git worktree add` with `worktree init` in a single step.
 
 | Option | Description |
 |---|---|
@@ -237,12 +237,12 @@ That rewrites the worktree-local `.paperclip/config.json` + `.paperclip/.env`, r
 Examples:
 
 ```sh
-pnpm penclipai worktree:make paperclip-pr-432
-pnpm penclipai worktree:make my-feature --start-point origin/main
-pnpm penclipai worktree:make experiment --no-seed
+pnpm penclip worktree:make paperclip-pr-432
+pnpm penclip worktree:make my-feature --start-point origin/main
+pnpm penclip worktree:make experiment --no-seed
 ```
 
-**`pnpm penclipai worktree env [options]`** — Print shell exports for the current worktree-local Paperclip instance.
+**`pnpm penclip worktree env [options]`** — Print shell exports for the current worktree-local Paperclip instance.
 
 | Option | Description |
 |---|---|
@@ -252,9 +252,9 @@ pnpm penclipai worktree:make experiment --no-seed
 Examples:
 
 ```sh
-pnpm penclipai worktree env
-pnpm penclipai worktree env --json
-eval "$(pnpm penclipai worktree env)"
+pnpm penclip worktree env
+pnpm penclip worktree env --json
+eval "$(pnpm penclip worktree env)"
 ```
 
 For project execution worktrees, Paperclip can also run a project-defined provision command after it creates or reuses an isolated git worktree. Configure this on the project's execution workspace policy (`workspaceStrategy.provisionCommand`). The command runs inside the derived worktree and receives `PAPERCLIP_WORKSPACE_*`, `PAPERCLIP_PROJECT_ID`, `PAPERCLIP_AGENT_ID`, and `PAPERCLIP_ISSUE_*` environment variables so each repo can bootstrap itself however it wants.
@@ -298,13 +298,13 @@ Paperclip can run automatic DB backups on a timer. Defaults:
 Configure these in:
 
 ```sh
-pnpm penclipai configure --section database
+pnpm penclip configure --section database
 ```
 
 Run a one-off backup manually:
 
 ```sh
-pnpm penclipai db:backup
+pnpm penclip db:backup
 # or:
 pnpm db:backup
 ```
@@ -334,9 +334,9 @@ When strict mode is enabled, sensitive env keys (for example `*_API_KEY`, `*_TOK
 
 CLI configuration support:
 
-- `pnpm penclipai onboard` writes a default `secrets` config section (`local_encrypted`, strict mode off, key file path set) and creates a local key file when needed.
-- `pnpm penclipai configure --section secrets` lets you update provider/strict mode/key path and creates the local key file when needed.
-- `pnpm penclipai doctor` validates secrets adapter configuration and can create a missing local key file with `--repair`.
+- `pnpm penclip onboard` writes a default `secrets` config section (`local_encrypted`, strict mode off, key file path set) and creates a local key file when needed.
+- `pnpm penclip configure --section secrets` lets you update provider/strict mode/key path and creates the local key file when needed.
+- `pnpm penclip doctor` validates secrets adapter configuration and can create a missing local key file with `--repair`.
 
 Migration helper for existing inline env secrets:
 
@@ -365,22 +365,22 @@ Paperclip CLI now includes client-side control-plane commands in addition to set
 Quick examples:
 
 ```sh
-pnpm penclipai issue list --company-id <company-id>
-pnpm penclipai issue create --company-id <company-id> --title "Investigate checkout conflict"
-pnpm penclipai issue update <issue-id> --status in_progress --comment "Started triage"
+pnpm penclip issue list --company-id <company-id>
+pnpm penclip issue create --company-id <company-id> --title "Investigate checkout conflict"
+pnpm penclip issue update <issue-id> --status in_progress --comment "Started triage"
 ```
 
 Set defaults once with context profiles:
 
 ```sh
-pnpm penclipai context set --api-base http://localhost:3100 --company-id <company-id>
+pnpm penclip context set --api-base http://localhost:3100 --company-id <company-id>
 ```
 
 Then run commands without repeating flags:
 
 ```sh
-pnpm penclipai issue list
-pnpm penclipai dashboard get
+pnpm penclip issue list
+pnpm penclip dashboard get
 ```
 
 See full command reference in `doc/CLI.md`.
@@ -448,4 +448,4 @@ Networking behavior for this smoke script:
 
 - auto-detects and prints a Paperclip host URL reachable from inside OpenClaw Docker
 - default container-side host alias is `host.docker.internal` (override with `PAPERCLIP_HOST_FROM_CONTAINER` / `PAPERCLIP_HOST_PORT`)
-- if Paperclip rejects container hostnames in authenticated/private mode, allow `host.docker.internal` via `pnpm penclipai allowed-hostname host.docker.internal` and restart Paperclip
+- if Paperclip rejects container hostnames in authenticated/private mode, allow `host.docker.internal` via `pnpm penclip allowed-hostname host.docker.internal` and restart Paperclip

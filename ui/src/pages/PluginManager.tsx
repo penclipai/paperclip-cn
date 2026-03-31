@@ -57,11 +57,11 @@ const EXAMPLE_PLUGIN_COPY: Record<
     descriptionKey: "pluginExamples.fileBrowser.description",
   },
   "@penclipai/plugin-hello-world-example": {
-    description: "参考界面插件，会在 Penclip 仪表盘中添加一个简单的“你好世界”小组件。",
+    description: "参考界面插件，会在 Paperclip CN 仪表盘中添加一个简单的“你好世界”小组件。",
     descriptionKey: "pluginExamples.helloWorld.description",
   },
   "@penclipai/plugin-kitchen-sink-example": {
-    description: "参考插件，在一个示例中集中演示当前 Penclip 插件 API、界面挂载点、桥接动作、事件、任务、Webhook、工具、本地工作区访问和运行诊断能力。",
+    description: "参考插件，在一个示例中集中演示当前 Paperclip CN 插件 API、界面挂载点、桥接动作、事件、任务、Webhook、工具、本地工作区访问和运行诊断能力。",
     descriptionKey: "pluginExamples.kitchenSink.description",
   },
 };

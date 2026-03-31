@@ -42,7 +42,7 @@ node packages/plugins/create-paperclip-plugin/dist/index.js @acme/my-plugin \
   --published
 ```
 
-That keeps generated plugins compatible with both upstream Paperclip hosts and Penclip hosts without requiring dual-published packages.
+That keeps generated plugins compatible with both upstream Paperclip hosts and Paperclip CN hosts without requiring dual-published packages.
 
 ## Workflow after scaffolding
 

@@ -32,13 +32,13 @@ source_env_path="$(dirname "$source_config_path")/.env"
 mkdir -p "$paperclip_dir"
 
 run_isolated_worktree_init() {
-  if command -v pnpm >/dev/null 2>&1 && pnpm penclipai --help >/dev/null 2>&1; then
-    pnpm penclipai worktree init --force --seed-mode minimal --name "$worktree_name" --from-config "$source_config_path"
+  if command -v pnpm >/dev/null 2>&1 && pnpm penclip --help >/dev/null 2>&1; then
+    pnpm penclip worktree init --force --seed-mode minimal --name "$worktree_name" --from-config "$source_config_path"
     return 0
   fi
 
-  if command -v penclipai >/dev/null 2>&1; then
-    penclipai worktree init --force --seed-mode minimal --name "$worktree_name" --from-config "$source_config_path"
+  if command -v penclip >/dev/null 2>&1; then
+    penclip worktree init --force --seed-mode minimal --name "$worktree_name" --from-config "$source_config_path"
     return 0
   fi
 
@@ -296,7 +296,7 @@ EOF
 }
 
 if ! run_isolated_worktree_init; then
-  echo "penclipai CLI not available in this workspace; writing isolated fallback config without DB seeding." >&2
+  echo "penclip CLI not available in this workspace; writing isolated fallback config without DB seeding." >&2
   write_fallback_worktree_config
 fi
 

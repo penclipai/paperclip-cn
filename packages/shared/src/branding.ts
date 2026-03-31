@@ -5,10 +5,10 @@ export type UiLocale = (typeof SUPPORTED_UI_LOCALES)[number];
 export const DEFAULT_UI_LOCALE: UiLocale = "zh-CN";
 
 export const BRANDING = {
-  productName: "Penclip",
+  productName: "Paperclip CN",
   legacyProductName: "Paperclip",
   organizationName: "penclipai",
-  repositoryUrl: "https://github.com/penclipai/paperclip",
+  repositoryUrl: "https://github.com/penclipai/paperclip-cn",
   websiteUrl: "https://penclip.ing",
   docsUrl: "https://penclip.ing/docs",
   chinaWebsiteUrl: "https://paperclipai.cn",

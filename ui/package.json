@@ -3,13 +3,13 @@
   "version": "0.3.1",
   "description": "Prebuilt Paperclip board UI assets.",
   "license": "MIT",
-  "homepage": "https://github.com/penclipai/paperclip",
+  "homepage": "https://github.com/penclipai/paperclip-cn",
   "bugs": {
-    "url": "https://github.com/penclipai/paperclip/issues"
+    "url": "https://github.com/penclipai/paperclip-cn/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/penclipai/paperclip",
+    "url": "https://github.com/penclipai/paperclip-cn",
     "directory": "ui"
   },
   "type": "module",

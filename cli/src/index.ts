@@ -26,8 +26,8 @@ const DATA_DIR_OPTION_HELP =
   "Paperclip data directory root (isolates state from ~/.paperclip)";
 
 program
-  .name("penclipai")
-  .description("Penclip CLI — setup, diagnose, and configure your instance")
+  .name("penclip")
+  .description("Paperclip CN CLI — setup, diagnose, and configure your instance")
   .version("0.3.1");
 
 program.hook("preAction", (_thisCommand, actionCommand) => {

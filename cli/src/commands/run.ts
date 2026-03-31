@@ -44,7 +44,7 @@ export async function runCommand(opts: RunOptions): Promise<void> {
   process.env.PAPERCLIP_CONFIG = configPath;
   loadPaperclipEnvFile(configPath);
 
-  p.intro(pc.bgCyan(pc.black(" penclipai run ")));
+  p.intro(pc.bgCyan(pc.black(" penclip run ")));
   p.log.message(pc.dim(`Home: ${paths.homeDir}`));
   p.log.message(pc.dim(`Instance: ${paths.instanceId}`));
   p.log.message(pc.dim(`Config: ${configPath}`));
@@ -52,7 +52,7 @@ export async function runCommand(opts: RunOptions): Promise<void> {
   if (!configExists(configPath)) {
     if (!process.stdin.isTTY || !process.stdout.isTTY) {
       p.log.error("No config found and terminal is non-interactive.");
-      p.log.message(`Run ${pc.cyan("penclipai onboard")} once, then retry ${pc.cyan("penclipai run")}.`);
+      p.log.message(`Run ${pc.cyan("penclip onboard")} once, then retry ${pc.cyan("penclip run")}.`);
       process.exit(1);
     }
 

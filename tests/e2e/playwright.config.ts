@@ -20,10 +20,10 @@ export default defineConfig({
       use: { browserName: "chromium" },
     },
   ],
-  // The webServer directive starts `penclipai run` before tests.
-  // Expects `pnpm penclipai` to be runnable from repo root.
+  // The webServer directive starts `penclip run` before tests.
+  // Expects `pnpm penclip` to be runnable from repo root.
   webServer: {
-    command: `pnpm penclipai run`,
+    command: `pnpm penclip run`,
     url: `${BASE_URL}/api/health`,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

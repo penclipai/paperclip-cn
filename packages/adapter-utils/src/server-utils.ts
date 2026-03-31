@@ -42,6 +42,11 @@ const PAPERCLIP_SKILL_ROOT_RELATIVE_CANDIDATES = [
   "../../skills",
   "../../../../../skills",
 ];
+const BUNDLED_PAPERCLIP_SKILL_KEY_PREFIX = "penclipai/paperclip-cn/";
+const LEGACY_BUNDLED_PAPERCLIP_SKILL_KEY_PREFIXES = [
+  "paperclipai/paperclip/",
+  "penclipai/paperclip/",
+] as const;
 
 export interface PaperclipSkillEntry {
   key: string;
@@ -68,6 +73,19 @@ interface PersistentSkillSnapshotOptions {
   externalConflictDetail: string;
   externalDetail: string;
   warnings?: string[];
+}
+
+function canonicalizeBundledPaperclipSkillKey(value: string | null | undefined) {
+  if (!value) return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  if (trimmed.startsWith(BUNDLED_PAPERCLIP_SKILL_KEY_PREFIX)) return trimmed;
+  for (const legacyPrefix of LEGACY_BUNDLED_PAPERCLIP_SKILL_KEY_PREFIXES) {
+    if (trimmed.startsWith(legacyPrefix)) {
+      return `${BUNDLED_PAPERCLIP_SKILL_KEY_PREFIX}${trimmed.slice(legacyPrefix.length)}`;
+    }
+  }
+  return trimmed;
 }
 
 function normalizePathSlashes(value: string): string {
@@ -375,7 +393,7 @@ export async function listPaperclipSkillEntries(
     return entries
       .filter((entry) => entry.isDirectory())
       .map((entry) => ({
-        key: `paperclipai/paperclip/${entry.name}`,
+        key: `${BUNDLED_PAPERCLIP_SKILL_KEY_PREFIX}${entry.name}`,
         runtimeName: entry.name,
         source: path.join(root, entry.name),
         required: true,
@@ -412,14 +430,28 @@ export function buildPersistentSkillSnapshot(
     externalConflictDetail,
     externalDetail,
   } = options;
-  const availableByKey = new Map(availableEntries.map((entry) => [entry.key, entry]));
-  const desiredSet = new Set(desiredSkills);
+  const canonicalDesiredSkills = Array.from(
+    new Set(
+      desiredSkills
+        .map((desiredSkill) => canonicalizeBundledPaperclipSkillKey(desiredSkill))
+        .filter((desiredSkill): desiredSkill is string => Boolean(desiredSkill)),
+    ),
+  );
+  const availableByKey = new Map(
+    availableEntries.flatMap((entry) => {
+      const canonicalKey = canonicalizeBundledPaperclipSkillKey(entry.key) ?? entry.key;
+      return canonicalKey === entry.key
+        ? [[entry.key, entry] as const]
+        : [[entry.key, entry] as const, [canonicalKey, entry] as const];
+    }),
+  );
+  const desiredSet = new Set(canonicalDesiredSkills);
   const entries: AdapterSkillEntry[] = [];
   const warnings = [...(options.warnings ?? [])];
 
   for (const available of availableEntries) {
     const installedEntry = installed.get(available.runtimeName) ?? null;
-    const desired = desiredSet.has(available.key);
+    const desired = desiredSet.has(canonicalizeBundledPaperclipSkillKey(available.key) ?? available.key);
     let state: AdapterSkillEntry["state"] = "available";
     let managed = false;
     let detail: string | null = null;
@@ -451,7 +483,7 @@ export function buildPersistentSkillSnapshot(
     });
   }
 
-  for (const desiredSkill of desiredSkills) {
+  for (const desiredSkill of canonicalDesiredSkills) {
     if (availableByKey.has(desiredSkill)) continue;
     warnings.push(`Desired skill "${desiredSkill}" is not available from the Paperclip skills directory.`);
     entries.push({
@@ -493,7 +525,7 @@ export function buildPersistentSkillSnapshot(
     adapterType,
     supported: true,
     mode: "persistent",
-    desiredSkills,
+    desiredSkills: canonicalDesiredSkills,
     entries,
     warnings,
   };
@@ -504,7 +536,7 @@ function normalizeConfiguredPaperclipRuntimeSkills(value: unknown): PaperclipSki
   const out: PaperclipSkillEntry[] = [];
   for (const rawEntry of value) {
     const entry = parseObject(rawEntry);
-    const key = asString(entry.key, asString(entry.name, "")).trim();
+    const key = canonicalizeBundledPaperclipSkillKey(asString(entry.key, asString(entry.name, ""))) ?? "";
     const runtimeName = asString(entry.runtimeName, asString(entry.name, "")).trim();
     const source = asString(entry.source, "").trim();
     if (!key || !runtimeName || !source) continue;
@@ -579,6 +611,14 @@ function canonicalizeDesiredPaperclipSkillReference(
   const normalizedReference = reference.trim().toLowerCase();
   if (!normalizedReference) return "";
 
+  const canonicalBundledReference = canonicalizeBundledPaperclipSkillKey(normalizedReference);
+  if (canonicalBundledReference) {
+    const exactCanonicalKey = availableEntries.find(
+      (entry) => entry.key.trim().toLowerCase() === canonicalBundledReference,
+    );
+    if (exactCanonicalKey) return exactCanonicalKey.key;
+  }
+
   const exactKey = availableEntries.find((entry) => entry.key.trim().toLowerCase() === normalizedReference);
   if (exactKey) return exactKey.key;
 
@@ -592,7 +632,7 @@ function canonicalizeDesiredPaperclipSkillReference(
   );
   if (slugMatches.length === 1) return slugMatches[0]!.key;
 
-  return normalizedReference;
+  return canonicalBundledReference ?? normalizedReference;
 }
 
 export function resolvePaperclipDesiredSkillNames(
@@ -738,7 +778,7 @@ export async function runChildProcess(
     // Strip Claude Code nesting-guard env vars so spawned `claude` processes
     // don't refuse to start with "cannot be launched inside another session".
     // These vars leak in when the Paperclip server itself is started from
-    // within a Claude Code session (e.g. `npx penclipai run` in a terminal
+    // within a Claude Code session (e.g. `npx penclip run` in a terminal
     // owned by Claude Code) or when cron inherits a contaminated shell env.
     const CLAUDE_CODE_NESTING_VARS = [
       "CLAUDECODE",

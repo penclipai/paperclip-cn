@@ -424,7 +424,7 @@ export function RoutineDetail() {
     onError: (error) => {
       pushToast({
         title: t("Failed to save routine", { defaultValue: "Failed to save routine" }),
-        body: error instanceof Error ? error.message : t("Penclip could not save the routine.", { defaultValue: "Penclip could not save the routine." }),
+        body: error instanceof Error ? error.message : t("Paperclip CN could not save the routine.", { defaultValue: "Paperclip CN could not save the routine." }),
         tone: "error",
       });
     },
@@ -445,7 +445,7 @@ export function RoutineDetail() {
     onError: (error) => {
       pushToast({
         title: t("Routine run failed", { defaultValue: "Routine run failed" }),
-        body: error instanceof Error ? error.message : t("Penclip could not start the routine run.", { defaultValue: "Penclip could not start the routine run." }),
+        body: error instanceof Error ? error.message : t("Paperclip CN could not start the routine run.", { defaultValue: "Paperclip CN could not start the routine run." }),
         tone: "error",
       });
     },
@@ -469,7 +469,7 @@ export function RoutineDetail() {
     onError: (error) => {
       pushToast({
         title: t("Failed to update routine", { defaultValue: "Failed to update routine" }),
-        body: error instanceof Error ? error.message : t("Penclip could not update the routine.", { defaultValue: "Penclip could not update the routine." }),
+        body: error instanceof Error ? error.message : t("Paperclip CN could not update the routine.", { defaultValue: "Paperclip CN could not update the routine." }),
         tone: "error",
       });
     },
@@ -510,7 +510,7 @@ export function RoutineDetail() {
     onError: (error) => {
       pushToast({
         title: t("Failed to add trigger", { defaultValue: "Failed to add trigger" }),
-        body: error instanceof Error ? error.message : t("Penclip could not create the trigger.", { defaultValue: "Penclip could not create the trigger." }),
+        body: error instanceof Error ? error.message : t("Paperclip CN could not create the trigger.", { defaultValue: "Paperclip CN could not create the trigger." }),
         tone: "error",
       });
     },
@@ -528,7 +528,7 @@ export function RoutineDetail() {
     onError: (error) => {
       pushToast({
         title: t("Failed to update trigger", { defaultValue: "Failed to update trigger" }),
-        body: error instanceof Error ? error.message : t("Penclip could not update the trigger.", { defaultValue: "Penclip could not update the trigger." }),
+        body: error instanceof Error ? error.message : t("Paperclip CN could not update the trigger.", { defaultValue: "Paperclip CN could not update the trigger." }),
         tone: "error",
       });
     },
@@ -546,7 +546,7 @@ export function RoutineDetail() {
     onError: (error) => {
       pushToast({
         title: t("Failed to delete trigger", { defaultValue: "Failed to delete trigger" }),
-        body: error instanceof Error ? error.message : t("Penclip could not delete the trigger.", { defaultValue: "Penclip could not delete the trigger." }),
+        body: error instanceof Error ? error.message : t("Paperclip CN could not delete the trigger.", { defaultValue: "Paperclip CN could not delete the trigger." }),
         tone: "error",
       });
     },
@@ -568,7 +568,7 @@ export function RoutineDetail() {
     onError: (error) => {
       pushToast({
         title: t("Failed to rotate webhook secret", { defaultValue: "Failed to rotate webhook secret" }),
-        body: error instanceof Error ? error.message : t("Penclip could not rotate the webhook secret.", { defaultValue: "Penclip could not rotate the webhook secret." }),
+        body: error instanceof Error ? error.message : t("Paperclip CN could not rotate the webhook secret.", { defaultValue: "Paperclip CN could not rotate the webhook secret." }),
         tone: "error",
       });
     },
@@ -704,8 +704,8 @@ export function RoutineDetail() {
           <div>
             <p className="font-medium">{secretMessage.title}</p>
             <p className="text-xs text-muted-foreground">
-              {t("Save this now. Penclip will not show the secret value again.", {
-                defaultValue: "Save this now. Penclip will not show the secret value again.",
+              {t("Save this now. Paperclip CN will not show the secret value again.", {
+                defaultValue: "Save this now. Paperclip CN will not show the secret value again.",
               })}
             </p>
           </div>

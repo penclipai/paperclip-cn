@@ -33,7 +33,7 @@ Do this for every public package that Paperclip publishes.
 
 At minimum that includes:
 
-- `penclipai`
+- `penclip`
 - `@penclipai/server`
 - `@penclipai/ui`
 - public packages under `packages/`
@@ -44,7 +44,7 @@ For each package:
 
 1. open npm as an owner of the package
 2. go to the package settings / publishing access area
-3. add a trusted publisher for the GitHub repository `penclipai/paperclip`
+3. add a trusted publisher for the GitHub repository `penclipai/paperclip-cn`
 
 ### 2.2. Add one trusted publisher entry per package
 
@@ -56,7 +56,7 @@ Configure:
 
 Repository:
 
-- `penclipai/paperclip`
+- `penclipai/paperclip-cn`
 
 Environment name:
 
@@ -211,7 +211,7 @@ After setup:
 Install-path check:
 
 ```bash
-npx penclipai@canary onboard
+npx penclip@canary onboard
 ```
 
 ## 12. Verify the Stable Workflow

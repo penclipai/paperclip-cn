@@ -150,7 +150,7 @@ function sourceMeta(sourceBadge: CompanySkillSourceBadge, sourceLabel: string | 
     normalizedLabel.includes("skills.sh") || normalizedLabel.includes("vercel-labs/skills");
   const translatedSourceLabel =
     sourceLabel === "Paperclip bundled"
-      ? translateInstant("Penclip bundled", { defaultValue: "Penclip bundled" })
+      ? translateInstant("Paperclip CN bundled", { defaultValue: "Paperclip CN bundled" })
       : sourceLabel;
 
   switch (sourceBadge) {

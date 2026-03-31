@@ -45,7 +45,12 @@ function isBundledPaperclipSkill(skill: { key: string; metadata?: unknown }) {
     typeof skill.metadata === "object" && skill.metadata !== null && !Array.isArray(skill.metadata)
       ? skill.metadata as Record<string, unknown>
       : null;
-  return metadata?.sourceKind === "paperclip_bundled" || skill.key.startsWith("paperclipai/paperclip/");
+  return (
+    metadata?.sourceKind === "paperclip_bundled"
+    || skill.key.startsWith("penclipai/paperclip-cn/")
+    || skill.key.startsWith("paperclipai/paperclip/")
+    || skill.key.startsWith("penclipai/paperclip/")
+  );
 }
 
 function createValuesForAdapterType(

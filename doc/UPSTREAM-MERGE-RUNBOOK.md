@@ -1,10 +1,10 @@
-# Penclip 上游同步 Runbook
+# Paperclip CN 上游同步 Runbook
 
 ## 1. 目的
 
-这份 runbook 用来指导 Penclip 从上游 `paperclipai/paperclip` 同步代码，并在同步过程中保住三类长期差异：
+这份 runbook 用来指导 Paperclip CN 从上游 `paperclipai/paperclip` 同步代码，并在同步过程中保住三类长期差异：
 
-- Penclip 品牌边界
+- Paperclip CN 品牌边界
 - UI 本地化与 locale 基础设施
 - Windows 兼容层
 
@@ -37,17 +37,17 @@ git remote -v
 - `upstream remote`
   - 原始 Paperclip 仓库
 - `fork remote`
-  - Penclip 自己的仓库
+  - Paperclip CN 自己的仓库
 - `base branch`
-  - Penclip 最终要合回去的目标分支，通常是 `master`
+  - Paperclip CN 最终要合回去的目标分支，通常是 `master`
 
 常见布局：
 
 - 布局 A
   - `origin` = 上游
-  - `private` = Penclip fork
+  - `private` = Paperclip CN fork
 - 布局 B
-  - `origin` = Penclip fork
+  - `origin` = Paperclip CN fork
   - `upstream` = 上游
 
 后面所有命令都要先映射到这三个角色，不要机械照抄 remote 名。
@@ -61,7 +61,7 @@ git remote -v
 - 工作分支命名：`codex/upstream-sync-YYYYMMDD`
 - 安全分支命名：`codex/upstream-sync-YYYYMMDD-safety`
 - 不要在本地 `master` 上做 merge、冲突解决、提交和推送
-- 最终必须推送工作分支，并通过 PR 合回 Penclip 的 `master`
+- 最终必须推送工作分支，并通过 PR 合回 Paperclip CN 的 `master`
 
 ### 4.2 同步策略
 
@@ -85,17 +85,17 @@ git merge upstream/master
 
 用户可见层保留：
 
-- `Penclip`
+- `Paperclip CN`
 - `penclipai`
 - `penclip.ing`
 - `paperclipai.cn`
 
 技术标识继续保留：
 
-- `paperclip`
+- `paperclip-cn`
 - `@penclipai/*`
 - `penclipai`
-- `penclipai` CLI
+- `penclip`
 - `PAPERCLIP_*`
 
 #### 本地化基础设施
@@ -126,7 +126,7 @@ git merge upstream/master
 上游同步 PR 的默认范围只包含三类改动：
 
 - 拉取并合并上游 `master`
-- 补齐或修正 Penclip 的 UI 本地化
+- 补齐或修正 Paperclip CN 的 UI 本地化
 - 为了让这次同步结果可用、可验证、可合并而必须做的小修复
 
 不要顺手加入无关重构、样式调整或额外功能。必须修问题时，优先在本次已触及的文件或路径里做最小补丁，避免扩大后续冲突面。
@@ -148,7 +148,7 @@ git fetch upstream --prune
 
 ### 5.2 建立工作分支
 
-从 Penclip 当前目标基线切出工作分支和安全分支：
+从 Paperclip CN 当前目标基线切出工作分支和安全分支：
 
 ```sh
 git checkout master
@@ -157,9 +157,9 @@ git checkout -b codex/upstream-sync-YYYYMMDD
 git branch codex/upstream-sync-YYYYMMDD-safety
 ```
 
-### 5.3 先和 Penclip 自己的目标分支对齐
+### 5.3 先和 Paperclip CN 自己的目标分支对齐
 
-如果存在独立 `fork remote`，先看你当前分支与 Penclip 目标分支的关系：
+如果存在独立 `fork remote`，先看你当前分支与 Paperclip CN 目标分支的关系：
 
 ```sh
 git rev-list --left-right --count private/master...HEAD
@@ -170,7 +170,7 @@ git rev-list --left-right --count private/master...HEAD
 - 左边：只在 `private/master` 上的提交数
 - 右边：只在 `HEAD` 上的提交数
 
-如果左边不为 0，先把 Penclip 自己的历史补齐：
+如果左边不为 0，先把 Paperclip CN 自己的历史补齐：
 
 ```sh
 git merge private/master
@@ -213,13 +213,13 @@ git merge origin/master
 更稳的做法是：
 
 1. 先吸收上游结构
-2. 再把 Penclip 差异按最小补丁补回去
+2. 再把 Paperclip CN 差异按最小补丁补回去
 
 ### 6.2 文件处理优先级
 
 #### 以上游结构为主
 
-这类文件通常应保留上游结构，再手动补回 Penclip 差异：
+这类文件通常应保留上游结构，再手动补回 Paperclip CN 差异：
 
 - 大多数页面组件
 - 共享组件
@@ -244,9 +244,9 @@ git merge origin/master
 - `doc/UI-LOCALIZATION.md`
 - `doc/UPSTREAM-MERGE-RUNBOOK.md`
 
-#### 通常优先保留 Penclip 版本
+#### 通常优先保留 Paperclip CN 版本
 
-这类文件如果是 Penclip 自己新增的，通常保留我们的版本，再选择性吸收上游思路：
+这类文件如果是 Paperclip CN 自己新增的，通常保留我们的版本，再选择性吸收上游思路：
 
 - `README.zh-CN.md`
 - `doc/UI-LOCALIZATION.md`
@@ -258,11 +258,11 @@ git merge origin/master
 
 ### 7.1 品牌审计
 
-确认用户可见文案是否需要保留 `Penclip`，同时不要把技术标识误改成 `penclip`。
+确认用户可见文案是否需要保留 `Paperclip CN`，同时不要把技术标识误改成 `penclip`。
 
 重点看：
 
-- `Paperclip` 是否该改回 `Penclip`
+- `Paperclip` 是否该改回 `Paperclip CN`
 - `paperclipai` / `penclipai` 是否落在正确边界
 - package name、CLI 名、环境变量名是否被误改
 
@@ -298,7 +298,7 @@ git merge origin/master
 处理 locale 文件时遵循四条规则：
 
 1. 先保留上游新增 key
-2. 再补回 Penclip 已有翻译
+2. 再补回 Paperclip CN 已有翻译
 3. 中英文一起改
 4. 不要引入重复 key
 
@@ -401,7 +401,7 @@ git branch -f master private/master
 
 ## 9. 常见错误
 
-### 9.1 把技术标识也改成 Penclip
+### 9.1 把技术标识也改成 Paperclip CN
 
 错误做法：
 
@@ -446,7 +446,7 @@ git branch -f master private/master
 - 外部插件名称
 - 用户输入名称
 
-### 9.5 跳过 Penclip 自己的历史对齐
+### 9.5 跳过 Paperclip CN 自己的历史对齐
 
 后果：
 
@@ -456,7 +456,7 @@ git branch -f master private/master
 正确做法：
 
 - 先看 `fork/master...HEAD`
-- 需要时先合 Penclip 自己的目标分支
+- 需要时先合 Paperclip CN 自己的目标分支
 
 ### 9.6 直接把同步结果留在 master
 
@@ -464,7 +464,7 @@ git branch -f master private/master
 
 - 在本地 `master` 上执行 `git merge origin/master`
 - 直接在本地 `master` 上解决冲突并提交
-- 直接把本地 `master` 推到 Penclip 远端
+- 直接把本地 `master` 推到 Paperclip CN 远端
 
 正确做法：
 
@@ -506,6 +506,6 @@ git restore --staged --worktree pnpm-lock.yaml
 一次上游同步是成功的，当且仅当下面四件事同时成立：
 
 1. 上游结构和 bugfix 没丢
-2. Penclip 的品牌边界和中文增强没丢
+2. Paperclip CN 的品牌边界和中文增强没丢
 3. Windows 兼容层没被误回退
 4. 本次同步通过工作分支和 PR 交付，没有把结果直接留在 `master`

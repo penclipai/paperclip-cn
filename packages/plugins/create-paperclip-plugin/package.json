@@ -2,13 +2,13 @@
   "name": "@penclipai/create-paperclip-plugin",
   "version": "0.1.0",
   "license": "MIT",
-  "homepage": "https://github.com/penclipai/paperclip",
+  "homepage": "https://github.com/penclipai/paperclip-cn",
   "bugs": {
-    "url": "https://github.com/penclipai/paperclip/issues"
+    "url": "https://github.com/penclipai/paperclip-cn/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/penclipai/paperclip",
+    "url": "https://github.com/penclipai/paperclip-cn",
     "directory": "packages/plugins/create-paperclip-plugin"
   },
   "type": "module",

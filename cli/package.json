@@ -1,10 +1,10 @@
 {
-  "name": "penclipai",
+  "name": "penclip",
   "version": "0.3.1",
-  "description": "Penclip CLI — orchestrate AI agent teams to run a business",
+  "description": "Paperclip CN CLI — orchestrate AI agent teams to run a business",
   "type": "module",
   "bin": {
-    "penclipai": "./dist/index.js"
+    "penclip": "./dist/index.js"
   },
   "keywords": [
     "paperclip",
@@ -16,12 +16,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/penclipai/paperclip",
+    "url": "https://github.com/penclipai/paperclip-cn",
     "directory": "cli"
   },
-  "homepage": "https://github.com/penclipai/paperclip",
+  "homepage": "https://github.com/penclipai/paperclip-cn",
   "bugs": {
-    "url": "https://github.com/penclipai/paperclip/issues"
+    "url": "https://github.com/penclipai/paperclip-cn/issues"
   },
   "files": [
     "dist"

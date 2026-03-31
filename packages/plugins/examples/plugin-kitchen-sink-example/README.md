@@ -21,7 +21,7 @@ This plugin is for local development, contributor onboarding, and runtime regres
 
 ```sh
 pnpm --filter @penclipai/plugin-kitchen-sink-example build
-pnpm penclipai plugin install ./packages/plugins/examples/plugin-kitchen-sink-example
+pnpm penclip plugin install ./packages/plugins/examples/plugin-kitchen-sink-example
 ```
 
 Or install it from the Paperclip plugin manager as a bundled example once this repo is built.

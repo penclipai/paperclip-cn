@@ -100,7 +100,11 @@ type RuntimeSkillEntryOptions = {
 };
 
 const skillInventoryRefreshPromises = new Map<string, Promise<void>>();
-const PAPERCLIP_BUNDLED_SKILL_KEY_PREFIX = "paperclipai/paperclip/";
+const PAPERCLIP_BUNDLED_SKILL_KEY_PREFIX = "penclipai/paperclip-cn/";
+const LEGACY_PAPERCLIP_BUNDLED_SKILL_KEY_PREFIXES = [
+  "paperclipai/paperclip/",
+  "penclipai/paperclip/",
+] as const;
 
 const PROJECT_SCAN_DIRECTORY_ROOTS = [
   "skills",
@@ -191,8 +195,21 @@ function normalizeSkillKey(value: string | null | undefined) {
   return segments.length > 0 ? segments.join("/") : null;
 }
 
+function canonicalizeBundledPaperclipSkillKey(value: string | null | undefined) {
+  const normalized = normalizeSkillKey(value);
+  if (!normalized) return null;
+  if (normalized.startsWith(PAPERCLIP_BUNDLED_SKILL_KEY_PREFIX)) return normalized;
+  for (const legacyPrefix of LEGACY_PAPERCLIP_BUNDLED_SKILL_KEY_PREFIXES) {
+    if (normalized.startsWith(legacyPrefix)) {
+      return `${PAPERCLIP_BUNDLED_SKILL_KEY_PREFIX}${normalized.slice(legacyPrefix.length)}`;
+    }
+  }
+  return normalized;
+}
+
 function isBundledPaperclipSkillKey(key: string) {
-  return key.startsWith(PAPERCLIP_BUNDLED_SKILL_KEY_PREFIX);
+  const canonical = canonicalizeBundledPaperclipSkillKey(key);
+  return Boolean(canonical?.startsWith(PAPERCLIP_BUNDLED_SKILL_KEY_PREFIX));
 }
 
 export function normalizeGitHubSkillDirectory(
@@ -247,12 +264,13 @@ function readCanonicalSkillKey(frontmatter: Record<string, unknown>, metadata: R
     ?? asString(metadata?.canonicalKey)
     ?? asString(metadata?.paperclipSkillKey),
   );
-  if (direct) return direct;
+  if (direct) return canonicalizeBundledPaperclipSkillKey(direct) ?? direct;
   const paperclip = isPlainRecord(metadata?.paperclip) ? metadata?.paperclip as Record<string, unknown> : null;
-  return normalizeSkillKey(
+  const nested = normalizeSkillKey(
     asString(paperclip?.skillKey)
     ?? asString(paperclip?.key),
   );
+  return canonicalizeBundledPaperclipSkillKey(nested) ?? nested;
 }
 
 function deriveCanonicalSkillKey(
@@ -266,7 +284,7 @@ function deriveCanonicalSkillKey(
 
   const sourceKind = asString(metadata?.sourceKind);
   if (sourceKind === "paperclip_bundled") {
-    return `paperclipai/paperclip/${slug}`;
+    return `${PAPERCLIP_BUNDLED_SKILL_KEY_PREFIX}${slug}`;
   }
 
   const owner = normalizeSkillSlug(asString(metadata?.owner));
@@ -1169,7 +1187,7 @@ function resolveSkillReference(
     return { skill: byId, ambiguous: false };
   }
 
-  const normalizedKey = normalizeSkillKey(trimmed);
+  const normalizedKey = canonicalizeBundledPaperclipSkillKey(trimmed) ?? normalizeSkillKey(trimmed);
   if (normalizedKey) {
     const byKey = skills.find((skill) => skill.key === normalizedKey);
     if (byKey) {
@@ -2212,8 +2230,11 @@ export function companySkillService(db: Db) {
         existing
         && existingMeta.sourceKind === "paperclip_bundled"
         && incomingKind === "github"
-        && incomingOwner === "paperclipai"
-        && incomingRepo === "paperclip"
+        && (
+          (incomingOwner === "paperclipai" && incomingRepo === "paperclip")
+          || (incomingOwner === "penclipai" && incomingRepo === "paperclip")
+          || (incomingOwner === "penclipai" && incomingRepo === "paperclip-cn")
+        )
       ) {
         out.push(existing);
         continue;

@@ -53,7 +53,7 @@ export async function doctor(opts: {
       status: "fail",
       message: `Could not read config: ${err instanceof Error ? err.message : String(err)}`,
       canRepair: false,
-      repairHint: "Run `penclipai configure --section database` or `penclipai onboard`",
+      repairHint: "Run `penclip configure --section database` or `penclip onboard`",
     };
     results.push(readResult);
     printResult(readResult);
