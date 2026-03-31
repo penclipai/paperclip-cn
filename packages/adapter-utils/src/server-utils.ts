@@ -304,7 +304,7 @@ async function resolveCommandPath(command: string, cwd: string, env: NodeJS.Proc
       process.platform === "win32"
         ? hasExtension
           ? [path.join(dir, command)]
-          : [path.join(dir, command), ...exts.map((ext) => path.join(dir, `${command}${ext}`))]
+          : [...exts.map((ext) => path.join(dir, `${command}${ext}`)), path.join(dir, command)]
         : [path.join(dir, command)];
     for (const candidate of candidates) {
       if (await pathExists(candidate)) return candidate;
