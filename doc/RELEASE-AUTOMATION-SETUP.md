@@ -10,6 +10,7 @@ This document covers the GitHub and npm setup required for the current Paperclip
 Repo-side files that depend on this setup:
 
 - `.github/workflows/release.yml`
+- `.github/workflows/release-smoke.yml`
 - `.github/CODEOWNERS`
 
 Note:
@@ -25,6 +26,7 @@ Before touching GitHub or npm settings, merge the release automation code so the
 Required files:
 
 - `.github/workflows/release.yml`
+- `.github/workflows/release-smoke.yml`
 - `.github/CODEOWNERS`
 
 ## 2. Configure npm Trusted Publishing
@@ -207,6 +209,7 @@ After setup:
 4. confirm publish succeeds under the `npm-canary` environment
 5. confirm npm now shows a new `canary` release
 6. confirm a git tag named `canary/vYYYY.MDD.P-canary.N` was pushed
+7. confirm the reusable `Release Smoke` workflow succeeds for the published `canary` dist-tag
 
 Install-path check:
 
@@ -232,6 +235,7 @@ After at least one good canary exists:
 8. confirm npm `latest` points to the new stable version
 9. confirm git tag `vYYYY.MDD.P` exists
 10. confirm the GitHub Release was created
+11. confirm the reusable `Release Smoke` workflow succeeds against `latest`
 
 Implementation note:
 

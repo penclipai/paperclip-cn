@@ -19,8 +19,8 @@ Examples:
 
 Notes:
   - Run this after pushing the stable tag.
-  - Resolves the git remote automatically.
-  - In GitHub Actions, origin is used explicitly.
+  - Local runs require RELEASE_REMOTE or PUBLISH_REMOTE to point at the canonical penclipai/paperclip-cn remote.
+  - In GitHub Actions, origin is used after verifying it targets the canonical release repository.
   - If the release already exists, this script updates its title and notes.
 EOF
 }

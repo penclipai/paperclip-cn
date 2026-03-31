@@ -41,7 +41,7 @@ Every stable release has four separate surfaces:
 
 A stable release is done only when all four surfaces are handled.
 
-Canaries only cover the first two surfaces plus an internal traceability tag.
+Canaries cover verification, npm publish, automated Docker + Playwright smoke, plus an internal traceability tag.
 
 ## Core Invariants
 
@@ -64,6 +64,7 @@ It:
 - computes the canary version for the current UTC date
 - publishes under npm dist-tag `canary`
 - creates a git tag `canary/vYYYY.MDD.P-canary.N`
+- calls [`.github/workflows/release-smoke.yml`](../.github/workflows/release-smoke.yml) against the published `canary` dist-tag
 
 Users install canaries with:
 
@@ -109,19 +110,20 @@ The workflow:
 - publishes `YYYY.MDD.P` under npm dist-tag `latest`
 - creates git tag `vYYYY.MDD.P`
 - creates or updates the GitHub Release from `releases/vYYYY.MDD.P.md`
+- runs the reusable release smoke workflow against the published `latest` dist-tag
 
 ## Local Commands
 
 ### Preview a canary locally
 
 ```bash
-./scripts/release.sh canary --dry-run
+RELEASE_REMOTE=<paperclip-cn-remote> ./scripts/release.sh canary --dry-run
 ```
 
 ### Preview a stable locally
 
 ```bash
-./scripts/release.sh stable --dry-run
+RELEASE_REMOTE=<paperclip-cn-remote> ./scripts/release.sh stable --dry-run
 ```
 
 ### Publish a stable locally
@@ -129,9 +131,9 @@ The workflow:
 This is mainly for emergency/manual use. The normal path is the GitHub workflow.
 
 ```bash
-./scripts/release.sh stable
-git push public-gh refs/tags/vYYYY.MDD.P
-PUBLISH_REMOTE=public-gh ./scripts/create-github-release.sh YYYY.MDD.P
+RELEASE_REMOTE=<paperclip-cn-remote> ./scripts/release.sh stable
+git push <paperclip-cn-remote> refs/tags/vYYYY.MDD.P
+PUBLISH_REMOTE=<paperclip-cn-remote> ./scripts/create-github-release.sh YYYY.MDD.P
 ```
 
 ## Stable Changelog Workflow
@@ -182,6 +184,8 @@ Automated browser smoke is also available:
 gh workflow run release-smoke.yml -f paperclip_version=canary
 gh workflow run release-smoke.yml -f paperclip_version=latest
 ```
+
+The main release workflow now calls that reusable smoke workflow automatically after both canary and stable publishes. Trigger `release-smoke.yml` manually when you want an isolated rerun without republishing.
 
 Minimum checks:
 

@@ -263,7 +263,7 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
     p.log.message(
       pc.dim("Existing Paperclip install detected; keeping the current configuration unchanged."),
     );
-    p.log.message(pc.dim(`Use ${pc.cyan("paperclipai configure")} if you want to change settings.`));
+    p.log.message(pc.dim(`Use ${pc.cyan("penclip configure")} if you want to change settings.`));
 
     const jwtSecret = ensureAgentJwtSecret(configPath);
     const envFilePath = resolveAgentJwtEnvFile(configPath);
@@ -300,9 +300,9 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
 
     p.note(
       [
-        `Run: ${pc.cyan("paperclipai run")}`,
-        `Reconfigure later: ${pc.cyan("paperclipai configure")}`,
-        `Diagnose setup: ${pc.cyan("paperclipai doctor")}`,
+        `Run: ${pc.cyan("penclip run")}`,
+        `Reconfigure later: ${pc.cyan("penclip configure")}`,
+        `Diagnose setup: ${pc.cyan("penclip doctor")}`,
       ].join("\n"),
       "Next commands",
     );

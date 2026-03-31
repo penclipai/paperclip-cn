@@ -88,7 +88,7 @@ Useful commands:
 ```bash
 git tag --list 'v*' --sort=-version:refname | head -1
 git log --oneline --no-merges
-npm view penclipai@canary version
+npm view penclip@canary version
 ```
 
 ## Step 2 — Draft the Stable Changelog
@@ -135,7 +135,7 @@ Confirm:
 Useful checks:
 
 ```bash
-npm view penclipai@canary version
+npm view penclip@canary version
 git tag --list 'canary/v*' --sort=-version:refname | head -5
 ```
 

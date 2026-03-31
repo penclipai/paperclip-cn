@@ -67,6 +67,9 @@ jobs:
     needs: verify_canary
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    outputs:
+      version: ${{ steps.release_metadata.outputs.version }}
+      tag: ${{ steps.release_metadata.outputs.tag }}
     environment: npm-canary
     permissions:
       contents: write
@@ -113,6 +116,53 @@ jobs:
             exit 1
           fi
           git push origin "refs/tags/${tag}"
+
+      - name: Capture canary metadata
+        id: release_metadata
+        run: |
+          tag="$(git tag --points-at HEAD | grep '^canary/v' | head -1)"
+          if [ -z "$tag" ]; then
+            echo "Error: no canary tag points at HEAD after release." >&2
+            exit 1
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "version=${tag#canary/v}" >> "$GITHUB_OUTPUT"
+
+  smoke_canary:
+    if: github.event_name == 'push'
+    needs: publish_canary
+    uses: ./.github/workflows/release-smoke.yml
+    with:
+      paperclip_version: canary
+      artifact_name: release-smoke-canary
+    secrets: inherit
+
+  summarize_canary:
+    if: ${{ always() && github.event_name == 'push' }}
+    needs:
+      - publish_canary
+      - smoke_canary
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Write canary summary
+        env:
+          RELEASE_VERSION: ${{ needs.publish_canary.outputs.version }}
+          RELEASE_TAG: ${{ needs.publish_canary.outputs.tag }}
+          PUBLISH_RESULT: ${{ needs.publish_canary.result }}
+          SMOKE_RESULT: ${{ needs.smoke_canary.result }}
+        run: |
+          {
+            echo "## Canary release summary"
+            echo ""
+            echo "- Version: \`${RELEASE_VERSION:-n/a}\`"
+            echo "- Tag: \`${RELEASE_TAG:-n/a}\`"
+            echo "- Publish job: \`${PUBLISH_RESULT}\`"
+            echo "- Smoke job: \`${SMOKE_RESULT}\`"
+            if [ "$SMOKE_RESULT" != "success" ]; then
+              echo "- Next step: fix the issue on \`master\`, wait for the next canary, and rerun the smoke workflow."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
 
   verify_stable:
     if: github.event_name == 'workflow_dispatch'
@@ -180,6 +230,16 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
+      - name: Resolve stable preview version
+        id: preview_version
+        run: |
+          args=(stable --print-version)
+          if [ -n "${{ inputs.stable_date }}" ]; then
+            args+=(--date "${{ inputs.stable_date }}")
+          fi
+          version="$(bash ./scripts/release.sh "${args[@]}")"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
       - name: Dry-run stable release
         env:
           GITHUB_ACTIONS: "true"
@@ -188,13 +248,31 @@ jobs:
           if [ -n "${{ inputs.stable_date }}" ]; then
             args+=(--date "${{ inputs.stable_date }}")
           fi
-          ./scripts/release.sh "${args[@]}"
+          bash ./scripts/release.sh "${args[@]}"
+
+      - name: Write stable dry-run summary
+        if: always()
+        env:
+          PREVIEW_VERSION: ${{ steps.preview_version.outputs.version }}
+        run: |
+          {
+            echo "## Stable dry-run summary"
+            echo ""
+            echo "- Source ref: \`${{ inputs.source_ref }}\`"
+            echo "- Target version: \`${PREVIEW_VERSION:-n/a}\`"
+            echo "- Result: \`${{ job.status }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
 
   publish_stable:
     if: github.event_name == 'workflow_dispatch' && !inputs.dry_run
     needs: verify_stable
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    outputs:
+      version: ${{ steps.release_metadata.outputs.version }}
+      tag: ${{ steps.release_metadata.outputs.tag }}
+      previous_stable_version: ${{ steps.previous_stable.outputs.version }}
+      previous_stable_tag: ${{ steps.previous_stable.outputs.tag }}
     environment: npm-stable
     permissions:
       contents: write
@@ -229,6 +307,17 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
+      - name: Capture previous stable
+        id: previous_stable
+        run: |
+          tag="$(git tag --list 'v*' --sort=-version:refname | head -1)"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          if [ -n "$tag" ]; then
+            echo "version=${tag#v}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Publish stable
         env:
           GITHUB_ACTIONS: "true"
@@ -259,3 +348,57 @@ jobs:
             exit 1
           fi
           ./scripts/create-github-release.sh "$version"
+
+      - name: Capture stable metadata
+        id: release_metadata
+        run: |
+          tag="$(git tag --points-at HEAD | grep '^v' | head -1)"
+          if [ -z "$tag" ]; then
+            echo "Error: no stable tag points at HEAD after release." >&2
+            exit 1
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "version=${tag#v}" >> "$GITHUB_OUTPUT"
+
+  smoke_stable:
+    if: github.event_name == 'workflow_dispatch' && !inputs.dry_run
+    needs: publish_stable
+    uses: ./.github/workflows/release-smoke.yml
+    with:
+      paperclip_version: latest
+      artifact_name: release-smoke-stable
+    secrets: inherit
+
+  summarize_stable:
+    if: ${{ always() && github.event_name == 'workflow_dispatch' && !inputs.dry_run }}
+    needs:
+      - publish_stable
+      - smoke_stable
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Write stable summary
+        env:
+          SOURCE_REF: ${{ inputs.source_ref }}
+          RELEASE_VERSION: ${{ needs.publish_stable.outputs.version }}
+          RELEASE_TAG: ${{ needs.publish_stable.outputs.tag }}
+          PREVIOUS_STABLE_VERSION: ${{ needs.publish_stable.outputs.previous_stable_version }}
+          PUBLISH_RESULT: ${{ needs.publish_stable.result }}
+          SMOKE_RESULT: ${{ needs.smoke_stable.result }}
+        run: |
+          {
+            echo "## Stable release summary"
+            echo ""
+            echo "- Source ref: \`${SOURCE_REF}\`"
+            echo "- Version: \`${RELEASE_VERSION:-n/a}\`"
+            echo "- Tag: \`${RELEASE_TAG:-n/a}\`"
+            echo "- Publish job: \`${PUBLISH_RESULT}\`"
+            echo "- Smoke job: \`${SMOKE_RESULT}\`"
+            if [ "$SMOKE_RESULT" != "success" ]; then
+              if [ -n "$PREVIOUS_STABLE_VERSION" ]; then
+                echo "- Rollback command: \`./scripts/rollback-latest.sh ${PREVIOUS_STABLE_VERSION}\`"
+              else
+                echo "- Rollback command: identify the last known good stable and run \`./scripts/rollback-latest.sh <last-good-version>\`"
+              fi
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

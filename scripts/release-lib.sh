@@ -50,31 +50,71 @@ process.exit(1);
 NODE
 }
 
+CANONICAL_RELEASE_GITHUB_REPO="${CANONICAL_RELEASE_GITHUB_REPO:-penclipai/paperclip-cn}"
+
+remote_targets_github_repo() {
+  local remote="$1"
+  local expected_repo="$2"
+  local actual_repo
+
+  actual_repo="$(github_repo_from_remote "$remote" 2>/dev/null || true)"
+  [ "$actual_repo" = "$expected_repo" ]
+}
+
+list_canonical_release_remotes() {
+  git -C "$REPO_ROOT" remote | while IFS= read -r remote; do
+    [ -n "$remote" ] || continue
+    if remote_targets_github_repo "$remote" "$CANONICAL_RELEASE_GITHUB_REPO"; then
+      printf '%s\n' "$remote"
+    fi
+  done
+}
+
+require_canonical_release_remote() {
+  local remote="$1"
+  local actual_repo
+
+  if remote_targets_github_repo "$remote" "$CANONICAL_RELEASE_GITHUB_REPO"; then
+    return
+  fi
+
+  actual_repo="$(github_repo_from_remote "$remote" 2>/dev/null || true)"
+  release_fail "git remote '$remote' points to ${actual_repo:-<non-GitHub remote>}, but releases must target ${CANONICAL_RELEASE_GITHUB_REPO}."
+}
+
 resolve_release_remote() {
   local remote="${RELEASE_REMOTE:-${PUBLISH_REMOTE:-}}"
+  local remotes=()
+  local candidate
 
   if [ -n "$remote" ]; then
     git_remote_exists "$remote" || release_fail "git remote '$remote' does not exist."
+    require_canonical_release_remote "$remote"
     printf '%s\n' "$remote"
     return
   fi
 
-  if git_remote_exists public-gh; then
-    printf 'public-gh\n'
-    return
-  fi
-
-  if git_remote_exists public; then
-    printf 'public\n'
-    return
-  fi
-
-  if git_remote_exists origin; then
+  if [ "${GITHUB_ACTIONS:-}" = "true" ]; then
+    git_remote_exists origin || release_fail "GitHub Actions releases require the canonical repository checkout with an origin remote."
+    require_canonical_release_remote origin
     printf 'origin\n'
     return
   fi
 
-  release_fail "no git remote found. Configure RELEASE_REMOTE or PUBLISH_REMOTE."
+  while IFS= read -r candidate; do
+    [ -n "$candidate" ] || continue
+    remotes+=("$candidate")
+  done < <(list_canonical_release_remotes)
+
+  if [ "${#remotes[@]}" -eq 0 ]; then
+    release_fail "no git remote points at ${CANONICAL_RELEASE_GITHUB_REPO}. Add the canonical release remote and rerun with RELEASE_REMOTE=<remote-name>."
+  fi
+
+  if [ "${#remotes[@]}" -gt 1 ]; then
+    release_fail "multiple git remotes point at ${CANONICAL_RELEASE_GITHUB_REPO}: ${remotes[*]}. Rerun with RELEASE_REMOTE=<remote-name>."
+  fi
+
+  release_fail "local release commands require an explicit canonical remote. Rerun with RELEASE_REMOTE=${remotes[0]} (or PUBLISH_REMOTE=${remotes[0]})."
 }
 
 fetch_release_remote() {

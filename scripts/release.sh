@@ -115,13 +115,8 @@ done
   exit 1
 }
 
-PUBLISH_REMOTE="$(resolve_release_remote)"
-fetch_release_remote "$PUBLISH_REMOTE"
-
 CURRENT_BRANCH="$(git_current_branch)"
 CURRENT_SHA="$(git -C "$REPO_ROOT" rev-parse HEAD)"
-LAST_STABLE_TAG="$(get_last_stable_tag)"
-CURRENT_STABLE_VERSION="$(get_current_stable_version)"
 RELEASE_DATE="${release_date:-$(utc_date_iso)}"
 
 PUBLIC_PACKAGE_INFO="$(list_public_package_info)"
@@ -150,6 +145,12 @@ if [ "$print_version_only" = true ]; then
   printf '%s\n' "$TARGET_PUBLISH_VERSION"
   exit 0
 fi
+
+PUBLISH_REMOTE="$(resolve_release_remote)"
+fetch_release_remote "$PUBLISH_REMOTE"
+
+LAST_STABLE_TAG="$(get_last_stable_tag)"
+CURRENT_STABLE_VERSION="$(get_current_stable_version)"
 
 NOTES_FILE="$(release_notes_file "$TARGET_STABLE_VERSION")"
 
