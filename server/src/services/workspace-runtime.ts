@@ -254,6 +254,40 @@ function formatCommandForDisplay(command: string, args: string[]) {
     .join(" ");
 }
 
+function normalizeGitArgsForDisplay(args: string[]) {
+  if (
+    args[0] === "-c" &&
+    args[1] === "core.autocrlf=false" &&
+    args[2] === "-c" &&
+    args[3] === "core.eol=lf"
+  ) {
+    return args.slice(4);
+  }
+  return args;
+}
+
+function buildGitWorktreeCheckoutArgs(args: string[]) {
+  if (process.platform !== "win32") return args;
+  return ["-c", "core.autocrlf=false", "-c", "core.eol=lf", ...args];
+}
+
+function normalizeWindowsAbsolutePath(value: string): string {
+  if (process.platform !== "win32") return value;
+  if (/^[A-Za-z]:[\\/]/.test(value) || value.startsWith("\\\\")) {
+    return path.normalize(value);
+  }
+  return value;
+}
+
+function toBashPath(value: string): string {
+  const normalized = normalizeWindowsAbsolutePath(value);
+  if (process.platform !== "win32") return normalized;
+  if (/^[A-Za-z]:[\\/]/.test(normalized) || normalized.startsWith("\\\\")) {
+    return normalized.replace(/\\/g, "/");
+  }
+  return normalized;
+}
+
 function decodeQuotedCommandArg(value: string, quote: `"` | `'`): string {
   if (quote === `"`) {
     return JSON.parse(`${quote}${value}${quote}`) as string;
@@ -455,7 +489,7 @@ async function recordGitOperation(
   let code: number | null = null;
   await recorder.recordOperation({
     phase: input.phase,
-    command: formatCommandForDisplay("git", input.args),
+    command: formatCommandForDisplay("git", normalizeGitArgsForDisplay(input.args)),
     cwd: input.cwd,
     metadata: input.metadata ?? null,
     run: async () => {
@@ -720,7 +754,7 @@ export async function realizeExecutionWorkspace(input: {
   try {
     await recordGitOperation(input.recorder, {
       phase: "worktree_prepare",
-      args: ["worktree", "add", "-b", branchName, worktreePath, baseRef],
+      args: buildGitWorktreeCheckoutArgs(["worktree", "add", "-b", branchName, worktreePath, baseRef]),
       cwd: repoRoot,
       metadata: {
         repoRoot,
@@ -738,7 +772,7 @@ export async function realizeExecutionWorkspace(input: {
     }
     await recordGitOperation(input.recorder, {
       phase: "worktree_prepare",
-      args: ["worktree", "add", worktreePath, branchName],
+      args: buildGitWorktreeCheckoutArgs(["worktree", "add", worktreePath, branchName]),
       cwd: repoRoot,
       metadata: {
         repoRoot,
@@ -986,7 +1020,7 @@ function renderRuntimeServiceEnv(input: {
   const rendered: Record<string, string> = {};
   for (const [key, value] of Object.entries(input.envConfig)) {
     if (typeof value !== "string") continue;
-    rendered[key] = renderTemplate(value, input.templateData);
+    rendered[key] = normalizeWindowsAbsolutePath(renderTemplate(value, input.templateData));
   }
   return rendered;
 }

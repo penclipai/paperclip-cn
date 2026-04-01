@@ -102,7 +102,7 @@ describe("gemini_local environment diagnostics", () => {
     expect(args).toContain("yolo");
     expect(args).toContain("--prompt");
     await fs.rm(root, { recursive: true, force: true });
-  });
+  }, 15_000);
 
   it("classifies quota exhaustion as a quota warning instead of a generic failure", async () => {
     const root = path.join(

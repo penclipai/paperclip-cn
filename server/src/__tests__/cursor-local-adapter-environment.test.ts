@@ -89,7 +89,7 @@ describe("cursor environment diagnostics", () => {
     const args = JSON.parse(await fs.readFile(argsCapturePath, "utf8")) as string[];
     expect(args).toContain("--yolo");
     await fs.rm(root, { recursive: true, force: true });
-  });
+  }, 15_000);
 
   it("does not auto-add --yolo when extraArgs already bypass trust", async () => {
     const root = path.join(

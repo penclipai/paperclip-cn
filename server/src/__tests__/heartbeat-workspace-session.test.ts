@@ -1,7 +1,4 @@
-import fs from "node:fs/promises";
-import os from "node:os";
-import path from "node:path";
-import { afterEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import type { agents } from "@penclipai/db";
 import { sessionCodec as codexSessionCodec } from "@penclipai/adapter-codex-local/server";
 import { resolveDefaultAgentWorkspaceDir } from "../home-paths.js";
@@ -9,8 +6,8 @@ import {
   applyPersistedExecutionWorkspaceConfig,
   buildRealizedExecutionWorkspaceFromPersisted,
   buildExplicitResumeSessionOverride,
+  deriveTaskKeyWithHeartbeatFallback,
   formatRuntimeWorkspaceWarningLog,
-  ensureDefaultAgentHome,
   prioritizeProjectWorkspaceCandidatesForRun,
   parseSessionCompactionPolicy,
   resolveRuntimeSessionParamsForWorkspace,
@@ -18,15 +15,6 @@ import {
   shouldResetTaskSessionForWake,
   type ResolvedWorkspaceForRun,
 } from "../services/heartbeat.ts";
-
-const cleanupDirs = new Set<string>();
-const originalPaperclipHome = process.env.PAPERCLIP_HOME;
-
-afterEach(async () => {
-  process.env.PAPERCLIP_HOME = originalPaperclipHome;
-  await Promise.all(Array.from(cleanupDirs).map((dir) => fs.rm(dir, { recursive: true, force: true })));
-  cleanupDirs.clear();
-});
 
 function buildResolvedWorkspace(overrides: Partial<ResolvedWorkspaceForRun> = {}): ResolvedWorkspaceForRun {
   return {
@@ -133,27 +121,6 @@ describe("resolveRuntimeSessionParamsForWorkspace", () => {
       workspaceId: "workspace-1",
     });
     expect(result.warning).toBeNull();
-  });
-});
-
-describe("ensureDefaultAgentHome", () => {
-  it("creates the expected agent-home scaffold for heartbeats", async () => {
-    const tempHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-agent-home-"));
-    cleanupDirs.add(tempHome);
-    process.env.PAPERCLIP_HOME = tempHome;
-
-    const home = await ensureDefaultAgentHome("agent-123");
-
-    const [lifeStats, archivesStats, memoryStats] = await Promise.all([
-      fs.stat(path.join(home, "life")),
-      fs.stat(path.join(home, "life", "archives")),
-      fs.stat(path.join(home, "memory")),
-    ]);
-
-    expect(lifeStats.isDirectory()).toBe(true);
-    expect(archivesStats.isDirectory()).toBe(true);
-    expect(memoryStats.isDirectory()).toBe(true);
-    await expect(fs.readFile(path.join(home, "MEMORY.md"), "utf8")).resolves.toContain("# Memory");
   });
 });
 
@@ -359,6 +326,34 @@ describe("shouldResetTaskSessionForWake", () => {
         wakeTriggerDetail: "callback",
       }),
     ).toBe(false);
+  });
+});
+
+describe("deriveTaskKeyWithHeartbeatFallback", () => {
+  it("returns explicit taskKey when present", () => {
+    expect(deriveTaskKeyWithHeartbeatFallback({ taskKey: "issue-123" }, null)).toBe("issue-123");
+  });
+
+  it("returns explicit issueId when no taskKey", () => {
+    expect(deriveTaskKeyWithHeartbeatFallback({ issueId: "issue-456" }, null)).toBe("issue-456");
+  });
+
+  it("returns __heartbeat__ for timer wakes with no explicit key", () => {
+    expect(deriveTaskKeyWithHeartbeatFallback({ wakeSource: "timer" }, null)).toBe("__heartbeat__");
+  });
+
+  it("prefers explicit key over heartbeat fallback even on timer wakes", () => {
+    expect(
+      deriveTaskKeyWithHeartbeatFallback({ wakeSource: "timer", taskKey: "issue-789" }, null),
+    ).toBe("issue-789");
+  });
+
+  it("returns null for non-timer wakes with no explicit key", () => {
+    expect(deriveTaskKeyWithHeartbeatFallback({ wakeSource: "on_demand" }, null)).toBeNull();
+  });
+
+  it("returns null for empty context", () => {
+    expect(deriveTaskKeyWithHeartbeatFallback({}, null)).toBeNull();
   });
 });
 

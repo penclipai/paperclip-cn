@@ -78,28 +78,6 @@ const SESSIONED_LOCAL_ADAPTERS = new Set([
   "opencode_local",
   "pi_local",
 ]);
-const DEFAULT_AGENT_HOME_MEMORY_MARKDOWN = `# Memory
-
-Use this file for long-lived notes that should survive across heartbeats.
-`;
-
-async function writeFileIfMissing(filePath: string, contents: string): Promise<void> {
-  try {
-    await fs.writeFile(filePath, contents, { flag: "wx" });
-  } catch (err) {
-    if ((err as NodeJS.ErrnoException).code !== "EEXIST") {
-      throw err;
-    }
-  }
-}
-
-export async function ensureDefaultAgentHome(agentId: string): Promise<string> {
-  const home = resolveDefaultAgentWorkspaceDir(agentId);
-  await fs.mkdir(path.join(home, "life", "archives"), { recursive: true });
-  await fs.mkdir(path.join(home, "memory"), { recursive: true });
-  await writeFileIfMissing(path.join(home, "MEMORY.md"), DEFAULT_AGENT_HOME_MEMORY_MARKDOWN);
-  return home;
-}
 
 export function applyPersistedExecutionWorkspaceConfig(input: {
   config: Record<string, unknown>;
@@ -630,6 +608,14 @@ function parseIssueAssigneeAdapterOverrides(
   };
 }
 
+/**
+ * Synthetic task key for timer/heartbeat wakes that have no issue context.
+ * This allows timer wakes to participate in the `agentTaskSessions` system
+ * and benefit from robust session resume, instead of relying solely on the
+ * simpler `agentRuntimeState.sessionId` fallback.
+ */
+const HEARTBEAT_TASK_KEY = "__heartbeat__";
+
 function deriveTaskKey(
   contextSnapshot: Record<string, unknown> | null | undefined,
   payload: Record<string, unknown> | null | undefined,
@@ -643,6 +629,28 @@ function deriveTaskKey(
     readNonEmptyString(payload?.issueId) ??
     null
   );
+}
+
+/**
+ * Extended task key derivation that falls back to a stable synthetic key
+ * for timer/heartbeat wakes. This ensures timer wakes can resume their
+ * previous session via `agentTaskSessions` instead of starting fresh.
+ *
+ * The synthetic key is only used when:
+ * - No explicit task/issue key exists in the context
+ * - The wake source is "timer" (scheduled heartbeat)
+ */
+export function deriveTaskKeyWithHeartbeatFallback(
+  contextSnapshot: Record<string, unknown> | null | undefined,
+  payload: Record<string, unknown> | null | undefined,
+) {
+  const explicit = deriveTaskKey(contextSnapshot, payload);
+  if (explicit) return explicit;
+
+  const wakeSource = readNonEmptyString(contextSnapshot?.wakeSource);
+  if (wakeSource === "timer") return HEARTBEAT_TASK_KEY;
+
+  return null;
 }
 
 export function shouldResetTaskSessionForWake(
@@ -1643,7 +1651,7 @@ export function heartbeatService(db: Db) {
   ) {
     const contextSnapshot = parseObject(run.contextSnapshot);
     const issueId = readNonEmptyString(contextSnapshot.issueId);
-    const taskKey = deriveTaskKey(contextSnapshot, null);
+    const taskKey = deriveTaskKeyWithHeartbeatFallback(contextSnapshot, null);
     const sessionBefore = await resolveSessionBeforeForWakeup(agent, taskKey);
     const retryContextSnapshot = {
       ...contextSnapshot,
@@ -2098,7 +2106,7 @@ export function heartbeatService(db: Db) {
 
     const runtime = await ensureRuntimeState(agent);
     const context = parseObject(run.contextSnapshot);
-    const taskKey = deriveTaskKey(context, null);
+    const taskKey = deriveTaskKeyWithHeartbeatFallback(context, null);
     const sessionCodec = getAdapterSessionCodec(agent.adapterType);
     const issueId = readNonEmptyString(context.issueId);
     const issueContext = issueId
@@ -2430,20 +2438,24 @@ export function heartbeatService(db: Db) {
       repoRef: executionWorkspace.repoRef,
       branchName: executionWorkspace.branchName,
       worktreePath: executionWorkspace.worktreePath,
-      agentHome: await ensureDefaultAgentHome(agent.id),
-    };
-    context.paperclipWorkspaces = resolvedWorkspace.workspaceHints;
-    const runtimeLocalizationPrompt = resolveRuntimeLocalizationPromptForContextSnapshot(context);
-    if (runtimeLocalizationPrompt) {
-      context.paperclipLocalizationPromptMarkdown = runtimeLocalizationPrompt;
-    } else {
-      delete context.paperclipLocalizationPromptMarkdown;
-    }
-    const runtimeServiceIntents = (() => {
-      const runtimeConfig = parseObject(resolvedConfig.workspaceRuntime);
-      return Array.isArray(runtimeConfig.services)
-        ? runtimeConfig.services.filter(
-            (value): value is Record<string, unknown> => typeof value === "object" && value !== null,
+      agentHome: await (async () => {
+        const home = resolveDefaultAgentWorkspaceDir(agent.id);
+        await fs.mkdir(home, { recursive: true });
+        return home;
+      })(),
+      };
+      context.paperclipWorkspaces = resolvedWorkspace.workspaceHints;
+      const runtimeLocalizationPrompt = resolveRuntimeLocalizationPromptForContextSnapshot(context);
+      if (runtimeLocalizationPrompt) {
+        context.paperclipLocalizationPromptMarkdown = runtimeLocalizationPrompt;
+      } else {
+        delete context.paperclipLocalizationPromptMarkdown;
+      }
+      const runtimeServiceIntents = (() => {
+        const runtimeConfig = parseObject(resolvedConfig.workspaceRuntime);
+        return Array.isArray(runtimeConfig.services)
+          ? runtimeConfig.services.filter(
+              (value): value is Record<string, unknown> => typeof value === "object" && value !== null,
           )
         : [];
     })();

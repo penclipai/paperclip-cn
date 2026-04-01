@@ -414,6 +414,7 @@ class CodexRpcClient {
   private buffer = "";
   private pending = new Map<number, PendingRequest>();
   private stderr = "";
+  private terminalError: Error | null = null;
 
   constructor(proc: ChildProcessWithoutNullStreams) {
     this.proc = proc;
@@ -424,13 +425,15 @@ class CodexRpcClient {
       this.stderr += chunk;
     });
     this.proc.on("exit", () => {
+      this.terminalError = new Error(this.stderr.trim() || "codex app-server closed unexpectedly");
       for (const request of this.pending.values()) {
         clearTimeout(request.timer);
-        request.reject(new Error(this.stderr.trim() || "codex app-server closed unexpectedly"));
+        request.reject(this.terminalError);
       }
       this.pending.clear();
     });
     this.proc.on("error", (err: Error) => {
+      this.terminalError = err;
       for (const request of this.pending.values()) {
         clearTimeout(request.timer);
         request.reject(err);
@@ -480,6 +483,10 @@ class CodexRpcClient {
     const id = this.nextId++;
     const payload = JSON.stringify({ id, method, params }) + "\n";
     return new Promise<Record<string, unknown>>((resolve, reject) => {
+      if (this.terminalError) {
+        reject(this.terminalError);
+        return;
+      }
       const timer = setTimeout(() => {
         this.pending.delete(id);
         reject(new Error(`codex app-server timed out on ${method}`));

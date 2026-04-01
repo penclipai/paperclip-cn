@@ -22,7 +22,6 @@ import { issueService } from "../services/issues.ts";
 
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
 const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : describe.skip;
-const EMBEDDED_POSTGRES_TIMEOUT = process.platform === "win32" ? 60_000 : 20_000;
 
 if (!embeddedPostgresSupport.supported) {
   console.warn(
@@ -39,7 +38,7 @@ describeEmbeddedPostgres("issueService.list participantAgentId", () => {
     tempDb = await startEmbeddedPostgresTestDatabase("paperclip-issues-service-");
     db = createDb(tempDb.connectionString);
     svc = issueService(db);
-  }, EMBEDDED_POSTGRES_TIMEOUT);
+  }, 20_000);
 
   afterEach(async () => {
     await db.delete(issueComments);
@@ -414,7 +413,7 @@ describeEmbeddedPostgres("issueService.create workspace inheritance", () => {
     tempDb = await startEmbeddedPostgresTestDatabase("paperclip-issues-create-");
     db = createDb(tempDb.connectionString);
     svc = issueService(db);
-  }, EMBEDDED_POSTGRES_TIMEOUT);
+  }, 20_000);
 
   afterEach(async () => {
     await db.delete(issueComments);

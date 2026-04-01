@@ -1,59 +1,103 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-base_cwd="${PAPERCLIP_WORKSPACE_BASE_CWD:?PAPERCLIP_WORKSPACE_BASE_CWD is required}"
-worktree_cwd="${PAPERCLIP_WORKSPACE_CWD:?PAPERCLIP_WORKSPACE_CWD is required}"
-paperclip_home="${PAPERCLIP_HOME:-$HOME/.paperclip}"
+to_shell_path() {
+  local raw="${1:-}"
+  if [[ -z "$raw" ]]; then
+    printf '%s\n' ""
+    return 0
+  fi
+
+  if command -v cygpath >/dev/null 2>&1; then
+    cygpath -u "$raw"
+    return 0
+  fi
+
+  if [[ "$raw" =~ ^([A-Za-z]):[\\/](.*)$ ]]; then
+    local drive
+    local rest
+    drive="$(printf '%s' "${BASH_REMATCH[1]}" | tr '[:upper:]' '[:lower:]')"
+    rest="${BASH_REMATCH[2]}"
+    rest="${rest//\\//}"
+    printf '/mnt/%s/%s\n' "$drive" "$rest"
+    return 0
+  fi
+
+  printf '%s\n' "$raw"
+}
+
+base_cwd_raw="${PAPERCLIP_WORKSPACE_BASE_CWD:?PAPERCLIP_WORKSPACE_BASE_CWD is required}"
+worktree_cwd_raw="${PAPERCLIP_WORKSPACE_CWD:?PAPERCLIP_WORKSPACE_CWD is required}"
+base_cwd="$(to_shell_path "$base_cwd_raw")"
+worktree_cwd="$(to_shell_path "$worktree_cwd_raw")"
+paperclip_home_raw="${PAPERCLIP_HOME:-$HOME/.paperclip}"
 paperclip_instance_id="${PAPERCLIP_INSTANCE_ID:-default}"
 paperclip_dir="$worktree_cwd/.paperclip"
-worktree_config_path="$paperclip_dir/config.json"
-worktree_env_path="$paperclip_dir/.env"
-worktree_name="${PAPERCLIP_WORKSPACE_BRANCH:-$(basename "$worktree_cwd")}"
+paperclip_dir_raw="$worktree_cwd_raw/.paperclip"
+worktree_config_path_raw="$paperclip_dir_raw/config.json"
+worktree_env_path_raw="$paperclip_dir_raw/.env"
+worktree_name="${PAPERCLIP_WORKSPACE_BRANCH:-$(basename "$worktree_cwd_raw")}"
 
 if [[ ! -d "$base_cwd" ]]; then
-  echo "Base workspace does not exist: $base_cwd" >&2
+  echo "Base workspace does not exist: $base_cwd_raw" >&2
   exit 1
 fi
 
 if [[ ! -d "$worktree_cwd" ]]; then
-  echo "Derived worktree does not exist: $worktree_cwd" >&2
+  echo "Derived worktree does not exist: $worktree_cwd_raw" >&2
   exit 1
 fi
 
-source_config_path="${PAPERCLIP_CONFIG:-}"
-if [[ -z "$source_config_path" && ( -e "$base_cwd/.paperclip/config.json" || -L "$base_cwd/.paperclip/config.json" ) ]]; then
-  source_config_path="$base_cwd/.paperclip/config.json"
+source_config_path_raw="${PAPERCLIP_CONFIG:-}"
+source_config_path_shell="$(to_shell_path "$source_config_path_raw")"
+if [[ -z "$source_config_path_raw" && ( -e "$base_cwd/.paperclip/config.json" || -L "$base_cwd/.paperclip/config.json" ) ]]; then
+  source_config_path_raw="$base_cwd_raw/.paperclip/config.json"
+  source_config_path_shell="$base_cwd/.paperclip/config.json"
 fi
-if [[ -z "$source_config_path" ]]; then
-  source_config_path="$paperclip_home/instances/$paperclip_instance_id/config.json"
+if [[ -z "$source_config_path_raw" ]]; then
+  source_config_path_raw="$paperclip_home_raw/instances/$paperclip_instance_id/config.json"
+  source_config_path_shell="$(to_shell_path "$source_config_path_raw")"
 fi
-source_env_path="$(dirname "$source_config_path")/.env"
+source_env_path_raw="$(dirname "$source_config_path_raw")/.env"
+source_env_path_shell="$(dirname "$source_config_path_shell")/.env"
 
 mkdir -p "$paperclip_dir"
 
 run_isolated_worktree_init() {
   if command -v pnpm >/dev/null 2>&1 && pnpm penclip --help >/dev/null 2>&1; then
-    pnpm penclip worktree init --force --seed-mode minimal --name "$worktree_name" --from-config "$source_config_path"
+    pnpm penclip worktree init --force --seed-mode minimal --name "$worktree_name" --from-config "$source_config_path_raw"
     return 0
   fi
 
   if command -v penclip >/dev/null 2>&1; then
-    penclip worktree init --force --seed-mode minimal --name "$worktree_name" --from-config "$source_config_path"
+    penclip worktree init --force --seed-mode minimal --name "$worktree_name" --from-config "$source_config_path_raw"
     return 0
   fi
 
   return 1
 }
 
+resolve_node_command() {
+  if [[ "$base_cwd_raw" =~ ^[A-Za-z]:[\\/] || "$worktree_cwd_raw" =~ ^[A-Za-z]:[\\/] ]]; then
+    if command -v node.exe >/dev/null 2>&1; then
+      printf '%s\n' "node.exe"
+      return 0
+    fi
+  fi
+
+  printf '%s\n' "node"
+}
+
 write_fallback_worktree_config() {
-  WORKTREE_NAME="$worktree_name" \
-  BASE_CWD="$base_cwd" \
-  WORKTREE_CWD="$worktree_cwd" \
-  PAPERCLIP_DIR="$paperclip_dir" \
-  SOURCE_CONFIG_PATH="$source_config_path" \
-  SOURCE_ENV_PATH="$source_env_path" \
-  PAPERCLIP_WORKTREES_DIR="${PAPERCLIP_WORKTREES_DIR:-}" \
-  node <<'EOF'
+  local node_command
+  node_command="$(resolve_node_command)"
+  "$node_command" \
+    - \
+    "$worktree_name" \
+    "$paperclip_dir_raw" \
+    "$source_config_path_raw" \
+    "$source_env_path_raw" \
+    "${PAPERCLIP_WORKTREES_DIR:-}" <<'EOF'
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
@@ -161,11 +205,15 @@ function resolveRuntimeLikePath(value, configPath) {
 }
 
 async function main() {
-  const worktreeName = process.env.WORKTREE_NAME;
-  const paperclipDir = process.env.PAPERCLIP_DIR;
-  const sourceConfigPath = process.env.SOURCE_CONFIG_PATH;
-  const sourceEnvPath = process.env.SOURCE_ENV_PATH;
-  const worktreeHome = path.resolve(expandHomePrefix(nonEmpty(process.env.PAPERCLIP_WORKTREES_DIR) ?? "~/.paperclip-worktrees"));
+  const [, , rawWorktreeName, rawPaperclipDir, rawSourceConfigPath, rawSourceEnvPath, rawWorktreeHome] = process.argv;
+  const worktreeName = nonEmpty(rawWorktreeName) ?? "worktree";
+  const paperclipDir = nonEmpty(rawPaperclipDir);
+  const sourceConfigPath = nonEmpty(rawSourceConfigPath);
+  const sourceEnvPath = nonEmpty(rawSourceEnvPath);
+  const worktreeHome = path.resolve(expandHomePrefix(nonEmpty(rawWorktreeHome) ?? "~/.paperclip-worktrees"));
+  if (!paperclipDir) {
+    throw new TypeError("paperclipDir is required");
+  }
   const instanceId = sanitizeInstanceId(worktreeName);
   const instanceRoot = path.resolve(worktreeHome, "instances", instanceId);
   const configPath = path.resolve(paperclipDir, "config.json");
@@ -298,6 +346,9 @@ EOF
 if ! run_isolated_worktree_init; then
   echo "penclip CLI not available in this workspace; writing isolated fallback config without DB seeding." >&2
   write_fallback_worktree_config
+elif [[ ! -e "$(to_shell_path "$worktree_config_path_raw")" || ! -e "$(to_shell_path "$worktree_env_path_raw")" ]]; then
+  echo "penclip worktree init did not materialize repo-local config; writing isolated fallback config." >&2
+  write_fallback_worktree_config
 fi
 
 while IFS= read -r relative_path; do
@@ -310,7 +361,7 @@ while IFS= read -r relative_path; do
 
   mkdir -p "$(dirname "$target_path")"
   ln -s "$source_path" "$target_path"
-done < <(
+  done < <(
   cd "$base_cwd" &&
     find . \
       -mindepth 1 \
