@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_UI_LOCALE, normalizeUiLocale } from "@penclipai/shared";
-import { resolveRequestLocale } from "../i18n.js";
+import { resolveRequestLocale, translate } from "../i18n.js";
 
 describe("request locale resolution", () => {
   it("normalizes supported UI locales", () => {
@@ -28,5 +28,12 @@ describe("request locale resolution", () => {
     expect(resolveRequestLocale("fr-FR,de-DE;q=0.9")).toBe(
       DEFAULT_UI_LOCALE,
     );
+  });
+
+  it("translates restore document errors from the shared locale bundles", () => {
+    expect(translate("zh-CN", "Document revision not found")).toBe("未找到文档修订版本");
+    expect(translate("zh-CN", "Selected revision is already the latest revision")).toBe("所选修订版本已经是最新版本");
+    expect(translate("zh-CN", "Document was updated by someone else")).toBe("文档已被其他人更新");
+    expect(translate("en", "Document revision not found")).toBe("Document revision not found");
   });
 });
