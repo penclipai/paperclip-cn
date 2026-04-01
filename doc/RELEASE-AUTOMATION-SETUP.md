@@ -80,6 +80,11 @@ After the workflows are live:
 
 Only after that should you remove old token-based access.
 
+Bootstrap note:
+
+- if a package has not finished npm trusted-publisher onboarding yet, you can temporarily set `NPM_TOKEN` as a GitHub environment secret on `npm-canary` and `npm-stable`
+- once trusted publishing succeeds end-to-end, remove that secret again
+
 ## 3. Remove Legacy npm Tokens
 
 After trusted publishing works:
