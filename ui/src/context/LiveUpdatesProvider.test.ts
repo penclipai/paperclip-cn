@@ -4,6 +4,13 @@ import { describe, expect, it, vi } from "vitest";
 import { __liveUpdatesTestUtils } from "./LiveUpdatesProvider";
 import { queryKeys } from "../lib/queryKeys";
 
+function buildFakeT(translations: Record<string, string>) {
+  return ((key: string, options?: Record<string, unknown>) => {
+    const template = translations[key] ?? (typeof options?.defaultValue === "string" ? options.defaultValue : key);
+    return template.replace(/{{(\w+)}}/g, (_, name: string) => String(options?.[name] ?? ""));
+  }) as never;
+}
+
 describe("LiveUpdatesProvider issue invalidation", () => {
   it("refreshes touched inbox queries for issue activity", () => {
     const invalidations: unknown[] = [];
@@ -119,6 +126,69 @@ describe("LiveUpdatesProvider visible issue toast suppression", () => {
 });
 
 describe("LiveUpdatesProvider run lifecycle toasts", () => {
+  it("routes issue activity copy through translation helpers", () => {
+    const queryClient = {
+      getQueryData: (key: unknown) => {
+        if (JSON.stringify(key) === JSON.stringify(queryKeys.issues.detail("issue-1"))) {
+          return {
+            id: "issue-1",
+            identifier: "PAP-759",
+            title: "Fix localization regression",
+          };
+        }
+        if (JSON.stringify(key) === JSON.stringify(queryKeys.issues.list("company-1"))) {
+          return [
+            {
+              id: "issue-1",
+              identifier: "PAP-759",
+              title: "Fix localization regression",
+            },
+          ];
+        }
+        return undefined;
+      },
+    };
+    const t = buildFakeT({
+      "liveUpdates.actor.board": "董事会",
+      "liveUpdates.activity.issueUpdatedTitle": "{{actor}} 更新了 {{issueRef}}",
+      "liveUpdates.action.viewIssue": "查看 {{issueRef}}",
+      "liveUpdates.issueUpdate.statusChanged": "状态 -> {{status}}",
+      "liveUpdates.issueUpdate.priorityChanged": "优先级 -> {{priority}}",
+      "status.inProgress": "进行中",
+      "priority.high": "高",
+    });
+
+    const toast = __liveUpdatesTestUtils.buildActivityToastWithT(
+      t,
+      queryClient as never,
+      "company-1",
+      {
+        entityType: "issue",
+        entityId: "issue-1",
+        action: "issue.updated",
+        actorType: "user",
+        actorId: "user-1",
+        details: {
+          identifier: "PAP-759",
+          status: "in_progress",
+          priority: "high",
+        },
+      },
+      { userId: null, agentId: null },
+    );
+
+    expect(toast).toMatchObject({
+      title: "董事会 更新了 PAP-759",
+      tone: "info",
+      action: {
+        label: "查看 PAP-759",
+        href: "/issues/PAP-759",
+      },
+    });
+    expect(toast?.body).toContain("状态 -> 进行中");
+    expect(toast?.body).toContain("优先级 -> 高");
+  });
+
   it("does not build start or success toasts for agent runs", () => {
     const queryClient = {
       getQueryData: () => [],
@@ -188,6 +258,35 @@ describe("LiveUpdatesProvider run lifecycle toasts", () => {
       title: "CodexCoder run failed",
       body: "boom",
       tone: "error",
+    });
+  });
+
+  it("routes run status copy through translation helpers", () => {
+    const t = buildFakeT({
+      "liveUpdates.runStatus.failedTitle": "{{name}} 运行失败",
+      "liveUpdates.runStatus.triggerDetail": "触发来源：{{triggerDetail}}",
+      "liveUpdates.action.viewRun": "查看运行",
+    });
+
+    expect(
+      __liveUpdatesTestUtils.buildRunStatusToastWithT(
+        t,
+        {
+          runId: "run-1",
+          agentId: "agent-1",
+          status: "failed",
+          triggerDetail: "timer",
+        },
+        () => "CodexCoder",
+      ),
+    ).toMatchObject({
+      title: "CodexCoder 运行失败",
+      body: "触发来源：timer",
+      tone: "error",
+      action: {
+        label: "查看运行",
+        href: "/agents/agent-1/runs/run-1",
+      },
     });
   });
 });

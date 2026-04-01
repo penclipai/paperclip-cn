@@ -392,21 +392,31 @@ export function documentService(db: Db) {
 
         const now = new Date();
         const nextRevisionNumber = existing.latestRevisionNumber + 1;
-        const [restoredRevision] = await tx
-          .insert(documentRevisions)
-          .values({
-            companyId: existing.companyId,
-            documentId: existing.id,
-            revisionNumber: nextRevisionNumber,
-            title: revision.title ?? null,
-            format: revision.format,
-            body: revision.body,
-            changeSummary: `Restored from revision ${revision.revisionNumber}`,
-            createdByAgentId: input.createdByAgentId ?? null,
-            createdByUserId: input.createdByUserId ?? null,
-            createdAt: now,
-          })
-          .returning();
+        let restoredRevision: typeof documentRevisions.$inferSelect;
+        try {
+          [restoredRevision] = await tx
+            .insert(documentRevisions)
+            .values({
+              companyId: existing.companyId,
+              documentId: existing.id,
+              revisionNumber: nextRevisionNumber,
+              title: revision.title ?? null,
+              format: revision.format,
+              body: revision.body,
+              changeSummary: `Restored from revision ${revision.revisionNumber}`,
+              createdByAgentId: input.createdByAgentId ?? null,
+              createdByUserId: input.createdByUserId ?? null,
+              createdAt: now,
+            })
+            .returning();
+        } catch (error) {
+          if (isUniqueViolation(error)) {
+            throw conflict("Document was updated by someone else", {
+              currentRevisionId: existing.latestRevisionId,
+            });
+          }
+          throw error;
+        }
 
         await tx
           .update(documents)
