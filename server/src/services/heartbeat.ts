@@ -44,6 +44,7 @@ import {
 import { issueService } from "./issues.js";
 import { executionWorkspaceService, mergeExecutionWorkspaceConfig } from "./execution-workspaces.js";
 import { workspaceOperationService } from "./workspace-operations.js";
+import { resolveRuntimeLocalizationPromptForContextSnapshot } from "./agent-runtime-localization.js";
 import {
   buildExecutionWorkspaceAdapterConfig,
   gateProjectExecutionWorkspacePolicy,
@@ -2419,6 +2420,12 @@ export function heartbeatService(db: Db) {
       })(),
     };
     context.paperclipWorkspaces = resolvedWorkspace.workspaceHints;
+    const runtimeLocalizationPrompt = resolveRuntimeLocalizationPromptForContextSnapshot(context);
+    if (runtimeLocalizationPrompt) {
+      context.paperclipLocalizationPromptMarkdown = runtimeLocalizationPrompt;
+    } else {
+      delete context.paperclipLocalizationPromptMarkdown;
+    }
     const runtimeServiceIntents = (() => {
       const runtimeConfig = parseObject(resolvedConfig.workspaceRuntime);
       return Array.isArray(runtimeConfig.services)

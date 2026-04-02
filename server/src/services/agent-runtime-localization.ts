@@ -17,6 +17,10 @@ type RuntimeEnvironmentDescriptor = {
   labelEn: string;
 };
 
+function readNonEmptyString(value: unknown): string | null {
+  return typeof value === "string" && value.trim().length > 0 ? value : null;
+}
+
 function stripExecutableName(value: string | null | undefined): string | null {
   const trimmed = value?.trim();
   if (!trimmed) return null;
@@ -146,4 +150,15 @@ export function resolveRuntimeLocalizationPrompt(
   return locale === "en"
     ? buildEnRuntimeLocalizationPrompt(environment)
     : buildZhCnRuntimeLocalizationPrompt(environment);
+}
+
+export function resolveRuntimeLocalizationPromptForContextSnapshot(
+  contextSnapshot: Record<string, unknown> | null | undefined,
+  runtimeInput: Omit<ResolveRuntimeLocalizationPromptInput, "locale"> = {},
+): string {
+  const requestedUiLocale = readNonEmptyString(contextSnapshot?.requestedUiLocale);
+  return resolveRuntimeLocalizationPrompt({
+    ...runtimeInput,
+    ...(requestedUiLocale ? { locale: requestedUiLocale } : {}),
+  });
 }

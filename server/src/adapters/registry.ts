@@ -81,10 +81,22 @@ import {
 } from "hermes-paperclip-adapter";
 import { processAdapter } from "./process/index.js";
 import { httpAdapter } from "./http/index.js";
+import type { AdapterExecutionContext, AdapterExecutionResult } from "./types.js";
+import { injectPaperclipRuntimePromptLayersIntoContext } from "./prompt-context.js";
+
+function wrapExecuteWithPaperclipPromptLayers(
+  execute: (ctx: AdapterExecutionContext) => Promise<AdapterExecutionResult>,
+) {
+  return async (ctx: AdapterExecutionContext): Promise<AdapterExecutionResult> =>
+    execute({
+      ...ctx,
+      context: injectPaperclipRuntimePromptLayersIntoContext(ctx.context),
+    });
+}
 
 const claudeLocalAdapter: ServerAdapterModule = {
   type: "claude_local",
-  execute: claudeExecute,
+  execute: wrapExecuteWithPaperclipPromptLayers(claudeExecute),
   testEnvironment: claudeTestEnvironment,
   listSkills: listClaudeSkills,
   syncSkills: syncClaudeSkills,
@@ -98,7 +110,7 @@ const claudeLocalAdapter: ServerAdapterModule = {
 
 const codexLocalAdapter: ServerAdapterModule = {
   type: "codex_local",
-  execute: codexExecute,
+  execute: wrapExecuteWithPaperclipPromptLayers(codexExecute),
   testEnvironment: codexTestEnvironment,
   listSkills: listCodexSkills,
   syncSkills: syncCodexSkills,
@@ -113,7 +125,7 @@ const codexLocalAdapter: ServerAdapterModule = {
 
 const cursorLocalAdapter: ServerAdapterModule = {
   type: "cursor",
-  execute: cursorExecute,
+  execute: wrapExecuteWithPaperclipPromptLayers(cursorExecute),
   testEnvironment: cursorTestEnvironment,
   listSkills: listCursorSkills,
   syncSkills: syncCursorSkills,
@@ -127,7 +139,7 @@ const cursorLocalAdapter: ServerAdapterModule = {
 
 const geminiLocalAdapter: ServerAdapterModule = {
   type: "gemini_local",
-  execute: geminiExecute,
+  execute: wrapExecuteWithPaperclipPromptLayers(geminiExecute),
   testEnvironment: geminiTestEnvironment,
   listSkills: listGeminiSkills,
   syncSkills: syncGeminiSkills,
@@ -149,7 +161,7 @@ const openclawGatewayAdapter: ServerAdapterModule = {
 
 const openCodeLocalAdapter: ServerAdapterModule = {
   type: "opencode_local",
-  execute: openCodeExecute,
+  execute: wrapExecuteWithPaperclipPromptLayers(openCodeExecute),
   testEnvironment: openCodeTestEnvironment,
   listSkills: listOpenCodeSkills,
   syncSkills: syncOpenCodeSkills,
@@ -163,7 +175,7 @@ const openCodeLocalAdapter: ServerAdapterModule = {
 
 const piLocalAdapter: ServerAdapterModule = {
   type: "pi_local",
-  execute: piExecute,
+  execute: wrapExecuteWithPaperclipPromptLayers(piExecute),
   testEnvironment: piTestEnvironment,
   listSkills: listPiSkills,
   syncSkills: syncPiSkills,
