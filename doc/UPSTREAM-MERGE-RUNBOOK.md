@@ -32,6 +32,13 @@
 git remote -v
 ```
 
+再看一次本地目标分支到底跟踪谁：
+
+```sh
+git branch -vv
+git config --get-regexp "^branch\\.(master|codex/upstream-sync-YYYYMMDD)\\."
+```
+
 同步时只关心三个角色：
 
 - `upstream remote`
@@ -40,6 +47,9 @@ git remote -v
   - Paperclip CN 自己的仓库
 - `base branch`
   - Paperclip CN 最终要合回去的目标分支，通常是 `master`
+- `upstream main ref`
+  - 写成 `<upstream remote>/master`
+  - 这是后文所有“查看上游范围”和“合并上游”命令里应该替换进去的明确写法
 
 常见布局：
 
@@ -51,6 +61,14 @@ git remote -v
   - `upstream` = 上游
 
 后面所有命令都要先映射到这三个角色，不要机械照抄 remote 名。
+
+额外注意：
+
+- 后文默认不再直接写 `origin/master`，统一写成 `<upstream remote>/master`
+- 它不等于“本地 `master` 当前跟踪的远端分支”
+- 在当前仓库的常见布局里，本地 `master` 往往跟踪 `private/master`
+- 当前仓库若采用布局 A，则 `<upstream remote>/master` 通常就是 `origin/master`
+- 若采用布局 B，则 `<upstream remote>/master` 通常就是 `upstream/master`
 
 ## 4. 固定规则
 
@@ -68,13 +86,7 @@ git remote -v
 长期 fork 默认使用 merge，不默认使用 rebase：
 
 ```sh
-git merge origin/master
-```
-
-如果你的仓库布局里 `upstream/master` 才代表真正上游，就替换成：
-
-```sh
-git merge upstream/master
+git merge <upstream remote>/master
 ```
 
 默认偏向 merge 的原因只有一个：它更适合把“这是一轮上游同步”保留成清晰历史。
@@ -131,6 +143,18 @@ git merge upstream/master
 
 不要顺手加入无关重构、样式调整或额外功能。必须修问题时，优先在本次已触及的文件或路径里做最小补丁，避免扩大后续冲突面。
 
+如果发现的是上游本身的路径/运行时契约问题，例如：
+
+- `AGENT_HOME` 与 instructions 根目录语义不一致
+- 某类运行时 prompt 需要额外注入
+- 某个 adapter 对共享上下文的消费方式与其他 adapter 漂移
+
+默认不要在同步 PR 里本地发明一套新设计。优先顺序应是：
+
+1. 先确认是否真的是 Paperclip CN 自己的长期差异
+2. 如果不是，优先保持与上游当前契约一致
+3. 必须补洞时，优先改 server/shared 外层，不要把同一类补丁复制到每个 adapter
+
 ## 5. 标准流程
 
 ### 5.1 准备
@@ -181,8 +205,8 @@ git merge private/master
 先看本次上游更新影响哪些区域：
 
 ```sh
-git log --oneline --decorate --stat HEAD..origin/master
-git diff --name-only HEAD..origin/master
+git log --oneline --decorate --stat HEAD..<upstream remote>/master
+git diff --name-only HEAD..<upstream remote>/master
 ```
 
 重点判断：
@@ -191,13 +215,14 @@ git diff --name-only HEAD..origin/master
 - 是否动到了高 churn UI 页面
 - 是否动到了 package manifest、exports、workspace 或 dev scripts
 - 是否动到了 shared types / API contract / schema
+- 是否动到了 `AGENT_HOME`、instructions bundle、adapter prompt 组装这类容易引发路径分叉的运行时契约
 
 ### 5.5 合并上游
 
 确认影响范围后再做真实 merge：
 
 ```sh
-git merge origin/master
+git merge <upstream remote>/master
 ```
 
 ## 6. 冲突处理原则
@@ -226,8 +251,10 @@ git merge origin/master
 - server route / service
 - package manifest
 - 构建脚本
+- adapter 实现
 
 原因很简单：上游通常会在这些地方带来 bugfix、结构调整和工程改进。
+如果只是为了补 Paperclip CN 的运行时本地化或上下文注入，优先找 adapter 外层包装点或 shared helper，不要把每个 adapter 都改一遍。
 
 #### 必须手动合并
 
@@ -471,7 +498,7 @@ git branch -f master private/master
 
 错误做法：
 
-- 在本地 `master` 上执行 `git merge origin/master`
+- 在本地 `master` 上执行 `git merge <upstream remote>/master`
 - 直接在本地 `master` 上解决冲突并提交
 - 直接把本地 `master` 推到 Paperclip CN 远端
 
@@ -480,6 +507,20 @@ git branch -f master private/master
 - 全程使用 `codex/upstream-sync-YYYYMMDD`
 - 推送工作分支
 - 通过 PR 合回 `master`
+
+### 9.7 在同步 PR 里本地发明新的路径契约
+
+错误做法：
+
+- 为了解某个运行报错，顺手重定义 `AGENT_HOME` 的语义
+- 把 instructions bundle 持久化结构改成另一套布局
+- 在多个 adapter 中分别补同一类 prompt/path 逻辑
+
+正确做法：
+
+- 先确认这是不是 Paperclip CN 自己必须长期保留的差异
+- 如果不是，优先与上游当前实现保持一致
+- 真要补洞时，优先在 server/shared 外层做一次性收口
 
 ## 10. 快速模板
 
@@ -495,9 +536,9 @@ git checkout -b codex/upstream-sync-YYYYMMDD
 git branch codex/upstream-sync-YYYYMMDD-safety
 git rev-list --left-right --count private/master...HEAD
 git merge private/master
-git log --oneline --decorate --stat HEAD..origin/master
-git diff --name-only HEAD..origin/master
-git merge origin/master
+git log --oneline --decorate --stat HEAD..<upstream remote>/master
+git diff --name-only HEAD..<upstream remote>/master
+git merge <upstream remote>/master
 pnpm -r typecheck
 pnpm test:run
 pnpm build

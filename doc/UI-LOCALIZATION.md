@@ -5,7 +5,7 @@
 这份文档记录 Paperclip CN 中文增强版在当前仓库里的本地化策略，目标是：
 
 - 保持默认中文体验，支持中英双语切换
-- 尽量减少与上游 `origin/master` 同步时的冲突
+- 尽量减少与上游主线（即上游 Paperclip remote 的 `master`）同步时的冲突
 - 避免把品牌替换和本地化做成一次性的大改造
 - 让后续新增页面、组件、错误文案都能按同一套规则继续落地
 
@@ -99,12 +99,15 @@
 - 服务端响应写入 `Content-Language`
 - 语言相关响应追加 `Vary: Accept-Language`
 - 服务端错误中间件对用户可见错误做翻译
+- 运行时动态 prompt、session handoff、CLI remediation、onboarding/snippet/generated text 也属于需要审计的本地化面
 - 前后端尽量共用同一套 locale 内容，避免维护两套文案
 
 原则上：
 
 - 前端负责界面壳层
 - 后端负责接口返回的人类可读错误
+- adapter 相关的运行时提示优先在 server 或 shared helper 外层统一注入
+- 不要为了补一条运行时本地化说明，在每个 adapter 里分别拼接一份相似 prompt
 
 ### 3.3 语言切换
 
@@ -247,6 +250,7 @@ Paperclip CN 品牌替换必须遵守以下边界：
 4. 在组件里接入 `useTranslation()`
 5. 对日期、时间、金额、词元数、相对时间，统一走 helper，不要手写格式化
 6. 对服务端错误，优先走服务端翻译，不要在前端重复硬编码 fallback
+7. 对运行时动态 prompt，优先复用外层统一注入点，不要在具体 adapter 或页面里各自拼接
 
 ## 9. 中文措辞准则
 
@@ -360,6 +364,8 @@ pnpm build
   - 仅在用户尚未手动编辑默认草稿时，才应该自动同步
 - 图表图例、状态词、优先级词是否全部走翻译 helper
   - 不要在组件里写死中文或英文枚举标签
+- 如果本次改动涉及运行时动态 prompt 或 operator remediation
+  - 确认所选语言下的运行时说明仍会被注入，而且不要因 adapter 差异出现一处有翻译、一处没有翻译
 
 ### 11.3 特殊边界
 
