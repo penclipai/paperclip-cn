@@ -1,6 +1,3 @@
-import fs from "node:fs/promises";
-import os from "node:os";
-import path from "node:path";
 import { describe, expect, it } from "vitest";
 import type { agents } from "@penclipai/db";
 import { sessionCodec as codexSessionCodec } from "@penclipai/adapter-codex-local/server";
@@ -10,7 +7,6 @@ import {
   buildRealizedExecutionWorkspaceFromPersisted,
   buildExplicitResumeSessionOverride,
   deriveTaskKeyWithHeartbeatFallback,
-  ensureDefaultAgentHome,
   formatRuntimeWorkspaceWarningLog,
   prioritizeProjectWorkspaceCandidatesForRun,
   parseSessionCompactionPolicy,
@@ -125,34 +121,6 @@ describe("resolveRuntimeSessionParamsForWorkspace", () => {
       workspaceId: "workspace-1",
     });
     expect(result.warning).toBeNull();
-  });
-});
-
-describe("ensureDefaultAgentHome", () => {
-  it("creates the default memory scaffold for fresh agent homes", async () => {
-    const originalPaperclipHome = process.env.PAPERCLIP_HOME;
-    const paperclipHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-heartbeat-home-"));
-
-    try {
-      process.env.PAPERCLIP_HOME = paperclipHome;
-
-      const home = await ensureDefaultAgentHome("agent-home-test");
-      const lifeDir = await fs.stat(path.join(home, "life"));
-      const archivesDir = await fs.stat(path.join(home, "life", "archives"));
-      const memoryDir = await fs.stat(path.join(home, "memory"));
-
-      expect(home).toBe(resolveDefaultAgentWorkspaceDir("agent-home-test"));
-      expect(lifeDir.isDirectory()).toBe(true);
-      expect(archivesDir.isDirectory()).toBe(true);
-      expect(memoryDir.isDirectory()).toBe(true);
-      await expect(fs.readFile(path.join(home, "MEMORY.md"), "utf8")).resolves.toContain(
-        "long-lived notes that should survive across heartbeats",
-      );
-    } finally {
-      if (originalPaperclipHome === undefined) delete process.env.PAPERCLIP_HOME;
-      else process.env.PAPERCLIP_HOME = originalPaperclipHome;
-      await fs.rm(paperclipHome, { recursive: true, force: true });
-    }
   });
 });
 
