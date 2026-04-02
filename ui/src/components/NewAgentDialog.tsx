@@ -24,6 +24,7 @@ import {
 import { cn } from "@/lib/utils";
 import { CodeBuddyLogoIcon } from "./CodeBuddyLogoIcon";
 import { OpenCodeLogoIcon } from "./OpenCodeLogoIcon";
+import { QwenLogoIcon } from "./QwenLogoIcon";
 import { HermesIcon } from "./HermesIcon";
 
 type AdvancedAdapterType =
@@ -33,6 +34,7 @@ type AdvancedAdapterType =
   | "gemini_local"
   | "opencode_local"
   | "pi_local"
+  | "qwen_local"
   | "cursor"
   | "openclaw_gateway"
   | "hermes_local";
@@ -63,6 +65,12 @@ const ADVANCED_ADAPTER_OPTIONS: Array<{
     label: "CodeBuddy",
     icon: CodeBuddyLogoIcon,
     descKey: "newAgent.option.codebuddyLocal",
+  },
+  {
+    value: "qwen_local",
+    label: "Qwen",
+    icon: QwenLogoIcon,
+    descKey: "newAgent.option.qwenLocal",
   },
   {
     value: "gemini_local",

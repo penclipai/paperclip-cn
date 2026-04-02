@@ -42,6 +42,7 @@ import {
 } from "@penclipai/adapter-codex-local";
 import { DEFAULT_CURSOR_LOCAL_MODEL } from "@penclipai/adapter-cursor-local";
 import { DEFAULT_GEMINI_LOCAL_MODEL } from "@penclipai/adapter-gemini-local";
+import { DEFAULT_QWEN_LOCAL_MODEL } from "@penclipai/adapter-qwen-local";
 import { resolveRouteOnboardingOptions } from "../lib/onboarding-route";
 import { AsciiArtAnimation } from "./AsciiArtAnimation";
 import { CodeBuddyLogoIcon } from "./CodeBuddyLogoIcon";
@@ -64,6 +65,7 @@ import {
   X
 } from "lucide-react";
 import { HermesIcon } from "./HermesIcon";
+import { QwenLogoIcon } from "./QwenLogoIcon";
 
 type Step = 1 | 2 | 3 | 4;
 type AdapterType =
@@ -74,6 +76,7 @@ type AdapterType =
   | "hermes_local"
   | "opencode_local"
   | "pi_local"
+  | "qwen_local"
   | "cursor"
   | "http"
   | "openclaw_gateway";
@@ -240,6 +243,7 @@ export function OnboardingWizard() {
     adapterType === "hermes_local" ||
     adapterType === "opencode_local" ||
     adapterType === "pi_local" ||
+    adapterType === "qwen_local" ||
     adapterType === "cursor";
   const effectiveAdapterCommand =
     command.trim() ||
@@ -253,6 +257,8 @@ export function OnboardingWizard() {
         ? "hermes"
       : adapterType === "pi_local"
       ? "pi"
+      : adapterType === "qwen_local"
+      ? "qwen"
       : adapterType === "cursor"
       ? "agent"
       : adapterType === "opencode_local"
@@ -269,7 +275,7 @@ export function OnboardingWizard() {
   const allowsDefaultModel = adapterType !== "opencode_local" && adapterType !== "hermes_local";
   const manualModel = modelSearch.trim();
   const canUseManualModel = Boolean(
-    adapterType === "hermes_local" &&
+    (adapterType === "hermes_local" || adapterType === "qwen_local") &&
       manualModel &&
       !(adapterModels ?? []).some((entry) => entry.id.toLowerCase() === manualModel.toLowerCase()),
   );
@@ -360,6 +366,8 @@ export function OnboardingWizard() {
           ? model || DEFAULT_CODEX_LOCAL_MODEL
           : adapterType === "codebuddy_local"
             ? model || DEFAULT_CODEBUDDY_LOCAL_MODEL
+          : adapterType === "qwen_local"
+            ? model || DEFAULT_QWEN_LOCAL_MODEL
           : adapterType === "gemini_local"
             ? model || DEFAULT_GEMINI_LOCAL_MODEL
           : adapterType === "cursor"
@@ -369,7 +377,10 @@ export function OnboardingWizard() {
       args,
       url,
       dangerouslySkipPermissions:
-        adapterType === "claude_local" || adapterType === "codebuddy_local" || adapterType === "opencode_local",
+        adapterType === "claude_local"
+        || adapterType === "codebuddy_local"
+        || adapterType === "opencode_local"
+        || adapterType === "qwen_local",
       dangerouslyBypassSandbox:
         adapterType === "codex_local"
           ? DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX
@@ -828,6 +839,12 @@ export function OnboardingWizard() {
                           label: "CodeBuddy",
                           icon: CodeBuddyLogoIcon,
                           desc: t("newAgent.option.codebuddyLocal")
+                        },
+                        {
+                          value: "qwen_local" as const,
+                          label: "Qwen",
+                          icon: QwenLogoIcon,
+                          desc: t("newAgent.option.qwenLocal")
                         }
                       ].map((opt) => (
                         <button
@@ -849,7 +866,15 @@ export function OnboardingWizard() {
                               setModel(DEFAULT_CODEBUDDY_LOCAL_MODEL);
                               return;
                             }
-                            if (nextType !== "codex_local" && nextType !== "codebuddy_local") {
+                            if (nextType === "qwen_local" && !model) {
+                              setModel(DEFAULT_QWEN_LOCAL_MODEL);
+                              return;
+                            }
+                            if (
+                              nextType !== "codex_local" &&
+                              nextType !== "codebuddy_local" &&
+                              nextType !== "qwen_local"
+                            ) {
                               setModel("");
                             }
                           }}
@@ -981,6 +1006,7 @@ export function OnboardingWizard() {
                     adapterType === "hermes_local" ||
                     adapterType === "opencode_local" ||
                     adapterType === "pi_local" ||
+                    adapterType === "qwen_local" ||
                     adapterType === "cursor") && (
                     <div className="space-y-3">
                       <div>
@@ -1018,6 +1044,7 @@ export function OnboardingWizard() {
                             <input
                               className="w-full px-2 py-1.5 text-xs bg-transparent outline-none border-b border-border mb-1 placeholder:text-muted-foreground/50"
                               placeholder={adapterType === "hermes_local"
+                                || adapterType === "qwen_local"
                                 ? t("agentConfig.searchModelsCreateHint")
                                 : t("Search models...")}
                               value={modelSearch}
@@ -1091,6 +1118,8 @@ export function OnboardingWizard() {
                               <p className="px-2 py-1.5 text-xs text-muted-foreground">
                                 {adapterType === "hermes_local"
                                   ? t("agentConfig.noHermesModelsDetected")
+                                  : adapterType === "qwen_local"
+                                    ? t("agentConfig.noModelsFound")
                                   : t("No models discovered.")}
                               </p>
                             )}
@@ -1171,6 +1200,8 @@ export function OnboardingWizard() {
                               ? `${effectiveAdapterCommand} exec --json -`
                               : adapterType === "codebuddy_local"
                                 ? `echo "Respond with hello." | ${effectiveAdapterCommand} -p --output-format stream-json --max-turns 1`
+                              : adapterType === "qwen_local"
+                                ? `echo "Respond with hello." | ${effectiveAdapterCommand} --output-format stream-json --approval-mode yolo`
                               : adapterType === "gemini_local"
                                 ? `${effectiveAdapterCommand} --output-format json "Respond with hello."`
                               : adapterType === "opencode_local"
@@ -1185,6 +1216,7 @@ export function OnboardingWizard() {
                           adapterType === "codex_local" ||
                           adapterType === "codebuddy_local" ||
                           adapterType === "gemini_local" ||
+                          adapterType === "qwen_local" ||
                           adapterType === "opencode_local" ? (
                             <p className="text-muted-foreground">
                               {t("If auth fails, set")}{" "}
@@ -1193,6 +1225,8 @@ export function OnboardingWizard() {
                                   ? "CURSOR_API_KEY"
                                   : adapterType === "codebuddy_local"
                                     ? "CODEBUDDY_API_KEY (optional)"
+                                  : adapterType === "qwen_local"
+                                    ? "OPENAI_API_KEY / provider-specific auth"
                                   : adapterType === "gemini_local"
                                     ? "GEMINI_API_KEY"
                                     : "OPENAI_API_KEY"}
@@ -1205,6 +1239,8 @@ export function OnboardingWizard() {
                                     ? "codebuddy"
                                   : adapterType === "codex_local"
                                     ? "codex login"
+                                    : adapterType === "qwen_local"
+                                      ? "qwen auth"
                                     : adapterType === "gemini_local"
                                       ? "gemini auth"
                                       : "opencode auth login"}

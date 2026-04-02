@@ -61,6 +61,7 @@ import {
 } from "@penclipai/adapter-codex-local";
 import { DEFAULT_CURSOR_LOCAL_MODEL } from "@penclipai/adapter-cursor-local";
 import { DEFAULT_GEMINI_LOCAL_MODEL } from "@penclipai/adapter-gemini-local";
+import { DEFAULT_QWEN_LOCAL_MODEL } from "@penclipai/adapter-qwen-local";
 import { ensureCodeBuddyModelConfiguredAndAvailable } from "@penclipai/adapter-codebuddy-local/server";
 import { ensureOpenCodeModelConfiguredAndAvailable } from "@penclipai/adapter-opencode-local/server";
 import {
@@ -77,6 +78,7 @@ export function agentRoutes(db: Db) {
     opencode_local: "instructionsFilePath",
     cursor: "instructionsFilePath",
     pi_local: "instructionsFilePath",
+    qwen_local: "instructionsFilePath",
   };
   const DEFAULT_MANAGED_INSTRUCTIONS_ADAPTER_TYPES = new Set(Object.keys(DEFAULT_INSTRUCTIONS_PATH_KEYS));
   const KNOWN_INSTRUCTIONS_PATH_KEYS = new Set(["instructionsFilePath", "agentsMdPath"]);
@@ -407,6 +409,10 @@ export function agentRoutes(db: Db) {
     }
     if (adapterType === "codebuddy_local" && !asNonEmptyString(next.model)) {
       next.model = DEFAULT_CODEBUDDY_LOCAL_MODEL;
+      return ensureGatewayDeviceKey(adapterType, next);
+    }
+    if (adapterType === "qwen_local" && !asNonEmptyString(next.model)) {
+      next.model = DEFAULT_QWEN_LOCAL_MODEL;
       return ensureGatewayDeviceKey(adapterType, next);
     }
     // OpenCode requires explicit model selection — no default

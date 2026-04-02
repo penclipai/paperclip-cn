@@ -23,6 +23,7 @@ const adapterLabels: Record<string, string> = {
   codebuddy_local: "CodeBuddy (local)",
   gemini_local: "Gemini CLI (local)",
   opencode_local: "OpenCode (local)",
+  qwen_local: "Qwen (local)",
   openclaw_gateway: "OpenClaw Gateway",
   cursor: "Cursor (local)",
   hermes_local: "Hermes Agent",
