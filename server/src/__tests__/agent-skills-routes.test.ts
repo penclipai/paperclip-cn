@@ -57,6 +57,7 @@ const mockAdapter = vi.hoisted(() => ({
   syncSkills: vi.fn(),
 }));
 const mockDetectAdapterModel = vi.hoisted(() => vi.fn());
+const mockEnsureCodeBuddyModelConfiguredAndAvailable = vi.hoisted(() => vi.fn());
 
 vi.mock("../services/index.js", () => ({
   agentService: () => mockAgentService,
@@ -78,6 +79,10 @@ vi.mock("../adapters/index.js", () => ({
   findServerAdapter: vi.fn(() => mockAdapter),
   detectAdapterModel: mockDetectAdapterModel,
   listAdapterModels: vi.fn(),
+}));
+
+vi.mock("@penclipai/adapter-codebuddy-local/server", () => ({
+  ensureCodeBuddyModelConfiguredAndAvailable: mockEnsureCodeBuddyModelConfiguredAndAvailable,
 }));
 
 function createDb(requireBoardApprovalForNewAgents = false) {
@@ -137,6 +142,7 @@ function makeAgent(adapterType: string) {
 describe("agent skill routes", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockEnsureCodeBuddyModelConfiguredAndAvailable.mockResolvedValue([]);
     mockDetectAdapterModel.mockResolvedValue({
       model: "openai/gpt-5.4",
       provider: "openai",
@@ -358,6 +364,35 @@ describe("agent skill routes", () => {
         promptTemplate: expect.anything(),
       }),
     });
+  });
+
+  it("validates codebuddy adapter config when patching an existing agent", async () => {
+    mockAgentService.getById.mockResolvedValue(makeAgent("codebuddy_local"));
+    mockSecretService.resolveAdapterConfigForRuntime.mockImplementation(
+      async (_companyId: string, config: Record<string, unknown>) => ({ config }),
+    );
+    mockEnsureCodeBuddyModelConfiguredAndAvailable.mockRejectedValue(
+      new Error("Configured CodeBuddy model is unavailable: bad-model"),
+    );
+
+    const res = await request(createApp())
+      .patch("/api/agents/11111111-1111-4111-8111-111111111111")
+      .send({
+        adapterConfig: {
+          model: "bad-model",
+        },
+      });
+
+    expect(res.status, JSON.stringify(res.body)).toBe(422);
+    expect(res.body).toEqual({
+      error:
+        "Invalid codebuddy_local adapterConfig: Configured CodeBuddy model is unavailable: bad-model",
+    });
+    expect(mockEnsureCodeBuddyModelConfiguredAndAvailable).toHaveBeenCalledWith(
+      expect.objectContaining({
+        model: "bad-model",
+      }),
+    );
   });
 
   it("materializes the bundled CEO instruction set for default CEO agents", async () => {
