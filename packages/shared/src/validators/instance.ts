@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { DEFAULT_UI_LOCALE, SUPPORTED_UI_LOCALES } from "../branding.js";
 import { DEFAULT_FEEDBACK_DATA_SHARING_PREFERENCE } from "../types/feedback.js";
 import { feedbackDataSharingPreferenceSchema } from "./feedback.js";
 
@@ -8,6 +9,7 @@ export const instanceGeneralSettingsSchema = z.object({
   feedbackDataSharingPreference: feedbackDataSharingPreferenceSchema.default(
     DEFAULT_FEEDBACK_DATA_SHARING_PREFERENCE,
   ),
+  runtimeDefaultLocale: z.enum(SUPPORTED_UI_LOCALES).default(DEFAULT_UI_LOCALE),
 }).strict();
 
 export const patchInstanceGeneralSettingsSchema = instanceGeneralSettingsSchema.partial();

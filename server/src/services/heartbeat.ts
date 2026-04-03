@@ -4,7 +4,7 @@ import { execFile as execFileCallback } from "node:child_process";
 import { promisify } from "node:util";
 import { and, asc, desc, eq, gt, inArray, sql } from "drizzle-orm";
 import type { Db } from "@penclipai/db";
-import type { BillingType, ExecutionWorkspace, ExecutionWorkspaceConfig } from "@penclipai/shared";
+import type { BillingType, ExecutionWorkspace, ExecutionWorkspaceConfig, UiLocale } from "@penclipai/shared";
 import {
   agents,
   agentRuntimeState,
@@ -46,7 +46,10 @@ import {
 import { issueService } from "./issues.js";
 import { executionWorkspaceService, mergeExecutionWorkspaceConfig } from "./execution-workspaces.js";
 import { workspaceOperationService } from "./workspace-operations.js";
-import { resolveRuntimeLocalizationPromptForContextSnapshot } from "./agent-runtime-localization.js";
+import {
+  resolveEffectiveRuntimeUiLocaleForContextSnapshot,
+  resolveRuntimeLocalizationPrompt,
+} from "./agent-runtime-localization.js";
 import {
   buildExecutionWorkspaceAdapterConfig,
   gateProjectExecutionWorkspacePolicy,
@@ -743,6 +746,50 @@ function enrichWakeContextSnapshot(input: {
   };
 }
 
+function materializeRuntimeUiLocaleContextSnapshot(
+  contextSnapshot: Record<string, unknown>,
+  runtimeDefaultLocale: UiLocale,
+) {
+  const nextContextSnapshot: Record<string, unknown> = {
+    ...contextSnapshot,
+    runtimeUiLocale: resolveEffectiveRuntimeUiLocaleForContextSnapshot(
+      contextSnapshot,
+      runtimeDefaultLocale,
+    ),
+  };
+  delete nextContextSnapshot.requestedUiLocale;
+  return nextContextSnapshot;
+}
+
+function resolveContextRuntimeUiLocale(
+  contextSnapshot: Record<string, unknown> | null | undefined,
+  runtimeDefaultLocale: UiLocale,
+) {
+  return resolveEffectiveRuntimeUiLocaleForContextSnapshot(
+    contextSnapshot,
+    runtimeDefaultLocale,
+  );
+}
+
+function canCoalesceWithRunLocale(input: {
+  existingContextSnapshot: Record<string, unknown> | null | undefined;
+  incomingContextSnapshot: Record<string, unknown>;
+  existingStatus: string | null | undefined;
+  runtimeDefaultLocale: UiLocale;
+}) {
+  if (input.existingStatus !== "running") return true;
+  return (
+    resolveContextRuntimeUiLocale(
+      input.existingContextSnapshot,
+      input.runtimeDefaultLocale,
+    ) ===
+    resolveContextRuntimeUiLocale(
+      input.incomingContextSnapshot,
+      input.runtimeDefaultLocale,
+    )
+  );
+}
+
 function mergeCoalescedContextSnapshot(
   existingRaw: unknown,
   incoming: Record<string, unknown>,
@@ -757,6 +804,7 @@ function mergeCoalescedContextSnapshot(
     merged.commentId = commentId;
     merged.wakeCommentId = commentId;
   }
+  delete merged.requestedUiLocale;
   return merged;
 }
 
@@ -1629,15 +1677,16 @@ export function heartbeatService(db: Db) {
     now: Date,
   ) {
     const contextSnapshot = parseObject(run.contextSnapshot);
+    const runtimeDefaultLocale = (await instanceSettings.getGeneral()).runtimeDefaultLocale;
     const issueId = readNonEmptyString(contextSnapshot.issueId);
     const taskKey = deriveTaskKeyWithHeartbeatFallback(contextSnapshot, null);
     const sessionBefore = await resolveSessionBeforeForWakeup(agent, taskKey);
-    const retryContextSnapshot = {
+    const retryContextSnapshot = materializeRuntimeUiLocaleContextSnapshot({
       ...contextSnapshot,
       retryOfRunId: run.id,
       wakeReason: "process_lost_retry",
       retryReason: "process_lost",
-    };
+    }, runtimeDefaultLocale);
 
     const queued = await db.transaction(async (tx) => {
       const wakeupRequest = await tx
@@ -2431,12 +2480,14 @@ export function heartbeatService(db: Db) {
       })(),
     };
     context.paperclipWorkspaces = resolvedWorkspace.workspaceHints;
-    const runtimeLocalizationPrompt = resolveRuntimeLocalizationPromptForContextSnapshot(context);
-    if (runtimeLocalizationPrompt) {
-      context.paperclipLocalizationPromptMarkdown = runtimeLocalizationPrompt;
-    } else {
-      delete context.paperclipLocalizationPromptMarkdown;
-    }
+    const runtimeDefaultLocale = (await instanceSettings.getGeneral()).runtimeDefaultLocale;
+    context.runtimeUiLocale = resolveContextRuntimeUiLocale(context, runtimeDefaultLocale);
+    delete context.requestedUiLocale;
+    context.paperclipLocalizationPromptMarkdown = resolveRuntimeLocalizationPrompt({
+      locale: context.runtimeUiLocale as UiLocale,
+      platform: process.platform,
+      env: process.env,
+    });
     const runtimeServiceIntents = (() => {
       const runtimeConfig = parseObject(resolvedConfig.workspaceRuntime);
       return Array.isArray(runtimeConfig.services)
@@ -3057,7 +3108,7 @@ export function heartbeatService(db: Db) {
         delete promotedPayload[DEFERRED_WAKE_CONTEXT_KEY];
 
         const {
-          contextSnapshot: promotedContextSnapshot,
+          contextSnapshot: promotedContextSeedSnapshot,
           taskKey: promotedTaskKey,
         } = enrichWakeContextSnapshot({
           contextSnapshot: promotedContextSeed,
@@ -3066,6 +3117,11 @@ export function heartbeatService(db: Db) {
           triggerDetail: promotedTriggerDetail,
           payload: promotedPayload,
         });
+        const runtimeDefaultLocale = (await instanceSettings.getGeneral()).runtimeDefaultLocale;
+        const promotedContextSnapshot = materializeRuntimeUiLocaleContextSnapshot(
+          promotedContextSeedSnapshot,
+          runtimeDefaultLocale,
+        );
 
         const sessionBefore =
           readNonEmptyString(promotedContextSnapshot.resumeSessionDisplayId) ??
@@ -3148,8 +3204,6 @@ export function heartbeatService(db: Db) {
       triggerDetail,
       payload,
     });
-    let issueId = readNonEmptyString(enrichedContextSnapshot.issueId) ?? issueIdFromPayload;
-
     const agent = await getAgent(agentId);
     if (!agent) throw notFound("Agent not found");
     const explicitResumeSession = await resolveExplicitResumeSessionOverride(agent, payload, taskKey);
@@ -3166,9 +3220,14 @@ export function heartbeatService(db: Db) {
       if (!readNonEmptyString(enrichedContextSnapshot.taskKey) && explicitResumeSession.taskKey) {
         enrichedContextSnapshot.taskKey = explicitResumeSession.taskKey;
       }
-      issueId = readNonEmptyString(enrichedContextSnapshot.issueId) ?? issueId;
     }
-    const effectiveTaskKey = readNonEmptyString(enrichedContextSnapshot.taskKey) ?? taskKey;
+    const runtimeDefaultLocale = (await instanceSettings.getGeneral()).runtimeDefaultLocale;
+    const localizedContextSnapshot = materializeRuntimeUiLocaleContextSnapshot(
+      enrichedContextSnapshot,
+      runtimeDefaultLocale,
+    );
+    let issueId = readNonEmptyString(localizedContextSnapshot.issueId) ?? issueIdFromPayload;
+    const effectiveTaskKey = readNonEmptyString(localizedContextSnapshot.taskKey) ?? taskKey;
     const sessionBefore =
       explicitResumeSession?.sessionDisplayId ??
       await resolveSessionBeforeForWakeup(agent, effectiveTaskKey);
@@ -3189,7 +3248,7 @@ export function heartbeatService(db: Db) {
       });
     };
 
-    let projectId = readNonEmptyString(enrichedContextSnapshot.projectId);
+    let projectId = readNonEmptyString(localizedContextSnapshot.projectId);
     if (!projectId && issueId) {
       projectId = await db
         .select({ projectId: issues.projectId })
@@ -3231,7 +3290,7 @@ export function heartbeatService(db: Db) {
 
     const bypassIssueExecutionLock =
       reason === "issue_comment_mentioned" ||
-      readNonEmptyString(enrichedContextSnapshot.wakeReason) === "issue_comment_mentioned";
+      readNonEmptyString(localizedContextSnapshot.wakeReason) === "issue_comment_mentioned";
 
     if (issueId && !bypassIssueExecutionLock) {
       const agentNameKey = normalizeAgentNameKey(agent.name);
@@ -3346,10 +3405,20 @@ export function heartbeatService(db: Db) {
             activeExecutionRun.status === "running" &&
             isSameExecutionAgent;
 
-          if (isSameExecutionAgent && !shouldQueueFollowupForCommentWake) {
+          const canCoalesceIntoActiveExecutionRun =
+            isSameExecutionAgent &&
+            !shouldQueueFollowupForCommentWake &&
+            canCoalesceWithRunLocale({
+              existingContextSnapshot: parseObject(activeExecutionRun.contextSnapshot),
+              incomingContextSnapshot: localizedContextSnapshot,
+              existingStatus: activeExecutionRun.status,
+              runtimeDefaultLocale,
+            });
+
+          if (canCoalesceIntoActiveExecutionRun) {
             const mergedContextSnapshot = mergeCoalescedContextSnapshot(
               activeExecutionRun.contextSnapshot,
-              enrichedContextSnapshot,
+              localizedContextSnapshot,
             );
             const mergedRun = await tx
               .update(heartbeatRuns)
@@ -3383,7 +3452,7 @@ export function heartbeatService(db: Db) {
           const deferredPayload = {
             ...(payload ?? {}),
             issueId,
-            [DEFERRED_WAKE_CONTEXT_KEY]: enrichedContextSnapshot,
+            [DEFERRED_WAKE_CONTEXT_KEY]: localizedContextSnapshot,
           };
 
           const existingDeferred = await tx
@@ -3406,7 +3475,7 @@ export function heartbeatService(db: Db) {
             const existingDeferredContext = parseObject(existingDeferredPayload[DEFERRED_WAKE_CONTEXT_KEY]);
             const mergedDeferredContext = mergeCoalescedContextSnapshot(
               existingDeferredContext,
-              enrichedContextSnapshot,
+              localizedContextSnapshot,
             );
             const mergedDeferredPayload = {
               ...existingDeferredPayload,
@@ -3469,7 +3538,7 @@ export function heartbeatService(db: Db) {
             triggerDetail,
             status: "queued",
             wakeupRequestId: wakeupRequest.id,
-            contextSnapshot: enrichedContextSnapshot,
+            contextSnapshot: localizedContextSnapshot,
             sessionIdBefore: sessionBefore,
           })
           .returning()
@@ -3525,20 +3594,29 @@ export function heartbeatService(db: Db) {
     const sameScopeQueuedRun = activeRuns.find(
       (candidate) => candidate.status === "queued" && isSameTaskScope(runTaskKey(candidate), taskKey),
     );
-    const sameScopeRunningRun = activeRuns.find(
-      (candidate) => candidate.status === "running" && isSameTaskScope(runTaskKey(candidate), taskKey),
+    const sameScopeRunningRun = activeRuns.find((candidate) =>
+      candidate.status === "running" && isSameTaskScope(runTaskKey(candidate), taskKey)
     );
     const shouldQueueFollowupForCommentWake =
       Boolean(wakeCommentId) && Boolean(sameScopeRunningRun) && !sameScopeQueuedRun;
 
+    const localeMatchedRunningRun = sameScopeRunningRun && canCoalesceWithRunLocale({
+      existingContextSnapshot: parseObject(sameScopeRunningRun.contextSnapshot),
+      incomingContextSnapshot: localizedContextSnapshot,
+      existingStatus: sameScopeRunningRun.status,
+      runtimeDefaultLocale,
+    })
+      ? sameScopeRunningRun
+      : null;
+
     const coalescedTargetRun =
       sameScopeQueuedRun ??
-      (shouldQueueFollowupForCommentWake ? null : sameScopeRunningRun ?? null);
+      (shouldQueueFollowupForCommentWake ? null : localeMatchedRunningRun);
 
     if (coalescedTargetRun) {
       const mergedContextSnapshot = mergeCoalescedContextSnapshot(
         coalescedTargetRun.contextSnapshot,
-        contextSnapshot,
+        localizedContextSnapshot,
       );
       const mergedRun = await db
         .update(heartbeatRuns)
@@ -3594,7 +3672,7 @@ export function heartbeatService(db: Db) {
         triggerDetail,
         status: "queued",
         wakeupRequestId: wakeupRequest.id,
-        contextSnapshot: enrichedContextSnapshot,
+        contextSnapshot: localizedContextSnapshot,
         sessionIdBefore: sessionBefore,
       })
       .returning()

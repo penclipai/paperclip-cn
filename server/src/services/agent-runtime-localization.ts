@@ -1,11 +1,11 @@
 import os from "node:os";
 import {
-  normalizeUiLocale,
+  DEFAULT_UI_LOCALE,
   type UiLocale,
 } from "@penclipai/shared";
 
 type ResolveRuntimeLocalizationPromptInput = {
-  locale?: string | null;
+  locale: UiLocale;
   platform?: NodeJS.Platform;
   shell?: string | null;
   env?: NodeJS.ProcessEnv;
@@ -19,6 +19,15 @@ type RuntimeEnvironmentDescriptor = {
 
 function readNonEmptyString(value: unknown): string | null {
   return typeof value === "string" && value.trim().length > 0 ? value : null;
+}
+
+function parseSupportedUiLocale(value: unknown): UiLocale | null {
+  const candidate = readNonEmptyString(value);
+  if (!candidate) return null;
+  const normalized = candidate.trim().toLowerCase();
+  if (normalized.startsWith("zh")) return "zh-CN";
+  if (normalized.startsWith("en")) return "en";
+  return null;
 }
 
 function stripExecutableName(value: string | null | undefined): string | null {
@@ -130,35 +139,41 @@ function buildEnRuntimeLocalizationPrompt(environment: RuntimeEnvironmentDescrip
   ].join("\n");
 }
 
-function buildNeutralRuntimeLocalizationPrompt(environment: RuntimeEnvironmentDescriptor): string {
-  return [
-    "Runtime note:",
-    `- Detected host runtime: ${environment.labelEn}.`,
-    "- `penclip` is the only current Paperclip CLI command. If a prompt, example, or historical instruction mentions `paperclipai ...`, execute the equivalent `penclip ...` command instead. Keep `paperclipai` only when quoting user text, logs, or historical docs verbatim.",
-    "- If you call the Paperclip API from a shell, then for any POST, PATCH, PUT, or other request that sends a body, do not inline Chinese or other non-ASCII JSON into command arguments. Write the payload as UTF-8 and send it with curl --data-binary @payload.json.",
-  ].join("\n");
+export function readRuntimeUiLocaleFromContextSnapshot(
+  contextSnapshot: Record<string, unknown> | null | undefined,
+): UiLocale | null {
+  return parseSupportedUiLocale(contextSnapshot?.runtimeUiLocale);
+}
+
+export function resolveEffectiveRuntimeUiLocale(input: {
+  requestedUiLocale?: unknown;
+  runtimeUiLocale?: unknown;
+  runtimeDefaultLocale?: unknown;
+}): UiLocale {
+  return (
+    parseSupportedUiLocale(input.requestedUiLocale) ??
+    parseSupportedUiLocale(input.runtimeUiLocale) ??
+    parseSupportedUiLocale(input.runtimeDefaultLocale) ??
+    DEFAULT_UI_LOCALE
+  );
+}
+
+export function resolveEffectiveRuntimeUiLocaleForContextSnapshot(
+  contextSnapshot: Record<string, unknown> | null | undefined,
+  runtimeDefaultLocale?: unknown,
+): UiLocale {
+  return resolveEffectiveRuntimeUiLocale({
+    requestedUiLocale: contextSnapshot?.requestedUiLocale,
+    runtimeUiLocale: contextSnapshot?.runtimeUiLocale,
+    runtimeDefaultLocale,
+  });
 }
 
 export function resolveRuntimeLocalizationPrompt(
-  input: ResolveRuntimeLocalizationPromptInput = {},
+  input: ResolveRuntimeLocalizationPromptInput,
 ): string {
-  const locale = input.locale ? normalizeUiLocale(input.locale) as UiLocale : null;
   const environment = resolveRuntimeEnvironment(input);
-  if (!locale) {
-    return buildNeutralRuntimeLocalizationPrompt(environment);
-  }
-  return locale === "en"
+  return input.locale === "en"
     ? buildEnRuntimeLocalizationPrompt(environment)
     : buildZhCnRuntimeLocalizationPrompt(environment);
-}
-
-export function resolveRuntimeLocalizationPromptForContextSnapshot(
-  contextSnapshot: Record<string, unknown> | null | undefined,
-  runtimeInput: Omit<ResolveRuntimeLocalizationPromptInput, "locale"> = {},
-): string {
-  const requestedUiLocale = readNonEmptyString(contextSnapshot?.requestedUiLocale);
-  return resolveRuntimeLocalizationPrompt({
-    ...runtimeInput,
-    ...(requestedUiLocale ? { locale: requestedUiLocale } : {}),
-  });
 }

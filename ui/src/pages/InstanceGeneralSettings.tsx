@@ -60,6 +60,23 @@ export function InstanceGeneralSettings() {
   const censorUsernameInLogs = generalQuery.data?.censorUsernameInLogs === true;
   const keyboardShortcuts = generalQuery.data?.keyboardShortcuts === true;
   const feedbackDataSharingPreference = generalQuery.data?.feedbackDataSharingPreference ?? "prompt";
+  const runtimeDefaultLocale = generalQuery.data?.runtimeDefaultLocale ?? "zh-CN";
+  const runtimeLocaleOptions: Array<{
+    value: NonNullable<PatchInstanceGeneralSettings["runtimeDefaultLocale"]>;
+    label: string;
+    description: string;
+  }> = [
+    {
+      value: "zh-CN",
+      label: t("instanceGeneralSettings.runtimeDefaultLocaleZhCn"),
+      description: t("instanceGeneralSettings.runtimeDefaultLocaleZhCnDescription"),
+    },
+    {
+      value: "en",
+      label: t("instanceGeneralSettings.runtimeDefaultLocaleEn"),
+      description: t("instanceGeneralSettings.runtimeDefaultLocaleEnDescription"),
+    },
+  ];
 
   return (
     <div className="max-w-4xl space-y-6">
@@ -70,8 +87,8 @@ export function InstanceGeneralSettings() {
         </div>
         <p className="text-sm text-muted-foreground">
           {t(
-            "Configure instance-wide defaults that affect how operator-visible logs are displayed.",
-            { defaultValue: "Configure instance-wide defaults that affect how operator-visible logs are displayed." },
+            "Configure instance-wide defaults that affect operator-visible logs and agent runtime guidance.",
+            { defaultValue: "Configure instance-wide defaults that affect operator-visible logs and agent runtime guidance." },
           )}
         </p>
       </div>
@@ -149,6 +166,45 @@ export function InstanceGeneralSettings() {
               )}
             />
           </button>
+        </div>
+      </section>
+
+      <section className="rounded-xl border border-border bg-card p-5">
+        <div className="space-y-4">
+          <div className="space-y-1.5">
+            <h2 className="text-sm font-semibold">{t("instanceGeneralSettings.runtimeDefaultLocaleTitle")}</h2>
+            <p className="max-w-2xl text-sm text-muted-foreground">
+              {t("instanceGeneralSettings.runtimeDefaultLocaleDescription")}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {runtimeLocaleOptions.map((option) => {
+              const active = runtimeDefaultLocale === option.value;
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  disabled={updateGeneralMutation.isPending}
+                  className={cn(
+                    "rounded-lg border px-3 py-2 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-60",
+                    active
+                      ? "border-foreground bg-accent text-foreground"
+                      : "border-border bg-background hover:bg-accent/50",
+                  )}
+                  onClick={() =>
+                    updateGeneralMutation.mutate({
+                      runtimeDefaultLocale: option.value,
+                    })
+                  }
+                >
+                  <div className="text-sm font-medium">{option.label}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {option.description}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </section>
 

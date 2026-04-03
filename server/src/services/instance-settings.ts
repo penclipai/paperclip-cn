@@ -1,6 +1,7 @@
 import type { Db } from "@penclipai/db";
 import { companies, instanceSettings } from "@penclipai/db";
 import {
+  DEFAULT_UI_LOCALE,
   DEFAULT_FEEDBACK_DATA_SHARING_PREFERENCE,
   instanceGeneralSettingsSchema,
   type InstanceGeneralSettings,
@@ -22,12 +23,14 @@ function normalizeGeneralSettings(raw: unknown): InstanceGeneralSettings {
       keyboardShortcuts: parsed.data.keyboardShortcuts ?? false,
       feedbackDataSharingPreference:
         parsed.data.feedbackDataSharingPreference ?? DEFAULT_FEEDBACK_DATA_SHARING_PREFERENCE,
+      runtimeDefaultLocale: parsed.data.runtimeDefaultLocale ?? DEFAULT_UI_LOCALE,
     };
   }
   return {
     censorUsernameInLogs: false,
     keyboardShortcuts: false,
     feedbackDataSharingPreference: DEFAULT_FEEDBACK_DATA_SHARING_PREFERENCE,
+    runtimeDefaultLocale: DEFAULT_UI_LOCALE,
   };
 }
 
