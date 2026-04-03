@@ -1,7 +1,9 @@
 import type { Request, Response, NextFunction } from "express";
 import { ZodError } from "zod";
+import { trackErrorHandlerCrash } from "@penclipai/shared/telemetry";
 import { HttpError } from "../errors.js";
 import { translate as translateServer } from "../i18n.js";
+import { getTelemetryClient } from "../telemetry.js";
 
 export interface ErrorContext {
   error: { message: string; stack?: string; name?: string; details?: unknown; raw?: unknown };
@@ -51,6 +53,8 @@ export function errorHandler(
         { message: err.message, stack: err.stack, name: err.name, details: err.details },
         err,
       );
+      const tc = getTelemetryClient();
+      if (tc) trackErrorHandlerCrash(tc, { errorCode: err.name });
     }
     res.status(err.status).json({
       error: translatedMessage,
@@ -73,6 +77,10 @@ export function errorHandler(
       : { message: String(err), raw: err, stack: rootError.stack, name: rootError.name },
     rootError,
   );
+
+  res.status(500).json({ error: translate("errors.internalServer") });
+  const tc = getTelemetryClient();
+  if (tc) trackErrorHandlerCrash(tc, { errorCode: rootError.name });
 
   res.status(500).json({ error: translate("errors.internalServer") });
 }

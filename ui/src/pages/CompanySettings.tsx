@@ -2,6 +2,7 @@ import { ChangeEvent, useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { Link } from "@/lib/router";
+import { DEFAULT_FEEDBACK_DATA_SHARING_TERMS_VERSION } from "@penclipai/shared";
 import { useCompany } from "../context/CompanyContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { useToast } from "../context/ToastContext";
@@ -9,6 +10,7 @@ import { companiesApi } from "../api/companies";
 import { accessApi } from "../api/access";
 import { assetsApi } from "../api/assets";
 import { queryKeys } from "../lib/queryKeys";
+import { formatDateTime } from "../lib/utils";
 import { Button } from "@/components/ui/button";
 import { Settings, Check, Download, Upload } from "lucide-react";
 import { CompanyPatternIcon } from "../components/CompanyPatternIcon";
@@ -23,6 +25,8 @@ type AgentSnippetInput = {
   connectionCandidates?: string[] | null;
   testResolutionUrl?: string | null;
 };
+
+const FEEDBACK_TERMS_URL = import.meta.env.VITE_FEEDBACK_TERMS_URL?.trim() || "https://paperclip.ing/tos";
 
 export function CompanySettings() {
   const { t } = useTranslation();
@@ -81,6 +85,32 @@ export function CompanySettings() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.companies.all });
     }
+  });
+
+  const feedbackSharingMutation = useMutation({
+    mutationFn: (enabled: boolean) =>
+      companiesApi.update(selectedCompanyId!, {
+        feedbackDataSharingEnabled: enabled,
+      }),
+    onSuccess: (_company, enabled) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.companies.all });
+      pushToast({
+        title: enabled
+          ? t("companySettings.feedbackSharingEnabledToast")
+          : t("companySettings.feedbackSharingDisabledToast"),
+        tone: "success",
+      });
+    },
+    onError: (err) => {
+      pushToast({
+        title: t("companySettings.feedbackSharingUpdateFailed"),
+        body:
+          err instanceof Error
+            ? err.message
+            : t("errors.internalServer", { defaultValue: "Internal server error" }),
+        tone: "error",
+      });
+    },
   });
 
   const inviteMutation = useMutation({
@@ -392,6 +422,56 @@ export function CompanySettings() {
             onChange={(v) => settingsMutation.mutate(v)}
             toggleTestId="company-settings-team-approval-toggle"
           />
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+          {t("companySettings.feedbackSharing")}
+        </div>
+        <div className="space-y-3 rounded-md border border-border px-4 py-4">
+          <ToggleField
+            label={t("companySettings.feedbackSharingLabel")}
+            hint={t("companySettings.feedbackSharingHint")}
+            checked={!!selectedCompany.feedbackDataSharingEnabled}
+            onChange={(enabled) => feedbackSharingMutation.mutate(enabled)}
+          />
+          <p className="text-sm text-muted-foreground">
+            {t("companySettings.feedbackSharingDescription")}
+          </p>
+          <div className="space-y-1 text-xs text-muted-foreground">
+            <div>
+              {t("companySettings.feedbackSharingTermsVersion", {
+                version:
+                  selectedCompany.feedbackDataSharingTermsVersion ??
+                  DEFAULT_FEEDBACK_DATA_SHARING_TERMS_VERSION,
+              })}
+            </div>
+            {selectedCompany.feedbackDataSharingConsentAt ? (
+              <div>
+                {selectedCompany.feedbackDataSharingConsentByUserId
+                  ? t("companySettings.feedbackSharingEnabledAtByUser", {
+                      date: formatDateTime(selectedCompany.feedbackDataSharingConsentAt),
+                      userId: selectedCompany.feedbackDataSharingConsentByUserId,
+                    })
+                  : t("companySettings.feedbackSharingEnabledAt", {
+                      date: formatDateTime(selectedCompany.feedbackDataSharingConsentAt),
+                    })}
+              </div>
+            ) : (
+              <div>{t("companySettings.feedbackSharingDisabled")}</div>
+            )}
+            {FEEDBACK_TERMS_URL ? (
+              <a
+                href={FEEDBACK_TERMS_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex text-foreground underline underline-offset-4"
+              >
+                {t("outputFeedback.readTerms")}
+              </a>
+            ) : null}
+          </div>
         </div>
       </div>
 

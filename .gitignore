@@ -32,6 +32,7 @@ server/src/**/*.d.ts
 server/src/**/*.d.ts.map
 server/ui-dist/
 tmp/
+feedback-export-*
 
 # Editor / tool temp files
 *.tmp

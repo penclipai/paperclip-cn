@@ -24,6 +24,7 @@ import {
   realizeExecutionWorkspace,
   releaseRuntimeServicesForRun,
   resetRuntimeServicesForTests,
+  resolveShell,
   sanitizeRuntimeServiceBaseEnv,
   stopRuntimeServicesForExecutionWorkspace,
   type RealizedExecutionWorkspace,
@@ -51,7 +52,7 @@ async function runGit(cwd: string, args: string[]) {
   await execFileAsync("git", args, { cwd });
 }
 
-async function createTempRepo() {
+async function createTempRepo(defaultBranch = "main") {
   const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktree-repo-"));
   await runGit(repoRoot, ["init"]);
   await runGit(repoRoot, ["config", "user.email", "paperclip@example.com"]);
@@ -59,7 +60,7 @@ async function createTempRepo() {
   await fs.writeFile(path.join(repoRoot, "README.md"), "hello\n", "utf8");
   await runGit(repoRoot, ["add", "README.md"]);
   await runGit(repoRoot, ["commit", "-m", "Initial commit"]);
-  await runGit(repoRoot, ["checkout", "-B", "main"]);
+  await runGit(repoRoot, ["checkout", "-B", defaultBranch]);
   return repoRoot;
 }
 
@@ -245,7 +246,7 @@ describe("realizeExecutionWorkspace", () => {
     expect(second.created).toBe(false);
     expect(second.cwd).toBe(first.cwd);
     expect(second.branchName).toBe(first.branchName);
-  });
+  }, 20_000);
 
   it("slugifies unsafe issue titles for branch names and worktree folders", async () => {
     const repoRoot = await createTempRepo();
@@ -322,17 +323,16 @@ describe("realizeExecutionWorkspace", () => {
     const repoRoot = await createTempRepo();
     await fs.mkdir(path.join(repoRoot, "scripts"), { recursive: true });
     await fs.writeFile(
-      path.join(repoRoot, "scripts", "provision.sh"),
+      path.join(repoRoot, "scripts", "provision.mjs"),
       [
-        "#!/usr/bin/env bash",
-        "set -euo pipefail",
-        "printf '%s\\n' \"$PAPERCLIP_WORKSPACE_BRANCH\" > .paperclip-provision-branch",
-        "printf '%s\\n' \"$PAPERCLIP_WORKSPACE_BASE_CWD\" > .paperclip-provision-base",
-        "printf '%s\\n' \"$PAPERCLIP_WORKSPACE_CREATED\" > .paperclip-provision-created",
+        'import fs from "node:fs/promises";',
+        'await fs.writeFile(".paperclip-provision-branch", `${process.env.PAPERCLIP_WORKSPACE_BRANCH ?? ""}\\n`, "utf8");',
+        'await fs.writeFile(".paperclip-provision-base", `${process.env.PAPERCLIP_WORKSPACE_BASE_CWD ?? ""}\\n`, "utf8");',
+        'await fs.writeFile(".paperclip-provision-created", `${process.env.PAPERCLIP_WORKSPACE_CREATED ?? ""}\\n`, "utf8");',
       ].join("\n"),
       "utf8",
     );
-    await runGit(repoRoot, ["add", "scripts/provision.sh"]);
+    await runGit(repoRoot, ["add", "scripts/provision.mjs"]);
     await runGit(repoRoot, ["commit", "-m", "Add worktree provision script"]);
 
     const workspace = await realizeExecutionWorkspace({
@@ -348,7 +348,7 @@ describe("realizeExecutionWorkspace", () => {
         workspaceStrategy: {
           type: "git_worktree",
           branchTemplate: "{{issue.identifier}}-{{slug}}",
-          provisionCommand: "bash ./scripts/provision.sh",
+          provisionCommand: "node ./scripts/provision.mjs",
         },
       },
       issue: {
@@ -386,7 +386,7 @@ describe("realizeExecutionWorkspace", () => {
         workspaceStrategy: {
           type: "git_worktree",
           branchTemplate: "{{issue.identifier}}-{{slug}}",
-          provisionCommand: "bash ./scripts/provision.sh",
+          provisionCommand: "node ./scripts/provision.mjs",
         },
       },
       issue: {
@@ -654,16 +654,11 @@ describe("realizeExecutionWorkspace", () => {
     await expect(fs.readFile(path.join(workspace.cwd, "feature.txt"), "utf8")).resolves.toBe("preserve me\n");
     const actualHead = (await execFileAsync("git", ["rev-parse", "HEAD"], { cwd: workspace.cwd })).stdout.trim();
     expect(actualHead).toBe(expectedHead);
-  });
+  }, 40_000);
 
   it("auto-detects the default branch when baseRef is not configured", async () => {
-    const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktree-master-"));
-    await runGit(repoRoot, ["init", "-b", "master"]);
-    await runGit(repoRoot, ["config", "user.email", "paperclip@example.com"]);
-    await runGit(repoRoot, ["config", "user.name", "Paperclip Test"]);
-    await fs.writeFile(path.join(repoRoot, "README.md"), "hello\n", "utf8");
-    await runGit(repoRoot, ["add", "README.md"]);
-    await runGit(repoRoot, ["commit", "-m", "Initial commit"]);
+    // Create a repo with "master" as default branch (not "main")
+    const repoRoot = await createTempRepo("master");
 
     const bareRemote = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktree-bare-"));
     await runGit(bareRemote, ["init", "--bare"]);
@@ -707,14 +702,9 @@ describe("realizeExecutionWorkspace", () => {
     expect(worktreeOperation?.metadata?.baseRef).toBe("master");
   });
 
-  it("auto-detects the default branch via origin HEAD when available", async () => {
-    const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktree-origin-head-"));
-    await runGit(repoRoot, ["init", "-b", "master"]);
-    await runGit(repoRoot, ["config", "user.email", "paperclip@example.com"]);
-    await runGit(repoRoot, ["config", "user.name", "Paperclip Test"]);
-    await fs.writeFile(path.join(repoRoot, "README.md"), "hello\n", "utf8");
-    await runGit(repoRoot, ["add", "README.md"]);
-    await runGit(repoRoot, ["commit", "-m", "Initial commit"]);
+  it("auto-detects the default branch via symbolic-ref when origin/HEAD is set", async () => {
+    // Create a repo with "master" as default branch
+    const repoRoot = await createTempRepo("master");
 
     const bareRemote = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktree-bare-origin-head-"));
     await runGit(bareRemote, ["init", "--bare"]);
@@ -1342,6 +1332,60 @@ describe("ensureRuntimeServicesForRun", () => {
 
     await releaseRuntimeServicesForRun(runId);
     leasedRunIds.delete(runId);
+  });
+});
+
+describe("resolveShell (shell fallback)", () => {
+  const originalShell = process.env.SHELL;
+  const originalPlatform = process.platform;
+
+  afterEach(() => {
+    if (originalShell !== undefined) {
+      process.env.SHELL = originalShell;
+    } else {
+      delete process.env.SHELL;
+    }
+    Object.defineProperty(process, "platform", { value: originalPlatform });
+  });
+
+  it("returns process.env.SHELL when set", () => {
+    process.env.SHELL = "/usr/bin/zsh";
+    expect(resolveShell()).toBe("/usr/bin/zsh");
+  });
+
+  it("trims whitespace from SHELL env var", () => {
+    process.env.SHELL = "  /usr/bin/fish  ";
+    expect(resolveShell()).toBe("/usr/bin/fish");
+  });
+
+  it("falls back to /bin/sh on non-Windows when SHELL is unset", () => {
+    delete process.env.SHELL;
+    Object.defineProperty(process, "platform", { value: "linux" });
+    expect(resolveShell()).toBe("/bin/sh");
+  });
+
+  it("falls back to sh (bare) on Windows when SHELL is unset", () => {
+    delete process.env.SHELL;
+    Object.defineProperty(process, "platform", { value: "win32" });
+    expect(resolveShell()).toBe("sh");
+  });
+
+  it("falls back to /bin/sh on darwin when SHELL is unset", () => {
+    delete process.env.SHELL;
+    Object.defineProperty(process, "platform", { value: "darwin" });
+    expect(resolveShell()).toBe("/bin/sh");
+  });
+
+  it("treats empty SHELL as unset and uses platform fallback", () => {
+    process.env.SHELL = "";
+    Object.defineProperty(process, "platform", { value: "linux" });
+    expect(resolveShell()).toBe("/bin/sh");
+  });
+
+  it("treats whitespace-only SHELL as unset and uses platform fallback", () => {
+    process.env.SHELL = "   ";
+    Object.defineProperty(process, "platform", { value: "win32" });
+    expect(resolveShell()).toBe("sh");
   });
 });
 

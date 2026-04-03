@@ -182,11 +182,10 @@ export function NewProjectDialog() {
 
   const isAbsolutePath = (value: string) => value.startsWith("/") || /^[A-Za-z]:[\\/]/.test(value);
 
-  const isGitHubRepoUrl = (value: string) => {
+  const looksLikeRepoUrl = (value: string) => {
     try {
       const parsed = new URL(value);
-      const host = parsed.hostname.toLowerCase();
-      if (host !== "github.com" && host !== "www.github.com") return false;
+      if (parsed.protocol !== "https:") return false;
       const segments = parsed.pathname.split("/").filter(Boolean);
       return segments.length >= 2;
     } catch {
@@ -220,7 +219,7 @@ export function NewProjectDialog() {
       setWorkspaceError(t("newProject.localFolderInvalid"));
       return;
     }
-    if (repoUrl && !isGitHubRepoUrl(repoUrl)) {
+    if (repoUrl && !looksLikeRepoUrl(repoUrl)) {
       setWorkspaceError(t("newProject.repoUrlInvalid"));
       return;
     }

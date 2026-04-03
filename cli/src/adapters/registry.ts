@@ -6,6 +6,7 @@ import { printCursorStreamEvent } from "@penclipai/adapter-cursor-local/cli";
 import { printGeminiStreamEvent } from "@penclipai/adapter-gemini-local/cli";
 import { printOpenCodeStreamEvent } from "@penclipai/adapter-opencode-local/cli";
 import { printPiStreamEvent } from "@penclipai/adapter-pi-local/cli";
+import { printQwenStreamEvent } from "@penclipai/adapter-qwen-local/cli";
 import { printOpenClawGatewayStreamEvent } from "@penclipai/adapter-openclaw-gateway/cli";
 import { processCLIAdapter } from "./process/index.js";
 import { httpCLIAdapter } from "./http/index.js";
@@ -35,6 +36,11 @@ const piLocalCLIAdapter: CLIAdapterModule = {
   formatStdoutEvent: printPiStreamEvent,
 };
 
+const qwenLocalCLIAdapter: CLIAdapterModule = {
+  type: "qwen_local",
+  formatStdoutEvent: printQwenStreamEvent,
+};
+
 const cursorLocalCLIAdapter: CLIAdapterModule = {
   type: "cursor",
   formatStdoutEvent: printCursorStreamEvent,
@@ -57,6 +63,7 @@ const adaptersByType = new Map<string, CLIAdapterModule>(
     codeBuddyLocalCLIAdapter,
     openCodeLocalCLIAdapter,
     piLocalCLIAdapter,
+    qwenLocalCLIAdapter,
     cursorLocalCLIAdapter,
     geminiLocalCLIAdapter,
     openclawGatewayCLIAdapter,

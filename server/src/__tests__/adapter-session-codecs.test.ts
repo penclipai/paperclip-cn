@@ -17,6 +17,10 @@ import {
   sessionCodec as opencodeSessionCodec,
   isOpenCodeUnknownSessionError,
 } from "@penclipai/adapter-opencode-local/server";
+import {
+  sessionCodec as qwenSessionCodec,
+  isQwenUnknownSessionError,
+} from "@penclipai/adapter-qwen-local/server";
 
 describe("adapter session codecs", () => {
   it("normalizes claude session params with cwd", () => {
@@ -126,6 +130,47 @@ describe("adapter session codecs", () => {
     });
     expect(geminiSessionCodec.getDisplayId?.(serialized ?? null)).toBe("gemini-session-1");
   });
+
+  it("normalizes qwen session params with cwd", () => {
+    const parsed = qwenSessionCodec.deserialize({
+      session_id: "qwen-session-1",
+      cwd: "/tmp/qwen",
+    });
+    expect(parsed).toEqual({
+      sessionId: "qwen-session-1",
+      cwd: "/tmp/qwen",
+    });
+
+    const serialized = qwenSessionCodec.serialize(parsed);
+    expect(serialized).toEqual({
+      sessionId: "qwen-session-1",
+      cwd: "/tmp/qwen",
+    });
+    expect(qwenSessionCodec.getDisplayId?.(serialized ?? null)).toBe("qwen-session-1");
+  });
+});
+
+describe("codebuddy resume recovery detection", () => {
+  it("detects unknown session errors from codebuddy output", () => {
+    expect(
+      isCodeBuddyUnknownSessionError(
+        "{\"type\":\"error\",\"message\":\"No conversation found with session ID: stale-session\"}",
+        "",
+      ),
+    ).toBe(true);
+    expect(
+      isCodeBuddyUnknownSessionError(
+        "",
+        "resume session not found",
+      ),
+    ).toBe(true);
+    expect(
+      isCodeBuddyUnknownSessionError(
+        "{\"type\":\"result\",\"subtype\":\"success\",\"result\":\"ok\"}",
+        "",
+      ),
+    ).toBe(false);
+  });
 });
 
 describe("codebuddy resume recovery detection", () => {
@@ -230,6 +275,29 @@ describe("gemini resume recovery detection", () => {
     ).toBe(true);
     expect(
       isGeminiUnknownSessionError(
+        "{\"type\":\"result\",\"subtype\":\"success\"}",
+        "",
+      ),
+    ).toBe(false);
+  });
+});
+
+describe("qwen resume recovery detection", () => {
+  it("detects unknown session errors from qwen output", () => {
+    expect(
+      isQwenUnknownSessionError(
+        "",
+        "No saved session found with ID stale-session",
+      ),
+    ).toBe(true);
+    expect(
+      isQwenUnknownSessionError(
+        "",
+        "cannot resume previous run",
+      ),
+    ).toBe(true);
+    expect(
+      isQwenUnknownSessionError(
         "{\"type\":\"result\",\"subtype\":\"success\"}",
         "",
       ),

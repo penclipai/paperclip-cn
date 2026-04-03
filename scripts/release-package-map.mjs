@@ -124,11 +124,16 @@ function setVersion(version) {
     `.version("${version}")`,
   );
 
-  if (cliEntry === nextCliEntry) {
-    throw new Error("failed to rewrite CLI version string in cli/src/index.ts");
+  if (cliEntry !== nextCliEntry) {
+    writeFileSync(cliEntryPath, nextCliEntry);
+    return;
   }
 
-  writeFileSync(cliEntryPath, nextCliEntry);
+  // Newer CLI builds source the version from cli/src/version.ts via package.json,
+  // so there is no inline version literal left to rewrite here.
+  if (!cliEntry.includes(".version(cliVersion)")) {
+    throw new Error("failed to rewrite CLI version string in cli/src/index.ts");
+  }
 }
 
 function listPackages() {

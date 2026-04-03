@@ -80,6 +80,17 @@ import {
   agentConfigurationDoc as piAgentConfigurationDoc,
 } from "@penclipai/adapter-pi-local";
 import {
+  execute as qwenExecute,
+  listQwenSkills,
+  syncQwenSkills,
+  testEnvironment as qwenTestEnvironment,
+  sessionCodec as qwenSessionCodec,
+} from "@penclipai/adapter-qwen-local/server";
+import {
+  agentConfigurationDoc as qwenAgentConfigurationDoc,
+  models as qwenModels,
+} from "@penclipai/adapter-qwen-local";
+import {
   execute as hermesExecute,
   testEnvironment as hermesTestEnvironment,
   sessionCodec as hermesSessionCodec,
@@ -213,6 +224,19 @@ const piLocalAdapter: ServerAdapterModule = {
   agentConfigurationDoc: piAgentConfigurationDoc,
 };
 
+const qwenLocalAdapter: ServerAdapterModule = {
+  type: "qwen_local",
+  execute: wrapExecuteWithPaperclipPromptLayers(qwenExecute),
+  testEnvironment: qwenTestEnvironment,
+  listSkills: listQwenSkills,
+  syncSkills: syncQwenSkills,
+  sessionCodec: qwenSessionCodec,
+  sessionManagement: getAdapterSessionManagement("qwen_local") ?? undefined,
+  models: qwenModels,
+  supportsLocalAgentJwt: true,
+  agentConfigurationDoc: qwenAgentConfigurationDoc,
+};
+
 const hermesLocalAdapter: ServerAdapterModule = {
   type: "hermes_local",
   execute: hermesExecute,
@@ -233,6 +257,7 @@ const adaptersByType = new Map<string, ServerAdapterModule>(
     codeBuddyLocalAdapter,
     openCodeLocalAdapter,
     piLocalAdapter,
+    qwenLocalAdapter,
     cursorLocalAdapter,
     geminiLocalAdapter,
     openclawGatewayAdapter,

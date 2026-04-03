@@ -53,6 +53,7 @@
     "@penclipai/adapter-openclaw-gateway": "workspace:*",
     "@penclipai/adapter-opencode-local": "workspace:*",
     "@penclipai/adapter-pi-local": "workspace:*",
+    "@penclipai/adapter-qwen-local": "workspace:*",
     "@penclipai/adapter-utils": "workspace:*",
     "@penclipai/db": "workspace:*",
     "@penclipai/plugin-sdk": "workspace:*",

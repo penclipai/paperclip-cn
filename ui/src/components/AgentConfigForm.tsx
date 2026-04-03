@@ -19,6 +19,7 @@ import {
 } from "@penclipai/adapter-codex-local";
 import { DEFAULT_CURSOR_LOCAL_MODEL } from "@penclipai/adapter-cursor-local";
 import { DEFAULT_GEMINI_LOCAL_MODEL } from "@penclipai/adapter-gemini-local";
+import { DEFAULT_QWEN_LOCAL_MODEL } from "@penclipai/adapter-qwen-local";
 import {
   Popover,
   PopoverContent,
@@ -48,6 +49,7 @@ import { MarkdownEditor } from "./MarkdownEditor";
 import { ChoosePathButton } from "./PathInstructionsModal";
 import { CodeBuddyLogoIcon } from "./CodeBuddyLogoIcon";
 import { OpenCodeLogoIcon } from "./OpenCodeLogoIcon";
+import { QwenLogoIcon } from "./QwenLogoIcon";
 import { ReportsToPicker } from "./ReportsToPicker";
 import { shouldShowLegacyWorkingDirectoryField } from "../lib/legacy-agent-config";
 
@@ -334,6 +336,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
     adapterType === "hermes_local" ||
     adapterType === "opencode_local" ||
     adapterType === "pi_local" ||
+    adapterType === "qwen_local" ||
     adapterType === "cursor";
   const isHermesLocal = adapterType === "hermes_local";
   const showLegacyWorkingDirectoryField =
@@ -462,7 +465,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
       : adapterType === "opencode_local"
         ? eff("adapterConfig", "variant", String(config.variant ?? ""))
       : eff("adapterConfig", "effort", String(config.effort ?? ""));
-  const showThinkingEffort = adapterType !== "gemini_local";
+  const showThinkingEffort = adapterType !== "gemini_local" && adapterType !== "qwen_local";
   const codexSearchEnabled = adapterType === "codex_local"
     ? (isCreate ? Boolean(val!.search) : eff("adapterConfig", "search", Boolean(config.search)))
     : false;
@@ -618,6 +621,8 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                         DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX;
                     } else if (t === "codebuddy_local") {
                       nextValues.model = DEFAULT_CODEBUDDY_LOCAL_MODEL;
+                    } else if (t === "qwen_local") {
+                      nextValues.model = DEFAULT_QWEN_LOCAL_MODEL;
                     } else if (t === "gemini_local") {
                       nextValues.model = DEFAULT_GEMINI_LOCAL_MODEL;
                     } else if (t === "cursor") {
@@ -638,6 +643,8 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                             ? DEFAULT_CODEX_LOCAL_MODEL
                             : t === "codebuddy_local"
                               ? DEFAULT_CODEBUDDY_LOCAL_MODEL
+                            : t === "qwen_local"
+                              ? DEFAULT_QWEN_LOCAL_MODEL
                             : t === "gemini_local"
                               ? DEFAULT_GEMINI_LOCAL_MODEL
                             : t === "cursor"
@@ -753,6 +760,8 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                       ? "codex"
                       : adapterType === "codebuddy_local"
                         ? "codebuddy"
+                      : adapterType === "qwen_local"
+                        ? "qwen"
                       : adapterType === "gemini_local"
                         ? "gemini"
                         : adapterType === "hermes_local"
@@ -781,7 +790,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                 allowDefault={adapterType !== "opencode_local" && adapterType !== "hermes_local"}
                 required={adapterType === "opencode_local" || adapterType === "hermes_local"}
                 groupByProvider={adapterType === "opencode_local"}
-                creatable={adapterType === "hermes_local"}
+                creatable={adapterType === "hermes_local" || adapterType === "qwen_local"}
                 detectedModel={adapterType === "hermes_local" ? detectedModel : null}
                 onDetectModel={adapterType === "hermes_local"
                   ? async () => {
@@ -1059,7 +1068,7 @@ function AdapterEnvironmentResult({ result }: { result: AdapterEnvironmentTestRe
 
 /* ---- Internal sub-components ---- */
 
-const ENABLED_ADAPTER_TYPES = new Set(["claude_local", "codex_local", "codebuddy_local", "gemini_local", "opencode_local", "pi_local", "cursor", "hermes_local"]);
+const ENABLED_ADAPTER_TYPES = new Set(["claude_local", "codex_local", "codebuddy_local", "gemini_local", "opencode_local", "pi_local", "qwen_local", "cursor", "hermes_local"]);
 
 /** Display list includes all real adapter types plus UI-only coming-soon entries. */
 const ADAPTER_DISPLAY_LIST: { value: string; label: string; comingSoon: boolean }[] = [
@@ -1085,6 +1094,7 @@ function AdapterTypeDropdown({
           <span className="inline-flex items-center gap-1.5">
             {value === "codebuddy_local" ? <CodeBuddyLogoIcon className="h-3.5 w-3.5" /> : null}
             {value === "opencode_local" ? <OpenCodeLogoIcon className="h-3.5 w-3.5" /> : null}
+            {value === "qwen_local" ? <QwenLogoIcon className="h-3.5 w-3.5" /> : null}
             <span>
               {t(adapterLabels[value] ?? value, {
                 defaultValue: adapterLabels[value] ?? value,
@@ -1113,6 +1123,7 @@ function AdapterTypeDropdown({
             <span className="inline-flex items-center gap-1.5">
               {item.value === "codebuddy_local" ? <CodeBuddyLogoIcon className="h-3.5 w-3.5" /> : null}
               {item.value === "opencode_local" ? <OpenCodeLogoIcon className="h-3.5 w-3.5" /> : null}
+              {item.value === "qwen_local" ? <QwenLogoIcon className="h-3.5 w-3.5" /> : null}
               <span>{t(item.label, { defaultValue: item.label })}</span>
             </span>
             {item.comingSoon && (

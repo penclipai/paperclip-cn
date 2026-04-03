@@ -52,6 +52,11 @@ describe("adapter model listing", () => {
     expect(models).toEqual([]);
   });
 
+  it("returns an empty list for qwen because models are user-configured", async () => {
+    const models = await listAdapterModels("qwen_local");
+    expect(models).toEqual([]);
+  });
+
   it("returns codex fallback models when no OpenAI key is available", async () => {
     const fetchSpy = vi.spyOn(globalThis, "fetch");
     const models = await listAdapterModels("codex_local");
