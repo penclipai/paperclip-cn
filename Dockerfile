@@ -27,6 +27,7 @@ COPY server/package.json server/
 COPY ui/package.json ui/
 COPY packages/shared/package.json packages/shared/
 COPY packages/db/package.json packages/db/
+COPY packages/desktop-electron/package.json packages/desktop-electron/
 COPY packages/adapter-utils/package.json packages/adapter-utils/
 COPY packages/adapters/claude-local/package.json packages/adapters/claude-local/
 COPY packages/adapters/codebuddy-local/package.json packages/adapters/codebuddy-local/
