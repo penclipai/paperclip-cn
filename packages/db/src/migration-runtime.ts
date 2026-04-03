@@ -3,25 +3,13 @@ import { createServer } from "node:net";
 import path from "node:path";
 import { ensurePostgresDatabase, getPostgresDataDirectory } from "./client.js";
 import { createEmbeddedPostgresLogBuffer, formatEmbeddedPostgresError } from "./embedded-postgres-error.js";
-import { recoverEmbeddedPostgresStart, shouldRetryEmbeddedPostgresStart } from "./embedded-postgres-recovery.js";
+import {
+  recoverEmbeddedPostgresStart,
+  resetIncompleteEmbeddedPostgresDataDir,
+  shouldRetryEmbeddedPostgresStart,
+} from "./embedded-postgres-recovery.js";
+import { loadEmbeddedPostgresCtor } from "./embedded-postgres-runtime-installer.js";
 import { resolveDatabaseTarget } from "./runtime-config.js";
-
-type EmbeddedPostgresInstance = {
-  initialise(): Promise<void>;
-  start(): Promise<void>;
-  stop(): Promise<void>;
-};
-
-type EmbeddedPostgresCtor = new (opts: {
-  databaseDir: string;
-  user: string;
-  password: string;
-  port: number;
-  persistent: boolean;
-  initdbFlags?: string[];
-  onLog?: (message: unknown) => void;
-  onError?: (message: unknown) => void;
-}) => EmbeddedPostgresInstance;
 
 export type MigrationConnection = {
   connectionString: string;
@@ -77,17 +65,6 @@ async function findAvailablePort(startPort: number): Promise<number> {
   );
 }
 
-async function loadEmbeddedPostgresCtor(): Promise<EmbeddedPostgresCtor> {
-  try {
-    const mod = await import("embedded-postgres");
-    return mod.default as EmbeddedPostgresCtor;
-  } catch {
-    throw new Error(
-      "Embedded PostgreSQL support requires dependency `embedded-postgres`. Reinstall dependencies and try again.",
-    );
-  }
-}
-
 async function ensureEmbeddedPostgresConnection(
   dataDir: string,
   preferredPort: number,
@@ -111,6 +88,12 @@ async function ensureEmbeddedPostgresConnection(
       onLog: logBuffer.append,
       onError: logBuffer.append,
     });
+
+  if (!runningPid && resetIncompleteEmbeddedPostgresDataDir(dataDir)) {
+    process.emitWarning(
+      `Embedded PostgreSQL data dir ${dataDir} was left half-initialized; resetting it before retrying startup.`,
+    );
+  }
 
   if (!runningPid && existsSync(pgVersionFile)) {
     try {

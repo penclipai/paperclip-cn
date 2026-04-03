@@ -1,4 +1,4 @@
-import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -185,6 +185,41 @@ describe("recoverEmbeddedPostgresStart", () => {
       await expect(recoverEmbeddedPostgresStart(requestedDataDir)).resolves.toEqual([]);
       expect(killSpy).toHaveBeenCalledWith(101);
       expect(existsSync(postmasterPidFile)).toBe(true);
+    } finally {
+      rmSync(requestedDataDir, { recursive: true, force: true });
+    }
+  });
+
+  it("resets a half-initialized embedded postgres data dir when pg_control is missing", async () => {
+    const requestedDataDir = mkdtempSync(path.join(os.tmpdir(), "paperclip-db-"));
+    writeFileSync(path.join(requestedDataDir, "PG_VERSION"), "18\n");
+
+    const { resetIncompleteEmbeddedPostgresDataDir } = await import(
+      "./embedded-postgres-recovery.js"
+    );
+
+    try {
+      expect(resetIncompleteEmbeddedPostgresDataDir(requestedDataDir)).toBe(true);
+      expect(existsSync(requestedDataDir)).toBe(false);
+    } finally {
+      rmSync(requestedDataDir, { recursive: true, force: true });
+    }
+  });
+
+  it("keeps an embedded postgres data dir when the control file exists", async () => {
+    const requestedDataDir = mkdtempSync(path.join(os.tmpdir(), "paperclip-db-"));
+    const globalDir = path.join(requestedDataDir, "global");
+    writeFileSync(path.join(requestedDataDir, "PG_VERSION"), "18\n");
+    mkdirSync(globalDir, { recursive: true });
+    writeFileSync(path.join(globalDir, "pg_control"), "ok");
+
+    const { resetIncompleteEmbeddedPostgresDataDir } = await import(
+      "./embedded-postgres-recovery.js"
+    );
+
+    try {
+      expect(resetIncompleteEmbeddedPostgresDataDir(requestedDataDir)).toBe(false);
+      expect(existsSync(requestedDataDir)).toBe(true);
     } finally {
       rmSync(requestedDataDir, { recursive: true, force: true });
     }

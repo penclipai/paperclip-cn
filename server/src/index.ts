@@ -25,6 +25,7 @@ import {
   companyMemberships,
   instanceUserRoles,
 } from "@penclipai/db";
+import { loadEmbeddedPostgresCtor } from "@penclipai/db/embedded-postgres-runtime-installer";
 import detectPort from "detect-port";
 import { createApp } from "./app.js";
 import { loadConfig } from "./config.js";
@@ -59,18 +60,6 @@ type EmbeddedPostgresInstance = {
   start(): Promise<void>;
   stop(): Promise<void>;
 };
-
-type EmbeddedPostgresCtor = new (opts: {
-  databaseDir: string;
-  user: string;
-  password: string;
-  port: number;
-  persistent: boolean;
-  initdbFlags?: string[];
-  onLog?: (message: unknown) => void;
-  onError?: (message: unknown) => void;
-}) => EmbeddedPostgresInstance;
-
 
 export interface StartedServer {
   server: ReturnType<typeof createServer>;
@@ -270,16 +259,14 @@ export async function startServer(): Promise<StartedServer> {
     activeDatabaseConnectionString = config.databaseUrl;
     startupDbInfo = { mode: "external-postgres", connectionString: config.databaseUrl };
   } else {
-    const moduleName = "embedded-postgres";
-    let EmbeddedPostgres: EmbeddedPostgresCtor;
-    try {
-      const mod = await import(moduleName);
-      EmbeddedPostgres = mod.default as EmbeddedPostgresCtor;
-    } catch {
-      throw new Error(
+    const EmbeddedPostgres = await loadEmbeddedPostgresCtor({
+      logger: {
+        warn: (message: string) => logger.warn(message),
+        info: (message: string) => logger.info(message),
+      },
+      missingDependencyMessage:
         "Embedded PostgreSQL mode requires dependency `embedded-postgres`. Reinstall dependencies (without omitting required packages), or set DATABASE_URL for external Postgres.",
-      );
-    }
+    });
   
     const dataDir = resolve(config.embeddedPostgresDataDir);
     const configuredPort = config.embeddedPostgresPort;

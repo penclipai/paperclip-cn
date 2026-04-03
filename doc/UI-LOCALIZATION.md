@@ -251,6 +251,8 @@ Paperclip CN 品牌替换必须遵守以下边界：
 5. 对日期、时间、金额、词元数、相对时间，统一走 helper，不要手写格式化
 6. 对服务端错误，优先走服务端翻译，不要在前端重复硬编码 fallback
 7. 对运行时动态 prompt，优先复用外层统一注入点，不要在具体 adapter 或页面里各自拼接
+8. 如果 UI 展示的是服务端返回的 warning、validation hint、timeline/event 描述，不要直接透传原始英文
+   - 优先让服务端按 locale 返回，或在前端通过受控 key / helper 做映射
 
 ## 9. 中文措辞准则
 
@@ -360,10 +362,14 @@ pnpm build
 - 首屏首次进入时，`html lang` 是否符合预期
 - `?lng=` 是否能覆盖请求头和浏览器语言
 - 语言切换后刷新页面是否保持用户选择
+- 如果本次改动触及布局容器
+  - 确认 loading skeleton / placeholder / error shell 与 live 状态使用一致的宽度和间距约束，避免出现“先窄后宽”或其他明显跳变
 - onboarding / dialog / wizard 里的默认文案是否会跟随语言变化
   - 仅在用户尚未手动编辑默认草稿时，才应该自动同步
 - 图表图例、状态词、优先级词是否全部走翻译 helper
   - 不要在组件里写死中文或英文枚举标签
+- UI 中直接展示的服务端 warning、validation hint、timeline/event 描述是否仍经过 locale 控制
+  - 不要只检查页面壳层中文，漏掉 bundle / activity / warning banner 里的原始英文
 - 如果本次改动涉及运行时动态 prompt 或 operator remediation
   - 确认所选语言下的运行时说明仍会被注入，而且不要因 adapter 差异出现一处有翻译、一处没有翻译
 

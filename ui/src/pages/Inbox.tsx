@@ -260,14 +260,22 @@ export function InboxIssueMetaLeading({
 }
 
 function issueActivityText(t: ReturnType<typeof useTranslation>["t"], issue: Issue): string {
-  return issue.lastExternalCommentAt
+  const activityAt = issue.lastActivityAt ?? issue.lastExternalCommentAt ?? issue.updatedAt;
+  const lastActivityTimestamp = issue.lastActivityAt ? new Date(issue.lastActivityAt).getTime() : 0;
+  const lastExternalCommentTimestamp = issue.lastExternalCommentAt
+    ? new Date(issue.lastExternalCommentAt).getTime()
+    : 0;
+  const isCommentActivity = lastExternalCommentTimestamp > 0
+    && (lastActivityTimestamp === 0 || lastExternalCommentTimestamp >= lastActivityTimestamp);
+
+  return isCommentActivity
     ? t("commented {{value}}", {
-      value: timeAgo(issue.lastExternalCommentAt),
-      defaultValue: `commented ${timeAgo(issue.lastExternalCommentAt)}`,
+      value: timeAgo(activityAt),
+      defaultValue: `commented ${timeAgo(activityAt)}`,
     })
     : t("updated {{value}}", {
-      value: timeAgo(issue.updatedAt),
-      defaultValue: `updated ${timeAgo(issue.updatedAt)}`,
+      value: timeAgo(activityAt),
+      defaultValue: `updated ${timeAgo(activityAt)}`,
     });
 }
 
@@ -301,7 +309,7 @@ export function InboxIssueTrailingColumns({
   currentUserId: string | null;
 }) {
   const { t } = useTranslation();
-  const activityText = timeAgo(issue.lastExternalCommentAt ?? issue.updatedAt);
+  const activityText = timeAgo(issue.lastActivityAt ?? issue.lastExternalCommentAt ?? issue.updatedAt);
   const userLabel = formatAssigneeUserLabel(issue.assigneeUserId, currentUserId)
     ?? t("User", { defaultValue: "User" });
 

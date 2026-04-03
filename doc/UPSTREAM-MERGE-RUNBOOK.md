@@ -132,6 +132,8 @@ git merge <upstream remote>/master
 - 用 Node 脚本替代 Unix-only shell 片段
 - `dev/build` 链路中的 Windows 兼容处理
 - `tsx` / dev watch 相关兼容修复
+- Windows 下嵌套 `pnpm exec tsx ...` 这类命令链的兼容修复
+  - 如果本次同步触及 dev/runtime 脚本，优先确认是否仍应保持 `pnpm exec node --import tsx ...` 这类更稳的写法
 
 ### 4.4 范围基线
 
@@ -319,6 +321,8 @@ git merge <upstream remote>/master
 - 服务端仍返回 `Content-Language` 和 `Vary: Accept-Language`
 - wizard / dialog 默认草稿仍只同步“未编辑”的默认值
 - 共享组件没有把状态、优先级、图例文案重新写死
+- loading / skeleton / placeholder / error shell 没有沿用旧布局约束，导致 live 页面与加载态宽度或层级不一致
+- UI 里直接展示的服务端 warning、validation hint、timeline/event 描述没有透传成英文原文
 - CLI 错误提示、server 纯文本/JSON remediation、onboarding manifest / onboarding.txt、导出或邀请 snippet 等运行期文案，没有被遗漏在审计范围之外
 
 术语以 `doc/UI-LOCALIZATION.md` 为准，尤其留意：
@@ -413,7 +417,16 @@ pnpm build
 - 高可见导航仍是中文
 - 没有明显把 `Agent` 冲回英文
 
-### 8.3 交付方式
+### 8.3 PR 自查
+
+在 push / 开 PR 前，先做一轮定向自查，至少覆盖：
+
+- 这次触及的页面、共享组件和 locale diff 中，是否还留有硬编码英文、未走 helper 的 aria/tooltip/label
+- upstream 如果改了容器宽度或页面结构，loading / skeleton / empty / error 状态是否和 live 页面保持同一布局约束
+- upstream 如果引入了搜索、筛选或新的 bulk action，动作作用域是否仍与当前可见列表一致
+- PR 描述是否按当前模板补齐必要字段，不要让流程性问题留到 review 时再补
+
+### 8.4 交付方式
 
 完成验证后，通过工作分支交付，不直接更新 `master`：
 

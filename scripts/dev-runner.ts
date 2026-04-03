@@ -343,7 +343,7 @@ async function runPnpm(args: string[], options: {
 
 async function getMigrationStatusPayload() {
   const status = await runPnpm(
-    ["--filter", "@penclipai/db", "exec", "tsx", "src/migration-status.ts", "--json"],
+    ["--filter", "@penclipai/db", "exec", "node", "--import", "tsx", "src/migration-status.ts", "--json"],
     { env },
   );
   if (status.code !== 0) {

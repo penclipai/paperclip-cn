@@ -97,6 +97,18 @@ export function shouldRetryEmbeddedPostgresStart(recentLogs: string[]): boolean 
   return recentLogs.some((line) => SHARED_MEMORY_IN_USE_PATTERN.test(line));
 }
 
+export function resetIncompleteEmbeddedPostgresDataDir(dataDir: string): boolean {
+  const pgVersionFile = path.resolve(dataDir, "PG_VERSION");
+  const controlFile = path.resolve(dataDir, "global", "pg_control");
+
+  if (!existsSync(pgVersionFile) || existsSync(controlFile)) {
+    return false;
+  }
+
+  rmSync(dataDir, { recursive: true, force: true });
+  return true;
+}
+
 export async function recoverEmbeddedPostgresStart(dataDir: string): Promise<number[]> {
   const matchingProcesses = (await listPostgresProcesses())
     .filter((processInfo) => matchesDataDir(processInfo.commandLine, dataDir))
