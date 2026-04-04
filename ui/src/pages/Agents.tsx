@@ -14,6 +14,7 @@ import { agentStatusDot, agentStatusDotDefault } from "../lib/status-colors";
 import { EntityRow } from "../components/EntityRow";
 import { EmptyState } from "../components/EmptyState";
 import { PageSkeleton } from "../components/PageSkeleton";
+import { AgentActionMenu } from "../components/AgentActionMenu";
 import { relativeTime, cn, agentRouteRef, agentUrl } from "../lib/utils";
 import { PageTabBar } from "../components/PageTabBar";
 import { Tabs } from "@/components/ui/tabs";
@@ -283,6 +284,7 @@ export function Agents() {
                         <StatusBadge status={agent.status} />
                       </span>
                     </div>
+                    <AgentActionMenu agent={agent} companyId={selectedCompanyId!} />
                   </div>
                 }
               />
