@@ -467,8 +467,8 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     instructionsPrefix,
     renderedBootstrapPrompt,
     sessionHandoffNote,
-    localizationPromptNote,
     renderedPrompt,
+    localizationPromptNote,
   ]);
   const promptMetrics = {
     promptChars: prompt.length,

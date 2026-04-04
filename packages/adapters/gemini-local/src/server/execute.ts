@@ -311,8 +311,8 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     sessionHandoffNote,
     paperclipEnvNote,
     apiAccessNote,
-    localizationPromptNote,
     renderedPrompt,
+    localizationPromptNote,
   ]);
   const promptMetrics = {
     promptChars: prompt.length,

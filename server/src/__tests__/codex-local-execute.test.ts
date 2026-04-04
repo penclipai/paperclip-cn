@@ -98,7 +98,9 @@ describe("codex execute", () => {
           },
           promptTemplate: "Follow the paperclip heartbeat.",
         },
-        context: {},
+        context: {
+          paperclipLocalizationPromptMarkdown: "Reply in zh-CN.",
+        },
         authToken: "run-jwt-token",
         onLog: async (stream, chunk) => {
           logs.push({ stream, chunk });
@@ -175,7 +177,9 @@ describe("codex execute", () => {
           },
           promptTemplate: "Follow the paperclip heartbeat.",
         },
-        context: {},
+        context: {
+          paperclipLocalizationPromptMarkdown: "Reply in zh-CN.",
+        },
         authToken: "run-jwt-token",
         onLog: async () => {},
         onMeta: async (meta) => {
@@ -236,7 +240,9 @@ describe("codex execute", () => {
           },
           promptTemplate: "Follow the paperclip heartbeat.",
         },
-        context: {},
+        context: {
+          paperclipLocalizationPromptMarkdown: "Reply in zh-CN.",
+        },
         authToken: "run-jwt-token",
         onLog: async () => {},
         onMeta: async (meta) => {
@@ -317,7 +323,9 @@ describe("codex execute", () => {
           },
           promptTemplate: "Follow the paperclip heartbeat.",
         },
-        context: {},
+        context: {
+          paperclipLocalizationPromptMarkdown: "Reply in zh-CN.",
+        },
         authToken: "run-jwt-token",
         onLog: async (stream, chunk) => {
           logs.push({ stream, chunk });
@@ -331,6 +339,11 @@ describe("codex execute", () => {
       expect(capture.codexHome).toBe(isolatedCodexHome);
       expect(capture.argv).toEqual(expect.arrayContaining(["exec", "--json", "-"]));
       expect(capture.prompt).toContain("Follow the paperclip heartbeat.");
+      expect(capture.prompt).toContain("Reply in zh-CN.");
+      expect(capture.prompt.indexOf("Follow the paperclip heartbeat.")).toBeLessThan(
+        capture.prompt.indexOf("Reply in zh-CN."),
+      );
+      expect(capture.prompt.trimEnd().endsWith("Reply in zh-CN.")).toBe(true);
       expect(capture.paperclipEnvKeys).toEqual(
         expect.arrayContaining([
           "PAPERCLIP_AGENT_ID",

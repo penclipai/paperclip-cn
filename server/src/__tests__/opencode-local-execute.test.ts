@@ -121,15 +121,14 @@ describe("opencode execute", () => {
       expect(capture.prompt).toContain("Runtime note:\n- Use zh-CN.");
       expect(capture.prompt).toContain("Follow the paperclip heartbeat.");
       expect(capture.prompt.indexOf("Session handoff note.")).toBeLessThan(
-        capture.prompt.indexOf("Runtime note:\n- Use zh-CN."),
-      );
-      expect(capture.prompt.indexOf("Runtime note:\n- Use zh-CN.")).toBeLessThan(
         capture.prompt.indexOf("Follow the paperclip heartbeat."),
       );
-      expect(invocationPrompt).toContain("Runtime note:\n- Use zh-CN.");
-      expect(promptMetrics.sessionHandoffChars).toBe(
-        ["Session handoff note.", "Runtime note:\n- Use zh-CN."].join("\n\n").length,
+      expect(capture.prompt.indexOf("Follow the paperclip heartbeat.")).toBeLessThan(
+        capture.prompt.indexOf("Runtime note:\n- Use zh-CN."),
       );
+      expect(capture.prompt.trimEnd().endsWith("Runtime note:\n- Use zh-CN.")).toBe(true);
+      expect(invocationPrompt.trimEnd().endsWith("Runtime note:\n- Use zh-CN.")).toBe(true);
+      expect(promptMetrics.sessionHandoffChars).toBe("Session handoff note.".length);
     } finally {
       resetOpenCodeModelsCacheForTests();
       if (previousHome === undefined) {

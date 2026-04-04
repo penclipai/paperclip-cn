@@ -411,8 +411,8 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const prompt = joinPromptSections([
     renderedBootstrapPrompt,
     sessionHandoffNote,
-    localizationPromptNote,
     renderedPrompt,
+    localizationPromptNote,
   ]);
   const promptMetrics = {
     promptChars: prompt.length,

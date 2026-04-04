@@ -308,8 +308,8 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const userPrompt = joinPromptSections([
     renderedBootstrapPrompt,
     sessionHandoffNote,
-    localizationPromptNote,
     renderedHeartbeatPrompt,
+    localizationPromptNote,
   ]);
   const promptMetrics = {
     systemPromptChars: renderedSystemPromptExtension.length,

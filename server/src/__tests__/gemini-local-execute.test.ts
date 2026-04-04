@@ -82,7 +82,9 @@ describe("gemini execute", () => {
           },
           promptTemplate: "Follow the paperclip heartbeat.",
         },
-        context: {},
+        context: {
+          paperclipLocalizationPromptMarkdown: "Reply in zh-CN.",
+        },
         authToken: "run-jwt-token",
         onLog: async () => {},
         onMeta: async (meta) => {
@@ -103,6 +105,11 @@ describe("gemini execute", () => {
       const promptArg = promptFlagIndex >= 0 ? capture.argv[promptFlagIndex + 1] : "";
       expect(promptArg).toContain("Follow the paperclip heartbeat.");
       expect(promptArg).toContain("Paperclip runtime note:");
+      expect(promptArg).toContain("Reply in zh-CN.");
+      expect(promptArg.indexOf("Follow the paperclip heartbeat.")).toBeLessThan(
+        promptArg.indexOf("Reply in zh-CN."),
+      );
+      expect(promptArg.trimEnd().endsWith("Reply in zh-CN.")).toBe(true);
       expect(capture.paperclipEnvKeys).toEqual(
         expect.arrayContaining([
           "PAPERCLIP_AGENT_ID",
@@ -116,6 +123,7 @@ describe("gemini execute", () => {
       expect(invocationPrompt).toContain("PAPERCLIP_API_URL");
       expect(invocationPrompt).toContain("Paperclip API access note:");
       expect(invocationPrompt).toContain("run_shell_command");
+      expect(invocationPrompt.trimEnd().endsWith("Reply in zh-CN.")).toBe(true);
       expect(result.question).toBeNull();
     } finally {
       if (previousHome === undefined) {

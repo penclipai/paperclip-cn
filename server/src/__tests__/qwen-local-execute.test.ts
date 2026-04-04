@@ -217,8 +217,12 @@ console.log(JSON.stringify({
     expect(capture.prompt).toContain("Paperclip runtime note:");
     expect(capture.prompt).toContain("Reply in the user's language.");
     expect(capture.prompt).toContain("Continue issue issue-123 for Qwen Agent.");
+    expect(capture.prompt.indexOf("Continue issue issue-123 for Qwen Agent.")).toBeLessThan(
+      capture.prompt.indexOf("Reply in the user's language."),
+    );
+    expect(capture.prompt.trimEnd().endsWith("Reply in the user's language.")).toBe(true);
     expect(invocationPrompt).toContain("Bootstrap agent-1.");
-    expect(invocationPrompt).toContain("Reply in the user's language.");
+    expect(invocationPrompt.trimEnd().endsWith("Reply in the user's language.")).toBe(true);
     expect(await fs.realpath(path.join(root, ".qwen", "skills", "ascii-heart"))).toBe(
       await fs.realpath(asciiHeartDir),
     );

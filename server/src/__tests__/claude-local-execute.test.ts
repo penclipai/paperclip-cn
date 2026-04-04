@@ -71,7 +71,9 @@ describe("claude execute", () => {
           },
           promptTemplate: "Follow the paperclip heartbeat.",
         },
-        context: {},
+        context: {
+          paperclipLocalizationPromptMarkdown: "Reply in zh-CN.",
+        },
         authToken: "run-jwt-token",
         onLog: async () => {},
         onMeta: async (meta) => {
@@ -82,10 +84,21 @@ describe("claude execute", () => {
 
       expect(result.exitCode).toBe(0);
       expect(result.errorMessage).toBeNull();
+      const capture = JSON.parse(await fs.readFile(capturePath, "utf8")) as {
+        argv: string[];
+        prompt: string;
+        claudeConfigDir: string | null;
+      };
       expect(loggedCommand).toBe(commandPath);
       expect(loggedEnv.HOME).toBe(root);
       expect(loggedEnv.CLAUDE_CONFIG_DIR).toBe(claudeConfigDir);
       expect(loggedEnv.PAPERCLIP_RESOLVED_COMMAND).toBe(commandPath);
+      expect(capture.prompt).toContain("Follow the paperclip heartbeat.");
+      expect(capture.prompt).toContain("Reply in zh-CN.");
+      expect(capture.prompt.indexOf("Follow the paperclip heartbeat.")).toBeLessThan(
+        capture.prompt.indexOf("Reply in zh-CN."),
+      );
+      expect(capture.prompt.trimEnd().endsWith("Reply in zh-CN.")).toBe(true);
     } finally {
       if (previousHome === undefined) delete process.env.HOME;
       else process.env.HOME = previousHome;

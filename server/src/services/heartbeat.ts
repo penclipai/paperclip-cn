@@ -47,9 +47,13 @@ import { issueService } from "./issues.js";
 import { executionWorkspaceService, mergeExecutionWorkspaceConfig } from "./execution-workspaces.js";
 import { workspaceOperationService } from "./workspace-operations.js";
 import {
-  resolveEffectiveRuntimeUiLocaleForContextSnapshot,
   resolveRuntimeLocalizationPrompt,
 } from "./agent-runtime-localization.js";
+import {
+  canCoalesceWithRunLocale,
+  materializeRuntimeUiLocaleContextSnapshot,
+  resolveContextRuntimeUiLocale,
+} from "./heartbeat-runtime-locale.js";
 import {
   buildExecutionWorkspaceAdapterConfig,
   gateProjectExecutionWorkspacePolicy,
@@ -744,50 +748,6 @@ function enrichWakeContextSnapshot(input: {
     taskKey,
     wakeCommentId,
   };
-}
-
-function materializeRuntimeUiLocaleContextSnapshot(
-  contextSnapshot: Record<string, unknown>,
-  runtimeDefaultLocale: UiLocale,
-) {
-  const nextContextSnapshot: Record<string, unknown> = {
-    ...contextSnapshot,
-    runtimeUiLocale: resolveEffectiveRuntimeUiLocaleForContextSnapshot(
-      contextSnapshot,
-      runtimeDefaultLocale,
-    ),
-  };
-  delete nextContextSnapshot.requestedUiLocale;
-  return nextContextSnapshot;
-}
-
-function resolveContextRuntimeUiLocale(
-  contextSnapshot: Record<string, unknown> | null | undefined,
-  runtimeDefaultLocale: UiLocale,
-) {
-  return resolveEffectiveRuntimeUiLocaleForContextSnapshot(
-    contextSnapshot,
-    runtimeDefaultLocale,
-  );
-}
-
-function canCoalesceWithRunLocale(input: {
-  existingContextSnapshot: Record<string, unknown> | null | undefined;
-  incomingContextSnapshot: Record<string, unknown>;
-  existingStatus: string | null | undefined;
-  runtimeDefaultLocale: UiLocale;
-}) {
-  if (input.existingStatus !== "running") return true;
-  return (
-    resolveContextRuntimeUiLocale(
-      input.existingContextSnapshot,
-      input.runtimeDefaultLocale,
-    ) ===
-    resolveContextRuntimeUiLocale(
-      input.incomingContextSnapshot,
-      input.runtimeDefaultLocale,
-    )
-  );
 }
 
 function mergeCoalescedContextSnapshot(
