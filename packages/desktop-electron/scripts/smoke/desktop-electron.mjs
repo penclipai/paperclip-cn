@@ -250,6 +250,67 @@ async function readDesktopLayoutState(page) {
   });
 }
 
+async function readTitlebarChromeState(page) {
+  return await page.evaluate(() => {
+    const colorCanvas = document.createElement("canvas");
+    const colorContext = colorCanvas.getContext("2d");
+    const normalizeColor = (value, fallback) => {
+      if (!colorContext) {
+        return value || fallback;
+      }
+
+      try {
+        colorContext.canvas.width = 1;
+        colorContext.canvas.height = 1;
+        colorContext.clearRect(0, 0, 1, 1);
+        colorContext.fillStyle = fallback;
+        colorContext.fillStyle = value;
+        colorContext.fillRect(0, 0, 1, 1);
+        const [red = 0, green = 0, blue = 0, alpha = 255] = colorContext.getImageData(0, 0, 1, 1).data;
+        const toHex = (channel) => Math.max(0, Math.min(255, Math.round(channel))).toString(16).padStart(2, "0");
+        const base = `#${toHex(red)}${toHex(green)}${toHex(blue)}`;
+        return alpha >= 254 ? base : `${base}${toHex((alpha / 255) * 255)}`;
+      } catch {
+        return fallback;
+      }
+    };
+
+    const resolveCssColor = (variableName, property) => {
+      const probe = document.createElement("span");
+      probe.style.position = "absolute";
+      probe.style.width = "0";
+      probe.style.height = "0";
+      probe.style.opacity = "0";
+      probe.style.pointerEvents = "none";
+      probe.style.color = property === "color" ? `var(${variableName})` : "transparent";
+      probe.style.backgroundColor = property === "backgroundColor" ? `var(${variableName})` : "transparent";
+      (document.body ?? document.documentElement).append(probe);
+      const value = getComputedStyle(probe)[property];
+      probe.remove();
+      return normalizeColor(value, property === "color" ? "#000000" : "#ffffff");
+    };
+
+    const titlebar = document.querySelector(".cet-titlebar");
+    const divider = document.querySelector('[data-testid="desktop-titlebar-divider"]');
+    const backButton = document.querySelector('[data-testid="desktop-nav-back"]');
+    const forwardButton = document.querySelector('[data-testid="desktop-nav-forward"]');
+    const titlebarStyles = titlebar instanceof HTMLElement ? getComputedStyle(titlebar) : null;
+    const dividerStyles = divider instanceof HTMLElement ? getComputedStyle(divider) : null;
+
+    return {
+      hasBackButton: backButton instanceof HTMLElement,
+      hasForwardButton: forwardButton instanceof HTMLElement,
+      backDisabled: backButton instanceof HTMLButtonElement ? backButton.disabled : null,
+      forwardDisabled: forwardButton instanceof HTMLButtonElement ? forwardButton.disabled : null,
+      hasDivider: divider instanceof HTMLElement && dividerStyles?.display !== "none",
+      titlebarBackground: titlebarStyles ? normalizeColor(titlebarStyles.backgroundColor, "#ffffff") : null,
+      dividerBackground: dividerStyles ? normalizeColor(dividerStyles.backgroundColor, "#000000") : null,
+      pageBackground: resolveCssColor("--background", "backgroundColor"),
+      pageBorder: resolveCssColor("--border", "color"),
+    };
+  });
+}
+
 function assertDesktopLayoutState(state, routeLabel) {
   if (!state.cetContainer || !state.root || !state.main) {
     throw new Error(`Missing layout nodes while validating ${routeLabel}.`);
@@ -270,6 +331,28 @@ function assertDesktopLayoutState(state, routeLabel) {
   if ((state.appShellPaddingTop ?? 0) > 1) {
     throw new Error(
       `${routeLabel} retained an unexpected desktop top inset (${state.appShellPaddingTop}px).`,
+    );
+  }
+}
+
+function assertTitlebarChromeState(state, routeLabel) {
+  if (!state.hasBackButton || !state.hasForwardButton) {
+    throw new Error(`${routeLabel} did not render both desktop navigation buttons.`);
+  }
+
+  if (state.titlebarBackground !== state.pageBackground) {
+    throw new Error(
+      `${routeLabel} titlebar background "${state.titlebarBackground}" did not match page background "${state.pageBackground}".`,
+    );
+  }
+
+  if (!state.hasDivider) {
+    throw new Error(`${routeLabel} did not render the desktop titlebar divider.`);
+  }
+
+  if (state.dividerBackground !== state.pageBorder) {
+    throw new Error(
+      `${routeLabel} titlebar divider "${state.dividerBackground}" did not match page border "${state.pageBorder}".`,
     );
   }
 }
@@ -364,6 +447,14 @@ async function runThemeScenario(mode, theme, artifactDir) {
           `Unexpected splash text token "${splashState.textColor}" for ${theme} theme (expected "${expectation.tokens.text}").`,
         );
       }
+
+      if (await page.locator('[data-testid="desktop-nav-back"]').count() !== 0) {
+        throw new Error("Splash should not render a desktop back button.");
+      }
+
+      if (await page.locator('[data-testid="desktop-nav-forward"]').count() !== 0) {
+        throw new Error("Splash should not render a desktop forward button.");
+      }
     } catch (error) {
       await writeFailureSnapshot(page, artifactDir, `${locale}-${theme}`);
       throw error;
@@ -386,8 +477,21 @@ async function runThemeScenario(mode, theme, artifactDir) {
       return Boolean(root && root.childElementCount > 0);
     }, undefined, { timeout: 30_000 });
 
+    await page.locator('[data-testid="desktop-nav-back"]').waitFor({ timeout: 15_000 });
+    await page.locator('[data-testid="desktop-nav-forward"]').waitFor({ timeout: 15_000 });
+
+    const initialTitlebarState = await readTitlebarChromeState(page);
+    assertTitlebarChromeState(initialTitlebarState, "desktop root");
+
+    if (!initialTitlebarState.backDisabled || !initialTitlebarState.forwardDisabled) {
+      throw new Error("Desktop root should start with disabled back/forward buttons after splash history is cleared.");
+    }
+
     const company = await createSmokeCompany(origin, theme);
-    await page.goto(`${origin}/${company.issuePrefix}/dashboard`);
+    const dashboardUrl = `${origin}/${company.issuePrefix}/dashboard`;
+    const issuesUrl = `${origin}/${company.issuePrefix}/issues`;
+
+    await page.goto(dashboardUrl);
     await page.waitForLoadState("domcontentloaded");
     await page.waitForFunction(() => {
       const root = document.querySelector("#root");
@@ -397,6 +501,37 @@ async function runThemeScenario(mode, theme, artifactDir) {
 
     const layoutState = await readDesktopLayoutState(page);
     assertDesktopLayoutState(layoutState, "desktop dashboard");
+    assertTitlebarChromeState(await readTitlebarChromeState(page), "desktop dashboard");
+
+    await page.goto(issuesUrl);
+    await page.waitForLoadState("domcontentloaded");
+    await page.waitForFunction(() => {
+      const back = document.querySelector('[data-testid="desktop-nav-back"]');
+      const forward = document.querySelector('[data-testid="desktop-nav-forward"]');
+      return (
+        back instanceof HTMLButtonElement &&
+        forward instanceof HTMLButtonElement &&
+        !back.disabled &&
+        forward.disabled
+      );
+    }, undefined, { timeout: 15_000 });
+
+    const issuesTitlebarState = await readTitlebarChromeState(page);
+    assertTitlebarChromeState(issuesTitlebarState, "desktop issues");
+
+    await Promise.all([
+      page.waitForURL(new RegExp(`${company.issuePrefix}/dashboard/?$`), { timeout: 15_000 }),
+      page.locator('[data-testid="desktop-nav-back"]').click(),
+    ]);
+
+    if (page.url().startsWith("data:")) {
+      throw new Error("Desktop back navigation unexpectedly returned to the splash page.");
+    }
+
+    await Promise.all([
+      page.waitForURL(new RegExp(`${company.issuePrefix}/issues/?$`), { timeout: 15_000 }),
+      page.locator('[data-testid="desktop-nav-forward"]').click(),
+    ]);
 
     const boardShot = path.resolve(artifactDir, `board-${locale}-${theme}.png`);
     await page.screenshot({ path: boardShot, fullPage: true });

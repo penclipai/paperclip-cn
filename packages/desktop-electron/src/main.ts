@@ -1,7 +1,7 @@
 import { fork, type ChildProcess } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { app, BrowserWindow, ipcMain, Menu, nativeTheme, shell } from "electron";
+import { app, BrowserWindow, ipcMain, Menu, nativeTheme, shell, type WebContents } from "electron";
 import { setupTitlebarAndAttachToWindow } from "custom-electron-titlebar/main";
 import {
   DESKTOP_APP_ID,
@@ -45,6 +45,11 @@ type NativeTitlebarSyncPayload = {
     symbolColor: string;
     height: number;
   };
+};
+
+type NavigationState = {
+  canGoBack: boolean;
+  canGoForward: boolean;
 };
 
 const __filename = fileURLToPath(import.meta.url);
@@ -149,6 +154,91 @@ function syncNativeTitlebar(
   }
 }
 
+function getNavigationState(contents: WebContents): NavigationState {
+  const history = contents.navigationHistory;
+  const canGoBack = history && typeof history.canGoBack === "function"
+    ? history.canGoBack()
+    : contents.canGoBack();
+  const canGoForward = history && typeof history.canGoForward === "function"
+    ? history.canGoForward()
+    : contents.canGoForward();
+
+  return {
+    canGoBack,
+    canGoForward,
+  };
+}
+
+function emitDesktopShellEvent(
+  win: BrowserWindow,
+  channel: "desktop-shell:navigation-state-changed" | "desktop-shell:refresh-titlebar",
+  payload?: NavigationState,
+): void {
+  if (win.isDestroyed() || win.webContents.isDestroyed()) {
+    return;
+  }
+
+  win.webContents.send(channel, payload);
+}
+
+function emitNavigationState(win: BrowserWindow): void {
+  emitDesktopShellEvent(win, "desktop-shell:navigation-state-changed", getNavigationState(win.webContents));
+}
+
+function emitTitlebarRefresh(win: BrowserWindow): void {
+  emitDesktopShellEvent(win, "desktop-shell:refresh-titlebar");
+}
+
+function clearNavigationHistory(contents: WebContents): void {
+  const history = contents.navigationHistory;
+
+  if (history && typeof history.clear === "function") {
+    history.clear();
+    return;
+  }
+
+  if (typeof contents.clearHistory === "function") {
+    contents.clearHistory();
+  }
+}
+
+function navigateHistory(contents: WebContents, direction: "back" | "forward"): boolean {
+  const history = contents.navigationHistory;
+
+  if (direction === "back") {
+    if (history && typeof history.canGoBack === "function" && history.canGoBack()) {
+      history.goBack();
+      return true;
+    }
+
+    if (contents.canGoBack()) {
+      contents.goBack();
+      return true;
+    }
+
+    return false;
+  }
+
+  if (history && typeof history.canGoForward === "function" && history.canGoForward()) {
+    history.goForward();
+    return true;
+  }
+
+  if (contents.canGoForward()) {
+    contents.goForward();
+    return true;
+  }
+
+  return false;
+}
+
+async function loadMainAppUrl(win: BrowserWindow, url: string): Promise<void> {
+  await win.loadURL(url);
+  clearNavigationHistory(win.webContents);
+  emitNavigationState(win);
+  emitTitlebarRefresh(win);
+}
+
 function ensureWindow(): BrowserWindow {
   if (mainWindow) return mainWindow;
 
@@ -190,6 +280,22 @@ function ensureWindow(): BrowserWindow {
     mainWindow = null;
   });
 
+  mainWindow.on("focus", () => {
+    if (!mainWindow) {
+      return;
+    }
+
+    emitTitlebarRefresh(mainWindow);
+  });
+
+  mainWindow.on("restore", () => {
+    if (!mainWindow) {
+      return;
+    }
+
+    emitTitlebarRefresh(mainWindow);
+  });
+
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     if (shouldOpenExternalNavigation(url, currentAppUrl)) {
       void shell.openExternal(url);
@@ -203,6 +309,31 @@ function ensureWindow(): BrowserWindow {
     if (!shouldOpenExternalNavigation(url, currentAppUrl)) return;
     event.preventDefault();
     void shell.openExternal(url);
+  });
+
+  mainWindow.webContents.on("did-navigate", () => {
+    if (!mainWindow) {
+      return;
+    }
+
+    emitNavigationState(mainWindow);
+  });
+
+  mainWindow.webContents.on("did-navigate-in-page", () => {
+    if (!mainWindow) {
+      return;
+    }
+
+    emitNavigationState(mainWindow);
+  });
+
+  mainWindow.webContents.on("did-stop-loading", () => {
+    if (!mainWindow) {
+      return;
+    }
+
+    emitNavigationState(mainWindow);
+    emitTitlebarRefresh(mainWindow);
   });
 
   return mainWindow;
@@ -311,7 +442,10 @@ async function startWorkerProcess(reason: string): Promise<void> {
     if (message?.type === "ready") {
       clearStartupTimers();
       currentAppUrl = message.payload.apiUrl.replace(/\/api\/?$/, "");
-      void ensureWindow().loadURL(currentAppUrl);
+      void loadMainAppUrl(ensureWindow(), currentAppUrl).catch((error) => {
+        console.warn("[desktop-main] Failed to load desktop app URL:", error);
+        void showStartupError(error instanceof Error ? error.message : String(error));
+      });
       return;
     }
 
@@ -404,6 +538,32 @@ if (!app.requestSingleInstanceLock()) {
     }
 
     return syncNativeTitlebar(win, payload);
+  });
+
+  ipcMain.handle("desktop-shell:get-navigation-state", (event) => {
+    return getNavigationState(event.sender);
+  });
+
+  ipcMain.handle("desktop-shell:navigate-back", (event) => {
+    const didNavigate = navigateHistory(event.sender, "back");
+    const win = BrowserWindow.fromWebContents(event.sender);
+
+    if (win) {
+      emitNavigationState(win);
+    }
+
+    return didNavigate;
+  });
+
+  ipcMain.handle("desktop-shell:navigate-forward", (event) => {
+    const didNavigate = navigateHistory(event.sender, "forward");
+    const win = BrowserWindow.fromWebContents(event.sender);
+
+    if (win) {
+      emitNavigationState(win);
+    }
+
+    return didNavigate;
   });
 
   ipcMain.handle("desktop-shell:set-theme-preference", (_event, theme: unknown) => {
