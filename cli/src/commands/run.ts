@@ -15,6 +15,7 @@ import {
   resolvePaperclipHomeDir,
   resolvePaperclipInstanceId,
 } from "../config/home.js";
+import { seedFirstRun } from "./seed-first-run.js";
 
 interface RunOptions {
   config?: string;
@@ -88,6 +89,26 @@ export async function runCommand(opts: RunOptions): Promise<void> {
       dbUrl: startedServer.databaseUrl,
       baseUrl: resolveBootstrapInviteBaseUrl(config, startedServer),
     });
+  }
+
+  // First-run seeding: create company, CEO agent, and first task if none exist
+  // This enables the `--yes` onboarding flow to create a ready-to-use setup
+  if (opts.yes || opts.repair) {
+    try {
+      const seedResult = await seedFirstRun({
+        apiUrl: startedServer.apiUrl,
+        databaseUrl: startedServer.databaseUrl,
+        companyName: process.env.PAPERCLIP_COMPANY_NAME,
+      });
+      if (seedResult.status === "success") {
+        p.log.success(`Company ready: ${pc.cyan(seedResult.companyName)}`);
+        p.log.message(`CEO: ${pc.cyan(seedResult.agentName)} (${pc.dim(seedResult.adapterType)})`);
+        p.log.message(`First task: ${pc.cyan(seedResult.issueTitle)}`);
+      }
+    } catch (err) {
+      p.log.message(pc.yellow(`First-run seeding failed: ${err instanceof Error ? err.message : String(err)}`));
+      p.log.message(pc.dim("You can create company/agents/tasks via the UI."));
+    }
   }
 }
 
