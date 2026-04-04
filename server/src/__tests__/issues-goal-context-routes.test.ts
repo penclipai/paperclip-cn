@@ -30,6 +30,7 @@ vi.mock("../services/index.js", () => ({
   agentService: () => ({
     getById: vi.fn(),
   }),
+  budgetService: () => ({ getInvocationBlock: vi.fn(async () => null) }),
   documentService: () => ({
     getIssueDocumentPayload: vi.fn(async () => ({})),
   }),
