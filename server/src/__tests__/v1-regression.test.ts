@@ -511,5 +511,143 @@ describeEmbeddedPostgres(
       expect(summary.tasks.done).toBe(1);
       expect(summary.tasks.blocked).toBe(1);
     });
+
+    // =========================================================================
+    // TEST 6: Checkout conflict false positive - assignee with null checkoutRunId
+    // =========================================================================
+    it("6. checkout conflict: assignee with null checkoutRunId can checkout with new run", async () => {
+      const { issueService } = await import("../services/issues.js");
+
+      const [company] = await db
+        .insert(companies)
+        .values({
+          id: randomUUID(),
+          name: "Checkout Conflict Corp",
+          status: "active",
+          createdByUserId: "local-board",
+          issuePrefix: "CC",
+        })
+        .returning();
+
+      const [agent] = await db
+        .insert(agents)
+        .values({
+          id: randomUUID(),
+          companyId: company.id,
+          name: "Checkout Agent",
+          role: "engineer",
+          status: "active",
+          adapterType: "claude-local",
+        })
+        .returning();
+
+      // Create an issue assigned to the agent with null checkoutRunId
+      const [issue] = await db
+        .insert(issues)
+        .values({
+          id: randomUUID(),
+          companyId: company.id,
+          title: "False conflict test",
+          status: "in_progress", // Already in_progress
+          assigneeAgentId: agent.id,
+          checkoutRunId: null, // But no run ID set
+        })
+        .returning();
+
+      // Verify initial state
+      expect(issue.checkoutRunId).toBeNull();
+      expect(issue.assigneeAgentId).toBe(agent.id);
+      expect(issue.status).toBe("in_progress");
+
+      // Create a heartbeat run to use as checkoutRunId
+      const [run] = await db
+        .insert(heartbeatRuns)
+        .values({
+          id: randomUUID(),
+          companyId: company.id,
+          agentId: agent.id,
+          status: "running",
+          startedAt: new Date(),
+        })
+        .returning();
+
+      // The issue service checkout should succeed (adopt null checkoutRunId to new run)
+      const issueSvc = issueService(db);
+      const result = await issueSvc.checkout(issue.id, agent.id, ["in_progress", "open"], run.id);
+
+      expect(result).toBeDefined();
+      expect(result.checkoutRunId).toBe(run.id);
+      expect(result.assigneeAgentId).toBe(agent.id);
+      expect(result.status).toBe("in_progress");
+    });
+
+    // =========================================================================
+    // TEST 7: Checkout conflict - unassigned issue can be checked out
+    // =========================================================================
+    it("7. checkout conflict: unassigned issue with null checkoutRunId can be checked out", async () => {
+      const { issueService } = await import("../services/issues.js");
+
+      const [company] = await db
+        .insert(companies)
+        .values({
+          id: randomUUID(),
+          name: "Checkout Conflict Corp 2",
+          status: "active",
+          createdByUserId: "local-board",
+          issuePrefix: "CC2",
+        })
+        .returning();
+
+      const [agent] = await db
+        .insert(agents)
+        .values({
+          id: randomUUID(),
+          companyId: company.id,
+          name: "Checkout Agent 2",
+          role: "engineer",
+          status: "active",
+          adapterType: "claude-local",
+        })
+        .returning();
+
+      // Create an UNASSIGNED issue with null checkoutRunId
+      const [issue] = await db
+        .insert(issues)
+        .values({
+          id: randomUUID(),
+          companyId: company.id,
+          title: "Unassigned test",
+          status: "open",
+          assigneeAgentId: null, // Not assigned
+          checkoutRunId: null,
+        })
+        .returning();
+
+      // Verify initial state
+      expect(issue.checkoutRunId).toBeNull();
+      expect(issue.assigneeAgentId).toBeNull();
+      expect(issue.status).toBe("open");
+
+      // Create a heartbeat run to use as checkoutRunId
+      const [run] = await db
+        .insert(heartbeatRuns)
+        .values({
+          id: randomUUID(),
+          companyId: company.id,
+          agentId: agent.id,
+          status: "running",
+          startedAt: new Date(),
+        })
+        .returning();
+
+      // The issue service checkout should succeed (assign and checkout)
+      const issueSvc = issueService(db);
+      const result = await issueSvc.checkout(issue.id, agent.id, ["open"], run.id);
+
+      expect(result).toBeDefined();
+      expect(result.checkoutRunId).toBe(run.id);
+      expect(result.assigneeAgentId).toBe(agent.id);
+      expect(result.status).toBe("in_progress");
+    });
   },
 );
