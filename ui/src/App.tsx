@@ -244,7 +244,10 @@ function CompanyRootRedirect() {
     return <div className="mx-auto max-w-xl py-10 text-sm text-muted-foreground">{t("common.loading")}</div>;
   }
 
-  const targetCompany = selectedCompany ?? companies[0] ?? null;
+  const targetCompany =
+    (selectedCompany && selectedCompany.status !== "archived" ? selectedCompany : null) ??
+    companies.find((company) => company.status !== "archived") ??
+    null;
   if (!targetCompany) {
     if (
       shouldRedirectCompanylessRouteToOnboarding({
@@ -269,7 +272,10 @@ function UnprefixedBoardRedirect() {
     return <div className="mx-auto max-w-xl py-10 text-sm text-muted-foreground">{t("common.loading")}</div>;
   }
 
-  const targetCompany = selectedCompany ?? companies[0] ?? null;
+  const targetCompany =
+    (selectedCompany && selectedCompany.status !== "archived" ? selectedCompany : null) ??
+    companies.find((company) => company.status !== "archived") ??
+    null;
   if (!targetCompany) {
     if (
       shouldRedirectCompanylessRouteToOnboarding({
