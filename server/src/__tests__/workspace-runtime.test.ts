@@ -41,6 +41,8 @@ const execFileAsync = promisify(execFile);
 const leasedRunIds = new Set<string>();
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
 const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : describe.skip;
+const WORKTREE_GIT_TEST_TIMEOUT = process.platform === "win32" ? 20_000 : 5_000;
+const WORKTREE_PROVISION_TEST_TIMEOUT = process.platform === "win32" ? 40_000 : 20_000;
 
 if (!embeddedPostgresSupport.supported) {
   console.warn(
@@ -283,7 +285,7 @@ describe("realizeExecutionWorkspace", () => {
     );
     expect(realized.branchName?.includes("/")).toBe(false);
     expect(path.basename(realized.cwd)).toBe(realized.branchName);
-  });
+  }, WORKTREE_GIT_TEST_TIMEOUT);
 
   it("preserves intentional slashes and dots from the branch template", async () => {
     const repoRoot = await createTempRepo();
@@ -317,7 +319,7 @@ describe("realizeExecutionWorkspace", () => {
 
     expect(realized.branchName).toBe("release/PAP-992.hotfix-april-1");
     expect(path.basename(realized.cwd)).toBe("PAP-992.hotfix-april-1");
-  });
+  }, WORKTREE_GIT_TEST_TIMEOUT);
 
   it("runs a configured provision command inside the derived worktree", async () => {
     const repoRoot = await createTempRepo();
@@ -402,7 +404,7 @@ describe("realizeExecutionWorkspace", () => {
     });
 
     await expect(fs.readFile(path.join(reused.cwd, ".paperclip-provision-created"), "utf8")).resolves.toBe("false\n");
-  }, 20_000);
+  }, WORKTREE_PROVISION_TEST_TIMEOUT);
 
   it("writes an isolated repo-local Paperclip config and worktree branding when provisioning", async () => {
     const repoRoot = await createTempRepo();
@@ -552,7 +554,7 @@ describe("realizeExecutionWorkspace", () => {
     } finally {
       process.chdir(previousCwd);
     }
-  }, 20_000);
+  }, WORKTREE_PROVISION_TEST_TIMEOUT);
 
   it("records worktree setup and provision operations when a recorder is provided", async () => {
     const repoRoot = await createTempRepo();
@@ -610,7 +612,7 @@ describe("realizeExecutionWorkspace", () => {
       created: true,
     });
     expect(operations[1]?.command).toBe("bash ./scripts/provision.sh");
-  }, 20_000);
+  }, WORKTREE_PROVISION_TEST_TIMEOUT);
 
   it("reuses an existing branch without resetting it when recreating a missing worktree", async () => {
     const repoRoot = await createTempRepo();

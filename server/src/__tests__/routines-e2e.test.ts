@@ -81,6 +81,7 @@ vi.mock("../services/index.js", async () => {
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
 const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : describe.skip;
 const EMBEDDED_POSTGRES_TIMEOUT = process.platform === "win32" ? 60_000 : 20_000;
+const ROUTINES_E2E_TEST_TIMEOUT = process.platform === "win32" ? 20_000 : 5_000;
 
 if (!embeddedPostgresSupport.supported) {
   console.warn(
@@ -276,7 +277,7 @@ describeEmbeddedPostgres("routine routes end-to-end", () => {
         "routine.run_triggered",
       ]),
     );
-  });
+  }, ROUTINES_E2E_TEST_TIMEOUT);
 
   it("runs routines with variable inputs and interpolates the execution issue description", async () => {
     const { companyId, agentId, projectId, userId } = await seedFixture();
@@ -324,7 +325,7 @@ describeEmbeddedPostgres("routine routes end-to-end", () => {
       .where(eq(issues.id, runRes.body.linkedIssueId));
 
     expect(issue?.description).toBe("Review paperclip for high bugs");
-  });
+  }, ROUTINES_E2E_TEST_TIMEOUT);
 
   it("persists execution workspace selections from manual routine runs", async () => {
     const { companyId, agentId, projectId, userId } = await seedFixture();
@@ -408,5 +409,5 @@ describeEmbeddedPostgres("routine routes end-to-end", () => {
       executionWorkspacePreference: "reuse_existing",
       executionWorkspaceSettings: { mode: "isolated_workspace" },
     });
-  });
+  }, ROUTINES_E2E_TEST_TIMEOUT);
 });

@@ -74,10 +74,20 @@ resolve_node_command() {
   printf '%s\n' "node"
 }
 
-run_penclip_command() {
-  local command_args=("$@")
-  if command -v pnpm >/dev/null 2>&1 && pnpm penclip --help >/dev/null 2>&1; then
-    pnpm penclip "${command_args[@]}"
+has_penclip_script_in_manifest() {
+  local manifest_path="${1:-}"
+  [[ -f "$manifest_path" ]] || return 1
+  grep -Eq '"penclip"[[:space:]]*:' "$manifest_path"
+}
+
+resolved_penclip_invoker=""
+resolved_penclip_cwd=""
+resolved_penclip_node_command=""
+resolved_penclip_tsx_path=""
+resolved_penclip_entry_path=""
+
+resolve_penclip_invoker() {
+  if [[ -n "$resolved_penclip_invoker" ]]; then
     return 0
   fi
 
@@ -86,16 +96,58 @@ run_penclip_command() {
   local node_command
   node_command="$(resolve_node_command)"
   if command -v "$node_command" >/dev/null 2>&1 && [[ -f "$base_cli_tsx_path" ]] && [[ -f "$base_cli_entry_path" ]]; then
-    "$node_command" "$base_cli_tsx_path" "$base_cli_entry_path" "${command_args[@]}"
+    resolved_penclip_invoker="source"
+    resolved_penclip_node_command="$node_command"
+    resolved_penclip_tsx_path="$base_cli_tsx_path"
+    resolved_penclip_entry_path="$base_cli_entry_path"
+    return 0
+  fi
+
+  local pnpm_cwd=""
+  if has_penclip_script_in_manifest "$base_cwd/package.json"; then
+    pnpm_cwd="$base_cwd"
+  elif [[ "$worktree_cwd" != "$base_cwd" ]] && has_penclip_script_in_manifest "$worktree_cwd/package.json"; then
+    pnpm_cwd="$worktree_cwd"
+  fi
+
+  if [[ -n "$pnpm_cwd" ]] && command -v pnpm >/dev/null 2>&1 && ( cd "$pnpm_cwd" && pnpm penclip --help >/dev/null 2>&1 ); then
+    resolved_penclip_invoker="pnpm"
+    resolved_penclip_cwd="$pnpm_cwd"
     return 0
   fi
 
   if command -v penclip >/dev/null 2>&1; then
-    penclip "${command_args[@]}"
+    resolved_penclip_invoker="global"
     return 0
   fi
 
-  return 1
+  resolved_penclip_invoker="none"
+}
+
+run_penclip_command() {
+  local command_args=("$@")
+  resolve_penclip_invoker
+
+  case "$resolved_penclip_invoker" in
+    source)
+      "$resolved_penclip_node_command" "$resolved_penclip_tsx_path" "$resolved_penclip_entry_path" "${command_args[@]}"
+      return 0
+      ;;
+    pnpm)
+      (
+        cd "$resolved_penclip_cwd" &&
+        pnpm penclip "${command_args[@]}"
+      )
+      return 0
+      ;;
+    global)
+      penclip "${command_args[@]}"
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
 }
 
 run_isolated_worktree_init() {
