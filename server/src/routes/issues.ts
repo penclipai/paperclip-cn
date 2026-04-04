@@ -27,6 +27,7 @@ import { validate } from "../middleware/validate.js";
 import {
   accessService,
   agentService,
+  budgetService,
   executionWorkspaceService,
   feedbackService,
   goalService,
@@ -95,6 +96,7 @@ export function issueRoutes(
   const workProductsSvc = workProductService(db);
   const documentsSvc = documentService(db);
   const routinesSvc = routineService(db);
+  const budgets = budgetService(db);
   const feedbackExportService = opts?.feedbackExportService;
   const upload = multer({
     storage: multer.memoryStorage(),
@@ -1396,6 +1398,18 @@ export function issueRoutes(
       return;
     }
     assertCompanyAccess(req, issue.companyId);
+
+    // Budget enforcement: check company, agent, and project budget blocks
+    // before allowing checkout. This prevents agents from checking out issues
+    // when their budget hard-stop has been reached.
+    const block = await budgets.getInvocationBlock(issue.companyId, req.body.agentId, {
+      issueId: issue.id,
+      projectId: issue.projectId ?? undefined,
+    });
+    if (block) {
+      res.status(409).json({ error: block.reason });
+      return;
+    }
 
     if (issue.projectId) {
       const project = await projectsSvc.getById(issue.projectId);

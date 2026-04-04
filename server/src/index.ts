@@ -50,6 +50,47 @@ type BetterAuthSessionUser = {
   name?: string | null;
 };
 
+// Global error handlers: prevent unhandled rejections from crashing the process
+// and leaving embedded PostgreSQL orphaned. These mirror the handlers in
+// dev-runner.ts and the Electron server-worker.
+let _serverShutdownState: {
+  embeddedPostgres: { stop(): Promise<void> } | null;
+  startedByThisProcess: boolean;
+} | null = null;
+
+function registerProcessErrorHandlers() {
+  process.on("uncaughtException", (error) => {
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.error({ err }, "Uncaught exception in Paperclip server");
+    void _safeShutdown("uncaughtException");
+  });
+
+  process.on("unhandledRejection", (reason) => {
+    const err = reason instanceof Error ? reason : new Error(String(reason));
+    logger.error({ err }, "Unhandled promise rejection in Paperclip server");
+    void _safeShutdown("unhandledRejection");
+  });
+}
+
+async function _safeShutdown(_cause: string): Promise<void> {
+  const telemetryClient = getTelemetryClient();
+  if (telemetryClient) {
+    telemetryClient.stop();
+    void telemetryClient.flush();
+  }
+
+  if (_serverShutdownState?.embeddedPostgres && _serverShutdownState.startedByThisProcess) {
+    try {
+      await _serverShutdownState.embeddedPostgres.stop();
+      logger.info("Embedded PostgreSQL stopped during error shutdown");
+    } catch (stopErr) {
+      logger.error({ err: stopErr }, "Failed to stop embedded PostgreSQL during error shutdown");
+    }
+  }
+
+  process.exit(1);
+}
+
 type BetterAuthSessionResult = {
   session: { id: string; userId: string } | null;
   user: BetterAuthSessionUser | null;
@@ -70,6 +111,11 @@ export interface StartedServer {
 }
 
 export async function startServer(): Promise<StartedServer> {
+  // Register global error handlers before any async work begins.
+  // This prevents background service failures from crashing the process
+  // without cleaning up embedded PostgreSQL.
+  registerProcessErrorHandlers();
+
   let config = loadConfig();
   initTelemetry({ enabled: config.telemetryEnabled });
   if (process.env.PAPERCLIP_SECRETS_PROVIDER === undefined) {
@@ -445,6 +491,9 @@ export async function startServer(): Promise<StartedServer> {
           }
         }
         embeddedPostgresStartedByThisProcess = embeddedPostgres !== null;
+        if (embeddedPostgresStartedByThisProcess) {
+          _serverShutdownState = { embeddedPostgres, startedByThisProcess: true };
+        }
       }
     }
   

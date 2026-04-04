@@ -30,6 +30,7 @@ vi.mock("../services/index.js", () => ({
     hasPermission: vi.fn(),
   }),
   agentService: () => mockAgentService,
+  budgetService: () => ({ getInvocationBlock: vi.fn(async () => null) }),
   documentService: () => ({}),
   executionWorkspaceService: () => ({}),
   feedbackService: () => ({}),

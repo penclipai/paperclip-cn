@@ -154,6 +154,11 @@ async function computeObservedAmount(
     conditions.push(lt(costEvents.occurredAt, end));
   }
 
+  // Exclude subscription_included events: these represent notional costs
+  // with zero marginal spend and must not count against money budgets.
+  // Only metered_api and subscription_overage contribute to budget spend.
+  conditions.push(ne(costEvents.billingType, "subscription_included"));
+
   const [row] = await db
     .select({
       total: sql<number>`coalesce(sum(${costEvents.costCents}), 0)::int`,
