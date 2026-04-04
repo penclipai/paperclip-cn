@@ -65,12 +65,12 @@ describe("resolveRuntimeLocalizationPrompt", () => {
       shell: "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
     });
 
-    expect(note).toContain("运行环境补充：");
-    expect(note).toContain("默认用简体中文进行自然语言回复");
-    expect(note).toContain("检测到的宿主环境：Windows PowerShell。");
-    expect(note).toContain("`penclip` 是当前唯一受支持的 Paperclip CLI 命令");
+    expect(note).toContain("## 语言与运行时契约");
+    expect(note).toContain("所有面向用户的自然语言输出必须使用简体中文");
+    expect(note).toContain("宿主环境：Windows PowerShell。");
+    expect(note).toContain("CLI 契约：执行 Paperclip 命令一律使用 `penclip ...`");
     expect(note).toContain("`paperclipai ...`");
-    expect(note).toContain("POST / PATCH / PUT");
+    expect(note).toContain("API 契约：任何带请求体的 Paperclip API 调用");
     expect(note).toContain("curl --data-binary @payload.json");
     expect(note).not.toContain("Python / Node");
   });
@@ -84,8 +84,8 @@ describe("resolveRuntimeLocalizationPrompt", () => {
       osRelease: "6.6.87.2-microsoft-standard-WSL2",
     });
 
-    expect(note).toContain("检测到的宿主环境：WSL bash。");
-    expect(note).toContain("不要把中文或其他非 ASCII JSON 直接内联到命令参数");
+    expect(note).toContain("宿主环境：WSL bash。");
+    expect(note).toContain("不要内联非 ASCII JSON");
   });
 
   it("returns an English note with a detected POSIX shell label", () => {
@@ -95,12 +95,12 @@ describe("resolveRuntimeLocalizationPrompt", () => {
       shell: "/bin/zsh",
     });
 
-    expect(note).toContain("Runtime note:");
-    expect(note).toContain("use English for natural-language output");
-    expect(note).toContain("Detected host runtime: zsh on darwin.");
-    expect(note).toContain("`penclip` is the only current Paperclip CLI command.");
+    expect(note).toContain("## Language and Runtime Contract");
+    expect(note).toContain("all user-facing natural-language output must be in English");
+    expect(note).toContain("Host runtime: zsh on darwin.");
+    expect(note).toContain("CLI contract: use `penclip ...` for Paperclip commands");
     expect(note).toContain("`paperclipai ...`");
-    expect(note).toContain("for any POST, PATCH, PUT");
+    expect(note).toContain("API contract: for any Paperclip API call with a request body");
     expect(note).toContain("curl --data-binary @payload.json");
     expect(note).not.toContain("Python / Node");
   });
