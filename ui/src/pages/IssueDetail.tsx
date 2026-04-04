@@ -668,6 +668,25 @@ export function IssueDetail() {
     onSuccess: () => {
       invalidateIssue();
     },
+    onError: (error: Error) => {
+      // Check if this is a checkout conflict error (409)
+      if ("status" in error && (error as { status: number }).status === 409) {
+        const errorBody = (error as { body?: { details?: { assigneeAgentId?: string; checkoutRunId?: string } } }).body;
+        const conflictAssigneeId = errorBody?.details?.assigneeAgentId;
+        
+        pushToast({
+          title: t("issueCheckout.conflict.title", { defaultValue: "Issue checkout conflict" }),
+          body: conflictAssigneeId
+            ? t("issueCheckout.conflict.body", { 
+                defaultValue: "This issue is already checked out by another agent run." 
+              })
+            : t("issueCheckout.conflict.bodyGeneric", {
+                defaultValue: "This issue is currently locked by another operation. Please try again later."
+              }),
+          tone: "error",
+        });
+      }
+    },
   });
 
   const addComment = useMutation({

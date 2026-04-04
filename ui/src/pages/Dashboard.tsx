@@ -15,6 +15,8 @@ import { queryKeys } from "../lib/queryKeys";
 import { MetricCard } from "../components/MetricCard";
 import { EmptyState } from "../components/EmptyState";
 import { StatusIcon } from "../components/StatusIcon";
+import { FailedRunIndicator } from "../components/FailedRunIndicator";
+import type { LiveRunForIssue } from "../api/heartbeats";
 
 import { ActivityRow } from "../components/ActivityRow";
 import { Identity } from "../components/Identity";
@@ -82,6 +84,19 @@ export function Dashboard() {
     queryFn: () => heartbeatsApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId,
   });
+
+  const { data: liveRuns } = useQuery({
+    queryKey: queryKeys.liveRuns(selectedCompanyId!),
+    queryFn: () => heartbeatsApi.liveRunsForCompany(selectedCompanyId!),
+    enabled: !!selectedCompanyId,
+    refetchInterval: 5000,
+  });
+
+  const failedRuns = useMemo(() => {
+    return (liveRuns ?? []).filter(
+      (run: LiveRunForIssue) => run.status === "failed" || run.status === "timed_out"
+    );
+  }, [liveRuns]);
 
   const recentIssues = issues ? getRecentIssues(issues) : [];
   const recentActivity = useMemo(() => (activity ?? []).slice(0, 10), [activity]);
@@ -209,6 +224,8 @@ export function Dashboard() {
           </button>
         </div>
       )}
+
+      {failedRuns.length > 0 && <FailedRunIndicator failedRuns={failedRuns} />}
 
       <ActiveAgentsPanel companyId={selectedCompanyId!} />
 

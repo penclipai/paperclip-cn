@@ -165,6 +165,8 @@ function ColorPicker({
 /* ── List (issues) tab content ── */
 
 function ProjectIssuesList({ projectId, companyId }: { projectId: string; companyId: string }) {
+  const { t } = useTranslation();
+  const { pushToast } = useToast();
   const queryClient = useQueryClient();
 
   const { data: agents } = useQuery({
@@ -200,6 +202,18 @@ function ProjectIssuesList({ projectId, companyId }: { projectId: string; compan
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.issues.listByProject(companyId, projectId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.issues.list(companyId) });
+    },
+    onError: (error: Error) => {
+      // Check if this is a checkout conflict error (409)
+      if ("status" in error && (error as { status: number }).status === 409) {
+        pushToast({
+          title: t("issueCheckout.conflict.title", { defaultValue: "Issue checkout conflict" }),
+          body: t("issueCheckout.conflict.body", { 
+            defaultValue: "This issue is already checked out by another agent run." 
+          }),
+          tone: "error",
+        });
+      }
     },
   });
 

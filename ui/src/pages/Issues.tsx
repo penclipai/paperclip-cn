@@ -8,6 +8,7 @@ import { projectsApi } from "../api/projects";
 import { heartbeatsApi } from "../api/heartbeats";
 import { useCompany } from "../context/CompanyContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
+import { useToast } from "../context/ToastContext";
 import { queryKeys } from "../lib/queryKeys";
 import { createIssueDetailLocationState } from "../lib/issueDetailBreadcrumb";
 import { EmptyState } from "../components/EmptyState";
@@ -18,6 +19,7 @@ export function Issues() {
   const { t } = useTranslation();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
+  const { pushToast } = useToast();
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
@@ -93,6 +95,18 @@ export function Issues() {
       issuesApi.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.issues.list(selectedCompanyId!) });
+    },
+    onError: (error: Error) => {
+      // Check if this is a checkout conflict error (409)
+      if ("status" in error && (error as { status: number }).status === 409) {
+        pushToast({
+          title: t("issueCheckout.conflict.title", { defaultValue: "Issue checkout conflict" }),
+          body: t("issueCheckout.conflict.body", { 
+            defaultValue: "This issue is already checked out by another agent run." 
+          }),
+          tone: "error",
+        });
+      }
     },
   });
 
