@@ -13,6 +13,12 @@ type FatalMessage = {
   error: string;
 };
 
+const shutdownFallbackTimeoutMs = 7_000;
+
+let bootstrapped = false;
+let shutdownRequested = false;
+let shutdownFallbackTimer: NodeJS.Timeout | null = null;
+
 function reportFatal(error: string): void {
   sendMessage({ type: "fatal", error });
   process.exitCode = 1;
@@ -66,12 +72,42 @@ function sendMessage(message: ReadyMessage | FatalMessage): void {
   }
 }
 
+function clearShutdownFallbackTimer(): void {
+  if (shutdownFallbackTimer) {
+    clearTimeout(shutdownFallbackTimer);
+    shutdownFallbackTimer = null;
+  }
+}
+
+function requestShutdownFromDisconnect(): void {
+  if (shutdownRequested) {
+    return;
+  }
+
+  shutdownRequested = true;
+  if (!bootstrapped) {
+    process.exit(0);
+    return;
+  }
+
+  shutdownFallbackTimer = setTimeout(() => {
+    process.exit(0);
+  }, shutdownFallbackTimeoutMs);
+
+  try {
+    process.kill(process.pid, "SIGTERM");
+  } catch {
+    process.exit(0);
+  }
+}
+
 async function bootstrap(): Promise<void> {
   applyDesktopEnvironment();
   await maybeDelayStartupForSmoke();
   const entryPath = resolveServerEntrypoint();
   const startServer = await loadServerModule(entryPath);
   const started = await startServer();
+  bootstrapped = true;
 
   sendMessage({
     type: "ready",
@@ -82,7 +118,11 @@ async function bootstrap(): Promise<void> {
 }
 
 process.once("disconnect", () => {
-  process.exit(0);
+  requestShutdownFromDisconnect();
+});
+
+process.once("exit", () => {
+  clearShutdownFallbackTimer();
 });
 
 process.on("uncaughtException", (error) => {

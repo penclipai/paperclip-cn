@@ -7,8 +7,9 @@ import path from "node:path";
 import process from "node:process";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
+import net from "node:net";
 import { _electron as electron } from "playwright";
-import { runPnpm } from "../utils.mjs";
+import { killProcessTree, runPnpm } from "../utils.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const packageDir = path.resolve(__dirname, "..", "..");
@@ -116,36 +117,6 @@ function prepareDevLaunch() {
   runPnpm(["--dir", packageDir, "build"], { cwd: packageDir });
 }
 
-function killProcessTree(pid) {
-  if (!pid || Number.isNaN(pid)) {
-    return;
-  }
-
-  if (process.platform === "win32") {
-    const result = spawnSync(
-      process.env.comspec ?? "cmd.exe",
-      ["/d", "/s", "/c", "taskkill", "/PID", String(pid), "/T", "/F"],
-      {
-        cwd: packageDir,
-        stdio: "ignore",
-        windowsHide: true,
-      },
-    );
-
-    if (result.error) {
-      throw result.error;
-    }
-
-    return;
-  }
-
-  try {
-    process.kill(pid, "SIGKILL");
-  } catch {
-    // Process already exited.
-  }
-}
-
 function resolvePackagedExecutable() {
   const winUnpackedDir = path.resolve(packageDir, "release", "win-unpacked");
   const candidates = [
@@ -203,6 +174,61 @@ async function waitForHealth(origin, timeoutMs = 90_000) {
   }
 
   throw new Error(`Timed out waiting for desktop health endpoint at ${healthUrl}`);
+}
+
+async function canConnect(host, port) {
+  return await new Promise((resolve) => {
+    const socket = new net.Socket();
+
+    const finish = (result) => {
+      socket.destroy();
+      resolve(result);
+    };
+
+    socket.once("connect", () => {
+      finish(true);
+    });
+    socket.once("error", () => {
+      finish(false);
+    });
+    socket.once("timeout", () => {
+      finish(false);
+    });
+    socket.setTimeout(1_000);
+    socket.connect(port, host);
+  });
+}
+
+async function waitForPortClosed(port, label, timeoutMs = 20_000) {
+  const deadline = Date.now() + timeoutMs;
+
+  while (Date.now() < deadline) {
+    if (!(await canConnect("127.0.0.1", port))) {
+      return;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+
+  throw new Error(`Timed out waiting for ${label} to stop listening on port ${port}.`);
+}
+
+function readEmbeddedPostgresPort(userDataDir) {
+  const pidFile = path.resolve(
+    userDataDir,
+    "runtime",
+    "instances",
+    "default",
+    "db",
+    "postmaster.pid",
+  );
+
+  if (!fs.existsSync(pidFile)) {
+    return null;
+  }
+
+  const portLine = fs.readFileSync(pidFile, "utf8").split(/\r?\n/)[3]?.trim();
+  const port = Number(portLine);
+  return Number.isInteger(port) && port > 0 ? port : null;
 }
 
 async function createSmokeCompany(origin, theme) {
@@ -374,6 +400,8 @@ async function runThemeScenario(mode, theme, artifactDir) {
   const electronApp = await electron.launch(launchOptions);
   const launchedProcess = electronApp.process();
   const launchedPid = launchedProcess?.pid ?? null;
+  let serverPort = null;
+  let embeddedPostgresPort = null;
 
   try {
     const actualLocale = await electronApp.evaluate(({ app }) => app.getLocale());
@@ -466,10 +494,12 @@ async function runThemeScenario(mode, theme, artifactDir) {
     await page.waitForURL(/^http:\/\/127\.0\.0\.1:\d+\/?/, { timeout: 90_000 });
     const currentUrl = page.url();
     const origin = new URL(currentUrl).origin;
+    serverPort = Number(new URL(currentUrl).port);
     const health = await waitForHealth(origin);
     if (!health || typeof health !== "object") {
       throw new Error("Desktop health endpoint returned an unexpected payload.");
     }
+    embeddedPostgresPort = readEmbeddedPostgresPort(userDataDir);
 
     await page.locator("#root").waitFor({ timeout: 30_000 });
     await page.waitForFunction(() => {
@@ -541,11 +571,24 @@ async function runThemeScenario(mode, theme, artifactDir) {
     console.log(`[desktop-smoke] App screenshot: ${boardShot}`);
     console.log(`[desktop-smoke] Health: ${JSON.stringify(health)}`);
   } finally {
+    let shutdownError = null;
     try {
       await electronApp.close();
+      if (serverPort) {
+        await waitForPortClosed(serverPort, "desktop control plane");
+      }
+      if (embeddedPostgresPort) {
+        await waitForPortClosed(embeddedPostgresPort, "embedded PostgreSQL");
+      }
+    } catch (error) {
+      shutdownError = error;
     } finally {
-      killProcessTree(launchedPid);
+      killProcessTree(launchedPid, { cwd: packageDir });
       await fs.promises.rm(userDataDir, { recursive: true, force: true });
+    }
+
+    if (shutdownError) {
+      throw shutdownError;
     }
   }
 }

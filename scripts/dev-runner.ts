@@ -3,12 +3,18 @@ import { spawn } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { createInterface } from "node:readline/promises";
+import { setTimeout as delay } from "node:timers/promises";
 import { stdin, stdout } from "node:process";
 import { shouldTrackDevServerPath } from "./dev-runner-paths.mjs";
-import { createDevServiceIdentity, repoRoot } from "./dev-service-profile.ts";
+import {
+  createDevServiceIdentity,
+  getDevServiceControlFilePath,
+  repoRoot,
+} from "./dev-service-profile.ts";
 import {
   findAdoptableLocalService,
   removeLocalServiceRegistryRecord,
+  terminateLocalService,
   touchLocalServiceRegistryRecord,
   writeLocalServiceRegistryRecord,
 } from "../server/src/services/local-service-supervisor.ts";
@@ -18,6 +24,7 @@ const cliArgs = process.argv.slice(3);
 const scanIntervalMs = 1500;
 const autoRestartPollIntervalMs = 2500;
 const gracefulShutdownTimeoutMs = 10_000;
+const controlRequestPollIntervalMs = 1000;
 const changedPathSampleLimit = 5;
 const devServerStatusFilePath = path.join(repoRoot, ".paperclip", "dev-server-status.json");
 
@@ -110,6 +117,9 @@ const devService = createDevServiceIdentity({
   tailscaleAuth,
   port: serverPort,
 });
+const devServiceControlFilePath = getDevServiceControlFilePath(devService.serviceKey);
+rmSync(devServiceControlFilePath, { force: true });
+env.PAPERCLIP_DEV_STOP_FILE = devServiceControlFilePath;
 
 const existingRunner = await findAdoptableLocalService({
   serviceKey: devService.serviceKey,
@@ -138,6 +148,7 @@ let child: ReturnType<typeof spawn> | null = null;
 let childExitPromise: Promise<{ code: number; signal: NodeJS.Signals | null }> | null = null;
 let scanTimer: ReturnType<typeof setInterval> | null = null;
 let autoRestartTimer: ReturnType<typeof setInterval> | null = null;
+let controlRequestTimer: ReturnType<typeof setInterval> | null = null;
 
 function toError(error: unknown, context = "Dev runner command failed") {
   if (error instanceof Error) return error;
@@ -272,6 +283,10 @@ function writeDevServerStatus() {
 function clearDevServerStatus() {
   if (mode !== "dev") return;
   rmSync(devServerStatusFilePath, { force: true });
+}
+
+function clearDevServiceControlRequest() {
+  rmSync(devServiceControlFilePath, { force: true });
 }
 
 async function updateDevServiceRecord(extra?: Record<string, unknown>) {
@@ -494,20 +509,31 @@ async function waitForChildExit() {
   return await childExitPromise;
 }
 
+async function terminateCurrentChild(signal: NodeJS.Signals) {
+  const activeChild = child;
+  if (!activeChild) return;
+
+  if (!activeChild.pid) {
+    try {
+      activeChild.kill(signal);
+    } catch {
+      // Child may already be gone by the time we attempt shutdown.
+    }
+    return;
+  }
+
+  await terminateLocalService(
+    { pid: activeChild.pid, processGroupId: null },
+    { signal, forceAfterMs: gracefulShutdownTimeoutMs },
+  );
+}
+
 async function stopChildForRestart() {
   if (!child) return { code: 0, signal: null };
   childExitWasExpected = true;
-  child.kill("SIGTERM");
-  const killTimer = setTimeout(() => {
-    if (child) {
-      child.kill("SIGKILL");
-    }
-  }, gracefulShutdownTimeoutMs);
-  try {
-    return await waitForChildExit();
-  } finally {
-    clearTimeout(killTimer);
-  }
+  const exitPromise = waitForChildExit();
+  await terminateCurrentChild("SIGTERM");
+  return await exitPromise;
 }
 
 async function startServerChild() {
@@ -611,6 +637,10 @@ function clearDevIntervals() {
     clearInterval(autoRestartTimer);
     autoRestartTimer = null;
   }
+  if (controlRequestTimer) {
+    clearInterval(controlRequestTimer);
+    controlRequestTimer = null;
+  }
 }
 
 async function shutdown(signal: NodeJS.Signals) {
@@ -626,13 +656,46 @@ async function shutdown(signal: NodeJS.Signals) {
   }
 
   childExitWasExpected = true;
-  child.kill(signal);
-  const exit = await waitForChildExit();
+  const exitPromise = waitForChildExit();
+  await terminateCurrentChild(signal);
+  const exit = await exitPromise;
   if (exit.signal) {
     exitForSignal(exit.signal);
     return;
   }
   process.exit(exit.code ?? 0);
+}
+
+async function shutdownFromControlRequest() {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  clearDevIntervals();
+  clearDevServerStatus();
+  await removeLocalServiceRegistryRecord(devService.serviceKey);
+
+  if (!child) {
+    process.exit(0);
+    return;
+  }
+
+  childExitWasExpected = true;
+  const exitPromise = waitForChildExit();
+  await terminateCurrentChild("SIGTERM");
+  await Promise.race([
+    exitPromise,
+    delay(gracefulShutdownTimeoutMs).then(() => undefined),
+  ]);
+  process.exit(0);
+}
+
+function installControlRequestPolling() {
+  clearDevServiceControlRequest();
+  controlRequestTimer = setInterval(() => {
+    if (!existsSync(devServiceControlFilePath) || shuttingDown) {
+      return;
+    }
+    void shutdownFromControlRequest();
+  }, controlRequestPollIntervalMs);
 }
 
 process.on("SIGINT", () => {
@@ -644,6 +707,7 @@ process.on("SIGTERM", () => {
 
 await maybePreflightMigrations();
 await startServerChild();
+installControlRequestPolling();
 installDevIntervals();
 
 if (mode === "watch") {

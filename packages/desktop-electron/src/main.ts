@@ -1,6 +1,8 @@
-import { fork, type ChildProcess } from "node:child_process";
+import { execFile, fork, type ChildProcess } from "node:child_process";
 import path from "node:path";
+import { setTimeout as delay } from "node:timers/promises";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { promisify } from "node:util";
 import { app, BrowserWindow, ipcMain, Menu, nativeTheme, shell, type WebContents } from "electron";
 import { setupTitlebarAndAttachToWindow } from "custom-electron-titlebar/main";
 import {
@@ -68,8 +70,11 @@ const desktopMode: DesktopMode =
   process.env.PAPERCLIP_DESKTOP_DEV === "true" ? "development" : "packaged";
 const startupTimeoutMs = 60_000;
 const waitingSplashDelayMs = 1_800;
+const workerGracefulShutdownTimeoutMs = 5_000;
+const workerForceKillWaitTimeoutMs = 2_000;
 const defaultUserDataDir = app.getPath("userData");
 const configuredUserDataDir = resolveDesktopUserDataDir(defaultUserDataDir);
+const execFileAsync = promisify(execFile);
 
 if (configuredUserDataDir !== defaultUserDataDir) {
   app.setPath("userData", configuredUserDataDir);
@@ -99,6 +104,53 @@ function getLocale(): string {
   } catch {
     return "en";
   }
+}
+
+function isPidAlive(pid: number): boolean {
+  if (!Number.isInteger(pid) || pid <= 0) return false;
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function forceKillProcessTree(pid: number): Promise<void> {
+  if (!isPidAlive(pid)) return;
+
+  if (process.platform !== "win32") {
+    try {
+      process.kill(pid, "SIGKILL");
+    } catch {
+      // Ignore cleanup races.
+    }
+    return;
+  }
+
+  try {
+    await execFileAsync(
+      process.env.comspec ?? "cmd.exe",
+      ["/d", "/s", "/c", "taskkill", "/PID", String(pid), "/T", "/F"],
+      { windowsHide: true },
+    );
+  } catch (error) {
+    if (isPidAlive(pid)) {
+      console.warn("[desktop-main] Failed to force kill worker process tree:", error);
+    }
+  }
+}
+
+async function waitForChildExit(child: ChildProcess): Promise<void> {
+  if (child.exitCode !== null || child.signalCode !== null) {
+    return;
+  }
+
+  await new Promise<void>((resolve) => {
+    child.once("exit", () => {
+      resolve();
+    });
+  });
 }
 
 function clearStartupTimers(): void {
@@ -364,25 +416,39 @@ async function stopWorkerProcess(): Promise<void> {
     }
   }
 
-  await new Promise<void>((resolve) => {
-    if (alreadyExited) {
-      resolve();
-      return;
+  if (alreadyExited) {
+    return;
+  }
+
+  const childPid = child.pid ?? null;
+  const exitPromise = waitForChildExit(child);
+
+  if (childPid && Number.isInteger(childPid) && childPid > 0) {
+    const gracefulDeadline = Date.now() + workerGracefulShutdownTimeoutMs;
+    while (Date.now() < gracefulDeadline) {
+      if (!isPidAlive(childPid)) {
+        await exitPromise;
+        return;
+      }
+      await delay(100);
     }
 
-    const killTimer = setTimeout(() => {
-      try {
-        child.kill("SIGKILL");
-      } catch {
-        // Ignore follow-up kill failures.
+    if (isPidAlive(childPid)) {
+      await forceKillProcessTree(childPid);
+      const forceKillDeadline = Date.now() + workerForceKillWaitTimeoutMs;
+      while (Date.now() < forceKillDeadline) {
+        if (!isPidAlive(childPid)) {
+          break;
+        }
+        await delay(100);
       }
-    }, 5_000);
+    }
+  }
 
-    child.once("exit", () => {
-      clearTimeout(killTimer);
-      resolve();
-    });
-  });
+  await Promise.race([
+    exitPromise,
+    delay(workerForceKillWaitTimeoutMs).then(() => undefined),
+  ]);
 }
 
 function attachWorkerLogging(child: ChildProcess): void {

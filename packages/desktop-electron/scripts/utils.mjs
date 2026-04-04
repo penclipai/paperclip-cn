@@ -44,6 +44,36 @@ export function runPnpm(args, options = {}) {
   runChecked(resolvePnpmCommand(), args, options);
 }
 
+export function killProcessTree(pid, options = {}) {
+  if (!pid || Number.isNaN(pid)) {
+    return;
+  }
+
+  if (process.platform === "win32") {
+    const result = spawnSync(
+      process.env.comspec ?? "cmd.exe",
+      ["/d", "/s", "/c", "taskkill", "/PID", String(pid), "/T", "/F"],
+      {
+        cwd: options.cwd,
+        stdio: options.stdio ?? "ignore",
+        windowsHide: true,
+      },
+    );
+
+    if (result.error) {
+      throw result.error;
+    }
+
+    return;
+  }
+
+  try {
+    process.kill(pid, "SIGKILL");
+  } catch {
+    // Process already exited.
+  }
+}
+
 export function bestEffortChmod(targetPath, mode = 0o755) {
   if (process.platform === "win32") return;
 

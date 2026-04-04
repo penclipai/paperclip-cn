@@ -53,6 +53,20 @@ const updateIssueRouteSchema = updateIssueSchema.extend({
   interrupt: z.boolean().optional(),
 });
 
+function normalizeStringQueryParam(value: unknown): string | undefined {
+  if (typeof value === "string") {
+    return value;
+  }
+  if (Array.isArray(value)) {
+    const parts = value
+      .filter((entry): entry is string => typeof entry === "string")
+      .map((entry) => entry.trim())
+      .filter(Boolean);
+    return parts.length > 0 ? parts.join(",") : undefined;
+  }
+  return undefined;
+}
+
 export function issueRoutes(
   db: Db,
   storage: StorageService,
@@ -306,6 +320,7 @@ export function issueRoutes(
   router.get("/companies/:companyId/issues", async (req, res) => {
     const companyId = req.params.companyId as string;
     assertCompanyAccess(req, companyId);
+    const normalizedStatus = normalizeStringQueryParam(req.query.status);
     const assigneeUserFilterRaw = req.query.assigneeUserId as string | undefined;
     const touchedByUserFilterRaw = req.query.touchedByUserId as string | undefined;
     const inboxArchivedByUserFilterRaw = req.query.inboxArchivedByUserId as string | undefined;
@@ -345,7 +360,7 @@ export function issueRoutes(
     }
 
     const result = await svc.list(companyId, {
-      status: req.query.status as string | undefined,
+      status: normalizedStatus,
       assigneeAgentId: req.query.assigneeAgentId as string | undefined,
       participantAgentId: req.query.participantAgentId as string | undefined,
       assigneeUserId,

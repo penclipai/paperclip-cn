@@ -197,6 +197,46 @@ export function isPidAlive(pid: number) {
   }
 }
 
+async function forceKillWindowsProcessTree(pid: number) {
+  if (!isPidAlive(pid)) return;
+
+  try {
+    await execFileAsync(
+      process.env.comspec ?? "cmd.exe",
+      ["/d", "/s", "/c", "taskkill", "/PID", String(pid), "/T", "/F"],
+      { windowsHide: true },
+    );
+  } catch (error) {
+    if (isPidAlive(pid)) {
+      throw error;
+    }
+  }
+}
+
+export async function forceKillLocalServiceProcessTree(
+  record: Pick<LocalServiceRegistryRecord, "pid" | "processGroupId">,
+) {
+  if (!Number.isInteger(record.pid) || record.pid <= 0) return;
+
+  const targetProcessGroup =
+    process.platform !== "win32" && record.processGroupId && record.processGroupId > 0;
+
+  try {
+    if (process.platform === "win32") {
+      await forceKillWindowsProcessTree(record.pid);
+      return;
+    }
+
+    if (targetProcessGroup) {
+      process.kill(-record.processGroupId!, "SIGKILL");
+    } else {
+      process.kill(record.pid, "SIGKILL");
+    }
+  } catch {
+    // Ignore cleanup races.
+  }
+}
+
 async function isLikelyMatchingCommand(record: LocalServiceRegistryRecord) {
   if (process.platform === "win32") return true;
   try {
@@ -255,7 +295,10 @@ export async function terminateLocalService(
   record: Pick<LocalServiceRegistryRecord, "pid" | "processGroupId">,
   opts?: { signal?: NodeJS.Signals; forceAfterMs?: number },
 ) {
+  if (!Number.isInteger(record.pid) || record.pid <= 0) return;
+
   const signal = opts?.signal ?? "SIGTERM";
+  const forceAfterMs = opts?.forceAfterMs ?? 2_000;
   const targetProcessGroup = process.platform !== "win32" && record.processGroupId && record.processGroupId > 0;
   try {
     if (targetProcessGroup) {
@@ -267,7 +310,7 @@ export async function terminateLocalService(
     return;
   }
 
-  const deadline = Date.now() + (opts?.forceAfterMs ?? 2_000);
+  const deadline = Date.now() + forceAfterMs;
   while (Date.now() < deadline) {
     if (!isPidAlive(record.pid)) {
       return;
@@ -276,15 +319,7 @@ export async function terminateLocalService(
   }
 
   if (!isPidAlive(record.pid)) return;
-  try {
-    if (targetProcessGroup) {
-      process.kill(-record.processGroupId!, "SIGKILL");
-    } else {
-      process.kill(record.pid, "SIGKILL");
-    }
-  } catch {
-    // Ignore cleanup races.
-  }
+  await forceKillLocalServiceProcessTree(record);
 }
 
 export async function readLocalServicePortOwner(port: number) {

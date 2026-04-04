@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { createLocalServiceKey } from "../server/src/services/local-service-supervisor.ts";
 
 export const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const devServiceControlDir = path.join(repoRoot, ".paperclip", "dev-service-control");
 
 export function createDevServiceIdentity(input: {
   mode: "watch" | "dev";
@@ -41,4 +42,8 @@ export function createDevServiceIdentity(input: {
     serviceName,
     envFingerprint,
   };
+}
+
+export function getDevServiceControlFilePath(serviceKey: string) {
+  return path.join(devServiceControlDir, `${serviceKey}.stop`);
 }

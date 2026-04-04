@@ -4,7 +4,7 @@ import path from "node:path";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import { spawn } from "node:child_process";
-import { runPnpm } from "./utils.mjs";
+import { killProcessTree, runPnpm } from "./utils.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const packageDir = path.resolve(__dirname, "..");
@@ -33,10 +33,44 @@ const child = spawn(electronBin, [...electronArgs, mainScript], {
   },
 });
 
+let shuttingDown = false;
+
+function exitForSignal(signal) {
+  if (signal === "SIGINT") {
+    process.exit(130);
+  }
+  if (signal === "SIGTERM") {
+    process.exit(143);
+  }
+  process.exit(1);
+}
+
+function shutdown(signal) {
+  if (shuttingDown) {
+    return;
+  }
+
+  shuttingDown = true;
+  killProcessTree(child.pid, { cwd: packageDir });
+  exitForSignal(signal);
+}
+
 child.on("exit", (code, signal) => {
+  if (shuttingDown) {
+    return;
+  }
+
   if (signal) {
     process.kill(process.pid, signal);
     return;
   }
   process.exit(code ?? 0);
+});
+
+process.once("SIGINT", () => {
+  shutdown("SIGINT");
+});
+
+process.once("SIGTERM", () => {
+  shutdown("SIGTERM");
 });

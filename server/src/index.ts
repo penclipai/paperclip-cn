@@ -768,7 +768,22 @@ export async function startServer(): Promise<StartedServer> {
   });
   
   {
+    const stopFilePath = process.env.PAPERCLIP_DEV_STOP_FILE?.trim() ?? "";
+    let controlStopTimer: NodeJS.Timeout | null = null;
+    let shutdownPromise: Promise<void> | null = null;
+
     const shutdown = async (signal: "SIGINT" | "SIGTERM") => {
+      if (shutdownPromise) {
+        await shutdownPromise;
+        return;
+      }
+
+      shutdownPromise = (async () => {
+        if (controlStopTimer) {
+          clearInterval(controlStopTimer);
+          controlStopTimer = null;
+        }
+
       const telemetryClient = getTelemetryClient();
       if (telemetryClient) {
         telemetryClient.stop();
@@ -785,7 +800,18 @@ export async function startServer(): Promise<StartedServer> {
       }
 
       process.exit(0);
+      })();
+
+      await shutdownPromise;
     };
+
+    if (stopFilePath) {
+      controlStopTimer = setInterval(() => {
+        if (existsSync(stopFilePath)) {
+          void shutdown("SIGTERM");
+        }
+      }, 1_000);
+    }
 
     process.once("SIGINT", () => {
       void shutdown("SIGINT");
