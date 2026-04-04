@@ -43,6 +43,7 @@ import {
   secretService,
   syncInstructionsBundleConfigFromFilePath,
   workspaceOperationService,
+  circuitBreakerService,
 } from "../services/index.js";
 import { conflict, forbidden, notFound, unprocessable } from "../errors.js";
 import { assertBoard, assertCompanyAccess, assertInstanceAdmin, getActorInfo } from "./authz.js";
@@ -2464,6 +2465,64 @@ export function agentRoutes(db: Db) {
       agentId: agent.id,
       agentName: agent.name,
       adapterType: agent.adapterType,
+    });
+  });
+
+  // Circuit breaker endpoints
+  router.get("/agents/:id/circuit-breaker", async (req, res) => {
+    const agentId = req.params.id as string;
+    const agent = await svc.getById(agentId);
+    if (!agent) {
+      res.status(404).json({ error: "Agent not found" });
+      return;
+    }
+    assertCompanyAccess(req, agent.companyId);
+
+    const cbService = circuitBreakerService(db);
+    const status = await cbService.getStatus(agentId);
+    if (!status) {
+      res.status(404).json({ error: "Circuit breaker status not available" });
+      return;
+    }
+
+    res.json({
+      agentId,
+      ...status,
+    });
+  });
+
+  router.post("/agents/:id/circuit-breaker/retry", async (req, res) => {
+    const agentId = req.params.id as string;
+    const agent = await svc.getById(agentId);
+    if (!agent) {
+      res.status(404).json({ error: "Agent not found" });
+      return;
+    }
+    assertCompanyAccess(req, agent.companyId);
+    assertBoard(req);
+
+    const cbService = circuitBreakerService(db);
+    const canRetry = await cbService.attemptRetry(agentId);
+    if (!canRetry) {
+      res.status(400).json({
+        error: "Cannot retry: circuit is not open or retry delay not met",
+      });
+      return;
+    }
+
+    await logActivity(db, {
+      companyId: agent.companyId,
+      actorType: "system",
+      actorId: req.actor.userId ?? "board",
+      action: "agent.circuit_breaker_retry",
+      entityType: "agent",
+      entityId: agentId,
+      details: { actorId: req.actor.userId ?? "board" },
+    });
+
+    res.json({
+      success: true,
+      message: "Circuit moved to half-open state, agent will attempt one more run",
     });
   });
 

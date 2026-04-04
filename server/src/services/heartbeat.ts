@@ -25,6 +25,7 @@ import type { AdapterExecutionResult, AdapterInvocationMeta, AdapterSessionCodec
 import { createLocalAgentJwt } from "../agent-auth-jwt.js";
 import { parseObject, asBoolean, asNumber, appendWithCap, MAX_EXCERPT_BYTES } from "../adapters/utils.js";
 import { costService } from "./costs.js";
+import { circuitBreakerService } from "./circuit-breaker.js";
 import { trackAgentFirstHeartbeat } from "@penclipai/shared/telemetry";
 import { getTelemetryClient } from "../telemetry.js";
 import { companySkillService } from "./company-skills.js";
@@ -903,6 +904,7 @@ export function heartbeatService(db: Db) {
   const issuesSvc = issueService(db);
   const executionWorkspacesSvc = executionWorkspaceService(db);
   const workspaceOperationsSvc = workspaceOperationService(db);
+  const circuitBreaker = circuitBreakerService(db);
   const activeRunExecutions = new Set<string>();
   const budgetHooks = {
     cancelWorkForScope: cancelBudgetScopeWork,
@@ -1822,6 +1824,52 @@ export function heartbeatService(db: Db) {
     }
 
     const isFirstHeartbeat = !existing.lastHeartbeatAt;
+
+    // Update circuit breaker state based on outcome
+    if (outcome === "succeeded" || outcome === "cancelled") {
+      await circuitBreaker.recordSuccess(agentId);
+    } else if (outcome === "failed" || outcome === "timed_out") {
+      await circuitBreaker.recordFailure(agentId, outcome);
+    }
+
+    // Check if circuit breaker has opened the circuit
+    const isCircuitOpen = await circuitBreaker.isCircuitOpen(agentId);
+    if (isCircuitOpen) {
+      // Circuit is open, force pause status
+      const runningCount = await countRunningRunsForAgent(agentId);
+      const updated = await db
+        .update(agents)
+        .set({
+          status: "paused",
+          pauseReason: existing.pauseReason || "Circuit breaker opened",
+          lastHeartbeatAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .where(eq(agents.id, agentId))
+        .returning()
+        .then((rows) => rows[0] ?? null);
+
+      if (isFirstHeartbeat && updated) {
+        const tc = getTelemetryClient();
+        if (tc) trackAgentFirstHeartbeat(tc, { agentRole: updated.role });
+      }
+
+      if (updated) {
+        publishLiveEvent({
+          companyId: updated.companyId,
+          type: "agent.status",
+          payload: {
+            agentId: updated.id,
+            status: updated.status,
+            lastHeartbeatAt: updated.lastHeartbeatAt
+              ? new Date(updated.lastHeartbeatAt).toISOString()
+              : null,
+            outcome,
+          },
+        });
+      }
+      return;
+    }
 
     const runningCount = await countRunningRunsForAgent(agentId);
     const nextStatus =

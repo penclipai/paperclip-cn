@@ -162,35 +162,40 @@ Paperclip V1 is approximately **98% complete** (up from 95%). All Phase 1 critic
 ### Phase 3: Medium Priority (Nice to Have for V1)
 
 #### 3.1 Quick Actions on List Views
-- Agent list: quick action menu (Pause/Resume/Terminate)
-- Approvals list: inline approve/reject buttons
+- ✅ Agent list: quick action menu (Phase 3.1 complete - PEN-5 integration)
+- ✅ Approvals list: inline approve/reject buttons
 
 #### 3.2 Enable Issue Execution Lock
-- Currently behind feature flag `ISSUE_EXECUTION_LOCK_ENABLED`
-- Enable and verify stable
+- ✅ **COMPLETE** - Execution lock is fully implemented and active (not behind feature flag)
+- ✅ Verified stable with checkout conflict tests
+- ✅ Prevents race conditions in issue checkout
+- ✅ Atomic locking via database transactions
 
 #### 3.3 Circuit Breaker for Agents
-- Per-agent circuit breaker guards
-- Max consecutive failures, no-progress detection, token velocity monitoring
+- ✅ **COMPLETE** - Per-agent circuit breaker guards implemented
+- ✅ Max consecutive failures detection (default: 5)
+- ✅ Automatic agent pause on circuit open
+- ✅ Retry mechanism with configurable delay (default: 15 minutes)
+- ✅ No-progress detection (default: 30 minute timeout)
+- ✅ Activity logging for all state changes
+- ✅ API endpoints: `GET /agents/:id/circuit-breaker`, `POST /agents/:id/circuit-breaker/retry`
+- ✅ Full test coverage
 
 ---
 
-## Technical Decisions Needed
+## Technical Decisions - RESOLVED
 
 ### D1: Plugin System Scope
-- **Status:** Built but out of V1 scope per spec
-- **Decision:** Gate behind feature flag or document as preview
-- **Recommendation:** Feature flag `ENABLE_PLUGINS=false` by default
+- ✅ **Decision: DEFERRED** - Feature flagged off by default
+- See `doc/plans/2026-04-05-v1-technical-decisions.md` for details
 
 ### D2: Desktop Electron Wrapper
-- **Status:** Built but not in V1 spec
-- **Decision:** Ship with V1 or defer
-- **Recommendation:** Defer — document as experimental
+- ✅ **Decision: DEFERRED** - Developer-only mode, not in V1 release
+- See `doc/plans/2026-04-05-v1-technical-decisions.md` for details
 
 ### D3: Multi-User Collaboration
-- **Status:** Schema exists, partial implementation
-- **Decision:** Complete for V1 or defer
-- **Recommendation:** Defer full invite flow — ensure single-board-operator mode is rock solid
+- ✅ **Decision: DEFERRED** - Single board operator only for V1
+- See `doc/plans/2026-04-05-v1-technical-decisions.md` for details
 
 ---
 
