@@ -17,17 +17,19 @@ afterEach(() => {
 
 describe("resolvePaperclipHomeDir", () => {
   it("preserves a fresh desktop temp PAPERCLIP_HOME inside the active desktop user-data dir", () => {
-    process.env.PAPERCLIP_DESKTOP_USER_DATA_DIR = "C:\\Users\\chenj\\AppData\\Local\\Temp\\paperclip-desktop-acceptance-dark-12345";
-    process.env.PAPERCLIP_HOME = "C:\\Users\\chenj\\AppData\\Local\\Temp\\paperclip-desktop-acceptance-dark-12345\\runtime";
+    const userDataDir = path.join(os.tmpdir(), "paperclip-desktop-acceptance-dark-12345");
+    const runtimeDir = path.join(userDataDir, "runtime");
+    process.env.PAPERCLIP_DESKTOP_USER_DATA_DIR = userDataDir;
+    process.env.PAPERCLIP_HOME = runtimeDir;
 
-    expect(resolvePaperclipHomeDir()).toBe(
-      path.resolve("C:\\Users\\chenj\\AppData\\Local\\Temp\\paperclip-desktop-acceptance-dark-12345\\runtime"),
-    );
+    expect(resolvePaperclipHomeDir()).toBe(path.resolve(runtimeDir));
   });
 
   it("still ignores broken inherited desktop temp homes outside the current desktop user-data dir", () => {
-    process.env.PAPERCLIP_DESKTOP_USER_DATA_DIR = "C:\\Users\\chenj\\AppData\\Local\\Temp\\paperclip-desktop-acceptance-dark-12345";
-    process.env.PAPERCLIP_HOME = "C:\\Users\\chenj\\AppData\\Local\\Temp\\paperclip-desktop-smoke-dev-light-stale\\runtime";
+    const currentUserDataDir = path.join(os.tmpdir(), "paperclip-desktop-acceptance-dark-12345");
+    const staleRuntimeDir = path.join(os.tmpdir(), "paperclip-desktop-smoke-dev-light-stale", "runtime");
+    process.env.PAPERCLIP_DESKTOP_USER_DATA_DIR = currentUserDataDir;
+    process.env.PAPERCLIP_HOME = staleRuntimeDir;
 
     expect(resolvePaperclipHomeDir()).toBe(path.resolve(os.homedir(), ".paperclip"));
   });
