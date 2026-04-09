@@ -259,9 +259,11 @@ test.describe("Signoff execution policy", () => {
       agentId: ctx.executor.agentId,
     });
 
-    // Step 2: Navigate to issue in UI and verify execution label
+    // Step 2: Navigate to issue in UI and verify review-stage routing in the current UI copy
     await page.goto(`/${ctx.companyPrefix}/issues/${issue.identifier}`);
-    await expect(page.locator("text=Review pending")).toBeVisible({ timeout: 10_000 });
+    await expect(
+      page.getByText(/Review pending|审阅.*Reviewer.*待处理/),
+    ).toBeVisible({ timeout: 10_000 });
 
     // Step 3: Reviewer approves → should route to approver
     const step3Res = await agentPatch(
@@ -277,9 +279,11 @@ test.describe("Signoff execution policy", () => {
     expect(step3Issue.executionState.currentStageType).toBe("approval");
     expect(step3Issue.executionState.completedStageIds).toHaveLength(1);
 
-    // Step 4: Verify UI shows approval pending
+    // Step 4: Verify UI shows approval-stage routing in the current UI copy
     await page.reload();
-    await expect(page.locator("text=Approval pending")).toBeVisible({ timeout: 10_000 });
+    await expect(
+      page.getByText(/Approval pending|审批.*Approver.*待处理/),
+    ).toBeVisible({ timeout: 10_000 });
 
     // Step 5: Approver approves → should complete
     const step5Res = await agentPatch(

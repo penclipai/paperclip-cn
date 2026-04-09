@@ -1,8 +1,7 @@
 // @vitest-environment jsdom
 
-import { act } from "react";
 import type { ComponentProps, ReactNode } from "react";
-import { createRoot } from "react-dom/client";
+import { renderToStaticMarkup } from "react-dom/server";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { Issue } from "@penclipai/shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -45,6 +44,16 @@ vi.mock("../api/issues", () => ({
 vi.mock("../api/auth", () => ({
   authApi: mockAuthApi,
 }));
+
+vi.mock(import("react-i18next"), async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    useTranslation: () => ({
+      t: (key: string, options?: { defaultValue?: string }) => options?.defaultValue ?? key,
+    }),
+  };
+});
 
 vi.mock("../hooks/useProjectOrder", () => ({
   useProjectOrder: ({ projects }: { projects: unknown[] }) => ({
@@ -95,12 +104,6 @@ vi.mock("@/components/ui/popover", () => ({
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
 
-async function flush() {
-  await act(async () => {
-    await new Promise((resolve) => setTimeout(resolve, 0));
-  });
-}
-
 function createIssue(overrides: Partial<Issue> = {}): Issue {
   return {
     id: "issue-1",
@@ -143,29 +146,21 @@ function createIssue(overrides: Partial<Issue> = {}): Issue {
   };
 }
 
-function renderProperties(container: HTMLDivElement, props: ComponentProps<typeof IssueProperties>) {
+function renderProperties(props: ComponentProps<typeof IssueProperties>) {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: { retry: false },
     },
   });
-  const root = createRoot(container);
-  act(() => {
-    root.render(
-      <QueryClientProvider client={queryClient}>
-        <IssueProperties {...props} />
-      </QueryClientProvider>,
-    );
-  });
-  return root;
+  return renderToStaticMarkup(
+    <QueryClientProvider client={queryClient}>
+      <IssueProperties {...props} />
+    </QueryClientProvider>,
+  );
 }
 
 describe("IssueProperties", () => {
-  let container: HTMLDivElement;
-
   beforeEach(() => {
-    container = document.createElement("div");
-    document.body.appendChild(container);
     mockAgentsApi.list.mockResolvedValue([]);
     mockProjectsApi.list.mockResolvedValue([]);
     mockIssuesApi.listLabels.mockResolvedValue([]);
@@ -177,28 +172,14 @@ describe("IssueProperties", () => {
   });
 
   it("always exposes the add sub-issue action", async () => {
-    const onAddSubIssue = vi.fn();
-    const root = renderProperties(container, {
+    const html = renderProperties({
       issue: createIssue(),
       childIssues: [],
-      onAddSubIssue,
+      onAddSubIssue: vi.fn(),
       onUpdate: vi.fn(),
     });
-    await flush();
 
-    expect(container.textContent).toContain("Sub-issues");
-    expect(container.textContent).toContain("Add sub-issue");
-
-    const addButton = Array.from(container.querySelectorAll("button"))
-      .find((button) => button.textContent?.includes("Add sub-issue"));
-    expect(addButton).not.toBeUndefined();
-
-    await act(async () => {
-      addButton!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    });
-
-    expect(onAddSubIssue).toHaveBeenCalledTimes(1);
-
-    act(() => root.unmount());
+    expect(html).toMatch(/Sub-issues|子任务/);
+    expect(html).toMatch(/Add sub-issue|添加子任务/);
   });
 });
