@@ -47,7 +47,11 @@ const EXAMPLE_PLUGIN_INSTALLS = [
 ];
 
 function parseArgs(argv) {
-  const args = { theme: "dark" };
+  const args = {
+    theme: "dark",
+    scope: "core",
+    skipBuild: false,
+  };
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
     if (arg === "--theme") {
@@ -55,8 +59,21 @@ function parseArgs(argv) {
       index += 1;
       continue;
     }
+    if (arg === "--scope") {
+      args.scope = argv[index + 1] ?? args.scope;
+      index += 1;
+      continue;
+    }
+    if (arg === "--skip-build") {
+      args.skipBuild = true;
+      continue;
+    }
     if (arg.startsWith("--theme=")) {
       args.theme = arg.slice("--theme=".length);
+      continue;
+    }
+    if (arg.startsWith("--scope=")) {
+      args.scope = arg.slice("--scope=".length);
     }
   }
   return args;
@@ -355,6 +372,8 @@ async function waitForRunOutput(origin, runId, timeoutMs = 240_000) {
     lastRun = await getRun(origin, runId);
     lastLog = await getRunLog(origin, runId);
     const logContent = typeof lastLog?.content === "string" ? lastLog.content : "";
+    const stdoutExcerpt = typeof lastRun?.stdoutExcerpt === "string" ? lastRun.stdoutExcerpt : "";
+    const stderrExcerpt = typeof lastRun?.stderrExcerpt === "string" ? lastRun.stderrExcerpt : "";
     if (logContent.length > 0) {
       lastLogContentLength = logContent.length;
     }
@@ -364,7 +383,9 @@ async function waitForRunOutput(origin, runId, timeoutMs = 240_000) {
       (
         lastLogContentLength > 0 ||
         lastRun.resultJson != null ||
-        typeof lastRun.error === "string"
+        typeof lastRun.error === "string" ||
+        stdoutExcerpt.length > 0 ||
+        stderrExcerpt.length > 0
       )
     ) {
       return { run: lastRun, log: lastLog };
@@ -372,7 +393,9 @@ async function waitForRunOutput(origin, runId, timeoutMs = 240_000) {
     await new Promise((resolve) => setTimeout(resolve, 2_000));
   }
 
-  throw new Error(`Timed out waiting for run ${runId} to produce log output.`);
+  throw new Error(
+    `Timed out waiting for run ${runId} to produce log output. Last status: ${lastRun?.status ?? "unknown"}`,
+  );
 }
 
 async function getPlugin(origin, pluginId) {
@@ -385,6 +408,10 @@ async function getPluginHealth(origin, pluginId) {
 
 async function getPluginDashboard(origin, pluginId) {
   return await fetchJson(origin, `/api/plugins/${pluginId}/dashboard`, undefined, "get plugin dashboard");
+}
+
+async function listPlugins(origin) {
+  return await fetchJson(origin, "/api/plugins", undefined, "list plugins");
 }
 
 async function listPluginUiContributions(origin) {
@@ -402,6 +429,30 @@ async function installPlugin(origin, options) {
     },
     `install plugin ${options.packageName}`,
   );
+}
+
+async function installPluginIfNeeded(origin, options, packageNames) {
+  const existingPlugins = await listPlugins(origin);
+  const existing = existingPlugins.find((plugin) => packageNames.includes(plugin.packageName));
+  if (existing) {
+    return existing;
+  }
+
+  try {
+    return await installPlugin(origin, options);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (!/already installed/i.test(message)) {
+      throw error;
+    }
+
+    const installedPlugins = await listPlugins(origin);
+    const installed = installedPlugins.find((plugin) => packageNames.includes(plugin.packageName));
+    if (installed) {
+      return installed;
+    }
+    throw error;
+  }
 }
 
 async function setPluginEnabled(origin, pluginId, enabled) {
@@ -451,7 +502,7 @@ async function installThirdPartyPlugin(origin) {
 
   for (const packageName of THIRD_PARTY_PLUGIN_CANDIDATES) {
     try {
-      const installed = await installPlugin(origin, { packageName });
+      const installed = await installPluginIfNeeded(origin, { packageName }, [packageName]);
       const plugin = await waitForPluginStatus(origin, installed.id, ["ready", "installed", "disabled"], 180_000);
       return { plugin, packageName, failures };
     } catch (error) {
@@ -615,86 +666,96 @@ async function verifyDesktopRoute(page, url, routeLabel) {
   assertTitlebarChromeState(await readTitlebarChromeState(page), routeLabel);
 }
 
-async function runAcceptanceFlow({ page, origin, company, project, issue, agent, artifactDir }) {
+async function runAcceptanceFlow({ page, origin, company, project, issue, agent, artifactDir, scope }) {
   const companyPrefix = company.issuePrefix;
-  const ceo = await createAgent(origin, company.id, {
-    name: "Acceptance CEO",
-    role: "ceo",
-    adapterType: "claude_local",
-    adapterConfig: {},
-  });
-  const manager = await createAgent(origin, company.id, {
-    name: "Acceptance Manager",
-    role: "general",
-    reportsTo: ceo.id,
-    adapterType: "claude_local",
-    adapterConfig: {},
-  });
-  const reviewer = await createAgent(origin, company.id, {
-    name: "Acceptance Reviewer",
-    role: "general",
-    reportsTo: manager.id,
-    adapterType: "claude_local",
-    adapterConfig: {},
-  });
+  const fullScope = scope === "full";
+  let ceo = null;
+  let manager = null;
+  let reviewer = null;
+  let coordinationIssue = null;
+  let implementationIssue = issue;
+  let reviewIssue = null;
 
-  const coordinationIssue = await fetchJson(
-    origin,
-    `/api/companies/${company.id}/issues`,
-    {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        projectId: project.id,
-        title: "Coordination Issue",
-        description: "Tracks the multi-agent coordination layer for desktop acceptance.",
-        status: "backlog",
-        priority: "high",
-        assigneeAgentId: manager.id,
-      }),
-    },
-    "create coordination issue",
-  );
-  const implementationIssue = await fetchJson(
-    origin,
-    `/api/companies/${company.id}/issues`,
-    {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        projectId: project.id,
-        title: "Implementation Issue",
-        description: "Assigned to the Claude acceptance agent and blocked by coordination.",
-        status: "backlog",
-        priority: "medium",
-        assigneeAgentId: agent.id,
-        blockedByIssueIds: [coordinationIssue.id],
-      }),
-    },
-    "create implementation issue",
-  );
-  const reviewIssue = await fetchJson(
-    origin,
-    `/api/companies/${company.id}/issues`,
-    {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        projectId: project.id,
-        title: "Review Issue",
-        description: "Assigned to the reviewer agent and blocked by implementation.",
-        status: "backlog",
-        priority: "medium",
-        assigneeAgentId: reviewer.id,
-        blockedByIssueIds: [implementationIssue.id],
-      }),
-    },
-    "create review issue",
-  );
+  if (fullScope) {
+    ceo = await createAgent(origin, company.id, {
+      name: "Acceptance CEO",
+      role: "ceo",
+      adapterType: "claude_local",
+      adapterConfig: {},
+    });
+    manager = await createAgent(origin, company.id, {
+      name: "Acceptance Manager",
+      role: "general",
+      reportsTo: ceo.id,
+      adapterType: "claude_local",
+      adapterConfig: {},
+    });
+    reviewer = await createAgent(origin, company.id, {
+      name: "Acceptance Reviewer",
+      role: "general",
+      reportsTo: manager.id,
+      adapterType: "claude_local",
+      adapterConfig: {},
+    });
 
-  await addIssueComment(origin, implementationIssue.id, {
-    body: `Coordination handoff prepared. Reviewer: ${reviewer.name}`,
-  });
+    coordinationIssue = await fetchJson(
+      origin,
+      `/api/companies/${company.id}/issues`,
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          projectId: project.id,
+          title: "Coordination Issue",
+          description: "Tracks the multi-agent coordination layer for desktop acceptance.",
+          status: "backlog",
+          priority: "high",
+          assigneeAgentId: manager.id,
+        }),
+      },
+      "create coordination issue",
+    );
+    implementationIssue = await fetchJson(
+      origin,
+      `/api/companies/${company.id}/issues`,
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          projectId: project.id,
+          title: "Implementation Issue",
+          description: "Assigned to the Claude acceptance agent and blocked by coordination.",
+          status: "backlog",
+          priority: "medium",
+          assigneeAgentId: agent.id,
+          blockedByIssueIds: [coordinationIssue.id],
+        }),
+      },
+      "create implementation issue",
+    );
+    reviewIssue = await fetchJson(
+      origin,
+      `/api/companies/${company.id}/issues`,
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          projectId: project.id,
+          title: "Review Issue",
+          description: "Assigned to the reviewer agent and blocked by implementation.",
+          status: "backlog",
+          priority: "medium",
+          assigneeAgentId: reviewer.id,
+          blockedByIssueIds: [implementationIssue.id],
+        }),
+      },
+      "create review issue",
+    );
+
+    await addIssueComment(origin, implementationIssue.id, {
+      body: `Coordination handoff prepared. Reviewer: ${reviewer.name}`,
+    });
+  }
 
   const routes = [
     { label: "dashboard", url: `${origin}/${companyPrefix}/dashboard` },
@@ -703,61 +764,71 @@ async function runAcceptanceFlow({ page, origin, company, project, issue, agent,
     { label: "projects", url: `${origin}/${companyPrefix}/projects` },
     { label: "project detail", url: `${origin}/${companyPrefix}/projects/${project.id}` },
     { label: "project issues", url: `${origin}/${companyPrefix}/projects/${project.id}/issues` },
-    { label: "implementation issue detail", url: `${origin}/${companyPrefix}/issues/${implementationIssue.id}` },
-    { label: "review issue detail", url: `${origin}/${companyPrefix}/issues/${reviewIssue.id}` },
+    { label: "acceptance issue detail", url: `${origin}/${companyPrefix}/issues/${issue.id}` },
     { label: "plugin manager", url: `${origin}/instance/settings/plugins` },
   ];
+  if (fullScope && implementationIssue && reviewIssue) {
+    routes.push(
+      { label: "implementation issue detail", url: `${origin}/${companyPrefix}/issues/${implementationIssue.id}` },
+      { label: "review issue detail", url: `${origin}/${companyPrefix}/issues/${reviewIssue.id}` },
+    );
+  }
 
   for (const route of routes) {
     await verifyDesktopRoute(page, route.url, route.label);
   }
 
-  const run = await wakeAgent(origin, agent.id, {
-    source: "on_demand",
-    triggerDetail: "manual",
-    reason: "desktop_acceptance_multi_agent_issue",
-    payload: {
-      issueId: implementationIssue.id,
-      projectId: project.id,
-    },
-    contextSnapshot: {
-      issueId: implementationIssue.id,
-      taskId: implementationIssue.id,
-      projectId: project.id,
-      source: "desktop.acceptance.multi-agent",
-      wakeReason: "desktop_acceptance_multi_agent_issue",
-    },
-  });
-  const runEvidence = await waitForRunOutput(origin, run.id);
-  const claudeEvidenceText = [
-    typeof runEvidence.log?.content === "string" ? runEvidence.log.content : "",
-    runEvidence.run?.resultJson ? JSON.stringify(runEvidence.run.resultJson, null, 2) : "",
-    typeof runEvidence.run?.error === "string" ? runEvidence.run.error : "",
-    typeof runEvidence.run?.errorCode === "string" ? runEvidence.run.errorCode : "",
-  ]
-    .filter(Boolean)
-    .join("\n");
+  let runEvidence = null;
+  if (fullScope) {
+    const run = await wakeAgent(origin, agent.id, {
+      source: "on_demand",
+      triggerDetail: "manual",
+      reason: "desktop_acceptance_multi_agent_issue",
+      payload: {
+        issueId: implementationIssue.id,
+        projectId: project.id,
+      },
+      contextSnapshot: {
+        issueId: implementationIssue.id,
+        taskId: implementationIssue.id,
+        projectId: project.id,
+        source: "desktop.acceptance.multi-agent",
+        wakeReason: "desktop_acceptance_multi_agent_issue",
+      },
+    });
+    runEvidence = await waitForRunOutput(origin, run.id);
+    const claudeEvidenceText = [
+      typeof runEvidence.log?.content === "string" ? runEvidence.log.content : "",
+      runEvidence.run?.resultJson ? JSON.stringify(runEvidence.run.resultJson, null, 2) : "",
+      typeof runEvidence.run?.error === "string" ? runEvidence.run.error : "",
+      typeof runEvidence.run?.errorCode === "string" ? runEvidence.run.errorCode : "",
+      typeof runEvidence.run?.stdoutExcerpt === "string" ? runEvidence.run.stdoutExcerpt : "",
+      typeof runEvidence.run?.stderrExcerpt === "string" ? runEvidence.run.stderrExcerpt : "",
+    ]
+      .filter(Boolean)
+      .join("\n");
 
-  await fs.promises.writeFile(
-    path.resolve(artifactDir, "claude-run-log.txt"),
-    claudeEvidenceText,
-    "utf8",
-  );
+    await fs.promises.writeFile(
+      path.resolve(artifactDir, "claude-run-log.txt"),
+      claudeEvidenceText,
+      "utf8",
+    );
 
-  if (!claudeEvidenceText.trim()) {
-    throw new Error(`Claude acceptance run ${run.id} did not produce any terminal evidence.`);
-  }
+    if (!claudeEvidenceText.trim()) {
+      throw new Error(`Claude acceptance run ${run.id} did not produce any terminal evidence.`);
+    }
 
-  if (!/API Error|assistant|result|summary|message|provider|provider_response_error|Arrearage|READY|claude/i.test(claudeEvidenceText)) {
-    throw new Error("Claude acceptance run log did not contain recognizable real CLI output.");
+    if (!/API Error|assistant|result|summary|message|provider|provider_response_error|Arrearage|READY|claude/i.test(claudeEvidenceText)) {
+      throw new Error("Claude acceptance run log did not contain recognizable real CLI output.");
+    }
   }
 
   const installedExamples = [];
   for (const example of EXAMPLE_PLUGIN_INSTALLS) {
-    const installed = await installPlugin(origin, {
+    const installed = await installPluginIfNeeded(origin, {
       packageName: example.localPath,
       isLocalPath: true,
-    });
+    }, [example.packageName]);
     const plugin = await waitForPluginStatus(origin, installed.id, ["ready"], 180_000);
     await getPluginHealth(origin, plugin.id);
     await getPluginDashboard(origin, plugin.id);
@@ -800,40 +871,44 @@ async function runAcceptanceFlow({ page, origin, company, project, issue, agent,
   await setPluginEnabled(origin, helloWorldPlugin.id, true);
   await waitForPluginStatus(origin, helloWorldPlugin.id, ["ready"], 60_000);
 
-  const thirdPartyInstall = await installThirdPartyPlugin(origin);
-  await verifyDesktopRoute(page, `${origin}/instance/settings/plugins/${thirdPartyInstall.plugin.id}`, "third-party plugin settings");
+  let thirdPartyInstall = null;
+  if (fullScope) {
+    thirdPartyInstall = await installThirdPartyPlugin(origin);
+    await verifyDesktopRoute(page, `${origin}/instance/settings/plugins/${thirdPartyInstall.plugin.id}`, "third-party plugin settings");
+  }
 
   const evidence = {
+    scope,
     companyId: company.id,
     companyPrefix,
     projectId: project.id,
     issueId: issue.id,
     agentId: agent.id,
-    multiAgent: {
+    multiAgent: fullScope ? {
       ceoAgentId: ceo.id,
       managerAgentId: manager.id,
       reviewerAgentId: reviewer.id,
       coordinationIssueId: coordinationIssue.id,
       implementationIssueId: implementationIssue.id,
       reviewIssueId: reviewIssue.id,
-    },
-    claudeRun: {
-      runId: run.id,
+    } : null,
+    claudeRun: fullScope && runEvidence ? {
+      runId: runEvidence.run?.id ?? null,
       status: runEvidence.run?.status ?? null,
       errorCode: runEvidence.run?.errorCode ?? null,
       logBytes: typeof runEvidence.log?.content === "string" ? runEvidence.log.content.length : 0,
-    },
+    } : null,
     examples: installedExamples.map((plugin) => ({
       id: plugin.id,
       packageName: plugin.packageName,
       status: plugin.status,
     })),
-    thirdParty: {
+    thirdParty: thirdPartyInstall ? {
       packageName: thirdPartyInstall.packageName,
       pluginId: thirdPartyInstall.plugin.id,
       status: thirdPartyInstall.plugin.status,
       attemptedFailures: thirdPartyInstall.failures,
-    },
+    } : null,
   };
 
   await fs.promises.writeFile(
@@ -844,7 +919,7 @@ async function runAcceptanceFlow({ page, origin, company, project, issue, agent,
 
   const cleanupPluginIds = [
     ...installedExamples.map((plugin) => plugin.id),
-    thirdPartyInstall.plugin.id,
+    ...(thirdPartyInstall ? [thirdPartyInstall.plugin.id] : []),
   ];
   for (const pluginId of cleanupPluginIds.reverse()) {
     await uninstallPlugin(origin, pluginId, true);
@@ -861,11 +936,16 @@ async function writeFailureSnapshot(page, artifactDir) {
 }
 
 async function run() {
-  const { theme } = parseArgs(process.argv.slice(2));
-  const artifactDir = path.resolve(packageDir, ".artifacts", "smoke", "acceptance-dev");
+  const { theme, scope, skipBuild } = parseArgs(process.argv.slice(2));
+  if (!["core", "full"].includes(scope)) {
+    throw new Error(`Unsupported acceptance scope "${scope}". Use "core" or "full".`);
+  }
+  const artifactDir = path.resolve(packageDir, ".artifacts", "smoke", `acceptance-dev-${scope}`);
 
   await ensureDirectory(artifactDir);
-  prepareDevLaunch();
+  if (!skipBuild) {
+    prepareDevLaunch();
+  }
 
   const userDataDir = await createSmokeUserDataDir(theme);
   const launchOptions = resolveDevLaunchOptions(userDataDir);
@@ -903,6 +983,7 @@ async function run() {
       issue,
       agent,
       artifactDir,
+      scope,
     });
 
     await page.screenshot({
@@ -910,7 +991,7 @@ async function run() {
       fullPage: true,
     });
 
-    console.log("[desktop-acceptance] Dev acceptance passed.");
+    console.log(`[desktop-acceptance] Dev acceptance passed (${scope}).`);
     console.log(`[desktop-acceptance] Health: ${JSON.stringify(health)}`);
     console.log(`[desktop-acceptance] Evidence: ${path.resolve(artifactDir, "acceptance-evidence.json")}`);
   } catch (error) {

@@ -92,21 +92,12 @@ function containsBrokenDesktopTempPath(value: unknown): boolean {
   return false;
 }
 
-function isBrokenDesktopTempConfig(candidate: string): boolean {
-  try {
-    const raw = JSON.parse(readFileSync(candidate, "utf8")) as unknown;
-    return containsBrokenDesktopTempPath(raw);
-  } catch {
-    return false;
-  }
-}
-
 function findConfigFileFromAncestors(startDir: string): string | null {
   let currentDir = path.resolve(startDir);
 
   while (true) {
     const candidate = path.resolve(currentDir, ".paperclip", CONFIG_BASENAME);
-    if (existsSync(candidate) && !isBrokenDesktopTempConfig(candidate)) return candidate;
+    if (existsSync(candidate)) return candidate;
 
     const nextDir = path.resolve(currentDir, "..");
     if (nextDir === currentDir) return null;
@@ -223,16 +214,19 @@ function readConfig(configPath: string): PartialConfig | null {
       ? migrated.database
       : undefined;
 
+  const embeddedPostgresDataDir =
+    typeof database?.embeddedPostgresDataDir === "string" &&
+    !containsBrokenDesktopTempPath(database.embeddedPostgresDataDir)
+      ? database.embeddedPostgresDataDir
+      : undefined;
+
   return {
     database: database
       ? {
           mode: database.mode === "postgres" ? "postgres" : "embedded-postgres",
           connectionString:
             typeof database.connectionString === "string" ? database.connectionString : undefined,
-          embeddedPostgresDataDir:
-            typeof database.embeddedPostgresDataDir === "string"
-              ? database.embeddedPostgresDataDir
-              : undefined,
+          embeddedPostgresDataDir,
           embeddedPostgresPort: asPositiveInt(database.embeddedPostgresPort) ?? undefined,
           pgliteDataDir: typeof database.pgliteDataDir === "string" ? database.pgliteDataDir : undefined,
           pglitePort: asPositiveInt(database.pglitePort) ?? undefined,

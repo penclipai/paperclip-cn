@@ -62,6 +62,8 @@ pnpm desktop:dev
 pnpm desktop:dist:win
 pnpm smoke:desktop --mode dev
 pnpm smoke:desktop --mode packaged
+pnpm smoke:desktop:acceptance
+pnpm smoke:desktop:acceptance:full
 ```
 
 What they do:
@@ -70,6 +72,8 @@ What they do:
 - `pnpm desktop:dist:win` stages a packaged runtime in `packages/desktop-electron/.stage/app-runtime`, builds a small Electron shell, bundles `app-runtime` as extra resources, and creates the Windows installer plus `win-unpacked/`
 - `pnpm smoke:desktop --mode dev` launches the dev Electron shell, captures a startup splash screenshot, waits for `/api/health`, then captures the loaded board
 - `pnpm smoke:desktop --mode packaged` launches the unpacked Windows desktop build from `packages/desktop-electron/release/win-unpacked/` and performs the same splash + board checks
+- `pnpm smoke:desktop:acceptance` runs the faster `core` dev acceptance flow: desktop business pages + bundled example plugin validation
+- `pnpm smoke:desktop:acceptance:full` runs the slower full dev acceptance flow: `core` coverage plus multi-agent orchestration, real Claude CLI output capture, and third-party plugin installation
 
 Current scope and notes:
 
@@ -78,6 +82,18 @@ Current scope and notes:
 - the desktop shell uses `custom-electron-titlebar` with native Windows controls exposed via `titleBarOverlay`
 - packaged desktop assets now live under `resources/app-runtime/{server,node_modules,skills}` instead of using the server runtime as the Electron app directory
 - startup splash screenshots are written to `packages/desktop-electron/.artifacts/smoke/<mode>/`
+- acceptance evidence is written to `packages/desktop-electron/.artifacts/smoke/acceptance-dev-core/` or `acceptance-dev-full/`
+
+Acceptance speed tips:
+
+- use `pnpm smoke:desktop:acceptance` for routine regression
+- use `pnpm smoke:desktop:acceptance:full` only for release-level deep validation
+- add `--skip-build` when you already have fresh local builds and only want to re-run the Electron acceptance flow:
+
+```sh
+node packages/desktop-electron/scripts/smoke/desktop-acceptance.mjs --skip-build
+node packages/desktop-electron/scripts/smoke/desktop-acceptance.mjs --scope full --skip-build
+```
 
 `pnpm dev:once` now tracks backend-relevant file changes and pending migrations. When the current boot is stale, the board UI shows a `Restart required` banner. You can also enable guarded auto-restart in `Instance Settings > Experimental`, which waits for queued/running local agent runs to finish before restarting the dev server.
 

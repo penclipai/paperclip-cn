@@ -14,6 +14,8 @@
     "desktop:dist": "pnpm --filter @penclipai/desktop-electron dist",
     "desktop:dist:win": "pnpm --filter @penclipai/desktop-electron dist:win",
     "smoke:desktop": "node packages/desktop-electron/scripts/smoke/desktop-electron.mjs",
+    "smoke:desktop:acceptance": "node packages/desktop-electron/scripts/smoke/desktop-acceptance.mjs",
+    "smoke:desktop:acceptance:full": "node packages/desktop-electron/scripts/smoke/desktop-acceptance.mjs --scope full",
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",
     "test": "vitest",

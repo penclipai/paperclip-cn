@@ -51,6 +51,37 @@ import type { PluginLifecycleManager } from "./plugin-lifecycle.js";
 
 const execFileAsync = promisify(execFile);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const NPM_COMMAND = process.platform === "win32" ? "npm.cmd" : "npm";
+
+async function execNpmCommand(
+  args: string[],
+  options?: {
+    cwd?: string;
+    timeout?: number;
+  },
+) {
+  if (process.platform === "win32") {
+    return await execFileAsync(
+      process.env.comspec ?? "cmd.exe",
+      ["/d", "/s", "/c", NPM_COMMAND, ...args],
+      {
+        cwd: options?.cwd,
+        timeout: options?.timeout,
+        windowsHide: true,
+      },
+    );
+  }
+
+  return await execFileAsync(
+    NPM_COMMAND,
+    args,
+    {
+      cwd: options?.cwd,
+      timeout: options?.timeout,
+      windowsHide: true,
+    },
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -832,10 +863,9 @@ export function pluginLoader(
         // Use execFile (not exec) to avoid shell injection from package name/version.
         // --ignore-scripts prevents preinstall/install/postinstall hooks from
         // executing arbitrary code on the host before manifest validation.
-        await execFileAsync(
-          "npm",
+        await execNpmCommand(
           ["install", spec, "--prefix", targetInstallDir, "--save", "--ignore-scripts"],
-          { timeout: 120_000 }, // 2 minute timeout for npm install
+          { timeout: 120_000 },
         );
       } catch (err) {
         throw new Error(`npm install failed for ${spec}: ${String(err)}`);
@@ -1398,8 +1428,7 @@ export function pluginLoader(
       const packageJsonPath = path.join(localPluginDir, "package.json");
       if (existsSync(packageJsonPath)) {
         try {
-          await execFileAsync(
-            "npm",
+          await execNpmCommand(
             ["uninstall", plugin.packageName, "--prefix", localPluginDir, "--ignore-scripts"],
             { timeout: 120_000 },
           );

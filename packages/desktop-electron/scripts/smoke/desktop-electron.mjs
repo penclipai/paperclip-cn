@@ -22,12 +22,6 @@ const DEV_PLUGIN_BUILD_FILTERS = [
   "@penclipai/plugin-file-browser-example",
   "@penclipai/plugin-kitchen-sink-example",
 ];
-const THIRD_PARTY_PLUGIN_CANDIDATES = [
-  "paperclip-plugin-superpowers",
-  "paperclip-plugin-knok",
-  "paperclip-plugin-acp",
-  "paperclip-plugin-telegram",
-];
 
 function parseArgs(argv) {
   const args = { mode: "dev" };
@@ -410,39 +404,7 @@ async function runExtendedDevAcceptance(origin, page, company) {
   await postPluginAction(origin, readyExample.id, "enable");
   await waitForPlugin(origin, (plugin) => plugin.id === readyExample.id && plugin.status === "ready");
 
-  let thirdPartyPackage = null;
-  let thirdPartyPlugin = null;
-  const thirdPartyErrors = [];
-  for (const candidate of THIRD_PARTY_PLUGIN_CANDIDATES) {
-    try {
-      const installed = await installPlugin(origin, { packageName: candidate });
-      if (!installed?.id || !installed?.packageName) {
-        throw new Error(`Third-party install for ${candidate} returned an unexpected payload.`);
-      }
-      thirdPartyPackage = candidate;
-      thirdPartyPlugin = await waitForPlugin(
-        origin,
-        (plugin) => plugin.id === installed.id || plugin.packageName === installed.packageName,
-      );
-      break;
-    } catch (error) {
-      thirdPartyErrors.push(`${candidate}: ${error instanceof Error ? error.message : String(error)}`);
-      // Try the next package.
-    }
-  }
-
-  if (!thirdPartyPackage || !thirdPartyPlugin) {
-    throw new Error(`Failed to install any third-party plugin candidate. ${thirdPartyErrors.join(" | ")}`);
-  }
-
-  if (!["ready", "installed"].includes(thirdPartyPlugin.status)) {
-    throw new Error(
-      `Third-party plugin ${thirdPartyPackage} installed with unexpected status ${thirdPartyPlugin.status}.`,
-    );
-  }
-
   await visitRoute(page, `${origin}/instance/settings/plugins/${readyExample.id}`, "desktop plugin settings");
-  await uninstallPlugin(origin, thirdPartyPlugin.id);
 }
 
 async function readDesktopLayoutState(page) {
