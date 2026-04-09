@@ -6,6 +6,7 @@ const DEFAULT_INSTANCE_ID = "default";
 const CONFIG_BASENAME = "config.json";
 const ENV_BASENAME = ".env";
 const INSTANCE_ID_RE = /^[a-zA-Z0-9_-]+$/;
+const DESKTOP_TEMP_INSTANCE_PATH_RE = /paperclip-desktop-(?:smoke|acceptance)-/i;
 
 type PartialConfig = {
   database?: {
@@ -43,7 +44,12 @@ function expandHomePrefix(value: string): string {
 
 function resolvePaperclipHomeDir(): string {
   const envHome = process.env.PAPERCLIP_HOME?.trim();
-  if (envHome) return path.resolve(expandHomePrefix(envHome));
+  if (envHome) {
+    const resolved = path.resolve(expandHomePrefix(envHome));
+    if (!(DESKTOP_TEMP_INSTANCE_PATH_RE.test(resolved) && !existsSync(resolved))) {
+      return resolved;
+    }
+  }
   return path.resolve(os.homedir(), ".paperclip");
 }
 
@@ -72,12 +78,35 @@ function resolveHomeAwarePath(value: string): string {
   return path.resolve(expandHomePrefix(value));
 }
 
+function containsBrokenDesktopTempPath(value: unknown): boolean {
+  if (typeof value === "string") {
+    const resolved = path.resolve(expandHomePrefix(value));
+    return DESKTOP_TEMP_INSTANCE_PATH_RE.test(resolved) && !existsSync(resolved);
+  }
+  if (Array.isArray(value)) {
+    return value.some((entry) => containsBrokenDesktopTempPath(entry));
+  }
+  if (typeof value === "object" && value !== null) {
+    return Object.values(value).some((entry) => containsBrokenDesktopTempPath(entry));
+  }
+  return false;
+}
+
+function isBrokenDesktopTempConfig(candidate: string): boolean {
+  try {
+    const raw = JSON.parse(readFileSync(candidate, "utf8")) as unknown;
+    return containsBrokenDesktopTempPath(raw);
+  } catch {
+    return false;
+  }
+}
+
 function findConfigFileFromAncestors(startDir: string): string | null {
   let currentDir = path.resolve(startDir);
 
   while (true) {
     const candidate = path.resolve(currentDir, ".paperclip", CONFIG_BASENAME);
-    if (existsSync(candidate)) return candidate;
+    if (existsSync(candidate) && !isBrokenDesktopTempConfig(candidate)) return candidate;
 
     const nextDir = path.resolve(currentDir, "..");
     if (nextDir === currentDir) return null;

@@ -17,6 +17,17 @@ const repoRoot = path.resolve(packageDir, "..", "..");
 const require = createRequire(import.meta.url);
 const DESKTOP_PREFERENCES_FILENAME = "desktop-preferences.json";
 const DESKTOP_THEMES = ["dark", "light"];
+const DEV_PLUGIN_BUILD_FILTERS = [
+  "@penclipai/plugin-hello-world-example",
+  "@penclipai/plugin-file-browser-example",
+  "@penclipai/plugin-kitchen-sink-example",
+];
+const THIRD_PARTY_PLUGIN_CANDIDATES = [
+  "paperclip-plugin-superpowers",
+  "paperclip-plugin-knok",
+  "paperclip-plugin-acp",
+  "paperclip-plugin-telegram",
+];
 
 function parseArgs(argv) {
   const args = { mode: "dev" };
@@ -87,12 +98,36 @@ async function createSmokeUserDataDir(mode, theme) {
 }
 
 function buildLaunchEnv(userDataDir) {
+  const baseEnv = { ...process.env };
+  for (const key of [
+    "PAPERCLIP_CONFIG",
+    "PAPERCLIP_CONTEXT",
+    "PAPERCLIP_IN_WORKTREE",
+    "PAPERCLIP_WORKTREE_NAME",
+    "PAPERCLIP_WORKTREE_COLOR",
+    "PAPERCLIP_WORKTREES_DIR",
+  ]) {
+    delete baseEnv[key];
+  }
+
+  const paperclipHome = path.resolve(userDataDir, "runtime");
   return {
-    ...process.env,
+    ...baseEnv,
     PAPERCLIP_DESKTOP_SMOKE_START_DELAY_MS: process.env.PAPERCLIP_DESKTOP_SMOKE_START_DELAY_MS ?? "1800",
     PAPERCLIP_DESKTOP_USER_DATA_DIR: userDataDir,
-    PAPERCLIP_HOME: path.resolve(userDataDir, "runtime"),
+    PAPERCLIP_HOME: paperclipHome,
+    PAPERCLIP_CONFIG: path.resolve(paperclipHome, "config.json"),
+    PAPERCLIP_CONTEXT: path.resolve(paperclipHome, "context.json"),
   };
+}
+
+async function cleanupUserDataDir(userDataDir) {
+  await fs.promises.rm(userDataDir, {
+    recursive: true,
+    force: true,
+    maxRetries: 10,
+    retryDelay: 500,
+  });
 }
 
 function resolveDevLaunchOptions(userDataDir) {
@@ -114,6 +149,9 @@ function resolveDevLaunchOptions(userDataDir) {
 
 function prepareDevLaunch() {
   runPnpm(["--dir", repoRoot, "--filter", "@penclipai/server...", "build"], { cwd: repoRoot });
+  for (const filter of DEV_PLUGIN_BUILD_FILTERS) {
+    runPnpm(["--dir", repoRoot, "--filter", filter, "build"], { cwd: repoRoot });
+  }
   runPnpm(["--dir", packageDir, "build"], { cwd: packageDir });
 }
 
@@ -247,6 +285,164 @@ async function createSmokeCompany(origin, theme) {
   }
 
   return await response.json();
+}
+
+async function fetchJson(origin, pathname, options) {
+  const response = await fetch(new URL(pathname, origin), options);
+  const text = await response.text();
+  const body = text ? JSON.parse(text) : null;
+  if (!response.ok) {
+    throw new Error(`Request failed for ${pathname} (${response.status}): ${text}`);
+  }
+  return body;
+}
+
+async function listPlugins(origin) {
+  return await fetchJson(origin, "/api/plugins", {});
+}
+
+async function waitForPlugin(origin, matcher, timeoutMs = 90_000) {
+  const start = Date.now();
+  let lastSeen = [];
+  while (Date.now() - start < timeoutMs) {
+    const plugins = await listPlugins(origin);
+    lastSeen = plugins;
+    const plugin = plugins.find(matcher);
+    if (plugin) {
+      return plugin;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 700));
+  }
+  throw new Error(`Timed out waiting for plugin to appear. Last seen packages: ${lastSeen.map((plugin) => `${plugin.packageName}:${plugin.status}`).join(", ")}`);
+}
+
+async function installPlugin(origin, body) {
+  return await fetchJson(origin, "/api/plugins/install", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(body),
+  });
+}
+
+async function postPluginAction(origin, pluginId, action, body = {}) {
+  return await fetchJson(origin, `/api/plugins/${pluginId}/${action}`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(body),
+  });
+}
+
+async function uninstallPlugin(origin, pluginId) {
+  const response = await fetch(new URL(`/api/plugins/${pluginId}`, origin), {
+    method: "DELETE",
+  });
+  const text = await response.text();
+  if (!response.ok) {
+    throw new Error(`Failed to uninstall plugin ${pluginId} (${response.status}): ${text}`);
+  }
+}
+
+async function visitRoute(page, url, routeLabel) {
+  await page.goto(url);
+  await page.waitForLoadState("domcontentloaded");
+  await page.waitForFunction(() => {
+    const root = document.querySelector("#root");
+    const main = document.querySelector("#main-content");
+    return Boolean(root && root.childElementCount > 0 && main);
+  }, undefined, { timeout: 30_000 });
+  assertDesktopLayoutState(await readDesktopLayoutState(page), routeLabel);
+  assertTitlebarChromeState(await readTitlebarChromeState(page), routeLabel);
+}
+
+async function runExtendedDevAcceptance(origin, page, company) {
+  const companyBase = `${origin}/${company.issuePrefix}`;
+  const routeChecks = [
+    { url: `${companyBase}/dashboard`, label: "desktop dashboard" },
+    { url: `${companyBase}/issues`, label: "desktop issues" },
+    { url: `${companyBase}/projects`, label: "desktop projects" },
+    { url: `${companyBase}/agents/all`, label: "desktop agents" },
+    { url: `${companyBase}/activity`, label: "desktop activity" },
+    { url: `${origin}/instance/settings/plugins`, label: "desktop plugin manager" },
+  ];
+
+  for (const route of routeChecks) {
+    await visitRoute(page, route.url, route.label);
+  }
+
+  const examples = await fetchJson(origin, "/api/plugins/examples", {});
+  if (!Array.isArray(examples) || examples.length === 0) {
+    throw new Error("Expected bundled plugin examples to be available in dev mode.");
+  }
+
+  for (const example of examples) {
+    const installed = await installPlugin(origin, {
+      packageName: example.localPath,
+      isLocalPath: true,
+    });
+    if (!installed?.id || !installed?.packageName) {
+      throw new Error(`Example install for ${example.packageName} returned an unexpected payload.`);
+    }
+
+    const listed = await waitForPlugin(
+      origin,
+      (plugin) => plugin.id === installed.id || plugin.packageName === installed.packageName,
+    );
+    if (!["ready", "installed"].includes(listed.status)) {
+      throw new Error(`Bundled example ${example.packageName} installed with unexpected status ${listed.status}.`);
+    }
+  }
+
+  const installedExamples = await listPlugins(origin);
+  const readyExample = installedExamples.find((plugin) =>
+    plugin.packageName === "@penclipai/plugin-hello-world-example" && plugin.status === "ready");
+  if (!readyExample) {
+    throw new Error("Hello World example plugin was not ready after installation.");
+  }
+
+  const contributions = await fetchJson(origin, "/api/plugins/ui-contributions", {});
+  if (!Array.isArray(contributions) || !contributions.some((entry) => entry.pluginId === readyExample.id)) {
+    throw new Error("Expected Hello World example plugin to publish a UI contribution.");
+  }
+
+  await postPluginAction(origin, readyExample.id, "disable");
+  await waitForPlugin(origin, (plugin) => plugin.id === readyExample.id && plugin.status === "disabled");
+
+  await postPluginAction(origin, readyExample.id, "enable");
+  await waitForPlugin(origin, (plugin) => plugin.id === readyExample.id && plugin.status === "ready");
+
+  let thirdPartyPackage = null;
+  let thirdPartyPlugin = null;
+  const thirdPartyErrors = [];
+  for (const candidate of THIRD_PARTY_PLUGIN_CANDIDATES) {
+    try {
+      const installed = await installPlugin(origin, { packageName: candidate });
+      if (!installed?.id || !installed?.packageName) {
+        throw new Error(`Third-party install for ${candidate} returned an unexpected payload.`);
+      }
+      thirdPartyPackage = candidate;
+      thirdPartyPlugin = await waitForPlugin(
+        origin,
+        (plugin) => plugin.id === installed.id || plugin.packageName === installed.packageName,
+      );
+      break;
+    } catch (error) {
+      thirdPartyErrors.push(`${candidate}: ${error instanceof Error ? error.message : String(error)}`);
+      // Try the next package.
+    }
+  }
+
+  if (!thirdPartyPackage || !thirdPartyPlugin) {
+    throw new Error(`Failed to install any third-party plugin candidate. ${thirdPartyErrors.join(" | ")}`);
+  }
+
+  if (!["ready", "installed"].includes(thirdPartyPlugin.status)) {
+    throw new Error(
+      `Third-party plugin ${thirdPartyPackage} installed with unexpected status ${thirdPartyPlugin.status}.`,
+    );
+  }
+
+  await visitRoute(page, `${origin}/instance/settings/plugins/${readyExample.id}`, "desktop plugin settings");
+  await uninstallPlugin(origin, thirdPartyPlugin.id);
 }
 
 async function readDesktopLayoutState(page) {
@@ -563,6 +759,10 @@ async function runThemeScenario(mode, theme, artifactDir) {
       page.locator('[data-testid="desktop-nav-forward"]').click(),
     ]);
 
+    if (mode === "dev") {
+      await runExtendedDevAcceptance(origin, page, company);
+    }
+
     const boardShot = path.resolve(artifactDir, `board-${locale}-${theme}.png`);
     await page.screenshot({ path: boardShot, fullPage: true });
 
@@ -584,7 +784,7 @@ async function runThemeScenario(mode, theme, artifactDir) {
       shutdownError = error;
     } finally {
       killProcessTree(launchedPid, { cwd: packageDir });
-      await fs.promises.rm(userDataDir, { recursive: true, force: true });
+      await cleanupUserDataDir(userDataDir);
     }
 
     if (shutdownError) {

@@ -105,4 +105,18 @@ describe("resolveDatabaseTarget", () => {
       source: "embedded-postgres@55444",
     });
   });
+
+  it("ignores deleted desktop smoke PAPERCLIP_HOME values", () => {
+    delete process.env.PAPERCLIP_CONFIG;
+    process.env.PAPERCLIP_HOME = "C:\\Users\\chenj\\AppData\\Local\\Temp\\paperclip-desktop-smoke-dev-light-aur69x\\runtime";
+
+    const target = resolveDatabaseTarget();
+
+    expect(target).toMatchObject({
+      mode: "embedded-postgres",
+      dataDir: path.resolve(os.homedir(), ".paperclip", "instances", "default", "db"),
+      port: 54329,
+      source: "embedded-postgres@54329",
+    });
+  });
 });

@@ -10,6 +10,7 @@ const manifest: PaperclipPluginManifestV1 = {
   categories: ["connector"],
   capabilities: [
     "events.subscribe",
+    "ui.dashboardWidget.register",
     "plugin.state.read",
     "plugin.state.write"
   ],
