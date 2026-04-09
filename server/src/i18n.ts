@@ -14,10 +14,18 @@ type TranslationBundles = Record<UiLocale, TranslationDictionary>;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 function localeRoots(): string[] {
+  if (process.env.NODE_ENV === "production") {
+    return [
+      path.resolve(__dirname, "../ui-dist/locales"),
+      path.resolve(__dirname, "../../ui/dist/locales"),
+      path.resolve(__dirname, "../../ui/public/locales"),
+    ];
+  }
+
   return [
-    path.resolve(__dirname, "../ui-dist/locales"),
     path.resolve(__dirname, "../../ui/public/locales"),
     path.resolve(__dirname, "../../ui/dist/locales"),
+    path.resolve(__dirname, "../ui-dist/locales"),
   ];
 }
 

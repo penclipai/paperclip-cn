@@ -142,6 +142,22 @@ describe("buildWorkerEnvironment", () => {
     expect(env.PAPERCLIP_UI_DEV_MIDDLEWARE).toBe("true");
   });
 
+  it("preserves fresh desktop temp overrides for the current user-data dir", () => {
+    const userDataDir = "C:\\Users\\chenj\\AppData\\Local\\Temp\\paperclip-desktop-acceptance-dark-12345";
+    process.env.PAPERCLIP_HOME = path.resolve(userDataDir, "runtime");
+    process.env.PAPERCLIP_CONTEXT = path.resolve(userDataDir, "runtime", "context.json");
+    process.env.PAPERCLIP_CONFIG = path.resolve(userDataDir, "runtime", "config.json");
+
+    const env = buildWorkerEnvironment({
+      ...buildInput("development"),
+      userDataDir,
+    });
+
+    expect(env.PAPERCLIP_HOME).toBe(path.resolve(userDataDir, "runtime"));
+    expect(env.PAPERCLIP_CONTEXT).toBe(path.resolve(userDataDir, "runtime", "context.json"));
+    expect(env.PAPERCLIP_CONFIG).toBe(path.resolve(userDataDir, "runtime", "config.json"));
+  });
+
   it("uses a contrasting title bar icon filter in dark mode", () => {
     expect(getDesktopTitlebarThemeConfig("light").iconFilter).toBe("none");
     expect(getDesktopTitlebarThemeConfig("dark").iconFilter).toContain("invert(1)");

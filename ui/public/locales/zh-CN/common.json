@@ -136,6 +136,7 @@
   "Cancel": "取消",
   "Cancelled": "已取消",
   "Cancelling…": "取消中…",
+  "Chat": "对话",
   "Capabilities": "能力",
   "Capture setup pitfalls and screenshots.": "补充配置过程中的常见坑点和截图。",
   "Card": "卡片",
@@ -248,6 +249,8 @@
   "Create Item": "创建项目",
   "Create document": "创建文档",
   "Create label": "创建标签",
+  "Delete attachment": "删除附件",
+  "Delete?": "删除？",
   "Create new agent": "创建新智能体",
   "Create new issue": "创建新任务",
   "Create new project": "创建新项目",
@@ -464,6 +467,7 @@
   "Go home": "返回首页",
   "Goals": "目标",
   "Group": "分组",
+  "Hide this Issue": "隐藏此任务",
   "Grouped List (Issues pattern)": "分组列表（任务模式）",
   "Hard stop": "额度封顶",
   "Hard-stop spend limits for agents and projects. Provider subscription quota stays separate and appears under Providers.": "用于管理智能体和项目的硬性预算上限。服务商订阅配额会单独显示在“服务商”页签中。",
@@ -651,6 +655,7 @@
   "New budget": "新预算",
   "New document": "新建文档",
   "New label": "新建标签",
+  "Sub-issue": "子任务",
   "New project": "新建项目",
   "New routine": "新建例行任务",
   "Next": "下一步",
@@ -663,7 +668,9 @@
   "No agents match the selected filter.": "没有智能体符合当前筛选条件。",
   "No approvals yet.": "当前还没有审批。",
   "No assignee": "无负责人",
+  "No approvers": "无审批人",
   "No assignees found.": "未找到可分配对象。",
+  "No blockers": "无阻塞项",
   "No billable events in this period.": "当前时段还没有计费记录。",
   "No budget policies yet. Set agent and project budgets from their detail pages, or use the existing company monthly budget control.": "还没有设置预算策略。你可以在智能体或项目详情页里配置预算，也可以直接使用现有的公司月度预算控制。",
   "No bundled example plugins were found in this checkout.": "当前代码检出中未发现内置示例插件。",
@@ -675,6 +682,7 @@
   "No company selected": "尚未选择公司",
   "No configuration revisions yet.": "暂无配置版本记录。",
   "No cost data yet.": "暂无成本数据。",
+  "No reviewers": "无审阅人",
   "No cost events in this period.": "当前时段还没有成本记录。",
   "No cost events yet.": "还没有成本记录。",
   "No description provided.": "未提供说明。",
@@ -823,6 +831,8 @@
   "Processed": "已处理",
   "Progress Bars (Budget)": "进度条（预算）",
   "Project": "项目",
+  "Requester": "请求者",
+  "Reviewers": "审阅人",
   "Project budgets": "项目预算",
   "Project execution blocked by budget": "因预算限制而暂停的项目执行",
   "Project execution is paused. New work in this project will not start until you resolve the budget incident.": "该项目已暂停执行。在处理完这次预算事件前，项目中的新工作不会启动。",
@@ -964,9 +974,11 @@
   "Search issues": "搜索任务",
   "Search issues, agents, projects...": "搜索任务、智能体、项目...",
   "Search issues...": "搜索任务...",
+  "Search approvers...": "搜索审批人...",
   "Search labels...": "搜索标签...",
   "Search models...": "搜索模型...",
   "Search projects...": "搜索项目...",
+  "Search reviewers...": "搜索审阅人...",
   "Secondary": "次级色",
   "Section heading example": "分节标题示例",
   "Section title example": "分区标题示例",
@@ -1036,6 +1048,8 @@
   "Desktop issue rows": "桌面端任务行",
   "States": "状态",
   "Status": "状态",
+  "sub-task": "子任务",
+  "sub-tasks": "子任务",
   "Status System": "状态系统",
   "StatusBadge (all statuses)": "状态徽标（全部状态）",
   "StatusIcon (interactive)": "状态图标（可交互）",
@@ -1045,6 +1059,7 @@
   "Streamed with the same transcript UI used on the full run detail page.": "使用与完整运行详情页相同的转录界面实时展示。",
   "Streaming": "流式输出中",
   "Sub Goal": "子目标",
+  "Add sub-issue": "添加子任务",
   "Sub-Goals ({{count}})": "子目标（{{count}}）",
   "Sub-issues": "子任务",
   "Submit markdown comment": "提交 Markdown 评论",
@@ -1137,6 +1152,16 @@
   "Upload": "上传",
   "Upload attachment": "上传附件",
   "Uploading...": "上传中...",
+  "Approvers": "审批人",
+  "Blocked by": "被阻塞于",
+  "Blocking": "阻塞中",
+  "Execution": "执行",
+  "Folder": "文件夹",
+  "attachment": "附件",
+  "by {{name}}": "由 {{name}}",
+  "with {{name}}": "与 {{name}}",
+  "{{stageLabel}} requested changes{{suffix}}": "{{stageLabel}} 请求修改{{suffix}}",
+  "{{stageLabel}} pending{{suffix}}": "{{stageLabel}} 待处理{{suffix}}",
   "Upstream providers": "上游服务商",
   "Uptime": "运行时长",
   "Use lowercase letters, numbers, -, or _, and start with a letter or number.": "请使用小写字母、数字、- 或 _，并以字母或数字开头。",
@@ -2357,4 +2382,39 @@
   ,"Failed to sign out.": "退出登录失败。"
   ,"Sign out": "退出登录"
   ,"Sign out of this Paperclip instance. You will be redirected to the login page.": "退出当前 Paperclip 实例的登录状态。随后会跳转到登录页面。"
+  ,"Reviewer": "审阅人"
+  ,"Approver": "审批人"
+  ,"Reviewers": "审阅人"
+  ,"Approvers": "审批人"
+  ,"Search reviewers...": "搜索审阅人..."
+  ,"Search approvers...": "搜索审批人..."
+  ,"No reviewers found.": "未找到审阅人。"
+  ,"No approvers found.": "未找到审批人。"
+  ,"Blocking": "阻塞中"
+  ,"No blockers": "无阻塞项"
+  ,"Execution": "执行"
+  ,"Hide this Issue": "隐藏此任务"
+  ,"Delete?": "删除？"
+  ,"Delete attachment": "删除附件"
+  ,"Yes": "是"
+  ,"No": "否"
+  ,"Review": "审阅"
+  ,"Approval": "审批"
+  ,"{{stage}} requested changes{{suffix}}": "{{stage}} 请求修改{{suffix}}"
+  ,"{{stage}} pending{{suffix}}": "{{stage}}{{suffix}}待处理"
+  ,"by": "由"
+  ,"with": "由"
+  ,"Requester": "请求者"
+  ,"No companies": "没有公司"
+  ,"Company Settings": "公司设置"
+  ,"Manage Companies": "管理公司"
+  ,"Mobile navigation": "移动端导航"
+  ,"Home": "首页"
+  ,"issuesList.newIssue": "新建任务"
+  ,"issuesList.filter": "筛选"
+  ,"issuesList.filters": "筛选"
+  ,"issuesList.quickFilters": "快捷筛选"
+  ,"issuesList.sort": "排序"
+  ,"issuesList.group": "分组"
+  ,"issuesList.live": "实时"
 }

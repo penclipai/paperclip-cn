@@ -179,7 +179,25 @@ function authorNameForComment(
 }
 
 function formatStatusLabel(status: string) {
-  return status.replace(/_/g, " ");
+  switch (status) {
+    case "running":
+      return translateInstant("Running", { defaultValue: "Running" });
+    case "queued":
+      return translateInstant("Queued", { defaultValue: "Queued" });
+    case "succeeded":
+      return translateInstant("Succeeded", { defaultValue: "Succeeded" });
+    case "failed":
+    case "error":
+      return translateInstant("Failed", { defaultValue: "Failed" });
+    case "cancelled":
+      return translateInstant("Cancelled", { defaultValue: "Cancelled" });
+    case "timed_out":
+      return translateInstant("Timed out", { defaultValue: "Timed out" });
+    default:
+      return translateInstant(status.replace(/_/g, " "), {
+        defaultValue: status.replace(/_/g, " "),
+      });
+  }
 }
 
 function createCommentMessage(args: {

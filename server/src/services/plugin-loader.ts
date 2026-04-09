@@ -60,18 +60,6 @@ async function execNpmCommand(
     timeout?: number;
   },
 ) {
-  if (process.platform === "win32") {
-    return await execFileAsync(
-      process.env.comspec ?? "cmd.exe",
-      ["/d", "/s", "/c", NPM_COMMAND, ...args],
-      {
-        cwd: options?.cwd,
-        timeout: options?.timeout,
-        windowsHide: true,
-      },
-    );
-  }
-
   return await execFileAsync(
     NPM_COMMAND,
     args,

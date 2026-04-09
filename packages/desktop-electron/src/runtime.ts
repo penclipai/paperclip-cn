@@ -197,11 +197,30 @@ function isBrokenDesktopTempPath(candidate: string | undefined): boolean {
   return DESKTOP_TEMP_INSTANCE_PATH_RE.test(resolved) && !fs.existsSync(resolved);
 }
 
-function hasBrokenInheritedDesktopPaperclipEnv(): boolean {
+function isPathInsideDir(candidatePath: string, parentDir: string): boolean {
+  const resolvedCandidate = path.resolve(candidatePath);
+  const resolvedParent = path.resolve(parentDir);
+  const relative = path.relative(resolvedParent, resolvedCandidate);
+  return relative === "" || (!relative.startsWith("..") && !path.isAbsolute(relative));
+}
+
+function isCurrentDesktopOverridePath(
+  candidate: string | undefined,
+  desktopUserDataDir: string,
+): boolean {
+  const trimmed = candidate?.trim();
+  if (!trimmed) return false;
+  return isPathInsideDir(trimmed, desktopUserDataDir);
+}
+
+function hasBrokenInheritedDesktopPaperclipEnv(desktopUserDataDir: string): boolean {
   return (
-    isBrokenDesktopTempPath(process.env.PAPERCLIP_HOME)
-    || isBrokenDesktopTempPath(process.env.PAPERCLIP_CONTEXT)
-    || isBrokenDesktopTempPath(process.env.PAPERCLIP_CONFIG)
+    (isBrokenDesktopTempPath(process.env.PAPERCLIP_HOME)
+      && !isCurrentDesktopOverridePath(process.env.PAPERCLIP_HOME, desktopUserDataDir))
+    || (isBrokenDesktopTempPath(process.env.PAPERCLIP_CONTEXT)
+      && !isCurrentDesktopOverridePath(process.env.PAPERCLIP_CONTEXT, desktopUserDataDir))
+    || (isBrokenDesktopTempPath(process.env.PAPERCLIP_CONFIG)
+      && !isCurrentDesktopOverridePath(process.env.PAPERCLIP_CONFIG, desktopUserDataDir))
   );
 }
 
@@ -212,7 +231,7 @@ export function buildWorkerEnvironment(input: DesktopRuntimeInput): NodeJS.Proce
   // If a later desktop session inherits one of those temp paths after cleanup,
   // the worker should fall back to the normal desktop instance instead of
   // crashing while trying to reuse a deleted temp runtime.
-  if (hasBrokenInheritedDesktopPaperclipEnv()) {
+  if (hasBrokenInheritedDesktopPaperclipEnv(input.userDataDir)) {
     for (const key of [
       "PAPERCLIP_HOME",
       "PAPERCLIP_INSTANCE_ID",

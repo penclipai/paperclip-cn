@@ -1328,10 +1328,10 @@ export function IssueDetail() {
         )}
       >
         <Paperclip className="h-3.5 w-3.5 mr-1.5" />
-        {uploadAttachment.isPending || importMarkdownDocument.isPending ? "Uploading..." : (
+        {uploadAttachment.isPending || importMarkdownDocument.isPending ? t("Uploading...", { defaultValue: "Uploading..." }) : (
           <>
-            <span className="hidden sm:inline">Upload attachment</span>
-            <span className="sm:hidden">Upload</span>
+            <span className="hidden sm:inline">{t("Upload attachment", { defaultValue: "Upload attachment" })}</span>
+            <span className="sm:hidden">{t("Upload", { defaultValue: "Upload" })}</span>
           </>
         )}
       </Button>
@@ -1417,7 +1417,7 @@ export function IssueDetail() {
           ) : (
             <span className="inline-flex items-center gap-1 text-xs text-muted-foreground opacity-50 px-1 -mx-1 py-0.5">
               <Hexagon className="h-3 w-3 shrink-0" />
-              No project
+              {t("No project", { defaultValue: "No project" })}
             </span>
           )}
 
@@ -1447,7 +1447,7 @@ export function IssueDetail() {
               variant="ghost"
               size="icon-xs"
               onClick={copyIssueToClipboard}
-              title="Copy issue as markdown"
+              title={t("Copy issue as markdown", { defaultValue: "Copy issue as markdown" })}
             >
               {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
             </Button>
@@ -1466,7 +1466,7 @@ export function IssueDetail() {
               variant="ghost"
               size="icon-xs"
               onClick={copyIssueToClipboard}
-              title="Copy issue as markdown"
+              title={t("Copy issue as markdown", { defaultValue: "Copy issue as markdown" })}
             >
               {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
             </Button>
@@ -1478,7 +1478,7 @@ export function IssueDetail() {
                 panelVisible ? "opacity-0 pointer-events-none w-0 overflow-hidden" : "opacity-100",
               )}
               onClick={() => setPanelVisible(true)}
-              title="Show properties"
+              title={t("Show properties", { defaultValue: "Show properties" })}
             >
               <SlidersHorizontal className="h-4 w-4" />
             </Button>
@@ -1501,7 +1501,7 @@ export function IssueDetail() {
                 }}
               >
                 <EyeOff className="h-3 w-3" />
-                Hide this Issue
+                {t("Hide this Issue", { defaultValue: "Hide this Issue" })}
               </button>
             </PopoverContent>
             </Popover>
@@ -1520,7 +1520,7 @@ export function IssueDetail() {
           onSave={(description) => updateIssue.mutateAsync({ description })}
           as="p"
           className="text-[15px] leading-7 text-foreground"
-          placeholder="Add a description..."
+          placeholder={t("Add a description...", { defaultValue: "Add a description..." })}
           multiline
           mentions={mentionOptions}
           imageUploadHandler={async (file) => {
@@ -1577,11 +1577,11 @@ export function IssueDetail() {
       {childIssues.length > 0 && (
         <div className="space-y-3">
           <div className="flex items-center justify-between gap-2">
-            <h3 className="text-sm font-medium text-muted-foreground">Sub-issues</h3>
+            <h3 className="text-sm font-medium text-muted-foreground">{t("Sub-issues", { defaultValue: "Sub-issues" })}</h3>
             <Button variant="outline" size="sm" onClick={openNewSubIssue} className="shadow-none">
               <ListTree className="h-3.5 w-3.5 mr-1.5" />
-              <span className="hidden sm:inline">Add sub-issue</span>
-              <span className="sm:hidden">Sub-issue</span>
+              <span className="hidden sm:inline">{t("Add sub-issue", { defaultValue: "Add sub-issue" })}</span>
+              <span className="sm:hidden">{t("Sub-issue", { defaultValue: "Sub-issue" })}</span>
             </Button>
           </div>
           <div className="border border-border rounded-lg divide-y divide-border">
@@ -1645,8 +1645,8 @@ export function IssueDetail() {
             {childIssues.length === 0 && (
               <Button variant="outline" size="sm" onClick={openNewSubIssue} className="shadow-none">
                 <ListTree className="h-3.5 w-3.5 mr-1.5" />
-                <span className="hidden sm:inline">Add sub-issue</span>
-                <span className="sm:hidden">Sub-issue</span>
+                <span className="hidden sm:inline">{t("Add sub-issue", { defaultValue: "Add sub-issue" })}</span>
+                <span className="sm:hidden">{t("Sub-issue", { defaultValue: "Sub-issue" })}</span>
               </Button>
             )}
           </>
@@ -1673,7 +1673,7 @@ export function IssueDetail() {
         onDrop={(evt) => void handleAttachmentDrop(evt)}
       >
         <div className="flex items-center justify-between gap-2">
-          <h3 className="text-sm font-medium text-muted-foreground">Attachments</h3>
+          <h3 className="text-sm font-medium text-muted-foreground">{t("newIssue.attachments", { defaultValue: "Attachments" })}</h3>
           {attachmentUploadButton}
         </div>
 
@@ -1695,7 +1695,7 @@ export function IssueDetail() {
               >
                 <img
                   src={attachment.contentPath}
-                  alt={attachment.originalFilename ?? "attachment"}
+                  alt={attachment.originalFilename ?? t("attachment", { defaultValue: "attachment" })}
                   className="h-full w-full object-cover"
                   loading="lazy"
                 />
@@ -1705,7 +1705,7 @@ export function IssueDetail() {
                     className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-black/60"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <p className="text-xs text-white font-medium">Delete?</p>
+                    <p className="text-xs text-white font-medium">{t("Delete?", { defaultValue: "Delete?" })}</p>
                     <div className="flex gap-1.5">
                       <button
                         type="button"
@@ -1717,7 +1717,7 @@ export function IssueDetail() {
                         }}
                         disabled={deleteAttachment.isPending}
                       >
-                        Yes
+                        {t("Yes", { defaultValue: "Yes" })}
                       </button>
                       <button
                         type="button"
@@ -1727,7 +1727,7 @@ export function IssueDetail() {
                           setConfirmDeleteId(null);
                         }}
                       >
-                        No
+                        {t("No", { defaultValue: "No" })}
                       </button>
                     </div>
                   </div>
@@ -1739,7 +1739,7 @@ export function IssueDetail() {
                       e.stopPropagation();
                       setConfirmDeleteId(attachment.id);
                     }}
-                    title="Delete attachment"
+                    title={t("Delete attachment", { defaultValue: "Delete attachment" })}
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
@@ -1768,7 +1768,7 @@ export function IssueDetail() {
                     className="text-muted-foreground hover:text-destructive"
                     onClick={() => deleteAttachment.mutate(attachment.id)}
                     disabled={deleteAttachment.isPending}
-                    title="Delete attachment"
+                    title={t("Delete attachment", { defaultValue: "Delete attachment" })}
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
@@ -1802,11 +1802,11 @@ export function IssueDetail() {
         <TabsList variant="line" className="w-full justify-start gap-1">
           <TabsTrigger value="chat" className="gap-1.5">
             <MessageSquare className="h-3.5 w-3.5" />
-            Chat
+            {t("Chat", { defaultValue: "Chat" })}
           </TabsTrigger>
           <TabsTrigger value="activity" className="gap-1.5">
             <ActivityIcon className="h-3.5 w-3.5" />
-            Activity
+            {t("Activity", { defaultValue: "Activity" })}
           </TabsTrigger>
           {issuePluginTabItems.map((item) => (
             <TabsTrigger key={item.value} value={item.value}>

@@ -255,7 +255,7 @@ function IssueChatTextPart({ text, recessed }: { text: string; recessed?: boolea
 }
 
 function humanizeValue(value: string | null) {
-  if (!value) return "None";
+  if (!value) return translateInstant("None", { defaultValue: "None" });
   return value.replace(/_/g, " ");
 }
 
@@ -268,9 +268,10 @@ function formatTimelineAssigneeLabel(
     return agentMap?.get(assignee.agentId)?.name ?? assignee.agentId.slice(0, 8);
   }
   if (assignee.userId) {
-    return formatAssigneeUserLabel(assignee.userId, currentUserId) ?? "Board";
+    return formatAssigneeUserLabel(assignee.userId, currentUserId)
+      ?? translateInstant("Board", { defaultValue: "Board" });
   }
-  return "Unassigned";
+  return translateInstant("Unassigned", { defaultValue: "Unassigned" });
 }
 
 function initialsForName(name: string) {
@@ -284,9 +285,22 @@ function initialsForName(name: string) {
 function formatRunStatusLabel(status: string) {
   switch (status) {
     case "timed_out":
-      return "timed out";
+      return translateInstant("timed out", { defaultValue: "timed out" });
+    case "running":
+      return translateInstant("Running", { defaultValue: "Running" });
+    case "queued":
+      return translateInstant("Queued", { defaultValue: "Queued" });
+    case "succeeded":
+      return translateInstant("Succeeded", { defaultValue: "Succeeded" });
+    case "failed":
+    case "error":
+      return translateInstant("Failed", { defaultValue: "Failed" });
+    case "cancelled":
+      return translateInstant("Cancelled", { defaultValue: "Cancelled" });
     default:
-      return status.replace(/_/g, " ");
+      return translateInstant(status.replace(/_/g, " "), {
+        defaultValue: status.replace(/_/g, " "),
+      });
   }
 }
 

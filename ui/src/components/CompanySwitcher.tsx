@@ -1,5 +1,6 @@
 import { ChevronsUpDown, Plus, Settings } from "lucide-react";
 import { Link } from "@/lib/router";
+import { useTranslation } from "react-i18next";
 import { useCompany } from "../context/CompanyContext";
 import {
   DropdownMenu,
@@ -25,6 +26,7 @@ function statusDotColor(status?: string): string {
 }
 
 export function CompanySwitcher() {
+  const { t } = useTranslation();
   const { companies, selectedCompany, setSelectedCompanyId } = useCompany();
   const sidebarCompanies = companies.filter((company) => company.status !== "archived");
 
@@ -40,14 +42,14 @@ export function CompanySwitcher() {
               <span className={`h-2 w-2 rounded-full shrink-0 ${statusDotColor(selectedCompany.status)}`} />
             )}
             <span className="text-sm font-medium truncate">
-              {selectedCompany?.name ?? "Select company"}
+              {selectedCompany?.name ?? t("Select company", { defaultValue: "Select company" })}
             </span>
           </div>
           <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-[220px]">
-        <DropdownMenuLabel>Companies</DropdownMenuLabel>
+        <DropdownMenuLabel>{t("Companies", { defaultValue: "Companies" })}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {sidebarCompanies.map((company) => (
           <DropdownMenuItem
@@ -60,19 +62,19 @@ export function CompanySwitcher() {
           </DropdownMenuItem>
         ))}
         {sidebarCompanies.length === 0 && (
-          <DropdownMenuItem disabled>No companies</DropdownMenuItem>
+          <DropdownMenuItem disabled>{t("No companies", { defaultValue: "No companies" })}</DropdownMenuItem>
         )}
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link to="/company/settings" className="no-underline text-inherit">
             <Settings className="h-4 w-4 mr-2" />
-            Company Settings
+            {t("Company Settings", { defaultValue: "Company Settings" })}
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link to="/companies" className="no-underline text-inherit">
             <Plus className="h-4 w-4 mr-2" />
-            Manage Companies
+            {t("Manage Companies", { defaultValue: "Manage Companies" })}
           </Link>
         </DropdownMenuItem>
       </DropdownMenuContent>

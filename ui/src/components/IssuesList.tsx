@@ -64,10 +64,10 @@ const defaultViewState: IssueViewState = {
 };
 
 const quickFilterPresets = [
-  { label: "All", statuses: [] as string[] },
-  { label: "Active", statuses: ["todo", "in_progress", "in_review", "blocked"] },
-  { label: "Backlog", statuses: ["backlog"] },
-  { label: "Done", statuses: ["done", "cancelled"] },
+  { labelKey: "All", statuses: [] as string[] },
+  { labelKey: "Active", statuses: ["todo", "in_progress", "in_review", "blocked"] },
+  { labelKey: "Backlog", statuses: ["backlog"] },
+  { labelKey: "Done", statuses: ["done", "cancelled"] },
 ];
 function getViewState(key: string): IssueViewState {
   try {
@@ -303,9 +303,9 @@ export function IssuesList({
       key,
       label:
         key === "__unassigned"
-          ? "Unassigned"
+          ? t("Unassigned", { defaultValue: "Unassigned" })
           : key.startsWith("__user:")
-            ? (formatAssigneeUserLabel(key.slice("__user:".length), currentUserId) ?? "User")
+            ? (formatAssigneeUserLabel(key.slice("__user:".length), currentUserId) ?? t("User", { defaultValue: "User" }))
             : (agentName(key) ?? key.slice(0, 8)),
       items: groups[key]!,
     }));
@@ -339,7 +339,7 @@ export function IssuesList({
         <div className="flex min-w-0 items-center gap-2 sm:gap-3">
           <Button size="sm" variant="outline" onClick={() => openNewIssue(newIssueDefaults())}>
             <Plus className="h-4 w-4 sm:mr-1" />
-            <span className="hidden sm:inline">New Issue</span>
+            <span className="hidden sm:inline">{t("issuesList.newIssue", { defaultValue: "New Issue" })}</span>
           </Button>
           <div className="relative w-48 sm:w-64 md:w-80">
             <Search className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
@@ -349,9 +349,9 @@ export function IssuesList({
                 setIssueSearch(e.target.value);
                 onSearchChange?.(e.target.value);
               }}
-              placeholder="Search issues..."
+              placeholder={t("Search issues...", { defaultValue: "Search issues..." })}
               className="pl-7 text-xs sm:text-sm"
-              aria-label="Search issues"
+              aria-label={t("Search issues...", { defaultValue: "Search issues..." })}
             />
           </div>
         </div>
@@ -362,14 +362,14 @@ export function IssuesList({
             <button
               className={`p-1.5 transition-colors ${viewState.viewMode === "list" ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"}`}
               onClick={() => updateView({ viewMode: "list" })}
-              title="List view"
+              title={t("List view", { defaultValue: "List view" })}
             >
               <List className="h-3.5 w-3.5" />
             </button>
             <button
               className={`p-1.5 transition-colors ${viewState.viewMode === "board" ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"}`}
               onClick={() => updateView({ viewMode: "board" })}
-              title="Board view"
+              title={t("Board view", { defaultValue: "Board view" })}
             >
               <Columns3 className="h-3.5 w-3.5" />
             </button>
@@ -380,7 +380,7 @@ export function IssuesList({
             <PopoverTrigger asChild>
               <Button variant="ghost" size="sm" className={`text-xs ${activeFilterCount > 0 ? "text-blue-600 dark:text-blue-400" : ""}`}>
                 <Filter className="h-3.5 w-3.5 sm:h-3 sm:w-3 sm:mr-1" />
-                <span className="hidden sm:inline">{activeFilterCount > 0 ? `Filters: ${activeFilterCount}` : "Filter"}</span>
+                <span className="hidden sm:inline">{activeFilterCount > 0 ? `${t("issuesList.filters", { defaultValue: "Filters" })}: ${activeFilterCount}` : t("issuesList.filter", { defaultValue: "Filter" })}</span>
                 {activeFilterCount > 0 && (
                   <span className="sm:hidden text-[10px] font-medium ml-0.5">{activeFilterCount}</span>
                 )}
@@ -398,26 +398,26 @@ export function IssuesList({
             <PopoverContent align="end" className="w-[min(480px,calc(100vw-2rem))] p-0">
               <div className="p-3 space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Filters</span>
+                  <span className="text-sm font-medium">{t("issuesList.filters", { defaultValue: "Filters" })}</span>
                   {activeFilterCount > 0 && (
                     <button
                       className="text-xs text-muted-foreground hover:text-foreground"
                       onClick={() => updateView({ statuses: [], priorities: [], assignees: [], labels: [] })}
                     >
-                      Clear
+                      {t("Clear", { defaultValue: "Clear" })}
                     </button>
                   )}
                 </div>
 
                 {/* Quick filters */}
                 <div className="space-y-1.5">
-                  <span className="text-xs text-muted-foreground">Quick filters</span>
+                  <span className="text-xs text-muted-foreground">{t("issuesList.quickFilters", { defaultValue: "Quick filters" })}</span>
                   <div className="flex flex-wrap gap-1.5">
                     {quickFilterPresets.map((preset) => {
                       const isActive = arraysEqual(viewState.statuses, preset.statuses);
                       return (
                         <button
-                          key={preset.label}
+                          key={preset.labelKey}
                           className={`px-2.5 py-1 text-xs rounded-full border transition-colors ${
                             isActive
                               ? "bg-primary text-primary-foreground border-primary"
@@ -425,7 +425,7 @@ export function IssuesList({
                           }`}
                           onClick={() => updateView({ statuses: isActive ? [] : [...preset.statuses] })}
                         >
-                          {preset.label}
+                          {t(preset.labelKey, { defaultValue: preset.labelKey })}
                         </button>
                       );
                     })}
@@ -438,7 +438,7 @@ export function IssuesList({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
                   {/* Status */}
                   <div className="space-y-1">
-                    <span className="text-xs text-muted-foreground">Status</span>
+                    <span className="text-xs text-muted-foreground">{t("Status", { defaultValue: "Status" })}</span>
                     <div className="space-y-0.5">
                       {statusOrder.map((s) => (
                         <label key={s} className="flex items-center gap-2 px-2 py-1 rounded-sm hover:bg-accent/50 cursor-pointer">
@@ -457,7 +457,7 @@ export function IssuesList({
                   <div className="space-y-3">
                     {/* Priority */}
                     <div className="space-y-1">
-                      <span className="text-xs text-muted-foreground">Priority</span>
+                      <span className="text-xs text-muted-foreground">{t("Priority", { defaultValue: "Priority" })}</span>
                       <div className="space-y-0.5">
                         {priorityOrder.map((p) => (
                           <label key={p} className="flex items-center gap-2 px-2 py-1 rounded-sm hover:bg-accent/50 cursor-pointer">
@@ -474,14 +474,14 @@ export function IssuesList({
 
                     {/* Assignee */}
                     <div className="space-y-1">
-                      <span className="text-xs text-muted-foreground">Assignee</span>
+                      <span className="text-xs text-muted-foreground">{t("Assignee", { defaultValue: "Assignee" })}</span>
                       <div className="space-y-0.5 max-h-32 overflow-y-auto">
                         <label className="flex items-center gap-2 px-2 py-1 rounded-sm hover:bg-accent/50 cursor-pointer">
                           <Checkbox
                             checked={viewState.assignees.includes("__unassigned")}
                             onCheckedChange={() => updateView({ assignees: toggleInArray(viewState.assignees, "__unassigned") })}
                           />
-                          <span className="text-sm">No assignee</span>
+                          <span className="text-sm">{t("No assignee", { defaultValue: "No assignee" })}</span>
                         </label>
                         {currentUserId && (
                           <label className="flex items-center gap-2 px-2 py-1 rounded-sm hover:bg-accent/50 cursor-pointer">
@@ -490,7 +490,7 @@ export function IssuesList({
                               onCheckedChange={() => updateView({ assignees: toggleInArray(viewState.assignees, "__me") })}
                             />
                             <User className="h-3.5 w-3.5 text-muted-foreground" />
-                            <span className="text-sm">Me</span>
+                            <span className="text-sm">{t("Me", { defaultValue: "Me" })}</span>
                           </label>
                         )}
                         {(agents ?? []).map((agent) => (
@@ -507,7 +507,7 @@ export function IssuesList({
 
                     {labels && labels.length > 0 && (
                       <div className="space-y-1">
-                        <span className="text-xs text-muted-foreground">Labels</span>
+                        <span className="text-xs text-muted-foreground">{t("Labels", { defaultValue: "Labels" })}</span>
                         <div className="space-y-0.5 max-h-32 overflow-y-auto">
                           {labels.map((label) => (
                             <label key={label.id} className="flex items-center gap-2 px-2 py-1 rounded-sm hover:bg-accent/50 cursor-pointer">
@@ -525,7 +525,7 @@ export function IssuesList({
 
                     {projects && projects.length > 0 && (
                       <div className="space-y-1">
-                        <span className="text-xs text-muted-foreground">Project</span>
+                        <span className="text-xs text-muted-foreground">{t("Project", { defaultValue: "Project" })}</span>
                         <div className="space-y-0.5 max-h-32 overflow-y-auto">
                           {projects.map((project) => (
                             <label key={project.id} className="flex items-center gap-2 px-2 py-1 rounded-sm hover:bg-accent/50 cursor-pointer">
@@ -551,17 +551,17 @@ export function IssuesList({
               <PopoverTrigger asChild>
                 <Button variant="ghost" size="sm" className="text-xs">
                   <ArrowUpDown className="h-3.5 w-3.5 sm:h-3 sm:w-3 sm:mr-1" />
-                  <span className="hidden sm:inline">Sort</span>
+                  <span className="hidden sm:inline">{t("issuesList.sort", { defaultValue: "Sort" })}</span>
                 </Button>
               </PopoverTrigger>
               <PopoverContent align="end" className="w-48 p-0">
                 <div className="p-2 space-y-0.5">
                   {([
-                    ["status", "Status"],
-                    ["priority", "Priority"],
-                    ["title", "Title"],
-                    ["created", "Created"],
-                    ["updated", "Updated"],
+                    ["status", t("Status", { defaultValue: "Status" })],
+                    ["priority", t("Priority", { defaultValue: "Priority" })],
+                    ["title", t("Title", { defaultValue: "Title" })],
+                    ["created", t("Created", { defaultValue: "Created" })],
+                    ["updated", t("Updated", { defaultValue: "Updated" })],
                   ] as const).map(([field, label]) => (
                     <button
                       key={field}
@@ -595,16 +595,16 @@ export function IssuesList({
               <PopoverTrigger asChild>
                 <Button variant="ghost" size="sm" className="text-xs">
                   <Layers className="h-3.5 w-3.5 sm:h-3 sm:w-3 sm:mr-1" />
-                  <span className="hidden sm:inline">Group</span>
+                  <span className="hidden sm:inline">{t("issuesList.group", { defaultValue: "Group" })}</span>
                 </Button>
               </PopoverTrigger>
               <PopoverContent align="end" className="w-44 p-0">
                 <div className="p-2 space-y-0.5">
                   {([
-                    ["status", "Status"],
-                    ["priority", "Priority"],
-                    ["assignee", "Assignee"],
-                    ["none", "None"],
+                    ["status", t("Status", { defaultValue: "Status" })],
+                    ["priority", t("Priority", { defaultValue: "Priority" })],
+                    ["assignee", t("Assignee", { defaultValue: "Assignee" })],
+                    ["none", t("None", { defaultValue: "None" })],
                   ] as const).map(([value, label]) => (
                     <button
                       key={value}
@@ -630,8 +630,8 @@ export function IssuesList({
       {!isLoading && filtered.length === 0 && viewState.viewMode === "list" && (
         <EmptyState
           icon={CircleDot}
-          message="No issues match the current filters or search."
-          action="Create Issue"
+          message={t("No issues match the current filters or search.", { defaultValue: "No issues match the current filters or search." })}
+          action={t("Create Issue", { defaultValue: "Create Issue" })}
           onAction={() => openNewIssue(newIssueDefaults())}
         />
       )}
@@ -700,7 +700,9 @@ export function IssuesList({
                         issueLinkState={issueLinkState}
                         titleSuffix={hasChildren && !isExpanded ? (
                           <span className="ml-1.5 text-xs text-muted-foreground">
-                            ({totalDescendants} sub-task{totalDescendants !== 1 ? "s" : ""})
+                            ({totalDescendants} {t(totalDescendants === 1 ? "sub-task" : "sub-tasks", {
+                              defaultValue: totalDescendants === 1 ? "sub-task" : "sub-tasks",
+                            })})
                           </span>
                         ) : undefined}
                         mobileLeading={
@@ -743,7 +745,7 @@ export function IssuesList({
                                   <span className="relative inline-flex h-2 w-2 rounded-full bg-blue-500" />
                                 </span>
                                 <span className="hidden text-[11px] font-medium text-blue-600 dark:text-blue-400 sm:inline">
-                                  Live
+                                  {t("issuesList.live", { defaultValue: "Live" })}
                                 </span>
                               </span>
                             )}
@@ -793,14 +795,14 @@ export function IssuesList({
                                       <span className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-dashed border-muted-foreground/35 bg-muted/30">
                                         <User className="h-3 w-3" />
                                       </span>
-                                      {formatAssigneeUserLabel(issue.assigneeUserId, currentUserId) ?? "User"}
+                                      {formatAssigneeUserLabel(issue.assigneeUserId, currentUserId) ?? t("User", { defaultValue: "User" })}
                                     </span>
                                   ) : (
                                     <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
                                       <span className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-dashed border-muted-foreground/35 bg-muted/30">
                                         <User className="h-3 w-3" />
                                       </span>
-                                      Assignee
+                                      {t("Assignee", { defaultValue: "Assignee" })}
                                     </span>
                                   )}
                                 </button>
@@ -813,7 +815,7 @@ export function IssuesList({
                               >
                                 <input
                                   className="mb-1 w-full border-b border-border bg-transparent px-2 py-1.5 text-xs outline-none placeholder:text-muted-foreground/50"
-                                  placeholder="Search assignees..."
+                                  placeholder={t("Search assignees...", { defaultValue: "Search assignees..." })}
                                   value={assigneeSearch}
                                   onChange={(e) => setAssigneeSearch(e.target.value)}
                                   autoFocus
@@ -830,7 +832,7 @@ export function IssuesList({
                                       assignIssue(issue.id, null, null);
                                     }}
                                   >
-                                    No assignee
+                                    {t("No assignee", { defaultValue: "No assignee" })}
                                   </button>
                                   {currentUserId && (
                                     <button
@@ -845,7 +847,7 @@ export function IssuesList({
                                       }}
                                     >
                                       <User className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                                      <span>Me</span>
+                                      <span>{t("Me", { defaultValue: "Me" })}</span>
                                     </button>
                                   )}
                                   {(agents ?? [])

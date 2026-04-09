@@ -118,6 +118,7 @@
   "Cancel": "Cancel",
   "Cancelled": "Cancelled",
   "Cancelling…": "Cancelling…",
+  "Chat": "Chat",
   "Capabilities": "Capabilities",
   "Capture setup pitfalls and screenshots.": "Capture setup pitfalls and screenshots.",
   "Card": "Card",
@@ -222,6 +223,8 @@
   "Create Item": "Create Item",
   "Create document": "Create document",
   "Create label": "Create label",
+  "Delete attachment": "Delete attachment",
+  "Delete?": "Delete?",
   "Create new issue": "Create new issue",
   "Create or select a company before testing adapter environment.": "Create or select a company before testing adapter environment.",
   "Create skill": "Create skill",
@@ -404,6 +407,7 @@
   "Go home": "Go home",
   "Goals": "Goals",
   "Group": "Group",
+  "Hide this Issue": "Hide this Issue",
   "Grouped List (Issues pattern)": "Grouped List (Issues pattern)",
   "Health Status": "Health Status",
   "Health checks run once the plugin is ready.": "Health checks run once the plugin is ready.",
@@ -570,6 +574,7 @@
   "New budget": "New budget",
   "New document": "New document",
   "New label": "New label",
+  "Sub-issue": "Sub-issue",
   "Next": "Next",
   "Next: {{value}}": "Next: {{value}}",
   "No OpenCode models discovered. Run `opencode models` and authenticate providers.": "No OpenCode models discovered. Run `opencode models` and authenticate providers.",
@@ -579,7 +584,9 @@
   "No agents match the selected filter.": "No agents match the selected filter.",
   "No approvals yet.": "No approvals yet.",
   "No assignee": "No assignee",
+  "No approvers": "No approvers",
   "No assignees found.": "No assignees found.",
+  "No blockers": "No blockers",
   "No bundled example plugins were found in this checkout.": "No bundled example plugins were found in this checkout.",
   "No comments or runs yet.": "No comments or runs yet.",
   "No inbox items match your search.": "No inbox items match your search.",
@@ -588,6 +595,7 @@
   "No company matches the requested prefix.": "No company matches the requested prefix.",
   "No company selected": "No company selected",
   "No cost data yet.": "No cost data yet.",
+  "No reviewers": "No reviewers",
   "No cost events yet.": "No cost events yet.",
   "No description provided.": "No description provided.",
   "No error summary available.": "No error summary available.",
@@ -720,6 +728,8 @@
   "Processed": "Processed",
   "Progress Bars (Budget)": "Progress Bars (Budget)",
   "Project": "Project",
+  "Requester": "Requester",
+  "Reviewers": "Reviewers",
   "Project skill scan complete": "Project skill scan complete",
   "Project skill scan failed": "Project skill scan failed",
   "Projects": "Projects",
@@ -839,9 +849,11 @@
   "Search inbox…": "Search inbox…",
   "Search issues": "Search issues",
   "Search issues...": "Search issues...",
+  "Search approvers...": "Search approvers...",
   "Search labels...": "Search labels...",
   "Search models...": "Search models...",
   "Search projects...": "Search projects...",
+  "Search reviewers...": "Search reviewers...",
   "Secondary": "Secondary",
   "Section heading example": "Section heading example",
   "Section title example": "Section title example",
@@ -901,6 +913,8 @@
   "Started {{time}}": "Started {{time}}",
   "States": "States",
   "Status": "Status",
+  "sub-task": "sub-task",
+  "sub-tasks": "sub-tasks",
   "Status System": "Status System",
   "StatusBadge (all statuses)": "StatusBadge (all statuses)",
   "StatusIcon (interactive)": "StatusIcon (interactive)",
@@ -911,6 +925,7 @@
   "Streamed with the same transcript UI used on the full run detail page.": "Streamed with the same transcript UI used on the full run detail page.",
   "Streaming": "Streaming",
   "Sub Goal": "Sub Goal",
+  "Add sub-issue": "Add sub-issue",
   "Sub-Goals ({{count}})": "Sub-Goals ({{count}})",
   "Sub-issues": "Sub-issues",
   "Submit markdown comment": "Submit markdown comment",
@@ -994,6 +1009,16 @@
   "Upload": "Upload",
   "Upload attachment": "Upload attachment",
   "Uploading...": "Uploading...",
+  "Approvers": "Approvers",
+  "Blocked by": "Blocked by",
+  "Blocking": "Blocking",
+  "Execution": "Execution",
+  "Folder": "Folder",
+  "attachment": "attachment",
+  "by {{name}}": "by {{name}}",
+  "with {{name}}": "with {{name}}",
+  "{{stageLabel}} requested changes{{suffix}}": "{{stageLabel}} requested changes{{suffix}}",
+  "{{stageLabel}} pending{{suffix}}": "{{stageLabel}} pending{{suffix}}",
   "Uptime": "Uptime",
   "Use lowercase letters, numbers, -, or _, and start with a letter or number.": "Use lowercase letters, numbers, -, or _, and start with a letter or number.",
   "Used by": "Used by",
@@ -2184,4 +2209,39 @@
   ,"Failed to sign out.": "Failed to sign out."
   ,"Sign out": "Sign out"
   ,"Sign out of this Paperclip instance. You will be redirected to the login page.": "Sign out of this Paperclip instance. You will be redirected to the login page."
+  ,"Reviewer": "Reviewer"
+  ,"Approver": "Approver"
+  ,"Reviewers": "Reviewers"
+  ,"Approvers": "Approvers"
+  ,"Search reviewers...": "Search reviewers..."
+  ,"Search approvers...": "Search approvers..."
+  ,"No reviewers found.": "No reviewers found."
+  ,"No approvers found.": "No approvers found."
+  ,"Blocking": "Blocking"
+  ,"No blockers": "No blockers"
+  ,"Execution": "Execution"
+  ,"Hide this Issue": "Hide this Issue"
+  ,"Delete?": "Delete?"
+  ,"Delete attachment": "Delete attachment"
+  ,"Yes": "Yes"
+  ,"No": "No"
+  ,"Review": "Review"
+  ,"Approval": "Approval"
+  ,"{{stage}} requested changes{{suffix}}": "{{stage}} requested changes{{suffix}}"
+  ,"{{stage}} pending{{suffix}}": "{{stage}} pending{{suffix}}"
+  ,"by": "by"
+  ,"with": "with"
+  ,"Requester": "Requester"
+  ,"No companies": "No companies"
+  ,"Company Settings": "Company Settings"
+  ,"Manage Companies": "Manage Companies"
+  ,"Mobile navigation": "Mobile navigation"
+  ,"Home": "Home"
+  ,"issuesList.newIssue": "New Issue"
+  ,"issuesList.filter": "Filter"
+  ,"issuesList.filters": "Filters"
+  ,"issuesList.quickFilters": "Quick filters"
+  ,"issuesList.sort": "Sort"
+  ,"issuesList.group": "Group"
+  ,"issuesList.live": "Live"
 }
