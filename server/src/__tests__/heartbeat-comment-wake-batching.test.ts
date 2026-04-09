@@ -225,6 +225,10 @@ describe("heartbeat comment wake batching", () => {
   }, 75_000);
 
   afterAll(async () => {
+    const client = (db as unknown as { $client?: { end: () => Promise<void> } }).$client;
+    if (client) {
+      await client.end();
+    }
     await instance?.stop();
     if (dataDir) {
       try {
