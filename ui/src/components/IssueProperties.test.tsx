@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 
+import { act } from "react";
 import type { ComponentProps, ReactNode } from "react";
-import { renderToStaticMarkup } from "react-dom/server";
+import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { Issue } from "@penclipai/shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -148,21 +149,30 @@ function createIssue(overrides: Partial<Issue> = {}): Issue {
   };
 }
 
-function renderProperties(props: ComponentProps<typeof IssueProperties>) {
+async function renderProperties(container: HTMLDivElement, props: ComponentProps<typeof IssueProperties>) {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: { retry: false },
     },
   });
-  return renderToStaticMarkup(
-    <QueryClientProvider client={queryClient}>
-      <IssueProperties {...props} />
-    </QueryClientProvider>,
-  );
+  const root = createRoot(container);
+  await act(async () => {
+    root.render(
+      <QueryClientProvider client={queryClient}>
+        <IssueProperties {...props} />
+      </QueryClientProvider>,
+    );
+    await Promise.resolve();
+  });
+  return root;
 }
 
 describe("IssueProperties", () => {
+  let container: HTMLDivElement;
+
   beforeEach(() => {
+    container = document.createElement("div");
+    document.body.appendChild(container);
     mockAgentsApi.list.mockResolvedValue([]);
     mockProjectsApi.list.mockResolvedValue([]);
     mockIssuesApi.listLabels.mockResolvedValue([]);
@@ -174,14 +184,28 @@ describe("IssueProperties", () => {
   });
 
   it("always exposes the add sub-issue action", async () => {
-    const html = renderProperties({
+    const onAddSubIssue = vi.fn();
+    const root = await renderProperties(container, {
       issue: createIssue(),
       childIssues: [],
-      onAddSubIssue: vi.fn(),
+      onAddSubIssue,
       onUpdate: vi.fn(),
     });
 
-    expect(html).toMatch(/Sub-issues|子任务/);
-    expect(html).toMatch(/Add sub-issue|添加子任务/);
+    const renderedText = container.textContent ?? "";
+    expect(renderedText).toMatch(/Sub-issues|子任务/);
+    expect(renderedText).toMatch(/Add sub-issue|添加子任务/);
+
+    const addButton = Array.from(container.querySelectorAll("button"))
+      .find((button) => /Add sub-issue|添加子任务/.test(button.textContent ?? ""));
+    expect(addButton).not.toBeUndefined();
+
+    await act(async () => {
+      addButton!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    expect(onAddSubIssue).toHaveBeenCalledTimes(1);
+
+    act(() => root.unmount());
   });
 });
