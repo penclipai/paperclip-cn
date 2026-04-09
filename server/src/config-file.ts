@@ -5,6 +5,12 @@ import { resolvePaperclipConfigPath } from "./paths.js";
 
 const DESKTOP_TEMP_INSTANCE_PATH_RE = /paperclip-desktop-(?:smoke|acceptance)-/i;
 
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+}
+
 function isBrokenDesktopTempPath(value: unknown): boolean {
   if (typeof value !== "string" || value.trim().length === 0) return false;
   const resolved = resolveHomeAwarePath(value);
@@ -17,30 +23,13 @@ function repairBrokenDesktopTempPaths(raw: unknown): unknown {
   }
 
   const next = structuredClone(raw as Record<string, unknown>);
-  const database = typeof next.database === "object" && next.database !== null && !Array.isArray(next.database)
-    ? (next.database as Record<string, unknown>)
-    : null;
-  const logging = typeof next.logging === "object" && next.logging !== null && !Array.isArray(next.logging)
-    ? (next.logging as Record<string, unknown>)
-    : null;
-  const storage = typeof next.storage === "object" && next.storage !== null && !Array.isArray(next.storage)
-    ? (next.storage as Record<string, unknown>)
-    : null;
-  const storageLocalDisk =
-    typeof storage?.localDisk === "object" && storage.localDisk !== null && !Array.isArray(storage.localDisk)
-      ? (storage.localDisk as Record<string, unknown>)
-      : null;
-  const secrets = typeof next.secrets === "object" && next.secrets !== null && !Array.isArray(next.secrets)
-    ? (next.secrets as Record<string, unknown>)
-    : null;
-  const localEncrypted =
-    typeof secrets?.localEncrypted === "object" && secrets.localEncrypted !== null && !Array.isArray(secrets.localEncrypted)
-      ? (secrets.localEncrypted as Record<string, unknown>)
-      : null;
-  const backup =
-    typeof database?.backup === "object" && database.backup !== null && !Array.isArray(database.backup)
-      ? (database.backup as Record<string, unknown>)
-      : null;
+  const database = asRecord(next.database);
+  const logging = asRecord(next.logging);
+  const storage = asRecord(next.storage);
+  const storageLocalDisk = asRecord(storage?.localDisk);
+  const secrets = asRecord(next.secrets);
+  const localEncrypted = asRecord(secrets?.localEncrypted);
+  const backup = asRecord(database?.backup);
 
   if (database && isBrokenDesktopTempPath(database.embeddedPostgresDataDir)) {
     database.embeddedPostgresDataDir = resolveDefaultEmbeddedPostgresDir();

@@ -334,19 +334,6 @@ async function addIssueComment(origin, issueId, body) {
   );
 }
 
-async function invokeAgent(origin, agentId) {
-  return await fetchJson(
-    origin,
-    `/api/agents/${agentId}/heartbeat/invoke`,
-    {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({}),
-    },
-    "invoke claude agent",
-  );
-}
-
 async function getRun(origin, runId) {
   return await fetchJson(origin, `/api/heartbeat-runs/${runId}`, undefined, "get heartbeat run");
 }
@@ -396,6 +383,19 @@ async function waitForRunOutput(origin, runId, timeoutMs = 240_000) {
   throw new Error(
     `Timed out waiting for run ${runId} to produce log output. Last status: ${lastRun?.status ?? "unknown"}`,
   );
+}
+
+function buildRunEvidenceText(runEvidence) {
+  return [
+    typeof runEvidence.log?.content === "string" ? runEvidence.log.content : "",
+    runEvidence.run?.resultJson ? JSON.stringify(runEvidence.run.resultJson, null, 2) : "",
+    typeof runEvidence.run?.error === "string" ? runEvidence.run.error : "",
+    typeof runEvidence.run?.errorCode === "string" ? runEvidence.run.errorCode : "",
+    typeof runEvidence.run?.stdoutExcerpt === "string" ? runEvidence.run.stdoutExcerpt : "",
+    typeof runEvidence.run?.stderrExcerpt === "string" ? runEvidence.run.stderrExcerpt : "",
+  ]
+    .filter(Boolean)
+    .join("\n");
 }
 
 async function getPlugin(origin, pluginId) {
@@ -797,16 +797,7 @@ async function runAcceptanceFlow({ page, origin, company, project, issue, agent,
       },
     });
     runEvidence = await waitForRunOutput(origin, run.id);
-    const claudeEvidenceText = [
-      typeof runEvidence.log?.content === "string" ? runEvidence.log.content : "",
-      runEvidence.run?.resultJson ? JSON.stringify(runEvidence.run.resultJson, null, 2) : "",
-      typeof runEvidence.run?.error === "string" ? runEvidence.run.error : "",
-      typeof runEvidence.run?.errorCode === "string" ? runEvidence.run.errorCode : "",
-      typeof runEvidence.run?.stdoutExcerpt === "string" ? runEvidence.run.stdoutExcerpt : "",
-      typeof runEvidence.run?.stderrExcerpt === "string" ? runEvidence.run.stderrExcerpt : "",
-    ]
-      .filter(Boolean)
-      .join("\n");
+    const claudeEvidenceText = buildRunEvidenceText(runEvidence);
 
     await fs.promises.writeFile(
       path.resolve(artifactDir, "claude-run-log.txt"),
