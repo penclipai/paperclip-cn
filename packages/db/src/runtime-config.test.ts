@@ -131,6 +131,31 @@ describe("resolveDatabaseTarget", () => {
     });
   });
 
+  it("preserves a fresh desktop temp PAPERCLIP_HOME inside the active desktop user-data dir", () => {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-db-runtime-"));
+    const projectDir = path.join(tempDir, "repo");
+    fs.mkdirSync(projectDir, { recursive: true });
+    process.chdir(projectDir);
+    delete process.env.PAPERCLIP_CONFIG;
+    delete process.env.PAPERCLIP_INSTANCE_ID;
+    process.env.PAPERCLIP_DESKTOP_USER_DATA_DIR = "C:\\Users\\chenj\\AppData\\Local\\Temp\\paperclip-desktop-acceptance-dark-12345";
+    process.env.PAPERCLIP_HOME = "C:\\Users\\chenj\\AppData\\Local\\Temp\\paperclip-desktop-acceptance-dark-12345\\runtime";
+
+    const target = resolveDatabaseTarget();
+
+    expect(target).toMatchObject({
+      mode: "embedded-postgres",
+      dataDir: path.resolve(
+        "C:\\Users\\chenj\\AppData\\Local\\Temp\\paperclip-desktop-acceptance-dark-12345\\runtime",
+        "instances",
+        "default",
+        "db",
+      ),
+      port: 54329,
+      source: "embedded-postgres@54329",
+    });
+  });
+
   it("repairs a broken repo-local embedded postgres path without discarding the rest of the config", () => {
     const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-db-runtime-"));
     const projectDir = path.join(tempDir, "repo");

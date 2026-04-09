@@ -42,11 +42,28 @@ function expandHomePrefix(value: string): string {
   return value;
 }
 
+function isPathInsideDir(candidatePath: string, parentDir: string): boolean {
+  const resolvedCandidate = path.resolve(candidatePath);
+  const resolvedParent = path.resolve(parentDir);
+  const relative = path.relative(resolvedParent, resolvedCandidate);
+  return relative === "" || (!relative.startsWith("..") && !path.isAbsolute(relative));
+}
+
+function isFreshDesktopTempHome(candidate: string | undefined): boolean {
+  const desktopUserDataDir = process.env.PAPERCLIP_DESKTOP_USER_DATA_DIR?.trim();
+  const trimmed = candidate?.trim();
+  if (!desktopUserDataDir || !trimmed) return false;
+  return isPathInsideDir(trimmed, path.resolve(desktopUserDataDir));
+}
+
 function resolvePaperclipHomeDir(): string {
   const envHome = process.env.PAPERCLIP_HOME?.trim();
   if (envHome) {
     const resolved = path.resolve(expandHomePrefix(envHome));
-    if (!(DESKTOP_TEMP_INSTANCE_PATH_RE.test(resolved) && !existsSync(resolved))) {
+    if (
+      isFreshDesktopTempHome(resolved)
+      || !(DESKTOP_TEMP_INSTANCE_PATH_RE.test(resolved) && !existsSync(resolved))
+    ) {
       return resolved;
     }
   }
