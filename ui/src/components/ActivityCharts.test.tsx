@@ -21,13 +21,16 @@ import { IssueStatusChart } from "./ActivityCharts";
 
 describe("IssueStatusChart", () => {
   it("uses translated status labels instead of hardcoded Chinese strings", () => {
+    const recentDate = new Date();
+    recentDate.setDate(recentDate.getDate() - 1);
+
     const html = renderToStaticMarkup(
       <IssueStatusChart
         issues={[
-          { status: "todo", createdAt: new Date("2026-03-28T12:00:00Z") },
+          { status: "todo", createdAt: recentDate },
           {
             status: "in_progress",
-            createdAt: new Date("2026-03-28T12:00:00Z"),
+            createdAt: recentDate,
           },
         ]}
       />,

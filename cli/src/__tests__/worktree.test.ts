@@ -852,11 +852,9 @@ describe("worktree helpers", () => {
       const targetTokensPath = path.join(resolvedTargetHooksDir, "forbidden-tokens.txt");
       const targetLinkedDirPath = path.join(resolvedTargetHooksDir, "shared-hook-data");
 
-      expect(copied).toMatchObject({
-        sourceHooksPath: resolvedSourceHooksDir,
-        targetHooksPath: resolvedTargetHooksDir,
-        copied: true,
-      });
+      expect(copied?.copied).toBe(true);
+      expect(fs.realpathSync(copied!.sourceHooksPath)).toBe(resolvedSourceHooksDir);
+      expect(fs.realpathSync(copied!.targetHooksPath)).toBe(resolvedTargetHooksDir);
       expect(fs.readFileSync(targetHookPath, "utf8")).toBe("#!/usr/bin/env bash\nexit 0\n");
       if (process.platform !== "win32") {
         expect(fs.statSync(targetHookPath).mode & 0o111).not.toBe(0);
