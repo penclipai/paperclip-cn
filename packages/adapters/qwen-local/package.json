@@ -46,7 +46,7 @@
   ],
   "scripts": {
     "build": "tsc",
-    "clean": "rm -rf dist",
+    "clean": "node ../../../scripts/fs-ops.mjs rm dist",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

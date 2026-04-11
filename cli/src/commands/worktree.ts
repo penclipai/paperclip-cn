@@ -594,7 +594,19 @@ function copyDirectoryContents(sourceDir: string, targetDir: string): boolean {
 
     if (entry.isSymbolicLink()) {
       rmSync(targetPath, { recursive: true, force: true });
-      symlinkSync(readlinkSync(sourcePath), targetPath);
+      const linkTarget = readlinkSync(sourcePath);
+      const resolvedLinkTarget = path.isAbsolute(linkTarget)
+        ? linkTarget
+        : path.resolve(path.dirname(sourcePath), linkTarget);
+      try {
+        if (process.platform === "win32" && statSync(sourcePath).isDirectory()) {
+          symlinkSync(resolvedLinkTarget, targetPath, "junction");
+        } else {
+          symlinkSync(linkTarget, targetPath);
+        }
+      } catch {
+        symlinkSync(linkTarget, targetPath);
+      }
       copied = true;
       continue;
     }
@@ -1085,7 +1097,7 @@ function resolveCurrentWorktreeReseedState(opts: { home?: string } = {}) {
   const currentConfigPath = resolveConfigPath();
   if (!existsSync(currentConfigPath)) {
     throw new Error(
-      "Current directory does not have a Paperclip worktree config. Run `paperclipai worktree init` here first.",
+      "Current directory does not have a Paperclip worktree config. Run `penclip worktree init` here first.",
     );
   }
   const currentConfig = readConfig(currentConfigPath);

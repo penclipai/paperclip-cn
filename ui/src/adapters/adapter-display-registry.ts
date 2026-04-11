@@ -19,6 +19,7 @@ import { CodeBuddyLogoIcon } from "@/components/CodeBuddyLogoIcon";
 import { OpenCodeLogoIcon } from "@/components/OpenCodeLogoIcon";
 import { QwenLogoIcon } from "@/components/QwenLogoIcon";
 import { HermesIcon } from "@/components/HermesIcon";
+import { translateInstant } from "../i18n";
 
 // ---------------------------------------------------------------------------
 // Type suffix parsing
@@ -140,26 +141,33 @@ function humanizeType(type: string): string {
 
 export function getAdapterLabel(type: string): string {
   const base = adapterDisplayMap[type]?.label ?? humanizeType(type);
-  return withSuffix(base, getTypeSuffix(type));
+  return withSuffix(translateInstant(base), getTypeSuffix(type));
 }
 
 export function getAdapterLabels(): Record<string, string> {
   const suffixed: Record<string, string> = {};
   for (const [type, info] of Object.entries(adapterDisplayMap)) {
-    suffixed[type] = withSuffix(info.label, getTypeSuffix(type));
+    suffixed[type] = withSuffix(translateInstant(info.label), getTypeSuffix(type));
   }
   return suffixed;
 }
 
 export function getAdapterDisplay(type: string): AdapterDisplayInfo {
   const known = adapterDisplayMap[type];
-  if (known) return known;
+  if (known) {
+    return {
+      ...known,
+      label: translateInstant(known.label),
+      description: translateInstant(known.description),
+      disabledLabel: known.disabledLabel ? translateInstant(known.disabledLabel) : undefined,
+    };
+  }
 
   const suffix = getTypeSuffix(type);
   const label = withSuffix(humanizeType(type), suffix);
   return {
     label,
-    description: suffix ? `External ${suffix} adapter` : "External adapter",
+    description: translateInstant(suffix ? `External ${suffix} adapter` : "External adapter"),
     icon: Cpu,
   };
 }

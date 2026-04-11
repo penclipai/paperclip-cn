@@ -21,6 +21,7 @@
     "test": "vitest",
     "test:run": "vitest run --reporter=dot --silent=passed-only",
     "test:upstream-merge-harness": "node scripts/upstream-merge-harness.mjs",
+    "test:windows-compat": "pnpm exec vitest run cli/src/__tests__/worktree.test.ts server/src/__tests__/paperclip-skill-utils.test.ts server/src/__tests__/local-service-supervisor.test.ts packages/desktop-electron/src/__tests__/runtime.test.ts packages/desktop-electron/src/__tests__/splash.test.ts",
     "db:generate": "pnpm --filter @penclipai/db generate",
     "db:migrate": "pnpm --filter @penclipai/db migrate",
     "secrets:migrate-inline-env": "tsx scripts/migrate-inline-env-secrets.ts",

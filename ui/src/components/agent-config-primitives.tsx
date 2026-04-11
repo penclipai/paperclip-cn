@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { HelpCircle, ChevronDown, ChevronRight } from "lucide-react";
 import { cn } from "../lib/utils";
 import { AGENT_ROLE_LABELS } from "@penclipai/shared";
-import { getAdapterLabels } from "../adapters/adapter-display-registry";
+import { getAdapterLabel } from "../adapters/adapter-display-registry";
 
 /* ---- Help text for (?) tooltips ---- */
 export const help: Record<string, string> = {
@@ -59,7 +59,11 @@ export const help: Record<string, string> = {
   budgetMonthlyCents: "Monthly spending limit in cents. 0 means no limit.",
 };
 
-export const adapterLabels = getAdapterLabels();
+export const adapterLabels = new Proxy<Record<string, string>>({} as Record<string, string>, {
+  get(_target, property) {
+    return typeof property === "string" ? getAdapterLabel(property) : undefined;
+  },
+});
 
 export const roleLabels = AGENT_ROLE_LABELS as Record<string, string>;
 

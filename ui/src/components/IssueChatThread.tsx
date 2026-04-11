@@ -747,8 +747,8 @@ function CopyablePreBlock({ children, className }: { children: string; className
           "absolute right-1.5 top-1.5 inline-flex h-6 w-6 items-center justify-center rounded-md bg-background/80 text-muted-foreground opacity-0 backdrop-blur-sm transition-opacity hover:text-foreground group-hover/pre:opacity-100",
           copied && "opacity-100",
         )}
-        title="Copy"
-        aria-label="Copy"
+        title={translateInstant("Copy")}
+        aria-label={translateInstant("Copy")}
         onClick={() => {
           void navigator.clipboard.writeText(children).then(() => {
             setCopied(true);
@@ -945,8 +945,8 @@ function IssueChatUserMessage() {
               <button
                 type="button"
                 className="inline-flex h-6 w-6 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
-                title="Copy message"
-                aria-label="Copy message"
+                title={translateInstant("Copy message")}
+                aria-label={translateInstant("Copy message")}
                 onClick={() => {
                   const text = message.content
                     .filter((p): p is { type: "text"; text: string } => p.type === "text")
@@ -1113,8 +1113,8 @@ function IssueChatAssistantMessage() {
                 <ActionBarPrimitive.Copy
                   copiedDuration={2000}
                   className="group inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground data-[copied=true]:text-foreground"
-                  title="Copy message"
-                  aria-label="Copy message"
+                  title={translateInstant("Copy message")}
+                  aria-label={translateInstant("Copy message")}
                 >
                   <Copy className="h-3.5 w-3.5 group-data-[copied=true]:hidden" />
                   <Check className="hidden h-3.5 w-3.5 group-data-[copied=true]:block" />
@@ -1146,8 +1146,8 @@ function IssueChatAssistantMessage() {
                       variant="ghost"
                       size="icon-xs"
                       className="text-muted-foreground hover:text-foreground"
-                      title="More actions"
-                      aria-label="More actions"
+                      title={translateInstant("More actions")}
+                      aria-label={translateInstant("More actions")}
                     >
                       <MoreHorizontal className="h-3.5 w-3.5" />
                     </Button>
@@ -1163,13 +1163,13 @@ function IssueChatAssistantMessage() {
                       }}
                     >
                       <Copy className="mr-2 h-3.5 w-3.5" />
-                      Copy message
+                      {translateInstant("Copy message")}
                     </DropdownMenuItem>
                     {runHref ? (
                       <DropdownMenuItem asChild>
                         <Link to={runHref} target="_blank" rel="noreferrer noopener">
                           <Search className="mr-2 h-3.5 w-3.5" />
-                          View run
+                          {translateInstant("View run")}
                         </Link>
                       </DropdownMenuItem>
                     ) : null}

@@ -67,7 +67,6 @@ If `PAPERCLIP_APPROVAL_ID` is set:
 ## Rules
 
 - Always use the Paperclip skill for coordination.
-- On any `POST` / `PATCH` / `PUT` or other API request that sends a body, write the JSON payload to a UTF-8 file and send it with `curl --data-binary @payload.json` instead of inlining it in the shell command.
 - Always include `X-Paperclip-Run-Id` header on mutating API calls.
 - Comment in concise markdown: status line + bullets + links.
 - Self-assign via checkout only when explicitly @-mentioned.

@@ -77,7 +77,7 @@ function AppBootstrapFallback() {
       className="flex min-h-screen items-center justify-center bg-background text-sm text-muted-foreground"
       aria-busy="true"
     >
-      Loading...
+      {i18n.t("common.loading")}
     </div>
   );
 }

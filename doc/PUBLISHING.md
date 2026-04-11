@@ -116,20 +116,20 @@ If the first real publish returns npm `E404`, check npm-side prerequisites befor
 - The initial publish must include `--access public` for a public scoped package.
 - npm also requires either account 2FA for publishing or a granular token that is allowed to bypass 2FA.
 
-### Manual first publish for `@paperclipai/mcp-server`
+### Manual first publish for `@penclipai/mcp-server`
 
 If you need to publish only the MCP server package once by hand, use:
 
-- `@paperclipai/mcp-server`
+- `@penclipai/mcp-server`
 
 Recommended flow from the repo root:
 
 ```bash
 # optional sanity check: this 404s until the first publish exists
-npm view @paperclipai/mcp-server version
+npm view @penclipai/mcp-server version
 
 # make sure the build output is fresh
-pnpm --filter @paperclipai/mcp-server build
+pnpm --filter @penclipai/mcp-server build
 
 # confirm your local npm auth before the real publish
 npm whoami
@@ -145,8 +145,8 @@ pnpm publish --no-git-checks --access public
 Notes:
 
 - Publish from `packages/mcp-server/`, not the repo root.
-- If `npm view @paperclipai/mcp-server version` already returns the same version that is in [`packages/mcp-server/package.json`](../packages/mcp-server/package.json), do not republish. Bump the version or use the normal repo-wide release flow in [`scripts/release.sh`](../scripts/release.sh).
-- The same npm-side prerequisites apply as above: valid npm auth, permission to publish to the `@paperclipai` scope, `--access public`, and the required publish auth/2FA policy.
+- If `npm view @penclipai/mcp-server version` already returns the same version that is in [`packages/mcp-server/package.json`](../packages/mcp-server/package.json), do not republish. Bump the version or use the normal repo-wide release flow in [`scripts/release.sh`](../scripts/release.sh).
+- The same npm-side prerequisites apply as above: valid npm auth, permission to publish to the `@penclipai` scope, `--access public`, and the required publish auth/2FA policy.
 
 ## Version formats
 

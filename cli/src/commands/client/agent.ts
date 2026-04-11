@@ -1,6 +1,7 @@
 import { Command } from "commander";
 import type { Agent } from "@penclipai/shared";
 import {
+  ensurePaperclipSkillSymlink,
   removeMaintainerOnlySkillSymlinks,
   resolvePaperclipSkillsDir,
 } from "@penclipai/adapter-utils/server-utils";
@@ -81,55 +82,13 @@ async function installSkillsForTarget(
     if (!entry.isDirectory()) continue;
     const source = path.join(sourceSkillsDir, entry.name);
     const target = path.join(targetSkillsDir, entry.name);
-    const existing = await fs.lstat(target).catch(() => null);
-    if (existing) {
-      if (existing.isSymbolicLink()) {
-        let linkedPath: string | null = null;
-        try {
-          linkedPath = await fs.readlink(target);
-        } catch (err) {
-          await fs.unlink(target);
-          try {
-            await fs.symlink(source, target);
-            summary.linked.push(entry.name);
-            continue;
-          } catch (linkErr) {
-            summary.failed.push({
-              name: entry.name,
-              error:
-                err instanceof Error && linkErr instanceof Error
-                  ? `${err.message}; then ${linkErr.message}`
-                  : err instanceof Error
-                    ? err.message
-                    : `Failed to recover broken symlink: ${String(err)}`,
-            });
-            continue;
-          }
-        }
-
-        const resolvedLinkedPath = path.isAbsolute(linkedPath)
-          ? linkedPath
-          : path.resolve(path.dirname(target), linkedPath);
-        const linkedTargetExists = await fs
-          .stat(resolvedLinkedPath)
-          .then(() => true)
-          .catch(() => false);
-
-        if (!linkedTargetExists) {
-          await fs.unlink(target);
-        } else {
-          summary.skipped.push(entry.name);
-          continue;
-        }
-      } else {
-        summary.skipped.push(entry.name);
-        continue;
-      }
-    }
-
     try {
-      await fs.symlink(source, target);
-      summary.linked.push(entry.name);
+      const mode = await ensurePaperclipSkillSymlink(source, target);
+      if (mode === "skipped") {
+        summary.skipped.push(entry.name);
+      } else {
+        summary.linked.push(entry.name);
+      }
     } catch (err) {
       summary.failed.push({
         name: entry.name,

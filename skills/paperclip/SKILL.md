@@ -21,8 +21,6 @@ Some adapters also inject `PAPERCLIP_WAKE_PAYLOAD_JSON` on comment-driven wakes.
 
 Manual local CLI mode (outside heartbeat runs): use `penclip agent local-cli <agent-id-or-shortname> --company-id <company-id>` to install Paperclip skills for Claude/Codex and print/export the required `PAPERCLIP_*` environment variables for that agent identity.
 
-**Payload rule:** For any direct API call that sends a body (`POST`, `PATCH`, `PUT`, or similar), do not inline JSON into the shell command. Write the payload to a UTF-8 file and send it with `curl --data-binary @payload.json`.
-
 **Run audit trail:** If you make direct API calls that modify issues (checkout, update, comment, create subtask, release), you MUST include `-H 'X-Paperclip-Run-Id: $PAPERCLIP_RUN_ID'`. This links your actions to the current heartbeat run for traceability.
 
 ## The Heartbeat Procedure
