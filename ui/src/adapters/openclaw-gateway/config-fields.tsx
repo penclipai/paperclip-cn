@@ -238,7 +238,7 @@ export function OpenClawGatewayConfigFields({
             />
           </Field>
 
-          <Field label="Device auth">
+          <Field label={t("Device auth", { defaultValue: "Device auth" })}>
             <div className="text-xs text-muted-foreground leading-relaxed">
               {t(
                 "Always enabled for gateway agents. Paperclip persists a device key during onboarding so pairing approvals remain stable across runs.",
