@@ -6,6 +6,12 @@ import { promisify } from "node:util";
 const execFileAsync = promisify(execFile);
 const SHARED_MEMORY_IN_USE_PATTERN = /pre-existing shared memory block is still in use/i;
 
+type PostgresProcessInfo = {
+  commandLine: string;
+  parentPid: number | null;
+  pid: number;
+};
+
 function normalizeForMatch(value: string): string {
   const normalized = path.resolve(value).replace(/\\/g, "/");
   return process.platform === "win32" ? normalized.toLowerCase() : normalized;
@@ -26,7 +32,26 @@ function matchesDataDir(commandLine: string, dataDir: string): boolean {
   return new RegExp(`(?:^|[\\s"'=])${escapedDataDir}(?=$|[\\s"'=])`).test(normalizedCommand);
 }
 
-async function listPostgresProcesses(): Promise<Array<{ pid: number; commandLine: string }>> {
+function toPid(value: unknown): number | null {
+  const pid = Number(value);
+  return Number.isInteger(pid) && pid > 0 ? pid : null;
+}
+
+function isPidAlive(pid: number): boolean {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error) {
+    return (error as NodeJS.ErrnoException).code !== "ESRCH";
+  }
+}
+
+function isEmbeddedPostgresForkchild(commandLine: string): boolean {
+  const normalizedCommand = normalizeTextForMatch(commandLine);
+  return normalizedCommand.includes("@embedded-postgres") && normalizedCommand.includes("--forkchild");
+}
+
+async function listPostgresProcesses(): Promise<PostgresProcessInfo[]> {
   if (process.platform === "win32") {
     const { stdout } = await execFileAsync(
       "powershell",
@@ -35,7 +60,7 @@ async function listPostgresProcesses(): Promise<Array<{ pid: number; commandLine
         "-NoProfile",
         "-Command",
         "Get-CimInstance Win32_Process -Filter \"name = 'postgres.exe'\" | " +
-          "Select-Object ProcessId,CommandLine | ConvertTo-Json -Compress",
+          "Select-Object ProcessId,ParentProcessId,CommandLine | ConvertTo-Json -Compress",
       ],
       { windowsHide: true },
     );
@@ -43,31 +68,33 @@ async function listPostgresProcesses(): Promise<Array<{ pid: number; commandLine
     const payload = stdout.trim();
     if (!payload) return [];
     const parsed = JSON.parse(payload) as
-      | { ProcessId?: number; CommandLine?: string | null }
-      | Array<{ ProcessId?: number; CommandLine?: string | null }>;
+      | { ProcessId?: number; ParentProcessId?: number; CommandLine?: string | null }
+      | Array<{ ProcessId?: number; ParentProcessId?: number; CommandLine?: string | null }>;
     const rows = Array.isArray(parsed) ? parsed : [parsed];
     return rows
       .map((row) => ({
-        pid: Number(row.ProcessId),
         commandLine: typeof row.CommandLine === "string" ? row.CommandLine : "",
+        parentPid: toPid(row.ParentProcessId),
+        pid: Number(row.ProcessId),
       }))
       .filter((row) => Number.isInteger(row.pid) && row.pid > 0);
   }
 
-  const { stdout } = await execFileAsync("ps", ["-axo", "pid=,command="]);
+  const { stdout } = await execFileAsync("ps", ["-axo", "pid=,ppid=,command="]);
   return stdout
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter(Boolean)
     .map((line) => {
-      const match = line.match(/^(\d+)\s+(.*)$/);
+      const match = line.match(/^(\d+)\s+(\d+)\s+(.*)$/);
       if (!match) return null;
       return {
         pid: Number(match[1]),
-        commandLine: match[2] ?? "",
+        parentPid: toPid(match[2]),
+        commandLine: match[3] ?? "",
       };
     })
-    .filter((row): row is { pid: number; commandLine: string } => row !== null)
+    .filter((row): row is PostgresProcessInfo => row !== null)
     .filter((row) => /\bpostgres\b/i.test(row.commandLine));
 }
 
@@ -107,6 +134,25 @@ export function resetIncompleteEmbeddedPostgresDataDir(dataDir: string): boolean
 
   rmSync(dataDir, { recursive: true, force: true });
   return true;
+}
+
+export async function cleanupOrphanedEmbeddedPostgresForkchildren(): Promise<number[]> {
+  const orphanedPids = (await listPostgresProcesses())
+    .filter((processInfo) => {
+      if (!isEmbeddedPostgresForkchild(processInfo.commandLine)) return false;
+      if (!processInfo.parentPid) return false;
+      return !isPidAlive(processInfo.parentPid);
+    })
+    .map((processInfo) => processInfo.pid);
+
+  const terminated: number[] = [];
+  for (const pid of orphanedPids) {
+    if (await terminateProcess(pid)) {
+      terminated.push(pid);
+    }
+  }
+
+  return terminated;
 }
 
 export async function recoverEmbeddedPostgresStart(dataDir: string): Promise<number[]> {

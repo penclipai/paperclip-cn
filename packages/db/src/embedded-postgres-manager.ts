@@ -14,6 +14,7 @@ import { promisify } from "node:util";
 import { ensurePostgresDatabase, getPostgresDataDirectory } from "./client.js";
 import { createEmbeddedPostgresLogBuffer } from "./embedded-postgres-error.js";
 import {
+  cleanupOrphanedEmbeddedPostgresForkchildren,
   recoverEmbeddedPostgresStart,
   resetIncompleteEmbeddedPostgresDataDir,
   shouldRetryEmbeddedPostgresStart,
@@ -670,6 +671,13 @@ export async function startManagedEmbeddedPostgres(
 
   if (!existsSync(options.dataDir)) {
     mkdirSync(options.dataDir, { recursive: true });
+  }
+
+  const cleanedForkchildren = await cleanupOrphanedEmbeddedPostgresForkchildren();
+  if (cleanedForkchildren.length > 0) {
+    options.logger?.warn?.(
+      `Cleaned up ${cleanedForkchildren.length} stale embedded PostgreSQL worker process(es) before startup.`,
+    );
   }
 
   if (!readRunningPostmasterPid(postmasterPidFile) && resetIncompleteEmbeddedPostgresDataDir(options.dataDir)) {

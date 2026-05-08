@@ -31,6 +31,7 @@ export {
   formatEmbeddedPostgresError,
 } from "./embedded-postgres-error.js";
 export {
+  cleanupOrphanedEmbeddedPostgresForkchildren,
   recoverEmbeddedPostgresStart,
   resetIncompleteEmbeddedPostgresDataDir,
   shouldRetryEmbeddedPostgresStart,

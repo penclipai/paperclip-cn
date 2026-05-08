@@ -15,6 +15,7 @@ import {
   inspectMigrations,
   applyPendingMigrations,
   createEmbeddedPostgresLogBuffer,
+  cleanupOrphanedEmbeddedPostgresForkchildren,
   recoverEmbeddedPostgresStart,
   resetIncompleteEmbeddedPostgresDataDir,
   reconcilePendingMigrationHistory,
@@ -319,7 +320,14 @@ export async function startServer(): Promise<StartedServer> {
     if (config.databaseMode === "postgres") {
       logger.warn("Database mode is postgres but no connection string was set; falling back to embedded PostgreSQL");
     }
-  
+
+    const cleanedForkchildren = await cleanupOrphanedEmbeddedPostgresForkchildren();
+    if (cleanedForkchildren.length > 0) {
+      logger.warn(
+        `Cleaned up ${cleanedForkchildren.length} stale embedded PostgreSQL worker process(es) before startup.`,
+      );
+    }
+
     const clusterVersionFile = resolve(dataDir, "PG_VERSION");
     if (resetIncompleteEmbeddedPostgresDataDir(dataDir)) {
       logger.warn(

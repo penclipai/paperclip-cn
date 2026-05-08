@@ -18,17 +18,18 @@ vi.mock("node:child_process", () => ({
 }));
 
 function mockProcessList(
-  rows: Array<{ pid: number; commandLine: string }>,
+  rows: Array<{ pid: number; parentPid?: number; commandLine: string }>,
 ): void {
   const stdout =
     process.platform === "win32"
       ? JSON.stringify(
           rows.map((row) => ({
             ProcessId: row.pid,
+            ParentProcessId: row.parentPid ?? 1,
             CommandLine: row.commandLine,
           })),
         )
-      : rows.map((row) => `${row.pid} ${row.commandLine}`).join("\n");
+      : rows.map((row) => `${row.pid} ${row.parentPid ?? 1} ${row.commandLine}`).join("\n");
 
   execFileAsyncMock.mockResolvedValue({ stdout, stderr: "" });
   execFileMock.mockImplementation(
@@ -46,6 +47,61 @@ function mockProcessList(
     },
   );
 }
+
+describe("cleanupOrphanedEmbeddedPostgresForkchildren", () => {
+  beforeEach(() => {
+    vi.resetModules();
+    execFileMock.mockReset();
+    execFileAsyncMock.mockReset();
+  });
+
+  it("only terminates embedded-postgres forkchildren whose parent process is gone", async () => {
+    mockProcessList([
+      {
+        pid: 101,
+        parentPid: 901,
+        commandLine: `"C:/tools/@embedded-postgres/windows-x64/native/bin/postgres.exe" --forkchild="io_worker" 1234`,
+      },
+      {
+        pid: 202,
+        parentPid: 902,
+        commandLine: `"C:/tools/@embedded-postgres/windows-x64/native/bin/postgres.exe" --forkchild="io_worker" 5678`,
+      },
+      {
+        pid: 303,
+        parentPid: 903,
+        commandLine: `postgres -D "C:/paperclip/db"`,
+      },
+    ]);
+
+    const livePids = new Set([902]);
+    const terminatedPids = new Set<number>();
+    const killSpy = vi.spyOn(process, "kill").mockImplementation(
+      ((pid: number, signal?: number | NodeJS.Signals) => {
+        if (signal === 0) {
+          if (livePids.has(pid)) return true;
+          if (terminatedPids.has(pid)) {
+            throw Object.assign(new Error("ESRCH"), { code: "ESRCH" });
+          }
+          throw Object.assign(new Error("ESRCH"), { code: "ESRCH" });
+        }
+        terminatedPids.add(pid);
+        return true;
+      }) as typeof process.kill,
+    );
+
+    const { cleanupOrphanedEmbeddedPostgresForkchildren } = await import(
+      "./embedded-postgres-recovery.js"
+    );
+
+    await expect(cleanupOrphanedEmbeddedPostgresForkchildren()).resolves.toEqual([101]);
+    expect(killSpy).toHaveBeenCalledWith(901, 0);
+    expect(killSpy).toHaveBeenCalledWith(902, 0);
+    expect(killSpy).toHaveBeenCalledWith(101);
+    expect(killSpy).not.toHaveBeenCalledWith(202);
+    expect(killSpy).not.toHaveBeenCalledWith(303);
+  });
+});
 
 describe("recoverEmbeddedPostgresStart", () => {
   beforeEach(() => {

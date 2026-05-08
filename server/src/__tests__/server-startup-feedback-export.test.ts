@@ -21,6 +21,7 @@ const {
   feedbackExportServiceMock,
   feedbackServiceFactoryMock,
   fakeServer,
+  cleanupOrphanedEmbeddedPostgresForkchildrenMock,
   loadConfigMock,
   resetIncompleteEmbeddedPostgresDataDirMock,
 } = vi.hoisted(() => {
@@ -50,6 +51,7 @@ const {
     close: vi.fn(),
   };
   const loadConfigMock = vi.fn();
+  const cleanupOrphanedEmbeddedPostgresForkchildrenMock = vi.fn(async () => []);
   const resetIncompleteEmbeddedPostgresDataDirMock = vi.fn(() => false);
 
   return {
@@ -64,6 +66,7 @@ const {
     feedbackExportServiceMock,
     feedbackServiceFactoryMock,
     fakeServer,
+    cleanupOrphanedEmbeddedPostgresForkchildrenMock,
     loadConfigMock,
     resetIncompleteEmbeddedPostgresDataDirMock,
   };
@@ -137,6 +140,7 @@ vi.mock("@penclipai/db", () => ({
   formatEmbeddedPostgresError: vi.fn((error: unknown, input: { fallbackMessage: string }) =>
     error instanceof Error ? error : new Error(input.fallbackMessage),
   ),
+  cleanupOrphanedEmbeddedPostgresForkchildren: cleanupOrphanedEmbeddedPostgresForkchildrenMock,
   recoverEmbeddedPostgresStart: vi.fn(async () => []),
   resetIncompleteEmbeddedPostgresDataDir: resetIncompleteEmbeddedPostgresDataDirMock,
   shouldRetryEmbeddedPostgresStart: vi.fn(() => false),
@@ -234,6 +238,7 @@ vi.mock("../auth/better-auth.js", () => ({
 import { startServer } from "../index.ts";
 
 beforeEach(() => {
+  cleanupOrphanedEmbeddedPostgresForkchildrenMock.mockResolvedValue([]);
   resetIncompleteEmbeddedPostgresDataDirMock.mockReturnValue(false);
   ensurePostgresDatabaseMock.mockResolvedValue("existing");
   embeddedPostgresInstanceMock.initialise.mockResolvedValue(undefined);
