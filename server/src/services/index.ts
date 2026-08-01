@@ -23,6 +23,8 @@ export {
 export { agentInstructionsService, syncInstructionsBundleConfigFromFilePath } from "./agent-instructions.js";
 export { assetService } from "./assets.js";
 export { documentService, extractLegacyPlanBody } from "./documents.js";
+export { statusCardService } from "./status-cards.js";
+export { finalizeStatusCardsForStalledGeneration } from "./status-card-finalization.js";
 export { documentAnnotationService } from "./document-annotations.js";
 export {
   ISSUE_CONTINUATION_SUMMARY_DOCUMENT_KEY,
@@ -63,6 +65,7 @@ export { activityService, type ActivityFilters } from "./activity.js";
 export { workTimelineService, normalizeTimelineWindow } from "./work-timeline.js";
 export { attentionService } from "./attention.js";
 export { captureDecisionSnapshot, decisionTrainingService } from "./decision-training.js";
+export { decisionService } from "./decisions.js";
 export type {
   WorkTimelineActor,
   WorkTimelineEdge,
@@ -108,9 +111,18 @@ export type {
   AuthorizationResource,
 } from "./authorization.js";
 export { boardAuthService } from "./board-auth.js";
-export { instanceSettingsService } from "./instance-settings.js";
+export { instanceSettingsService, applyManagedExperimentalOverlay } from "./instance-settings.js";
+export {
+  getManagedInstanceConfig,
+  managedFeatureKeySet,
+  parseManagedConfigEnv,
+  MANAGED_CONFIG_ENV_KEY,
+  type ManagedEnvironmentSpec,
+  type ManagedInstanceConfig,
+} from "./managed-config.js";
 export { bootstrapExecutionPolicyFromEnv } from "./execution-policy-bootstrap.js";
-export { cloudUpstreamService, reconcileCloudUpstreamRunsOnStartup } from "./cloud-upstreams.js";
+export { applyManagedEnvironments } from "./managed-environments.js";
+export { buildExportFidelityReport, collectExportFidelityCounts } from "./export-fidelity.js";
 export { companyPortabilityService } from "./company-portability.js";
 export { teamsCatalogService } from "./teams-catalog.js";
 export { environmentService } from "./environments.js";

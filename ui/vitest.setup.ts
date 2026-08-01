@@ -1,5 +1,6 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
+import { beforeEach } from "vitest";
 
 import { SUPPORTED_UI_LOCALES } from "@penclipai/shared";
 
@@ -76,3 +77,7 @@ if (!i18n.isInitialized) {
     useSuspense: false,
   };
 }
+
+beforeEach(async () => {
+  await i18n.changeLanguage("en");
+});

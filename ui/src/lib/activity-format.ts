@@ -1,5 +1,4 @@
 import type { Agent } from "@penclipai/shared";
-import { translateInstant } from "../i18n";
 import type { CompanyUserProfile } from "./company-members";
 
 type ActivityDetails = Record<string, unknown> | null | undefined;
@@ -25,7 +24,6 @@ interface ActivityFormatOptions {
 const ACTIVITY_ROW_VERBS: Record<string, string> = {
   "issue.created": "created",
   "issue.updated": "updated",
-  "issue.read_marked": "marked as read",
   "issue.checked_out": "checked out",
   "issue.released": "released",
   "issue.comment_added": "commented on",
@@ -38,14 +36,6 @@ const ACTIVITY_ROW_VERBS: Record<string, string> = {
   "issue.document_locked": "locked document on",
   "issue.document_unlocked": "unlocked document on",
   "issue.document_deleted": "deleted document from",
-  "issue.file_resource_list": "listed issue files for",
-  "issue.file_resource_list_denied": "was denied issue file list access for",
-  "issue.file_resource_content_read": "read issue file content on",
-  "issue.file_resource_content_denied": "was denied issue file content access for",
-  "issue.file_resource_resolve": "resolved issue file reference on",
-  "issue.file_resource_resolve_denied": "was denied issue file reference access for",
-  "issue.file_resource_download": "downloaded issue file from",
-  "issue.file_resource_download_denied": "was denied issue file download access for",
   "issue.monitor_scheduled": "scheduled monitor on",
   "issue.monitor_triggered": "triggered monitor for",
   "issue.monitor_cleared": "cleared monitor on",
@@ -63,10 +53,6 @@ const ACTIVITY_ROW_VERBS: Record<string, string> = {
   "issue.recovery_action_opened": "opened a recovery action on",
   "issue.recovery_action_resolved": "resolved the recovery action on",
   "issue.recovery_action_escalated": "escalated the recovery action on",
-  "issue.thread_interaction_created": "created a thread interaction on",
-  "issue.thread_interaction_accepted": "accepted a thread interaction on",
-  "issue.thread_interaction_rejected": "rejected a thread interaction on",
-  "issue.thread_interaction_expired": "expired a thread interaction on",
   "agent.created": "created",
   "agent.updated": "updated",
   "agent.paused": "paused",
@@ -96,26 +82,12 @@ const ACTIVITY_ROW_VERBS: Record<string, string> = {
   "company.archived": "archived",
   "company.reactivated": "reactivated",
   "company.budget_updated": "updated budget for",
-  "company.skills_scanned": "scanned company skills",
-  "instance.settings.updated": "updated instance settings",
-  "instance.settings.general_updated": "updated general instance settings",
-  "instance.settings.experimental_updated": "updated experimental instance settings",
-  "instance.settings.issue_graph_liveness_auto_recovery_run": "ran issue graph auto-recovery",
-  "plugin.installed": "installed plugin",
-  "plugin.uninstalled": "uninstalled plugin",
-  "resource_membership.joined": "joined",
-  "resource_membership.left": "left",
-  "resource_membership.starred": "starred",
-  "resource_membership.unstarred": "unstarred",
-  "environment.lease_acquired": "acquired environment lease",
-  "environment.lease_released": "released environment lease",
-  "auth.agent_jwt_run_header_mismatch": "recorded agent JWT run header mismatch",
+  "audit.exported": "exported the agent audit log for",
 };
 
 const ISSUE_ACTIVITY_LABELS: Record<string, string> = {
   "issue.created": "created the issue",
   "issue.updated": "updated the issue",
-  "issue.read_marked": "marked the issue as read",
   "issue.checked_out": "checked out the issue",
   "issue.released": "released the issue",
   "issue.comment_added": "added a comment",
@@ -129,14 +101,6 @@ const ISSUE_ACTIVITY_LABELS: Record<string, string> = {
   "issue.document_locked": "locked a document",
   "issue.document_unlocked": "unlocked a document",
   "issue.document_deleted": "deleted a document",
-  "issue.file_resource_list": "listed issue files",
-  "issue.file_resource_list_denied": "was denied issue file list access",
-  "issue.file_resource_content_read": "read issue file content",
-  "issue.file_resource_content_denied": "was denied issue file content access",
-  "issue.file_resource_resolve": "resolved an issue file reference",
-  "issue.file_resource_resolve_denied": "was denied issue file reference access",
-  "issue.file_resource_download": "downloaded an issue file",
-  "issue.file_resource_download_denied": "was denied issue file download access",
   "issue.monitor_scheduled": "scheduled a monitor",
   "issue.monitor_triggered": "triggered a monitor",
   "issue.monitor_cleared": "cleared a monitor",
@@ -153,10 +117,6 @@ const ISSUE_ACTIVITY_LABELS: Record<string, string> = {
   "issue.recovery_action_resolved": "Resolved the recovery action",
   "issue.recovery_action_escalated": "Escalated the recovery action",
   "issue.accepted_plan_decomposition_updated": "updated the accepted-plan decomposition",
-  "issue.thread_interaction_created": "created a thread interaction",
-  "issue.thread_interaction_accepted": "accepted a thread interaction",
-  "issue.thread_interaction_rejected": "rejected a thread interaction",
-  "issue.thread_interaction_expired": "expired a thread interaction",
   "agent.created": "created an agent",
   "agent.updated": "updated the agent",
   "agent.paused": "paused the agent",
@@ -172,48 +132,6 @@ const ISSUE_ACTIVITY_LABELS: Record<string, string> = {
   "approval.rejected": "rejected",
 };
 
-const STATUS_TRANSLATION_KEYS: Record<string, string> = {
-  active: "status.active",
-  approved: "status.approved",
-  archived: "status.archived",
-  backlog: "status.backlog",
-  blocked: "status.blocked",
-  cancelled: "status.cancelled",
-  done: "status.done",
-  error: "status.error",
-  failed: "status.failed",
-  queued: "status.queued",
-  idle: "status.idle",
-  in_progress: "status.inProgress",
-  in_review: "status.inReview",
-  paused: "status.paused",
-  pending: "status.pending",
-  pending_approval: "status.pendingApproval",
-  rejected: "status.rejected",
-  revision_requested: "status.revisionRequested",
-  running: "status.running",
-  skipped: "status.skipped",
-  starting: "status.starting",
-  succeeded: "status.succeeded",
-  timed_out: "status.timedOut",
-  terminated: "status.terminated",
-  todo: "status.todo",
-};
-
-const PRIORITY_TRANSLATION_KEYS: Record<string, string> = {
-  critical: "priority.critical",
-  high: "priority.high",
-  medium: "priority.medium",
-  low: "priority.low",
-};
-
-function translateActivityText(
-  key: string,
-  options?: Record<string, string | number | boolean | null | undefined>,
-): string {
-  return translateInstant(key, { defaultValue: key, ...options });
-}
-
 function asRecord(value: unknown): Record<string, unknown> | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
   return value as Record<string, unknown>;
@@ -222,16 +140,6 @@ function asRecord(value: unknown): Record<string, unknown> | null {
 function humanizeValue(value: unknown): string {
   if (typeof value !== "string") return String(value ?? "none");
   return value.replace(/_/g, " ");
-}
-
-function humanizeStatusValue(value: unknown): string {
-  if (typeof value !== "string") return humanizeValue(value);
-  return translateInstant(STATUS_TRANSLATION_KEYS[value] ?? value, { defaultValue: humanizeValue(value) });
-}
-
-function humanizePriorityValue(value: unknown): string {
-  if (typeof value !== "string") return humanizeValue(value);
-  return translateInstant(PRIORITY_TRANSLATION_KEYS[value] ?? value, { defaultValue: humanizeValue(value) });
 }
 
 function isActivityParticipant(value: unknown): value is ActivityParticipant {
@@ -257,20 +165,17 @@ function readIssueReferences(details: ActivityDetails, key: string): ActivityIss
 }
 
 function formatUserLabel(userId: string | null | undefined, options: ActivityFormatOptions = {}): string {
-  if (!userId || userId === "local-board") return translateActivityText("Board");
-  if (options.currentUserId && userId === options.currentUserId) return translateActivityText("You");
+  if (!userId || userId === "local-board") return "Board";
+  if (options.currentUserId && userId === options.currentUserId) return "You";
   const profile = options.userProfileMap?.get(userId);
   if (profile) return profile.label;
-  return translateInstant("activityFormat.userLabel", {
-    id: userId.slice(0, 5),
-    defaultValue: `user ${userId.slice(0, 5)}`,
-  });
+  return `user ${userId.slice(0, 5)}`;
 }
 
 function formatParticipantLabel(participant: ActivityParticipant, options: ActivityFormatOptions): string {
   if (participant.type === "agent") {
     const agentId = participant.agentId ?? "";
-    return options.agentMap?.get(agentId)?.name ?? translateActivityText("agent");
+    return options.agentMap?.get(agentId)?.name ?? "agent";
   }
   return formatUserLabel(participant.userId, options);
 }
@@ -279,7 +184,7 @@ function formatIssueReferenceLabel(reference: ActivityIssueReference): string {
   if (reference.identifier) return reference.identifier;
   if (reference.title) return reference.title;
   if (reference.id) return reference.id.slice(0, 8);
-  return translateActivityText("issue");
+  return "task";
 }
 
 function formatChangedEntityLabel(
@@ -287,21 +192,9 @@ function formatChangedEntityLabel(
   plural: string,
   labels: string[],
 ): string {
-  const singularLabel = translateActivityText(singular);
-  const pluralLabel = translateActivityText(plural);
-  if (labels.length <= 0) return pluralLabel;
-  if (labels.length === 1) {
-    return translateInstant("activityFormat.namedEntity", {
-      entity: singularLabel,
-      label: labels[0],
-      defaultValue: `${singularLabel} ${labels[0]}`,
-    });
-  }
-  return translateInstant("activityFormat.countedEntity", {
-    count: labels.length,
-    entity: pluralLabel,
-    defaultValue: `${labels.length} ${pluralLabel}`,
-  });
+  if (labels.length <= 0) return plural;
+  if (labels.length === 1) return `${singular} ${labels[0]}`;
+  return `${labels.length} ${plural}`;
 }
 
 function readNumber(value: unknown): number | null {
@@ -338,28 +231,14 @@ function formatIssueUpdatedVerb(details: ActivityDetails): string | null {
   if (details.status !== undefined) {
     const from = previous.status;
     return from
-      ? translateInstant("activityFormat.changedStatusFromOn", {
-        from: humanizeStatusValue(from),
-        to: humanizeStatusValue(details.status),
-        defaultValue: `changed status from ${humanizeStatusValue(from)} to ${humanizeStatusValue(details.status)} on`,
-      })
-      : translateInstant("activityFormat.changedStatusToOn", {
-        status: humanizeStatusValue(details.status),
-        defaultValue: `changed status to ${humanizeStatusValue(details.status)} on`,
-      });
+      ? `changed status from ${humanizeValue(from)} to ${humanizeValue(details.status)} on`
+      : `changed status to ${humanizeValue(details.status)} on`;
   }
   if (details.priority !== undefined) {
     const from = previous.priority;
     return from
-      ? translateInstant("activityFormat.changedPriorityFromOn", {
-        from: humanizePriorityValue(from),
-        to: humanizePriorityValue(details.priority),
-        defaultValue: `changed priority from ${humanizePriorityValue(from)} to ${humanizePriorityValue(details.priority)} on`,
-      })
-      : translateInstant("activityFormat.changedPriorityToOn", {
-        priority: humanizePriorityValue(details.priority),
-        defaultValue: `changed priority to ${humanizePriorityValue(details.priority)} on`,
-      });
+      ? `changed priority from ${humanizeValue(from)} to ${humanizeValue(details.priority)} on`
+      : `changed priority to ${humanizeValue(details.priority)} on`;
   }
   return null;
 }
@@ -386,45 +265,24 @@ function formatIssueUpdatedAction(details: ActivityDetails, options: ActivityFor
     const from = previous.status;
     parts.push(
       from
-        ? translateInstant("changed the status from {{from}} to {{to}}", {
-          from: humanizeStatusValue(from),
-          to: humanizeStatusValue(details.status),
-          defaultValue: `changed the status from ${humanizeStatusValue(from)} to ${humanizeStatusValue(details.status)}`,
-        })
-        : translateInstant("changed the status to {{status}}", {
-          status: humanizeStatusValue(details.status),
-          defaultValue: `changed the status to ${humanizeStatusValue(details.status)}`,
-        }),
+        ? `changed the status from ${humanizeValue(from)} to ${humanizeValue(details.status)}`
+        : `changed the status to ${humanizeValue(details.status)}`,
     );
   }
   if (details.priority !== undefined) {
     const from = previous.priority;
     parts.push(
       from
-        ? translateInstant("changed the priority from {{from}} to {{to}}", {
-          from: humanizePriorityValue(from),
-          to: humanizePriorityValue(details.priority),
-          defaultValue: `changed the priority from ${humanizePriorityValue(from)} to ${humanizePriorityValue(details.priority)}`,
-        })
-        : translateInstant("changed the priority to {{priority}}", {
-          priority: humanizePriorityValue(details.priority),
-          defaultValue: `changed the priority to ${humanizePriorityValue(details.priority)}`,
-        }),
+        ? `changed the priority from ${humanizeValue(from)} to ${humanizeValue(details.priority)}`
+        : `changed the priority to ${humanizeValue(details.priority)}`,
     );
   }
   if (details.assigneeAgentId !== undefined || details.assigneeUserId !== undefined) {
     const assigneeName = formatAssigneeName(details, options);
-    parts.push(
-      assigneeName
-        ? translateInstant("made {{assignee}} responsible for the task", {
-            assignee: assigneeName,
-            defaultValue: `made ${assigneeName} responsible for the task`,
-          })
-        : translateActivityText("cleared the responsible"),
-    );
+    parts.push(assigneeName ? `made ${assigneeName} responsible for the task` : "cleared the responsible");
   }
-  if (details.title !== undefined) parts.push(translateActivityText("updated the title"));
-  if (details.description !== undefined) parts.push(translateActivityText("updated the description"));
+  if (details.title !== undefined) parts.push("updated the title");
+  if (details.description !== undefined) parts.push("updated the description");
 
   return parts.length > 0 ? parts.join(", ") : null;
 }
@@ -443,37 +301,13 @@ function formatStructuredIssueChange(input: {
     const removed = readIssueReferences(details, "removedBlockedByIssues").map(formatIssueReferenceLabel);
     if (added.length > 0 && removed.length === 0) {
       const changed = formatChangedEntityLabel("blocker", "blockers", added);
-      return input.forIssueDetail
-        ? translateInstant("activityFormat.added", {
-          changed,
-          defaultValue: `added ${changed}`,
-        })
-        : translateInstant("activityFormat.addedTo", {
-          changed,
-          defaultValue: `added ${changed} to`,
-        });
+      return input.forIssueDetail ? `added ${changed}` : `added ${changed} to`;
     }
     if (removed.length > 0 && added.length === 0) {
       const changed = formatChangedEntityLabel("blocker", "blockers", removed);
-      return input.forIssueDetail
-        ? translateInstant("activityFormat.removed", {
-          changed,
-          defaultValue: `removed ${changed}`,
-        })
-        : translateInstant("activityFormat.removedFrom", {
-          changed,
-          defaultValue: `removed ${changed} from`,
-        });
+      return input.forIssueDetail ? `removed ${changed}` : `removed ${changed} from`;
     }
-    return input.forIssueDetail
-      ? translateInstant("activityFormat.updatedLabel", {
-        label: translateActivityText("blockers"),
-        defaultValue: "updated blockers",
-      })
-      : translateInstant("activityFormat.updatedOn", {
-        label: translateActivityText("blockers"),
-        defaultValue: "updated blockers on",
-      });
+    return input.forIssueDetail ? "updated blockers" : "updated blockers on";
   }
 
   if (input.action === "issue.reviewers_updated" || input.action === "issue.approvers_updated") {
@@ -483,38 +317,13 @@ function formatStructuredIssueChange(input: {
     const plural = input.action === "issue.reviewers_updated" ? "reviewers" : "approvers";
     if (added.length > 0 && removed.length === 0) {
       const changed = formatChangedEntityLabel(singular, plural, added);
-      return input.forIssueDetail
-        ? translateInstant("activityFormat.added", {
-          changed,
-          defaultValue: `added ${changed}`,
-        })
-        : translateInstant("activityFormat.addedTo", {
-          changed,
-          defaultValue: `added ${changed} to`,
-        });
+      return input.forIssueDetail ? `added ${changed}` : `added ${changed} to`;
     }
     if (removed.length > 0 && added.length === 0) {
       const changed = formatChangedEntityLabel(singular, plural, removed);
-      return input.forIssueDetail
-        ? translateInstant("activityFormat.removed", {
-          changed,
-          defaultValue: `removed ${changed}`,
-        })
-        : translateInstant("activityFormat.removedFrom", {
-          changed,
-          defaultValue: `removed ${changed} from`,
-        });
+      return input.forIssueDetail ? `removed ${changed}` : `removed ${changed} from`;
     }
-    const translatedPlural = translateActivityText(plural);
-    return input.forIssueDetail
-      ? translateInstant("activityFormat.updatedLabel", {
-        label: translatedPlural,
-        defaultValue: `updated ${translatedPlural}`,
-      })
-      : translateInstant("activityFormat.updatedOn", {
-        label: translatedPlural,
-        defaultValue: `updated ${translatedPlural} on`,
-      });
+    return input.forIssueDetail ? `updated ${plural}` : `updated ${plural} on`;
   }
 
   return null;
@@ -538,8 +347,7 @@ export function formatActivityVerb(
   });
   if (structuredChange) return structuredChange;
 
-  const fallback = ACTIVITY_ROW_VERBS[action] ?? action.replace(/[._]/g, " ");
-  return translateActivityText(fallback);
+  return ACTIVITY_ROW_VERBS[action] ?? action.replace(/[._]/g, " ");
 }
 
 export function formatIssueActivityAction(
@@ -585,9 +393,8 @@ export function formatIssueActivityAction(
   ) {
     const key = typeof details.key === "string" ? details.key : "document";
     const title = typeof details.title === "string" && details.title ? ` (${details.title})` : "";
-    return `${translateActivityText(ISSUE_ACTIVITY_LABELS[action] ?? action)} ${key}${title}`;
+    return `${ISSUE_ACTIVITY_LABELS[action] ?? action} ${key}${title}`;
   }
 
-  const fallback = ISSUE_ACTIVITY_LABELS[action] ?? action.replace(/[._]/g, " ");
-  return translateActivityText(fallback);
+  return ISSUE_ACTIVITY_LABELS[action] ?? action.replace(/[._]/g, " ");
 }

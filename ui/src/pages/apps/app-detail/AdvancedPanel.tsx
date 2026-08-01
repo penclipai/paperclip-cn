@@ -1,15 +1,17 @@
+import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { ArrowUpRight, Loader2, Lock } from "lucide-react";
-import { useTranslation } from "react-i18next";
-import type { AppGalleryEntry, ToolConnection } from "@penclipai/shared";
-import { humanizeConnectionDisplayName } from "@penclipai/shared";
+import type { AppDefinition, ToolConnection } from "@penclipai/shared";
+import {
+  credentialConfigPath,
+  getAvailableConnectionMethod,
+  humanizeConnectionDisplayName,
+} from "@penclipai/shared";
 import { toolsApi } from "@/api/tools";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/context/ToastContext";
-import { translateInstant } from "@/i18n";
-import { credentialFieldLabel } from "@/lib/app-gallery-copy";
 import { redactUrlSecrets } from "@/lib/redact-url-secrets";
 import type { AppDetailSectionProps } from "./types";
 
@@ -44,7 +46,7 @@ function KeySection({
   onReplaced,
 }: {
   connection: ToolConnection;
-  galleryEntry: AppGalleryEntry | null;
+  galleryEntry: AppDefinition | null;
   onReplaced: () => void;
 }) {
   const { t } = useTranslation();
@@ -56,21 +58,16 @@ function KeySection({
           <Lock className="mt-0.5 h-4 w-4 text-muted-foreground" />
           <div>
             <h2 className="text-sm font-bold text-foreground">
-              {t("apps.detail.advanced.key.title", { defaultValue: "Key" })}
+              {t("apps.advanced.key")}
             </h2>
             <p className="mt-0.5 text-sm text-muted-foreground">
-              {t("apps.detail.advanced.key.description", {
-                defaultValue:
-                  "Your key is stored securely. Replace it if it stopped working or you rotated it.",
-              })}
+              {t("apps.detail.advanced.key.description")}
             </p>
           </div>
         </div>
         {!open && (
           <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
-            {t("apps.detail.advanced.key.replace", {
-              defaultValue: "Replace key",
-            })}
+            {t("apps.detail.advanced.key.replace")}
           </Button>
         )}
       </div>
@@ -97,23 +94,18 @@ export function ReconnectCard({
   onReconnected,
 }: {
   connection: ToolConnection;
-  galleryEntry: AppGalleryEntry | null;
+  galleryEntry: AppDefinition | null;
   onReconnected: () => void;
 }) {
   const { t } = useTranslation();
   return (
     <div className="rounded-xl border border-amber-500/50 bg-amber-500/10 p-5">
       <h2 className="text-sm font-bold text-amber-900 dark:text-amber-100">
-        {t("apps.detail.advanced.reconnectCard.title", {
-          defaultValue: "This app needs reconnecting",
-        })}
+        {t("apps.detail.advanced.reconnectCard.title")}
       </h2>
       <p className="mt-1 text-sm text-amber-800 dark:text-amber-200">
         {connection.healthMessage?.trim() ||
-          t("apps.detail.advanced.reconnectCard.description", {
-            defaultValue:
-              "The key stopped working. Paste a new one to get it back online.",
-          })}
+          "The key stopped working. Paste a new one to get it back online."}
       </p>
       <div className="mt-3">
         <ReconnectForm
@@ -133,13 +125,21 @@ function ReconnectForm({
   onReconnected,
 }: {
   connection: ToolConnection;
-  galleryEntry: AppGalleryEntry | null;
+  galleryEntry: AppDefinition | null;
   onCancel?: () => void;
   onReconnected: () => void;
 }) {
-  const { pushToast } = useToast();
   const { t } = useTranslation();
-  const fields = galleryEntry?.credentialFields ?? [];
+  const { pushToast } = useToast();
+  const method =
+    galleryEntry && Array.isArray(galleryEntry.methods)
+      ? getAvailableConnectionMethod(galleryEntry)
+      : null;
+  const fields = (method?.credentialFields ?? []).map((field) => ({
+    ...field,
+    configPath: credentialConfigPath(field),
+    helpUrl: method?.consoleLinks?.keys ?? method?.consoleLinks?.docs ?? "",
+  }));
   const [values, setValues] = useState<Record<string, string>>({});
   const [single, setSingle] = useState("");
   const usesGallery = fields.length > 0 && !!galleryEntry;
@@ -157,41 +157,28 @@ function ReconnectForm({
         result.connection.healthStatus === "unknown";
       if (healthy) {
         pushToast({
-          title: t("apps.detail.advanced.reconnect.success.title", {
-            defaultValue: "Reconnected",
-          }),
-          body: t("apps.detail.advanced.reconnect.success.body", {
-            defaultValue: "{{appName}} is back online.",
-            appName: humanizeConnectionDisplayName(connection),
-          }),
+          title: "Reconnected",
+          body: `${humanizeConnectionDisplayName(connection)} is back online.`,
           tone: "success",
         });
         onReconnected();
       } else {
         pushToast({
-          title: t("apps.detail.advanced.reconnect.stillFailing.title", {
-            defaultValue: "Still not working",
-          }),
+          title: "Still not working",
           body:
             result.connection.healthMessage?.trim() ||
-            t("apps.detail.advanced.reconnect.stillFailing.body", {
-              defaultValue: "That key didn't check out. Try another.",
-            }),
+            "That key didn't check out. Try another.",
           tone: "error",
         });
       }
     },
     onError: (error) =>
       pushToast({
-        title: t("apps.detail.advanced.reconnect.error.title", {
-          defaultValue: "That key didn't work",
-        }),
+        title: "That key didn't work",
         body:
           error instanceof Error
             ? error.message
-            : t("apps.detail.advanced.reconnect.error.body", {
-                defaultValue: "Check the key and try again.",
-              }),
+            : "Check the key and try again.",
         tone: "error",
       }),
   });
@@ -210,16 +197,7 @@ function ReconnectForm({
         fields.map((field) => (
           <div key={field.configPath}>
             <label className="text-xs font-medium text-foreground">
-              {t(
-                `apps.gallery.${galleryEntry.key}.credentials.${field.configPath.replaceAll(".", "_")}`,
-                {
-                  defaultValue: credentialFieldLabel(
-                    galleryEntry.name,
-                    field.label,
-                    fields.length,
-                  ),
-                },
-              )}
+              {field.label}
             </label>
             <Input
               type="password"
@@ -228,12 +206,7 @@ function ReconnectForm({
               onChange={(e) =>
                 setValues({ ...values, [field.configPath]: e.target.value })
               }
-              placeholder={t(
-                "apps.detail.advanced.reconnect.fieldPlaceholder",
-                {
-                  defaultValue: "****************",
-                },
-              )}
+              placeholder="****************"
               className="mt-1 h-10 font-mono"
             />
             {field.helpUrl && (
@@ -243,9 +216,7 @@ function ReconnectForm({
                 rel="noreferrer"
                 className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-foreground underline underline-offset-2"
               >
-                {t("apps.detail.advanced.reconnect.help", {
-                  defaultValue: "Where do I find this?",
-                })}{" "}
+                {t("apps.detail.advanced.reconnect.help")}{" "}
                 <ArrowUpRight className="h-3 w-3" />
               </a>
             )}
@@ -257,9 +228,7 @@ function ReconnectForm({
           autoComplete="off"
           value={single}
           onChange={(e) => setSingle(e.target.value)}
-          placeholder={t("apps.detail.advanced.reconnect.placeholder", {
-            defaultValue: "Paste your new key",
-          })}
+          placeholder={t("apps.detail.advanced.reconnect.placeholder")}
           className="h-10 font-mono"
         />
       )}
@@ -272,13 +241,7 @@ function ReconnectForm({
           {reconnect.isPending && (
             <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
           )}
-          {reconnect.isPending
-            ? t("apps.detail.advanced.reconnect.checking", {
-                defaultValue: "Checking...",
-              })
-            : t("apps.detail.advanced.reconnect.submit", {
-                defaultValue: "Check & reconnect",
-              })}
+          {reconnect.isPending ? "Checking..." : "Check & reconnect"}
         </Button>
         {onCancel && (
           <Button
@@ -287,7 +250,7 @@ function ReconnectForm({
             onClick={onCancel}
             disabled={reconnect.isPending}
           >
-            {t("apps.detail.common.cancel", { defaultValue: "Cancel" })}
+            {t("apps.detail.common.cancel")}
           </Button>
         )}
       </div>
@@ -300,23 +263,17 @@ function TechnicalDetails({ connection }: { connection: ToolConnection }) {
   return (
     <section className="rounded-xl border border-border bg-card px-5 py-4">
       <h2 className="text-sm font-bold text-foreground">
-        {t("apps.detail.advanced.technical.title", {
-          defaultValue: "Technical details",
-        })}
+        {t("apps.detail.advanced.technical.title")}
       </h2>
       <dl className="mt-3 grid gap-2 text-xs sm:grid-cols-(--gtc-59)">
         <dt className="text-muted-foreground">
-          {t("apps.detail.advanced.technical.address", {
-            defaultValue: "Address",
-          })}
+          {t("apps.detail.advanced.technical.address")}
         </dt>
         <dd className="break-all font-mono text-foreground">
           {connectionAddress(connection)}
         </dd>
         <dt className="text-muted-foreground">
-          {t("apps.detail.advanced.technical.connectionType", {
-            defaultValue: "Connection type",
-          })}
+          {t("apps.detail.advanced.technical.connectionType")}
         </dt>
         <dd className="text-foreground">
           {connectionTransportLabel(connection.transport)}
@@ -340,23 +297,16 @@ export function DangerZone({
   return (
     <section className="rounded-xl border border-destructive/40 bg-card">
       <div className="border-b border-destructive/40 px-5 py-3 text-sm font-bold text-destructive">
-        {t("apps.detail.advanced.danger.title", {
-          defaultValue: "Danger zone",
-        })}
+        {t("apps.detail.advanced.danger.title")}
       </div>
       <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
         <div>
           <p className="text-sm font-medium text-foreground">
-            {t("apps.detail.advanced.danger.removeTitle", {
-              defaultValue: "Remove this app",
-            })}
+            {t("apps.detail.advanced.danger.removeTitle")}
           </p>
           <p className="text-xs text-muted-foreground">
-            {t("apps.detail.advanced.danger.removeDescription", {
-              defaultValue:
-                "Agents lose access to {{appName}} right away. You can connect it again later.",
-              appName,
-            })}
+            {t("apps.advanced.removeAccessPrefix")} {appName}{" "}
+            {t("apps.advanced.removeAccessSuffix")}
           </p>
         </div>
         {confirming ? (
@@ -367,7 +317,7 @@ export function DangerZone({
               onClick={() => setConfirming(false)}
               disabled={removing}
             >
-              {t("apps.detail.common.cancel", { defaultValue: "Cancel" })}
+              {t("apps.detail.common.cancel")}
             </Button>
             <Button
               variant="destructive"
@@ -378,9 +328,7 @@ export function DangerZone({
               {removing && (
                 <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
               )}
-              {t("apps.detail.advanced.danger.confirmRemove", {
-                defaultValue: "Yes, remove it",
-              })}
+              {t("apps.detail.advanced.danger.confirmRemove")}
             </Button>
           </div>
         ) : (
@@ -389,9 +337,7 @@ export function DangerZone({
             size="sm"
             onClick={() => setConfirming(true)}
           >
-            {t("apps.detail.advanced.danger.removeButton", {
-              defaultValue: "Remove app",
-            })}
+            {t("apps.detail.advanced.danger.removeButton")}
           </Button>
         )}
       </div>
@@ -404,36 +350,14 @@ export function connectionAddress(connection: ToolConnection): string {
   const value = config.url ?? config.endpoint ?? config.remoteUrl;
   if (typeof value === "string" && value.trim().length > 0)
     return redactUrlSecrets(value);
-  if (connection.transport === "local_stdio") {
-    return translateInstant("apps.detail.advanced.technical.localCommand", {
-      defaultValue: "Local command",
-    });
-  }
-  return translateInstant("apps.detail.advanced.technical.notSet", {
-    defaultValue: "Not set",
-  });
+  if (connection.transport === "local_stdio") return "Local command";
+  return "Not set";
 }
 
 export function connectionTransportLabel(
   transport: ToolConnection["transport"],
 ): string {
-  if (transport === "remote_http") {
-    return translateInstant(
-      "apps.detail.advanced.technical.transport.remoteHttp",
-      {
-        defaultValue: "Remote HTTP",
-      },
-    );
-  }
-  if (transport === "local_stdio") {
-    return translateInstant(
-      "apps.detail.advanced.technical.transport.localCommand",
-      {
-        defaultValue: "Local command",
-      },
-    );
-  }
-  return translateInstant("apps.detail.advanced.technical.transport.unknown", {
-    defaultValue: "Unknown",
-  });
+  if (transport === "mcp_remote") return "Remote HTTP";
+  if (transport === "local_stdio") return "Local command";
+  return "Unknown";
 }

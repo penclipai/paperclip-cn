@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
@@ -7,7 +8,6 @@ import type {
   Project,
 } from "@penclipai/shared";
 import { ArrowLeft, Download, Search } from "lucide-react";
-import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "@/lib/router";
 import {
   decisionTrainingApi,
@@ -29,53 +29,11 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { decisionTrainingHref } from "@/lib/decisionTraining";
 import { queryKeys } from "@/lib/queryKeys";
 import { cn, formatDate, formatDateTime } from "@/lib/utils";
 
 type SnapshotRecord = Record<string, unknown>;
-type TrainingT = ReturnType<typeof useTranslation>["t"];
-
-const SOURCE_KIND_LABELS = {
-  interaction: {
-    key: "training.sourceKinds.interaction",
-    defaultValue: "Interaction",
-  },
-  approval: { key: "training.sourceKinds.approval", defaultValue: "Approval" },
-  execution_decision: {
-    key: "training.sourceKinds.executionDecision",
-    defaultValue: "Execution decision",
-  },
-} satisfies Record<
-  DecisionTrainingSourceKind,
-  { key: string; defaultValue: string }
->;
-
-const OUTCOME_LABELS: Record<string, { key: string; defaultValue: string }> = {
-  accepted: { key: "training.outcomes.accepted", defaultValue: "Accepted" },
-  answered: { key: "training.outcomes.answered", defaultValue: "Answered" },
-  approved: { key: "training.outcomes.approved", defaultValue: "Approved" },
-  cancelled: { key: "training.outcomes.cancelled", defaultValue: "Cancelled" },
-  changes_requested: {
-    key: "training.outcomes.changesRequested",
-    defaultValue: "Changes requested",
-  },
-  expired: { key: "training.outcomes.expired", defaultValue: "Expired" },
-  failed: { key: "training.outcomes.failed", defaultValue: "Failed" },
-  rejected: { key: "training.outcomes.rejected", defaultValue: "Rejected" },
-  revision_requested: {
-    key: "training.outcomes.revisionRequested",
-    defaultValue: "Revision requested",
-  },
-};
-
-const COMMENT_AUTHOR_LABELS: Record<
-  string,
-  { key: string; defaultValue: string }
-> = {
-  agent: { key: "training.thread.authors.agent", defaultValue: "Agent" },
-  system: { key: "training.thread.authors.system", defaultValue: "System" },
-  user: { key: "training.thread.authors.user", defaultValue: "User" },
-};
 
 function stringValue(record: SnapshotRecord | undefined, ...keys: string[]) {
   for (const key of keys) {
@@ -110,49 +68,22 @@ export function partitionTrainingThread(
   return { included: snapshotComments, excluded };
 }
 
-function decisionTitle(
-  example: DecisionTrainingExample,
-  t: TrainingT,
-  issueTitle?: string,
-) {
+function decisionTitle(example: DecisionTrainingExample, issueTitle?: string) {
   const payload = example.snapshot.decision.payload;
   return (
     stringValue(payload, "title", "prompt", "summary", "action") ??
     issueTitle ??
-    t("training.common.untitledExample", {
-      defaultValue: "Decision training example",
-    })
+    "Decision training example"
   );
 }
 
-function outcomeLabel(value: string | null, t: TrainingT) {
-  if (!value)
-    return t("training.outcomes.pendingAtCapture", {
-      defaultValue: "Pending at capture",
-    });
-  const label = OUTCOME_LABELS[value];
-  return label
-    ? t(label.key, { defaultValue: label.defaultValue })
-    : value.replaceAll("_", " ");
+function outcomeLabel(value: string | null) {
+  if (!value) return "Pending at capture";
+  return value.replaceAll("_", " ");
 }
 
-function authorLabel(id: string, t: TrainingT) {
-  return id === "local-board"
-    ? t("training.authors.localBoard", { defaultValue: "Local board" })
-    : id.slice(0, 8);
-}
-
-function sourceKindLabel(kind: DecisionTrainingSourceKind, t: TrainingT) {
-  const label = SOURCE_KIND_LABELS[kind];
-  return t(label.key, { defaultValue: label.defaultValue });
-}
-
-function commentAuthorLabel(comment: SnapshotRecord, t: TrainingT) {
-  const value = stringValue(comment, "authorType", "author_type");
-  if (!value)
-    return t("training.thread.authors.comment", { defaultValue: "Comment" });
-  const label = COMMENT_AUTHOR_LABELS[value];
-  return label ? t(label.key, { defaultValue: label.defaultValue }) : value;
+function authorLabel(id: string) {
+  return id === "local-board" ? "Local board" : id.slice(0, 8);
 }
 
 function downloadExport(companyId: string) {
@@ -166,8 +97,8 @@ function downloadExport(companyId: string) {
 }
 
 export function TrainingLibrary() {
-  const navigate = useNavigate();
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const [q, setQ] = useState("");
@@ -178,19 +109,10 @@ export function TrainingLibrary() {
   useEffect(
     () =>
       setBreadcrumbs([
-        {
-          label: t("training.breadcrumbs.decisions", {
-            defaultValue: "Decisions",
-          }),
-          href: "/decisions",
-        },
-        {
-          label: t("training.breadcrumbs.training", {
-            defaultValue: "Training",
-          }),
-        },
+        { label: "Decisions", href: "/decisions" },
+        { label: "Training" },
       ]),
-    [setBreadcrumbs, t],
+    [setBreadcrumbs],
   );
 
   const filters = useMemo<DecisionTrainingFilters>(
@@ -212,8 +134,11 @@ export function TrainingLibrary() {
     enabled: Boolean(selectedCompanyId),
   });
   const projectsQuery = useQuery({
-    queryKey: ["projects", selectedCompanyId],
-    queryFn: () => projectsApi.list(selectedCompanyId!),
+    queryKey: queryKeys.projects.list(selectedCompanyId ?? "", {
+      includeArchived: true,
+    }),
+    queryFn: () =>
+      projectsApi.list(selectedCompanyId!, { includeArchived: true }),
     enabled: Boolean(selectedCompanyId),
   });
   const records = recordsQuery.data ?? [];
@@ -229,14 +154,9 @@ export function TrainingLibrary() {
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-xl font-bold">
-            {t("training.library.title", { defaultValue: "Training examples" })}
-          </h1>
+          <h1 className="text-xl font-bold">{t("training.library.title")}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {t("training.library.description", {
-              defaultValue:
-                "Human decision traces with frozen state for future eval cases.",
-            })}
+            {t("training.library.description")}
           </p>
         </div>
         <Button
@@ -244,8 +164,7 @@ export function TrainingLibrary() {
           onClick={() => selectedCompanyId && downloadExport(selectedCompanyId)}
           disabled={!selectedCompanyId}
         >
-          <Download className="size-4" />
-          {t("training.actions.exportJsonl", { defaultValue: "Export JSONL" })}
+          <Download className="size-4" /> {t("training.actions.exportJsonl")}
         </Button>
       </header>
 
@@ -253,34 +172,20 @@ export function TrainingLibrary() {
         <div className="relative">
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            aria-label={t("training.filters.searchAria", {
-              defaultValue: "Search training examples",
-            })}
+            aria-label={t("training.filters.searchAria")}
             value={q}
             onChange={(event) => setQ(event.target.value)}
-            placeholder={t("training.filters.searchPlaceholder", {
-              defaultValue: "Search notes, tasks…",
-            })}
+            placeholder={t("training.filters.searchPlaceholder")}
             className="pl-9"
           />
         </div>
         <Select value={project} onValueChange={setProject}>
-          <SelectTrigger
-            aria-label={t("training.filters.projectAria", {
-              defaultValue: "Filter by project",
-            })}
-          >
-            <SelectValue
-              placeholder={t("training.filters.projectAll", {
-                defaultValue: "Project: All",
-              })}
-            />
+          <SelectTrigger aria-label={t("training.filters.projectAria")}>
+            <SelectValue placeholder={t("training.filters.projectAll")} />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">
-              {t("training.filters.projectAll", {
-                defaultValue: "Project: All",
-              })}
+              {t("training.filters.projectAll")}
             </SelectItem>
             {projects.map((item: Project) => (
               <SelectItem key={item.id} value={item.id}>
@@ -290,53 +195,33 @@ export function TrainingLibrary() {
           </SelectContent>
         </Select>
         <Select value={kind} onValueChange={setKind}>
-          <SelectTrigger
-            aria-label={t("training.filters.kindAria", {
-              defaultValue: "Filter by decision kind",
-            })}
-          >
-            <SelectValue
-              placeholder={t("training.filters.kindAll", {
-                defaultValue: "Decision kind: All",
-              })}
-            />
+          <SelectTrigger aria-label={t("training.filters.kindAria")}>
+            <SelectValue placeholder={t("training.filters.kindAll")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">
-              {t("training.filters.kindAll", {
-                defaultValue: "Decision kind: All",
-              })}
-            </SelectItem>
+            <SelectItem value="all">{t("training.filters.kindAll")}</SelectItem>
             <SelectItem value="interaction">
-              {sourceKindLabel("interaction", t)}
+              {t("training.sourceKinds.interaction")}
             </SelectItem>
             <SelectItem value="approval">
-              {sourceKindLabel("approval", t)}
+              {t("training.sourceKinds.approval")}
             </SelectItem>
             <SelectItem value="execution_decision">
-              {sourceKindLabel("execution_decision", t)}
+              {t("training.sourceKinds.executionDecision")}
             </SelectItem>
           </SelectContent>
         </Select>
         <Select value={author} onValueChange={setAuthor}>
-          <SelectTrigger
-            aria-label={t("training.filters.authorAria", {
-              defaultValue: "Filter by author",
-            })}
-          >
-            <SelectValue
-              placeholder={t("training.filters.authorAll", {
-                defaultValue: "Author: All",
-              })}
-            />
+          <SelectTrigger aria-label={t("training.filters.authorAria")}>
+            <SelectValue placeholder={t("training.filters.authorAll")} />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">
-              {t("training.filters.authorAll", { defaultValue: "Author: All" })}
+              {t("training.filters.authorAll")}
             </SelectItem>
             {authors.map((userId) => (
               <SelectItem key={userId} value={userId}>
-                {authorLabel(userId, t)}
+                {authorLabel(userId)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -345,109 +230,66 @@ export function TrainingLibrary() {
 
       {recordsQuery.isLoading ? (
         <p className="text-sm text-muted-foreground">
-          {t("training.library.loading", {
-            defaultValue: "Loading training examples…",
-          })}
+          {t("training.library.loading")}
         </p>
       ) : null}
       {recordsQuery.isError ? (
         <p className="text-sm text-destructive">
-          {t("training.library.loadError", {
-            defaultValue: "Could not load training examples.",
-          })}
+          {t("training.library.loadError")}
         </p>
       ) : null}
       {!recordsQuery.isLoading &&
       !recordsQuery.isError &&
       records.length === 0 ? (
         <p className="py-12 text-center text-sm text-muted-foreground">
-          {t("training.library.empty", {
-            defaultValue: "No training examples match these filters.",
-          })}
+          {t("training.library.empty")}
         </p>
       ) : null}
 
       <div className="overflow-hidden rounded-lg border border-border">
         <div className="hidden grid-cols-6 gap-4 bg-muted/40 px-4 py-2 text-xs font-medium text-muted-foreground md:grid">
-          <span>
-            {t("training.columns.decision", { defaultValue: "Decision" })}
-          </span>
-          <span>
-            {t("training.columns.outcome", { defaultValue: "Outcome" })}
-          </span>
-          <span>
-            {t("training.columns.snapshot", { defaultValue: "Snapshot" })}
-          </span>
-          <span>
-            {t("training.columns.author", { defaultValue: "Author" })}
-          </span>
-          <span>
-            {t("training.columns.created", { defaultValue: "Created" })}
-          </span>
-          <span>
-            {t("training.columns.edited", { defaultValue: "Edited" })}
-          </span>
+          <span>{t("training.columns.decision")}</span>
+          <span>{t("training.columns.outcome")}</span>
+          <span>{t("training.columns.snapshot")}</span>
+          <span>{t("training.columns.author")}</span>
+          <span>{t("training.columns.created")}</span>
+          <span>{t("training.columns.edited")}</span>
         </div>
         {records.map(({ example, issueIdentifier, issueTitle }) => {
           const issue = example.snapshot.issue;
           const projectName =
             projectNames.get(
               stringValue(issue, "projectId", "project_id") ?? "",
-            ) ?? t("training.common.noProject", { defaultValue: "No project" });
+            ) ?? "No project";
           const edited = example.updatedAt !== example.createdAt;
           return (
             <button
               key={example.id}
               type="button"
-              onClick={() => navigate(`/training/${example.id}`)}
+              onClick={() => navigate(decisionTrainingHref(example.id))}
               className="grid w-full gap-3 border-t border-border px-4 py-4 text-left transition-colors first:border-t-0 hover:bg-muted/30 md:grid-cols-6 md:items-center md:gap-4"
             >
               <span className="min-w-0">
                 <span className="block truncate text-sm font-medium">
-                  {decisionTitle(example, t, issueTitle)}
+                  {decisionTitle(example, issueTitle)}
                 </span>
                 <span className="mt-1 block truncate text-xs text-muted-foreground">
                   {issueIdentifier} · {projectName} ·{" "}
-                  {sourceKindLabel(example.sourceKind, t)}
+                  {example.sourceKind.replaceAll("_", " ")}
                 </span>
               </span>
               <span className="text-sm capitalize">
-                {outcomeLabel(example.decisionOutcome, t)}
+                {outcomeLabel(example.decisionOutcome)}
               </span>
               <span className="font-mono text-xs text-muted-foreground">
-                {t(
-                  example.snapshot.cutoff.commentCount === 1
-                    ? "training.snapshot.comments.one"
-                    : "training.snapshot.comments.other",
-                  {
-                    defaultValue:
-                      example.snapshot.cutoff.commentCount === 1
-                        ? "{{count}} comment"
-                        : "{{count}} comments",
-                    count: example.snapshot.cutoff.commentCount,
-                  },
-                )}
-                {" · "}
-                {t(
-                  example.snapshot.runs.length === 1
-                    ? "training.snapshot.runs.one"
-                    : "training.snapshot.runs.other",
-                  {
-                    defaultValue:
-                      example.snapshot.runs.length === 1
-                        ? "{{count}} run"
-                        : "{{count}} runs",
-                    count: example.snapshot.runs.length,
-                  },
-                )}
-                {" · "}
-                {example.snapshot.code.commitSha?.slice(0, 9) ??
-                  t("training.snapshot.noRepository", {
-                    defaultValue: "no repo",
-                  })}
+                {example.snapshot.cutoff.commentCount}{" "}
+                {t("training.snapshot.commentsSuffix")}{" "}
+                {example.snapshot.runs.length}{" "}
+                {t("training.snapshot.runsSuffix")}{" "}
+                {example.snapshot.code.commitSha?.slice(0, 9) ?? "no repo"}
               </span>
               <span className="text-sm">
-                {authorLabel(example.createdByUserId, t)}
+                {authorLabel(example.createdByUserId)}
               </span>
               <span className="text-xs text-muted-foreground">
                 {formatDate(example.createdAt)}
@@ -484,7 +326,24 @@ export function TrainingThreadPanel({
     liveComments,
     example.cutoffAt,
   );
-  const renderComment = (comment: SnapshotRecord, ghosted = false) => (
+  const renderComment = (comment: SnapshotRecord, ghosted = false) => {
+    const authorType = stringValue(comment, "authorType", "author_type");
+    const authorLabel = (() => {
+      switch (authorType) {
+        case "agent":
+          return t("training.thread.authors.agent", { defaultValue: "Agent" });
+        case "system":
+          return t("training.thread.authors.system", { defaultValue: "System" });
+        case "user":
+          return t("training.thread.authors.user", { defaultValue: "User" });
+        case null:
+          return t("training.thread.authors.comment", { defaultValue: "Comment" });
+        default:
+          return authorType;
+      }
+    })();
+
+    return (
     <div
       key={
         recordId(comment) ||
@@ -494,13 +353,11 @@ export function TrainingThreadPanel({
       className={cn("py-4", ghosted && "opacity-50")}
     >
       <div className="font-mono text-xs text-muted-foreground">
-        {commentAuthorLabel(comment, t)}
-        {" · "}
+        {authorLabel} ·{" "}
         {recordDate(comment)
           ? formatDateTime(recordDate(comment))
-          : t("training.thread.unknownTime", { defaultValue: "Unknown time" })}
-        {" · "}
-        {recordId(comment).slice(0, 10)}
+          : t("training.thread.unknownTime", { defaultValue: "Unknown time" })}{" "}
+        · {recordId(comment).slice(0, 10)}
       </div>
       <p className="mt-2 whitespace-pre-wrap text-sm">
         {stringValue(comment, "body") ?? ""}
@@ -513,7 +370,8 @@ export function TrainingThreadPanel({
         </p>
       ) : null}
     </div>
-  );
+    );
+  };
   return (
     <div className="divide-y divide-border">
       {included.map((comment) => renderComment(comment))}
@@ -535,10 +393,10 @@ export function TrainingThreadPanel({
 }
 
 export function TrainingInspector() {
+  const { t } = useTranslation();
   const { id = "" } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { t } = useTranslation();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { pushToast } = useToastActions();
   const [notes, setNotes] = useState("");
@@ -560,25 +418,11 @@ export function TrainingInspector() {
   useEffect(
     () =>
       setBreadcrumbs([
-        {
-          label: t("training.breadcrumbs.decisions", {
-            defaultValue: "Decisions",
-          }),
-          href: "/decisions",
-        },
-        {
-          label: t("training.breadcrumbs.training", {
-            defaultValue: "Training",
-          }),
-          href: "/training",
-        },
-        {
-          label: example
-            ? decisionTitle(example, t)
-            : t("training.breadcrumbs.example", { defaultValue: "Example" }),
-        },
+        { label: "Decisions", href: "/decisions" },
+        { label: "Training", href: decisionTrainingHref() },
+        { label: example ? decisionTitle(example) : "Example" },
       ]),
-    [example, setBreadcrumbs, t],
+    [example, setBreadcrumbs],
   );
   const saveMutation = useMutation({
     mutationFn: () => decisionTrainingApi.updateNotes(id, notes.trim()),
@@ -587,57 +431,36 @@ export function TrainingInspector() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.decisionTraining.list(updated.companyId),
       });
-      pushToast({
-        title: t("training.toasts.notesUpdated", {
-          defaultValue: "Notes updated",
-        }),
-        tone: "success",
-      });
+      pushToast({ title: "Notes updated", tone: "success" });
       setEditing(false);
     },
     onError: (error) => {
       pushToast({
-        title: t("training.toasts.notesUpdateError", {
-          defaultValue: "Could not update notes",
-        }),
-        body:
-          error instanceof Error
-            ? error.message
-            : t("training.toasts.tryAgain", {
-                defaultValue: "Please try again.",
-              }),
+        title: "Could not update notes",
+        body: error instanceof Error ? error.message : "Please try again.",
         tone: "error",
       });
     },
   });
 
-  if (recordQuery.isLoading) {
+  if (recordQuery.isLoading)
     return (
       <p className="p-6 text-sm text-muted-foreground">
-        {t("training.inspector.loading", {
-          defaultValue: "Loading training example…",
-        })}
+        {t("training.inspector.loading")}
       </p>
     );
-  }
-  if (recordQuery.isError) {
+  if (recordQuery.isError)
     return (
       <p className="p-6 text-sm text-destructive">
-        {t("training.inspector.loadError", {
-          defaultValue: "Could not load training example.",
-        })}
+        {t("training.inspector.loadError")}
       </p>
     );
-  }
-  if (!example) {
+  if (!example)
     return (
       <p className="p-6 text-sm text-destructive">
-        {t("training.inspector.notFound", {
-          defaultValue: "Training example not found.",
-        })}
+        {t("training.inspector.notFound")}
       </p>
     );
-  }
   const issueIdentifier =
     stringValue(example.snapshot.issue, "identifier") ??
     example.issueId.slice(0, 8);
@@ -649,31 +472,25 @@ export function TrainingInspector() {
             variant="ghost"
             size="sm"
             className="mb-2 -ml-2"
-            onClick={() => navigate("/training")}
+            onClick={() => navigate(decisionTrainingHref())}
           >
-            <ArrowLeft className="size-4" />
-            {t("training.inspector.backToTraining", {
-              defaultValue: "Training",
-            })}
+            <ArrowLeft className="size-4" />{" "}
+            {t("training.inspector.backToTraining")}
           </Button>
           <h1 className="truncate text-xl font-bold">
-            {decisionTitle(example, t)}
+            {decisionTitle(example)}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {t("training.inspector.summary", {
-              defaultValue: "{{identifier}} · {{outcome}} · cutoff {{date}}",
-              identifier: issueIdentifier,
-              outcome: outcomeLabel(example.decisionOutcome, t),
-              date: formatDateTime(example.cutoffAt),
-            })}
+            {issueIdentifier} · {outcomeLabel(example.decisionOutcome)}{" "}
+            {t("training.inspector.cutoffSuffix")}{" "}
+            {formatDateTime(example.cutoffAt)}
           </p>
         </div>
         <Button
           variant="outline"
           onClick={() => downloadExport(example.companyId)}
         >
-          <Download className="size-4" />
-          {t("training.actions.exportJsonl", { defaultValue: "Export JSONL" })}
+          <Download className="size-4" /> {t("training.actions.exportJsonl")}
         </Button>
       </header>
       <div className="grid gap-8 lg:grid-cols-2">
@@ -681,15 +498,12 @@ export function TrainingInspector() {
           <div className="mb-3 flex items-center justify-between">
             <div>
               <h2 className="text-sm font-semibold">
-                {t("training.inspector.notesTitle", {
-                  defaultValue: "Training notes",
-                })}
+                {t("training.inspector.notesInputAria")}
               </h2>
               <p className="mt-1 text-xs text-muted-foreground">
-                {t("training.inspector.notesMeta", {
-                  defaultValue: "Last edited {{date}} · edits are versioned",
-                  date: formatDateTime(example.updatedAt),
-                })}
+                {t("training.inspector.lastEdited")}{" "}
+                {formatDateTime(example.updatedAt)}{" "}
+                {t("training.inspector.editsVersioned")}
               </p>
             </div>
             {!editing ? (
@@ -698,16 +512,13 @@ export function TrainingInspector() {
                 size="sm"
                 onClick={() => setEditing(true)}
               >
-                {t("training.actions.edit", { defaultValue: "Edit" })}
+                {t("training.actions.edit")}
               </Button>
             ) : null}
           </div>
           {editing ? (
             <div className="space-y-3">
               <Textarea
-                aria-label={t("training.inspector.notesInputAria", {
-                  defaultValue: "Training notes",
-                })}
                 value={notes}
                 onChange={(event) => setNotes(event.target.value)}
                 className="min-h-72"
@@ -720,7 +531,7 @@ export function TrainingInspector() {
                     setEditing(false);
                   }}
                 >
-                  {t("training.actions.cancel", { defaultValue: "Cancel" })}
+                  {t("training.actions.cancel")}
                 </Button>
                 <Button
                   onClick={() => saveMutation.mutate()}
@@ -728,30 +539,23 @@ export function TrainingInspector() {
                     saveMutation.isPending || notes.trim() === example.notes
                   }
                 >
-                  {t("training.actions.saveNotes", {
-                    defaultValue: "Save notes",
-                  })}
+                  {t("training.actions.saveNotes")}
                 </Button>
               </div>
             </div>
           ) : (
             <p className="whitespace-pre-wrap text-sm leading-relaxed">
-              {example.notes ||
-                t("training.inspector.noNotes", {
-                  defaultValue: "No notes recorded.",
-                })}
+              {example.notes || "No notes recorded."}
             </p>
           )}
         </section>
         <section className="min-w-0">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-sm font-semibold">
-              {t("training.inspector.frozenState", {
-                defaultValue: "Frozen state",
-              })}
+              {t("training.inspector.frozenState")}
             </h2>
             <span className="font-mono text-xs text-muted-foreground">
-              {t("training.inspector.readOnly", { defaultValue: "read-only" })}
+              {t("training.inspector.readOnly")}
             </span>
           </div>
           <Tabs defaultValue="thread">
@@ -760,19 +564,15 @@ export function TrainingInspector() {
               className="w-full justify-start overflow-x-auto"
             >
               <TabsTrigger value="thread">
-                {t("training.tabs.thread", { defaultValue: "Thread" })}
+                {t("training.tabs.thread")}
               </TabsTrigger>
               <TabsTrigger value="issue">
-                {t("training.tabs.issue", { defaultValue: "Issue" })}
+                {t("training.tabs.issue")}
               </TabsTrigger>
-              <TabsTrigger value="runs">
-                {t("training.tabs.runs", { defaultValue: "Runs" })}
-              </TabsTrigger>
-              <TabsTrigger value="code">
-                {t("training.tabs.code", { defaultValue: "Code" })}
-              </TabsTrigger>
+              <TabsTrigger value="runs">{t("training.tabs.runs")}</TabsTrigger>
+              <TabsTrigger value="code">{t("training.tabs.code")}</TabsTrigger>
               <TabsTrigger value="decision">
-                {t("training.tabs.decision", { defaultValue: "Decision" })}
+                {t("training.columns.decision")}
               </TabsTrigger>
             </TabsList>
             <TabsContent value="thread">

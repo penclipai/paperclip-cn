@@ -1,6 +1,10 @@
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import type { ExternalObjectSummary, Issue, IssueRecoveryAction } from "@penclipai/shared";
+import type {
+  ExternalObjectSummary,
+  Issue,
+  IssueRecoveryAction,
+} from "@penclipai/shared";
 import { Link } from "@/lib/router";
 import { Archive, Eye, Flag } from "lucide-react";
 import {
@@ -129,7 +133,9 @@ export function IssueRow({
       />
     </button>
   );
-  const selectedStatusClass = selected ? "!text-muted-foreground !border-muted-foreground" : undefined;
+  const selectedStatusClass = selected
+    ? "!text-muted-foreground !border-muted-foreground"
+    : undefined;
   const detailState = withIssueDetailHeaderSeed(issueLinkState, issue);
   const productivityReview = issue.productivityReview ?? null;
   const productivityReviewIndicator = productivityReview ? (
@@ -142,25 +148,34 @@ export function IssueRow({
         defaultValue: "Productivity review: {{label}}",
         label: productivityReviewTriggerLabel(productivityReview.trigger, t),
       })}
-      aria-label={t("productivityReview.openTitle", { defaultValue: "Productivity review open" })}
+      aria-label={t("productivityReview.openTitle", {
+        defaultValue: "Productivity review open",
+      })}
     >
       <Eye className="h-2.5 w-2.5" aria-hidden />
     </span>
   ) : null;
   const hasChecklistStep = checklistStepNumber !== null;
   const checklistStep = hasChecklistStep ? (
-    <span className="shrink-0 font-mono text-xs text-muted-foreground" aria-hidden="true">
+    <span
+      className="shrink-0 font-mono text-xs text-muted-foreground"
+      aria-hidden="true"
+    >
       {checklistStepNumber}.
     </span>
   ) : null;
   const recoveryAction = issue.activeRecoveryAction ?? null;
-  const recoveryIndicator = recoveryAction ? renderRecoveryChip(recoveryAction, selected) : null;
+  const recoveryIndicator = recoveryAction
+    ? renderRecoveryChip(recoveryAction, selected)
+    : null;
   const parkedBlockerIndicator = hasAssignedBacklogBlocker(issue.blockedBy) ? (
-    <Badge variant="outline"
+    <Badge
+      variant="outline"
       data-testid="issue-row-parked-blocker"
       className="ml-1.5 inline-flex shrink-0 items-center gap-0.5 rounded-full border border-amber-500/60 bg-amber-500/15 px-2 py-0.5 text-(length:--text-nano) font-medium text-amber-700 dark:text-amber-300"
       title={t("issueBlocked.parkedWorkTitle", {
-        defaultValue: "Blocked by parked work - at least one assigned blocker is in backlog and will not wake its assignee.",
+        defaultValue:
+          "Blocked by parked work - at least one assigned blocker is in backlog and will not wake its assignee.",
       })}
     >
       <Flag className="h-2.5 w-2.5" aria-hidden />
@@ -169,36 +184,62 @@ export function IssueRow({
   ) : null;
 
   return (
-    <Link
-      to={createIssueDetailPath(issuePathId)}
-      state={detailState}
-      disableIssueQuicklook
-      issuePrefetch={issue}
-      data-inbox-issue-link
-      id={checklistRowId}
-      aria-current={checklistCurrentStep ? "step" : undefined}
-      onClickCapture={() => rememberIssueDetailLocationState(issuePathId, detailState)}
+    <div
       onMouseEnter={onMouseEnter}
       className={cn(
         // No color transition on the row band: hover/selection must snap
         // instantly. A fade (transition-colors) leaves a trail of fading bands
         // when scrubbing the mouse fast across the list.
         "group relative flex items-start gap-2 rounded-lg py-2.5 pl-2 pr-3 text-sm no-underline text-inherit sm:items-center sm:py-2 sm:pl-1",
-        !hideDivider && "border-b border-border last:border-b-0",
-        selected ? "hover:bg-transparent" : "hover:bg-accent/50",
-        checklistCurrentStep ? "bg-primary/5" : null,
+        "[&_button]:relative [&_button]:z-10",
         className,
       )}
     >
+      <Link
+        to={createIssueDetailPath(issuePathId)}
+        state={detailState}
+        disableIssueQuicklook
+        issuePrefetch={issue}
+        data-inbox-issue-link
+        id={checklistRowId}
+        aria-current={checklistCurrentStep ? "step" : undefined}
+        onClickCapture={() =>
+          rememberIssueDetailLocationState(issuePathId, detailState)
+        }
+        className={cn(
+          "absolute inset-0 rounded-lg no-underline text-inherit focus-visible:z-10 focus-visible:outline-none focus-visible:ring-(length:--rad-3) focus-visible:ring-ring",
+          !hideDivider && "border-b border-border last:border-b-0",
+          selected ? "hover:bg-transparent" : "hover:bg-accent/50",
+          checklistCurrentStep ? "bg-primary/5" : null,
+          className,
+        )}
+      >
+        <span className="sr-only">
+          {t("issueRow.open")} {identifier}: {issue.title}
+        </span>
+      </Link>
       <span className="flex shrink-0 items-center gap-1 pt-px sm:hidden">
-        {mobileLeading ?? <StatusIcon status={issue.status} blockerAttention={issue.blockerAttention} size="md" className={selectedStatusClass} />}
+        {mobileLeading ?? (
+          <StatusIcon
+            status={issue.status}
+            blockerAttention={issue.blockerAttention}
+            size="md"
+            className={selectedStatusClass}
+          />
+        )}
         {productivityReviewIndicator}
         {parkedBlockerIndicator}
         {recoveryIndicator}
       </span>
       <span className="flex min-w-0 flex-1 flex-col gap-1 sm:contents">
-        <span className={cn("line-clamp-2 text-sm sm:order-2 sm:min-w-0 sm:flex-1 sm:truncate sm:line-clamp-none", titleClassName)}>
-          {issue.title}{titleSuffix}
+        <span
+          className={cn(
+            "line-clamp-2 text-sm sm:order-2 sm:min-w-0 sm:flex-1 sm:truncate sm:line-clamp-none",
+            titleClassName,
+          )}
+        >
+          {issue.title}
+          {titleSuffix}
         </span>
         {checklistDependencyChips ? (
           <span className="flex flex-wrap gap-1 sm:order-3 sm:ml-(--sz-calc-13)">
@@ -221,38 +262,43 @@ export function IssueRow({
           ) : null}
           {treeGuides > 0
             ? Array.from({ length: treeGuides }, (_, level) => {
-              // The innermost guide lands on THIS row's own chevron column; if
-              // the row has a chevron, break the line around it so it isn't
-              // crossed out.
-              const gapForChevron = chevronInGuide && level === treeGuides - 1;
-              return (
-              // Tree guide: occupies the same flex slot as the parent's
-              // chevron column so the line lands under the parent's status
-              // column; stretched past the row padding so consecutive rows
-              // read as one continuous line.
-              <span key={`guide-${level}`} aria-hidden="true" className="relative hidden w-4 shrink-0 self-stretch sm:block">
-                {/* The connector drops from under the ancestor's STATUS icon,
+                // The innermost guide lands on THIS row's own chevron column; if
+                // the row has a chevron, break the line around it so it isn't
+                // crossed out.
+                const gapForChevron =
+                  chevronInGuide && level === treeGuides - 1;
+                return (
+                  // Tree guide: occupies the same flex slot as the parent's
+                  // chevron column so the line lands under the parent's status
+                  // column; stretched past the row padding so consecutive rows
+                  // read as one continuous line.
+                  <span
+                    key={`guide-${level}`}
+                    aria-hidden="true"
+                    className="relative hidden w-4 shrink-0 self-stretch sm:block"
+                  >
+                    {/* The connector drops from under the ancestor's STATUS icon,
                     not its chevron: the status column sits one level (w-4 slot
                     + gap-2 = 2rem) right of this guide slot's left edge.
                     bg-background underlay: dark-mode --border is translucent,
                     so overlapping row segments would stack brighter without
                     an opaque base. */}
-                <span className="absolute -inset-y-3 left-8 w-px bg-background">
-                  {gapForChevron ? (
-                    // Two border segments centering a 14px (h-3.5) transparent
-                    // gap for the row's own chevron.
-                    <span className="absolute inset-0 flex flex-col">
-                      <span className="flex-1 bg-border" />
-                      <span className="h-3.5 shrink-0" />
-                      <span className="flex-1 bg-border" />
+                    <span className="absolute -inset-y-3 left-8 w-px bg-background">
+                      {gapForChevron ? (
+                        // Two border segments centering a 14px (h-3.5) transparent
+                        // gap for the row's own chevron.
+                        <span className="absolute inset-0 flex flex-col">
+                          <span className="flex-1 bg-border" />
+                          <span className="h-3.5 shrink-0" />
+                          <span className="flex-1 bg-border" />
+                        </span>
+                      ) : (
+                        <span className="absolute inset-0 bg-border" />
+                      )}
                     </span>
-                  ) : (
-                    <span className="absolute inset-0 bg-border" />
-                  )}
-                </span>
-              </span>
-              );
-            })
+                  </span>
+                );
+              })
             : null}
           {desktopLeadingSpacer ? (
             <span className="hidden w-3.5 shrink-0 sm:block" />
@@ -260,7 +306,12 @@ export function IssueRow({
           {desktopMetaLeading ?? (
             <>
               <span className="hidden shrink-0 items-center gap-1 sm:inline-flex">
-                <StatusIcon status={issue.status} blockerAttention={issue.blockerAttention} size="md" className={selectedStatusClass} />
+                <StatusIcon
+                  status={issue.status}
+                  blockerAttention={issue.blockerAttention}
+                  size="md"
+                  className={selectedStatusClass}
+                />
                 {productivityReviewIndicator}
               </span>
               {checklistStep}
@@ -273,22 +324,32 @@ export function IssueRow({
           )}
           {mobileMeta ? (
             <>
-              <span className="text-xs text-muted-foreground sm:hidden" aria-hidden="true">
+              <span
+                className="text-xs text-muted-foreground sm:hidden"
+                aria-hidden="true"
+              >
                 &middot;
               </span>
-              <span className="text-xs text-muted-foreground sm:hidden">{mobileMeta}</span>
+              <span className="text-xs text-muted-foreground sm:hidden">
+                {mobileMeta}
+              </span>
             </>
           ) : null}
         </span>
       </span>
-      {(onArchive || desktopTrailing || trailingMeta || externalObjectSummary) ? (
+      {onArchive || desktopTrailing || trailingMeta || externalObjectSummary ? (
         <span className="ml-auto hidden shrink-0 items-center gap-2 sm:order-3 sm:flex sm:gap-3">
           {externalObjectSummary ? (
-            <ExternalObjectStatusSummary summary={externalObjectSummary} compact />
+            <ExternalObjectStatusSummary
+              summary={externalObjectSummary}
+              compact
+            />
           ) : null}
           {desktopTrailing}
           {trailingMeta ? (
-            <span className="text-xs text-muted-foreground">{trailingMeta}</span>
+            <span className="text-xs text-muted-foreground">
+              {trailingMeta}
+            </span>
           ) : null}
         </span>
       ) : null}
@@ -319,7 +380,9 @@ export function IssueRow({
               <span
                 className={cn(
                   "block h-2 w-2 rounded-full transition-opacity duration-300",
-                  selected ? "bg-muted-foreground/70" : "bg-blue-600 dark:bg-blue-400",
+                  selected
+                    ? "bg-muted-foreground/70"
+                    : "bg-blue-600 dark:bg-blue-400",
                   unreadState === "fading" ? "opacity-0" : "opacity-100",
                 )}
               />
@@ -341,18 +404,29 @@ export function IssueRow({
               }}
               disabled={archiveDisabled}
               className="inline-flex h-4 w-4 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100 disabled:pointer-events-none disabled:opacity-30"
-              aria-label={t("Dismiss from inbox", { defaultValue: "Dismiss from inbox" })}
+              aria-label={t("Dismiss from inbox", {
+                defaultValue: "Dismiss from inbox",
+              })}
             >
               <Archive className="h-3.5 w-3.5" />
-              <span className="sr-only">{t("Dismiss from inbox", { defaultValue: "Dismiss from inbox" })}</span>
+              <span className="sr-only">
+                {t("Dismiss from inbox", {
+                  defaultValue: "Dismiss from inbox",
+                })}
+              </span>
             </button>
           ) : null}
           {externalObjectSummary ? (
-            <ExternalObjectStatusSummary summary={externalObjectSummary} compact />
+            <ExternalObjectStatusSummary
+              summary={externalObjectSummary}
+              compact
+            />
           ) : null}
           {desktopTrailing}
           {trailingMeta ? (
-            <span className="text-xs text-muted-foreground">{trailingMeta}</span>
+            <span className="text-xs text-muted-foreground">
+              {trailingMeta}
+            </span>
           ) : null}
         </span>
       ) : null}
@@ -364,18 +438,22 @@ export function IssueRow({
           {unreadDotButton}
         </span>
       ) : null}
-    </Link>
+    </div>
   );
 }
 
-function renderRecoveryChip(action: IssueRecoveryAction, selected: boolean): ReactNode {
+function renderRecoveryChip(
+  action: IssueRecoveryAction,
+  selected: boolean,
+): ReactNode {
   const state = deriveActiveRecoveryDisplayState(action);
   if (!state) return null;
   const tone = RECOVERY_CHIP_DEFAULT_TONE[state];
   const Icon = tone.icon;
   const label = recoveryChipLabel(state, action.kind);
   return (
-    <Badge variant="outline"
+    <Badge
+      variant="outline"
       data-testid="issue-row-recovery-indicator"
       data-recovery-state={state}
       data-recovery-kind={action.kind}

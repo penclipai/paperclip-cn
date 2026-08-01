@@ -1,12 +1,29 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
+import {
+  Fragment,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowUpDown, Check, CheckCircle2, GraduationCap, Inbox, Layers, ListFilter } from "lucide-react";
-import type { Agent, AttentionItem, AttentionSourceKind } from "@penclipai/shared";
+import {
+  ArrowUpDown,
+  Check,
+  CheckCircle2,
+  GraduationCap,
+  Inbox,
+  Layers,
+  ListFilter,
+} from "lucide-react";
+import type { Agent, AttentionItem, AttentionSubject } from "@penclipai/shared";
 import { useNavigate } from "@/lib/router";
 import { attentionApi } from "../api/attention";
 import { agentsApi } from "../api/agents";
 import { authApi } from "../api/auth";
+import { decisionsApi } from "../api/decisions";
 import { useCompany } from "../context/CompanyContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { useToastActions } from "../context/ToastContext";
@@ -37,43 +54,30 @@ import {
   type AttentionGroupBy,
   type AttentionSortOrder,
 } from "../lib/attention";
+import { decisionTrainingHref } from "../lib/decisionTraining";
 import { cn } from "../lib/utils";
-import { hasBlockingShortcutDialog, resolveAttentionQueueKeyAction } from "../lib/keyboardShortcuts";
+import {
+  hasBlockingShortcutDialog,
+  resolveAttentionQueueKeyAction,
+} from "../lib/keyboardShortcuts";
 import { PageSkeleton } from "../components/PageSkeleton";
 import { AttentionQueueRow } from "../components/AttentionQueueRow";
+import { DecisionResolver } from "../components/DecisionResolver";
 import { DecisionTrainingDrawer } from "../components/DecisionTrainingDrawer";
 import { IssueGroupHeader } from "../components/IssueGroupHeader";
 import { Button } from "../components/ui/button";
 import { Checkbox } from "../components/ui/checkbox";
-import { Popover, PopoverContent, PopoverTrigger } from "../components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "../components/ui/popover";
 
-const SEVERITY_LABELS: Record<string, { key: string; defaultValue: string }> = {
-  critical: { key: "whatNeedsMe.severity.critical", defaultValue: "Critical" },
-  high: { key: "whatNeedsMe.severity.high", defaultValue: "High" },
-  medium: { key: "whatNeedsMe.severity.medium", defaultValue: "Medium" },
-  low: { key: "whatNeedsMe.severity.low", defaultValue: "Low" },
-};
-
-const SOURCE_KIND_LABELS: Record<AttentionSourceKind, { key: string; defaultValue: string }> = {
-  approval: { key: "whatNeedsMe.sourceKinds.approval", defaultValue: "Approval" },
-  issue_thread_interaction: {
-    key: "whatNeedsMe.sourceKinds.issueThreadInteraction",
-    defaultValue: "Decision requested",
-  },
-  join_request: { key: "whatNeedsMe.sourceKinds.joinRequest", defaultValue: "Join request" },
-  recovery_action: { key: "whatNeedsMe.sourceKinds.recoveryAction", defaultValue: "Recovery" },
-  productivity_review: {
-    key: "whatNeedsMe.sourceKinds.productivityReview",
-    defaultValue: "Productivity review",
-  },
-  blocker_attention: {
-    key: "whatNeedsMe.sourceKinds.blockerAttention",
-    defaultValue: "Blocked dependency",
-  },
-  review: { key: "whatNeedsMe.sourceKinds.review", defaultValue: "Review" },
-  failed_run: { key: "whatNeedsMe.sourceKinds.failedRun", defaultValue: "Failed run" },
-  budget_alert: { key: "whatNeedsMe.sourceKinds.budgetAlert", defaultValue: "Budget" },
-  agent_error_alert: { key: "whatNeedsMe.sourceKinds.agentErrorAlert", defaultValue: "Agent error" },
+const SEVERITY_LABELS: Record<string, string> = {
+  critical: "Critical",
+  high: "High",
+  medium: "Medium",
+  low: "Low",
 };
 
 /** Curtain rows never expand; module-level so memoized rows see one identity. */
@@ -87,13 +91,37 @@ const noopToggleExpand = () => {};
 const INITIAL_ATTENTION_ROW_RENDER_LIMIT = 50;
 const ATTENTION_ROW_RENDER_BATCH_SIZE = 100;
 const ATTENTION_SCROLL_LOAD_THRESHOLD_PX = 480;
+const DECISION_HISTORY_VISIBLE_LIMIT = 50;
+const DECISION_HISTORY_QUERY_LIMIT = DECISION_HISTORY_VISIBLE_LIMIT + 1;
+
+export function decisionHistoryQueryEnabled(
+  companyId: string | null | undefined,
+  open: boolean,
+) {
+  return Boolean(companyId && open);
+}
+
+export function decisionHistoryCount(count: number | undefined) {
+  if (count == null) return undefined;
+  return count > DECISION_HISTORY_VISIBLE_LIMIT
+    ? `${DECISION_HISTORY_VISIBLE_LIMIT}+`
+    : count;
+}
 
 function findScrollContainer(element: HTMLElement | null): HTMLElement | null {
   if (!element || typeof window === "undefined") return null;
   let current = element.parentElement;
-  while (current && current !== document.body && current !== document.documentElement) {
+  while (
+    current &&
+    current !== document.body &&
+    current !== document.documentElement
+  ) {
     const overflowY = window.getComputedStyle(current).overflowY;
-    if (overflowY === "auto" || overflowY === "scroll" || overflowY === "overlay") {
+    if (
+      overflowY === "auto" ||
+      overflowY === "scroll" ||
+      overflowY === "overlay"
+    ) {
       return current;
     }
     current = current.parentElement;
@@ -106,30 +134,52 @@ export function WhatNeedsMe() {
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [selectedAttentionId, setSelectedAttentionId] = useState<string | null>(null);
+  const [selectedAttentionId, setSelectedAttentionId] = useState<string | null>(
+    null,
+  );
+  // How the current selection was made. The selection ring is the keyboard
+  // cursor — it marks the row that j/k, e, x and s will act on — so it is drawn
+  // only for a keyboard-driven selection. Clicking used to set it too, which
+  // put a ring around the card for no reason the operator could act on, and
+  // only ever on rows with a See more/less toggle to click (the toggle is what
+  // set it), so the queue looked arbitrarily inconsistent. The selection itself
+  // still follows a click, so keyboard actions target the row you just used.
+  const [selectionFromKeyboard, setSelectionFromKeyboard] = useState(false);
   const [autoExpandDone, setAutoExpandDone] = useState(false);
   // Decision-training drawer target. `null` when closed.
   const [trainingItem, setTrainingItem] = useState<AttentionItem | null>(null);
 
   // Toolbar preferences (persisted to localStorage, Inbox pattern).
-  const [groupBy, setGroupBy] = useState<AttentionGroupBy>(() => loadAttentionGroupBy());
-  const [sortOrder, setSortOrder] = useState<AttentionSortOrder>(() => loadAttentionSortOrder());
-  const [filters, setFilters] = useState<AttentionFilterState>(() => defaultAttentionFilterState);
-  const [collapsedGroupKeys, setCollapsedGroupKeys] = useState<Set<string>>(() => new Set());
+  const [groupBy, setGroupBy] = useState<AttentionGroupBy>(() =>
+    loadAttentionGroupBy(),
+  );
+  const [sortOrder, setSortOrder] = useState<AttentionSortOrder>(() =>
+    loadAttentionSortOrder(),
+  );
+  const [filters, setFilters] = useState<AttentionFilterState>(
+    () => defaultAttentionFilterState,
+  );
+  const [collapsedGroupKeys, setCollapsedGroupKeys] = useState<Set<string>>(
+    () => new Set(),
+  );
   const [snoozedOpen, setSnoozedOpen] = useState(false);
   const [dismissedOpen, setDismissedOpen] = useState(false);
+  const [decidedOpen, setDecidedOpen] = useState(false);
+  const [expiredOpen, setExpiredOpen] = useState(false);
 
   // Optimistic hide/restore. Reset whenever a fresh feed lands (server truth).
   const [pendingHide, setPendingHide] = useState<Set<string>>(() => new Set());
-  const [pendingRestore, setPendingRestore] = useState<Set<string>>(() => new Set());
+  const [pendingRestore, setPendingRestore] = useState<Set<string>>(
+    () => new Set(),
+  );
 
   const { dismiss, snooze, restore } = useInboxDismissals(selectedCompanyId);
   const { pushToast } = useToastActions();
   const navigate = useNavigate();
 
   useEffect(() => {
-    setBreadcrumbs([{ label: t("whatNeedsMe.title", { defaultValue: "Decisions" }) }]);
-  }, [setBreadcrumbs, t]);
+    setBreadcrumbs([{ label: "Decisions" }]);
+  }, [setBreadcrumbs]);
 
   // Re-hydrate per-company preferences when the company changes.
   useEffect(() => {
@@ -146,7 +196,8 @@ export function WhatNeedsMe() {
     // (needed for the curtains) never inflate the badge count. Invalidating the
     // `["attention", companyId]` prefix still cascades to this query.
     queryKey: [...queryKeys.attention(selectedCompanyId!), "with-dismissed"],
-    queryFn: () => attentionApi.list(selectedCompanyId!, { includeDismissed: true }),
+    queryFn: () =>
+      attentionApi.list(selectedCompanyId!, { includeDismissed: true }),
     enabled: !!selectedCompanyId,
     refetchOnWindowFocus: true,
   });
@@ -156,6 +207,29 @@ export function WhatNeedsMe() {
     queryFn: () => agentsApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId,
   });
+
+  // Decision history — decided / expired decisions leave the open attention
+  // feed (entryRule = open only), so we fetch them directly for the curtains.
+  const { data: decidedDecisions, isLoading: decidedDecisionsLoading } =
+    useQuery({
+      queryKey: queryKeys.decisions.list(selectedCompanyId!, "decided"),
+      queryFn: () =>
+        decisionsApi.list(selectedCompanyId!, {
+          status: "decided",
+          limit: DECISION_HISTORY_QUERY_LIMIT,
+        }),
+      enabled: decisionHistoryQueryEnabled(selectedCompanyId, decidedOpen),
+    });
+  const { data: expiredDecisions, isLoading: expiredDecisionsLoading } =
+    useQuery({
+      queryKey: queryKeys.decisions.list(selectedCompanyId!, "expired"),
+      queryFn: () =>
+        decisionsApi.list(selectedCompanyId!, {
+          status: "expired",
+          limit: DECISION_HISTORY_QUERY_LIMIT,
+        }),
+      enabled: decisionHistoryQueryEnabled(selectedCompanyId, expiredOpen),
+    });
 
   const { data: session } = useQuery({
     queryKey: queryKeys.auth.session,
@@ -177,12 +251,15 @@ export function WhatNeedsMe() {
 
   const allItems = useMemo(() => feed?.items ?? [], [feed]);
 
-  const isServerHidden = (item: AttentionItem) => item.dismissal != null && item.dismissal.isActive;
+  const isServerHidden = (item: AttentionItem) =>
+    item.dismissal != null && item.dismissal.isActive;
 
   const activeItems = useMemo(
     () =>
       allItems.filter(
-        (item) => (!isServerHidden(item) || pendingRestore.has(item.id)) && !pendingHide.has(item.id),
+        (item) =>
+          (!isServerHidden(item) || pendingRestore.has(item.id)) &&
+          !pendingHide.has(item.id),
       ),
     [allItems, pendingHide, pendingRestore],
   );
@@ -190,7 +267,9 @@ export function WhatNeedsMe() {
     () =>
       allItems.filter(
         (item) =>
-          item.dismissal?.kind === "snooze" && item.dismissal.isActive && !pendingRestore.has(item.id),
+          item.dismissal?.kind === "snooze" &&
+          item.dismissal.isActive &&
+          !pendingRestore.has(item.id),
       ),
     [allItems, pendingRestore],
   );
@@ -198,12 +277,17 @@ export function WhatNeedsMe() {
     () =>
       allItems.filter(
         (item) =>
-          item.dismissal?.kind === "dismiss" && item.dismissal.isActive && !pendingRestore.has(item.id),
+          item.dismissal?.kind === "dismiss" &&
+          item.dismissal.isActive &&
+          !pendingRestore.has(item.id),
       ),
     [allItems, pendingRestore],
   );
 
-  const filterOptions = useMemo(() => buildAttentionFilterOptions(activeItems), [activeItems]);
+  const filterOptions = useMemo(
+    () => buildAttentionFilterOptions(activeItems),
+    [activeItems],
+  );
 
   // Filter → sort → group, all client-side so switching re-buckets without a refetch.
   const groups = useMemo(() => {
@@ -212,42 +296,25 @@ export function WhatNeedsMe() {
     return groupAttentionItems(sorted, groupBy);
   }, [activeItems, filters, sortOrder, groupBy]);
 
-  const localizedGroupLabel = useCallback((key: string, label: string | null): string | null => {
-    if (label === null) return null;
-    if (key.startsWith("date:")) {
-      const dateKey = key.slice("date:".length);
-      const labels: Record<string, { key: string; defaultValue: string }> = {
-        today: { key: "whatNeedsMe.dateGroups.today", defaultValue: "Today" },
-        yesterday: { key: "whatNeedsMe.dateGroups.yesterday", defaultValue: "Yesterday" },
-        this_week: { key: "whatNeedsMe.dateGroups.thisWeek", defaultValue: "This week" },
-        earlier: { key: "whatNeedsMe.dateGroups.earlier", defaultValue: "Earlier" },
-      };
-      const translated = labels[dateKey];
-      return translated ? t(translated.key, { defaultValue: translated.defaultValue }) : label;
-    }
-    if (key.startsWith("severity:")) {
-      const translated = SEVERITY_LABELS[key.slice("severity:".length)];
-      return translated ? t(translated.key, { defaultValue: translated.defaultValue }) : label;
-    }
-    if (key.startsWith("type:")) {
-      const translated = SOURCE_KIND_LABELS[key.slice("type:".length) as AttentionSourceKind];
-      return translated ? t(translated.key, { defaultValue: translated.defaultValue }) : label;
-    }
-    if (key === `project:${NO_GROUP_SENTINEL}`) {
-      return t("whatNeedsMe.common.noProject", { defaultValue: "No project" });
-    }
-    return label;
-  }, [t]);
-
-  const visibleCount = useMemo(() => groups.reduce((sum, group) => sum + group.items.length, 0), [groups]);
+  const visibleCount = useMemo(
+    () => groups.reduce((sum, group) => sum + group.items.length, 0),
+    [groups],
+  );
   const keyboardItems = useMemo(
-    () => groups.filter((group) => group.label === null || !collapsedGroupKeys.has(group.key)).flatMap((group) => group.items),
+    () =>
+      groups
+        .filter(
+          (group) => group.label === null || !collapsedGroupKeys.has(group.key),
+        )
+        .flatMap((group) => group.items),
     [collapsedGroupKeys, groups],
   );
 
   // Rendered-row budget: only ratchets up (a hard reset mid-scroll would yank
   // the DOM out from under the user), and resets when the company changes.
-  const [renderedRowLimit, setRenderedRowLimit] = useState(INITIAL_ATTENTION_ROW_RENDER_LIMIT);
+  const [renderedRowLimit, setRenderedRowLimit] = useState(
+    INITIAL_ATTENTION_ROW_RENDER_LIMIT,
+  );
   const rootRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     setRenderedRowLimit(INITIAL_ATTENTION_ROW_RENDER_LIMIT);
@@ -295,7 +362,9 @@ export function WhatNeedsMe() {
       if (animationFrameId !== null) return;
       animationFrameId = window.requestAnimationFrame(() => {
         animationFrameId = null;
-        const scrollHeight = scrollContainer?.scrollHeight ?? document.documentElement.scrollHeight;
+        const scrollHeight =
+          scrollContainer?.scrollHeight ??
+          document.documentElement.scrollHeight;
         if (scrollHeight === 0) return;
         const scrollBottom = scrollContainer
           ? scrollContainer.scrollTop + scrollContainer.clientHeight
@@ -306,7 +375,9 @@ export function WhatNeedsMe() {
       });
     };
 
-    scrollTarget.addEventListener("scroll", checkScrollPosition, { passive: true });
+    scrollTarget.addEventListener("scroll", checkScrollPosition, {
+      passive: true,
+    });
     window.addEventListener("resize", checkScrollPosition);
     // Initial check: a tall viewport (or an opened curtain) may need more rows
     // than the current budget before any scrolling happens.
@@ -315,19 +386,26 @@ export function WhatNeedsMe() {
     return () => {
       scrollTarget.removeEventListener("scroll", checkScrollPosition);
       window.removeEventListener("resize", checkScrollPosition);
-      if (animationFrameId !== null) window.cancelAnimationFrame(animationFrameId);
+      if (animationFrameId !== null)
+        window.cancelAnimationFrame(animationFrameId);
     };
   }, [loadMoreRows, renderPlan.hasMoreRows, renderedRowLimit]);
 
   useEffect(() => {
-    if (selectedAttentionId && !keyboardItems.some((item) => item.id === selectedAttentionId)) {
+    if (
+      selectedAttentionId &&
+      !keyboardItems.some((item) => item.id === selectedAttentionId)
+    ) {
       setSelectedAttentionId(null);
+      setSelectionFromKeyboard(false);
     }
   }, [keyboardItems, selectedAttentionId]);
 
   useEffect(() => {
     if (!selectedAttentionId) return;
-    document.getElementById(`attention-row-${selectedAttentionId}`)?.scrollIntoView({ block: "nearest" });
+    document
+      .getElementById(`attention-row-${selectedAttentionId}`)
+      ?.scrollIntoView({ block: "nearest" });
   }, [selectedAttentionId]);
 
   // Auto-expand the topmost inline-capable decision, once.
@@ -384,17 +462,14 @@ export function WhatNeedsMe() {
       pushToast({
         id: `attention-dismiss-${item.id}`,
         dedupeKey: `attention-dismiss-${item.dismissalKey}`,
-        title: t("whatNeedsMe.toast.dismissed", { defaultValue: "Dismissed" }),
+        title: "Dismissed",
         body: item.subject.title ?? undefined,
         tone: "info",
         ttlMs: 8000,
-        action: {
-          label: t("whatNeedsMe.toast.undo", { defaultValue: "Undo" }),
-          onClick: () => handleUndoDismiss(item),
-        },
+        action: { label: "Undo", onClick: () => handleUndoDismiss(item) },
       });
     },
-    [dismiss, handleUndoDismiss, pushToast, t],
+    [dismiss, handleUndoDismiss, pushToast],
   );
   const handleSnooze = useCallback(
     (item: AttentionItem, snoozedUntil: string) => {
@@ -413,6 +488,7 @@ export function WhatNeedsMe() {
   );
   const handleToggleExpand = useCallback((item: AttentionItem) => {
     setSelectedAttentionId(item.id);
+    setSelectionFromKeyboard(false);
     setExpandedId((prev) => (prev === item.id ? null : item.id));
   }, []);
   const handleTrain = useCallback((item: AttentionItem) => {
@@ -435,25 +511,34 @@ export function WhatNeedsMe() {
 
       if (action === "next" || action === "previous") {
         event.preventDefault();
-        const currentIndex = selectedAttentionId ? keyboardItems.findIndex((item) => item.id === selectedAttentionId) : -1;
+        const currentIndex = selectedAttentionId
+          ? keyboardItems.findIndex((item) => item.id === selectedAttentionId)
+          : -1;
         const offset = action === "next" ? 1 : -1;
-        const nextIndex = currentIndex < 0
-          ? action === "next"
-            ? 0
-            : keyboardItems.length - 1
-          : (currentIndex + offset + keyboardItems.length) % keyboardItems.length;
+        const nextIndex =
+          currentIndex < 0
+            ? action === "next"
+              ? 0
+              : keyboardItems.length - 1
+            : (currentIndex + offset + keyboardItems.length) %
+              keyboardItems.length;
         setSelectedAttentionId(keyboardItems[nextIndex]?.id ?? null);
+        setSelectionFromKeyboard(true);
         return;
       }
 
-      const selectedItem = keyboardItems.find((item) => item.id === selectedAttentionId);
+      const selectedItem = keyboardItems.find(
+        (item) => item.id === selectedAttentionId,
+      );
       if (!selectedItem) return;
       event.preventDefault();
 
       if (action === "dismiss") {
         handleDismiss(selectedItem);
       } else if (isInlineResolvable(selectedItem)) {
-        setExpandedId((previous) => (previous === selectedItem.id ? null : selectedItem.id));
+        setExpandedId((previous) =>
+          previous === selectedItem.id ? null : selectedItem.id,
+        );
       } else if (selectedItem.subject.href) {
         navigate(selectedItem.subject.href);
       }
@@ -467,7 +552,7 @@ export function WhatNeedsMe() {
   if (!selectedCompanyId) {
     return (
       <p className="text-sm text-muted-foreground">
-        {t("whatNeedsMe.selectCompany", { defaultValue: "Select a company first." })}
+        {t("whatNeedsMe.selectCompany")}
       </p>
     );
   }
@@ -476,26 +561,19 @@ export function WhatNeedsMe() {
     return <PageSkeleton variant="approvals" />;
   }
 
-  const hasAnything = activeItems.length > 0 || snoozedItems.length > 0 || dismissedItems.length > 0;
+  const hasAnything =
+    activeItems.length > 0 ||
+    snoozedItems.length > 0 ||
+    dismissedItems.length > 0;
 
   return (
     <div ref={rootRef} className="max-w-3xl space-y-4">
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center justify-between gap-4">
-          <h1 className="text-xl font-bold">
-            {t("whatNeedsMe.title", { defaultValue: "Decisions" })}
-          </h1>
-          <Button variant="outline" size="sm" onClick={() => navigate("/training")}>
-            <GraduationCap className="size-4" />
-            {t("financeEventKind.training", { defaultValue: "Training" })}
-          </Button>
-        </div>
+        <h1 className="text-xl font-bold">{t("whatNeedsMe.title")}</h1>
         <div className="flex items-center gap-2">
           {visibleCount > 0 && (
             <span className="text-sm text-muted-foreground">
-              {visibleCount === 1
-                ? t("whatNeedsMe.decisionCount.one", { defaultValue: "{{count}} decision", count: visibleCount })
-                : t("whatNeedsMe.decisionCount.other", { defaultValue: "{{count}} decisions", count: visibleCount })}
+              {visibleCount} {visibleCount === 1 ? "decision" : "decisions"}
             </span>
           )}
           {/* Filter */}
@@ -505,9 +583,12 @@ export function WhatNeedsMe() {
                 type="button"
                 variant="outline"
                 size="icon"
-                className={cn("h-8 w-8 shrink-0", activeFilterCount > 0 && "bg-accent")}
-                title={t("whatNeedsMe.toolbar.filter", { defaultValue: "Filter" })}
-                aria-label={t("whatNeedsMe.toolbar.filter", { defaultValue: "Filter" })}
+                className={cn(
+                  "h-8 w-8 shrink-0",
+                  activeFilterCount > 0 && "bg-accent",
+                )}
+                title={t("whatNeedsMe.toolbar.filter")}
+                aria-label={t("whatNeedsMe.toolbar.filter")}
               >
                 <ListFilter className="h-3.5 w-3.5" />
               </Button>
@@ -527,42 +608,50 @@ export function WhatNeedsMe() {
                 type="button"
                 variant="outline"
                 size="icon"
-                className={cn("h-8 w-8 shrink-0", groupBy !== "none" && "bg-accent")}
-                title={t("whatNeedsMe.toolbar.group", { defaultValue: "Group" })}
-                aria-label={t("whatNeedsMe.toolbar.group", { defaultValue: "Group" })}
+                className={cn(
+                  "h-8 w-8 shrink-0",
+                  groupBy !== "none" && "bg-accent",
+                )}
+                title={t("whatNeedsMe.toolbar.group")}
+                aria-label={t("whatNeedsMe.toolbar.group")}
               >
                 <Layers className="h-3.5 w-3.5" />
               </Button>
             </PopoverTrigger>
             <PopoverContent align="end" className="w-40 p-2">
               <div className="space-y-0.5">
-                {ATTENTION_GROUP_BY_OPTIONS.map(([value]) => {
-                  const groupLabels: Record<AttentionGroupBy, { key: string; defaultValue: string }> = {
-                    none: { key: "whatNeedsMe.group.none", defaultValue: "None" },
-                    date: { key: "whatNeedsMe.group.date", defaultValue: "Date" },
-                    type: { key: "whatNeedsMe.group.type", defaultValue: "Type" },
-                    project: { key: "whatNeedsMe.group.project", defaultValue: "Project" },
-                    severity: { key: "whatNeedsMe.group.severity", defaultValue: "Severity" },
-                  };
-                  const label = groupLabels[value];
-                  return (
+                {ATTENTION_GROUP_BY_OPTIONS.map(([value, label]) => (
                   <button
                     key={value}
                     type="button"
                     className={cn(
                       "flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-sm",
-                      groupBy === value ? "bg-accent/50 text-foreground" : "text-muted-foreground hover:bg-accent/50",
+                      groupBy === value
+                        ? "bg-accent/50 text-foreground"
+                        : "text-muted-foreground hover:bg-accent/50",
                     )}
                     onClick={() => updateGroupBy(value)}
                   >
-                    <span>{t(label.key, { defaultValue: label.defaultValue })}</span>
-                    {groupBy === value ? <Check className="h-3.5 w-3.5" /> : null}
+                    <span>{label}</span>
+                    {groupBy === value ? (
+                      <Check className="h-3.5 w-3.5" />
+                    ) : null}
                   </button>
-                  );
-                })}
+                ))}
               </div>
             </PopoverContent>
           </Popover>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            className="h-8 w-8 shrink-0"
+            title={t("financeEventKind.training")}
+            aria-label={t("financeEventKind.training")}
+            onClick={() => navigate(decisionTrainingHref())}
+          >
+            <GraduationCap className="h-3.5 w-3.5" />
+          </Button>
           {/* Sort */}
           <Popover>
             <PopoverTrigger asChild>
@@ -571,40 +660,41 @@ export function WhatNeedsMe() {
                 variant="outline"
                 size="icon"
                 className="h-8 w-8 shrink-0"
-                title={t("whatNeedsMe.toolbar.sort", { defaultValue: "Sort" })}
-                aria-label={t("whatNeedsMe.toolbar.sort", { defaultValue: "Sort" })}
+                title={t("whatNeedsMe.toolbar.sort")}
+                aria-label={t("whatNeedsMe.toolbar.sort")}
               >
                 <ArrowUpDown className="h-3.5 w-3.5" />
               </Button>
             </PopoverTrigger>
             <PopoverContent align="end" className="w-44 p-2">
               <div className="space-y-0.5">
-                {ATTENTION_SORT_OPTIONS.map(([value]) => {
-                  const label = value === "newest"
-                    ? { key: "whatNeedsMe.sort.newest", defaultValue: "Newest first" }
-                    : { key: "whatNeedsMe.sort.oldest", defaultValue: "Oldest first" };
-                  return (
+                {ATTENTION_SORT_OPTIONS.map(([value, label]) => (
                   <button
                     key={value}
                     type="button"
                     className={cn(
                       "flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-sm",
-                      sortOrder === value ? "bg-accent/50 text-foreground" : "text-muted-foreground hover:bg-accent/50",
+                      sortOrder === value
+                        ? "bg-accent/50 text-foreground"
+                        : "text-muted-foreground hover:bg-accent/50",
                     )}
                     onClick={() => updateSortOrder(value)}
                   >
-                    <span>{t(label.key, { defaultValue: label.defaultValue })}</span>
-                    {sortOrder === value ? <Check className="h-3.5 w-3.5" /> : null}
+                    <span>{label}</span>
+                    {sortOrder === value ? (
+                      <Check className="h-3.5 w-3.5" />
+                    ) : null}
                   </button>
-                  );
-                })}
+                ))}
               </div>
             </PopoverContent>
           </Popover>
         </div>
       </div>
 
-      {error && <p className="text-sm text-destructive">{(error as Error).message}</p>}
+      {error && (
+        <p className="text-sm text-destructive">{(error as Error).message}</p>
+      )}
 
       {!hasAnything ? (
         <ZeroState />
@@ -614,8 +704,9 @@ export function WhatNeedsMe() {
             <CaughtUpNote filtered={activeItems.length > 0} />
           ) : (
             groups.map((group) => {
-              const groupLabel = localizedGroupLabel(group.key, group.label);
-              const collapsed = groupLabel !== null && collapsedGroupKeys.has(group.key);
+              const groupLabel = group.label;
+              const collapsed =
+                groupLabel !== null && collapsedGroupKeys.has(group.key);
               return (
                 <section key={group.key} className="space-y-2">
                   {groupLabel !== null && (
@@ -625,27 +716,86 @@ export function WhatNeedsMe() {
                       collapsed={collapsed}
                       onToggle={() => toggleGroupCollapse(group.key)}
                       trailing={
-                        <span className="text-xs tabular-nums text-muted-foreground">{group.items.length}</span>
+                        <span className="text-xs tabular-nums text-muted-foreground">
+                          {group.items.length}
+                        </span>
                       }
                     />
                   )}
                   {!collapsed && (
-                    <div className="space-y-2">
-                      {(renderPlan.groupRows.get(group.key) ?? []).map((item) => (
-                        <AttentionQueueRow
-                          key={item.id}
-                          item={item}
-                          companyId={selectedCompanyId}
-                          expanded={expandedId === item.id}
-                          onToggleExpand={handleToggleExpand}
-                          onDismiss={handleDismiss}
-                          onSnooze={handleSnooze}
-                          onTrain={handleTrain}
-                          agentMap={agentMap}
-                          currentUserId={currentUserId}
-                          selected={selectedAttentionId === item.id}
-                        />
-                      ))}
+                    <div className="space-y-4">
+                      {(() => {
+                        const rows = renderPlan.groupRows.get(group.key) ?? [];
+                        const seenBundles = new Set<string>();
+                        return rows.map((item) => {
+                          const bundleId =
+                            item.sourceKind === "decision"
+                              ? ((item.subject.metadata?.bundleId as
+                                  | string
+                                  | null
+                                  | undefined) ?? null)
+                              : null;
+                          let header: ReactNode = null;
+                          if (bundleId && !seenBundles.has(bundleId)) {
+                            seenBundles.add(bundleId);
+                            const bundleRows = rows.filter(
+                              (row) =>
+                                row.sourceKind === "decision" &&
+                                ((row.subject.metadata?.bundleId as
+                                  | string
+                                  | null
+                                  | undefined) ?? null) === bundleId,
+                            );
+                            const first = bundleRows[0];
+                            header = (
+                              <DecisionBundleHeader
+                                agentName={
+                                  agentMap.get(
+                                    first?.subject.metadata
+                                      ?.originAgentId as string,
+                                  )?.name ?? null
+                                }
+                                title={
+                                  (first?.subject.metadata?.bundleTitle as
+                                    | string
+                                    | null
+                                    | undefined) ?? null
+                                }
+                                originIssue={first?.relatedIssue ?? null}
+                                count={bundleRows.length}
+                              />
+                            );
+                          }
+                          return (
+                            <Fragment key={item.id}>
+                              {header}
+                              <div
+                                className={
+                                  bundleId
+                                    ? "border-l-2 border-violet-500/40 pl-3"
+                                    : undefined
+                                }
+                              >
+                                <AttentionQueueRow
+                                  item={item}
+                                  companyId={selectedCompanyId}
+                                  expanded={expandedId === item.id}
+                                  onToggleExpand={handleToggleExpand}
+                                  onDismiss={handleDismiss}
+                                  onSnooze={handleSnooze}
+                                  onTrain={handleTrain}
+                                  agentMap={agentMap}
+                                  currentUserId={currentUserId}
+                                  selected={
+                                    selectionFromKeyboard &&
+                                    selectedAttentionId === item.id
+                                  }
+                                />
+                              </div>
+                            </Fragment>
+                          );
+                        });
+                      })()}
                     </div>
                   )}
                 </section>
@@ -655,7 +805,7 @@ export function WhatNeedsMe() {
 
           {snoozedItems.length > 0 && (
             <Curtain
-              label={t("whatNeedsMe.curtains.snoozed", { defaultValue: "Snoozed" })}
+              label={t("whatNeedsMe.curtains.snoozed")}
               count={snoozedItems.length}
               open={snoozedOpen}
               onToggle={() => setSnoozedOpen((prev) => !prev)}
@@ -679,7 +829,7 @@ export function WhatNeedsMe() {
 
           {dismissedItems.length > 0 && (
             <Curtain
-              label={t("whatNeedsMe.curtains.dismissed", { defaultValue: "Dismissed" })}
+              label={t("whatNeedsMe.curtains.dismissed")}
               count={dismissedItems.length}
               open={dismissedOpen}
               onToggle={() => setDismissedOpen((prev) => !prev)}
@@ -703,6 +853,72 @@ export function WhatNeedsMe() {
         </div>
       )}
 
+      <div className="space-y-4">
+        <Curtain
+          label={t("whatNeedsMe.decided")}
+          count={decisionHistoryCount(decidedDecisions?.length)}
+          open={decidedOpen}
+          onToggle={() => setDecidedOpen((prev) => !prev)}
+        >
+          {decidedDecisionsLoading ? (
+            <p className="text-xs text-muted-foreground">
+              {t("whatNeedsMe.loadingDecided")}
+            </p>
+          ) : (decidedDecisions?.length ?? 0) > 0 ? (
+            decidedDecisions!
+              .slice(0, DECISION_HISTORY_VISIBLE_LIMIT)
+              .map((decision) => (
+                <DecisionResolver
+                  key={decision.id}
+                  companyId={selectedCompanyId}
+                  decisionId={decision.id}
+                  agentMap={agentMap}
+                  initialDecision={{
+                    ...decision,
+                    executions: decision.executions ?? [],
+                  }}
+                />
+              ))
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              {t("whatNeedsMe.noDecided")}
+            </p>
+          )}
+        </Curtain>
+
+        <Curtain
+          label={t("issueThreadInteraction.toolAction.status.expired")}
+          count={decisionHistoryCount(expiredDecisions?.length)}
+          open={expiredOpen}
+          onToggle={() => setExpiredOpen((prev) => !prev)}
+        >
+          {expiredDecisionsLoading ? (
+            <p className="text-xs text-muted-foreground">
+              {t("whatNeedsMe.loadingExpired")}
+            </p>
+          ) : (expiredDecisions?.length ?? 0) > 0 ? (
+            expiredDecisions!
+              .slice(0, DECISION_HISTORY_VISIBLE_LIMIT)
+              .map((decision) => (
+                <DecisionResolver
+                  key={decision.id}
+                  companyId={selectedCompanyId}
+                  decisionId={decision.id}
+                  agentMap={agentMap}
+                  initialDecision={{
+                    ...decision,
+                    executions: decision.executions ?? [],
+                  }}
+                />
+              ))
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              {t("whatNeedsMe.noExpired")}
+            </p>
+          )}
+        </Curtain>
+      </div>
+
       <DecisionTrainingDrawer
         open={trainingItem !== null}
         onOpenChange={(next) => {
@@ -712,6 +928,49 @@ export function WhatNeedsMe() {
         item={trainingItem}
         currentUserId={currentUserId}
       />
+    </div>
+  );
+}
+
+/**
+ * Violet left-rule strip over a run of decisions that share a bundle, e.g.
+ * "Planner proposed 6 decisions · from PAP-123 · routing review · 6 pending".
+ * Grouping is a surface only — each decision is still decided independently.
+ */
+export function DecisionBundleHeader({
+  agentName,
+  title,
+  originIssue,
+  count,
+}: {
+  agentName: string | null;
+  title: string | null;
+  originIssue: AttentionSubject | null;
+  count: number;
+}) {
+  const { t } = useTranslation();
+  const noun = count === 1 ? "decision" : "decisions";
+  return (
+    <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 rounded-sm border-l-2 border-violet-500/60 bg-violet-500/5 px-3 py-1.5 text-xs">
+      <span className="font-semibold text-violet-800 dark:text-violet-200">
+        {agentName ?? "An agent"} {t("whatNeedsMe.proposed")} {count} {noun}
+      </span>
+      {originIssue && (originIssue.identifier || originIssue.title) && (
+        <span className="text-muted-foreground">
+          {t("whatNeedsMe.from")}
+          {originIssue.href ? (
+            <a href={originIssue.href} className="hover:underline">
+              {originIssue.identifier ?? originIssue.title}
+            </a>
+          ) : (
+            (originIssue.identifier ?? originIssue.title)
+          )}
+        </span>
+      )}
+      {title && <span className="text-muted-foreground">· {title}</span>}
+      <span className="text-muted-foreground">
+        · {count} {t("runStatus.pending")}
+      </span>
     </div>
   );
 }
@@ -728,7 +987,9 @@ function FilterMenu({
   const { t } = useTranslation();
   const toggle = (key: keyof AttentionFilterState, value: string) => {
     const list = filters[key] as string[];
-    const nextList = list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
+    const nextList = list.includes(value)
+      ? list.filter((v) => v !== value)
+      : [...list, value];
     onChange({ ...filters, [key]: nextList });
   };
   const hasActive = countActiveAttentionFilters(filters) > 0;
@@ -755,9 +1016,7 @@ function FilterMenu({
           {options.sourceKinds.map((kind) => (
             <FilterRow
               key={kind}
-              label={t(SOURCE_KIND_LABELS[kind].key, {
-                defaultValue: SOURCE_KIND_LABELS[kind].defaultValue,
-              })}
+              label={sourceMeta(kind).label}
               checked={filters.sourceKinds.includes(kind)}
               onToggle={() => toggle("sourceKinds", kind)}
             />
@@ -770,11 +1029,7 @@ function FilterMenu({
           {options.severities.map((severity) => (
             <FilterRow
               key={severity}
-              label={SEVERITY_LABELS[severity]
-                ? t(SEVERITY_LABELS[severity].key, {
-                    defaultValue: SEVERITY_LABELS[severity].defaultValue,
-                  })
-                : severity}
+              label={SEVERITY_LABELS[severity] ?? severity}
               checked={filters.severities.includes(severity)}
               onToggle={() => toggle("severities", severity)}
             />
@@ -825,7 +1080,13 @@ function FilterMenu({
   );
 }
 
-function FilterSection({ title, children }: { title: string; children: ReactNode }) {
+function FilterSection({
+  title,
+  children,
+}: {
+  title: string;
+  children: ReactNode;
+}) {
   return (
     <div className="border-t border-border/60 px-2 py-1.5">
       <p className="px-1 pb-1 text-(length:--text-nano) font-medium uppercase tracking-wide text-muted-foreground">
@@ -851,7 +1112,11 @@ function FilterRow({
       className="flex w-full items-center gap-2 rounded-sm px-1 py-1 text-left text-sm hover:bg-accent/50"
       onClick={onToggle}
     >
-      <Checkbox checked={checked} className="pointer-events-none" tabIndex={-1} />
+      <Checkbox
+        checked={checked}
+        className="pointer-events-none"
+        tabIndex={-1}
+      />
       <span className="truncate">{label}</span>
     </button>
   );
@@ -865,7 +1130,7 @@ function Curtain({
   children,
 }: {
   label: string;
-  count: number;
+  count?: number | string;
   open: boolean;
   onToggle: () => void;
   children: ReactNode;
@@ -873,13 +1138,13 @@ function Curtain({
   return (
     <section className="space-y-2">
       <IssueGroupHeader
-        label={`${label} (${count})`}
+        label={count == null ? label : `${label} (${count})`}
         collapsible
         collapsed={!open}
         onToggle={onToggle}
         className="text-muted-foreground"
       />
-      {open && <div className="space-y-2">{children}</div>}
+      {open && <div className="space-y-4">{children}</div>}
     </section>
   );
 }
@@ -889,7 +1154,9 @@ function CaughtUpNote({ filtered }: { filtered: boolean }) {
   return (
     <div className="rounded-xl border border-dashed border-border py-10 text-center">
       <p className="text-sm font-medium text-foreground">
-        {filtered ? t("whatNeedsMe.empty.noMatches") : t("whatNeedsMe.empty.caughtUpSentence")}
+        {filtered
+          ? "No decisions match your filters."
+          : "You're all caught up."}
       </p>
       {filtered && (
         <p className="mt-1 text-xs text-muted-foreground">

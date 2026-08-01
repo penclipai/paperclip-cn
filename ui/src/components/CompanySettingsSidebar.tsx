@@ -1,10 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
+import { useQuery } from "@tanstack/react-query";
 import {
   ChevronLeft,
   Clock3,
-  CloudUpload,
   Cpu,
+  Download,
   FlaskConical,
   KeyRound,
   MailPlus,
@@ -13,12 +13,12 @@ import {
   Settings,
   Shield,
   SlidersHorizontal,
+  Upload,
   UserRoundPen,
   Users,
 } from "lucide-react";
 import type { PluginRecord } from "@penclipai/shared";
 import { sidebarBadgesApi } from "@/api/sidebarBadges";
-import { instanceSettingsApi } from "@/api/instanceSettings";
 import { pluginsApi } from "@/api/plugins";
 import { ApiError } from "@/api/client";
 import { Link, NavLink } from "@/lib/router";
@@ -54,12 +54,15 @@ export function CompanySettingsSidebar() {
   const { data: badges } = useQuery({
     queryKey: selectedCompanyId
       ? queryKeys.sidebarBadges(selectedCompanyId)
-      : ["sidebar-badges", "__disabled__"] as const,
+      : (["sidebar-badges", "__disabled__"] as const),
     queryFn: async () => {
       try {
         return await sidebarBadgesApi.get(selectedCompanyId!);
       } catch (error) {
-        if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
+        if (
+          error instanceof ApiError &&
+          (error.status === 401 || error.status === 403)
+        ) {
           return null;
         }
         throw error;
@@ -69,16 +72,13 @@ export function CompanySettingsSidebar() {
     retry: false,
     refetchInterval: 15_000,
   });
-  const { data: experimentalSettings } = useQuery({
-    queryKey: queryKeys.instance.experimentalSettings,
-    queryFn: () => instanceSettingsApi.getExperimental(),
-  });
   const { data: plugins } = useQuery({
     queryKey: queryKeys.plugins.all,
     queryFn: () => pluginsApi.list(),
   });
-  const showCloudUpstream = experimentalSettings?.enableCloudSync === true;
-  const sidebarPlugins = (plugins ?? []).filter((plugin) => !isSandboxProviderOnly(plugin));
+  const sidebarPlugins = (plugins ?? []).filter(
+    (plugin) => !isSandboxProviderOnly(plugin),
+  );
 
   return (
     <aside className="w-full h-full min-h-0 border-r border-border bg-background flex flex-col">
@@ -91,7 +91,7 @@ export function CompanySettingsSidebar() {
           className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
         >
           <ChevronLeft className="h-3.5 w-3.5 shrink-0" />
-          <span className="truncate">{selectedCompany?.name ?? t("Company")}</span>
+          <span className="truncate">{selectedCompany?.name ?? "Company"}</span>
         </Link>
         <div className="flex items-center gap-2 px-2 py-1">
           <Settings className="h-4 w-4 text-muted-foreground shrink-0" />
@@ -103,18 +103,26 @@ export function CompanySettingsSidebar() {
 
       <nav className="flex-1 min-h-0 overflow-y-auto scrollbar-auto-hide px-3 py-2">
         <div className="px-3 pb-1 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
-          {t("Company settings", { defaultValue: "Company settings" })}
+          {t("Company settings")}
         </div>
         <div className="flex flex-col gap-0.5">
-          <SidebarNavItem to="/company/settings" label={t("General")} icon={SlidersHorizontal} end />
-          {showCloudUpstream ? (
-            <SidebarNavItem
-              to="/company/settings/cloud-upstream"
-              label={t("Cloud upstream")}
-              icon={CloudUpload}
-              end
-            />
-          ) : null}
+          <SidebarNavItem
+            to="/company/settings"
+            label={t("General")}
+            icon={SlidersHorizontal}
+            end
+          />
+          <SidebarNavItem
+            to="/company/export"
+            label={t("companyExport.exportButton")}
+            icon={Download}
+          />
+          <SidebarNavItem
+            to="/company/import"
+            label={t("companyImport.importButton")}
+            icon={Upload}
+            end
+          />
           <SidebarNavItem
             to="/company/settings/members"
             label={t("Members")}
@@ -133,51 +141,61 @@ export function CompanySettingsSidebar() {
                 end
               />
             ))}
-          <SidebarNavItem to="/company/settings/invites" label={t("Invites")} icon={MailPlus} end />
-          <SidebarNavItem to="/company/settings/secrets" label={t("Secrets")} icon={KeyRound} end />
+          <SidebarNavItem
+            to="/company/settings/invites"
+            label={t("Invites")}
+            icon={MailPlus}
+            end
+          />
+          <SidebarNavItem
+            to="/company/settings/secrets"
+            label={t("Secrets")}
+            icon={KeyRound}
+            end
+          />
         </div>
         <div className="mt-5 px-3 pb-1 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
-          {t("Instance settings", { defaultValue: "Instance settings" })}
+          {t("Instance settings")}
         </div>
         <div className="flex flex-col gap-0.5">
           <SidebarNavItem
             to={`${INSTANCE_SETTINGS_PATH_PREFIX}/profile`}
-            label={t("Profile", { defaultValue: "Profile" })}
+            label={t("Profile")}
             icon={UserRoundPen}
             end
           />
           <SidebarNavItem
             to={`${INSTANCE_SETTINGS_PATH_PREFIX}/general`}
-            label={t("General", { defaultValue: "General" })}
+            label={t("General")}
             icon={SlidersHorizontal}
             end
           />
           <SidebarNavItem
             to={`${INSTANCE_SETTINGS_PATH_PREFIX}/environments`}
-            label={t("Environments", { defaultValue: "Environments" })}
+            label={t("Environments")}
             icon={MonitorCog}
             end
           />
           <SidebarNavItem
             to={`${INSTANCE_SETTINGS_PATH_PREFIX}/access`}
-            label={t("Access", { defaultValue: "Access" })}
+            label={t("Access")}
             icon={Shield}
             end
           />
           <SidebarNavItem
             to={`${INSTANCE_SETTINGS_PATH_PREFIX}/heartbeats`}
-            label={t("Heartbeats", { defaultValue: "Heartbeats" })}
+            label={t("Heartbeats")}
             icon={Clock3}
             end
           />
           <SidebarNavItem
             to={`${INSTANCE_SETTINGS_PATH_PREFIX}/experimental`}
-            label={t("Experimental", { defaultValue: "Experimental" })}
+            label={t("Experimental")}
             icon={FlaskConical}
           />
           <SidebarNavItem
             to={`${INSTANCE_SETTINGS_PATH_PREFIX}/plugins`}
-            label={t("Plugins", { defaultValue: "Plugins" })}
+            label={t("Plugins")}
             icon={Puzzle}
           />
           {sidebarPlugins.length > 0 ? (
@@ -203,7 +221,7 @@ export function CompanySettingsSidebar() {
           ) : null}
           <SidebarNavItem
             to={`${INSTANCE_SETTINGS_PATH_PREFIX}/adapters`}
-            label={t("Adapters", { defaultValue: "Adapters" })}
+            label={t("Adapters")}
             icon={Cpu}
           />
         </div>

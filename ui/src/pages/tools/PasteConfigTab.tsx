@@ -55,7 +55,7 @@ function draftSummary(draft: McpJsonImportDraft, t: TFunction): string {
  * approved Paperclip template), so they get no hand-off here.
  */
 function draftConnectUrl(draft: McpJsonImportDraft): string | null {
-  if (draft.transport !== "remote_http") return null;
+  if (draft.transport !== "mcp_remote") return null;
   const raw = draft.config?.url;
   if (typeof raw !== "string") return null;
   try {

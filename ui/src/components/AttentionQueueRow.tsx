@@ -1,10 +1,10 @@
-import { memo, useState, type KeyboardEvent } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
+import { memo, useState, type KeyboardEvent, type ReactNode } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   AlarmClock,
   ChevronDown,
-  ChevronRight,
+  ChevronUp,
   ExternalLink,
   GraduationCap,
   Loader2,
@@ -12,7 +12,11 @@ import {
   RotateCcw,
   X,
 } from "lucide-react";
-import type { Agent, AttentionDetailImage, AttentionItem } from "@penclipai/shared";
+import type {
+  Agent,
+  AttentionDetailImage,
+  AttentionItem,
+} from "@penclipai/shared";
 import { Link } from "@/lib/router";
 import { accessApi } from "../api/access";
 import { approvalsApi } from "../api/approvals";
@@ -23,14 +27,16 @@ import {
   attentionDetailImages,
   attentionDetailLine,
   attentionImageUrl,
-  attentionToneStyle,
+  attentionStatus,
+  attentionTaskRef,
   isInlineResolvable,
-  severityBadge,
   sourceMeta,
 } from "../lib/attention";
 import { isTrainable } from "../lib/decisionTraining";
 import { cn, relativeTime } from "../lib/utils";
+import { StatusGlyph } from "./StatusGlyph";
 import { Button } from "./ui/button";
+import { Collapsible, CollapsibleContent } from "./ui/collapsible";
 import { Textarea } from "./ui/textarea";
 import {
   DropdownMenu,
@@ -43,8 +49,7 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { AttentionInteractionResolver } from "./AttentionInteractionResolver";
-import { ProjectTile } from "./ProjectTile";
-import { translateInstant } from "../i18n";
+import { DecisionResolver } from "./DecisionResolver";
 
 const HOUR_MS = 60 * 60 * 1000;
 const DAY_MS = 24 * HOUR_MS;
@@ -53,7 +58,8 @@ const DAY_MS = 24 * HOUR_MS;
 // (h-9 / text-sm), shrinking back to the dense pill (h-6 / text-xs) once the
 // row's own container is wide enough (`@xl` ≈ 576px). Container-query driven so
 // the row also reflows correctly inside narrow side panels, not just on phones.
-const ACTION_BTN = "h-9 gap-1.5 px-3 text-sm @xl:h-6 @xl:gap-1 @xl:px-2 @xl:text-xs";
+const ACTION_BTN =
+  "h-9 gap-1.5 px-3 text-sm @xl:h-6 @xl:gap-1 @xl:px-2 @xl:text-xs";
 
 /** Tomorrow at 9am local time. */
 function tomorrowMorningIso(): string {
@@ -64,12 +70,22 @@ function tomorrowMorningIso(): string {
 }
 
 /** Snooze presets, resolved to a future ISO timestamp at click time. */
-const SNOOZE_PRESETS: ReadonlyArray<{ key: string; defaultLabel: string; resolve: () => string }> = [
-  { key: "attentionQueue.snooze.oneHour", defaultLabel: "1 hour", resolve: () => new Date(Date.now() + HOUR_MS).toISOString() },
-  { key: "attentionQueue.snooze.fourHours", defaultLabel: "4 hours", resolve: () => new Date(Date.now() + 4 * HOUR_MS).toISOString() },
-  { key: "attentionQueue.snooze.tomorrowMorning", defaultLabel: "Tomorrow morning", resolve: tomorrowMorningIso },
-  { key: "attentionQueue.snooze.nextWeek", defaultLabel: "Next week", resolve: () => new Date(Date.now() + 7 * DAY_MS).toISOString() },
-];
+const SNOOZE_PRESETS: ReadonlyArray<{ label: string; resolve: () => string }> =
+  [
+    {
+      label: "1 hour",
+      resolve: () => new Date(Date.now() + HOUR_MS).toISOString(),
+    },
+    {
+      label: "4 hours",
+      resolve: () => new Date(Date.now() + 4 * HOUR_MS).toISOString(),
+    },
+    { label: "Tomorrow morning", resolve: tomorrowMorningIso },
+    {
+      label: "Next week",
+      resolve: () => new Date(Date.now() + 7 * DAY_MS).toISOString(),
+    },
+  ];
 
 interface AttentionQueueRowProps {
   item: AttentionItem;
@@ -113,15 +129,18 @@ export const AttentionQueueRow = memo(function AttentionQueueRow({
   userLabelMap,
   selected = false,
 }: AttentionQueueRowProps) {
-  useTranslation();
+  const { t } = useTranslation();
   const meta = sourceMeta(item.sourceKind);
-  const tone = attentionToneStyle(item);
-  const sevBadge = severityBadge(item.severity);
-  const Icon = meta.icon;
+  // Colour + glyph are borrowed wholesale from the task status system, so a
+  // blocking decision reads exactly like a blocked task (DESIGN.md principle 5).
+  const status = attentionStatus(item);
+  // The task this row belongs to, whichever field the feed put it in.
+  const taskRef = attentionTaskRef(item);
   const isHidden = variant === "hidden";
   const inline = !isHidden && isInlineResolvable(item);
   const href = item.subject.href;
-  const snoozedUntil = item.dismissal?.kind === "snooze" ? item.dismissal.snoozedUntil : null;
+  const snoozedUntil =
+    item.dismissal?.kind === "snooze" ? item.dismissal.snoozedUntil : null;
   const detailLine = attentionDetailLine(item) ?? item.whyNow;
   const images = attentionDetailImages(item);
   const hasImages = images.length > 0;
@@ -153,18 +172,90 @@ export const AttentionQueueRow = memo(function AttentionQueueRow({
   // Which rows contribute an action bar. Inline rows carry compact decision
   // verbs; deep-link rows carry an Open button; curtain rows carry Restore.
   const compactActions = !isHidden ? collectCompactActions(item) : [];
-  const showCompact = !expanded && compactActions.length > 0;
   const showOpen = !inline && !!href;
   const showRestore = isHidden && !!onRestore;
-  const showActionBar = showCompact || showOpen || showRestore;
-  // Left gutter width (chevron + gap) so the stacked content aligns under the
-  // headline in the wide layout; when narrow, everything runs full-bleed.
-  const gutterIndent = "@xl:pl-6";
+  // An expanded inline row hands its footer to the resolver, which owns the
+  // decision verbs — so the toggle rides alongside them on one row rather than
+  // stranding a lone "See less" under the buttons. That makes the collapsed
+  // footer a swap rather than a survivor, so it crossfades with the panel.
+  const hasCollapsedOnlyContent = hasImages || inline;
+
+  // Disclosure control. Now the row's only expand affordance: it names what it
+  // does instead of leaving a bare chevron to be decoded, and it sits at the
+  // bottom-left where the eye lands after reading the row.
+  const toggle = expandable ? (
+    <button
+      type="button"
+      className="inline-flex shrink-0 items-center gap-1 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground focus-visible:ring-ring focus-visible:ring-(length:--rad-3) focus-visible:outline-none"
+      aria-label={expanded ? "Collapse decision" : "Expand decision"}
+      aria-expanded={expanded}
+      onClick={activate}
+    >
+      {expanded ? (
+        <ChevronUp className="h-4 w-4" />
+      ) : (
+        <ChevronDown className="h-4 w-4" />
+      )}
+      {expanded ? "See less" : "See more"}
+    </button>
+  ) : null;
+
+  /**
+   * The row's action bar: disclosure on the left, decision verbs on the right.
+   * Rendered either inside the collapsed-only cluster (inline rows, where the
+   * resolver takes it over once expanded) or as a standing sibling (everything
+   * else). `compact` is false for the standing copy so an expanded row does not
+   * show collapsed verbs beside the panel's own.
+   */
+  const renderFooter = ({ compact }: { compact: boolean }) => {
+    const showCompact = compactActions.length > 0 && (compact || !expanded);
+    if (!toggle && !showCompact && !showOpen && !showRestore) return null;
+    return (
+      <div
+        className="flex flex-wrap items-center justify-between gap-2"
+        data-attention-actions="true"
+      >
+        {toggle ?? <span />}
+
+        <div className="flex flex-wrap items-center gap-2 @xl:justify-end">
+          {showCompact && (
+            <CompactDecisionActions
+              item={item}
+              companyId={companyId}
+              onOpen={() => onToggleExpand(item)}
+            />
+          )}
+
+          {showOpen && (
+            <Button asChild variant="default" size="xs" className={ACTION_BTN}>
+              <Link to={href!}>
+                {t("attentionQueue.open")}
+                <ExternalLink className="h-3 w-3" />
+              </Link>
+            </Button>
+          )}
+
+          {showRestore && (
+            <Button
+              type="button"
+              variant="outline"
+              size="xs"
+              className={ACTION_BTN}
+              onClick={() => onRestore(item)}
+            >
+              <RotateCcw className="h-3 w-3" />
+              {t("attentionQueue.restore")}
+            </Button>
+          )}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div
       className={cn(
-        "@container relative flex flex-col overflow-hidden border border-border bg-card",
+        "@container relative flex flex-col gap-4 overflow-hidden rounded-xl border border-border bg-card px-4 pt-3 pb-4",
         // The feed is uncapped, so off-screen rows must not cost layout/paint
         // while scrolling. The intrinsic-size estimate only matters before a
         // row's first paint; `auto` keeps the real measured height afterwards.
@@ -179,294 +270,280 @@ export const AttentionQueueRow = memo(function AttentionQueueRow({
       data-attention-source={item.sourceKind}
       data-attention-severity={item.severity}
     >
-      {/* Type accent bar (canonical color map — never severity). */}
-      <span className={cn("absolute inset-y-0 left-0 w-1", tone.accent)} aria-hidden />
+      {/* Meta band: one breadcrumb of identity on the left (kind → task →
+          project), recency + overflow on the right. Not part of the clickable
+          headline, so the menu never toggles it. */}
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-1">
+          <span className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground">
+            <StatusGlyph status={status} size="md" />
+            {meta.label}
+          </span>
+          {taskRef && (
+            <>
+              <EyebrowSeparator />
+              <Link
+                to={taskRef.href ?? "#"}
+                className="font-mono text-(length:--text-nano) text-muted-foreground hover:text-foreground"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {taskRef.identifier}
+              </Link>
+            </>
+          )}
+          {trainable && trained && (
+            <button
+              type="button"
+              className="inline-flex items-center gap-1 rounded-sm border border-primary/30 bg-primary/10 px-1.5 py-px text-(length:--text-nano) font-medium text-primary hover:bg-primary/15"
+              onClick={(event) => {
+                event.stopPropagation();
+                onTrain?.(item);
+              }}
+              data-testid="attention-trained-badge"
+            >
+              <GraduationCap className="h-3 w-3 fill-primary/25" />
+              {t("attentionQueue.trained")}
+            </button>
+          )}
+        </div>
 
-      <div className="flex items-start gap-2 py-3 pl-4 pr-3">
-        {/* Expand affordance / spacer gutter — keeps headlines aligned across the list. */}
-        {expandable ? (
-          <button
-            type="button"
-            className="mt-0.5 shrink-0 rounded-sm p-0.5 text-muted-foreground hover:text-foreground focus-visible:ring-ring focus-visible:ring-(length:--rad-3) focus-visible:outline-none"
-            aria-label={expanded
-              ? translateInstant("attentionQueue.collapseDecision", { defaultValue: "Collapse decision" })
-              : translateInstant("attentionQueue.expandDecision", { defaultValue: "Expand decision" })}
-            aria-expanded={expanded}
-            onClick={activate}
-          >
-            {expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-          </button>
-        ) : (
-          <span className="mt-0.5 hidden h-4 w-4 shrink-0 @xl:block" aria-hidden />
-        )}
-
-        {/* Content column: a single vertical stack that fills the full width on
-            mobile (no competing right-hand controls) and reads top-to-bottom. */}
-        <div className="flex min-w-0 flex-1 flex-col gap-2">
-          {/* Meta band: identity on the left, recency + overflow on the right.
-              Not part of the clickable headline, so the menu never toggles it. */}
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-              <span className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground">
-                <Icon className={cn("h-3.5 w-3.5", tone.icon)} />
-                {translateInstant(meta.label, { defaultValue: meta.label })}
-              </span>
-              {sevBadge && (
-                <span
-                  className={cn(
-                    "inline-flex items-center rounded-sm border px-1.5 py-px text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-eyebrow)",
-                    sevBadge.className,
-                  )}
-                >
-                  {translateInstant(sevBadge.label, { defaultValue: sevBadge.label })}
-                </span>
-              )}
-              {item.relatedIssue?.identifier && (
-                <Link
-                  to={item.relatedIssue.href ?? "#"}
-                  className="font-mono text-(length:--text-nano) text-muted-foreground hover:text-foreground"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {item.relatedIssue.identifier}
-                </Link>
-              )}
-            </div>
-
-            <div className="flex shrink-0 items-center gap-1" data-attention-menu="true">
-              {trainable && (
+        <div
+          className="flex shrink-0 items-center gap-1"
+          data-attention-menu="true"
+        >
+          {isHidden && snoozedUntil ? (
+            <span
+              className="text-(length:--text-nano) text-muted-foreground"
+              title={`Reappears ${new Date(snoozedUntil).toLocaleString()}`}
+            >
+              {t("attentionQueue.reappears")} {reappearLabel(snoozedUntil)}
+            </span>
+          ) : (
+            <span className="text-(length:--text-nano) text-muted-foreground">
+              {relativeTime(item.activityAt)}
+            </span>
+          )}
+          {!isHidden && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
                 <Button
-                  type="button"
                   variant="ghost"
                   size="icon-xs"
-                  className={cn(trained ? "text-primary" : "text-muted-foreground")}
-                  aria-label={trained
-                    ? translateInstant("attentionQueue.training.view", { defaultValue: "View training example" })
-                    : translateInstant("attentionQueue.training.train", { defaultValue: "Train this decision" })}
-                  aria-pressed={trained}
-                  title={trained
-                    ? translateInstant("attentionQueue.training.viewTrained", { defaultValue: "Trained - view example" })
-                    : translateInstant("attentionQueue.training.train", { defaultValue: "Train this decision" })}
-                  data-training-state={trained ? "trained" : "untrained"}
-                  data-testid="attention-train-button"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    onTrain?.(item);
-                  }}
+                  className="text-muted-foreground"
+                  aria-label={t("attentionQueue.rowActions")}
                 >
-                  <GraduationCap className={cn("h-4 w-4", trained && "fill-primary/25")} />
+                  <MoreHorizontal className="h-4 w-4" />
                 </Button>
-              )}
-              {isHidden && snoozedUntil ? (
-                <span
-                  className="text-(length:--text-nano) text-muted-foreground"
-                  title={translateInstant("attentionQueue.reappearsAt", {
-                    defaultValue: "Reappears {{time}}",
-                    time: new Date(snoozedUntil).toLocaleString(),
-                  })}
-                >
-                  {translateInstant("attentionQueue.reappears", {
-                    defaultValue: "Reappears {{time}}",
-                    time: reappearLabel(snoozedUntil),
-                  })}
-                </span>
-              ) : (
-                <span className="text-(length:--text-nano) text-muted-foreground">{relativeTime(item.activityAt)}</span>
-              )}
-              {!isHidden && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon-xs"
-                      className="text-muted-foreground"
-                      aria-label={translateInstant("attentionQueue.rowActions", { defaultValue: "Row actions" })}
-                    >
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    {onSnooze && <SnoozeSubmenu onSnooze={(iso) => onSnooze(item, iso)} />}
-                    <DropdownMenuItem onClick={() => onDismiss(item)}>
-                      <X className="h-4 w-4" />
-                      {translateInstant("attentionQueue.dismiss", { defaultValue: "Dismiss" })}
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {/* Training moved off the header strip (which now carries only
+                    recency + overflow) but keeps its testids so the affordance
+                    is still addressable. */}
+                {trainable && (
+                  <DropdownMenuItem
+                    data-training-state={trained ? "trained" : "untrained"}
+                    data-testid="attention-train-button"
+                    onClick={() => onTrain?.(item)}
+                  >
+                    <GraduationCap
+                      className={cn("h-4 w-4", trained && "fill-primary/25")}
+                    />
+                    {trained ? "View training example" : "Train this decision"}
+                  </DropdownMenuItem>
+                )}
+                {onSnooze && (
+                  <SnoozeSubmenu onSnooze={(iso) => onSnooze(item, iso)} />
+                )}
+                <DropdownMenuItem onClick={() => onDismiss(item)}>
+                  <X className="h-4 w-4" />
+                  {t("attentionQueue.dismiss")}
+                </DropdownMenuItem>
+                {href && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link to={href}>{t("attentionQueue.openSource")}</Link>
                     </DropdownMenuItem>
-                    {href && (
-                      <>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem asChild>
-                          <Link to={href}>{translateInstant("attentionQueue.openSource", { defaultValue: "Open source" })}</Link>
-                        </DropdownMenuItem>
-                      </>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
-            </div>
-          </div>
-
-          {/* Headline — the primary expand target for inline rows. Title now wraps
-              to two lines instead of truncating to a sliver on narrow screens. */}
-          <div
-            className={cn(
-              "min-w-0 rounded-md",
-              expandable && "cursor-pointer focus-visible:ring-ring focus-visible:ring-(length:--rad-3) focus-visible:outline-none",
-            )}
-            {...(expandable
-              ? {
-                  role: "button",
-                  tabIndex: 0,
-                  "aria-expanded": expanded,
-                  "aria-label": expanded
-                    ? translateInstant("attentionQueue.collapseDecision", { defaultValue: "Collapse decision" })
-                    : translateInstant("attentionQueue.expandDecision", { defaultValue: "Expand decision" }),
-                  onClick: activate,
-                  onKeyDown: onHeaderKeyDown,
-                }
-              : {})}
-          >
-            <span className="line-clamp-2 text-sm font-medium text-foreground" title={item.subject.title ?? undefined}>
-              {item.subject.title ?? translateInstant(meta.label, { defaultValue: meta.label })}
-            </span>
-            <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{detailLine}</p>
-          </div>
-
-          {/* Context row: project identity and evidence thumbnails move below the
-              text so they never squeeze the headline on mobile. */}
-          {(item.project || (hasImages && !expanded) || (trainable && trained)) && (
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-              {item.project && <ProjectMeta project={item.project} />}
-              {trainable && trained && (
-                <button
-                  type="button"
-                  className="inline-flex items-center gap-1 rounded-sm border border-primary/30 bg-primary/10 px-1.5 py-px text-(length:--text-nano) font-medium text-primary hover:bg-primary/15"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    onTrain?.(item);
-                  }}
-                  data-testid="attention-trained-badge"
-                >
-                  <GraduationCap className="h-3 w-3 fill-primary/25" />
-                  Trained ✓
-                </button>
-              )}
-              {hasImages && !expanded && <ThumbnailStack images={images} />}
-            </div>
-          )}
-
-          {/* Action bar: full-width, thumb-reachable buttons on mobile;
-              right-aligned dense pills on desktop. Sibling of the headline so
-              taps never toggle expand. */}
-          {showActionBar && (
-            <div
-              className={cn("flex flex-wrap items-center gap-2 @xl:justify-end", gutterIndent)}
-              data-attention-actions="true"
-            >
-              {showCompact && (
-                <CompactDecisionActions
-                  item={item}
-                  companyId={companyId}
-                  onOpen={() => onToggleExpand(item)}
-                />
-              )}
-
-              {showOpen && (
-                <Button asChild variant="outline" size="xs" className={cn(ACTION_BTN, "w-full @xl:w-auto")}>
-                  <Link to={href!}>
-                    {translateInstant("attentionQueue.open", { defaultValue: "Open" })}
-                    <ExternalLink className="h-3 w-3" />
-                  </Link>
-                </Button>
-              )}
-
-              {showRestore && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="xs"
-                  className={cn(ACTION_BTN, "w-full @xl:w-auto")}
-                  onClick={() => onRestore(item)}
-                >
-                  <RotateCcw className="h-3 w-3" />
-                  {translateInstant("attentionQueue.restore", { defaultValue: "Restore" })}
-                </Button>
-              )}
-            </div>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
         </div>
       </div>
 
-      {expanded && (hasImages || inline) && (
-        <div className="space-y-3 border-t border-border/60 bg-muted/20 px-4 py-3 motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-top-1 motion-safe:duration-200">
-          {hasImages && <ExpandedImages images={images} issueHref={issueHref} />}
-          {inline && (
-            <InlineResolver
-              item={item}
-              companyId={companyId}
-              agentMap={agentMap}
-              currentUserId={currentUserId}
-              userLabelMap={userLabelMap}
-            />
-          )}
-        </div>
+      {/* Headline — the primary expand target for inline rows. Title wraps to
+          two lines instead of truncating to a sliver on narrow screens. */}
+      <div
+        className={cn(
+          "min-w-0 rounded-md",
+          expandable &&
+            "cursor-pointer focus-visible:ring-ring focus-visible:ring-(length:--rad-3) focus-visible:outline-none",
+        )}
+        {...(expandable
+          ? {
+              role: "button",
+              tabIndex: 0,
+              "aria-expanded": expanded,
+              "aria-label": expanded ? "Collapse decision" : "Expand decision",
+              onClick: activate,
+              onKeyDown: onHeaderKeyDown,
+            }
+          : {})}
+      >
+        <span
+          className="line-clamp-2 text-sm font-medium text-foreground"
+          title={item.subject.title ?? undefined}
+        >
+          {item.subject.title ?? meta.label}
+        </span>
+        <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
+          {detailLine}
+        </p>
+      </div>
+
+      {/* Collapsed-only content. It has no counterpart to morph into — the
+          thumbnail strip becomes a full gallery, and an inline row's footer is
+          replaced by the resolver's own — so it rides an inverse disclosure and
+          crossfades against the panel below: this shrinks and fades out on the
+          same tokens as that grows and fades in, instead of popping. */}
+      {hasCollapsedOnlyContent && (
+        <Collapsible open={!expanded} className="contents">
+          <CollapsibleContent data-decision-disclosure className="-mt-4">
+            <div className="flex flex-col gap-4 pt-4">
+              {hasImages && <ThumbnailStack images={images} />}
+              {inline && renderFooter({ compact: true })}
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
       )}
+
+      {/* The disclosure panel. Collapsible measures the panel and publishes its
+          height, so the card grows and shrinks to a real number rather than
+          snapping open. `contents` keeps the Root out of the layout, so a
+          collapsed row does not pay a flex gap for an empty wrapper — and once
+          the exit finishes Radix unmounts the panel, so a collapsed row is not
+          left with a live resolver behind it. */}
+      <Collapsible
+        open={expanded}
+        onOpenChange={() => onToggleExpand(item)}
+        className="contents"
+      >
+        <CollapsibleContent data-decision-disclosure className="-mt-4">
+          <div className="flex flex-col gap-4 pt-4">
+            {hasImages && (
+              <ExpandedImages images={images} issueHref={issueHref} />
+            )}
+            {inline && (
+              <InlineResolver
+                item={item}
+                companyId={companyId}
+                agentMap={agentMap}
+                currentUserId={currentUserId}
+                userLabelMap={userLabelMap}
+                toggle={toggle}
+              />
+            )}
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+
+      {/* A non-inline row keeps one footer across both states — its Open or
+          Restore button and its toggle are the same control either way, so it
+          stays put rather than crossfading with itself. */}
+      {!inline && renderFooter({ compact: false })}
     </div>
   );
 });
 
-type CompactDecisionAction = "accept" | "approve" | "reject" | "request_revision";
+/**
+ * "·" between eyebrow segments.
+ *
+ * The eyebrow is a flat list of two facts (decision kind, task key), not a
+ * hierarchy, so a middle dot reads more honestly than the "/" this started as —
+ * a slash implies containment that the two segments do not have.
+ */
+function EyebrowSeparator() {
+  return (
+    <span className="text-xs text-muted-foreground" aria-hidden>
+      ·
+    </span>
+  );
+}
 
-function compactDecisionAction(item: AttentionItem, verbId: string): CompactDecisionAction | null {
-  if (item.sourceKind === "approval" && (verbId === "approve" || verbId === "reject" || verbId === "request_revision")) {
-    return verbId;
-  }
-  if (item.sourceKind === "join_request" && (verbId === "approve" || verbId === "reject")) {
+type CompactDecisionAction =
+  | "accept"
+  | "approve"
+  | "reject"
+  | "request_revision";
+
+function compactDecisionAction(
+  item: AttentionItem,
+  verbId: string,
+): CompactDecisionAction | null {
+  if (
+    item.sourceKind === "approval" &&
+    (verbId === "approve" ||
+      verbId === "reject" ||
+      verbId === "request_revision")
+  ) {
     return verbId;
   }
   if (
-    item.sourceKind === "issue_thread_interaction"
-    && item.subject.metadata?.kind === "request_confirmation"
-    && (verbId === "accept" || verbId === "reject")
+    item.sourceKind === "join_request" &&
+    (verbId === "approve" || verbId === "reject")
+  ) {
+    return verbId;
+  }
+  if (
+    item.sourceKind === "issue_thread_interaction" &&
+    item.subject.metadata?.kind === "request_confirmation" &&
+    (verbId === "accept" || verbId === "reject")
   ) {
     return verbId;
   }
   return null;
 }
 
-/** The compact accept/reject verbs a collapsed row can resolve in place. */
-function collectCompactActions(
-  item: AttentionItem,
-): Array<{
+/**
+ * Weight used to order a decision's verbs. The affirmative verb always lands
+ * rightmost — the same place in every row, collapsed or expanded — so the
+ * operator's aim never has to move with the verb list.
+ */
+const VERB_ORDER: Record<"outline" | "destructive" | "default", number> = {
+  outline: 0,
+  destructive: 1,
+  default: 2,
+};
+
+interface CompactAction {
   action: CompactDecisionAction;
-  description: string | null;
-  id: string;
   label: string;
-}> {
-  return item.decisionVerbs.slice(0, 3).flatMap((verb) => {
-    const action = compactDecisionAction(item, verb.id);
-    return action
-      ? [
-        {
-          action,
-          description: verb.description,
-          id: verb.id,
-          label: verb.label || compactDecisionActionLabel(action),
-        },
-      ]
-      : [];
-  });
+  id: string;
+  description: string;
 }
 
-function compactDecisionActionLabel(action: CompactDecisionAction): string {
-  switch (action) {
-    case "accept":
-      return translateInstant("attentionQueue.actions.accept", { defaultValue: "Accept" });
-    case "approve":
-      return translateInstant("attentionQueue.actions.approve", { defaultValue: "Approve" });
-    case "reject":
-      return translateInstant("attentionQueue.actions.reject", { defaultValue: "Reject" });
-    default:
-      return translateInstant("attentionQueue.actions.requestRevision", { defaultValue: "Request revision" });
-  }
+/** The compact accept/reject verbs a collapsed row can resolve in place. */
+function collectCompactActions(item: AttentionItem): CompactAction[] {
+  return item.decisionVerbs
+    .slice(0, 3)
+    .flatMap((verb) => {
+      const action = compactDecisionAction(item, verb.id);
+      return action
+        ? [
+            {
+              action,
+              label: verb.label,
+              id: verb.id,
+              description: verb.description ?? "",
+            },
+          ]
+        : [];
+    })
+    .sort(
+      (a, b) =>
+        VERB_ORDER[decisionVerbVariant(a)] - VERB_ORDER[decisionVerbVariant(b)],
+    );
 }
 
 function CompactDecisionActions({
@@ -478,6 +555,7 @@ function CompactDecisionActions({
   companyId: string;
   onOpen: () => void;
 }) {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
   const actions = collectCompactActions(item);
@@ -496,24 +574,26 @@ function CompactDecisionActions({
       }
       if (item.sourceKind === "issue_thread_interaction") {
         const issueId = item.subject.metadata?.issueId;
-        if (typeof issueId !== "string") {
-          throw new Error(translateInstant("attentionQueue.missingIssueReference", {
-            defaultValue: "Missing issue reference for this decision.",
-          }));
-        }
-        if (action === "accept") return issuesApi.acceptInteraction(issueId, item.subject.id);
+        if (typeof issueId !== "string")
+          throw new Error("Missing issue reference for this decision.");
+        if (action === "accept")
+          return issuesApi.acceptInteraction(issueId, item.subject.id);
         return issuesApi.rejectInteraction(issueId, item.subject.id);
       }
-      throw new Error(translateInstant("attentionQueue.completeFromDetail", {
-        defaultValue: "This decision must be completed from its detail view.",
-      }));
+      throw new Error("This decision must be completed from its detail view.");
     },
     onSuccess: (_result, action) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.attention(companyId) });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.attention(companyId),
+      });
       if (item.sourceKind === "approval") {
-        queryClient.invalidateQueries({ queryKey: queryKeys.approvals.list(companyId) });
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.approvals.list(companyId),
+        });
       } else {
-        queryClient.invalidateQueries({ queryKey: queryKeys.access.joinRequests(companyId) });
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.access.joinRequests(companyId),
+        });
       }
       pushToast({
         title: compactDecisionSuccessLabel(item.sourceKind, action),
@@ -522,10 +602,8 @@ function CompactDecisionActions({
     },
     onError: (error, action) => {
       pushToast({
-        title: translateInstant("attentionQueue.decisionFailed", { defaultValue: "Could not complete decision" }),
-        body: error instanceof Error
-          ? error.message
-          : translateInstant("Please try again.", { defaultValue: "Please try again." }),
+        title: `Could not ${decisionLabel(action)}`,
+        body: error instanceof Error ? error.message : "Please try again.",
         tone: "error",
       });
     },
@@ -536,9 +614,9 @@ function CompactDecisionActions({
   return (
     <div
       className="flex w-full flex-wrap items-center gap-2 @xl:w-auto @xl:justify-end @xl:gap-1"
-      aria-label={translateInstant("attentionQueue.decisionActions", { defaultValue: "Decision actions" })}
+      aria-label={t("attentionQueue.decisionActions")}
     >
-      {actions.map(({ action, description, id, label }) => (
+      {actions.map(({ action, id, label, description }) => (
         <Button
           key={id}
           type="button"
@@ -548,14 +626,19 @@ function CompactDecisionActions({
           disabled={decision.isPending}
           onClick={(event) => {
             event.stopPropagation();
-            if (item.sourceKind === "issue_thread_interaction" && action === "reject") {
+            if (
+              item.sourceKind === "issue_thread_interaction" &&
+              action === "reject"
+            ) {
               onOpen();
               return;
             }
             decision.mutate(action);
           }}
         >
-          {decision.isPending && decision.variables === action && <Loader2 className="h-3 w-3 animate-spin" />}
+          {decision.isPending && decision.variables === action && (
+            <Loader2 className="h-3 w-3 animate-spin" />
+          )}
           {label}
         </Button>
       ))}
@@ -563,50 +646,32 @@ function CompactDecisionActions({
   );
 }
 
-function compactDecisionSuccessLabel(sourceKind: AttentionItem["sourceKind"], action: CompactDecisionAction): string {
-  if (sourceKind === "approval") {
-    if (action === "request_revision") {
-      return translateInstant("attentionQueue.success.approvalRevisionRequested", { defaultValue: "Approval sent for revision" });
-    }
-    return action === "approve"
-      ? translateInstant("attentionQueue.success.approvalApproved", { defaultValue: "Approval approved" })
-      : translateInstant("attentionQueue.success.approvalRejected", { defaultValue: "Approval rejected" });
-  }
-  if (sourceKind === "join_request") {
-    return action === "approve"
-      ? translateInstant("attentionQueue.success.joinRequestApproved", { defaultValue: "Join request approved" })
-      : translateInstant("attentionQueue.success.joinRequestRejected", { defaultValue: "Join request rejected" });
-  }
+function decisionLabel(action: CompactDecisionAction): string {
+  if (action === "request_revision") return "sent for revision";
+  if (action === "accept" || action === "approve") return "approved";
+  return "rejected";
+}
+
+function compactDecisionSuccessLabel(
+  sourceKind: AttentionItem["sourceKind"],
+  action: CompactDecisionAction,
+): string {
+  if (sourceKind === "approval") return `Approval ${decisionLabel(action)}`;
+  if (sourceKind === "join_request")
+    return `Join request ${decisionLabel(action)}`;
   return action === "accept"
-    ? translateInstant("attentionQueue.success.confirmationAccepted", { defaultValue: "Confirmation accepted" })
-    : translateInstant("attentionQueue.success.confirmationDeclined", { defaultValue: "Confirmation declined" });
+    ? "Confirmation accepted"
+    : "Confirmation declined";
 }
 
 function decisionVerbVariant(
   verb: AttentionItem["decisionVerbs"][number],
 ): "default" | "outline" | "destructive" {
   const text = `${verb.label} ${verb.description ?? ""}`.toLowerCase();
-  if (/\b(reject|decline|deny|delete|remove)\b/.test(text) || /拒绝|驳回|删除|移除/.test(text)) {
+  if (/\b(reject|decline|deny|delete|remove)\b/.test(text))
     return "destructive";
-  }
-  if (/\b(accept|approve|confirm|apply)\b/.test(text) || /接受|批准|确认|应用/.test(text)) {
-    return "default";
-  }
+  if (/\b(accept|approve|confirm|apply)\b/.test(text)) return "default";
   return "outline";
-}
-
-/** Inline project identity keeps useful context without a competing badge. */
-function ProjectMeta({ project }: { project: NonNullable<AttentionItem["project"]> }) {
-  return (
-    <span
-      className="inline-flex max-w-(--sz-12rem) items-center gap-1.5 text-(length:--text-nano) text-muted-foreground"
-      title={project.name}
-      data-testid="attention-project-meta"
-    >
-      <ProjectTile color={project.color} icon={project.icon} size="xs" />
-      <span className="truncate">{project.name}</span>
-    </span>
-  );
 }
 
 /** Square screenshot thumbnails at the right of the description (plan §10). */
@@ -641,12 +706,21 @@ function ThumbnailStack({ images }: { images: AttentionDetailImage[] }) {
  * first three screenshots at a readable size; if more exist, an "n more" tile
  * links through to the issue where the full set lives.
  */
-function ExpandedImages({ images, issueHref }: { images: AttentionDetailImage[]; issueHref: string | null }) {
+function ExpandedImages({
+  images,
+  issueHref,
+}: {
+  images: AttentionDetailImage[];
+  issueHref: string | null;
+}) {
   const { t } = useTranslation();
   const visible = images.slice(0, 3);
   const extra = images.length - visible.length;
   return (
-    <div className="flex flex-wrap items-stretch gap-2" data-attention-expanded-images="true">
+    <div
+      className="flex flex-wrap items-stretch gap-2"
+      data-attention-expanded-images="true"
+    >
       {visible.map((img, index) => {
         const src = attentionImageUrl(img.assetId);
         const key = `${img.assetId}-${index}`;
@@ -662,6 +736,12 @@ function ExpandedImages({ images, issueHref }: { images: AttentionDetailImage[];
           <Link
             key={key}
             to={issueHref}
+            // No task quicklook on evidence. `Link` upgrades any /issues/ href
+            // into a hover preview, which here pops a text card over the very
+            // screenshot being examined — and because expanding a row mounts
+            // this gallery directly under a stationary pointer, the preview
+            // opens unbidden and can outlive the pointer that never entered it.
+            disableIssueQuicklook
             className="block rounded-md focus-visible:ring-ring focus-visible:ring-(length:--rad-3) focus-visible:outline-none"
             onClick={(e) => e.stopPropagation()}
           >
@@ -673,31 +753,39 @@ function ExpandedImages({ images, issueHref }: { images: AttentionDetailImage[];
           </span>
         );
       })}
-      {extra > 0 && (issueHref ? (
-        <Link
-          to={issueHref}
-          onClick={(e) => e.stopPropagation()}
-          className="flex h-32 w-24 flex-col items-center justify-center rounded-md border border-dashed border-border bg-muted/40 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-ring focus-visible:ring-(length:--rad-3) focus-visible:outline-none"
-        >
-          <span className="text-base font-semibold">
-            {t("attentionQueue.galleryMore", { count: extra, defaultValue: "{{count}} more" })}
+      {extra > 0 &&
+        (issueHref ? (
+          <Link
+            to={issueHref}
+            // Same gallery, same pointer trap — see the thumbnail note above.
+            disableIssueQuicklook
+            onClick={(e) => e.stopPropagation()}
+            className="flex h-32 w-24 flex-col items-center justify-center rounded-md border border-dashed border-border bg-muted/40 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-ring focus-visible:ring-(length:--rad-3) focus-visible:outline-none"
+          >
+            <span className="text-base font-semibold">
+              {extra} {t("issueProperties.more")}
+            </span>
+            <span className="mt-0.5 inline-flex items-center gap-1 text-(length:--text-nano)">
+              {t("attentionQueue.viewIssue")}
+              <ExternalLink className="h-3 w-3" />
+            </span>
+          </Link>
+        ) : (
+          <span className="flex h-32 w-24 items-center justify-center rounded-md border border-dashed border-border bg-muted/40 text-sm font-semibold text-muted-foreground">
+            {extra} {t("issueProperties.more")}
           </span>
-          <span className="mt-0.5 inline-flex items-center gap-1 text-(length:--text-nano)">
-            {t("attentionQueue.viewIssue", { defaultValue: "View issue" })}
-            <ExternalLink className="h-3 w-3" />
-          </span>
-        </Link>
-      ) : (
-        <span className="flex h-32 w-24 items-center justify-center rounded-md border border-dashed border-border bg-muted/40 text-sm font-semibold text-muted-foreground">
-          {t("attentionQueue.galleryMore", { count: extra, defaultValue: "{{count}} more" })}
-        </span>
-      ))}
+        ))}
     </div>
   );
 }
 
 /** Snooze submenu: presets + a custom date-time (plan §6). */
-function SnoozeSubmenu({ onSnooze }: { onSnooze: (snoozedUntil: string) => void }) {
+function SnoozeSubmenu({
+  onSnooze,
+}: {
+  onSnooze: (snoozedUntil: string) => void;
+}) {
+  const { t } = useTranslation();
   const [customValue, setCustomValue] = useState("");
   const applyCustom = () => {
     if (!customValue) return;
@@ -709,12 +797,15 @@ function SnoozeSubmenu({ onSnooze }: { onSnooze: (snoozedUntil: string) => void 
     <DropdownMenuSub>
       <DropdownMenuSubTrigger>
         <AlarmClock className="h-4 w-4" />
-        {translateInstant("attentionQueue.snooze.title", { defaultValue: "Snooze" })}
+        {t("attentionQueue.snooze.title")}
       </DropdownMenuSubTrigger>
       <DropdownMenuSubContent>
         {SNOOZE_PRESETS.map((preset) => (
-          <DropdownMenuItem key={preset.key} onClick={() => onSnooze(preset.resolve())}>
-            {translateInstant(preset.key, { defaultValue: preset.defaultLabel })}
+          <DropdownMenuItem
+            key={preset.label}
+            onClick={() => onSnooze(preset.resolve())}
+          >
+            {preset.label}
           </DropdownMenuItem>
         ))}
         <DropdownMenuSeparator />
@@ -726,7 +817,7 @@ function SnoozeSubmenu({ onSnooze }: { onSnooze: (snoozedUntil: string) => void 
           onClick={(e) => e.stopPropagation()}
         >
           <span className="text-(length:--text-nano) font-medium uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
-            {translateInstant("attentionQueue.snooze.custom", { defaultValue: "Custom" })}
+            {t("attentionQueue.snooze.custom")}
           </span>
           <input
             type="datetime-local"
@@ -734,8 +825,13 @@ function SnoozeSubmenu({ onSnooze }: { onSnooze: (snoozedUntil: string) => void 
             onChange={(e) => setCustomValue(e.target.value)}
             className="w-full rounded-sm border border-border bg-background px-2 py-1 text-xs"
           />
-          <Button type="button" size="xs" disabled={!customValue} onClick={applyCustom}>
-            {translateInstant("attentionQueue.snooze.until", { defaultValue: "Snooze until…" })}
+          <Button
+            type="button"
+            size="xs"
+            disabled={!customValue}
+            onClick={applyCustom}
+          >
+            {t("attentionQueue.snooze.until")}
           </Button>
         </div>
       </DropdownMenuSubContent>
@@ -746,122 +842,199 @@ function SnoozeSubmenu({ onSnooze }: { onSnooze: (snoozedUntil: string) => void 
 /** Compact "when does this snooze end" label, e.g. `in 2h`, `in 3d`. */
 function reappearLabel(snoozedUntil: string): string {
   const diffMs = new Date(snoozedUntil).getTime() - Date.now();
-  if (!Number.isFinite(diffMs) || diffMs <= 0) {
-    return translateInstant("attentionQueue.snooze.soon", { defaultValue: "soon" });
-  }
+  if (!Number.isFinite(diffMs) || diffMs <= 0) return "soon";
   const diffMin = Math.round(diffMs / 60000);
-  if (diffMin < 60) {
-    return translateInstant("attentionQueue.snooze.inMinutes", { defaultValue: "in {{count}}m", count: diffMin });
-  }
+  if (diffMin < 60) return `in ${diffMin}m`;
   const diffHr = Math.round(diffMin / 60);
-  if (diffHr < 24) {
-    return translateInstant("attentionQueue.snooze.inHours", { defaultValue: "in {{count}}h", count: diffHr });
-  }
+  if (diffHr < 24) return `in ${diffHr}h`;
   const diffDay = Math.round(diffHr / 24);
-  return translateInstant("attentionQueue.snooze.inDays", { defaultValue: "in {{count}}d", count: diffDay });
+  return `in ${diffDay}d`;
 }
 
+/**
+ * Expanded-row content. Resolvers that own their decision verbs also render the
+ * row's footer, so the disclosure toggle (`toggle`) sits on the same line as the
+ * buttons. The issue-thread interaction card keeps its verbs internally — it is
+ * shared with the issue thread surface — so there the toggle gets its own row.
+ */
 function InlineResolver({
   item,
   companyId,
   agentMap,
   currentUserId,
   userLabelMap,
+  toggle,
 }: {
   item: AttentionItem;
   companyId: string;
   agentMap?: Map<string, Agent>;
   currentUserId?: string | null;
   userLabelMap?: ReadonlyMap<string, string> | null;
+  toggle: ReactNode;
 }) {
-  if (item.sourceKind === "issue_thread_interaction") {
-    const issueId = (item.subject.metadata?.issueId as string | undefined) ?? item.relatedIssue?.id;
-    if (!issueId) {
-      return (
-        <p className="text-xs text-muted-foreground">
-          {translateInstant("attentionQueue.missingIssueReference", {
-            defaultValue: "Missing issue reference for this decision.",
-          })}
-        </p>
-      );
-    }
+  const { t } = useTranslation();
+  if (item.sourceKind === "decision") {
     return (
-      <AttentionInteractionResolver
+      <DecisionResolver
         companyId={companyId}
-        issueId={issueId}
-        interactionId={item.subject.id}
+        decisionId={item.subject.id}
+        originIssue={item.relatedIssue}
         agentMap={agentMap}
-        currentUserId={currentUserId}
-        userLabelMap={userLabelMap}
       />
     );
   }
 
+  if (item.sourceKind === "issue_thread_interaction") {
+    const issueId =
+      (item.subject.metadata?.issueId as string | undefined) ??
+      item.relatedIssue?.id;
+    if (!issueId) {
+      return (
+        <p className="text-xs text-muted-foreground">
+          {t("attentionQueue.missingIssueReference")}
+        </p>
+      );
+    }
+    return (
+      <>
+        <AttentionInteractionResolver
+          companyId={companyId}
+          issueId={issueId}
+          interactionId={item.subject.id}
+          agentMap={agentMap}
+          currentUserId={currentUserId}
+          userLabelMap={userLabelMap}
+        />
+        {toggle && <div className="flex items-center">{toggle}</div>}
+      </>
+    );
+  }
+
   if (item.sourceKind === "approval") {
-    return <ApprovalResolver item={item} companyId={companyId} />;
+    return (
+      <ApprovalResolver item={item} companyId={companyId} toggle={toggle} />
+    );
   }
 
   if (item.sourceKind === "join_request") {
-    return <JoinRequestResolver item={item} companyId={companyId} />;
+    return (
+      <JoinRequestResolver item={item} companyId={companyId} toggle={toggle} />
+    );
   }
 
   return null;
 }
 
-function ApprovalResolver({ item, companyId }: { item: AttentionItem; companyId: string }) {
-  const queryClient = useQueryClient();
-  const [note, setNote] = useState("");
-  const invalidate = () => {
-    queryClient.invalidateQueries({ queryKey: queryKeys.attention(companyId) });
-    queryClient.invalidateQueries({ queryKey: queryKeys.approvals.list(companyId) });
-  };
-  const approve = useMutation({
-    mutationFn: () => approvalsApi.approve(item.subject.id, note.trim() || undefined),
-    onSuccess: invalidate,
-  });
-  const reject = useMutation({
-    mutationFn: () => approvalsApi.reject(item.subject.id, note.trim() || undefined),
-    onSuccess: invalidate,
-  });
-  const revise = useMutation({
-    mutationFn: () => approvalsApi.requestRevision(item.subject.id, note.trim() || undefined),
-    onSuccess: invalidate,
-  });
-  const pending = approve.isPending || reject.isPending || revise.isPending;
-
+/** Footer shared by the resolvers that own their verbs: toggle left, verbs right. */
+function ResolverFooter({
+  toggle,
+  children,
+}: {
+  toggle: ReactNode;
+  children: ReactNode;
+}) {
   return (
-    <div className="space-y-3">
-      <Textarea
-        value={note}
-        onChange={(e) => setNote(e.target.value)}
-        placeholder={translateInstant("attentionQueue.optionalDecisionNote", {
-          defaultValue: "Optional decision note…",
-        })}
-        className="min-h-16 text-sm"
-      />
-      <div className="flex flex-wrap gap-2">
-        <Button size="sm" onClick={() => approve.mutate()} disabled={pending}>
-          {approve.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-          {translateInstant("attentionQueue.actions.approve", { defaultValue: "Approve" })}
-        </Button>
-        <Button size="sm" variant="outline" onClick={() => revise.mutate()} disabled={pending}>
-          {revise.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-          {translateInstant("attentionQueue.actions.requestRevision", { defaultValue: "Request revision" })}
-        </Button>
-        <Button size="sm" variant="destructive" onClick={() => reject.mutate()} disabled={pending}>
-          {reject.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-          {translateInstant("attentionQueue.actions.reject", { defaultValue: "Reject" })}
-        </Button>
-      </div>
+    <div
+      className="flex flex-wrap items-center justify-between gap-2"
+      data-attention-actions="true"
+    >
+      {toggle ?? <span />}
+      <div className="flex flex-wrap items-center gap-2">{children}</div>
     </div>
   );
 }
 
-function JoinRequestResolver({ item, companyId }: { item: AttentionItem; companyId: string }) {
+function ApprovalResolver({
+  item,
+  companyId,
+  toggle,
+}: {
+  item: AttentionItem;
+  companyId: string;
+  toggle: ReactNode;
+}) {
+  const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  const [note, setNote] = useState("");
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.attention(companyId) });
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.approvals.list(companyId),
+    });
+  };
+  const approve = useMutation({
+    mutationFn: () =>
+      approvalsApi.approve(item.subject.id, note.trim() || undefined),
+    onSuccess: invalidate,
+  });
+  const reject = useMutation({
+    mutationFn: () =>
+      approvalsApi.reject(item.subject.id, note.trim() || undefined),
+    onSuccess: invalidate,
+  });
+  const revise = useMutation({
+    mutationFn: () =>
+      approvalsApi.requestRevision(item.subject.id, note.trim() || undefined),
+    onSuccess: invalidate,
+  });
+  const pending = approve.isPending || reject.isPending || revise.isPending;
+
+  // Verb order matches the collapsed row exactly (revise → reject → approve),
+  // so expanding never moves the button the operator was already aiming at.
+  return (
+    <>
+      <Textarea
+        value={note}
+        onChange={(e) => setNote(e.target.value)}
+        placeholder={t("attentionQueue.optionalDecisionNote")}
+        className="min-h-16 text-sm"
+      />
+      <ResolverFooter toggle={toggle}>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => revise.mutate()}
+          disabled={pending}
+        >
+          {revise.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+          {t("attentionQueue.actions.requestRevision")}
+        </Button>
+        <Button
+          size="sm"
+          variant="destructive"
+          onClick={() => reject.mutate()}
+          disabled={pending}
+        >
+          {reject.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+          {t("attentionQueue.actions.reject")}
+        </Button>
+        <Button size="sm" onClick={() => approve.mutate()} disabled={pending}>
+          {approve.isPending && (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          )}
+          {t("attentionQueue.actions.approve")}
+        </Button>
+      </ResolverFooter>
+    </>
+  );
+}
+
+function JoinRequestResolver({
+  item,
+  companyId,
+  toggle,
+}: {
+  item: AttentionItem;
+  companyId: string;
+  toggle: ReactNode;
+}) {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: queryKeys.attention(companyId) });
-    queryClient.invalidateQueries({ queryKey: queryKeys.access.joinRequests(companyId) });
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.access.joinRequests(companyId),
+    });
   };
   const approve = useMutation({
     mutationFn: () => accessApi.approveJoinRequest(companyId, item.subject.id),
@@ -874,15 +1047,20 @@ function JoinRequestResolver({ item, companyId }: { item: AttentionItem; company
   const pending = approve.isPending || reject.isPending;
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <ResolverFooter toggle={toggle}>
+      <Button
+        size="sm"
+        variant="destructive"
+        onClick={() => reject.mutate()}
+        disabled={pending}
+      >
+        {reject.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+        {t("attentionQueue.actions.reject")}
+      </Button>
       <Button size="sm" onClick={() => approve.mutate()} disabled={pending}>
         {approve.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-        {translateInstant("attentionQueue.actions.approve", { defaultValue: "Approve" })}
+        {t("attentionQueue.actions.approve")}
       </Button>
-      <Button size="sm" variant="destructive" onClick={() => reject.mutate()} disabled={pending}>
-        {reject.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-        {translateInstant("attentionQueue.actions.reject", { defaultValue: "Reject" })}
-      </Button>
-    </div>
+    </ResolverFooter>
   );
 }

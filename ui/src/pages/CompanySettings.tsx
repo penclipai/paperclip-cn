@@ -1,6 +1,6 @@
-import { ChangeEvent, useEffect, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
+import { ChangeEvent, useEffect, useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   DEFAULT_COMPANY_ATTACHMENT_MAX_BYTES,
   MAX_COMPANY_ATTACHMENT_MAX_BYTES,
@@ -9,39 +9,35 @@ import { useCompany } from "../context/CompanyContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { companiesApi } from "../api/companies";
 import { assetsApi } from "../api/assets";
-import { instanceSettingsApi } from "../api/instanceSettings";
 import { queryKeys } from "../lib/queryKeys";
 import { Link } from "@/lib/router";
 import { Button } from "@/components/ui/button";
-import { Settings, CloudUpload, Download, Upload } from "lucide-react";
+import { Settings, Download, Upload } from "lucide-react";
 import { CompanyPatternIcon } from "../components/CompanyPatternIcon";
-import {
-  Field,
-  ToggleField,
-} from "../components/agent-config-primitives";
+import { Field, ToggleField } from "../components/agent-config-primitives";
 
 const BYTES_PER_MIB = 1024 * 1024;
-const DEFAULT_COMPANY_ATTACHMENT_MAX_MIB = DEFAULT_COMPANY_ATTACHMENT_MAX_BYTES / BYTES_PER_MIB;
-const MAX_COMPANY_ATTACHMENT_MAX_MIB = MAX_COMPANY_ATTACHMENT_MAX_BYTES / BYTES_PER_MIB;
+const DEFAULT_COMPANY_ATTACHMENT_MAX_MIB =
+  DEFAULT_COMPANY_ATTACHMENT_MAX_BYTES / BYTES_PER_MIB;
+const MAX_COMPANY_ATTACHMENT_MAX_MIB =
+  MAX_COMPANY_ATTACHMENT_MAX_BYTES / BYTES_PER_MIB;
 export function CompanySettings() {
   const { t } = useTranslation();
   const {
     companies,
     selectedCompany,
     selectedCompanyId,
-    setSelectedCompanyId
+    setSelectedCompanyId,
   } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const queryClient = useQueryClient();
-  const { data: experimentalSettings } = useQuery({
-    queryKey: queryKeys.instance.experimentalSettings,
-    queryFn: () => instanceSettingsApi.getExperimental(),
-  });
   // General settings local state
   const [companyName, setCompanyName] = useState("");
   const [description, setDescription] = useState("");
   const [brandColor, setBrandColor] = useState("");
-  const [attachmentMaxMiB, setAttachmentMaxMiB] = useState(String(DEFAULT_COMPANY_ATTACHMENT_MAX_MIB));
+  const [attachmentMaxMiB, setAttachmentMaxMiB] = useState(
+    String(DEFAULT_COMPANY_ATTACHMENT_MAX_MIB),
+  );
   const [logoUrl, setLogoUrl] = useState("");
   const [logoUploadError, setLogoUploadError] = useState<string | null>(null);
 
@@ -51,23 +47,32 @@ export function CompanySettings() {
     setCompanyName(selectedCompany.name);
     setDescription(selectedCompany.description ?? "");
     setBrandColor(selectedCompany.brandColor ?? "");
-    setAttachmentMaxMiB(String(Math.round((selectedCompany.attachmentMaxBytes ?? DEFAULT_COMPANY_ATTACHMENT_MAX_BYTES) / BYTES_PER_MIB)));
+    setAttachmentMaxMiB(
+      String(
+        Math.round(
+          (selectedCompany.attachmentMaxBytes ??
+            DEFAULT_COMPANY_ATTACHMENT_MAX_BYTES) / BYTES_PER_MIB,
+        ),
+      ),
+    );
     setLogoUrl(selectedCompany.logoUrl ?? "");
   }, [selectedCompany]);
 
-  const attachmentMaxBytes = Number.parseInt(attachmentMaxMiB, 10) * BYTES_PER_MIB;
+  const attachmentMaxBytes =
+    Number.parseInt(attachmentMaxMiB, 10) * BYTES_PER_MIB;
   const attachmentMaxValid =
-    Number.isInteger(attachmentMaxBytes)
-    && attachmentMaxBytes >= BYTES_PER_MIB
-    && attachmentMaxBytes <= MAX_COMPANY_ATTACHMENT_MAX_BYTES;
-  const cloudSyncEnabled = experimentalSettings?.enableCloudSync === true;
+    Number.isInteger(attachmentMaxBytes) &&
+    attachmentMaxBytes >= BYTES_PER_MIB &&
+    attachmentMaxBytes <= MAX_COMPANY_ATTACHMENT_MAX_BYTES;
 
   const generalDirty =
     !!selectedCompany &&
     (companyName !== selectedCompany.name ||
       description !== (selectedCompany.description ?? "") ||
       brandColor !== (selectedCompany.brandColor ?? "") ||
-      attachmentMaxBytes !== (selectedCompany.attachmentMaxBytes ?? DEFAULT_COMPANY_ATTACHMENT_MAX_BYTES));
+      attachmentMaxBytes !==
+        (selectedCompany.attachmentMaxBytes ??
+          DEFAULT_COMPANY_ATTACHMENT_MAX_BYTES));
 
   const generalMutation = useMutation({
     mutationFn: (data: {
@@ -78,17 +83,17 @@ export function CompanySettings() {
     }) => companiesApi.update(selectedCompanyId!, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.companies.all });
-    }
+    },
   });
 
   const settingsMutation = useMutation({
     mutationFn: (requireApproval: boolean) =>
       companiesApi.update(selectedCompanyId!, {
-        requireBoardApprovalForNewAgents: requireApproval
+        requireBoardApprovalForNewAgents: requireApproval,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.companies.all });
-    }
+    },
   });
 
   const syncLogoState = (nextLogoUrl: string | null) => {
@@ -98,21 +103,24 @@ export function CompanySettings() {
 
   const logoUploadMutation = useMutation({
     mutationFn: (file: File) =>
-      assetsApi
-        .uploadCompanyLogo(selectedCompanyId!, file)
-        .then((asset) => companiesApi.update(selectedCompanyId!, { logoAssetId: asset.assetId })),
+      assetsApi.uploadCompanyLogo(selectedCompanyId!, file).then((asset) =>
+        companiesApi.update(selectedCompanyId!, {
+          logoAssetId: asset.assetId,
+        }),
+      ),
     onSuccess: (company) => {
       syncLogoState(company.logoUrl);
       setLogoUploadError(null);
-    }
+    },
   });
 
   const clearLogoMutation = useMutation({
-    mutationFn: () => companiesApi.update(selectedCompanyId!, { logoAssetId: null }),
+    mutationFn: () =>
+      companiesApi.update(selectedCompanyId!, { logoAssetId: null }),
     onSuccess: (company) => {
       setLogoUploadError(null);
       syncLogoState(company.logoUrl);
-    }
+    },
   });
 
   function handleLogoFileChange(event: ChangeEvent<HTMLInputElement>) {
@@ -130,7 +138,7 @@ export function CompanySettings() {
   const archiveMutation = useMutation({
     mutationFn: ({
       companyId,
-      nextCompanyId
+      nextCompanyId,
     }: {
       companyId: string;
       nextCompanyId: string | null;
@@ -140,20 +148,20 @@ export function CompanySettings() {
         setSelectedCompanyId(nextCompanyId);
       }
       await queryClient.invalidateQueries({
-        queryKey: queryKeys.companies.all
+        queryKey: queryKeys.companies.all,
       });
       await queryClient.invalidateQueries({
-        queryKey: queryKeys.companies.stats
+        queryKey: queryKeys.companies.stats,
       });
-    }
+    },
   });
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: selectedCompany?.name ?? t("Company"), href: "/dashboard" },
-      { label: t("Settings") }
+      { label: selectedCompany?.name ?? "Company", href: "/dashboard" },
+      { label: "Settings" },
     ]);
-  }, [setBreadcrumbs, selectedCompany?.name, t]);
+  }, [setBreadcrumbs, selectedCompany?.name]);
 
   if (!selectedCompany) {
     return (
@@ -168,7 +176,7 @@ export function CompanySettings() {
       name: companyName.trim(),
       description: description.trim() || null,
       brandColor: brandColor || null,
-      attachmentMaxBytes
+      attachmentMaxBytes,
     });
   }
 
@@ -185,7 +193,10 @@ export function CompanySettings() {
           {t("General")}
         </div>
         <div className="space-y-3 rounded-md border border-border px-4 py-4">
-          <Field label={t("Company name")} hint={t("The display name for your company.")}>
+          <Field
+            label={t("Company name")}
+            hint="The display name for your company."
+          >
             <input
               className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
               type="text"
@@ -195,7 +206,7 @@ export function CompanySettings() {
           </Field>
           <Field
             label={t("Description")}
-            hint={t("Optional description shown in the company profile.")}
+            hint="Optional description shown in the company profile."
           >
             <input
               className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
@@ -226,7 +237,7 @@ export function CompanySettings() {
             <div className="flex-1 space-y-3">
               <Field
                 label={t("Logo")}
-                hint={t("Upload a PNG, JPEG, WEBP, GIF, or SVG logo image.")}
+                hint="Upload a PNG, JPEG, WEBP, GIF, or SVG logo image."
               >
                 <div className="space-y-2">
                   <input
@@ -243,7 +254,9 @@ export function CompanySettings() {
                         onClick={handleClearLogo}
                         disabled={clearLogoMutation.isPending}
                       >
-                        {clearLogoMutation.isPending ? t("Removing...") : t("Remove logo")}
+                        {clearLogoMutation.isPending
+                          ? "Removing..."
+                          : "Remove logo"}
                       </Button>
                     </div>
                   )}
@@ -252,7 +265,7 @@ export function CompanySettings() {
                       {logoUploadError ??
                         (logoUploadMutation.error instanceof Error
                           ? logoUploadMutation.error.message
-                          : t("Logo upload failed"))}
+                          : "Logo upload failed")}
                     </span>
                   )}
                   {clearLogoMutation.isError && (
@@ -261,13 +274,15 @@ export function CompanySettings() {
                     </span>
                   )}
                   {logoUploadMutation.isPending && (
-                    <span className="text-xs text-muted-foreground">{t("Uploading logo...")}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {t("Uploading logo...")}
+                    </span>
                   )}
                 </div>
               </Field>
               <Field
                 label={t("Brand color")}
-                hint={t("Sets the hue for the company icon. Leave empty for auto-generated color.")}
+                hint="Sets the hue for the company icon. Leave empty for auto-generated color."
               >
                 <div className="flex items-center gap-2">
                   {/* token-extraction: allowlisted — <input type="color"> value must be a real hex string, not a var() reference. */}
@@ -303,7 +318,7 @@ export function CompanySettings() {
               </Field>
               <Field
                 label={t("Attachment size limit")}
-                hint={t("Accepted range: 1-{{max}} MiB.", { max: MAX_COMPANY_ATTACHMENT_MAX_MIB })}
+                hint={`Accepted range: 1-${MAX_COMPANY_ATTACHMENT_MAX_MIB} MiB.`}
               >
                 <div className="flex flex-col gap-1.5">
                   <div className="flex items-center gap-2">
@@ -320,7 +335,8 @@ export function CompanySettings() {
                   </div>
                   {!attachmentMaxValid && (
                     <span className="text-xs text-destructive">
-                      {t("Enter a whole number from 1 to {{max}}.", { max: MAX_COMPANY_ATTACHMENT_MAX_MIB })}
+                      {t("companySettings.attachmentRange")}{" "}
+                      {MAX_COMPANY_ATTACHMENT_MAX_MIB}.
                     </span>
                   )}
                 </div>
@@ -336,9 +352,13 @@ export function CompanySettings() {
           <Button
             size="sm"
             onClick={handleSaveGeneral}
-            disabled={generalMutation.isPending || !companyName.trim() || !attachmentMaxValid}
+            disabled={
+              generalMutation.isPending ||
+              !companyName.trim() ||
+              !attachmentMaxValid
+            }
           >
-            {generalMutation.isPending ? t("Saving...") : t("Save changes")}
+            {generalMutation.isPending ? "Saving..." : "Save changes"}
           </Button>
           {generalMutation.isSuccess && (
             <span className="text-xs text-muted-foreground">{t("Saved")}</span>
@@ -346,8 +366,8 @@ export function CompanySettings() {
           {generalMutation.isError && (
             <span className="text-xs text-destructive">
               {generalMutation.error instanceof Error
-                  ? generalMutation.error.message
-                  : t("Failed to save")}
+                ? generalMutation.error.message
+                : "Failed to save"}
             </span>
           )}
         </div>
@@ -361,7 +381,7 @@ export function CompanySettings() {
         <div className="rounded-md border border-border px-4 py-3">
           <ToggleField
             label={t("Require board approval for new hires")}
-            hint={t("New agent hires stay pending until approved by board.")}
+            hint="New agent hires stay pending until approved by board."
             checked={!!selectedCompany.requireBoardApprovalForNewAgents}
             onChange={(v) => settingsMutation.mutate(v)}
             toggleTestId="company-settings-team-approval-toggle"
@@ -375,20 +395,7 @@ export function CompanySettings() {
           {t("Company Packages")}
         </div>
         <div className="rounded-md border border-border px-4 py-4">
-          <p className="text-sm text-muted-foreground">
-            {t("Import and export have moved to dedicated pages accessible from the")}{" "}
-            <Link to="/org" className="underline hover:text-foreground">{t("Org Chart")}</Link>{" "}
-            {t("header.")}
-          </p>
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            {cloudSyncEnabled ? (
-              <Button size="sm" asChild>
-                <Link to="/company/settings/cloud-upstream">
-                  <CloudUpload className="mr-1.5 h-3.5 w-3.5" />
-                  {t("Send to Paperclip Cloud")}
-                </Link>
-              </Button>
-            ) : null}
+          <div className="flex flex-wrap items-center gap-2">
             <Button size="sm" variant="outline" asChild>
               <Link to="/company/export">
                 <Download className="mr-1.5 h-3.5 w-3.5" />
@@ -412,7 +419,9 @@ export function CompanySettings() {
         </div>
         <div className="space-y-3 rounded-md border border-destructive/40 bg-destructive/5 px-4 py-4">
           <p className="text-sm text-muted-foreground">
-            {t("Archive this company to hide it from the sidebar. This persists in the database.")}
+            {t(
+              "Archive this company to hide it from the sidebar. This persists in the database.",
+            )}
           </p>
           <div className="flex items-center gap-2">
             <Button
@@ -425,32 +434,32 @@ export function CompanySettings() {
               onClick={() => {
                 if (!selectedCompanyId) return;
                 const confirmed = window.confirm(
-                  t("Archive company \"{{name}}\"? It will be hidden from the sidebar.", { name: selectedCompany.name })
+                  `Archive company "${selectedCompany.name}"? It will be hidden from the sidebar.`,
                 );
                 if (!confirmed) return;
                 const nextCompanyId =
                   companies.find(
                     (company) =>
                       company.id !== selectedCompanyId &&
-                      company.status !== "archived"
+                      company.status !== "archived",
                   )?.id ?? null;
                 archiveMutation.mutate({
                   companyId: selectedCompanyId,
-                  nextCompanyId
+                  nextCompanyId,
                 });
               }}
             >
               {archiveMutation.isPending
-                ? t("Archiving...")
+                ? "Archiving..."
                 : selectedCompany.status === "archived"
-                ? t("Already archived")
-                : t("Archive company")}
+                  ? "Already archived"
+                  : "Archive company"}
             </Button>
             {archiveMutation.isError && (
               <span className="text-xs text-destructive">
                 {archiveMutation.error instanceof Error
                   ? archiveMutation.error.message
-                  : t("Failed to archive company")}
+                  : "Failed to archive company"}
               </span>
             )}
           </div>

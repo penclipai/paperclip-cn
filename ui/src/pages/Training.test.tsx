@@ -15,6 +15,10 @@ const { mockT } = vi.hoisted(() => ({
 
 vi.mock("react-i18next", async (importOriginal) => {
   const actual = await importOriginal<typeof import("react-i18next")>();
+  const { translateForTest } = await import("../test-utils/i18n");
+  mockT.mockImplementation((key: string, options?: Record<string, unknown>) =>
+    translateForTest(key, options),
+  );
   return {
     ...actual,
     useTranslation: () => ({ t: mockT }),

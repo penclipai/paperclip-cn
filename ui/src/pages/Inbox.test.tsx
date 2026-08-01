@@ -7,10 +7,18 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { Issue } from "@penclipai/shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { CompanyJoinRequest } from "../api/access";
+import {
+  clearLocalInboxArchive,
+  getLocalInboxArchiveIssueIds,
+} from "../lib/inboxArchiveCache";
 
 const routerMock = vi.hoisted(() => ({
   location: { pathname: "/", search: "", hash: "" },
   navigate: vi.fn(),
+}));
+
+const externalObjectMocks = vi.hoisted(() => ({
+  summaries: new Map(),
 }));
 
 const apiMocks = vi.hoisted(() => ({
@@ -122,6 +130,14 @@ vi.mock("../hooks/useInboxBadge", () => ({
   }),
 }));
 
+vi.mock("../hooks/useIssueExternalObjects", () => ({
+  useIssueExternalObjectSummaries: () => ({
+    summaries: externalObjectMocks.summaries,
+    isLoading: false,
+    isReady: true,
+  }),
+}));
+
 import {
   FailedRunInboxRow,
   Inbox,
@@ -141,13 +157,12 @@ vi.mock("@/lib/router", () => ({
 
 vi.mock("react-i18next", async (importOriginal) => {
   const actual = await importOriginal<typeof import("react-i18next")>();
+  const { translateForTest } = await import("../test-utils/i18n");
   return {
     ...actual,
     useTranslation: () => ({
       t: (key: string, options?: { defaultValue?: string; agentName?: string }) =>
-        options?.defaultValue ?? (typeof options?.agentName === "string"
-          ? key.replace("{{agentName}}", options.agentName)
-          : key),
+        translateForTest(key, options),
     }),
   };
 });
@@ -264,6 +279,7 @@ function createJoinRequest(
 
 function resetInboxApiMocks() {
   for (const mock of Object.values(apiMocks)) mock.mockReset();
+  externalObjectMocks.summaries.clear();
   routerMock.location.pathname = "/";
   routerMock.location.search = "";
   routerMock.location.hash = "";
@@ -303,7 +319,42 @@ describe("Inbox toolbar", () => {
   });
 
   afterEach(() => {
+    for (const issueId of getLocalInboxArchiveIssueIds("company-1")) {
+      clearLocalInboxArchive("company-1", issueId);
+    }
     container.remove();
+  });
+
+  it("does not render external-object summaries in inbox rows", async () => {
+    routerMock.location.pathname = "/inbox/mine";
+    const issue = createIssue({ title: "Inbox row without external object column" });
+    apiMocks.issuesList.mockResolvedValue([issue]);
+    externalObjectMocks.summaries.set(issue.id, {
+      total: 1,
+      highestSeverity: "failed",
+      byStatusCategory: { failed: 1 },
+      objects: [],
+    });
+
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false, staleTime: 0, gcTime: 0 } },
+    });
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(
+        <QueryClientProvider client={queryClient}>
+          <Inbox />
+        </QueryClientProvider>,
+      );
+    });
+    await vi.waitFor(() => {
+      expect(container.textContent).toContain(issue.title);
+    });
+
+    expect(container.querySelector('[aria-label^="External objects:"]')).toBeNull();
+
+    act(() => root.unmount());
   });
 
   it("shows blocked toolbar controls on the Blocked tab", async () => {
@@ -490,16 +541,15 @@ describe("Inbox toolbar", () => {
 
     const rows = Array.from(container.querySelectorAll("[data-inbox-item]"));
     const rowFor = (text: string) => rows.find((row) => row.textContent?.includes(text));
-    const linkOf = (row: Element) => row.querySelector<HTMLAnchorElement>("a[data-inbox-issue-link]");
     const markReadButton = (row: Element) => row.querySelector('button[aria-label="Mark as read"]');
     // The empty spacer that reserves the chevron column on every leaf row.
     // Excludes the tree-guide span (`.self-stretch`), which only renders on
     // nested rows.
     const hasLeadingSpacer = (row: Element) =>
-      !!linkOf(row)?.querySelector("span.hidden.w-4.shrink-0.sm\\:block:not(.self-stretch)");
+      !!row.querySelector("span.hidden.w-4.shrink-0.sm\\:block:not(.self-stretch)");
     // The reserved leading dot slot, present on read AND unread rows.
     const dotSlot = (row: Element) =>
-      linkOf(row)?.querySelector('[data-testid="issue-row-unread-slot"]') ?? null;
+      row.querySelector('[data-testid="issue-row-unread-slot"]');
 
     const unreadRow = rowFor("Unread inbox row")!;
     const readRow = rowFor("Read inbox row")!;
@@ -657,6 +707,110 @@ describe("Inbox toolbar", () => {
     act(() => {
       root.unmount();
     });
+  });
+
+  it("keeps a successful archive hidden when stale query data arrives", async () => {
+    routerMock.location.pathname = "/inbox/mine";
+    const archivedIssue = createIssue({
+      id: "issue-a",
+      identifier: "PAP-1001",
+      title: "Archived inbox row",
+    });
+    apiMocks.issuesList.mockResolvedValue([archivedIssue]);
+
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false, staleTime: 0, gcTime: 0 } },
+    });
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(
+        <QueryClientProvider client={queryClient}>
+          <Inbox />
+        </QueryClientProvider>,
+      );
+    });
+    await vi.waitFor(() => {
+      expect(container.textContent).toContain("Archived inbox row");
+    });
+
+    const archiveButton = container.querySelector<HTMLButtonElement>(
+      'button[aria-label="Dismiss from inbox"]',
+    );
+    expect(archiveButton).not.toBeNull();
+
+    await act(async () => {
+      archiveButton!.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
+    });
+    await vi.waitFor(() => {
+      expect(apiMocks.archiveFromInbox).toHaveBeenCalledWith("issue-a");
+      expect(container.textContent).not.toContain("Archived inbox row");
+    });
+
+    await act(async () => {
+      queryClient.setQueriesData<Issue[]>(
+        { queryKey: ["issues", "company-1", "mine-by-me"] },
+        [archivedIssue],
+      );
+    });
+
+    expect(container.textContent).not.toContain("Archived inbox row");
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("restores a locally hidden archive when undo is pressed", async () => {
+    generalSettingsMock.keyboardShortcutsEnabled = true;
+    routerMock.location.pathname = "/inbox/mine";
+    const archivedIssue = createIssue({
+      id: "issue-a",
+      identifier: "PAP-1001",
+      title: "Undoable inbox row",
+    });
+    apiMocks.issuesList.mockResolvedValue([archivedIssue]);
+
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false, staleTime: 0, gcTime: 0 } },
+    });
+    const root = createRoot(container);
+
+    try {
+      await act(async () => {
+        root.render(
+          <QueryClientProvider client={queryClient}>
+            <Inbox />
+          </QueryClientProvider>,
+        );
+      });
+      await vi.waitFor(() => {
+        expect(container.textContent).toContain("Undoable inbox row");
+      });
+
+      const archiveButton = container.querySelector<HTMLButtonElement>(
+        'button[aria-label="Dismiss from inbox"]',
+      );
+      expect(archiveButton).not.toBeNull();
+      await act(async () => {
+        archiveButton!.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
+      });
+      await vi.waitFor(() => {
+        expect(container.textContent).not.toContain("Undoable inbox row");
+        expect(queryClient.isMutating()).toBe(0);
+      });
+
+      await act(async () => {
+        document.body.dispatchEvent(new KeyboardEvent("keydown", { key: "u", bubbles: true }));
+      });
+      await vi.waitFor(() => {
+        expect(apiMocks.unarchiveFromInbox).toHaveBeenCalledWith("issue-a");
+        expect(container.textContent).toContain("Undoable inbox row");
+      });
+    } finally {
+      generalSettingsMock.keyboardShortcutsEnabled = false;
+      act(() => root.unmount());
+    }
   });
 });
 

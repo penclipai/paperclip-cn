@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   activityLog,
@@ -81,29 +81,6 @@ if (!embeddedPostgresSupport.supported) {
   );
 }
 
-function errorHasPostgresCode(error: unknown, code: string): boolean {
-  let current: unknown = error;
-  for (let depth = 0; depth < 4; depth += 1) {
-    if (!current || typeof current !== "object") return false;
-    const record = current as { code?: unknown; cause?: unknown };
-    if (record.code === code) return true;
-    current = record.cause;
-  }
-  return false;
-}
-
-async function truncateCompaniesWithDeadlockRetry(db: ReturnType<typeof createDb>) {
-  for (let attempt = 0; attempt < 5; attempt += 1) {
-    try {
-      await db.execute(sql.raw(`TRUNCATE TABLE "companies" CASCADE`));
-      return;
-    } catch (error) {
-      if (!errorHasPostgresCode(error, "40P01") || attempt === 4) throw error;
-      await new Promise((resolve) => setTimeout(resolve, 50 * (attempt + 1)));
-    }
-  }
-}
-
 describeEmbeddedPostgres("heartbeat issue graph liveness escalation", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
   let db: ReturnType<typeof createDb>;
@@ -116,22 +93,35 @@ describeEmbeddedPostgres("heartbeat issue graph liveness escalation", () => {
   afterEach(async () => {
     vi.clearAllMocks();
     runningProcesses.clear();
-    let idlePolls = 0;
-    for (let attempt = 0; attempt < 100; attempt += 1) {
-      const runs = await db
-        .select({ status: heartbeatRuns.status })
-        .from(heartbeatRuns);
-      const hasActiveRun = runs.some((run) => run.status === "queued" || run.status === "running");
-      if (!hasActiveRun) {
-        idlePolls += 1;
-        if (idlePolls >= 3) break;
-      } else {
-        idlePolls = 0;
-      }
-      await new Promise((resolve) => setTimeout(resolve, 50));
-    }
-    await new Promise((resolve) => setTimeout(resolve, 50));
-    await truncateCompaniesWithDeadlockRetry(db);
+    // reconcileIssueGraphLiveness heals dependency wakes by enqueuing an
+    // on-demand wake, which dispatches a heartbeat run fire-and-forget (see
+    // startNextQueuedRunForAgent → executeRun in the heartbeat service). That
+    // background run keeps writing rows (workspace_operations, heartbeat_run_events)
+    // after the awaited call resolves. Deterministically await those in-flight
+    // executions before clearing tables — otherwise an escaping heartbeat_run_events
+    // insert can land between the events delete and the heartbeat_runs delete and
+    // trip the run_events → runs foreign key.
+    await heartbeatService(db).drainActiveRunExecutions();
+    await db.delete(activityLog);
+    await db.delete(heartbeatRunEvents);
+    await db.delete(costEvents);
+    await db.delete(workspaceOperations);
+    await db.delete(issueComments);
+    await db.delete(issueTreeHoldMembers);
+    await db.delete(issueTreeHolds);
+    await db.delete(issueRelations);
+    await db.delete(issues);
+    await db.delete(executionWorkspaces);
+    await db.delete(projectWorkspaces);
+    await db.delete(projects);
+    await db.delete(heartbeatRuns);
+    await db.delete(agentWakeupRequests);
+    await db.delete(agentRuntimeState);
+    await db.delete(budgetPolicies);
+    await db.delete(agents);
+    await db.delete(companyMemberships);
+    await db.delete(companySkills);
+    await db.delete(companies);
     await instanceSettingsService(db).updateExperimental({
       enableIssueGraphLivenessAutoRecovery: false,
       enableIsolatedWorkspaces: false,

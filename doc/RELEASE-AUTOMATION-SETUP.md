@@ -10,7 +10,6 @@ This document covers the GitHub and npm setup required for the current Paperclip
 Repo-side files that depend on this setup:
 
 - `.github/workflows/release.yml`
-- `.github/workflows/release-smoke.yml`
 - `.github/CODEOWNERS`
 
 Note:
@@ -26,7 +25,6 @@ Before touching GitHub or npm settings, merge the release automation code so the
 Required files:
 
 - `.github/workflows/release.yml`
-- `.github/workflows/release-smoke.yml`
 - `.github/CODEOWNERS`
 
 ## 2. Configure npm Trusted Publishing
@@ -35,9 +33,9 @@ Do this for every public package that Paperclip publishes.
 
 At minimum that includes:
 
-- `penclip`
-- `@penclipai/server`
-- `@penclipai/ui`
+- `paperclipai`
+- `@paperclipai/server`
+- `@paperclipai/ui`
 - public packages under `packages/`
 
 ### 2.1. In npm, open each package settings page
@@ -46,7 +44,7 @@ For each package:
 
 1. open npm as an owner of the package
 2. go to the package settings / publishing access area
-3. add a trusted publisher for the GitHub repository `penclipai/paperclip-cn`
+3. add a trusted publisher for the GitHub repository `paperclipai/paperclip`
 
 ### 2.2. Add one trusted publisher entry per package
 
@@ -58,7 +56,7 @@ Configure:
 
 Repository:
 
-- `penclipai/paperclip-cn`
+- `paperclipai/paperclip`
 
 Environment name:
 
@@ -83,8 +81,8 @@ Repo policy:
 
 Bootstrap sequence for a new package:
 
-1. publish the package once from a trusted maintainer machine using npm account 2FA or a granular token with bypass 2FA enabled
-2. open that package on npm and add the `penclipai/paperclip-cn` trusted publisher for `.github/workflows/release.yml`
+1. publish the package once from a trusted maintainer machine using normal npm auth
+2. open that package on npm and add the `paperclipai/paperclip` trusted publisher for `.github/workflows/release.yml`
 3. rerun or dry-run the release flow as needed to confirm CI publishing now works
 4. only then enable `"publishFromCi": true`
 
@@ -100,11 +98,6 @@ After the workflows are live:
 4. run one real stable publish
 
 Only after that should you remove old token-based access.
-
-Bootstrap note:
-
-- if a package has not finished npm trusted-publisher onboarding yet, you can temporarily set `NPM_TOKEN` as a GitHub environment secret on `npm-canary` and `npm-stable`
-- once trusted publishing succeeds end-to-end, remove that secret again
 
 ## 3. Remove Legacy npm Tokens
 
@@ -235,13 +228,16 @@ After setup:
 4. confirm publish succeeds under the `npm-canary` environment
 5. confirm npm now shows a new `canary` release
 6. confirm a git tag named `canary/vYYYY.MDD.P-canary.N` was pushed
-7. confirm the reusable `Release Smoke` workflow succeeds for the published `canary` dist-tag
 
 Install-path check:
 
 ```bash
-npx penclip@canary onboard
+npm install --prefix "$(mktemp -d)" paperclipai@canary --no-audit --no-fund
 ```
+
+The release script runs this clean-prefix install after publishing every workspace
+package dependency-first and publishing `paperclipai` last. A package that is not
+yet registry-visible stops the train before the channel entrypoint can advance.
 
 ## 12. Verify the Stable Workflow
 
@@ -261,7 +257,6 @@ After at least one good canary exists:
 8. confirm npm `latest` points to the new stable version
 9. confirm git tag `vYYYY.MDD.P` exists
 10. confirm the GitHub Release was created
-11. confirm the reusable `Release Smoke` workflow succeeds against `latest`
 
 Implementation note:
 

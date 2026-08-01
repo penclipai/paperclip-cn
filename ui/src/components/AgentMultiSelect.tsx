@@ -1,11 +1,21 @@
-import { useEffect, useMemo, useState, type ComponentProps, type ReactNode } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type ComponentProps,
+  type ReactNode,
+} from "react";
 import { ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { AgentIcon } from "@/components/AgentIconPicker";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
@@ -14,6 +24,128 @@ export interface AgentMultiSelectOption {
   name: string;
   title?: string | null;
   icon?: string | null;
+}
+
+export function AgentSelect({
+  agents,
+  value,
+  onChange,
+  placeholder = "Select agent…",
+  emptyMessage = "No agents yet.",
+  disabled = false,
+  triggerClassName,
+  id,
+}: {
+  agents: AgentMultiSelectOption[];
+  value: string;
+  onChange: (agentId: string) => void;
+  placeholder?: string;
+  emptyMessage?: string;
+  disabled?: boolean;
+  triggerClassName?: string;
+  id?: string;
+}) {
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+  const [filter, setFilter] = useState("");
+  const selectedAgent = agents.find((agent) => agent.id === value);
+  const normalizedFilter = filter.trim().toLowerCase();
+  const filteredAgents = useMemo(
+    () =>
+      agents
+        .filter((agent) =>
+          `${agent.name} ${agent.title ?? ""}`
+            .toLowerCase()
+            .includes(normalizedFilter),
+        )
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    [agents, normalizedFilter],
+  );
+
+  return (
+    <Popover
+      open={open}
+      onOpenChange={(nextOpen) => {
+        setOpen(nextOpen);
+        if (!nextOpen) setFilter("");
+      }}
+    >
+      <PopoverTrigger asChild>
+        <Button
+          id={id}
+          type="button"
+          variant="outline"
+          size="sm"
+          className={cn("w-full justify-between", triggerClassName)}
+          disabled={disabled}
+        >
+          <span
+            className={cn(
+              "min-w-0 truncate",
+              !selectedAgent && "text-muted-foreground",
+            )}
+          >
+            {selectedAgent?.name ?? placeholder}
+          </span>
+          <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent
+        className="w-(--radix-popover-trigger-width) p-0"
+        align="start"
+      >
+        <div className="border-b border-border p-3">
+          <Input
+            value={filter}
+            onChange={(event) => setFilter(event.target.value)}
+            placeholder={t("agentMultiSelect.filterPlaceholder")}
+            className="h-8"
+            autoFocus
+          />
+        </div>
+        {agents.length === 0 ? (
+          <div className="px-3 py-4 text-sm text-muted-foreground">
+            {emptyMessage}
+          </div>
+        ) : (
+          <div className="max-h-60 overflow-y-auto py-1">
+            {filteredAgents.map((agent) => (
+              <button
+                key={agent.id}
+                type="button"
+                className="flex w-full items-start gap-2 px-3 py-2 text-left hover:bg-accent/30"
+                aria-label={`Select ${agent.name}`}
+                onClick={() => {
+                  onChange(agent.id);
+                  setOpen(false);
+                }}
+              >
+                <AgentIcon
+                  icon={agent.icon ?? null}
+                  className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground"
+                />
+                <span className="flex min-w-0 flex-col">
+                  <span className="truncate text-sm font-medium text-foreground">
+                    {agent.name}
+                  </span>
+                  {agent.title ? (
+                    <span className="truncate text-xs text-muted-foreground">
+                      {agent.title}
+                    </span>
+                  ) : null}
+                </span>
+              </button>
+            ))}
+            {filteredAgents.length === 0 ? (
+              <div className="px-3 py-4 text-sm text-muted-foreground">
+                {t("agentMultiSelect.noMatches")}
+              </div>
+            ) : null}
+          </div>
+        )}
+      </PopoverContent>
+    </Popover>
+  );
 }
 
 export function AgentMultiSelect({
@@ -64,7 +196,9 @@ export function AgentMultiSelect({
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState("");
-  const [draftAgentIds, setDraftAgentIds] = useState<Set<string>>(new Set(selectedAgentIds));
+  const [draftAgentIds, setDraftAgentIds] = useState<Set<string>>(
+    new Set(selectedAgentIds),
+  );
   const staged = Boolean(onSave);
   const workingAgentIds = staged ? draftAgentIds : selectedAgentIds;
 
@@ -78,7 +212,9 @@ export function AgentMultiSelect({
       agents
         .filter((agent) => {
           const description = getDescription?.(agent) ?? agent.title ?? "";
-          return `${agent.name} ${description}`.toLowerCase().includes(normalizedFilter);
+          return `${agent.name} ${description}`
+            .toLowerCase()
+            .includes(normalizedFilter);
         })
         .sort((a, b) => {
           const aSelected = workingAgentIds.has(a.id);
@@ -89,7 +225,9 @@ export function AgentMultiSelect({
     [agents, getDescription, normalizedFilter, workingAgentIds],
   );
   const selectedCount = selectedAgentIds.size;
-  const selectedAgents = agents.filter((agent) => selectedAgentIds.has(agent.id));
+  const selectedAgents = agents.filter((agent) =>
+    selectedAgentIds.has(agent.id),
+  );
 
   function setSelection(next: Set<string>) {
     if (staged) setDraftAgentIds(next);
@@ -111,102 +249,130 @@ export function AgentMultiSelect({
             type="button"
             variant={triggerVariant}
             size={triggerSize}
-            className={cn("justify-between", triggerFullWidth && "w-full", triggerClassName)}
+            className={cn(
+              "justify-between",
+              triggerFullWidth && "w-full",
+              triggerClassName,
+            )}
             disabled={disabled || pending}
           >
             <span className="flex min-w-0 items-center">
               {triggerIcon}
               <span className="truncate">
-                {triggerLabel ?? (selectedCount === 0
-                  ? t("agentMultiSelect.selectAgents", { defaultValue: "Select agents" })
-                  : t("agentMultiSelect.selectedCount", {
-                    count: selectedCount,
-                    defaultValue: selectedCount === 1
-                      ? "{{count}} agent selected"
-                      : "{{count}} agents selected",
-                  }))}
+                {triggerLabel ??
+                  (selectedCount === 0
+                    ? t("agentMultiSelect.selectAgents", {
+                        defaultValue: "Select agents",
+                      })
+                    : t("agentMultiSelect.selectedCount", {
+                        count: selectedCount,
+                        defaultValue:
+                          selectedCount === 1
+                            ? "{{count}} agent selected"
+                            : "{{count}} agents selected",
+                      }))}
               </span>
             </span>
             <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-80 p-0" align={contentAlign}>
-        <div className="border-b border-border p-3">
-          <Input
-            value={filter}
-            onChange={(event) => setFilter(event.target.value)}
-            placeholder={t("agentMultiSelect.filterPlaceholder", { defaultValue: "Filter agents" })}
-            className="h-8"
-            autoFocus
-          />
-          {headerContent}
-        </div>
-        {loading ? (
-          <div className="space-y-2 p-3">
-            <Skeleton className="h-6 w-full" />
-            <Skeleton className="h-6 w-full" />
+          <div className="border-b border-border p-3">
+            <Input
+              value={filter}
+              onChange={(event) => setFilter(event.target.value)}
+              placeholder={t("agentMultiSelect.filterPlaceholder", {
+                defaultValue: "Filter agents",
+              })}
+              className="h-8"
+              autoFocus
+            />
+            {headerContent}
           </div>
-        ) : agents.length === 0 ? (
-          <div className="px-3 py-4 text-sm text-muted-foreground">
-            {emptyMessage ?? t("agentMultiSelect.empty", { defaultValue: "No agents yet." })}
-          </div>
-        ) : (
-          <div className="max-h-60 overflow-y-auto py-1">
-            {filteredAgents.map((agent) => {
-              const description = getDescription?.(agent) ?? agent.title;
-              const optionDisabled = isAgentDisabled?.(agent) ?? false;
-              return (
-                <label
-                  key={agent.id}
-                  className={cn(
-                    "flex items-start gap-2 px-3 py-2 hover:bg-accent/30",
-                    optionDisabled ? "opacity-60" : "cursor-pointer",
-                  )}
-                >
-                  <Checkbox
-                    checked={workingAgentIds.has(agent.id)}
-                    disabled={optionDisabled}
-                    aria-label={t("agentMultiSelect.allowAgentAria", {
-                      defaultValue: "Allow {{name}}",
-                      name: agent.name,
-                    })}
-                    onCheckedChange={(checked) => {
-                      const next = new Set(workingAgentIds);
-                      if (checked) next.add(agent.id);
-                      else next.delete(agent.id);
-                      setSelection(next);
-                    }}
-                  />
-                  <AgentIcon icon={agent.icon ?? null} className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                  <span className="flex min-w-0 flex-col">
-                    <span className="flex items-center gap-1.5 text-sm font-medium text-foreground">
-                      <span className="truncate">{agent.name}</span>
-                      {renderNameSuffix?.(agent)}
+          {loading ? (
+            <div className="space-y-2 p-3">
+              <Skeleton className="h-6 w-full" />
+              <Skeleton className="h-6 w-full" />
+            </div>
+          ) : agents.length === 0 ? (
+            <div className="px-3 py-4 text-sm text-muted-foreground">
+              {emptyMessage ??
+                t("agentMultiSelect.empty", { defaultValue: "No agents yet." })}
+            </div>
+          ) : (
+            <div className="max-h-60 overflow-y-auto py-1">
+              {filteredAgents.map((agent) => {
+                const description = getDescription?.(agent) ?? agent.title;
+                const optionDisabled = isAgentDisabled?.(agent) ?? false;
+                return (
+                  <label
+                    key={agent.id}
+                    className={cn(
+                      "flex items-start gap-2 px-3 py-2 hover:bg-accent/30",
+                      optionDisabled ? "opacity-60" : "cursor-pointer",
+                    )}
+                  >
+                    <Checkbox
+                      checked={workingAgentIds.has(agent.id)}
+                      disabled={optionDisabled}
+                      aria-label={t("agentMultiSelect.allowAgentAria", {
+                        defaultValue: "Allow {{name}}",
+                        name: agent.name,
+                      })}
+                      onCheckedChange={(checked) => {
+                        const next = new Set(workingAgentIds);
+                        if (checked) next.add(agent.id);
+                        else next.delete(agent.id);
+                        setSelection(next);
+                      }}
+                    />
+                    <AgentIcon
+                      icon={agent.icon ?? null}
+                      className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground"
+                    />
+                    <span className="flex min-w-0 flex-col">
+                      <span className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+                        <span className="truncate">{agent.name}</span>
+                        {renderNameSuffix?.(agent)}
+                      </span>
+                      {description ? (
+                        <span className="truncate text-xs text-muted-foreground">
+                          {description}
+                        </span>
+                      ) : null}
                     </span>
-                    {description ? <span className="truncate text-xs text-muted-foreground">{description}</span> : null}
-                  </span>
-                </label>
-              );
-            })}
-            {filteredAgents.length === 0 ? (
-              <div className="px-3 py-4 text-sm text-muted-foreground">
-                {t("agentMultiSelect.noMatches", { defaultValue: "No matches." })}
-              </div>
-            ) : null}
-          </div>
-        )}
+                  </label>
+                );
+              })}
+              {filteredAgents.length === 0 ? (
+                <div className="px-3 py-4 text-sm text-muted-foreground">
+                  {t("agentMultiSelect.noMatches", {
+                    defaultValue: "No matches.",
+                  })}
+                </div>
+              ) : null}
+            </div>
+          )}
           <div className="flex items-center justify-between border-t border-border px-3 py-2">
             <span className="text-xs text-muted-foreground">
               {workingAgentIds.size === 0
-                ? t("agentMultiSelect.noneSelected", { defaultValue: "No agents selected" })
+                ? t("agentMultiSelect.noneSelected", {
+                    defaultValue: "No agents selected",
+                  })
                 : t("agentMultiSelect.selectionCount", {
-                  count: workingAgentIds.size,
-                  defaultValue: "{{count}} selected",
-                })}
+                    count: workingAgentIds.size,
+                    defaultValue: "{{count}} selected",
+                  })}
             </span>
             <div className="flex items-center gap-2">
               {staged ? (
-                <Button type="button" variant="ghost" size="sm" onClick={() => setOpen(false)} disabled={pending}>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setOpen(false)}
+                  disabled={pending}
+                >
                   {t("agentMultiSelect.cancel", { defaultValue: "Cancel" })}
                 </Button>
               ) : null}
@@ -232,9 +398,17 @@ export function AgentMultiSelect({
       {showSelectionPreview && selectedAgents.length > 0 ? (
         <div className="space-y-0.5">
           {selectedAgents.slice(0, 3).map((agent) => (
-            <div key={agent.id} className="flex items-center gap-2 px-1.5 py-1 text-sm">
-              <AgentIcon icon={agent.icon ?? null} className="h-4 w-4 shrink-0 text-muted-foreground" />
-              <span className="min-w-0 flex-1 truncate text-foreground">{agent.name}</span>
+            <div
+              key={agent.id}
+              className="flex items-center gap-2 px-1.5 py-1 text-sm"
+            >
+              <AgentIcon
+                icon={agent.icon ?? null}
+                className="h-4 w-4 shrink-0 text-muted-foreground"
+              />
+              <span className="min-w-0 flex-1 truncate text-foreground">
+                {agent.name}
+              </span>
             </div>
           ))}
           {selectedAgents.length > 3 ? (

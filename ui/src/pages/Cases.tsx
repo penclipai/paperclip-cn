@@ -845,8 +845,8 @@ export function Cases() {
     enabled: !!selectedCompanyId,
   });
   const projectsQuery = useQuery({
-    queryKey: queryKeys.projects.list(selectedCompanyId ?? ""),
-    queryFn: () => projectsApi.list(selectedCompanyId!),
+    queryKey: queryKeys.projects.list(selectedCompanyId ?? "", { includeArchived: true }),
+    queryFn: () => projectsApi.list(selectedCompanyId!, { includeArchived: true }),
     enabled: !!selectedCompanyId,
   });
   const labelsQuery = useQuery({
@@ -1346,7 +1346,7 @@ export function Cases() {
                           checked={viewState.projectFilters.includes(ALL)}
                           onCheckedChange={(checked) => toggleStringFilter("projectFilters", ALL, checked)}
                         />
-                        {(projectsQuery.data ?? []).map((project) => (
+                        {(projectsQuery.data ?? []).filter((project) => !project.archivedAt).map((project) => (
                           <FilterCheckboxRow
                             key={project.id}
                             label={project.name}

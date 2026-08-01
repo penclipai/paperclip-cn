@@ -1,5 +1,4 @@
 import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
-import { localized } from "./localized-selectors";
 
 // Current Apps lifecycle coverage. The legacy Tools -> Applications CRUD table
 // was retired; old links now redirect to /apps. Keep this harness focused on
@@ -46,7 +45,7 @@ async function createConnection(
 ): Promise<{ id: string; applicationId: string; name: string }> {
   const res = await request.post(`/api/companies/${companyId}/tools/connections`, {
     data: {
-      transport: "remote_http",
+      transport: "mcp_remote",
       config: { url: "https://fixture.example/mcp" },
       enabled: true,
       status: "active",
@@ -59,7 +58,7 @@ async function createConnection(
 
 async function gotoApps(page: Page, prefix: string) {
   await page.goto(`/${prefix}/apps`);
-  await expect(page.getByRole("heading", { name: localized.appConnections })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByRole("heading", { name: "Connections" })).toBeVisible({ timeout: 30_000 });
 }
 
 test.describe.serial("applications lifecycle", () => {
@@ -85,22 +84,30 @@ test.describe.serial("applications lifecycle", () => {
 
     await gotoApps(page, seed.prefix);
 
+    // The status pill ("Healthy" / "Not connected") is derived from two separate
+    // react-query fetches (applications + connections). A row can paint as soon as
+    // the applications fetch resolves, but the pill only renders once the
+    // connections fetch also settles. Under CI load that second fetch can land
+    // after Playwright's default 5s assertion timeout, so give the pill
+    // assertions the same generous window used by the rest of this spec — this is
+    // a polling wait on the real rendered label, not a fixed sleep, so coverage of
+    // the exact status text is preserved.
     const connectedRow = page.locator("tbody tr", { hasText: connectedName });
     await expect(connectedRow).toBeVisible();
-    await expect(connectedRow.getByText("Healthy")).toBeVisible();
-    await expect(connectedRow.getByRole("button", { name: /^(Open|打开)$/i })).toBeVisible();
+    await expect(connectedRow.getByText("Healthy")).toBeVisible({ timeout: 30_000 });
+    await expect(connectedRow.getByRole("button", { name: "Open" })).toBeVisible();
 
     const notConnectedRow = page.locator("tbody tr", { hasText: notConnectedName });
     await expect(notConnectedRow).toBeVisible();
-    await expect(notConnectedRow.getByText(localized.appNotConnected)).toBeVisible();
-    await expect(notConnectedRow.getByRole("button", { name: localized.appConnect })).toBeVisible();
+    await expect(notConnectedRow.getByText("Not connected")).toBeVisible({ timeout: 30_000 });
+    await expect(notConnectedRow.getByRole("button", { name: "Connect" })).toBeVisible();
     await page.screenshot({ path: `${SCREENSHOT_DIR}/applications-crud-current-list.png`, fullPage: true });
 
-    await connectedRow.getByRole("button", { name: /^(Open|打开)$/i }).click();
+    await connectedRow.getByRole("button", { name: "Open" }).click();
     await expect(page).toHaveURL(new RegExp(`/${seed.prefix}/apps/${connected.id}`), { timeout: 20_000 });
 
     await gotoApps(page, seed.prefix);
-    await notConnectedRow.getByRole("button", { name: localized.appConnect }).click();
+    await notConnectedRow.getByRole("button", { name: "Connect" }).click();
     await expect(page).toHaveURL(new RegExp(`/${seed.prefix}/apps/app/${notConnected.id}`), { timeout: 20_000 });
   });
 
@@ -114,27 +121,27 @@ test.describe.serial("applications lifecycle", () => {
 
     await page.goto(`/${seed.prefix}/apps/${connection.id}/setup`);
     await expect(page.getByRole("heading", { name: appName })).toBeVisible({ timeout: 30_000 });
-    await expect(page.getByRole("heading", { name: localized.appAccessEnabled })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Agents can use this app" })).toBeVisible();
 
-    await page.getByRole("switch", { name: localized.appPause }).click();
-    await expect(page.getByRole("heading", { name: localized.appPaused })).toBeVisible({ timeout: 15_000 });
-    await page.getByRole("switch", { name: localized.appResume }).click();
-    await expect(page.getByRole("heading", { name: localized.appAccessEnabled })).toBeVisible({ timeout: 15_000 });
+    await page.getByRole("switch", { name: "Pause this app" }).click();
+    await expect(page.getByRole("heading", { name: "This app is paused" })).toBeVisible({ timeout: 15_000 });
+    await page.getByRole("switch", { name: "Resume this app" }).click();
+    await expect(page.getByRole("heading", { name: "Agents can use this app" })).toBeVisible({ timeout: 15_000 });
 
-    await page.getByRole("button", { name: localized.appRename }).click();
-    await page.getByLabel(localized.appName).fill(renamed);
-    await page.getByRole("button", { name: localized.commonSave, exact: true }).click();
+    await page.getByRole("button", { name: "Rename app" }).click();
+    await page.getByLabel("App name").fill(renamed);
+    await page.getByRole("button", { name: "Save", exact: true }).click();
     await expect(page.getByRole("heading", { name: renamed })).toBeVisible({ timeout: 15_000 });
     await page.screenshot({ path: `${SCREENSHOT_DIR}/applications-crud-current-detail.png`, fullPage: true });
 
     await page.goto(`/${seed.prefix}/apps/${connection.id}/advanced`);
-    await expect(page.getByText(localized.appDangerZone)).toBeVisible({ timeout: 15_000 });
-    await page.getByRole("button", { name: localized.appRemove, exact: true }).click();
-    await expect(page.getByRole("button", { name: localized.appRemoveConfirm })).toBeVisible();
+    await expect(page.getByText("Danger zone")).toBeVisible({ timeout: 15_000 });
+    await page.getByRole("button", { name: "Remove app", exact: true }).click();
+    await expect(page.getByRole("button", { name: "Yes, remove it" })).toBeVisible();
     await page.screenshot({ path: `${SCREENSHOT_DIR}/applications-crud-current-remove-connected.png`, fullPage: true });
-    await page.getByRole("button", { name: localized.appRemoveConfirm }).click();
+    await page.getByRole("button", { name: "Yes, remove it" }).click();
     await expect(page).toHaveURL(new RegExp(`/${seed.prefix}/apps$`), { timeout: 20_000 });
-    await expect(page.getByText(localized.appRemoved).first()).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText("App removed").first()).toBeVisible({ timeout: 20_000 });
     await expect(page.locator("tbody tr", { hasText: renamed })).toHaveCount(0);
   });
 
@@ -144,12 +151,12 @@ test.describe.serial("applications lifecycle", () => {
 
     await page.goto(`/${seed.prefix}/apps/app/${cleanApp.id}/advanced`);
     await expect(page.getByRole("heading", { name: cleanAppName })).toBeVisible({ timeout: 30_000 });
-    await expect(page.getByText(localized.appDangerZone)).toBeVisible();
-    await page.getByRole("button", { name: localized.appRemove, exact: true }).click();
+    await expect(page.getByText("Danger zone")).toBeVisible();
+    await page.getByRole("button", { name: "Remove app", exact: true }).click();
     await page.screenshot({ path: `${SCREENSHOT_DIR}/applications-crud-current-remove-not-connected.png`, fullPage: true });
-    await page.getByRole("button", { name: localized.appRemoveConfirm }).click();
+    await page.getByRole("button", { name: "Yes, remove it" }).click();
     await expect(page).toHaveURL(new RegExp(`/${seed.prefix}/apps$`), { timeout: 20_000 });
-    await expect(page.getByText(localized.appRemoved).first()).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText("App removed").first()).toBeVisible({ timeout: 20_000 });
     await expect(page.locator("tbody tr", { hasText: cleanAppName })).toHaveCount(0);
   });
 });

@@ -1,194 +1,92 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { readConfigFile } from "../config-file.js";
 
-const ORIGINAL_CWD = process.cwd();
-const ORIGINAL_ENV = { ...process.env };
+const ORIGINAL_PAPERCLIP_CONFIG = process.env.PAPERCLIP_CONFIG;
 
-function writeJson(filePath: string, value: unknown) {
-  fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  fs.writeFileSync(filePath, JSON.stringify(value, null, 2));
+function writeConfig(configPath: string, value: unknown): void {
+  fs.writeFileSync(configPath, `${JSON.stringify(value, null, 2)}\n`);
 }
 
-afterEach(() => {
-  process.chdir(ORIGINAL_CWD);
-  for (const key of Object.keys(process.env)) {
-    if (!(key in ORIGINAL_ENV)) delete process.env[key];
-  }
-  for (const [key, value] of Object.entries(ORIGINAL_ENV)) {
-    if (value === undefined) delete process.env[key];
-    else process.env[key] = value;
-  }
-});
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function minimalConfig(): unknown {
+  return {
+    $meta: {
+      version: 1,
+      updatedAt: "2026-07-05T00:00:00.000Z",
+      source: "configure",
+    },
+    database: {
+      mode: "embedded-postgres",
+    },
+    logging: {
+      mode: "file",
+    },
+    server: {},
+  };
+}
 
 describe("readConfigFile", () => {
-  it("repairs broken desktop temp path fields without discarding the rest of the repo-local config", () => {
-    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-config-file-"));
-    const projectDir = path.join(tempDir, "repo");
-    fs.mkdirSync(projectDir, { recursive: true });
-    process.chdir(projectDir);
-    delete process.env.PAPERCLIP_CONFIG;
-    delete process.env.PAPERCLIP_HOME;
+  let tempDir: string;
+  let configPath: string;
 
-    writeJson(path.join(projectDir, ".paperclip", "config.json"), {
-      $meta: {
-        version: 1,
-        updatedAt: "2026-04-09T00:00:00.000Z",
-        source: "configure",
-      },
-      database: {
-        mode: "embedded-postgres",
-        embeddedPostgresDataDir: "C:\\Users\\chenj\\AppData\\Local\\Temp\\paperclip-desktop-smoke-dev-light-aur69x\\runtime\\instances\\default\\db",
-        embeddedPostgresPort: 54331,
-        backup: {
-          enabled: true,
-          intervalMinutes: 120,
-          retentionDays: 14,
-          dir: "C:\\Users\\chenj\\AppData\\Local\\Temp\\paperclip-desktop-smoke-dev-light-aur69x\\runtime\\instances\\default\\data\\backups",
-        },
-      },
-      logging: {
-        mode: "file",
-        logDir: "C:\\Users\\chenj\\AppData\\Local\\Temp\\paperclip-desktop-smoke-dev-light-aur69x\\runtime\\instances\\default\\logs",
-      },
-      server: {
-        deploymentMode: "local_trusted",
-        exposure: "private",
-        host: "127.0.0.1",
-        port: 3900,
-        allowedHostnames: ["localhost"],
-        serveUi: true,
-      },
-      storage: {
-        provider: "local_disk",
-        localDisk: {
-          baseDir: "C:\\Users\\chenj\\AppData\\Local\\Temp\\paperclip-desktop-smoke-dev-light-aur69x\\runtime\\instances\\default\\data\\storage",
-        },
-        s3: {
-          bucket: "paperclip",
-          region: "us-east-1",
-          prefix: "",
-          forcePathStyle: false,
-        },
-      },
-      secrets: {
-        provider: "local_encrypted",
-        strictMode: false,
-        localEncrypted: {
-          keyFilePath: "C:\\Users\\chenj\\AppData\\Local\\Temp\\paperclip-desktop-smoke-dev-light-aur69x\\runtime\\instances\\default\\secrets\\master.key",
-        },
-      },
-      telemetry: { enabled: true },
-      auth: {
-        baseUrlMode: "auto",
-        disableSignUp: false,
-      },
-    });
+  beforeEach(() => {
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-config-file-test-"));
+    configPath = path.join(tempDir, "config.json");
+    process.env.PAPERCLIP_CONFIG = configPath;
+  });
 
-    const config = readConfigFile();
+  afterEach(() => {
+    if (ORIGINAL_PAPERCLIP_CONFIG === undefined) {
+      delete process.env.PAPERCLIP_CONFIG;
+    } else {
+      process.env.PAPERCLIP_CONFIG = ORIGINAL_PAPERCLIP_CONFIG;
+    }
 
-    expect(config).not.toBeNull();
-    expect(config?.server.port).toBe(3900);
-    expect(config?.database.embeddedPostgresPort).toBe(54331);
-    const expectedInstanceId = process.env.PAPERCLIP_INSTANCE_ID?.trim() || "default";
-    expect(config?.database.embeddedPostgresDataDir).toBe(
-      path.resolve(os.homedir(), ".paperclip", "instances", expectedInstanceId, "db"),
-    );
-    expect(config?.database.backup.dir).toBe(
-      path.resolve(os.homedir(), ".paperclip", "instances", expectedInstanceId, "data", "backups"),
-    );
-    expect(config?.logging.logDir).toBe(
-      path.resolve(os.homedir(), ".paperclip", "instances", expectedInstanceId, "logs"),
-    );
-    expect(config?.storage.localDisk.baseDir).toBe(
-      path.resolve(os.homedir(), ".paperclip", "instances", expectedInstanceId, "data", "storage"),
-    );
-    expect(config?.secrets.localEncrypted.keyFilePath).toBe(
-      path.resolve(os.homedir(), ".paperclip", "instances", expectedInstanceId, "secrets", "master.key"),
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  });
+
+  it("returns null when the config file does not exist", () => {
+    expect(readConfigFile()).toBeNull();
+  });
+
+  it("throws a path-specific error when the config file is invalid JSON", () => {
+    fs.writeFileSync(configPath, "{");
+
+    expect(() => readConfigFile()).toThrow(
+      new RegExp(`Invalid Paperclip config at ${escapeRegExp(configPath)}: failed to read or parse JSON`),
     );
   });
 
-  it("normalizes legacy desktop storage paths in repo-local configs", () => {
-    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-config-file-"));
-    const projectDir = path.join(tempDir, "repo");
-    fs.mkdirSync(projectDir, { recursive: true });
-    process.chdir(projectDir);
-    delete process.env.PAPERCLIP_CONFIG;
-    delete process.env.PAPERCLIP_HOME;
+  it("throws a field-specific error when the config file fails schema validation", () => {
+    const config = minimalConfig();
+    if (typeof config === "object" && config !== null) {
+      (config as { $meta: { source: string } }).$meta.source = "edited-by-hand";
+    }
 
-    writeJson(path.join(projectDir, ".paperclip", "config.json"), {
+    writeConfig(configPath, config);
+
+    expect(() => readConfigFile()).toThrow(/Invalid Paperclip config .* \$meta\.source:/);
+  });
+
+  it("parses a valid config file", () => {
+    writeConfig(configPath, minimalConfig());
+
+    expect(readConfigFile()).toMatchObject({
       $meta: {
-        version: 1,
-        updatedAt: "2026-04-12T00:00:00.000Z",
         source: "configure",
       },
       database: {
         mode: "embedded-postgres",
-        embeddedPostgresDataDir: "C:\\Users\\chenj\\AppData\\Roaming\\Paperclip CN\\instances\\default\\db",
-        embeddedPostgresPort: 54331,
-        backup: {
-          enabled: true,
-          intervalMinutes: 60,
-          retentionDays: 14,
-          dir: "C:\\Users\\chenj\\AppData\\Roaming\\Paperclip CN\\instances\\default\\data\\backups",
-        },
       },
       logging: {
         mode: "file",
-        logDir: "C:\\Users\\chenj\\AppData\\Roaming\\Paperclip CN\\instances\\default\\logs",
-      },
-      server: {
-        deploymentMode: "local_trusted",
-        exposure: "private",
-        host: "127.0.0.1",
-        port: 3900,
-        allowedHostnames: [],
-        serveUi: true,
-      },
-      storage: {
-        provider: "local_disk",
-        localDisk: {
-          baseDir: "C:\\Users\\chenj\\AppData\\Roaming\\Paperclip CN\\instances\\default\\data\\storage",
-        },
-        s3: {
-          bucket: "paperclip",
-          region: "us-east-1",
-          prefix: "",
-          forcePathStyle: false,
-        },
-      },
-      secrets: {
-        provider: "local_encrypted",
-        strictMode: false,
-        localEncrypted: {
-          keyFilePath: "C:\\Users\\chenj\\AppData\\Roaming\\Paperclip CN\\instances\\default\\secrets\\master.key",
-        },
-      },
-      telemetry: { enabled: true },
-      auth: {
-        baseUrlMode: "auto",
-        disableSignUp: false,
       },
     });
-
-    const config = readConfigFile();
-
-    expect(config?.database.embeddedPostgresDataDir).toBe(
-      "C:\\Users\\chenj\\AppData\\Roaming\\penclip\\instances\\default\\db",
-    );
-    expect(config?.database.backup.dir).toBe(
-      "C:\\Users\\chenj\\AppData\\Roaming\\penclip\\instances\\default\\data\\backups",
-    );
-    expect(config?.logging.logDir).toBe(
-      "C:\\Users\\chenj\\AppData\\Roaming\\penclip\\instances\\default\\logs",
-    );
-    expect(config?.storage.localDisk.baseDir).toBe(
-      "C:\\Users\\chenj\\AppData\\Roaming\\penclip\\instances\\default\\data\\storage",
-    );
-    expect(config?.secrets.localEncrypted.keyFilePath).toBe(
-      "C:\\Users\\chenj\\AppData\\Roaming\\penclip\\instances\\default\\secrets\\master.key",
-    );
   });
 });

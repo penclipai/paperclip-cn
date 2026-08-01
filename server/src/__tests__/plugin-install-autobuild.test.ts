@@ -61,7 +61,7 @@ async function createBundledPluginFixture(
   options: { rootDir?: string; buildDistImmediately?: boolean } = {},
 ): Promise<FixturePlugin> {
   const slug = `plugin-autobuild-${nameSuffix}-${randomUUID().slice(0, 8)}`;
-  const packageName = `@paperclipai/${slug}`;
+  const packageName = `@penclipai/${slug}`;
   const pluginKey = `paperclip.${slug.replace(/^plugin-/, "").replace(/-/g, "_")}`;
   const packageRoot = path.join(options.rootDir ?? repoPluginRoot, slug);
   const distDir = path.join(packageRoot, "dist");
@@ -312,7 +312,7 @@ describeEmbeddedPostgres("plugin install auto-build route", () => {
       .post("/api/plugins/install")
       .send({ packageName: fixture.packageRoot, isLocalPath: true });
 
-    expect(res.status).toBe(200);
+    expect(res.status, res.body.error).toBe(200);
     expect(res.body.packageName).toBe(fixture.packageName);
     expect(res.body.pluginKey).toBe(fixture.pluginKey);
     expect(existsSync(path.join(fixture.distDir, "manifest.js"))).toBe(true);
@@ -333,7 +333,7 @@ describeEmbeddedPostgres("plugin install auto-build route", () => {
       .post("/api/plugins/install")
       .send({ packageName: fixture.packageRoot, isLocalPath: true });
 
-    expect(res.status).toBe(200);
+    expect(res.status, res.body.error).toBe(200);
     expect(res.body.packageName).toBe(fixture.packageName);
     expect(res.body.pluginKey).toBe(fixture.pluginKey);
     expect(existsSync(path.join(fixture.distDir, "manifest.js"))).toBe(true);
@@ -358,7 +358,7 @@ describeEmbeddedPostgres("plugin install auto-build route", () => {
       .post("/api/plugins/install")
       .send({ packageName: fixture.packageRoot, isLocalPath: true });
 
-    expect(res.status).toBe(200);
+    expect(res.status, res.body.error).toBe(200);
     expect(res.body.packageName).toBe(fixture.packageName);
     expect(res.body.pluginKey).toBe(fixture.pluginKey);
     expect(existsSync(path.join(fixture.packageRoot, "node_modules", "@paperclipai", "plugin-sdk"))).toBe(true);

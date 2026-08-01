@@ -1,30 +1,35 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-to_shell_path() {
-  local raw="${1:-}"
-  if [[ -z "$raw" ]]; then
-    printf '%s\n' ""
-    return 0
-  fi
+base_cwd="${PAPERCLIP_WORKSPACE_BASE_CWD:?PAPERCLIP_WORKSPACE_BASE_CWD is required}"
+worktree_cwd="${PAPERCLIP_WORKSPACE_CWD:?PAPERCLIP_WORKSPACE_CWD is required}"
+paperclip_home="${PAPERCLIP_HOME:-$HOME/.paperclip}"
+paperclip_instance_id="${PAPERCLIP_INSTANCE_ID:-default}"
+paperclip_dir="$worktree_cwd/.paperclip"
+worktree_config_path="$paperclip_dir/config.json"
+worktree_env_path="$paperclip_dir/.env"
+worktree_name="${PAPERCLIP_WORKSPACE_BRANCH:-$(basename "$worktree_cwd")}"
 
-  if command -v cygpath >/dev/null 2>&1; then
-    cygpath -u "$raw"
-    return 0
-  fi
+if [[ ! -d "$base_cwd" ]]; then
+  echo "Base workspace does not exist: $base_cwd" >&2
+  exit 1
+fi
 
-  if [[ "$raw" =~ ^([A-Za-z]):[\\/](.*)$ ]]; then
-    local drive
-    local rest
-    drive="$(printf '%s' "${BASH_REMATCH[1]}" | tr '[:upper:]' '[:lower:]')"
-    rest="${BASH_REMATCH[2]}"
-    rest="${rest//\\//}"
-    printf '/mnt/%s/%s\n' "$drive" "$rest"
-    return 0
-  fi
+if [[ ! -d "$worktree_cwd" ]]; then
+  echo "Derived worktree does not exist: $worktree_cwd" >&2
+  exit 1
+fi
 
-  printf '%s\n' "$raw"
-}
+source_config_path="${PAPERCLIP_CONFIG:-}"
+if [[ -z "$source_config_path" && ( -e "$base_cwd/.paperclip/config.json" || -L "$base_cwd/.paperclip/config.json" ) ]]; then
+  source_config_path="$base_cwd/.paperclip/config.json"
+fi
+if [[ -z "$source_config_path" ]]; then
+  source_config_path="$paperclip_home/instances/$paperclip_instance_id/config.json"
+fi
+source_env_path="$(dirname "$source_config_path")/.env"
+
+mkdir -p "$paperclip_dir"
 
 should_force_fallback_config() {
   case "${PAPERCLIP_WORKTREE_FORCE_FALLBACK_CONFIG:-}" in
@@ -37,145 +42,122 @@ should_force_fallback_config() {
   esac
 }
 
-base_cwd_raw="${PAPERCLIP_WORKSPACE_BASE_CWD:?PAPERCLIP_WORKSPACE_BASE_CWD is required}"
-worktree_cwd_raw="${PAPERCLIP_WORKSPACE_CWD:?PAPERCLIP_WORKSPACE_CWD is required}"
-base_cwd="$(to_shell_path "$base_cwd_raw")"
-worktree_cwd="$(to_shell_path "$worktree_cwd_raw")"
-paperclip_home_raw="${PAPERCLIP_HOME:-$HOME/.paperclip}"
-paperclip_instance_id="${PAPERCLIP_INSTANCE_ID:-default}"
-paperclip_dir="$worktree_cwd/.paperclip"
-paperclip_dir_raw="$worktree_cwd_raw/.paperclip"
-worktree_config_path_raw="$paperclip_dir_raw/config.json"
-worktree_env_path_raw="$paperclip_dir_raw/.env"
-worktree_config_path="$(to_shell_path "$worktree_config_path_raw")"
-worktree_env_path="$(to_shell_path "$worktree_env_path_raw")"
-worktree_name="${PAPERCLIP_WORKSPACE_BRANCH:-$(basename "$worktree_cwd_raw")}"
-
-if [[ ! -d "$base_cwd" ]]; then
-  echo "Base workspace does not exist: $base_cwd_raw" >&2
-  exit 1
-fi
-
-if [[ ! -d "$worktree_cwd" ]]; then
-  echo "Derived worktree does not exist: $worktree_cwd_raw" >&2
-  exit 1
-fi
-
-source_config_path_raw="${PAPERCLIP_CONFIG:-}"
-source_config_path_shell="$(to_shell_path "$source_config_path_raw")"
-if [[ -z "$source_config_path_raw" && ( -e "$base_cwd/.paperclip/config.json" || -L "$base_cwd/.paperclip/config.json" ) ]]; then
-  source_config_path_raw="$base_cwd_raw/.paperclip/config.json"
-  source_config_path_shell="$base_cwd/.paperclip/config.json"
-fi
-if [[ -z "$source_config_path_raw" ]]; then
-  source_config_path_raw="$paperclip_home_raw/instances/$paperclip_instance_id/config.json"
-  source_config_path_shell="$(to_shell_path "$source_config_path_raw")"
-fi
-source_env_path_raw="$(dirname "$source_config_path_raw")/.env"
-source_env_path_shell="$(dirname "$source_config_path_shell")/.env"
-
-mkdir -p "$paperclip_dir"
-
 resolve_node_command() {
-  if [[ "$base_cwd_raw" =~ ^[A-Za-z]:[\\/] || "$worktree_cwd_raw" =~ ^[A-Za-z]:[\\/] ]]; then
-    if command -v node.exe >/dev/null 2>&1; then
-      printf '%s\n' "node.exe"
-      return 0
-    fi
+  if command -v node >/dev/null 2>&1; then
+    printf '%s\n' "node"
+    return 0
   fi
 
-  printf '%s\n' "node"
+  # Git Bash can expose the Windows executable without the extensionless
+  # shim, especially in isolated PATH fixtures and packaged runtimes.
+  if command -v node.exe >/dev/null 2>&1; then
+    printf '%s\n' "node.exe"
+    return 0
+  fi
+
+  return 1
 }
 
-has_penclip_script_in_manifest() {
-  local manifest_path="${1:-}"
-  [[ -f "$manifest_path" ]] || return 1
-  grep -Eq '"penclip"[[:space:]]*:' "$manifest_path"
+node_command="$(resolve_node_command || true)"
+base_cli_runner_path="$base_cwd/cli/node_modules/tsx/dist/cli.mjs"
+base_cli_entry_path="$base_cwd/cli/src/index.ts"
+
+base_cli_files_present() {
+  [[ -f "$base_cli_runner_path" && -f "$base_cli_entry_path" ]]
 }
 
-resolved_penclip_invoker=""
-resolved_penclip_cwd=""
-resolved_penclip_node_command=""
-resolved_penclip_tsx_path=""
-resolved_penclip_entry_path=""
+# File existence is not enough: pnpm links package node_modules into the
+# versioned virtual store, so a lockfile change plus a partial/filtered install
+# in the base workspace leaves dangling symlinks that fail ESM resolution at
+# runtime. Actually boot the CLI to prove its import graph resolves.
+base_cli_healthy() {
+  [[ -n "$node_command" ]] || return 1
+  base_cli_files_present || return 1
+  (cd "$base_cwd" && "$node_command" "$base_cli_runner_path" "$base_cli_entry_path" --help >/dev/null 2>&1)
+}
 
-resolve_penclip_invoker() {
-  if [[ -n "$resolved_penclip_invoker" ]]; then
-    return 0
+repair_base_workspace_install() {
+  command -v pnpm >/dev/null 2>&1 || return 1
+  [[ -f "$base_cwd/package.json" && -f "$base_cwd/pnpm-lock.yaml" ]] || return 1
+  echo "Base workspace CLI at $base_cli_entry_path failed its health check (typically dangling pnpm symlinks after a partial install); repairing with pnpm install in $base_cwd." >&2
+  # --force guarantees relinking even when pnpm's up-to-date heuristics would
+  # otherwise skip the dangling symlinks; --frozen-lockfile keeps the repair
+  # from mutating the shared base workspace's lockfile.
+  local repair_cmd=(pnpm install --prod=false --force --frozen-lockfile --config.confirmModulesPurge=false)
+  # Resolve the real git dir so locking also covers base workspaces that are
+  # linked worktrees, where "$base_cwd/.git" is a file rather than a directory.
+  local repair_lock_dir=""
+  if command -v git >/dev/null 2>&1; then
+    repair_lock_dir="$(git -C "$base_cwd" rev-parse --absolute-git-dir 2>/dev/null || true)"
+  fi
+  if [[ ! -d "$repair_lock_dir" && -d "$base_cwd/.git" ]]; then
+    repair_lock_dir="$base_cwd/.git"
+  fi
+  if command -v flock >/dev/null 2>&1 && [[ -d "$repair_lock_dir" ]]; then
+    # The post-repair verification must run under the same lock: a concurrent
+    # provision's forced install could be mid-relink during an unlocked check
+    # and fail a repair that actually succeeded. Holding the lock also means a
+    # process that queued behind a peer's repair can skip its own reinstall.
+    (
+      cd "$base_cwd" || exit 1
+      exec 9>"$repair_lock_dir/paperclip-provision-repair.lock"
+      flock 9
+      if base_cli_healthy; then
+        echo "Base workspace CLI became healthy while waiting for the repair lock; skipping reinstall." >&2
+        exit 0
+      fi
+      env -u NODE_ENV CI=true "${repair_cmd[@]}" >&2 || exit 1
+      base_cli_healthy
+    )
+  else
+    (cd "$base_cwd" && env -u NODE_ENV CI=true "${repair_cmd[@]}" >&2 && base_cli_healthy)
+  fi
+}
+
+ensure_base_cli_healthy() {
+  base_cli_files_present || return 1
+  base_cli_healthy && return 0
+  repair_base_workspace_install
+}
+
+run_isolated_worktree_init() {
+  if ensure_base_cli_healthy; then
+    (
+      cd "$worktree_cwd" &&
+        "$node_command" "$base_cli_runner_path" "$base_cli_entry_path" worktree init --force --seed-mode minimal --name "$worktree_name" --from-config "$source_config_path"
+    )
+    return
   fi
 
-  if should_force_fallback_config; then
-    resolved_penclip_invoker="none"
-    return 0
-  fi
-
-  local base_cli_tsx_path="$base_cwd/cli/node_modules/tsx/dist/cli.mjs"
-  local base_cli_entry_path="$base_cwd/cli/src/index.ts"
-  local node_command
-  node_command="$(resolve_node_command)"
-  if command -v "$node_command" >/dev/null 2>&1 && [[ -f "$base_cli_tsx_path" ]] && [[ -f "$base_cli_entry_path" ]]; then
-    resolved_penclip_invoker="source"
-    resolved_penclip_node_command="$node_command"
-    resolved_penclip_tsx_path="$base_cli_tsx_path"
-    resolved_penclip_entry_path="$base_cli_entry_path"
-    return 0
-  fi
-
-  local pnpm_cwd=""
-  if has_penclip_script_in_manifest "$base_cwd/package.json"; then
-    pnpm_cwd="$base_cwd"
-  elif [[ "$worktree_cwd" != "$base_cwd" ]] && has_penclip_script_in_manifest "$worktree_cwd/package.json"; then
-    pnpm_cwd="$worktree_cwd"
-  fi
-
-  if [[ -n "$pnpm_cwd" ]] && command -v pnpm >/dev/null 2>&1 && ( cd "$pnpm_cwd" && pnpm penclip --help >/dev/null 2>&1 ); then
-    resolved_penclip_invoker="pnpm"
-    resolved_penclip_cwd="$pnpm_cwd"
-    return 0
+  if command -v pnpm >/dev/null 2>&1 && pnpm penclip --help >/dev/null 2>&1; then
+    (
+      cd "$worktree_cwd" &&
+        pnpm penclip worktree init --force --seed-mode minimal --name "$worktree_name" --from-config "$source_config_path"
+    )
+    return
   fi
 
   if command -v penclip >/dev/null 2>&1; then
-    resolved_penclip_invoker="global"
-    return 0
+    (
+      cd "$worktree_cwd" &&
+        penclip worktree init --force --seed-mode minimal --name "$worktree_name" --from-config "$source_config_path"
+    )
+    return
   fi
 
-  resolved_penclip_invoker="none"
+  return 127
 }
 
-run_penclip_command() {
-  local command_args=("$@")
-  resolve_penclip_invoker
+penclip_command_available() {
+  if should_force_fallback_config; then
+    return 1
+  fi
 
-  case "$resolved_penclip_invoker" in
-    source)
-      "$resolved_penclip_node_command" "$resolved_penclip_tsx_path" "$resolved_penclip_entry_path" "${command_args[@]}"
-      return $?
-      ;;
-    pnpm)
-      (
-        cd "$resolved_penclip_cwd" &&
-        pnpm penclip "${command_args[@]}"
-      )
-      return $?
-      ;;
-    global)
-      penclip "${command_args[@]}"
-      return $?
-      ;;
-    *)
-      return 1
-      ;;
-  esac
-}
-
-paperclipai_command_available() {
   if command -v pnpm >/dev/null 2>&1 && pnpm penclip --help >/dev/null 2>&1; then
     return 0
   fi
 
-  local base_cli_tsx_path="$base_cwd/cli/node_modules/tsx/dist/cli.mjs"
-  local base_cli_entry_path="$base_cwd/cli/src/index.ts"
-  if command -v node >/dev/null 2>&1 && [[ -f "$base_cli_tsx_path" ]] && [[ -f "$base_cli_entry_path" ]]; then
+  if [[ -n "$node_command" ]] && base_cli_files_present; then
     return 0
   fi
 
@@ -186,23 +168,11 @@ paperclipai_command_available() {
   return 1
 }
 
-run_isolated_worktree_init() {
-  run_penclip_command \
-    worktree \
-    init \
-    --force \
-    --seed-mode \
-    minimal \
-    --name \
-    "$worktree_name" \
-    --from-config \
-    "$source_config_path_raw"
-}
-
 existing_worktree_config_is_usable() {
+  [[ -n "$node_command" ]] || return 1
   WORKTREE_CONFIG_PATH="$worktree_config_path" \
   WORKTREE_ENV_PATH="$worktree_env_path" \
-  node <<'EOF'
+  "$node_command" <<'EOF'
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
@@ -278,15 +248,18 @@ EOF
 }
 
 write_fallback_worktree_config() {
-  local node_command
-  node_command="$(resolve_node_command)"
-  "$node_command" \
-    - \
-    "$worktree_name" \
-    "$paperclip_dir_raw" \
-    "$source_config_path_raw" \
-    "$source_env_path_raw" \
-    "${PAPERCLIP_WORKTREES_DIR:-}" <<'EOF'
+  [[ -n "$node_command" ]] || {
+    echo "Node.js is required to write an isolated fallback config." >&2
+    return 127
+  }
+  WORKTREE_NAME="$worktree_name" \
+  BASE_CWD="$base_cwd" \
+  WORKTREE_CWD="$worktree_cwd" \
+  PAPERCLIP_DIR="$paperclip_dir" \
+  SOURCE_CONFIG_PATH="$source_config_path" \
+  SOURCE_ENV_PATH="$source_env_path" \
+  PAPERCLIP_WORKTREES_DIR="${PAPERCLIP_WORKTREES_DIR:-}" \
+  "$node_command" <<'EOF'
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
@@ -301,6 +274,13 @@ function expandHomePrefix(value) {
 
 function nonEmpty(value) {
   return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
+}
+
+function serializeEnvValue(value) {
+  const text = String(value);
+  // dotenv preserves backslashes in single-quoted values. JSON double-quoted
+  // strings leave Windows paths double-escaped after parsing.
+  return /[\r\n]/.test(text) ? JSON.stringify(text) : `'${text}'`;
 }
 
 function sanitizeInstanceId(value) {
@@ -394,15 +374,11 @@ function resolveRuntimeLikePath(value, configPath) {
 }
 
 async function main() {
-  const [, , rawWorktreeName, rawPaperclipDir, rawSourceConfigPath, rawSourceEnvPath, rawWorktreeHome] = process.argv;
-  const worktreeName = nonEmpty(rawWorktreeName) ?? "worktree";
-  const paperclipDir = nonEmpty(rawPaperclipDir);
-  const sourceConfigPath = nonEmpty(rawSourceConfigPath);
-  const sourceEnvPath = nonEmpty(rawSourceEnvPath);
-  const worktreeHome = path.resolve(expandHomePrefix(nonEmpty(rawWorktreeHome) ?? "~/.paperclip-worktrees"));
-  if (!paperclipDir) {
-    throw new TypeError("paperclipDir is required");
-  }
+  const worktreeName = process.env.WORKTREE_NAME;
+  const paperclipDir = process.env.PAPERCLIP_DIR;
+  const sourceConfigPath = process.env.SOURCE_CONFIG_PATH;
+  const sourceEnvPath = process.env.SOURCE_ENV_PATH;
+  const worktreeHome = path.resolve(expandHomePrefix(nonEmpty(process.env.PAPERCLIP_WORKTREES_DIR) ?? "~/.paperclip-worktrees"));
   const instanceId = sanitizeInstanceId(worktreeName);
   const instanceRoot = path.resolve(worktreeHome, "instances", instanceId);
   const configPath = path.resolve(paperclipDir, "config.json");
@@ -510,18 +486,13 @@ async function main() {
     }
   }
 
-  const formatEnvValue = (value) => `"${String(value)
-    .replace(/\r/g, "\\r")
-    .replace(/\n/g, "\\n")
-    .replace(/"/g, '\\"')}"`;
-
   const envLines = [
-    "PAPERCLIP_HOME=" + formatEnvValue(worktreeHome),
-    "PAPERCLIP_INSTANCE_ID=" + formatEnvValue(instanceId),
-    "PAPERCLIP_CONFIG=" + formatEnvValue(configPath),
-    "PAPERCLIP_CONTEXT=" + formatEnvValue(path.resolve(worktreeHome, "context.json")),
+    "PAPERCLIP_HOME=" + serializeEnvValue(worktreeHome),
+    "PAPERCLIP_INSTANCE_ID=" + serializeEnvValue(instanceId),
+    "PAPERCLIP_CONFIG=" + serializeEnvValue(configPath),
+    "PAPERCLIP_CONTEXT=" + serializeEnvValue(path.resolve(worktreeHome, "context.json")),
     "PAPERCLIP_IN_WORKTREE=true",
-    "PAPERCLIP_WORKTREE_NAME=" + formatEnvValue(worktreeName),
+    "PAPERCLIP_WORKTREE_NAME=" + serializeEnvValue(worktreeName),
   ];
 
   // Secrets that must be carried over from the source instance so the worktree's
@@ -537,7 +508,7 @@ async function main() {
   for (const key of propagatedSecretKeys) {
     const value = nonEmpty(sourceEnvEntries[key]);
     if (value) {
-      envLines.push(key + "=" + formatEnvValue(value));
+      envLines.push(key + "=" + serializeEnvValue(value));
     }
   }
 
@@ -552,45 +523,34 @@ EOF
 }
 
 if [[ -e "$worktree_config_path" && -e "$worktree_env_path" ]] && existing_worktree_config_is_usable; then
-  echo "Reusing existing isolated Paperclip worktree config at $worktree_config_path_raw" >&2
+  echo "Reusing existing isolated Paperclip worktree config at $worktree_config_path" >&2
 else
   if [[ -e "$worktree_config_path" || -e "$worktree_env_path" ]]; then
     echo "Existing isolated Paperclip worktree config is stale for this host; regenerating." >&2
   fi
-  if run_isolated_worktree_init; then
-    if [[ ! -e "$worktree_config_path" || ! -e "$worktree_env_path" ]]; then
-      echo "penclip worktree init did not materialize repo-local config; writing isolated fallback config." >&2
-      write_fallback_worktree_config
+  if penclip_command_available; then
+    if run_isolated_worktree_init; then
+      :
+    else
+      init_exit_code=$?
+      if [[ "$init_exit_code" -eq 127 ]]; then
+        # Every CLI candidate was unusable (e.g. an unhealthy base install that
+        # the repair could not fix); degrade instead of stranding the run.
+        echo "No usable penclip CLI found; writing isolated fallback config without DB seeding." >&2
+        write_fallback_worktree_config
+      else
+        # A CLI that ran and failed signals a real problem; do not paper over
+        # it with an unseeded fallback config.
+        echo "penclip worktree init failed (exit $init_exit_code); failing provisioning instead of writing an unseeded fallback config." >&2
+        exit "$init_exit_code"
+      fi
     fi
   else
-    resolve_penclip_invoker
-    if [[ "$resolved_penclip_invoker" == "none" ]]; then
-      echo "penclip CLI not available in this workspace; writing isolated fallback config without DB seeding." >&2
-      write_fallback_worktree_config
-    else
-      echo "penclip worktree init failed after CLI detection; refusing to write fallback config." >&2
-      exit 1
-    fi
+    echo "penclip worktree init unavailable; writing isolated fallback config without DB seeding." >&2
+    write_fallback_worktree_config
   fi
 fi
 
-disable_seeded_routines() {
-  if should_force_fallback_config; then
-    return 0
-  fi
-
-  local company_id="${PAPERCLIP_COMPANY_ID:-}"
-  if [[ -z "$company_id" ]]; then
-    echo "PAPERCLIP_COMPANY_ID not set; skipping routine disable post-step." >&2
-    return 0
-  fi
-
-  if ! run_penclip_command routines disable-all --config "$worktree_config_path_raw" --company-id "$company_id"; then
-    echo "penclip CLI not available in this workspace; skipping routine disable post-step." >&2
-  fi
-}
-
-disable_seeded_routines
 list_base_node_modules_paths() {
   cd "$base_cwd" &&
     find . \
@@ -604,7 +564,8 @@ list_base_node_modules_paths() {
 }
 
 compute_pnpm_install_fingerprint() {
-  WORKTREE_CWD="$worktree_cwd" node <<'EOF'
+  [[ -n "$node_command" ]] || return 127
+  WORKTREE_CWD="$worktree_cwd" "$node_command" <<'EOF'
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");

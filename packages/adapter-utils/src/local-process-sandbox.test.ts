@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import http from "node:http";
+import net from "node:net";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
@@ -13,7 +14,17 @@ import {
 import { runChildProcess } from "./server-utils.js";
 
 const cleanup: string[] = [];
-const itLinux = it.runIf(process.platform === "linux");
+
+async function withTmpDir<T>(tmpDir: string, run: () => Promise<T>): Promise<T> {
+  const previousTmpDir = process.env.TMPDIR;
+  process.env.TMPDIR = tmpDir;
+  try {
+    return await run();
+  } finally {
+    if (previousTmpDir === undefined) delete process.env.TMPDIR;
+    else process.env.TMPDIR = previousTmpDir;
+  }
+}
 
 afterEach(async () => {
   await Promise.all(cleanup.splice(0).map((candidate) => fs.rm(candidate, { recursive: true, force: true })));
@@ -21,9 +32,11 @@ afterEach(async () => {
 
 describe("local process sandbox", () => {
   it("parses read-only and writable extra paths", () => {
-    expect(parseLocalProcessSandboxExtraPaths(["/opt/cache", { path: "/var/lib/tool", access: "rw" }])).toEqual([
-      { path: path.resolve("/opt/cache"), access: "ro" },
-      { path: path.resolve("/var/lib/tool"), access: "rw" },
+    const readOnlyPath = path.resolve("opt", "cache");
+    const writablePath = path.resolve("var", "lib", "tool");
+    expect(parseLocalProcessSandboxExtraPaths([readOnlyPath, { path: writablePath, access: "rw" }])).toEqual([
+      { path: readOnlyPath, access: "ro" },
+      { path: writablePath, access: "rw" },
     ]);
     expect(() => parseLocalProcessSandboxExtraPaths(["relative"])).toThrow("must be an absolute path");
   });
@@ -41,7 +54,24 @@ describe("local process sandbox", () => {
     expect(() => parseLocalProcessNetworkScope("public")).toThrow('"deny" or "allowlist"');
   });
 
-  itLinux("builds a fresh-root bubblewrap command with workspace access", async () => {
+  it.runIf(process.platform === "linux")("describes every valid allowlist input when no proxy rules remain", async () => {
+    const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-network-rules-"));
+    cleanup.push(workspace);
+
+    await expect(buildLocalProcessSandboxSpawnTarget({
+      executable: process.execPath,
+      args: ["-e", "process.exit(0)"],
+      cwd: workspace,
+      options: {
+        workspaceDir: workspace,
+        networkScope: "allowlist",
+        networkAllowlist: [],
+        networkTrustedUrls: ["file:///not-a-network-target"],
+      },
+    })).rejects.toThrow("valid networkAllowlist hostname or HTTP(S) networkTrustedUrl");
+  });
+
+  it.runIf(process.platform === "linux")("builds a fresh-root bubblewrap command with workspace access", async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-fs-sandbox-"));
     cleanup.push(root);
     const workspace = path.join(root, "workspace");
@@ -68,7 +98,47 @@ describe("local process sandbox", () => {
     expect(target.args.slice(-3)).toEqual([process.execPath, "-e", "console.log('ok')"]);
   });
 
-  itLinux("builds a network-only namespace without changing filesystem visibility", async () => {
+  it.runIf(process.platform === "linux")("binds a confined absolute alias to the synchronized workspace", async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-fs-alias-"));
+    cleanup.push(root);
+    const workspace = path.join(root, "workspace");
+    await fs.mkdir(workspace);
+
+    const target = await buildLocalProcessSandboxSpawnTarget({
+      executable: process.execPath,
+      args: ["-e", "process.exit(0)"],
+      cwd: workspace,
+      options: {
+        workspaceDir: workspace,
+        filesystemScope: "workspace",
+        pathAliases: [{ path: "/app", target: workspace }],
+      },
+    });
+
+    expect(target.args).toEqual(expect.arrayContaining(["--bind", workspace, "/app"]));
+  });
+
+  it.runIf(process.platform === "linux")("rejects writable out-of-tree paths without an outbound restore mapping", async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-fs-outbound-"));
+    cleanup.push(root);
+    const workspace = path.join(root, "workspace");
+    const outside = path.join(root, "outside");
+    await fs.mkdir(workspace);
+    await fs.mkdir(outside);
+
+    await expect(buildLocalProcessSandboxSpawnTarget({
+      executable: process.execPath,
+      args: ["-e", "process.exit(0)"],
+      cwd: workspace,
+      options: {
+        workspaceDir: workspace,
+        filesystemScope: "workspace",
+        extraPaths: [{ path: outside, access: "rw" }],
+      },
+    })).rejects.toThrow("has no outbound restore mapping");
+  });
+
+  it.runIf(process.platform === "linux")("builds a network-only namespace without changing filesystem visibility", async () => {
     const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-network-sandbox-"));
     cleanup.push(workspace);
     const target = await buildLocalProcessSandboxSpawnTarget({
@@ -84,10 +154,86 @@ describe("local process sandbox", () => {
     expect(target.env?.HTTP_PROXY).toBeUndefined();
   });
 
-  itLinux("forwards allowed proxy targets and rejects other hosts", async () => {
+  it.runIf(process.platform === "linux")("forwards allowed proxy targets with a deep TMPDIR and rejects other hosts", async () => {
     const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-network-proxy-"));
     cleanup.push(workspace);
+    const deepTmpDir = path.join(workspace, ...Array.from({ length: 6 }, () => "deep-temporary-directory-segment"));
+    await fs.mkdir(deepTmpDir, { recursive: true });
     const server = http.createServer((_request, response) => response.end("allowed-response"));
+    await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+    const address = server.address();
+    if (!address || typeof address === "string") throw new Error("Expected TCP test server address.");
+    const target = await withTmpDir(deepTmpDir, () =>
+      buildLocalProcessSandboxSpawnTarget({
+        executable: process.execPath,
+        args: ["-e", "process.exit(0)"],
+        cwd: workspace,
+        options: {
+          workspaceDir: workspace,
+          filesystemScope: "workspace",
+          networkScope: "allowlist",
+          networkAllowlist: [`127.0.0.1:${address.port}`],
+        },
+      }),
+    );
+    const delimiterIndex = target.args.indexOf("--");
+    const socketPath = target.args[delimiterIndex + 3];
+    expect(Buffer.byteLength(path.join(deepTmpDir, "paperclip-network-sandbox-XXXXXX", "proxy.sock"))).toBeGreaterThan(107);
+    expect(Buffer.byteLength(socketPath)).toBeLessThanOrEqual(107);
+    expect(socketPath).toMatch(/^\/tmp\/paperclip-network-sandbox-/);
+    expect(target.args).toContain(path.dirname(socketPath));
+    const request = (url: string) => new Promise<{ status: number; contentType: string | null; body: string }>((resolve, reject) => {
+      const outgoing = http.request({ socketPath, path: url, headers: { host: new URL(url).host } }, (response) => {
+        let body = "";
+        response.on("data", (chunk) => {
+          body += chunk;
+        });
+        response.on("end", () => resolve({
+          status: response.statusCode ?? 0,
+          contentType: typeof response.headers["content-type"] === "string" ? response.headers["content-type"] : null,
+          body,
+        }));
+      });
+      outgoing.on("error", reject);
+      outgoing.end();
+    });
+
+    try {
+      await expect(request(`http://127.0.0.1:${address.port}/canary`)).resolves.toEqual({
+        status: 200,
+        contentType: null,
+        body: "allowed-response",
+      });
+      await expect(request("http://example.com/")).resolves.toEqual({
+        status: 403,
+        contentType: "application/json; charset=utf-8",
+        body: '{"error":{"code":"network_target_denied","message":"Network target denied by Paperclip sandbox policy."}}\n',
+      });
+      const connectResponse = await new Promise<string>((resolve, reject) => {
+        const socket = net.createConnection(socketPath, () => {
+          socket.end("CONNECT example.com:443 HTTP/1.1\r\nHost: example.com:443\r\n\r\n");
+        });
+        let response = "";
+        socket.setEncoding("utf8");
+        socket.on("data", (chunk) => { response += chunk; });
+        socket.on("end", () => resolve(response));
+        socket.on("error", reject);
+      });
+      expect(connectResponse).toContain("HTTP/1.1 403 Forbidden\r\n");
+      expect(connectResponse).toContain("Content-Type: application/json; charset=utf-8\r\n");
+      expect(connectResponse).toContain(
+        '{"error":{"code":"network_target_denied","message":"Network target denied by Paperclip sandbox policy."}}\n',
+      );
+    } finally {
+      await target.cleanup?.();
+      await new Promise<void>((resolve) => server.close(() => resolve()));
+    }
+  });
+
+  it.runIf(process.platform === "linux")("always permits trusted Paperclip control-plane URLs", async () => {
+    const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-network-trusted-"));
+    cleanup.push(workspace);
+    const server = http.createServer((_request, response) => response.end("control-plane-response"));
     await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
     const address = server.address();
     if (!address || typeof address === "string") throw new Error("Expected TCP test server address.");
@@ -98,39 +244,35 @@ describe("local process sandbox", () => {
       options: {
         workspaceDir: workspace,
         networkScope: "allowlist",
-        networkAllowlist: [`127.0.0.1:${address.port}`],
+        networkAllowlist: ["api.openai.com"],
+        networkTrustedUrls: [`http://127.0.0.1:${address.port}/api/issues/issue-1`],
       },
     });
     const delimiterIndex = target.args.indexOf("--");
     const socketPath = target.args[delimiterIndex + 3];
-    const request = (url: string) => new Promise<{ status: number; body: string }>((resolve, reject) => {
-      const outgoing = http.request({ socketPath, path: url, headers: { host: new URL(url).host } }, (response) => {
-        let body = "";
-        response.on("data", (chunk) => {
-          body += chunk;
-        });
-        response.on("end", () => resolve({ status: response.statusCode ?? 0, body }));
-      });
-      outgoing.on("error", reject);
-      outgoing.end();
-    });
 
     try {
-      await expect(request(`http://127.0.0.1:${address.port}/canary`)).resolves.toEqual({
-        status: 200,
-        body: "allowed-response",
+      const response = await new Promise<{ status: number; body: string }>((resolve, reject) => {
+        const outgoing = http.request({
+          socketPath,
+          path: `http://127.0.0.1:${address.port}/api/issues/issue-1`,
+          headers: { host: `127.0.0.1:${address.port}` },
+        }, (incoming) => {
+          let body = "";
+          incoming.on("data", (chunk) => { body += chunk; });
+          incoming.on("end", () => resolve({ status: incoming.statusCode ?? 0, body }));
+        });
+        outgoing.on("error", reject);
+        outgoing.end();
       });
-      await expect(request("http://example.com/")).resolves.toEqual({
-        status: 403,
-        body: "Network target denied by Paperclip sandbox policy.\n",
-      });
+      expect(response).toEqual({ status: 200, body: "control-plane-response" });
     } finally {
       await target.cleanup?.();
       await new Promise<void>((resolve) => server.close(() => resolve()));
     }
   });
 
-  it("fails clearly when Bubblewrap is unavailable", async () => {
+  it.runIf(process.platform === "linux")("fails clearly when Bubblewrap is unavailable", async () => {
     const workspace = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-fs-sandbox-missing-"));
     cleanup.push(workspace);
     await expect(
@@ -274,19 +416,29 @@ function request(url) {
 })().catch((error) => { console.error(error); process.exit(7); });
 `;
       try {
-        const result = await runChildProcess("network-sandbox-allowlist-test", process.execPath, ["-e", script], {
-          cwd: workspace,
-          env: {},
-          timeoutSec: 10,
-          graceSec: 1,
-          onLog: async () => {},
-          localProcessSandbox: {
-            workspaceDir: workspace,
-            networkScope: "allowlist",
-            networkAllowlist: [`127.0.0.1:${address.port}`],
-            command: process.env.PAPERCLIP_TEST_BWRAP,
-          },
-        });
+        const deepTmpDir = path.join(workspace, ...Array.from({ length: 6 }, () => "deep-temporary-directory-segment"));
+        await fs.mkdir(deepTmpDir, { recursive: true });
+        const result = await withTmpDir(deepTmpDir, () =>
+          runChildProcess(
+            "network-sandbox-allowlist-test",
+            process.execPath,
+            ["-e", script],
+            {
+              cwd: workspace,
+              env: {},
+              timeoutSec: 10,
+              graceSec: 1,
+              onLog: async () => {},
+              localProcessSandbox: {
+                workspaceDir: workspace,
+                filesystemScope: "workspace",
+                networkScope: "allowlist",
+                networkAllowlist: [`127.0.0.1:${address.port}`],
+                command: process.env.PAPERCLIP_TEST_BWRAP,
+              },
+            },
+          ),
+        );
         expect(result.exitCode, result.stderr).toBe(0);
       } finally {
         await new Promise<void>((resolve) => server.close(() => resolve()));

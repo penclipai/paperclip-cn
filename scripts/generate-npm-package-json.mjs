@@ -13,8 +13,10 @@
  */
 
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { bundledCliNpmDependencies } from "./cli-bundled-npm-dependencies.mjs";
 import {
   SERVER_PACKAGE_NAME,
   WORKSPACE_SCOPE,
@@ -57,6 +59,7 @@ for (const pkgPath of workspacePaths) {
 
   for (const [name, version] of Object.entries(deps)) {
     if (name.startsWith(WORKSPACE_SCOPE) && !externalWorkspacePackages.has(name)) continue;
+    if (bundledCliNpmDependencies.has(name)) continue;
     // For external workspace packages, read their version directly
     if (externalWorkspacePackages.has(name)) {
       const pkgDirMap = { [SERVER_PACKAGE_NAME]: "server" };
@@ -73,6 +76,15 @@ for (const pkgPath of workspacePaths) {
   for (const [name, version] of Object.entries(optDeps)) {
     allOptionalDeps[name] = version;
   }
+}
+
+if (bundledCliNpmDependencies.has("embedded-postgres")) {
+  const requireFromDb = createRequire(resolve(repoRoot, "packages/db/package.json"));
+  const embeddedPostgresRoot = dirname(requireFromDb.resolve("embedded-postgres"));
+  const embeddedPostgresPackage = JSON.parse(
+    readFileSync(resolve(embeddedPostgresRoot, "..", "package.json"), "utf8"),
+  );
+  Object.assign(allOptionalDeps, embeddedPostgresPackage.optionalDependencies ?? {});
 }
 
 // Sort alphabetically

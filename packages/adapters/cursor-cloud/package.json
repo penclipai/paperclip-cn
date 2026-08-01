@@ -46,16 +46,16 @@
   ],
   "scripts": {
     "build": "tsc",
-    "clean": "node ../../../scripts/fs-ops.mjs rm dist",
+    "clean": "rm -rf dist",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@cursor/sdk": "^1.0.19",
+    "@cursor/sdk": "^1.0.24",
     "@penclipai/adapter-utils": "workspace:*",
     "picocolors": "^1.1.1"
   },
   "devDependencies": {
-    "@types/node": "^22.19.21",
+    "@types/node": "^22.20.1",
     "typescript": "^5.7.3"
   }
 }

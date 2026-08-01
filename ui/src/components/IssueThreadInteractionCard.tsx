@@ -1,7 +1,29 @@
-import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Agent } from "@penclipai/shared";
-import { AlertTriangle, ArrowUpRight, Check, CheckCircle2, ChevronDown, ChevronRight, CircleDashed, Clock, ExternalLink, FileText, GitBranch, ImagePlus, Loader2, MessageSquareQuote, MinusCircle, ShieldAlert, ThumbsUp, TriangleAlert, Wrench, X, XCircle } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowUpRight,
+  Check,
+  CheckCircle2,
+  ChevronDown,
+  ChevronRight,
+  CircleDashed,
+  Clock,
+  ExternalLink,
+  FileText,
+  GitBranch,
+  ImagePlus,
+  Loader2,
+  MessageSquareQuote,
+  MinusCircle,
+  ShieldAlert,
+  ThumbsUp,
+  TriangleAlert,
+  Wrench,
+  X,
+  XCircle,
+} from "lucide-react";
 import { Link } from "@/lib/router";
 import { formatAssigneeUserLabel } from "../lib/assignees";
 import {
@@ -28,15 +50,21 @@ import {
   type SuggestedTaskTreeNode,
 } from "../lib/issue-thread-interactions";
 import { cn, formatDateTime, formatShortDate } from "../lib/utils";
-import { MarkdownBody, type MarkdownExternalReferenceMap } from "./MarkdownBody";
+import {
+  MarkdownBody,
+  type MarkdownExternalReferenceMap,
+} from "./MarkdownBody";
 import { Button } from "./ui/button";
 import { Checkbox } from "./ui/checkbox";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "./ui/collapsible";
 import { PriorityIcon } from "./PriorityIcon";
 import { Textarea } from "./ui/textarea";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { Badge } from "@/components/ui/badge";
-import { translateInstant } from "../i18n";
 
 const OTHER_ANSWER_ID = "__paperclip_other__";
 
@@ -69,7 +97,11 @@ interface IssueThreadInteractionCardProps {
   ) => Promise<void> | void;
   onSubmitInteractionVerdicts?: (
     interaction: RequestItemVerdictsInteraction,
-    verdicts: { id: string; verdict: RequestItemVerdictValue; reason?: string }[],
+    verdicts: {
+      id: string;
+      verdict: RequestItemVerdictValue;
+      reason?: string;
+    }[],
   ) => Promise<void> | void;
   onUploadImage?: (file: File) => Promise<string>;
   externalReferences?: MarkdownExternalReferenceMap;
@@ -87,34 +119,29 @@ function resolveActorLabel(args: {
     return agentMap?.get(agentId)?.name ?? agentId.slice(0, 8);
   }
   if (userId) {
-    return formatAssigneeUserLabel(userId, currentUserId, userLabelMap)
-      ?? translateInstant("Board", { defaultValue: "Board" });
+    return (
+      formatAssigneeUserLabel(userId, currentUserId, userLabelMap) ?? "Board"
+    );
   }
-  return translateInstant("Unknown", { defaultValue: "Unknown" });
-}
-
-function draftIssueWord(count: number) {
-  return count === 1
-    ? translateInstant("issueThreadInteraction.issueWordSingular", { defaultValue: "issue" })
-    : translateInstant("issueThreadInteraction.issueWordPlural", { defaultValue: "issues" });
+  return "Unknown";
 }
 
 function statusLabel(status: IssueThreadInteraction["status"]) {
   switch (status) {
     case "pending":
-      return translateInstant("issueThreadInteraction.status.pending", { defaultValue: "Pending" });
+      return "Pending";
     case "accepted":
-      return translateInstant("issueThreadInteraction.status.accepted", { defaultValue: "Accepted" });
+      return "Accepted";
     case "rejected":
-      return translateInstant("issueThreadInteraction.status.rejected", { defaultValue: "Rejected" });
+      return "Rejected";
     case "answered":
-      return translateInstant("issueThreadInteraction.status.answered", { defaultValue: "Answered" });
+      return "Answered";
     case "cancelled":
-      return translateInstant("issueThreadInteraction.status.cancelled", { defaultValue: "Cancelled" });
+      return "Cancelled";
     case "expired":
-      return translateInstant("issueThreadInteraction.status.expired", { defaultValue: "Expired" });
+      return "Expired";
     case "failed":
-      return translateInstant("issueThreadInteraction.status.failed", { defaultValue: "Failed" });
+      return "Failed";
     default:
       return status;
   }
@@ -123,13 +150,15 @@ function statusLabel(status: IssueThreadInteraction["status"]) {
 function interactionKindLabel(kind: IssueThreadInteraction["kind"]) {
   switch (kind) {
     case "suggest_tasks":
-      return translateInstant("issueThreadInteraction.kind.suggestTasks", { defaultValue: "Suggested tasks" });
+      return "Suggested tasks";
     case "ask_user_questions":
-      return translateInstant("issueThreadInteraction.kind.askUserQuestions", { defaultValue: "Ask user questions" });
+      return "Ask user questions";
     case "request_confirmation":
-      return translateInstant("issueThreadInteraction.kind.confirmation", { defaultValue: "Confirmation" });
+      return "Confirmation";
     case "request_checkbox_confirmation":
-      return translateInstant("issueThreadInteraction.kind.checkboxConfirmation", { defaultValue: "Checkbox confirmation" });
+      return "Checkbox confirmation";
+    case "request_item_verdicts":
+      return "Item verdicts";
     default:
       return kind;
   }
@@ -157,24 +186,28 @@ function statusClasses(status: IssueThreadInteraction["status"]) {
     case "answered":
       return {
         shell: "border-emerald-400/70 bg-transparent",
-        badge: "border-emerald-500/60 bg-emerald-500/10 text-emerald-900 dark:bg-emerald-500/15 dark:text-emerald-100",
+        badge:
+          "border-emerald-500/60 bg-emerald-500/10 text-emerald-900 dark:bg-emerald-500/15 dark:text-emerald-100",
       };
     case "rejected":
     case "cancelled":
       return {
         shell: "border-rose-400/70 bg-transparent",
-        badge: "border-rose-500/60 bg-rose-500/10 text-rose-900 dark:bg-rose-500/15 dark:text-rose-100",
+        badge:
+          "border-rose-500/60 bg-rose-500/10 text-rose-900 dark:bg-rose-500/15 dark:text-rose-100",
       };
     case "failed":
     case "expired":
       return {
         shell: "border-amber-400/70 bg-transparent",
-        badge: "border-amber-500/60 bg-amber-500/10 text-amber-900 dark:bg-amber-500/15 dark:text-amber-100",
+        badge:
+          "border-amber-500/60 bg-amber-500/10 text-amber-900 dark:bg-amber-500/15 dark:text-amber-100",
       };
     default:
       return {
         shell: "border-sky-500/70 bg-transparent",
-        badge: "border-sky-500/70 bg-sky-500/10 text-sky-900 dark:bg-sky-500/15 dark:text-sky-100",
+        badge:
+          "border-sky-500/70 bg-sky-500/10 text-sky-900 dark:bg-sky-500/15 dark:text-sky-100",
       };
   }
 }
@@ -192,13 +225,18 @@ function isPlanConfirmation(interaction: IssueThreadInteraction): boolean {
 }
 
 function requestConfirmationResumeFailure(interaction: IssueThreadInteraction) {
-  if (interaction.kind !== "request_confirmation" && interaction.kind !== "request_checkbox_confirmation") return null;
+  if (
+    interaction.kind !== "request_confirmation" &&
+    interaction.kind !== "request_checkbox_confirmation"
+  )
+    return null;
   return interaction.result?.resumeFailure ?? null;
 }
 
 function planStatusClasses(
   status: IssueThreadInteraction["status"],
   resumeFailure?: ReturnType<typeof requestConfirmationResumeFailure>,
+  outcome?: string | null,
 ) {
   switch (status) {
     case "accepted":
@@ -206,38 +244,43 @@ function planStatusClasses(
       if (resumeFailure) {
         return {
           shell: "border-2 border-amber-500/70 bg-transparent",
-          badge: "border-amber-500/60 bg-amber-500/10 text-amber-900 dark:bg-amber-500/15 dark:text-amber-100",
-          label: translateInstant("issueThreadInteraction.approvedResumeFailed", { defaultValue: "Approved — agent resume failed" }),
+          badge:
+            "border-amber-500/60 bg-amber-500/10 text-amber-900 dark:bg-amber-500/15 dark:text-amber-100",
+          label: "Approved — agent resume failed",
           Icon: AlertTriangle,
         };
       }
       return {
         shell: "border-2 border-green-500/80 bg-transparent",
-        badge: "border-green-500/60 bg-green-500/10 text-green-900 dark:bg-green-500/15 dark:text-green-100",
-        label: translateInstant("issueThreadInteraction.approved", { defaultValue: "Approved" }),
+        badge:
+          "border-green-500/60 bg-green-500/10 text-green-900 dark:bg-green-500/15 dark:text-green-100",
+        label: "Approved",
         Icon: CheckCircle2,
       };
     case "rejected":
     case "cancelled":
       return {
         shell: "border-2 border-red-500/80 bg-transparent",
-        badge: "border-red-500/60 bg-red-500/10 text-red-900 dark:bg-red-500/15 dark:text-red-100",
-        label: translateInstant("issueThreadInteraction.changesRequested", { defaultValue: "Changes requested" }),
+        badge:
+          "border-red-500/60 bg-red-500/10 text-red-900 dark:bg-red-500/15 dark:text-red-100",
+        label: outcome === "withdrawn" ? "Withdrawn" : "Changes requested",
         Icon: XCircle,
       };
     case "failed":
     case "expired":
       return {
         shell: "border-2 border-amber-500/70 bg-transparent",
-        badge: "border-amber-500/60 bg-amber-500/10 text-amber-900 dark:bg-amber-500/15 dark:text-amber-100",
-        label: translateInstant("issueThreadInteraction.status.expired", { defaultValue: "Expired" }),
+        badge:
+          "border-amber-500/60 bg-amber-500/10 text-amber-900 dark:bg-amber-500/15 dark:text-amber-100",
+        label: "Expired",
         Icon: AlertTriangle,
       };
     default:
       return {
         shell: "border-2 border-violet-500/80 bg-transparent",
-        badge: "border-violet-500/60 bg-violet-500/10 text-violet-900 dark:bg-violet-500/15 dark:text-violet-100",
-        label: translateInstant("issueThreadInteraction.inReview", { defaultValue: "In review" }),
+        badge:
+          "border-violet-500/60 bg-violet-500/10 text-violet-900 dark:bg-violet-500/15 dark:text-violet-100",
+        label: "In review",
         Icon: FileText,
       };
   }
@@ -257,7 +300,9 @@ function toolActionPayload(
   return interaction.payload.toolAction ?? null;
 }
 
-function isToolActionConfirmation(interaction: IssueThreadInteraction): boolean {
+function isToolActionConfirmation(
+  interaction: IssueThreadInteraction,
+): boolean {
   return toolActionPayload(interaction) != null;
 }
 
@@ -304,30 +349,34 @@ function toolActionStatusClasses(state: ToolActionCardState): {
     case "running":
       return {
         shell: "border-2 border-amber-500/70 bg-transparent",
-        badge: "border-amber-500/60 bg-amber-500/10 text-amber-900 dark:bg-amber-500/15 dark:text-amber-100",
-        label: translateInstant("issueThreadInteraction.toolAction.status.running", { defaultValue: "Running…" }),
+        badge:
+          "border-amber-500/60 bg-amber-500/10 text-amber-900 dark:bg-amber-500/15 dark:text-amber-100",
+        label: "Running…",
         Icon: Loader2,
         spin: true,
       };
     case "executed":
       return {
         shell: "border-2 border-green-500/80 bg-transparent",
-        badge: "border-green-500/60 bg-green-500/10 text-green-900 dark:bg-green-500/15 dark:text-green-100",
-        label: translateInstant("issueThreadInteraction.toolAction.status.executed", { defaultValue: "Executed" }),
+        badge:
+          "border-green-500/60 bg-green-500/10 text-green-900 dark:bg-green-500/15 dark:text-green-100",
+        label: "Executed",
         Icon: CheckCircle2,
       };
     case "failed":
       return {
         shell: "border-2 border-amber-500/70 bg-transparent",
-        badge: "border-amber-500/60 bg-amber-500/10 text-amber-900 dark:bg-amber-500/15 dark:text-amber-100",
-        label: translateInstant("issueThreadInteraction.toolAction.status.failed", { defaultValue: "Failed" }),
+        badge:
+          "border-amber-500/60 bg-amber-500/10 text-amber-900 dark:bg-amber-500/15 dark:text-amber-100",
+        label: "Failed",
         Icon: XCircle,
       };
     case "declined":
       return {
         shell: "border-2 border-red-500/80 bg-transparent",
-        badge: "border-red-500/60 bg-red-500/10 text-red-900 dark:bg-red-500/15 dark:text-red-100",
-        label: translateInstant("issueThreadInteraction.toolAction.status.declined", { defaultValue: "Declined" }),
+        badge:
+          "border-red-500/60 bg-red-500/10 text-red-900 dark:bg-red-500/15 dark:text-red-100",
+        label: "Declined",
         Icon: XCircle,
         dimmed: true,
       };
@@ -335,15 +384,16 @@ function toolActionStatusClasses(state: ToolActionCardState): {
       return {
         shell: "border-2 border-border bg-transparent",
         badge: "border-border bg-muted/60 text-muted-foreground",
-        label: translateInstant("issueThreadInteraction.toolAction.status.expired", { defaultValue: "Expired" }),
+        label: "Expired",
         Icon: Clock,
         dimmed: true,
       };
     default:
       return {
         shell: "border-2 border-violet-500/80 bg-transparent",
-        badge: "border-violet-500/60 bg-violet-500/10 text-violet-900 dark:bg-violet-500/15 dark:text-violet-100",
-        label: translateInstant("issueThreadInteraction.toolAction.status.pending", { defaultValue: "Awaiting approval" }),
+        badge:
+          "border-violet-500/60 bg-violet-500/10 text-violet-900 dark:bg-violet-500/15 dark:text-violet-100",
+        label: "Awaiting approval",
         Icon: ShieldAlert,
       };
   }
@@ -352,14 +402,14 @@ function toolActionStatusClasses(state: ToolActionCardState): {
 function toolActionRiskBadge(risk: "write" | "destructive") {
   if (risk === "destructive") {
     return {
-      label: translateInstant("issueThreadInteraction.toolAction.risk.destructive", { defaultValue: "DESTRUCTIVE" }),
+      label: "DESTRUCTIVE",
       Icon: TriangleAlert,
       className:
         "border-red-500/60 bg-red-500/10 text-red-900 dark:bg-red-500/15 dark:text-red-100",
     };
   }
   return {
-    label: translateInstant("issueThreadInteraction.toolAction.risk.write", { defaultValue: "WRITE" }),
+    label: "WRITE",
     Icon: AlertTriangle,
     className:
       "border-amber-500/60 bg-amber-500/10 text-amber-900 dark:bg-amber-500/15 dark:text-amber-100",
@@ -370,11 +420,15 @@ function toolActionInitial(payload: {
   appDisplayName: string | null;
   toolDisplayName: string;
 }): string {
-  const source = payload.appDisplayName?.trim() || payload.toolDisplayName.trim();
+  const source =
+    payload.appDisplayName?.trim() || payload.toolDisplayName.trim();
   return source ? source.charAt(0).toUpperCase() : "?";
 }
 
-function formatToolActionCountdown(expiresAt: string, nowMs: number): {
+function formatToolActionCountdown(
+  expiresAt: string,
+  nowMs: number,
+): {
   text: string;
   urgent: boolean;
 } | null {
@@ -383,18 +437,13 @@ function formatToolActionCountdown(expiresAt: string, nowMs: number): {
   const remainingMs = expiresMs - nowMs;
   if (remainingMs <= 0) {
     return {
-      text: translateInstant("issueThreadInteraction.toolAction.approvalClosed", {
-        defaultValue: "Approval window closed · auto-declines any moment",
-      }),
+      text: "Approval window closed · auto-declines any moment",
       urgent: true,
     };
   }
   const minutes = Math.ceil(remainingMs / 60000);
   return {
-    text: translateInstant("issueThreadInteraction.toolAction.approvalExpires", {
-      minutes,
-      defaultValue: "Approval expires in {{minutes}} min · auto-declines if not answered",
-    }),
+    text: `Approval expires in ${minutes} min · auto-declines if not answered`,
     urgent: minutes <= 5,
   };
 }
@@ -453,7 +502,10 @@ function TaskTreeNode({
   showSelection?: boolean;
   onToggleSelection?: (node: SuggestedTaskTreeNode, checked: boolean) => void;
 }) {
-  const visibleChildren = node.children.filter((child) => !child.task.hiddenInPreview);
+  const { t } = useTranslation();
+  const visibleChildren = node.children.filter(
+    (child) => !child.task.hiddenInPreview,
+  );
   const hiddenChildCount = node.children
     .filter((child) => child.task.hiddenInPreview)
     .reduce((sum, child) => sum + countSuggestedTaskNodes(child), 0);
@@ -471,17 +523,19 @@ function TaskTreeNode({
     node.task.assigneeAgentId || node.task.assigneeUserId,
   );
   const labels = node.task.labels ?? [];
-  const hasMetadata = hasExplicitAssignee
-    || Boolean(node.task.billingCode)
-    || Boolean(node.task.projectId)
-    || labels.length > 0;
+  const hasMetadata =
+    hasExplicitAssignee ||
+    Boolean(node.task.billingCode) ||
+    Boolean(node.task.projectId) ||
+    labels.length > 0;
 
   return (
     <>
       <div
         className={cn(
           "relative border-b border-border/60 px-3 py-2.5 last:border-b-0",
-          depth > 0 && "before:absolute before:left-3 before:top-0 before:h-full before:w-px before:bg-border/70",
+          depth > 0 &&
+            "before:absolute before:left-3 before:top-0 before:h-full before:w-px before:bg-border/70",
         )}
         style={depth > 0 ? { paddingLeft: `${depth * 24 + 12}px` } : undefined}
       >
@@ -491,11 +545,10 @@ function TaskTreeNode({
               {showSelection ? (
                 <Checkbox
                   checked={isSelected}
-                  onCheckedChange={(checked) => onToggleSelection?.(node, checked === true)}
-                  aria-label={translateInstant("issueThreadInteraction.includeTask", {
-                    title: node.task.title,
-                    defaultValue: "Include {{title}}",
-                  })}
+                  onCheckedChange={(checked) =>
+                    onToggleSelection?.(node, checked === true)
+                  }
+                  aria-label={`Include ${node.task.title}`}
                   className="mt-0.5"
                 />
               ) : null}
@@ -513,7 +566,7 @@ function TaskTreeNode({
                 </div>
                 {depth > 0 ? (
                   <div className="mt-0.5 text-(length:--text-nano) font-medium uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
-                    {translateInstant("issueThreadInteraction.childTask", { defaultValue: "Child task" })}
+                    {t("issueThreadInteraction.childTask")}
                   </div>
                 ) : null}
                 {node.task.description ? (
@@ -535,7 +588,7 @@ function TaskTreeNode({
             </Link>
           ) : isSkipped ? (
             <span className="inline-flex shrink-0 items-center rounded-sm border border-amber-500/60 bg-amber-500/10 px-2.5 py-1 text-(length:--text-micro) font-medium text-amber-900 dark:text-amber-100">
-              {translateInstant("issueThreadInteraction.skipped", { defaultValue: "Skipped" })}
+              {t("issueThreadInteraction.skipped")}
             </span>
           ) : null}
         </div>
@@ -543,16 +596,25 @@ function TaskTreeNode({
         {hasMetadata ? (
           <div className="mt-2 flex flex-wrap gap-1.5">
             {hasExplicitAssignee ? (
-              <TaskField label={translateInstant("Responsible", { defaultValue: "Responsible" })} value={assigneeLabel} />
+              <TaskField label={t("Responsible")} value={assigneeLabel} />
             ) : null}
             {node.task.billingCode ? (
-              <TaskField label={translateInstant("Billing", { defaultValue: "Billing" })} value={node.task.billingCode} />
+              <TaskField label={t("Billing")} value={node.task.billingCode} />
             ) : null}
             {node.task.projectId ? (
-              <TaskField label={translateInstant("Project", { defaultValue: "Project" })} value={node.task.projectId} tone="subtle" />
+              <TaskField
+                label={t("Project")}
+                value={node.task.projectId}
+                tone="subtle"
+              />
             ) : null}
             {labels.map((label) => (
-              <TaskField key={label} label={translateInstant("Label", { defaultValue: "Label" })} value={label} tone="subtle" />
+              <TaskField
+                key={label}
+                label={t("Label")}
+                value={label}
+                tone="subtle"
+              />
             ))}
           </div>
         ) : null}
@@ -562,11 +624,8 @@ function TaskTreeNode({
             <GitBranch className="h-3.5 w-3.5 shrink-0" />
             <span>
               {hiddenChildCount === 1
-                ? translateInstant("issueThreadInteraction.oneHiddenFollowOnTask", { defaultValue: "1 follow-on task hidden in preview" })
-                : translateInstant("issueThreadInteraction.hiddenFollowOnTasks", {
-                  count: hiddenChildCount,
-                  defaultValue: "{{count}} follow-on tasks hidden in preview",
-                })}
+                ? "1 follow-on task hidden in preview"
+                : `${hiddenChildCount} follow-on tasks hidden in preview`}
             </span>
           </div>
         ) : null}
@@ -616,6 +675,7 @@ function SuggestTasksCard({
     reason?: string,
   ) => Promise<void> | void;
 }) {
+  const { t } = useTranslation();
   const [rejecting, setRejecting] = useState(false);
   const [working, setWorking] = useState<"accept" | "reject" | null>(null);
   const [rejectReason, setRejectReason] = useState(
@@ -655,11 +715,18 @@ function SuggestTasksCard({
   );
 
   useEffect(() => {
-    setSelectedClientKeys(new Set(interaction.payload.tasks.map((task) => task.clientKey)));
+    setSelectedClientKeys(
+      new Set(interaction.payload.tasks.map((task) => task.clientKey)),
+    );
   }, [interaction.id, interaction.status, taskSelectionSeed]);
 
   const taskByClientKey = useMemo(
-    () => new Map(interaction.payload.tasks.map((task) => [task.clientKey, task] as const)),
+    () =>
+      new Map(
+        interaction.payload.tasks.map(
+          (task) => [task.clientKey, task] as const,
+        ),
+      ),
     [interaction.payload.tasks],
   );
   const selectedCount = selectedClientKeys.size;
@@ -687,7 +754,10 @@ function SuggestTasksCard({
     }
   }
 
-  function handleToggleSelection(node: SuggestedTaskTreeNode, checked: boolean) {
+  function handleToggleSelection(
+    node: SuggestedTaskTreeNode,
+    checked: boolean,
+  ) {
     const subtreeClientKeys = collectSuggestedTaskClientKeys(node);
     setSelectedClientKeys((current) => {
       const next = new Set(current);
@@ -702,28 +772,29 @@ function SuggestTasksCard({
         next.add(clientKey);
       }
 
-      let parentClientKey = taskByClientKey.get(node.task.clientKey)?.parentClientKey ?? null;
+      let parentClientKey =
+        taskByClientKey.get(node.task.clientKey)?.parentClientKey ?? null;
       while (parentClientKey) {
         next.add(parentClientKey);
-        parentClientKey = taskByClientKey.get(parentClientKey)?.parentClientKey ?? null;
+        parentClientKey =
+          taskByClientKey.get(parentClientKey)?.parentClientKey ?? null;
       }
       return next;
     });
   }
 
   return (
-      <div className="space-y-3">
-        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
         <span>
-          {totalTasks === 1
-            ? translateInstant("issueThreadInteraction.oneDraftIssue", { defaultValue: "1 draft issue" })
-            : translateInstant("issueThreadInteraction.draftIssues", {
-              count: totalTasks,
-              defaultValue: "{{count}} draft issues",
-            })}
+          {totalTasks === 1 ? "1 draft issue" : `${totalTasks} draft issues`}
         </span>
         {interaction.payload.defaultParentId ? (
-          <TaskField label={translateInstant("issueThreadInteraction.defaultParent", { defaultValue: "Default parent" })} value={interaction.payload.defaultParentId} tone="subtle" />
+          <TaskField
+            label={t("issueThreadInteraction.defaultParent")}
+            value={interaction.payload.defaultParentId}
+            tone="subtle"
+          />
         ) : null}
       </div>
 
@@ -747,21 +818,12 @@ function SuggestTasksCard({
       {interaction.status === "accepted" ? (
         <div className="rounded-sm border border-emerald-500/60 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-900 dark:text-emerald-100">
           <div className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-emerald-700">
-            {translateInstant("issueThreadInteraction.resolutionSummary", { defaultValue: "Resolution summary" })}
+            {t("issueThreadInteraction.resolutionSummary")}
           </div>
           <p className="mt-1 leading-6">
             {skippedCount > 0
-              ? translateInstant("issueThreadInteraction.createdAndSkippedDrafts", {
-                defaultValue: "Created {{created}} draft issue and skipped {{skipped}} during review.",
-                created: createdCount,
-                skipped: skippedCount,
-                issueWord: draftIssueWord(createdCount),
-              })
-              : translateInstant("issueThreadInteraction.createdAllDrafts", {
-                defaultValue: "Created all {{count}} draft issues.",
-                count: createdCount,
-                issueWord: draftIssueWord(createdCount),
-              })}
+              ? `Created ${createdCount} draft ${createdCount === 1 ? "issue" : "issues"} and skipped ${skippedCount} during review.`
+              : `Created all ${createdCount} draft ${createdCount === 1 ? "issue" : "issues"}.`}
           </p>
         </div>
       ) : null}
@@ -769,13 +831,15 @@ function SuggestTasksCard({
       {interaction.status === "rejected" ? (
         <div className="rounded-sm border border-rose-500/60 bg-rose-500/10 px-4 py-3 text-sm text-rose-900 dark:text-rose-100">
           <div className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-rose-700">
-            {translateInstant("issueThreadInteraction.rejectionReason", { defaultValue: "Rejection reason" })}
+            {t("issueThreadInteraction.rejectionReason")}
           </div>
-          <p className={cn(
-            "mt-1 leading-6",
-            !interaction.result?.rejectionReason && "text-rose-900/75",
-          )}>
-            {interaction.result?.rejectionReason || translateInstant("issueThreadInteraction.noReasonProvided", { defaultValue: "No reason provided." })}
+          <p
+            className={cn(
+              "mt-1 leading-6",
+              !interaction.result?.rejectionReason && "text-rose-900/75",
+            )}
+          >
+            {interaction.result?.rejectionReason || "No reason provided."}
           </p>
         </div>
       ) : null}
@@ -786,24 +850,13 @@ function SuggestTasksCard({
             <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
               <span>
                 {selectedCount === totalTasks
-                  ? translateInstant("issueThreadInteraction.allDraftsSelected", {
-                    count: totalTasks,
-                    issueWord: draftIssueWord(totalTasks),
-                    defaultValue: "All {{count}} draft {{issueWord}} selected",
-                  })
-                  : translateInstant("issueThreadInteraction.someDraftsSelected", {
-                    selected: selectedCount,
-                    total: totalTasks,
-                    issueWord: draftIssueWord(totalTasks),
-                    defaultValue: "{{selected}} of {{total}} draft {{issueWord}} selected",
-                  })}
+                  ? `All ${totalTasks} draft ${totalTasks === 1 ? "issue" : "issues"} selected`
+                  : `${selectedCount} of ${totalTasks} draft ${totalTasks === 1 ? "issue" : "issues"} selected`}
               </span>
               {selectedCount < totalTasks ? (
                 <span>
-                  {translateInstant("issueThreadInteraction.skippedIfAccepted", {
-                    count: totalTasks - selectedCount,
-                    defaultValue: "{{count}} will be skipped if you accept this interaction.",
-                  })}
+                  {totalTasks - selectedCount}{" "}
+                  {t("issueThreadInteraction.skipIfAccepted")}
                 </span>
               ) : null}
             </div>
@@ -811,18 +864,22 @@ function SuggestTasksCard({
             <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
               <Button
                 size="sm"
-                disabled={!onAcceptInteraction || working !== null || selectedCount === 0}
+                disabled={
+                  !onAcceptInteraction ||
+                  working !== null ||
+                  selectedCount === 0
+                }
                 onClick={() => void handleAccept()}
               >
                 {working === "accept" ? (
                   <>
                     <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                    {translateInstant("issueThreadInteraction.accepting", { defaultValue: "Accepting..." })}
+                    {t("issueThreadInteraction.accepting")}
                   </>
+                ) : selectedCount === totalTasks ? (
+                  "Accept drafts"
                 ) : (
-                  selectedCount === totalTasks
-                    ? translateInstant("issueThreadInteraction.acceptDrafts", { defaultValue: "Accept drafts" })
-                    : translateInstant("issueThreadInteraction.acceptSelectedDrafts", { defaultValue: "Accept selected drafts" })
+                  "Accept selected drafts"
                 )}
               </Button>
               <Button
@@ -831,16 +888,22 @@ function SuggestTasksCard({
                 disabled={!onRejectInteraction || working !== null}
                 onClick={() => setRejecting((current) => !current)}
               >
-                {translateInstant("Reject", { defaultValue: "Reject" })}
+                {t("issueThreadInteraction.verdict.reject")}
               </Button>
               {selectedCount < totalTasks ? (
                 <Button
                   size="sm"
                   variant="ghost"
                   disabled={working !== null}
-                  onClick={() => setSelectedClientKeys(new Set(interaction.payload.tasks.map((task) => task.clientKey)))}
+                  onClick={() =>
+                    setSelectedClientKeys(
+                      new Set(
+                        interaction.payload.tasks.map((task) => task.clientKey),
+                      ),
+                    )
+                  }
                 >
-                  {translateInstant("issueThreadInteraction.resetSelection", { defaultValue: "Reset selection" })}
+                  {t("issueThreadInteraction.resetSelection")}
                 </Button>
               ) : null}
             </div>
@@ -851,7 +914,9 @@ function SuggestTasksCard({
               <Textarea
                 value={rejectReason}
                 onChange={(event) => setRejectReason(event.target.value)}
-                placeholder={translateInstant("issueThreadInteraction.rejectSuggestionPlaceholder", { defaultValue: "Add a short reason for rejecting this suggestion" })}
+                placeholder={t(
+                  "issueThreadInteraction.rejectSuggestionPlaceholder",
+                )}
                 className="min-h-24 bg-background text-sm"
               />
               <div className="flex justify-end">
@@ -864,10 +929,10 @@ function SuggestTasksCard({
                   {working === "reject" ? (
                     <>
                       <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                      {translateInstant("issueThreadInteraction.saving", { defaultValue: "Saving..." })}
+                      {t("issueThreadInteraction.saving")}
                     </>
                   ) : (
-                    translateInstant("issueThreadInteraction.saveRejection", { defaultValue: "Save rejection" })
+                    "Save rejection"
                   )}
                 </Button>
               </div>
@@ -948,22 +1013,28 @@ function AskUserQuestionsCard({
   ) => Promise<void> | void;
   externalReferences?: MarkdownExternalReferenceMap;
 }) {
-  const [draftAnswers, setDraftAnswers] = useState<Record<string, string[]>>(() =>
-    Object.fromEntries(
-      (interaction.result?.answers ?? []).map((answer) => [
-        answer.questionId,
-        [...answer.optionIds],
-      ]),
-    ),
+  const { t } = useTranslation();
+  const [draftAnswers, setDraftAnswers] = useState<Record<string, string[]>>(
+    () =>
+      Object.fromEntries(
+        (interaction.result?.answers ?? []).map((answer) => [
+          answer.questionId,
+          [...answer.optionIds],
+        ]),
+      ),
   );
-  const [draftOtherAnswers, setDraftOtherAnswers] = useState<Record<string, string>>(() =>
+  const [draftOtherAnswers, setDraftOtherAnswers] = useState<
+    Record<string, string>
+  >(() =>
     Object.fromEntries(
       (interaction.result?.answers ?? [])
         .filter((answer) => answer.otherText)
         .map((answer) => [answer.questionId, answer.otherText ?? ""]),
     ),
   );
-  const [otherActiveQuestions, setOtherActiveQuestions] = useState<Record<string, boolean>>(() =>
+  const [otherActiveQuestions, setOtherActiveQuestions] = useState<
+    Record<string, boolean>
+  >(() =>
     Object.fromEntries(
       (interaction.result?.answers ?? [])
         .filter((answer) => answer.otherText)
@@ -1002,14 +1073,16 @@ function AskUserQuestionsCard({
   const requiredQuestions = questions.filter((question) => question.required);
   const canSubmit = requiredQuestions.every(
     (question) =>
-      (draftAnswers[question.id] ?? []).length > 0
-      || (
-        otherActiveQuestions[question.id] === true
-        && (draftOtherAnswers[question.id]?.trim().length ?? 0) > 0
-      ),
+      (draftAnswers[question.id] ?? []).length > 0 ||
+      (otherActiveQuestions[question.id] === true &&
+        (draftOtherAnswers[question.id]?.trim().length ?? 0) > 0),
   );
 
-  function toggleOption(questionId: string, optionId: string, selectionMode: "single" | "multi") {
+  function toggleOption(
+    questionId: string,
+    optionId: string,
+    selectionMode: "single" | "multi",
+  ) {
     if (optionId === OTHER_ANSWER_ID) {
       setOtherActiveQuestions((current) => ({
         ...current,
@@ -1032,7 +1105,10 @@ function AskUserQuestionsCard({
       return { ...current, [questionId]: next };
     });
     if (selectionMode === "single") {
-      setOtherActiveQuestions((current) => ({ ...current, [questionId]: false }));
+      setOtherActiveQuestions((current) => ({
+        ...current,
+        [questionId]: false,
+      }));
     }
   }
 
@@ -1043,9 +1119,10 @@ function AskUserQuestionsCard({
       await onSubmitInteractionAnswers(
         interaction,
         questions.map((question) => {
-          const otherText = otherActiveQuestions[question.id] === true
-            ? draftOtherAnswers[question.id]?.trim() ?? ""
-            : "";
+          const otherText =
+            otherActiveQuestions[question.id] === true
+              ? (draftOtherAnswers[question.id]?.trim() ?? "")
+              : "";
           return {
             questionId: question.id,
             optionIds: draftAnswers[question.id] ?? [],
@@ -1071,17 +1148,17 @@ function AskUserQuestionsCard({
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-        <Badge variant="outline" className="border-border/70 bg-background/70 px-2.5 py-1 uppercase tracking-(--tracking-eyebrow) text-foreground/70">
+        <Badge
+          variant="outline"
+          className="border-border/70 bg-background/70 px-2.5 py-1 uppercase tracking-(--tracking-eyebrow) text-foreground/70"
+        >
           <MessageSquareQuote className="h-3 w-3" />
-          {translateInstant("issueThreadInteraction.kind.askUserQuestions", { defaultValue: "Ask user questions" })}
+          {t("issueThreadInteraction.kind.askUserQuestions")}
         </Badge>
         <span>
           {questions.length === 1
-            ? translateInstant("issueThreadInteraction.oneQuestion", { defaultValue: "1 question" })
-            : translateInstant("issueThreadInteraction.questionsCount", {
-              count: questions.length,
-              defaultValue: "{{count}} questions",
-            })}
+            ? "1 question"
+            : `${questions.length} questions`}
         </span>
       </div>
 
@@ -1095,10 +1172,7 @@ function AskUserQuestionsCard({
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <div className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
-                    {translateInstant("issueThreadInteraction.questionNumber", {
-                      count: index + 1,
-                      defaultValue: "Question {{count}}",
-                    })}
+                    {t("issueThreadInteraction.question")} {index + 1}
                   </div>
                   <div
                     id={`${interaction.id}-${question.id}-prompt`}
@@ -1113,12 +1187,10 @@ function AskUserQuestionsCard({
                   ) : null}
                 </div>
                 <TaskField
-                  label={question.selectionMode === "single"
-                    ? translateInstant("issueThreadInteraction.pick", { defaultValue: "Pick" })
-                    : translateInstant("issueThreadInteraction.pickMany", { defaultValue: "Pick many" })}
-                  value={question.required
-                    ? translateInstant("Required", { defaultValue: "Required" })
-                    : translateInstant("Optional", { defaultValue: "Optional" })}
+                  label={
+                    question.selectionMode === "single" ? "Pick" : "Pick many"
+                  }
+                  value={question.required ? "Required" : "Optional"}
                   tone="subtle"
                 />
               </div>
@@ -1126,7 +1198,9 @@ function AskUserQuestionsCard({
               <div className="mt-3 space-y-3">
                 <div
                   className="grid gap-3"
-                  role={question.selectionMode === "single" ? "radiogroup" : "group"}
+                  role={
+                    question.selectionMode === "single" ? "radiogroup" : "group"
+                  }
                   aria-labelledby={`${interaction.id}-${question.id}-prompt`}
                 >
                   {question.options.map((option) => (
@@ -1135,10 +1209,17 @@ function AskUserQuestionsCard({
                       id={`${interaction.id}-${question.id}-${option.id}`}
                       label={option.label}
                       description={option.description}
-                      selected={(draftAnswers[question.id] ?? []).includes(option.id)}
+                      selected={(draftAnswers[question.id] ?? []).includes(
+                        option.id,
+                      )}
                       selectionMode={question.selectionMode}
                       onClick={() =>
-                        toggleOption(question.id, option.id, question.selectionMode)}
+                        toggleOption(
+                          question.id,
+                          option.id,
+                          question.selectionMode,
+                        )
+                      }
                     />
                   ))}
                 </div>
@@ -1153,23 +1234,26 @@ function AskUserQuestionsCard({
                       : "text-muted-foreground hover:text-foreground",
                   )}
                   onClick={() =>
-                    toggleOption(question.id, OTHER_ANSWER_ID, question.selectionMode)}
+                    toggleOption(
+                      question.id,
+                      OTHER_ANSWER_ID,
+                      question.selectionMode,
+                    )
+                  }
                 >
-                  {translateInstant("Other", { defaultValue: "Other" })}
+                  {t("Other")}
                 </button>
                 {otherActiveQuestions[question.id] ? (
                   <Textarea
-                    aria-label={translateInstant("issueThreadInteraction.otherAnswerFor", {
-                      prompt: question.prompt,
-                      defaultValue: "Other answer for {{prompt}}",
-                    })}
+                    aria-label={`Other answer for ${question.prompt}`}
                     value={draftOtherAnswers[question.id] ?? ""}
                     onChange={(event) =>
                       setDraftOtherAnswers((current) => ({
                         ...current,
                         [question.id]: event.target.value,
-                      }))}
-                    placeholder={translateInstant("issueThreadInteraction.typeYourAnswer", { defaultValue: "Type your answer" })}
+                      }))
+                    }
+                    placeholder={t("issueThreadInteraction.typeYourAnswer")}
                     className="min-h-24 bg-background text-sm"
                   />
                 ) : null}
@@ -1179,7 +1263,7 @@ function AskUserQuestionsCard({
 
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/70 bg-background/75 p-4">
             <div className="text-sm text-muted-foreground">
-              {translateInstant("issueThreadInteraction.submitAfterForm", { defaultValue: "Submit once after you finish the full form." })}
+              {t("issueThreadInteraction.submitAfterForm")}
             </div>
             <div className="flex flex-wrap items-center gap-2">
               {onCancelInteraction ? (
@@ -1192,25 +1276,30 @@ function AskUserQuestionsCard({
                   {cancelling ? (
                     <>
                       <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                      {translateInstant("issueThreadInteraction.cancelling", { defaultValue: "Cancelling..." })}
+                      {t("issueThreadInteraction.cancelling")}
                     </>
                   ) : (
-                    translateInstant("issueThreadInteraction.cancelQuestion", { defaultValue: "Cancel question" })
+                    "Cancel question"
                   )}
-                  </Button>
-                ) : null}
+                </Button>
+              ) : null}
               <Button
                 size="sm"
-                disabled={!onSubmitInteractionAnswers || !canSubmit || working || cancelling}
+                disabled={
+                  !onSubmitInteractionAnswers ||
+                  !canSubmit ||
+                  working ||
+                  cancelling
+                }
                 onClick={() => void handleSubmit()}
               >
                 {working ? (
                   <>
                     <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                    {translateInstant("issueThreadInteraction.submitting", { defaultValue: "Submitting..." })}
+                    {t("issueThreadInteraction.submitting")}
                   </>
                 ) : (
-                  interaction.payload.submitLabel ?? translateInstant("issueThreadInteraction.submitAnswers", { defaultValue: "Submit answers" })
+                  (interaction.payload.submitLabel ?? "Submit answers")
                 )}
               </Button>
             </div>
@@ -1218,32 +1307,46 @@ function AskUserQuestionsCard({
         </div>
       ) : interaction.status === "cancelled" ? (
         <div className="rounded-2xl border border-rose-300/60 bg-rose-50/85 p-4 text-sm leading-6 text-rose-950 dark:border-rose-500/40 dark:bg-rose-500/10 dark:text-rose-100">
-          <div className="font-semibold">{translateInstant("issueThreadInteraction.questionCancelled", { defaultValue: "Question cancelled" })}</div>
+          <div className="font-semibold">
+            {interaction.result?.outcome === "withdrawn"
+              ? questions.length === 1
+                ? "Question withdrawn"
+                : "Questions withdrawn"
+              : "Question cancelled"}
+          </div>
           {interaction.result?.cancellationReason ? (
             <p className="mt-1">{interaction.result.cancellationReason}</p>
+          ) : interaction.result?.reason ? (
+            <p className="mt-1">{interaction.result.reason}</p>
           ) : (
-            <p className="mt-1">{translateInstant("issueThreadInteraction.noAnswerWasRecorded", { defaultValue: "No answer was recorded." })}</p>
+            <p className="mt-1">
+              {t("issueThreadInteraction.noAnswerWasRecorded")}
+            </p>
           )}
         </div>
       ) : interaction.status === "expired" ? (
         <div className="rounded-2xl border border-amber-300/70 bg-amber-50/85 p-4 text-sm leading-6 text-amber-950 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-100">
           <div className="flex items-center gap-2 font-semibold">
             <AlertTriangle className="h-4 w-4" />
-            {questions.length === 1
-              ? translateInstant("issueThreadInteraction.questionExpiredByCommentOne", { defaultValue: "Question expired by comment" })
-              : translateInstant("issueThreadInteraction.questionExpiredByCommentMany", { defaultValue: "Questions expired by comment" })}
+            {interaction.result?.outcome === "issue_closed"
+              ? questions.length === 1
+                ? "Question expired when issue closed"
+                : "Questions expired when issue closed"
+              : questions.length === 1
+                ? "Question expired by comment"
+                : "Questions expired by comment"}
           </div>
           <p className="mt-1">
-            {translateInstant("issueThreadInteraction.questionExpiredByCommentBody", {
-              defaultValue: "A later board/user comment superseded this question request. Create a fresh request if answers are still needed.",
-            })}
+            {interaction.result?.outcome === "issue_closed"
+              ? "The issue was closed before these questions were answered."
+              : "A later board/user comment superseded this question request. Create a fresh request if answers are still needed."}
           </p>
           {interaction.result?.commentId ? (
             <a
               href={`#comment-${interaction.result.commentId}`}
               className="mt-3 inline-flex text-sm font-medium underline underline-offset-4"
             >
-              {translateInstant("issueThreadInteraction.jumpToComment", { defaultValue: "Jump to comment" })}
+              {t("issueThreadInteraction.jumpToComment")}
             </a>
           ) : null}
         </div>
@@ -1265,10 +1368,16 @@ function AskUserQuestionsCard({
                 <div className="mt-2 flex flex-wrap gap-2">
                   {labels.length > 0 ? (
                     labels.map((label) => (
-                      <TaskField key={label} label={translateInstant("Answer", { defaultValue: "Answer" })} value={label} />
+                      <TaskField
+                        key={label}
+                        label={t("Answer")}
+                        value={label}
+                      />
                     ))
                   ) : (
-                    <span className="text-sm text-muted-foreground">{translateInstant("issueThreadInteraction.noAnswerRecorded", { defaultValue: "No answer recorded." })}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {t("issueThreadInteraction.noAnswerRecorded")}
+                    </span>
                   )}
                 </div>
               </div>
@@ -1278,9 +1387,11 @@ function AskUserQuestionsCard({
           {interaction.result?.summaryMarkdown ? (
             <div className="rounded-2xl border border-emerald-300/60 bg-emerald-50/85 p-4">
               <div className="mb-2 text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-emerald-700">
-                {translateInstant("issueThreadInteraction.submittedSummary", { defaultValue: "Submitted summary" })}
+                {t("issueThreadInteraction.submittedSummary")}
               </div>
-              <MarkdownBody externalReferences={externalReferences}>{interaction.result.summaryMarkdown}</MarkdownBody>
+              <MarkdownBody externalReferences={externalReferences}>
+                {interaction.result.summaryMarkdown}
+              </MarkdownBody>
             </div>
           ) : null}
         </div>
@@ -1293,7 +1404,7 @@ function requestConfirmationTargetLabel(target: RequestConfirmationTarget) {
   if (target.label) return target.label;
   const revision = target.revisionNumber ? ` v${target.revisionNumber}` : "";
   if (target.type === "issue_document" && target.key === "plan") {
-    return `${translateInstant("issueThreadInteraction.plan", { defaultValue: "Plan" })}${revision}`;
+    return `Plan${revision}`;
   }
   return `${target.key}${revision}`;
 }
@@ -1335,7 +1446,9 @@ function RequestConfirmationTargetChip({
   const content = (
     <>
       <GitBranch className="h-3 w-3 shrink-0" />
-      <span className="min-w-0 truncate">{requestConfirmationTargetLabel(target)}</span>
+      <span className="min-w-0 truncate">
+        {requestConfirmationTargetLabel(target)}
+      </span>
     </>
   );
 
@@ -1370,28 +1483,27 @@ function RequestConfirmationResolution({
       return (
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2 text-sm leading-6 text-foreground">
-            <span className="font-medium">{t("Confirmed", { defaultValue: "Confirmed" })}</span>
-            <RequestConfirmationTargetChip interaction={interaction} target={target} />
+            <span className="font-medium">{t("Confirmed")}</span>
+            <RequestConfirmationTargetChip
+              interaction={interaction}
+              target={target}
+            />
           </div>
           <div className="rounded-sm border border-amber-500/60 bg-amber-500/10 px-4 py-3 text-sm text-amber-900 dark:text-amber-100">
             <div className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-amber-700">
-              {t("issueThreadInteraction.resumeFailedTitle", { defaultValue: "Agent resume failed" })}
+              {t("issueThreadInteraction.resumeFailedTitle")}
             </div>
             <p className="mt-1 leading-6">
               {resumeFailure.status === "retrying"
-                ? t("issueThreadInteraction.resumeRetrying", {
-                    defaultValue: "Paperclip is retrying the agent resume after approval (attempt {{attempt}}/{{maxAttempts}}).",
-                    attempt: resumeFailure.attempt,
-                    maxAttempts: resumeFailure.maxAttempts,
-                  })
-                : t("issueThreadInteraction.resumeNeedsAttention", {
-                    defaultValue: "Paperclip needs attention before the agent can resume this approved work.",
-                  })}
+                ? `Paperclip is retrying the agent resume after approval (attempt ${resumeFailure.attempt}/${resumeFailure.maxAttempts}).`
+                : "Paperclip needs attention before the agent can resume this approved work."}
             </p>
             {resumeFailure.errorCode ? (
               <p className="mt-1 leading-6">
-                {t("issueThreadInteraction.latestCause", { defaultValue: "Latest cause:" })}{" "}
-                <code className="font-mono text-(length:--text-micro)">{resumeFailure.errorCode}</code>
+                {t("issueThreadInteraction.latestCause")}{" "}
+                <code className="font-mono text-(length:--text-micro)">
+                  {resumeFailure.errorCode}
+                </code>
               </p>
             ) : null}
           </div>
@@ -1400,8 +1512,11 @@ function RequestConfirmationResolution({
     }
     return (
       <div className="flex flex-wrap items-center gap-2 text-sm leading-6 text-foreground">
-        <span className="font-medium">{translateInstant("Confirmed", { defaultValue: "Confirmed" })}</span>
-        <RequestConfirmationTargetChip interaction={interaction} target={target} />
+        <span className="font-medium">{t("Confirmed")}</span>
+        <RequestConfirmationTargetChip
+          interaction={interaction}
+          target={target}
+        />
       </div>
     );
   }
@@ -1410,8 +1525,34 @@ function RequestConfirmationResolution({
     return (
       <div className="space-y-2">
         <div className="flex flex-wrap items-center gap-2 text-sm leading-6 text-foreground">
-          <span className="font-medium">{translateInstant("Declined", { defaultValue: "Declined" })}</span>
-          <RequestConfirmationTargetChip interaction={interaction} target={target} />
+          <span className="font-medium">
+            {t("issueThreadInteraction.toolAction.status.declined")}
+          </span>
+          <RequestConfirmationTargetChip
+            interaction={interaction}
+            target={target}
+          />
+        </div>
+        {interaction.result?.reason ? (
+          <div className="rounded-sm border-l-2 border-rose-500/70 bg-rose-500/10 px-3 py-2 text-sm leading-6 text-rose-900 dark:text-rose-100">
+            <MarkdownBody>{interaction.result.reason}</MarkdownBody>
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+
+  if (interaction.status === "cancelled" && outcome === "withdrawn") {
+    return (
+      <div className="space-y-2">
+        <div className="flex flex-wrap items-center gap-2 text-sm leading-6 text-foreground">
+          <span className="font-medium">
+            {t("issueThreadInteraction.withdrawn")}
+          </span>
+          <RequestConfirmationTargetChip
+            interaction={interaction}
+            target={target}
+          />
         </div>
         {interaction.result?.reason ? (
           <div className="rounded-sm border-l-2 border-rose-500/70 bg-rose-500/10 px-3 py-2 text-sm leading-6 text-rose-900 dark:text-rose-100">
@@ -1424,22 +1565,34 @@ function RequestConfirmationResolution({
 
   if (interaction.status === "expired") {
     const expiredByComment = outcome === "superseded_by_comment";
+    const expiredWithIssue = outcome === "issue_closed";
     const expiredByTargetChange = outcome === "stale_target";
     return (
       <div className="space-y-3 rounded-sm border border-amber-500/60 bg-amber-500/10 px-4 py-3 text-sm text-amber-900 dark:text-amber-100">
         <div className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-amber-700">
           {expiredByComment
-            ? translateInstant("issueThreadInteraction.expiredByComment", { defaultValue: "Expired by comment" })
-            : translateInstant("issueThreadInteraction.expiredByTargetChange", { defaultValue: "Expired by target change" })}
+            ? "Expired by comment"
+            : expiredWithIssue
+              ? "Expired when issue closed"
+              : "Expired by target change"}
         </div>
         <p className="leading-6">
           {expiredByComment
-            ? translateInstant("issueThreadInteraction.supersededByComment", { defaultValue: "A board comment superseded this confirmation before it was resolved." })
-            : translateInstant("issueThreadInteraction.staleTarget", { defaultValue: "The requested target changed before this confirmation was resolved." })}
+            ? "A board comment superseded this confirmation before it was resolved."
+            : expiredWithIssue
+              ? "The issue was closed before this confirmation was resolved."
+              : "The requested target changed before this confirmation was resolved."}
         </p>
         {expiredByComment && interaction.result?.commentId ? (
-          <Button asChild size="sm" variant="ghost" className="h-7 px-2 text-amber-950 hover:bg-amber-500/15 dark:text-amber-50">
-            <a href={`#comment-${interaction.result.commentId}`}>{translateInstant("issueThreadInteraction.jumpToComment", { defaultValue: "Jump to comment" })}</a>
+          <Button
+            asChild
+            size="sm"
+            variant="ghost"
+            className="h-7 px-2 text-amber-950 hover:bg-amber-500/15 dark:text-amber-50"
+          >
+            <a href={`#comment-${interaction.result.commentId}`}>
+              {t("issueThreadInteraction.jumpToComment")}
+            </a>
           </Button>
         ) : null}
         {expiredByTargetChange ? (
@@ -1452,7 +1605,10 @@ function RequestConfirmationResolution({
             {staleTarget && target ? (
               <ChevronRight className="h-3.5 w-3.5 text-amber-700" />
             ) : null}
-            <RequestConfirmationTargetChip interaction={interaction} target={target} />
+            <RequestConfirmationTargetChip
+              interaction={interaction}
+              target={target}
+            />
           </div>
         ) : null}
       </div>
@@ -1462,7 +1618,7 @@ function RequestConfirmationResolution({
   if (interaction.status === "failed") {
     return (
       <p className="text-sm leading-6 text-muted-foreground">
-        {translateInstant("issueThreadInteraction.requestFailed", { defaultValue: "This request could not be resolved. Try again or create a new request." })}
+        {t("issueThreadInteraction.requestFailed")}
       </p>
     );
   }
@@ -1485,7 +1641,9 @@ function ToolActionIdentityHeader({
   );
 
   return (
-    <div className={cn("flex items-start gap-3", dimmed && "opacity-60 grayscale")}>
+    <div
+      className={cn("flex items-start gap-3", dimmed && "opacity-60 grayscale")}
+    >
       <div
         aria-hidden
         className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border/70 bg-muted/60 text-base font-semibold text-foreground"
@@ -1522,6 +1680,7 @@ function ToolActionTechnicalDetails({
 }: {
   payload: NonNullable<RequestConfirmationInteraction["payload"]["toolAction"]>;
 }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const hasArgs = payload.argumentsSummaryJson.trim().length > 0;
 
@@ -1533,7 +1692,7 @@ function ToolActionTechnicalDetails({
         ) : (
           <ChevronRight className="h-3.5 w-3.5" />
         )}
-        {translateInstant("issueThreadInteraction.toolAction.technicalDetails", { defaultValue: "Technical details" })}
+        {t("issueThreadInteraction.toolAction.technicalDetails")}
       </CollapsibleTrigger>
       <CollapsibleContent className="space-y-2 pt-2">
         {hasArgs ? (
@@ -1543,7 +1702,7 @@ function ToolActionTechnicalDetails({
         ) : null}
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span className="font-semibold uppercase tracking-(--tracking-eyebrow) text-(length:--text-nano)">
-            {translateInstant("issueThreadInteraction.toolAction.argsHash", { defaultValue: "args hash" })}
+            {t("issueThreadInteraction.toolAction.argsHash")}
           </span>
           <code className="truncate font-mono">{payload.argumentsHash}</code>
         </div>
@@ -1563,13 +1722,15 @@ function ToolActionResolution({
   resolvedByLabel: string | null;
   requestedByLabel: string;
 }) {
+  const { t } = useTranslation();
   const result = interaction.result?.toolAction ?? null;
-  const who = resolvedByLabel ?? translateInstant("issueThreadInteraction.toolAction.theBoard", { defaultValue: "the board" });
+  const who = resolvedByLabel ?? "the board";
   const when = interaction.resolvedAt
     ? formatDateTime(interaction.resolvedAt)
     : result?.updatedAt
       ? formatDateTime(result.updatedAt)
       : null;
+  const whenSuffix = when ? ` at ${when}` : "";
 
   if (state === "running") {
     return (
@@ -1580,15 +1741,11 @@ function ToolActionResolution({
         <Loader2 className="mt-0.5 h-4 w-4 shrink-0 animate-spin" />
         <div className="space-y-1 leading-6">
           <div className="font-medium">
-            {translateInstant("issueThreadInteraction.toolAction.runningTitle", {
-              who,
-              defaultValue: "Approved by {{who}} — running the action now",
-            })}
+            {t("issueThreadInteraction.approvedBy")} {who}{" "}
+            {t("issueThreadInteraction.runningNow")}
           </div>
           <p className="text-amber-900/80 dark:text-amber-100/80">
-            {translateInstant("issueThreadInteraction.toolAction.runningBody", {
-              defaultValue: "The action is executing server-side with the exact arguments you approved.",
-            })}
+            {t("issueThreadInteraction.toolAction.runningBody")}
           </p>
         </div>
       </div>
@@ -1607,19 +1764,11 @@ function ToolActionResolution({
           <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
           <div>
             <div className="font-medium">
-              {translateInstant(when
-                ? "issueThreadInteraction.toolAction.executedTitleAt"
-                : "issueThreadInteraction.toolAction.executedTitle", {
-                who,
-                when,
-                defaultValue: when ? "Executed · approved by {{who}} at {{when}}" : "Executed · approved by {{who}}",
-              })}
+              {t("issueThreadInteraction.executedApprovedBy")} {who}
+              {whenSuffix}
             </div>
             <p className="text-green-900/80 dark:text-green-100/80">
-              {translateInstant("issueThreadInteraction.toolAction.resumedWithResult", {
-                requestedBy: requestedByLabel,
-                defaultValue: "{{requestedBy}} was resumed with this result.",
-              })}
+              {requestedByLabel} {t("issueThreadInteraction.resumedWithResult")}
             </p>
           </div>
         </div>
@@ -1629,14 +1778,14 @@ function ToolActionResolution({
           </div>
         ) : (
           <div className="rounded-sm border border-green-500/40 bg-background/60 px-3 py-2 text-foreground">
-            {translateInstant("issueThreadInteraction.toolAction.executedSuccessfully", { defaultValue: "Executed successfully." })}
+            {t("issueThreadInteraction.toolAction.executedSuccessfully")}
           </div>
         )}
         {href ? (
           <Button asChild size="sm" variant="outline" className="h-7 px-2">
             <a href={href} target="_blank" rel="noreferrer">
               <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
-              {translateInstant("issueThreadInteraction.toolAction.viewResult", { defaultValue: "View result" })}
+              {t("issueThreadInteraction.toolAction.viewResult")}
             </a>
           </Button>
         ) : null}
@@ -1656,19 +1805,12 @@ function ToolActionResolution({
           <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-600 dark:text-red-400" />
           <div>
             <div className="font-medium">
-              {translateInstant(when
-                ? "issueThreadInteraction.toolAction.failedTitleAt"
-                : "issueThreadInteraction.toolAction.failedTitle", {
-                who,
-                when,
-                defaultValue: when ? "Failed · approved by {{who}} at {{when}}" : "Failed · approved by {{who}}",
-              })}
+              {t("issueThreadInteraction.failedApprovedBy")} {who}
+              {whenSuffix}
             </div>
             <p className="text-amber-900/80 dark:text-amber-100/80">
-              {translateInstant("issueThreadInteraction.toolAction.failedBody", {
-                requestedBy: requestedByLabel,
-                defaultValue: "You approved it and it ran, but the connector returned an error. {{requestedBy}} was resumed with this error.",
-              })}
+              {t("issueThreadInteraction.connectorError")} {requestedByLabel}{" "}
+              {t("issueThreadInteraction.resumedWithError")}
             </p>
           </div>
         </div>
@@ -1680,7 +1822,9 @@ function ToolActionResolution({
               </div>
             ) : null}
             {errorText ? (
-              <p className={cn("leading-6", errorCode && "mt-1")}>{errorText}</p>
+              <p className={cn("leading-6", errorCode && "mt-1")}>
+                {errorText}
+              </p>
             ) : null}
           </div>
         ) : null}
@@ -1696,19 +1840,14 @@ function ToolActionResolution({
           <XCircle className="mt-0.5 h-4 w-4 shrink-0" />
           <div>
             <div className="font-medium">
-              {translateInstant(when
-                ? "issueThreadInteraction.toolAction.declinedTitleAt"
-                : "issueThreadInteraction.toolAction.declinedTitle", {
-                who,
-                when,
-                defaultValue: when ? "Declined by {{who}} at {{when}}" : "Declined by {{who}}",
-              })}
+              {t("issueThreadInteraction.declinedBy")} {who}
+              {whenSuffix}
             </div>
             <p className="text-red-900/80 dark:text-red-100/80">
-              {translateInstant("issueThreadInteraction.toolAction.declinedBody", {
-                requestedBy: requestedByLabel,
-                defaultValue: "The action did not run. {{requestedBy}} was resumed with your reason and told not to retry the same call.",
-              })}
+              {t("issueThreadInteraction.actionDid")}{" "}
+              <strong>{t("issueThreadInteraction.not")}</strong>{" "}
+              {t("issueThreadInteraction.runSuffix")} {requestedByLabel}{" "}
+              {t("issueThreadInteraction.resumedWithReason")}
             </p>
           </div>
         </div>
@@ -1728,19 +1867,13 @@ function ToolActionResolution({
         <Clock className="mt-0.5 h-4 w-4 shrink-0" />
         <div>
           <div className="font-medium text-foreground">
-            {translateInstant(when
-              ? "issueThreadInteraction.toolAction.expiredTitleAt"
-              : "issueThreadInteraction.toolAction.expiredTitle", {
-              when,
-              defaultValue: when
-                ? "Expired at {{when}} — no one responded within 60 minutes"
-                : "Expired — no one responded within 60 minutes",
-            })}
+            {t("issueThreadInteraction.toolAction.status.expired")}
+            {when ? ` at ${when}` : ""} {t("issueThreadInteraction.noResponse")}
           </div>
           <p>
-            {translateInstant("issueThreadInteraction.toolAction.expiredBody", {
-              defaultValue: "The action did not run. If it's still needed, the agent can request approval again — a fresh card will appear.",
-            })}
+            {t("issueThreadInteraction.actionDid")}{" "}
+            <strong>{t("issueThreadInteraction.not")}</strong>{" "}
+            {t("issueThreadInteraction.requestAgain")}
           </p>
         </div>
       </div>
@@ -1770,6 +1903,7 @@ function RequestToolActionCard({
   ) => Promise<void> | void;
   externalReferences?: MarkdownExternalReferenceMap;
 }) {
+  const { t } = useTranslation();
   const payload = interaction.payload.toolAction!;
   const [rejecting, setRejecting] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
@@ -1799,7 +1933,7 @@ function RequestToolActionCard({
     try {
       await onAcceptInteraction(interaction);
     } catch {
-      setActionError(translateInstant("issueThreadInteraction.toolAction.submitFailed", { defaultValue: "Couldn't submit. Try again." }));
+      setActionError("Couldn't submit. Try again.");
     } finally {
       setWorking(null);
     }
@@ -1813,13 +1947,15 @@ function RequestToolActionCard({
       await onRejectInteraction(interaction, rejectReason.trim() || undefined);
       setRejecting(false);
     } catch {
-      setActionError(translateInstant("issueThreadInteraction.toolAction.submitFailed", { defaultValue: "Couldn't submit. Try again." }));
+      setActionError("Couldn't submit. Try again.");
     } finally {
       setWorking(null);
     }
   }
 
-  const countdown = isPending ? formatToolActionCountdown(payload.expiresAt, nowMs) : null;
+  const countdown = isPending
+    ? formatToolActionCountdown(payload.expiresAt, nowMs)
+    : null;
 
   return (
     <div className="space-y-4">
@@ -1839,7 +1975,9 @@ function RequestToolActionCard({
             <div
               className={cn(
                 "flex items-center gap-2 text-(length:--text-micro) font-medium",
-                countdown.urgent ? "text-amber-700 dark:text-amber-300" : "text-muted-foreground",
+                countdown.urgent
+                  ? "text-amber-700 dark:text-amber-300"
+                  : "text-muted-foreground",
               )}
             >
               <Clock className="h-3.5 w-3.5" />
@@ -1858,10 +1996,10 @@ function RequestToolActionCard({
                 {working === "accept" ? (
                   <>
                     <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                    {translateInstant("issueThreadInteraction.toolAction.approving", { defaultValue: "Approving…" })}
+                    {t("issueThreadInteraction.toolAction.approving")}
                   </>
                 ) : (
-                  translateInstant("issueThreadInteraction.toolAction.approveAndRun", { defaultValue: "Approve & run" })
+                  "Approve & run"
                 )}
               </Button>
               <Button
@@ -1870,10 +2008,10 @@ function RequestToolActionCard({
                 disabled={!onRejectInteraction || working !== null}
                 onClick={() => setRejecting((current) => !current)}
               >
-                {translateInstant("issueThreadInteraction.toolAction.decline", { defaultValue: "Decline" })}
+                {t("issueThreadInteraction.toolAction.decline")}
               </Button>
               <span className="text-(length:--text-micro) text-muted-foreground">
-                {translateInstant("issueThreadInteraction.toolAction.approveHint", { defaultValue: "Approving runs this action now." })}
+                {t("issueThreadInteraction.toolAction.approveHint")}
               </span>
             </div>
 
@@ -1882,9 +2020,9 @@ function RequestToolActionCard({
                 <Textarea
                   value={rejectReason}
                   onChange={(event) => setRejectReason(event.target.value)}
-                  placeholder={translateInstant("issueThreadInteraction.toolAction.declineReasonPlaceholder", {
-                    defaultValue: "Optional: tell the agent why, so it doesn't retry the same call.",
-                  })}
+                  placeholder={t(
+                    "issueThreadInteraction.toolAction.declineReasonPlaceholder",
+                  )}
                   className="min-h-20 bg-background text-sm"
                 />
                 <div className="flex flex-wrap justify-end gap-2">
@@ -1894,7 +2032,7 @@ function RequestToolActionCard({
                     disabled={working !== null}
                     onClick={() => setRejecting(false)}
                   >
-                    {translateInstant("Cancel", { defaultValue: "Cancel" })}
+                    {t("Cancel")}
                   </Button>
                   <Button
                     size="sm"
@@ -1905,10 +2043,10 @@ function RequestToolActionCard({
                     {working === "reject" ? (
                       <>
                         <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                        {translateInstant("issueThreadInteraction.toolAction.declining", { defaultValue: "Declining…" })}
+                        {t("issueThreadInteraction.toolAction.declining")}
                       </>
                     ) : (
-                      translateInstant("issueThreadInteraction.toolAction.decline", { defaultValue: "Decline" })
+                      "Decline"
                     )}
                   </Button>
                 </div>
@@ -1954,9 +2092,12 @@ function RequestConfirmationCard({
   onUploadImage?: (file: File) => Promise<string>;
   externalReferences?: MarkdownExternalReferenceMap;
 }) {
+  const { t } = useTranslation();
   const [rejecting, setRejecting] = useState(false);
   const [working, setWorking] = useState<"accept" | "reject" | null>(null);
-  const [rejectReason, setRejectReason] = useState(interaction.result?.reason ?? "");
+  const [rejectReason, setRejectReason] = useState(
+    interaction.result?.reason ?? "",
+  );
   const [rejectAttempted, setRejectAttempted] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [shots, setShots] = useState<{ name: string; url: string }[]>([]);
@@ -1966,16 +2107,18 @@ function RequestConfirmationCard({
   // Screenshots ride along in the decline reason as markdown image refs so the
   // board can attach images when sending a plan back — no schema change needed.
   const allowScreenshots = isPlan && Boolean(onUploadImage);
-  const rejectRequiresReason = interaction.payload.rejectRequiresReason === true;
+  const rejectRequiresReason =
+    interaction.payload.rejectRequiresReason === true;
   const allowDeclineReason = interaction.payload.allowDeclineReason !== false;
   const trimmedRejectReason = rejectReason.trim();
-  const canReject = !rejectRequiresReason || trimmedRejectReason.length > 0 || shots.length > 0;
+  const canReject =
+    !rejectRequiresReason || trimmedRejectReason.length > 0 || shots.length > 0;
   const declineReasonInvalid = rejectRequiresReason && !canReject;
   const declineReasonPlaceholder =
-    interaction.payload.declineReasonPlaceholder
-    ?? (interaction.payload.acceptLabel === "Approve plan"
-      ? translateInstant("issueThreadInteraction.revisionPlaceholder", { defaultValue: "Optional: what would you like revised?" })
-      : translateInstant("issueThreadInteraction.declinePlaceholder", { defaultValue: "Optional: tell the agent what you'd change." }));
+    interaction.payload.declineReasonPlaceholder ??
+    (interaction.payload.acceptLabel === "Approve plan"
+      ? "Optional: what would you like revised?"
+      : "Optional: tell the agent what you'd change.");
 
   useEffect(() => {
     setRejectReason(interaction.result?.reason ?? "");
@@ -2002,7 +2145,7 @@ function RequestConfirmationCard({
       }
       if (uploaded.length > 0) setShots((current) => [...current, ...uploaded]);
     } catch {
-      setUploadError(translateInstant("issueThreadInteraction.uploadImageFailed", { defaultValue: "Couldn't upload that image. Try again." }));
+      setUploadError("Couldn't upload that image. Try again.");
     } finally {
       setUploading(false);
     }
@@ -2022,7 +2165,7 @@ function RequestConfirmationCard({
     try {
       await onAcceptInteraction(interaction);
     } catch {
-      setActionError(translateInstant("issueThreadInteraction.tryAgain", { defaultValue: "Try again" }));
+      setActionError("Try again");
     } finally {
       setWorking(null);
     }
@@ -2037,7 +2180,7 @@ function RequestConfirmationCard({
       await onRejectInteraction(interaction, composeReason());
       setRejecting(false);
     } catch {
-      setActionError(translateInstant("issueThreadInteraction.tryAgain", { defaultValue: "Try again" }));
+      setActionError("Try again");
     } finally {
       setWorking(null);
     }
@@ -2052,7 +2195,9 @@ function RequestConfirmationCard({
           </div>
           {interaction.payload.detailsMarkdown ? (
             <div className="border-t border-border/60 pt-3 text-sm">
-              <MarkdownBody externalReferences={externalReferences}>{interaction.payload.detailsMarkdown}</MarkdownBody>
+              <MarkdownBody externalReferences={externalReferences}>
+                {interaction.payload.detailsMarkdown}
+              </MarkdownBody>
             </div>
           ) : null}
           <RequestConfirmationTargetChip
@@ -2074,10 +2219,10 @@ function RequestConfirmationCard({
               {working === "accept" ? (
                 <>
                   <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                  {translateInstant("issueThreadInteraction.confirming", { defaultValue: "Confirming..." })}
+                  {t("issueThreadInteraction.confirming")}
                 </>
               ) : (
-                interaction.payload.acceptLabel ?? translateInstant("issueThreadInteraction.confirm", { defaultValue: "Confirm" })
+                (interaction.payload.acceptLabel ?? "Confirm")
               )}
             </Button>
             <Button
@@ -2093,7 +2238,7 @@ function RequestConfirmationCard({
                 setRejecting((current) => !current);
               }}
             >
-              {interaction.payload.rejectLabel ?? translateInstant("issueThreadInteraction.decline", { defaultValue: "Decline" })}
+              {interaction.payload.rejectLabel ?? "Decline"}
             </Button>
           </div>
 
@@ -2106,12 +2251,15 @@ function RequestConfirmationCard({
                 aria-invalid={rejectAttempted && declineReasonInvalid}
                 className={cn(
                   "min-h-24 bg-background text-sm",
-                  rejectAttempted && declineReasonInvalid
-                    && "border-rose-500 focus-visible:ring-rose-500/25",
+                  rejectAttempted &&
+                    declineReasonInvalid &&
+                    "border-rose-500 focus-visible:ring-rose-500/25",
                 )}
               />
               {rejectAttempted && declineReasonInvalid ? (
-                <p className="text-xs text-destructive">{translateInstant("issueThreadInteraction.declineReasonRequired", { defaultValue: "A decline reason is required." })}</p>
+                <p className="text-xs text-destructive">
+                  {t("issueThreadInteraction.declineReasonRequired")}
+                </p>
               ) : null}
               {allowScreenshots ? (
                 <div className="space-y-2">
@@ -2129,10 +2277,12 @@ function RequestConfirmationCard({
                           />
                           <button
                             type="button"
-                            aria-label={translateInstant("issueThreadInteraction.removeScreenshot", { defaultValue: "Remove {{name}}", name: shot.name })}
+                            aria-label={`Remove ${shot.name}`}
                             className="absolute right-0.5 top-0.5 rounded-full bg-background/90 p-0.5 text-foreground opacity-0 transition-opacity group-hover:opacity-100"
                             onClick={() =>
-                              setShots((current) => current.filter((_, i) => i !== index))
+                              setShots((current) =>
+                                current.filter((_, i) => i !== index),
+                              )
                             }
                           >
                             <X className="h-3 w-3" />
@@ -2148,7 +2298,9 @@ function RequestConfirmationCard({
                     multiple
                     className="hidden"
                     onChange={(event) => {
-                      void handleAddScreenshots(event.target.value ? event.target.files : null);
+                      void handleAddScreenshots(
+                        event.target.value ? event.target.files : null,
+                      );
                       event.target.value = "";
                     }}
                   />
@@ -2162,12 +2314,12 @@ function RequestConfirmationCard({
                     {uploading ? (
                       <>
                         <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                        {translateInstant("issueThreadInteraction.uploading", { defaultValue: "Uploading..." })}
+                        {t("issueThreadInteraction.uploading")}
                       </>
                     ) : (
                       <>
                         <ImagePlus className="mr-2 h-3.5 w-3.5" />
-                        {translateInstant("issueThreadInteraction.attachScreenshots", { defaultValue: "Attach screenshots" })}
+                        {t("issueThreadInteraction.attachScreenshots")}
                       </>
                     )}
                   </Button>
@@ -2186,7 +2338,7 @@ function RequestConfirmationCard({
                     setRejectAttempted(false);
                   }}
                 >
-                  {translateInstant("issueThreadInteraction.cancelDecline", { defaultValue: "Cancel decline" })}
+                  {t("issueThreadInteraction.cancelDecline")}
                 </Button>
                 <Button
                   size="sm"
@@ -2197,10 +2349,10 @@ function RequestConfirmationCard({
                   {working === "reject" ? (
                     <>
                       <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                      {translateInstant("issueThreadInteraction.saving", { defaultValue: "Saving..." })}
+                      {t("issueThreadInteraction.saving")}
                     </>
                   ) : (
-                    interaction.payload.rejectLabel ?? translateInstant("issueThreadInteraction.decline", { defaultValue: "Decline" })
+                    (interaction.payload.rejectLabel ?? "Decline")
                   )}
                 </Button>
               </div>
@@ -2227,6 +2379,7 @@ function RequestCheckboxConfirmationResolution({
 }: {
   interaction: RequestCheckboxConfirmationInteraction;
 }) {
+  const { t } = useTranslation();
   const target = interaction.payload.target ?? null;
   const [expanded, setExpanded] = useState(false);
 
@@ -2236,7 +2389,8 @@ function RequestCheckboxConfirmationResolution({
       payload: interaction.payload,
       result: interaction.result,
     });
-    const selectedCount = interaction.result?.selectedOptionIds?.length ?? selectedLabels.length;
+    const selectedCount =
+      interaction.result?.selectedOptionIds?.length ?? selectedLabels.length;
     const visibleLabels = expanded
       ? selectedLabels
       : selectedLabels.slice(0, CHECKBOX_SUMMARY_LABEL_LIMIT);
@@ -2250,21 +2404,20 @@ function RequestCheckboxConfirmationResolution({
         <div className="flex flex-wrap items-center gap-2 text-sm leading-6 text-foreground">
           <span className="font-medium">
             {selectedCount === 0
-              ? translateInstant("issueThreadInteraction.confirmedNoOptions", { defaultValue: "Confirmed with no options selected" })
-              : translateInstant("issueThreadInteraction.confirmedOptions", {
-                defaultValue: "Confirmed {{selected}} of {{total}} options",
-                selected: selectedCount,
-                total: totalOptions,
-              })}
+              ? "Confirmed with no options selected"
+              : `Confirmed ${selectedCount} of ${totalOptions} ${totalOptions === 1 ? "option" : "options"}`}
           </span>
-          <RequestConfirmationTargetChip interaction={interaction} target={target} />
+          <RequestConfirmationTargetChip
+            interaction={interaction}
+            target={target}
+          />
         </div>
         {visibleLabels.length > 0 ? (
           <div className="flex flex-wrap gap-1.5">
             {visibleLabels.map((label, index) => (
               <TaskField
                 key={`${label}-${index}`}
-                label={translateInstant("issueThreadInteraction.selected", { defaultValue: "Selected" })}
+                label={t("issueThreadInteraction.selected")}
                 value={label}
               />
             ))}
@@ -2278,12 +2431,7 @@ function RequestCheckboxConfirmationResolution({
                 )}
                 aria-expanded={expanded}
               >
-                {expanded
-                  ? translateInstant("foldCurtain.showLess", { defaultValue: "Show less" })
-                  : translateInstant("issueThreadInteraction.moreHidden", {
-                    count: hiddenCount,
-                    defaultValue: "+{{count}} more",
-                  })}
+                {expanded ? "Show less" : `+${hiddenCount} more`}
               </button>
             ) : null}
           </div>
@@ -2293,17 +2441,25 @@ function RequestCheckboxConfirmationResolution({
   }
 
   if (interaction.status === "rejected") {
-    return <RequestConfirmationResolution interaction={interaction as unknown as RequestConfirmationInteraction} />;
+    return (
+      <RequestConfirmationResolution
+        interaction={interaction as unknown as RequestConfirmationInteraction}
+      />
+    );
   }
 
   if (interaction.status === "expired") {
-    return <RequestConfirmationResolution interaction={interaction as unknown as RequestConfirmationInteraction} />;
+    return (
+      <RequestConfirmationResolution
+        interaction={interaction as unknown as RequestConfirmationInteraction}
+      />
+    );
   }
 
   if (interaction.status === "failed") {
     return (
       <p className="text-sm leading-6 text-muted-foreground">
-        {translateInstant("issueThreadInteraction.requestFailed", { defaultValue: "This request could not be resolved. Try again or create a new request." })}
+        {t("issueThreadInteraction.requestFailed")}
       </p>
     );
   }
@@ -2344,9 +2500,13 @@ function CheckboxOptionRow({
         className="mt-0.5"
       />
       <div className="min-w-0 flex-1">
-        <div className="text-sm font-medium leading-5 text-foreground">{label}</div>
+        <div className="text-sm font-medium leading-5 text-foreground">
+          {label}
+        </div>
         {description ? (
-          <p className="mt-0.5 text-sm leading-5 text-muted-foreground">{description}</p>
+          <p className="mt-0.5 text-sm leading-5 text-muted-foreground">
+            {description}
+          </p>
         ) : null}
       </div>
     </label>
@@ -2371,8 +2531,12 @@ function RequestCheckboxConfirmationCard({
   ) => Promise<void> | void;
   externalReferences?: MarkdownExternalReferenceMap;
 }) {
+  const { t } = useTranslation();
   const options = interaction.payload.options;
-  const optionIds = useMemo(() => options.map((option) => option.id), [options]);
+  const optionIds = useMemo(
+    () => options.map((option) => option.id),
+    [options],
+  );
   const validOptionIds = useMemo(() => new Set(optionIds), [optionIds]);
   const minSelected = interaction.payload.minSelected ?? 0;
   const maxSelected = interaction.payload.maxSelected ?? null;
@@ -2380,15 +2544,21 @@ function RequestCheckboxConfirmationCard({
   const defaultSelected = useMemo(
     () =>
       new Set(
-        (interaction.payload.defaultSelectedOptionIds ?? []).filter((id) => validOptionIds.has(id)),
+        (interaction.payload.defaultSelectedOptionIds ?? []).filter((id) =>
+          validOptionIds.has(id),
+        ),
       ),
     [interaction.payload.defaultSelectedOptionIds, validOptionIds],
   );
 
-  const [selectedOptionIds, setSelectedOptionIds] = useState<Set<string>>(() => new Set(defaultSelected));
+  const [selectedOptionIds, setSelectedOptionIds] = useState<Set<string>>(
+    () => new Set(defaultSelected),
+  );
   const [rejecting, setRejecting] = useState(false);
   const [working, setWorking] = useState<"accept" | "reject" | null>(null);
-  const [rejectReason, setRejectReason] = useState(interaction.result?.reason ?? "");
+  const [rejectReason, setRejectReason] = useState(
+    interaction.result?.reason ?? "",
+  );
   const [rejectAttempted, setRejectAttempted] = useState(false);
   const [acceptAttempted, setAcceptAttempted] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -2405,18 +2575,23 @@ function RequestCheckboxConfirmationCard({
       setRejecting(false);
       setWorking(null);
     }
-  }, [interaction.id, interaction.status, interaction.result?.reason, defaultSelected, optionSeed]);
+  }, [
+    interaction.id,
+    interaction.status,
+    interaction.result?.reason,
+    defaultSelected,
+    optionSeed,
+  ]);
 
-  const rejectRequiresReason = interaction.payload.rejectRequiresReason === true;
+  const rejectRequiresReason =
+    interaction.payload.rejectRequiresReason === true;
   const allowDeclineReason = interaction.payload.allowDeclineReason !== false;
   const trimmedRejectReason = rejectReason.trim();
   const canReject = !rejectRequiresReason || trimmedRejectReason.length > 0;
   const declineReasonInvalid = rejectRequiresReason && !canReject;
   const declineReasonPlaceholder =
-    interaction.payload.declineReasonPlaceholder
-    ?? translateInstant("issueThreadInteraction.declinePlaceholder", {
-      defaultValue: "Optional: tell the agent what you'd change.",
-    });
+    interaction.payload.declineReasonPlaceholder ??
+    "Optional: tell the agent what you'd change.";
 
   const selectedCount = selectedOptionIds.size;
   const totalOptions = options.length;
@@ -2427,18 +2602,12 @@ function RequestCheckboxConfirmationCard({
 
   const validationMessage = belowMin
     ? minSelected === 1
-      ? translateInstant("issueThreadInteraction.selectAtLeastOne", { defaultValue: "Select at least 1 option." })
-      : translateInstant("issueThreadInteraction.selectAtLeast", {
-        count: minSelected,
-        defaultValue: "Select at least {{count}} options.",
-      })
+      ? "Select at least 1 option."
+      : `Select at least ${minSelected} options.`
     : aboveMax && maxSelected != null
       ? maxSelected === 1
-        ? translateInstant("issueThreadInteraction.selectAtMostOne", { defaultValue: "Select at most 1 option." })
-        : translateInstant("issueThreadInteraction.selectAtMost", {
-          count: maxSelected,
-          defaultValue: "Select at most {{count}} options.",
-        })
+        ? "Select at most 1 option."
+        : `Select at most ${maxSelected} options.`
       : null;
 
   function toggleOption(optionId: string, checked: boolean) {
@@ -2454,7 +2623,8 @@ function RequestCheckboxConfirmationCard({
   }
 
   function handleSelectAll() {
-    const capped = maxSelected != null ? optionIds.slice(0, maxSelected) : optionIds;
+    const capped =
+      maxSelected != null ? optionIds.slice(0, maxSelected) : optionIds;
     setSelectedOptionIds(new Set(capped));
   }
 
@@ -2470,7 +2640,7 @@ function RequestCheckboxConfirmationCard({
     try {
       await onAcceptInteraction(interaction, undefined, [...selectedOptionIds]);
     } catch {
-      setActionError(translateInstant("issueThreadInteraction.tryAgain", { defaultValue: "Try again" }));
+      setActionError("Try again");
     } finally {
       setWorking(null);
     }
@@ -2485,7 +2655,7 @@ function RequestCheckboxConfirmationCard({
       await onRejectInteraction(interaction, trimmedRejectReason || undefined);
       setRejecting(false);
     } catch {
-      setActionError(translateInstant("issueThreadInteraction.tryAgain", { defaultValue: "Try again" }));
+      setActionError("Try again");
     } finally {
       setWorking(null);
     }
@@ -2499,41 +2669,28 @@ function RequestCheckboxConfirmationCard({
     );
   }
 
-  const selectionSummary = totalOptions > 0 && selectedCount === totalOptions
-    ? translateInstant("issueThreadInteraction.allOptionsSelected", {
-      count: totalOptions,
-      defaultValue: "All {{count}} options selected",
-    })
-    : translateInstant("issueThreadInteraction.optionsSelected", {
-      selected: selectedCount,
-      total: totalOptions,
-      defaultValue: "{{selected}} of {{total}} options selected",
-    });
-  const boundsHint = maxSelected != null
-    ? minSelected === maxSelected
-      ? translateInstant("issueThreadInteraction.pickExactly", {
-        count: maxSelected,
-        defaultValue: "Pick exactly {{count}}.",
-      })
-      : translateInstant("issueThreadInteraction.pickRange", {
-        min: minSelected,
-        max: maxSelected,
-        defaultValue: "Pick {{min}}-{{max}}.",
-      })
-    : minSelected > 0
-      ? translateInstant("issueThreadInteraction.pickAtLeast", {
-        count: minSelected,
-        defaultValue: "Pick at least {{count}}.",
-      })
-      : null;
+  const selectionSummary =
+    totalOptions > 0 && selectedCount === totalOptions
+      ? `All ${totalOptions} options selected`
+      : `${selectedCount} of ${totalOptions} ${totalOptions === 1 ? "option" : "options"} selected`;
+  const boundsHint =
+    maxSelected != null
+      ? `Pick ${minSelected === maxSelected ? `exactly ${maxSelected}` : `${minSelected}-${maxSelected}`}.`
+      : minSelected > 0
+        ? `Pick at least ${minSelected}.`
+        : null;
 
   return (
     <div className="space-y-4">
       <div className="space-y-3 rounded-sm border border-border/70 bg-background/75 p-4">
-        <div className="text-sm leading-6 text-foreground">{interaction.payload.prompt}</div>
+        <div className="text-sm leading-6 text-foreground">
+          {interaction.payload.prompt}
+        </div>
         {interaction.payload.detailsMarkdown ? (
           <div className="border-t border-border/60 pt-3 text-sm">
-            <MarkdownBody externalReferences={externalReferences}>{interaction.payload.detailsMarkdown}</MarkdownBody>
+            <MarkdownBody externalReferences={externalReferences}>
+              {interaction.payload.detailsMarkdown}
+            </MarkdownBody>
           </div>
         ) : null}
         <RequestConfirmationTargetChip
@@ -2552,10 +2709,14 @@ function RequestCheckboxConfirmationCard({
             <Button
               size="sm"
               variant="ghost"
-              disabled={working !== null || selectedCount === totalOptions || (maxSelected != null && selectedCount >= maxSelected)}
+              disabled={
+                working !== null ||
+                selectedCount === totalOptions ||
+                (maxSelected != null && selectedCount >= maxSelected)
+              }
               onClick={handleSelectAll}
             >
-              {translateInstant("issueThreadInteraction.selectAll", { defaultValue: "Select all" })}
+              {t("issueThreadInteraction.selectAll")}
             </Button>
             <Button
               size="sm"
@@ -2563,14 +2724,14 @@ function RequestCheckboxConfirmationCard({
               disabled={working !== null || selectedCount === 0}
               onClick={handleClearSelection}
             >
-              {translateInstant("issueThreadInteraction.clearSelection", { defaultValue: "Clear selection" })}
+              {t("issueThreadInteraction.clearSelection")}
             </Button>
           </div>
         </div>
 
         <div
           role="group"
-          aria-label={translateInstant("issueThreadInteraction.selectableOptions", { defaultValue: "Selectable options" })}
+          aria-label={t("issueThreadInteraction.selectableOptions")}
           className="max-h-80 overflow-y-auto rounded-sm border border-border/70"
         >
           {options.map((option) => {
@@ -2603,10 +2764,10 @@ function RequestCheckboxConfirmationCard({
             {working === "accept" ? (
               <>
                 <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                {translateInstant("issueThreadInteraction.confirming", { defaultValue: "Confirming..." })}
+                {t("issueThreadInteraction.confirming")}
               </>
             ) : (
-              interaction.payload.acceptLabel ?? translateInstant("issueThreadInteraction.confirmSelected", { defaultValue: "Confirm selected" })
+              (interaction.payload.acceptLabel ?? "Confirm selected")
             )}
           </Button>
           <Button
@@ -2622,7 +2783,7 @@ function RequestCheckboxConfirmationCard({
               setRejecting((current) => !current);
             }}
           >
-            {interaction.payload.rejectLabel ?? translateInstant("issueThreadInteraction.requestChanges", { defaultValue: "Request changes" })}
+            {interaction.payload.rejectLabel ?? "Request changes"}
           </Button>
         </div>
 
@@ -2635,12 +2796,15 @@ function RequestCheckboxConfirmationCard({
               aria-invalid={rejectAttempted && declineReasonInvalid}
               className={cn(
                 "min-h-24 bg-background text-sm",
-                rejectAttempted && declineReasonInvalid
-                  && "border-rose-500 focus-visible:ring-rose-500/25",
+                rejectAttempted &&
+                  declineReasonInvalid &&
+                  "border-rose-500 focus-visible:ring-rose-500/25",
               )}
             />
             {rejectAttempted && declineReasonInvalid ? (
-              <p className="text-xs text-destructive">{translateInstant("issueThreadInteraction.reasonRequired", { defaultValue: "A reason is required." })}</p>
+              <p className="text-xs text-destructive">
+                {t("issueThreadInteraction.reasonRequired")}
+              </p>
             ) : null}
             <div className="flex flex-wrap justify-end gap-2">
               <Button
@@ -2652,7 +2816,7 @@ function RequestCheckboxConfirmationCard({
                   setRejectAttempted(false);
                 }}
               >
-                {translateInstant("Cancel", { defaultValue: "Cancel" })}
+                {t("Cancel")}
               </Button>
               <Button
                 size="sm"
@@ -2663,10 +2827,10 @@ function RequestCheckboxConfirmationCard({
                 {working === "reject" ? (
                   <>
                     <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                    {translateInstant("issueThreadInteraction.saving", { defaultValue: "Saving..." })}
+                    {t("issueThreadInteraction.saving")}
                   </>
                 ) : (
-                  interaction.payload.rejectLabel ?? translateInstant("issueThreadInteraction.requestChanges", { defaultValue: "Request changes" })
+                  (interaction.payload.rejectLabel ?? "Request changes")
                 )}
               </Button>
             </div>
@@ -2685,41 +2849,41 @@ function RequestCheckboxConfirmationCard({
 
 // --- Per-item verdicts (C3) ---------------------------------------------
 
-function verdictLabel(verdict: RequestItemVerdictValue) {
-  switch (verdict) {
-    case "approve":
-      return translateInstant("issueThreadInteraction.verdict.approve", { defaultValue: "Approve" });
-    case "reject":
-      return translateInstant("issueThreadInteraction.verdict.reject", { defaultValue: "Reject" });
-    default:
-      return translateInstant("issueThreadInteraction.verdict.defer", { defaultValue: "Defer" });
-  }
-}
+const VERDICT_LABEL: Record<RequestItemVerdictValue, string> = {
+  approve: "Approve",
+  reject: "Reject",
+  defer: "Defer",
+};
 
-function resolvedVerdictLabel(verdict: RequestItemVerdictValue) {
-  switch (verdict) {
-    case "approve":
-      return translateInstant("issueThreadInteraction.verdict.approved", { defaultValue: "Approved" });
-    case "reject":
-      return translateInstant("issueThreadInteraction.verdict.rejected", { defaultValue: "Rejected" });
-    default:
-      return translateInstant("issueThreadInteraction.verdict.deferred", { defaultValue: "Deferred" });
-  }
-}
+/** Present-tense past-participle label for a resolved verdict chip. */
+const VERDICT_RESOLVED_LABEL: Record<RequestItemVerdictValue, string> = {
+  approve: "Approved",
+  reject: "Rejected",
+  defer: "Deferred",
+};
 
 function verdictChipClasses(verdict: RequestItemVerdictValue) {
   switch (verdict) {
     case "approve":
-      return "border-(--status-task-done-border) bg-(--status-task-done-soft) text-(--status-task-done)";
+      return "border-emerald-500/60 bg-emerald-500/10 text-emerald-900 dark:bg-emerald-500/15 dark:text-emerald-100";
     case "reject":
-      return "border-(--status-task-blocked-border) bg-(--status-task-blocked-soft) text-(--status-task-blocked)";
+      return "border-rose-500/60 bg-rose-500/10 text-rose-900 dark:bg-rose-500/15 dark:text-rose-100";
     default:
       return "border-border/70 bg-muted/40 text-muted-foreground";
   }
 }
 
-function VerdictConsequenceChip({ verdict }: { verdict: RequestItemVerdictValue }) {
-  const Icon = verdict === "approve" ? CheckCircle2 : verdict === "reject" ? XCircle : MinusCircle;
+function VerdictConsequenceChip({
+  verdict,
+}: {
+  verdict: RequestItemVerdictValue;
+}) {
+  const Icon =
+    verdict === "approve"
+      ? CheckCircle2
+      : verdict === "reject"
+        ? XCircle
+        : MinusCircle;
   return (
     <span
       className={cn(
@@ -2728,21 +2892,28 @@ function VerdictConsequenceChip({ verdict }: { verdict: RequestItemVerdictValue 
       )}
     >
       <Icon className="h-3.5 w-3.5" aria-hidden />
-      {resolvedVerdictLabel(verdict)}
+      {VERDICT_RESOLVED_LABEL[verdict]}
     </span>
   );
 }
 
 function ItemVerdictDeepLink({ item }: { item: RequestItemVerdictsItem }) {
-  const href = item.href ? normalizeRequestConfirmationTargetHref(item.href) : null;
+  const { t } = useTranslation();
+  const href = item.href
+    ? normalizeRequestConfirmationTargetHref(item.href)
+    : null;
   if (!href) return null;
   const isInternal = href.startsWith("/") || href.startsWith("#");
   const className =
     "inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1";
   const label = (
     <>
-      {translateInstant("issueThreadInteraction.verdict.openItem", { defaultValue: "Open" })}
-      {isInternal ? <ArrowUpRight className="h-3 w-3" aria-hidden /> : <ExternalLink className="h-3 w-3" aria-hidden />}
+      {t("issueThreadInteraction.verdict.openItem")}
+      {isInternal ? (
+        <ArrowUpRight className="h-3 w-3" aria-hidden />
+      ) : (
+        <ExternalLink className="h-3 w-3" aria-hidden />
+      )}
     </>
   );
   if (isInternal) {
@@ -2772,20 +2943,33 @@ function ItemVerdictSegmentedControl({
   disabled: boolean;
   onSelect: (verdict: RequestItemVerdictValue) => void;
 }) {
+  const { t } = useTranslation();
   return (
     <div
       role="group"
-      aria-label={translateInstant("issueThreadInteraction.verdict.choose", { defaultValue: "Choose a verdict" })}
+      aria-label={t("issueThreadInteraction.verdict.choose")}
       className="flex shrink-0 flex-wrap items-center gap-2"
     >
       {verdicts.map((verdict) => {
         const active = value === verdict;
-        const variant = verdict === "reject"
-          ? (active ? "destructive" : "outline")
-          : verdict === "approve"
-            ? (active ? "default" : "outline")
-            : (active ? "secondary" : "outline");
-        const Icon = verdict === "approve" ? Check : verdict === "reject" ? X : MinusCircle;
+        const variant =
+          verdict === "reject"
+            ? active
+              ? "destructive"
+              : "outline"
+            : verdict === "approve"
+              ? active
+                ? "default"
+                : "outline"
+              : active
+                ? "secondary"
+                : "outline";
+        const Icon =
+          verdict === "approve"
+            ? Check
+            : verdict === "reject"
+              ? X
+              : MinusCircle;
         return (
           <Button
             key={verdict}
@@ -2794,10 +2978,7 @@ function ItemVerdictSegmentedControl({
             variant={variant}
             disabled={disabled}
             aria-pressed={active}
-            aria-label={translateInstant("issueThreadInteraction.verdict.itemActionAria", {
-              defaultValue: "{{action}} this item",
-              action: verdictLabel(verdict),
-            })}
+            aria-label={`${VERDICT_LABEL[verdict]} this item`}
             className="min-h-11 min-w-24"
             onClick={() => onSelect(verdict)}
             data-verdict={verdict}
@@ -2805,7 +2986,7 @@ function ItemVerdictSegmentedControl({
             data-active={active}
           >
             <Icon className="h-4 w-4" aria-hidden />
-            {verdictLabel(verdict)}
+            {VERDICT_LABEL[verdict]}
           </Button>
         );
       })}
@@ -2826,10 +3007,15 @@ function RequestItemVerdictsCard({
   interaction: RequestItemVerdictsInteraction;
   onSubmitInteractionVerdicts?: (
     interaction: RequestItemVerdictsInteraction,
-    verdicts: { id: string; verdict: RequestItemVerdictValue; reason?: string }[],
+    verdicts: {
+      id: string;
+      verdict: RequestItemVerdictValue;
+      reason?: string;
+    }[],
   ) => Promise<void> | void;
   externalReferences?: MarkdownExternalReferenceMap;
 }) {
+  const { t } = useTranslation();
   const payload = interaction.payload;
   const items = payload.items;
   const enabledVerdicts = useMemo<RequestItemVerdictValue[]>(
@@ -2837,21 +3023,26 @@ function RequestItemVerdictsCard({
     [payload.verdicts],
   );
   const requireReasonOn = useMemo(
-    () => new Set<RequestItemVerdictValue>(payload.requireReasonOn ?? ["reject"]),
+    () =>
+      new Set<RequestItemVerdictValue>(payload.requireReasonOn ?? ["reject"]),
     [payload.requireReasonOn],
   );
-  const allowBulkApprove = payload.allowBulkApprove !== false && enabledVerdicts.includes("approve");
-  const reasonLabel = payload.reasonLabel ?? translateInstant("issueThreadInteraction.verdict.reason", {
-    defaultValue: "Reason",
-  });
+  const allowBulkApprove =
+    payload.allowBulkApprove !== false && enabledVerdicts.includes("approve");
+  const reasonLabel = payload.reasonLabel ?? "Reason";
 
   const resolvedById = useMemo(
-    () => new Map<string, RequestItemVerdictsResultItem>((interaction.result?.items ?? []).map((item) => [item.id, item])),
+    () =>
+      new Map<string, RequestItemVerdictsResultItem>(
+        (interaction.result?.items ?? []).map((item) => [item.id, item]),
+      ),
     [interaction.result],
   );
 
   const [drafts, setDrafts] = useState<Map<string, VerdictDraft>>(new Map());
-  const [applyingItemIds, setApplyingItemIds] = useState<Set<string>>(new Set());
+  const [applyingItemIds, setApplyingItemIds] = useState<Set<string>>(
+    new Set(),
+  );
   const [working, setWorking] = useState(false);
   const [attempted, setAttempted] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -2875,22 +3066,31 @@ function RequestItemVerdictsCard({
     setActionError(null);
   }, [resolvedById]);
 
-  const progress = getItemVerdictProgress({ payload, result: interaction.result });
+  const progress = getItemVerdictProgress({
+    payload,
+    result: interaction.result,
+  });
   const isTerminal = interaction.status !== "pending";
   const isExpired = interaction.status === "expired";
-  const isComplete = interaction.status === "answered" || progress.decided === progress.total;
+  const isComplete =
+    interaction.status === "answered" || progress.decided === progress.total;
 
   const draftEntries = [...drafts.entries()];
   const draftCount = draftEntries.length;
   const invalidDraftIds = new Set(
     draftEntries
-      .filter(([, draft]) => requireReasonOn.has(draft.verdict) && draft.reason.trim().length === 0)
+      .filter(
+        ([, draft]) =>
+          requireReasonOn.has(draft.verdict) &&
+          draft.reason.trim().length === 0,
+      )
       .map(([id]) => id),
   );
   // Apply is enabled as soon as there is ≥1 draft (spec §1). If a required
   // reject reason is missing, clicking Apply reveals the inline error instead
   // of silently submitting — the reason gates the actual submit (spec AC).
-  const hasDrafts = draftCount > 0 && !working && Boolean(onSubmitInteractionVerdicts);
+  const hasDrafts =
+    draftCount > 0 && !working && Boolean(onSubmitInteractionVerdicts);
   const canApply = hasDrafts && invalidDraftIds.size === 0;
 
   function toggleDraft(itemId: string, verdict: RequestItemVerdictValue) {
@@ -2930,7 +3130,12 @@ function RequestItemVerdictsCard({
 
   async function handleApply() {
     setAttempted(true);
-    if (!onSubmitInteractionVerdicts || draftCount === 0 || invalidDraftIds.size > 0) return;
+    if (
+      !onSubmitInteractionVerdicts ||
+      draftCount === 0 ||
+      invalidDraftIds.size > 0
+    )
+      return;
     const verdicts = draftEntries.map(([id, draft]) => ({
       id,
       verdict: draft.verdict,
@@ -2944,60 +3149,62 @@ function RequestItemVerdictsCard({
       // Success: the parent refetch updates `interaction.result`, the effect
       // above clears drafts + applying state, and terminal chips render.
     } catch {
-      setActionError(translateInstant("Try again", { defaultValue: "Try again" }));
+      setActionError("Try again");
       setApplyingItemIds(new Set());
       setWorking(false);
     }
   }
 
-  const applyLabel = translateInstant("issueThreadInteraction.verdict.applyDecisions", {
-    defaultValue: "Apply {{count}} decision",
-    defaultValue_other: "Apply {{count}} decisions",
-    count: draftCount,
-  });
+  const applyLabel =
+    draftCount === 0
+      ? "Apply 0 decisions"
+      : `Apply ${draftCount} decision${draftCount === 1 ? "" : "s"}`;
 
   return (
     <div className="space-y-4">
       {/* Prompt + details (S1) */}
       <div className="space-y-3 rounded-sm border border-border/70 bg-background/75 p-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="text-sm leading-6 text-foreground">{payload.prompt}</div>
-          <VerdictProgressBadge progress={progress} pendingReason={invalidDraftIds.size > 0} />
+          <div className="text-sm leading-6 text-foreground">
+            {payload.prompt}
+          </div>
+          <VerdictProgressBadge
+            progress={progress}
+            pendingReason={invalidDraftIds.size > 0}
+          />
         </div>
         {payload.detailsMarkdown ? (
           <div className="border-t border-border/60 pt-3 text-sm">
-            <MarkdownBody externalReferences={externalReferences}>{payload.detailsMarkdown}</MarkdownBody>
+            <MarkdownBody externalReferences={externalReferences}>
+              {payload.detailsMarkdown}
+            </MarkdownBody>
           </div>
         ) : null}
         {interaction.payload.target ? (
-          <RequestConfirmationTargetChip interaction={interaction} target={interaction.payload.target} />
+          <RequestConfirmationTargetChip
+            interaction={interaction}
+            target={interaction.payload.target}
+          />
         ) : null}
       </div>
 
       {/* Stale / superseded notice (S6) */}
       {isExpired ? (
-        <div className="rounded-sm border border-(--status-task-todo-border) bg-(--status-task-todo-soft) px-3 py-2 text-sm text-(--status-task-todo)">
+        <div className="rounded-sm border border-amber-500/50 bg-amber-500/10 px-3 py-2 text-sm text-amber-900 dark:text-amber-100">
           <div className="flex items-center gap-2 font-medium">
             <AlertTriangle className="h-4 w-4" aria-hidden />
             {interaction.result?.outcome === "superseded_by_comment"
-              ? translateInstant("issueThreadInteraction.verdict.expiredAfterComment", {
-                  defaultValue: "This review expired after a later comment.",
-                })
+              ? "This review expired after a later comment."
               : interaction.result?.outcome === "stale_target"
-                ? translateInstant("issueThreadInteraction.verdict.expiredAfterTargetChanged", {
-                    defaultValue: "This review expired after the target changed.",
-                  })
-                : translateInstant("issueThreadInteraction.verdict.expired", {
-                    defaultValue: "This review expired.",
-                  })}
+                ? "This review expired after the target changed."
+                : "This review expired."}
           </div>
           {progress.decided > 0 ? (
             <p className="mt-1 text-xs leading-5">
-              {translateInstant("issueThreadInteraction.verdict.expiredAppliedSummary", {
-                defaultValue: "{{count}} item was already applied and cannot be reverted. Remaining items were cancelled.",
-                defaultValue_other: "{{count}} items were already applied and cannot be reverted. Remaining items were cancelled.",
-                count: progress.decided,
-              })}
+              {progress.decided === 1
+                ? "1 item was"
+                : `${progress.decided} items were`}{" "}
+              {t("issueThreadInteraction.alreadyApplied")}
             </p>
           ) : null}
         </div>
@@ -3006,9 +3213,7 @@ function RequestItemVerdictsCard({
       {/* Item list (S1/S2/S3/S4) */}
       <ul
         className="space-y-2"
-        aria-label={translateInstant("issueThreadInteraction.verdict.itemsToReview", {
-          defaultValue: "Items to review",
-        })}
+        aria-label={t("issueThreadInteraction.verdict.itemsToReview")}
       >
         {items.map((item) => {
           const resolved = resolvedById.get(item.id);
@@ -3022,25 +3227,41 @@ function RequestItemVerdictsCard({
                 draft && !resolved && "border-border",
               )}
               data-item-id={item.id}
-              data-item-state={resolved ? "resolved" : applying ? "applying" : draft ? "draft" : "pending"}
+              data-item-state={
+                resolved
+                  ? "resolved"
+                  : applying
+                    ? "applying"
+                    : draft
+                      ? "draft"
+                      : "pending"
+              }
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0 flex-1 basis-64">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-sm font-medium leading-5 text-foreground">{item.label}</span>
+                    <span className="text-sm font-medium leading-5 text-foreground">
+                      {item.label}
+                    </span>
                     <ItemVerdictDeepLink item={item} />
                   </div>
                   {item.description ? (
-                    <p className="mt-0.5 text-sm leading-5 text-muted-foreground">{item.description}</p>
+                    <p className="mt-0.5 text-sm leading-5 text-muted-foreground">
+                      {item.description}
+                    </p>
                   ) : null}
                   {item.previewMarkdown ? (
                     <div className="mt-2 rounded-sm border border-border/50 bg-muted/20 px-2.5 py-2 text-xs">
-                      <MarkdownBody externalReferences={externalReferences}>{item.previewMarkdown}</MarkdownBody>
+                      <MarkdownBody externalReferences={externalReferences}>
+                        {item.previewMarkdown}
+                      </MarkdownBody>
                     </div>
                   ) : null}
                   {resolved?.reason ? (
                     <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                      <span className="font-medium text-foreground">{reasonLabel}: </span>
+                      <span className="font-medium text-foreground">
+                        {reasonLabel}:{" "}
+                      </span>
                       {resolved.reason}
                     </p>
                   ) : null}
@@ -3051,13 +3272,16 @@ function RequestItemVerdictsCard({
                     <VerdictConsequenceChip verdict={resolved.verdict} />
                   ) : applying ? (
                     <span className="inline-flex items-center gap-1.5 rounded-sm border border-border/70 bg-muted/40 px-2 py-0.5 text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
-                      <Loader2 className="h-3.5 w-3.5 motion-safe:animate-spin" aria-hidden />
-                      {translateInstant("issueThreadInteraction.verdict.applying", { defaultValue: "Applying…" })}
+                      <Loader2
+                        className="h-3.5 w-3.5 motion-safe:animate-spin"
+                        aria-hidden
+                      />
+                      {t("issueThreadInteraction.verdict.applying")}
                     </span>
                   ) : isTerminal ? (
                     <span className="inline-flex items-center gap-1 rounded-sm border border-border/70 bg-muted/30 px-2 py-0.5 text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
                       <CircleDashed className="h-3.5 w-3.5" aria-hidden />
-                      {translateInstant("issueThreadInteraction.verdict.notDecided", { defaultValue: "Not decided" })}
+                      {t("issueThreadInteraction.verdict.notDecided")}
                     </span>
                   ) : (
                     <ItemVerdictSegmentedControl
@@ -3072,7 +3296,10 @@ function RequestItemVerdictsCard({
               </div>
 
               {/* Draft reason field (S2) — reveals when the draft verdict needs a reason */}
-              {!resolved && !applying && draft && requireReasonOn.has(draft.verdict) ? (
+              {!resolved &&
+              !applying &&
+              draft &&
+              requireReasonOn.has(draft.verdict) ? (
                 <div className="mt-3 space-y-1.5">
                   <label
                     htmlFor={`${interaction.id}-${item.id}-reason`}
@@ -3083,21 +3310,24 @@ function RequestItemVerdictsCard({
                   <Textarea
                     id={`${interaction.id}-${item.id}-reason`}
                     value={draft.reason}
-                    onChange={(event) => setDraftReason(item.id, event.target.value)}
-                    placeholder={translateInstant("issueThreadInteraction.verdict.reasonPlaceholder", {
-                      defaultValue: "Give the agent a reason so it can act on this item.",
-                    })}
+                    onChange={(event) =>
+                      setDraftReason(item.id, event.target.value)
+                    }
+                    placeholder={t(
+                      "issueThreadInteraction.verdict.reasonPlaceholder",
+                    )}
                     aria-invalid={attempted && invalidDraftIds.has(item.id)}
                     className={cn(
                       "min-h-16 bg-background text-sm",
-                      attempted && invalidDraftIds.has(item.id) && "border-(--status-task-blocked) focus-visible:ring-(--status-task-blocked-ring)",
+                      attempted &&
+                        invalidDraftIds.has(item.id) &&
+                        "border-rose-500 focus-visible:ring-rose-500/25",
                     )}
                   />
                   {attempted && invalidDraftIds.has(item.id) ? (
                     <p className="text-xs text-destructive">
-                      {translateInstant("issueThreadInteraction.verdict.reasonRequired", {
-                        defaultValue: "A reason is required to {{action}} this item.",
-                        action: verdictLabel(draft.verdict).toLocaleLowerCase(),
+                      {t("issueThreadInteraction.verdict.reasonRequired", {
+                        action: VERDICT_LABEL[draft.verdict].toLowerCase(),
                       })}
                     </p>
                   ) : null}
@@ -3110,18 +3340,16 @@ function RequestItemVerdictsCard({
 
       {/* Complete summary (S5) */}
       {isComplete && !isExpired ? (
-        <div className="flex flex-wrap items-center gap-2 rounded-sm border border-(--status-task-done-border) bg-(--status-task-done-soft) px-3 py-2 text-sm text-(--status-task-done)">
+        <div className="flex flex-wrap items-center gap-2 rounded-sm border border-emerald-500/50 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-900 dark:text-emerald-100">
           <CheckCircle2 className="h-4 w-4" aria-hidden />
           <span className="font-medium">
-            {translateInstant("issueThreadInteraction.verdict.completeSummary", {
-              defaultValue: "{{decided}} decided · {{approved}} approved · {{rejected}} rejected",
+            {t("issueThreadInteraction.verdict.completeSummary", {
               decided: progress.decided,
               approved: progress.approved,
               rejected: progress.rejected,
             })}
             {progress.deferred > 0
-              ? translateInstant("issueThreadInteraction.verdict.deferredSuffix", {
-                  defaultValue: " · {{count}} deferred",
+              ? t("issueThreadInteraction.verdict.deferredSuffix", {
                   count: progress.deferred,
                 })
               : ""}
@@ -3134,14 +3362,8 @@ function RequestItemVerdictsCard({
         <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border/60 pt-3">
           <div className="text-xs text-muted-foreground">
             {draftCount > 0
-              ? translateInstant("issueThreadInteraction.verdict.draftsReady", {
-                  defaultValue: "{{count}} draft verdict ready to apply",
-                  defaultValue_other: "{{count}} draft verdicts ready to apply",
-                  count: draftCount,
-                })
-              : translateInstant("issueThreadInteraction.verdict.markThenApply", {
-                  defaultValue: "Mark verdicts, then apply them in one pass.",
-                })}
+              ? `${draftCount} draft verdict${draftCount === 1 ? "" : "s"} ready to apply`
+              : "Mark verdicts, then apply them in one pass."}
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {allowBulkApprove ? (
@@ -3153,7 +3375,7 @@ function RequestItemVerdictsCard({
                 onClick={handleApproveAll}
               >
                 <ThumbsUp className="h-4 w-4" aria-hidden />
-                {translateInstant("issueThreadInteraction.verdict.approveAll", { defaultValue: "Approve all" })}
+                {t("issueThreadInteraction.verdict.approveAll")}
               </Button>
             ) : null}
             <Button
@@ -3166,8 +3388,11 @@ function RequestItemVerdictsCard({
             >
               {working ? (
                 <>
-                  <Loader2 className="h-4 w-4 motion-safe:animate-spin" aria-hidden />
-                  {translateInstant("issueThreadInteraction.verdict.applying", { defaultValue: "Applying…" })}
+                  <Loader2
+                    className="h-4 w-4 motion-safe:animate-spin"
+                    aria-hidden
+                  />
+                  {t("issueThreadInteraction.verdict.applying")}
                 </>
               ) : (
                 applyLabel
@@ -3193,14 +3418,18 @@ function VerdictProgressBadge({
   progress: ReturnType<typeof getItemVerdictProgress>;
   pendingReason: boolean;
 }) {
-  const pct = progress.total > 0 ? Math.round((progress.decided / progress.total) * 100) : 0;
+  const { t } = useTranslation();
+  const pct =
+    progress.total > 0
+      ? Math.round((progress.decided / progress.total) * 100)
+      : 0;
   return (
     <div className="flex items-center gap-2">
       {/* Von Restorff accent when a draft reject is missing its reason */}
       {pendingReason ? (
-        <span className="inline-flex items-center gap-1 rounded-sm border border-(--status-task-todo-border) bg-(--status-task-todo-soft) px-1.5 py-0.5 text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-eyebrow) text-(--status-task-todo)">
+        <span className="inline-flex items-center gap-1 rounded-sm border border-amber-500/60 bg-amber-500/10 px-1.5 py-0.5 text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-eyebrow) text-amber-900 dark:text-amber-100">
           <AlertTriangle className="h-3 w-3" aria-hidden />
-          {translateInstant("issueThreadInteraction.verdict.reasonNeeded", { defaultValue: "Reason needed" })}
+          {t("issueThreadInteraction.verdict.reasonNeeded")}
         </span>
       ) : null}
       <div
@@ -3209,11 +3438,7 @@ function VerdictProgressBadge({
         aria-valuemin={0}
         aria-valuemax={progress.total}
         aria-valuenow={progress.decided}
-        aria-label={translateInstant("issueThreadInteraction.verdict.progress", {
-          defaultValue: "{{decided}} of {{total}} decided",
-          decided: progress.decided,
-          total: progress.total,
-        })}
+        aria-label={`${progress.decided} of ${progress.total} decided`}
       >
         <div className="h-1.5 w-16 overflow-hidden rounded-full bg-muted">
           <div
@@ -3222,11 +3447,8 @@ function VerdictProgressBadge({
           />
         </div>
         <span className="whitespace-nowrap text-xs font-medium text-muted-foreground">
-          {translateInstant("issueThreadInteraction.verdict.progress", {
-            defaultValue: "{{decided}} of {{total}} decided",
-            decided: progress.decided,
-            total: progress.total,
-          })}
+          {progress.decided} {t("issueCommon.of")} {progress.total}{" "}
+          {t("issueThreadInteraction.decidedLabel")}
         </span>
       </div>
     </div>
@@ -3246,19 +3468,32 @@ export function IssueThreadInteractionCard({
   onUploadImage,
   externalReferences,
 }: IssueThreadInteractionCardProps) {
-  useTranslation();
+  const { t } = useTranslation();
   const isPlan = isPlanConfirmation(interaction);
   const isToolAction =
-    interaction.kind === "request_confirmation" && isToolActionConfirmation(interaction);
+    interaction.kind === "request_confirmation" &&
+    isToolActionConfirmation(interaction);
   const toolActionState =
     isToolAction && interaction.kind === "request_confirmation"
       ? toolActionCardState(interaction)
       : null;
-  const toolActionStyles = toolActionState ? toolActionStatusClasses(toolActionState) : null;
+  const toolActionStyles = toolActionState
+    ? toolActionStatusClasses(toolActionState)
+    : null;
   const resumeFailure = requestConfirmationResumeFailure(interaction);
-  const planStyles = isPlan ? planStatusClasses(interaction.status, resumeFailure) : null;
+  const planStyles = isPlan
+    ? planStatusClasses(
+        interaction.status,
+        resumeFailure,
+        interaction.result && "outcome" in interaction.result
+          ? interaction.result.outcome
+          : null,
+      )
+    : null;
   const activeStyles = toolActionStyles ?? planStyles;
-  const StatusIcon = activeStyles ? activeStyles.Icon : statusIcon(interaction.status);
+  const StatusIcon = activeStyles
+    ? activeStyles.Icon
+    : statusIcon(interaction.status);
   const iconSpin = toolActionStyles?.spin ?? false;
   const styles = activeStyles ?? statusClasses(interaction.status);
   const createdByLabel = resolveActorLabel({
@@ -3284,29 +3519,38 @@ export function IssueThreadInteractionCard({
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0 flex-1 basis-64">
           <div className="flex flex-wrap items-center gap-2">
-            <span className={cn("inline-flex items-center gap-1 rounded-sm border px-2.5 py-1 text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow)", styles.badge)}>
-              <StatusIcon className={cn("h-3.5 w-3.5", iconSpin && "animate-spin")} />
-              {isPlan ? translateInstant("issueThreadInteraction.plan", { defaultValue: "Plan" }) : interactionKindLabel(interaction.kind)}
+            <span
+              className={cn(
+                "inline-flex items-center gap-1 rounded-sm border px-2.5 py-1 text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow)",
+                styles.badge,
+              )}
+            >
+              <StatusIcon
+                className={cn("h-3.5 w-3.5", iconSpin && "animate-spin")}
+              />
+              {isPlan ? "Plan" : interactionKindLabel(interaction.kind)}
               <span className="text-current/60">/</span>
-              {activeStyles ? activeStyles.label : statusLabel(interaction.status)}
+              {activeStyles
+                ? activeStyles.label
+                : statusLabel(interaction.status)}
             </span>
           </div>
 
           <div className="mt-3 text-lg font-bold text-foreground">
-            {interaction.title
-              ?? (interaction.kind === "suggest_tasks"
-                ? translateInstant("issueThreadInteraction.suggestedTaskTree", { defaultValue: "Suggested task tree" })
+            {interaction.title ??
+              (interaction.kind === "suggest_tasks"
+                ? "Suggested task tree"
                 : interaction.kind === "ask_user_questions"
-                  ? interaction.payload.title ?? translateInstant("issueThreadInteraction.questionsForOperator", { defaultValue: "Questions for the operator" })
-                : interaction.kind === "request_checkbox_confirmation"
-                  ? translateInstant("issueThreadInteraction.checkboxConfirmationRequested", { defaultValue: "Checkbox confirmation requested" })
-                  : isToolAction
-                    ? translateInstant("issueThreadInteraction.toolApprovalRequested", { defaultValue: "Tool approval requested" })
-                    : interaction.kind === "request_item_verdicts"
-                      ? translateInstant("issueThreadInteraction.reviewTheseItems", { defaultValue: "Review these items" })
-                      : isPlan
-                        ? translateInstant("issueThreadInteraction.planReview", { defaultValue: "Plan review" })
-                        : translateInstant("issueThreadInteraction.confirmationRequested", { defaultValue: "Confirmation requested" }))}
+                  ? (interaction.payload.title ?? "Questions for the operator")
+                  : interaction.kind === "request_checkbox_confirmation"
+                    ? "Checkbox confirmation requested"
+                    : isToolAction
+                      ? "Tool approval requested"
+                      : interaction.kind === "request_item_verdicts"
+                        ? "Review these items"
+                        : isPlan
+                          ? "Plan review"
+                          : "Confirmation requested")}
           </div>
           {interaction.summary ? (
             <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
@@ -3318,12 +3562,17 @@ export function IssueThreadInteractionCard({
         <Tooltip>
           <TooltipTrigger asChild>
             <div className="rounded-sm border border-border/70 bg-transparent px-3 py-2 text-right text-xs text-muted-foreground">
-              <div className="font-medium text-foreground">{formatShortDate(interaction.createdAt)}</div>
-              <div>{translateInstant("issueThreadInteraction.proposedBy", { defaultValue: "proposed by {{name}}", name: createdByLabel })}</div>
+              <div className="font-medium text-foreground">
+                {formatShortDate(interaction.createdAt)}
+              </div>
+              <div>
+                {t("issueThreadInteraction.proposedBy")} {createdByLabel}
+              </div>
             </div>
           </TooltipTrigger>
           <TooltipContent side="bottom" className="text-xs">
-            {translateInstant("issueThreadInteraction.createdAt", { defaultValue: "Created {{date}}", date: formatDateTime(interaction.createdAt) })}
+            {t("issueProperties.created")}{" "}
+            {formatDateTime(interaction.createdAt)}
           </TooltipContent>
         </Tooltip>
       </div>
@@ -3352,7 +3601,9 @@ export function IssueThreadInteractionCard({
             onRejectInteraction={onRejectInteraction}
             externalReferences={externalReferences}
           />
-        ) : isToolAction && interaction.kind === "request_confirmation" && toolActionState ? (
+        ) : isToolAction &&
+          interaction.kind === "request_confirmation" &&
+          toolActionState ? (
           <RequestToolActionCard
             interaction={interaction}
             state={toolActionState}
@@ -3382,12 +3633,10 @@ export function IssueThreadInteractionCard({
 
       {resolvedByLabel && !isToolAction ? (
         <div className="mt-4 border-t border-border/60 pt-3 text-xs text-muted-foreground">
-          {translateInstant("issueThreadInteraction.resolvedBy", { defaultValue: "Resolved by {{name}}", name: resolvedByLabel ?? "" })}
+          {t("issueThreadInteraction.resolvedBy")}{" "}
+          <span className="font-medium text-foreground">{resolvedByLabel}</span>
           {interaction.resolvedAt
-            ? translateInstant("issueThreadInteraction.resolvedOn", {
-              date: formatShortDate(interaction.resolvedAt),
-              defaultValue: " on {{date}}",
-            })
+            ? ` on ${formatShortDate(interaction.resolvedAt)}`
             : ""}
         </div>
       ) : null}

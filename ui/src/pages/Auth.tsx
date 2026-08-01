@@ -1,15 +1,15 @@
+import { useTranslation } from "react-i18next";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "@/lib/router";
 import { authApi } from "../api/auth";
 import { queryKeys } from "../lib/queryKeys";
 import { getRememberedInvitePath } from "../lib/invite-memory";
 import { Button } from "@/components/ui/button";
 import { AsciiArtAnimation } from "@/components/AsciiArtAnimation";
+import { PaperclipLoading } from "@/components/AnimatedPaperclipIcon";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Sparkles } from "lucide-react";
-import { BRAND_NAME } from "../lib/branding";
 
 type AuthMode = "sign_in" | "sign_up";
 
@@ -57,23 +57,26 @@ export function AuthPage() {
       setError(null);
       await queryClient.invalidateQueries({ queryKey: queryKeys.auth.session });
       await queryClient.invalidateQueries({ queryKey: queryKeys.health });
-      await queryClient.invalidateQueries({ queryKey: queryKeys.companies.all });
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.companies.all,
+      });
       navigate(nextPath, { replace: true });
     },
     onError: (err) => {
-      setError(err instanceof Error ? err.message : t("auth.authenticationFailed"));
+      setError(err instanceof Error ? err.message : "Authentication failed");
     },
   });
 
   const canSubmit =
     email.trim().length > 0 &&
     password.trim().length > 0 &&
-    (mode === "sign_in" || (name.trim().length > 0 && password.trim().length >= 8));
+    (mode === "sign_in" ||
+      (name.trim().length > 0 && password.trim().length >= 8));
 
   if (isSessionLoading) {
     return (
       <div className="fixed inset-0 flex items-center justify-center">
-        <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
+        <PaperclipLoading className="min-h-0" />
       </div>
     );
   }
@@ -88,27 +91,33 @@ export function AuthPage() {
         <div className="w-full max-w-md mx-auto my-auto px-8 py-12">
           <div className="flex items-center gap-2 mb-8">
             <Sparkles className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium">{BRAND_NAME}</span>
+            <span className="text-sm font-medium">Paperclip</span>
           </div>
 
           <h1 className="text-xl font-semibold">
-            {mode === "sign_in" ? t("auth.title.signIn") : t("auth.title.signUp")}
+            {mode === "sign_in"
+              ? "Sign in to Paperclip"
+              : "Create your Paperclip account"}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {mode === "sign_in"
-              ? t("auth.subtitle.signIn")
-              : t("auth.subtitle.signUp")}
+              ? "Use your email and password to access this instance."
+              : "Create an account for this instance. Email confirmation is not required in v1."}
           </p>
 
           <form
             className="mt-6 space-y-4"
             method="post"
-            action={mode === "sign_up" ? "/api/auth/sign-up/email" : "/api/auth/sign-in/email"}
+            action={
+              mode === "sign_up"
+                ? "/api/auth/sign-up/email"
+                : "/api/auth/sign-in/email"
+            }
             onSubmit={(event) => {
               event.preventDefault();
               if (mutation.isPending) return;
               if (!canSubmit) {
-                setError(t("auth.requiredFields"));
+                setError("Please fill in all required fields.");
                 return;
               }
               mutation.mutate();
@@ -116,7 +125,12 @@ export function AuthPage() {
           >
             {mode === "sign_up" && (
               <div>
-                <label htmlFor="name" className="text-xs text-muted-foreground mb-1 block">{t("auth.name")}</label>
+                <label
+                  htmlFor="name"
+                  className="text-xs text-muted-foreground mb-1 block"
+                >
+                  {t("auth.name")}
+                </label>
                 <input
                   id="name"
                   name="name"
@@ -133,7 +147,12 @@ export function AuthPage() {
               </div>
             )}
             <div>
-              <label htmlFor="email" className="text-xs text-muted-foreground mb-1 block">{t("auth.email")}</label>
+              <label
+                htmlFor="email"
+                className="text-xs text-muted-foreground mb-1 block"
+              >
+                {t("auth.email")}
+              </label>
               <input
                 id="email"
                 name="email"
@@ -150,7 +169,12 @@ export function AuthPage() {
               />
             </div>
             <div>
-              <label htmlFor="password" className="text-xs text-muted-foreground mb-1 block">{t("auth.password")}</label>
+              <label
+                htmlFor="password"
+                className="text-xs text-muted-foreground mb-1 block"
+              >
+                {t("auth.password")}
+              </label>
               <input
                 id="password"
                 name="password"
@@ -158,7 +182,9 @@ export function AuthPage() {
                 type="password"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
-                autoComplete={mode === "sign_in" ? "current-password" : "new-password"}
+                autoComplete={
+                  mode === "sign_in" ? "current-password" : "new-password"
+                }
                 required
                 aria-required="true"
                 aria-invalid={error ? true : undefined}
@@ -177,15 +203,17 @@ export function AuthPage() {
               className={`w-full ${!canSubmit && !mutation.isPending ? "opacity-50" : ""}`}
             >
               {mutation.isPending
-                ? t("common.working")
+                ? "Working…"
                 : mode === "sign_in"
-                  ? t("auth.submit.signIn")
-                  : t("auth.submit.signUp")}
+                  ? "Sign In"
+                  : "Create Account"}
             </Button>
           </form>
 
           <div className="mt-5 text-sm text-muted-foreground">
-            {mode === "sign_in" ? t("auth.needAccount") : t("auth.haveAccount")}{" "}
+            {mode === "sign_in"
+              ? "Need an account?"
+              : "Already have an account?"}{" "}
             <button
               type="button"
               className="font-medium text-foreground underline underline-offset-2"
@@ -194,7 +222,7 @@ export function AuthPage() {
                 setMode(mode === "sign_in" ? "sign_up" : "sign_in");
               }}
             >
-              {mode === "sign_in" ? t("auth.createOne") : t("auth.signInLink")}
+              {mode === "sign_in" ? "Create one" : "Sign in"}
             </button>
           </div>
         </div>
