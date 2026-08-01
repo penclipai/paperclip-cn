@@ -2606,6 +2606,9 @@ describe("ACPX engine remote managed-home seam (PR 2: per-adapter home seed)", (
 });
 
 describe("ACPX engine remote session-lifecycle re-staging (PR 3: stage once / reuse on compatible resume)", () => {
+  const remoteIt = (name: string, testFn: () => void | Promise<void>) =>
+    it(name, testFn, REMOTE_SANDBOX_TEST_TIMEOUT_MS);
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -2683,7 +2686,7 @@ describe("ACPX engine remote session-lifecycle re-staging (PR 3: stage once / re
     };
   }
 
-  it("test_acp_resume_compatible_session_does_not_restage", async () => {
+  remoteIt("test_acp_resume_compatible_session_does_not_restage", async () => {
     const { stateDir, localCwd, remoteCwd, executionTarget } = await setupRemoteSandbox();
     const ensureInputs: Array<Record<string, unknown>> = [];
     const execute = createAcpxEngineExecutor({
@@ -2712,7 +2715,7 @@ describe("ACPX engine remote session-lifecycle re-staging (PR 3: stage once / re
     expect(ensureInputs[1]?.resumeSessionId).toBe(first.sessionId);
   });
 
-  it("test_acp_resume_incompatible_fingerprint_stages_fresh", async () => {
+  remoteIt("test_acp_resume_incompatible_fingerprint_stages_fresh", async () => {
     const { stateDir, localCwd, remoteCwd, executionTarget } = await setupRemoteSandbox();
     const ensureInputs: Array<Record<string, unknown>> = [];
     const execute = createAcpxEngineExecutor({
@@ -2744,7 +2747,7 @@ describe("ACPX engine remote session-lifecycle re-staging (PR 3: stage once / re
     expect(ensureInputs[1]?.resumeSessionId).toBeUndefined();
   });
 
-  it("test_warm_handle_scoped_per_fingerprint_no_cross_session_credential_reuse", async () => {
+  remoteIt("test_warm_handle_scoped_per_fingerprint_no_cross_session_credential_reuse", async () => {
     const { root, stateDir, localCwd, executionTarget } = await setupRemoteSandbox();
     const ensureInputs: Array<Record<string, unknown>> = [];
     // Two managed homes, one per session, each carrying a distinct credential
@@ -2796,7 +2799,7 @@ describe("ACPX engine remote session-lifecycle re-staging (PR 3: stage once / re
     await expect(fs.readFile(path.join(bHome, "auth.json"), "utf8")).resolves.toContain("SECRET-B");
   });
 
-  it("test_acp_failed_turn_evicts_staged_runtime_so_resume_restages", async () => {
+  remoteIt("test_acp_failed_turn_evicts_staged_runtime_so_resume_restages", async () => {
     const { stateDir, localCwd, executionTarget } = await setupRemoteSandbox();
     const ensureInputs: Array<Record<string, unknown>> = [];
     const execute = createAcpxEngineExecutor({
@@ -2834,7 +2837,7 @@ describe("ACPX engine remote session-lifecycle re-staging (PR 3: stage once / re
   // that shares company/agent/task/fingerprint (hence sessionKey) with a prior
   // run but carries NO sessionParams starts a new ACP session — it must NOT
   // inherit the prior session's staged workspace + managed home.
-  it("test_acp_reuse_requires_compatible_resume_not_just_session_key", async () => {
+  remoteIt("test_acp_reuse_requires_compatible_resume_not_just_session_key", async () => {
     const { stateDir, localCwd, remoteCwd, executionTarget } = await setupRemoteSandbox();
     const ensureInputs: Array<Record<string, unknown>> = [];
     let seamCalls = 0;
@@ -2870,7 +2873,7 @@ describe("ACPX engine remote session-lifecycle re-staging (PR 3: stage once / re
   // fire on every run (incl. a reused resume) while the one-time host staged-temp
   // cleanup must NOT fire between clean runs — otherwise the reused staged runtime
   // would be invalidated before the next resume.
-  it("test_reused_resume_copies_back_per_run_without_disposing_staged_temp", async () => {
+  remoteIt("test_reused_resume_copies_back_per_run_without_disposing_staged_temp", async () => {
     const { stateDir, localCwd, executionTarget } = await setupRemoteSandbox();
     const ensureInputs: Array<Record<string, unknown>> = [];
     let teardownCalls = 0;
@@ -2916,7 +2919,7 @@ describe("ACPX engine remote session-lifecycle re-staging (PR 3: stage once / re
   // The one-time dispose DOES fire when the staged runtime is actually dropped
   // (here: a failed turn), releasing the host staged-temp — the copy-back also
   // still fires on the failure path.
-  it("test_dropped_staged_runtime_disposes_host_temp", async () => {
+  remoteIt("test_dropped_staged_runtime_disposes_host_temp", async () => {
     const { stateDir, localCwd, executionTarget } = await setupRemoteSandbox();
     const ensureInputs: Array<Record<string, unknown>> = [];
     let teardownCalls = 0;
@@ -2946,7 +2949,7 @@ describe("ACPX engine remote session-lifecycle re-staging (PR 3: stage once / re
     expect(disposeCalls).toBe(1);
   });
 
-  it("test_idle_staged_runtime_cleanup_waits_for_active_turn_release", async () => {
+  remoteIt("test_idle_staged_runtime_cleanup_waits_for_active_turn_release", async () => {
     const { stateDir, localCwd, executionTarget } = await setupRemoteSandbox();
     const events: string[] = [];
     let currentNow = 0;
@@ -3034,7 +3037,7 @@ describe("ACPX engine remote session-lifecycle re-staging (PR 3: stage once / re
   // Superseding an incompatible session that collides on sessionKey re-stages
   // fresh AND releases the superseded entry's host staged-temp (no leak, no
   // reuse of the old session's staged credentials).
-  it("test_incompatible_restage_disposes_superseded_staged_temp", async () => {
+  remoteIt("test_incompatible_restage_disposes_superseded_staged_temp", async () => {
     const { stateDir, localCwd, executionTarget } = await setupRemoteSandbox();
     const ensureInputs: Array<Record<string, unknown>> = [];
     const disposedRunIds: string[] = [];
@@ -3066,7 +3069,7 @@ describe("ACPX engine remote session-lifecycle re-staging (PR 3: stage once / re
   // of the same session key must not ship into the same remote workspace at once.
   // The per-key staging lock serializes the stage-or-reuse section, so their
   // staging windows never overlap.
-  it("test_concurrent_same_session_staging_is_serialized", async () => {
+  remoteIt("test_concurrent_same_session_staging_is_serialized", async () => {
     const { stateDir, localCwd, executionTarget } = await setupRemoteSandbox();
     const ensureInputs: Array<Record<string, unknown>> = [];
     const events: string[] = [];
@@ -3107,7 +3110,7 @@ describe("ACPX engine remote session-lifecycle re-staging (PR 3: stage once / re
   // Greptile P1 "Lock Ends Before Use": a same-session re-stage must wait for
   // the prior run's active turn and cleanup to finish before it can touch the
   // staged remote workspace again.
-  it("test_concurrent_same_session_staging_waits_for_active_turn_cleanup", async () => {
+  remoteIt("test_concurrent_same_session_staging_waits_for_active_turn_cleanup", async () => {
     const { stateDir, localCwd, executionTarget } = await setupRemoteSandbox();
     const events: string[] = [];
     let releaseTurn!: () => void;
@@ -3164,14 +3167,14 @@ describe("ACPX engine remote session-lifecycle re-staging (PR 3: stage once / re
 
     expect(events).toContain("enter:run-b");
     expect(events.indexOf("enter:run-b")).toBeGreaterThan(events.indexOf("run-a-finished"));
-  }, REMOTE_SANDBOX_TEST_TIMEOUT_MS);
+  });
 
   // The per-session lease must be released when a run is abandoned before it
   // reaches the executor's cleanup (e.g. staging or a bridge fails to start),
   // otherwise the next run of the same session waits on the lease forever. Here
   // the first run's staging throws; the second run of the same session must
   // still acquire the lease and stage instead of deadlocking.
-  it("test_failed_staging_releases_lease_so_next_same_session_run_proceeds", async () => {
+  remoteIt("test_failed_staging_releases_lease_so_next_same_session_run_proceeds", async () => {
     const { stateDir, localCwd, executionTarget } = await setupRemoteSandbox();
     const events: string[] = [];
     let failNextStaging = true;
