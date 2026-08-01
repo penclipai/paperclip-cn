@@ -11,8 +11,9 @@ import {
 } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { delimiter, join } from "node:path";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
 
 import cliEsbuildConfig from "../cli/esbuild.config.mjs";
 import { bundledCliNpmDependencies } from "./cli-bundled-npm-dependencies.mjs";
@@ -112,56 +113,60 @@ test("bundled package staging rebuilds npm dependencies and applies the acpx pat
   writeFileSync(callLog, "");
   t.after(() => rmSync(fixtureDir, { recursive: true, force: true }));
 
-  const writeExecutable = (name, body) => {
-    writeFileSync(join(binDir, name), body, { mode: 0o755 });
+  const writeNodeTool = (name, body) => {
+    const scriptPath = join(binDir, `${name}.mjs`);
+    writeFileSync(scriptPath, body);
+    const shimPath = join(binDir, process.platform === "win32" ? `${name}.cmd` : name);
+    const shim = process.platform === "win32"
+      ? `@"${process.execPath}" "${scriptPath}" %*\r\n`
+      : `#!/bin/sh\nexec ${JSON.stringify(process.execPath)} ${JSON.stringify(scriptPath)} "$@"\n`;
+    writeFileSync(shimPath, shim, { mode: 0o755 });
   };
-  writeExecutable(
+  writeNodeTool(
     "pnpm",
-    `#!/usr/bin/env bash
-set -euo pipefail
-printf 'pnpm %s\\n' "$*" >> "$FAKE_CALL_LOG"
-destination="\${!#}"
-cp "$FAKE_SOURCE_PACKAGE" "$destination/package.json"
-mkdir -p "$destination/node_modules/.pnpm"
+    `import { appendFileSync, copyFileSync, mkdirSync } from "node:fs";
+import { join } from "node:path";
+const args = process.argv.slice(2);
+appendFileSync(process.env.FAKE_CALL_LOG, \`pnpm \${args.join(" ").replaceAll("\\\\", "/")}\\n\`);
+const destination = args.at(-1);
+copyFileSync(process.env.FAKE_SOURCE_PACKAGE, join(destination, "package.json"));
+mkdirSync(join(destination, "node_modules", ".pnpm"), { recursive: true });
 `,
   );
-  writeExecutable(
+  writeNodeTool(
     "npm",
-    `#!/usr/bin/env bash
-set -euo pipefail
-printf 'npm %s\\n' "$*" >> "$FAKE_CALL_LOG"
-[ "$*" = "install --omit=dev --ignore-scripts --no-audit --no-fund" ]
-mkdir -p node_modules/acpx/dist
-printf 'unpatched runtime\\n' > node_modules/acpx/dist/runtime.js
+    `import assert from "node:assert/strict";
+import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+const args = process.argv.slice(2);
+appendFileSync(process.env.FAKE_CALL_LOG, \`npm \${args.join(" ")}\\n\`);
+assert.deepEqual(args, ["install", "--omit=dev", "--ignore-scripts", "--no-audit", "--no-fund"]);
+mkdirSync(join("node_modules", "acpx", "dist"), { recursive: true });
+writeFileSync(join("node_modules", "acpx", "dist", "runtime.js"), "unpatched runtime\\n");
 `,
   );
-  writeExecutable(
+  writeNodeTool(
     "patch",
-    `#!/usr/bin/env bash
-set -euo pipefail
-printf 'patch %s\\n' "$*" >> "$FAKE_CALL_LOG"
-target=""
-while [ "$#" -gt 0 ]; do
-  if [ "$1" = "-d" ]; then
-    target="$2"
-    shift 2
-  else
-    shift
-  fi
-done
-patch_input="$(cat)"
-grep -q onAgentStderr <<< "$patch_input"
-printf 'patched onAgentStderr runtime\\n' > "$target/dist/runtime.js"
+    `import assert from "node:assert/strict";
+import { appendFileSync, readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+const args = process.argv.slice(2);
+appendFileSync(process.env.FAKE_CALL_LOG, \`patch \${args.join(" ").replaceAll("\\\\", "/")}\\n\`);
+const targetIndex = args.indexOf("-d") + 1;
+assert.ok(targetIndex > 0 && args[targetIndex]);
+assert.match(readFileSync(0, "utf8"), /onAgentStderr/);
+const target = args[targetIndex].replace(/^"(.*)"$/, "$1");
+writeFileSync(join(target, "dist", "runtime.js"), "patched onAgentStderr runtime\\n");
 `,
   );
 
   execFileSync(
     process.execPath,
-    [new URL("./prepare-bundled-package.mjs", import.meta.url).pathname, sourceDir, destinationDir],
+    [fileURLToPath(new URL("./prepare-bundled-package.mjs", import.meta.url)), sourceDir, destinationDir],
     {
       env: {
         ...process.env,
-        PATH: `${binDir}:${process.env.PATH}`,
+        PATH: `${binDir}${delimiter}${process.env.PATH ?? ""}`,
         FAKE_CALL_LOG: callLog,
         FAKE_SOURCE_PACKAGE: join(sourceDir, "package.json"),
       },

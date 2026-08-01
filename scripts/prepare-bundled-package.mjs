@@ -7,6 +7,20 @@ import { fileURLToPath } from "node:url";
 
 const repoRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
 
+function quoteCmdArg(value) {
+  if (/^[A-Za-z0-9_/:=.,@+-]+$/.test(value)) return value;
+  return `"${value.replace(/"/g, '""')}"`;
+}
+
+function execToolSync(command, args, options) {
+  if (process.platform !== "win32") {
+    return execFileSync(command, args, options);
+  }
+
+  const commandLine = [command, ...args].map(quoteCmdArg).join(" ");
+  return execFileSync(process.env.ComSpec?.trim() || "cmd.exe", ["/d", "/s", "/c", commandLine], options);
+}
+
 export function materializePublishManifest(pkg) {
   const publishConfig = pkg.publishConfig ?? {};
   const publishManifest = { ...pkg };
@@ -60,7 +74,7 @@ export function applyBundledDependencyPatches(destinationDir, bundledDependencie
     const packageName = patchedDependencyPackageName(specifier);
     if (!bundledDependencyNames.has(packageName)) continue;
 
-    execFileSync(
+    execToolSync(
       "patch",
       ["-p1", "--forward", "-d", resolve(destinationDir, "node_modules", packageName)],
       {
@@ -95,7 +109,7 @@ export function prepareBundledPackage(sourceDir, destinationDir) {
   const installManifest = createBundledInstallManifest(publishManifest, bundledDependencies);
   writeFileSync(deployedPackagePath, `${JSON.stringify(installManifest, null, 2)}\n`);
 
-  execFileSync(
+  execToolSync(
     "npm",
     ["install", "--omit=dev", "--ignore-scripts", "--no-audit", "--no-fund"],
     { cwd: destinationDir, stdio: "inherit" },
