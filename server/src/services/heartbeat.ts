@@ -263,6 +263,7 @@ import {
   touchHeartbeatRunRuntimeStatus,
 } from "./heartbeat-run-runtime-status.js";
 import {
+  findMissingHotRestartSnapshotRunIds,
   readHotRestartIntent,
   removeHotRestartIntent,
   shouldHonorHotRestartIntentForProcess,
@@ -9727,12 +9728,19 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
 
     if (!intent.shutdownSnapshot) {
       logger.warn(
-        { previousServerPid: intent.previousServerPid },
+        {
+          previousServerPid: intent.previousServerPid,
+          preflightActiveRunIds: intent.preflightActiveRunIds,
+        },
         "hot-restart intent present but shutdown snapshot is missing; no runs can be adopted",
       );
     }
     const candidates = intent.shutdownSnapshot?.activeRuns ?? [];
-    const currentRows = candidates.length > 0
+    const missingSnapshotRunIds = findMissingHotRestartSnapshotRunIds(intent);
+    const reconciliationRunIds = [
+      ...new Set([...candidates.map((run) => run.runId), ...missingSnapshotRunIds]),
+    ];
+    const currentRows = reconciliationRunIds.length > 0
       ? await db
         .select({
           run: heartbeatRuns,
@@ -9740,7 +9748,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         })
         .from(heartbeatRuns)
         .innerJoin(agents, eq(heartbeatRuns.agentId, agents.id))
-        .where(inArray(heartbeatRuns.id, candidates.map((run) => run.runId)))
+        .where(inArray(heartbeatRuns.id, reconciliationRunIds))
       : [];
     const currentByRunId = new Map(currentRows.map((row) => [row.run.id, row]));
 
@@ -9763,6 +9771,28 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       else if (classification === "lost") lostRunIds.push(candidate.runId);
       else skippedRunIds.push(candidate.runId);
     };
+
+    for (const runId of missingSnapshotRunIds) {
+      const current = currentByRunId.get(runId);
+      if (!current) {
+        finalizedWhileDownRunIds.push(runId);
+        continue;
+      }
+
+      const candidate = toHotRestartIntentRun(current);
+      if (current.run.status !== "running") {
+        classify(candidate, "finalized_while_down", `run_status_${current.run.status}`);
+      } else {
+        classify(candidate, "lost", "missing_shutdown_snapshot");
+      }
+    }
+
+    if (lostRunIds.length > 0) {
+      logger.error(
+        { previousServerPid: intent.previousServerPid, lostRunIds },
+        "hot-restart shutdown snapshot omitted live preflight runs; reporting them as lost",
+      );
+    }
 
     for (const candidate of candidates) {
       const current = currentByRunId.get(candidate.runId);
@@ -9874,7 +9904,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
       skippedRunIds,
       runs: reportRuns,
     });
-    await removeHotRestartIntent();
+    await removeHotRestartIntent(undefined, intent);
 
     logger.info(
       {
@@ -9883,6 +9913,7 @@ export function heartbeatService(db: Db, options: HeartbeatServiceOptions = {}) 
         adoptedRunIds,
         finalizedWhileDownRunIds,
         lostRunIds,
+        missingSnapshotRunIds,
         skippedRunIds,
       },
       "hot-restart adoption report written",
