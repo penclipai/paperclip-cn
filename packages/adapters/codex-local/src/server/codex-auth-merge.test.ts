@@ -15,6 +15,7 @@ import {
 import { buildCodexAuthInboundProvision } from "./codex-auth-merge-scripts.js";
 
 const execFile = promisify(execFileCallback);
+const CODEX_AUTH_SHELL_TEST_TIMEOUT_MS = process.platform === "win32" ? 30_000 : 5_000;
 
 function resolveTestPosixShellCommand() {
   if (process.platform !== "win32") return "/bin/sh";
@@ -65,6 +66,9 @@ function expectPosixMode(actual: number, expected: number, message?: string): vo
 }
 
 describe("codex home auth merge on sandbox asset extract", () => {
+  const shellIt = (name: string, testFn: () => void | Promise<void>) =>
+    it(name, testFn, CODEX_AUTH_SHELL_TEST_TIMEOUT_MS);
+
   const cleanupDirs: string[] = [];
 
   afterEach(async () => {
@@ -211,7 +215,7 @@ describe("codex home auth merge on sandbox asset extract", () => {
     };
   }
 
-  it("keeps a newer same-account sandbox auth.json and installs it atomically with mode 0600", async () => {
+  shellIt("keeps a newer same-account sandbox auth.json and installs it atomically with mode 0600", async () => {
     const sandboxAuth = subscriptionAuth({
       accountId: "acct-same",
       lastRefresh: "2026-07-09T02:00:00Z",
@@ -238,7 +242,7 @@ describe("codex home auth merge on sandbox asset extract", () => {
     expect(result.writtenPaths.some((entry) => entry.endsWith("codex-auth-merge-decision.cjs"))).toBe(true);
   });
 
-  it("installs same-account host auth when host last_refresh is strictly newer", async () => {
+  shellIt("installs same-account host auth when host last_refresh is strictly newer", async () => {
     const sandboxAuth = subscriptionAuth({
       accountId: "acct-same",
       lastRefresh: "2026-07-09T01:00:00Z",
@@ -256,7 +260,7 @@ describe("codex home auth merge on sandbox asset extract", () => {
     expectPosixMode(result.finalMode, 0o600);
   });
 
-  it("installs host auth on identity mismatch, auth-mode mismatch, apikey mode, and unusable sandbox auth", async () => {
+  shellIt("installs host auth on identity mismatch, auth-mode mismatch, apikey mode, and unusable sandbox auth", async () => {
     const cases = [
       {
         name: "identity mismatch",
@@ -313,7 +317,7 @@ describe("codex home auth merge on sandbox asset extract", () => {
     }
   });
 
-  it("keeps host auth when the sandbox copy is not strictly newer (equal, missing, or unparseable freshness)", async () => {
+  shellIt("keeps host auth when the sandbox copy is not strictly newer (equal, missing, or unparseable freshness)", async () => {
     // The extract path stages the sandbox copy as `source` and the host copy as
     // `destination`. The decision predicate only adopts the source when it is
     // strictly fresher, so a tie, a missing last_refresh on either side, or an
@@ -394,7 +398,7 @@ describe("codex home auth merge on sandbox asset extract", () => {
     }
   });
 
-  it("installs unusable host auth instead of serving leftover sandbox auth", async () => {
+  shellIt("installs unusable host auth instead of serving leftover sandbox auth", async () => {
     const sandboxAuth = subscriptionAuth({
       accountId: "acct-a",
       lastRefresh: "2026-07-09T03:00:00Z",
@@ -435,7 +439,7 @@ describe("codex home auth merge on sandbox asset extract", () => {
     }
   });
 
-  it("falls back to the sandbox image's own login when neither host nor prior asset has auth", async () => {
+  shellIt("falls back to the sandbox image's own login when neither host nor prior asset has auth", async () => {
     const imageAuth = subscriptionAuth({
       accountId: "acct-image",
       lastRefresh: "2026-07-01T00:00:00Z",
@@ -449,7 +453,7 @@ describe("codex home auth merge on sandbox asset extract", () => {
     expectPosixMode(result.finalMode, 0o600);
   });
 
-  it("prefers shipped host auth over the image's own login", async () => {
+  shellIt("prefers shipped host auth over the image's own login", async () => {
     const hostAuth = subscriptionAuth({
       accountId: "acct-host",
       lastRefresh: "2026-07-02T00:00:00Z",
@@ -468,7 +472,7 @@ describe("codex home auth merge on sandbox asset extract", () => {
     expect(result.finalAuth).toBe(hostAuth);
   });
 
-  it("prefers a preserved newer prior-lease credential over the image's own login", async () => {
+  shellIt("prefers a preserved newer prior-lease credential over the image's own login", async () => {
     const hostAuth = subscriptionAuth({
       accountId: "acct-1",
       lastRefresh: "2026-07-01T00:00:00Z",
@@ -493,7 +497,7 @@ describe("codex home auth merge on sandbox asset extract", () => {
     expect(result.finalAuth).toBe(sandboxAuth);
   });
 
-  it("routes the Codex home asset through a single native syncIn operation whose post-command is the auth-merge (#4, C5/C6)", async () => {
+  shellIt("routes the Codex home asset through a single native syncIn operation whose post-command is the auth-merge (#4, C5/C6)", async () => {
     const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-codex-native-route-"));
     cleanupDirs.push(rootDir);
     const localWorkspaceDir = path.join(rootDir, "local-workspace");

@@ -317,6 +317,9 @@ function buildContext(root: string, overrides: Partial<AdapterExecutionContext> 
 }
 
 describe("codex_local ACP lane", () => {
+  const remoteIt = (name: string, testFn: () => void | Promise<void>) =>
+    it(name, testFn, REMOTE_ACP_TEST_TIMEOUT_MS);
+
   it("defaults to ACP when prerequisites pass and falls back to CLI only for auto resolution", async () => {
     const root = await makeTempRoot("paperclip-codex-acp-default-");
     const commandPath = path.join(root, "bin", "codex-acp");
@@ -633,7 +636,7 @@ describe("codex_local ACP lane", () => {
     });
   });
 
-  it("creates the ACP session on the in-sandbox workspace cwd for runner-backed remote runs", async () => {
+  remoteIt("creates the ACP session on the in-sandbox workspace cwd for runner-backed remote runs", async () => {
     const root = await makeTempRoot("paperclip-codex-acp-remote-cwd-");
     const localCwd = path.join(root, "worktree");
     const remoteCwd = path.join(root, "remote-workspace");
@@ -684,9 +687,9 @@ describe("codex_local ACP lane", () => {
     await expect(fs.readFile(path.join(remoteCwd, "hello.txt"), "utf8")).resolves.toBe("hi");
     expect(runtimes[0]?.ensureInputs[0]?.cwd).toBe(remoteCwd);
     expect(runtimes[0]?.ensureInputs[0]?.cwd).not.toBe(localCwd);
-  }, REMOTE_ACP_TEST_TIMEOUT_MS);
+  });
 
-  it("seeds the managed Codex home into the sandbox and repoints CODEX_HOME to the in-sandbox path", async () => {
+  remoteIt("seeds the managed Codex home into the sandbox and repoints CODEX_HOME to the in-sandbox path", async () => {
     const root = await makeTempRoot("paperclip-codex-acp-home-seed-");
     const localCwd = path.join(root, "worktree");
     const remoteCwd = path.join(root, "remote-workspace");
@@ -754,7 +757,7 @@ describe("codex_local ACP lane", () => {
     expect(Object.keys(meta[0]?.env ?? {}).filter((key) => key.startsWith("XDG_"))).toEqual([]);
   });
 
-  it("copies a strictly-newer sandbox Codex auth back to the shared host on teardown", async () => {
+  remoteIt("copies a strictly-newer sandbox Codex auth back to the shared host on teardown", async () => {
     const root = await makeTempRoot("paperclip-codex-acp-copyback-newer-");
     const localCwd = path.join(root, "worktree");
     const remoteCwd = path.join(root, "remote-workspace");
@@ -818,7 +821,7 @@ describe("codex_local ACP lane", () => {
     expectPosixMode(mode, 0o600);
   });
 
-  it("keeps the shared host Codex auth when the sandbox copy is not strictly newer", async () => {
+  remoteIt("keeps the shared host Codex auth when the sandbox copy is not strictly newer", async () => {
     const root = await makeTempRoot("paperclip-codex-acp-copyback-older-");
     const localCwd = path.join(root, "worktree");
     const remoteCwd = path.join(root, "remote-workspace");
@@ -877,7 +880,7 @@ describe("codex_local ACP lane", () => {
     expect(hostAuth.tokens.refresh_token).toBe("ref-host-newer");
   });
 
-  it("keeps the host staged Codex home after a clean teardown so a compatible resume can reuse it", async () => {
+  remoteIt("keeps the host staged Codex home after a clean teardown so a compatible resume can reuse it", async () => {
     // Session-re-staging guardrail: the per-run copy-back (`teardown`) must NOT
     // remove the host staged-home temp dir — that removal moved to the one-time
     // `disposeStaged`, fired only when the runtime is dropped. So after a CLEAN
@@ -956,7 +959,7 @@ describe("codex_local ACP lane", () => {
     await Promise.all(stagedDirs.map((dir) => fs.rm(dir, { recursive: true, force: true })));
   });
 
-  it("removes the host staged Codex home when a failed turn drops the staged runtime", async () => {
+  remoteIt("removes the host staged Codex home when a failed turn drops the staged runtime", async () => {
     // The complementary guardrail: when the staged runtime IS dropped (here, a
     // failed turn), the one-time `disposeStaged` fires and removes the host
     // staged-home temp dir — while the per-run copy-back (`teardown`) STILL fires
