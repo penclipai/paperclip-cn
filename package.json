@@ -12,6 +12,8 @@
     "dev:stop": "node scripts/run-with-tsx.mjs scripts/dev-service.ts stop",
     "dev:server": "pnpm --filter @penclipai/server dev",
     "dev:ui": "pnpm --filter @penclipai/ui dev",
+    "dev:mobile": "pnpm --filter @penclipai/ui build && pnpm --filter @penclipai/ui preview",
+    "dev:both": "node scripts/dev-both.mjs",
     "desktop:dev": "pnpm --filter @penclipai/desktop-electron run dev",
     "desktop:build": "pnpm --filter @penclipai/desktop-electron run build",
     "desktop:build:release": "pnpm --filter @penclipai/desktop-electron run build:release",

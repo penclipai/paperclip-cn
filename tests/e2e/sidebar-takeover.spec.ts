@@ -26,13 +26,13 @@ const BASE_URL = `http://127.0.0.1:${PORT}`;
 const COMPANY_NAME_PREFIX = "E2E-SidebarTakeover";
 const COLLAPSED_STORAGE_KEY = "paperclip.sidebar.collapsed";
 
-// The sidebar header's "Open search" control only renders when the app sidebar
-// is expanded (pinned or peeking); in the collapsed rail it is hidden to fit
-// the 64px width. Its presence/absence is therefore a stable proxy for the
-// app sidebar's collapsed state (see Sidebar.tsx).
-const APP_SIDEBAR_EXPANDED_MARKER = /Open search|打开搜索/;
-const DASHBOARD_LINK_NAME = /Dashboard|仪表盘/;
-const ENVIRONMENTS_LABEL = /^(Environments|环境)$/;
+// The sidebar header's "Collapse sidebar" toggle only renders when the app
+// sidebar is expanded (pinned, desktop, not takeover-locked); in the collapsed
+// rail and on takeover routes it is hidden. Its presence/absence is therefore
+// a stable proxy for the app sidebar's collapsed state (see Sidebar.tsx).
+// (Previously "Open search", but the header search icon moved into the nav,
+// where it renders in the rail too.)
+const APP_SIDEBAR_EXPANDED_MARKER = "Collapse sidebar";
 
 async function createCompany(board: APIRequestContext): Promise<{ id: string; prefix: string }> {
   const healthRes = await board.get(`${BASE_URL}/api/health`);
@@ -92,7 +92,7 @@ test.describe("Sidebar takeover (collapse + secondary pane)", () => {
     expect(secondaryBox!.width).toBeGreaterThan(180);
 
     // The app sidebar is NOT replaced — its company nav still renders...
-    await expect(page.getByRole("link", { name: DASHBOARD_LINK_NAME })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Dashboard" })).toBeVisible();
 
     // ...but it is collapsed to its rail: the expanded-only "Open search"
     // header control is hidden.
@@ -114,7 +114,7 @@ test.describe("Sidebar takeover (collapse + secondary pane)", () => {
 
     // ...yet a settings nav label renders at its full text width, not clipped to
     // zero. "Environments" is unique to the company-settings nav.
-    const envLabel = secondary.getByText(ENVIRONMENTS_LABEL);
+    const envLabel = secondary.getByText("Environments", { exact: true });
     await expect(envLabel).toBeVisible();
     const labelBox = await envLabel.boundingBox();
     expect(labelBox).not.toBeNull();

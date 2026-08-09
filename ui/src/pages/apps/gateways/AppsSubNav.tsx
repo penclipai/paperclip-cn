@@ -1,13 +1,12 @@
 import { Link } from "@/lib/router";
-import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
 type SubNavKey = "connected" | "gateways" | "activity";
 
-const ITEMS: { key: SubNavKey; defaultLabel: string; href: string }[] = [
-  { key: "connected", defaultLabel: "Connected", href: "/apps" },
-  { key: "gateways", defaultLabel: "Gateways", href: "/apps/gateways" },
-  { key: "activity", defaultLabel: "Activity", href: "/activity" },
+const ITEMS: { key: SubNavKey; label: string; href: string }[] = [
+  { key: "connected", label: "Connected", href: "/apps/connections" },
+  { key: "gateways", label: "Gateways", href: "/apps/gateways" },
+  { key: "activity", label: "Activity", href: "/activity" },
 ];
 
 /**
@@ -16,13 +15,8 @@ const ITEMS: { key: SubNavKey; defaultLabel: string; href: string }[] = [
  * design of record, rather than buried under the Advanced developer door.
  */
 export function AppsSubNav({ active }: { active: SubNavKey }) {
-  const { t } = useTranslation();
-
   return (
-    <nav
-      className="flex items-center gap-6 border-b border-border text-sm"
-      aria-label={t("apps.gateways.subNav.ariaLabel", { defaultValue: "Apps sections" })}
-    >
+    <nav className="flex items-center gap-6 border-b border-border text-sm" aria-label="Apps sections">
       {ITEMS.map((item) => {
         const isActive = item.key === active;
         return (
@@ -37,7 +31,7 @@ export function AppsSubNav({ active }: { active: SubNavKey }) {
             )}
             aria-current={isActive ? "page" : undefined}
           >
-            {t(`apps.gateways.subNav.${item.key}`, { defaultValue: item.defaultLabel })}
+            {item.label}
           </Link>
         );
       })}

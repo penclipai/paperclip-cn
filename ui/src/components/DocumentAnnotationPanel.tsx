@@ -27,6 +27,7 @@ import { cn, relativeTime } from "@/lib/utils";
 import { documentAnnotationsApi, type DocumentAnnotationTarget } from "@/api/document-annotations";
 import { authApi } from "@/api/auth";
 import { queryKeys } from "@/lib/queryKeys";
+import { copyTextToClipboard } from "@/lib/clipboard";
 import { AgentIcon } from "./AgentIconPicker";
 import { deriveInitials } from "./Identity";
 import { MarkdownBody } from "./MarkdownBody";
@@ -58,6 +59,8 @@ export interface AnnotationPanelProps {
   isMobile?: boolean;
   /** Desktop panel width calculated by the document frame. */
   desktopWidth?: number;
+  /** Render as a full-width card in a constrained host instead of a floating side panel. */
+  inline?: boolean;
   className?: string;
   /** Resolve `<authorAgentId>` to a display name. */
   agentMap?: ReadonlyMap<string, Pick<Agent, "id" | "name"> & Partial<Pick<Agent, "icon">>>;
@@ -101,7 +104,8 @@ export function DocumentAnnotationPanel(props: AnnotationPanelProps) {
       })}
       data-testid="document-annotation-panel"
       className={cn(
-        "isolate flex h-full max-h-(--sz-80vh) w-(--sz-360px) shrink-0 flex-col overflow-hidden rounded-none border border-border bg-popover text-popover-foreground shadow-xl",
+        "isolate flex h-full max-h-(--sz-80vh) shrink-0 flex-col overflow-hidden rounded-none border border-border bg-popover text-popover-foreground shadow-xl",
+        props.inline ? "w-full" : "w-(--sz-360px)",
         props.className,
       )}
       style={props.desktopWidth ? { width: props.desktopWidth, maxWidth: props.desktopWidth } : undefined}
@@ -798,11 +802,11 @@ function truncate(value: string, limit: number) {
 }
 
 async function copyAnnotationLink(documentKey: string, threadId: string) {
-  if (typeof window === "undefined" || !navigator.clipboard) return;
+  if (typeof window === "undefined") return;
   const { pathname } = window.location;
   const hash = `#document-${encodeURIComponent(documentKey)}&thread=${encodeURIComponent(threadId)}`;
   try {
-    await navigator.clipboard.writeText(`${window.location.origin}${pathname}${hash}`);
+    await copyTextToClipboard(`${window.location.origin}${pathname}${hash}`);
   } catch {
     /* swallow */
   }

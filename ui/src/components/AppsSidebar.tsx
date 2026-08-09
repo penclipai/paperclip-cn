@@ -1,6 +1,5 @@
 import { ChevronLeft, AppWindow, Store, ShieldQuestion } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
 import { Link } from "@/lib/router";
 import { useCompany } from "@/context/CompanyContext";
 import { useSidebar } from "@/context/SidebarContext";
@@ -15,12 +14,11 @@ import { SidebarNavItem } from "./SidebarNavItem";
  * Secondary sidebar for the prosumer Apps area (PAP-10856; three-door IA
  * PAP-13254 / U3).
  *
- *   ← Back · APPS: Browse / Connections / Review (n)
- *   DEVELOPER: Gateways / Profiles / Rules / Health / Activity
+ *   ← Back · APPS: Browse / Review (n)
+ *   DEVELOPER: Connections / Gateways / Profiles / Rules / Health / Activity
  *
- * The three consumer doors are peers: "Browse" (the store — discover + add),
- * "Connections" (your connected tools + health), and "Review" (PAP-12371,
- * Finding B — decisions waiting on your OK, with a live pending count).
+ * "Browse" is the store and "Review" holds decisions waiting on the user's
+ * OK. Connection management lives with the Developer tools.
  * "Needs attention" is no longer a door: health/error triage folds into
  * Connections as a status filter + banner, so approvals are never buried
  * behind an error label. The Developer section was folded in from the retired
@@ -30,7 +28,6 @@ import { SidebarNavItem } from "./SidebarNavItem";
  * (PAP-10922).
  */
 export function AppsSidebar() {
-  const { t } = useTranslation();
   const { selectedCompany, selectedCompanyId } = useCompany();
   const { isMobile, setSidebarOpen } = useSidebar();
 
@@ -60,57 +57,42 @@ export function AppsSidebar() {
           className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
         >
           <ChevronLeft className="h-3.5 w-3.5 shrink-0" />
-          <span className="truncate">
-            {selectedCompany?.name ?? t("apps.common.company", { defaultValue: "Company" })}
-          </span>
+          <span className="truncate">{selectedCompany?.name ?? "Company"}</span>
         </Link>
         <div className="flex items-center gap-2 px-2 py-1">
           <AppWindow className="h-4 w-4 text-muted-foreground shrink-0" />
-          <span className="flex-1 truncate text-sm font-bold text-foreground">
-            {t("apps.common.apps", { defaultValue: "Apps" })}
-          </span>
+          <span className="flex-1 truncate text-sm font-bold text-foreground">Apps</span>
         </div>
       </div>
 
       <nav className="flex-1 min-h-0 overflow-y-auto scrollbar-auto-hide px-3 py-2">
         <div className="px-3 pb-1 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
-          {t("apps.common.apps", { defaultValue: "Apps" })}
+          Apps
         </div>
         <div className="flex flex-col gap-0.5">
-          <SidebarNavItem
-            to="/apps/browse"
-            label={t("apps.sidebar.browse", { defaultValue: "Browse" })}
-            icon={Store}
-          />
-          <SidebarNavItem
-            to="/apps"
-            label={t("apps.sidebar.connections", { defaultValue: "Connections" })}
-            icon={AppWindow}
-            end
-          />
+          <SidebarNavItem to="/apps" label="Browse" icon={Store} end />
           <SidebarNavItem
             to="/apps/review"
-            label={t("apps.sidebar.review", { defaultValue: "Review" })}
+            label="Review"
             icon={ShieldQuestion}
             badge={reviewCount > 0 ? reviewCount : undefined}
             badgeTone="warning"
-            badgeLabel={t("apps.sidebar.waitingForApproval", { defaultValue: "waiting for your OK" })}
+            badgeLabel="waiting for your OK"
           />
         </div>
         <div className="px-3 pb-1 pt-4 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
-          {t("apps.sidebar.developer", { defaultValue: "Developer" })}
+          Developer
         </div>
         <p className="px-3 pb-1.5 text-(length:--text-micro) leading-snug text-muted-foreground/70">
-          {t("apps.sidebar.developerDescription", {
-            defaultValue: "Advanced setup for developers. Most teams never open this.",
-          })}
+          Advanced setup for developers. Most teams never open this.
         </p>
         <div className="flex flex-col gap-0.5">
+          <SidebarNavItem to="/apps/connections" label="Connections" icon={AppWindow} end />
           {developerTabs.map((tab) => (
             <SidebarNavItem
               key={tab.key}
               to={advancedTabHref(tab.key)}
-              label={t(`apps.sidebar.developerTabs.${tab.key}`, { defaultValue: tab.label })}
+              label={tab.label}
               icon={tab.icon}
               end
               liveCount={tab.key === "runtime" && runtimeActiveCount > 0 ? runtimeActiveCount : undefined}

@@ -1,18 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, useRef } from "react";
-import {
-  Link,
-  useParams,
-  useNavigate,
-  useLocation,
-  Navigate,
-} from "@/lib/router";
+import { Link, useParams, useNavigate, useLocation, Navigate } from "@/lib/router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
-import {
-  PROJECT_COLORS,
-  isUuidLike,
-  type BudgetPolicySummary,
-} from "@penclipai/shared";
+import { PROJECT_COLORS, PROJECT_ICON_NAMES, isUuidLike, type BudgetPolicySummary } from "@penclipai/shared";
 import { budgetsApi } from "../api/budgets";
 import { executionWorkspacesApi } from "../api/execution-workspaces";
 import { instanceSettingsApi } from "../api/instanceSettings";
@@ -26,11 +15,7 @@ import { useCompany } from "../context/CompanyContext";
 import { useToastActions } from "../context/ToastContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { queryKeys } from "../lib/queryKeys";
-import {
-  ProjectProperties,
-  type ProjectConfigFieldKey,
-  type ProjectFieldSaveState,
-} from "../components/ProjectProperties";
+import { ProjectProperties, type ProjectConfigFieldKey, type ProjectFieldSaveState } from "../components/ProjectProperties";
 import { InlineEditor } from "../components/InlineEditor";
 import { StatusBadge } from "../components/StatusBadge";
 import { ProjectTile } from "../components/ProjectTile";
@@ -43,29 +28,17 @@ import { SummarySlotCard } from "../components/SummarySlotCard";
 import { MembershipAction } from "../components/MembershipAction";
 import { StarToggle } from "../components/StarToggle";
 import { buildProjectWorkspaceSummaries } from "../lib/project-workspaces-tab";
-import { displaySeededName } from "../lib/seeded-display";
-import { PROJECT_ICONS, PROJECT_ICON_NAMES } from "../lib/project-icons";
-import { projectRouteRef } from "../lib/utils";
 import { collectLiveIssueIds } from "../lib/liveIssueIds";
-import {
-  usePublishSharedQueryData,
-  useSharedPollingQuery,
-} from "../hooks/useSharedPolling";
+import { projectRouteRef } from "../lib/utils";
+import { PROJECT_ICONS } from "../lib/project-icons";
+import { usePublishSharedQueryData, useSharedPollingQuery } from "../hooks/useSharedPolling";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { Tabs } from "@/components/ui/tabs";
 import { PluginLauncherOutlet } from "@/plugins/launchers";
-import {
-  PluginSlotMount,
-  PluginSlotOutlet,
-  usePluginSlots,
-} from "@/plugins/slots";
+import { PluginSlotMount, PluginSlotOutlet, usePluginSlots } from "@/plugins/slots";
 import {
   isStarred,
   resourceMembershipState,
@@ -75,13 +48,7 @@ import {
 
 /* ── Top-level tab types ── */
 
-type ProjectBaseTab =
-  | "overview"
-  | "list"
-  | "plugin-operations"
-  | "workspaces"
-  | "configuration"
-  | "budget";
+type ProjectBaseTab = "overview" | "list" | "plugin-operations" | "workspaces" | "configuration" | "budget";
 type ProjectPluginTab = `plugin:${string}`;
 type ProjectTab = ProjectBaseTab | ProjectPluginTab;
 
@@ -89,14 +56,10 @@ function isProjectPluginTab(value: string | null): value is ProjectPluginTab {
   return typeof value === "string" && value.startsWith("plugin:");
 }
 
-function resolveProjectTab(
-  pathname: string,
-  projectId: string,
-): ProjectTab | null {
+function resolveProjectTab(pathname: string, projectId: string): ProjectTab | null {
   const segments = pathname.split("/").filter(Boolean);
   const projectsIdx = segments.indexOf("projects");
-  if (projectsIdx === -1 || segments[projectsIdx + 1] !== projectId)
-    return null;
+  if (projectsIdx === -1 || segments[projectsIdx + 1] !== projectId) return null;
   const tab = segments[projectsIdx + 2];
   if (tab === "overview") return "overview";
   if (tab === "configuration") return "configuration";
@@ -114,15 +77,10 @@ function OverviewContent({
   onUpdate,
   imageUploadHandler,
 }: {
-  project: {
-    description: string | null;
-    status: string;
-    targetDate: string | null;
-  };
+  project: { description: string | null; status: string; targetDate: string | null };
   onUpdate: (data: Record<string, unknown>) => void;
   imageUploadHandler?: (file: File) => Promise<string>;
 }) {
-  const { t } = useTranslation();
   return (
     <div className="space-y-6">
       <InlineEditor
@@ -131,27 +89,21 @@ function OverviewContent({
         nullable
         as="p"
         className="text-sm text-muted-foreground"
-        placeholder={t("Add a description...", {
-          defaultValue: "Add a description...",
-        })}
+        placeholder="Add a description..."
         multiline
         imageUploadHandler={imageUploadHandler}
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
         <div>
-          <span className="text-muted-foreground">
-            {t("Status", { defaultValue: "Status" })}
-          </span>
+          <span className="text-muted-foreground">Status</span>
           <div className="mt-1">
             <StatusBadge status={project.status} />
           </div>
         </div>
         {project.targetDate && (
           <div>
-            <span className="text-muted-foreground">
-              {t("Target Date", { defaultValue: "Target Date" })}
-            </span>
+            <span className="text-muted-foreground">Target Date</span>
             <p>{project.targetDate}</p>
           </div>
         )}
@@ -177,12 +129,9 @@ function ProjectTilePicker({
 }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const { t } = useTranslation();
 
   const filteredIcons = useMemo(() => {
-    const entries = PROJECT_ICON_NAMES.map(
-      (name) => [name, PROJECT_ICONS[name]] as const,
-    );
+    const entries = PROJECT_ICON_NAMES.map((name) => [name, PROJECT_ICONS[name]] as const);
     if (!search) return entries;
     const q = search.toLowerCase();
     return entries.filter(([name]) => name.includes(q));
@@ -202,21 +151,16 @@ function ProjectTilePicker({
         <button
           type="button"
           className="shrink-0 rounded-lg cursor-pointer hover:ring-2 hover:ring-foreground/20 transition-(--tp-box-shadow)"
-          aria-label={t("projectDetail.changeIconAndColor", {
-            defaultValue: "Change project icon and color",
-          })}
+          aria-label="Change project icon and color"
         >
           <ProjectTile color={color} icon={icon} size="md" />
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-72 p-3" align="start">
-        <p className="text-xs font-medium text-muted-foreground mb-2">
-          {t("projectDetail.icon", { defaultValue: "Icon" })}
-        </p>
+        {/* Icon search + grid */}
+        <p className="text-xs font-medium text-muted-foreground mb-2">Icon</p>
         <Input
-          placeholder={t("projectDetail.searchIconsPlaceholder", {
-            defaultValue: "Search icons...",
-          })}
+          placeholder="Search icons..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="mb-2 h-8 text-sm"
@@ -230,8 +174,7 @@ function ProjectTilePicker({
               onClick={() => onSelectIcon(name)}
               className={cn(
                 "flex items-center justify-center h-8 w-8 rounded hover:bg-accent transition-colors",
-                (icon ?? DEFAULT_PROJECT_ICON) === name &&
-                  "bg-accent ring-1 ring-primary",
+                (icon ?? DEFAULT_PROJECT_ICON) === name && "bg-accent ring-1 ring-primary",
               )}
               title={name}
             >
@@ -239,18 +182,13 @@ function ProjectTilePicker({
             </button>
           ))}
           {filteredIcons.length === 0 && (
-            <p className="col-span-7 text-xs text-muted-foreground text-center py-2">
-              {t("projectDetail.noIconsMatch", {
-                defaultValue: "No icons match",
-              })}
-            </p>
+            <p className="col-span-7 text-xs text-muted-foreground text-center py-2">No icons match</p>
           )}
         </div>
 
+        {/* Color swatches */}
         <div className="mt-3 border-t border-border pt-3">
-          <p className="text-xs font-medium text-muted-foreground mb-2">
-            {t("projectDetail.color", { defaultValue: "Color" })}
-          </p>
+          <p className="text-xs font-medium text-muted-foreground mb-2">Color</p>
           <div className="grid grid-cols-5 gap-1.5">
             {/* Neutral / reset-to-gray option */}
             <button
@@ -261,12 +199,8 @@ function ProjectTilePicker({
                   ? "ring-2 ring-foreground ring-offset-1 ring-offset-background rounded-md"
                   : ""
               }`}
-              aria-label={t("projectDetail.resetToNeutralGray", {
-                defaultValue: "Reset to neutral gray",
-              })}
-              title={t("projectDetail.neutralDefault", {
-                defaultValue: "Neutral (default)",
-              })}
+              aria-label="Reset to neutral gray"
+              title="Neutral (default)"
             >
               <ProjectTile color={null} size="sm" />
             </button>
@@ -281,10 +215,7 @@ function ProjectTilePicker({
                     : "hover:ring-2 hover:ring-foreground/30"
                 }`}
                 style={{ backgroundColor: swatch }}
-                aria-label={t("Select color {{color}}", {
-                  color: swatch,
-                  defaultValue: `Select color ${swatch}`,
-                })}
+                aria-label={`Select color ${swatch}`}
               />
             ))}
           </div>
@@ -296,13 +227,7 @@ function ProjectTilePicker({
 
 /* ── List (issues) tab content ── */
 
-function ProjectIssuesList({
-  projectId,
-  companyId,
-}: {
-  projectId: string;
-  companyId: string;
-}) {
+function ProjectIssuesList({ projectId, companyId }: { projectId: string; companyId: string }) {
   const queryClient = useQueryClient();
 
   const { data: agents } = useQuery({
@@ -317,7 +242,7 @@ function ProjectIssuesList({
     resourceKey: "live-runs",
     queryKey: liveRunsQueryKey,
     enabled: !!companyId,
-    // Event-sourced via LiveUpdatesProvider (paperclipai/paperclip#9627); no interval poll needed.
+    // Event-sourced via LiveUpdatesProvider (issue 9627); no interval poll needed.
     refetchInterval: false,
     leaderOnly: true,
   });
@@ -334,28 +259,19 @@ function ProjectIssuesList({
     enabled: !!companyId,
   });
 
-  const liveIssueIds = useMemo(() => collectLiveIssueIds(liveRuns), [liveRuns]);
-
-  const {
-    data: issues,
-    isLoading,
-    error,
-  } = useQuery({
+  const { data: issues, isLoading, error } = useQuery({
     queryKey: queryKeys.issues.listByProject(companyId, projectId),
     queryFn: () => issuesApi.list(companyId, { projectId }),
     enabled: !!companyId,
   });
+  const liveIssueIds = useMemo(() => collectLiveIssueIds(liveRuns, issues), [issues, liveRuns]);
 
   const updateIssue = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) =>
       issuesApi.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.issues.listByProject(companyId, projectId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.issues.list(companyId),
-      });
+      queryClient.invalidateQueries({ queryKey: queryKeys.issues.listByProject(companyId, projectId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.issues.list(companyId) });
     },
   });
 
@@ -402,7 +318,7 @@ function ProjectPluginOperationsList({
     resourceKey: "live-runs",
     queryKey: liveRunsQueryKey,
     enabled: !!companyId,
-    // Event-sourced via LiveUpdatesProvider (paperclipai/paperclip#9627); no interval poll needed.
+    // Event-sourced via LiveUpdatesProvider (issue 9627); no interval poll needed.
     refetchInterval: false,
     leaderOnly: true,
   });
@@ -413,39 +329,20 @@ function ProjectPluginOperationsList({
     refetchInterval: sharedLiveRuns.refetchInterval,
   });
   usePublishSharedQueryData(sharedLiveRuns, liveRuns, liveRunsUpdatedAt);
-  const liveIssueIds = useMemo(() => collectLiveIssueIds(liveRuns), [liveRuns]);
-
-  const {
-    data: issues,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: queryKeys.issues.listPluginOperationsByProject(
-      companyId,
-      projectId,
-      originKindPrefix,
-    ),
+  const { data: issues, isLoading, error } = useQuery({
+    queryKey: queryKeys.issues.listPluginOperationsByProject(companyId, projectId, originKindPrefix),
     queryFn: () => issuesApi.list(companyId, { projectId, originKindPrefix }),
     enabled: !!companyId && !!projectId,
   });
+  const liveIssueIds = useMemo(() => collectLiveIssueIds(liveRuns, issues), [issues, liveRuns]);
 
   const updateIssue = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) =>
       issuesApi.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.issues.listPluginOperationsByProject(
-          companyId,
-          projectId,
-          originKindPrefix,
-        ),
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.issues.listByProject(companyId, projectId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.issues.list(companyId),
-      });
+      queryClient.invalidateQueries({ queryKey: queryKeys.issues.listPluginOperationsByProject(companyId, projectId, originKindPrefix) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.issues.listByProject(companyId, projectId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.issues.list(companyId) });
     },
   });
 
@@ -467,7 +364,6 @@ function ProjectPluginOperationsList({
 /* ── Main project page ── */
 
 export function ProjectDetail() {
-  const { t } = useTranslation();
   const { companyPrefix, projectId, filter } = useParams<{
     companyPrefix?: string;
     projectId: string;
@@ -480,56 +376,31 @@ export function ProjectDetail() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const location = useLocation();
-  const [fieldSaveStates, setFieldSaveStates] = useState<
-    Partial<Record<ProjectConfigFieldKey, ProjectFieldSaveState>>
-  >({});
-  const [dismissedLeftProjectIds, setDismissedLeftProjectIds] = useState<
-    Set<string>
-  >(() => new Set());
-  const fieldSaveRequestIds = useRef<
-    Partial<Record<ProjectConfigFieldKey, number>>
-  >({});
-  const fieldSaveTimers = useRef<
-    Partial<Record<ProjectConfigFieldKey, ReturnType<typeof setTimeout>>>
-  >({});
+  const [fieldSaveStates, setFieldSaveStates] = useState<Partial<Record<ProjectConfigFieldKey, ProjectFieldSaveState>>>({});
+  const [dismissedLeftProjectIds, setDismissedLeftProjectIds] = useState<Set<string>>(() => new Set());
+  const fieldSaveRequestIds = useRef<Partial<Record<ProjectConfigFieldKey, number>>>({});
+  const fieldSaveTimers = useRef<Partial<Record<ProjectConfigFieldKey, ReturnType<typeof setTimeout>>>>({});
   const routeProjectRef = projectId ?? "";
   const routeCompanyId = useMemo(() => {
     if (!companyPrefix) return null;
     const requestedPrefix = companyPrefix.toUpperCase();
-    return (
-      companies.find(
-        (company) => company.issuePrefix.toUpperCase() === requestedPrefix,
-      )?.id ?? null
-    );
+    return companies.find((company) => company.issuePrefix.toUpperCase() === requestedPrefix)?.id ?? null;
   }, [companies, companyPrefix]);
   const lookupCompanyId = routeCompanyId ?? selectedCompanyId ?? undefined;
-  const canFetchProject =
-    routeProjectRef.length > 0 &&
-    (isUuidLike(routeProjectRef) || Boolean(lookupCompanyId));
-  const activeRouteTab = routeProjectRef
-    ? resolveProjectTab(location.pathname, routeProjectRef)
-    : null;
+  const canFetchProject = routeProjectRef.length > 0 && (isUuidLike(routeProjectRef) || Boolean(lookupCompanyId));
+  const activeRouteTab = routeProjectRef ? resolveProjectTab(location.pathname, routeProjectRef) : null;
   const pluginTabFromSearch = useMemo(() => {
     const tab = new URLSearchParams(location.search).get("tab");
     return isProjectPluginTab(tab) ? tab : null;
   }, [location.search]);
   const activeTab = activeRouteTab ?? pluginTabFromSearch;
 
-  const {
-    data: project,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: [
-      ...queryKeys.projects.detail(routeProjectRef),
-      lookupCompanyId ?? null,
-    ],
+  const { data: project, isLoading, error } = useQuery({
+    queryKey: [...queryKeys.projects.detail(routeProjectRef), lookupCompanyId ?? null],
     queryFn: () => projectsApi.get(routeProjectRef, lookupCompanyId),
     enabled: canFetchProject,
   });
-  const canonicalProjectRef = project
-    ? projectRouteRef(project)
-    : routeProjectRef;
+  const canonicalProjectRef = project ? projectRouteRef(project) : routeProjectRef;
   const projectLookupRef = project?.id ?? routeProjectRef;
   const resolvedCompanyId = project?.companyId ?? selectedCompanyId;
   const membershipsQuery = useResourceMemberships(resolvedCompanyId);
@@ -541,63 +412,43 @@ export function ProjectDetail() {
     queryKey: queryKeys.instance.experimentalSettings,
     queryFn: () => instanceSettingsApi.getExperimental(),
   });
-  const { slots: pluginDetailSlots, isLoading: pluginDetailSlotsLoading } =
-    usePluginSlots({
-      slotTypes: ["detailTab"],
-      entityType: "project",
-      companyId: resolvedCompanyId,
-      enabled: !!resolvedCompanyId,
-    });
+  const {
+    slots: pluginDetailSlots,
+    isLoading: pluginDetailSlotsLoading,
+  } = usePluginSlots({
+    slotTypes: ["detailTab"],
+    entityType: "project",
+    companyId: resolvedCompanyId,
+    enabled: !!resolvedCompanyId,
+  });
   const pluginTabItems = useMemo(
-    () =>
-      pluginDetailSlots.map((slot) => ({
-        value: `plugin:${slot.pluginKey}:${slot.id}` as ProjectPluginTab,
-        label: slot.displayName,
-        slot,
-      })),
+    () => pluginDetailSlots.map((slot) => ({
+      value: `plugin:${slot.pluginKey}:${slot.id}` as ProjectPluginTab,
+      label: slot.displayName,
+      slot,
+    })),
     [pluginDetailSlots],
   );
-  const activePluginTab =
-    pluginTabItems.find((item) => item.value === activeTab) ?? null;
-  const isolatedWorkspacesEnabled =
-    experimentalSettingsQuery.data?.enableIsolatedWorkspaces === true;
+  const activePluginTab = pluginTabItems.find((item) => item.value === activeTab) ?? null;
+  const isolatedWorkspacesEnabled = experimentalSettingsQuery.data?.enableIsolatedWorkspaces === true;
   const workspaceTabProjectId = project?.id ?? null;
-  const {
-    data: workspaceTabIssues = [],
-    isLoading: isWorkspaceTabIssuesLoading,
-    error: workspaceTabIssuesError,
-  } = useQuery({
-    queryKey:
-      workspaceTabProjectId && resolvedCompanyId
-        ? queryKeys.issues.listByProject(
-            resolvedCompanyId,
-            workspaceTabProjectId,
-          )
-        : ["issues", "__workspace-tab__", "disabled"],
-    queryFn: () =>
-      issuesApi.list(resolvedCompanyId!, { projectId: workspaceTabProjectId! }),
-    enabled: Boolean(
-      resolvedCompanyId && workspaceTabProjectId && isolatedWorkspacesEnabled,
-    ),
+  const { data: workspaceTabIssues = [], isLoading: isWorkspaceTabIssuesLoading, error: workspaceTabIssuesError } = useQuery({
+    queryKey: workspaceTabProjectId && resolvedCompanyId
+      ? queryKeys.issues.listByProject(resolvedCompanyId, workspaceTabProjectId)
+      : ["issues", "__workspace-tab__", "disabled"],
+    queryFn: () => issuesApi.list(resolvedCompanyId!, { projectId: workspaceTabProjectId! }),
+    enabled: Boolean(resolvedCompanyId && workspaceTabProjectId && isolatedWorkspacesEnabled),
   });
   const {
     data: workspaceTabExecutionWorkspaces = [],
     isLoading: isWorkspaceTabExecutionWorkspacesLoading,
     error: workspaceTabExecutionWorkspacesError,
   } = useQuery({
-    queryKey:
-      workspaceTabProjectId && resolvedCompanyId
-        ? queryKeys.executionWorkspaces.list(resolvedCompanyId, {
-            projectId: workspaceTabProjectId,
-          })
-        : ["execution-workspaces", "__workspace-tab__", "disabled"],
-    queryFn: () =>
-      executionWorkspacesApi.list(resolvedCompanyId!, {
-        projectId: workspaceTabProjectId!,
-      }),
-    enabled: Boolean(
-      resolvedCompanyId && workspaceTabProjectId && isolatedWorkspacesEnabled,
-    ),
+    queryKey: workspaceTabProjectId && resolvedCompanyId
+      ? queryKeys.executionWorkspaces.list(resolvedCompanyId, { projectId: workspaceTabProjectId })
+      : ["execution-workspaces", "__workspace-tab__", "disabled"],
+    queryFn: () => executionWorkspacesApi.list(resolvedCompanyId!, { projectId: workspaceTabProjectId! }),
+    enabled: Boolean(resolvedCompanyId && workspaceTabProjectId && isolatedWorkspacesEnabled),
   });
   const workspaceSummaries = useMemo(() => {
     if (!project || !isolatedWorkspacesEnabled) return [];
@@ -606,21 +457,12 @@ export function ProjectDetail() {
       issues: workspaceTabIssues,
       executionWorkspaces: workspaceTabExecutionWorkspaces,
     });
-  }, [
-    project,
-    isolatedWorkspacesEnabled,
-    workspaceTabIssues,
-    workspaceTabExecutionWorkspaces,
-  ]);
-  const showWorkspacesTab =
-    isolatedWorkspacesEnabled && workspaceSummaries.length > 0;
+  }, [project, isolatedWorkspacesEnabled, workspaceTabIssues, workspaceTabExecutionWorkspaces]);
+  const showWorkspacesTab = isolatedWorkspacesEnabled && workspaceSummaries.length > 0;
   const workspaceTabDecisionLoaded =
     experimentalSettingsQuery.isFetched &&
-    (!isolatedWorkspacesEnabled ||
-      (!isWorkspaceTabIssuesLoading &&
-        !isWorkspaceTabExecutionWorkspacesLoading));
-  const workspaceTabError = (workspaceTabIssuesError ??
-    workspaceTabExecutionWorkspacesError) as Error | null;
+    (!isolatedWorkspacesEnabled || (!isWorkspaceTabIssuesLoading && !isWorkspaceTabExecutionWorkspacesLoading));
+  const workspaceTabError = (workspaceTabIssuesError ?? workspaceTabExecutionWorkspacesError) as Error | null;
 
   useEffect(() => {
     if (!project?.companyId || project.companyId === selectedCompanyId) return;
@@ -628,26 +470,16 @@ export function ProjectDetail() {
   }, [project?.companyId, selectedCompanyId, setSelectedCompanyId]);
 
   const invalidateProject = () => {
-    queryClient.invalidateQueries({
-      queryKey: queryKeys.projects.detail(routeProjectRef),
-    });
-    queryClient.invalidateQueries({
-      queryKey: queryKeys.projects.detail(projectLookupRef),
-    });
+    queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(routeProjectRef) });
+    queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(projectLookupRef) });
     if (resolvedCompanyId) {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.projects.all(resolvedCompanyId),
-      });
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects.all(resolvedCompanyId) });
     }
   };
 
   const updateProject = useMutation({
     mutationFn: (data: Record<string, unknown>) =>
-      projectsApi.update(
-        projectLookupRef,
-        data,
-        resolvedCompanyId ?? lookupCompanyId,
-      ),
+      projectsApi.update(projectLookupRef, data, resolvedCompanyId ?? lookupCompanyId),
     onSuccess: invalidateProject,
   });
 
@@ -660,39 +492,17 @@ export function ProjectDetail() {
       ),
     onSuccess: (updatedProject, archived) => {
       invalidateProject();
-      const name =
-        updatedProject?.name ??
-        project?.name ??
-        t("Project", { defaultValue: "Project" });
-      const displayName = displaySeededName(name);
+      const name = updatedProject?.name ?? project?.name ?? "Project";
       if (archived) {
-        pushToast({
-          title: t('"{{name}}" has been archived', {
-            name: displayName,
-            defaultValue: `"${displayName}" has been archived`,
-          }),
-          tone: "success",
-        });
+        pushToast({ title: `"${name}" has been archived`, tone: "success" });
         navigate("/dashboard");
       } else {
-        pushToast({
-          title: t('"{{name}}" has been unarchived', {
-            name: displayName,
-            defaultValue: `"${displayName}" has been unarchived`,
-          }),
-          tone: "success",
-        });
+        pushToast({ title: `"${name}" has been unarchived`, tone: "success" });
       }
     },
     onError: (_, archived) => {
       pushToast({
-        title: archived
-          ? t("Failed to archive project", {
-              defaultValue: "Failed to archive project",
-            })
-          : t("Failed to unarchive project", {
-              defaultValue: "Failed to unarchive project",
-            }),
+        title: archived ? "Failed to archive project" : "Failed to unarchive project",
         tone: "error",
       });
     },
@@ -700,15 +510,8 @@ export function ProjectDetail() {
 
   const uploadImage = useMutation({
     mutationFn: async (file: File) => {
-      if (!resolvedCompanyId)
-        throw new Error(
-          t("No company selected", { defaultValue: "No company selected" }),
-        );
-      return assetsApi.uploadImage(
-        resolvedCompanyId,
-        file,
-        `projects/${projectLookupRef || "draft"}`,
-      );
+      if (!resolvedCompanyId) throw new Error("No company selected");
+      return assetsApi.uploadImage(resolvedCompanyId, file, `projects/${projectLookupRef || "draft"}`);
     },
   });
 
@@ -722,23 +525,16 @@ export function ProjectDetail() {
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: t("Projects", { defaultValue: "Projects" }), href: "/projects" },
-      {
-        label: project
-          ? displaySeededName(project.name)
-          : (routeProjectRef ?? t("Project", { defaultValue: "Project" })),
-      },
+      { label: "Projects", href: "/projects" },
+      { label: project?.name ?? routeProjectRef ?? "Project" },
     ]);
-  }, [setBreadcrumbs, project, routeProjectRef, t]);
+  }, [setBreadcrumbs, project, routeProjectRef]);
 
   useEffect(() => {
     if (!project) return;
     if (routeProjectRef === canonicalProjectRef) return;
     if (isProjectPluginTab(activeTab)) {
-      navigate(
-        `/projects/${canonicalProjectRef}?tab=${encodeURIComponent(activeTab)}`,
-        { replace: true },
-      );
+      navigate(`/projects/${canonicalProjectRef}?tab=${encodeURIComponent(activeTab)}`, { replace: true });
       return;
     }
     if (activeTab === "overview") {
@@ -746,9 +542,7 @@ export function ProjectDetail() {
       return;
     }
     if (activeTab === "configuration") {
-      navigate(`/projects/${canonicalProjectRef}/configuration`, {
-        replace: true,
-      });
+      navigate(`/projects/${canonicalProjectRef}/configuration`, { replace: true });
       return;
     }
     if (activeTab === "budget") {
@@ -756,36 +550,23 @@ export function ProjectDetail() {
       return;
     }
     if (activeTab === "plugin-operations") {
-      navigate(`/projects/${canonicalProjectRef}/plugin-operations`, {
-        replace: true,
-      });
+      navigate(`/projects/${canonicalProjectRef}/plugin-operations`, { replace: true });
       return;
     }
     if (activeTab === "workspaces") {
-      navigate(`/projects/${canonicalProjectRef}/workspaces`, {
-        replace: true,
-      });
+      navigate(`/projects/${canonicalProjectRef}/workspaces`, { replace: true });
       return;
     }
     if (activeTab === "list") {
       if (filter) {
-        navigate(`/projects/${canonicalProjectRef}/issues/${filter}`, {
-          replace: true,
-        });
+        navigate(`/projects/${canonicalProjectRef}/issues/${filter}`, { replace: true });
         return;
       }
       navigate(`/projects/${canonicalProjectRef}/issues`, { replace: true });
       return;
     }
     navigate(`/projects/${canonicalProjectRef}`, { replace: true });
-  }, [
-    project,
-    routeProjectRef,
-    canonicalProjectRef,
-    activeTab,
-    filter,
-    navigate,
-  ]);
+  }, [project, routeProjectRef, canonicalProjectRef, activeTab, filter, navigate]);
 
   useEffect(() => {
     closePanel();
@@ -810,66 +591,44 @@ export function ProjectDetail() {
     };
   }, []);
 
-  const setFieldState = useCallback(
-    (field: ProjectConfigFieldKey, state: ProjectFieldSaveState) => {
-      setFieldSaveStates((current) => ({ ...current, [field]: state }));
-    },
-    [],
-  );
+  const setFieldState = useCallback((field: ProjectConfigFieldKey, state: ProjectFieldSaveState) => {
+    setFieldSaveStates((current) => ({ ...current, [field]: state }));
+  }, []);
 
-  const scheduleFieldReset = useCallback(
-    (field: ProjectConfigFieldKey, delayMs: number) => {
-      const existing = fieldSaveTimers.current[field];
-      if (existing) clearTimeout(existing);
-      fieldSaveTimers.current[field] = setTimeout(() => {
-        setFieldSaveStates((current) => {
-          const next = { ...current };
-          delete next[field];
-          return next;
-        });
-        delete fieldSaveTimers.current[field];
-      }, delayMs);
-    },
-    [],
-  );
+  const scheduleFieldReset = useCallback((field: ProjectConfigFieldKey, delayMs: number) => {
+    const existing = fieldSaveTimers.current[field];
+    if (existing) clearTimeout(existing);
+    fieldSaveTimers.current[field] = setTimeout(() => {
+      setFieldSaveStates((current) => {
+        const next = { ...current };
+        delete next[field];
+        return next;
+      });
+      delete fieldSaveTimers.current[field];
+    }, delayMs);
+  }, []);
 
-  const updateProjectField = useCallback(
-    async (field: ProjectConfigFieldKey, data: Record<string, unknown>) => {
-      const requestId = (fieldSaveRequestIds.current[field] ?? 0) + 1;
-      fieldSaveRequestIds.current[field] = requestId;
-      setFieldState(field, "saving");
-      try {
-        await projectsApi.update(
-          projectLookupRef,
-          data,
-          resolvedCompanyId ?? lookupCompanyId,
-        );
-        invalidateProject();
-        if (fieldSaveRequestIds.current[field] !== requestId) return;
-        setFieldState(field, "saved");
-        scheduleFieldReset(field, 1800);
-      } catch (error) {
-        if (fieldSaveRequestIds.current[field] !== requestId) return;
-        setFieldState(field, "error");
-        scheduleFieldReset(field, 3000);
-        throw error;
-      }
-    },
-    [
-      invalidateProject,
-      lookupCompanyId,
-      projectLookupRef,
-      resolvedCompanyId,
-      scheduleFieldReset,
-      setFieldState,
-    ],
-  );
+  const updateProjectField = useCallback(async (field: ProjectConfigFieldKey, data: Record<string, unknown>) => {
+    const requestId = (fieldSaveRequestIds.current[field] ?? 0) + 1;
+    fieldSaveRequestIds.current[field] = requestId;
+    setFieldState(field, "saving");
+    try {
+      await projectsApi.update(projectLookupRef, data, resolvedCompanyId ?? lookupCompanyId);
+      invalidateProject();
+      if (fieldSaveRequestIds.current[field] !== requestId) return;
+      setFieldState(field, "saved");
+      scheduleFieldReset(field, 1800);
+    } catch (error) {
+      if (fieldSaveRequestIds.current[field] !== requestId) return;
+      setFieldState(field, "error");
+      scheduleFieldReset(field, 3000);
+      throw error;
+    }
+  }, [invalidateProject, lookupCompanyId, projectLookupRef, resolvedCompanyId, scheduleFieldReset, setFieldState]);
 
   const projectBudgetSummary = useMemo(() => {
     const matched = budgetOverview?.policies.find(
-      (policy) =>
-        policy.scopeType === "project" &&
-        policy.scopeId === (project?.id ?? routeProjectRef),
+      (policy) => policy.scopeType === "project" && policy.scopeId === (project?.id ?? routeProjectRef),
     );
     if (matched) return matched;
     return {
@@ -877,7 +636,7 @@ export function ProjectDetail() {
       companyId: resolvedCompanyId ?? "",
       scopeType: "project",
       scopeId: project?.id ?? routeProjectRef,
-      scopeName: project?.name ?? t("Project", { defaultValue: "Project" }),
+      scopeName: project?.name ?? "Project",
       metric: "billed_cents",
       windowKind: "lifetime",
       amount: 0,
@@ -894,13 +653,7 @@ export function ProjectDetail() {
       windowStart: new Date(),
       windowEnd: new Date(),
     } satisfies BudgetPolicySummary;
-  }, [
-    budgetOverview?.policies,
-    project,
-    resolvedCompanyId,
-    routeProjectRef,
-    t,
-  ]);
+  }, [budgetOverview?.policies, project, resolvedCompanyId, routeProjectRef]);
 
   const budgetMutation = useMutation({
     mutationFn: (amount: number) =>
@@ -912,21 +665,11 @@ export function ProjectDetail() {
       }),
     onSuccess: () => {
       if (!resolvedCompanyId) return;
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.budgets.overview(resolvedCompanyId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.projects.detail(routeProjectRef),
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.projects.detail(projectLookupRef),
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.projects.all(resolvedCompanyId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.dashboard(resolvedCompanyId),
-      });
+      queryClient.invalidateQueries({ queryKey: queryKeys.budgets.overview(resolvedCompanyId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(routeProjectRef) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(projectLookupRef) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects.all(resolvedCompanyId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard(resolvedCompanyId) });
     },
   });
 
@@ -934,11 +677,7 @@ export function ProjectDetail() {
     return <Navigate to={`/projects/${canonicalProjectRef}/issues`} replace />;
   }
 
-  if (
-    activeTab === "workspaces" &&
-    workspaceTabDecisionLoaded &&
-    !showWorkspacesTab
-  ) {
+  if (activeTab === "workspaces" && workspaceTabDecisionLoaded && !showWorkspacesTab) {
     return <Navigate to={`/projects/${canonicalProjectRef}/issues`} replace />;
   }
 
@@ -946,55 +685,28 @@ export function ProjectDetail() {
   if (routeProjectRef && activeTab === null) {
     let cachedTab: string | null = null;
     if (project?.id) {
-      try {
-        cachedTab = localStorage.getItem(`paperclip:project-tab:${project.id}`);
-      } catch {}
+      try { cachedTab = localStorage.getItem(`paperclip:project-tab:${project.id}`); } catch {}
     }
     if (cachedTab === "overview") {
-      return (
-        <Navigate to={`/projects/${canonicalProjectRef}/overview`} replace />
-      );
+      return <Navigate to={`/projects/${canonicalProjectRef}/overview`} replace />;
     }
     if (cachedTab === "configuration") {
-      return (
-        <Navigate
-          to={`/projects/${canonicalProjectRef}/configuration`}
-          replace
-        />
-      );
+      return <Navigate to={`/projects/${canonicalProjectRef}/configuration`} replace />;
     }
     if (cachedTab === "budget") {
-      return (
-        <Navigate to={`/projects/${canonicalProjectRef}/budget`} replace />
-      );
+      return <Navigate to={`/projects/${canonicalProjectRef}/budget`} replace />;
     }
     if (cachedTab === "plugin-operations" && project?.managedByPlugin) {
-      return (
-        <Navigate
-          to={`/projects/${canonicalProjectRef}/plugin-operations`}
-          replace
-        />
-      );
+      return <Navigate to={`/projects/${canonicalProjectRef}/plugin-operations`} replace />;
     }
-    if (
-      cachedTab === "workspaces" &&
-      workspaceTabDecisionLoaded &&
-      showWorkspacesTab
-    ) {
-      return (
-        <Navigate to={`/projects/${canonicalProjectRef}/workspaces`} replace />
-      );
+    if (cachedTab === "workspaces" && workspaceTabDecisionLoaded && showWorkspacesTab) {
+      return <Navigate to={`/projects/${canonicalProjectRef}/workspaces`} replace />;
     }
     if (cachedTab === "workspaces" && !workspaceTabDecisionLoaded) {
       return <PageSkeleton variant="detail" />;
     }
     if (isProjectPluginTab(cachedTab)) {
-      return (
-        <Navigate
-          to={`/projects/${canonicalProjectRef}?tab=${encodeURIComponent(cachedTab)}`}
-          replace
-        />
-      );
+      return <Navigate to={`/projects/${canonicalProjectRef}?tab=${encodeURIComponent(cachedTab)}`} replace />;
     }
     return <Navigate to={`/projects/${canonicalProjectRef}/issues`} replace />;
   }
@@ -1003,35 +715,22 @@ export function ProjectDetail() {
   if (error) return <p className="text-sm text-destructive">{error.message}</p>;
   if (!project) return null;
   const showLeftProjectNotice =
-    projectMembershipState === "left" &&
-    !dismissedLeftProjectIds.has(project.id);
+    projectMembershipState === "left" && !dismissedLeftProjectIds.has(project.id);
   const projectMembershipPending =
     membershipMutation.isPending &&
     membershipMutation.variables?.resourceType === "project" &&
     membershipMutation.variables.resourceId === project.id;
-  const projectStarred = isStarred(
-    membershipsQuery.data,
-    "project",
-    project.id,
-  );
-  const projectStarPending =
-    projectMembershipPending &&
-    membershipMutation.variables?.starred !== undefined;
-  const projectJoinLeavePending =
-    projectMembershipPending &&
-    membershipMutation.variables?.starred === undefined;
+  const projectStarred = isStarred(membershipsQuery.data, "project", project.id);
+  const projectStarPending = projectMembershipPending && membershipMutation.variables?.starred !== undefined;
+  const projectJoinLeavePending = projectMembershipPending && membershipMutation.variables?.starred === undefined;
 
   const handleTabChange = (tab: ProjectTab) => {
     // Cache the active tab per project
     if (project?.id) {
-      try {
-        localStorage.setItem(`paperclip:project-tab:${project.id}`, tab);
-      } catch {}
+      try { localStorage.setItem(`paperclip:project-tab:${project.id}`, tab); } catch {}
     }
     if (isProjectPluginTab(tab)) {
-      navigate(
-        `/projects/${canonicalProjectRef}?tab=${encodeURIComponent(tab)}`,
-      );
+      navigate(`/projects/${canonicalProjectRef}?tab=${encodeURIComponent(tab)}`);
       return;
     }
     if (tab === "overview") {
@@ -1053,45 +752,33 @@ export function ProjectDetail() {
     <div className="space-y-6">
       {showLeftProjectNotice ? (
         <div className="flex items-center gap-3 border border-yellow-300/35 bg-yellow-300/10 px-3 py-2 text-sm text-yellow-900 dark:text-yellow-100">
-          <p className="min-w-0 flex-1">{t("projectDetail.leftProject")}</p>
+          <p className="min-w-0 flex-1">
+            You left this project. It no longer appears in your sidebar.
+          </p>
           <MembershipAction
             compact
             state="left"
             pending={projectJoinLeavePending}
-            pendingState={
-              projectJoinLeavePending
-                ? membershipMutation.variables?.state
-                : null
-            }
+            pendingState={projectJoinLeavePending ? membershipMutation.variables?.state : null}
             resourceName={project.name}
-            onJoin={() =>
-              membershipMutation.mutate({
-                resourceType: "project",
-                resourceId: project.id,
-                resourceName: project.name,
-                state: "joined",
-              })
-            }
-            onLeave={() =>
-              membershipMutation.mutate({
-                resourceType: "project",
-                resourceId: project.id,
-                resourceName: project.name,
-                state: "left",
-              })
-            }
+            onJoin={() => membershipMutation.mutate({
+              resourceType: "project",
+              resourceId: project.id,
+              resourceName: project.name,
+              state: "joined",
+            })}
+            onLeave={() => membershipMutation.mutate({
+              resourceType: "project",
+              resourceId: project.id,
+              resourceName: project.name,
+              state: "left",
+            })}
           />
           <button
             type="button"
-            className="h-6 w-6 shrink-0 text-yellow-100/70 hover:text-yellow-100"
-            aria-label={t("projectDetail.dismissMembershipNotice", {
-              defaultValue: "Dismiss project membership notice",
-            })}
-            onClick={() =>
-              setDismissedLeftProjectIds((current) =>
-                new Set(current).add(project.id),
-              )
-            }
+            className="h-6 w-6 shrink-0 text-yellow-900/70 hover:text-yellow-900 dark:text-yellow-100/70 dark:hover:text-yellow-100"
+            aria-label="Dismiss project membership notice"
+            onClick={() => setDismissedLeftProjectIds((current) => new Set(current).add(project.id))}
           >
             ×
           </button>
@@ -1116,23 +803,13 @@ export function ProjectDetail() {
           {project.pauseReason === "budget" ? (
             <div className="inline-flex items-center gap-2 rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1 text-(length:--text-micro) font-medium uppercase tracking-(--tracking-caps) text-red-800 dark:text-red-200">
               <span className="h-2 w-2 rounded-full bg-red-400" />
-              {t("Paused by budget hard stop", {
-                defaultValue: "Paused by budget hard stop",
-              })}
+              Paused by budget hard stop
             </div>
           ) : null}
           {project.managedByPlugin ? (
             <div className="inline-flex items-center gap-2 rounded-full border border-border bg-muted px-3 py-1 text-(length:--text-micro) font-medium text-muted-foreground">
-              <span
-                className="h-2 w-2 rounded-full"
-                style={{
-                  backgroundColor: project.color ?? "var(--project-seed)",
-                }}
-              />
-              {t("Managed by {{name}}", {
-                defaultValue: "Managed by {{name}}",
-                name: project.managedByPlugin.pluginDisplayName,
-              })}
+              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: project.color ?? "var(--project-seed)" }} />
+              Managed by {project.managedByPlugin.pluginDisplayName}
             </div>
           ) : null}
         </div>
@@ -1142,14 +819,12 @@ export function ProjectDetail() {
             starred={projectStarred}
             pending={projectStarPending}
             resourceName={project.name}
-            onToggle={(next) =>
-              membershipMutation.mutate({
-                resourceType: "project",
-                resourceId: project.id,
-                resourceName: project.name,
-                starred: next,
-              })
-            }
+            onToggle={(next) => membershipMutation.mutate({
+              resourceType: "project",
+              resourceId: project.id,
+              resourceName: project.name,
+              starred: next,
+            })}
           />
         </div>
       </div>
@@ -1158,8 +833,8 @@ export function ProjectDetail() {
         companyId={resolvedCompanyId}
         scopeKind="project"
         scopeId={project.id}
-        title={t("projectDetail.summaryTitle")}
-        description={t("projectDetail.summaryDescription")}
+        title="Project summary"
+        description="Summarizer keeps the latest project status, next step, and operator-needed items here."
       />
 
       <PluginSlotOutlet
@@ -1193,40 +868,15 @@ export function ProjectDetail() {
         itemClassName="inline-flex"
       />
 
-      <Tabs
-        value={activeTab ?? "list"}
-        onValueChange={(value) => handleTabChange(value as ProjectTab)}
-      >
+      <Tabs value={activeTab ?? "list"} onValueChange={(value) => handleTabChange(value as ProjectTab)}>
         <PageTabBar
           items={[
-            { value: "list", label: t("Issues", { defaultValue: "Issues" }) },
-            {
-              value: "overview",
-              label: t("Overview", { defaultValue: "Overview" }),
-            },
-            ...(project.managedByPlugin
-              ? [
-                  {
-                    value: "plugin-operations",
-                    label: t("Plugin operations", {
-                      defaultValue: "Plugin operations",
-                    }),
-                  },
-                ]
-              : []),
-            ...(showWorkspacesTab
-              ? [
-                  {
-                    value: "workspaces",
-                    label: t("Workspaces", { defaultValue: "Workspaces" }),
-                  },
-                ]
-              : []),
-            {
-              value: "configuration",
-              label: t("Configuration", { defaultValue: "Configuration" }),
-            },
-            { value: "budget", label: t("Budget", { defaultValue: "Budget" }) },
+            { value: "list", label: "Tasks" },
+            { value: "overview", label: "Overview" },
+            ...(project.managedByPlugin ? [{ value: "plugin-operations", label: "Plugin operations" }] : []),
+            ...(showWorkspacesTab ? [{ value: "workspaces", label: "Workspaces" }] : []),
+            { value: "configuration", label: "Configuration" },
+            { value: "budget", label: "Budget" },
             ...pluginTabItems.map((item) => ({
               value: item.value,
               label: item.label,
@@ -1250,29 +900,21 @@ export function ProjectDetail() {
       )}
 
       {activeTab === "list" && project?.id && resolvedCompanyId && (
-        <ProjectIssuesList
-          projectId={project.id}
-          companyId={resolvedCompanyId}
-        />
+        <ProjectIssuesList projectId={project.id} companyId={resolvedCompanyId} />
       )}
 
-      {activeTab === "plugin-operations" &&
-        project?.id &&
-        resolvedCompanyId &&
-        project.managedByPlugin && (
-          <ProjectPluginOperationsList
-            projectId={project.id}
-            companyId={resolvedCompanyId}
-            pluginKey={project.managedByPlugin.pluginKey}
-          />
-        )}
+      {activeTab === "plugin-operations" && project?.id && resolvedCompanyId && project.managedByPlugin && (
+        <ProjectPluginOperationsList
+          projectId={project.id}
+          companyId={resolvedCompanyId}
+          pluginKey={project.managedByPlugin.pluginKey}
+        />
+      )}
 
       {activeTab === "workspaces" ? (
         workspaceTabDecisionLoaded ? (
           workspaceTabError ? (
-            <p className="text-sm text-destructive">
-              {workspaceTabError.message}
-            </p>
+            <p className="text-sm text-destructive">{workspaceTabError.message}</p>
           ) : (
             <ProjectWorkspacesContent
               companyId={resolvedCompanyId!}
@@ -1282,11 +924,7 @@ export function ProjectDetail() {
             />
           )
         ) : (
-          <p className="text-sm text-muted-foreground">
-            {t("Loading workspaces...", {
-              defaultValue: "Loading workspaces...",
-            })}
-          </p>
+          <p className="text-sm text-muted-foreground">Loading workspaces...</p>
         )
       ) : null}
 

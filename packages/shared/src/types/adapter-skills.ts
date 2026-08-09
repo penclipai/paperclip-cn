@@ -1,5 +1,7 @@
 export type AgentSkillSyncMode = "unsupported" | "persistent" | "ephemeral";
 
+export type AgentSkillAssignmentMode = "add" | "remove" | "replace";
+
 export type AgentSkillState =
   | "available"
   | "configured"
@@ -49,5 +51,6 @@ export interface AgentSkillSnapshot {
 }
 
 export interface AgentSkillSyncRequest {
+  mode: AgentSkillAssignmentMode;
   desiredSkills: Array<string | AgentDesiredSkillEntry>;
 }

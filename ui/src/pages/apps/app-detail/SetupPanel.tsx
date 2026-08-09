@@ -1,4 +1,3 @@
-import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import type { ToolCatalogEntry, ToolConnection } from "@penclipai/shared";
 import { Button } from "@/components/ui/button";
@@ -6,10 +5,7 @@ import { Input } from "@/components/ui/input";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
 import { appDefinitionSlug } from "../app-definition-display";
 import type { AppDetailSectionProps } from "./types";
-import {
-  googleSheetsConfigWithAllowlist,
-  parseGoogleSheetIds,
-} from "../google-sheets";
+import { googleSheetsConfigWithAllowlist, parseGoogleSheetIds } from "../google-sheets";
 
 export function SetupPanel({
   connection,
@@ -20,7 +16,10 @@ export function SetupPanel({
   configUpdateDisabled,
   onStartOAuth,
   oauthStartDisabled,
-}: Pick<AppDetailSectionProps, "connection" | "galleryEntry"> & {
+}: Pick<
+  AppDetailSectionProps,
+  "connection" | "galleryEntry"
+> & {
   onToggleApp: () => void;
   appToggleDisabled: boolean;
   onUpdateConfig: (config: Record<string, unknown>) => void;
@@ -30,16 +29,12 @@ export function SetupPanel({
 }) {
   const description = galleryEntry?.description ?? null;
   const oauth = connection.config?.oauth;
-  const hasOAuthSignIn = Boolean(
-    oauth && typeof oauth === "object" && !Array.isArray(oauth),
-  );
+  const hasOAuthSignIn = Boolean(oauth && typeof oauth === "object" && !Array.isArray(oauth));
   const isSmokeLabFixture = connection.config?.smokeLabFixture === "oauth-http";
   return (
     <div className="space-y-6">
       {description && (
-        <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
-          {description}
-        </p>
+        <p className="max-w-2xl text-sm leading-6 text-muted-foreground">{description}</p>
       )}
       {appDefinitionSlug(galleryEntry) === "google-sheets" && (
         <GoogleSheetsAllowlistSection
@@ -51,44 +46,37 @@ export function SetupPanel({
       {hasOAuthSignIn && (
         <OAuthConnectionSection
           connected={Boolean((oauth as Record<string, unknown>).connectedAt)}
-          isSmokeLabFixture={isSmokeLabFixture}
+          providerName={appDefinitionSlug(galleryEntry) === "notion" ? "Notion" : isSmokeLabFixture ? "Smoke OAuth" : "OAuth"}
           disabled={oauthStartDisabled}
           onStart={onStartOAuth}
         />
       )}
-      <AppLifecycleSection
-        connection={connection}
-        disabled={appToggleDisabled}
-        onToggle={onToggleApp}
-      />
+      <AppLifecycleSection connection={connection} disabled={appToggleDisabled} onToggle={onToggleApp} />
     </div>
   );
 }
 
 function OAuthConnectionSection({
   connected,
-  isSmokeLabFixture,
+  providerName,
   disabled,
   onStart,
 }: {
   connected: boolean;
-  isSmokeLabFixture: boolean;
+  providerName: string;
   disabled: boolean;
   onStart: () => void;
 }) {
-  const providerName = isSmokeLabFixture ? "Smoke OAuth" : "OAuth";
   return (
     <section className="rounded-xl border border-border bg-card px-5 py-4">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 className="text-sm font-bold text-foreground">
-            {connected
-              ? `Connected with ${providerName}`
-              : `Connect with ${providerName}`}
+            {connected ? `${providerName} connected` : `Connect with ${providerName}`}
           </h2>
           <p className="mt-0.5 text-sm text-muted-foreground">
             {connected
-              ? "Sign in again to replace this connection's OAuth session."
+              ? "Your workspace authorization is active. Reconnect any time to replace it."
               : "Open the provider's consent page to finish connecting this app."}
           </p>
         </div>
@@ -102,9 +90,7 @@ function OAuthConnectionSection({
 
 function currentSpreadsheetIds(connection: ToolConnection): string[] {
   const raw = connection.config?.allowedSpreadsheetIds;
-  return Array.isArray(raw)
-    ? raw.map((value) => String(value).trim()).filter(Boolean)
-    : [];
+  return Array.isArray(raw) ? raw.map((value) => String(value).trim()).filter(Boolean) : [];
 }
 
 function googleSheetsUrlForId(id: string): string {
@@ -120,7 +106,6 @@ function GoogleSheetsAllowlistSection({
   disabled: boolean;
   onUpdateConfig: (config: Record<string, unknown>) => void;
 }) {
-  const { t } = useTranslation();
   const [draft, setDraft] = useState("");
   const [error, setError] = useState<string | null>(null);
   const ids = currentSpreadsheetIds(connection);
@@ -130,41 +115,32 @@ function GoogleSheetsAllowlistSection({
   return (
     <section className="rounded-xl border border-border bg-card px-5 py-4">
       <div>
-        <h2 className="text-sm font-bold text-foreground">
-          {t("apps.detail.setup.googleSheets.title")}
-        </h2>
+        <h2 className="text-sm font-bold text-foreground">Sheets agents can use</h2>
         <p className="mt-0.5 text-sm text-muted-foreground">
-          {t("apps.detail.setup.googleSheets.description")}
+          Agents can only use the sheets listed here.
         </p>
       </div>
 
       <div className="mt-4 space-y-2">
         {ids.length === 0 ? (
-          <div className="text-sm text-muted-foreground">
-            {t("apps.detail.setup.googleSheets.empty")}
-          </div>
+          <div className="text-sm text-muted-foreground">No sheets are connected yet.</div>
         ) : (
           ids.map((id) => {
             const sheetUrl = googleSheetsUrlForId(id);
             return (
-              <div
-                key={id}
-                className="flex items-center gap-3 border-t border-border py-2 first:border-t-0"
-              >
+              <div key={id} className="flex items-center gap-3 border-t border-border py-2 first:border-t-0">
                 <a
                   href={sheetUrl}
                   target="_blank"
                   rel="noreferrer"
                   className="min-w-0 flex-1 text-sm font-medium text-foreground underline-offset-2 hover:underline"
                 >
-                  <span className="block truncate">
-                    {t("apps.detail.setup.googleSheets.openSheet")}
-                  </span>
+                  <span className="block truncate">Open sheet</span>
                   <span className="block truncate font-mono text-xs font-normal text-muted-foreground">
                     {sheetUrl}
                   </span>
                   <span className="block truncate font-mono text-(length:--text-micro) font-normal text-muted-foreground/80">
-                    {t("apps.setup.id")} {id}
+                    ID: {id}
                   </span>
                 </a>
                 <Button
@@ -172,16 +148,10 @@ function GoogleSheetsAllowlistSection({
                   size="sm"
                   variant="outline"
                   disabled={disabled || ids.length <= 1}
-                  title={
-                    ids.length <= 1
-                      ? "Add another sheet before removing this one."
-                      : undefined
-                  }
-                  onClick={() =>
-                    saveIds(ids.filter((current) => current !== id))
-                  }
+                  title={ids.length <= 1 ? "Add another sheet before removing this one." : undefined}
+                  onClick={() => saveIds(ids.filter((current) => current !== id))}
                 >
-                  {t("secrets.remove")}
+                  Remove
                 </Button>
               </div>
             );
@@ -196,7 +166,7 @@ function GoogleSheetsAllowlistSection({
             setDraft(event.target.value);
             setError(null);
           }}
-          placeholder={t("apps.detail.setup.googleSheets.placeholder")}
+          placeholder="https://docs.google.com/spreadsheets/d/..."
           className="h-10"
         />
         <Button
@@ -217,7 +187,7 @@ function GoogleSheetsAllowlistSection({
             setDraft("");
           }}
         >
-          {t("apps.detail.setup.googleSheets.addSheet")}
+          Add sheet
         </Button>
       </div>
       {error && <div className="mt-2 text-xs text-destructive">{error}</div>}
@@ -234,8 +204,7 @@ export function AppLifecycleSection({
   disabled: boolean;
   onToggle: () => void;
 }) {
-  const enabled =
-    connection.enabled !== false && connection.status !== "disabled";
+  const enabled = connection.enabled !== false && connection.status !== "disabled";
   return (
     <section className="rounded-xl border border-border bg-card px-5 py-4">
       <div className="flex items-center justify-between gap-4">
@@ -261,72 +230,85 @@ export function AppLifecycleSection({
   );
 }
 
-export function QuarantinePill({
-  count,
+export function QuarantinedActionsReview({
   entries,
   disabled,
-  onTurnOn,
+  onSubmit,
 }: {
-  count: number;
   entries: ToolCatalogEntry[];
   disabled: boolean;
-  onTurnOn: (ids: string[]) => void;
+  onSubmit: (enabledIds: string[]) => void;
 }) {
-  const { t } = useTranslation();
-  const [open, setOpen] = useState(false);
+  const [enabledIds, setEnabledIds] = useState<Set<string>>(new Set());
+  const count = entries.length;
+  const selectedIds = entries.filter((entry) => enabledIds.has(entry.id)).map((entry) => entry.id);
   return (
-    <div className="rounded-xl border border-amber-500/40 bg-amber-500/[0.08] p-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="text-sm font-semibold text-amber-800 dark:text-amber-200">
-          {count} {t("apps.setup.newCount")}{" "}
-          {count === 1 ? "action" : "actions"} {t("apps.setup.toReview")}
+    <section className="overflow-hidden rounded-xl border border-amber-500/40 bg-amber-500/[0.08]">
+      <div className="flex flex-wrap items-start justify-between gap-3 px-4 py-3">
+        <div>
+          <div className="text-sm font-semibold text-amber-800 dark:text-amber-200">
+            Review {count} new {count === 1 ? "action" : "actions"}
+          </div>
+          <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">
+            Turn on the actions agents may use. Anything left off stays blocked when you save.
+          </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setOpen((v) => !v)}
-          >
-            {open ? "Hide" : "Review"}
-          </Button>
-          <Button
-            size="sm"
+          <button
+            type="button"
+            className="text-xs font-medium text-amber-800 hover:text-amber-950 dark:text-amber-200 dark:hover:text-amber-50"
             disabled={disabled}
-            onClick={() => onTurnOn(entries.map((e) => e.id))}
+            onClick={() => setEnabledIds(new Set(entries.map((entry) => entry.id)))}
           >
-            {t("apps.detail.setup.quarantine.turnOnAll")}
-          </Button>
+            Turn all on
+          </button>
+          <button
+            type="button"
+            className="text-xs font-medium text-amber-800 hover:text-amber-950 dark:text-amber-200 dark:hover:text-amber-50"
+            disabled={disabled}
+            onClick={() => setEnabledIds(new Set())}
+          >
+            Turn all off
+          </button>
         </div>
       </div>
-      <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">
-        {t("apps.detail.setup.quarantine.description")}
-      </p>
-      {open && (
-        <div className="mt-3 divide-y divide-amber-500/25 rounded-lg border border-amber-500/40 bg-background">
-          {entries.map((entry) => (
-            <div key={entry.id} className="flex items-center gap-3 px-4 py-2.5">
+      <div className="divide-y divide-amber-500/25 border-y border-amber-500/25 bg-background">
+        {entries.map((entry) => {
+          const enabled = enabledIds.has(entry.id);
+          const label = entry.title ?? entry.toolName;
+          return (
+            <div key={entry.id} className="flex items-center gap-3 px-4 py-3">
               <div className="min-w-0 flex-1">
-                <div className="text-sm font-medium text-foreground">
-                  {entry.title ?? entry.toolName}
-                </div>
+                <div className="text-sm font-medium text-foreground">{label}</div>
                 {entry.description && (
-                  <div className="truncate text-xs text-muted-foreground">
-                    {entry.description}
-                  </div>
+                  <div className="truncate text-xs text-muted-foreground">{entry.description}</div>
                 )}
               </div>
-              <Button
-                size="sm"
-                variant="outline"
+              <ToggleSwitch
+                aria-label={`${label} allowed`}
+                checked={enabled}
                 disabled={disabled}
-                onClick={() => onTurnOn([entry.id])}
-              >
-                {t("apps.detail.setup.quarantine.turnOn")}
-              </Button>
+                onCheckedChange={(next) => {
+                  setEnabledIds((current) => {
+                    const updated = new Set(current);
+                    if (next) updated.add(entry.id);
+                    else updated.delete(entry.id);
+                    return updated;
+                  });
+                }}
+              />
             </div>
-          ))}
-        </div>
-      )}
-    </div>
+          );
+        })}
+      </div>
+      <div className="flex items-center justify-between gap-3 px-4 py-3">
+        <span className="text-xs text-amber-700 dark:text-amber-300">
+          {selectedIds.length} of {count} will be on
+        </span>
+        <Button size="sm" disabled={disabled} onClick={() => onSubmit(selectedIds)}>
+          {disabled ? "Saving…" : "Save choices"}
+        </Button>
+      </div>
+    </section>
   );
 }

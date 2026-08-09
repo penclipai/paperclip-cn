@@ -15,37 +15,33 @@ const {
   createDbMock,
   detectPortMock,
   deriveAuthTrustedOriginsMock,
-  embeddedPostgresCtorMock,
-  embeddedPostgresInstanceMock,
-  ensurePostgresDatabaseMock,
   environmentCustomImagesServiceMock,
   environmentCustomImagesServiceFactoryMock,
+  executionWorkspaceServiceFactoryMock,
+  executionWorkspaceServiceMock,
+  externalObjectsServiceMock,
+  externalObjectsServiceFactoryMock,
   feedbackExportServiceMock,
   feedbackServiceFactoryMock,
   fakeServer,
   heartbeatServiceFactoryMock,
   heartbeatServiceMock,
-  cleanupOrphanedEmbeddedPostgresForkchildrenMock,
+  issueThreadInteractionServiceFactoryMock,
+  issueThreadInteractionServiceMock,
   loadConfigMock,
-  resetIncompleteEmbeddedPostgresDataDirMock,
   resolveHeartbeatSchedulingSuppressionMock,
   routineServiceFactoryMock,
   routineServiceMock,
 } = vi.hoisted(() => {
   const createAppMock = vi.fn(async () => ((_: unknown, __: unknown) => {}) as never);
   const createBetterAuthInstanceMock = vi.fn(() => ({}));
-  const createDbMock = vi.fn(() => ({}) as never);
+  const createDbMock = vi.fn(() => ({
+    select: vi.fn(() => ({
+      from: vi.fn(() => ({ where: vi.fn(async () => []) })),
+    })),
+  }) as never);
   const detectPortMock = vi.fn(async (port: number) => port);
   const deriveAuthTrustedOriginsMock = vi.fn(() => []);
-  const embeddedPostgresInstanceMock = {
-    initialise: vi.fn(async () => undefined),
-    start: vi.fn(async () => undefined),
-    stop: vi.fn(async () => undefined),
-  };
-  const embeddedPostgresCtorMock = vi.fn(function EmbeddedPostgresMock() {
-    return embeddedPostgresInstanceMock;
-  });
-  const ensurePostgresDatabaseMock = vi.fn(async () => "existing");
   const resolveHeartbeatSchedulingSuppressionMock = vi.fn(() => ({
     suppressed: false,
     reason: null,
@@ -77,10 +73,37 @@ const {
     tickTimers: vi.fn(async () => ({ checked: 0, enqueued: 0, skipped: 0 })),
   };
   const heartbeatServiceFactoryMock = vi.fn(() => heartbeatServiceMock);
+  const issueThreadInteractionServiceMock = {
+    sweepSupersededPendingRequestConfirmations: vi.fn(async () => ({ expired: 0 })),
+    sweepMergedPullRequestConfirmations: vi.fn(async () => ({
+      checked: 0,
+      candidates: 0,
+      accepted: 0,
+      woken: 0,
+    })),
+  };
+  const issueThreadInteractionServiceFactoryMock = vi.fn(() => issueThreadInteractionServiceMock);
   const environmentCustomImagesServiceMock = {
     cleanupExpiredSetupSessions: vi.fn(async () => ({ scanned: 0, timedOut: 0, failed: 0 })),
   };
   const environmentCustomImagesServiceFactoryMock = vi.fn(() => environmentCustomImagesServiceMock);
+  const executionWorkspaceServiceMock = {
+    sweepTerminalWorkspaces: vi.fn(async () => ({
+      checked: 0,
+      eligible: 0,
+      archived: 0,
+      cleanupFailed: 0,
+      skippedActiveRun: 0,
+      skippedNonTerminalTree: 0,
+      skippedUndelivered: 0,
+      skippedRace: 0,
+    })),
+  };
+  const executionWorkspaceServiceFactoryMock = vi.fn(() => executionWorkspaceServiceMock);
+  const externalObjectsServiceMock = {
+    refreshDueObjectsForActiveCompanies: vi.fn(async () => ({ companies: 0, checked: 0, refreshed: 0 })),
+  };
+  const externalObjectsServiceFactoryMock = vi.fn(() => externalObjectsServiceMock);
   const routineServiceMock = {
     tickScheduledTriggers: vi.fn(async () => ({ triggered: 0 })),
   };
@@ -99,8 +122,6 @@ const {
     close: vi.fn(),
   };
   const loadConfigMock = vi.fn();
-  const cleanupOrphanedEmbeddedPostgresForkchildrenMock = vi.fn(async () => []);
-  const resetIncompleteEmbeddedPostgresDataDirMock = vi.fn(() => false);
 
   return {
     createAppMock,
@@ -108,19 +129,20 @@ const {
     createDbMock,
     detectPortMock,
     deriveAuthTrustedOriginsMock,
-    embeddedPostgresCtorMock,
-    embeddedPostgresInstanceMock,
-    ensurePostgresDatabaseMock,
     environmentCustomImagesServiceMock,
     environmentCustomImagesServiceFactoryMock,
+    executionWorkspaceServiceFactoryMock,
+    executionWorkspaceServiceMock,
+    externalObjectsServiceMock,
+    externalObjectsServiceFactoryMock,
     feedbackExportServiceMock,
     feedbackServiceFactoryMock,
     fakeServer,
     heartbeatServiceFactoryMock,
     heartbeatServiceMock,
-    cleanupOrphanedEmbeddedPostgresForkchildrenMock,
+    issueThreadInteractionServiceFactoryMock,
+    issueThreadInteractionServiceMock,
     loadConfigMock,
-    resetIncompleteEmbeddedPostgresDataDirMock,
     resolveHeartbeatSchedulingSuppressionMock,
     routineServiceFactoryMock,
     routineServiceMock,
@@ -176,44 +198,19 @@ vi.mock("detect-port", () => ({
   default: detectPortMock,
 }));
 
-vi.mock("embedded-postgres", () => ({
-  default: embeddedPostgresCtorMock,
-}));
-
 vi.mock("@penclipai/db", () => ({
   createDb: createDbMock,
-  ensurePostgresDatabase: ensurePostgresDatabaseMock,
-  getPostgresDataDirectory: vi.fn(async () => null),
+  ensurePostgresDatabase: vi.fn(),
+  getPostgresDataDirectory: vi.fn(),
   inspectMigrations: vi.fn(async () => ({ status: "upToDate" })),
   applyPendingMigrations: vi.fn(),
   reconcilePendingMigrationHistory: vi.fn(async () => ({ repairedMigrations: [] })),
-  createEmbeddedPostgresLogBuffer: vi.fn(() => {
-    const recentLogs: string[] = [];
-    return {
-      append: vi.fn((message: unknown) => {
-        recentLogs.push(String(message ?? ""));
-      }),
-      getRecentLogs: vi.fn(() => [...recentLogs]),
-    };
-  }),
-  formatEmbeddedPostgresError: vi.fn((error: unknown, input: { fallbackMessage: string }) =>
-    error instanceof Error ? error : new Error(input.fallbackMessage),
-  ),
-  cleanupOrphanedEmbeddedPostgresForkchildren: cleanupOrphanedEmbeddedPostgresForkchildrenMock,
-  prepareEmbeddedPostgresNativeRuntime: vi.fn(async () => undefined),
-  recoverEmbeddedPostgresStart: vi.fn(async () => []),
-  resetIncompleteEmbeddedPostgresDataDir: resetIncompleteEmbeddedPostgresDataDirMock,
-  shouldRetryEmbeddedPostgresStart: vi.fn(() => false),
   formatDatabaseBackupResult: vi.fn(() => "ok"),
   runDatabaseBackup: vi.fn(),
   authUsers: {},
   companies: {},
   companyMemberships: {},
   instanceUserRoles: {},
-}));
-
-vi.mock("@penclipai/db/embedded-postgres-runtime-installer", () => ({
-  loadEmbeddedPostgresCtor: vi.fn(async () => embeddedPostgresCtorMock),
 }));
 
 vi.mock("../app.js", () => ({
@@ -253,16 +250,30 @@ vi.mock("../services/index.js", () => ({
     agentMembershipsInserted: 0,
     humanGrantsInserted: 0,
   })),
+  attentionService: vi.fn(() => ({
+    list: vi.fn(async () => ({ items: [], nextCursor: null })),
+  })),
   decisionService: vi.fn(() => ({
     sweepExpired: vi.fn(async () => ({ expired: 0 })),
+  })),
+  decisionRetentionService: vi.fn(() => ({
+    autoArchive: vi.fn(async () => 0),
+    deliverNotifications: vi.fn(async () => ({ notifiedAgents: 0, delivered: 0 })),
   })),
   feedbackService: feedbackServiceFactoryMock,
   bootstrapExecutionPolicyFromEnv: vi.fn(async () => null),
   applyManagedEnvironments: vi.fn(async () => null),
   environmentCustomImageService: environmentCustomImagesServiceFactoryMock,
+  executionWorkspaceService: executionWorkspaceServiceFactoryMock,
+  externalObjectService: externalObjectsServiceFactoryMock,
   heartbeatService: heartbeatServiceFactoryMock,
+  issueThreadInteractionService: issueThreadInteractionServiceFactoryMock,
   issueService: vi.fn(() => ({ update: vi.fn(async () => null) })),
   instanceSettingsService: vi.fn(() => ({
+    getExperimental: vi.fn(async () => ({
+      enableExternalObjects: true,
+      enableStatusCards: false,
+    })),
     getGeneral: vi.fn(async () => ({
       backupRetention: {
         dailyDays: 7,
@@ -301,6 +312,12 @@ vi.mock("../services/index.js", () => ({
   })),
 }));
 
+vi.mock("../services/secret-proposals.js", () => ({
+  createSecretProposalsService: vi.fn(() => ({
+    sweepExpired: vi.fn(async () => 0),
+  })),
+}));
+
 vi.mock("../storage/index.js", () => ({
   createStorageServiceFromConfig: vi.fn(() => ({ id: "storage-service" })),
 }));
@@ -331,15 +348,6 @@ vi.mock("../auth/better-auth.js", () => ({
 }));
 
 import { startServer } from "../index.ts";
-
-beforeEach(() => {
-  cleanupOrphanedEmbeddedPostgresForkchildrenMock.mockResolvedValue([]);
-  resetIncompleteEmbeddedPostgresDataDirMock.mockReturnValue(false);
-  ensurePostgresDatabaseMock.mockResolvedValue("existing");
-  embeddedPostgresInstanceMock.initialise.mockResolvedValue(undefined);
-  embeddedPostgresInstanceMock.start.mockResolvedValue(undefined);
-  embeddedPostgresInstanceMock.stop.mockResolvedValue(undefined);
-});
 
 describe("startServer feedback export wiring", () => {
   beforeEach(() => {
@@ -488,8 +496,41 @@ describe("startServer feedback export wiring", () => {
       await Promise.resolve();
 
       expect(heartbeatServiceMock.tickTimers).not.toHaveBeenCalled();
+      expect(externalObjectsServiceMock.refreshDueObjectsForActiveCompanies).toHaveBeenCalledTimes(1);
+      expect(issueThreadInteractionServiceMock.sweepMergedPullRequestConfirmations).toHaveBeenCalledTimes(1);
+      expect(executionWorkspaceServiceMock.sweepTerminalWorkspaces).toHaveBeenCalledTimes(1);
       expect(routineServiceMock.tickScheduledTriggers).toHaveBeenCalledTimes(1);
       expect(environmentCustomImagesServiceMock.cleanupExpiredSetupSessions).toHaveBeenCalledTimes(2);
+    } finally {
+      setIntervalSpy.mockRestore();
+    }
+  });
+
+  it("keeps external object refresh active when heartbeat scheduling is disabled", async () => {
+    loadConfigMock.mockReturnValue(buildTestConfig({
+      heartbeatSchedulerEnabled: false,
+      heartbeatSchedulerIntervalMs: 30000,
+    }));
+    let intervalCallback: (() => void) | null = null;
+    const setIntervalSpy = vi
+      .spyOn(globalThis, "setInterval")
+      .mockImplementation(((callback: () => void) => {
+        intervalCallback = callback;
+        return 1 as unknown as ReturnType<typeof setInterval>;
+      }) as typeof setInterval);
+
+    try {
+      await startServer();
+
+      expect(heartbeatServiceFactoryMock).not.toHaveBeenCalled();
+      expect(intervalCallback).not.toBeNull();
+      intervalCallback?.();
+      await Promise.resolve();
+      await Promise.resolve();
+
+      expect(externalObjectsServiceMock.refreshDueObjectsForActiveCompanies).toHaveBeenCalledTimes(1);
+      expect(routineServiceMock.tickScheduledTriggers).not.toHaveBeenCalled();
+      expect(environmentCustomImagesServiceMock.cleanupExpiredSetupSessions).not.toHaveBeenCalled();
     } finally {
       setIntervalSpy.mockRestore();
     }
@@ -538,43 +579,6 @@ describe("startServer feedback export wiring", () => {
       "authenticated public deployments require DATABASE_URL to be a postgres/postgresql connection string",
     );
     expect(createDbMock).not.toHaveBeenCalled();
-  });
-});
-
-describe("startServer embedded PostgreSQL recovery", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    loadConfigMock.mockReturnValue(buildTestConfig());
-    process.env.BETTER_AUTH_SECRET = "test-secret";
-  });
-
-  it("resets a half-initialized embedded data directory before deciding whether initdb is needed", async () => {
-    const dataDir = mkdtempSync(path.join(tmpdir(), "paperclip-half-init-db-"));
-    writeFileSync(path.join(dataDir, "PG_VERSION"), "18\n");
-    resetIncompleteEmbeddedPostgresDataDirMock.mockImplementationOnce((dir: string) => {
-      rmSync(dir, { recursive: true, force: true });
-      return true;
-    });
-    loadConfigMock.mockReturnValue(buildTestConfig({
-      databaseMode: "embedded-postgres",
-      databaseUrl: undefined,
-      embeddedPostgresDataDir: dataDir,
-      embeddedPostgresPort: 55432,
-    }));
-
-    try {
-      await startServer();
-    } finally {
-      rmSync(dataDir, { recursive: true, force: true });
-    }
-
-    expect(resetIncompleteEmbeddedPostgresDataDirMock).toHaveBeenCalledWith(dataDir);
-    expect(embeddedPostgresCtorMock).toHaveBeenCalledWith(expect.objectContaining({
-      databaseDir: dataDir,
-      port: 55432,
-    }));
-    expect(embeddedPostgresInstanceMock.initialise).toHaveBeenCalledTimes(1);
-    expect(embeddedPostgresInstanceMock.start).toHaveBeenCalledTimes(1);
   });
 });
 

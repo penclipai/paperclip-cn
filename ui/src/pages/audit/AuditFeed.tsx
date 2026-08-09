@@ -1,5 +1,4 @@
-import { useTranslation } from "react-i18next";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { Download, ScrollText, ShieldAlert } from "lucide-react";
 import type { Agent } from "@penclipai/shared";
@@ -14,20 +13,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Identity } from "@/components/Identity";
 import { AgentIcon } from "@/components/AgentIconPicker";
 import { cn, relativeTime } from "@/lib/utils";
 import { queryKeys } from "@/lib/queryKeys";
 import { formatActivityVerb } from "@/lib/activity-format";
-import {
-  buildCompanyUserProfileMap,
-  type CompanyUserProfile,
-} from "@/lib/company-members";
-import {
-  auditApi,
-  type AuditActionRecord,
-  type AuditActionFilters,
-} from "@/api/audit";
+import { buildCompanyUserProfileMap, type CompanyUserProfile } from "@/lib/company-members";
+import { auditApi, type AuditActionRecord, type AuditActionFilters } from "@/api/audit";
 import { agentsApi } from "@/api/agents";
 import { accessApi } from "@/api/access";
 import { ApiError } from "@/api/client";
@@ -60,6 +53,13 @@ const ENTITY_TYPES: { value: string; label: string }[] = [
   { value: "company", label: "Company" },
 ];
 
+/**
+ * Which actors the feed covers. `all` is the shared company activity view
+ * (people, agents, and the system); `agents` is the privileged agent-action
+ * audit that carries responsible-person and run attribution.
+ */
+export type AuditFeedMode = "all" | "agents";
+
 export interface AuditFeedProps {
   companyId: string;
   /**
@@ -69,6 +69,13 @@ export interface AuditFeedProps {
   lockedAgentId?: string;
   /** Hide the section header/description (the AgentDetail tab supplies its own chrome). */
   hideHeader?: boolean;
+  /**
+   * Controlled feed mode. Supplying `onModeChange` turns on the mode toggle for
+   * callers that hold `audit:view_agent_actions`; without it the feed stays in
+   * `mode` (or the all-actors default). Ignored when `lockedAgentId` is set.
+   */
+  mode?: AuditFeedMode;
+  onModeChange?: (mode: AuditFeedMode) => void;
 }
 
 function toStartIso(value: string): string | undefined {
@@ -93,19 +100,21 @@ function AuditActor({
   agentMap: Map<string, Agent>;
   userProfileMap: Map<string, CompanyUserProfile>;
 }) {
-  const agent = record.agentId ? agentMap.get(record.agentId) : null;
+  // Agent names are company-readable through the same authorization-filtered
+  // directory used by this page. The basic audit tier strips privileged
+  // attribution (`agentId`) but retains the acting principal (`actorId`), so
+  // use that principal to avoid presenting a trivially joinable identity as
+  // an anonymous "Agent" in the UI.
+  const actorAgentId = record.agentId
+    ?? (record.actorType === "agent" ? record.actorId : null);
+  const agent = actorAgentId ? agentMap.get(actorAgentId) : null;
   if (agent) {
     return (
-      <span
-        className="inline-flex min-w-0 items-center gap-1.5"
-        title={agent.name}
-      >
+      <span className="inline-flex min-w-0 items-center gap-1.5" title={agent.name}>
         <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
           <AgentIcon icon={agent.icon} className="h-3 w-3" />
         </span>
-        <span className="truncate font-medium text-foreground">
-          {agent.name}
-        </span>
+        <span className="truncate font-medium text-foreground">{agent.name}</span>
       </span>
     );
   }
@@ -120,10 +129,17 @@ function AuditActor({
       />
     );
   }
-  const label = record.actorType === "plugin" ? "Plugin" : "System";
-  return (
-    <Identity name={label} size="sm" className="font-medium text-foreground" />
-  );
+  // Fall back to the actor *type*, never a blanket "System". This still covers
+  // deleted or authorization-filtered agents that are absent from the directory.
+  const label =
+    record.actorType === "plugin"
+      ? "Plugin"
+      : record.actorType === "agent"
+        ? "Agent"
+        : record.actorType === "user"
+          ? "User"
+          : "System";
+  return <Identity name={label} size="sm" className="font-medium text-foreground" />;
 }
 
 /**
@@ -139,13 +155,8 @@ function AuditEntityNode({ record }: { record: AuditActionRecord }) {
 
   if (issueRef) {
     return (
-      <Link
-        to={`/issues/${issueRef}`}
-        className="font-medium text-primary hover:underline"
-      >
-        {issue?.identifier
-          ? `${issue.identifier}${issue.title ? ` · ${issue.title}` : ""}`
-          : "the task"}
+      <Link to={`/issues/${issueRef}`} className="font-medium text-primary hover:underline">
+        {issue?.identifier ? `${issue.identifier}${issue.title ? ` · ${issue.title}` : ""}` : "the task"}
       </Link>
     );
   }
@@ -165,41 +176,24 @@ function AuditRow({
   agentMap: Map<string, Agent>;
   userProfileMap: Map<string, CompanyUserProfile>;
 }) {
-  const { t } = useTranslation();
-  const verb = formatActivityVerb(record.action, record.details, {
-    agentMap,
-    userProfileMap,
-  });
-  const responsible = record.responsibleUserId
-    ? userProfileMap.get(record.responsibleUserId)
-    : null;
+  const verb = formatActivityVerb(record.action, record.details, { agentMap, userProfileMap });
+  const responsible = record.responsibleUserId ? userProfileMap.get(record.responsibleUserId) : null;
   // Suppress the "on behalf of" chip when the human actor *is* the responsible user.
   const showOnBehalf = Boolean(
-    record.responsibleUserId &&
-      !(
-        record.actorType === "user" &&
-        record.actorId === record.responsibleUserId
-      ),
+    record.responsibleUserId
+      && !(record.actorType === "user" && record.actorId === record.responsibleUserId),
   );
-  const responsibleLabel =
-    responsible?.label ?? (record.responsibleUserId ? "a user" : null);
+  const responsibleLabel = responsible?.label ?? (record.responsibleUserId ? "a user" : null);
   const excerpt = record.entity.comment?.excerpt?.trim();
   // Show the document key only when it isn't already the linked entity node.
-  const documentKey =
-    record.entity.issue && record.entity.document
-      ? record.entity.document.key
-      : null;
+  const documentKey = record.entity.issue && record.entity.document ? record.entity.document.key : null;
 
   return (
     <li className="px-4 py-3 text-sm">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 space-y-1">
           <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-foreground">
-            <AuditActor
-              record={record}
-              agentMap={agentMap}
-              userProfileMap={userProfileMap}
-            />
+            <AuditActor record={record} agentMap={agentMap} userProfileMap={userProfileMap} />
             <span className="text-muted-foreground">{verb}</span>
             <AuditEntityNode record={record} />
           </div>
@@ -210,16 +204,13 @@ function AuditRow({
           ) : null}
           {documentKey ? (
             <p className="text-xs text-muted-foreground">
-              {t("artifactsPanel.documentFallback")}{" "}
-              <span className="font-mono text-(length:--text-micro)">
-                {documentKey}
-              </span>
+              Document <span className="font-mono text-(length:--text-micro)">{documentKey}</span>
             </p>
           ) : null}
           <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
             {showOnBehalf && responsibleLabel ? (
               <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5">
-                {t("issueRunLedger.onBehalfOf")} {responsibleLabel}
+                on behalf of {responsibleLabel}
               </span>
             ) : null}
             {record.runId && record.agentId ? (
@@ -227,12 +218,10 @@ function AuditRow({
                 to={`/agents/${record.agentId}/runs/${record.runId}`}
                 className="text-primary hover:underline"
               >
-                {t("auditFeed.viewRun")}
+                View run
               </Link>
             ) : null}
-            <span className="font-mono text-(length:--text-micro) opacity-70">
-              {record.action}
-            </span>
+            <span className="font-mono text-(length:--text-micro) opacity-70">{record.action}</span>
           </div>
         </div>
         <time
@@ -249,21 +238,18 @@ function AuditRow({
 
 /** The permission-denied / upsell state shown when the caller lacks the grant. */
 function AuditUpsell() {
-  const { t } = useTranslation();
   return (
     <Card>
       <CardContent className="flex flex-col items-center gap-3 py-14 text-center">
         <ShieldAlert className="h-10 w-10 text-muted-foreground/50" />
         <div>
-          <p className="text-sm font-medium text-foreground">
-            {t("auditFeed.enterpriseTitle")}
-          </p>
+          <p className="text-sm font-medium text-foreground">Agent audit is a Paperclip Enterprise view</p>
           <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
-            {t("auditFeed.permissionPrefix")}{" "}
-            <span className="font-mono text-(length:--text-micro)">
-              audit:view_agent_actions
-            </span>{" "}
-            {t("auditFeed.permissionSuffix")}
+            The agent audit log gives you a searchable, exportable record of everything your agents
+            did — every comment, task change, approval, and run — with the responsible person for
+            each action. Ask an administrator to grant you the{" "}
+            <span className="font-mono text-(length:--text-micro)">audit:view_agent_actions</span>{" "}
+            permission to view it.
           </p>
         </div>
       </CardContent>
@@ -275,8 +261,9 @@ export function AuditFeed({
   companyId,
   lockedAgentId,
   hideHeader,
+  mode,
+  onModeChange,
 }: AuditFeedProps) {
-  const { t } = useTranslation();
   const { pushToast } = useToastActions();
   const [agent, setAgent] = useState<string>(ALL);
   const [responsibleUser, setResponsibleUser] = useState<string>(ALL);
@@ -285,6 +272,7 @@ export function AuditFeed({
   const [dateFrom, setDateFrom] = useState<string>("");
   const [dateTo, setDateTo] = useState<string>("");
   const [exporting, setExporting] = useState(false);
+  const [downgradeRecoveryAttempted, setDowngradeRecoveryAttempted] = useState(false);
 
   const agents = useQuery({
     queryKey: queryKeys.agents.list(companyId),
@@ -305,7 +293,13 @@ export function AuditFeed({
     [userDirectory.data],
   );
 
+  // The per-agent tab keeps the legacy privileged scope because it always
+  // carries an attribution filter and must not silently downgrade to the basic
+  // tier. Everywhere else the mode picks the scope, defaulting to all actors.
+  const resolvedMode: AuditFeedMode = lockedAgentId ? "agents" : mode ?? "all";
+
   const filters: AuditActionFilters = {
+    actorScope: resolvedMode,
     agentId: lockedAgentId ?? (agent === ALL ? undefined : agent),
     responsibleUserId: responsibleUser === ALL ? undefined : responsibleUser,
     action: actionDomain === ALL ? undefined : actionDomain,
@@ -315,16 +309,17 @@ export function AuditFeed({
   };
 
   const hasActiveFilters = Boolean(
-    (!lockedAgentId && agent !== ALL) ||
-      responsibleUser !== ALL ||
-      actionDomain !== ALL ||
-      entityType !== ALL ||
-      dateFrom ||
-      dateTo,
+    (!lockedAgentId && agent !== ALL)
+      || responsibleUser !== ALL
+      || actionDomain !== ALL
+      || entityType !== ALL
+      || dateFrom
+      || dateTo,
   );
 
   const feed = useInfiniteQuery({
     queryKey: queryKeys.audit.agentActions(companyId, {
+      actorScope: filters.actorScope,
       agentId: filters.agentId,
       responsibleUserId: filters.responsibleUserId,
       action: filters.action,
@@ -333,24 +328,90 @@ export function AuditFeed({
       to: filters.to,
     }),
     queryFn: ({ pageParam }) =>
-      auditApi.listAgentActions(companyId, {
-        ...filters,
-        limit: PAGE_SIZE,
-        cursor: pageParam ?? undefined,
-      }),
+      auditApi.listAgentActions(companyId, { ...filters, limit: PAGE_SIZE, cursor: pageParam ?? undefined }),
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
-    retry: (count, error) =>
-      !(error instanceof ApiError && error.status === 403) && count < 2,
+    retry: (count, error) => !(error instanceof ApiError && error.status === 403) && count < 2,
   });
 
-  const items = useMemo(
-    () => feed.data?.pages.flatMap((page) => page.items) ?? [],
-    [feed.data],
+  const permissionDenied = feed.error instanceof ApiError && feed.error.status === 403;
+  const hasBasicPage = feed.data?.pages.some((page) => page.accessTier === "basic") ?? false;
+  const hasFullPage = feed.data?.pages.some((page) => page.accessTier === "full") ?? false;
+
+  // Once the server answers at the basic tier the caller has lost the permission
+  // that produced the privileged attribution on the pages already in the cache.
+  // Drop those pages rather than rendering revoked "on behalf of" attribution
+  // next to stripped rows — the recovery refetch below may never clear them.
+  const items = useMemo(() => {
+    const pages = feed.data?.pages ?? [];
+    const visible = hasBasicPage ? pages.filter((page) => page.accessTier !== "full") : pages;
+    return visible.flatMap((page) => page.items);
+  }, [feed.data, hasBasicPage]);
+  // Access may be revoked between cursor requests. Treat the least-privileged
+  // page as authoritative until every cached page has been fetched again.
+  const accessTier = hasBasicPage ? "basic" : feed.data?.pages[0]?.accessTier;
+  const hasMixedAccessTiers = hasBasicPage && hasFullPage;
+  const canUseAdvancedControls = lockedAgentId
+    ? true
+    : accessTier === "full";
+  // The recovery refetch below gets one shot. If it does not clear the mixed
+  // pages — it errored, or it somehow came back mixed again — the cache keeps
+  // them, so `hasMixedAccessTiers` would stay true forever. Only call the feed
+  // "recovering" while that attempt is outstanding; once it has settled, fall
+  // through to normal rendering. Otherwise the banner permanently hides the
+  // error state and its "Try again" button, with no way off the page. Falling
+  // through is safe because `items` already excludes the privileged pages, so
+  // an unrecovered cache renders as a plain basic-tier feed.
+  const downgradeRecoveryExhausted = Boolean(
+    hasMixedAccessTiers && downgradeRecoveryAttempted && !feed.isFetching,
+  );
+  const recoveringFromAccessDowngrade = Boolean(
+    !lockedAgentId
+      && !downgradeRecoveryExhausted
+      && ((permissionDenied && hasActiveFilters) || hasMixedAccessTiers),
+  );
+  // A reader without `audit:view_agent_actions` can still land on the
+  // agent-actions mode through an old `/audit` deep link. Drop them into the
+  // shared all-activity feed instead of blocking the whole page with the upsell.
+  const fallingBackToAllActivity = Boolean(
+    permissionDenied && !lockedAgentId && resolvedMode === "agents" && onModeChange,
+  );
+  // The privileged mode is only offered to callers the server already answered
+  // at the full tier — everyone else just gets the basic all-activity feed.
+  const showModeToggle = Boolean(
+    !lockedAgentId
+      && onModeChange
+      && !fallingBackToAllActivity
+      && (resolvedMode === "agents" || accessTier === "full"),
   );
 
-  const permissionDenied =
-    feed.error instanceof ApiError && feed.error.status === 403;
+  useEffect(() => {
+    if (fallingBackToAllActivity) onModeChange?.("all");
+  }, [fallingBackToAllActivity, onModeChange]);
+
+  useEffect(() => {
+    if (!lockedAgentId && (accessTier === "basic" || recoveringFromAccessDowngrade)) {
+      setAgent(ALL);
+      setResponsibleUser(ALL);
+      setActionDomain(ALL);
+      setEntityType(ALL);
+      setDateFrom("");
+      setDateTo("");
+    }
+  }, [accessTier, hasMixedAccessTiers, lockedAgentId, recoveringFromAccessDowngrade]);
+
+  // Recover from a mid-pagination downgrade with exactly one refetch. `feed`
+  // gets a new identity on every render, so an unguarded refetch here re-fires
+  // on each render and hammers the endpoint while the tiers stay mixed.
+  useEffect(() => {
+    if (!hasMixedAccessTiers) {
+      if (downgradeRecoveryAttempted) setDowngradeRecoveryAttempted(false);
+      return;
+    }
+    if (downgradeRecoveryAttempted) return;
+    setDowngradeRecoveryAttempted(true);
+    void feed.refetch();
+  }, [downgradeRecoveryAttempted, feed, hasMixedAccessTiers]);
 
   const clearFilters = () => {
     setAgent(ALL);
@@ -365,6 +426,7 @@ export function AuditFeed({
     setExporting(true);
     try {
       const blob = await auditApi.exportAgentActionsCsv(companyId, {
+        actorScope: filters.actorScope,
         agentId: filters.agentId,
         responsibleUserId: filters.responsibleUserId,
         action: filters.action,
@@ -375,25 +437,18 @@ export function AuditFeed({
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `agent-audit-${companyId}.csv`;
+      link.download = `${resolvedMode === "agents" ? "agent-audit" : "activity"}-${companyId}.csv`;
       document.body.appendChild(link);
       link.click();
       link.remove();
       // Browsers may read blob URLs lazily after click(), so keep the URL alive
       // long enough for the download to start.
       window.setTimeout(() => URL.revokeObjectURL(url), 5_000);
-      pushToast({
-        title: "Audit exported",
-        body: "Your CSV download has started.",
-        tone: "success",
-      });
+      pushToast({ title: "Audit exported", body: "Your CSV download has started.", tone: "success" });
     } catch (error) {
       pushToast({
         title: "Export failed",
-        body:
-          error instanceof Error
-            ? error.message
-            : "Could not export the audit log.",
+        body: error instanceof Error ? error.message : "Could not export the audit log.",
         tone: "error",
       });
     } finally {
@@ -401,7 +456,7 @@ export function AuditFeed({
     }
   };
 
-  if (permissionDenied) {
+  if (permissionDenied && !recoveringFromAccessDowngrade && !fallingBackToAllActivity) {
     return <AuditUpsell />;
   }
 
@@ -410,122 +465,132 @@ export function AuditFeed({
       {!hideHeader ? (
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h1 className="text-lg font-semibold text-foreground">
-              {t("auditFeed.title")}
-            </h1>
+            <h1 className="text-lg font-semibold text-foreground">Activity</h1>
             <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-              {t("auditFeed.description")}
+              {resolvedMode === "agents"
+                ? "Every recorded agent action, newest first — with the responsible person and run behind each one."
+                : "Everything happening in your company, newest first — people, agents, and the system. Each line is one recorded action."}
             </p>
           </div>
         </div>
       ) : null}
 
-      <div className="flex flex-wrap items-center gap-2">
-        {!lockedAgentId ? (
-          <Select value={agent} onValueChange={setAgent}>
-            <SelectTrigger className="w-40">
-              <SelectValue
-                placeholder={t("caseComponents.activity.actors.agent")}
-              />
+      {showModeToggle ? (
+        <Tabs value={resolvedMode} onValueChange={(value) => onModeChange?.(value as AuditFeedMode)}>
+          <TabsList aria-label="Activity scope">
+            <TabsTrigger value="all">All activity</TabsTrigger>
+            <TabsTrigger value="agents">Agent actions</TabsTrigger>
+          </TabsList>
+        </Tabs>
+      ) : null}
+
+      {canUseAdvancedControls ? (
+        <div className="flex flex-wrap items-center gap-2">
+          {!lockedAgentId ? (
+            <Select value={agent} onValueChange={setAgent}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Agent" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL}>All agents</SelectItem>
+                {(agents.data ?? []).map((a) => (
+                  <SelectItem key={a.id} value={a.id}>
+                    {a.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : null}
+          <Select value={responsibleUser} onValueChange={setResponsibleUser}>
+            {/* Wide enough for "All responsible users" — w-44 truncated it. */}
+            <SelectTrigger className="w-52">
+              <SelectValue placeholder="Responsible user" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={ALL}>{t("auditFeed.allAgents")}</SelectItem>
-              {(agents.data ?? []).map((a) => (
-                <SelectItem key={a.id} value={a.id}>
-                  {a.name}
+              <SelectItem value={ALL}>All responsible users</SelectItem>
+              {(userDirectory.data?.users ?? []).map((u) => (
+                <SelectItem key={u.principalId} value={u.principalId}>
+                  {u.user?.name ?? u.user?.email ?? u.principalId.slice(0, 8)}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-        ) : null}
-        <Select value={responsibleUser} onValueChange={setResponsibleUser}>
-          <SelectTrigger className="w-44">
-            <SelectValue placeholder={t("secrets.responsibleUser")} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={ALL}>
-              {t("auditFeed.allResponsibleUsers")}
-            </SelectItem>
-            {(userDirectory.data?.users ?? []).map((u) => (
-              <SelectItem key={u.principalId} value={u.principalId}>
-                {u.user?.name ?? u.user?.email ?? u.principalId.slice(0, 8)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select value={actionDomain} onValueChange={setActionDomain}>
-          <SelectTrigger className="w-36">
-            <SelectValue placeholder={t("auditFeed.action")} />
-          </SelectTrigger>
-          <SelectContent>
-            {ACTION_DOMAINS.map((d) => (
-              <SelectItem key={d.value} value={d.value}>
-                {d.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select value={entityType} onValueChange={setEntityType}>
-          <SelectTrigger className="w-36">
-            <SelectValue placeholder={t("auditFeed.entity")} />
-          </SelectTrigger>
-          <SelectContent>
-            {ENTITY_TYPES.map((e) => (
-              <SelectItem key={e.value} value={e.value}>
-                {e.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Input
-          type="date"
-          aria-label={t("auditFeed.fromDate")}
-          value={dateFrom}
-          max={dateTo || undefined}
-          onChange={(e) => setDateFrom(e.target.value)}
-          className="w-36"
-        />
-        <Input
-          type="date"
-          aria-label={t("auditFeed.toDate")}
-          value={dateTo}
-          min={dateFrom || undefined}
-          onChange={(e) => setDateTo(e.target.value)}
-          className="w-36"
-        />
-        {hasActiveFilters ? (
-          <Button variant="ghost" size="sm" onClick={clearFilters}>
-            {t("auditFeed.clearFilters")}
+          <Select value={actionDomain} onValueChange={setActionDomain}>
+            <SelectTrigger className="w-36">
+              <SelectValue placeholder="Action" />
+            </SelectTrigger>
+            <SelectContent>
+              {ACTION_DOMAINS.map((d) => (
+                <SelectItem key={d.value} value={d.value}>
+                  {d.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={entityType} onValueChange={setEntityType}>
+            <SelectTrigger className="w-36">
+              <SelectValue placeholder="Entity" />
+            </SelectTrigger>
+            <SelectContent>
+              {ENTITY_TYPES.map((e) => (
+                <SelectItem key={e.value} value={e.value}>
+                  {e.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Input
+            type="date"
+            aria-label="From date"
+            value={dateFrom}
+            max={dateTo || undefined}
+            onChange={(e) => setDateFrom(e.target.value)}
+            className="w-36"
+          />
+          <Input
+            type="date"
+            aria-label="To date"
+            value={dateTo}
+            min={dateFrom || undefined}
+            onChange={(e) => setDateTo(e.target.value)}
+            className="w-36"
+          />
+          {hasActiveFilters ? (
+            <Button variant="ghost" size="sm" onClick={clearFilters}>
+              Clear filters
+            </Button>
+          ) : null}
+          <Button
+            variant="outline"
+            size="sm"
+            className="ml-auto"
+            onClick={handleExport}
+            disabled={exporting || feed.isLoading || items.length === 0}
+          >
+            <Download className="mr-1.5 h-4 w-4" />
+            {exporting ? "Exporting…" : "Export CSV"}
           </Button>
-        ) : null}
-        <Button
-          variant="outline"
-          size="sm"
-          className="ml-auto"
-          onClick={handleExport}
-          disabled={exporting || feed.isLoading || items.length === 0}
-        >
-          <Download className="mr-1.5 h-4 w-4" />
-          {exporting ? "Exporting…" : "Export CSV"}
-        </Button>
-      </div>
+        </div>
+      ) : null}
 
-      {feed.isLoading ? (
+      {recoveringFromAccessDowngrade || fallingBackToAllActivity ? (
         <Card>
           <CardContent className="py-14 text-center text-sm text-muted-foreground">
-            {t("tools.advanced.loading")}
+            Refreshing audit access…
           </CardContent>
+        </Card>
+      ) : feed.isLoading ? (
+        <Card>
+          <CardContent className="py-14 text-center text-sm text-muted-foreground">Loading…</CardContent>
         </Card>
       ) : feed.error ? (
         <Card>
           <CardContent className="flex flex-col items-center gap-3 py-14 text-center">
             <p className="text-sm text-muted-foreground">
-              {feed.error instanceof Error
-                ? feed.error.message
-                : "Failed to load the audit log."}
+              {feed.error instanceof Error ? feed.error.message : "Failed to load the audit log."}
             </p>
             <Button variant="outline" size="sm" onClick={() => feed.refetch()}>
-              {t("auditFeed.tryAgain")}
+              Try again
             </Button>
           </CardContent>
         </Card>
@@ -535,19 +600,19 @@ export function AuditFeed({
             <ScrollText className="h-10 w-10 text-muted-foreground/40" />
             <div>
               <p className="text-sm font-medium text-foreground">
-                {hasActiveFilters
-                  ? "No actions match these filters"
-                  : "Nothing here yet"}
+                {hasActiveFilters ? "No actions match these filters" : "Nothing here yet"}
               </p>
               <p className="mt-1 max-w-md text-sm text-muted-foreground">
                 {hasActiveFilters
                   ? "Try a wider date range or different filters."
-                  : "As soon as your agents start doing things, their actions show up here."}
+                  : resolvedMode === "agents"
+                    ? "As soon as your agents start doing things, their actions show up here."
+                    : "As soon as anyone in your company does something, it shows up here."}
               </p>
             </div>
             {hasActiveFilters ? (
               <Button variant="outline" size="sm" onClick={clearFilters}>
-                {t("auditFeed.clearFilters")}
+                Clear filters
               </Button>
             ) : null}
           </CardContent>
@@ -583,7 +648,7 @@ export function AuditFeed({
       ) : null}
 
       <p className="text-xs text-muted-foreground">
-        {t("tools.audit.immutabilityNotice")}
+        Recorded by Paperclip — entries can't be edited. Sensitive values are never stored.
       </p>
     </div>
   );

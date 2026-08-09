@@ -879,7 +879,7 @@ export function Routines() {
       ),
     [routineFolders],
   );
-  const liveIssueIds = useMemo(() => collectLiveIssueIds(liveRuns), [liveRuns]);
+  const liveIssueIds = useMemo(() => collectLiveIssueIds(liveRuns, routineExecutionIssues), [liveRuns, routineExecutionIssues]);
   const visibleRoutines = useMemo(
     () => (routines ?? []).filter((routine) => routine.status !== "archived"),
     [routines],

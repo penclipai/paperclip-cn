@@ -1,4 +1,3 @@
-import { useTranslation } from "react-i18next";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link2, Search } from "lucide-react";
@@ -10,6 +9,7 @@ import { toolsApi } from "@/api/tools";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AppLogo } from "./AppLogo";
 import {
+  appApplicationSourceSlug,
   appDefinitionDescription,
   appDefinitionLogoUrl,
   appDefinitionName,
@@ -20,20 +20,27 @@ import {
   AdvancedToolsLink,
   BYO_CONNECT_HREF,
   ByoConnectCard,
+  NOTION_CONNECT_HREF,
   POPULAR_KEYS,
   ZAPIER_CONNECT_HREF,
 } from "./store-cards";
+
+function connectHrefFor(entry: AppGalleryDisplayEntry): string | null {
+  const slug = appDefinitionSlug(entry);
+  if (slug === "notion") return NOTION_CONNECT_HREF;
+  if (slug === "zapier") return ZAPIER_CONNECT_HREF;
+  return null;
+}
 
 /**
  * Door 1 — Browse (the store) (PAP-13254 / U3 §4).
  *
  * A persistent, browsable storefront: search + a Popular grid + the full
  * gallery + a first-class bring-your-own card + a labelled Developer link.
- * Browse remains the single discoverability surface. Zapier and bring-your-own
- * MCP servers use the URL flow; the remaining integrations stay unavailable.
+ * Browse remains the single discoverability surface. Notion uses MCP-direct
+ * OAuth, while Zapier and bring-your-own MCP servers use the URL flow.
  */
 export function Browse() {
-  const { t } = useTranslation();
   const navigate = useNavigate();
   const { selectedCompany, selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
@@ -42,8 +49,7 @@ export function Browse() {
   useEffect(() => {
     setBreadcrumbs([
       { label: selectedCompany?.name ?? "Company", href: "/dashboard" },
-      { label: "Apps", href: "/apps" },
-      { label: "Browse" },
+      { label: "Apps" },
     ]);
     return () => setBreadcrumbs([]);
   }, [setBreadcrumbs, selectedCompany?.name]);
@@ -53,13 +59,23 @@ export function Browse() {
     queryFn: () => toolsApi.listGallery(selectedCompanyId!),
     enabled: !!selectedCompanyId,
   });
+  const applicationsQuery = useQuery({
+    queryKey: queryKeys.tools.applications(selectedCompanyId ?? "__none__"),
+    queryFn: () => toolsApi.listApplications(selectedCompanyId!),
+    enabled: !!selectedCompanyId,
+  });
+  const connectionsQuery = useQuery({
+    queryKey: queryKeys.tools.connections(selectedCompanyId ?? "__none__"),
+    queryFn: () => toolsApi.listConnections(selectedCompanyId!),
+    enabled: !!selectedCompanyId,
+  });
 
   const gallery = (galleryQuery.data?.apps ?? []) as AppGalleryDisplayEntry[];
   const popular = useMemo(
     () =>
-      POPULAR_KEYS.map((key) =>
-        gallery.find((entry) => appDefinitionSlug(entry) === key),
-      ).filter((entry): entry is AppGalleryDisplayEntry => Boolean(entry)),
+      POPULAR_KEYS.map((key) => gallery.find((entry) => appDefinitionSlug(entry) === key)).filter(
+        (entry): entry is AppGalleryDisplayEntry => Boolean(entry),
+      ),
     [gallery],
   );
 
@@ -72,25 +88,57 @@ export function Browse() {
         appDefinitionDescription(entry).toLowerCase().includes(trimmed),
     );
   }, [gallery, trimmed]);
+  const connectionSummaryBySlug = useMemo(() => {
+    const connections = connectionsQuery.data?.connections ?? [];
+    const connectedCountByApplicationId = new Map<string, number>();
+    for (const connection of connections) {
+      if (connection.status === "archived" || connection.status === "draft") continue;
+      connectedCountByApplicationId.set(
+        connection.applicationId,
+        (connectedCountByApplicationId.get(connection.applicationId) ?? 0) + 1,
+      );
+    }
+
+    const summaries = new Map<string, { applicationId: string; count: number }>();
+    for (const application of applicationsQuery.data?.applications ?? []) {
+      if (application.status === "archived") continue;
+      const slug = appApplicationSourceSlug(application);
+      if (!slug) continue;
+      const count = connectedCountByApplicationId.get(application.id) ?? 0;
+      const current = summaries.get(slug);
+      summaries.set(slug, {
+        applicationId: current?.applicationId ?? application.id,
+        count: (current?.count ?? 0) + count,
+      });
+    }
+    return summaries;
+  }, [applicationsQuery.data, connectionsQuery.data]);
 
   if (!selectedCompanyId) {
-    return (
-      <div className="p-6 text-sm text-muted-foreground">
-        {t("apps.browse.selectCompany")}
-      </div>
-    );
+    return <div className="p-6 text-sm text-muted-foreground">Select a company to browse apps.</div>;
   }
 
-  const loading = galleryQuery.isLoading;
+  const loading = galleryQuery.isLoading || applicationsQuery.isLoading || connectionsQuery.isLoading;
+
+  const tileProps = (entry: AppGalleryDisplayEntry) => {
+    const summary = connectionSummaryBySlug.get(appDefinitionSlug(entry));
+    const connectHref = connectHrefFor(entry);
+    return {
+      connectedCount: summary?.count ?? 0,
+      onOpen: summary && summary.count > 0
+        ? () => navigate(`/apps/app/${summary.applicationId}/setup`)
+        : connectHref
+          ? () => navigate(connectHref)
+          : undefined,
+    };
+  };
 
   return (
     <div className="max-w-5xl space-y-8 pb-12">
       <header>
-        <h1 className="text-2xl font-bold tracking-tight">
-          {t("apps.sidebar.browse")}
-        </h1>
+        <h1 className="text-2xl font-bold tracking-tight">Browse</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          {t("apps.browse.description")}
+          Choose an app or connect your own MCP server.
         </p>
       </header>
 
@@ -100,8 +148,8 @@ export function Browse() {
           type="search"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder={t("apps.browse.searchPlaceholder")}
-          aria-label={t("apps.browse.searchAriaLabel")}
+          placeholder="Search apps…"
+          aria-label="Search apps"
           className="h-10 w-full rounded-lg border border-border bg-background pl-9 pr-3 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-foreground/30"
         />
       </div>
@@ -117,18 +165,14 @@ export function Browse() {
           {!trimmed && popular.length > 0 && (
             <section className="space-y-3">
               <div className="text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
-                {t("apps.browse.popular")}
+                Popular
               </div>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
                 {popular.map((entry) => (
                   <AppTile
                     key={appDefinitionSlug(entry)}
                     entry={entry}
-                    onConnect={
-                      appDefinitionSlug(entry) === "zapier"
-                        ? () => navigate(ZAPIER_CONNECT_HREF)
-                        : undefined
-                    }
+                    {...tileProps(entry)}
                     compact
                   />
                 ))}
@@ -143,8 +187,7 @@ export function Browse() {
             {filtered.length === 0 ? (
               <p className="flex items-center gap-1.5 rounded-xl border border-dashed border-border bg-card px-4 py-6 text-sm text-muted-foreground">
                 <Link2 className="h-4 w-4" />
-                {t("apps.browse.noPlannedMatches")}
-                {query.trim()}”.
+                No planned apps match “{query.trim()}”.
               </p>
             ) : (
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -152,11 +195,7 @@ export function Browse() {
                   <AppTile
                     key={appDefinitionSlug(entry)}
                     entry={entry}
-                    onConnect={
-                      appDefinitionSlug(entry) === "zapier"
-                        ? () => navigate(ZAPIER_CONNECT_HREF)
-                        : undefined
-                    }
+                    {...tileProps(entry)}
                   />
                 ))}
               </div>
@@ -165,10 +204,7 @@ export function Browse() {
 
           <ByoConnectCard onConnect={() => navigate(BYO_CONNECT_HREF)} />
 
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-xs text-muted-foreground">
-              {t("apps.browse.previewNotice")}
-            </p>
+          <div className="flex justify-end">
             <AdvancedToolsLink />
           </div>
         </>
@@ -179,42 +215,35 @@ export function Browse() {
 
 function AppTile({
   entry,
-  onConnect,
+  onOpen,
+  connectedCount,
   compact = false,
 }: {
   entry: AppGalleryDisplayEntry;
-  onConnect?: () => void;
+  onOpen?: () => void;
+  connectedCount: number;
   compact?: boolean;
 }) {
-  const disabled = !onConnect;
+  const disabled = !onOpen;
+  const actionLabel = connectedCount > 0
+    ? `${connectedCount} connected already`
+    : disabled
+      ? "Coming soon"
+      : "Connect →";
   if (compact) {
     return (
       <button
         type="button"
         disabled={disabled}
-        onClick={onConnect}
-        className={
-          disabled
-            ? "flex cursor-not-allowed flex-col items-center gap-2 rounded-xl border border-border bg-background px-3 py-4 text-center opacity-60"
-            : "flex flex-col items-center gap-2 rounded-xl border border-border bg-background px-3 py-4 text-center transition-colors hover:border-foreground/30 hover:bg-accent/40"
-        }
+        onClick={onOpen}
+        className={disabled
+          ? "flex cursor-not-allowed flex-col items-center gap-2 rounded-xl border border-border bg-background px-3 py-4 text-center opacity-60"
+          : "flex flex-col items-center gap-2 rounded-xl border border-border bg-background px-3 py-4 text-center transition-colors hover:border-foreground/30 hover:bg-accent/40"}
       >
-        <AppLogo
-          name={appDefinitionName(entry)}
-          logoUrl={appDefinitionLogoUrl(entry)}
-          size={36}
-        />
-        <span className="text-xs font-medium text-foreground">
-          {appDefinitionName(entry)}
-        </span>
-        <span
-          className={
-            disabled
-              ? "text-xs text-muted-foreground"
-              : "text-xs font-semibold text-primary"
-          }
-        >
-          {disabled ? "Coming soon" : "Connect →"}
+        <AppLogo name={appDefinitionName(entry)} logoUrl={appDefinitionLogoUrl(entry)} size={36} />
+        <span className="text-xs font-medium text-foreground">{appDefinitionName(entry)}</span>
+        <span className={disabled ? "text-xs text-muted-foreground" : "text-xs font-semibold text-primary"}>
+          {actionLabel}
         </span>
       </button>
     );
@@ -223,34 +252,18 @@ function AppTile({
     <button
       type="button"
       disabled={disabled}
-      onClick={onConnect}
-      className={
-        disabled
-          ? "flex h-full cursor-not-allowed items-start gap-3 rounded-xl border border-border bg-card px-4 py-4 text-left opacity-60"
-          : "flex h-full items-start gap-3 rounded-xl border border-border bg-card px-4 py-4 text-left transition-colors hover:border-foreground/30 hover:bg-accent/40"
-      }
+      onClick={onOpen}
+      className={disabled
+        ? "flex h-full cursor-not-allowed items-start gap-3 rounded-xl border border-border bg-card px-4 py-4 text-left opacity-60"
+        : "flex h-full items-start gap-3 rounded-xl border border-border bg-card px-4 py-4 text-left transition-colors hover:border-foreground/30 hover:bg-accent/40"}
     >
-      <AppLogo
-        name={appDefinitionName(entry)}
-        logoUrl={appDefinitionLogoUrl(entry)}
-        size={36}
-      />
+      <AppLogo name={appDefinitionName(entry)} logoUrl={appDefinitionLogoUrl(entry)} size={36} />
       <div className="min-w-0 flex-1">
-        <div className="text-sm font-semibold text-foreground">
-          {appDefinitionName(entry)}
-        </div>
-        <div className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
-          {appDefinitionDescription(entry)}
-        </div>
+        <div className="text-sm font-semibold text-foreground">{appDefinitionName(entry)}</div>
+        <div className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{appDefinitionDescription(entry)}</div>
       </div>
-      <span
-        className={
-          disabled
-            ? "shrink-0 text-xs font-semibold text-muted-foreground"
-            : "shrink-0 text-xs font-semibold text-primary"
-        }
-      >
-        {disabled ? "Coming soon" : "Connect →"}
+      <span className={disabled ? "shrink-0 text-xs font-semibold text-muted-foreground" : "shrink-0 text-xs font-semibold text-primary"}>
+        {actionLabel}
       </span>
     </button>
   );

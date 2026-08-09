@@ -5723,6 +5723,7 @@
   "workspaceRuntime.status.starting": "正在启动",
   "workspaceRuntime.status.stopped": "已停止",
   "workspaceServiceControl.allServices": "全部服务",
+  "workspaceServiceControl.status.provisioning": "正在预置…",
   "workspaceServiceControl.copyFailed": "复制失败",
   "workspaceServiceControl.copyUrl": "复制 URL",
   "workspaceServiceControl.manageServices": "前往服务标签页管理 →",

@@ -255,6 +255,9 @@ function createSuggestedTasksInteraction(
     },
     result: null,
     ...overrides,
+    resolverPolicy: overrides.resolverPolicy ?? "board_only",
+    requestedResolverPolicy: overrides.requestedResolverPolicy ?? "board_only",
+    effectiveResolverPolicy: overrides.effectiveResolverPolicy ?? "board_only",
   };
 }
 
@@ -294,6 +297,9 @@ function createQuestionInteraction(
     },
     result: null,
     ...overrides,
+    resolverPolicy: overrides.resolverPolicy ?? "board_only",
+    requestedResolverPolicy: overrides.requestedResolverPolicy ?? "board_only",
+    effectiveResolverPolicy: overrides.effectiveResolverPolicy ?? "board_only",
   };
 }
 
@@ -327,6 +333,9 @@ function createExpiredRequestConfirmationInteraction(
       commentId: "comment-1",
     },
     ...overrides,
+    resolverPolicy: overrides.resolverPolicy ?? "board_only",
+    requestedResolverPolicy: overrides.requestedResolverPolicy ?? "board_only",
+    effectiveResolverPolicy: overrides.effectiveResolverPolicy ?? "board_only",
   };
 }
 

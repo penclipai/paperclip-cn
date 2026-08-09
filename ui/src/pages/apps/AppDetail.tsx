@@ -1,4 +1,3 @@
-import { useTranslation } from "react-i18next";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, Loader2, Pencil } from "lucide-react";
@@ -22,11 +21,8 @@ import { agentsApi } from "@/api/agents";
 import { accessApi } from "@/api/access";
 import { authApi } from "@/api/auth";
 import { buildCompanyUserLabelMap } from "@/lib/company-members";
-import {
-  installPayload,
-  installStateFrom,
-  type InstallState,
-} from "@/lib/tool-installs";
+import { installPayload, installStateFrom, type InstallState } from "@/lib/tool-installs";
+import { navigateTopLevel } from "@/lib/browserNavigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -38,12 +34,7 @@ import {
   appDefinitionSlug,
   type AppGalleryDisplayEntry,
 } from "./app-definition-display";
-import {
-  appTabHref,
-  appTabLabel,
-  isAppTabKey,
-  type AppTabKey,
-} from "./app-tabs";
+import { appTabHref, appTabLabel, isAppTabKey, type AppTabKey } from "./app-tabs";
 import { SetupPanel } from "./app-detail/SetupPanel";
 import { PermissionsPanel } from "./app-detail/PermissionsPanel";
 import { TestPanel } from "./app-detail/TestPanel";
@@ -61,11 +52,7 @@ import type { AccessDraft } from "./app-detail/types";
 export { DangerZone, connectionAddress, connectionTransportLabel };
 
 export function AppDetail() {
-  const { t } = useTranslation();
-  const { connectionId = "", tab } = useParams<{
-    connectionId: string;
-    tab?: string;
-  }>();
+  const { connectionId = "", tab } = useParams<{ connectionId: string; tab?: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { pushToast } = useToast();
@@ -116,9 +103,7 @@ export function AppDetail() {
   });
   // Resolve who ran Test-tab calls ("<User> tested as <Agent>") in the Activity feed (PAP-11415).
   const userDirectoryQuery = useQuery({
-    queryKey: queryKeys.access.companyUserDirectory(
-      selectedCompanyId ?? "__none__",
-    ),
+    queryKey: queryKeys.access.companyUserDirectory(selectedCompanyId ?? "__none__"),
     queryFn: () => accessApi.listUserDirectory(selectedCompanyId!),
     enabled: !!selectedCompanyId && activeTab === "activity",
   });
@@ -129,9 +114,7 @@ export function AppDetail() {
   });
 
   const connection = connectionQuery.data;
-  const appName = connection
-    ? humanizeConnectionDisplayName(connection)
-    : "App";
+  const appName = connection ? humanizeConnectionDisplayName(connection) : "App";
 
   useEffect(() => {
     if (!activeTab) return;
@@ -146,10 +129,7 @@ export function AppDetail() {
 
   const catalog = catalogQuery.data?.catalog ?? [];
   const profile = useMemo(
-    () =>
-      (profilesQuery.data?.profiles ?? []).find(
-        (p) => p.profileKey === `app:${connectionId}`,
-      ),
+    () => (profilesQuery.data?.profiles ?? []).find((p) => p.profileKey === `app:${connectionId}`),
     [profilesQuery.data, connectionId],
   );
   const enabledIds = useMemo(() => enabledCatalogIds(profile), [profile]);
@@ -159,8 +139,7 @@ export function AppDetail() {
   );
   const access = useMemo(() => accessFrom(profile), [profile]);
   const install = useMemo(
-    () =>
-      installStateFrom(installsQuery.data?.installs ?? connection?.installs),
+    () => installStateFrom(installsQuery.data?.installs ?? connection?.installs),
     [connection?.installs, installsQuery.data?.installs],
   );
   const agents = agentsQuery.data ?? [];
@@ -174,11 +153,7 @@ export function AppDetail() {
     return labels;
   }, [userDirectoryQuery.data, sessionQuery.data]);
   const logoEntry = useMemo(
-    () =>
-      galleryEntryFor(
-        (galleryQuery.data?.apps ?? []) as AppGalleryDisplayEntry[],
-        connection,
-      ),
+    () => galleryEntryFor((galleryQuery.data?.apps ?? []) as AppGalleryDisplayEntry[], connection),
     [galleryQuery.data, connection],
   );
 
@@ -188,37 +163,22 @@ export function AppDetail() {
       enabled: Set<string>;
       askFirst: Set<string>;
       access: AccessDraft;
+      reviewed?: Set<string>;
     }) =>
       toolsApi.finishApp(selectedCompanyId!, connectionId, {
         enabledCatalogEntryIds: [...next.enabled],
-        askFirstCatalogEntryIds: [...next.askFirst].filter((id) =>
-          next.enabled.has(id),
-        ),
-        access:
-          next.access.mode === "all"
-            ? "all_agents"
-            : { agentIds: [...next.access.agentIds] },
+        askFirstCatalogEntryIds: [...next.askFirst].filter((id) => next.enabled.has(id)),
+        ...(next.reviewed ? { reviewedCatalogEntryIds: [...next.reviewed] } : {}),
+        access: next.access.mode === "all" ? "all_agents" : { agentIds: [...next.access.agentIds] },
       }),
     onMutate: () => setPending(true),
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.tools.connection(connectionId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.tools.catalog(connectionId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.tools.profiles(selectedCompanyId!),
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.tools.policies(selectedCompanyId!),
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.tools.connections(selectedCompanyId!),
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.apps.attention(selectedCompanyId!),
-      });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tools.connection(connectionId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tools.catalog(connectionId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tools.profiles(selectedCompanyId!) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tools.policies(selectedCompanyId!) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tools.connections(selectedCompanyId!) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.apps.attention(selectedCompanyId!) });
     },
     onError: (error) =>
       pushToast({
@@ -231,27 +191,13 @@ export function AppDetail() {
 
   const persistInstall = useMutation({
     mutationFn: (next: InstallState) =>
-      toolsApi.putConnectionInstalls(
-        connectionId,
-        installPayload(selectedCompanyId!, next),
-      ),
+      toolsApi.putConnectionInstalls(connectionId, installPayload(selectedCompanyId!, next)),
     onSuccess: (snapshot) => {
-      queryClient.setQueryData(
-        queryKeys.tools.connectionInstalls(connectionId),
-        snapshot,
-      );
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.tools.connection(connectionId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.tools.connections(selectedCompanyId!),
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.tools.profiles(selectedCompanyId!),
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.apps.attention(selectedCompanyId!),
-      });
+      queryClient.setQueryData(queryKeys.tools.connectionInstalls(connectionId), snapshot);
+      queryClient.invalidateQueries({ queryKey: queryKeys.tools.connection(connectionId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tools.connections(selectedCompanyId!) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tools.profiles(selectedCompanyId!) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.apps.attention(selectedCompanyId!) });
     },
     onError: (error) =>
       pushToast({
@@ -264,19 +210,12 @@ export function AppDetail() {
   const [renaming, setRenaming] = useState(false);
   const [nameDraft, setNameDraft] = useState("");
   const rename = useMutation({
-    mutationFn: (name: string) =>
-      toolsApi.updateConnection(connectionId, { name }),
+    mutationFn: (name: string) => toolsApi.updateConnection(connectionId, { name }),
     onSuccess: () => {
       setRenaming(false);
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.tools.connection(connectionId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.tools.connections(selectedCompanyId!),
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.apps.attention(selectedCompanyId!),
-      });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tools.connection(connectionId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tools.connections(selectedCompanyId!) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.apps.attention(selectedCompanyId!) });
     },
     onError: (error) =>
       pushToast({
@@ -287,21 +226,14 @@ export function AppDetail() {
   });
 
   const updateConfig = useMutation({
-    mutationFn: (config: Record<string, unknown>) =>
-      toolsApi.updateConnection(connectionId, {
-        config,
-        transportConfig: connection?.transportConfig ?? {},
-      }),
+    mutationFn: (config: Record<string, unknown>) => toolsApi.updateConnection(connectionId, {
+      config,
+      transportConfig: connection?.transportConfig ?? {},
+    }),
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.tools.connection(connectionId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.tools.connections(selectedCompanyId!),
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.apps.attention(selectedCompanyId!),
-      });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tools.connection(connectionId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tools.connections(selectedCompanyId!) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.apps.attention(selectedCompanyId!) });
     },
     onError: (error) =>
       pushToast({
@@ -314,7 +246,7 @@ export function AppDetail() {
   const startOAuth = useMutation({
     mutationFn: () => toolsApi.startOAuth(connectionId),
     onSuccess: ({ authorizationUrl }) => {
-      window.location.assign(authorizationUrl);
+      navigateTopLevel(authorizationUrl);
     },
     onError: (error) =>
       pushToast({
@@ -327,21 +259,15 @@ export function AppDetail() {
   const removeApp = useMutation({
     mutationFn: () => toolsApi.archiveConnection(connectionId),
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.tools.connections(selectedCompanyId!),
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.tools.applications(selectedCompanyId!),
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.apps.attention(selectedCompanyId!),
-      });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tools.connections(selectedCompanyId!) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tools.applications(selectedCompanyId!) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.apps.attention(selectedCompanyId!) });
       pushToast({
         title: "App removed",
         body: `${appName} no longer has access. You can connect it again any time.`,
         tone: "success",
       });
-      navigate("/apps");
+      navigate("/apps/connections");
     },
     onError: (error) =>
       pushToast({
@@ -352,23 +278,12 @@ export function AppDetail() {
   });
 
   const toggleEnabled = useMutation({
-    mutationFn: () =>
-      toolsApi.updateConnection(connectionId, {
-        enabled: !connection?.enabled,
-      }),
+    mutationFn: () => toolsApi.updateConnection(connectionId, { enabled: !connection?.enabled }),
     onSuccess: (updated) => {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.tools.connection(connectionId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.tools.connections(selectedCompanyId!),
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.tools.applications(selectedCompanyId!),
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.apps.attention(selectedCompanyId!),
-      });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tools.connection(connectionId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tools.connections(selectedCompanyId!) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tools.applications(selectedCompanyId!) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.apps.attention(selectedCompanyId!) });
       pushToast({
         title: updated.enabled ? "App resumed" : "App paused",
         body: updated.enabled
@@ -388,24 +303,15 @@ export function AppDetail() {
   const refreshTools = useMutation({
     mutationFn: () => toolsApi.refreshCatalog(connectionId),
     onSuccess: (result) => {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.tools.connection(connectionId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.tools.catalog(connectionId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.tools.connections(selectedCompanyId!),
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.apps.attention(selectedCompanyId!),
-      });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tools.connection(connectionId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tools.catalog(connectionId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tools.connections(selectedCompanyId!) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.apps.attention(selectedCompanyId!) });
       pushToast({
         title: `Found ${result.discoveredCount} ${result.discoveredCount === 1 ? "action" : "actions"}`,
-        body:
-          result.quarantinedCount > 0
-            ? `${result.quarantinedCount} new ${result.quarantinedCount === 1 ? "action needs" : "actions need"} your OK.`
-            : undefined,
+        body: result.quarantinedCount > 0
+          ? `${result.quarantinedCount} new ${result.quarantinedCount === 1 ? "action needs" : "actions need"} your OK.`
+          : undefined,
         tone: "success",
       });
     },
@@ -421,28 +327,28 @@ export function AppDetail() {
     enabled?: Set<string>;
     askFirst?: Set<string>;
     access?: AccessDraft;
+    reviewed?: Set<string>;
   }) =>
     persist.mutate({
       enabled: mutate.enabled ?? new Set(enabledIds),
       askFirst: mutate.askFirst ?? new Set(askFirstIds),
       access: mutate.access ?? access,
+      reviewed: mutate.reviewed,
     });
 
+  const reviewQuarantined = (allowedIds: string[]) => {
+    const quarantinedIds = new Set(quarantined.map((entry) => entry.id));
+    const nextEnabled = new Set([...enabledIds].filter((id) => !quarantinedIds.has(id)));
+    for (const id of allowedIds) nextEnabled.add(id);
+    apply({ enabled: nextEnabled, reviewed: quarantinedIds });
+  };
+
   if (!connectionId || !activeTab) {
-    return (
-      <Navigate
-        replace
-        to={connectionId ? appTabHref(connectionId, "setup") : "/apps"}
-      />
-    );
+    return <Navigate replace to={connectionId ? appTabHref(connectionId, "setup") : "/apps/connections"} />;
   }
 
   if (!selectedCompanyId) {
-    return (
-      <div className="p-6 text-sm text-muted-foreground">
-        {t("apps.detail.empty.selectCompany")}
-      </div>
-    );
+    return <div className="p-6 text-sm text-muted-foreground">Select a company to manage apps.</div>;
   }
   if (connectionQuery.isLoading || catalogQuery.isLoading) {
     return (
@@ -456,27 +362,18 @@ export function AppDetail() {
   if (!connection) {
     return (
       <div className="max-w-3xl p-6">
-        <p className="text-sm text-muted-foreground">
-          {t("apps.detail.empty.notFound")}
-        </p>
-        <Button
-          className="mt-4"
-          variant="outline"
-          onClick={() => navigate("/apps")}
-        >
-          {t("apps.detail.empty.backToApps")}
+        <p className="text-sm text-muted-foreground">We couldn't find that app.</p>
+        <Button className="mt-4" variant="outline" onClick={() => navigate("/apps/connections")}>
+          Back to apps
         </Button>
       </div>
     );
   }
 
   const status = statusFor(connection);
-  const needsReconnect =
-    status.tone === "attention" && connection.healthStatus !== "unknown";
+  const needsReconnect = status.tone === "attention" && connection.healthStatus !== "unknown";
   const quarantined = catalog.filter((e) => e.status === "quarantined");
-  const active = catalog.filter(
-    (e) => e.status !== "quarantined" && e.status !== "removed",
-  );
+  const active = catalog.filter((e) => e.status !== "quarantined" && e.status !== "removed");
   const readOnly = active.filter((e) => e.isReadOnly);
   const canChange = active.filter((e) => !e.isReadOnly);
   const actionCount = active.length;
@@ -509,15 +406,9 @@ export function AppDetail() {
           connection={connection}
           galleryEntry={logoEntry}
           onReconnected={() => {
-            queryClient.invalidateQueries({
-              queryKey: queryKeys.tools.connection(connectionId),
-            });
-            queryClient.invalidateQueries({
-              queryKey: queryKeys.tools.connections(selectedCompanyId),
-            });
-            queryClient.invalidateQueries({
-              queryKey: queryKeys.apps.attention(selectedCompanyId),
-            });
+            queryClient.invalidateQueries({ queryKey: queryKeys.tools.connection(connectionId) });
+            queryClient.invalidateQueries({ queryKey: queryKeys.tools.connections(selectedCompanyId) });
+            queryClient.invalidateQueries({ queryKey: queryKeys.apps.attention(selectedCompanyId) });
           }}
         />
       )}
@@ -539,9 +430,7 @@ export function AppDetail() {
           connectionId={connectionId}
           quarantined={quarantined}
           pending={pending}
-          onTurnOnQuarantined={(ids) =>
-            apply({ enabled: addAll(new Set(enabledIds), ids) })
-          }
+          onReviewQuarantined={reviewQuarantined}
         />
       )}
       {activeTab === "permissions" && (
@@ -561,21 +450,12 @@ export function AppDetail() {
           onSaveAccess={(next) => apply({ access: next })}
           onSaveInstall={(next) => persistInstall.mutate(next)}
           onRefreshActions={() => refreshTools.mutate()}
-          onSetActionPermission={(id, next) =>
-            apply(actionPermissionMutation(id, next, enabledIds, askFirstIds))
-          }
-          onTurnOnQuarantined={(ids) =>
-            apply({ enabled: addAll(new Set(enabledIds), ids) })
-          }
+          onSetActionPermission={(id, next) => apply(actionPermissionMutation(id, next, enabledIds, askFirstIds))}
+          onReviewQuarantined={reviewQuarantined}
         />
       )}
       {activeTab === "test" && (
-        <TestPanel
-          connectionId={connectionId}
-          appName={appName}
-          active={active}
-          quarantined={quarantined}
-        />
+        <TestPanel connectionId={connectionId} appName={appName} active={active} quarantined={quarantined} />
       )}
       {activeTab === "activity" && (
         <ActivityPanel
@@ -598,15 +478,9 @@ export function AppDetail() {
           removing={removeApp.isPending}
           onRemove={() => removeApp.mutate()}
           onReplaced={() => {
-            queryClient.invalidateQueries({
-              queryKey: queryKeys.tools.connection(connectionId),
-            });
-            queryClient.invalidateQueries({
-              queryKey: queryKeys.tools.connections(selectedCompanyId),
-            });
-            queryClient.invalidateQueries({
-              queryKey: queryKeys.apps.attention(selectedCompanyId),
-            });
+            queryClient.invalidateQueries({ queryKey: queryKeys.tools.connection(connectionId) });
+            queryClient.invalidateQueries({ queryKey: queryKeys.tools.connections(selectedCompanyId) });
+            queryClient.invalidateQueries({ queryKey: queryKeys.apps.attention(selectedCompanyId) });
           }}
         />
       )}
@@ -641,15 +515,10 @@ function AppDetailHeader({
   onRenameCancel: () => void;
   onRenameSubmit: (value: string) => void;
 }) {
-  const { t } = useTranslation();
   return (
     <header className="flex flex-wrap items-start justify-between gap-4">
       <div className="flex items-center gap-3">
-        <AppLogo
-          name={appName}
-          logoUrl={appDefinitionLogoUrl(logoEntry)}
-          size={44}
-        />
+        <AppLogo name={appName} logoUrl={appDefinitionLogoUrl(logoEntry)} size={44} />
         <div>
           {renaming ? (
             <form
@@ -660,31 +529,17 @@ function AppDetailHeader({
               }}
             >
               <Input
-                aria-label={t("apps.detail.header.renameInputAria")}
+                aria-label="App name"
                 value={nameDraft}
                 onChange={(event) => onNameDraftChange(event.target.value)}
                 className="h-9 w-64 text-lg font-bold"
                 autoFocus
               />
-              <Button
-                type="submit"
-                size="sm"
-                disabled={renamePending || !nameDraft.trim()}
-              >
-                {renamePending ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                ) : (
-                  "Save"
-                )}
+              <Button type="submit" size="sm" disabled={renamePending || !nameDraft.trim()}>
+                {renamePending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Save"}
               </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                onClick={onRenameCancel}
-                disabled={renamePending}
-              >
-                {t("apps.detail.common.cancel")}
+              <Button type="button" size="sm" variant="ghost" onClick={onRenameCancel} disabled={renamePending}>
+                Cancel
               </Button>
             </form>
           ) : (
@@ -694,7 +549,7 @@ function AppDetailHeader({
                 variant="ghost"
                 size="icon"
                 className="h-7 w-7 text-muted-foreground"
-                aria-label={t("apps.detail.header.renameButtonAria")}
+                aria-label="Rename app"
                 onClick={onRenameStart}
               >
                 <Pencil className="h-3.5 w-3.5" />
@@ -702,15 +557,12 @@ function AppDetailHeader({
             </div>
           )}
           {connectionDisplaySecondaryHint(connection) && (
-            <p className="text-xs text-muted-foreground">
-              {connectionDisplaySecondaryHint(connection)}
-            </p>
+            <p className="text-xs text-muted-foreground">{connectionDisplaySecondaryHint(connection)}</p>
           )}
           <div className="mt-1 flex items-center gap-2">
             <StatusBadge status={status} />
             <span className="text-xs text-muted-foreground">
-              {actionCount} {actionCount === 1 ? "action" : "actions"}{" "}
-              {t("apps.detail.available")}
+              {actionCount} {actionCount === 1 ? "action" : "actions"} available
             </span>
           </div>
         </div>
@@ -733,10 +585,8 @@ function statusFor(connection: ToolConnection): StatusInfo {
 
 function StatusBadge({ status }: { status: StatusInfo }) {
   const klass: Record<StatusInfo["tone"], string> = {
-    connected:
-      "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
-    attention:
-      "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300",
+    connected: "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
+    attention: "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300",
     paused: "border-border bg-muted text-muted-foreground",
   };
   return (
@@ -752,35 +602,20 @@ function StatusBadge({ status }: { status: StatusInfo }) {
   );
 }
 
-function enabledCatalogIds(
-  profile: ToolProfileWithDetails | undefined,
-): Set<string> {
+function enabledCatalogIds(profile: ToolProfileWithDetails | undefined): Set<string> {
   const ids = new Set<string>();
   for (const entry of profile?.entries ?? []) {
-    if (entry.effect === "include" && entry.catalogEntryId)
-      ids.add(entry.catalogEntryId);
+    if (entry.effect === "include" && entry.catalogEntryId) ids.add(entry.catalogEntryId);
   }
   return ids;
 }
 
-function askFirstCatalogIds(
-  policies: ToolPolicy[],
-  connectionId: string,
-): Set<string> {
+function askFirstCatalogIds(policies: ToolPolicy[], connectionId: string): Set<string> {
   const ids = new Set<string>();
   for (const policy of policies) {
-    if (policy.policyType !== "require_approval" || policy.enabled === false)
-      continue;
-    const config = (policy.config ?? {}) as {
-      source?: unknown;
-      connectionId?: unknown;
-      catalogEntryId?: unknown;
-    };
-    if (
-      config.source === "app_gallery_finish" &&
-      config.connectionId === connectionId &&
-      typeof config.catalogEntryId === "string"
-    ) {
+    if (policy.policyType !== "require_approval" || policy.enabled === false) continue;
+    const config = (policy.config ?? {}) as { source?: unknown; connectionId?: unknown; catalogEntryId?: unknown };
+    if (config.source === "app_gallery_finish" && config.connectionId === connectionId && typeof config.catalogEntryId === "string") {
       ids.add(config.catalogEntryId);
     }
   }
@@ -792,9 +627,7 @@ function accessFrom(profile: ToolProfileWithDetails | undefined): AccessDraft {
   if (bindings.some((b) => b.targetType === "company")) {
     return { mode: "all", agentIds: new Set() };
   }
-  const agentIds = new Set(
-    bindings.filter((b) => b.targetType === "agent").map((b) => b.targetId),
-  );
+  const agentIds = new Set(bindings.filter((b) => b.targetType === "agent").map((b) => b.targetId));
   if (agentIds.size === 0) return { mode: "all", agentIds: new Set() };
   return { mode: "specific", agentIds };
 }
@@ -805,17 +638,9 @@ function galleryEntryFor(
 ): AppGalleryDisplayEntry | null {
   if (!connection) return null;
   const name = connection.name.toLowerCase();
-  return (
-    apps.find((app) => appDefinitionName(app).toLowerCase() === name) ??
+  return apps.find((app) => appDefinitionName(app).toLowerCase() === name) ??
     apps.find((app) => appDefinitionSlug(app) === name) ??
-    null
-  );
-}
-
-function addAll(set: Set<string>, ids: string[]): Set<string> {
-  const next = new Set(set);
-  for (const id of ids) next.add(id);
-  return next;
+    null;
 }
 
 function actionPermissionMutation(

@@ -1,23 +1,6 @@
-import {
-  memo,
-  useState,
-  useEffect,
-  useRef,
-  useCallback,
-  useMemo,
-  type ChangeEvent,
-  type CSSProperties,
-  type DragEvent,
-  type RefObject,
-} from "react";
-import { useTranslation } from "react-i18next";
-import type { TFunction } from "i18next";
+import { memo, useState, useEffect, useRef, useCallback, useMemo, type ChangeEvent, type CSSProperties, type DragEvent, type RefObject } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type {
-  AgentEnvConfig,
-  EnvBinding,
-  IssueWorkMode,
-} from "@penclipai/shared";
+import type { AgentEnvConfig, EnvBinding, IssueWorkMode } from "@penclipai/shared";
 import { pickTextColorForSolidBg } from "@/lib/color-contrast";
 import { useDialog } from "../context/DialogContext";
 import { useCompany } from "../context/CompanyContext";
@@ -31,11 +14,7 @@ import { agentsApi } from "../api/agents";
 import { accessApi } from "../api/access";
 import { authApi } from "../api/auth";
 import { assetsApi } from "../api/assets";
-import {
-  buildCompanyUserInlineOptions,
-  buildMarkdownMentionOptions,
-  isAgentTaskTarget,
-} from "../lib/company-members";
+import { buildCompanyUserInlineOptions, buildMarkdownMentionOptions, isAgentTaskTarget } from "../lib/company-members";
 import { queryKeys } from "../lib/queryKeys";
 import { orderReusableExecutionWorkspaces } from "../lib/reusable-execution-workspaces";
 import {
@@ -44,29 +23,20 @@ import {
   issueExecutionWorkspaceModeForExistingWorkspace,
 } from "../lib/project-workspace-defaults";
 import { useProjectOrder } from "../hooks/useProjectOrder";
-import {
-  getRecentAssigneeIds,
-  sortAgentsByRecency,
-  trackRecentAssignee,
-} from "../lib/recent-assignees";
-import {
-  getRecentProjectIds,
-  trackRecentProject,
-} from "../lib/recent-projects";
+import { getRecentAssigneeIds, sortAgentsByRecency, trackRecentAssignee } from "../lib/recent-assignees";
+import { getRecentProjectIds, trackRecentProject } from "../lib/recent-projects";
 import { buildExecutionPolicy } from "../lib/issue-execution-policy";
-import {
-  isIssueWorkMode,
-  nextWorkMode,
-  workModeMetaFor,
-  workModeMetaList,
-} from "../lib/work-mode-meta";
+import { isIssueWorkMode, nextWorkMode, workModeMetaFor, workModeMetaList } from "../lib/work-mode-meta";
 import { useToastActions } from "../context/ToastContext";
 import {
   assigneeValueFromSelection,
   currentUserAssigneeOption,
   parseAssigneeValue,
 } from "../lib/assignees";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
 import {
@@ -102,29 +72,18 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "../lib/utils";
 import { extractProviderIdWithFallback } from "../lib/model-utils";
-import {
-  issueStatusText,
-  issueStatusTextDefault,
-  priorityColor,
-  priorityColorDefault,
-} from "../lib/status-colors";
-import {
-  MarkdownEditor,
-  type MarkdownEditorRef,
-  type MentionOption,
-} from "./MarkdownEditor";
+import { issueStatusText, issueStatusTextDefault, priorityColor, priorityColorDefault } from "../lib/status-colors";
+import { SHOW_TASK_PRIORITY_UI } from "../lib/ui-flags";
+import { MarkdownEditor, type MarkdownEditorRef, type MentionOption } from "./MarkdownEditor";
 import { AgentIcon } from "./AgentIconPicker";
-import {
-  InlineEntitySelector,
-  type InlineEntityOption,
-} from "./InlineEntitySelector";
+import { InlineEntitySelector, type InlineEntityOption } from "./InlineEntitySelector";
 import { getTrustPreset } from "../lib/trust-policy-ui";
 import { ReusableExecutionWorkspaceSelect } from "./ReusableExecutionWorkspaceSelect";
 
 const DRAFT_KEY = "paperclip:issue-draft";
 const DEBOUNCE_MS = 800;
-const MOBILE_DIALOG_HEIGHT =
-  "calc(100dvh - max(1rem, env(safe-area-inset-top)) - max(1rem, env(safe-area-inset-bottom)))";
+const MOBILE_DIALOG_HEIGHT = "calc(100dvh - max(1rem, env(safe-area-inset-top)) - max(1rem, env(safe-area-inset-bottom)))";
+
 
 interface IssueDraft {
   title: string;
@@ -164,100 +123,31 @@ import {
   type IssueModelLane,
 } from "../lib/issue-assignee-overrides";
 
-const STAGED_FILE_ACCEPT =
-  "image/*,application/pdf,text/plain,text/markdown,application/json,text/csv,text/html,.md,.markdown";
+const STAGED_FILE_ACCEPT = "image/*,application/pdf,text/plain,text/markdown,application/json,text/csv,text/html,.md,.markdown";
 
 const ISSUE_THINKING_EFFORT_OPTIONS = {
   claude_local: [
-    {
-      value: "",
-      labelKey: "newIssue.thinkingEffort.default",
-      defaultLabel: "Default",
-    },
-    {
-      value: "low",
-      labelKey: "newIssue.thinkingEffort.low",
-      defaultLabel: "Low",
-    },
-    {
-      value: "medium",
-      labelKey: "newIssue.thinkingEffort.medium",
-      defaultLabel: "Medium",
-    },
-    {
-      value: "high",
-      labelKey: "newIssue.thinkingEffort.high",
-      defaultLabel: "High",
-    },
+    { value: "", label: "Default" },
+    { value: "low", label: "Low" },
+    { value: "medium", label: "Medium" },
+    { value: "high", label: "High" },
   ],
   codex_local: [
-    {
-      value: "",
-      labelKey: "newIssue.thinkingEffort.default",
-      defaultLabel: "Default",
-    },
-    {
-      value: "minimal",
-      labelKey: "newIssue.thinkingEffort.minimal",
-      defaultLabel: "Minimal",
-    },
-    {
-      value: "low",
-      labelKey: "newIssue.thinkingEffort.low",
-      defaultLabel: "Low",
-    },
-    {
-      value: "medium",
-      labelKey: "newIssue.thinkingEffort.medium",
-      defaultLabel: "Medium",
-    },
-    {
-      value: "high",
-      labelKey: "newIssue.thinkingEffort.high",
-      defaultLabel: "High",
-    },
-    {
-      value: "xhigh",
-      labelKey: "newIssue.thinkingEffort.xhigh",
-      defaultLabel: "X-High",
-    },
+    { value: "", label: "Default" },
+    { value: "minimal", label: "Minimal" },
+    { value: "low", label: "Low" },
+    { value: "medium", label: "Medium" },
+    { value: "high", label: "High" },
+    { value: "xhigh", label: "X-High" },
   ],
   opencode_local: [
-    {
-      value: "",
-      labelKey: "newIssue.thinkingEffort.default",
-      defaultLabel: "Default",
-    },
-    {
-      value: "minimal",
-      labelKey: "newIssue.thinkingEffort.minimal",
-      defaultLabel: "Minimal",
-    },
-    {
-      value: "low",
-      labelKey: "newIssue.thinkingEffort.low",
-      defaultLabel: "Low",
-    },
-    {
-      value: "medium",
-      labelKey: "newIssue.thinkingEffort.medium",
-      defaultLabel: "Medium",
-    },
-    {
-      value: "high",
-      labelKey: "newIssue.thinkingEffort.high",
-      defaultLabel: "High",
-    },
-    {
-      value: "xhigh",
-      labelKey: "newIssue.thinkingEffort.xhigh",
-      defaultLabel: "X-High",
-    },
-    {
-      value: "max",
-      labelKey: "newIssue.thinkingEffort.max",
-      defaultLabel: "Max",
-    },
+    { value: "", label: "Default" },
+    { value: "minimal", label: "Minimal" },
+    { value: "low", label: "Low" },
+    { value: "medium", label: "Medium" },
+    { value: "high", label: "High" },
+    { value: "xhigh", label: "X-High" },
+    { value: "max", label: "Max" },
   ],
 } as const;
 
@@ -311,10 +201,7 @@ function titleizeFilename(input: string) {
     .join(" ");
 }
 
-function createUniqueDocumentKey(
-  baseKey: string,
-  stagedFiles: StagedIssueFile[],
-) {
+function createUniqueDocumentKey(baseKey: string, stagedFiles: StagedIssueFile[]) {
   const existingKeys = new Set(
     stagedFiles
       .filter((file) => file.kind === "document")
@@ -335,45 +222,24 @@ function formatFileSize(file: File) {
   return `${(file.size / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function buildStatusOptions(t: TFunction): ReadonlyArray<{
-  value: string;
-  label: string;
-  color: string;
-  description?: string;
-}> {
+function buildStatusOptions(): ReadonlyArray<{ value: string; label: string; color: string; description?: string }> {
   const palette = issueStatusText;
   return [
     {
       value: "backlog",
-      label: t("status.backlog", { defaultValue: "Backlog" }),
+      label: "Backlog",
       color: palette.backlog ?? issueStatusTextDefault,
-      description: t("newIssue.statusDescriptions.backlog", {
-        defaultValue: "Parked - responsible will not be woken",
-      }),
+      description: "Parked - assignee will not be woken",
     },
     {
       value: "todo",
-      label: t("status.todo", { defaultValue: "Todo" }),
+      label: "Todo",
       color: palette.todo ?? issueStatusTextDefault,
-      description: t("newIssue.statusDescriptions.todo", {
-        defaultValue: "Executable - responsible will be woken",
-      }),
+      description: "Executable - assignee will be woken",
     },
-    {
-      value: "in_progress",
-      label: t("status.inProgress", { defaultValue: "In Progress" }),
-      color: palette.in_progress ?? issueStatusTextDefault,
-    },
-    {
-      value: "in_review",
-      label: t("status.inReview", { defaultValue: "In Review" }),
-      color: palette.in_review ?? issueStatusTextDefault,
-    },
-    {
-      value: "done",
-      label: t("status.done", { defaultValue: "Done" }),
-      color: palette.done ?? issueStatusTextDefault,
-    },
+    { value: "in_progress", label: "In Progress", color: palette.in_progress ?? issueStatusTextDefault },
+    { value: "in_review", label: "In Review", color: palette.in_review ?? issueStatusTextDefault },
+    { value: "done", label: "Done", color: palette.done ?? issueStatusTextDefault },
   ];
 }
 
@@ -381,148 +247,59 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
-function isRequiredUserSecretBinding(
-  value: unknown,
-): value is Extract<EnvBinding, { type: "user_secret_ref" }> {
-  return (
-    isRecord(value) &&
-    value.type === "user_secret_ref" &&
-    typeof value.key === "string" &&
-    value.key.trim().length > 0 &&
-    value.required !== false &&
-    value.allowMissingOverride !== true
-  );
+function isRequiredUserSecretBinding(value: unknown): value is Extract<EnvBinding, { type: "user_secret_ref" }> {
+  return isRecord(value)
+    && value.type === "user_secret_ref"
+    && typeof value.key === "string"
+    && value.key.trim().length > 0
+    && value.required !== false
+    && value.allowMissingOverride !== true;
 }
 
-function collectRequiredUserSecretKeysFromEnv(
-  env: AgentEnvConfig | Record<string, unknown> | null | undefined,
-): string[] {
+function collectRequiredUserSecretKeysFromEnv(env: AgentEnvConfig | Record<string, unknown> | null | undefined): string[] {
   if (!isRecord(env)) return [];
   return Object.values(env).flatMap((binding) =>
     isRequiredUserSecretBinding(binding) ? [binding.key.trim()] : [],
   );
 }
 
-function uniqueRequiredUserSecretKeys(
-  inputs: Array<AgentEnvConfig | Record<string, unknown> | null | undefined>,
-): string[] {
+function uniqueRequiredUserSecretKeys(inputs: Array<AgentEnvConfig | Record<string, unknown> | null | undefined>): string[] {
   return [...new Set(inputs.flatMap(collectRequiredUserSecretKeysFromEnv))];
 }
 
-function shouldWarnAboutRunUserSecrets(
-  status: string,
-  assigneeAgentId: string | null | undefined,
-) {
-  return (
-    Boolean(assigneeAgentId) && (status === "todo" || status === "in_progress")
-  );
+function shouldWarnAboutRunUserSecrets(status: string, assigneeAgentId: string | null | undefined) {
+  return Boolean(assigneeAgentId) && (status === "todo" || status === "in_progress");
 }
 
 const priorities = [
-  {
-    value: "critical",
-    labelKey: "priority.critical",
-    defaultLabel: "Critical",
-    icon: AlertTriangle,
-    color: priorityColor.critical ?? priorityColorDefault,
-  },
-  {
-    value: "high",
-    labelKey: "priority.high",
-    defaultLabel: "High",
-    icon: ArrowUp,
-    color: priorityColor.high ?? priorityColorDefault,
-  },
-  {
-    value: "medium",
-    labelKey: "priority.medium",
-    defaultLabel: "Medium",
-    icon: Minus,
-    color: priorityColor.medium ?? priorityColorDefault,
-  },
-  {
-    value: "low",
-    labelKey: "priority.low",
-    defaultLabel: "Low",
-    icon: ArrowDown,
-    color: priorityColor.low ?? priorityColorDefault,
-  },
+  { value: "critical", label: "Critical", icon: AlertTriangle, color: priorityColor.critical ?? priorityColorDefault },
+  { value: "high", label: "High", icon: ArrowUp, color: priorityColor.high ?? priorityColorDefault },
+  { value: "medium", label: "Medium", icon: Minus, color: priorityColor.medium ?? priorityColorDefault },
+  { value: "low", label: "Low", icon: ArrowDown, color: priorityColor.low ?? priorityColorDefault },
 ];
 
 const EXECUTION_WORKSPACE_MODES = [
-  {
-    value: "shared_workspace",
-    labelKey: "newIssue.executionWorkspaceMode.shared_workspace",
-    defaultLabel: "Project default",
-  },
-  {
-    value: "isolated_workspace",
-    labelKey: "newIssue.executionWorkspaceMode.isolated_workspace",
-    defaultLabel: "New isolated workspace",
-  },
-  {
-    value: "reuse_existing",
-    labelKey: "newIssue.executionWorkspaceMode.reuse_existing",
-    defaultLabel: "Reuse existing workspace",
-  },
+  { value: "shared_workspace", label: "Project default" },
+  { value: "isolated_workspace", label: "New isolated workspace" },
+  { value: "reuse_existing", label: "Reuse existing workspace" },
 ] as const;
-
-function translateWorkModeLabel(t: TFunction, value: string) {
-  if (value === "planning") {
-    return t("newIssue.workMode.conferenceRoom.planning", {
-      defaultValue: "Plan mode",
-    });
-  }
-  if (value === "ask") {
-    return t("newIssue.workMode.conferenceRoom.ask", {
-      defaultValue: "Ask mode",
-    });
-  }
-  return t("newIssue.workMode.conferenceRoom.standard", {
-    defaultValue: "Agent mode",
-  });
-}
-
-function translateWorkModeShortLabel(t: TFunction, value: string) {
-  if (value === "planning") {
-    return t("newIssue.workMode.short.planning", { defaultValue: "Plan" });
-  }
-  if (value === "ask") {
-    return t("newIssue.workMode.short.ask", { defaultValue: "Ask" });
-  }
-  return t("newIssue.workMode.short.standard", { defaultValue: "Agent" });
-}
 
 function defaultExecutionWorkspaceModeForIssueDefaults(
   defaults: {
     executionWorkspaceId?: unknown;
     executionWorkspaceMode?: unknown;
   },
-  project:
-    | {
-        executionWorkspacePolicy?: {
-          enabled?: boolean;
-          defaultMode?: string | null;
-        } | null;
-      }
-    | null
-    | undefined,
+  project: { executionWorkspacePolicy?: { enabled?: boolean; defaultMode?: string | null } | null } | null | undefined,
 ) {
-  if (
-    typeof defaults.executionWorkspaceId === "string" &&
-    defaults.executionWorkspaceId.length > 0
-  ) {
+  if (typeof defaults.executionWorkspaceId === "string" && defaults.executionWorkspaceId.length > 0) {
     return "reuse_existing";
   }
-  return typeof defaults.executionWorkspaceMode === "string" &&
-    defaults.executionWorkspaceMode.length > 0
+  return typeof defaults.executionWorkspaceMode === "string" && defaults.executionWorkspaceMode.length > 0
     ? defaults.executionWorkspaceMode
     : defaultExecutionWorkspaceModeForProject(project);
 }
 
-function isWorkModePeriodShortcut(
-  e: Pick<React.KeyboardEvent, "code" | "ctrlKey" | "key" | "metaKey">,
-) {
+function isWorkModePeriodShortcut(e: Pick<React.KeyboardEvent, "code" | "ctrlKey" | "key" | "metaKey">) {
   const isPeriod = e.code === "Period" || e.key === ".";
   return (e.metaKey || e.ctrlKey) && isPeriod;
 }
@@ -550,7 +327,6 @@ const IssueTitleTextarea = memo(function IssueTitleTextarea({
   projectSelectorRef: RefObject<HTMLButtonElement | null>;
   onChange: (value: string) => void;
 }) {
-  const { t } = useTranslation();
   const [draftValue, setDraftValue] = useState(value);
 
   useEffect(() => {
@@ -560,9 +336,7 @@ const IssueTitleTextarea = memo(function IssueTitleTextarea({
   return (
     <textarea
       className="w-full text-lg font-semibold bg-transparent outline-none resize-none overflow-hidden placeholder:text-muted-foreground/50"
-      placeholder={t("newIssue.titlePlaceholder", {
-        defaultValue: "Task title",
-      })}
+      placeholder="Task title"
       rows={1}
       value={draftValue}
       onChange={(e) => {
@@ -616,7 +390,6 @@ const IssueDescriptionEditor = memo(function IssueDescriptionEditor({
   imageUploadHandler: (file: File) => Promise<string>;
   onChange: (value: string) => void;
 }) {
-  const { t } = useTranslation();
   const [draftValue, setDraftValue] = useState(value);
 
   useEffect(() => {
@@ -631,34 +404,20 @@ const IssueDescriptionEditor = memo(function IssueDescriptionEditor({
         setDraftValue(nextValue);
         onChange(nextValue);
       }}
-      placeholder={t("newIssue.descriptionPlaceholder", {
-        defaultValue: "Add description...",
-      })}
+      placeholder="Add description..."
       bordered={false}
       mentions={mentions}
-      contentClassName={cn(
-        "text-sm text-muted-foreground pb-12",
-        expanded ? "min-h-(--sz-220px)" : "min-h-(--sz-120px)",
-      )}
+      contentClassName={cn("text-sm text-muted-foreground pb-12", expanded ? "min-h-(--sz-220px)" : "min-h-(--sz-120px)")}
       imageUploadHandler={imageUploadHandler}
     />
   );
 });
 
 export function NewIssueDialog() {
-  const { t } = useTranslation();
   const { newIssueOpen, newIssueDefaults, closeNewIssue } = useDialog();
   const { companies, selectedCompanyId, selectedCompany } = useCompany();
   const workModeOptions = useMemo(() => workModeMetaList(), []);
-  const statuses = useMemo(() => buildStatusOptions(t), [t]);
-  const priorityOptions = useMemo(
-    () =>
-      priorities.map((priority) => ({
-        ...priority,
-        label: t(priority.labelKey, { defaultValue: priority.defaultLabel }),
-      })),
-    [t],
-  );
+  const statuses = useMemo(() => buildStatusOptions(), []);
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
   const [title, setTitle] = useState("");
@@ -682,15 +441,12 @@ export function NewIssueDialog() {
   const [projectId, setProjectId] = useState("");
   const [projectWorkspaceId, setProjectWorkspaceId] = useState("");
   const [assigneeOptionsOpen, setAssigneeOptionsOpen] = useState(false);
-  const [assigneeModelLane, setAssigneeModelLane] =
-    useState<IssueModelLane>("primary");
+  const [assigneeModelLane, setAssigneeModelLane] = useState<IssueModelLane>("primary");
   const [assigneeModelOverride, setAssigneeModelOverride] = useState("");
   const [assigneeThinkingEffort, setAssigneeThinkingEffort] = useState("");
   const [assigneeChrome, setAssigneeChrome] = useState(false);
-  const [executionWorkspaceMode, setExecutionWorkspaceMode] =
-    useState<string>("shared_workspace");
-  const [selectedExecutionWorkspaceId, setSelectedExecutionWorkspaceId] =
-    useState("");
+  const [executionWorkspaceMode, setExecutionWorkspaceMode] = useState<string>("shared_workspace");
+  const [selectedExecutionWorkspaceId, setSelectedExecutionWorkspaceId] = useState("");
   const [workMode, setWorkMode] = useState<IssueWorkMode>("standard");
   const [expanded, setExpanded] = useState(false);
   const [dialogCompanyId, setDialogCompanyId] = useState<string | null>(null);
@@ -701,17 +457,12 @@ export function NewIssueDialog() {
   const initializationKeyRef = useRef<string | null>(null);
 
   const effectiveCompanyId = dialogCompanyId ?? selectedCompanyId;
-  const dialogCompany =
-    companies.find((c) => c.id === effectiveCompanyId) ?? selectedCompany;
+  const dialogCompany = companies.find((c) => c.id === effectiveCompanyId) ?? selectedCompany;
   const isSubIssueMode = Boolean(newIssueDefaults.parentId);
-  const parentIssueLabel =
-    newIssueDefaults.parentIdentifier ??
-    (newIssueDefaults.parentId ? newIssueDefaults.parentId.slice(0, 8) : "");
-  const parentExecutionWorkspaceId =
-    newIssueDefaults.executionWorkspaceId ?? "";
-  const parentExecutionWorkspaceLabel =
-    newIssueDefaults.parentExecutionWorkspaceLabel ??
-    parentExecutionWorkspaceId;
+  const parentIssueLabel = newIssueDefaults.parentIdentifier
+    ?? (newIssueDefaults.parentId ? newIssueDefaults.parentId.slice(0, 8) : "");
+  const parentExecutionWorkspaceId = newIssueDefaults.executionWorkspaceId ?? "";
+  const parentExecutionWorkspaceLabel = newIssueDefaults.parentExecutionWorkspaceLabel ?? parentExecutionWorkspaceId;
 
   // Popover states
   const [statusOpen, setStatusOpen] = useState(false);
@@ -769,59 +520,41 @@ export function NewIssueDialog() {
     retry: false,
   });
   const currentUserId = session?.user?.id ?? session?.session?.userId ?? null;
-  const activeProjects = useMemo(() => projects ?? [], [projects]);
+  const activeProjects = useMemo(
+    () => projects ?? [],
+    [projects],
+  );
   const { orderedProjects } = useProjectOrder({
     projects: activeProjects,
     companyId: effectiveCompanyId,
     userId: currentUserId,
   });
 
-  const selectedAssignee = useMemo(
-    () => parseAssigneeValue(assigneeValue),
-    [assigneeValue],
-  );
+  const selectedAssignee = useMemo(() => parseAssigneeValue(assigneeValue), [assigneeValue]);
   const selectedAssigneeAgentId = selectedAssignee.assigneeAgentId;
   const selectedAssigneeUserId = selectedAssignee.assigneeUserId;
 
-  const assigneeAdapterType =
-    (agents ?? []).find((agent) => agent.id === selectedAssigneeAgentId)
-      ?.adapterType ?? null;
+  const assigneeAdapterType = (agents ?? []).find((agent) => agent.id === selectedAssigneeAgentId)?.adapterType ?? null;
   const supportsAssigneeOverrides = Boolean(
-    assigneeAdapterType &&
-      ISSUE_OVERRIDE_ADAPTER_TYPES.has(assigneeAdapterType),
+    assigneeAdapterType && ISSUE_OVERRIDE_ADAPTER_TYPES.has(assigneeAdapterType),
   );
   const getAdapterCapabilities = useAdapterCapabilities();
   const assigneeAdapterCapabilities = assigneeAdapterType
     ? getAdapterCapabilities(assigneeAdapterType)
     : null;
   const assigneeSupportsCheapLane = Boolean(
-    supportsAssigneeOverrides &&
-      assigneeAdapterCapabilities?.supportsModelProfiles,
+    supportsAssigneeOverrides && assigneeAdapterCapabilities?.supportsModelProfiles,
   );
 
   const { data: assigneeCheapProfiles } = useQuery({
-    queryKey:
-      effectiveCompanyId && assigneeAdapterType
-        ? queryKeys.agents.adapterModelProfiles(
-            effectiveCompanyId,
-            assigneeAdapterType,
-          )
-        : [
-            "agents",
-            "none",
-            "adapter-model-profiles",
-            assigneeAdapterType ?? "none",
-          ],
-    queryFn: () =>
-      agentsApi.adapterModelProfiles(effectiveCompanyId!, assigneeAdapterType!),
-    enabled:
-      Boolean(effectiveCompanyId) && newIssueOpen && assigneeSupportsCheapLane,
+    queryKey: effectiveCompanyId && assigneeAdapterType
+      ? queryKeys.agents.adapterModelProfiles(effectiveCompanyId, assigneeAdapterType)
+      : ["agents", "none", "adapter-model-profiles", assigneeAdapterType ?? "none"],
+    queryFn: () => agentsApi.adapterModelProfiles(effectiveCompanyId!, assigneeAdapterType!),
+    enabled: Boolean(effectiveCompanyId) && newIssueOpen && assigneeSupportsCheapLane,
   });
   const assigneeCheapProfile = useMemo(
-    () =>
-      (assigneeCheapProfiles ?? []).find(
-        (profile) => profile.key === "cheap",
-      ) ?? null,
+    () => (assigneeCheapProfiles ?? []).find((profile) => profile.key === "cheap") ?? null,
     [assigneeCheapProfiles],
   );
   const mentionOptions = useMemo<MentionOption[]>(() => {
@@ -835,15 +568,10 @@ export function NewIssueDialog() {
   const { data: assigneeAdapterModels } = useQuery({
     queryKey:
       effectiveCompanyId && assigneeAdapterType
-        ? queryKeys.agents.adapterModels(
-            effectiveCompanyId,
-            assigneeAdapterType,
-          )
+        ? queryKeys.agents.adapterModels(effectiveCompanyId, assigneeAdapterType)
         : ["agents", "none", "adapter-models", assigneeAdapterType ?? "none"],
-    queryFn: () =>
-      agentsApi.adapterModels(effectiveCompanyId!, assigneeAdapterType!),
-    enabled:
-      Boolean(effectiveCompanyId) && newIssueOpen && supportsAssigneeOverrides,
+    queryFn: () => agentsApi.adapterModels(effectiveCompanyId!, assigneeAdapterType!),
+    enabled: Boolean(effectiveCompanyId) && newIssueOpen && supportsAssigneeOverrides,
   });
 
   const createIssue = useMutation({
@@ -851,10 +579,7 @@ export function NewIssueDialog() {
       companyId,
       stagedFiles: pendingStagedFiles,
       ...data
-    }: { companyId: string; stagedFiles: StagedIssueFile[] } & Record<
-      string,
-      unknown
-    >) => {
+    }: { companyId: string; stagedFiles: StagedIssueFile[] } & Record<string, unknown>) => {
       const issue = await issuesApi.create(companyId, data);
       const failures: string[] = [];
 
@@ -862,25 +587,14 @@ export function NewIssueDialog() {
         try {
           if (stagedFile.kind === "document") {
             const body = await stagedFile.file.text();
-            await issuesApi.upsertDocument(
-              issue.id,
-              stagedFile.documentKey ?? "document",
-              {
-                title:
-                  stagedFile.documentKey === "plan"
-                    ? null
-                    : (stagedFile.title ?? null),
-                format: "markdown",
-                body,
-                baseRevisionId: null,
-              },
-            );
+            await issuesApi.upsertDocument(issue.id, stagedFile.documentKey ?? "document", {
+              title: stagedFile.documentKey === "plan" ? null : stagedFile.title ?? null,
+              format: "markdown",
+              body,
+              baseRevisionId: null,
+            });
           } else {
-            await issuesApi.uploadAttachment(
-              companyId,
-              issue.id,
-              stagedFile.file,
-            );
+            await issuesApi.uploadAttachment(companyId, issue.id, stagedFile.file);
           }
         } catch {
           failures.push(stagedFile.file.name);
@@ -890,37 +604,21 @@ export function NewIssueDialog() {
       return { issue, companyId, failures };
     },
     onSuccess: ({ issue, companyId, failures }) => {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.issues.list(companyId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.issues.listMineByMe(companyId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.issues.listTouchedByMe(companyId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.issues.listUnreadTouchedByMe(companyId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.sidebarBadges(companyId),
-      });
+      queryClient.invalidateQueries({ queryKey: queryKeys.issues.list(companyId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.issues.listMineByMe(companyId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.issues.listTouchedByMe(companyId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.issues.listUnreadTouchedByMe(companyId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.sidebarBadges(companyId) });
       if (draftTimer.current) clearTimeout(draftTimer.current);
       if (failures.length > 0) {
-        const prefix = (
-          companies.find((company) => company.id === companyId)?.issuePrefix ??
-          ""
-        ).trim();
+        const prefix = (companies.find((company) => company.id === companyId)?.issuePrefix ?? "").trim();
         const issueRef = issue.identifier ?? issue.id;
         pushToast({
           title: `Created ${issueRef} with upload warnings`,
           body: `${failures.length} staged ${failures.length === 1 ? "file" : "files"} could not be added.`,
           tone: "warn",
           action: prefix
-            ? {
-                label: `Open ${issueRef}`,
-                href: `/${prefix}/issues/${issueRef}`,
-              }
+            ? { label: `Open ${issueRef}`, href: `/${prefix}/issues/${issueRef}` }
             : undefined,
         });
       }
@@ -932,75 +630,42 @@ export function NewIssueDialog() {
 
   const uploadDescriptionImage = useMutation({
     mutationFn: async (file: File) => {
-      if (!effectiveCompanyId) {
-        throw new Error(
-          t("common.noCompanySelected", {
-            defaultValue: "No company selected",
-          }),
-        );
-      }
+      if (!effectiveCompanyId) throw new Error("No company selected");
       return assetsApi.uploadImage(effectiveCompanyId, file, "issues/drafts");
     },
   });
-  const uploadDescriptionImageHandler = useCallback(
-    async (file: File) => {
-      const asset = await uploadDescriptionImage.mutateAsync(file);
-      return asset.contentPath;
-    },
-    [uploadDescriptionImage.mutateAsync],
-  );
+  const uploadDescriptionImageHandler = useCallback(async (file: File) => {
+    const asset = await uploadDescriptionImage.mutateAsync(file);
+    return asset.contentPath;
+  }, [uploadDescriptionImage.mutateAsync]);
 
   // Debounced draft saving
-  const scheduleSave = useCallback((draft: IssueDraft) => {
-    if (draftTimer.current) clearTimeout(draftTimer.current);
-    draftTimer.current = setTimeout(() => {
-      if (draft.title.trim()) saveDraft(draft);
-    }, DEBOUNCE_MS);
-  }, []);
-
-  const setIssueText = useCallback(
-    (nextTitle: string, nextDescription: string) => {
-      titleRef.current = nextTitle;
-      descriptionRef.current = nextDescription;
-      setTitle(nextTitle);
-      setDescription(nextDescription);
-      setTitleHasText(nextTitle.trim().length > 0);
-      setDraftHasText(
-        nextTitle.trim().length > 0 || nextDescription.trim().length > 0,
-      );
+  const scheduleSave = useCallback(
+    (draft: IssueDraft) => {
+      if (draftTimer.current) clearTimeout(draftTimer.current);
+      draftTimer.current = setTimeout(() => {
+        if (draft.title.trim()) saveDraft(draft);
+      }, DEBOUNCE_MS);
     },
     [],
   );
 
-  const queueDraftSave = useCallback(
-    (overrides: { title?: string; description?: string } = {}) => {
-      if (!newIssueOpen) return;
-      const nextTitle = overrides.title ?? titleRef.current;
-      const nextDescription = overrides.description ?? descriptionRef.current;
-      scheduleSave({
-        title: nextTitle,
-        description: nextDescription,
-        status,
-        priority,
-        assigneeValue,
-        reviewerValue,
-        approverValue,
-        watchdogAgentId,
-        watchdogInstructions,
-        projectId,
-        projectWorkspaceId,
-        assigneeModelLane,
-        assigneeModelOverride,
-        assigneeThinkingEffort,
-        assigneeChrome,
-        executionWorkspaceMode,
-        selectedExecutionWorkspaceId,
-        workMode,
-      });
-    },
-    [
-      newIssueOpen,
-      scheduleSave,
+  const setIssueText = useCallback((nextTitle: string, nextDescription: string) => {
+    titleRef.current = nextTitle;
+    descriptionRef.current = nextDescription;
+    setTitle(nextTitle);
+    setDescription(nextDescription);
+    setTitleHasText(nextTitle.trim().length > 0);
+    setDraftHasText(nextTitle.trim().length > 0 || nextDescription.trim().length > 0);
+  }, []);
+
+  const queueDraftSave = useCallback((overrides: { title?: string; description?: string } = {}) => {
+    if (!newIssueOpen) return;
+    const nextTitle = overrides.title ?? titleRef.current;
+    const nextDescription = overrides.description ?? descriptionRef.current;
+    scheduleSave({
+      title: nextTitle,
+      description: nextDescription,
       status,
       priority,
       assigneeValue,
@@ -1010,44 +675,49 @@ export function NewIssueDialog() {
       watchdogInstructions,
       projectId,
       projectWorkspaceId,
+      assigneeModelLane,
       assigneeModelOverride,
       assigneeThinkingEffort,
       assigneeChrome,
       executionWorkspaceMode,
       selectedExecutionWorkspaceId,
       workMode,
-    ],
-  );
+    });
+  }, [
+    newIssueOpen,
+    scheduleSave,
+    status,
+    priority,
+    assigneeValue,
+    reviewerValue,
+    approverValue,
+    watchdogAgentId,
+    watchdogInstructions,
+    projectId,
+    projectWorkspaceId,
+    assigneeModelOverride,
+    assigneeThinkingEffort,
+    assigneeChrome,
+    executionWorkspaceMode,
+    selectedExecutionWorkspaceId,
+    workMode,
+  ]);
 
-  const handleTitleChange = useCallback(
-    (nextTitle: string) => {
-      titleRef.current = nextTitle;
-      const nextTitleHasText = nextTitle.trim().length > 0;
-      const nextDraftHasText =
-        nextTitleHasText || descriptionRef.current.trim().length > 0;
-      setTitleHasText((current) =>
-        current === nextTitleHasText ? current : nextTitleHasText,
-      );
-      setDraftHasText((current) =>
-        current === nextDraftHasText ? current : nextDraftHasText,
-      );
-      queueDraftSave({ title: nextTitle });
-    },
-    [queueDraftSave],
-  );
+  const handleTitleChange = useCallback((nextTitle: string) => {
+    titleRef.current = nextTitle;
+    const nextTitleHasText = nextTitle.trim().length > 0;
+    const nextDraftHasText = nextTitleHasText || descriptionRef.current.trim().length > 0;
+    setTitleHasText((current) => current === nextTitleHasText ? current : nextTitleHasText);
+    setDraftHasText((current) => current === nextDraftHasText ? current : nextDraftHasText);
+    queueDraftSave({ title: nextTitle });
+  }, [queueDraftSave]);
 
-  const handleDescriptionChange = useCallback(
-    (nextDescription: string) => {
-      descriptionRef.current = nextDescription;
-      const nextDraftHasText =
-        titleRef.current.trim().length > 0 || nextDescription.trim().length > 0;
-      setDraftHasText((current) =>
-        current === nextDraftHasText ? current : nextDraftHasText,
-      );
-      queueDraftSave({ description: nextDescription });
-    },
-    [queueDraftSave],
-  );
+  const handleDescriptionChange = useCallback((nextDescription: string) => {
+    descriptionRef.current = nextDescription;
+    const nextDraftHasText = titleRef.current.trim().length > 0 || nextDescription.trim().length > 0;
+    setDraftHasText((current) => current === nextDraftHasText ? current : nextDraftHasText);
+    queueDraftSave({ description: nextDescription });
+  }, [queueDraftSave]);
 
   // Save draft on meaningful changes
   useEffect(() => {
@@ -1088,27 +758,14 @@ export function NewIssueDialog() {
 
     const draft = loadDraft();
     if (newIssueDefaults.parentId) {
-      const nextWorkMode = isIssueWorkMode(newIssueDefaults.workMode)
-        ? newIssueDefaults.workMode
-        : "standard";
+      const nextWorkMode = isIssueWorkMode(newIssueDefaults.workMode) ? newIssueDefaults.workMode : "standard";
       const defaultProjectId = newIssueDefaults.projectId ?? "";
-      const defaultProject = orderedProjects.find(
-        (project) => project.id === defaultProjectId,
-      );
-      const hasExplicitProjectWorkspaceId =
-        newIssueDefaults.projectWorkspaceId !== undefined;
-      const defaultProjectWorkspaceId =
-        newIssueDefaults.projectWorkspaceId ??
-        defaultProjectWorkspaceIdForProject(defaultProject);
-      const defaultExecutionWorkspaceMode =
-        defaultExecutionWorkspaceModeForIssueDefaults(
-          newIssueDefaults,
-          defaultProject,
-        );
-      setIssueText(
-        newIssueDefaults.title ?? "",
-        newIssueDefaults.description ?? "",
-      );
+      const defaultProject = orderedProjects.find((project) => project.id === defaultProjectId);
+      const hasExplicitProjectWorkspaceId = newIssueDefaults.projectWorkspaceId !== undefined;
+      const defaultProjectWorkspaceId = newIssueDefaults.projectWorkspaceId
+        ?? defaultProjectWorkspaceIdForProject(defaultProject);
+      const defaultExecutionWorkspaceMode = defaultExecutionWorkspaceModeForIssueDefaults(newIssueDefaults, defaultProject);
+      setIssueText(newIssueDefaults.title ?? "", newIssueDefaults.description ?? "");
       setStatus(newIssueDefaults.status ?? "todo");
       setPriority(newIssueDefaults.priority ?? "");
       setProjectId(defaultProjectId);
@@ -1120,31 +777,20 @@ export function NewIssueDialog() {
       setAssigneeChrome(false);
       setExecutionWorkspaceMode(defaultExecutionWorkspaceMode);
       setWorkMode(nextWorkMode);
-      setSelectedExecutionWorkspaceId(
-        newIssueDefaults.executionWorkspaceId ?? "",
-      );
-      executionWorkspaceDefaultProjectId.current =
-        hasExplicitProjectWorkspaceId || defaultProject
-          ? defaultProjectId || null
-          : null;
+      setSelectedExecutionWorkspaceId(newIssueDefaults.executionWorkspaceId ?? "");
+      executionWorkspaceDefaultProjectId.current = hasExplicitProjectWorkspaceId || defaultProject
+        ? defaultProjectId || null
+        : null;
     } else if (newIssueDefaults.title) {
-      const nextWorkMode = isIssueWorkMode(newIssueDefaults.workMode)
-        ? newIssueDefaults.workMode
-        : "standard";
+      const nextWorkMode = isIssueWorkMode(newIssueDefaults.workMode) ? newIssueDefaults.workMode : "standard";
       setIssueText(newIssueDefaults.title, newIssueDefaults.description ?? "");
       setStatus(newIssueDefaults.status ?? "todo");
       setPriority(newIssueDefaults.priority ?? "");
       const defaultProjectId = newIssueDefaults.projectId ?? "";
-      const defaultProject = orderedProjects.find(
-        (project) => project.id === defaultProjectId,
-      );
-      const hasExplicitProjectWorkspaceId =
-        newIssueDefaults.projectWorkspaceId !== undefined;
+      const defaultProject = orderedProjects.find((project) => project.id === defaultProjectId);
+      const hasExplicitProjectWorkspaceId = newIssueDefaults.projectWorkspaceId !== undefined;
       setProjectId(defaultProjectId);
-      setProjectWorkspaceId(
-        newIssueDefaults.projectWorkspaceId ??
-          defaultProjectWorkspaceIdForProject(defaultProject),
-      );
+      setProjectWorkspaceId(newIssueDefaults.projectWorkspaceId ?? defaultProjectWorkspaceIdForProject(defaultProject));
       setAssigneeValue(assigneeValueFromSelection(newIssueDefaults));
       setReviewerValue("");
       setApproverValue("");
@@ -1156,36 +802,19 @@ export function NewIssueDialog() {
       setAssigneeModelOverride("");
       setAssigneeThinkingEffort("");
       setAssigneeChrome(false);
-      setExecutionWorkspaceMode(
-        defaultExecutionWorkspaceModeForIssueDefaults(
-          newIssueDefaults,
-          defaultProject,
-        ),
-      );
+      setExecutionWorkspaceMode(defaultExecutionWorkspaceModeForIssueDefaults(newIssueDefaults, defaultProject));
       setWorkMode(nextWorkMode);
-      setSelectedExecutionWorkspaceId(
-        newIssueDefaults.executionWorkspaceId ?? "",
-      );
-      executionWorkspaceDefaultProjectId.current =
-        hasExplicitProjectWorkspaceId ||
-        newIssueDefaults.executionWorkspaceId ||
-        defaultProject
-          ? defaultProjectId || null
-          : null;
+      setSelectedExecutionWorkspaceId(newIssueDefaults.executionWorkspaceId ?? "");
+      executionWorkspaceDefaultProjectId.current = hasExplicitProjectWorkspaceId || newIssueDefaults.executionWorkspaceId || defaultProject
+        ? defaultProjectId || null
+        : null;
     } else if (draft && draft.title.trim()) {
-      const nextWorkMode = isIssueWorkMode(draft.workMode)
-        ? draft.workMode
-        : "standard";
+      const nextWorkMode = isIssueWorkMode(draft.workMode) ? draft.workMode : "standard";
       const restoredProjectId = newIssueDefaults.projectId ?? draft.projectId;
-      const restoredProject = orderedProjects.find(
-        (project) => project.id === restoredProjectId,
-      );
-      const hasExplicitProjectWorkspaceId =
-        newIssueDefaults.projectWorkspaceId !== undefined;
-      const hasExplicitExecutionWorkspaceId =
-        newIssueDefaults.executionWorkspaceId !== undefined;
-      const hasExplicitExecutionWorkspaceMode =
-        newIssueDefaults.executionWorkspaceMode !== undefined;
+      const restoredProject = orderedProjects.find((project) => project.id === restoredProjectId);
+      const hasExplicitProjectWorkspaceId = newIssueDefaults.projectWorkspaceId !== undefined;
+      const hasExplicitExecutionWorkspaceId = newIssueDefaults.executionWorkspaceId !== undefined;
+      const hasExplicitExecutionWorkspaceMode = newIssueDefaults.executionWorkspaceMode !== undefined;
       setIssueText(draft.title, draft.description);
       setStatus(draft.status || "todo");
       setPriority(draft.priority);
@@ -1196,17 +825,16 @@ export function NewIssueDialog() {
       );
       setReviewerValue(draft.reviewerValue ?? "");
       setApproverValue(draft.approverValue ?? "");
-      setShowReviewerRow(!!draft.reviewerValue);
-      setShowApproverRow(!!draft.approverValue);
+      setShowReviewerRow(!!(draft.reviewerValue));
+      setShowApproverRow(!!(draft.approverValue));
       setWatchdogAgentId(draft.watchdogAgentId ?? "");
       setWatchdogInstructions(draft.watchdogInstructions ?? "");
-      setShowWatchdogRow(!!draft.watchdogAgentId);
+      setShowWatchdogRow(!!(draft.watchdogAgentId));
       setProjectId(restoredProjectId);
       setProjectWorkspaceId(
         hasExplicitProjectWorkspaceId
           ? (newIssueDefaults.projectWorkspaceId ?? "")
-          : (draft.projectWorkspaceId ??
-              defaultProjectWorkspaceIdForProject(restoredProject)),
+          : (draft.projectWorkspaceId ?? defaultProjectWorkspaceIdForProject(restoredProject)),
       );
       setAssigneeModelLane(draft.assigneeModelLane ?? "primary");
       setAssigneeModelOverride(draft.assigneeModelOverride ?? "");
@@ -1214,14 +842,11 @@ export function NewIssueDialog() {
       setAssigneeChrome(draft.assigneeChrome ?? false);
       setExecutionWorkspaceMode(
         hasExplicitExecutionWorkspaceId || hasExplicitExecutionWorkspaceMode
-          ? defaultExecutionWorkspaceModeForIssueDefaults(
-              newIssueDefaults,
-              restoredProject,
-            )
-          : (draft.executionWorkspaceMode ??
-              (draft.useIsolatedExecutionWorkspace
-                ? "isolated_workspace"
-                : defaultExecutionWorkspaceModeForProject(restoredProject))),
+          ? defaultExecutionWorkspaceModeForIssueDefaults(newIssueDefaults, restoredProject)
+          : (
+              draft.executionWorkspaceMode
+              ?? (draft.useIsolatedExecutionWorkspace ? "isolated_workspace" : defaultExecutionWorkspaceModeForProject(restoredProject))
+            ),
       );
       setWorkMode(nextWorkMode);
       setSelectedExecutionWorkspaceId(
@@ -1229,29 +854,19 @@ export function NewIssueDialog() {
           ? (newIssueDefaults.executionWorkspaceId ?? "")
           : (draft.selectedExecutionWorkspaceId ?? ""),
       );
-      executionWorkspaceDefaultProjectId.current =
-        hasExplicitProjectWorkspaceId ||
-        hasExplicitExecutionWorkspaceId ||
-        draft.projectWorkspaceId ||
-        restoredProject
-          ? restoredProjectId || null
-          : null;
+      executionWorkspaceDefaultProjectId.current = hasExplicitProjectWorkspaceId || hasExplicitExecutionWorkspaceId || draft.projectWorkspaceId || restoredProject
+        ? restoredProjectId || null
+        : null;
     } else {
       setWorkMode("standard");
       const defaultProjectId = newIssueDefaults.projectId ?? "";
-      const defaultProject = orderedProjects.find(
-        (project) => project.id === defaultProjectId,
-      );
-      const hasExplicitProjectWorkspaceId =
-        newIssueDefaults.projectWorkspaceId !== undefined;
+      const defaultProject = orderedProjects.find((project) => project.id === defaultProjectId);
+      const hasExplicitProjectWorkspaceId = newIssueDefaults.projectWorkspaceId !== undefined;
       setIssueText("", "");
       setStatus(newIssueDefaults.status ?? "todo");
       setPriority(newIssueDefaults.priority ?? "");
       setProjectId(defaultProjectId);
-      setProjectWorkspaceId(
-        newIssueDefaults.projectWorkspaceId ??
-          defaultProjectWorkspaceIdForProject(defaultProject),
-      );
+      setProjectWorkspaceId(newIssueDefaults.projectWorkspaceId ?? defaultProjectWorkspaceIdForProject(defaultProject));
       setAssigneeValue(assigneeValueFromSelection(newIssueDefaults));
       setReviewerValue("");
       setApproverValue("");
@@ -1263,29 +878,13 @@ export function NewIssueDialog() {
       setAssigneeModelOverride("");
       setAssigneeThinkingEffort("");
       setAssigneeChrome(false);
-      setExecutionWorkspaceMode(
-        defaultExecutionWorkspaceModeForIssueDefaults(
-          newIssueDefaults,
-          defaultProject,
-        ),
-      );
-      setSelectedExecutionWorkspaceId(
-        newIssueDefaults.executionWorkspaceId ?? "",
-      );
-      executionWorkspaceDefaultProjectId.current =
-        hasExplicitProjectWorkspaceId ||
-        newIssueDefaults.executionWorkspaceId ||
-        defaultProject
-          ? defaultProjectId || null
-          : null;
+      setExecutionWorkspaceMode(defaultExecutionWorkspaceModeForIssueDefaults(newIssueDefaults, defaultProject));
+      setSelectedExecutionWorkspaceId(newIssueDefaults.executionWorkspaceId ?? "");
+      executionWorkspaceDefaultProjectId.current = hasExplicitProjectWorkspaceId || newIssueDefaults.executionWorkspaceId || defaultProject
+        ? defaultProjectId || null
+        : null;
     }
-  }, [
-    newIssueOpen,
-    newIssueDefaults,
-    orderedProjects,
-    selectedCompanyId,
-    setIssueText,
-  ]);
+  }, [newIssueOpen, newIssueDefaults, orderedProjects, selectedCompanyId, setIssueText]);
 
   useEffect(() => {
     if (!supportsAssigneeOverrides) {
@@ -1306,11 +905,7 @@ export function NewIssueDialog() {
         : assigneeAdapterType === "opencode_local"
           ? ISSUE_THINKING_EFFORT_OPTIONS.opencode_local
           : ISSUE_THINKING_EFFORT_OPTIONS.claude_local;
-    if (
-      !validThinkingValues.some(
-        (option) => option.value === assigneeThinkingEffort,
-      )
-    ) {
+    if (!validThinkingValues.some((option) => option.value === assigneeThinkingEffort)) {
       setAssigneeThinkingEffort("");
     }
   }, [
@@ -1404,22 +999,17 @@ export function NewIssueDialog() {
       thinkingEffortOverride: assigneeThinkingEffort,
       chrome: assigneeChrome,
     });
-    const selectedProject = orderedProjects.find(
-      (project) => project.id === projectId,
-    );
+    const selectedProject = orderedProjects.find((project) => project.id === projectId);
     const executionWorkspacePolicy =
       experimentalSettings?.enableIsolatedWorkspaces === true
-        ? (selectedProject?.executionWorkspacePolicy ?? null)
+        ? selectedProject?.executionWorkspacePolicy ?? null
         : null;
-    const selectedReusableExecutionWorkspace =
-      selectableReusableWorkspaces.find(
-        (workspace) => workspace.id === selectedExecutionWorkspaceId,
-      );
+    const selectedReusableExecutionWorkspace = selectableReusableWorkspaces.find(
+      (workspace) => workspace.id === selectedExecutionWorkspaceId,
+    );
     const requestedExecutionWorkspaceMode =
       executionWorkspaceMode === "reuse_existing"
-        ? issueExecutionWorkspaceModeForExistingWorkspace(
-            selectedReusableExecutionWorkspace?.mode,
-          )
+        ? issueExecutionWorkspaceModeForExistingWorkspace(selectedReusableExecutionWorkspace?.mode)
         : executionWorkspaceMode;
     const executionWorkspaceSettings = executionWorkspacePolicy?.enabled
       ? { mode: requestedExecutionWorkspaceMode }
@@ -1436,35 +1026,21 @@ export function NewIssueDialog() {
       status,
       priority: priority || "medium",
       workMode,
-      ...(selectedAssigneeAgentId
-        ? { assigneeAgentId: selectedAssigneeAgentId }
-        : {}),
-      ...(selectedAssigneeUserId
-        ? { assigneeUserId: selectedAssigneeUserId }
-        : {}),
-      ...(newIssueDefaults.parentId
-        ? { parentId: newIssueDefaults.parentId }
-        : {}),
+      ...(selectedAssigneeAgentId ? { assigneeAgentId: selectedAssigneeAgentId } : {}),
+      ...(selectedAssigneeUserId ? { assigneeUserId: selectedAssigneeUserId } : {}),
+      ...(newIssueDefaults.parentId ? { parentId: newIssueDefaults.parentId } : {}),
       ...(newIssueDefaults.goalId ? { goalId: newIssueDefaults.goalId } : {}),
       ...(projectId ? { projectId } : {}),
       ...(projectWorkspaceId ? { projectWorkspaceId } : {}),
       ...(assigneeAdapterOverrides ? { assigneeAdapterOverrides } : {}),
-      ...(executionWorkspacePolicy?.enabled
-        ? { executionWorkspacePreference: executionWorkspaceMode }
-        : {}),
-      ...(executionWorkspaceMode === "reuse_existing" &&
-      selectedExecutionWorkspaceId
+      ...(executionWorkspacePolicy?.enabled ? { executionWorkspacePreference: executionWorkspaceMode } : {}),
+      ...(executionWorkspaceMode === "reuse_existing" && selectedExecutionWorkspaceId
         ? { executionWorkspaceId: selectedExecutionWorkspaceId }
         : {}),
       ...(executionWorkspaceSettings ? { executionWorkspaceSettings } : {}),
       ...(executionPolicy ? { executionPolicy } : {}),
       ...(taskWatchdogsEnabled && watchdogAgentId
-        ? {
-            watchdog: {
-              agentId: watchdogAgentId,
-              instructions: watchdogInstructions.trim() || null,
-            },
-          }
+        ? { watchdog: { agentId: watchdogAgentId, instructions: watchdogInstructions.trim() || null } }
         : {}),
     });
   }
@@ -1488,10 +1064,7 @@ export function NewIssueDialog() {
       for (const file of files) {
         if (isTextDocumentFile(file)) {
           const baseName = fileBaseName(file.name);
-          const documentKey = createUniqueDocumentKey(
-            slugifyDocumentKey(baseName),
-            next,
-          );
+          const documentKey = createUniqueDocumentKey(slugifyDocumentKey(baseName), next);
           next.push({
             id: `${file.name}:${file.size}:${file.lastModified}:${documentKey}`,
             file,
@@ -1548,95 +1121,64 @@ export function NewIssueDialog() {
   }
 
   const hasDraft = draftHasText || stagedFiles.length > 0;
-  const currentStatus =
-    statuses.find((s) => s.value === status) ?? statuses[1]!;
-  const currentPriority = priorityOptions.find((p) => p.value === priority);
+  const currentStatus = statuses.find((s) => s.value === status) ?? statuses[1]!;
+  const currentPriority = priorities.find((p) => p.value === priority);
   const currentAssignee = selectedAssigneeAgentId
     ? (agents ?? []).find((a) => a.id === selectedAssigneeAgentId)
     : null;
-  const currentAssigneeLowTrust =
-    getTrustPreset(currentAssignee?.permissions) === "low_trust_review";
-  const currentProject = orderedProjects.find(
-    (project) => project.id === projectId,
+  const currentAssigneeLowTrust = getTrustPreset(currentAssignee?.permissions) === "low_trust_review";
+  const currentProject = orderedProjects.find((project) => project.id === projectId);
+  const neededUserSecretKeys = useMemo(
+    () => {
+      if (!shouldWarnAboutRunUserSecrets(status, selectedAssigneeAgentId)) return [];
+      return uniqueRequiredUserSecretKeys([
+        isRecord(currentAssignee?.adapterConfig) ? currentAssignee.adapterConfig.env as Record<string, unknown> : null,
+        currentProject?.env ?? null,
+      ]);
+    },
+    [currentAssignee?.adapterConfig, currentProject?.env, selectedAssigneeAgentId, status],
   );
-  const neededUserSecretKeys = useMemo(() => {
-    if (!shouldWarnAboutRunUserSecrets(status, selectedAssigneeAgentId))
-      return [];
-    return uniqueRequiredUserSecretKeys([
-      isRecord(currentAssignee?.adapterConfig)
-        ? (currentAssignee.adapterConfig.env as Record<string, unknown>)
-        : null,
-      currentProject?.env ?? null,
-    ]);
-  }, [
-    currentAssignee?.adapterConfig,
-    currentProject?.env,
-    selectedAssigneeAgentId,
-    status,
-  ]);
   const currentProjectExecutionWorkspacePolicy =
     experimentalSettings?.enableIsolatedWorkspaces === true
-      ? (currentProject?.executionWorkspacePolicy ?? null)
+      ? currentProject?.executionWorkspacePolicy ?? null
       : null;
-  const currentProjectSupportsExecutionWorkspace = Boolean(
-    currentProjectExecutionWorkspacePolicy?.enabled,
-  );
-  const taskWatchdogsEnabled =
-    experimentalSettings?.enableTaskWatchdogs === true;
+  const currentProjectSupportsExecutionWorkspace = Boolean(currentProjectExecutionWorkspacePolicy?.enabled);
+  const taskWatchdogsEnabled = experimentalSettings?.enableTaskWatchdogs === true;
   const selectableReusableWorkspaces = reusableExecutionWorkspaces ?? [];
   const selectedReusableExecutionWorkspace = selectableReusableWorkspaces.find(
     (workspace) => workspace.id === selectedExecutionWorkspaceId,
   );
-  const isUsingParentExecutionWorkspace =
-    isSubIssueMode && parentExecutionWorkspaceId
-      ? executionWorkspaceMode === "reuse_existing" &&
-        selectedExecutionWorkspaceId === parentExecutionWorkspaceId
-      : false;
-  const showParentWorkspaceWarning =
-    isSubIssueMode &&
-    currentProjectSupportsExecutionWorkspace &&
-    Boolean(parentExecutionWorkspaceId) &&
-    !isUsingParentExecutionWorkspace;
+  const isUsingParentExecutionWorkspace = isSubIssueMode && parentExecutionWorkspaceId
+    ? executionWorkspaceMode === "reuse_existing" && selectedExecutionWorkspaceId === parentExecutionWorkspaceId
+    : false;
+  const showParentWorkspaceWarning = isSubIssueMode
+    && currentProjectSupportsExecutionWorkspace
+    && Boolean(parentExecutionWorkspaceId)
+    && !isUsingParentExecutionWorkspace;
   const assigneeOptionsTitle =
     assigneeAdapterType === "claude_local"
-      ? t("newIssue.assigneeOptions.claude_local", {
-          defaultValue: "Claude options",
-        })
+      ? "Claude options"
       : assigneeAdapterType === "codex_local"
-        ? t("newIssue.assigneeOptions.codex_local", {
-            defaultValue: "Codex options",
-          })
+        ? "Codex options"
         : assigneeAdapterType === "opencode_local"
-          ? t("newIssue.assigneeOptions.opencode_local", {
-              defaultValue: "OpenCode options",
-            })
-          : t("newIssue.assigneeOptions.agent", {
-              defaultValue: "Agent options",
-            });
+          ? "OpenCode options"
+        : "Agent options";
   const thinkingEffortOptions =
     assigneeAdapterType === "codex_local"
       ? ISSUE_THINKING_EFFORT_OPTIONS.codex_local
       : assigneeAdapterType === "opencode_local"
         ? ISSUE_THINKING_EFFORT_OPTIONS.opencode_local
-        : ISSUE_THINKING_EFFORT_OPTIONS.claude_local;
-  const recentAssigneeIds = useMemo(
-    () => getRecentAssigneeIds(),
-    [newIssueOpen],
-  );
+      : ISSUE_THINKING_EFFORT_OPTIONS.claude_local;
+  const recentAssigneeIds = useMemo(() => getRecentAssigneeIds(), [newIssueOpen]);
   const recentAssigneeOptionIds = useMemo(
-    () =>
-      recentAssigneeIds.map((id) =>
-        assigneeValueFromSelection({ assigneeAgentId: id }),
-      ),
+    () => recentAssigneeIds.map((id) => assigneeValueFromSelection({ assigneeAgentId: id })),
     [recentAssigneeIds],
   );
   const recentProjectIds = useMemo(() => getRecentProjectIds(), [newIssueOpen]);
   const assigneeOptions = useMemo<InlineEntityOption[]>(
     () => [
       ...currentUserAssigneeOption(currentUserId),
-      ...buildCompanyUserInlineOptions(companyMembers?.users, {
-        excludeUserIds: [currentUserId],
-      }),
+      ...buildCompanyUserInlineOptions(companyMembers?.users, { excludeUserIds: [currentUserId] }),
       ...sortAgentsByRecency(
         (agents ?? []).filter(isAgentTaskTarget),
         recentAssigneeIds,
@@ -1650,10 +1192,7 @@ export function NewIssueDialog() {
   );
   const watchdogAgentOptions = useMemo<InlineEntityOption[]>(
     () =>
-      sortAgentsByRecency(
-        (agents ?? []).filter(isAgentTaskTarget),
-        recentAssigneeIds,
-      ).map((agent) => ({
+      sortAgentsByRecency((agents ?? []).filter(isAgentTaskTarget), recentAssigneeIds).map((agent) => ({
         id: agent.id,
         label: agent.name,
         searchText: `${agent.name} ${agent.role} ${agent.title ?? ""}`,
@@ -1661,10 +1200,7 @@ export function NewIssueDialog() {
     [agents, recentAssigneeIds],
   );
   const selectedWatchdogAgent = useMemo(
-    () =>
-      watchdogAgentId
-        ? ((agents ?? []).find((agent) => agent.id === watchdogAgentId) ?? null)
-        : null,
+    () => (watchdogAgentId ? (agents ?? []).find((agent) => agent.id === watchdogAgentId) ?? null : null),
     [agents, watchdogAgentId],
   );
   const projectOptions = useMemo<InlineEntityOption[]>(
@@ -1676,43 +1212,23 @@ export function NewIssueDialog() {
       })),
     [orderedProjects],
   );
-  const savedDraft = useMemo(
-    () => (newIssueOpen ? loadDraft() : null),
-    [newIssueOpen],
-  );
-  const hasSavedDraft = Boolean(
-    savedDraft?.title.trim() || savedDraft?.description.trim(),
-  );
+  const savedDraft = useMemo(() => newIssueOpen ? loadDraft() : null, [newIssueOpen]);
+  const hasSavedDraft = Boolean(savedDraft?.title.trim() || savedDraft?.description.trim());
   const canDiscardDraft = hasDraft || hasSavedDraft;
   const createIssueErrorMessage =
-    createIssue.error instanceof Error
-      ? createIssue.error.message
-      : t("newIssue.createFailed", {
-          defaultValue: "Failed to create issue. Try again.",
-        });
-  const stagedDocuments = stagedFiles.filter(
-    (file) => file.kind === "document",
-  );
-  const stagedAttachments = stagedFiles.filter(
-    (file) => file.kind === "attachment",
-  );
+    createIssue.error instanceof Error ? createIssue.error.message : "Failed to create task. Try again.";
+  const stagedDocuments = stagedFiles.filter((file) => file.kind === "document");
+  const stagedAttachments = stagedFiles.filter((file) => file.kind === "attachment");
 
-  const handleProjectChange = useCallback(
-    (nextProjectId: string) => {
-      if (nextProjectId) trackRecentProject(nextProjectId);
-      setProjectId(nextProjectId);
-      const nextProject = orderedProjects.find(
-        (project) => project.id === nextProjectId,
-      );
-      executionWorkspaceDefaultProjectId.current = nextProjectId || null;
-      setProjectWorkspaceId(defaultProjectWorkspaceIdForProject(nextProject));
-      setExecutionWorkspaceMode(
-        defaultExecutionWorkspaceModeForProject(nextProject),
-      );
-      setSelectedExecutionWorkspaceId("");
-    },
-    [orderedProjects],
-  );
+  const handleProjectChange = useCallback((nextProjectId: string) => {
+    if (nextProjectId) trackRecentProject(nextProjectId);
+    setProjectId(nextProjectId);
+    const nextProject = orderedProjects.find((project) => project.id === nextProjectId);
+    executionWorkspaceDefaultProjectId.current = nextProjectId || null;
+    setProjectWorkspaceId(defaultProjectWorkspaceIdForProject(nextProject));
+    setExecutionWorkspaceMode(defaultExecutionWorkspaceModeForProject(nextProject));
+    setSelectedExecutionWorkspaceId("");
+  }, [orderedProjects]);
 
   useEffect(() => {
     if (
@@ -1730,26 +1246,25 @@ export function NewIssueDialog() {
     setExecutionWorkspaceMode(defaultExecutionWorkspaceModeForProject(project));
     setSelectedExecutionWorkspaceId("");
   }, [newIssueOpen, orderedProjects, projectId, selectedExecutionWorkspaceId]);
-  const modelOverrideOptions = useMemo<InlineEntityOption[]>(() => {
-    return [...(assigneeAdapterModels ?? [])]
-      .sort((a, b) => {
-        const providerA = extractProviderIdWithFallback(a.id);
-        const providerB = extractProviderIdWithFallback(b.id);
-        const byProvider = providerA.localeCompare(providerB);
-        if (byProvider !== 0) return byProvider;
-        return a.id.localeCompare(b.id);
-      })
-      .map((model) => ({
-        id: model.id,
-        label: model.label,
-        searchText: `${model.id} ${extractProviderIdWithFallback(model.id)}`,
-      }));
-  }, [assigneeAdapterModels]);
-  const currentWorkMode = workModeMetaFor(workMode);
-  const currentWorkModeShortLabel = translateWorkModeShortLabel(
-    t,
-    currentWorkMode.value,
+  const modelOverrideOptions = useMemo<InlineEntityOption[]>(
+    () => {
+      return [...(assigneeAdapterModels ?? [])]
+        .sort((a, b) => {
+          const providerA = extractProviderIdWithFallback(a.id);
+          const providerB = extractProviderIdWithFallback(b.id);
+          const byProvider = providerA.localeCompare(providerB);
+          if (byProvider !== 0) return byProvider;
+          return a.id.localeCompare(b.id);
+        })
+        .map((model) => ({
+          id: model.id,
+          label: model.label,
+          searchText: `${model.id} ${extractProviderIdWithFallback(model.id)}`,
+        }));
+    },
+    [assigneeAdapterModels],
   );
+  const currentWorkMode = workModeMetaFor(workMode);
   const CurrentWorkModeIcon = currentWorkMode.icon;
 
   return (
@@ -1762,14 +1277,12 @@ export function NewIssueDialog() {
       <DialogContent
         showCloseButton={false}
         aria-describedby={undefined}
-        style={
-          { "--new-issue-dialog-height": MOBILE_DIALOG_HEIGHT } as CSSProperties
-        }
+        style={{ "--new-issue-dialog-height": MOBILE_DIALOG_HEIGHT } as CSSProperties}
         className={cn(
           "flex h-(--new-issue-dialog-height) max-h-(--new-issue-dialog-height) flex-col gap-0 overflow-hidden p-0 sm:h-auto",
           expanded
             ? "sm:max-w-2xl sm:h-(--new-issue-dialog-height)"
-            : "sm:max-w-lg",
+            : "sm:max-w-lg"
         )}
         onKeyDown={handleKeyDown}
         onEscapeKeyDown={(event) => {
@@ -1797,13 +1310,8 @@ export function NewIssueDialog() {
           // (outside the Dialog), so touch/click events on their content get
           // their default prevented. Telling Radix "this event is handled" skips
           // that preventDefault, restoring popover scroll and autocomplete taps.
-          const target = event.detail.originalEvent
-            .target as HTMLElement | null;
-          if (
-            target?.closest(
-              "[data-radix-popper-content-wrapper], [data-paperclip-floating-ui]",
-            )
-          ) {
+          const target = event.detail.originalEvent.target as HTMLElement | null;
+          if (target?.closest("[data-radix-popper-content-wrapper], [data-paperclip-floating-ui]")) {
             event.preventDefault();
           }
         }}
@@ -1823,9 +1331,7 @@ export function NewIssueDialog() {
                     dialogCompany?.brandColor
                       ? {
                           backgroundColor: dialogCompany.brandColor,
-                          color: pickTextColorForSolidBg(
-                            dialogCompany.brandColor,
-                          ),
+                          color: pickTextColorForSolidBg(dialogCompany.brandColor),
                         }
                       : undefined
                   }
@@ -1834,47 +1340,41 @@ export function NewIssueDialog() {
                 </button>
               </PopoverTrigger>
               <PopoverContent className="w-48 p-1" align="start">
-                {companies
-                  .filter((c) => c.status !== "archived")
-                  .map((c) => (
-                    <button
-                      key={c.id}
+                {companies.filter((c) => c.status !== "archived").map((c) => (
+                  <button
+                    key={c.id}
+                    className={cn(
+                      "flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50",
+                      c.id === effectiveCompanyId && "bg-accent",
+                    )}
+                    onClick={() => {
+                      handleCompanyChange(c.id);
+                      setCompanyOpen(false);
+                    }}
+                  >
+                    <span
                       className={cn(
-                        "flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50",
-                        c.id === effectiveCompanyId && "bg-accent",
+                        "px-1 py-0.5 rounded text-(length:--text-nano) font-semibold leading-none",
+                        !c.brandColor && "bg-muted",
                       )}
-                      onClick={() => {
-                        handleCompanyChange(c.id);
-                        setCompanyOpen(false);
-                      }}
+                      style={
+                        c.brandColor
+                          ? {
+                              backgroundColor: c.brandColor,
+                              color: pickTextColorForSolidBg(c.brandColor),
+                            }
+                          : undefined
+                      }
                     >
-                      <span
-                        className={cn(
-                          "px-1 py-0.5 rounded text-(length:--text-nano) font-semibold leading-none",
-                          !c.brandColor && "bg-muted",
-                        )}
-                        style={
-                          c.brandColor
-                            ? {
-                                backgroundColor: c.brandColor,
-                                color: pickTextColorForSolidBg(c.brandColor),
-                              }
-                            : undefined
-                        }
-                      >
-                        {c.name.slice(0, 3).toUpperCase()}
-                      </span>
-                      <span className="truncate">{c.name}</span>
-                    </button>
-                  ))}
+                      {c.name.slice(0, 3).toUpperCase()}
+                    </span>
+                    <span className="truncate">{c.name}</span>
+                  </button>
+                ))}
               </PopoverContent>
             </Popover>
             <span className="text-muted-foreground/60">&rsaquo;</span>
-            <span>
-              {isSubIssueMode
-                ? t("newIssue.subIssueTitle", { defaultValue: "New sub-task" })
-                : t("newIssue.newTaskTitle", { defaultValue: "New task" })}
-            </span>
+            <span>{isSubIssueMode ? "New sub-task" : "New task"}</span>
           </div>
           <div className="flex items-center gap-1">
             <Button
@@ -1884,11 +1384,7 @@ export function NewIssueDialog() {
               onClick={() => setExpanded(!expanded)}
               disabled={createIssue.isPending}
             >
-              {expanded ? (
-                <Minimize2 className="h-3.5 w-3.5" />
-              ) : (
-                <Maximize2 className="h-3.5 w-3.5" />
-              )}
+              {expanded ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
             </Button>
             <Button
               variant="ghost"
@@ -1931,306 +1427,217 @@ export function NewIssueDialog() {
           <div className="px-4 pb-2">
             <div className="overflow-x-auto overscroll-x-contain">
               <div className="inline-flex items-center gap-2 text-sm text-muted-foreground flex-wrap sm:flex-nowrap sm:min-w-max">
-                <span className="w-6 shrink-0 text-center">
-                  {t("newIssue.forLabel", { defaultValue: "For" })}
-                </span>
-                <InlineEntitySelector
-                  ref={assigneeSelectorRef}
-                  value={assigneeValue}
-                  options={assigneeOptions}
-                  recentOptionIds={recentAssigneeOptionIds}
-                  placeholder={t("Assignee", { defaultValue: "Assignee" })}
-                  disablePortal
-                  noneLabel={t("No assignee", { defaultValue: "No assignee" })}
-                  searchPlaceholder={t("Search assignees...", {
-                    defaultValue: "Search assignees...",
-                  })}
-                  emptyMessage={t("No assignees found.", {
-                    defaultValue: "No assignees found.",
-                  })}
-                  onChange={(value) => {
-                    const nextAssignee = parseAssigneeValue(value);
-                    if (nextAssignee.assigneeAgentId) {
-                      trackRecentAssignee(nextAssignee.assigneeAgentId);
-                    }
-                    setAssigneeValue(value);
-                    const hasAssignee = Boolean(
-                      nextAssignee.assigneeAgentId ||
-                        nextAssignee.assigneeUserId,
-                    );
-                    if (hasAssignee && status === "backlog") {
-                      setStatus("todo");
-                    }
-                  }}
-                  onConfirm={() => {
-                    if (projectId) {
-                      descriptionEditorRef.current?.focus();
-                    } else {
-                      projectSelectorRef.current?.focus();
-                    }
-                  }}
-                  renderTriggerValue={(option) =>
-                    option ? (
-                      currentAssignee ? (
-                        <>
-                          <AgentIcon
-                            icon={currentAssignee.icon}
-                            className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
-                          />
-                          <span className="truncate">{option.label}</span>
-                        </>
-                      ) : (
-                        <span className="truncate">{option.label}</span>
-                      )
-                    ) : (
-                      <span className="text-muted-foreground">
-                        {t("Assignee", { defaultValue: "Assignee" })}
-                      </span>
-                    )
+              <span className="w-6 shrink-0 text-center">For</span>
+              <InlineEntitySelector
+                ref={assigneeSelectorRef}
+                value={assigneeValue}
+                options={assigneeOptions}
+                recentOptionIds={recentAssigneeOptionIds}
+                placeholder="Assignee"
+                disablePortal
+                noneLabel="No assignee"
+                searchPlaceholder="Search assignees..."
+                emptyMessage="No assignees found."
+                onChange={(value) => {
+                  const nextAssignee = parseAssigneeValue(value);
+                  if (nextAssignee.assigneeAgentId) {
+                    trackRecentAssignee(nextAssignee.assigneeAgentId);
                   }
-                  renderOption={(option) => {
-                    if (!option.id)
-                      return <span className="truncate">{option.label}</span>;
-                    const assignee = parseAssigneeValue(option.id)
-                      .assigneeAgentId
-                      ? (agents ?? []).find(
-                          (agent) =>
-                            agent.id ===
-                            parseAssigneeValue(option.id).assigneeAgentId,
-                        )
-                      : null;
-                    return (
-                      <>
-                        {assignee ? (
-                          <AgentIcon
-                            icon={assignee.icon}
-                            className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
-                          />
-                        ) : null}
-                        <span className="truncate">{option.label}</span>
-                        {assignee &&
-                        getTrustPreset(assignee.permissions) ===
-                          "low_trust_review" ? (
-                          <ShieldAlert
-                            className="ml-auto h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-300"
-                            aria-label={t("newIssue.lowTrustReviewAgent", {
-                              defaultValue: "Low-trust review agent",
-                            })}
-                          />
-                        ) : null}
-                      </>
-                    );
-                  }}
-                />
-                <span>{t("newIssue.inLabel", { defaultValue: "in" })}</span>
-                <InlineEntitySelector
-                  ref={projectSelectorRef}
-                  value={projectId}
-                  options={projectOptions}
-                  recentOptionIds={recentProjectIds}
-                  placeholder={t("Project", { defaultValue: "Project" })}
-                  disablePortal
-                  noneLabel={t("issueDetail.noProject", {
-                    defaultValue: "No project",
-                  })}
-                  searchPlaceholder={t("Search projects...", {
-                    defaultValue: "Search projects...",
-                  })}
-                  emptyMessage={t("No projects found.", {
-                    defaultValue: "No projects found.",
-                  })}
-                  onChange={handleProjectChange}
-                  onConfirm={() => {
+                  setAssigneeValue(value);
+                  const hasAssignee = Boolean(nextAssignee.assigneeAgentId || nextAssignee.assigneeUserId);
+                  if (hasAssignee && status === "backlog") {
+                    setStatus("todo");
+                  }
+                }}
+                onConfirm={() => {
+                  if (projectId) {
                     descriptionEditorRef.current?.focus();
-                  }}
-                  renderTriggerValue={(option) =>
-                    option && currentProject ? (
+                  } else {
+                    projectSelectorRef.current?.focus();
+                  }
+                }}
+                renderTriggerValue={(option) =>
+                  option ? (
+                    currentAssignee ? (
                       <>
-                        <span
-                          className="h-3.5 w-3.5 shrink-0 rounded-sm"
-                          style={{
-                            backgroundColor:
-                              currentProject.color ?? "var(--project-seed)",
-                          }}
-                        />
+                        <AgentIcon icon={currentAssignee.icon} className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                         <span className="truncate">{option.label}</span>
                       </>
                     ) : (
-                      <span className="text-muted-foreground">
-                        {t("Project", { defaultValue: "Project" })}
-                      </span>
+                      <span className="truncate">{option.label}</span>
                     )
-                  }
-                  renderOption={(option) => {
-                    if (!option.id)
-                      return <span className="truncate">{option.label}</span>;
-                    const project = orderedProjects.find(
-                      (item) => item.id === option.id,
-                    );
-                    return (
-                      <>
-                        <span
-                          className="h-3.5 w-3.5 shrink-0 rounded-sm"
-                          style={{
-                            backgroundColor:
-                              project?.color ?? "var(--project-seed)",
-                          }}
-                        />
-                        <span className="truncate">{option.label}</span>
-                      </>
-                    );
-                  }}
-                />
+                  ) : (
+                    <span className="text-muted-foreground">Assignee</span>
+                  )
+                }
+                renderOption={(option) => {
+                  if (!option.id) return <span className="truncate">{option.label}</span>;
+                  const assignee = parseAssigneeValue(option.id).assigneeAgentId
+                    ? (agents ?? []).find((agent) => agent.id === parseAssigneeValue(option.id).assigneeAgentId)
+                    : null;
+                  return (
+                    <>
+                      {assignee ? <AgentIcon icon={assignee.icon} className="h-3.5 w-3.5 shrink-0 text-muted-foreground" /> : null}
+                      <span className="truncate">{option.label}</span>
+                      {assignee && getTrustPreset(assignee.permissions) === "low_trust_review" ? (
+                        <ShieldAlert className="ml-auto h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-300" aria-label="Low-trust review agent" />
+                      ) : null}
+                    </>
+                  );
+                }}
+              />
+              <span>in</span>
+              <InlineEntitySelector
+                ref={projectSelectorRef}
+                value={projectId}
+                options={projectOptions}
+                recentOptionIds={recentProjectIds}
+                placeholder="Project"
+                disablePortal
+                noneLabel="No project"
+                searchPlaceholder="Search projects..."
+                emptyMessage="No projects found."
+                onChange={handleProjectChange}
+                onConfirm={() => {
+                  descriptionEditorRef.current?.focus();
+                }}
+                renderTriggerValue={(option) =>
+                  option && currentProject ? (
+                    <>
+                      <span
+                        className="h-3.5 w-3.5 shrink-0 rounded-sm"
+                        style={{ backgroundColor: currentProject.color ?? "var(--project-seed)" }}
+                      />
+                      <span className="truncate">{option.label}</span>
+                    </>
+                  ) : (
+                    <span className="text-muted-foreground">Project</span>
+                  )
+                }
+                renderOption={(option) => {
+                  if (!option.id) return <span className="truncate">{option.label}</span>;
+                  const project = orderedProjects.find((item) => item.id === option.id);
+                  return (
+                    <>
+                      <span
+                        className="h-3.5 w-3.5 shrink-0 rounded-sm"
+                        style={{ backgroundColor: project?.color ?? "var(--project-seed)" }}
+                      />
+                      <span className="truncate">{option.label}</span>
+                    </>
+                  );
+                }}
+              />
 
-                {/* Three-dot menu to add Reviewer / Approver rows */}
-                <Popover
-                  open={participantMenuOpen}
-                  onOpenChange={setParticipantMenuOpen}
-                >
-                  <PopoverTrigger asChild>
-                    <button
-                      type="button"
-                      className="inline-flex items-center justify-center rounded-md p-1 text-muted-foreground hover:bg-accent/50 transition-colors"
-                      title={
-                        taskWatchdogsEnabled
-                          ? "Add reviewer, approver, or watchdog"
-                          : "Add reviewer or approver"
-                      }
-                    >
-                      <MoreHorizontal className="h-4 w-4" />
-                    </button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-44 p-1" align="start">
-                    <button
-                      className={cn(
-                        "flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50",
-                        showReviewerRow && "bg-accent",
-                      )}
-                      onClick={() => {
-                        setShowReviewerRow((v) => !v);
-                        if (showReviewerRow) setReviewerValue("");
-                        setParticipantMenuOpen(false);
-                      }}
-                    >
-                      <Eye className="h-3 w-3" />
-                      {t("newIssue.reviewer")}
-                    </button>
-                    <button
-                      className={cn(
-                        "flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50",
-                        showApproverRow && "bg-accent",
-                      )}
-                      onClick={() => {
-                        setShowApproverRow((v) => !v);
-                        if (showApproverRow) setApproverValue("");
-                        setParticipantMenuOpen(false);
-                      }}
-                    >
-                      <ShieldCheck className="h-3 w-3" />
-                      {t("newIssue.approver")}
-                    </button>
-                    {taskWatchdogsEnabled && (
-                      <button
-                        className={cn(
-                          "flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50",
-                          showWatchdogRow && "bg-accent",
-                        )}
-                        onClick={() => {
-                          if (showWatchdogRow) {
-                            setShowWatchdogRow(false);
-                            setWatchdogAgentId("");
-                            setWatchdogInstructions("");
-                            setWatchdogEditorOpen(false);
-                          } else {
-                            setShowWatchdogRow(true);
-                            setWatchdogEditorOpen(true);
-                          }
-                          setParticipantMenuOpen(false);
-                        }}
-                      >
-                        <ScanEye className="h-3 w-3" />
-                        {t("issueDetail.watchdogTitle")}
-                      </button>
+              {/* Three-dot menu to add Reviewer / Approver rows */}
+              <Popover open={participantMenuOpen} onOpenChange={setParticipantMenuOpen}>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className="inline-flex items-center justify-center rounded-md p-1 text-muted-foreground hover:bg-accent/50 transition-colors"
+                    title={taskWatchdogsEnabled ? "Add reviewer, approver, or watchdog" : "Add reviewer or approver"}
+                  >
+                    <MoreHorizontal className="h-4 w-4" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-44 p-1" align="start">
+                  <button
+                    className={cn(
+                      "flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50",
+                      showReviewerRow && "bg-accent",
                     )}
-                  </PopoverContent>
-                </Popover>
+                    onClick={() => {
+                      setShowReviewerRow((v) => !v);
+                      if (showReviewerRow) setReviewerValue("");
+                      setParticipantMenuOpen(false);
+                    }}
+                  >
+                    <Eye className="h-3 w-3" />
+                    Reviewer
+                  </button>
+                  <button
+                    className={cn(
+                      "flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50",
+                      showApproverRow && "bg-accent",
+                    )}
+                    onClick={() => {
+                      setShowApproverRow((v) => !v);
+                      if (showApproverRow) setApproverValue("");
+                      setParticipantMenuOpen(false);
+                    }}
+                  >
+                    <ShieldCheck className="h-3 w-3" />
+                    Approver
+                  </button>
+                  {taskWatchdogsEnabled && (
+                    <button
+                      className={cn(
+                        "flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50",
+                        showWatchdogRow && "bg-accent",
+                      )}
+                      onClick={() => {
+                        if (showWatchdogRow) {
+                          setShowWatchdogRow(false);
+                          setWatchdogAgentId("");
+                          setWatchdogInstructions("");
+                          setWatchdogEditorOpen(false);
+                        } else {
+                          setShowWatchdogRow(true);
+                          setWatchdogEditorOpen(true);
+                        }
+                        setParticipantMenuOpen(false);
+                      }}
+                    >
+                      <ScanEye className="h-3 w-3" />
+                      Watchdog
+                    </button>
+                  )}
+                </PopoverContent>
+              </Popover>
               </div>
             </div>
 
             {/* Reviewer row */}
             {showReviewerRow && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                <span className="w-6 shrink-0 flex items-center justify-center">
-                  <Eye className="h-3.5 w-3.5" />
-                </span>
+                <span className="w-6 shrink-0 flex items-center justify-center"><Eye className="h-3.5 w-3.5" /></span>
                 <InlineEntitySelector
-                  value={reviewerValue}
-                  options={assigneeOptions}
-                  recentOptionIds={recentAssigneeOptionIds}
-                  placeholder={t("newIssue.reviewer", {
-                    defaultValue: "Reviewer",
-                  })}
-                  disablePortal
-                  noneLabel={t("newIssue.noReviewer", {
-                    defaultValue: "No reviewer",
-                  })}
-                  searchPlaceholder={t("newIssue.searchReviewers", {
-                    defaultValue: "Search reviewers...",
-                  })}
-                  emptyMessage={t("newIssue.noReviewersFound", {
-                    defaultValue: "No reviewers found.",
-                  })}
-                  onChange={setReviewerValue}
-                  renderTriggerValue={(option) =>
-                    option ? (
-                      <>
-                        {(() => {
-                          const reviewer = parseAssigneeValue(option.id)
-                            .assigneeAgentId
-                            ? (agents ?? []).find(
-                                (a) =>
-                                  a.id ===
-                                  parseAssigneeValue(option.id).assigneeAgentId,
-                              )
-                            : null;
-                          return reviewer ? (
-                            <AgentIcon
-                              icon={reviewer.icon}
-                              className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
-                            />
-                          ) : null;
-                        })()}
-                        <span className="truncate">{option.label}</span>
-                      </>
-                    ) : (
-                      <span className="text-muted-foreground">
-                        {t("newIssue.reviewer", { defaultValue: "Reviewer" })}
-                      </span>
-                    )
-                  }
-                  renderOption={(option) => {
-                    if (!option.id)
-                      return <span className="truncate">{option.label}</span>;
-                    const reviewer = parseAssigneeValue(option.id)
-                      .assigneeAgentId
-                      ? (agents ?? []).find(
-                          (agent) =>
-                            agent.id ===
-                            parseAssigneeValue(option.id).assigneeAgentId,
-                        )
-                      : null;
-                    return (
-                      <>
-                        {reviewer ? (
-                          <AgentIcon
-                            icon={reviewer.icon}
-                            className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
-                          />
-                        ) : null}
-                        <span className="truncate">{option.label}</span>
-                      </>
-                    );
-                  }}
+                value={reviewerValue}
+                options={assigneeOptions}
+                recentOptionIds={recentAssigneeOptionIds}
+                placeholder="Reviewer"
+                disablePortal
+                noneLabel="No reviewer"
+                searchPlaceholder="Search reviewers..."
+                emptyMessage="No reviewers found."
+                onChange={setReviewerValue}
+                renderTriggerValue={(option) =>
+                  option ? (
+                    <>
+                      {(() => {
+                        const reviewer = parseAssigneeValue(option.id).assigneeAgentId
+                          ? (agents ?? []).find((a) => a.id === parseAssigneeValue(option.id).assigneeAgentId)
+                          : null;
+                        return reviewer ? <AgentIcon icon={reviewer.icon} className="h-3.5 w-3.5 shrink-0 text-muted-foreground" /> : null;
+                      })()}
+                      <span className="truncate">{option.label}</span>
+                    </>
+                  ) : (
+                    <span className="text-muted-foreground">Reviewer</span>
+                  )
+                }
+                renderOption={(option) => {
+                  if (!option.id) return <span className="truncate">{option.label}</span>;
+                  const reviewer = parseAssigneeValue(option.id).assigneeAgentId
+                    ? (agents ?? []).find((agent) => agent.id === parseAssigneeValue(option.id).assigneeAgentId)
+                    : null;
+                  return (
+                    <>
+                      {reviewer ? <AgentIcon icon={reviewer.icon} className="h-3.5 w-3.5 shrink-0 text-muted-foreground" /> : null}
+                      <span className="truncate">{option.label}</span>
+                    </>
+                  );
+                }}
                 />
               </div>
             )}
@@ -2238,77 +1645,44 @@ export function NewIssueDialog() {
             {/* Approver row */}
             {showApproverRow && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                <span className="w-6 shrink-0 flex items-center justify-center">
-                  <ShieldCheck className="h-3.5 w-3.5" />
-                </span>
+                <span className="w-6 shrink-0 flex items-center justify-center"><ShieldCheck className="h-3.5 w-3.5" /></span>
                 <InlineEntitySelector
-                  value={approverValue}
-                  options={assigneeOptions}
-                  recentOptionIds={recentAssigneeOptionIds}
-                  placeholder={t("newIssue.approver", {
-                    defaultValue: "Approver",
-                  })}
-                  disablePortal
-                  noneLabel={t("newIssue.noApprover", {
-                    defaultValue: "No approver",
-                  })}
-                  searchPlaceholder={t("newIssue.searchApprovers", {
-                    defaultValue: "Search approvers...",
-                  })}
-                  emptyMessage={t("newIssue.noApproversFound", {
-                    defaultValue: "No approvers found.",
-                  })}
-                  onChange={setApproverValue}
-                  renderTriggerValue={(option) =>
-                    option ? (
-                      <>
-                        {(() => {
-                          const approver = parseAssigneeValue(option.id)
-                            .assigneeAgentId
-                            ? (agents ?? []).find(
-                                (a) =>
-                                  a.id ===
-                                  parseAssigneeValue(option.id).assigneeAgentId,
-                              )
-                            : null;
-                          return approver ? (
-                            <AgentIcon
-                              icon={approver.icon}
-                              className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
-                            />
-                          ) : null;
-                        })()}
-                        <span className="truncate">{option.label}</span>
-                      </>
-                    ) : (
-                      <span className="text-muted-foreground">
-                        {t("newIssue.approver", { defaultValue: "Approver" })}
-                      </span>
-                    )
-                  }
-                  renderOption={(option) => {
-                    if (!option.id)
-                      return <span className="truncate">{option.label}</span>;
-                    const approver = parseAssigneeValue(option.id)
-                      .assigneeAgentId
-                      ? (agents ?? []).find(
-                          (agent) =>
-                            agent.id ===
-                            parseAssigneeValue(option.id).assigneeAgentId,
-                        )
-                      : null;
-                    return (
-                      <>
-                        {approver ? (
-                          <AgentIcon
-                            icon={approver.icon}
-                            className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
-                          />
-                        ) : null}
-                        <span className="truncate">{option.label}</span>
-                      </>
-                    );
-                  }}
+                value={approverValue}
+                options={assigneeOptions}
+                recentOptionIds={recentAssigneeOptionIds}
+                placeholder="Approver"
+                disablePortal
+                noneLabel="No approver"
+                searchPlaceholder="Search approvers..."
+                emptyMessage="No approvers found."
+                onChange={setApproverValue}
+                renderTriggerValue={(option) =>
+                  option ? (
+                    <>
+                      {(() => {
+                        const approver = parseAssigneeValue(option.id).assigneeAgentId
+                          ? (agents ?? []).find((a) => a.id === parseAssigneeValue(option.id).assigneeAgentId)
+                          : null;
+                        return approver ? <AgentIcon icon={approver.icon} className="h-3.5 w-3.5 shrink-0 text-muted-foreground" /> : null;
+                      })()}
+                      <span className="truncate">{option.label}</span>
+                    </>
+                  ) : (
+                    <span className="text-muted-foreground">Approver</span>
+                  )
+                }
+                renderOption={(option) => {
+                  if (!option.id) return <span className="truncate">{option.label}</span>;
+                  const approver = parseAssigneeValue(option.id).assigneeAgentId
+                    ? (agents ?? []).find((agent) => agent.id === parseAssigneeValue(option.id).assigneeAgentId)
+                    : null;
+                  return (
+                    <>
+                      {approver ? <AgentIcon icon={approver.icon} className="h-3.5 w-3.5 shrink-0 text-muted-foreground" /> : null}
+                      <span className="truncate">{option.label}</span>
+                    </>
+                  );
+                }}
                 />
               </div>
             )}
@@ -2316,99 +1690,55 @@ export function NewIssueDialog() {
             {/* Watchdog row */}
             {taskWatchdogsEnabled && showWatchdogRow && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                <span className="w-6 shrink-0 flex items-center justify-center">
-                  <ScanEye className="h-3.5 w-3.5" />
-                </span>
-                <Popover
-                  open={watchdogEditorOpen}
-                  onOpenChange={setWatchdogEditorOpen}
-                >
+                <span className="w-6 shrink-0 flex items-center justify-center"><ScanEye className="h-3.5 w-3.5" /></span>
+                <Popover open={watchdogEditorOpen} onOpenChange={setWatchdogEditorOpen}>
                   <PopoverTrigger asChild>
                     <button
                       type="button"
                       className="inline-flex max-w-full items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs hover:bg-accent/50 transition-colors min-w-0"
-                      title={t("issueProperties.configureWatchdog", {
-                        defaultValue: "Configure watchdog",
-                      })}
+                      title="Configure watchdog"
                     >
                       {selectedWatchdogAgent ? (
                         <>
-                          <AgentIcon
-                            icon={selectedWatchdogAgent.icon}
-                            className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
-                          />
-                          <span className="truncate text-foreground">
-                            {selectedWatchdogAgent.name}
-                          </span>
+                          <AgentIcon icon={selectedWatchdogAgent.icon} className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                          <span className="truncate text-foreground">{selectedWatchdogAgent.name}</span>
                           {watchdogInstructions.trim() ? (
-                            <span className="truncate text-muted-foreground">
-                              · {watchdogInstructions.trim()}
-                            </span>
+                            <span className="truncate text-muted-foreground">· {watchdogInstructions.trim()}</span>
                           ) : null}
                         </>
                       ) : (
-                        <span className="text-muted-foreground">
-                          {t("issueProperties.setWatchdog", {
-                            defaultValue: "Set watchdog",
-                          })}
-                        </span>
+                        <span className="text-muted-foreground">Set watchdog</span>
                       )}
                     </button>
                   </PopoverTrigger>
                   <PopoverContent className="w-80 p-3 space-y-3" align="start">
                     <div className="space-y-1.5">
-                      <div className="text-xs font-medium text-foreground">
-                        {t("issueProperties.watchdogAgent", {
-                          defaultValue: "Watchdog agent",
-                        })}
-                      </div>
+                      <div className="text-xs font-medium text-foreground">Watchdog agent</div>
                       <InlineEntitySelector
                         value={watchdogAgentId}
                         options={watchdogAgentOptions}
-                        placeholder={t("issueProperties.selectAgent", {
-                          defaultValue: "Select agent",
-                        })}
-                        noneLabel={t("issueProperties.noWatchdogAgent", {
-                          defaultValue: "No watchdog agent",
-                        })}
-                        searchPlaceholder={t("Search agents...", {
-                          defaultValue: "Search agents...",
-                        })}
-                        emptyMessage={t("No agents found.", {
-                          defaultValue: "No agents found.",
-                        })}
+                        placeholder="Select agent"
+                        noneLabel="No watchdog agent"
+                        searchPlaceholder="Search agents..."
+                        emptyMessage="No agents found."
                         onChange={setWatchdogAgentId}
                         renderTriggerValue={(option) =>
                           option ? (
                             <>
                               {selectedWatchdogAgent ? (
-                                <AgentIcon
-                                  icon={selectedWatchdogAgent.icon}
-                                  className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
-                                />
+                                <AgentIcon icon={selectedWatchdogAgent.icon} className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                               ) : null}
                               <span className="truncate">{option.label}</span>
                             </>
                           ) : (
-                            <span className="text-muted-foreground">
-                              {t("issueProperties.selectAgent", {
-                                defaultValue: "Select agent",
-                              })}
-                            </span>
+                            <span className="text-muted-foreground">Select agent</span>
                           )
                         }
                         renderOption={(option) => {
-                          const agent = (agents ?? []).find(
-                            (a) => a.id === option.id,
-                          );
+                          const agent = (agents ?? []).find((a) => a.id === option.id);
                           return (
                             <>
-                              {agent ? (
-                                <AgentIcon
-                                  icon={agent.icon}
-                                  className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
-                                />
-                              ) : null}
+                              {agent ? <AgentIcon icon={agent.icon} className="h-3.5 w-3.5 shrink-0 text-muted-foreground" /> : null}
                               <span className="truncate">{option.label}</span>
                             </>
                           );
@@ -2416,24 +1746,11 @@ export function NewIssueDialog() {
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <div className="text-xs font-medium text-foreground">
-                        {t("Instructions", { defaultValue: "Instructions" })}{" "}
-                        <span className="font-normal text-muted-foreground">
-                          ({t("optional", { defaultValue: "optional" })})
-                        </span>
-                      </div>
+                      <div className="text-xs font-medium text-foreground">Instructions <span className="font-normal text-muted-foreground">(optional)</span></div>
                       <Textarea
                         value={watchdogInstructions}
-                        onChange={(event) =>
-                          setWatchdogInstructions(event.target.value)
-                        }
-                        placeholder={t(
-                          "issueProperties.watchdogInstructionsPlaceholder",
-                          {
-                            defaultValue:
-                              "What should the watchdog watch for and how should it keep work moving?",
-                          },
-                        )}
+                        onChange={(event) => setWatchdogInstructions(event.target.value)}
+                        placeholder="What should the watchdog watch for and how should it keep work moving?"
                         rows={4}
                         className="text-xs"
                       />
@@ -2449,15 +1766,10 @@ export function NewIssueDialog() {
                           setWatchdogEditorOpen(false);
                         }}
                       >
-                        {t("Remove", { defaultValue: "Remove" })}
+                        Remove
                       </button>
-                      <Button
-                        type="button"
-                        size="sm"
-                        className="h-7 text-xs"
-                        onClick={() => setWatchdogEditorOpen(false)}
-                      >
-                        {t("Done", { defaultValue: "Done" })}
+                      <Button type="button" size="sm" className="h-7 text-xs" onClick={() => setWatchdogEditorOpen(false)}>
+                        Done
                       </Button>
                     </div>
                   </PopoverContent>
@@ -2468,294 +1780,168 @@ export function NewIssueDialog() {
 
           {isSubIssueMode ? (
             <div className="px-4 pb-2">
-              <div className="max-w-full rounded-md border border-border bg-muted/30 px-2.5 py-1.5 text-xs text-muted-foreground">
-                <div className="flex items-center gap-1.5">
-                  <ListTree className="h-3.5 w-3.5 shrink-0" />
-                  <span className="shrink-0">
-                    {t("newIssue.subIssueOf", { defaultValue: "Sub-task of" })}
-                  </span>
-                  <span className="font-medium text-foreground">
-                    {parentIssueLabel}
-                  </span>
-                </div>
-                {newIssueDefaults.parentTitle ? (
-                  <div className="pl-5 text-foreground/80 truncate">
-                    {newIssueDefaults.parentTitle}
-                  </div>
-                ) : null}
+            <div className="max-w-full rounded-md border border-border bg-muted/30 px-2.5 py-1.5 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1.5">
+                <ListTree className="h-3.5 w-3.5 shrink-0" />
+                <span className="shrink-0">Sub-task of</span>
+                <span className="font-medium text-foreground">{parentIssueLabel}</span>
               </div>
+              {newIssueDefaults.parentTitle ? (
+                <div className="pl-5 text-foreground/80 truncate">
+                  {newIssueDefaults.parentTitle}
+                </div>
+              ) : null}
+            </div>
             </div>
           ) : null}
 
           {currentProject && currentProjectSupportsExecutionWorkspace && (
             <div className="px-4 py-3 space-y-2">
-              <div className="space-y-1.5">
-                <div className="text-xs font-medium">
-                  {t("newIssue.executionWorkspaceTitle", {
-                    defaultValue: "Execution workspace",
-                  })}
-                </div>
-                <div className="text-(length:--text-micro) text-muted-foreground">
-                  {t("newIssue.executionWorkspaceHelp", {
-                    defaultValue:
-                      "Control whether this issue runs in the shared workspace, a new isolated workspace, or an existing one.",
-                  })}
-                </div>
-                <select
-                  className="w-full rounded border border-border bg-transparent px-2 py-1.5 text-xs outline-none"
-                  value={executionWorkspaceMode}
-                  onChange={(e) => {
-                    setExecutionWorkspaceMode(e.target.value);
-                    if (e.target.value !== "reuse_existing") {
-                      setSelectedExecutionWorkspaceId("");
-                    }
-                  }}
-                >
-                  {EXECUTION_WORKSPACE_MODES.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {t(option.labelKey, {
-                        defaultValue: option.defaultLabel,
-                      })}
-                    </option>
-                  ))}
-                </select>
-                {executionWorkspaceMode === "reuse_existing" && (
-                  <ReusableExecutionWorkspaceSelect
-                    value={selectedExecutionWorkspaceId}
-                    workspaces={selectableReusableWorkspaces}
-                    onValueChange={(workspaceId) =>
-                      setSelectedExecutionWorkspaceId(workspaceId)
-                    }
-                    loading={reusableExecutionWorkspacesLoading}
-                    error={reusableExecutionWorkspacesError}
-                    disablePortal
-                  />
-                )}
-                {executionWorkspaceMode === "reuse_existing" &&
-                  selectedReusableExecutionWorkspace && (
-                    <div className="text-(length:--text-micro) text-muted-foreground">
-                      {t("newIssue.reusingExecutionWorkspace", {
-                        defaultValue: "Reusing {{name}} from {{source}}.",
-                        name: selectedReusableExecutionWorkspace.name,
-                        source:
-                          selectedReusableExecutionWorkspace.branchName ??
-                          selectedReusableExecutionWorkspace.cwd ??
-                          t("newIssue.existingExecutionWorkspace", {
-                            defaultValue: "existing execution workspace",
-                          }),
-                      })}
-                    </div>
-                  )}
-                {showParentWorkspaceWarning ? (
-                  <div className="rounded-md border border-amber-300/60 bg-amber-50 px-2 py-1.5 text-(length:--text-micro) text-amber-900 dark:border-amber-800/70 dark:bg-amber-950/30 dark:text-amber-100">
-                    {t("newIssue.executionWorkspace.parentWarning", {
-                      defaultValue:
-                        "Warning: this sub-issue will no longer use the parent issue workspace{{suffix}}.",
-                      suffix: parentExecutionWorkspaceLabel
-                        ? ` (${parentExecutionWorkspaceLabel})`
-                        : "",
-                    })}
-                  </div>
-                ) : null}
+            <div className="space-y-1.5">
+              <div className="text-xs font-medium">Execution workspace</div>
+              <div className="text-(length:--text-micro) text-muted-foreground">
+                Control whether this task runs in the shared workspace, a new isolated workspace, or an existing one.
               </div>
+              <select
+                className="w-full rounded border border-border bg-transparent px-2 py-1.5 text-xs outline-none"
+                value={executionWorkspaceMode}
+                onChange={(e) => {
+                  setExecutionWorkspaceMode(e.target.value);
+                  if (e.target.value !== "reuse_existing") {
+                    setSelectedExecutionWorkspaceId("");
+                  }
+                }}
+              >
+                {EXECUTION_WORKSPACE_MODES.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              {executionWorkspaceMode === "reuse_existing" && (
+                <ReusableExecutionWorkspaceSelect
+                  value={selectedExecutionWorkspaceId}
+                  workspaces={selectableReusableWorkspaces}
+                  onValueChange={(workspaceId) => setSelectedExecutionWorkspaceId(workspaceId)}
+                  loading={reusableExecutionWorkspacesLoading}
+                  error={reusableExecutionWorkspacesError}
+                  disablePortal
+                />
+              )}
+              {executionWorkspaceMode === "reuse_existing" && selectedReusableExecutionWorkspace && (
+                <div className="text-(length:--text-micro) text-muted-foreground">
+                  Reusing {selectedReusableExecutionWorkspace.name} from {selectedReusableExecutionWorkspace.branchName ?? selectedReusableExecutionWorkspace.cwd ?? "existing execution workspace"}.
+                </div>
+              )}
+              {showParentWorkspaceWarning ? (
+                <div className="rounded-md border border-amber-300/60 bg-amber-50 px-2 py-1.5 text-(length:--text-micro) text-amber-900 dark:border-amber-800/70 dark:bg-amber-950/30 dark:text-amber-100">
+                  Warning: this sub-task will no longer use the parent task workspace{parentExecutionWorkspaceLabel ? ` (${parentExecutionWorkspaceLabel})` : ""}.
+                </div>
+              ) : null}
+            </div>
             </div>
           )}
 
           {supportsAssigneeOverrides && (
             <div className="px-4 pb-2">
-              <button
-                className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
-                onClick={() => setAssigneeOptionsOpen((open) => !open)}
-              >
-                {assigneeOptionsOpen ? (
-                  <ChevronDown className="h-3 w-3" />
-                ) : (
-                  <ChevronRight className="h-3 w-3" />
-                )}
-                {assigneeOptionsTitle}
-              </button>
-              {assigneeOptionsOpen && (
-                <div className="mt-2 rounded-md border border-border p-3 bg-muted/20 space-y-3">
+            <button
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+              onClick={() => setAssigneeOptionsOpen((open) => !open)}
+            >
+              {assigneeOptionsOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+              {assigneeOptionsTitle}
+            </button>
+            {assigneeOptionsOpen && (
+              <div className="mt-2 rounded-md border border-border p-3 bg-muted/20 space-y-3">
+                <div className="space-y-1.5">
+                  <div className="text-xs text-muted-foreground">Model lane</div>
+                  <div
+                    className="flex w-full overflow-hidden rounded-md border border-border"
+                    role="radiogroup"
+                    aria-label="Model lane"
+                  >
+                    {(["primary", ...(assigneeSupportsCheapLane ? (["cheap"] as const) : ([] as const)), "custom"] as const).map((lane) => (
+                      <button
+                        key={lane}
+                        type="button"
+                        role="radio"
+                        aria-checked={assigneeModelLane === lane}
+                        className={cn(
+                          "flex-1 px-2 py-1 text-xs capitalize transition-colors hover:bg-accent/40",
+                          assigneeModelLane === lane && "bg-accent text-foreground",
+                        )}
+                        onClick={() => setAssigneeModelLane(lane)}
+                      >
+                        {lane === "primary"
+                          ? "Primary"
+                          : lane === "cheap"
+                            ? "Cheap"
+                            : "Custom"}
+                      </button>
+                    ))}
+                  </div>
+                  {assigneeModelLane === "cheap" && (
+                    <p className="text-(length:--text-micro) text-muted-foreground">
+                      Sends <code>modelProfile: "cheap"</code>{" "}
+                      {assigneeCheapProfile?.adapterConfig && typeof (assigneeCheapProfile.adapterConfig as Record<string, unknown>).model === "string"
+                        ? <>· adapter default <code>{String((assigneeCheapProfile.adapterConfig as Record<string, unknown>).model)}</code></>
+                        : assigneeCheapProfile
+                          ? <>· uses the agent's configured cheap profile</>
+                          : <>· falls back to the primary model if no cheap profile is configured</>}
+                    </p>
+                  )}
+                  {assigneeModelLane === "primary" && (
+                    <p className="text-(length:--text-micro) text-muted-foreground">Runs on the agent's primary model.</p>
+                  )}
+                  {assigneeModelLane === "custom" && (
+                    <p className="text-(length:--text-micro) text-muted-foreground">Override the model and effort for this task only.</p>
+                  )}
+                </div>
+                {assigneeModelLane === "custom" && (
                   <div className="space-y-1.5">
-                    <div className="text-xs text-muted-foreground">
-                      {t("newIssue.modelLane.title", {
-                        defaultValue: "Model lane",
-                      })}
-                    </div>
-                    <div
-                      className="flex w-full overflow-hidden rounded-md border border-border"
-                      role="radiogroup"
-                      aria-label={t("newIssue.modelLane.title", {
-                        defaultValue: "Model lane",
-                      })}
-                    >
-                      {(
-                        [
-                          "primary",
-                          ...(assigneeSupportsCheapLane
-                            ? (["cheap"] as const)
-                            : ([] as const)),
-                          "custom",
-                        ] as const
-                      ).map((lane) => (
+                    <div className="text-xs text-muted-foreground">Model</div>
+                    <InlineEntitySelector
+                      value={assigneeModelOverride}
+                      options={modelOverrideOptions}
+                      placeholder="Default model"
+                      disablePortal
+                      noneLabel="Default model"
+                      searchPlaceholder="Search models..."
+                      emptyMessage="No models found."
+                      onChange={setAssigneeModelOverride}
+                    />
+                  </div>
+                )}
+                {assigneeModelLane === "custom" && (
+                  <div className="space-y-1.5">
+                    <div className="text-xs text-muted-foreground">Thinking effort</div>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {thinkingEffortOptions.map((option) => (
                         <button
-                          key={lane}
-                          type="button"
-                          role="radio"
-                          aria-checked={assigneeModelLane === lane}
+                          key={option.value || "default"}
                           className={cn(
-                            "flex-1 px-2 py-1 text-xs capitalize transition-colors hover:bg-accent/40",
-                            assigneeModelLane === lane &&
-                              "bg-accent text-foreground",
+                            "px-2 py-1 rounded-md text-xs border border-border hover:bg-accent/50 transition-colors",
+                            assigneeThinkingEffort === option.value && "bg-accent"
                           )}
-                          onClick={() => setAssigneeModelLane(lane)}
+                          onClick={() => setAssigneeThinkingEffort(option.value)}
                         >
-                          {lane === "primary"
-                            ? t("newIssue.modelLane.primary", {
-                                defaultValue: "Primary",
-                              })
-                            : lane === "cheap"
-                              ? t("newIssue.modelLane.cheap", {
-                                  defaultValue: "Cheap",
-                                })
-                              : t("newIssue.modelLane.custom", {
-                                  defaultValue: "Custom",
-                                })}
+                          {option.label}
                         </button>
                       ))}
                     </div>
-                    {assigneeModelLane === "cheap" && (
-                      <p className="text-(length:--text-micro) text-muted-foreground">
-                        {t("newIssue.modelLane.cheapSendsPrefix", {
-                          defaultValue: "Sends",
-                        })}{" "}
-                        <code>modelProfile: "cheap"</code>{" "}
-                        {assigneeCheapProfile?.adapterConfig &&
-                        typeof (
-                          assigneeCheapProfile.adapterConfig as Record<
-                            string,
-                            unknown
-                          >
-                        ).model === "string" ? (
-                          <>
-                            {t("newIssue.modelLane.adapterDefaultPrefix", {
-                              defaultValue: "· adapter default",
-                            })}{" "}
-                            <code>
-                              {String(
-                                (
-                                  assigneeCheapProfile.adapterConfig as Record<
-                                    string,
-                                    unknown
-                                  >
-                                ).model,
-                              )}
-                            </code>
-                          </>
-                        ) : assigneeCheapProfile ? (
-                          <>
-                            {t("newIssue.modelLane.usesCheapProfile", {
-                              defaultValue:
-                                "· uses the agent's configured cheap profile",
-                            })}
-                          </>
-                        ) : (
-                          <>
-                            {t("newIssue.modelLane.fallsBackToPrimary", {
-                              defaultValue:
-                                "· falls back to the primary model if no cheap profile is configured",
-                            })}
-                          </>
-                        )}
-                      </p>
-                    )}
-                    {assigneeModelLane === "primary" && (
-                      <p className="text-(length:--text-micro) text-muted-foreground">
-                        {t("newIssue.modelLane.primaryDescription", {
-                          defaultValue: "Runs on the agent's primary model.",
-                        })}
-                      </p>
-                    )}
-                    {assigneeModelLane === "custom" && (
-                      <p className="text-(length:--text-micro) text-muted-foreground">
-                        {t("newIssue.modelLane.customDescription", {
-                          defaultValue:
-                            "Override the model and effort for this issue only.",
-                        })}
-                      </p>
-                    )}
                   </div>
-                  {assigneeModelLane === "custom" && (
-                    <div className="space-y-1.5">
-                      <div className="text-xs text-muted-foreground">
-                        {t("agentConfig.model", { defaultValue: "Model" })}
-                      </div>
-                      <InlineEntitySelector
-                        value={assigneeModelOverride}
-                        options={modelOverrideOptions}
-                        placeholder={t("newIssue.defaultModel", {
-                          defaultValue: "Default model",
-                        })}
-                        disablePortal
-                        noneLabel={t("newIssue.defaultModel", {
-                          defaultValue: "Default model",
-                        })}
-                        searchPlaceholder={t("issueProperties.searchModels", {
-                          defaultValue: "Search models...",
-                        })}
-                        emptyMessage={t("issueProperties.noModelsFound", {
-                          defaultValue: "No models found.",
-                        })}
-                        onChange={setAssigneeModelOverride}
-                      />
-                    </div>
-                  )}
-                  {assigneeModelLane === "custom" && (
-                    <div className="space-y-1.5">
-                      <div className="text-xs text-muted-foreground">
-                        {t("agentConfig.thinkingEffort", {
-                          defaultValue: "Thinking effort",
-                        })}
-                      </div>
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        {thinkingEffortOptions.map((option) => (
-                          <button
-                            key={option.value || "default"}
-                            className={cn(
-                              "px-2 py-1 rounded-md text-xs border border-border hover:bg-accent/50 transition-colors",
-                              assigneeThinkingEffort === option.value &&
-                                "bg-accent",
-                            )}
-                            onClick={() =>
-                              setAssigneeThinkingEffort(option.value)
-                            }
-                          >
-                            {t(option.labelKey, {
-                              defaultValue: option.defaultLabel,
-                            })}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {assigneeAdapterType === "claude_local" &&
-                    assigneeModelLane === "custom" && (
-                      <div className="flex items-center justify-between rounded-md border border-border px-2 py-1.5">
-                        <div className="text-xs text-muted-foreground">
-                          {t("newIssue.enableChrome", {
-                            defaultValue: "Enable Chrome (--chrome)",
-                          })}
-                        </div>
-                        <ToggleSwitch
-                          checked={assigneeChrome}
-                          onCheckedChange={() =>
-                            setAssigneeChrome((value) => !value)
-                          }
-                        />
-                      </div>
-                    )}
-                </div>
-              )}
+                )}
+                {assigneeAdapterType === "claude_local" && assigneeModelLane === "custom" && (
+                  <div className="flex items-center justify-between rounded-md border border-border px-2 py-1.5">
+                    <div className="text-xs text-muted-foreground">Enable Chrome (--chrome)</div>
+                    <ToggleSwitch
+                      checked={assigneeChrome}
+                      onCheckedChange={() => setAssigneeChrome((value) => !value)}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
             </div>
           )}
 
@@ -2784,96 +1970,72 @@ export function NewIssueDialog() {
             </div>
             {stagedFiles.length > 0 ? (
               <div className="mt-4 space-y-3 rounded-lg border border-border/70 p-3">
-                {stagedDocuments.length > 0 ? (
+              {stagedDocuments.length > 0 ? (
+                <div className="space-y-2">
+                  <div className="text-xs font-medium text-muted-foreground">Documents</div>
                   <div className="space-y-2">
-                    <div className="text-xs font-medium text-muted-foreground">
-                      {t("newIssue.documents", { defaultValue: "Documents" })}
-                    </div>
-                    <div className="space-y-2">
-                      {stagedDocuments.map((file) => (
-                        <div
-                          key={file.id}
-                          className="flex items-start justify-between gap-3 rounded-md border border-border/70 px-3 py-2"
-                        >
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2">
-                              <Badge
-                                variant="outline"
-                                className="border-border font-mono text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow) text-muted-foreground"
-                              >
-                                {file.documentKey}
-                              </Badge>
-                              <span className="truncate text-sm">
-                                {file.file.name}
-                              </span>
-                            </div>
-                            <div className="mt-1 flex items-center gap-2 text-(length:--text-micro) text-muted-foreground">
-                              <FileText className="h-3.5 w-3.5" />
-                              <span>{file.title || file.file.name}</span>
-                              <span>•</span>
-                              <span>{formatFileSize(file.file)}</span>
-                            </div>
+                    {stagedDocuments.map((file) => (
+                      <div key={file.id} className="flex items-start justify-between gap-3 rounded-md border border-border/70 px-3 py-2">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="border-border font-mono text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
+                              {file.documentKey}
+                            </Badge>
+                            <span className="truncate text-sm">{file.file.name}</span>
                           </div>
-                          <Button
-                            variant="ghost"
-                            size="icon-xs"
-                            className="shrink-0 text-muted-foreground"
-                            onClick={() => removeStagedFile(file.id)}
-                            disabled={createIssue.isPending}
-                            title={t("newIssue.removeDocument", {
-                              defaultValue: "Remove document",
-                            })}
-                          >
-                            <X className="h-3.5 w-3.5" />
-                          </Button>
+                          <div className="mt-1 flex items-center gap-2 text-(length:--text-micro) text-muted-foreground">
+                            <FileText className="h-3.5 w-3.5" />
+                            <span>{file.title || file.file.name}</span>
+                            <span>•</span>
+                            <span>{formatFileSize(file.file)}</span>
+                          </div>
                         </div>
-                      ))}
-                    </div>
+                        <Button
+                          variant="ghost"
+                          size="icon-xs"
+                          className="shrink-0 text-muted-foreground"
+                          onClick={() => removeStagedFile(file.id)}
+                          disabled={createIssue.isPending}
+                          title="Remove document"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    ))}
                   </div>
-                ) : null}
+                </div>
+              ) : null}
 
-                {stagedAttachments.length > 0 ? (
+              {stagedAttachments.length > 0 ? (
+                <div className="space-y-2">
+                  <div className="text-xs font-medium text-muted-foreground">Attachments</div>
                   <div className="space-y-2">
-                    <div className="text-xs font-medium text-muted-foreground">
-                      {t("newIssue.attachments", {
-                        defaultValue: "Attachments",
-                      })}
-                    </div>
-                    <div className="space-y-2">
-                      {stagedAttachments.map((file) => (
-                        <div
-                          key={file.id}
-                          className="flex items-start justify-between gap-3 rounded-md border border-border/70 px-3 py-2"
-                        >
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2">
-                              <Paperclip className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                              <span className="truncate text-sm">
-                                {file.file.name}
-                              </span>
-                            </div>
-                            <div className="mt-1 text-(length:--text-micro) text-muted-foreground">
-                              {file.file.type || "application/octet-stream"} •{" "}
-                              {formatFileSize(file.file)}
-                            </div>
+                    {stagedAttachments.map((file) => (
+                      <div key={file.id} className="flex items-start justify-between gap-3 rounded-md border border-border/70 px-3 py-2">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <Paperclip className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                            <span className="truncate text-sm">{file.file.name}</span>
                           </div>
-                          <Button
-                            variant="ghost"
-                            size="icon-xs"
-                            className="shrink-0 text-muted-foreground"
-                            onClick={() => removeStagedFile(file.id)}
-                            disabled={createIssue.isPending}
-                            title={t("newIssue.removeAttachment", {
-                              defaultValue: "Remove attachment",
-                            })}
-                          >
-                            <X className="h-3.5 w-3.5" />
-                          </Button>
+                          <div className="mt-1 text-(length:--text-micro) text-muted-foreground">
+                            {file.file.type || "application/octet-stream"} • {formatFileSize(file.file)}
+                          </div>
                         </div>
-                      ))}
-                    </div>
+                        <Button
+                          variant="ghost"
+                          size="icon-xs"
+                          className="shrink-0 text-muted-foreground"
+                          onClick={() => removeStagedFile(file.id)}
+                          disabled={createIssue.isPending}
+                          title="Remove attachment"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    ))}
                   </div>
-                ) : null}
+                </div>
+              ) : null}
               </div>
             ) : null}
           </div>
@@ -2895,22 +2057,15 @@ export function NewIssueDialog() {
                   key={s.value}
                   className={cn(
                     "flex w-full items-start gap-2 px-2 py-1.5 text-xs rounded hover:bg-accent/50",
-                    s.value === status && "bg-accent",
+                    s.value === status && "bg-accent"
                   )}
-                  onClick={() => {
-                    setStatus(s.value);
-                    setStatusOpen(false);
-                  }}
+                  onClick={() => { setStatus(s.value); setStatusOpen(false); }}
                 >
-                  <CircleDot
-                    className={cn("h-3 w-3 mt-0.5 shrink-0", s.color)}
-                  />
+                  <CircleDot className={cn("h-3 w-3 mt-0.5 shrink-0", s.color)} />
                   <span className="flex flex-col text-left leading-tight">
                     <span>{s.label}</span>
                     {s.description ? (
-                      <span className="text-(length:--text-nano) text-muted-foreground">
-                        {s.description}
-                      </span>
+                      <span className="text-(length:--text-nano) text-muted-foreground">{s.description}</span>
                     ) : null}
                   </span>
                 </button>
@@ -2918,7 +2073,8 @@ export function NewIssueDialog() {
             </PopoverContent>
           </Popover>
 
-          {/* Priority chip */}
+          {/* Priority chip — PAP-411: hidden behind SHOW_TASK_PRIORITY_UI. */}
+          {SHOW_TASK_PRIORITY_UI && (
           <Popover open={priorityOpen} onOpenChange={setPriorityOpen}>
             <PopoverTrigger asChild>
               <button
@@ -2928,31 +2084,26 @@ export function NewIssueDialog() {
               >
                 {currentPriority ? (
                   <>
-                    <currentPriority.icon
-                      className={cn("h-3 w-3", currentPriority.color)}
-                    />
+                    <currentPriority.icon className={cn("h-3 w-3", currentPriority.color)} />
                     {currentPriority.label}
                   </>
                 ) : (
                   <>
                     <Minus className="h-3 w-3 text-muted-foreground" />
-                    {t("newIssue.priority", { defaultValue: "Priority" })}
+                    Priority
                   </>
                 )}
               </button>
             </PopoverTrigger>
             <PopoverContent className="w-36 p-1" align="start">
-              {priorityOptions.map((p) => (
+              {priorities.map((p) => (
                 <button
                   key={p.value}
                   className={cn(
                     "flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50",
-                    p.value === priority && "bg-accent",
+                    p.value === priority && "bg-accent"
                   )}
-                  onClick={() => {
-                    setPriority(p.value);
-                    setPriorityOpen(false);
-                  }}
+                  onClick={() => { setPriority(p.value); setPriorityOpen(false); }}
                 >
                   <p.icon className={cn("h-3 w-3", p.color)} />
                   {p.label}
@@ -2960,6 +2111,7 @@ export function NewIssueDialog() {
               ))}
             </PopoverContent>
           </Popover>
+          )}
 
           {/* Labels chip — disabled, not wired up yet */}
           {/* <button className="inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs hover:bg-accent/50 transition-colors text-muted-foreground">
@@ -2981,7 +2133,7 @@ export function NewIssueDialog() {
             disabled={createIssue.isPending}
           >
             <Paperclip className="h-3 w-3" />
-            {t("newIssue.upload", { defaultValue: "Upload" })}
+            Upload
           </button>
 
           {/* Work mode chip */}
@@ -2997,7 +2149,7 @@ export function NewIssueDialog() {
                 )}
               >
                 <CurrentWorkModeIcon className="h-3 w-3" />
-                {currentWorkModeShortLabel}
+                {currentWorkMode.shortLabel}
               </button>
             </PopoverTrigger>
             <PopoverContent className="w-36 p-1" align="start">
@@ -3018,10 +2170,8 @@ export function NewIssueDialog() {
                     }}
                   >
                     <Icon className="h-3 w-3" />
-                    {translateWorkModeLabel(t, option.value)}
-                    {option.value === workMode ? (
-                      <Check className="ml-auto h-3 w-3" aria-hidden />
-                    ) : null}
+                    {option.label}
+                    {option.value === workMode ? <Check className="ml-auto h-3 w-3" aria-hidden /> : null}
                   </button>
                 );
               })}
@@ -3039,16 +2189,14 @@ export function NewIssueDialog() {
                 <MoreHorizontal className="h-3 w-3" />
               </button>
             </PopoverTrigger>
-            <PopoverContent
-              className="w-44 p-1"
-              align="start"
-              data-testid="new-issue-more-menu"
-            >
+            <PopoverContent className="w-44 p-1" align="start" data-testid="new-issue-more-menu">
+              {/* PAP-411: mobile priority section hidden behind SHOW_TASK_PRIORITY_UI. */}
+              {SHOW_TASK_PRIORITY_UI && (
               <div className="sm:hidden">
                 <div className="px-2 py-1 text-(length:--text-nano) font-medium uppercase text-muted-foreground">
-                  {t("newIssue.priority", { defaultValue: "Priority" })}
+                  Priority
                 </div>
-                {priorityOptions.map((p) => (
+                {priorities.map((p) => (
                   <button
                     type="button"
                     key={p.value}
@@ -3068,13 +2216,14 @@ export function NewIssueDialog() {
                 ))}
                 <div className="my-1 border-t border-border" />
               </div>
+              )}
               <button className="flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50 text-muted-foreground">
                 <Calendar className="h-3 w-3" />
-                {t("newIssue.startDate", { defaultValue: "Start date" })}
+                Start date
               </button>
               <button className="flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50 text-muted-foreground">
                 <Calendar className="h-3 w-3" />
-                {t("newIssue.dueDate", { defaultValue: "Due date" })}
+                Due date
               </button>
             </PopoverContent>
           </Popover>
@@ -3087,25 +2236,7 @@ export function NewIssueDialog() {
           >
             <Flag className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-300" />
             <span className="leading-snug">
-              {t("newIssue.assignedBacklogNote.beforeBacklog", {
-                defaultValue:
-                  "Assigning implies executable intent - leave status as",
-              })}{" "}
-              <span className="font-medium">
-                {t("status.backlog", { defaultValue: "Backlog" })}
-              </span>{" "}
-              {t("newIssue.assignedBacklogNote.afterBacklog", {
-                defaultValue:
-                  "only to deliberately park this. The responsible will not be woken until status moves to",
-              })}{" "}
-              <span className="font-medium">
-                {t("status.todo", { defaultValue: "Todo" })}
-              </span>{" "}
-              {t("newIssue.assignedBacklogNote.or", { defaultValue: "or" })}{" "}
-              <span className="font-medium">
-                {t("status.inProgress", { defaultValue: "In Progress" })}
-              </span>
-              .
+              Assigning implies executable intent - leave status as <span className="font-medium">Backlog</span> only to deliberately park this. The assignee will not be woken until status moves to <span className="font-medium">Todo</span> or <span className="font-medium">In Progress</span>.
             </span>
           </div>
         ) : null}
@@ -3117,10 +2248,7 @@ export function NewIssueDialog() {
           >
             <ShieldAlert className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-300" />
             <span className="leading-snug">
-              {t("newIssue.lowTrustAssigneeNote", {
-                defaultValue:
-                  "Low-trust review agent. It can only act inside its assigned review boundary; issue, project, or run policy defines the concrete scope.",
-              })}
+              Low-trust review agent. It can only act inside its assigned review boundary; task, project, or run policy defines the concrete scope.
             </span>
           </div>
         ) : null}
@@ -3134,23 +2262,14 @@ export function NewIssueDialog() {
             onClick={discardDraft}
             disabled={createIssue.isPending || !canDiscardDraft}
           >
-            {t("newIssue.discardDraft", { defaultValue: "Discard Draft" })}
+            Discard Draft
           </Button>
           <div className="flex items-center gap-3">
-            <div className="min-h-5 text-right">
-              {createIssue.isPending ? (
-                <span className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                  {t("newIssue.creatingIssue", {
-                    defaultValue: "Creating issue...",
-                  })}
-                </span>
-              ) : createIssue.isError ? (
-                <span className="text-xs text-destructive">
-                  {createIssueErrorMessage}
-                </span>
-              ) : null}
-            </div>
+            {createIssue.isError ? (
+              <div className="min-h-5 text-right">
+                <span className="text-xs text-destructive">{createIssueErrorMessage}</span>
+              </div>
+            ) : null}
             <Button
               size="sm"
               className="min-w-(--sz-8_5rem) disabled:opacity-100"
@@ -3159,20 +2278,8 @@ export function NewIssueDialog() {
               aria-busy={createIssue.isPending}
             >
               <span className="inline-flex items-center justify-center gap-1.5">
-                {createIssue.isPending ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                ) : null}
-                <span>
-                  {createIssue.isPending
-                    ? t("newIssue.creating", { defaultValue: "Creating..." })
-                    : isSubIssueMode
-                      ? t("newIssue.createSubIssue", {
-                          defaultValue: "Create Sub-Task",
-                        })
-                      : t("newIssue.createTask", {
-                          defaultValue: "Create Task",
-                        })}
-                </span>
+                {createIssue.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
+                <span>{createIssue.isPending ? "Creating..." : isSubIssueMode ? "Create Sub-Task" : "Create Task"}</span>
               </span>
             </Button>
           </div>

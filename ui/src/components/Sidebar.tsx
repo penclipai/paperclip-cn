@@ -1,4 +1,3 @@
-import { useTranslation } from "react-i18next";
 import {
   Inbox,
   ListChecks,
@@ -23,12 +22,10 @@ import {
   AppWindow,
   MessagesSquare,
   GanttChartSquare,
-  ScrollText,
   LayoutGrid,
 } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { NavLink } from "@/lib/router";
 import { SidebarSection } from "./SidebarSection";
 import { SidebarNavItem } from "./SidebarNavItem";
 import { SidebarAgents } from "./SidebarAgents";
@@ -43,37 +40,22 @@ import { instanceSettingsApi } from "../api/instanceSettings";
 import { queryKeys } from "../lib/queryKeys";
 import { attentionBadgeCount } from "../lib/attention";
 import { useInboxBadge } from "../hooks/useInboxBadge";
-import {
-  usePublishSharedQueryData,
-  useSharedPollingQuery,
-} from "../hooks/useSharedPolling";
+import { usePublishSharedQueryData, useSharedPollingQuery } from "../hooks/useSharedPolling";
 import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn, SIDEBAR_RAIL_HIDDEN_LABEL } from "../lib/utils";
 import { PluginSlotOutlet } from "@/plugins/slots";
 import { PluginLauncherOutlet } from "@/plugins/launchers";
 import { SidebarCompanyMenu } from "./SidebarCompanyMenu";
 
 export function Sidebar() {
-  const { t } = useTranslation();
   const { openNewIssue } = useDialogActions();
   // Every labeled section is collapsible (session-scoped, default open) —
   // one policy across static nav groups and the data-driven sections.
   const [workOpen, setWorkOpen] = useState(true);
   const [companyOpen, setCompanyOpen] = useState(true);
   const { selectedCompanyId, selectedCompany } = useCompany();
-  const {
-    isMobile,
-    collapsed,
-    collapseLocked,
-    peeking,
-    toggleCollapsed,
-    setCollapsed,
-  } = useSidebar();
+  const { isMobile, collapsed, collapseLocked, peeking, toggleCollapsed, setCollapsed } = useSidebar();
   const rail = collapsed && !peeking;
   const inboxBadge = useInboxBadge(selectedCompanyId);
   const { data: experimentalSettings } = useQuery({
@@ -100,8 +82,7 @@ export function Sidebar() {
   });
   usePublishSharedQueryData(sharedLiveRuns, liveRuns, liveRunsUpdatedAt);
   const liveRunCount = liveRuns?.length ?? 0;
-  const showWorkspacesLink =
-    experimentalSettings?.enableIsolatedWorkspaces === true;
+  const showWorkspacesLink = experimentalSettings?.enableIsolatedWorkspaces === true;
   const showApps = experimentalSettings?.enableApps === true;
   const showPipelines = experimentalSettings?.enablePipelines === true;
   const showStatusCards = experimentalSettings?.enableStatusCards === true;
@@ -128,8 +109,7 @@ export function Sidebar() {
   // Conference Room Chat flag (PAP-136/PAP-137): the Conference Room nav item
   // is a new surface, hidden entirely while the flag is off (same no-flash
   // pattern as showWorkspacesLink above).
-  const conferenceRoomChatEnabled =
-    experimentalSettings?.enableConferenceRoomChat === true;
+  const conferenceRoomChatEnabled = experimentalSettings?.enableConferenceRoomChat === true;
 
   const pluginContext = {
     companyId: selectedCompanyId,
@@ -138,28 +118,20 @@ export function Sidebar() {
 
   return (
     <aside className="w-full h-full min-h-0 border-r border-border bg-background flex flex-col">
-      {/* Top bar: Company name (bold) + Search — aligned with top sections (no visible border) */}
+      {/* Top bar: Company name (bold) + collapse control — aligned with top
+          sections (no visible border). Search deliberately does NOT live here:
+          the header's spare width goes to the workspace/organization name,
+          which is the user's orientation anchor and truncates otherwise.
+          Search is the first nav item below instead. */}
       <div className="flex items-center gap-1 px-3 h-12 shrink-0">
         <SidebarCompanyMenu />
-        {/* In the collapsed rail the search/toggle controls don't fit beside the
-            logo — keeping them would overflow the 64px rail and squeeze the logo
-            out of alignment with the icon column below it (PAP-10676). They return
-            as soon as the panel is expanded (pinned) or peeking. Expansion in the
+        {/* In the collapsed rail the toggle doesn't fit beside the logo —
+            keeping it would overflow the 64px rail and squeeze the logo out of
+            alignment with the icon column below it. It returns as
+            soon as the panel is expanded (pinned) or peeking. Expansion in the
             rail is still reachable via hover-peek + Pin and Cmd/Ctrl+B. */}
         {!rail ? (
           <>
-            <Button
-              asChild
-              variant="ghost"
-              size="icon-sm"
-              className="text-muted-foreground shrink-0"
-              aria-label={t("sidebar.openSearch")}
-              title={t("sidebar.openSearch")}
-            >
-              <NavLink to="/search">
-                <Search className="h-4 w-4" />
-              </NavLink>
-            </Button>
             {/* Desktop-only collapse/expand affordance. While peeking (hover flyout
                 over the collapsed rail) it becomes a Pin that promotes the peek to a
                 pinned-expanded sidebar; otherwise it toggles the pinned rail. Mobile
@@ -172,8 +144,8 @@ export function Sidebar() {
                   variant="ghost"
                   size="icon-sm"
                   className="text-muted-foreground shrink-0"
-                  aria-label={t("Keep sidebar expanded")}
-                  title={t("Keep sidebar expanded")}
+                  aria-label="Keep sidebar expanded"
+                  title="Keep sidebar expanded"
                   onClick={() => setCollapsed(false)}
                 >
                   <Pin className="h-4 w-4" />
@@ -188,11 +160,7 @@ export function Sidebar() {
                   title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
                   onClick={() => toggleCollapsed()}
                 >
-                  {collapsed ? (
-                    <PanelLeftOpen className="h-4 w-4" />
-                  ) : (
-                    <PanelLeftClose className="h-4 w-4" />
-                  )}
+                  {collapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
                 </Button>
               )
             ) : null}
@@ -212,31 +180,27 @@ export function Sidebar() {
                 className="flex items-center gap-2.5 mx-2 rounded-lg px-2 py-1.5 pointer-coarse:py-1 text-(length:--text-compact) font-medium text-foreground/80 hover:bg-accent/50 hover:text-foreground transition-colors"
               >
                 <SquarePen className="h-4 w-4 shrink-0" />
-                <span className={rail ? SIDEBAR_RAIL_HIDDEN_LABEL : "truncate"}>
-                  {t("New Issue")}
-                </span>
+                <span className={rail ? SIDEBAR_RAIL_HIDDEN_LABEL : "truncate"}>New Task</span>
               </button>
             );
             return rail ? (
               <Tooltip>
                 <TooltipTrigger asChild>{newTaskButton}</TooltipTrigger>
-                <TooltipContent side="right">
-                  {t("New Issue")}
-                </TooltipContent>
+                <TooltipContent side="right">New Task</TooltipContent>
               </Tooltip>
             ) : (
               newTaskButton
             );
           })()}
-          <SidebarNavItem
-            to="/dashboard"
-            label={t("sidebar.dashboard")}
-            icon={LayoutDashboard}
-            liveCount={liveRunCount}
-          />
+          {/* Search moved out of the header so the workspace name keeps the
+              width; a nav row also keeps search reachable from the
+              collapsed rail, where the old header icon was dropped entirely.
+              Cmd/Ctrl+K remains the keyboard path (command palette). */}
+          <SidebarNavItem to="/search" label="Search" icon={Search} />
+          <SidebarNavItem to="/dashboard" label="Dashboard" icon={LayoutDashboard} liveCount={liveRunCount} />
           <SidebarNavItem
             to="/inbox"
-            label={t("sidebar.inbox")}
+            label="Inbox"
             icon={Inbox}
             badge={inboxBadge.inbox}
             badgeLabel="unread"
@@ -246,64 +210,31 @@ export function Sidebar() {
           {showDecisions ? (
             <SidebarNavItem
               to="/decisions"
-              label={t("whatNeedsMe.title")}
+              label="Decisions"
               icon={ListChecks}
               badge={attentionCount}
               badgeLabel="decisions"
             />
           ) : null}
           {showStatusCards ? (
-            <SidebarNavItem
-              to="/status"
-              label={t("apps.detail.test.askFirst.field.status")}
-              icon={LayoutGrid}
-              textBadge="beta"
-            />
+            <SidebarNavItem to="/status" label="Status" icon={LayoutGrid} textBadge="beta" />
           ) : null}
           {conferenceRoomChatEnabled ? (
-            <SidebarNavItem
-              to="/board-chat"
-              label={t("Conference Room")}
-              icon={MessagesSquare}
-            />
+            <SidebarNavItem to="/board-chat" label="Conference Room" icon={MessagesSquare} />
           ) : null}
         </div>
 
-        <SidebarSection
-          label={t("sidebar.work")}
-          collapsible={{ open: workOpen, onOpenChange: setWorkOpen }}
-        >
-          <SidebarNavItem
-            to="/issues"
-            label={t("sidebar.issues")}
-            icon={CircleDot}
-          />
+        <SidebarSection label="Work" collapsible={{ open: workOpen, onOpenChange: setWorkOpen }}>
+          <SidebarNavItem to="/issues" label="Tasks" icon={CircleDot} />
           {showCases ? (
-            <SidebarNavItem
-              to="/cases"
-              label={t("Cases")}
-              icon={Layers}
-              textBadge="beta"
-            />
+            <SidebarNavItem to="/cases" label="Cases" icon={Layers} textBadge="beta" />
           ) : null}
-          <SidebarNavItem
-            to="/routines"
-            label={t("sidebar.routines")}
-            icon={Repeat}
-          />
+          <SidebarNavItem to="/routines" label="Routines" icon={Repeat} />
           {showPipelines ? (
-            <SidebarNavItem
-              to="/pipelines"
-              label={t("sidebar.pipelines")}
-              icon={GitBranch}
-            />
+            <SidebarNavItem to="/pipelines" label="Pipelines" icon={GitBranch} />
           ) : null}
           {showGoalsLink ? (
-            <SidebarNavItem
-              to="/goals"
-              label={t("sidebar.goals")}
-              icon={Target}
-            />
+            <SidebarNavItem to="/goals" label="Goals" icon={Target} />
           ) : goalsLinkPending ? (
             <div
               data-testid="sidebar-goals-placeholder"
@@ -311,30 +242,14 @@ export function Sidebar() {
               aria-hidden="true"
             />
           ) : null}
-          <SidebarNavItem
-            to="/artifacts"
-            label={t("sidebar.artifacts")}
-            icon={Package}
-          />
-          <SidebarNavItem
-            to="/skills"
-            label={t("sidebar.skills")}
-            icon={Boxes}
-          />
+          <SidebarNavItem to="/artifacts" label="Artifacts" icon={Package} />
+          <SidebarNavItem to="/skills" label="Skills" icon={Boxes} />
           {showWorkspacesLink ? (
-            <SidebarNavItem
-              to="/workspaces"
-              label={t("sidebar.workspaces")}
-              icon={GitBranch}
-            />
+            <SidebarNavItem to="/workspaces" label="Workspaces" icon={GitBranch} />
           ) : null}
           {streamlined ? (
             <>
-              <SidebarNavItem
-                to="/projects"
-                label={t("Projects")}
-                icon={FolderOpen}
-              />
+              <SidebarNavItem to="/projects" label="Projects" icon={FolderOpen} />
               <SidebarStarredProjects />
             </>
           ) : null}
@@ -358,43 +273,14 @@ export function Sidebar() {
 
         <SidebarAgents streamlined={streamlined} />
 
-        <SidebarSection
-          label={t("sidebar.company")}
-          collapsible={{ open: companyOpen, onOpenChange: setCompanyOpen }}
-        >
-          <SidebarNavItem to="/org" label={t("sidebar.org")} icon={Network} />
-          {showApps ? (
-            <SidebarNavItem
-              to="/apps"
-              label={t("sidebar.apps")}
-              icon={AppWindow}
-            />
-          ) : null}
-          <SidebarNavItem
-            to="/timeline"
-            label={t("sidebar.timeline")}
-            icon={GanttChartSquare}
-          />
-          <SidebarNavItem
-            to="/costs"
-            label={t("sidebar.costs")}
-            icon={DollarSign}
-          />
-          <SidebarNavItem
-            to="/activity"
-            label={t("sidebar.activity")}
-            icon={History}
-          />
-          <SidebarNavItem
-            to="/audit"
-            label={t("auditFeed.title")}
-            icon={ScrollText}
-          />
-          <SidebarNavItem
-            to="/company/settings"
-            label={t("sidebar.settings")}
-            icon={Settings}
-          />
+        <SidebarSection label="Company" collapsible={{ open: companyOpen, onOpenChange: setCompanyOpen }}>
+          <SidebarNavItem to="/org" label="Org" icon={Network} />
+          {showApps ? <SidebarNavItem to="/apps" label="Apps" icon={AppWindow} /> : null}
+          <SidebarNavItem to="/timeline" label="Timeline" icon={GanttChartSquare} />
+          <SidebarNavItem to="/costs" label="Costs" icon={DollarSign} />
+          {/* One entry — /audit merged into the rich Activity feed (PAP-16302). */}
+          <SidebarNavItem to="/activity" label="Activity" icon={History} />
+          <SidebarNavItem to="/company/settings" label="Settings" icon={Settings} />
         </SidebarSection>
 
         <PluginSlotOutlet

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { __test__, buildAgentParams, resolveSessionKey } from "./execute.js";
+import { buildAgentParams, resolveClaimedApiKeyPath, resolveSessionKey } from "./execute.js";
 
 describe("resolveSessionKey", () => {
   it("prefixes run-scoped session keys with the configured agent", () => {
@@ -99,36 +99,27 @@ describe("buildAgentParams", () => {
   });
 });
 
-describe("buildAgentRequestParamsForProtocol", () => {
-  it("keeps v4 agent params free of root-level paperclip fields", () => {
+describe("resolveClaimedApiKeyPath", () => {
+  const DEFAULT_PATH = "~/.openclaw/workspace/paperclip-claimed-api-key.json";
+
+  it("returns the configured per-agent path when set", () => {
     expect(
-      __test__.buildAgentRequestParamsForProtocol({
-        baseParams: {
-          message: "wake text",
-          sessionKey: "paperclip",
-        },
-        paperclipPayload: { runId: "run-123" },
-        protocol: 4,
-      }),
-    ).toEqual({
-      message: "wake text",
-      sessionKey: "paperclip",
-    });
+      resolveClaimedApiKeyPath("~/.openclaw/workspace/paperclip-keys/happy.json"),
+    ).toBe("~/.openclaw/workspace/paperclip-keys/happy.json");
   });
 
-  it("keeps v3 agent params free of root-level paperclip fields", () => {
-    expect(
-      __test__.buildAgentRequestParamsForProtocol({
-        baseParams: {
-          message: "wake text",
-          sessionKey: "paperclip",
-        },
-        paperclipPayload: { runId: "run-123" },
-        protocol: 3,
-      }),
-    ).toEqual({
-      message: "wake text",
-      sessionKey: "paperclip",
-    });
+  it("falls back to the shared default when value is empty", () => {
+    expect(resolveClaimedApiKeyPath("")).toBe(DEFAULT_PATH);
+    expect(resolveClaimedApiKeyPath("   ")).toBe(DEFAULT_PATH);
+  });
+
+  it("falls back to the shared default when value is missing", () => {
+    expect(resolveClaimedApiKeyPath(undefined)).toBe(DEFAULT_PATH);
+    expect(resolveClaimedApiKeyPath(null)).toBe(DEFAULT_PATH);
+  });
+
+  it("falls back to the shared default when value is not a string", () => {
+    expect(resolveClaimedApiKeyPath(42)).toBe(DEFAULT_PATH);
+    expect(resolveClaimedApiKeyPath({})).toBe(DEFAULT_PATH);
   });
 });

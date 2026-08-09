@@ -3,6 +3,12 @@ import { promises as fs } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
+import {
+  runWithoutActiveStep,
+  runWithRuntimeParent,
+  type RuntimeSpanRunner,
+  type StartupSpanContext,
+} from "./acpx-engine/startup-timing.js";
 import type { CommandManagedRuntimeRunner } from "./command-managed-runtime.js";
 import { preferredShellForSandbox, shellCommandArgs } from "./sandbox-shell.js";
 import type { RunProcessResult } from "./server-utils.js";
@@ -17,6 +23,10 @@ const REMOTE_WRITE_BASE64_CHUNK_SIZE = 32 * 1024;
 const SANDBOX_CALLBACK_BRIDGE_ENTRYPOINT = "paperclip-bridge-server.mjs";
 const SANDBOX_EXEC_CHANNEL_ENV = "PAPERCLIP_SANDBOX_EXEC_CHANNEL";
 const SANDBOX_EXEC_CHANNEL_BRIDGE = "bridge";
+
+/** Span name that wraps one Paperclip-API callback request — read the request,
+ * write the response, and remove the request file. */
+const CALLBACK_BRIDGE_RELAY_REQUEST_SPAN = "sandbox.callbackBridge.relayRequest";
 
 export const DEFAULT_SANDBOX_CALLBACK_BRIDGE_MAX_BODY_BYTES = DEFAULT_BRIDGE_MAX_BODY_BYTES;
 
@@ -72,10 +82,10 @@ export const DEFAULT_SANDBOX_CALLBACK_BRIDGE_ROUTE_ALLOWLIST: readonly SandboxCa
   { method: "POST", path: /^\/api\/issues\/[^/]+\/work-products$/ },
   { method: "PATCH", path: /^\/api\/work-products\/[^/]+$/ },
 
-  // Issue-thread interactions (suggest tasks, ask questions, request confirmation)
+  // Issue-thread interactions (create, resolve, verdict, and withdraw)
   { method: "GET", path: /^\/api\/issues\/[^/]+\/interactions(?:\/[^/]+)?$/ },
   { method: "POST", path: /^\/api\/issues\/[^/]+\/interactions$/ },
-  { method: "POST", path: /^\/api\/issues\/[^/]+\/interactions\/[^/]+\/(?:accept|reject|respond)$/ },
+  { method: "POST", path: /^\/api\/issues\/[^/]+\/interactions\/[^/]+\/(?:accept|reject|respond|verdicts|withdraw)$/ },
 
   // Subtasks / delegation
   { method: "POST", path: /^\/api\/companies\/[^/]+\/issues$/ },
@@ -162,7 +172,6 @@ export interface SandboxCallbackBridgeQueueClient {
     body: string,
     options?: {
       requestPath?: string | null;
-      removeRequestPath?: boolean | null;
     },
   ): Promise<{ wrote: boolean }>;
   rename(fromPath: string, toPath: string): Promise<void>;
@@ -225,8 +234,15 @@ async function runShell(
     env: {
       [SANDBOX_EXEC_CHANNEL_ENV]: SANDBOX_EXEC_CHANNEL_BRIDGE,
     },
-    stdin,
     timeoutMs,
+    stdin,
+    // Every command that rides this helper is bridge control-plane plumbing:
+    // input delivery, output read, callback relay, and queue/setup bookkeeping.
+    // It must run concurrently with the agent, so force it off the persistent
+    // session. In streamed mode the agent holds that single serialized session
+    // for the whole run; a control write on the same session queues behind the
+    // agent command that never returns — a permanent deadlock.
+    bypassSession: true,
   });
 }
 
@@ -387,7 +403,6 @@ export function createFileSystemSandboxCallbackBridgeQueueClient(): SandboxCallb
       const tempPath = `${responsePath}.tmp`;
       const lockDir = `${responsePath}.paperclip-write.lock`;
       const lockPidFile = `${lockDir}/pid`;
-      const requestPath = options.requestPath?.trim() || "";
       if (options.requestPath) {
         const requestExists = await pathExists(options.requestPath);
         if (!requestExists) {
@@ -439,24 +454,18 @@ export function createFileSystemSandboxCallbackBridgeQueueClient(): SandboxCallb
       }
 
       try {
-        if (requestPath) {
-          const requestExists = await pathExists(requestPath);
+        if (options.requestPath) {
+          const requestExists = await pathExists(options.requestPath);
           if (!requestExists) {
             return { wrote: false };
           }
         }
         const responseExists = await pathExists(responsePath);
         if (responseExists) {
-          if (options.removeRequestPath && requestPath) {
-            await fs.rm(requestPath, { force: true }).catch(() => undefined);
-          }
           return { wrote: false };
         }
         await fs.writeFile(tempPath, body, "utf8");
         await fs.rename(tempPath, responsePath);
-        if (options.removeRequestPath && requestPath) {
-          await fs.rm(requestPath, { force: true }).catch(() => undefined);
-        }
         return { wrote: true };
       } finally {
         await fs.rm(tempPath, { force: true }).catch(() => undefined);
@@ -481,8 +490,8 @@ export function createCommandManagedSandboxCallbackBridgeQueueClient(input: {
 }): SandboxCallbackBridgeQueueClient {
   const timeoutMs = normalizeTimeoutMs(input.timeoutMs, DEFAULT_BRIDGE_RESPONSE_TIMEOUT_MS);
   const shellCommand = preferredShellForSandbox(input.shellCommand);
-  const runChecked = async (action: string, script: string, stdin?: string) =>
-    requireSuccessfulResult(action, await runShell(input.runner, input.remoteCwd, script, timeoutMs, shellCommand, stdin));
+  const runChecked = async (action: string, script: string) =>
+    requireSuccessfulResult(action, await runShell(input.runner, input.remoteCwd, script, timeoutMs, shellCommand));
 
   return {
     makeDir: async (remotePath) => {
@@ -523,23 +532,21 @@ export function createCommandManagedSandboxCallbackBridgeQueueClient(input: {
     },
     writeTextFile: async (remotePath, body) => {
       const remoteDir = path.posix.dirname(remotePath);
-      const encodedTempPath = `${remotePath}.paperclip-upload.b64`;
-      const decodedTempPath = `${remotePath}.paperclip-upload.tmp`;
+      const tempPath = `${remotePath}.paperclip-upload.b64`;
       await runChecked(
         `prepare upload ${remotePath}`,
-        `mkdir -p ${shellQuote(remoteDir)} && rm -f ${shellQuote(encodedTempPath)} ${shellQuote(decodedTempPath)} && : > ${shellQuote(encodedTempPath)}`,
+        `mkdir -p ${shellQuote(remoteDir)} && rm -f ${shellQuote(tempPath)} && : > ${shellQuote(tempPath)}`,
       );
       const base64Body = toBuffer(Buffer.from(body, "utf8")).toString("base64");
       for (const chunk of base64Chunks(base64Body)) {
         await runChecked(
           `append upload chunk ${remotePath}`,
-          `cat >> ${shellQuote(encodedTempPath)}`,
-          chunk,
+          `printf '%s' ${shellQuote(chunk)} >> ${shellQuote(tempPath)}`,
         );
       }
       await runChecked(
         `finalize upload ${remotePath}`,
-        `base64 -d < ${shellQuote(encodedTempPath)} > ${shellQuote(decodedTempPath)} && mv ${shellQuote(decodedTempPath)} ${shellQuote(remotePath)} && rm -f ${shellQuote(encodedTempPath)}`,
+        `base64 -d < ${shellQuote(tempPath)} > ${shellQuote(remotePath)} && rm -f ${shellQuote(tempPath)}`,
       );
     },
     writeResponseFile: async (responsePath, body, options = {}) => {
@@ -547,7 +554,6 @@ export function createCommandManagedSandboxCallbackBridgeQueueClient(input: {
       const tempPath = `${responsePath}.tmp`;
       const lockDir = `${responsePath}.paperclip-write.lock`;
       const requestPath = options.requestPath?.trim() || "";
-      const removeRequestPath = Boolean(options.removeRequestPath && requestPath);
       const result = await runShell(
         input.runner,
         input.remoteCwd,
@@ -558,7 +564,6 @@ export function createCommandManagedSandboxCallbackBridgeQueueClient(input: {
           `temp_path=${shellQuote(tempPath)}`,
           `lock_dir=${shellQuote(lockDir)}`,
           `request_path=${shellQuote(requestPath)}`,
-          `remove_request_path=${removeRequestPath ? "1" : "0"}`,
           "mkdir -p \"$response_dir\"",
           ...buildRemotePidLockAcquireScript("\"$lock_dir\"", "Timed out acquiring sandbox callback bridge response lock."),
           ...buildRemotePidLockCleanupScript("\"$lock_dir\"", [
@@ -569,13 +574,11 @@ export function createCommandManagedSandboxCallbackBridgeQueueClient(input: {
           "  exit 0",
           "fi",
           "if [ -f \"$response_path\" ]; then",
-          "  if [ \"$remove_request_path\" = \"1\" ]; then rm -f \"$request_path\"; fi",
           "  printf '{\"wrote\":false}\\n'",
           "  exit 0",
           "fi",
           "cat > \"$temp_path\"",
           "mv \"$temp_path\" \"$response_path\"",
-          "if [ \"$remove_request_path\" = \"1\" ]; then rm -f \"$request_path\"; fi",
           "printf '{\"wrote\":true}\\n'",
         ].join("\n"),
         timeoutMs,
@@ -610,22 +613,16 @@ async function writeBridgeResponse(
   requestPath: string,
   responsePath: string,
   response: SandboxCallbackBridgeResponse,
-  options: { removeRequestPath?: boolean; requireRequestPath?: boolean } = {},
+  options: { requireRequestPath?: boolean } = {},
 ) {
   const body = `${JSON.stringify(response)}\n`;
   if (client.writeResponseFile) {
-    await client.writeResponseFile(responsePath, body, {
-      requestPath: options.requireRequestPath === false ? null : requestPath,
-      removeRequestPath: options.removeRequestPath,
-    });
+    await client.writeResponseFile(responsePath, body, options.requireRequestPath === false ? {} : { requestPath });
     return;
   }
   const tempPath = `${responsePath}.tmp`;
   await client.writeTextFile(tempPath, body);
   await client.rename(tempPath, responsePath);
-  if (options.removeRequestPath) {
-    await client.remove(requestPath).catch(() => undefined);
-  }
 }
 
 export async function startSandboxCallbackBridgeWorker(input: {
@@ -639,6 +636,18 @@ export async function startSandboxCallbackBridgeWorker(input: {
     body?: string;
   }>;
   maxBodyBytes?: number | null;
+  // Return the current-run parent-context token. The worker reads it per request
+  // and runs the request work under it, so the request `sandbox.exec` span
+  // parents to the live run span (`agent.turn` during the turn, `task.run`
+  // otherwise). When it is absent, the request work runs with an empty store,
+  // exactly like the earlier `runWithoutActiveStep` behavior.
+  getRuntimeParentContext?: () => StartupSpanContext | undefined;
+  // Wrap each Paperclip-API callback request in a
+  // `sandbox.callbackBridge.relayRequest` span, so the request's read, write, and
+  // remove execs group under one named span. When it is absent, the request work
+  // runs under the run parent with no wrapper span, exactly like the earlier
+  // behavior.
+  runtimeSpan?: RuntimeSpanRunner;
 }): Promise<SandboxCallbackBridgeWorkerHandle> {
   const pollIntervalMs = normalizeTimeoutMs(input.pollIntervalMs, DEFAULT_BRIDGE_POLL_INTERVAL_MS);
   const maxBodyBytes = normalizeTimeoutMs(input.maxBodyBytes, DEFAULT_BRIDGE_MAX_BODY_BYTES);
@@ -664,7 +673,6 @@ export async function startSandboxCallbackBridgeWorker(input: {
   let settled = false;
   let stopDeadline = Number.POSITIVE_INFINITY;
   let settleResolve: (() => void) | null = null;
-  const stoppedBeforeHandledMessage = "Bridge worker stopped before request could be handled.";
   const settledPromise = new Promise<void>((resolve) => {
     settleResolve = resolve;
   });
@@ -688,7 +696,7 @@ export async function startSandboxCallbackBridgeWorker(input: {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ error: "Invalid bridge request payload." }),
         completedAt: new Date().toISOString(),
-      }, { removeRequestPath: true });
+      });
       await input.client.remove(requestPath);
       return;
     }
@@ -701,7 +709,7 @@ export async function startSandboxCallbackBridgeWorker(input: {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ error: denialReason }),
         completedAt: new Date().toISOString(),
-      }, { removeRequestPath: true });
+      });
       await input.client.remove(requestPath);
       return;
     }
@@ -709,16 +717,6 @@ export async function startSandboxCallbackBridgeWorker(input: {
     try {
       const result = await input.handleRequest(request);
       const responseBody = result.body ?? "";
-      if (stopping && Date.now() >= stopDeadline) {
-        await writeBridgeResponse(input.client, requestPath, responsePath, {
-          id: request.id,
-          status: 503,
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ error: stoppedBeforeHandledMessage }),
-          completedAt: new Date().toISOString(),
-        }, { removeRequestPath: true });
-        return;
-      }
       if (Buffer.byteLength(responseBody, "utf8") > maxBodyBytes) {
         throw new Error(`Bridge response body exceeded the configured size limit of ${maxBodyBytes} bytes.`);
       }
@@ -728,7 +726,7 @@ export async function startSandboxCallbackBridgeWorker(input: {
         headers: result.headers ?? {},
         body: responseBody,
         completedAt: new Date().toISOString(),
-      }, { removeRequestPath: true });
+      });
     } catch (error) {
       console.warn(
         `[paperclip] sandbox callback bridge handler failed for ${request.id}: ${error instanceof Error ? error.message : String(error)}`,
@@ -741,7 +739,7 @@ export async function startSandboxCallbackBridgeWorker(input: {
           error: error instanceof Error ? error.message : String(error),
         }),
         completedAt: new Date().toISOString(),
-      }, { removeRequestPath: true });
+      });
     } finally {
       await input.client.remove(requestPath);
     }
@@ -764,7 +762,6 @@ export async function startSandboxCallbackBridgeWorker(input: {
           body: JSON.stringify({ error: message }),
           completedAt: new Date().toISOString(),
         }, {
-          removeRequestPath: true,
           requireRequestPath: false,
         });
       } catch (error) {
@@ -777,7 +774,13 @@ export async function startSandboxCallbackBridgeWorker(input: {
     }
   };
 
-  const loop = (async () => {
+  // Start the long-lived poll loop outside the measured startup-step store.
+  // The `makeDir` calls above are startup work and must keep the active
+  // `bridge.paperclip` step. The loop runs run-time execs for the whole run,
+  // so each loop `sandbox.exec` span must not parent to the ended step or copy
+  // its `criticalPath` flag. `runWithoutActiveStep` empties the store for the
+  // loop only; Node keeps the empty store on every later poll continuation.
+  const loop = runWithoutActiveStep(() => (async () => {
     try {
       while (true) {
         const fileNames = await input.client.listJsonFiles(directories.requestsDir);
@@ -792,7 +795,20 @@ export async function startSandboxCallbackBridgeWorker(input: {
           if (stopping && Date.now() >= stopDeadline) break;
           inFlight += 1;
           try {
-            await processRequestFile(fileName);
+            // A request is run-time work, not startup work. Wrap it in a
+            // `sandbox.callbackBridge.relayRequest` span, so its read, write, and
+            // remove execs group under one named span that parents to the live
+            // run span. The span runner reads the run parent per request: the
+            // live parent switches to `agent.turn` during the turn and back to
+            // `task.run` after it. Without a runner, the request runs under the
+            // run parent with no wrapper span, exactly like the earlier behavior.
+            await (input.runtimeSpan
+              ? input.runtimeSpan(CALLBACK_BRIDGE_RELAY_REQUEST_SPAN, () =>
+                  processRequestFile(fileName),
+                )
+              : runWithRuntimeParent(input.getRuntimeParentContext?.(), () =>
+                  processRequestFile(fileName),
+                ));
           } finally {
             inFlight -= 1;
           }
@@ -817,7 +833,7 @@ export async function startSandboxCallbackBridgeWorker(input: {
         settleResolve();
       }
     }
-  })();
+  })());
 
   void loop;
 
@@ -832,7 +848,7 @@ export async function startSandboxCallbackBridgeWorker(input: {
           new Promise<void>((resolve) => setTimeout(resolve, drainMs)),
         ]);
       }
-      await failPendingRequests(stoppedBeforeHandledMessage);
+      await failPendingRequests("Bridge worker stopped before request could be handled.");
     },
   };
 }
@@ -1051,12 +1067,8 @@ export async function startSandboxCallbackBridgeServer(input: {
       `    cat ${shellQuote(directories.readyFile)}`,
       "    exit 0",
       "  fi",
-      `  if [ -s ${shellQuote(directories.pidFile)} ] && ! kill -0 \"$(cat ${shellQuote(directories.pidFile)} 2>/dev/null)\" 2>/dev/null; then`,
-      `    if [ -s ${shellQuote(directories.logFile)} ]; then`,
-      `      cat ${shellQuote(directories.logFile)} >&2`,
-      "    else",
-      `      echo "Sandbox callback bridge exited before writing readiness." >&2`,
-      "    fi",
+      `  if [ -s ${shellQuote(directories.logFile)} ] && ! kill -0 \"$(cat ${shellQuote(directories.pidFile)} 2>/dev/null)\" 2>/dev/null; then`,
+      `    cat ${shellQuote(directories.logFile)} >&2`,
       "    exit 1",
       "  fi",
       "  i=$((i + 1))",

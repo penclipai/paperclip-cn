@@ -1,25 +1,8 @@
-import { useTranslation } from "react-i18next";
-import {
-  Fragment,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
-import {
-  ArrowUpDown,
-  Check,
-  CheckCircle2,
-  GraduationCap,
-  Inbox,
-  Layers,
-  ListFilter,
-} from "lucide-react";
+import { CheckCircle2, Inbox } from "lucide-react";
 import type { Agent, AttentionItem, AttentionSubject } from "@penclipai/shared";
-import { useNavigate } from "@/lib/router";
+import { useNavigate, useSearchParams } from "@/lib/router";
 import { attentionApi } from "../api/attention";
 import { agentsApi } from "../api/agents";
 import { authApi } from "../api/auth";
@@ -30,10 +13,9 @@ import { useToastActions } from "../context/ToastContext";
 import { useInboxDismissals } from "../hooks/useInboxBadge";
 import { queryKeys } from "../lib/queryKeys";
 import {
-  ATTENTION_GROUP_BY_OPTIONS,
-  ATTENTION_SORT_OPTIONS,
+  ATTENTION_AGING_DAYS,
+  attentionIsAging,
   buildAttentionFilterOptions,
-  countActiveAttentionFilters,
   defaultAttentionFilterState,
   filterAttentionItems,
   groupAttentionItems,
@@ -42,43 +24,31 @@ import {
   loadAttentionGroupBy,
   loadAttentionSortOrder,
   loadCollapsedAttentionGroupKeys,
-  NO_GROUP_SENTINEL,
+  buildDeskShelves,
   planAttentionRenderRows,
+  resolveAttentionDateRange,
   saveAttentionFilters,
   saveAttentionGroupBy,
   saveAttentionSortOrder,
   saveCollapsedAttentionGroupKeys,
   sortAttentionItems,
-  sourceMeta,
+  type AttentionDateRangeId,
   type AttentionFilterState,
+  type AttentionGroup,
   type AttentionGroupBy,
   type AttentionSortOrder,
 } from "../lib/attention";
 import { decisionTrainingHref } from "../lib/decisionTraining";
-import { cn } from "../lib/utils";
-import {
-  hasBlockingShortcutDialog,
-  resolveAttentionQueueKeyAction,
-} from "../lib/keyboardShortcuts";
+import { hasBlockingShortcutDialog, resolveAttentionQueueKeyAction } from "../lib/keyboardShortcuts";
 import { PageSkeleton } from "../components/PageSkeleton";
 import { AttentionQueueRow } from "../components/AttentionQueueRow";
+import { DecisionsToolbar } from "../components/DecisionsToolbar";
+import { Curtain, AgingItemRow } from "../components/DecisionShelf";
+import { DecisionQueueRail } from "../components/DecisionQueueRail";
+import { DecisionDateChips, type AttentionCustomRange } from "../components/DecisionDateChips";
 import { DecisionResolver } from "../components/DecisionResolver";
 import { DecisionTrainingDrawer } from "../components/DecisionTrainingDrawer";
 import { IssueGroupHeader } from "../components/IssueGroupHeader";
-import { Button } from "../components/ui/button";
-import { Checkbox } from "../components/ui/checkbox";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "../components/ui/popover";
-
-const SEVERITY_LABELS: Record<string, string> = {
-  critical: "Critical",
-  high: "High",
-  medium: "Medium",
-  low: "Low",
-};
 
 /** Curtain rows never expand; module-level so memoized rows see one identity. */
 const noopToggleExpand = () => {};
@@ -94,34 +64,21 @@ const ATTENTION_SCROLL_LOAD_THRESHOLD_PX = 480;
 const DECISION_HISTORY_VISIBLE_LIMIT = 50;
 const DECISION_HISTORY_QUERY_LIMIT = DECISION_HISTORY_VISIBLE_LIMIT + 1;
 
-export function decisionHistoryQueryEnabled(
-  companyId: string | null | undefined,
-  open: boolean,
-) {
+export function decisionHistoryQueryEnabled(companyId: string | null | undefined, open: boolean) {
   return Boolean(companyId && open);
 }
 
 export function decisionHistoryCount(count: number | undefined) {
   if (count == null) return undefined;
-  return count > DECISION_HISTORY_VISIBLE_LIMIT
-    ? `${DECISION_HISTORY_VISIBLE_LIMIT}+`
-    : count;
+  return count > DECISION_HISTORY_VISIBLE_LIMIT ? `${DECISION_HISTORY_VISIBLE_LIMIT}+` : count;
 }
 
 function findScrollContainer(element: HTMLElement | null): HTMLElement | null {
   if (!element || typeof window === "undefined") return null;
   let current = element.parentElement;
-  while (
-    current &&
-    current !== document.body &&
-    current !== document.documentElement
-  ) {
+  while (current && current !== document.body && current !== document.documentElement) {
     const overflowY = window.getComputedStyle(current).overflowY;
-    if (
-      overflowY === "auto" ||
-      overflowY === "scroll" ||
-      overflowY === "overlay"
-    ) {
+    if (overflowY === "auto" || overflowY === "scroll" || overflowY === "overlay") {
       return current;
     }
     current = current.parentElement;
@@ -130,13 +87,10 @@ function findScrollContainer(element: HTMLElement | null): HTMLElement | null {
 }
 
 export function WhatNeedsMe() {
-  const { t } = useTranslation();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [selectedAttentionId, setSelectedAttentionId] = useState<string | null>(
-    null,
-  );
+  const [selectedAttentionId, setSelectedAttentionId] = useState<string | null>(null);
   // How the current selection was made. The selection ring is the keyboard
   // cursor — it marks the row that j/k, e, x and s will act on — so it is drawn
   // only for a keyboard-driven selection. Clicking used to set it too, which
@@ -150,32 +104,40 @@ export function WhatNeedsMe() {
   const [trainingItem, setTrainingItem] = useState<AttentionItem | null>(null);
 
   // Toolbar preferences (persisted to localStorage, Inbox pattern).
-  const [groupBy, setGroupBy] = useState<AttentionGroupBy>(() =>
-    loadAttentionGroupBy(),
-  );
-  const [sortOrder, setSortOrder] = useState<AttentionSortOrder>(() =>
-    loadAttentionSortOrder(),
-  );
-  const [filters, setFilters] = useState<AttentionFilterState>(
-    () => defaultAttentionFilterState,
-  );
-  const [collapsedGroupKeys, setCollapsedGroupKeys] = useState<Set<string>>(
-    () => new Set(),
-  );
+  const [groupBy, setGroupBy] = useState<AttentionGroupBy>(() => loadAttentionGroupBy());
+  const [sortOrder, setSortOrder] = useState<AttentionSortOrder>(() => loadAttentionSortOrder());
+  const [filters, setFilters] = useState<AttentionFilterState>(() => defaultAttentionFilterState);
+  const [collapsedGroupKeys, setCollapsedGroupKeys] = useState<Set<string>>(() => new Set());
   const [snoozedOpen, setSnoozedOpen] = useState(false);
   const [dismissedOpen, setDismissedOpen] = useState(false);
+  const [agingOpen, setAgingOpen] = useState(false);
   const [decidedOpen, setDecidedOpen] = useState(false);
   const [expiredOpen, setExpiredOpen] = useState(false);
 
+  // Date-range chips (PAP-16032 §4.2) — resolve to server-side activity bounds.
+  const [dateRange, setDateRange] = useState<AttentionDateRangeId>("all");
+  const [customRange, setCustomRange] = useState<AttentionCustomRange>({ from: null, to: null });
+
+  // `?decisionId=` deep link (PAP-16032 §4.7) — focus/expand the referenced card.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const deepLinkDecisionId = searchParams.get("decisionId");
+  const [deepLinkConsumed, setDeepLinkConsumed] = useState(false);
+
   // Optimistic hide/restore. Reset whenever a fresh feed lands (server truth).
   const [pendingHide, setPendingHide] = useState<Set<string>>(() => new Set());
-  const [pendingRestore, setPendingRestore] = useState<Set<string>>(
-    () => new Set(),
-  );
+  const [pendingRestore, setPendingRestore] = useState<Set<string>>(() => new Set());
 
   const { dismiss, snooze, restore } = useInboxDismissals(selectedCompanyId);
   const { pushToast } = useToastActions();
   const navigate = useNavigate();
+
+  // Date chips resolve to server-side activity bounds. Anchored to start-of-day,
+  // so the resolved ISO strings are stable across renders within the same day —
+  // safe to key the feed query on without thrashing.
+  const activityBounds = useMemo(
+    () => resolveAttentionDateRange(dateRange, Date.now(), customRange),
+    [dateRange, customRange],
+  );
 
   useEffect(() => {
     setBreadcrumbs([{ label: "Decisions" }]);
@@ -195,9 +157,17 @@ export function WhatNeedsMe() {
     // Distinct from the sidebar badge's `queryKeys.attention` so dismissed rows
     // (needed for the curtains) never inflate the badge count. Invalidating the
     // `["attention", companyId]` prefix still cascades to this query.
-    queryKey: [...queryKeys.attention(selectedCompanyId!), "with-dismissed"],
-    queryFn: () =>
-      attentionApi.list(selectedCompanyId!, { includeDismissed: true }),
+    queryKey: [
+      ...queryKeys.attention(selectedCompanyId!),
+      "with-dismissed",
+      activityBounds.activitySince ?? null,
+      activityBounds.activityUntil ?? null,
+    ],
+    queryFn: () => attentionApi.list(selectedCompanyId!, {
+      includeDismissed: true,
+      all: true,
+      ...activityBounds,
+    }),
     enabled: !!selectedCompanyId,
     refetchOnWindowFocus: true,
   });
@@ -210,26 +180,16 @@ export function WhatNeedsMe() {
 
   // Decision history — decided / expired decisions leave the open attention
   // feed (entryRule = open only), so we fetch them directly for the curtains.
-  const { data: decidedDecisions, isLoading: decidedDecisionsLoading } =
-    useQuery({
-      queryKey: queryKeys.decisions.list(selectedCompanyId!, "decided"),
-      queryFn: () =>
-        decisionsApi.list(selectedCompanyId!, {
-          status: "decided",
-          limit: DECISION_HISTORY_QUERY_LIMIT,
-        }),
-      enabled: decisionHistoryQueryEnabled(selectedCompanyId, decidedOpen),
-    });
-  const { data: expiredDecisions, isLoading: expiredDecisionsLoading } =
-    useQuery({
-      queryKey: queryKeys.decisions.list(selectedCompanyId!, "expired"),
-      queryFn: () =>
-        decisionsApi.list(selectedCompanyId!, {
-          status: "expired",
-          limit: DECISION_HISTORY_QUERY_LIMIT,
-        }),
-      enabled: decisionHistoryQueryEnabled(selectedCompanyId, expiredOpen),
-    });
+  const { data: decidedDecisions, isLoading: decidedDecisionsLoading } = useQuery({
+    queryKey: queryKeys.decisions.list(selectedCompanyId!, "decided"),
+    queryFn: () => decisionsApi.list(selectedCompanyId!, { status: "decided", limit: DECISION_HISTORY_QUERY_LIMIT }),
+    enabled: decisionHistoryQueryEnabled(selectedCompanyId, decidedOpen),
+  });
+  const { data: expiredDecisions, isLoading: expiredDecisionsLoading } = useQuery({
+    queryKey: queryKeys.decisions.list(selectedCompanyId!, "expired"),
+    queryFn: () => decisionsApi.list(selectedCompanyId!, { status: "expired", limit: DECISION_HISTORY_QUERY_LIMIT }),
+    enabled: decisionHistoryQueryEnabled(selectedCompanyId, expiredOpen),
+  });
 
   const { data: session } = useQuery({
     queryKey: queryKeys.auth.session,
@@ -251,25 +211,33 @@ export function WhatNeedsMe() {
 
   const allItems = useMemo(() => feed?.items ?? [], [feed]);
 
-  const isServerHidden = (item: AttentionItem) =>
-    item.dismissal != null && item.dismissal.isActive;
+  const isServerHidden = (item: AttentionItem) => item.dismissal != null && item.dismissal.isActive;
 
   const activeItems = useMemo(
     () =>
       allItems.filter(
-        (item) =>
-          (!isServerHidden(item) || pendingRestore.has(item.id)) &&
-          !pendingHide.has(item.id),
+        (item) => (!isServerHidden(item) || pendingRestore.has(item.id)) && !pendingHide.has(item.id),
       ),
     [allItems, pendingHide, pendingRestore],
   );
+
+  // The server's clock at feed time — used for the arrival/decide-by shelves and
+  // the aging idle labels so they match `deskBadgeCount` and the sidebar badge
+  // exactly, and stay stable across renders (Date.now() only as a pre-load fallback).
+  const now = useMemo(
+    () => (feed?.generatedAt ? new Date(feed.generatedAt).getTime() : Date.now()),
+    [feed?.generatedAt],
+  );
+
+  // Aging shelf (§4.4): items the server flags as idle past retention leave the
+  // live desk for their own curtain, so today's desk shows only fresh decisions.
+  const agingItems = useMemo(() => activeItems.filter(attentionIsAging), [activeItems]);
+  const deskItems = useMemo(() => activeItems.filter((item) => !attentionIsAging(item)), [activeItems]);
   const snoozedItems = useMemo(
     () =>
       allItems.filter(
         (item) =>
-          item.dismissal?.kind === "snooze" &&
-          item.dismissal.isActive &&
-          !pendingRestore.has(item.id),
+          item.dismissal?.kind === "snooze" && item.dismissal.isActive && !pendingRestore.has(item.id),
       ),
     [allItems, pendingRestore],
   );
@@ -277,44 +245,36 @@ export function WhatNeedsMe() {
     () =>
       allItems.filter(
         (item) =>
-          item.dismissal?.kind === "dismiss" &&
-          item.dismissal.isActive &&
-          !pendingRestore.has(item.id),
+          item.dismissal?.kind === "dismiss" && item.dismissal.isActive && !pendingRestore.has(item.id),
       ),
     [allItems, pendingRestore],
   );
 
-  const filterOptions = useMemo(
-    () => buildAttentionFilterOptions(activeItems),
-    [activeItems],
-  );
+  const filterOptions = useMemo(() => buildAttentionFilterOptions(deskItems), [deskItems]);
 
-  // Filter → sort → group, all client-side so switching re-buckets without a refetch.
-  const groups = useMemo(() => {
-    const filtered = filterAttentionItems(activeItems, filters);
+  // Filter → sort → group, all client-side so switching re-buckets without a
+  // refetch. In the default (ungrouped) view the desk groups by arrival —
+  // "New today" then "Earlier" — with a "Decide now" shelf only when something
+  // carries an explicit, due decide-by. Any explicit
+  // group-by keeps the Inbox-style activity grouping.
+  const groups = useMemo<AttentionGroup[]>(() => {
+    const filtered = filterAttentionItems(deskItems, filters);
+    if (groupBy === "none") {
+      return buildDeskShelves(filtered, now);
+    }
     const sorted = sortAttentionItems(filtered, sortOrder);
     return groupAttentionItems(sorted, groupBy);
-  }, [activeItems, filters, sortOrder, groupBy]);
+  }, [deskItems, filters, sortOrder, groupBy, now]);
 
-  const visibleCount = useMemo(
-    () => groups.reduce((sum, group) => sum + group.items.length, 0),
-    [groups],
-  );
+  const visibleCount = useMemo(() => groups.reduce((sum, group) => sum + group.items.length, 0), [groups]);
   const keyboardItems = useMemo(
-    () =>
-      groups
-        .filter(
-          (group) => group.label === null || !collapsedGroupKeys.has(group.key),
-        )
-        .flatMap((group) => group.items),
+    () => groups.filter((group) => group.label === null || !collapsedGroupKeys.has(group.key)).flatMap((group) => group.items),
     [collapsedGroupKeys, groups],
   );
 
   // Rendered-row budget: only ratchets up (a hard reset mid-scroll would yank
   // the DOM out from under the user), and resets when the company changes.
-  const [renderedRowLimit, setRenderedRowLimit] = useState(
-    INITIAL_ATTENTION_ROW_RENDER_LIMIT,
-  );
+  const [renderedRowLimit, setRenderedRowLimit] = useState(INITIAL_ATTENTION_ROW_RENDER_LIMIT);
   const rootRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     setRenderedRowLimit(INITIAL_ATTENTION_ROW_RENDER_LIMIT);
@@ -362,9 +322,7 @@ export function WhatNeedsMe() {
       if (animationFrameId !== null) return;
       animationFrameId = window.requestAnimationFrame(() => {
         animationFrameId = null;
-        const scrollHeight =
-          scrollContainer?.scrollHeight ??
-          document.documentElement.scrollHeight;
+        const scrollHeight = scrollContainer?.scrollHeight ?? document.documentElement.scrollHeight;
         if (scrollHeight === 0) return;
         const scrollBottom = scrollContainer
           ? scrollContainer.scrollTop + scrollContainer.clientHeight
@@ -375,9 +333,7 @@ export function WhatNeedsMe() {
       });
     };
 
-    scrollTarget.addEventListener("scroll", checkScrollPosition, {
-      passive: true,
-    });
+    scrollTarget.addEventListener("scroll", checkScrollPosition, { passive: true });
     window.addEventListener("resize", checkScrollPosition);
     // Initial check: a tall viewport (or an opened curtain) may need more rows
     // than the current budget before any scrolling happens.
@@ -386,16 +342,12 @@ export function WhatNeedsMe() {
     return () => {
       scrollTarget.removeEventListener("scroll", checkScrollPosition);
       window.removeEventListener("resize", checkScrollPosition);
-      if (animationFrameId !== null)
-        window.cancelAnimationFrame(animationFrameId);
+      if (animationFrameId !== null) window.cancelAnimationFrame(animationFrameId);
     };
   }, [loadMoreRows, renderPlan.hasMoreRows, renderedRowLimit]);
 
   useEffect(() => {
-    if (
-      selectedAttentionId &&
-      !keyboardItems.some((item) => item.id === selectedAttentionId)
-    ) {
+    if (selectedAttentionId && !keyboardItems.some((item) => item.id === selectedAttentionId)) {
       setSelectedAttentionId(null);
       setSelectionFromKeyboard(false);
     }
@@ -403,19 +355,42 @@ export function WhatNeedsMe() {
 
   useEffect(() => {
     if (!selectedAttentionId) return;
-    document
-      .getElementById(`attention-row-${selectedAttentionId}`)
-      ?.scrollIntoView({ block: "nearest" });
+    document.getElementById(`attention-row-${selectedAttentionId}`)?.scrollIntoView({ block: "nearest" });
   }, [selectedAttentionId]);
+
+  // `?decisionId=` deep link (§4.7): focus and expand the referenced decision
+  // card once the feed lands, then drop the param so a later manual collapse is
+  // not re-forced on the next refetch. Wins over the generic auto-expand below.
+  useEffect(() => {
+    if (deepLinkConsumed || !deepLinkDecisionId || allItems.length === 0) return;
+    const target = allItems.find(
+      (item) => item.sourceKind === "decision" && item.subject.id === deepLinkDecisionId,
+    );
+    setDeepLinkConsumed(true);
+    setAutoExpandDone(true);
+    if (target) {
+      setExpandedId(target.id);
+      setSelectedAttentionId(target.id);
+      setSelectionFromKeyboard(true);
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          next.delete("decisionId");
+          return next;
+        },
+        { replace: true },
+      );
+    }
+  }, [allItems, deepLinkConsumed, deepLinkDecisionId, setSearchParams]);
 
   // Auto-expand the topmost inline-capable decision, once.
   useEffect(() => {
-    if (autoExpandDone || activeItems.length === 0) return;
-    const sorted = sortAttentionItems(activeItems, sortOrder);
+    if (autoExpandDone || deskItems.length === 0) return;
+    const sorted = sortAttentionItems(deskItems, sortOrder);
     const topInline = sorted.find((item) => isInlineResolvable(item));
     if (topInline) setExpandedId(topInline.id);
     setAutoExpandDone(true);
-  }, [activeItems, autoExpandDone, sortOrder]);
+  }, [deskItems, autoExpandDone, sortOrder]);
 
   const updateGroupBy = (next: AttentionGroupBy) => {
     setGroupBy(next);
@@ -511,34 +486,26 @@ export function WhatNeedsMe() {
 
       if (action === "next" || action === "previous") {
         event.preventDefault();
-        const currentIndex = selectedAttentionId
-          ? keyboardItems.findIndex((item) => item.id === selectedAttentionId)
-          : -1;
+        const currentIndex = selectedAttentionId ? keyboardItems.findIndex((item) => item.id === selectedAttentionId) : -1;
         const offset = action === "next" ? 1 : -1;
-        const nextIndex =
-          currentIndex < 0
-            ? action === "next"
-              ? 0
-              : keyboardItems.length - 1
-            : (currentIndex + offset + keyboardItems.length) %
-              keyboardItems.length;
+        const nextIndex = currentIndex < 0
+          ? action === "next"
+            ? 0
+            : keyboardItems.length - 1
+          : (currentIndex + offset + keyboardItems.length) % keyboardItems.length;
         setSelectedAttentionId(keyboardItems[nextIndex]?.id ?? null);
         setSelectionFromKeyboard(true);
         return;
       }
 
-      const selectedItem = keyboardItems.find(
-        (item) => item.id === selectedAttentionId,
-      );
+      const selectedItem = keyboardItems.find((item) => item.id === selectedAttentionId);
       if (!selectedItem) return;
       event.preventDefault();
 
       if (action === "dismiss") {
         handleDismiss(selectedItem);
       } else if (isInlineResolvable(selectedItem)) {
-        setExpandedId((previous) =>
-          previous === selectedItem.id ? null : selectedItem.id,
-        );
+        setExpandedId((previous) => (previous === selectedItem.id ? null : selectedItem.id));
       } else if (selectedItem.subject.href) {
         navigate(selectedItem.subject.href);
       }
@@ -547,166 +514,61 @@ export function WhatNeedsMe() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleDismiss, keyboardItems, navigate, selectedAttentionId]);
-  const activeFilterCount = countActiveAttentionFilters(filters);
 
   if (!selectedCompanyId) {
-    return (
-      <p className="text-sm text-muted-foreground">
-        {t("whatNeedsMe.selectCompany")}
-      </p>
-    );
+    return <p className="text-sm text-muted-foreground">Select a company first.</p>;
   }
 
   if (isLoading) {
     return <PageSkeleton variant="approvals" />;
   }
 
-  const hasAnything =
-    activeItems.length > 0 ||
-    snoozedItems.length > 0 ||
-    dismissedItems.length > 0;
+  const hasAnything = activeItems.length > 0 || snoozedItems.length > 0 || dismissedItems.length > 0;
 
   return (
     <div ref={rootRef} className="max-w-3xl space-y-4">
       <div className="flex items-center justify-between gap-2">
-        <h1 className="text-xl font-bold">{t("whatNeedsMe.title")}</h1>
-        <div className="flex items-center gap-2">
-          {visibleCount > 0 && (
-            <span className="text-sm text-muted-foreground">
-              {visibleCount} {visibleCount === 1 ? "decision" : "decisions"}
-            </span>
-          )}
-          {/* Filter */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                className={cn(
-                  "h-8 w-8 shrink-0",
-                  activeFilterCount > 0 && "bg-accent",
-                )}
-                title={t("whatNeedsMe.toolbar.filter")}
-                aria-label={t("whatNeedsMe.toolbar.filter")}
-              >
-                <ListFilter className="h-3.5 w-3.5" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent align="end" className="w-64 p-0">
-              <FilterMenu
-                options={filterOptions}
-                filters={filters}
-                onChange={updateFilters}
-              />
-            </PopoverContent>
-          </Popover>
-          {/* Group by */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                className={cn(
-                  "h-8 w-8 shrink-0",
-                  groupBy !== "none" && "bg-accent",
-                )}
-                title={t("whatNeedsMe.toolbar.group")}
-                aria-label={t("whatNeedsMe.toolbar.group")}
-              >
-                <Layers className="h-3.5 w-3.5" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent align="end" className="w-40 p-2">
-              <div className="space-y-0.5">
-                {ATTENTION_GROUP_BY_OPTIONS.map(([value, label]) => (
-                  <button
-                    key={value}
-                    type="button"
-                    className={cn(
-                      "flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-sm",
-                      groupBy === value
-                        ? "bg-accent/50 text-foreground"
-                        : "text-muted-foreground hover:bg-accent/50",
-                    )}
-                    onClick={() => updateGroupBy(value)}
-                  >
-                    <span>{label}</span>
-                    {groupBy === value ? (
-                      <Check className="h-3.5 w-3.5" />
-                    ) : null}
-                  </button>
-                ))}
-              </div>
-            </PopoverContent>
-          </Popover>
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            className="h-8 w-8 shrink-0"
-            title={t("financeEventKind.training")}
-            aria-label={t("financeEventKind.training")}
-            onClick={() => navigate(decisionTrainingHref())}
-          >
-            <GraduationCap className="h-3.5 w-3.5" />
-          </Button>
-          {/* Sort */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                className="h-8 w-8 shrink-0"
-                title={t("whatNeedsMe.toolbar.sort")}
-                aria-label={t("whatNeedsMe.toolbar.sort")}
-              >
-                <ArrowUpDown className="h-3.5 w-3.5" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent align="end" className="w-44 p-2">
-              <div className="space-y-0.5">
-                {ATTENTION_SORT_OPTIONS.map(([value, label]) => (
-                  <button
-                    key={value}
-                    type="button"
-                    className={cn(
-                      "flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-sm",
-                      sortOrder === value
-                        ? "bg-accent/50 text-foreground"
-                        : "text-muted-foreground hover:bg-accent/50",
-                    )}
-                    onClick={() => updateSortOrder(value)}
-                  >
-                    <span>{label}</span>
-                    {sortOrder === value ? (
-                      <Check className="h-3.5 w-3.5" />
-                    ) : null}
-                  </button>
-                ))}
-              </div>
-            </PopoverContent>
-          </Popover>
-        </div>
+        <h1 className="text-xl font-bold">Decisions</h1>
+        <DecisionsToolbar
+          visibleCount={visibleCount}
+          filterOptions={filterOptions}
+          filters={filters}
+          onFiltersChange={updateFilters}
+          groupBy={groupBy}
+          onGroupByChange={updateGroupBy}
+          sortOrder={sortOrder}
+          onSortOrderChange={updateSortOrder}
+          onOpenTraining={() => navigate(decisionTrainingHref())}
+        />
       </div>
 
-      {error && (
-        <p className="text-sm text-destructive">{(error as Error).message}</p>
-      )}
+      {/* Queue quicklinks + date-range chips (§4.1–§4.2). The rail self-hides
+          when the company has no queues; the chips filter the desk server-side. */}
+      <div className="space-y-2">
+        <DecisionQueueRail companyId={selectedCompanyId} activeQueueKey={null} />
+        <DecisionDateChips
+          value={dateRange}
+          custom={customRange}
+          onChange={(value, custom) => {
+            setDateRange(value);
+            setCustomRange(custom);
+          }}
+        />
+      </div>
+
+      {error && <p className="text-sm text-destructive">{(error as Error).message}</p>}
 
       {!hasAnything ? (
         <ZeroState />
       ) : (
         <div className="space-y-4">
           {visibleCount === 0 ? (
-            <CaughtUpNote filtered={activeItems.length > 0} />
+            <CaughtUpNote filtered={deskItems.length > 0} />
           ) : (
-            groups.map((group) => {
+            <>
+              {groups.map((group) => {
               const groupLabel = group.label;
-              const collapsed =
-                groupLabel !== null && collapsedGroupKeys.has(group.key);
+              const collapsed = groupLabel !== null && collapsedGroupKeys.has(group.key);
               return (
                 <section key={group.key} className="space-y-2">
                   {groupLabel !== null && (
@@ -716,9 +578,7 @@ export function WhatNeedsMe() {
                       collapsed={collapsed}
                       onToggle={() => toggleGroupCollapse(group.key)}
                       trailing={
-                        <span className="text-xs tabular-nums text-muted-foreground">
-                          {group.items.length}
-                        </span>
+                        <span className="text-xs tabular-nums text-muted-foreground">{group.items.length}</span>
                       }
                     />
                   )}
@@ -730,10 +590,7 @@ export function WhatNeedsMe() {
                         return rows.map((item) => {
                           const bundleId =
                             item.sourceKind === "decision"
-                              ? ((item.subject.metadata?.bundleId as
-                                  | string
-                                  | null
-                                  | undefined) ?? null)
+                              ? ((item.subject.metadata?.bundleId as string | null | undefined) ?? null)
                               : null;
                           let header: ReactNode = null;
                           if (bundleId && !seenBundles.has(bundleId)) {
@@ -741,26 +598,13 @@ export function WhatNeedsMe() {
                             const bundleRows = rows.filter(
                               (row) =>
                                 row.sourceKind === "decision" &&
-                                ((row.subject.metadata?.bundleId as
-                                  | string
-                                  | null
-                                  | undefined) ?? null) === bundleId,
+                                ((row.subject.metadata?.bundleId as string | null | undefined) ?? null) === bundleId,
                             );
                             const first = bundleRows[0];
                             header = (
                               <DecisionBundleHeader
-                                agentName={
-                                  agentMap.get(
-                                    first?.subject.metadata
-                                      ?.originAgentId as string,
-                                  )?.name ?? null
-                                }
-                                title={
-                                  (first?.subject.metadata?.bundleTitle as
-                                    | string
-                                    | null
-                                    | undefined) ?? null
-                                }
+                                agentName={agentMap.get(first?.subject.metadata?.originAgentId as string)?.name ?? null}
+                                title={(first?.subject.metadata?.bundleTitle as string | null | undefined) ?? null}
                                 originIssue={first?.relatedIssue ?? null}
                                 count={bundleRows.length}
                               />
@@ -769,13 +613,7 @@ export function WhatNeedsMe() {
                           return (
                             <Fragment key={item.id}>
                               {header}
-                              <div
-                                className={
-                                  bundleId
-                                    ? "border-l-2 border-violet-500/40 pl-3"
-                                    : undefined
-                                }
-                              >
+                              <div className={bundleId ? "border-l-2 border-violet-500/40 pl-3" : undefined}>
                                 <AttentionQueueRow
                                   item={item}
                                   companyId={selectedCompanyId}
@@ -785,11 +623,10 @@ export function WhatNeedsMe() {
                                   onSnooze={handleSnooze}
                                   onTrain={handleTrain}
                                   agentMap={agentMap}
+                                  agents={agents}
+                                  showTriage
                                   currentUserId={currentUserId}
-                                  selected={
-                                    selectionFromKeyboard &&
-                                    selectedAttentionId === item.id
-                                  }
+                                  selected={selectionFromKeyboard && selectedAttentionId === item.id}
                                 />
                               </div>
                             </Fragment>
@@ -800,12 +637,13 @@ export function WhatNeedsMe() {
                   )}
                 </section>
               );
-            })
+              })}
+            </>
           )}
 
           {snoozedItems.length > 0 && (
             <Curtain
-              label={t("whatNeedsMe.curtains.snoozed")}
+              label="Snoozed"
               count={snoozedItems.length}
               open={snoozedOpen}
               onToggle={() => setSnoozedOpen((prev) => !prev)}
@@ -829,7 +667,7 @@ export function WhatNeedsMe() {
 
           {dismissedItems.length > 0 && (
             <Curtain
-              label={t("whatNeedsMe.curtains.dismissed")}
+              label="Dismissed"
               count={dismissedItems.length}
               open={dismissedOpen}
               onToggle={() => setDismissedOpen((prev) => !prev)}
@@ -850,71 +688,83 @@ export function WhatNeedsMe() {
               ))}
             </Curtain>
           )}
+
+          {agingItems.length > 0 && (
+            <Curtain
+              label="Aging"
+              count={agingItems.length}
+              open={agingOpen}
+              onToggle={() => setAgingOpen((prev) => !prev)}
+            >
+              <p className="text-xs text-muted-foreground">
+                Idle past {ATTENTION_AGING_DAYS} days — kept off the desk. Keep any you still want surfaced.
+              </p>
+              {agingItems.map((item) => (
+                <AgingItemRow
+                  key={item.id}
+                  item={item}
+                  companyId={selectedCompanyId}
+                  now={now}
+                  agentMap={agentMap}
+                  agents={agents}
+                  currentUserId={currentUserId}
+                  expanded={expandedId === item.id}
+                  onToggleExpand={handleToggleExpand}
+                  onDismiss={handleDismiss}
+                  onSnooze={handleSnooze}
+                  onTrain={handleTrain}
+                />
+              ))}
+            </Curtain>
+          )}
+
         </div>
       )}
 
       <div className="space-y-4">
         <Curtain
-          label={t("whatNeedsMe.decided")}
+          label="Decided"
           count={decisionHistoryCount(decidedDecisions?.length)}
           open={decidedOpen}
           onToggle={() => setDecidedOpen((prev) => !prev)}
         >
           {decidedDecisionsLoading ? (
-            <p className="text-xs text-muted-foreground">
-              {t("whatNeedsMe.loadingDecided")}
-            </p>
+            <p className="text-xs text-muted-foreground">Loading decided decisions…</p>
           ) : (decidedDecisions?.length ?? 0) > 0 ? (
-            decidedDecisions!
-              .slice(0, DECISION_HISTORY_VISIBLE_LIMIT)
-              .map((decision) => (
-                <DecisionResolver
-                  key={decision.id}
-                  companyId={selectedCompanyId}
-                  decisionId={decision.id}
-                  agentMap={agentMap}
-                  initialDecision={{
-                    ...decision,
-                    executions: decision.executions ?? [],
-                  }}
-                />
-              ))
+            decidedDecisions!.slice(0, DECISION_HISTORY_VISIBLE_LIMIT).map((decision) => (
+              <DecisionResolver
+                key={decision.id}
+                companyId={selectedCompanyId}
+                decisionId={decision.id}
+                agentMap={agentMap}
+                initialDecision={{ ...decision, executions: decision.executions ?? [] }}
+              />
+            ))
           ) : (
-            <p className="text-xs text-muted-foreground">
-              {t("whatNeedsMe.noDecided")}
-            </p>
+            <p className="text-xs text-muted-foreground">No decided decisions.</p>
           )}
         </Curtain>
 
         <Curtain
-          label={t("issueThreadInteraction.toolAction.status.expired")}
+          label="Expired"
           count={decisionHistoryCount(expiredDecisions?.length)}
           open={expiredOpen}
           onToggle={() => setExpiredOpen((prev) => !prev)}
         >
           {expiredDecisionsLoading ? (
-            <p className="text-xs text-muted-foreground">
-              {t("whatNeedsMe.loadingExpired")}
-            </p>
+            <p className="text-xs text-muted-foreground">Loading expired decisions…</p>
           ) : (expiredDecisions?.length ?? 0) > 0 ? (
-            expiredDecisions!
-              .slice(0, DECISION_HISTORY_VISIBLE_LIMIT)
-              .map((decision) => (
-                <DecisionResolver
-                  key={decision.id}
-                  companyId={selectedCompanyId}
-                  decisionId={decision.id}
-                  agentMap={agentMap}
-                  initialDecision={{
-                    ...decision,
-                    executions: decision.executions ?? [],
-                  }}
-                />
-              ))
+            expiredDecisions!.slice(0, DECISION_HISTORY_VISIBLE_LIMIT).map((decision) => (
+              <DecisionResolver
+                key={decision.id}
+                companyId={selectedCompanyId}
+                decisionId={decision.id}
+                agentMap={agentMap}
+                initialDecision={{ ...decision, executions: decision.executions ?? [] }}
+              />
+            ))
           ) : (
-            <p className="text-xs text-muted-foreground">
-              {t("whatNeedsMe.noExpired")}
-            </p>
+            <p className="text-xs text-muted-foreground">No expired decisions.</p>
           )}
         </Curtain>
       </div>
@@ -948,238 +798,53 @@ export function DecisionBundleHeader({
   originIssue: AttentionSubject | null;
   count: number;
 }) {
-  const { t } = useTranslation();
   const noun = count === 1 ? "decision" : "decisions";
   return (
     <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 rounded-sm border-l-2 border-violet-500/60 bg-violet-500/5 px-3 py-1.5 text-xs">
       <span className="font-semibold text-violet-800 dark:text-violet-200">
-        {agentName ?? "An agent"} {t("whatNeedsMe.proposed")} {count} {noun}
+        {agentName ?? "An agent"} proposed {count} {noun}
       </span>
       {originIssue && (originIssue.identifier || originIssue.title) && (
         <span className="text-muted-foreground">
-          {t("whatNeedsMe.from")}
+          {"· from "}
           {originIssue.href ? (
             <a href={originIssue.href} className="hover:underline">
               {originIssue.identifier ?? originIssue.title}
             </a>
           ) : (
-            (originIssue.identifier ?? originIssue.title)
+            originIssue.identifier ?? originIssue.title
           )}
         </span>
       )}
       {title && <span className="text-muted-foreground">· {title}</span>}
-      <span className="text-muted-foreground">
-        · {count} {t("runStatus.pending")}
-      </span>
+      <span className="text-muted-foreground">· {count} pending</span>
     </div>
-  );
-}
-
-function FilterMenu({
-  options,
-  filters,
-  onChange,
-}: {
-  options: ReturnType<typeof buildAttentionFilterOptions>;
-  filters: AttentionFilterState;
-  onChange: (next: AttentionFilterState) => void;
-}) {
-  const { t } = useTranslation();
-  const toggle = (key: keyof AttentionFilterState, value: string) => {
-    const list = filters[key] as string[];
-    const nextList = list.includes(value)
-      ? list.filter((v) => v !== value)
-      : [...list, value];
-    onChange({ ...filters, [key]: nextList });
-  };
-  const hasActive = countActiveAttentionFilters(filters) > 0;
-
-  return (
-    <div className="max-h-(--sz-70vh) overflow-y-auto">
-      <div className="flex items-center justify-between px-3 py-2">
-        <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          {t("whatNeedsMe.toolbar.filter")}
-        </span>
-        {hasActive && (
-          <button
-            type="button"
-            className="text-xs text-muted-foreground hover:text-foreground"
-            onClick={() => onChange(defaultAttentionFilterState)}
-          >
-            {t("whatNeedsMe.filters.clear")}
-          </button>
-        )}
-      </div>
-
-      {options.sourceKinds.length > 1 && (
-        <FilterSection title={t("whatNeedsMe.filters.type")}>
-          {options.sourceKinds.map((kind) => (
-            <FilterRow
-              key={kind}
-              label={sourceMeta(kind).label}
-              checked={filters.sourceKinds.includes(kind)}
-              onToggle={() => toggle("sourceKinds", kind)}
-            />
-          ))}
-        </FilterSection>
-      )}
-
-      {options.severities.length > 1 && (
-        <FilterSection title={t("whatNeedsMe.filters.severity")}>
-          {options.severities.map((severity) => (
-            <FilterRow
-              key={severity}
-              label={SEVERITY_LABELS[severity] ?? severity}
-              checked={filters.severities.includes(severity)}
-              onToggle={() => toggle("severities", severity)}
-            />
-          ))}
-        </FilterSection>
-      )}
-
-      {(options.projects.length > 0 || options.hasNoProject) && (
-        <FilterSection title={t("whatNeedsMe.filters.project")}>
-          {options.projects.map((project) => (
-            <FilterRow
-              key={project.id}
-              label={project.name}
-              checked={filters.projectIds.includes(project.id)}
-              onToggle={() => toggle("projectIds", project.id)}
-            />
-          ))}
-          {options.hasNoProject && (
-            <FilterRow
-              label={t("whatNeedsMe.common.noProject")}
-              checked={filters.projectIds.includes(NO_GROUP_SENTINEL)}
-              onToggle={() => toggle("projectIds", NO_GROUP_SENTINEL)}
-            />
-          )}
-        </FilterSection>
-      )}
-
-      {(options.workspaces.length > 0 || options.hasNoWorkspace) && (
-        <FilterSection title={t("whatNeedsMe.filters.workspace")}>
-          {options.workspaces.map((workspace) => (
-            <FilterRow
-              key={workspace.id}
-              label={workspace.name}
-              checked={filters.workspaceIds.includes(workspace.id)}
-              onToggle={() => toggle("workspaceIds", workspace.id)}
-            />
-          ))}
-          {options.hasNoWorkspace && (
-            <FilterRow
-              label={t("whatNeedsMe.filters.noWorkspace")}
-              checked={filters.workspaceIds.includes(NO_GROUP_SENTINEL)}
-              onToggle={() => toggle("workspaceIds", NO_GROUP_SENTINEL)}
-            />
-          )}
-        </FilterSection>
-      )}
-    </div>
-  );
-}
-
-function FilterSection({
-  title,
-  children,
-}: {
-  title: string;
-  children: ReactNode;
-}) {
-  return (
-    <div className="border-t border-border/60 px-2 py-1.5">
-      <p className="px-1 pb-1 text-(length:--text-nano) font-medium uppercase tracking-wide text-muted-foreground">
-        {title}
-      </p>
-      <div className="space-y-0.5">{children}</div>
-    </div>
-  );
-}
-
-function FilterRow({
-  label,
-  checked,
-  onToggle,
-}: {
-  label: string;
-  checked: boolean;
-  onToggle: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      className="flex w-full items-center gap-2 rounded-sm px-1 py-1 text-left text-sm hover:bg-accent/50"
-      onClick={onToggle}
-    >
-      <Checkbox
-        checked={checked}
-        className="pointer-events-none"
-        tabIndex={-1}
-      />
-      <span className="truncate">{label}</span>
-    </button>
-  );
-}
-
-function Curtain({
-  label,
-  count,
-  open,
-  onToggle,
-  children,
-}: {
-  label: string;
-  count?: number | string;
-  open: boolean;
-  onToggle: () => void;
-  children: ReactNode;
-}) {
-  return (
-    <section className="space-y-2">
-      <IssueGroupHeader
-        label={count == null ? label : `${label} (${count})`}
-        collapsible
-        collapsed={!open}
-        onToggle={onToggle}
-        className="text-muted-foreground"
-      />
-      {open && <div className="space-y-4">{children}</div>}
-    </section>
   );
 }
 
 function CaughtUpNote({ filtered }: { filtered: boolean }) {
-  const { t } = useTranslation();
   return (
     <div className="rounded-xl border border-dashed border-border py-10 text-center">
       <p className="text-sm font-medium text-foreground">
-        {filtered
-          ? "No decisions match your filters."
-          : "You're all caught up."}
+        {filtered ? "No decisions match your filters." : "You're all caught up."}
       </p>
       {filtered && (
-        <p className="mt-1 text-xs text-muted-foreground">
-          {t("whatNeedsMe.empty.filteredHelp")}
-        </p>
+        <p className="mt-1 text-xs text-muted-foreground">Adjust or clear the filters to see the rest.</p>
       )}
     </div>
   );
 }
 
 function ZeroState() {
-  const { t } = useTranslation();
   return (
     <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-20 text-center">
       <div className="mb-4 rounded-full bg-green-500/10 p-4">
         <CheckCircle2 className="h-10 w-10 text-green-500" />
       </div>
-      <p className="text-lg font-semibold text-foreground">
-        {t("whatNeedsMe.empty.caughtUp")}
-      </p>
+      <p className="text-lg font-semibold text-foreground">You're all caught up</p>
       <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
         <Inbox className="h-4 w-4" />
-        {t("whatNeedsMe.empty.nothingNeedsDecision")}
+        Nothing needs a decision from you right now.
       </p>
     </div>
   );

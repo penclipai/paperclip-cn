@@ -1,18 +1,15 @@
-import { useTranslation } from "react-i18next";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { KeyRound, Plus, ServerCog, Trash2, Variable } from "lucide-react";
 import type {
   CompanySecret,
   EnvSecretRefBinding,
+  SecretProposalView,
   SecretVersionSelector,
 } from "@penclipai/shared";
 import { cn } from "../lib/utils";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import {
-  SecretBindingPicker,
-  type SecretBindingValue,
-} from "./SecretBindingPicker";
+import { SecretBindingPicker, type SecretBindingValue } from "./SecretBindingPicker";
 import {
   AGENT_ACCESS_CONFIG_PATH_PREFIX,
   ENV_CONFIG_PATH_PREFIX,
@@ -20,6 +17,13 @@ import {
   deliveryModeDescription,
 } from "../lib/secret-delivery";
 import { envKeyFromSecretName } from "./environment-variables-editor/model";
+import {
+  DeliveryBadge as ProposalDeliveryBadge,
+  ProposalActions,
+  ProposedBadge,
+  bindingEnvKey,
+  bindingSecretLabel,
+} from "../pages/secrets/proposal-review";
 
 /* -------------------------------------------------------------------------- */
 /* Pure model (exported for tests)                                            */
@@ -33,27 +37,21 @@ export interface AgentSecretRefEntry {
 }
 
 function asRecord(value: unknown): Record<string, unknown> | null {
-  if (typeof value !== "object" || value === null || Array.isArray(value))
-    return null;
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return null;
   return value as Record<string, unknown>;
 }
 
-function readSecretRef(
-  raw: unknown,
-): { secretId: string; version: SecretVersionSelector } | null {
+function readSecretRef(raw: unknown): { secretId: string; version: SecretVersionSelector } | null {
   const binding = asRecord(raw);
   if (!binding || binding.type !== "secret_ref") return null;
   const secretId = typeof binding.secretId === "string" ? binding.secretId : "";
   if (!secretId) return null;
-  const version: SecretVersionSelector =
-    typeof binding.version === "number" ? binding.version : "latest";
+  const version: SecretVersionSelector = typeof binding.version === "number" ? binding.version : "latest";
   return { secretId, version };
 }
 
 /** Secret-ref bindings delivered as environment variables (`config.env.<KEY>`). */
-export function parseEnvSecretRefs(
-  config: Record<string, unknown> | null | undefined,
-): AgentSecretRefEntry[] {
+export function parseEnvSecretRefs(config: Record<string, unknown> | null | undefined): AgentSecretRefEntry[] {
   const env = asRecord(config?.env);
   if (!env) return [];
   const entries: AgentSecretRefEntry[] = [];
@@ -65,19 +63,13 @@ export function parseEnvSecretRefs(
 }
 
 /** Secret-ref bindings delivered via the agent API (top-level `access.<ALIAS>`). */
-export function parseAccessGrants(
-  config: Record<string, unknown> | null | undefined,
-): AgentSecretRefEntry[] {
+export function parseAccessGrants(config: Record<string, unknown> | null | undefined): AgentSecretRefEntry[] {
   if (!config) return [];
   const entries: AgentSecretRefEntry[] = [];
   for (const [key, raw] of Object.entries(config)) {
     if (!key.startsWith(AGENT_ACCESS_CONFIG_PATH_PREFIX)) continue;
     const ref = readSecretRef(raw);
-    if (ref)
-      entries.push({
-        name: key.slice(AGENT_ACCESS_CONFIG_PATH_PREFIX.length),
-        ...ref,
-      });
+    if (ref) entries.push({ name: key.slice(AGENT_ACCESS_CONFIG_PATH_PREFIX.length), ...ref });
   }
   return entries;
 }
@@ -102,10 +94,8 @@ export function summarizeAgentBindings(
     }
     return summary;
   };
-  for (const entry of envBindings)
-    ensure(entry.secretId).envKeys.push(entry.name);
-  for (const entry of apiBindings)
-    ensure(entry.secretId).apiAliases.push(entry.name);
+  for (const entry of envBindings) ensure(entry.secretId).envKeys.push(entry.name);
+  for (const entry of apiBindings) ensure(entry.secretId).apiAliases.push(entry.name);
   return [...bySecret.values()];
 }
 
@@ -132,26 +122,18 @@ function entriesToRows(entries: readonly AgentSecretRefEntry[]): AccessRow[] {
 }
 
 /** Complete, valid API-access grants keyed by alias. Incomplete/invalid/duplicate rows are dropped. */
-export function rowsToAccessMap(
-  rows: readonly AccessRow[],
-): Record<string, EnvSecretRefBinding> {
+export function rowsToAccessMap(rows: readonly AccessRow[]): Record<string, EnvSecretRefBinding> {
   const map: Record<string, EnvSecretRefBinding> = {};
   for (const row of rows) {
     const alias = row.alias.trim();
     if (!alias || !SECRET_ALIAS_RE.test(alias) || !row.secretId) continue;
-    map[alias] = {
-      type: "secret_ref",
-      secretId: row.secretId,
-      version: row.version,
-    };
+    map[alias] = { type: "secret_ref", secretId: row.secretId, version: row.version };
   }
   return map;
 }
 
 /** Stable key for change-detection between the controlled value and the local draft. */
-export function normalizeAccessMapKey(
-  map: Record<string, EnvSecretRefBinding>,
-): string {
+export function normalizeAccessMapKey(map: Record<string, EnvSecretRefBinding>): string {
   return JSON.stringify(
     Object.keys(map)
       .sort()
@@ -176,17 +158,22 @@ export interface AgentSecretAccessEditorProps {
    */
   onChange: (next: Record<string, EnvSecretRefBinding>) => void;
   disabled?: boolean;
+  /** Pending binding proposals targeting this agent (PAP-14731). */
+  proposals?: readonly SecretProposalView[];
+  /** Open the approve confirm dialog for a proposal (wired by the parent surface). */
+  onApproveProposal?: (proposal: SecretProposalView) => void;
+  /** Open the reject dialog for a proposal (wired by the parent surface). */
+  onRejectProposal?: (proposal: SecretProposalView) => void;
 }
 
 function DeliveryBadge({ mode }: { mode: "env" | "api" }) {
-  const { t } = useTranslation();
   if (mode === "env") {
     return (
       <Badge
         variant="outline"
         className="h-5 gap-1 px-1.5 text-(length:--text-nano) font-normal border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-300"
       >
-        <Variable className="size-3" /> {t("agentSecretAccess.envVar")}
+        <Variable className="size-3" /> Env var
       </Badge>
     );
   }
@@ -195,7 +182,7 @@ function DeliveryBadge({ mode }: { mode: "env" | "api" }) {
       variant="outline"
       className="h-5 gap-1 px-1.5 text-(length:--text-nano) font-normal border-violet-500/30 bg-violet-500/10 text-violet-700 dark:text-violet-300"
     >
-      <ServerCog className="size-3" /> {t("agentSecretAccess.apiAccess")}
+      <ServerCog className="size-3" /> API access
     </Badge>
   );
 }
@@ -205,27 +192,22 @@ export function AgentSecretAccessEditor({
   secrets,
   onChange,
   disabled,
+  proposals,
+  onApproveProposal,
+  onRejectProposal,
 }: AgentSecretAccessEditorProps) {
-  const { t } = useTranslation();
+  const bindingProposals = useMemo(
+    () => (proposals ?? []).filter((proposal) => proposal.kind === "binding"),
+    [proposals],
+  );
   const envBindings = useMemo(() => parseEnvSecretRefs(config), [config]);
   const apiBindings = useMemo(() => parseAccessGrants(config), [config]);
-  const summaries = useMemo(
-    () => summarizeAgentBindings(envBindings, apiBindings),
-    [envBindings, apiBindings],
-  );
+  const summaries = useMemo(() => summarizeAgentBindings(envBindings, apiBindings), [envBindings, apiBindings]);
 
-  const incomingMap = useMemo(
-    () => rowsToAccessMap(entriesToRows(apiBindings)),
-    [apiBindings],
-  );
-  const incomingKey = useMemo(
-    () => normalizeAccessMapKey(incomingMap),
-    [incomingMap],
-  );
+  const incomingMap = useMemo(() => rowsToAccessMap(entriesToRows(apiBindings)), [apiBindings]);
+  const incomingKey = useMemo(() => normalizeAccessMapKey(incomingMap), [incomingMap]);
 
-  const [rows, setRows] = useState<AccessRow[]>(() =>
-    entriesToRows(apiBindings),
-  );
+  const [rows, setRows] = useState<AccessRow[]>(() => entriesToRows(apiBindings));
   const lastEmittedKeyRef = useRef(incomingKey);
   const lastIncomingKeyRef = useRef(incomingKey);
 
@@ -240,8 +222,7 @@ export function AgentSecretAccessEditor({
   }, [incomingKey, apiBindings]);
 
   const secretName = (secretId: string): string =>
-    secrets.find((secret) => secret.id === secretId)?.name ??
-    `${secretId.slice(0, 8)}…`;
+    secrets.find((secret) => secret.id === secretId)?.name ?? `${secretId.slice(0, 8)}…`;
 
   function emit(nextRows: AccessRow[]) {
     setRows(nextRows);
@@ -259,10 +240,7 @@ export function AgentSecretAccessEditor({
   }
 
   function addRow() {
-    setRows((prev) => [
-      ...prev,
-      { id: nextAccessRowId(), alias: "", secretId: "", version: "latest" },
-    ]);
+    setRows((prev) => [...prev, { id: nextAccessRowId(), alias: "", secretId: "", version: "latest" }]);
   }
 
   const aliasCounts = useMemo(() => {
@@ -287,46 +265,75 @@ export function AgentSecretAccessEditor({
               className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-md border border-border bg-muted/30 px-2.5 py-1.5 text-xs"
             >
               <KeyRound className="size-3.5 shrink-0 text-muted-foreground" />
-              <span className="font-medium">
-                {secretName(summary.secretId)}
-              </span>
+              <span className="font-medium">{secretName(summary.secretId)}</span>
               {summary.envKeys.length > 0 ? <DeliveryBadge mode="env" /> : null}
-              {summary.apiAliases.length > 0 ? (
-                <DeliveryBadge mode="api" />
-              ) : null}
+              {summary.apiAliases.length > 0 ? <DeliveryBadge mode="api" /> : null}
               <span className="min-w-0 truncate font-mono text-(length:--text-micro) text-muted-foreground">
                 {[
-                  ...summary.envKeys.map(
-                    (key) => `${ENV_CONFIG_PATH_PREFIX}${key}`,
-                  ),
-                  ...summary.apiAliases.map(
-                    (alias) => `${AGENT_ACCESS_CONFIG_PATH_PREFIX}${alias}`,
-                  ),
+                  ...summary.envKeys.map((key) => `${ENV_CONFIG_PATH_PREFIX}${key}`),
+                  ...summary.apiAliases.map((alias) => `${AGENT_ACCESS_CONFIG_PATH_PREFIX}${alias}`),
                 ].join(" · ")}
               </span>
             </div>
           ))}
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground">
-          {t("agentSecretAccess.empty")}
-        </p>
+        <p className="text-sm text-muted-foreground">No secrets are bound to this agent yet.</p>
       )}
+
+      {/* Pending binding proposals targeting this agent (PAP-14731). */}
+      {bindingProposals.length > 0 && onApproveProposal && onRejectProposal ? (
+        <div className="space-y-2">
+          <div className="text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">
+            Proposed access
+          </div>
+          {bindingProposals.map((proposal) => {
+            const secret = bindingSecretLabel(proposal);
+            const envKey = bindingEnvKey(proposal);
+            return (
+              <div
+                key={proposal.id}
+                className="flex flex-col gap-2 rounded-md border border-amber-500/30 bg-amber-500/5 px-2.5 py-2 text-xs sm:flex-row sm:items-center"
+              >
+                <div className="min-w-0 flex-1 space-y-1">
+                  <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                    <ProposalDeliveryBadge configPath={proposal.configPath} />
+                    <code className="font-mono">{envKey || proposal.configPath}</code>
+                    <span className="text-muted-foreground">→</span>
+                    <KeyRound className="size-3 text-muted-foreground" />
+                    <span className="font-medium">{secret.name}</span>
+                    {secret.pending ? <ProposedBadge /> : null}
+                  </div>
+                  <p className="flex flex-wrap items-center gap-1 text-muted-foreground">
+                    <span>proposed by {proposal.proposedBy.name}</span>
+                    <span aria-hidden="true">·</span>
+                    <span className="truncate italic">“{proposal.justification}”</span>
+                  </p>
+                </div>
+                <ProposalActions
+                  proposal={proposal}
+                  onApprove={onApproveProposal}
+                  onReject={onRejectProposal}
+                  disabled={disabled}
+                  size="xs"
+                />
+              </div>
+            );
+          })}
+        </div>
+      ) : null}
 
       {/* Editable API-access grants (access.<ALIAS>). */}
       <div className="space-y-2">
         <div className="text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">
-          {t("agentSecretAccess.apiAccessOnly")}
+          API access (no env var)
         </div>
         {rows.length > 0 ? (
           <div className="space-y-2">
             {rows.map((row) => {
               const trimmedAlias = row.alias.trim();
-              const aliasInvalid =
-                Boolean(trimmedAlias) && !SECRET_ALIAS_RE.test(trimmedAlias);
-              const aliasDuplicate =
-                Boolean(trimmedAlias) &&
-                (aliasCounts.get(trimmedAlias) ?? 0) > 1;
+              const aliasInvalid = Boolean(trimmedAlias) && !SECRET_ALIAS_RE.test(trimmedAlias);
+              const aliasDuplicate = Boolean(trimmedAlias) && (aliasCounts.get(trimmedAlias) ?? 0) > 1;
               const bindingValue: SecretBindingValue | null = row.secretId
                 ? { secretId: row.secretId, version: row.version }
                 : null;
@@ -336,24 +343,20 @@ export function AgentSecretAccessEditor({
                     <div>
                       <Input
                         value={row.alias}
-                        onChange={(event) =>
-                          patchRow(row.id, { alias: event.target.value })
-                        }
+                        onChange={(event) => patchRow(row.id, { alias: event.target.value })}
                         onBlur={(event) => {
                           const next = event.target.value.trim();
                           if (next && !SECRET_ALIAS_RE.test(next)) {
                             const suggested = envKeyFromSecretName(next);
-                            if (suggested && suggested !== next)
-                              patchRow(row.id, { alias: suggested });
+                            if (suggested && suggested !== next) patchRow(row.id, { alias: suggested });
                           }
                         }}
                         placeholder="ALIAS"
-                        aria-label={t("agentSecretAccess.aliasAria")}
+                        aria-label="Access alias"
                         disabled={disabled}
                         className={cn(
                           "h-9 font-mono text-sm",
-                          (aliasInvalid || aliasDuplicate) &&
-                            "border-destructive text-destructive",
+                          (aliasInvalid || aliasDuplicate) && "border-destructive text-destructive",
                         )}
                       />
                     </div>
@@ -366,14 +369,12 @@ export function AgentSecretAccessEditor({
                             version: next?.version ?? "latest",
                             alias:
                               !row.alias.trim() && next?.secretId
-                                ? envKeyFromSecretName(
-                                    secretName(next.secretId),
-                                  )
+                                ? envKeyFromSecretName(secretName(next.secretId))
                                 : row.alias,
                           })
                         }
                         label=""
-                        placeholder={t("envVarEditor.selectSecret")}
+                        placeholder="Select secret"
                         disabled={disabled}
                       />
                     </div>
@@ -381,7 +382,7 @@ export function AgentSecretAccessEditor({
                       type="button"
                       onClick={() => removeRow(row.id)}
                       disabled={disabled}
-                      aria-label={t("agentSecretAccess.remove")}
+                      aria-label="Remove API access"
                       className="mt-1 inline-flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
                     >
                       <Trash2 className="size-3.5" />
@@ -389,12 +390,10 @@ export function AgentSecretAccessEditor({
                   </div>
                   {aliasInvalid ? (
                     <p className="pl-0.5 text-(length:--text-micro) text-destructive">
-                      {t("agentSecretAccess.invalidAlias")}
+                      Invalid alias — use letters, digits and _
                     </p>
                   ) : aliasDuplicate ? (
-                    <p className="pl-0.5 text-(length:--text-micro) text-destructive">
-                      {t("agentSecretAccess.duplicateAlias")}
-                    </p>
+                    <p className="pl-0.5 text-(length:--text-micro) text-destructive">Duplicate alias</p>
                   ) : null}
                 </div>
               );
@@ -409,13 +408,12 @@ export function AgentSecretAccessEditor({
           className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
         >
           <Plus className="size-3.5" />
-          {t("agentSecretAccess.add")}
+          Add API access
         </button>
       </div>
 
       <p className="text-(length:--text-micro) text-muted-foreground/70">
-        {deliveryModeDescription("api")} {t("agentSecretAccess.readByAlias")}{" "}
-        <code>GET /agents/me/secrets</code>.
+        {deliveryModeDescription("api")} The agent reads them by alias through <code>GET /agents/me/secrets</code>.
       </p>
     </div>
   );

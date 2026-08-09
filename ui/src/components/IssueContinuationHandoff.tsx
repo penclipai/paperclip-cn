@@ -7,6 +7,7 @@ import { cn, relativeTime } from "../lib/utils";
 import { MarkdownBody, type MarkdownExternalReferenceMap } from "./MarkdownBody";
 import { Check, ChevronDown, ChevronRight, Copy, History } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { copyTextToClipboard } from "@/lib/clipboard";
 
 type IssueContinuationHandoffProps = {
   document: IssueDocument | null | undefined;
@@ -45,7 +46,11 @@ export function IssueContinuationHandoff({
 
   const copyBody = useCallback(async () => {
     if (!document) return;
-    await navigator.clipboard?.writeText(document.body);
+    try {
+      await copyTextToClipboard(document.body);
+    } catch {
+      return;
+    }
     setCopied(true);
     if (copiedTimerRef.current) {
       clearTimeout(copiedTimerRef.current);

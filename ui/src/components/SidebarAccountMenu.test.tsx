@@ -6,34 +6,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { queryKeys } from "../lib/queryKeys";
 import { SidebarAccountMenu } from "./SidebarAccountMenu";
 
-const translations: Record<string, string> = {
-  Board: "董事会",
-  "language.zh-CN": "简体中文",
-  "language.en": "English",
-  "layout.languageSwitcherLabel": "Switch language",
-  "sidebarAccountMenu.languageLabel": "Language",
-  "sidebarAccountMenu.languageDescription": "Choose the interface language for this browser.",
-};
-
-vi.mock("react-i18next", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("react-i18next")>();
-  return {
-    ...actual,
-    initReactI18next: { type: "3rdParty", init: () => {} },
-    useTranslation: () => ({
-      i18n: {
-        resolvedLanguage: "en",
-        language: "en",
-        changeLanguage: vi.fn(),
-      },
-      t: (key: string, options?: Record<string, unknown>) => {
-        const template = translations[key] ?? (typeof options?.defaultValue === "string" ? options.defaultValue : key);
-        return template.replace(/\{\{(\w+)\}\}/g, (_match, token) => String(options?.[token] ?? ""));
-      },
-    }),
-  };
-});
-
 const mockAuthApi = vi.hoisted(() => ({
   getSession: vi.fn(),
   signInEmail: vi.fn(),
@@ -47,9 +19,14 @@ const mockInstanceSettingsApi = vi.hoisted(() => ({
 }));
 const mockToggleTheme = vi.hoisted(() => vi.fn());
 const mockSetSidebarOpen = vi.hoisted(() => vi.fn());
+const mockNavigateTopLevel = vi.hoisted(() => vi.fn());
 
 vi.mock("@/api/auth", () => ({
   authApi: mockAuthApi,
+}));
+
+vi.mock("@/lib/browserNavigation", () => ({
+  navigateTopLevel: mockNavigateTopLevel,
 }));
 
 vi.mock("@/api/instanceSettings", () => ({
@@ -114,7 +91,7 @@ describe("SidebarAccountMenu", () => {
     mockInstanceSettingsApi.getExperimental.mockResolvedValue({
       enableIsolatedWorkspaces: false,
     });
-    mockAuthApi.signOut.mockResolvedValue(undefined);
+    mockAuthApi.signOut.mockResolvedValue({ success: true, redirectTo: "/cloud/logout" });
   });
 
   afterEach(() => {
@@ -123,7 +100,7 @@ describe("SidebarAccountMenu", () => {
     vi.clearAllMocks();
   });
 
-  it("renders the signed-in user and opens the account card menu", async () => {
+  it("keeps authenticated self-hosted sign-out on the local auth flow", async () => {
     const root = createRoot(container);
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false } },
@@ -148,7 +125,6 @@ describe("SidebarAccountMenu", () => {
 
     expect(container.textContent).toContain("Jane Example");
     expect(container.textContent).not.toContain("jane@example.com");
-    expect(container.querySelector('button[aria-label="Switch language"]')).toBeNull();
 
     const trigger = container.querySelector('button[aria-label="Open account menu"]');
     expect(trigger).not.toBeNull();
@@ -159,12 +135,12 @@ describe("SidebarAccountMenu", () => {
     await flushReact();
 
     expect(document.body.textContent).toContain("Edit profile");
-    expect(document.body.textContent).toContain("Instance settings");
+    expect(document.body.textContent).not.toContain("Instance settings");
     expect(document.body.textContent).toContain("Documentation");
     expect(document.body.textContent).toContain("Feedback");
 
     // Feedback link opens in a new tab pointing at the feedback URL
-    const feedbackAnchor = document.body.querySelector('a[href="https://penclip.ing/feedback"]') as HTMLAnchorElement | null;
+    const feedbackAnchor = document.body.querySelector('a[href="https://paperclip.ing/feedback"]') as HTMLAnchorElement | null;
     expect(feedbackAnchor).not.toBeNull();
     expect(feedbackAnchor?.getAttribute("target")).toBe("_blank");
 
@@ -178,26 +154,20 @@ describe("SidebarAccountMenu", () => {
 
     expect(document.body.textContent).toContain("Paperclip v1.2.3");
     expect(document.body.textContent).toContain("jane@example.com");
-    expect(document.body.textContent).toContain("Language");
-    expect(document.body.textContent).not.toContain("Choose the interface language for this browser.");
-    expect(document.body.textContent).toContain("中文");
-    expect(document.body.textContent).toContain("English");
     expect(document.body.querySelector('[data-slot="popover-content"]')?.className)
       .toContain("w-(--sz-277px)");
     expect(document.body.querySelector('a[href="/company/settings/instance/profile"]')).not.toBeNull();
-    expect(document.body.querySelector('a[href="/company/settings/instance/general"]')).not.toBeNull();
 
     const signOutButton = Array.from(document.body.querySelectorAll("button")).find(
       (button) => button.textContent?.includes("Sign out"),
     );
-    expect(signOutButton).not.toBeNull();
-
     await act(async () => {
       signOutButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
     await flushReact();
 
     expect(mockAuthApi.signOut).toHaveBeenCalledOnce();
+    expect(mockNavigateTopLevel).not.toHaveBeenCalled();
     expect(queryClient.getQueryState(queryKeys.health)?.isInvalidated).toBe(true);
 
     await act(async () => {
@@ -205,17 +175,55 @@ describe("SidebarAccountMenu", () => {
     });
   });
 
-  it("localizes the local board display name", async () => {
-    mockAuthApi.getSession.mockResolvedValue({
-      session: { id: "session-local", userId: "local-board" },
-      user: {
-        id: "local-board",
-        name: "Board",
-        email: null,
-        image: null,
+  it("navigates cloud-managed sign-out through the harness without calling local auth", async () => {
+    const root = createRoot(container);
+    const onOpenChange = vi.fn();
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    queryClient.setQueryData(queryKeys.health, {
+      status: "ok",
+      deploymentMode: "authenticated",
+      cloud: {
+        managed: true,
+        managedBy: "paperclip-cloud",
+        stackSlug: "acme-labs",
+        cloudBaseUrl: "https://cloud.example.test",
       },
     });
 
+    await act(async () => {
+      root.render(
+        <QueryClientProvider client={queryClient}>
+          <SidebarAccountMenu
+            deploymentMode="authenticated"
+            open
+            onOpenChange={onOpenChange}
+          />
+        </QueryClientProvider>,
+      );
+    });
+    await flushReact();
+
+    const signOutButton = Array.from(document.body.querySelectorAll("button")).find(
+      (button) => button.textContent?.includes("Sign out"),
+    );
+    await act(async () => {
+      signOutButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+    await flushReact();
+
+    expect(mockAuthApi.signOut).not.toHaveBeenCalled();
+    expect(mockNavigateTopLevel).toHaveBeenCalledOnce();
+    expect(mockNavigateTopLevel).toHaveBeenCalledWith("/cloud/logout");
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+
+    await act(async () => {
+      root.unmount();
+    });
+  });
+
+  it("keeps sign-out hidden outside authenticated deployment mode", async () => {
     const root = createRoot(container);
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false } },
@@ -224,18 +232,13 @@ describe("SidebarAccountMenu", () => {
     await act(async () => {
       root.render(
         <QueryClientProvider client={queryClient}>
-          <SidebarAccountMenu
-            deploymentMode="local_trusted"
-            version="1.2.3"
-          />
+          <SidebarAccountMenu deploymentMode="local_trusted" open />
         </QueryClientProvider>,
       );
     });
     await flushReact();
-    await flushReact();
 
-    expect(container.textContent).toContain("董事会");
-    expect(container.textContent).not.toContain("Board");
+    expect(document.body.textContent).not.toContain("Sign out");
 
     await act(async () => {
       root.unmount();
@@ -276,12 +279,12 @@ describe("SidebarAccountMenu", () => {
     });
     await flushReact();
 
-    expect(document.body.textContent).toContain("feature/source-build-labelPaperclip CN 518fc71");
+    expect(document.body.textContent).toContain("feature/source-build-labelPaperclip 518fc71");
     expect(document.body.textContent).not.toContain("2026.626.0+58.git.518fc71ce");
-    expect(document.body.querySelector('a[href="https://github.com/penclipai/paperclip-cn/tree/feature%2Fsource-build-label"]')?.textContent).toBe(
+    expect(document.body.querySelector('a[href="https://github.com/paperclipai/paperclip/tree/feature%2Fsource-build-label"]')?.textContent).toBe(
       "feature/source-build-label",
     );
-    expect(document.body.querySelector('a[href="https://github.com/penclipai/paperclip-cn/commit/518fc71ce1234567890abcdef1234567890abcde"]')?.textContent).toBe(
+    expect(document.body.querySelector('a[href="https://github.com/paperclipai/paperclip/commit/518fc71ce1234567890abcdef1234567890abcde"]')?.textContent).toBe(
       "518fc71",
     );
 

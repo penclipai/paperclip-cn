@@ -5764,6 +5764,7 @@
   "workspaceRuntime.status.starting": "starting",
   "workspaceRuntime.status.stopped": "stopped",
   "workspaceServiceControl.allServices": "All services",
+  "workspaceServiceControl.status.provisioning": "Provisioning…",
   "workspaceServiceControl.copyFailed": "Copy failed",
   "workspaceServiceControl.copyUrl": "Copy URL",
   "workspaceServiceControl.manageServices": "Manage in Services tab →",

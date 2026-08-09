@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import { copyTextToClipboard } from "@/lib/clipboard";
 
 interface CopyTextProps {
   text: string;
@@ -23,11 +23,8 @@ export function CopyText({
   title,
   copiedLabel = "Copied!",
 }: CopyTextProps) {
-  const { t } = useTranslation();
-  const successLabel = copiedLabel === "Copied!" ? t("Copied!", { defaultValue: "Copied!" }) : copiedLabel;
-  const failureLabel = t("Copy failed", { defaultValue: "Copy failed" });
   const [visible, setVisible] = useState(false);
-  const [label, setLabel] = useState(successLabel);
+  const [label, setLabel] = useState(copiedLabel);
   const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
@@ -35,31 +32,15 @@ export function CopyText({
 
   const handleClick = useCallback(async () => {
     try {
-      if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(text);
-      } else {
-        // Fallback for non-secure contexts (e.g. HTTP on non-localhost)
-        const textarea = document.createElement("textarea");
-        textarea.value = text;
-        textarea.style.position = "fixed";
-        textarea.style.left = "-9999px";
-        document.body.appendChild(textarea);
-        try {
-          textarea.select();
-          const success = document.execCommand("copy");
-          if (!success) throw new Error("execCommand copy failed");
-        } finally {
-          document.body.removeChild(textarea);
-        }
-      }
-      setLabel(successLabel);
+      await copyTextToClipboard(text);
+      setLabel(copiedLabel);
     } catch {
-      setLabel(failureLabel);
+      setLabel("Copy failed");
     }
     clearTimeout(timerRef.current);
     setVisible(true);
     timerRef.current = setTimeout(() => setVisible(false), 1500);
-  }, [failureLabel, successLabel, text]);
+  }, [copiedLabel, text]);
 
   return (
     <span className={cn("relative inline-flex", containerClassName)}>
