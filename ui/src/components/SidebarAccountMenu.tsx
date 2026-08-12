@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import {
   BookOpen,
   LogOut,
@@ -17,6 +18,7 @@ import { useSidebar } from "../context/SidebarContext";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn, SIDEBAR_RAIL_HIDDEN_LABEL } from "../lib/utils";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 import { ThemeToggle } from "./ThemeToggle";
 import { SidebarServerInfo } from "./SidebarServerInfo";
 import { Badge } from "@/components/ui/badge";
@@ -117,6 +119,7 @@ export function SidebarAccountMenu({
   serverGit,
   version,
 }: SidebarAccountMenuProps) {
+  const { t } = useTranslation();
   const [internalOpen, setInternalOpen] = useState(false);
   const { isMobile, setSidebarOpen, collapsed, peeking } = useSidebar();
   const rail = collapsed && !peeking;
@@ -130,10 +133,18 @@ export function SidebarAccountMenu({
 
   const signOutMutation = useSignOut({ onSignedOut: closeNavigationChrome });
 
-  const displayName = session?.user.name?.trim() || "Board";
+  const rawDisplayName = session?.user.name?.trim() || "";
+  const isLocalBoardAccount = session?.user.id === "local-board";
+  const displayName = isLocalBoardAccount && (!rawDisplayName || rawDisplayName === "Board")
+    ? t("Board", { defaultValue: "Board" })
+    : rawDisplayName || t("Board", { defaultValue: "Board" });
   const secondaryLabel =
-    session?.user.email?.trim() || (deploymentMode === "authenticated" ? "Signed in" : "Local workspace board");
-  const accountBadge = deploymentMode === "authenticated" ? "Account" : "Local";
+    session?.user.email?.trim() || (deploymentMode === "authenticated"
+      ? t("Signed in", { defaultValue: "Signed in" })
+      : t("Local workspace board", { defaultValue: "Local workspace board" }));
+  const accountBadge = deploymentMode === "authenticated"
+    ? t("Account", { defaultValue: "Account" })
+    : t("Local", { defaultValue: "Local" });
   const initials = deriveInitials(displayName);
   const profileHref = `/u/${deriveUserSlug(session?.user.name, session?.user.email, session?.user.id)}`;
   const sourceSha = version ? sourceVersionSha(version) : null;
@@ -159,7 +170,7 @@ export function SidebarAccountMenu({
           <button
             type="button"
             className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-(length:--text-compact) font-medium text-foreground/80 transition-colors hover:bg-accent/50 hover:text-foreground"
-            aria-label="Open account menu"
+            aria-label={t("Open account menu", { defaultValue: "Open account menu" })}
           >
             <Avatar size="sm">
               {session?.user.image ? <AvatarImage src={session.user.image} alt={displayName} /> : null}
@@ -216,43 +227,57 @@ export function SidebarAccountMenu({
                     </p>
                   </div>
                 ) : version ? (
-                  <p className="mt-1 text-xs text-muted-foreground">Paperclip v{version}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {t("Paperclip v{{version}}", { defaultValue: "Paperclip v{{version}}", version })}
+                  </p>
                 ) : null}
               </div>
             </div>
 
             <div className="mt-4 space-y-1">
               <MenuAction
-                label="View profile"
-                description="Open your activity, task, and usage ledger."
+                label={t("View profile", { defaultValue: "View profile" })}
+                description={t("Open your activity, task, and usage ledger.", {
+                  defaultValue: "Open your activity, task, and usage ledger.",
+                })}
                 icon={UserRound}
                 href={profileHref}
                 onClick={closeNavigationChrome}
               />
               <MenuAction
-                label="Edit profile"
-                description="Update your display name and avatar."
+                label={t("Edit profile", { defaultValue: "Edit profile" })}
+                description={t("Update your display name and avatar.", {
+                  defaultValue: "Update your display name and avatar.",
+                })}
                 icon={UserRoundPen}
                 href={PROFILE_SETTINGS_PATH}
                 onClick={closeNavigationChrome}
               />
               <MenuAction
-                label="Documentation"
-                description="Open Paperclip docs in a new tab."
+                label={t("Documentation", { defaultValue: "Documentation" })}
+                description={t("Open Paperclip docs in a new tab.", {
+                  defaultValue: "Open Paperclip docs in a new tab.",
+                })}
                 icon={BookOpen}
                 href={DOCS_URL}
                 external
                 onClick={() => setOpen(false)}
               />
               <MenuAction
-                label="Feedback"
-                description="Share feedback or report an issue."
+                label={t("Feedback", { defaultValue: "Feedback" })}
+                description={t("Share feedback or report an issue.", {
+                  defaultValue: "Share feedback or report an issue.",
+                })}
                 icon={Megaphone}
                 href={FEEDBACK_URL}
                 external
                 onClick={() => setOpen(false)}
               />
               <ThemeToggle variant="menu-action" onAfterToggle={() => setOpen(false)} />
+              <LanguageSwitcher
+                variant="inline"
+                onLanguageChange={() => setOpen(false)}
+              />
               {deploymentMode === "authenticated" ? (
                 <button
                   type="button"
@@ -268,10 +293,12 @@ export function SidebarAccountMenu({
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block text-sm font-medium text-foreground">
-                      {signOutMutation.isPending ? "Signing out..." : "Sign out"}
+                      {signOutMutation.isPending
+                        ? t("Signing out...", { defaultValue: "Signing out..." })
+                        : t("Sign out", { defaultValue: "Sign out" })}
                     </span>
                     <span className="block text-xs text-muted-foreground">
-                      End this browser session.
+                      {t("End this browser session.", { defaultValue: "End this browser session." })}
                     </span>
                   </span>
                 </button>

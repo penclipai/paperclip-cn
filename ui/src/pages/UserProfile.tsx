@@ -424,17 +424,20 @@ export function UserProfile() {
             </div>
           ) : (
             <ul className="divide-y divide-border">
-              {data.recentActivity.map((event) => (
-                <li key={event.id} className="grid gap-2 py-2.5 sm:grid-cols-(--gtc-17) sm:items-center">
-                  <div className="min-w-0">
-                    <div className="truncate text-sm">{formatActivityVerb(event.action, event.details)}</div>
-                    <div className="truncate text-xs text-muted-foreground">
-                      {translateEntityTypeLabel(t, event.entityType)} · {event.entityId.slice(0, 12)}
+              {data.recentActivity.map((event) => {
+                const rawVerb = formatActivityVerb(event.action, event.details);
+                return (
+                  <li key={event.id} className="grid gap-2 py-2.5 sm:grid-cols-(--gtc-17) sm:items-center">
+                    <div className="min-w-0">
+                      <div className="truncate text-sm">{t(rawVerb, { defaultValue: rawVerb })}</div>
+                      <div className="truncate text-xs text-muted-foreground">
+                        {translateEntityTypeLabel(t, event.entityType)} · {event.entityId.slice(0, 12)}
+                      </div>
                     </div>
-                  </div>
-                  <span className="text-xs tabular-nums text-muted-foreground sm:justify-self-end">{relativeTime(event.createdAt)}</span>
-                </li>
-              ))}
+                    <span className="text-xs tabular-nums text-muted-foreground sm:justify-self-end">{relativeTime(event.createdAt)}</span>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </section>

@@ -803,7 +803,7 @@ describe("worktree helpers", () => {
       const envContents = fs.readFileSync(envPath, "utf8");
       expect(envContents).toContain("PAPERCLIP_AGENT_JWT_SECRET=worktree-shared-secret");
       expect(envContents).toContain("PAPERCLIP_WORKTREE_NAME=repo");
-      expect(envContents).toMatch(/PAPERCLIP_WORKTREE_COLOR='#[0-9a-f]{6}'/);
+      expect(envContents).toMatch(/PAPERCLIP_WORKTREE_COLOR="#[0-9a-f]{6}"/);
     } finally {
       process.chdir(originalCwd);
       if (originalJwtSecret === undefined) {

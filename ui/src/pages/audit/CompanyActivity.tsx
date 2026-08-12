@@ -1,5 +1,6 @@
 import { useCallback, useEffect } from "react";
 import { History } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useSearchParams } from "@/lib/router";
 import { useCompany } from "../../context/CompanyContext";
 import { useBreadcrumbs } from "../../context/BreadcrumbContext";
@@ -15,14 +16,15 @@ import { AuditFeed, type AuditFeedMode } from "./AuditFeed";
  * links stay shareable. The server enforces both tiers regardless.
  */
 export function CompanyActivity() {
+  const { t } = useTranslation();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const [searchParams, setSearchParams] = useSearchParams();
   const mode: AuditFeedMode = searchParams.get("mode") === "agents" ? "agents" : "all";
 
   useEffect(() => {
-    setBreadcrumbs([{ label: "Activity" }]);
-  }, [setBreadcrumbs]);
+    setBreadcrumbs([{ label: t("companyActivity.title", { defaultValue: "Activity" }) }]);
+  }, [setBreadcrumbs, t]);
 
   const handleModeChange = useCallback(
     (next: AuditFeedMode) => {
@@ -42,7 +44,7 @@ export function CompanyActivity() {
   );
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={History} message="Select a company to view activity." />;
+    return <EmptyState icon={History} message={t("Select a company to view activity.", { defaultValue: "Select a company to view activity." })} />;
   }
 
   return <AuditFeed companyId={selectedCompanyId} mode={mode} onModeChange={handleModeChange} />;

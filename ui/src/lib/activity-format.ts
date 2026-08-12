@@ -1,4 +1,5 @@
 import type { Agent } from "@penclipai/shared";
+import { translateInstant } from "../i18n";
 import type { CompanyUserProfile } from "./company-members";
 
 type ActivityDetails = Record<string, unknown> | null | undefined;
@@ -61,11 +62,19 @@ const ACTIVITY_ROW_VERBS: Record<string, string> = {
   "agent.terminated": "terminated",
   "agent.key_created": "created API key for",
   "agent.budget_updated": "updated budget for",
+  "agent.instructions_file_updated": "updated agent instructions file",
   "agent.runtime_session_reset": "reset session for",
+  "auth.agent_jwt_run_header_mismatch": "recorded agent JWT run header mismatch",
+  "built_in_agent.provisioned": "provisioned built-in agent",
+  "built_in_agent.reset": "reset built-in agent",
   "heartbeat.invoked": "invoked heartbeat for",
   "heartbeat.cancelled": "cancelled heartbeat for",
   "heartbeat.output_stale_source_resolved": "system-folded stale run on",
   "heartbeat.output_stale_recovery_recursion_refused": "refused recovery-on-recovery for",
+  "environment.lease_acquired": "acquired environment lease",
+  "environment.lease_released": "released environment lease",
+  "built_in_agent.routine_reconciled": "built-in agent routine reconciled",
+  "built_in_agent.routine_reset": "reset built-in agent routine",
   "approval.created": "requested approval",
   "approval.approved": "approved",
   "approval.rejected": "rejected",
@@ -82,6 +91,19 @@ const ACTIVITY_ROW_VERBS: Record<string, string> = {
   "company.archived": "archived",
   "company.reactivated": "reactivated",
   "company.budget_updated": "updated budget for",
+  "company.skills_scanned": "scanned company skills",
+  "instance.settings.experimental_updated": "updated experimental instance settings",
+  "instance.settings.general_updated": "updated general instance settings",
+  "issue.file_resource_content_read": "read issue file content on",
+  "issue.file_resource_list": "listed issue files for",
+  "issue.file_resource_resolve": "resolved issue file reference on",
+  "issue.read_marked": "marked the issue as read",
+  "issue.thread_interaction_accepted": "accepted a thread interaction on",
+  "issue.thread_interaction_created": "created a thread interaction on",
+  "plugin.installed": "installed plugin",
+  "plugin.uninstalled": "uninstalled plugin",
+  "resource_membership.starred": "starred",
+  "resource_membership.unstarred": "unstarred",
   "audit.exported": "exported the agent audit log for",
 };
 
@@ -101,6 +123,9 @@ const ISSUE_ACTIVITY_LABELS: Record<string, string> = {
   "issue.document_locked": "locked a document",
   "issue.document_unlocked": "unlocked a document",
   "issue.document_deleted": "deleted a document",
+  "issue.file_resource_content_read": "read issue file content",
+  "issue.file_resource_list": "listed issue files",
+  "issue.file_resource_resolve": "resolved an issue file reference",
   "issue.monitor_scheduled": "scheduled a monitor",
   "issue.monitor_triggered": "triggered a monitor",
   "issue.monitor_cleared": "cleared a monitor",
@@ -110,6 +135,9 @@ const ISSUE_ACTIVITY_LABELS: Record<string, string> = {
   "issue.monitor_recovery_issue_created": "created a monitor recovery issue",
   "issue.monitor_escalated_to_board": "escalated a monitor to the board",
   "issue.deleted": "deleted the issue",
+  "issue.read_marked": "marked the issue as read",
+  "issue.thread_interaction_accepted": "accepted a thread interaction",
+  "issue.thread_interaction_created": "created a thread interaction",
   "issue.successful_run_handoff_required": "Run finished without a clear next step",
   "issue.successful_run_handoff_resolved": "Next step chosen",
   "issue.successful_run_handoff_escalated": "Run finished without a next step - recovery escalated",
@@ -134,6 +162,35 @@ const ISSUE_ACTIVITY_LABELS: Record<string, string> = {
   "approval.approved": "approved",
   "approval.rejected": "rejected",
 };
+
+const STATUS_TRANSLATION_KEYS: Record<string, string> = {
+  active: "status.active",
+  backlog: "status.backlog",
+  blocked: "status.blocked",
+  cancelled: "status.cancelled",
+  done: "status.done",
+  in_progress: "status.inProgress",
+  in_review: "status.inReview",
+  planned: "status.planned",
+  todo: "status.todo",
+};
+
+const PRIORITY_TRANSLATION_KEYS: Record<string, string> = {
+  critical: "priority.critical",
+  high: "priority.high",
+  medium: "priority.medium",
+  low: "priority.low",
+};
+
+function localize(key: string, options?: Record<string, string | number | boolean | null | undefined>): string {
+  return translateInstant(key, { defaultValue: key, ...options });
+}
+
+function localizeActivityValue(value: unknown, kind: "status" | "priority"): string {
+  const normalized = typeof value === "string" ? value : "";
+  const key = (kind === "status" ? STATUS_TRANSLATION_KEYS : PRIORITY_TRANSLATION_KEYS)[normalized];
+  return key ? localize(key) : localize(humanizeValue(value));
+}
 
 function asRecord(value: unknown): Record<string, unknown> | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
@@ -168,17 +225,17 @@ function readIssueReferences(details: ActivityDetails, key: string): ActivityIss
 }
 
 function formatUserLabel(userId: string | null | undefined, options: ActivityFormatOptions = {}): string {
-  if (!userId || userId === "local-board") return "Board";
-  if (options.currentUserId && userId === options.currentUserId) return "You";
+  if (!userId || userId === "local-board") return localize("Board");
+  if (options.currentUserId && userId === options.currentUserId) return localize("You");
   const profile = options.userProfileMap?.get(userId);
   if (profile) return profile.label;
-  return `user ${userId.slice(0, 5)}`;
+  return localize("activityFormat.userLabel", { id: userId.slice(0, 5) });
 }
 
 function formatParticipantLabel(participant: ActivityParticipant, options: ActivityFormatOptions): string {
   if (participant.type === "agent") {
     const agentId = participant.agentId ?? "";
-    return options.agentMap?.get(agentId)?.name ?? "agent";
+    return options.agentMap?.get(agentId)?.name ?? localize("Agent");
   }
   return formatUserLabel(participant.userId, options);
 }
@@ -187,7 +244,7 @@ function formatIssueReferenceLabel(reference: ActivityIssueReference): string {
   if (reference.identifier) return reference.identifier;
   if (reference.title) return reference.title;
   if (reference.id) return reference.id.slice(0, 8);
-  return "task";
+  return localize("Task");
 }
 
 function formatChangedEntityLabel(
@@ -195,9 +252,17 @@ function formatChangedEntityLabel(
   plural: string,
   labels: string[],
 ): string {
-  if (labels.length <= 0) return plural;
-  if (labels.length === 1) return `${singular} ${labels[0]}`;
-  return `${labels.length} ${plural}`;
+  if (labels.length <= 0) return localize(plural);
+  if (labels.length === 1) {
+    return localize("activityFormat.namedEntity", {
+      entity: localize(singular),
+      label: labels[0]!,
+    });
+  }
+  return localize("activityFormat.countedEntity", {
+    count: labels.length,
+    entity: localize(plural),
+  });
 }
 
 function readNumber(value: unknown): number | null {
@@ -218,13 +283,25 @@ function formatAcceptedPlanDecompositionDetail(details: ActivityDetails): string
   const newlyCreated = readStringArrayLength(details.newlyCreatedChildIssueIds);
   const reused = Math.max(0, totalChildren - newlyCreated);
   const parts: string[] = [];
-  if (newlyCreated > 0) parts.push(`created ${newlyCreated} new`);
-  if (reused > 0) parts.push(`reused ${reused} existing`);
-  if (parts.length === 0 && requested !== null) parts.push(`${requested} requested`);
+  if (newlyCreated > 0) {
+    parts.push(localize("activityFormat.decomposition.created", {
+      count: newlyCreated,
+    }));
+  }
+  if (reused > 0) {
+    parts.push(localize("activityFormat.decomposition.reused", { count: reused }));
+  }
+  if (parts.length === 0 && requested !== null) {
+    parts.push(localize("activityFormat.decomposition.requested", { count: requested }));
+  }
   const summary = parts.length > 0 ? parts.join(", ") : null;
-  if (status === "completed" && summary) return `decomposition completed (${summary})`;
-  if (status === "completed") return "decomposition completed";
-  if (status === "in_flight" && summary) return `decomposition in flight (${summary})`;
+  if (status === "completed" && summary) {
+    return localize("activityFormat.decomposition.completedWithSummary", { summary });
+  }
+  if (status === "completed") return localize("activityFormat.decomposition.completed");
+  if (status === "in_flight" && summary) {
+    return localize("activityFormat.decomposition.inFlightWithSummary", { summary });
+  }
   return summary;
 }
 
@@ -234,14 +311,24 @@ function formatIssueUpdatedVerb(details: ActivityDetails): string | null {
   if (details.status !== undefined) {
     const from = previous.status;
     return from
-      ? `changed status from ${humanizeValue(from)} to ${humanizeValue(details.status)} on`
-      : `changed status to ${humanizeValue(details.status)} on`;
+      ? localize("activityFormat.changedStatusFromOn", {
+        from: localizeActivityValue(from, "status"),
+        to: localizeActivityValue(details.status, "status"),
+      })
+      : localize("activityFormat.changedStatusToOn", {
+        status: localizeActivityValue(details.status, "status"),
+      });
   }
   if (details.priority !== undefined) {
     const from = previous.priority;
     return from
-      ? `changed priority from ${humanizeValue(from)} to ${humanizeValue(details.priority)} on`
-      : `changed priority to ${humanizeValue(details.priority)} on`;
+      ? localize("activityFormat.changedPriorityFromOn", {
+        from: localizeActivityValue(from, "priority"),
+        to: localizeActivityValue(details.priority, "priority"),
+      })
+      : localize("activityFormat.changedPriorityToOn", {
+        priority: localizeActivityValue(details.priority, "priority"),
+      });
   }
   return null;
 }
@@ -251,7 +338,7 @@ function formatAssigneeName(details: ActivityDetails, options: ActivityFormatOpt
   const agentId = details.assigneeAgentId;
   const userId = details.assigneeUserId;
   if (typeof agentId === "string" && agentId) {
-    return options.agentMap?.get(agentId)?.name ?? "agent";
+    return options.agentMap?.get(agentId)?.name ?? localize("Agent");
   }
   if (typeof userId === "string" && userId) {
     return formatUserLabel(userId, options);
@@ -268,24 +355,36 @@ function formatIssueUpdatedAction(details: ActivityDetails, options: ActivityFor
     const from = previous.status;
     parts.push(
       from
-        ? `changed the status from ${humanizeValue(from)} to ${humanizeValue(details.status)}`
-        : `changed the status to ${humanizeValue(details.status)}`,
+        ? localize("activityFormat.changedStatusFrom", {
+          from: localizeActivityValue(from, "status"),
+          to: localizeActivityValue(details.status, "status"),
+        })
+        : localize("activityFormat.changedStatusTo", {
+          status: localizeActivityValue(details.status, "status"),
+        }),
     );
   }
   if (details.priority !== undefined) {
     const from = previous.priority;
     parts.push(
       from
-        ? `changed the priority from ${humanizeValue(from)} to ${humanizeValue(details.priority)}`
-        : `changed the priority to ${humanizeValue(details.priority)}`,
+        ? localize("activityFormat.changedPriorityFrom", {
+          from: localizeActivityValue(from, "priority"),
+          to: localizeActivityValue(details.priority, "priority"),
+        })
+        : localize("activityFormat.changedPriorityTo", {
+          priority: localizeActivityValue(details.priority, "priority"),
+        }),
     );
   }
   if (details.assigneeAgentId !== undefined || details.assigneeUserId !== undefined) {
     const assigneeName = formatAssigneeName(details, options);
-    parts.push(assigneeName ? `made ${assigneeName} responsible for the task` : "cleared the responsible");
+    parts.push(assigneeName
+      ? localize("activityFormat.assigneeSet", { assignee: assigneeName })
+      : localize("activityFormat.assigneeCleared"));
   }
-  if (details.title !== undefined) parts.push("updated the title");
-  if (details.description !== undefined) parts.push("updated the description");
+  if (details.title !== undefined) parts.push(localize("activityFormat.titleUpdated"));
+  if (details.description !== undefined) parts.push(localize("activityFormat.descriptionUpdated"));
 
   return parts.length > 0 ? parts.join(", ") : null;
 }
@@ -304,13 +403,15 @@ function formatStructuredIssueChange(input: {
     const removed = readIssueReferences(details, "removedBlockedByIssues").map(formatIssueReferenceLabel);
     if (added.length > 0 && removed.length === 0) {
       const changed = formatChangedEntityLabel("blocker", "blockers", added);
-      return input.forIssueDetail ? `added ${changed}` : `added ${changed} to`;
+      return localize(input.forIssueDetail ? "activityFormat.added" : "activityFormat.addedTo", { changed });
     }
     if (removed.length > 0 && added.length === 0) {
       const changed = formatChangedEntityLabel("blocker", "blockers", removed);
-      return input.forIssueDetail ? `removed ${changed}` : `removed ${changed} from`;
+      return localize(input.forIssueDetail ? "activityFormat.removed" : "activityFormat.removedFrom", { changed });
     }
-    return input.forIssueDetail ? "updated blockers" : "updated blockers on";
+    return localize(input.forIssueDetail ? "activityFormat.updatedLabel" : "activityFormat.updatedOn", {
+      label: localize("blockers"),
+    });
   }
 
   if (input.action === "issue.reviewers_updated" || input.action === "issue.approvers_updated") {
@@ -320,13 +421,15 @@ function formatStructuredIssueChange(input: {
     const plural = input.action === "issue.reviewers_updated" ? "reviewers" : "approvers";
     if (added.length > 0 && removed.length === 0) {
       const changed = formatChangedEntityLabel(singular, plural, added);
-      return input.forIssueDetail ? `added ${changed}` : `added ${changed} to`;
+      return localize(input.forIssueDetail ? "activityFormat.added" : "activityFormat.addedTo", { changed });
     }
     if (removed.length > 0 && added.length === 0) {
       const changed = formatChangedEntityLabel(singular, plural, removed);
-      return input.forIssueDetail ? `removed ${changed}` : `removed ${changed} from`;
+      return localize(input.forIssueDetail ? "activityFormat.removed" : "activityFormat.removedFrom", { changed });
     }
-    return input.forIssueDetail ? `updated ${plural}` : `updated ${plural} on`;
+    return localize(input.forIssueDetail ? "activityFormat.updatedLabel" : "activityFormat.updatedOn", {
+      label: localize(plural),
+    });
   }
 
   return null;
@@ -350,7 +453,8 @@ export function formatActivityVerb(
   });
   if (structuredChange) return structuredChange;
 
-  return ACTIVITY_ROW_VERBS[action] ?? action.replace(/[._]/g, " ");
+  const fallback = ACTIVITY_ROW_VERBS[action] ?? action.replace(/[._]/g, " ");
+  return localize(fallback);
 }
 
 export function formatIssueActivityAction(
@@ -380,8 +484,8 @@ export function formatIssueActivityAction(
     const serviceName = typeof details.serviceName === "string" && details.serviceName.trim()
       ? details.serviceName.trim()
       : null;
-    const base = ISSUE_ACTIVITY_LABELS[action] ?? action.replace(/[._]/g, " ");
-    return serviceName ? `${base} for ${serviceName}` : base;
+    const base = localize(ISSUE_ACTIVITY_LABELS[action] ?? action.replace(/[._]/g, " "));
+    return serviceName ? localize("activityFormat.monitorForService", { base, serviceName }) : base;
   }
 
   if (
@@ -394,10 +498,13 @@ export function formatIssueActivityAction(
     ) &&
     details
   ) {
-    const key = typeof details.key === "string" ? details.key : "document";
+    const key = typeof details.key === "string" ? details.key : localize("Document");
     const title = typeof details.title === "string" && details.title ? ` (${details.title})` : "";
-    return `${ISSUE_ACTIVITY_LABELS[action] ?? action} ${key}${title}`;
+    return localize("activityFormat.documentAction", {
+      action: localize(ISSUE_ACTIVITY_LABELS[action] ?? action),
+      key: `${key}${title}`,
+    });
   }
 
-  return ISSUE_ACTIVITY_LABELS[action] ?? action.replace(/[._]/g, " ");
+  return localize(ISSUE_ACTIVITY_LABELS[action] ?? action.replace(/[._]/g, " "));
 }

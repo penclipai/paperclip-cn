@@ -132,6 +132,14 @@ describe("InstanceGeneralSettings sign-out", () => {
     expect(container.textContent).not.toContain("Settings update failed");
   });
 
+  it("localizes the feedback-sharing choices and terms link", async () => {
+    await renderPage(SELF_HOSTED_HEALTH);
+
+    expect(container.textContent).toContain("Read our terms of service");
+    expect(container.textContent).toContain("Always allow");
+    expect(container.textContent).toContain("Don't allow");
+  });
+
   it("clears a stale sign-out failure after a settings update succeeds", async () => {
     mockAuthApi.signOut.mockRejectedValue(new Error("Sign-out request failed"));
     await renderPage(SELF_HOSTED_HEALTH);

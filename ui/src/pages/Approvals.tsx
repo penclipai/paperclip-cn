@@ -98,7 +98,7 @@ export function Approvals() {
                 {pendingCount}
               </span>
             )}</> },
-            { value: "all", label: "All" },
+            { value: "all", label: t("All", { defaultValue: "All" }) },
           ]} />
         </Tabs>
       </div>

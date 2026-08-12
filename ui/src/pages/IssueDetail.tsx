@@ -159,6 +159,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { formatIssueActivityAction } from "@/lib/activity-format";
+import { useTranslation } from "react-i18next";
 import { copyTextToClipboard } from "../lib/clipboard";
 import { buildIssuePropertiesPanelKey } from "../lib/issue-properties-panel-key";
 import { buildIssueSiblingNavigation, shouldRenderRichSubIssuesSection } from "../lib/issue-detail-subissues";
@@ -1351,6 +1352,7 @@ function IssueDetailActivityTab({
   handoffFocusSignal = 0,
   externalReferences,
 }: IssueDetailActivityTabProps) {
+  const { t } = useTranslation();
   const { data: activity, isLoading: activityLoading } = useQuery({
     queryKey: queryKeys.issues.activity(issueId),
     queryFn: () => activityApi.forIssue(issueId),
@@ -1543,7 +1545,10 @@ function IssueDetailActivityTab({
                     <AlertTriangle className={cn("h-3.5 w-3.5 shrink-0", tone.iconClassName)} />
                   ) : null}
                   <ActorIdentity evt={evt} agentMap={agentMap} userProfileMap={userProfileMap} />
-                  <span>{formatIssueActivityAction(evt.action, evt.details, { agentMap, userProfileMap, currentUserId })}</span>
+                  {(() => {
+                    const rawAction = formatIssueActivityAction(evt.action, evt.details, { agentMap, userProfileMap, currentUserId });
+                    return <span>{t(rawAction, { defaultValue: rawAction })}</span>;
+                  })()}
                   <span className="ml-auto shrink-0">{relativeTime(evt.createdAt)}</span>
                 </div>
                 <IssueReferenceActivitySummary event={evt} />

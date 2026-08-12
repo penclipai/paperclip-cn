@@ -52,6 +52,7 @@
     "@penclipai/adapter-cursor-local": "workspace:*",
     "@penclipai/adapter-gemini-local": "workspace:*",
     "@penclipai/adapter-grok-local": "workspace:*",
+    "@penclipai/hermes-paperclip-adapter": "workspace:*",
     "@penclipai/adapter-openclaw-gateway": "workspace:*",
     "@penclipai/adapter-opencode-local": "workspace:*",
     "@penclipai/adapter-pi-local": "workspace:*",

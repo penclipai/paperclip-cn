@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link2, Search } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "@/lib/router";
 import { useCompany } from "@/context/CompanyContext";
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";
@@ -25,6 +26,27 @@ import {
   ZAPIER_CONNECT_HREF,
 } from "./store-cards";
 
+const APP_DESCRIPTION_KEY_BY_SLUG: Record<string, string> = {
+  anthropic: "apps.browse.appDescription.anthropic",
+  "api-key-generic": "apps.browse.appDescription.apiKeyGeneric",
+  context7: "apps.browse.appDescription.context7",
+  github: "apps.browse.appDescription.github",
+  "google-sheets": "apps.browse.appDescription.googleSheets",
+  linear: "apps.browse.appDescription.linear",
+  notion: "apps.browse.appDescription.notion",
+  "oauth-generic": "apps.browse.appDescription.oauthGeneric",
+  sentry: "apps.browse.appDescription.sentry",
+  slack: "apps.browse.appDescription.slack",
+  vercel: "apps.browse.appDescription.vercel",
+  zapier: "apps.browse.appDescription.zapier",
+};
+
+function appGalleryDescription(entry: AppGalleryDisplayEntry, t: ReturnType<typeof useTranslation>["t"]): string {
+  const sourceDescription = appDefinitionDescription(entry);
+  const translationKey = APP_DESCRIPTION_KEY_BY_SLUG[appDefinitionSlug(entry)];
+  return translationKey ? t(translationKey, { defaultValue: sourceDescription }) : sourceDescription;
+}
+
 function connectHrefFor(entry: AppGalleryDisplayEntry): string | null {
   const slug = appDefinitionSlug(entry);
   if (slug === "notion") return NOTION_CONNECT_HREF;
@@ -41,6 +63,7 @@ function connectHrefFor(entry: AppGalleryDisplayEntry): string | null {
  * OAuth, while Zapier and bring-your-own MCP servers use the URL flow.
  */
 export function Browse() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { selectedCompany, selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
@@ -48,11 +71,11 @@ export function Browse() {
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: selectedCompany?.name ?? "Company", href: "/dashboard" },
-      { label: "Apps" },
+      { label: selectedCompany?.name ?? t("apps.common.company", { defaultValue: "Company" }), href: "/dashboard" },
+      { label: t("apps.common.apps", { defaultValue: "Apps" }) },
     ]);
     return () => setBreadcrumbs([]);
-  }, [setBreadcrumbs, selectedCompany?.name]);
+  }, [setBreadcrumbs, selectedCompany?.name, t]);
 
   const galleryQuery = useQuery({
     queryKey: queryKeys.apps.gallery(selectedCompanyId ?? "__none__"),
@@ -85,9 +108,9 @@ export function Browse() {
     return gallery.filter(
       (entry) =>
         appDefinitionName(entry).toLowerCase().includes(trimmed) ||
-        appDefinitionDescription(entry).toLowerCase().includes(trimmed),
+        appGalleryDescription(entry, t).toLowerCase().includes(trimmed),
     );
-  }, [gallery, trimmed]);
+  }, [gallery, t, trimmed]);
   const connectionSummaryBySlug = useMemo(() => {
     const connections = connectionsQuery.data?.connections ?? [];
     const connectedCountByApplicationId = new Map<string, number>();
@@ -115,7 +138,11 @@ export function Browse() {
   }, [applicationsQuery.data, connectionsQuery.data]);
 
   if (!selectedCompanyId) {
-    return <div className="p-6 text-sm text-muted-foreground">Select a company to browse apps.</div>;
+    return (
+      <div className="p-6 text-sm text-muted-foreground">
+        {t("apps.browse.selectCompany", { defaultValue: "Select a company to browse apps." })}
+      </div>
+    );
   }
 
   const loading = galleryQuery.isLoading || applicationsQuery.isLoading || connectionsQuery.isLoading;
@@ -136,9 +163,13 @@ export function Browse() {
   return (
     <div className="max-w-5xl space-y-8 pb-12">
       <header>
-        <h1 className="text-2xl font-bold tracking-tight">Browse</h1>
+        <h1 className="text-2xl font-bold tracking-tight">
+          {t("apps.sidebar.browse", { defaultValue: "Browse" })}
+        </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Choose an app or connect your own MCP server.
+          {t("apps.browse.description", {
+            defaultValue: "Connect Zapier or your own MCP server. More integrations are coming soon.",
+          })}
         </p>
       </header>
 
@@ -148,8 +179,8 @@ export function Browse() {
           type="search"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search apps…"
-          aria-label="Search apps"
+          placeholder={t("apps.browse.searchPlaceholder", { defaultValue: "Search apps…" })}
+          aria-label={t("apps.browse.searchAriaLabel", { defaultValue: "Search apps" })}
           className="h-10 w-full rounded-lg border border-border bg-background pl-9 pr-3 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-foreground/30"
         />
       </div>
@@ -165,7 +196,7 @@ export function Browse() {
           {!trimmed && popular.length > 0 && (
             <section className="space-y-3">
               <div className="text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
-                Popular
+                {t("apps.browse.popular", { defaultValue: "Popular" })}
               </div>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
                 {popular.map((entry) => (
@@ -182,12 +213,17 @@ export function Browse() {
 
           <section className="space-y-3">
             <div className="text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
-              {trimmed ? `Results (${filtered.length})` : "All apps"}
+              {trimmed
+                ? t("apps.browse.results", { count: filtered.length, defaultValue: "Results ({{count}})" })
+                : t("apps.sidebar.allApps", { defaultValue: "All apps" })}
             </div>
             {filtered.length === 0 ? (
               <p className="flex items-center gap-1.5 rounded-xl border border-dashed border-border bg-card px-4 py-6 text-sm text-muted-foreground">
                 <Link2 className="h-4 w-4" />
-                No planned apps match “{query.trim()}”.
+                {t("apps.browse.noMatches", {
+                  query: query.trim(),
+                  defaultValue: "No planned apps match “{{query}}”.",
+                })}
               </p>
             ) : (
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -224,12 +260,13 @@ function AppTile({
   connectedCount: number;
   compact?: boolean;
 }) {
+  const { t } = useTranslation();
   const disabled = !onOpen;
   const actionLabel = connectedCount > 0
-    ? `${connectedCount} connected already`
+    ? t("apps.browse.connectedAlready", { count: connectedCount, defaultValue: "{{count}} connected already" })
     : disabled
-      ? "Coming soon"
-      : "Connect →";
+      ? t("apps.common.comingSoon", { defaultValue: "Coming soon" })
+      : t("apps.common.connectArrow", { defaultValue: "Connect →" });
   if (compact) {
     return (
       <button
@@ -260,7 +297,7 @@ function AppTile({
       <AppLogo name={appDefinitionName(entry)} logoUrl={appDefinitionLogoUrl(entry)} size={36} />
       <div className="min-w-0 flex-1">
         <div className="text-sm font-semibold text-foreground">{appDefinitionName(entry)}</div>
-        <div className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{appDefinitionDescription(entry)}</div>
+        <div className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{appGalleryDescription(entry, t)}</div>
       </div>
       <span className={disabled ? "shrink-0 text-xs font-semibold text-muted-foreground" : "shrink-0 text-xs font-semibold text-primary"}>
         {actionLabel}

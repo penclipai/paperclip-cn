@@ -2473,6 +2473,65 @@ function toShellPath(value: string) {
   return normalized;
 }
 
+function buildPosixShellEnv(env: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
+  if (process.platform !== "win32" || !env.PATH) return env;
+
+  const bashPath = env.PATH
+    .split(path.delimiter)
+    .filter(Boolean)
+    .map((entry) => /^[A-Za-z]:[\\/]/.test(entry) ? toShellPath(entry) : entry)
+    .join(":");
+
+  return { ...env, PATH: bashPath };
+}
+
+function resolveCommandShell(command: string, env: NodeJS.ProcessEnv) {
+  return {
+    command: resolveShell(),
+    args: ["-c", command],
+    env: buildPosixShellEnv(env),
+  };
+}
+
+function parseJsonCommandArgument(command: string, start = 0) {
+  if (command[start] !== '"') return null;
+  for (let index = start + 1; index < command.length; index += 1) {
+    if (command[index] === "\\") {
+      index += 1;
+      continue;
+    }
+    if (command[index] !== '"') continue;
+    try {
+      const value = JSON.parse(command.slice(start, index + 1));
+      return typeof value === "string" ? { value, end: index + 1 } : null;
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+function resolveWorkspaceCommandProcess(command: string, env: NodeJS.ProcessEnv) {
+  if (process.platform === "win32") {
+    const trimmed = command.trim();
+    const quotedExecutable = parseJsonCommandArgument(trimmed);
+    const namedExecutable = trimmed.match(/^(node(?:\.exe)?)\b/i);
+    const executable = quotedExecutable?.value ?? namedExecutable?.[1];
+    const executableEnd = quotedExecutable?.end ?? namedExecutable?.[0].length;
+    const remainder = executable && executableEnd !== undefined
+      ? trimmed.slice(executableEnd).trim()
+      : "";
+    if (executable && remainder.startsWith("-e")) {
+      const script = parseJsonCommandArgument(remainder.slice(2).trim());
+      if (script && script.end === remainder.slice(2).trim().length) {
+        return { command: executable, args: ["-e", script.value], env };
+      }
+    }
+  }
+
+  return resolveCommandShell(command, env);
+}
+
 function resolveRepoManagedWorkspaceCommand(command: string, repoRoot: string) {
   const patterns = [
     /^(?<prefix>(?:bash|sh|zsh)\s+)(?<quote>["']?)(?<relative>\.\/[^"'\s]+)\k<quote>(?<suffix>(?:\s.*)?)$/s,
@@ -2503,12 +2562,12 @@ async function runWorkspaceCommand(input: {
   label: string;
   onLog?: (stream: "stdout" | "stderr", chunk: string) => Promise<void>;
 }) {
-  const shell = resolveShell();
+  const shell = resolveWorkspaceCommandProcess(input.resolvedCommand ?? input.command, input.env);
   const proc = await executeProcess({
-    command: shell,
-    args: ["-c", input.resolvedCommand ?? input.command],
+    command: shell.command,
+    args: shell.args,
     cwd: input.cwd,
-    env: input.env,
+    env: shell.env,
   });
   if (proc.stdout && input.onLog) await input.onLog("stdout", `[runtime-provision] ${proc.stdout}`);
   if (proc.stderr && input.onLog) await input.onLog("stderr", `[runtime-provision] ${proc.stderr}`);
@@ -2612,12 +2671,12 @@ async function recordWorkspaceCommandOperation(
     cwd: input.cwd,
     metadata: input.metadata ?? null,
     run: async () => {
-      const shell = resolveShell();
+      const shell = resolveWorkspaceCommandProcess(input.resolvedCommand ?? input.command, input.env);
       const result = await executeProcess({
-        command: shell,
-        args: ["-c", input.resolvedCommand ?? input.command],
+        command: shell.command,
+        args: shell.args,
         cwd: input.cwd,
-        env: input.env,
+        env: shell.env,
       });
       stdout = result.stdout;
       stderr = result.stderr;
@@ -4439,10 +4498,10 @@ async function spawnLocalRuntimeService(input: StartLocalRuntimeServiceInput): P
     onLog: input.onLog,
   });
 
-  const shell = resolveShell();
-  const child = spawn(shell, ["-lc", command], {
+  const processCommand = resolveWorkspaceCommandProcess(command, env);
+  const child = spawn(processCommand.command, processCommand.args, {
     cwd: serviceCwd,
-    env,
+    env: processCommand.env,
     detached: process.platform !== "win32",
     stdio: ["ignore", "pipe", "pipe"],
   });

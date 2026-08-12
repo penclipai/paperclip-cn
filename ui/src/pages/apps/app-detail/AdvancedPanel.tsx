@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { ArrowUpRight, Loader2, Lock } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import type { AppDefinition, ToolConnection } from "@penclipai/shared";
 import { credentialConfigPath, getAvailableConnectionMethod, humanizeConnectionDisplayName } from "@penclipai/shared";
 import { toolsApi } from "@/api/tools";
@@ -23,6 +24,7 @@ export function AdvancedPanel({
   onRemove: () => void;
   onReplaced: () => void;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-6">
       <KeySection connection={connection} galleryEntry={galleryEntry} onReplaced={onReplaced} />
@@ -41,6 +43,7 @@ function KeySection({
   galleryEntry: AppDefinition | null;
   onReplaced: () => void;
 }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   return (
     <section className="rounded-xl border border-border bg-card">
@@ -48,15 +51,19 @@ function KeySection({
         <div className="flex items-start gap-3">
           <Lock className="mt-0.5 h-4 w-4 text-muted-foreground" />
           <div>
-            <h2 className="text-sm font-bold text-foreground">Key</h2>
+            <h2 className="text-sm font-bold text-foreground">
+              {t("apps.detail.advanced.key.title", { defaultValue: "Key" })}
+            </h2>
             <p className="mt-0.5 text-sm text-muted-foreground">
-              Your key is stored securely. Replace it if it stopped working or you rotated it.
+              {t("apps.detail.advanced.key.description", {
+                defaultValue: "Your key is stored securely. Replace it if it stopped working or you rotated it.",
+              })}
             </p>
           </div>
         </div>
         {!open && (
           <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
-            Replace key
+            {t("apps.detail.advanced.key.replace", { defaultValue: "Replace key" })}
           </Button>
         )}
       </div>
@@ -86,14 +93,15 @@ export function ReconnectCard({
   galleryEntry: AppDefinition | null;
   onReconnected: () => void;
 }) {
+  const { t } = useTranslation();
   const { pushToast } = useToast();
   const reconnectOAuth = useMutation({
     mutationFn: () => toolsApi.startOAuth(connection.id),
     onSuccess: ({ authorizationUrl }) => navigateTopLevel(authorizationUrl),
     onError: (error) =>
       pushToast({
-        title: "Couldn’t start sign-in",
-        body: error instanceof Error ? error.message : "Please try again.",
+        title: t("apps.detail.oauth.startError.title", { defaultValue: "Couldn’t start sign-in" }),
+        body: error instanceof Error ? error.message : t("apps.detail.common.tryAgain", { defaultValue: "Please try again." }),
         tone: "error",
       }),
   });
@@ -102,12 +110,18 @@ export function ReconnectCard({
   return (
     <div className="rounded-xl border border-amber-500/50 bg-amber-500/10 p-5">
       <h2 className="text-sm font-bold text-amber-900 dark:text-amber-100">
-        {oauth ? "Reconnect required" : "This app needs reconnecting"}
+        {oauth
+          ? t("apps.detail.advanced.reconnectCard.oauthTitle", { defaultValue: "Reconnect required" })
+          : t("apps.detail.advanced.reconnectCard.title", { defaultValue: "This app needs reconnecting" })}
       </h2>
       <p className="mt-1 text-sm text-amber-800 dark:text-amber-200">
         {connection.healthMessage?.trim() || (oauth
-          ? "Authorization expired or was revoked. Sign in again to restore access."
-          : "The key stopped working. Paste a new one to get it back online.")}
+          ? t("apps.detail.advanced.reconnectCard.oauthDescription", {
+              defaultValue: "Authorization expired or was revoked. Sign in again to restore access.",
+            })
+          : t("apps.detail.advanced.reconnectCard.description", {
+              defaultValue: "The key stopped working. Paste a new one to get it back online.",
+            }))}
       </p>
       <div className="mt-3">
         {oauth ? (
@@ -118,7 +132,9 @@ export function ReconnectCard({
             onClick={() => reconnectOAuth.mutate()}
           >
             {reconnectOAuth.isPending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-            {reconnectOAuth.isPending ? "Opening sign-in…" : "Reconnect"}
+            {reconnectOAuth.isPending
+              ? t("apps.detail.oauth.openingSignIn", { defaultValue: "Opening sign-in…" })
+              : t("apps.detail.setup.oauth.reconnect", { defaultValue: "Reconnect" })}
           </Button>
         ) : (
           <ReconnectForm connection={connection} galleryEntry={galleryEntry} onReconnected={onReconnected} />
@@ -139,6 +155,7 @@ function ReconnectForm({
   onCancel?: () => void;
   onReconnected: () => void;
 }) {
+  const { t } = useTranslation();
   const { pushToast } = useToast();
   const method = galleryEntry && Array.isArray(galleryEntry.methods)
     ? getAvailableConnectionMethod(galleryEntry)
@@ -164,23 +181,30 @@ function ReconnectForm({
         result.connection.healthStatus === "healthy" || result.connection.healthStatus === "unknown";
       if (healthy) {
         pushToast({
-          title: "Reconnected",
-          body: `${humanizeConnectionDisplayName(connection)} is back online.`,
+          title: t("apps.detail.advanced.reconnect.success.title", { defaultValue: "Reconnected" }),
+          body: t("apps.detail.advanced.reconnect.success.body", {
+            appName: humanizeConnectionDisplayName(connection),
+            defaultValue: "{{appName}} is back online.",
+          }),
           tone: "success",
         });
         onReconnected();
       } else {
         pushToast({
-          title: "Still not working",
-          body: result.connection.healthMessage?.trim() || "That key didn't check out. Try another.",
+          title: t("apps.detail.advanced.reconnect.stillFailing.title", { defaultValue: "Still not working" }),
+          body: result.connection.healthMessage?.trim() || t("apps.detail.advanced.reconnect.stillFailing.body", {
+            defaultValue: "That key didn't check out. Try another.",
+          }),
           tone: "error",
         });
       }
     },
     onError: (error) =>
       pushToast({
-        title: "That key didn't work",
-        body: error instanceof Error ? error.message : "Check the key and try again.",
+        title: t("apps.detail.advanced.reconnect.error.title", { defaultValue: "That key didn't work" }),
+        body: error instanceof Error ? error.message : t("apps.detail.advanced.reconnect.error.body", {
+          defaultValue: "Check the key and try again.",
+        }),
         tone: "error",
       }),
   });
@@ -200,7 +224,7 @@ function ReconnectForm({
               autoComplete="off"
               value={values[field.configPath] ?? ""}
               onChange={(e) => setValues({ ...values, [field.configPath]: e.target.value })}
-              placeholder="****************"
+              placeholder={t("apps.detail.advanced.reconnect.fieldPlaceholder", { defaultValue: "****************" })}
               className="mt-1 h-10 font-mono"
             />
             {field.helpUrl && (
@@ -210,7 +234,8 @@ function ReconnectForm({
                 rel="noreferrer"
                 className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-foreground underline underline-offset-2"
               >
-                Where do I find this? <ArrowUpRight className="h-3 w-3" />
+                {t("apps.detail.advanced.reconnect.help", { defaultValue: "Where do I find this?" })}
+                <ArrowUpRight className="h-3 w-3" />
               </a>
             )}
           </div>
@@ -221,18 +246,20 @@ function ReconnectForm({
           autoComplete="off"
           value={single}
           onChange={(e) => setSingle(e.target.value)}
-          placeholder="Paste your new key"
+          placeholder={t("apps.detail.advanced.reconnect.placeholder", { defaultValue: "Paste your new key" })}
           className="h-10 font-mono"
         />
       )}
       <div className="flex items-center gap-2">
         <Button size="sm" disabled={!filled || reconnect.isPending} onClick={() => reconnect.mutate()}>
           {reconnect.isPending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-          {reconnect.isPending ? "Checking..." : "Check & reconnect"}
+          {reconnect.isPending
+            ? t("apps.detail.advanced.reconnect.checking", { defaultValue: "Checking..." })
+            : t("apps.detail.advanced.reconnect.submit", { defaultValue: "Check & reconnect" })}
         </Button>
         {onCancel && (
           <Button size="sm" variant="ghost" onClick={onCancel} disabled={reconnect.isPending}>
-            Cancel
+            {t("apps.detail.common.cancel", { defaultValue: "Cancel" })}
           </Button>
         )}
       </div>
@@ -241,14 +268,32 @@ function ReconnectForm({
 }
 
 function TechnicalDetails({ connection }: { connection: ToolConnection }) {
+  const { t } = useTranslation();
+  const address = connectionAddress(connection);
+  const displayAddress = connection.transport === "local_stdio"
+    ? t("apps.detail.advanced.technical.localCommand", { defaultValue: "Local command" })
+    : address === "Not set"
+      ? t("apps.detail.advanced.technical.notSet", { defaultValue: "Not set" })
+      : address;
+  const transportKey = connection.transport === "mcp_remote"
+    ? "apps.detail.advanced.technical.transport.remoteHttp"
+    : connection.transport === "local_stdio"
+      ? "apps.detail.advanced.technical.transport.localCommand"
+      : "apps.detail.advanced.technical.transport.unknown";
   return (
     <section className="rounded-xl border border-border bg-card px-5 py-4">
-      <h2 className="text-sm font-bold text-foreground">Technical details</h2>
+      <h2 className="text-sm font-bold text-foreground">
+        {t("apps.detail.advanced.technical.title", { defaultValue: "Technical details" })}
+      </h2>
       <dl className="mt-3 grid gap-2 text-xs sm:grid-cols-(--gtc-59)">
-        <dt className="text-muted-foreground">Address</dt>
-        <dd className="break-all font-mono text-foreground">{connectionAddress(connection)}</dd>
-        <dt className="text-muted-foreground">Connection type</dt>
-        <dd className="text-foreground">{connectionTransportLabel(connection.transport)}</dd>
+        <dt className="text-muted-foreground">
+          {t("apps.detail.advanced.technical.address", { defaultValue: "Address" })}
+        </dt>
+        <dd className="break-all font-mono text-foreground">{displayAddress}</dd>
+        <dt className="text-muted-foreground">
+          {t("apps.detail.advanced.technical.connectionType", { defaultValue: "Connection type" })}
+        </dt>
+        <dd className="text-foreground">{t(transportKey, { defaultValue: connectionTransportLabel(connection.transport) })}</dd>
       </dl>
     </section>
   );
@@ -263,32 +308,38 @@ export function DangerZone({
   removing: boolean;
   onRemove: () => void;
 }) {
+  const { t } = useTranslation();
   const [confirming, setConfirming] = useState(false);
   return (
     <section className="rounded-xl border border-destructive/40 bg-card">
       <div className="border-b border-destructive/40 px-5 py-3 text-sm font-bold text-destructive">
-        Danger zone
+        {t("apps.detail.advanced.danger.title", { defaultValue: "Danger zone" })}
       </div>
       <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
         <div>
-          <p className="text-sm font-medium text-foreground">Remove this app</p>
+          <p className="text-sm font-medium text-foreground">
+            {t("apps.detail.advanced.danger.removeTitle", { defaultValue: "Remove this app" })}
+          </p>
           <p className="text-xs text-muted-foreground">
-            Agents lose access to {appName} right away. You can connect it again later.
+            {t("apps.detail.advanced.danger.removeDescription", {
+              appName,
+              defaultValue: "Agents lose access to {{appName}} right away. You can connect it again later.",
+            })}
           </p>
         </div>
         {confirming ? (
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm" onClick={() => setConfirming(false)} disabled={removing}>
-              Cancel
+              {t("apps.detail.common.cancel", { defaultValue: "Cancel" })}
             </Button>
             <Button variant="destructive" size="sm" onClick={onRemove} disabled={removing}>
               {removing && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-              Yes, remove it
+              {t("apps.detail.advanced.danger.confirmRemove", { defaultValue: "Yes, remove it" })}
             </Button>
           </div>
         ) : (
           <Button variant="destructive" size="sm" onClick={() => setConfirming(true)}>
-            Remove app
+            {t("apps.detail.advanced.danger.removeButton", { defaultValue: "Remove app" })}
           </Button>
         )}
       </div>

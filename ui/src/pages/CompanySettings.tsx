@@ -1,5 +1,6 @@
 import { ChangeEvent, Fragment, useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import {
   DEFAULT_COMPANY_ATTACHMENT_MAX_BYTES,
   MAX_COMPANY_ATTACHMENT_MAX_BYTES,
@@ -34,22 +35,16 @@ const DEFAULT_COMPANY_ATTACHMENT_MAX_MIB = DEFAULT_COMPANY_ATTACHMENT_MAX_BYTES 
 const MAX_COMPANY_ATTACHMENT_MAX_MIB = MAX_COMPANY_ATTACHMENT_MAX_BYTES / BYTES_PER_MIB;
 
 const INTERACTION_KIND_LABELS: Record<IssueThreadInteractionKind, string> = {
-  suggest_tasks: "Suggested tasks",
-  ask_user_questions: "Ask user questions",
-  request_confirmation: "Confirmations",
-  request_checkbox_confirmation: "Checkbox confirmations",
-  request_item_verdicts: "Item verdicts",
+  suggest_tasks: "companySettings.governance.kind.suggest_tasks",
+  ask_user_questions: "companySettings.governance.kind.ask_user_questions",
+  request_confirmation: "companySettings.governance.kind.request_confirmation",
+  request_checkbox_confirmation: "companySettings.governance.kind.request_checkbox_confirmation",
+  request_item_verdicts: "companySettings.governance.kind.request_item_verdicts",
 };
 
 // Sentinel for "no override" — Radix Select disallows empty-string item values.
 const GOVERNANCE_UNSET = "default";
 type GovernanceSelectValue = typeof GOVERNANCE_UNSET | IssueThreadInteractionResolverPolicy;
-
-const GOVERNANCE_POLICY_OPTIONS: { value: GovernanceSelectValue; label: string }[] = [
-  { value: GOVERNANCE_UNSET, label: "Company default" },
-  { value: "board_only", label: "Board only" },
-  { value: "board_or_agents", label: "Board or agents" },
-];
 
 function toSelectValue(policy: IssueThreadInteractionResolverPolicy | undefined): GovernanceSelectValue {
   return policy ?? GOVERNANCE_UNSET;
@@ -82,6 +77,7 @@ function applyGovernanceChange(
 function GovernanceSelect({
   value,
   onChange,
+  options,
   disabled,
   testId,
   ariaLabel,
@@ -89,6 +85,7 @@ function GovernanceSelect({
 }: {
   value: GovernanceSelectValue;
   onChange: (value: GovernanceSelectValue) => void;
+  options: Array<{ value: GovernanceSelectValue; label: string }>;
   disabled?: boolean;
   testId?: string;
   ariaLabel: string;
@@ -116,7 +113,7 @@ function GovernanceSelect({
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          {GOVERNANCE_POLICY_OPTIONS.map((option) => (
+          {options.map((option) => (
             <SelectItem key={option.value} value={option.value} className="text-xs">
               {option.label}
             </SelectItem>
@@ -128,6 +125,7 @@ function GovernanceSelect({
 }
 
 export function CompanySettings() {
+  const { t } = useTranslation();
   const {
     companies,
     selectedCompany,
@@ -136,6 +134,11 @@ export function CompanySettings() {
   } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const queryClient = useQueryClient();
+  const governancePolicyOptions: Array<{ value: GovernanceSelectValue; label: string }> = [
+    { value: GOVERNANCE_UNSET, label: t("companySettings.governance.option.companyDefault") },
+    { value: "board_only", label: t("companySettings.governance.option.boardOnly") },
+    { value: "board_or_agents", label: t("companySettings.governance.option.boardOrAgents") },
+  ];
   // General settings local state
   const [companyName, setCompanyName] = useState("");
   const [description, setDescription] = useState("");
@@ -269,15 +272,15 @@ export function CompanySettings() {
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: selectedCompany?.name ?? "Company", href: "/dashboard" },
-      { label: "Settings" }
+      { label: selectedCompany?.name ?? t("Company"), href: "/dashboard" },
+      { label: t("Settings") }
     ]);
-  }, [setBreadcrumbs, selectedCompany?.name]);
+  }, [setBreadcrumbs, selectedCompany?.name, t]);
 
   if (!selectedCompany) {
     return (
       <div className="text-sm text-muted-foreground">
-        No company selected. Select a company from the switcher above.
+        {t("companySettings.noCompanySelectedBody")}
       </div>
     );
   }
@@ -295,16 +298,16 @@ export function CompanySettings() {
     <div className="max-w-2xl space-y-6">
       <div className="flex items-center gap-2">
         <Settings className="h-5 w-5 text-muted-foreground" />
-        <h1 className="text-lg font-semibold">Company Settings</h1>
+        <h1 className="text-lg font-semibold">{t("Company Settings")}</h1>
       </div>
 
       {/* General */}
       <div className="space-y-4">
         <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          General
+          {t("General")}
         </div>
         <div className="space-y-3 rounded-md border border-border px-4 py-4">
-          <Field label="Company name" hint="The display name for your company.">
+          <Field label={t("Company name")} hint={t("companySettings.companyNameHint")}>
             <input
               className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
               type="text"
@@ -313,14 +316,14 @@ export function CompanySettings() {
             />
           </Field>
           <Field
-            label="Description"
-            hint="Optional description shown in the company profile."
+            label={t("Description")}
+            hint={t("companySettings.descriptionHint")}
           >
             <input
               className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
               type="text"
               value={description}
-              placeholder="Optional company description"
+              placeholder={t("Optional company description")}
               onChange={(e) => setDescription(e.target.value)}
             />
           </Field>
@@ -330,7 +333,7 @@ export function CompanySettings() {
       {/* Appearance */}
       <div className="space-y-4">
         <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          Appearance
+          {t("Appearance")}
         </div>
         <div className="space-y-3 rounded-md border border-border px-4 py-4">
           <div className="flex items-start gap-4">
@@ -344,8 +347,8 @@ export function CompanySettings() {
             </div>
             <div className="flex-1 space-y-3">
               <Field
-                label="Logo"
-                hint="Upload a PNG, JPEG, WEBP, GIF, or SVG logo image."
+                label={t("Logo")}
+                hint={t("companySettings.logoHint")}
               >
                 <div className="space-y-2">
                   <input
@@ -362,7 +365,9 @@ export function CompanySettings() {
                         onClick={handleClearLogo}
                         disabled={clearLogoMutation.isPending}
                       >
-                        {clearLogoMutation.isPending ? "Removing..." : "Remove logo"}
+                        {clearLogoMutation.isPending
+                          ? t("Removing...", { defaultValue: "Removing..." })
+                          : t("Remove logo")}
                       </Button>
                     </div>
                   )}
@@ -371,7 +376,7 @@ export function CompanySettings() {
                       {logoUploadError ??
                         (logoUploadMutation.error instanceof Error
                           ? logoUploadMutation.error.message
-                          : "Logo upload failed")}
+                          : t("Logo upload failed"))}
                     </span>
                   )}
                   {clearLogoMutation.isError && (
@@ -380,13 +385,15 @@ export function CompanySettings() {
                     </span>
                   )}
                   {logoUploadMutation.isPending && (
-                    <span className="text-xs text-muted-foreground">Uploading logo...</span>
+                    <span className="text-xs text-muted-foreground">
+                      {t("Uploading logo...", { defaultValue: "Uploading logo..." })}
+                    </span>
                   )}
                 </div>
               </Field>
               <Field
-                label="Brand color"
-                hint="Sets the hue for the company icon. Leave empty for auto-generated color."
+                label={t("Brand color")}
+                hint={t("companySettings.brandColorHint")}
               >
                 <div className="flex items-center gap-2">
                   {/* token-extraction: allowlisted — <input type="color"> value must be a real hex string, not a var() reference. */}
@@ -405,7 +412,7 @@ export function CompanySettings() {
                         setBrandColor(v);
                       }
                     }}
-                    placeholder="Auto"
+                    placeholder={t("Auto")}
                     className="w-28 rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm font-mono outline-none"
                   />
                   {brandColor && (
@@ -415,14 +422,16 @@ export function CompanySettings() {
                       onClick={() => setBrandColor("")}
                       className="text-xs text-muted-foreground"
                     >
-                      Clear
+                      {t("Clear")}
                     </Button>
                   )}
                 </div>
               </Field>
               <Field
-                label="Attachment size limit"
-                hint={`Accepted range: 1-${MAX_COMPANY_ATTACHMENT_MAX_MIB} MiB.`}
+                label={t("Attachment size limit")}
+                hint={t("companySettings.attachmentLimitHint", {
+                  max: MAX_COMPANY_ATTACHMENT_MAX_MIB,
+                })}
               >
                 <div className="flex flex-col gap-1.5">
                   <div className="flex items-center gap-2">
@@ -435,11 +444,15 @@ export function CompanySettings() {
                       onChange={(e) => setAttachmentMaxMiB(e.target.value)}
                       className="w-28 rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
                     />
-                    <span className="text-xs text-muted-foreground">MiB</span>
+                    <span className="text-xs text-muted-foreground">
+                      {t("companySettings.mibUnit")}
+                    </span>
                   </div>
                   {!attachmentMaxValid && (
                     <span className="text-xs text-destructive">
-                      Enter a whole number from 1 to {MAX_COMPANY_ATTACHMENT_MAX_MIB}.
+                      {t("companySettings.attachmentRangeError", {
+                        max: MAX_COMPANY_ATTACHMENT_MAX_MIB,
+                      })}
                     </span>
                   )}
                 </div>
@@ -457,16 +470,18 @@ export function CompanySettings() {
             onClick={handleSaveGeneral}
             disabled={generalMutation.isPending || !companyName.trim() || !attachmentMaxValid}
           >
-            {generalMutation.isPending ? "Saving..." : "Save changes"}
+            {generalMutation.isPending
+              ? t("common.saving", { defaultValue: "Saving..." })
+              : t("Save changes")}
           </Button>
           {generalMutation.isSuccess && (
-            <span className="text-xs text-muted-foreground">Saved</span>
+            <span className="text-xs text-muted-foreground">{t("Saved")}</span>
           )}
           {generalMutation.isError && (
             <span className="text-xs text-destructive">
               {generalMutation.error instanceof Error
                   ? generalMutation.error.message
-                  : "Failed to save"}
+                  : t("Failed to save")}
             </span>
           )}
         </div>
@@ -475,12 +490,12 @@ export function CompanySettings() {
       {/* Hiring */}
       <div className="space-y-4" data-testid="company-settings-team-section">
         <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          Hiring
+          {t("Hiring")}
         </div>
         <div className="rounded-md border border-border px-4 py-3">
           <ToggleField
-            label="Require board approval for new hires"
-            hint="New agent hires stay pending until approved by board."
+            label={t("Require board approval for new hires")}
+            hint={t("companySettings.requireBoardApprovalHint")}
             checked={!!selectedCompany.requireBoardApprovalForNewAgents}
             onChange={(v) => settingsMutation.mutate(v)}
             toggleTestId="company-settings-team-approval-toggle"
@@ -491,18 +506,11 @@ export function CompanySettings() {
       {/* Interaction governance */}
       <div className="space-y-4" data-testid="company-settings-interaction-governance-section">
         <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          Interaction governance
+          {t("companySettings.interactionGovernance")}
         </div>
         <div className="space-y-4 rounded-md border border-border px-4 py-4">
           <p className="text-sm text-muted-foreground">
-            Control who may resolve each kind of thread interaction.{" "}
-            <span className="font-medium text-foreground">Default policy</span> is the
-            resolver policy new interactions request;{" "}
-            <span className="font-medium text-foreground">Cap</span> is the maximum a
-            request may reach — set it to{" "}
-            <span className="font-medium text-foreground">Board only</span> to always
-            require the board. Tool-approval confirmations always stay board-only
-            regardless of these settings.
+            {t("companySettings.interactionGovernanceDescription")}
           </p>
           {/*
            * Responsive: below `sm` the row collapses to a single column so the
@@ -513,32 +521,34 @@ export function CompanySettings() {
            */}
           <div className="grid grid-cols-1 gap-y-4 sm:grid-cols-[1fr_auto_auto] sm:items-center sm:gap-x-4 sm:gap-y-2.5">
             <div className="hidden text-xs font-medium text-muted-foreground uppercase tracking-wide sm:block">
-              Kind
+              {t("companySettings.governance.kind")}
             </div>
             <div className="hidden text-xs font-medium text-muted-foreground uppercase tracking-wide sm:block">
-              Default policy
+              {t("companySettings.governance.defaultPolicy")}
             </div>
             <div className="hidden text-xs font-medium text-muted-foreground uppercase tracking-wide sm:block">
-              Cap
+              {t("companySettings.governance.cap")}
             </div>
             {ISSUE_THREAD_INTERACTION_KINDS.map((kind) => {
               const entry = governance[kind] ?? {};
-              const kindLabel = INTERACTION_KIND_LABELS[kind];
+              const kindLabel = t(INTERACTION_KIND_LABELS[kind]);
               return (
                 <Fragment key={kind}>
                   <div className="text-sm font-medium sm:font-normal">{kindLabel}</div>
                   <GovernanceSelect
+                    options={governancePolicyOptions}
                     testId={`governance-${kind}-default`}
-                    ariaLabel={`Default resolver policy for ${kindLabel}`}
-                    mobileLabel="Default policy"
+                    ariaLabel={t("companySettings.governance.defaultPolicyAria", { kind: kindLabel })}
+                    mobileLabel={t("companySettings.governance.defaultPolicy")}
                     value={toSelectValue(entry.defaultPolicy)}
                     disabled={governanceMutation.isPending}
                     onChange={(v) => handleGovernanceChange(kind, "defaultPolicy", v)}
                   />
                   <GovernanceSelect
+                    options={governancePolicyOptions}
                     testId={`governance-${kind}-cap`}
-                    ariaLabel={`Resolver cap for ${kindLabel}`}
-                    mobileLabel="Cap"
+                    ariaLabel={t("companySettings.governance.capAria", { kind: kindLabel })}
+                    mobileLabel={t("companySettings.governance.cap")}
                     value={toSelectValue(entry.cap)}
                     disabled={governanceMutation.isPending}
                     onChange={(v) => handleGovernanceChange(kind, "cap", v)}
@@ -551,7 +561,7 @@ export function CompanySettings() {
             <span className="text-xs text-destructive">
               {governanceMutation.error instanceof Error
                 ? governanceMutation.error.message
-                : "Failed to save interaction governance"}
+                : t("companySettings.interactionGovernanceSaveFailed")}
             </span>
           )}
         </div>
@@ -560,20 +570,20 @@ export function CompanySettings() {
       {/* Import / Export */}
       <div className="space-y-4">
         <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          Company Packages
+          {t("Company Packages")}
         </div>
         <div className="rounded-md border border-border px-4 py-4">
           <div className="flex flex-wrap items-center gap-2">
             <Button size="sm" variant="outline" asChild>
               <Link to="/company/export">
                 <Download className="mr-1.5 h-3.5 w-3.5" />
-                Export
+                {t("Export")}
               </Link>
             </Button>
             <Button size="sm" variant="outline" asChild>
               <Link to="/company/import">
                 <Upload className="mr-1.5 h-3.5 w-3.5" />
-                Import
+                {t("Import")}
               </Link>
             </Button>
           </div>
@@ -583,12 +593,11 @@ export function CompanySettings() {
       {/* Danger Zone */}
       <div className="space-y-4">
         <div className="text-xs font-medium text-destructive uppercase tracking-wide">
-          Danger Zone
+          {t("Danger Zone")}
         </div>
         <div className="space-y-3 rounded-md border border-destructive/40 bg-destructive/5 px-4 py-4">
           <p className="text-sm text-muted-foreground">
-            Archive this company to hide it from the sidebar. This persists in
-            the database.
+            {t("Archive this company to hide it from the sidebar. This persists in the database.")}
           </p>
           <div className="flex items-center gap-2">
             <Button
@@ -601,7 +610,7 @@ export function CompanySettings() {
               onClick={() => {
                 if (!selectedCompanyId) return;
                 const confirmed = window.confirm(
-                  `Archive company "${selectedCompany.name}"? It will be hidden from the sidebar.`
+                  t("companySettings.archiveConfirm", { name: selectedCompany.name })
                 );
                 if (!confirmed) return;
                 const nextCompanyId =
@@ -617,16 +626,16 @@ export function CompanySettings() {
               }}
             >
               {archiveMutation.isPending
-                ? "Archiving..."
+                ? t("Archiving...", { defaultValue: "Archiving..." })
                 : selectedCompany.status === "archived"
-                ? "Already archived"
-                : "Archive company"}
+                ? t("Already archived")
+                : t("Archive company")}
             </Button>
             {archiveMutation.isError && (
               <span className="text-xs text-destructive">
                 {archiveMutation.error instanceof Error
                   ? archiveMutation.error.message
-                  : "Failed to archive company"}
+                  : t("Failed to archive company")}
               </span>
             )}
           </div>

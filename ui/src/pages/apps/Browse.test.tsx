@@ -114,14 +114,14 @@ describe("Browse store door (PAP-13254 door 1)", () => {
 
     const text = container.textContent ?? "";
     expect(text).toContain("Browse");
-    expect(text).toContain("Choose an app or connect your own MCP server.");
-    expect(text).not.toContain("More integrations are coming soon.");
+    expect(text).toContain("Connect Zapier or your own MCP server. More integrations are coming soon.");
     expect(text).not.toContain("Other integrations are previews.");
     expect(text).toContain("Popular");
     expect(text).toContain("All apps");
     expect(text).toContain("GitHub");
     expect(text).toContain("Slack");
     expect(text).toContain("Acme CRM");
+    expect(text).toContain("Read code and pull requests, and coordinate repository work.");
     // Bring-your-own is a first-class row in the store.
     expect(text).toContain("Connect your own tool");
   });
@@ -220,6 +220,13 @@ describe("Browse store door (PAP-13254 door 1)", () => {
       notionTiles[0]?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
     expect(navigateMock).toHaveBeenCalledWith("/apps/app/app-notion/setup");
+  });
+
+  it("uses locale-backed descriptions for known gallery apps", async () => {
+    await renderBrowse();
+
+    expect(container.textContent).toContain("Read code and pull requests, and coordinate repository work.");
+    expect(container.textContent).not.toContain("Open PRs and issues.");
   });
 
   it("keeps the custom URL option available when gallery search has no matches", async () => {

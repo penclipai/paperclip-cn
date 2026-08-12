@@ -8,6 +8,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Sidebar } from "./Sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
+const sidebarTestLanguage = vi.hoisted(() => ({ value: "en" as "en" | "zh-CN" }));
+
 vi.mock("react-i18next", async (importOriginal) => {
   const actual = await importOriginal<typeof import("react-i18next")>();
   const { translateForTest } = await import("../test-utils/i18n");
@@ -16,7 +18,7 @@ vi.mock("react-i18next", async (importOriginal) => {
     initReactI18next: { type: "3rdParty", init: () => {} },
     useTranslation: () => ({
       t: (key: string, options?: Record<string, unknown>) =>
-        translateForTest(key, options),
+        translateForTest(key, options, sidebarTestLanguage.value),
     }),
   };
 });
@@ -157,6 +159,7 @@ describe("Sidebar", () => {
   }
 
   beforeEach(() => {
+    sidebarTestLanguage.value = "en";
     container = document.createElement("div");
     document.body.appendChild(container);
     mockHeartbeatsApi.liveRunsForCompany.mockResolvedValue([]);
@@ -221,8 +224,8 @@ describe("Sidebar", () => {
     });
     const root = await renderSidebar();
 
-    expect(container.textContent).toContain("New Issue");
-    expect(container.textContent).not.toContain("New Task");
+    expect(container.textContent).toContain("New Task");
+    expect(container.textContent).not.toContain("New Issue");
 
     const navLabels = [...container.querySelectorAll("nav a")].map((a) => a.textContent?.trim());
     expect(navLabels).toContain("Tasks");
@@ -264,8 +267,8 @@ describe("Sidebar", () => {
     });
     const root = await renderSidebar();
 
-    expect(container.textContent).toContain("New Issue");
-    expect(container.textContent).not.toContain("New Task");
+    expect(container.textContent).toContain("New Task");
+    expect(container.textContent).not.toContain("New Issue");
 
     const navLabels = [...container.querySelectorAll("nav a")].map((a) => a.textContent?.trim());
     expect(navLabels).toContain("Tasks");
@@ -340,7 +343,7 @@ describe("Sidebar", () => {
     const statusLink = primaryNavLinks.find((anchor) => anchor.getAttribute("href") === "/status");
 
     expect(statusLink?.textContent).toContain("Status");
-    expect(statusLink?.textContent).toContain("beta");
+    expect(statusLink?.textContent).toContain("Beta");
     expect(statusLink?.textContent).not.toContain("exp");
     expect(statusLink?.textContent).not.toContain("cards");
     expect(primaryNavLinks.indexOf(statusLink!)).toBe(primaryNavLinks.indexOf(decisionsLink!) + 1);
@@ -546,6 +549,33 @@ describe("Sidebar", () => {
 
     const link = [...container.querySelectorAll("a")].find((anchor) => anchor.textContent === "Workspaces");
     expect(link?.getAttribute("href")).toBe("/workspaces");
+
+    flushSync(() => {
+      root.unmount();
+    });
+  });
+
+  it("localizes the shared sidebar shell in zh-CN", async () => {
+    sidebarTestLanguage.value = "zh-CN";
+    mockInstanceSettingsApi.getExperimental.mockResolvedValue({
+      enableIsolatedWorkspaces: true,
+      enableConferenceRoomChat: true,
+      enableStatusCards: true,
+    });
+    const root = await renderSidebar();
+
+    const navText = container.querySelector("nav")?.textContent ?? "";
+    expect(navText).toContain("搜索");
+    expect(navText).toContain("仪表盘");
+    expect(navText).toContain("收件箱");
+    expect(navText).toContain("工作");
+    expect(navText).toContain("公司");
+    expect(navText).toContain("会议室");
+    expect(navText).toContain("状态");
+    expect(navText).toContain("测试版");
+    expect(navText).toContain("工作区");
+
+    expect(container.textContent).toContain("新建任务");
 
     flushSync(() => {
       root.unmount();

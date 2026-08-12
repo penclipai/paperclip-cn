@@ -558,7 +558,7 @@ function ExportPreviewPane({
     return (
       <EmptyState
         icon={Package}
-        message="Select a file to preview its contents."
+        message={t("companyExport.selectPreview")}
       />
     );
   }
@@ -767,11 +767,11 @@ export function CompanyExport() {
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: selectedCompany?.name ?? "Company", href: "/dashboard" },
-      { label: "Settings", href: "/company/settings" },
-      { label: "Export" },
+      { label: selectedCompany?.name ?? t("Company"), href: "/dashboard" },
+      { label: t("Settings"), href: "/company/settings" },
+      { label: t("Export") },
     ]);
-  }, [selectedCompany?.name, setBreadcrumbs]);
+  }, [selectedCompany?.name, setBreadcrumbs, t]);
 
   const exportPreviewMutation = useMutation({
     mutationFn: () =>
@@ -810,9 +810,9 @@ export function CompanyExport() {
     onError: (err) => {
       pushToast({
         tone: "error",
-        title: "Export failed",
+        title: t("companyExport.exportFailedTitle"),
         body:
-          err instanceof Error ? err.message : "Failed to load export data.",
+          err instanceof Error ? err.message : t("companyExport.exportFailedBody"),
       });
     },
   });
@@ -829,18 +829,21 @@ export function CompanyExport() {
       downloadZip(result, resultCheckedFiles, result.files);
       pushToast({
         tone: "success",
-        title: "Export downloaded",
-        body: `${resultCheckedFiles.size} file${resultCheckedFiles.size === 1 ? "" : "s"} exported as ${result.rootPath}.zip`,
+        title: t("companyExport.exportDownloadedTitle"),
+        body: t("companyExport.exportDownloadedBody", {
+          count: resultCheckedFiles.size,
+          rootPath: result.rootPath,
+        }),
       });
     },
     onError: (err) => {
       pushToast({
         tone: "error",
-        title: "Export failed",
+        title: t("companyExport.exportFailedTitle"),
         body:
           err instanceof Error
             ? err.message
-            : "Failed to build export package.",
+            : t("companyExport.buildFailedBody"),
       });
     },
   });
@@ -1051,7 +1054,7 @@ export function CompanyExport() {
   }
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={Package} message="Select a company to export." />;
+    return <EmptyState icon={Package} message={t("companyExport.selectCompany")} />;
   }
 
   if (exportPreviewMutation.isPending && !exportData) {
@@ -1059,7 +1062,7 @@ export function CompanyExport() {
   }
 
   if (!exportData) {
-    return <EmptyState icon={Package} message="Loading export data..." />;
+    return <EmptyState icon={Package} message={t("companyExport.loadingData")} />;
   }
 
   const previewContent = selectedFile
@@ -1075,20 +1078,20 @@ export function CompanyExport() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-4 text-sm">
             <span className="font-medium">
-              {selectedCompany?.name ?? "Company"}{" "}
-              {t("companyExport.exportLabel")}
+              {t("companyExport.header", {
+                companyName: selectedCompany?.name ?? t("companyExport.companyFallback"),
+              })}
             </span>
             <span className="text-muted-foreground">
-              {t("companyExport.exporting")} {selectedCount.toLocaleString()}{" "}
-              {t("issueCommon.of")} {totalFiles.toLocaleString()}{" "}
-              {t("companyImport.file")}
-              {totalFiles === 1 ? "" : "s"}
-              {selectedCount > 0 && ` (~${formatBytes(estimatedZipBytes)})`}
+              {t("companyExport.selectionSummary", {
+                selected: selectedCount.toLocaleString(),
+                total: totalFiles.toLocaleString(),
+                sizeSuffix: selectedCount > 0 ? ` (~${formatBytes(estimatedZipBytes)})` : "",
+              })}
             </span>
             {warnings.length > 0 && (
               <span className="text-amber-500">
-                {warnings.length} {t("companyExport.warning")}
-                {warnings.length === 1 ? "" : "s"}
+                {t("companyExport.warningCount", { count: warnings.length })}
               </span>
             )}
           </div>
@@ -1099,8 +1102,8 @@ export function CompanyExport() {
           >
             <Download className="mr-1.5 h-3.5 w-3.5" />
             {downloadMutation.isPending
-              ? "Building export..."
-              : `Export ${selectedCount.toLocaleString()} file${selectedCount === 1 ? "" : "s"}`}
+              ? t("companyExport.building")
+              : t("companyExport.exportButton", { count: selectedCount })}
           </Button>
         </div>
       </div>
@@ -1172,7 +1175,7 @@ export function CompanyExport() {
                     )}
                     title={
                       disabled
-                        ? "Attachments travel with tasks and routines; re-enable one of them to include attachments."
+                        ? t("companyExport.attachmentsRequireTasksOrRoutines")
                         : undefined
                     }
                   >
@@ -1185,7 +1188,7 @@ export function CompanyExport() {
                       data-export-category={key}
                     />
                     <span className="min-w-0 truncate">
-                      {EXPORT_CATEGORY_LABELS[key]}
+                      {t(EXPORT_CATEGORY_LABELS[key], { defaultValue: EXPORT_CATEGORY_LABELS[key] })}
                     </span>
                     <span className="text-xs text-muted-foreground">
                       {count.toLocaleString()}
@@ -1226,9 +1229,10 @@ export function CompanyExport() {
                   onClick={() => setTaskLimit((prev) => prev + TASKS_PAGE_SIZE)}
                   className="w-full rounded-md border border-border px-3 py-1.5 text-xs text-muted-foreground hover:bg-accent/30 hover:text-foreground transition-colors"
                 >
-                  {t("companyExport.showMoreTasks")}
-                  {visibleTaskChildren} {t("issueCommon.of")}{" "}
-                  {totalTaskChildren})
+                  {t("companyExport.showMoreTasksSummary", {
+                    visible: visibleTaskChildren,
+                    total: totalTaskChildren,
+                  })}
                 </button>
               </div>
             )}

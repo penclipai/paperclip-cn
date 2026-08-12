@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NewIssueDialog } from "./NewIssueDialog";
 
+const currentLanguage = vi.hoisted(() => ({ value: "en" as "en" | "zh-CN" }));
 const dialogState = vi.hoisted(() => ({
   newIssueOpen: true,
   newIssueDefaults: {} as Record<string, unknown>,
@@ -77,6 +78,24 @@ const mockInstanceSettingsApi = vi.hoisted(() => ({
   getExperimental: vi.fn(),
 }));
 const mockMissingUserSecretsBannerRender = vi.hoisted(() => vi.fn());
+
+vi.mock("react-i18next", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("react-i18next")>();
+  const { translateForTest } = await import("../test-utils/i18n");
+  return {
+    ...actual,
+    initReactI18next: { type: "3rdParty", init: () => {} },
+    useTranslation: () => ({
+      t: (key: string, options?: Record<string, unknown>) =>
+        translateForTest(key, options, currentLanguage.value),
+      i18n: {
+        language: currentLanguage.value,
+        resolvedLanguage: currentLanguage.value,
+        changeLanguage: vi.fn(),
+      },
+    }),
+  };
+});
 
 vi.mock("../context/DialogContext", () => ({
   useDialog: () => dialogState,
@@ -321,6 +340,7 @@ describe("NewIssueDialog", () => {
 
   beforeEach(() => {
     vi.useRealTimers();
+    currentLanguage.value = "en";
     originalResizeObserver = globalThis.ResizeObserver;
     globalThis.ResizeObserver = class ResizeObserver {
       observe() {}
@@ -398,6 +418,31 @@ describe("NewIssueDialog", () => {
     expect(container.textContent).not.toContain("Sub-task of");
 
     act(() => rerendered.root.unmount());
+  });
+
+  it("renders the new-task dialog from locale keys in zh-CN", async () => {
+    currentLanguage.value = "zh-CN";
+
+    const { root } = renderDialog(container);
+    await flush();
+
+    expect(container.textContent).toContain("新建任务");
+    expect(container.textContent).toContain("待办");
+    expect(container.textContent).toContain("上传");
+    expect(container.textContent).toContain("丢弃草稿");
+    expect(container.textContent).toContain("创建任务");
+
+    const titleInput = container.querySelector('textarea[placeholder="任务标题"]');
+    const descriptionInput = container.querySelector('textarea[aria-label="添加描述..."]');
+    expect(titleInput).not.toBeNull();
+    expect(descriptionInput).not.toBeNull();
+
+    expect(container.textContent).not.toContain("New task");
+    expect(container.textContent).not.toContain("Create Task");
+    expect(container.textContent).not.toContain("Discard Draft");
+    expect(container.textContent).not.toContain("Upload");
+
+    act(() => root.unmount());
   });
 
   it("submits parent and goal context for sub-issues", async () => {

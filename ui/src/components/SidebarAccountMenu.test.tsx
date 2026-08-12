@@ -6,6 +6,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { queryKeys } from "../lib/queryKeys";
 import { SidebarAccountMenu } from "./SidebarAccountMenu";
 
+const currentLanguage = vi.hoisted(() => ({ value: "en" as "en" | "zh-CN" }));
+const mockChangeLanguage = vi.hoisted(() => vi.fn());
 const mockAuthApi = vi.hoisted(() => ({
   getSession: vi.fn(),
   signInEmail: vi.fn(),
@@ -20,6 +22,24 @@ const mockInstanceSettingsApi = vi.hoisted(() => ({
 const mockToggleTheme = vi.hoisted(() => vi.fn());
 const mockSetSidebarOpen = vi.hoisted(() => vi.fn());
 const mockNavigateTopLevel = vi.hoisted(() => vi.fn());
+
+vi.mock("react-i18next", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("react-i18next")>();
+  const { translateForTest } = await import("../test-utils/i18n");
+  return {
+    ...actual,
+    initReactI18next: { type: "3rdParty", init: () => {} },
+    useTranslation: () => ({
+      t: (key: string, options?: Record<string, unknown>) =>
+        translateForTest(key, options, currentLanguage.value),
+      i18n: {
+        language: currentLanguage.value,
+        resolvedLanguage: currentLanguage.value,
+        changeLanguage: mockChangeLanguage,
+      },
+    }),
+  };
+});
 
 vi.mock("@/api/auth", () => ({
   authApi: mockAuthApi,
@@ -47,6 +67,8 @@ vi.mock("../context/SidebarContext", () => ({
   useSidebar: () => ({
     isMobile: false,
     setSidebarOpen: mockSetSidebarOpen,
+    collapsed: false,
+    peeking: false,
   }),
 }));
 
@@ -77,6 +99,9 @@ describe("SidebarAccountMenu", () => {
   let container: HTMLDivElement;
 
   beforeEach(() => {
+    currentLanguage.value = "en";
+    mockChangeLanguage.mockReset();
+    mockChangeLanguage.mockResolvedValue(undefined);
     container = document.createElement("div");
     document.body.appendChild(container);
     mockAuthApi.getSession.mockResolvedValue({
@@ -239,6 +264,43 @@ describe("SidebarAccountMenu", () => {
     await flushReact();
 
     expect(document.body.textContent).not.toContain("Sign out");
+
+    await act(async () => {
+      root.unmount();
+    });
+  });
+
+  it("restores the inline language switcher and changes the UI language", async () => {
+    currentLanguage.value = "zh-CN";
+    const root = createRoot(container);
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    await act(async () => {
+      root.render(
+        <QueryClientProvider client={queryClient}>
+          <SidebarAccountMenu deploymentMode="authenticated" open />
+        </QueryClientProvider>,
+      );
+    });
+    await flushReact();
+
+    expect(document.body.textContent).toContain("语言");
+    expect(document.body.textContent).toContain("中文");
+    expect(document.body.textContent).toContain("English");
+
+    const englishButton = Array.from(document.body.querySelectorAll("button")).find(
+      (button) => button.textContent?.includes("English"),
+    );
+    expect(englishButton?.getAttribute("aria-pressed")).toBe("false");
+
+    await act(async () => {
+      englishButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+    await flushReact();
+
+    expect(mockChangeLanguage).toHaveBeenCalledWith("en");
 
     await act(async () => {
       root.unmount();

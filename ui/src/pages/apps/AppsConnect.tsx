@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import {
   ArrowUpRight,
   Check,
@@ -46,7 +47,7 @@ import { navigateTopLevel } from "@/lib/browserNavigation";
 import { AppLogo } from "./AppLogo";
 import { appSourceConnectHref, isMcpDirectOAuthConnectSlug } from "./app-connect-policy";
 import { parseGoogleSheetIds } from "./google-sheets";
-import { autoExtendNotice, INSTALL_ALL_WARNING, installInfoNotice, installPayload } from "@/lib/tool-installs";
+import { installPayload } from "@/lib/tool-installs";
 
 type Step = "gallery" | "key" | "actions" | "who" | "install" | "success";
 export type OAuthConnectPhase = "entry" | "starting" | "redirecting" | "error";
@@ -1779,6 +1780,7 @@ export function InstallStep({
   onBack: () => void;
   onFinish: () => void;
 }) {
+  const { t } = useTranslation();
   const agentsQuery = useQuery({
     queryKey: queryKeys.agents.list(companyId),
     queryFn: () => agentsApi.list(companyId),
@@ -1795,20 +1797,28 @@ export function InstallStep({
       : [...installAgentIds].filter((id) => !accessAgentIds.has(id));
   const canFinish = installMode !== "specific" || installAgentIds.size > 0;
   const extendingLabel = extendingAgentIds.length === 1
-    ? agents.find((agent) => agent.id === extendingAgentIds[0])?.name ?? "1 agent"
-    : `${extendingAgentIds.length} agents`;
+    ? agents.find((agent) => agent.id === extendingAgentIds[0])?.name
+      ?? t("apps.connect.install.agentCount", { count: 1, defaultValue: "{{count}} agents" })
+    : t("apps.connect.install.agentCount", { count: extendingAgentIds.length, defaultValue: "{{count}} agents" });
 
   return (
     <div className="mx-auto max-w-xl">
       <div className="rounded-2xl border border-border bg-card p-8">
-        <h2 className="text-xl font-bold tracking-tight">Install {appName} tools?</h2>
+        <h2 className="text-xl font-bold tracking-tight">
+          {t("apps.connect.install.title", { appName, defaultValue: "Install {{appName}} tools?" })}
+        </h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Access is permission. Install decides whose runs actually carry these tools.
+          {t("apps.connect.install.description", {
+            defaultValue: "Access is permission. Install decides whose runs actually carry these tools.",
+          })}
         </p>
 
         <div className="mt-5">
           <InlineBanner tone="info" compact>
-            {installInfoNotice(appName)}
+            {t("apps.connect.install.infoNotice", {
+              appName,
+              defaultValue: "Installing adds {{appName}}'s tools to the agent's context on every run — install only where it will actually be used.",
+            })}
           </InlineBanner>
         </div>
 
@@ -1823,9 +1833,14 @@ export function InstallStep({
           >
             <Radio selected={installMode === "none"} />
             <div>
-              <span className="font-semibold text-foreground">Not yet</span>
+              <span className="font-semibold text-foreground">
+                {t("apps.connect.install.notYet", { defaultValue: "Not yet" })}
+              </span>
               <p className="mt-1 text-xs text-muted-foreground">
-                Keep {appName} permitted only. You can install it later from the app or agent page.
+                {t("apps.connect.install.notYetDescription", {
+                  appName,
+                  defaultValue: "Keep {{appName}} permitted only. You can install it later from the app or agent page.",
+                })}
               </p>
             </div>
           </button>
@@ -1840,8 +1855,15 @@ export function InstallStep({
           >
             <Radio selected={installMode === "specific"} />
             <div className="flex-1">
-              <span className="font-semibold text-foreground">Specific agents</span>
-              <p className="mt-1 text-xs text-muted-foreground">Tick the agents that should load {appName} every run.</p>
+              <span className="font-semibold text-foreground">
+                {t("apps.connect.install.specificAgents", { defaultValue: "Specific agents" })}
+              </span>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {t("apps.connect.install.specificDescription", {
+                  appName,
+                  defaultValue: "Tick the agents that should load {{appName}} every run.",
+                })}
+              </p>
             </div>
           </button>
 
@@ -1867,14 +1889,23 @@ export function InstallStep({
           >
             <Radio selected={installMode === "all"} />
             <div>
-              <span className="font-semibold text-foreground">All agents</span>
-              <p className="mt-1 text-xs text-muted-foreground">{INSTALL_ALL_WARNING}</p>
+              <span className="font-semibold text-foreground">
+                {t("apps.detail.permissions.installed.installAll.title", { defaultValue: "Install on all agents" })}
+              </span>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {t("apps.connect.install.allWarning", {
+                  defaultValue: "Adds context cost to every run of every agent — a deliberate choice. New agents you add later are installed automatically.",
+                })}
+              </p>
             </div>
           </button>
 
           {extendingAgentIds.length > 0 ? (
             <InlineBanner tone="warning" compact>
-              {autoExtendNotice(extendingLabel)}
+              {t("apps.connect.install.extendNotice", {
+                agents: extendingLabel,
+                defaultValue: "Installing on {{agents}} will also grant access. A tool can't be installed on an agent that isn't allowed to use it, so we'll add {{agents}} to who can use it. This is logged.",
+              })}
             </InlineBanner>
           ) : null}
         </div>
@@ -1882,11 +1913,13 @@ export function InstallStep({
 
       <div className="mt-6 flex items-center justify-between">
         <Button variant="ghost" onClick={onBack} disabled={submitting}>
-          Back
+          {t("apps.common.back", { defaultValue: "Back" })}
         </Button>
         <Button onClick={onFinish} disabled={submitting || !canFinish}>
           {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {submitting ? "Finishing..." : "Finish setup"}
+          {submitting
+            ? t("apps.connect.install.finishing", { defaultValue: "Finishing..." })
+            : t("apps.connect.install.finish", { defaultValue: "Finish setup" })}
         </Button>
       </div>
     </div>
@@ -1923,11 +1956,12 @@ function SuccessStep({
   installCount: number;
   onDone: () => void;
 }) {
+  const { t } = useTranslation();
   const installSummary = installMode === "all"
-    ? "Installed on all agents"
+    ? t("apps.connect.success.installedAll", { defaultValue: "Installed on all agents" })
     : installMode === "specific"
-      ? `${installCount} ${installCount === 1 ? "agent" : "agents"} installed`
-      : "Permitted only";
+      ? t("apps.connect.success.installedCount", { count: installCount, defaultValue: "{{count}} agents installed" })
+      : t("apps.connect.success.permittedOnly", { defaultValue: "Permitted only" });
   return (
     <div className="mx-auto max-w-md py-10 text-center">
       <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border-2 border-emerald-500 bg-emerald-500/10">
@@ -1935,20 +1969,30 @@ function SuccessStep({
       </div>
       <div className="mt-6 flex items-center justify-center gap-2">
         <AppLogo name={appName} logoUrl={logoUrl} size={28} />
-        <h2 className="text-2xl font-bold tracking-tight">{appName} is ready.</h2>
+        <h2 className="text-2xl font-bold tracking-tight">
+          {t("apps.connect.success.ready", { appName, defaultValue: "{{appName}} is ready." })}
+        </h2>
       </div>
       <p className="mt-2 text-sm text-muted-foreground">
         {installMode === "none"
-          ? "Agents can use it after you install it on their Tools tab."
-          : "Installed agents will load it on their next run."}
+          ? t("apps.connect.success.installLater", {
+              defaultValue: "Agents can use it after you install it on their Tools tab.",
+            })
+          : t("apps.connect.success.loadNextRun", { defaultValue: "Installed agents will load it on their next run." })}
       </p>
       <p className="mt-1 text-xs text-muted-foreground">
-        {enabledCount} {enabledCount === 1 ? "action" : "actions"} on ·{" "}
-        {access === "all" ? "All agents can use it" : "Specific agents can use it"} · {installSummary}
+        {t("apps.connect.success.summary", {
+          count: enabledCount,
+          access: access === "all"
+            ? t("apps.connect.success.allAccess", { defaultValue: "All agents can use it" })
+            : t("apps.connect.success.specificAccess", { defaultValue: "Specific agents can use it" }),
+          install: installSummary,
+          defaultValue: "{{count}} actions on · {{access}} · {{install}}",
+        })}
       </p>
       <div className="mt-8">
         <Button size="lg" className="px-10" onClick={onDone}>
-          Done
+          {t("common.done", { defaultValue: "Done" })}
         </Button>
       </div>
     </div>

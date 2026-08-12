@@ -22,15 +22,11 @@ const externalUIAdapter: UIAdapterModule = {
 describe("ui adapter registry", () => {
   beforeEach(() => {
     unregisterUIAdapter("external_test");
-    unregisterUIAdapter("hermes_local");
-    unregisterUIAdapter("hermes_gateway");
     syncExternalAdapters([]);
   });
 
   afterEach(() => {
     unregisterUIAdapter("external_test");
-    unregisterUIAdapter("hermes_local");
-    unregisterUIAdapter("hermes_gateway");
     syncExternalAdapters([]);
   });
 
@@ -56,20 +52,29 @@ describe("ui adapter registry", () => {
     expect(fallback.ConfigFields).toBe(SchemaConfigFields);
   });
 
-  it("registers external Hermes so agent creation menus can show it after install", () => {
-    unregisterUIAdapter("hermes_local");
+  it("restores built-in Hermes adapters when external overrides are paused or removed", () => {
+    for (const type of ["hermes_local", "hermes_gateway"]) {
+      const builtin = getUIAdapter(type);
 
-    syncExternalAdapters([
-      {
-        type: "hermes_local",
-        label: "Hermes Agent",
-        disabled: false,
-      },
-    ]);
+      syncExternalAdapters([{ type, label: "External Hermes" }]);
 
-    expect(listUIAdapters().some((adapter) => adapter.type === "hermes_local")).toBe(true);
-    expect(findUIAdapter("hermes_local")).not.toBeNull();
+      const overridden = getUIAdapter(type);
+      expect(overridden).not.toBe(builtin);
+      expect(overridden.type).toBe(type);
+      expect(overridden.label).toBe("External Hermes");
+      expect(overridden.ConfigFields).toBe(builtin.ConfigFields);
+      expect(overridden.buildAdapterConfig).toBe(builtin.buildAdapterConfig);
 
-    unregisterUIAdapter("hermes_local");
+      syncExternalAdapters([{ type, label: "External Hermes", overrideDisabled: true }]);
+
+      expect(getUIAdapter(type)).toBe(builtin);
+
+      syncExternalAdapters([{ type, label: "External Hermes" }]);
+      expect(getUIAdapter(type)).not.toBe(builtin);
+
+      syncExternalAdapters([]);
+
+      expect(getUIAdapter(type)).toBe(builtin);
+    }
   });
 });

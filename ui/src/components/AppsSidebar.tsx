@@ -1,5 +1,6 @@
 import { ChevronLeft, AppWindow, Store, ShieldQuestion } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Link } from "@/lib/router";
 import { useCompany } from "@/context/CompanyContext";
 import { useSidebar } from "@/context/SidebarContext";
@@ -28,6 +29,7 @@ import { SidebarNavItem } from "./SidebarNavItem";
  * (PAP-10922).
  */
 export function AppsSidebar() {
+  const { t } = useTranslation();
   const { selectedCompany, selectedCompanyId } = useCompany();
   const { isMobile, setSidebarOpen } = useSidebar();
 
@@ -57,42 +59,58 @@ export function AppsSidebar() {
           className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
         >
           <ChevronLeft className="h-3.5 w-3.5 shrink-0" />
-          <span className="truncate">{selectedCompany?.name ?? "Company"}</span>
+          <span className="truncate">
+            {selectedCompany?.name ?? t("apps.common.company", { defaultValue: "Company" })}
+          </span>
         </Link>
         <div className="flex items-center gap-2 px-2 py-1">
           <AppWindow className="h-4 w-4 text-muted-foreground shrink-0" />
-          <span className="flex-1 truncate text-sm font-bold text-foreground">Apps</span>
+          <span className="flex-1 truncate text-sm font-bold text-foreground">
+            {t("apps.common.apps", { defaultValue: "Apps" })}
+          </span>
         </div>
       </div>
 
       <nav className="flex-1 min-h-0 overflow-y-auto scrollbar-auto-hide px-3 py-2">
         <div className="px-3 pb-1 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
-          Apps
+          {t("apps.common.apps", { defaultValue: "Apps" })}
         </div>
         <div className="flex flex-col gap-0.5">
-          <SidebarNavItem to="/apps" label="Browse" icon={Store} end />
+          <SidebarNavItem
+            to="/apps"
+            label={t("apps.sidebar.browse", { defaultValue: "Browse" })}
+            icon={Store}
+            end
+          />
           <SidebarNavItem
             to="/apps/review"
-            label="Review"
+            label={t("apps.sidebar.review", { defaultValue: "Review" })}
             icon={ShieldQuestion}
             badge={reviewCount > 0 ? reviewCount : undefined}
             badgeTone="warning"
-            badgeLabel="waiting for your OK"
+            badgeLabel={t("apps.sidebar.waitingForApproval", { defaultValue: "waiting for your OK" })}
           />
         </div>
         <div className="px-3 pb-1 pt-4 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
-          Developer
+          {t("apps.sidebar.developer", { defaultValue: "Developer" })}
         </div>
         <p className="px-3 pb-1.5 text-(length:--text-micro) leading-snug text-muted-foreground/70">
-          Advanced setup for developers. Most teams never open this.
+          {t("apps.sidebar.developerDescription", {
+            defaultValue: "Advanced setup for developers. Most teams never open this.",
+          })}
         </p>
         <div className="flex flex-col gap-0.5">
-          <SidebarNavItem to="/apps/connections" label="Connections" icon={AppWindow} end />
+          <SidebarNavItem
+            to="/apps/connections"
+            label={t("apps.sidebar.connections", { defaultValue: "Connections" })}
+            icon={AppWindow}
+            end
+          />
           {developerTabs.map((tab) => (
             <SidebarNavItem
               key={tab.key}
               to={advancedTabHref(tab.key)}
-              label={tab.label}
+              label={developerTabLabel(tab.key, t)}
               icon={tab.icon}
               end
               liveCount={tab.key === "runtime" && runtimeActiveCount > 0 ? runtimeActiveCount : undefined}
@@ -102,4 +120,24 @@ export function AppsSidebar() {
       </nav>
     </aside>
   );
+}
+
+function developerTabLabel(
+  tabKey: typeof DEVELOPER_TABS[number]["key"],
+  t: ReturnType<typeof useTranslation>["t"],
+): string {
+  switch (tabKey) {
+    case "gateways":
+      return t("tools.tabs.gateways", { defaultValue: "Gateways" });
+    case "profiles":
+      return t("tools.tabs.profiles", { defaultValue: "Profiles" });
+    case "policies":
+      return t("tools.tabs.rules", { defaultValue: "Rules" });
+    case "runtime":
+      return t("tools.tabs.health", { defaultValue: "Health" });
+    case "audit":
+      return t("tools.tabs.activity", { defaultValue: "Activity" });
+    case "smoke-lab":
+      return t("tools.tabs.smokeLab", { defaultValue: "Smoke Lab" });
+  }
 }

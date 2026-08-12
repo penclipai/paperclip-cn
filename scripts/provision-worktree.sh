@@ -12,7 +12,30 @@ seed_pending_marker_path="$paperclip_dir/seed-pending"
 seed_complete_marker_path="$paperclip_dir/seed-complete"
 worktree_name="${PAPERCLIP_WORKSPACE_BRANCH:-$(basename "$worktree_cwd")}"
 created_worktree_config=0
-worktree_instance_id="$(WORKTREE_CWD="$worktree_cwd" node <<'EOF'
+resolve_node_command() {
+  if command -v node >/dev/null 2>&1; then
+    printf '%s\n' "node"
+    return 0
+  fi
+  if command -v node.exe >/dev/null 2>&1; then
+    printf '%s\n' "node.exe"
+    return 0
+  fi
+  if [[ -x "/c/Program Files/nodejs/node.exe" ]]; then
+    printf '%s\n' "/c/Program Files/nodejs/node.exe"
+    return 0
+  fi
+  return 1
+}
+
+node_command="${PAPERCLIP_NODE_COMMAND:-$(resolve_node_command || true)}"
+
+if [[ -z "$node_command" ]]; then
+  echo "Node.js is required to provision a Paperclip worktree." >&2
+  exit 127
+fi
+
+worktree_instance_id="$(WORKTREE_CWD="$worktree_cwd" "$node_command" <<'EOF'
 const crypto = require("node:crypto");
 const path = require("node:path");
 
@@ -63,7 +86,7 @@ base_cli_files_present() {
 # runtime. Actually boot the CLI to prove its import graph resolves.
 base_cli_healthy() {
   base_cli_files_present || return 1
-  (cd "$base_cwd" && node "$base_cli_runner_path" "$base_cli_entry_path" --help >/dev/null 2>&1)
+  (cd "$base_cwd" && "$node_command" "$base_cli_runner_path" "$base_cli_entry_path" --help >/dev/null 2>&1)
 }
 
 repair_base_workspace_install() {
@@ -114,23 +137,23 @@ run_isolated_worktree_init() {
   if ensure_base_cli_healthy; then
     (
       cd "$worktree_cwd" &&
-        node "$base_cli_runner_path" "$base_cli_entry_path" worktree init --force --no-seed --seed-mode minimal --name "$worktree_name" --instance "$worktree_instance_id" --from-config "$source_config_path"
+        "$node_command" "$base_cli_runner_path" "$base_cli_entry_path" worktree init --force --no-seed --seed-mode minimal --name "$worktree_name" --instance "$worktree_instance_id" --from-config "$source_config_path"
     )
     return
   fi
 
-  if command -v pnpm >/dev/null 2>&1 && pnpm paperclipai --help >/dev/null 2>&1; then
+  if command -v pnpm >/dev/null 2>&1 && pnpm penclip --help >/dev/null 2>&1; then
     (
       cd "$worktree_cwd" &&
-        pnpm paperclipai worktree init --force --no-seed --seed-mode minimal --name "$worktree_name" --instance "$worktree_instance_id" --from-config "$source_config_path"
+        pnpm penclip worktree init --force --no-seed --seed-mode minimal --name "$worktree_name" --instance "$worktree_instance_id" --from-config "$source_config_path"
     )
     return
   fi
 
-  if command -v paperclipai >/dev/null 2>&1; then
+  if command -v penclip >/dev/null 2>&1; then
     (
       cd "$worktree_cwd" &&
-        paperclipai worktree init --force --no-seed --seed-mode minimal --name "$worktree_name" --instance "$worktree_instance_id" --from-config "$source_config_path"
+        penclip worktree init --force --no-seed --seed-mode minimal --name "$worktree_name" --instance "$worktree_instance_id" --from-config "$source_config_path"
     )
     return
   fi
@@ -138,16 +161,16 @@ run_isolated_worktree_init() {
   return 127
 }
 
-paperclipai_command_available() {
-  if command -v pnpm >/dev/null 2>&1 && pnpm paperclipai --help >/dev/null 2>&1; then
+penclip_command_available() {
+  if command -v pnpm >/dev/null 2>&1 && pnpm penclip --help >/dev/null 2>&1; then
     return 0
   fi
 
-  if command -v node >/dev/null 2>&1 && base_cli_files_present; then
+  if command -v "$node_command" >/dev/null 2>&1 && base_cli_files_present; then
     return 0
   fi
 
-  if command -v paperclipai >/dev/null 2>&1; then
+  if command -v penclip >/dev/null 2>&1; then
     return 0
   fi
 
@@ -158,7 +181,7 @@ existing_worktree_config_is_usable() {
   WORKTREE_CONFIG_PATH="$worktree_config_path" \
   WORKTREE_ENV_PATH="$worktree_env_path" \
   WORKTREE_INSTANCE_ID="$worktree_instance_id" \
-  node <<'EOF'
+  "$node_command" <<'EOF'
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
@@ -241,7 +264,7 @@ write_seed_pending_marker() {
   SEED_PENDING_MARKER_PATH="$seed_pending_marker_path" \
   SEED_COMPLETE_MARKER_PATH="$seed_complete_marker_path" \
   SOURCE_CONFIG_PATH="$source_config_path" \
-  node <<'EOF'
+  "$node_command" <<'EOF'
 const fs = require("node:fs");
 const path = require("node:path");
 
@@ -263,6 +286,10 @@ EOF
 }
 
 write_fallback_worktree_config() {
+  [[ -n "$node_command" ]] || {
+    echo "Node.js is required to write an isolated fallback config." >&2
+    return 127
+  }
   WORKTREE_NAME="$worktree_name" \
   BASE_CWD="$base_cwd" \
   WORKTREE_CWD="$worktree_cwd" \
@@ -271,7 +298,7 @@ write_fallback_worktree_config() {
   SOURCE_ENV_PATH="$source_env_path" \
   WORKTREE_INSTANCE_ID="$worktree_instance_id" \
   PAPERCLIP_WORKTREES_DIR="${PAPERCLIP_WORKTREES_DIR:-}" \
-  node <<'EOF'
+  "$node_command" <<'EOF'
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
@@ -286,6 +313,11 @@ function expandHomePrefix(value) {
 
 function nonEmpty(value) {
   return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
+}
+
+function serializeEnvValue(value) {
+  const text = String(value);
+  return /[\r\n]/.test(text) ? JSON.stringify(text) : `'${text.replaceAll("'", "'\\''")}'`;
 }
 
 function parseEnvFile(contents) {
@@ -486,12 +518,12 @@ async function main() {
   }
 
   const envLines = [
-    "PAPERCLIP_HOME=" + JSON.stringify(worktreeHome),
-    "PAPERCLIP_INSTANCE_ID=" + JSON.stringify(instanceId),
-    "PAPERCLIP_CONFIG=" + JSON.stringify(configPath),
-    "PAPERCLIP_CONTEXT=" + JSON.stringify(path.resolve(worktreeHome, "context.json")),
+    "PAPERCLIP_HOME=" + serializeEnvValue(worktreeHome),
+    "PAPERCLIP_INSTANCE_ID=" + serializeEnvValue(instanceId),
+    "PAPERCLIP_CONFIG=" + serializeEnvValue(configPath),
+    "PAPERCLIP_CONTEXT=" + serializeEnvValue(path.resolve(worktreeHome, "context.json")),
     "PAPERCLIP_IN_WORKTREE=true",
-    "PAPERCLIP_WORKTREE_NAME=" + JSON.stringify(worktreeName),
+    "PAPERCLIP_WORKTREE_NAME=" + serializeEnvValue(worktreeName),
   ];
 
   // Secrets that must be carried over from the source instance so the worktree's
@@ -507,7 +539,7 @@ async function main() {
   for (const key of propagatedSecretKeys) {
     const value = nonEmpty(sourceEnvEntries[key]);
     if (value) {
-      envLines.push(key + "=" + JSON.stringify(value));
+      envLines.push(key + "=" + serializeEnvValue(value));
     }
   }
 
@@ -527,7 +559,7 @@ else
   if [[ -e "$worktree_config_path" || -e "$worktree_env_path" ]]; then
     echo "Existing isolated Paperclip worktree config is stale for this host; regenerating." >&2
   fi
-  if paperclipai_command_available; then
+  if penclip_command_available; then
     if run_isolated_worktree_init; then
       :
     else
@@ -535,17 +567,17 @@ else
       if [[ "$init_exit_code" -eq 127 ]]; then
         # Every CLI candidate was unusable (e.g. an unhealthy base install that
         # the repair could not fix); degrade instead of stranding the run.
-        echo "No usable paperclipai CLI found; writing isolated fallback config without DB seeding." >&2
+        echo "No usable penclip CLI found; writing isolated fallback config without DB seeding." >&2
         write_fallback_worktree_config
       else
         # A CLI that ran and failed signals a real problem; do not paper over
         # it with an unseeded fallback config.
-        echo "paperclipai worktree init failed (exit $init_exit_code); failing provisioning instead of writing an unseeded fallback config." >&2
+        echo "penclip worktree init failed (exit $init_exit_code); failing provisioning instead of writing an unseeded fallback config." >&2
         exit "$init_exit_code"
       fi
     fi
   else
-    echo "paperclipai worktree init unavailable; writing isolated fallback config without DB seeding." >&2
+    echo "penclip worktree init unavailable; writing isolated fallback config without DB seeding." >&2
     write_fallback_worktree_config
   fi
   created_worktree_config=1
@@ -568,7 +600,7 @@ list_base_node_modules_paths() {
 }
 
 compute_pnpm_install_fingerprint() {
-  WORKTREE_CWD="$worktree_cwd" node <<'EOF'
+  WORKTREE_CWD="$worktree_cwd" "$node_command" <<'EOF'
 const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");

@@ -28,6 +28,7 @@ vi.mock("../context/CompanyContext", () => ({
         status: "active",
         budgetMonthlyCents: 0,
         spentMonthlyCents: 0,
+        createdAt: new Date().toISOString(),
       },
     ],
     selectedCompanyId: "company-1",
