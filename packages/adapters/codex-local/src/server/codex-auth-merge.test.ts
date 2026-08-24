@@ -10,15 +10,12 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   prepareSandboxManagedRuntime,
   type SandboxManagedRuntimeClient,
+  type SandboxSyncOperation,
 } from "@penclipai/adapter-utils/sandbox-managed-runtime";
 import { buildCodexAuthInboundProvision } from "./codex-auth-merge-scripts.js";
 
 const execFile = promisify(execFileCallback);
-
-function expectPrivateAuthMode(mode: number, label?: string) {
-  if (process.platform === "win32") return;
-  expect(mode, label).toBe(0o600);
-}
+const CODEX_AUTH_SHELL_TEST_TIMEOUT_MS = process.platform === "win32" ? 30_000 : 5_000;
 
 function resolveTestPosixShellCommand() {
   if (process.platform !== "win32") return "/bin/sh";
@@ -35,32 +32,43 @@ function rewriteWindowsPathsForGitShell(script: string) {
     `/${drive.toLowerCase()}/${rest.replace(/\\/g, "/")}`;
   return script
     .replace(/'([A-Za-z]):\\([^']*)'/g, (_match, drive: string, rest: string) =>
-      `'${toGitShellPath(drive, rest)}'`)
+      `'${toGitShellPath(drive, rest)}'`,
+    )
     .replace(/"([A-Za-z]):\\([^"]*)"/g, (_match, drive: string, rest: string) =>
-      `"${toGitShellPath(drive, rest)}"`)
+      `"${toGitShellPath(drive, rest)}"`,
+    )
     .replace(/([A-Za-z]):\\([^'"\s]*)/g, (_match, drive: string, rest: string) =>
-      toGitShellPath(drive, rest));
+      toGitShellPath(drive, rest),
+    );
 }
 
-async function execPosixShell(script: string) {
-  const env = { ...process.env };
+async function runTestPosixShell(
+  command: string,
+  envOverrides: NodeJS.ProcessEnv = {},
+) {
+  const env = { ...process.env, ...envOverrides };
   if (process.platform === "win32") {
-    env.PATH = [
-      "/usr/bin",
-      "/bin",
+    const entries = [
       "C:\\Program Files\\Git\\usr\\bin",
       "C:\\Program Files\\Git\\bin",
-      env.PATH ?? "",
-    ].join(path.delimiter);
+    ].filter((entry) => existsSync(entry));
+    env.PATH = [...entries, env.PATH ?? ""].join(path.delimiter);
   }
   return execFile(
     resolveTestPosixShellCommand(),
-    ["-c", rewriteWindowsPathsForGitShell(script)],
-    { env, maxBuffer: 32 * 1024 * 1024 },
+    ["-c", rewriteWindowsPathsForGitShell(command)],
+    { maxBuffer: 32 * 1024 * 1024, env },
   );
 }
 
+function expectPosixMode(actual: number, expected: number, message?: string): void {
+  if (process.platform !== "win32") expect(actual, message).toBe(expected);
+}
+
 describe("codex home auth merge on sandbox asset extract", () => {
+  const shellIt = (name: string, testFn: () => void | Promise<void>) =>
+    it(name, testFn, CODEX_AUTH_SHELL_TEST_TIMEOUT_MS);
+
   const cleanupDirs: string[] = [];
 
   afterEach(async () => {
@@ -92,8 +100,9 @@ describe("codex home auth merge on sandbox asset extract", () => {
   }
 
   async function runCodexHomeAssetExtract(input: {
-    sandboxAuth: string;
-    hostAuth: string;
+    sandboxAuth?: string;
+    hostAuth?: string;
+    imageAuth?: string;
   }): Promise<{
     commandText: string;
     writtenPaths: string[];
@@ -112,9 +121,19 @@ describe("codex home auth merge on sandbox asset extract", () => {
     await mkdir(localHomeDir, { recursive: true });
     await mkdir(remoteHomeDir, { recursive: true });
     await writeFile(path.join(localWorkspaceDir, "README.md"), "workspace\n", "utf8");
-    await writeFile(path.join(localHomeDir, "auth.json"), input.hostAuth, { mode: 0o600 });
+    if (input.hostAuth !== undefined) {
+      await writeFile(path.join(localHomeDir, "auth.json"), input.hostAuth, { mode: 0o600 });
+    }
     await writeFile(path.join(localHomeDir, "config.toml"), "model = \"gpt\"\n", "utf8");
-    await writeFile(path.join(remoteHomeDir, "auth.json"), input.sandboxAuth, { mode: 0o600 });
+    if (input.sandboxAuth !== undefined) {
+      await writeFile(path.join(remoteHomeDir, "auth.json"), input.sandboxAuth, { mode: 0o600 });
+    }
+    // A fake in-sandbox $HOME whose ~/.codex may carry the image's own login.
+    const imageHomeDir = path.join(rootDir, "image-home");
+    await mkdir(path.join(imageHomeDir, ".codex"), { recursive: true });
+    if (input.imageAuth !== undefined) {
+      await writeFile(path.join(imageHomeDir, ".codex", "auth.json"), input.imageAuth, { mode: 0o600 });
+    }
 
     const commands: string[] = [];
     const outputs: string[] = [];
@@ -135,9 +154,30 @@ describe("codex home auth merge on sandbox asset extract", () => {
       },
       run: async (command) => {
         commands.push(command);
-        const result = await execPosixShell(command);
+        const result = await runTestPosixShell(command, { HOME: imageHomeDir });
         outputs.push(result.stdout, result.stderr);
       },
+    };
+    // Non-native base64-tar fallback `syncIn`: place each file mapping via
+    // `writeFile`, then run the operation's ordered `postUploadCommands` — the
+    // same seam the command-managed client provides in production. The Codex home
+    // asset uploads its tar + the two merge scripts, then runs the auth-merge
+    // command as the operation's post-upload command.
+    client.syncIn = async (operations) => {
+      for (const operation of operations) {
+        for (const mapping of operation.files) {
+          const bytes = await readFile(mapping.sourcePath);
+          await mkdir(path.dirname(mapping.targetPath), { recursive: true });
+          await client.writeFile(mapping.targetPath, bytes.buffer.slice(
+            bytes.byteOffset,
+            bytes.byteOffset + bytes.byteLength,
+          ) as ArrayBuffer);
+        }
+        for (const command of operation.postUploadCommands ?? []) {
+          await client.run(command.command, { timeoutMs: 30_000 });
+        }
+      }
+      return { operations: [] };
     };
 
     await prepareSandboxManagedRuntime({
@@ -175,7 +215,7 @@ describe("codex home auth merge on sandbox asset extract", () => {
     };
   }
 
-  it("keeps a newer same-account sandbox auth.json and installs it atomically with mode 0600", async () => {
+  shellIt("keeps a newer same-account sandbox auth.json and installs it atomically with mode 0600", async () => {
     const sandboxAuth = subscriptionAuth({
       accountId: "acct-same",
       lastRefresh: "2026-07-09T02:00:00Z",
@@ -190,7 +230,7 @@ describe("codex home auth merge on sandbox asset extract", () => {
     const result = await runCodexHomeAssetExtract({ sandboxAuth, hostAuth });
 
     expect(result.finalAuth).toBe(sandboxAuth);
-    expectPrivateAuthMode(result.finalMode);
+    expectPosixMode(result.finalMode, 0o600);
     expect(result.combinedOutput).not.toContain("SENTINEL");
     expect(result.commandText).not.toContain("SENTINEL");
     expect(result.commandText).toContain("codex-auth-merge-extract.sh");
@@ -202,7 +242,7 @@ describe("codex home auth merge on sandbox asset extract", () => {
     expect(result.writtenPaths.some((entry) => entry.endsWith("codex-auth-merge-decision.cjs"))).toBe(true);
   });
 
-  it("installs same-account host auth when host last_refresh is strictly newer", async () => {
+  shellIt("installs same-account host auth when host last_refresh is strictly newer", async () => {
     const sandboxAuth = subscriptionAuth({
       accountId: "acct-same",
       lastRefresh: "2026-07-09T01:00:00Z",
@@ -217,10 +257,10 @@ describe("codex home auth merge on sandbox asset extract", () => {
     const result = await runCodexHomeAssetExtract({ sandboxAuth, hostAuth });
 
     expect(result.finalAuth).toBe(hostAuth);
-    expectPrivateAuthMode(result.finalMode);
+    expectPosixMode(result.finalMode, 0o600);
   });
 
-  it("installs host auth on identity mismatch, auth-mode mismatch, apikey mode, and unusable sandbox auth", async () => {
+  shellIt("installs host auth on identity mismatch, auth-mode mismatch, apikey mode, and unusable sandbox auth", async () => {
     const cases = [
       {
         name: "identity mismatch",
@@ -273,11 +313,11 @@ describe("codex home auth merge on sandbox asset extract", () => {
         hostAuth: entry.hostAuth,
       });
       expect(result.finalAuth, entry.name).toBe(entry.hostAuth);
-      expectPrivateAuthMode(result.finalMode, entry.name);
+      expectPosixMode(result.finalMode, 0o600, entry.name);
     }
   });
 
-  it("keeps host auth when the sandbox copy is not strictly newer (equal, missing, or unparseable freshness)", async () => {
+  shellIt("keeps host auth when the sandbox copy is not strictly newer (equal, missing, or unparseable freshness)", async () => {
     // The extract path stages the sandbox copy as `source` and the host copy as
     // `destination`. The decision predicate only adopts the source when it is
     // strictly fresher, so a tie, a missing last_refresh on either side, or an
@@ -354,11 +394,11 @@ describe("codex home auth merge on sandbox asset extract", () => {
         hostAuth: entry.hostAuth,
       });
       expect(result.finalAuth, entry.name).toBe(entry.hostAuth);
-      expectPrivateAuthMode(result.finalMode, entry.name);
+      expectPosixMode(result.finalMode, 0o600, entry.name);
     }
   });
 
-  it("installs unusable host auth instead of serving leftover sandbox auth", async () => {
+  shellIt("installs unusable host auth instead of serving leftover sandbox auth", async () => {
     const sandboxAuth = subscriptionAuth({
       accountId: "acct-a",
       lastRefresh: "2026-07-09T03:00:00Z",
@@ -393,10 +433,189 @@ describe("codex home auth merge on sandbox asset extract", () => {
       });
       expect(result.finalAuth, entry.name).toBe(entry.hostAuth);
       expect(result.finalAuth, entry.name).not.toBe(sandboxAuth);
-      expectPrivateAuthMode(result.finalMode, entry.name);
+      expectPosixMode(result.finalMode, 0o600, entry.name);
       expect(result.combinedOutput, entry.name).not.toContain("SENTINEL");
       expect(result.commandText, entry.name).not.toContain("SENTINEL");
     }
+  });
+
+  shellIt("falls back to the sandbox image's own login when neither host nor prior asset has auth", async () => {
+    const imageAuth = subscriptionAuth({
+      accountId: "acct-image",
+      lastRefresh: "2026-07-01T00:00:00Z",
+      marker: "image",
+    });
+    const result = await runCodexHomeAssetExtract({
+      imageAuth,
+    });
+
+    expect(result.finalAuth).toBe(imageAuth);
+    expectPosixMode(result.finalMode, 0o600);
+  });
+
+  shellIt("prefers shipped host auth over the image's own login", async () => {
+    const hostAuth = subscriptionAuth({
+      accountId: "acct-host",
+      lastRefresh: "2026-07-02T00:00:00Z",
+      marker: "host",
+    });
+    const imageAuth = subscriptionAuth({
+      accountId: "acct-image",
+      lastRefresh: "2026-07-03T00:00:00Z",
+      marker: "image",
+    });
+    const result = await runCodexHomeAssetExtract({
+      hostAuth,
+      imageAuth,
+    });
+
+    expect(result.finalAuth).toBe(hostAuth);
+  });
+
+  shellIt("prefers a preserved newer prior-lease credential over the image's own login", async () => {
+    const hostAuth = subscriptionAuth({
+      accountId: "acct-1",
+      lastRefresh: "2026-07-01T00:00:00Z",
+      marker: "host",
+    });
+    const sandboxAuth = subscriptionAuth({
+      accountId: "acct-1",
+      lastRefresh: "2026-07-05T00:00:00Z",
+      marker: "prior-lease",
+    });
+    const imageAuth = subscriptionAuth({
+      accountId: "acct-image",
+      lastRefresh: "2026-07-06T00:00:00Z",
+      marker: "image",
+    });
+    const result = await runCodexHomeAssetExtract({
+      hostAuth,
+      sandboxAuth,
+      imageAuth,
+    });
+
+    expect(result.finalAuth).toBe(sandboxAuth);
+  });
+
+  shellIt("routes the Codex home asset through a single native syncIn operation whose post-command is the auth-merge (#4, C5/C6)", async () => {
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-codex-native-route-"));
+    cleanupDirs.push(rootDir);
+    const localWorkspaceDir = path.join(rootDir, "local-workspace");
+    const remoteWorkspaceDir = path.join(rootDir, "remote-workspace");
+    const localHomeDir = path.join(rootDir, "local-codex-home");
+    const remoteHomeDir = path.join(remoteWorkspaceDir, ".paperclip-runtime", "codex", "home");
+    await mkdir(localWorkspaceDir, { recursive: true });
+    await mkdir(localHomeDir, { recursive: true });
+    await mkdir(remoteHomeDir, { recursive: true });
+    await writeFile(path.join(localWorkspaceDir, "README.md"), "workspace\n", "utf8");
+    // Host credential is strictly newer → wins the merge (same identity).
+    const hostAuth = subscriptionAuth({
+      accountId: "acct-native",
+      lastRefresh: "2026-07-10T02:00:00Z",
+      marker: "host-newer-SENTINEL",
+    });
+    const sandboxAuth = subscriptionAuth({
+      accountId: "acct-native",
+      lastRefresh: "2026-07-10T01:00:00Z",
+      marker: "sandbox-older-SENTINEL",
+    });
+    await writeFile(path.join(localHomeDir, "auth.json"), hostAuth, { mode: 0o600 });
+    await writeFile(path.join(localHomeDir, "config.toml"), "model = \"gpt\"\n", "utf8");
+    await writeFile(path.join(remoteHomeDir, "auth.json"), sandboxAuth, { mode: 0o600 });
+
+    // A native runner: the orchestrator must make NO direct writeFile/run — every
+    // byte (incl. auth.json) rides `syncIn` (native uploadFiles), and the merge
+    // runs as the operation's ordered post-upload command.
+    const directWrites: string[] = [];
+    const directRuns: string[] = [];
+    const captured: SandboxSyncOperation[] = [];
+    const client: SandboxManagedRuntimeClient = {
+      makeDir: async (remotePath) => {
+        await mkdir(remotePath, { recursive: true });
+      },
+      writeFile: async (remotePath, bytes) => {
+        directWrites.push(remotePath);
+        await mkdir(path.dirname(remotePath), { recursive: true });
+        await writeFile(remotePath, Buffer.from(bytes));
+      },
+      readFile: async (remotePath) => await readFile(remotePath),
+      listFiles: async () => [],
+      remove: async (remotePath) => {
+        await rm(remotePath, { recursive: true, force: true });
+      },
+      run: async (command) => {
+        directRuns.push(command);
+        await runTestPosixShell(command);
+      },
+    };
+    client.syncIn = async (operations) => {
+      for (const operation of operations) {
+        captured.push(operation);
+        for (const mapping of operation.files) {
+          const bytes = await readFile(mapping.sourcePath);
+          await mkdir(path.dirname(mapping.targetPath), { recursive: true });
+          await writeFile(mapping.targetPath, bytes);
+          if (mapping.mode != null) await lstat(mapping.targetPath);
+        }
+        for (const command of operation.postUploadCommands ?? []) {
+          await runTestPosixShell(command.command);
+        }
+      }
+      return { operations: [] };
+    };
+
+    await prepareSandboxManagedRuntime({
+      spec: {
+        transport: "sandbox",
+        provider: "test",
+        sandboxId: "sandbox-1",
+        remoteCwd: remoteWorkspaceDir,
+        timeoutMs: 30_000,
+        apiKey: null,
+      },
+      adapterKey: "codex",
+      client,
+      workspaceLocalDir: localWorkspaceDir,
+      assets: [{
+        key: "home",
+        localDir: localHomeDir,
+        followSymlinks: true,
+        provision: buildCodexAuthInboundProvision(),
+      }],
+    });
+
+    // 0 direct exec/writeFile — pure native delegation.
+    expect(directWrites).toEqual([]);
+    expect(directRuns).toEqual([]);
+
+    // One operation carries the home asset: the home tar + the two merge scripts
+    // as `files` mappings, and the auth-merge as the ordered post-upload command.
+    const homeOp = captured.find((op) =>
+      op.files.some((mapping) => mapping.targetPath.endsWith("home-upload.tar")),
+    );
+    expect(homeOp).toBeDefined();
+    const targets = homeOp!.files.map((mapping) => path.posix.basename(mapping.targetPath)).sort();
+    expect(targets).toEqual([
+      "codex-auth-merge-decision.cjs",
+      "codex-auth-merge-extract.sh",
+      "home-upload.tar",
+    ]);
+    expect(homeOp!.files.every((mapping) => mapping.kind === "file")).toBe(true);
+    expect(homeOp!.postUploadCommands).toHaveLength(1);
+    // The post-command is the auth-merge script, NOT a plain `tar -xf` (C6).
+    const mergeCommand = homeOp!.postUploadCommands![0].command;
+    expect(mergeCommand).toContain("codex-auth-merge-extract.sh");
+    expect(mergeCommand).not.toMatch(/^\s*tar -xf/);
+
+    // C5: no token/credential material leaks into the operation metadata.
+    const opJson = JSON.stringify(captured);
+    expect(opJson).not.toContain("SENTINEL");
+    expect(opJson).not.toContain("refresh-token");
+
+    // C6: newer host credential won, installed atomically at mode 0600.
+    const finalAuthPath = path.join(remoteHomeDir, "auth.json");
+    expect(await readFile(finalAuthPath, "utf8")).toBe(hostAuth);
+    expectPosixMode((await lstat(finalAuthPath)).mode & 0o777, 0o600);
   });
 });
 

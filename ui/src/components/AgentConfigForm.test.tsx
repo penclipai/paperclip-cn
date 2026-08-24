@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Agent } from "@penclipai/shared";
 import { AgentConfigForm } from "./AgentConfigForm";
+import { ToastProvider } from "../context/ToastContext";
 
 const translations: Record<string, string> = {
   "agentConfig.identity": "身份信息",
@@ -205,12 +206,14 @@ function renderForm(container: HTMLDivElement) {
   act(() => {
     root.render(
       <QueryClientProvider client={queryClient}>
-        <AgentConfigForm
-          mode="edit"
-          agent={createAgent()}
-          onSave={vi.fn()}
-          sectionLayout="cards"
-        />
+        <ToastProvider>
+          <AgentConfigForm
+            mode="edit"
+            agent={createAgent()}
+            onSave={vi.fn()}
+            sectionLayout="cards"
+          />
+        </ToastProvider>
       </QueryClientProvider>,
     );
   });

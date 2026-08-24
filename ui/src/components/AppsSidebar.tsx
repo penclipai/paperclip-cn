@@ -15,12 +15,11 @@ import { SidebarNavItem } from "./SidebarNavItem";
  * Secondary sidebar for the prosumer Apps area (PAP-10856; three-door IA
  * PAP-13254 / U3).
  *
- *   ← Back · APPS: Browse / Connections / Review (n)
- *   DEVELOPER: Gateways / Profiles / Rules / Health / Activity
+ *   ← Back · APPS: Browse / Review (n)
+ *   DEVELOPER: Connections / Gateways / Profiles / Rules / Health / Activity
  *
- * The three consumer doors are peers: "Browse" (the store — discover + add),
- * "Connections" (your connected tools + health), and "Review" (PAP-12371,
- * Finding B — decisions waiting on your OK, with a live pending count).
+ * "Browse" is the store and "Review" holds decisions waiting on the user's
+ * OK. Connection management lives with the Developer tools.
  * "Needs attention" is no longer a door: health/error triage folds into
  * Connections as a status filter + banner, so approvals are never buried
  * behind an error label. The Developer section was folded in from the retired
@@ -78,14 +77,9 @@ export function AppsSidebar() {
         </div>
         <div className="flex flex-col gap-0.5">
           <SidebarNavItem
-            to="/apps/browse"
+            to="/apps"
             label={t("apps.sidebar.browse", { defaultValue: "Browse" })}
             icon={Store}
-          />
-          <SidebarNavItem
-            to="/apps"
-            label={t("apps.sidebar.connections", { defaultValue: "Connections" })}
-            icon={AppWindow}
             end
           />
           <SidebarNavItem
@@ -106,11 +100,17 @@ export function AppsSidebar() {
           })}
         </p>
         <div className="flex flex-col gap-0.5">
+          <SidebarNavItem
+            to="/apps/connections"
+            label={t("apps.sidebar.connections", { defaultValue: "Connections" })}
+            icon={AppWindow}
+            end
+          />
           {developerTabs.map((tab) => (
             <SidebarNavItem
               key={tab.key}
               to={advancedTabHref(tab.key)}
-              label={t(`apps.sidebar.developerTabs.${tab.key}`, { defaultValue: tab.label })}
+              label={developerTabLabel(tab.key, t)}
               icon={tab.icon}
               end
               liveCount={tab.key === "runtime" && runtimeActiveCount > 0 ? runtimeActiveCount : undefined}
@@ -120,4 +120,24 @@ export function AppsSidebar() {
       </nav>
     </aside>
   );
+}
+
+function developerTabLabel(
+  tabKey: typeof DEVELOPER_TABS[number]["key"],
+  t: ReturnType<typeof useTranslation>["t"],
+): string {
+  switch (tabKey) {
+    case "gateways":
+      return t("tools.tabs.gateways", { defaultValue: "Gateways" });
+    case "profiles":
+      return t("tools.tabs.profiles", { defaultValue: "Profiles" });
+    case "policies":
+      return t("tools.tabs.rules", { defaultValue: "Rules" });
+    case "runtime":
+      return t("tools.tabs.health", { defaultValue: "Health" });
+    case "audit":
+      return t("tools.tabs.activity", { defaultValue: "Activity" });
+    case "smoke-lab":
+      return t("tools.tabs.smokeLab", { defaultValue: "Smoke Lab" });
+  }
 }

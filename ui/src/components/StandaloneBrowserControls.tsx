@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState, type ReactNode } from "react";
-import { useTranslation } from "react-i18next";
 import { ExternalLink, RefreshCw, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useOptionalToastActions } from "../context/ToastContext";
 import { CHROMELESS_DISPLAY_MODES, isChromelessDisplayMode } from "../lib/pwa-display-mode";
+import { copyTextToClipboard } from "../lib/clipboard";
 
 function ControlButton({
   label,
@@ -35,7 +35,6 @@ function ControlButton({
 }
 
 export function StandaloneBrowserControls({ mobile }: { mobile: boolean }) {
-  const { t } = useTranslation();
   const [chromeless, setChromeless] = useState(() =>
     typeof window !== "undefined" && mobile ? isChromelessDisplayMode() : false,
   );
@@ -73,17 +72,13 @@ export function StandaloneBrowserControls({ mobile }: { mobile: boolean }) {
         await navigator.share({ title: document.title || "Paperclip", url });
         return;
       }
-      if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(url);
-        toastActions?.pushToast({ title: t("standaloneBrowser.linkCopied"), tone: "success" });
-        return;
-      }
-      toastActions?.pushToast({ title: t("standaloneBrowser.sharingUnavailable"), body: url, tone: "warn" });
+      await copyTextToClipboard(url);
+      toastActions?.pushToast({ title: "Link copied", tone: "success" });
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") return;
-      toastActions?.pushToast({ title: t("standaloneBrowser.shareFailed"), body: t("standaloneBrowser.openInBrowserHint"), tone: "error" });
+      toastActions?.pushToast({ title: "Share failed", body: "Try opening the page in your browser.", tone: "error" });
     }
-  }, [t, toastActions]);
+  }, [toastActions]);
 
   const openInBrowser = useCallback(() => {
     window.open(window.location.href, "_blank", "noopener,noreferrer");
@@ -93,13 +88,13 @@ export function StandaloneBrowserControls({ mobile }: { mobile: boolean }) {
 
   return (
     <div className="flex h-10 items-center justify-end gap-1 border-b border-border bg-background/95 px-3 backdrop-blur supports-[backdrop-filter]:bg-background/85">
-      <ControlButton label={t("standaloneBrowser.refresh")} onClick={refresh}>
+      <ControlButton label="Refresh" onClick={refresh}>
         <RefreshCw className="h-4 w-4" />
       </ControlButton>
-      <ControlButton label={t("standaloneBrowser.share")} onClick={share}>
+      <ControlButton label="Share" onClick={share}>
         <Share2 className="h-4 w-4" />
       </ControlButton>
-      <ControlButton label={t("standaloneBrowser.openInBrowser")} onClick={openInBrowser}>
+      <ControlButton label="Open in Browser" onClick={openInBrowser}>
         <ExternalLink className="h-4 w-4" />
       </ControlButton>
     </div>

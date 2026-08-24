@@ -1,6 +1,5 @@
 import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
 import { ciSmokeLabScenarios, type SmokeLabLifecycleTool, type SmokeLabScenario, type SmokeRunStepPath } from "./smoke-lab.catalog";
-import { localized } from "./localized-selectors";
 
 type SmokeRunStepStatus = "pass" | "fail" | "skipped";
 
@@ -17,7 +16,7 @@ type SmokeRunStepResult = {
 type ToolConnection = {
   id: string;
   name: string;
-  transport: "remote_http" | "local_stdio";
+  transport: "mcp_remote" | "local_stdio";
   applicationId: string;
   enabled: boolean;
   status?: string;
@@ -151,22 +150,22 @@ async function screenshot(page: Page, scenario: SmokeLabScenario, step: string) 
 async function navigateForEvidence(page: Page, seed: Seed, connectionId: string, scenario: SmokeLabScenario) {
   if (scenario.uiEntryPath === "advanced") {
     await page.goto(`/${seed.prefix}/apps/advanced`);
-    await expect(page.getByRole("heading", { name: localized.appAdvancedSetup })).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByRole("heading", { name: "Advanced setup" })).toBeVisible({ timeout: 20_000 });
     return;
   }
   if (scenario.uiEntryPath === "review") {
     await page.goto(`/${seed.prefix}/apps/${connectionId}/review`);
-    await expect(page.getByText(localized.reviewQueueEmpty).first()).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText(/Nothing is waiting for your OK|new actions? (need|to) review/i).first()).toBeVisible({ timeout: 20_000 });
     return;
   }
   if (scenario.uiEntryPath === "activity") {
     await page.goto(`/${seed.prefix}/apps/${connectionId}/activity`);
-    await expect(page.getByRole("heading", { name: localized.recentActivity })).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByRole("heading", { name: "Recent activity" })).toBeVisible({ timeout: 20_000 });
     return;
   }
   if (scenario.uiEntryPath === "attention") {
-    await page.goto(`/${seed.prefix}/apps`);
-    await expect(page.getByRole("heading", { name: localized.appConnections })).toBeVisible({ timeout: 20_000 });
+    await page.goto(`/${seed.prefix}/apps/connections`);
+    await expect(page.getByRole("heading", { name: "Connections" })).toBeVisible({ timeout: 20_000 });
     return;
   }
   await page.goto(`/${seed.prefix}/apps/${connectionId}`);
@@ -215,7 +214,7 @@ async function startAndInstallFixtures(request: APIRequestContext, companyId: st
 
 function connectionForScenario(fixtures: FixtureInstall, scenario: SmokeLabScenario): ToolConnection {
   const preferStdio = scenario.transport === "local_stdio" || scenario.transport === "plugin";
-  const transport = preferStdio ? "local_stdio" : "remote_http";
+  const transport = preferStdio ? "local_stdio" : "mcp_remote";
   const connection = fixtures.connections.find((candidate) => candidate.transport === transport);
   if (!connection) throw new Error(`Missing ${transport} fixture connection for ${scenario.path}`);
   return connection;
@@ -372,7 +371,7 @@ test.describe.serial("Smoke Lab scenario catalog mirror", () => {
         });
 
         await runRecordedStep(page, request, seed, smokeRun.id, scenario, "schema-change-quarantine", async () => {
-          if (connection.transport !== "remote_http") {
+          if (connection.transport !== "mcp_remote") {
             await page.goto(`/${seed.prefix}/apps/${connection.id}/activity`);
             return "Non-HTTP path records governance/quarantine evidence through fixture metadata.";
           }
@@ -392,7 +391,7 @@ test.describe.serial("Smoke Lab scenario catalog mirror", () => {
             await request.post(`/api/tool-connections/${connection.id}/catalog/refresh`),
           );
           expect(refresh.quarantinedCount).toBeGreaterThan(0);
-          await page.goto(`/${seed.prefix}/apps`);
+          await page.goto(`/${seed.prefix}/apps/connections`);
           return `Catalog refresh quarantined ${refresh.quarantinedCount} changed entries.`;
         });
 

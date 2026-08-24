@@ -5,6 +5,11 @@ import { BRAND_NAME } from "../lib/branding";
 export interface Breadcrumb {
   label: string;
   href?: string;
+  /**
+   * Optional task identifier (e.g. "PAP-1204") rendered in gray monospace
+   * between the leading glyph and the label.
+   */
+  identifier?: string;
   /** Optional node rendered before the label (e.g. a status glyph). */
   leading?: ReactNode;
   /**
@@ -36,6 +41,7 @@ function breadcrumbsEqual(left: Breadcrumb[], right: Breadcrumb[]) {
     if (
       left[index]?.label !== right[index]?.label
       || left[index]?.href !== right[index]?.href
+      || left[index]?.identifier !== right[index]?.identifier
       || left[index]?.leadingKey !== right[index]?.leadingKey
     ) {
       return false;

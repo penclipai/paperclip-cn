@@ -2,7 +2,13 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "@/lib/router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { isUuidLike, type ProjectWorkspace } from "@penclipai/shared";
-import { ArrowLeft, Check, ExternalLink, Loader2, Sparkles } from "lucide-react";
+import {
+  ArrowLeft,
+  Check,
+  ExternalLink,
+  Loader2,
+  Sparkles,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -56,7 +62,9 @@ const PROJECT_WORKSPACE_BASE_TAB_ITEMS: OrderedProjectWorkspaceTabItem[] = [
   { value: "configuration", label: "Configuration", order: 30 },
 ];
 
-function isProjectWorkspacePluginTab(value: string | null): value is ProjectWorkspacePluginTab {
+function isProjectWorkspacePluginTab(
+  value: string | null,
+): value is ProjectWorkspacePluginTab {
   return typeof value === "string" && value.startsWith("plugin:");
 }
 
@@ -66,10 +74,15 @@ function projectWorkspaceTabFromSearch(search: string): ProjectWorkspaceTab {
   return "configuration";
 }
 
-function orderProjectWorkspaceTabItems(items: OrderedProjectWorkspaceTabItem[]) {
+function orderProjectWorkspaceTabItems(
+  items: OrderedProjectWorkspaceTabItem[],
+) {
   return items
     .map((item, index) => ({ item, index }))
-    .sort((left, right) => left.item.order - right.item.order || left.index - right.index)
+    .sort(
+      (left, right) =>
+        left.item.order - right.item.order || left.index - right.index,
+    )
     .map(({ item }) => item);
 }
 
@@ -96,7 +109,9 @@ function formatJson(value: Record<string, unknown> | null | undefined) {
   return JSON.stringify(value, null, 2);
 }
 
-function formStateFromWorkspace(workspace: ProjectWorkspace): WorkspaceFormState {
+function formStateFromWorkspace(
+  workspace: ProjectWorkspace,
+): WorkspaceFormState {
   return {
     name: workspace.name,
     sourceType: workspace.sourceType,
@@ -121,7 +136,8 @@ function normalizeText(value: string) {
 
 function parseRuntimeConfigJson(value: string) {
   const trimmed = value.trim();
-  if (!trimmed) return { ok: true as const, value: null as Record<string, unknown> | null };
+  if (!trimmed)
+    return { ok: true as const, value: null as Record<string, unknown> | null };
 
   try {
     const parsed = JSON.parse(trimmed);
@@ -140,9 +156,15 @@ function parseRuntimeConfigJson(value: string) {
   }
 }
 
-function buildWorkspacePatch(initialState: WorkspaceFormState, nextState: WorkspaceFormState) {
+function buildWorkspacePatch(
+  initialState: WorkspaceFormState,
+  nextState: WorkspaceFormState,
+) {
   const patch: Record<string, unknown> = {};
-  const maybeAssign = (key: keyof WorkspaceFormState, transform?: (value: string) => unknown) => {
+  const maybeAssign = (
+    key: keyof WorkspaceFormState,
+    transform?: (value: string) => unknown,
+  ) => {
     const initialValue = initialState[key];
     const nextValue = nextState[key];
     if (initialValue === nextValue) return;
@@ -172,7 +194,10 @@ function buildWorkspacePatch(initialState: WorkspaceFormState, nextState: Worksp
   return patch;
 }
 
-function validateWorkspaceForm(form: WorkspaceFormState, t: (key: string) => string) {
+function validateWorkspaceForm(
+  form: WorkspaceFormState,
+  t: (key: string) => string,
+) {
   const cwd = normalizeText(form.cwd);
   const repoUrl = normalizeText(form.repoUrl);
   const remoteWorkspaceRef = normalizeText(form.remoteWorkspaceRef);
@@ -185,7 +210,11 @@ function validateWorkspaceForm(form: WorkspaceFormState, t: (key: string) => str
     return t("projectWorkspace.validation.pathOrRepoRequired");
   }
 
-  if (cwd && (form.sourceType === "local_path" || form.sourceType === "non_git_path") && !isAbsolutePath(cwd)) {
+  if (
+    cwd &&
+    (form.sourceType === "local_path" || form.sourceType === "non_git_path") &&
+    !isAbsolutePath(cwd)
+  ) {
     return t("projectWorkspace.validation.absolutePathRequired");
   }
 
@@ -200,7 +229,9 @@ function validateWorkspaceForm(form: WorkspaceFormState, t: (key: string) => str
   const runtimeConfig = parseRuntimeConfigJson(form.runtimeConfig);
   if (!runtimeConfig.ok) {
     // If it's a locale key, translate it; otherwise pass through raw error
-    return runtimeConfig.error.startsWith("projectWorkspace.") ? t(runtimeConfig.error) : runtimeConfig.error;
+    return runtimeConfig.error.startsWith("projectWorkspace.")
+      ? t(runtimeConfig.error)
+      : runtimeConfig.error;
   }
 
   return null;
@@ -218,18 +249,32 @@ function Field({
   return (
     <label className="space-y-1.5">
       <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
-        <span className="text-xs font-medium uppercase tracking-(--tracking-eyebrow) text-muted-foreground">{label}</span>
-        {hint ? <span className="text-(length:--text-micro) leading-relaxed text-muted-foreground sm:text-right">{hint}</span> : null}
+        <span className="text-xs font-medium uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
+          {label}
+        </span>
+        {hint ? (
+          <span className="text-(length:--text-micro) leading-relaxed text-muted-foreground sm:text-right">
+            {hint}
+          </span>
+        ) : null}
       </div>
       {children}
     </label>
   );
 }
 
-function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
+function DetailRow({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="flex flex-col gap-1.5 py-1.5 sm:flex-row sm:items-start sm:gap-3">
-      <div className="shrink-0 text-xs text-muted-foreground sm:w-28">{label}</div>
+      <div className="shrink-0 text-xs text-muted-foreground sm:w-28">
+        {label}
+      </div>
       <div className="min-w-0 flex-1 text-sm">{children}</div>
     </div>
   );
@@ -249,19 +294,47 @@ export function ProjectWorkspaceDetail() {
   const queryClient = useQueryClient();
   const [form, setForm] = useState<WorkspaceFormState | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [runtimeActionMessage, setRuntimeActionMessage] = useState<string | null>(null);
+  const [runtimeActionMessage, setRuntimeActionMessage] = useState<
+    string | null
+  >(null);
   const routeProjectRef = projectId ?? "";
   const routeWorkspaceId = workspaceId ?? "";
-  const activeTab = useMemo(() => projectWorkspaceTabFromSearch(location.search), [location.search]);
+  const activeTab = useMemo(
+    () => projectWorkspaceTabFromSearch(location.search),
+    [location.search],
+  );
 
-  const SOURCE_TYPE_OPTIONS: Array<{ value: ProjectWorkspaceSourceType; label: string; description: string }> = [
-    { value: "local_path", label: t("projectWorkspace.sourceType.localGit"), description: t("projectWorkspace.sourceType.localGitDesc") },
-    { value: "non_git_path", label: t("projectWorkspace.sourceType.nonGit"), description: t("projectWorkspace.sourceType.nonGitDesc") },
-    { value: "git_repo", label: t("projectWorkspace.sourceType.gitRepo"), description: t("projectWorkspace.sourceType.gitRepoDesc") },
-    { value: "remote_managed", label: t("projectWorkspace.sourceType.remoteManaged"), description: t("projectWorkspace.sourceType.remoteManagedDesc") },
+  const SOURCE_TYPE_OPTIONS: Array<{
+    value: ProjectWorkspaceSourceType;
+    label: string;
+    description: string;
+  }> = [
+    {
+      value: "local_path",
+      label: t("projectWorkspace.sourceType.localGit"),
+      description: t("projectWorkspace.sourceType.localGitDesc"),
+    },
+    {
+      value: "non_git_path",
+      label: t("projectWorkspace.sourceType.nonGit"),
+      description: t("projectWorkspace.sourceType.nonGitDesc"),
+    },
+    {
+      value: "git_repo",
+      label: t("projectWorkspace.sourceType.gitRepo"),
+      description: t("projectWorkspace.sourceType.gitRepoDesc"),
+    },
+    {
+      value: "remote_managed",
+      label: t("projectWorkspace.sourceType.remoteManaged"),
+      description: t("projectWorkspace.sourceType.remoteManagedDesc"),
+    },
   ];
 
-  const VISIBILITY_OPTIONS: Array<{ value: ProjectWorkspaceVisibility; label: string }> = [
+  const VISIBILITY_OPTIONS: Array<{
+    value: ProjectWorkspaceVisibility;
+    label: string;
+  }> = [
     { value: "default", label: t("projectWorkspace.visibility.default") },
     { value: "advanced", label: t("projectWorkspace.visibility.advanced") },
   ];
@@ -269,25 +342,44 @@ export function ProjectWorkspaceDetail() {
   const routeCompanyId = useMemo(() => {
     if (!companyPrefix) return null;
     const requestedPrefix = companyPrefix.toUpperCase();
-    return companies.find((company) => company.issuePrefix.toUpperCase() === requestedPrefix)?.id ?? null;
+    return (
+      companies.find(
+        (company) => company.issuePrefix.toUpperCase() === requestedPrefix,
+      )?.id ?? null
+    );
   }, [companies, companyPrefix]);
 
   const lookupCompanyId = routeCompanyId ?? selectedCompanyId ?? undefined;
-  const canFetchProject = routeProjectRef.length > 0 && (isUuidLike(routeProjectRef) || Boolean(lookupCompanyId));
+  const canFetchProject =
+    routeProjectRef.length > 0 &&
+    (isUuidLike(routeProjectRef) || Boolean(lookupCompanyId));
   const projectQuery = useQuery({
-    queryKey: [...queryKeys.projects.detail(routeProjectRef), lookupCompanyId ?? null],
+    queryKey: [
+      ...queryKeys.projects.detail(routeProjectRef),
+      lookupCompanyId ?? null,
+    ],
     queryFn: () => projectsApi.get(routeProjectRef, lookupCompanyId),
     enabled: canFetchProject,
   });
 
   const project = projectQuery.data ?? null;
   const workspace = useMemo(
-    () => project?.workspaces.find((item) => item.id === routeWorkspaceId) ?? null,
+    () =>
+      project?.workspaces.find((item) => item.id === routeWorkspaceId) ?? null,
     [project, routeWorkspaceId],
   );
-  const canonicalProjectRef = project ? projectRouteRef(project) : routeProjectRef;
-  const initialState = useMemo(() => (workspace ? formStateFromWorkspace(workspace) : null), [workspace]);
-  const isDirty = Boolean(form && initialState && JSON.stringify(form) !== JSON.stringify(initialState));
+  const canonicalProjectRef = project
+    ? projectRouteRef(project)
+    : routeProjectRef;
+  const initialState = useMemo(
+    () => (workspace ? formStateFromWorkspace(workspace) : null),
+    [workspace],
+  );
+  const isDirty = Boolean(
+    form &&
+      initialState &&
+      JSON.stringify(form) !== JSON.stringify(initialState),
+  );
   const {
     slots: pluginDetailSlots,
     isLoading: pluginDetailSlotsLoading,
@@ -299,16 +391,22 @@ export function ProjectWorkspaceDetail() {
     enabled: Boolean(project?.companyId),
   });
   const pluginTabItems = useMemo(
-    () => pluginDetailSlots.map((slot) => ({
-      value: `plugin:${slot.pluginKey}:${slot.id}` as ProjectWorkspacePluginTab,
-      label: displayPluginSlotName(slot, t),
-      order: slot.order ?? DEFAULT_PLUGIN_DETAIL_TAB_ORDER,
-      slot,
-    })),
+    () =>
+      pluginDetailSlots.map((slot) => ({
+        value:
+          `plugin:${slot.pluginKey}:${slot.id}` as ProjectWorkspacePluginTab,
+        label: displayPluginSlotName(slot, t),
+        order: slot.order ?? DEFAULT_PLUGIN_DETAIL_TAB_ORDER,
+        slot,
+      })),
     [pluginDetailSlots, t],
   );
   const tabItems = useMemo(
-    () => orderProjectWorkspaceTabItems([...PROJECT_WORKSPACE_BASE_TAB_ITEMS, ...pluginTabItems]),
+    () =>
+      orderProjectWorkspaceTabItems([
+        ...PROJECT_WORKSPACE_BASE_TAB_ITEMS,
+        ...pluginTabItems,
+      ]),
     [pluginTabItems],
   );
 
@@ -328,52 +426,103 @@ export function ProjectWorkspaceDetail() {
     setBreadcrumbs([
       { label: t("Projects"), href: "/projects" },
       { label: project.name, href: `/projects/${canonicalProjectRef}` },
-      { label: t("projectWorkspace.breadcrumb.workspaces"), href: `/projects/${canonicalProjectRef}/workspaces` },
+      {
+        label: t("projectWorkspace.breadcrumb.workspaces"),
+        href: `/projects/${canonicalProjectRef}/workspaces`,
+      },
       { label: workspace?.name ?? routeWorkspaceId },
     ]);
-  }, [setBreadcrumbs, project, canonicalProjectRef, workspace?.name, routeWorkspaceId, t]);
+  }, [
+    setBreadcrumbs,
+    project,
+    canonicalProjectRef,
+    workspace?.name,
+    routeWorkspaceId,
+    t,
+  ]);
 
   useEffect(() => {
     if (!project) return;
     if (routeProjectRef === canonicalProjectRef) return;
-    navigate(`${projectWorkspaceUrl(project, routeWorkspaceId)}${location.search}`, { replace: true });
-  }, [project, routeProjectRef, canonicalProjectRef, routeWorkspaceId, location.search, navigate]);
+    navigate(
+      `${projectWorkspaceUrl(project, routeWorkspaceId)}${location.search}`,
+      { replace: true },
+    );
+  }, [
+    project,
+    routeProjectRef,
+    canonicalProjectRef,
+    routeWorkspaceId,
+    location.search,
+    navigate,
+  ]);
 
   const invalidateProject = () => {
     if (!project) return;
-    queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(project.id) });
-    queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(project.urlKey) });
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.projects.detail(project.id),
+    });
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.projects.detail(project.urlKey),
+    });
     if (lookupCompanyId) {
-      queryClient.invalidateQueries({ queryKey: queryKeys.projects.list(lookupCompanyId) });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.projects.all(lookupCompanyId),
+      });
     }
   };
 
   const updateWorkspace = useMutation({
     mutationFn: (patch: Record<string, unknown>) =>
-      projectsApi.updateWorkspace(project!.id, routeWorkspaceId, patch, lookupCompanyId),
+      projectsApi.updateWorkspace(
+        project!.id,
+        routeWorkspaceId,
+        patch,
+        lookupCompanyId,
+      ),
     onSuccess: () => {
       invalidateProject();
       setErrorMessage(null);
     },
     onError: (error) => {
-      setErrorMessage(error instanceof Error ? error.message : t("projectWorkspace.failedToSave"));
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : t("projectWorkspace.failedToSave"),
+      );
     },
   });
 
   const setPrimaryWorkspace = useMutation({
-    mutationFn: () => projectsApi.updateWorkspace(project!.id, routeWorkspaceId, { isPrimary: true }, lookupCompanyId),
+    mutationFn: () =>
+      projectsApi.updateWorkspace(
+        project!.id,
+        routeWorkspaceId,
+        { isPrimary: true },
+        lookupCompanyId,
+      ),
     onSuccess: () => {
       invalidateProject();
       setErrorMessage(null);
     },
     onError: (error) => {
-      setErrorMessage(error instanceof Error ? error.message : t("projectWorkspace.failedToUpdate"));
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : t("projectWorkspace.failedToUpdate"),
+      );
     },
   });
 
   const controlRuntimeServices = useMutation({
     mutationFn: (request: WorkspaceRuntimeControlRequest) =>
-      projectsApi.controlWorkspaceCommands(project!.id, routeWorkspaceId, request.action, lookupCompanyId, request),
+      projectsApi.controlWorkspaceCommands(
+        project!.id,
+        routeWorkspaceId,
+        request.action,
+        lookupCompanyId,
+        request,
+      ),
     onSuccess: (result, request) => {
       invalidateProject();
       setErrorMessage(null);
@@ -389,31 +538,50 @@ export function ProjectWorkspaceDetail() {
     },
     onError: (error) => {
       setRuntimeActionMessage(null);
-      setErrorMessage(error instanceof Error ? error.message : t("projectWorkspace.failedToControlRuntimeCommands"));
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : t("projectWorkspace.failedToControlRuntimeCommands"),
+      );
     },
   });
 
-  if (projectQuery.isLoading) return <p className="text-sm text-muted-foreground">{t("projectWorkspace.loadingWorkspace")}</p>;
+  if (projectQuery.isLoading)
+    return (
+      <p className="text-sm text-muted-foreground">
+        {t("projectWorkspace.loadingWorkspace")}
+      </p>
+    );
   if (projectQuery.error) {
     return (
       <p className="text-sm text-destructive">
-        {projectQuery.error instanceof Error ? projectQuery.error.message : t("projectWorkspace.failedToLoadWorkspace")}
+        {projectQuery.error instanceof Error
+          ? projectQuery.error.message
+          : t("projectWorkspace.failedToLoadWorkspace")}
       </p>
     );
   }
   if (!project || !workspace || !form || !initialState) {
-    return <p className="text-sm text-muted-foreground">{t("projectWorkspace.workspaceNotFound")}</p>;
+    return (
+      <p className="text-sm text-muted-foreground">
+        {t("projectWorkspace.workspaceNotFound")}
+      </p>
+    );
   }
 
   const canRunWorkspaceCommands = Boolean(workspace.cwd);
-  const canStartRuntimeServices = Boolean(workspace.runtimeConfig?.workspaceRuntime) && canRunWorkspaceCommands;
+  const canStartRuntimeServices =
+    Boolean(workspace.runtimeConfig?.workspaceRuntime) &&
+    canRunWorkspaceCommands;
   const runtimeControlSections = buildWorkspaceRuntimeControlSections({
     runtimeConfig: workspace.runtimeConfig?.workspaceRuntime ?? null,
     runtimeServices: workspace.runtimeServices ?? [],
     canStartServices: canStartRuntimeServices,
     canRunJobs: canRunWorkspaceCommands,
   });
-  const pendingRuntimeAction = controlRuntimeServices.isPending ? controlRuntimeServices.variables ?? null : null;
+  const pendingRuntimeAction = controlRuntimeServices.isPending
+    ? (controlRuntimeServices.variables ?? null)
+    : null;
 
   const saveChanges = () => {
     const validationError = validateWorkspaceForm(form, t);
@@ -426,7 +594,9 @@ export function ProjectWorkspaceDetail() {
     updateWorkspace.mutate(patch);
   };
 
-  const sourceTypeDescription = SOURCE_TYPE_OPTIONS.find((option) => option.value === form.sourceType)?.description ?? null;
+  const sourceTypeDescription =
+    SOURCE_TYPE_OPTIONS.find((option) => option.value === form.sourceType)
+      ?.description ?? null;
   const handleTabChange = (tab: ProjectWorkspaceTab) => {
     const workspacePath = projectWorkspaceUrl(project, routeWorkspaceId);
     if (isProjectWorkspacePluginTab(tab)) {
@@ -435,7 +605,8 @@ export function ProjectWorkspaceDetail() {
     }
     navigate(workspacePath);
   };
-  const activePluginTab = pluginTabItems.find((item) => item.value === activeTab) ?? null;
+  const activePluginTab =
+    pluginTabItems.find((item) => item.value === activeTab) ?? null;
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
@@ -447,7 +618,9 @@ export function ProjectWorkspaceDetail() {
           </Link>
         </Button>
         <div className="inline-flex items-center rounded-full border border-border bg-background px-2.5 py-1 text-xs text-muted-foreground">
-          {workspace.isPrimary ? t("projectWorkspace.primaryWorkspace") : t("projectWorkspace.secondaryWorkspace")}
+          {workspace.isPrimary
+            ? t("projectWorkspace.primaryWorkspace")
+            : t("projectWorkspace.secondaryWorkspace")}
         </div>
       </div>
 
@@ -456,7 +629,9 @@ export function ProjectWorkspaceDetail() {
           <div className="text-xs font-medium uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
             {t("projectWorkspace.title")}
           </div>
-          <h1 className="truncate text-xl font-semibold sm:text-2xl">{workspace.name}</h1>
+          <h1 className="truncate text-xl font-semibold sm:text-2xl">
+            {workspace.name}
+          </h1>
         </div>
         {!workspace.isPrimary ? (
           <Button
@@ -465,9 +640,11 @@ export function ProjectWorkspaceDetail() {
             disabled={setPrimaryWorkspace.isPending}
             onClick={() => setPrimaryWorkspace.mutate()}
           >
-            {setPrimaryWorkspace.isPending
-              ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              : <Check className="mr-2 h-4 w-4" />}
+            {setPrimaryWorkspace.isPending ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Check className="mr-2 h-4 w-4" />
+            )}
             {t("projectWorkspace.makePrimary")}
           </Button>
         ) : (
@@ -478,254 +655,423 @@ export function ProjectWorkspaceDetail() {
         )}
       </div>
 
-      <Tabs value={activeTab} onValueChange={(value) => handleTabChange(value as ProjectWorkspaceTab)}>
+      <Tabs
+        value={activeTab}
+        onValueChange={(value) => handleTabChange(value as ProjectWorkspaceTab)}
+      >
         <PageTabBar
           items={tabItems.map((item) => ({
             value: item.value,
-            label: item.value === "configuration" ? t("projectWorkspace.configuration") : item.label,
+            label:
+              item.value === "configuration"
+                ? t("projectWorkspace.configuration")
+                : item.label,
           }))}
           align="start"
           value={activeTab}
-          onValueChange={(value) => handleTabChange(value as ProjectWorkspaceTab)}
+          onValueChange={(value) =>
+            handleTabChange(value as ProjectWorkspaceTab)
+          }
         />
       </Tabs>
 
       {activeTab === "configuration" ? (
-      <div className="grid gap-6 lg:grid-cols-(--gtc-53)">
-        <div className="space-y-6">
-          <Card className="block p-5">
-            <p className="max-w-2xl text-sm text-muted-foreground">
-              {t("projectWorkspace.description")}
-            </p>
+        <div className="grid gap-6 lg:grid-cols-(--gtc-53)">
+          <div className="space-y-6">
+            <Card className="block p-5">
+              <p className="max-w-2xl text-sm text-muted-foreground">
+                {t("projectWorkspace.description")}
+              </p>
 
-            <Separator className="my-5" />
+              <Separator className="my-5" />
 
-            <div className="grid gap-4 md:grid-cols-2">
-              <Field label={t("projectWorkspace.workspaceName")}>
-                <input
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none"
-                  value={form.name}
-                  onChange={(event) => setForm((current) => current ? { ...current, name: event.target.value } : current)}
-                  placeholder={t("projectWorkspace.workspaceName")}
-                />
-              </Field>
-
-              <Field label={t("projectWorkspace.visibility")}>
-                <select
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none"
-                  value={form.visibility}
-                  onChange={(event) =>
-                    setForm((current) => current ? { ...current, visibility: event.target.value as ProjectWorkspaceVisibility } : current)
-                  }
-                >
-                  {VISIBILITY_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
-                  ))}
-                </select>
-              </Field>
-            </div>
-
-            <div className="mt-4 grid gap-4">
-              <Field label={t("projectWorkspace.sourceType")} hint={sourceTypeDescription ?? undefined}>
-                <select
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none"
-                  value={form.sourceType}
-                  onChange={(event) =>
-                    setForm((current) => current ? { ...current, sourceType: event.target.value as ProjectWorkspaceSourceType } : current)
-                  }
-                >
-                  {SOURCE_TYPE_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
-                  ))}
-                </select>
-              </Field>
-
-              <div className="grid gap-4 md:grid-cols-(--gtc-13)">
-                <Field label={t("projectWorkspace.localPath")}>
+              <div className="grid gap-4 md:grid-cols-2">
+                <Field label={t("projectWorkspace.workspaceName")}>
                   <input
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm outline-none"
-                    value={form.cwd}
-                    onChange={(event) => setForm((current) => current ? { ...current, cwd: event.target.value } : current)}
-                    placeholder="/absolute/path/to/workspace"
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none"
+                    value={form.name}
+                    onChange={(event) =>
+                      setForm((current) =>
+                        current
+                          ? { ...current, name: event.target.value }
+                          : current,
+                      )
+                    }
+                    placeholder={t("projectWorkspace.workspaceName")}
                   />
                 </Field>
-                <div className="flex items-end">
-                  <ChoosePathButton />
+
+                <Field label={t("projectWorkspace.visibility")}>
+                  <select
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none"
+                    value={form.visibility}
+                    onChange={(event) =>
+                      setForm((current) =>
+                        current
+                          ? {
+                              ...current,
+                              visibility: event.target
+                                .value as ProjectWorkspaceVisibility,
+                            }
+                          : current,
+                      )
+                    }
+                  >
+                    {VISIBILITY_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+              </div>
+
+              <div className="mt-4 grid gap-4">
+                <Field
+                  label={t("projectWorkspace.sourceType")}
+                  hint={sourceTypeDescription ?? undefined}
+                >
+                  <select
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none"
+                    value={form.sourceType}
+                    onChange={(event) =>
+                      setForm((current) =>
+                        current
+                          ? {
+                              ...current,
+                              sourceType: event.target
+                                .value as ProjectWorkspaceSourceType,
+                            }
+                          : current,
+                      )
+                    }
+                  >
+                    {SOURCE_TYPE_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+
+                <div className="grid gap-4 md:grid-cols-(--gtc-13)">
+                  <Field label={t("projectWorkspace.localPath")}>
+                    <input
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm outline-none"
+                      value={form.cwd}
+                      onChange={(event) =>
+                        setForm((current) =>
+                          current
+                            ? { ...current, cwd: event.target.value }
+                            : current,
+                        )
+                      }
+                      placeholder={t("agentConfig.workingDirectoryPlaceholder")}
+                    />
+                  </Field>
+                  <div className="flex items-end">
+                    <ChoosePathButton />
+                  </div>
                 </div>
-              </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
-                <Field label={t("projectWorkspace.repoUrl")}>
-                  <input
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none"
-                    value={form.repoUrl}
-                    onChange={(event) => setForm((current) => current ? { ...current, repoUrl: event.target.value } : current)}
-                    placeholder="https://github.com/org/repo"
-                  />
-                </Field>
-                <Field label={t("projectWorkspace.repoRef")}>
-                  <input
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm outline-none"
-                    value={form.repoRef}
-                    onChange={(event) => setForm((current) => current ? { ...current, repoRef: event.target.value } : current)}
-                    placeholder="origin/main"
-                  />
-                </Field>
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <Field label={t("projectWorkspace.defaultRef")}>
-                  <input
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm outline-none"
-                    value={form.defaultRef}
-                    onChange={(event) => setForm((current) => current ? { ...current, defaultRef: event.target.value } : current)}
-                    placeholder="origin/main"
-                  />
-                </Field>
-                <Field label={t("projectWorkspace.sharedWorkspaceKey")}>
-                  <input
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm outline-none"
-                    value={form.sharedWorkspaceKey}
-                    onChange={(event) => setForm((current) => current ? { ...current, sharedWorkspaceKey: event.target.value } : current)}
-                    placeholder="frontend"
-                  />
-                </Field>
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <Field label={t("projectWorkspace.remoteProvider")}>
-                  <input
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none"
-                    value={form.remoteProvider}
-                    onChange={(event) => setForm((current) => current ? { ...current, remoteProvider: event.target.value } : current)}
-                    placeholder="codespaces"
-                  />
-                </Field>
-                <Field label={t("projectWorkspace.remoteWorkspaceRef")}>
-                  <input
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm outline-none"
-                    value={form.remoteWorkspaceRef}
-                    onChange={(event) => setForm((current) => current ? { ...current, remoteWorkspaceRef: event.target.value } : current)}
-                    placeholder="workspace-123"
-                  />
-                </Field>
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <Field label={t("projectWorkspace.setupCommand")} hint={t("projectWorkspace.setupCommandHint")}>
-                  <textarea
-                    className="min-h-28 w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm outline-none"
-                    value={form.setupCommand}
-                    onChange={(event) => setForm((current) => current ? { ...current, setupCommand: event.target.value } : current)}
-                    placeholder="pnpm install && pnpm dev"
-                  />
-                </Field>
-                <Field label={t("projectWorkspace.cleanupCommand")} hint={t("projectWorkspace.cleanupCommandHint")}>
-                  <textarea
-                    className="min-h-28 w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm outline-none"
-                    value={form.cleanupCommand}
-                    onChange={(event) => setForm((current) => current ? { ...current, cleanupCommand: event.target.value } : current)}
-                    placeholder="pkill -f vite || true"
-                  />
-                </Field>
-              </div>
-
-              <details className="rounded-xl border border-dashed border-border/70 bg-background px-3 py-3">
-                <summary className="cursor-pointer text-sm font-medium">{t("projectWorkspace.advancedRuntimeJson")}</summary>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  {t("projectWorkspace.advancedRuntimeJsonHint")}
-                </p>
-                <div className="mt-3">
-                  <Field label={t("projectWorkspace.workspaceCommandsJson")} hint={t("projectWorkspace.workspaceCommandsJsonHint")}>
-                    <textarea
-                      className="min-h-96 w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm outline-none"
-                      value={form.runtimeConfig}
-                      onChange={(event) => setForm((current) => current ? { ...current, runtimeConfig: event.target.value } : current)}
-                      placeholder={"{\n  \"commands\": [\n    {\n      \"id\": \"web\",\n      \"name\": \"web\",\n      \"kind\": \"service\",\n      \"command\": \"pnpm dev\",\n      \"cwd\": \".\",\n      \"port\": { \"type\": \"auto\" },\n      \"readiness\": {\n        \"type\": \"http\",\n        \"urlTemplate\": \"http://127.0.0.1:${port}\"\n      },\n      \"expose\": {\n        \"type\": \"url\",\n        \"urlTemplate\": \"http://127.0.0.1:${port}\"\n      },\n      \"lifecycle\": \"shared\",\n      \"reuseScope\": \"project_workspace\"\n    },\n    {\n      \"id\": \"db-migrate\",\n      \"name\": \"db:migrate\",\n      \"kind\": \"job\",\n      \"command\": \"pnpm db:migrate\",\n      \"cwd\": \".\"\n    }\n  ]\n}"}
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Field label={t("projectWorkspace.repoUrl")}>
+                    <input
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none"
+                      value={form.repoUrl}
+                      onChange={(event) =>
+                        setForm((current) =>
+                          current
+                            ? { ...current, repoUrl: event.target.value }
+                            : current,
+                        )
+                      }
+                      placeholder="https://github.com/org/repo"
+                    />
+                  </Field>
+                  <Field label={t("projectWorkspace.repoRef")}>
+                    <input
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm outline-none"
+                      value={form.repoRef}
+                      onChange={(event) =>
+                        setForm((current) =>
+                          current
+                            ? { ...current, repoRef: event.target.value }
+                            : current,
+                        )
+                      }
+                      placeholder="origin/main"
                     />
                   </Field>
                 </div>
-              </details>
-            </div>
 
-            <div className="mt-5 flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-              <Button className="w-full sm:w-auto" disabled={!isDirty || updateWorkspace.isPending} onClick={saveChanges}>
-                {updateWorkspace.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                {t("projectWorkspace.saveChanges")}
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full sm:w-auto"
-                disabled={!isDirty || updateWorkspace.isPending}
-                onClick={() => {
-                  setForm(initialState);
-                  setErrorMessage(null);
-                }}
-              >
-                {t("projectWorkspace.reset")}
-              </Button>
-              {errorMessage ? <p className="text-sm text-destructive">{errorMessage}</p> : null}
-              {!errorMessage && runtimeActionMessage ? <p className="text-sm text-muted-foreground">{runtimeActionMessage}</p> : null}
-              {!errorMessage && !isDirty ? <p className="text-sm text-muted-foreground">{t("projectWorkspace.noUnsavedChanges")}</p> : null}
-            </div>
-          </Card>
-        </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Field label={t("projectWorkspace.defaultRef")}>
+                    <input
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm outline-none"
+                      value={form.defaultRef}
+                      onChange={(event) =>
+                        setForm((current) =>
+                          current
+                            ? { ...current, defaultRef: event.target.value }
+                            : current,
+                        )
+                      }
+                      placeholder="origin/main"
+                    />
+                  </Field>
+                  <Field label={t("projectWorkspace.sharedWorkspaceKey")}>
+                    <input
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm outline-none"
+                      value={form.sharedWorkspaceKey}
+                      onChange={(event) =>
+                        setForm((current) =>
+                          current
+                            ? {
+                                ...current,
+                                sharedWorkspaceKey: event.target.value,
+                              }
+                            : current,
+                        )
+                      }
+                      placeholder="frontend"
+                    />
+                  </Field>
+                </div>
 
-        <div className="space-y-6">
-          <Card className="block p-5">
-            <div className="space-y-1">
-              <div className="text-xs font-medium uppercase tracking-(--tracking-eyebrow) text-muted-foreground">{t("projectWorkspace.workspaceFacts")}</div>
-              <h2 className="text-lg font-semibold">{t("projectWorkspace.currentState")}</h2>
-            </div>
-            <Separator className="my-4" />
-            <DetailRow label={t("Project", { defaultValue: "Project" })}>
-              <Link to={`/projects/${canonicalProjectRef}`} className="hover:underline">{project.name}</Link>
-            </DetailRow>
-            <DetailRow label={t("projectWorkspace.workspaceId")}>
-              <span className="break-all font-mono text-xs">{workspace.id}</span>
-            </DetailRow>
-            <DetailRow label={t("projectWorkspace.localPath")}>
-              <span className="break-all font-mono text-xs">{workspace.cwd ?? t("projectWorkspace.none")}</span>
-            </DetailRow>
-            <DetailRow label={t("projectWorkspace.repoUrl")}>
-              {workspace.repoUrl && isSafeExternalUrl(workspace.repoUrl) ? (
-                <a href={workspace.repoUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 hover:underline">
-                  {workspace.repoUrl}
-                  <ExternalLink className="h-3 w-3" />
-                </a>
-              ) : workspace.repoUrl ? (
-                <span className="break-all font-mono text-xs">{workspace.repoUrl}</span>
-              ) : t("projectWorkspace.none")}
-            </DetailRow>
-            <DetailRow label={t("projectWorkspace.defaultRef")}>{workspace.defaultRef ?? t("projectWorkspace.none")}</DetailRow>
-            <DetailRow label={t("Updated", { defaultValue: "Updated" })}>{new Date(workspace.updatedAt).toLocaleString()}</DetailRow>
-          </Card>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Field label={t("projectWorkspace.remoteProvider")}>
+                    <input
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none"
+                      value={form.remoteProvider}
+                      onChange={(event) =>
+                        setForm((current) =>
+                          current
+                            ? { ...current, remoteProvider: event.target.value }
+                            : current,
+                        )
+                      }
+                      placeholder="codespaces"
+                    />
+                  </Field>
+                  <Field label={t("projectWorkspace.remoteWorkspaceRef")}>
+                    <input
+                      className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm outline-none"
+                      value={form.remoteWorkspaceRef}
+                      onChange={(event) =>
+                        setForm((current) =>
+                          current
+                            ? {
+                                ...current,
+                                remoteWorkspaceRef: event.target.value,
+                              }
+                            : current,
+                        )
+                      }
+                      placeholder="workspace-123"
+                    />
+                  </Field>
+                </div>
 
-          <Card className="block p-5">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-              <div className="space-y-1">
-                <div className="text-xs font-medium uppercase tracking-(--tracking-eyebrow) text-muted-foreground">{t("projectWorkspace.workspaceCommands")}</div>
-                <h2 className="text-lg font-semibold">{t("projectWorkspace.servicesAndJobs")}</h2>
-                <p className="text-sm text-muted-foreground">{t("projectWorkspace.servicesAndJobsDesc")}</p>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Field
+                    label={t("projectWorkspace.setupCommand")}
+                    hint={t("projectWorkspace.setupCommandHint")}
+                  >
+                    <textarea
+                      className="min-h-28 w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm outline-none"
+                      value={form.setupCommand}
+                      onChange={(event) =>
+                        setForm((current) =>
+                          current
+                            ? { ...current, setupCommand: event.target.value }
+                            : current,
+                        )
+                      }
+                      placeholder="pnpm install && pnpm dev"
+                    />
+                  </Field>
+                  <Field
+                    label={t("projectWorkspace.cleanupCommand")}
+                    hint={t("projectWorkspace.cleanupCommandHint")}
+                  >
+                    <textarea
+                      className="min-h-28 w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm outline-none"
+                      value={form.cleanupCommand}
+                      onChange={(event) =>
+                        setForm((current) =>
+                          current
+                            ? { ...current, cleanupCommand: event.target.value }
+                            : current,
+                        )
+                      }
+                      placeholder="pkill -f vite || true"
+                    />
+                  </Field>
+                </div>
+
+                <details className="rounded-xl border border-dashed border-border/70 bg-background px-3 py-3">
+                  <summary className="cursor-pointer text-sm font-medium">
+                    {t("projectWorkspace.advancedRuntimeJson")}
+                  </summary>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {t("projectWorkspace.advancedRuntimeJsonHint")}
+                  </p>
+                  <div className="mt-3">
+                    <Field
+                      label={t("projectWorkspace.workspaceCommandsJson")}
+                      hint={t("projectWorkspace.workspaceCommandsJsonHint")}
+                    >
+                      <textarea
+                        className="min-h-96 w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm outline-none"
+                        value={form.runtimeConfig}
+                        onChange={(event) =>
+                          setForm((current) =>
+                            current
+                              ? {
+                                  ...current,
+                                  runtimeConfig: event.target.value,
+                                }
+                              : current,
+                          )
+                        }
+                        placeholder={
+                          '{\n  "commands": [\n    {\n      "id": "web",\n      "name": "web",\n      "kind": "service",\n      "command": "pnpm dev",\n      "cwd": ".",\n      "port": { "type": "auto" },\n      "readiness": {\n        "type": "http",\n        "urlTemplate": "http://127.0.0.1:${port}"\n      },\n      "expose": {\n        "type": "url",\n        "urlTemplate": "http://127.0.0.1:${port}"\n      },\n      "lifecycle": "shared",\n      "reuseScope": "project_workspace"\n    },\n    {\n      "id": "db-migrate",\n      "name": "db:migrate",\n      "kind": "job",\n      "command": "pnpm db:migrate",\n      "cwd": "."\n    }\n  ]\n}'
+                        }
+                      />
+                    </Field>
+                  </div>
+                </details>
               </div>
-            </div>
-            <WorkspaceRuntimeControls
-              className="mt-4"
-              sections={runtimeControlSections}
-              isPending={controlRuntimeServices.isPending}
-              pendingRequest={pendingRuntimeAction}
-              serviceEmptyMessage={
-                workspace.runtimeConfig?.workspaceRuntime
-                  ? t("projectWorkspace.noServicesStarted")
-                  : t("projectWorkspace.noWorkspaceCommandsConfigured")
-              }
-              jobEmptyMessage={t("projectWorkspace.noWorkspaceJobsConfigured")}
-              disabledHint={t("projectWorkspace.runtimeCommandsDisabledHint")}
-              onAction={(request) => controlRuntimeServices.mutate(request)}
-            />
-          </Card>
+
+              <div className="mt-5 flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                <Button
+                  className="w-full sm:w-auto"
+                  disabled={!isDirty || updateWorkspace.isPending}
+                  onClick={saveChanges}
+                >
+                  {updateWorkspace.isPending ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : null}
+                  {t("projectWorkspace.saveChanges")}
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full sm:w-auto"
+                  disabled={!isDirty || updateWorkspace.isPending}
+                  onClick={() => {
+                    setForm(initialState);
+                    setErrorMessage(null);
+                  }}
+                >
+                  {t("projectWorkspace.reset")}
+                </Button>
+                {errorMessage ? (
+                  <p className="text-sm text-destructive">{errorMessage}</p>
+                ) : null}
+                {!errorMessage && runtimeActionMessage ? (
+                  <p className="text-sm text-muted-foreground">
+                    {runtimeActionMessage}
+                  </p>
+                ) : null}
+                {!errorMessage && !isDirty ? (
+                  <p className="text-sm text-muted-foreground">
+                    {t("projectWorkspace.noUnsavedChanges")}
+                  </p>
+                ) : null}
+              </div>
+            </Card>
+          </div>
+
+          <div className="space-y-6">
+            <Card className="block p-5">
+              <div className="space-y-1">
+                <div className="text-xs font-medium uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
+                  {t("projectWorkspace.workspaceFacts")}
+                </div>
+                <h2 className="text-lg font-semibold">
+                  {t("projectWorkspace.currentState")}
+                </h2>
+              </div>
+              <Separator className="my-4" />
+              <DetailRow label={t("Project", { defaultValue: "Project" })}>
+                <Link
+                  to={`/projects/${canonicalProjectRef}`}
+                  className="hover:underline"
+                >
+                  {project.name}
+                </Link>
+              </DetailRow>
+              <DetailRow label={t("projectWorkspace.workspaceId")}>
+                <span className="break-all font-mono text-xs">
+                  {workspace.id}
+                </span>
+              </DetailRow>
+              <DetailRow label={t("projectWorkspace.localPath")}>
+                <span className="break-all font-mono text-xs">
+                  {workspace.cwd ?? t("projectWorkspace.none")}
+                </span>
+              </DetailRow>
+              <DetailRow label={t("projectWorkspace.repoUrl")}>
+                {workspace.repoUrl && isSafeExternalUrl(workspace.repoUrl) ? (
+                  <a
+                    href={workspace.repoUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 hover:underline"
+                  >
+                    {workspace.repoUrl}
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                ) : workspace.repoUrl ? (
+                  <span className="break-all font-mono text-xs">
+                    {workspace.repoUrl}
+                  </span>
+                ) : (
+                  t("projectWorkspace.none")
+                )}
+              </DetailRow>
+              <DetailRow label={t("projectWorkspace.defaultRef")}>
+                {workspace.defaultRef ?? t("projectWorkspace.none")}
+              </DetailRow>
+              <DetailRow label={t("Updated", { defaultValue: "Updated" })}>
+                {new Date(workspace.updatedAt).toLocaleString()}
+              </DetailRow>
+            </Card>
+
+            <Card className="block p-5">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="space-y-1">
+                  <div className="text-xs font-medium uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
+                    {t("projectWorkspace.workspaceCommands")}
+                  </div>
+                  <h2 className="text-lg font-semibold">
+                    {t("projectWorkspace.servicesAndJobs")}
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    {t("projectWorkspace.servicesAndJobsDesc")}
+                  </p>
+                </div>
+              </div>
+              <WorkspaceRuntimeControls
+                className="mt-4"
+                sections={runtimeControlSections}
+                isPending={controlRuntimeServices.isPending}
+                pendingRequest={pendingRuntimeAction}
+                serviceEmptyMessage={
+                  workspace.runtimeConfig?.workspaceRuntime
+                    ? t("projectWorkspace.noServicesStarted")
+                    : t("projectWorkspace.noWorkspaceCommandsConfigured")
+                }
+                jobEmptyMessage={t(
+                  "projectWorkspace.noWorkspaceJobsConfigured",
+                )}
+                disabledHint={t("projectWorkspace.runtimeCommandsDisabledHint")}
+                onAction={(request) => controlRuntimeServices.mutate(request)}
+              />
+            </Card>
+          </div>
         </div>
-      </div>
       ) : null}
 
       {isProjectWorkspacePluginTab(activeTab) ? (
@@ -743,7 +1089,9 @@ export function ProjectWorkspaceDetail() {
           />
         ) : pluginDetailSlotsLoading || pluginDetailSlotsError ? (
           <div className="rounded-lg border border-dashed border-border bg-background px-4 py-8 text-sm text-muted-foreground">
-            {pluginDetailSlotsError ? pluginDetailSlotsError : t("projectWorkspace.loadingPlugin")}
+            {pluginDetailSlotsError
+              ? pluginDetailSlotsError
+              : t("projectWorkspace.loadingPlugin")}
           </div>
         ) : (
           <MissingPluginTabPlaceholder

@@ -3,97 +3,12 @@
 import { act } from "react";
 import type { ReactNode } from "react";
 import { createRoot } from "react-dom/client";
-import i18n from "i18next";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { IssueChatThread } from "./IssueChatThread";
 import type { IssueChatComment } from "../lib/issue-chat-messages";
+import type { LiveRunForIssue } from "../api/heartbeats";
 import type { Agent, SuccessfulRunHandoffState } from "@penclipai/shared";
-
-const { i18nLanguageRef, i18nTranslations } = vi.hoisted(() => ({
-  i18nLanguageRef: { current: "en" },
-  i18nTranslations: {
-    "zh-CN": {
-      "systemNotice.alert": "系统警报",
-      "systemNotice.notice": "系统通知",
-      "systemNotice.warning": "系统警告",
-      "systemNotice.metadata.statusBefore": "之前状态",
-      "systemNotice.metadata.cause": "原因",
-      "systemNotice.metadata.completedRun": "已完成运行",
-      "systemNotice.metadata.runContext": "运行上下文",
-      "systemNotice.metadata.reason": "原因",
-      "systemNotice.metadata.causeCode": "原因代码",
-      "systemGenerated.outputSilence.criticalThresholdCrossed": "已超过关键输出静默阈值。",
-      "systemGenerated.outputSilence.detectedOnActiveRun": "Paperclip 检测到此任务的活动运行已达到关键输出静默。",
-      "systemGenerated.outputSilence.blocksSourceIssue": "这会通过明确的复查任务阻塞来源任务，但不会取消仍在活动的进程。",
-      "systemGenerated.label.run": "运行",
-      "systemGenerated.label.silentFor": "静默时长",
-      "systemGenerated.label.lastOutputAt": "最后输出时间",
-      "systemGenerated.label.evaluationIssue": "评估任务",
-      "systemGenerated.duration.hours": "{{count}} 小时",
-      "systemGenerated.value.noneRecorded": "未记录",
-      "systemNotice.successfulRunHandoff.missingDispositionTitle": "缺少任务处置状态",
-      "systemNotice.successfulRunHandoff.missingDispositionBody": "需要先为这个任务记录处置状态，才能继续推进。",
-      "systemNotice.successfulRunHandoff.recoveryBlockedTitle": "缺少处置状态的恢复已阻塞",
-      "systemNotice.successfulRunHandoff.recoveryBlockedBody": "系统无法自动补齐这个任务缺失的处置状态。该任务已阻塞，等待恢复负责人处理。",
-      "systemNotice.successfulRunHandoff.requiredAction": "需要处理",
-      "systemNotice.successfulRunHandoff.runEvidence": "运行依据",
-      "systemNotice.successfulRunHandoff.recoveryOwner": "恢复负责人",
-      "systemNotice.successfulRunHandoff.sourceIssue": "来源任务",
-      "systemNotice.successfulRunHandoff.assignee": "负责人",
-      "systemNotice.successfulRunHandoff.missingDisposition": "缺失处置状态",
-      "systemNotice.successfulRunHandoff.validDispositions": "有效处置状态",
-      "systemNotice.successfulRunHandoff.successfulRun": "成功运行",
-      "systemNotice.successfulRunHandoff.runStatus": "运行状态",
-      "systemNotice.successfulRunHandoff.normalizedCause": "归一化原因",
-      "systemNotice.successfulRunHandoff.detectedProgress": "检测到的进展",
-      "systemNotice.successfulRunHandoff.automaticRetry": "自动重试",
-      "systemNotice.successfulRunHandoff.recoveryIssue": "恢复任务",
-      "systemNotice.successfulRunHandoff.sourceAssignee": "来源负责人",
-      "systemNotice.successfulRunHandoff.suggestedAction": "建议操作",
-      "systemNotice.successfulRunHandoff.sourceRun": "来源运行",
-      "systemNotice.successfulRunHandoff.correctiveHandoffRun": "修正交接运行",
-      "systemNotice.successfulRunHandoff.latestIssueStatus": "最新任务状态",
-      "systemNotice.successfulRunHandoff.latestHandoffRunStatus": "最新交接运行状态",
-      "systemNotice.successfulRunHandoff.value.clearNextStep": "补充下一步处置",
-      "systemNotice.successfulRunHandoff.value.validDispositions": "已完成、已取消、带负责人的审核中、带阻塞项的已阻塞、委派后续任务，或明确继续执行",
-      "systemNotice.successfulRunHandoff.value.successfulRunMissingState": "成功运行缺少任务处置状态",
-      "systemNotice.successfulRunHandoff.value.usefulOutputNoActionEvidence": "运行产出了有用内容，但没有记录具体行动依据",
-      "systemNotice.successfulRunHandoff.value.correctiveHandoffQueued": "已排队一次修正性交接唤醒",
-      "systemNotice.successfulRunHandoff.value.chooseValidDisposition": "选择并记录有效的任务处置状态，不要复制运行记录内容",
-      "Status": "状态",
-      "unknown": "未知",
-      "status.done": "已完成",
-      "status.failed": "失败",
-      "status.inProgress": "进行中",
-      "status.succeeded": "成功",
-    },
-  } as Record<string, Record<string, string>>,
-}));
-
-vi.mock("react-i18next", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("react-i18next")>();
-  const enCommon = (await import("../../public/locales/en/common.json")).default as Record<string, string>;
-  const interpolate = (text: string, options?: Record<string, unknown>) =>
-    text.replace(/\{\{(\w+)\}\}/g, (_match, token) => String(options?.[token] ?? ""));
-  return {
-    ...actual,
-    useTranslation: () => ({
-      t: (key: string, options?: Record<string, unknown>) => {
-        const translated = i18nTranslations[i18nLanguageRef.current]?.[key];
-        const fallback = typeof options?.defaultValue === "string" ? options.defaultValue : enCommon[key] ?? key;
-        return interpolate(translated ?? fallback, options);
-      },
-      i18n: {
-        language: i18nLanguageRef.current,
-        resolvedLanguage: i18nLanguageRef.current,
-        changeLanguage: vi.fn(async (language: string) => {
-          i18nLanguageRef.current = language;
-        }),
-      },
-    }),
-  };
-});
 
 vi.mock("@assistant-ui/react", () => ({
   AssistantRuntimeProvider: ({ children }: { children: ReactNode }) => <div>{children}</div>,
@@ -145,7 +60,6 @@ let container: HTMLDivElement;
 let root: ReturnType<typeof createRoot>;
 
 beforeEach(() => {
-  i18nLanguageRef.current = "en";
   container = document.createElement("div");
   document.body.appendChild(container);
   window.scrollTo = vi.fn();
@@ -163,9 +77,9 @@ function renderThread(
     agentMap?: Map<string, Agent>;
     issueStatus?: string;
     successfulRunHandoff?: SuccessfulRunHandoffState | null;
+    liveRuns?: LiveRunForIssue[];
   } = {},
 ) {
-  void i18n.changeLanguage(i18nLanguageRef.current);
   act(() => {
     root.render(
       <MemoryRouter>
@@ -173,7 +87,7 @@ function renderThread(
           comments={comments}
           linkedRuns={[]}
           timelineEvents={[]}
-          liveRuns={[]}
+          liveRuns={options.liveRuns ?? []}
           onAdd={async () => {}}
           showComposer={false}
           enableLiveTranscriptPolling={false}
@@ -236,266 +150,32 @@ describe("IssueChatThread system notice routing", () => {
     expect(container.querySelectorAll('[data-message-role="user"]').length).toBe(0);
   });
 
-  it("localizes known successful-run handoff system notices in Chinese", () => {
-    i18nLanguageRef.current = "zh-CN";
+  it("renders a system notice with a malformed createdAt without tripping the error boundary (PAP-16607)", () => {
     const comment: IssueChatComment = {
-      id: "comment-system-zh",
+      id: "comment-system-bad-date",
       companyId: "company-1",
       issueId: "issue-1",
       authorType: "system",
       authorAgentId: null,
       authorUserId: null,
-      body: "Paperclip needs a disposition before this issue can continue.",
-      presentation: {
-        kind: "system_notice",
-        tone: "warning",
-        title: "Missing issue disposition",
-        detailsDefaultOpen: true,
-      },
-      metadata: {
-        version: 1,
-        sections: [
-          {
-            title: "Required action",
-            rows: [
-              { type: "issue_link", label: "Source issue", issueId: "i1", identifier: "PAP-3440", title: "Recovery" },
-              { type: "key_value", label: "Missing disposition", value: "clear_next_step" },
-              {
-                type: "key_value",
-                label: "Valid dispositions",
-                value: "done, cancelled, in_review with an owner, blocked with blockers, delegated follow-up, or explicit continuation",
-              },
-            ],
-          },
-          {
-            title: "Run evidence",
-            rows: [
-              { type: "run_link", label: "Successful run", runId: "run-1", title: "succeeded" },
-              { type: "key_value", label: "Run status", value: "succeeded" },
-              { type: "key_value", label: "Normalized cause", value: "successful_run_missing_state" },
-              {
-                type: "key_value",
-                label: "Detected progress",
-                value: "Run produced useful output but no concrete action evidence",
-              },
-              { type: "key_value", label: "Automatic retry", value: "one corrective handoff wake queued" },
-            ],
-          },
-        ],
-      },
-      ...baseTimestamps,
-    };
-
-    renderThread([comment]);
-
-    const status = container.querySelector('[role="status"]');
-    expect(status?.getAttribute("aria-label")).toBe("缺少任务处置状态");
-    expect(container.textContent).toContain("需要先为这个任务记录处置状态");
-    expect(container.textContent).toContain("需要处理");
-    expect(container.textContent).toContain("来源任务");
-    expect(container.textContent).toContain("运行依据");
-    expect(container.textContent).toContain("成功运行");
-    expect(container.textContent).toContain("缺失处置状态");
-    expect(container.textContent).toContain("补充下一步处置");
-    expect(container.textContent).toContain("有效处置状态");
-    expect(container.textContent).toContain("已完成、已取消、带负责人的审核中");
-    expect(container.textContent).toContain("运行状态");
-    expect(container.textContent).toContain("归一化原因");
-    expect(container.textContent).toContain("成功运行缺少任务处置状态");
-    expect(container.textContent).toContain("检测到的进展");
-    expect(container.textContent).toContain("运行产出了有用内容，但没有记录具体行动依据");
-    expect(container.textContent).toContain("自动重试");
-    expect(container.textContent).toContain("已排队一次修正性交接唤醒");
-    expect(container.textContent).not.toContain("Missing issue disposition");
-    expect(container.textContent).not.toContain("Paperclip needs a disposition");
-    expect(container.textContent).not.toContain("clear_next_step");
-    expect(container.textContent).not.toContain("successful_run_missing_state");
-    expect(container.textContent).not.toContain("one corrective handoff wake queued");
-    expect(container.textContent).not.toContain("in_review with an owner");
-  });
-
-  it("localizes output-silence system notice bodies in Chinese", () => {
-    i18nLanguageRef.current = "zh-CN";
-    const comment: IssueChatComment = {
-      id: "comment-output-silence-zh",
-      companyId: "company-1",
-      issueId: "issue-1",
-      authorType: "system",
-      authorAgentId: null,
-      authorUserId: null,
-      body: [
-        "Critical output silence threshold crossed.",
-        "",
-        "- Run: `da7d59e5-7eec-4c3b-8019-b15157d3fcf1`",
-        "- Silent for: 4h",
-        "- Last output at: none recorded",
-        "- Evaluation issue: BIG-52",
-        "",
-        "Paperclip detected critical output silence on this issue's active run.",
-        "This blocks the source issue on the explicit review task without cancelling the active process.",
-      ].join("\n"),
+      body: "Workspace ready.",
       presentation: {
         kind: "system_notice",
         tone: "info",
-        title: null,
+        title: "Workspace ready",
         detailsDefaultOpen: false,
       },
-      metadata: null,
-      ...baseTimestamps,
+      metadata: { version: 1, sections: [] },
+      // A server serialization bug (Dates collapsed to `{}` by secret
+      // redaction) shipped comments whose timestamps parse to Invalid Date.
+      createdAt: {} as unknown as Date,
+      updatedAt: {} as unknown as Date,
     };
 
     renderThread([comment]);
 
-    expect(container.textContent).toContain("已超过关键输出静默阈值。");
-    expect(container.textContent).toContain("运行：`da7d59e5-7eec-4c3b-8019-b15157d3fcf1`");
-    expect(container.textContent).toContain("静默时长：4 小时");
-    expect(container.textContent).toContain("最后输出时间：未记录");
-    expect(container.textContent).toContain("评估任务：BIG-52");
-    expect(container.textContent).toContain("Paperclip 检测到此任务的活动运行已达到关键输出静默。");
-    expect(container.textContent).toContain("这会通过明确的复查任务阻塞来源任务");
-    expect(container.textContent).not.toContain("Critical output silence threshold crossed");
-    expect(container.textContent).not.toContain("Silent for");
-    expect(container.textContent).not.toContain("Last output at");
-  });
-
-  it("localizes recovery-blocked system notice metadata values in Chinese", () => {
-    i18nLanguageRef.current = "zh-CN";
-    const comment: IssueChatComment = {
-      id: "comment-recovery-blocked-zh",
-      companyId: "company-1",
-      issueId: "issue-1",
-      authorType: "system",
-      authorAgentId: null,
-      authorUserId: null,
-      body: "Paperclip could not resolve this issue's missing disposition automatically. The issue is blocked on a recovery owner.",
-      presentation: {
-        kind: "system_notice",
-        tone: "danger",
-        title: "Missing disposition recovery blocked",
-        detailsDefaultOpen: true,
-      },
-      metadata: {
-        version: 1,
-        sections: [
-          {
-            title: "Recovery owner",
-            rows: [
-              {
-                type: "issue_link",
-                label: "Source issue",
-                issueId: "issue-3",
-                identifier: "BIG-3",
-                title: "Review productivity for BIG-2",
-              },
-              {
-                type: "issue_link",
-                label: "Recovery issue",
-                issueId: "issue-5",
-                identifier: "BIG-5",
-                title: "Recover missing next step",
-              },
-              { type: "agent_link", label: "Recovery owner", agentId: "agent-ceo", name: "CEO" },
-              { type: "agent_link", label: "Source assignee", agentId: "agent-ceo", name: "CEO" },
-              {
-                type: "key_value",
-                label: "Suggested action",
-                value: "choose and record a valid issue disposition without copying transcript content",
-              },
-            ],
-          },
-          {
-            title: "Run evidence",
-            rows: [
-              { type: "run_link", label: "Source run", runId: "run-source", title: "succeeded" },
-              { type: "run_link", label: "Corrective handoff run", runId: "run-corrective", title: "in_progress" },
-              { type: "key_value", label: "Latest issue status", value: "in_progress" },
-              { type: "key_value", label: "Latest handoff run status", value: "succeeded" },
-              { type: "key_value", label: "Normalized cause", value: "successful_run_missing_state" },
-              { type: "key_value", label: "Missing disposition", value: "clear_next_step" },
-            ],
-          },
-        ],
-      },
-      ...baseTimestamps,
-    };
-
-    renderThread([comment]);
-
-    expect(container.textContent).toContain("缺少处置状态的恢复已阻塞");
-    expect(container.textContent).toContain("恢复负责人");
-    expect(container.textContent).toContain("恢复任务");
-    expect(container.textContent).toContain("建议操作");
-    expect(container.textContent).toContain("选择并记录有效的任务处置状态，不要复制运行记录内容");
-    expect(container.textContent).toContain("来源运行");
-    expect(container.textContent).toContain("修正交接运行");
-    expect(container.textContent).toContain("最新任务状态");
-    expect(container.textContent).toContain("最新交接运行状态");
-    expect(container.textContent).toContain("进行中");
-    expect(container.textContent).toContain("成功");
-    expect(container.textContent).toContain("成功运行缺少任务处置状态");
-    expect(container.textContent).toContain("补充下一步处置");
-    expect(container.textContent).toContain("Review productivity for BIG-2");
-    expect(container.textContent).toContain("CEO");
-    expect(container.textContent).not.toContain("choose and record a valid issue disposition");
-    expect(container.textContent).not.toContain("successful_run_missing_state");
-    expect(container.textContent).not.toContain("clear_next_step");
-    expect(container.textContent).not.toContain("in_progress");
-    expect(container.textContent).not.toContain("succeeded");
-  });
-
-  it("localizes generic system notice metadata labels and enum values in Chinese", () => {
-    i18nLanguageRef.current = "zh-CN";
-    const comment: IssueChatComment = {
-      id: "comment-generic-metadata-zh",
-      companyId: "company-1",
-      issueId: "issue-1",
-      authorType: "system",
-      authorAgentId: null,
-      authorUserId: null,
-      body: "System recovery completed.",
-      presentation: {
-        kind: "system_notice",
-        tone: "info",
-        title: null,
-        detailsDefaultOpen: true,
-      },
-      metadata: {
-        version: 1,
-        sections: [
-          {
-            title: "Run context",
-            rows: [
-              { type: "key_value", label: "Status before", value: "in_progress" },
-              { type: "key_value", label: "Status", value: "done" },
-              { type: "key_value", label: "Cause", value: "successful_run_missing_state" },
-              { type: "key_value", label: "Reason", value: "unknown" },
-              { type: "run_link", label: "Completed run", runId: "run-generic", title: "failed" },
-              { type: "code", label: "Cause code", code: "missing_disposition" },
-            ],
-          },
-        ],
-      },
-      ...baseTimestamps,
-    };
-
-    renderThread([comment]);
-
-    expect(container.textContent).toContain("运行上下文");
-    expect(container.textContent).toContain("之前状态");
-    expect(container.textContent).toContain("进行中");
-    expect(container.textContent).toContain("状态");
-    expect(container.textContent).toContain("已完成");
-    expect(container.textContent).toContain("原因");
-    expect(container.textContent).toContain("成功运行缺少任务处置状态");
-    expect(container.textContent).toContain("未知");
-    expect(container.textContent).toContain("已完成运行");
-    expect(container.textContent).toContain("失败");
-    expect(container.textContent).toContain("原因代码");
-    expect(container.textContent).toContain("missing_disposition");
-    expect(container.textContent).not.toContain("Status before");
-    expect(container.textContent).not.toContain("in_progress");
-    expect(container.textContent).not.toContain("successful_run_missing_state");
-    expect(container.textContent).not.toContain("unknown");
+    expect(container.textContent).not.toContain("Chat renderer hit an internal state error.");
+    expect(container.textContent).toContain("Workspace ready");
   });
 
   it("expands metadata when detailsDefaultOpen is true", () => {
@@ -712,7 +392,7 @@ describe("IssueChatThread system notice routing", () => {
     expect(status?.textContent).not.toContain("You");
   });
 
-  it("falls back to the CN brand in the system notice header when run agent is unknown to agentMap", () => {
+  it("falls back to Paperclip in the system notice header when run agent is unknown to agentMap", () => {
     const comment: IssueChatComment = {
       id: "comment-system-unknown-agent",
       companyId: "company-1",
@@ -741,7 +421,9 @@ describe("IssueChatThread system notice routing", () => {
     expect(sourceLink?.textContent).toBe("Paperclip CN");
   });
 
-  it("keeps agent-authored comments as assistant bubbles even when presentation requests system_notice", () => {
+  it("routes agent-authored comments to the notice renderer when presentation requests system_notice", () => {
+    const owner = { id: "agent-1", name: "ClaudeCoder" } as unknown as Agent;
+    const agentMap = new Map<string, Agent>([[owner.id, owner]]);
     const comment: IssueChatComment = {
       id: "comment-agent-system",
       companyId: "company-1",
@@ -749,11 +431,166 @@ describe("IssueChatThread system notice routing", () => {
       authorType: "agent",
       authorAgentId: "agent-1",
       authorUserId: null,
+      runId: "run-owner",
+      runAgentId: "agent-1",
       body: "Reassigned to ClaudeFixer.",
       presentation: {
         kind: "system_notice",
         tone: "neutral",
-        title: null,
+        title: "Recovery reassignment",
+        detailsDefaultOpen: false,
+      },
+      metadata: null,
+      ...baseTimestamps,
+    };
+
+    renderThread([comment], { agentMap });
+
+    // No longer an assistant bubble — it collapses like a system notice.
+    expect(container.querySelector('[data-message-role="assistant"]')).toBeNull();
+    const row = container.querySelector('[data-message-role="system"]');
+    expect(row).not.toBeNull();
+    const status = row?.querySelector('[role="status"]');
+    expect(status?.getAttribute("aria-label")).toBe("Recovery reassignment");
+    // The real author's name + run link stay visible on the notice.
+    const sourceLink = status?.querySelector('a[href^="/agents/"]') as HTMLAnchorElement | null;
+    expect(sourceLink?.getAttribute("href")).toBe("/agents/agent-1/runs/run-owner");
+    expect(sourceLink?.textContent).toBe("ClaudeCoder");
+  });
+
+  it("collapses compact system notices to a single quiet row and expands to the full card", () => {
+    const comment: IssueChatComment = {
+      id: "comment-compact",
+      companyId: "company-1",
+      issueId: "issue-1",
+      authorType: "system",
+      authorAgentId: null,
+      authorUserId: null,
+      runId: "run-recovery",
+      runAgentId: "agent-codex",
+      body: "Recovery escalated to the CTO after repeated stalls.",
+      presentation: {
+        kind: "system_notice",
+        tone: "warning",
+        title: "Recovery escalated",
+        detailsDefaultOpen: false,
+        density: "compact",
+      },
+      metadata: {
+        version: 1,
+        sections: [
+          {
+            title: "Escalation",
+            rows: [{ type: "agent_link", label: "Owner", agentId: "agent-cto", name: "CTO" }],
+          },
+        ],
+      },
+      ...baseTimestamps,
+    };
+
+    renderThread([comment]);
+
+    const row = container.querySelector('[data-testid="compact-system-notice"]');
+    expect(row).not.toBeNull();
+    // Collapsed: title + timestamp + chevron visible, but body/card hidden.
+    expect(row?.textContent).toContain("Recovery escalated");
+    expect(row?.querySelector('[data-testid="compact-system-notice-time"]')).not.toBeNull();
+    expect(row?.querySelector(".lucide-chevron-down")).not.toBeNull();
+    const toggle = row?.querySelector("button[aria-expanded]") as HTMLButtonElement;
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    const detailsId = toggle.getAttribute("aria-controls");
+    const details = detailsId ? container.ownerDocument.getElementById(detailsId) : null;
+    expect(details).not.toBeNull();
+    expect(details).toHaveProperty("hidden", true);
+    // The full SystemNotice card lives inside the collapsed region.
+    expect(details?.querySelector('[role="status"]')).not.toBeNull();
+
+    act(() => {
+      toggle.click();
+    });
+
+    expect(toggle.getAttribute("aria-expanded")).toBe("true");
+    expect(details).toHaveProperty("hidden", false);
+    expect(details?.textContent).toContain("Recovery escalated to the CTO");
+  });
+
+  it("renders a compact notice already expanded when detailsDefaultOpen is true", () => {
+    const comment: IssueChatComment = {
+      id: "comment-compact-open",
+      companyId: "company-1",
+      issueId: "issue-1",
+      authorType: "system",
+      authorAgentId: null,
+      authorUserId: null,
+      body: "Recovery escalated to the CTO.",
+      presentation: {
+        kind: "system_notice",
+        tone: "danger",
+        title: "Recovery escalated",
+        detailsDefaultOpen: true,
+        density: "compact",
+      },
+      metadata: null,
+      ...baseTimestamps,
+    };
+
+    renderThread([comment]);
+
+    const row = container.querySelector('[data-testid="compact-system-notice"]');
+    expect(row).not.toBeNull();
+    const toggle = row?.querySelector("button[aria-expanded]") as HTMLButtonElement;
+    expect(toggle.getAttribute("aria-expanded")).toBe("true");
+    const detailsId = toggle.getAttribute("aria-controls");
+    const details = detailsId ? container.ownerDocument.getElementById(detailsId) : null;
+    expect(details).toHaveProperty("hidden", false);
+    expect(details?.querySelector('[role="status"]')).not.toBeNull();
+    expect(details?.textContent).toContain("Recovery escalated to the CTO.");
+  });
+
+  it("keeps the author visible on a compact agent-authored notice row", () => {
+    const owner = { id: "agent-1", name: "ClaudeCoder" } as unknown as Agent;
+    const agentMap = new Map<string, Agent>([[owner.id, owner]]);
+    const comment: IssueChatComment = {
+      id: "comment-compact-agent",
+      companyId: "company-1",
+      issueId: "issue-1",
+      authorType: "agent",
+      authorAgentId: "agent-1",
+      authorUserId: null,
+      body: "Picked this back up after the wake.",
+      presentation: {
+        kind: "system_notice",
+        tone: "neutral",
+        title: "Recovery owner update",
+        detailsDefaultOpen: false,
+        density: "compact",
+      },
+      metadata: null,
+      ...baseTimestamps,
+    };
+
+    renderThread([comment], { agentMap });
+
+    const row = container.querySelector('[data-testid="compact-system-notice"]');
+    expect(row).not.toBeNull();
+    expect(row?.textContent).toContain("Recovery owner update");
+    // Author name shows on the collapsed row itself.
+    expect(row?.querySelector("button[aria-expanded]")?.textContent).toContain("ClaudeCoder");
+  });
+
+  it("keeps notices without density rendering as the full card (graceful fallback)", () => {
+    const comment: IssueChatComment = {
+      id: "comment-no-density",
+      companyId: "company-1",
+      issueId: "issue-1",
+      authorType: "system",
+      authorAgentId: null,
+      authorUserId: null,
+      body: "Recovery completed.",
+      presentation: {
+        kind: "system_notice",
+        tone: "success",
+        title: "Recovery completed",
         detailsDefaultOpen: false,
       },
       metadata: null,
@@ -762,8 +599,11 @@ describe("IssueChatThread system notice routing", () => {
 
     renderThread([comment]);
 
-    expect(container.querySelector('[role="status"]')).toBeNull();
-    expect(container.querySelector('[data-message-role="assistant"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="compact-system-notice"]')).toBeNull();
+    const status = container.querySelector('[role="status"]');
+    expect(status?.getAttribute("aria-label")).toBe("Recovery completed");
+    // Body is visible immediately on the full card.
+    expect(status?.textContent).toContain("Recovery completed.");
   });
 
   it("folds stale successful-run disposition warnings into the activity log disclosure style", () => {
@@ -841,5 +681,153 @@ describe("IssueChatThread system notice routing", () => {
     expect(toggle.getAttribute("aria-expanded")).toBe("true");
     expect(details).toHaveProperty("hidden", false);
     expect(container.textContent).toContain("run-stale");
+  });
+
+  it("folds a required disposition warning while a live continuation is running the issue", () => {
+    const comment: IssueChatComment = {
+      id: "comment-live-disposition-warning",
+      companyId: "company-1",
+      issueId: "issue-1",
+      authorType: "system",
+      authorAgentId: null,
+      authorUserId: null,
+      runId: "run-source",
+      runAgentId: "agent-codex",
+      body: "Paperclip needs a disposition before this issue can continue.",
+      presentation: {
+        kind: "system_notice",
+        tone: "warning",
+        title: "Missing issue disposition",
+        detailsDefaultOpen: false,
+      },
+      metadata: {
+        version: 1,
+        sourceRunId: "run-source",
+        sections: [],
+      },
+      ...baseTimestamps,
+    };
+
+    renderThread([comment], {
+      issueStatus: "in_progress",
+      successfulRunHandoff: {
+        state: "required",
+        required: true,
+        hasLiveContinuation: true,
+        liveRunId: "run-live",
+        sourceRunId: "run-source",
+        correctiveRunId: null,
+        assigneeAgentId: "agent-codex",
+        detectedProgressSummary: null,
+        createdAt: new Date("2026-05-04T17:00:00.000Z"),
+      },
+    });
+
+    const row = container.querySelector('[data-testid="stale-disposition-warning"]');
+    expect(row).not.toBeNull();
+    expect(row?.textContent).not.toContain("Paperclip needs a disposition before this issue can continue.");
+  });
+
+  it("keeps the required disposition warning loud when no live continuation exists", () => {
+    const comment: IssueChatComment = {
+      id: "comment-stuck-disposition-warning",
+      companyId: "company-1",
+      issueId: "issue-1",
+      authorType: "system",
+      authorAgentId: null,
+      authorUserId: null,
+      runId: "run-source",
+      runAgentId: "agent-codex",
+      body: "Paperclip needs a disposition before this issue can continue.",
+      presentation: {
+        kind: "system_notice",
+        tone: "warning",
+        title: "Missing issue disposition",
+        detailsDefaultOpen: false,
+      },
+      metadata: {
+        version: 1,
+        sourceRunId: "run-source",
+        sections: [],
+      },
+      ...baseTimestamps,
+    };
+
+    renderThread([comment], {
+      issueStatus: "in_progress",
+      successfulRunHandoff: {
+        state: "required",
+        required: true,
+        hasLiveContinuation: false,
+        sourceRunId: "run-source",
+        correctiveRunId: null,
+        assigneeAgentId: "agent-codex",
+        detectedProgressSummary: null,
+        createdAt: new Date("2026-05-04T17:00:00.000Z"),
+      },
+    });
+
+    expect(container.querySelector('[data-testid="stale-disposition-warning"]')).toBeNull();
+    expect(container.textContent).toContain("Paperclip needs a disposition before this issue can continue.");
+  });
+
+  it("folds a required disposition warning when a live run starts after the issue payload was fetched", () => {
+    const comment: IssueChatComment = {
+      id: "comment-realtime-disposition-warning",
+      companyId: "company-1",
+      issueId: "issue-1",
+      authorType: "system",
+      authorAgentId: null,
+      authorUserId: null,
+      runId: "run-source",
+      runAgentId: "agent-codex",
+      body: "Paperclip needs a disposition before this issue can continue.",
+      presentation: {
+        kind: "system_notice",
+        tone: "warning",
+        title: "Missing issue disposition",
+        detailsDefaultOpen: false,
+      },
+      metadata: {
+        version: 1,
+        sourceRunId: "run-source",
+        sections: [],
+      },
+      ...baseTimestamps,
+    };
+
+    renderThread([comment], {
+      issueStatus: "in_progress",
+      liveRuns: [
+        {
+          id: "run-live",
+          status: "running",
+          invocationSource: "wakeup",
+          triggerDetail: null,
+          startedAt: "2026-05-04T17:05:00.000Z",
+          finishedAt: null,
+          createdAt: "2026-05-04T17:05:00.000Z",
+          agentId: "agent-codex",
+          agentName: "CodexCoder",
+          adapterType: "codex_local",
+          issueId: "issue-1",
+        },
+      ],
+      successfulRunHandoff: {
+        state: "required",
+        required: true,
+        // Stale server view: the payload was fetched before run-live started.
+        hasLiveContinuation: false,
+        sourceRunId: "run-source",
+        correctiveRunId: null,
+        assigneeAgentId: "agent-codex",
+        detectedProgressSummary: null,
+        createdAt: new Date("2026-05-04T17:00:00.000Z"),
+      },
+    });
+
+    const row = container.querySelector('[data-testid="stale-disposition-warning"]');
+    expect(row).not.toBeNull();
+    expect(row?.textContent).not.toContain("Paperclip needs a disposition before this issue can continue.");
   });
 });

@@ -1,6 +1,7 @@
 import { startTransition, useDeferredValue, useEffect, useMemo, useState, useCallback, useRef } from "react";
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { useQueries, useQuery } from "@tanstack/react-query";
+import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useVisibilityRefetchInterval } from "@/lib/polling";
 import { accessApi } from "../api/access";
 import { useDialogActions } from "../context/DialogContext";
@@ -19,6 +20,7 @@ import {
 import { formatAssigneeUserLabel } from "../lib/assignees";
 import { buildCompanyUserLabelMap, buildCompanyUserProfileMap } from "../lib/company-members";
 import { createIssueDetailPath, rememberIssueDetailLocationState, withIssueDetailHeaderSeed } from "../lib/issueDetailBreadcrumb";
+import { prefetchIssueDetailForNavigation } from "../lib/issueDetailCache";
 import {
   buildSubIssueProgressSummary,
   shouldRenderSubIssueProgressSummary,
@@ -45,6 +47,7 @@ import {
   type InboxIssueColumn,
 } from "../lib/inbox";
 import { cn, formatDurationMs, formatTokens } from "../lib/utils";
+import { SHOW_TASK_PRIORITY_UI } from "../lib/ui-flags";
 import { collectSubtreeLiveCounts } from "../lib/liveIssueIds";
 import {
   InboxIssueMetaLeading,
@@ -61,7 +64,6 @@ import { IssueFiltersPopover } from "./IssueFiltersPopover";
 import { IssueRow } from "./IssueRow";
 import { PageSkeleton } from "./PageSkeleton";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
@@ -81,11 +83,11 @@ import { getInboxKeyboardSelectionIndex } from "../lib/inbox";
 import { hasBlockingShortcutDialog, isKeyboardShortcutTextInputTarget } from "../lib/keyboardShortcuts";
 import { useGeneralSettings } from "../context/GeneralSettingsContext";
 import { buildSubIssueDefaultsForViewer } from "../lib/subIssueDefaults";
-import { translateStatusLabel } from "../lib/i18n-labels";
 import { statusBadge } from "../lib/status-colors";
 import { workflowSort } from "../lib/workflow-sort";
 import { isSuccessfulRunHandoffRequired } from "../lib/successful-run-handoff";
 import { deriveOriginatingActor, ISSUE_STATUSES, type Issue, type IssueStatus, type Project } from "@penclipai/shared";
+import { Badge } from "@/components/ui/badge";
 const ISSUE_SEARCH_DEBOUNCE_MS = 250;
 const ISSUE_SEARCH_RESULT_LIMIT = 200;
 const ISSUE_BOARD_COLUMN_RESULT_LIMIT = 200;
@@ -121,6 +123,15 @@ function findIssuesScrollContainer(element: HTMLElement | null): HTMLElement | n
   return null;
 }
 const boardIssueStatuses = ISSUE_STATUSES;
+const issueStatusTranslationKeys: Record<IssueStatus, string> = {
+  backlog: "status.backlog",
+  todo: "status.todo",
+  in_progress: "status.inProgress",
+  in_review: "status.inReview",
+  done: "status.done",
+  blocked: "status.blocked",
+  cancelled: "status.cancelled",
+};
 const progressSegmentClasses: Record<IssueStatus, string> = {
   backlog: "bg-muted-foreground/40",
   todo: "bg-blue-500",
@@ -293,6 +304,60 @@ function sortIssues(issues: Issue[], state: IssueViewState): Issue[] {
     }
   });
   return sorted;
+}
+
+const AGE_BUCKET_DAY_MS = 24 * 60 * 60 * 1000;
+const AGE_BUCKET_WEEK_MS = 7 * AGE_BUCKET_DAY_MS;
+
+// Recency buckets for the date separators shown in date-sorted lists:
+//   0 = within the last day, 1 = within the last week, 2 = older than a week.
+// A separator is drawn between rows whenever the bucket increases, so the
+// "1 day" and "1 week" boundaries appear as the list ages downward.
+export function issueAgeBucket(date: Date | string, now: number = Date.now()): 0 | 1 | 2 {
+  const age = now - new Date(date).getTime();
+  if (age < AGE_BUCKET_DAY_MS) return 0;
+  if (age < AGE_BUCKET_WEEK_MS) return 1;
+  return 2;
+}
+
+export function issueAgeSeparatorLabel(bucket: 1 | 2): string {
+  return bucket === 1 ? "Older than a day" : "Older than a week";
+}
+
+export function issueAgeBucketsCrossed(
+  previousBucket: 0 | 1 | 2,
+  currentBucket: 0 | 1 | 2,
+): Array<1 | 2> {
+  const crossedBuckets: Array<1 | 2> = [];
+  if (previousBucket < 1 && currentBucket >= 1) crossedBuckets.push(1);
+  if (previousBucket < 2 && currentBucket >= 2) crossedBuckets.push(2);
+  return crossedBuckets;
+}
+
+// Only recency sorts (newest first) get date separators — for any other
+// sort/direction the boundaries would be meaningless.
+function issueDateSeparatorField(state: IssueViewState): "createdAt" | "updatedAt" | null {
+  if (state.sortDir !== "desc") return null;
+  if (state.sortField === "created") return "createdAt";
+  if (state.sortField === "updated") return "updatedAt";
+  return null;
+}
+
+function IssueDateSeparator({ label }: { label: string }) {
+  return (
+    <div
+      className="flex items-center gap-2 px-3 py-1.5 sm:pl-0 sm:pr-4"
+      role="separator"
+      aria-label={label}
+      data-issues-date-separator=""
+    >
+      <div className="h-px flex-1 bg-border" />
+      <span className="text-(length:--text-nano) font-medium uppercase tracking-wider text-muted-foreground">
+        {label}
+      </span>
+      <div className="h-px flex-1 bg-border" />
+    </div>
+  );
 }
 
 function issueMatchesLocalSearch(issue: Issue, normalizedSearch: string): boolean {
@@ -488,9 +553,9 @@ function IssueSearchInput({
             e.currentTarget.blur();
           }
         }}
-        placeholder={t("Search issues...", { defaultValue: "Search issues..." })}
+        placeholder={t("issuesList.searchPlaceholder")}
         className="pl-7 text-xs sm:text-sm"
-        aria-label={t("Search issues", { defaultValue: "Search issues" })}
+        aria-label={t("issuesList.searchAria")}
         data-page-search-target="true"
       />
     </div>
@@ -540,50 +605,34 @@ function SubIssueProgressSummaryStrip({
               {t("issuesList.subIssueDoneCount", {
                 done: summary.doneCount,
                 total: summary.totalCount,
-                defaultValue: "{{done}}/{{total}} done",
               })}
             </span>
             <span className="text-muted-foreground">
-              {t("issuesList.subIssueInProgressCount", {
-                count: summary.inProgressCount,
-                defaultValue: "{{count}} in progress",
-              })}
+              {t("issuesList.subIssueInProgressCount", { count: summary.inProgressCount })}
             </span>
             <span className="text-muted-foreground">
-              {t("issuesList.subIssueBlockedCount", {
-                count: summary.blockedCount,
-                defaultValue: "{{count}} blocked",
-              })}
+              {t("issuesList.subIssueBlockedCount", { count: summary.blockedCount })}
             </span>
             {showCostSummary && (
               <>
                 <span
                   className="text-muted-foreground tabular-nums"
-                  title={t("issuesList.subIssueRunSummary", {
-                    runCount: costSummary.runCount.toLocaleString(),
-                    issueCount: costSummary.issueCount,
-                    defaultValue: "{{runCount}} runs across {{issueCount}} sub-issues",
+                  title={t("issuesList.costSummaryTitle", {
+                    runs: costSummary.runCount.toLocaleString(),
+                    tasks: costSummary.issueCount.toLocaleString(),
                   })}
                 >
-                  {t("issuesList.tokenCount", {
-                    tokens: formatTokens(totalTokens),
-                    defaultValue: "{{tokens}} tokens",
-                  })}
+                  {t("issuesList.tokenCount", { tokens: formatTokens(totalTokens) })}
                 </span>
                 <span className="text-muted-foreground tabular-nums">
-                  {t("issuesList.runtimeDuration", {
-                    duration: formatDurationMs(costSummary.runtimeMs),
-                    defaultValue: "{{duration}} runtime",
-                  })}
+                  {t("issuesList.runtimeDuration", { duration: formatDurationMs(costSummary.runtimeMs) })}
                 </span>
               </>
             )}
           </div>
           <div
             role="progressbar"
-            aria-label={t("issuesList.subIssuesCompletionProgress", {
-              defaultValue: "Sub-issues completion progress",
-            })}
+            aria-label={t("issuesList.subtaskProgressAria")}
             aria-valuemin={0}
             aria-valuenow={summary.doneCount}
             aria-valuemax={summary.totalCount}
@@ -594,11 +643,7 @@ function SubIssueProgressSummaryStrip({
                 key={status}
                 className={cn("h-full", progressSegmentClasses[status])}
                 style={{ width: `${(count / summary.totalCount) * 100}%` }}
-                title={t("issuesList.statusSegmentTitle", {
-                  status: translateStatusLabel(t, status),
-                  count,
-                  defaultValue: "{{status}}: {{count}}",
-                })}
+                title={`${t(issueStatusTranslationKeys[status])}: ${count}`}
                 aria-hidden="true"
               />
             ))}
@@ -609,9 +654,7 @@ function SubIssueProgressSummaryStrip({
           {target && targetIssue ? (
             <>
               <div className="text-xs font-medium text-muted-foreground">
-                {target.kind === "next"
-                  ? t("issuesList.nextUp", { defaultValue: "Next up" })
-                  : t("issuesList.waitingOnBlockers", { defaultValue: "Waiting on blockers" })}
+                {target.kind === "next" ? t("issuesList.nextUp") : t("issuesList.waitingOnBlockers")}
               </div>
               <Link
                 to={createIssueDetailPath(targetPathId)}
@@ -626,17 +669,11 @@ function SubIssueProgressSummaryStrip({
               </Link>
             </>
           ) : summary.totalCount === 0 ? (
-            <div className="text-sm font-medium text-foreground">
-              {t("issuesList.noActiveSubIssues", { defaultValue: "No active sub-issues" })}
-            </div>
+            <div className="text-sm font-medium text-foreground">{t("issuesList.noActiveSubtasks")}</div>
           ) : summary.doneCount === summary.totalCount ? (
-            <div className="text-sm font-medium text-foreground">
-              {t("issuesList.allSubIssuesDone", { defaultValue: "All sub-issues done" })}
-            </div>
+            <div className="text-sm font-medium text-foreground">{t("issuesList.allSubtasksDone")}</div>
           ) : (
-            <div className="text-sm font-medium text-foreground">
-              {t("issuesList.noActionableSubIssues", { defaultValue: "No actionable sub-issues" })}
-            </div>
+            <div className="text-sm font-medium text-foreground">{t("issuesList.noActionableSubtasks")}</div>
           )}
         </div>
       </div>
@@ -676,10 +713,19 @@ export function IssuesList({
   onSearchChange,
   onUpdateIssue,
 }: IssuesListProps) {
-  const rootRef = useRef<HTMLDivElement | null>(null);
   const { t } = useTranslation();
+  const localizeKnownUserLabel = useCallback((label: string | null | undefined) => {
+    if (label === "Me") return t("Me");
+    if (label === "Board") return t("Board");
+    return label ?? null;
+  }, [t]);
+  const rootRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { keyboardShortcutsEnabled } = useGeneralSettings();
+  // Keyboard selection for the list view (mirrors the inbox). Hover moves the
+  // selection only after real pointer movement, so keyboard-driven scrolling
+  // doesn't hand the selection to whatever row lands under the cursor.
   const [selectedNavKey, setSelectedNavKey] = useState<string | null>(null);
   const pointerMovedSinceKeyNavRef = useRef(true);
   useEffect(() => {
@@ -689,10 +735,17 @@ export function IssuesList({
     window.addEventListener("mousemove", handlePointerMove, { passive: true });
     return () => window.removeEventListener("mousemove", handlePointerMove);
   }, []);
+  // Which entry the cursor is over, tracked WITHOUT React state so scrubbing the
+  // list costs zero re-renders (hover paints via CSS `:hover`). Keyboard nav
+  // reads this to continue from the hovered row. Key-based, so it self-heals if
+  // the entry disappears (findIndex → -1).
   const hoveredNavKeyRef = useRef<string | null>(null);
   const setNavSelectionFromPointer = useCallback((navKey: string) => {
     if (!pointerMovedSinceKeyNavRef.current) return;
     hoveredNavKeyRef.current = navKey;
+    // Drop any keyboard selection band the moment the mouse takes over, so we
+    // never show two identical highlights at once. React bails when already
+    // null, so continuous hovering triggers no re-render.
     setSelectedNavKey((prev) => (prev === null ? prev : null));
   }, []);
   const { selectedCompanyId } = useCompany();
@@ -941,9 +994,7 @@ export function IssuesList({
     if (currentUserId) {
       options.set(`user:${currentUserId}`, {
         id: `user:${currentUserId}`,
-        label: currentUserId === "local-board"
-          ? t("Board", { defaultValue: "Board" })
-          : t("Me", { defaultValue: "Me" }),
+        label: currentUserId === "local-board" ? t("Board") : t("Me"),
         kind: "user",
         searchText: currentUserId === "local-board" ? "board me human local-board" : `me board human ${currentUserId}`,
       });
@@ -955,7 +1006,8 @@ export function IssuesList({
         if (!options.has(id)) {
           options.set(id, {
             id,
-            label: formatAssigneeUserLabel(issue.createdByUserId, currentUserId) ?? issue.createdByUserId.slice(0, 5),
+            label: localizeKnownUserLabel(formatAssigneeUserLabel(issue.createdByUserId, currentUserId))
+              ?? issue.createdByUserId.slice(0, 5),
             kind: "user",
             searchText: `${issue.createdByUserId} board user human`,
           });
@@ -994,7 +1046,7 @@ export function IssuesList({
       if (a.kind !== b.kind) return a.kind === "user" ? -1 : 1;
       return a.label.localeCompare(b.label);
     });
-  }, [agents, currentUserId, issues, t]);
+  }, [agents, currentUserId, issues, localizeKnownUserLabel, t]);
 
   const visibleIssueColumnSet = useMemo(() => new Set(visibleIssueColumns), [visibleIssueColumns]);
   const availableIssueColumns = useMemo(
@@ -1203,7 +1255,7 @@ export function IssuesList({
         })
         .map((key) => ({
           key,
-          label: key === "__no_workspace" ? t("No Workspace", { defaultValue: "No Workspace" }) : (workspaceNameMap.get(key) ?? key.slice(0, 8)),
+          label: key === "__no_workspace" ? t("No Workspace") : (workspaceNameMap.get(key) ?? key.slice(0, 8)),
           items: groups[key]!,
         }));
     }
@@ -1219,7 +1271,7 @@ export function IssuesList({
         })
         .map((key) => ({
           key,
-          label: key === "__no_project" ? t("No Project", { defaultValue: "No Project" }) : (projectById.get(key)?.name ?? key.slice(0, 8)),
+          label: key === "__no_project" ? t("No Project") : (projectById.get(key)?.name ?? key.slice(0, 8)),
           items: groups[key]!,
         }));
     }
@@ -1234,7 +1286,7 @@ export function IssuesList({
         })
         .map((key) => ({
           key,
-          label: key === "__no_parent" ? t("No Parent", { defaultValue: "No Parent" }) : (issueTitleMap.get(key) ?? key.slice(0, 8)),
+          label: key === "__no_parent" ? t("No Parent") : (issueTitleMap.get(key) ?? key.slice(0, 8)),
           items: groups[key]!,
         }));
     }
@@ -1247,9 +1299,13 @@ export function IssuesList({
       key,
       label:
         key === "__unassigned"
-          ? t("Unassigned", { defaultValue: "Unassigned" })
+          ? t("Unassigned")
           : key.startsWith("__user:")
-            ? (formatAssigneeUserLabel(key.slice("__user:".length), currentUserId, companyUserLabelMap) ?? t("User", { defaultValue: "User" }))
+            ? (localizeKnownUserLabel(formatAssigneeUserLabel(
+              key.slice("__user:".length),
+              currentUserId,
+              companyUserLabelMap,
+            )) ?? t("User"))
             : (agentName(key) ?? key.slice(0, 8)),
       items: groups[key]!,
     }));
@@ -1263,6 +1319,7 @@ export function IssuesList({
     workspaceNameMap,
     issueTitleMap,
     companyUserLabelMap,
+    localizeKnownUserLabel,
     projectById,
     t,
   ]);
@@ -1337,7 +1394,7 @@ export function IssuesList({
     const row = rootRef.current?.querySelector(
       `[data-issue-row-id="${escapeAttrValue(navKey.slice("issue:".length))}"]`,
     );
-    const link = row?.querySelector(":scope > [data-inbox-issue-link]");
+    const link = row?.querySelector("[data-inbox-issue-link]");
     return link instanceof HTMLElement ? link : null;
   }, []);
 
@@ -1426,6 +1483,11 @@ export function IssuesList({
           const pathId = issue.identifier ?? issue.id;
           const detailState = withIssueDetailHeaderSeed(st.issueLinkState, issue);
           rememberIssueDetailLocationState(pathId, detailState);
+          // Seed the full list-row snapshot + first comments page before we
+          // navigate so keyboard-driven opens paint from cache instantly, the
+          // same way pointer hover/click does through the issue link. Mirrors
+          // the inbox Enter handler.
+          void prefetchIssueDetailForNavigation(queryClient, pathId, { issue });
           navigate(createIssueDetailPath(pathId), { state: detailState });
           break;
         }
@@ -1435,7 +1497,7 @@ export function IssuesList({
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [keyboardShortcutsEnabled, navigate]);
+  }, [keyboardShortcutsEnabled, navigate, queryClient]);
 
   // Keep the keyboard selection visible while navigating. Depends on the
   // render budget too: a selection past the mounted batch scrolls once its
@@ -1578,15 +1640,9 @@ export function IssuesList({
     viewState.groupBy,
   ]);
 
-  const localizedCreateIssueLabel = createIssueLabel
-    ? t(createIssueLabel, { defaultValue: createIssueLabel })
-    : null;
-  const createActionLabel = localizedCreateIssueLabel
-    ? t("Create {{label}}", { label: localizedCreateIssueLabel, defaultValue: `Create ${createIssueLabel}` })
-    : t("Create Issue", { defaultValue: "Create Issue" });
-  const createButtonLabel = localizedCreateIssueLabel
-    ? t("New {{label}}", { label: localizedCreateIssueLabel, defaultValue: `New ${createIssueLabel}` })
-    : t("New Issue", { defaultValue: "New Issue" });
+  const createLabel = createIssueLabel ?? t("Task");
+  const createActionLabel = t("Create {{label}}", { label: createLabel });
+  const createButtonLabel = t("New {{label}}", { label: createLabel });
   const openCreateIssueDialog = useCallback((group?: { key: string; items: Issue[] }) => {
     openNewIssue(newIssueDefaults(group));
   }, [newIssueDefaults, openNewIssue]);
@@ -1645,12 +1701,12 @@ export function IssuesList({
 
         <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
           {/* View mode toggle */}
-          <div className="flex items-center border border-border rounded-md overflow-hidden mr-1" role="group" aria-label={t("View mode", { defaultValue: "View mode" })}>
+          <div className="flex items-center border border-border rounded-md overflow-hidden mr-1" role="group" aria-label={t("View mode")}>
             <button
               className={`flex h-8 w-8 items-center justify-center transition-colors ${viewState.viewMode === "list" ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"}`}
               onClick={() => updateView({ viewMode: "list" })}
-              title={t("List view", { defaultValue: "List view" })}
-              aria-label={t("List view", { defaultValue: "List view" })}
+              title={t("List view")}
+              aria-label={t("List view")}
               aria-pressed={viewState.viewMode === "list"}
             >
               <List className="h-3.5 w-3.5" />
@@ -1658,8 +1714,8 @@ export function IssuesList({
             <button
               className={`flex h-8 w-8 items-center justify-center transition-colors ${viewState.viewMode === "board" ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"}`}
               onClick={() => updateView({ viewMode: "board" })}
-              title={t("Board view", { defaultValue: "Board view" })}
-              aria-label={t("Board view", { defaultValue: "Board view" })}
+              title={t("Board view")}
+              aria-label={t("Board view")}
               aria-pressed={viewState.viewMode === "board"}
             >
               <SquareKanban className="h-3.5 w-3.5" />
@@ -1673,9 +1729,7 @@ export function IssuesList({
               size="icon"
               className={cn("hidden h-8 w-8 shrink-0 sm:inline-flex", viewState.nestingEnabled && "bg-accent")}
               onClick={() => updateView({ nestingEnabled: !viewState.nestingEnabled })}
-              title={viewState.nestingEnabled
-                ? t("Disable parent-child nesting", { defaultValue: "Disable parent-child nesting" })
-                : t("Enable parent-child nesting", { defaultValue: "Enable parent-child nesting" })}
+              title={t(viewState.nestingEnabled ? "Disable parent-child nesting" : "Enable parent-child nesting")}
             >
               <ListTree className="h-3.5 w-3.5" />
             </Button>
@@ -1689,9 +1743,7 @@ export function IssuesList({
                 size="icon"
                 className={cn("h-8 w-8 shrink-0", boardCompactCards && "bg-accent")}
                 onClick={() => updateView({ boardCardDensity: boardCompactCards ? "comfortable" : "compact" })}
-                title={boardCompactCards
-                  ? t("issuesList.useComfortableCards", { defaultValue: "Use comfortable cards" })
-                  : t("issuesList.useCompactCards", { defaultValue: "Use compact cards" })}
+                title={t(boardCompactCards ? "issuesList.useComfortableCards" : "issuesList.useCompactCards")}
               >
                 <ChevronsDownUp className="h-3.5 w-3.5" />
               </Button>
@@ -1701,9 +1753,7 @@ export function IssuesList({
                 size="icon"
                 className={cn("h-8 w-8 shrink-0", boardCollapsedStatuses.length > 0 && "bg-accent")}
                 onClick={() => updateView({ boardColdLaneMode: boardCollapsedStatuses.length > 0 ? "expanded" : "collapsed" })}
-                title={boardCollapsedStatuses.length > 0
-                  ? t("issuesList.expandColdLanes", { defaultValue: "Expand cold lanes" })
-                  : t("issuesList.collapseColdLanes", { defaultValue: "Collapse cold lanes" })}
+                title={t(boardCollapsedStatuses.length > 0 ? "issuesList.expandColdLanes" : "issuesList.collapseColdLanes")}
               >
                 <PanelTopClose className="h-3.5 w-3.5" />
               </Button>
@@ -1717,7 +1767,7 @@ export function IssuesList({
                       "h-8 shrink-0 gap-1.5 px-2",
                       viewState.boardColumnPageSize !== KANBAN_COLUMN_DEFAULT_PAGE_SIZE && "bg-accent",
                     )}
-                    title={t("issuesList.cardsPerColumn", { defaultValue: "Cards per column" })}
+                    title={t("issuesList.cardsPerColumn")}
                   >
                     <ListCollapse className="h-3.5 w-3.5" />
                     <span className="min-w-4 text-xs tabular-nums">{viewState.boardColumnPageSize}</span>
@@ -1737,12 +1787,7 @@ export function IssuesList({
                         )}
                         onClick={() => updateView({ boardColumnPageSize: pageSize })}
                       >
-                        <span>
-                          {t("issuesList.cardsPerColumnOption", {
-                            defaultValue: "{{count}} per column",
-                            count: pageSize,
-                          })}
-                        </span>
+                        <span>{t("issuesList.cardsPerColumnOption", { count: pageSize })}</span>
                         {viewState.boardColumnPageSize === pageSize && <Check className="h-3.5 w-3.5" />}
                       </button>
                     ))}
@@ -1760,7 +1805,7 @@ export function IssuesList({
                   boardColumnPageSize: KANBAN_COLUMN_DEFAULT_PAGE_SIZE,
                 })}
                 disabled={!boardDensityCustomized}
-                title={t("issuesList.resetBoardDensity", { defaultValue: "Reset board density" })}
+                title={t("issuesList.resetBoardDensity")}
               >
                 <RotateCcw className="h-3.5 w-3.5" />
               </Button>
@@ -1772,7 +1817,7 @@ export function IssuesList({
             visibleColumnSet={visibleIssueColumnSet}
             onToggleColumn={toggleIssueColumn}
             onResetColumns={() => setIssueColumns(DEFAULT_INBOX_ISSUE_COLUMNS)}
-            title={t("Choose which issue columns stay visible", { defaultValue: "Choose which issue columns stay visible" })}
+            title={t("issuesList.chooseColumns")}
             iconOnly
           />
 
@@ -1796,20 +1841,23 @@ export function IssuesList({
           {viewState.viewMode === "list" && (
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" size="icon" className="h-8 w-8 shrink-0" title={t("Sort", { defaultValue: "Sort" })}>
+                <Button variant="outline" size="icon" className="h-8 w-8 shrink-0" title={t("Sort")}>
                   <ArrowUpDown className="h-3.5 w-3.5" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent align="end" className="w-48 p-0">
                 <div className="p-2 space-y-0.5">
+                  {/* PAP-411: "priority" sort option hidden behind SHOW_TASK_PRIORITY_UI (comparator stays dormant). */}
                   {([
-                    ["workflow", t("Workflow", { defaultValue: "Workflow" })],
-                    ["status", t("Status", { defaultValue: "Status" })],
-                    ["priority", t("Priority", { defaultValue: "Priority" })],
-                    ["title", t("Title", { defaultValue: "Title" })],
-                    ["created", t("Created", { defaultValue: "Created" })],
-                    ["updated", t("Updated", { defaultValue: "Updated" })],
-                  ] as const).map(([field, label]) => (
+                    ["workflow", "Workflow"],
+                    ["status", "Status"],
+                    ["priority", "Priority"],
+                    ["title", "Title"],
+                    ["created", "Created"],
+                    ["updated", "Updated"],
+                  ] as const)
+                    .filter(([field]) => SHOW_TASK_PRIORITY_UI || field !== "priority")
+                    .map(([field, label]) => (
                     <button
                       key={field}
                       className={`flex items-center justify-between w-full px-2 py-1.5 text-sm rounded-sm ${
@@ -1823,7 +1871,7 @@ export function IssuesList({
                         }
                       }}
                     >
-                      <span>{label}</span>
+                    <span>{t(label)}</span>
                       {viewState.sortField === field && (
                         <span className="text-xs text-muted-foreground">
                           {viewState.sortDir === "asc" ? "\u2191" : "\u2193"}
@@ -1840,21 +1888,24 @@ export function IssuesList({
           {viewState.viewMode === "list" && (
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" size="icon" className="h-8 w-8 shrink-0" title={t("Group", { defaultValue: "Group" })}>
+                <Button variant="outline" size="icon" className="h-8 w-8 shrink-0" title={t("Group")}>
                   <Layers className="h-3.5 w-3.5" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent align="end" className="w-44 p-0">
                 <div className="p-2 space-y-0.5">
+                  {/* PAP-411: "priority" group-by option hidden behind SHOW_TASK_PRIORITY_UI (group logic stays dormant). */}
                   {([
-                    ["status", t("Status", { defaultValue: "Status" })],
-                    ["priority", t("Priority", { defaultValue: "Priority" })],
-                    ["assignee", t("issueChat.assigneePlaceholder", { defaultValue: "Responsible" })],
-                    ["project", t("Project", { defaultValue: "Project" })],
-                    ["workspace", t("Workspace", { defaultValue: "Workspace" })],
-                    ["parent", t("Parent Issue", { defaultValue: "Parent Task" })],
-                    ["none", t("None", { defaultValue: "None" })],
-                  ] as const).map(([value, label]) => (
+                    ["status", "Status"],
+                    ["priority", "Priority"],
+                    ["assignee", "Responsible"],
+                    ["project", "Project"],
+                    ["workspace", "Workspace"],
+                    ["parent", "Parent issue"],
+                    ["none", "None"],
+                  ] as const)
+                    .filter(([value]) => SHOW_TASK_PRIORITY_UI || value !== "priority")
+                    .map(([value, label]) => (
                     <button
                       key={value}
                       className={`flex items-center justify-between w-full px-2 py-1.5 text-sm rounded-sm ${
@@ -1862,7 +1913,7 @@ export function IssuesList({
                       }`}
                       onClick={() => updateView({ groupBy: value })}
                     >
-                      <span>{label}</span>
+                      <span>{t(label)}</span>
                       {viewState.groupBy === value && <Check className="h-3.5 w-3.5" />}
                     </button>
                   ))}
@@ -1879,7 +1930,6 @@ export function IssuesList({
         <p className="text-xs text-muted-foreground">
           {t("Showing up to {{count}} matches. Refine the search to narrow further.", {
             count: ISSUE_SEARCH_RESULT_LIMIT,
-            defaultValue: `Showing up to ${ISSUE_SEARCH_RESULT_LIMIT} matches. Refine the search to narrow further.`,
           })}
         </p>
       )}
@@ -1887,14 +1937,13 @@ export function IssuesList({
         <p className="text-xs text-muted-foreground">
           {t("Some board columns are showing up to {{count}} issues. Refine filters or search to reveal the rest.", {
             count: ISSUE_BOARD_COLUMN_RESULT_LIMIT,
-            defaultValue: `Some board columns are showing up to ${ISSUE_BOARD_COLUMN_RESULT_LIMIT} issues. Refine filters or search to reveal the rest.`,
           })}
         </p>
       )}
       {!isLoading && !externalObjectFilterLoading && filtered.length === 0 && viewState.viewMode === "list" && (
         <EmptyState
           icon={CircleDot}
-          message={t("issuesList.noIssuesMatch", { defaultValue: "No issues match the current filters or search." })}
+          message={t("issuesList.noIssuesMatch")}
           action={createActionLabel}
           onAction={() => openCreateIssueDialog()}
         />
@@ -1953,14 +2002,8 @@ export function IssuesList({
                     variant="ghost"
                     size="icon-xs"
                     className="-mr-2 text-muted-foreground"
-                    title={t("issuesList.newIssueInGroup", {
-                      group: group.label,
-                      defaultValue: "New issue in {{group}}",
-                    })}
-                    aria-label={t("issuesList.newIssueInGroup", {
-                      group: group.label,
-                      defaultValue: "New issue in {{group}}",
-                    })}
+                    title={t("issuesList.newIssueInGroup", { group: group.label })}
+                    aria-label={t("issuesList.newIssueInGroup", { group: group.label })}
                     onClick={() => openCreateIssueDialog(group)}
                   >
                     <Plus className="h-3 w-3" />
@@ -1991,11 +2034,11 @@ export function IssuesList({
                   const assigneeUserProfile = issue.assigneeUserId
                     ? companyUserProfileMap.get(issue.assigneeUserId) ?? null
                     : null;
-                  const assigneeUserLabel = formatAssigneeUserLabel(
+                  const assigneeUserLabel = localizeKnownUserLabel(formatAssigneeUserLabel(
                     issue.assigneeUserId,
                     currentUserId,
                     companyUserLabelMap,
-                  ) ?? assigneeUserProfile?.label ?? null;
+                  )) ?? assigneeUserProfile?.label ?? null;
                   const originatingActor = deriveOriginatingActor(issue);
                   const originatingUserId = originatingActor?.kind === "user" ? originatingActor.id : null;
                   const originatingViaAgentId =
@@ -2023,28 +2066,18 @@ export function IssuesList({
                       const label = blockerIssue.identifier ?? blockerIssue.id.slice(0, 8);
                       const blockerStep = checklistMeta?.stepNumberByIssueId.get(blockerId);
                       const blockerStepSuffix = blockerStep
-                        ? t("issuesList.blockerStepSuffix", {
-                          defaultValue: " · step {{step}}",
-                          step: blockerStep,
-                        })
+                        ? t("issuesList.blockerStepSuffix", { step: blockerStep })
                         : "";
                       return {
                         blockerId,
-                        chipLabel: t("issuesList.blockedByChip", {
-                          defaultValue: "blocked by {{label}}{{suffix}}",
-                          label,
-                          suffix: blockerStepSuffix,
-                        }),
+                        chipLabel: t("issuesList.blockedByChip", { label, suffix: blockerStepSuffix }),
                       };
                     })
                     .filter((chip): chip is { blockerId: string; chipLabel: string } => chip !== null);
                   const firstVisibleBlockerChip = visibleBlockerChips[0] ?? null;
                   const additionalVisibleBlockerCount = Math.max(visibleBlockerChips.length - 1, 0);
                   const additionalVisibleBlockerLabel = additionalVisibleBlockerCount > 0
-                    ? t("issuesList.andMoreBlockers", {
-                      defaultValue: " ... and {{count}} more",
-                      count: additionalVisibleBlockerCount,
-                    })
+                    ? t("issuesList.andMoreBlockers", { count: additionalVisibleBlockerCount })
                     : "";
                   const firstVisibleBlockerDisplayLabel = firstVisibleBlockerChip
                     ? `${firstVisibleBlockerChip.chipLabel}${additionalVisibleBlockerLabel}`
@@ -2099,7 +2132,6 @@ export function IssuesList({
                         onMouseEnter={() => setNavSelectionFromPointer(`issue:${issue.id}`)}
                         treeGuides={depth}
                         chevronInGuide={depth > 0 && hasChildren}
-                        hideDivider={hasChildren && isExpanded}
                         checklistStepNumber={checklistStepNumber}
                         checklistCurrentStep={checklistMeta?.currentStepIssueId === issue.id}
                         checklistDependencyChips={checklistDependencyChips}
@@ -2110,27 +2142,19 @@ export function IssuesList({
                           <>
                             {hasChildren && !isExpanded ? (
                               <span className="ml-1.5 text-xs text-muted-foreground">
-                                {totalDescendants === 1
-                                  ? t("({{count}} sub-task)", {
-                                    defaultValue: "({{count}} sub-task)",
-                                    count: totalDescendants,
-                                  })
-                                  : t("({{count}} sub-tasks)", {
-                                    defaultValue: "({{count}} sub-tasks)",
-                                    count: totalDescendants,
-                                  })}
+                                ({totalDescendants} {t(totalDescendants === 1 ? "sub-task" : "sub-tasks")})
                               </span>
                             ) : null}
                             {issueBadge ? (
                               issueBadge === "Paused" ? (
-                                <span
-                                  className={cn("ml-1.5 inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-(length:--text-nano) font-medium", statusBadge.paused)}
-                                  aria-label={t("Paused", { defaultValue: "Paused" })}
-                                  title={t("Paused", { defaultValue: "Paused" })}
+                                <Badge variant="ghost"
+                                  className={cn("ml-1.5 px-1.5 text-(length:--text-nano)", statusBadge.paused)}
+                                  aria-label={t("Paused")}
+                                  title={t("Paused")}
                                 >
                                   <CircleSlash2 className="h-3 w-3" />
-                                  {t("Paused", { defaultValue: "Paused" })}
-                                </span>
+                                  {t("Paused")}
+                                </Badge>
                               ) : (
                                 <Badge variant="outline" className="ml-1.5 border-amber-500/40 bg-amber-500/10 px-1.5 text-(length:--text-nano) text-amber-700 dark:text-amber-300">
                                   {issueBadge}
@@ -2138,14 +2162,14 @@ export function IssuesList({
                               )
                             ) : null}
                             {isSuccessfulRunHandoffRequired(issue) ? (
-                              <span
-                                className="ml-1.5 inline-flex items-center gap-1 rounded-full border border-amber-400/45 bg-amber-50/60 px-1.5 py-0.5 text-(length:--text-nano) font-medium text-amber-700 dark:border-amber-300/35 dark:bg-amber-400/10 dark:text-amber-300"
-                                aria-label={t("Needs next step", { defaultValue: "Needs next step" })}
-                                title={t("This issue needs a next step", { defaultValue: "This issue needs a next step" })}
+                              <Badge variant="outline"
+                                className="ml-1.5 border-amber-400/45 bg-amber-50/60 px-1.5 text-(length:--text-nano) text-amber-700 dark:border-amber-300/35 dark:bg-amber-400/10 dark:text-amber-300"
+                                aria-label={t("Needs next step")}
+                                title={t("issuesList.needsNextStep")}
                               >
                                 <CircleDot className="h-3 w-3" />
-                                {t("Needs next step", { defaultValue: "Needs next step" })}
-                              </span>
+                                {t("Needs next step")}
+                              </Badge>
                             ) : null}
                           </>
                         )}
@@ -2232,7 +2256,7 @@ export function IssuesList({
                                         <Identity name={agentName(issue.assigneeAgentId)!} size="sm" shape="square" className="min-w-0" />
                                       ) : issue.assigneeUserId ? (
                                         <Identity
-                                          name={assigneeUserLabel ?? t("User", { defaultValue: "User" })}
+                                          name={assigneeUserLabel ?? t("User")}
                                           avatarUrl={assigneeUserProfile?.image ?? null}
                                           size="sm"
                                           className="min-w-0"
@@ -2242,7 +2266,7 @@ export function IssuesList({
                                           <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-dashed border-muted-foreground/35 bg-muted/30">
                                             <User className="h-3.5 w-3.5" />
                                           </span>
-                                          {t("Assignee", { defaultValue: "Assignee" })}
+                                          {t("Assignee")}
                                         </span>
                                       )}
                                     </button>
@@ -2255,7 +2279,7 @@ export function IssuesList({
                                   >
                                     <input
                                       className="mb-1 w-full border-b border-border bg-transparent px-2 py-1.5 text-xs outline-none placeholder:text-muted-foreground/50"
-                                      placeholder={t("issueChat.searchAssignees", { defaultValue: "Search responsible..." })}
+                                      placeholder={t("issuesList.searchResponsible")}
                                       value={assigneeSearch}
                                       onChange={(e) => setAssigneeSearch(e.target.value)}
                                       autoFocus
@@ -2272,7 +2296,7 @@ export function IssuesList({
                                           assignIssue(issue.id, null, null);
                                         }}
                                       >
-                                        {t("issueChat.noAssignee", { defaultValue: "No responsible" })}
+                                        {t("issuesList.noResponsible")}
                                       </button>
                                       {currentUserId && (
                                         <button
@@ -2287,7 +2311,7 @@ export function IssuesList({
                                           }}
                                         >
                                           <User className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                                          <span>{t("Me", { defaultValue: "Me" })}</span>
+                                          <span>{t("Me")}</span>
                                         </button>
                                       )}
                                       {(agents ?? [])
@@ -2319,12 +2343,44 @@ export function IssuesList({
                           ) : undefined
                         )}
                       />
-                      {hasChildren && isExpanded && children.map((child) => renderIssueRow(child, depth + 1))}
                     </div>
                   );
                 };
 
-                return roots.map((issue) => renderIssueRow(issue, 0)).filter((node) => node !== null);
+                const separatorField = issueDateSeparatorField(viewState);
+                const separatorNow = Date.now();
+                const nodes: ReactNode[] = [];
+                let prevBucket: 0 | 1 | 2 | null = null;
+                const appendIssueRow = (issue: Issue, depth: number) => {
+                  const node = renderIssueRow(issue, depth);
+                  // Skip rows the render budget dropped so separators never
+                  // dangle above an unrendered (or absent) row.
+                  if (node === null) return;
+                  if (separatorField) {
+                    const bucket = issueAgeBucket(issue[separatorField], separatorNow);
+                    for (const crossedBucket of prevBucket === null
+                      ? []
+                      : issueAgeBucketsCrossed(prevBucket, bucket)) {
+                      nodes.push(
+                        <IssueDateSeparator
+                          key={`age-sep-${issue.id}-${crossedBucket}`}
+                          label={t(crossedBucket === 1 ? "issuesList.olderThanDay" : "issuesList.olderThanWeek")}
+                        />,
+                      );
+                    }
+                    prevBucket = bucket;
+                  }
+                  nodes.push(node);
+                  if (!viewState.collapsedParents.includes(issue.id)) {
+                    for (const child of childMap.get(issue.id) ?? []) {
+                      appendIssueRow(child, depth + 1);
+                    }
+                  }
+                };
+                for (const issue of roots) {
+                  appendIssueRow(issue, 0);
+                }
+                return nodes;
               })()}
             </CollapsibleContent>
           </Collapsible>
@@ -2334,14 +2390,13 @@ export function IssuesList({
             <div className="py-2" data-testid="issues-load-more-sentinel">
               <p className="text-xs text-muted-foreground">
                 {isLoadingMoreIssues
-                  ? t("issuesList.loadingMoreIssues", { defaultValue: "Loading more issues..." })
+                  ? t("issuesList.loadingMoreIssues")
                   : remainingIssueRowCount > 0
                     ? t("issuesList.renderingIssues", {
-                      defaultValue: "Rendering {{shown}} of {{total}} issues",
                       shown: Math.min(renderedIssueRowLimit, filtered.length),
                       total: filtered.length,
                     })
-                    : t("issuesList.scrollToLoadMoreIssues", { defaultValue: "Scroll to load more issues" })}
+                    : t("issuesList.scrollToLoadMoreIssues")}
               </p>
             </div>
           )}

@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { AppWindow, Loader2, ShieldAlert, ShieldQuestion, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { AppWindow, ShieldAlert, ShieldQuestion } from "lucide-react";
 import type {
-  AppGalleryEntry,
   ToolApplication,
   ToolConnection,
   ToolProfileWithDetails,
@@ -15,17 +14,34 @@ import {
 import { useNavigate } from "@/lib/router";
 import { useCompany } from "@/context/CompanyContext";
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";
+import { useToast } from "@/context/ToastContext";
 import { queryKeys } from "@/lib/queryKeys";
 import { toolsApi } from "@/api/tools";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { timeAgo } from "@/lib/timeAgo";
 import { AppLogo } from "./AppLogo";
+import {
+  appDefinitionLogoUrl,
+  appDefinitionName,
+  appDefinitionSlug,
+  type AppGalleryDisplayEntry,
+} from "./app-definition-display";
 import { useReviewCount } from "./useReviewCount";
 import { AdvancedToolsLink } from "./store-cards";
 
-const BROWSE_HREF = "/apps/browse";
+const BROWSE_HREF = "/apps";
 
 type StatusFilter = "all" | "attention";
 
@@ -37,6 +53,8 @@ type AppStatus = {
 type AppRow = {
   application: ToolApplication;
   primaryConnection: ToolConnection | null;
+  connectionCount: number;
+  agentAvailableConnectionCount: number;
   status: AppStatus;
   actionCount: number;
   lastUsedAt: Date | string | null;
@@ -77,25 +95,25 @@ const STATUS_CLASS: Record<AppStatus["tone"], string> = {
   not_connected: "border-border bg-background text-muted-foreground",
 };
 
-const STATUS_I18N_KEY: Record<AppStatus["tone"], string> = {
-  connected: "apps.status.healthy",
-  attention: "apps.status.needsAttention",
-  paused: "apps.status.paused",
-  not_connected: "apps.status.notConnected",
-};
-
 export function Connections() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { pushToast } = useToast();
   const { selectedCompany, selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const reviewCount = useReviewCount();
   const [filter, setFilter] = useState<StatusFilter>("all");
+  const [connectionToDelete, setConnectionToDelete] = useState<{
+    id: string;
+    appName: string;
+    remainingConnectionCount: number;
+  } | null>(null);
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: selectedCompany?.name ?? t("apps.common.company", { defaultValue: "Company" }), href: "/dashboard" },
-      { label: t("apps.common.apps", { defaultValue: "Apps" }), href: "/apps" },
+      { label: selectedCompany?.name ?? t("apps.detail.breadcrumb.company", { defaultValue: "Company" }), href: "/dashboard" },
+      { label: t("apps.detail.breadcrumb.apps", { defaultValue: "Apps" }), href: "/apps" },
       { label: t("apps.sidebar.connections", { defaultValue: "Connections" }) },
     ]);
     return () => setBreadcrumbs([]);
@@ -122,15 +140,52 @@ export function Connections() {
     enabled: !!selectedCompanyId,
   });
 
-  const gallery = galleryQuery.data?.apps ?? [];
+  const deleteConnection = useMutation({
+    mutationFn: (target: { id: string; appName: string; remainingConnectionCount: number }) =>
+      toolsApi.archiveConnection(target.id),
+    onSuccess: (_connection, target) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.tools.connections(selectedCompanyId!) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tools.applications(selectedCompanyId!) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.apps.attention(selectedCompanyId!) });
+      pushToast({
+        title: t("apps.connections.toast.deletedTitle", {
+          defaultValue: "Connection deleted",
+        }),
+        body: target.remainingConnectionCount > 0
+          ? t("apps.connections.toast.deletedRemaining", {
+              defaultValue:
+                "{{appName}} still has {{count}} active connection available to agents.",
+              appName: target.appName,
+              count: target.remainingConnectionCount,
+            })
+          : t("apps.connections.toast.deletedUnavailable", {
+              defaultValue:
+                "{{appName}} is no longer available to agents. You can connect it again later.",
+              appName: target.appName,
+            }),
+        tone: "success",
+      });
+      setConnectionToDelete(null);
+    },
+    onError: (error) =>
+      pushToast({
+        title: t("apps.connections.toast.deleteFailedTitle", {
+          defaultValue: "Couldn't delete the connection",
+        }),
+        body: error instanceof Error ? error.message : t("common.tryAgain"),
+        tone: "error",
+      }),
+  });
+
+  const gallery = (galleryQuery.data?.apps ?? []) as AppGalleryDisplayEntry[];
   const logoByName = useMemo(() => {
-    const map = new Map<string, AppGalleryEntry>();
-    for (const entry of gallery) map.set(entry.name.toLowerCase(), entry);
+    const map = new Map<string, AppGalleryDisplayEntry>();
+    for (const entry of gallery) map.set(appDefinitionName(entry).toLowerCase(), entry);
     return map;
   }, [gallery]);
   const logoByKey = useMemo(() => {
-    const map = new Map<string, AppGalleryEntry>();
-    for (const entry of gallery) map.set(entry.key, entry);
+    const map = new Map<string, AppGalleryDisplayEntry>();
+    for (const entry of gallery) map.set(appDefinitionSlug(entry), entry);
     return map;
   }, [gallery]);
 
@@ -179,10 +234,15 @@ export function Connections() {
       return {
         application,
         primaryConnection,
+        connectionCount: appConnections.length,
+        agentAvailableConnectionCount: appConnections.filter(
+          (connection) => connection.status === "active" && connection.enabled,
+        ).length,
         status: statusFor(application, appConnections),
         actionCount,
         lastUsedAt,
-        logoUrl: galleryEntry?.logoUrl ?? logoByName.get(application.name.toLowerCase())?.logoUrl,
+        logoUrl: appDefinitionLogoUrl(galleryEntry) ??
+          appDefinitionLogoUrl(logoByName.get(application.name.toLowerCase())),
       };
     });
   }, [actionCountByConnection, applications, connectionsByApplication, logoByKey, logoByName]);
@@ -229,7 +289,7 @@ export function Connections() {
 
           <div className="flex flex-wrap items-center gap-2">
             <FilterChip active={filter === "all"} onClick={() => setFilter("all")}>
-              {t("apps.connections.filters.all", { defaultValue: "All ({{count}})", count: rows.length })}
+              {t("apps.connections.filters.all", { count: rows.length, defaultValue: "All ({{count}})" })}
             </FilterChip>
             <FilterChip
               active={filter === "attention"}
@@ -238,8 +298,8 @@ export function Connections() {
               onClick={() => setFilter("attention")}
             >
               {t("apps.connections.filters.attention", {
-                defaultValue: "Needs attention ({{count}})",
                 count: rowsNeedingAttention.length,
+                defaultValue: "Needs attention ({{count}})",
               })}
             </FilterChip>
           </div>
@@ -254,10 +314,8 @@ export function Connections() {
               <div className="min-w-0 flex-1">
                 <div className="text-sm font-semibold text-amber-900 dark:text-amber-100">
                   {t("apps.connections.reviewCount", {
-                    defaultValue: reviewCount === 1
-                      ? "{{count}} action is waiting for your OK"
-                      : "{{count}} actions are waiting for your OK",
                     count: reviewCount,
+                    defaultValue: "{{count}} actions are waiting for your OK",
                   })}
                 </div>
                 <div className="truncate text-xs text-amber-700 dark:text-amber-300">
@@ -282,14 +340,12 @@ export function Connections() {
               <div className="min-w-0 flex-1">
                 <div className="text-sm font-semibold text-red-900 dark:text-red-100">
                   {t("apps.connections.attentionCount", {
-                    defaultValue: rowsNeedingAttention.length === 1
-                      ? "{{count}} app needs attention"
-                      : "{{count}} apps need attention",
                     count: rowsNeedingAttention.length,
+                    defaultValue: "{{count}} apps need attention",
                   })}
                 </div>
                 <div className="truncate text-xs text-red-700 dark:text-red-300">
-                  {floatSummary(rowsNeedingAttention, t)}
+                  {floatSummary(rowsNeedingAttention)}
                 </div>
               </div>
               <span className="shrink-0 text-xs font-semibold text-red-800 dark:text-red-200">
@@ -315,9 +371,13 @@ export function Connections() {
                   const attention = rowNeedsAttention(row);
                   const hint =
                     status.tone === "attention"
-                      ? t("apps.connections.hints.reconnect", {
-                          defaultValue: "The key stopped working — reconnect to fix.",
-                        })
+                      ? primaryConnection?.authKind === "oauth"
+                        ? t("apps.connections.hints.reconnectRequired", {
+                            defaultValue: "Reconnect required — sign in again to restore access.",
+                          })
+                        : t("apps.connections.hints.reconnect", {
+                            defaultValue: "The key stopped working — reconnect to fix.",
+                          })
                       : status.tone === "paused"
                         ? t("apps.connections.hints.paused", {
                             defaultValue: "Paused — agents can’t use it right now.",
@@ -326,10 +386,10 @@ export function Connections() {
                           ? t("apps.connections.hints.connect", {
                               defaultValue: "Connect it so agents can use it.",
                             })
-                        : null;
-                  const appHref = primaryConnection
-                    ? `/apps/${primaryConnection.id}`
-                    : `/apps/app/${application.id}`;
+                          : row.connectionCount > 1
+                            ? `${row.connectionCount} connections`
+                            : null;
+                  const appHref = `/apps/app/${application.id}/setup`;
                   const actionLabel = !primaryConnection
                     ? t("apps.common.connect", { defaultValue: "Connect" })
                     : status.tone === "attention"
@@ -368,14 +428,20 @@ export function Connections() {
                             STATUS_CLASS[status.tone],
                           )}
                         >
-                          {t(STATUS_I18N_KEY[status.tone], { defaultValue: status.label })}
+                          {status.tone === "connected"
+                            ? t("Healthy", { defaultValue: "Healthy" })
+                            : status.tone === "attention"
+                              ? t("Needs attention", { defaultValue: "Needs attention" })
+                              : status.tone === "paused"
+                                ? t("Paused", { defaultValue: "Paused" })
+                                : t("apps.status.notConnected", { defaultValue: "Not connected" })}
                         </span>
                       </td>
                       <td className="px-4 py-3">
                         <span className="text-xs text-muted-foreground">
                           {t("apps.connections.actionsOn", {
-                            defaultValue: "{{count}} on",
                             count: row.actionCount,
+                            defaultValue: "{{count}} on",
                           })}
                         </span>
                       </td>
@@ -385,16 +451,43 @@ export function Connections() {
                         </span>
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <Button
-                          variant={attention ? "default" : "outline"}
-                          size="sm"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            navigate(appHref);
-                          }}
-                        >
-                          {actionLabel}
-                        </Button>
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            variant={attention ? "default" : "outline"}
+                            size="sm"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              navigate(appHref);
+                            }}
+                          >
+                            {actionLabel}
+                          </Button>
+                          {primaryConnection && (
+                            <Button
+                              variant="ghost"
+                              size="icon-sm"
+                              className="text-muted-foreground hover:text-destructive"
+                              aria-label={t("apps.connections.deleteAria", {
+                                defaultValue: "Delete {{appName}} connection",
+                                appName: application.name,
+                              })}
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                setConnectionToDelete({
+                                  id: primaryConnection.id,
+                                  appName: application.name,
+                                  remainingConnectionCount: Math.max(
+                                    0,
+                                    row.agentAvailableConnectionCount -
+                                      (primaryConnection.status === "active" && primaryConnection.enabled ? 1 : 0),
+                                  ),
+                                });
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );
@@ -413,6 +506,57 @@ export function Connections() {
           </div>
         </div>
       )}
+
+      <AlertDialog
+        open={connectionToDelete !== null}
+        onOpenChange={(open) => {
+          if (!open && !deleteConnection.isPending) setConnectionToDelete(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t("apps.connections.deleteDialogTitle", {
+                defaultValue: "Delete {{appName}} connection?",
+                appName: connectionToDelete?.appName ?? t("apps.connections.thisApp", {
+                  defaultValue: "this app",
+                }),
+              })}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {connectionToDelete && connectionToDelete.remainingConnectionCount > 0
+                ? t("apps.connections.deleteDialogRemaining", {
+                    defaultValue:
+                      "This connection will be removed. Agents can still use {{appName}} through {{count}} other active connection.",
+                    appName: connectionToDelete.appName,
+                    count: connectionToDelete.remainingConnectionCount,
+                  })
+                : t("apps.connections.deleteDialogFinal", {
+                    defaultValue:
+                      "Agents will lose access immediately. You can connect it again later.",
+                  })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteConnection.isPending}>
+              {t("common.cancel")}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={!connectionToDelete || deleteConnection.isPending}
+              onClick={(event) => {
+                event.preventDefault();
+                if (connectionToDelete) deleteConnection.mutate(connectionToDelete);
+              }}
+            >
+              {deleteConnection.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+              {deleteConnection.isPending
+                ? t("apps.connections.deleting", { defaultValue: "Deleting..." })
+                : t("apps.connections.deleteAction", { defaultValue: "Delete connection" })}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
@@ -458,19 +602,10 @@ function enabledActionCount(profile: ToolProfileWithDetails): number {
   return count;
 }
 
-function floatSummary(rows: AppRow[], t: ReturnType<typeof useTranslation>["t"]): string {
+function floatSummary(rows: AppRow[]): string {
   const names = rows.map((row) => humanizeConnectionDisplayName(row.application.name));
-  if (names.length <= 2) {
-    return t("apps.connections.nameList", {
-      defaultValue: "{{names}}",
-      names: names.join(t("apps.connections.andSeparator", { defaultValue: " and " })),
-    });
-  }
-  return t("apps.connections.nameListMore", {
-    defaultValue: "{{names}} and {{count}} more",
-    names: names.slice(0, 2).join(", "),
-    count: names.length - 2,
-  });
+  if (names.length <= 2) return names.join(" and ");
+  return `${names.slice(0, 2).join(", ")} and ${names.length - 2} more`;
 }
 
 function EmptyConnections({ onBrowse }: { onBrowse: () => void }) {

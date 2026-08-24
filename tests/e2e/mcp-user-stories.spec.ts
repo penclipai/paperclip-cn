@@ -1,7 +1,6 @@
 import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
 import { createServer, type Server } from "node:http";
 import { listenOnFetchAllowedPort } from "./fetch-allowed-port";
-import { localized } from "./localized-selectors";
 import { storyById } from "./mcp-user-stories.catalog";
 
 const SCREENSHOT_DIR = "test-results/mcp-user-stories";
@@ -404,8 +403,8 @@ test.describe.serial("MCP prod Phase 5a user-story harness", () => {
 
     const health = await request.post(`/api/tool-connections/${connectionId}/health-check`);
     expect(health.status()).toBe(502);
-    await page.goto(`/${seed.prefix}/apps`);
-    await expect(page.getByRole("heading", { name: localized.appConnections })).toBeVisible({ timeout: 30_000 });
+    await page.goto(`/${seed.prefix}/apps/connections`);
+    await expect(page.getByRole("heading", { name: "Connections" })).toBeVisible({ timeout: 30_000 });
     await screenshot(page, "US-8", "01-needs-attention");
 
     const recovered = await startMockMcp();
@@ -450,7 +449,7 @@ test.describe.serial("MCP prod Phase 5a user-story harness", () => {
       await screenshot(page, "US-10", "01-apps-detail");
 
       await page.goto(`/${seed.prefix}/apps/advanced`);
-      await expect(page.getByRole("heading", { name: localized.appAdvancedSetup })).toBeVisible({ timeout: 20_000 });
+      await expect(page.getByRole("heading", { name: "Advanced setup" })).toBeVisible({ timeout: 20_000 });
       await screenshot(page, "US-10", "02-admin-depth");
     } finally {
       await mock.close();

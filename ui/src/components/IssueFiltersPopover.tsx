@@ -7,6 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useTranslation } from "react-i18next";
 import { Bot, Filter, HardDrive, Search, User, X } from "lucide-react";
 import { PriorityIcon } from "./PriorityIcon";
+import { SHOW_TASK_PRIORITY_UI } from "../lib/ui-flags";
 import { StatusIcon } from "./StatusIcon";
 import {
   defaultIssueFilterState,
@@ -207,6 +208,8 @@ export function IssueFiltersPopover({
                 </div>
               </div>
 
+              {/* PAP-411: Priority filter section hidden behind SHOW_TASK_PRIORITY_UI (filter state stays intact). */}
+              {SHOW_TASK_PRIORITY_UI && (
               <div className="space-y-1">
                 <span className="text-xs text-muted-foreground">{t("Priority", { defaultValue: "Priority" })}</span>
                 <div className="space-y-0.5">
@@ -222,6 +225,7 @@ export function IssueFiltersPopover({
                   ))}
                 </div>
               </div>
+              )}
             </div>
 
             <div className="min-w-0 space-y-3">

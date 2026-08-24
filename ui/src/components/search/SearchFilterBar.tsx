@@ -11,6 +11,7 @@ import {
 } from "@penclipai/shared";
 import { StatusIcon } from "@/components/StatusIcon";
 import { PriorityIcon } from "@/components/PriorityIcon";
+import { SHOW_TASK_PRIORITY_UI } from "@/lib/ui-flags";
 import { SearchFilterMenu, type FilterMenuOption } from "./SearchFilterMenu";
 import { SearchSortMenu } from "./SearchSortMenu";
 import {
@@ -205,6 +206,8 @@ export function SearchFilterBar({
         searchPlaceholder={t("searchFilters.searchLabels")}
         emptyMessage={t("searchFilters.noLabels")}
       />
+      {/* PAP-411: Priority filter menu hidden behind SHOW_TASK_PRIORITY_UI (search DSL stays intact). */}
+      {SHOW_TASK_PRIORITY_UI && (
       <SearchFilterMenu
         label={t("searchFilters.priority")}
         multi
@@ -213,6 +216,7 @@ export function SearchFilterBar({
         onToggle={(value) => toggleMulti("priority", value)}
         onClear={() => onChange({ ...filters, priority: [] })}
       />
+      )}
       <SearchFilterMenu
         label={t("searchFilters.updated")}
         options={options.updated}

@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
 import { useToast } from "@/context/ToastContext";
 import { cn } from "@/lib/utils";
+import { copyTextToClipboard } from "@/lib/clipboard";
 import {
   activeTokenCount,
+  allowedToolsLabel,
   expiringTokenCount,
   formatScope,
   type GatewayAppRow,
@@ -53,7 +55,7 @@ export function OverviewPanel({
 
   async function copy(value: string, label: string) {
     try {
-      await navigator.clipboard.writeText(value);
+      await copyTextToClipboard(value);
       pushToast({
         title: t("apps.gateways.overview.toast.copiedTitle", { defaultValue: "Copied" }),
         body: label,
@@ -94,20 +96,28 @@ export function OverviewPanel({
         <StatCard label={t("apps.gateways.overview.appsStat", { defaultValue: "Apps" })}>
           {t("apps.gateways.overview.appsCount", {
             count: apps.length,
-            defaultValue: apps.length === 1 ? "{{count}} app" : "{{count}} apps",
+            defaultValue: "{{count}} apps",
           })}
-          {profile ? ` · ${formatAllowedToolsSummary(profile, t)}` : ""}
+          {profile ? ` · ${allowedToolsLabel(profile)}` : ""}
         </StatCard>
         <StatCard label={t("apps.gateways.overview.tokensStat", { defaultValue: "Tokens" })}>
-          {formatTokenSummary(active, expiring, t)}
+          {expiring > 0
+            ? t("apps.gateways.overview.tokensSummaryWithExpiring", {
+                active,
+                expiring,
+                defaultValue: "{{active}} active · {{expiring}} expiring",
+              })
+            : t("apps.gateways.overview.tokensSummary", {
+                active,
+                defaultValue: "{{active}} active",
+              })}
         </StatCard>
         <StatCard label={t("apps.gateways.overview.healthStat", { defaultValue: "Health" })}>
           {needsAttention.length === 0
             ? t("apps.gateways.overview.healthGood", { defaultValue: "All green" })
             : t("apps.gateways.overview.healthNeedsAttention", {
                 count: needsAttention.length,
-                defaultValue:
-                  needsAttention.length === 1 ? "{{count}} needs attention" : "{{count}} need attention",
+                defaultValue: "{{count}} need attention",
               })}
         </StatCard>
       </div>
@@ -126,10 +136,7 @@ export function OverviewPanel({
           </div>
         </div>
         <div className="mt-3 flex flex-wrap gap-2">
-          <Chip>
-            {t("apps.gateways.overview.scopeChip", { defaultValue: "Scope" })} ·{" "}
-            {translateGatewayScopeLabel(formatScope(gateway, projectNames, agentNames), t)}
-          </Chip>
+          <Chip>{t("apps.gateways.overview.scopeChip", { defaultValue: "Scope" })} · {formatScope(gateway, projectNames, agentNames)}</Chip>
           <Chip>
             {t("apps.gateways.overview.profileChip", { defaultValue: "Profile" })} ·{" "}
             {profile?.name ?? t("apps.gateways.overview.unavailable", { defaultValue: "Unavailable" })}
@@ -137,7 +144,7 @@ export function OverviewPanel({
           <Chip>
             {t("apps.gateways.overview.activeTokenCount", {
               count: active,
-              defaultValue: active === 1 ? "{{count}} active token" : "{{count}} active tokens",
+              defaultValue: "{{count}} active tokens",
             })}
           </Chip>
         </div>
@@ -171,8 +178,7 @@ export function OverviewPanel({
             variant="outline"
             size="sm"
             onClick={() =>
-              void copy(snippet, t("apps.gateways.overview.clientConfig", { defaultValue: "Client config" }))
-            }
+              void copy(snippet, t("apps.gateways.overview.clientConfig", { defaultValue: "Client config" }))}
           >
             <Copy className="mr-1 h-3.5 w-3.5" />
             {t("apps.gateways.overview.copy", { defaultValue: "Copy" })}
@@ -213,13 +219,11 @@ function AppRow({ app }: { app: GatewayAppRow }) {
           {gatewayAppDisplayName(app)}
         </Link>
         <div className="text-xs text-muted-foreground">
-          {t("apps.gateways.overview.toolCount", {
+          {t("apps.gateways.common.toolsCount", {
             count: app.toolCount,
-            defaultValue: app.toolCount === 1 ? "{{count}} tool" : "{{count}} tools",
+            defaultValue: "{{count}} tools",
           })}
-          {app.needsAttention && app.attentionReason
-            ? ` · ${translateGatewayAttentionReason(app.attentionReason, t)}`
-            : ""}
+          {app.needsAttention && app.attentionReason ? ` · ${app.attentionReason}` : ""}
         </div>
       </div>
       <span
@@ -236,68 +240,4 @@ function AppRow({ app }: { app: GatewayAppRow }) {
       </span>
     </li>
   );
-}
-
-function formatTokenSummary(
-  active: number,
-  expiring: number,
-  t: (key: string, options?: Record<string, unknown>) => string,
-): string {
-  if (expiring > 0) {
-    return t("apps.gateways.overview.tokensSummaryWithExpiring", {
-      active,
-      expiring,
-      defaultValue: "{{active}} active · {{expiring}} expiring",
-    });
-  }
-  return t("apps.gateways.overview.tokensSummary", {
-    active,
-    defaultValue: "{{active}} active",
-  });
-}
-
-function formatAllowedToolsSummary(
-  profile: ToolProfileWithDetails | undefined,
-  t: (key: string, options?: Record<string, unknown>) => string,
-): string {
-  if (!profile) {
-    return t("apps.gateways.common.profileUnavailable", { defaultValue: "Profile unavailable" });
-  }
-  const { accessMode, allowedToolCount, totalToolCount, excludedToolCount } = profile.summary;
-  const count = accessMode === "all_except" ? Math.max(totalToolCount - excludedToolCount, 0) : allowedToolCount;
-  if (count === 0) {
-    return t("apps.gateways.common.noToolsAllowed", { defaultValue: "No tools allowed" });
-  }
-  return t("apps.gateways.common.toolsCount", {
-    count,
-    defaultValue: count === 1 ? "{{count}} tool" : "{{count}} tools",
-  });
-}
-
-function translateGatewayScopeLabel(
-  scope: string,
-  t: (key: string, options?: Record<string, unknown>) => string,
-): string {
-  if (scope === "Company") {
-    return t("apps.gateways.scope.company", { defaultValue: "Company" });
-  }
-  if (scope.startsWith("Project · ")) {
-    return `${t("apps.gateways.scope.project", { defaultValue: "Project" })} · ${scope.slice("Project · ".length)}`;
-  }
-  if (scope.startsWith("Agent · ")) {
-    return `${t("apps.gateways.scope.agent", { defaultValue: "Agent" })} · ${scope.slice("Agent · ".length)}`;
-  }
-  return scope;
-}
-
-function translateGatewayAttentionReason(
-  reason: string,
-  t: (key: string, options?: Record<string, unknown>) => string,
-): string {
-  if (reason === "Sign-in expired — reconnect to restore access.") {
-    return t("apps.gateways.common.signInExpired", {
-      defaultValue: "Sign-in expired — reconnect to restore access.",
-    });
-  }
-  return reason;
 }

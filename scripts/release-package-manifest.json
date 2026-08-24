@@ -60,6 +60,16 @@
     "publishFromCi": true
   },
   {
+    "dir": "packages/adapters/hermes",
+    "name": "@penclipai/hermes-paperclip-adapter",
+    "publishFromCi": true
+  },
+  {
+    "dir": "packages/adapters/hermes-gateway",
+    "name": "@penclipai/adapter-hermes-gateway",
+    "publishFromCi": false
+  },
+  {
     "dir": "packages/shared",
     "name": "@penclipai/shared",
     "publishFromCi": true

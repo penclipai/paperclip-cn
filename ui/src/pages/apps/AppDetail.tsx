@@ -3,7 +3,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, Loader2, Pencil } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type {
-  AppGalleryEntry,
   ToolConnection,
   ToolPolicy,
   ToolProfileWithDetails,
@@ -24,13 +23,19 @@ import { accessApi } from "@/api/access";
 import { authApi } from "@/api/auth";
 import { buildCompanyUserLabelMap } from "@/lib/company-members";
 import { installPayload, installStateFrom, type InstallState } from "@/lib/tool-installs";
+import { navigateTopLevel } from "@/lib/browserNavigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { translateInstant } from "@/i18n";
 import { cn } from "@/lib/utils";
 import { AppLogo } from "./AppLogo";
-import { appTabHref, isAppTabKey, type AppTabKey } from "./app-tabs";
+import {
+  appDefinitionLogoUrl,
+  appDefinitionName,
+  appDefinitionSlug,
+  type AppGalleryDisplayEntry,
+} from "./app-definition-display";
+import { appTabHref, appTabTranslationKey, isAppTabKey, type AppTabKey } from "./app-tabs";
 import { SetupPanel } from "./app-detail/SetupPanel";
 import { PermissionsPanel } from "./app-detail/PermissionsPanel";
 import { TestPanel } from "./app-detail/TestPanel";
@@ -47,14 +52,12 @@ import type { AccessDraft } from "./app-detail/types";
 
 export { DangerZone, connectionAddress, connectionTransportLabel };
 
-type AppDetailT = ReturnType<typeof useTranslation>["t"];
-
 export function AppDetail() {
+  const { t } = useTranslation();
   const { connectionId = "", tab } = useParams<{ connectionId: string; tab?: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { pushToast } = useToast();
-  const { t } = useTranslation();
   const { selectedCompany, selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
 
@@ -120,14 +123,10 @@ export function AppDetail() {
   useEffect(() => {
     if (!activeTab) return;
     setBreadcrumbs([
-      {
-        label: selectedCompany?.name
-          ?? t("apps.detail.breadcrumb.company", { defaultValue: "Company" }),
-        href: "/dashboard",
-      },
+      { label: selectedCompany?.name ?? t("apps.detail.breadcrumb.company", { defaultValue: "Company" }), href: "/dashboard" },
       { label: t("apps.detail.breadcrumb.apps", { defaultValue: "Apps" }), href: "/apps" },
       { label: appName, href: appTabHref(connectionId, "setup") },
-      { label: appDetailTabLabel(activeTab, t) },
+      { label: t(appTabTranslationKey(activeTab), { defaultValue: activeTab }) },
     ]);
     return () => setBreadcrumbs([]);
   }, [setBreadcrumbs, selectedCompany?.name, appName, connectionId, activeTab, t]);
@@ -158,16 +157,22 @@ export function AppDetail() {
     return labels;
   }, [userDirectoryQuery.data, sessionQuery.data]);
   const logoEntry = useMemo(
-    () => galleryEntryFor(galleryQuery.data?.apps ?? [], connection),
+    () => galleryEntryFor((galleryQuery.data?.apps ?? []) as AppGalleryDisplayEntry[], connection),
     [galleryQuery.data, connection],
   );
 
   const [pending, setPending] = useState(false);
   const persist = useMutation({
-    mutationFn: (next: { enabled: Set<string>; askFirst: Set<string>; access: AccessDraft }) =>
+    mutationFn: (next: {
+      enabled: Set<string>;
+      askFirst: Set<string>;
+      access: AccessDraft;
+      reviewed?: Set<string>;
+    }) =>
       toolsApi.finishApp(selectedCompanyId!, connectionId, {
         enabledCatalogEntryIds: [...next.enabled],
         askFirstCatalogEntryIds: [...next.askFirst].filter((id) => next.enabled.has(id)),
+        ...(next.reviewed ? { reviewedCatalogEntryIds: [...next.reviewed] } : {}),
         access: next.access.mode === "all" ? "all_agents" : { agentIds: [...next.access.agentIds] },
       }),
     onMutate: () => setPending(true),
@@ -181,10 +186,8 @@ export function AppDetail() {
     },
     onError: (error) =>
       pushToast({
-        title: t("apps.detail.toast.saveError.title", { defaultValue: "Couldn't save that" }),
-        body: error instanceof Error
-          ? error.message
-          : t("apps.detail.toast.tryAgain", { defaultValue: "Please try again." }),
+        title: t("apps.detail.errors.save.title", { defaultValue: "Couldn't save that" }),
+        body: error instanceof Error ? error.message : t("apps.detail.common.tryAgain", { defaultValue: "Please try again." }),
         tone: "error",
       }),
     onSettled: () => setPending(false),
@@ -202,10 +205,8 @@ export function AppDetail() {
     },
     onError: (error) =>
       pushToast({
-        title: t("apps.detail.toast.installSaveError.title", { defaultValue: "Couldn't save installs" }),
-        body: error instanceof Error
-          ? error.message
-          : t("apps.detail.toast.tryAgain", { defaultValue: "Please try again." }),
+        title: t("apps.detail.errors.saveInstalls.title", { defaultValue: "Couldn't save installs" }),
+        body: error instanceof Error ? error.message : t("apps.detail.common.tryAgain", { defaultValue: "Please try again." }),
         tone: "error",
       }),
   });
@@ -222,10 +223,8 @@ export function AppDetail() {
     },
     onError: (error) =>
       pushToast({
-        title: t("apps.detail.toast.renameError.title", { defaultValue: "Couldn't rename the app" }),
-        body: error instanceof Error
-          ? error.message
-          : t("apps.detail.toast.tryAgain", { defaultValue: "Please try again." }),
+        title: t("apps.detail.errors.rename.title", { defaultValue: "Couldn't rename the app" }),
+        body: error instanceof Error ? error.message : t("apps.detail.common.tryAgain", { defaultValue: "Please try again." }),
         tone: "error",
       }),
   });
@@ -242,10 +241,8 @@ export function AppDetail() {
     },
     onError: (error) =>
       pushToast({
-        title: t("apps.detail.toast.saveError.title", { defaultValue: "Couldn't save that" }),
-        body: error instanceof Error
-          ? error.message
-          : t("apps.detail.toast.tryAgain", { defaultValue: "Please try again." }),
+        title: t("apps.detail.errors.save.title", { defaultValue: "Couldn't save that" }),
+        body: error instanceof Error ? error.message : t("apps.detail.common.tryAgain", { defaultValue: "Please try again." }),
         tone: "error",
       }),
   });
@@ -253,14 +250,12 @@ export function AppDetail() {
   const startOAuth = useMutation({
     mutationFn: () => toolsApi.startOAuth(connectionId),
     onSuccess: ({ authorizationUrl }) => {
-      window.location.assign(authorizationUrl);
+      navigateTopLevel(authorizationUrl);
     },
     onError: (error) =>
       pushToast({
-        title: t("apps.detail.toast.signInError.title", { defaultValue: "Couldn't start sign-in" }),
-        body: error instanceof Error
-          ? error.message
-          : t("apps.detail.toast.tryAgain", { defaultValue: "Please try again." }),
+        title: t("apps.detail.oauth.startError.title", { defaultValue: "Couldn't start sign-in" }),
+        body: error instanceof Error ? error.message : t("apps.detail.common.tryAgain", { defaultValue: "Please try again." }),
         tone: "error",
       }),
   });
@@ -272,21 +267,19 @@ export function AppDetail() {
       queryClient.invalidateQueries({ queryKey: queryKeys.tools.applications(selectedCompanyId!) });
       queryClient.invalidateQueries({ queryKey: queryKeys.apps.attention(selectedCompanyId!) });
       pushToast({
-        title: t("apps.detail.toast.removeSuccess.title", { defaultValue: "App removed" }),
-        body: t("apps.detail.toast.removeSuccess.body", {
-          defaultValue: "{{appName}} no longer has access. You can connect it again any time.",
+        title: t("apps.detail.removedToast.title", { defaultValue: "App removed" }),
+        body: t("apps.detail.removedToast.body", {
           appName,
+          defaultValue: "{{appName}} no longer has access. You can connect it again any time.",
         }),
         tone: "success",
       });
-      navigate("/apps");
+      navigate("/apps/connections");
     },
     onError: (error) =>
       pushToast({
-        title: t("apps.detail.toast.removeError.title", { defaultValue: "Couldn't remove the app" }),
-        body: error instanceof Error
-          ? error.message
-          : t("apps.detail.toast.tryAgain", { defaultValue: "Please try again." }),
+        title: t("apps.detail.errors.remove.title", { defaultValue: "Couldn't remove the app" }),
+        body: error instanceof Error ? error.message : t("apps.detail.common.tryAgain", { defaultValue: "Please try again." }),
         tone: "error",
       }),
   });
@@ -300,26 +293,24 @@ export function AppDetail() {
       queryClient.invalidateQueries({ queryKey: queryKeys.apps.attention(selectedCompanyId!) });
       pushToast({
         title: updated.enabled
-          ? t("apps.detail.toast.resumeSuccess.title", { defaultValue: "App resumed" })
-          : t("apps.detail.toast.pauseSuccess.title", { defaultValue: "App paused" }),
+          ? t("apps.detail.lifecycleToast.resumed.title", { defaultValue: "App resumed" })
+          : t("apps.detail.lifecycleToast.paused.title", { defaultValue: "App paused" }),
         body: updated.enabled
-          ? t("apps.detail.toast.resumeSuccess.body", {
-            defaultValue: "{{appName}} is available to agents again.",
-            appName: humanizeConnectionDisplayName(updated),
-          })
-          : t("apps.detail.toast.pauseSuccess.body", {
-            defaultValue: "{{appName}} is paused for agents.",
-            appName: humanizeConnectionDisplayName(updated),
-          }),
+          ? t("apps.detail.lifecycleToast.resumed.body", {
+              appName: humanizeConnectionDisplayName(updated),
+              defaultValue: "{{appName}} is available to agents again.",
+            })
+          : t("apps.detail.lifecycleToast.paused.body", {
+              appName: humanizeConnectionDisplayName(updated),
+              defaultValue: "{{appName}} is paused for agents.",
+            }),
         tone: "success",
       });
     },
     onError: (error) =>
       pushToast({
-        title: t("apps.detail.toast.updateError.title", { defaultValue: "Couldn't update the app" }),
-        body: error instanceof Error
-          ? error.message
-          : t("apps.detail.toast.tryAgain", { defaultValue: "Please try again." }),
+        title: t("apps.detail.errors.update.title", { defaultValue: "Couldn't update the app" }),
+        body: error instanceof Error ? error.message : t("apps.detail.common.tryAgain", { defaultValue: "Please try again." }),
         tone: "error",
       }),
   });
@@ -332,38 +323,49 @@ export function AppDetail() {
       queryClient.invalidateQueries({ queryKey: queryKeys.tools.connections(selectedCompanyId!) });
       queryClient.invalidateQueries({ queryKey: queryKeys.apps.attention(selectedCompanyId!) });
       pushToast({
-        title: t("apps.detail.toast.refreshSuccess.title", {
-          defaultValue: `Found ${result.discoveredCount} ${result.discoveredCount === 1 ? "action" : "actions"}`,
+        title: t("apps.detail.refreshToast.title", {
           count: result.discoveredCount,
+          defaultValue: "Found {{count}} actions",
         }),
         body: result.quarantinedCount > 0
-          ? t("apps.detail.toast.refreshSuccess.body", {
-            defaultValue: `${result.quarantinedCount} new ${result.quarantinedCount === 1 ? "action needs" : "actions need"} your OK.`,
-            count: result.quarantinedCount,
-          })
+          ? t("apps.detail.refreshToast.quarantined", {
+              count: result.quarantinedCount,
+              defaultValue: "{{count}} new actions need your OK.",
+            })
           : undefined,
         tone: "success",
       });
     },
     onError: (error) =>
       pushToast({
-        title: t("apps.detail.toast.refreshError.title", { defaultValue: "Couldn't refresh actions" }),
-        body: error instanceof Error
-          ? error.message
-          : t("apps.detail.toast.tryAgain", { defaultValue: "Please try again." }),
+        title: t("apps.detail.errors.refresh.title", { defaultValue: "Couldn't refresh actions" }),
+        body: error instanceof Error ? error.message : t("apps.detail.common.tryAgain", { defaultValue: "Please try again." }),
         tone: "error",
       }),
   });
 
-  const apply = (mutate: { enabled?: Set<string>; askFirst?: Set<string>; access?: AccessDraft }) =>
+  const apply = (mutate: {
+    enabled?: Set<string>;
+    askFirst?: Set<string>;
+    access?: AccessDraft;
+    reviewed?: Set<string>;
+  }) =>
     persist.mutate({
       enabled: mutate.enabled ?? new Set(enabledIds),
       askFirst: mutate.askFirst ?? new Set(askFirstIds),
       access: mutate.access ?? access,
+      reviewed: mutate.reviewed,
     });
 
+  const reviewQuarantined = (allowedIds: string[]) => {
+    const quarantinedIds = new Set(quarantined.map((entry) => entry.id));
+    const nextEnabled = new Set([...enabledIds].filter((id) => !quarantinedIds.has(id)));
+    for (const id of allowedIds) nextEnabled.add(id);
+    apply({ enabled: nextEnabled, reviewed: quarantinedIds });
+  };
+
   if (!connectionId || !activeTab) {
-    return <Navigate replace to={connectionId ? appTabHref(connectionId, "setup") : "/apps"} />;
+    return <Navigate replace to={connectionId ? appTabHref(connectionId, "setup") : "/apps/connections"} />;
   }
 
   if (!selectedCompanyId) {
@@ -388,7 +390,7 @@ export function AppDetail() {
         <p className="text-sm text-muted-foreground">
           {t("apps.detail.empty.notFound", { defaultValue: "We couldn't find that app." })}
         </p>
-        <Button className="mt-4" variant="outline" onClick={() => navigate("/apps")}>
+        <Button className="mt-4" variant="outline" onClick={() => navigate("/apps/connections")}>
           {t("apps.detail.empty.backToApps", { defaultValue: "Back to apps" })}
         </Button>
       </div>
@@ -455,7 +457,7 @@ export function AppDetail() {
           connectionId={connectionId}
           quarantined={quarantined}
           pending={pending}
-          onTurnOnQuarantined={(ids) => apply({ enabled: addAll(new Set(enabledIds), ids) })}
+          onReviewQuarantined={reviewQuarantined}
         />
       )}
       {activeTab === "permissions" && (
@@ -476,7 +478,7 @@ export function AppDetail() {
           onSaveInstall={(next) => persistInstall.mutate(next)}
           onRefreshActions={() => refreshTools.mutate()}
           onSetActionPermission={(id, next) => apply(actionPermissionMutation(id, next, enabledIds, askFirstIds))}
-          onTurnOnQuarantined={(ids) => apply({ enabled: addAll(new Set(enabledIds), ids) })}
+          onReviewQuarantined={reviewQuarantined}
         />
       )}
       {activeTab === "test" && (
@@ -529,7 +531,7 @@ function AppDetailHeader({
 }: {
   appName: string;
   connection: ToolConnection;
-  logoEntry: AppGalleryEntry | null;
+  logoEntry: AppGalleryDisplayEntry | null;
   status: StatusInfo;
   actionCount: number;
   renaming: boolean;
@@ -544,7 +546,7 @@ function AppDetailHeader({
   return (
     <header className="flex flex-wrap items-start justify-between gap-4">
       <div className="flex items-center gap-3">
-        <AppLogo name={appName} logoUrl={logoEntry?.logoUrl} size={44} />
+        <AppLogo name={appName} logoUrl={appDefinitionLogoUrl(logoEntry)} size={44} />
         <div>
           {renaming ? (
             <form
@@ -588,10 +590,7 @@ function AppDetailHeader({
           <div className="mt-1 flex items-center gap-2">
             <StatusBadge status={status} />
             <span className="text-xs text-muted-foreground">
-              {t("apps.detail.header.actionCount", {
-                defaultValue: `${actionCount} ${actionCount === 1 ? "action" : "actions"} available`,
-                count: actionCount,
-              })}
+              {t("apps.detail.header.actionCount", { count: actionCount, defaultValue: "{{count}} actions available" })}
             </span>
           </div>
         </div>
@@ -602,15 +601,12 @@ function AppDetailHeader({
 
 type StatusInfo = { label: string; tone: "connected" | "attention" | "paused" };
 
-function statusFor(connection: ToolConnection, t: AppDetailT): StatusInfo {
+function statusFor(connection: ToolConnection, t: ReturnType<typeof useTranslation>["t"]): StatusInfo {
   if (connection.enabled === false || connection.status === "disabled") {
     return { label: t("apps.detail.status.paused", { defaultValue: "Paused" }), tone: "paused" };
   }
   if (isAttentionHealthStatus(connection.healthStatus)) {
-    return {
-      label: t("apps.detail.status.needsAttention", { defaultValue: "Needs attention" }),
-      tone: "attention",
-    };
+    return { label: t("apps.detail.status.needsAttention", { defaultValue: "Needs attention" }), tone: "attention" };
   }
   return { label: t("apps.detail.status.connected", { defaultValue: "Connected" }), tone: "connected" };
 }
@@ -664,35 +660,15 @@ function accessFrom(profile: ToolProfileWithDetails | undefined): AccessDraft {
   return { mode: "specific", agentIds };
 }
 
-function galleryEntryFor(apps: AppGalleryEntry[], connection: ToolConnection | undefined): AppGalleryEntry | null {
+function galleryEntryFor(
+  apps: AppGalleryDisplayEntry[],
+  connection: ToolConnection | undefined,
+): AppGalleryDisplayEntry | null {
   if (!connection) return null;
   const name = connection.name.toLowerCase();
-  return apps.find((a) => a.name.toLowerCase() === name) ?? apps.find((a) => a.key === name) ?? null;
-}
-
-function addAll(set: Set<string>, ids: string[]): Set<string> {
-  const next = new Set(set);
-  for (const id of ids) next.add(id);
-  return next;
-}
-
-function appDetailTabLabel(tab: AppTabKey, t: AppDetailT): string {
-  switch (tab) {
-    case "setup":
-      return t("apps.detail.tab.setup", { defaultValue: "Setup" });
-    case "review":
-      return t("apps.detail.tab.review", { defaultValue: "Review" });
-    case "permissions":
-      return t("apps.detail.tab.permissions", { defaultValue: "Permissions" });
-    case "test":
-      return t("apps.detail.tab.test", { defaultValue: "Test" });
-    case "activity":
-      return t("apps.detail.tab.activity", { defaultValue: "Activity" });
-    case "advanced":
-      return t("apps.detail.tab.advanced", { defaultValue: "Advanced" });
-    default:
-      return translateInstant("apps.detail.common.app", { defaultValue: "App" });
-  }
+  return apps.find((app) => appDefinitionName(app).toLowerCase() === name) ??
+    apps.find((app) => appDefinitionSlug(app) === name) ??
+    null;
 }
 
 function actionPermissionMutation(

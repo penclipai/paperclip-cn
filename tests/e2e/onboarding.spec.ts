@@ -7,7 +7,7 @@ import { localized } from "./localized-selectors";
  * The wizard now opens on a front door (path picker) and the "Create a new
  * company" path runs:
  *   Step 0  — Front door (Create a new company / Level up existing)
- *   Step 1a — Name your company
+ *   Step 1a — Name your organization
  *   Step 1b — Define your mission (direct or guided)
  *   Step 2  — Hire your team lead (adapter picker)
  *   Step 3+ — Launch celebration → CEO chat → hiring plan → orientation
@@ -54,7 +54,7 @@ test.describe("Onboarding wizard", () => {
       await createCard.first().click();
     }
 
-    // Step 1 — Name your company.
+    // Step 1 — Name your organization.
     await expect(
       page.getByRole("heading", { name: localized.nameYourTeam }),
     ).toBeVisible({ timeout: 15_000 });

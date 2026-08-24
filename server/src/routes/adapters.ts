@@ -44,11 +44,29 @@ import type { ServerAdapterModule, AdapterConfigSchema } from "../adapters/types
 import { loadExternalAdapterPackage, getUiParserSource, getOrExtractUiParserSource, reloadExternalAdapter } from "../adapters/plugin-loader.js";
 import { resolveHomeAwarePath } from "../home-paths.js";
 import { logger } from "../middleware/logger.js";
+import { forbidden } from "../errors.js";
+import { isCloudManagedInstance } from "../services/cloud-instance.js";
 import { assertBoardOrgAccess, assertInstanceAdmin } from "./authz.js";
 import { BUILTIN_ADAPTER_TYPES } from "../adapters/builtin-adapter-types.js";
 import { execNpmCommand } from "../services/npm-command.js";
 
 const execFileAsync = promisify(execFile);
+
+/**
+ * Floor: on cloud-managed instances adapter code is bundled into the platform
+ * image; fetching and loading external adapter packages at runtime stays off
+ * for every actor, including instance admins. Adapter code executes in the
+ * server process, so a runtime install would let an instance admin read the
+ * platform trust anchors from the process environment (mirrors the
+ * bundled-only plugin install floor in plugin-install-guard.ts).
+ */
+function assertAdapterCodeInstallAllowed() {
+  if (isCloudManagedInstance()) {
+    throw forbidden("Adapter installation is platform-managed on cloud-managed instances", {
+      code: "adapter_install_platform_managed",
+    });
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Request / Response types
@@ -253,6 +271,7 @@ export function adapterRoutes() {
    */
   router.post("/adapters/install", async (req, res) => {
     assertInstanceAdmin(req);
+    assertAdapterCodeInstallAllowed();
 
     const { packageName, isLocalPath = false, version } = req.body as AdapterInstallRequest;
 
@@ -590,6 +609,7 @@ export function adapterRoutes() {
   // package name, but without the risk of losing the store record.
   router.post("/adapters/:type/reinstall", async (req, res) => {
     assertInstanceAdmin(req);
+    assertAdapterCodeInstallAllowed();
 
     const type = req.params.type;
 

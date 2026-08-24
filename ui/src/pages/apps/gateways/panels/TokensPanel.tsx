@@ -13,8 +13,9 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/context/ToastContext";
 import { RelativeTime } from "@/pages/tools/shared";
 import { cn } from "@/lib/utils";
+import { copyTextToClipboard } from "@/lib/clipboard";
 import { gatewaysQueryKey } from "../NewGatewayDialog";
-import { maskedTokenLabel, tokenStatus, type TokenStatus } from "../gateway-helpers";
+import { maskedTokenLabel, TOKEN_STATUS_LABEL, tokenStatus, type TokenStatus } from "../gateway-helpers";
 
 const DEFAULT_ACTIONS: ToolMcpGatewayTokenAction[] = ["tools/list", "tools/call"];
 
@@ -31,7 +32,6 @@ const STATUS_CLASS: Record<TokenStatus, string> = {
 
 /** Token status pill, shared by the desktop table and mobile cards. */
 function StatusBadge({ status }: { status: TokenStatus }) {
-  const { t } = useTranslation();
   return (
     <span
       className={cn(
@@ -39,7 +39,7 @@ function StatusBadge({ status }: { status: TokenStatus }) {
         STATUS_CLASS[status],
       )}
     >
-      {translateStatusLabel(status, t)}
+      {TOKEN_STATUS_LABEL[status]}
     </span>
   );
 }
@@ -138,12 +138,7 @@ export function TokensPanel({
 
   async function copyToken(value: string) {
     try {
-      if (typeof navigator === "undefined" || !navigator.clipboard?.writeText) {
-        throw new Error(
-          t("apps.gateways.tokens.clipboardUnavailable", { defaultValue: "Clipboard access is unavailable." }),
-        );
-      }
-      await navigator.clipboard.writeText(value);
+      await copyTextToClipboard(value);
       pushToast({
         title: t("apps.gateways.tokens.toast.copiedTitle", { defaultValue: "Copied" }),
         body: t("apps.gateways.tokens.accessToken", { defaultValue: "Access token" }),
@@ -152,12 +147,11 @@ export function TokensPanel({
     } catch (error) {
       pushToast({
         title: t("apps.gateways.tokens.toast.copyFailedTitle", { defaultValue: "Copy failed" }),
-        body:
-          error instanceof Error
-            ? error.message
-            : t("apps.gateways.tokens.clipboardUnavailable", {
-                defaultValue: "Clipboard access is unavailable.",
-              }),
+        body: error instanceof Error
+          ? error.message
+          : t("apps.gateways.tokens.clipboardUnavailable", {
+              defaultValue: "Clipboard access is unavailable.",
+            }),
         tone: "error",
       });
     }
@@ -300,6 +294,7 @@ export function TokensPanel({
         </div>
       ) : (
         <>
+          {/* Desktop / tablet: full table. */}
           <div className="hidden overflow-x-auto rounded-lg border border-border sm:block">
             <table className="w-full min-w-(--sz-44rem) text-sm">
               <thead>
@@ -324,18 +319,12 @@ export function TokensPanel({
                         <div className="font-mono text-xs text-muted-foreground">{maskedTokenLabel(token)}</div>
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">{token.clientLabel || token.ownerNote || "—"}</td>
-                      <td className="px-4 py-3 text-muted-foreground">
-                        <RelativeTime value={token.createdAt} />
-                      </td>
+                      <td className="px-4 py-3 text-muted-foreground"><RelativeTime value={token.createdAt} /></td>
                       <td className="px-4 py-3 text-muted-foreground">
                         {token.lastUsedAt ? <RelativeTime value={token.lastUsedAt} /> : "—"}
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">
-                        {token.revokedAt
-                          ? "—"
-                          : token.expiresAt
-                            ? <RelativeTime value={token.expiresAt} />
-                            : t("apps.gateways.tokens.noExpiry", { defaultValue: "no expiry" })}
+                        {token.revokedAt ? "—" : token.expiresAt ? <RelativeTime value={token.expiresAt} /> : t("apps.gateways.tokens.noExpiry", { defaultValue: "no expiry" })}
                       </td>
                       <td className="px-4 py-3">
                         <StatusBadge status={status} />
@@ -362,6 +351,7 @@ export function TokensPanel({
             </table>
           </div>
 
+          {/* Mobile: stacked cards so status + Revoke stay reachable. */}
           <div className="space-y-3 sm:hidden">
             {tokens.map((token) => {
               const status = tokenStatus(token);
@@ -391,11 +381,7 @@ export function TokensPanel({
                     <TokenField
                       label={t("apps.gateways.tokens.mobile.expires", { defaultValue: "Expires" })}
                       value={
-                        token.revokedAt
-                          ? "—"
-                          : token.expiresAt
-                            ? <RelativeTime value={token.expiresAt} />
-                            : t("apps.gateways.tokens.noExpiry", { defaultValue: "no expiry" })
+                        token.revokedAt ? "—" : token.expiresAt ? <RelativeTime value={token.expiresAt} /> : t("apps.gateways.tokens.noExpiry", { defaultValue: "no expiry" })
                       }
                     />
                   </dl>
@@ -434,9 +420,7 @@ export function TokensPanel({
                 {t("apps.gateways.tokens.confirmRevokeTitle", { defaultValue: "Revoke this token?" })}
               </h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                {t("apps.gateways.tokens.confirmRevokeBodyPrefix", {
-                  defaultValue: "Any client using",
-                })}{" "}
+                {t("apps.gateways.tokens.confirmRevokeBodyPrefix", { defaultValue: "Any client using" })}{" "}
                 <span className="font-medium text-foreground">{confirmToken.name}</span>{" "}
                 {t("apps.gateways.tokens.confirmRevokeBodySuffix", {
                   defaultValue: "goes silent immediately. This can’t be undone. Type the token name to confirm.",
@@ -479,22 +463,4 @@ export function TokensPanel({
       ) : null}
     </div>
   );
-}
-
-function translateStatusLabel(
-  status: TokenStatus,
-  t: (key: string, options?: Record<string, unknown>) => string,
-): string {
-  switch (status) {
-    case "active":
-      return t("apps.gateways.tokens.status.active", { defaultValue: "Active" });
-    case "expiring":
-      return t("apps.gateways.tokens.status.expiring", { defaultValue: "Expiring" });
-    case "expired":
-      return t("apps.gateways.tokens.status.expired", { defaultValue: "Expired" });
-    case "revoked":
-      return t("apps.gateways.tokens.status.revoked", { defaultValue: "Revoked" });
-    default:
-      return status;
-  }
 }

@@ -15,7 +15,6 @@ import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { queryKeys } from "../lib/queryKeys";
 import { MetricCard } from "../components/MetricCard";
 import { EmptyState } from "../components/EmptyState";
-import { Card } from "@/components/ui/card";
 import { StatusIcon } from "../components/StatusIcon";
 import { usePublishSharedQueryData, useSharedPollingQuery } from "../hooks/useSharedPolling";
 
@@ -23,13 +22,14 @@ import { ActivityRow } from "../components/ActivityRow";
 import { Identity } from "../components/Identity";
 import { timeAgo } from "../lib/timeAgo";
 import { cn, formatCents } from "../lib/utils";
+import { SHOW_TASK_PRIORITY_UI } from "../lib/ui-flags";
 import { Bot, CircleDot, DollarSign, ShieldCheck, LayoutDashboard, PauseCircle } from "lucide-react";
 import { ActiveAgentsPanel } from "../components/ActiveAgentsPanel";
 import { ChartCard, RunActivityChart, PriorityChart, IssueStatusChart, SuccessRateChart } from "../components/ActivityCharts";
 import { PageSkeleton } from "../components/PageSkeleton";
+import { Card } from "@/components/ui/card";
 import type { Agent, Issue } from "@penclipai/shared";
 import { PluginSlotOutlet } from "@/plugins/slots";
-import { displaySeededName } from "../lib/seeded-display";
 import { SmokeLabDashboardCard } from "../components/SmokeLabDashboardCard";
 
 const DASHBOARD_ACTIVITY_LIMIT = 10;
@@ -94,8 +94,8 @@ export function Dashboard() {
   });
 
   const { data: projects } = useQuery({
-    queryKey: queryKeys.projects.list(selectedCompanyId!),
-    queryFn: () => projectsApi.list(selectedCompanyId!),
+    queryKey: queryKeys.projects.list(selectedCompanyId!, { includeArchived: true }),
+    queryFn: () => projectsApi.list(selectedCompanyId!, { includeArchived: true }),
     enabled: !!selectedCompanyId,
   });
 
@@ -177,8 +177,8 @@ export function Dashboard() {
   const entityNameMap = useMemo(() => {
     const map = new Map<string, string>();
     for (const i of issues ?? []) map.set(`issue:${i.id}`, i.identifier ?? i.id.slice(0, 8));
-    for (const a of agents ?? []) map.set(`agent:${a.id}`, displaySeededName(a.name));
-    for (const p of projects ?? []) map.set(`project:${p.id}`, displaySeededName(p.name));
+    for (const a of agents ?? []) map.set(`agent:${a.id}`, a.name);
+    for (const p of projects ?? []) map.set(`project:${p.id}`, p.name);
     return map;
   }, [issues, agents, projects]);
 
@@ -190,8 +190,7 @@ export function Dashboard() {
 
   const agentName = (id: string | null) => {
     if (!id || !agents) return null;
-    const agent = agents.find((a) => a.id === id);
-    return agent ? displaySeededName(agent.name) : null;
+    return agents.find((a) => a.id === id)?.name ?? null;
   };
 
   if (!selectedCompanyId) {
@@ -246,10 +245,10 @@ export function Dashboard() {
               <div className="flex items-start gap-2.5">
                 <PauseCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-700 dark:text-red-300" />
                 <div>
-                  <p className="text-sm font-medium text-red-50">
+                  <p className="text-sm font-medium text-red-950 dark:text-red-50">
                     {t("dashboard.activeBudgetIncidents", { count: data.budgets.activeIncidents })}
                   </p>
-                  <p className="text-xs text-red-100/70">
+                  <p className="text-xs text-red-900/70 dark:text-red-100/70">
                     {t("dashboard.budgetSummary", {
                       pausedAgents: data.budgets.pausedAgents,
                       pausedProjects: data.budgets.pausedProjects,
@@ -258,7 +257,7 @@ export function Dashboard() {
                   </p>
                 </div>
               </div>
-              <Link to="/costs" className="text-sm underline underline-offset-2 text-red-100">
+              <Link to="/costs" className="text-sm underline underline-offset-2 text-red-900 dark:text-red-100">
                 {t("dashboard.openBudgets")}
               </Link>
             </div>
@@ -271,11 +270,13 @@ export function Dashboard() {
               label={t("dashboard.agentsEnabled")}
               to="/agents"
               description={
-                <span>{t("dashboard.agentSummary", {
-                  running: data.agents.running,
-                  paused: data.agents.paused,
-                  errors: data.agents.error,
-                })}</span>
+                <span>
+                  {t("dashboard.agentSummary", {
+                    running: data.agents.running,
+                    paused: data.agents.paused,
+                    errors: data.agents.error,
+                  })}
+                </span>
               }
             />
             <MetricCard
@@ -284,10 +285,12 @@ export function Dashboard() {
               label={t("dashboard.tasksInProgress")}
               to="/issues"
               description={
-                <span>{t("dashboard.taskSummary", {
-                  open: data.tasks.open,
-                  blocked: data.tasks.blocked,
-                })}</span>
+                <span>
+                  {t("dashboard.taskSummary", {
+                    open: data.tasks.open,
+                    blocked: data.tasks.blocked,
+                  })}
+                </span>
               }
             />
             <MetricCard
@@ -327,9 +330,12 @@ export function Dashboard() {
             <ChartCard title={t("dashboard.runActivity")} subtitle={t("dashboard.last14Days")}>
               <RunActivityChart activity={data.runActivity} />
             </ChartCard>
-            <ChartCard title={t("dashboard.issuesByPriority")} subtitle={t("dashboard.last14Days")}>
-              <PriorityChart issues={issues ?? []} />
-            </ChartCard>
+            {/* PAP-411: "Tasks by Priority" chart hidden behind SHOW_TASK_PRIORITY_UI. */}
+            {SHOW_TASK_PRIORITY_UI && (
+              <ChartCard title={t("dashboard.issuesByPriority")} subtitle={t("dashboard.last14Days")}>
+                <PriorityChart issues={issues ?? []} />
+              </ChartCard>
+            )}
             <ChartCard title={t("dashboard.issuesByStatus")} subtitle={t("dashboard.last14Days")}>
               <IssueStatusChart issues={issues ?? []} />
             </ChartCard>
@@ -375,9 +381,9 @@ export function Dashboard() {
                 {t("dashboard.recentTasks")}
               </h3>
               {recentIssues.length === 0 ? (
-                <div className="border border-border p-4">
+                <Card className="block p-4">
                   <p className="text-sm text-muted-foreground">{t("dashboard.noTasksYet")}</p>
-                </div>
+                </Card>
               ) : (
                 <Card className="block py-0 divide-y divide-border overflow-hidden">
                   {recentIssues.slice(0, 10).map((issue) => (

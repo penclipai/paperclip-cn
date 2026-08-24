@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
+import { getCurrentLocale } from "@/i18n";
 
 export type RoutineListProjectSummary = {
   name: string;
@@ -39,7 +40,7 @@ export type RoutineListRowItem = {
 
 export function formatLastRunTimestamp(value: Date | string | null | undefined, t?: TFunction) {
   if (!value) return t ? t("Never", { defaultValue: "Never" }) : "Never";
-  return new Date(value).toLocaleString();
+  return new Date(value).toLocaleString(getCurrentLocale());
 }
 
 export function formatRoutineRunStatus(value: string | null | undefined, t?: TFunction) {
@@ -60,7 +61,7 @@ export function RoutineListRow<TRoutine extends RoutineListRowItem>({
   runningRoutineId,
   statusMutationRoutineId,
   href,
-  configureLabel = "Edit",
+  configureLabel,
   managedByLabel,
   secondaryDetails,
   runNowButton = false,
@@ -127,7 +128,10 @@ export function RoutineListRow<TRoutine extends RoutineListRowItem>({
             type="checkbox"
             className="h-4 w-4 rounded border-border"
             checked={selected}
-            aria-label={`Select ${routine.title}`}
+            aria-label={t("routines.selectRoutine", {
+              defaultValue: "Select {{name}}",
+              name: routine.title,
+            })}
             onChange={(event) => onSelectChange?.(routine, event.target.checked)}
           />
         </div>
@@ -229,7 +233,7 @@ export function RoutineListRow<TRoutine extends RoutineListRowItem>({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem asChild>
-              <Link to={href}>{configureLabel}</Link>
+              <Link to={href}>{configureLabel ?? t("common.edit")}</Link>
             </DropdownMenuItem>
             <DropdownMenuItem
               disabled={runDisabled}

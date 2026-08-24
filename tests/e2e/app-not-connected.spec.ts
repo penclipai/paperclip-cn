@@ -1,7 +1,6 @@
 import { expect, test, type APIRequestContext } from "@playwright/test";
 import { createServer, type Server } from "node:http";
 import { listenOnFetchAllowedPort } from "./fetch-allowed-port";
-import { localized } from "./localized-selectors";
 
 // Apps navigation wave 6 — not-connected apps get a real app page.
 // A row with no live connection must open /apps/app/:applicationId/setup (previous
@@ -87,7 +86,7 @@ test.describe.serial("not-connected app page", () => {
     applicationId = body.application.id as string;
 
     // Archive the connection (Remove app), then resurrect the application so
-    // it shows on /apps as "Not connected" — the state in Dotta's screenshot.
+    // it shows on /apps/connections as "Not connected" — the state in Dotta's screenshot.
     const archive = await request.delete(`/api/tool-connections/${connectionId}`);
     expect(archive.ok(), `archive failed ${archive.status()}: ${await archive.text()}`).toBe(true);
     const revive = await request.patch(`/api/tool-applications/${applicationId}`, {
@@ -101,30 +100,30 @@ test.describe.serial("not-connected app page", () => {
   });
 
   test("not-connected row opens the app page, not the generic wizard", async ({ page }) => {
-    await page.goto(`/${seed.prefix}/apps`);
+    await page.goto(`/${seed.prefix}/apps/connections`);
     const row = page.locator("tbody tr", { hasText: "Bla" });
     await expect(row).toBeVisible({ timeout: 30_000 });
-    await expect(row.getByText(localized.appNotConnected)).toBeVisible();
-    await expect(row.getByRole("button", { name: localized.appConnect })).toBeVisible();
+    await expect(row.getByText("Not connected")).toBeVisible();
+    await expect(row.getByRole("button", { name: "Connect" })).toBeVisible();
 
     await row.click();
     await expect(page).toHaveURL(new RegExp(`/${seed.prefix}/apps/app/${applicationId}/setup$`), { timeout: 20_000 });
     await expect(page.getByRole("heading", { name: "Bla" })).toBeVisible({ timeout: 20_000 });
-    await expect(page.getByRole("heading", { name: localized.appPreviousSetup })).toBeVisible();
-    await expect(page.getByRole("heading", { name: localized.appReconnectTitle })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Previous setup" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Reconnect this app" })).toBeVisible();
     await page.screenshot({ path: `${SCREENSHOT_DIR}/apps-nav-w6-01-app-not-connected.png`, fullPage: true });
   });
 
   test("reconnect prefills the wizard and revives the same application", async ({ page, request }) => {
     await page.goto(`/${seed.prefix}/apps/app/${applicationId}`);
-    await page.getByRole("button", { name: localized.appReconnect, exact: true }).click();
+    await page.getByRole("button", { name: "Reconnect", exact: true }).click();
     await expect(page).toHaveURL(/\/apps\/connect\?/, { timeout: 20_000 });
-    await expect(page.getByText(localized.appConnectWithLink)).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText("Connect with a link")).toBeVisible({ timeout: 20_000 });
     await expect(page.getByText(mock.url)).toBeVisible();
     await page.screenshot({ path: `${SCREENSHOT_DIR}/apps-nav-w6-02-reconnect-prefilled.png`, fullPage: true });
 
-    await page.getByRole("button", { name: localized.appCheckLink }).click();
-    await expect(page.getByText(localized.appConnectedSummary)).toBeVisible({ timeout: 30_000 });
+    await page.getByRole("button", { name: "Check link" }).click();
+    await expect(page.getByText(/Connected to .* it offers/)).toBeVisible({ timeout: 30_000 });
 
     const apps = await request.get(`/api/companies/${seed.companyId}/tools/applications`);
     const appsBody = await apps.json();
@@ -144,14 +143,16 @@ test.describe.serial("not-connected app page", () => {
     expect(appConns[0].status).not.toBe("archived");
   });
 
-  test("connected app page redirects from the app route and its row says Open", async ({ page }) => {
+  test("draft app connection stays on provider setup until setup finishes", async ({ page }) => {
     await page.goto(`/${seed.prefix}/apps/app/${applicationId}`);
-    await expect(page).toHaveURL(new RegExp(`/${seed.prefix}/apps/${connectionId}/setup$`), { timeout: 20_000 });
+    await expect(page).toHaveURL(new RegExp(`/${seed.prefix}/apps/app/${applicationId}/setup$`), { timeout: 20_000 });
+    await expect(page.getByText("Not connected", { exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Connect this app" })).toBeVisible();
 
-    await page.goto(`/${seed.prefix}/apps`);
+    await page.goto(`/${seed.prefix}/apps/connections`);
     const row = page.locator("tbody tr", { hasText: "Bla" });
     await expect(row).toBeVisible({ timeout: 30_000 });
-    await expect(row.getByRole("button", { name: localized.appOpenOrReview })).toBeVisible();
+    await expect(row.getByRole("button", { name: "Connect" })).toBeVisible();
     await page.screenshot({ path: `${SCREENSHOT_DIR}/apps-nav-w6-03-reconnected-row.png`, fullPage: true });
   });
 
@@ -170,12 +171,13 @@ test.describe.serial("not-connected app page", () => {
     await request.patch(`/api/tool-applications/${secondBody.application.id}`, { data: { status: "active" } });
 
     await page.goto(`/${seed.prefix}/apps/app/${secondBody.application.id}/advanced`);
-    await expect(page.getByText(localized.appDangerZone)).toBeVisible({ timeout: 30_000 });
-    await page.getByRole("button", { name: localized.appRemove, exact: true }).click();
+    await expect(page.getByText("Danger zone")).toBeVisible({ timeout: 30_000 });
+    await page.getByRole("button", { name: "Remove app", exact: true }).click();
     await page.screenshot({ path: `${SCREENSHOT_DIR}/apps-nav-w6-04-app-page-danger.png`, fullPage: true });
-    await page.getByRole("button", { name: localized.appRemoveConfirm }).click();
-    await expect(page).toHaveURL(new RegExp(`/${seed.prefix}/apps$`), { timeout: 20_000 });
-    await expect(page.getByText(localized.appRemoved).first()).toBeVisible({ timeout: 20_000 });
+    await page.getByRole("button", { name: "Yes, remove it" }).click();
+    await expect(page).toHaveURL(new RegExp(`/${seed.prefix}/apps/connections$`), { timeout: 20_000 });
+    await expect(page.getByText("App removed").first()).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByRole("heading", { name: "Connections" })).toBeVisible();
     await expect(page.locator("tbody tr", { hasText: "Doomed app" })).toHaveCount(0);
   });
 });

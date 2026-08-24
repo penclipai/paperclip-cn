@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { flushSync } from "react-dom";
-import { createRoot } from "react-dom/client";
+import { createRoot, type Root } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type {
   CatalogTeam,
@@ -208,8 +208,10 @@ function findButton(label: string): HTMLButtonElement | undefined {
 
 describe("TeamCatalog install preview path", () => {
   let container: HTMLDivElement;
+  let root: Root | null;
 
   beforeEach(() => {
+    root = null;
     container = document.createElement("div");
     document.body.appendChild(container);
     currentRoute = "team-no-deps";
@@ -231,17 +233,20 @@ describe("TeamCatalog install preview path", () => {
     });
   });
 
-  afterEach(() => {
+  afterEach(async () => {
+    if (root) {
+      await act(async () => root?.unmount());
+      root = null;
+    }
     container.remove();
-    document.body.innerHTML = "";
     vi.clearAllMocks();
   });
 
   async function renderPage() {
-    const root = createRoot(container);
+    root = createRoot(container);
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     await act(async () => {
-      root.render(
+      root?.render(
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>
             <TeamCatalog />

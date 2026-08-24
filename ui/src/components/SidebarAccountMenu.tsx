@@ -1,32 +1,32 @@
 import { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import {
   BookOpen,
   LogOut,
   Megaphone,
   type LucideIcon,
-  Settings,
   UserRound,
   UserRoundPen,
 } from "lucide-react";
 import type { DeploymentMode, ServerGitInfo } from "@penclipai/shared";
 import { Link } from "@/lib/router";
 import { authApi } from "@/api/auth";
-import { BRAND_DOCS_URL, BRAND_NAME, BRAND_REPOSITORY_URL, BRAND_WEBSITE_URL } from "@/lib/branding";
-import { DEFAULT_INSTANCE_SETTINGS_PATH } from "@/lib/instance-settings";
 import { queryKeys } from "@/lib/queryKeys";
+import { useSignOut } from "@/hooks/useSignOut";
 import { useSidebar } from "../context/SidebarContext";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LanguageSwitcher } from "./LanguageSwitcher";
 import { cn, SIDEBAR_RAIL_HIDDEN_LABEL } from "../lib/utils";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 import { ThemeToggle } from "./ThemeToggle";
 import { SidebarServerInfo } from "./SidebarServerInfo";
 import { Badge } from "@/components/ui/badge";
 
 const PROFILE_SETTINGS_PATH = "/company/settings/instance/profile";
-const FEEDBACK_URL = `${BRAND_WEBSITE_URL}/feedback`;
+const DOCS_URL = "https://docs.paperclip.ing/";
+const FEEDBACK_URL = "https://paperclip.ing/feedback";
+const SOURCE_REPOSITORY_URL = "https://github.com/paperclipai/paperclip";
 const SOURCE_VERSION_RE = /\+\d+\.git\.([0-9a-f]{7,40})(?:\.dirty)?$/i;
 
 interface SidebarAccountMenuProps {
@@ -121,7 +121,6 @@ export function SidebarAccountMenu({
 }: SidebarAccountMenuProps) {
   const { t } = useTranslation();
   const [internalOpen, setInternalOpen] = useState(false);
-  const queryClient = useQueryClient();
   const { isMobile, setSidebarOpen, collapsed, peeking } = useSidebar();
   const rail = collapsed && !peeking;
   const open = controlledOpen ?? internalOpen;
@@ -132,14 +131,7 @@ export function SidebarAccountMenu({
     retry: false,
   });
 
-  const signOutMutation = useMutation({
-    mutationFn: () => authApi.signOut(),
-    onSuccess: async () => {
-      setOpen(false);
-      await queryClient.invalidateQueries({ queryKey: queryKeys.auth.session });
-      await queryClient.invalidateQueries({ queryKey: queryKeys.health });
-    },
-  });
+  const signOutMutation = useSignOut({ onSignedOut: closeNavigationChrome });
 
   const rawDisplayName = session?.user.name?.trim() || "";
   const isLocalBoardAccount = session?.user.id === "local-board";
@@ -165,6 +157,10 @@ export function SidebarAccountMenu({
   function closeNavigationChrome() {
     setOpen(false);
     if (isMobile) setSidebarOpen(false);
+  }
+
+  function handleSignOut() {
+    signOutMutation.mutate();
   }
 
   return (
@@ -210,7 +206,7 @@ export function SidebarAccountMenu({
                   <div className="mt-1 text-xs text-muted-foreground">
                     {sourceBranch ? (
                       <a
-                        href={`${BRAND_REPOSITORY_URL}/tree/${encodeURIComponent(sourceBranch)}`}
+                        href={`${SOURCE_REPOSITORY_URL}/tree/${encodeURIComponent(sourceBranch)}`}
                         target="_blank"
                         rel="noreferrer"
                         className="block truncate transition-colors hover:text-foreground"
@@ -219,9 +215,9 @@ export function SidebarAccountMenu({
                       </a>
                     ) : null}
                     <p>
-                      {BRAND_NAME}{" "}
+                      Paperclip{" "}
                       <a
-                        href={`${BRAND_REPOSITORY_URL}/commit/${sourceFullSha}`}
+                        href={`${SOURCE_REPOSITORY_URL}/commit/${sourceFullSha}`}
                         target="_blank"
                         rel="noreferrer"
                         className="transition-colors hover:text-foreground"
@@ -258,21 +254,12 @@ export function SidebarAccountMenu({
                 onClick={closeNavigationChrome}
               />
               <MenuAction
-                label={t("Instance settings", { defaultValue: "Instance settings" })}
-                description={t("Jump back to the last settings page you opened.", {
-                  defaultValue: "Jump back to the last settings page you opened.",
-                })}
-                icon={Settings}
-                href={DEFAULT_INSTANCE_SETTINGS_PATH}
-                onClick={closeNavigationChrome}
-              />
-              <MenuAction
                 label={t("Documentation", { defaultValue: "Documentation" })}
                 description={t("Open Paperclip docs in a new tab.", {
                   defaultValue: "Open Paperclip docs in a new tab.",
                 })}
                 icon={BookOpen}
-                href={BRAND_DOCS_URL}
+                href={DOCS_URL}
                 external
                 onClick={() => setOpen(false)}
               />
@@ -298,7 +285,7 @@ export function SidebarAccountMenu({
                     "flex w-full items-start gap-3 rounded-xl px-3 py-3 text-left transition-colors hover:bg-destructive/10",
                     signOutMutation.isPending && "cursor-not-allowed opacity-60",
                   )}
-                  onClick={() => signOutMutation.mutate()}
+                  onClick={handleSignOut}
                   disabled={signOutMutation.isPending}
                 >
                   <span className="mt-0.5 rounded-lg border border-border bg-background/70 p-2 text-muted-foreground">

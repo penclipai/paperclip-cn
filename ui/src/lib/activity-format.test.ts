@@ -66,6 +66,40 @@ describe("activity formatting", () => {
     expect(formatIssueActivityAction("issue.monitor_recovery_issue_created")).toBe("created a monitor recovery issue");
   });
 
+  it("uses locale keys for environment and built-in routine activity", () => {
+    expect(formatActivityVerb("environment.lease_acquired")).toBe("acquired environment lease");
+    expect(formatActivityVerb("environment.lease_released")).toBe("released environment lease");
+    expect(formatActivityVerb("built_in_agent.routine_reconciled")).toBe("built-in agent routine reconciled");
+  });
+
+  it("maps generated activity actions to locale-backed phrases", () => {
+    const expectedPhrases = {
+      "agent.instructions_file_updated": "updated agent instructions file",
+      "auth.agent_jwt_run_header_mismatch": "recorded agent JWT run header mismatch",
+      "built_in_agent.provisioned": "provisioned built-in agent",
+      "built_in_agent.reset": "reset built-in agent",
+      "built_in_agent.routine_reset": "reset built-in agent routine",
+      "company.skills_scanned": "scanned company skills",
+      "instance.settings.experimental_updated": "updated experimental instance settings",
+      "instance.settings.general_updated": "updated general instance settings",
+      "issue.file_resource_content_read": "read issue file content on",
+      "issue.file_resource_list": "listed issue files for",
+      "issue.file_resource_resolve": "resolved issue file reference on",
+      "issue.read_marked": "marked the issue as read",
+      "issue.thread_interaction_accepted": "accepted a thread interaction on",
+      "issue.thread_interaction_created": "created a thread interaction on",
+      "plugin.installed": "installed plugin",
+      "plugin.uninstalled": "uninstalled plugin",
+      "resource_membership.starred": "starred",
+      "resource_membership.unstarred": "unstarred",
+    };
+
+    expect(Object.fromEntries(Object.keys(expectedPhrases).map((action) => [action, formatActivityVerb(action)])))
+      .toEqual(expectedPhrases);
+    expect(formatIssueActivityAction("issue.file_resource_resolve")).toBe("resolved an issue file reference");
+    expect(formatIssueActivityAction("issue.thread_interaction_accepted")).toBe("accepted a thread interaction");
+  });
+
   it("uses plain next-step copy for successful-run handoff activity", () => {
     expect(formatActivityVerb("issue.successful_run_handoff_required")).toBe("flagged missing next step on");
     expect(formatIssueActivityAction("issue.successful_run_handoff_required")).toBe("Run finished without a clear next step");

@@ -11,6 +11,23 @@ export const APP_TABS = [
 
 export type AppTabKey = (typeof APP_TABS)[number]["key"];
 
+export function appTabTranslationKey(tabKey: AppTabKey): string {
+  switch (tabKey) {
+    case "setup":
+      return "apps.detail.tab.setup";
+    case "review":
+      return "apps.detail.tab.review";
+    case "permissions":
+      return "apps.detail.tab.permissions";
+    case "activity":
+      return "apps.detail.tab.activity";
+    case "test":
+      return "apps.detail.tab.test";
+    case "advanced":
+      return "apps.detail.tab.advanced";
+  }
+}
+
 /**
  * Tabs hidden for an application that has no live connection (the
  * `AppNotConnected` shell). The Test tab runs real calls against a connected

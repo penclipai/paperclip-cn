@@ -16,16 +16,17 @@ import type { Issue } from "@penclipai/shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { IssueProperties } from "./IssueProperties";
 import { queryKeys } from "../lib/queryKeys";
+import { formatMonitorAbsolute } from "../lib/issue-monitor";
+import { timeAgo } from "../lib/timeAgo";
 
 vi.mock("react-i18next", async (importOriginal) => {
   const actual = await importOriginal<typeof import("react-i18next")>();
+  const { translateForTest } = await import("../test-utils/i18n");
   return {
     ...actual,
     useTranslation: () => ({
       t: (key: string, options?: Record<string, unknown>) =>
-        typeof options?.defaultValue === "string"
-          ? options.defaultValue.replace(/\{\{(\w+)\}\}/g, (_match, token) => String(options?.[token] ?? ""))
-          : key,
+        translateForTest(key, options),
     }),
   };
 });
@@ -46,6 +47,10 @@ const mockExecutionWorkspacesApi = vi.hoisted(() => ({
 
 const mockIssuesApi = vi.hoisted(() => ({
   list: vi.fn(),
+  getDocument: vi.fn(),
+  listAcceptedPlanDecompositions: vi.fn(),
+  listAttachments: vi.fn(),
+  listInteractions: vi.fn(),
   listLabels: vi.fn(),
   createLabel: vi.fn(),
   upsertWatchdog: vi.fn(),
@@ -65,10 +70,18 @@ const mockInstanceSettingsApi = vi.hoisted(() => ({
   getExperimental: vi.fn(),
 }));
 
+const mockSidebarState = vi.hoisted(() => ({
+  isMobile: false,
+}));
+
 vi.mock("../context/CompanyContext", () => ({
   useCompany: () => ({
     selectedCompanyId: "company-1",
   }),
+}));
+
+vi.mock("../context/SidebarContext", () => ({
+  useSidebar: () => mockSidebarState,
 }));
 
 vi.mock("../api/agents", () => ({
@@ -149,6 +162,7 @@ vi.mock("./AgentIconPicker", () => ({
 vi.mock("@/lib/router", () => ({
   Link: ({ children, to, ...props }: { children: ReactNode; to: string } & ComponentProps<"a">) => <a href={to} {...props}>{children}</a>,
   useCaseHref: () => (caseId: string) => `/cases/${caseId}`,
+  useLocation: () => ({ hash: "", pathname: "/", search: "", state: null, key: "test" }),
 }));
 
 vi.mock("@/components/ui/separator", () => ({
@@ -163,6 +177,11 @@ vi.mock("@/components/ui/popover", () => ({
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
+
+if (!globalThis.PointerEvent) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (globalThis as any).PointerEvent = MouseEvent;
+}
 
 async function act(callback: () => void | Promise<void>) {
   let result: void | Promise<void> = undefined;
@@ -217,6 +236,7 @@ function createIssue(overrides: Partial<Issue> = {}): Issue {
     description: null,
     status: "todo",
     priority: "medium",
+    reviewPolicy: null,
     assigneeAgentId: null,
     assigneeUserId: null,
     responsibleUserId: null,
@@ -305,6 +325,7 @@ function createExecutionWorkspace(overrides: Partial<ExecutionWorkspace> = {}): 
     strategyType: "git_worktree",
     name: "PAP-1 workspace",
     status: "active",
+    deliveryState: "unknown",
     cwd: "/tmp/paperclip/PAP-1",
     repoUrl: null,
     baseRef: "master",
@@ -439,6 +460,7 @@ describe("IssueProperties", () => {
   let container: HTMLDivElement;
 
   beforeEach(() => {
+    mockSidebarState.isMobile = false;
     container = document.createElement("div");
     document.body.appendChild(container);
     mockAgentsApi.list.mockResolvedValue([]);
@@ -447,6 +469,10 @@ describe("IssueProperties", () => {
     mockProjectsApi.list.mockResolvedValue([]);
     mockExecutionWorkspacesApi.controlRuntimeCommands.mockReset();
     mockIssuesApi.list.mockResolvedValue([]);
+    mockIssuesApi.getDocument.mockResolvedValue(null);
+    mockIssuesApi.listAcceptedPlanDecompositions.mockResolvedValue([]);
+    mockIssuesApi.listAttachments.mockResolvedValue([]);
+    mockIssuesApi.listInteractions.mockResolvedValue([]);
     mockIssuesApi.listLabels.mockResolvedValue([]);
     mockIssuesApi.createLabel.mockResolvedValue(createLabel({
       id: "label-new",
@@ -478,6 +504,62 @@ describe("IssueProperties", () => {
 
   afterEach(() => {
     document.body.innerHTML = "";
+  });
+
+  it("keeps the Plan tab visible for a planning-mode issue without a plan document", async () => {
+    mockInstanceSettingsApi.getExperimental.mockResolvedValue({
+      enableTaskWatchdogs: false,
+      enableClassicTaskInterface: false,
+    });
+    mockIssuesApi.listInteractions.mockResolvedValue([
+      {
+        kind: "request_confirmation",
+        status: "pending",
+        payload: { target: { type: "issue_document", key: "plan" } },
+      },
+    ]);
+    const root = renderProperties(container, {
+      issue: createIssue({ workMode: "planning" }),
+      childIssues: [],
+      onUpdate: vi.fn(),
+      inline: true,
+    });
+
+    await waitForAssertion(() => {
+      expect(Array.from(container.querySelectorAll("button")).some((button) => button.textContent === "Plan")).toBe(true);
+    });
+
+    const planTab = Array.from(container.querySelectorAll("button")).find((button) => button.textContent === "Plan");
+    await act(async () => {
+      // Radix Tabs triggers select on mousedown (button 0), not on click.
+      planTab!.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, button: 0 }));
+    });
+
+    await waitForAssertion(() => {
+      expect(container.textContent).toContain("This task is in plan mode but no plan document has been written yet.");
+      expect(container.textContent).toContain("A plan confirmation is pending, but the plan document it should confirm is missing.");
+    });
+
+    act(() => root.unmount());
+  });
+
+  it("hides the Priority property row while priority UI is off (PAP-411)", async () => {
+    const root = renderProperties(container, {
+      issue: createIssue({ priority: "high" }),
+      childIssues: [],
+      onUpdate: vi.fn(),
+      inline: true,
+    });
+    await flush();
+
+    await waitForAssertion(() => {
+      // The Triage section still renders the Status row...
+      expect(container.querySelector('[data-property-label="Status"]')).not.toBeNull();
+      // ...but the Priority row is gated behind SHOW_TASK_PRIORITY_UI (off).
+      expect(container.querySelector('[data-property-label="Priority"]')).toBeNull();
+    });
+
+    act(() => root.unmount());
   });
 
   it("shows assignee and originating without responsible wording", async () => {
@@ -721,7 +803,13 @@ describe("IssueProperties", () => {
     act(() => root.unmount());
   });
 
-  it("always exposes the add sub-issue action", async () => {
+  it("exposes the classic-layout add sub-issue pill action", async () => {
+    // The chat shell hosts the full tree in the center pane; the slim pill row
+    // + its Add sub-task button only render in the classic layout (PAP-496).
+    mockInstanceSettingsApi.getExperimental.mockResolvedValue({
+      enableTaskWatchdogs: false,
+      enableClassicTaskInterface: true,
+    });
     const onAddSubIssue = vi.fn();
     const root = renderProperties(container, {
       issue: createIssue(),
@@ -729,10 +817,13 @@ describe("IssueProperties", () => {
       onAddSubIssue,
       onUpdate: vi.fn(),
     });
-    await flush();
+    // Wait for the classic-layout settings query to resolve (the pane starts in
+    // the chat shell until it does).
+    await waitForAssertion(() => {
+      expect(container.textContent).toContain("Add sub-task");
+    });
 
     expect(container.textContent).toContain("Sub-tasks");
-    expect(container.textContent).toContain("Add sub-task");
 
     const addButton = Array.from(container.querySelectorAll("button"))
       .find((button) => button.textContent?.includes("Add sub-task"));
@@ -743,6 +834,20 @@ describe("IssueProperties", () => {
     });
 
     expect(onAddSubIssue).toHaveBeenCalledTimes(1);
+
+    act(() => root.unmount());
+  });
+
+  it("does not duplicate sub-tasks in the properties pane in the chat shell", async () => {
+    const root = renderProperties(container, {
+      issue: createIssue(),
+      childIssues: [],
+      onUpdate: vi.fn(),
+    });
+    await flush();
+
+    expect(container.textContent).not.toContain("Add sub-task");
+    expect(container.textContent).not.toContain("Sub-tasks");
 
     act(() => root.unmount());
   });
@@ -962,7 +1067,76 @@ describe("IssueProperties", () => {
     });
     await flush();
 
-    expect(document.body.textContent).toContain("Remove PAP-2: Existing blocker as a blocker for this issue.");
+    expect(document.body.textContent).toContain("Remove PAP-2: Existing blocker as a blocker for this task.");
+    const confirmButton = Array.from(document.body.querySelectorAll("button"))
+      .find((button) => button.textContent?.includes("Remove blocker"));
+    expect(confirmButton).not.toBeUndefined();
+
+    await act(async () => {
+      confirmButton!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    expect(onUpdate).toHaveBeenCalledWith({ blockedByIssueIds: ["issue-4"] });
+
+    act(() => root.unmount());
+  });
+
+  it("opens visit and remove actions when a blocked-by chip is tapped on mobile", async () => {
+    mockSidebarState.isMobile = true;
+    const onUpdate = vi.fn();
+    const root = renderProperties(container, {
+      issue: createIssue({
+        blockedBy: [
+          {
+            id: "issue-2",
+            identifier: "PAP-2",
+            title: "Existing blocker",
+            status: "in_progress",
+            priority: "medium",
+            assigneeAgentId: null,
+            assigneeUserId: null,
+          },
+          {
+            id: "issue-4",
+            identifier: "PAP-4",
+            title: "Keep blocker",
+            status: "todo",
+            priority: "medium",
+            assigneeAgentId: null,
+            assigneeUserId: null,
+          },
+        ],
+      }),
+      childIssues: [],
+      onUpdate,
+      inline: true,
+    });
+    await flush();
+
+    expect(container.querySelector('a[href="/issues/PAP-2"]')).toBeNull();
+    expect(container.querySelector('button[aria-label="Remove PAP-2 as blocker"]')).toBeNull();
+    const blockerActions = container.querySelector('button[aria-label^="Issue PAP-2:"]');
+    expect(blockerActions).not.toBeNull();
+
+    await act(async () => {
+      blockerActions!.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, button: 0 }));
+      blockerActions!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+    await flush();
+
+    const visitLink = Array.from(document.body.querySelectorAll('a[href="/issues/PAP-2"]'))
+      .find((link) => link.textContent?.includes("View task"));
+    expect(visitLink).not.toBeUndefined();
+    const removeMenuItem = Array.from(document.body.querySelectorAll('[data-slot="dropdown-menu-item"]'))
+      .find((item) => item.textContent?.includes("Remove blocker"));
+    expect(removeMenuItem).not.toBeUndefined();
+
+    await act(async () => {
+      removeMenuItem!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+    await flush();
+
+    expect(document.body.textContent).toContain("Remove PAP-2: Existing blocker as a blocker for this task.");
     const confirmButton = Array.from(document.body.querySelectorAll("button"))
       .find((button) => button.textContent?.includes("Remove blocker"));
     expect(confirmButton).not.toBeUndefined();
@@ -977,6 +1151,12 @@ describe("IssueProperties", () => {
   });
 
   it("collapses long blocked-by and sub-task lists until the more button is clicked", async () => {
+    // The sub-task pill row (with its collapse control) is classic-layout only
+    // now — the chat shell promotes sub-tasks to their own pane tab (PAP-496).
+    mockInstanceSettingsApi.getExperimental.mockResolvedValue({
+      enableTaskWatchdogs: false,
+      enableClassicTaskInterface: true,
+    });
     const blockedBy = Array.from({ length: 7 }, (_, index) => ({
       id: `blocker-${index + 1}`,
       identifier: `BLOCK-${index + 1}`,
@@ -997,11 +1177,14 @@ describe("IssueProperties", () => {
       onUpdate: vi.fn(),
       inline: true,
     });
-    await flush();
+    // Wait for the classic-layout settings query to resolve so the sub-task
+    // pill row renders (the pane starts in the chat shell until it does).
+    await waitForAssertion(() => {
+      expect(container.textContent).toContain("SUB-5");
+    });
 
     expect(container.textContent).toContain("BLOCK-5");
     expect(container.textContent).not.toContain("BLOCK-6");
-    expect(container.textContent).toContain("SUB-5");
     expect(container.textContent).not.toContain("SUB-6");
     expect(
       Array.from(container.querySelectorAll("button")).filter((button) =>
@@ -1239,6 +1422,31 @@ describe("IssueProperties", () => {
 
     expect(container.textContent).not.toContain("BLOCK-6");
     expect(container.textContent).toContain("Show 2 more");
+
+    act(() => root.unmount());
+  });
+
+  it("keeps the current archived project visible in the project property", async () => {
+    mockProjectsApi.list.mockResolvedValue([
+      createProject({
+        id: "archived-project",
+        name: "Archived Project",
+        archivedAt: new Date("2026-04-08T00:00:00.000Z"),
+      }),
+    ]);
+
+    const root = renderProperties(container, {
+      issue: createIssue({ projectId: "archived-project" }),
+      childIssues: [],
+      onUpdate: vi.fn(),
+      inline: true,
+    });
+    await flush();
+
+    expect(mockProjectsApi.list).toHaveBeenCalledWith("company-1", { includeArchived: true });
+    await waitForAssertion(() => {
+      expect(findRowTrigger(container, "Project")?.textContent).toContain("Archived Project");
+    });
 
     act(() => root.unmount());
   });
@@ -1961,6 +2169,7 @@ describe("IssueProperties", () => {
   });
 
   it("renders monitor controls and clears an existing monitor", async () => {
+    const dateNowSpy = vi.spyOn(Date, "now").mockReturnValue(new Date("2026-04-11T10:00:00.000Z").getTime());
     const onUpdate = vi.fn();
     const root = renderProperties(container, {
       issue: createIssue({
@@ -2000,12 +2209,11 @@ describe("IssueProperties", () => {
     await flush();
 
     expect(container.textContent).toContain("Monitor");
-    expect(container.textContent).toContain("Next check");
+    expect(container.textContent).toContain("In 2h 30m");
     expect(container.querySelector('input[type="datetime-local"]')).toBeNull();
     expect(container.querySelector('input[placeholder="What should the agent re-check?"]')).toBeNull();
 
-    const monitorTrigger = Array.from(container.querySelectorAll("button"))
-      .find((button) => button.textContent?.includes("Next check"));
+    const monitorTrigger = container.querySelector('[data-testid="monitor-row-trigger"]')?.closest("button");
     expect(monitorTrigger).not.toBeUndefined();
 
     await act(async () => {
@@ -2038,6 +2246,109 @@ describe("IssueProperties", () => {
     });
 
     act(() => root.unmount());
+    dateNowSpy.mockRestore();
+  });
+
+  it("renders scheduled, retrying, due, overdue, cleared, and empty monitor row states", async () => {
+    const monitorNow = new Date("2026-07-17T13:56:00.000Z");
+    const dateNowSpy = vi.spyOn(Date, "now").mockReturnValue(monitorNow.getTime());
+    const baseMonitorState = {
+      status: "scheduled" as const,
+      nextCheckAt: "2026-07-17T16:08:00.000Z",
+      lastTriggeredAt: null,
+      attemptCount: 1,
+      notes: "Verify deployment",
+      scheduledBy: "board" as const,
+      clearedAt: null,
+      clearReason: null,
+    };
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const root = createRoot(container);
+    const monitorRowText = () => container.querySelector('[data-testid="monitor-row-trigger"]')?.textContent;
+    const renderMonitor = (issue: Issue) => {
+      act(() => {
+        root.render(
+          <QueryClientProvider client={queryClient}>
+            <IssueProperties issue={issue} childIssues={[]} onUpdate={vi.fn()} inline />
+          </QueryClientProvider>,
+        );
+      });
+    };
+
+    renderMonitor(createIssue({
+      executionPolicy: createExecutionPolicy({ monitor: { ...baseMonitorState, serviceName: "vercel-deploy" } }),
+      executionState: createExecutionState({ monitor: baseMonitorState }),
+      monitorAttemptCount: 1,
+    }));
+    await flush();
+    expect(monitorRowText()).toContain("In 2h 12m");
+    expect(monitorRowText()).toContain(
+      `${formatMonitorAbsolute(baseMonitorState.nextCheckAt, {}, monitorNow)} · Attempt 1`,
+    );
+
+    renderMonitor(createIssue({
+      executionPolicy: createExecutionPolicy({ monitor: { ...baseMonitorState, nextCheckAt: "2026-07-17T18:08:00.000Z" } }),
+      executionState: createExecutionState({ monitor: { ...baseMonitorState, nextCheckAt: "2026-07-17T16:08:00.000Z" } }),
+      monitorNextCheckAt: new Date("2026-07-17T17:08:00.000Z"),
+    }));
+    await flush();
+    expect(monitorRowText()).toContain("In 2h 12m");
+    expect(monitorRowText()).toContain(
+      formatMonitorAbsolute(baseMonitorState.nextCheckAt, {}, monitorNow),
+    );
+
+    renderMonitor(createIssue({
+      executionPolicy: createExecutionPolicy({ monitor: { ...baseMonitorState, serviceName: "vercel-deploy" } }),
+      executionState: createExecutionState({ monitor: { ...baseMonitorState, attemptCount: 3 } }),
+      monitorAttemptCount: 3,
+    }));
+    await flush();
+    expect(monitorRowText()).toContain("Attempt 3");
+
+    renderMonitor(createIssue({
+      executionPolicy: createExecutionPolicy({ monitor: { ...baseMonitorState, nextCheckAt: "2026-07-17T13:56:00.000Z" } }),
+      executionState: createExecutionState({ monitor: { ...baseMonitorState, nextCheckAt: "2026-07-17T13:56:00.000Z" } }),
+    }));
+    await flush();
+    expect(monitorRowText()).toContain("Due now");
+    expect(monitorRowText()).toContain("checking momentarily…");
+
+    renderMonitor(createIssue({
+      executionPolicy: createExecutionPolicy({ monitor: { ...baseMonitorState, nextCheckAt: "2026-07-17T13:38:00.000Z" } }),
+      executionState: createExecutionState({ monitor: { ...baseMonitorState, nextCheckAt: "2026-07-17T13:38:00.000Z" } }),
+    }));
+    await flush();
+    expect(monitorRowText()).toContain("Overdue by 18m");
+    expect(monitorRowText()).toContain(
+      `${formatMonitorAbsolute("2026-07-17T13:38:00.000Z", {}, monitorNow)} · fires on next tick`,
+    );
+
+    renderMonitor(createIssue({
+      executionPolicy: createExecutionPolicy(),
+      executionState: createExecutionState({ monitor: {
+        ...baseMonitorState,
+        status: "cleared",
+        nextCheckAt: null,
+        lastTriggeredAt: "2026-07-17T11:56:00.000Z",
+        attemptCount: 2,
+        clearedAt: "2026-07-17T12:00:00.000Z",
+        clearReason: "manual",
+      } }),
+      monitorAttemptCount: 2,
+      monitorLastTriggeredAt: new Date("2026-07-17T11:56:00.000Z"),
+    }));
+    await flush();
+    expect(monitorRowText()).toContain("Cleared");
+    expect(monitorRowText()).toContain(
+      `last checked ${timeAgo("2026-07-17T11:56:00.000Z")} · after attempt 2`,
+    );
+
+    renderMonitor(createIssue());
+    await flush();
+    expect(monitorRowText()).toContain("None");
+
+    act(() => root.unmount());
+    dateNowSpy.mockRestore();
   });
 
   const watchdogAgent = {
@@ -2313,7 +2624,7 @@ describe("IssueProperties", () => {
       inline: true,
       externalObjects: [
         {
-          mentionCount: 1,
+          mentionCount: 2,
           sourceLabels: ["Description"],
           pill: {
             providerKey: "github",
@@ -2330,7 +2641,7 @@ describe("IssueProperties", () => {
           group: {
             object: null,
             mentions: [],
-            mentionCount: 1,
+            mentionCount: 2,
             sourceLabels: ["Description"],
           },
         },
@@ -2378,11 +2689,35 @@ describe("IssueProperties", () => {
             sourceLabels: ["Comment"],
           },
         },
+        {
+          mentionCount: 1,
+          sourceLabels: ["Comment"],
+          pill: {
+            providerKey: "github",
+            objectType: "pull_request",
+            displayKey: "Github PR",
+            iconKey: "github",
+            statusCategory: "unknown",
+            statusIconKey: null,
+            statusLabel: null,
+            liveness: "unknown",
+            displayTitle: "acme/web#242",
+            url: "https://github.com/acme/web/pull/242",
+          },
+          group: {
+            object: null,
+            mentions: [],
+            mentionCount: 1,
+            sourceLabels: ["Comment"],
+          },
+        },
       ],
     });
     await flush();
 
-    expect(container.textContent).toContain("Github Pull Request");
+    expect(container.textContent).toContain("Github PR");
+    expect(container.textContent).not.toContain("Github Pull Request");
+    expect(container.textContent).not.toContain("×2");
     expect(container.textContent).toContain("Github Issue");
     expect(container.textContent).toContain("URL");
     expect(container.textContent).not.toContain("URL link");
@@ -2391,17 +2726,21 @@ describe("IssueProperties", () => {
     expect(container.textContent).toContain("Open");
     expect(container.textContent).not.toContain("External objects");
     const label = Array.from(container.querySelectorAll("span"))
-      .find((span) => span.textContent === "Github Pull Request");
+      .find((span) => span.textContent === "Github PR");
     expect(label?.querySelector("svg")).toBeTruthy();
     const pullRequestLink = Array.from(container.querySelectorAll("a"))
       .find((anchor) => anchor.getAttribute("href") === "https://github.com/acme/web/pull/241");
     expect(pullRequestLink?.textContent).toContain("PR 241 - Merged");
     expect(pullRequestLink?.textContent).not.toContain("acme/web#241");
-    expect(pullRequestLink?.textContent).not.toContain("Github Pull Request");
+    expect(pullRequestLink?.textContent).not.toContain("Github PR");
     expect(pullRequestLink?.querySelectorAll("svg")).toHaveLength(1);
     expect(pullRequestLink?.className).not.toContain("paperclip-mention-chip");
     expect(pullRequestLink?.className).not.toContain("rounded-full");
     expect(pullRequestLink?.className).not.toContain("border");
+    const unrefreshedPullRequestLink = Array.from(container.querySelectorAll("a"))
+      .find((anchor) => anchor.getAttribute("href") === "https://github.com/acme/web/pull/242");
+    expect(unrefreshedPullRequestLink?.textContent).toContain("PR 242 - Not yet refreshed");
+    expect(unrefreshedPullRequestLink?.textContent).not.toContain("Not yet resolved");
 
     act(() => root.unmount());
   });

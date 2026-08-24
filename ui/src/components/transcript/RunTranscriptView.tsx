@@ -14,8 +14,15 @@ import {
   GitCompare,
   TerminalSquare,
   User,
-  Wrench,
 } from "lucide-react";
+import { toolTaxonomy } from "../task-chat/tool-taxonomy";
+import { translateInstant as tr } from "@/i18n";
+
+/** Family glyph for a tool block/row; the taxonomy falls back to Wrench. */
+function ToolFamilyIcon({ name, className }: { name: string; className?: string }) {
+  const Icon = toolTaxonomy(name).icon;
+  return <Icon className={className} />;
+}
 
 export type TranscriptMode = "nice" | "raw";
 export type TranscriptDensity = "comfortable" | "compact";
@@ -44,12 +51,18 @@ type TranscriptBlock =
       type: "message";
       role: "assistant" | "user";
       ts: string;
+      // Timestamp of the first entry that opened this block. `ts` tracks the
+      // latest merged delta and mutates every chunk; `startTs` stays fixed so
+      // the React key is stable and the streaming block does not remount (and
+      // restart its fade) on each delta.
+      startTs: string;
       text: string;
       streaming: boolean;
     }
   | {
       type: "thinking";
       ts: string;
+      startTs: string;
       text: string;
       streaming: boolean;
     }
@@ -69,6 +82,7 @@ type TranscriptBlock =
   | {
       type: "activity";
       ts: string;
+      startTs: string;
       activityId?: string;
       name: string;
       status: "running" | "completed";
@@ -121,6 +135,7 @@ type TranscriptBlock =
   | {
       type: "stdout";
       ts: string;
+      startTs: string;
       text: string;
     }
   | {
@@ -313,20 +328,22 @@ function isCommandTool(name: string, input: unknown): boolean {
 }
 
 function displayToolName(name: string, input: unknown): string {
-  if (isCommandTool(name, input)) return "Executing command";
+  if (isCommandTool(name, input)) return tr("Executing command");
   return humanizeLabel(name);
 }
 
 function summarizeToolResult(result: string | undefined, isError: boolean | undefined, density: TranscriptDensity): string {
-  if (!result) return isError ? "Tool failed" : "Waiting for result";
+  if (!result) return isError ? tr("Tool failed") : tr("Waiting for result");
   const structured = parseStructuredToolResult(result);
   if (structured) {
     if (structured.body) {
       return truncate(structured.body.split("\n")[0] ?? structured.body, density === "compact" ? 84 : 140);
     }
-    if (structured.status === "completed") return "Completed";
+    if (structured.status === "completed") return tr("Completed");
     if (structured.status === "failed" || structured.status === "error") {
-      return structured.exitCode ? `Failed with exit code ${structured.exitCode}` : "Failed";
+      return structured.exitCode
+        ? tr("Failed with exit code {{exitCode}}", { exitCode: structured.exitCode })
+        : tr("runTranscript.toolDecision.failed");
     }
   }
   const lines = result
@@ -571,6 +588,7 @@ export function normalizeTranscript(entries: TranscriptEntry[], streaming: boole
           type: "message",
           role: entry.kind,
           ts: entry.ts,
+          startTs: entry.ts,
           text: entry.text,
           streaming: isStreaming,
         });
@@ -588,6 +606,7 @@ export function normalizeTranscript(entries: TranscriptEntry[], streaming: boole
         blocks.push({
           type: "thinking",
           ts: entry.ts,
+          startTs: entry.ts,
           text: entry.text,
           streaming: isStreaming,
         });
@@ -666,7 +685,7 @@ export function normalizeTranscript(entries: TranscriptEntry[], streaming: boole
         ts: entry.ts,
         label: "result",
         tone: entry.isError ? "error" : "info",
-        text: entry.text.trim() || entry.errors[0] || (entry.isError ? "Run failed" : "Completed"),
+        text: entry.text.trim() || entry.errors[0] || (entry.isError ? tr("runTranscript.errored") : tr("Completed")),
         detail:
           !entry.isError && entry.text.trim().length > 0
             ? `${formatTokens(entry.inputTokens)} / ${formatTokens(entry.outputTokens)} / $${entry.costUsd.toFixed(6)}`
@@ -712,6 +731,7 @@ export function normalizeTranscript(entries: TranscriptEntry[], streaming: boole
           const block: Extract<TranscriptBlock, { type: "activity" }> = {
             type: "activity",
             ts: entry.ts,
+            startTs: entry.ts,
             activityId: activity.activityId,
             name: activity.name,
             status: activity.status,
@@ -779,12 +799,62 @@ export function normalizeTranscript(entries: TranscriptEntry[], streaming: boole
       blocks.push({
         type: "stdout",
         ts: entry.ts,
+        startTs: entry.ts,
         text: entry.text,
       });
     }
   }
 
   return groupToolBlocks(groupCommandBlocks(blocks));
+}
+
+/**
+ * Stable identity for a block's React key. Anchored to the block's opening
+ * timestamp (`startTs`) or a durable id (`toolUseId`, `activityId`) rather than
+ * its latest `ts`, which mutates on every streamed delta. A mutating key
+ * remounts the block, restarting its 300ms fade-in so the text visibly blinks
+ * out and back each chunk; a stable one keeps the streaming tail mounted.
+ */
+function transcriptBlockIdentity(block: TranscriptBlock): string {
+  switch (block.type) {
+    case "message":
+      return `message:${block.role}:${block.startTs}`;
+    case "thinking":
+      return `thinking:${block.startTs}`;
+    case "stdout":
+      return `stdout:${block.startTs}`;
+    case "activity":
+      return `activity:${block.activityId ?? block.startTs}`;
+    case "tool":
+      return `tool:${block.toolUseId ?? block.ts}`;
+    case "command_group":
+      return `command_group:${block.ts}`;
+    case "tool_group":
+      return `tool_group:${block.ts}`;
+    case "stderr_group":
+      return `stderr_group:${block.ts}`;
+    case "system_group":
+      return `system_group:${block.ts}`;
+    case "diff_group":
+      return `diff_group:${block.ts}`;
+    case "event":
+      return `event:${block.label}:${block.ts}`;
+  }
+}
+
+/**
+ * Assign each block a stable, unique React key. Identity is position-independent
+ * so earlier blocks collapsing (truncation) does not remount the survivors; a
+ * per-render occurrence counter disambiguates the rare identity collision.
+ */
+export function keyTranscriptBlocks(blocks: TranscriptBlock[]): Array<{ block: TranscriptBlock; key: string }> {
+  const seen = new Map<string, number>();
+  return blocks.map((block) => {
+    const identity = transcriptBlockIdentity(block);
+    const occurrence = seen.get(identity) ?? 0;
+    seen.set(identity, occurrence + 1);
+    return { block, key: occurrence === 0 ? identity : `${identity}#${occurrence}` };
+  });
 }
 
 function TranscriptMessageBlock({
@@ -811,7 +881,9 @@ function TranscriptMessageBlock({
       <MarkdownBody
         className={cn(
           "[&>*:first-child]:mt-0 [&>*:last-child]:mb-0",
-          compact ? "text-xs leading-5 text-foreground/85" : "text-sm",
+          // Match the default view's chat message body (IssueChatThread:
+          // `text-sm leading-6`) so streamed text reads identically (PAP-461, A2).
+          compact ? "text-xs leading-5 text-foreground/85" : "text-sm leading-6",
         )}
         externalReferences={externalReferences}
       >
@@ -820,7 +892,7 @@ function TranscriptMessageBlock({
       {block.streaming && (
         <div className="mt-2 inline-flex items-center gap-1 text-(length:--text-nano) font-medium italic text-muted-foreground">
           <span className="relative flex h-1.5 w-1.5">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-current opacity-70" />
+            <span className="tc-live-ping absolute inline-flex h-full w-full rounded-full bg-current opacity-70" />
             <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-current" />
           </span>
           {t("runTranscript.streaming", { defaultValue: "Streaming" })}
@@ -844,8 +916,11 @@ function TranscriptThinkingBlock({
   return (
     <MarkdownBody
       className={cn(
-        "italic text-foreground/70 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0",
-        density === "compact" ? "text-(length:--text-micro) leading-5" : "text-sm leading-6",
+        // Match the default view's chain-of-thought text (IssueChatThread:
+        // `text-(length:--text-compact) italic leading-5 text-muted-foreground/70`)
+        // so streamed thinking reads identically across both views (PAP-461, A2).
+        "italic text-muted-foreground/70 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0",
+        density === "compact" ? "text-(length:--text-micro) leading-5" : "text-(length:--text-compact) leading-5",
         className,
       )}
       externalReferences={externalReferences}
@@ -964,7 +1039,7 @@ function TranscriptToolCard({
         ) : block.status === "completed" ? (
           <Check className={iconClass} />
         ) : (
-          <Wrench className={iconClass} />
+          <ToolFamilyIcon name={block.name} className={iconClass} />
         )}
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
@@ -1246,7 +1321,7 @@ function TranscriptToolGroup({
                   isItemRunning && "animate-pulse",
                 )}
               >
-                <Wrench className="h-3.5 w-3.5" />
+                <ToolFamilyIcon name={item.name} className="h-3.5 w-3.5" />
               </span>
             );
           })}
@@ -1291,7 +1366,7 @@ function TranscriptToolGroup({
                       ? "border-blue-500/25 bg-blue-500/[0.08] text-blue-600 dark:text-blue-300"
                       : "border-border/70 bg-background text-foreground/55",
                 )}>
-                  <Wrench className="h-3 w-3" />
+                  <ToolFamilyIcon name={item.name} className="h-3 w-3" />
                 </span>
                 <span className={cn("text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground")}>
                   {humanizeLabel(item.name)}
@@ -1357,7 +1432,7 @@ function TranscriptActivityRow({
         <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-300" />
       ) : (
         <span className="relative mt-1 flex h-2.5 w-2.5 shrink-0">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-400 opacity-70" />
+          <span className="tc-live-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-70" />
           <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-blue-500" />
         </span>
       )}
@@ -1534,6 +1609,7 @@ function TranscriptStderrGroup({
   block: Extract<TranscriptBlock, { type: "stderr_group" }>;
   density: TranscriptDensity;
 }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const compact = density === "compact";
   return (
@@ -1546,7 +1622,7 @@ function TranscriptStderrGroup({
         onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setOpen((v) => !v); } }}
       >
         <span className={cn("text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-eyebrow)")}>
-          {block.lines.length} log {block.lines.length === 1 ? "line" : "lines"}
+          {t("runTranscript.logLines", { count: block.lines.length })}
         </span>
         {open ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
       </div>
@@ -1571,6 +1647,7 @@ function TranscriptSystemGroup({
   block: Extract<TranscriptBlock, { type: "system_group" }>;
   density: TranscriptDensity;
 }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   return (
     <div className="rounded-xl border border-blue-500/20 bg-blue-500/[0.04] p-2 text-blue-700 dark:text-blue-300">
@@ -1583,7 +1660,7 @@ function TranscriptSystemGroup({
       >
         <TerminalSquare className="h-3.5 w-3.5 shrink-0" />
         <span className="text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-eyebrow)">
-          {block.lines.length} system {block.lines.length === 1 ? "message" : "messages"}
+          {t("runTranscript.systemMessages", { count: block.lines.length })}
         </span>
         {open ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
       </div>
@@ -1610,6 +1687,7 @@ function TranscriptStdoutRow({
   density: TranscriptDensity;
   collapseByDefault: boolean;
 }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(!collapseByDefault);
 
   return (
@@ -1622,7 +1700,7 @@ function TranscriptStdoutRow({
           type="button"
           className="inline-flex h-5 w-5 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
           onClick={() => setOpen((value) => !value)}
-          aria-label={open ? "Collapse stdout" : "Expand stdout"}
+          aria-label={t(open ? "Collapse stdout" : "Expand stdout")}
         >
           {open ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
         </button>
@@ -1763,12 +1841,14 @@ export function RunTranscriptView({
   thinkingClassName,
   externalReferences,
 }: RunTranscriptViewProps) {
+  useTranslation();
   const toolDecisionMaps = useMemo(() => buildToolDecisionMaps(toolDecisions), [toolDecisions]);
   const blocks = useMemo(
     () => (mode === "raw" ? [] : normalizeTranscript(entries, streaming)),
     [entries, mode, streaming],
   );
   const visibleBlocks = limit ? blocks.slice(-limit) : blocks;
+  const keyedBlocks = useMemo(() => keyTranscriptBlocks(visibleBlocks), [visibleBlocks]);
   const visibleEntries = limit ? entries.slice(-limit) : entries;
 
   if (entries.length === 0) {
@@ -1789,10 +1869,10 @@ export function RunTranscriptView({
 
   return (
     <div className={cn("space-y-3", className)}>
-      {visibleBlocks.map((block, index) => (
+      {keyedBlocks.map(({ block, key }, index) => (
         <div
-          key={`${block.type}-${block.ts}-${index}`}
-          className={cn(index === visibleBlocks.length - 1 && streaming && "animate-in fade-in slide-in-from-bottom-1 duration-300")}
+          key={key}
+          className={cn(index === keyedBlocks.length - 1 && streaming && "tc-stream-block-enter")}
         >
           {block.type === "message" && (
             <TranscriptMessageBlock

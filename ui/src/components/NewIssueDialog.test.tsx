@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NewIssueDialog } from "./NewIssueDialog";
 
+const currentLanguage = vi.hoisted(() => ({ value: "en" as "en" | "zh-CN" }));
 const dialogState = vi.hoisted(() => ({
   newIssueOpen: true,
   newIssueDefaults: {} as Record<string, unknown>,
@@ -77,6 +78,24 @@ const mockInstanceSettingsApi = vi.hoisted(() => ({
   getExperimental: vi.fn(),
 }));
 const mockMissingUserSecretsBannerRender = vi.hoisted(() => vi.fn());
+
+vi.mock("react-i18next", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("react-i18next")>();
+  const { translateForTest } = await import("../test-utils/i18n");
+  return {
+    ...actual,
+    initReactI18next: { type: "3rdParty", init: () => {} },
+    useTranslation: () => ({
+      t: (key: string, options?: Record<string, unknown>) =>
+        translateForTest(key, options, currentLanguage.value),
+      i18n: {
+        language: currentLanguage.value,
+        resolvedLanguage: currentLanguage.value,
+        changeLanguage: vi.fn(),
+      },
+    }),
+  };
+});
 
 vi.mock("../context/DialogContext", () => ({
   useDialog: () => dialogState,
@@ -318,10 +337,15 @@ function renderDialog(container: HTMLDivElement) {
 describe("NewIssueDialog", () => {
   let container: HTMLDivElement;
   let originalResizeObserver: typeof ResizeObserver | undefined;
+  let originalVisualViewportDescriptor: PropertyDescriptor | undefined;
+  let originalInnerHeightDescriptor: PropertyDescriptor | undefined;
 
   beforeEach(() => {
     vi.useRealTimers();
+    currentLanguage.value = "en";
     originalResizeObserver = globalThis.ResizeObserver;
+    originalVisualViewportDescriptor = Object.getOwnPropertyDescriptor(window, "visualViewport");
+    originalInnerHeightDescriptor = Object.getOwnPropertyDescriptor(window, "innerHeight");
     globalThis.ResizeObserver = class ResizeObserver {
       observe() {}
       unobserve() {}
@@ -366,6 +390,16 @@ describe("NewIssueDialog", () => {
 
   afterEach(() => {
     globalThis.ResizeObserver = originalResizeObserver!;
+    if (originalVisualViewportDescriptor) {
+      Object.defineProperty(window, "visualViewport", originalVisualViewportDescriptor);
+    } else {
+      Reflect.deleteProperty(window, "visualViewport");
+    }
+    if (originalInnerHeightDescriptor) {
+      Object.defineProperty(window, "innerHeight", originalInnerHeightDescriptor);
+    } else {
+      Reflect.deleteProperty(window, "innerHeight");
+    }
     document.body.innerHTML = "";
   });
 
@@ -398,6 +432,31 @@ describe("NewIssueDialog", () => {
     expect(container.textContent).not.toContain("Sub-task of");
 
     act(() => rerendered.root.unmount());
+  });
+
+  it("renders the new-task dialog from locale keys in zh-CN", async () => {
+    currentLanguage.value = "zh-CN";
+
+    const { root } = renderDialog(container);
+    await flush();
+
+    expect(container.textContent).toContain("新建任务");
+    expect(container.textContent).toContain("待办");
+    expect(container.textContent).toContain("上传");
+    expect(container.textContent).toContain("丢弃草稿");
+    expect(container.textContent).toContain("创建任务");
+
+    const titleInput = container.querySelector('textarea[placeholder="任务标题"]');
+    const descriptionInput = container.querySelector('textarea[aria-label="添加描述..."]');
+    expect(titleInput).not.toBeNull();
+    expect(descriptionInput).not.toBeNull();
+
+    expect(container.textContent).not.toContain("New task");
+    expect(container.textContent).not.toContain("Create Task");
+    expect(container.textContent).not.toContain("Discard Draft");
+    expect(container.textContent).not.toContain("Upload");
+
+    act(() => root.unmount());
   });
 
   it("submits parent and goal context for sub-issues", async () => {
@@ -797,6 +856,29 @@ describe("NewIssueDialog", () => {
     act(() => root.unmount());
   });
 
+  it("shows the create-task loading state only in the submit button", async () => {
+    mockIssuesApi.create.mockReturnValue(new Promise(() => undefined));
+    dialogState.newIssueDefaults = { title: "Pending task" };
+
+    const { root } = renderDialog(container);
+    await flush();
+
+    const submitButton = Array.from(container.querySelectorAll("button"))
+      .find((button) => button.textContent?.includes("Create Task"));
+    expect(submitButton).not.toBeUndefined();
+
+    await act(async () => {
+      submitButton!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+    await flush();
+
+    expect(submitButton?.textContent).toContain("Creating...");
+    expect(submitButton?.getAttribute("aria-busy")).toBe("true");
+    expect(container.textContent).not.toContain("Creating issue");
+
+    act(() => root.unmount());
+  });
+
   it("submits Chinese, Japanese, and Hindi issue text without normalization", async () => {
     const title = "验证中文任务";
     const description = [
@@ -1072,8 +1154,6 @@ describe("NewIssueDialog", () => {
     );
     expect(dialogContent?.className).toContain("h-(--new-issue-dialog-height)");
     expect(dialogContent?.className).toContain("overflow-hidden");
-    expect(dialogContent?.getAttribute("style")).toContain("env(safe-area-inset-top)");
-    expect(dialogContent?.getAttribute("style")).toContain("env(safe-area-inset-bottom)");
 
     const titleInput = container.querySelector('textarea[placeholder="Task title"]');
     const descriptionInput = container.querySelector('textarea[aria-label="Add description..."]');
@@ -1088,24 +1168,108 @@ describe("NewIssueDialog", () => {
     act(() => root.unmount());
   });
 
-  it("keeps priority under the mobile overflow menu", async () => {
+  it("tracks the mobile visual viewport and keeps the focused editor visible above the keyboard", async () => {
+    const visualViewport = new EventTarget() as EventTarget & {
+      height: number;
+      offsetTop: number;
+    };
+    visualViewport.height = 844;
+    visualViewport.offsetTop = 0;
+    Object.defineProperty(window, "visualViewport", {
+      configurable: true,
+      value: visualViewport,
+    });
+    Object.defineProperty(window, "innerHeight", {
+      configurable: true,
+      value: 844,
+    });
+
     const { root } = renderDialog(container);
     await flush();
 
+    const dialogContent = Array.from(container.querySelectorAll<HTMLDivElement>("div")).find((element) =>
+      element.className.includes("max-h-(--new-issue-dialog-height)"),
+    );
+    const descriptionInput = container.querySelector<HTMLTextAreaElement>(
+      'textarea[aria-label="Add description..."]',
+    );
+    const scrollIntoView = vi.fn();
+    Object.defineProperty(descriptionInput!, "scrollIntoView", {
+      configurable: true,
+      value: scrollIntoView,
+    });
+    descriptionInput?.focus();
+
+    expect(dialogContent?.style.top).toBe("");
+    expect(dialogContent?.style.height).toBe("");
+    expect(dialogContent?.style.translate).toBe("");
+
+    visualViewport.height = 420;
+    visualViewport.offsetTop = 24;
+    await act(async () => {
+      visualViewport.dispatchEvent(new Event("resize"));
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+    });
+
+    expect(dialogContent?.style.getPropertyValue("--new-issue-visual-viewport-height")).toBe("420px");
+    expect(dialogContent?.style.getPropertyValue("--new-issue-visual-viewport-offset-top")).toBe("24px");
+    expect(dialogContent?.style.getPropertyValue("--new-issue-dialog-top")).toBe(
+      "calc(var(--new-issue-visual-viewport-offset-top) + var(--new-issue-dialog-top-gap))",
+    );
+    expect(dialogContent?.style.getPropertyValue("--new-issue-dialog-height")).toBe(
+      "calc(var(--new-issue-visual-viewport-height) - var(--new-issue-dialog-top-gap) - var(--new-issue-dialog-bottom-gap))",
+    );
+    expect(dialogContent?.style.top).toBe("var(--new-issue-dialog-top)");
+    expect(dialogContent?.style.height).toBe("var(--new-issue-dialog-height)");
+    expect(dialogContent?.style.translate).toBe("var(--pct-neg-50)");
+    expect(scrollIntoView).toHaveBeenCalledWith({ block: "nearest" });
+
+    act(() => root.unmount());
+  });
+
+  it("hides the priority chip and mobile priority option (PAP-411)", async () => {
+    const { root } = renderDialog(container);
+    await flush();
+
+    // PAP-411: priority UI is hidden behind SHOW_TASK_PRIORITY_UI (off). Neither the
+    // desktop priority chip nor the mobile overflow priority option should render.
     const priorityChip = container.querySelector('[data-testid="new-issue-priority-chip"]');
-    expect(priorityChip?.className).toContain("hidden");
-    expect(priorityChip?.className).toContain("sm:inline-flex");
+    expect(priorityChip).toBeNull();
 
     const highPriorityOption = container.querySelector('[data-testid="new-issue-more-priority-high"]');
-    expect(highPriorityOption?.textContent).toContain("High");
+    expect(highPriorityOption).toBeNull();
+
+    act(() => root.unmount());
+  });
+
+  it("still submits the default priority when the priority UI is hidden (PAP-411)", async () => {
+    dialogState.newIssueDefaults = {
+      title: "Priority default persists",
+    };
+
+    const { root } = renderDialog(container);
+    await flush();
+
+    const submitButton = Array.from(container.querySelectorAll("button"))
+      .find((button) => button.textContent?.includes("Create Task"));
+    expect(submitButton).not.toBeUndefined();
+    await vi.waitFor(() => {
+      expect(submitButton?.hasAttribute("disabled")).toBe(false);
+    });
 
     await act(async () => {
-      highPriorityOption?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      submitButton!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
     await flush();
 
-    const selectedHighPriorityOption = container.querySelector('[data-testid="new-issue-more-priority-high"]');
-    expect(selectedHighPriorityOption?.className).toContain("bg-accent");
+    // PAP-411: the priority control is hidden, but the data-model default must survive.
+    expect(mockIssuesApi.create).toHaveBeenCalledWith(
+      "company-1",
+      expect.objectContaining({
+        title: "Priority default persists",
+        priority: "medium",
+      }),
+    );
 
     act(() => root.unmount());
   });
@@ -1310,6 +1474,37 @@ describe("NewIssueDialog", () => {
 
       expect(statusOptionIconClass("Todo", "Executable - assignee will be woken")).toContain("text-amber-600");
       expect(statusOptionIconClass("In Progress")).toContain("text-blue-600");
+
+      act(() => root.unmount());
+    });
+  });
+
+  describe("PAP-8501: company badge shows issuePrefix", () => {
+    it("displays issuePrefix instead of name-derived prefix", async () => {
+      // Override company data to have mismatched name/prefix
+      companyState.companies = [
+        {
+          id: "company-1",
+          name: "Acme Labs",
+          status: "active",
+          brandColor: "#123456",
+          issuePrefix: "OPS",
+        },
+      ];
+      companyState.selectedCompany = {
+        id: "company-1",
+        name: "Acme Labs",
+        status: "active",
+        brandColor: "#123456",
+        issuePrefix: "OPS",
+      };
+
+      const { root } = renderDialog(container);
+      await waitForAssertion(() => {
+        const text = container.textContent ?? "";
+        // Should show OPS (issuePrefix), not ACM (name.slice(0,3))
+        expect(text).toContain("OPS");
+      });
 
       act(() => root.unmount());
     });

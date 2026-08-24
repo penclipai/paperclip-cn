@@ -24,13 +24,42 @@ test("release package list only contains CI-enrolled packages", () => {
   assert.ok(enabledPackages.every((pkg) => pkg.publishFromCi === true));
 });
 
-test("release surface keeps Hermes adapters external to the CN fork", () => {
+test("release package list publishes the installable channel entrypoint last", () => {
+  const enabledPackages = getReleasePackages();
+
+  assert.equal(enabledPackages.at(-1)?.name, "penclip");
+  assert.ok(enabledPackages.slice(0, -1).some((pkg) => pkg.name === "@penclipai/server"));
+});
+
+test("release package list keeps runtime workspace dependencies ahead of consumers", () => {
+  const enabledPackages = getReleasePackages();
+  const publishIndexByName = new Map(enabledPackages.map((pkg, index) => [pkg.name, index]));
+
+  for (const pkg of enabledPackages) {
+    for (const section of ["dependencies", "optionalDependencies", "peerDependencies"]) {
+      for (const [dependencyName, spec] of Object.entries(pkg.pkg[section] ?? {})) {
+        if (typeof spec !== "string" || !spec.startsWith("workspace:")) continue;
+        const dependencyIndex = publishIndexByName.get(dependencyName);
+        if (dependencyIndex === undefined) continue;
+
+        assert.ok(
+          dependencyIndex < publishIndexByName.get(pkg.name),
+          `${dependencyName} must publish before ${pkg.name}`,
+        );
+      }
+    }
+  }
+});
+
+test("release surface includes the CN fork's built-in Hermes adapter", () => {
   const packages = buildReleasePackagePlan();
-  const hermes = packages.find((pkg) => pkg.name === "@paperclipai/hermes-paperclip-adapter");
+  const hermes = packages.find((pkg) => pkg.name === "@penclipai/hermes-paperclip-adapter");
   const gatewayShim = packages.find((pkg) => pkg.name === "@penclipai/adapter-hermes-gateway");
 
-  assert.equal(hermes, undefined);
-  assert.equal(gatewayShim, undefined);
+  assert.ok(hermes);
+  assert.equal(hermes.publishFromCi, true);
+  assert.ok(gatewayShim);
+  assert.equal(gatewayShim.publishFromCi, false);
 });
 
 test("release package configuration validates successfully", () => {
@@ -55,21 +84,21 @@ test("guard inspects optional and peer dependency sections too", () => {
   const problems = findUnpublishableWorkspaceEdges([
     pkg("@penclipai/server", {
       publishFromCi: true,
-      optionalDependencies: { "@paperclipai/opt": "workspace:^" },
+      optionalDependencies: { "@penclipai/opt": "workspace:^" },
       peerDependencies: { "@penclipai/peer": "workspace:*" },
     }),
-    pkg("@paperclipai/opt", { publishFromCi: false }),
+    pkg("@penclipai/opt", { publishFromCi: false }),
     pkg("@penclipai/peer", { publishFromCi: false }),
   ]);
 
   assert.equal(problems.length, 2);
 });
 
-test("guard treats a workspace dep on an unknown @paperclipai package as unpublishable", () => {
+test("guard treats a workspace dep on an unknown @penclipai package as unpublishable", () => {
   const problems = findUnpublishableWorkspaceEdges([
     pkg("@penclipai/server", {
       publishFromCi: true,
-      dependencies: { "@paperclipai/private-internal": "workspace:*" },
+      dependencies: { "@penclipai/private-internal": "workspace:*" },
     }),
   ]);
 
@@ -105,16 +134,16 @@ test("guard ignores non-workspace specs, non-internal deps, and edges from off-t
     pkg("@penclipai/server", {
       publishFromCi: true,
       dependencies: {
-        "@paperclipai/pinned": "0.3.1",
+        "@penclipai/pinned": "0.3.1",
         zod: "^3.0.0",
       },
     }),
-    pkg("@paperclipai/pinned", { publishFromCi: false }),
-    pkg("@paperclipai/offtrain", {
+    pkg("@penclipai/pinned", { publishFromCi: false }),
+    pkg("@penclipai/offtrain", {
       publishFromCi: false,
-      dependencies: { "@paperclipai/also-off": "workspace:*" },
+      dependencies: { "@penclipai/also-off": "workspace:*" },
     }),
-    pkg("@paperclipai/also-off", { publishFromCi: false }),
+    pkg("@penclipai/also-off", { publishFromCi: false }),
   ]);
 
   assert.deepEqual(problems, []);

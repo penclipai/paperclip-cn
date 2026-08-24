@@ -46,7 +46,10 @@ import {
 
 const SEARCH_ALL_VALUE = "__paperclip-search-all__";
 
-export function buildFullSearchPath(query: string, context: SearchQueryParserContext = {}) {
+export function buildFullSearchPath(
+  query: string,
+  context: SearchQueryParserContext = {},
+) {
   return buildSearchPathFromQuery(query, context);
 }
 
@@ -76,7 +79,11 @@ function isSubsequence(needle: string, haystack: string): boolean {
  * `null` means no match. Prefers name hits (exact > prefix > substring) over
  * description hits, with fuzzy subsequence as a last resort.
  */
-function scoreProjectMatch(name: string, description: string, q: string): number | null {
+function scoreProjectMatch(
+  name: string,
+  description: string,
+  q: string,
+): number | null {
   if (name === q) return 1000;
   // Shorter names rank first, but clamp the length penalty so a prefix match can
   // never sink below the substring band (max 699) for unusually long names —
@@ -105,7 +112,8 @@ export function CommandPalette() {
     queryFn: () => instanceSettingsApi.getExperimental(),
     retry: false,
   });
-  const fileViewerEnabled = experimentalSettings?.enableExperimentalFileViewer === true;
+  const fileViewerEnabled =
+    experimentalSettings?.enableExperimentalFileViewer === true;
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -134,10 +142,7 @@ export function CommandPalette() {
     queryFn: () => projectsApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId && open,
   });
-  const projects = useMemo(
-    () => allProjects.filter((p) => !p.archivedAt),
-    [allProjects],
-  );
+  const projects = useMemo(() => allProjects, [allProjects]);
 
   const { data: labels = [] } = useQuery({
     queryKey: queryKeys.issues.labels(selectedCompanyId!),
@@ -152,13 +157,19 @@ export function CommandPalette() {
   });
 
   const currentUserId = session?.user?.id ?? session?.session?.userId ?? null;
-  const parserContext = useMemo<SearchQueryParserContext>(() => ({
-    currentUserId,
-    agents,
-    projects,
-    labels,
-  }), [agents, currentUserId, labels, projects]);
-  const parsedQuery = useMemo(() => parseSearchQuery(query, parserContext), [parserContext, query]);
+  const parserContext = useMemo<SearchQueryParserContext>(
+    () => ({
+      currentUserId,
+      agents,
+      projects,
+      labels,
+    }),
+    [agents, currentUserId, labels, projects],
+  );
+  const parsedQuery = useMemo(
+    () => parseSearchQuery(query, parserContext),
+    [parserContext, query],
+  );
   const quickSearchQuery = parsedQuery.query.trim();
 
   const { data: issues = [] } = useQuery({
@@ -168,8 +179,18 @@ export function CommandPalette() {
   });
 
   const { data: searchedIssues = [] } = useQuery({
-    queryKey: queryKeys.issues.search(selectedCompanyId!, quickSearchQuery, undefined, 10),
-    queryFn: () => issuesApi.list(selectedCompanyId!, { q: quickSearchQuery, limit: 10, includeRoutineExecutions: true }),
+    queryKey: queryKeys.issues.search(
+      selectedCompanyId!,
+      quickSearchQuery,
+      undefined,
+      10,
+    ),
+    queryFn: () =>
+      issuesApi.list(selectedCompanyId!, {
+        q: quickSearchQuery,
+        limit: 10,
+        includeRoutineExecutions: true,
+      }),
     enabled: !!selectedCompanyId && open && quickSearchQuery.length > 0,
   });
 
@@ -208,7 +229,12 @@ export function CommandPalette() {
           q,
         ),
       }))
-      .filter((entry): entry is { project: (typeof projects)[number]; score: number } => entry.score !== null)
+      .filter(
+        (
+          entry,
+        ): entry is { project: (typeof projects)[number]; score: number } =>
+          entry.score !== null,
+      )
       .sort((a, b) => b.score - a.score)
       .slice(0, MAX_MATCHED_PROJECTS)
       .map((entry) => entry.project);
@@ -216,15 +242,20 @@ export function CommandPalette() {
 
   const showSearchAll = searchQuery.length > 0;
   const showPromotedProjects = showSearchAll && matchedProjects.length > 0;
-  const taskLimit = showPromotedProjects ? TASK_LIMIT_WITH_PROJECTS : TASK_LIMIT;
+  const taskLimit = showPromotedProjects
+    ? TASK_LIMIT_WITH_PROJECTS
+    : TASK_LIMIT;
   const showEmptyHint =
     showSearchAll && visibleIssues.length === 0 && matchedProjects.length === 0;
 
   return (
-    <CommandDialog open={open} onOpenChange={(v) => {
+    <CommandDialog
+      open={open}
+      onOpenChange={(v) => {
         setOpen(v);
         if (v && isMobile) setSidebarOpen(false);
-      }}>
+      }}
+    >
       <CommandInput
         placeholder={t("Search issues, agents, projects...", {
           defaultValue: "Search issues, agents, projects...",
@@ -250,7 +281,9 @@ export function CommandPalette() {
               {t("commandPalette.noQuickMatchesPrefix", {
                 defaultValue: "No quick issue matches. Press",
               })}{" "}
-              <kbd className="rounded border border-border bg-muted px-1 py-0.5 text-(length:--text-nano)">↵</kbd>{" "}
+              <kbd className="rounded border border-border bg-muted px-1 py-0.5 text-(length:--text-nano)">
+                ↵
+              </kbd>{" "}
               {t("commandPalette.noQuickMatchesSuffix", {
                 defaultValue: "to",
               })}{" "}
@@ -276,14 +309,22 @@ export function CommandPalette() {
             >
               <Search className="mr-2 h-4 w-4" />
               <span className="flex-1 truncate">
-                {t("commandPalette.searchAllFor", { defaultValue: "Search all for" })}{" "}
-                <span className="font-semibold">&ldquo;{searchQuery}&rdquo;</span>
+                {t("commandPalette.searchAllFor", {
+                  defaultValue: "Search all for",
+                })}{" "}
+                <span className="font-semibold">
+                  &ldquo;{searchQuery}&rdquo;
+                </span>
               </span>
               <span className="ml-auto inline-flex items-center gap-1 text-xs text-muted-foreground">
                 <span>
-                  {t("commandPalette.openFullSearch", { defaultValue: "open full search" })}
+                  {t("commandPalette.openFullSearch", {
+                    defaultValue: "open full search",
+                  })}
                 </span>
-                <kbd className="rounded border border-border bg-background px-1 py-0.5 text-(length:--text-nano)">↵</kbd>
+                <kbd className="rounded border border-border bg-background px-1 py-0.5 text-(length:--text-nano)">
+                  ↵
+                </kbd>
               </span>
             </CommandItem>
           </CommandGroup>
@@ -296,7 +337,11 @@ export function CommandPalette() {
             <CommandItem
               key={chip}
               value={`quick-filter ${chip}`}
-              onSelect={() => setQuery((current) => current.trim() ? `${current.trim()} ${chip}` : chip)}
+              onSelect={() =>
+                setQuery((current) =>
+                  current.trim() ? `${current.trim()} ${chip}` : chip,
+                )
+              }
               data-testid="command-filter-chip"
             >
               <Search className="mr-2 h-4 w-4" />
@@ -346,11 +391,13 @@ export function CommandPalette() {
             <CommandItem
               onSelect={() => {
                 setOpen(false);
-                window.dispatchEvent(new CustomEvent("paperclip:open-file-viewer"));
+                window.dispatchEvent(
+                  new CustomEvent("paperclip:open-file-viewer"),
+                );
               }}
             >
               <FileCode2 className="mr-2 h-4 w-4" />
-              Open file in this issue...
+              {t("commandPalette.openFileInIssue")}
               <span className="ml-auto text-xs text-muted-foreground">g f</span>
             </CommandItem>
           )}
@@ -409,7 +456,9 @@ export function CommandPalette() {
         {visibleIssues.length > 0 && (
           <>
             <CommandSeparator />
-            <CommandGroup heading={t("sidebar.issues", { defaultValue: "Tasks" })}>
+            <CommandGroup
+              heading={t("sidebar.issues", { defaultValue: "Tasks" })}
+            >
               {visibleIssues.slice(0, taskLimit).map((issue) => (
                 <CommandItem
                   key={issue.id}
@@ -425,10 +474,17 @@ export function CommandPalette() {
                     {issue.identifier ?? issue.id.slice(0, 8)}
                   </span>
                   <span className="flex-1 truncate">{issue.title}</span>
-                  {issue.assigneeAgentId && (() => {
-                    const name = agentName(issue.assigneeAgentId);
-                    return name ? <Identity name={name} size="sm" className="ml-2 hidden sm:inline-flex" /> : null;
-                  })()}
+                  {issue.assigneeAgentId &&
+                    (() => {
+                      const name = agentName(issue.assigneeAgentId);
+                      return name ? (
+                        <Identity
+                          name={name}
+                          size="sm"
+                          className="ml-2 hidden sm:inline-flex"
+                        />
+                      ) : null;
+                    })()}
                 </CommandItem>
               ))}
             </CommandGroup>
@@ -440,10 +496,15 @@ export function CommandPalette() {
             <CommandSeparator />
             <CommandGroup heading={t("Agents", { defaultValue: "Agents" })}>
               {agents.slice(0, 10).map((agent) => (
-                <CommandItem key={agent.id} onSelect={() => go(agentUrl(agent))}>
+                <CommandItem
+                  key={agent.id}
+                  onSelect={() => go(agentUrl(agent))}
+                >
                   <Bot className="mr-2 h-4 w-4" />
                   {displaySeededName(agent.name)}
-                  <span className="text-xs text-muted-foreground ml-2">{agent.role}</span>
+                  <span className="text-xs text-muted-foreground ml-2">
+                    {agent.role}
+                  </span>
                 </CommandItem>
               ))}
             </CommandGroup>
@@ -455,7 +516,10 @@ export function CommandPalette() {
             <CommandSeparator />
             <CommandGroup heading={t("Projects", { defaultValue: "Projects" })}>
               {projects.slice(0, 10).map((project) => (
-                <CommandItem key={project.id} onSelect={() => go(projectUrl(project))}>
+                <CommandItem
+                  key={project.id}
+                  onSelect={() => go(projectUrl(project))}
+                >
                   <Hexagon className="mr-2 h-4 w-4" />
                   {displaySeededName(project.name)}
                 </CommandItem>

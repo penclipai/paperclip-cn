@@ -16,7 +16,12 @@ interface PageTabBarProps {
   align?: "center" | "start";
 }
 
-export function PageTabBar({ items, value, onValueChange, align = "center" }: PageTabBarProps) {
+export function PageTabBar({
+  items,
+  value,
+  onValueChange,
+  align = "center",
+}: PageTabBarProps) {
   const { isMobile } = useSidebar();
   const { t } = useTranslation(undefined, { useSuspense: false });
 
@@ -26,10 +31,14 @@ export function PageTabBar({ items, value, onValueChange, align = "center" }: Pa
         value={value}
         onChange={(e) => onValueChange(e.target.value)}
         className="h-9 rounded-md border border-border bg-background px-2 py-1 text-base focus:outline-none focus:ring-1 focus:ring-ring"
+        aria-label={t("pageTabBar.aria")}
       >
         {items.map((item) => (
           <option key={item.value} value={item.value}>
-            {item.mobileLabel ?? (typeof item.label === "string" ? t(item.label, { defaultValue: item.label }) : item.value)}
+            {item.mobileLabel ??
+              (typeof item.label === "string"
+                ? t(item.label, { defaultValue: item.label })
+                : item.value)}
           </option>
         ))}
       </select>
@@ -37,10 +46,15 @@ export function PageTabBar({ items, value, onValueChange, align = "center" }: Pa
   }
 
   return (
-    <TabsList variant="line" className={align === "start" ? "justify-start" : undefined}>
+    <TabsList
+      variant="line"
+      className={align === "start" ? "justify-start" : undefined}
+    >
       {items.map((item) => (
         <TabsTrigger key={item.value} value={item.value}>
-          {typeof item.label === "string" ? t(item.label, { defaultValue: item.label }) : item.label}
+          {typeof item.label === "string"
+            ? t(item.label, { defaultValue: item.label })
+            : item.label}
         </TabsTrigger>
       ))}
     </TabsList>

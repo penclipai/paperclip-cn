@@ -131,7 +131,23 @@ describe("server adapter registry", () => {
     ]);
   });
 
-  it("keeps Hermes external-only while accepting external registrations", () => {
+  it("ships Hermes adapters as built-ins and still accepts external overrides", () => {
+    const builtInLocal = findServerAdapter("hermes_local");
+    const builtInGateway = findServerAdapter("hermes_gateway");
+
+    expect(builtInLocal).not.toBeNull();
+    expect(builtInLocal?.supportsLocalAgentJwt).toBe(true);
+    expect(builtInLocal?.supportsInstructionsBundle).toBe(true);
+    expect(builtInLocal?.requiresMaterializedRuntimeSkills).toBe(false);
+    expect(builtInLocal?.detectModel).toBeTypeOf("function");
+    expect(builtInLocal?.getConfigSchema).toBeTypeOf("function");
+
+    expect(builtInGateway).not.toBeNull();
+    expect(builtInGateway?.supportsLocalAgentJwt).toBe(false);
+    expect(builtInGateway?.supportsInstructionsBundle).toBe(false);
+    expect(builtInGateway?.requiresMaterializedRuntimeSkills).toBe(false);
+    expect(builtInGateway?.getConfigSchema).toBeTypeOf("function");
+
     const hermesLocalExternalAdapter: ServerAdapterModule = {
       type: "hermes_local",
       execute: async () => ({ exitCode: 0, signal: null, timedOut: false }),
@@ -178,9 +194,6 @@ describe("server adapter registry", () => {
       }),
     };
 
-    expect(findServerAdapter("hermes_local")).toBeNull();
-    expect(findServerAdapter("hermes_gateway")).toBeNull();
-
     registerServerAdapter(hermesLocalExternalAdapter);
 
     expect(requireServerAdapter("hermes_local")).toBe(hermesLocalExternalAdapter);
@@ -188,8 +201,7 @@ describe("server adapter registry", () => {
 
     unregisterServerAdapter("hermes_local");
 
-    expect(findServerAdapter("hermes_local")).toBeNull();
-    expect(() => requireServerAdapter("hermes_local")).toThrow("Unknown adapter type: hermes_local");
+    expect(requireServerAdapter("hermes_local")).toBe(builtInLocal);
 
     registerServerAdapter(hermesGatewayExternalAdapter);
 
@@ -198,8 +210,7 @@ describe("server adapter registry", () => {
 
     unregisterServerAdapter("hermes_gateway");
 
-    expect(findServerAdapter("hermes_gateway")).toBeNull();
-    expect(() => requireServerAdapter("hermes_gateway")).toThrow("Unknown adapter type: hermes_gateway");
+    expect(requireServerAdapter("hermes_gateway")).toBe(builtInGateway);
   });
 
   it("exposes capability flags from registered adapters", () => {
@@ -258,7 +269,7 @@ describe("server adapter registry", () => {
     await expect(listAdapterModelProfiles("codex_local")).resolves.toEqual([
       expect.objectContaining({
         key: "cheap",
-        adapterConfig: expect.objectContaining({ model: "gpt-5.3-codex-spark" }),
+        adapterConfig: {},
         source: "adapter_default",
       }),
     ]);

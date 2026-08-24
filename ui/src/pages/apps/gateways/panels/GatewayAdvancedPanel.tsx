@@ -8,6 +8,7 @@ import { toolsApi } from "@/api/tools";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/context/ToastContext";
+import { copyTextToClipboard } from "@/lib/clipboard";
 import { gatewaysQueryKey } from "../NewGatewayDialog";
 
 /**
@@ -75,7 +76,7 @@ export function GatewayAdvancedPanel({
 
   async function copy(value: string, label: string) {
     try {
-      await navigator.clipboard.writeText(value);
+      await copyTextToClipboard(value);
       pushToast({
         title: t("apps.gateways.advanced.toast.copiedTitle", { defaultValue: "Copied" }),
         body: label,
@@ -111,9 +112,10 @@ export function GatewayAdvancedPanel({
           <Button
             variant="outline"
             size="sm"
-            onClick={() =>
-              void copy(endpoint, t("apps.gateways.advanced.endpointUrl", { defaultValue: "Endpoint URL" }))
-            }
+            onClick={() => void copy(
+              endpoint,
+              t("apps.gateways.advanced.endpointUrl", { defaultValue: "Endpoint URL" }),
+            )}
           >
             <Copy className="mr-1 h-3.5 w-3.5" />
             {t("apps.gateways.advanced.copy", { defaultValue: "Copy" })}
@@ -129,12 +131,10 @@ export function GatewayAdvancedPanel({
           <Button
             variant="outline"
             size="sm"
-            onClick={() =>
-              void copy(
-                rawConfig,
-                t("apps.gateways.advanced.gatewayConfigJson", { defaultValue: "Gateway config JSON" }),
-              )
-            }
+            onClick={() => void copy(
+              rawConfig,
+              t("apps.gateways.advanced.gatewayConfigJson", { defaultValue: "Gateway config JSON" }),
+            )}
           >
             <Copy className="mr-1 h-3.5 w-3.5" />
             {t("apps.gateways.advanced.copyJson", { defaultValue: "Copy JSON" })}
@@ -151,8 +151,7 @@ export function GatewayAdvancedPanel({
         </h3>
         <p className="text-sm text-muted-foreground">
           {t("apps.gateways.advanced.dangerBody", {
-            defaultValue:
-              "Archiving takes the gateway offline for every client. Existing tokens stop working. Type the gateway name to confirm.",
+            defaultValue: "Archiving takes the gateway offline for every client. Existing tokens stop working. Type the gateway name to confirm.",
           })}
         </p>
         {confirming ? (
@@ -176,14 +175,7 @@ export function GatewayAdvancedPanel({
                   ? t("apps.gateways.advanced.archiving", { defaultValue: "Archiving…" })
                   : t("apps.gateways.advanced.archive", { defaultValue: "Archive gateway" })}
               </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setConfirming(false);
-                  setConfirmName("");
-                }}
-              >
+              <Button variant="ghost" size="sm" onClick={() => { setConfirming(false); setConfirmName(""); }}>
                 {t("apps.gateways.advanced.cancel", { defaultValue: "Cancel" })}
               </Button>
             </div>

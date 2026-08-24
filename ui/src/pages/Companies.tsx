@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCompany } from "../context/CompanyContext";
 import { useDialogActions } from "../context/DialogContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
+import { useCloudInstance } from "../hooks/useCloudInstance";
 import { companiesApi } from "../api/companies";
 import { queryKeys } from "../lib/queryKeys";
 import { formatCents, relativeTime } from "../lib/utils";
@@ -30,7 +31,6 @@ import {
   DollarSign,
   Calendar,
 } from "lucide-react";
-import { translateStatusLabel } from "../lib/i18n-labels";
 
 export function Companies() {
   const { t } = useTranslation();
@@ -44,6 +44,9 @@ export function Companies() {
   const { openOnboarding } = useDialogActions();
   const { setBreadcrumbs } = useBreadcrumbs();
   const queryClient = useQueryClient();
+  // A cloud stack holds exactly one company; creating another is a 403 floor
+  // server-side, so the wizard entry point is hidden rather than dead-ending.
+  const isCloud = Boolean(useCloudInstance());
 
   const { data: stats } = useQuery({
     queryKey: queryKeys.companies.stats,
@@ -95,10 +98,12 @@ export function Companies() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-end">
-        <Button size="sm" onClick={() => openOnboarding()}>
-          <Plus className="h-3.5 w-3.5 mr-1.5" />
-          {t("New Company", { defaultValue: "New Company" })}
-        </Button>
+        {isCloud ? null : (
+          <Button size="sm" onClick={() => openOnboarding()}>
+            <Plus className="h-3.5 w-3.5 mr-1.5" />
+            {t("New Company", { defaultValue: "New Company" })}
+          </Button>
+        )}
       </div>
 
       <div className="h-6">
@@ -180,7 +185,7 @@ export function Companies() {
                               : "bg-muted text-muted-foreground"
                         }`}
                       >
-                        {translateStatusLabel(t, company.status)}
+                        {t(company.status, { defaultValue: company.status })}
                       </Badge>
                       <Button
                         variant="ghost"
@@ -239,19 +244,13 @@ export function Companies() {
                 <div className="flex items-center gap-1.5">
                   <Users className="h-3.5 w-3.5" />
                   <span>
-                    {t("companies.agentCount", {
-                      count: agentCount,
-                      defaultValue: agentCount === 1 ? "1 agent" : `${agentCount} agents`,
-                    })}
+                    {t("{{count}} agents", { defaultValue: "{{count}} agents", count: agentCount })}
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <CircleDot className="h-3.5 w-3.5" />
                   <span>
-                    {t("companies.issueCount", {
-                      count: issueCount,
-                      defaultValue: issueCount === 1 ? "1 issue" : `${issueCount} issues`,
-                    })}
+                    {t("{{count}} issues", { defaultValue: "{{count}} issues", count: issueCount })}
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5 tabular-nums">
@@ -265,10 +264,7 @@ export function Companies() {
                 </div>
                 <div className="flex items-center gap-1.5 ml-auto">
                   <Calendar className="h-3.5 w-3.5" />
-                  <span>{t("Created {{value}}", {
-                    value: relativeTime(company.createdAt),
-                    defaultValue: `Created ${relativeTime(company.createdAt)}`,
-                  })}</span>
+                  <span>{t("Created", { defaultValue: "Created" })} {relativeTime(company.createdAt)}</span>
                 </div>
               </div>
 

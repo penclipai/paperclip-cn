@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 # shellcheck source=./release-lib.sh
 . "$REPO_ROOT/scripts/release-lib.sh"
 CLI_DIR="$REPO_ROOT/cli"
@@ -11,7 +11,7 @@ release_date=""
 dry_run=false
 skip_verify=false
 print_version_only=false
-allow_canary_latest=false
+from_candidate=false
 tag_name=""
 
 cleanup_on_exit=false
@@ -19,12 +19,14 @@ cleanup_on_exit=false
 usage() {
   cat <<'EOF'
 Usage:
-  ./scripts/release.sh <canary|stable> [--date YYYY-MM-DD] [--dry-run] [--skip-verify] [--print-version] [--allow-canary-latest]
+  ./scripts/release.sh <canary|nightly|beta|stable> [--date YYYY-MM-DD] [--dry-run] [--skip-verify] [--print-version]
 
 Examples:
   ./scripts/release.sh canary
   ./scripts/release.sh canary --date 2026-03-17 --dry-run
-  ./scripts/release.sh canary --allow-canary-latest
+  ./scripts/release.sh nightly --dry-run
+  ./scripts/release.sh beta --dry-run
+  ./scripts/release.sh beta --from-candidate --dry-run
   ./scripts/release.sh stable
   ./scripts/release.sh stable --date 2026-03-17 --dry-run
   ./scripts/release.sh stable --date 2026-03-18 --print-version
@@ -34,9 +36,16 @@ Notes:
     zero-padded UTC day, and P is the same-day stable patch slot.
   - Canary releases publish YYYY.MDD.P-canary.N under the npm dist-tag
     "canary" and create the git tag canary/vYYYY.MDD.P-canary.N.
-  - Canary releases fail by default if npm leaves the "latest" dist-tag
-    pointing at any canary. Pass --allow-canary-latest only when that is an
-    intentional first-publish or migration state.
+  - Nightly releases republish a commit that already shipped a canary (HEAD
+    must carry a canary/v* tag) as YYYY.MDD.P-nightly.N under the npm
+    dist-tag "nightly", with the git tag nightly/vYYYY.MDD.P-nightly.N.
+    The version dates the nightly cut, not the source canary.
+  - Beta releases republish a commit that already shipped a nightly (HEAD
+    must carry a nightly/v* tag) as YYYY.MDD.P-beta.N under the npm
+    dist-tag "beta", with the git tag beta/vYYYY.MDD.P-beta.N.
+  - --from-candidate (beta only) waives the nightly-tag requirement for
+    cherry-picked candidate-branch builds; callers are responsible for
+    validating the candidate branch before using it.
   - Stable releases publish YYYY.MDD.P under the npm dist-tag "latest" and
     create the git tag vYYYY.MDD.P.
   - Non-dry-run stable release notes must already exist at releases/vYYYY.MDD.P.md.
@@ -90,7 +99,7 @@ set_cleanup_trap() {
 
 while [ $# -gt 0 ]; do
   case "$1" in
-    canary|stable)
+    canary|nightly|beta|stable)
       if [ -n "$channel" ]; then
         release_fail "only one release channel may be provided."
       fi
@@ -104,7 +113,7 @@ while [ $# -gt 0 ]; do
     --dry-run) dry_run=true ;;
     --skip-verify) skip_verify=true ;;
     --print-version) print_version_only=true ;;
-    --allow-canary-latest) allow_canary_latest=true ;;
+    --from-candidate) from_candidate=true ;;
     -h|--help)
       usage
       exit 0
@@ -121,8 +130,8 @@ done
   exit 1
 }
 
-if [ "$allow_canary_latest" = true ] && [ "$channel" != "canary" ]; then
-  release_fail "--allow-canary-latest can only be used with the canary channel."
+if [ "$from_candidate" = true ] && [ "$channel" != "beta" ]; then
+  release_fail "--from-candidate only applies to the beta channel."
 fi
 
 PUBLISH_REMOTE="$(resolve_release_remote)"
@@ -130,6 +139,8 @@ fetch_release_remote "$PUBLISH_REMOTE"
 
 CURRENT_BRANCH="$(git_current_branch)"
 CURRENT_SHA="$(git -C "$REPO_ROOT" rev-parse HEAD)"
+LAST_STABLE_TAG="$(get_last_stable_tag)"
+CURRENT_STABLE_VERSION="$(get_current_stable_version)"
 RELEASE_DATE="${release_date:-$(utc_date_iso)}"
 
 PUBLIC_PACKAGE_INFO="$(list_public_package_info)"
@@ -154,9 +165,31 @@ DIST_TAG="latest"
 
 if [ "$channel" = "canary" ]; then
   require_on_master_branch
-  TARGET_PUBLISH_VERSION="$(next_canary_version "$TARGET_STABLE_VERSION" "${PUBLIC_PACKAGE_NAMES[@]}")"
+  TARGET_PUBLISH_VERSION="$(next_prerelease_version canary "$TARGET_STABLE_VERSION" "${PUBLIC_PACKAGE_NAMES[@]}")"
   DIST_TAG="canary"
-  tag_name="$(canary_tag_name "$TARGET_PUBLISH_VERSION")"
+  tag_name="$(prerelease_tag_name canary "$TARGET_PUBLISH_VERSION")"
+elif [ "$channel" = "nightly" ]; then
+  # Nightly promotes an already-shipped canary commit, so it runs from a
+  # detached checkout of that commit rather than the master branch tip.
+  require_channel_tag_at_head canary
+  require_channel_tag_absent_at_head nightly
+  TARGET_PUBLISH_VERSION="$(next_prerelease_version nightly "$TARGET_STABLE_VERSION" "${PUBLIC_PACKAGE_NAMES[@]}")"
+  DIST_TAG="nightly"
+  tag_name="$(prerelease_tag_name nightly "$TARGET_PUBLISH_VERSION")"
+elif [ "$channel" = "beta" ]; then
+  if [ "$from_candidate" = true ]; then
+    # Candidate builds carry targeted cherry-picks that never shipped as a
+    # nightly, so the nightly-tag requirement does not apply; the workflow
+    # validates the candidate branch identity before invoking this path.
+    :
+  else
+    # Beta promotes an already-shipped nightly commit.
+    require_channel_tag_at_head nightly
+  fi
+  require_channel_tag_absent_at_head beta
+  TARGET_PUBLISH_VERSION="$(next_prerelease_version beta "$TARGET_STABLE_VERSION" "${PUBLIC_PACKAGE_NAMES[@]}")"
+  DIST_TAG="beta"
+  tag_name="$(prerelease_tag_name beta "$TARGET_PUBLISH_VERSION")"
 else
   tag_name="$(stable_tag_name "$TARGET_STABLE_VERSION")"
 fi
@@ -168,9 +201,6 @@ if [ "$print_version_only" = true ]; then
   printf '%s\n' "$TARGET_PUBLISH_VERSION"
   exit 0
 fi
-
-LAST_STABLE_TAG="$(get_last_stable_tag)"
-CURRENT_STABLE_VERSION="$(get_current_stable_version)"
 
 NOTES_FILE="$(release_notes_file "$TARGET_STABLE_VERSION")"
 
@@ -204,16 +234,12 @@ release_info "  Last stable tag: ${LAST_STABLE_TAG:-<none>}"
 release_info "  Current stable version: $CURRENT_STABLE_VERSION"
 release_info "  Release date (UTC): $RELEASE_DATE"
 release_info "  Target stable version: $TARGET_STABLE_VERSION"
-if [ "$channel" = "canary" ]; then
-  release_info "  Canary version: $TARGET_PUBLISH_VERSION"
-  if [ "$allow_canary_latest" = true ]; then
-    release_info "  latest dist-tag policy: allow canary"
-  else
-    release_info "  latest dist-tag policy: fail if npm leaves latest on a canary"
-  fi
-else
-  release_info "  Stable version: $TARGET_PUBLISH_VERSION"
-fi
+case "$channel" in
+  canary) release_info "  Canary version: $TARGET_PUBLISH_VERSION" ;;
+  nightly) release_info "  Nightly version: $TARGET_PUBLISH_VERSION" ;;
+  beta) release_info "  Beta version: $TARGET_PUBLISH_VERSION" ;;
+  *) release_info "  Stable version: $TARGET_PUBLISH_VERSION" ;;
+esac
 release_info "  Dist-tag: $DIST_TAG"
 release_info "  Git tag: $tag_name"
 if [ "$channel" = "stable" ]; then
@@ -261,13 +287,13 @@ release_info "==> Step 4/7: Building publishable CLI bundle..."
 release_info "  ✓ CLI bundle ready"
 
 VERSIONED_PACKAGE_INFO="$(list_public_package_info)"
-VERSION_IN_CLI_PACKAGE="$(
-  cd "$CLI_DIR"
-  node -e "console.log(JSON.parse(require('fs').readFileSync('package.json', 'utf8')).version)"
-)"
+VERSION_IN_CLI_PACKAGE="$(node -e "console.log(require('$CLI_DIR/package.json').version)")"
 if [ "$VERSION_IN_CLI_PACKAGE" != "$TARGET_PUBLISH_VERSION" ]; then
   release_fail "versioning drift detected. Expected $TARGET_PUBLISH_VERSION but found $VERSION_IN_CLI_PACKAGE."
 fi
+
+VERIFY_ATTEMPTS="${NPM_PUBLISH_VERIFY_ATTEMPTS:-12}"
+VERIFY_DELAY_SECONDS="${NPM_PUBLISH_VERIFY_DELAY_SECONDS:-5}"
 
 release_info ""
 if [ "$dry_run" = true ]; then
@@ -276,7 +302,16 @@ if [ "$dry_run" = true ]; then
     [ -z "$pkg_dir" ] && continue
     release_info "  --- $pkg_dir ---"
     cd "$REPO_ROOT/$pkg_dir"
-    pnpm publish --dry-run --no-git-checks --tag "$DIST_TAG" 2>&1 | tail -3
+    publish_tool="$(package_publish_tool)"
+    if [ "$publish_tool" = "npm" ]; then
+      publish_dir="$(mktemp -d "${TMPDIR:-/tmp}/paperclip-release-package.XXXXXX")"
+      node "$REPO_ROOT/scripts/prepare-bundled-package.mjs" "$REPO_ROOT/$pkg_dir" "$publish_dir"
+      cd "$publish_dir"
+      run_bundled_npm_pack pack --pack-destination "$publish_dir" 2>&1 | tail -3
+      rm -rf "$publish_dir"
+    else
+      pnpm publish --dry-run --no-git-checks --tag "$DIST_TAG" 2>&1 | tail -3
+    fi
   done <<< "$VERSIONED_PACKAGE_INFO"
   release_info "  [dry-run] Would create git tag $tag_name on $CURRENT_SHA"
 else
@@ -285,9 +320,30 @@ else
     [ -z "$pkg_dir" ] && continue
     release_info "  Publishing $pkg_name@$pkg_version"
     cd "$REPO_ROOT/$pkg_dir"
-    publish_package_to_npm "$DIST_TAG" "$pkg_name" "$pkg_version"
+    publish_tool="$(package_publish_tool)"
+    if [ "$publish_tool" = "npm" ]; then
+      publish_dir="$(mktemp -d "${TMPDIR:-/tmp}/paperclip-release-package.XXXXXX")"
+      node "$REPO_ROOT/scripts/prepare-bundled-package.mjs" "$REPO_ROOT/$pkg_dir" "$publish_dir"
+      cd "$publish_dir"
+    fi
+    if ! publish_package_to_npm_and_wait \
+      "$DIST_TAG" \
+      "$pkg_name" \
+      "$pkg_version" \
+      "$publish_tool" \
+      "$VERIFY_ATTEMPTS" \
+      "$VERIFY_DELAY_SECONDS"; then
+      if [ "$publish_tool" = "npm" ]; then
+        rm -rf "$publish_dir"
+      fi
+      release_fail "stopping release: npm did not publish and expose ${pkg_name}@${pkg_version}"
+    fi
+    if [ "$publish_tool" = "npm" ]; then
+      rm -rf "$publish_dir"
+    fi
+    release_info "    ✓ Published version is registry-visible"
   done <<< "$VERSIONED_PACKAGE_INFO"
-  release_info "  ✓ Published all packages under dist-tag $DIST_TAG"
+  release_info "  ✓ Published the full package set under dist-tag $DIST_TAG"
 fi
 
 release_info ""
@@ -295,68 +351,15 @@ if [ "$dry_run" = true ]; then
   release_info "==> Step 6/7: Skipping npm verification in dry-run mode..."
 else
   release_info "==> Step 6/7: Confirming npm package availability and dist-tag integrity..."
-  VERIFY_ATTEMPTS="${NPM_PUBLISH_VERIFY_ATTEMPTS:-24}"
-  VERIFY_DELAY_SECONDS="${NPM_PUBLISH_VERIFY_DELAY_SECONDS:-5}"
-  REMAINING_PUBLISHED_PACKAGES=""
   REGISTRY_STATE_VERIFY_ATTEMPTS="${NPM_REGISTRY_STATE_VERIFY_ATTEMPTS:-12}"
   REGISTRY_STATE_VERIFY_DELAY_SECONDS="${NPM_REGISTRY_STATE_VERIFY_DELAY_SECONDS:-5}"
-
-  while IFS=$'\t' read -r _pkg_dir pkg_name pkg_version; do
-    [ -z "$pkg_name" ] && continue
-    if [ -n "$REMAINING_PUBLISHED_PACKAGES" ]; then
-      REMAINING_PUBLISHED_PACKAGES="${REMAINING_PUBLISHED_PACKAGES}"$'\n'
-    fi
-    REMAINING_PUBLISHED_PACKAGES="${REMAINING_PUBLISHED_PACKAGES}${pkg_name}"$'\t'"${pkg_version}"
-  done <<< "$VERSIONED_PACKAGE_INFO"
-
-  VERIFY_ROUND=1
-  while [ -n "$REMAINING_PUBLISHED_PACKAGES" ] && [ "$VERIFY_ROUND" -le "$VERIFY_ATTEMPTS" ]; do
-    NEXT_MISSING_PUBLISHED_PACKAGES=""
-
-    release_info "  Verification round ${VERIFY_ROUND}/${VERIFY_ATTEMPTS}"
-    while IFS=$'\t' read -r pkg_name pkg_version; do
-      [ -z "$pkg_name" ] && continue
-      release_info "    Checking $pkg_name@$pkg_version"
-      if npm_package_version_exists "$pkg_name" "$pkg_version"; then
-        release_info "      ✓ Found on npm"
-        continue
-      fi
-
-      if [ -n "$NEXT_MISSING_PUBLISHED_PACKAGES" ]; then
-        NEXT_MISSING_PUBLISHED_PACKAGES="${NEXT_MISSING_PUBLISHED_PACKAGES}"$'\n'
-      fi
-      NEXT_MISSING_PUBLISHED_PACKAGES="${NEXT_MISSING_PUBLISHED_PACKAGES}${pkg_name}"$'\t'"${pkg_version}"
-    done <<< "$REMAINING_PUBLISHED_PACKAGES"
-
-    REMAINING_PUBLISHED_PACKAGES="$NEXT_MISSING_PUBLISHED_PACKAGES"
-    if [ -n "$REMAINING_PUBLISHED_PACKAGES" ] && [ "$VERIFY_ROUND" -lt "$VERIFY_ATTEMPTS" ]; then
-      release_info "    Waiting ${VERIFY_DELAY_SECONDS}s for npm propagation before retrying remaining packages..."
-      sleep "$VERIFY_DELAY_SECONDS"
-    fi
-    VERIFY_ROUND=$((VERIFY_ROUND + 1))
-  done
-
-  MISSING_PUBLISHED_PACKAGES=""
-  while IFS=$'\t' read -r pkg_name pkg_version; do
-    [ -z "$pkg_name" ] && continue
-    if [ -n "$MISSING_PUBLISHED_PACKAGES" ]; then
-      MISSING_PUBLISHED_PACKAGES="${MISSING_PUBLISHED_PACKAGES}, "
-    fi
-    MISSING_PUBLISHED_PACKAGES="${MISSING_PUBLISHED_PACKAGES}${pkg_name}@${pkg_version}"
-  done <<< "$REMAINING_PUBLISHED_PACKAGES"
-
-  [ -z "$MISSING_PUBLISHED_PACKAGES" ] || release_fail "publish completed but npm never exposed: $MISSING_PUBLISHED_PACKAGES"
-
-  release_info "  ✓ Verified all versioned packages are available on npm"
+  release_info "  ✓ Every version was registry-visible before the next package publish"
 
   verify_args=(
     --channel "$channel"
     --dist-tag "$DIST_TAG"
     --target-version "$TARGET_PUBLISH_VERSION"
   )
-  if [ "$allow_canary_latest" = true ]; then
-    verify_args+=(--allow-canary-latest)
-  fi
   while IFS=$'\t' read -r _pkg_dir pkg_name _pkg_version; do
     [ -z "$pkg_name" ] && continue
     verify_args+=(--package "$pkg_name")
@@ -376,6 +379,12 @@ else
 
     release_fail "publish completed, but npm dist-tags or registry metadata never converged for ${TARGET_PUBLISH_VERSION}"
   fi
+
+  release_info "  Installing penclip@$DIST_TAG into a clean prefix..."
+  if ! verify_npm_installable "penclip@$DIST_TAG" "$TARGET_PUBLISH_VERSION"; then
+    release_fail "penclip@$DIST_TAG did not install cleanly at expected version ${TARGET_PUBLISH_VERSION}"
+  fi
+  release_info "    ✓ Clean-prefix install resolved ${TARGET_PUBLISH_VERSION}"
 fi
 
 release_info ""
@@ -391,14 +400,17 @@ release_info ""
 if [ "$dry_run" = true ]; then
   release_info "Dry run complete for $channel ${TARGET_PUBLISH_VERSION}."
 else
-  if [ "$channel" = "canary" ]; then
-    release_info "Published canary ${TARGET_PUBLISH_VERSION}."
-    release_info "Install with: npx penclip@canary onboard"
-    release_info "Next step: git push ${PUBLISH_REMOTE} refs/tags/${tag_name}"
-  else
-    release_info "Published stable ${TARGET_PUBLISH_VERSION}."
-    release_info "Next steps:"
-    release_info "  git push ${PUBLISH_REMOTE} refs/tags/${tag_name}"
-    release_info "  ./scripts/create-github-release.sh $TARGET_STABLE_VERSION"
-  fi
+  case "$channel" in
+    canary|nightly|beta)
+      release_info "Published $channel ${TARGET_PUBLISH_VERSION}."
+      release_info "Install with: npx penclip@$channel onboard"
+      release_info "Next step: git push ${PUBLISH_REMOTE} refs/tags/${tag_name}"
+      ;;
+    *)
+      release_info "Published stable ${TARGET_PUBLISH_VERSION}."
+      release_info "Next steps:"
+      release_info "  git push ${PUBLISH_REMOTE} refs/tags/${tag_name}"
+      release_info "  ./scripts/create-github-release.sh $TARGET_STABLE_VERSION"
+      ;;
+  esac
 fi

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { Outlet, useLocation, useNavigate, useNavigationType, useParams } from "@/lib/router";
@@ -60,7 +60,16 @@ function getCompanyPathSegments(pathname: string, companyPrefix: string | undefi
   return segments.slice(1);
 }
 
-const RESERVED_APP_SUBPATHS = new Set(["browse", "connect", "review", "attention", "gateways", "advanced", "app"]);
+const RESERVED_APP_SUBPATHS = new Set([
+  "browse",
+  "connections",
+  "connect",
+  "review",
+  "attention",
+  "gateways",
+  "advanced",
+  "app",
+]);
 
 function isSkillsStoreRoute(pathname: string, companyPrefix: string | undefined) {
   const segments = pathname.split("/").filter(Boolean);
@@ -205,11 +214,14 @@ export function Layout() {
   useEffect(() => {
     if (companiesLoading || onboardingTriggered.current) return;
     if (health?.deploymentMode === "authenticated") return;
+    // Cloud provisions the single company for a stack, and POST /companies is a
+    // 403 floor there — auto-opening the wizard could only dead-end.
+    if (health?.cloud) return;
     if (companies.length === 0) {
       onboardingTriggered.current = true;
       openOnboarding();
     }
-  }, [companies, companiesLoading, openOnboarding, health?.deploymentMode]);
+  }, [companies, companiesLoading, openOnboarding, health?.cloud, health?.deploymentMode]);
 
   useEffect(() => {
     if (!companyPrefix || companiesLoading || companies.length === 0) return;
@@ -627,6 +639,20 @@ export function Layout() {
               id="main-content"
               ref={mainContentRef}
               tabIndex={-1}
+              // Publish the pinned-composer bottom offset to descendants
+              // (PAP-495): while the auto-hiding mobile nav is on screen, raise
+              // it to the nav height so a sticky composer clears the nav; drop
+              // it back to the safe-area dock when the nav hides. Desktop leaves
+              // the token at its :root default.
+              style={
+                isMobile
+                  ? ({
+                      "--tc-composer-bottom": mobileNavVisible
+                        ? "var(--sz-calc-14)"
+                        : "var(--sz-calc-8)",
+                    } as CSSProperties)
+                  : undefined
+              }
               className={cn(
                 "flex-1 p-4 outline-none md:p-6",
                 // Reserve the scrollbar gutter on desktop so pages whose height

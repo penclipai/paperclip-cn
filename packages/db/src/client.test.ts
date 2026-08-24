@@ -32,6 +32,10 @@ async function migrationHash(migrationFile: string): Promise<string> {
   return createHash("sha256").update(content).digest("hex");
 }
 
+function contentHash(content: string): string {
+  return createHash("sha256").update(content).digest("hex");
+}
+
 const userVisibleUpdatedAtTables = new Set([
   "companies",
   "heartbeat_runs",
@@ -148,6 +152,86 @@ describeEmbeddedPostgres("applyPendingMigrations", () => {
       ),
     ).toEqual(['9999_bad_backfill.sql: UPDATE "issues" sets updated_at']);
   });
+
+  it(
+    "treats LF and CRLF migration content as the same migration identity",
+    async () => {
+      const connectionString = await createTempDatabase();
+      await applyPendingMigrations(connectionString);
+
+      const migrationFile = "0001_fast_northstar.sql";
+      const content = await fs.promises.readFile(
+        new URL(`./migrations/${migrationFile}`, import.meta.url),
+        "utf8",
+      );
+      const currentHash = contentHash(content);
+      const normalizedLf = content.replace(/\r\n?/g, "\n");
+      const lfHash = contentHash(normalizedLf);
+      const crlfHash = contentHash(normalizedLf.replaceAll("\n", "\r\n"));
+      const alternateHash = currentHash === lfHash ? crlfHash : lfHash;
+      expect(alternateHash).not.toBe(currentHash);
+
+      const sql = postgres(connectionString, { max: 1, onnotice: () => {} });
+      try {
+        const updated = await sql<{ id: number }[]>`
+          UPDATE "drizzle"."__drizzle_migrations"
+          SET "hash" = ${alternateHash}
+          WHERE "hash" = ${currentHash}
+          RETURNING "id"
+        `;
+        expect(updated).toHaveLength(1);
+      } finally {
+        await sql.end();
+      }
+
+      expect(await inspectMigrations(connectionString)).toMatchObject({ status: "upToDate" });
+      await expect(applyPendingMigrations(connectionString)).resolves.toBeUndefined();
+    },
+    MIGRATION_TEST_TIMEOUT,
+  );
+
+  it(
+    "refuses to replay a partially applied historical migration with incompatible history",
+    async () => {
+      const connectionString = await createTempDatabase();
+      await applyPendingMigrations(connectionString);
+
+      const migrationFile = "0001_fast_northstar.sql";
+      const currentHash = await migrationHash(migrationFile);
+      const incompatibleHash = "f".repeat(64);
+      const sql = postgres(connectionString, { max: 1, onnotice: () => {} });
+      try {
+        const updated = await sql<{ id: number }[]>`
+          UPDATE "drizzle"."__drizzle_migrations"
+          SET "hash" = ${incompatibleHash}
+          WHERE "hash" = ${currentHash}
+          RETURNING "id"
+        `;
+        expect(updated).toHaveLength(1);
+      } finally {
+        await sql.end();
+      }
+
+      expect(await inspectMigrations(connectionString)).toMatchObject({
+        status: "needsMigrations",
+        pendingMigrations: [migrationFile],
+      });
+      await expect(applyPendingMigrations(connectionString)).rejects.toThrow(
+        `Refusing to replay migration ${migrationFile}`,
+      );
+
+      const verifySql = postgres(connectionString, { max: 1, onnotice: () => {} });
+      try {
+        const rows = await verifySql<{ relation: string | null }[]>`
+          SELECT to_regclass('public.agent_runtime_state')::text AS relation
+        `;
+        expect(rows[0]?.relation).toBe("agent_runtime_state");
+      } finally {
+        await verifySql.end();
+      }
+    },
+    MIGRATION_TEST_TIMEOUT,
+  );
 
   it(
     "applies an inserted earlier migration without replaying later legacy migrations",

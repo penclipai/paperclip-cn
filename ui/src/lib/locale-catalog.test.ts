@@ -67,4 +67,35 @@ describe("locale catalogs", () => {
       en["issueRecoveryAction.headline.stranded_assigned_issue"],
     );
   });
+
+  it("keeps company settings and portability copy localized in zh-CN", () => {
+    const en = readLocaleMessages("en");
+    const zh = readLocaleMessages("zh-CN");
+    const requiredKeys = [
+      "companySettings.noCompanySelectedBody",
+      "companySettings.interactionGovernance",
+      "companySettings.governance.option.companyDefault",
+      "companySettings.mibUnit",
+      "companyImport.completedTitle",
+      "companyImport.summaryLine",
+      "companyImport.skillImportResults",
+      "companyImport.activationPartialFailureTitle",
+      "companyImport.requestDidNotComplete",
+      "companyExport.selectionSummary",
+      "companyExport.attachmentsRequireTasksOrRoutines",
+      "companyExport.showMoreTasksSummary",
+    ];
+
+    for (const key of requiredKeys) {
+      expect(en[key], `missing en key ${key}`).toBeTruthy();
+      expect(zh[key], `missing zh-CN key ${key}`).toBeTruthy();
+    }
+
+    expect(zh["companySettings.interactionGovernance"]).not.toBe(
+      en["companySettings.interactionGovernance"],
+    );
+    expect(zh["companyImport.completedTitle"]).not.toBe(
+      en["companyImport.completedTitle"],
+    );
+  });
 });

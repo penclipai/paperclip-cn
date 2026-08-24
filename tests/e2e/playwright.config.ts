@@ -11,50 +11,16 @@ const PAPERCLIP_HOME = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-e2e-home
 const PAPERCLIP_INSTANCE_ID = "playwright-e2e";
 const PAPERCLIP_CONFIG = path.join(PAPERCLIP_HOME, "instances", PAPERCLIP_INSTANCE_ID, "config.json");
 const PAPERCLIP_AGENT_JWT_SECRET = process.env.PAPERCLIP_AGENT_JWT_SECRET ?? "playwright-e2e-agent-jwt-secret";
-const PLAYWRIGHT_CHANNEL = process.env.PAPERCLIP_PLAYWRIGHT_CHANNEL?.trim();
-
-function bootstrapE2EInstanceConfig(): void {
-  const instanceRoot = path.join(PAPERCLIP_HOME, "instances", PAPERCLIP_INSTANCE_ID);
-  fs.mkdirSync(instanceRoot, { recursive: true });
-  const dataRoot = path.join(instanceRoot, "data");
-  fs.writeFileSync(
-    PAPERCLIP_CONFIG,
-    `${JSON.stringify({
-      $meta: { version: 1, updatedAt: "2026-01-01T00:00:00.000Z", source: "onboard" },
-      database: {
-        mode: "embedded-postgres",
-        embeddedPostgresDataDir: path.join(instanceRoot, "db"),
-        backup: {
-          enabled: false,
-          intervalMinutes: 60,
-          retentionDays: 7,
-          dir: path.join(dataRoot, "backups"),
-        },
-      },
-      logging: { mode: "file", logDir: path.join(instanceRoot, "logs") },
-      server: { deploymentMode: "local_trusted", host: "127.0.0.1", port: PORT },
-      auth: { baseUrlMode: "auto" },
-      storage: {
-        provider: "local_disk",
-        localDisk: { baseDir: path.join(dataRoot, "storage") },
-      },
-      secrets: {
-        provider: "local_encrypted",
-        strictMode: false,
-        localEncrypted: { keyFilePath: path.join(instanceRoot, "secrets", "master.key") },
-      },
-    }, null, 2)}\n`,
-    "utf8",
-  );
-}
-
-bootstrapE2EInstanceConfig();
+const PAPERCLIP_DECISION_SIGNING_SECRET =
+  process.env.PAPERCLIP_DECISION_SIGNING_SECRET ?? "playwright-e2e-decision-signing-secret";
 const PAPERCLIP_TOOL_ACTION_SIGNING_SECRET =
   process.env.PAPERCLIP_TOOL_ACTION_SIGNING_SECRET ?? "playwright-e2e-tool-action-signing-secret";
+const PLAYWRIGHT_CHANNEL = process.env.PAPERCLIP_PLAYWRIGHT_CHANNEL;
 
 process.env.PAPERCLIP_HOME = PAPERCLIP_HOME;
 process.env.PAPERCLIP_CONFIG = PAPERCLIP_CONFIG;
 process.env.PAPERCLIP_AGENT_JWT_SECRET = PAPERCLIP_AGENT_JWT_SECRET;
+process.env.PAPERCLIP_DECISION_SIGNING_SECRET = PAPERCLIP_DECISION_SIGNING_SECRET;
 process.env.PAPERCLIP_TOOL_ACTION_SIGNING_SECRET = PAPERCLIP_TOOL_ACTION_SIGNING_SECRET;
 
 export default defineConfig({
@@ -85,10 +51,10 @@ export default defineConfig({
       },
     },
   ],
-  // The webServer directive starts `penclip run` before tests.
-  // Expects `pnpm penclip` to be runnable from repo root.
+  // The webServer directive bootstraps a throwaway instance and then starts it.
+  // `onboard --yes --run` works in a non-interactive temp PAPERCLIP_HOME.
   webServer: {
-    command: `pnpm penclip run`,
+    command: `pnpm paperclipai onboard --yes --run`,
     url: `${BASE_URL}/api/health`,
     // Always boot a dedicated throwaway instance for e2e so browser tests
     // never attach to the developer's active Paperclip home/server.
@@ -104,7 +70,7 @@ export default defineConfig({
       PAPERCLIP_INSTANCE_ID,
       PAPERCLIP_CONFIG,
       PAPERCLIP_AGENT_JWT_SECRET,
-      PAPERCLIP_INSTANCE_ID,
+      PAPERCLIP_DECISION_SIGNING_SECRET,
       PAPERCLIP_TOOL_ACTION_SIGNING_SECRET,
       PAPERCLIP_BIND: "loopback",
       PAPERCLIP_DEPLOYMENT_MODE: "local_trusted",

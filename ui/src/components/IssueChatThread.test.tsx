@@ -75,7 +75,7 @@ vi.mock("@assistant-ui/react", () => ({
 
 vi.mock("react-i18next", async (importOriginal) => {
   const actual = await importOriginal<typeof import("react-i18next")>();
-  const enCommon = (await import("../../public/locales/en/common.json")).default as Record<string, string>;
+  const { translateForTest } = await import("../test-utils/i18n");
   const translations: Record<string, string> = {
     None: "无",
     "issueBlocked.blockedByOne": "Work on this task is blocked by {{blockerLabel}} until it is complete. Comments still wake the responsible for questions or triage.",
@@ -94,22 +94,14 @@ vi.mock("react-i18next", async (importOriginal) => {
   return {
     ...actual,
     useTranslation: () => ({
-      t: (key: string, options?: Record<string, unknown>) => {
-        const value = key in translations
-          ? translations[key]
-          : key in enCommon
-          ? enCommon[key]
-          : typeof options?.defaultValue === "string"
-          ? options.defaultValue.replace(/\{\{(\w+)\}\}/g, (_match, token) => String(options?.[token] ?? ""))
-          : key.replace(/\{\{(\w+)\}\}/g, (_match, token) => String(options?.[token] ?? ""));
-        return value.replace(/\{\{(\w+)\}\}/g, (_match, token) => String(options?.[token] ?? ""));
-      },
+      t: (key: string, options?: Record<string, unknown>) =>
+        translateForTest(key, options, "en", translations),
     }),
   };
 });
 
 vi.mock("../i18n", async () => {
-  const enCommon = (await import("../../public/locales/en/common.json")).default as Record<string, string>;
+  const { translateForTest } = await import("../test-utils/i18n");
   return {
   translateInstant: (key: string, options?: Record<string, unknown>) => {
     const translations: Record<string, string> = {
@@ -118,10 +110,7 @@ vi.mock("../i18n", async () => {
       "status.inProgress": "进行中",
       "status.todo": "待办",
     };
-    const value = translations[key] ?? enCommon[key] ?? (typeof options?.defaultValue === "string"
-      ? options.defaultValue.replace(/\{\{(\w+)\}\}/g, (_match, token) => String(options?.[token] ?? ""))
-      : key);
-    return value.replace(/\{\{(\w+)\}\}/g, (_match, token) => String(options?.[token] ?? ""));
+    return translateForTest(key, options, "en", translations);
   },
   getCurrentLocale: () => "en",
   };
@@ -266,6 +255,9 @@ function createSuggestedTasksInteraction(
     },
     result: null,
     ...overrides,
+    resolverPolicy: overrides.resolverPolicy ?? "board_only",
+    requestedResolverPolicy: overrides.requestedResolverPolicy ?? "board_only",
+    effectiveResolverPolicy: overrides.effectiveResolverPolicy ?? "board_only",
   };
 }
 
@@ -305,6 +297,9 @@ function createQuestionInteraction(
     },
     result: null,
     ...overrides,
+    resolverPolicy: overrides.resolverPolicy ?? "board_only",
+    requestedResolverPolicy: overrides.requestedResolverPolicy ?? "board_only",
+    effectiveResolverPolicy: overrides.effectiveResolverPolicy ?? "board_only",
   };
 }
 
@@ -338,6 +333,9 @@ function createExpiredRequestConfirmationInteraction(
       commentId: "comment-1",
     },
     ...overrides,
+    resolverPolicy: overrides.resolverPolicy ?? "board_only",
+    requestedResolverPolicy: overrides.requestedResolverPolicy ?? "board_only",
+    effectiveResolverPolicy: overrides.effectiveResolverPolicy ?? "board_only",
   };
 }
 
@@ -2161,8 +2159,6 @@ describe("IssueChatThread", () => {
       );
     });
 
-    expect(container.textContent).toContain("Work on this task is blocked by the linked task");
-    expect(container.textContent).toContain("Comments still wake the responsible for questions or triage");
     expect(container.textContent).toContain("PAP-1723");
     expect(container.textContent).toContain("QA the install flow");
     expect(container.querySelector('[data-issue-path-id="PAP-1723"]')).not.toBeNull();

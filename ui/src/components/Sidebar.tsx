@@ -22,11 +22,11 @@ import {
   AppWindow,
   MessagesSquare,
   GanttChartSquare,
+  LayoutGrid,
 } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { NavLink } from "@/lib/router";
 import { SidebarSection } from "./SidebarSection";
 import { SidebarNavItem } from "./SidebarNavItem";
 import { SidebarAgents } from "./SidebarAgents";
@@ -70,7 +70,7 @@ export function Sidebar() {
     resourceKey: "live-runs",
     queryKey: liveRunsQueryKey,
     enabled: !!selectedCompanyId,
-    // Event-sourced via LiveUpdatesProvider (paperclipai/paperclip#9627) + reconnect reconcile — no
+    // Event-sourced via LiveUpdatesProvider (GitHub issue 9627) + reconnect reconcile — no
     // interval poll needed. Polling here also re-armed React Query's timer on
     // every live-event cache write, a major source of steady-state churn.
     refetchInterval: false,
@@ -87,6 +87,7 @@ export function Sidebar() {
   const showWorkspacesLink = experimentalSettings?.enableIsolatedWorkspaces === true;
   const showApps = experimentalSettings?.enableApps === true;
   const showPipelines = experimentalSettings?.enablePipelines === true;
+  const showStatusCards = experimentalSettings?.enableStatusCards === true;
   const goalsLinkPending = experimentalSettings === undefined;
   const showGoalsLink = experimentalSettings?.enableGoalsSidebarLink === true;
   // Decisions (attention home) is an experimental surface (PAP-13481): the nav
@@ -119,28 +120,20 @@ export function Sidebar() {
 
   return (
     <aside className="w-full h-full min-h-0 border-r border-border bg-background flex flex-col">
-      {/* Top bar: Company name (bold) + Search — aligned with top sections (no visible border) */}
+      {/* Top bar: Company name (bold) + collapse control — aligned with top
+          sections (no visible border). Search deliberately does NOT live here:
+          the header's spare width goes to the workspace/organization name,
+          which is the user's orientation anchor and truncates otherwise.
+          Search is the first nav item below instead. */}
       <div className="flex items-center gap-1 px-3 h-12 shrink-0">
         <SidebarCompanyMenu />
-        {/* In the collapsed rail the search/toggle controls don't fit beside the
-            logo — keeping them would overflow the 64px rail and squeeze the logo
-            out of alignment with the icon column below it (PAP-10676). They return
-            as soon as the panel is expanded (pinned) or peeking. Expansion in the
+        {/* In the collapsed rail the toggle doesn't fit beside the logo —
+            keeping it would overflow the 64px rail and squeeze the logo out of
+            alignment with the icon column below it. It returns as
+            soon as the panel is expanded (pinned) or peeking. Expansion in the
             rail is still reachable via hover-peek + Pin and Cmd/Ctrl+B. */}
         {!rail ? (
           <>
-            <Button
-              asChild
-              variant="ghost"
-              size="icon-sm"
-              className="text-muted-foreground shrink-0"
-              aria-label={t("sidebar.openSearch", { defaultValue: "Open search" })}
-              title={t("sidebar.openSearch", { defaultValue: "Open search" })}
-            >
-              <NavLink to="/search">
-                <Search className="h-4 w-4" />
-              </NavLink>
-            </Button>
             {/* Desktop-only collapse/expand affordance. While peeking (hover flyout
                 over the collapsed rail) it becomes a Pin that promotes the peek to a
                 pinned-expanded sidebar; otherwise it toggles the pinned rail. Mobile
@@ -189,12 +182,12 @@ export function Sidebar() {
               <button
                 onClick={() => openNewIssue()}
                 data-slot="icon-button"
-                aria-label={rail ? t("sidebar.newIssue", { defaultValue: "New Issue" }) : undefined}
-                className="flex items-center gap-2.5 px-3 py-2 pointer-coarse:py-1.5 text-(length:--text-compact) font-medium text-foreground/80 hover:bg-accent/50 hover:text-foreground transition-colors"
+                aria-label={rail ? t("sidebar.newTask", { defaultValue: "New Task" }) : undefined}
+                className="flex items-center gap-2.5 mx-2 rounded-lg px-2 py-1.5 pointer-coarse:py-1 text-(length:--text-compact) font-medium text-foreground/80 hover:bg-accent/50 hover:text-foreground transition-colors"
               >
                 <SquarePen className="h-4 w-4 shrink-0" />
                 <span className={rail ? SIDEBAR_RAIL_HIDDEN_LABEL : "truncate"}>
-                  {t("sidebar.newIssue", { defaultValue: "New Issue" })}
+                  {t("sidebar.newTask", { defaultValue: "New Task" })}
                 </span>
               </button>
             );
@@ -202,14 +195,28 @@ export function Sidebar() {
               <Tooltip>
                 <TooltipTrigger asChild>{newTaskButton}</TooltipTrigger>
                 <TooltipContent side="right">
-                  {t("sidebar.newIssue", { defaultValue: "New Issue" })}
+                  {t("sidebar.newTask", { defaultValue: "New Task" })}
                 </TooltipContent>
               </Tooltip>
             ) : (
               newTaskButton
             );
           })()}
-          <SidebarNavItem to="/dashboard" label={t("sidebar.dashboard", { defaultValue: "Dashboard" })} icon={LayoutDashboard} liveCount={liveRunCount} />
+          {/* Search moved out of the header so the workspace name keeps the
+              width; a nav row also keeps search reachable from the
+              collapsed rail, where the old header icon was dropped entirely.
+              Cmd/Ctrl+K remains the keyboard path (command palette). */}
+          <SidebarNavItem
+            to="/search"
+            label={t("Search", { defaultValue: "Search" })}
+            icon={Search}
+          />
+          <SidebarNavItem
+            to="/dashboard"
+            label={t("sidebar.dashboard", { defaultValue: "Dashboard" })}
+            icon={LayoutDashboard}
+            liveCount={liveRunCount}
+          />
           <SidebarNavItem
             to="/inbox"
             label={t("sidebar.inbox", { defaultValue: "Inbox" })}
@@ -228,8 +235,20 @@ export function Sidebar() {
               badgeLabel={t("whatNeedsMe.badgeLabel", { defaultValue: "decisions" })}
             />
           ) : null}
+          {showStatusCards ? (
+            <SidebarNavItem
+              to="/status"
+              label={t("Status", { defaultValue: "Status" })}
+              icon={LayoutGrid}
+              textBadge={t("Beta", { defaultValue: "Beta" })}
+            />
+          ) : null}
           {conferenceRoomChatEnabled ? (
-            <SidebarNavItem to="/board-chat" label={t("Conference Room", { defaultValue: "Conference Room" })} icon={MessagesSquare} />
+            <SidebarNavItem
+              to="/board-chat"
+              label={t("Conference Room", { defaultValue: "Conference Room" })}
+              icon={MessagesSquare}
+            />
           ) : null}
         </div>
 
@@ -298,6 +317,7 @@ export function Sidebar() {
           {showApps ? <SidebarNavItem to="/apps" label={t("sidebar.apps", { defaultValue: "Apps" })} icon={AppWindow} /> : null}
           <SidebarNavItem to="/timeline" label={t("sidebar.timeline", { defaultValue: "Timeline" })} icon={GanttChartSquare} />
           <SidebarNavItem to="/costs" label={t("sidebar.costs", { defaultValue: "Costs" })} icon={DollarSign} />
+          {/* One entry — /audit merged into the rich Activity feed (PAP-16302). */}
           <SidebarNavItem to="/activity" label={t("sidebar.activity", { defaultValue: "Activity" })} icon={History} />
           <SidebarNavItem to="/company/settings" label={t("sidebar.settings", { defaultValue: "Settings" })} icon={Settings} />
         </SidebarSection>

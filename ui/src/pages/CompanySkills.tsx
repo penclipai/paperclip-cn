@@ -30,6 +30,7 @@ import { useCompany } from "../context/CompanyContext";
 import { useBreadcrumbs, type Breadcrumb } from "../context/BreadcrumbContext";
 import { useToastActions } from "../context/ToastContext";
 import { queryKeys } from "../lib/queryKeys";
+import { copyTextToClipboard } from "../lib/clipboard";
 import { EmptyState } from "../components/EmptyState";
 import { MarkdownBody } from "../components/MarkdownBody";
 import { MarkdownEditor } from "../components/MarkdownEditor";
@@ -938,7 +939,7 @@ function SkillCard({
             type="checkbox"
             className="mt-1 h-4 w-4 rounded border-border"
             checked={selected}
-            aria-label={`Select ${card.name}`}
+            aria-label={t("companySkills.selectSkillAria", { name: card.name })}
             onClick={(event) => event.stopPropagation()}
             onChange={(event) => onSelectChange?.(card, event.target.checked)}
           />
@@ -979,7 +980,7 @@ function SkillCard({
                 variant="ghost"
                 size="icon-sm"
                 className="-mr-1 -mt-1 opacity-70 group-hover:opacity-100"
-                aria-label={`More actions for ${card.name}`}
+                aria-label={t("More actions for {{name}}", { name: card.name })}
                 onClick={(event) => event.stopPropagation()}
               >
                 <MoreHorizontal className="h-4 w-4" />
@@ -990,7 +991,7 @@ function SkillCard({
                 <>
                   <DropdownMenuItem onSelect={() => onOpenMove(card)}>
                     <FolderInput className="h-3.5 w-3.5" />
-                    Move to folder…
+                    {t("folders.moveTo")}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                 </>
@@ -1174,7 +1175,7 @@ export function DiscoveryGrid({
   onImport: () => void;
   onImportFromProject: () => void;
   onBrowseCatalog: () => void;
-  onScan: () => void;
+  onScan: (projectId?: string) => void;
   scanPending: boolean;
   scanStatus: string | null;
   folderResult?: FolderListResult | null;
@@ -1229,7 +1230,15 @@ export function DiscoveryGrid({
   );
   // The nested folder tree owns the left rail whenever folders (reserved roots
   // or user folders) exist for the installed view.
-  const showFolderRail = Boolean(folderResult && folderResult.folders.length > 0 && onFolderSelect && folderActionsReady);
+  const showFolderRail = Boolean(
+    folderResult && folderResult.folders.length > 0 && onFolderSelect && folderActionsReady,
+  );
+  const activeProjectFolder = useMemo(() => {
+    if (!folderResult || folderSelection === "all" || folderSelection === "unfiled") return null;
+    const folder = folderResult.folders.find((candidate) => candidate.id === folderSelection);
+    return folder?.systemKey?.startsWith("project:") ? folder : null;
+  }, [folderResult, folderSelection]);
+  const activeProjectId = activeProjectFolder?.systemKey?.slice("project:".length) || null;
 
   return (
     // On desktop the store is bounded to the viewport so the category sidebar
@@ -1331,7 +1340,7 @@ export function DiscoveryGrid({
           <Button
             variant="ghost"
             size="icon-sm"
-            onClick={onScan}
+            onClick={() => onScan()}
             disabled={scanPending}
             title={t("companySkills.scanProjectWorkspaces")}
             aria-label={t("companySkills.scanProjectWorkspaces")}
@@ -1381,7 +1390,7 @@ export function DiscoveryGrid({
               />
             </div>
           ) : null}
-          {onCreateFolder ? (
+          {onCreateFolder && !showFolderRail ? (
             <Button variant="outline" size="sm" onClick={onCreateFolder}>
               <Plus className="mr-1 h-3.5 w-3.5" />
               {t("folders.newFolder", { defaultValue: "New folder" })}
@@ -1451,8 +1460,21 @@ export function DiscoveryGrid({
         <div className="min-h-0 flex-1 overflow-auto p-4">
           {scanStatus ? <p className="mb-3 text-xs text-muted-foreground">{scanStatus}</p> : null}
           {showFolderRail && onFolderSelect ? (
-            <div className="mb-4">
+            <div className="mb-4 flex items-center justify-between gap-2">
               <FolderBreadcrumb result={folderResult} selection={folderSelection} onSelect={onFolderSelect} />
+              {activeProjectFolder && activeProjectId ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onScan(activeProjectId)}
+                  disabled={scanPending}
+                  aria-label={t("companySkills.refreshProjectSkillsAria", { name: activeProjectFolder.name })}
+                  title={t("companySkills.refreshFromProject", { name: activeProjectFolder.name })}
+                >
+                  <RefreshCw className={cn("h-3.5 w-3.5", scanPending && "animate-spin")} />
+                  {t("Refresh")}
+                </Button>
+              ) : null}
             </div>
           ) : null}
           {folderNudgeStorageKey && onCreateFolder && folderResult && folderResult.folders.length === 0 && !loading && cards.length > 0 ? (
@@ -1872,7 +1894,7 @@ function CatalogList({
             type="button"
             className="flex h-9 w-9 shrink-0 items-center justify-center self-center rounded-sm text-muted-foreground opacity-80 transition-(--tp-background-color-color-opacity) hover:bg-accent hover:text-foreground group-hover:opacity-100"
             onClick={() => onToggleSkill(skill.id)}
-            aria-label={expanded ? `Collapse ${skill.name}` : `Expand ${skill.name}`}
+            aria-label={t(expanded ? "Collapse {{name}}" : "Expand {{name}}", { name: skill.name })}
           >
             {expanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
           </button>
@@ -2614,7 +2636,7 @@ function SkillList({
                 type="button"
                 className="flex h-9 w-9 shrink-0 items-center justify-center self-center rounded-sm text-muted-foreground opacity-80 transition-(--tp-background-color-color-opacity) hover:bg-accent hover:text-foreground group-hover:opacity-100"
                 onClick={() => onToggleSkill(skill.id)}
-                aria-label={expanded ? `Collapse ${skill.name}` : `Expand ${skill.name}`}
+                aria-label={t(expanded ? "Collapse {{name}}" : "Expand {{name}}", { name: skill.name })}
               >
                 {expanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
               </button>
@@ -2855,10 +2877,12 @@ function SkillLocationCard({
           size="sm"
           variant="outline"
           onClick={() => {
-            void navigator.clipboard?.writeText(canonical).then(() => {
-              setCopied(true);
-              window.setTimeout(() => setCopied(false), 1500);
-            });
+            void copyTextToClipboard(canonical)
+              .then(() => {
+                setCopied(true);
+                window.setTimeout(() => setCopied(false), 1500);
+              })
+              .catch(() => {});
           }}
         >
           <Copy className="mr-1.5 h-3.5 w-3.5" />
@@ -3947,9 +3971,11 @@ function SkillPane({
             {detail.sourceType === "github" && (
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-muted-foreground">{t("companySkills.pin")}</span>
-                <span className="font-mono text-xs">{currentPin ?? "untracked"}</span>
+                <span className="font-mono text-xs">{currentPin ?? t("untracked")}</span>
                 {updateStatus?.trackingRef && (
-                  <span className="text-xs text-muted-foreground">tracking {updateStatus.trackingRef}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {t("companySkills.trackingRef", { ref: updateStatus.trackingRef })}
+                  </span>
                 )}
                 <Button
                   variant="ghost"
@@ -4494,13 +4520,23 @@ export function CompanySkills() {
   });
 
   const scanProjects = useMutation({
-    mutationFn: () => companySkillsApi.scanProjects(selectedCompanyId!),
-    onMutate: () => {
-      setScanStatusMessage(t("companySkills.scanningProjectWorkspaces"));
+    mutationFn: (projectId?: string) => companySkillsApi.scanProjects(
+      selectedCompanyId!,
+      projectId ? { projectIds: [projectId] } : {},
+    ),
+    onMutate: (projectId) => {
+      setScanStatusMessage(
+        projectId
+          ? t("companySkills.refreshingSkillsList")
+          : t("companySkills.scanningProjectWorkspaces"),
+      );
     },
     onSuccess: async (result) => {
       setScanStatusMessage(t("companySkills.refreshingSkillsList"));
-      await queryClient.invalidateQueries({ queryKey: queryKeys.companySkills.list(selectedCompanyId!) });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.companySkills.list(selectedCompanyId!) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.folders.list(selectedCompanyId!, "skill") }),
+      ]);
       const summary = formatProjectScanSummary(result);
       setScanStatusMessage(summary);
       pushToast({
@@ -5150,7 +5186,7 @@ export function CompanySkills() {
 
   const attachAgentsMutation = useMutation({
     mutationFn: async (input: { agentId: string; desiredSkills: Array<string | AgentDesiredSkillEntry> }) => {
-      return agentsApi.syncSkills(input.agentId, input.desiredSkills, selectedCompanyId ?? undefined);
+      return agentsApi.syncSkills(input.agentId, input.desiredSkills, "replace", selectedCompanyId ?? undefined);
     },
     onSuccess: async () => {
       await Promise.all([
@@ -5630,7 +5666,7 @@ export function CompanySkills() {
           onImport={() => setImportDialogOpen(true)}
           onImportFromProject={() => setImportFromProjectOpen(true)}
           onBrowseCatalog={() => setDiscoveryTab("catalog")}
-          onScan={() => scanProjects.mutate()}
+          onScan={(projectId) => scanProjects.mutate(projectId)}
           scanPending={scanProjects.isPending}
           scanStatus={scanStatusMessage}
           folderResult={showInstalledFolders ? railSkillFolderResult : null}

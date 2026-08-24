@@ -34,6 +34,20 @@ function splitMigrationStatements(content: string): string[] {
     .filter((statement) => statement.length > 0);
 }
 
+function hashMigrationContent(content: string): string {
+  return createHash("sha256").update(content).digest("hex");
+}
+
+function normalizeMigrationLineEndings(content: string): string {
+  return content.replace(/\r\n?/g, "\n");
+}
+
+function migrationContentHashAliases(content: string): string[] {
+  const normalizedLf = normalizeMigrationLineEndings(content);
+  const normalizedCrlf = normalizedLf.replaceAll("\n", "\r\n");
+  return [...new Set([normalizedLf, normalizedCrlf, content].map(hashMigrationContent))];
+}
+
 export type MigrationState =
   | { status: "upToDate"; tableCount: number; availableMigrations: string[]; appliedMigrations: string[] }
   | {
@@ -45,8 +59,72 @@ export type MigrationState =
       reason: "no-migration-journal-empty-db" | "no-migration-journal-non-empty-db" | "pending-migrations";
     };
 
-export function createDb(url: string) {
-  const sql = postgres(url);
+export interface DatabaseClientOptions {
+  /**
+   * postgres.js `prepare`. Set false when connecting through a
+   * transaction-mode pooler (pgbouncer / Neon `-pooler` endpoints /
+   * Supabase Supavisor transaction ports) so the client does not rely on
+   * session-scoped prepared statements. Defaults to the driver default
+   * (enabled), preserving existing behavior on direct connections.
+   */
+  prepare?: boolean;
+  /** postgres.js `max` — connection pool size (driver default: 10). */
+  maxConnections?: number;
+  /** postgres.js `idle_timeout` in seconds (driver default: disabled). */
+  idleTimeoutSeconds?: number;
+  /** postgres.js `connect_timeout` in seconds (driver default: 30). */
+  connectTimeoutSeconds?: number;
+}
+
+function envBoolean(env: NodeJS.ProcessEnv, name: string): boolean | undefined {
+  const value = env[name]?.trim().toLowerCase();
+  if (value === undefined || value === "") return undefined;
+  if (value === "true" || value === "1") return true;
+  if (value === "false" || value === "0") return false;
+  throw new Error(`${name} must be "true" or "false", got: ${env[name]}`);
+}
+
+function envPositiveInteger(env: NodeJS.ProcessEnv, name: string): number | undefined {
+  const value = env[name]?.trim();
+  if (value === undefined || value === "") return undefined;
+  if (!/^[1-9]\d*$/.test(value)) {
+    throw new Error(`${name} must be a positive integer, got: ${env[name]}`);
+  }
+  return Number.parseInt(value, 10);
+}
+
+/**
+ * Database client tuning from the environment, so hosted deployments can
+ * adapt to their connection topology (pooled endpoints, network latency)
+ * without editing source. Every variable is optional; when unset the
+ * driver defaults apply and behavior is identical to a bare
+ * `postgres(url)` — self-hosted setups need none of these.
+ */
+export function databaseClientOptionsFromEnv(env: NodeJS.ProcessEnv = process.env): DatabaseClientOptions {
+  const options: DatabaseClientOptions = {};
+  const prepare = envBoolean(env, "DATABASE_PREPARED_STATEMENTS");
+  if (prepare !== undefined) options.prepare = prepare;
+  const maxConnections = envPositiveInteger(env, "DATABASE_POOL_MAX");
+  if (maxConnections !== undefined) options.maxConnections = maxConnections;
+  const idleTimeoutSeconds = envPositiveInteger(env, "DATABASE_IDLE_TIMEOUT_SECONDS");
+  if (idleTimeoutSeconds !== undefined) options.idleTimeoutSeconds = idleTimeoutSeconds;
+  const connectTimeoutSeconds = envPositiveInteger(env, "DATABASE_CONNECT_TIMEOUT_SECONDS");
+  if (connectTimeoutSeconds !== undefined) options.connectTimeoutSeconds = connectTimeoutSeconds;
+  return options;
+}
+
+export function postgresJsOptions(options: DatabaseClientOptions): Record<string, unknown> {
+  const driverOptions: Record<string, unknown> = {};
+  if (options.prepare !== undefined) driverOptions.prepare = options.prepare;
+  if (options.maxConnections !== undefined) driverOptions.max = options.maxConnections;
+  if (options.idleTimeoutSeconds !== undefined) driverOptions.idle_timeout = options.idleTimeoutSeconds;
+  if (options.connectTimeoutSeconds !== undefined) driverOptions.connect_timeout = options.connectTimeoutSeconds;
+  return driverOptions;
+}
+
+export function createDb(url: string, options?: DatabaseClientOptions) {
+  const resolved = options ?? databaseClientOptionsFromEnv();
+  const sql = postgres(url, postgresJsOptions(resolved));
   return drizzlePg(sql, { schema });
 }
 
@@ -182,10 +260,12 @@ async function migrationHistoryEntryExists(
   qualifiedTable: string,
   columnNames: Set<string>,
   migrationFile: string,
-  hash: string,
+  hashes: readonly string[],
 ): Promise<boolean> {
   const predicates: string[] = [];
-  if (columnNames.has("hash")) predicates.push(`hash = ${quoteLiteral(hash)}`);
+  if (columnNames.has("hash") && hashes.length > 0) {
+    predicates.push(`hash IN (${hashes.map(quoteLiteral).join(", ")})`);
+  }
   if (columnNames.has("name")) predicates.push(`name = ${quoteLiteral(migrationFile)}`);
   if (predicates.length === 0) return false;
 
@@ -249,15 +329,36 @@ async function applyPendingMigrationsManually(
 
     for (const migrationFile of orderedPendingMigrations) {
       const migrationContent = await readMigrationFileContent(migrationFile);
-      const hash = createHash("sha256").update(migrationContent).digest("hex");
+      const hashes = migrationContentHashAliases(migrationContent);
+      const hash = hashMigrationContent(migrationContent);
       const existingEntry = await migrationHistoryEntryExists(
         sql,
         qualifiedTable,
         columnNames,
         migrationFile,
-        hash,
+        hashes,
       );
       if (existingEntry) continue;
+
+      const applicationState = await migrationContentApplicationState(sql, migrationContent);
+      if (applicationState === "applied") {
+        await runInTransaction(sql, async () => {
+          await recordMigrationHistoryEntry(
+            sql,
+            qualifiedTable,
+            columnNames,
+            migrationFile,
+            hash,
+            folderMillisByFileName.get(migrationFile) ?? Date.now(),
+          );
+        });
+        continue;
+      }
+      if (applicationState === "unsafe-replay") {
+        throw new Error(
+          `Refusing to replay migration ${migrationFile}: some schema statements are already applied while its migration history is missing or incompatible. Repair the migration journal from verified schema state before retrying.`,
+        );
+      }
 
       await runInTransaction(sql, async () => {
         for (const statement of splitMigrationStatements(migrationContent)) {
@@ -285,8 +386,9 @@ async function mapHashesToMigrationFiles(migrationFiles: string[]): Promise<Map<
   await Promise.all(
     migrationFiles.map(async (migrationFile) => {
       const content = await readMigrationFileContent(migrationFile);
-      const hash = createHash("sha256").update(content).digest("hex");
-      mapped.set(hash, migrationFile);
+      for (const hash of migrationContentHashAliases(content)) {
+        mapped.set(hash, migrationFile);
+      }
     }),
   );
 
@@ -373,51 +475,73 @@ async function constraintExists(
   return rows[0]?.exists ?? false;
 }
 
-async function migrationStatementAlreadyApplied(
+type MigrationStatementInspection = {
+  state: "applied" | "not-applied" | "unknown";
+  replaySafeWhenApplied: boolean;
+};
+type MigrationContentApplicationState = "applied" | "replayable" | "unsafe-replay";
+
+async function migrationStatementApplicationState(
   sql: ReturnType<typeof postgres>,
   statement: string,
-): Promise<boolean> {
+): Promise<MigrationStatementInspection> {
   const normalized = statement.replace(/\s+/g, " ").trim();
 
   const createTableMatch = normalized.match(/^CREATE TABLE(?: IF NOT EXISTS)? "([^"]+)"/i);
   if (createTableMatch) {
-    return tableExists(sql, createTableMatch[1]);
+    return {
+      state: (await tableExists(sql, createTableMatch[1])) ? "applied" : "not-applied",
+      replaySafeWhenApplied: /^CREATE TABLE IF NOT EXISTS /i.test(normalized),
+    };
   }
 
   const addColumnMatch = normalized.match(
     /^ALTER TABLE "([^"]+)" ADD COLUMN(?: IF NOT EXISTS)? "([^"]+)"/i,
   );
   if (addColumnMatch) {
-    return columnExists(sql, addColumnMatch[1], addColumnMatch[2]);
+    return {
+      state: (await columnExists(sql, addColumnMatch[1], addColumnMatch[2])) ? "applied" : "not-applied",
+      replaySafeWhenApplied: / ADD COLUMN IF NOT EXISTS /i.test(normalized),
+    };
   }
 
   const createIndexMatch = normalized.match(/^CREATE (?:UNIQUE )?INDEX(?: IF NOT EXISTS)? "([^"]+)"/i);
   if (createIndexMatch) {
-    return indexExists(sql, createIndexMatch[1]);
+    return {
+      state: (await indexExists(sql, createIndexMatch[1])) ? "applied" : "not-applied",
+      replaySafeWhenApplied: /^CREATE (?:UNIQUE )?INDEX IF NOT EXISTS /i.test(normalized),
+    };
   }
 
   const addConstraintMatch = normalized.match(/^ALTER TABLE "([^"]+)" ADD CONSTRAINT "([^"]+)"/i);
   if (addConstraintMatch) {
-    return constraintExists(sql, addConstraintMatch[2]);
+    return {
+      state: (await constraintExists(sql, addConstraintMatch[2])) ? "applied" : "not-applied",
+      replaySafeWhenApplied: false,
+    };
   }
 
-  // If we cannot reason about a statement safely, require manual migration.
-  return false;
+  return { state: "unknown", replaySafeWhenApplied: true };
 }
 
-async function migrationContentAlreadyApplied(
+async function migrationContentApplicationState(
   sql: ReturnType<typeof postgres>,
   migrationContent: string,
-): Promise<boolean> {
+): Promise<MigrationContentApplicationState> {
   const statements = splitMigrationStatements(migrationContent);
-  if (statements.length === 0) return false;
+  if (statements.length === 0) return "replayable";
+
+  const inspections: MigrationStatementInspection[] = [];
 
   for (const statement of statements) {
-    const applied = await migrationStatementAlreadyApplied(sql, statement);
-    if (!applied) return false;
+    inspections.push(await migrationStatementApplicationState(sql, statement));
   }
 
-  return true;
+  if (inspections.every(({ state }) => state === "applied")) return "applied";
+  if (inspections.some(({ state, replaySafeWhenApplied }) => state === "applied" && !replaySafeWhenApplied)) {
+    return "unsafe-replay";
+  }
+  return "replayable";
 }
 
 async function loadAppliedMigrations(
@@ -507,14 +631,15 @@ export async function reconcilePendingMigrationHistory(
 
     for (const migrationFile of state.pendingMigrations) {
       const migrationContent = await readMigrationFileContent(migrationFile);
-      const alreadyApplied = await migrationContentAlreadyApplied(sql, migrationContent);
-      if (!alreadyApplied) break;
+      const applicationState = await migrationContentApplicationState(sql, migrationContent);
+      if (applicationState !== "applied") break;
 
-      const hash = createHash("sha256").update(migrationContent).digest("hex");
+      const hashes = migrationContentHashAliases(migrationContent);
+      const hash = hashMigrationContent(migrationContent);
       const folderMillis = folderMillisByFile.get(migrationFile) ?? Date.now();
       const existingByHash = columnNames.has("hash")
         ? await sql.unsafe<{ created_at: string | number | null }[]>(
-            `SELECT created_at FROM ${qualifiedTable} WHERE hash = ${quoteLiteral(hash)} ORDER BY created_at DESC LIMIT 1`,
+            `SELECT created_at FROM ${qualifiedTable} WHERE hash IN (${hashes.map(quoteLiteral).join(", ")}) ORDER BY created_at DESC LIMIT 1`,
           )
         : [];
       const existingByName = columnNames.has("name")
@@ -527,7 +652,7 @@ export async function reconcilePendingMigrationHistory(
           const existingHashCreatedAt = Number(existingByHash[0]?.created_at ?? -1);
           if (existingByHash.length > 0 && Number.isFinite(existingHashCreatedAt) && existingHashCreatedAt < folderMillis) {
             await sql.unsafe(
-              `UPDATE ${qualifiedTable} SET created_at = ${quoteLiteral(String(folderMillis))} WHERE hash = ${quoteLiteral(hash)} AND created_at < ${quoteLiteral(String(folderMillis))}`,
+              `UPDATE ${qualifiedTable} SET created_at = ${quoteLiteral(String(folderMillis))} WHERE hash IN (${hashes.map(quoteLiteral).join(", ")}) AND created_at < ${quoteLiteral(String(folderMillis))}`,
             );
           }
 

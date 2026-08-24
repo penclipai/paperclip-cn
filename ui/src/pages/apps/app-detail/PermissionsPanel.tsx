@@ -9,8 +9,8 @@ import { AgentMultiSelect } from "@/components/AgentMultiSelect";
 import { InlineBanner } from "@/components/InlineBanner";
 import { cn } from "@/lib/utils";
 import { brandChipBadge } from "@/lib/status-colors";
-import { type InstallState } from "@/lib/tool-installs";
-import { QuarantinePill } from "./SetupPanel";
+import type { InstallState } from "@/lib/tool-installs";
+import { QuarantinedActionsReview } from "./SetupPanel";
 import type { AccessDraft, AppDetailSectionProps } from "./types";
 
 type ActionPermission = "off" | "allowed" | "ask";
@@ -30,7 +30,7 @@ export function PermissionsPanel({
   onSaveAccess,
   onSaveInstall,
   onSetActionPermission,
-  onTurnOnQuarantined,
+  onReviewQuarantined,
   onRefreshActions,
   refreshPending,
 }: Pick<
@@ -43,7 +43,7 @@ export function PermissionsPanel({
   onSaveAccess: (next: AccessDraft) => void;
   onSaveInstall: (next: InstallState) => void;
   onSetActionPermission: (id: string, next: ActionPermission) => void;
-  onTurnOnQuarantined: (ids: string[]) => void;
+  onReviewQuarantined: (enabledIds: string[]) => void;
   onRefreshActions: () => void;
   refreshPending: boolean;
 }) {
@@ -72,7 +72,7 @@ export function PermissionsPanel({
         refreshPending={refreshPending}
         focusId={focusId}
         onSetPermission={onSetActionPermission}
-        onTurnOnQuarantined={onTurnOnQuarantined}
+        onReviewQuarantined={onReviewQuarantined}
         onRefreshActions={onRefreshActions}
       />
     </div>
@@ -103,9 +103,9 @@ function AccessSection({
     access.mode === "all"
       ? t("apps.detail.permissions.access.summary.all", { defaultValue: "Every agent can use it" })
       : t("apps.detail.permissions.access.summary.specific", {
-        defaultValue: `${access.agentIds.size} ${access.agentIds.size === 1 ? "agent" : "agents"} can use it`,
-        count: access.agentIds.size,
-      });
+          count: access.agentIds.size,
+          defaultValue: "{{count}} agents can use it",
+        });
 
   const canSave = draft.mode === "all" || draft.agentIds.size > 0;
 
@@ -231,8 +231,8 @@ function InstalledSection({
           </h2>
           <p className="mt-0.5 text-sm text-muted-foreground">
             {t("apps.detail.permissions.installed.description", {
-              defaultValue: "Whose harness carries {{appName}}'s tools on every run.",
               appName,
+              defaultValue: "Whose harness carries {{appName}}'s tools on every run.",
             })}
           </p>
         </div>
@@ -251,8 +251,8 @@ function InstalledSection({
           ) : install.agentIds.size > 0 ? (
             <InstalledBadge
               label={t("apps.detail.permissions.installed.badge.count", {
-                defaultValue: `${installedCount} installed`,
                 count: installedCount,
+                defaultValue: "{{count}} installed",
               })}
             />
           ) : (
@@ -268,8 +268,8 @@ function InstalledSection({
       <div className="space-y-3 border-t border-border px-5 py-4">
         <InlineBanner tone="info" compact>
           {t("apps.detail.permissions.installed.notice", {
-            defaultValue: "Installing adds {{appName}}'s tools to the agent's context on every run — install only where it will actually be used.",
             appName,
+            defaultValue: "Installing adds {{appName}}'s tools to the agent's context on every run — install only where it will actually be used.",
           })}
         </InlineBanner>
 
@@ -281,18 +281,16 @@ function InstalledSection({
             triggerLabel={
               install.agentIds.size === 0
                 ? t("apps.detail.permissions.installed.select.placeholder", {
-                  defaultValue: "Choose agents to install on",
-                })
+                    defaultValue: "Choose agents to install on",
+                  })
                 : t("apps.detail.permissions.installed.select.count", {
-                  defaultValue: `${install.agentIds.size} ${install.agentIds.size === 1 ? "agent" : "agents"} installed`,
-                  count: install.agentIds.size,
-                })
+                    count: install.agentIds.size,
+                    defaultValue: "{{count}} agents installed",
+                  })
             }
-            getDescription={(agent) =>
-              hasAccess(agent.id)
-                ? t("apps.detail.permissions.installed.select.hasAccess", { defaultValue: "has access" })
-                : t("apps.detail.permissions.installed.select.noAccess", { defaultValue: "no access yet" })
-            }
+            getDescription={(agent) => hasAccess(agent.id)
+              ? t("apps.detail.permissions.installed.select.hasAccess", { defaultValue: "has access" })
+              : t("apps.detail.permissions.installed.select.noAccess", { defaultValue: "no access yet" })}
             renderNameSuffix={(agent) =>
               !hasAccess(agent.id) && install.agentIds.has(agent.id) ? (
                 <span className={cn("rounded border px-1 py-0 text-xs font-medium", brandChipBadge.amber)}>
@@ -340,19 +338,19 @@ function InstalledSection({
           <InlineBanner tone="warning" compact>
             <span>
               {t("apps.detail.permissions.installed.autoExtend.notice", {
-                defaultValue: "Installing on {{targetLabel}} will also grant access. A tool can't be installed on an agent that isn't allowed to use it, so we'll add {{targetLabel}} to who can use it. This is logged.",
                 targetLabel: extendingAgents.length === 1
                   ? liveAgents.find((a) => a.id === extendingAgents[0])?.name
                     ?? t("apps.detail.permissions.installed.autoExtend.oneAgent", { defaultValue: "1 agent" })
                   : t("apps.detail.permissions.installed.autoExtend.manyAgents", {
-                    defaultValue: `${extendingAgents.length} agents`,
-                    count: extendingAgents.length,
-                  }),
+                      count: extendingAgents.length,
+                      defaultValue: "{{count}} agents",
+                    }),
+                defaultValue: "Installing on {{targetLabel}} will also grant access. A tool can't be installed on an agent that isn't allowed to use it, so we'll add {{targetLabel}} to who can use it. This is logged.",
               })}{" "}
               <span className="font-medium">
                 {t("apps.detail.permissions.installed.autoExtend.review", {
-                  defaultValue: `Review the ${extendingAgents.length} access change${extendingAgents.length === 1 ? "" : "s"}`,
                   count: extendingAgents.length,
+                  defaultValue: "Review the {{count}} access changes",
                 })}
               </span>
             </span>
@@ -382,7 +380,7 @@ function ActionsSection({
   refreshPending,
   focusId,
   onSetPermission,
-  onTurnOnQuarantined,
+  onReviewQuarantined,
   onRefreshActions,
 }: {
   readOnly: ToolCatalogEntry[];
@@ -394,7 +392,7 @@ function ActionsSection({
   refreshPending: boolean;
   focusId?: string | null;
   onSetPermission: (id: string, next: ActionPermission) => void;
-  onTurnOnQuarantined: (ids: string[]) => void;
+  onReviewQuarantined: (enabledIds: string[]) => void;
   onRefreshActions: () => void;
 }) {
   const { t } = useTranslation();
@@ -434,11 +432,10 @@ function ActionsSection({
       </div>
 
       {quarantined.length > 0 && (
-        <QuarantinePill
-          count={quarantined.length}
+        <QuarantinedActionsReview
           entries={quarantined}
           disabled={disabled}
-          onTurnOn={onTurnOnQuarantined}
+          onSubmit={onReviewQuarantined}
         />
       )}
 
@@ -527,8 +524,8 @@ function ActionGroup({
               </div>
               <select
                 aria-label={t("apps.detail.permissions.actions.select.aria", {
-                  defaultValue: "{{actionName}} permission",
                   actionName: action.title ?? action.toolName,
+                  defaultValue: "{{actionName}} permission",
                 })}
                 className={cn(
                   "h-9 w-44 rounded-md border border-input bg-background px-3 text-sm text-foreground shadow-xs outline-none",

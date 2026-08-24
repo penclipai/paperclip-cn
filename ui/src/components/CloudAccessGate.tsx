@@ -1,33 +1,37 @@
+import { useTranslation } from "react-i18next";
 import { Navigate, Outlet, useLocation } from "@/lib/router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
 import { accessApi } from "@/api/access";
 import { ApiError } from "@/api/client";
 import { authApi } from "@/api/auth";
 import { healthApi } from "@/api/health";
 import { queryKeys } from "@/lib/queryKeys";
 import { BootstrapPendingPage } from "@/components/BootstrapPendingPage";
+import { PaperclipLoading } from "@/components/AnimatedPaperclipIcon";
 import { Card } from "@/components/ui/card";
 
 function NoBoardAccessPage() {
   const { t } = useTranslation();
   return (
     <div className="mx-auto max-w-xl py-10">
-      <div className="rounded-lg border border-border bg-card p-6">
+      <Card className="block p-6">
         <h1 className="text-xl font-semibold">{t("No company access")}</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          {t("This account is signed in, but it does not have an active company membership or instance-admin access on this Paperclip instance.")}
+          {t(
+            "This account is signed in, but it does not have an active company membership or instance-admin access on this Paperclip instance.",
+          )}
         </p>
         <p className="mt-2 text-sm text-muted-foreground">
-          {t("Use a company invite or sign in with an account that already belongs to this org.")}
+          {t(
+            "Use a company invite or sign in with an account that already belongs to this org.",
+          )}
         </p>
-      </div>
+      </Card>
     </div>
   );
 }
 
 export function CloudAccessGate() {
-  const { t } = useTranslation();
   const location = useLocation();
   const queryClient = useQueryClient();
   const healthQuery = useQuery({
@@ -36,17 +40,24 @@ export function CloudAccessGate() {
     retry: false,
     refetchInterval: (query) => {
       const data = query.state.data as
-        | { deploymentMode?: "local_trusted" | "authenticated"; bootstrapStatus?: "ready" | "bootstrap_pending" }
+        | {
+            deploymentMode?: "local_trusted" | "authenticated";
+            bootstrapStatus?: "ready" | "bootstrap_pending";
+          }
         | undefined;
-      return data?.deploymentMode === "authenticated" && data.bootstrapStatus === "bootstrap_pending"
+      return data?.deploymentMode === "authenticated" &&
+        data.bootstrapStatus === "bootstrap_pending"
         ? 2000
         : false;
     },
     refetchIntervalInBackground: true,
   });
 
-  const isAuthenticatedMode = healthQuery.data?.deploymentMode === "authenticated";
-  const isBootstrapPending = isAuthenticatedMode && healthQuery.data?.bootstrapStatus === "bootstrap_pending";
+  const isAuthenticatedMode =
+    healthQuery.data?.deploymentMode === "authenticated";
+  const isBootstrapPending =
+    isAuthenticatedMode &&
+    healthQuery.data?.bootstrapStatus === "bootstrap_pending";
   const sessionQuery = useQuery({
     queryKey: queryKeys.auth.session,
     queryFn: () => authApi.getSession(),
@@ -65,18 +76,27 @@ export function CloudAccessGate() {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.auth.session });
       await queryClient.invalidateQueries({ queryKey: queryKeys.health });
-      await queryClient.invalidateQueries({ queryKey: queryKeys.companies.all });
-      await queryClient.invalidateQueries({ queryKey: queryKeys.companies.stats });
-      await queryClient.invalidateQueries({ queryKey: queryKeys.access.currentBoardAccess });
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.companies.all,
+      });
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.companies.stats,
+      });
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.access.currentBoardAccess,
+      });
     },
   });
 
   if (
     healthQuery.isLoading ||
     (isAuthenticatedMode && sessionQuery.isLoading) ||
-    (isAuthenticatedMode && !isBootstrapPending && !!sessionQuery.data && boardAccessQuery.isLoading)
+    (isAuthenticatedMode &&
+      !isBootstrapPending &&
+      !!sessionQuery.data &&
+      boardAccessQuery.isLoading)
   ) {
-    return <div className="mx-auto max-w-xl py-10 text-sm text-muted-foreground">{t("Loading...")}</div>;
+    return <PaperclipLoading />;
   }
 
   if (healthQuery.error || boardAccessQuery.error) {
@@ -86,7 +106,7 @@ export function CloudAccessGate() {
           ? healthQuery.error.message
           : boardAccessQuery.error instanceof Error
             ? boardAccessQuery.error.message
-            : t("Failed to load app state")}
+            : "Failed to load app state"}
       </div>
     );
   }
@@ -94,19 +114,29 @@ export function CloudAccessGate() {
   if (isBootstrapPending) {
     const health = healthQuery.data;
     if (!health) {
-      return <div className="mx-auto max-w-xl py-10 text-sm text-muted-foreground">{t("Loading...")}</div>;
+      return <PaperclipLoading />;
     }
-    const claimError = claimMutation.error instanceof ApiError
-      ? { status: claimMutation.error.status, message: claimMutation.error.message }
-      : claimMutation.error instanceof Error
-        ? { message: claimMutation.error.message }
-        : null;
+    const claimError =
+      claimMutation.error instanceof ApiError
+        ? {
+            status: claimMutation.error.status,
+            message: claimMutation.error.message,
+          }
+        : claimMutation.error instanceof Error
+          ? { message: claimMutation.error.message }
+          : null;
     return (
       <BootstrapPendingPage
         claimAvailable={health.deploymentExposure === "private"}
         hasActiveInvite={health.bootstrapInviteActive}
         session={sessionQuery.data}
-        claimState={claimMutation.isSuccess ? "success" : claimMutation.isPending ? "claiming" : "idle"}
+        claimState={
+          claimMutation.isSuccess
+            ? "success"
+            : claimMutation.isPending
+              ? "claiming"
+              : "idle"
+        }
         claimError={claimError}
         onClaim={() => claimMutation.mutate()}
       />

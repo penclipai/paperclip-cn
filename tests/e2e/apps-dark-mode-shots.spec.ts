@@ -1,7 +1,6 @@
 import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
 import { createServer, type Server } from "node:http";
 import { listenOnFetchAllowedPort } from "./fetch-allowed-port";
-import { localized } from "./localized-selectors";
 
 // Apps navigation — dark-mode + navigation QA for the prosumer Apps surfaces.
 // Seeds a healthy app and a broken (needs-attention) app, forces dark theme,
@@ -121,71 +120,72 @@ test.describe.serial("dark-mode Apps surfaces", () => {
   test("sidebar says Apps and links to /apps", async ({ page }) => {
     await forceDark(page);
     await page.goto(`/${seed.prefix}/dashboard`);
-    const appsLink = page.getByRole("link", { name: localized.apps, exact: true });
+    const appsLink = page.getByRole("link", { name: "Apps", exact: true });
     await expect(appsLink).toBeVisible({ timeout: 30_000 });
     await expect(appsLink).toHaveAttribute("href", new RegExp(`/${seed.prefix}/apps$`));
   });
 
   test("apps list dark mode with attention banner", async ({ page }) => {
     await forceDark(page);
-    await page.goto(`/${seed.prefix}/apps`);
-    await expect(page.getByRole("heading", { name: localized.appConnections })).toBeVisible({ timeout: 30_000 });
-    await expect(page.getByText(localized.appNeedsAttention).first()).toBeVisible({ timeout: 30_000 });
+    await page.goto(`/${seed.prefix}/apps/connections`);
+    await expect(page.getByRole("heading", { name: "Connections" })).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByText(/needs attention/i).first()).toBeVisible({ timeout: 30_000 });
     await page.screenshot({ path: `${SCREENSHOT_DIR}/apps-nav-01-apps-dark.png`, fullPage: true });
   });
 
   test("attention banner dark mode", async ({ page }) => {
     await forceDark(page);
-    await page.goto(`/${seed.prefix}/apps`);
-    await expect(page.getByRole("heading", { name: localized.appConnections })).toBeVisible({ timeout: 30_000 });
-    await expect(page.getByText(localized.appNeedsAttention).first()).toBeVisible({ timeout: 30_000 });
+    await page.goto(`/${seed.prefix}/apps/connections`);
+    await expect(page.getByRole("heading", { name: "Connections" })).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByText(/app needs attention/i).first()).toBeVisible({ timeout: 30_000 });
     await page.screenshot({ path: `${SCREENSHOT_DIR}/apps-nav-02-attention-dark.png`, fullPage: true });
   });
 
   test("advanced door defaults to Run your own with the merged Apps sidebar", async ({ page }) => {
     await forceDark(page);
     await page.goto(`/${seed.prefix}/apps/advanced`);
-    await expect(page.getByRole("heading", { name: localized.appAdvancedSetup })).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByRole("heading", { name: "Advanced setup" })).toBeVisible({ timeout: 30_000 });
     // Run your own is now the default tab (Apps navigation); merged sidebar shows Apps items too.
-    await expect(page.getByText(localized.appIsolatedWorkspace).first()).toBeVisible({ timeout: 20_000 });
-    await expect(page.getByRole("link", { name: localized.appConnections })).toBeVisible();
+    await expect(page.getByText(/isolated workspace/i).first()).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByRole("link", { name: "Connections" })).toBeVisible();
     await page.screenshot({ path: `${SCREENSHOT_DIR}/apps-nav-03-advanced-run-dark.png`, fullPage: true });
 
     // Sidebar and tab switcher both link Paste a config — either lands on /paste-config.
-    await page.getByRole("link", { name: localized.appPasteConfig }).first().click();
+    await page.getByRole("link", { name: "Paste a config" }).first().click();
     await expect(page).toHaveURL(/\/apps\/advanced\/paste-config$/);
-    await expect(page.getByText(localized.toolsPasteDescription).first()).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText(/Paste the MCP config snippet/i).first()).toBeVisible({ timeout: 20_000 });
     await page.screenshot({ path: `${SCREENSHOT_DIR}/apps-nav-04-advanced-paste-dark.png`, fullPage: true });
   });
 
   test("developer tabs share the merged Apps sidebar", async ({ page }) => {
     await forceDark(page);
     await page.goto(`/${seed.prefix}/apps/advanced/profiles`);
-    await expect(page.getByRole("heading", { name: localized.developerTools })).toBeVisible({ timeout: 30_000 });
-    await expect(page.getByRole("heading", { name: localized.toolsAccessProfiles })).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByRole("heading", { name: "Developer tools" })).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByRole("heading", { name: "Access profiles" })).toBeVisible({ timeout: 30_000 });
     await expect(page.locator('a[href$="/apps/advanced/runtime"]', { hasText: "Health" })).toBeVisible();
     await expect(page.locator('a[href$="/apps/advanced/audit"]', { hasText: "Activity" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Applications", exact: true })).toHaveCount(0);
     // Apps section lives in the same sidebar now.
-    await expect(page.locator('a[href$="/apps"]', { hasText: localized.appConnections })).toBeVisible();
+    await expect(page.locator('a[href$="/apps/connections"]', { hasText: "Connections" })).toBeVisible();
     await page.screenshot({ path: `${SCREENSHOT_DIR}/apps-nav-05-developer-overview-dark.png`, fullPage: true });
   });
 
   test("app detail rename and danger zone removal", async ({ page }) => {
     await forceDark(page);
     await page.goto(`/${seed.prefix}/apps/${brokenId}/advanced`);
-    await expect(page.getByText(localized.appDangerZone)).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByText("Danger zone")).toBeVisible({ timeout: 30_000 });
 
     // Rename from the header pencil.
-    await page.getByRole("button", { name: localized.appRename }).click();
-    await page.getByLabel(localized.appName).fill("QA Renamed App");
-    await page.getByRole("button", { name: localized.commonSave, exact: true }).click();
+    await page.getByRole("button", { name: "Rename app" }).click();
+    await page.getByLabel("App name").fill("QA Renamed App");
+    await page.getByRole("button", { name: "Save", exact: true }).click();
     await expect(page.getByRole("heading", { name: "QA Renamed App" })).toBeVisible({ timeout: 20_000 });
-    await page.getByRole("button", { name: localized.appRemove, exact: true }).click();
+    await page.getByRole("button", { name: "Remove app", exact: true }).click();
     await page.screenshot({ path: `${SCREENSHOT_DIR}/apps-nav-06-danger-zone-dark.png`, fullPage: true });
-    await page.getByRole("button", { name: localized.appRemoveConfirm }).click();
-    await expect(page).toHaveURL(new RegExp(`/${seed.prefix}/apps$`), { timeout: 20_000 });
-    await expect(page.getByText(localized.appRemoved).first()).toBeVisible({ timeout: 20_000 });
+    await page.getByRole("button", { name: "Yes, remove it" }).click();
+    await expect(page).toHaveURL(new RegExp(`/${seed.prefix}/apps/connections$`), { timeout: 20_000 });
+    await expect(page.getByText("App removed").first()).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByRole("heading", { name: "Connections" })).toBeVisible();
     await page.screenshot({ path: `${SCREENSHOT_DIR}/apps-nav-07-after-remove-dark.png`, fullPage: true });
   });
 });

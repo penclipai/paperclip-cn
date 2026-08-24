@@ -10,7 +10,7 @@ test("release verification uses split Vitest jobs before publishing", () => {
     "verify_canary_core",
     "verify_canary_general_tests",
     "verify_canary_serialized_server",
-    "verify_stable_core",
+    "verify_stable",
     "verify_stable_general_tests",
     "verify_stable_serialized_server",
   ]) {
@@ -30,7 +30,7 @@ test("release publish jobs wait for every split verification lane", () => {
     "verify_canary_core",
     "verify_canary_general_tests",
     "verify_canary_serialized_server",
-    "verify_stable_core",
+    "verify_stable",
     "verify_stable_general_tests",
     "verify_stable_serialized_server",
   ]) {

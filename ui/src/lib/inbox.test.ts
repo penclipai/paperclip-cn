@@ -36,6 +36,7 @@ import {
   loadInboxIssueColumns,
   loadInboxWorkItemGroupBy,
   loadCollapsedInboxGroupKeys,
+  loadCollapsedInboxParentIds,
   loadLastInboxTab,
   matchesInboxIssueSearch,
   normalizeInboxIssueColumns,
@@ -46,6 +47,7 @@ import {
   resolveInboxSelectionIndex,
   saveInboxFilterPreferences,
   saveCollapsedInboxGroupKeys,
+  saveCollapsedInboxParentIds,
   saveInboxIssueColumns,
   saveInboxWorkItemGroupBy,
   saveLastInboxTab,
@@ -190,6 +192,7 @@ function makeIssue(id: string, isUnreadForMe: boolean): Issue {
     status: "todo",
     workMode: "standard",
     priority: "medium",
+    reviewPolicy: null,
     assigneeAgentId: null,
     assigneeUserId: null,
     responsibleUserId: null,
@@ -259,6 +262,7 @@ function makeExecutionWorkspace(overrides: Partial<ExecutionWorkspace> = {}): Ex
     strategyType: "git_worktree",
     name: "PAP-1 branch",
     status: "active",
+    deliveryState: overrides.deliveryState ?? "unknown",
     cwd: "/tmp/project/worktree",
     repoUrl: null,
     baseRef: null,
@@ -1055,6 +1059,25 @@ describe("inbox helpers", () => {
     ).toEqual(["inbox", "archived", "other"]);
   });
 
+  it("omits empty archived and other ungrouped search sections", () => {
+    expect(
+      buildGroupedInboxSections(
+        [],
+        "none",
+        {},
+        { keyPrefix: "archived-search:", searchSection: "archived" },
+      ),
+    ).toEqual([]);
+    expect(
+      buildGroupedInboxSections(
+        [],
+        "none",
+        {},
+        { keyPrefix: "other-search:", searchSection: "other" },
+      ),
+    ).toEqual([]);
+  });
+
   it("defaults the remembered inbox tab to mine and persists all", () => {
     localStorage.clear();
     expect(loadLastInboxTab()).toBe("mine");
@@ -1553,6 +1576,23 @@ describe("inbox helpers", () => {
     expect(loadCollapsedInboxGroupKeys("company-1")).toEqual(new Set());
     localStorage.setItem("paperclip:inbox:collapsed-groups:company-1", JSON.stringify({ nope: true }));
     expect(loadCollapsedInboxGroupKeys("company-1")).toEqual(new Set());
+  });
+
+  it("persists collapsed inbox parents per company", () => {
+    saveCollapsedInboxParentIds("company-1", new Set(["parent-1", "parent-2"]));
+    saveCollapsedInboxParentIds("company-2", new Set(["parent-3"]));
+
+    expect(loadCollapsedInboxParentIds("company-1")).toEqual(new Set(["parent-1", "parent-2"]));
+    expect(loadCollapsedInboxParentIds("company-2")).toEqual(new Set(["parent-3"]));
+
+    saveCollapsedInboxParentIds("company-1", new Set());
+    expect(loadCollapsedInboxParentIds("company-1")).toEqual(new Set());
+  });
+
+  it("returns empty collapsed inbox parents for missing or invalid storage", () => {
+    expect(loadCollapsedInboxParentIds("company-1")).toEqual(new Set());
+    localStorage.setItem("paperclip:inbox:collapsed-parents:company-1", JSON.stringify({ nope: true }));
+    expect(loadCollapsedInboxParentIds("company-1")).toEqual(new Set());
   });
 
   it("does not reset workspace grouping before experimental settings have loaded", () => {

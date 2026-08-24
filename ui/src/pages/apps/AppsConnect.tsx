@@ -16,11 +16,13 @@ import {
 import type { LucideIcon } from "lucide-react";
 import type {
   Agent,
-  AppGalleryEntry,
+  AppDefinition,
   ConnectToolAppResult,
+  ToolApplication,
+  ToolConnection,
   ToolAppConnectionActionSummary,
 } from "@penclipai/shared";
-import { getToolAppGalleryEntryForUrl } from "@penclipai/shared";
+import { credentialConfigPath, getAppDefinitionForUrl, getAvailableConnectionMethod } from "@penclipai/shared";
 import { useNavigate, useParams, useSearchParams } from "@/lib/router";
 import { useCompany } from "@/context/CompanyContext";
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";
@@ -40,11 +42,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { copyTextToClipboard } from "@/lib/clipboard";
+import { navigateTopLevel } from "@/lib/browserNavigation";
 import { AppLogo } from "./AppLogo";
+import { appSourceConnectHref, isMcpDirectOAuthConnectSlug } from "./app-connect-policy";
 import { parseGoogleSheetIds } from "./google-sheets";
-import { autoExtendNotice, INSTALL_ALL_WARNING, installInfoNotice, installPayload } from "@/lib/tool-installs";
+import { installPayload } from "@/lib/tool-installs";
 
 type Step = "gallery" | "key" | "actions" | "who" | "install" | "success";
+export type OAuthConnectPhase = "entry" | "starting" | "redirecting" | "error";
 
 const ROUTE_STAGE_BY_STEP: Partial<Record<Step, string>> = {
   key: "setup",
@@ -79,27 +85,55 @@ const ZAPIER_STEP_INDEX: Record<Exclude<Step, "gallery" | "success">, number> = 
 };
 const ZAPIER_STEP_LABELS = ["Add MCP URL", "Choose actions", "Choose access", "Install tools"];
 
-const STEP_LABEL_KEYS: Record<string, string> = {
-  "Pick app": "apps.connect.steps.pickApp",
-  "Add your key": "apps.connect.steps.addKey",
-  "Share sheet": "apps.connect.steps.shareSheet",
-  "Add MCP URL": "apps.connect.steps.addMcpUrl",
-  "Choose actions": "apps.connect.steps.chooseActions",
-  "Choose access": "apps.connect.steps.chooseAccess",
-  "Install tools": "apps.connect.steps.installTools",
-};
-
 function askFirstLevelsFrom(result: ConnectToolAppResult): string[] {
   const raw = (result.suggestedDefaults as { askFirstRiskLevels?: unknown })?.askFirstRiskLevels;
   return Array.isArray(raw) ? raw.filter((x): x is string => typeof x === "string") : ["write", "destructive"];
 }
 
-function isGoogleSheetsEntry(entry: AppGalleryEntry | null): boolean {
-  return entry?.key === "google-sheets";
+function isGoogleSheetsEntry(entry: AppDefinition | null): boolean {
+  return entry?.slug === "google-sheets";
+}
+
+function appSourceSlug(application: ToolApplication): string | null {
+  const metadata = application.metadata;
+  if (!metadata) return null;
+  const source = metadata.sourceTemplateKey ?? metadata.galleryKey;
+  return typeof source === "string" ? source : null;
+}
+
+function connectionSourceSlug(connection: ToolConnection): string | null {
+  const source = connection.config?.sourceTemplateKey ?? connection.transportConfig.sourceTemplateKey;
+  return typeof source === "string" ? source : null;
+}
+
+function reusableOAuthConnection(
+  sourceSlug: string | null,
+  applications: ToolApplication[],
+  connections: ToolConnection[],
+  options: { applicationId?: string; draftOnly?: boolean } = {},
+): ToolConnection | null {
+  if (!sourceSlug) return null;
+  const matchingApplicationIds = new Set(
+    applications
+      .filter((application) =>
+        application.status !== "archived" &&
+        appSourceSlug(application) === sourceSlug &&
+        (!options.applicationId || application.id === options.applicationId)
+      )
+      .map((application) => application.id),
+  );
+  return connections.find((connection) => {
+    const matchesApplication = options.applicationId
+      ? connection.applicationId === options.applicationId
+      : matchingApplicationIds.has(connection.applicationId) || connectionSourceSlug(connection) === sourceSlug;
+    return connection.status !== "archived" &&
+      (!options.draftOnly || connection.status === "draft") &&
+      connection.authKind === "oauth" &&
+      matchesApplication;
+  }) ?? null;
 }
 
 export function AppsConnect() {
-  const { t } = useTranslation();
   const navigate = useNavigate();
   const routeParams = useParams<{ appKey?: string }>();
   const { selectedCompany, selectedCompanyId } = useCompany();
@@ -107,7 +141,11 @@ export function AppsConnect() {
   const { pushToast } = useToast();
   const [searchParams] = useSearchParams();
   const appKey = routeParams.appKey ?? searchParams.get("appKey") ?? undefined;
-  const zapierSource = searchParams.get("source") === "zapier";
+  const sourceSlug = searchParams.get("source")?.trim() || null;
+  const createNewConnection = searchParams.get("new") === "1";
+  const directOAuthSource = isMcpDirectOAuthConnectSlug(sourceSlug) ? sourceSlug : null;
+  const requestedAppKey = appKey ?? directOAuthSource ?? undefined;
+  const zapierSource = sourceSlug === "zapier";
 
   // Prefill arrives from the app page for reconnects; read once so later
   // wizard navigation doesn't fight the URL.
@@ -120,8 +158,8 @@ export function AppsConnect() {
     };
   });
 
-  const [step, setStep] = useState<Step>(appKey || prefill.link || zapierSource ? "key" : "gallery");
-  const [entry, setEntry] = useState<AppGalleryEntry | null>(null);
+  const [step, setStep] = useState<Step>(requestedAppKey || prefill.link || zapierSource ? "key" : "gallery");
+  const [entry, setEntry] = useState<AppDefinition | null>(null);
   const [galleryName, setGalleryName] = useState("");
   const [linkUrl, setLinkUrl] = useState(prefill.link);
   const [linkName, setLinkName] = useState(prefill.name || (zapierSource ? "Zapier" : ""));
@@ -136,6 +174,10 @@ export function AppsConnect() {
   const [agentIds, setAgentIds] = useState<Set<string>>(new Set());
   const [installMode, setInstallMode] = useState<InstallMode>("none");
   const [installAgentIds, setInstallAgentIds] = useState<Set<string>>(new Set());
+  const [oauthPhase, setOAuthPhase] = useState<OAuthConnectPhase>("entry");
+  const [oauthError, setOAuthError] = useState<string | null>(null);
+  const directOAuthStartedRef = useRef(false);
+  const directOAuthRetryingRef = useRef(false);
 
   const openGallery = () => {
     setEntry(null);
@@ -156,31 +198,164 @@ export function AppsConnect() {
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: selectedCompany?.name ?? t("apps.common.company", { defaultValue: "Company" }), href: "/dashboard" },
-      { label: t("apps.common.apps", { defaultValue: "Apps" }), href: "/apps" },
-      { label: t("apps.connect.title", { defaultValue: "Connect an app" }) },
+      { label: selectedCompany?.name ?? "Company", href: "/dashboard" },
+      { label: "Apps", href: "/apps" },
+      { label: "Connect an app" },
     ]);
     return () => setBreadcrumbs([]);
-  }, [setBreadcrumbs, selectedCompany?.name, t]);
+  }, [setBreadcrumbs, selectedCompany?.name]);
 
   const galleryQuery = useQuery({
     queryKey: queryKeys.apps.gallery(selectedCompanyId ?? "__none__"),
     queryFn: () => toolsApi.listGallery(selectedCompanyId!),
     enabled: !!selectedCompanyId,
   });
+  const applicationsQuery = useQuery({
+    queryKey: queryKeys.tools.applications(selectedCompanyId ?? "__none__"),
+    queryFn: () => toolsApi.listApplications(selectedCompanyId!),
+    enabled: !!selectedCompanyId && !!directOAuthSource,
+    refetchOnMount: "always",
+  });
+  const connectionsQuery = useQuery({
+    queryKey: queryKeys.tools.connections(selectedCompanyId ?? "__none__"),
+    queryFn: () => toolsApi.listConnections(selectedCompanyId!),
+    enabled: !!selectedCompanyId && !!directOAuthSource,
+    refetchOnMount: "always",
+  });
+  const existingOAuthConnection = useMemo(
+    () => reusableOAuthConnection(
+      directOAuthSource,
+      applicationsQuery.data?.applications ?? [],
+      connectionsQuery.data?.connections ?? [],
+      createNewConnection
+        ? { applicationId: prefill.applicationId, draftOnly: true }
+        : {},
+    ),
+    [applicationsQuery.data, connectionsQuery.data, createNewConnection, directOAuthSource, prefill.applicationId],
+  );
+
+  const directOAuthEntry = entry &&
+    getAvailableConnectionMethod(entry)?.auth === "oauth" &&
+    isMcpDirectOAuthConnectSlug(entry.slug)
+    ? entry
+    : null;
+
+  const setAppStep = (nextStep: Step) => {
+    setStep(nextStep);
+    if (entry) navigate(appConnectHref(entry.slug, nextStep));
+  };
+
+  const oauthStartMutation = useMutation({
+    mutationFn: (connectionId: string) => toolsApi.startOAuth(connectionId),
+    onSuccess: ({ authorizationUrl }) => {
+      setOAuthPhase("redirecting");
+      navigateTopLevel(authorizationUrl);
+    },
+    onError: (error) => {
+      const details = error instanceof ApiError && error.body && typeof error.body === "object"
+        ? (error.body as { details?: { code?: unknown } }).details
+        : null;
+      setOAuthPhase("error");
+      setOAuthError(
+        details?.code === "invalid_grant"
+          ? "Your authorization expired or was revoked. Reconnect to continue."
+          : error instanceof Error
+            ? error.message
+            : "Paperclip couldn’t start secure sign-in. Try again.",
+      );
+    },
+  });
+  const startOAuth = oauthStartMutation.mutate;
+
+  const connectMutation = useMutation({
+    mutationFn: (entryOverride?: AppDefinition) => {
+      const connectEntry = entryOverride ?? entry;
+      if (connectEntry) {
+        const sheetIds = isGoogleSheetsEntry(connectEntry) ? parseGoogleSheetIds(googleSheetsLinks).ids : [];
+        const trimmedGalleryName = galleryName.trim();
+        return toolsApi.connectApp(selectedCompanyId!, {
+          galleryKey: connectEntry.slug,
+          name: trimmedGalleryName || connectEntry.name,
+          credentialValues: credentials,
+          configValues: isGoogleSheetsEntry(connectEntry) ? { allowedSpreadsheetIds: sheetIds } : undefined,
+          applicationId: prefill.applicationId,
+        });
+      }
+      const trimmedKey = linkNeedsKey ? linkKey.trim() : "";
+      const trimmedName = linkName.trim();
+      return toolsApi.connectApp(selectedCompanyId!, {
+        link: linkUrl,
+        name: trimmedName || undefined,
+        credentialValues: trimmedKey ? { [LINK_CREDENTIAL_CONFIG_PATH]: trimmedKey } : undefined,
+        applicationId: prefill.applicationId,
+      });
+    },
+    onSuccess: (result) => {
+      if (result.auth?.kind === "oauth") {
+        setConnectResult(result);
+        const startUrl = result.auth.startUrl?.trim();
+        if (!startUrl) {
+          setOAuthPhase("starting");
+          startOAuth(result.connectionId);
+          return;
+        }
+        setOAuthPhase("redirecting");
+        navigateTopLevel(startUrl);
+        return;
+      }
+      setConnectResult(result);
+      const defaults: Record<string, boolean> = {};
+      for (const a of result.actions.readOnly) defaults[a.catalogEntryId] = true;
+      for (const a of result.actions.canMakeChanges) defaults[a.catalogEntryId] = false;
+      setEnabled(defaults);
+      setInstallMode("none");
+      setInstallAgentIds(new Set());
+      setAppStep("actions");
+    },
+    onError: (error) => {
+      const details = error instanceof ApiError && error.body && typeof error.body === "object"
+        ? (error.body as { details?: { code?: unknown } }).details
+        : null;
+      if (isMcpDirectOAuthConnectSlug(requestedAppKey)) {
+        setOAuthPhase("error");
+        setOAuthError(
+          details?.code === "invalid_grant"
+            ? "Your authorization expired or was revoked. Reconnect to continue."
+            : error instanceof Error
+              ? error.message
+              : "Paperclip couldn’t start secure sign-in. Try again.",
+        );
+        return;
+      }
+      const oauthRequired = details?.code === "oauth_challenge";
+      pushToast({
+        title: oauthRequired ? "Sign-in required" : "Couldn’t connect",
+        body: oauthRequired
+          ? "This app needs you to sign in - coming soon."
+          : error instanceof Error
+            ? error.message
+            : "Please check your key and try again.",
+        tone: "error",
+      });
+    },
+  });
+  const connectApp = connectMutation.mutate;
 
   useEffect(() => {
-    if (!appKey || galleryQuery.isLoading || !galleryQuery.data) return;
+    if (!requestedAppKey || galleryQuery.isLoading || !galleryQuery.data) return;
 
-    const requestedEntry = galleryQuery.data.apps.find((candidate) => candidate.key === appKey);
-    if (!requestedEntry || requestedEntry.authKind === "oauth" || requestedEntry.availability?.available === false) {
+    const requestedEntry = galleryQuery.data.apps.find((candidate) => candidate.slug === requestedAppKey);
+    const method = requestedEntry ? getAvailableConnectionMethod(requestedEntry) : null;
+    const directOAuth = method?.auth === "oauth" && isMcpDirectOAuthConnectSlug(requestedEntry?.slug);
+    const unsupportedOAuth = method?.auth === "oauth" && !directOAuth;
+    if (!requestedEntry || unsupportedOAuth || requestedEntry.availability?.available === false) {
       setEntry(null);
       setStep("gallery");
       navigate("/apps/connect", { replace: true });
       return;
     }
 
-    if (entry?.key !== requestedEntry.key) {
+    if (entry?.slug !== requestedEntry.slug) {
       setEntry(requestedEntry);
       setGalleryName(requestedEntry.name);
       setLinkUrl("");
@@ -195,63 +370,42 @@ export function AppsConnect() {
     setInstallMode("none");
     setInstallAgentIds(new Set());
     setStep("key");
-  }, [appKey, entry?.key, galleryQuery.data, galleryQuery.isLoading, navigate]);
 
-  const setAppStep = (nextStep: Step) => {
-    setStep(nextStep);
-    if (entry) navigate(appConnectHref(entry.key, nextStep));
-  };
+    if (directOAuth && (
+      !applicationsQuery.isFetchedAfterMount ||
+      !connectionsQuery.isFetchedAfterMount
+    )) return;
+    if (directOAuth && directOAuthRetryingRef.current) return;
+    if (directOAuth && (applicationsQuery.isError || connectionsQuery.isError)) {
+      setOAuthPhase("error");
+      setOAuthError("Paperclip couldn’t check for an existing connection. Try again.");
+      return;
+    }
 
-  const connectMutation = useMutation({
-    mutationFn: () => {
-      if (entry) {
-        const sheetIds = isGoogleSheetsEntry(entry) ? parseGoogleSheetIds(googleSheetsLinks).ids : [];
-        const trimmedGalleryName = galleryName.trim();
-        return toolsApi.connectApp(selectedCompanyId!, {
-          galleryKey: entry.key,
-          name: trimmedGalleryName || undefined,
-          credentialValues: credentials,
-          configValues: isGoogleSheetsEntry(entry) ? { allowedSpreadsheetIds: sheetIds } : undefined,
-          applicationId: prefill.applicationId,
-        });
+    if (directOAuth && !directOAuthStartedRef.current) {
+      directOAuthStartedRef.current = true;
+      setOAuthError(null);
+      setOAuthPhase("starting");
+      if (existingOAuthConnection) {
+        startOAuth(existingOAuthConnection.id);
+      } else {
+        connectApp(requestedEntry);
       }
-      const trimmedKey = linkNeedsKey ? linkKey.trim() : "";
-      const trimmedName = linkName.trim();
-      return toolsApi.connectApp(selectedCompanyId!, {
-        link: linkUrl,
-        name: trimmedName || undefined,
-        credentialValues: trimmedKey ? { [LINK_CREDENTIAL_CONFIG_PATH]: trimmedKey } : undefined,
-        applicationId: prefill.applicationId,
-      });
-    },
-    onSuccess: (result) => {
-      setConnectResult(result);
-      const defaults: Record<string, boolean> = {};
-      for (const a of result.actions.readOnly) defaults[a.catalogEntryId] = true;
-      for (const a of result.actions.canMakeChanges) defaults[a.catalogEntryId] = false;
-      setEnabled(defaults);
-      setInstallMode("none");
-      setInstallAgentIds(new Set());
-      setAppStep("actions");
-    },
-    onError: (error) => {
-      const details = error instanceof ApiError && error.body && typeof error.body === "object"
-        ? (error.body as { details?: { code?: unknown } }).details
-        : null;
-      const oauthRequired = details?.code === "oauth_challenge";
-      pushToast({
-        title: oauthRequired
-          ? t("apps.connect.signInRequired", { defaultValue: "Sign-in required" })
-          : t("apps.connect.connectError", { defaultValue: "Couldn’t connect" }),
-        body: oauthRequired
-          ? t("apps.connect.signInComingSoon", { defaultValue: "This app needs you to sign in - coming soon." })
-          : error instanceof Error
-            ? error.message
-            : t("apps.connect.checkKey", { defaultValue: "Please check your key and try again." }),
-        tone: "error",
-      });
-    },
-  });
+    }
+  }, [
+    applicationsQuery.isError,
+    applicationsQuery.isFetchedAfterMount,
+    connectApp,
+    connectionsQuery.isError,
+    connectionsQuery.isFetchedAfterMount,
+    entry?.slug,
+    existingOAuthConnection,
+    galleryQuery.data,
+    galleryQuery.isLoading,
+    navigate,
+    requestedAppKey,
+    startOAuth,
+  ]);
 
   const finishMutation = useMutation({
     mutationFn: async () => {
@@ -282,38 +436,81 @@ export function AppsConnect() {
     onSuccess: () => setAppStep("success"),
     onError: (error) => {
       pushToast({
-        title: t("apps.connect.finishError", { defaultValue: "Couldn’t finish setup" }),
-        body: error instanceof Error
-          ? error.message
-          : t("apps.common.tryAgain", { defaultValue: "Please try again." }),
+        title: "Couldn’t finish setup",
+        body: error instanceof Error ? error.message : "Please try again.",
         tone: "error",
       });
     },
   });
 
   if (!selectedCompanyId) {
+    return <div className="p-6 text-sm text-muted-foreground">Select a company to connect apps.</div>;
+  }
+
+  if (directOAuthEntry && step === "key") {
     return (
-      <div className="p-6 text-sm text-muted-foreground">
-        {t("apps.connect.selectCompany", { defaultValue: "Select a company to connect apps." })}
-      </div>
+      <OAuthConnectStateScreen
+        entry={directOAuthEntry}
+        phase={oauthPhase}
+        error={oauthError}
+        onRetry={async () => {
+          setOAuthError(null);
+          setOAuthPhase("starting");
+          const connectionId = connectResult?.connectionId ?? existingOAuthConnection?.id;
+          if (connectionId) {
+            startOAuth(connectionId);
+            return;
+          }
+
+          // The create request may have reached the server even when its
+          // response did not reach the browser. Re-read both resources before
+          // creating again so Retry resumes that durable draft instead of
+          // duplicating it.
+          directOAuthRetryingRef.current = true;
+          try {
+            const [applicationsResult, connectionsResult] = await Promise.all([
+              applicationsQuery.refetch(),
+              connectionsQuery.refetch(),
+            ]);
+            if (applicationsResult.isError || connectionsResult.isError) {
+              setOAuthPhase("error");
+              setOAuthError("Paperclip couldn’t check for an existing connection. Try again.");
+              return;
+            }
+            const refreshedConnection = reusableOAuthConnection(
+              directOAuthSource,
+              applicationsResult.data?.applications ?? [],
+              connectionsResult.data?.connections ?? [],
+              createNewConnection
+                ? { applicationId: prefill.applicationId, draftOnly: true }
+                : {},
+            );
+            if (refreshedConnection) {
+              startOAuth(refreshedConnection.id);
+            } else {
+              connectMutation.mutate(directOAuthEntry);
+            }
+          } finally {
+            directOAuthRetryingRef.current = false;
+          }
+        }}
+        onCancel={() => navigate("/apps/browse")}
+      />
     );
   }
 
   const appName =
     connectResult?.application.name ??
     entry?.name ??
-    (linkName.trim() || defaultLinkName(linkUrl) || t("apps.connect.thisApp", { defaultValue: "this app" }));
+    (linkName.trim() || defaultLinkName(linkUrl) || "this app");
   const zapierEntry = zapierSource
-    ? galleryQuery.data?.apps.find((app) => app.key === "zapier") ?? null
+    ? galleryQuery.data?.apps.find((app) => app.slug === "zapier") ?? null
     : null;
-  const defaultStepLabels = zapierSource
+  const stepLabels = zapierSource
     ? ZAPIER_STEP_LABELS
     : isGoogleSheetsEntry(entry)
       ? ["Pick app", "Share sheet", "Choose actions", "Choose access", "Install tools"]
       : STEP_LABELS;
-  const stepLabels = defaultStepLabels.map((label) =>
-    t(STEP_LABEL_KEYS[label] ?? "apps.connect.steps.unknown", { defaultValue: label }),
-  );
   const stepIndex = zapierSource && step !== "gallery" && step !== "success"
     ? ZAPIER_STEP_INDEX[step]
     : step === "success"
@@ -326,22 +523,18 @@ export function AppsConnect() {
         <StepHeader
           subtitle={
             step === "gallery"
-              ? t("apps.connect.pickDescription", { defaultValue: "Pick the app you want your agents to use." })
-              : t("apps.connect.stepProgress", {
-                  defaultValue: "Step {{current}} of {{total}}",
-                  current: stepIndex + 1,
-                  total: stepLabels.length,
-                })
+              ? "Pick the app you want your agents to use."
+              : `Step ${stepIndex + 1} of ${stepLabels.length}`
           }
           step={step}
           activeIndex={stepIndex}
           labels={stepLabels}
           appIdentity={
             zapierSource
-              ? { name: "Zapier", logoUrl: zapierEntry?.logoUrl ?? null }
+              ? { name: "Zapier", logoUrl: zapierEntry?.branding.logoUrl ?? null }
               : undefined
           }
-          onCancel={() => navigate(zapierSource ? "/apps/browse" : "/apps")}
+          onCancel={() => navigate("/apps")}
         />
       )}
 
@@ -352,6 +545,13 @@ export function AppsConnect() {
           byo={searchParams.get("byo") === "1"}
           source={searchParams.get("source")}
           onPick={(picked) => {
+            if (
+              getAvailableConnectionMethod(picked)?.auth === "oauth" &&
+              isMcpDirectOAuthConnectSlug(picked.slug)
+            ) {
+              navigate(appSourceConnectHref(picked.slug));
+              return;
+            }
             setEntry(picked);
             setGalleryName(picked.name);
             setLinkUrl("");
@@ -365,10 +565,10 @@ export function AppsConnect() {
             setInstallMode("none");
             setInstallAgentIds(new Set());
             setStep("key");
-            navigate(appConnectHref(picked.key, "key"));
+            navigate(appConnectHref(picked.slug, "key"));
           }}
           onUseLink={(url) => {
-            const matchedEntry = getToolAppGalleryEntryForUrl(url, galleryQuery.data?.apps ?? []);
+            const matchedEntry = getAppDefinitionForUrl(url, galleryQuery.data?.apps ?? []);
             setEntry(null);
             setGalleryName("");
             setLinkUrl(url);
@@ -406,19 +606,15 @@ export function AppsConnect() {
             if (isGoogleSheetsEntry(entry)) {
               const parsed = parseGoogleSheetIds(googleSheetsLinks);
               if (parsed.invalidCount > 0) {
-                setGoogleSheetsError(t("apps.connect.googleSheets.invalidLink", {
-                  defaultValue: "That doesn't look like a Google Sheets link.",
-                }));
+                setGoogleSheetsError("That doesn't look like a Google Sheets link.");
                 return;
               }
               if (parsed.ids.length === 0) {
-                setGoogleSheetsError(t("apps.connect.googleSheets.missingLink", {
-                  defaultValue: "Paste at least one Google Sheets link.",
-                }));
+                setGoogleSheetsError("Paste at least one Google Sheets link.");
                 return;
               }
             }
-            connectMutation.mutate();
+            connectMutation.mutate(undefined);
           }}
         />
       )}
@@ -437,7 +633,7 @@ export function AppsConnect() {
           onKeyChange={setLinkKey}
           submitting={connectMutation.isPending}
           onBack={() => setStep("gallery")}
-          onConnect={() => connectMutation.mutate()}
+          onConnect={() => connectMutation.mutate(undefined)}
         />
       )}
 
@@ -446,8 +642,8 @@ export function AppsConnect() {
           link={linkUrl}
           onLinkChange={setLinkUrl}
           submitting={connectMutation.isPending}
-          onBack={() => navigate("/apps/browse")}
-          onConnect={() => connectMutation.mutate()}
+          onBack={() => navigate("/apps")}
+          onConnect={() => connectMutation.mutate(undefined)}
         />
       )}
 
@@ -501,12 +697,12 @@ export function AppsConnect() {
       {step === "success" && (
         <SuccessStep
           appName={appName}
-          logoUrl={entry?.logoUrl}
+          logoUrl={entry?.branding.logoUrl}
           enabledCount={Object.values(enabled).filter(Boolean).length}
           access={access}
           installMode={installMode}
           installCount={installAgentIds.size}
-          onDone={() => navigate("/apps")}
+          onDone={() => navigate("/apps/connections")}
         />
       )}
     </div>
@@ -528,7 +724,6 @@ function StepHeader({
   appIdentity?: { name: string; logoUrl: string | null };
   onCancel: () => void;
 }) {
-  const { t } = useTranslation();
   return (
     <div className="mb-6">
       <div className="flex items-start justify-between gap-4">
@@ -538,18 +733,13 @@ function StepHeader({
           ) : null}
           <div>
             <h1 className="text-2xl font-bold tracking-tight">
-              {appIdentity
-                ? t("apps.connect.connectNamedApp", {
-                    defaultValue: "Connect {{appName}}",
-                    appName: appIdentity.name,
-                  })
-                : t("apps.connect.title", { defaultValue: "Connect an app" })}
+              {appIdentity ? `Connect ${appIdentity.name}` : "Connect an app"}
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
           </div>
         </div>
         <Button variant="ghost" size="sm" onClick={onCancel}>
-          {t("apps.common.cancel", { defaultValue: "Cancel" })}
+          Cancel
         </Button>
       </div>
       {step !== "gallery" && (
@@ -569,6 +759,85 @@ function StepHeader({
   );
 }
 
+export function OAuthConnectStateScreen({
+  entry,
+  phase,
+  error,
+  onRetry,
+  onCancel,
+}: {
+  entry: AppDefinition;
+  phase: OAuthConnectPhase;
+  error?: string | null;
+  onRetry: () => void;
+  onCancel: () => void;
+}) {
+  const status = phase === "entry"
+    ? {
+        title: `Connect ${entry.name} to Paperclip`,
+        body: `Paperclip will open ${entry.name} so you can choose a workspace and approve access.`,
+      }
+    : phase === "starting"
+      ? {
+          title: "Preparing secure sign-in",
+          body: `Paperclip is creating a secure ${entry.name} connection.`,
+        }
+      : phase === "redirecting"
+        ? {
+            title: `Opening ${entry.name}`,
+            body: `Continue in ${entry.name} to choose a workspace and approve access.`,
+          }
+        : {
+            title: `${entry.name} couldn’t connect`,
+            body: error ?? "Paperclip couldn’t start secure sign-in. Try again.",
+          };
+
+  return (
+    <div className="max-w-5xl">
+      <StepHeader
+        subtitle="Secure MCP sign-in"
+        step="key"
+        activeIndex={0}
+        labels={["Connect", "Review actions", "Choose access", "Install tools"]}
+        appIdentity={{ name: entry.name, logoUrl: entry.branding.logoUrl }}
+        onCancel={onCancel}
+      />
+      <div className="mx-auto max-w-xl rounded-2xl border border-border bg-card p-8">
+        <div className="flex items-start gap-3">
+          <span className="mt-1 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border bg-background">
+            {phase === "error" ? (
+              <Link2 className="h-5 w-5 text-destructive" />
+            ) : phase === "entry" ? (
+              <Lock className="h-5 w-5 text-muted-foreground" />
+            ) : (
+              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+            )}
+          </span>
+          <div className="min-w-0">
+            <h2 className="text-xl font-bold tracking-tight">{status.title}</h2>
+            <p className="mt-1 text-sm text-muted-foreground">{status.body}</p>
+          </div>
+        </div>
+
+        <div className="mt-6 flex items-center gap-2">
+          {phase === "error" ? (
+            <Button type="button" onClick={onRetry}>Try again</Button>
+          ) : (
+            <Button type="button" disabled>
+              {phase === "redirecting" ? `Opening ${entry.name}…` : "Preparing…"}
+            </Button>
+          )}
+          <Button type="button" variant="ghost" onClick={onCancel}>Back to apps</Button>
+        </div>
+        <p className="mt-5 flex items-center gap-1.5 text-xs text-muted-foreground">
+          <Lock className="h-3.5 w-3.5" />
+          Your authorization stays in Paperclip’s encrypted secret store.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function ZapierConnectStep({
   link,
   onLinkChange,
@@ -582,7 +851,6 @@ function ZapierConnectStep({
   onBack: () => void;
   onConnect: () => void;
 }) {
-  const { t } = useTranslation();
   const normalizedLink = normalizeAppLink(link);
   const zapierHostname = normalizedLink ? new URL(normalizedLink).hostname : "";
   const isZapierLink = zapierHostname === "zapier.com" || zapierHostname.endsWith(".zapier.com");
@@ -594,21 +862,15 @@ function ZapierConnectStep({
           <Link2 className="h-5 w-5 text-muted-foreground" />
         </span>
         <div className="min-w-0">
-          <h2 className="text-xl font-bold tracking-tight">
-            {t("apps.connect.connectZapier", { defaultValue: "Connect Zapier" })}
-          </h2>
+          <h2 className="text-xl font-bold tracking-tight">Connect Zapier</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            {t("apps.connect.zapierDescription", {
-              defaultValue: "Paste the complete MCP URL Zapier gives you, including its token.",
-            })}
+            Paste the complete MCP URL Zapier gives you, including its token.
           </p>
         </div>
       </div>
 
       <div className="mt-8">
-        <label className="text-sm font-medium text-foreground">
-          {t("apps.connect.zapierUrl", { defaultValue: "Zapier MCP URL" })}
-        </label>
+        <label className="text-sm font-medium text-foreground">Zapier MCP URL</label>
         <Input
           value={link}
           onChange={(event) => onLinkChange(event.target.value)}
@@ -620,26 +882,20 @@ function ZapierConnectStep({
           autoFocus
         />
         <p className="mt-2 text-xs text-muted-foreground">
-          {t("apps.connect.zapierTokenNotice", {
-            defaultValue: "The token is part of the URL. Paperclip stores it securely and checks the connection before enabling actions.",
-          })}
+          The token is part of the URL. Paperclip stores it securely and checks the connection before enabling actions.
         </p>
         {link.trim() && !isZapierLink && (
-          <p className="mt-2 text-xs text-destructive">
-            {t("apps.connect.zapierInvalidUrl", { defaultValue: "Paste a valid Zapier URL to continue." })}
-          </p>
+          <p className="mt-2 text-xs text-destructive">Paste a valid Zapier URL to continue.</p>
         )}
       </div>
 
       <div className="mt-8 flex items-center justify-between">
         <Button variant="ghost" onClick={onBack} disabled={submitting}>
-          {t("apps.common.back", { defaultValue: "Back" })}
+          Back
         </Button>
         <Button onClick={onConnect} disabled={submitting || !isZapierLink}>
           {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {submitting
-            ? t("apps.connect.checking", { defaultValue: "Checking…" })
-            : t("apps.connect.checkLink", { defaultValue: "Check link" })}
+          {submitting ? "Checking…" : "Check link"}
         </Button>
       </div>
     </div>
@@ -657,16 +913,15 @@ function GalleryStep({
   onPasteConfig,
 }: {
   loading: boolean;
-  apps: AppGalleryEntry[];
+  apps: AppDefinition[];
   /** Entered via the "Connect your own MCP server" card (PAP-12371, Finding C): focus the link path. */
   byo?: boolean;
   source?: string | null;
-  onPick: (entry: AppGalleryEntry) => void;
+  onPick: (entry: AppDefinition) => void;
   onUseLink: (link: string) => void;
   onRunYourOwn: () => void;
   onPasteConfig: () => void;
 }) {
-  const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const [linkInput, setLinkInput] = useState("");
   const [linkError, setLinkError] = useState<string | null>(null);
@@ -686,13 +941,13 @@ function GalleryStep({
     return apps.filter((a) => a.name.toLowerCase().includes(q));
   }, [apps, search]);
   const normalizedLink = normalizeAppLink(linkInput);
-  const matchedEntry = normalizedLink ? getToolAppGalleryEntryForUrl(normalizedLink, apps) : null;
+  const matchedEntry = normalizedLink ? getAppDefinitionForUrl(normalizedLink, apps) : null;
   const zapierSource = source === "zapier";
 
   const continueWithLink = () => {
     const next = normalizeAppLink(linkInput);
     if (!next) {
-      setLinkError(t("apps.connect.link.fullUrlError", { defaultValue: "Paste a full http or https link." }));
+      setLinkError("Paste a full http or https link.");
       return;
     }
     setLinkError(null);
@@ -716,53 +971,43 @@ function GalleryStep({
         <Input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder={t("apps.browse.searchPlaceholder", { defaultValue: "Search apps…" })}
+          placeholder="Search apps…"
           className="h-11 pl-9"
         />
       </div>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
         {filtered.map((app) => {
-          const copy = appCopyFor(app.key, app.tagline);
-          const oauth = app.authKind === "oauth";
+          const copy = appCopyFor(app.slug, app.description);
+          const oauth = getAvailableConnectionMethod(app)?.auth === "oauth";
+          const oauthBlocked = oauth && !isMcpDirectOAuthConnectSlug(app.slug);
           const unavailable = app.availability?.available === false;
           return (
             <button
-              key={app.key}
+              key={app.slug}
               type="button"
-              disabled={oauth || unavailable}
+              disabled={oauthBlocked || unavailable}
               title={
                 unavailable
-                  ? t("apps.connect.gallery.notConfiguredTitle", {
-                      defaultValue: "{{appName}} isn't configured on this instance yet. Ask your Paperclip admin.",
-                      appName: app.name,
-                    })
+                  ? `${app.name} isn't configured on this instance yet. Ask your Paperclip admin.`
                   : undefined
               }
               onClick={() => onPick(app)}
               className={cn(
                 "flex flex-col rounded-xl border border-border bg-card p-4 text-left transition-colors",
-                oauth || unavailable ? "cursor-not-allowed opacity-60" : "hover:border-foreground/30 hover:bg-accent/40",
+                oauthBlocked || unavailable ? "cursor-not-allowed opacity-60" : "hover:border-foreground/30 hover:bg-accent/40",
               )}
             >
-              <AppLogo name={app.name} logoUrl={app.logoUrl} size={36} />
+              <AppLogo name={app.name} logoUrl={app.branding.logoUrl} size={36} />
               <div className="mt-3 text-sm font-bold text-foreground">{app.name}</div>
-              <div className="mt-1 line-clamp-2 text-xs text-muted-foreground">
-                {t(`apps.gallery.${app.key}.tagline`, { defaultValue: copy.tagline })}
-              </div>
+              <div className="mt-1 line-clamp-2 text-xs text-muted-foreground">{copy.tagline}</div>
               <div className="mt-3 text-xs font-semibold text-foreground">
                 {unavailable ? (
-                  <span className="text-muted-foreground">
-                    {t("apps.connect.gallery.notAvailableOnInstance", {
-                      defaultValue: "Not available on this instance - ask your admin.",
-                    })}
-                  </span>
-                ) : oauth ? (
-                  <span className="text-muted-foreground">
-                    {t("apps.connect.gallery.signInComingSoon", { defaultValue: "Sign-in coming soon" })}
-                  </span>
+                  <span className="text-muted-foreground">Not available on this instance - ask your admin.</span>
+                ) : oauthBlocked ? (
+                  <span className="text-muted-foreground">Sign-in coming soon</span>
                 ) : (
-                  <span>{t("apps.common.connectArrow", { defaultValue: "Connect →" })}</span>
+                  <span>Connect →</span>
                 )}
               </div>
             </button>
@@ -771,9 +1016,7 @@ function GalleryStep({
       </div>
 
       {filtered.length === 0 && (
-        <div className="py-10 text-center text-sm text-muted-foreground">
-          {t("apps.connect.gallery.noMatches", { defaultValue: "No apps match “{{query}}”.", query: search })}
-        </div>
+        <div className="py-10 text-center text-sm text-muted-foreground">No apps match “{search}”.</div>
       )}
 
       <div
@@ -786,43 +1029,26 @@ function GalleryStep({
         <div>
           <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
             <Link2 className="h-4 w-4 text-muted-foreground" />
-            {zapierSource
-              ? t("apps.connect.connectZapier", { defaultValue: "Connect Zapier" })
-              : byo
-                ? t("apps.connect.link.connectOwnServer", { defaultValue: "Connect your own MCP server" })
-                : t("apps.connect.link.title", { defaultValue: "Connect with a link" })}
+            {zapierSource ? "Connect Zapier" : byo ? "Connect your own MCP server" : "Connect with a link"}
           </div>
           <p className="mt-1 text-xs text-muted-foreground">
             {zapierSource
-              ? t("apps.connect.zapierDescription", {
-                  defaultValue: "Paste the complete MCP URL Zapier gives you, including its token.",
-                })
+              ? "Paste the complete MCP URL Zapier gives you, including its token."
               : byo
-                ? t("apps.connect.link.ownServerDescription", {
-                    defaultValue: "Paste your MCP server’s URL and we’ll walk you through permissions and review.",
-                  })
-                : t("apps.connect.link.description", {
-                    defaultValue: "Paste a setup link from an app that is not listed here.",
-                  })}
+              ? "Paste your MCP server’s URL and we’ll walk you through permissions and review."
+              : "Paste a setup link from an app that is not listed here."}
           </p>
           {!zapierSource && (
             <p className="mt-1 text-xs text-muted-foreground">
-              {t("apps.connect.link.remoteUrlNotice", {
-                defaultValue: "Any remote tool URL works here — including a local MCP server like",
-              })}{" "}
+              Any remote tool URL works here — including a local MCP server like{" "}
               <code className="rounded bg-muted px-1 py-0.5 text-xs">http://127.0.0.1:8848/mcp</code>.
             </p>
           )}
           {matchedEntry && (
             <div className="mt-3 flex items-center justify-between gap-3 rounded-lg border border-border bg-muted/40 px-3 py-2">
               <div className="flex min-w-0 items-center gap-2 text-sm">
-                <AppLogo name={matchedEntry.name} logoUrl={matchedEntry.logoUrl} size={24} />
-                <span className="truncate">
-                  {t("apps.connect.link.matchedApp", {
-                    defaultValue: "This looks like {{appName}}.",
-                    appName: matchedEntry.name,
-                  })}
-                </span>
+                <AppLogo name={matchedEntry.name} logoUrl={matchedEntry.branding.logoUrl} size={24} />
+                <span className="truncate">This looks like {matchedEntry.name}.</span>
               </div>
               <Button
                 type="button"
@@ -831,7 +1057,7 @@ function GalleryStep({
                 disabled={matchedEntry.availability?.available === false}
                 onClick={() => {
                   setLinkError(null);
-                  if (matchedEntry.key === "zapier") {
+                  if (matchedEntry.slug === "zapier") {
                     continueWithLink();
                     return;
                   }
@@ -839,13 +1065,10 @@ function GalleryStep({
                 }}
               >
                 {matchedEntry.availability?.available === false
-                  ? t("apps.common.notAvailable", { defaultValue: "Not available" })
-                  : matchedEntry.key === "zapier"
-                    ? t("apps.common.continue", { defaultValue: "Continue" })
-                    : t("apps.connect.link.useApp", {
-                        defaultValue: "Use {{appName}}",
-                        appName: matchedEntry.name,
-                      })}
+                  ? "Not available"
+                  : matchedEntry.slug === "zapier"
+                    ? "Continue"
+                    : `Use ${matchedEntry.name}`}
               </Button>
             </div>
           )}
@@ -866,7 +1089,7 @@ function GalleryStep({
               className="h-10"
             />
             <Button type="button" variant="outline" onClick={continueWithLink}>
-              {t("apps.common.continue", { defaultValue: "Continue" })}
+              Continue
             </Button>
           </div>
           {linkError && <div className="text-xs text-destructive">{linkError}</div>}
@@ -874,29 +1097,21 @@ function GalleryStep({
       </div>
 
       <div className="border-t border-border pt-5">
-        <div className="text-sm font-semibold text-foreground">
-          {t("apps.connect.moreWays.title", { defaultValue: "More ways to connect" })}
-        </div>
+        <div className="text-sm font-semibold text-foreground">More ways to connect</div>
         <p className="mt-1 text-xs text-muted-foreground">
-          {t("apps.connect.moreWays.description", {
-            defaultValue: "For tools that aren’t in the gallery. You’ll need details from the tool’s docs.",
-          })}
+          For tools that aren’t in the gallery. You’ll need details from the tool’s docs.
         </p>
         <div className="mt-3 flex flex-col gap-2">
           <ConnectMethodRow
             icon={TerminalSquare}
-            title={t("apps.connect.moreWays.runOwn", { defaultValue: "Run your own" })}
-            description={t("apps.connect.moreWays.runOwnDescription", {
-              defaultValue: "Register a command Paperclip runs in your workspace for a tool that isn’t listed.",
-            })}
+            title="Run your own"
+            description="Register a command Paperclip runs in your workspace for a tool that isn’t listed."
             onClick={onRunYourOwn}
           />
           <ConnectMethodRow
             icon={ClipboardPaste}
-            title={t("apps.connect.moreWays.pasteConfig", { defaultValue: "Paste a config" })}
-            description={t("apps.connect.moreWays.pasteConfigDescription", {
-              defaultValue: "Already have a setup snippet from a README? Paste it and we’ll connect it.",
-            })}
+            title="Paste a config"
+            description="Already have a setup snippet from a README? Paste it and we’ll connect it."
             onClick={onPasteConfig}
           />
         </div>
@@ -975,7 +1190,6 @@ function LinkConnectStep({
   onBack: () => void;
   onConnect: () => void;
 }) {
-  const { t } = useTranslation();
   return (
     <div className="mx-auto max-w-xl rounded-2xl border border-border bg-card p-8">
       <div className="flex items-start gap-3">
@@ -983,62 +1197,50 @@ function LinkConnectStep({
           <Link2 className="h-5 w-5 text-muted-foreground" />
         </span>
         <div className="min-w-0">
-          <h2 className="text-xl font-bold tracking-tight">
-            {t("apps.connect.link.title", { defaultValue: "Connect with a link" })}
-          </h2>
+          <h2 className="text-xl font-bold tracking-tight">Connect with a link</h2>
           <p className="mt-1 truncate text-sm text-muted-foreground">{link}</p>
         </div>
       </div>
 
       <div className="mt-8 space-y-6">
         <div>
-          <label className="text-sm font-medium text-foreground">
-            {t("apps.common.name", { defaultValue: "Name" })}
-          </label>
+          <label className="text-sm font-medium text-foreground">Name</label>
           <Input
             value={name}
             onChange={(e) => onNameChange(e.target.value)}
-            placeholder={t("apps.connect.namePlaceholder", { defaultValue: "My app" })}
+            placeholder="My app"
             className="mt-2 h-11"
           />
           <p className="mt-2 text-xs text-muted-foreground">
-            {t("apps.connect.link.nameDescription", {
-              defaultValue: "We filled this in from the link. Change it if you’d like.",
-            })}
+            We filled this in from the link. Change it if you’d like.
           </p>
         </div>
 
         <div>
-          <label className="text-sm font-medium text-foreground">
-            {t("apps.connect.link.needsKey", { defaultValue: "Does it need a key?" })}
-          </label>
+          <label className="text-sm font-medium text-foreground">Does it need a key?</label>
           <div className="mt-2 inline-flex rounded-lg border border-border bg-muted/50 p-1">
             <SegmentedOption
-              label={t("apps.common.no", { defaultValue: "No" })}
+              label="No"
               selected={!needsKey}
               onClick={() => onNeedsKeyChange(false)}
             />
             <SegmentedOption
-              label={t("apps.common.yes", { defaultValue: "Yes" })}
+              label="Yes"
               selected={needsKey}
               onClick={() => onNeedsKeyChange(true)}
             />
           </div>
           <p className="mt-2 text-xs text-muted-foreground">
             {needsKey
-              ? t("apps.connect.link.pasteKey", { defaultValue: "Paste the key this app gave you." })
-              : t("apps.connect.link.keyHint", {
-                  defaultValue: "Most apps just work from the link — pick Yes only if the app gave you a key.",
-                })}
+              ? "Paste the key this app gave you."
+              : "Most apps just work from the link — pick Yes only if the app gave you a key."}
           </p>
         </div>
 
         {needsKey && (
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium text-foreground">
-                {t("apps.connect.appKey", { defaultValue: "App key" })}
-              </label>
+              <label className="text-sm font-medium text-foreground">App key</label>
               <Input
                 type="password"
                 autoComplete="off"
@@ -1052,13 +1254,9 @@ function LinkConnectStep({
             <div className="flex items-start gap-3 rounded-lg bg-muted/50 p-4">
               <Lock className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
               <div>
-                <div className="text-sm font-medium text-foreground">
-                  {t("apps.connect.keyStored", { defaultValue: "Your key is stored securely." })}
-                </div>
+                <div className="text-sm font-medium text-foreground">Your key is stored securely.</div>
                 <div className="text-xs text-muted-foreground">
-                  {t("apps.connect.replaceKey", {
-                    defaultValue: "You can replace it anytime from this app’s page.",
-                  })}
+                  You can replace it anytime from this app’s page.
                 </div>
               </div>
             </div>
@@ -1068,19 +1266,15 @@ function LinkConnectStep({
 
       <div className="mt-8 flex items-center justify-between">
         <Button variant="ghost" onClick={onBack} disabled={submitting}>
-          {t("apps.common.back", { defaultValue: "Back" })}
+          Back
         </Button>
         <div className="flex items-center gap-3">
           <span className="hidden text-xs text-muted-foreground sm:inline">
-            {t("apps.connect.link.checkNotice", {
-              defaultValue: "We’ll check the link before turning anything on.",
-            })}
+            We’ll check the link before turning anything on.
           </span>
           <Button onClick={onConnect} disabled={submitting || (needsKey && keyValue.trim().length === 0)}>
             {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {submitting
-              ? t("apps.connect.checking", { defaultValue: "Checking…" })
-              : t("apps.connect.checkLink", { defaultValue: "Check link" })}
+            {submitting ? "Checking…" : "Check link"}
           </Button>
         </div>
       </div>
@@ -1121,22 +1315,17 @@ function ConnectionNameField({
   name: string;
   onNameChange: (next: string) => void;
 }) {
-  const { t } = useTranslation();
   return (
     <div>
-      <label className="text-sm font-medium text-foreground">
-        {t("apps.common.name", { defaultValue: "Name" })}
-      </label>
+      <label className="text-sm font-medium text-foreground">Name</label>
       <Input
         value={name}
         onChange={(e) => onNameChange(e.target.value)}
-        placeholder={t("apps.connect.namePlaceholder", { defaultValue: "My app" })}
+        placeholder="My app"
         className="mt-2 h-11"
       />
       <p className="mt-2 text-xs text-muted-foreground">
-        {t("apps.connect.nameDescription", {
-          defaultValue: "We filled this in from the app. Change it to tell connections apart.",
-        })}
+        We filled this in from the app. Change it to tell connections apart.
       </p>
     </div>
   );
@@ -1155,7 +1344,7 @@ function KeyStep({
   onBack,
   onConnect,
 }: {
-  entry: AppGalleryEntry;
+  entry: AppDefinition;
   name: string;
   onNameChange: (next: string) => void;
   values: Record<string, string>;
@@ -1167,9 +1356,13 @@ function KeyStep({
   onBack: () => void;
   onConnect: () => void;
 }) {
-  const { t } = useTranslation();
-  const copy = appCopyFor(entry.key, entry.tagline);
-  const fields = entry.credentialFields ?? [];
+  const copy = appCopyFor(entry.slug, entry.description);
+  const method = getAvailableConnectionMethod(entry);
+  const fields = (method?.credentialFields ?? []).map((field) => ({
+    ...field,
+    configPath: credentialConfigPath(field),
+    helpUrl: method?.consoleLinks?.keys ?? method?.consoleLinks?.docs ?? "",
+  }));
   const allFilled = fields.every(
     (f) => f.required === false || (values[f.configPath]?.trim().length ?? 0) > 0,
   );
@@ -1182,14 +1375,10 @@ function KeyStep({
     return (
       <div className="mx-auto max-w-xl rounded-2xl border border-border bg-card p-8">
         <div className="flex items-center gap-3">
-          <AppLogo name={entry.name} logoUrl={entry.logoUrl} size={48} />
+          <AppLogo name={entry.name} logoUrl={entry.branding.logoUrl} size={48} />
           <div>
-            <h2 className="text-lg font-bold tracking-tight sm:text-xl">
-              {t("apps.connect.googleSheets.title", { defaultValue: "Connect Google Sheets" })}
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              {t(`apps.gallery.${entry.key}.short`, { defaultValue: copy.short })}
-            </p>
+            <h2 className="text-lg font-bold tracking-tight sm:text-xl">Connect Google Sheets</h2>
+            <p className="text-sm text-muted-foreground">{copy.short}</p>
           </div>
         </div>
 
@@ -1198,9 +1387,7 @@ function KeyStep({
 
           {robotEmail ? (
             <div>
-              <label className="text-sm font-medium text-foreground">
-                {t("apps.connect.googleSheets.shareEmail", { defaultValue: "Share each sheet with this email" })}
-              </label>
+              <label className="text-sm font-medium text-foreground">Share each sheet with this email</label>
               <div className="mt-2 flex min-w-0 flex-col gap-2 sm:flex-row">
                 <div
                   title={robotEmail}
@@ -1212,30 +1399,24 @@ function KeyStep({
                   type="button"
                   variant="outline"
                   className="shrink-0"
-                  onClick={() => void navigator.clipboard?.writeText(robotEmail)}
+                  onClick={() => void copyTextToClipboard(robotEmail).catch(() => {})}
                 >
                   <Copy className="mr-2 h-4 w-4" />
-                  {t("apps.common.copy", { defaultValue: "Copy" })}
+                  Copy
                 </Button>
               </div>
               <p className="mt-2 text-xs text-muted-foreground">
-                {t("apps.connect.googleSheets.shareInstructions", {
-                  defaultValue: "In Google Sheets, click Share and add this email as an Editor. Then paste the sheet links below.",
-                })}
+                In Google Sheets, click Share and add this email as an Editor. Then paste the sheet links below.
               </p>
             </div>
           ) : (
             <div className="rounded-lg bg-muted/50 p-4 text-sm text-muted-foreground">
-              {t("apps.connect.googleSheets.unavailable", {
-                defaultValue: "Google Sheets is not available on this instance yet.",
-              })}
+              Google Sheets is not available on this instance yet.
             </div>
           )}
 
           <div>
-            <label className="text-sm font-medium text-foreground">
-              {t("apps.connect.googleSheets.pasteLinks", { defaultValue: "Paste links to the sheets you shared" })}
-            </label>
+            <label className="text-sm font-medium text-foreground">Paste links to the sheets you shared</label>
             <Textarea
               value={googleSheetsLinks}
               onChange={(e) => onGoogleSheetsLinksChange(e.target.value)}
@@ -1244,15 +1425,8 @@ function KeyStep({
             />
             <div className="mt-2 text-xs text-muted-foreground">
               {parsed.ids.length > 0
-                ? t("apps.connect.googleSheets.readyCount", {
-                    defaultValue: parsed.ids.length === 1
-                      ? "{{count}} sheet ready to connect."
-                      : "{{count}} sheets ready to connect.",
-                    count: parsed.ids.length,
-                  })
-                : t("apps.connect.googleSheets.linkHint", {
-                    defaultValue: "Paste one link per line. Both .../edit and .../edit#gid=... links work.",
-                  })}
+                ? `${parsed.ids.length} ${parsed.ids.length === 1 ? "sheet" : "sheets"} ready to connect.`
+                : "Paste one link per line. Both .../edit and .../edit#gid=... links work."}
             </div>
             {googleSheetsError && <div className="mt-2 text-xs text-destructive">{googleSheetsError}</div>}
           </div>
@@ -1260,13 +1434,11 @@ function KeyStep({
 
         <div className="mt-8 flex items-center justify-between">
           <Button variant="ghost" onClick={onBack} disabled={submitting}>
-            {t("apps.common.back", { defaultValue: "Back" })}
+            Back
           </Button>
           <Button onClick={onConnect} disabled={submitting || !canConnect}>
             {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {submitting
-              ? t("apps.connect.checking", { defaultValue: "Checking…" })
-              : t("apps.common.connect", { defaultValue: "Connect" })}
+            {submitting ? "Checking…" : "Connect"}
           </Button>
         </div>
       </div>
@@ -1276,17 +1448,10 @@ function KeyStep({
   return (
     <div className="mx-auto max-w-xl rounded-2xl border border-border bg-card p-8">
       <div className="flex items-center gap-3">
-        <AppLogo name={entry.name} logoUrl={entry.logoUrl} size={48} />
+        <AppLogo name={entry.name} logoUrl={entry.branding.logoUrl} size={48} />
         <div>
-          <h2 className="text-xl font-bold tracking-tight">
-            {t("apps.connect.connectNamedApp", {
-              defaultValue: "Connect {{appName}}",
-              appName: entry.name,
-            })}
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            {t(`apps.gallery.${entry.key}.short`, { defaultValue: copy.short })}
-          </p>
+          <h2 className="text-xl font-bold tracking-tight">Connect {entry.name}</h2>
+          <p className="text-sm text-muted-foreground">{copy.short}</p>
         </div>
       </div>
 
@@ -1295,17 +1460,13 @@ function KeyStep({
 
         {fields.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            {t("apps.connect.noKeyRequired", {
-              defaultValue: "This app doesn’t need a key. Just connect to continue.",
-            })}
+            This app doesn’t need a key. Just connect to continue.
           </p>
         ) : (
           fields.map((field) => (
             <div key={field.configPath}>
               <label className="text-sm font-medium text-foreground">
-                {t(`apps.gallery.${entry.key}.credentials.${field.configPath.replaceAll(".", "_")}`, {
-                  defaultValue: credentialFieldLabel(entry.name, field.label, fields.length),
-                })}
+                {credentialFieldLabel(entry.name, field.label, fields.length)}
               </label>
               <Input
                 type="password"
@@ -1322,7 +1483,7 @@ function KeyStep({
                   rel="noreferrer"
                   className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-foreground underline underline-offset-2"
                 >
-                  {t("apps.connect.findCredential", { defaultValue: "Where do I find this?" })}
+                  Where do I find this?
                   <ArrowUpRight className="h-3 w-3" />
                 </a>
               )}
@@ -1333,13 +1494,9 @@ function KeyStep({
         <div className="flex items-start gap-3 rounded-lg bg-muted/50 p-4">
           <Lock className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
           <div>
-            <div className="text-sm font-medium text-foreground">
-              {t("apps.connect.keyStored", { defaultValue: "Your key is stored securely." })}
-            </div>
+            <div className="text-sm font-medium text-foreground">Your key is stored securely.</div>
             <div className="text-xs text-muted-foreground">
-              {t("apps.connect.replaceKey", {
-                defaultValue: "You can replace it anytime from this app’s page.",
-              })}
+              You can replace it anytime from this app’s page.
             </div>
           </div>
         </div>
@@ -1347,19 +1504,15 @@ function KeyStep({
 
       <div className="mt-8 flex items-center justify-between">
         <Button variant="ghost" onClick={onBack} disabled={submitting}>
-          {t("apps.common.back", { defaultValue: "Back" })}
+          Back
         </Button>
         <div className="flex items-center gap-3">
           <span className="hidden text-xs text-muted-foreground sm:inline">
-            {t("apps.connect.checkKeyNotice", {
-              defaultValue: "We’ll check the key before turning anything on.",
-            })}
+            We’ll check the key before turning anything on.
           </span>
           <Button onClick={onConnect} disabled={submitting || !allFilled}>
             {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {submitting
-              ? t("apps.connect.checking", { defaultValue: "Checking…" })
-              : t("apps.common.connect", { defaultValue: "Connect" })}
+            {submitting ? "Checking…" : "Connect"}
           </Button>
         </div>
       </div>
@@ -1386,7 +1539,6 @@ function ActionGroup({
   onBulk: () => void;
   askFirstLevels: string[];
 }) {
-  const { t } = useTranslation();
   if (actions.length === 0) return null;
   return (
     <div className="rounded-xl border border-border bg-card">
@@ -1419,17 +1571,10 @@ function ActionGroup({
               </div>
               {showAskFirst && (
                 <span className="inline-flex items-center rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-xs font-semibold text-amber-700 dark:text-amber-300">
-                  {t("apps.connect.actions.askFirst", { defaultValue: "Ask first" })}
+                  Ask first
                 </span>
               )}
-              <ToggleSwitch
-                checked={on}
-                onCheckedChange={(next) => onToggle(action.catalogEntryId, next)}
-                aria-label={t("apps.connect.actions.toggleAction", {
-                  defaultValue: "Toggle {{action}}",
-                  action: action.title ?? action.toolName,
-                })}
-              />
+              <ToggleSwitch checked={on} onCheckedChange={(next) => onToggle(action.catalogEntryId, next)} />
             </div>
           );
         })}
@@ -1455,7 +1600,6 @@ function ActionsStep({
   onBack: () => void;
   onContinue: () => void;
 }) {
-  const { t } = useTranslation();
   const askFirstLevels = askFirstLevelsFrom(result);
   const { readOnly, canMakeChanges } = result.actions;
   const total = readOnly.length + canMakeChanges.length;
@@ -1469,64 +1613,46 @@ function ActionsStep({
         </span>
         <div>
           <div className="text-lg font-bold text-foreground">
-            {t("apps.connect.actions.connected", {
-              defaultValue: total === 1
-                ? "Connected to {{appName}} — it offers {{count}} action."
-                : "Connected to {{appName}} — it offers {{count}} actions.",
-              appName,
-              count: total,
-            })}
+            Connected to {appName} — it offers {total} {total === 1 ? "action" : "actions"}.
           </div>
           <div className="text-sm text-muted-foreground">
-            {t("apps.connect.actions.description", {
-              defaultValue: "Read-only actions are on. Anything that can change something starts off — turn on the ones you want.",
-            })}
+            Read-only actions are on. Anything that can change something starts off — turn on the ones you want.
           </div>
         </div>
       </div>
 
       <ActionGroup
-        title={t("apps.connect.actions.readOnly", { defaultValue: "Read only" })}
-        hint={t("apps.connect.actions.readOnlyHint", { defaultValue: "these can look but not change anything" })}
+        title="Read only"
+        hint="these can look but not change anything"
         actions={readOnly}
         enabled={enabled}
         onToggle={onToggle}
-        bulkLabel={t("apps.connect.actions.turnAllOff", { defaultValue: "Turn all off" })}
+        bulkLabel="Turn all off"
         onBulk={() => onBulk(readOnly.map((a) => a.catalogEntryId), false)}
         askFirstLevels={askFirstLevels}
       />
 
       <ActionGroup
-        title={t("apps.connect.actions.canMakeChanges", { defaultValue: "Can make changes" })}
-        hint={t("apps.connect.actions.canMakeChangesHint", {
-          defaultValue: "these change something in another app",
-        })}
+        title="Can make changes"
+        hint="these change something in another app"
         actions={canMakeChanges}
         enabled={enabled}
         onToggle={onToggle}
-        bulkLabel={t("apps.connect.actions.turnAllOn", { defaultValue: "Turn all on" })}
+        bulkLabel="Turn all on"
         onBulk={() => onBulk(canMakeChanges.map((a) => a.catalogEntryId), true)}
         askFirstLevels={askFirstLevels}
       />
 
       <div className="flex items-center justify-between pt-1">
         <Button variant="ghost" onClick={onBack}>
-          {t("apps.common.back", { defaultValue: "Back" })}
+          Back
         </Button>
         <div className="flex items-center gap-3">
           <span className="hidden text-xs text-muted-foreground sm:inline">
-            {t("apps.connect.actions.newActionsNotice", {
-              defaultValue: "If {{appName}} adds new actions later, they start off until you review them.",
-              appName,
-            })}
+            If {appName} adds new actions later, they start off until you review them.
           </span>
           <Button onClick={onContinue} disabled={enabledCount === 0}>
-            {t("apps.connect.actions.continueCount", {
-              defaultValue: enabledCount === 1
-                ? "Continue with {{count}} action on"
-                : "Continue with {{count}} actions on",
-              count: enabledCount,
-            })}
+            Continue with {enabledCount} {enabledCount === 1 ? "action" : "actions"} on
           </Button>
         </div>
       </div>
@@ -1553,7 +1679,6 @@ function WhoStep({
   onBack: () => void;
   onContinue: () => void;
 }) {
-  const { t } = useTranslation();
   const agentsQuery = useQuery({
     queryKey: queryKeys.agents.list(companyId),
     queryFn: () => agentsApi.list(companyId),
@@ -1565,14 +1690,8 @@ function WhoStep({
   return (
     <div className="mx-auto max-w-xl">
       <div className="rounded-2xl border border-border bg-card p-8">
-        <h2 className="text-xl font-bold tracking-tight">
-          {t("apps.connect.access.title", { defaultValue: "Who can use {{appName}}?", appName })}
-        </h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {t("apps.connect.access.description", {
-            defaultValue: "You can change this later from the app’s page.",
-          })}
-        </p>
+        <h2 className="text-xl font-bold tracking-tight">Who can use {appName}?</h2>
+        <p className="mt-1 text-sm text-muted-foreground">You can change this later from the app’s page.</p>
 
         <div className="mt-6 space-y-3">
           <button
@@ -1586,18 +1705,13 @@ function WhoStep({
             <Radio selected={access === "all"} />
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-bold text-foreground">
-                  {t("apps.common.allAgents", { defaultValue: "All agents" })}
-                </span>
+                <span className="font-bold text-foreground">All agents</span>
                 <span className="rounded-full bg-foreground px-2 py-0.5 text-(length:--text-nano) font-bold text-background">
-                  {t("apps.common.recommended", { defaultValue: "Recommended" })}
+                  Recommended
                 </span>
               </div>
               <p className="mt-1 text-xs text-muted-foreground">
-                {t("apps.connect.access.allDescription", {
-                  defaultValue: "Anyone you’ve added to Paperclip can use {{appName}} in their tasks. This is what most teams want.",
-                  appName,
-                })}
+                Anyone you’ve added to Paperclip can use {appName} in their tasks. This is what most teams want.
               </p>
             </div>
           </button>
@@ -1612,15 +1726,8 @@ function WhoStep({
           >
             <Radio selected={access === "specific"} />
             <div className="flex-1">
-              <span className="font-semibold text-foreground">
-                {t("apps.connect.access.specificAgents", { defaultValue: "Only specific agents" })}
-              </span>
-              <p className="mt-1 text-xs text-muted-foreground">
-                {t("apps.connect.access.specificDescription", {
-                  defaultValue: "Tick the agents who can use {{appName}}.",
-                  appName,
-                })}
-              </p>
+              <span className="font-semibold text-foreground">Only specific agents</span>
+              <p className="mt-1 text-xs text-muted-foreground">Tick the agents who can use {appName}.</p>
             </div>
           </button>
 
@@ -1638,10 +1745,10 @@ function WhoStep({
 
       <div className="mt-6 flex items-center justify-between">
         <Button variant="ghost" onClick={onBack}>
-          {t("apps.common.back", { defaultValue: "Back" })}
+          Back
         </Button>
         <Button onClick={onContinue} disabled={!canFinish}>
-          {t("apps.connect.access.continue", { defaultValue: "Continue to install" })}
+          Continue to install
         </Button>
       </div>
     </div>
@@ -1691,17 +1798,14 @@ export function InstallStep({
   const canFinish = installMode !== "specific" || installAgentIds.size > 0;
   const extendingLabel = extendingAgentIds.length === 1
     ? agents.find((agent) => agent.id === extendingAgentIds[0])?.name
-      ?? t("apps.connect.install.agentCount", { defaultValue: "1 agent", count: 1 })
-    : t("apps.connect.install.agentCount", {
-        defaultValue: "{{count}} agents",
-        count: extendingAgentIds.length,
-      });
+      ?? t("apps.connect.install.agentCount", { count: 1, defaultValue: "{{count}} agents" })
+    : t("apps.connect.install.agentCount", { count: extendingAgentIds.length, defaultValue: "{{count}} agents" });
 
   return (
     <div className="mx-auto max-w-xl">
       <div className="rounded-2xl border border-border bg-card p-8">
         <h2 className="text-xl font-bold tracking-tight">
-          {t("apps.connect.install.title", { defaultValue: "Install {{appName}} tools?", appName })}
+          {t("apps.connect.install.title", { appName, defaultValue: "Install {{appName}} tools?" })}
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
           {t("apps.connect.install.description", {
@@ -1712,8 +1816,8 @@ export function InstallStep({
         <div className="mt-5">
           <InlineBanner tone="info" compact>
             {t("apps.connect.install.infoNotice", {
-              defaultValue: installInfoNotice(appName),
               appName,
+              defaultValue: "Installing adds {{appName}}'s tools to the agent's context on every run — install only where it will actually be used.",
             })}
           </InlineBanner>
         </div>
@@ -1734,8 +1838,8 @@ export function InstallStep({
               </span>
               <p className="mt-1 text-xs text-muted-foreground">
                 {t("apps.connect.install.notYetDescription", {
-                  defaultValue: "Keep {{appName}} permitted only. You can install it later from the app or agent page.",
                   appName,
+                  defaultValue: "Keep {{appName}} permitted only. You can install it later from the app or agent page.",
                 })}
               </p>
             </div>
@@ -1756,8 +1860,8 @@ export function InstallStep({
               </span>
               <p className="mt-1 text-xs text-muted-foreground">
                 {t("apps.connect.install.specificDescription", {
-                  defaultValue: "Tick the agents that should load {{appName}} every run.",
                   appName,
+                  defaultValue: "Tick the agents that should load {{appName}} every run.",
                 })}
               </p>
             </div>
@@ -1786,10 +1890,12 @@ export function InstallStep({
             <Radio selected={installMode === "all"} />
             <div>
               <span className="font-semibold text-foreground">
-                {t("apps.common.allAgents", { defaultValue: "All agents" })}
+                {t("apps.detail.permissions.installed.installAll.title", { defaultValue: "Install on all agents" })}
               </span>
               <p className="mt-1 text-xs text-muted-foreground">
-                {t("apps.connect.install.allWarning", { defaultValue: INSTALL_ALL_WARNING })}
+                {t("apps.connect.install.allWarning", {
+                  defaultValue: "Adds context cost to every run of every agent — a deliberate choice. New agents you add later are installed automatically.",
+                })}
               </p>
             </div>
           </button>
@@ -1797,8 +1903,8 @@ export function InstallStep({
           {extendingAgentIds.length > 0 ? (
             <InlineBanner tone="warning" compact>
               {t("apps.connect.install.extendNotice", {
-                defaultValue: autoExtendNotice(extendingLabel),
                 agents: extendingLabel,
+                defaultValue: "Installing on {{agents}} will also grant access. A tool can't be installed on an agent that isn't allowed to use it, so we'll add {{agents}} to who can use it. This is logged.",
               })}
             </InlineBanner>
           ) : null}
@@ -1854,12 +1960,7 @@ function SuccessStep({
   const installSummary = installMode === "all"
     ? t("apps.connect.success.installedAll", { defaultValue: "Installed on all agents" })
     : installMode === "specific"
-      ? t("apps.connect.success.installedCount", {
-          defaultValue: installCount === 1
-            ? "{{count}} agent installed"
-            : "{{count}} agents installed",
-          count: installCount,
-        })
+      ? t("apps.connect.success.installedCount", { count: installCount, defaultValue: "{{count}} agents installed" })
       : t("apps.connect.success.permittedOnly", { defaultValue: "Permitted only" });
   return (
     <div className="mx-auto max-w-md py-10 text-center">
@@ -1869,7 +1970,7 @@ function SuccessStep({
       <div className="mt-6 flex items-center justify-center gap-2">
         <AppLogo name={appName} logoUrl={logoUrl} size={28} />
         <h2 className="text-2xl font-bold tracking-tight">
-          {t("apps.connect.success.ready", { defaultValue: "{{appName}} is ready.", appName })}
+          {t("apps.connect.success.ready", { appName, defaultValue: "{{appName}} is ready." })}
         </h2>
       </div>
       <p className="mt-2 text-sm text-muted-foreground">
@@ -1877,25 +1978,21 @@ function SuccessStep({
           ? t("apps.connect.success.installLater", {
               defaultValue: "Agents can use it after you install it on their Tools tab.",
             })
-          : t("apps.connect.success.loadNextRun", {
-              defaultValue: "Installed agents will load it on their next run.",
-            })}
+          : t("apps.connect.success.loadNextRun", { defaultValue: "Installed agents will load it on their next run." })}
       </p>
       <p className="mt-1 text-xs text-muted-foreground">
         {t("apps.connect.success.summary", {
-          defaultValue: enabledCount === 1
-            ? "{{count}} action on · {{access}} · {{install}}"
-            : "{{count}} actions on · {{access}} · {{install}}",
           count: enabledCount,
           access: access === "all"
             ? t("apps.connect.success.allAccess", { defaultValue: "All agents can use it" })
             : t("apps.connect.success.specificAccess", { defaultValue: "Specific agents can use it" }),
           install: installSummary,
+          defaultValue: "{{count}} actions on · {{access}} · {{install}}",
         })}
       </p>
       <div className="mt-8">
         <Button size="lg" className="px-10" onClick={onDone}>
-          {t("apps.common.done", { defaultValue: "Done" })}
+          {t("common.done", { defaultValue: "Done" })}
         </Button>
       </div>
     </div>

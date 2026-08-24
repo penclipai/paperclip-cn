@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import type {
   CompanyPortabilityCollisionStrategy,
   CompanyPortabilityFileEntry,
+  CompanyPortabilityImportResult,
   CompanyPortabilityPreviewResult,
   CompanyPortabilitySource,
   CompanyPortabilityAdapterOverride,
@@ -12,8 +13,11 @@ import { useCompany } from "../context/CompanyContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { useToastActions } from "../context/ToastContext";
 import { authApi } from "../api/auth";
-import { companiesApi } from "../api/companies";
+import { ApiError } from "../api/client";
+import { companiesApi, type CompanyImportJobAccepted } from "../api/companies";
+import { adaptersApi } from "../api/adapters";
 import { agentsApi } from "../api/agents";
+import { routinesApi } from "../api/routines";
 import { sidebarPreferencesApi } from "../api/sidebarPreferences";
 import { queryKeys } from "../lib/queryKeys";
 import { getAgentOrderStorageKey, writeAgentOrder } from "../lib/agent-order";
@@ -29,10 +33,12 @@ import {
   ChevronRight,
   Download,
   Github,
+  Loader2,
   Package,
   Upload,
 } from "lucide-react";
 import { Field, adapterLabels } from "../components/agent-config-primitives";
+import { getAdapterLabel } from "../adapters/adapter-display-registry";
 import { defaultCreateValues } from "../components/agent-config-defaults";
 import { getUIAdapter, listUIAdapters } from "../adapters";
 import type { CreateConfigValues } from "@penclipai/adapter-utils";
@@ -47,7 +53,21 @@ import {
   FileTree,
 } from "../components/FileTree";
 import { readZipArchive } from "../lib/zip";
+import { formatMegabytes } from "../lib/import-preflight";
+import type { CompanyImportTransferDeclaration } from "@penclipai/shared/company-import-transfer";
+import {
+  CHUNKED_IMPORT_THRESHOLD_BYTES,
+  IMPORT_TRANSFER_PART_ATTEMPTS,
+  buildImportTransferManifest,
+} from "../lib/import-transfer";
 import { getPortableFileDataUrl, getPortableFileText, isPortableImageFile } from "../lib/portable-files";
+import {
+  clearStoredImportJob,
+  importJobStorageKey,
+  readStoredImportJob,
+  waitForNextImportJobPoll,
+  writeStoredImportJob,
+} from "../lib/import-job-watch";
 import { Badge } from "@/components/ui/badge";
 
 // ── Import-specific helpers ───────────────────────────────────────────
@@ -156,7 +176,9 @@ function renderImportFileExtra(node: FileTreeNode, checked: boolean, renameMap: 
       "text-(length:--text-nano) uppercase tracking-wide",
       ACTION_COLORS[node.action] ?? ACTION_COLORS.skip,
     )}>
-      {checked ? node.action : "skip"}
+      {translateInstant(`companyImport.action.${checked ? node.action : "skip"}`, {
+        defaultValue: checked ? node.action : "skip",
+      })}
     </Badge>
   ) : null;
 
@@ -193,9 +215,10 @@ function ImportPreviewPane({
   action: string | null;
   renamedTo: string | null;
 }) {
+  const { t } = useTranslation();
   if (!selectedFile || content === null) {
     return (
-      <EmptyState icon={Package} message={translateInstant("companyImport.selectPreview")} />
+      <EmptyState icon={Package} message={t("companyImport.selectPreview")} />
     );
   }
 
@@ -234,7 +257,7 @@ function ImportPreviewPane({
               "uppercase tracking-wide",
               actionColor,
             )}>
-              {action}
+              {translateInstant(`companyImport.action.${action}`, { defaultValue: action })}
             </Badge>
           )}
         </div>
@@ -257,7 +280,7 @@ function ImportPreviewPane({
           </pre>
         ) : (
           <div className="rounded-lg border border-border bg-accent/10 px-4 py-3 text-sm text-muted-foreground">
-            Binary asset preview is not available for this file type.
+            {t("companyExport.binaryPreviewUnavailable")}
           </div>
         )}
       </div>
@@ -387,6 +410,29 @@ async function applyImportedSidebarOrder(
   }
 }
 
+// ── Post-import activation ───────────────────────────────────────────
+
+interface ActivationItem {
+  key: string;
+  kind: "agent" | "routine";
+  id: string;
+  name: string;
+}
+
+/** Imported entries that landed paused and can be activated in place; entries without a result id (skipped etc.) are excluded */
+function buildActivationItems(result: CompanyPortabilityImportResult): ActivationItem[] {
+  const items: ActivationItem[] = [];
+  for (const agent of result.agents) {
+    if (!agent.id || agent.action === "skipped") continue;
+    items.push({ key: `agent:${agent.id}`, kind: "agent", id: agent.id, name: agent.name });
+  }
+  for (const routine of result.routines) {
+    if (!routine.id) continue;
+    items.push({ key: `routine:${routine.id}`, kind: "routine", id: routine.id, name: routine.title });
+  }
+  return items;
+}
+
 // ── Conflict resolution UI ───────────────────────────────────────────
 
 function ConflictResolutionList({
@@ -406,7 +452,6 @@ function ConflictResolutionList({
   onToggleSkip: (slug: string, filePath: string | null) => void;
   onToggleConfirm: (slug: string) => void;
 }) {
-  const { t } = useTranslation();
   if (conflicts.length === 0) return null;
 
   return (
@@ -414,10 +459,10 @@ function ConflictResolutionList({
       <div className="rounded-md border border-border">
         <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
           <h3 className="text-sm font-medium">
-            {t("Renames", { defaultValue: "Renames" })}
+            {translateInstant("companyImport.renames", { defaultValue: "Renames" })}
           </h3>
           <span className="text-xs text-muted-foreground">
-            {conflicts.length} item{conflicts.length === 1 ? "" : "s"}
+            {translateInstant("companyImport.itemCount", { defaultValue: "{{count}} item", count: conflicts.length })}
           </span>
         </div>
         <div className="divide-y divide-border">
@@ -445,7 +490,9 @@ function ConflictResolutionList({
                   )}
                   onClick={() => onToggleSkip(item.slug, item.filePath)}
                 >
-                  {isSkipped ? t("skipped", { defaultValue: "skipped" }) : t("skip", { defaultValue: "skip" })}
+                  {isSkipped
+                    ? translateInstant("companyImport.skipped", { defaultValue: "skipped" })
+                    : translateInstant("companyImport.skip", { defaultValue: "skip" })}
                 </button>
 
                 <Badge variant="outline" className={cn(
@@ -456,7 +503,7 @@ function ConflictResolutionList({
                       ? "text-emerald-500 border-emerald-500/30"
                       : "text-amber-500 border-amber-500/30",
                 )}>
-                  {item.kind}
+                  {translateInstant(`companyImport.kind.${item.kind}`, { defaultValue: item.kind })}
                 </Badge>
 
                 <span className={cn(
@@ -498,10 +545,10 @@ function ConflictResolutionList({
                     {isConfirmed ? (
                       <>
                         <Check className="h-3 w-3" />
-                        {t("confirmed", { defaultValue: "confirmed" })}
+                        {translateInstant("companyImport.confirmed", { defaultValue: "confirmed" })}
                       </>
                     ) : (
-                      t("confirm rename", { defaultValue: "confirm rename" })
+                      translateInstant("companyImport.confirmRename", { defaultValue: "confirm rename" })
                     )}
                   </button>
                 )}
@@ -516,12 +563,25 @@ function ConflictResolutionList({
 
 // ── Adapter type options for import ───────────────────────────────────
 
+const IMPORT_ADAPTER_OPTIONS: { value: string; label: string }[] = listUIAdapters().map((adapter) => ({
+  value: adapter.type,
+  label: adapterLabels[adapter.type] ?? getAdapterLabel(adapter.type),
+}));
+
 // ── Adapter picker for imported agents ───────────────────────────────
 
 interface AdapterPickerItem {
   slug: string;
   name: string;
+  /** Adapter type from the package manifest (the source's adapter). */
   adapterType: string;
+  /**
+   * Set when the manifest adapter is not installed on the destination: the
+   * adapter type the agent falls back to unless the user picks another one.
+   * Null when the manifest adapter is usable here (or availability is unknown,
+   * which fails open to the manifest adapter).
+   */
+  fallbackAdapterType: string | null;
 }
 
 function AdapterPickerList({
@@ -541,29 +601,21 @@ function AdapterPickerList({
   onToggleExpand: (slug: string) => void;
   onChangeConfig: (slug: string, patch: Partial<CreateConfigValues>) => void;
 }) {
-  const { t } = useTranslation();
-
-  const importAdapterOptions = listUIAdapters().map((adapter) => ({
-    value: adapter.type,
-    label: t(adapterLabels[adapter.type] ?? adapter.label, {
-      defaultValue: adapterLabels[adapter.type] ?? adapter.label,
-    }),
-  }));
-
   if (agents.length === 0) return null;
 
   return (
     <div className="mx-5 mt-3">
       <div className="rounded-md border border-border">
         <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
-          <h3 className="text-sm font-medium">{t("Adapters", { defaultValue: "Adapters" })}</h3>
+          <h3 className="text-sm font-medium">{translateInstant("companyImport.adapters", { defaultValue: "Adapters" })}</h3>
           <span className="text-xs text-muted-foreground">
-            {agents.length} agent{agents.length === 1 ? "" : "s"}
+            {translateInstant("companyImport.agentCount", { defaultValue: "{{count}} agent", count: agents.length })}
           </span>
         </div>
         <div className="divide-y divide-border">
           {agents.map((agent) => {
-            const selectedType = adapterOverrides[agent.slug] ?? agent.adapterType;
+            const selectedType =
+              adapterOverrides[agent.slug] ?? agent.fallbackAdapterType ?? agent.adapterType;
             const isExpanded = expandedSlugs.has(agent.slug);
             const vals = configValues[agent.slug] ?? { ...defaultCreateValues, adapterType: selectedType };
 
@@ -574,7 +626,7 @@ function AdapterPickerList({
                     "text-(length:--text-nano) uppercase tracking-wide",
                     "text-blue-500 border-blue-500/30",
                   )}>
-                    {t("agent", { defaultValue: "agent" })}
+                    {translateInstant("companyImport.kind.agent", { defaultValue: "agent" })}
                   </Badge>
                   <span className="shrink-0 font-mono text-xs text-muted-foreground">
                     {agent.name}
@@ -585,7 +637,7 @@ function AdapterPickerList({
                     value={selectedType}
                     onChange={(e) => onChangeAdapter(agent.slug, e.target.value)}
                   >
-                    {importAdapterOptions.map((opt) => (
+                    {IMPORT_ADAPTER_OPTIONS.map((opt) => (
                       <option key={opt.value} value={opt.value}>
                         {opt.label}
                       </option>
@@ -602,9 +654,20 @@ function AdapterPickerList({
                     onClick={() => onToggleExpand(agent.slug)}
                   >
                     <ChevronRight className={cn("h-3 w-3 transition-transform", isExpanded && "rotate-90")} />
-                    {t("configure adapter", { defaultValue: "configure adapter" })}
+                    {translateInstant("companyImport.configureAdapter", { defaultValue: "Configure adapter" })}
                   </button>
                 </div>
+                {agent.fallbackAdapterType && (
+                  <div className="mx-4 mb-2.5 rounded-md border border-amber-500/30 bg-amber-500/5 px-3 py-2">
+                    <p className="text-xs text-amber-500">
+                      {translateInstant("companyImport.adapterFallback", {
+                        defaultValue: "source adapter {{source}} is not installed here — this agent will use {{fallback}}.",
+                        source: agent.adapterType,
+                        fallback: adapterLabels[selectedType] ?? getAdapterLabel(selectedType),
+                      })}
+                    </p>
+                  </div>
+                )}
                 {isExpanded && (
                   <div className="border-t border-border bg-accent/10 px-4 py-3 space-y-3">
                     <AgentConfigForm
@@ -632,6 +695,14 @@ function AdapterPickerList({
 
 async function readLocalPackageZip(file: File): Promise<{
   name: string;
+  /**
+   * The raw .zip File itself. Local imports upload this compressed file as
+   * multipart instead of inflating it into one large inline JSON body (which
+   * truncated in transit on big companies); the parsed `files` map below is
+   * kept only for the client-side preflight display and preview affordances.
+   */
+  file: File;
+  compressedBytes: number;
   rootPath: string | null;
   files: Record<string, CompanyPortabilityFileEntry>;
 }> {
@@ -644,9 +715,133 @@ async function readLocalPackageZip(file: File): Promise<{
   }
   return {
     name: file.name,
+    file,
+    compressedBytes: file.size,
     rootPath: archive.rootPath,
     files: archive.files,
   };
+}
+
+// ── Chunked transfer flow for large local zips ───────────────────────
+//
+// A local .zip over the threshold is not uploaded in one request: one dropped
+// connection would restart the whole multi-minute upload. Instead the file is
+// declared as a chunked transfer (whole-file and per-part sha256), the parts
+// are uploaded individually with per-part retries, and preview/apply run
+// server-side against the assembled spool. Re-declaring the same file — after
+// a failure, a refresh, or between preview and import — resumes the prior
+// transfer, so only the parts the server is missing are ever re-uploaded.
+
+function usesChunkedTransfer(file: File): boolean {
+  return file.size > CHUNKED_IMPORT_THRESHOLD_BYTES;
+}
+
+/** Parts done / bytes uploaded, rendered inside the pending panels while parts upload. */
+interface ImportTransferProgress {
+  uploadedParts: number;
+  totalParts: number;
+  uploadedBytes: number;
+  totalBytes: number;
+}
+
+function formatTransferProgress(progress: ImportTransferProgress): string {
+  return `${progress.uploadedParts}/${progress.totalParts} · ${formatMegabytes(progress.uploadedBytes)} / ${formatMegabytes(progress.totalBytes)}`;
+}
+
+// ── Async import job flow ─────────────────────────────────────────────
+//
+// Imports run as server-side jobs: the submit returns 202 with a job id and
+// the page polls the status route until the job settles. The connection is
+// no longer load-bearing — a proxy timeout, network blip, or page reload
+// cannot kill the import, and the stored job id lets the page resume
+// watching. Jobs are held in server memory only, so an id the server no
+// longer knows (restart, retention expiry) polls as 404.
+
+/** A 409 on submit means this user's previous import is still running; adopt it instead of importing twice. */
+function runningImportJobFromError(err: unknown): CompanyImportJobAccepted | null {
+  if (!(err instanceof ApiError) || err.status !== 409) return null;
+  const body = err.body as { job?: { id?: unknown }; statusUrl?: unknown } | null;
+  const jobId = body?.job?.id;
+  if (typeof jobId !== "string" || jobId.length === 0) return null;
+  return {
+    job: { id: jobId, status: "running" },
+    statusUrl: typeof body?.statusUrl === "string" ? body.statusUrl : `/companies/import/jobs/${jobId}`,
+  };
+}
+
+/**
+ * Terminal outcome of watching an import job.
+ *
+ * - `completed` carries the full import result and drives the activation path.
+ * - `completed-expired` is a *server-confirmed* success whose full result we
+ *   can no longer read: the server reported the job `succeeded` but retained
+ *   only its compact summary — a cloud tenant job, or a board job whose full
+ *   in-memory result aged out. The company id lets the page still navigate to
+ *   the imported company. This is never a failure: the server confirmed the
+ *   import succeeded before we stopped being able to read the full result.
+ */
+type CompanyImportWatchOutcome =
+  | { status: "completed"; result: CompanyPortabilityImportResult }
+  | { status: "completed-expired"; companyId: string | null };
+
+/** Poll a job to a terminal state; resolves with the outcome or throws the job's error. */
+async function watchImportJob(
+  jobId: string,
+  storageKey: string,
+): Promise<CompanyImportWatchOutcome> {
+  for (;;) {
+    let job: Awaited<ReturnType<typeof companiesApi.getImportJob>>["job"] | null = null;
+    try {
+      job = (await companiesApi.getImportJob(jobId)).job;
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 404) {
+        // The server has no record of this job. The retention sweep only drops
+        // jobs that have already *settled* (a running job is never removed), so
+        // a 404 while we are still watching means the in-memory record was lost
+        // to a restart mid-import — the import never reached a confirmed
+        // `succeeded` state and may not have finished. Report that honestly
+        // rather than masking a possibly-incomplete import as a success; the
+        // refreshed company list lets the user confirm what actually landed.
+        clearStoredImportJob(storageKey);
+        throw new Error(translateInstant("companyImport.jobMissingAfterRestart"));
+      }
+      if (
+        err instanceof ApiError
+        && err.status >= 400
+        && err.status < 500
+        && err.status !== 429
+      ) {
+        // A permanent client error (an expired board session, lost board
+        // access, or a bad request) will never recover by polling again, so
+        // stop instead of leaving the import locked in its running state.
+        // 429 (rate limited) and 5xx stay transient and fall through below.
+        clearStoredImportJob(storageKey);
+        throw new Error(translateInstant("companyImport.statusUnavailable"));
+      }
+      // Any other poll failure is treated as transient (network blip,
+      // dropped connection, rate limit, or a 5xx): the job keeps running
+      // server-side, so keep watching rather than reporting a failure that
+      // may not exist.
+    }
+    if (job?.status === "succeeded") {
+      clearStoredImportJob(storageKey);
+      if (!job.importResult) {
+        // The server confirmed success but retained only the compact summary
+        // (a cloud tenant job, or a board job whose full result aged out of
+        // memory). Still a success — navigate by the summary's company id.
+        return {
+          status: "completed-expired",
+          companyId: job.result?.companyId ?? null,
+        };
+      }
+      return { status: "completed", result: job.importResult };
+    }
+    if (job?.status === "failed") {
+      clearStoredImportJob(storageKey);
+      throw new Error(job.error?.message ?? translateInstant("companyImport.serverImportFailed"));
+    }
+    await waitForNextImportJobPoll();
+  }
 }
 
 // ── Main page ─────────────────────────────────────────────────────────
@@ -673,6 +868,8 @@ export function CompanyImport() {
   const [importUrl, setImportUrl] = useState("");
   const [localPackage, setLocalPackage] = useState<{
     name: string;
+    file: File;
+    compressedBytes: number;
     rootPath: string | null;
     files: Record<string, CompanyPortabilityFileEntry>;
   } | null>(null);
@@ -699,6 +896,110 @@ export function CompanyImport() {
   const [adapterExpandedSlugs, setAdapterExpandedSlugs] = useState<Set<string>>(new Set());
   const [adapterConfigValues, setAdapterConfigValues] = useState<Record<string, CreateConfigValues>>({});
 
+  // Post-import success / activation state
+  const [pauseAutomations, setPauseAutomations] = useState(true);
+  const [importOutcome, setImportOutcome] = useState<
+    | {
+        kind: "full";
+        result: CompanyPortabilityImportResult;
+        dashboardPath: string;
+        pausedAutomations: boolean;
+      }
+    | { kind: "expired" }
+    | null
+  >(null);
+  const [activationChecked, setActivationChecked] = useState<Set<string>>(new Set());
+  const [activatedKeys, setActivatedKeys] = useState<Set<string>>(new Set());
+  const [activationFailures, setActivationFailures] = useState<Record<string, string>>({});
+  const [isActivating, setIsActivating] = useState(false);
+
+  // A still-running job from a previous page load being re-attached to. While
+  // set, the page shows a "resume watching" panel instead of the stale form.
+  const [resumedWatchJobId, setResumedWatchJobId] = useState<string | null>(null);
+  const resumeAttemptedRef = useRef(false);
+
+  // Chunked transfer state. The manifest cache is keyed by File identity so
+  // preview and import hash the (large) package once; progress is set only
+  // while parts are actually uploading, so the pending panels can report it.
+  const transferManifestRef = useRef<{ file: File; manifest: CompanyImportTransferDeclaration } | null>(null);
+  const [transferProgress, setTransferProgress] = useState<ImportTransferProgress | null>(null);
+
+  async function ensureTransferManifest(file: File): Promise<CompanyImportTransferDeclaration> {
+    if (transferManifestRef.current?.file === file) {
+      return transferManifestRef.current.manifest;
+    }
+    // The whole file is read once here for hashing; parts are later uploaded
+    // as Blob slices of the File, so this buffer is not retained past hashing.
+    const manifest = await buildImportTransferManifest(await file.arrayBuffer());
+    transferManifestRef.current = { file, manifest };
+    return manifest;
+  }
+
+  /**
+   * Declare (or resume) the transfer for this file and upload every part the
+   * server reports missing, sequentially with per-part retries. Resolves with
+   * the transfer id once the server holds every part.
+   */
+  async function uploadImportTransfer(file: File): Promise<string> {
+    const manifest = await ensureTransferManifest(file);
+    const created = await companiesApi.importTransferCreate(manifest);
+    if (created.alreadyCompleted) {
+      // The server keys transfers by content, and this exact zip already
+      // finished an apply — its parts are gone, so it cannot be re-run.
+      throw new Error(translateInstant("companyImport.packageAlreadyImported"));
+    }
+    const missing = new Set(created.missingParts);
+    let uploadedParts = manifest.parts.length - missing.size;
+    let uploadedBytes = manifest.parts.reduce(
+      (sum, part) => (missing.has(part.index) ? sum : sum + part.byteSize),
+      0,
+    );
+    try {
+      setTransferProgress({
+        uploadedParts,
+        totalParts: manifest.parts.length,
+        uploadedBytes,
+        totalBytes: manifest.totalBytes,
+      });
+      for (const part of manifest.parts) {
+        if (!missing.has(part.index)) continue;
+        const offset = part.index * manifest.partSizeBytes;
+        const bytes = file.slice(offset, offset + part.byteSize);
+        let lastError: unknown = null;
+        let uploaded = false;
+        for (let attempt = 0; attempt < IMPORT_TRANSFER_PART_ATTEMPTS && !uploaded; attempt += 1) {
+          try {
+            await companiesApi.importTransferUploadPart(created.transferId, part.index, bytes);
+            uploaded = true;
+          } catch (err) {
+            lastError = err;
+          }
+        }
+        if (!uploaded) {
+          // The parts already uploaded stay spooled server-side; retrying the
+          // preview/import resumes from them instead of starting over.
+          throw lastError instanceof Error
+            ? lastError
+            : new Error(translateInstant("companyImport.partUploadFailed", {
+                part: part.index + 1,
+                total: manifest.parts.length,
+              }));
+        }
+        uploadedParts += 1;
+        uploadedBytes += part.byteSize;
+        setTransferProgress({
+          uploadedParts,
+          totalParts: manifest.parts.length,
+          uploadedBytes,
+          totalBytes: manifest.totalBytes,
+        });
+      }
+    } finally {
+      setTransferProgress(null);
+    }
+    return created.transferId;
+  }
+
   // Fetch current company agents to find CEO adapter type
   const { data: companyAgents } = useQuery({
     queryKey: selectedCompanyId ? queryKeys.agents.list(selectedCompanyId) : ["agents", "none"],
@@ -712,40 +1013,96 @@ export function CompanyImport() {
   }, [companyAgents]);
 
   const localZipHelpText = t("companyImport.localZipHelp");
+  const translatePackageReadError = (err: unknown) => {
+    if (!(err instanceof Error)) return t("companyImport.packageReadFailedBody");
+    return err.message;
+  };
+  const translateImportFlowError = (err: unknown) => {
+    if (!(err instanceof Error)) return t("companyImport.requestDidNotComplete");
+    return err.message;
+  };
+  const summarizeImportCount = (
+    kind: "agents" | "skills" | "projects" | "routines",
+    count: number,
+  ) => t(`companyImport.summary.${kind}`, { count });
+  const skillActionLabel = (action: string) =>
+    t(`companyImport.skillAction.${action}`, { defaultValue: action });
+  // Fetch the destination's installed adapters so imported agents keep their
+  // manifest adapter whenever it is usable here. Only agents whose manifest
+  // adapter is missing (or disabled) fall back to the CEO's adapter — with a
+  // visible per-agent warning, never silently.
+  const { data: installedAdapters } = useQuery({
+    queryKey: queryKeys.adapters.all,
+    queryFn: () => adaptersApi.list(),
+    staleTime: 5 * 60 * 1000,
+  });
+  // Null while the list is loading or unreadable: availability is unknown, so
+  // fail open and trust the manifest rather than coercing every agent.
+  const availableAdapterTypes = useMemo(() => {
+    if (!installedAdapters) return null;
+    return new Set(installedAdapters.filter((a) => !a.disabled).map((a) => a.type));
+  }, [installedAdapters]);
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: t("Org Chart"), href: "/org" },
+      { label: selectedCompany?.name ?? t("Company"), href: "/dashboard" },
+      { label: t("Settings"), href: "/company/settings" },
       { label: t("Import") },
     ]);
-  }, [setBreadcrumbs, t]);
+  }, [selectedCompany?.name, setBreadcrumbs, t]);
 
-  function buildSource(): CompanyPortabilitySource | null {
-    if (sourceMode === "local") {
-      if (!localPackage) return null;
-      return { type: "inline", rootPath: localPackage.rootPath, files: localPackage.files };
-    }
+  // The GitHub/URL source still travels inline (it is just a URL, so it never
+  // hits the inline-size ceiling). The local .zip source uploads its raw
+  // compressed file as multipart instead — see the preview/import mutations.
+  function buildGithubSource(): CompanyPortabilitySource | null {
     const url = importUrl.trim();
     if (!url) return null;
     return { type: "github", url };
   }
 
+  // Import fields shared by preview and apply, and by both transports. The
+  // multipart zip upload ships these as a JSON `meta` field; the inline GitHub
+  // request spreads them alongside its `source`.
+  function buildImportMetaCommon() {
+    return {
+      include: { company: true, agents: true, projects: true, issues: true },
+      target:
+        targetMode === "new"
+          ? { mode: "new_company" as const, newCompanyName: newCompanyName || null }
+          : { mode: "existing_company" as const, companyId: selectedCompanyId! },
+      collisionStrategy,
+    };
+  }
+
+  // Monotonic id for preview requests. Structural configuration changes bump
+  // it, so an in-flight preview they supersede settles silently instead of
+  // publishing a result or error for a package that is no longer selected.
+  // Imports are not gated this way: they mutate the server, so their outcome
+  // is always published.
+  const previewGenerationRef = useRef(0);
+
   // Preview mutation
   const previewMutation = useMutation({
-    mutationFn: () => {
-      const source = buildSource();
-      if (!source) throw new Error(translateInstant("companyImport.noSourceConfigured"));
-      return companiesApi.importPreview({
-        source,
-        include: { company: true, agents: true, projects: true, issues: true },
-        target:
-          targetMode === "new"
-            ? { mode: "new_company", newCompanyName: newCompanyName || null }
-            : { mode: "existing_company", companyId: selectedCompanyId! },
-        collisionStrategy,
-      });
+    mutationFn: async (_generation: number) => {
+      const meta = buildImportMetaCommon();
+      if (sourceMode === "local") {
+        if (!localPackage) throw new Error(t("companyImport.noSourceConfigured"));
+        if (usesChunkedTransfer(localPackage.file)) {
+          // Too large for one request: upload (or resume) the chunked
+          // transfer, then preview against the server-side assembled spool.
+          const transferId = await uploadImportTransfer(localPackage.file);
+          return companiesApi.importTransferPreview(transferId, meta);
+        }
+        // Upload the raw compressed zip; the server unzips it into the same
+        // inline bundle the importer consumes.
+        return companiesApi.importPreviewPackage(localPackage.file, meta);
+      }
+      const source = buildGithubSource();
+      if (!source) throw new Error(t("companyImport.noSourceConfigured"));
+      return companiesApi.importPreview({ source, ...meta });
     },
-    onSuccess: (result) => {
+    onSuccess: (result, generation) => {
+      if (generation !== previewGenerationRef.current) return;
       setImportPreview(result);
 
       // Build conflicts and set default name overrides with prefix
@@ -768,12 +1125,10 @@ export function CompanyImport() {
       setSkippedSlugs(new Set());
       setConfirmedSlugs(new Set());
 
-      // Initialize adapter overrides — default all agents to the CEO's adapter type
-      const defaultAdapters: Record<string, string> = {};
-      for (const agent of result.manifest.agents) {
-        defaultAdapters[agent.slug] = ceoAdapterType;
-      }
-      setAdapterOverrides(defaultAdapters);
+      // Adapter overrides start empty: each agent keeps its manifest adapter
+      // unless the user changes it, or the manifest adapter is not installed
+      // here (handled per-agent via a warned fallback, never seeded silently).
+      setAdapterOverrides({});
       setAdapterExpandedSlugs(new Set());
       setAdapterConfigValues({});
 
@@ -808,7 +1163,8 @@ export function CompanyImport() {
       const firstFile = Object.keys(result.files)[0];
       if (firstFile) setSelectedFile(firstFile);
     },
-    onError: (err) => {
+    onError: (err, generation) => {
+      if (generation !== previewGenerationRef.current) return;
       pushToast({
         tone: "error",
         title: t("companyImport.previewFailedTitle"),
@@ -834,26 +1190,99 @@ export function CompanyImport() {
     return selected.length > 0 ? selected : undefined;
   }
 
-  // Apply mutation
+  /** Storage key for the pending submission, scoped per company + package. */
+  function currentImportJobStorageKey(): string {
+    const packageName =
+      sourceMode === "local"
+        ? localPackage?.name ?? "package"
+        : importUrl.trim() || "package";
+    return importJobStorageKey(selectedCompanyId ?? "unknown-company", packageName);
+  }
+
+  // Apply mutation. The preview the import was started from and the
+  // submitted pause option ride along as the mutation variables so the
+  // request and its callbacks never read state that a later edit replaced.
+  // The import runs as a server-side job: the mutation stays pending across
+  // the 202 submit and every poll, so the existing progress panel, error
+  // panel, and structural locks cover the whole job, not just one request.
   const importMutation = useMutation({
-    mutationFn: () => {
-      const source = buildSource();
-      if (!source) throw new Error(translateInstant("companyImport.noSourceConfigured"));
-      return companiesApi.importBundle({
-        source,
-        include: { company: true, agents: true, projects: true, issues: true },
-        target:
-          targetMode === "new"
-            ? { mode: "new_company", newCompanyName: newCompanyName || null }
-            : { mode: "existing_company", companyId: selectedCompanyId! },
-        collisionStrategy,
+    mutationFn: async (variables: {
+      previewForImport: CompanyPortabilityPreviewResult | null;
+      pauseAutomations: boolean;
+      /** Re-attach to a job stored by a previous page load instead of submitting. */
+      resume?: { jobId: string; storageKey: string };
+    }) => {
+      if (variables.resume) {
+        return watchImportJob(variables.resume.jobId, variables.resume.storageKey);
+      }
+      const meta = {
+        ...buildImportMetaCommon(),
         nameOverrides: buildFinalNameOverrides(),
         selectedFiles: buildSelectedFiles(),
         adapterOverrides: buildFinalAdapterOverrides(),
+        pauseAutomations: variables.pauseAutomations,
+      };
+      const localFile = sourceMode === "local" ? localPackage?.file : null;
+      const githubSource = sourceMode === "local" ? null : buildGithubSource();
+      if (sourceMode === "local" ? !localFile : !githubSource) {
+        throw new Error(t("companyImport.noSourceConfigured"));
+      }
+      const storageKey = currentImportJobStorageKey();
+      let accepted: CompanyImportJobAccepted;
+      try {
+        if (localFile && usesChunkedTransfer(localFile)) {
+          // Same transfer the preview uploaded: re-declaring resumes it, so
+          // normally no parts travel again and this goes straight to apply.
+          const transferId = await uploadImportTransfer(localFile);
+          accepted = await companiesApi.importTransferApply(transferId, meta);
+        } else {
+          accepted = localFile
+            ? await companiesApi.importBundlePackageAsync(localFile, meta)
+            : await companiesApi.importBundleAsync({ source: githubSource!, ...meta });
+        }
+      } catch (err) {
+        // 409: this user's previous import is still running. Adopt that job
+        // and watch it — never fire a second import.
+        const running = runningImportJobFromError(err);
+        if (!running) throw err;
+        accepted = running;
+      }
+      writeStoredImportJob(storageKey, {
+        jobId: accepted.job.id,
+        pauseAutomations: variables.pauseAutomations,
       });
+      return watchImportJob(accepted.job.id, storageKey);
     },
-    onSuccess: async (result) => {
+    onSuccess: async (outcome, { previewForImport, pauseAutomations: submittedPauseAutomations }) => {
+      setResumedWatchJobId(null);
+      // The company list powers the switcher; refresh it on every success path
+      // so the imported company appears immediately without a manual reload.
       await queryClient.invalidateQueries({ queryKey: queryKeys.companies.all });
+
+      if (outcome.status === "completed-expired") {
+        // The import finished and wrote all its data, but the job's result
+        // expired (or was never retained) before we could read it. This is a
+        // success, not a failure: surface it gently and let the refreshed
+        // switcher carry the user into the new company.
+        if (outcome.companyId) {
+          try {
+            const importedCompany = await companiesApi.get(outcome.companyId);
+            setSelectedCompanyId(importedCompany.id);
+          } catch {
+            // The company id may be unreadable (permissions, race); the
+            // refreshed company list still surfaces the import.
+          }
+        }
+        setImportOutcome({ kind: "expired" });
+        pushToast({
+          tone: "success",
+          title: t("companyImport.completed"),
+          body: t("companyImport.completedNoSummary"),
+        });
+        return;
+      }
+
+      const result = outcome.result;
       const importedCompany = await companiesApi.get(result.company.id);
       const refreshedSession = currentUserId
         ? null
@@ -866,20 +1295,20 @@ export function CompanyImport() {
         ?? refreshedSession?.user?.id
         ?? refreshedSession?.session?.userId
         ?? null;
-      await applyImportedSidebarOrder(importPreview, result, sidebarOrderUserId);
+      await applyImportedSidebarOrder(previewForImport, result, sidebarOrderUserId);
       setSelectedCompanyId(importedCompany.id);
-      pushToast({
-        tone: "success",
-        title: t("companyImport.importCompleteTitle"),
-        body: t("companyImport.importCompleteBody", {
-          companyName: result.company.name,
-          count: result.agents.length,
-        }),
+      setActivationChecked(new Set(buildActivationItems(result).map((item) => item.key)));
+      setActivatedKeys(new Set());
+      setActivationFailures({});
+      setImportOutcome({
+        kind: "full",
+        result,
+        dashboardPath: `/${importedCompany.issuePrefix}/dashboard`,
+        pausedAutomations: submittedPauseAutomations,
       });
-      // Force a fresh dashboard load so newly imported agents are immediately visible.
-      window.location.assign(`/${importedCompany.issuePrefix}/dashboard`);
     },
     onError: (err) => {
+      setResumedWatchJobId(null);
       pushToast({
         tone: "error",
         title: t("companyImport.importFailedTitle"),
@@ -888,18 +1317,56 @@ export function CompanyImport() {
     },
   });
 
+  // On mount, re-attach to a job stored by a previous page load. This is what
+  // makes dropped connections and reloads harmless: the job kept running
+  // server-side, so resume watching it instead of showing the stale form.
+  const resumeImportWatch = importMutation.mutate;
+  useEffect(() => {
+    if (resumeAttemptedRef.current || !selectedCompanyId) return;
+    resumeAttemptedRef.current = true;
+    const stored = readStoredImportJob(selectedCompanyId);
+    if (!stored) return;
+    setResumedWatchJobId(stored.jobId);
+    resumeImportWatch({
+      previewForImport: null,
+      pauseAutomations: stored.pauseAutomations,
+      resume: { jobId: stored.jobId, storageKey: stored.storageKey },
+    });
+  }, [selectedCompanyId, resumeImportWatch]);
+
+  // Any change to the import configuration supersedes the request a settled
+  // progress/error panel describes, so it clears settled mutation state. A
+  // pending request is never detached: its panel keeps reporting it (and the
+  // action buttons stay disabled) until it settles. Payload edits made
+  // against a rendered preview (new-company name, pause toggle, file
+  // selection, conflict choices, adapter overrides, dropping attachments)
+  // reset only the panels; structural changes also discard the preview
+  // itself. Structural controls are locked while an import runs, so this can
+  // never unmount the preview section that hosts a running import's status
+  // panels.
+  function resetMutationState() {
+    if (!previewMutation.isPending) previewMutation.reset();
+    if (!importMutation.isPending) importMutation.reset();
+  }
+
+  function resetImportFlowState() {
+    previewGenerationRef.current += 1;
+    setImportPreview(null);
+    resetMutationState();
+  }
+
   async function handleChooseLocalPackage(e: ChangeEvent<HTMLInputElement>) {
     const fileList = e.target.files;
     if (!fileList || fileList.length === 0) return;
     try {
       const pkg = await readLocalPackageZip(fileList[0]!);
       setLocalPackage(pkg);
-      setImportPreview(null);
+      resetImportFlowState();
     } catch (err) {
       pushToast({
         tone: "error",
         title: t("companyImport.packageReadFailedTitle"),
-        body: err instanceof Error ? err.message : t("companyImport.packageReadFailedBody"),
+        body: translatePackageReadError(err),
       });
     }
   }
@@ -953,6 +1420,7 @@ export function CompanyImport() {
 
   function handleToggleCheck(path: string, kind: "file" | "dir") {
     if (!importPreview) return;
+    resetMutationState();
     setCheckedFiles((prev) => {
       const next = new Set(prev);
       if (kind === "file") {
@@ -985,6 +1453,7 @@ export function CompanyImport() {
   }
 
   function handleConflictRename(slug: string, newName: string) {
+    resetMutationState();
     setNameOverrides((prev) => ({ ...prev, [slug]: newName }));
     // Editing the name un-confirms
     setConfirmedSlugs((prev) => {
@@ -996,6 +1465,7 @@ export function CompanyImport() {
   }
 
   function handleConflictToggleConfirm(slug: string) {
+    resetMutationState();
     setConfirmedSlugs((prev) => {
       const next = new Set(prev);
       if (next.has(slug)) next.delete(slug);
@@ -1005,6 +1475,7 @@ export function CompanyImport() {
   }
 
   function handleConflictToggleSkip(slug: string, filePath: string | null) {
+    resetMutationState();
     setSkippedSlugs((prev) => {
       const next = new Set(prev);
       const wasSkipped = next.has(slug);
@@ -1032,6 +1503,7 @@ export function CompanyImport() {
   }
 
   function handleAdapterChange(slug: string, adapterType: string) {
+    resetMutationState();
     setAdapterOverrides((prev) => ({ ...prev, [slug]: adapterType }));
     // Reset config values when adapter type changes
     setAdapterConfigValues((prev) => {
@@ -1051,29 +1523,93 @@ export function CompanyImport() {
   }
 
   function handleAdapterConfigChange(slug: string, patch: Partial<CreateConfigValues>) {
+    resetMutationState();
+    const agent = adapterAgents.find((a) => a.slug === slug);
+    const currentType = agent ? effectiveAdapterType(agent) : adapterOverrides[slug] ?? "claude_local";
     setAdapterConfigValues((prev) => ({
       ...prev,
-      [slug]: { ...(prev[slug] ?? { ...defaultCreateValues, adapterType: adapterOverrides[slug] ?? "claude_local" }), ...patch },
+      [slug]: { ...(prev[slug] ?? { ...defaultCreateValues, adapterType: currentType }), ...patch },
     }));
   }
 
-  // Build the list of agents for adapter picking
+  function handleToggleActivationItem(key: string) {
+    setActivationChecked((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
+
+  async function handleActivateSelected() {
+    if (!importOutcome || importOutcome.kind !== "full" || isActivating) return;
+    setIsActivating(true);
+    const nextActivated = new Set(activatedKeys);
+    const nextFailures: Record<string, string> = {};
+    for (const item of buildActivationItems(importOutcome.result)) {
+      if (!activationChecked.has(item.key) || nextActivated.has(item.key)) continue;
+      try {
+        if (item.kind === "agent") {
+          await agentsApi.resume(item.id);
+        } else {
+          await routinesApi.update(item.id, { status: "active" });
+        }
+        nextActivated.add(item.key);
+      } catch (err) {
+        nextFailures[item.key] = err instanceof Error
+          ? err.message
+          : t("companyImport.activationFailedFallback");
+      }
+    }
+    setActivatedKeys(nextActivated);
+    setActivationFailures(nextFailures);
+    setIsActivating(false);
+    const failureCount = Object.keys(nextFailures).length;
+    if (failureCount > 0) {
+      pushToast({
+        tone: "error",
+        title: t("companyImport.activationPartialFailureTitle"),
+        body: t("companyImport.activationPartialFailureBody", { count: failureCount }),
+      });
+    }
+  }
+
+  // Build the list of agents for adapter picking. An agent whose manifest
+  // adapter is not installed on the destination gets a warned fallback to the
+  // CEO's adapter; while availability is unknown the manifest adapter stands.
   const adapterAgents = useMemo<AdapterPickerItem[]>(() => {
     if (!importPreview) return [];
     return importPreview.manifest.agents.map((a) => ({
       slug: a.slug,
       name: a.name,
       adapterType: a.adapterType,
+      // The fallback must itself be installed: the CEO's adapter when it is,
+      // else any installed adapter, else null so the manifest adapter stands
+      // and the server's unknown-adapter rejection is the backstop.
+      fallbackAdapterType:
+        availableAdapterTypes && !availableAdapterTypes.has(a.adapterType)
+          ? availableAdapterTypes.has(ceoAdapterType)
+            ? ceoAdapterType
+            : [...availableAdapterTypes][0] ?? null
+          : null,
     }));
-  }, [importPreview]);
+  }, [importPreview, availableAdapterTypes, ceoAdapterType]);
 
-  // Build final adapterOverrides for import request
+  /** The adapter type an imported agent will actually use: an explicit user pick, else the availability fallback, else the manifest adapter. */
+  function effectiveAdapterType(agent: AdapterPickerItem): string {
+    return adapterOverrides[agent.slug] ?? agent.fallbackAdapterType ?? agent.adapterType;
+  }
+
+  // Build final adapterOverrides for import request. Only agents that diverge
+  // from the manifest adapter (a user pick or an availability fallback) or
+  // carry edited adapter config send an override — untouched agents flow
+  // through with none, so the manifest adapter survives the import.
   function buildFinalAdapterOverrides(): Record<string, CompanyPortabilityAdapterOverride> | undefined {
-    if (adapterAgents.length === 0) return undefined;
     const overrides: Record<string, CompanyPortabilityAdapterOverride> = {};
     for (const agent of adapterAgents) {
-      const selectedType = adapterOverrides[agent.slug] ?? agent.adapterType;
+      const selectedType = effectiveAdapterType(agent);
       const configVals = adapterConfigValues[agent.slug];
+      if (selectedType === agent.adapterType && !configVals) continue;
       const override: CompanyPortabilityAdapterOverride = { adapterType: selectedType };
       if (configVals) {
         const uiAdapter = getUIAdapter(selectedType);
@@ -1088,12 +1624,180 @@ export function CompanyImport() {
     sourceMode === "local" ? !!localPackage : importUrl.trim().length > 0;
   const hasErrors = importPreview ? importPreview.errors.length > 0 : false;
 
+  // The local .zip uploads its raw compressed file as multipart and is unzipped
+  // server-side, so the old inline-size ceiling no longer gates it. Surface the
+  // compressed upload size instead of the inflated-JSON estimate.
+  const localCompressedBytes = sourceMode === "local" ? localPackage?.compressedBytes ?? null : null;
+
   const previewContent = selectedFile && importPreview
     ? (() => {
         return importPreview.files[selectedFile] ?? null;
       })()
     : null;
   const selectedAction = selectedFile ? (actionMap.get(selectedFile) ?? null) : null;
+
+  if (importOutcome && importOutcome.kind === "expired") {
+    // Soft success: the import finished and wrote all its data, but the job's
+    // in-memory result expired before we could read it. Never a failure — the
+    // company list has been refreshed, so the imported company is available
+    // from the switcher.
+    return (
+      <div className="px-5 py-5 space-y-4">
+        <div>
+          <h2 className="text-base font-semibold">{t("companyImport.completedExpiredTitle")}</h2>
+          <p className="text-xs text-muted-foreground mt-1">
+            {t("companyImport.completedExpiredBody")}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (importOutcome) {
+    const { result, dashboardPath } = importOutcome;
+    const skillResults = result.skills ?? [];
+    const activationItems = importOutcome.pausedAutomations ? buildActivationItems(result) : [];
+    const pendingCount = activationItems.filter(
+      (item) => activationChecked.has(item.key) && !activatedKeys.has(item.key),
+    ).length;
+    return (
+      <div className="px-5 py-5 space-y-4">
+        <div>
+          <h2 className="text-base font-semibold">{t("companyImport.completedTitle")}</h2>
+          <p className="text-xs text-muted-foreground mt-1">
+            {t("companyImport.summaryLine", {
+              companyName: result.company.name,
+              agents: summarizeImportCount("agents", result.agents.length),
+              skills: summarizeImportCount("skills", skillResults.length),
+              projects: summarizeImportCount("projects", result.projects.length),
+              routines: summarizeImportCount("routines", result.routines.length),
+            })}
+          </p>
+        </div>
+
+        {skillResults.length > 0 && (
+          <div className="rounded-md border border-border">
+            <div className="border-b border-border px-4 py-2.5">
+              <h3 className="text-sm font-medium">{t("companyImport.skillImportResults")}</h3>
+            </div>
+            <div className="divide-y divide-border">
+              {skillResults.map((skill) => (
+                <div key={`${skill.originalKey}:${skill.id}`} className="flex items-center gap-3 px-4 py-2.5 text-sm">
+                  <span className="min-w-0 flex-1 truncate">{skill.originalSlug}</span>
+                  <span className="shrink-0 text-xs text-muted-foreground">
+                    {skillActionLabel(skill.action)}
+                  </span>
+                  {skill.slug !== skill.originalSlug && (
+                    <span className="shrink-0 text-xs text-muted-foreground">
+                      {t("companyImport.skillRenamedAs", { slug: skill.slug })}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {result.warnings.length > 0 && (
+          <div className="rounded-md border border-amber-500/30 bg-amber-500/5 px-4 py-3">
+            {result.warnings.map((w) => (
+              <div key={w} className="text-xs text-amber-500">{w}</div>
+            ))}
+          </div>
+        )}
+
+        {activationItems.length > 0 && (
+          <div className="rounded-md border border-border">
+            <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
+              <h3 className="text-sm font-medium">{t("companyImport.activateImported")}</h3>
+              <span className="text-xs text-muted-foreground">{t("companyImport.importedPaused")}</span>
+            </div>
+            <div className="divide-y divide-border">
+              {activationItems.map((item) => {
+                const isActivated = activatedKeys.has(item.key);
+                const failure = activationFailures[item.key];
+                return (
+                  <label key={item.key} className="flex items-center gap-3 px-4 py-2.5 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={activationChecked.has(item.key)}
+                      disabled={isActivated || isActivating}
+                      onChange={() => handleToggleActivationItem(item.key)}
+                      className="accent-foreground"
+                    />
+                    <Badge variant="outline" className={cn(
+                      "text-(length:--text-nano) uppercase tracking-wide",
+                      item.kind === "agent"
+                        ? "text-blue-500 border-blue-500/30"
+                        : "text-purple-500 border-purple-500/30",
+                    )}>
+                      {t(`companyImport.activationKind.${item.kind}`)}
+                    </Badge>
+                    <span className="min-w-0 flex-1 truncate">{item.name}</span>
+                    {isActivated ? (
+                      <span className="shrink-0 text-xs text-emerald-500">{t("companyImport.activated")}</span>
+                    ) : failure ? (
+                      <span className="shrink-0 text-xs text-destructive">
+                        {t("companyImport.activationFailedPrefix")} {failure}
+                      </span>
+                    ) : (
+                      <span className="shrink-0 text-xs text-muted-foreground">
+                        {t("companyImport.paused")}
+                      </span>
+                    )}
+                  </label>
+                );
+              })}
+            </div>
+            <div className="flex justify-end border-t border-border px-4 py-2.5">
+              <Button
+                size="sm"
+                onClick={() => void handleActivateSelected()}
+                disabled={isActivating || pendingCount === 0}
+              >
+                {isActivating
+                  ? t("companyImport.activating")
+                  : t("companyImport.activateSelected", { count: pendingCount })}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Force a fresh dashboard load so newly imported agents are immediately visible. */}
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => window.location.assign(dashboardPath)}
+          >
+            {t("companyImport.goToDashboard")}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Resuming a job from a previous page load: show a watch panel instead of
+  // the stale form. Cleared when the job settles (success renders the
+  // outcome above; failure returns to the form with an error toast).
+  if (resumedWatchJobId) {
+    return (
+      <div className="px-5 py-5 space-y-4">
+        <div>
+          <h2 className="text-base font-semibold">{t("companyImport.resumeWatching")}</h2>
+          <p className="text-xs text-muted-foreground mt-1">
+            {t("companyImport.stillRunning")}
+          </p>
+        </div>
+        <div className="flex items-start gap-2 rounded-md border border-border bg-muted/30 px-3 py-2.5">
+          <Loader2 className="mt-0.5 h-3.5 w-3.5 shrink-0 animate-spin text-muted-foreground" />
+          <p className="text-xs text-muted-foreground">
+            {t("companyImport.serverRunning")}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (!selectedCompanyId) {
     return <EmptyState icon={Download} message={t("companyImport.selectCompany")} />;
@@ -1106,7 +1810,7 @@ export function CompanyImport() {
         <div>
           <h2 className="text-base font-semibold">{t("companyImport.sourceTitle")}</h2>
           <p className="text-xs text-muted-foreground mt-1">
-            {t("companyImport.sourceHint")}
+            {t("companyImport.chooseSource")}
           </p>
         </div>
 
@@ -1125,10 +1829,12 @@ export function CompanyImport() {
                 sourceMode === key
                   ? "border-foreground bg-accent"
                   : "border-border hover:bg-accent/50",
+                importMutation.isPending && "cursor-not-allowed opacity-50",
               )}
+              disabled={importMutation.isPending}
               onClick={() => {
                 setSourceMode(key);
-                setImportPreview(null);
+                resetImportFlowState();
               }}
             >
               <div className="flex items-center gap-2">
@@ -1153,14 +1859,17 @@ export function CompanyImport() {
                 size="sm"
                 variant="outline"
                 onClick={() => packageInputRef.current?.click()}
+                disabled={importMutation.isPending}
               >
                 {t("companyImport.chooseZip")}
               </Button>
               {localPackage && (
                 <span className="text-xs text-muted-foreground">
-                  {localPackage.name} with{" "}
-                  {Object.keys(localPackage.files).length} file
-                  {Object.keys(localPackage.files).length === 1 ? "" : "s"}
+                  {t("companyImport.localPackageSummary", {
+                    name: localPackage.name,
+                    count: Object.keys(localPackage.files).length,
+                  })}
+                  {localCompressedBytes !== null ? ` (${formatMegabytes(localCompressedBytes)} ZIP)` : ""}
                 </span>
               )}
             </div>
@@ -1180,9 +1889,10 @@ export function CompanyImport() {
               type="text"
               value={importUrl}
               placeholder={t("companyImport.githubUrlPlaceholder")}
+              disabled={importMutation.isPending}
               onChange={(e) => {
                 setImportUrl(e.target.value);
-                setImportPreview(null);
+                resetImportFlowState();
               }}
             />
           </Field>
@@ -1192,9 +1902,10 @@ export function CompanyImport() {
           <select
             className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
             value={targetMode}
+            disabled={importMutation.isPending}
             onChange={(e) => {
               setTargetMode(e.target.value as "existing" | "new");
-              setImportPreview(null);
+              resetImportFlowState();
             }}
           >
             <option value="new">{t("companyImport.newCompany")}</option>
@@ -1213,7 +1924,10 @@ export function CompanyImport() {
               className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
               type="text"
               value={newCompanyName}
-              onChange={(e) => setNewCompanyName(e.target.value)}
+              onChange={(e) => {
+                setNewCompanyName(e.target.value);
+                resetMutationState();
+              }}
               placeholder={t("companyImport.newCompanyPlaceholder")}
             />
           </Field>
@@ -1226,9 +1940,10 @@ export function CompanyImport() {
           <select
             className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
             value={collisionStrategy}
+            disabled={importMutation.isPending}
             onChange={(e) => {
               setCollisionStrategy(e.target.value as CompanyPortabilityCollisionStrategy);
-              setImportPreview(null);
+              resetImportFlowState();
             }}
           >
             <option value="rename">{t("companyImport.renameOnConflict")}</option>
@@ -1241,12 +1956,47 @@ export function CompanyImport() {
           <Button
             size="sm"
             variant="outline"
-            onClick={() => previewMutation.mutate()}
-            disabled={previewMutation.isPending || !hasSource}
+            onClick={() => previewMutation.mutate(previewGenerationRef.current)}
+            disabled={
+              previewMutation.isPending || importMutation.isPending || !hasSource
+            }
           >
             {previewMutation.isPending ? t("companyImport.previewing") : t("companyImport.previewImport")}
           </Button>
+          {!hasSource && !previewMutation.isPending && (
+            <span className="text-xs text-muted-foreground">
+              {t("companyImport.chooseForPreview")}
+            </span>
+          )}
+          {importMutation.isPending && (
+            <span className="text-xs text-muted-foreground">
+              {t("companyImport.lockedDuringImport")}
+            </span>
+          )}
         </div>
+        {previewMutation.isPending && (
+          <div className="mt-3 flex items-start gap-2 rounded-md border border-border bg-muted/30 px-3 py-2.5">
+            <Loader2 className="mt-0.5 h-3.5 w-3.5 shrink-0 animate-spin text-muted-foreground" />
+            <p className="text-xs text-muted-foreground">
+              {t("companyImport.uploading")}
+              {localCompressedBytes !== null ? ` (${formatMegabytes(localCompressedBytes)} zip)` : ""}
+              {transferProgress ? ` ${formatTransferProgress(transferProgress)}` : ""}
+              {" "}
+              {t("companyImport.largePackageHint")}
+            </p>
+          </div>
+        )}
+        {previewMutation.isError &&
+          !previewMutation.isPending &&
+          previewMutation.variables === previewGenerationRef.current && (
+          <div className="mt-3 rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2.5">
+            <p className="text-xs text-destructive">
+              {t("companyImport.previewFailed")}{" "}
+              {translateImportFlowError(previewMutation.error)}{" "}
+              {t("companyImport.previewRetryHint")}
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Preview results */}
@@ -1301,10 +2051,22 @@ export function CompanyImport() {
           />
 
           {/* Import button — below renames */}
-          <div className="mx-5 mt-3 flex flex-wrap justify-end gap-2">
+          <div className="mx-5 mt-3 flex flex-wrap items-center justify-end gap-3">
+            <label className="flex items-center gap-2 text-xs text-muted-foreground">
+              <input
+                type="checkbox"
+                checked={pauseAutomations}
+                onChange={(e) => {
+                  setPauseAutomations(e.target.checked);
+                  resetMutationState();
+                }}
+                className="accent-foreground"
+              />
+              {t("companyImport.startPaused")}
+            </label>
             <Button
               size="sm"
-              onClick={() => importMutation.mutate()}
+              onClick={() => importMutation.mutate({ previewForImport: importPreview, pauseAutomations })}
               disabled={importMutation.isPending || hasErrors || selectedCount === 0}
             >
               <Download className="mr-1.5 h-3.5 w-3.5" />
@@ -1313,6 +2075,24 @@ export function CompanyImport() {
                 : t("companyImport.importButton", { count: selectedCount })}
             </Button>
           </div>
+          {importMutation.isPending && (
+            <div className="mx-5 mt-3 flex items-start gap-2 rounded-md border border-border bg-muted/30 px-3 py-2.5">
+              <Loader2 className="mt-0.5 h-3.5 w-3.5 shrink-0 animate-spin text-muted-foreground" />
+              <p className="text-xs text-muted-foreground">
+                {t("companyImport.serverRunningLarge")}
+                {transferProgress ? ` ${formatTransferProgress(transferProgress)}` : ""}
+              </p>
+            </div>
+          )}
+          {importMutation.isError && !importMutation.isPending && (
+            <div className="mx-5 mt-3 rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2.5">
+              <p className="text-xs text-destructive">
+                {t("companyImport.importFailed")}{" "}
+                {translateImportFlowError(importMutation.error)}{" "}
+                {t("companyImport.partialFailureHint")}
+              </p>
+            </div>
+          )}
 
           {/* Warnings */}
           {importPreview.warnings.length > 0 && (

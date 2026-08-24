@@ -210,7 +210,6 @@ describe("adapter routes", () => {
       },
     });
 
-    // CN fork keeps Hermes external-only; it should not appear as a built-in adapter.
     const grokAdapter = res.body.find((a: any) => a.type === "grok_local");
     expect(grokAdapter).toBeDefined();
     expect(grokAdapter.capabilities).toMatchObject({
@@ -222,10 +221,26 @@ describe("adapter routes", () => {
     });
 
     const hermesLocal = res.body.find((a: any) => a.type === "hermes_local");
-    expect(hermesLocal).toBeUndefined();
+    expect(hermesLocal).toBeDefined();
+    expect(hermesLocal.source).toBe("builtin");
+    expect(hermesLocal.capabilities).toMatchObject({
+      supportsInstructionsBundle: true,
+      supportsSkills: true,
+      supportsLocalAgentJwt: true,
+      requiresMaterializedRuntimeSkills: false,
+      supportsAcp: false,
+    });
 
     const hermesGateway = res.body.find((a: any) => a.type === "hermes_gateway");
-    expect(hermesGateway).toBeUndefined();
+    expect(hermesGateway).toBeDefined();
+    expect(hermesGateway.source).toBe("builtin");
+    expect(hermesGateway.capabilities).toMatchObject({
+      supportsInstructionsBundle: false,
+      supportsSkills: false,
+      supportsLocalAgentJwt: false,
+      requiresMaterializedRuntimeSkills: false,
+      supportsAcp: false,
+    });
   });
 
   it("GET /api/adapters derives supportsSkills from listSkills/syncSkills presence", async () => {
@@ -372,16 +387,26 @@ describe("adapter routes", () => {
     );
   });
 
-  it("keeps Hermes config schemas behind external adapter installation", async () => {
+  it("serves built-in Hermes config schemas", async () => {
     const app = createApp();
 
     const local = await request(app).get("/api/adapters/hermes_local/config-schema");
-    expect(local.status, JSON.stringify(local.body)).toBe(404);
-    expect(local.body.error).toContain('Adapter "hermes_local" is not registered.');
+    expect(local.status, JSON.stringify(local.body)).toBe(200);
+    expect(local.body.fields).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ key: "provider" }),
+        expect.objectContaining({ key: "timeoutSec" }),
+      ]),
+    );
 
     const gateway = await request(app).get("/api/adapters/hermes_gateway/config-schema");
-    expect(gateway.status, JSON.stringify(gateway.body)).toBe(404);
-    expect(gateway.body.error).toContain('Adapter "hermes_gateway" is not registered.');
+    expect(gateway.status, JSON.stringify(gateway.body)).toBe(200);
+    expect(gateway.body.fields).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ key: "apiBaseUrl", required: true }),
+        expect.objectContaining({ key: "apiKey", required: true }),
+      ]),
+    );
   });
 
   it("GET /api/adapters lists acpx_local only as a model-less tombstone", async () => {
