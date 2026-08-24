@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent, type DragEvent, type ReactNode, type Ref } from "react";
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ChangeEvent, type DragEvent, type ReactNode, type Ref } from "react";
 import { pickTextColorForPillBg } from "@/lib/color-contrast";
 import { Link, useLocation, useNavigate, useNavigationType, useParams } from "@/lib/router";
 import { useInfiniteQuery, useQuery, useMutation, useQueryClient, type InfiniteData, type QueryClient } from "@tanstack/react-query";
@@ -23,6 +23,7 @@ import { useDialogActions } from "../context/DialogContext";
 import { usePanel } from "../context/PanelContext";
 import { useSidebar } from "../context/SidebarContext";
 import { useToastActions } from "../context/ToastContext";
+import { translateInstant as tr } from "../i18n";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { assigneeValueFromSelection, formatAssigneeUserLabel, formatUserLabel, suggestedCommentAssigneeValue } from "../lib/assignees";
 import { buildCompanyUserInlineOptions, buildCompanyUserLabelMap, buildCompanyUserProfileMap, buildMarkdownMentionOptions, isAgentTaskTarget } from "../lib/company-members";
@@ -40,6 +41,15 @@ import {
 } from "../lib/issueDetailBreadcrumb";
 import { resolveIssueActiveRun, shouldTrackIssueActiveRun } from "../lib/issueActiveRun";
 import { getIssueDetailQueryOptions } from "../lib/issueDetailCache";
+import {
+  beginIssueDetailNavigation,
+  ISSUE_DETAIL_CONTENT_MEASURE,
+  ISSUE_DETAIL_CONTENT_PAINT_MARK,
+  ISSUE_DETAIL_HEADER_MEASURE,
+  ISSUE_DETAIL_HEADER_PAINT_MARK,
+  reportIssueDetailWebVitals,
+  scheduleIssueDetailPaintMeasure,
+} from "../lib/issue-detail-performance";
 import {
   beginLocalInboxArchive,
   boundLocalInboxArchive,
@@ -92,7 +102,7 @@ import {
 } from "../components/IssueChatThread";
 import { TaskChatThread } from "../components/TaskChatThread";
 import type { TaskChatIssueBrief } from "../components/task-chat/TaskChatDescriptionBubble";
-import { useTaskChatRedesignEnabled } from "../hooks/useTaskChatRedesignEnabled";
+import { useClassicTaskInterfaceEnabled } from "../hooks/useClassicTaskInterfaceEnabled";
 import { workModeMetaFor } from "../lib/work-mode-meta";
 import { IssueContinuationHandoff } from "../components/IssueContinuationHandoff";
 import { IssueAttachmentsSection } from "../components/IssueAttachmentsSection";
@@ -125,6 +135,7 @@ import { IssueProperties } from "../components/IssueProperties";
 import { PauseAffectsSummaryView } from "../components/interrupt-handoff/InterruptHandoffViews";
 import { computePauseAffectsSummary } from "../lib/interrupt-handoff";
 import { useIssueExternalObjects } from "../hooks/useIssueExternalObjects";
+import { useIssuePlanDocument } from "../hooks/useIssuePlanDocument";
 import { IssueRunLedger } from "../components/IssueRunLedger";
 import { IssueWorkspaceCard } from "../components/IssueWorkspaceCard";
 import type { MentionOption } from "../components/MarkdownEditor";
@@ -202,6 +213,7 @@ import {
   getClosedIsolatedExecutionWorkspaceMessage,
   isClosedIsolatedExecutionWorkspace,
   ISSUE_CONTINUATION_SUMMARY_DOCUMENT_KEY,
+  ONBOARDING_FIRST_TASK_ORIGIN_KIND,
   type AskUserQuestionsAnswer,
   type AskUserQuestionsInteraction,
   type ActivityEvent,
@@ -224,14 +236,20 @@ import {
   workspaceFileRefSchema,
 } from "@penclipai/shared";
 
+// Stable empty array for React Query `data` defaults. A literal `= []` default
+// creates a new array reference on every render while `data` is undefined
+// (loading/idle), which destabilizes downstream memos and panel keys that
+// depend on it. Reusing one shared reference keeps those values stable.
+const EMPTY_ISSUES: Issue[] = [];
+
 type StopAndFinalizeRunError = Error & {
   runCancelledBeforeStatusUpdateFailed?: boolean;
 };
 
 function createRunCancelledStatusUpdateError(err: unknown): StopAndFinalizeRunError {
   const message = err instanceof Error
-    ? `Run was stopped, but updating the task failed: ${err.message}`
-    : "Run was stopped, but updating the task failed. Retry the task status update.";
+    ? tr("issueDetail.runStoppedTaskUpdateFailedWithError", { error: err.message })
+    : tr("issueDetail.runStoppedTaskUpdateFailed");
   const error = new Error(message) as StopAndFinalizeRunError;
   error.runCancelledBeforeStatusUpdateFailed = true;
   return error;
@@ -260,45 +278,27 @@ type IssueDetailComment = (IssueComment | OptimisticIssueComment) & {
 const FEEDBACK_TERMS_URL = import.meta.env.VITE_FEEDBACK_TERMS_URL?.trim() || "https://paperclip.ing/tos";
 const ISSUE_COMMENT_AUTOLOAD_LIMIT = ISSUE_COMMENT_PAGE_SIZE * 3;
 const JUMP_TO_LATEST_MAX_COMMENT_PAGES = 10;
-const TREE_CONTROL_MODE_LABEL: Record<IssueTreeControlMode, string> = {
-  pause: "Pause subtree",
-  resume: "Resume subtree",
-  cancel: "Cancel subtree",
-  restore: "Restore subtree",
-};
-const LEAF_WORK_CONTROL_MODE_LABEL: Partial<Record<IssueTreeControlMode, string>> = {
-  pause: "Pause work",
-  resume: "Resume work",
-};
-const TREE_CONTROL_MODE_HELP_TEXT: Record<IssueTreeControlMode, string> = {
-  pause: "Pause active execution in this task subtree until an explicit resume.",
-  resume: "Release the active subtree pause hold so held work can continue.",
-  cancel: "Cancel non-terminal tasks in this subtree and stop queued/running work where possible.",
-  restore: "Restore tasks cancelled by this subtree operation so work can resume.",
-};
-const LEAF_WORK_CONTROL_MODE_HELP_TEXT: Partial<Record<IssueTreeControlMode, string>> = {
-  pause: "Pause active execution on this task until an explicit resume.",
-  resume: "Release the active pause hold so this task can continue.",
-};
 function issueTreeControlLabel(mode: IssueTreeControlMode, scope: "leaf" | "subtree") {
-  return scope === "leaf"
-    ? LEAF_WORK_CONTROL_MODE_LABEL[mode] ?? TREE_CONTROL_MODE_LABEL[mode]
-    : TREE_CONTROL_MODE_LABEL[mode];
+  if (scope === "leaf" && (mode === "pause" || mode === "resume")) {
+    return tr(`issueDetail.treeControl.leaf.${mode}.label`);
+  }
+  return tr(`issueDetail.treeControl.subtree.${mode}.label`);
 }
 
 function issueTreeControlHelpText(mode: IssueTreeControlMode, scope: "leaf" | "subtree") {
-  return scope === "leaf"
-    ? LEAF_WORK_CONTROL_MODE_HELP_TEXT[mode] ?? TREE_CONTROL_MODE_HELP_TEXT[mode]
-    : TREE_CONTROL_MODE_HELP_TEXT[mode];
+  if (scope === "leaf" && (mode === "pause" || mode === "resume")) {
+    return tr(`issueDetail.treeControl.leaf.${mode}.help`);
+  }
+  return tr(`issueDetail.treeControl.subtree.${mode}.help`);
 }
 
 function treeControlPreviewErrorCopy(error: unknown): string {
   if (error instanceof ApiError) {
-    if (error.status === 403) return "Only board users can preview subtree controls.";
-    if (error.status === 409) return "Preview is stale because subtree hold state changed. Retry to refresh.";
-    if (error.status === 422) return "This subtree action is currently invalid for the selected tasks.";
+    if (error.status === 403) return tr("issueDetail.treePreviewBoardOnly");
+    if (error.status === 409) return tr("issueDetail.treePreviewStale");
+    if (error.status === 422) return tr("issueDetail.treePreviewInvalid");
   }
-  return error instanceof Error ? error.message : "Unable to load preview.";
+  return error instanceof Error ? error.message : tr("issueDetail.treePreviewLoadFailed");
 }
 
 export function canBoardResolveRecoveryAction(
@@ -503,12 +503,12 @@ function ActorIdentity({ evt, agentMap, userProfileMap }: { evt: ActivityEvent; 
     const agent = agentMap.get(id);
     return <Identity name={agent?.name ?? id.slice(0, 8)} size="sm" />;
   }
-  if (evt.actorType === "system") return <Identity name="System" size="sm" />;
+  if (evt.actorType === "system") return <Identity name={tr("System")} size="sm" />;
   if (evt.actorType === "user") {
     const profile = userProfileMap?.get(id);
-    return <Identity name={profile?.label ?? "Board"} avatarUrl={profile?.image} size="sm" />;
+    return <Identity name={profile?.label ?? tr("Board")} avatarUrl={profile?.image} size="sm" />;
   }
-  return <Identity name={id || "Unknown"} size="sm" />;
+  return <Identity name={id || tr("Unknown")} size="sm" />;
 }
 
 export type AttributionActor = {
@@ -529,11 +529,14 @@ function AttributionAvatar({
   actor,
   via,
 }: {
-  label: "Assignee" | "Originating";
+  label: "assignee" | "originating";
   actor: AttributionActor;
   via?: string | null;
 }) {
-  const accessibleLabel = via ? `${label}: ${actor.name} · via ${via}` : `${label}: ${actor.name}`;
+  const localizedLabel = tr(`issueDetail.attribution.${label}`);
+  const accessibleLabel = via
+    ? tr("issueDetail.attribution.viaLabel", { label: localizedLabel, name: actor.name, via })
+    : tr("issueDetail.attribution.label", { label: localizedLabel, name: actor.name });
   const testIdLabel = label.toLowerCase();
 
   return (
@@ -563,10 +566,10 @@ function AttributionAvatar({
             </AvatarFallback>
           </Avatar>
           <div className="min-w-0">
-            <div className="text-(length:--text-nano) font-medium uppercase leading-none text-background/70">{label}</div>
+            <div className="text-(length:--text-nano) font-medium uppercase leading-none text-background/70">{localizedLabel}</div>
             <div className="max-w-48 truncate text-xs font-medium leading-4 text-background">{actor.name}</div>
             {via ? (
-              <div className="max-w-48 truncate text-(length:--text-nano) leading-3 text-background/60">via {via}</div>
+              <div className="max-w-48 truncate text-(length:--text-nano) leading-3 text-background/60">{tr("issueDetail.attribution.via", { via })}</div>
             ) : null}
           </div>
         </div>
@@ -598,7 +601,7 @@ function IssueAttributionByline({
           id: issue.assigneeUserId,
           name: formatUserLabel(issue.assigneeUserId, userLabelMap)
             ?? userProfileMap.get(issue.assigneeUserId)?.label
-            ?? "User",
+            ?? tr("User"),
           avatarUrl: userProfileMap.get(issue.assigneeUserId)?.image ?? null,
         }
       : null;
@@ -615,7 +618,7 @@ function IssueAttributionByline({
           id: originatingActor.id,
           name: formatUserLabel(originatingActor.id, userLabelMap)
             ?? userProfileMap.get(originatingActor.id)?.label
-            ?? "User",
+            ?? tr("User"),
           avatarUrl: userProfileMap.get(originatingActor.id)?.image ?? null,
         }
     : null;
@@ -627,9 +630,13 @@ function IssueAttributionByline({
 
   return (
     <TooltipProvider>
-      <AvatarGroup className="-space-x-1.5" aria-label="Task people" data-testid="issue-attribution-avatar-stack">
-        {assignee ? <AttributionAvatar label="Assignee" actor={assignee} /> : null}
-        {originator ? <AttributionAvatar label="Originating" actor={originator} via={originatorVia} /> : null}
+      <AvatarGroup
+        className="-space-x-1.5"
+        aria-label={tr("issueDetail.taskPeople")}
+        data-testid="issue-attribution-avatar-stack"
+      >
+        {assignee ? <AttributionAvatar label="assignee" actor={assignee} /> : null}
+        {originator ? <AttributionAvatar label="originating" actor={originator} via={originatorVia} /> : null}
       </AvatarGroup>
     </TooltipProvider>
   );
@@ -654,33 +661,76 @@ function IssueSectionSkeleton({
   );
 }
 
+/**
+ * One chat-bubble placeholder mirroring TaskChatBubble's anatomy: agent replies
+ * sit left under an avatar + name author row, human messages sit right with no
+ * header. The bubble reuses the real rounding (rounded-2xl with a squared tail
+ * corner) so the skeleton reads as a conversation, not a stack of cards.
+ */
+function ChatBubbleSkeleton({
+  side,
+  className,
+}: {
+  side: "agent" | "human";
+  className?: string;
+}) {
+  const isHuman = side === "human";
+  return (
+    <div className={cn("flex w-full flex-col gap-1", isHuman ? "items-end" : "items-start")}>
+      {isHuman ? null : (
+        <span className="flex items-center gap-2 px-1">
+          <Skeleton className="h-6 w-6 rounded-full" />
+          <Skeleton className="h-3 w-24" />
+        </span>
+      )}
+      <Skeleton
+        className={cn(
+          "max-w-(--pct-85)",
+          isHuman ? "rounded-2xl rounded-br-sm" : "rounded-2xl rounded-bl-sm",
+          className,
+        )}
+      />
+    </div>
+  );
+}
+
+/**
+ * Composer placeholder mirroring TaskChatComposer's docked card (a bordered
+ * rounded input area with a plus, a mode chip, and a send affordance) so the
+ * foot of the loading state matches the real chat shell.
+ */
+function IssueChatComposerSkeleton({ className }: { className?: string }) {
+  return (
+    <div
+      className={cn("rounded-xl border border-input bg-card p-2", className)}
+      data-testid="issue-chat-composer-skeleton"
+    >
+      <div className="min-h-(--sz-48px) space-y-2 px-1 py-1">
+        <Skeleton className="h-3 w-1/2" />
+        <Skeleton className="h-3 w-1/3" />
+      </div>
+      <div className="mt-1 flex items-center gap-2">
+        <Skeleton className="h-8 w-8 rounded-md" />
+        <Skeleton className="h-8 w-24 rounded-md" />
+        <div className="flex-1" />
+        <Skeleton className="h-8 w-8 rounded-md" />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Alternating chat-bubble placeholders for the thread body. Widths and heights
+ * vary so the skeleton mirrors a real back-and-forth (TaskChatThreadView)
+ * rather than the pre-chat bordered card it replaced.
+ */
 function IssueChatSkeleton() {
   return (
-    <div className="space-y-3 rounded-lg border border-border p-3">
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <Skeleton className="h-8 w-8 rounded-full" />
-          <div className="space-y-2">
-            <Skeleton className="h-3 w-24" />
-            <Skeleton className="h-3 w-16" />
-          </div>
-        </div>
-        <Skeleton className="h-20 w-full rounded-xl" />
-      </div>
-      <div className="space-y-2">
-        <div className="flex items-center justify-end gap-2">
-          <div className="space-y-2 text-right">
-            <Skeleton className="ml-auto h-3 w-20" />
-            <Skeleton className="ml-auto h-3 w-14" />
-          </div>
-          <Skeleton className="h-8 w-8 rounded-full" />
-        </div>
-        <Skeleton className="ml-auto h-16 w-(--pct-85) rounded-xl" />
-      </div>
-      <div className="space-y-2 border-t border-border pt-3">
-        <Skeleton className="h-3 w-28" />
-        <Skeleton className="h-24 w-full rounded-xl" />
-      </div>
+    <div className="flex flex-col gap-3" data-testid="issue-chat-skeleton">
+      <ChatBubbleSkeleton side="agent" className="h-16 w-3/4" />
+      <ChatBubbleSkeleton side="human" className="h-9 w-1/2" />
+      <ChatBubbleSkeleton side="agent" className="h-24 w-4/5" />
+      <ChatBubbleSkeleton side="human" className="h-8 w-2/5" />
     </div>
   );
 }
@@ -691,7 +741,8 @@ function IssueDetailLoadingState({
   headerSeed: ReturnType<typeof readIssueDetailHeaderSeed>;
 }) {
   const identifier = headerSeed?.identifier ?? headerSeed?.id.slice(0, 8) ?? null;
-  const { enabled: taskChatShellEnabled } = useTaskChatRedesignEnabled();
+  const { enabled: classicTaskInterfaceEnabled } = useClassicTaskInterfaceEnabled();
+  const taskChatShellEnabled = !classicTaskInterfaceEnabled;
 
   return (
     <div
@@ -716,10 +767,10 @@ function IssueDetailLoadingState({
               {headerSeed.originKind === "routine_execution" && headerSeed.originId ? (
                 <Badge variant="outline"
                   className="border-violet-500/30 bg-violet-500/10 text-(length:--text-nano) text-violet-600 dark:text-violet-400"
-                  title={`Routine execution from routine ${headerSeed.originId}`}
+                  title={tr("issueDetail.routineExecutionTitle", { routine: headerSeed.originId })}
                 >
                   <Repeat className="h-3 w-3" />
-                  Routine
+                  {tr("Routine")}
                 </Badge>
               ) : null}
               {/* Seeded header — same anatomy as the resolved one below, so the
@@ -734,7 +785,7 @@ function IssueDetailLoadingState({
               ) : (
                 <span className="inline-flex items-center gap-1 text-xs text-muted-foreground opacity-50 px-1 -mx-1 py-0.5">
                   <ProjectTile size="xs" />
-                  No project
+                  {tr("issueDetail.noProject")}
                 </span>
               )}
             </>
@@ -764,17 +815,29 @@ function IssueDetailLoadingState({
         )}
       </div>
 
-      <Skeleton className="h-28 w-full rounded-lg border border-border" />
-
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <Skeleton className="h-8 w-20" />
-          <Skeleton className="h-8 w-20" />
+      {taskChatShellEnabled ? (
+        // Chat shell: the thread is the whole surface — alternating bubble
+        // placeholders followed by the docked composer, no tab strip or
+        // properties-card chrome (those don't exist in the chat layout).
+        <div className="space-y-6">
+          <IssueChatSkeleton />
+          <IssueChatComposerSkeleton />
         </div>
-        <IssueChatSkeleton />
-      </div>
+      ) : (
+        <>
+          <Skeleton className="h-28 w-full rounded-lg border border-border" />
 
-      <IssueSectionSkeleton titleWidth="w-24" rows={3} />
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-8 w-20" />
+              <Skeleton className="h-8 w-20" />
+            </div>
+            <IssueChatSkeleton />
+          </div>
+
+          <IssueSectionSkeleton titleWidth="w-24" rows={3} />
+        </>
+      )}
     </div>
   );
 }
@@ -818,7 +881,7 @@ function InboxMobileToolbar({
             navigate(backHref);
           }
         }}
-        aria-label="Back to inbox"
+        aria-label={tr("issueDetail.backToInbox")}
       >
         <ArrowLeft className="h-5 w-5" />
       </Button>
@@ -830,7 +893,7 @@ function InboxMobileToolbar({
             size="icon-sm"
             onClick={onArchive}
             disabled={archivePending}
-            aria-label="Archive from inbox"
+            aria-label={tr("issueDetail.archiveFromInbox")}
           >
             <Archive className="h-5 w-5" />
           </Button>
@@ -838,7 +901,7 @@ function InboxMobileToolbar({
 
         <Popover open={menuOpen} onOpenChange={setMenuOpen}>
           <PopoverTrigger asChild>
-            <Button variant="ghost" size="icon-sm" aria-label="More actions">
+            <Button variant="ghost" size="icon-sm" aria-label={tr("issueDetail.moreActions")}>
               <MoreVertical className="h-5 w-5" />
             </Button>
           </PopoverTrigger>
@@ -848,14 +911,14 @@ function InboxMobileToolbar({
               onClick={() => { onCopy(); setMenuOpen(false); }}
             >
               <Copy className="h-3 w-3" />
-              Copy as markdown
+              {tr("Copy as markdown")}
             </button>
             <button
               className="flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50"
               onClick={() => { onProperties(); setMenuOpen(false); }}
             >
               <SlidersHorizontal className="h-3 w-3" />
-              Properties
+              {tr("Properties")}
             </button>
             {issueIdProp && (
               <button
@@ -863,7 +926,7 @@ function InboxMobileToolbar({
                 onClick={() => { onHide(); setMenuOpen(false); }}
               >
                 <EyeOff className="h-3 w-3" />
-                Hide this task
+                {tr("issueDetail.hideTask")}
               </button>
             )}
           </PopoverContent>
@@ -916,14 +979,14 @@ type IssueDetailChatTabProps = {
   /** Optional node rendered inline directly above the reply composer (e.g. the monitor strip). */
   composerAccessory?: ReactNode;
   /**
-   * Issue header (title row, badges, plugin toolbars) that the redesigned
+   * Issue header (title row, badges, plugin toolbars) that the chat-style
    * thread renders inside its scroll viewport so it scrolls away with the
-   * messages (flag: enableTaskChatRedesign). Ignored by the legacy thread.
+   * messages. Ignored by the classic thread (flag: enableClassicTaskInterface).
    */
   threadHeader?: ReactNode;
   /**
    * The task description rendered as the requester's first chat bubble in the
-   * redesigned thread (PAP-375). Ignored by the legacy thread.
+   * chat-style thread (PAP-375). Ignored by the classic thread.
    */
   issueBrief?: TaskChatIssueBrief;
   footer?: ReactNode;
@@ -1057,11 +1120,12 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
   externalReferences,
   linkCaseReferences,
 }: IssueDetailChatTabProps) {
-  // Seam for the Task Chat Redesign (flag: enableTaskChatRedesign). Flag OFF
-  // renders IssueChatThread verbatim — the flag-off branch is provably today's
-  // UI. Both components share one prop type, so no cast is needed.
-  const { enabled: taskChatRedesignEnabled } = useTaskChatRedesignEnabled();
-  const ThreadComponent = taskChatRedesignEnabled ? TaskChatThread : IssueChatThread;
+  // Seam for the Classic Task Interface (flag: enableClassicTaskInterface).
+  // Flag ON renders the legacy IssueChatThread verbatim; flag OFF (the
+  // default) renders the chat-style TaskChatThread. Both components share one
+  // prop type, so no cast is needed.
+  const { enabled: classicTaskInterfaceEnabled } = useClassicTaskInterfaceEnabled();
+  const ThreadComponent = classicTaskInterfaceEnabled ? IssueChatThread : TaskChatThread;
   const { data: activity } = useQuery({
     queryKey: queryKeys.issues.activity(issueId),
     queryFn: () => activityApi.forIssue(issueId),
@@ -1210,24 +1274,35 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
         disabled={commentsLoadingOlder}
         onClick={onLoadOlderComments}
       >
-        {commentsLoadingOlder ? "Loading earlier comments..." : "Load earlier comments"}
+        {commentsLoadingOlder
+          ? tr("issueDetail.loadingEarlierComments")
+          : tr("issueDetail.loadEarlierComments")}
       </Button>
     </div>
   ) : null;
 
   return (
-    <div className={taskChatRedesignEnabled ? "flex min-h-0 flex-1 flex-col" : "space-y-3"}>
-      {/* Redesign: the button rides inside the thread's scroll viewport with the
-          header so nothing sits above the thread in the page flow. */}
-      {taskChatRedesignEnabled ? null : loadOlderButton}
+    <div className={classicTaskInterfaceEnabled ? "space-y-3" : "flex min-h-0 flex-1 flex-col"}>
+      {/* Chat-style: the button rides inside the thread's scroll viewport with
+          the header so nothing sits above the thread in the page flow. */}
+      {classicTaskInterfaceEnabled ? loadOlderButton : null}
       {commentsInitialLoading && commentsWithRunMeta.length === 0 && interactions.length === 0 ? (
-        <IssueChatSkeleton />
+        classicTaskInterfaceEnabled ? (
+          <IssueChatSkeleton />
+        ) : (
+          // Chat shell: center the bubbles at the thread cap (mirrors
+          // TaskChatThreadView) and dock a composer placeholder beneath them.
+          <div className="mx-auto flex w-full max-w-(--tc-shell-max-w) flex-col gap-3 px-4 py-4">
+            <IssueChatSkeleton />
+            <IssueChatComposerSkeleton className="mt-3" />
+          </div>
+        )
       ) : (
       <ThreadComponent
         composerRef={composerRef}
         composerAccessory={composerAccessory}
         threadHeader={
-          taskChatRedesignEnabled && (threadHeader || loadOlderButton) ? (
+          !classicTaskInterfaceEnabled && (threadHeader || loadOlderButton) ? (
             <>
               {threadHeader}
               {loadOlderButton}
@@ -1289,8 +1364,8 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
         interruptingQueuedRunId={interruptingQueuedRunId}
         stoppingRunId={pausingWorkRunId}
         onStopRun={onPauseWorkRun}
-        stopRunLabel="Pause work"
-        stoppingRunLabel="Pausing..."
+        stopRunLabel={tr("issueDetail.pauseWork")}
+        stoppingRunLabel={tr("issueDetail.pausing")}
         stopRunVariant="pause"
         runFinalizationActions={runFinalizationActions}
         onAcceptInteraction={onAcceptInteraction}
@@ -1464,13 +1539,13 @@ function IssueDetailActivityTab({
     <>
       {shouldShowCostSummary && (
         <div className="mb-3 px-3 py-2 rounded-lg border border-border">
-          <div className="text-sm font-medium text-muted-foreground mb-1">Cost Summary</div>
+          <div className="text-sm font-medium text-muted-foreground mb-1">{tr("issueDetail.costSummary")}</div>
           {!issueCostSummary.hasCost && !issueCostSummary.hasTokens && !hasIssueTreeCost ? (
-            <div className="text-xs text-muted-foreground">No cost data yet.</div>
+            <div className="text-xs text-muted-foreground">{tr("issueDetail.noCostDataYet")}</div>
           ) : (
             <div className="space-y-1 text-xs text-muted-foreground tabular-nums">
               <div className="flex flex-wrap gap-3">
-                <span className="font-medium text-foreground">This task</span>
+                <span className="font-medium text-foreground">{tr("issueDetail.thisTask")}</span>
                 {issueCostSummary.hasCost ? (
                   <span className="font-medium text-foreground">
                     ${issueCostSummary.cost.toFixed(4)}
@@ -1478,26 +1553,33 @@ function IssueDetailActivityTab({
                 ) : null}
                 {issueCostSummary.hasTokens ? (
                   <span>
-                    Tokens {formatTokens(issueCostSummary.totalTokens)}
+                    {tr("issueDetail.tokensValue", { value: formatTokens(issueCostSummary.totalTokens) })}
                     {issueCostSummary.cached > 0
-                      ? ` (in ${formatTokens(issueCostSummary.input)}, out ${formatTokens(issueCostSummary.output)}, cached ${formatTokens(issueCostSummary.cached)})`
-                      : ` (in ${formatTokens(issueCostSummary.input)}, out ${formatTokens(issueCostSummary.output)})`}
+                      ? tr("issueDetail.costTokenBreakdownCached", {
+                        input: formatTokens(issueCostSummary.input),
+                        output: formatTokens(issueCostSummary.output),
+                        cached: formatTokens(issueCostSummary.cached),
+                      })
+                      : tr("issueDetail.costTokenBreakdown", {
+                        input: formatTokens(issueCostSummary.input),
+                        output: formatTokens(issueCostSummary.output),
+                      })}
                   </span>
                 ) : null}
                 {issueCostSummary.hasRuntime ? (
                   <span>
-                    Runtime {formatDurationMs(issueCostSummary.runtimeMs)}
-                    {` (${issueCostSummary.runCount} run${issueCostSummary.runCount === 1 ? "" : "s"})`}
+                    {tr("issueDetail.runtimeValue", { value: formatDurationMs(issueCostSummary.runtimeMs) })}
+                    {tr("issueDetail.costRunCount", { count: issueCostSummary.runCount })}
                   </span>
                 ) : null}
                 {!issueCostSummary.hasCost && !issueCostSummary.hasTokens && !issueCostSummary.hasRuntime ? (
-                  <span>No direct cost data.</span>
+                  <span>{tr("issueDetail.noDirectCostData")}</span>
                 ) : null}
               </div>
               {hasIssueTreeCost && issueTreeCostSummary ? (
                 <div className="flex flex-wrap gap-3">
                   <span className="font-medium text-foreground">
-                    Including sub-tasks {(issueTreeCostSummary.costCents / 100).toLocaleString(undefined, {
+                    {tr("issueDetail.includingSubtasksCost")} {(issueTreeCostSummary.costCents / 100).toLocaleString(undefined, {
                       style: "currency",
                       currency: "USD",
                       minimumFractionDigits: 4,
@@ -1505,18 +1587,25 @@ function IssueDetailActivityTab({
                     })}
                   </span>
                   <span>
-                    Tokens {formatTokens(issueTreeCostTokens)}
+                    {tr("issueDetail.tokensValue", { value: formatTokens(issueTreeCostTokens) })}
                     {issueTreeCostSummary.cachedInputTokens > 0
-                      ? ` (in ${formatTokens(issueTreeCostSummary.inputTokens)}, out ${formatTokens(issueTreeCostSummary.outputTokens)}, cached ${formatTokens(issueTreeCostSummary.cachedInputTokens)})`
-                      : ` (in ${formatTokens(issueTreeCostSummary.inputTokens)}, out ${formatTokens(issueTreeCostSummary.outputTokens)})`}
+                      ? tr("issueDetail.costTokenBreakdownCached", {
+                        input: formatTokens(issueTreeCostSummary.inputTokens),
+                        output: formatTokens(issueTreeCostSummary.outputTokens),
+                        cached: formatTokens(issueTreeCostSummary.cachedInputTokens),
+                      })
+                      : tr("issueDetail.costTokenBreakdown", {
+                        input: formatTokens(issueTreeCostSummary.inputTokens),
+                        output: formatTokens(issueTreeCostSummary.outputTokens),
+                      })}
                   </span>
                   {issueTreeCostSummary.runCount > 0 ? (
                     <span>
-                      Runtime {formatDurationMs(issueTreeCostSummary.runtimeMs)}
-                      {` (${issueTreeCostSummary.runCount} run${issueTreeCostSummary.runCount === 1 ? "" : "s"})`}
+                      {tr("issueDetail.runtimeValue", { value: formatDurationMs(issueTreeCostSummary.runtimeMs) })}
+                      {tr("issueDetail.costRunCount", { count: issueTreeCostSummary.runCount })}
                     </span>
                   ) : null}
-                  <span>{issueTreeCostSummary.issueCount} task{issueTreeCostSummary.issueCount === 1 ? "" : "s"}</span>
+                  <span>{tr("issueDetail.issueCount", { count: issueTreeCostSummary.issueCount })}</span>
                 </div>
               ) : null}
             </div>
@@ -1607,17 +1696,19 @@ function IssueDetailActivityTab({
 }
 
 export function IssueDetail() {
+  const { t } = useTranslation();
   const { issueId } = useParams<{ issueId: string }>();
   const { selectedCompanyId } = useCompany();
-  // Task Chat Redesign (flag: enableTaskChatRedesign): with the flag ON the
-  // thread owns the center column — the legacy title/description block,
-  // sub-tasks table, plan decompositions and Documents section are gated off
-  // (plan lives in the properties-pane Plan tab). Flag OFF renders the legacy
-  // page byte-identically.
-  const { enabled: taskChatShellEnabled } = useTaskChatRedesignEnabled();
-  // Flag ON the page wrapper spans the full center pane so the thread's scroll
-  // viewport (and its scrollbar) reaches the properties-pane border; every
-  // non-thread section re-centers itself at the 60rem shell cap instead.
+  // Classic Task Interface (flag: enableClassicTaskInterface): with the flag
+  // OFF (the default) the chat-style thread owns the center column — the
+  // legacy title/description block, sub-tasks table, plan decompositions and
+  // Documents section are gated off (plan lives in the properties-pane Plan
+  // tab). Flag ON restores the legacy page.
+  const { enabled: classicTaskInterfaceEnabled } = useClassicTaskInterfaceEnabled();
+  const taskChatShellEnabled = !classicTaskInterfaceEnabled;
+  // Chat-style: the page wrapper spans the full center pane so the thread's
+  // scroll viewport (and its scrollbar) reaches the properties-pane border;
+  // every non-thread section re-centers itself at the 60rem shell cap instead.
   const shellSectionClass = taskChatShellEnabled
     ? "mx-auto w-full max-w-(--tc-shell-max-w)"
     : undefined;
@@ -1712,6 +1803,25 @@ export function IssueDetail() {
     () => flattenIssueCommentPages(commentPages?.pages),
     [commentPages?.pages],
   );
+
+  useLayoutEffect(() => {
+    beginIssueDetailNavigation();
+  }, [issueId]);
+
+  useEffect(() => {
+    if (!(import.meta.env.DEV || import.meta.env.MODE === "qa")) return;
+    return reportIssueDetailWebVitals();
+  }, [issueId]);
+
+  useEffect(() => {
+    if (!issue) return;
+    scheduleIssueDetailPaintMeasure(ISSUE_DETAIL_HEADER_PAINT_MARK, ISSUE_DETAIL_HEADER_MEASURE);
+  }, [issue?.id]);
+
+  useEffect(() => {
+    if (!issue || commentsLoading) return;
+    scheduleIssueDetailPaintMeasure(ISSUE_DETAIL_CONTENT_PAINT_MARK, ISSUE_DETAIL_CONTENT_MEASURE);
+  }, [commentsLoading, issue?.id]);
   const shouldPrefetchOlderComments = useMemo(
     () =>
       shouldAutoloadOlderIssueComments({
@@ -1770,11 +1880,14 @@ export function IssueDetail() {
     }
   }, [hasLiveRuns, locallyQueuedCommentRunIds.size]);
   const sourceBreadcrumb = useMemo(
-    () => readIssueDetailBreadcrumb(issueId, location.state, location.search) ?? { label: "Tasks", href: "/issues" },
+    () => readIssueDetailBreadcrumb(issueId, location.state, location.search) ?? {
+      label: tr("issueDetail.tasksBreadcrumb"),
+      href: "/issues",
+    },
     [issueId, location.state, location.search],
   );
 
-  const { data: rawChildIssues = [], isLoading: childIssuesLoading } = useQuery({
+  const { data: rawChildIssuesData, isLoading: childIssuesLoading } = useQuery({
     queryKey:
       issue?.id && resolvedCompanyId
         ? queryKeys.issues.listByDescendantRoot(resolvedCompanyId, issue.id)
@@ -1783,8 +1896,9 @@ export function IssueDetail() {
     enabled: !!resolvedCompanyId && !!issue?.id,
     placeholderData: keepPreviousDataForSameQueryTail<Issue[]>(issue?.id ?? "pending"),
   });
+  const rawChildIssues: Issue[] = rawChildIssuesData ?? EMPTY_ISSUES;
   const {
-    data: rawSiblingIssues = [],
+    data: rawSiblingIssuesData,
     isLoading: siblingIssuesLoading,
     isError: siblingIssuesError,
   } = useQuery({
@@ -1795,6 +1909,7 @@ export function IssueDetail() {
     queryFn: () => issuesApi.list(resolvedCompanyId!, { parentId: issue!.parentId!, includeBlockedBy: true }),
     enabled: !!resolvedCompanyId && !!issue?.parentId,
   });
+  const rawSiblingIssues: Issue[] = rawSiblingIssuesData ?? EMPTY_ISSUES;
   const companyLiveRunsQueryKey = resolvedCompanyId ? queryKeys.liveRuns(resolvedCompanyId) : ["live-runs", "pending"] as const;
   const sharedCompanyLiveRuns = useSharedPollingQuery<LiveRunForIssue[]>({
     companyId: resolvedCompanyId,
@@ -2001,6 +2116,27 @@ export function IssueDetail() {
     () => childIssues,
     [issuePanelKey],
   );
+  // Onboarding first task only: hide the Properties sidebar until a plan exists,
+  // then reveal it already on the Plan tab. We gate the panel *mount* (withhold
+  // the panel content) rather than flipping the global `panelVisible` preference
+  // — that preference persists to localStorage and would leak "hidden" into every
+  // other task. Every non-first task has originKind !== onboarding_first_task, so
+  // `suppressPanelForFirstTask` stays false and behavior is unchanged. The user
+  // can still opt in early via the "Show properties" header button, which sets a
+  // per-issue override (keyed on the issue id so it resets across navigations).
+  const isOnboardingFirstTask =
+    taskChatShellEnabled &&
+    issue?.originKind === ONBOARDING_FIRST_TASK_ORIGIN_KIND;
+  const { data: firstTaskPlanDoc } = useIssuePlanDocument(
+    isOnboardingFirstTask ? issue?.id : null,
+  );
+  const [firstTaskPanelOverrideIssueId, setFirstTaskPanelOverrideIssueId] = useState<
+    string | null
+  >(null);
+  const firstTaskPanelOverride =
+    firstTaskPanelOverrideIssueId !== null && firstTaskPanelOverrideIssueId === issue?.id;
+  const suppressPanelForFirstTask =
+    isOnboardingFirstTask && !firstTaskPlanDoc && !firstTaskPanelOverride;
   const showRichSubIssuesSection = shouldRenderRichSubIssuesSection(childIssuesLoading, childIssues.length);
   const siblingNavigation = useMemo(
     () => issue && !childIssuesLoading && !siblingIssuesLoading && !siblingIssuesError
@@ -2027,7 +2163,7 @@ export function IssueDetail() {
       options.push({ id: `agent:${agent.id}`, label: agent.name });
     }
     if (currentUserId) {
-      options.push({ id: `user:${currentUserId}`, label: "Me" });
+      options.push({ id: `user:${currentUserId}`, label: tr("Me") });
     }
     return options;
   }, [agents, companyMembers?.users, currentUserId]);
@@ -2051,7 +2187,7 @@ export function IssueDetail() {
     () => mergeIssueComments(comments ?? [], optimisticComments),
     [comments, optimisticComments],
   );
-  const breadcrumbTitle = issue?.title ?? issueId ?? "Task";
+  const breadcrumbTitle = issue?.title ?? issueId ?? tr("Task");
   const breadcrumbIdentifier = issue?.identifier ?? issueHeaderSeed?.identifier ?? undefined;
   const breadcrumbStatus = issue?.status;
   const breadcrumbBlockerAttention = issue?.blockerAttention;
@@ -2151,6 +2287,37 @@ export function IssueDetail() {
       queryClient.invalidateQueries({ queryKey: queryKeys.sidebarBadges(selectedCompanyId) });
     }
   }, [queryClient, selectedCompanyId]);
+  const undoInboxArchive = useCallback(async (
+    id: string,
+    companyId: string | undefined,
+    previousData: InboxIssueCacheSnapshot,
+  ) => {
+    if (companyId) {
+      await cancelInboxIssueQueries(queryClient, companyId);
+      clearLocalInboxArchive(companyId, id);
+      restoreIssueToInboxCaches(queryClient, previousData, id);
+    }
+
+    try {
+      await issuesApi.unarchiveFromInbox(id);
+      pushToast({ title: t("Task restored to inbox"), tone: "success" });
+    } catch (error) {
+      if (companyId) {
+        beginLocalInboxArchive(companyId, id);
+        removeIssueFromInboxCaches(queryClient, companyId, id);
+        boundLocalInboxArchive(companyId, id);
+      }
+      pushToast({
+        title: t("Undo failed"),
+        body: error instanceof Error ? error.message : t("Unable to restore this task to the inbox"),
+        tone: "error",
+      });
+    } finally {
+      if (companyId) {
+        await invalidateInboxIssueQueries(queryClient, companyId);
+      }
+    }
+  }, [pushToast, queryClient]);
   const upsertInteractionInCache = useCallback((interaction: IssueThreadInteraction) => {
     queryClient.setQueryData<IssueThreadInteraction[] | undefined>(
       queryKeys.issues.interactions(issueId!),
@@ -2245,8 +2412,8 @@ export function IssueDetail() {
         queryClient.setQueryData(queryKeys.issues.list(context.selectedCompanyId), context.previousList);
       }
       pushToast({
-        title: "Task update failed",
-        body: err instanceof Error ? err.message : "Unable to save task changes",
+        title: t("Task update failed"),
+        body: err instanceof Error ? err.message : t("Unable to save task changes"),
         tone: "error",
       });
     },
@@ -2273,8 +2440,8 @@ export function IssueDetail() {
     },
     onError: (err) => {
       pushToast({
-        title: "Recovery resolution failed",
-        body: err instanceof Error ? err.message : "Unable to resolve recovery action",
+        title: tr("runWorkspaceRecovery.resolveFailedTitle"),
+        body: err instanceof Error ? err.message : tr("runWorkspaceRecovery.resolveFailedBody"),
         tone: "error",
       });
     },
@@ -2290,7 +2457,7 @@ export function IssueDetail() {
       if (treeControlMode === "resume") {
         const pauseHoldId = treeControlState?.activePauseHold?.holdId;
         if (!pauseHoldId) {
-          throw new Error("No active subtree pause hold is available to resume.");
+          throw new Error(tr("No active subtree pause hold is available to resume."));
         }
         const releasedHold = await issuesApi.releaseTreeHold(issueId!, pauseHoldId, {
           reason: treeControlReason.trim() || null,
@@ -2318,19 +2485,21 @@ export function IssueDetail() {
       const cancelCount = result.preview?.totals.activeRuns ?? 0;
       pushToast({
         title: result.kind === "release"
-          ? treeControlScope === "leaf" ? "Work resumed" : "Subtree resumed"
+          ? treeControlScope === "leaf" ? tr("issueDetail.workResumed") : tr("issueDetail.subtreeResumed")
           : result.hold.mode === "pause"
-            ? treeControlScope === "leaf" ? "Work paused" : "Subtree paused"
-            : `${modeLabel} applied`,
+            ? treeControlScope === "leaf" ? tr("Work paused") : tr("issueDetail.subtreePaused")
+            : tr("issueDetail.treeControlApplied", { label: modeLabel }),
         body: result.kind === "release"
-          ? (result.hold.releaseReason?.trim() || (treeControlScope === "leaf" ? "Active task pause released." : "Active subtree pause released."))
+          ? (result.hold.releaseReason?.trim() || (treeControlScope === "leaf"
+            ? tr("issueDetail.activeTaskPauseReleased")
+            : tr("issueDetail.activeSubtreePauseReleased")))
           : result.hold.mode === "pause"
             ? treeControlScope === "leaf"
-              ? `Work paused. ${cancelCount} run${cancelCount === 1 ? "" : "s"} cancelled.`
-              : `Subtree paused. ${cancelCount} run${cancelCount === 1 ? "" : "s"} cancelled.`
+              ? tr("issueDetail.workPausedRunsCancelled", { count: cancelCount })
+              : tr("issueDetail.subtreePausedRunsCancelled", { count: cancelCount })
             : result.hold.reason?.trim()
               ? result.hold.reason
-              : "Subtree control applied.",
+              : tr("issueDetail.subtreeControlApplied"),
       });
       setTreeControlOpen(false);
       setTreeControlReason("");
@@ -2360,8 +2529,8 @@ export function IssueDetail() {
     },
     onError: (err) => {
       pushToast({
-        title: "Unable to apply subtree control",
-        body: err instanceof Error ? err.message : "Please try again.",
+        title: tr("Unable to apply subtree control"),
+        body: err instanceof Error ? err.message : tr("Please try again."),
         tone: "error",
       });
     },
@@ -2370,7 +2539,7 @@ export function IssueDetail() {
     mutationFn: async ({ runId, scope }: { runId: string; scope: "leaf" | "subtree" }) => {
       const created = await issuesApi.createTreeHold(issueId!, {
         mode: "pause",
-        reason: "Paused from active run controls.",
+        reason: tr("issueDetail.pausedFromActiveRunControls"),
         releasePolicy: { strategy: "manual", note: scope === "leaf" ? "leaf_pause" : "full_pause" },
         metadata: { source: "issue_active_run_control", runId },
       });
@@ -2379,10 +2548,10 @@ export function IssueDetail() {
     onSuccess: async (result) => {
       const cancelCount = result.preview?.totals.activeRuns ?? 0;
       pushToast({
-        title: "Work paused",
+        title: tr("Work paused"),
         body: cancelCount > 0
-          ? `Work paused. ${cancelCount} run${cancelCount === 1 ? "" : "s"} cancelled.`
-          : "Work paused. This task is held until resume.",
+          ? tr("issueDetail.workPausedRunsCancelled", { count: cancelCount })
+          : tr("issueDetail.taskHeldUntilResume"),
         tone: "success",
       });
       await Promise.all([
@@ -2399,8 +2568,8 @@ export function IssueDetail() {
     },
     onError: (err) => {
       pushToast({
-        title: "Unable to pause work",
-        body: err instanceof Error ? err.message : "Please try again.",
+        title: tr("Unable to pause work"),
+        body: err instanceof Error ? err.message : tr("Please try again."),
         tone: "error",
       });
     },
@@ -2422,7 +2591,9 @@ export function IssueDetail() {
       invalidateIssueRunState();
       invalidateIssueCollections();
       pushToast({
-        title: status === "done" ? "Run stopped and task done" : "Run stopped and task cancelled",
+        title: status === "done"
+          ? tr("issueDetail.runStoppedTaskDone")
+          : tr("issueDetail.runStoppedTaskCancelled"),
         tone: "success",
       });
     },
@@ -2430,9 +2601,11 @@ export function IssueDetail() {
       const runWasStopped = didRunCancelBeforeStatusUpdateFail(err);
       pushToast({
         title: runWasStopped
-          ? "Run stopped; task update failed"
-          : status === "done" ? "Stop and done failed" : "Stop and cancel failed",
-        body: err instanceof Error ? err.message : "Unable to stop the run and update the task",
+          ? tr("issueDetail.runStoppedTaskUpdateFailedTitle")
+          : status === "done"
+            ? tr("issueDetail.stopAndDoneFailed")
+            : tr("issueDetail.stopAndCancelFailed"),
+        body: err instanceof Error ? err.message : tr("issueDetail.unableToStopRunAndUpdateTask"),
         tone: "error",
       });
     },
@@ -2458,15 +2631,57 @@ export function IssueDetail() {
     },
     onError: (err) => {
       pushToast({
-        title: "Task update failed",
-        body: err instanceof Error ? err.message : "Unable to save sub-task changes",
+        title: tr("issueDetail.taskUpdateFailed"),
+        body: err instanceof Error ? err.message : tr("issueDetail.unableToSaveSubtaskChanges"),
         tone: "error",
       });
     },
   });
   const handleChildIssueUpdate = useCallback((id: string, data: Record<string, unknown>) => {
     updateChildIssue.mutate({ id, data });
-  }, [updateChildIssue]);
+  }, [updateChildIssue.mutate]);
+
+  // PAP-496: the chat shell keeps the full sub-task tree directly below the
+  // title in the center column. This is the tree's single chat-shell home; the
+  // Properties pane does not duplicate it. Classic mode keeps its existing
+  // center-column section below the header.
+  const subTasksTree = useMemo(
+    () =>
+      taskChatShellEnabled && issue && showRichSubIssuesSection ? (
+        <IssuesList
+          issues={childIssues}
+          isLoading={childIssuesLoading}
+          agents={agents}
+          projects={projects}
+          liveIssueIds={liveIssueIds}
+          projectId={issue.projectId ?? undefined}
+          viewStateKey={`paperclip:issue-detail:${issue.id}:subissues-view`}
+          issueLinkState={resolvedIssueDetailState ?? location.state}
+          searchFilters={{ descendantOf: issue.id, includeBlockedBy: true }}
+          searchWithinLoadedIssues
+          baseCreateIssueDefaults={buildSubIssueDefaultsForViewer(issue, currentUserId)}
+          createIssueLabel={tr("sub-task")}
+          defaultSortField="workflow"
+          showProgressSummary
+          parentIssueIdForCostSummary={issue.id}
+          onUpdateIssue={handleChildIssueUpdate}
+        />
+      ) : null,
+    [
+      taskChatShellEnabled,
+      issue,
+      showRichSubIssuesSection,
+      childIssues,
+      childIssuesLoading,
+      agents,
+      projects,
+      liveIssueIds,
+      resolvedIssueDetailState,
+      location.state,
+      currentUserId,
+      handleChildIssueUpdate,
+    ],
+  );
 
   const checkIssueMonitorNow = useMutation({
     mutationFn: () => issuesApi.checkMonitorNow(issueId!),
@@ -2475,14 +2690,14 @@ export function IssueDetail() {
       invalidateIssueRunState();
       invalidateIssueCollections();
       pushToast({
-        title: "Monitor check queued",
+        title: tr("Monitor check queued"),
         tone: "success",
       });
     },
     onError: (err) => {
       pushToast({
-        title: "Monitor check failed",
-        body: err instanceof Error ? err.message : "Unable to trigger the monitor right now",
+        title: tr("Monitor check failed"),
+        body: err instanceof Error ? err.message : tr("Unable to trigger the monitor right now"),
         tone: "error",
       });
     },
@@ -2507,14 +2722,14 @@ export function IssueDetail() {
         queryClient.invalidateQueries({ queryKey: queryKeys.approvals.list(resolvedCompanyId) });
       }
       pushToast({
-        title: variables.action === "approve" ? "Approval approved" : "Approval rejected",
+        title: variables.action === "approve" ? tr("Approval approved") : tr("Approval rejected"),
         tone: "success",
       });
     },
     onError: (err, variables) => {
       pushToast({
-        title: variables.action === "approve" ? "Approval failed" : "Rejection failed",
-        body: err instanceof Error ? err.message : "Unable to update approval",
+        title: variables.action === "approve" ? tr("Approval failed") : tr("Rejection failed"),
+        body: err instanceof Error ? err.message : tr("Unable to update approval"),
         tone: "error",
       });
     },
@@ -2577,8 +2792,8 @@ export function IssueDetail() {
           return;
         } catch (err) {
           pushToast({
-            title: "Cancel failed",
-            body: err instanceof Error ? err.message : "Unable to cancel the queued comment",
+            title: tr("Cancel failed"),
+            body: err instanceof Error ? err.message : tr("issueThreadInteraction.unableToCancelQueuedComment"),
             tone: "error",
           });
         }
@@ -2611,8 +2826,8 @@ export function IssueDetail() {
         queryClient.setQueryData(queryKeys.issues.detail(issueId!), context.previousIssue);
       }
       pushToast({
-        title: "Comment failed",
-        body: err instanceof Error ? err.message : "Unable to post comment",
+        title: tr("Comment failed"),
+        body: err instanceof Error ? err.message : tr("Unable to post comment"),
         tone: "error",
       });
     },
@@ -2651,19 +2866,22 @@ export function IssueDetail() {
         : 0;
       pushToast({
         title: interaction.kind === "request_confirmation"
-          ? "Request confirmed"
+          ? tr("issueThreadInteraction.requestConfirmed")
           : interaction.kind === "request_checkbox_confirmation"
-          ? "Selection confirmed"
+          ? tr("issueThreadInteraction.selectionConfirmed")
           : skippedCount > 0
-          ? `Accepted ${createdCount} draft${createdCount === 1 ? "" : "s"} and skipped ${skippedCount}`
-          : "Suggested tasks accepted",
+          ? tr("issueThreadInteraction.acceptedDraftsAndSkipped", {
+              count: createdCount,
+              skipped: skippedCount,
+            })
+          : tr("issueThreadInteraction.suggestedTasksAccepted"),
         tone: "success",
       });
     },
     onError: (err) => {
       pushToast({
-        title: "Accept failed",
-        body: err instanceof Error ? err.message : "Unable to accept the suggested tasks",
+        title: tr("issueThreadInteraction.acceptFailed"),
+        body: err instanceof Error ? err.message : tr("issueThreadInteraction.unableToAcceptSuggestedTasks"),
         tone: "error",
       });
     },
@@ -2676,14 +2894,16 @@ export function IssueDetail() {
       invalidateIssueDetail();
       invalidateIssueCollections();
       pushToast({
-        title: interaction.kind === "request_confirmation" ? "Request declined" : "Suggestion rejected",
+        title: interaction.kind === "request_confirmation"
+          ? tr("issueThreadInteraction.requestDeclined")
+          : tr("issueThreadInteraction.suggestionRejected"),
         tone: "success",
       });
     },
     onError: (err) => {
       pushToast({
-        title: "Reject failed",
-        body: err instanceof Error ? err.message : "Unable to reject the suggested tasks",
+        title: tr("Reject failed"),
+        body: err instanceof Error ? err.message : tr("issueThreadInteraction.unableToRejectSuggestedTasks"),
         tone: "error",
       });
     },
@@ -2701,14 +2921,14 @@ export function IssueDetail() {
       invalidateIssueDetail();
       invalidateIssueCollections();
       pushToast({
-        title: "Answers submitted",
+        title: tr("issueThreadInteraction.answersSubmitted"),
         tone: "success",
       });
     },
     onError: (err) => {
       pushToast({
-        title: "Submit failed",
-        body: err instanceof Error ? err.message : "Unable to submit answers",
+        title: tr("issueThreadInteraction.submitFailed"),
+        body: err instanceof Error ? err.message : tr("issueThreadInteraction.unableToSubmitAnswers"),
         tone: "error",
       });
     },
@@ -2732,15 +2952,15 @@ export function IssueDetail() {
         : false;
       pushToast({
         title: complete
-          ? "All verdicts applied"
-          : `Applied ${applied} decision${applied === 1 ? "" : "s"}`,
+          ? tr("issueThreadInteraction.verdict.allApplied")
+          : tr("issueThreadInteraction.verdict.appliedDecisions", { count: applied }),
         tone: "success",
       });
     },
     onError: (err) => {
       pushToast({
-        title: "Apply failed",
-        body: err instanceof Error ? err.message : "Unable to apply the verdicts",
+        title: tr("issueThreadInteraction.verdict.applyFailed"),
+        body: err instanceof Error ? err.message : tr("issueThreadInteraction.verdict.unableToApply"),
         tone: "error",
       });
     },
@@ -2754,14 +2974,14 @@ export function IssueDetail() {
       invalidateIssueDetail();
       invalidateIssueCollections();
       pushToast({
-        title: "Question cancelled",
+        title: tr("issueThreadInteraction.questionCancelled"),
         tone: "success",
       });
     },
     onError: (err) => {
       pushToast({
-        title: "Cancel failed",
-        body: err instanceof Error ? err.message : "Unable to cancel the question",
+        title: tr("Cancel failed"),
+        body: err instanceof Error ? err.message : tr("Unable to cancel the question"),
         tone: "error",
       });
     },
@@ -2840,8 +3060,8 @@ export function IssueDetail() {
           return;
         } catch (err) {
           pushToast({
-            title: "Cancel failed",
-            body: err instanceof Error ? err.message : "Unable to cancel the queued comment",
+            title: tr("Cancel failed"),
+            body: err instanceof Error ? err.message : tr("issueThreadInteraction.unableToCancelQueuedComment"),
             tone: "error",
           });
         }
@@ -2876,8 +3096,8 @@ export function IssueDetail() {
         queryClient.setQueryData(queryKeys.issues.detail(issueId!), context.previousIssue);
       }
       pushToast({
-        title: "Comment failed",
-        body: err instanceof Error ? err.message : "Unable to post comment",
+        title: tr("Comment failed"),
+        body: err instanceof Error ? err.message : tr("Unable to post comment"),
         tone: "error",
       });
     },
@@ -2957,8 +3177,8 @@ export function IssueDetail() {
       invalidateIssueDetail();
       invalidateIssueRunState();
       pushToast({
-        title: "Interrupt requested",
-        body: "The active run is stopping so queued comments can continue next.",
+        title: tr("Interrupt requested"),
+        body: tr("The active run is stopping so queued comments can continue next."),
         tone: "success",
       });
     },
@@ -2973,8 +3193,8 @@ export function IssueDetail() {
         setLocallyQueuedCommentRunIds(context.previousLocalQueuedCommentRunIds);
       }
       pushToast({
-        title: "Interrupt failed",
-        body: err instanceof Error ? err.message : "Unable to interrupt the active run",
+        title: tr("Interrupt failed"),
+        body: err instanceof Error ? err.message : tr("Unable to interrupt the active run"),
         tone: "error",
       });
     },
@@ -2995,15 +3215,15 @@ export function IssueDetail() {
       invalidateIssueThreadLazily();
       invalidateIssueCollections();
       pushToast({
-        title: "Queued comment canceled",
-        body: "The queued message was restored to the composer.",
+        title: tr("issueThreadInteraction.queuedCommentCanceled"),
+        body: tr("issueThreadInteraction.queuedMessageRestored"),
         tone: "success",
       });
     },
     onError: (err) => {
       pushToast({
-        title: "Cancel failed",
-        body: err instanceof Error ? err.message : "Unable to cancel the queued comment",
+        title: tr("Cancel failed"),
+        body: err instanceof Error ? err.message : tr("issueThreadInteraction.unableToCancelQueuedComment"),
         tone: "error",
       });
     },
@@ -3019,15 +3239,15 @@ export function IssueDetail() {
       invalidateIssueCollections();
       invalidateIssueDocumentAnnotationState();
       pushToast({
-        title: "Comment deleted",
-        body: "The thread now shows a deleted-comment marker.",
+        title: tr("issueChat.commentDeleted"),
+        body: tr("issueChat.commentDeletedBody"),
         tone: "success",
       });
     },
     onError: (err) => {
       pushToast({
-        title: "Delete failed",
-        body: err instanceof Error ? err.message : "Unable to delete the comment",
+        title: tr("Delete failed"),
+        body: err instanceof Error ? err.message : tr("issueChat.unableToDeleteComment"),
         tone: "error",
       });
     },
@@ -3045,8 +3265,8 @@ export function IssueDetail() {
       if (cancelledCommentBody) {
         restoreQueuedCommentDraft(cancelledCommentBody);
         pushToast({
-          title: "Queued comment canceled",
-          body: "The queued message was restored to the composer.",
+          title: tr("issueThreadInteraction.queuedCommentCanceled"),
+          body: tr("issueThreadInteraction.queuedMessageRestored"),
           tone: "success",
         });
       }
@@ -3101,11 +3321,11 @@ export function IssueDetail() {
         title:
           variables.sharingPreferenceAtSubmit === "prompt"
             ? variables.allowSharing
-              ? "Feedback saved. Future votes will share"
-              : "Feedback saved. Future votes will stay local"
+              ? tr("Feedback saved. Future votes will share")
+              : tr("Feedback saved. Future votes will stay local")
             : variables.allowSharing
-              ? "Feedback saved and sharing enabled"
-              : "Feedback saved",
+              ? tr("Feedback saved and sharing enabled")
+              : tr("Feedback saved"),
         tone: "success",
       });
     },
@@ -3114,8 +3334,8 @@ export function IssueDetail() {
         queryClient.setQueryData(queryKeys.issues.feedbackVotes(issueId!), context.previousVotes);
       }
       pushToast({
-        title: "Failed to save feedback",
-        body: err instanceof Error ? err.message : "Unknown error",
+        title: tr("Failed to save feedback"),
+        body: err instanceof Error ? err.message : tr("Unknown error"),
         tone: "error",
       });
     },
@@ -3123,7 +3343,7 @@ export function IssueDetail() {
 
   const uploadAttachment = useMutation({
     mutationFn: async (file: File) => {
-      if (!selectedCompanyId) throw new Error("No company selected");
+      if (!selectedCompanyId) throw new Error(tr("common.noCompanySelected"));
       return issuesApi.uploadAttachment(selectedCompanyId, issueId!, file);
     },
     onSuccess: () => {
@@ -3132,7 +3352,7 @@ export function IssueDetail() {
       invalidateIssueDetail();
     },
     onError: (err) => {
-      setAttachmentError(err instanceof Error ? err.message : "Upload failed");
+      setAttachmentError(err instanceof Error ? err.message : tr("Upload failed"));
     },
   });
 
@@ -3157,7 +3377,7 @@ export function IssueDetail() {
       queryClient.invalidateQueries({ queryKey: queryKeys.issues.documents(issueId!) });
     },
     onError: (err) => {
-      setAttachmentError(err instanceof Error ? err.message : "Document import failed");
+      setAttachmentError(err instanceof Error ? err.message : tr("Document import failed"));
     },
   });
 
@@ -3169,7 +3389,7 @@ export function IssueDetail() {
       invalidateIssueDetail();
     },
     onError: (err) => {
-      setAttachmentError(err instanceof Error ? err.message : "Delete failed");
+      setAttachmentError(err instanceof Error ? err.message : tr("Delete failed"));
     },
   });
 
@@ -3183,13 +3403,22 @@ export function IssueDetail() {
       removeIssueFromInboxCaches(queryClient, selectedCompanyId, id);
       return { companyId: selectedCompanyId, previousData };
     },
-    onSuccess: (_data, id) => {
+    onSuccess: (_data, id, context) => {
       if (selectedCompanyId) {
         removeIssueFromInboxCaches(queryClient, selectedCompanyId, id);
       }
       invalidateIssueCollections();
       navigate(sourceBreadcrumb.href.startsWith("/inbox") ? sourceBreadcrumb.href : "/inbox", { replace: true });
-      pushToast({ title: "Task archived from inbox", tone: "success" });
+      pushToast({
+        title: tr("issueDetail.archivedFromInbox"),
+        tone: "success",
+        action: {
+          label: tr("Undo"),
+          onClick: () => {
+            void undoInboxArchive(id, context?.companyId, context?.previousData ?? []);
+          },
+        },
+      });
     },
     onError: (err, id, context) => {
       if (context?.companyId) clearLocalInboxArchive(context.companyId, id);
@@ -3197,8 +3426,8 @@ export function IssueDetail() {
         restoreIssueToInboxCaches(queryClient, context.previousData, id);
       }
       pushToast({
-        title: "Archive failed",
-        body: err instanceof Error ? err.message : "Unable to archive this task from the inbox",
+        title: tr("Archive failed"),
+        body: err instanceof Error ? err.message : tr("issueDetail.unableToArchiveFromInbox"),
         tone: "error",
       });
     },
@@ -3278,7 +3507,7 @@ export function IssueDetail() {
   }, [issue?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (!panelIssue) {
+    if (!panelIssue || suppressPanelForFirstTask) {
       closePanel();
       return;
     }
@@ -3306,6 +3535,7 @@ export function IssueDetail() {
     openPanel,
     panelChildIssues,
     panelIssue,
+    suppressPanelForFirstTask,
     resolvedHasActiveRun,
     checkIssueMonitorNow.isPending,
     checkIssueMonitorNow.mutate,
@@ -3581,12 +3811,12 @@ export function IssueDetail() {
     try {
       await copyTextToClipboard(md);
       setCopied(true);
-      pushToast({ title: "Copied to clipboard", tone: "success" });
+      pushToast({ title: tr("Copied to clipboard"), tone: "success" });
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
       pushToast({
-        title: "Copy failed",
-        body: error instanceof Error ? error.message : "Unable to copy task markdown",
+        title: tr("Copy failed"),
+        body: error instanceof Error ? error.message : tr("issueDetail.unableToCopyTaskMarkdown"),
         tone: "error",
       });
     }
@@ -3719,8 +3949,8 @@ export function IssueDetail() {
   const runFinalizationActions = useMemo<readonly IssueChatRunFinalizationAction[]>(() => [
     {
       id: "cancel",
-      label: "Stop and cancel",
-      pendingLabel: "Stopping and cancelling...",
+      label: tr("issueDetail.stopAndCancel"),
+      pendingLabel: tr("issueDetail.stoppingAndCancelling"),
       isPending:
         stopAndFinalizeRun.isPending &&
         stopAndFinalizeRun.variables?.status === "cancelled",
@@ -3730,8 +3960,8 @@ export function IssueDetail() {
     },
     {
       id: "done",
-      label: "Stop and done",
-      pendingLabel: "Stopping and marking done...",
+      label: tr("issueDetail.stopAndDone"),
+      pendingLabel: tr("issueDetail.stoppingAndMarkingDone"),
       isPending:
         stopAndFinalizeRun.isPending &&
         stopAndFinalizeRun.variables?.status === "done",
@@ -3743,6 +3973,7 @@ export function IssueDetail() {
     stopAndFinalizeRun.isPending,
     stopAndFinalizeRun.mutateAsync,
     stopAndFinalizeRun.variables?.status,
+    t,
   ]);
   const handleAcceptInteraction = useCallback(async (
     interaction: ActionableIssueThreadInteraction,
@@ -3806,20 +4037,22 @@ export function IssueDetail() {
     mutationFn: async (
       request: import("../components/IssueRecoveryActionCard").RecoveryReissueRequest,
     ) => {
-      if (!issue) throw new Error("Task is not loaded yet.");
-      const sourceLabel = issue.identifier ?? "the stalled task";
+      if (!issue) throw new Error(tr("runWorkspaceRecovery.taskNotLoaded"));
+      const sourceLabel = issue.identifier ?? tr("runWorkspaceRecovery.stalledTask");
       const descriptionLines = [
-        `Re-issued from ${sourceLabel} on an isolated git worktree after a workspace branch divergence.`,
+        tr("runWorkspaceRecovery.reissueDescription", { source: sourceLabel }),
         "",
-        `- Base ref (live branch): \`${request.baseRef}\``,
-        ...(request.expectedBranch ? [`- Recorded branch: \`${request.expectedBranch}\``] : []),
+        `- ${tr("runWorkspaceRecovery.baseRefLabel")}: \`${request.baseRef}\``,
+        ...(request.expectedBranch
+          ? [`- ${tr("runWorkspaceRecovery.recordedBranchLabel")}: \`${request.expectedBranch}\``]
+          : []),
         "",
         "---",
         "",
         issue.description ?? "",
       ];
       return issuesApi.create(issue.companyId, {
-        title: `Re-issue (isolated): ${issue.title ?? sourceLabel}`,
+        title: tr("runWorkspaceRecovery.reissueTitle", { title: issue.title ?? sourceLabel }),
         description: descriptionLines.join("\n"),
         priority: issue.priority,
         projectId: issue.projectId ?? null,
@@ -3839,10 +4072,10 @@ export function IssueDetail() {
     onSuccess: (created) => {
       invalidateIssueCollections();
       pushToast({
-        title: "Isolated re-issue created",
+        title: tr("runWorkspaceRecovery.reissueCreatedTitle"),
         body: created.identifier
-          ? `${created.identifier} will run on a fresh isolated workspace.`
-          : "A fresh isolated re-issue was created.",
+          ? tr("runWorkspaceRecovery.reissueCreatedWithId", { identifier: created.identifier })
+          : tr("runWorkspaceRecovery.reissueCreatedBody"),
         tone: "success",
       });
       if (created.identifier) {
@@ -3851,8 +4084,8 @@ export function IssueDetail() {
     },
     onError: (err) => {
       pushToast({
-        title: "Re-issue failed",
-        body: err instanceof Error ? err.message : "Unable to create an isolated re-issue.",
+        title: tr("runWorkspaceRecovery.reissueFailedTitle"),
+        body: err instanceof Error ? err.message : tr("runWorkspaceRecovery.reissueFailedBody"),
         tone: "error",
       });
     },
@@ -3890,21 +4123,21 @@ export function IssueDetail() {
       pushToast(
         variables.mode === "quarantine_restore"
           ? {
-              title: "Workspace repaired",
-              body: "Dirty changes were quarantined onto a rescue branch and the recorded branch restored; the task will resume.",
+              title: tr("runWorkspaceRecovery.repairedTitle"),
+              body: tr("runWorkspaceRecovery.repairedBody"),
               tone: "success",
             }
           : {
-              title: "Workspace branch reconciled",
-              body: "The recorded branch now matches the live branch; the task will resume.",
+              title: tr("runWorkspaceRecovery.reconciledTitle"),
+              body: tr("runWorkspaceRecovery.reconciledBody"),
               tone: "success",
             },
       );
     },
     onError: (err) => {
       pushToast({
-        title: "Reconcile failed",
-        body: err instanceof Error ? err.message : "Unable to reconcile the workspace branch.",
+        title: tr("runWorkspaceRecovery.reconcileFailedTitle"),
+        body: err instanceof Error ? err.message : tr("runWorkspaceRecovery.reconcileFailedBody"),
         tone: "error",
       });
     },
@@ -3920,8 +4153,8 @@ export function IssueDetail() {
   const handleReconcileForwardRecoveryAction = useCallback(() => {
     if (!reconcileExecutionWorkspaceId) {
       pushToast({
-        title: "Reconcile failed",
-        body: "This task has no execution workspace to reconcile.",
+        title: tr("runWorkspaceRecovery.reconcileFailedTitle"),
+        body: tr("runWorkspaceRecovery.noWorkspaceToReconcile"),
         tone: "error",
       });
       return;
@@ -3935,8 +4168,8 @@ export function IssueDetail() {
     (reason: string) => {
       if (!reconcileExecutionWorkspaceId) {
         pushToast({
-          title: "Reconcile failed",
-          body: "This task has no execution workspace to reconcile.",
+          title: tr("runWorkspaceRecovery.reconcileFailedTitle"),
+          body: tr("runWorkspaceRecovery.noWorkspaceToReconcile"),
           tone: "error",
         });
         return;
@@ -3954,8 +4187,8 @@ export function IssueDetail() {
   const handleQuarantineRestoreRecoveryAction = useCallback(() => {
     if (!reconcileExecutionWorkspaceId) {
       pushToast({
-        title: "Repair failed",
-        body: "This task has no execution workspace to repair.",
+        title: tr("runWorkspaceRecovery.repairFailedTitle"),
+        body: tr("runWorkspaceRecovery.noWorkspaceToRepair"),
         tone: "error",
       });
       return;
@@ -4011,7 +4244,7 @@ export function IssueDetail() {
     const badges = new Map<string, string>();
     for (const child of childIssues) {
       if (!heldIssueIds.has(child.id)) continue;
-      badges.set(child.id, "Paused");
+      badges.set(child.id, tr("issueDetail.paused"));
     }
     return badges;
   }, [childIssues, heldIssueIds]);
@@ -4093,15 +4326,15 @@ export function IssueDetail() {
   const treeControlPrimaryButtonLabel =
     treeControlMode === "pause"
       ? treeControlScope === "leaf"
-        ? "Pause work"
-        : "Pause and stop work"
+        ? tr("issueDetail.pauseWork")
+        : tr("issueDetail.pauseAndStopWork")
       : treeControlMode === "cancel"
-        ? `Cancel ${previewAffectedIssueCount} tasks`
+        ? tr("issueDetail.cancelIssueCount", { count: previewAffectedIssueCount })
       : treeControlMode === "restore"
-          ? `Restore ${previewAffectedIssueCount} tasks`
+          ? tr("issueDetail.restoreIssueCount", { count: previewAffectedIssueCount })
           : treeControlScope === "leaf"
-            ? "Resume work"
-            : "Resume subtree";
+            ? tr("issueDetail.resumeWork")
+            : tr("issueDetail.resumeSubtree");
   const treePreviewAffectedIssueRows = treePreviewDisplayIssues.map((candidate) => ({
     candidate,
     issue: {
@@ -4125,8 +4358,10 @@ export function IssueDetail() {
   const pausedComposerHint = activePauseHold
     ? (
       issue.assigneeAgentId
-        ? `Sending this comment will wake ${agentMap.get(issue.assigneeAgentId)?.name ?? "the assignee"} for triage while the subtree remains paused.`
-        : "Assign an agent to wake them for triage while the subtree remains paused."
+        ? tr("issueDetail.pausedComposerWakeAssignee", {
+          name: agentMap.get(issue.assigneeAgentId)?.name ?? tr("issueDetail.theAssignee"),
+        })
+        : tr("issueDetail.pausedComposerAssignAgent")
     )
     : null;
   const composerHint = pausedComposerHint;
@@ -4155,10 +4390,10 @@ export function IssueDetail() {
         )}
       >
         <Paperclip className="h-3.5 w-3.5 mr-1.5" />
-        {uploadAttachment.isPending || importMarkdownDocument.isPending ? "Uploading..." : (
+        {uploadAttachment.isPending || importMarkdownDocument.isPending ? tr("issueDetail.uploading") : (
           <>
-            <span className="hidden sm:inline">Upload attachment</span>
-            <span className="sm:hidden">Upload</span>
+            <span className="hidden sm:inline">{tr("Upload attachment")}</span>
+            <span className="sm:hidden">{tr("issueDetail.upload")}</span>
           </>
         )}
       </Button>
@@ -4197,7 +4432,10 @@ export function IssueDetail() {
   );
 
   const issueHeaderBlock = (
-      <div className={cn("space-y-3", shellSectionClass)}>
+      <div
+        data-testid="issue-detail-header"
+        className={cn("space-y-3", shellSectionClass)}
+      >
         <div className="flex items-center gap-2 min-w-0 flex-wrap">
           <StatusIcon
             status={issue.status}
@@ -4220,7 +4458,7 @@ export function IssueDetail() {
                 <span className="animate-pulse absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-blue-500" />
               </span>
-              Live
+              {tr("issueDetail.live")}
             </Badge>
           )}
 
@@ -4228,10 +4466,10 @@ export function IssueDetail() {
             <Link
               to={`/routines/${issue.originId}`}
               className="inline-flex items-center gap-1 rounded-full bg-violet-500/10 border border-violet-500/30 px-2 py-0.5 text-(length:--text-nano) font-medium text-violet-600 dark:text-violet-400 shrink-0 hover:bg-violet-500/20 transition-colors"
-              title={`Routine execution from routine ${issue.originId}`}
+              title={tr("issueDetail.routineExecutionTitle", { routine: issue.originId })}
             >
               <Repeat className="h-3 w-3" />
-              Routine
+              {tr("Routine")}
             </Link>
           )}
 
@@ -4242,20 +4480,20 @@ export function IssueDetail() {
           {issue.originKind === "issue_productivity_review" ? (
             <Badge variant="outline"
               className="border-amber-500/40 bg-amber-500/10 text-(length:--text-nano) text-amber-700 dark:text-amber-300"
-              title="This task is a productivity review."
+              title={tr("productivityReview.currentIssueTitle")}
             >
               <Eye className="h-3 w-3" />
-              Productivity review
+              {tr("issueDetail.productivityReview")}
             </Badge>
           ) : null}
 
           {issue.originKind === "task_watchdog" ? (
             <Badge variant="outline"
               className="border-sky-500/40 bg-sky-500/10 text-(length:--text-nano) text-sky-700 dark:text-sky-300"
-              title="This task is a generated watchdog task. It verifies whether stopped work in the watched task tree is legitimate."
+              title={tr("issueDetail.watchdogGeneratedDescription")}
             >
               <ScanEye className="h-3 w-3" />
-              Watchdog
+              {tr("issueDetail.watchdog")}
             </Badge>
           ) : null}
 
@@ -4269,7 +4507,7 @@ export function IssueDetail() {
             return (
               <Badge variant="outline"
                 className={cn("text-(length:--text-nano)", workModeMeta.classes.badge)}
-                title={`This task is in ${workModeMeta.label.toLowerCase()}.`}
+                title={tr("issueDetail.workModeDescription", { mode: workModeMeta.label.toLowerCase() })}
               >
                 <WorkModeIcon className="h-3 w-3" aria-hidden />
                 {workModeMeta.label}
@@ -4281,10 +4519,10 @@ export function IssueDetail() {
             <Badge variant="outline"
               data-testid="issue-detail-parked-blocker"
               className="border-amber-500/60 bg-amber-500/15 text-(length:--text-nano) text-amber-700 dark:text-amber-300"
-              title="Blocked by parked work — at least one assigned blocker is in backlog and will not wake its assignee."
+              title={tr("issueDetail.blockedByParkedWorkDescription")}
             >
               <Flag className="h-3 w-3" />
-              Blocked by parked work
+              {tr("issueDetail.blockedByParkedWorkTitle")}
             </Badge>
           ) : null}
 
@@ -4306,7 +4544,7 @@ export function IssueDetail() {
           ) : (
             <span className="inline-flex items-center gap-1 text-xs text-muted-foreground opacity-50 px-1 -mx-1 py-0.5">
               <ProjectTile size="xs" />
-              No project
+              {tr("issueDetail.noProject")}
             </span>
           )}
 
@@ -4344,7 +4582,7 @@ export function IssueDetail() {
                 variant="ghost"
                 size="icon-xs"
                 onClick={copyIssueToClipboard}
-                title="Copy task as markdown"
+                title={t("issueDetail.copyIssueAsMarkdown")}
               >
                 {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
               </Button>
@@ -4352,7 +4590,7 @@ export function IssueDetail() {
                 variant="ghost"
                 size="icon-xs"
                 onClick={() => setMobilePropsOpen(true)}
-                title="Properties"
+                title={t("Properties")}
               >
                 <SlidersHorizontal className="h-4 w-4" />
               </Button>
@@ -4368,8 +4606,8 @@ export function IssueDetail() {
                   if (!archivePending && issue?.id) archiveFromInbox.mutate(issue.id);
                 }}
                 disabled={archivePending}
-                title="Archive from inbox"
-                aria-label="Archive from inbox"
+                title={t("issueDetail.archiveFromInbox")}
+                aria-label={t("issueDetail.archiveFromInbox")}
               >
                 <Archive className="h-4 w-4" />
               </Button>
@@ -4379,8 +4617,8 @@ export function IssueDetail() {
                 variant="ghost"
                 size="icon-xs"
                 onClick={() => setFileViewerPromptOpen(true)}
-                title="Open file... (g f)"
-                aria-label="Open file in this issue"
+                title={`${tr("issueDetail.openFileShortcut")}... (g f)`}
+                aria-label={tr("issueDetail.openFileInIssue")}
               >
                 <FileCode2 className="h-4 w-4" />
               </Button>
@@ -4389,7 +4627,7 @@ export function IssueDetail() {
               variant="ghost"
               size="icon-xs"
               onClick={copyIssueToClipboard}
-              title="Copy task as markdown"
+              title={t("issueDetail.copyIssueAsMarkdown")}
             >
               {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
             </Button>
@@ -4398,10 +4636,17 @@ export function IssueDetail() {
               size="icon-xs"
               className={cn(
                 "shrink-0 transition-opacity duration-200",
-                panelVisible ? "opacity-0 pointer-events-none w-0 overflow-hidden" : "opacity-100",
+                panelVisible && !suppressPanelForFirstTask
+                  ? "opacity-0 pointer-events-none w-0 overflow-hidden"
+                  : "opacity-100",
               )}
-              onClick={() => setPanelVisible(true)}
-              title="Show properties"
+              onClick={() => {
+                if (suppressPanelForFirstTask && issue?.id) {
+                  setFirstTaskPanelOverrideIssueId(issue.id);
+                }
+                setPanelVisible(true);
+              }}
+              title={t("issueDetail.showProperties")}
             >
               <SlidersHorizontal className="h-4 w-4" />
             </Button>
@@ -4412,8 +4657,8 @@ export function IssueDetail() {
                   variant="ghost"
                   size="icon-xs"
                   className="shrink-0"
-                  aria-label="More task actions"
-                  title="More task actions"
+                  aria-label={t("issueDetail.moreIssueActions")}
+                  title={t("issueDetail.moreIssueActions")}
                   onKeyDown={(event) => {
                     if (event.key === "Enter" || event.key === " ") {
                       event.preventDefault();
@@ -4436,7 +4681,7 @@ export function IssueDetail() {
                   }}
                 >
                   <PauseCircle className="h-3 w-3" />
-                  Pause work...
+                  {t("issueDetail.pauseWorkMenu")}
                 </button>
               ) : null}
               {canResumeLeafWork ? (
@@ -4450,7 +4695,7 @@ export function IssueDetail() {
                   }}
                 >
                   <PlayCircle className="h-3 w-3" />
-                  Resume work
+                  {t("issueDetail.resumeWork")}
                 </button>
               ) : null}
               {canShowSubtreeControls ? (
@@ -4465,7 +4710,7 @@ export function IssueDetail() {
                     }}
                   >
                     <PauseCircle className="h-3 w-3" />
-                    Pause subtree...
+                    {t("issueDetail.pauseSubtreeMenu")}
                   </button>
                   {canResumeSubtree ? (
                     <button
@@ -4478,7 +4723,7 @@ export function IssueDetail() {
                       }}
                     >
                       <PlayCircle className="h-3 w-3" />
-                      Resume subtree
+                      {t("issueDetail.resumeSubtree")}
                     </button>
                   ) : null}
                   <button
@@ -4491,7 +4736,7 @@ export function IssueDetail() {
                     }}
                   >
                     <XCircle className="h-3 w-3" />
-                    Cancel subtree...
+                    {t("issueDetail.cancelSubtreeMenu")}
                   </button>
                   {canRestoreSubtree ? (
                     <button
@@ -4505,7 +4750,7 @@ export function IssueDetail() {
                       }}
                     >
                       <Repeat className="h-3 w-3" />
-                      Restore subtree...
+                      {t("issueDetail.restoreSubtreeMenu")}
                     </button>
                   ) : null}
                 </>
@@ -4521,7 +4766,7 @@ export function IssueDetail() {
                 }}
               >
                 <EyeOff className="h-3 w-3" />
-                Hide this task
+                {t("issueDetail.hideTask")}
               </button>
             </PopoverContent>
             </Popover>
@@ -4535,6 +4780,8 @@ export function IssueDetail() {
           className={taskChatShellEnabled ? "text-base font-semibold" : "text-xl font-bold"}
         />
 
+        {taskChatShellEnabled ? subTasksTree : null}
+
         <IssueMonitorBanner
           issue={issue}
           onCheckNow={() => checkIssueMonitorNow.mutate()}
@@ -4547,7 +4794,7 @@ export function IssueDetail() {
             onSave={(description) => updateIssue.mutateAsync({ description })}
             as="p"
             className="text-sm leading-7 text-foreground"
-            placeholder="Add a description..."
+            placeholder={t("issueDetail.addDescriptionPlaceholder")}
             multiline
             foldable
             mentions={mentionOptions}
@@ -4620,6 +4867,7 @@ export function IssueDetail() {
   return (
     <FileViewerProvider issueId={issue.id} enabled={fileViewerEnabled}>
     <div
+      data-task-chat-shell={taskChatShellEnabled ? "" : undefined}
       className={
         taskChatShellEnabled
           ? isMobile
@@ -4638,7 +4886,7 @@ export function IssueDetail() {
       {issue.hiddenAt && (
         <div className={cn("flex items-center gap-2 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive", shellSectionClass)}>
           <EyeOff className="h-4 w-4 shrink-0" />
-          This task is hidden
+          {tr("issueDetail.hidden")}
         </div>
       )}
       {activePauseHold && (
@@ -4647,19 +4895,19 @@ export function IssueDetail() {
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="font-medium">
-                  {childIssues.length === 0 ? "Paused by board." : "Subtree pause is active."}
+                  {childIssues.length === 0 ? tr("issueDetail.pausedByBoard") : tr("issueDetail.subtreePauseActive")}
                 </span>
                 <span className="text-xs text-amber-900/80 dark:text-amber-100/80">
                   {childIssues.length === 0
-                    ? "Task execution is held until resume. Human comments can still wake the assignee for triage."
-                    : "Root and descendant execution is held until resume. Human comments can still wake assignee agents for triage."}
+                    ? tr("issueDetail.taskExecutionHeldDescription")
+                    : tr("issueDetail.subtreeExecutionHeldDescription")}
                 </span>
               </div>
               <div className="text-xs text-amber-900/80 dark:text-amber-100/80">
                 {childIssues.length === 0
-                  ? "1 task held"
-                  : `${heldDescendantCount} descendant${heldDescendantCount === 1 ? "" : "s"} held`}
-                {activeRootPauseHold?.createdAt ? ` · started ${relativeTime(activeRootPauseHold.createdAt)}` : ""}
+                  ? tr("issueDetail.oneTaskHeld")
+                  : tr("issueDetail.descendantsHeld", { count: heldDescendantCount })}
+                {activeRootPauseHold?.createdAt ? tr("issueDetail.startedRelative", { relative: relativeTime(activeRootPauseHold.createdAt) }) : ""}
               </div>
               {canShowSubtreeControls || canResumeLeafWork ? (
                 <div className="flex flex-wrap items-center gap-2">
@@ -4671,7 +4919,7 @@ export function IssueDetail() {
                       setTreeControlOpen(true);
                     }}
                   >
-                    {childIssues.length === 0 ? "Resume work" : "Resume subtree"}
+                    {childIssues.length === 0 ? tr("issueDetail.resumeWork") : tr("issueDetail.resumeSubtree")}
                   </Button>
                   <Button
                     variant="outline"
@@ -4682,7 +4930,9 @@ export function IssueDetail() {
                       setTreeControlOpen(true);
                     }}
                   >
-                    View affected ({childIssues.length === 0 ? 1 : heldDescendantCount})
+                    {t("issueDetail.viewAffectedCount", {
+                      count: childIssues.length === 0 ? 1 : heldDescendantCount,
+                    })}
                   </Button>
                   {canShowSubtreeControls ? (
                     <Button
@@ -4695,7 +4945,7 @@ export function IssueDetail() {
                         setTreeControlOpen(true);
                       }}
                     >
-                      Cancel subtree...
+                      {t("issueDetail.cancelSubtreeMenu")}
                     </Button>
                   ) : null}
                 </div>
@@ -4703,7 +4953,7 @@ export function IssueDetail() {
             </div>
           ) : (
             <div className="text-xs">
-              This task is paused by ancestor{" "}
+              {t("issueDetail.pausedByAncestorPrefix")}{" "}
               {activePauseHoldRoot?.identifier ? (
                 <Link to={createIssueDetailPath(activePauseHoldRoot.identifier)} className="underline">
                   {activePauseHoldRoot.identifier}
@@ -4711,7 +4961,8 @@ export function IssueDetail() {
               ) : (
                 activePauseHold.rootIssueId.slice(0, 8)
               )}
-              . Resume from the root task to deliver deferred work.
+              {" "}{t("issueDetail.pausedByAncestorSuffix")}
+              {t("issueDetail.resumeFromRoot")}
             </div>
           )}
         </div>
@@ -4724,7 +4975,7 @@ export function IssueDetail() {
       {taskChatShellEnabled ? null : showRichSubIssuesSection ? (
         <div className="space-y-3">
           <div className="flex items-center justify-between gap-2">
-            <h3 className="text-sm font-medium text-muted-foreground">Sub-tasks</h3>
+            <h3 className="text-sm font-medium text-muted-foreground">{t("Sub-tasks")}</h3>
           </div>
           <IssuesList
             issues={childIssues}
@@ -4740,7 +4991,7 @@ export function IssueDetail() {
             searchFilters={{ descendantOf: issue.id, includeBlockedBy: true }}
             searchWithinLoadedIssues
             baseCreateIssueDefaults={buildSubIssueDefaultsForViewer(issue, currentUserId)}
-            createIssueLabel="Sub-task"
+            createIssueLabel={tr("sub-task")}
             defaultSortField="workflow"
             showProgressSummary
             parentIssueIdForCostSummary={issue.id}
@@ -4751,7 +5002,7 @@ export function IssueDetail() {
         <div className="flex flex-wrap items-center justify-end gap-2 min-w-0">
           <Button variant="outline" size="sm" onClick={openNewSubIssue} className="shrink-0 shadow-none">
             <Plus className="mr-1.5 h-3.5 w-3.5" />
-            New Sub-task
+            {tr("issueDetail.newSubtask")}
           </Button>
         </div>
       )}
@@ -4871,7 +5122,7 @@ export function IssueDetail() {
         return (
           <div className="space-y-3">
             <div className="flex items-center justify-between gap-2">
-              <h3 className="text-sm font-medium text-muted-foreground">Artifacts</h3>
+              <h3 className="text-sm font-medium text-muted-foreground">{t("Artifacts")}</h3>
             </div>
             <div className="flex flex-wrap gap-2">
               {workProductsWithFileRefs.map(({ product, fileRef }) => (
@@ -4899,15 +5150,15 @@ export function IssueDetail() {
         <TabsList variant="line" className={cn("w-full justify-start gap-1", shellSectionClass)}>
           <TabsTrigger value="chat" className="gap-1.5">
             <MessageSquare className="h-3.5 w-3.5" />
-            Chat
+            {tr("Chat")}
           </TabsTrigger>
           <TabsTrigger value="activity" className="gap-1.5">
             <ActivityIcon className="h-3.5 w-3.5" />
-            Activity
+            {tr("Activity")}
           </TabsTrigger>
           <TabsTrigger value="related-work" className="gap-1.5">
             <ListTree className="h-3.5 w-3.5" />
-            Related work
+            {tr("Related work")}
           </TabsTrigger>
           {issuePluginTabItems.map((item) => (
             <TabsTrigger key={item.value} value={item.value}>
@@ -4921,6 +5172,7 @@ export function IssueDetail() {
             (symmetric, so the centered column keeps the same axis) and the
             scrollbar sits flush against the properties-pane border. */}
         <TabsContent
+          data-testid="issue-detail-content"
           value="chat"
           className={
             taskChatShellEnabled
@@ -4934,12 +5186,16 @@ export function IssueDetail() {
             <IssueDetailChatTab
               threadHeader={taskChatThreadHeader}
               issueBrief={
-                taskChatShellEnabled
+                // Suppress the seeded-description bubble for the onboarding first
+                // task: its description is agent instructions, not something the
+                // user typed. The user lands on a seeded agent greeting instead.
+                taskChatShellEnabled &&
+                issue.originKind !== ONBOARDING_FIRST_TASK_ORIGIN_KIND
                   ? {
                       description: issue.description ?? "",
                       author: issue.createdByAgentId ? "agent" : "human",
                       authorName: issue.createdByAgentId
-                        ? agentMap.get(issue.createdByAgentId)?.name ?? "Agent"
+                        ? agentMap.get(issue.createdByAgentId)?.name ?? t("Agent")
                         : undefined,
                       agentIcon: issue.createdByAgentId
                         ? agentMap.get(issue.createdByAgentId)?.icon
@@ -5120,18 +5376,18 @@ export function IssueDetail() {
           <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-6 py-4">
             {treeControlMode === "cancel" ? (
               <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
-                Cancelling a subtree is destructive. Non-terminal tasks will be marked cancelled, and running or queued work will be interrupted where possible.
+                {tr("issueDetail.cancelSubtreeDescription")}
               </div>
             ) : null}
 
             <div className="space-y-1.5">
               <label className="text-xs text-muted-foreground">
-                Reason (optional)
+                {tr("issueDetail.reasonOptional")}
               </label>
               <Textarea
                 value={treeControlReason}
                 onChange={(event) => setTreeControlReason(event.target.value)}
-                placeholder="Explain why this subtree control is being applied..."
+                placeholder={tr("issueDetail.subtreeReasonPlaceholder")}
                 className="min-h-(--sz-88px)"
               />
             </div>
@@ -5147,11 +5403,11 @@ export function IssueDetail() {
                     onChange={(event) => setTreeControlWakeAgentsOnResume(event.target.checked)}
                   />
                   <span>
-                    <span className="block font-medium">Wake affected agents ({previewAffectedAgentCount})</span>
+                    <span className="block font-medium">{tr("issueDetail.wakeAffectedAgents", { count: previewAffectedAgentCount })}</span>
                     <span className="text-xs text-muted-foreground">
                       {previewAffectedAgentCount === 0
-                        ? "No assignee agents are eligible to wake from this preview."
-                        : "Wake assignee agents after this operation completes."}
+                        ? tr("issueDetail.noAgentsEligibleToWake")
+                        : tr("issueDetail.wakeAgentsAfterOperation")}
                     </span>
                   </span>
                 </label>
@@ -5178,7 +5434,7 @@ export function IssueDetail() {
                   checked={treeControlCancelConfirmed}
                   onChange={(event) => setTreeControlCancelConfirmed(event.target.checked)}
                 />
-                <span>I understand this will cancel {previewAffectedIssueCount} tasks.</span>
+                <span>{tr("issueDetail.confirmCancelSubtreeIssues", { count: previewAffectedIssueCount })}</span>
               </label>
             ) : null}
 
@@ -5200,7 +5456,7 @@ export function IssueDetail() {
                       void refetchTreeControlPreview();
                     }}
                   >
-                    Retry preview
+                    {tr("issueDetail.retryPreview")}
                   </Button>
                 </div>
               ) : treeControlPreview ? (
@@ -5235,7 +5491,7 @@ export function IssueDetail() {
                             </span>
                             <span className="min-w-0 flex-1 truncate">{candidate.title}</span>
                             {candidate.skipped && candidate.skipReason === "terminal_status" ? (
-                              <span className="shrink-0 text-xs text-muted-foreground">Complete</span>
+                              <span className="shrink-0 text-xs text-muted-foreground">{tr("Complete")}</span>
                             ) : null}
                           </Link>
                         </div>
@@ -5244,20 +5500,20 @@ export function IssueDetail() {
                   ) : null}
                 </div>
               ) : (
-                <p className="text-xs text-muted-foreground">Preview unavailable.</p>
+                <p className="text-xs text-muted-foreground">{tr("issueDetail.previewUnavailable")}</p>
               )}
             </div>
           </div>
           <DialogFooter className="border-t border-border/60 bg-background px-6 py-4">
             <Button variant="outline" onClick={() => setTreeControlOpen(false)} disabled={executeTreeControl.isPending}>
-              Close
+              {tr("common.close")}
             </Button>
             <Button
               onClick={() => executeTreeControl.mutate()}
               disabled={executeTreeControl.isPending || !canApplyTreeControl}
               variant={treeControlMode === "cancel" ? "destructive" : "default"}
             >
-              {executeTreeControl.isPending ? "Applying..." : treeControlPrimaryButtonLabel}
+              {executeTreeControl.isPending ? tr("issueDetail.applying") : treeControlPrimaryButtonLabel}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -5267,7 +5523,7 @@ export function IssueDetail() {
       <Sheet open={mobilePropsOpen} onOpenChange={setMobilePropsOpen}>
         <SheetContent side="bottom" className="max-h-(--sz-85dvh) pb-(--sz-safe-bottom)">
           <SheetHeader>
-            <SheetTitle className="text-sm">Properties</SheetTitle>
+            <SheetTitle className="text-sm">{tr("Properties")}</SheetTitle>
           </SheetHeader>
           <ScrollArea className="flex-1 overflow-y-auto">
             <div className="px-4 pb-4">

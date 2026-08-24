@@ -186,6 +186,16 @@ function localize(key: string, options?: Record<string, string | number | boolea
   return translateInstant(key, { defaultValue: key, ...options });
 }
 
+function localizeActivityRow(action: string, fallback?: string): string {
+  const defaultValue = fallback ?? ACTIVITY_ROW_VERBS[action] ?? action.replace(/[._]/g, " ");
+  return localize(`activityFormat.row.${action}`, { defaultValue });
+}
+
+function localizeActivityAction(action: string, fallback?: string): string {
+  const defaultValue = fallback ?? ISSUE_ACTIVITY_LABELS[action] ?? action.replace(/[._]/g, " ");
+  return localize(`activityFormat.action.${action}`, { defaultValue });
+}
+
 function localizeActivityValue(value: unknown, kind: "status" | "priority"): string {
   const normalized = typeof value === "string" ? value : "";
   const key = (kind === "status" ? STATUS_TRANSLATION_KEYS : PRIORITY_TRANSLATION_KEYS)[normalized];
@@ -225,8 +235,8 @@ function readIssueReferences(details: ActivityDetails, key: string): ActivityIss
 }
 
 function formatUserLabel(userId: string | null | undefined, options: ActivityFormatOptions = {}): string {
-  if (!userId || userId === "local-board") return localize("Board");
-  if (options.currentUserId && userId === options.currentUserId) return localize("You");
+  if (!userId || userId === "local-board") return localize("activityFormat.board");
+  if (options.currentUserId && userId === options.currentUserId) return localize("activityFormat.you");
   const profile = options.userProfileMap?.get(userId);
   if (profile) return profile.label;
   return localize("activityFormat.userLabel", { id: userId.slice(0, 5) });
@@ -235,7 +245,7 @@ function formatUserLabel(userId: string | null | undefined, options: ActivityFor
 function formatParticipantLabel(participant: ActivityParticipant, options: ActivityFormatOptions): string {
   if (participant.type === "agent") {
     const agentId = participant.agentId ?? "";
-    return options.agentMap?.get(agentId)?.name ?? localize("Agent");
+    return options.agentMap?.get(agentId)?.name ?? localize("activityFormat.agent");
   }
   return formatUserLabel(participant.userId, options);
 }
@@ -244,7 +254,7 @@ function formatIssueReferenceLabel(reference: ActivityIssueReference): string {
   if (reference.identifier) return reference.identifier;
   if (reference.title) return reference.title;
   if (reference.id) return reference.id.slice(0, 8);
-  return localize("Task");
+  return localize("activityFormat.task");
 }
 
 function formatChangedEntityLabel(
@@ -338,7 +348,7 @@ function formatAssigneeName(details: ActivityDetails, options: ActivityFormatOpt
   const agentId = details.assigneeAgentId;
   const userId = details.assigneeUserId;
   if (typeof agentId === "string" && agentId) {
-    return options.agentMap?.get(agentId)?.name ?? localize("Agent");
+    return options.agentMap?.get(agentId)?.name ?? localize("activityFormat.agent");
   }
   if (typeof userId === "string" && userId) {
     return formatUserLabel(userId, options);
@@ -410,15 +420,15 @@ function formatStructuredIssueChange(input: {
       return localize(input.forIssueDetail ? "activityFormat.removed" : "activityFormat.removedFrom", { changed });
     }
     return localize(input.forIssueDetail ? "activityFormat.updatedLabel" : "activityFormat.updatedOn", {
-      label: localize("blockers"),
+      label: localize("activityFormat.blockers"),
     });
   }
 
   if (input.action === "issue.reviewers_updated" || input.action === "issue.approvers_updated") {
     const added = readParticipants(details, "addedParticipants").map((participant) => formatParticipantLabel(participant, input.options));
     const removed = readParticipants(details, "removedParticipants").map((participant) => formatParticipantLabel(participant, input.options));
-    const singular = input.action === "issue.reviewers_updated" ? "reviewer" : "approver";
-    const plural = input.action === "issue.reviewers_updated" ? "reviewers" : "approvers";
+    const singular = input.action === "issue.reviewers_updated" ? "activityFormat.reviewer" : "activityFormat.approver";
+    const plural = input.action === "issue.reviewers_updated" ? "activityFormat.reviewers" : "activityFormat.approvers";
     if (added.length > 0 && removed.length === 0) {
       const changed = formatChangedEntityLabel(singular, plural, added);
       return localize(input.forIssueDetail ? "activityFormat.added" : "activityFormat.addedTo", { changed });
@@ -453,8 +463,7 @@ export function formatActivityVerb(
   });
   if (structuredChange) return structuredChange;
 
-  const fallback = ACTIVITY_ROW_VERBS[action] ?? action.replace(/[._]/g, " ");
-  return localize(fallback);
+  return localizeActivityRow(action);
 }
 
 export function formatIssueActivityAction(
@@ -484,7 +493,7 @@ export function formatIssueActivityAction(
     const serviceName = typeof details.serviceName === "string" && details.serviceName.trim()
       ? details.serviceName.trim()
       : null;
-    const base = localize(ISSUE_ACTIVITY_LABELS[action] ?? action.replace(/[._]/g, " "));
+    const base = localizeActivityAction(action);
     return serviceName ? localize("activityFormat.monitorForService", { base, serviceName }) : base;
   }
 
@@ -498,13 +507,13 @@ export function formatIssueActivityAction(
     ) &&
     details
   ) {
-    const key = typeof details.key === "string" ? details.key : localize("Document");
+    const key = typeof details.key === "string" ? details.key : localize("activityFormat.document");
     const title = typeof details.title === "string" && details.title ? ` (${details.title})` : "";
     return localize("activityFormat.documentAction", {
-      action: localize(ISSUE_ACTIVITY_LABELS[action] ?? action),
+      action: localizeActivityAction(action),
       key: `${key}${title}`,
     });
   }
 
-  return localize(ISSUE_ACTIVITY_LABELS[action] ?? action.replace(/[._]/g, " "));
+  return localizeActivityAction(action);
 }

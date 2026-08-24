@@ -129,7 +129,10 @@ function durableCopyFile(sourcePath: string, destinationPath: string, flags = 0)
   fs.copyFileSync(sourcePath, destinationPath, flags);
   fs.chmodSync(destinationPath, 0o600);
 
-  const backupDescriptor = fs.openSync(destinationPath, "r");
+  // Windows requires a writable file handle for FlushFileBuffers (fsync).
+  // The backup was just created by us, so opening it read/write preserves the
+  // durability guarantee without weakening the copy or permission checks.
+  const backupDescriptor = fs.openSync(destinationPath, "r+");
   try {
     fs.fsyncSync(backupDescriptor);
   } finally {

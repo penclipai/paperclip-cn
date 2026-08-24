@@ -60,7 +60,7 @@ of spawning a process. Both type keys are stable built-ins.
 The unified Hermes package owns both built-in adapters. The older
 `@penclipai/adapter-hermes-gateway` package remains only as a deprecated
 compatibility shim that re-exports the gateway entrypoints for one release.
-New plugin overrides should target `@paperclipai/hermes-paperclip-adapter` and
+New plugin overrides should target `@penclipai/hermes-paperclip-adapter` and
 set the desired type key (`hermes_local` or `hermes_gateway`).
 
 ### External (plugin) adapters
@@ -69,7 +69,6 @@ These adapters ship as standalone npm packages and are installed via the plugin 
 
 | Adapter | Package | Type Key | Description |
 |---------|---------|----------|-------------|
-| Hermes Local | `@henkey/hermes-paperclip-adapter` | `hermes_local` | Runs Hermes CLI locally |
 | Droid | `@henkey/droid-paperclip-adapter` | `droid_local` | Runs Factory Droid locally |
 
 ## External Adapters

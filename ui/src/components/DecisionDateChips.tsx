@@ -1,4 +1,5 @@
 import { cloneElement, isValidElement, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { CalendarRange } from "lucide-react";
 import {
   ATTENTION_DATE_RANGE_OPTIONS,
@@ -26,13 +27,14 @@ interface DecisionDateChipsProps {
  * filter on the client. "Custom" opens a from/to range picker.
  */
 export function DecisionDateChips({ value, custom, onChange }: DecisionDateChipsProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
 
   return (
     <div className="flex flex-wrap items-center gap-1.5" data-decision-date-chips>
-      {ATTENTION_DATE_RANGE_OPTIONS.map(([id, label]) => (
+      {ATTENTION_DATE_RANGE_OPTIONS.map(([id]) => (
         <ChipButton key={id} active={value === id} onClick={() => onChange(id, custom)}>
-          {label}
+          {t(`whatNeedsMe.dateRange.${id}`)}
         </ChipButton>
       ))}
       <Popover open={open} onOpenChange={setOpen}>
@@ -42,14 +44,14 @@ export function DecisionDateChips({ value, custom, onChange }: DecisionDateChips
               <CalendarRange className="h-3.5 w-3.5" />
               {value === "custom" && (custom.from || custom.to)
                 ? `${custom.from ?? "…"} → ${custom.to ?? "…"}`
-                : "Custom"}
+                : t("whatNeedsMe.dateRange.custom")}
             </button>
           </ChipButton>
         </PopoverTrigger>
         <PopoverContent align="start" className="w-auto space-y-2 p-3">
           <div className="flex flex-col gap-1.5">
             <label className="text-(length:--text-nano) font-medium uppercase tracking-wide text-muted-foreground">
-              From
+              {t("whatNeedsMe.dateRange.from")}
             </label>
             <input
               type="date"
@@ -61,7 +63,7 @@ export function DecisionDateChips({ value, custom, onChange }: DecisionDateChips
           </div>
           <div className="flex flex-col gap-1.5">
             <label className="text-(length:--text-nano) font-medium uppercase tracking-wide text-muted-foreground">
-              To
+              {t("whatNeedsMe.dateRange.to")}
             </label>
             <input
               type="date"
@@ -81,7 +83,7 @@ export function DecisionDateChips({ value, custom, onChange }: DecisionDateChips
                 setOpen(false);
               }}
             >
-              Clear
+              {t("whatNeedsMe.dateRange.clear")}
             </Button>
           </div>
         </PopoverContent>

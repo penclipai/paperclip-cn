@@ -15,6 +15,10 @@ import {
 } from "./codex-auth-cache.js";
 import { resolveSharedCodexHomeDir } from "./codex-home.js";
 
+function expectPosixMode(actual: number, expected: number): void {
+  if (process.platform !== "win32") expect(actual).toBe(expected);
+}
+
 // This suite proves the per-identity host credential cache store. The cache is a
 // separate directory outside the shared Codex home and outside the symlink
 // allowlist. It keys one usable subscription credential per identity
@@ -145,8 +149,8 @@ describe("codex auth cache store", () => {
       const entryPath = await ensureCodexAuthCacheEntryDir(env, "acct-priv", "company-a");
       const entryDir = path.dirname(entryPath);
       const cacheDir = resolveCodexAuthCacheDir(env, "company-a");
-      expect((await lstat(entryDir)).mode & 0o777).toBe(0o700);
-      expect((await lstat(cacheDir)).mode & 0o777).toBe(0o700);
+      expectPosixMode((await lstat(entryDir)).mode & 0o777, 0o700);
+      expectPosixMode((await lstat(cacheDir)).mode & 0o777, 0o700);
     });
 
     it("the cache root fails closed (lstat) when it is a symlink or a non-directory", async () => {

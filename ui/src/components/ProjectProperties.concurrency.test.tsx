@@ -30,6 +30,17 @@ vi.mock("../context/CompanyContext", () => ({
   useCompany: () => ({ companies: [{ id: "company-1", issuePrefix: "PAP" }], selectedCompanyId: "company-1", setSelectedCompanyId: vi.fn() }),
 }));
 
+vi.mock("react-i18next", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("react-i18next")>();
+  const { translateForTest } = await import("../test-utils/i18n");
+  return {
+    ...actual,
+    useTranslation: () => ({
+      t: (key: string, options?: Record<string, unknown>) => translateForTest(key, options),
+    }),
+  };
+});
+
 // Heavy children that are unrelated to this control.
 vi.mock("./environment-variables-editor", () => ({ EnvironmentVariablesEditor: () => null }));
 vi.mock("./InlineEditor", () => ({ InlineEditor: ({ value }: { value?: ReactNode }) => <div>{value}</div> }));
@@ -49,6 +60,8 @@ function makeProject(overrides: Partial<Project> = {}): Project {
     primaryWorkspace: null,
     workspaces: [],
     executionWorkspacePolicy: { enabled: true, defaultMode: "shared_workspace", allowIssueOverride: true },
+    createdAt: "2026-01-01T00:00:00.000Z",
+    updatedAt: "2026-01-01T00:00:00.000Z",
     ...overrides,
   } as unknown as Project;
 }

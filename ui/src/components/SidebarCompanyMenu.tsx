@@ -6,7 +6,6 @@ import {
   GripVertical,
   LogOut,
   Plus,
-  Settings,
   UserPlus,
 } from "lucide-react";
 import {
@@ -38,6 +37,7 @@ import { useDialogActions } from "@/context/DialogContext";
 import { useCloudInstance } from "@/hooks/useCloudInstance";
 import { useCompanyOrder } from "@/hooks/useCompanyOrder";
 import { useSignOut } from "@/hooks/useSignOut";
+import { useTranslation } from "react-i18next";
 import { navigateTopLevel } from "@/lib/browserNavigation";
 import { cloudStackCreateUrl, cloudStackEnterUrl } from "@/lib/cloudLinks";
 import { queryKeys } from "@/lib/queryKeys";
@@ -137,6 +137,7 @@ function SortableCompanyItem({
   isSelected: boolean;
   onSelect: (company: Company) => void;
 }) {
+  const { t } = useTranslation();
   const {
     attributes,
     listeners,
@@ -175,7 +176,7 @@ function SortableCompanyItem({
         <button
           type="button"
           ref={setActivatorNodeRef}
-          aria-label={`Reorder ${company.name}`}
+          aria-label={t("Reorder {{name}}", { name: company.name })}
           className="inline-flex size-6 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-(length:--rad-2) focus-visible:ring-ring"
           onClick={(event) => {
             event.preventDefault();
@@ -197,6 +198,7 @@ function SortableCompanyItem({
 }
 
 export function SidebarCompanyMenu({ open: controlledOpen, onOpenChange }: SidebarCompanyMenuProps = {}) {
+  const { t } = useTranslation();
   const [internalOpen, setInternalOpen] = useState(false);
   const [isEditingOrder, setIsEditingOrder] = useState(false);
   const { companies, selectedCompany, setSelectedCompanyId } = useCompany();
@@ -309,7 +311,10 @@ export function SidebarCompanyMenu({ open: controlledOpen, onOpenChange }: Sideb
       if (createStackUrl) navigateTopLevel(createStackUrl);
       return;
     }
-    openOnboarding();
+    // Skip the front-door "how would you like to get started?" choice and land
+    // directly on "Name your organization" — this entry point is unambiguously
+    // "create a new company" (PAP-431).
+    openOnboarding({ initialStep: 1 });
   }
 
   const handleDragEnd = useCallback(
@@ -345,8 +350,8 @@ export function SidebarCompanyMenu({ open: controlledOpen, onOpenChange }: Sideb
           className="h-9 min-w-0 flex-1 justify-start gap-2 px-3 text-left"
           aria-label={
             currentName
-              ? `Open ${currentName} ${switcherNoun} switcher`
-              : `Open ${switcherNoun} switcher`
+              ? t(isCloud ? "sidebar.openOrganizationSwitcherFor" : "sidebar.openCompanySwitcherFor", { name: currentName })
+              : t(isCloud ? "sidebar.openOrganizationSwitcher" : "sidebar.openCompanySwitcher")
           }
         >
           <span className="flex min-w-0 flex-1 items-center gap-2">
@@ -364,7 +369,7 @@ export function SidebarCompanyMenu({ open: controlledOpen, onOpenChange }: Sideb
               )}
               title={currentName ?? undefined}
             >
-              {currentName ?? (isCloud ? "Select organization" : "Select company")}
+              {currentName ?? t(isCloud ? "sidebar.selectOrganization" : "sidebar.selectCompany")}
             </span>
           </span>
           {!rail && <ChevronsUpDown className="size-3.5 shrink-0 text-muted-foreground" />}
@@ -373,7 +378,7 @@ export function SidebarCompanyMenu({ open: controlledOpen, onOpenChange }: Sideb
       <DropdownMenuContent align="start" sideOffset={8} className="w-64 p-1">
         <div className="flex items-center justify-between gap-2 px-2 py-1.5">
           <DropdownMenuLabel className="p-0 text-(length:--text-micro) font-semibold uppercase text-muted-foreground">
-            {isCloud ? "Switch organization" : "Switch company"}
+            {t(isCloud ? "sidebar.switchOrganization" : "sidebar.switchCompany")}
           </DropdownMenuLabel>
           {/* Stack order is owned by cloud's own portfolio in v1, so the
               drag-to-reorder affordance stays self-hosted-only. */}
@@ -387,7 +392,7 @@ export function SidebarCompanyMenu({ open: controlledOpen, onOpenChange }: Sideb
               }}
               className="rounded px-1.5 py-0.5 text-(length:--text-micro) font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
             >
-              {isEditingOrder ? "Done" : "Edit"}
+              {t(isEditingOrder ? "sidebar.done" : "sidebar.edit")}
             </button>
           )}
         </div>
@@ -405,10 +410,10 @@ export function SidebarCompanyMenu({ open: controlledOpen, onOpenChange }: Sideb
               {stacks.length === 0 ? (
                 <DropdownMenuItem disabled>
                   {stacksQuery.isLoading
-                    ? "Loading organizations..."
+                    ? t("sidebar.loadingOrganizations")
                     : stacksQuery.isError
-                      ? "Could not load organizations"
-                      : "No organizations"}
+                      ? t("sidebar.couldNotLoadOrganizations")
+                      : t("sidebar.noOrganizations")}
                 </DropdownMenuItem>
               ) : null}
             </>
@@ -435,7 +440,7 @@ export function SidebarCompanyMenu({ open: controlledOpen, onOpenChange }: Sideb
                 </SortableContext>
               </DndContext>
               {orderedCompanies.length === 0 ? (
-                <DropdownMenuItem disabled>No companies</DropdownMenuItem>
+                <DropdownMenuItem disabled>{t("sidebar.noCompanies")}</DropdownMenuItem>
               ) : null}
             </>
           )}
@@ -451,7 +456,7 @@ export function SidebarCompanyMenu({ open: controlledOpen, onOpenChange }: Sideb
               disabled={isEditingOrder}
             >
               <Plus className="size-4" />
-              <span>{isCloud ? "Create new organization..." : "Create new company..."}</span>
+              <span>{t("sidebar.createNewOrganization")}</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
           </>
@@ -469,23 +474,8 @@ export function SidebarCompanyMenu({ open: controlledOpen, onOpenChange }: Sideb
           >
             <UserPlus className="size-4" />
             <span className="truncate">
-              {currentName ? `Invite people to ${currentName}` : "Invite people"}
+              {currentName ? t("sidebar.invitePeopleToCompany", { companyName: currentName }) : t("sidebar.invitePeople")}
             </span>
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild disabled={isEditingOrder}>
-          <Link
-            to="/company/settings"
-            onClick={(event) => {
-              if (isEditingOrder) {
-                event.preventDefault();
-                return;
-              }
-              closeNavigationChrome();
-            }}
-          >
-            <Settings className="size-4" />
-            <span>{isCloud ? "Organization settings" : "Company settings"}</span>
           </Link>
         </DropdownMenuItem>
         {session?.session ? (
@@ -497,7 +487,7 @@ export function SidebarCompanyMenu({ open: controlledOpen, onOpenChange }: Sideb
               disabled={isEditingOrder || signOutMutation.isPending}
             >
               <LogOut className="size-4" />
-              <span>{signOutMutation.isPending ? "Signing out..." : "Sign out"}</span>
+              <span>{t(signOutMutation.isPending ? "sidebar.signingOut" : "sidebar.signOut")}</span>
             </DropdownMenuItem>
           </>
         ) : null}

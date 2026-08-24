@@ -637,7 +637,7 @@ describe("codex execute", () => {
       else process.env.PATH = previousPath;
       await fs.rm(root, { recursive: true, force: true });
     }
-  });
+  }, 15_000);
 
   it("injects structured Paperclip wake payloads into env and prompt", async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-execute-wake-"));

@@ -135,7 +135,7 @@ async function openOnboarding(page: Page) {
 }
 
 test.describe("Docker authenticated onboarding smoke", () => {
-  test("logs in, completes onboarding, and triggers the first CEO run", async ({
+  test("logs in, completes onboarding, and hires the lead agent", async ({
     page,
   }) => {
     await installPortableAgentRoutes(page);
@@ -145,6 +145,7 @@ test.describe("Docker authenticated onboarding smoke", () => {
     await page.getByPlaceholder("Acme Corp").fill(COMPANY_NAME);
     await page.getByRole("button", { name: localized.next }).click();
 
+    // Step 2: define the mission directly; confirming creates the company.
     await expect(
       page.getByRole("heading", { name: localized.defineMission })
     ).toBeVisible({ timeout: 10_000 });
@@ -188,6 +189,26 @@ test.describe("Docker authenticated onboarding smoke", () => {
     expect(ceoAgent).toBeTruthy();
     expect(ceoAgent!.role).toBe("ceo");
     expect(ceoAgent!.adapterType).toBe("process");
+
+    const goalsRes = await page.request.get(
+      `${baseUrl}/api/companies/${company!.id}/goals`
+    );
+    expect(goalsRes.ok()).toBe(true);
+    const goals = (await goalsRes.json()) as Array<{
+      id: string;
+      title: string;
+      level: string;
+      status: string;
+    }>;
+    expect(goals).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          title: MISSION,
+          level: "company",
+          status: "active",
+        }),
+      ])
+    );
 
     const issuesRes = await page.request.get(
       `${baseUrl}/api/companies/${company!.id}/issues`

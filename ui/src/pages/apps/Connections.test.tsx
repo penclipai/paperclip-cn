@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 
 import { flushSync } from "react-dom";
+import i18n from "i18next";
 import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -372,6 +373,31 @@ describe("Connections table (M1b / PAP-13254 door 2)", () => {
         tone: "success",
       }),
     );
+  });
+
+  it("localizes connection deletion controls while preserving the app name", async () => {
+    await i18n.changeLanguage("zh-CN");
+    listApplicationsMock.mockResolvedValue({
+      applications: [application({ id: "app-github", name: "GitHub" })],
+    });
+    listConnectionsMock.mockResolvedValue({
+      connections: [connection({ id: "c-github", applicationId: "app-github", name: "GitHub" })],
+    });
+
+    await renderApps();
+
+    const deleteButton = container.querySelector<HTMLButtonElement>(
+      'button[aria-label="删除 GitHub 连接"]',
+    );
+    expect(deleteButton).toBeTruthy();
+
+    await act(async () => {
+      deleteButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    expect(document.body.textContent).toContain("删除 GitHub 连接？");
+    expect(document.body.textContent).toContain("智能体将立即失去访问权限");
+    expect(document.body.textContent).toContain("删除连接");
   });
 
   it("reports the remaining active connections after deleting one", async () => {

@@ -73,6 +73,36 @@ function writeJson(filePath, value) {
   renameSync(tempPath, filePath);
 }
 
+function withPnpm9DeployPatchAllowance(callback) {
+  const rootPackageJsonPath = path.resolve(repoRoot, "package.json");
+  const originalContents = readFileSync(rootPackageJsonPath, "utf8");
+  const rootPackageJson = JSON.parse(originalContents);
+
+  if (rootPackageJson.pnpm?.allowNonAppliedPatches === true) {
+    return callback();
+  }
+
+  rootPackageJson.pnpm ??= {};
+  rootPackageJson.pnpm.allowNonAppliedPatches = true;
+
+  let restored = false;
+  const restoreRootPackageJson = () => {
+    if (restored) return;
+    writeFileSync(rootPackageJsonPath, originalContents);
+    restored = true;
+  };
+
+  process.once("exit", restoreRootPackageJson);
+  writeJson(rootPackageJsonPath, rootPackageJson);
+
+  try {
+    return callback();
+  } finally {
+    process.off("exit", restoreRootPackageJson);
+    restoreRootPackageJson();
+  }
+}
+
 function isInsideStage(targetPath) {
   const realTarget = realpathSync(targetPath);
   const relative = path.relative(stageRootDir, realTarget);
@@ -399,18 +429,23 @@ console.log("[desktop-stage] Creating staged packaged runtime...");
 rmSync(stageRootDir, { recursive: true, force: true });
 mkdirSync(stageRootDir, { recursive: true });
 
-runPnpm(
-  [
-    "--config.node-linker=hoisted",
-    "--dir",
-    repoRoot,
-    "--filter",
-    "@penclipai/server",
-    "deploy",
-    "--prod",
-    serverDeployDir,
-  ],
-  { cwd: repoRoot },
+// pnpm 9's hoisted deploy copies bundled dependencies such as the patched
+// acpx package, but does not count them as applied patches. Scope the legacy
+// allowance to this deploy so normal workspace installs remain strict.
+withPnpm9DeployPatchAllowance(() =>
+  runPnpm(
+    [
+      "--config.node-linker=hoisted",
+      "--dir",
+      repoRoot,
+      "--filter",
+      "@penclipai/server",
+      "deploy",
+      "--prod",
+      serverDeployDir,
+    ],
+    { cwd: repoRoot },
+  ),
 );
 
 const hoistedSelfRefServerPath = path.resolve(

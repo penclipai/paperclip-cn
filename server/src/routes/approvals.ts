@@ -23,6 +23,7 @@ import { redactEventPayload } from "../redaction.js";
 import type { PluginWorkerManager } from "../services/plugin-worker-manager.js";
 import { issueService } from "../services/issues.js";
 import { REVIEW_PATH_RECOVERY_INSTRUCTION } from "../services/recovery/review-path-recovery.js";
+import { resolveExplicitRequestUiLocale } from "../ui-locale.js";
 
 function redactApprovalPayload<T extends { payload: Record<string, unknown> }>(approval: T): T {
   return {
@@ -82,6 +83,7 @@ export function approvalRoutes(
     lostIssueIds: Set<string>;
     alreadyWoken?: { agentId: string; issueId: string } | null;
     requestedByUserId: string;
+    requestedUiLocale: ReturnType<typeof resolveExplicitRequestUiLocale>;
   }) {
     for (const issue of input.linkedIssues) {
       if (!input.lostIssueIds.has(issue.id) || !issue.assigneeAgentId) continue;
@@ -113,6 +115,7 @@ export function approvalRoutes(
             taskId: issue.id,
             wakeReason,
             ...approvalReviewPathContext(input.approvalId),
+            ...(input.requestedUiLocale ? { requestedUiLocale: input.requestedUiLocale } : {}),
           },
         });
 
@@ -294,6 +297,7 @@ export function approvalRoutes(
     }
     const decidedByUserId = req.actor.userId ?? "board";
     const { approval, applied } = await svc.approve(id, decidedByUserId, req.body.decisionNote);
+    const requestedUiLocale = resolveExplicitRequestUiLocale(req);
 
     if (applied) {
       const linkedIssues = await issueApprovalsSvc.listIssuesForApproval(approval.id);
@@ -343,6 +347,7 @@ export function approvalRoutes(
               taskId: primaryIssueId,
               wakeReason: "approval_approved",
               ...(primaryReviewPathContext ?? {}),
+              ...(requestedUiLocale ? { requestedUiLocale } : {}),
             },
           });
           primaryReviewPathWakeCovered = Boolean(wakeRun && primaryReviewPathContext);
@@ -395,6 +400,7 @@ export function approvalRoutes(
           ? { agentId: approval.requestedByAgentId, issueId: primaryIssueId }
           : null,
         requestedByUserId: req.actor.userId ?? "board",
+        requestedUiLocale,
       });
     }
 
@@ -410,6 +416,7 @@ export function approvalRoutes(
     }
     const decidedByUserId = req.actor.userId ?? "board";
     const { approval, applied } = await svc.reject(id, decidedByUserId, req.body.decisionNote);
+    const requestedUiLocale = resolveExplicitRequestUiLocale(req);
 
     if (applied) {
       const linkedIssues = await issueApprovalsSvc.listIssuesForApproval(approval.id);
@@ -430,6 +437,7 @@ export function approvalRoutes(
         linkedIssues,
         lostIssueIds: lostReviewIssueIds,
         requestedByUserId: req.actor.userId ?? "board",
+        requestedUiLocale,
       });
     }
 

@@ -1,4 +1,6 @@
 import { useState, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
+import { translateInstant as tr } from "@/i18n";
 import { cn } from "@/lib/utils";
 import { Check, ChevronRight, X } from "lucide-react";
 import type { TaskChatTurnItem, TaskChatTurnChildItem } from "./task-chat-model";
@@ -26,7 +28,7 @@ interface TaskChatTurnProps {
 export function turnSummaryMetrics(summary: TaskChatTurnItem["summary"]): string {
   const parts: string[] = [];
   if (summary.durationLabel) parts.push(summary.durationLabel);
-  if (summary.toolCount > 0) parts.push(`${summary.toolCount} tool${summary.toolCount === 1 ? "" : "s"}`);
+  if (summary.toolCount > 0) parts.push(tr("taskChat.toolCount", { count: summary.toolCount }));
   if (summary.added > 0 || summary.removed > 0) parts.push(`+${summary.added} −${summary.removed}`);
   if (summary.tokensLabel) parts.push(summary.tokensLabel);
   return parts.join(" · ");
@@ -35,7 +37,7 @@ export function turnSummaryMetrics(summary: TaskChatTurnItem["summary"]): string
 /** "✓ Worked · 38s · 3 tools · +34 −3 · 12.3k tokens" (parts omitted when unknown). */
 export function turnSummaryText(summary: TaskChatTurnItem["summary"]): string {
   const metrics = turnSummaryMetrics(summary);
-  const label = summary.failed ? "Stopped" : "Worked";
+  const label = summary.failed ? tr("taskChat.stopped", { defaultValue: "Stopped" }) : tr("Worked");
   return metrics ? `${label} · ${metrics}` : label;
 }
 
@@ -58,6 +60,7 @@ export function turnSummaryText(summary: TaskChatTurnItem["summary"]): string {
  * and folds when it settles.
  */
 export function TaskChatTurn({ item, renderChild, timestampPrefix, leading }: TaskChatTurnProps) {
+  useTranslation();
   const parentRow = !item.settled && item.liveStatus != null;
   // Parent-row live turns and settled turns start as their one-line header;
   // only the headerless legacy live turn starts expanded.
@@ -95,9 +98,20 @@ export function TaskChatTurn({ item, renderChild, timestampPrefix, leading }: Ta
         </>
       ) : null}
       <SummaryIcon className="h-3.5 w-3.5 shrink-0" />
-      <span>{item.summary.failed ? "Stopped" : "Worked"}</span>
+      <span>{item.summary.failed ? tr("taskChat.stopped", { defaultValue: "Stopped" }) : tr("Worked")}</span>
       {turnSummaryMetrics(item.summary) ? (
-        <span className="font-mono text-(length:--text-micro)">{turnSummaryMetrics(item.summary)}</span>
+        // Time/tools/tokens is demoted, not deleted (PAP-502): it stays in the
+        // DOM (and the accessible tree) but fades in only on hover/focus so the
+        // settled line reads as "2:34 PM · ✓ Worked" at rest. Revealed too when
+        // the fold is open, so the metrics don't vanish while you read below.
+        <span
+          className={cn(
+            "font-mono text-(length:--text-micro) transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100",
+            open ? "opacity-100" : "opacity-0",
+          )}
+        >
+          {turnSummaryMetrics(item.summary)}
+        </span>
       ) : null}
       <ChevronRight className={cn("h-3 w-3 shrink-0 transition-transform", open ? "rotate-90" : null)} />
     </button>

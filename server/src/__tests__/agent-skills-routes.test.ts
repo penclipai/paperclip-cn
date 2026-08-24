@@ -115,6 +115,7 @@ vi.mock("../adapters/index.js", () => ({
   findServerAdapter: vi.fn(() => mockAdapter),
   findActiveServerAdapter: vi.fn(() => mockAdapter),
   listAdapterModels: vi.fn(),
+  listAdapterModelProfiles: vi.fn(async () => []),
   detectAdapterModel: vi.fn(),
 }));
 
@@ -158,6 +159,7 @@ function registerModuleMocks() {
     findServerAdapter: vi.fn(() => mockAdapter),
     findActiveServerAdapter: vi.fn(() => mockAdapter),
     listAdapterModels: vi.fn(),
+    listAdapterModelProfiles: vi.fn(async () => []),
     detectAdapterModel: vi.fn(),
   }));
 }
@@ -1080,7 +1082,7 @@ describe.sequential("agent skill routes", () => {
       }),
       expect.objectContaining({
         "AGENTS.md": expect.stringContaining("You are the CEO."),
-        "HEARTBEAT.md": expect.stringContaining("CEO Heartbeat Checklist"),
+        "HEARTBEAT.md": expect.stringContaining("CEO 心跳检查清单"),
         "SOUL.md": expect.stringContaining("CEO Persona"),
         "TOOLS.md": expect.stringContaining("# Tools"),
       }),

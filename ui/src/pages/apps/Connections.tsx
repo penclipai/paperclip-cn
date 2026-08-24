@@ -148,18 +148,31 @@ export function Connections() {
       queryClient.invalidateQueries({ queryKey: queryKeys.tools.applications(selectedCompanyId!) });
       queryClient.invalidateQueries({ queryKey: queryKeys.apps.attention(selectedCompanyId!) });
       pushToast({
-        title: "Connection deleted",
+        title: t("apps.connections.toast.deletedTitle", {
+          defaultValue: "Connection deleted",
+        }),
         body: target.remainingConnectionCount > 0
-          ? `${target.appName} still has ${target.remainingConnectionCount} active ${target.remainingConnectionCount === 1 ? "connection" : "connections"} available to agents.`
-          : `${target.appName} is no longer available to agents. You can connect it again later.`,
+          ? t("apps.connections.toast.deletedRemaining", {
+              defaultValue:
+                "{{appName}} still has {{count}} active connection available to agents.",
+              appName: target.appName,
+              count: target.remainingConnectionCount,
+            })
+          : t("apps.connections.toast.deletedUnavailable", {
+              defaultValue:
+                "{{appName}} is no longer available to agents. You can connect it again later.",
+              appName: target.appName,
+            }),
         tone: "success",
       });
       setConnectionToDelete(null);
     },
     onError: (error) =>
       pushToast({
-        title: "Couldn't delete the connection",
-        body: error instanceof Error ? error.message : "Please try again.",
+        title: t("apps.connections.toast.deleteFailedTitle", {
+          defaultValue: "Couldn't delete the connection",
+        }),
+        body: error instanceof Error ? error.message : t("common.tryAgain"),
         tone: "error",
       }),
   });
@@ -359,7 +372,9 @@ export function Connections() {
                   const hint =
                     status.tone === "attention"
                       ? primaryConnection?.authKind === "oauth"
-                        ? "Reconnect required — sign in again to restore access."
+                        ? t("apps.connections.hints.reconnectRequired", {
+                            defaultValue: "Reconnect required — sign in again to restore access.",
+                          })
                         : t("apps.connections.hints.reconnect", {
                             defaultValue: "The key stopped working — reconnect to fix.",
                           })
@@ -452,7 +467,10 @@ export function Connections() {
                               variant="ghost"
                               size="icon-sm"
                               className="text-muted-foreground hover:text-destructive"
-                              aria-label={`Delete ${application.name} connection`}
+                              aria-label={t("apps.connections.deleteAria", {
+                                defaultValue: "Delete {{appName}} connection",
+                                appName: application.name,
+                              })}
                               onClick={(event) => {
                                 event.stopPropagation();
                                 setConnectionToDelete({
@@ -498,16 +516,31 @@ export function Connections() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Delete {connectionToDelete?.appName ?? "this"} connection?
+              {t("apps.connections.deleteDialogTitle", {
+                defaultValue: "Delete {{appName}} connection?",
+                appName: connectionToDelete?.appName ?? t("apps.connections.thisApp", {
+                  defaultValue: "this app",
+                }),
+              })}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {connectionToDelete && connectionToDelete.remainingConnectionCount > 0
-                ? `This connection will be removed. Agents can still use ${connectionToDelete.appName} through ${connectionToDelete.remainingConnectionCount} other active ${connectionToDelete.remainingConnectionCount === 1 ? "connection" : "connections"}.`
-                : "Agents will lose access immediately. You can connect it again later."}
+                ? t("apps.connections.deleteDialogRemaining", {
+                    defaultValue:
+                      "This connection will be removed. Agents can still use {{appName}} through {{count}} other active connection.",
+                    appName: connectionToDelete.appName,
+                    count: connectionToDelete.remainingConnectionCount,
+                  })
+                : t("apps.connections.deleteDialogFinal", {
+                    defaultValue:
+                      "Agents will lose access immediately. You can connect it again later.",
+                  })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleteConnection.isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={deleteConnection.isPending}>
+              {t("common.cancel")}
+            </AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               disabled={!connectionToDelete || deleteConnection.isPending}
@@ -517,7 +550,9 @@ export function Connections() {
               }}
             >
               {deleteConnection.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-              {deleteConnection.isPending ? "Deleting..." : "Delete connection"}
+              {deleteConnection.isPending
+                ? t("apps.connections.deleting", { defaultValue: "Deleting..." })
+                : t("apps.connections.deleteAction", { defaultValue: "Delete connection" })}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

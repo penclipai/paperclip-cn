@@ -99,14 +99,34 @@ function buildMissionFromQuestionnaire(
 }
 
 const ONBOARDING_STORAGE_KEY = "paperclip-onboarding-state";
-const DEFAULT_TASK_TITLE = "Hire your first engineer and create a hiring plan";
-const DEFAULT_TASK_DESCRIPTION = `You are the CEO. You set the direction for the company.
+const DEFAULT_TASK_TITLE = "Paperclip onboarding";
+const DEFAULT_TASK_DESCRIPTION = `You are the Paperclip agent. This is your first task. Your job here is to
+understand what the user wants and turn it into a concrete plan — not to
+start building yet.
 
-- hire a founding engineer
-- write a hiring plan
-- break the roadmap into concrete tasks and start delegating work`;
-const INCOMPLETE_ONBOARDING_STATE_MESSAGE =
-  "Onboarding state is incomplete. Please restart onboarding and try again.";
+A greeting has already been posted to the user on your behalf, so don't
+re-introduce yourself — go straight to the questions.
+
+This is a user-facing chat. Everything you post here is read by the user, so
+keep your messages terse and written for them. Only surface things meant for
+the user: the questions, the plan, the team, next-step options, and short
+status ("Got your answers — here's the plan."). Never narrate how you work.
+Don't post your internal steps or thinking into the chat — no "let me probe
+the schema", "schema learned", "building the questions payload", "orienting
+myself with the API", or similar play-by-play of your API/tool calls. Do that
+work silently and post only the result.
+
+Work in this order:
+
+1. Ask a few focused, clarifying questions. Use an ask_user_questions interaction to settle on one concrete goal to tackle first— scope, priorities, constraints, and what "done" looks like. Don't guess; ask.
+
+2. Propose one plan. Once you understand the goal, write a short approach plan to the \`plan\` document. At the bottom, list the agents you'd hire (with their roles) and any follow-up tasks you'd create. Then present the whole thing as a SINGLE request_checkbox_confirmation that targets the \`plan\` document, with each proposed hire and follow-up task as its own checkable option, checked by default. Give each option a stable id you can act on later. Do NOT use suggest_tasks or a separate request_confirmation — one checkbox card is the plan and its approval. In the card's message keep the summary to a line or two and point the user to the full write-up in the plan on the right sidebar (it opens to the Plan there automatically) — don't paste the whole plan into the card, and never say the write-up is "above" or "in the plan doc above"; it lives in the right sidebar.
+
+3. Wait for approval. Don't hire anyone or create work until the user approves the plan. They can uncheck anything they don't want before approving, and unchecking simply drops it. If they ask for changes, revise the plan document and re-confirm.
+
+4. On approval, execute only what they kept. Create exactly the checked options — hire the checked agents and create + delegate the checked follow-up tasks, each in its own task. Skip anything the user unchecked.
+
+Propose, don't decide. Keep it conversational.`;
 
 function loadSavedState(): Record<string, unknown> | null {
   try {
@@ -434,7 +454,7 @@ export function OnboardingWizard() {
 
   async function handleLaunchToDashboard() {
     if (!createdCompanyId || !createdAgentId) {
-      setError(INCOMPLETE_ONBOARDING_STATE_MESSAGE);
+      setError(t("onboarding.incompleteState"));
       return;
     }
     setLoading(true);
@@ -466,7 +486,8 @@ export function OnboardingWizard() {
         setCreatedProjectId(projectId);
       }
 
-      if (!createdIssueRef) {
+      let issueRef = createdIssueRef;
+      if (!issueRef) {
         const issue = await issuesApi.create(
           createdCompanyId,
           buildOnboardingIssuePayload({
@@ -477,19 +498,26 @@ export function OnboardingWizard() {
             goalId
           })
         );
-        setCreatedIssueRef(issue.identifier ?? issue.id);
+        issueRef = issue.identifier ?? issue.id;
+        setCreatedIssueRef(issueRef);
         queryClient.invalidateQueries({
           queryKey: queryKeys.issues.list(createdCompanyId)
         });
       }
 
       const prefix = createdCompanyPrefix;
-      setSelectedCompanyId(createdCompanyId);
+      // Select the new company as a route sync, not a manual switch: the
+      // explicit navigate below is the intended destination, so page-memory's
+      // "restore last page" (which falls back to /dashboard) must not fire and
+      // clobber the first-task URL. See PAP-404.
+      setSelectedCompanyId(createdCompanyId, { source: "route_sync" });
       reset();
       closeOnboarding();
-      navigate(prefix ? `/${prefix}/dashboard` : "/dashboard");
+      // Drop the user straight into the first task's detail page (not the
+      // dashboard) so they land on the conversation the agent will start in.
+      navigate(prefix ? `/${prefix}/issues/${issueRef}` : `/issues/${issueRef}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to launch first task");
+      setError(err instanceof Error ? err.message : t("onboarding.launchFirstTaskFailed"));
     } finally {
       setLoading(false);
     }
@@ -535,9 +563,7 @@ export function OnboardingWizard() {
     adapterConfigOverride?: Record<string, unknown>
   ): Promise<AdapterEnvironmentTestResult | null> {
     if (!createdCompanyId) {
-      setAdapterEnvError(
-        "Create or select a company before testing adapter environment."
-      );
+      setAdapterEnvError(t("onboarding.selectCompanyBeforeTestingAdapterEnvironment"));
       return null;
     }
     setAdapterEnvLoading(true);
@@ -554,7 +580,7 @@ export function OnboardingWizard() {
       return result;
     } catch (err) {
       setAdapterEnvError(
-        err instanceof Error ? err.message : "Adapter environment test failed"
+        err instanceof Error ? err.message : t("onboarding.adapterEnvironmentTestFailed")
       );
       return null;
     } finally {
@@ -595,7 +621,7 @@ export function OnboardingWizard() {
 
       setStep(3); // → Create your team lead
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create company");
+      setError(err instanceof Error ? err.message : t("onboarding.createCompanyFailed"));
     } finally {
       setLoading(false);
     }
@@ -616,22 +642,20 @@ export function OnboardingWizard() {
       if (adapterType === "opencode_local") {
         const selectedModelId = model.trim();
         if (!isValidOpenCodeModelId(selectedModelId)) {
-          setError(
-            "OpenCode requires an explicit model in provider/model format."
-          );
+          setError(t("onboarding.openCodeExplicitModelRequired"));
           return;
         }
         if (adapterModelsError) {
           setError(
             adapterModelsError instanceof Error
               ? adapterModelsError.message
-              : "Failed to load OpenCode models."
+              : t("onboarding.openCodeModelsLoadFailed")
           );
           return;
         }
         if (adapterModelsLoading || adapterModelsFetching) {
           setError(
-            "OpenCode models are still loading. Please wait and try again."
+            t("onboarding.openCodeModelsLoading")
           );
           return;
         }
@@ -639,8 +663,8 @@ export function OnboardingWizard() {
         if (!discoveredModels.some((entry) => entry.id === selectedModelId)) {
           setError(
             discoveredModels.length === 0
-              ? "No OpenCode models discovered. Run `opencode models` and authenticate providers."
-              : `Configured OpenCode model is unavailable: ${selectedModelId}`
+              ? t("onboarding.noOpenCodeModelsDiscovered", { command: "opencode models" })
+              : t("onboarding.openCodeModelUnavailable", { model: selectedModelId })
           );
           return;
         }
@@ -661,7 +685,7 @@ export function OnboardingWizard() {
       if (hire.approval) {
         await approvalsApi.approve(
           hire.approval.id,
-          "Approved during onboarding first-agent setup."
+          t("onboarding.firstAgentSetupApproved"),
         );
         queryClient.invalidateQueries({
           queryKey: queryKeys.approvals.list(createdCompanyId)
@@ -702,7 +726,7 @@ export function OnboardingWizard() {
       // strategy + hiring from the planning chat after "Get started".
       setStep(5);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create agent");
+      setError(err instanceof Error ? err.message : t("onboarding.createAgentFailed"));
     } finally {
       setLoading(false);
     }
@@ -742,15 +766,13 @@ export function OnboardingWizard() {
 
       const result = await runAdapterEnvironmentTest(configWithUnset);
       if (result?.status === "fail") {
-        setError(
-          "Retried with ANTHROPIC_API_KEY unset in adapter config, but the environment test is still failing."
-        );
+        setError(t("onboarding.anthropicApiKeyUnsetRetryFailed"));
       }
     } catch (err) {
       setError(
         err instanceof Error
           ? err.message
-          : "Failed to unset ANTHROPIC_API_KEY and retry."
+          : t("onboarding.unsetAnthropicApiKeyRetryFailed")
       );
     } finally {
       setUnsetAnthropicLoading(false);
@@ -772,7 +794,7 @@ export function OnboardingWizard() {
   if (!effectiveOnboardingOpen) return null;
 
   const launchStateIncomplete = step === 5 && (!createdCompanyId || !createdAgentId);
-  const visibleError = error ?? (launchStateIncomplete ? INCOMPLETE_ONBOARDING_STATE_MESSAGE : null);
+  const visibleError = error ?? (launchStateIncomplete ? t("onboarding.incompleteState") : null);
 
   return (
     <Dialog
@@ -830,7 +852,7 @@ export function OnboardingWizard() {
                     <button
                       key={s}
                       type="button"
-                      aria-label={`Step ${s}`}
+                      aria-label={t("onboarding.stepAria", { step: s })}
                       aria-current={s === step ? "step" : undefined}
                       disabled={!canJump}
                       onClick={() => canJump && setStep(s as Step)}
@@ -849,7 +871,7 @@ export function OnboardingWizard() {
                   morph reads as one capsule coming to life — dashed slot →
                   solid (configured) → liquid fill + blue glow (online). */}
               {step >= 3 && step <= 5 && (
-                <div className="space-y-4 mb-6">
+                <div className="mb-6 space-y-4">
                   <div className="flex items-center gap-3 mb-1">
                     <div className="bg-muted/50 p-2">
                       {step === 5 ? (
@@ -884,7 +906,12 @@ export function OnboardingWizard() {
                     </div>
                   </div>
 
-                  <div className="flex flex-col items-center gap-1.5 py-1 text-center">
+                  <div
+                    className={cn(
+                      "flex flex-col items-center py-1 text-center",
+                      step === 5 ? "mt-8 gap-2.5" : "gap-1.5"
+                    )}
+                  >
                     <AgentCapsule
                       state={step === 3 ? "slot" : step === 4 ? "configured" : "online"}
                       gradient={5}
@@ -1071,7 +1098,7 @@ export function OnboardingWizard() {
                   </div>
 
                   {/* Mission path selector */}
-                  <div className="space-y-3">
+                  <div className="space-y-3 pt-3">
                     <label className="text-xs text-foreground block">
                       {t("onboarding.howDefineMission", { defaultValue: "How would you like to define your mission?" })}
                     </label>
@@ -1243,7 +1270,6 @@ export function OnboardingWizard() {
                       {t("onboarding.changeMissionLater", { defaultValue: "You can always change your mission later in settings." })}
                     </p>
                   )}
-
                   <button
                     className="text-(length:--text-micro) text-muted-foreground hover:text-foreground transition-colors"
                     onClick={() => setStep(1)}
@@ -1653,7 +1679,6 @@ export function OnboardingWizard() {
                       </div>
                     ))}
                   </div>
-
                   {companyGoal.trim() && (
                     <p className="text-sm text-muted-foreground italic text-center">
                       "{companyGoal}"

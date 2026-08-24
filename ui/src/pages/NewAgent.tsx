@@ -24,6 +24,8 @@ import { roleLabels } from "../components/agent-config-primitives";
 import {
   AgentConfigForm,
   AdapterEnvironmentResult,
+  AdapterLoginPanel,
+  type AdapterLoginDescriptor,
   type CreateConfigValues,
 } from "../components/AgentConfigForm";
 import { defaultCreateValues } from "../components/agent-config-defaults";
@@ -82,9 +84,11 @@ export function NewAgent() {
   const [testAgentFeedback, setTestAgentFeedback] = useState<{
     errorMessage: string | null;
     result: AdapterEnvironmentTestResult | null;
+    login: AdapterLoginDescriptor | null;
   }>({
     errorMessage: null,
     result: null,
+    login: null,
   });
 
   const { data: agents } = useQuery({
@@ -205,6 +209,7 @@ export function NewAgent() {
   const handleTestAgentFeedbackChange = useCallback((feedback: {
     errorMessage: string | null;
     result: AdapterEnvironmentTestResult | null;
+    login: AdapterLoginDescriptor | null;
   }) => {
     setTestAgentFeedback(feedback);
   }, []);
@@ -360,6 +365,14 @@ export function NewAgent() {
             )}
             {testAgentFeedback.result && (
               <AdapterEnvironmentResult result={testAgentFeedback.result} />
+            )}
+            {testAgentFeedback.login && (
+              <AdapterLoginPanel
+                key={`${testAgentFeedback.login.adapterType}:${testAgentFeedback.login.environmentId}`}
+                companyId={testAgentFeedback.login.companyId}
+                adapterType={testAgentFeedback.login.adapterType}
+                environmentId={testAgentFeedback.login.environmentId}
+              />
             )}
             <div className="flex items-center justify-between gap-2">
               <Button variant="outline" size="sm" onClick={() => navigate("/agents")}>

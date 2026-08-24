@@ -6,6 +6,7 @@ import { I18nextProvider } from "react-i18next";
 import { BrowserRouter } from "@/lib/router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { App } from "./App";
+import { AppErrorBoundary } from "./components/AppErrorBoundary";
 import { CompanyProvider, useCompany } from "./context/CompanyContext";
 import { LiveUpdatesProvider } from "./context/LiveUpdatesProvider";
 import { BreadcrumbProvider } from "./context/BreadcrumbContext";
@@ -101,7 +102,9 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <I18nextProvider i18n={i18n}>
       <Suspense fallback={<AppBootstrapFallback />}>
-        <AppProviders />
+        <AppErrorBoundary>
+          <AppProviders />
+        </AppErrorBoundary>
       </Suspense>
     </I18nextProvider>
   </StrictMode>

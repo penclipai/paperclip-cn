@@ -15,7 +15,9 @@ import {
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 const translations: Record<string, string> = {
-  "No issues match the current filters or search.": "没有任务匹配当前筛选或搜索条件。",
+  "issuesList.noIssuesMatch": "没有匹配当前筛选或搜索的任务。",
+  "issuesList.searchAria": "Search tasks",
+  "issuesList.searchPlaceholder": "Search tasks...",
   "Showing up to {{count}} matches. Refine the search to narrow further.": "最多显示 {{count}} 条匹配结果。请进一步收窄搜索范围。",
   "Desktop issue rows": "桌面端任务行",
   "issuesList.columns": "列",
@@ -39,7 +41,7 @@ const translations: Record<string, string> = {
   "issuesList.defaultColumnsSummary": "状态、编号、更新时间",
   "Create {{label}}": "创建{{label}}",
   "New {{label}}": "新建{{label}}",
-  "Sub-issue": "子任务",
+  "Task": "任务",
 };
 
 vi.mock("react-i18next", async (importOriginal) => {
@@ -595,7 +597,7 @@ describe("IssuesList", () => {
         projects={[]}
         viewStateKey="paperclip:test-issues"
         baseCreateIssueDefaults={{ parentId: "parent-1", projectId: "project-1" }}
-        createIssueLabel="Sub-issue"
+        createIssueLabel="子任务"
         onUpdateIssue={() => undefined}
       />,
       container,
@@ -840,8 +842,8 @@ describe("IssuesList", () => {
     await waitForAssertion(() => {
       const labels = Array.from(document.body.querySelectorAll("button")).map((b) => b.textContent ?? "");
       // Status sort option renders, but the Priority option is gated off (PAP-411).
-      expect(labels.some((text) => text.includes("Status"))).toBe(true);
-      expect(labels.some((text) => text.includes("Priority"))).toBe(false);
+      expect(labels.some((text) => text.includes("状态"))).toBe(true);
+      expect(labels.some((text) => text.includes("优先级"))).toBe(false);
     });
 
     const groupButton = Array.from(container.querySelectorAll("button")).find(
@@ -853,8 +855,8 @@ describe("IssuesList", () => {
     });
     await waitForAssertion(() => {
       const labels = Array.from(document.body.querySelectorAll("button")).map((b) => b.textContent ?? "");
-      expect(labels.some((text) => text.includes("Status"))).toBe(true);
-      expect(labels.some((text) => text.includes("Priority"))).toBe(false);
+      expect(labels.some((text) => text.includes("状态"))).toBe(true);
+      expect(labels.some((text) => text.includes("优先级"))).toBe(false);
     });
 
     act(() => {
@@ -1148,7 +1150,7 @@ describe("IssuesList", () => {
       container,
     );
 
-    const input = container.querySelector('input[aria-label="Search issues"]') as HTMLInputElement | null;
+    const input = container.querySelector('input[aria-label="Search tasks"]') as HTMLInputElement | null;
     expect(input).not.toBeNull();
     const valueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
     expect(valueSetter).toBeTypeOf("function");
@@ -1234,7 +1236,7 @@ describe("IssuesList", () => {
     );
 
     await waitForAssertion(() => {
-      expect(container.textContent).toContain("没有任务匹配当前筛选或搜索条件。");
+      expect(container.textContent).toContain("没有匹配当前筛选或搜索的任务。");
     });
 
     act(() => {
@@ -1445,7 +1447,7 @@ describe("IssuesList", () => {
     );
 
     await waitForAssertion(() => {
-      expect(container.textContent).toContain("Some board columns are showing up to 200 issues. Refine filters or search to reveal the rest.");
+      expect(container.textContent).toContain("Some board columns are showing up to 200 tasks. Refine filters or search to reveal the rest.");
     });
 
     act(() => {
@@ -1475,7 +1477,7 @@ describe("IssuesList", () => {
 
     await waitForAssertion(() => {
       expect(container.querySelectorAll('[data-testid="issue-row"]')).toHaveLength(100);
-      expect(container.textContent).toContain("Rendering 100 of 220 issues");
+      expect(container.textContent).toContain("Rendering 100 of 220 tasks");
     });
 
     act(() => {
@@ -1517,7 +1519,7 @@ describe("IssuesList", () => {
 
     await waitForAssertion(() => {
       expect(container.querySelectorAll('[data-testid="issue-row"]')).toHaveLength(250);
-      expect(container.textContent).toContain("Rendering 250 of 420 issues");
+      expect(container.textContent).toContain("Rendering 250 of 420 tasks");
     });
 
     act(() => {
@@ -2009,13 +2011,13 @@ describe("IssuesList", () => {
     );
 
     await waitForAssertion(() => {
-      const input = container.querySelector('input[aria-label="Search issues"]') as HTMLInputElement | null;
+      const input = container.querySelector('input[aria-label="Search tasks"]') as HTMLInputElement | null;
       expect(input).not.toBeNull();
       input?.focus();
       expect(document.activeElement).toBe(input);
     });
 
-    const input = container.querySelector('input[aria-label="Search issues"]') as HTMLInputElement;
+    const input = container.querySelector('input[aria-label="Search tasks"]') as HTMLInputElement;
     act(() => {
       input.dispatchEvent(new KeyboardEvent("keydown", {
         key: "Enter",
@@ -2045,13 +2047,13 @@ describe("IssuesList", () => {
     );
 
     await waitForAssertion(() => {
-      const input = container.querySelector('input[aria-label="Search issues"]') as HTMLInputElement | null;
+      const input = container.querySelector('input[aria-label="Search tasks"]') as HTMLInputElement | null;
       expect(input).not.toBeNull();
       input?.focus();
       expect(document.activeElement).toBe(input);
     });
 
-    const input = container.querySelector('input[aria-label="Search issues"]') as HTMLInputElement;
+    const input = container.querySelector('input[aria-label="Search tasks"]') as HTMLInputElement;
     act(() => {
       input.dispatchEvent(new KeyboardEvent("keydown", {
         key: "Escape",

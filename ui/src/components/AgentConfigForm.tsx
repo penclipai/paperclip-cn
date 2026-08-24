@@ -1,7 +1,10 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
   Agent,
+  AdapterAuthSessionPrompt,
+  AdapterAuthSessionStatus,
   AdapterEnvironmentTestResult,
   CompanySecret,
   EnvBinding,
@@ -19,14 +22,16 @@ import { DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX } from "@penclipai/ada
 import { DEFAULT_CURSOR_LOCAL_MODEL } from "@penclipai/adapter-cursor-local";
 import { DEFAULT_GEMINI_LOCAL_MODEL } from "@penclipai/adapter-gemini-local";
 import { DEFAULT_OPENCODE_LOCAL_MODEL } from "@penclipai/adapter-opencode-local";
+import { ADAPTER_AUTH_MISSING_CHECK_CODE } from "@penclipai/adapter-codex-local/ui";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { FolderOpen, Heart, ChevronDown, X } from "lucide-react";
+import { FolderOpen, Heart, ChevronDown, X, Copy, Check, ExternalLink, Loader2, TriangleAlert } from "lucide-react";
 import { asBoolean, asFiniteNumber, asObject, cn } from "../lib/utils";
+import { copyTextToClipboard } from "../lib/clipboard";
 import { resolveAdapterTestEnvironmentId } from "../lib/adapter-test-environment";
 import { extractModelName, extractProviderId } from "../lib/model-utils";
 import { queryKeys } from "../lib/queryKeys";
@@ -84,6 +89,12 @@ type AgentConfigFormProps = {
   onTestFeedbackChange?: (feedback: {
     errorMessage: string | null;
     result: AdapterEnvironmentTestResult | null;
+    // The login panel descriptor when the current target is a sandbox with no
+    // ready authentication, otherwise null. A parent that lifts the test
+    // feedback must render `AdapterLoginPanel` from this descriptor. The inline
+    // feedback branch renders the panel itself, so this descriptor is the only
+    // way the panel reaches a parent that hides the inline branch.
+    login: AdapterLoginDescriptor | null;
   }) => void;
   hideInlineSave?: boolean;
   showAdapterTypeField?: boolean;
@@ -203,6 +214,7 @@ function clampDelayMsFromSeconds(value: number) {
 /* ---- Form ---- */
 
 export function AgentConfigForm(props: AgentConfigFormProps) {
+  const { t } = useTranslation();
   const { mode, adapterModels: externalModels } = props;
   const isCreate = mode === "create";
   const cards = props.sectionLayout === "cards";
@@ -295,7 +307,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
   );
   const createSecret = useMutation({
     mutationFn: (input: { name: string; value: string }) => {
-      if (!selectedCompanyId) throw new Error("Select a company to create secrets");
+      if (!selectedCompanyId) throw new Error(t("agentConfig.selectCompanyToCreateSecrets"));
       return secretsApi.create(selectedCompanyId, input);
     },
     onSuccess: () => {
@@ -306,7 +318,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
 
   const uploadMarkdownImage = useMutation({
     mutationFn: async ({ file, namespace }: { file: File; namespace: string }) => {
-      if (!selectedCompanyId) throw new Error("Select a company to upload images");
+      if (!selectedCompanyId) throw new Error(t("agentConfig.selectCompanyToUploadImages"));
       return assetsApi.uploadImage(selectedCompanyId, file, namespace);
     },
   });
@@ -455,6 +467,23 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
     [environments, instanceDefaultEnvironmentId],
   );
 
+  // The environment a login session runs in. It mirrors the Test resolution: the
+  // agent's own environment wins, otherwise the instance default. The login
+  // affordance shows only when this environment is a sandbox, because the
+  // canonical auth-missing check comes only from a sandbox target.
+  const effectiveLoginEnvironmentId = useMemo(
+    () =>
+      resolveAdapterTestEnvironmentId({
+        agentDefaultEnvironmentId: rawCurrentDefaultEnvironmentId || null,
+        instanceDefaultEnvironmentId: instanceSettings?.defaultEnvironmentId ?? null,
+      }),
+    [rawCurrentDefaultEnvironmentId, instanceSettings?.defaultEnvironmentId],
+  );
+  const effectiveLoginEnvironment = useMemo(
+    () => environments.find((environment) => environment.id === effectiveLoginEnvironmentId) ?? null,
+    [environments, effectiveLoginEnvironmentId],
+  );
+
   // When the instance forces Kubernetes execution, new agents must default to the
   // managed Kubernetes sandbox environment (never the implicit local default).
   // Only applies in create mode and only once the K8s environment is loaded; if
@@ -490,9 +519,12 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
     currentDefaultEnvironmentId.length > 0 ||
     runnableEnvironments.length >= 1
   );
+  const managedSandboxOnly = experimentalSettings?.enableManagedSandboxOnly === true;
   const inheritedEnvironmentLabel = instanceDefaultEnvironment
     ? `${instanceDefaultEnvironment.name} (${instanceDefaultEnvironment.driver})`
-    : "Local";
+    : managedSandboxOnly
+      ? t("agentConfig.kubernetesSandbox")
+      : t("Local");
 
   // Fetch adapter models for the effective adapter type
   const modelQueryKey = selectedCompanyId
@@ -521,7 +553,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
       : ["agents", "none", "detect-model", adapterType],
     queryFn: () => {
       if (!selectedCompanyId) {
-        throw new Error("Select a company to detect the model");
+        throw new Error(t("agentConfig.selectCompanyToDetectModel"));
       }
       return agentsApi.detectModel(selectedCompanyId, adapterType);
     },
@@ -677,7 +709,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
   const testEnvironment = useMutation({
     mutationFn: async () => {
       if (!selectedCompanyId) {
-        throw new Error("Select a company to test adapter environment");
+        throw new Error(t("agentConfig.selectCompanyToTestEnvironment"));
       }
       const flushedEnv = flushEnvironmentDraft();
       const adapterConfigPatch = flushedEnv ? { env: flushedEnv } : undefined;
@@ -716,10 +748,10 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
       });
       const testResults: Array<{ label: string; model: string | null; result: AdapterEnvironmentTestResult }> = [
         {
-          label: "Primary model",
+          label: t("agentConfig.model"),
           model: primaryModel,
           result: await runEnvironmentTestCase(
-            "Primary model",
+            t("agentConfig.model"),
             primaryModel,
             buildAdapterConfigForTest(adapterConfigPatch),
             environmentId,
@@ -729,10 +761,10 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
 
       if (cheapTestCase) {
         testResults.push({
-          label: "Cheap model",
+          label: t("agentConfig.cheapModel"),
           model: cheapTestCase.model,
           result: await runEnvironmentTestCase(
-            "Cheap model",
+            t("agentConfig.cheapModel"),
             cheapTestCase.model,
             cheapTestCase.adapterConfig,
             environmentId,
@@ -747,12 +779,38 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
   });
   const [testActionPending, setTestActionPending] = useState(false);
   const [testActionError, setTestActionError] = useState<string | null>(null);
-  const testActionLabel = "Test";
+  const testActionLabel = t("agentConfig.testEnvironment");
   const isSavePending = !isCreate && Boolean(props.isSaving);
   const testEnvironmentDisabled = testActionPending || isSavePending || !selectedCompanyId;
+
+  // Drop a stale Test result when the adapter type or the effective environment
+  // changes. A held result would keep the login affordance visible for a target
+  // the user no longer selected. The reset unmounts the login panel too, so its
+  // session state clears with it. Hold `reset` in a ref so the effect does not
+  // re-run on every render (the mutation object has a new identity each render).
+  const resetTestEnvironmentRef = useRef(testEnvironment.reset);
+  resetTestEnvironmentRef.current = testEnvironment.reset;
+  useEffect(() => {
+    resetTestEnvironmentRef.current();
+    setTestActionError(null);
+  }, [adapterType, effectiveLoginEnvironmentId]);
+
+  // Show the login affordance only for a current `codex_local` sandbox whose most
+  // recent Test result carries the canonical auth-missing check. The result keeps
+  // its own `adapterType`, so a result from another adapter never gates the panel.
+  const authMissingCheck =
+    testEnvironment.data?.adapterType === "codex_local"
+      ? testEnvironment.data.checks.find((check) => check.code === ADAPTER_AUTH_MISSING_CHECK_CODE) ?? null
+      : null;
+  const showAdapterLogin =
+    adapterType === "codex_local" &&
+    effectiveLoginEnvironment?.driver === "sandbox" &&
+    Boolean(effectiveLoginEnvironmentId) &&
+    Boolean(selectedCompanyId) &&
+    Boolean(authMissingCheck);
   const runEnvironmentTest = useCallback(async () => {
     if (!selectedCompanyId) {
-      throw new Error("Select a company to test adapter environment");
+      throw new Error(t("agentConfig.selectCompanyToTestEnvironment"));
     }
     setTestActionPending(true);
     setTestActionError(null);
@@ -760,12 +818,12 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
     try {
       return await testEnvironment.mutateAsync();
     } catch (error) {
-      setTestActionError(error instanceof Error ? error.message : "Environment test failed");
+      setTestActionError(error instanceof Error ? error.message : t("agentConfig.environmentTestFailed"));
       throw error;
     } finally {
       setTestActionPending(false);
     }
-  }, [selectedCompanyId, testEnvironment]);
+  }, [selectedCompanyId, t, testEnvironment]);
   // `runEnvironmentTest` (and `testEnvironmentDisabled`) change identity on every
   // render because `useMutation` returns a fresh result object each time. Hold the
   // latest behavior in a ref so the trigger handed to the parent stays referentially
@@ -813,14 +871,29 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
         ?? (testEnvironment.error instanceof Error
           ? testEnvironment.error.message
           : testEnvironment.error
-            ? "Environment test failed"
+            ? t("agentConfig.environmentTestFailed")
             : null),
       result: testEnvironment.data ?? null,
+      // `showAdapterLogin` already requires a selected company and a non-empty
+      // environment id, so both are present here.
+      login:
+        showAdapterLogin && selectedCompanyId && effectiveLoginEnvironmentId
+          ? { companyId: selectedCompanyId, adapterType, environmentId: effectiveLoginEnvironmentId }
+          : null,
     });
     return () => {
-      props.onTestFeedbackChange?.({ errorMessage: null, result: null });
+      props.onTestFeedbackChange?.({ errorMessage: null, result: null, login: null });
     };
-  }, [props.onTestFeedbackChange, testActionError, testEnvironment.data, testEnvironment.error]);
+  }, [
+    props.onTestFeedbackChange,
+    testActionError,
+    testEnvironment.data,
+    testEnvironment.error,
+    showAdapterLogin,
+    selectedCompanyId,
+    adapterType,
+    effectiveLoginEnvironmentId,
+  ]);
 
   // Current model for display
   const currentModelValue = isCreate
@@ -986,13 +1059,13 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
       {isDirty && !props.hideInlineSave && (
         <div className="sticky top-0 z-10 flex items-center justify-end px-4 py-2 bg-background/90 backdrop-blur-sm border-b border-primary/20">
           <div className="flex items-center gap-3">
-            <span className="text-xs text-muted-foreground">Unsaved changes</span>
+            <span className="text-xs text-muted-foreground">{t("agentConfig.unsavedChanges")}</span>
             <Button
               size="sm"
               onClick={handleSave}
               disabled={!isCreate && props.isSaving}
             >
-              {!isCreate && props.isSaving ? "Saving..." : "Save"}
+              {!isCreate && props.isSaving ? t("common.saving") : t("common.save")}
             </Button>
           </div>
         </div>
@@ -1002,42 +1075,42 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
       {!isCreate && (
         <div className={cn(!cards && "border-b border-border")}>
           {cards
-            ? <h3 className="text-sm font-medium mb-3">Identity</h3>
-            : <div className="px-4 py-2 text-xs font-medium text-muted-foreground">Identity</div>
+            ? <h3 className="text-sm font-medium mb-3">{t("agentConfig.identity")}</h3>
+            : <div className="px-4 py-2 text-xs font-medium text-muted-foreground">{t("agentConfig.identity")}</div>
           }
           <div className={cn(cards ? "border border-border rounded-lg p-4 space-y-3" : "px-4 pb-3 space-y-3")}>
-            <Field label="Name" hint={help.name}>
+            <Field label={t("agentConfig.name")} hint={help.name}>
               <DraftInput
                 value={eff("identity", "name", props.agent.name)}
                 onCommit={(v) => mark("identity", "name", v)}
                 immediate
                 className={inputClass}
-                placeholder="Agent name"
+                placeholder={t("agentConfig.agentName")}
               />
             </Field>
-            <Field label="Title" hint={help.title}>
+            <Field label={t("agentConfig.title")} hint={help.title}>
               <DraftInput
                 value={eff("identity", "title", props.agent.title ?? "")}
                 onCommit={(v) => mark("identity", "title", v || null)}
                 immediate
                 className={inputClass}
-                placeholder="e.g. VP of Engineering"
+                placeholder={t("agentConfig.titlePlaceholder")}
               />
             </Field>
-            <Field label="Reports to" hint={help.reportsTo}>
+            <Field label={t("agentConfig.reportsTo")} hint={help.reportsTo}>
               <ReportsToPicker
                 agents={companyAgents}
                 value={eff("identity", "reportsTo", props.agent.reportsTo ?? null)}
                 onChange={(id) => mark("identity", "reportsTo", id)}
                 excludeAgentIds={[props.agent.id]}
-                chooseLabel="Choose manager…"
+                chooseLabel={t("agentConfig.chooseManager")}
               />
             </Field>
-            <Field label="Capabilities" hint={help.capabilities}>
+            <Field label={t("agentConfig.capabilities")} hint={help.capabilities}>
               <MarkdownEditor
                 value={eff("identity", "capabilities", props.agent.capabilities ?? "") ?? ""}
                 onChange={(v) => mark("identity", "capabilities", v || null)}
-                placeholder="Describe what this agent can do..."
+                placeholder={t("agentConfig.capabilitiesPlaceholder")}
                 contentClassName="min-h-(--sz-44px) text-sm font-mono"
                 imageUploadHandler={async (file) => {
                   const asset = await uploadMarkdownImage.mutateAsync({
@@ -1050,7 +1123,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
             </Field>
             {isLocal && !props.hidePromptTemplate && (
               <>
-                <Field label="Prompt Template" hint={help.promptTemplate}>
+                <Field label={t("agentConfig.promptTemplate")} hint={help.promptTemplate}>
                   <MarkdownEditor
                     value={eff(
                       "adapterConfig",
@@ -1058,7 +1131,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                       String(config.promptTemplate ?? ""),
                     )}
                     onChange={(v) => mark("adapterConfig", "promptTemplate", v ?? "")}
-                    placeholder="You are agent {{ agent.name }}. Your role is {{ agent.role }}..."
+                    placeholder={t("agentConfig.promptTemplatePlaceholder")}
                     contentClassName="min-h-(--sz-88px) text-sm font-mono"
                     imageUploadHandler={async (file) => {
                       const namespace = `agents/${props.agent.id}/prompt-template`;
@@ -1068,7 +1141,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                   />
                 </Field>
                 <div className="rounded-md border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-xs text-amber-900 dark:text-amber-100">
-                  Prompt template is replayed on every heartbeat. Keep it compact and dynamic to avoid recurring token cost and cache churn.
+                  {t("agentConfig.promptTemplateWarning")}
                 </div>
               </>
             )}
@@ -1083,23 +1156,21 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
         // Render the environment read-only instead of the selectable picker.
         <div className={cn(!cards && (isCreate ? "border-t border-border" : "border-b border-border"))}>
           {cards
-            ? <h3 className="text-sm font-medium mb-3">Environment</h3>
-            : <div className="px-4 py-2 text-xs font-medium text-muted-foreground">Environment</div>
+            ? <h3 className="text-sm font-medium mb-3">{t("agentConfig.environment")}</h3>
+            : <div className="px-4 py-2 text-xs font-medium text-muted-foreground">{t("agentConfig.environment")}</div>
           }
           <div className={cn(cards ? "border border-border rounded-lg p-4 space-y-3" : "px-4 pb-3 space-y-3")}>
             <Field
-              label="Default environment"
-              hint="This instance runs all agents in the Kubernetes sandbox. Local execution is disabled."
+              label={t("agentConfig.defaultEnvironment")}
+              hint={t("agentConfig.forcedKubernetesEnvironmentHint")}
             >
               {kubernetesEnvironment ? (
                 <div className={cn(inputClass, "flex items-center text-muted-foreground")}>
-                  {kubernetesEnvironment.name} · Kubernetes sandbox
+                  {kubernetesEnvironment.name} · {t("agentConfig.kubernetesSandbox")}
                 </div>
               ) : (
                 <div className="rounded-md border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-xs text-amber-800 dark:text-amber-200">
-                  This instance requires the Kubernetes sandbox, but no managed Kubernetes
-                  environment is available for this company yet. Configure one before creating
-                  agents; execution will not fall back to local.
+                  {t("agentConfig.missingForcedKubernetesEnvironment")}
                 </div>
               )}
             </Field>
@@ -1108,11 +1179,11 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
       ) : showEnvironmentOverrideControl ? (
         <div className={cn(!cards && (isCreate ? "border-t border-border" : "border-b border-border"))}>
           {cards
-            ? <h3 className="text-sm font-medium mb-3">Environment</h3>
-            : <div className="px-4 py-2 text-xs font-medium text-muted-foreground">Environment</div>
+            ? <h3 className="text-sm font-medium mb-3">{t("agentConfig.environment")}</h3>
+            : <div className="px-4 py-2 text-xs font-medium text-muted-foreground">{t("agentConfig.environment")}</div>
           }
           <div className={cn(cards ? "border border-border rounded-lg p-4 space-y-3" : "px-4 pb-3 space-y-3")}>
-            <Field label="Environment override">
+            <Field label={t("agentConfig.environmentOverride")}>
               <div className="space-y-2">
                 <select
                   className={inputClass}
@@ -1126,7 +1197,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                     mark("identity", "defaultEnvironmentId", nextValue || null);
                   }}
                 >
-                  <option value="">Default: {inheritedEnvironmentLabel}</option>
+                  <option value="">{t("agentConfig.inheritInstanceDefault", { name: inheritedEnvironmentLabel })}</option>
                   {environmentOptions.map((environment) => (
                     <option key={environment.id} value={environment.id}>
                       {environment.name} · {environment.driver}
@@ -1143,8 +1214,8 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
       <div className={cn(!cards && (isCreate ? "border-t border-border" : "border-b border-border"))}>
         <div className={cn(cards ? "flex items-center justify-between mb-3" : "px-4 py-2 flex items-center justify-between gap-2")}>
           {cards
-            ? <h3 className="text-sm font-medium">Adapter</h3>
-            : <span className="text-xs font-medium text-muted-foreground">Adapter</span>
+            ? <h3 className="text-sm font-medium">{t("agentConfig.adapter")}</h3>
+            : <span className="text-xs font-medium text-muted-foreground">{t("agentConfig.adapter")}</span>
           }
           {showInlineAdapterTestEnvironmentButton && (
             <Button
@@ -1161,7 +1232,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
         </div>
         <div className={cn(cards ? "border border-border rounded-lg p-4 space-y-3" : "px-4 pb-3 space-y-3")}>
           {showAdapterTypeField && (
-            <Field label="Adapter type" hint={help.adapterType}>
+            <Field label={t("agentConfig.adapterType")} hint={help.adapterType}>
               <AdapterTypeDropdown
                 value={adapterType}
                 disabledTypes={disabledTypes}
@@ -1220,7 +1291,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
               {testActionError
                 ?? (testEnvironment.error instanceof Error
                   ? testEnvironment.error.message
-                  : "Environment test failed")}
+                  : t("agentConfig.environmentTestFailed"))}
             </div>
           )}
 
@@ -1228,9 +1299,18 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
             <AdapterEnvironmentResult result={testEnvironment.data} />
           )}
 
+          {showInlineAdapterTestEnvironmentFeedback && showAdapterLogin && (
+            <AdapterLoginPanel
+              key={`${adapterType}:${effectiveLoginEnvironmentId}`}
+              companyId={selectedCompanyId!}
+              adapterType={adapterType}
+              environmentId={effectiveLoginEnvironmentId!}
+            />
+          )}
+
           {/* Working directory */}
           {showLegacyWorkingDirectoryField && (
-            <Field label="Working directory (deprecated)" hint={help.cwd}>
+            <Field label={t("agentConfig.workingDirectoryDeprecated")} hint={help.cwd}>
               <div className="flex items-center gap-2 rounded-md border border-border px-2.5 py-1.5">
                 <FolderOpen className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                 <DraftInput
@@ -1264,11 +1344,11 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
       {isLocal && (
         <div className={cn(!cards && "border-b border-border")}>
           {cards
-            ? <h3 className="text-sm font-medium mb-3">Permissions &amp; Configuration</h3>
-            : <div className="px-4 py-2 text-xs font-medium text-muted-foreground">Permissions &amp; Configuration</div>
+            ? <h3 className="text-sm font-medium mb-3">{t("agentConfig.permissionsAndConfiguration")}</h3>
+            : <div className="px-4 py-2 text-xs font-medium text-muted-foreground">{t("agentConfig.permissionsAndConfiguration")}</div>
           }
           <div className={cn(cards ? "border border-border rounded-lg p-4 space-y-3" : "px-4 pb-3 space-y-3")}>
-              <Field label="Command" hint={help.localCommand}>
+              <Field label={t("agentConfig.command")} hint={help.localCommand}>
                 <DraftInput
                   value={
                     isCreate
@@ -1302,7 +1382,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
               </Field>
 
               {supportsModelProfiles && (
-                <div className="text-(length:--text-micro) uppercase tracking-wide text-muted-foreground">Primary model</div>
+                <div className="text-(length:--text-micro) uppercase tracking-wide text-muted-foreground">{t("agentConfig.model")}</div>
               )}
               <ModelDropdown
                 models={models}
@@ -1332,22 +1412,22 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                     : undefined
                 }
                 refreshingModels={refreshingModels}
-                detectModelLabel="Detect model"
-                emptyDetectHint="No model detected. Select or enter one manually."
+                detectModelLabel={t("agentConfig.detectModel")}
+                emptyDetectHint={t("agentConfig.noDetectedModelSelectManually")}
               />
               {(refreshModelsError || fetchedModelsError) && (
                 <p className="text-xs text-destructive">
                   {refreshModelsError
                     ?? (fetchedModelsError instanceof Error
                       ? fetchedModelsError.message
-                      : "Failed to load adapter models.")}
+                      : t("agentConfig.failedToLoadAdapterModels"))}
                 </p>
               )}
               {adapterType === "opencode_local"
                 && currentDefaultEnvironment
                 && currentDefaultEnvironment.driver !== "local" && (
                 <p className="text-xs text-muted-foreground">
-                  Live OpenCode model discovery only runs for Local environments. Using the curated list and manual entry for {currentDefaultEnvironment.name}.
+                  {t("agentConfig.liveOpenCodeDiscoveryLocalOnly", { environmentName: currentDefaultEnvironment.name })}
                 </p>
               )}
 
@@ -1382,14 +1462,14 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                     codexSearchEnabled &&
                     currentThinkingEffort === "minimal" && (
                       <p className="text-xs text-amber-400">
-                        Codex may reject `minimal` thinking when search is enabled.
+                        {t("agentConfig.codexMinimalSearchWarning")}
                       </p>
                     )}
                 </>
               )}
               {!isCreate && typeof config.bootstrapPromptTemplate === "string" && config.bootstrapPromptTemplate && (
                 <>
-                  <Field label="Bootstrap prompt (legacy)" hint={help.bootstrapPrompt}>
+                  <Field label={t("agentConfig.bootstrapPromptLegacy")} hint={help.bootstrapPrompt}>
                     <MarkdownEditor
                       value={eff(
                         "adapterConfig",
@@ -1399,7 +1479,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                       onChange={(v) =>
                         mark("adapterConfig", "bootstrapPromptTemplate", v || undefined)
                       }
-                      placeholder="Optional initial setup prompt for the first run"
+                      placeholder={t("agentConfig.bootstrapPromptPlaceholder")}
                       contentClassName="min-h-(--sz-44px) text-sm font-mono"
                       imageUploadHandler={async (file) => {
                         const namespace = `agents/${props.agent.id}/bootstrap-prompt`;
@@ -1409,7 +1489,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                     />
                   </Field>
                   <div className="rounded-md border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-xs text-amber-800 dark:text-amber-200">
-                    Bootstrap prompt is legacy and will be removed in a future release. Consider moving this content into the agent&apos;s prompt template or instructions file instead.
+                    {t("agentConfig.bootstrapPromptLegacyWarning")}
                   </div>
                 </>
               )}
@@ -1418,7 +1498,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
               )}
               <uiAdapter.ConfigFields {...adapterFieldProps} />
 
-              <Field label="Extra args (comma-separated)" hint={help.extraArgs}>
+              <Field label={t("agentConfig.extraArgs")} hint={help.extraArgs}>
                 <DraftInput
                   value={
                     isCreate
@@ -1435,7 +1515,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                 />
               </Field>
 
-              <Field label="Environment variables" hint={help.envVars}>
+              <Field label={t("agentConfig.environmentVariables")} hint={help.envVars}>
                 <EnvironmentVariablesEditor
                   ref={environmentVariablesEditorRef}
                   value={
@@ -1459,7 +1539,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
               </Field>
 
               {!isCreate && (
-                <Field label="Secret access" hint={help.secretAccess}>
+                <Field label={t("agentConfig.secretAccess")} hint={help.secretAccess}>
                   <AgentSecretAccessEditor
                     config={{ ...config, ...overlay.adapterConfig }}
                     secrets={availableSecrets}
@@ -1475,7 +1555,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
               {/* Edit-only: timeout + grace period */}
               {!isCreate && (
                 <>
-                  <Field label="Timeout (sec)" hint={help.timeoutSec}>
+                  <Field label={t("agentConfig.timeoutSec")} hint={help.timeoutSec}>
                     <DraftNumberInput
                       value={eff(
                         "adapterConfig",
@@ -1487,7 +1567,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                       className={inputClass}
                     />
                   </Field>
-                  <Field label="Interrupt grace period (sec)" hint={help.graceSec}>
+                  <Field label={t("agentConfig.graceSec")} hint={help.graceSec}>
                     <DraftNumberInput
                       value={eff(
                         "adapterConfig",
@@ -1509,19 +1589,19 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
       {isCreate && showCreateRunPolicySection ? (
         <div className={cn(!cards && "border-b border-border")}>
           {cards
-            ? <h3 className="text-sm font-medium flex items-center gap-2 mb-3"><Heart className="h-3 w-3" /> Run Policy</h3>
-            : <div className="px-4 py-2 text-xs font-medium text-muted-foreground flex items-center gap-2"><Heart className="h-3 w-3" /> Run Policy</div>
+            ? <h3 className="text-sm font-medium flex items-center gap-2 mb-3"><Heart className="h-3 w-3" /> {t("agentConfig.runPolicy")}</h3>
+            : <div className="px-4 py-2 text-xs font-medium text-muted-foreground flex items-center gap-2"><Heart className="h-3 w-3" /> {t("agentConfig.runPolicy")}</div>
           }
           <div className={cn(cards ? "border border-border rounded-lg p-4 space-y-3" : "px-4 pb-3 space-y-3")}>
             <ToggleWithNumber
-              label="Heartbeat on interval"
+              label={t("agentConfig.heartbeatOnInterval")}
               hint={help.heartbeatInterval}
               checked={val!.heartbeatEnabled}
               onCheckedChange={(v) => set!({ heartbeatEnabled: v })}
               number={val!.intervalSec}
               onNumberChange={(v) => set!({ intervalSec: v })}
-              numberLabel="sec"
-              numberPrefix="Run heartbeat every"
+              numberLabel={t("agentConfig.seconds")}
+              numberPrefix={t("agentConfig.runHeartbeatEvery")}
               numberHint={help.intervalSec}
               showNumber={val!.heartbeatEnabled}
             />
@@ -1530,33 +1610,33 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
       ) : !isCreate ? (
         <div className={cn(!cards && "border-b border-border")}>
           {cards
-            ? <h3 className="text-sm font-medium flex items-center gap-2 mb-3"><Heart className="h-3 w-3" /> Run Policy</h3>
-            : <div className="px-4 py-2 text-xs font-medium text-muted-foreground flex items-center gap-2"><Heart className="h-3 w-3" /> Run Policy</div>
+            ? <h3 className="text-sm font-medium flex items-center gap-2 mb-3"><Heart className="h-3 w-3" /> {t("agentConfig.runPolicy")}</h3>
+            : <div className="px-4 py-2 text-xs font-medium text-muted-foreground flex items-center gap-2"><Heart className="h-3 w-3" /> {t("agentConfig.runPolicy")}</div>
           }
           <div className={cn(cards ? "border border-border rounded-lg overflow-hidden" : "")}>
             <div className={cn(cards ? "p-4 space-y-3" : "px-4 pb-3 space-y-3")}>
               <ToggleWithNumber
-                label="Heartbeat on interval"
+                label={t("agentConfig.heartbeatOnInterval")}
                 hint={help.heartbeatInterval}
                 checked={eff("heartbeat", "enabled", heartbeat.enabled === true)}
                 onCheckedChange={(v) => mark("heartbeat", "enabled", v)}
                 number={eff("heartbeat", "intervalSec", Number(heartbeat.intervalSec ?? 300))}
                 onNumberChange={(v) => mark("heartbeat", "intervalSec", v)}
-                numberLabel="sec"
-                numberPrefix="Run heartbeat every"
+                numberLabel={t("agentConfig.seconds")}
+                numberPrefix={t("agentConfig.runHeartbeatEvery")}
                 numberHint={help.intervalSec}
                 showNumber={eff("heartbeat", "enabled", heartbeat.enabled === true)}
               />
             </div>
             <CollapsibleSection
-              title="Advanced Run Policy"
+              title={t("agentConfig.advancedRunPolicy")}
               bordered={cards}
               open={runPolicyAdvancedOpen}
               onToggle={() => setRunPolicyAdvancedOpen(!runPolicyAdvancedOpen)}
             >
             <div className="space-y-3">
               <ToggleField
-                label="Wake on demand"
+                label={t("agentConfig.wakeOnDemand")}
                 hint={help.wakeOnDemand}
                 checked={eff(
                   "heartbeat",
@@ -1565,7 +1645,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                 )}
                 onChange={(v) => mark("heartbeat", "wakeOnDemand", v)}
               />
-              <Field label="Cooldown (sec)" hint={help.cooldownSec}>
+              <Field label={t("agentConfig.cooldownSec")} hint={help.cooldownSec}>
                 <DraftNumberInput
                   value={eff(
                     "heartbeat",
@@ -1577,7 +1657,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                   className={inputClass}
                 />
               </Field>
-              <Field label="Max concurrent runs" hint={help.maxConcurrentRuns}>
+              <Field label={t("agentConfig.maxConcurrentRuns")} hint={help.maxConcurrentRuns}>
                 <DraftNumberInput
                   value={eff(
                     "heartbeat",
@@ -1591,14 +1671,14 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
               </Field>
               <div className="rounded-md border border-border/70 px-3 py-2">
                 <ToggleField
-                  label="Continue after max-turn stop"
+                  label={t("agentConfig.continueAfterMaxTurnStop")}
                   hint={help.maxTurnContinuationEnabled}
                   checked={maxTurnContinuationEnabled}
                   onChange={(v) => updateMaxTurnContinuation({ enabled: v })}
                 />
                 {maxTurnContinuationEnabled ? (
                   <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                    <Field label="Continuation attempts" hint={help.maxTurnContinuationMaxAttempts}>
+                    <Field label={t("agentConfig.continuationAttempts")} hint={help.maxTurnContinuationMaxAttempts}>
                       <DraftNumberInput
                         value={maxTurnContinuationMaxAttempts}
                         onCommit={(v) =>
@@ -1609,7 +1689,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                         className={inputClass}
                       />
                     </Field>
-                    <Field label="Continuation delay (sec)" hint={help.maxTurnContinuationDelaySec}>
+                    <Field label={t("agentConfig.continuationDelaySec")} hint={help.maxTurnContinuationDelaySec}>
                       <DraftNumberInput
                         value={maxTurnContinuationDelaySec}
                         onCommit={(v) =>
@@ -1633,9 +1713,270 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
   );
 }
 
+// The public session states that end a login. The panel stops the status poll
+// and shows a terminal message when the session reaches one of these.
+const ADAPTER_LOGIN_TERMINAL_STATUSES = new Set<AdapterAuthSessionStatus>([
+  "authenticated",
+  "failed",
+  "timed_out",
+  "cancelled",
+]);
+
+// The status route poll interval while a session is active (Decision A). The
+// poll stops at a terminal state.
+const ADAPTER_LOGIN_POLL_INTERVAL_MS = 2000;
+
+// A copy-to-clipboard button. It mirrors the workspace service control bar: a
+// short "copied" flash, then it returns to the copy icon.
+function AdapterLoginCopyButton({ value, label }: { value: string; label: string }) {
+  const [copied, setCopied] = useState(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    },
+    [],
+  );
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      size="icon-xs"
+      aria-label={label}
+      title={label}
+      className="text-muted-foreground hover:text-foreground"
+      onClick={async () => {
+        try {
+          await copyTextToClipboard(value);
+          setCopied(true);
+        } catch {
+          setCopied(false);
+        }
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        timeoutRef.current = setTimeout(() => setCopied(false), 1500);
+      }}
+    >
+      {copied ? <Check className="size-3" /> : <Copy className="size-3" />}
+    </Button>
+  );
+}
+
+// The terminal message for a finished login. It never shows a secret. It shows
+// only the fixed, non-secret failure message the server returns.
+function AdapterLoginTerminalState({
+  status,
+  message,
+}: {
+  status: AdapterAuthSessionStatus;
+  message: string | null;
+}) {
+  const { t } = useTranslation();
+  if (status === "authenticated") {
+    return (
+      <div className="flex items-center gap-2 text-(length:--text-micro) text-foreground">
+        <Check className="size-3 shrink-0" />
+        <span>{t("agentConfig.loginAuthenticated")}</span>
+      </div>
+    );
+  }
+  const label =
+    status === "timed_out"
+      ? t("agentConfig.loginTimedOut")
+      : status === "cancelled"
+        ? t("agentConfig.loginCancelled")
+        : t("agentConfig.loginFailed");
+  return (
+    <div className="flex items-start gap-2 text-(length:--text-micro) text-destructive">
+      <TriangleAlert className="size-3 shrink-0" />
+      <span>
+        {label}
+        {message ? `: ${message}` : "."}
+      </span>
+    </div>
+  );
+}
+
+// The login panel for one adapter in one sandbox environment. It starts a login
+// session, polls the status route, and shows the one-time code and the
+// authentication URL with copy and open actions. It shows the terminal states.
+// It never writes the code, the URL, or any credential byte to a log line.
+//
+// The panel holds its own session state. The parent gives it a stable `key` from
+// the adapter type and the environment id, so a change to either remounts the
+// panel with a fresh session state.
+// The props that identify one login panel: one adapter in one sandbox
+// environment for one company. A parent that lifts the test feedback renders
+// the panel from this descriptor.
+export type AdapterLoginDescriptor = {
+  companyId: string;
+  adapterType: string;
+  environmentId: string;
+};
+
+export function AdapterLoginPanel({
+  companyId,
+  adapterType,
+  environmentId,
+}: AdapterLoginDescriptor) {
+  const { t } = useTranslation();
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [startError, setStartError] = useState<string | null>(null);
+  // The server delivers the one-time prompt on the first owner read only. Latch
+  // it so a later poll that returns a null prompt does not hide the code and the
+  // URL.
+  const [latchedPrompt, setLatchedPrompt] = useState<AdapterAuthSessionPrompt | null>(null);
+
+  const startLogin = useMutation({
+    mutationFn: () => agentsApi.startAdapterAuthLogin(companyId, adapterType, { environmentId }),
+    onSuccess: (session) => {
+      setStartError(null);
+      setLatchedPrompt(null);
+      setSessionId(session.sessionId);
+    },
+    onError: (error) => {
+      setStartError(error instanceof Error ? error.message : t("agentConfig.couldNotStartLogin"));
+    },
+  });
+
+  const cancelLogin = useMutation({
+    mutationFn: () => agentsApi.cancelAdapterAuthLogin(companyId, adapterType, sessionId!),
+    onSuccess: () => {
+      // Reset local state, so the panel returns to its idle start state and the
+      // Log in button is available again.
+      setSessionId(null);
+      setLatchedPrompt(null);
+      setStartError(null);
+    },
+    onError: (error) => {
+      setStartError(error instanceof Error ? error.message : t("agentConfig.couldNotCancelLogin"));
+    },
+  });
+
+  const statusQuery = useQuery({
+    queryKey: ["adapter-login-status", companyId, adapterType, sessionId],
+    queryFn: () => agentsApi.getAdapterAuthLoginStatus(companyId, adapterType, sessionId!),
+    enabled: Boolean(sessionId),
+    refetchInterval: (query) => {
+      const status = query.state.data?.status;
+      return status && ADAPTER_LOGIN_TERMINAL_STATUSES.has(status)
+        ? false
+        : ADAPTER_LOGIN_POLL_INTERVAL_MS;
+    },
+  });
+
+  // Latch the first non-null prompt for the current session. A later poll
+  // returns a null prompt after the one-time delivery, so keep the latched value.
+  useEffect(() => {
+    const next = statusQuery.data?.prompt ?? null;
+    if (next) setLatchedPrompt(next);
+  }, [statusQuery.data]);
+
+  const session = statusQuery.data ?? startLogin.data ?? null;
+  const status = session?.status ?? null;
+  const prompt = latchedPrompt;
+  const isTerminal = status ? ADAPTER_LOGIN_TERMINAL_STATUSES.has(status) : false;
+  const isActive = Boolean(sessionId) && !isTerminal;
+  const startDisabled = startLogin.isPending || isActive;
+
+  return (
+    <div className="rounded-md border border-border bg-muted/40 px-3 py-2 space-y-2">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-xs font-medium text-foreground">{t("agentConfig.signInToSandbox")}</span>
+        <div className="flex items-center gap-1.5">
+          {isActive && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2.5 text-xs text-muted-foreground hover:text-foreground"
+              disabled={cancelLogin.isPending}
+              onClick={() => cancelLogin.mutate()}
+            >
+              {t("agentConfig.cancel")}
+            </Button>
+          )}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-7 px-2.5 text-xs"
+            disabled={startDisabled}
+            onClick={() => startLogin.mutate()}
+          >
+            {t("agentConfig.logIn")}
+          </Button>
+        </div>
+      </div>
+
+      {startError && (
+        <div role="alert" className="text-(length:--text-micro) text-destructive">
+          {startError}
+        </div>
+      )}
+
+      {/* One live region announces the loading, prompt, and terminal states, so a
+          screen reader reports each transition without a re-navigation. */}
+      <div role="status" aria-live="polite" className="space-y-2 empty:hidden">
+        {isActive && !prompt && (
+          <div className="flex items-center gap-2 text-(length:--text-micro) text-muted-foreground">
+            <Loader2 className="size-3 animate-spin shrink-0" />
+            <span>{t("agentConfig.preparingLogin")}</span>
+          </div>
+        )}
+
+        {isActive && prompt && (
+          <div className="space-y-2">
+            <div className="text-(length:--text-micro) text-muted-foreground">
+              {t("agentConfig.openAuthenticationPage")}
+            </div>
+          <div className="flex items-center justify-between gap-2">
+            <div className="min-w-0">
+              <div className="text-(length:--text-micro) uppercase tracking-wide text-muted-foreground">
+                {t("agentConfig.code")}
+              </div>
+              <span className="font-mono text-xs text-foreground break-all">{prompt.code}</span>
+            </div>
+            <AdapterLoginCopyButton value={prompt.code} label={t("agentConfig.copyCode")} />
+          </div>
+          <div className="flex items-center justify-between gap-2">
+            <div className="min-w-0">
+              <div className="text-(length:--text-micro) uppercase tracking-wide text-muted-foreground">
+                {t("agentConfig.authenticationUrl")}
+              </div>
+              <span className="font-mono text-xs text-foreground break-all">{prompt.url}</span>
+            </div>
+            <div className="flex items-center">
+              <AdapterLoginCopyButton value={prompt.url} label={t("agentConfig.copyUrl")} />
+              <Button
+                asChild
+                type="button"
+                variant="ghost"
+                size="icon-xs"
+                aria-label={t("agentConfig.openAuthenticationPage")}
+                title={t("agentConfig.openAuthenticationPage")}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <a href={prompt.url} target="_blank" rel="noreferrer noopener">
+                  <ExternalLink className="size-3" />
+                </a>
+              </Button>
+            </div>
+          </div>
+        </div>
+        )}
+
+        {isTerminal && status && (
+          <AdapterLoginTerminalState status={status} message={session?.failure?.message ?? null} />
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function AdapterEnvironmentResult({ result }: { result: AdapterEnvironmentTestResult }) {
+  const { t } = useTranslation();
   const statusLabel =
-    result.status === "pass" ? "Passed" : result.status === "warn" ? "Warnings" : "Failed";
+    result.status === "pass" ? t("agentConfig.passed") : result.status === "warn" ? t("agentConfig.warnings") : t("agentConfig.failed");
   const statusClass =
     result.status === "pass"
       ? "text-green-700 dark:text-green-300 border-green-300 dark:border-green-500/40 bg-green-50 dark:bg-green-500/10"
@@ -1660,7 +2001,7 @@ export function AdapterEnvironmentResult({ result }: { result: AdapterEnvironmen
             <span className="mx-1 opacity-60">·</span>
             <span>{check.message}</span>
             {check.detail && <span className="block opacity-75 break-all">({check.detail})</span>}
-            {check.hint && <span className="block opacity-90 break-words">Hint: {check.hint}</span>}
+            {check.hint && <span className="block opacity-90 break-words">{t("agentConfig.hint")}: {check.hint}</span>}
           </div>
         ))}
       </div>
@@ -1679,6 +2020,7 @@ export function AdapterTypeDropdown({
   onChange: (type: string) => void;
   disabledTypes: Set<string>;
 }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const selectedDisplay = getAdapterDisplay(value);
   const adapterList = useMemo(
@@ -1726,7 +2068,7 @@ export function AdapterTypeDropdown({
               {item.experimental && <ExperimentalBadge />}
             </span>
             {item.comingSoon && (
-              <span className="text-(length:--text-nano) text-muted-foreground">Coming soon</span>
+              <span className="text-(length:--text-nano) text-muted-foreground">{t("agentConfig.comingSoon")}</span>
             )}
           </button>
         ))}
@@ -1736,9 +2078,10 @@ export function AdapterTypeDropdown({
 }
 
 function ExperimentalBadge() {
+  const { t } = useTranslation();
   return (
     <span className="shrink-0 rounded border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 text-(length:--text-nano) font-medium leading-none text-amber-700 dark:text-amber-200">
-      Experimental
+      {t("Experimental")}
     </span>
   );
 }
@@ -1780,6 +2123,7 @@ export function ModelDropdown({
   emptyDetectHint?: string;
   defaultLabel?: string;
 }) {
+  const { t } = useTranslation();
   const [modelSearch, setModelSearch] = useState("");
   const [detectingModel, setDetectingModel] = useState(false);
   const selected = models.find((m) => m.id === value);
@@ -1852,7 +2196,7 @@ export function ModelDropdown({
   }
 
   return (
-    <Field label="Model" hint={help.model}>
+    <Field label={t("agentConfig.model")} hint={help.model}>
       <Popover
         open={open}
         onOpenChange={(nextOpen) => {
@@ -1866,7 +2210,7 @@ export function ModelDropdown({
               {selected
                 ? selected.label
                 : value
-                  || (allowDefault ? (defaultLabel ?? "Default") : required ? "Select model (required)" : "Select model")}
+                  || (allowDefault ? (defaultLabel ?? t("agentConfig.default")) : required ? t("agentConfig.selectModelRequired") : t("agentConfig.selectModel"))}
             </span>
             <ChevronDown className="h-3 w-3 text-muted-foreground" />
           </button>
@@ -1875,7 +2219,7 @@ export function ModelDropdown({
           <div className="relative mb-1">
             <input
               className="w-full px-2 py-1.5 pr-6 text-xs bg-transparent outline-none border-b border-border placeholder:text-muted-foreground/50"
-              placeholder={creatable ? "Search models... (type to create)" : "Search models..."}
+              placeholder={creatable ? t("agentConfig.searchModelsCreateHint") : t("agentConfig.searchModels")}
               value={modelSearch}
               onChange={(e) => setModelSearch(e.target.value)}
               autoFocus
@@ -1906,7 +2250,11 @@ export function ModelDropdown({
                 <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
                 <path d="M3 3v5h5" />
               </svg>
-              {detectingModel ? "Detecting..." : detectedModel ? (detectModelLabel?.replace(/^Detect\b/, "Re-detect") ?? "Re-detect from config") : (detectModelLabel ?? "Detect from config")}
+              {detectingModel
+                ? t("agentConfig.detectingModel")
+                : detectedModel
+                  ? t("agentConfig.redetectFromConfig")
+                  : (detectModelLabel ?? t("agentConfig.detectFromConfig"))}
             </button>
           )}
           {onRefreshModels && !modelSearch.trim() && (
@@ -1924,7 +2272,7 @@ export function ModelDropdown({
                 <path d="M21 12a9 9 0 0 1-15.28 6.36L3 16" />
                 <path d="M8 16H3v5" />
               </svg>
-              {refreshingModels ? "Refreshing..." : "Refresh models"}
+              {refreshingModels ? t("agentConfig.refreshingModels") : t("agentConfig.refreshModels")}
             </button>
           )}
           {value && (!models.some((m) => m.id === value) || promotedModelIds.has(value)) && (
@@ -1941,7 +2289,7 @@ export function ModelDropdown({
                 {models.find((m) => m.id === value)?.label ?? value}
               </span>
               <Badge variant="outline" className="ml-auto text-(length:--text-nano) px-1.5 bg-green-500/15 text-green-400 border-green-500/20">
-                current
+                {t("agentConfig.currentBadge")}
               </Badge>
             </button>
           )}
@@ -1960,7 +2308,7 @@ export function ModelDropdown({
                 {models.find((m) => m.id === detectedModel)?.label ?? detectedModel}
               </span>
               <Badge variant="outline" className="ml-auto text-(length:--text-nano) px-1.5 bg-blue-500/15 text-blue-400 border-blue-500/20">
-                detected
+                {t("agentConfig.detectedBadge")}
               </Badge>
             </button>
           )}
@@ -1984,7 +2332,7 @@ export function ModelDropdown({
                     {entry?.label ?? candidate}
                   </span>
                   <Badge variant="outline" className="ml-auto text-(length:--text-nano) px-1.5 bg-sky-500/15 text-sky-400 border-sky-500/20">
-                    config
+                {t("agentConfig.configBadge")}
                   </Badge>
                 </button>
               );
@@ -2002,7 +2350,7 @@ export function ModelDropdown({
                   onOpenChange(false);
                 }}
               >
-                Default
+                {t("agentConfig.default")}
               </button>
             )}
             {canCreateManualModel && (
@@ -2015,7 +2363,7 @@ export function ModelDropdown({
                   setModelSearch("");
                 }}
               >
-                <span>Use manual model</span>
+                <span>{t("agentConfig.useManualModel")}</span>
                 <span className="text-xs font-mono text-muted-foreground">{manualModel}</span>
               </button>
             )}
@@ -2050,8 +2398,8 @@ export function ModelDropdown({
               <div className="px-2 py-2 space-y-2">
                 <p className="text-xs text-muted-foreground">
                   {onDetectModel
-                    ? (emptyDetectHint ?? "No model detected yet. Enter a provider/model manually.")
-                    : "No models found."}
+                    ? (emptyDetectHint ?? t("agentConfig.noModelDetectedEnterManually"))
+                    : t("agentConfig.noModelsFound")}
                 </p>
               </div>
             )}
@@ -2083,16 +2431,17 @@ function CheapModelSection({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const { t } = useTranslation();
   const placeholderHint = adapterDefaultModel
-    ? `Adapter default · ${adapterDefaultModel}`
-    : "No adapter default — choose a cheaper model";
+    ? t("agentConfig.adapterDefaultModel", { model: adapterDefaultModel })
+    : t("agentConfig.noAdapterDefaultChooseCheapModel");
   return (
     <div className="rounded-md border border-border/70 bg-muted/20 p-3 space-y-3">
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <div className="text-(length:--text-micro) uppercase tracking-wide text-muted-foreground">Cheap model</div>
+          <div className="text-(length:--text-micro) uppercase tracking-wide text-muted-foreground">{t("agentConfig.cheapModel")}</div>
           <p className="text-xs text-muted-foreground">
-            Used when a run requests the cheap profile (e.g. routine summaries). The primary model stays unchanged.
+            {t("agentConfig.cheapModelHint")}
           </p>
         </div>
         <ToggleSwitch checked={enabled} onCheckedChange={onEnabledChange} />
@@ -2116,12 +2465,12 @@ function CheapModelSection({
       ) : null}
       {enabled && !model && adapterDefaultModel ? (
         <p className="text-(length:--text-micro) text-muted-foreground">
-          No explicit cheap model selected — runtime falls back to <code>{adapterDefaultModel}</code>.
+          {t("agentConfig.noExplicitCheapModelFallback", { model: adapterDefaultModel })}
         </p>
       ) : null}
       {enabled && !model && !adapterDefaultModel ? (
         <p className="text-(length:--text-micro) text-amber-500">
-          No cheap model selected and the adapter has no default. Cheap-lane runs will continue on the primary model with a fallback note.
+          {t("agentConfig.noCheapModelSelectedNoAdapterDefault")}
         </p>
       ) : null}
     </div>
@@ -2141,14 +2490,17 @@ function ThinkingEffortDropdown({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const { t } = useTranslation();
   const selected = options.find((option) => option.id === value) ?? options[0];
 
   return (
-    <Field label="Thinking effort" hint={help.thinkingEffort}>
+    <Field label={t("agentConfig.thinkingEffort")} hint={help.thinkingEffort}>
       <Popover open={open} onOpenChange={onOpenChange}>
         <PopoverTrigger asChild>
           <button className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-sm hover:bg-accent/50 transition-colors w-full justify-between">
-            <span className={cn(!value && "text-muted-foreground")}>{selected?.label ?? "Auto"}</span>
+            <span className={cn(!value && "text-muted-foreground")}>
+              {t(`agentConfig.${selected?.id || "auto"}`)}
+            </span>
             <ChevronDown className="h-3 w-3 text-muted-foreground" />
           </button>
         </PopoverTrigger>
@@ -2165,7 +2517,7 @@ function ThinkingEffortDropdown({
                 onOpenChange(false);
               }}
             >
-              <span>{option.label}</span>
+              <span>{t(`agentConfig.${option.id || "auto"}`)}</span>
               {option.id ? <span className="text-xs text-muted-foreground font-mono">{option.id}</span> : null}
             </button>
           ))}

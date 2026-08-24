@@ -277,6 +277,17 @@ export type {
   AdapterEnvironmentTestStatus,
   AdapterEnvironmentCheck,
   AdapterEnvironmentTestResult,
+  AdapterAuthSessionStatus,
+  AdapterAuthSessionInternalStatus,
+  AdapterAuthSessionFailure,
+  AdapterAuthSessionResponse,
+  AdapterAuthSessionPrompt,
+  AdapterAuthSessionOwnerResponse,
+  StartAdapterAuthSessionRequest,
+} from "./agent.js";
+export {
+  ADAPTER_AUTH_SESSION_STATUSES,
+  ADAPTER_AUTH_SESSION_INTERNAL_STATUSES,
 } from "./agent.js";
 export type {
   AgentEligibilityAgent,
@@ -384,6 +395,11 @@ export type {
   WorkspaceOperationStatus,
 } from "./workspace-operation.js";
 export type {
+  NormalizedWorkspaceFileAvailabilityQuery,
+  WorkspaceFileAvailabilityQuery,
+  WorkspaceFileAvailabilityRequest,
+  WorkspaceFileAvailabilityResponse,
+  WorkspaceFileAvailabilityResult,
   WorkspaceFileContent,
   WorkspaceFileContentEncoding,
   WorkspaceFileListDirectoryItem,

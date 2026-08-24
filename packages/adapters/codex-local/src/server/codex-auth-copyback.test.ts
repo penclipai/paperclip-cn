@@ -532,33 +532,30 @@ describe("copyBackCodexAuth identity-keyed cache write", () => {
     expect(combined).not.toContain("id-token");
   });
 
-  it("a read-only cache directory does not fail the copy-back: the successful host result is kept and no partial slot remains", async () => {
+  it("a cache-path resolution failure does not fail the copy-back: the successful host result is kept and no partial slot remains", async () => {
     const { env, sharedHomeAuthPath } = await makeEnv();
     const sandboxAuth = subscriptionAuth({ accountId: "acct-x", lastRefresh: NEWER, marker: "sandbox" });
     const hostAuth = subscriptionAuth({ accountId: "acct-x", lastRefresh: OLDER, marker: "host" });
     await writeFile(sharedHomeAuthPath, hostAuth, { mode: 0o600 });
 
-    // Pre-create the entry directory, then make it read-only so the cache-slot
-    // temp create fails. The host overwrite runs first and must stay intact. The
-    // additive cache write is best-effort, so its failure must not throw.
+    // Pre-create the entry directory, then inject a deterministic EACCES from
+    // the cache-path boundary. chmod does not reliably deny owner writes on
+    // Windows, while this exercises the same best-effort failure contract on
+    // every platform.
     const entryPath = await ensureCodexAuthCacheEntryDir(env, "acct-x", COMPANY_ID);
     const slotDir = path.dirname(entryPath);
     const logs: string[] = [];
-    await chmod(slotDir, 0o500);
-    let outcome: string;
-    try {
-      outcome = await copyBackCodexAuth({
-        readSandboxAuth: async () => Buffer.from(sandboxAuth, "utf8"),
-        hostAuthPath: sharedHomeAuthPath,
-        log: (line) => {
-          logs.push(line);
-        },
-        resolveCacheEntryPath: (accountId) => ensureCodexAuthCacheEntryDir(env, accountId, COMPANY_ID),
-        env,
-      });
-    } finally {
-      await chmod(slotDir, 0o700);
-    }
+    const outcome = await copyBackCodexAuth({
+      readSandboxAuth: async () => Buffer.from(sandboxAuth, "utf8"),
+      hostAuthPath: sharedHomeAuthPath,
+      log: (line) => {
+        logs.push(line);
+      },
+      resolveCacheEntryPath: async () => {
+        throw Object.assign(new Error("cache path unavailable"), { code: "EACCES" });
+      },
+      env,
+    });
 
     // The host copy-back succeeded and its result is returned unchanged.
     expect(outcome).toBe("copied");
@@ -579,11 +576,11 @@ describe("copyBackCodexAuth identity-keyed cache write", () => {
     const hostAuth = subscriptionAuth({ accountId: "acct-x", lastRefresh: OLDER, marker: "host" });
     await writeFile(sharedHomeAuthPath, hostAuth, { mode: 0o600 });
 
-    // Force the additive cache write to fail: pre-create the slot directory,
-    // then make it read-only so the slot temp create fails with EACCES.
+    // Force the additive cache path to fail after pre-creating an empty slot.
+    // This is deterministic on Windows, where chmod 0500 is not a write-denial
+    // mechanism for the current user.
     const entryPath = await ensureCodexAuthCacheEntryDir(env, "acct-x", COMPANY_ID);
     const slotDir = path.dirname(entryPath);
-    await chmod(slotDir, 0o500);
 
     // The logger rejects for the cache-failure diagnostic line only. The host
     // copy-back already installed the sandbox credential on disk, so this
@@ -591,25 +588,23 @@ describe("copyBackCodexAuth identity-keyed cache write", () => {
     const logs: string[] = [];
     let outcome: Awaited<ReturnType<typeof copyBackCodexAuth>> | undefined;
     let thrown: unknown;
-    try {
-      outcome = await copyBackCodexAuth({
-        readSandboxAuth: async () => Buffer.from(sandboxAuth, "utf8"),
-        hostAuthPath: sharedHomeAuthPath,
-        log: (line) => {
-          logs.push(line);
-          if (line.includes("additive cache write failed")) {
-            return Promise.reject(new Error("log sink boom"));
-          }
-        },
-        resolveCacheEntryPath: (accountId) => ensureCodexAuthCacheEntryDir(env, accountId, COMPANY_ID),
-        env,
-      }).catch((error: unknown) => {
-        thrown = error;
-        return undefined;
-      });
-    } finally {
-      await chmod(slotDir, 0o700);
-    }
+    outcome = await copyBackCodexAuth({
+      readSandboxAuth: async () => Buffer.from(sandboxAuth, "utf8"),
+      hostAuthPath: sharedHomeAuthPath,
+      log: (line) => {
+        logs.push(line);
+        if (line.includes("additive cache write failed")) {
+          return Promise.reject(new Error("log sink boom"));
+        }
+      },
+      resolveCacheEntryPath: async () => {
+        throw Object.assign(new Error("cache path unavailable"), { code: "EACCES" });
+      },
+      env,
+    }).catch((error: unknown) => {
+      thrown = error;
+      return undefined;
+    });
 
     // The rejecting cache-failure log never surfaces as a thrown error.
     expect(thrown).toBeUndefined();

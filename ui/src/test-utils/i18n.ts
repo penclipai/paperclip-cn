@@ -21,7 +21,10 @@ export function translateForTest(
   overrides: Record<string, string> = {},
 ) {
   const catalog = catalogs[language] ?? catalogs.en;
+  const count = typeof options?.count === "number" ? options.count : null;
+  const pluralKey = count === null ? null : `${key}_${count === 1 ? "one" : "other"}`;
   const template =
+    (pluralKey ? overrides[pluralKey] ?? catalog[pluralKey] : undefined) ??
     overrides[key] ??
     catalog[key] ??
     (typeof options?.defaultValue === "string" ? options.defaultValue : key);

@@ -1,12 +1,19 @@
 // @vitest-environment jsdom
 
 import type { AnchorHTMLAttributes, ReactNode } from "react";
+import i18n from "i18next";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { FolderListResult, Issue, RoutineListItem } from "@penclipai/shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { Routines, buildRoutineGroups, buildRoutineSections, sortRoutines } from "./Routines";
+import {
+  Routines,
+  buildRoutineGroups,
+  buildRoutineSections,
+  displayRoutineTitle,
+  sortRoutines,
+} from "./Routines";
 
 let currentSearch = "";
 
@@ -448,6 +455,18 @@ describe("Routines page", () => {
     expect(groups.map((group) => group.label)).toEqual(["Project Alpha", "Built-in routines"]);
     expect(groups[0]?.items.map((item) => item.title)).toEqual(["Morning sync"]);
     expect(groups[1]?.items.map((item) => item.title)).toEqual(["Reflection review"]);
+  });
+
+  it("localizes known built-in routine titles without rewriting custom titles", async () => {
+    await i18n.changeLanguage("zh-CN");
+
+    expect(displayRoutineTitle(createRoutine({
+      title: "Refresh stale summary slots",
+      originKind: "built_in_agent_bundle",
+    }), i18n.t)).toBe("刷新过期的状态摘要");
+    expect(displayRoutineTitle(createRoutine({
+      title: "Refresh stale summary slots",
+    }), i18n.t)).toBe("Refresh stale summary slots");
   });
 
   it("groups routines by folder using folder names and Unfiled labels", () => {

@@ -984,8 +984,8 @@ The board UI generates agent onboarding prompts from the add-agent modal (`+` in
 
 Hermes gateway agents use this same generic agent invite flow with
 `adapterType=hermes_gateway` and `agentDefaultsPayload.apiBaseUrl` /
-`agentDefaultsPayload.apiKey`. Install a Hermes gateway adapter plugin first so
-the type key is available at runtime.
+`agentDefaultsPayload.apiKey`. The built-in Hermes package registers this type
+in the CN fork; an external adapter package may still override the built-in.
 
 ## OpenClaw Join Smoke Test
 

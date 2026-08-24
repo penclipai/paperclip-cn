@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 import { startTransition, useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useSearchParams } from "@/lib/router";
@@ -117,6 +118,18 @@ const catchUpPolicyDescriptions: Record<string, string> = {
   skip_missed: "routineDetail.catchUp.skipMissed",
   enqueue_missed_with_cap: "routineDetail.catchUp.enqueueMissedWithCap",
 };
+
+const builtInRoutineTitleKeys: Record<string, string> = {
+  "Refresh stale summary slots": "routines.builtInTitle.refreshStaleSummarySlots",
+  "Review recent agent trajectories for coaching proposals":
+    "routines.builtInTitle.reviewRecentAgentTrajectories",
+};
+
+export function displayRoutineTitle(routine: RoutineListItem, t: TFunction): string {
+  if (!isBuiltInRoutine(routine)) return routine.title;
+  const key = builtInRoutineTitleKeys[routine.title];
+  return key ? t(key, { defaultValue: routine.title }) : routine.title;
+}
 
 function autoResizeTextarea(element: HTMLTextAreaElement | null) {
   if (!element) return;
@@ -275,10 +288,10 @@ export function buildRoutineGroups(
           ? "No project"
           : (projectById.get(key)?.name ?? "Unknown project"),
         labelTranslationKey: key === "__no_project"
-          ? "No project"
+          ? "routines.noProject"
           : projectById.has(key)
             ? undefined
-            : "Unknown project",
+            : "routines.unknownProject",
         items: groups[key]!,
       }));
   }
@@ -299,10 +312,10 @@ export function buildRoutineGroups(
         ? "Unassigned"
         : (agentById.get(key)?.name ?? "Unknown agent"),
       labelTranslationKey: key === "__unassigned"
-        ? "Unassigned"
+        ? "routines.unassigned"
         : agentById.has(key)
           ? undefined
-          : "Unknown agent",
+          : "routines.unknownAssignee",
       items: groups[key]!,
     }));
 }
@@ -468,7 +481,7 @@ export function Routines() {
   const folderSelection = normalizeFolderSelection(searchParams.get("folder"));
 
   useEffect(() => {
-    setBreadcrumbs([{ label: t("Routines") }]);
+    setBreadcrumbs([{ label: t("routines.pageTitle", { defaultValue: "Routines" }) }]);
   }, [setBreadcrumbs, t]);
 
   useEffect(() => {
@@ -574,10 +587,12 @@ export function Routines() {
         queryKey: queryKeys.routines.list(selectedCompanyId!),
       });
       pushToast({
-        title: t("Routine created"),
+        title: t("routines.createSuccess", { defaultValue: "Routine created" }),
         body: routine.assigneeAgentId
-          ? t("Add the first trigger to turn it into a live workflow.")
-          : t("Draft saved. Add a default agent before enabling automation."),
+          ? t("routines.postCreateHint", { defaultValue: "Add the first trigger to turn it into a live workflow." })
+          : t("routines.createDraftSuccess", {
+            defaultValue: "Draft saved. Add a default agent before enabling automation.",
+          }),
         tone: "success",
       });
       navigate(`/routines/${routine.id}?tab=triggers`);
@@ -769,7 +784,7 @@ export function Routines() {
     },
     onError: (mutationError) => {
       pushToast({
-        title: t("Failed to update routine"),
+        title: t("routines.updateFailed", { defaultValue: "Failed to update routine" }),
         body:
           mutationError instanceof Error
             ? mutationError.message
@@ -824,7 +839,7 @@ export function Routines() {
     },
     onError: (mutationError) => {
       pushToast({
-        title: t("Routine run failed"),
+        title: t("routines.runFailed", { defaultValue: "Routine run failed" }),
         body:
           mutationError instanceof Error
             ? mutationError.message
@@ -936,7 +951,7 @@ export function Routines() {
       ).map((group) => ({
         ...group,
         label: group.labelTranslationKey
-          ? t(group.labelTranslationKey, { defaultValue: group.labelTranslationKey })
+          ? t(group.labelTranslationKey, { defaultValue: group.label ?? group.labelTranslationKey })
           : group.label,
       })),
     [
@@ -951,7 +966,7 @@ export function Routines() {
   const recentRunsIssueLinkState = useMemo(
     () =>
       createIssueDetailLocationState(
-        t("Recent Runs"),
+        t("routines.recentRuns", { defaultValue: "Recent Runs" }),
         buildRoutinesTabHref("runs"),
         "issues",
       ),
@@ -1063,8 +1078,10 @@ export function Routines() {
   function handleToggleEnabled(routine: RoutineListItem, enabled: boolean) {
     if (!enabled && !routine.assigneeAgentId) {
       pushToast({
-        title: t("Default agent required"),
-        body: t("Set a default agent before enabling routine automation."),
+        title: t("routines.defaultAgentRequired", { defaultValue: "Default agent required" }),
+        body: t("routines.defaultAgentRequiredBody", {
+          defaultValue: "Set a default agent before enabling routine automation.",
+        }),
         tone: "warn",
       });
       return;
@@ -1086,7 +1103,7 @@ export function Routines() {
     return (
       <EmptyState
         icon={Repeat}
-        message={t("Select a company to view routines.")}
+        message={t("routines.selectCompany", { defaultValue: "Select a company to view routines." })}
       />
     );
   }
@@ -1108,7 +1125,7 @@ export function Routines() {
         </div>
         <Button onClick={openCreateRoutine}>
           <Plus className="mr-2 h-4 w-4" />
-          {t("Create routine")}
+          {t("routines.create", { defaultValue: "Create routine" })}
         </Button>
       </div>
 
@@ -1118,8 +1135,8 @@ export function Routines() {
           value={activeTab}
           onValueChange={handleTabChange}
           items={[
-            { value: "routines", label: t("Routines") },
-            { value: "runs", label: t("Recent Runs") },
+            { value: "routines", label: t("routines.pageTitle", { defaultValue: "Routines" }) },
+            { value: "runs", label: t("routines.recentRuns", { defaultValue: "Recent Runs" }) },
           ]}
         />
         <TabsContent value="routines" className="space-y-4">
@@ -1146,10 +1163,10 @@ export function Routines() {
                   <div className="p-2 space-y-0.5">
                     {(
                       [
-                        ["updated", "Updated"],
-                        ["created", "Created"],
-                        ["lastRun", "Last run"],
-                        ["title", "Title"],
+                        ["updated", "routines.sortField.updated"],
+                        ["created", "routines.sortField.created"],
+                        ["lastRun", "routines.sortField.lastRun"],
+                        ["title", "routines.sortField.title"],
                       ] as const
                     ).map(([field, label]) => (
                       <button
@@ -1175,12 +1192,12 @@ export function Routines() {
                           );
                         }}
                       >
-                        <span>{t(label)}</span>
+                        <span>{t(label, { defaultValue: label })}</span>
                         {routineViewState.sortField === field ? (
                           <span className="text-xs text-muted-foreground">
                             {routineViewState.sortDir === "asc"
-                              ? t("Asc")
-                              : t("Desc")}
+                              ? t("common.asc", { defaultValue: "Asc" })
+                              : t("common.desc", { defaultValue: "Desc" })}
                           </span>
                         ) : null}
                       </button>
@@ -1206,10 +1223,10 @@ export function Routines() {
                   <div className="p-2 space-y-0.5">
                     {(
                       [
-                        ["folder", "Folder"],
-                        ["project", "Project"],
-                        ["assignee", "Agent"],
-                        ["none", "None"],
+                        ["folder", "routines.groupBy.folder"],
+                        ["project", "routines.groupBy.project"],
+                        ["assignee", "routines.groupBy.assignee"],
+                        ["none", "routines.groupBy.none"],
                       ] as const
                     ).map(([value, label]) => (
                       <button
@@ -1226,7 +1243,7 @@ export function Routines() {
                           })
                         }
                       >
-                        <span>{t(label)}</span>
+                        <span>{t(label, { defaultValue: label })}</span>
                         {routineViewState.groupBy === value ? (
                           <Check className="h-3.5 w-3.5" />
                         ) : null}
@@ -1252,7 +1269,7 @@ export function Routines() {
                   className="text-xs"
                   onClick={() => setSelectMode((current) => !current)}
                 >
-                  {selectMode ? t("Done") : t("common.select")}
+                  {selectMode ? t("common.done", { defaultValue: "Done" }) : t("common.select")}
                 </Button>
               ) : null}
             </div>
@@ -1371,7 +1388,7 @@ export function Routines() {
                     value={draft.assigneeAgentId}
                     options={assigneeOptions}
                     recentOptionIds={recentAssigneeIds}
-                    placeholder={t("Responsible")}
+                    placeholder={t("routines.responsible", { defaultValue: "Responsible" })}
                     noneLabel={t("issuesList.noResponsible")}
                     searchPlaceholder={t("issuesList.searchResponsible")}
                     emptyMessage={t("routines.noResponsibleFound", { defaultValue: "No responsible found." })}
@@ -1401,7 +1418,7 @@ export function Routines() {
                         )
                       ) : (
                         <span className="text-muted-foreground">
-                          {t("Responsible")}
+                          {t("routines.responsible", { defaultValue: "Responsible" })}
                         </span>
                       )
                     }
@@ -1428,10 +1445,10 @@ export function Routines() {
                     value={draft.projectId}
                     options={projectOptions}
                     recentOptionIds={recentProjectIds}
-                    placeholder={t("Project")}
-                    noneLabel={t("No project")}
-                    searchPlaceholder={t("Search projects...")}
-                    emptyMessage={t("No projects found.")}
+                    placeholder={t("routines.project", { defaultValue: "Project" })}
+                    noneLabel={t("routines.noProject", { defaultValue: "No project" })}
+                    searchPlaceholder={t("newIssue.searchProjects", { defaultValue: "Search projects..." })}
+                    emptyMessage={t("newIssue.noProjectsFound", { defaultValue: "No projects found." })}
                     onChange={(projectId) => {
                       if (projectId) trackRecentProject(projectId);
                       setDraft((current) => ({ ...current, projectId }));
@@ -1451,7 +1468,7 @@ export function Routines() {
                         </>
                       ) : (
                         <span className="text-muted-foreground">
-                          {t("Project")}
+                          {t("routines.project", { defaultValue: "Project" })}
                         </span>
                       )
                     }
@@ -1615,13 +1632,15 @@ export function Routines() {
                 disabled={createRoutine.isPending || !draft.title.trim()}
               >
                 <Plus className="mr-2 h-4 w-4" />
-                {createRoutine.isPending ? t("Creating...") : t("Create routine")}
+                {createRoutine.isPending
+                  ? t("routines.creating", { defaultValue: "Creating..." })
+                  : t("routines.create", { defaultValue: "Create routine" })}
               </Button>
               {createRoutine.isError ? (
                 <p className="text-sm text-destructive">
                   {createRoutine.error instanceof Error
                     ? createRoutine.error.message
-                    : t("Failed to create routine")}
+                    : t("routines.createFailed", { defaultValue: "Failed to create routine" })}
                 </p>
               ) : null}
             </div>
@@ -1632,7 +1651,7 @@ export function Routines() {
       {error ? (
         <Card>
           <CardContent className="pt-6 text-sm text-destructive">
-            {error instanceof Error ? error.message : t("Failed to load routines")}
+            {error instanceof Error ? error.message : t("routines.loadFailed", { defaultValue: "Failed to load routines" })}
           </CardContent>
         </Card>
       ) : null}
@@ -1672,12 +1691,9 @@ export function Routines() {
                     <span className="truncate font-medium">
                       {folderSelection === "unfiled"
                         ? t("folders.unfiled")
-                        : (activeFolder?.name ?? t("Folder"))}
+                        : (activeFolder?.name ?? t("folders.folder", { defaultValue: "Folder" }))}
                     </span>
-                    <span className="text-muted-foreground">
-                      {sortedRoutines.length} {t("folders.routine")}
-                      {sortedRoutines.length === 1 ? "" : "s"}
-                    </span>
+                    <span className="text-muted-foreground">{t("folders.routineCount", { count: sortedRoutines.length })}</span>
                   </div>
                 )}
               </div>
@@ -1759,10 +1775,14 @@ export function Routines() {
                         />
                       ) : null}
                       <CollapsibleContent>
-                        {group.items.map((routine) => (
+                        {group.items.map((routine) => {
+                          const displayedRoutine = isBuiltInRoutine(routine)
+                            ? { ...routine, title: displayRoutineTitle(routine, t) }
+                            : routine;
+                          return (
                           <RoutineListRow
                             key={routine.id}
-                            routine={routine}
+                            routine={displayedRoutine}
                             projectById={projectById}
                             agentById={agentById}
                             runningRoutineId={runningRoutineId}
@@ -1806,7 +1826,7 @@ export function Routines() {
                                             routineFolders?.folders.find(
                                               (folder) =>
                                                 folder.id === folderId,
-                                            )?.name ?? t("Folder"),
+                                            )?.name ?? t("folders.folder", { defaultValue: "Folder" }),
                                         })
                                       : t("folders.movedNamedItemToUnfiled", {
                                           name: routine.title,
@@ -1828,7 +1848,8 @@ export function Routines() {
                               />
                             }
                           />
-                        ))}
+                          );
+                        })}
                       </CollapsibleContent>
                     </Collapsible>
                   );
@@ -1902,10 +1923,7 @@ function FolderIconHeader({ label, count }: { label: string; count: number }) {
     <div className="flex min-w-0 items-center gap-2 text-sm">
       <Repeat className="h-3.5 w-3.5 text-muted-foreground" />
       <span className="truncate font-medium">{label}</span>
-      <span className="text-muted-foreground">
-        {count} {t("folders.routine")}
-        {count === 1 ? "" : "s"}
-      </span>
+      <span className="text-muted-foreground">{t("folders.routineCount", { count })}</span>
     </div>
   );
 }

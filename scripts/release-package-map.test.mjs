@@ -51,13 +51,15 @@ test("release package list keeps runtime workspace dependencies ahead of consume
   }
 });
 
-test("release surface keeps Hermes adapters external to the CN fork", () => {
+test("release surface includes the CN fork's built-in Hermes adapter", () => {
   const packages = buildReleasePackagePlan();
   const hermes = packages.find((pkg) => pkg.name === "@penclipai/hermes-paperclip-adapter");
   const gatewayShim = packages.find((pkg) => pkg.name === "@penclipai/adapter-hermes-gateway");
 
-  assert.equal(hermes, undefined);
-  assert.equal(gatewayShim, undefined);
+  assert.ok(hermes);
+  assert.equal(hermes.publishFromCi, true);
+  assert.ok(gatewayShim);
+  assert.equal(gatewayShim.publishFromCi, false);
 });
 
 test("release package configuration validates successfully", () => {

@@ -119,7 +119,7 @@ describe("config store", () => {
     const backupPath = backupInvalidConfig(configPath);
     expect(backupPath).toBe(`${configPath}.invalid-2`);
     expect(fs.readFileSync(backupPath)).toEqual(invalidBytes);
-    expect(open).toHaveBeenCalledWith(backupPath, "r");
+    expect(open).toHaveBeenCalledWith(backupPath, "r+");
     expect(open).toHaveBeenCalledWith(path.dirname(configPath), "r");
     expect(sync).toHaveBeenCalled();
     expect(() => writeConfig(defaultConfig(), configPath)).toThrow(/Refusing to overwrite invalid config/);

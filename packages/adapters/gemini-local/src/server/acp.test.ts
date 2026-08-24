@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -16,6 +17,30 @@ import {
 // A local stand-in for a sandbox runner: runs the managed-runtime staging
 // scripts (mkdir/tar/find) as real child processes so the remote ACP lane can
 // be exercised end-to-end against the host filesystem.
+function resolveTestPosixShellCommand(command: "bash" | "sh") {
+  if (process.platform !== "win32") return command === "bash" ? "/bin/bash" : "sh";
+  const candidates = command === "bash"
+    ? ["C:\\Program Files\\Git\\bin\\bash.exe", "C:\\Program Files\\Git\\usr\\bin\\bash.exe"]
+    : ["C:\\Program Files\\Git\\usr\\bin\\sh.exe", "C:\\Program Files\\Git\\bin\\bash.exe"];
+  return candidates.find((candidate) => existsSync(candidate)) ?? command;
+}
+
+function rewriteWindowsPathsForGitShell(script: string) {
+  if (process.platform !== "win32") return script;
+  const toGitShellPath = (drive: string, rest: string) =>
+    `/${drive.toLowerCase()}/${rest.replace(/\\/g, "/")}`;
+  return script
+    .replace(/'([A-Za-z]):\\([^']*)'/g, (_match, drive: string, rest: string) =>
+      `'${toGitShellPath(drive, rest)}'`,
+    )
+    .replace(/"([A-Za-z]):\\([^"]*)"/g, (_match, drive: string, rest: string) =>
+      `"${toGitShellPath(drive, rest)}"`,
+    )
+    .replace(/([A-Za-z]):\\([^'"\s]*)/g, (_match, drive: string, rest: string) =>
+      toGitShellPath(drive, rest),
+    );
+}
+
 function createLocalSandboxRunner() {
   let counter = 0;
   return {
@@ -29,10 +54,29 @@ function createLocalSandboxRunner() {
       onLog?: (stream: "stdout" | "stderr", chunk: string) => Promise<void>;
     }) => {
       counter += 1;
-      const command = input.command === "bash" ? "/bin/bash" : input.command;
-      return await runChildProcess(`gemini-acp-sandbox-run-${counter}`, command, input.args ?? [], {
+      const isPosixShell = input.command === "sh" || input.command === "bash";
+      const command = isPosixShell
+        ? resolveTestPosixShellCommand(input.command as "bash" | "sh")
+        : input.command;
+      const args = [...(input.args ?? [])];
+      if (
+        isPosixShell &&
+        (args[0] === "-c" || args[0] === "-lc") &&
+        typeof args[1] === "string"
+      ) {
+        args[1] = rewriteWindowsPathsForGitShell(args[1]);
+      }
+      const env = { ...process.env, ...input.env } as Record<string, string>;
+      if (process.platform === "win32" && isPosixShell) {
+        const entries = [
+          "C:\\Program Files\\Git\\usr\\bin",
+          "C:\\Program Files\\Git\\bin",
+        ].filter((entry) => existsSync(entry));
+        env.PATH = [...entries, env.PATH ?? ""].join(path.delimiter);
+      }
+      return await runChildProcess(`gemini-acp-sandbox-run-${counter}`, command, args, {
         cwd: input.cwd ?? process.cwd(),
-        env: input.env ?? {},
+        env,
         stdin: input.stdin,
         timeoutSec: Math.max(1, Math.ceil((input.timeoutMs ?? 30_000) / 1000)),
         graceSec: 5,
@@ -84,7 +128,11 @@ afterEach(async () => {
   else process.env.HOME = originalHome;
   if (originalGeminiApiKey === undefined) delete process.env.GEMINI_API_KEY;
   else process.env.GEMINI_API_KEY = originalGeminiApiKey;
-  await Promise.all(tempRoots.splice(0).map((root) => fs.rm(root, { recursive: true, force: true })));
+  await Promise.all(
+    tempRoots
+      .splice(0)
+      .map((root) => fs.rm(root, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 })),
+  );
 });
 
 class FakeRuntime {
@@ -443,6 +491,7 @@ describe("gemini_local ACP lane", () => {
           // a real gemini binary in the local sandbox stand-in.
           agentCommand: "node ./fake-acp.js",
           stateDir: path.join(root, "state"),
+          env: { HOME: path.join(root, "home") },
           promptTemplate: "Do the assigned work.",
         },
         context: {

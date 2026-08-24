@@ -418,7 +418,7 @@ describe("IssueChatThread system notice routing", () => {
     const status = container.querySelector('[role="status"]');
     const sourceLink = status?.querySelector('a[href^="/agents/"]') as HTMLAnchorElement | null;
     expect(sourceLink?.getAttribute("href")).toBe("/agents/agent-unknown/runs/run-xyz");
-    expect(sourceLink?.textContent).toBe("Paperclip");
+    expect(sourceLink?.textContent).toBe("Paperclip CN");
   });
 
   it("routes agent-authored comments to the notice renderer when presentation requests system_notice", () => {

@@ -3,12 +3,13 @@ import { Clock3, FileDiff, GitCommit, type LucideIcon } from "lucide-react";
 import { healthApi, type HealthStatus } from "@/api/health";
 import { instanceSettingsApi } from "@/api/instanceSettings";
 import { queryKeys } from "@/lib/queryKeys";
+import { useTranslation } from "react-i18next";
 
-function formatTimestamp(value: string | null | undefined): string {
-  if (!value) return "Unavailable";
+function formatTimestamp(value: string | null | undefined, locale: string, unavailable: string): string {
+  if (!value) return unavailable;
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "Unavailable";
-  return new Intl.DateTimeFormat(undefined, {
+  if (Number.isNaN(date.getTime())) return unavailable;
+  return new Intl.DateTimeFormat(locale, {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(date);
@@ -78,6 +79,7 @@ function ServerInfoRow({
 }
 
 export function SidebarServerInfo() {
+  const { t, i18n } = useTranslation();
   const experimentalQuery = useQuery({
     queryKey: queryKeys.instance.experimentalSettings,
     queryFn: () => instanceSettingsApi.getExperimental(),
@@ -106,14 +108,14 @@ export function SidebarServerInfo() {
   const restartedAt = restartTimestamp(health);
   const restartedAtIsValid = isValidTimestamp(restartedAt);
   const lastRestartedLabel = healthUnavailable
-    ? "Health unavailable"
+    ? t("sidebarServerInfo.healthUnavailable")
     : isWaitingForHealth
-      ? "Loading..."
-      : formatTimestamp(restartedAt);
+      ? t("sidebarServerInfo.loading")
+      : formatTimestamp(restartedAt, i18n.language, t("sidebarServerInfo.unavailable"));
   const commit = healthUnavailable
-    ? "Health unavailable"
+    ? t("sidebarServerInfo.healthUnavailable")
     : isWaitingForHealth
-      ? "Loading..."
+      ? t("sidebarServerInfo.loading")
       : commitLabel(health);
   const localChanges = healthUnavailable
     ? "Health unavailable"
@@ -124,16 +126,16 @@ export function SidebarServerInfo() {
   return (
     <div className="mt-2 border-t border-border pt-2">
       <p className="px-3 pb-1 pt-1 text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">
-        Server
+        {t("sidebarServerInfo.server")}
       </p>
       <ServerInfoRow
         icon={Clock3}
-        label="Last restarted"
+        label={t("sidebarServerInfo.lastRestarted")}
         value={lastRestartedLabel}
         dateTime={!healthUnavailable && !isWaitingForHealth && restartedAtIsValid ? restartedAt : null}
       />
-      <ServerInfoRow icon={GitCommit} label="Running commit" value={commit} />
-      <ServerInfoRow icon={FileDiff} label="Checkout state" value={localChanges} />
+      <ServerInfoRow icon={GitCommit} label={t("sidebarServerInfo.runningCommit")} value={commit} />
+      <ServerInfoRow icon={FileDiff} label={t("sidebarServerInfo.checkoutState")} value={localChanges} />
     </div>
   );
 }

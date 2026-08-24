@@ -24,21 +24,25 @@ if (!embeddedPostgresSupport.supported) {
 describeEmbeddedPostgres("company secret proposals migration", () => {
   afterEach(async () => Promise.all(cleanups.splice(0).map((cleanup) => cleanup())));
 
-  it("can be reapplied after its migration journal entry is removed", async () => {
-    const database = await startEmbeddedPostgresTestDatabase("paperclip-secret-proposals-migration-");
-    cleanups.push(database.cleanup);
-    const sql = postgres(database.connectionString, { max: 1 });
-    cleanups.push(async () => sql.end());
+  it(
+    "can be reapplied after its migration journal entry is removed",
+    async () => {
+      const database = await startEmbeddedPostgresTestDatabase("paperclip-secret-proposals-migration-");
+      cleanups.push(database.cleanup);
+      const sql = postgres(database.connectionString, { max: 1 });
+      cleanups.push(async () => sql.end());
 
-    await sql`DELETE FROM "drizzle"."__drizzle_migrations" WHERE "hash" = ${await migrationHash()}`;
+      await sql`DELETE FROM "drizzle"."__drizzle_migrations" WHERE "hash" = ${await migrationHash()}`;
 
-    await expect(applyPendingMigrations(database.connectionString)).resolves.toBeUndefined();
+      await expect(applyPendingMigrations(database.connectionString)).resolves.toBeUndefined();
 
-    const [result] = await sql<{ constraints: number; indexes: number }[]>`
-      SELECT
-        (SELECT count(*)::int FROM pg_constraint WHERE conrelid = 'company_secret_proposals'::regclass AND contype <> 'n') AS constraints,
-        (SELECT count(*)::int FROM pg_indexes WHERE tablename = 'company_secret_proposals') AS indexes
-    `;
-    expect(result).toEqual({ constraints: 13, indexes: 5 });
-  });
+      const [result] = await sql<{ constraints: number; indexes: number }[]>`
+        SELECT
+          (SELECT count(*)::int FROM pg_constraint WHERE conrelid = 'company_secret_proposals'::regclass AND contype <> 'n') AS constraints,
+          (SELECT count(*)::int FROM pg_indexes WHERE tablename = 'company_secret_proposals') AS indexes
+      `;
+      expect(result).toEqual({ constraints: 13, indexes: 5 });
+    },
+    30_000,
+  );
 });

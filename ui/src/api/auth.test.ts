@@ -22,7 +22,10 @@ describe("authApi.signOut", () => {
     expect(fetchMock).toHaveBeenCalledWith("/api/auth/sign-out", {
       method: "POST",
       credentials: "include",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Accept-Language": "en",
+        "Content-Type": "application/json",
+      },
       body: "{}",
     });
   });

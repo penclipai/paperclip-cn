@@ -42,7 +42,11 @@ type PatchedAcpRuntimeOptions = AcpRuntimeOptions & {
 type PatchedEnsureSessionOptions = Parameters<ReturnType<typeof createAcpRuntime>["ensureSession"]>[0];
 
 afterEach(async () => {
-  await Promise.all(tempRoots.splice(0).map((root) => fs.rm(root, { recursive: true, force: true })));
+  await Promise.all(
+    tempRoots.splice(0).map((root) =>
+      fs.rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 50 }),
+    ),
+  );
 });
 
 async function makeTempDir(prefix: string): Promise<string> {

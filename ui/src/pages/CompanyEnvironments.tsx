@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import {
   ArrowLeft,
   Check,
+  Lock,
   Play,
   RefreshCw,
   RotateCcw,
@@ -48,6 +49,7 @@ import {
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";
 import { useCompany } from "@/context/CompanyContext";
 import { useToast } from "@/context/ToastContext";
+import { isPlatformManagedEnvironment } from "@/lib/managed-sandbox-environment";
 import { queryKeys } from "@/lib/queryKeys";
 import { Link, useNavigate, useParams } from "@/lib/router";
 import { buildSameOriginWebSocketUrl } from "@/lib/websocket-url";
@@ -1370,7 +1372,11 @@ function EnvironmentImageTemplatePanel({
                 className="break-all font-mono text-foreground"
                 title={
                   templateRef
-                    ? `Provider ${activeTemplate.templateKind} ref ${templateRef} (Paperclip template ${activeTemplate.id})`
+                    ? t("companySettings.customImage.templateRefTitle", {
+                        kind: activeTemplate.templateKind,
+                        ref: templateRef,
+                        id: activeTemplate.id,
+                      })
                     : activeTemplate.id
                 }
               >
@@ -1550,6 +1556,7 @@ export function CompanyEnvironments({
     retry: false,
   });
   const environmentsEnabled = experimentalSettings?.enableEnvironments === true;
+  const managedSandboxOnly = experimentalSettings?.enableManagedSandboxOnly === true;
 
   const { data: environments } = useQuery({
     queryKey: selectedCompanyId
@@ -1633,16 +1640,54 @@ export function CompanyEnvironments({
     },
   });
 
+  // Managed (platform-provisioned) environments accept exactly one tenant
+  // edit: the env var map. The server's write floor rejects everything
+  // else, so this mutation sends an envVars-only PATCH — the one body
+  // shape the floor admits.
+  const managedEnvironmentEnvVarsMutation = useMutation({
+    mutationFn: async (envVars: EnvironmentFormState["envVars"]) => {
+      if (!editingEnvironmentId) throw new Error(t("companySettings.noEnvironmentSelected"));
+      return await environmentsApi.update(editingEnvironmentId, { envVars }, selectedCompanyId);
+    },
+    onSuccess: async (environment) => {
+      if (selectedCompanyId) {
+        await queryClient.invalidateQueries({
+          queryKey: queryKeys.environments.list(selectedCompanyId),
+        });
+      }
+      initializedFormKeyRef.current = null;
+      setEnvironmentForm(createEmptyEnvironmentForm());
+      setEnvironmentFormBaselineKey(null);
+      setEnvironmentVariablesDirty(false);
+      navigate(ENVIRONMENTS_PATH, { replace: true });
+      pushToast({
+        title: t("companySettings.environmentUpdated"),
+        body: t("companySettings.environmentReady", { name: environment.name }),
+        tone: "success",
+      });
+    },
+    onError: (error) => {
+      pushToast({
+        title: t("companySettings.failedToSaveEnvironment"),
+        body:
+          error instanceof Error
+            ? error.message
+            : t("companySettings.environmentSaveFailed"),
+        tone: "error",
+      });
+    },
+  });
+
   const environmentMutation = useMutation({
     mutationFn: async (form: EnvironmentFormState) => {
       const body = buildEnvironmentPayload(form);
 
       if (editingEnvironmentId) {
-        return await environmentsApi.update(editingEnvironmentId, body);
+        return await environmentsApi.update(editingEnvironmentId, body, selectedCompanyId);
       }
 
       if (!selectedCompanyId)
-        throw new Error("Select a company to create environments");
+        throw new Error(t("companySettings.selectCompanyToCreateEnvironments"));
       return await environmentsApi.create(selectedCompanyId!, body);
     },
     onSuccess: async (environment) => {
@@ -1671,16 +1716,10 @@ export function CompanyEnvironments({
       });
       const reconciliation = (environment as EnvironmentUpdateResult)
         .customImageReconciliation;
-      if (reconciliation?.action === "relinked") {
+      if (reconciliation?.action === "detached") {
         pushToast({
-          title: "Custom image kept active",
-          body: "The captured image was re-linked to the updated configuration automatically.",
-          tone: "info",
-        });
-      } else if (reconciliation?.action === "detached") {
-        pushToast({
-          title: "Custom image no longer applies",
-          body: "This change alters what the captured image was built from. Runs use the base configuration until you capture a new image.",
+          title: t("companySettings.customImage.title"),
+          body: t("companyEnvironments.imageStale"),
           tone: "warn",
         });
       }
@@ -1785,7 +1824,7 @@ export function CompanyEnvironments({
   const draftEnvironmentProbeMutation = useMutation({
     mutationFn: async (form: EnvironmentFormState) => {
       if (!selectedCompanyId)
-        throw new Error("Select a company to test environments");
+        throw new Error(t("companySettings.selectCompanyToTestEnvironments"));
       const body = buildEnvironmentPayload(form);
       return await environmentsApi.probeConfig(selectedCompanyId, body);
     },
@@ -2110,15 +2149,21 @@ export function CompanyEnvironments({
                   className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
                   value={instanceDefaultEnvironmentId}
                   onChange={(event) =>
-                    defaultEnvironmentMutation.mutate(
-                      event.target.value || null,
-                    )
+                    defaultEnvironmentMutation.mutate(event.target.value || null)
                   }
                   disabled={defaultEnvironmentMutation.isPending}
                 >
-                  <option value="">
-                    {t("Local", { defaultValue: "Local" })}
-                  </option>
+                  {managedSandboxOnly ? (
+                    instanceDefaultEnvironmentId === "" ? (
+                      <option value="" disabled>
+                        {t("common.select", { defaultValue: "Select" })}
+                      </option>
+                    ) : null
+                  ) : (
+                    <option value="">
+                      {t("Local", { defaultValue: "Local" })}
+                    </option>
+                  )}
                   {nonLocalEnvironments.map((environment) => (
                     <option key={environment.id} value={environment.id}>
                       {environment.name} · {environment.driver}
@@ -2208,6 +2253,17 @@ export function CompanyEnvironments({
                           </div>
                         )}
                       </div>
+                      {isPlatformManagedEnvironment(environment) ? (
+                        <div className="text-xs text-muted-foreground">
+                          <span className="inline-flex items-center gap-1 rounded-full border border-border/70 px-2 py-0.5 font-normal">
+                            <Lock className="h-3 w-3" aria-hidden />
+                            {t("Managed by {{name}}", {
+                              defaultValue: "Managed by {{name}}",
+                              name: "Paperclip",
+                            })}
+                          </span>
+                        </div>
+                      ) : null}
                       <div className="flex flex-wrap items-center gap-2">
                         {environment.driver !== "local" ? (
                           <Button
@@ -2293,7 +2349,82 @@ export function CompanyEnvironments({
         </div>
       ) : null}
 
-      {isEnvironmentFormPage && (mode === "create" || editingEnvironment) ? (
+      {isEnvironmentFormPage && mode === "edit" && editingEnvironment && isPlatformManagedEnvironment(editingEnvironment) ? (
+        <SecretRefHintsContext.Provider value={environmentSecretRefHints}>
+        <div className="rounded-md border border-border bg-background" data-testid="managed-environment-form-page">
+          <div className="border-b border-border/60 px-6 pb-4 pt-6">
+            <div className="mb-4">
+              <Button size="sm" variant="ghost" asChild>
+                <Link to={ENVIRONMENTS_PATH}>
+                  <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
+                  {t("companySettings.environments", {
+                    defaultValue: "Environments",
+                  })}
+                </Link>
+              </Button>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-lg font-semibold">{editingEnvironment.name}</h1>
+              <span className="inline-flex items-center gap-1 rounded-full border border-border/70 px-2 py-0.5 text-xs text-muted-foreground">
+                <Lock className="h-3 w-3" aria-hidden />
+                {t("Managed by {{name}}", {
+                  defaultValue: "Managed by {{name}}",
+                  name: "Paperclip",
+                })}
+              </span>
+            </div>
+            {editingEnvironment.description ? (
+              <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
+                {editingEnvironment.description}
+              </p>
+            ) : null}
+          </div>
+          <div className="px-6 py-4">
+            <Field
+              label={t("companySettings.environmentVariables")}
+              hint={t("companySettings.environmentVariablesHint")}
+            >
+              <EnvironmentVariablesEditor
+                ref={environmentVariablesEditorRef}
+                value={environmentForm.envVars}
+                secrets={secrets ?? []}
+                onCreateSecret={async (name, value) => await createSecret.mutateAsync({ name, value })}
+                onChange={(env) =>
+                  setEnvironmentForm((current) => ({ ...current, envVars: env ?? {} }))}
+                onDirtyChange={setEnvironmentVariablesDirty}
+              />
+            </Field>
+            {managedEnvironmentEnvVarsMutation.isError ? (
+              <div className="mt-3 text-xs text-destructive">
+                {managedEnvironmentEnvVarsMutation.error instanceof Error
+                  ? managedEnvironmentEnvVarsMutation.error.message
+                  : t("companySettings.environmentSaveFailed")}
+              </div>
+            ) : null}
+          </div>
+          <div className="flex flex-wrap justify-end gap-2 border-t border-border/60 bg-background px-6 py-4">
+            <Button
+              variant="outline"
+              onClick={closeEnvironmentForm}
+              disabled={managedEnvironmentEnvVarsMutation.isPending}
+            >
+              {t("common.cancel", { defaultValue: "Cancel" })}
+            </Button>
+            <Button
+              onClick={() => managedEnvironmentEnvVarsMutation.mutate(flushEnvironmentForm().envVars)}
+              disabled={managedEnvironmentEnvVarsMutation.isPending}
+            >
+              {managedEnvironmentEnvVarsMutation.isPending
+                ? t("common.saving", { defaultValue: "Saving..." })
+                : t("common.save", { defaultValue: "Save" })}
+            </Button>
+          </div>
+        </div>
+        </SecretRefHintsContext.Provider>
+      ) : null}
+
+      {isEnvironmentFormPage &&
+      (mode === "create" || (editingEnvironment && !isPlatformManagedEnvironment(editingEnvironment))) ? (
         <SecretRefHintsContext.Provider value={environmentSecretRefHints}>
           <div
             className="rounded-md border border-border bg-background"

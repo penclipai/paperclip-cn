@@ -3,6 +3,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import type { HeartbeatRun } from "@penclipai/shared";
 import { ThemeProvider } from "../context/ThemeContext";
@@ -118,24 +119,30 @@ describe("RunInvocationCard", () => {
 
 describe("LatestRunCard", () => {
   it("renders nothing while runs are empty", () => {
+    const queryClient = new QueryClient();
     const html = renderToStaticMarkup(
-      <ThemeProvider>
-        <MemoryRouter initialEntries={["/APP/agents/ceo/dashboard"]}>
-          <LatestRunCard runs={[]} agentId="ceo" />
-        </MemoryRouter>
-      </ThemeProvider>,
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <MemoryRouter initialEntries={["/APP/agents/ceo/dashboard"]}>
+            <LatestRunCard runs={[]} agentId="ceo" />
+          </MemoryRouter>
+        </ThemeProvider>
+      </QueryClientProvider>,
     );
 
     expect(html).toBe("");
   });
 
   it("renders the latest run once onboard data arrives", () => {
+    const queryClient = new QueryClient();
     const html = renderToStaticMarkup(
-      <ThemeProvider>
-        <MemoryRouter initialEntries={["/APP/agents/ceo/dashboard"]}>
-          <LatestRunCard runs={[createRun()]} agentId="ceo" />
-        </MemoryRouter>
-      </ThemeProvider>,
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <MemoryRouter initialEntries={["/APP/agents/ceo/dashboard"]}>
+            <LatestRunCard runs={[createRun()]} agentId="ceo" />
+          </MemoryRouter>
+        </ThemeProvider>
+      </QueryClientProvider>,
     );
 
     expect(html).toContain("Latest Run");

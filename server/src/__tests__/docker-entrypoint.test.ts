@@ -101,10 +101,10 @@ describe("Dockerfile", () => {
     expect(missingSources).toEqual([]);
   });
 
-  it("keeps external Hermes adapters out of the core image package-manifest layer", () => {
+  it("copies the built-in Hermes manifest without the deprecated gateway shim", () => {
     const sources = dockerfilePackageJsonCopySources();
 
-    expect(sources).not.toContain("packages/adapters/hermes/package.json");
+    expect(sources).toContain("packages/adapters/hermes/package.json");
     expect(sources).not.toContain("packages/adapters/hermes-gateway/package.json");
   });
 });

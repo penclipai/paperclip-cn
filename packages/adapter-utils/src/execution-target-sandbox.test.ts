@@ -1,6 +1,7 @@
 import { createServer } from "node:http";
 import net from "node:net";
 import { execFile, spawn } from "node:child_process";
+import { existsSync } from "node:fs";
 import { mkdir, mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -30,6 +31,45 @@ import { shellQuote } from "./ssh.js";
 
 const execFileAsync = promisify(execFile);
 
+function resolveTestPosixShellCommand(command: "bash" | "sh") {
+  if (process.platform !== "win32") return command === "bash" ? "/bin/bash" : "sh";
+  const candidates = command === "bash"
+    ? ["C:\\Program Files\\Git\\bin\\bash.exe", "C:\\Program Files\\Git\\usr\\bin\\bash.exe"]
+    : ["C:\\Program Files\\Git\\usr\\bin\\sh.exe", "C:\\Program Files\\Git\\bin\\bash.exe"];
+  return candidates.find((candidate) => existsSync(candidate)) ?? command;
+}
+
+function createTestPosixEnv(overrides?: Record<string, string>) {
+  const env: Record<string, string> = {};
+  for (const [key, value] of Object.entries(process.env)) {
+    if (value !== undefined) env[key] = value;
+  }
+  Object.assign(env, overrides);
+  if (process.platform === "win32") {
+    const entries = [
+      "C:\\Program Files\\Git\\usr\\bin",
+      "C:\\Program Files\\Git\\bin",
+    ].filter((entry) => existsSync(entry));
+    env.PATH = [...entries, env.PATH ?? ""].join(path.delimiter);
+  }
+  return env;
+}
+
+function rewriteWindowsPathsForGitShell(script: string) {
+  if (process.platform !== "win32") return script;
+  const toGitShellPath = (drive: string, rest: string) => `/${drive.toLowerCase()}/${rest.replace(/\\/g, "/")}`;
+  return script
+    .replace(/'([A-Za-z]):\\([^']*)'/g, (_match, drive: string, rest: string) =>
+      `'${toGitShellPath(drive, rest)}'`,
+    )
+    .replace(/"([A-Za-z]):\\([^"]*)"/g, (_match, drive: string, rest: string) =>
+      `"${toGitShellPath(drive, rest)}"`,
+    )
+    .replace(/([A-Za-z]):\\([^'"\s]*)/g, (_match, drive: string, rest: string) =>
+      toGitShellPath(drive, rest),
+    );
+}
+
 describe("sandbox adapter execution targets", () => {
   const cleanupDirs: string[] = [];
 
@@ -56,10 +96,21 @@ describe("sandbox adapter execution targets", () => {
         onSpawn?: (meta: { pid: number; startedAt: string }) => Promise<void>;
       }) => {
         counter += 1;
-        const command = input.command === "bash" ? "/bin/bash" : input.command;
-        return runChildProcess(`sandbox-run-${counter}`, command, input.args ?? [], {
+        const isPosixShell = input.command === "sh" || input.command === "bash";
+        const command = isPosixShell
+          ? resolveTestPosixShellCommand(input.command as "bash" | "sh")
+          : input.command;
+        const args = [...(input.args ?? [])];
+        if (
+          isPosixShell &&
+          (args[0] === "-c" || args[0] === "-lc") &&
+          typeof args[1] === "string"
+        ) {
+          args[1] = rewriteWindowsPathsForGitShell(args[1]);
+        }
+        return runChildProcess(`sandbox-run-${counter}`, command, args, {
           cwd: input.cwd ?? process.cwd(),
-          env: input.env ?? {},
+          env: createTestPosixEnv(input.env),
           stdin: input.stdin,
           timeoutSec: Math.max(1, Math.ceil((input.timeoutMs ?? 30_000) / 1000)),
           graceSec: 5,
@@ -106,8 +157,15 @@ describe("sandbox adapter execution targets", () => {
     throw new Error(message);
   }
 
+  function spawnProxy(command: string) {
+    const invocation = process.platform === "win32"
+      ? { command: process.execPath, args: [command] }
+      : { command, args: [] as string[] };
+    return spawn(invocation.command, invocation.args, { stdio: ["pipe", "pipe", "pipe"] });
+  }
+
   async function runProxyWithInput(command: string, input: string): Promise<{ stdout: string; stderr: string; code: number | null }> {
-    const child = spawn(command, [], { stdio: ["pipe", "pipe", "pipe"] });
+    const child = spawnProxy(command);
     let stdout = "";
     let stderr = "";
     child.stdout.setEncoding("utf8");
@@ -853,7 +911,7 @@ describe("sandbox adapter execution targets", () => {
     });
     expect(bridge).not.toBeNull();
 
-    const child = spawn(bridge!.agentCommand, [], { stdio: ["pipe", "pipe", "pipe"] });
+    const child = spawnProxy(bridge!.agentCommand);
     let stdout = "";
     let stderr = "";
     let exited = false;
@@ -1089,7 +1147,7 @@ describe("sandbox adapter execution targets", () => {
       });
       expect(bridge).not.toBeNull();
 
-      const child = spawn(bridge!.agentCommand, [], { stdio: ["pipe", "pipe", "pipe"] });
+      const child = spawnProxy(bridge!.agentCommand);
       let stdout = "";
       let stderr = "";
       let exited = false;

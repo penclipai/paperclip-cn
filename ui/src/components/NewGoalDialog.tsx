@@ -137,8 +137,8 @@ export function NewGoalDialog() {
         <div className="flex items-center justify-between px-4 py-2.5 border-b border-border">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             {selectedCompany && (
-            <span className="bg-muted px-1.5 py-0.5 rounded text-xs font-medium">
-                {selectedCompany.name.slice(0, 3).toUpperCase()}
+              <span className="bg-muted px-1.5 py-0.5 rounded text-xs font-medium">
+                {selectedCompany.issuePrefix}
               </span>
             )}
             <span className="text-muted-foreground/60">&rsaquo;</span>
