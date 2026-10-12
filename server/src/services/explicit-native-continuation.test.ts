@@ -1411,7 +1411,7 @@ const support = await getEmbeddedPostgresTestSupport();
   });
 
   it("queues one exact Retry with fresh history and adopts repeated clicks", async () => {
-    const f = await seed();
+    const f = await seedWithVerifiedStop();
     await db.insert(heartbeatRuns).values({ companyId: f.companyId, agentId: f.agentId, status: "running" });
     const service = heartbeatService(db);
     const request = { source: "on_demand" as const, triggerDetail: "manual" as const,
