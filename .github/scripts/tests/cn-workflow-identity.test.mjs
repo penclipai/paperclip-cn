@@ -1,9 +1,17 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
 const read = (name) => readFileSync(new URL(`../../workflows/${name}`, import.meta.url), "utf8").replaceAll("\r\n", "\n");
-const trusted = read("pr-trusted.yml");
+const repoRoot = fileURLToPath(new URL("../../../", import.meta.url));
+const pinnedSha = read("pr.yml").match(/uses: penclipai\/paperclip-cn\/\.github\/workflows\/pr-trusted\.yml@([0-9a-f]{40})\s*$/m)?.[1];
+assert.ok(pinnedSha, "pr.yml must pin the trusted fork workflow to a full commit SHA");
+const pinned = spawnSync("git", ["show", `${pinnedSha}:.github/workflows/pr-trusted.yml`], { cwd: repoRoot, encoding: "utf8" });
+assert.equal(pinned.status, 0, `Cannot read pinned trusted workflow ${pinnedSha}: ${pinned.stderr}`);
+const trusted = pinned.stdout.replaceAll("\r\n", "\n");
+assert.equal(trusted, read("pr-trusted.yml"), "The pinned workflow must match the proposed trusted workflow source");
 const release = read("release.yml");
 const job = (source, name) => {
   const match = source.match(new RegExp(`^  ${name}:\\n([\\s\\S]*?)(?=^  [a-zA-Z_][\\w-]*:|$(?![\\s\\S]))`, "m"));

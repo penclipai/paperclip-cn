@@ -11,5 +11,4 @@ permissions:
 jobs:
   ci:
     # Use an immutable fork commit for the reviewed CI definition.
-    # The follow-up commit pins the completed sync merge's trusted workflow.
-    uses: penclipai/paperclip-cn/.github/workflows/pr-trusted.yml@6157480136e58b4fd352f3784246a6129260c7b3
+    uses: penclipai/paperclip-cn/.github/workflows/pr-trusted.yml@849cb762e82d87ba65f5747f6f0d91b4c0f0438e

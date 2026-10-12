@@ -45,8 +45,13 @@ function readTrustedPrWorkflow() {
     /^\s+uses: penclipai\/paperclip-cn\/\.github\/workflows\/pr-trusted\.yml@[0-9a-f]{40}\s*$/m,
     "pr.yml must call the trusted workflow from an immutable fork commit",
   );
-  // Validate proposed workflow changes locally; CI executes the pinned version.
-  return readFileSync(trustedPrWorkflow, "utf8");
+  const pinnedSha = caller.match(/uses: penclipai\/paperclip-cn\/\.github\/workflows\/pr-trusted\.yml@([0-9a-f]{40})\s*$/m)?.[1];
+  assert.ok(pinnedSha, "missing immutable trusted workflow SHA");
+  const pinned = spawnSync("git", ["show", `${pinnedSha}:${trustedPrWorkflowPath}`], { cwd: repoRoot, encoding: "utf8" });
+  assert.equal(pinned.status, 0, `Cannot read pinned trusted workflow ${pinnedSha}: ${pinned.stderr}`);
+  const source = pinned.stdout.replaceAll("\r\n", "\n");
+  assert.equal(source, readFileSync(trustedPrWorkflow, "utf8").replaceAll("\r\n", "\n"), "The pinned workflow must match the proposed trusted workflow source");
+  return source;
 }
 
 function readWorkflowJobs(workflow) {
@@ -67,7 +72,7 @@ function readWorkflowJobs(workflow) {
 }
 
 function runStackScope(stack, prBaseRef) {
-  const workflow = readFileSync(trustedPrWorkflow, "utf8");
+  const workflow = readTrustedPrWorkflow();
   const match = workflow.match(
     /      - name: Select stacked PR CI scope[\s\S]*?        run: \|\n([\s\S]*?)\n\n  policy:/,
   );
@@ -235,7 +240,7 @@ test("the trusted PR workflow keeps a stable aggregate check named e2e over the 
 });
 
 test("the trusted PR workflow limits full CI to merge-relevant stack layers", () => {
-  const workflow = readFileSync(trustedPrWorkflow, "utf8");
+  const workflow = readTrustedPrWorkflow();
   const jobs = readWorkflowJobs(workflow);
   const gate = jobs.get("gate");
 
@@ -329,9 +334,8 @@ test("the trusted PR workflow passes the shard's spec filter to Playwright witho
 });
 
 test("the trusted PR workflow regenerates stale stacked lockfiles", () => {
-  // Validate the proposed workflow here. The caller executes the merged master
-  // workflow; edits to this workflow take effect after code-owner review and merge.
-  const workflow = readFileSync(trustedPrWorkflow, "utf8");
+  // Inspect the exact immutable workflow blob selected by the caller.
+  const workflow = readTrustedPrWorkflow();
   assert.match(
     workflow,
     /policy:\n    needs: \[gate\][\s\S]{0,160}timeout-minutes: 10/,
