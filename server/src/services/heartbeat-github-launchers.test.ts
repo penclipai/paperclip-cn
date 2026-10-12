@@ -5,10 +5,22 @@ import path from "node:path";
 import { promisify } from "node:util";
 import { cleanupGitHubOperationLaunchers } from "@penclipai/adapter-utils/execution-target";
 import type { CommandManagedRuntimeRunner } from "@penclipai/adapter-utils/command-managed-runtime";
+import { prepareTestPosixShell } from "@penclipai/adapter-utils/test-fixtures/posix-shell";
 import { describe, expect, it, vi } from "vitest";
 import { prepareHeartbeatGitHubLaunchers } from "./heartbeat-github-launchers.js";
 
 const target = { kind: "remote" as const, transport: "sandbox" as const, providerKey: "daytona", remoteCwd: "/workspace" };
+
+function shellQuote(value: string) {
+  return `'${value.replace(/'/g, `"'"'`)}'`;
+}
+
+function toPosixFixturePath(value: string) {
+  if (process.platform !== "win32") return value;
+  return value
+    .replace(/^([A-Za-z]):[\\/]/, (_match, drive: string) => `/${drive.toLowerCase()}/`)
+    .replaceAll("\\", "/");
+}
 
 describe("heartbeat GitHub launcher lifetime", () => {
   it.each([target, null])("defers native managed authorization/staging to the session owner (%j)", async (target) => {
@@ -82,16 +94,34 @@ it("keeps anonymous wrappers usable after run cleanup and excludes sandbox image
   const root = await mkdtemp(path.join(tmpdir(), "native-anonymous-github-"));
   try {
     const bin = path.join(root, "bin");
+    const remoteRoot = toPosixFixturePath(root);
+    const remoteBin = toPosixFixturePath(bin);
     await mkdir(bin);
     await mkdir(path.join(root, ".config", "gh"), { recursive: true });
     await writeFile(path.join(root, ".config", "gh", "hosts.yml"), "ambient-image-secret");
-    await writeFile(path.join(bin, "gh"), `#!${process.execPath}
+    const ghSource = `
 const fs = require('node:fs');
-process.stdout.write(JSON.stringify({token:process.env.GH_TOKEN || '', githubToken:process.env.GITHUB_TOKEN || '', ssh:process.env.SSH_AUTH_SOCK, global:process.env.GIT_CONFIG_GLOBAL, imageConfig:fs.existsSync(process.env.GH_CONFIG_DIR + '/hosts.yml')}));`, { mode: 0o700 });
-    const imageEnv = { HOME: root, PATH: `${bin}:${path.dirname(process.execPath)}:/usr/bin:/bin`, GH_TOKEN: "ambient-token", GITHUB_TOKEN: "ambient-other-token", SSH_AUTH_SOCK: "/ambient/socket" };
+process.stdout.write(JSON.stringify({token:process.env.GH_TOKEN || '', githubToken:process.env.GITHUB_TOKEN || '', ssh:process.env.SSH_AUTH_SOCK, global:process.env.GIT_CONFIG_GLOBAL, imageConfig:fs.existsSync(process.env.GH_CONFIG_DIR + '/hosts.yml')}));`;
+    if (process.platform === "win32") {
+      await writeFile(path.join(bin, "gh.fixture.cjs"), ghSource);
+      await writeFile(path.join(bin, "gh.cmd"), `@echo off\r\n"${process.execPath}" "%~dp0gh.fixture.cjs" %*\r\n`);
+    } else {
+      await writeFile(path.join(bin, "gh"), `#!${process.execPath}\n${ghSource}`, { mode: 0o700 });
+    }
+    const imageEnv = { HOME: remoteRoot, PATH: `${remoteBin}:${toPosixFixturePath(path.dirname(process.execPath))}:/usr/bin:/bin`, GH_TOKEN: "ambient-token", GITHUB_TOKEN: "ambient-other-token", SSH_AUTH_SOCK: "/ambient/socket" };
     const execute: CommandManagedRuntimeRunner["execute"] = async (input) => {
       const startedAt = new Date().toISOString();
-      const child = promisify(execFile)(input.command, input.args ?? [], { cwd: input.cwd ?? root, env: { ...imageEnv, ...input.env }, timeout: 15_000 });
+      const directScript = process.platform === "win32" && path.isAbsolute(input.command) && !/\.(?:exe|cmd|bat)$/i.test(input.command);
+      const command = directScript ? "sh" : input.command;
+      const args = directScript
+        ? ["-c", `exec ${shellQuote(toPosixFixturePath(input.command))} "$@"`, "--", ...(input.args ?? [])]
+        : input.args;
+      const remoteEnv = Object.fromEntries(Object.entries(input.env ?? {}).map(([key, value]) => [
+        key,
+        typeof value === "string" && process.platform === "win32" ? value.replace(root, remoteRoot).replaceAll("\\", "/") : value,
+      ]));
+      const prepared = prepareTestPosixShell({ command, args, env: { ...imageEnv, ...remoteEnv } });
+      const child = promisify(execFile)(prepared.command, prepared.args, { cwd: input.cwd ?? root, env: prepared.env, timeout: 15_000 });
       child.child.stdin?.on("error", () => undefined);
       child.child.stdin?.end(input.stdin ?? "");
       const result = await child;

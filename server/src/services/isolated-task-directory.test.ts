@@ -6,8 +6,14 @@ import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { materializeIsolatedTaskDirectory, shouldUseIsolatedTaskDirectory } from "./isolated-task-directory.js";
 import { prepareSandboxManagedRuntime, type SandboxManagedRuntimeClient, type SandboxSyncOperation } from "@penclipai/adapter-utils/sandbox-managed-runtime";
+import { prepareTestPosixShell } from "@penclipai/adapter-utils/test-fixtures/posix-shell";
 
 const execFile = promisify(execFileCallback);
+
+function execFixtureShell(command: string) {
+  const prepared = prepareTestPosixShell({ command: "sh", args: ["-c", command], env: process.env });
+  return execFile(prepared.command, prepared.args, { env: prepared.env });
+}
 
 const policy = {
   trustPreset: "low_trust_review",
@@ -85,7 +91,7 @@ describe("isolated task directories", () => {
           await cp(file.sourcePath, file.targetPath, { recursive: true, dereference: file.followSymlinks ?? false });
         }
         for (const command of operation.postUploadCommands ?? []) {
-          await execFile("sh", ["-c", command.command]);
+          await execFixtureShell(command.command);
         }
         return { operationId: operation.operationId, filesTransferred: operation.files.length, bytesTransferred: 0 };
       })),
@@ -96,7 +102,7 @@ describe("isolated task directories", () => {
       readFile: async (target) => readFile(target),
       listFiles: async (target) => readdir(target),
       remove: async (target) => { await rm(target, { recursive: true, force: true }); },
-      run: async (command) => { await execFile("sh", ["-c", command]); },
+      run: async (command) => { await execFixtureShell(command); },
       syncIn: transfer,
       syncOut: transfer,
     };
