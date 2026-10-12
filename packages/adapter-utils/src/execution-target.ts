@@ -1461,6 +1461,11 @@ export async function prepareAdapterExecutionTargetRuntime(input: {
   // so the host pack time rides one `pack` span under the `stage.sync` step. The
   // SSH and local lanes ignore it. The default is a no-op.
   runtimeSpan?: RuntimeSpanRunner;
+  /**
+   * Sandbox copy-back retry delays. Environment probes restore into a throwaway
+   * temp workspace and pass `[]` so a failed restore does not stall the Test.
+   */
+  workspaceRestoreRetryDelaysMs?: readonly number[];
 }): Promise<PreparedAdapterExecutionTargetRuntime> {
   const target = input.target ?? { kind: "local" as const };
   if (target.kind === "local") {
@@ -1535,6 +1540,7 @@ export async function prepareAdapterExecutionTargetRuntime(input: {
     onProgress: input.onProgress,
     onRuntimeProgress: input.onRuntimeProgress,
     runtimeSpan: input.runtimeSpan,
+    workspaceRestoreRetryDelaysMs: input.workspaceRestoreRetryDelaysMs,
   });
   return {
     target,

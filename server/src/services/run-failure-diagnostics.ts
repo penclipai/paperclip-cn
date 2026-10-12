@@ -256,6 +256,7 @@ export function collectRunFailureDiagnostics(run: Run, options: RunFailureReport
       execution.environmentAcquisitionPhase = acquisition.phase;
       execution.environmentAcquisitionElapsedMs = acquisition.elapsedMs;
       execution.environmentAcquisitionBudgetMs = acquisition.budgetMs;
+      if (acquisition.providerState) execution.environmentAcquisitionProviderState = acquisition.providerState;
     }
     if (execution.restoreLockOwnerState === undefined && read(error, "code") === "ERR_WORKSPACE_RESTORE_LOCK_TIMEOUT") {
       const lock = read(error, "workspaceRestoreLock");

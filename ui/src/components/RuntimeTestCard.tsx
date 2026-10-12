@@ -64,7 +64,14 @@ export function RuntimeTestCard({
   variant?: "connection" | "prerequisites";
 }) {
   useTranslation();
+  const missingRuntime = state === "fail"
+    ? result?.checks.find((check) => check.code === "acpx_runtime_package_missing")
+    : undefined;
   const content = (variant === "prerequisites" ? prerequisiteCopy : copy)[state];
+  const title = missingRuntime ? translateInstant("Runtime missing") : translateInstant(content.title);
+  const description = state === "fail" && error
+    ? error
+    : missingRuntime?.message ?? translateInstant(content.description);
   const Icon =
     state === "running"
       ? Loader2
@@ -103,10 +110,8 @@ export function RuntimeTestCard({
             aria-atomic="true"
             className="min-w-0 space-y-1"
           >
-            <h3 className="text-sm font-medium">{translateInstant(content.title)}</h3>
-            <p className="text-xs leading-relaxed text-muted-foreground">
-              {state === "fail" && error ? error : translateInstant(content.description)}
-            </p>
+            <h3 className="text-sm font-medium">{title}</h3>
+            <p className="text-xs leading-relaxed text-muted-foreground">{description}</p>
           </div>
           <Button
             type="button"
@@ -130,7 +135,8 @@ export function RuntimeTestCard({
               aria-hidden="true"
               className="size-3 transition-transform group-open:rotate-90"
             />
-            {translateInstant("Test details")}</summary>
+            {translateInstant("Test details")}
+          </summary>
           <ul className="space-y-3 px-4 pb-4">
             {result.checks.map((check) => (
               <li

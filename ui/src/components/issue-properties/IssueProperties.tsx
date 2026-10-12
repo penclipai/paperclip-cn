@@ -31,7 +31,7 @@ import { issuesApi } from "../../api/issues";
 import { useIssuePlanDocument } from "@/hooks/useIssuePlanDocument";
 import { useIssueDocuments } from "@/hooks/useIssueDocuments";
 import { useStreamlinedUiEnabled } from "@/hooks/useStreamlinedUiEnabled";
-import { selectAgentArtifactAttachments } from "@/lib/issue-artifacts";
+import { selectArtifactAttachments } from "@/lib/issue-artifacts";
 import { projectsApi } from "../../api/projects";
 import { useCompany } from "../../context/CompanyContext";
 import { useSidebar } from "../../context/SidebarContext";
@@ -324,12 +324,11 @@ export function IssueProperties({
     || paneTabStandaloneDocuments.length > 0;
   // Artifacts covers the same three sources the tab body composes: work
   // products, documents (redundant with the Plan tab, intentionally), and
-  // agent-created attachments. User comment uploads stay thread-only and
-  // no longer summon the tab.
+  // attachments from agents and people.
   const hasArtifactsTab =
     (paneTabWorkProducts?.length ?? 0) > 0
     || paneTabStandaloneDocuments.length > 0
-    || selectAgentArtifactAttachments(paneTabAttachments, paneTabWorkProducts).length > 0;
+    || selectArtifactAttachments(paneTabAttachments, paneTabWorkProducts).length > 0;
   const [paneTab, setPaneTab] = useState<IssuePaneTab>("properties");
   const [closedPaneTabs, setClosedPaneTabs] = useState<Set<IssuePaneTab>>(() => new Set());
   // Once a plan document exists, surface it: switch the pane to the Plan tab so

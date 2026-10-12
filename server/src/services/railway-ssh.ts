@@ -1,4 +1,5 @@
 import { execFile, spawn } from "node:child_process";
+import { existsSync } from "node:fs";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -8,6 +9,32 @@ import { RailwayError, type RailwaySshInput } from "./railway.js";
 import { redactSensitiveText } from "../redaction.js";
 
 export const RAILWAY_SSH_SECRET_PATH = "railway.ssh_private_key";
+
+/**
+ * Uses only Paperclip's fixed OpenSSH locations. In particular, do not fall
+ * back to PATH here: Railway commands must not inherit a developer's SSH
+ * wrapper, configuration, agent, or provider credentials.
+ */
+export function resolveRailwayOpenSshPath(
+  command: "ssh" | "ssh-keygen",
+  platform = process.platform,
+  environment: NodeJS.ProcessEnv = process.env,
+): string | null {
+  if (platform !== "win32") return `/usr/bin/${command}`;
+
+  for (const programFiles of [environment.ProgramFiles, environment["ProgramFiles(x86)"]]) {
+    if (!programFiles) continue;
+    const candidate = path.join(programFiles, "Git", "usr", "bin", `${command}.exe`);
+    if (existsSync(candidate)) return candidate;
+  }
+  return null;
+}
+
+function railwayMsysPath(value: string): string {
+  // Git for Windows' OpenSSH is an MSYS executable. Forward slashes retain
+  // the drive prefix while avoiding backslash escaping in its POSIX path args.
+  return process.platform === "win32" ? value.replace(/\\/g, "/") : value;
+}
 
 export function validateRailwayKnownHosts(value: string): string {
   if (value.length > 8192) throw new RailwayError("railway_ssh_host_key_invalid", "The Railway host key is too long.", 400);
@@ -22,7 +49,9 @@ export async function generateRailwaySshKey(): Promise<{ publicKey: string; priv
   const directory = await mkdtemp(path.join(tmpdir(), "paperclip-railway-key-"));
   try {
     const keyPath = path.join(directory, "identity");
-    await promisify(execFile)("/usr/bin/ssh-keygen", ["-q", "-t", "ed25519", "-N", "", "-C", "paperclip-railway", "-f", keyPath], { timeout: 10_000, env: { PATH: "/usr/bin:/bin" } });
+    const sshKeygen = resolveRailwayOpenSshPath("ssh-keygen");
+    if (!sshKeygen) throw new Error("OpenSSH unavailable");
+    await promisify(execFile)(sshKeygen, ["-q", "-t", "ed25519", "-N", "", "-C", "paperclip-railway", "-f", railwayMsysPath(keyPath)], { timeout: 10_000, env: { PATH: process.platform === "win32" ? path.dirname(sshKeygen) : "/usr/bin:/bin" } });
     return { publicKey: (await readFile(`${keyPath}.pub`, "utf8")).trim(), privateKey: await readFile(keyPath, "utf8") };
   } catch {
     throw new RailwayError("railway_ssh_unavailable", "Generating a Railway key requires system OpenSSH (ssh-keygen) on the Paperclip runtime.", 422);
@@ -32,11 +61,11 @@ export async function generateRailwaySshKey(): Promise<{ publicKey: string; priv
 export function railwaySshArguments(directory: string, instanceId: string): string[] {
   if (!/^[a-f0-9-]{36}$/i.test(instanceId)) throw new RailwayError("railway_target_mismatch", "Invalid Railway container instance.", 400);
   return [
-    "-F", "/dev/null", "-T", "-i", path.join(directory, "identity"),
+    "-F", "/dev/null", "-T", "-i", railwayMsysPath(path.join(directory, "identity")),
     "-o", "BatchMode=yes", "-o", "IdentitiesOnly=yes", "-o", "IdentityAgent=none",
     "-o", "ForwardAgent=no", "-o", "ClearAllForwardings=yes", "-o", "ControlMaster=no",
     "-o", "ControlPath=none", "-o", "PermitLocalCommand=no", "-o", "StrictHostKeyChecking=yes",
-    "-o", `UserKnownHostsFile=${path.join(directory, "known_hosts")}`, "-o", "GlobalKnownHostsFile=/dev/null",
+    "-o", `UserKnownHostsFile=${railwayMsysPath(path.join(directory, "known_hosts"))}`, "-o", "GlobalKnownHostsFile=/dev/null",
     "-o", "ConnectTimeout=10", "-o", "ServerAliveInterval=5", "-o", "ServerAliveCountMax=2",
     "--", `${instanceId}@ssh.railway.com`, "sh -s",
   ];
@@ -51,9 +80,11 @@ export async function runRailwaySshCommand(input: RailwaySshInput & { privateKey
     await writeFile(path.join(directory, "identity"), input.privateKey, { mode: 0o600 });
     await writeFile(path.join(directory, "known_hosts"), knownHosts, { mode: 0o600 });
     input.signal.throwIfAborted();
+    const ssh = resolveRailwayOpenSshPath("ssh");
+    if (!ssh) throw new RailwayError("railway_ssh_unavailable", "System OpenSSH is unavailable on this Paperclip runtime.", 422);
     return await new Promise<{ exitCode: number | null; stdout: string; stderr: string; truncated: boolean; timedOut: boolean }>((resolve, reject) => {
       // No developer SSH config/agent, CLI login, provider token or ambient env.
-      const child = spawn("/usr/bin/ssh", railwaySshArguments(directory, input.deploymentInstanceId), { env: { PATH: "/usr/bin:/bin", LANG: "C.UTF-8" }, stdio: ["pipe", "pipe", "pipe"] });
+      const child = spawn(ssh, railwaySshArguments(directory, input.deploymentInstanceId), { env: { PATH: process.platform === "win32" ? path.dirname(ssh) : "/usr/bin:/bin", LANG: "C.UTF-8" }, stdio: ["pipe", "pipe", "pipe"] });
       let stdout = "", stderr = "", bytes = 0, truncated = false, timedOut = false, deliveryFailed = false;
       const marker = `paperclip_railway_completed_${randomBytes(16).toString("hex")}`;
       const stop = () => { child.kill("SIGKILL"); };

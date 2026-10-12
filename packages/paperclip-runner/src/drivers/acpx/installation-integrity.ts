@@ -354,7 +354,7 @@ export function createAcpxPackageJsonResolver(
       resolvePackageJsonFromIssuer(packageName, canonicalIssuer),
     );
     if (!pathIsInside(canonicalNodeModules, packageJsonPath)
-      && !isDeclaredHoistedCodexPlatform(canonicalRoot, canonicalManifest, canonicalIssuer, packageName, packageJsonPath)) {
+      && !isDeclaredHoistedProviderPlatform(canonicalRoot, canonicalManifest, canonicalIssuer, packageName, packageJsonPath)) {
       throw new Error(
         `ACPX provider package ${packageName} resolves outside the selected provider root`,
       );
@@ -365,25 +365,35 @@ export function createAcpxPackageJsonResolver(
   return resolver;
 }
 
-function hasPublishedCodexPlatformDeclaration(resolver: AcpxPackageJsonResolver, runtimeManifest: string): boolean {
+function hasPublishedProviderPlatformDeclaration(
+  resolver: AcpxPackageJsonResolver,
+  runtimeManifest: string,
+  qualified: { runtimePackageName: string; runtimePackageVersion: string; packageName: string; dependencyDeclaration: string },
+): boolean {
   const authority = rootedPackageResolvers.get(resolver);
   if (!authority || !pathIsInside(authority.root, runtimeManifest)) return false;
   const selected = readResolverPackageJson(authority.manifest);
   const runtime = readResolverPackageJson(runtimeManifest);
   const declarations = selected.optionalDependencies as Record<string, unknown> | undefined;
   return selected.name === "@penclipai/server"
-    && runtime.name === QUALIFIED_CODEX_LINUX_X64_RUNTIME.runtimePackageName
-    && runtime.version === QUALIFIED_CODEX_LINUX_X64_RUNTIME.runtimePackageVersion
+    && runtime.name === qualified.runtimePackageName
+    && runtime.version === qualified.runtimePackageVersion
     && runtime.optionalDependencies === undefined
-    && declarations?.[QUALIFIED_CODEX_LINUX_X64_RUNTIME.packageName] === QUALIFIED_CODEX_LINUX_X64_RUNTIME.dependencyDeclaration;
+    && declarations?.[qualified.packageName] === qualified.dependencyDeclaration;
 }
 
 // npm installs an optional platform alias outside a bundled server graph.
 // Admit only the qualified executable package through its declared npm slot;
 // all executable bytes still pass the existing digest/no-follow admission.
-function isDeclaredHoistedCodexPlatform(root: string, manifest: string, issuer: string, packageName: string, packageJsonPath: string): boolean {
-  const qualified = QUALIFIED_CODEX_LINUX_X64_RUNTIME;
-  if (packageName !== qualified.packageName || issuer === manifest) return false;
+function isDeclaredHoistedProviderPlatform(root: string, manifest: string, issuer: string, packageName: string, packageJsonPath: string): boolean {
+  const platformQualification = [
+    { qualified: QUALIFIED_CODEX_LINUX_X64_RUNTIME, os: "linux", cpu: "x64", alias: true },
+    { qualified: QUALIFIED_CLAUDE_LINUX_X64_RUNTIME, os: "linux", cpu: "x64", alias: false },
+    { qualified: QUALIFIED_CLAUDE_DARWIN_RUNTIMES.arm64, os: "darwin", cpu: "arm64", alias: false },
+    { qualified: QUALIFIED_CLAUDE_DARWIN_RUNTIMES.x64, os: "darwin", cpu: "x64", alias: false },
+  ].find(value => value.qualified.packageName === packageName);
+  if (!platformQualification || issuer === manifest) return false;
+  const { qualified, os, cpu, alias } = platformQualification;
   try {
     const selected = readResolverPackageJson(manifest);
     const runtime = readResolverPackageJson(issuer);
@@ -404,10 +414,10 @@ function isDeclaredHoistedCodexPlatform(root: string, manifest: string, issuer: 
     });
     if (!declaredSlot) return false;
     const platform = readResolverPackageJson(packageJsonPath);
-    return (platform.name === qualified.packageName || platform.name === qualified.runtimePackageName)
+    return (platform.name === qualified.packageName || (alias && platform.name === qualified.runtimePackageName))
       && platform.version === qualified.packageVersion
-      && Array.isArray(platform.os) && platform.os.includes("linux")
-      && Array.isArray(platform.cpu) && platform.cpu.includes("x64");
+      && Array.isArray(platform.os) && platform.os.includes(os)
+      && Array.isArray(platform.cpu) && platform.cpu.includes(cpu);
   } catch { return false; }
 }
 
@@ -633,9 +643,9 @@ export async function verifyQualifiedAcpxInstallation(
   profile: QualifiedAcpxProfile,
   resolvePackageJson: AcpxPackageJsonResolver = defaultPackageJsonResolver,
 ): Promise<VerifiedAcpxInstallation> {
-  // Keep the selected package authority available when its bundled Codex
+  // Keep the selected package authority available when its bundled provider
   // wrapper delegates platform installation to the published server manifest.
-  if (profile.agent === "codex" && resolvePackageJson === defaultPackageJsonResolver && process.env.PAPERCLIP_ACPX_PROVIDER_PACKAGE_ROOT !== undefined) {
+  if ((profile.agent === "codex" || profile.agent === "claude") && resolvePackageJson === defaultPackageJsonResolver && process.env.PAPERCLIP_ACPX_PROVIDER_PACKAGE_ROOT !== undefined) {
     resolvePackageJson = createAcpxPackageJsonResolver(
       process.env.PAPERCLIP_ACPX_PROVIDER_PACKAGE_ROOT,
       process.env.PAPERCLIP_ACPX_PROVIDER_PACKAGE_MANIFEST,
@@ -645,7 +655,22 @@ export async function verifyQualifiedAcpxInstallation(
   if (builtin && (profile.agentServerPackage !== "builtin:grok-acp" || profile.agentServerVersion !== "1" || profile.agentRuntimePackage !== "native:grok" || profile.agentRuntimeVersion !== "1.0.13")) {
     throw new Error("Grok builtin profile identity mismatch");
   }
-  const serverPackageJsonPath = builtin ? null : await realpath(resolvePackageJson(profile.agentServerPackage));
+  let serverPackageJsonPath: string | null = null;
+  if (!builtin) {
+    try {
+      serverPackageJsonPath = await realpath(resolvePackageJson(profile.agentServerPackage));
+    } catch (error) {
+      if ((profile.agent === "claude" || profile.agent === "codex") &&
+          error instanceof Error && "code" in error &&
+          (error.code === "MODULE_NOT_FOUND" || error.code === "ERR_MODULE_NOT_FOUND")) {
+        throw Object.assign(new Error(
+          `The ACPX ${profile.agent} runtime is incomplete: required package ${profile.agentServerPackage} is missing. ` +
+          "Reinstall or rebuild Paperclip with its bundled provider dependencies, restart the server, then test the agent's runtime before retrying.",
+        ), { code: "ACPX_RUNTIME_PACKAGE_MISSING" });
+      }
+      throw error;
+    }
+  }
   const serverPackage: AcpxPackageMetadata = builtin
     ? { version: "1", bin: "launcher.cjs", type: "commonjs" }
     : await readPackageJson(serverPackageJsonPath!, profile.agentServerPackage);
@@ -1019,8 +1044,8 @@ async function verifyQualifiedRuntimeExecutable(input: {
   const ownDeclaration = typeof optionalDependencies === "object"
     && optionalDependencies !== null && !Array.isArray(optionalDependencies)
     && (optionalDependencies as Record<string, unknown>)[qualification.packageName] === qualification.dependencyDeclaration;
-  const publishedDeclaration = input.profile.agent === "codex" && optionalDependencies === undefined
-    && hasPublishedCodexPlatformDeclaration(input.resolvePackageJson, input.runtimePackageJsonPath);
+  const publishedDeclaration = optionalDependencies === undefined
+    && hasPublishedProviderPlatformDeclaration(input.resolvePackageJson, input.runtimePackageJsonPath, qualification);
   if (!ownDeclaration && !publishedDeclaration) {
     throw new Error(
       `ACPX ${input.profile.agent} runtime omitted its verified platform executable package`,

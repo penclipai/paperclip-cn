@@ -161,6 +161,8 @@ export async function testEnvironment(
         workspaceRemoteDir: cwd,
         installCommand: SANDBOX_INSTALL_COMMAND,
         detectCommand: command,
+        // The probe workspace is a throwaway temp dir; never wait on copy-back retries.
+        workspaceRestoreRetryDelaysMs: [],
         assets: localRuntimeConfigHome
           ? [{
             key: "xdgConfig",

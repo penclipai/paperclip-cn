@@ -1,12 +1,13 @@
 import { EventEmitter } from "node:events";
 import { PassThrough } from "node:stream";
-import { access, readFile } from "node:fs/promises";
+import { access, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { instanceId } from "./fixtures/railway/provider.js";
 const { spawnMock } = vi.hoisted(() => ({ spawnMock: vi.fn() }));
 vi.mock("node:child_process", async (original) => ({ ...await original<typeof import("node:child_process")>(), spawn: spawnMock }));
-import { generateRailwaySshKey, railwaySshArguments, runRailwaySshCommand, validateRailwayKnownHosts } from "../services/railway-ssh.js";
+import { generateRailwaySshKey, railwaySshArguments, resolveRailwayOpenSshPath, runRailwaySshCommand, validateRailwayKnownHosts } from "../services/railway-ssh.js";
 
 const host = "ssh.railway.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFixture";
 function input(signal = new AbortController().signal) { return { deploymentInstanceId: instanceId, command: "printf 'hello'", timeoutSeconds: 1, privateKey: "-----BEGIN OPENSSH PRIVATE KEY-----\nfixture\n", knownHosts: host, signal }; }
@@ -22,6 +23,19 @@ function fakeProcess(action: (child: EventEmitter & { stdout: PassThrough; stder
 afterEach(() => { vi.clearAllMocks(); });
 
 describe("Railway isolated container command runner", () => {
+  it("uses only an installed Git for Windows OpenSSH binary", async () => {
+    const root = await mkdtemp(path.join(tmpdir(), "paperclip-railway-git-"));
+    try {
+      const ssh = path.join(root, "Git", "usr", "bin", "ssh.exe");
+      await mkdir(path.dirname(ssh), { recursive: true });
+      await writeFile(ssh, "fixture");
+      expect(resolveRailwayOpenSshPath("ssh", "win32", { ProgramFiles: root })).toBe(ssh);
+      expect(resolveRailwayOpenSshPath("ssh-keygen", "win32", { ProgramFiles: root })).toBeNull();
+      expect(resolveRailwayOpenSshPath("ssh", "win32", { PATH: root })).toBeNull();
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
   it("generates a fresh real key without retaining files", async () => {
     const key = await generateRailwaySshKey();
     expect(key.publicKey).toMatch(/^ssh-ed25519 /);
@@ -44,7 +58,11 @@ describe("Railway isolated container command runner", () => {
     const args = spawnMock.mock.calls[0][1] as string[];
     const keyPath = args[args.indexOf("-i") + 1];
     await expect(access(path.dirname(keyPath))).rejects.toThrow();
-    expect(spawnMock.mock.calls[0][2].env).toEqual({ PATH: "/usr/bin:/bin", LANG: "C.UTF-8" });
+    const ssh = resolveRailwayOpenSshPath("ssh");
+    expect(ssh).not.toBeNull();
+    expect(spawnMock.mock.calls[0][0]).toBe(ssh);
+    if (process.platform === "win32") expect(keyPath).not.toContain("\\");
+    expect(spawnMock.mock.calls[0][2].env).toEqual({ PATH: process.platform === "win32" ? path.dirname(ssh!) : "/usr/bin:/bin", LANG: "C.UTF-8" });
   });
   it("never treats local success or stdin failure as confirmed remote success", async () => {
     fakeProcess((child) => { child.stdin.emit("error", new Error("EPIPE")); child.emit("close", 0); });

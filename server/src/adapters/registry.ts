@@ -490,7 +490,12 @@ const paperclipRunnerAdapter: ServerAdapterModule = {
       } catch (error) {
         return {
           adapterType: "paperclip_runner", status: "fail" as const, testedAt: new Date().toISOString(),
-          checks: [{ code: "acpx_runtime_unavailable", level: "error" as const, message: error instanceof Error ? error.message : "ACPX Claude runtime could not be verified." }],
+          checks: [{
+            code: error instanceof Error && "code" in error && error.code === "ACPX_RUNTIME_PACKAGE_MISSING"
+              ? "acpx_runtime_package_missing" : "acpx_runtime_unavailable",
+            level: "error" as const,
+            message: error instanceof Error ? error.message : "The ACPX runtime could not be verified.",
+          }],
         };
       }
     }

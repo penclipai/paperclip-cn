@@ -46,6 +46,8 @@ export const costEvents = pgTable(
     nonnegativeAmounts: check("cost_events_nonnegative_amounts", sql`${table.costCents} >= 0 and ${table.inputTokens} >= 0 and ${table.cachedInputTokens} >= 0 and ${table.outputTokens} >= 0`),
     companyProjectOccurredIdx: index("cost_events_company_project_occurred_idx").on(table.companyId, table.projectId, table.occurredAt),
     unpricedIdx: index("cost_events_unpriced_idx").on(table.companyId, table.occurredAt, table.id).where(sql`${table.costStatus} = 'unpriced' and ${table.billingType} <> 'subscription_included'`),
+    dataQualityIdx: index("cost_events_data_quality_idx").on(table.companyId, table.occurredAt.desc(), table.id)
+      .where(sql`${table.billingType} = 'unknown' or (${table.costStatus} = 'unpriced' and ${table.billingType} <> 'subscription_included')`),
     companyOccurredIdx: index("cost_events_company_occurred_idx").on(table.companyId, table.occurredAt),
     companySubscriptionOccurredIdx: index("cost_events_company_subscription_occurred_idx").on(table.companyId, table.subscriptionId, table.occurredAt),
     companyAgentOccurredIdx: index("cost_events_company_agent_occurred_idx").on(

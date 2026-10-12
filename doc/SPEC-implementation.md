@@ -1601,6 +1601,26 @@ Validation:
 Read-time aggregate queries are acceptable for V1.
 Materialized rollups can be added later if query latency exceeds targets.
 
+The Costs overview distinguishes unknown billing categories, missing model/price
+data, and terminal runs awaiting final receipts. Bounded, company-scoped details
+load on demand at `GET /companies/:companyId/costs/data-quality`. Entries link to
+the run and, where applicable, agent configuration for future usage. Normal
+credits and fixed billing are not unknown billing warnings. Unavailable historic
+prices require no cleanup and must not be presented as zero-cost receipts.
+
+`POST /companies/:companyId/costs/retry-accounting` accepts a run ID, requires a
+board cost reader with a non-viewer membership, and uses the existing audited,
+idempotent accounting service. It never executes an agent. The UI offers retry
+only when the saved run is eligible to record costs. Missing final usage changes
+its display label after fifteen minutes; elapsed time never settles the debt or
+discards a late receipt. Raw provider errors and credentials are excluded from
+cost details. ACP usage retains the runtime-selected model, including defaults;
+conflicting before/after model IDs do not authorize a single-model estimate.
+Remote OpenCode billing uses only credentials forwarded to the execution target.
+Cost detail reads use company-scoped partial indexes matching their filters and
+sort order. Provider and biller cards retain estimate and missing-price labels;
+an accounting retry confirmation survives removal of the resolved cost gap.
+
 ## 14. UI Requirements (Board App)
 
 V1 UI routes:

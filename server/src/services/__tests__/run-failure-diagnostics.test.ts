@@ -24,6 +24,9 @@ describe("run failure diagnostics", () => {
     expect(collectSetup(error, run({ ...fixture, errorCode: "adapter_failed" }))).not.toHaveProperty("environmentAcquisitionPhase");
     expect(collectRunFailureDiagnostics(fixture, { error, phase: "execute" }).execution).not.toHaveProperty("environmentAcquisitionPhase");
     expect(Object.getOwnPropertyDescriptors(error)).toEqual(properties);
+    expect(collectSetup(error)).not.toHaveProperty("environmentAcquisitionProviderState");
+    captureEnvironmentAcquisitionDiagnostic(error, scope, { phase: "create", elapsedMs: 2_000, budgetMs: 2_000, providerState: "pulling_snapshot" });
+    expect(collectSetup(error)).toMatchObject({ environmentAcquisitionPhase: "create", environmentAcquisitionProviderState: "pulling_snapshot" });
     captureEnvironmentAcquisitionDiagnostic(error, scope, null);
     expect(collectSetup(error)).not.toHaveProperty("environmentAcquisitionPhase");
   });

@@ -565,6 +565,8 @@ export async function prepareCommandManagedRuntime(input: {
   // prepareSandboxManagedRuntime so the host pack time rides one `pack` span
   // under the `stage.sync` step. The default is a no-op.
   runtimeSpan?: RuntimeSpanRunner;
+  /** Copy-back retry delays; pass `[]` for throwaway workspaces that must not wait on retries. */
+  workspaceRestoreRetryDelaysMs?: readonly number[];
 }): Promise<PreparedSandboxManagedRuntime> {
   const timeoutMs = input.spec.timeoutMs && input.spec.timeoutMs > 0 ? input.spec.timeoutMs : 300_000;
   const workspaceRemoteDir = input.workspaceRemoteDir ?? input.spec.remoteCwd;
@@ -623,6 +625,7 @@ export async function prepareCommandManagedRuntime(input: {
           onProgress: input.onProgress,
           onRuntimeProgress: input.onRuntimeProgress,
           runtimeSpan: input.runtimeSpan,
+          workspaceRestoreRetryDelaysMs: input.workspaceRestoreRetryDelaysMs,
         });
       }
     }
@@ -668,5 +671,6 @@ export async function prepareCommandManagedRuntime(input: {
     onProgress: input.onProgress,
     onRuntimeProgress: input.onRuntimeProgress,
     runtimeSpan: input.runtimeSpan,
+    workspaceRestoreRetryDelaysMs: input.workspaceRestoreRetryDelaysMs,
   });
 }

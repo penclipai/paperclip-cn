@@ -129,6 +129,7 @@ import type {
   TurnCompletion,
 } from "./run-contracts.js";
 import { createRunResourceLedger } from "./run-resource-ledger.js";
+import { acpxAccountingModel } from "./accounting-model.js";
 import { settleAcpRun, type SettlementSteps } from "./settlement-sequence.js";
 import {
   runAttempt,
@@ -4791,6 +4792,7 @@ export function createAcpxEngineExecutor(deps: AcpxEngineExecutorOptions = {}) {
       // scoped hoisted local, so the settlement `endSession` step can cancel it.
       let runPrompt = "";
       let preTurnStatus: AcpRuntimeStatus | null = null;
+      let accountingModel: string | null = prepared.requestedModel || null;
       // Phase-timing markers for the prepare_turn and turn phases. The prepare
       // phase covers the prompt build and the pre-turn usage snapshot; the turn
       // phase covers the started turn and the event relay.
@@ -4862,6 +4864,7 @@ export function createAcpxEngineExecutor(deps: AcpxEngineExecutorOptions = {}) {
         // Snapshot pre-turn usage so cumulative agent-reported cost can be
         // attributed to this run alone.
         preTurnStatus = await readRuntimeStatus(runtime, sessionHandle);
+        accountingModel = acpxAccountingModel(prepared.requestedModel, preTurnStatus, null);
         // The prepare phase (prompt build + usage snapshot) finished; the turn
         // phase starts next.
         await emitPhase("prepare_turn", preparePhaseStart, "ok");
@@ -4991,7 +4994,7 @@ export function createAcpxEngineExecutor(deps: AcpxEngineExecutorOptions = {}) {
               const checkpoint = summarizeAcpxTurnUsage({ preStatus: preTurnStatus, postStatus: null, eventBreakdown, eventCostUsd });
               observedUsage = { usage: checkpoint.usage ?? undefined, costUsd: checkpoint.costUsd, usageBasis: "per_run", usageComplete: false };
               await ctx.onUsage?.({ ...billingFields, usage: checkpoint.usage ?? undefined, costUsd: checkpoint.costUsd,
-                model: prepared.requestedModel, usageBasis: "per_run", complete: false });
+                model: accountingModel, usageBasis: "per_run", complete: false });
             }
             await emitRuntimeEvent(ctx, event, toolTitles, prepared.coalescePlaceholderToolUpdates);
           }
@@ -5072,6 +5075,7 @@ export function createAcpxEngineExecutor(deps: AcpxEngineExecutorOptions = {}) {
         const turnSucceeded = terminal.status === "completed" && !timedOut && !channelLost;
         // Read usage before the settlement can discard runtime state.
         const postTurnStatus = await readRuntimeStatus(runtime, sessionHandle);
+        accountingModel = acpxAccountingModel(prepared.requestedModel, preTurnStatus, postTurnStatus);
         const turnUsage = summarizeAcpxTurnUsage({
           preStatus: preTurnStatus,
           postStatus: postTurnStatus,
@@ -5083,7 +5087,7 @@ export function createAcpxEngineExecutor(deps: AcpxEngineExecutorOptions = {}) {
         const usageComplete = !channelLost && (turnSucceeded || postTurnStatus?.usage != null);
         observedUsage = { usage: turnUsage.usage ?? undefined, costUsd: turnUsage.costUsd, usageBasis: "per_run", usageComplete };
         await ctx.onUsage?.({ ...billingFields, usage: turnUsage.usage ?? undefined, costUsd: turnUsage.costUsd,
-          model: prepared.requestedModel, usageBasis: "per_run", complete: usageComplete });
+          model: accountingModel, usageBasis: "per_run", complete: usageComplete });
         const failedTurn = terminal.status === "failed" || terminal.status === "cancelled" || timedOut;
         // ACPX can defer session/load until runTurn. Forget an unavailable
         // session so the next bounded turn receives the full task conversation.
@@ -5166,7 +5170,7 @@ export function createAcpxEngineExecutor(deps: AcpxEngineExecutorOptions = {}) {
           sessionDisplayId: sessionHandle.agentSessionId ?? sessionHandle.backendSessionId ?? sessionHandle.runtimeSessionName,
           ...billingFields,
           ...referencedProjectStagingFailuresField,
-          model: prepared.requestedModel || null,
+          model: accountingModel,
           ...(turnUsage.usage ? { usage: turnUsage.usage, usageBasis: "per_run" as const } : {}),
           costUsd: turnUsage.costUsd,
           usageComplete,
@@ -5307,7 +5311,7 @@ export function createAcpxEngineExecutor(deps: AcpxEngineExecutorOptions = {}) {
           ...(!turnDispatchAttempted ? { executionRecovery: { kind: "bootstrap" as const, providerWorkStarted: false as const } } : {}),
           ...billingFields,
           ...referencedProjectStagingFailuresField,
-          model: prepared.requestedModel || null,
+          model: accountingModel,
           clearSession: clearSession || timedOut,
           resultJson: { phase, ...activityDiagnostics },
           summary: message,

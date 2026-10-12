@@ -1279,8 +1279,19 @@ When a workspace service runs Paperclip for browser OAuth QA, configure its `exp
 Keep relevant heartbeat extractions and their focused tests in `server/src/services/heartbeat/`.
 
 Task assignment Markdown is rendered by `server/src/services/heartbeat/task-markdown.ts`.
-`heartbeat.ts` calls the renderer and re-exports it for existing callers. Keep prompt
+`heartbeat.ts` re-exports it for existing callers. Keep prompt
 formatting changes in the renderer and its tests, separate from run orchestration.
+
+Task context assembly is in `server/src/services/heartbeat/task-context.ts`.
+`prepareHeartbeatTaskContext` rebuilds prompt fields on the current run context:
+continuation summaries, wake comments, task plans, communication guidance, and
+full/compact assignment Markdown. It preserves quarantine and secret redaction
+before computing turn-context revisions. The executor supplies the already-loaded
+issue, session, and trust policy, and retains admission, resource ownership, and
+cleanup. Public-path characterization tests are in
+`server/src/__tests__/heartbeat-task-context.test.ts`; the workspace-bootstrap
+browser fixture also checks the persisted prompt variants and description revision
+from a real process adapter before completing its task.
 
 Run-log formatting is in `server/src/services/heartbeat/run-log.ts`. It bounds
 stored event payloads, redacts and shortens log chunks, and caps stdout/stderr
@@ -1456,6 +1467,19 @@ normal Claude catalog and accepts custom model IDs; the exact ID is sent to
 Claude, which can reject unavailable models. Package/version verification is
 independent of model selection. Environment tests verify runtime installation;
 a successful provider run additionally verifies credentials and model access.
+
+The server must install and bundle `@agentclientprotocol/claude-agent-acp`
+at the qualified version, including the patched bridge and pinned SDK. The
+vendor dependency check covers this dynamic lookup as well as ordinary imports.
+Source builds bind the vendored runner to the workspace's pnpm store while
+keeping the server manifest as its provider authority. Published npm bundles
+retain the pinned SDK JavaScript and declare its native packages as server
+optional dependencies, so npm installs the executable for the consumer's
+platform. Runtime admission still checks the exact version and executable digest.
+A missing provider package is reported as **Runtime missing**, with automatic
+retries stopped. Reinstall or rebuild Paperclip with its provider dependencies,
+restart the server, and run the agent's runtime test before retrying the task.
+Changing the model or signing in again cannot repair a missing runtime package.
 
 ACPX Claude supports Linux x64 and macOS ARM64/x64 with pinned SDK executables.
 On macOS the launcher uses private verified module/executable snapshots instead

@@ -54,6 +54,77 @@ afterEach(async () => {
 });
 
 describe("ACPX installation integrity", () => {
+  it.each([["linux", "x64"], ["darwin", "arm64"], ["darwin", "x64"]] as const)(
+    "retains Claude executable admission for a published bundle on %s %s", async (os, cpu) => {
+      const parent = await realpath(await mkdtemp(join(tmpdir(), "paperclip-claude-npm-admission-")));
+      temporaryDirectories.push(parent);
+      const root = join(parent, "node_modules/@penclipai/server");
+      const bridge = join(root, "node_modules/@agentclientprotocol/claude-agent-acp");
+      const runtime = join(bridge, "node_modules/@anthropic-ai/claude-agent-sdk");
+      const name = `@anthropic-ai/claude-agent-sdk-${os}-${cpu}`;
+      const platformRoot = join(parent, "node_modules", name);
+      const optionalDependencies = { [name]: "0.3.286" };
+      const runtimeMetadata = { name: "@anthropic-ai/claude-agent-sdk", version: "0.3.286" };
+      const platformMetadata = { name, version: "0.3.286", os: [os], cpu: [cpu] };
+      await Promise.all([mkdir(runtime, { recursive: true }), mkdir(platformRoot, { recursive: true })]);
+      const command = 'process.stdout.write("unexecuted fixture");';
+      const reset = () => Promise.all([
+        writeFile(join(root, "package.json"), JSON.stringify({ name: "@penclipai/server", optionalDependencies })),
+        writeFile(join(runtime, "package.json"), JSON.stringify(runtimeMetadata)),
+        writeFile(join(platformRoot, "package.json"), JSON.stringify(platformMetadata)),
+      ]);
+      await reset();
+      await Promise.all([
+        writeFile(join(bridge, "package.json"), JSON.stringify({ name: "@agentclientprotocol/claude-agent-acp", version: "0.73.0", bin: "server.js" })),
+        writeFile(join(bridge, "server.js"), command),
+        writeFile(join(platformRoot, "claude"), "unqualified native bytes", { mode: 0o755 }),
+      ]);
+      const profile = { ...resolveQualifiedAcpxProfile("claude", "claude-opus-5-5"), commandDigest: `sha256:${createHash("sha256").update(command).digest("hex")}` };
+      const resolver = createAcpxPackageJsonResolver(root);
+      expect(resolver(name, join(runtime, "package.json"))).toBe(join(platformRoot, "package.json"));
+      expect(() => resolver(name)).toThrow("outside the selected provider root");
+      for (const [file, metadata] of [
+        [join(root, "package.json"), { name: "@penclipai/server", optionalDependencies: { [name]: "latest" } }],
+        [join(runtime, "package.json"), { ...runtimeMetadata, version: "0.3.285" }],
+        [join(runtime, "package.json"), { ...runtimeMetadata, optionalDependencies: {} }],
+        [join(platformRoot, "package.json"), { ...platformMetadata, name: "unqualified-provider" }],
+        [join(platformRoot, "package.json"), { ...platformMetadata, version: "0.3.285" }],
+        [join(platformRoot, "package.json"), { ...platformMetadata, cpu: ["ia32"] }],
+      ] as const) {
+        await writeFile(file, JSON.stringify(metadata));
+        expect(() => resolver(name, join(runtime, "package.json"))).toThrow("outside the selected provider root");
+        await reset();
+      }
+      const platformSpy = vi.spyOn(process, "platform", "get").mockReturnValue(os);
+      const archSpy = vi.spyOn(process, "arch", "get").mockReturnValue(cpu);
+      try {
+        await expect(verifyQualifiedAcpxInstallation(profile, (...args) => resolver(...args))).rejects.toThrow("runtime omitted its verified platform executable package");
+        await expect(verifyQualifiedAcpxInstallation(profile, resolver)).rejects.toThrow(/digest mismatch/);
+        vi.stubEnv("PAPERCLIP_ACPX_PROVIDER_PACKAGE_ROOT", root);
+        vi.stubEnv("PAPERCLIP_ACPX_PROVIDER_PACKAGE_MANIFEST", undefined);
+        await expect(verifyQualifiedAcpxInstallation(profile)).rejects.toThrow(/digest mismatch/);
+      } finally {
+        vi.unstubAllEnvs();
+        platformSpy.mockRestore();
+        archSpy.mockRestore();
+      }
+    },
+  );
+  it("explains a missing Claude ACP installation without leaking the resolver stack", async () => {
+    const missingPackage = Object.assign(new Error(
+      "Cannot find module '@agentclientprotocol/claude-agent-acp/package.json'\nRequire stack: /srv/private/server.js",
+    ), { code: "MODULE_NOT_FOUND" });
+    const error = await verifyQualifiedAcpxInstallation(
+      resolveQualifiedAcpxProfile("claude", "claude-opus-5-5"),
+      () => { throw missingPackage; },
+    ).catch(error => error);
+    expect(error).toMatchObject({ code: "ACPX_RUNTIME_PACKAGE_MISSING" });
+    expect(error.message).toContain("@agentclientprotocol/claude-agent-acp");
+    expect(error.message).toContain("Reinstall or rebuild");
+    expect(error.message).not.toContain("/srv/private");
+    expect(error.message).not.toContain("Require stack");
+  });
+
   it.each([false, true])("admits only the declared qualified Codex platform in its npm-hoisted slot (published platform declaration: %s)", async (publishedDeclaration) => {
     const parent = await realpath(await mkdtemp(join(tmpdir(), "paperclip-codex-npm-hoist-")));
     temporaryDirectories.push(parent);

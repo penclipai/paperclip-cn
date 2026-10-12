@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import {
   existsSync,
+  cpSync,
   lstatSync,
   mkdirSync,
   mkdtempSync,
@@ -56,6 +57,33 @@ function esbuildFixture(t) {
 }
 const codexTargets = ["linux-x64", "linux-arm64", "darwin-x64", "darwin-arm64", "win32-x64", "win32-arm64"];
 const codexOptional = Object.fromEntries(codexTargets.map(target => [`@openai/codex-${target}`, `npm:@openai/codex@0.160.0-${target}`]));
+const claudeTargets = [...codexTargets, "linux-x64-musl", "linux-arm64-musl"];
+const claudeOptional = Object.fromEntries(claudeTargets.map(target => [`@anthropic-ai/claude-agent-sdk-${target}`, "0.3.286"]));
+function claudeFixture(t) {
+  const directory = realpathSync(mkdtempSync(join(tmpdir(), "paperclip-bundled-claude-")));
+  t.after(() => rmSync(directory, { recursive: true, force: true }));
+  const graph = join(directory, "node_modules");
+  const writePackage = (location, metadata) => {
+    mkdirSync(location, { recursive: true });
+    writeFileSync(join(location, "package.json"), JSON.stringify(metadata));
+    return location;
+  };
+  const bridge = writePackage(join(graph, "@agentclientprotocol/claude-agent-acp"), {
+    name: "@agentclientprotocol/claude-agent-acp", version: "0.73.0", dependencies: { "@anthropic-ai/claude-agent-sdk": "0.3.286" },
+  });
+  writeFileSync(join(bridge, "index.js"), "export {};\n");
+  const runtime = writePackage(join(graph, "@anthropic-ai/claude-agent-sdk"), {
+    name: "@anthropic-ai/claude-agent-sdk", version: "0.3.286", exports: { ".": "./sdk.mjs" }, optionalDependencies: claudeOptional,
+  });
+  writeFileSync(join(runtime, "sdk.mjs"), "// official JavaScript fixture, never executed\n");
+  const producer = writePackage(join(graph, "@anthropic-ai/claude-agent-sdk-linux-x64"), {
+    name: "@anthropic-ai/claude-agent-sdk-linux-x64", version: "0.3.286", os: ["linux"], cpu: ["x64"],
+  });
+  writeFileSync(join(producer, "claude"), "producer native fixture, never executed");
+  const profiles = [{ agent: "claude", ...profileData.profiles.claude }];
+  const publish = { name: "paperclip-claude-pack-fixture", version: "1.0.0", dependencies: { "@agentclientprotocol/claude-agent-acp": "0.73.0" }, bundleDependencies: ["@agentclientprotocol/claude-agent-acp"] };
+  return { directory, graph, bridge, runtime, producer, profiles, publish, writePackage };
+}
 function codexFixture(t) {
   const directory = realpathSync(mkdtempSync(join(tmpdir(), "paperclip-bundled-codex-")));
   t.after(() => rmSync(directory, { recursive: true, force: true }));
@@ -173,13 +201,26 @@ test("published packages preserve the patched ACPX runtime", () => {
   assert.equal(cliEsbuildConfig.external.includes("acpx"), false);
 });
 
+test("published Claude bridge pins its qualified SDK and provider dependency closure", () => {
+  const published = materializePublishManifest(serverPackage);
+  const { installManifest } = configureBundledProviderOverrides(
+    createBundledInstallManifest(published, serverPackage.bundleDependencies),
+    serverPackage.bundleDependencies, rootPackage, profileData,
+  );
+  assert.deepEqual(installManifest.overrides["@agentclientprotocol/claude-agent-acp@0.73.0"], {
+    "@anthropic-ai/claude-agent-sdk": "0.3.286",
+    "@agentclientprotocol/sdk": "1.4.0",
+    zod: "4.4.3",
+  });
+});
+
 test("published Codex bridge uses its qualified producer closure without consumer overrides", () => {
   const published = materializePublishManifest(serverPackage);
   const { installManifest, profiles } = configureBundledProviderOverrides(
     createBundledInstallManifest(published, serverPackage.bundleDependencies),
     serverPackage.bundleDependencies, rootPackage, profileData,
   );
-  assert.equal(profiles.length, 1);
+  assert.deepEqual(profiles.map(profile => profile.agent), ["codex", "claude"]);
   for (const profile of profiles) {
     assert.equal(published.dependencies[profile.agentServerPackage], profile.agentServerVersion);
     assert.ok(published.bundleDependencies.includes(profile.agentServerPackage));
@@ -196,6 +237,58 @@ test("published Codex bridge uses its qualified producer closure without consume
   const conflict = createBundledInstallManifest(published, serverPackage.bundleDependencies);
   conflict.overrides = { "@agentclientprotocol/codex-acp@1.6.2": { "@openai/codex": "0.156.1" } };
   assert.throws(() => configureBundledProviderOverrides(conflict, serverPackage.bundleDependencies, rootPackage, profileData), /conflicting producer override/);
+});
+
+test("Linux-produced Claude bundles retain the SDK and install native packages for the consumer platform", (t) => {
+  const { directory, bridge, runtime, producer, profiles, publish } = claudeFixture(t);
+  const bridgeBefore = readFileSync(join(bridge, "package.json"), "utf8");
+  const staged = stageBundledProviderOptionalDependencies(directory, publish, profiles);
+  assert.deepEqual(staged.optionalDependencies, claudeOptional);
+  assert.equal(existsSync(producer), false);
+  assert.equal(JSON.parse(readFileSync(join(runtime, "package.json"), "utf8")).optionalDependencies, undefined);
+  assert.equal(readFileSync(join(bridge, "package.json"), "utf8"), bridgeBefore);
+  assert.deepEqual(stageBundledProviderOptionalDependencies(directory, staged, profiles), staged);
+  writeFileSync(join(directory, "package.json"), JSON.stringify(staged));
+  const packs = JSON.parse(execFileSync("npm", ["pack", "--ignore-scripts", "--offline", "--json"], {
+    cwd: directory, encoding: "utf8", timeout: 30_000,
+    env: { ...process.env, HOME: directory, npm_config_cache: join(directory, "cache"), npm_config_update_notifier: "false" },
+  }));
+  const paths = packs[0].files.map(file => file.path);
+  assert.ok(paths.some(path => path.endsWith("@anthropic-ai/claude-agent-sdk/sdk.mjs")));
+  assert.equal(paths.some(path => /@anthropic-ai\/claude-agent-sdk-(?:linux|darwin|win32)-/.test(path)), false);
+});
+
+test("Claude bundle validation rejects unqualified declarations before removing native payloads", (t) => {
+  const { directory, runtime, producer, profiles, publish } = claudeFixture(t);
+  const file = join(runtime, "package.json"), original = JSON.parse(readFileSync(file, "utf8"));
+  for (const metadata of [
+    { ...original, version: "0.3.285" },
+    { ...original, optionalDependencies: { ...claudeOptional, "@anthropic-ai/claude-agent-sdk-darwin-arm64": "latest" } },
+    { ...original, optionalDependencies: {} },
+  ]) {
+    writeFileSync(file, JSON.stringify(metadata));
+    assert.throws(() => stageBundledProviderOptionalDependencies(directory, publish, profiles), /version mismatch|not qualified/);
+    assert.equal(existsSync(producer), true);
+  }
+});
+
+test("mixed provider bundles validate both runtimes before removing either producer executable", (t) => {
+  const codex = codexFixture(t), claude = claudeFixture(t);
+  for (const name of ["@agentclientprotocol/claude-agent-acp", "@anthropic-ai/claude-agent-sdk", "@anthropic-ai/claude-agent-sdk-linux-x64"]) {
+    cpSync(join(claude.graph, name), join(codex.graph, name), { recursive: true });
+  }
+  const profiles = [...codex.profiles, ...claude.profiles];
+  const publish = { ...codex.publish, dependencies: { ...codex.publish.dependencies, ...claude.publish.dependencies },
+    bundleDependencies: [...codex.publish.bundleDependencies, ...claude.publish.bundleDependencies] };
+  const file = join(codex.graph, "@anthropic-ai/claude-agent-sdk/package.json");
+  const metadata = JSON.parse(readFileSync(file, "utf8"));
+  writeFileSync(file, JSON.stringify({ ...metadata, version: "0.3.285" }));
+  assert.throws(() => stageBundledProviderOptionalDependencies(codex.directory, publish, profiles), /Claude runtime version mismatch/);
+  assert.equal(existsSync(codex.producer), true);
+  assert.deepEqual(JSON.parse(readFileSync(join(codex.runtime, "package.json"), "utf8")).optionalDependencies, codexOptional);
+  writeFileSync(file, JSON.stringify(metadata));
+  const staged = stageBundledProviderOptionalDependencies(codex.directory, publish, profiles);
+  assert.deepEqual(staged.optionalDependencies, { ...codexOptional, ...claudeOptional });
 });
 
 test("Codex bundles retain pinned JavaScript and delegate official consumer platform aliases without native payloads", (t) => {
@@ -548,9 +641,12 @@ for (const runtimes of Object.values(pkg.overrides ?? {})) {
   for (const [name, version] of Object.entries(runtimes)) {
     const directory = join("node_modules", name);
     mkdirSync(directory, { recursive: true });
+    const targets = ["linux-x64", "linux-arm64", "darwin-x64", "darwin-arm64", "win32-x64", "win32-arm64"];
     const optionalDependencies = name === "@openai/codex"
-      ? Object.fromEntries(["linux-x64", "linux-arm64", "darwin-x64", "darwin-arm64", "win32-x64", "win32-arm64"].map((target) => [name + "-" + target, "npm:" + name + "@" + version + "-" + target]))
-      : undefined;
+      ? Object.fromEntries(targets.map((target) => [name + "-" + target, "npm:" + name + "@" + version + "-" + target]))
+      : name === "@anthropic-ai/claude-agent-sdk"
+        ? Object.fromEntries([...targets, "linux-x64-musl", "linux-arm64-musl"].map((target) => [name + "-" + target, version]))
+        : undefined;
     writeFileSync(join(directory, "package.json"), JSON.stringify({ name, version, optionalDependencies }));
   }
 }
@@ -612,7 +708,7 @@ writeFileSync(join(target, "dist", "runtime.js"), "patched spawnEnvironment runt
   assert.equal(lstatSync(stagedAcpxDir).isSymbolicLink(), false);
   assert.equal(existsSync(join(destinationDir, "node_modules/.pnpm")), false);
   const stagedManifest = JSON.parse(readFileSync(join(destinationDir, "package.json"), "utf8"));
-  for (const [name, version] of Object.entries(codexOptional)) {
+  for (const [name, version] of Object.entries({ ...codexOptional, ...claudeOptional })) {
     assert.equal(stagedManifest.optionalDependencies[name], version);
     assert.equal(existsSync(join(destinationDir, "node_modules", name)), false);
     assert.equal(stagedManifest.bundleDependencies.includes(name), false);

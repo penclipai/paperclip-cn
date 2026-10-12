@@ -1649,7 +1649,9 @@ export function TaskChatThread(props: TaskChatThreadProps) {
             ? "native_runner_timed_out"
             : "native_runner_process_exited");
         const label =
-          code === "native_provider_model_rejected" && source.status === "failed"
+          code === "native_provider_runtime_missing" && source.status === "failed"
+            ? "Runtime missing"
+            : code === "native_provider_model_rejected" && source.status === "failed"
             ? "Model unavailable"
             : code === "native_provider_approval_required" && source.status === "failed"
             ? "Approval required"
@@ -1670,6 +1672,8 @@ export function TaskChatThread(props: TaskChatThreadProps) {
             ? `The run was cancelled${responseBoundary}.`
             : source.status === "interrupted"
               ? `The run was interrupted${responseBoundary}.`
+              : code === "native_provider_runtime_missing"
+                ? "The selected provider runtime is missing a required package. Reinstall or rebuild Paperclip with its bundled provider dependencies, restart the server, then test the agent's runtime before retrying."
               : code === "native_provider_approval_required"
                 ? "This operation requires approval, but this runner has no interactive approval handler. Review the operation and update the agent's permission setting before retrying."
                 : code === "native_provider_model_rejected"

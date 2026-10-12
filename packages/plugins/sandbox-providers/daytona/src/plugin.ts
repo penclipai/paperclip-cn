@@ -14,6 +14,7 @@ import type {
   PluginContext,
   PluginEnvironmentCreationCleanup,
   PluginEnvironmentAcquisitionDiagnostic,
+  PluginEnvironmentAcquisitionProviderState,
   PluginTracer,
   PluginEnvironmentAcquireLeaseParams,
   PluginEnvironmentCancelInteractiveSetupParams,
@@ -1043,6 +1044,28 @@ async function destroyFailedCreation(
     }
   }
   await withLivenessTimeout("sandbox.failedCreateDelete", 15_000, () => orphan.delete(10, true));
+}
+
+// Daytona states reported as-is after a create deadline; any other is `other`.
+const REPORTED_CREATE_STATES = new Set<string>([
+  "creating", "pending_build", "building_snapshot", "pulling_snapshot", "starting", "started", "error", "build_failed",
+] satisfies PluginEnvironmentAcquisitionProviderState[]);
+
+// One read-only lookup of the provisional creation name, so a create deadline
+// records where the provider left the allocation. It neither deletes nor
+// records an observed ID: the host-owned cleanup envelope is unchanged.
+async function observeCreateState(
+  config: DaytonaDriverConfig, cleanup: PluginEnvironmentCreationCleanup,
+): Promise<PluginEnvironmentAcquisitionProviderState> {
+  try {
+    const sandbox = await withLivenessTimeout("sandbox.createStateLookup", 5_000,
+      () => createDaytonaClient(config).get(cleanup.providerLeaseId));
+    if (!sandbox || sandbox.name !== cleanup.providerLeaseId || typeof sandbox.state !== "string" ||
+        Object.entries(cleanup.labels).some(([key, value]) => sandbox.labels?.[key] !== value)) return "unavailable";
+    return REPORTED_CREATE_STATES.has(sandbox.state) ? sandbox.state as PluginEnvironmentAcquisitionProviderState : "other";
+  } catch (error) {
+    return error instanceof DaytonaNotFoundError ? "absent" : "unavailable";
+  }
 }
 
 // ─── Per-lease started-sandbox handle cache ──────────────────────────────────
@@ -2500,6 +2523,15 @@ const plugin = definePlugin({
     const assertActive = () => {
       if (expired || Date.now() >= deadline) throw timeoutFailure();
     };
+    const deadlineFailure = async () => {
+      // Only a create that has neither resolved nor rejected is still pending.
+      const createPending = phase === "create" && firstFailure === undefined ? cleanup : undefined;
+      const diagnostic = observeFailure();
+      // Stop late setup before the lookup, so a late create cannot be admitted.
+      expired = true;
+      if (createPending) diagnostic.providerState = await observeCreateState(config, createPending);
+      return timeoutFailure();
+    };
     const acquire = async (): Promise<PluginEnvironmentLease> => {
       const sandbox = await createSandbox(params, config, {
         onCreateAttempt: (attempt) => { cleanup = attempt; },
@@ -2586,11 +2618,14 @@ const plugin = definePlugin({
       }
     };
     let timer: ReturnType<typeof setTimeout> | undefined;
+    let timedOut = false;
     try {
       return await Promise.race([
-        acquire(),
+        // After the deadline only the timer settles the call: a late create
+        // rejection cannot replace the timeout's ownership and observation.
+        acquire().catch((error: unknown) => timedOut ? new Promise<never>(() => undefined) : Promise.reject(error)),
         new Promise<never>((_resolve, reject) => {
-          timer = setTimeout(() => reject(timeoutFailure()), budgetMs);
+          timer = setTimeout(() => { timedOut = true; void deadlineFailure().then(reject); }, budgetMs);
         }),
       ]);
     } finally {

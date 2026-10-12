@@ -1454,6 +1454,7 @@ describe("shared ACPX engine runtime behavior", () => {
     const stateDir = path.join(root, "state");
     const logs: Array<{ stream: string; text: string }> = [];
     let statusCalls = 0;
+    const onUsage = vi.fn();
     const execute = createAcpxEngineExecutor({
       createRuntime: () => ({
         ensureSession: async () => ({
@@ -1464,8 +1465,9 @@ describe("shared ACPX engine runtime behavior", () => {
         getStatus: async () => {
           statusCalls += 1;
           return statusCalls === 1
-            ? { usage: { cost: { amount: 0.4, currency: "USD" } } }
+            ? { models: { currentModelId: "claude-observed-default", availableModelIds: [] }, usage: { cost: { amount: 0.4, currency: "USD" } } }
             : {
+                models: { currentModelId: "claude-observed-default", availableModelIds: [] },
                 usage: {
                   cumulative: {
                     inputTokens: 120,
@@ -1499,6 +1501,7 @@ describe("shared ACPX engine runtime behavior", () => {
 
     const result = await execute({
       runId: "run-usage-capture",
+      onUsage,
       agent: {
         id: "agent-1",
         companyId: "company-1",
@@ -1522,6 +1525,8 @@ describe("shared ACPX engine runtime behavior", () => {
     expect(result.provider).toBe("anthropic");
     expect(result.biller).toBe("anthropic");
     expect(result.billingType).toBe("api");
+    expect(result.model).toBe("claude-observed-default");
+    expect(onUsage).toHaveBeenLastCalledWith(expect.objectContaining({ model: "claude-observed-default", complete: true }));
     expect((result.resultJson as Record<string, unknown>)?.cumulativeCostUsd).toBeCloseTo(1.15);
     expect((result.resultJson as Record<string, unknown>)?.usage).toEqual({
       inputTokens: 120,

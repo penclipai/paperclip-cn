@@ -29,6 +29,7 @@ import {
 } from "./git-workspace-sync.js";
 import {
   captureDirectorySnapshot,
+  classifyWorkspaceRestoreFailure,
   disposeDirectorySnapshot,
   selectDirectorySnapshot,
   mergeDirectoryWithBaseline,
@@ -312,6 +313,37 @@ const REFERENCED_SOURCE_IGNORE_SCAN_RETRY_DELAYS_MS = [1_000, 2_000] as const;
 
 async function delay(ms: number): Promise<void> {
   await new Promise<void>((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Backoff before each automatic retry of a workspace copy-back: three total
+ * attempts. A failed copy-back otherwise retains the sandbox for board repair,
+ * so a dropped transfer or a busy merge lock must not end the run's restore.
+ */
+const WORKSPACE_RESTORE_RETRY_DELAYS_MS = [2_000, 5_000] as const;
+
+/**
+ * Retry a copy-back attempt only while it has written nothing into the host
+ * workspace. The baseline stays valid until then, so a fresh attempt is the
+ * same merge. Never retry an unsafe archive or a permission failure, and never
+ * retry once the merge has started writing host files.
+ */
+async function retryWorkspaceRestoreBeforeHostWrite(
+  delaysMs: readonly number[],
+  attempt: (markHostWriteStarted: () => void) => Promise<void>,
+): Promise<void> {
+  for (let retry = 0; ; retry++) {
+    let hostWriteStarted = false;
+    try {
+      await attempt(() => { hostWriteStarted = true; });
+      return;
+    } catch (error) {
+      const code = classifyWorkspaceRestoreFailure(error);
+      const retryable = code === "restore_failed" || code === "restore_lock_timeout";
+      if (hostWriteStarted || !retryable || retry >= delaysMs.length) throw error;
+      await delay(delaysMs[retry]!);
+    }
+  }
 }
 
 /**
@@ -1164,6 +1196,8 @@ export async function prepareSandboxManagedRuntime(input: {
   // no-op that keeps the current behavior and control flow. A throwing runner
   // never changes control flow (see `createRuntimeSpanRunner`).
   runtimeSpan?: RuntimeSpanRunner;
+  /** Backoff before each automatic workspace copy-back retry. Tests shorten it. */
+  workspaceRestoreRetryDelaysMs?: readonly number[];
 }): Promise<PreparedSandboxManagedRuntime> {
   const workspaceRemoteDir = input.workspaceRemoteDir ?? input.spec.remoteCwd;
   const runtimeRootDir = input.runtimeRootDir ?? path.posix.join(workspaceRemoteDir, ".paperclip-runtime", input.adapterKey);
@@ -1808,10 +1842,13 @@ export async function prepareSandboxManagedRuntime(input: {
                   ignoredPaths: repository.snapshot.ignoredPaths,
                 }),
                 onRuntimeProgress: input.onRuntimeProgress,
+                workspaceRestoreRetryDelaysMs: input.workspaceRestoreRetryDelaysMs,
               });
               await nested.restoreWorkspace(restoreSink);
             }
-            await withTempDir("paperclip-sandbox-restore-", async (tempDir) => {
+            await retryWorkspaceRestoreBeforeHostWrite(
+              input.workspaceRestoreRetryDelaysMs ?? WORKSPACE_RESTORE_RETRY_DELAYS_MS,
+              (markHostWriteStarted) => withTempDir("paperclip-sandbox-restore-", async (tempDir) => {
               let importedRef: string | null = null;
               let importedHead: string | null = null;
               let remoteWorkspaceStatus = "dirty";
@@ -1978,15 +2015,16 @@ export async function prepareSandboxManagedRuntime(input: {
                       baseline: mergeBaseline,
                       sourceDir: extractedDir,
                       targetDir: input.workspaceLocalDir,
-                      beforeApply: gitHeadToIntegrate
-                        ? async () => {
-                            await withWorkspaceRestoreStep("git_integration", () => integrateImportedGitHead({
-                              localDir: input.workspaceLocalDir,
-                              importedHead: gitHeadToIntegrate,
-                              baseline: gitSnapshot ?? undefined,
-                            }));
-                          }
-                        : undefined,
+                      // Runs under the merge lock, before the first host write.
+                      beforeApply: async () => {
+                        markHostWriteStarted();
+                        if (!gitHeadToIntegrate) return;
+                        await withWorkspaceRestoreStep("git_integration", () => integrateImportedGitHead({
+                          localDir: input.workspaceLocalDir,
+                          importedHead: gitHeadToIntegrate,
+                          baseline: gitSnapshot ?? undefined,
+                        }));
+                      },
                       afterApply: gitSnapshot
                         ? async () => {
                             await withWorkspaceRestoreStep("index_reset", () => resetLocalGitIndexToHead({
@@ -2004,7 +2042,7 @@ export async function prepareSandboxManagedRuntime(input: {
                   await withWorkspaceRestoreStep("git_ref_cleanup", () => deleteLocalGitRef({ localDir: input.workspaceLocalDir, ref: importedRef! }));
                 }
               }
-            });
+            }));
           }), restoreSink, (diagnostic) => { outboundDiagnostics[0] = diagnostic; }),
         );
       }

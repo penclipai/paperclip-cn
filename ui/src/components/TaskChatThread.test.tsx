@@ -4660,3 +4660,16 @@ describe("TaskChatThread composer execution controls", () => {
     expect(container.querySelector('[data-testid="task-chat-composer-stop"]')).toBeNull();
   });
 });
+
+it("explains a missing provider runtime with an installation repair", () => {
+  render(<TaskChatThread comments={[]} onAdd={async () => {}} linkedRuns={[{
+    runId: "missing-runtime", runtimeMode: "native", status: "failed", errorCode: "native_provider_runtime_missing",
+    agentId: "agent-1", agentName: "Content Strategist", adapterType: "paperclip_runner",
+    createdAt: "2026-10-11T11:19:08Z", startedAt: "2026-10-11T11:19:08Z", finishedAt: "2026-10-11T11:19:14Z",
+  }]} />);
+  expect(container.textContent).toContain("Runtime missing");
+  const toggle = container.querySelector<HTMLButtonElement>('[data-testid="task-chat-collapsible-marker"] button[aria-expanded]')!;
+  flushSync(() => toggle.click());
+  expect(container.textContent).toContain("Reinstall or rebuild Paperclip");
+  expect(container.textContent).toContain("test the agent's runtime");
+});

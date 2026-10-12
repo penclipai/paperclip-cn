@@ -4547,12 +4547,14 @@ describe("sandbox git-bundle export transport", () => {
     const client = makeTransportClient(step !== "workspace_extract", { syncOutOperations: [], readFilePaths: [] });
     const prepared = await prepareSandboxManagedRuntime({
       spec: gitSpec(remoteWorkspaceDir), adapterKey: "test-adapter", client, workspaceLocalDir: localWorkspaceDir,
+      workspaceRestoreRetryDelaysMs: [0, 0],
     });
     await commitInSandbox(remoteWorkspaceDir);
     const failure = Object.assign(new Error("private-restore-command /private-restore-path"), { code: 7, stderr: "private-restore-stderr" });
+    // Failures before the first host write are retried, so they must persist.
     if (step === "git_export") client.run = async () => { throw failure; };
-    if (step === "git_import") vi.spyOn(gitSync, "fetchGitBundleIntoLocalRef").mockRejectedValueOnce(failure);
-    if (step === "directory_merge") vi.spyOn(restoreMerge, "mergeDirectoryWithBaseline").mockRejectedValueOnce(failure);
+    if (step === "git_import") vi.spyOn(gitSync, "fetchGitBundleIntoLocalRef").mockRejectedValue(failure);
+    if (step === "directory_merge") vi.spyOn(restoreMerge, "mergeDirectoryWithBaseline").mockRejectedValue(failure);
     if (step === "git_integration") vi.spyOn(gitSync, "integrateImportedGitHead").mockRejectedValueOnce(failure);
     if (step === "index_reset") vi.spyOn(gitSync, "resetLocalGitIndexToHead").mockRejectedValueOnce(failure);
     if (step === "git_ref_cleanup") vi.spyOn(gitSync, "deleteLocalGitRef").mockRejectedValueOnce(failure);
@@ -4578,6 +4580,111 @@ describe("sandbox git-bundle export transport", () => {
       const diagnostics = lines.filter((line) => line.includes("Workspace restore diagnostic:"));
       expect(diagnostics).toHaveLength(1);
       expect(diagnostics[0]).not.toContain("private-restore-");
+    } finally { vi.restoreAllMocks(); }
+  });
+
+  it.each([
+    ["a dropped transfer", Object.assign(new Error("transfer reset"), { code: "ECONNRESET" })],
+    ["a busy merge lock", Object.assign(new Error("lock busy"), { code: restoreMerge.WORKSPACE_RESTORE_LOCK_TIMEOUT_CODE })],
+  ])("retries the copy-back after %s before any host write", async (_label, failure) => {
+    const { localWorkspaceDir, remoteWorkspaceDir } = await setupGitBackedWorkspace("paperclip-restore-retry-");
+    const client = makeTransportClient(true, { syncOutOperations: [], readFilePaths: [] });
+    const prepared = await prepareSandboxManagedRuntime({
+      spec: gitSpec(remoteWorkspaceDir), adapterKey: "test-adapter", client, workspaceLocalDir: localWorkspaceDir,
+      workspaceRestoreRetryDelaysMs: [0, 0],
+    });
+    await commitInSandbox(remoteWorkspaceDir);
+    let directoryTransfers = 0;
+    const syncOut = client.syncOut!;
+    client.syncOut = async (operations) => {
+      const directory = operations.some((operation) => operation.files.some((file) => file.kind === "directory"));
+      if (directory && ++directoryTransfers === 1 && failure.code === "ECONNRESET") throw failure;
+      return syncOut(operations);
+    };
+    if (failure.code !== "ECONNRESET") vi.spyOn(restoreMerge, "mergeDirectoryWithBaseline").mockRejectedValueOnce(failure);
+    try {
+      await prepared.restoreWorkspace();
+      expect(directoryTransfers).toBe(2);
+      expect(await git(localWorkspaceDir, ["log", "-1", "--pretty=%s"])).toBe("sandbox update");
+      await expect(readFile(path.join(localWorkspaceDir, "remote-only.txt"), "utf8")).resolves.toBe("from sandbox\n");
+    } finally { vi.restoreAllMocks(); }
+  });
+
+  it("gives up after three copy-back attempts", async () => {
+    const { localWorkspaceDir, remoteWorkspaceDir } = await setupGitBackedWorkspace("paperclip-restore-retry-limit-");
+    const client = makeTransportClient(true, { syncOutOperations: [], readFilePaths: [] });
+    const prepared = await prepareSandboxManagedRuntime({
+      spec: gitSpec(remoteWorkspaceDir), adapterKey: "test-adapter", client, workspaceLocalDir: localWorkspaceDir,
+      workspaceRestoreRetryDelaysMs: [0, 0],
+    });
+    await commitInSandbox(remoteWorkspaceDir);
+    const failure = new Error("sandbox unreachable");
+    let directoryTransfers = 0;
+    const syncOut = client.syncOut!;
+    client.syncOut = async (operations) => {
+      if (!operations.some((operation) => operation.files.some((file) => file.kind === "directory"))) return syncOut(operations);
+      directoryTransfers++;
+      throw failure;
+    };
+    await expect(prepared.restoreWorkspace()).rejects.toBe(failure);
+    expect(directoryTransfers).toBe(3);
+  });
+
+  it.each([
+    ["an unsafe archive", Object.assign(new Error("unsafe"), { code: "WORKSPACE_RESTORE_UNSAFE_ARCHIVE" }), "directory_merge"],
+    ["a permission failure", Object.assign(new Error("denied"), { code: "EACCES" }), "directory_merge"],
+    ["a failure after the merge started writing", new Error("integration failed"), "git_integration"],
+  ] as const)("does not retry %s", async (_label, failure, step) => {
+    const { localWorkspaceDir, remoteWorkspaceDir } = await setupGitBackedWorkspace("paperclip-restore-no-retry-");
+    const client = makeTransportClient(true, { syncOutOperations: [], readFilePaths: [] });
+    const prepared = await prepareSandboxManagedRuntime({
+      spec: gitSpec(remoteWorkspaceDir), adapterKey: "test-adapter", client, workspaceLocalDir: localWorkspaceDir,
+      workspaceRestoreRetryDelaysMs: [0, 0],
+    });
+    await commitInSandbox(remoteWorkspaceDir);
+    const spy = step === "directory_merge"
+      ? vi.spyOn(restoreMerge, "mergeDirectoryWithBaseline").mockRejectedValue(failure)
+      : vi.spyOn(gitSync, "integrateImportedGitHead").mockRejectedValue(failure);
+    try {
+      await expect(prepared.restoreWorkspace()).rejects.toBe(failure);
+      expect(spy).toHaveBeenCalledTimes(1);
+    } finally { vi.restoreAllMocks(); }
+  });
+
+  it("does not retry a non-Git copy-back that failed after writing a host file", async () => {
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-restore-partial-"));
+    cleanupDirs.push(rootDir);
+    const localWorkspaceDir = path.join(rootDir, "local-workspace");
+    const remoteWorkspaceDir = path.join(rootDir, "remote-workspace");
+    await mkdir(localWorkspaceDir, { recursive: true });
+    await writeFile(path.join(localWorkspaceDir, "base.txt"), "base\n", "utf8");
+    const client = makeTransportClient(true, { syncOutOperations: [], readFilePaths: [] });
+    const prepared = await prepareSandboxManagedRuntime({
+      spec: gitSpec(remoteWorkspaceDir), adapterKey: "test-adapter", client, workspaceLocalDir: localWorkspaceDir,
+      workspaceRestoreRetryDelaysMs: [0, 0],
+    });
+    await writeFile(path.join(remoteWorkspaceDir, "a-first.txt"), "first\n", "utf8");
+    await writeFile(path.join(remoteWorkspaceDir, "z-later.txt"), "later\n", "utf8");
+    let directoryTransfers = 0;
+    const syncOut = client.syncOut!;
+    client.syncOut = async (operations) => {
+      if (operations.some((operation) => operation.files.some((file) => file.kind === "directory"))) directoryTransfers++;
+      return syncOut(operations);
+    };
+    // The merge copies entries in path order, so the first file lands before the
+    // later copy fails with an otherwise retryable I/O error.
+    const failure = Object.assign(new Error("i/o error"), { code: "EIO" });
+    const copyFile = fsPromises.copyFile.bind(fsPromises);
+    vi.spyOn(fsPromises, "copyFile").mockImplementation(async (source, target, mode) => {
+      if (path.basename(String(source)) === "z-later.txt") throw failure;
+      return copyFile(source, target, mode);
+    });
+    const merge = vi.spyOn(restoreMerge, "mergeDirectoryWithBaseline");
+    try {
+      await expect(prepared.restoreWorkspace()).rejects.toBe(failure);
+      await expect(readFile(path.join(localWorkspaceDir, "a-first.txt"), "utf8")).resolves.toBe("first\n");
+      expect(directoryTransfers).toBe(1);
+      expect(merge).toHaveBeenCalledTimes(1);
     } finally { vi.restoreAllMocks(); }
   });
 

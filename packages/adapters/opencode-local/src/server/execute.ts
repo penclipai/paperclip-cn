@@ -61,6 +61,7 @@ import {
   requireOpenCodeModelId,
 } from "./models.js";
 import { removeMaintainerOnlySkillSymlinks } from "@penclipai/adapter-utils/server-utils";
+import { apiKeyBillingType } from "@penclipai/adapter-utils/api-billing-type";
 import { prepareOpenCodeRuntimeConfig, prepareManagedOpenCodeRemoteHomes } from "./runtime-config.js";
 import { SANDBOX_INSTALL_COMMAND } from "../index.js";
 import { resolveOpenCodeSkillsHome } from "./skills.js";
@@ -576,7 +577,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         !resumedSession && bootstrapPromptTemplate.trim().length > 0
           ? renderTemplate(bootstrapPromptTemplate, templateData).trim()
           : "";
-      const { taskContextNote, wakePrompt } = selectPaperclipPromptSections(context, {
+      const { taskContextNote, localizationPromptNote, wakePrompt } = selectPaperclipPromptSections(context, {
         resumedSession,
         includeCommunicationGuidance: false,
       });
@@ -585,7 +586,6 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         ? ""
         : renderTemplate(promptTemplate, templateData);
       const sessionHandoffNote = asString(context.paperclipSessionHandoffMarkdown, "").trim();
-      const localizationPromptNote = asString(context.paperclipLocalizationPromptMarkdown, "").trim();
       const basePrompt = joinPromptSections([
         instructionsPrefix,
         localizationPromptNote,
@@ -635,6 +635,8 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       return args;
     };
 
+    // Remote targets receive only the prepared environment, never host keys.
+    const accountingEnv = executionTargetIsRemote ? preparedRuntimeConfig.env : runtimeEnv;
     const runAttempt = async (resumeSessionId: string | null) => {
       await hydrateFreshSessionHandoff(ctx, { resumedSession: Boolean(resumeSessionId) });
       const { basePrompt, promptMetrics } = buildPrompt(Boolean(resumeSessionId));
@@ -665,7 +667,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         const provider = parseModelProvider(model || null);
         return { usage: parsed.usageReported ? parsed.usage : undefined, costUsd: parsed.costUsd,
           costStatus: parsed.usageComplete || parsed.costUsd != null ? undefined : "unpriced",
-          usageBasis: "per_run", provider, biller: resolveOpenCodeBiller(runtimeEnv, provider), billingType: "unknown", model, complete: false };
+          usageBasis: "per_run", provider, biller: resolveOpenCodeBiller(accountingEnv, provider), billingType: apiKeyBillingType(provider, accountingEnv), model, complete: false };
       });
       const proc = await runAdapterExecutionTargetProcess(runId, runtimeExecutionTarget, command, args, {
         onProcessStopped: providerStop.beginInvocation(),
@@ -720,9 +722,9 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
           usage: attempt.parsed.usageReported ? attempt.parsed.usage : undefined,
           usageBasis: "per_run",
           provider: parseModelProvider(model || null),
-          biller: resolveOpenCodeBiller(runtimeEnv, parseModelProvider(model || null)),
+          biller: resolveOpenCodeBiller(accountingEnv, parseModelProvider(model || null)),
           model,
-          billingType: "unknown",
+          billingType: apiKeyBillingType(parseModelProvider(model || null), accountingEnv),
           costUsd: attempt.parsed.costUsd,
           costStatus: attempt.parsed.usageComplete || attempt.parsed.costUsd != null ? undefined : "unpriced",
           // A provider or output-observation timeout can arrive before the
@@ -779,9 +781,9 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         sessionParams: resolvedSessionParams,
         sessionDisplayId: resolvedSessionId,
         provider: parseModelProvider(modelId),
-        biller: resolveOpenCodeBiller(runtimeEnv, parseModelProvider(modelId)),
+        biller: resolveOpenCodeBiller(accountingEnv, parseModelProvider(modelId)),
         model: modelId,
-        billingType: "unknown",
+        billingType: apiKeyBillingType(parseModelProvider(modelId), accountingEnv),
         costUsd: attempt.parsed.costUsd,
         costStatus: attempt.parsed.usageComplete || attempt.parsed.costUsd != null ? undefined : "unpriced",
         resultJson: {

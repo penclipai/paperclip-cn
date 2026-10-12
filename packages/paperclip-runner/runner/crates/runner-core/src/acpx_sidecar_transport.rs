@@ -844,6 +844,7 @@ fn stderr_diagnostic_categories(value: &str) -> BTreeSet<&'static str> {
 
 fn response_error_classification(error: &ResponseError) -> &'static str {
     match error.code.as_str() {
+        "ACPX_RUNTIME_PACKAGE_MISSING" => return "runtime_package_missing",
         "ACP_MODEL_UNSUPPORTED" => return "requested_model_unsupported",
         "AGENT_STARTUP_FAILED" => return "agent_startup_failed",
         "AGENT_STARTUP_FAILED.UNVERIFIED_MODULE" => return "agent_startup_unverified_module",
@@ -1038,6 +1039,7 @@ mod tests {
     #[test]
     fn candidate_auth_diagnostics_use_only_closed_codes_and_never_provider_text() {
         for (code, expected) in [
+            ("ACPX_RUNTIME_PACKAGE_MISSING", "runtime_package_missing"),
             ("ACPX_TOOL_CALL_STALE", "provider_tool_call_retired"),
             ("ACPX_TOOL_CALL_STALE_EXTRA", "unclassified"),
             ("COPILOT_AUTH_REQUIRED", "authentication_required"),

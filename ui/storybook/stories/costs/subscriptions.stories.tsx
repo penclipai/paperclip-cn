@@ -2,8 +2,9 @@ import { useLayoutEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, within } from "storybook/test";
-import { monthlySubscriptionCents, type SubscriptionCostReport } from "@penclipai/shared";
+import { monthlySubscriptionCents, type SubscriptionCostReport, type CostDataQualityReport } from "@penclipai/shared";
 import { Costs } from "@/pages/Costs";
+import { ToastViewport } from "@/components/ToastViewport";
 
 function fixture(): SubscriptionCostReport {
   const zero = { inputTokens: 0, cachedInputTokens: 0, outputTokens: 0, costCents: "0", eventCount: 0, estimatedEventCount: 0, unpricedEventCount: 0 };
@@ -26,12 +27,24 @@ function fixture(): SubscriptionCostReport {
 }
 
 /** Production Costs page; only API responses are fixtures. Edits persist in the story. */
-function SubscriptionCostsStory({ unknownPrice = false, stale = false }: { unknownPrice?: boolean; stale?: boolean }) {
+function SubscriptionCostsStory({ unknownPrice = false, stale = false, costGaps = false }: { unknownPrice?: boolean; stale?: boolean; costGaps?: boolean }) {
   const [ready, setReady] = useState(false);
   const client = useQueryClient();
   useLayoutEffect(() => {
     const original = window.fetch;
     const report = fixture();
+    const details: CostDataQualityReport = { canRetry: true, hasMoreEvents: false, hasMoreRuns: false,
+      events: [
+        { id: "unknown-billing", runId: "run-openrouter", agentId: "codie", agentName: "Codie", occurredAt: "2026-10-09T10:00:00Z", provider: "openrouter", model: "deepseek-v4", reason: "unknown_billing" },
+        { id: "missing-model", runId: "run-default-model", agentId: "fry", agentName: "Fry", occurredAt: "2026-10-09T09:00:00Z", provider: "openai", model: "unknown", reason: "missing_model" },
+        { id: "missing-price", runId: "run-old-receipt", agentId: "leela", agentName: "Leela", occurredAt: "2026-10-02T09:00:00Z", provider: "openai", model: "gpt-6-astra", reason: "missing_price" },
+      ],
+      runs: [
+        { id: "receiving", runId: "receiving", agentId: "codie", agentName: "Codie", occurredAt: new Date().toISOString(), provider: "openai", model: "gpt-6-astra", reason: "waiting_for_receipt" },
+        { id: "unavailable", runId: "unavailable", agentId: "leela", agentName: "Leela", occurredAt: "2026-10-08T12:00:00Z", provider: "anthropic", model: "claude-opus-4-6", reason: "receipt_unavailable" },
+        { id: "ready", runId: "ready", agentId: "fry", agentName: "Fry", occurredAt: "2026-10-09T12:00:00Z", provider: "openai", model: "gpt-6-astra", reason: "retryable" },
+      ],
+    };
     if (unknownPrice) {
       report.accounts[1].price = { ...report.accounts[1].price, plan: "Claude Max", amountCents: null, monthlyCents: null, source: "unknown", sourceUrl: null };
       report.accounts[1].detectedPlan = "max";
@@ -44,6 +57,12 @@ function SubscriptionCostsStory({ unknownPrice = false, stale = false }: { unkno
       const path = url.pathname.startsWith(base) ? url.pathname.slice(base.length) : "";
       if (path === "costs/subscriptions/refresh") return Response.json({ status: "accepted" }, { status: 202 });
       if (path === "costs/subscriptions") return Response.json(report);
+      if (path === "costs/data-quality") return Response.json(details);
+      if (path === "costs/retry-accounting" && init?.method === "POST") {
+        const { runId } = JSON.parse(String(init.body));
+        details.runs = details.runs.filter(row => row.runId !== runId);
+        return Response.json({ accounted: true });
+      }
       if (path.startsWith("costs/subscriptions/") && init?.method === "PATCH") {
         const account = report.accounts.find(row => row.id === path.split("/")[2])!;
         const patch = JSON.parse(String(init.body));
@@ -63,7 +82,7 @@ function SubscriptionCostsStory({ unknownPrice = false, stale = false }: { unkno
         return Response.json({ id: account.id });
       }
       if (path === "budgets/overview") return Response.json({ policies: [], activeIncidents: [], pausedAgentCount: 0, pausedProjectCount: 0, pendingApprovalCount: 0 });
-      if (path === "costs/summary") return Response.json({ spendCents: 4217, budgetCents: 20000, utilizationPercent: 21, pricingComplete: true, eventCount: 74, estimatedEventCount: 12, unpricedEventCount: 0, pendingRunCount: 0 });
+      if (path === "costs/summary") return Response.json({ spendCents: 4217, budgetCents: 20000, utilizationPercent: 21, pricingComplete: !costGaps, eventCount: 74, estimatedEventCount: 12, unpricedEventCount: costGaps ? 2 : 0, pendingRunCount: costGaps ? details.runs.length : 0, unknownBillingEventCount: costGaps ? 1 : 0 });
       if (path === "costs/by-agent") return Response.json([
         { agentId: "codie", agentName: "Codie", agentStatus: "active", costCents: 4217, inputTokens: 12000000, cachedInputTokens: 56200000, outputTokens: 1000000, eventCount: 54, estimatedEventCount: 12, apiRunCount: 24, subscriptionRunCount: 30 },
         { agentId: "fry", agentName: "Fry", agentStatus: "active", costCents: 0, inputTokens: 2000000, cachedInputTokens: 10000000, outputTokens: 200000, eventCount: 10, estimatedEventCount: 0, apiRunCount: 0, subscriptionRunCount: 10 },
@@ -75,10 +94,10 @@ function SubscriptionCostsStory({ unknownPrice = false, stale = false }: { unkno
       if (path.startsWith("costs/")) return Response.json([]);
       return original(input, init);
     };
-    client.removeQueries({ queryKey: ["cost-subscriptions"] }); setReady(true);
-    return () => { window.fetch = original; client.removeQueries({ queryKey: ["cost-subscriptions"] }); };
-  }, [client, unknownPrice, stale]);
-  return ready ? <Costs embedded hideBudgetsTab /> : null;
+    client.removeQueries({ queryKey: ["cost-subscriptions"] }); client.removeQueries({ queryKey: ["costs"] }); setReady(true);
+    return () => { window.fetch = original; client.removeQueries({ queryKey: ["cost-subscriptions"] }); client.removeQueries({ queryKey: ["costs"] }); };
+  }, [client, unknownPrice, stale, costGaps]);
+  return ready ? <><Costs embedded hideBudgetsTab /><ToastViewport /></> : null;
 }
 
 const meta = { title: "Costs/Subscriptions", component: SubscriptionCostsStory, parameters: {
@@ -90,6 +109,8 @@ export const Overview: Story = { play: async ({ canvasElement }) => {
   const canvas = within(canvasElement);
   await expect(await canvas.findByText("API spend")).toBeVisible();
   await expect(await canvas.findByText("$120.00")).toBeVisible();
+  await expect(canvas.queryByRole("button", { name: "12 estimated charges" })).not.toBeInTheDocument();
+  await expect(canvas.queryByText(/Includes 12 estimated charges/)).not.toBeInTheDocument();
 } };
 export const AccountDetails: Story = { play: async ({ canvasElement }) => {
   const canvas = within(canvasElement);
@@ -101,3 +122,21 @@ export const AccountDetails: Story = { play: async ({ canvasElement }) => {
 export const UnknownPrice: Story = { args: { unknownPrice: true } };
 export const ProviderUnavailable: Story = { args: { stale: true } };
 export const Mobile: Story = { globals: { viewport: { value: "mobile1", isRotated: false } } };
+export const CostDataQuality: Story = { args: { costGaps: true }, play: async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+  await expect(await canvas.findByRole("button", { name: "5 run costs unavailable" })).toHaveAttribute("aria-expanded", "false");
+  await expect(canvas.queryByText(/Includes 12 estimated charges/)).not.toBeInTheDocument();
+} };
+export const CostDataQualityDetails: Story = { args: { costGaps: true }, play: async ({ canvasElement }) => {
+  const canvas = within(canvasElement);
+  await userEvent.click(await canvas.findByRole("button", { name: "5 run costs unavailable" }));
+  await expect(await canvas.findByText("Model not reported")).toBeVisible();
+  await expect(await canvas.findByRole("button", { name: "Retry cost recording" })).toBeVisible();
+  const groups = canvas.getByRole("list", { name: "Cost details by agent" });
+  await expect(within(groups).getAllByRole("heading").map(heading => heading.textContent)).toEqual(["Codie", "Fry", "Leela"]);
+  await expect(canvas.getAllByRole("link", { name: "View run" })).toHaveLength(6);
+  await expect(within(groups).getAllByRole("link", { name: /^(Codie|Fry|Leela)$/ })).toHaveLength(3);
+  await expect(canvas.queryByRole("link", { name: "Configuration" })).not.toBeInTheDocument();
+  await expect(canvas.queryByText("Totals include known charges only.")).not.toBeInTheDocument();
+  await expect(canvas.queryByText(/Includes 12 estimated charges/)).not.toBeInTheDocument();
+} };

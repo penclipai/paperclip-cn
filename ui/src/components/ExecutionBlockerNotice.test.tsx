@@ -106,7 +106,12 @@ describe("stopped task recovery notice", () => {
         nextAction: "The original sandbox is retained. Recover the missing files and record workspace repair evidence.",
       }} />
     </QueryClientProvider>));
-    expect(container.textContent).toContain("Recover the missing files");
+    expect(container.textContent).toContain("could not restore the agent's workspace files");
+    expect(container.textContent).toContain("A board operator must recover the files");
+    // The hold also covers unsafe archives and local runs, so the notice must not promise retries or a kept sandbox.
+    expect(container.textContent).not.toContain("retrying");
+    expect(container.textContent).not.toContain("no work is lost");
+    expect(container.querySelector("details")?.textContent).toContain("Recover the missing files");
     expect(container.querySelector("button")).toBeNull();
     expect(container.querySelector("a")?.textContent).toBe("Inspect run");
     expect(agentsApi.retryFailedRun).not.toHaveBeenCalled();

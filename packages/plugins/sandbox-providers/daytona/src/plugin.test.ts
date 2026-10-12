@@ -569,8 +569,82 @@ describe("Daytona sandbox provider plugin", () => {
       }).catch(error => error);
       await vi.advanceTimersByTimeAsync(2_000);
       const error = await pending;
-      expect(readEnvironmentAcquisitionDiagnostic(error)).toEqual({ phase, elapsedMs: 2_000, budgetMs: 2_000 });
+      // The default lookup mock returns no sandbox, so a pending create reports `unavailable`.
+      expect(readEnvironmentAcquisitionDiagnostic(error)).toEqual({ phase, elapsedMs: 2_000, budgetMs: 2_000,
+        ...(phase === "create" ? { providerState: "unavailable" } : {}) });
       expect(error.message).toBe("Daytona lease acquisition timed out; allocation cleanup is pending");
+      expect(sandbox.delete).not.toHaveBeenCalled();
+      if (phase !== "create") expect(mockGet).not.toHaveBeenCalled();
+    });
+
+    function ownedCreation(state: string) {
+      const requested = mockCreate.mock.calls.at(-1)![0];
+      return { ...createMockSandbox({ state }), name: requested.name, labels: { ...requested.labels } };
+    }
+
+    it.each([
+      ["pulling_snapshot", "pulling_snapshot"], ["starting", "starting"], ["pending_build", "pending_build"],
+      ["error", "error"], ["stopped", "other"], ["11184809", "other"],
+    ])("records provider state %s as %s when creation is still pending at the deadline", async (state, expected) => {
+      mockCreate.mockImplementation(() => new Promise(() => {}));
+      let found: ReturnType<typeof ownedCreation> | undefined;
+      mockGet.mockImplementation(async () => (found = ownedCreation(state)));
+      const pending = plugin.definition.onEnvironmentAcquireLease!({ ...params, config: { ...params.config, timeoutMs: 2_000 } }).catch(error => error);
+      await vi.advanceTimersByTimeAsync(2_000);
+      const error = await pending;
+      expect(readEnvironmentAcquisitionDiagnostic(error)).toEqual({ phase: "create", elapsedMs: 2_000, budgetMs: 2_000, providerState: expected });
+      expect(mockGet).toHaveBeenCalledOnce();
+      expect(mockGet).toHaveBeenCalledWith(mockCreate.mock.calls[0][0].name);
+      // Read-only: no deletion, and the host-owned cleanup envelope is unchanged.
+      expect(found!.delete).not.toHaveBeenCalled();
+      expect(readEnvironmentCreationCleanupError(error)?.observedProviderLeaseId).toBeUndefined();
+      expect(JSON.stringify(environmentCreationCleanupErrorData(error, true))).not.toContain(found!.id);
+    });
+
+    it.each([
+      ["absent", () => mockGet.mockRejectedValue(new MockDaytonaNotFoundError("private-not-found"))],
+      ["unavailable", () => mockGet.mockRejectedValue(new Error("private-provider-failure"))],
+      ["unavailable", () => mockGet.mockImplementation(async () => {
+        const foreign = ownedCreation("started"); foreign.labels["paperclip-run-id"] = "foreign-run"; return foreign;
+      })],
+    ])("records %s when the deadline lookup cannot attribute an allocation", async (expected, arrange) => {
+      mockCreate.mockImplementation(() => new Promise(() => {}));
+      arrange();
+      const pending = plugin.definition.onEnvironmentAcquireLease!({ ...params, config: { ...params.config, timeoutMs: 2_000 } }).catch(error => error);
+      await vi.advanceTimersByTimeAsync(2_000);
+      const error = await pending;
+      expect(readEnvironmentAcquisitionDiagnostic(error)?.providerState).toBe(expected);
+      expect(JSON.stringify(environmentCreationCleanupErrorData(error, true))).not.toContain("private-");
+    });
+
+    it("bounds a hung deadline lookup well inside the host's RPC margin", async () => {
+      mockCreate.mockImplementation(() => new Promise(() => {}));
+      mockGet.mockImplementation(() => new Promise(() => {}));
+      let settled = false;
+      const pending = plugin.definition.onEnvironmentAcquireLease!(params).catch(error => { settled = true; return error; });
+      await vi.advanceTimersByTimeAsync(304_999);
+      expect(settled).toBe(false);
+      await vi.advanceTimersByTimeAsync(1);
+      const error = await pending;
+      expect(readEnvironmentAcquisitionDiagnostic(error)).toEqual({ phase: "create", elapsedMs: 300_000, budgetMs: 300_000, providerState: "unavailable" });
+      expect(error.message).toBe("Daytona lease acquisition timed out; allocation cleanup is pending");
+    });
+
+    it("keeps the timeout result when a late create settles during the deadline lookup", async () => {
+      const sandbox = createMockSandbox();
+      mockCreate.mockImplementation(() => new Promise(resolve => setTimeout(() => resolve(sandbox), 2_500)));
+      mockGet.mockImplementation(() => new Promise(resolve => setTimeout(() => resolve(ownedCreation("starting")), 4_000)));
+      let settled = false;
+      const pending = plugin.definition.onEnvironmentAcquireLease!({ ...params, config: { ...params.config, timeoutMs: 2_000 } })
+        .catch(error => { settled = true; return error; });
+      // The host serializes the error on settlement; it must wait for the lookup.
+      await vi.advanceTimersByTimeAsync(3_000);
+      expect(settled).toBe(false);
+      await vi.advanceTimersByTimeAsync(3_000);
+      const error = await pending;
+      expect(readEnvironmentAcquisitionDiagnostic(error)).toEqual({ phase: "create", elapsedMs: 2_000, budgetMs: 2_000, providerState: "starting" });
+      expect(readEnvironmentCreationCleanupError(error)?.providerLeaseId).toBe(mockCreate.mock.calls[0][0].name);
+      expect(sandbox.getWorkDir).not.toHaveBeenCalled();
       expect(sandbox.delete).not.toHaveBeenCalled();
     });
 
@@ -598,7 +672,7 @@ describe("Daytona sandbox provider plugin", () => {
       await vi.advanceTimersByTimeAsync(100);
       const second = plugin.definition.onEnvironmentAcquireLease!({ ...params, config: { ...params.config, timeoutMs: 3_000 } }).catch(error => error);
       await vi.advanceTimersByTimeAsync(3_000);
-      expect(readEnvironmentAcquisitionDiagnostic(await first)).toEqual({ phase: "create", elapsedMs: 2_000, budgetMs: 2_000 });
+      expect(readEnvironmentAcquisitionDiagnostic(await first)).toEqual({ phase: "create", elapsedMs: 2_000, budgetMs: 2_000, providerState: "unavailable" });
       expect(readEnvironmentAcquisitionDiagnostic(await second)).toEqual({ phase: "workspace", elapsedMs: 3_000, budgetMs: 3_000 });
       mockCreate.mockResolvedValue(createMockSandbox());
       expect(await plugin.definition.onEnvironmentAcquireLease!(params)).not.toHaveProperty("acquisitionDiagnostic");

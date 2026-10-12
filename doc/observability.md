@@ -595,6 +595,16 @@ still describes the earlier failure. The overall error message is unchanged.
 Elapsed time is bounded to seven days, and the budget to one day. Unknown or
 malformed optional values are omitted without invalidating cleanup ownership.
 
+When the deadline expires while Daytona creation is still pending, the plugin
+makes one read-only lookup (bounded to five seconds, inside the host's 30-second
+RPC margin) of its provisional creation name and reports
+`environmentAcquisitionProviderState`. The value is one of `absent`, `creating`,
+`pending_build`, `building_snapshot`, `pulling_snapshot`, `starting`, `started`,
+`error`, `build_failed`, `other`, or `unavailable` (lookup failed, timed out, or
+ownership labels did not match). It records where the provider left the
+allocation, not why. The lookup does not delete, retry, or change the cleanup
+envelope.
+
 These fields cross the existing creation-cleanup RPC envelope only for lease
 acquisition. The host accepts them only from an actual RPC error with matching
 company, environment, and run ownership. A private receipt binds the report to
