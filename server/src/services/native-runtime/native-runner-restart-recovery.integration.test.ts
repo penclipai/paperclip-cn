@@ -12,6 +12,7 @@ import {
   agents,
   companies,
   createDb,
+  heartbeatRunEvents,
   heartbeatRuns,
   issueRecoveryActions,
   issues,
@@ -412,6 +413,69 @@ describeEmbeddedPostgres("native runner restart recovery with real processes", (
     expect(run?.status).toBe("running");
     expect(run?.processPid).toBe(remotePid);
   });
+
+  it.runIf(process.platform === "win32").each(["bootstrap_incomplete", "resume_dead_runner"])(
+    "keeps a dead direct runner without a group awaiting evidence instead of claiming %s",
+    async claimKind => {
+      const fixture = await seedRun(`WINDOWS-${claimKind}`);
+      const runnerProfileJson = claimKind === "resume_dead_runner"
+        ? {
+            sessionCheckpoint: {
+              sessionId: fixture.native.normalizedSessionId,
+              identity: {
+                companyId,
+                issueId: fixture.issueId,
+                runId: fixture.runId,
+                agentId,
+                sessionId: fixture.native.normalizedSessionId,
+              },
+              providerSessionId: "windows-unverified-provider",
+              providerIdentity: {
+                kind: "codex",
+                providerSessionId: "windows-unverified-provider",
+              },
+            },
+          }
+        : undefined;
+      await fixture.db.update(heartbeatRuns).set({
+        processPid: 999999999,
+        processGroupId: null,
+        processStartedAt: new Date("2026-09-04T11:00:00.000Z"),
+        ...(runnerProfileJson ? { runnerProfileJson } : {}),
+      }).where(eq(heartbeatRuns.id, fixture.runId));
+
+      await expect(claimNativeRestartRecoveries({
+        db: fixture.db,
+        controller: successor,
+        restartKind: "hard",
+        runIds: [fixture.runId],
+      })).resolves.toEqual([
+        expect.objectContaining({
+          kind: "awaiting_evidence",
+          runId: fixture.runId,
+          reason: "missing_stop_evidence",
+        }),
+      ]);
+      expect(await hasNativeLocalProcessStop(fixture.db, companyId, fixture.runId)).toBe(false);
+      await expect(
+        fixture.db.select({ id: heartbeatRunEvents.id }).from(heartbeatRunEvents).where(and(
+          eq(heartbeatRunEvents.runId, fixture.runId),
+          eq(heartbeatRunEvents.eventType, "native.local_process_stopped"),
+        )),
+      ).resolves.toEqual([]);
+      await expect(
+        fixture.db.select({ processPid: heartbeatRuns.processPid, processGroupId: heartbeatRuns.processGroupId })
+          .from(heartbeatRuns).where(eq(heartbeatRuns.id, fixture.runId)),
+      ).resolves.toEqual([{ processPid: 999999999, processGroupId: null }]);
+      await expect(
+        fixture.db.select({ leaseOwner: nativeRunFinalizations.leaseOwner, recoveryState: nativeRunFinalizations.recoveryState })
+          .from(nativeRunFinalizations).where(eq(nativeRunFinalizations.runId, fixture.runId)),
+      ).resolves.toEqual([{ leaseOwner: null, recoveryState: "awaiting_evidence" }]);
+      await expect(
+        fixture.db.select({ executionRunId: issues.executionRunId }).from(issues).where(eq(issues.id, fixture.issueId)),
+      ).resolves.toEqual([{ executionRunId: fixture.runId }]);
+    },
+  );
 
   realProcessIt("adopts one active runner across hot and hard controller restarts without duplicating steering", async () => {
     const fixture = await seedRun("LIVE");

@@ -109,7 +109,10 @@ import {
 } from "../home-paths.js";
 import { buildNativeExecutionInput } from "../services/native-runtime/native-execution-input.js";
 import { nativeRuntimeContextFixture } from "../services/native-runtime/runtime-context.test-fixture.js";
-import { NativeRunnerOwnershipUnverifiedError } from "../services/native-runtime/native-runner-ownership.js";
+import {
+  NATIVE_OWNERSHIP_UNVERIFIED_ERROR_CODE,
+  NativeRunnerOwnershipUnverifiedError,
+} from "../services/native-runtime/native-runner-ownership.js";
 import { nativeCompletionSource } from "../services/native-runtime/completion-contracts.js";
 import { nativeCompletionFeedback } from "../services/native-runtime/native-completion-feedback.js";
 import type { PrpStructuredRunResult } from "../vendor/paperclip-runner/index.js";
@@ -2988,6 +2991,68 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
         .where(eq(agentWakeupRequests.id, wakeupRequestId)),
     ).resolves.toEqual([{ status: "claimed" }]);
   });
+
+  it.runIf(process.platform === "win32")(
+    "keeps a dead direct native process unclaimable without process-tree stop authority",
+    async () => {
+      const deadPid = 999_999_999;
+      const processStartedAt = new Date("2026-03-19T00:00:00.000Z");
+      const { companyId, runId, issueId } = await seedRunFixture({
+        adapterType: "paperclip_runner",
+        runtimeMode: "native",
+        processPid: deadPid,
+        processGroupId: null,
+      });
+      await db
+        .update(heartbeatRuns)
+        .set({
+          nativeIssueId: issueId,
+          nativePhase: "retryable_failure",
+          processStartedAt,
+        })
+        .where(eq(heartbeatRuns.id, runId));
+      await db.insert(nativeRunFinalizations).values({
+        runId,
+        companyId,
+        issueId,
+        phase: "retryable_failure",
+        attempt: 1,
+        nextAttemptAt: new Date(0),
+      });
+
+      const heartbeat = heartbeatService(db);
+      expect(await heartbeat.reapOrphanedRuns()).toEqual({
+        reaped: 0,
+        runIds: [],
+      });
+      await heartbeat.drainActiveRunExecutions();
+
+      expect(await heartbeat.getRun(runId)).toMatchObject({
+        processPid: deadPid,
+        processGroupId: null,
+        processStartedAt,
+        errorCode: NATIVE_OWNERSHIP_UNVERIFIED_ERROR_CODE,
+      });
+      expect(
+        await db
+          .select({ eventType: heartbeatRunEvents.eventType })
+          .from(heartbeatRunEvents)
+          .where(
+            and(
+              eq(heartbeatRunEvents.runId, runId),
+              eq(heartbeatRunEvents.eventType, "native.local_process_stopped"),
+            ),
+          ),
+      ).toEqual([]);
+      expect(
+        await db
+          .select({ id: heartbeatRuns.id })
+          .from(heartbeatRuns)
+          .where(eq(heartbeatRuns.retryOfRunId, runId)),
+      ).toEqual([]);
+      expect(mockExecutePaperclipNativeSession).not.toHaveBeenCalled();
+    },
+  );
 
   it("does not grant a dead native run legacy retry authority after adapter reassignment", async () => {
     const { agentId, runId } = await seedRunFixture({

@@ -22,6 +22,9 @@ function absent(pid: number): boolean {
  */
 export async function recordNativeLocalProcessStop(db: Db, run: typeof heartbeatRuns.$inferSelect) {
   if (run.runtimeMode !== "native" || (!run.processPid && !run.processGroupId)) return false;
+  // Windows does not give this controller an owned process-tree or Job Object
+  // receipt. A dead direct PID cannot prove that its descendants stopped.
+  if (process.platform === "win32") return false;
   const leases = await db.select({ provider: environmentLeases.provider })
     .from(environmentLeases)
     .where(and(
@@ -46,6 +49,9 @@ export async function recordNativeLocalProcessStop(db: Db, run: typeof heartbeat
 
 /** Only server-authored evidence counts. A later launch invalidates the receipt. */
 export async function hasNativeLocalProcessStop(db: Db, companyId: string, runId: string) {
+  // Older Windows versions could emit this receipt for a direct PID without
+  // process-tree authority. Never let that historical event authorize reuse.
+  if (process.platform === "win32") return false;
   const [event] = await db.select({ eventType: heartbeatRunEvents.eventType })
     .from(heartbeatRunEvents)
     .where(and(
@@ -65,6 +71,9 @@ export async function hasNativeLocalProcessStop(db: Db, companyId: string, runId
  * The caller must hold the run/controller locks and verify local lease cleanup.
  */
 export async function hasHistoricalSuspendedNativeSession(db: Db, run: typeof heartbeatRuns.$inferSelect) {
+  // A durable runner snapshot describes session state, not the native Windows
+  // process tree. Without a Job Object receipt, it cannot authorize a replacement.
+  if (process.platform === "win32") return false;
   if (run.runtimeMode !== "native" || run.processPid || run.processGroupId ||
       !run.nativeSessionId || !run.runnerInstanceId || !run.nativeIssueId) return false;
   const [modernProcessEvidence] = await db.select({ id: heartbeatRunEvents.id }).from(heartbeatRunEvents).where(and(
@@ -92,6 +101,7 @@ export async function hasHistoricalSuspendedNativeSession(db: Db, run: typeof he
 
 /** Recover the exact stopped identity after the mutable run fields were cleared. */
 export async function readNativeLocalProcessStop(db: Db, companyId: string, runId: string) {
+  if (process.platform === "win32") return null;
   const [event] = await db.select({ eventType: heartbeatRunEvents.eventType, payload: heartbeatRunEvents.payload })
     .from(heartbeatRunEvents)
     .where(and(eq(heartbeatRunEvents.companyId, companyId), eq(heartbeatRunEvents.runId, runId),

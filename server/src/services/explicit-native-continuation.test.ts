@@ -4,7 +4,12 @@ import { createPostgresWakeQueueAdapter } from "../modules/wake-queue/adapters/p
 import { createReleaseIssueExecution } from "../modules/wake-queue/application/use-cases.js";
 import * as nativeExecutor from "./native-runtime/native-session-executor.js";
 import { appendHeartbeatRunEvent } from "./heartbeat-run-events.js";
-import { recordNativeLocalProcessStop, hasNativeLocalProcessStop, PROCESS_START_REQUESTED } from "./native-local-process-stop.js";
+import {
+  hasHistoricalSuspendedNativeSession,
+  hasNativeLocalProcessStop,
+  PROCESS_START_REQUESTED,
+  recordNativeLocalProcessStop,
+} from "./native-local-process-stop.js";
 import { remoteTerminationReceipt } from "./remote-execution-termination.js";
 import { createHash, randomUUID } from "node:crypto";
 import { mkdtemp, mkdir, writeFile, rm } from "node:fs/promises";
@@ -783,6 +788,33 @@ const support = await getEmbeddedPostgresTestSupport();
           expect(await getExecutionBlocker(db, f.companyId, f.issueId)).not.toBeNull();
           return;
         }
+        if (process.platform === "win32") {
+          const [source] = await db
+            .select()
+            .from(heartbeatRuns)
+            .where(eq(heartbeatRuns.id, f.sourceRunId));
+          expect(await hasHistoricalSuspendedNativeSession(db, source!)).toBe(false);
+          expect(await admit(f, true)).toBeNull();
+          expect(
+            await db
+              .select({
+                processPid: heartbeatRuns.processPid,
+                processGroupId: heartbeatRuns.processGroupId,
+                nativeSessionId: heartbeatRuns.nativeSessionId,
+                runnerInstanceId: heartbeatRuns.runnerInstanceId,
+              })
+              .from(heartbeatRuns)
+              .where(eq(heartbeatRuns.id, f.sourceRunId)),
+          ).toEqual([
+            {
+              processPid: null,
+              processGroupId: null,
+              nativeSessionId,
+              runnerInstanceId,
+            },
+          ]);
+          return;
+        }
         expect(await admit(f, true)).toMatchObject({ previousRunId: f.sourceRunId });
         expect(await getExecutionBlocker(db, f.companyId, f.issueId)).not.toBeNull();
         // Exercise the real message admission path while keeping the provider slot occupied.
@@ -1073,7 +1105,7 @@ const support = await getEmbeddedPostgresTestSupport();
     },
   );
 
-  it("preserves local stop proof after process metadata is cleared and invalidates it on another launch", async () => {
+  it.runIf(process.platform !== "win32")("preserves local stop proof after process metadata is cleared and invalidates it on another launch", async () => {
     const f = await seed();
     const [source] = await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, f.sourceRunId));
     await db.transaction(async tx => {
@@ -1090,6 +1122,27 @@ const support = await getEmbeddedPostgresTestSupport();
     await appendHeartbeatRunEvent(db, { companyId: f.companyId, runId: source.id, agentId: f.agentId,
       eventType: PROCESS_START_REQUESTED });
     // No PID was stored for the new launch, as when the server dies after spawn.
+    expect(await admit(f, true)).toBeNull();
+  });
+  it.runIf(process.platform === "win32")("does not treat a dead direct PID without a group as local stop proof", async () => {
+    const f = await seed();
+    const [source] = await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, f.sourceRunId));
+    expect(source.processPid).toBe(999999999);
+    expect(source.processGroupId).toBeNull();
+    expect(await recordNativeLocalProcessStop(db, source)).toBe(false);
+    expect(await hasNativeLocalProcessStop(db, f.companyId, source.id)).toBe(false);
+    // A server-authored receipt from an older Windows release cannot upgrade
+    // a direct PID into process-tree authority after this repair.
+    await appendHeartbeatRunEvent(db, {
+      companyId: f.companyId,
+      runId: source.id,
+      agentId: f.agentId,
+      eventType: "native.local_process_stopped",
+      payload: { processPid: source.processPid, processGroupId: null },
+    });
+    expect(await hasNativeLocalProcessStop(db, f.companyId, source.id)).toBe(false);
+    const [preserved] = await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, source.id));
+    expect(preserved).toMatchObject({ processPid: source.processPid, processGroupId: null });
     expect(await admit(f, true)).toBeNull();
   });
 
@@ -1109,7 +1162,11 @@ const support = await getEmbeddedPostgresTestSupport();
     expect(await hasNativeLocalProcessStop(db, f.companyId, source.id)).toBe(false);
   });
 
-  it.each(["stopped_process", "cancelled_startup"])("resumes saved local messages after restart exactly once: %s", async kind => {
+  it.each(
+    process.platform === "win32"
+      ? ["cancelled_startup"]
+      : ["stopped_process", "cancelled_startup"],
+  )("resumes saved local messages after restart exactly once: %s", async kind => {
     const f = kind === "cancelled_startup" ? await seedCancelledStartup() : await seed();
     await db.insert(heartbeatRuns).values({ companyId: f.companyId, agentId: f.agentId, status: "running" });
     await db.update(heartbeatRuns).set({ processPid: process.pid }).where(eq(heartbeatRuns.id, f.sourceRunId));

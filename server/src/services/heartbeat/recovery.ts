@@ -1983,8 +1983,16 @@ export function createHeartbeatRecovery(db: Db, dependencies: HeartbeatRecoveryD
         });
         continue;
       }
-      const cleared = await db.transaction(async tx => {
-        const cleared = await tx
+      const stopReceiptCasLost = Symbol("native_local_stop_receipt_cas_lost");
+      let stopAuthorityDenied = false;
+      let cleared: { id: string } | null = null;
+      try {
+        cleared = await db.transaction(async tx => {
+          if (!await recordNativeLocalProcessStop(tx as unknown as Db, run)) {
+            stopAuthorityDenied = true;
+            return null;
+          }
+          const cleared = await tx
           .update(heartbeatRuns)
           .set({
             processPid: null,
@@ -2009,9 +2017,22 @@ export function createHeartbeatRecovery(db: Db, dependencies: HeartbeatRecoveryD
           )
           .returning({ id: heartbeatRuns.id })
           .then((rows) => rows[0] ?? null);
-        if (cleared) await recordNativeLocalProcessStop(tx as unknown as Db, run);
-        return cleared;
-      });
+          // Do not commit a stop receipt for a process identity that the CAS
+          // did not clear; a newer launch would otherwise inherit its proof.
+          if (!cleared) throw stopReceiptCasLost;
+          return cleared;
+        });
+      } catch (error) {
+        if (error !== stopReceiptCasLost) throw error;
+      }
+      if (stopAuthorityDenied) {
+        await markNativeOwnershipUnverified(run, {
+          reason: "observed_owner_unverified",
+          processPidAlive,
+          processGroupAlive,
+        });
+        continue;
+      }
       if (cleared) claimableNativeRunIds.add(cleared.id);
     }
 

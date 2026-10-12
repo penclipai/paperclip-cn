@@ -2022,10 +2022,15 @@ export function heartbeatService(
         });
         throw new Error(NATIVE_OWNERSHIP_UNVERIFIED_ERROR_CODE);
       }
-      runningProcesses.delete(run.id);
       if (run.processPid || run.processGroupId || run.processStartedAt) {
-        const cleared = await db.transaction(async tx => {
-          const cleared = await tx
+        const stopReceiptCasLost = Symbol("native_local_stop_receipt_cas_lost");
+        let cleared: typeof heartbeatRuns.$inferSelect | null = null;
+        try {
+          cleared = await db.transaction(async tx => {
+            if (!await recordNativeLocalProcessStop(tx as unknown as Db, run)) {
+              return null;
+            }
+            const cleared = await tx
             .update(heartbeatRuns)
             .set({
               processPid: null,
@@ -2050,20 +2055,26 @@ export function heartbeatService(
             )
             .returning()
             .then((rows) => rows[0] ?? null);
-          if (cleared) await recordNativeLocalProcessStop(tx as unknown as Db, run);
-          return cleared;
-        });
+            // Do not commit a stop receipt for a process identity that the CAS
+            // did not clear; a newer launch would otherwise inherit its proof.
+            if (!cleared) throw stopReceiptCasLost;
+            return cleared;
+          });
+        } catch (error) {
+          if (error !== stopReceiptCasLost) throw error;
+        }
         if (!cleared) {
           const current = await getRun(run.id);
           if (current) {
             await markNativeOwnershipUnverified(current, {
-              reason: "live_process_identifier",
+              reason: "observed_owner_unverified",
             });
           }
           throw new Error(NATIVE_OWNERSHIP_UNVERIFIED_ERROR_CODE);
         }
         run = cleared;
       }
+      runningProcesses.delete(run.id);
     }
 
     if (run.runtimeMode === "legacy" && run.controllerBootId &&

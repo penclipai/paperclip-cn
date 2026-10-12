@@ -892,6 +892,10 @@ export async function claimNativeRestartRecoveries(input: {
 
       const generation = row.coordinator.controllerGeneration + 1;
       const leaseOwner = `${controller.bootId}:${generation}:${randomUUID()}`;
+      const requiresLocalStopReceipt =
+        claimKind !== "reattach_existing_runner" &&
+        claimKind !== "reattach_remote_runner" &&
+        (row.run.processPid !== null || row.run.processGroupId !== null);
       const event = historyEntry({
         now,
         restartKind: input.restartKind,
@@ -912,6 +916,51 @@ export async function claimNativeRestartRecoveries(input: {
         recycledProviderPids: providerProcesses.recycledPids,
         stderrTail: row.run.stderrExcerpt,
       });
+      if (
+        requiresLocalStopReceipt &&
+        !await recordNativeLocalProcessStop(tx as unknown as Db, row.run)
+      ) {
+        const evidenceEvent = historyEntry({
+          now,
+          restartKind: input.restartKind,
+          controller,
+          generation: row.coordinator.controllerGeneration,
+          disposition: "awaiting_evidence",
+          reason: "missing_stop_evidence",
+          requestId: input.recoveryRequestId ?? null,
+          providerAttempt: row.coordinator.attempt,
+          processPid: row.run.processPid,
+          processStartedAt: row.run.processStartedAt,
+          hasCheckpoint,
+          checkpointIdentityMatches,
+          hasProviderEvidence,
+          knownProviderPids: providerProcesses.knownPids,
+          liveProviderPids: providerProcesses.livePids,
+          ambiguousProviderPids: providerProcesses.ambiguousLivePids,
+          recycledProviderPids: providerProcesses.recycledPids,
+          stderrTail: row.run.stderrExcerpt,
+        });
+        await tx
+          .update(nativeRunFinalizations)
+          .set({
+            recoveryState: "awaiting_evidence",
+            recoveryRequestId: input.recoveryRequestId ?? null,
+            recoveryHistory: appendBoundedRecoveryHistory(evidenceEvent),
+            updatedAt: now,
+          })
+          .where(
+            and(
+              eq(nativeRunFinalizations.runId, row.run.id),
+              eq(nativeRunFinalizations.attempt, row.coordinator.attempt),
+              eq(nativeRunFinalizations.phase, row.coordinator.phase),
+            ),
+          );
+        return {
+          kind: "awaiting_evidence",
+          runId: row.run.id,
+          reason: "missing_stop_evidence",
+        } as const;
+      }
       const claimed = await tx
         .update(nativeRunFinalizations)
         .set({
@@ -956,13 +1005,6 @@ export async function claimNativeRestartRecoveries(input: {
           runId: row.run.id,
           reason: "concurrent_recovery_claim",
         } as const;
-      }
-
-      if (
-        claimKind !== "reattach_existing_runner" &&
-        claimKind !== "reattach_remote_runner"
-      ) {
-        await recordNativeLocalProcessStop(tx as unknown as Db, row.run);
       }
 
       await tx
