@@ -15,6 +15,9 @@ const fixturePath = path.join(
   "acp-echo-agent.mjs",
 );
 const tempRoots: string[] = [];
+const fixtureLaunch = process.platform === "win32"
+  ? { agentArgv: [process.execPath, fixturePath] }
+  : { agentCommand: `${JSON.stringify(process.execPath.replaceAll("\\", "/"))} ${JSON.stringify(fixturePath.replaceAll("\\", "/"))}` };
 
 async function writeFailureFile(root: string, title: string): Promise<string> {
   const file = path.join(root, "failure.json");
@@ -45,7 +48,7 @@ it("spawns a real Node ACP agent with per-session env on this platform", async (
     runtime: {},
     config: {
       agent: "custom",
-      agentCommand: `${JSON.stringify(process.execPath.replaceAll("\\", "/"))} ${JSON.stringify(fixturePath.replaceAll("\\", "/"))}`,
+      ...fixtureLaunch,
       mode: "oneshot",
       stateDir,
       cwd: repoRoot,
@@ -82,7 +85,7 @@ it("retains a typed ACP failure as diagnostics without making it assistant outpu
     runtime: {},
     config: {
       agent: "custom",
-      agentCommand: `${JSON.stringify(process.execPath.replaceAll("\\", "/"))} ${JSON.stringify(fixturePath.replaceAll("\\", "/"))}`,
+      ...fixtureLaunch,
       mode: "oneshot",
       stateDir: path.join(root, "state"),
       cwd: repoRoot,
@@ -117,7 +120,7 @@ it("fails closed on a typed ACP session failure in persistent mode", async () =>
     runtime: {},
     config: {
       agent: "custom",
-      agentCommand: `${JSON.stringify(process.execPath.replaceAll("\\", "/"))} ${JSON.stringify(fixturePath.replaceAll("\\", "/"))}`,
+      ...fixtureLaunch,
       mode: "persistent",
       warmHandleIdleMs: 0,
       stateDir: path.join(root, "state"),
@@ -153,7 +156,7 @@ it("preserves ordinary assistant text even when it resembles a provider error", 
     runtime: {},
     config: {
       agent: "custom",
-      agentCommand: `${JSON.stringify(process.execPath.replaceAll("\\", "/"))} ${JSON.stringify(fixturePath.replaceAll("\\", "/"))}`,
+      ...fixtureLaunch,
       mode: "oneshot",
       stateDir: path.join(root, "state"),
       cwd: repoRoot,
@@ -185,7 +188,7 @@ it("keeps a typed retry warning nonfatal when the turn produces an answer", asyn
     runtime: {},
     config: {
       agent: "custom",
-      agentCommand: `${JSON.stringify(process.execPath.replaceAll("\\", "/"))} ${JSON.stringify(fixturePath.replaceAll("\\", "/"))}`,
+      ...fixtureLaunch,
       mode: "oneshot",
       stateDir: path.join(root, "state"),
       cwd: repoRoot,

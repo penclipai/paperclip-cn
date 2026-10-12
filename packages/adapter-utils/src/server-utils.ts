@@ -2241,10 +2241,11 @@ export function selectPaperclipPromptSections(
     includeExecutionContract?: boolean;
     nativeWakeReaderAvailable?: boolean;
   } = {},
-): { taskContextNote: string; wakePrompt: string } {
+): { taskContextNote: string; localizationPromptNote: string; wakePrompt: string } {
   const taskContextNote = selectPaperclipTaskMarkdown(context, options);
   return {
     taskContextNote,
+    localizationPromptNote: asString(context?.paperclipLocalizationPromptMarkdown, "").trim(),
     wakePrompt: renderPaperclipWakePrompt(context?.paperclipWake, {
       resumedSession: options.resumedSession,
       includeExecutionContract: options.includeExecutionContract,
@@ -3807,6 +3808,22 @@ export async function resolvePaperclipSkillsDir(
   return null;
 }
 
+const BUNDLED_PAPERCLIP_SKILL_KEY_PREFIX = "penclipai/paperclip-cn/";
+const LEGACY_BUNDLED_PAPERCLIP_SKILL_KEY_PREFIXES = [
+  "paperclipai/paperclip/",
+  "penclipai/paperclip/",
+] as const;
+
+function canonicalizeBundledPaperclipSkillKey(value: string): string {
+  const normalized = value.trim().toLowerCase();
+  for (const prefix of LEGACY_BUNDLED_PAPERCLIP_SKILL_KEY_PREFIXES) {
+    if (normalized.startsWith(prefix)) {
+      return `${BUNDLED_PAPERCLIP_SKILL_KEY_PREFIX}${normalized.slice(prefix.length)}`;
+    }
+  }
+  return normalized;
+}
+
 export async function listPaperclipSkillEntries(
   moduleDir: string,
   additionalCandidates: string[] = [],
@@ -3821,7 +3838,7 @@ export async function listPaperclipSkillEntries(
       const source = path.join(root, entry.name);
       const required = await readSkillRequired(source);
       return {
-        key: `paperclipai/paperclip/${entry.name}`,
+        key: `${BUNDLED_PAPERCLIP_SKILL_KEY_PREFIX}${entry.name}`,
         runtimeName: entry.name,
         source,
         required,
@@ -4251,6 +4268,12 @@ function canonicalizeDesiredPaperclipSkillReference(
   const normalizedReference = reference.trim().toLowerCase();
   if (!normalizedReference) return "";
 
+  const canonicalReference = canonicalizeBundledPaperclipSkillKey(normalizedReference);
+  const canonicalEntry = availableEntries.find(
+    (entry) => entry.key.trim().toLowerCase() === canonicalReference,
+  );
+  if (canonicalEntry) return canonicalEntry.key;
+
   const exactKey = availableEntries.find(
     (entry) => entry.key.trim().toLowerCase() === normalizedReference,
   );
@@ -4294,11 +4317,11 @@ export function resolvePaperclipDesiredSkillNames(
  * resolver above.
  */
 export const PAPERCLIP_OPERATIONAL_SKILL_KEY =
-  "paperclipai/paperclip/paperclip";
+  `${BUNDLED_PAPERCLIP_SKILL_KEY_PREFIX}paperclip`;
 
 export const PAPERCLIP_FEEDBACK_SKILL_KEYS = [
-  "paperclipai/paperclip/complain",
-  "paperclipai/paperclip/suggestion-box",
+  `${BUNDLED_PAPERCLIP_SKILL_KEY_PREFIX}complain`,
+  `${BUNDLED_PAPERCLIP_SKILL_KEY_PREFIX}suggestion-box`,
 ] as const;
 
 /**
@@ -4316,7 +4339,7 @@ export function normalizePaperclipOperationalSkillPreference(
   const preference = readPaperclipSkillSyncPreference(config);
   const desiredSkillEntries = preference.desiredSkillEntries.filter(
     (entry) =>
-      entry.key.trim().toLowerCase() !== PAPERCLIP_OPERATIONAL_SKILL_KEY,
+      canonicalizeBundledPaperclipSkillKey(entry.key) !== PAPERCLIP_OPERATIONAL_SKILL_KEY,
   );
   return desiredSkillEntries.length === preference.desiredSkillEntries.length
     ? config
@@ -4360,12 +4383,12 @@ export function resolveLegacyPaperclipDesiredSkillNames(
   );
   const operationalEntry = availableEntries.find(
     (entry) =>
-      entry.key.trim().toLowerCase() === PAPERCLIP_OPERATIONAL_SKILL_KEY,
+      canonicalizeBundledPaperclipSkillKey(entry.key) === PAPERCLIP_OPERATIONAL_SKILL_KEY,
   );
   if (!operationalEntry) return desiredSkills;
 
   const feedbackEntries = PAPERCLIP_FEEDBACK_SKILL_KEYS.flatMap((key) => {
-    const entry = availableEntries.find((candidate) => candidate.key.trim().toLowerCase() === key);
+    const entry = availableEntries.find((candidate) => canonicalizeBundledPaperclipSkillKey(candidate.key) === key);
     return entry ? [entry.key] : [];
   });
   return Array.from(new Set([operationalEntry.key, ...feedbackEntries, ...desiredSkills]));

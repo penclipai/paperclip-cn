@@ -238,15 +238,15 @@ export function Artifacts() {
 
   const emptyMessage = showGroupCards
     ? searching
-      ? "No artifact stacks match this search."
-      : "No artifact stacks yet."
+      ? translateInstant("artifacts.emptyStackSearch")
+      : translateInstant("artifacts.emptyStacks")
     : searching
-      ? "No artifacts match this search."
+      ? translateInstant("artifacts.emptySearch")
       : viewingSelectedStack
-        ? "No artifacts in this stack match the current filters."
+        ? translateInstant("artifacts.emptySelectedStack")
         : kind === "all"
-          ? "No artifacts yet. Outputs attached to issues will appear here."
-          : "No artifacts of this type yet.";
+          ? translateInstant("artifacts.emptyAll")
+          : translateInstant("artifacts.emptyKind");
 
   return (
     <div className="w-full max-w-6xl space-y-5">

@@ -3,6 +3,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { runChildProcess } from "@penclipai/adapter-utils/server-utils";
+import { prepareTestPosixShell } from "@penclipai/adapter-utils/test-fixtures/posix-shell";
 import { execute } from "@penclipai/adapter-cursor-local/server";
 
 // These fixtures verify command discovery, environment and real CLI execution.
@@ -106,9 +107,16 @@ function createLocalSandboxRunner() {
       if (input.args?.some(arg => arg.includes("curl https://cursor.com/install"))) {
         throw new Error("Sandbox fixture did not discover its preinstalled Cursor CLI");
       }
-      return await runChildProcess(`cursor-sandbox-execute-${counter}`, input.command, input.args ?? [], {
-        cwd: input.cwd ?? process.cwd(),
-        env: input.env ?? {},
+      const prepared = prepareTestPosixShell(input);
+      const command = process.platform === "win32" && prepared.command.startsWith("/tmp/")
+        ? path.join(os.tmpdir(), prepared.command.slice("/tmp/".length))
+        : prepared.command;
+      return await runChildProcess(`cursor-sandbox-execute-${counter}`, command, prepared.args, {
+        // The real POSIX sandbox accepts `/` as a working directory. The
+        // Windows fixture runs that command through Git Bash, whose spawned
+        // Node process needs a physical host directory instead.
+        cwd: process.platform === "win32" && input.cwd === "/" ? process.cwd() : input.cwd ?? process.cwd(),
+        env: prepared.env,
         stdin: input.stdin,
         timeoutSec: Math.max(1, Math.ceil((input.timeoutMs ?? 30_000) / 1000)),
         graceSec: 5,
@@ -399,7 +407,10 @@ describe("cursor execute", () => {
         path: string;
       };
       expect(capture.command).toBe(cursorAgentPath);
-      expect(capture.path.split(":")[0]).toBe(path.join(homeDir, ".local", "bin"));
+      const expectedRemoteCursorBin = process.platform === "win32"
+        ? `/tmp/${path.basename(root)}/home/.local/bin`
+        : path.join(homeDir, ".local", "bin");
+      expect(capture.path.split(":")[0]).toBe(expectedRemoteCursorBin);
       expect(capture.prompt).toContain("Follow the paperclip heartbeat.");
     } finally {
       if (previousHome === undefined) delete process.env.HOME;

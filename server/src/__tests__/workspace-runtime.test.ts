@@ -8,7 +8,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import { parse as parseEnvContents } from "dotenv";
-import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import {
   activityLog,
   agents,
@@ -5678,6 +5678,14 @@ describe("resolveWorkspaceRuntimeReadinessTimeoutSec", () => {
 describe("resolveShell (shell fallback)", () => {
   const originalShell = process.env.SHELL;
   const originalPlatform = process.platform;
+  const originalProgramFiles = process.env.ProgramFiles;
+  const originalProgramFilesX86 = process.env["ProgramFiles(x86)"];
+
+  beforeEach(() => {
+    const missingDirectory = path.join(os.tmpdir(), `paperclip-missing-tools-${randomUUID()}`);
+    process.env.ProgramFiles = missingDirectory;
+    process.env["ProgramFiles(x86)"] = missingDirectory;
+  });
 
   afterEach(() => {
     if (originalShell !== undefined) {
@@ -5686,6 +5694,10 @@ describe("resolveShell (shell fallback)", () => {
       delete process.env.SHELL;
     }
     Object.defineProperty(process, "platform", { value: originalPlatform });
+    if (originalProgramFiles === undefined) delete process.env.ProgramFiles;
+    else process.env.ProgramFiles = originalProgramFiles;
+    if (originalProgramFilesX86 === undefined) delete process.env["ProgramFiles(x86)"];
+    else process.env["ProgramFiles(x86)"] = originalProgramFilesX86;
   });
 
   it("returns process.env.SHELL when set", () => {
@@ -5713,6 +5725,32 @@ describe("resolveShell (shell fallback)", () => {
     delete process.env.SHELL;
     Object.defineProperty(process, "platform", { value: "win32" });
     expect(resolveShell()).toBe("sh");
+  });
+
+  it.each([
+    "pwsh",
+    "PowerShell.exe",
+    "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
+    "C:/Windows/System32/cmd.exe",
+  ])("uses the POSIX fallback for incompatible Windows SHELL %s", (shell) => {
+    process.env.SHELL = shell;
+    Object.defineProperty(process, "platform", { value: "win32" });
+    expect(resolveShell()).toBe("sh");
+  });
+
+  it("finds installed Git Bash when Windows has no POSIX shell on PATH", async () => {
+    const toolsRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-shell-tools-"));
+    try {
+      const shell = path.join(toolsRoot, "Git", "bin", "sh.exe");
+      await fs.mkdir(path.dirname(shell), { recursive: true });
+      await fs.writeFile(shell, "test shell fixture");
+      process.env.ProgramFiles = toolsRoot;
+      process.env.SHELL = "powershell.exe";
+      Object.defineProperty(process, "platform", { value: "win32" });
+      expect(resolveShell()).toBe(shell);
+    } finally {
+      await fs.rm(toolsRoot, { recursive: true, force: true });
+    }
   });
 
   it("falls back to /bin/sh on darwin when SHELL is unset", () => {

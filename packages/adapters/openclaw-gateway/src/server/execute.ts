@@ -1140,9 +1140,17 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   });
 
   const templateMessage = nonEmpty(payloadTemplate.message) ?? nonEmpty(payloadTemplate.text);
+  // The server folds runtime localization into the session handoff layer
+  // before adapters execute. Keep both forms here for direct adapter callers
+  // and place the resulting runtime guidance ahead of the wake procedure.
+  const runtimePromptLayer = joinPromptSections([
+    asString(ctx.context.paperclipSessionHandoffMarkdown, ""),
+    asString(ctx.context.paperclipLocalizationPromptMarkdown, ""),
+  ]);
+  const localizedWakeText = joinPromptSections([runtimePromptLayer, wakeText]);
   const message = joinPromptSections([
     selectInitialCommunicationGuidance(ctx.context, { resumedSession: Boolean(ctx.runtime?.sessionId) }),
-    templateMessage ? appendWakeText(templateMessage, wakeText) : wakeText,
+    templateMessage ? appendWakeText(templateMessage, localizedWakeText) : localizedWakeText,
   ]);
 
   const agentParams = buildAgentParams({

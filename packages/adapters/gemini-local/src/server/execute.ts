@@ -561,7 +561,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       !resumedSession && bootstrapPromptTemplate.trim().length > 0
         ? renderTemplate(bootstrapPromptTemplate, templateData).trim()
         : "";
-    const { taskContextNote, wakePrompt } = selectPaperclipPromptSections(context, {
+    const { taskContextNote, localizationPromptNote, wakePrompt } = selectPaperclipPromptSections(context, {
       resumedSession,
       includeCommunicationGuidance: false,
     });
@@ -575,6 +575,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     const basePrompt = joinPromptSections([
       instructionsPrefix,
       renderedBootstrapPrompt,
+      localizationPromptNote,
       wakePrompt,
       taskContextNote,
       sessionHandoffNote,

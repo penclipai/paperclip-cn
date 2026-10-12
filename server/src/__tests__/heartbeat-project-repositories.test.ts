@@ -8,6 +8,7 @@ import { pathToFileURL } from "node:url";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { agents, companies, createDb, environments, executionWorkspaces, heartbeatRuns, issues, projects, projectWorkspaces } from "@penclipai/db";
 import { setExpensiveWorkspaceGitExecutor } from "@penclipai/adapter-utils/git-workspace-sync";
+import { prepareTestPosixShell } from "@penclipai/adapter-utils/test-fixtures/posix-shell";
 import { buildProjectMentionHref } from "@penclipai/shared";
 import { createWorkspaceGitOperationScheduler, WorkspaceGitScanError } from "../services/workspace-git-operation-scheduler.js";
 import { getEmbeddedPostgresTestSupport, startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.js";
@@ -31,7 +32,7 @@ suite("task project repository provisioning", () => {
   let root: string;
   let heartbeat: ReturnType<typeof heartbeatService>;
   beforeAll(async () => {
-    root = await mkdtemp(path.join(os.tmpdir(), "paperclip-project-repos-"));
+    root = await mkdtemp(path.join(os.homedir(), "paperclip-project-repos-"));
     vi.stubEnv("PAPERCLIP_HOME", path.join(root, "home"));
     vi.stubEnv("PAPERCLIP_MULTI_PROJECT_WORKSPACE_SYNC", "false");
     database = await startEmbeddedPostgresTestDatabase("project-repositories");
@@ -85,11 +86,23 @@ suite("task project repository provisioning", () => {
     // provider, executing its setup commands in a disposable filesystem root.
     const sandboxHeartbeat = heartbeatService(db, { environmentRuntime: {
       ...environmentRuntimeService(db),
-      execute: async (input) => ({
-        exitCode: 0,
-        stdout: execFileSync(input.command, input.args ?? [], { cwd: root, input: input.stdin, encoding: "utf8", env: { ...process.env, ...input.env } }),
-        stderr: "", signal: null, timedOut: false,
-      }),
+      execute: async (input) => {
+        const prepared = prepareTestPosixShell({
+          command: input.command,
+          args: input.args,
+          env: { ...process.env, ...input.env },
+        });
+        return {
+          exitCode: 0,
+          stdout: execFileSync(prepared.command, prepared.args, {
+            cwd: root,
+            input: input.stdin,
+            encoding: "utf8",
+            env: prepared.env,
+          }),
+          stderr: "", signal: null, timedOut: false,
+        };
+      },
     } });
     const directories: string[] = [];
     const issueIds: string[] = [];
@@ -186,7 +199,7 @@ suite("task project repository provisioning", () => {
         expect(workspace.strategy).toBe("git_worktree");
         expect(execFileSync("git", ["rev-parse", "--is-inside-work-tree"], { cwd: workspace.cwd, encoding: "utf8" }).trim()).toBe("true");
       } else {
-        expect(workspace.cwd).toContain(`${projectId}/_default`);
+        expect(workspace.cwd).toContain(path.join(projectId, "_default"));
       }
     }
   }, 25_000);

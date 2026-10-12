@@ -134,10 +134,13 @@ async function readGit(cwd: string, args: string[]) {
   return (await execFileAsync("git", args, { cwd })).stdout.trim();
 }
 
-async function createGitRepo() {
+async function createGitRepo(options: { root?: string; prefix?: string } = {}) {
   // realpath: on macOS os.tmpdir() is a symlink (/tmp -> /private/tmp) and the
   // runtime persists resolved worktree paths, so unresolved fixtures never match.
-  const repoRoot = await realpath(await mkdtemp(path.join(os.tmpdir(), "paperclip-branch-containment-repo-")));
+  const repoRoot = await realpath(await mkdtemp(path.join(
+    options.root ?? os.tmpdir(),
+    options.prefix ?? "paperclip-branch-containment-repo-",
+  )));
   await runGit(repoRoot, ["init"]);
   await runGit(repoRoot, ["config", "user.email", "paperclip-test@example.com"]);
   await runGit(repoRoot, ["config", "user.name", "Paperclip Test"]);
@@ -938,12 +941,15 @@ describeEmbeddedPostgres("heartbeat workspace branch containment", () => {
   }, 60_000);
 
   async function seedRetainedSourceRun(kind: "deleted" | "explicit_conflict" | "foreign_project" | "foreign_company" | "unproven") {
-    const home = await realpath(await mkdtemp(path.join(os.tmpdir(), "paperclip-retained-source-home-")));
-    tempRoots.push(home);
+    // Git records linked-worktree admin paths. Keep this managed fixture below
+    // Windows' legacy path limit while retaining its UUID-scoped directory shape.
+    const fixtureRoot = await realpath(await mkdtemp(path.join(os.homedir(), ".pc-r-")));
+    const home = path.join(fixtureRoot, "h");
+    await mkdir(home);
+    tempRoots.push(fixtureRoot);
     vi.stubEnv("PAPERCLIP_HOME", home);
-    const original = await createGitRepo();
-    const replacement = await createGitRepo();
-    tempRoots.push(original, replacement);
+    const original = await createGitRepo({ root: fixtureRoot, prefix: "o-" });
+    const replacement = await createGitRepo({ root: fixtureRoot, prefix: "n-" });
     const companyId = randomUUID(), projectId = randomUUID(), oldWorkspaceId = randomUUID(), newWorkspaceId = randomUUID();
     const agentId = randomUUID(), issueId = randomUUID(), executionWorkspaceId = randomUUID(), runId = randomUUID(), wakeupId = randomUUID();
     const issuePrefix = `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`;
@@ -1029,7 +1035,9 @@ describeEmbeddedPostgres("heartbeat workspace branch containment", () => {
     expect(await readFile(path.join(seeded.worktree, "retained.txt"), "utf8")).toBe("unexported original task edits\n");
     expect(await readFile(path.join(seeded.replacement, "replacement.txt"), "utf8")).toBe("replacement source must stay untouched\n");
     expect(await readGit(seeded.worktree, ["branch", "--show-current"])).toBe(seeded.branch);
-    expect(await readGit(seeded.owner, ["worktree", "list", "--porcelain"])).toContain(`worktree ${seeded.worktree}`);
+    expect(await readGit(seeded.owner, ["worktree", "list", "--porcelain"])).toContain(
+      `worktree ${seeded.worktree.replaceAll(path.sep, "/")}`,
+    );
   });
 
   it.each(["explicit_conflict", "foreign_project", "foreign_company", "unproven"] as const)(

@@ -164,7 +164,7 @@ export function buildPrompt(
     paperclipApiUrl = paperclipApiUrl.replace(/\/+$/, "") + "/api";
   }
 
-  const { taskContextNote: taskContextMarkdown, wakePrompt } = selectPaperclipPromptSections(context, {
+  const { taskContextNote: taskContextMarkdown, localizationPromptNote, wakePrompt } = selectPaperclipPromptSections(context, {
     resumedSession: options.resumedSession === true,
     includeCommunicationGuidance: true,
   });
@@ -206,6 +206,7 @@ export function buildPrompt(
     : "";
   return joinPromptSections([
     renderTemplate(HERMES_RUNTIME_IDENTITY_TEMPLATE, vars),
+    localizationPromptNote,
     wakePrompt,
     sessionHandoffMarkdown,
     taskContextMarkdown,

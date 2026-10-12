@@ -120,7 +120,7 @@ export function FastResponseSettingsView({
           id: c.grantId,
           name: c.name,
           description:
-            c.status === "connected" ? "Connected" : "Needs attention",
+            translateInstant(c.status === "connected" ? "apps.detail.status.connected" : "apps.detail.status.needsAttention"),
           icon: <AppLogo name={c.provider} brandKey={c.provider} size={24} />,
         }))}
         onSelect={(grantId) => {
@@ -209,14 +209,14 @@ export function FastResponseSettingsView({
             <p>{result.text}</p>
             <p className="text-xs text-muted-foreground">
               {(result.durationMs / 1000).toFixed(2)} {translateInstant("seconds ·")}{" "}
-              {result.usage.inputTokens ?? "—"} input /{" "}
+              {result.usage.inputTokens ?? "—"} {translateInstant("input")} /{" "}
               {result.usage.outputTokens ?? "—"} {translateInstant("output tokens · Usage recorded in Costs.")}</p>
           </div>
         ) : (
           <p role="alert" className="text-sm text-destructive">
             {result.reason === "timeout"
-              ? "The model did not respond within three seconds. Try a faster model."
-              : "Could not generate a response. Check the connection and model, then try again."}
+              ? translateInstant("The model did not respond within three seconds. Try a faster model.")
+              : translateInstant("Could not generate a response. Check the connection and model, then try again.")}
           </p>
         ))}
       <div className="flex items-center justify-between gap-3">
@@ -227,12 +227,12 @@ export function FastResponseSettingsView({
             onClick={onTest}
             disabled={dirty || !settings.enabled || saving || testing}
           >
-            {testing ? "Testing…" : "Test response"}
+            {translateInstant(testing ? "Testing…" : "Test response")}
           </Button>
           <p className="text-xs text-muted-foreground">
-            {dirty
+            {translateInstant(dirty
               ? "Save changes before testing."
-              : "Runs a small sample with an API charge."}
+              : "Runs a small sample with an API charge.")}
           </p>
         </div>
         {dirty && (
@@ -245,7 +245,7 @@ export function FastResponseSettingsView({
             }
             onClick={() => onSave(draft)}
           >
-            {saving ? "Saving…" : "Save fast response"}
+            {translateInstant(saving ? "Saving…" : "Save fast response")}
           </Button>
         )}
       </div>

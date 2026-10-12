@@ -256,7 +256,7 @@ export function errorHandler(
     "status" in err && err.status === 400 &&
     "type" in err && err.type === "entity.parse.failed"
   ) {
-    res.status(400).json({ error: translate("errors.validation") });
+    res.status(400).json({ error: translate("errors.invalidJsonBody") });
     return;
   }
 

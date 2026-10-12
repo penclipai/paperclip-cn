@@ -1,4 +1,4 @@
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { createRequire } from "node:module";
 import { setTimeout as delay } from "node:timers/promises";
 import { afterEach, describe, expect, it } from "vitest";
@@ -10,7 +10,7 @@ const manifest = { id: "test.idle", apiVersion: 1 as const, version: "1.0.0", di
 function worker(write = false, hostHandler = async () => undefined) {
   return createPluginWorkerHandle("test.idle", {
     entrypointPath: fileURLToPath(new URL("./fixtures/plugin-worker-idle.cjs", import.meta.url)),
-    execArgv: ["--import", createRequire(import.meta.url).resolve("tsx")],
+    execArgv: ["--import", pathToFileURL(createRequire(import.meta.url).resolve("tsx")).href],
     manifest, config: {}, instanceInfo: { instanceId: "fixture", hostVersion: "1.0.0" }, apiVersion: 1,
     env: { IDLE_TEST_WRITE: write ? "1" : "0" },
     hostHandlers: { "state.set": hostHandler, "events.subscribe": async () => ({}) },

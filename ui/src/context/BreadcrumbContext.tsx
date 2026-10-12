@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode, type MouseEventHandler } from "react";
+import { useTranslation } from "react-i18next";
 
 export interface Breadcrumb {
   label: string;
@@ -75,15 +76,20 @@ export function buildDocumentTitle(breadcrumbs: Breadcrumb[], companyName?: stri
 }
 
 export function BreadcrumbProvider({ children, companyName }: BreadcrumbProviderProps) {
+  const { i18n } = useTranslation();
+  const language = i18n.resolvedLanguage ?? i18n.language;
   const [breadcrumbs, setBreadcrumbsState] = useState<Breadcrumb[]>([]);
   const [breadcrumbToolbar, setBreadcrumbToolbarState] = useState<ReactNode | null>(null);
   const [breadcrumbPanelControl, setBreadcrumbPanelControlState] =
     useState<BreadcrumbPanelControl | null>(null);
   const [mobileToolbar, setMobileToolbarState] = useState<ReactNode | null>(null);
 
+  // Page effects usually derive breadcrumb labels with translateInstant and
+  // depend on this callback. Changing its identity only for a locale change
+  // reruns those effects without remounting the page or touching raw labels.
   const setBreadcrumbs = useCallback((crumbs: Breadcrumb[]) => {
     setBreadcrumbsState((current) => (breadcrumbsEqual(current, crumbs) ? current : crumbs));
-  }, []);
+  }, [language]);
 
   const setMobileToolbar = useCallback((node: ReactNode | null) => {
     setMobileToolbarState(node);

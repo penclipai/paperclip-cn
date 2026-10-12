@@ -347,6 +347,8 @@ async function verifyManifest(runId: string, manifest: PathManifest): Promise<vo
     const stat = await fs.lstat(dir);
     if (!stat.isDirectory() || stat.isSymbolicLink()) throw new Error("native_workspace_sync_manifest_root_invalid");
   }
+  const leaf = await fs.lstat(manifest.filePath);
+  if (!leaf.isFile() || leaf.isSymbolicLink()) throw new Error("native_workspace_sync_manifest_invalid");
   if (await manifestFileSha256(manifest.filePath) !== match[1]) throw new Error("native_workspace_sync_manifest_digest_mismatch");
   // Verify every record before consumers can mutate a workspace on recovery.
   for (const _record of readManifestRecords(manifest)) { /* bounded validation */ }

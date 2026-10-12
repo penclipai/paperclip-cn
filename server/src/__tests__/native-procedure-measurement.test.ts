@@ -30,7 +30,7 @@ const receipts: unknown[] = [];
 let mcpReceipt: unknown;
 function measure(value: unknown) {
   const json = JSON.stringify(value);
-  const normalized = json.replaceAll(WORKSPACE, "/workspace");
+  const normalized = json.replaceAll(JSON.stringify(WORKSPACE).slice(1, -1), "/workspace");
   return {
     utf8Bytes: Buffer.byteLength(json), characters: json.length, sha256: sha(json),
     normalizedComparison: { utf8Bytes: Buffer.byteLength(normalized), characters: normalized.length, sha256: sha(normalized) },

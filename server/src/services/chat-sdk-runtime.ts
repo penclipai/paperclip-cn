@@ -912,6 +912,7 @@ function assertDiscordAdapterCompatibility(adapter: Adapter, chat: Chat): void {
 
 interface TeamsApiClientInternals {
   _apiClientSettings?: unknown;
+  clone?: (options: { serviceUrl: string }) => TeamsApiClientInternals;
   constructor: Function;
   http: unknown;
   serviceUrl: string;
@@ -1195,11 +1196,11 @@ export function scopeMicrosoftTeamsEgress(
       http: unknown,
       settings?: unknown,
     ) => TeamsApiClientInternals;
-    const scopedApi = new ApiClient(
-      serviceUrl,
-      defaultApi.http,
-      defaultApi._apiClientSettings,
-    );
+    // The SDK clone owns token-provider handling. Reusing its decorated HTTP
+    // client directly can supply both token and tokenProvider on newer SDKs.
+    const scopedApi = typeof defaultApi.clone === "function"
+      ? defaultApi.clone({ serviceUrl })
+      : new ApiClient(serviceUrl, defaultApi.http, defaultApi._apiClientSettings);
     return await apiScope.run(scopedApi, operation);
   };
   const withThreadServiceUrl = async <T>(

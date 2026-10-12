@@ -159,7 +159,9 @@ async function createRemoteMcpToolFixture(db: ReturnType<typeof createDb>, compa
     expect(result.exitCode).toBe(0);
     const received = JSON.parse(captured.join("").trim());
     expect(received.snapshot).toEqual(snapshot);
-    expect(received.mode).toBe(0o600);
+    // Windows stat mode bits do not encode ACL privacy. Preserve the strict
+    // POSIX permission check there, and verify owner access on Windows.
+    expect(process.platform === "win32" ? received.mode & 0o600 : received.mode).toBe(0o600);
     await expect(access(received.file)).rejects.toThrow();
   });
 

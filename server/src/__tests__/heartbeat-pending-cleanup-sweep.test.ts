@@ -16,7 +16,10 @@ import {
   startEmbeddedPostgresTestDatabase,
 } from "./helpers/embedded-postgres.js";
 
-const mockTelemetryClient = vi.hoisted(() => ({ track: vi.fn() }));
+const mockTelemetryClient = vi.hoisted(() => ({
+  track: vi.fn(),
+  hashPrivateRef: vi.fn((value: string) => `hashed:${value}`),
+}));
 vi.mock("../telemetry.ts", () => ({ getTelemetryClient: () => mockTelemetryClient }));
 
 vi.mock("../middleware/logger.js", () => ({

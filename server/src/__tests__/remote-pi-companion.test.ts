@@ -2,21 +2,22 @@ import { createHash } from "node:crypto";
 import { chmodSync, linkSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, renameSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, expect, it, vi } from "vitest";
-const hooks = vi.hoisted(() => ({ mkdir: undefined as undefined | ((path: string) => void), rename: undefined as undefined | ((source: string, destination: string) => void), open: undefined as undefined | ((path: string) => void), read: undefined as undefined | ((path: string, bytes: number) => void) }));
+import { afterEach, describe, expect, it, vi } from "vitest";
+const hooks = vi.hoisted(() => ({ mkdir: undefined as undefined | ((path: string) => void), rename: undefined as undefined | ((source: string, destination: string) => void), open: undefined as undefined | ((path: string) => void), read: undefined as undefined | ((path: string, bytes: number) => void), lstat: undefined as undefined | ((path: string) => void) }));
 vi.mock("node:fs/promises", async (original) => {
   const fs = await original<typeof import("node:fs/promises")>();
   return { ...fs,
     mkdir: async (...args: Parameters<typeof fs.mkdir>) => { hooks.mkdir?.(String(args[0])); return fs.mkdir(...args); },
     rename: async (...args: Parameters<typeof fs.rename>) => { hooks.rename?.(String(args[0]), String(args[1])); return fs.rename(...args); },
     open: async (...args: Parameters<typeof fs.open>) => { hooks.open?.(String(args[0])); const file = await fs.open(...args); const read = file.read.bind(file); file.read = (async (...readArgs: any[]) => { const result = await (read as any)(...readArgs); hooks.read?.(String(args[0]), result.bytesRead); return result; }) as typeof file.read; return file; },
+    lstat: async (...args: Parameters<typeof fs.lstat>) => { hooks.lstat?.(String(args[0])); return fs.lstat(...args); },
   };
 });
 vi.mock("../vendor/paperclip-runner/index.js", async () => await import("../../../packages/paperclip-runner/src/drivers/acpx/qualified-profiles.js"));
 import { QUALIFIED_ACPX_PROFILES } from "../../../packages/paperclip-runner/src/drivers/acpx/qualified-profiles.js";
 import { createRemotePiCompanionManifest, importRemotePiCompanion, inventoryRemoteCompanion, resolveRemotePiCompanion, selectRemotePiCompanion } from "../services/native-runtime/remote-pi-companion.js";
 const roots: string[] = [];
-afterEach(() => { hooks.mkdir = undefined; hooks.rename = undefined; hooks.open = undefined; hooks.read = undefined; for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true }); vi.restoreAllMocks(); });
+afterEach(() => { hooks.mkdir = undefined; hooks.rename = undefined; hooks.open = undefined; hooks.read = undefined; hooks.lstat = undefined; for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true }); vi.restoreAllMocks(); });
 const hash = (bytes: string | Buffer) => createHash("sha256").update(bytes).digest("hex");
 const canonical = (v: any): string => Array.isArray(v) ? `[${v.map(canonical).join(",")}]` : v && typeof v === "object" ? `{${Object.keys(v).sort().map(k => `${JSON.stringify(k)}:${canonical(v[k])}`).join(",")}}` : JSON.stringify(v);
 async function fixture() {
@@ -30,6 +31,12 @@ async function fixture() {
   writeFileSync(join(directory, "provider-pack/provider-pack.json"), JSON.stringify({ schema: "paperclip-runner/remote-provider-pack/v1", digest: `sha256:${hash(canonical(payload))}`, payload }));
   const manifest = await createRemotePiCompanionManifest(directory, source); const bytes = JSON.stringify(manifest); writeFileSync(join(directory, "companion.json"), bytes); return { root, directory, serverRoot, sha256: hash(bytes), manifest, source };
 }
+it.runIf(process.platform === "win32")("rejects a remote Pi import before accessing operator paths on an unsupported controller", async () => {
+  hooks.lstat = () => { throw new Error("unexpected filesystem access"); };
+  await expect(importRemotePiCompanion({ directory: "C:\\untrusted-companion", sha256: "a".repeat(64), serverRoot: "C:\\untrusted-server" })).rejects.toThrow("runner_remote_companion_invalid: companion import supports macOS and Linux controllers");
+});
+
+describe.skipIf(process.platform === "win32")("remote Pi companion imports on supported controllers", () => {
 it("imports the release-generated closure and resolves target bytes without environment overrides", async () => {
   const f = await fixture(); const result = await importRemotePiCompanion(f); expect(result.status).toBe("imported_verified");
   expect(result.runnerBinary).toBe(join(f.serverRoot, "remote-companions/linux-x64/bin/paperclip-runnerd"));
@@ -160,4 +167,5 @@ it("rejects read-only directory modes before claiming a staging or output path",
     await expect(importRemotePiCompanion({...f, checkCancelled(){}})).rejects.toThrow("owner read/write/search");
     expect(() => readdirSync(join(f.serverRoot, "remote-companions"))).toThrow();
   } finally { chmodSync(dir, 0o755); }
+});
 });

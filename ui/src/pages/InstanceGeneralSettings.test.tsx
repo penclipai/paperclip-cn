@@ -1,10 +1,12 @@
 // @vitest-environment jsdom
 
+import { act } from "react";
 import { flushSync } from "react-dom";
 import { createRoot, type Root } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { queryKeys } from "@/lib/queryKeys";
+import i18n from "@/i18n";
 import { InstanceGeneralSettings } from "./InstanceGeneralSettings";
 
 const mockAuthApi = vi.hoisted(() => ({ signOut: vi.fn() }));
@@ -148,6 +150,25 @@ describe("InstanceGeneralSettings sign-out", () => {
     expect(container.textContent).toContain("Read our terms of service");
     expect(container.textContent).toContain("Always allow");
     expect(container.textContent).toContain("Don't allow");
+  });
+
+  it("renders backup-retention preset counts through locale-aware messages", async () => {
+    try {
+      await renderPage(SELF_HOSTED_HEALTH);
+      await act(async () => {
+        await i18n.changeLanguage("zh-CN");
+      });
+
+      await vi.waitFor(() => {
+        expect(container.textContent).toContain("7 天");
+        expect(container.textContent).toContain("4 周");
+        expect(container.textContent).toContain("1 个月");
+      });
+    } finally {
+      await act(async () => {
+        await i18n.changeLanguage("en");
+      });
+    }
   });
 
   it("clears a stale sign-out failure after a settings update succeeds", async () => {

@@ -238,6 +238,10 @@ process.stdin.on("end", () => { console.error(process.env.FIXTURE_TRACE ?? ""); 
     process.env.HOME = homeDir;
 
     try {
+      const promptContext = {
+        ...createPromptContextFixture(),
+        paperclipLocalizationPromptMarkdown: "## Language\n\nReply in Chinese.",
+      };
       const result = await execute({
         runId: "run-fresh-lease-1",
         agent: {
@@ -265,7 +269,7 @@ process.stdin.on("end", () => { console.error(process.env.FIXTURE_TRACE ?? ""); 
           cwd: workspace,
           promptTemplate: "Follow the paperclip heartbeat.",
         },
-        context: createPromptContextFixture(),
+        context: promptContext,
         authToken: "run-jwt-token",
         onLog: async () => {},
       });
@@ -281,6 +285,7 @@ process.stdin.on("end", () => { console.error(process.env.FIXTURE_TRACE ?? ""); 
       expect(runtimePath.split(path.delimiter)).toContain(path.join(homeDir, ".local", "bin"));
       expect(prompt).toContain("Follow the paperclip heartbeat.");
       expect(prompt).toContain("## Owned assignment");
+      expect(prompt).toContain("## Language\n\nReply in Chinese.");
     } finally {
       if (previousHome === undefined) delete process.env.HOME;
       else process.env.HOME = previousHome;

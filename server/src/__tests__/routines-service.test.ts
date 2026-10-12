@@ -1324,7 +1324,7 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
     const { companyId, agentId, issueSvc, routine, svc } = await seedFixture();
     const userId = randomUUID();
 
-    const run = await svc.runRoutine(routine.id, { source: "manual" }, { actor: boardActor(userId) });
+    const run = await svc.runRoutine(routine.id, { source: "manual" }, boardActor(userId));
 
     expect(run.status).toBe("issue_created");
     expect(run.linkedIssueId).toBeTruthy();
@@ -1523,7 +1523,7 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
       archivedAt: new Date("2026-03-20T12:02:00.000Z"),
     });
 
-    const run = await svc.runRoutine(routine.id, { source: "manual" }, { actor: boardActor(userId) });
+    const run = await svc.runRoutine(routine.id, { source: "manual" }, boardActor(userId));
 
     expect(run.status).toBe("coalesced");
     expect(run.linkedIssueId).toBe(previousIssue.id);
@@ -1609,7 +1609,7 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
       archivedAt: new Date("2026-03-20T12:02:00.000Z"),
     });
 
-    const run = await svc.runRoutine(routine.id, { source: "manual" }, { actor: boardActor(userId) });
+    const run = await svc.runRoutine(routine.id, { source: "manual" }, boardActor(userId));
 
     expect(run.status).toBe("skipped");
     expect(run.linkedIssueId).toBe(previousIssue.id);

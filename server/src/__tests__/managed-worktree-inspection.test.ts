@@ -27,10 +27,23 @@ async function fixture() {
 }
 
 async function replaceListProbe(root: string, body: string) {
-  const realGit = (await exec("/bin/sh", ["-c", "command -v git"])).stdout.trim();
+  const realGit = process.platform === "win32"
+    ? (await exec("where.exe", ["git"])).stdout.split(/\r?\n/).find(Boolean)!
+    : (await exec("sh", ["-c", "command -v git"])).stdout.trim();
   const bin = path.join(root, "bin");
   await fs.mkdir(bin);
-  await fs.writeFile(path.join(bin, "git"), `#!${process.execPath}\nconst args=process.argv.slice(2);\nif(args[0]==="worktree"&&args[1]==="list"){${body}}else{const r=require("node:child_process").spawnSync(${JSON.stringify(realGit)},args,{stdio:"inherit"});process.exitCode=r.status??1;}\n`, { mode: 0o755 });
+  if (process.platform === "win32") {
+    const bootstrap = path.join(bin, "git-interceptor.cjs");
+    await fs.copyFile(process.execPath, path.join(bin, "git.exe"));
+    await fs.writeFile(bootstrap, `const path = require("node:path");
+const { spawnSync } = require("node:child_process");
+const args = [...process.execArgv, ...process.argv.slice(1).map((value, index) => index === 0 ? path.basename(value) : value)];
+if (args.includes("worktree") && args.includes("list")) { ${body} process.exit(process.exitCode ?? 0); } else { const result = spawnSync(${JSON.stringify(realGit)}, args, { stdio: "inherit" }); process.exit(result.status ?? 1); }
+`, "utf8");
+    vi.stubEnv("NODE_OPTIONS", `${process.env.NODE_OPTIONS?.trim() ? `${process.env.NODE_OPTIONS.trim()} ` : ""}--require=${bootstrap}`);
+  } else {
+    await fs.writeFile(path.join(bin, "git"), `#!${process.execPath}\nconst args=process.argv.slice(2);\nif(args[0]==="worktree"&&args[1]==="list"){${body}}else{const r=require("node:child_process").spawnSync(${JSON.stringify(realGit)},args,{stdio:"inherit"});process.exitCode=r.status??1;}\n`, { mode: 0o755 });
+  }
   vi.stubEnv("PATH", `${bin}${path.delimiter}${process.env.PATH ?? ""}`);
 }
 

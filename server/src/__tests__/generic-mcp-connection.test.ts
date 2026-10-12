@@ -637,11 +637,14 @@ describeEmbeddedPostgres("generic remote MCP connections", () => {
     await expect(db.select().from(toolApplications)).resolves.toHaveLength(0);
   });
 
-  it("emits DNS guidance for a real NXDOMAIN failure", async () => {
+  it("emits DNS guidance for a proven DNS lookup failure", async () => {
     const company = await createCompany(db);
     const app = createRouteApp(db, {
       deploymentMode: "local_trusted",
       deploymentExposure: "private",
+      remoteHttpEndpointLookup: async () => {
+        throw Object.assign(new Error("fixture NXDOMAIN"), { code: "ENOTFOUND" });
+      },
     });
 
     const response = await request(app)

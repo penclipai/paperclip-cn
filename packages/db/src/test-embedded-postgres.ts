@@ -168,6 +168,27 @@ function cleanupEmbeddedPostgresTestDirs(dataDir: string) {
 // stop gracefully before abandoning the wait and returning from the hook.
 const EMBEDDED_POSTGRES_STOP_TIMEOUT_MS = 5000;
 
+type ManagedEmbeddedPostgresShutdown = (record: {
+  dataDir: string;
+  pgCtlPath: string | null;
+  postmasterPid: number | null;
+}) => Promise<void>;
+
+let embeddedPostgresStopTimeoutMs = EMBEDDED_POSTGRES_STOP_TIMEOUT_MS;
+let managedEmbeddedPostgresShutdown: ManagedEmbeddedPostgresShutdown = shutdownManagedEmbeddedPostgres;
+
+// Test seam for the timeout-only cleanup path. Production always uses the
+// manager and the five-second graceful-stop budget above.
+export function __setEmbeddedPostgresStopTimeoutForTests(timeoutMs: number | null): void {
+  embeddedPostgresStopTimeoutMs = timeoutMs ?? EMBEDDED_POSTGRES_STOP_TIMEOUT_MS;
+}
+
+export function __setManagedEmbeddedPostgresShutdownForTests(
+  shutdown: ManagedEmbeddedPostgresShutdown | null,
+): void {
+  managedEmbeddedPostgresShutdown = shutdown ?? shutdownManagedEmbeddedPostgres;
+}
+
 // `embedded-postgres@18.1.0-beta.16` exposes only `stop(): Promise<void>` — no
 // shutdown-mode argument. Internally it SIGINTs the postgres process (already
 // PostgreSQL "fast shutdown") and resolves *only* on the child's `exit` event,
@@ -215,7 +236,7 @@ async function stopEmbeddedPostgresBounded(
         timer = setTimeout(() => {
           timedOut = true;
           resolve();
-        }, EMBEDDED_POSTGRES_STOP_TIMEOUT_MS);
+        }, embeddedPostgresStopTimeoutMs);
         timer.unref?.();
       }),
     ]);
@@ -224,14 +245,15 @@ async function stopEmbeddedPostgresBounded(
   }
 
   // The embedded-postgres Windows stop implementation invokes taskkill but
-  // can leave its ChildProcess exit promise pending. The manager only removes
-  // a postmaster PID after proving no process is still using this exact data
-  // directory, so it is safe to reclaim the owned directory after a timeout.
+  // can leave its ChildProcess exit promise pending. The manager reads the
+  // postmaster PID from this exact data directory and verifies its matching
+  // process tree is gone before it removes the PID file. Do not pass pg_ctl
+  // here: a second `pg_ctl ... -t 30` wait can consume the afterAll budget
+  // that this bounded fallback exists to protect.
   if (timedOut && dataDir) {
-    const binaries = await loadEmbeddedPostgresBinaryPaths().catch(() => null);
-    await shutdownManagedEmbeddedPostgres({
+    await managedEmbeddedPostgresShutdown({
       dataDir,
-      pgCtlPath: binaries?.pgCtl ?? null,
+      pgCtlPath: null,
       postmasterPid: null,
     }).catch(() => undefined);
     cleanupFn?.();
@@ -655,6 +677,7 @@ let lastStartMode: EmbeddedPostgresStartMode | null = null;
 // or `getEmbeddedPostgresTestSupport`. A test drives the bounded retry directly
 // so it does not need a real Postgres connection.
 export const __startEmbeddedPostgresWithRetryForTests = startEmbeddedPostgresWithRetry;
+export const __stopEmbeddedPostgresBoundedForTests = stopEmbeddedPostgresBounded;
 export const __embeddedPostgresStartMaxAttemptsForTests = EMBEDDED_POSTGRES_START_MAX_ATTEMPTS;
 export const __embeddedPostgresTemplateRootDirForTests = templateRootDir;
 export const __isUsableEmbeddedPostgresTemplateForTests = isUsableTemplate;

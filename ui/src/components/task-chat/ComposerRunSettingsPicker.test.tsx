@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { Agent } from "@penclipai/shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { agentsApi } from "@/api/agents";
+import i18n from "@/i18n";
 import { ComposerRunSettingsPicker } from "./ComposerRunSettingsPicker";
 import { getLastComposerEffort, rememberComposerEffort } from "@/lib/recent-composer-effort";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -270,6 +271,18 @@ describe("composer assignee picker", () => {
     expect(document.querySelector('[role="listbox"]')).toBeNull();
   });
 
+  it("closes the mobile assignee dialog after choosing an agent inside a parent dialog", async () => {
+    render(vi.fn(), vi.fn(), false, { mobile: true }, true);
+
+    await click("Select assignee");
+    expect(document.querySelector('[data-testid="composer-mobile-dialog"]')).not.toBeNull();
+
+    await click("Clippy");
+
+    expect(document.querySelector('[data-testid="composer-mobile-dialog"]')).toBeNull();
+    expect(document.querySelector('[role="listbox"]')).toBeNull();
+  });
+
   it("offers No assignee and clears settings when selected", async () => {
     const onAssigneeChange = vi.fn();
     const onSettingsChange = vi.fn();
@@ -306,5 +319,25 @@ describe("composer assignee picker", () => {
     expect(document.querySelector('[data-testid="composer-mobile-dialog"]')).not.toBeNull();
     expect(document.querySelector('[aria-label="Search assignees"]')).not.toBeNull();
     expect(document.querySelector('[aria-label="Choose exact model"]')).toBeNull();
+  });
+
+  it("localizes the mobile model dialog while preserving raw agent and model identifiers", async () => {
+    try {
+      await act(async () => {
+        await i18n.changeLanguage("zh-CN");
+      });
+      render(vi.fn(), vi.fn(), false, { mobile: true, initialOpen: true }, true);
+      await act(async () => { await new Promise((resolve) => setTimeout(resolve, 0)); });
+
+      const dialog = document.querySelector<HTMLElement>('[data-testid="composer-mobile-dialog"]');
+      expect(dialog?.textContent).toContain("选择模型和推理强度");
+      expect(document.querySelector('input[aria-label="推理强度"]')).not.toBeNull();
+      expect(dialog?.textContent).toContain("Clippy");
+      expect(dialog?.textContent).toContain("gpt-6-sol");
+    } finally {
+      await act(async () => {
+        await i18n.changeLanguage("en");
+      });
+    }
   });
 });

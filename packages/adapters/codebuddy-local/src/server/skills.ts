@@ -7,9 +7,11 @@ import {
   buildPersistentSkillSnapshot,
   ensurePaperclipSkillSymlink,
   readInstalledSkillTargets,
+  readPaperclipSkillSyncPreference,
   readPaperclipRuntimeSkillEntries,
   removeMaintainerOnlySkillSymlinks,
-  resolvePaperclipDesiredSkillNames,
+  resolveLegacyPaperclipDesiredSkillNames,
+  writePaperclipSkillSyncPreference,
 } from "@penclipai/adapter-utils/server-utils";
 
 const __moduleDir = path.dirname(fileURLToPath(import.meta.url));
@@ -42,6 +44,29 @@ export function resolveCodeBuddySkillsHome(config: Record<string, unknown>) {
   return path.join(resolveCodeBuddyHome(config), "skills");
 }
 
+function resolveCodeBuddyDesiredSkillNames(
+  config: Record<string, unknown>,
+  availableEntries: Array<{ key: string; required?: boolean }>,
+) {
+  return Array.from(new Set([
+    ...availableEntries.filter((entry) => entry.required).map((entry) => entry.key),
+    ...resolveLegacyPaperclipDesiredSkillNames(config, availableEntries),
+  ]));
+}
+
+function withRequestedCodeBuddySkills(
+  config: Record<string, unknown>,
+  desiredSkills: string[],
+) {
+  const configuredEntries = readPaperclipSkillSyncPreference(config).desiredSkillEntries;
+  return writePaperclipSkillSyncPreference(
+    config,
+    desiredSkills.map(
+      (key) => configuredEntries.find((entry) => entry.key === key) ?? key,
+    ),
+  );
+}
+
 type EnsureCodeBuddySkillsInjectedOptions = {
   config?: Record<string, unknown>;
   skillsDir?: string | null;
@@ -68,7 +93,7 @@ export async function ensureCodeBuddySkillsInjected(
       : await readPaperclipRuntimeSkillEntries(config, __moduleDir));
   if (skillsEntries.length === 0) return;
 
-  const desiredNames = options.desiredSkillNames ?? resolvePaperclipDesiredSkillNames(config, skillsEntries);
+  const desiredNames = options.desiredSkillNames ?? resolveCodeBuddyDesiredSkillNames(config, skillsEntries);
   const desiredSet = new Set(desiredNames);
   const selectedEntries = skillsEntries.filter((entry) => desiredSet.has(entry.key));
   if (selectedEntries.length === 0) return;
@@ -115,10 +140,10 @@ export async function ensureCodeBuddySkillsInjected(
 
 async function buildCodeBuddySkillSnapshot(config: Record<string, unknown>): Promise<AdapterSkillSnapshot> {
   const availableEntries = await readPaperclipRuntimeSkillEntries(config, __moduleDir);
-  const desiredSkills = resolvePaperclipDesiredSkillNames(config, availableEntries);
+  const desiredSkills = resolveCodeBuddyDesiredSkillNames(config, availableEntries);
   const skillsHome = resolveCodeBuddySkillsHome(config);
   const installed = await readInstalledSkillTargets(skillsHome);
-  return buildPersistentSkillSnapshot({
+  const snapshot = buildPersistentSkillSnapshot({
     adapterType: "codebuddy_local",
     availableEntries,
     desiredSkills,
@@ -129,6 +154,16 @@ async function buildCodeBuddySkillSnapshot(config: Record<string, unknown>): Pro
     externalConflictDetail: "Skill name is occupied by an external installation.",
     externalDetail: "Installed outside Paperclip management.",
   });
+  const availableByKey = new Map(availableEntries.map((entry) => [entry.key, entry]));
+  return {
+    ...snapshot,
+    entries: snapshot.entries.map((entry) => {
+      const available = availableByKey.get(entry.key);
+      return available?.required
+        ? { ...entry, required: true, requiredReason: available.requiredReason ?? null }
+        : entry;
+    }),
+  };
 }
 
 export async function listCodeBuddySkills(ctx: AdapterSkillContext): Promise<AdapterSkillSnapshot> {
@@ -140,10 +175,8 @@ export async function syncCodeBuddySkills(
   desiredSkills: string[],
 ): Promise<AdapterSkillSnapshot> {
   const availableEntries = await readPaperclipRuntimeSkillEntries(ctx.config, __moduleDir);
-  const desiredSet = new Set([
-    ...desiredSkills,
-    ...availableEntries.filter((entry) => entry.required).map((entry) => entry.key),
-  ]);
+  const syncedConfig = withRequestedCodeBuddySkills(ctx.config, desiredSkills);
+  const desiredSet = new Set(resolveCodeBuddyDesiredSkillNames(syncedConfig, availableEntries));
   const skillsHome = resolveCodeBuddySkillsHome(ctx.config);
   await fs.mkdir(skillsHome, { recursive: true });
   const installed = await readInstalledSkillTargets(skillsHome);
@@ -163,5 +196,5 @@ export async function syncCodeBuddySkills(
     await fs.unlink(path.join(skillsHome, name)).catch(() => {});
   }
 
-  return buildCodeBuddySkillSnapshot(ctx.config);
+  return buildCodeBuddySkillSnapshot(syncedConfig);
 }

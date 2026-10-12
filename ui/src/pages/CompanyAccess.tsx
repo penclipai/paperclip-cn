@@ -395,12 +395,14 @@ export function CompanyAccess() {
                     </td>
                     <td className="px-3 py-3">
                       {member.membershipRole
-                        ? HUMAN_COMPANY_MEMBERSHIP_ROLE_LABELS[member.membershipRole]
+                        ? translateInstant(HUMAN_COMPANY_MEMBERSHIP_ROLE_LABELS[member.membershipRole])
                         : translateInstant("Unset")}
                     </td>
                     <td className="px-3 py-3">
                       <Badge variant={member.status === "active" ? "secondary" : member.status === "suspended" ? "destructive" : "outline"}>
-                        {member.status.replace("_", " ")}
+                        {translateInstant(`status.${member.status}`, {
+                          defaultValue: member.status.replace("_", " "),
+                        })}
                       </Badge>
                     </td>
                     <td className="px-3 py-3 text-right">
@@ -453,7 +455,7 @@ export function CompanyAccess() {
                     <option value="">{translateInstant("Unset")}</option>
                     {Object.entries(HUMAN_COMPANY_MEMBERSHIP_ROLE_LABELS).map(([value, label]) => (
                       <option key={value} value={value}>
-                        {label}
+                        {translateInstant(label)}
                       </option>
                     ))}
                   </select>

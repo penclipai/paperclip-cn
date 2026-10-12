@@ -77,7 +77,9 @@ test.describe("Language switcher", () => {
     // the fixture agent prevents the dashboard's empty-company onboarding offer
     // from covering the account menu we need to exercise.
     await page.addInitScript(() => {
-      localStorage.setItem("paperclip.locale", "zh-CN");
+      if (!localStorage.getItem("paperclip.locale")) {
+        localStorage.setItem("paperclip.locale", "zh-CN");
+      }
     });
 
     await page.goto(`/${company.issuePrefix}/dashboard`);

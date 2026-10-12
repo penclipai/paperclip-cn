@@ -17,7 +17,7 @@ import {
   readPaperclipRuntimeSkillEntries,
   renderTemplate,
   resolveCommandForLogs,
-  resolvePaperclipDesiredSkillNames,
+  resolveLegacyPaperclipDesiredSkillNames,
   runChildProcess,
 } from "@penclipai/adapter-utils/server-utils";
 import {
@@ -143,7 +143,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
 
   const envConfig = parseObject(config.env);
   const qwenSkillEntries = await readPaperclipRuntimeSkillEntries(config, __moduleDir);
-  const desiredQwenSkillNames = resolvePaperclipDesiredSkillNames(config, qwenSkillEntries);
+  const desiredQwenSkillNames = resolveLegacyPaperclipDesiredSkillNames(config, qwenSkillEntries);
   await ensureQwenSkillsInjected(onLog, {
     config,
     skillsEntries: qwenSkillEntries.filter((entry) => desiredQwenSkillNames.includes(entry.key)),

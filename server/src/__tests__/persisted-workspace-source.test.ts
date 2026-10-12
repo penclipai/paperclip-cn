@@ -13,6 +13,32 @@ afterEach(async () => {
   await Promise.all(roots.splice(0).map(root => fs.rm(root, { recursive: true, force: true })));
 });
 
+async function replaceWorktreeListProbe(root: string) {
+  const realGit = process.platform === "win32"
+    ? (await exec("where.exe", ["git"])).stdout.split(/\r?\n/).find(Boolean)!
+    : (await exec("sh", ["-c", "command -v git"])).stdout.trim();
+  const bin = path.join(root, "bin");
+  await fs.mkdir(bin);
+  if (process.platform === "win32") {
+    const bootstrap = path.join(bin, "git-interceptor.cjs");
+    await fs.copyFile(process.execPath, path.join(bin, "git.exe"));
+    await fs.writeFile(bootstrap, `const path = require("node:path");
+const { spawnSync } = require("node:child_process");
+const args = [...process.execArgv, ...process.argv.slice(1).map((value, index) => index === 0 ? path.basename(value) : value)];
+if (args.includes("worktree") && args.includes("list")) { process.stderr.write("private-provider-output /private/path"); process.exit(128); }
+const result = spawnSync(${JSON.stringify(realGit)}, args, { stdio: "inherit" });
+process.exit(result.status ?? 1);
+`, "utf8");
+    vi.stubEnv("NODE_OPTIONS", `${process.env.NODE_OPTIONS?.trim() ? `${process.env.NODE_OPTIONS.trim()} ` : ""}--require=${bootstrap}`);
+  } else {
+    await fs.writeFile(path.join(bin, "git"), `#!${process.execPath}
+const args=process.argv.slice(2);
+if(args[0]==="worktree"&&args[1]==="list"){process.stderr.write("private-provider-output /private/path");process.exitCode=128;}else{const r=require("node:child_process").spawnSync(${JSON.stringify(realGit)},args,{stdio:"inherit"});process.exitCode=r.status??1;}
+`, { mode: 0o755 });
+  }
+  vi.stubEnv("PATH", `${bin}${path.delimiter}${process.env.PATH ?? ""}`);
+}
+
 async function fixture() {
   const root = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), "persisted-source-")));
   roots.push(root);
@@ -229,11 +255,7 @@ describe("persisted Git workspace source", () => {
   it.each([false, true])("keeps bounded Git inspection evidence before restoring a retained source (missing=%s)", async missing => {
     const { root, original, worktree, input } = await fixture();
     if (missing) await exec("git", ["-C", original, "worktree", "remove", "--force", worktree]);
-    const realGit = (await exec("/bin/sh", ["-c", "command -v git"])).stdout.trim();
-    const bin = path.join(root, "bin");
-    await fs.mkdir(bin);
-    await fs.writeFile(path.join(bin, "git"), `#!${process.execPath}\nconst args=process.argv.slice(2);\nif(args[0]==="worktree"&&args[1]==="list"){process.stderr.write("private-provider-output /private/path");process.exitCode=128;}else{const r=require("node:child_process").spawnSync(${JSON.stringify(realGit)},args,{stdio:"inherit"});process.exitCode=r.status??1;}\n`, { mode: 0o755 });
-    vi.stubEnv("PATH", `${bin}${path.delimiter}${process.env.PATH ?? ""}`);
+    await replaceWorktreeListProbe(root);
     const materializeOriginalRepository = vi.fn();
     const failure = await resolvePersistedGitWorkspaceSource({ ...input, materializeOriginalRepository }).catch(error => error);
     expect(failure).toMatchObject({ code: "workspace_validation_failed", resultJson: { workspaceValidation: {

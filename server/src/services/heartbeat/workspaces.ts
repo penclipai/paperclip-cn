@@ -433,6 +433,9 @@ export async function resolveWorkspaceAfterLowTrustPreflight<
 function deriveRepoNameFromRepoUrl(repoUrl: string | null): string | null {
   const trimmed = repoUrl?.trim() ?? "";
   if (!trimmed) return null;
+  // A Windows drive path is a local source, like a POSIX path. URL parses
+  // its drive letter as a scheme and otherwise turns the whole path into a name.
+  if (/^[a-zA-Z]:[\\/]/.test(trimmed)) return null;
   try {
     const parsed = new URL(trimmed);
     const cleanedPath = parsed.pathname.replace(/\/+$/, "");
@@ -446,6 +449,25 @@ function deriveRepoNameFromRepoUrl(repoUrl: string | null): string | null {
   } catch {
     return null;
   }
+}
+
+function deriveLegacyWindowsDriveRepoName(repoUrl: string | null): string | null {
+  const trimmed = repoUrl?.trim() ?? "";
+  if (!/^[a-zA-Z]:[\\/]/.test(trimmed)) return null;
+  const parsed = new URL(trimmed);
+  const cleanedPath = parsed.pathname.replace(/\/+$/, "");
+  return cleanedPath
+    .split("/")
+    .filter(Boolean)
+    .pop()
+    ?.replace(/\.git$/i, "") ?? null;
+}
+
+async function readManagedCheckoutOrigin(cwd: string): Promise<string | null> {
+  if (!(await fs.stat(path.join(cwd, ".git")).catch(() => null))) return null;
+  return execFile("git", ["-C", cwd, "remote", "get-url", "origin"], { timeout: 10_000 })
+    .then((result) => result.stdout.trim())
+    .catch(() => null);
 }
 
 /**
@@ -472,11 +494,25 @@ export async function ensureManagedProjectWorkspace(input: {
     repoName: deriveRepoNameFromRepoUrl(input.repoUrl),
   });
   let cwd = defaultCwd;
-  if (input.repoUrl && await fs.stat(path.join(cwd, ".git")).catch(() => null)) {
-    const origin = await execFile("git", ["-C", cwd, "remote", "get-url", "origin"], { timeout: 10_000 })
-      .then((result) => result.stdout.trim()).catch(() => null);
-    if (origin && origin !== input.repoUrl) {
-      cwd = `${cwd}-${createHash("sha256").update(input.repoUrl).digest("hex").slice(0, 12)}`;
+  if (input.repoUrl) {
+    const defaultOrigin = await readManagedCheckoutOrigin(defaultCwd);
+    if (defaultOrigin !== input.repoUrl) {
+      const legacyRepoName = deriveLegacyWindowsDriveRepoName(input.repoUrl);
+      const legacyCwd = legacyRepoName
+        ? resolveManagedProjectWorkspaceDir({
+          companyId: input.companyId,
+          projectId: input.projectId,
+          repoName: legacyRepoName,
+        })
+        : null;
+      const legacyOrigin = legacyCwd && legacyCwd !== defaultCwd
+        ? await readManagedCheckoutOrigin(legacyCwd)
+        : null;
+      if (legacyCwd && legacyOrigin === input.repoUrl) {
+        cwd = legacyCwd;
+      } else if (defaultOrigin) {
+        cwd = `${defaultCwd}-${createHash("sha256").update(input.repoUrl).digest("hex").slice(0, 12)}`;
+      }
     }
   }
   const inFlight = managedCheckoutMaterializations.get(cwd);

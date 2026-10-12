@@ -95,6 +95,8 @@ describe("workspace Git scan route load regression", () => {
   });
 
   it("keeps 500 cross-actor/cross-issue requests globally bounded while health stays responsive", async () => {
+    const requestCount = 500;
+    let admittedRequests = 0;
     let releaseScans!: () => void;
     const scanGate = new Promise<void>((resolve) => {
       releaseScans = resolve;
@@ -120,6 +122,7 @@ describe("workspace Git scan route load regression", () => {
     const service: WorkspaceFileResourceService = {
       getIssue: vi.fn(async () => ({ companyId })),
       list: vi.fn(async (issueId, input, opts) => {
+        admittedRequests += 1;
         const numericId = Number(issueId.slice("issue-".length));
         await scheduler.run({
           workspacePath: roots[numericId % roots.length]!,
@@ -138,7 +141,7 @@ describe("workspace Git scan route load regression", () => {
     // accept/close races can reset clients before they reach the scheduler.
     const server = app.listen(0, "127.0.0.1");
     await new Promise<void>(resolve => server.once("listening", resolve));
-    const pendingResponses = Array.from({ length: 500 }, (_, index) => request(server)
+    const pendingResponses = Array.from({ length: requestCount }, (_, index) => request(server)
       .get(`/api/issues/issue-${index}/file-resources/list`)
       .set("x-test-actor", `actor-${index % 73}`)
       .query({ mode: "changed" })
@@ -146,8 +149,15 @@ describe("workspace Git scan route load regression", () => {
     // Observe every client rejection immediately, including on assertion failure.
     const settledResponses = Promise.allSettled(pendingResponses);
     try {
+      // Windows can admit a large burst of loopback requests more slowly than
+      // POSIX. Wait for every route handler to reach the scheduler before
+      // asserting its coalescing total, rather than sampling mid-admission.
       await vi.waitFor(
-        () => expect(scheduler.snapshot().totals.singleFlightJoins).toBe(498),
+        () => expect(admittedRequests).toBe(requestCount),
+        { timeout: process.platform === "win32" ? 45_000 : 15_000, interval: 20 },
+      );
+      await vi.waitFor(
+        () => expect(scheduler.snapshot().totals.singleFlightJoins).toBe(requestCount - 2),
         { timeout: 15_000, interval: 20 },
       );
       const loadedSnapshot = scheduler.snapshot();
@@ -173,7 +183,7 @@ describe("workspace Git scan route load regression", () => {
         counts[response.status] = (counts[response.status] ?? 0) + 1;
         return counts;
       }, {});
-      expect(outcomeCounts).toEqual({ 200: 500 });
+      expect(outcomeCounts).toEqual({ 200: requestCount });
       expect({ runnerCalls, peakActive }).toEqual({ runnerCalls: 2, peakActive: 2 });
       expect(scheduler.snapshot()).toMatchObject({ activeCount: 0, queuedCount: 0, inFlightCount: 0 });
 

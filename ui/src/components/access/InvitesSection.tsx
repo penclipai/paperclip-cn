@@ -17,14 +17,14 @@ const inviteRoleOptions = [
   {
     value: "viewer",
     label: "Viewer",
-    description: "Can view organization work and follow along.",
-    gets: "View-only organization membership.",
+    description: "access.inviteRoles.viewerDescription",
+    gets: "access.inviteRoles.viewerAccess",
   },
   {
     value: "operator",
     label: "Operator",
-    description: "Can edit organization work and invite people.",
-    gets: "Full editing and audit access. Cannot approve join requests or manage member permissions.",
+    description: "access.inviteRoles.operatorDescription",
+    gets: "access.inviteRoles.operatorAccess",
   },
   {
     value: "admin",
@@ -35,7 +35,7 @@ const inviteRoleOptions = [
   {
     value: "owner",
     label: "Owner",
-    description: "Full organization access, including membership management.",
+    description: "access.inviteRoles.ownerDescription",
     gets: "Everything in Admin, plus managing members.",
   },
 ] as const;
@@ -87,7 +87,7 @@ export function InvitesSection() {
   }
 
   async function copyInviteUrl(url: string) {
-    return copyText(url, "The invite URL is selected. Copy it manually from the field.", selectLatestInviteUrl);
+    return copyText(url, translateInstant("The invite URL is selected. Copy it manually from the field."), selectLatestInviteUrl);
   }
 
   const inviteHistoryQueryKey = queryKeys.access.invites(selectedCompanyId ?? "", "all", INVITE_HISTORY_PAGE_SIZE);
@@ -120,19 +120,19 @@ export function InvitesSection() {
     onSuccess: async (invite) => {
       setLatestInviteUrl(invite.inviteUrl);
       setLatestInviteCopied(false);
-      const copied = await copyText(invite.inviteUrl, "Copy the invite URL manually from the field below.");
+      const copied = await copyText(invite.inviteUrl, translateInstant("Copy the invite URL manually from the field below."));
 
       await queryClient.invalidateQueries({ queryKey: inviteHistoryQueryKey });
       pushToast({
         title: translateInstant("Invite created"),
-        body: copied ? "Invite ready below and copied to clipboard." : "Invite ready below.",
+        body: translateInstant(copied ? "Invite ready below and copied to clipboard." : "Invite ready below."),
         tone: "success",
       });
     },
     onError: (error) => {
       pushToast({
         title: translateInstant("Failed to create invite"),
-        body: error instanceof Error ? error.message : "Unknown error",
+        body: error instanceof Error ? error.message : translateInstant("Unknown error"),
         tone: "error",
       });
     },
@@ -147,7 +147,7 @@ export function InvitesSection() {
     onError: (error) => {
       pushToast({
         title: translateInstant("Failed to revoke invite"),
-        body: error instanceof Error ? error.message : "Unknown error",
+        body: error instanceof Error ? error.message : translateInstant("Unknown error"),
         tone: "error",
       });
     },
@@ -164,10 +164,10 @@ export function InvitesSection() {
   if (invitesQuery.error) {
     const message =
       invitesQuery.error instanceof ApiError && invitesQuery.error.status === 403
-        ? "You do not have permission to manage organization invites."
+        ? translateInstant("You do not have permission to manage company invites.")
         : invitesQuery.error instanceof Error
           ? invitesQuery.error.message
-          : "Failed to load invites.";
+          : translateInstant("Failed to load invites.");
     return <div className="text-sm text-destructive">{message}</div>;
   }
 
@@ -203,14 +203,14 @@ export function InvitesSection() {
                   />
                   <span className="min-w-0 space-y-1">
                     <span className="flex flex-wrap items-center gap-2">
-                      <span className="text-sm font-medium">{option.label}</span>
+                      <span className="text-sm font-medium">{translateInstant(option.label)}</span>
                       {option.value === "operator" ? (
                         <Badge variant="outline" className="border-border text-muted-foreground">
                           {translateInstant("Default")}</Badge>
                       ) : null}
                     </span>
-                    <span className="block max-w-2xl text-sm text-muted-foreground">{option.description}</span>
-                    <span className="block text-sm text-foreground">{option.gets}</span>
+                    <span className="block max-w-2xl text-sm text-muted-foreground">{translateInstant(option.description)}</span>
+                    <span className="block text-sm text-foreground">{translateInstant(option.gets)}</span>
                   </span>
                 </label>
               );
@@ -223,7 +223,7 @@ export function InvitesSection() {
 
         <div className="flex flex-wrap items-center gap-3">
           <Button onClick={() => createInviteMutation.mutate()} disabled={createInviteMutation.isPending}>
-            {createInviteMutation.isPending ? "Creating…" : "Create invite"}
+            {createInviteMutation.isPending ? translateInstant("Creating…") : translateInstant("Create invite")}
           </Button>
           <span className="text-sm text-muted-foreground">{translateInstant("Invite history below keeps the audit trail.")}</span>
         </div>
@@ -309,7 +309,7 @@ export function InvitesSection() {
                       </td>
                       <td className="px-5 py-3 align-top">{formatInviteAudience(invite)}</td>
                       <td className="px-5 py-3 align-top">
-                        <div>{invite.invitedByUser?.name || invite.invitedByUser?.email || "Unknown inviter"}</div>
+                        <div>{invite.invitedByUser?.name || invite.invitedByUser?.email || translateInstant("Unknown inviter")}</div>
                         {invite.invitedByUser?.email && invite.invitedByUser.name ? (
                           <div className="text-xs text-muted-foreground">{invite.invitedByUser.email}</div>
                         ) : null}
@@ -351,7 +351,7 @@ export function InvitesSection() {
                   onClick={() => invitesQuery.fetchNextPage()}
                   disabled={invitesQuery.isFetchingNextPage}
                 >
-                  {invitesQuery.isFetchingNextPage ? "Loading more…" : "View more"}
+                  {invitesQuery.isFetchingNextPage ? translateInstant("Loading more…") : translateInstant("View more")}
                 </Button>
               </div>
             ) : null}
@@ -363,11 +363,17 @@ export function InvitesSection() {
 }
 
 function formatInviteState(state: "active" | "accepted" | "expired" | "revoked") {
-  return state.charAt(0).toUpperCase() + state.slice(1);
+  return translateInstant(state.charAt(0).toUpperCase() + state.slice(1));
 }
 
 function formatInviteAudience(invite: Awaited<ReturnType<typeof accessApi.listInvites>>["invites"][number]) {
-  if (invite.allowedJoinTypes === "agent") return "Agent";
-  if (invite.allowedJoinTypes === "both") return invite.humanRole ? `Human or agent · ${invite.humanRole}` : "Human or agent";
-  return invite.humanRole ?? "Human";
+  if (invite.allowedJoinTypes === "agent") return translateInstant("Agent");
+  if (invite.allowedJoinTypes === "both") {
+    return invite.humanRole
+      ? `${translateInstant("Human or agent")} · ${translateInstant(invite.humanRole.charAt(0).toUpperCase() + invite.humanRole.slice(1))}`
+      : translateInstant("Human or agent");
+  }
+  return invite.humanRole
+    ? translateInstant(invite.humanRole.charAt(0).toUpperCase() + invite.humanRole.slice(1))
+    : translateInstant("Human");
 }

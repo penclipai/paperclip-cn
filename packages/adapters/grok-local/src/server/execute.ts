@@ -584,6 +584,7 @@ async function executeTurn(ctx: AdapterExecutionContext): Promise<AdapterExecuti
         ? ""
         : renderTemplate(promptTemplate, templateData);
       const attemptBasePrompt = joinPromptSections([
+        attemptSections.localizationPromptNote,
         attemptWakePrompt,
         attemptSections.taskContextNote,
         sessionHandoffNote,

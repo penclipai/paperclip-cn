@@ -3114,7 +3114,7 @@ async function buildPrompt(ctx: AdapterExecutionContext, resumedSession: boolean
       ? renderTemplate(bootstrapPromptTemplate, templateData).trim()
       : "";
   await hydrateFreshSessionHandoff(ctx, { resumedSession });
-  const { taskContextNote, wakePrompt } = selectPaperclipPromptSections(context, { resumedSession, includeCommunicationGuidance: false });
+  const { taskContextNote, localizationPromptNote, wakePrompt } = selectPaperclipPromptSections(context, { resumedSession, includeCommunicationGuidance: false });
   const externalChatTurn = isPaperclipExternalChatTurn(context.paperclipWake);
   const shouldUseResumeDeltaPrompt = resumedSession && wakePrompt.length > 0;
   const promptInstructionsPrefix = shouldUseResumeDeltaPrompt ? "" : instructionsPrefix;
@@ -3128,6 +3128,7 @@ async function buildPrompt(ctx: AdapterExecutionContext, resumedSession: boolean
   const prompt = joinPromptSections([
     promptInstructionsPrefix,
     renderedBootstrapPrompt,
+    localizationPromptNote,
     selectInitialCommunicationGuidance(context, { resumedSession }),
     wakePrompt,
     sessionHandoffNote,

@@ -3664,6 +3664,7 @@ describeEmbeddedPostgres("executionWorkspaceService.getCloseReadiness", () => {
     const issueId = randomUUID();
     const executionWorkspaceId = randomUUID();
     const runtimeStartedMarker = path.join(os.tmpdir(), `paperclip-runtime-started-${randomUUID()}.marker`);
+    const runtimeStartReleaseMarker = path.join(os.tmpdir(), `paperclip-runtime-release-${randomUUID()}.marker`);
 
     await db.insert(companies).values({
       id: companyId,
@@ -3703,11 +3704,17 @@ describeEmbeddedPostgres("executionWorkspaceService.getCloseReadiness", () => {
 
     const serverScript = [
       `require("node:fs").writeFileSync(${JSON.stringify(runtimeStartedMarker)}, "started");`,
-      "setTimeout(() => {",
+      `const releaseMarker = ${JSON.stringify(runtimeStartReleaseMarker)};`,
+      "const startServer = () => {",
+      "  if (!require(\"node:fs\").existsSync(releaseMarker)) {",
+      "    setTimeout(startServer, 25);",
+      "    return;",
+      "  }",
       "  require(\"node:http\")",
       "    .createServer((_req, res) => { res.end(\"ok\"); })",
       "    .listen(Number(process.env.PORT), \"127.0.0.1\");",
-      "}, 600);",
+      "};",
+      "startServer();",
       "setInterval(() => {}, 1000);",
     ].join(" ");
     const runtimeServerScriptPath = path.join(os.tmpdir(), `paperclip-runtime-server-${randomUUID()}.cjs`);
@@ -3716,8 +3723,9 @@ describeEmbeddedPostgres("executionWorkspaceService.getCloseReadiness", () => {
     const command = `${shellQuoteForTest(process.execPath)} ${shellQuoteForTest(runtimeServerScriptPath)}`;
 
     let startedServices: Awaited<ReturnType<typeof startRuntimeServicesForWorkspaceControl>> = [];
+    let startPromise: Promise<Awaited<ReturnType<typeof startRuntimeServicesForWorkspaceControl>>> | null = null;
     try {
-      const startPromise = startRuntimeServicesForWorkspaceControl({
+      startPromise = startRuntimeServicesForWorkspaceControl({
         db,
         invocationId: randomUUID(),
         actor: {
@@ -3791,8 +3799,8 @@ describeEmbeddedPostgres("executionWorkspaceService.getCloseReadiness", () => {
         (error) => error,
       );
 
-      startedServices = await startPromise;
-      await expect(reconcileErrorPromise).resolves.toMatchObject({
+      const reconcileError = await reconcileErrorPromise;
+      await expect(reconcileError).toMatchObject({
         status: 422,
         message: "Execution workspace branch reconciliation requires all runtime services to be stopped",
         details: {
@@ -3803,6 +3811,19 @@ describeEmbeddedPostgres("executionWorkspaceService.getCloseReadiness", () => {
           }),
           runtimeServices: [
             expect.objectContaining({
+              serviceName: "web",
+              status: "starting",
+            }),
+          ],
+        },
+      });
+
+      await fs.writeFile(runtimeStartReleaseMarker, "release", "utf8");
+      startedServices = await startPromise;
+      expect(reconcileError).toMatchObject({
+        details: {
+          runtimeServices: [
+            expect.objectContaining({
               id: startedServices[0]?.id,
               serviceName: "web",
               status: "starting",
@@ -3811,12 +3832,18 @@ describeEmbeddedPostgres("executionWorkspaceService.getCloseReadiness", () => {
         },
       });
     } finally {
-      await stopRuntimeServicesForExecutionWorkspace({
-        db,
-        executionWorkspaceId,
-        workspaceCwd: worktreePath,
-      });
-      await fs.rm(runtimeStartedMarker, { force: true });
+      try {
+        await fs.writeFile(runtimeStartReleaseMarker, "release", "utf8").catch(() => undefined);
+        await startPromise?.catch(() => undefined);
+        await stopRuntimeServicesForExecutionWorkspace({
+          db,
+          executionWorkspaceId,
+          workspaceCwd: worktreePath,
+        });
+      } finally {
+        await fs.rm(runtimeStartedMarker, { force: true }).catch(() => undefined);
+        await fs.rm(runtimeStartReleaseMarker, { force: true }).catch(() => undefined);
+      }
     }
 
     const [workspace] = await db

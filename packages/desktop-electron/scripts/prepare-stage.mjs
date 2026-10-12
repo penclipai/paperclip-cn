@@ -405,7 +405,9 @@ for (const packageJsonPath of findBundledPluginPackageJsons(bundledPluginsDir)) 
   if (shouldInstallBundledPluginBeforeBuild(packageRoot)) {
     const relativePackageRoot = bundledPluginRelativeRoot(packageRoot);
     console.log(`[desktop-stage] Installing standalone bundled plugin deps for ${relativePackageRoot}...`);
-    runPnpm(["--dir", packageRoot, "install", "--ignore-workspace", "--no-lockfile"], {
+    // Packaging must acknowledge module recreation without an interactive
+    // console prompt when standalone provider dependencies already exist.
+    runPnpm(["--dir", packageRoot, "install", "--ignore-workspace", "--no-lockfile", "--force"], {
       cwd: packageRoot,
       env: standaloneBundledPluginInstallEnv,
     });

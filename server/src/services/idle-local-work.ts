@@ -19,6 +19,21 @@ export function markIdleStartupComplete(options: { scheduledBackups: boolean }) 
   startupComplete = true;
 }
 
+async function missingPathHasSafeDirectoryAncestor(directory: string): Promise<boolean> {
+  let current = path.dirname(directory);
+  while (true) {
+    try {
+      const info = await fs.lstat(current);
+      if (!info.isDirectory() || info.isSymbolicLink()) return false;
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT") return false;
+    }
+    const parent = path.dirname(current);
+    if (parent === current) return true;
+    current = parent;
+  }
+}
+
 /** Any entry, including malformed JSON, a temp file or a failed probe, is
  * evidence to retain. Recovery readers intentionally skip some such files;
  * they cannot certify that stopping the process is safe. */
@@ -30,7 +45,8 @@ export async function inspectIdleSpool(directory: string): Promise<IdleLocalWork
     try { return (await dir.read()) === null ? "none" : "present"; }
     finally { await dir.close(); }
   } catch (error) {
-    return (error as NodeJS.ErrnoException).code === "ENOENT" ? "none" : "unknown";
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT") return "unknown";
+    return (await missingPathHasSafeDirectoryAncestor(directory)) ? "none" : "unknown";
   }
 }
 

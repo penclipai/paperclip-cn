@@ -156,7 +156,7 @@ export function CompanySettings() {
       // still makes sense (another active company, the Cloud portfolio, or
       // the companies list), with a toast naming what happened.
       const archived = companies.find((company) => company.id === companyId);
-      const archivedName = archived?.name ?? "Organization";
+      const archivedName = archived?.name ?? translateInstant("Organization");
       const departure = resolveCompanyArchiveDeparture({
         archivedCompanyId: companyId,
         companies,
@@ -171,8 +171,8 @@ export function CompanySettings() {
       }
       if (departure.kind === "company") {
         toastActions?.pushToast({
-          title: `${archivedName} is archived`,
-          body: `Switched to ${departure.company.name}.`,
+          title: translateInstant("companySettings.archivedToastTitle", { name: archivedName }),
+          body: translateInstant("companySettings.switchedOrganizationToast", { name: departure.company.name }),
           tone: "info",
           dedupeKey: `company-archive-departure:${companyId}`,
         });
@@ -180,8 +180,8 @@ export function CompanySettings() {
         navigate(`/${departure.company.issuePrefix}/dashboard`, { replace: true });
       } else {
         toastActions?.pushToast({
-          title: `${archivedName} is archived`,
-          body: "You can unarchive it from this list.",
+          title: translateInstant("companySettings.archivedToastTitle", { name: archivedName }),
+          body: translateInstant("companySettings.unarchiveFromList"),
           tone: "info",
           dedupeKey: `company-archive-departure:${companyId}`,
         });
@@ -392,7 +392,7 @@ export function CompanySettings() {
               onClick={() => {
                 if (!selectedCompanyId) return;
                 const confirmed = window.confirm(
-                  `Archive organization "${selectedCompany.name}"? It will be hidden from the sidebar.`
+                  translateInstant("companySettings.archiveConfirm", { name: selectedCompany.name })
                 );
                 if (!confirmed) return;
                 archiveMutation.mutate({ companyId: selectedCompanyId });
@@ -402,13 +402,13 @@ export function CompanySettings() {
                 ? translateInstant("Archiving...")
                 : selectedCompany.status === "archived"
                 ? translateInstant("Already archived")
-                : "Archive organization"}
+                : translateInstant("companySettings.archiveOrganization")}
             </Button>
             {archiveMutation.isError && (
               <span className="text-xs text-destructive">
                 {archiveMutation.error instanceof Error
                   ? archiveMutation.error.message
-                  : "Failed to archive organization"}
+                  : translateInstant("companySettings.archiveError")}
               </span>
             )}
           </div>

@@ -4,6 +4,8 @@ import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { AdapterExecutionContext } from "@penclipai/adapter-utils";
 
+const mocks = vi.hoisted(() => ({ runChildProcess: vi.fn() }));
+
 // Pi resolves its session directory at module load. Keep that test directory
 // under the temporary root instead of the operator's real home.
 vi.mock("node:os", async (importOriginal) => {
@@ -14,6 +16,10 @@ vi.mock("@penclipai/adapter-utils/execution-target", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@penclipai/adapter-utils/execution-target")>();
   return { ...actual, runAdapterExecutionTargetProcess: vi.fn() };
 });
+vi.mock("@penclipai/adapter-utils/server-utils", async (importOriginal) => ({
+  ...await importOriginal<typeof import("@penclipai/adapter-utils/server-utils")>(),
+  runChildProcess: mocks.runChildProcess,
+}));
 import { runAdapterExecutionTargetProcess } from "@penclipai/adapter-utils/execution-target";
 import { execute as gemini } from "@penclipai/adapter-gemini-local/server";
 import { execute as kimi } from "@penclipai/adapter-kimi-local/server";
@@ -30,8 +36,12 @@ describe("legacy environment tool access on resumed conversations", () => {
     ["cursor", cursor, "--resume"], ["opencode_local", opencode, "--session"], ["pi_local", pi, "--session"],
   ] as const)("refreshes %s without dropping its conversation", async (type, execute, resumeFlag) => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-cli-tool-refresh-")); roots.push(root);
-    const command = path.join(root, "agent");
-    await fs.writeFile(command, "#!/bin/sh\nprintf 'provider  model\\nopenai  gpt-5\\n'\n", { mode: 0o755 });
+    const command = path.join(root, process.platform === "win32" ? "agent.exe" : "agent");
+    if (process.platform === "win32") {
+      await fs.link(process.execPath, command).catch(() => fs.copyFile(process.execPath, command));
+    } else {
+      await fs.writeFile(command, "#!/bin/sh\nprintf 'provider  model\\nopenai  gpt-5\\n'\n", { mode: 0o755 });
+    }
     const sessionId = type === "pi_local" ? path.join(root, "session.jsonl") : "existing-session";
     if (type === "pi_local") await fs.writeFile(sessionId, JSON.stringify({ type: "session", cwd: root }) + "\n");
     const stdout = type === "kimi_local"
@@ -42,6 +52,7 @@ describe("legacy environment tool access on resumed conversations", () => {
           ? JSON.stringify({ type: "agent_end", messages: [{ role: "assistant", content: "done" }] })
           : JSON.stringify({ type: "result", subtype: "success", session_id: sessionId, result: "done" });
     const invocations: Array<{ args: string[]; env: Record<string, string> }> = [];
+    mocks.runChildProcess.mockResolvedValue({ exitCode: 0, signal: null, timedOut: false, stdout: "", stderr: "provider  model\nopenai  gpt-5\n", pid: null, startedAt: null });
     vi.mocked(runAdapterExecutionTargetProcess).mockImplementation(async (_runId, _target, _command, args, options) => {
       invocations.push({ args, env: options.env ?? {} });
       return { exitCode: 0, signal: null, timedOut: false, stdout, stderr: "", pid: null, startedAt: null };

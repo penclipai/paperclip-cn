@@ -53,4 +53,14 @@ describe("task and event section ownership", () => {
     expect(sections.taskContextNote).toBe("");
     expect(sections.wakePrompt).toContain(context.paperclipWake.issue.description);
   });
+
+  it("selects the server-provided localization prompt as its own runtime section", () => {
+    const sections = selectSections({
+      paperclipLocalizationPromptMarkdown: "  ## Language\n\nReply in Chinese.  ",
+    });
+
+    expect(sections.localizationPromptNote).toBe("## Language\n\nReply in Chinese.");
+    expect(sections.taskContextNote).toBe("");
+    expect(sections.wakePrompt).toBe("");
+  });
 });

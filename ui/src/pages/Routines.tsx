@@ -768,7 +768,7 @@ export function Routines() {
         queryClient.invalidateQueries({ queryKey: queryKeys.routines.list(selectedCompanyId!) }),
         queryClient.invalidateQueries({ queryKey: queryKeys.folders.list(selectedCompanyId!, "routine") }),
       ]);
-      pushToast({ title: translateInstant("Routines moved"), body: `${ids.length} routine${ids.length === 1 ? "" : "s"} filed.`, tone: "success" });
+      pushToast({ title: translateInstant("Routines moved"), body: translateInstant("folders.routineCountFiled", { count: ids.length }), tone: "success" });
     } catch (moveError) {
       pushToast({
         title: translateInstant("Failed to move routines"),
@@ -892,7 +892,7 @@ export function Routines() {
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between gap-3">
           <p className="text-sm text-muted-foreground">
-            {visibleRoutines.length} {translateInstant("folders.routine")}{visibleRoutines.length === 1 ? "" : "s"}
+            {translateInstant("folders.routineCount", { count: visibleRoutines.length })}
           </p>
           <div className="flex items-center gap-1">
               <Popover>
@@ -1296,7 +1296,7 @@ export function Routines() {
                 <div className="flex min-w-0 items-center gap-2 text-sm">
                   <FolderSwatch color={activeFolder?.color} />
                   <span className="truncate font-medium">{folderSelection === "unfiled" ? translateInstant("folders.unfiled") : activeFolder?.name ?? translateInstant("Folder")}</span>
-                  <span className="text-muted-foreground">{sortedRoutines.length} {translateInstant("folders.routine")}{sortedRoutines.length === 1 ? "" : "s"}</span>
+                  <span className="text-muted-foreground">{translateInstant("folders.routineCount", { count: sortedRoutines.length })}</span>
                 </div>
               )}
             </div>
@@ -1487,7 +1487,7 @@ function FolderIconHeader({ label, count }: { label: string; count: number }) {
     <div className="flex min-w-0 items-center gap-2 text-sm">
       <Repeat className="h-3.5 w-3.5 text-muted-foreground" />
       <span className="truncate font-medium">{label}</span>
-      <span className="text-muted-foreground">{count} {translateInstant("folders.routine")}{count === 1 ? "" : "s"}</span>
+      <span className="text-muted-foreground">{translateInstant("folders.routineCount", { count })}</span>
     </div>
   );
 }

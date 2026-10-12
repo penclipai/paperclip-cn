@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import type { AdapterRuntimeMcpServer } from "@penclipai/adapter-utils";
 import { runChildProcess } from "@penclipai/adapter-utils/server-utils";
+import { prepareTestPosixShell } from "@penclipai/adapter-utils/test-fixtures/posix-shell";
 import { buildPaperclipTaskMarkdown } from "../services/heartbeat.js";
 import {
   claudeCommandSupportsEffortFlag,
@@ -12,6 +13,19 @@ import {
   resetClaudeCliCapabilitiesCacheForTests,
   sessionCodec,
 } from "@penclipai/adapter-claude-local/server";
+
+async function writeClaudeCommand(commandPath: string, script: string): Promise<void> {
+  await fs.writeFile(commandPath, script, "utf8");
+  await fs.chmod(commandPath, 0o755);
+  if (process.platform === "win32") {
+    const commandName = path.basename(commandPath);
+    await fs.writeFile(
+      `${commandPath}.cmd`,
+      `@echo off\r\n"${process.execPath}" "%~dp0${commandName}" %*\r\n`,
+      "utf8",
+    );
+  }
+}
 
 async function writeFailingClaudeCommand(
   commandPath: string,
@@ -23,8 +37,7 @@ async function writeFailingClaudeCommand(
 console.log(${JSON.stringify(payload)});
 process.exit(${exit});
 `;
-  await fs.writeFile(commandPath, script, "utf8");
-  await fs.chmod(commandPath, 0o755);
+  await writeClaudeCommand(commandPath, script);
 }
 
 async function writeTextFailingClaudeCommand(
@@ -41,8 +54,7 @@ if (${JSON.stringify(options.stderr ?? "")}) {
 }
 process.exit(${exit});
 `;
-  await fs.writeFile(commandPath, script, "utf8");
-  await fs.chmod(commandPath, 0o755);
+  await writeClaudeCommand(commandPath, script);
 }
 
 async function writeFakeClaudeCommand(commandPath: string): Promise<void> {
@@ -82,8 +94,7 @@ console.log(JSON.stringify({ type: "system", subtype: "init", session_id: "11111
 console.log(JSON.stringify({ type: "assistant", session_id: "11111111-1111-4111-8111-111111111111", message: { content: [{ type: "text", text: "hello" }] } }));
 console.log(JSON.stringify({ type: "result", session_id: "11111111-1111-4111-8111-111111111111", result: "hello", usage: { input_tokens: 1, cache_read_input_tokens: 0, output_tokens: 1 } }));
 `;
-  await fs.writeFile(commandPath, script, "utf8");
-  await fs.chmod(commandPath, 0o755);
+  await writeClaudeCommand(commandPath, script);
 }
 
 async function writeHelpWithoutEffortClaudeCommand(commandPath: string): Promise<void> {
@@ -120,8 +131,7 @@ console.log(JSON.stringify({ type: "system", subtype: "init", session_id: "33333
 console.log(JSON.stringify({ type: "assistant", session_id: "33333333-3333-4333-8333-333333333333", message: { content: [{ type: "text", text: "hello" }] } }));
 console.log(JSON.stringify({ type: "result", session_id: "33333333-3333-4333-8333-333333333333", result: "hello", usage: { input_tokens: 1, cache_read_input_tokens: 0, output_tokens: 1 } }));
 `;
-  await fs.writeFile(commandPath, script, "utf8");
-  await fs.chmod(commandPath, 0o755);
+  await writeClaudeCommand(commandPath, script);
 }
 
 async function writeHelpWithEffortClaudeCommand(commandPath: string): Promise<void> {
@@ -159,8 +169,7 @@ console.log(JSON.stringify({ type: "system", subtype: "init", session_id: "44444
 console.log(JSON.stringify({ type: "assistant", session_id: "44444444-4444-4444-8444-444444444444", message: { content: [{ type: "text", text: "hello" }] } }));
 console.log(JSON.stringify({ type: "result", session_id: "44444444-4444-4444-8444-444444444444", result: "hello", usage: { input_tokens: 1, cache_read_input_tokens: 0, output_tokens: 1 } }));
 `;
-  await fs.writeFile(commandPath, script, "utf8");
-  await fs.chmod(commandPath, 0o755);
+  await writeClaudeCommand(commandPath, script);
 }
 
 type CapturePayload = {
@@ -215,8 +224,7 @@ console.log(JSON.stringify({ type: "system", subtype: "init", session_id: "bbbbb
 console.log(JSON.stringify({ type: "assistant", session_id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", message: { content: [{ type: "text", text: "hello" }] } }));
 console.log(JSON.stringify({ type: "result", session_id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", result: "hello", usage: { input_tokens: 1, cache_read_input_tokens: 0, output_tokens: 1 } }));
 `;
-  await fs.writeFile(commandPath, script, "utf8");
-  await fs.chmod(commandPath, 0o755);
+  await writeClaudeCommand(commandPath, script);
 }
 
 async function writeAlwaysPoisonedMessageIdClaudeCommand(commandPath: string): Promise<void> {
@@ -245,8 +253,7 @@ console.log(JSON.stringify({
 }));
 process.exit(1);
 `;
-  await fs.writeFile(commandPath, script, "utf8");
-  await fs.chmod(commandPath, 0o755);
+  await writeClaudeCommand(commandPath, script);
 }
 
 async function writeRetryThenSucceedClaudeCommand(commandPath: string): Promise<void> {
@@ -286,8 +293,7 @@ console.log(JSON.stringify({ type: "system", subtype: "init", session_id: "22222
 console.log(JSON.stringify({ type: "assistant", session_id: "22222222-2222-4222-8222-222222222222", message: { content: [{ type: "text", text: "hello" }] } }));
 console.log(JSON.stringify({ type: "result", session_id: "22222222-2222-4222-8222-222222222222", result: "hello", usage: { input_tokens: 1, cache_read_input_tokens: 0, output_tokens: 1 } }));
 `;
-  await fs.writeFile(commandPath, script, "utf8");
-  await fs.chmod(commandPath, 0o755);
+  await writeClaudeCommand(commandPath, script);
 }
 
 async function setupExecuteEnv(
@@ -331,13 +337,14 @@ function createLocalSandboxRunner() {
       onSpawn?: (meta: { pid: number; startedAt: string }) => Promise<void>;
     }) => {
       counter += 1;
+      const prepared = prepareTestPosixShell(input);
       return runChildProcess(
         `sandbox-run-${counter}`,
-        input.command,
-        input.args ?? [],
+        prepared.command,
+        prepared.args,
         {
           cwd: input.cwd ?? process.cwd(),
-          env: input.env ?? {},
+          env: prepared.env,
           stdin: input.stdin,
           timeoutSec: Math.max(1, Math.ceil((input.timeoutMs ?? 30_000) / 1000)),
           graceSec: 5,
@@ -483,7 +490,7 @@ describe("claude execute", () => {
       expect(zero.argv).not.toContain("--strict-mcp-config");
       expect(zero.mcpConfigPath).toBeNull();
       expect(zero.mcpConfigContents).toBeNull();
-      expect(alpha.mcpConfigPath).toContain("/agents/agent-alpha/");
+      expect(alpha.mcpConfigPath?.replace(/\\/g, "/")).toContain("/agents/agent-alpha/");
     } finally {
       restore();
       await fs.rm(root, { recursive: true, force: true });
@@ -879,10 +886,11 @@ describe("claude execute", () => {
       expect(result.usage).toEqual({ inputTokens: 1, cachedInputTokens: 0, outputTokens: 1 });
       expect(result.usageBasis).toBe("per_run");
       expect(result.costUsd).toBeNull();
-      expect(loggedCommand).toBe(commandPath);
+      const resolvedCommandPath = process.platform === "win32" ? `${commandPath}.cmd` : commandPath;
+      expect(loggedCommand?.toLowerCase()).toBe(resolvedCommandPath.toLowerCase());
       expect(loggedEnv.HOME).toBe(root);
       expect(loggedEnv.CLAUDE_CONFIG_DIR).toBe(claudeConfigDir);
-      expect(loggedEnv.PAPERCLIP_RESOLVED_COMMAND).toBe(commandPath);
+      expect(loggedEnv.PAPERCLIP_RESOLVED_COMMAND?.toLowerCase()).toBe(resolvedCommandPath.toLowerCase());
     } finally {
       if (previousHome === undefined) delete process.env.HOME;
       else process.env.HOME = previousHome;
@@ -969,7 +977,7 @@ describe("claude execute", () => {
       const capture = JSON.parse(await fs.readFile(capturePath1, "utf8")) as CapturePayload;
       expect(capture.argv).toContain("--dangerously-skip-permissions");
       expect(capture.argv).not.toContain("--allowedTools");
-      expect(capture.claudeConfigDir).toBe(path.join(remoteWorkspace, ".paperclip-runtime", "claude", "config"));
+      expect(capture.claudeConfigDir?.replace(/\//g, "\\")).toBe(path.join(remoteWorkspace, ".paperclip-runtime", "claude", "config"));
       expect(capture.claudeConfigEntries).toContain("settings.json");
       expect(capture.paperclipApiUrl).toMatch(/^http:\/\/127\.0\.0\.1:\d+$/);
       expect(capture.paperclipApiKey).not.toBe("run-jwt-token");
@@ -981,7 +989,7 @@ describe("claude execute", () => {
       else process.env.PATH = previousPath;
       await fs.rm(root, { recursive: true, force: true });
     }
-  }, 10_000);
+  }, process.platform === "win32" ? 15_000 : 10_000);
 
   it("omits --effort for sandbox-managed runs when the installed Claude CLI does not advertise it", async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-claude-execute-sandbox-effort-"));
@@ -1114,7 +1122,7 @@ describe("claude execute", () => {
       restore();
       await fs.rm(root, { recursive: true, force: true });
     }
-  }, 10_000);
+  }, process.platform === "win32" ? 15_000 : 10_000);
 
   it("degrades to the conservative fallback (returns null) when the sandbox probe throws, and retries on the next lease", async () => {
     let calls = 0;

@@ -636,10 +636,10 @@ export function routineRoutes(
     await assertBoardCanAssignTasks(req, routine.companyId);
     const run = await svc.runRoutine(routine.id, {
       ...req.body,
-      requestedUiLocale: resolveExplicitRequestUiLocale(req),
     }, {
       agentId: req.actor.type === "agent" ? req.actor.agentId : null,
       userId: req.actor.type === "board" ? req.actor.userId ?? null : null,
+      requestedUiLocale: resolveExplicitRequestUiLocale(req),
     });
     const actor = getActorInfo(req);
     await logActivity(db, {

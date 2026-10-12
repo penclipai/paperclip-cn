@@ -421,7 +421,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   };
   const instructions = await buildInstructionsPrefix(config, onLog);
   await hydrateFreshSessionHandoff(ctx, { resumedSession: canReuseSession });
-  const { taskContextNote, wakePrompt } = selectPaperclipPromptSections(context, {
+  const { taskContextNote, localizationPromptNote, wakePrompt } = selectPaperclipPromptSections(context, {
     resumedSession: canReuseSession,
     includeCommunicationGuidance: false,
   });
@@ -438,6 +438,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     selectInitialCommunicationGuidance(context, { resumedSession: canReuseSession }),
     instructions.prefix,
     renderedBootstrapPrompt,
+    localizationPromptNote,
     wakePrompt,
     taskContextNote,
     paperclipEnvNote,

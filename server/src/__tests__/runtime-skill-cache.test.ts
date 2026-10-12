@@ -1,6 +1,5 @@
 import { randomUUID } from "node:crypto";
 import { spawn } from "node:child_process";
-import { fileURLToPath } from "node:url";
 import { promises as fs } from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -44,14 +43,16 @@ describe("runtime skill revision cache", () => {
     const sources = await Promise.all(Array.from({ length: 20 }, () => resolveRuntimeSkillCache(spec, read)));
     expect(new Set(sources).size).toBe(1);
     expect(read).toHaveBeenCalledTimes(2);
-    expect((await fs.stat(sources[0]!)).mode & 0o222).toBe(0);
+    const directoryStat = await fs.stat(sources[0]!);
+    expect(directoryStat.isDirectory()).toBe(true);
+    if (process.platform !== "win32") expect(directoryStat.mode & 0o222).toBe(0);
     expect((await fs.stat(path.join(sources[0]!, "SKILL.md"))).mode & 0o222).toBe(0);
     const before = await fs.stat(path.join(sources[0]!, "SKILL.md"));
     read.mockRejectedValue(new Error("Upstream offline"));
     expect(await resolveRuntimeSkillCache(runtimeSkillCacheSpec(root, { ...skill })!, read)).toBe(sources[0]);
     expect(await resolveRuntimeSkillCache(spec, read, false)).toBe(sources[0]);
     expect((await fs.stat(path.join(sources[0]!, "SKILL.md"))).mtimeMs).toBe(before.mtimeMs);
-    expect(await fs.readdir(sources[0]!)).toEqual(["SKILL.md", "references"]);
+    expect((await fs.readdir(sources[0]!)).sort()).toEqual(["SKILL.md", "references"]);
     expect(read).toHaveBeenCalledTimes(2);
   });
 
@@ -68,7 +69,7 @@ describe("runtime skill revision cache", () => {
         });
         console.log(JSON.stringify({ source, reads }));
       `;
-      const child = spawn(process.execPath, ["--import", fileURLToPath(new URL("../../node_modules/tsx/dist/loader.mjs", import.meta.url)), "--input-type=module", "-e", code], { stdio: ["ignore", "pipe", "pipe"] });
+      const child = spawn(process.execPath, ["--import", new URL("../../node_modules/tsx/dist/loader.mjs", import.meta.url).href, "--input-type=module", "-e", code], { stdio: ["ignore", "pipe", "pipe"] });
       let output = "", errors = "";
       child.stdout.on("data", (chunk) => { output += chunk; });
       child.stderr.on("data", (chunk) => { errors += chunk; });

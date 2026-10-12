@@ -867,7 +867,7 @@ describeEmbeddedPostgres("built-in agents", () => {
     const trigger = `stock_failure_${companyId.replaceAll("-", "")}`;
     const remove = fs.rm.bind(fs);
     const fault = failure === "file" ? vi.spyOn(fs, "rm").mockImplementation(async (file, options) => {
-      if (String(file).endsWith("/obsolete.txt")) throw new Error("injected stock file failure");
+      if (path.basename(String(file)) === "obsolete.txt") throw new Error("injected stock file failure");
       return remove(file, options);
     }) : null;
     if (failure === "database") {

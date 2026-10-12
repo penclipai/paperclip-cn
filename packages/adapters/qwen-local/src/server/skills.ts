@@ -7,9 +7,11 @@ import {
   buildPersistentSkillSnapshot,
   ensurePaperclipSkillSymlink,
   readInstalledSkillTargets,
+  readPaperclipSkillSyncPreference,
   readPaperclipRuntimeSkillEntries,
   removeMaintainerOnlySkillSymlinks,
-  resolvePaperclipDesiredSkillNames,
+  resolveLegacyPaperclipDesiredSkillNames,
+  writePaperclipSkillSyncPreference,
 } from "@penclipai/adapter-utils/server-utils";
 
 const __moduleDir = path.dirname(fileURLToPath(import.meta.url));
@@ -40,6 +42,29 @@ export function resolveQwenSkillsHome(config: Record<string, unknown>) {
   return path.join(resolveQwenHomeBase(config), ".qwen", "skills");
 }
 
+function resolveQwenDesiredSkillNames(
+  config: Record<string, unknown>,
+  availableEntries: Array<{ key: string; required?: boolean }>,
+) {
+  return Array.from(new Set([
+    ...availableEntries.filter((entry) => entry.required).map((entry) => entry.key),
+    ...resolveLegacyPaperclipDesiredSkillNames(config, availableEntries),
+  ]));
+}
+
+function withRequestedQwenSkills(
+  config: Record<string, unknown>,
+  desiredSkills: string[],
+) {
+  const configuredEntries = readPaperclipSkillSyncPreference(config).desiredSkillEntries;
+  return writePaperclipSkillSyncPreference(
+    config,
+    desiredSkills.map(
+      (key) => configuredEntries.find((entry) => entry.key === key) ?? key,
+    ),
+  );
+}
+
 type EnsureQwenSkillsInjectedOptions = {
   config?: Record<string, unknown>;
   skillsDir?: string | null;
@@ -66,7 +91,7 @@ export async function ensureQwenSkillsInjected(
       : await readPaperclipRuntimeSkillEntries(config, __moduleDir));
   if (skillsEntries.length === 0) return;
 
-  const desiredNames = options.desiredSkillNames ?? resolvePaperclipDesiredSkillNames(config, skillsEntries);
+  const desiredNames = options.desiredSkillNames ?? resolveQwenDesiredSkillNames(config, skillsEntries);
   const desiredSet = new Set(desiredNames);
   const selectedEntries = skillsEntries.filter((entry) => desiredSet.has(entry.key));
   if (selectedEntries.length === 0) return;
@@ -113,10 +138,10 @@ export async function ensureQwenSkillsInjected(
 
 async function buildQwenSkillSnapshot(config: Record<string, unknown>): Promise<AdapterSkillSnapshot> {
   const availableEntries = await readPaperclipRuntimeSkillEntries(config, __moduleDir);
-  const desiredSkills = resolvePaperclipDesiredSkillNames(config, availableEntries);
+  const desiredSkills = resolveQwenDesiredSkillNames(config, availableEntries);
   const skillsHome = resolveQwenSkillsHome(config);
   const installed = await readInstalledSkillTargets(skillsHome);
-  return buildPersistentSkillSnapshot({
+  const snapshot = buildPersistentSkillSnapshot({
     adapterType: "qwen_local",
     availableEntries,
     desiredSkills,
@@ -127,6 +152,16 @@ async function buildQwenSkillSnapshot(config: Record<string, unknown>): Promise<
     externalConflictDetail: "Skill name is occupied by an external installation.",
     externalDetail: "Installed outside Paperclip management.",
   });
+  const availableByKey = new Map(availableEntries.map((entry) => [entry.key, entry]));
+  return {
+    ...snapshot,
+    entries: snapshot.entries.map((entry) => {
+      const available = availableByKey.get(entry.key);
+      return available?.required
+        ? { ...entry, required: true, requiredReason: available.requiredReason ?? null }
+        : entry;
+    }),
+  };
 }
 
 export async function listQwenSkills(ctx: AdapterSkillContext): Promise<AdapterSkillSnapshot> {
@@ -138,10 +173,8 @@ export async function syncQwenSkills(
   desiredSkills: string[],
 ): Promise<AdapterSkillSnapshot> {
   const availableEntries = await readPaperclipRuntimeSkillEntries(ctx.config, __moduleDir);
-  const desiredSet = new Set([
-    ...desiredSkills,
-    ...availableEntries.filter((entry) => entry.required).map((entry) => entry.key),
-  ]);
+  const syncedConfig = withRequestedQwenSkills(ctx.config, desiredSkills);
+  const desiredSet = new Set(resolveQwenDesiredSkillNames(syncedConfig, availableEntries));
   const skillsHome = resolveQwenSkillsHome(ctx.config);
   await fs.mkdir(skillsHome, { recursive: true });
   const installed = await readInstalledSkillTargets(skillsHome);
@@ -161,5 +194,5 @@ export async function syncQwenSkills(
     await fs.unlink(path.join(skillsHome, name)).catch(() => {});
   }
 
-  return buildQwenSkillSnapshot(ctx.config);
+  return buildQwenSkillSnapshot(syncedConfig);
 }

@@ -225,7 +225,7 @@ describe("ensureLocalPluginBuilt", () => {
     const installArgs = ["install", "--ignore-workspace", ...(localPolicy ? ["--ignore-scripts"] : []), "--no-lockfile"];
     const execStub = vi.fn(async (_file: string, args: readonly string[]) => {
       if (args.join(" ") === installArgs.join(" ")) {
-        await mkdir(path.join(fixture.packageRoot, "node_modules", "@paperclipai", "plugin-sdk"), { recursive: true });
+        await mkdir(path.join(fixture.packageRoot, "node_modules", "@penclipai", "plugin-sdk"), { recursive: true });
       }
       if (args.join(" ") === "build") {
         await mkdir(path.join(fixture.distDir, "ui"), { recursive: true });
@@ -264,7 +264,7 @@ describe("ensureLocalPluginBuilt", () => {
     cleanupPaths.add(fixture.packageRoot);
 
     const execStub = vi.fn(async () => {
-      await mkdir(path.join(fixture.packageRoot, "node_modules", "@paperclipai", "plugin-sdk"), { recursive: true });
+      await mkdir(path.join(fixture.packageRoot, "node_modules", "@penclipai", "plugin-sdk"), { recursive: true });
       return { stdout: "", stderr: "" };
     });
     await ensureLocalPluginBuilt(

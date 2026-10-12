@@ -204,7 +204,7 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
                       })
                     }
                   >
-                    <div className="text-sm font-medium">{days} days</div>
+                    <div className="text-sm font-medium">{translateInstant("instanceGeneralSettings.retentionDays", { count: days })}</div>
                   </button>
                 );
               })}
@@ -216,7 +216,7 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
             <div className="flex flex-wrap gap-2">
               {WEEKLY_RETENTION_PRESETS.map((weeks) => {
                 const active = backupRetention.weeklyWeeks === weeks;
-                const label = weeks === 1 ? "1 week" : `${weeks} weeks`;
+                const label = translateInstant("instanceGeneralSettings.retentionWeeks", { count: weeks });
                 return (
                   <button
                     key={weeks}
@@ -246,7 +246,7 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
             <div className="flex flex-wrap gap-2">
               {MONTHLY_RETENTION_PRESETS.map((months) => {
                 const active = backupRetention.monthlyMonths === months;
-                const label = months === 1 ? "1 month" : `${months} months`;
+                const label = translateInstant("instanceGeneralSettings.retentionMonths", { count: months });
                 return (
                   <button
                     key={months}

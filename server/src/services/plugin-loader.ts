@@ -51,6 +51,7 @@ import type { PluginToolDispatcher } from "./plugin-tool-dispatcher.js";
 import type { PluginLifecycleManager } from "./plugin-lifecycle.js";
 import { pluginDatabaseService } from "./plugin-database.js";
 import { resolveBundledCatalogRoot } from "./bundled-plugins.js";
+import { resolvePnpmInvocation } from "./npm-command.js";
 
 const execFileAsync = promisify(execFile);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -910,10 +911,20 @@ export async function ensureLocalPluginBuilt(
 
   try {
     for (const command of buildCommands) {
+      // execFile cannot directly execute pnpm's Windows .cmd shim. Keep the
+      // injected runner on the logical pnpm command so unit tests continue to
+      // assert the install policy, while real execution uses the safe shim
+      // invocation (or npm_execpath) resolved by npm-command.
+      const invocation = options.execFileAsyncImpl
+        ? command
+        : (() => {
+          const resolved = resolvePnpmInvocation(command.args, { env: processEnv });
+          return { file: resolved.command, args: resolved.args, cwd: command.cwd };
+        })();
       await runExecFileAsync(
-        command.file,
-        command.args,
-        { cwd: command.cwd, timeout: LOCAL_PLUGIN_AUTOBUILD_TIMEOUT_MS },
+        invocation.file,
+        invocation.args,
+        { cwd: invocation.cwd, timeout: LOCAL_PLUGIN_AUTOBUILD_TIMEOUT_MS },
       );
     }
   } catch (error) {

@@ -30,7 +30,10 @@ import { drainHeartbeatRunsToQuiescence } from "./helpers/drain-heartbeat-runs.j
 import { registerServerAdapter, unregisterServerAdapter } from "../adapters/index.ts";
 import { createPostgresRunDispatchAdapter } from "../modules/run-dispatch/adapters/postgres.js";
 
-const mockTelemetryClient = vi.hoisted(() => ({ track: vi.fn() }));
+const mockTelemetryClient = vi.hoisted(() => ({
+  track: vi.fn(),
+  hashPrivateRef: vi.fn((value: string) => `hashed:${value}`),
+}));
 const mockTrackAgentTaskRun = vi.hoisted(() => vi.fn());
 
 vi.mock("../telemetry.js", () => ({

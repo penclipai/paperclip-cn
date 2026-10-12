@@ -108,9 +108,19 @@ import {
 import { resolveTailscaleDnsName } from "./runtime-exposure/tailscale-hostname.js";
 
 export function resolveShell(): string {
-  const fallback = process.platform === "win32" ? "sh" : "/bin/sh";
+  const fallback = process.platform === "win32"
+    ? [process.env.ProgramFiles, process.env["ProgramFiles(x86)"]]
+      .filter((directory): directory is string => Boolean(directory))
+      .map((directory) => path.join(directory, "Git", "bin", "sh.exe"))
+      .find(existsSync) ?? "sh"
+    : "/bin/sh";
   const shell = process.env.SHELL?.trim();
   if (!shell) return fallback;
+  // Workspace commands use POSIX quoting and -lc, which native Windows
+  // command interpreters do not support.
+  if (process.platform === "win32" && /(?:^|[\\/])(?:pwsh|powershell|cmd)(?:\.exe)?$/i.test(shell)) {
+    return fallback;
+  }
   if (path.isAbsolute(shell) && !existsSync(shell)) return fallback;
   return shell;
 }

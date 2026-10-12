@@ -308,7 +308,7 @@ describeEmbeddedPostgres("shared-workspace run serialization", () => {
         driver: agentEnvironmentDriver,
         status: "active",
         config: agentEnvironmentDriver === "ssh"
-          ? { host: "workspace-test.invalid", username: "test", remoteWorkspacePath: workspaceCwd }
+          ? { host: "workspace-test.invalid", username: "test", remoteWorkspacePath: "/workspace" }
           : { provider: "fake", image: "fake:test", reuseLease: false },
       });
     }

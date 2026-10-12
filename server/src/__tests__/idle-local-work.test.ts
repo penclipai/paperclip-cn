@@ -31,6 +31,15 @@ describe("idle cleanup inspection", () => {
     vi.spyOn(fs, "opendir").mockRejectedValue(Object.assign(new Error("private path"), { code: "EACCES" }));
     expect(await inspectIdleSpool(root)).toBe("unknown");
   });
+  it("checks every existing ancestor before accepting an absent spool", async () => {
+    const real = path.join(root, "real");
+    const link = path.join(root, "link");
+    await fs.mkdir(real);
+    await fs.symlink(root, link, process.platform === "win32" ? "junction" : "dir");
+
+    expect(await inspectIdleSpool(path.join(real, "absent"))).toBe("none");
+    expect(await inspectIdleSpool(path.join(link, "real", "absent"))).toBe("unknown");
+  });
   it("checks custom spool directories as well as the default paths", async () => {
     vi.stubEnv("PAPERCLIP_HOME", root);
     vi.stubEnv("SANDBOX_ORPHAN_CLEANUP_SPOOL_DIR", path.join(root, "orphans"));

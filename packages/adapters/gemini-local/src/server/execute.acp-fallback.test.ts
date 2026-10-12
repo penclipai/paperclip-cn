@@ -133,7 +133,10 @@ describe("gemini_local ACP startup fallback", () => {
         await execute({
           ...ctx,
           runtime: { ...ctx.runtime, sessionId: state === "fresh" ? null : "previous" },
-          context: { paperclipTaskCommunicationGuidance: "Frozen Slack preferences." },
+          context: {
+            paperclipTaskCommunicationGuidance: "Frozen Slack preferences.",
+            paperclipLocalizationPromptMarkdown: "## Language\n\nReply in Chinese.",
+          },
           onMeta: async (meta) => { prompts.push(meta.prompt ?? ""); },
         });
         if (state === "fresh") {
@@ -145,6 +148,9 @@ describe("gemini_local ACP startup fallback", () => {
           if (state === "missing") {
             expect(prompts[1]?.match(/Frozen Slack preferences\./g)).toHaveLength(1);
           }
+        }
+        for (const prompt of prompts) {
+          expect(prompt).toContain("## Language\n\nReply in Chinese.");
         }
       } finally {
         await rm(cwd, { recursive: true, force: true });

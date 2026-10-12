@@ -8,6 +8,7 @@ import { agents, heartbeatRuns, issueAttachments, issueComments, issues, issueWo
 import { startAdapterExecutionTargetPaperclipBridge, type AdapterSandboxExecutionTarget } from "@penclipai/adapter-utils/execution-target";
 import type { CommandManagedRuntimeRunner } from "@penclipai/adapter-utils/command-managed-runtime";
 import { runChildProcess } from "@penclipai/adapter-utils/server-utils";
+import { prepareTestPosixShell } from "@penclipai/adapter-utils/test-fixtures/posix-shell";
 import { createLocalAgentJwt } from "../agent-auth-jwt.js";
 import { PaperclipRunnerToolAuthority } from "../services/native-runtime/paperclip-runner-tool-authority.js";
 import { readVerifiedRemoteWorkspaceFile } from "../services/native-runtime/remote-deliverable-file.js";
@@ -24,12 +25,16 @@ const files = [
 
 function localProcessRunner(): CommandManagedRuntimeRunner {
   return {
-    execute: input => runChildProcess("file-delivery-test", input.command, input.args ?? [], {
-      cwd: input.cwd ?? process.cwd(), env: input.env ?? {}, stdin: input.stdin,
-      timeoutSec: (input.timeoutMs ?? 30_000) / 1000, graceSec: 1, onLog: async () => {},
-    }),
+    execute: input => {
+      const prepared = prepareTestPosixShell({ command: input.command, args: input.args, env: input.env });
+      return runChildProcess("file-delivery-test", prepared.command, prepared.args, {
+        cwd: input.cwd ?? process.cwd(), env: prepared.env, stdin: input.stdin,
+        timeoutSec: (input.timeoutMs ?? 30_000) / 1000, graceSec: 1, onLog: async () => {},
+      });
+    },
     openDuplexChannel: async ({ command }) => {
-      const child = spawn(command[0], command.slice(1), { stdio: ["pipe", "pipe", "pipe"] });
+      const prepared = prepareTestPosixShell({ command: command[0]!, args: command.slice(1), env: process.env });
+      const child = spawn(prepared.command, prepared.args, { cwd: process.cwd(), env: prepared.env, stdio: ["pipe", "pipe", "pipe"] });
       child.stderr.resume();
       return {
         write: data => { child.stdin.write(data); },

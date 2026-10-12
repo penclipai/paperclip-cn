@@ -3,6 +3,7 @@ import request from "supertest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { HttpError } from "../errors.js";
 import { errorHandler } from "../middleware/error-handler.js";
+import { localeMiddleware } from "../middleware/locale.js";
 
 const sinks = vi.hoisted(() => ({
   captureException: vi.fn(),
@@ -13,8 +14,9 @@ vi.mock("../sentry.js", () => ({ captureException: sinks.captureException }));
 vi.mock("../telemetry.js", () => ({ getTelemetryClient: () => sinks.telemetryClient }));
 vi.mock("@penclipai/shared/telemetry", () => ({ trackErrorHandlerCrash: sinks.trackErrorHandlerCrash }));
 
-function createApp(routeError?: Error) {
+function createApp(routeError?: Error, options: { withLocale?: boolean } = {}) {
   const app = express();
+  if (options.withLocale) app.use(localeMiddleware);
   app.use(express.json());
   const handler = vi.fn((req: express.Request, res: express.Response, next: express.NextFunction) => {
     if (routeError) return next(routeError);
@@ -56,6 +58,24 @@ describe("JSON parse error handler", () => {
       expect(response.err).toBeUndefined();
       expect(response.__errorContext).toBeUndefined();
     }
+  });
+
+  it("localizes malformed secret-bearing JSON without reporting or retaining raw context", async () => {
+    const { app, handler, errorResponses } = createApp(undefined, { withLocale: true });
+    const response = await request(app)
+      .post("/api/echo")
+      .set("Accept-Language", "zh-CN")
+      .set("Content-Type", "application/json")
+      .send('{"token":"private-request-canary","broken":');
+
+    expect(response.status).toBe(400);
+    expect(response.body).toEqual({ error: "无效的 JSON 请求体" });
+    expect(handler).not.toHaveBeenCalled();
+    expect(sinks.captureException).not.toHaveBeenCalled();
+    expect(sinks.trackErrorHandlerCrash).not.toHaveBeenCalled();
+    expect(errorResponses).toHaveLength(1);
+    expect(errorResponses[0].err).toBeUndefined();
+    expect(errorResponses[0].__errorContext).toBeUndefined();
   });
 
   it.each([

@@ -43,7 +43,7 @@ export function DecisionModelSettingsView({ settings, choices, saving, testing, 
   }, [newlyConnectedId, choices]);
   const selected = choices.find(row => row.grantId === draft.grantId);
   const dirty = draft.enabled !== settings.enabled || draft.allowBackground !== settings.allowBackground || draft.grantId !== settings.grantId;
-  const unavailable = result && result.status !== "succeeded" ? failureMessages[result.status === "unavailable" ? result.reason : result.errorCode] ?? "The decision could not be completed. Review its entry in Costs." : null;
+  const unavailable = result && result.status !== "succeeded" ? translateInstant(failureMessages[result.status === "unavailable" ? result.reason : result.errorCode] ?? "The decision could not be completed. Review its entry in Costs.") : null;
   return <section aria-labelledby="decision-model-heading" className="max-w-2xl space-y-4">
     <div className="flex flex-wrap items-center justify-between gap-3">
       <h2 id="decision-model-heading" className="text-lg font-semibold">{translateInstant("Decision model")}</h2>
@@ -52,7 +52,7 @@ export function DecisionModelSettingsView({ settings, choices, saving, testing, 
     <p className="text-sm text-muted-foreground">{translateInstant("Choose the shared connection Paperclip uses for optional decision features. API usage is charged to this connection.")}</p>
     <ConnectionChoiceList selectedId={draft.grantId ?? undefined} disabled={saving || testing}
       choices={choices.map(row => ({ id: row.grantId, name: row.name,
-        description: `${row.decisionModel} · ${row.status === "connected" ? "Connected" : "Needs attention"}`,
+        description: `${row.decisionModel} · ${translateInstant(row.status === "connected" ? "apps.detail.status.connected" : "apps.detail.status.needsAttention")}`,
         icon: <AppLogo name={row.provider === "openai" ? "OpenAI" : "OpenRouter"} brandKey={row.provider} size={24} />,
       }))}
       onSelect={grantId => { const row = choices.find(choice => choice.grantId === grantId)!; setDraft(value => ({ ...value, connectionId: row.id, grantId, enabled: value.connectionId ? value.enabled : true })); }} />
@@ -60,7 +60,7 @@ export function DecisionModelSettingsView({ settings, choices, saving, testing, 
     {draft.connectionId && !selected && <p role="status" className="text-sm text-muted-foreground">{translateInstant("The saved connection is unavailable to you. Disable decisions or choose another connection.")}</p>}
     <div className="flex flex-wrap items-center gap-3">
       <Button variant="outline" size="sm" onClick={onAdd} disabled={saving || testing}>{translateInstant("Add connection")}</Button>
-      {selected && <Link to={`/apps/${selected.id}/permissions`} className="text-sm underline underline-offset-4">{selected.status === "connected" ? "Manage connection" : "Reconnect connection"}</Link>}
+      {selected && <Link to={`/apps/${selected.id}/permissions`} className="text-sm underline underline-offset-4">{translateInstant(selected.status === "connected" ? "Manage connection" : "Reconnect connection")}</Link>}
     </div>
     {draft.connectionId && <fieldset disabled={saving || testing} className="space-y-4">
       <ToggleField label={translateInstant("Enable decisions")} checked={draft.enabled} onChange={enabled => setDraft(value => ({ ...value, enabled }))} />
@@ -74,17 +74,17 @@ export function DecisionModelSettingsView({ settings, choices, saving, testing, 
     {!dirty && result?.status === "succeeded" && <div role="status" className="space-y-2 text-sm">
       <p className="font-medium">{translateInstant("Decision model is working")}</p>
       <dl className="grid grid-cols-2 gap-2">{Object.entries(result.answers).map(([name, answer]) => <div key={name}>
-        <dt className="text-muted-foreground">{name === "billing" ? "Billing problem" : name === "team" ? "Assigned team" : "Disruption score"}</dt>
+        <dt className="text-muted-foreground">{translateInstant(name === "billing" ? "Billing problem" : name === "team" ? "Assigned team" : "Disruption score")}</dt>
         <dd className="font-mono">{answer.type === "boolean" ? `${Math.round(answer.probability * 100)}%` : answer.type === "choice" ? answer.choice : `${answer.score.toFixed(2)} / 2`}</dd>
       </div>)}</dl>
       <p className="text-xs text-muted-foreground">{translateInstant("Usage was recorded. Test answers are not saved.")}</p>
     </div>}
     <div className="flex flex-wrap items-center justify-between gap-3">
       <div className="space-y-1">
-        <Button variant="outline" size="sm" disabled={!settings.enabled || dirty || saving || testing || selected?.status !== "connected"} onClick={onTest}>{testing ? "Running test…" : "Run test"}</Button>
-        <p className="text-xs text-muted-foreground">{dirty ? "Save changes before testing." : "Runs a small sample with an API charge."}</p>
+        <Button variant="outline" size="sm" disabled={!settings.enabled || dirty || saving || testing || selected?.status !== "connected"} onClick={onTest}>{translateInstant(testing ? "Running test…" : "Run test")}</Button>
+        <p className="text-xs text-muted-foreground">{translateInstant(dirty ? "Save changes before testing." : "Runs a small sample with an API charge.")}</p>
       </div>
-      {dirty && <Button onClick={() => onSave(draft)} disabled={saving || testing || (draft.enabled && selected?.status !== "connected")}>{saving ? "Saving…" : "Save decision model"}</Button>}
+      {dirty && <Button onClick={() => onSave(draft)} disabled={saving || testing || (draft.enabled && selected?.status !== "connected")}>{translateInstant(saving ? "Saving…" : "Save decision model")}</Button>}
     </div>
   </section>;
 }

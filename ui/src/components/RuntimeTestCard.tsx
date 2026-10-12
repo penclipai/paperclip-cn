@@ -103,9 +103,9 @@ export function RuntimeTestCard({
             aria-atomic="true"
             className="min-w-0 space-y-1"
           >
-            <h3 className="text-sm font-medium">{content.title}</h3>
+            <h3 className="text-sm font-medium">{translateInstant(content.title)}</h3>
             <p className="text-xs leading-relaxed text-muted-foreground">
-              {state === "fail" && error ? error : content.description}
+              {state === "fail" && error ? error : translateInstant(content.description)}
             </p>
           </div>
           <Button
@@ -116,7 +116,7 @@ export function RuntimeTestCard({
             disabled={disabled || state === "running"}
             onClick={onTest}
           >
-            {content.action}
+            {translateInstant(content.action)}
           </Button>
         </div>
       </div>

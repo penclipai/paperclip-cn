@@ -1,5 +1,5 @@
 import { createRequire } from "node:module";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { describe, expect, it } from "vitest";
 import { JsonRpcCallError, readEnvironmentAcquisitionDiagnostic, readEnvironmentCreationCleanupError } from "@penclipai/plugin-sdk";
 import type { heartbeatRuns } from "@penclipai/db";
@@ -16,7 +16,10 @@ describe("acquisition diagnostics through the built worker and real host client"
         entrypoints: { worker: "fixture.mjs" } },
       config: {}, instanceInfo: { instanceId: "instance-fixture", hostVersion: "1.0.0" }, apiVersion: 1,
       hostHandlers: {}, rpcTimeoutMs: 5_000,
-      execArgv: ["--import", createRequire(import.meta.url).resolve("tsx")],
+      execArgv: [
+        "--import",
+        pathToFileURL(createRequire(import.meta.url).resolve("tsx")).href,
+      ],
     });
     try {
       await handle.start();

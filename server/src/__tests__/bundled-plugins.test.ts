@@ -15,6 +15,13 @@ import {
 
 const CATALOG_ROOT = "/app/packages/plugins";
 
+// The release image uses a POSIX location, while these unit tests run on the
+// host platform. Match production's path.resolve() behavior for every catalog
+// fixture instead of comparing a POSIX string to a Windows-native path.
+function catalogPath(...segments: string[]) {
+  return path.resolve(CATALOG_ROOT, ...segments);
+}
+
 const tempDirs: string[] = [];
 function makeTempDir(prefix: string): string {
   const dir = mkdtempSync(path.join(os.tmpdir(), prefix));
@@ -39,7 +46,7 @@ describe("resolveBundledPluginInstalls", () => {
     })).toEqual([{
       key: "createos",
       pluginKey: "paperclip.createos-sandbox-provider",
-      localPath: path.join(CATALOG_ROOT, "sandbox-providers/createos"),
+      localPath: catalogPath("sandbox-providers/createos"),
     }]);
     expect(SELF_HOSTED_AUTO_INSTALL_KEYS).not.toContain("createos");
   });
@@ -53,12 +60,12 @@ describe("resolveBundledPluginInstalls", () => {
       {
         key: "kubernetes",
         pluginKey: "paperclip.kubernetes-sandbox-provider",
-        localPath: path.join(CATALOG_ROOT, "sandbox-providers/kubernetes"),
+        localPath: catalogPath("sandbox-providers/kubernetes"),
       },
       {
         key: "daytona",
         pluginKey: "paperclip.daytona-sandbox-provider",
-        localPath: path.join(CATALOG_ROOT, "sandbox-providers/daytona"),
+        localPath: catalogPath("sandbox-providers/daytona"),
       },
     ]);
   });
@@ -142,13 +149,13 @@ describe("resolveBundledPluginInstalls", () => {
       {
         key: "kubernetes",
         pluginKey: "paperclip.kubernetes-sandbox-provider",
-        localPath: "/somewhere/else/kubernetes",
+        localPath: path.resolve("/somewhere/else/kubernetes"),
       },
     ]);
   });
 
   it("honors an env override that stays inside the catalog root under enforcement", () => {
-    const inside = path.join(CATALOG_ROOT, "sandbox-providers", "kubernetes");
+    const inside = catalogPath("sandbox-providers", "kubernetes");
     const resolved = resolveBundledPluginInstalls(["kubernetes"], {
       catalogRoot: CATALOG_ROOT,
       env: { PAPERCLIP_KUBERNETES_PLUGIN_PATH: inside },
@@ -177,7 +184,7 @@ describe("resolveBundledPluginInstalls", () => {
     expect(entry).toEqual({
       key: "kubernetes",
       pluginKey: "paperclip.kubernetes-sandbox-provider",
-      localPath: "/app/packages/plugins/sandbox-providers/kubernetes",
+      localPath: catalogPath("sandbox-providers/kubernetes"),
     });
   });
 
@@ -247,7 +254,7 @@ function makeDeps(overrides?: {
   const installPlugin = vi.fn(async ({ localPath }: { localPath: string }) => {
     if (overrides?.installError) throw overrides.installError;
     const entry = BUNDLED_PLUGIN_CATALOG.find((candidate) =>
-      localPath.endsWith(candidate.relativePath),
+      localPath.replaceAll("\\", "/").endsWith(`/${candidate.relativePath}`),
     );
     const pluginKey = entry?.pluginKey ?? "unknown";
     installedRows.set(pluginKey, normalize({ id: `id-${pluginKey}`, pluginKey, status: "installed" }));
@@ -257,7 +264,7 @@ function makeDeps(overrides?: {
   const updateStatus = vi.fn(async () => undefined);
   const loadManifest = vi.fn(async (localPath: string) => {
     const entry = BUNDLED_PLUGIN_CATALOG.find((candidate) =>
-      localPath.endsWith(candidate.relativePath),
+      localPath.replaceAll("\\", "/").endsWith(`/${candidate.relativePath}`),
     );
     const pluginKey = entry?.pluginKey ?? "unknown";
     const persisted = installedRows.get(pluginKey);
@@ -283,12 +290,12 @@ function makeDeps(overrides?: {
 const K8S: ResolvedBundledPlugin = {
   key: "kubernetes",
   pluginKey: "paperclip.kubernetes-sandbox-provider",
-  localPath: path.join(CATALOG_ROOT, "sandbox-providers/kubernetes"),
+  localPath: catalogPath("sandbox-providers/kubernetes"),
 };
 const DAYTONA: ResolvedBundledPlugin = {
   key: "daytona",
   pluginKey: "paperclip.daytona-sandbox-provider",
-  localPath: path.join(CATALOG_ROOT, "sandbox-providers/daytona"),
+  localPath: catalogPath("sandbox-providers/daytona"),
 };
 
 describe("ensureBundledPlugins", () => {

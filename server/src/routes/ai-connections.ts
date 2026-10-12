@@ -1,6 +1,6 @@
 import { validateAiApiKey } from "../services/ai-api-key-test.js";
 export { validateAiApiKey } from "../services/ai-api-key-test.js";
-import { supportsLocalAiLogin } from "../services/local-ai-login-policy.js";
+import { localAiLoginUnavailableReason, supportsLocalAiLogin } from "../services/local-ai-login-policy.js";
 import { localAiLoginService } from "../services/local-ai-login.js";
 import { z } from "zod";
 import { Router, type Request } from "express";
@@ -137,8 +137,14 @@ export async function canInstallSharedAiConnectionForNewAgent(
 
 
 export function aiConnectionRoutes(db: Db, options: Parameters<typeof supportsLocalAiLogin>[0] = {}) {
-  function assertLocalLoginAvailable() {
-    if (!supportsLocalAiLogin(options)) throw unprocessable("Server-host subscription sign-in is unavailable on this hosted instance. Choose a supported sign-in environment or use an API key.");
+  function assertLocalLoginAvailable(t?: (key: string) => string) {
+    const reason = localAiLoginUnavailableReason(options);
+    if (reason) {
+      const key = (options.platform ?? process.platform) === "win32"
+        ? "aiConnections.localLogin.windowsUnavailable"
+        : "aiConnections.localLogin.hostedUnavailable";
+      throw unprocessable(t?.(key) ?? reason);
+    }
   }
   const router = Router();
   const service = aiConnectionService(db);
@@ -182,7 +188,7 @@ export function aiConnectionRoutes(db: Db, options: Parameters<typeof supportsLo
   router.post("/companies/:companyId/ai-connections/local/attempts", validate(localAiLoginStartSchema), async (req, res) => {
     const companyId = req.params.companyId as string;
     const { restart, ...intent } = localAiLoginStartSchema.parse(req.body);
-    assertLocalLoginAvailable();
+    assertLocalLoginAvailable(req.t);
     const userId = await assertAiConnectionCreateAccess(db, req, companyId, intent);
     res.setHeader("Cache-Control", "no-store");
     res.status(201).json(await localLogin.start(companyId, userId, intent, restart));
@@ -190,7 +196,7 @@ export function aiConnectionRoutes(db: Db, options: Parameters<typeof supportsLo
   router.post("/companies/:companyId/ai-connections/local/check", validate(localAiConnectionSchema), async (req, res) => {
     const companyId = req.params.companyId as string;
     const { localSessionId, ...intent } = localAiConnectionSchema.parse(req.body);
-    assertLocalLoginAvailable();
+    assertLocalLoginAvailable(req.t);
     const userId = await assertAiConnectionCreateAccess(db, req, companyId, intent);
     res.setHeader("Cache-Control", "no-store");
     res.json(await localLogin.check(companyId, userId, intent, localSessionId));
@@ -204,7 +210,7 @@ export function aiConnectionRoutes(db: Db, options: Parameters<typeof supportsLo
   });
   router.post("/companies/:companyId/ai-connections/local/attempts/:sessionId/code", validate(z.object({ browserCode: browserCodeSchema })), async (req, res) => {
     const companyId = req.params.companyId as string;
-    assertLocalLoginAvailable();
+    assertLocalLoginAvailable(req.t);
     assertBoard(req);
     assertCompanyAccess(req, companyId);
     const id = z.string().uuid().parse(req.params.sessionId);
@@ -323,7 +329,7 @@ export function aiConnectionRoutes(db: Db, options: Parameters<typeof supportsLo
     async (req, res) => {
       const companyId = req.params.companyId as string;
       const { localSessionId, ...input } = localAiConnectionSchema.parse(req.body);
-      assertLocalLoginAvailable();
+      assertLocalLoginAvailable(req.t);
       const userId = await assertAiConnectionCreateAccess(db, req, companyId, input);
       if (!localSessionId) throw unprocessable(input.provider === "xai"
         ? "Start local sign-in for this connection before connecting."

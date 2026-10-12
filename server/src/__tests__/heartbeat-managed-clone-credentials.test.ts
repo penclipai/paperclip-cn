@@ -15,9 +15,14 @@ const execFile = promisify(execFileCallback);
 let tempHome: string;
 let originalHome: string | undefined;
 
+function testTempPrefix(): string {
+  // Keep room for Git's nested object paths on Windows.
+  return path.join(os.homedir(), "p-");
+}
+
 beforeAll(async () => {
   originalHome = process.env.PAPERCLIP_HOME;
-  tempHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-managed-clone-"));
+  tempHome = await fs.mkdtemp(testTempPrefix());
   process.env.PAPERCLIP_HOME = tempHome;
 });
 
@@ -28,7 +33,7 @@ afterAll(async () => {
 });
 
 async function createLocalSourceRepo() {
-  const sourceRepo = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-clone-source-"));
+  const sourceRepo = await fs.mkdtemp(testTempPrefix());
   await execFile("git", ["init"], { cwd: sourceRepo });
   await execFile("git", ["config", "user.email", "paperclip@example.com"], { cwd: sourceRepo });
   await execFile("git", ["config", "user.name", "Paperclip Test"], { cwd: sourceRepo });
@@ -36,6 +41,34 @@ async function createLocalSourceRepo() {
   await execFile("git", ["add", "README.md"], { cwd: sourceRepo });
   await execFile("git", ["commit", "-m", "init"], { cwd: sourceRepo });
   return sourceRepo;
+}
+
+async function writeFakeGit(bin: string, script: string): Promise<string | undefined> {
+  const commandPath = path.join(bin, "git");
+  if (process.platform === "win32") {
+    const executablePath = `${commandPath}.exe`;
+    await fs.link(process.execPath, executablePath).catch(() => fs.copyFile(process.execPath, executablePath));
+    const preloadPath = path.join(bin, "fake-git-preload.cjs");
+    await fs.writeFile(preloadPath, [
+      'const path = require("node:path");',
+      'if (path.basename(process.execPath).toLowerCase() === "git.exe") {',
+      "  if (process.env.FIXTURE_CLONE_STDERR !== undefined) {",
+      '    process.stderr.write(`${process.env.FIXTURE_CLONE_STDERR}\\n`);',
+      "    process.exit(128);",
+      "  }",
+      '  const statePath = path.join(__dirname, "fake-git-state");',
+      '  if (!require("node:fs").existsSync(statePath)) {',
+      '    require("node:fs").writeFileSync(statePath, "");',
+      "    process.exit(0);",
+      "  }",
+      '  process.stderr.write("fatal: Authentication failed for \'https://example.test/repo.git\'\\n");',
+      "  process.exit(128);",
+      "}",
+    ].join("\n"), "utf8");
+    return `--require "${preloadPath.replace(/\\/g, "/")}"`;
+  }
+  await fs.writeFile(commandPath, `#!/usr/bin/env node\n${script}`, "utf8");
+  await fs.chmod(commandPath, 0o755);
 }
 
 describe("ensureManagedProjectWorkspace clone credentials", () => {
@@ -46,10 +79,12 @@ describe("ensureManagedProjectWorkspace clone credentials", () => {
     [null, "fatal: corrupt loose object"],
   ] as const)("preserves only proven outbound clone classification through the actionable wrapper: %s", async (reason, stderr) => {
     const bin = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-fake-clone-"));
-    await fs.writeFile(path.join(bin, "git"), `#!/bin/sh
-printf '%s\\n' "$FIXTURE_CLONE_STDERR" >&2
-exit 128
-`, { mode: 0o755 });
+    const originalNodeOptions = process.env.NODE_OPTIONS;
+    const nodeOptions = await writeFakeGit(bin, [
+      'process.stderr.write(`${process.env.FIXTURE_CLONE_STDERR ?? ""}\\n`);',
+      "process.exit(128);",
+    ].join("\n"));
+    if (nodeOptions) process.env.NODE_OPTIONS = [nodeOptions, originalNodeOptions].filter(Boolean).join(" ");
     try {
       const failure = await ensureManagedProjectWorkspace({
         companyId: "remote-clone-fixture", projectId: path.basename(bin),
@@ -70,6 +105,8 @@ exit 128
       })));
       expect(homeEntries.some((name) => name.includes(".clone-"))).toBe(false);
     } finally {
+      if (originalNodeOptions === undefined) delete process.env.NODE_OPTIONS;
+      else process.env.NODE_OPTIONS = originalNodeOptions;
       await fs.rm(bin, { recursive: true, force: true });
     }
   });
@@ -89,17 +126,22 @@ exit 128
   it("does not transfer clone classification to a later local checkout failure", async () => {
     const bin = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-fake-checkout-"));
     const previousPath = process.env.PATH;
-    await fs.writeFile(path.join(bin, "git"), `#!/bin/sh
-if [ "$1" = clone ]; then
-  for argument in "$@"; do destination="$argument"; done
-  /bin/mkdir -p "$destination/.git"
-  exit 0
-fi
-printf '%s\\n' "fatal: Authentication failed for 'https://example.test/repo.git'" >&2
-exit 128
-`, { mode: 0o755 });
+    const previousPathCase = process.env.Path;
+    const originalNodeOptions = process.env.NODE_OPTIONS;
+    const nodeOptions = await writeFakeGit(bin, `
+const fs = require("node:fs");
+const args = process.argv.slice(2);
+if (args[0] === "clone") {
+  fs.mkdirSync(require("node:path").join(args.at(-1), ".git"), { recursive: true });
+  process.exit(0);
+}
+process.stderr.write("fatal: Authentication failed for 'https://example.test/repo.git'\\n");
+process.exit(128);
+`);
+    if (nodeOptions) process.env.NODE_OPTIONS = [nodeOptions, originalNodeOptions].filter(Boolean).join(" ");
     try {
       process.env.PATH = bin;
+      process.env.Path = bin;
       const failure = await ensureManagedProjectWorkspace({
         companyId: "checkout-failure-fixture", projectId: "project", repoUrl: "https://example.test/repo.git", repoRef: "missing-branch",
       }).catch((error: unknown) => error);
@@ -108,6 +150,9 @@ exit 128
       expect(readGitConnectionFailure(failure)).toBeNull();
     } finally {
       if (previousPath === undefined) delete process.env.PATH; else process.env.PATH = previousPath;
+      if (previousPathCase === undefined) delete process.env.Path; else process.env.Path = previousPathCase;
+      if (originalNodeOptions === undefined) delete process.env.NODE_OPTIONS;
+      else process.env.NODE_OPTIONS = originalNodeOptions;
       await fs.rm(bin, { recursive: true, force: true });
     }
   });
@@ -130,7 +175,7 @@ exit 128
       const additional = await prepareProjectRepositoryWorkspaces(input);
       expect(additional).toHaveLength(1);
       expect(additional[0]!.workspaceId).toBe("second");
-      expect(path.relative(anchor.cwd, additional[0]!.cwd)).toMatch(/^\.paperclip-repositories\//);
+      expect(path.relative(anchor.cwd, additional[0]!.cwd)).toMatch(/^\.paperclip-repositories[\\/]/);
       expect((await execFile("git", ["branch", "--show-current"], { cwd: additional[0]!.cwd })).stdout.trim()).toBe("project-branch");
       expect(resolveGitAuth).toHaveBeenCalledWith(second);
       await fs.writeFile(path.join(additional[0]!.cwd, "README.md"), "work in progress");
@@ -350,6 +395,48 @@ exit 128
       await expect(fs.readFile(path.join(cwd, "keep.txt"), "utf8")).resolves.toBe("operator data\n");
     } finally {
       await fs.rm(sourceRepo, { recursive: true, force: true });
+    }
+  });
+
+  it.skipIf(process.platform !== "win32")("reuses the legacy Windows-drive checkout with its retained work", async () => {
+    const companyId = "legacy-windows-source";
+    const projectId = "project-1";
+    const sourceRepo = await createLocalSourceRepo();
+    const legacyRepoName = new URL(sourceRepo).pathname.replace(/\/+$/, "").split("/").filter(Boolean).pop()!;
+    const legacyCwd = resolveManagedProjectWorkspaceDir({ companyId, projectId, repoName: legacyRepoName });
+    try {
+      await execFile("git", ["clone", sourceRepo, legacyCwd]);
+      await fs.writeFile(path.join(legacyCwd, "retained-sentinel.txt"), "keep\n", "utf8");
+      await fs.writeFile(path.join(legacyCwd, "README.md"), "uncommitted work\n", "utf8");
+
+      const result = await ensureManagedProjectWorkspace({ companyId, projectId, repoUrl: sourceRepo });
+
+      expect(result.cwd).toBe(legacyCwd);
+      await expect(fs.readFile(path.join(result.cwd, "retained-sentinel.txt"), "utf8")).resolves.toBe("keep\n");
+      expect((await execFile("git", ["status", "--porcelain"], { cwd: result.cwd })).stdout).toContain("README.md");
+    } finally {
+      await fs.rm(sourceRepo, { recursive: true, force: true });
+    }
+  });
+
+  it.skipIf(process.platform !== "win32")("does not reuse a legacy Windows-drive checkout with another origin", async () => {
+    const companyId = "legacy-windows-wrong-origin";
+    const projectId = "project-1";
+    const sourceRepo = await createLocalSourceRepo();
+    const otherRepo = await createLocalSourceRepo();
+    const legacyRepoName = new URL(sourceRepo).pathname.replace(/\/+$/, "").split("/").filter(Boolean).pop()!;
+    const legacyCwd = resolveManagedProjectWorkspaceDir({ companyId, projectId, repoName: legacyRepoName });
+    const defaultCwd = resolveManagedProjectWorkspaceDir({ companyId, projectId });
+    try {
+      await execFile("git", ["clone", otherRepo, legacyCwd]);
+
+      const result = await ensureManagedProjectWorkspace({ companyId, projectId, repoUrl: sourceRepo });
+
+      expect(result.cwd).toBe(defaultCwd);
+      expect((await execFile("git", ["remote", "get-url", "origin"], { cwd: legacyCwd })).stdout.trim()).toBe(otherRepo);
+      expect((await execFile("git", ["remote", "get-url", "origin"], { cwd: result.cwd })).stdout.trim()).toBe(sourceRepo);
+    } finally {
+      await Promise.all([sourceRepo, otherRepo].map((cwd) => fs.rm(cwd, { recursive: true, force: true })));
     }
   });
 

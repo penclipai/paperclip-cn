@@ -36,6 +36,10 @@ const mockAssetsApi = vi.hoisted(() => ({
 }));
 
 const mockSetBreadcrumbs = vi.hoisted(() => vi.fn());
+const companyState = vi.hoisted(() => ({
+  selectedCompanyId: "company-1",
+  selectedCompany: { id: "company-1", name: "Paperclip", issuePrefix: "PAP" },
+}));
 
 vi.mock("@/api/auth", () => ({
   authApi: mockAuthApi,
@@ -52,10 +56,7 @@ vi.mock("../context/BreadcrumbContext", () => ({
 }));
 
 vi.mock("../context/CompanyContext", () => ({
-  useCompany: () => ({
-    selectedCompanyId: "company-1",
-    selectedCompany: { id: "company-1", name: "Paperclip", issuePrefix: "PAP" },
-  }),
+  useCompany: () => companyState,
 }));
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -94,6 +95,7 @@ describe("ProfileSettings", () => {
       email: "jane@example.com",
       image: input.image,
     }));
+    companyState.selectedCompany.name = "Paperclip";
   });
 
   afterEach(() => {
@@ -157,6 +159,21 @@ describe("ProfileSettings", () => {
     await act(async () => {
       root.unmount();
     });
+  });
+
+  it("localizes the upload-storage hint while preserving the selected organization name", async () => {
+    companyState.selectedCompany.name = "Northstar Labs";
+    const root = createRoot(container);
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+
+    await act(async () => {
+      root.render(<QueryClientProvider client={queryClient}><ProfileSettings /></QueryClientProvider>);
+    });
+    await flushReact();
+
+    expect(container.textContent).toContain("Stored in Paperclip file storage for Northstar Labs.");
+
+    await act(async () => root.unmount());
   });
 
   it("uploads an avatar for a user id that comes from an identity provider", async () => {

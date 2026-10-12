@@ -394,8 +394,8 @@ describe("paperclip skill utils", () => {
     const entries = await listPaperclipSkillEntries(moduleDir);
 
     expect(entries.map((entry) => entry.key)).toEqual([
-      "paperclipai/paperclip/paperclip",
-      "paperclipai/paperclip/paperclip-create-agent",
+      "penclipai/paperclip-cn/paperclip",
+      "penclipai/paperclip-cn/paperclip-create-agent",
     ]);
     expect(entries.map((entry) => entry.runtimeName)).toEqual([
       "paperclip",

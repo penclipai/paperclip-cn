@@ -22448,22 +22448,37 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
               pinned.getProviderAdapter() as unknown as {
                 app: {
                   activitySender: {
-                    client: {
-                      post(
-                        url: string,
-                        body: unknown,
-                      ): Promise<{ data: unknown }>;
+                    createClient(
+                      serviceUrl: string,
+                    ): {
+                      http: {
+                        post(
+                          url: string,
+                          body: unknown,
+                        ): Promise<{ data: unknown }>;
+                      };
                     };
                   };
                 };
               }
             ).app;
-            vi.spyOn(app.activitySender.client, "post").mockImplementation(
-              async (url, body) => {
-                httpBodies.push({ url, body });
-                return {
-                  data: { id: `teams-http-receipt-${httpBodies.length}` },
-                };
+            const createClient = app.activitySender.createClient.bind(
+              app.activitySender,
+            );
+            vi.spyOn(app.activitySender, "createClient").mockImplementation(
+              (serviceUrl) => {
+                const client = createClient(serviceUrl);
+                vi.spyOn(client.http, "post").mockImplementation(
+                  async (url, body) => {
+                    httpBodies.push({ url, body });
+                    return {
+                      data: {
+                        id: `teams-http-receipt-${httpBodies.length}`,
+                      },
+                    };
+                  },
+                );
+                return client;
               },
             );
           }

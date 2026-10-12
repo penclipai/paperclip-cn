@@ -44,6 +44,7 @@ import type {
   RoutineTriggerSecretMaterial,
   RoutineVariable,
   RunRoutine,
+  UiLocale,
   UpdateRoutine,
   UpdateRoutineTrigger,
 } from "@penclipai/shared";
@@ -182,7 +183,12 @@ async function resolveRoutineResponsibleUserId(db: Db, companyId: string, actorU
   return resolveCompanyDefaultResponsibleUserId(db, companyId);
 }
 
-type Actor = { agentId?: string | null; userId?: string | null; runId?: string | null };
+type Actor = {
+  agentId?: string | null;
+  userId?: string | null;
+  runId?: string | null;
+  requestedUiLocale?: UiLocale | null;
+};
 type RoutineRow = typeof routines.$inferSelect;
 type RoutineTriggerRow = typeof routineTriggers.$inferSelect;
 
@@ -1988,6 +1994,7 @@ export function routineService(
           mutation: "create",
           contextSource: "routine.dispatch",
           requestedByActorType: input.source === "schedule" ? "system" : undefined,
+          requestedUiLocale: input.actor?.requestedUiLocale,
           rethrowOnError: true,
         });
         const updated = await finalizeRun(createdRun.id, {

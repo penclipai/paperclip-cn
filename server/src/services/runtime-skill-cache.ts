@@ -80,7 +80,11 @@ async function readRegularFile(filename: string): Promise<Buffer> {
 
 async function inventory(directory: string, base = ""): Promise<string[]> {
   const out: string[] = [];
-  if ((await fs.lstat(directory)).mode & 0o222) throw new Error("Writable runtime skill cache directory");
+  // Windows directory modes do not expose POSIX write protection. Warm reuse
+  // still verifies every read-only file and the complete hashed inventory.
+  if (process.platform !== "win32" && ((await fs.lstat(directory)).mode & 0o222)) {
+    throw new Error("Writable runtime skill cache directory");
+  }
   for (const entry of await fs.readdir(directory, { withFileTypes: true })) {
     const relative = base ? `${base}/${entry.name}` : entry.name;
     if (entry.isDirectory()) out.push(...await inventory(path.join(directory, entry.name), relative));

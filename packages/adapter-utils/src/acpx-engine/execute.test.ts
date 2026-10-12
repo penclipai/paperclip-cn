@@ -725,6 +725,27 @@ describe("shared ACPX engine runtime behavior", () => {
     expect(resetPrompt).not.toContain("Execution contract:");
   });
 
+  it("delivers the server localization note at the shared ACP turn boundary", async () => {
+    const root = await makeTempRoot();
+    const { turnInputs } = await runExecutor(
+      {
+        agent: "claude",
+        agentCommand: "node ./fixture-acp.js",
+        cwd: root,
+        stateDir: path.join(root, "state"),
+        mode: "persistent",
+      },
+      {
+        context: {
+          ...createPromptContextFixture(),
+          paperclipLocalizationPromptMarkdown: "## Language\n\nReply in Chinese.",
+        },
+      },
+    );
+
+    expect(String(turnInputs[0]?.text ?? "")).toContain("## Language\n\nReply in Chinese.");
+  });
+
   it("includes Paperclip env and API access notes in the ACPX prompt without leaking the token", async () => {
     const { meta } = await runExecutor(
       { agent: "custom", agentCommand: "node ./fake-acp.js" },

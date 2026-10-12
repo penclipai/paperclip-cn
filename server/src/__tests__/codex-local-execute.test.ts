@@ -3,9 +3,23 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { runChildProcess } from "@penclipai/adapter-utils/server-utils";
+import { prepareTestPosixShell } from "@penclipai/adapter-utils/test-fixtures/posix-shell";
 import { execute } from "@penclipai/adapter-codex-local/server";
 import { buildPaperclipTaskMarkdown } from "../services/heartbeat.js";
 import { AGENT_CHAT_DIRECTIVE } from "../services/agent-conversations.js";
+
+async function writeCodexCommand(commandPath: string, script: string): Promise<void> {
+  await fs.writeFile(commandPath, script, "utf8");
+  await fs.chmod(commandPath, 0o755);
+  if (process.platform === "win32") {
+    const commandName = path.basename(commandPath);
+    await fs.writeFile(
+      `${commandPath}.cmd`,
+      `@echo off\r\n"${process.execPath}" "%~dp0${commandName}" %*\r\n`,
+      "utf8",
+    );
+  }
+}
 
 async function writeFakeCodexCommand(commandPath: string): Promise<void> {
   const script = `#!/usr/bin/env node
@@ -34,8 +48,7 @@ console.log(JSON.stringify({ type: "thread.started", thread_id: "codex-session-1
 console.log(JSON.stringify({ type: "item.completed", item: { type: "agent_message", text: "hello" } }));
 console.log(JSON.stringify({ type: "turn.completed", usage: { input_tokens: 1, cached_input_tokens: 0, output_tokens: 1 } }));
 `;
-  await fs.writeFile(commandPath, script, "utf8");
-  await fs.chmod(commandPath, 0o755);
+  await writeCodexCommand(commandPath, script);
 }
 
 async function writeFailingCodexCommand(commandPath: string, errorMessage: string): Promise<void> {
@@ -43,8 +56,7 @@ async function writeFailingCodexCommand(commandPath: string, errorMessage: strin
 console.log(JSON.stringify({ type: "error", message: ${JSON.stringify(errorMessage)} }));
 process.exit(1);
 `;
-  await fs.writeFile(commandPath, script, "utf8");
-  await fs.chmod(commandPath, 0o755);
+  await writeCodexCommand(commandPath, script);
 }
 
 type CapturePayload = {
@@ -98,13 +110,14 @@ function createLocalSandboxRunner() {
       onSpawn?: (meta: { pid: number; startedAt: string }) => Promise<void>;
     }) => {
       counter += 1;
+      const prepared = prepareTestPosixShell(input);
       return runChildProcess(
         `sandbox-run-${counter}`,
-        input.command,
-        input.args ?? [],
+        prepared.command,
+        prepared.args,
         {
-          cwd: input.cwd ?? process.cwd(),
-          env: input.env ?? {},
+          cwd: process.platform === "win32" && input.cwd === "/" ? process.cwd() : input.cwd ?? process.cwd(),
+          env: prepared.env,
           stdin: input.stdin,
           timeoutSec: Math.max(1, Math.ceil((input.timeoutMs ?? 30_000) / 1000)),
           graceSec: 5,
@@ -450,9 +463,10 @@ describe("codex execute", () => {
 
       expect(result.exitCode).toBe(0);
       expect(result.errorMessage).toBeNull();
-      expect(loggedCommand).toBe(commandPath);
+      const resolvedCommandPath = process.platform === "win32" ? `${commandPath}.cmd` : commandPath;
+      expect(loggedCommand?.toLowerCase()).toBe(resolvedCommandPath.toLowerCase());
       expect(loggedEnv.HOME).toBe(root);
-      expect(loggedEnv.PAPERCLIP_RESOLVED_COMMAND).toBe(commandPath);
+      expect(loggedEnv.PAPERCLIP_RESOLVED_COMMAND?.toLowerCase()).toBe(resolvedCommandPath.toLowerCase());
     } finally {
       if (previousHome === undefined) delete process.env.HOME;
       else process.env.HOME = previousHome;
@@ -525,7 +539,7 @@ describe("codex execute", () => {
       expect(result.errorMessage).toBeNull();
 
       const capture = JSON.parse(await fs.readFile(capturePath, "utf8")) as CapturePayload;
-      expect(capture.codexHome).toBe(path.join(remoteWorkspace, ".paperclip-runtime", "codex", "home"));
+      expect(capture.codexHome?.replace(/\//g, "\\")).toBe(path.join(remoteWorkspace, ".paperclip-runtime", "codex", "home"));
       expect(capture.paperclipApiUrl).toMatch(/^http:\/\/127\.0\.0\.1:\d+$/);
       expect(capture.paperclipApiKey).not.toBe("run-jwt-token");
       expect(capture.paperclipApiBridgeMode).toBe("queue_v1");
@@ -1617,7 +1631,7 @@ process.exit(1);
     };
     try {
       const first = await invoke("agent-1", "a".repeat(64));
-      expect(first.codexHome).toContain("connector-runtimes/agent-1/");
+      expect(first.codexHome?.replace(/\\/g, "/")).toContain("connector-runtimes/agent-1/");
       expect(await fs.realpath(path.join(first.codexHome!, "auth.json"))).toBe(await fs.realpath(path.join(sourceHome, "auth.json")));
       expect(await fs.readFile(path.join(first.codexHome!, "skills/agentmail/SKILL.md"), "utf8")).toContain("inbox one");
       await expect(fs.stat(path.join(sourceHome, "skills/agentmail"))).rejects.toMatchObject({ code: "ENOENT" });

@@ -221,6 +221,22 @@ async function prepareCodexHelloProbe(input: {
       : path.join(os.tmpdir(), `paperclip-codex-probe-${input.runId}`);
     // The local finally path retries cleanup independently of the model result.
     if (!input.targetIsRemote) probeHomeLocalDir = probeHome;
+    if (!input.targetIsRemote && process.platform === "win32") {
+      // Local Windows probes use the normal native launcher. Keep auth in the
+      // isolated probe home, and let the existing finally cleanup remove it.
+      await fs.mkdir(probeHome, { recursive: true, mode: 0o700 });
+      await fs.writeFile(
+        path.join(probeHome, "auth.json"),
+        JSON.stringify({ OPENAI_API_KEY: input.probeApiKey }),
+        { mode: 0o600 },
+      );
+      return {
+        command: input.command,
+        args: input.args,
+        env: { ...input.env, CODEX_HOME: probeHome },
+        cleanup,
+      };
+    }
     return {
       command: "sh",
       args: [

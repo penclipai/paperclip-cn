@@ -628,6 +628,36 @@ describe("Routines page", () => {
     });
   });
 
+  it("uses the localized routine-count interpolation", async () => {
+    await i18n.changeLanguage("zh-CN");
+    routinesListMock.mockResolvedValue([]);
+    issuesListMock.mockResolvedValue([]);
+
+    const root = createRoot(container);
+    const queryClient = new QueryClient({
+      defaultOptions: {
+        queries: { retry: false },
+      },
+    });
+
+    await act(async () => {
+      root.render(
+        <QueryClientProvider client={queryClient}>
+          <Routines />
+        </QueryClientProvider>,
+      );
+      await flush();
+    });
+
+    expect(container.textContent).toContain("0 个例行任务");
+    expect(container.textContent).not.toContain("0 个例行任务s");
+
+    await act(async () => {
+      root.unmount();
+      await i18n.changeLanguage("en");
+    });
+  });
+
   it("defaults the routines list to folder mode with inline folder sections", async () => {
     foldersListMock.mockResolvedValue({
       kind: "routine",

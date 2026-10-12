@@ -341,7 +341,7 @@ function buildInput(ctx: AdapterExecutionContext, paperclipApiUrl: string | null
   const resumedSession =
     (sessionKeyStrategy === "issue" || sessionKeyStrategy === "agent") &&
     Boolean(nonEmpty(ctx.runtime?.sessionId));
-  const { taskContextNote: taskMarkdown, wakePrompt } = selectPaperclipPromptSections(ctx.context, {
+  const { taskContextNote: taskMarkdown, localizationPromptNote, wakePrompt } = selectPaperclipPromptSections(ctx.context, {
     resumedSession,
     // Hermes gateway owns the execution contract below; retain the old
     // gateway prompt shape and avoid adding a second contract on resume.
@@ -374,6 +374,7 @@ function buildInput(ctx: AdapterExecutionContext, paperclipApiUrl: string | null
           "- Use X-Paperclip-Run-Id on mutating Paperclip API requests when a Paperclip API key is available.",
           "",
         ]),
+    ...(localizationPromptNote ? ["", localizationPromptNote] : []),
     wakePrompt,
     ...(sessionHandoff ? ["", sessionHandoff] : []),
     ...(taskMarkdown ? ["", taskMarkdown] : []),

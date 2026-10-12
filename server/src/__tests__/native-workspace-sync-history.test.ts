@@ -8,12 +8,14 @@ import type { EnvironmentLease } from "@penclipai/shared";
 import type { AdapterSandboxExecutionTarget } from "@penclipai/adapter-utils/execution-target";
 import type { CommandManagedRuntimeRunner } from "@penclipai/adapter-utils/command-managed-runtime";
 import { runLocalGit } from "@penclipai/adapter-utils/git-workspace-sync";
+import { prepareTestPosixShell } from "@penclipai/adapter-utils/test-fixtures/posix-shell";
 import { prepareNativeWorkspaceSync } from "../services/native-runtime/native-workspace-sync.js";
 
 const runner: CommandManagedRuntimeRunner = {
   execute: (input) => new Promise((resolve, reject) => {
-    const child = execFile(input.command, input.args ?? [], {
-      cwd: input.cwd, env: { ...process.env, ...input.env },
+    const shell = prepareTestPosixShell({ ...input, env: { ...process.env, ...input.env } });
+    const child = execFile(shell.command, shell.args, {
+      cwd: input.cwd, env: shell.env,
       timeout: input.timeoutMs, maxBuffer: 16 * 1024 * 1024,
     }, (error, stdout, stderr) => resolve({
       exitCode: error ? (typeof error.code === "number" ? error.code : 1) : 0,

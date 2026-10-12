@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 
-import { act } from "react";
+import { act, useEffect } from "react";
 import { createRoot } from "react-dom/client";
+import i18n, { translateInstant } from "../i18n";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { BreadcrumbProvider, buildDocumentTitle, useBreadcrumbs } from "./BreadcrumbContext";
 
@@ -118,5 +119,37 @@ describe("BreadcrumbContext", () => {
   it("omits blank company names from page titles", () => {
     expect(buildDocumentTitle([{ label: "Inbox" }], "  ")).toBe("Inbox • Paperclip CN");
     expect(buildDocumentTitle([], null)).toBe("Paperclip CN");
+  });
+
+  it("recomputes translated breadcrumb titles on a locale change without changing user labels", async () => {
+    function DashboardBreadcrumb() {
+      const { setBreadcrumbs } = useBreadcrumbs();
+
+      useEffect(() => {
+        setBreadcrumbs([
+          { label: translateInstant("Dashboard") },
+          { label: "Northstar Labs" },
+        ]);
+      }, [setBreadcrumbs]);
+
+      return null;
+    }
+
+    await act(async () => {
+      await i18n.changeLanguage("zh-CN");
+      root.render(
+        <BreadcrumbProvider companyName="Northstar Labs">
+          <DashboardBreadcrumb />
+        </BreadcrumbProvider>,
+      );
+    });
+
+    expect(document.title).toBe("Northstar Labs • 仪表盘 • Northstar Labs • Paperclip CN");
+
+    await act(async () => {
+      await i18n.changeLanguage("en");
+    });
+
+    expect(document.title).toBe("Northstar Labs • Dashboard • Northstar Labs • Paperclip CN");
   });
 });

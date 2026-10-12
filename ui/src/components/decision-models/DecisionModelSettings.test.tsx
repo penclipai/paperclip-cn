@@ -2,7 +2,7 @@
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { MemoryRouter } from "react-router-dom";
-import { expect, it, vi } from "vitest";
+import { afterEach, expect, it, vi } from "vitest";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { decisionModelsApi } from "@/api/decision-models";
 import { DecisionModelSettingsSection, DecisionModelSettingsView } from "./DecisionModelSettings";
@@ -10,6 +10,29 @@ import { choices, configured, result } from "../../../storybook/stories/decision
 
 vi.mock("@/context/CompanyContext", () => ({ useCompany: () => ({ selectedCompanyId: "company-storybook" }) }));
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+
+const locale = vi.hoisted(() => ({ value: "en" as "en" | "zh-CN" }));
+
+vi.mock("react-i18next", () => ({
+  useTranslation: () => ({
+    t: (key: string) => key,
+    i18n: { language: locale.value, resolvedLanguage: locale.value },
+  }),
+}));
+
+vi.mock("@/i18n", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../../i18n")>();
+  const { translateForTest } = await import("../../test-utils/i18n");
+  return {
+    ...actual,
+    translateInstant: (key: string, options?: Record<string, string | number | boolean | null | undefined>) =>
+      translateForTest(key, options, locale.value),
+  };
+});
+
+afterEach(() => {
+  locale.value = "en";
+});
 
 it("consumes an added connection once and preserves a later choice across refetches", async () => {
   const container = document.createElement("div"); document.body.appendChild(container);
@@ -55,4 +78,22 @@ it("clears test feedback when another manager changes the saved configuration", 
     });
     expect(container.textContent).not.toContain("Decision model is working");
   } finally { act(() => root.unmount()); client.clear(); test.mockRestore(); container.remove(); }
+});
+
+it("localizes the test action and billing hint while preserving connection and model identifiers", async () => {
+  locale.value = "zh-CN";
+  const container = document.createElement("div");
+  document.body.appendChild(container);
+  const root = createRoot(container);
+
+  try {
+    await act(async () => root.render(<MemoryRouter><DecisionModelSettingsView
+      settings={configured} choices={choices} onSave={vi.fn()} onTest={vi.fn()} onAdd={vi.fn()} />
+    </MemoryRouter>));
+
+    expect(container.textContent).toContain("运行测试");
+    expect(container.textContent).toContain("将运行一个小样本，并产生 API 费用。");
+    expect(container.textContent).toContain("gpt-6-luna");
+    expect(container.textContent).toContain("Company OpenAI");
+  } finally { act(() => root.unmount()); container.remove(); }
 });

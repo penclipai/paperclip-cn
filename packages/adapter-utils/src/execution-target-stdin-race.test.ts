@@ -1819,7 +1819,9 @@ describe("deterministic remote process-session wrapper shutdown (PAP-5316)", () 
     await bridge!.stop();
     const elapsedMs = Date.now() - start;
 
-    expect(elapsedMs).toBeLessThan(1_000);
+    // Native Windows child cleanup can cross one second under load. Keep the
+    // bound below the three-second unacknowledged shutdown path.
+    expect(elapsedMs).toBeLessThan(process.platform === "win32" ? 2_000 : 1_000);
     expect(warnedCount).toBe(0);
   }, 10_000);
 

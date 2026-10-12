@@ -1,5 +1,6 @@
 import { spawn } from "node:child_process";
 import http from "node:http";
+import { existsSync } from "node:fs";
 import fs from "node:fs/promises";
 import os from "node:os";
 import { ensurePaperclipSkillSymlink } from "@penclipai/adapter-utils/server-utils";
@@ -14,6 +15,59 @@ import { afterEach, describe, expect, it } from "vitest";
 // bounded-write-retry rule.
 const HELPER_PATH = path.resolve("skills/paperclip/scripts/paperclip-issue-update.sh");
 const REPO_HELPER_PATH = path.resolve("scripts/paperclip-issue-update.sh");
+const GIT_BASH = "C:\\Program Files\\Git\\bin\\bash.exe";
+
+function bashExecutable() {
+  return process.platform === "win32" && existsSync(GIT_BASH) ? GIT_BASH : "bash";
+}
+
+function toBashPath(filePath: string, bash = bashExecutable()): string {
+  if (process.platform !== "win32") return filePath;
+  const { root } = path.win32.parse(filePath);
+  if (!/^[A-Za-z]:\\$/.test(root)) return filePath;
+  const relative = filePath.slice(root.length).replaceAll("\\", "/");
+  return bash === GIT_BASH
+    ? `/${root[0]!.toLowerCase()}/${relative}`
+    : `/mnt/${root[0]!.toLowerCase()}/${relative}`;
+}
+
+async function makeWindowsBashRunner(cleanupFns: Array<() => Promise<void>>): Promise<string> {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-issue-update-bin-"));
+  cleanupFns.push(() => fs.rm(root, { recursive: true, force: true }));
+  const jqPath = path.join(root, "jq");
+  const runnerPath = path.join(root, "run-helper");
+  await fs.writeFile(jqPath, String.raw`#!/usr/bin/env node
+const args = process.argv.slice(2);
+const values = {};
+const positionals = [];
+for (let index = 0; index < args.length; index += 1) {
+  if (args[index] === "--arg") {
+    values[args[index + 1]] = args[index + 2];
+    index += 2;
+  } else if (!args[index].startsWith("-")) {
+    positionals.push(args[index]);
+  }
+}
+const filter = positionals[0] ?? "";
+const input = args.some((argument) => /^-[^-]*n/.test(argument)) ? "" : require("node:fs").readFileSync(0, "utf8").trim();
+if (filter === ".status // empty") {
+  const value = input ? JSON.parse(input) : {};
+  process.stdout.write(value.status ?? "");
+} else {
+  const value = {};
+  if (values.status) value.status = values.status;
+  if (values.comment) value.comment = values.comment;
+  process.stdout.write(JSON.stringify(value));
+}
+`, { mode: 0o755 });
+  await fs.writeFile(runnerPath, `#!/usr/bin/env bash
+set -euo pipefail
+PATH="$(dirname "$0"):$PATH"
+export PATH
+exec /bin/bash "$@"
+`, { mode: 0o755 });
+  return runnerPath;
+}
 
 interface HelperResult {
   code: number | null;
@@ -74,15 +128,26 @@ describe("paperclip issue update helper", () => {
     return { baseUrl: `http://127.0.0.1:${port}`, requests };
   }
 
-  function runHelper(apiUrl: string, args: string[], options: { helper?: string; cwd?: string; input?: string } = {}): Promise<HelperResult> {
+  async function runHelper(apiUrl: string, args: string[], options: { helper?: string; cwd?: string; input?: string } = {}): Promise<HelperResult> {
+    const bash = bashExecutable();
+    const helper = toBashPath(options.helper ?? HELPER_PATH, bash);
+    const runner = process.platform === "win32"
+      ? await makeWindowsBashRunner(cleanupFns)
+      : null;
+    const commandArgs = runner
+      ? [toBashPath(runner, bash), helper, ...args]
+      : [helper, ...args];
     return new Promise((resolve, reject) => {
-      const child = spawn("bash", [options.helper ?? HELPER_PATH, ...args], {
+      const child = spawn(bash, commandArgs, {
         cwd: options.cwd,
         env: {
           ...process.env,
           PAPERCLIP_API_URL: apiUrl,
           PAPERCLIP_API_KEY: "test-key",
           PAPERCLIP_RUN_ID: "test-run",
+          WSLENV: process.platform === "win32" && bash === "bash"
+            ? [process.env.WSLENV, "PAPERCLIP_API_URL", "PAPERCLIP_API_KEY", "PAPERCLIP_RUN_ID"].filter(Boolean).join(":")
+            : process.env.WSLENV,
         },
         stdio: ["pipe", "pipe", "pipe"],
       });

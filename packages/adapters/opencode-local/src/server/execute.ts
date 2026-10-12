@@ -585,8 +585,10 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         ? ""
         : renderTemplate(promptTemplate, templateData);
       const sessionHandoffNote = asString(context.paperclipSessionHandoffMarkdown, "").trim();
+      const localizationPromptNote = asString(context.paperclipLocalizationPromptMarkdown, "").trim();
       const basePrompt = joinPromptSections([
         instructionsPrefix,
+        localizationPromptNote,
         renderedBootstrapPrompt,
         wakePrompt,
         taskContextNote,
@@ -598,6 +600,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         promptMetrics: {
           promptChars: basePrompt.length,
           instructionsChars: instructionsPrefix.length,
+          localizationPromptChars: localizationPromptNote.length,
           bootstrapPromptChars: renderedBootstrapPrompt.length,
           wakePromptChars: wakePrompt.length,
           taskContextChars: taskContextNote.length,

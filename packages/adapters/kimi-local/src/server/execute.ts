@@ -557,6 +557,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     const attemptBasePrompt = joinPromptSections([
       instructionsPrefix,
       attemptBootstrapPrompt,
+      attemptSections.localizationPromptNote,
       attemptWakePrompt,
       attemptSections.taskContextNote,
       sessionHandoffNote,

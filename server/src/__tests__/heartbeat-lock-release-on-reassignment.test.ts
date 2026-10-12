@@ -18,7 +18,10 @@ import {
 } from "./helpers/embedded-postgres.js";
 import { drainHeartbeatRunsToQuiescence } from "./helpers/drain-heartbeat-runs.js";
 
-const mockTelemetryClient = vi.hoisted(() => ({ track: vi.fn() }));
+const mockTelemetryClient = vi.hoisted(() => ({
+  track: vi.fn(),
+  hashPrivateRef: vi.fn((value: string) => `hashed:${value}`),
+}));
 const mockTrackAgentTaskRun = vi.hoisted(() => vi.fn());
 
 vi.mock("../telemetry.js", () => ({

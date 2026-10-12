@@ -43,7 +43,10 @@ const mockAdapterExecute = vi.hoisted(() =>
 );
 
 vi.mock("../telemetry.ts", () => ({
-  getTelemetryClient: () => ({ track: vi.fn() }),
+  getTelemetryClient: () => ({
+    track: vi.fn(),
+    hashPrivateRef: vi.fn((value: string) => `hashed:${value}`),
+  }),
 }));
 
 vi.mock("@penclipai/shared/telemetry", async () => {

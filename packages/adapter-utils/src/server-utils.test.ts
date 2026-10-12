@@ -20,6 +20,7 @@ import {
   isPaperclipExternalChatQuestionResponseTurn,
   isPaperclipExternalChatTurn,
   materializePaperclipSkillCopy,
+  normalizePaperclipOperationalSkillPreference,
   PAPERCLIP_OPERATIONAL_SKILL_KEY,
   PAPERCLIP_FEEDBACK_SKILL_KEYS,
   refreshPaperclipWorkspaceEnvForExecution,
@@ -164,6 +165,23 @@ describe("legacy adapter skill selection", () => {
     }
     expect(resolveLegacyPaperclipDesiredSkillNames({}, inventory.slice(1))).toEqual([]);
   });
+
+  it.each(["paperclipai/paperclip/", "penclipai/paperclip/", "penclipai/paperclip-cn/"])(
+    "resolves %s operational references to the available CN key and removes them for native runners",
+    (prefix) => {
+      const custom = { key: "acme/tools/reviewer", versionId: "pinned-custom-version" };
+      const config = { paperclipSkillSync: { desiredSkills: [
+        { key: `${prefix}paperclip`, versionId: "old-bundled-version" }, custom,
+      ] } };
+      expect(resolvePaperclipDesiredSkillNames(config, [operationalEntry, { key: custom.key }])).toEqual([
+        "penclipai/paperclip-cn/paperclip", custom.key,
+      ]);
+      expect(normalizePaperclipOperationalSkillPreference("paperclip_runner", config)).toMatchObject({
+        paperclipSkillSync: { desiredSkills: [custom] },
+      });
+      expect(normalizePaperclipOperationalSkillPreference("codex_local", config)).toBe(config);
+    },
+  );
 });
 
 function isPidAlive(pid: number) {

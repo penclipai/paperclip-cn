@@ -1,8 +1,8 @@
-import { mkdtemp, readFile, rm, symlink, utimes, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, rename, rm, symlink, utimes, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { gzipSync } from "node:zlib";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { sql } from "drizzle-orm";
 import { createDb, ensurePostgresDatabase, getEmbeddedPostgresTestSupport, runDatabaseBackup, runDatabaseRestore, startEmbeddedPostgresTestDatabase } from "@penclipai/db";
 import { clearIdleBackupWakeRequired, idleBackupWakeMarker, markIdleBackupWakeRequired, verifyIdleDatabaseBackup } from "../services/idle-database-backup.js";
@@ -46,6 +46,49 @@ describe("idle database backup persistence", () => {
     await symlink(target, idleBackupWakeMarker(directory));
     await expect(markIdleBackupWakeRequired(directory)).rejects.toThrow();
     expect(await readFile(target)).toEqual(gzipSync("SELECT 1;"));
+  });
+
+  it("replaces a marker symlink at the leaf without writing through it", async () => {
+    const target = path.join(directory, "target");
+    const staged = path.join(directory, "staged-marker");
+    const marker = idleBackupWakeMarker(directory);
+    await writeFile(target, gzipSync("SELECT 1;"));
+    await writeFile(staged, "Take a fresh database backup after this process restarts.\n");
+    await symlink(target, marker);
+
+    await rename(staged, marker);
+
+    expect(await readFile(target)).toEqual(gzipSync("SELECT 1;"));
+    expect(await readFile(marker, "utf8")).toContain("restarts");
+  });
+
+  it("rejects an archive replaced after its identity is inspected", async () => {
+    const archive = path.join(directory, "backup.sql.gz");
+    const replacement = path.join(directory, "replacement.sql.gz");
+    await writeFile(archive, gzipSync("SELECT 'original';"));
+    await writeFile(replacement, gzipSync("SELECT 'replacement';"));
+
+    vi.resetModules();
+    const actualFs = await vi.importActual<typeof import("node:fs/promises")>("node:fs/promises");
+    let swapped = false;
+    vi.doMock("node:fs/promises", () => ({
+      ...actualFs,
+      open: async (...args: Parameters<typeof actualFs.open>) => {
+        if (!swapped && args[0] === archive) {
+          swapped = true;
+          await rename(replacement, archive);
+        }
+        return await actualFs.open(...args);
+      },
+    }));
+    try {
+      const { verifyIdleDatabaseBackup: verifyWithSwap } = await import("../services/idle-database-backup.js");
+      await expect(verifyWithSwap(archive)).rejects.toThrow("changed during verification");
+      expect(swapped).toBe(true);
+    } finally {
+      vi.doUnmock("node:fs/promises");
+      vi.resetModules();
+    }
   });
 });
 
