@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import fs from "node:fs";
+import { rm as rmAsync } from "node:fs/promises";
 import { createRequire } from "node:module";
 import net from "node:net";
 import os from "node:os";
@@ -161,7 +162,10 @@ function databaseConnectionStringFor(port: number): string {
 }
 
 function cleanupEmbeddedPostgresTestDirs(dataDir: string) {
-  fs.rmSync(dataDir, { recursive: true, force: true });
+  // Reclaim is eventual: callers only need confirmed process-stop authority.
+  // A Windows sharing violation stays handled after the test hook returns.
+  void rmAsync(dataDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 })
+    .catch(() => undefined);
 }
 
 // Upper bound (ms) on how long we wait for the embedded Postgres cluster to
@@ -199,35 +203,46 @@ export function __setManagedEmbeddedPostgresShutdownForTests(
 // the abandoned process still exits on its own (and again when the runner exits).
 // Errors are swallowed, matching prior behavior.
 //
-// `cleanupFn` (data-dir reclaim) is chained on the raw `stop()` promise, not on
-// the timeout race, so the disposable data dir is removed *only after* `stop()`
-// actually settles — i.e. once the child Postgres process has exited. Removing
-// it on the timeout path would pull the data files out from under a still-running
-// cluster and provoke checkpoint / WAL I/O errors. In the fast path `cleanupFn`
-// has run by the time this resolves; in the timeout path it runs asynchronously
-// once the abandoned process finally exits.
+// A raw `stop()` resolve proves child exit and may schedule reclaim. A raw
+// rejection does not: beta embedded-postgres can reject before child exit. Only
+// the data-dir-scoped manager may establish timeout/rejection authority, and the
+// once gate prevents two concurrent NTFS removals for one directory.
 async function stopEmbeddedPostgresBounded(
   instance: EmbeddedPostgresInstance | null,
   cleanupFn?: () => void,
   dataDir?: string,
 ): Promise<void> {
+  let cleanupScheduled = false;
+  const scheduleCleanup = () => {
+    if (cleanupScheduled) return;
+    cleanupScheduled = true;
+    try {
+      cleanupFn?.();
+    } catch {
+      // Best effort only; cleanup never changes stop authority.
+    }
+  };
+  let managerConfirmation: Promise<boolean> | undefined;
+  const confirmDataDirStopped = (): Promise<boolean> => {
+    if (!dataDir) return Promise.resolve(false);
+    managerConfirmation ??= managedEmbeddedPostgresShutdown({
+      dataDir,
+      pgCtlPath: null,
+      postmasterPid: null,
+    }).then(() => true, () => false);
+    return managerConfirmation;
+  };
   if (!instance) {
-    cleanupFn?.();
+    scheduleCleanup();
     return;
   }
   let timer: ReturnType<typeof setTimeout> | undefined;
-  const stopped = instance
-    .stop()
-    .catch(() => {
-      // Swallow shutdown errors — the data dir is reclaimed regardless.
-    })
-    .finally(() => {
-      try {
-        cleanupFn?.();
-      } catch {
-        // Best-effort reclaim; ignore removal errors.
-      }
-    });
+  const stopped = instance.stop().then(
+    () => scheduleCleanup(),
+    async () => {
+      if (await confirmDataDirStopped()) scheduleCleanup();
+    },
+  );
   let timedOut = false;
   try {
     await Promise.race([
@@ -251,12 +266,7 @@ async function stopEmbeddedPostgresBounded(
   // here: a second `pg_ctl ... -t 30` wait can consume the afterAll budget
   // that this bounded fallback exists to protect.
   if (timedOut && dataDir) {
-    await managedEmbeddedPostgresShutdown({
-      dataDir,
-      pgCtlPath: null,
-      postmasterPid: null,
-    }).catch(() => undefined);
-    cleanupFn?.();
+    if (await confirmDataDirStopped()) scheduleCleanup();
   }
 }
 
