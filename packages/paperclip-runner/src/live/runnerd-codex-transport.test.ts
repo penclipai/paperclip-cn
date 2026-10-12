@@ -2164,7 +2164,10 @@ it.each(["installed", "explicit"] as const)("records the selected %s Codex comma
     await expect(transport.request("thread/start", { cwd: root, model: "gpt-6.1-sol", dynamicTools: [] }))
       .rejects.toThrow("fixture_stop_before_runner_launch");
     expect(template).toMatchObject({ provider: { command, model: "gpt-6.1-sol" } });
-    expect(JSON.stringify(template)).toContain(`${JSON.stringify(command).replaceAll('"', '\\"')}=\\"read\\"`);
+    const launchArgs = (template as Record<string, unknown> | null)?.runtimeLaunchArgs;
+    expect(launchArgs).toEqual(expect.arrayContaining([
+      expect.stringContaining(JSON.stringify(command) + '="read"'),
+    ]));
     if (selection === "explicit") expect(resolver).not.toHaveBeenCalled();
     else expect(resolver).toHaveBeenCalledExactlyOnceWith(undefined, { PATH: "/missing-ambient-codex" }, root);
     expect(launch).not.toHaveBeenCalled();
@@ -2232,8 +2235,13 @@ it.each(["missing", "changed"] as const)("reuses the recorded Codex command when
     await expect(transport.request("thread/read", { threadId: "provider-prior" }))
       .rejects.toThrow("fixture_stop_before_resumed_runner_launch");
     expect(template).toMatchObject({ provider: { command, model: "gpt-6.1-sol" } });
-    expect(JSON.stringify(template)).toContain(`${JSON.stringify(command).replaceAll('"', '\\"')}=\\"read\\"`);
-    expect(JSON.stringify(template)).not.toContain(replacement);
+    const launchArgs = (template as Record<string, unknown> | null)?.runtimeLaunchArgs;
+    expect(launchArgs).toEqual(expect.arrayContaining([
+      expect.stringContaining(JSON.stringify(command) + '="read"'),
+    ]));
+    expect(launchArgs).toEqual(expect.not.arrayContaining([
+      expect.stringContaining(JSON.stringify(replacement)),
+    ]));
     expect(resolver).not.toHaveBeenCalled();
     expect(launch).not.toHaveBeenCalled();
   } finally {
