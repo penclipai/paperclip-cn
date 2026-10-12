@@ -674,10 +674,27 @@ function readBoundedNativeFile(
   maxBytes: number,
   errorCode: string,
 ): Buffer {
+  const pathBefore = lstatSync(path);
+  if (
+    !pathBefore.isFile() ||
+    pathBefore.isSymbolicLink() ||
+    pathBefore.size > maxBytes
+  ) {
+    throw new Error(errorCode);
+  }
   const descriptor = openSync(path, constants.O_RDONLY | constants.O_NOFOLLOW);
   try {
     const before = fstatSync(descriptor);
-    if (!before.isFile() || before.size > maxBytes) throw new Error(errorCode);
+    if (
+      !before.isFile() ||
+      before.size > maxBytes ||
+      before.dev !== pathBefore.dev ||
+      before.ino !== pathBefore.ino ||
+      before.size !== pathBefore.size ||
+      before.mtimeMs !== pathBefore.mtimeMs
+    ) {
+      throw new Error(errorCode);
+    }
     const output = Buffer.allocUnsafe(before.size);
     let offset = 0;
     while (offset < output.length) {
@@ -692,11 +709,19 @@ function readBoundedNativeFile(
       offset += bytesRead;
     }
     const after = fstatSync(descriptor);
+    const pathAfter = lstatSync(path);
     if (
       offset !== before.size ||
+      !pathAfter.isFile() ||
+      pathAfter.isSymbolicLink() ||
       after.size !== before.size ||
       after.mtimeMs !== before.mtimeMs ||
-      after.ino !== before.ino
+      after.dev !== before.dev ||
+      after.ino !== before.ino ||
+      pathAfter.dev !== before.dev ||
+      pathAfter.ino !== before.ino ||
+      pathAfter.size !== before.size ||
+      pathAfter.mtimeMs !== before.mtimeMs
     ) {
       throw new Error("native_state_file_changed");
     }
@@ -11248,7 +11273,8 @@ async function prepareRemoteDotRunner({ input, target, runner, root, identity }:
       if (!input.runnerRemoteBinaryPath?.trim()) {
         const platform = await runner.execute({ command: "sh", args: ["-c", "uname -s; uname -m"], bypassSession: true, timeoutMs: 10000 });
         const [os, arch] = platform.stdout.trim().split(/\r?\n/);
-        if (platform.exitCode !== 0 || platform.timedOut || os !== (process.platform === "darwin" ? "Darwin" : "Linux")
+        const controllerOs = process.platform === "darwin" ? "Darwin" : process.platform === "linux" ? "Linux" : process.platform;
+        if (platform.exitCode !== 0 || platform.timedOut || os !== controllerOs
           || ![process.arch === "x64" ? "x86_64" : "aarch64", process.arch].includes(arch)) {
           throw new Error("runner_remote_artifact_platform_mismatch: configure PAPERCLIP_RUNNER_REMOTE_BINARY_PATH for the sandbox platform");
         }
