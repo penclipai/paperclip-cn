@@ -8,7 +8,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import { parse as parseEnvContents } from "dotenv";
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   activityLog,
   agents,
@@ -56,6 +56,7 @@ import {
   startRuntimeServicesForWorkspaceControl,
   stopRuntimeServicesForExecutionWorkspace,
   stopRuntimeServicesForProjectWorkspace,
+  toWorkspacePosixShellPath,
   WORKSPACE_RUNTIME_PORT_ALLOCATION_ATTEMPTS,
   type RealizedExecutionWorkspace,
 } from "../services/workspace-runtime.ts";
@@ -83,10 +84,61 @@ import type { WorkspaceOperation } from "@penclipai/shared";
 import type { WorkspaceOperationRecorder } from "../services/workspace-operations.ts";
 import { HttpError } from "../errors.ts";
 import { deriveWorktreeInstanceId } from "../services/workspace-instance-cleanup.ts";
+import { resolvePnpmInvocation } from "../services/npm-command.ts";
+import { shellQuote } from "@penclipai/adapter-utils/ssh";
+import { prepareTestPosixShell } from "@penclipai/adapter-utils/test-fixtures/posix-shell";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
 } from "./helpers/embedded-postgres.js";
+
+const { listenerProbeUnavailableFixture } = vi.hoisted(() => ({
+  listenerProbeUnavailableFixture: { enabled: false },
+}));
+
+vi.mock("node:child_process", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("node:child_process")>();
+  const { promisify: nativePromisify } = await import("node:util");
+  const nativeExecFileAsync = nativePromisify(actual.execFile);
+  const promisifyCustom = Symbol.for("nodejs.util.promisify.custom");
+  const execFile = (...input: unknown[]) => {
+      const [command] = input;
+      if (listenerProbeUnavailableFixture.enabled && (command === "netstat" || command === "lsof")) {
+        const callback = [...input].reverse().find((value) => typeof value === "function") as
+          | ((error: Error, stdout: string, stderr: string) => void)
+          | undefined;
+        if (callback) queueMicrotask(() => callback(Object.assign(new Error("listener probe unavailable"), { code: 1 }), "", ""));
+        return {};
+      }
+      return (actual.execFile as (...args: unknown[]) => unknown)(...input);
+  };
+  Object.defineProperty(execFile, promisifyCustom, {
+    value: (...input: unknown[]) => {
+      const [command] = input;
+      if (!(listenerProbeUnavailableFixture.enabled && (command === "netstat" || command === "lsof"))) {
+        return (nativeExecFileAsync as (...args: unknown[]) => unknown)(...input);
+      }
+      let child: unknown;
+      const promise = new Promise<{ stdout: string; stderr: string }>((resolve, reject) => {
+        child = execFile(...input, (error: Error & { stdout?: string; stderr?: string } | null, stdout: string, stderr: string) => {
+          if (error) {
+            error.stdout = stdout;
+            error.stderr = stderr;
+            reject(error);
+            return;
+          }
+          resolve({ stdout, stderr });
+        });
+      });
+      Object.defineProperty(promise, "child", { enumerable: true, get: () => child });
+      return promise;
+    },
+  });
+  return {
+    ...actual,
+    execFile,
+  };
+});
 
 const RUNTIME_OWNED_GIT_BRANCH_METADATA = {
   createdByRuntime: true,
@@ -154,6 +206,23 @@ if (!embeddedPostgresSupport.supported) {
 }
 const provisionWorktreeScriptPath = new URL("../../../scripts/provision-worktree.sh", import.meta.url);
 
+describe("workspace command shell path contract", () => {
+  const originalPlatform = process.platform;
+
+  afterEach(() => {
+    Object.defineProperty(process, "platform", { value: originalPlatform });
+  });
+
+  it("translates only native drive-qualified paths for Git Bash", () => {
+    Object.defineProperty(process, "platform", { value: "win32" });
+
+    expect(toWorkspacePosixShellPath("D:\\paperclip\\worktree")).toBe("/d/paperclip/worktree");
+    expect(toWorkspacePosixShellPath("/d/paperclip/worktree")).toBe("/d/paperclip/worktree");
+    expect(toWorkspacePosixShellPath("relative/worktree")).toBe("relative/worktree");
+    expect(toWorkspacePosixShellPath("\\\\server\\share\\worktree")).toBe("\\\\server\\share\\worktree");
+  });
+});
+
 async function runGit(cwd: string, args: string[]) {
   await execFileAsync("git", args, { cwd });
 }
@@ -163,23 +232,54 @@ async function readGit(cwd: string, args: string[]) {
 }
 
 async function runPnpm(cwd: string, args: string[]) {
-  await execFileAsync("pnpm", args, { cwd });
+  const invocation = resolvePnpmInvocation(args);
+  await execFileAsync(invocation.command, invocation.args, { cwd });
 }
 
 function toBashPathForTest(value: string) {
   if (process.platform !== "win32") return value;
-  const normalized = path.resolve(value).replace(/\\\\/g, "/");
+  const normalized = path.resolve(value).replace(/\\/g, "/");
   const driveMatch = normalized.match(/^([A-Za-z]):\/(.*)$/);
   return driveMatch ? `/${driveMatch[1]!.toLowerCase()}/${driveMatch[2]}` : normalized;
 }
 
+function nodeEvalCommandForTest(script: string) {
+  return `${shellQuote(toBashPathForTest(process.execPath))} -e ${shellQuote(script)}`;
+}
+
+async function writeNativeNodeToolForTest(input: { directory: string; name: string; script: string }) {
+  const toolPath = path.join(input.directory, input.name);
+  if (process.platform !== "win32") {
+    await fs.writeFile(toolPath, `#!${process.execPath}\n${input.script}\n`, { mode: 0o700 });
+    return { path: toolPath, nodeOptions: null };
+  }
+  const executablePath = /\.exe$/i.test(toolPath) ? toolPath : `${toolPath}.exe`;
+  await fs.link(process.execPath, executablePath).catch(() => fs.copyFile(process.execPath, executablePath));
+  const scriptPath = path.join(input.directory, `${input.name}.fixture.cjs`);
+  const preloadPath = path.join(input.directory, `${input.name}.preload.cjs`);
+  await fs.writeFile(scriptPath, `${input.script}\n`, "utf8");
+  await fs.writeFile(preloadPath, [
+    'const path = require("node:path");',
+    `if (path.basename(process.execPath).toLowerCase() === ${JSON.stringify(path.basename(executablePath).toLowerCase())}) {`,
+    `  require(${JSON.stringify(scriptPath)});`,
+    "  process.exit(process.exitCode ?? 0);",
+    "}",
+    "",
+  ].join("\n"), "utf8");
+  return { path: executablePath, nodeOptions: `--require "${preloadPath.replace(/\\/g, "/")}"` };
+}
+
 async function runBashScriptForTest(scriptPath: string, options: { cwd: string; env: NodeJS.ProcessEnv }) {
-  const gitBash = "C:\\Program Files\\Git\\bin\\bash.exe";
-  const bash = process.platform === "win32" && existsSync(gitBash) ? gitBash : "bash";
-  return execFileAsync(bash, [toBashPathForTest(scriptPath)], options);
+  const posixPath = options.env.PATH ?? options.env.Path;
+  const env = process.platform === "win32" && posixPath
+    ? { ...options.env, PATH: posixPath.split(path.delimiter).map(toBashPathForTest).join(":") }
+    : options.env;
+  const prepared = prepareTestPosixShell({ command: "bash", args: [toBashPathForTest(scriptPath)], env });
+  return execFileAsync(prepared.command, prepared.args, { ...options, env: prepared.env });
 }
 
 function restoreInitialTestEnvironment() {
+  listenerProbeUnavailableFixture.enabled = false;
   for (const key of testEnvironmentKeys) {
     const value = initialTestEnvironment.get(key);
     if (value === undefined) delete process.env[key];
@@ -1475,14 +1575,23 @@ describe("realizeExecutionWorkspace", () => {
     await runGit(repoRoot, ["remote", "set-url", "origin", "https://fixture.example.invalid/private-repo"]);
     const bin = path.join(repoRoot, "fixture-bin"), calls = path.join(repoRoot, "fixture-calls.jsonl");
     await fs.mkdir(bin);
-    await fs.writeFile(path.join(bin, "git"), `#!${process.execPath}
-const fs = require("node:fs");
-fs.appendFileSync(${JSON.stringify(calls)}, JSON.stringify(process.argv.slice(2)) + "\\n");
-process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${code}; });
-`);
-    await fs.chmod(path.join(bin, "git"), 0o700);
+    const fakeGit = await writeNativeNodeToolForTest({
+      directory: bin,
+      name: "git",
+      script: [
+        'const fs = require("node:fs");',
+        `fs.appendFileSync(${JSON.stringify(calls)}, JSON.stringify(process.argv.slice(1)) + "\\n");`,
+        `fs.writeSync(2, ${JSON.stringify(stderr)});`,
+        `process.exit(${code});`,
+      ].join("\n"),
+    });
     const error = await realizeWorktreeForTest(repoRoot, "absent-fixture", async () => ({
-      configArgs: [], env: { PATH: `${bin}:${process.env.PATH}` }, source: "server_env",
+      configArgs: [],
+      env: {
+        PATH: `${bin}${path.delimiter}${process.env.PATH ?? ""}`,
+        ...(fakeGit.nodeOptions ? { NODE_OPTIONS: fakeGit.nodeOptions } : {}),
+      },
+      source: "server_env",
     })).catch(error => error);
     expect(error).toBeInstanceOf(UnresolvedWorkspaceBaseRefError);
     const diagnostic = readUnresolvedWorkspaceBaseRefDiagnostic(error);
@@ -2388,7 +2497,7 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
           "fi",
           "if [ \"$1\" = \"install\" ] && [ \"$2\" = \"--prod=false\" ] && [ \"$3\" = \"--frozen-lockfile\" ]; then",
           "  mkdir -p \"$PWD/node_modules\"",
-          `  echo "install:$*" >> ${JSON.stringify(installLogPath)}`,
+          `  echo "install:$*" >> ${shellQuote(toBashPathForTest(installLogPath))}`,
           "  exit 0",
           "fi",
           "exit 1",
@@ -2574,9 +2683,8 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
       });
 
       expect(result.stderr).toContain("Existing isolated Paperclip worktree config is stale for this host; regenerating.");
-      await expect(fs.readFile(path.join(paperclipDir, ".env"), "utf8")).resolves.toContain(
-        `PAPERCLIP_CONFIG=${toBashPathForTest(worktreeRoot)}/.paperclip/config.json`,
-      );
+      const regeneratedEnv = parseEnvContents(await fs.readFile(path.join(paperclipDir, ".env"), "utf8"));
+      expect(regeneratedEnv.PAPERCLIP_CONFIG).toBe(path.join(worktreeRoot, ".paperclip", "config.json"));
       await expect(fs.readFile(path.join(paperclipDir, "config.json"), "utf8")).resolves.toContain(
         toBashPathForTest(worktreeRoot),
       );
@@ -2914,7 +3022,7 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
     });
 
     expect(workspace.branchName).toBe(branchName);
-    await expect(fs.readFile(path.join(workspace.cwd, "feature.txt"), "utf8")).resolves.toBe("preserve me\n");
+    await expect(fs.readFile(path.join(workspace.cwd, "feature.txt"), "utf8")).resolves.toMatch(/^preserve me\r?\n$/);
     const actualHead = (await execFileAsync("git", ["rev-parse", "HEAD"], { cwd: workspace.cwd })).stdout.trim();
     expect(actualHead).toBe(expectedHead);
   });
@@ -3010,7 +3118,7 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
 
     expect(restored).not.toBeNull();
     expect(restored?.cwd).toBe(initial.cwd);
-    await expect(fs.readFile(path.join(initial.cwd, "feature.txt"), "utf8")).resolves.toBe("persisted\n");
+    await expect(fs.readFile(path.join(initial.cwd, "feature.txt"), "utf8")).resolves.toMatch(/^persisted\r?\n$/);
     await expect(fs.readFile(path.join(initial.cwd, ".paperclip-restored-branch"), "utf8")).resolves.toBe(`${branchName}\n`);
     const actualHead = (await execFileAsync("git", ["rev-parse", "HEAD"], { cwd: initial.cwd })).stdout.trim();
     expect(actualHead).toBe(expectedHead);
@@ -4377,7 +4485,7 @@ describe("ensureRuntimeServicesForRun", () => {
             name: "web",
             command:
               input.serviceCommand
-              ?? `${JSON.stringify(process.execPath)} -e ${JSON.stringify("setInterval(() => {}, 1000)")}`,
+              ?? nodeEvalCommandForTest("setInterval(() => {}, 1000)"),
             lifecycle: "shared",
             reuseScope: "execution_workspace",
             stopPolicy: { type: "manual" },
@@ -4424,7 +4532,7 @@ describe("ensureRuntimeServicesForRun", () => {
       "setTimeout(() => {}, 250);",
     ].join(" ");
     const config = runtimeProvisionTestConfig({
-      provisionCommand: `${JSON.stringify(process.execPath)} -e ${JSON.stringify(provisionScript)}`,
+      provisionCommand: nodeEvalCommandForTest(provisionScript),
     });
     const workspace = buildWorkspace(workspaceRoot);
     const { recorder, operations } = createWorkspaceOperationRecorderDouble();
@@ -4471,7 +4579,7 @@ describe("ensureRuntimeServicesForRun", () => {
       "if (attempt === 0) { console.error('runtime seed exploded'); process.exit(7); }",
     ].join(" ");
     const config = runtimeProvisionTestConfig({
-      provisionCommand: `${JSON.stringify(process.execPath)} -e ${JSON.stringify(provisionScript)}`,
+      provisionCommand: nodeEvalCommandForTest(provisionScript),
     });
     const workspace = buildWorkspace(workspaceRoot);
     const logs: Array<{ stream: string; chunk: string }> = [];
@@ -4713,7 +4821,7 @@ describe("ensureRuntimeServicesForRun", () => {
           workspaceRuntime: {
             services: [{
               name: "paperclip-dev",
-              command: `${JSON.stringify(process.execPath)} -e ${JSON.stringify(serviceScript)}`,
+              command: nodeEvalCommandForTest(serviceScript),
               port: { type: "auto" },
               readiness: {
                 type: "http",
@@ -4774,7 +4882,7 @@ describe("ensureRuntimeServicesForRun", () => {
         services: [
           {
             name: "paperclip-dev",
-            command: `${JSON.stringify(process.execPath)} -e ${JSON.stringify(serviceScript)}`,
+            command: nodeEvalCommandForTest(serviceScript),
             port: { type: "auto" },
             readiness: {
               type: "http",
@@ -5212,20 +5320,18 @@ describe("ensureRuntimeServicesForRun", () => {
     expect(executionServices[0]?.url).not.toBe(primaryServices[0]?.url);
 
     const primaryResponse = await fetch(primaryServices[0]!.url!);
-    expect(await primaryResponse.text()).toBe(path.join(primaryWorkspaceRoot, ".paperclip", "runtime-services"));
+    expect(await primaryResponse.text()).toBe(toBashPathForTest(path.join(primaryWorkspaceRoot, ".paperclip", "runtime-services")));
 
     const executionResponse = await fetch(executionServices[0]!.url!);
-    expect(await executionResponse.text()).toBe(path.join(worktreeWorkspaceRoot, ".paperclip", "runtime-services"));
+    expect(await executionResponse.text()).toBe(toBashPathForTest(path.join(worktreeWorkspaceRoot, ".paperclip", "runtime-services")));
   });
 
   it("does not leak parent Paperclip instance env into runtime service commands", async () => {
     const workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-env-"));
     const workspace = buildWorkspace(workspaceRoot);
     const envCapturePath = path.join(workspaceRoot, "captured-env.json");
-    const serviceCommand = [
-      "node -e",
-      JSON.stringify(
-        [
+    const serviceCommand = nodeEvalCommandForTest(
+      [
           "const fs = require('node:fs');",
           `fs.writeFileSync(${JSON.stringify(envCapturePath)}, JSON.stringify({`,
           "paperclipConfig: process.env.PAPERCLIP_CONFIG ?? null,",
@@ -5236,9 +5342,8 @@ describe("ensureRuntimeServicesForRun", () => {
           "port: process.env.PORT ?? null,",
           "}));",
           "require('node:http').createServer((req, res) => res.end('ok')).listen(Number(process.env.PORT), '127.0.0.1');",
-        ].join(" "),
-      ),
-    ].join(" ");
+      ].join(" "),
+    );
 
     process.env.PAPERCLIP_CONFIG = "/tmp/base-paperclip-config.json";
     process.env.PAPERCLIP_HOME = "/tmp/base-paperclip-home";
@@ -5812,31 +5917,25 @@ describe("readLocalServicePortOwner", () => {
   });
 
   it("attributes a Windows listener to a descendant of the launched process", async () => {
-    const fakeBin = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-windows-tools-"));
-    const previousPath = process.env.PATH;
-    const port = 43_123;
-    const listenerPid = 43_210;
-    const launchedPid = 32_000;
-    await fs.writeFile(
-      path.join(fakeBin, "netstat"),
-      `#!/bin/sh\nprintf '  TCP    127.0.0.1:${port}    0.0.0.0:0    LISTENING    ${listenerPid}\\n'\n`,
-      { mode: 0o755 },
-    );
-    await fs.writeFile(
-      path.join(fakeBin, "powershell.exe"),
-      `#!/bin/sh\nprintf '${launchedPid}\\n'\n`,
-      { mode: 0o755 },
-    );
-    process.env.PATH = `${fakeBin}${path.delimiter}${previousPath ?? ""}`;
-    Object.defineProperty(process, "platform", { value: "win32" });
+    if (process.platform !== "win32") return;
+    const child = spawn(process.execPath, ["-e", "const server=require('node:http').createServer(); server.listen(0, '127.0.0.1', () => console.log(server.address().port));"], { stdio: ["ignore", "pipe", "inherit"] });
+    const port = await new Promise<number>((resolve, reject) => {
+      let output = "";
+      child.stdout?.on("data", (chunk) => {
+        output += String(chunk);
+        const value = Number.parseInt(output.trim(), 10);
+        if (Number.isInteger(value) && value > 0) resolve(value);
+      });
+      child.once("error", reject);
+      child.once("exit", (code) => reject(new Error(`Port owner exited before listening: ${code ?? "unknown"}`)));
+    });
 
     try {
-      await expect(readLocalServicePortOwner(port)).resolves.toBe(listenerPid);
-      await expect(isLocalServiceProcessOwnedBy(listenerPid, launchedPid)).resolves.toBe(true);
+      await expect(readLocalServicePortOwner(port)).resolves.toBe(child.pid);
+      await expect(isLocalServiceProcessOwnedBy(child.pid!, process.pid)).resolves.toBe(true);
     } finally {
-      if (previousPath === undefined) delete process.env.PATH;
-      else process.env.PATH = previousPath;
-      await fs.rm(fakeBin, { recursive: true, force: true });
+      child.kill("SIGTERM");
+      await new Promise<void>((resolve) => child.once("exit", () => resolve()));
     }
   });
 
@@ -5849,24 +5948,19 @@ describe("readLocalServicePortOwner", () => {
   });
 
   it("preserves newlines and trailing whitespace from Darwin lsof cwd output", async () => {
-    const fakeBin = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-lsof-tools-"));
-    const previousPath = process.env.PATH;
-    const reportedCwd = path.join(os.tmpdir(), "paperclip-runtime-line\nbreak ");
-    const output = `p${process.pid}\0fcwd\0n${reportedCwd}\0\n`;
-    await fs.writeFile(
-      path.join(fakeBin, "lsof"),
-      `#!${process.execPath}\nprocess.stdout.write(${JSON.stringify(output)});\n`,
-      { mode: 0o755 },
-    );
-    Object.defineProperty(process, "platform", { value: "darwin" });
-    process.env.PATH = fakeBin;
+    if (process.platform !== "darwin") return;
+    try { await execFileAsync("lsof", ["-v"]); } catch { return; }
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-lsof-"));
+    const reportedCwd = path.join(root, "line\nbreak ");
+    await fs.mkdir(reportedCwd);
+    const child = spawn(process.execPath, ["-e", "setInterval(() => {}, 1000)"], { cwd: reportedCwd, stdio: "ignore" });
 
     try {
-      await expect(readLocalServiceProcessCwd(process.pid)).resolves.toBe(reportedCwd);
+      await expect(readLocalServiceProcessCwd(child.pid!)).resolves.toBe(reportedCwd);
     } finally {
-      if (previousPath === undefined) delete process.env.PATH;
-      else process.env.PATH = previousPath;
-      await fs.rm(fakeBin, { recursive: true, force: true });
+      child.kill("SIGTERM");
+      await new Promise<void>((resolve) => child.once("exit", () => resolve()));
+      await fs.rm(root, { recursive: true, force: true });
     }
   });
 
@@ -6847,8 +6941,7 @@ describeEmbeddedPostgres("workspace runtime service control persistence", () => 
       `require("node:fs").writeFileSync(${JSON.stringify(provisionMarkerPath)}, "provisioning");`,
       "setTimeout(() => {}, 1200);",
     ].join(" ");
-    const runtimeProvisionCommand =
-      `${JSON.stringify(process.execPath)} -e ${JSON.stringify(provisionScript)}`;
+    const runtimeProvisionCommand = nodeEvalCommandForTest(provisionScript);
     const serverScript = [
       `require("node:fs").writeFileSync(${JSON.stringify(markerPath)}, "spawned");`,
       "setTimeout(() => {",
@@ -6858,7 +6951,7 @@ describeEmbeddedPostgres("workspace runtime service control persistence", () => 
       "}, 100);",
       "setInterval(() => {}, 1000);",
     ].join(" ");
-    const command = `${JSON.stringify(process.execPath)} -e ${JSON.stringify(serverScript)}`;
+    const command = nodeEvalCommandForTest(serverScript);
 
     await db.insert(companies).values({
       id: companyId,
@@ -7144,13 +7237,9 @@ describeEmbeddedPostgres("workspace runtime service control persistence", () => 
   }
 
   function fixedPortRuntimeConfig(port: number, command?: string) {
-    const serverCommand = command ?? [
-      JSON.stringify(process.execPath),
-      "-e",
-      JSON.stringify(
-        "require('node:http').createServer((_req,res)=>res.end('ok')).listen(Number(process.env.PORT),'127.0.0.1')",
-      ),
-    ].join(" ");
+    const serverCommand = command ?? nodeEvalCommandForTest(
+      "require('node:http').createServer((_req,res)=>res.end('ok')).listen(Number(process.env.PORT),'127.0.0.1')",
+    );
     return {
       workspaceRuntime: {
         services: [{
@@ -7237,7 +7326,7 @@ describeEmbeddedPostgres("workspace runtime service control persistence", () => 
       "setTimeout(()=>http.createServer((_req,res)=>res.end('hmr')).listen(port+10000,'127.0.0.1'),750);",
       "setInterval(()=>{},1000);",
     ].join("");
-    const command = `${JSON.stringify(process.execPath)} -e ${JSON.stringify(delayedHmrScript)}`;
+    const command = nodeEvalCommandForTest(delayedHmrScript);
     let reservedListeners: Array<{ purpose: "app" | "vite_hmr"; port: number }> = [];
     let exposeCalls = 0;
     const broker = {
@@ -7320,7 +7409,7 @@ describeEmbeddedPostgres("workspace runtime service control persistence", () => 
       "http.createServer((_req,res)=>res.end('ok')).listen(Number(process.env.PORT),'127.0.0.1');",
       "setInterval(()=>{},1000);",
     ].join("");
-    const command = `${JSON.stringify(process.execPath)} -e ${JSON.stringify(appOnlyScript)}`;
+    const command = nodeEvalCommandForTest(appOnlyScript);
     let foreignHmr: net.Server | null = null;
     let exposeCalls = 0;
     let reservedPorts: number[] = [];
@@ -7472,7 +7561,7 @@ describeEmbeddedPostgres("workspace runtime service control persistence", () => 
       "},25);",
       "setInterval(()=>{},1000);",
     ].join("");
-    const command = `${JSON.stringify(process.execPath)} -e ${JSON.stringify(serverScript)}`;
+    const command = nodeEvalCommandForTest(serverScript);
     const config = fixedPortRuntimeConfig(basePort, command);
     config.workspaceRuntime.services[0]!.readiness.timeoutSec = 70;
     let startPromise: ReturnType<typeof startRuntimeServicesForWorkspaceControl> | null = null;
@@ -7617,7 +7706,7 @@ describeEmbeddedPostgres("workspace runtime service control persistence", () => 
       "}else{start();}",
       "setInterval(()=>{},1000);",
     ].join("");
-    const command = `${JSON.stringify(process.execPath)} -e ${JSON.stringify(raceScript)}`;
+    const command = nodeEvalCommandForTest(raceScript);
 
     try {
       const started = (await startRuntimeServicesForWorkspaceControl({
@@ -7664,11 +7753,7 @@ describeEmbeddedPostgres("workspace runtime service control persistence", () => 
     const cleanupRuntimeHome = await createRuntimeHome();
     const workspace = fixture.workspaces[0]!;
     const basePort = await findFreePort();
-    const fakeBin = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-no-lsof-"));
-    const fakeLsof = path.join(fakeBin, "lsof");
-    const previousPath = process.env.PATH;
-    await fs.writeFile(fakeLsof, "#!/bin/sh\nexit 1\n", { mode: 0o755 });
-    process.env.PATH = `${fakeBin}${path.delimiter}${previousPath ?? ""}`;
+    listenerProbeUnavailableFixture.enabled = true;
 
     try {
       await expect(startRuntimeServicesForWorkspaceControl({
@@ -7688,14 +7773,12 @@ describeEmbeddedPostgres("workspace runtime service control persistence", () => 
         },
       });
     } finally {
-      if (previousPath === undefined) delete process.env.PATH;
-      else process.env.PATH = previousPath;
+      listenerProbeUnavailableFixture.enabled = false;
       await stopRuntimeServicesForExecutionWorkspace({
         db,
         executionWorkspaceId: workspace.id,
         workspaceCwd: workspace.cwd,
       }).catch(() => undefined);
-      await fs.rm(fakeBin, { recursive: true, force: true });
       await cleanupRuntimeHome();
       await fixture.cleanup();
     }
@@ -10323,7 +10406,7 @@ describe("runWorkspaceJobForControl", () => {
         workspace: buildWorkspace(workspaceRoot),
         command: {
           name: "Recover retained files",
-          command: `${JSON.stringify(process.execPath)} -e ${JSON.stringify(jobScript)}`,
+          command: nodeEvalCommandForTest(jobScript),
         },
         recorder,
       }).then(() => null, (error: unknown) => error);
