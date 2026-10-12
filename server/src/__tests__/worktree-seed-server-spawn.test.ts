@@ -5,6 +5,7 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { prepareTestPosixShell } from "@penclipai/adapter-utils/test-fixtures/posix-shell";
 import {
   ensureWorktreeSeeded,
   readWorktreeSeedManifest,
@@ -144,9 +145,17 @@ describe("managed worktree seed source through the server spawn path", () => {
       expect(seedDatabase).not.toHaveBeenCalled();
       expect(inspectLegacyDatabase).not.toHaveBeenCalled();
       const provisionScript = fileURLToPath(new URL("../../../scripts/provision-worktree-runtime.sh", import.meta.url));
-      const provision = await execFileAsync("bash", [provisionScript], {
-        cwd,
+      // Git Bash does not accept a drive-letter script argument directly. Run
+      // the real script through the shared POSIX-shell fixture so its path is
+      // translated before spawning Bash on Windows.
+      const provisionShell = prepareTestPosixShell({
+        command: "bash",
+        args: ["-c", `exec ${JSON.stringify(provisionScript)}`],
         env: { ...process.env, PAPERCLIP_WORKSPACE_CWD: cwd },
+      });
+      const provision = await execFileAsync(provisionShell.command, provisionShell.args, {
+        cwd,
+        env: provisionShell.env,
       });
       expect(provision.stderr).toContain("explicitly empty");
       expect(readWorktreeSeedManifest(configPath)).toBeNull();
