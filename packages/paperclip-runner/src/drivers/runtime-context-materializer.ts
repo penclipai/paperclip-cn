@@ -507,7 +507,7 @@ async function assertWindowsHostAuthUnavailable(sourceHome?: string | null): Pro
   });
   if (entry) {
     throw new Error(
-      "native_runtime_context_unsupported: importing host Codex auth is unsupported on win32",
+      "native_runtime_context_unsupported: Windows host Codex auth import is unavailable; use an explicit API key or managed connection",
     );
   }
 }

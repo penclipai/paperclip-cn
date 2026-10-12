@@ -613,6 +613,12 @@ command = "untrusted-command"
       expect(homeAcl.readers).toEqual([homeAcl.current]);
       expect(homeAcl.ruleCount).toBe(1);
       expect(homeAcl.fullControl).toBe(true);
+      const configAcl = await windowsPrivateAcl(join(codexHome, "config.toml"));
+      expect(configAcl.protected).toBe(true);
+      expect(configAcl.owner).toBe(configAcl.current);
+      expect(configAcl.readers).toEqual([configAcl.current]);
+      expect(configAcl.ruleCount).toBe(1);
+      expect(configAcl.fullControl).toBe(true);
     } else {
       expect((await stat(authPath)).mode & 0o777).toBe(0o600);
     }
