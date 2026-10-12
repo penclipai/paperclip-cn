@@ -96,7 +96,22 @@ describe("workspace Git scan route load regression", () => {
 
   it("keeps 500 cross-actor/cross-issue requests globally bounded while health stays responsive", async () => {
     const requestCount = 500;
+    const admissionTimeoutMs = process.platform === "win32" ? 45_000 : 15_000;
     let admittedRequests = 0;
+    let resolveNextAdmission!: () => void;
+    let nextAdmission = new Promise<void>(resolve => {
+      resolveNextAdmission = resolve;
+    });
+    let rejectAdmissionDeadline!: (error: Error) => void;
+    const admissionDeadline = new Promise<never>((_resolve, reject) => {
+      rejectAdmissionDeadline = reject;
+    });
+    const admissionTimer = setTimeout(() => {
+      rejectAdmissionDeadline(new Error(`Timed out admitting ${requestCount} workspace scan requests after ${admissionTimeoutMs}ms`));
+    }, admissionTimeoutMs);
+    async function waitForAdmissions(target: number) {
+      while (admittedRequests < target) await Promise.race([nextAdmission, admissionDeadline]);
+    }
     let releaseScans!: () => void;
     const scanGate = new Promise<void>((resolve) => {
       releaseScans = resolve;
@@ -123,6 +138,10 @@ describe("workspace Git scan route load regression", () => {
       getIssue: vi.fn(async () => ({ companyId })),
       list: vi.fn(async (issueId, input, opts) => {
         admittedRequests += 1;
+        resolveNextAdmission();
+        nextAdmission = new Promise<void>(resolve => {
+          resolveNextAdmission = resolve;
+        });
         const numericId = Number(issueId.slice("issue-".length));
         await scheduler.run({
           workspacePath: roots[numericId % roots.length]!,
@@ -141,21 +160,31 @@ describe("workspace Git scan route load regression", () => {
     // accept/close races can reset clients before they reach the scheduler.
     const server = app.listen(0, "127.0.0.1");
     await new Promise<void>(resolve => server.once("listening", resolve));
-    const pendingResponses = Array.from({ length: requestCount }, (_, index) => request(server)
-      .get(`/api/issues/issue-${index}/file-resources/list`)
-      .set("x-test-actor", `actor-${index % 73}`)
-      .query({ mode: "changed" })
-      .then((response) => response));
-    // Observe every client rejection immediately, including on assertion failure.
-    const settledResponses = Promise.allSettled(pendingResponses);
+    const settledResponses: Array<Promise<PromiseSettledResult<request.Response>>> = [];
+    const enqueueRequest = (index: number) => {
+      const pending = request(server)
+        .get(`/api/issues/issue-${index}/file-resources/list`)
+        .set("x-test-actor", `actor-${index % 73}`)
+        .query({ mode: "changed" })
+        .then((response) => response);
+      // Observe every client rejection immediately, including on assertion failure.
+      settledResponses.push(pending.then(
+        value => ({ status: "fulfilled", value }),
+        reason => ({ status: "rejected", reason }),
+      ));
+    };
     try {
-      // Windows can admit a large burst of loopback requests more slowly than
-      // POSIX. Wait for every route handler to reach the scheduler before
-      // asserting its coalescing total, rather than sampling mid-admission.
-      await vi.waitFor(
-        () => expect(admittedRequests).toBe(requestCount),
-        { timeout: process.platform === "win32" ? 45_000 : 15_000, interval: 20 },
-      );
+      // Windows loopback can leave hundreds of held HTTP connections in the
+      // listener backlog. Admit in transport-sized batches while the first two
+      // scans stay held, so every distinct actor/issue request reaches the same
+      // global single-flight scheduler before completion is released.
+      const admissionBatchSize = process.platform === "win32" ? 20 : requestCount;
+      for (let start = 0; start < requestCount; start += admissionBatchSize) {
+        const end = Math.min(start + admissionBatchSize, requestCount);
+        for (let index = start; index < end; index += 1) enqueueRequest(index);
+        if (end < requestCount) await waitForAdmissions(end);
+      }
+      await waitForAdmissions(requestCount);
       await vi.waitFor(
         () => expect(scheduler.snapshot().totals.singleFlightJoins).toBe(requestCount - 2),
         { timeout: 15_000, interval: 20 },
@@ -175,7 +204,7 @@ describe("workspace Git scan route load regression", () => {
       expect(healthP99Ms).toBeLessThan(250);
 
       releaseScans();
-      const responses = (await settledResponses).map(result => {
+      const responses = (await Promise.all(settledResponses)).map(result => {
         if (result.status === "rejected") throw result.reason;
         return result.value;
       });
@@ -198,9 +227,10 @@ describe("workspace Git scan route load regression", () => {
         unreapedChildCount: 0,
       });
     } finally {
+      clearTimeout(admissionTimer);
       releaseScans();
       server.closeAllConnections();
-      await settledResponses;
+      await Promise.all(settledResponses);
       await new Promise<void>((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
     }
   }, 60_000);
