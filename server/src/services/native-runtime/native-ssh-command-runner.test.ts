@@ -1,24 +1,37 @@
 import { createHash } from "node:crypto";
-import { chmod, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { readFileSync } from "node:fs";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createNativeSshCommandRunner } from "./native-ssh-command-runner.js";
 import { MAX_REMOTE_DELIVERABLE_BYTES, readVerifiedRemoteWorkspaceFile } from "./remote-deliverable-file.js";
 
+const execFile = vi.hoisted(() => vi.fn());
+vi.mock("node:child_process", async (importOriginal) => ({
+  ...await importOriginal<typeof import("node:child_process")>(),
+  execFile,
+}));
+
 describe("native SSH deliverable output budget", () => {
   let root: string;
   beforeEach(async () => {
     root = await mkdtemp(join(tmpdir(), "paperclip-ssh-output-"));
     // Exercise the real SSH command adapter and its execFile output limit,
-    // replacing only the network executable with a deterministic byte source.
-    const executable = join(root, "ssh");
-    await writeFile(executable, `#!${process.execPath}\nprocess.stdout.write(require('node:fs').readFileSync(${JSON.stringify(join(root, "response"))}));\n`);
-    await chmod(executable, 0o700);
-    vi.stubEnv("PATH", `${root}:${process.env.PATH}`);
+    // replacing only the network transport executable. A Windows .cmd shim
+    // cannot stand in for execFile("ssh", ...) with shell disabled, because
+    // OpenSSH flags are parsed as Node options by a copied node.exe.
+    execFile.mockImplementation((_file, _args, options, callback) => {
+      const stdout = readFileSync(join(root, "response"), "utf8");
+      if (Buffer.byteLength(stdout) > options.maxBuffer) {
+        callback(Object.assign(new Error("stdout maxBuffer exceeded"), { code: "ERR_CHILD_PROCESS_STDIO_MAXBUFFER" }), "", "");
+      } else {
+        callback(null, stdout, "");
+      }
+    });
   });
   afterEach(async () => {
-    vi.unstubAllEnvs();
+    execFile.mockReset();
     await rm(root, { recursive: true, force: true });
   });
 
@@ -39,6 +52,11 @@ describe("native SSH deliverable output budget", () => {
       byteSize, sha256: createHash("sha256").update(body).digest("hex"),
     });
     expect(result.equals(body)).toBe(true);
+    expect(execFile).toHaveBeenCalledWith("ssh", expect.arrayContaining([
+      "-o", "BatchMode=yes", "-o", "StrictHostKeyChecking=yes",
+    ]), expect.objectContaining({
+      maxBuffer: 4 * Math.ceil(MAX_REMOTE_DELIVERABLE_BYTES / 3),
+    }), expect.any(Function));
   });
 
   it("stops a remote command that exceeds the maximum encoded envelope", async () => {

@@ -1738,7 +1738,9 @@ export async function prepareGitHubOperationLaunchers(input: {
   const directory = githubOperationLauncherDirectory(input);
   const configDirectory = path.posix.join(directory, "gh-config");
   const basePath = await githubOperationLauncherBasePath(remote, input.env);
-  const managedPath = basePath ? `${directory}:${basePath}` : directory;
+  // Local launchers execute in the controller's native environment, while
+  // remote launchers and their shell profiles are always POSIX.
+  const managedPath = basePath ? `${directory}${remote ? ":" : path.delimiter}${basePath}` : directory;
   // Login shells may reorder PATH through /etc/profile or path_helper. Restore
   // the managed launchers after startup without loading a host user's profile.
   // Empty merge overrides clear host identity before launch, but Git treats
