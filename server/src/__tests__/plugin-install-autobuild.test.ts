@@ -345,7 +345,7 @@ describeEmbeddedPostgres("plugin install auto-build route", () => {
     expect(existsSync(path.join(fixture.distDir, "manifest.js"))).toBe(true);
     expect(existsSync(path.join(fixture.distDir, "worker.js"))).toBe(true);
     expect(existsSync(path.join(fixture.distDir, "ui", "index.js"))).toBe(true);
-    expect(existsSync(path.join(fixture.packageRoot, "node_modules", "@paperclipai", "plugin-sdk"))).toBe(true);
+    expect(existsSync(path.join(fixture.packageRoot, "node_modules", "@penclipai", "plugin-sdk"))).toBe(true);
     expect(mockLifecycle.load).toHaveBeenCalledTimes(1);
   }, 60_000);
 
@@ -358,7 +358,7 @@ describeEmbeddedPostgres("plugin install auto-build route", () => {
     const app = await createInstallApp(db);
 
     expect(existsSync(path.join(fixture.distDir, "manifest.js"))).toBe(true);
-    expect(existsSync(path.join(fixture.packageRoot, "node_modules", "@paperclipai", "plugin-sdk"))).toBe(false);
+    expect(existsSync(path.join(fixture.packageRoot, "node_modules", "@penclipai", "plugin-sdk"))).toBe(false);
 
     const res = await request(app)
       .post("/api/plugins/install")
@@ -367,7 +367,7 @@ describeEmbeddedPostgres("plugin install auto-build route", () => {
     expect(res.status, res.body.error).toBe(200);
     expect(res.body.packageName).toBe(fixture.packageName);
     expect(res.body.pluginKey).toBe(fixture.pluginKey);
-    expect(existsSync(path.join(fixture.packageRoot, "node_modules", "@paperclipai", "plugin-sdk"))).toBe(true);
+    expect(existsSync(path.join(fixture.packageRoot, "node_modules", "@penclipai", "plugin-sdk"))).toBe(true);
     expect(mockLifecycle.load).toHaveBeenCalledTimes(1);
   }, 60_000);
 
