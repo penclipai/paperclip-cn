@@ -25,10 +25,15 @@ describe("Grok runner company credentials", () => {
   it("uses only an explicitly selected API key and strips subscription payloads and homes", async () => {
     expect(await prepareGrokRunnerCredentials({ companyId: "test-company", remote: true, environment: { XAI_API_KEY: "selected", GROK_HOME: "/host", PAPERCLIP_ACPX_GROK_AUTH_JSON_SECRET: "stale" } })).toEqual({ environment: { XAI_API_KEY: "selected" }, home: null });
   });
-  it("reads the controller-selected managed connection privately", async () => {
+  it("uses the controller-selected managed connection and fails closed on unsupported hosts", async () => {
     const root = await home(); companyHome.mockReturnValue(join(root, "unused"));
     await writeFile(join(root, "auth.json"), '{"private":"fixture"}', { mode: 0o600 });
-    const value = await prepareGrokRunnerCredentials({ companyId: "test-company", remote: true, managedHome: root, environment: { GROK_HOME: "/untrusted", XAI_API_KEY: "" } });
-    expect(value).toEqual({ home: root, environment: { PAPERCLIP_ACPX_GROK_AUTH_JSON_SECRET: '{"private":"fixture"}' } });
+    const result = prepareGrokRunnerCredentials({ companyId: "test-company", remote: true, managedHome: root, environment: { GROK_HOME: "/untrusted", XAI_API_KEY: "" } });
+    if (process.platform === "linux" || process.platform === "darwin") {
+      await expect(result).resolves.toEqual({ home: root, environment: { PAPERCLIP_ACPX_GROK_AUTH_JSON_SECRET: '{"private":"fixture"}' } });
+    } else {
+      await expect(result).rejects.toThrow("Grok subscription login is unavailable");
+    }
+    expect(companyHome).toHaveBeenCalledWith(process.env, "test-company");
   });
 });
