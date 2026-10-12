@@ -364,7 +364,9 @@ function persistence(): ChatSdkStatePersistence {
 // no service source authority is inferred from these transport-only fixtures.
 describe("Teams inline images through pinned runtime/App HTTP", () => {
   const runtimes: ChatSdkEndpointRuntime[] = [];
+  const ejectHttpMiddlewares: Array<() => void> = [];
   afterEach(async () => {
+    ejectHttpMiddlewares.splice(0).forEach((eject) => eject());
     await Promise.all(runtimes.splice(0).map((runtime) => runtime.shutdown()));
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
@@ -396,18 +398,41 @@ describe("Teams inline images through pinned runtime/App HTTP", () => {
     const app = (
       runtime.getProviderAdapter() as unknown as {
         app: {
-          api: { serviceUrl: string };
-          activitySender: {
-            client: {
-              post(url: string, data: unknown): Promise<{ data: unknown }>;
+          api: {
+            serviceUrl: string;
+            http: {
+              use(middleware: {
+                invoke(
+                  input: {
+                    config: { method: string; url: string; data: unknown };
+                  },
+                  next: () => Promise<unknown>,
+                ): Promise<unknown>;
+              }): number;
+              eject(id: number): void;
+            };
+            clone(input: { serviceUrl?: string }): {
+              http: {
+                post(
+                  url: string,
+                  body: unknown,
+                ): Promise<{ data: { id?: string } }>;
+              };
             };
           };
         };
       }
     ).app;
-    const post = vi
-      .spyOn(app.activitySender.client, "post")
-      .mockResolvedValue({ data: { id: "image-receipt-1" } });
+    const post = vi.fn().mockResolvedValue({ data: { id: "image-receipt-1" } });
+    const middlewareId = app.api.http.use({
+      async invoke({ config }, next) {
+        if (config.method === "post") {
+          return post(config.url, config.data);
+        }
+        return next();
+      },
+    });
+    ejectHttpMiddlewares.push(() => app.api.http.eject(middlewareId));
     return { runtime, app, post, network };
   }
   const destination = (

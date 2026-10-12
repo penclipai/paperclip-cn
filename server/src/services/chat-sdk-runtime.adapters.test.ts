@@ -2385,24 +2385,50 @@ describe("Chat SDK published adapter integration", () => {
             api: {
               serviceUrl: string;
               http: {
-                put(url: string, body: unknown): Promise<{ data: unknown }>;
+                use(middleware: {
+                  invoke(
+                    input: {
+                      config: { method: string; url: string; data: unknown };
+                    },
+                    next: () => Promise<unknown>,
+                  ): Promise<unknown>;
+                }): number;
+                eject(id: number): void;
               };
-            };
-            activitySender: {
-              client: {
-                post(url: string, body: unknown): Promise<{ data: unknown }>;
+              clone(input: { serviceUrl?: string }): {
+                http: {
+                  post(
+                    url: string,
+                    body: unknown,
+                  ): Promise<{ data: { id?: string } }>;
+                  put(
+                    url: string,
+                    body: unknown,
+                  ): Promise<{ data: { id?: string } }>;
+                };
               };
             };
           };
         }
       ).app;
       const post = vi
-        .spyOn(app.activitySender.client, "post")
+        .fn()
         .mockResolvedValueOnce({ data: { id: "authored-answer" } })
         .mockResolvedValueOnce({ data: { id: "owned-progress" } });
       const put = vi
-        .spyOn(app.api.http, "put")
+        .fn()
         .mockResolvedValue({ data: { id: "owned-progress" } });
+      const middlewareId = app.api.http.use({
+        async invoke({ config }, next) {
+          if (config.method === "post") {
+            return post(config.url, config.data);
+          }
+          if (config.method === "put") {
+            return put(config.url, config.data);
+          }
+          return next();
+        },
+      });
       const conversation =
         scope === "personal"
           ? "a:close-personal"
@@ -2476,6 +2502,7 @@ describe("Chat SDK published adapter integration", () => {
         expect(post).toHaveBeenCalledTimes(2);
         expect(network).not.toHaveBeenCalled();
       } finally {
+        app.api.http.eject(middlewareId);
         await runtime.shutdown();
         vi.restoreAllMocks();
         vi.unstubAllGlobals();

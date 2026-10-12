@@ -136,19 +136,38 @@ interface AppSeam {
       check(header: string, body: Record<string, unknown>): Promise<unknown>;
     };
   };
-  activitySender: {
-    client: { post(url: string, data: unknown): Promise<{ data: unknown }> };
+  api: {
+    serviceUrl: string;
+    http: {
+      use(middleware: {
+        invoke(
+          input: { config: { method: string; url: string; data: unknown } },
+          next: () => Promise<unknown>,
+        ): Promise<unknown>;
+      }): number;
+      eject(id: number): void;
+    };
+    clone(input: { serviceUrl?: string }): {
+      http: {
+        post(
+          url: string,
+          body: unknown,
+        ): Promise<{ data: { id?: string } }>;
+      };
+    };
   };
-  api: { serviceUrl: string };
 }
 
-// Real installed adapter/App router, App.send, ActivitySender and API client.
-// Only service JWT verification and final HTTP post are replaced. There is no
+// Real installed adapter/App router, ActivitySender and scoped API clients.
+// The Teams 2.1 SDK creates a scoped HTTP client for each send, so only the
+// final HTTP post is replaced. There is no
 // live tenant, Graph, service/DB authority, or successful file-delivery claim.
 describe("Teams opt-in file-consent runtime", () => {
   const runtimes: ChatSdkEndpointRuntime[] = [];
+  const ejectHttpMiddlewares: Array<() => void> = [];
   afterEach(async () => {
     try {
+      ejectHttpMiddlewares.splice(0).forEach((eject) => eject());
       await Promise.all(
         runtimes.splice(0).map((runtime) => runtime.shutdown()),
       );
@@ -205,9 +224,16 @@ describe("Teams opt-in file-consent runtime", () => {
           isExpired: () => false,
         };
       });
-    const post = vi
-      .spyOn(app.activitySender.client, "post")
-      .mockResolvedValue({ data: { id: "card-receipt-1" } });
+    const post = vi.fn().mockResolvedValue({ data: { id: "card-receipt-1" } });
+    const middlewareId = app.api.http.use({
+      async invoke({ config }, next) {
+        if (config.method === "post") {
+          return post(config.url, config.data);
+        }
+        return next();
+      },
+    });
+    ejectHttpMiddlewares.push(() => app.api.http.eject(middlewareId));
     const dispatch = (
       activity: unknown,
       authorization = "Bearer fixture-token",
