@@ -1600,7 +1600,7 @@ describe("realizeExecutionWorkspace", () => {
       name: "git",
       script: [
         'const fs = require("node:fs");',
-        `fs.appendFileSync(${JSON.stringify(calls)}, JSON.stringify(process.argv.slice(process.platform === "win32" ? 2 : 1)) + "\\n");`,
+        `fs.appendFileSync(${JSON.stringify(calls)}, JSON.stringify(process.argv.slice(process.platform === "win32" ? 1 : 2)) + "\\n");`,
         `fs.writeSync(2, ${JSON.stringify(stderr)});`,
         `process.exit(${code});`,
       ].join("\n"),
@@ -5340,10 +5340,14 @@ describe("ensureRuntimeServicesForRun", () => {
     expect(executionServices[0]?.url).not.toBe(primaryServices[0]?.url);
 
     const primaryResponse = await fetch(primaryServices[0]!.url!);
-    expect(await primaryResponse.text()).toBe(path.join(primaryWorkspaceRoot, ".paperclip", "runtime-services"));
+    expect(path.resolve(await primaryResponse.text())).toBe(
+      path.resolve(primaryWorkspaceRoot, ".paperclip", "runtime-services"),
+    );
 
     const executionResponse = await fetch(executionServices[0]!.url!);
-    expect(await executionResponse.text()).toBe(path.join(worktreeWorkspaceRoot, ".paperclip", "runtime-services"));
+    expect(path.resolve(await executionResponse.text())).toBe(
+      path.resolve(worktreeWorkspaceRoot, ".paperclip", "runtime-services"),
+    );
   });
 
   it("does not leak parent Paperclip instance env into runtime service commands", async () => {

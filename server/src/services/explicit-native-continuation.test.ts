@@ -37,7 +37,8 @@ const support = await getEmbeddedPostgresTestSupport();
   let db: ReturnType<typeof createDb>;
   beforeAll(async () => { database = await startEmbeddedPostgresTestDatabase("explicit-native-message-"); db = createDb(database.connectionString); }, 90_000);
   afterAll(async () => { await database?.cleanup(); });
-  async function seed() {
+  async function seed(options: { terminationAuthority?: "local" | "remote" } = {}) {
+    const terminationAuthority = options.terminationAuthority ?? "local";
     const companyId = randomUUID(), agentId = randomUUID(), issueId = randomUUID();
     const sourceRunId = randomUUID(), successorRunId = randomUUID();
     const commentId: string = randomUUID();
@@ -47,6 +48,17 @@ const support = await getEmbeddedPostgresTestSupport();
     await db.insert(heartbeatRuns).values({ id: sourceRunId, companyId, agentId,
       nativeIssueId: issueId, runtimeMode: "native", status: "failed", processPid: 999999999,
       contextSnapshot: { issueId }, finishedAt: new Date("2026-09-11T10:00:00Z") });
+    if (terminationAuthority === "remote") {
+      const [environment] = await db.insert(environments).values({
+        name: `Verified remote predecessor ${sourceRunId}`, driver: "sandbox",
+      }).returning();
+      const lease = { id: randomUUID(), companyId, heartbeatRunId: sourceRunId, issueId,
+        environmentId: environment.id, provider: "daytona", providerLeaseId: `stopped-${sourceRunId}` };
+      await db.insert(environmentLeases).values({ ...lease, status: "released", leasePolicy: "ephemeral",
+        releasedAt: new Date("2026-09-11T10:00:00Z"), cleanupStatus: "success",
+        metadata: { remoteExecutionTermination: remoteTerminationReceipt(lease,
+          { providerLeaseId: lease.providerLeaseId, state: "destroyed" }) } });
+    }
     await db.insert(nativeRunFinalizations).values({ runId: sourceRunId, companyId, issueId,
       phase: "terminal_failure", attempt: 3, failureDetail: { replacementDenied: "uncertain_external_action" } });
     await db.insert(issueRecoveryActions).values({ companyId, sourceIssueId: issueId,
@@ -58,6 +70,11 @@ const support = await getEmbeddedPostgresTestSupport();
     return { companyId, issueId, agentId, sourceRunId, commentId, successorRunId,
       actorType: "user", actorId: "board", reason: "issue_commented" };
   }
+  // Windows cannot prove a local PID tree from these logical fixtures. The
+  // remote lease is an authenticated termination receipt, not an OS-proof mock.
+  const seedWithVerifiedStop = (localOnly = false) => seed({
+    terminationAuthority: localOnly || process.platform !== "win32" ? "local" : "remote",
+  });
   type Fixture = Awaited<ReturnType<typeof seed>>;
   it.each(["handoff", "foreign_task", "running_source", "different_owner", "mention", "interaction", "chat"])("adopts former-owner comments only during an authorized handoff (%s)", async kind => {
     const f = await seed(), nextAgentId = randomUUID(), queueId = randomUUID();
@@ -93,7 +110,7 @@ const support = await getEmbeddedPostgresTestSupport();
     } else expect(receipt.status).toBe("deferred_issue_execution");
   });
   it.each(["ready", "unacknowledged", "pause", "recovery", "controller", "process_running", "identity_missing", "remote_pending", "remote_stopped", "first_delivered", "last_delivered", "mixed_authors"])("delivers a saved native message after run-only Stop exactly once (%s)", async gate => {
-    const f = await seed();
+    const f = await seedWithVerifiedStop(["process_running", "identity_missing"].includes(gate));
     if (gate !== "recovery") await db.delete(issueRecoveryActions).where(eq(issueRecoveryActions.sourceIssueId, f.issueId));
     await db.update(issues).set({ status: "in_progress" }).where(eq(issues.id, f.issueId));
     await db.update(nativeRunFinalizations).set({ phase: "terminal_failure", failureDetail: null, leaseOwner: gate === "controller" ? "still-cleaning" : null })
@@ -216,7 +233,7 @@ const support = await getEmbeddedPostgresTestSupport();
     }
   });
   it("a durable queue interrupt authorizes older legacy messages but still requires the provider to stop", async () => {
-    const f = await seed();
+    const f = await seed({ terminationAuthority: "local" });
     await db.update(agents).set({ adapterType: "claude_local" }).where(eq(agents.id, f.agentId));
     await db.delete(nativeRunFinalizations).where(eq(nativeRunFinalizations.runId, f.sourceRunId));
     await db.update(heartbeatRuns).set({ runtimeMode: "legacy", nativeIssueId: null,
@@ -385,16 +402,16 @@ const support = await getEmbeddedPostgresTestSupport();
     else expect(result).toBeNull();
   });
 
-  const admit = (f: Fixture, dryRun = false) => db.transaction(async tx => {
+  const admit = (f: Fixture, dryRun = false, onBlocked?: (reason: string, message: string) => void) => db.transaction(async tx => {
     await tx.select().from(issues).where(eq(issues.id, f.issueId)).for("update");
-    const result = await admitExplicitNativeContinuation({ ...f, dryRun, db: tx as unknown as typeof db });
+    const result = await admitExplicitNativeContinuation({ ...f, dryRun, onBlocked, db: tx as unknown as typeof db });
     if (result && !dryRun) await tx.insert(heartbeatRuns).values({ id: f.successorRunId, companyId: f.companyId,
       agentId: f.agentId, status: "queued", contextSnapshot: { issueId: f.issueId, previousRunId: result.previousRunId, forceFreshSession: true } });
     return result;
   });
 
   it.each(["other_user", "same_user", "unaddressed", "tool_access"])("scopes connection waits to the user starting the fresh turn (%s)", async audience => {
-    const f = await seed();
+    const f = await seedWithVerifiedStop();
     await db.update(heartbeatRuns).set({ status: "cancelled", errorCode: "slack_session_stopped" })
       .where(eq(heartbeatRuns.id, f.sourceRunId));
     const [interaction] = await db.insert(issueThreadInteractions).values({
@@ -417,7 +434,7 @@ const support = await getEmbeddedPostgresTestSupport();
 
   it.each(["fresh", "before_stop", "delivered", "unknown_stop_time", "wrong_actor", "approval"])(
     "resumes an already-saved follow-up after native Slack Stop (%s)", async gate => {
-      const f = await seed(), queueId = randomUUID();
+      const f = await seedWithVerifiedStop(), queueId = randomUUID();
       await db.update(heartbeatRuns).set({ status: "cancelled", errorCode: "slack_session_stopped",
         startedAt: new Date("2026-09-11T09:30:00Z"), finishedAt: gate === "unknown_stop_time" ? null : new Date("2026-09-11T10:00:00Z"),
         contextSnapshot: { issueId: f.issueId, ...(gate === "delivered" ? { wakeCommentId: f.commentId } : {}) },
@@ -453,7 +470,7 @@ const support = await getEmbeddedPostgresTestSupport();
   );
 
   async function seedTimedOutExplicitTurn() {
-    const f = await seed();
+    const f = await seedWithVerifiedStop();
     const explicitUserContinuation = await admit(f);
     expect(explicitUserContinuation).not.toBeNull();
     const [receipt] = await db.select().from(issueRecoveryActions)
@@ -711,16 +728,35 @@ const support = await getEmbeddedPostgresTestSupport();
 
   it.each(["verified", "unproven", "changed", "dry_run", "retry", "duplicate"])(
     "requires exact local cleanup for a new turn after worker loss (%s)", async mode => {
-      const f = await seed();
+      const f = await seed({ terminationAuthority: "local" });
       await db.update(heartbeatRuns).set({ errorCode: "native_session_cleanup_quarantined" }).where(eq(heartbeatRuns.id, f.sourceRunId));
       const retire = vi.fn(() => mode !== "changed");
+      const blocked = vi.fn();
       const verify = vi.spyOn(nativeExecutor, "verifyStoppedNativeSessionForContinuation").mockResolvedValue(
         mode === "unproven" ? null : { evidence: { runId: f.sourceRunId, schema: "paperclip.stopped_native_conversation.v1" }, retire });
       try {
+        const before = await Promise.all([
+          db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, f.sourceRunId)),
+          db.select().from(issueRecoveryActions).where(eq(issueRecoveryActions.sourceIssueId, f.issueId)),
+          db.select().from(heartbeatRunEvents).where(eq(heartbeatRunEvents.runId, f.sourceRunId)),
+        ]);
         const result = mode === "retry"
           ? await db.transaction(tx => admitExplicitNativeContinuation({ ...f, db: tx as unknown as typeof db,
-              reason: "retry_failed_run", failedRunId: f.sourceRunId }))
-          : await admit(f, mode === "dry_run");
+              reason: "retry_failed_run", failedRunId: f.sourceRunId, onBlocked: blocked }))
+          : await admit(f, mode === "dry_run", blocked);
+        if (process.platform === "win32") {
+          expect(result).toBeNull();
+          expect(blocked).toHaveBeenCalledWith("process_running", expect.any(String));
+          expect(verify).not.toHaveBeenCalled();
+          expect(retire).not.toHaveBeenCalled();
+          expect(await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, f.successorRunId))).toEqual([]);
+          expect(await Promise.all([
+            db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, f.sourceRunId)),
+            db.select().from(issueRecoveryActions).where(eq(issueRecoveryActions.sourceIssueId, f.issueId)),
+            db.select().from(heartbeatRunEvents).where(eq(heartbeatRunEvents.runId, f.sourceRunId)),
+          ])).toEqual(before);
+          return;
+        }
         expect(Boolean(result)).toBe(["verified", "dry_run", "duplicate"].includes(mode));
         expect(retire).toHaveBeenCalledTimes(["verified", "changed", "duplicate"].includes(mode) ? 1 : 0);
         const actions = await db.select().from(issueRecoveryActions).where(eq(issueRecoveryActions.sourceIssueId, f.issueId));
@@ -841,7 +877,7 @@ const support = await getEmbeddedPostgresTestSupport();
     },
   );
   async function seedCancelledStartup() {
-    const f = await seed();
+    const f = await seed({ terminationAuthority: "local" });
     await db.update(heartbeatRuns).set({ status: "cancelled", processPid: null,
       startedAt: new Date("2026-09-11T09:59:59Z"),
       runtimeModeResolvedAt: new Date("2026-09-11T10:00:01Z"),
@@ -1106,7 +1142,7 @@ const support = await getEmbeddedPostgresTestSupport();
   );
 
   it.runIf(process.platform !== "win32")("preserves local stop proof after process metadata is cleared and invalidates it on another launch", async () => {
-    const f = await seed();
+    const f = await seed({ terminationAuthority: "local" });
     const [source] = await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, f.sourceRunId));
     await db.transaction(async tx => {
       expect(await recordNativeLocalProcessStop(tx as unknown as typeof db, source)).toBe(true);
@@ -1125,7 +1161,7 @@ const support = await getEmbeddedPostgresTestSupport();
     expect(await admit(f, true)).toBeNull();
   });
   it.runIf(process.platform === "win32")("does not treat a dead direct PID without a group as local stop proof", async () => {
-    const f = await seed();
+    const f = await seed({ terminationAuthority: "local" });
     const [source] = await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, f.sourceRunId));
     expect(source.processPid).toBe(999999999);
     expect(source.processGroupId).toBeNull();
@@ -1501,7 +1537,7 @@ const support = await getEmbeddedPostgresTestSupport();
   });
 
   it("queues the actual user wake with a fresh session and retained source context", async () => {
-    const f = await seed();
+    const f = await seedWithVerifiedStop();
     // Occupy this agent's only slot so this admission test never starts a provider.
     await db.insert(heartbeatRuns).values({ companyId: f.companyId, agentId: f.agentId, status: "running" });
     const wake = await heartbeatService(db).wakeup(f.agentId, {
@@ -1523,7 +1559,7 @@ const support = await getEmbeddedPostgresTestSupport();
   });
 
   it.each(["pause", "dependency", "state"])("keeps the existing %s gate on the actual user wake", async gate => {
-    const f = await seed();
+    const f = await seedWithVerifiedStop();
     await db.insert(heartbeatRuns).values({ companyId: f.companyId, agentId: f.agentId, status: "running" });
     if (gate === "pause") {
       const holdId = randomUUID();
@@ -1550,7 +1586,7 @@ const support = await getEmbeddedPostgresTestSupport();
   });
 
   it("preflights eligibility without retiring the hold or creating a successor", async () => {
-    const f = await seed();
+    const f = await seedWithVerifiedStop();
     expect(await admit(f, true)).toMatchObject({ previousRunId: f.sourceRunId });
     expect(await getExecutionBlocker(db, f.companyId, f.issueId)).not.toBeNull();
     expect(await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, f.successorRunId))).toHaveLength(0);
@@ -1573,7 +1609,7 @@ const support = await getEmbeddedPostgresTestSupport();
     expect(await getExecutionBlocker(db, f.companyId, f.issueId)).not.toBeNull();
   });
   it("lets a new human message continue after exhausted recovery without certifying old actions", async () => {
-    const f = await seed();
+    const f = await seedWithVerifiedStop();
     expect(await admit(f)).toEqual({ previousRunId: f.sourceRunId, commentId: f.commentId });
     expect(await getExecutionBlocker(db, f.companyId, f.issueId)).toBeNull();
     const [action] = await db.select().from(issueRecoveryActions).where(eq(issueRecoveryActions.sourceIssueId, f.issueId));
@@ -1587,7 +1623,7 @@ const support = await getEmbeddedPostgresTestSupport();
 
   it.each(["ready", "live_process", "pause", "delivered", "mixed_authors", "last_delivered", "operator_stop"])(
     "automatically delivers an unconsumed native message sent before the failed run stopped, respecting %s", async gate => {
-    const f = await seed();
+    const f = await seedWithVerifiedStop(gate === "live_process");
     await db.update(issueComments).set({ createdAt: new Date("2026-09-11T09:59:00Z") }).where(eq(issueComments.id, f.commentId));
     await db.insert(heartbeatRuns).values({ companyId: f.companyId, agentId: f.agentId, status: "running" });
     let queuedIds = [f.commentId];
@@ -1658,7 +1694,7 @@ const support = await getEmbeddedPostgresTestSupport();
   });
   it.each(["failed", "succeeded_result", "rejected_result", "still_committing", "controller", "successor", "live_process"])(
     "requires a fully committed failed result and verified stop for a new turn (%s)", async scenario => {
-      const f = await seed(), contractId = randomUUID(), resultId = randomUUID();
+      const f = await seedWithVerifiedStop(scenario !== "failed"), contractId = randomUUID(), resultId = randomUUID();
       await db.insert(completionContracts).values({ id: contractId, companyId: f.companyId, issueId: f.issueId,
         revision: 1, schemaVersion: "paperclip.completion-contract.v1", policyVersion: "test",
         risk: "standard", completionAuthority: "server_arbiter", incompleteCriteriaPolicy: "preserve_non_terminal",
@@ -1709,7 +1745,7 @@ const support = await getEmbeddedPostgresTestSupport();
   }
   it.each(["stopped", "controller", "successor", "still_committing", "live_process", "identity_missing"])(
     "continues after terminal failure with a retained result only when execution stopped (%s)", async scenario => {
-      const f = await seed(), resultId = await seedResultBeforeTerminalFailure(f);
+      const f = await seedWithVerifiedStop(scenario !== "stopped"), resultId = await seedResultBeforeTerminalFailure(f);
       await db.update(nativeRunFinalizations).set({
         phase: scenario === "still_committing" ? "result_accepted" : "terminal_failure",
         leaseOwner: scenario === "controller" ? "active-controller" : null,
@@ -1731,7 +1767,7 @@ const support = await getEmbeddedPostgresTestSupport();
       expect(savedResult.resultJson).toEqual({ terminal: { runTerminalState: "succeeded", reportedWorkDisposition: "blocked" } });
     });
   it.each(["task", "chat", "chat_with_next_message"])("delivers a queued %s message exactly once after a retained-result failure and delayed remote stop", async kind => {
-    const f = await seed(), resultId = await seedResultBeforeTerminalFailure(f);
+    const f = await seedWithVerifiedStop(), resultId = await seedResultBeforeTerminalFailure(f);
     const settings = instanceSettingsService(db);
     const experimental = await settings.getExperimental();
     await settings.updateExperimental({ enableAgentChat: true });
@@ -1820,7 +1856,7 @@ const support = await getEmbeddedPostgresTestSupport();
     }
   });
   it("keeps exhausted workspace export on its own repair path after the sandbox stops", async () => {
-    const f = await seed(), resultId = await seedResultBeforeTerminalFailure(f);
+    const f = await seedWithVerifiedStop(), resultId = await seedResultBeforeTerminalFailure(f);
     await db.delete(issueRecoveryActions).where(eq(issueRecoveryActions.sourceIssueId, f.issueId));
     await db.update(nativeRunFinalizations).set({ phase: "result_accepted", attempt: 1, failureCode: null, failureDetail: null })
       .where(eq(nativeRunFinalizations.runId, f.sourceRunId));
@@ -1870,7 +1906,7 @@ const support = await getEmbeddedPostgresTestSupport();
   });
   it.each(["linked", "revoked", "unlinked", "wrong_author"])(
     "admits a fresh Slack message after failure only with current linked-user authority (%s)", async scenario => {
-      const f = await seed();
+      const f = await seedWithVerifiedStop(scenario !== "linked");
       // Keep execution queued so this tests real admission without launching a provider.
       await db.insert(heartbeatRuns).values({ companyId: f.companyId, agentId: f.agentId, status: "running" });
       const authorize = vi.fn(async () => { if (scenario === "revoked") throw new Error("chat_authorization_revoked"); });
@@ -1895,7 +1931,7 @@ const support = await getEmbeddedPostgresTestSupport();
       } else expect(await getExecutionBlocker(db, f.companyId, f.issueId)).not.toBeNull();
     });
   it.each(["live_process", "missing_process", "lease", "coordinator", "successor", "agent_message", "old_comment", "wrong_author", "run_authored", "reassigned", "automatic", "approval", "question", "malformed_comment", "legacy_owner"])("keeps the hold for %s", async kind => {
-    const f = await seed();
+    const f = await seed({ terminationAuthority: "local" });
     if (kind === "legacy_owner") await db.insert(heartbeatRuns).values({ companyId: f.companyId,
       agentId: f.agentId, status: "failed", runtimeMode: "legacy", processPid: process.pid,
       contextSnapshot: { issueId: f.issueId }, resultJson: { conversationContinuation: "continue_conversation_v1" } });
@@ -1940,13 +1976,13 @@ const support = await getEmbeddedPostgresTestSupport();
       summary: null, exposeLowTrustRaw: false })).rejects.toThrow("continuation_user_authorization_missing");
   });
   it("keeps one new turn under concurrent delivery of the same message", async () => {
-    const f = await seed();
+    const f = await seedWithVerifiedStop();
     const results = await Promise.all([admit(f), admit(f)]);
     expect(results.filter(Boolean)).toHaveLength(1);
     expect(await db.select().from(heartbeatRuns).where(and(eq(heartbeatRuns.companyId, f.companyId), eq(heartbeatRuns.status, "queued")))).toHaveLength(1);
   });
   it("retains the source incident through prior rejected message admissions", async () => {
-    const f = await seed(), rejectedRunId = randomUUID();
+    const f = await seedWithVerifiedStop(), rejectedRunId = randomUUID();
     await db.insert(heartbeatRuns).values({ id: rejectedRunId, companyId: f.companyId, agentId: f.agentId,
       status: "cancelled", errorCode: "execution_reconciliation_required", contextSnapshot: { issueId: f.issueId },
       finishedAt: new Date("2026-09-11T10:30:00Z") });
