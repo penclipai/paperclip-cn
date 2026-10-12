@@ -1,3 +1,5 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
 import {
   useCallback,
   useEffect,
@@ -8,8 +10,6 @@ import {
   type PointerEvent,
   type ReactNode,
 } from "react";
-import type { TFunction } from "i18next";
-import { useTranslation } from "react-i18next";
 import {
   Boxes,
   Check,
@@ -120,27 +120,6 @@ function ancestorIds(model: SkillFolderTreeModel, folderId: string): string[] {
     .filter((id) => id !== folderId);
 }
 
-function localizedFolderLabel(t: TFunction, folder: Pick<FolderListItem, "systemKey" | "name">): string {
-  switch (folder.systemKey) {
-    case "my":
-      return t("folders.mySkills", { defaultValue: "My Skills" });
-    case "projects":
-      return t("folders.projects", { defaultValue: "Projects" });
-    case "bundled":
-      return t("folders.bundled", { defaultValue: "Bundled" });
-    default:
-      return folder.name;
-  }
-}
-
-function localizedFolderPath(t: TFunction, model: SkillFolderTreeModel, folderId: string): string | null {
-  const trail = folderBreadcrumbTrail(model, folderId);
-  if (trail.length === 0) return null;
-  const labels = trail.map((folder) => localizedFolderLabel(t, folder));
-  if (!trail[0]?.systemKey) labels.unshift(t("folders.company", { defaultValue: "Company" }));
-  return labels.join(" / ");
-}
-
 // ---------------------------------------------------------------------------
 // Rail
 // ---------------------------------------------------------------------------
@@ -174,7 +153,7 @@ export function SkillFolderRail({
   onDeleteFolder: (folder: FolderListItem) => void;
   onEnsureMyFolder?: () => void;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   const model = useMemo(() => treeFromResult(result), [result]);
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
   const [renamingId, setRenamingId] = useState<string | null>(null);
@@ -273,19 +252,13 @@ export function SkillFolderRail({
   return (
     <div className="relative hidden h-full shrink-0 md:flex" style={{ width: `${width}px` }}>
       <nav
-        aria-label={t("folders.skillFolders", { defaultValue: "Skill folders" })}
+        aria-label={translateInstant("folders.skillFolders")}
         className="flex min-w-0 flex-1 flex-col overflow-y-auto border-r border-border pr-3"
       >
       <div className="mb-2 flex items-center justify-between gap-2 pt-0.5">
         <div className="text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">
-          {t("folders.title", { defaultValue: "Folders" })}
-        </div>
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          title={t("folders.newFolder", { defaultValue: "New folder" })}
-          onClick={() => onCreateFolder(null)}
-        >
+          {translateInstant("folders.title")}</div>
+        <Button variant="ghost" size="icon-sm" title={translateInstant("folders.newFolder")} onClick={() => onCreateFolder(null)}>
           <Plus className="h-3.5 w-3.5" />
         </Button>
       </div>
@@ -300,7 +273,7 @@ export function SkillFolderRail({
         <div className="space-y-0.5">
           <VirtualRow
             active={selection === "all"}
-            label={t("folders.allSkills", { defaultValue: "All skills" })}
+            label={translateInstant("folders.allSkills")}
             count={allCount}
             icon={<Layers className="h-3.5 w-3.5" />}
             onSelect={() => onSelect("all")}
@@ -315,7 +288,7 @@ export function SkillFolderRail({
               expanded={expanded}
               renamingId={renamingId}
               renameDraft={renameDraft}
-              rootLabel={t("folders.mySkills", { defaultValue: "My Skills" })}
+              rootLabel="My Skills"
               rootIcon={<User className="h-3.5 w-3.5" />}
               onToggle={toggle}
               onSelect={onSelect}
@@ -331,7 +304,7 @@ export function SkillFolderRail({
           ) : onEnsureMyFolder ? (
             <VirtualRow
               active={false}
-              label={t("folders.mySkills", { defaultValue: "My Skills" })}
+              label={translateInstant("folders.mySkills")}
               count={0}
               icon={<User className="h-3.5 w-3.5" />}
               muted
@@ -340,7 +313,7 @@ export function SkillFolderRail({
           ) : null}
 
           {/* Company — plain top-level company folders */}
-          <RailHeading label={t("folders.company", { defaultValue: "Company" })} onCreate={() => onCreateFolder(null)} />
+          <RailHeading label={translateInstant("Organization")} onCreate={() => onCreateFolder(null)} />
           {model.company.length > 0 ? (
             model.company.map((node) => (
               <TreeBranch
@@ -364,9 +337,7 @@ export function SkillFolderRail({
               />
             ))
           ) : (
-            <div className="px-2 py-1 text-xs text-muted-foreground">
-              {t("folders.noCompanyFolders", { defaultValue: "No company folders yet." })}
-            </div>
+            <div className="px-2 py-1 text-xs text-muted-foreground">{translateInstant("No organization folders yet.")}</div>
           )}
 
           {/* Projects — auto-managed, read-only structure */}
@@ -378,7 +349,7 @@ export function SkillFolderRail({
               expanded={expanded}
               renamingId={renamingId}
               renameDraft={renameDraft}
-              rootLabel={t("folders.projects", { defaultValue: "Projects" })}
+              rootLabel="Projects"
               rootIcon={<Boxes className="h-3.5 w-3.5" />}
               onToggle={toggle}
               onSelect={onSelect}
@@ -394,7 +365,7 @@ export function SkillFolderRail({
           ) : (
             <VirtualRow
               active={false}
-              label={t("folders.projects", { defaultValue: "Projects" })}
+              label={translateInstant("folders.projects")}
               count={0}
               icon={<Boxes className="h-3.5 w-3.5" />}
               muted
@@ -412,7 +383,7 @@ export function SkillFolderRail({
               expanded={expanded}
               renamingId={renamingId}
               renameDraft={renameDraft}
-              rootLabel={t("folders.bundled", { defaultValue: "Bundled" })}
+              rootLabel="Bundled"
               rootIcon={<Boxes className="h-3.5 w-3.5" />}
               onToggle={toggle}
               onSelect={onSelect}
@@ -428,11 +399,10 @@ export function SkillFolderRail({
           ) : null}
 
           <div className="px-2 pb-1 pt-3 text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">
-            {t("folders.system", { defaultValue: "System" })}
-          </div>
+            {translateInstant("folders.system")}</div>
           <VirtualRow
             active={selection === "unfiled"}
-            label={t("folders.unfiled", { defaultValue: "Unfiled" })}
+            label={translateInstant("folders.unfiled")}
             count={unfiledCount}
             icon={<FolderSwatch color={null} />}
             onSelect={() => onSelect("unfiled")}
@@ -445,8 +415,7 @@ export function SkillFolderRail({
         <div className="mt-4 border-t border-border pt-3">
           <div className="mb-1.5 flex items-center gap-1.5 px-2 text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">
             <Hash className="h-3 w-3" />
-            {t("folders.tags", { defaultValue: "Tags" })}
-          </div>
+            {translateInstant("folders.tags")}</div>
           <div className="flex flex-wrap gap-1.5 px-1">
             {activeTag ? (
               <button
@@ -477,7 +446,7 @@ export function SkillFolderRail({
       </nav>
       <div
         role="separator"
-        aria-label={t("folders.resizeSkillFolders", { defaultValue: "Resize skill folders" })}
+        aria-label={translateInstant("folders.resizeSkillFolders")}
         aria-orientation="vertical"
         aria-valuemin={MIN_FOLDER_RAIL_WIDTH}
         aria-valuemax={MAX_FOLDER_RAIL_WIDTH}
@@ -501,7 +470,6 @@ export function SkillFolderRail({
 }
 
 function RailHeading({ label, onCreate }: { label: string; onCreate: () => void }) {
-  const { t } = useTranslation();
   return (
     <div className="group/heading flex items-center justify-between px-2 pb-0.5 pt-3">
       <span className="text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">
@@ -510,10 +478,7 @@ function RailHeading({ label, onCreate }: { label: string; onCreate: () => void 
       <button
         type="button"
         onClick={onCreate}
-        title={t("folders.newSectionFolder", {
-          defaultValue: "New {{section}} folder",
-          section: label,
-        })}
+        title={`New ${label.toLowerCase()} folder`}
         className="opacity-0 transition-opacity group-hover/heading:opacity-100"
       >
         <Plus className="h-3 w-3 text-muted-foreground" />
@@ -598,7 +563,7 @@ function TreeBranch({
   onRenameCommit: (folder: FolderListItem) => void;
   onRenameCancel: () => void;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   const { folder, children } = node;
   const isOpen = expanded.has(folder.id);
   const active = selection === folder.id;
@@ -618,9 +583,7 @@ function TreeBranch({
       >
         <button
           type="button"
-          aria-label={isOpen
-            ? t("folders.collapse", { defaultValue: "Collapse folder" })
-            : t("folders.expand", { defaultValue: "Expand folder" })}
+          aria-label={isOpen ? "Collapse folder" : "Expand folder"}
           className={cn(
             "flex h-6 w-4 items-center justify-center text-muted-foreground",
             children.length === 0 && "invisible",
@@ -669,10 +632,7 @@ function TreeBranch({
                 variant="ghost"
                 size="icon-sm"
                 className="h-6 w-6 opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100"
-                aria-label={t("folders.actionsFor", {
-                  defaultValue: "Folder actions for {{name}}",
-                  name: label,
-                })}
+                aria-label={`Folder actions for ${label}`}
               >
                 <MoreHorizontal className="h-3.5 w-3.5" />
               </Button>
@@ -681,31 +641,20 @@ function TreeBranch({
               {canNest ? (
                 <DropdownMenuItem onSelect={() => onCreateFolder(folder.id)}>
                   <FolderPlus className="h-3.5 w-3.5" />
-                  {t("folders.newSubfolder", { defaultValue: "New subfolder" })}
-                </DropdownMenuItem>
+                  {translateInstant("folders.newSubfolder")}</DropdownMenuItem>
               ) : null}
               {editable ? (
                 <>
-                  <DropdownMenuItem onSelect={() => onStartRename(folder)}>
-                    {t("folders.rename", { defaultValue: "Rename" })}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onSelect={() => onEditFolder(folder)}>
-                    {t("folders.editColor", { defaultValue: "Edit color" })}
-                  </DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => onStartRename(folder)}>{translateInstant("folders.rename")}</DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => onEditFolder(folder)}>{translateInstant("folders.editColor")}</DropdownMenuItem>
                   <DropdownMenuItem onSelect={() => onMoveFolder(folder, isInMySkills ? "company" : "my")}>
                     <MoveRight className="h-3.5 w-3.5" />
-                    {t("folders.moveToDestination", {
-                      defaultValue: "Move to {{destination}}",
-                      destination: isInMySkills
-                        ? t("folders.company", { defaultValue: "Company" })
-                        : t("folders.mySkills", { defaultValue: "My Skills" }),
-                    })}
+                    {translateInstant("pipelineSettings.moveTo")}{" "}{isInMySkills ? "Organization" : "My Skills"}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem variant="destructive" onSelect={() => onDeleteFolder(folder)}>
                     <Trash2 className="h-3.5 w-3.5" />
-                    {t("common.delete", { defaultValue: "Delete" })}
-                  </DropdownMenuItem>
+                    {translateInstant("common.delete")}</DropdownMenuItem>
                 </>
               ) : null}
             </DropdownMenuContent>
@@ -756,17 +705,14 @@ export function FolderBreadcrumb({
   selection: FolderSelection;
   onSelect: (selection: FolderSelection) => void;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   const model = useMemo(() => treeFromResult(result), [result]);
   const trail = selection === "all" || selection === "unfiled"
     ? []
     : folderBreadcrumbTrail(model, selection);
 
   return (
-    <nav
-      aria-label={t("folders.path", { defaultValue: "Folder path" })}
-      className="flex flex-wrap items-center gap-1 text-sm"
-    >
+    <nav aria-label={translateInstant("folders.path")} className="flex flex-wrap items-center gap-1 text-sm">
       <button
         type="button"
         onClick={() => onSelect("all")}
@@ -776,19 +722,16 @@ export function FolderBreadcrumb({
         )}
       >
         <Home className="h-3.5 w-3.5" />
-        {t("folders.allSkills", { defaultValue: "All skills" })}
-      </button>
+        {translateInstant("folders.allSkills")}</button>
       {selection === "unfiled" ? (
         <>
           <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/60" />
-          <span className="rounded px-1.5 py-0.5 font-medium text-foreground">
-            {t("folders.unfiled", { defaultValue: "Unfiled" })}
-          </span>
+          <span className="rounded px-1.5 py-0.5 font-medium text-foreground">{translateInstant("folders.unfiled")}</span>
         </>
       ) : null}
       {trail.map((folder, index) => {
         const isLast = index === trail.length - 1;
-        const label = index === 0 ? localizedFolderLabel(t, folder) : folder.name;
+        const label = index === 0 ? reservedRootLabel(folder) : folder.name;
         return (
           <span key={folder.id} className="inline-flex items-center gap-1">
             <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/60" />
@@ -823,7 +766,7 @@ export function FolderTiles({
   selection: FolderSelection;
   onOpen: (folderId: string) => void;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   const model = useMemo(() => treeFromResult(result), [result]);
   const children = useMemo<FolderTreeNode[]>(() => {
     if (selection === "unfiled") return [];
@@ -836,8 +779,7 @@ export function FolderTiles({
   return (
     <div className="mb-4">
       <div className="mb-2 text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">
-        {t("folders.title", { defaultValue: "Folders" })}
-      </div>
+        {translateInstant("folders.title")}</div>
       <div className="grid gap-2 [grid-template-columns:repeat(auto-fill,minmax(11rem,1fr))]">
         {children.map((node) => (
           <button
@@ -852,7 +794,7 @@ export function FolderTiles({
               <FolderSwatch color={node.folder.color} className="h-3.5 w-3.5" />
             )}
             <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
-              {localizedFolderLabel(t, node.folder)}
+              {reservedRootLabel(node.folder)}
             </span>
             <span className="text-xs text-muted-foreground">{node.folder.itemCount}</span>
           </button>
@@ -888,7 +830,7 @@ export function MoveToFolderDialog({
   /** Create a folder under `parentId` (null = top level); resolve to the new id. */
   onCreateFolder: (parentId: string | null, name: string) => Promise<string | null>;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   const model = useMemo(() => treeFromResult(result), [result]);
   const [query, setQuery] = useState("");
   const [target, setTarget] = useState<string | null | undefined>(undefined);
@@ -915,10 +857,8 @@ export function MoveToFolderDialog({
   const previewPath = chosen === undefined
     ? null
     : chosen === null
-      ? t("folders.unfiled", { defaultValue: "Unfiled" })
-      : chosenFolder
-        ? localizedFolderPath(t, model, chosenFolder.id)
-        : null;
+      ? "Unfiled"
+      : chosenFolder?.path ?? null;
 
   async function submitNewFolder() {
     const name = newName.trim();
@@ -963,22 +903,14 @@ export function MoveToFolderDialog({
           ) : (
             <FolderSwatch color={folder.color} />
           )}
-          <span className="min-w-0 flex-1 truncate">{localizedFolderLabel(t, folder)}</span>
-          {isCurrent ? (
-            <span className="text-xs text-muted-foreground">
-              {t("folders.current", { defaultValue: "current" })}
-            </span>
-          ) : null}
-          {bundled ? (
-            <span className="text-xs text-muted-foreground">
-              {t("folders.readOnly", { defaultValue: "read-only" })}
-            </span>
-          ) : null}
+          <span className="min-w-0 flex-1 truncate">{reservedRootLabel(folder)}</span>
+          {isCurrent ? <span className="text-xs text-muted-foreground">{translateInstant("folders.current")}</span> : null}
+          {bundled ? <span className="text-xs text-muted-foreground">{translateInstant("folders.readOnly")}</span> : null}
           {isChosen ? <Check className="h-3.5 w-3.5" /> : null}
           {nestable ? (
             <button
               type="button"
-              title={t("folders.newFolderInside", { defaultValue: "New folder inside..." })}
+              title={translateInstant("New folder inside…")}
               className="opacity-0 transition-opacity group-hover:opacity-100"
               onClick={(event) => {
                 event.stopPropagation();
@@ -1018,7 +950,7 @@ export function MoveToFolderDialog({
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder={t("folders.search", { defaultValue: "Search folders" })}
+            placeholder={translateInstant("folders.search")}
             className="h-8 min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
           />
         </div>
@@ -1032,14 +964,8 @@ export function MoveToFolderDialog({
             onClick={() => setTarget(null)}
           >
             <FolderSwatch color={null} />
-            <span className="min-w-0 flex-1 truncate">
-              {t("folders.unfiled", { defaultValue: "Unfiled" })}
-            </span>
-            {currentFolderId == null ? (
-              <span className="text-xs text-muted-foreground">
-                {t("folders.current", { defaultValue: "current" })}
-              </span>
-            ) : null}
+            <span className="min-w-0 flex-1 truncate">{translateInstant("folders.unfiled")}</span>
+            {currentFolderId == null ? <span className="text-xs text-muted-foreground">{translateInstant("folders.current")}</span> : null}
             {chosen === null ? <Check className="h-3.5 w-3.5" /> : null}
           </div>
           {model.roots.map((node) => renderNode(node, 0))}
@@ -1063,8 +989,7 @@ export function MoveToFolderDialog({
                 className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-accent/40 hover:text-foreground"
               >
                 <Plus className="h-3.5 w-3.5" />
-                {t("folders.newTopLevel", { defaultValue: "New top-level folder..." })}
-              </button>
+                {translateInstant("New top-level folder…")}</button>
             )}
           </div>
         </div>
@@ -1072,25 +997,21 @@ export function MoveToFolderDialog({
         <div className="min-h-5 text-xs text-muted-foreground">
           {previewPath ? (
             <span>
-              {t("folders.movingTo", { defaultValue: "Moving to" })}{" "}
-              <span className="font-mono text-foreground">{previewPath}</span>
+              {translateInstant("folders.movingTo")}{" "}<span className="font-mono text-foreground">{previewPath}</span>
             </span>
           ) : (
-            <span>{t("folders.pickDestination", { defaultValue: "Pick a destination folder." })}</span>
+            <span>{translateInstant("folders.pickDestination")}</span>
           )}
         </div>
 
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={pending}>
-            {t("common.cancel", { defaultValue: "Cancel" })}
-          </Button>
+            {translateInstant("common.cancel")}</Button>
           <Button
             disabled={pending || chosen === undefined || chosen === currentFolderId}
             onClick={() => chosen !== undefined && onMove(chosen)}
           >
-            {pending
-              ? t("folders.moving", { defaultValue: "Moving..." })
-              : t("folders.moveHere", { defaultValue: "Move here" })}
+            {pending ? "Moving…" : "Move here"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -1118,14 +1039,14 @@ function InlineNewFolder({
   onSubmit: () => void;
   onCancel: () => void;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   return (
     <div className="flex items-center gap-2 py-1" style={{ paddingLeft: `${0.5 + depth * 0.9}rem` }}>
       <FolderPlus className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
       <Input
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        placeholder={t("folders.namePlaceholder", { defaultValue: "Folder name" })}
+        placeholder={translateInstant("folders.namePlaceholder")}
         autoFocus
         className="h-7 flex-1 text-sm"
         onKeyDown={(event) => {
@@ -1134,11 +1055,9 @@ function InlineNewFolder({
         }}
       />
       <Button size="sm" variant="ghost" onClick={onCancel} disabled={pending}>
-        {t("common.cancel", { defaultValue: "Cancel" })}
-      </Button>
+        {translateInstant("common.cancel")}</Button>
       <Button size="sm" onClick={onSubmit} disabled={pending || !value.trim()}>
-        {t("common.add", { defaultValue: "Add" })}
-      </Button>
+        {translateInstant("common.add")}</Button>
     </div>
   );
 }

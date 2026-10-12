@@ -4,8 +4,8 @@ import type {
   PluginDetailTabProps,
   PluginCommentAnnotationProps,
   PluginCommentContextMenuItemProps,
-} from "@paperclipai/plugin-sdk/ui";
-import { FileTree, usePluginAction, usePluginData } from "@paperclipai/plugin-sdk/ui";
+} from "@penclipai/plugin-sdk/ui";
+import { FileTree, usePluginAction, usePluginData } from "@penclipai/plugin-sdk/ui";
 import { useCallback, useMemo, useState, useEffect, useRef, type MouseEvent, type RefObject } from "react";
 import { EditorView } from "@codemirror/view";
 import { basicSetup } from "codemirror";

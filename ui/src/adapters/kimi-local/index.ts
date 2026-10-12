@@ -2,11 +2,10 @@ import type { UIAdapterModule } from "../types";
 import { parseKimiStdoutLine } from "@penclipai/adapter-kimi-local/ui";
 import { KimiLocalConfigFields } from "./config-fields";
 import { buildKimiLocalConfig } from "@penclipai/adapter-kimi-local/ui";
-import { translateInstant } from "../../i18n";
 
 export const kimiLocalUIAdapter: UIAdapterModule = {
   type: "kimi_local",
-  label: translateInstant("Kimi Code"),
+  label: "Kimi Code",
   parseStdoutLine: parseKimiStdoutLine,
   ConfigFields: KimiLocalConfigFields,
   buildAdapterConfig: buildKimiLocalConfig,

@@ -1,17 +1,15 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import type { Issue, IssueDocument, IssueThreadInteraction } from "@penclipai/shared";
-import { isArtifactReviewDocumentKey } from "@penclipai/shared";
+import type { Issue, IssueThreadInteraction } from "@penclipai/shared";
 import { issuesApi } from "@/api/issues";
 import { queryKeys } from "@/lib/queryKeys";
 import { IssuePlanDecompositionsSection } from "@/components/IssuePlanDecompositionsSection";
 import { MarkdownBody } from "@/components/MarkdownBody";
 import { DocumentAnnotationsCountChip, IssueDocumentAnnotations } from "@/components/IssueDocumentAnnotations";
 import { useIssuePlanDocument } from "@/hooks/useIssuePlanDocument";
-import { useIssueDocuments } from "@/hooks/useIssueDocuments";
-import { documentDisplayTitle } from "@/lib/issue-artifacts";
 import { useLocation } from "@/lib/router";
-import { useTranslation } from "react-i18next";
 
 interface IssuePropertiesPlansTabProps {
   issue: Issue;
@@ -30,46 +28,6 @@ function hasPendingPlanConfirmation(interactions: IssueThreadInteraction[] | und
   );
 }
 
-function OtherDocumentSection({ issueId, doc, locationHash }: { issueId: string; doc: IssueDocument; locationHash: string }) {
-  const { t, i18n } = useTranslation();
-  const [annotationPanelOpen, setAnnotationPanelOpen] = useState(false);
-  return (
-    <section data-testid="issue-other-document" className="space-y-2 border-t border-border pt-4 first:border-t-0 first:pt-0">
-      <div className="flex items-baseline justify-between gap-2">
-        <h3 className="text-sm font-semibold">{documentDisplayTitle(doc)}</h3>
-        <div className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
-          {t("issueProperties.plans.revisionUpdated", { revision: doc.latestRevisionNumber ?? 1, updatedAt: new Date(doc.updatedAt).toLocaleString(i18n.language, {
-            month: "short",
-            day: "numeric",
-            hour: "numeric",
-            minute: "2-digit",
-          }) })}
-          <DocumentAnnotationsCountChip
-            issueId={issueId}
-            docKey={doc.key}
-            panelOpen={annotationPanelOpen}
-            onToggle={() => setAnnotationPanelOpen((open) => !open)}
-          />
-        </div>
-      </div>
-      <IssueDocumentAnnotations
-        issueId={issueId}
-        doc={doc}
-        bodyMarkdown={doc.body}
-        draftDirty={false}
-        draftConflicted={false}
-        historicalPreview={false}
-        locationHash={locationHash}
-        panelOpen={annotationPanelOpen}
-        onPanelOpenChange={setAnnotationPanelOpen}
-        panelPlacement="popover"
-      >
-        <MarkdownBody>{doc.body}</MarkdownBody>
-      </IssueDocumentAnnotations>
-    </section>
-  );
-}
-
 /**
  * Plans tab of the properties pane.
  *
@@ -80,7 +38,7 @@ function OtherDocumentSection({ issueId, doc, locationHash }: { issueId: string;
  * the /dev/task-chat-lab harness).
  */
 export function IssuePropertiesPlansTab({ issue }: IssuePropertiesPlansTabProps) {
-  const { t, i18n } = useTranslation();
+  useTranslation();
   const { data: planDocument, isLoading: planDocumentLoading } = useIssuePlanDocument(issue.id);
   const location = useLocation();
   const [annotationPanelOpen, setAnnotationPanelOpen] = useState(false);
@@ -92,32 +50,24 @@ export function IssuePropertiesPlansTab({ issue }: IssuePropertiesPlansTabProps)
     queryKey: queryKeys.issues.interactions(issue.id),
     queryFn: () => issuesApi.listInteractions(issue.id),
   });
-  const { data: documents } = useIssueDocuments(issue.id);
   const hasPlans = (data?.length ?? 0) > 0;
   const pendingPlanConfirmation = hasPendingPlanConfirmation(interactions);
-  // Every other non-system document (e.g. `synthesis`) renders below the plan;
-  // the `plan` doc itself stays on its dedicated annotated surface above, and
-  // proxy `artifact-review-*` documents surface only through their Work product.
-  const otherDocuments = (documents ?? []).filter(
-    (doc) => doc.key !== "plan" && !isArtifactReviewDocumentKey(doc.key),
-  );
 
-  if (!planDocument && !hasPlans && otherDocuments.length === 0) {
+  if (!planDocument && !hasPlans) {
     return (
       <div className="px-1 py-6 text-sm text-muted-foreground">
         {planDocumentLoading ? (
-          t("issueProperties.plans.loading")
+          "Loading plan…"
         ) : issue.workMode === "planning" ? (
           <div className="space-y-2">
-            <p>{t("issueProperties.plans.planModeMissingDocument")}</p>
+            <p>{translateInstant("issueProperties.plans.planModeMissingDocument")}</p>
             {pendingPlanConfirmation ? (
               <p className="text-amber-foreground">
-                {t("issueProperties.plans.pendingConfirmationMissingDocument")}
-              </p>
+                {translateInstant("issueProperties.plans.pendingConfirmationMissingDocument")}</p>
             ) : null}
           </div>
         ) : (
-          t("issueProperties.plans.empty")
+          "No plan yet. The plan document, accepted plans, and their revisions will appear here."
         )}
       </div>
     );
@@ -132,12 +82,12 @@ export function IssuePropertiesPlansTab({ issue }: IssuePropertiesPlansTabProps)
       {planDocument ? (
         <section data-testid="issue-plan-document" className="space-y-2">
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            {t("issueProperties.plans.revisionUpdated", { revision: planDocument.latestRevisionNumber ?? 1, updatedAt: new Date(planDocument.updatedAt).toLocaleString(i18n.language, {
+            {`Revision ${planDocument.latestRevisionNumber ?? 1} · updated ${new Date(planDocument.updatedAt).toLocaleString([], {
               month: "short",
               day: "numeric",
               hour: "numeric",
               minute: "2-digit",
-            }) })}
+            })}`}
             <DocumentAnnotationsCountChip
               issueId={issue.id}
               docKey="plan"
@@ -165,9 +115,6 @@ export function IssuePropertiesPlansTab({ issue }: IssuePropertiesPlansTabProps)
           </IssueDocumentAnnotations>
         </section>
       ) : null}
-      {otherDocuments.map((doc) => (
-        <OtherDocumentSection key={doc.key} issueId={issue.id} doc={doc} locationHash={location.hash} />
-      ))}
       {hasPlans ? (
         <IssuePlanDecompositionsSection issueId={issue.id} issueIdentifier={issue.identifier} />
       ) : null}

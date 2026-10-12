@@ -1,3 +1,4 @@
+import { AgentIdentity } from "@/components/AgentIdentity";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
@@ -23,7 +24,7 @@ import {
 } from "../lib/blockedInbox";
 import { BlockedReasonChip } from "./BlockedReasonChip";
 import { IssueGroupHeader } from "./IssueGroupHeader";
-import { IssueRow } from "./IssueRow";
+import { IssueRow, type IssueRowPresentation } from "./IssueRow";
 import { Identity } from "./Identity";
 import { StatusIcon } from "./StatusIcon";
 import { Button } from "@/components/ui/button";
@@ -33,6 +34,7 @@ interface BlockedInboxViewProps {
   companyId: string;
   searchQuery: string;
   agentNameById: ReadonlyMap<string, string>;
+  agents?: import("./AgentAvatar").AvatarAgent[];
   userLabelById?: ReadonlyMap<string, string>;
   issueLinkState: unknown;
   groupBy: BlockedInboxGroupBy;
@@ -45,6 +47,7 @@ interface BlockedInboxViewProps {
   showStatusColumn: boolean;
   showIdentifierColumn: boolean;
   showUpdatedColumn: boolean;
+  presentation?: IssueRowPresentation;
 }
 
 const BLOCKED_LIST_LIMIT = 200;
@@ -102,6 +105,7 @@ export function BlockedInboxView({
   companyId,
   searchQuery,
   agentNameById,
+  agents,
   userLabelById,
   issueLinkState,
   groupBy,
@@ -114,6 +118,7 @@ export function BlockedInboxView({
   showStatusColumn,
   showIdentifierColumn,
   showUpdatedColumn,
+  presentation = "legacy",
 }: BlockedInboxViewProps) {
   const { t } = useTranslation();
   const [collapsedVariants, setCollapsedVariants] = useState<Set<string>>(() => new Set());
@@ -178,7 +183,10 @@ export function BlockedInboxView({
             {Array.from({ length: 2 }).map((__, rowIdx) => (
               <div
                 key={rowIdx}
-                className="flex items-center gap-3 border-b border-border/60 px-3 py-2.5 sm:px-4"
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2.5 sm:px-4",
+                  presentation === "legacy" && "border-b border-border/60",
+                )}
               >
                 <div className="h-3.5 w-3.5 animate-pulse rounded-full bg-muted" />
                 <div className="h-4 w-16 animate-pulse rounded bg-muted/70" />
@@ -277,13 +285,14 @@ export function BlockedInboxView({
               key={row.issue.id}
               row={row}
               issueLinkState={issueLinkState}
-              agentNameById={agentNameById}
+              agentNameById={agentNameById} agents={agents}
               userLabelById={userLabelById}
               liveIssueIds={liveIssueIds}
               subtreeLiveCounts={subtreeLiveCounts}
               showStatusColumn={showStatusColumn}
               showIdentifierColumn={showIdentifierColumn}
               showUpdatedColumn={showUpdatedColumn}
+              presentation={presentation}
             />
           ))
         ) : (
@@ -291,7 +300,7 @@ export function BlockedInboxView({
             const isCollapsed = collapsedVariants.has(group.variant);
             return (
               <div key={group.variant} data-testid={`blocked-inbox-group-${group.variant}`}>
-                <div className="px-3 sm:px-4">
+                <div className={presentation === "task" ? "rounded-lg px-3 sm:pl-0 sm:pr-4" : "px-3 sm:px-4"}>
                   <IssueGroupHeader
                     label={`${formatBlockedVariantLabel(group.variant, t)} · ${group.rows.length}`}
                     collapsible
@@ -306,13 +315,14 @@ export function BlockedInboxView({
                         key={row.issue.id}
                         row={row}
                         issueLinkState={issueLinkState}
-                        agentNameById={agentNameById}
+                        agentNameById={agentNameById} agents={agents}
                         userLabelById={userLabelById}
                         liveIssueIds={liveIssueIds}
                         subtreeLiveCounts={subtreeLiveCounts}
                         showStatusColumn={showStatusColumn}
                         showIdentifierColumn={showIdentifierColumn}
                         showUpdatedColumn={showUpdatedColumn}
+                        presentation={presentation}
                       />
                     ))}
                   </div>
@@ -330,12 +340,14 @@ interface BlockedInboxRowProps {
   row: BlockedInboxIssueRow;
   issueLinkState: unknown;
   agentNameById: ReadonlyMap<string, string>;
+  agents?: import("./AgentAvatar").AvatarAgent[];
   userLabelById?: ReadonlyMap<string, string>;
   liveIssueIds: ReadonlySet<string>;
   subtreeLiveCounts: ReadonlyMap<string, number>;
   showStatusColumn: boolean;
   showIdentifierColumn: boolean;
   showUpdatedColumn: boolean;
+  presentation: IssueRowPresentation;
 }
 
 function resolveOwnerName(
@@ -358,12 +370,14 @@ function BlockedInboxRow({
   row,
   issueLinkState,
   agentNameById,
+  agents,
   userLabelById,
   liveIssueIds,
   subtreeLiveCounts,
   showStatusColumn,
   showIdentifierColumn,
   showUpdatedColumn,
+  presentation,
 }: BlockedInboxRowProps) {
   const { t } = useTranslation();
   const { label: ownerName, isAgent } = resolveOwnerName(row, agentNameById, userLabelById);
@@ -399,16 +413,12 @@ function BlockedInboxRow({
       </span>
       {ownerName ? (
         <span className="hidden w-(--sz-150px) min-w-0 items-center text-muted-foreground sm:inline-flex">
-          <Identity
-            name={ownerName}
-            size="xs"
-            className="max-w-full"
-          />
+          {isAgent ? <AgentIdentity agent={agents?.find((agent) => agent.id === row.attention.owner.agentId) ?? { id: row.attention.owner.agentId ?? undefined, name: ownerName }} size="xs" className="max-w-full" /> : <Identity name={ownerName} size="xs" className="max-w-full" />}
         </span>
       ) : (
         <span className="hidden w-(--sz-150px) shrink-0 sm:inline-flex" aria-hidden="true" />
       )}
-      {showUpdatedColumn ? (
+      {presentation === "legacy" && showUpdatedColumn ? (
         <span className="hidden w-(--sz-5_75rem) text-right text-muted-foreground sm:inline" data-testid="blocked-row-age">
           {stoppedAge}
         </span>
@@ -418,10 +428,10 @@ function BlockedInboxRow({
 
   const mobileMeta = (
     <span className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs text-muted-foreground">
-      <span data-testid="blocked-row-age-mobile">{stoppedAge}</span>
+      {presentation === "legacy" && <span data-testid="blocked-row-age-mobile">{stoppedAge}</span>}
       {ownerName ? (
         <>
-          <span aria-hidden="true">·</span>
+          {presentation === "legacy" && <span aria-hidden="true">·</span>}
           <span
             className={cn(isAgent ? "font-medium text-foreground/90" : null)}
             data-testid="blocked-row-owner-mobile"
@@ -437,15 +447,22 @@ function BlockedInboxRow({
     <IssueRow
       issue={row.issue}
       issueLinkState={issueLinkState}
-      showDivider
-      desktopMetaLeading={
+      presentation={presentation}
+      showDivider={presentation === "legacy"}
+      statusSlot={presentation === "task"
+        ? showStatusColumn
+          ? <StatusIcon status={row.issue.status} blockerAttention={blockerAttention} />
+          : <span className="inline-flex size-4" aria-hidden="true" />
+        : undefined}
+      showIdentifier={presentation === "task" ? showIdentifierColumn : undefined}
+      desktopMetaLeading={presentation === "legacy" ? (
         <BlockedRowDesktopMeta
           row={row}
           blockerAttention={blockerAttention}
           showStatusColumn={showStatusColumn}
           showIdentifierColumn={showIdentifierColumn}
         />
-      }
+      ) : undefined}
       mobileLeading={
         <span className="flex shrink-0 items-center gap-1.5 pt-px">
           <StatusIcon status={row.issue.status} blockerAttention={blockerAttention} />
@@ -462,7 +479,9 @@ function BlockedInboxRow({
         />
       }
       mobileMeta={mobileMeta}
+      mobileTitleMeta={presentation === "task" ? <span data-testid="blocked-row-age-mobile">{stoppedAge}</span> : undefined}
       desktopTrailing={desktopTrailing}
+      trailingMeta={presentation === "task" && showUpdatedColumn ? stoppedAge : null}
     />
   );
 }

@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { definePlugin } from "@paperclipai/plugin-sdk";
+import { definePlugin } from "@penclipai/plugin-sdk";
 import type {
   PluginEnvironmentAcquireLeaseParams,
   PluginEnvironmentDestroyLeaseParams,
@@ -17,7 +17,7 @@ import type {
   PluginEnvironmentSyncResult,
   PluginEnvironmentValidateConfigParams,
   PluginEnvironmentValidationResult,
-} from "@paperclipai/plugin-sdk";
+} from "@penclipai/plugin-sdk";
 import {
   kubernetesProviderConfigSchema,
   type KubernetesProviderConfig,

@@ -7,10 +7,15 @@ import {
   asNumber,
   asString,
   buildPaperclipEnv,
+  buildRuntimeToolsEnv,
   parseObject,
   readPaperclipIssueWorkModeFromContext,
-  renderPaperclipWakePrompt,
+  hydrateFreshSessionHandoff,
+  selectPaperclipPromptSections,
+  selectInitialCommunicationGuidance,
+  joinPromptSections,
   stringifyPaperclipWakePayload,
+  paperclipWakeCommentsArePromptOwned,
 } from "@penclipai/adapter-utils/server-utils";
 import crypto, { randomUUID } from "node:crypto";
 import { WebSocket } from "ws";
@@ -86,10 +91,7 @@ type GatewayClientRequestOptions = {
   expectFinal?: boolean;
 };
 
-const MIN_PROTOCOL_VERSION = 3;
-const MAX_PROTOCOL_VERSION = 4;
-const DEFAULT_PROTOCOL_VERSION = 3;
-const GATEWAY_COMMANDS = ["agent", "agent.wait"];
+const PROTOCOL_VERSION = 4;
 const DEFAULT_SCOPES = ["operator.admin"];
 const DEFAULT_CLIENT_ID = "gateway-client";
 const DEFAULT_CLIENT_MODE = "backend";
@@ -194,15 +196,6 @@ function normalizeScopes(value: unknown): string[] {
   return parsed.length > 0 ? parsed : [...DEFAULT_SCOPES];
 }
 
-function normalizeGatewayLocale(value: unknown): string | null {
-  const candidate = nonEmpty(value);
-  if (!candidate) return null;
-  const normalized = candidate.toLowerCase();
-  if (normalized.startsWith("zh")) return "zh-CN";
-  if (normalized.startsWith("en")) return "en-US";
-  return candidate;
-}
-
 function uniqueScopes(scopes: string[]): string[] {
   return Array.from(new Set(scopes.map((scope) => scope.trim()).filter(Boolean)));
 }
@@ -220,52 +213,6 @@ function getGatewayErrorDetails(err: unknown): Record<string, unknown> | null {
   if (!err || typeof err !== "object") return null;
   const candidate = (err as GatewayResponseError).gatewayDetails;
   return asRecord(candidate);
-}
-
-function getGatewayErrorCode(err: unknown): string | null {
-  if (!err || typeof err !== "object") return null;
-  return nonEmpty((err as GatewayResponseError).gatewayCode);
-}
-
-function formatGatewayDetailsForMessage(details: Record<string, unknown> | null): string {
-  if (!details || Object.keys(details).length === 0) return "";
-  return ` Details: ${stringifyForLog(details, 2_000)}`;
-}
-
-function classifyGatewayRequestError(err: unknown): {
-  errorCode: string;
-  errorMessage: string;
-} | null {
-  const gatewayCode = getGatewayErrorCode(err)?.toUpperCase() ?? null;
-  if (!gatewayCode) return null;
-
-  const message = err instanceof Error ? err.message : String(err);
-  const details = getGatewayErrorDetails(err);
-  const detailsSuffix = formatGatewayDetailsForMessage(details);
-
-  if (gatewayCode === "PROTOCOL_MISMATCH") {
-    return {
-      errorCode: "openclaw_gateway_protocol_mismatch",
-      errorMessage:
-        `Paperclip supports Gateway protocol ${MIN_PROTOCOL_VERSION}-${MAX_PROTOCOL_VERSION}, but OpenClaw gateway reported protocol mismatch: ${message}.${detailsSuffix}`,
-    };
-  }
-
-  if (gatewayCode === "INVALID_REQUEST") {
-    return {
-      errorCode: "openclaw_gateway_invalid_request",
-      errorMessage: `OpenClaw gateway rejected the request as invalid: ${message}.${detailsSuffix}`,
-    };
-  }
-
-  if (gatewayCode === "AUTH_FAILED" || gatewayCode === "UNAUTHORIZED" || gatewayCode === "FORBIDDEN") {
-    return {
-      errorCode: "openclaw_gateway_auth_failed",
-      errorMessage: `OpenClaw gateway authentication failed: ${message}.${detailsSuffix}`,
-    };
-  }
-
-  return null;
 }
 
 function extractPairingRequestId(err: unknown): string | null {
@@ -403,6 +350,7 @@ function buildPaperclipEnvForWake(ctx: AdapterExecutionContext, wakePayload: Wak
   const paperclipApiUrlOverride = resolvePaperclipApiUrlOverride(ctx.config.paperclipApiUrl);
   const paperclipEnv: Record<string, string> = {
     ...buildPaperclipEnv(ctx.agent),
+    ...buildRuntimeToolsEnv(ctx.runtimeTools),
     PAPERCLIP_RUN_ID: ctx.runId,
   };
 
@@ -428,6 +376,7 @@ function buildWakeText(
   paperclipEnv: Record<string, string>,
   structuredWakePrompt: string,
   claimedApiKeyPath: string,
+  conversationTaskMarkdown?: string,
 ): string {
   const orderedKeys = [
     "PAPERCLIP_RUN_ID",
@@ -451,6 +400,19 @@ function buildWakeText(
 
   const issueIdHint = payload.taskId ?? payload.issueId ?? "";
   const apiBaseHint = paperclipEnv.PAPERCLIP_API_URL ?? "<set PAPERCLIP_API_URL>";
+
+  if (conversationTaskMarkdown !== undefined) {
+    return [
+      "Paperclip conversation turn for a cloud adapter.",
+      "Set these values in your run context:",
+      ...envLines,
+      `Load PAPERCLIP_API_KEY from ${claimedApiKeyPath} (the token saved after claim-api-key).`,
+      "Use Authorization: Bearer $PAPERCLIP_API_KEY on every API call and X-Paperclip-Run-Id: $PAPERCLIP_RUN_ID on every mutation.",
+      "Follow the supplied chat mode directive. Keep this conversation available for the next message.",
+      structuredWakePrompt,
+      conversationTaskMarkdown,
+    ].join("\n\n");
+  }
 
   const lines = [
     "Paperclip wake event for a cloud adapter.",
@@ -906,21 +868,14 @@ async function autoApproveDevicePairing(params: {
 
     await client.connect(
       () => ({
-        minProtocol: MIN_PROTOCOL_VERSION,
-        maxProtocol: MAX_PROTOCOL_VERSION,
+        minProtocol: PROTOCOL_VERSION,
+        maxProtocol: PROTOCOL_VERSION,
         client: {
           id: params.clientId,
           version: params.clientVersion,
           platform: process.platform,
           mode: params.clientMode,
         },
-        caps: GATEWAY_COMMANDS,
-        commands: GATEWAY_COMMANDS,
-        permissions: {
-          scopes: true,
-        },
-        locale: "en-US",
-        userAgent: `Paperclip OpenClaw Gateway Adapter/${params.clientVersion} (${process.platform})`,
         role: params.role,
         scopes: approvalScopes,
         auth: {
@@ -1145,11 +1100,6 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const clientVersion = nonEmpty(ctx.config.clientVersion) ?? DEFAULT_CLIENT_VERSION;
   const role = nonEmpty(ctx.config.role) ?? DEFAULT_ROLE;
   const scopes = normalizeScopes(ctx.config.scopes);
-  const gatewayLocale =
-    normalizeGatewayLocale(ctx.config.locale) ??
-    normalizeGatewayLocale(ctx.context.runtimeUiLocale) ??
-    "en-US";
-  const userAgent = `Paperclip OpenClaw Gateway Adapter/${clientVersion} (${process.platform})`;
   const deviceFamily = nonEmpty(ctx.config.deviceFamily);
   const disableDeviceAuth = parseBoolean(ctx.config.disableDeviceAuth, false);
 
@@ -1157,10 +1107,17 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const paperclipEnv = buildPaperclipEnvForWake(ctx, wakePayload);
   // No heartbeat prompt template is sent over the gateway, so the wake prompt
   // must carry the execution contract itself.
-  const structuredWakePrompt = renderPaperclipWakePrompt(ctx.context.paperclipWake, {
+  await hydrateFreshSessionHandoff(ctx, { resumedSession: Boolean(ctx.runtime?.sessionId) });
+  const { taskContextNote, wakePrompt: structuredWakePrompt } = selectPaperclipPromptSections(ctx.context, {
+    resumedSession: Boolean(ctx.runtime?.sessionId),
     includeExecutionContract: true,
+    includeCommunicationGuidance: false,
   });
-  const structuredWakeJson = stringifyPaperclipWakePayload(ctx.context.paperclipWake);
+  const structuredWakeJson = paperclipWakeCommentsArePromptOwned(ctx.context)
+    ? null
+    : stringifyPaperclipWakePayload(ctx.context.paperclipWake, {
+        omitIssueDescription: Boolean(taskContextNote),
+      });
   const wakeText = buildWakeText(
     wakePayload,
     paperclipEnv,
@@ -1168,6 +1125,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       ? joinWakePayloadSections(structuredWakePrompt, structuredWakeJson)
       : structuredWakePrompt,
     resolveClaimedApiKeyPath(ctx.config.claimedApiKeyPath),
+    taskContextNote || undefined,
   );
 
   const sessionKeyStrategy = normalizeSessionKeyStrategy(ctx.config.sessionKeyStrategy);
@@ -1182,9 +1140,10 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   });
 
   const templateMessage = nonEmpty(payloadTemplate.message) ?? nonEmpty(payloadTemplate.text);
-  const localizationPrompt = nonEmpty(ctx.context.paperclipLocalizationPromptMarkdown);
-  const localizedWakeText = localizationPrompt ? `${localizationPrompt}\n\n${wakeText}` : wakeText;
-  const message = templateMessage ? appendWakeText(templateMessage, localizedWakeText) : localizedWakeText;
+  const message = joinPromptSections([
+    selectInitialCommunicationGuidance(ctx.context, { resumedSession: Boolean(ctx.runtime?.sessionId) }),
+    templateMessage ? appendWakeText(templateMessage, wakeText) : wakeText,
+  ]);
 
   const agentParams = buildAgentParams({
     payloadTemplate,
@@ -1231,7 +1190,14 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   let autoPairAttempted = false;
   let latestResultPayload: unknown = null;
   let retryCount = 0;
+  let dispatchReported = false;
   const MAX_RETRIES = 2;
+
+  const reportDispatch = () => {
+    if (dispatchReported) return;
+    dispatchReported = true;
+    ctx.onDispatch?.();
+  };
 
   while (true) {
     const trackedRunIds = new Set<string>([ctx.runId]);
@@ -1310,8 +1276,8 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       const hello = await client.connect((nonce) => {
         const signedAtMs = Date.now();
         const connectParams: Record<string, unknown> = {
-          minProtocol: MIN_PROTOCOL_VERSION,
-          maxProtocol: MAX_PROTOCOL_VERSION,
+          minProtocol: PROTOCOL_VERSION,
+          maxProtocol: PROTOCOL_VERSION,
           client: {
             id: clientId,
             version: clientVersion,
@@ -1319,13 +1285,6 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
             ...(deviceFamily ? { deviceFamily } : {}),
             mode: clientMode,
           },
-          caps: GATEWAY_COMMANDS,
-          commands: GATEWAY_COMMANDS,
-          permissions: {
-            scopes: true,
-          },
-          locale: gatewayLocale,
-          userAgent,
           role,
           scopes,
           auth:
@@ -1364,9 +1323,14 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
 
       await ctx.onLog(
         "stdout",
-        `[openclaw-gateway] connected protocol=${asNumber(asRecord(hello)?.protocol, DEFAULT_PROTOCOL_VERSION)}\n`,
+        `[openclaw-gateway] connected protocol=${asNumber(asRecord(hello)?.protocol, PROTOCOL_VERSION)}\n`,
       );
 
+      // Keep any server-side continuation lock through retryable websocket
+      // setup and backoff. The first agent request is the remote-work boundary:
+      // once it is sent, retrying would be unsafe because the gateway may have
+      // accepted work even if the response is lost.
+      reportDispatch();
       const acceptedPayload = await client.request<Record<string, unknown>>("agent", agentParams, {
         timeoutMs: connectTimeoutMs,
       });
@@ -1536,7 +1500,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
           lower.includes("socket hang up") ||
           (timedOut && !lower.includes("agent.wait")));
 
-      if (isTransient && retryCount < MAX_RETRIES) {
+      if (isTransient && !dispatchReported && retryCount < MAX_RETRIES) {
         retryCount++;
         const backoffMs = retryCount * 2000;
         await ctx.onLog(
@@ -1547,10 +1511,9 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         continue;
       }
 
-      const classifiedError = classifyGatewayRequestError(err);
       const detailedMessage = pairingRequired
         ? `${message}. Approve the pending device in OpenClaw (for example: openclaw devices approve --latest --url <gateway-ws-url> --token <gateway-token>) and retry. Ensure this agent has a persisted adapterConfig.devicePrivateKeyPem so approvals are reused.`
-        : classifiedError?.errorMessage ?? message;
+        : message;
 
       await ctx.onLog("stderr", `[openclaw-gateway] request failed: ${detailedMessage}\n`);
 
@@ -1563,7 +1526,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
           ? "openclaw_gateway_timeout"
           : pairingRequired
             ? "openclaw_gateway_pairing_required"
-            : classifiedError?.errorCode ?? "openclaw_gateway_request_failed",
+            : "openclaw_gateway_request_failed",
         resultJson: asRecord(latestResultPayload),
       };
     } finally {

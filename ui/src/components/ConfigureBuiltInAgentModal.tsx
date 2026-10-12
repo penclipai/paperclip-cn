@@ -1,7 +1,7 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
-import type { TFunction } from "i18next";
 
 import {
   Dialog,
@@ -14,10 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field } from "@/components/agent-config-primitives";
-import {
-  AdapterTypeDropdown,
-  ModelDropdown,
-} from "@/components/AgentConfigForm";
+import { AdapterTypeDropdown, ModelDropdown } from "@/components/AgentConfigForm";
 import { InlineBanner } from "@/components/InlineBanner";
 import { listAdapterOptions } from "@/adapters/metadata";
 import { agentsApi } from "@/api/agents";
@@ -25,66 +22,13 @@ import { queryKeys } from "@/lib/queryKeys";
 import { ApiError } from "@/api/client";
 import {
   builtInAgentsApi,
-  type BuiltInAgentDefinition,
   type BuiltInAgentState,
 } from "@/api/builtInAgents";
-
-function builtInAgentDisplayName(
-  definition: BuiltInAgentDefinition,
-  t: TFunction,
-): string {
-  switch (definition.key) {
-    case "briefs":
-      return t("builtInAgents.definitions.briefs.displayName", {
-        defaultValue: "Briefs Agent",
-      });
-    case "learning":
-      return t("builtInAgents.definitions.learning.displayName", {
-        defaultValue: "Learning Agent",
-      });
-    case "reflection-coach":
-      return t("builtInAgents.definitions.reflectionCoach.displayName", {
-        defaultValue: "Reflection Coach",
-      });
-    default:
-      return definition.displayName;
-  }
-}
-
-function builtInAgentShortPurpose(
-  definition: BuiltInAgentDefinition,
-  t: TFunction,
-): string {
-  switch (definition.key) {
-    case "briefs":
-      return t("builtInAgents.definitions.briefs.shortPurpose", {
-        defaultValue:
-          "Prepares concise operational briefs for the board and agent company.",
-      });
-    case "learning":
-      return t("builtInAgents.definitions.learning.shortPurpose", {
-        defaultValue:
-          "Maintains reusable company learning from completed work and recurring patterns.",
-      });
-    case "reflection-coach":
-      return t("builtInAgents.definitions.reflectionCoach.shortPurpose", {
-        defaultValue:
-          "Runs evidence-backed reflection loops on recent agent work, proposes small instruction and skill improvements, and requests approval before changes are applied.",
-      });
-    default:
-      return definition.shortPurpose;
-  }
-}
+import { adapterCuratesModelOrder } from "../lib/model-utils";
 
 /** Adapters whose config completeness is keyed on a non-empty `model`. */
 function isModelBasedAdapter(adapterType: string): boolean {
-  return ![
-    "process",
-    "command",
-    "http",
-    "openclaw_gateway",
-    "hermes_gateway",
-  ].includes(adapterType);
+  return !["process", "command", "http", "openclaw_gateway"].includes(adapterType);
 }
 
 function defaultAdapterType(state: BuiltInAgentState): string {
@@ -119,11 +63,9 @@ export function ConfigureBuiltInAgentModal({
   onOpenChange,
   onConfigured,
 }: ConfigureBuiltInAgentModalProps) {
-  const { t } = useTranslation();
+  useTranslation();
   const queryClient = useQueryClient();
   const { definition } = state;
-  const displayName = builtInAgentDisplayName(definition, t);
-  const shortPurpose = builtInAgentShortPurpose(definition, t);
 
   const [adapterType, setAdapterType] = useState<string>(
     () => state.agent?.adapterType ?? defaultAdapterType(state),
@@ -173,12 +115,7 @@ export function ConfigureBuiltInAgentModal({
     models.some((candidate) => candidate.id === normalizedModel);
   const modelError = modelKnown
     ? null
-    : t("builtInAgents.configure.modelUnavailable", {
-        defaultValue:
-          'Model "{{model}}" is not available for {{adapterType}}. Choose a known model.',
-        model: normalizedModel,
-        adapterType,
-      });
+    : `Model “${normalizedModel}” is not available for ${adapterType}. Choose a known model.`;
   const budgetMonthlyCents = parseBudgetMonthlyCents(budgetDollars);
   const budgetValid = !budgetDollars.trim() || budgetMonthlyCents !== undefined;
   const canSubmit =
@@ -186,88 +123,50 @@ export function ConfigureBuiltInAgentModal({
     modelKnown &&
     (setupSupportedInModal ? !modelRequired || normalizedModel.length > 0 : true);
   const submitLabel = setupSupportedInModal
-    ? t("builtInAgents.configure.configureAndEnable", {
-        defaultValue: "Configure & enable {{name}}",
-        name: displayName,
-      })
-    : t("builtInAgents.configure.provision", {
-        defaultValue: "Provision {{name}}",
-        name: displayName,
-      });
+    ? `Configure & enable ${definition.displayName}`
+    : `Provision ${definition.displayName}`;
 
   const provision = useMutation({
     mutationFn: async () => {
       const adapterConfig: Record<string, unknown> = {};
       if (model.trim()) adapterConfig.model = model.trim();
-      const result = await builtInAgentsApi.provision(
-        companyId,
-        definition.key,
-        {
-          adapterType,
-          adapterConfig,
-          ...(budgetMonthlyCents !== undefined ? { budgetMonthlyCents } : {}),
-        },
-      );
+      const result = await builtInAgentsApi.provision(companyId, definition.key, {
+        adapterType,
+        adapterConfig,
+        ...(budgetMonthlyCents !== undefined ? { budgetMonthlyCents } : {}),
+      });
       return result;
     },
     onSuccess: (result) => {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.builtInAgents.list(companyId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.agents.list(companyId),
-      });
+      queryClient.invalidateQueries({ queryKey: queryKeys.builtInAgents.list(companyId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.agents.list(companyId) });
       if (result.agentId) {
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.agents.detail(result.agentId),
-        });
+        queryClient.invalidateQueries({ queryKey: queryKeys.agents.detail(result.agentId) });
       }
       onConfigured?.(result);
       onOpenChange(false);
     },
     onError: (err) => {
-      setError(
-        err instanceof ApiError
-          ? err.message
-          : t("builtInAgents.configure.failed", {
-              defaultValue: "Failed to configure the built-in agent.",
-            }),
-      );
+      setError(err instanceof ApiError ? err.message : "Failed to configure the built-in agent.");
     },
   });
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(next) =>
-        provision.isPending ? undefined : onOpenChange(next)
-      }
-    >
+    <Dialog open={open} onOpenChange={(next) => (provision.isPending ? undefined : onOpenChange(next))}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>
-            {t("builtInAgents.configure.title", {
-              defaultValue: "Set up the {{name}}",
-              name: displayName,
-            })}
-          </DialogTitle>
-          <DialogDescription>{shortPurpose}</DialogDescription>
+          <DialogTitle>{translateInstant("Set up the")}{" "}{definition.displayName}</DialogTitle>
+          <DialogDescription>{definition.shortPurpose}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <InlineBanner tone="info" compact>
-            {t("builtInAgents.configure.rosterNotice", {
-              defaultValue:
-                "Creates {{name}} in your roster with a Built-in badge. Companies that require hire approval will queue this for the board.",
-              name: displayName,
-            })}
+            {translateInstant("Creates")}{" "}<strong>{definition.displayName}</strong> {translateInstant("in your roster, badged")}{" "}
+            <strong>{translateInstant("Built-in")}</strong>. Organizations that require hire approval will queue this for the
+            board.
           </InlineBanner>
 
-          <Field
-            label={t("builtInAgents.configure.adapterType", {
-              defaultValue: "Adapter type",
-            })}
-          >
+          <Field label={translateInstant("builtInAgents.configure.adapterType")}>
             <AdapterTypeDropdown
               value={adapterType}
               onChange={(next) => {
@@ -289,6 +188,7 @@ export function ConfigureBuiltInAgentModal({
               allowDefault={adapterType !== "opencode_local"}
               required
               groupByProvider={false}
+              preserveOrder={adapterCuratesModelOrder(adapterType)}
               creatable
             />
           )}
@@ -301,21 +201,10 @@ export function ConfigureBuiltInAgentModal({
 
           {!setupSupportedInModal && (
             <InlineBanner tone="warning" compact>
-              {t("builtInAgents.configure.additionalFieldsRequired", {
-                defaultValue:
-                  "This adapter needs command or endpoint fields before it can run. Provision the built-in row now, then finish those fields from the full agent configuration.",
-              })}
-            </InlineBanner>
+              {translateInstant("builtInAgents.configure.additionalFieldsRequired")}</InlineBanner>
           )}
 
-          <Field
-            label={t("builtInAgents.configure.monthlyBudget", {
-              defaultValue: "Monthly budget (optional)",
-            })}
-            hint={t("builtInAgents.configure.monthlyBudgetHint", {
-              defaultValue: "Leave blank for no cap.",
-            })}
-          >
+          <Field label={translateInstant("builtInAgents.configure.monthlyBudget")} hint="Leave blank for no cap.">
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">$</span>
               <Input
@@ -328,11 +217,7 @@ export function ConfigureBuiltInAgentModal({
                 onChange={(event) => setBudgetDollars(event.target.value)}
                 className="w-32"
               />
-              <span className="text-sm text-muted-foreground">
-                {t("builtInAgents.configure.perMonth", {
-                  defaultValue: "/ month",
-                })}
-              </span>
+              <span className="text-sm text-muted-foreground">{translateInstant("builtInAgents.configure.perMonth")}</span>
             </div>
           </Field>
 
@@ -349,8 +234,7 @@ export function ConfigureBuiltInAgentModal({
             onClick={() => onOpenChange(false)}
             disabled={provision.isPending}
           >
-            {t("builtInAgents.configure.notNow", { defaultValue: "Not now" })}
-          </Button>
+            {translateInstant("builtInAgents.configure.notNow")}</Button>
           <Button
             onClick={() => {
               setError(null);
@@ -358,11 +242,7 @@ export function ConfigureBuiltInAgentModal({
             }}
             disabled={!canSubmit || provision.isPending}
           >
-            {provision.isPending
-              ? t("builtInAgents.configure.configuring", {
-                  defaultValue: "Configuring…",
-                })
-              : submitLabel}
+            {provision.isPending ? "Configuring…" : submitLabel}
           </Button>
         </DialogFooter>
       </DialogContent>

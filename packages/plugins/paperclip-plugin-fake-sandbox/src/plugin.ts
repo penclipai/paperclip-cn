@@ -3,7 +3,7 @@ import { mkdir, mkdtemp, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { spawn } from "node:child_process";
-import { definePlugin } from "@paperclipai/plugin-sdk";
+import { definePlugin } from "@penclipai/plugin-sdk";
 import type {
   PluginEnvironmentAcquireLeaseParams,
   PluginEnvironmentCancelInteractiveSetupParams,
@@ -27,7 +27,7 @@ import type {
   PluginEnvironmentStartInteractiveSetupParams,
   PluginEnvironmentValidateConfigParams,
   PluginEnvironmentValidationResult,
-} from "@paperclipai/plugin-sdk";
+} from "@penclipai/plugin-sdk";
 
 interface FakeDriverConfig {
   image: string;

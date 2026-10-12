@@ -1,3 +1,6 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
+import { AgentAvatar } from "@/components/AgentAvatar";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { Agent, Issue } from "@penclipai/shared";
@@ -10,10 +13,10 @@ import {
   buildExecutionPolicy,
   stageParticipantValues,
 } from "../lib/issue-execution-policy";
+import { useExecutionPolicy } from "../hooks/useExecutionPolicy";
 import { cn } from "../lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { User, Eye, ShieldCheck } from "lucide-react";
-import { AgentIcon } from "./AgentIconPicker";
 
 type StageType = "review" | "approval";
 
@@ -32,8 +35,10 @@ export function ExecutionParticipantPicker({
   currentUserId,
   onUpdate,
 }: ExecutionParticipantPickerProps) {
+  useTranslation();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const policyAvailable = useExecutionPolicy(issue.executionPolicy).success;
 
   const reviewerValues = stageParticipantValues(issue.executionPolicy, "review");
   const approverValues = stageParticipantValues(issue.executionPolicy, "approval");
@@ -73,6 +78,7 @@ export function ExecutionParticipantPicker({
   };
 
   const updatePolicy = (nextValues: string[]) => {
+    if (!policyAvailable) return;
     onUpdate({
       executionPolicy: buildExecutionPolicy({
         existingPolicy: issue.executionPolicy ?? null,
@@ -91,6 +97,10 @@ export function ExecutionParticipantPicker({
 
   const label = stageType === "review" ? "Reviewers" : "Approvers";
   const Icon = stageType === "review" ? Eye : ShieldCheck;
+
+  if (!policyAvailable) {
+    return <span role="status" className="text-xs text-muted-foreground">{translateInstant("Execution policy unavailable. Refresh to try again.")}</span>;
+  }
 
   return (
     <Popover open={open} onOpenChange={(o) => { setOpen(o); if (!o) setSearch(""); }}>
@@ -129,7 +139,7 @@ export function ExecutionParticipantPicker({
             )}
             onClick={() => updatePolicy([])}
           >
-            No {label.toLowerCase()}
+            {translateInstant("No")}{" "}{label.toLowerCase()}
           </button>
           {currentUserId && (
             <button
@@ -140,8 +150,7 @@ export function ExecutionParticipantPicker({
               onClick={() => toggle(`user:${currentUserId}`)}
             >
               <User className="h-3 w-3 shrink-0 text-muted-foreground" />
-              Assign to me
-            </button>
+              {translateInstant("Assign to me")}</button>
           )}
           {issue.createdByUserId && issue.createdByUserId !== currentUserId && (
             <button
@@ -189,7 +198,7 @@ export function ExecutionParticipantPicker({
                   )}
                   onClick={() => toggle(encoded)}
                 >
-                  <AgentIcon icon={agent.icon} className="shrink-0 h-3 w-3 text-muted-foreground" />
+                  <AgentAvatar agent={agent} size={16} className="shrink-0 h-3 w-3 text-muted-foreground"/>
                   {agent.name}
                 </button>
               );

@@ -1,18 +1,12 @@
+import { agentAppearanceSchema } from "../agent-appearance.js";
 import { z } from "zod";
-import {
-  AGENT_ICON_NAMES,
-  AGENT_ROLES,
-  MAX_COMPANY_ATTACHMENT_MAX_BYTES,
-  PERMISSION_KEYS,
-  PROJECT_STATUSES,
-} from "../constants.js";
+import { PERMISSION_KEYS } from "../constants.js";
 import {
   issueCommentAuthorTypeSchema,
   issueCommentMetadataSchema,
   issueCommentPresentationSchema,
 } from "./issue.js";
 import { routineVariableSchema } from "./routine.js";
-import { brandColorSchema } from "./company.js";
 
 export const portabilityIncludeSchema = z
   .object({
@@ -44,13 +38,15 @@ export const portabilityFileEntrySchema = z.union([
   }),
 ]);
 
+// Deliberately non-strict: packages exported by older versions still carry
+// retired company keys such as `brandColor` and `attachmentMaxBytes`. Zod
+// strips keys the schema does not name, so those bundles keep importing —
+// the retired settings are simply ignored.
 export const portabilityCompanyManifestEntrySchema = z.object({
   path: z.string().min(1),
   name: z.string().min(1),
   description: z.string().nullable(),
-  brandColor: brandColorSchema,
   logoPath: z.string().nullable(),
-  attachmentMaxBytes: z.number().int().min(1).max(MAX_COMPANY_ATTACHMENT_MAX_BYTES).nullable().default(null),
   requireBoardApprovalForNewAgents: z.boolean(),
   feedbackDataSharingEnabled: z.boolean().default(false),
   feedbackDataSharingConsentAt: z.string().datetime().nullable().default(null),
@@ -79,9 +75,10 @@ export const portabilityAgentManifestEntrySchema = z.object({
   name: z.string().min(1),
   path: z.string().min(1),
   skills: z.array(z.string().min(1)).default([]),
-  role: z.enum(AGENT_ROLES),
+  role: z.string().min(1),
   title: z.string().nullable(),
-  icon: z.enum(AGENT_ICON_NAMES).nullable(),
+  icon: z.string().nullable(),
+  appearance: agentAppearanceSchema.nullable().optional(),
   capabilities: z.string().nullable(),
   reportsToSlug: z.string().min(1).nullable(),
   adapterType: z.string().min(1),
@@ -123,7 +120,7 @@ export const portabilityProjectManifestEntrySchema = z.object({
   leadAgentSlug: z.string().min(1).nullable(),
   targetDate: z.string().nullable(),
   color: z.string().nullable(),
-  status: z.enum(PROJECT_STATUSES).nullable(),
+  status: z.string().nullable(),
   executionWorkspacePolicy: z.record(z.string(), z.unknown()).nullable(),
   workspaces: z.array(z.object({
     key: z.string().min(1),

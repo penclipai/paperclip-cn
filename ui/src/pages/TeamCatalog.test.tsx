@@ -1,14 +1,20 @@
 // @vitest-environment jsdom
 
 import { flushSync } from "react-dom";
-import { createRoot, type Root } from "react-dom/client";
+import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type {
   CatalogTeam,
   CatalogTeamImportPreviewResult,
 } from "@penclipai/shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { TeamCatalog, parseTeamRoute, teamRoute } from "./TeamCatalog";
+import {
+  TeamCatalog,
+  listTeamInstallAdapterTypes,
+  parseTeamRoute,
+  resolveTeamInstallAdapterType,
+  teamRoute,
+} from "./TeamCatalog";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 const mockTeamCatalogApi = vi.hoisted(() => ({
@@ -27,9 +33,17 @@ const mockAgentsApi = vi.hoisted(() => ({
 const mockPushToast = vi.hoisted(() => vi.fn());
 const mockSetBreadcrumbs = vi.hoisted(() => vi.fn());
 const mockNavigate = vi.hoisted(() => vi.fn());
+const mockAdapterAvailability = vi.hoisted(() => ({
+  disabled: new Set<string>(["paperclip_runner"]),
+  loaded: true,
+}));
 
 vi.mock("../api/teamCatalog", () => ({ teamCatalogApi: mockTeamCatalogApi }));
 vi.mock("../api/agents", () => ({ agentsApi: mockAgentsApi }));
+vi.mock("../adapters/use-disabled-adapters", () => ({
+  useDisabledAdaptersSync: () => mockAdapterAvailability.disabled,
+  useAdapterRegistryLoaded: () => mockAdapterAvailability.loaded,
+}));
 
 vi.mock("../components/MarkdownBody", () => ({
   MarkdownBody: ({ children }: { children: string }) => <div>{children}</div>,
@@ -94,6 +108,21 @@ describe("TeamCatalog routes", () => {
       catalogRef: "paperclipai/bundled/test/team",
       filePath: "agents/a~b/AGENTS.md",
     });
+  });
+
+  it("fails closed for Paperclip Runner until adapter availability is loaded and enabled", () => {
+    expect(listTeamInstallAdapterTypes(new Set(), false)).not.toContain("paperclip_runner");
+    expect(listTeamInstallAdapterTypes(new Set(), false)).not.toContain("process");
+    expect(listTeamInstallAdapterTypes(new Set(), false)).not.toContain("http");
+    expect(listTeamInstallAdapterTypes(new Set(["paperclip_runner"]), true))
+      .not.toContain("paperclip_runner");
+    expect(listTeamInstallAdapterTypes(new Set(), true)).toContain("paperclip_runner");
+    expect(resolveTeamInstallAdapterType("paperclip_runner", ["claude_local", "codex_local"]))
+      .toBe("claude_local");
+    expect(resolveTeamInstallAdapterType("paperclip_runner", ["codex_local"]))
+      .toBe("codex_local");
+    expect(resolveTeamInstallAdapterType("paperclip_runner", []))
+      .toBeNull();
   });
 });
 
@@ -208,10 +237,11 @@ function findButton(label: string): HTMLButtonElement | undefined {
 
 describe("TeamCatalog install preview path", () => {
   let container: HTMLDivElement;
-  let root: Root | null;
+  let root: ReturnType<typeof createRoot> | null = null;
 
   beforeEach(() => {
-    root = null;
+    mockAdapterAvailability.disabled = new Set(["paperclip_runner"]);
+    mockAdapterAvailability.loaded = true;
     container = document.createElement("div");
     document.body.appendChild(container);
     currentRoute = "team-no-deps";
@@ -233,20 +263,23 @@ describe("TeamCatalog install preview path", () => {
     });
   });
 
-  afterEach(async () => {
-    if (root) {
-      await act(async () => root?.unmount());
+  afterEach(() => {
+    const mountedRoot = root;
+    if (mountedRoot) {
+      flushSync(() => mountedRoot.unmount());
       root = null;
     }
     container.remove();
+    document.body.innerHTML = "";
     vi.clearAllMocks();
   });
 
   async function renderPage() {
-    root = createRoot(container);
+    const nextRoot = createRoot(container);
+    root = nextRoot;
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     await act(async () => {
-      root?.render(
+      nextRoot.render(
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>
             <TeamCatalog />
@@ -255,7 +288,7 @@ describe("TeamCatalog install preview path", () => {
       );
     });
     await flushReact();
-    return root;
+    return nextRoot;
   }
 
   it("renders the detail pane for the selected team", async () => {

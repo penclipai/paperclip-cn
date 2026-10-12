@@ -50,18 +50,15 @@ import type { PluginJobStore } from "./plugin-job-store.js";
 import type { PluginToolDispatcher } from "./plugin-tool-dispatcher.js";
 import type { PluginLifecycleManager } from "./plugin-lifecycle.js";
 import { pluginDatabaseService } from "./plugin-database.js";
-import { execNpmCommand, execPnpmCommand } from "./npm-command.js";
 import { resolveBundledCatalogRoot } from "./bundled-plugins.js";
 
 const execFileAsync = promisify(execFile);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const REPO_ROOT = path.resolve(__dirname, "../../..");
-export const BUNDLED_LOCAL_PLUGIN_ROOT = process.env.PAPERCLIP_BUNDLED_PLUGINS_DIR?.trim()
-  ? path.resolve(process.env.PAPERCLIP_BUNDLED_PLUGINS_DIR)
-  : path.join(REPO_ROOT, "packages", "plugins");
+export const BUNDLED_LOCAL_PLUGIN_ROOT = path.join(REPO_ROOT, "packages", "plugins");
 export const STANDALONE_BUNDLED_PLUGIN_ROOT = path.join(BUNDLED_LOCAL_PLUGIN_ROOT, "sandbox-providers");
 export const LOCAL_PLUGIN_AUTOBUILD_TIMEOUT_MS = 120_000;
-const STANDALONE_BUNDLED_PLUGIN_SDK_PACKAGE = "@paperclipai/plugin-sdk";
+const STANDALONE_BUNDLED_PLUGIN_SDK_PACKAGE = "@penclipai/plugin-sdk";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -144,6 +141,7 @@ const SANDBOX_PROVIDER_CREDENTIAL_ENV_PASSTHROUGH: Record<
   string,
   { driverKey: string; envVars: readonly string[] }
 > = {
+  "@penclipai/plugin-createos": { driverKey: "createos", envVars: ["CREATEOS_API_KEY"] },
   "@penclipai/plugin-daytona": { driverKey: "daytona", envVars: ["DAYTONA_API_KEY"] },
   "@penclipai/plugin-e2b": { driverKey: "e2b", envVars: ["E2B_API_KEY"] },
   "@penclipai/plugin-exe-dev": { driverKey: "exe-dev", envVars: ["EXE_API_KEY"] },
@@ -271,6 +269,16 @@ function getDeclaredPageRoutePaths(manifest: PaperclipPluginManifestV1): string[
  * Options for the plugin loader service.
  */
 export interface PluginLoaderOptions {
+  /** Image-owned deployment policy, checked before importing code and starting workers. */
+  assertPackageActivation?: (input: {
+    pluginKey?: string;
+    packageRoot: string;
+    /** Persisted source path, even when package resolution used a fallback. */
+    installedPackagePath?: string | null;
+    manifest?: PaperclipPluginManifestV1;
+    /** Persisted grants, supplied before a runtime manifest refresh is saved. */
+    previousManifest?: PaperclipPluginManifestV1;
+  }) => void;
   /**
    * Path to the local plugin directory to scan.
    * Defaults to ~/.paperclip/plugins/
@@ -656,7 +664,7 @@ export interface PluginLoader {
  */
 export function isPluginPackageName(name: string): boolean {
   if (name.startsWith(NPM_PLUGIN_PACKAGE_PREFIX)) return true;
-  // Also accept scoped packages like @acme/plugin-linear or @paperclipai/plugin-*
+  // Also accept scoped packages like @acme/plugin-linear or @penclipai/plugin-*
   if (name.includes("/")) {
     const localPart = name.split("/")[1] ?? "";
     return localPart.startsWith("plugin-");
@@ -796,9 +804,11 @@ function buildStandaloneBundledPluginInstallArgs(
   packageRoot: string,
 ): string[] {
   const packageLockfilePath = path.join(packageRoot, "pnpm-lock.yaml");
-  return existsSync(packageLockfilePath)
-    ? ["install", "--ignore-workspace", "--frozen-lockfile"]
-    : ["install", "--ignore-workspace", "--no-lockfile"];
+  // Never let plugin-supplied workspace settings broaden dependency resolution
+  // or script execution. When a plugin declares a local install policy, disable
+  // dependency lifecycle scripts instead of loading that workspace configuration.
+  const scriptArgs = existsSync(path.join(packageRoot, "pnpm-workspace.yaml")) ? ["--ignore-scripts"] : [];
+  return ["install", "--ignore-workspace", ...scriptArgs, existsSync(packageLockfilePath) ? "--frozen-lockfile" : "--no-lockfile"];
 }
 
 function buildStandaloneBundledPluginInstallCommand(
@@ -891,25 +901,7 @@ export async function ensureLocalPluginBuilt(
   const manualBuildCommand = buildLocalPluginRecoveryCommand(packageRoot, pkgJson, { repoRoot: options.repoRoot });
   if (typeof packageName !== "string" || packageName.trim().length === 0 || !manualBuildCommand) return;
 
-  const runExecFileAsync = options.execFileAsyncImpl ?? (async (
-    file: string,
-    args: readonly string[],
-    execOptions: { cwd: string; timeout: number },
-  ) => {
-    if (file === "pnpm") {
-      return await execPnpmCommand([...args], {
-        cwd: execOptions.cwd,
-        timeout: execOptions.timeout,
-      });
-    }
-    if (file === "npm") {
-      return await execNpmCommand([...args], {
-        cwd: execOptions.cwd,
-        timeout: execOptions.timeout,
-      });
-    }
-    return await execFileAsync(file, [...args], execOptions);
-  });
+  const runExecFileAsync = options.execFileAsyncImpl ?? execFileAsync;
   const buildCommands = buildLocalPluginBuildCommands(packageRoot, pkgJson, {
     repoRoot: options.repoRoot,
     needsBuild: missingEntrypoints.length > 0,
@@ -1162,6 +1154,7 @@ export function pluginLoader(
     migrationDb = db,
     enableLocalFilesystem = true,
     enableNpmDiscovery = true,
+    assertPackageActivation,
   } = options;
 
   const registry = pluginRegistryService(db);
@@ -1257,7 +1250,8 @@ export function pluginLoader(
         // Use execFile (not exec) to avoid shell injection from package name/version.
         // --ignore-scripts prevents preinstall/install/postinstall hooks from
         // executing arbitrary code on the host before manifest validation.
-        await execNpmCommand(
+        await execFileAsync(
+          "npm",
           ["install", spec, "--prefix", targetInstallDir, "--save", "--ignore-scripts"],
           { timeout: 120_000 }, // 2 minute timeout for npm install
         );
@@ -1286,6 +1280,7 @@ export function pluginLoader(
 
     // Step 3: Read and validate plugin manifest
     // Note: this.loadManifest (used via current context)
+    assertPackageActivation?.({ packageRoot: resolvedPackagePath });
     const pkgJson = await readPackageJson(resolvedPackagePath);
     if (!pkgJson) throw new Error(`Missing package.json at ${resolvedPackagePath}`);
 
@@ -1304,6 +1299,7 @@ export function pluginLoader(
     }
 
     const manifest = await loadManifestFromPath(manifestPath);
+    assertPackageActivation?.({ packageRoot: resolvedPackagePath, pluginKey: manifest.id, manifest });
 
     // Step 4: Reject incompatible plugin API versions
     if (!manifestValidator.getSupportedVersions().includes(manifest.apiVersion)) {
@@ -1399,6 +1395,7 @@ export function pluginLoader(
       );
     }
 
+    assertPackageActivation?.({ packageRoot, installedPackagePath: plugin.packagePath, pluginKey: plugin.pluginKey, manifest, previousManifest: plugin.manifestJson });
     if (JSON.stringify(manifest) === JSON.stringify(plugin.manifestJson)) {
       return plugin;
     }
@@ -1426,6 +1423,7 @@ export function pluginLoader(
     packagePath: string,
     source: PluginSource,
   ): Promise<DiscoveredPlugin | null> {
+    assertPackageActivation?.({ packageRoot: packagePath });
     const pkgJson = await readPackageJson(packagePath);
     if (!pkgJson) return null;
 
@@ -1455,6 +1453,7 @@ export function pluginLoader(
 
     try {
       const manifest = await loadManifestFromPath(manifestPath);
+      assertPackageActivation?.({ packageRoot: packagePath, pluginKey: manifest.id, manifest });
       return {
         packagePath,
         packageName,
@@ -1707,6 +1706,7 @@ export function pluginLoader(
     // -----------------------------------------------------------------------
 
     async loadManifest(packagePath: string): Promise<PaperclipPluginManifestV1 | null> {
+      assertPackageActivation?.({ packageRoot: packagePath });
       const pkgJson = await readPackageJson(packagePath);
       if (!pkgJson) return null;
 
@@ -1721,7 +1721,9 @@ export function pluginLoader(
       const manifestPath = resolveManifestPath(packagePath, pkgJson);
       if (!manifestPath || !existsSync(manifestPath)) return null;
 
-      return loadManifestFromPath(manifestPath);
+      const manifest = await loadManifestFromPath(manifestPath);
+      assertPackageActivation?.({ packageRoot: packagePath, pluginKey: manifest.id, manifest });
+      return manifest;
     },
 
     // -----------------------------------------------------------------------
@@ -1898,7 +1900,8 @@ export function pluginLoader(
       const packageJsonPath = path.join(localPluginDir, "package.json");
       if (existsSync(packageJsonPath)) {
         try {
-          await execNpmCommand(
+          await execFileAsync(
+            "npm",
             ["uninstall", plugin.packageName, "--prefix", localPluginDir, "--ignore-scripts"],
             { timeout: 120_000 },
           );
@@ -2262,8 +2265,10 @@ export function pluginLoader(
       // 1. Resolve worker entrypoint
       // ------------------------------------------------------------------
       const packageRoot = resolvePluginPackageRoot(activePlugin, localPluginDir);
+      assertPackageActivation?.({ pluginKey, packageRoot, installedPackagePath: activePlugin.packagePath });
       activePlugin = await refreshPluginManifestFromPackage(activePlugin, packageRoot);
       manifest = activePlugin.manifestJson;
+      assertPackageActivation?.({ pluginKey, packageRoot, installedPackagePath: activePlugin.packagePath, manifest });
       const workerEntrypoint = resolveWorkerEntrypoint(activePlugin, localPluginDir);
 
       // ------------------------------------------------------------------

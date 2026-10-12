@@ -295,7 +295,7 @@ function CaseLabelsPicker({
       <PopoverTrigger asChild>
         <Button variant="ghost" size="sm" className="h-6 gap-1 px-2 text-xs text-muted-foreground">
           <Plus className="h-3.5 w-3.5" />
-          {t("caseDetail.labels.button", { defaultValue: "Labels" })}
+          {" "}{t("caseDetail.labels.button", { defaultValue: "Labels" })}
         </Button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-64 p-2">

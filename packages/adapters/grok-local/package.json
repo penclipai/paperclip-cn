@@ -45,17 +45,18 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && node ../../../scripts/fs-ops.mjs cp src/server/grok-auth-merge-decision.cjs dist/server/grok-auth-merge-decision.cjs",
     "clean": "node ../../../scripts/fs-ops.mjs rm dist",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@penclipai/adapter-utils": "workspace:*",
+    "@penclipai/shared": "workspace:*",
     "picocolors": "^1.1.1"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
-    "typescript": "^5.7.3"
+    "typescript": "^7.0.2"
   },
   "engines": {
     "node": ">=24.11.0"

@@ -1,3 +1,4 @@
+import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
@@ -318,7 +319,7 @@ export function StatusCardDetailDrawer({
                   ? "Setting up…"
                   : recompileMutation.isPending
                     ? "Running…"
-                    : "Run now"}
+                    : translateInstant("Run now")}
               </Button>
             ) : (
               <Button
@@ -333,14 +334,14 @@ export function StatusCardDetailDrawer({
                     refreshMutation.isPending && "animate-spin",
                   )}
                 />
-                {refreshMutation.isPending ? "Refreshing…" : "Refresh"}
+                {refreshMutation.isPending ? translateInstant("Refreshing…") : translateInstant("Refresh")}
               </Button>
             )}
           </div>
           <p className="text-xs text-muted-foreground">
             {card.lastGeneratedAt
               ? `Updated ${relativeTime(card.lastGeneratedAt)}`
-              : "No summary yet"}{" "}
+              : translateInstant("summarySlotCard.empty.title")}{" "}
             · {describeRefreshPolicy(card.refreshPolicy)}
           </p>
         </SheetHeader>
@@ -412,7 +413,7 @@ export function StatusCardDetailDrawer({
                         <SelectItem value="__latest__" className="text-xs">
                           {t("statusCards.detail.revision")}{" "}
                           {latestRevisionNumber}{" "}
-                          {t("statusCards.detail.latest")}
+                          {" "}{t("statusCards.detail.latest")}
                         </SelectItem>
                         <SelectSeparator />
                         {summaryRevisions.slice(0, 30).map((update) => (
@@ -433,7 +434,7 @@ export function StatusCardDetailDrawer({
                   ) : latestRevisionNumber > 0 ? (
                     <span className="text-xs text-muted-foreground">
                       {t("statusCards.detail.revision")} {latestRevisionNumber}{" "}
-                      {t("statusCards.detail.latest")}
+                      {" "}{t("statusCards.detail.latest")}
                     </span>
                   ) : null}
                 </div>
@@ -514,7 +515,7 @@ export function StatusCardDetailDrawer({
                       ? "Integrated in this revision"
                       : "Integrated in this update"}{" "}
                     ({displayedChanges.length}{" "}
-                    {displayedChanges.length === 1 ? "change" : "changes"})
+                    {displayedChanges.length === 1 ? translateInstant("issueRecoveryAction.repair.change") : translateInstant("issueRecoveryAction.repair.changes")})
                   </h3>
                   <div className="space-y-1.5">
                     {displayedChanges.map((change) => (
@@ -531,7 +532,7 @@ export function StatusCardDetailDrawer({
               {updatesQuery.isLoading ? (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Loader2 className="h-4 w-4 animate-spin" />{" "}
-                  {t("statusCards.detail.loadingHistory")}
+                  {" "}{t("statusCards.detail.loadingHistory")}
                 </div>
               ) : updates.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
@@ -541,7 +542,7 @@ export function StatusCardDetailDrawer({
                 <>
                   <div className="text-xs text-muted-foreground">
                     {t("statusCards.common.today")} {todayRollup.updateCount}{" "}
-                    {todayRollup.updateCount === 1 ? "update" : "updates"} ·{" "}
+                    {todayRollup.updateCount === 1 ? translateInstant("companyImport.action.update") : "updates"} ·{" "}
                     {formatTokens(todayRollup.totalTokens)} ·{" "}
                     {formatCents(todayRollup.totalCostCents)}
                     {card.refreshPolicy.dailyTokenCap
@@ -605,7 +606,7 @@ export function StatusCardDetailDrawer({
               ) : dryRunQuery.isLoading ? (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Loader2 className="h-4 w-4 animate-spin" />{" "}
-                  {t("statusCards.detail.matchingIssues")}
+                  {" "}{t("statusCards.detail.matchingIssues")}
                 </div>
               ) : dryRunQuery.isError ? (
                 <InlineBanner
@@ -788,7 +789,7 @@ function WatchedIssueRow({ issue }: { issue: CompanySearchIssueSummary }) {
       >
         {issue.identifier ?? issue.id.slice(0, 8)}
       </Link>
-      <IssueStatusBadge status={issue.status} />
+      <IssueStatusBadge status={issue.status} externalConversationState={issue.externalConversationState} />
       <span className="min-w-0 flex-1 truncate">{issue.title}</span>
       <span className="shrink-0 text-muted-foreground">
         {relativeTime(issue.updatedAt)}

@@ -1,13 +1,23 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
+import { isLockedIssueStub } from "@/components/LockedIssueChip";
+import { IssuePullRequestLinks } from "../IssuePullRequestLinks";
+import { useIssueWorkProducts } from "../../hooks/useIssueWorkProducts";
+import { getIssuePullRequests, pullRequestHref, pullRequestIdentity } from "../../lib/issue-pull-requests";
+import { useWorkspaceIsolationControls } from "@/hooks/useWorkspaceIsolationControls";
+import { AgentIdentity } from "@/components/AgentIdentity";
+import { AgentAvatar } from "@/components/AgentAvatar";
+import { normalizeLegacyRunnerProvider } from "@penclipai/adapter-utils";
 import { useCallback, useEffect, useMemo, useRef, useState, type ComponentType } from "react";
 import { createPortal } from "react-dom";
 import { PROPERTIES_PANE_HEADER_SLOT_ID } from "../PropertiesPanel";
-import { pickTextColorForPillBg } from "@/lib/color-contrast";
 import { issueStatusText } from "@/lib/status-colors";
 import { copyTextToClipboard } from "@/lib/clipboard";
 import { Link } from "@/lib/router";
 import {
   deriveOriginatingActor,
   isArtifactReviewDocumentKey,
+  type ExecutionWorkspace,
   type Issue,
   type IssueLabel,
 } from "@penclipai/shared";
@@ -20,6 +30,7 @@ import { instanceSettingsApi } from "../../api/instanceSettings";
 import { issuesApi } from "../../api/issues";
 import { useIssuePlanDocument } from "@/hooks/useIssuePlanDocument";
 import { useIssueDocuments } from "@/hooks/useIssueDocuments";
+import { useStreamlinedUiEnabled } from "@/hooks/useStreamlinedUiEnabled";
 import { selectAgentArtifactAttachments } from "@/lib/issue-artifacts";
 import { projectsApi } from "../../api/projects";
 import { useCompany } from "../../context/CompanyContext";
@@ -34,10 +45,11 @@ import {
   trackRecentAssignee,
   trackRecentAssigneeUser,
 } from "../../lib/recent-assignees";
-import { getRecentProjectIds, trackRecentProject } from "../../lib/recent-projects";
+import { getRecentProjectIds } from "../../lib/recent-projects";
 import { orderItemsBySelectedAndRecent } from "../../lib/recent-selections";
 import { formatAssigneeUserLabel, formatUserLabel } from "../../lib/assignees";
 import { buildExecutionPolicy, stageParticipantValues } from "../../lib/issue-execution-policy";
+import { useExecutionPolicy } from "../../hooks/useExecutionPolicy";
 import {
   formatMonitorAbsolute,
   formatMonitorAbsoluteFull,
@@ -54,6 +66,7 @@ import { StatusIcon } from "../StatusIcon";
 import { PriorityIcon } from "../PriorityIcon";
 import { SHOW_TASK_PRIORITY_UI } from "../../lib/ui-flags";
 import { Identity } from "../Identity";
+import { ProjectTile } from "../ProjectTile";
 import { IssueReferencePill } from "../IssueReferencePill";
 import { formatDate, formatDateTime, cn, projectUrl } from "../../lib/utils";
 import type { IssueExternalObjectGroup } from "../../hooks/useIssueExternalObjects";
@@ -66,10 +79,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { IssuePropertiesPlansTab } from "./IssuePropertiesPlansTab";
 import { IssuePropertiesArtifactsTab } from "./IssuePropertiesArtifactsTab";
-import { User, ArrowUpRight, Plus, GitBranch, FolderOpen, HardDrive, Check, Clock, RotateCcw, Loader2, CheckCircle2, ArchiveRestore } from "lucide-react";
-import { AgentIcon } from "../AgentIconPicker";
+import { User, ArrowUpRight, Plus, X, GitBranch, FolderOpen, HardDrive, Check, Clock, RotateCcw, Loader2, CheckCircle2, ArchiveRestore, ChevronLeft } from "lucide-react";
 import { InlineEntitySelector, type InlineEntityOption } from "../InlineEntitySelector";
 import {
   AssigneeRunningBanner,
@@ -98,14 +116,36 @@ import {
 } from "./helpers";
 import { PropertyPicker } from "./property-picker";
 import { PropertyChip, PropertyRow, PropertySection } from "./primitives";
+import {
+  buildWorkspaceSelectionUpdate,
+  currentWorkspaceSelection,
+} from "../../lib/issue-workspace-selection";
+import {
+  buildReusableExecutionWorkspaceOptionGroups,
+  dedupeReusableExecutionWorkspaces,
+  reusableWorkspaceOptionMatches,
+} from "../../lib/reusable-execution-workspaces";
 import { issueReviewPolicyBadge } from "../../lib/review-policy";
 import { IssueCasesPanel } from "../IssueCasesPanel";
 import { ExpandRelationListButton, RemovableIssueReferencePill } from "./relation-controls";
 import { Badge } from "@/components/ui/badge";
-import { useTranslation } from "react-i18next";
+import {
+  TaskDetailReferencesPanel,
+  TaskDetailSubtasksPanel,
+  type TaskDetailRelationItem,
+} from "../task-detail/TaskDetailRelationsPanel";
+
+function splitMiddleTruncation(value: string): { prefix: string; suffix: string } | null {
+  const splitAt = Math.max(value.lastIndexOf("/"), value.lastIndexOf("\\"));
+  if (splitAt <= 0 || splitAt >= value.length - 1) return null;
+  return {
+    prefix: value.slice(0, splitAt + 1),
+    suffix: value.slice(splitAt + 1),
+  };
+}
 
 function TruncatedCopyable({ value, icon: Icon }: { value: string; icon: ComponentType<{ className?: string }> }) {
-  const { t } = useTranslation();
+  useTranslation();
   const [copied, setCopied] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   useEffect(() => () => clearTimeout(timerRef.current), []);
@@ -117,24 +157,35 @@ function TruncatedCopyable({ value, icon: Icon }: { value: string; icon: Compone
       timerRef.current = setTimeout(() => setCopied(false), 1500);
     } catch { /* noop */ }
   }, [value]);
+  const { enabled: streamlinedUiEnabled } = useStreamlinedUiEnabled();
+  const middle = streamlinedUiEnabled ? splitMiddleTruncation(value) : null;
 
   return (
     <div className="flex items-center gap-1.5 min-w-0 flex-1" title={value}>
       <Icon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
       <button
         type="button"
-        className="text-sm font-mono min-w-0 truncate text-left cursor-pointer hover:text-foreground transition-colors"
+        className={cn(
+          "cursor-pointer text-left font-mono text-sm transition-colors hover:text-foreground",
+          streamlinedUiEnabled ? "min-w-0 flex-1" : "min-w-0 truncate",
+        )}
         onClick={handleCopy}
         title={value}
-        aria-label={t("issueProperties.copyValueToClipboard", { value })}
+        aria-label={`Copy ${value} to clipboard`}
       >
-        {value}
+        {!streamlinedUiEnabled ? value : middle ? (
+          <span className="flex min-w-0" data-middle-truncate="true">
+            <span className="min-w-0 truncate">{middle.prefix}</span>
+            <span className="max-w-1/2 shrink-0 truncate">{middle.suffix}</span>
+          </span>
+        ) : (
+          <span className="block truncate">{value}</span>
+        )}
       </button>
       {copied && (
         <span className={cn("inline-flex items-center gap-1 text-xs shrink-0", issueStatusText.done)} role="status">
           <Check className="h-3 w-3 shrink-0" />
-          {t("common.copied")}
-        </span>
+          {translateInstant("common.copied")}</span>
       )}
     </div>
   );
@@ -143,6 +194,7 @@ function TruncatedCopyable({ value, icon: Icon }: { value: string; icon: Compone
 interface IssuePropertiesProps {
   issue: Issue;
   childIssues?: Issue[];
+  issueLinkState?: unknown;
   onAddSubIssue?: () => void;
   onUpdate: (data: Record<string, unknown>) => void;
   inline?: boolean;
@@ -156,20 +208,34 @@ interface IssuePropertiesProps {
   onCheckMonitorNow?: () => void;
   checkingMonitorNow?: boolean;
   documentDeepLink?: IssuePropertiesDocumentDeepLink | null;
+  /** Render only the Properties body when a parent owns the side-panel tabs. */
+  sidePanelContentOnly?: boolean;
 }
 
 export interface IssuePropertiesDocumentDeepLink {
   requestId: number;
-  tab: "plans" | "artifacts";
+  tab: "plans" | "artifacts" | "document";
   documentKey: string;
 }
 
 const ISSUE_BLOCKER_SEARCH_LIMIT = 50;
 const ISSUE_PROPERTY_RELATION_PREVIEW_COUNT = 5;
+const STREAMLINED_PANE_TAB_CLASS =
+  "task-detail-pane-tab h-7 rounded-md text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+
+type IssuePaneTab = "properties" | "subtasks" | "references" | "plans" | "artifacts";
+
+interface IssuePaneTabDescriptor {
+  value: IssuePaneTab;
+  label: string;
+  count?: number;
+  closable: boolean;
+}
 
 export function IssueProperties({
   issue,
   childIssues = [],
+  issueLinkState,
   onAddSubIssue,
   onUpdate,
   inline,
@@ -181,8 +247,12 @@ export function IssueProperties({
   onCheckMonitorNow,
   checkingMonitorNow = false,
   documentDeepLink,
+  sidePanelContentOnly = false,
 }: IssuePropertiesProps) {
-  const { t } = useTranslation();
+  useTranslation();
+  const policyResult = useExecutionPolicy(issue.executionPolicy);
+  const policyAvailable = policyResult.success;
+  const executionPolicy = policyResult.success ? policyResult.data : null;
   const { selectedCompanyId } = useCompany();
   const { isMobile } = useSidebar();
   const queryClient = useQueryClient();
@@ -191,13 +261,24 @@ export function IssueProperties({
     queryKey: queryKeys.instance.experimentalSettings,
     queryFn: () => instanceSettingsApi.getExperimental(),
   });
-  const taskWatchdogsEnabled = experimentalSettings?.enableTaskWatchdogs === true;
+  // Managed-sandbox-only policy: the workspace folder is a host filesystem
+  // path, so the Folder row disappears. The Branch row above it stays. The gate
+  // fails closed whenever the policy is unknown — in flight and also on a failed
+  // read — because an unresolved policy reads as "not managed" and would show
+  // the folder the policy exists to hide.
+  const hideHostPaths =
+    experimentalSettings === undefined || experimentalSettings.enableManagedSandboxOnly === true;
+  const { enabled: streamlinedUiEnabled } = useStreamlinedUiEnabled();
   // Classic Task Interface: gate the Properties | Plans | Artifacts tab shell.
   // Flag ON renders the legacy stacked sections verbatim (no Tabs wrapper);
   // flag OFF — including while settings load — renders the chat-style tab
   // shell. This pane is always task-scoped, so the flag alone is a sufficient
   // gate.
+  // Classic Task Interface alone controls the production tabbed-vs-stacked
+  // boundary. Streamlined UI layers new relationship tabs and visual treatment
+  // onto master's tabbed task-chat pane without changing that boundary.
   const taskChatShellEnabled = experimentalSettings?.enableClassicTaskInterface !== true;
+  const streamlinedPropertiesEnabled = streamlinedUiEnabled && taskChatShellEnabled;
   // When hosted by the resizable PropertiesPanel, the tab strip portals into
   // the pane's header bar (left of the window controls). The slot only exists
   // once the panel has committed, hence the effect; inline hosts (mobile sheet)
@@ -210,9 +291,7 @@ export function IssueProperties({
     }
     setPaneHeaderSlot(document.getElementById(PROPERTIES_PANE_HEADER_SLOT_ID));
   }, [taskChatShellEnabled, inline]);
-  // Plan earns a tab as soon as an issue is in planning mode, even before the
-  // plan document arrives. This keeps an expected plan surface visible and
-  // lets its diagnostic empty state explain what is missing.
+  // A Plan tab represents materialized plan content, not merely planning mode.
   // Same query keys as the tab bodies, so these share their cached fetches.
   const { data: paneTabPlanDocument } = useIssuePlanDocument(
     taskChatShellEnabled ? issue.id : null,
@@ -227,11 +306,12 @@ export function IssueProperties({
     queryFn: () => issuesApi.listAttachments(issue.id),
     enabled: taskChatShellEnabled,
   });
-  const { data: paneTabWorkProducts } = useQuery({
-    queryKey: queryKeys.issues.workProducts(issue.id),
-    queryFn: () => issuesApi.listWorkProducts(issue.id),
-    enabled: taskChatShellEnabled,
-  });
+  const { data: paneTabWorkProducts, isError: workProductsError, refetch: refetchWorkProducts } = useIssueWorkProducts(issue.id);
+  const pullRequests = useMemo(() => getIssuePullRequests(paneTabWorkProducts), [paneTabWorkProducts]);
+  const remainingExternalObjects = useMemo(() => {
+    const identities = new Set(pullRequests.map((product) => pullRequestIdentity(pullRequestHref(product))).filter(Boolean));
+    return externalObjects?.filter((entry) => !identities.has(pullRequestIdentity(entry.pill.url)));
+  }, [externalObjects, pullRequests]);
   const { data: paneTabDocuments } = useIssueDocuments(taskChatShellEnabled ? issue.id : null);
   // Proxy `artifact-review-*` documents surface only through their Work
   // product row, so they must not summon the Plan or Documents surfaces.
@@ -241,8 +321,7 @@ export function IssueProperties({
   const hasPlanTab =
     Boolean(paneTabPlanDocument)
     || (paneTabAcceptedPlans?.length ?? 0) > 0
-    || paneTabStandaloneDocuments.length > 0
-    || issue.workMode === "planning";
+    || paneTabStandaloneDocuments.length > 0;
   // Artifacts covers the same three sources the tab body composes: work
   // products, documents (redundant with the Plan tab, intentionally), and
   // agent-created attachments. User comment uploads stay thread-only and
@@ -251,7 +330,8 @@ export function IssueProperties({
     (paneTabWorkProducts?.length ?? 0) > 0
     || paneTabStandaloneDocuments.length > 0
     || selectAgentArtifactAttachments(paneTabAttachments, paneTabWorkProducts).length > 0;
-  const [paneTab, setPaneTab] = useState("properties");
+  const [paneTab, setPaneTab] = useState<IssuePaneTab>("properties");
+  const [closedPaneTabs, setClosedPaneTabs] = useState<Set<IssuePaneTab>>(() => new Set());
   // Once a plan document exists, surface it: switch the pane to the Plan tab so
   // the write-up is exposed alongside the plan-approval card, instead of leaving
   // the user on Properties. Only auto-switch until the user picks a tab by hand —
@@ -259,8 +339,11 @@ export function IssueProperties({
   const paneTabUserChosenRef = useRef(false);
   const handlePaneTabChange = useCallback((value: string) => {
     paneTabUserChosenRef.current = true;
-    setPaneTab(value);
+    setPaneTab(value as IssuePaneTab);
   }, []);
+  useEffect(() => {
+    setClosedPaneTabs(new Set());
+  }, [issue.id]);
   useEffect(() => {
     if (hasPlanTab && !paneTabUserChosenRef.current) {
       setPaneTab("plans");
@@ -268,8 +351,16 @@ export function IssueProperties({
   }, [hasPlanTab]);
   useEffect(() => {
     if (!documentDeepLink) return;
+    const targetTab = documentDeepLink.tab;
+    if (targetTab === "document") return;
     paneTabUserChosenRef.current = true;
-    setPaneTab(documentDeepLink.tab);
+    setPaneTab(targetTab);
+    setClosedPaneTabs((current) => {
+      if (!current.has(targetTab)) return current;
+      const next = new Set(current);
+      next.delete(targetTab);
+      return next;
+    });
   }, [documentDeepLink]);
   const [assigneeOpen, setAssigneeOpen] = useState(false);
   const [assigneeSearch, setAssigneeSearch] = useState("");
@@ -283,11 +374,15 @@ export function IssueProperties({
   } | null>(null);
   const [projectOpen, setProjectOpen] = useState(false);
   const [projectSearch, setProjectSearch] = useState("");
+  const [workspacePickerOpen, setWorkspacePickerOpen] = useState(false);
+  const [workspacePickerStep, setWorkspacePickerStep] = useState<"mode" | "reuse">("mode");
+  const [workspaceSearch, setWorkspaceSearch] = useState("");
   const [blockedByOpen, setBlockedByOpen] = useState(false);
   const [blockedBySearch, setBlockedBySearch] = useState("");
   const [blockedByExpanded, setBlockedByExpanded] = useState(false);
   const [blockingExpanded, setBlockingExpanded] = useState(false);
   const [subTasksExpanded, setSubTasksExpanded] = useState(false);
+  const [subtasksOpen, setSubtasksOpen] = useState(false);
   const [relatedTasksExpanded, setRelatedTasksExpanded] = useState(false);
   const [parentOpen, setParentOpen] = useState(false);
   const [parentSearch, setParentSearch] = useState("");
@@ -304,9 +399,9 @@ export function IssueProperties({
   const [newLabelName, setNewLabelName] = useState("");
   // token-extraction: allowlisted — color-picker seed state, persisted into label-create payload; a var() string would break that payload.
   const [newLabelColor, setNewLabelColor] = useState("#6366f1");
-  const [monitorAtInput, setMonitorAtInput] = useState(() => toDateTimeLocalValue(issue.executionPolicy?.monitor?.nextCheckAt));
-  const [monitorNotesInput, setMonitorNotesInput] = useState(issue.executionPolicy?.monitor?.notes ?? "");
-  const [monitorServiceInput, setMonitorServiceInput] = useState(issue.executionPolicy?.monitor?.serviceName ?? "");
+  const [monitorAtInput, setMonitorAtInput] = useState(() => toDateTimeLocalValue(executionPolicy?.monitor?.nextCheckAt));
+  const [monitorNotesInput, setMonitorNotesInput] = useState(executionPolicy?.monitor?.notes ?? "");
+  const [monitorServiceInput, setMonitorServiceInput] = useState(executionPolicy?.monitor?.serviceName ?? "");
   const [runtimeActionMessage, setRuntimeActionMessage] = useState<string | null>(null);
   const [runtimeActionErrorMessage, setRuntimeActionErrorMessage] = useState<string | null>(null);
   const [unarchiveErrorMessage, setUnarchiveErrorMessage] = useState<string | null>(null);
@@ -421,7 +516,7 @@ export function IssueProperties({
     onError: (error) => {
       setUnarchiveErrorMessage(error instanceof Error && error.message.trim().length > 0
         ? error.message
-        : t("issueProperties.unarchiveFailed"));
+        : "Failed to unarchive this issue. Please try again.");
     },
   });
 
@@ -440,7 +535,7 @@ export function IssueProperties({
   };
 
   const projectName = (id: string | null) => {
-    if (!id) return id?.slice(0, 8) ?? t("common.none");
+    if (!id) return id?.slice(0, 8) ?? "None";
     const project = orderedProjects.find((p) => p.id === id);
     return project?.name ?? id.slice(0, 8);
   };
@@ -448,6 +543,70 @@ export function IssueProperties({
     ? orderedProjects.find((project) => project.id === issue.projectId) ?? null
     : null;
   const issueProject = issue.project ?? currentProject;
+  const { visible: workspaceIsolationControlsVisible } = useWorkspaceIsolationControls();
+  const workspacePickerEligible = workspaceIsolationControlsVisible && experimentalSettings?.enableIsolatedWorkspaces === true
+    && Boolean(issueProject?.executionWorkspacePolicy?.enabled);
+  const {
+    data: reusableExecutionWorkspaces,
+    isLoading: reusableExecutionWorkspacesLoading,
+    isError: reusableExecutionWorkspacesError,
+  } = useQuery({
+    queryKey: queryKeys.executionWorkspaces.list(companyId!, {
+      projectId: issue.projectId ?? undefined,
+      projectWorkspaceId: issue.projectWorkspaceId ?? undefined,
+      reuseEligible: true,
+    }),
+    queryFn: () => executionWorkspacesApi.list(companyId!, {
+      projectId: issue.projectId ?? undefined,
+      projectWorkspaceId: issue.projectWorkspaceId ?? undefined,
+      reuseEligible: true,
+    }),
+    enabled: Boolean(companyId) && Boolean(issue.projectId) && workspacePickerEligible && workspacePickerOpen,
+  });
+  const effectiveWorkspaceSelection = currentWorkspaceSelection(issue, issueProject);
+  const hasWorkspaceOverride = issue.executionWorkspacePreference != null
+    || issue.executionWorkspaceSettings != null;
+  const activeWorkspacePickerMode = effectiveWorkspaceSelection === "reuse_existing"
+    ? "reuse"
+    : !hasWorkspaceOverride
+      ? "default"
+      : effectiveWorkspaceSelection === "isolated_workspace"
+        ? "isolated"
+        : "default";
+  const reusableWorkspaceOptions = useMemo(
+    () => buildReusableExecutionWorkspaceOptionGroups(
+      dedupeReusableExecutionWorkspaces(reusableExecutionWorkspaces ?? []),
+    ).map((group) => ({
+      ...group,
+      options: group.options.filter((option) => reusableWorkspaceOptionMatches(option, workspaceSearch)),
+    })).filter((group) => group.options.length > 0),
+    [reusableExecutionWorkspaces, workspaceSearch],
+  );
+  const boundWorkspace = (reusableExecutionWorkspaces ?? []).find(
+    (workspace) => workspace.id === issue.executionWorkspaceId,
+  ) ?? issue.currentExecutionWorkspace ?? null;
+  const workspaceTriggerLabel = activeWorkspacePickerMode === "isolated"
+    ? "New isolated workspace"
+    : activeWorkspacePickerMode === "reuse"
+      ? boundWorkspace?.name ?? "Reuse existing workspace"
+      : "Default";
+  const workspaceTriggerTitle = activeWorkspacePickerMode === "reuse"
+    ? boundWorkspace?.branchName ?? undefined
+    : undefined;
+  const closeWorkspacePicker = () => {
+    setWorkspacePickerOpen(false);
+    setWorkspacePickerStep("mode");
+    setWorkspaceSearch("");
+  };
+  const saveWorkspaceSelection = (
+    selection: null | "isolated_workspace" | "reuse_existing",
+    workspace?: ExecutionWorkspace,
+  ) => {
+    const update = buildWorkspaceSelectionUpdate(selection, workspace?.id, workspace?.mode);
+    if (!update) return;
+    onUpdate(update);
+    closeWorkspacePicker();
+  };
   const issueUsesMainWorkspace = useMemo(
     () => isMainIssueWorkspace({ issue, project: issueProject }),
     [issue, issueProject],
@@ -472,7 +631,7 @@ export function IssueProperties({
   const controlWorkspaceRuntime = useMutation({
     mutationFn: (request: WorkspaceRuntimeControlRequest) => {
       const workspaceId = issue.currentExecutionWorkspace?.id ?? issue.executionWorkspaceId;
-      if (!workspaceId) throw new Error(t("issueProperties.taskNotAttachedWorkspace"));
+      if (!workspaceId) throw new Error("This task is not attached to a workspace.");
       return executionWorkspacesApi.controlRuntimeCommands(workspaceId, request.action, request);
     },
     onSuccess: (result, request) => {
@@ -488,17 +647,17 @@ export function IssueProperties({
       setRuntimeActionErrorMessage(null);
       setRuntimeActionMessage(
         request.action === "run"
-          ? t("issueProperties.workspaceJobCompleted")
+          ? "Workspace job completed."
           : request.action === "stop"
-            ? t("issueProperties.workspaceServiceStopped")
+            ? "Workspace service stopped."
             : request.action === "restart"
-              ? t("issueProperties.workspaceServiceRestarted")
-              : t("issueProperties.workspaceServiceStarted"),
+              ? "Workspace service restarted."
+              : "Workspace service started.",
       );
     },
     onError: (error) => {
       setRuntimeActionMessage(null);
-      setRuntimeActionErrorMessage(error instanceof Error ? error.message : t("issueProperties.workspaceControlFailed"));
+      setRuntimeActionErrorMessage(error instanceof Error ? error.message : "Failed to control workspace commands.");
     },
   });
   const pendingWorkspaceRuntimeAction = controlWorkspaceRuntime.isPending ? controlWorkspaceRuntime.variables ?? null : null;
@@ -526,6 +685,29 @@ export function IssueProperties({
       .filter((identifier) => !excluded.has(identifier))
       .map((identifier) => ({ id: identifier, identifier, title: identifier }));
   }, [childIssues, issue.blockedBy, issue.blocks, issue.relatedWork?.outbound, referencedIssueIdentifiers]);
+  const panelReferencedTasks = useMemo<TaskDetailRelationItem[]>(() => {
+    const outbound = issue.relatedWork?.outbound.map(({ issue: referenced }) => ({
+      id: referenced.id,
+      identifier: referenced.identifier,
+      title: referenced.title,
+      status: referenced.status,
+    })) ?? [];
+    if (outbound.length > 0) return outbound;
+    return referencedIssueIdentifiers.map((identifier) => ({
+      id: identifier,
+      identifier,
+      title: identifier,
+    }));
+  }, [issue.relatedWork?.outbound, referencedIssueIdentifiers]);
+  const panelMentionedInTasks = useMemo<TaskDetailRelationItem[]>(
+    () => issue.relatedWork?.inbound.map(({ issue: referenced }) => ({
+      id: referenced.id,
+      identifier: referenced.identifier,
+      title: referenced.title,
+      status: referenced.status,
+    })) ?? [],
+    [issue.relatedWork?.inbound],
+  );
   const projectLink = (id: string | null) => {
     if (!id) return null;
     const project = projects?.find((p) => p.id === id) ?? null;
@@ -560,41 +742,29 @@ export function IssueProperties({
   const supportsAssigneeOverrides = Boolean(
     assigneeAdapterType && ISSUE_OVERRIDE_ADAPTER_TYPES.has(assigneeAdapterType),
   );
-  const assigneeSupportsCheapLane = Boolean(
-    supportsAssigneeOverrides
-      && (assigneeAdapterType === "claude_local"
-        || assigneeAdapterType === "codex_local"
-        || assigneeAdapterType === "opencode_local"),
-  );
   const assigneeOverrideLane = overrideLane(assigneeAdapterOverrides);
   const assigneeOverrideAdapterConfig = asRecord(assigneeAdapterOverrides?.adapterConfig);
   const assigneeOverrideModel =
     typeof assigneeOverrideAdapterConfig.model === "string" ? assigneeOverrideAdapterConfig.model : "";
+  const assigneePrimaryAdapterConfig = asRecord(assignee?.adapterConfig);
+  const assigneePrimaryModel =
+    typeof assigneePrimaryAdapterConfig.model === "string" ? assigneePrimaryAdapterConfig.model : "";
+  const effectiveAssigneeModel = assigneeOverrideModel || assigneePrimaryModel;
   const assigneeOverrideThinkingEffort = thinkingEffortValueFor(
     assigneeAdapterType,
     assigneeOverrideAdapterConfig,
   );
   const assigneeOverrideChrome = assigneeAdapterType === "claude_local"
     && assigneeOverrideAdapterConfig.chrome === true;
+  const catalogProvider = assigneeAdapterType === "paperclip_runner" ? String(normalizeLegacyRunnerProvider(assigneePrimaryAdapterConfig).provider ?? "codex") : undefined;
   const { data: assigneeAdapterModels } = useQuery({
     queryKey:
       companyId && assigneeAdapterType
-        ? queryKeys.agents.adapterModels(companyId, assigneeAdapterType)
+        ? queryKeys.agents.adapterModels(companyId, assigneeAdapterType, null, catalogProvider)
         : ["agents", "none", "adapter-models", assigneeAdapterType ?? "none"],
-    queryFn: () => agentsApi.adapterModels(companyId!, assigneeAdapterType!),
+    queryFn: () => agentsApi.adapterModels(companyId!, assigneeAdapterType!, { provider: catalogProvider }),
     enabled: Boolean(companyId) && showAssigneeAdapterOptions && supportsAssigneeOverrides,
   });
-  const { data: assigneeCheapProfiles } = useQuery({
-    queryKey: companyId && assigneeAdapterType
-      ? queryKeys.agents.adapterModelProfiles(companyId, assigneeAdapterType)
-      : ["agents", "none", "adapter-model-profiles", assigneeAdapterType ?? "none"],
-    queryFn: () => agentsApi.adapterModelProfiles(companyId!, assigneeAdapterType!),
-    enabled: Boolean(companyId) && showAssigneeAdapterOptions && assigneeSupportsCheapLane,
-  });
-  const assigneeCheapProfile = useMemo(
-    () => (assigneeCheapProfiles ?? []).find((profile) => profile.key === "cheap") ?? null,
-    [assigneeCheapProfiles],
-  );
   const modelOverrideOptions = useMemo<InlineEntityOption[]>(() => {
     const models = sortAdapterModels(assigneeAdapterModels ?? []);
     const options = models.map((model) => ({
@@ -641,52 +811,56 @@ export function IssueProperties({
     }
     updateAssigneeAdapterOverrides(buildAssigneeOverrideWithConfig(nextConfig));
   };
+  const updateAssigneeOverrideModel = (nextModel: string) => {
+    const nextConfig: Record<string, unknown> = {
+      ...assigneeOverrideAdapterConfig,
+      model: nextModel || undefined,
+    };
+    if (
+      assigneeAdapterType === "codex_local"
+      && assigneeOverrideThinkingEffort
+      && !thinkingEffortOptionsFor(assigneeAdapterType, nextModel || assigneePrimaryModel).some(
+        (option) => option.value === assigneeOverrideThinkingEffort,
+      )
+    ) {
+      delete nextConfig.modelReasoningEffort;
+      delete nextConfig.reasoningEffort;
+      delete nextConfig.effort;
+    }
+    updateAssigneeAdapterOverrides(buildAssigneeOverrideWithConfig(nextConfig));
+  };
   const setAssigneeOverrideLane = (lane: IssueModelLane) => {
     if (lane === "primary") {
       updateAssigneeAdapterOverrides(null);
       return;
     }
-    if (lane === "cheap") {
-      updateAssigneeAdapterOverrides(
-        compactRecord({
-          useProjectWorkspace: assigneeAdapterOverrides?.useProjectWorkspace,
-          modelProfile: "cheap",
-        }),
-      );
-      return;
-    }
     updateAssigneeAdapterOverrides(buildAssigneeOverrideWithConfig(assigneeOverrideAdapterConfig) ?? { adapterConfig: {} });
   };
   const assigneeOptionsTrigger = (() => {
-    if (assigneeOverrideLane === "cheap") {
-      return <span className="text-sm">{t("issueProperties.cheapModel")}</span>;
-    }
     if (assigneeOverrideLane === "custom") {
       const details = [
         assigneeOverrideModel,
         assigneeOverrideThinkingEffort,
         assigneeOverrideChrome ? "Chrome" : "",
       ].filter(Boolean);
-      const summary = details.length > 0
-        ? t("issueProperties.modelOverrideWithDetails", { details: details.join(" · ") })
-        : t("issueProperties.modelOverrideAdapterOptions");
+      const summary = details.length > 0 ? `Override · ${details.join(" · ")}` : "Override · adapter options";
       return (
         <span
           className="min-w-0 truncate text-sm"
-          title={t("issueProperties.taskLevelModelOverrideDescription", { details: details.length > 0 ? ` (${details.join(" · ")})` : "" })}
+          title={`Task-level model override — replaces the agent's primary model for this issue.${details.length > 0 ? ` (${details.join(" · ")})` : ""}`}
         >
           {summary}
         </span>
       );
     }
-    return <span className="text-sm text-muted-foreground">{t("issueProperties.primaryModel")}</span>;
+    return <span className="text-sm text-muted-foreground">{translateInstant("issueProperties.primaryModel")}</span>;
   })();
   const assigneeOptionsContent = supportsAssigneeOverrides ? (
     <div className="w-full space-y-3 p-2">
       <div className="space-y-1.5">
-        <div className="text-xs text-muted-foreground">{t("issueProperties.modelLane")}</div>
-        <div className="flex w-full overflow-hidden rounded-md border border-border" role="radiogroup" aria-label={t("issueProperties.modelLane")}>
-          {(["primary", ...(assigneeSupportsCheapLane ? (["cheap"] as const) : ([] as const)), "custom"] as const).map((lane) => (
+        <div className="text-xs text-muted-foreground">{translateInstant("issueProperties.modelLane")}</div>
+        <div className="flex w-full overflow-hidden rounded-md border border-border" role="radiogroup" aria-label={translateInstant("issueProperties.modelLane")}>
+          {(["primary", "custom"] as const).map((lane) => (
             <button
               key={lane}
               type="button"
@@ -698,45 +872,34 @@ export function IssueProperties({
               )}
               onClick={() => setAssigneeOverrideLane(lane)}
             >
-              {lane === "primary" ? t("issueProperties.primaryModel") : lane === "cheap" ? t("issueProperties.cheapModel") : t("newIssue.modelLane.override")}
+              {lane === "primary" ? "Primary" : "Override"}
             </button>
           ))}
         </div>
-        {assigneeOverrideLane === "cheap" ? (
-          <p className="text-xs text-muted-foreground">
-            {t("issueProperties.modelLaneSends")} <code>modelProfile: "cheap"</code>{" "}
-            {assigneeCheapProfile?.adapterConfig && typeof (assigneeCheapProfile.adapterConfig as Record<string, unknown>).model === "string"
-              ? <>{t("issueProperties.adapterDefault")} <code>{String((assigneeCheapProfile.adapterConfig as Record<string, unknown>).model)}</code></>
-              : assigneeCheapProfile
-                ? <>{t("issueProperties.usesCheapProfile")}</>
-                : <>{t("issueProperties.cheapProfileFallback")}</>}
-          </p>
-        ) : null}
         {assigneeOverrideLane === "custom" ? (
           <p className="text-xs text-muted-foreground">
-            {t("issueProperties.modelOverrideHint")}
-          </p>
+            {translateInstant("Task-level model override — replaces the agent&apos;s primary model for this issue.")}</p>
         ) : null}
       </div>
       {assigneeOverrideLane === "custom" ? (
         <>
           <div className="space-y-1.5">
-            <div className="text-xs text-muted-foreground">{t("agentConfig.model")}</div>
+            <div className="text-xs text-muted-foreground">{translateInstant("agentConfig.model")}</div>
             <InlineEntitySelector
               value={assigneeOverrideModel}
               options={modelOverrideOptions}
-              placeholder={t("issueProperties.defaultModel")}
+              placeholder={translateInstant("issueProperties.defaultModel")}
               disablePortal
-              noneLabel={t("issueProperties.defaultModel")}
-              searchPlaceholder={t("issueProperties.searchModels")}
-              emptyMessage={t("issueProperties.noModelsFound")}
-              onChange={(model) => updateAssigneeOverrideConfig({ model: model || undefined })}
+              noneLabel="Default model"
+              searchPlaceholder="Search models..."
+              emptyMessage={translateInstant("issueProperties.noModelsFound")}
+              onChange={updateAssigneeOverrideModel}
             />
           </div>
           <div className="space-y-1.5">
-            <div className="text-xs text-muted-foreground">{t("agentConfig.thinkingEffort")}</div>
+            <div className="text-xs text-muted-foreground">{translateInstant("agentConfig.thinkingEffort")}</div>
             <div className="flex items-center gap-1.5 flex-wrap">
-              {thinkingEffortOptionsFor(assigneeAdapterType).map((option) => (
+              {thinkingEffortOptionsFor(assigneeAdapterType, effectiveAssigneeModel).map((option) => (
                 <button
                   key={option.value || "default"}
                   className={cn(
@@ -752,7 +915,7 @@ export function IssueProperties({
           </div>
           {assigneeAdapterType === "claude_local" ? (
             <div className="flex items-center justify-between rounded-md border border-border px-2 py-1.5">
-              <div className="text-xs text-muted-foreground">{t("issueProperties.enableChromeFlag")}</div>
+              <div className="text-xs text-muted-foreground">{translateInstant("issueProperties.enableChromeFlag")}</div>
               <ToggleSwitch
                 checked={assigneeOverrideChrome}
                 onCheckedChange={(next) => updateAssigneeOverrideConfig({ chrome: next ? true : undefined })}
@@ -766,16 +929,15 @@ export function IssueProperties({
     <div className="w-full space-y-2 p-2">
       <p className="text-xs text-muted-foreground">
         {assignee
-          ? t("issueProperties.noEditableIssueOverrides")
-          : t("issueProperties.selectCompatibleAssigneeForOverrides")}
+          ? "This assignee's adapter does not expose editable task overrides."
+          : "Select a compatible assignee agent to edit these overrides."}
       </p>
       <button
         type="button"
         className="inline-flex items-center rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
         onClick={() => updateAssigneeAdapterOverrides(null)}
       >
-        {t("issueProperties.clearAdapterOptions")}
-      </button>
+        {translateInstant("issueProperties.clearAdapterOptions")}</button>
     </div>
   );
   const reviewerValues = stageParticipantValues(issue.executionPolicy, "review");
@@ -800,7 +962,7 @@ export function IssueProperties({
   // --- Interrupt-handoff clarity for the assignee picker (design surface 2) ---
   const handoffResolvers: HandoffChipResolvers = useMemo(
     () => ({
-      agentMap: new Map((agents ?? []).map((agent) => [agent.id, { name: agent.name, icon: agent.icon }])),
+      agentMap: new Map((agents ?? []).map((agent) => [agent.id, agent])),
       resolveUserLabel: (id) => userLabel(id),
     }),
     // userLabel closes over userLabelMap + currentUserId, both reflected here.
@@ -842,6 +1004,7 @@ export function IssueProperties({
     applyAssignee(next, track);
   };
   const updateExecutionPolicy = (nextReviewers: string[], nextApprovers: string[]) => {
+    if (!policyAvailable) return;
     onUpdate({
       executionPolicy: buildExecutionPolicy({
         existingPolicy: issue.executionPolicy ?? null,
@@ -865,7 +1028,7 @@ export function IssueProperties({
       return agentName(value.slice("agent:".length)) ?? value.slice("agent:".length, "agent:".length + 8);
     }
     if (value.startsWith("user:")) {
-      return userLabel(value.slice("user:".length)) ?? t("runTranscript.user");
+      return userLabel(value.slice("user:".length)) ?? "User";
     }
     return value;
   };
@@ -873,10 +1036,10 @@ export function IssueProperties({
   const approverLabel = approverValues.map((value) => executionParticipantLabel(value)).join(", ");
   const reviewerTrigger = reviewerValues.length > 0
     ? <span className="text-sm truncate min-w-0" title={reviewerLabel}>{reviewerLabel}</span>
-    : <span className="text-sm text-muted-foreground">{t("common.none")}</span>;
+    : <span className="text-sm text-muted-foreground">{translateInstant("common.none")}</span>;
   const approverTrigger = approverValues.length > 0
     ? <span className="text-sm truncate min-w-0" title={approverLabel}>{approverLabel}</span>
-    : <span className="text-sm text-muted-foreground">{t("common.none")}</span>;
+    : <span className="text-sm text-muted-foreground">{translateInstant("common.none")}</span>;
   // PAP-16506 P4: who may give the `in_review` verdict. Only an agent sets this,
   // and only the two opt-in constraints are worth a row — the default (`null` ≡
   // "anyone can approve") is what every issue already does, so it shows nothing.
@@ -916,13 +1079,13 @@ export function IssueProperties({
     return `${stageLabel} pending${participantLabel ? ` with ${participantLabel}` : ""}`;
   })();
   useEffect(() => {
-    setMonitorAtInput(toDateTimeLocalValue(issue.executionPolicy?.monitor?.nextCheckAt));
-    setMonitorNotesInput(issue.executionPolicy?.monitor?.notes ?? "");
-    setMonitorServiceInput(issue.executionPolicy?.monitor?.serviceName ?? "");
+    setMonitorAtInput(toDateTimeLocalValue(executionPolicy?.monitor?.nextCheckAt));
+    setMonitorNotesInput(executionPolicy?.monitor?.notes ?? "");
+    setMonitorServiceInput(executionPolicy?.monitor?.serviceName ?? "");
   }, [
-    issue.executionPolicy?.monitor?.nextCheckAt,
-    issue.executionPolicy?.monitor?.notes,
-    issue.executionPolicy?.monitor?.serviceName,
+    executionPolicy?.monitor?.nextCheckAt,
+    executionPolicy?.monitor?.notes,
+    executionPolicy?.monitor?.serviceName,
   ]);
   // Re-sync watchdog editor inputs when the persisted watchdog changes (and reset on close).
   useEffect(() => {
@@ -992,7 +1155,7 @@ export function IssueProperties({
     <span className="inline-flex min-w-0 max-w-full items-center gap-1.5 text-sm" title={issue.watchdog.instructions?.trim() || undefined}>
       {(() => {
         const agent = (agents ?? []).find((candidate) => candidate.id === issue.watchdog?.watchdogAgentId);
-        return agent ? <AgentIcon icon={agent.icon} className="h-3.5 w-3.5 shrink-0 text-muted-foreground" /> : null;
+        return agent ? <AgentAvatar agent={agent} size={16} className="h-3.5 w-3.5 shrink-0 text-muted-foreground"/> : null;
       })()}
       <span className="shrink-0 max-w-40 truncate">{agentName(issue.watchdog.watchdogAgentId)}</span>
       {issue.watchdog.instructions?.trim() ? (
@@ -1001,30 +1164,41 @@ export function IssueProperties({
         </span>
       ) : null}
       {issue.watchdog.status === "disabled" ? (
-        <span className="shrink-0 text-xs text-muted-foreground">(disabled)</span>
+        <span className="shrink-0 text-xs text-muted-foreground">{translateInstant("issueProperties.disabled")}</span>
       ) : null}
     </span>
   ) : (
-    <span className="text-sm text-muted-foreground">{t("common.none")}</span>
+    <span className="text-sm text-muted-foreground">{translateInstant("common.none")}</span>
   );
+  const labelsExtra = !streamlinedPropertiesEnabled && (issue.labelIds ?? []).length > 0 ? (
+    <button
+      type="button"
+      className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
+      onClick={() => setLabelsOpen(true)}
+      aria-label={translateInstant("Add label")}
+      title={translateInstant("Add label")}
+    >
+      <Plus className="h-3 w-3" />
+      {translateInstant("Add label")}</button>
+  ) : undefined;
   const watchdogContent = (
     <div className="space-y-3 p-2">
       <div className="space-y-1.5">
-        <div className="text-xs font-medium text-foreground">{t("issueProperties.watchdogAgent")}</div>
+        <div className="text-xs font-medium text-foreground">{translateInstant("issueProperties.watchdogAgent")}</div>
         <InlineEntitySelector
           value={watchdogAgentInput}
           options={watchdogAgentOptions}
-          placeholder={t("issueProperties.selectAgent")}
-          noneLabel={t("issueProperties.noWatchdogAgent")}
-          searchPlaceholder={t("issueProperties.searchAgents")}
-          emptyMessage={t("issueProperties.noAgentsFound")}
+          placeholder={translateInstant("issueProperties.selectAgent")}
+          noneLabel="No watchdog agent"
+          searchPlaceholder="Search agents..."
+          emptyMessage={translateInstant("issueProperties.noAgentsFound")}
           onChange={setWatchdogAgentInput}
           renderTriggerValue={(option) => {
-            if (!option) return <span className="text-muted-foreground">{t("issueProperties.selectAgent")}</span>;
+            if (!option) return <span className="text-muted-foreground">{translateInstant("issueProperties.selectAgent")}</span>;
             const agent = (agents ?? []).find((candidate) => candidate.id === option.id);
             return (
               <>
-                {agent ? <AgentIcon icon={agent.icon} className="h-3 w-3 shrink-0 text-muted-foreground" /> : null}
+                {agent ? <AgentAvatar agent={agent} size={16} className="h-3 w-3 shrink-0 text-muted-foreground"/> : null}
                 <span className="truncate">{option.label}</span>
               </>
             );
@@ -1033,7 +1207,7 @@ export function IssueProperties({
             const agent = (agents ?? []).find((candidate) => candidate.id === option.id);
             return (
               <>
-                {agent ? <AgentIcon icon={agent.icon} className="h-3 w-3 shrink-0 text-muted-foreground" /> : null}
+                {agent ? <AgentAvatar agent={agent} size={16} className="h-3 w-3 shrink-0 text-muted-foreground"/> : null}
                 <span className="truncate">{option.label}</span>
               </>
             );
@@ -1042,19 +1216,19 @@ export function IssueProperties({
       </div>
       <div className="space-y-1.5">
         <div className="text-xs font-medium text-foreground">
-          Instructions <span className="font-normal text-muted-foreground">(optional)</span>
+          {translateInstant("Instructions")}{" "}<span className="font-normal text-muted-foreground">{translateInstant("common.optionalParenthetical")}</span>
         </div>
         <Textarea
           value={watchdogInstructionsInput}
           onChange={(event) => setWatchdogInstructionsInput(event.target.value)}
-          placeholder="What should the watchdog watch for and how should it keep work moving?"
+          placeholder={translateInstant("issueProperties.watchdogInstructionsPlaceholder")}
           rows={4}
           className="text-xs"
         />
       </div>
       {watchdogIssueRef ? (
         <div className="text-xs text-muted-foreground">
-          Watchdog task:{" "}
+          {translateInstant("issueProperties.watchdogTask")}{" "}
           <Link to={`/issues/${watchdogIssueRef.id}`} className="text-primary hover:underline">
             {watchdogIssueRef.identifier ?? "View task"}
           </Link>
@@ -1072,7 +1246,7 @@ export function IssueProperties({
           disabled={deleteWatchdog.isPending || (!issue.watchdog && !watchdogAgentInput)}
           onClick={removeWatchdog}
         >
-          {deleteWatchdog.isPending ? t("issueProperties.removing") : t("common.remove")}
+          {deleteWatchdog.isPending ? "Removing…" : "Remove"}
         </button>
         <Button
           type="button"
@@ -1081,7 +1255,7 @@ export function IssueProperties({
           disabled={!watchdogAgentInput || upsertWatchdog.isPending}
           onClick={saveWatchdog}
         >
-          {upsertWatchdog.isPending ? t("projectProperties.saving") : issue.watchdog ? t("issueProperties.update") : t("issueProperties.setWatchdog")}
+          {upsertWatchdog.isPending ? "Saving…" : issue.watchdog ? "Update" : "Set watchdog"}
         </Button>
       </div>
     </div>
@@ -1092,6 +1266,7 @@ export function IssueProperties({
       ? M | null
       : never
     : never) => {
+    if (!policyAvailable) return;
     const basePolicy = buildExecutionPolicy({
       existingPolicy: issue.executionPolicy ?? null,
       reviewerValues,
@@ -1101,8 +1276,10 @@ export function IssueProperties({
       onUpdate({ executionPolicy: null });
       return;
     }
+    const { monitor: _previousMonitor, ...policyWithoutMonitor } = basePolicy ?? {};
     onUpdate({
       executionPolicy: {
+        ...policyWithoutMonitor,
         mode: basePolicy?.mode ?? issue.executionPolicy?.mode ?? "normal",
         commentRequired: true,
         stages: basePolicy?.stages ?? [],
@@ -1130,11 +1307,11 @@ export function IssueProperties({
     setMonitorOpen(false);
   };
   const monitorState = issue.executionState?.monitor ?? null;
-  const monitorNextCheckAt = monitorState?.nextCheckAt ?? issue.monitorNextCheckAt ?? issue.executionPolicy?.monitor?.nextCheckAt ?? null;
+  const monitorNextCheckAt = monitorState?.nextCheckAt ?? issue.monitorNextCheckAt ?? executionPolicy?.monitor?.nextCheckAt ?? null;
   const monitorAttemptCount = issue.monitorAttemptCount ?? monitorState?.attemptCount ?? 0;
   const monitorLastTriggeredAt = issue.monitorLastTriggeredAt ?? monitorState?.lastTriggeredAt ?? null;
-  const monitorServiceName = issue.executionPolicy?.monitor?.serviceName ?? monitorState?.serviceName ?? null;
-  const monitorNotes = issue.executionPolicy?.monitor?.notes ?? monitorState?.notes ?? null;
+  const monitorServiceName = executionPolicy?.monitor?.serviceName ?? monitorState?.serviceName ?? null;
+  const monitorNotes = executionPolicy?.monitor?.notes ?? monitorState?.notes ?? null;
   const monitorNow = useMonitorCountdown(monitorNextCheckAt);
   const monitorRelative = monitorNextCheckAt ? formatMonitorEta(monitorNextCheckAt, monitorNow) : null;
   const monitorIsDueNow = monitorRelative === "due now";
@@ -1142,8 +1319,8 @@ export function IssueProperties({
   const monitorPrimary = monitorNextCheckAt
     ? formatMonitorEtaLabel(monitorNextCheckAt, monitorNow)
     : monitorState?.status === "cleared"
-      ? t("issueProperties.monitorCleared")
-      : t("common.none");
+      ? "Cleared"
+      : "None";
   const monitorSecondary = monitorNextCheckAt
     ? monitorIsDueNow
       ? "checking momentarily…"
@@ -1181,36 +1358,36 @@ export function IssueProperties({
           onPointerDown={(event) => event.stopPropagation()}
         >
           <div className="flex items-center justify-between border-b border-border px-4 py-3">
-            <span className="text-sm font-semibold">{t("issueProperties.monitor")}</span>
-            {monitorAttemptCount > 0 ? <span className="text-xs text-muted-foreground">Attempt {monitorAttemptCount}</span> : null}
+            <span className="text-sm font-semibold">{translateInstant("issueProperties.monitor")}</span>
+            {monitorAttemptCount > 0 ? <span className="text-xs text-muted-foreground">{translateInstant("issueProperties.attempt")}{" "}{monitorAttemptCount}</span> : null}
           </div>
           <div className="space-y-3 px-4 py-3 text-left">
             <div>
-              <div className="text-xs text-muted-foreground">{t("issueProperties.nextCheck")}</div>
+              <div className="text-xs text-muted-foreground">{translateInstant("issueProperties.nextCheck")}</div>
               <div className="text-sm">{formatMonitorAbsoluteFull(monitorNextCheckAt)}</div>
               <div className="text-xs text-muted-foreground">{monitorRelative}</div>
             </div>
             <div>
-              <div className="text-xs text-muted-foreground">{t("issueProperties.watching")}</div>
+              <div className="text-xs text-muted-foreground">{translateInstant("issueProperties.watching")}</div>
               <div className="text-sm">{monitorServiceName ?? "—"}</div>
             </div>
             <div>
-              <div className="text-xs text-muted-foreground">{t("issueProperties.notes")}</div>
+              <div className="text-xs text-muted-foreground">{translateInstant("issueProperties.notes")}</div>
               <div className="whitespace-normal text-sm">{monitorNotes ?? "—"}</div>
             </div>
             <div>
-              <div className="text-xs text-muted-foreground">{t("issueProperties.lastTriggeredLabel")}</div>
+              <div className="text-xs text-muted-foreground">{translateInstant("issueProperties.lastTriggeredLabel")}</div>
               <div className="text-sm">{monitorLastTriggeredAt ? formatMonitorAbsoluteFull(monitorLastTriggeredAt) : "— not yet triggered"}</div>
             </div>
           </div>
           <div className="flex gap-2 border-t border-border px-4 py-3">
             {onCheckMonitorNow ? (
               <Button type="button" size="sm" variant="outline" disabled={checkingMonitorNow} onClick={() => { setMonitorDetailsOpen(false); onCheckMonitorNow(); }}>
-                {checkingMonitorNow ? t("issueProperties.checkingMomentarily") : t("Check now")}
+                {checkingMonitorNow ? "Checking…" : "Check now"}
               </Button>
             ) : null}
-            <Button type="button" size="sm" variant="outline" onClick={() => { setMonitorDetailsOpen(false); setMonitorOpen(true); }}>{t("common.edit")}</Button>
-            <Button type="button" size="sm" variant="outline" onClick={() => { setMonitorDetailsOpen(false); clearMonitor(); }}>{t("common.clear")}</Button>
+            <Button type="button" size="sm" variant="outline" onClick={() => { setMonitorDetailsOpen(false); setMonitorOpen(true); }}>{translateInstant("common.edit")}</Button>
+            <Button type="button" size="sm" variant="outline" onClick={() => { setMonitorDetailsOpen(false); clearMonitor(); }}>{translateInstant("common.clear")}</Button>
           </div>
         </TooltipContent>
       ) : null}
@@ -1243,19 +1420,15 @@ export function IssueProperties({
   const scheduledRetryIsContinuation =
     scheduledRetry?.scheduledRetryReason === "max_turns_continuation";
   const scheduledRetryRelativeLabel = (() => {
-    if (!scheduledRetryRelative) return t("issueScheduledRetry.pendingScheduleTitle");
-    const action = scheduledRetryIsContinuation
-      ? t("issueScheduledRetry.shortAction.continuation")
-      : t("issueScheduledRetry.shortAction.retry");
-    if (scheduledRetryRelative === "now") return t("issueScheduledRetry.relativeDueNow", { action });
-    return t("issueScheduledRetry.relativeWithOffset", { action, offset: scheduledRetryRelative });
+    if (!scheduledRetryRelative) return "Pending schedule";
+    const action = scheduledRetryIsContinuation ? "Continuation" : "Retry";
+    if (scheduledRetryRelative === "now") return `${action} due now`;
+    return `${action} ${scheduledRetryRelative}`;
   })();
   const scheduledRetryRetryNowSuccess = retryNow.isSuccess
     && (retryNow.data?.outcome === "promoted" || retryNow.data?.outcome === "already_promoted");
   const scheduledRetryAttemptBadge = scheduledRetryAttempt !== null ? (
-    <span className="whitespace-nowrap shrink-0 text-xs text-muted-foreground">
-      {t("issueScheduledRetry.attempt", { count: scheduledRetryAttempt })}
-    </span>
+    <span className="whitespace-nowrap shrink-0 text-xs text-muted-foreground">{translateInstant("issueProperties.attempt")}{" "}{scheduledRetryAttempt}</span>
   ) : null;
   const scheduledRetryTrigger = (
     <span className="inline-flex min-w-0 items-center gap-1.5">
@@ -1277,24 +1450,24 @@ export function IssueProperties({
     <div className="flex w-full flex-col gap-2 p-2 text-xs">
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium text-foreground">
-          {scheduledRetryIsContinuation ? t("issueScheduledRetry.scheduledContinuation") : t("issueScheduledRetry.scheduledRetry")}
+          {scheduledRetryIsContinuation ? "Scheduled continuation" : "Scheduled retry"}
         </span>
         {scheduledRetryAttempt !== null ? (
           <span className="text-xs text-muted-foreground">
-            {t("issueScheduledRetry.attempt", { count: scheduledRetryAttempt })}
+            {translateInstant("issueProperties.attempt")}{" "}{scheduledRetryAttempt}
           </span>
         ) : null}
       </div>
       <dl className="grid grid-cols-(--gtc-15) gap-y-1">
         {scheduledRetryReasonLabel ? (
           <>
-            <dt className="text-muted-foreground">{t("issueScheduledRetry.reason")}</dt>
+            <dt className="text-muted-foreground">{translateInstant("issueScheduledRetry.reason")}</dt>
             <dd className="text-foreground">{scheduledRetryReasonLabel}</dd>
           </>
         ) : null}
         {scheduledRetryAbsolute ? (
           <>
-            <dt className="text-muted-foreground">{t("issueScheduledRetry.nextAttempt")}</dt>
+            <dt className="text-muted-foreground">{translateInstant("issueScheduledRetry.nextAttempt")}</dt>
             <dd className="text-foreground">
               {scheduledRetryAbsolute}
               {scheduledRetryRelative ? (
@@ -1305,7 +1478,7 @@ export function IssueProperties({
         ) : null}
         {scheduledRetry.retryOfRunId ? (
           <>
-            <dt className="text-muted-foreground">{t("issueScheduledRetry.replacesRun")}</dt>
+            <dt className="text-muted-foreground">{translateInstant("issueScheduledRetry.replacesRun")}</dt>
             <dd className="text-foreground">
               <Link
                 to={`/agents/${scheduledRetry.agentId}/runs/${scheduledRetry.retryOfRunId}`}
@@ -1318,7 +1491,7 @@ export function IssueProperties({
         ) : null}
         {scheduledRetry.agentName ? (
           <>
-            <dt className="text-muted-foreground">{t("tools.common.agent")}</dt>
+            <dt className="text-muted-foreground">{translateInstant("tools.common.agent")}</dt>
             <dd className="text-foreground">
               <Link
                 to={`/agents/${scheduledRetry.agentId}`}
@@ -1331,7 +1504,7 @@ export function IssueProperties({
         ) : null}
         {scheduledRetry.error ? (
           <>
-            <dt className="text-muted-foreground">{t("issueScheduledRetry.lastError")}</dt>
+            <dt className="text-muted-foreground">{translateInstant("issueScheduledRetry.lastError")}</dt>
             <dd className="text-foreground break-words">{scheduledRetry.error}</dd>
           </>
         ) : null}
@@ -1356,30 +1529,30 @@ export function IssueProperties({
           {retryNow.isPending ? (
             <span className="inline-flex items-center gap-1.5">
               <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
-              {t("issueScheduledRetry.retrying")}
-            </span>
+              {translateInstant("Retrying…")}</span>
           ) : scheduledRetryRetryNowSuccess ? (
             <span className="inline-flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
-              {retryNow.data?.outcome === "already_promoted" ? t("issueScheduledRetry.alreadyPromoted") : t("issueScheduledRetry.promoted")}
+              {retryNow.data?.outcome === "already_promoted" ? "Already promoted" : "Promoted"}
             </span>
           ) : (
             <span className="inline-flex items-center gap-1.5">
               <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
-              {t("issueScheduledRetry.retryNow")}
-            </span>
+              {translateInstant("issueScheduledRetry.retryNow")}</span>
           )}
         </Button>
         <span className="text-right text-xs text-muted-foreground">
           {retryNow.isPending
-            ? t("issueScheduledRetry.helper.promotingScheduledRetry")
+            ? "Promoting scheduled retry"
             : scheduledRetryRetryNowSuccess
               ? retryNow.data?.outcome === "already_promoted"
-                ? t("issueScheduledRetry.helper.alreadyPromotedRunStarting")
-                : t("issueScheduledRetry.helper.promotedRunStarting")
-              : scheduledRetryIsContinuation
-                ? t("issueScheduledRetry.helper.pullContinuationForward")
-                : t("issueScheduledRetry.helper.pullRetryForward")}
+                ? "Already promoted — run starting"
+                : "Promoted — run starting"
+              : retryNow.data?.outcome === "waiting" && retryNow.data.scheduledRetry?.runId === scheduledRetry.runId
+                ? retryNow.data.message
+                : scheduledRetryIsContinuation
+                  ? "Pulls continuation forward immediately"
+                  : "Pulls retry forward immediately"}
         </span>
       </div>
     </div>
@@ -1396,7 +1569,7 @@ export function IssueProperties({
         <input
           type="text"
           className="min-w-0 flex-1 rounded-md border border-border bg-transparent px-2 py-1 text-xs"
-          placeholder={t("issueProperties.monitorNotesPlaceholder")}
+          placeholder={translateInstant("issueProperties.monitorNotesPlaceholder")}
           value={monitorNotesInput}
           onChange={(e) => setMonitorNotesInput(e.target.value)}
         />
@@ -1405,7 +1578,7 @@ export function IssueProperties({
         <input
           type="text"
           className="min-w-0 flex-1 rounded-md border border-border bg-transparent px-2 py-1 text-xs"
-          placeholder={t("issueProperties.externalServicePlaceholder")}
+          placeholder={translateInstant("issueProperties.externalServicePlaceholder")}
           value={monitorServiceInput}
           onChange={(e) => setMonitorServiceInput(e.target.value)}
         />
@@ -1416,16 +1589,14 @@ export function IssueProperties({
             disabled={!monitorAtInput}
             onClick={saveMonitor}
           >
-            {t("issueProperties.schedule")}
-          </button>
-          {issue.executionPolicy?.monitor ? (
+            {translateInstant("issueProperties.schedule")}</button>
+          {executionPolicy?.monitor ? (
             <button
               type="button"
               className="inline-flex items-center rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
               onClick={clearMonitor}
             >
-              {t("common.clear")}
-            </button>
+              {translateInstant("common.clear")}</button>
           ) : null}
         </div>
       </div>
@@ -1446,14 +1617,14 @@ export function IssueProperties({
   }, [issue.labelIds, issue.labels, labels]);
 
   const labelsTrigger = selectedIssueLabels.length > 0 ? (
-    <div className="flex items-center gap-1 flex-wrap">
+    <div className="flex min-w-0 flex-col items-start gap-1">
       {selectedIssueLabels.slice(0, 3).map((label) => (
         <PropertyChip
           key={label.id}
+          className="border-0"
           style={{
-            borderColor: label.color,
             backgroundColor: `${label.color}22`,
-            color: pickTextColorForPillBg(label.color, 0.13),
+            color: label.color,
           }}
         >
           {label.name}
@@ -1461,31 +1632,17 @@ export function IssueProperties({
       ))}
       {selectedIssueLabels.length > 3 && (
         <Badge variant="outline" className="border-border text-muted-foreground">
-          +{selectedIssueLabels.length - 3} more
-        </Badge>
+          +{selectedIssueLabels.length - 3} {translateInstant("issueProperties.more")}</Badge>
       )}
     </div>
   ) : (
-    <span className="text-sm text-muted-foreground">{t("common.none")}</span>
+    <span className="text-sm text-muted-foreground">{translateInstant("common.none")}</span>
   );
-  const labelsExtra = (issue.labelIds ?? []).length > 0 ? (
-    <button
-      type="button"
-      className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
-      onClick={() => setLabelsOpen(true)}
-      aria-label={t("issueProperties.labels")}
-      title={t("issueProperties.labels")}
-    >
-      <Plus className="h-3 w-3" />
-      Add label
-    </button>
-  ) : undefined;
-
   const labelsContent = (
     <>
       <input
         className="w-full px-2 py-1.5 text-xs bg-transparent outline-none border-b border-border mb-1 placeholder:text-muted-foreground/50"
-        placeholder={t("issueProperties.searchLabels")}
+        placeholder={translateInstant("issueProperties.searchLabels")}
         value={labelSearch}
         onChange={(e) => setLabelSearch(e.target.value)}
         autoFocus={!inline}
@@ -1524,7 +1681,7 @@ export function IssueProperties({
           />
           <input
             className="flex-1 px-2 py-1.5 text-xs bg-transparent outline-none rounded placeholder:text-muted-foreground/50"
-            placeholder={t("issueProperties.newLabel")}
+            placeholder={translateInstant("issueProperties.newLabel")}
             value={newLabelName}
             onChange={(e) => setNewLabelName(e.target.value)}
           />
@@ -1540,21 +1697,21 @@ export function IssueProperties({
           }
         >
           <Plus className="h-3 w-3" />
-          {createLabel.isPending ? t("common.loadingEllipsis") : t("issueProperties.createLabel")}
+          {createLabel.isPending ? "Creating…" : "Create label"}
         </button>
       </div>
     </>
   );
 
   const assigneeTrigger = assignee ? (
-    <Identity name={assignee.name} size="sm" shape="square" />
+    <AgentIdentity agent={assignee} size="sm" />
   ) : assigneeUserLabel ? (
     <>
       <User className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
       <span className="min-w-0 truncate text-sm" title={assigneeUserLabel}>{assigneeUserLabel}</span>
     </>
   ) : (
-    <span className="text-sm text-muted-foreground">{t("issueProperties.noAssignee")}</span>
+    <span className="text-sm text-muted-foreground">{translateInstant("Unassigned")}</span>
   );
 
   // Grouped picker options (design surface 2): a board-users section and an
@@ -1566,7 +1723,7 @@ export function IssueProperties({
           kind: "user" as const,
           value: `user:${currentUserId}`,
           userId: currentUserId,
-          label: t("issueProperties.assignToMe"),
+          label: translateInstant("issueProperties.assignToMe"),
           searchText: userLabel(currentUserId) ?? "",
         }]
       : []),
@@ -1575,7 +1732,7 @@ export function IssueProperties({
           kind: "user" as const,
           value: `user:${issue.createdByUserId}`,
           userId: issue.createdByUserId,
-          label: creatorUserLabel ? t("issueProperties.assignToUser", { name: creatorUserLabel }) : t("issueProperties.assignToRequester"),
+          label: creatorUserLabel ? `Assign to ${creatorUserLabel}` : "Assign to requester",
           searchText: creatorUserLabel ?? "requester",
         }]
       : []),
@@ -1615,11 +1772,11 @@ export function IssueProperties({
       onClick={() => {
         if (option.kind === "agent") {
           selectAssignee({ assigneeAgentId: option.agent.id, assigneeUserId: null }, option.label, () =>
-            trackRecentAssignee(option.agent.id),
+            trackRecentAssignee(option.agent.id, companyId ?? undefined),
           );
         } else if (option.kind === "user") {
           selectAssignee({ assigneeAgentId: null, assigneeUserId: option.userId }, option.label, () =>
-            trackRecentAssigneeUser(option.userId),
+            trackRecentAssigneeUser(option.userId, companyId ?? undefined),
           );
         } else {
           selectAssignee({ assigneeAgentId: null, assigneeUserId: null }, option.label);
@@ -1627,7 +1784,7 @@ export function IssueProperties({
       }}
     >
       {option.kind === "agent" ? (
-        <AgentIcon icon={option.agent.icon} className="shrink-0 h-3 w-3 text-muted-foreground" />
+        <AgentAvatar agent={option.agent} size={16} className="shrink-0 h-3 w-3 text-muted-foreground"/>
       ) : option.kind === "user" ? (
         <User className="h-3 w-3 shrink-0 text-muted-foreground" />
       ) : null}
@@ -1644,7 +1801,7 @@ export function IssueProperties({
   const visibleAgentOptions = agentAssigneeOptions.filter((option) =>
     matchesAssigneeSearch(option.label, option.searchText),
   );
-  const showNoAssigneeOption = matchesAssigneeSearch(t("issueProperties.noAssignee"), "");
+  const showNoAssigneeOption = matchesAssigneeSearch("No assignee", "");
   const sectionHeader = (text: string) => (
     <div className="px-2 pb-0.5 pt-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
       {text}
@@ -1675,29 +1832,29 @@ export function IssueProperties({
       ) : null}
       <input
         className="w-full px-2 py-1.5 text-xs bg-transparent outline-none border-b border-border mb-1 placeholder:text-muted-foreground/50"
-        placeholder={t("issueProperties.searchAssignees")}
+        placeholder={translateInstant("issueProperties.searchAssignees")}
         value={assigneeSearch}
         onChange={(e) => setAssigneeSearch(e.target.value)}
         autoFocus={!inline}
       />
       <div className="max-h-56 overflow-y-auto overscroll-contain">
         {showNoAssigneeOption
-          ? renderAssigneeOption({ kind: "none", value: "", label: t("issueProperties.noAssignee"), searchText: "" })
+          ? renderAssigneeOption({ kind: "none", value: "", label: translateInstant("issueProperties.noAssignee"), searchText: "" })
           : null}
         {visibleAgentOptions.length > 0 ? (
           <>
-            {sectionHeader(t("common.agents"))}
+            {sectionHeader("Agents")}
             {visibleAgentOptions.map((option) => renderAssigneeOption(option))}
           </>
         ) : null}
         {visibleUserOptions.length > 0 ? (
           <>
-            {sectionHeader(t("issueProperties.boardUsers"))}
+            {sectionHeader("Board users")}
             {visibleUserOptions.map((option) => renderAssigneeOption(option))}
           </>
         ) : null}
         {!showNoAssigneeOption && visibleAgentOptions.length === 0 && visibleUserOptions.length === 0 ? (
-          <div className="px-2 py-2 text-xs text-muted-foreground">{t("No matches.")}</div>
+          <div className="px-2 py-2 text-xs text-muted-foreground">{translateInstant("No matches.")}</div>
         ) : null}
       </div>
     </>
@@ -1726,7 +1883,7 @@ export function IssueProperties({
           )}
           onClick={onClear}
         >
-          No {stageType === "review" ? "reviewers" : "approvers"}
+          {translateInstant("No")}{" "}{stageType === "review" ? "reviewers" : "approvers"}
         </button>
         {currentUserId && (
           <button
@@ -1737,8 +1894,7 @@ export function IssueProperties({
             onClick={() => toggleExecutionParticipant(stageType, `user:${currentUserId}`)}
           >
             <User className="h-3 w-3 shrink-0 text-muted-foreground" />
-            Assign to me
-          </button>
+            {translateInstant("issueProperties.assignToMe")}</button>
         )}
         {issue.createdByUserId && issue.createdByUserId !== currentUserId && (
           <button
@@ -1786,7 +1942,7 @@ export function IssueProperties({
                 )}
                 onClick={() => toggleExecutionParticipant(stageType, encoded)}
               >
-                <AgentIcon icon={agent.icon} className="shrink-0 h-3 w-3 text-muted-foreground" />
+                <AgentAvatar agent={agent} size={16} className="shrink-0 h-3 w-3 text-muted-foreground"/>
                 {agent.name}
               </button>
             );
@@ -1797,18 +1953,19 @@ export function IssueProperties({
 
   const projectTrigger = issue.projectId ? (
     <>
-      <span
-        className="shrink-0 h-3 w-3 rounded-sm"
-        style={{ backgroundColor: orderedProjects.find((p) => p.id === issue.projectId)?.color ?? "var(--project-seed)" }}
+      <ProjectTile
+        color={issueProject?.color ?? null}
+        icon={issueProject?.icon ?? null}
+        size="sm"
       />
       <span className="text-sm truncate min-w-0" title={projectName(issue.projectId)}>{projectName(issue.projectId)}</span>
     </>
   ) : (
-    <span className="text-sm text-muted-foreground">{t("common.none")}</span>
+    <span className="text-sm text-muted-foreground">{translateInstant("common.none")}</span>
   );
   const projectPickerOptions = orderItemsBySelectedAndRecent(
     [
-      { id: "", kind: "none" as const, name: t("issueProperties.noProject"), color: null as string | null },
+      { id: "", kind: "none" as const, name: "No project", color: null as string | null },
       ...orderedProjects.map((project) => ({
         id: project.id,
         kind: "project" as const,
@@ -1825,7 +1982,7 @@ export function IssueProperties({
     <>
       <input
         className="w-full px-2 py-1.5 text-xs bg-transparent outline-none border-b border-border mb-1 placeholder:text-muted-foreground/50"
-        placeholder={t("issueProperties.searchProjects")}
+        placeholder={translateInstant("issueProperties.searchProjects")}
         value={projectSearch}
         onChange={(e) => setProjectSearch(e.target.value)}
         autoFocus={!inline}
@@ -1847,13 +2004,12 @@ export function IssueProperties({
               onClick={() => {
                 if (option.kind === "project") {
                   const defaultMode = defaultExecutionWorkspaceModeForProject(option.project);
-                  trackRecentProject(option.project.id);
                   onUpdate({
                     projectId: option.project.id,
                     projectWorkspaceId: defaultProjectWorkspaceIdForProject(option.project),
                     executionWorkspaceId: null,
-                    executionWorkspacePreference: defaultMode,
-                    executionWorkspaceSettings: option.project.executionWorkspacePolicy?.enabled
+                    executionWorkspacePreference: workspaceIsolationControlsVisible ? defaultMode : null,
+                    executionWorkspaceSettings: workspaceIsolationControlsVisible && option.project.executionWorkspacePolicy?.enabled
                       ? { mode: defaultMode }
                       : null,
                   });
@@ -1870,9 +2026,10 @@ export function IssueProperties({
               }}
             >
               {option.kind === "project" ? (
-                <span
-                  className="shrink-0 h-3 w-3 rounded-sm"
-                  style={{ backgroundColor: option.color ?? "var(--project-seed)" }}
+                <ProjectTile
+                  color={option.project.color ?? null}
+                  icon={option.project.icon ?? null}
+                  size="xs"
                 />
               ) : null}
               {option.name}
@@ -1897,6 +2054,38 @@ export function IssueProperties({
     ? blockingIssues
     : blockingIssues.slice(0, ISSUE_PROPERTY_RELATION_PREVIEW_COUNT);
   const hiddenBlockingIssueCount = blockingIssues.length - visibleBlockingIssues.length;
+  const blockedByTrigger = blockedByRelations.length > 0 ? (
+    <div className="flex min-w-0 flex-col items-start gap-1">
+      {blockedByRelations.slice(0, 2).map((relation) => (
+        <IssueReferencePill
+          key={relation.id}
+          issue={relation}
+          onRemove={(id) => onUpdate({ blockedByIssueIds: blockedByIds.filter((candidate) => candidate !== id) })}
+        />
+      ))}
+      {blockedByRelations.length > 2 ? (
+        <Badge asChild variant="outline" className="border-border text-muted-foreground hover:bg-accent/50">
+          <button type="button" onClick={() => setBlockedByOpen(true)}>+{blockedByRelations.length - 2} {translateInstant("issueProperties.more")}</button>
+        </Badge>
+      ) : null}
+    </div>
+  ) : (
+    <span className="text-sm text-muted-foreground">{translateInstant("common.none")}</span>
+  );
+  const subtasksTrigger = childIssues.length > 0 ? (
+    <div className="flex min-w-0 flex-col items-start gap-1">
+      {childIssues.slice(0, 2).map((child) => (
+        <IssueReferencePill variant="property" key={child.id} issue={child} className="min-w-0 max-w-full" />
+      ))}
+      {childIssues.length > 2 ? (
+        <Badge asChild variant="outline" className="border-border text-muted-foreground hover:bg-accent/50">
+          <button type="button" onClick={() => setSubtasksOpen(true)}>+{childIssues.length - 2} {translateInstant("issueProperties.more")}</button>
+        </Badge>
+      ) : null}
+    </div>
+  ) : (
+    <span className="text-sm text-muted-foreground">{translateInstant("common.none")}</span>
+  );
   const visibleRelatedTasks = relatedTasksExpanded
     ? relatedTasks
     : relatedTasks.slice(0, ISSUE_PROPERTY_RELATION_PREVIEW_COUNT);
@@ -1925,28 +2114,23 @@ export function IssueProperties({
     if (!issue.parentId) return null;
     return allIssues?.find((candidate) => candidate.id === issue.parentId) ?? null;
   }, [allIssues, issue.parentId]);
-  const parentIdentifier = issue.ancestors?.[0]?.identifier ?? currentParentIssue?.identifier;
-  const parentTitle = issue.ancestors?.[0]?.title ?? currentParentIssue?.title ?? issue.parentId?.slice(0, 8);
+  const parentAncestor = issue.ancestors?.find((ancestor) => ancestor.id === issue.parentId);
+  const parentIdentifier = parentAncestor?.identifier ?? currentParentIssue?.identifier;
+  const parentTitle = parentAncestor?.title ?? currentParentIssue?.title ?? issue.parentId?.slice(0, 8);
   const parentTrigger = issue.parentId ? (
-    <span
-      className="text-sm truncate min-w-0"
-      title={`${parentIdentifier ? `${parentIdentifier} ` : ""}${parentTitle ?? ""}`.trim()}
-    >
-      {parentIdentifier ? `${parentIdentifier} ` : ""}
-      {parentTitle}
-    </span>
+    <IssueReferencePill
+      variant="property"
+      issue={isLockedIssueStub(parentAncestor) ? parentAncestor : {
+        id: issue.parentId,
+        identifier: parentIdentifier ?? issue.parentId,
+        title: parentTitle ?? "Parent task",
+        status: parentAncestor?.status ?? currentParentIssue?.status,
+      }}
+      className="min-w-0 max-w-full"
+    />
   ) : (
-    <span className="text-sm text-muted-foreground">{t("common.none")}</span>
+    <span className="text-sm text-muted-foreground">{translateInstant("common.none")}</span>
   );
-  const parentLink = issue.parentId ? (
-    <Link
-      to={`/issues/${parentIdentifier ?? issue.parentId}`}
-      className="inline-flex items-center justify-center h-5 w-5 rounded hover:bg-accent/50 transition-colors text-muted-foreground hover:text-foreground"
-      onClick={(e) => e.stopPropagation()}
-    >
-      <ArrowUpRight className="h-3 w-3" />
-    </Link>
-  ) : undefined;
   const parentSearchActive = normalizedParentSearch.length > 0;
   // When the user types, search on the server. The default list caps at 500 rows
   // and sorts priority-first, so a medium-priority or low-priority match past that
@@ -1967,7 +2151,7 @@ export function IssueProperties({
     <>
       <input
         className="w-full px-2 py-1.5 text-xs bg-transparent outline-none border-b border-border mb-1 placeholder:text-muted-foreground/50"
-        placeholder={t("issueProperties.searchTasks")}
+        placeholder={translateInstant("issueProperties.searchTasks")}
         value={parentSearch}
         onChange={(e) => setParentSearch(e.target.value)}
         autoFocus={!inline}
@@ -1983,7 +2167,7 @@ export function IssueProperties({
             setParentOpen(false);
           }}
         >
-          No parent
+          {translateInstant("issueProperties.noParent")}
         </button>
         {parentOptions.map((candidate) => (
           <button
@@ -2005,17 +2189,28 @@ export function IssueProperties({
           </button>
         ))}
         {parentOptionsLoading ? (
-          <div className="px-2 py-2 text-xs text-muted-foreground">{t("issueProperties.searchingTasks")}</div>
+          <div className="px-2 py-2 text-xs text-muted-foreground">{translateInstant("issueProperties.searchingTasks")}</div>
         ) : parentOptions.length === 0 ? (
-          <div className="px-2 py-2 text-xs text-muted-foreground">{t("issueProperties.noMatchingTasks")}</div>
+          <div className="px-2 py-2 text-xs text-muted-foreground">{translateInstant("issueProperties.noMatchingTasks")}</div>
         ) : null}
       </div>
     </>
   );
   const blockerSearchActive = normalizedBlockedBySearch.length > 0;
-  const blockerSourceIssues = blockerSearchActive ? searchedBlockedByIssues : allIssues;
-  const blockerOptions = (blockerSourceIssues ?? [])
-    .filter((candidate) => candidate.id !== issue.id);
+  const blockerSourceIssues = blockerSearchActive
+    ? searchedBlockedByIssues
+    : streamlinedPropertiesEnabled
+      ? [...(issue.blockedBy ?? []), ...(allIssues ?? [])]
+      : allIssues;
+  const blockerOptions = streamlinedPropertiesEnabled
+    ? Array.from(
+        new Map(
+          (blockerSourceIssues ?? [])
+            .filter((candidate) => candidate.id !== issue.id)
+            .map((candidate) => [candidate.id, candidate]),
+        ).values(),
+      )
+    : (blockerSourceIssues ?? []).filter((candidate) => candidate.id !== issue.id);
   if (!blockerSearchActive) {
     blockerOptions.sort((a, b) => {
       const aLabel = `${a.identifier ?? ""} ${a.title}`.trim();
@@ -2038,16 +2233,15 @@ export function IssueProperties({
   const removeBlockedBy = (blockedByIssueId: string) => {
     onUpdate({ blockedByIssueIds: blockedByIds.filter((candidate) => candidate !== blockedByIssueId) });
   };
-
   const blockedByContent = (
     <>
       <input
         className="w-full px-2 py-1.5 text-xs bg-transparent outline-none border-b border-border mb-1 placeholder:text-muted-foreground/50"
-        placeholder={t("issueProperties.searchTasks")}
+        placeholder={translateInstant("issueProperties.searchTasks")}
         value={blockedBySearch}
         onChange={(e) => setBlockedBySearch(e.target.value)}
         autoFocus={!inline}
-        aria-label={t("issueProperties.searchBlockersAria")}
+        aria-label={translateInstant("issueProperties.searchBlockersAria")}
       />
       <div className="max-h-48 overflow-y-auto overscroll-contain">
         <button
@@ -2061,8 +2255,7 @@ export function IssueProperties({
             setBlockedBySearch("");
           }}
         >
-          No blockers
-        </button>
+          {translateInstant("No blockers")}</button>
         {blockerOptions.map((candidate) => {
           const selected = blockedByIds.includes(candidate.id);
           return (
@@ -2084,9 +2277,9 @@ export function IssueProperties({
           );
         })}
         {blockerOptionsLoading ? (
-          <div className="px-2 py-2 text-xs text-muted-foreground">{t("issueProperties.searchingTasks")}</div>
+          <div className="px-2 py-2 text-xs text-muted-foreground">{translateInstant("issueProperties.searchingTasks")}</div>
         ) : blockerOptions.length === 0 ? (
-          <div className="px-2 py-2 text-xs text-muted-foreground">{t("issueProperties.noMatchingTasks")}</div>
+          <div className="px-2 py-2 text-xs text-muted-foreground">{translateInstant("issueProperties.noMatchingTasks")}</div>
         ) : null}
       </div>
     </>
@@ -2098,17 +2291,58 @@ export function IssueProperties({
       onClick={onClick}
     >
       <Plus className="h-3 w-3" />
-      Add blocker
-    </button>
+      {translateInstant("Add blocker")}</button>
+  );
+  const subtasksContent = (
+    <>
+      <div className="max-h-48 overflow-y-auto overscroll-contain">
+        {childIssues.length > 0 ? childIssues.map((child) => (
+          <Link
+            key={child.id}
+            to={`/issues/${child.identifier ?? child.id}`}
+            state={issueLinkState}
+            className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-xs hover:bg-accent/50"
+            onClick={() => setSubtasksOpen(false)}
+          >
+            <StatusIcon status={child.status} className="h-3 w-3" />
+            <span className="min-w-0 truncate">
+              {child.identifier ? `${child.identifier} ` : ""}
+              {child.title}
+            </span>
+          </Link>
+        )) : (
+          <div className="px-2 py-2 text-xs text-muted-foreground">{translateInstant("No subtasks yet.")}</div>
+        )}
+      </div>
+      {onAddSubIssue ? (
+        <div className="mt-2 border-t border-border pt-2">
+          <button
+            type="button"
+            className="flex w-full items-center justify-center gap-1.5 rounded border border-border px-2 py-1.5 text-xs hover:bg-accent/50"
+            onClick={() => {
+              setSubtasksOpen(false);
+              onAddSubIssue();
+            }}
+          >
+            <Plus className="h-3 w-3" />
+            {translateInstant("Add subtask")}</button>
+        </div>
+      ) : null}
+    </>
   );
 
   const propertiesBody = (
-    <div>
-      <PropertySection title={t("issueProperties.triage")} first>
-        <PropertyRow label={t("common.status")}>
+    <div className={cn(streamlinedPropertiesEnabled && "task-detail-properties pl-4")}>
+      <PropertySection
+        title={streamlinedPropertiesEnabled ? "Work" : "Triage"}
+        first
+        streamlined={streamlinedPropertiesEnabled}
+      >
+        <PropertyRow label={translateInstant("common.status")}>
           <StatusIcon
             status={issue.status}
-            size="lg"
+            externalConversationState={issue.externalConversationState}
+            glyphContainerClassName="inline-flex size-6 shrink-0 items-center justify-center"
             blockerAttention={issue.blockerAttention}
             onChange={(status) => onUpdate({ status })}
             showLabel
@@ -2117,7 +2351,7 @@ export function IssueProperties({
 
         {/* PAP-411: priority UI is hidden behind SHOW_TASK_PRIORITY_UI. Revive by flipping the flag. */}
         {SHOW_TASK_PRIORITY_UI && (
-          <PropertyRow label={t("common.priority")}>
+          <PropertyRow label={translateInstant("common.priority")}>
             <PriorityIcon
               priority={issue.priority}
               onChange={(priority) => onUpdate({ priority })}
@@ -2128,20 +2362,7 @@ export function IssueProperties({
 
         <PropertyPicker
           inline={inline}
-          label={t("issueProperties.labels")}
-          open={labelsOpen}
-          onOpenChange={(open) => { setLabelsOpen(open); if (!open) setLabelSearch(""); }}
-          triggerContent={labelsTrigger}
-          triggerClassName="min-w-0 max-w-full"
-          popoverClassName="w-64"
-          extra={labelsExtra}
-        >
-          {labelsContent}
-        </PropertyPicker>
-
-        <PropertyPicker
-          inline={inline}
-          label={t("common.assignee")}
+          label={translateInstant("common.assignee")}
           open={assigneeOpen}
           onOpenChange={(open) => { setAssigneeOpen(open); if (!open) { setAssigneeSearch(""); setPendingAssignee(null); } }}
           triggerContent={assigneeTrigger}
@@ -2162,7 +2383,7 @@ export function IssueProperties({
         {showAssigneeAdapterOptions ? (
           <PropertyPicker
             inline={inline}
-            label={t("agentConfig.model")}
+            label={translateInstant("agentConfig.model")}
             open={assigneeOptionsOpen}
             onOpenChange={setAssigneeOptionsOpen}
             triggerContent={assigneeOptionsTrigger}
@@ -2175,7 +2396,7 @@ export function IssueProperties({
 
         <PropertyPicker
           inline={inline}
-          label={t("common.project")}
+          label={translateInstant("common.project")}
           open={projectOpen}
           onOpenChange={(open) => { setProjectOpen(open); if (!open) setProjectSearch(""); }}
           triggerContent={projectTrigger}
@@ -2193,12 +2414,26 @@ export function IssueProperties({
         >
           {projectContent}
         </PropertyPicker>
-      </PropertySection>
 
-      <PropertySection title={t("issueProperties.relationships")}>
         <PropertyPicker
           inline={inline}
-          label={t("issueProperties.parent")}
+          label={translateInstant("issueProperties.labels")}
+          open={labelsOpen}
+          onOpenChange={(open) => { setLabelsOpen(open); if (!open) setLabelSearch(""); }}
+          triggerContent={labelsTrigger}
+          triggerClassName="min-w-0 max-w-full"
+          popoverClassName="w-64"
+          extra={labelsExtra}
+          stacked
+        >
+          {labelsContent}
+        </PropertyPicker>
+      </PropertySection>
+
+      <PropertySection title={translateInstant("issueProperties.relationships")} streamlined={streamlinedPropertiesEnabled}>
+        <PropertyPicker
+          inline={inline}
+          label={translateInstant("issueProperties.parent")}
           open={parentOpen}
           onOpenChange={(open) => {
             setParentOpen(open);
@@ -2207,14 +2442,31 @@ export function IssueProperties({
           triggerContent={parentTrigger}
           triggerClassName="min-w-0 max-w-full"
           popoverClassName="w-72"
-          extra={parentLink}
+          separateTrigger={!!issue.parentId}
         >
           {parentContent}
         </PropertyPicker>
 
-        {inline ? (
+        {streamlinedPropertiesEnabled ? (
+          <PropertyPicker
+            inline={inline}
+            label={translateInstant("issueProperties.blockedBy")}
+            open={blockedByOpen}
+            onOpenChange={(open) => {
+              setBlockedByOpen(open);
+              if (!open) setBlockedBySearch("");
+            }}
+            separateTrigger={blockedByRelations.length > 0}
+            triggerContent={blockedByTrigger}
+            triggerClassName="min-w-0 max-w-full"
+            popoverClassName="w-72"
+            stacked
+          >
+            {blockedByContent}
+          </PropertyPicker>
+        ) : inline ? (
           <div>
-            <PropertyRow label={t("issueProperties.blockedBy")} wrap>
+            <PropertyRow label={translateInstant("issueProperties.blockedBy")} wrap>
               {visibleBlockedByRelations.map((relation) => (
                 <RemovableIssueReferencePill
                   key={relation.id}
@@ -2230,14 +2482,14 @@ export function IssueProperties({
               />
               {renderAddBlockedByButton(() => setBlockedByOpen((open) => !open))}
             </PropertyRow>
-            {blockedByOpen && (
+            {blockedByOpen ? (
               <div className="rounded-md border border-border bg-popover p-1 mb-2">
                 {blockedByContent}
               </div>
-            )}
+            ) : null}
           </div>
         ) : (
-          <PropertyRow label={t("issueProperties.blockedBy")} wrap>
+          <PropertyRow label={translateInstant("issueProperties.blockedBy")} wrap>
             {visibleBlockedByRelations.map((relation) => (
               <RemovableIssueReferencePill
                 key={relation.id}
@@ -2258,9 +2510,7 @@ export function IssueProperties({
                 if (!open) setBlockedBySearch("");
               }}
             >
-              <PopoverTrigger asChild>
-                {renderAddBlockedByButton()}
-              </PopoverTrigger>
+              <PopoverTrigger asChild>{renderAddBlockedByButton()}</PopoverTrigger>
               <PopoverContent className="w-72 p-1" align="end" collisionPadding={16}>
                 {blockedByContent}
               </PopoverContent>
@@ -2268,11 +2518,11 @@ export function IssueProperties({
           </PropertyRow>
         )}
 
-        <PropertyRow label={t("issueProperties.blocking")} wrap>
+        <PropertyRow label={translateInstant("issueProperties.blocking")} wrap>
           {blockingIssues.length > 0 ? (
-            <div className="flex flex-wrap items-center gap-1.5">
+            <div className="flex flex-col items-start gap-1.5">
               {visibleBlockingIssues.map((relation) => (
-                <IssueReferencePill key={relation.id} issue={relation} />
+                <IssueReferencePill variant="property" key={relation.id} issue={relation} />
               ))}
               <ExpandRelationListButton
                 hiddenCount={hiddenBlockingIssueCount}
@@ -2281,21 +2531,30 @@ export function IssueProperties({
               />
             </div>
           ) : (
-            <span className="text-sm text-muted-foreground">{t("common.none")}</span>
+            <span className="text-sm text-muted-foreground">{translateInstant("common.none")}</span>
           )}
         </PropertyRow>
 
-        {/* Chat shell promotes sub-tasks to their own pane tab (the full tree),
-            so the slim pill row here would duplicate that home (PAP-496). Keep
-            the pill row only for the classic center-column layout. */}
-        {taskChatShellEnabled ? null : (
-          <PropertyRow label={t("sub-tasks")} wrap>
-            <div className="flex flex-wrap items-center gap-1.5">
-              {childIssues.length > 0
-                ? visibleChildIssues.map((child) => (
-                  <IssueReferencePill key={child.id} issue={child} />
-                ))
-                : null}
+        {streamlinedPropertiesEnabled ? (
+          <PropertyPicker
+            inline={inline}
+            label={translateInstant("Subtasks")}
+            open={subtasksOpen}
+            onOpenChange={setSubtasksOpen}
+            separateTrigger={childIssues.length > 0}
+            triggerContent={subtasksTrigger}
+            triggerClassName="min-w-0 max-w-full"
+            popoverClassName="w-72"
+            stacked
+          >
+            {subtasksContent}
+          </PropertyPicker>
+        ) : !taskChatShellEnabled ? (
+          <PropertyRow label={translateInstant("issueDetail.subTasks")} wrap>
+            <div className="flex flex-col items-start gap-1.5">
+              {visibleChildIssues.map((child) => (
+                <IssueReferencePill key={child.id} issue={child} />
+              ))}
               <ExpandRelationListButton
                 hiddenCount={hiddenChildIssueCount}
                 expanded={subTasksExpanded}
@@ -2308,16 +2567,15 @@ export function IssueProperties({
                   onClick={onAddSubIssue}
                 >
                   <Plus className="h-3 w-3" />
-                  Add sub-task
-                </button>
+                  {translateInstant("issueProperties.addSubTask")}</button>
               ) : null}
             </div>
           </PropertyRow>
-        )}
+        ) : null}
 
-        {relatedTasks.length > 0 ? (
-          <PropertyRow label={t("issueProperties.relatedTasks")} wrap>
-            <div className="flex flex-wrap items-center gap-1.5">
+        {(!streamlinedPropertiesEnabled || !taskChatShellEnabled) && relatedTasks.length > 0 ? (
+          <PropertyRow label={streamlinedPropertiesEnabled ? "Referenced" : "Related tasks"} wrap>
+            <div className="flex flex-col items-start gap-1.5">
               {visibleRelatedTasks.map((related) => (
                 <IssueReferencePill key={related.id} issue={related} />
               ))}
@@ -2330,18 +2588,30 @@ export function IssueProperties({
           </PropertyRow>
         ) : null}
 
+        {pullRequests.length > 0 || workProductsError ? (
+          <PropertyRow label={translateInstant("Pull requests")} wrap>
+            <div className="flex min-w-0 flex-col gap-2">
+              <IssuePullRequestLinks products={pullRequests} externalObjects={externalObjects?.map((entry) => entry.pill)} />
+              {workProductsError ? (
+                <span className="text-xs text-muted-foreground">
+                  {translateInstant("Couldn’t load pull requests.")}{" "}<button type="button" className="text-primary hover:underline" onClick={() => void refetchWorkProducts()}>{translateInstant("issueScheduledRetry.shortAction.retry")}</button>
+                </span>
+              ) : null}
+            </div>
+          </PropertyRow>
+        ) : null}
         <ExternalObjectRows
-          externalObjects={externalObjects}
+          externalObjects={remainingExternalObjects}
           externalObjectsLoading={externalObjectsLoading}
           externalObjectsError={externalObjectsError}
           onRetryExternalObjects={onRetryExternalObjects}
         />
       </PropertySection>
 
-      <PropertySection title={t("issueProperties.execution")}>
+      <PropertySection title={translateInstant("issueProperties.execution")} streamlined={streamlinedPropertiesEnabled}>
         {/* Read-only: agents set the policy, the board does not. */}
         {reviewPolicyBadge ? (
-          <PropertyRow label={t("inbox.approvals")}>
+          <PropertyRow label={translateInstant("inbox.approvals")}>
             <PropertyChip title={reviewPolicyBadge.description}>
               <reviewPolicyBadge.Icon className="shrink-0 text-muted-foreground" aria-hidden />
               <span className="min-w-0 truncate">{reviewPolicyBadge.label}</span>
@@ -2349,9 +2619,14 @@ export function IssueProperties({
           </PropertyRow>
         ) : null}
 
+        {!policyAvailable ? (
+          <PropertyRow label={translateInstant("Execution policy")} wrap>
+            <span role="status" className="text-sm text-muted-foreground">{translateInstant("Execution policy unavailable. Refresh to try again.")}</span>
+          </PropertyRow>
+        ) : (<>
         <PropertyPicker
           inline={inline}
-          label={t("issueProperties.reviewers")}
+          label={translateInstant("issueProperties.reviewers")}
           open={reviewersOpen}
           onOpenChange={(open) => { setReviewersOpen(open); if (!open) setReviewerSearch(""); }}
           triggerContent={reviewerTrigger}
@@ -2370,7 +2645,7 @@ export function IssueProperties({
 
         <PropertyPicker
           inline={inline}
-          label={t("issueProperties.approvers")}
+          label={translateInstant("issueProperties.approvers")}
           open={approversOpen}
           onOpenChange={(open) => { setApproversOpen(open); if (!open) setApproverSearch(""); }}
           triggerContent={approverTrigger}
@@ -2386,17 +2661,22 @@ export function IssueProperties({
           )}
         </PropertyPicker>
         {nextRunnableExecutionStage === "approval" && approverValues.length > 0 ? runExecutionButton("approval") : null}
+        </>)}
 
         {currentExecutionLabel && (
-          <PropertyRow label={t("issueProperties.execution")}>
+          <PropertyRow label={translateInstant("issueProperties.execution")}>
             <span className="text-sm truncate min-w-0" title={currentExecutionLabel}>{currentExecutionLabel}</span>
           </PropertyRow>
         )}
 
-        {showScheduledRetryRow && scheduledRetryContent ? (
+        {showScheduledRetryRow && scheduledRetry?.scheduledRetryReason === "workspace_busy" ? (
+          <PropertyRow label={translateInstant("issueProperties.workspace")}>
+            <span className="text-sm text-muted-foreground">{translateInstant("Waiting for workspace")}</span>
+          </PropertyRow>
+        ) : showScheduledRetryRow && scheduledRetryContent ? (
           <PropertyPicker
             inline={inline}
-            label={t("issueScheduledRetry.scheduledRetry")}
+            label={translateInstant("issueScheduledRetry.scheduledRetry")}
             open={scheduledRetryOpen}
             onOpenChange={setScheduledRetryOpen}
             triggerContent={scheduledRetryTrigger}
@@ -2408,9 +2688,10 @@ export function IssueProperties({
           </PropertyPicker>
         ) : null}
 
+        {policyAvailable ? (
         <PropertyPicker
           inline={inline}
-          label={t("issueProperties.monitor")}
+          label={translateInstant("issueProperties.monitor")}
           open={monitorOpen}
           onOpenChange={setMonitorOpen}
           triggerContent={monitorTrigger}
@@ -2419,51 +2700,164 @@ export function IssueProperties({
         >
           {monitorContent}
         </PropertyPicker>
-
-        {taskWatchdogsEnabled ? (
-          <PropertyPicker
-            inline={inline}
-            label={t("issueProperties.watchdog")}
-            open={watchdogOpen}
-            onOpenChange={setWatchdogOpen}
-            triggerContent={watchdogTrigger}
-            triggerClassName="min-w-0 max-w-full"
-            popoverClassName={cn("max-w-full", inline ? "w-full" : "w-80 sm:w-96")}
-            extra={
-              watchdogIssueRef ? (
-                <Link
-                  to={`/issues/${watchdogIssueRef.id}`}
-                  className="inline-flex items-center justify-center h-5 w-5 rounded hover:bg-accent/50 transition-colors text-muted-foreground hover:text-foreground"
-                  title={t("issueProperties.openWatchdogTask")}
-                  aria-label={t("issueProperties.openWatchdogTask")}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <ArrowUpRight className="h-3 w-3" />
-                </Link>
-              ) : undefined
-            }
-          >
-            {watchdogContent}
-          </PropertyPicker>
         ) : null}
+
+        <PropertyPicker
+          inline={inline}
+          label={translateInstant("issueProperties.watchdog")}
+          open={watchdogOpen}
+          onOpenChange={setWatchdogOpen}
+          triggerContent={watchdogTrigger}
+          triggerClassName="min-w-0 max-w-full"
+          popoverClassName={cn("max-w-full", inline ? "w-full" : "w-80 sm:w-96")}
+          extra={
+            watchdogIssueRef ? (
+              <Link
+                to={`/issues/${watchdogIssueRef.id}`}
+                className="inline-flex items-center justify-center h-5 w-5 rounded hover:bg-accent/50 transition-colors text-muted-foreground hover:text-foreground"
+                title={translateInstant("issueProperties.openWatchdogTask")}
+                aria-label={translateInstant("issueProperties.openWatchdogTask")}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <ArrowUpRight className="h-3 w-3" />
+              </Link>
+            ) : undefined
+          }
+        >
+          {watchdogContent}
+        </PropertyPicker>
       </PropertySection>
 
-      {hasWorkspaceRuntimeControls || issue.currentExecutionWorkspace?.branchName || issue.currentExecutionWorkspace?.cwd || issue.executionWorkspaceId ? (
-        <PropertySection title={t("issueProperties.workspace")}>
+      {workspacePickerEligible || hasWorkspaceRuntimeControls || issue.currentExecutionWorkspace?.branchName || issue.currentExecutionWorkspace?.cwd || issue.executionWorkspaceId ? (
+        <PropertySection title={translateInstant("issueProperties.workspace")} streamlined={streamlinedPropertiesEnabled}>
+          {workspacePickerEligible ? (
+            <PropertyPicker
+              inline={inline}
+              label={translateInstant("issueProperties.execution")}
+              open={workspacePickerOpen}
+              onOpenChange={(open) => {
+                setWorkspacePickerOpen(open);
+                if (!open) {
+                  setWorkspacePickerStep("mode");
+                  setWorkspaceSearch("");
+                }
+              }}
+              triggerContent={(
+                <span className="truncate" title={workspaceTriggerTitle}>
+                  {workspaceTriggerLabel}
+                </span>
+              )}
+              triggerClassName="min-w-0 max-w-full"
+              popoverClassName={cn("max-w-full", inline ? "w-full" : "w-72")}
+            >
+              {workspacePickerStep === "mode" ? (
+                <>
+                  <div className="space-y-0.5">
+                    <button
+                      type="button"
+                      className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left hover:bg-accent/50"
+                      onClick={() => saveWorkspaceSelection(null)}
+                    >
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-sm">{translateInstant("Default")}</span>
+                        <span className="block text-xs text-muted-foreground">{translateInstant("Use the project workspace policy")}</span>
+                      </span>
+                      {activeWorkspacePickerMode === "default" ? <Check className="h-3.5 w-3.5 shrink-0" /> : null}
+                    </button>
+                    <button
+                      type="button"
+                      className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left hover:bg-accent/50"
+                      onClick={() => saveWorkspaceSelection("isolated_workspace")}
+                    >
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-sm">{translateInstant("issueWorkspace.newIsolatedWorkspace")}</span>
+                        <span className="block text-xs text-muted-foreground">{translateInstant("Create a fresh workspace on the next run")}</span>
+                      </span>
+                      {activeWorkspacePickerMode === "isolated" ? <Check className="h-3.5 w-3.5 shrink-0" /> : null}
+                    </button>
+                    <button
+                      type="button"
+                      className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left hover:bg-accent/50"
+                      onClick={() => setWorkspacePickerStep("reuse")}
+                    >
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-sm">{translateInstant("Reuse existing workspace…")}</span>
+                        <span className="block text-xs text-muted-foreground">{translateInstant("Pick a workspace to reuse")}</span>
+                      </span>
+                      {activeWorkspacePickerMode === "reuse" ? <Check className="h-3.5 w-3.5 shrink-0" /> : null}
+                    </button>
+                  </div>
+                  <div className="mt-1 border-t border-border px-2 py-1.5 text-xs text-muted-foreground">
+                    {issue.executionWorkspaceId ? "Current workspace stays active. Applies on the next run." : "Applies on the next run."}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="border-b border-border pb-1">
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-1 rounded px-1 py-1 text-xs text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                      onClick={() => setWorkspacePickerStep("mode")}
+                      aria-label={translateInstant("Back to workspace options")}
+                    >
+                      <ChevronLeft className="h-3.5 w-3.5" />
+                      {translateInstant("Workspace mode")}</button>
+                    <input
+                      className="block w-full bg-transparent px-2 py-1.5 text-xs outline-none placeholder:text-muted-foreground/50"
+                      placeholder={translateInstant("Search workspaces...")}
+                      value={workspaceSearch}
+                      onChange={(event) => setWorkspaceSearch(event.target.value)}
+                      autoFocus={!inline}
+                      aria-label={translateInstant("Search reusable workspaces")}
+                    />
+                  </div>
+                  <div className="max-h-48 overflow-y-auto overscroll-contain py-1">
+                    {reusableExecutionWorkspacesLoading ? (
+                      <div className="px-2 py-2 text-xs text-muted-foreground">{translateInstant("Loading workspaces...")}</div>
+                    ) : reusableExecutionWorkspacesError ? (
+                      <div className="px-2 py-2 text-xs text-destructive">{translateInstant("Failed to load workspaces.")}</div>
+                    ) : reusableWorkspaceOptions.length === 0 ? (
+                      <div className="px-2 py-2 text-xs text-muted-foreground">{translateInstant("No matching workspaces.")}</div>
+                    ) : reusableWorkspaceOptions.map((group) => (
+                      <div key={group.id} className="py-1">
+                        <div className="px-2 pb-1 text-xs font-medium text-muted-foreground">{group.label}</div>
+                        {group.options.map((option) => (
+                          <button
+                            key={option.key}
+                            type="button"
+                            className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left hover:bg-accent/50"
+                            onClick={() => saveWorkspaceSelection("reuse_existing", option.workspace)}
+                          >
+                            <span className="min-w-0 flex-1">
+                              <span className="block truncate text-sm">{option.label}</span>
+                              <span className="block truncate text-xs text-muted-foreground">{option.description}</span>
+                            </span>
+                            {issue.executionWorkspaceId === option.workspaceId ? <Check className="h-3.5 w-3.5 shrink-0" /> : null}
+                          </button>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="border-t border-border px-2 py-1.5 text-xs text-muted-foreground">
+                    {issue.executionWorkspaceId ? "Current workspace stays active. Applies on the next run." : "Applies on the next run."}
+                  </div>
+                </>
+              )}
+            </PropertyPicker>
+          ) : null}
           {showWorkspaceDetailLink && issue.executionWorkspaceId && (
-            <PropertyRow label={t("issueProperties.workspace")}>
+            <PropertyRow label={translateInstant("issueProperties.workspace")}>
               <Link
                 to={`/execution-workspaces/${issue.executionWorkspaceId}`}
                 className="text-sm text-primary hover:underline inline-flex min-w-0 items-center gap-1.5"
               >
                 <HardDrive className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                View workspace
-                <ArrowUpRight className="h-3 w-3 shrink-0" />
+                {translateInstant("issueProperties.viewWorkspace")}<ArrowUpRight className="h-3 w-3 shrink-0" />
               </Link>
             </PropertyRow>
           )}
           {hasWorkspaceRuntimeControls && (
-            <PropertyRow label={t("issueProperties.service")}>
+            <PropertyRow label={translateInstant("issueProperties.service")}>
               <div className="flex min-w-0 flex-1 flex-col gap-1.5">
                 <WorkspaceRuntimeQuickControls
                   sections={workspaceRuntimeSections}
@@ -2484,15 +2878,15 @@ export function IssueProperties({
             </PropertyRow>
           )}
           {issue.currentExecutionWorkspace?.branchName && (
-            <PropertyRow label={t("issueProperties.branch")}>
+            <PropertyRow label={translateInstant("issueProperties.branch")}>
               <TruncatedCopyable
                 value={issue.currentExecutionWorkspace.branchName}
                 icon={GitBranch}
               />
             </PropertyRow>
           )}
-          {issue.currentExecutionWorkspace?.cwd && (
-            <PropertyRow label={t("issueProperties.folder")}>
+          {issue.currentExecutionWorkspace?.cwd && !hideHostPaths && (
+            <PropertyRow label={translateInstant("issueProperties.folder")}>
               <TruncatedCopyable
                 value={issue.currentExecutionWorkspace.cwd}
                 icon={FolderOpen}
@@ -2502,30 +2896,26 @@ export function IssueProperties({
         </PropertySection>
       ) : null}
 
-      <PropertySection title={t("issueProperties.about")}>
+      <PropertySection title={translateInstant("issueProperties.about")} streamlined={streamlinedPropertiesEnabled}>
         {originatingActor ? (
-          <PropertyRow label={t("issueProperties.originating")}>
+          <PropertyRow label={translateInstant("issueProperties.originating")}>
             {originatingActor.kind === "agent" ? (
               <Link
                 to={`/agents/${originatingActor.id}`}
                 className="hover:underline"
               >
-                <Identity
-                  name={agentName(originatingActor.id) ?? originatingActor.id.slice(0, 8)}
-                  size="sm"
-                  shape="square"
-                />
+                <AgentIdentity agent={agents?.find((agent) => agent.id === originatingActor.id) ?? { id: originatingActor.id, name: agentName(originatingActor.id) ?? "Agent" }} size="sm" />
               </Link>
             ) : (
               <span className="flex min-w-0 items-center gap-1.5">
                 <Identity
-                  name={actualUserLabel(originatingActor.id) ?? originatingUserProfile?.label ?? t("runTranscript.user")}
+                  name={actualUserLabel(originatingActor.id) ?? originatingUserProfile?.label ?? "User"}
                   avatarUrl={originatingUserProfile?.image ?? null}
                   size="sm"
                 />
                 {originatingViaAgentName ? (
                   <span className="shrink-0 truncate text-xs text-muted-foreground">
-                    via {originatingViaAgentName}
+                    {translateInstant("caseComponents.activity.relations.via")}{" "}{originatingViaAgentName}
                   </span>
                 ) : null}
               </span>
@@ -2533,27 +2923,39 @@ export function IssueProperties({
           </PropertyRow>
         ) : null}
         {issue.startedAt && (
-          <PropertyRow label={t("issueProperties.started")}>
-            <span className="text-sm">{formatDateTime(issue.startedAt)}</span>
+          <PropertyRow label={translateInstant("issueProperties.started")}>
+            <span
+              className={streamlinedPropertiesEnabled ? "min-w-0 truncate whitespace-nowrap text-sm" : "text-sm"}
+              title={streamlinedPropertiesEnabled ? formatDateTime(issue.startedAt) : undefined}
+            >{formatDateTime(issue.startedAt)}</span>
           </PropertyRow>
         )}
         {issue.completedAt && (
-          <PropertyRow label={t("issueProperties.completed")}>
-            <span className="text-sm">{formatDateTime(issue.completedAt)}</span>
+          <PropertyRow label={translateInstant("issueProperties.completed")}>
+            <span
+              className={streamlinedPropertiesEnabled ? "min-w-0 truncate whitespace-nowrap text-sm" : "text-sm"}
+              title={streamlinedPropertiesEnabled ? formatDateTime(issue.completedAt) : undefined}
+            >{formatDateTime(issue.completedAt)}</span>
           </PropertyRow>
         )}
-        <PropertyRow label={t("issueProperties.created")}>
-          <span className="text-sm">{formatDateTime(issue.createdAt)}</span>
+        <PropertyRow label={translateInstant("issueProperties.created")}>
+          <span
+            className={streamlinedPropertiesEnabled ? "min-w-0 truncate whitespace-nowrap text-sm" : "text-sm"}
+            title={streamlinedPropertiesEnabled ? formatDateTime(issue.createdAt) : undefined}
+          >{formatDateTime(issue.createdAt)}</span>
         </PropertyRow>
-        <PropertyRow label={t("issueProperties.updated")}>
-          <span className="text-sm">{timeAgo(issue.updatedAt)}</span>
+        <PropertyRow label={translateInstant("issueProperties.updated")}>
+          <span
+            className={streamlinedPropertiesEnabled ? "min-w-0 truncate whitespace-nowrap text-sm" : "text-sm"}
+            title={streamlinedPropertiesEnabled ? timeAgo(issue.updatedAt) : undefined}
+          >{timeAgo(issue.updatedAt)}</span>
         </PropertyRow>
         {issue.archivedAt && issue.archivedByActorType === "agent" && issue.archivedByAgentId ? (
           (() => {
             const archivedByAgent = (agents ?? []).find((candidate) => candidate.id === issue.archivedByAgentId);
             const archivedByName = agentName(issue.archivedByAgentId);
             return (
-              <PropertyRow label={t("status.archived")}>
+              <PropertyRow label={translateInstant("status.archived")}>
                 <div className="flex min-w-0 max-w-full flex-col items-start gap-1">
                   {/* The row label already reads "Archived", so the value shows just
                       the attributing agent (icon + name) — this gives the name the
@@ -2566,7 +2968,7 @@ export function IssueProperties({
                     title={`Archived by ${archivedByName} · ${formatDateTime(issue.archivedAt)}`}
                   >
                     {archivedByAgent
-                      ? <AgentIcon icon={archivedByAgent.icon} className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                      ? <AgentAvatar agent={archivedByAgent} size={16} className="h-3.5 w-3.5 shrink-0 text-muted-foreground"/>
                       : null}
                     <span className="min-w-0 truncate">
                       {archivedByName}
@@ -2581,7 +2983,7 @@ export function IssueProperties({
                       disabled={unarchiveFromInbox.isPending}
                     >
                       <ArchiveRestore className="h-3 w-3" />
-                      {unarchiveFromInbox.isPending ? t("issueProperties.unarchiving") : t("common.unarchive")}
+                      {unarchiveFromInbox.isPending ? "Unarchiving…" : "Unarchive"}
                     </button>
                   </div>
                   {unarchiveErrorMessage ? (
@@ -2595,7 +2997,7 @@ export function IssueProperties({
           })()
         ) : null}
         {issue.requestDepth > 0 && (
-          <PropertyRow label={t("issueProperties.depth")}>
+          <PropertyRow label={translateInstant("issueProperties.depth")}>
             <span className="text-sm font-mono">{issue.requestDepth}</span>
           </PropertyRow>
         )}
@@ -2610,15 +3012,52 @@ export function IssueProperties({
   );
 
   // Classic Task Interface ON: the legacy stacked pane, byte-for-byte.
-  if (!taskChatShellEnabled) return propertiesBody;
+  if (!taskChatShellEnabled || sidePanelContentOnly) return propertiesBody;
 
-  // Chat-style with nothing to switch between: no tab strip — the header bar
-  // shows a plain title and the pane body is just the properties stack.
-  if (!hasPlanTab && !hasArtifactsTab) {
+  const hasSubtasksTab = streamlinedPropertiesEnabled && childIssues.length > 0;
+  const hasReferencesTab = streamlinedPropertiesEnabled
+    && (panelReferencedTasks.length > 0 || panelMentionedInTasks.length > 0);
+  const availablePaneTabs: IssuePaneTabDescriptor[] = [
+    { value: "properties", label: translateInstant("issueProperties.properties"), closable: false },
+    ...(hasSubtasksTab
+      ? [{ value: "subtasks" as const, label: translateInstant("Subtasks"), count: childIssues.length, closable: true }]
+      : []),
+    ...(hasReferencesTab
+      ? [{ value: "references" as const, label: translateInstant("issueProperties.references"), closable: true }]
+      : []),
+    ...(hasPlanTab
+      ? [{ value: "plans" as const, label: translateInstant("agentConfig.plan"), closable: true }]
+      : []),
+    ...(hasArtifactsTab
+      ? [{ value: "artifacts" as const, label: translateInstant("Artifacts"), closable: true }]
+      : []),
+  ];
+  const visiblePaneTabs = availablePaneTabs.filter(
+    (tab) => tab.value === "properties" || !closedPaneTabs.has(tab.value),
+  );
+  const hiddenPaneTabs = availablePaneTabs.filter((tab) => closedPaneTabs.has(tab.value));
+
+  // Chat-style with nothing to switch between: render one selected tab button
+  // so the header uses the same filled-tab treatment as the multi-tab state.
+  if (!hasSubtasksTab && !hasReferencesTab && !hasPlanTab && !hasArtifactsTab) {
     return (
       <>
         {paneHeaderSlot
-          ? createPortal(<span className="text-sm font-medium">{t("issueProperties.properties")}</span>, paneHeaderSlot)
+          ? streamlinedPropertiesEnabled ? createPortal(
+              <div className="flex items-center" role="tablist" aria-label={translateInstant("Properties panel sections")}>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected="true"
+                  className={cn(
+                    STREAMLINED_PANE_TAB_CLASS,
+                    "inline-flex flex-none items-center bg-muted px-3",
+                  )}
+                >
+                  {translateInstant("issueProperties.properties")}</button>
+              </div>,
+              paneHeaderSlot,
+            ) : createPortal(<span className="text-sm font-medium">{translateInstant("issueProperties.properties")}</span>, paneHeaderSlot)
           : null}
         {propertiesBody}
       </>
@@ -2634,37 +3073,150 @@ export function IssueProperties({
   const activePaneTab =
     (paneTab === "plans" && !hasPlanTab)
     || (paneTab === "artifacts" && !hasArtifactsTab)
+    || (paneTab === "subtasks" && !hasSubtasksTab)
+    || (paneTab === "references" && !hasReferencesTab)
+    || closedPaneTabs.has(paneTab)
       ? "properties"
       : paneTab;
-  // In the pane header the strip stretches to the bar's full height and the
-  // active underline drops to bottom-0, so it hugs the header's border line.
+  const closePaneTab = (value: IssuePaneTab) => {
+    if (value === "properties") return;
+    paneTabUserChosenRef.current = true;
+    setClosedPaneTabs((current) => {
+      const next = new Set(current);
+      next.add(value);
+      return next;
+    });
+    if (activePaneTab !== value) return;
+    const closingIndex = visiblePaneTabs.findIndex((tab) => tab.value === value);
+    const fallback = visiblePaneTabs[closingIndex - 1]
+      ?? visiblePaneTabs[closingIndex + 1]
+      ?? availablePaneTabs[0];
+    setPaneTab(fallback.value);
+  };
+  const reopenPaneTab = (value: IssuePaneTab) => {
+    paneTabUserChosenRef.current = true;
+    setClosedPaneTabs((current) => {
+      if (!current.has(value)) return current;
+      const next = new Set(current);
+      next.delete(value);
+      return next;
+    });
+    setPaneTab(value);
+  };
+  const codexStylePaneTabs = Boolean(paneHeaderSlot && streamlinedPropertiesEnabled);
+  // Production keeps the master underline treatment. Streamlined task detail
+  // uses the compact, truncating Codex-inspired pane-tab treatment instead.
   const paneTabTriggerClass = paneHeaderSlot
-    ? "h-full group-data-[orientation=horizontal]/tabs:after:bottom-0"
+    ? streamlinedPropertiesEnabled
+      ? cn(
+          STREAMLINED_PANE_TAB_CLASS,
+          "min-w-0 flex-1 justify-start overflow-hidden after:hidden",
+        )
+      : "h-full group-data-[orientation=horizontal]/tabs:after:bottom-0"
     : undefined;
-  const tabStrip = (
+  const paneTabs = codexStylePaneTabs ? visiblePaneTabs : availablePaneTabs;
+  const tabList = (
     <TabsList
       variant="line"
       className={
         paneHeaderSlot
-          ? "items-stretch justify-start gap-1 p-0 group-data-[orientation=horizontal]/tabs:h-full"
+          ? streamlinedPropertiesEnabled
+            ? "min-w-0 flex-1 items-center justify-start gap-0 overflow-hidden p-0 group-data-[orientation=horizontal]/tabs:h-full"
+            : "items-stretch justify-start gap-1 p-0 group-data-[orientation=horizontal]/tabs:h-full"
           : "w-full justify-start gap-1"
       }
     >
-      <TabsTrigger value="properties" className={paneTabTriggerClass}>
-        Properties
-      </TabsTrigger>
-      {hasPlanTab ? (
-        <TabsTrigger value="plans" className={paneTabTriggerClass}>
-          Plan
-        </TabsTrigger>
-      ) : null}
-      {hasArtifactsTab ? (
-        <TabsTrigger value="artifacts" className={paneTabTriggerClass}>
-          Artifacts
-        </TabsTrigger>
-      ) : null}
+      {paneTabs.map((tab, index) => {
+        const trigger = (
+          <TabsTrigger
+            key={codexStylePaneTabs ? undefined : tab.value}
+            value={tab.value}
+            className={cn(
+              paneTabTriggerClass,
+              codexStylePaneTabs && "mx-1.5 hover:bg-accent/50 group-focus-within/pane-tab:bg-accent/50",
+              codexStylePaneTabs && "px-3",
+            )}
+          >
+            <span
+              className={cn(
+                codexStylePaneTabs
+                  && "task-detail-pane-tab-label min-w-0 flex-1 overflow-hidden whitespace-nowrap",
+              )}
+              title={tab.label}
+            >
+              {tab.label}
+            </span>
+            {tab.count ? (
+              <span className="shrink-0 font-mono text-(length:--text-nano) text-muted-foreground transition-opacity group-hover/pane-tab:opacity-0 group-focus-within/pane-tab:opacity-0">
+                {tab.count}
+              </span>
+            ) : null}
+          </TabsTrigger>
+        );
+        if (!codexStylePaneTabs) return trigger;
+        return (
+          <div
+            key={tab.value}
+            data-slot="task-detail-pane-tab"
+            className="group/pane-tab relative flex min-w-0 flex-1 basis-0 items-center"
+          >
+            {index > 0 ? (
+              <span
+                data-slot="task-detail-pane-tab-divider"
+                aria-hidden="true"
+                className="absolute left-0 top-1/2 h-4 w-px -translate-y-1/2 bg-border"
+              />
+            ) : null}
+            {trigger}
+            {tab.closable ? (
+              <button
+                type="button"
+                className="absolute right-2.5 top-1/2 z-20 inline-flex size-5 -translate-y-1/2 items-center justify-center rounded-sm text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-(length:--rad-3) focus-visible:ring-ring group-hover/pane-tab:opacity-100 group-focus-within/pane-tab:opacity-100"
+                aria-label={`Close ${tab.label} tab`}
+                onPointerDown={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                }}
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  closePaneTab(tab.value);
+                }}
+              >
+                <X className="size-3.5" aria-hidden />
+              </button>
+            ) : null}
+          </div>
+        );
+      })}
     </TabsList>
   );
+  const tabStrip = codexStylePaneTabs ? (
+    <div className="flex h-full min-w-0 flex-1 items-center">
+      {tabList}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            className="size-6 shrink-0 text-muted-foreground"
+            disabled={hiddenPaneTabs.length === 0}
+            aria-label={translateInstant("Open closed sidebar tab")}
+            title={hiddenPaneTabs.length === 0 ? "All sidebar tabs are open" : "Open closed sidebar tab"}
+          >
+            <Plus className="size-3.5" aria-hidden />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="min-w-(--sz-8rem)">
+          {hiddenPaneTabs.map((tab) => (
+            <DropdownMenuItem key={tab.value} onClick={() => reopenPaneTab(tab.value)}>
+              {tab.label}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  ) : tabList;
   return (
     <Tabs value={activePaneTab} onValueChange={handlePaneTabChange} className="flex min-h-0 flex-col gap-3">
       {paneHeaderSlot
@@ -2680,6 +3232,24 @@ export function IssueProperties({
           )
         : tabStrip}
       <TabsContent value="properties">{propertiesBody}</TabsContent>
+      {hasSubtasksTab ? (
+        <TabsContent value="subtasks">
+          <TaskDetailSubtasksPanel
+            items={childIssues}
+            onAddSubtask={onAddSubIssue}
+            issueLinkState={issueLinkState}
+          />
+        </TabsContent>
+      ) : null}
+      {hasReferencesTab ? (
+        <TabsContent value="references">
+          <TaskDetailReferencesPanel
+            referenced={panelReferencedTasks}
+            mentionedIn={panelMentionedInTasks}
+            issueLinkState={issueLinkState}
+          />
+        </TabsContent>
+      ) : null}
       {hasPlanTab ? (
         <TabsContent value="plans">
           <IssuePropertiesPlansTab issue={issue} inline={inline} />

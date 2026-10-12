@@ -1,13 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
+import { useEffect, useRef, useState } from "react";
 import type { IssueDocument } from "@penclipai/shared";
 import { ISSUE_CONTINUATION_SUMMARY_DOCUMENT_KEY } from "@penclipai/shared";
-import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
+import { AgentSetupPrompt } from "@/components/AgentSetupPrompt";
 import { cn, relativeTime } from "../lib/utils";
 import { MarkdownBody, type MarkdownExternalReferenceMap } from "./MarkdownBody";
-import { Check, ChevronDown, ChevronRight, Copy, History } from "lucide-react";
+import { ChevronDown, ChevronRight, History } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { copyTextToClipboard } from "@/lib/clipboard";
 
 type IssueContinuationHandoffProps = {
   document: IssueDocument | null | undefined;
@@ -20,20 +20,10 @@ export function IssueContinuationHandoff({
   focusSignal = 0,
   externalReferences,
 }: IssueContinuationHandoffProps) {
-  const { t } = useTranslation(undefined, { useSuspense: false });
+  useTranslation();
   const [expanded, setExpanded] = useState(false);
-  const [copied, setCopied] = useState(false);
   const [highlighted, setHighlighted] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
-  const copiedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    return () => {
-      if (copiedTimerRef.current) {
-        clearTimeout(copiedTimerRef.current);
-      }
-    };
-  }, []);
 
   useEffect(() => {
     if (!document || focusSignal <= 0) return;
@@ -44,23 +34,9 @@ export function IssueContinuationHandoff({
     return () => clearTimeout(timer);
   }, [document, focusSignal]);
 
-  const copyBody = useCallback(async () => {
-    if (!document) return;
-    try {
-      await copyTextToClipboard(document.body);
-    } catch {
-      return;
-    }
-    setCopied(true);
-    if (copiedTimerRef.current) {
-      clearTimeout(copiedTimerRef.current);
-    }
-    copiedTimerRef.current = setTimeout(() => setCopied(false), 1500);
-  }, [document]);
-
   if (!document) return null;
 
-  const title = document.title?.trim() || t("issueContinuationHandoff.title", { defaultValue: "Continuation handoff" });
+  const title = document.title?.trim() || "Continuation handoff";
 
   return (
     <div
@@ -76,9 +52,7 @@ export function IssueContinuationHandoff({
           type="button"
           className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-accent/60 hover:text-foreground"
           onClick={() => setExpanded((current) => !current)}
-          aria-label={expanded
-            ? t("issueContinuationHandoff.collapse", { defaultValue: "Collapse continuation handoff" })
-            : t("issueContinuationHandoff.expand", { defaultValue: "Expand continuation handoff" })}
+          aria-label={expanded ? "Collapse continuation handoff" : "Expand continuation handoff"}
           aria-expanded={expanded}
         >
           {expanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
@@ -87,27 +61,21 @@ export function IssueContinuationHandoff({
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-sm font-medium text-foreground">{title}</span>
-            <span className="rounded-full border border-border px-2 py-0.5 font-mono text-(length:--text-nano) uppercase text-muted-foreground">
-              {t("issueContinuationHandoff.badge", { defaultValue: "handoff" })}
-            </span>
+            <Badge variant="outline" className="border-border font-mono text-(length:--text-nano) uppercase text-muted-foreground">
+              {translateInstant("issueContinuationHandoff.badge")}</Badge>
           </div>
           <div className="text-(length:--text-micro) text-muted-foreground">
-            {t("issueContinuationHandoff.updated", {
-              time: relativeTime(document.updatedAt),
-              defaultValue: "Updated {{time}}",
-            })}
-            {document.latestRevisionNumber > 0
-              ? t("issueContinuationHandoff.revisionSuffix", {
-                count: document.latestRevisionNumber,
-                defaultValue: " - revision {{count}}",
-              })
-              : ""}
+            {translateInstant("Updated")}{" "}{relativeTime(document.updatedAt)}
+            {document.latestRevisionNumber > 0 ? ` - revision ${document.latestRevisionNumber}` : ""}
           </div>
         </div>
-        <Button variant="ghost" size="sm" onClick={copyBody} className="shrink-0">
-          {copied ? <Check className="mr-1.5 h-3.5 w-3.5" /> : <Copy className="mr-1.5 h-3.5 w-3.5" />}
-          {copied ? t("Copied", { defaultValue: "Copied" }) : t("Copy", { defaultValue: "Copy" })}
-        </Button>
+        <AgentSetupPrompt
+          prompt={document.body}
+          label={translateInstant("Continue with an agent")}
+          title={translateInstant("Task handoff")}
+          description={translateInstant("Paste this into your agent to continue from this handoff.")}
+          align="end"
+        />
       </div>
       {expanded ? (
         <div className="mt-3 rounded-md border border-border bg-background/80 p-3">

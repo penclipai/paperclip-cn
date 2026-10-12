@@ -1,5 +1,8 @@
-import type { ReactNode } from "react";
+import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
+import { AgentIdentity } from "@/components/AgentIdentity";
+import type { AvatarAgent } from "./AgentAvatar";
+import type { ReactNode } from "react";
 import { deriveOriginatingActor, type Issue } from "@penclipai/shared";
 import { Columns3 } from "lucide-react";
 import { pickTextColorForPillBg } from "@/lib/color-contrast";
@@ -16,7 +19,6 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { formatAssigneeUserLabel } from "../lib/assignees";
 import type { InboxIssueColumn } from "../lib/inbox";
-import { translateInstant } from "../i18n";
 import { cn } from "../lib/utils";
 import { timeAgo } from "../lib/timeAgo";
 import { Identity } from "./Identity";
@@ -49,11 +51,25 @@ const issueColumnDescriptions: Record<InboxIssueColumn, string> = {
   updated: "Latest visible activity time.",
 };
 
+export function issueColumnDescription(
+  column: InboxIssueColumn,
+  presentation: "legacy" | "task" = "legacy",
+): string {
+  if (column === "id" && presentation === "task") {
+    return "Task identifier like PAP-1009 on the trailing edge.";
+  }
+  if (column === "status" && presentation === "task") {
+    return "Task state icon on the leading edge.";
+  }
+  return issueColumnDescriptions[column];
+}
+
+export function issueActivityTimestamp(issue: Issue): string {
+  return timeAgo(issue.lastActivityAt ?? issue.lastExternalCommentAt ?? issue.updatedAt);
+}
+
 export function issueActivityText(issue: Issue): string {
-  return translateInstant("issuesList.updatedAtTime", {
-    defaultValue: "Updated {{time}}",
-    time: timeAgo(issue.lastActivityAt ?? issue.lastExternalCommentAt ?? issue.updatedAt),
-  });
+  return `Updated ${issueActivityTimestamp(issue)}`;
 }
 
 function issueTrailingGridTemplate(columns: InboxIssueColumn[]): string {
@@ -74,18 +90,24 @@ export function IssueColumnPicker({
   availableColumns,
   visibleColumnSet,
   onToggleColumn,
+  showDateGroupSeparators,
+  onToggleDateGroupSeparators,
   onResetColumns,
   title,
   iconOnly = false,
+  rowPresentation = "legacy",
 }: {
   availableColumns: InboxIssueColumn[];
   visibleColumnSet: ReadonlySet<InboxIssueColumn>;
   onToggleColumn: (column: InboxIssueColumn, enabled: boolean) => void;
+  showDateGroupSeparators?: boolean;
+  onToggleDateGroupSeparators?: (enabled: boolean) => void;
   onResetColumns: () => void;
   title: string;
   iconOnly?: boolean;
+  rowPresentation?: "legacy" | "task";
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -94,18 +116,17 @@ export function IssueColumnPicker({
           variant={iconOnly ? "outline" : "ghost"}
           size={iconOnly ? "icon" : "sm"}
           className={iconOnly ? "h-8 w-8 shrink-0" : "hidden h-8 shrink-0 px-2 text-xs sm:inline-flex"}
-          title={t("issuesList.columns", { defaultValue: "Columns" })}
+          title={translateInstant("issuesList.columns")}
         >
           <Columns3 className={iconOnly ? "h-3.5 w-3.5" : "mr-1 h-3.5 w-3.5"} />
-          {!iconOnly && t("issuesList.columns", { defaultValue: "Columns" })}
+          {!iconOnly && "Columns"}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-(--sz-300px) rounded-xl border-border/70 p-1.5 shadow-xl shadow-black/10">
         <DropdownMenuLabel className="px-2 pb-1 pt-1.5">
           <div className="space-y-1">
             <div className="text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">
-              {t("Desktop issue rows", { defaultValue: "Desktop issue rows" })}
-            </div>
+              {translateInstant("Desktop task rows")}</div>
             <div className="text-sm font-medium text-foreground">
               {title}
             </div>
@@ -122,23 +143,35 @@ export function IssueColumnPicker({
           >
             <span className="flex flex-col gap-0.5">
               <span className="text-sm font-medium text-foreground">
-                {t(issueColumnLabels[column], { defaultValue: issueColumnLabels[column] })}
+                {issueColumnLabels[column]}
               </span>
               <span className="text-xs leading-relaxed text-muted-foreground">
-                {t(issueColumnDescriptions[column], { defaultValue: issueColumnDescriptions[column] })}
+                {issueColumnDescription(column, rowPresentation)}
               </span>
             </span>
           </DropdownMenuCheckboxItem>
         ))}
+        {showDateGroupSeparators !== undefined && onToggleDateGroupSeparators ? (
+          <DropdownMenuCheckboxItem
+            checked={showDateGroupSeparators}
+            onSelect={(event) => event.preventDefault()}
+            onCheckedChange={(checked) => onToggleDateGroupSeparators(checked === true)}
+            className="items-start rounded-lg px-3 py-2.5 pl-8"
+          >
+            <span className="flex flex-col gap-0.5">
+              <span className="text-sm font-medium text-foreground">
+                {translateInstant("Date group separators")}</span>
+              <span className="text-xs leading-relaxed text-muted-foreground">
+                {translateInstant("Show Today, Yesterday, and Earlier rules on newest-first task lists.")}</span>
+            </span>
+          </DropdownMenuCheckboxItem>
+        ) : null}
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onSelect={onResetColumns}
           className="rounded-lg px-3 py-2 text-sm"
         >
-          {t("Reset defaults", { defaultValue: "Reset defaults" })}
-          <span className="ml-auto text-xs text-muted-foreground">
-            {t("issuesList.defaultColumnsSummary", { defaultValue: "status, id, updated" })}
-          </span>
+          {translateInstant("Reset defaults")}<span className="ml-auto text-xs text-muted-foreground">{translateInstant("issuesList.defaultColumnsSummary")}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -164,18 +197,17 @@ export function InboxIssueMetaLeading({
   statusSlot?: ReactNode;
   checklistStepNumber?: number | string | null;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   return (
     <>
       {showStatus ? (
         <span className="hidden shrink-0 items-center sm:inline-flex">
-          {statusSlot ?? <StatusIcon status={issue.status} blockerAttention={issue.blockerAttention} />}
+          {statusSlot ?? <StatusIcon status={issue.status} externalConversationState={issue.externalConversationState} blockerAttention={issue.blockerAttention} />}
         </span>
       ) : null}
       {checklistStepNumber !== null ? (
         <span className="shrink-0 font-mono text-xs text-muted-foreground" aria-hidden="true">
-          {checklistStepNumber}.
-        </span>
+          {checklistStepNumber}{translateInstant(".")}</span>
       ) : null}
       {showIdentifier ? (
         <span className="shrink-0 font-mono text-xs text-muted-foreground">
@@ -204,8 +236,7 @@ export function InboxIssueMetaLeading({
               "text-blue-600 dark:text-blue-400",
             )}
           >
-            {t("issuesList.live", { defaultValue: "Live" })}
-          </span>
+            {translateInstant("issuesList.live")}</span>
         </Badge>
       )}
       {showSubtreeLiveChip && !isLive && subtreeLiveCount > 0 && (
@@ -224,8 +255,7 @@ export function InboxIssueMetaLeading({
             aria-hidden="true"
           />
           <span className="hidden text-(length:--text-micro) font-medium text-muted-foreground sm:inline">
-            {subtreeLiveCount} live below
-          </span>
+            {subtreeLiveCount} {translateInstant("live below")}</span>
         </Badge>
       )}
     </>
@@ -240,6 +270,8 @@ export function InboxIssueTrailingColumns({
   workspaceId,
   workspaceName,
   assigneeName,
+  assigneeAgent,
+  creatorAgent,
   assigneeUserName,
   assigneeUserAvatarUrl,
   creatorAgentName,
@@ -259,6 +291,8 @@ export function InboxIssueTrailingColumns({
   workspaceId?: string | null;
   workspaceName: string | null;
   assigneeName: string | null;
+  assigneeAgent?: AvatarAgent;
+  creatorAgent?: AvatarAgent;
   assigneeUserName?: string | null;
   assigneeUserAvatarUrl?: string | null;
   creatorAgentName?: string | null;
@@ -271,12 +305,12 @@ export function InboxIssueTrailingColumns({
   assigneeContent?: ReactNode;
   onFilterWorkspace?: (workspaceId: string) => void;
 }) {
-  const { t } = useTranslation();
-  const activityText = issueActivityText(issue);
-  const userLabel = assigneeUserName ?? formatAssigneeUserLabel(issue.assigneeUserId, currentUserId) ?? t("User", { defaultValue: "User" });
+  useTranslation();
+  const activityText = issueActivityTimestamp(issue);
+  const userLabel = assigneeUserName ?? formatAssigneeUserLabel(issue.assigneeUserId, currentUserId) ?? "User";
   const originatingActor = deriveOriginatingActor(issue);
   const originatingUserId = originatingActor?.kind === "user" ? originatingActor.id : null;
-  const creatorUserLabel = creatorUserName ?? formatAssigneeUserLabel(originatingUserId, currentUserId) ?? t("User", { defaultValue: "User" });
+  const creatorUserLabel = creatorUserName ?? formatAssigneeUserLabel(originatingUserId, currentUserId) ?? "User";
 
   return (
     <span
@@ -292,10 +326,9 @@ export function InboxIssueTrailingColumns({
           if (issue.assigneeAgentId) {
             return (
               <span key={column} className="min-w-0 text-xs text-foreground">
-                <Identity
-                  name={assigneeName ?? issue.assigneeAgentId.slice(0, 8)}
+                <AgentIdentity
+                  agent={assigneeAgent ?? { id: issue.assigneeAgentId, name: assigneeName ?? issue.assigneeAgentId.slice(0, 8) }}
                   size="sm"
-                  shape="square"
                   className="min-w-0"
                 />
               </span>
@@ -317,8 +350,7 @@ export function InboxIssueTrailingColumns({
 
           return (
             <span key={column} className="min-w-0 truncate text-xs text-muted-foreground">
-              {t("Unassigned", { defaultValue: "Unassigned" })}
-            </span>
+              {translateInstant("Unassigned")}</span>
           );
         }
 
@@ -329,10 +361,9 @@ export function InboxIssueTrailingColumns({
               <Tooltip key={column}>
                 <TooltipTrigger asChild>
                   <span className="min-w-0 text-xs text-foreground">
-                    <Identity
-                      name={name}
+                    <AgentIdentity
+                      agent={creatorAgent ?? { id: originatingActor.id, name }}
                       size="sm"
-                      shape="square"
                       className="min-w-0"
                     />
                   </span>
@@ -363,8 +394,7 @@ export function InboxIssueTrailingColumns({
 
           return (
             <span key={column} className="min-w-0 truncate text-xs text-muted-foreground">
-              Unknown
-            </span>
+              {translateInstant("Unknown")}</span>
           );
         }
 
@@ -389,8 +419,7 @@ export function InboxIssueTrailingColumns({
 
           return (
             <span key={column} className="min-w-0 truncate text-xs text-muted-foreground">
-              {t("No project", { defaultValue: "No project" })}
-            </span>
+              {translateInstant("No project")}</span>
           );
         }
 
@@ -446,8 +475,7 @@ export function InboxIssueTrailingColumns({
                     </button>
                   </TooltipTrigger>
                   <TooltipContent side="top" sideOffset={6}>
-                    Filter by workspace
-                  </TooltipContent>
+                    {translateInstant("Filter by workspace")}</TooltipContent>
                 </Tooltip>
               ) : (
                 workspaceName
@@ -466,7 +494,7 @@ export function InboxIssueTrailingColumns({
               {parentIdentifier ? (
                 <span className="font-mono">{parentIdentifier}</span>
               ) : (
-                <span className="italic">{t("Sub-issue", { defaultValue: "Sub-issue" })}</span>
+                <span className="italic">{translateInstant("Sub-task")}</span>
               )}
             </span>
           );

@@ -1,7 +1,7 @@
+import { useTranslation } from "react-i18next";
+import { translateInstant } from "@/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
-import type { TFunction } from "i18next";
 import {
   AlertCircle,
   AlertTriangle,
@@ -89,23 +89,23 @@ export function scannableWorkspaces(project: Project): ProjectWorkspace[] {
   return project.workspaces.filter(isScannableWorkspace);
 }
 
-function workspaceKindLabel(sourceType: ProjectWorkspace["sourceType"], t: TFunction): string {
+function workspaceKindLabel(sourceType: ProjectWorkspace["sourceType"]): string {
   switch (sourceType) {
     case "git_repo":
-      return t("importSkillsFromProject.workspaceKind.git", { defaultValue: "git" });
+      return "git";
     case "local_path":
-      return t("importSkillsFromProject.workspaceKind.local", { defaultValue: "local" });
+      return "local";
     case "non_git_path":
-      return t("importSkillsFromProject.workspaceKind.folder", { defaultValue: "folder" });
+      return "folder";
     case "remote_managed":
-      return t("importSkillsFromProject.workspaceKind.remote", { defaultValue: "remote" });
+      return "remote";
     default:
       return sourceType;
   }
 }
 
-function summarizeWorkspaceKinds(workspaces: ProjectWorkspace[], t: TFunction): string {
-  const kinds = Array.from(new Set(workspaces.map((ws) => workspaceKindLabel(ws.sourceType, t))));
+function summarizeWorkspaceKinds(workspaces: ProjectWorkspace[]): string {
+  const kinds = Array.from(new Set(workspaces.map((ws) => workspaceKindLabel(ws.sourceType))));
   return kinds.join(", ");
 }
 
@@ -218,15 +218,12 @@ export function isValidSelectionSlug(selection: SkillSelection): boolean {
   return Boolean(trimmed) && normalizeAgentUrlKey(trimmed) === trimmed;
 }
 
-function readableErrorMessage(error: unknown, t: TFunction): string {
+function readableErrorMessage(error: unknown): string {
   if (error instanceof ApiError) {
-    return error.message || t("importSkillsFromProject.requestFailed", {
-      defaultValue: "Request failed: {{status}}",
-      status: error.status,
-    });
+    return error.message || `Request failed: ${error.status}`;
   }
   if (error instanceof Error) return error.message;
-  return t("importSkillsFromProject.unexpectedError", { defaultValue: "Unexpected error" });
+  return "Unexpected error";
 }
 
 export function isGrantError(error: unknown): boolean {
@@ -239,7 +236,7 @@ function CandidateStatusBadge({
 }: {
   status: CompanySkillProjectScanCandidate["status"];
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   switch (status) {
     case "already_imported":
       return (
@@ -247,9 +244,7 @@ function CandidateStatusBadge({
           variant="outline"
           className="gap-1 px-1.5 py-0 font-normal text-muted-foreground border-border/60"
         >
-          <Link2 className="h-3 w-3" />
-          {t("importSkillsFromProject.status.imported", { defaultValue: "Imported" })}
-        </Badge>
+          <Link2 className="h-3 w-3" /> {translateInstant("importSkillsFromProject.status.imported")}</Badge>
       );
     case "conflict":
       return (
@@ -257,9 +252,7 @@ function CandidateStatusBadge({
           variant="outline"
           className="gap-1 px-1.5 py-0 font-normal text-amber-600 border-amber-500/40 dark:text-amber-400"
         >
-          <AlertTriangle className="h-3 w-3" />
-          {t("importSkillsFromProject.status.conflict", { defaultValue: "Conflict" })}
-        </Badge>
+          <AlertTriangle className="h-3 w-3" /> {translateInstant("importSkillsFromProject.status.conflict")}</Badge>
       );
     case "skipped":
       return (
@@ -267,9 +260,7 @@ function CandidateStatusBadge({
           variant="outline"
           className="gap-1 px-1.5 py-0 font-normal text-muted-foreground border-border/60"
         >
-          <FileWarning className="h-3 w-3" />
-          {t("importSkillsFromProject.status.skipped", { defaultValue: "Skipped" })}
-        </Badge>
+          <FileWarning className="h-3 w-3" /> {translateInstant("importSkillsFromProject.status.skipped")}</Badge>
       );
     case "new":
     default:
@@ -278,9 +269,7 @@ function CandidateStatusBadge({
           variant="outline"
           className="gap-1 px-1.5 py-0 font-normal text-emerald-600 border-emerald-500/40 dark:text-emerald-400"
         >
-          <CheckCircle2 className="h-3 w-3" />
-          {t("importSkillsFromProject.status.new", { defaultValue: "New" })}
-        </Badge>
+          <CheckCircle2 className="h-3 w-3" /> {translateInstant("importSkillsFromProject.status.new")}</Badge>
       );
   }
 }
@@ -291,7 +280,7 @@ export function ImportSkillsFromProjectDialog({
   companyId,
   onImportFromPath,
 }: ImportSkillsFromProjectDialogProps) {
-  const { t } = useTranslation();
+  useTranslation();
   const queryClient = useQueryClient();
   const toast = useToastActions();
 
@@ -361,9 +350,7 @@ export function ImportSkillsFromProjectDialog({
 
   const importMutation = useMutation({
     mutationFn: () => {
-      if (!selectedProject) {
-        throw new Error(t("importSkillsFromProject.noProjectSelected", { defaultValue: "No project selected." }));
-      }
+      if (!selectedProject) throw new Error("No project selected.");
       const selectionInput = Array.from(selection.values());
       return companySkillsApi.scanProjects(companyId, {
         projectIds: [selectedProject.id],
@@ -380,30 +367,18 @@ export function ImportSkillsFromProjectDialog({
       const importedCount = result.imported.length;
       toast.pushToast({
         tone: importedCount > 0 ? "success" : "warn",
-        title: importedCount > 0
-          ? t("importSkillsFromProject.toast.importedTitle", { defaultValue: "Skills imported" })
-          : t("importSkillsFromProject.toast.nothingImportedTitle", { defaultValue: "Nothing imported" }),
+        title: importedCount > 0 ? translateInstant("importSkillsFromProject.toast.importedTitle") : translateInstant("importSkillsFromProject.toast.nothingImportedTitle"),
         body:
           importedCount > 0
-            ? t("importSkillsFromProject.toast.importedBody", {
-              count: importedCount,
-              defaultValue: importedCount === 1
-                ? "{{count}} skill imported as a reference from {{project}}."
-                : "{{count}} skills imported as references from {{project}}.",
-              project: selectedProject?.name ?? t("importSkillsFromProject.projectFallback", {
-                defaultValue: "the project",
-              }),
-            })
-            : t("importSkillsFromProject.toast.nothingImportedBody", {
-              defaultValue: "No skills were imported.",
-            }),
+            ? `${importedCount} skill${importedCount === 1 ? "" : "s"} imported as references from ${selectedProject?.name ?? "the project"}.`
+            : "No skills were imported.",
       });
     },
     onError: (error) => {
       toast.pushToast({
         tone: "error",
-        title: t("importSkillsFromProject.toast.failedTitle", { defaultValue: "Import failed" }),
-        body: readableErrorMessage(error, t),
+        title: translateInstant("importSkillsFromProject.toast.failedTitle"),
+        body: readableErrorMessage(error),
       });
     },
   });
@@ -493,7 +468,7 @@ export function ImportSkillsFromProjectDialog({
         });
       }
     } catch (error) {
-      toast.pushToast({ tone: "error", title: "Could not inspect skill", body: readableErrorMessage(error, t) });
+      toast.pushToast({ tone: "error", title: translateInstant("Could not inspect skill"), body: readableErrorMessage(error) });
     } finally {
       setBrowseAddingKey(null);
     }
@@ -538,19 +513,15 @@ export function ImportSkillsFromProjectDialog({
         <header className="flex shrink-0 items-start justify-between gap-3 border-b border-border/60 px-5 py-4">
           <div className="flex flex-col gap-1">
             <DialogTitle className="text-base font-semibold">
-              {t("importSkillsFromProject.title", { defaultValue: "Import skills from project" })}
-            </DialogTitle>
+              {translateInstant("importSkillsFromProject.title")}</DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
-              {t("importSkillsFromProject.description", {
-                defaultValue: "Pick a project, scan its workspaces for skills, and import them as references.",
-              })}
-            </DialogDescription>
+              {translateInstant("importSkillsFromProject.description")}</DialogDescription>
           </div>
           <button
             type="button"
             className="rounded-sm text-muted-foreground opacity-70 transition-opacity hover:opacity-100"
             onClick={handleClose}
-            aria-label={t("importSkillsFromProject.closeAria", { defaultValue: "Close import dialog" })}
+            aria-label={translateInstant("importSkillsFromProject.closeAria")}
           >
             <X className="h-4 w-4" />
           </button>
@@ -597,10 +568,7 @@ export function ImportSkillsFromProjectDialog({
             <div className="min-w-0 flex-1 text-xs text-muted-foreground">
               <span className="flex items-center gap-1.5">
                 <Link2 className="h-3.5 w-3.5 shrink-0" />
-                {t("importSkillsFromProject.filesStayInProject", {
-                  defaultValue: "Files stay in the project — Studio edits save directly to them.",
-                })}
-              </span>
+                {translateInstant("importSkillsFromProject.filesStayInProject")}</span>
             </div>
           ) : (
             <div className="hidden min-w-0 flex-1 sm:block" />
@@ -617,8 +585,7 @@ export function ImportSkillsFromProjectDialog({
                       disabled={selectableCandidates.length === 0}
                       data-testid="select-all"
                     >
-                      {t("importSkillsFromProject.selectAll", { defaultValue: "Select all" })}
-                    </Button>
+                      {translateInstant("importSkillsFromProject.selectAll")}</Button>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -626,14 +593,11 @@ export function ImportSkillsFromProjectDialog({
                       disabled={selectedCount === 0}
                       data-testid="deselect-all"
                     >
-                      {t("importSkillsFromProject.deselectAll", { defaultValue: "Deselect all" })}
-                    </Button>
+                      {translateInstant("importSkillsFromProject.deselectAll")}</Button>
                   </div>
                 )}
                 <Button variant="outline" size="sm" onClick={backToPick}>
-                  <ArrowLeft className="mr-1 h-3.5 w-3.5" />
-                  {t("importSkillsFromProject.back", { defaultValue: "Back" })}
-                </Button>
+                  <ArrowLeft className="mr-1 h-3.5 w-3.5" /> {translateInstant("importSkillsFromProject.back")}</Button>
                 {!scanError && candidates.length > 0 && (
                   <Button
                     size="sm"
@@ -643,16 +607,9 @@ export function ImportSkillsFromProjectDialog({
                   >
                     {importMutation.isPending ? (
                       <>
-                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                        {t("importSkillsFromProject.importing", { defaultValue: "Importing…" })}
-                      </>
+                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> {translateInstant("importSkillsFromProject.importing")}</>
                     ) : (
-                      t("importSkillsFromProject.importSelected", {
-                        count: selectedCount,
-                        defaultValue: selectedCount === 1
-                          ? "Import {{count}} skill"
-                          : "Import {{count}} skills",
-                      })
+                      `Import ${selectedCount} skill${selectedCount === 1 ? "" : "s"}`
                     )}
                   </Button>
                 )}
@@ -660,13 +617,11 @@ export function ImportSkillsFromProjectDialog({
             )}
             {step === "pick" && (
               <Button variant="ghost" size="sm" onClick={handleClose}>
-                {t("importSkillsFromProject.cancel", { defaultValue: "Cancel" })}
-              </Button>
+                {translateInstant("importSkillsFromProject.cancel")}</Button>
             )}
             {step === "result" && (
               <Button size="sm" onClick={handleClose}>
-                {t("importSkillsFromProject.done", { defaultValue: "Done" })}
-              </Button>
+                {translateInstant("importSkillsFromProject.done")}</Button>
             )}
           </div>
         </footer>
@@ -694,7 +649,7 @@ function PickProjectStep({
   onFilterChange,
   onPick,
 }: PickProjectStepProps) {
-  const { t } = useTranslation();
+  useTranslation();
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="border-b border-border/60 px-5 py-3">
@@ -703,47 +658,34 @@ function PickProjectStep({
           <Input
             value={filter}
             onChange={(event) => onFilterChange(event.target.value)}
-            placeholder={t("importSkillsFromProject.filterProjects", { defaultValue: "Filter projects" })}
+            placeholder={translateInstant("importSkillsFromProject.filterProjects")}
             className="pl-7 text-xs"
-            aria-label={t("importSkillsFromProject.filterProjects", { defaultValue: "Filter projects" })}
+            aria-label={translateInstant("importSkillsFromProject.filterProjects")}
             data-testid="project-filter"
           />
         </div>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto">
         {loading ? (
-          <div className="p-6 text-center text-sm text-muted-foreground">
-            {t("importSkillsFromProject.loadingProjects", { defaultValue: "Loading projects…" })}
-          </div>
+          <div className="p-6 text-center text-sm text-muted-foreground">{translateInstant("importSkillsFromProject.loadingProjects")}</div>
         ) : error ? (
           <div
             className="m-5 flex items-start gap-3 rounded-md border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive"
             role="alert"
           >
             <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-            <div>{readableErrorMessage(error, t)}</div>
+            <div>{readableErrorMessage(error)}</div>
           </div>
         ) : totalProjects === 0 ? (
-          <EmptyState
-            icon={Layers}
-            message={t("importSkillsFromProject.noProjects", {
-              defaultValue: "This company has no projects yet.",
-            })}
-          />
+          <EmptyState icon={Layers} message={translateInstant("This organization has no projects yet.")} />
         ) : projects.length === 0 ? (
-          <EmptyState
-            icon={Search}
-            message={t("importSkillsFromProject.noMatchingProjects", {
-              defaultValue: "No projects match \"{{filter}}\".",
-              filter,
-            })}
-          />
+          <EmptyState icon={Search} message={`No projects match "${filter}".`} />
         ) : (
           <ul className="divide-y divide-border/60" data-testid="project-list">
             {projects.map((project) => {
               const scannable = scannableWorkspaces(project);
               const disabled = scannable.length === 0;
-              const kinds = summarizeWorkspaceKinds(project.workspaces, t);
+              const kinds = summarizeWorkspaceKinds(project.workspaces);
               return (
                 <li key={project.id}>
                   <button
@@ -763,28 +705,18 @@ function PickProjectStep({
                     <div className="min-w-0 flex-1">
                       <div className="truncate text-sm font-medium">{project.name}</div>
                       <div className="mt-0.5 text-xs text-muted-foreground">
-                        {t("importSkillsFromProject.workspaceCount", {
-                          count: project.workspaces.length,
-                          defaultValue: project.workspaces.length === 1
-                            ? "{{count}} workspace"
-                            : "{{count}} workspaces",
-                        })}
+                        {project.workspaces.length} workspace
+                        {project.workspaces.length === 1 ? "" : "s"}
                         {kinds ? ` · ${kinds}` : ""}
                       </div>
                       {disabled && (
                         <div className="mt-1 text-(length:--text-micro) text-muted-foreground">
-                          {t("importSkillsFromProject.remoteOnlyProject", {
-                            defaultValue: "Remote-only project — no locally scannable workspaces to import from.",
-                          })}
-                        </div>
+                          {translateInstant("importSkillsFromProject.remoteOnlyProject")}</div>
                       )}
                     </div>
                     {!disabled && (
                       <Badge variant="outline" className="shrink-0 px-1.5 py-0 font-normal">
-                        {t("importSkillsFromProject.scannableCount", {
-                          count: scannable.length,
-                          defaultValue: "{{count}} scannable",
-                        })}
+                        {scannable.length} scannable
                       </Badge>
                     )}
                   </button>
@@ -799,7 +731,7 @@ function PickProjectStep({
 }
 
 function ScanningStep({ projectName }: { projectName: string }) {
-  const { t } = useTranslation();
+  useTranslation();
   return (
     <div
       className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4 p-8 text-center"
@@ -810,19 +742,9 @@ function ScanningStep({ projectName }: { projectName: string }) {
         <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
       </div>
       <div>
-        <p className="text-sm font-medium">
-          {t("importSkillsFromProject.scanningProject", {
-            defaultValue: "Scanning {{project}} for skills…",
-            project: projectName || t("importSkillsFromProject.projectFallbackShort", {
-              defaultValue: "project",
-            }),
-          })}
-        </p>
+        <p className="text-sm font-medium">{translateInstant("Scanning")}{" "}{projectName || translateInstant("importSkillsFromProject.projectFallbackShort")}{" "}{translateInstant("for skills…")}</p>
         <p className="mt-1 text-xs text-muted-foreground">
-          {t("importSkillsFromProject.scanningDescription", {
-            defaultValue: "Looking in well-known skill folders across each workspace.",
-          })}
-        </p>
+          {translateInstant("importSkillsFromProject.scanningDescription")}</p>
       </div>
       <div className="flex max-w-md flex-wrap justify-center gap-1.5">
         {HIGHLIGHTED_SCAN_FOLDERS.map((folder) => (
@@ -838,11 +760,7 @@ function ScanningStep({ projectName }: { projectName: string }) {
           variant="outline"
           className="px-1.5 py-0 text-(length:--text-micro) font-normal text-muted-foreground"
         >
-          {t("importSkillsFromProject.moreFolders", {
-            count: APPROX_TOTAL_SCAN_FOLDERS - HIGHLIGHTED_SCAN_FOLDERS.length,
-            defaultValue: "+{{count}} more",
-          })}
-        </Badge>
+          +{APPROX_TOTAL_SCAN_FOLDERS - HIGHLIGHTED_SCAN_FOLDERS.length} {translateInstant("issueProperties.more")}</Badge>
       </div>
     </div>
   );
@@ -862,7 +780,7 @@ function ProjectSkillBrowser({
   onAddSkill: (workspaceId: string, path: string) => void;
   addingKey: string | null;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   const workspaces = scannableWorkspaces(project);
   const initialWorkspace = workspaces.find((workspace) => workspace.isPrimary) ?? workspaces[0] ?? null;
   const [workspaceId, setWorkspaceId] = useState(initialWorkspace?.id ?? "");
@@ -888,15 +806,14 @@ function ProjectSkillBrowser({
       <div className="shrink-0 border-b border-border/60 px-5 py-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-sm font-medium">Browse project folders</p>
-            <p className="mt-0.5 text-xs text-muted-foreground">Open any folder and add directories or individual SKILL.md files.</p>
+            <p className="text-sm font-medium">{translateInstant("Browse project folders")}</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">{translateInstant("Open any folder and add directories or individual SKILL.md files.")}</p>
           </div>
           <Button variant="outline" size="sm" onClick={onBack}>
-            <ArrowLeft className="mr-1 h-3.5 w-3.5" /> Discovered skills
-          </Button>
+            <ArrowLeft className="mr-1 h-3.5 w-3.5" /> {translateInstant("Discovered skills")}</Button>
         </div>
         {workspaces.length > 1 && (
-          <div className="mt-3 flex flex-wrap gap-1.5" aria-label="Project workspace">
+          <div className="mt-3 flex flex-wrap gap-1.5" aria-label={translateInstant("executionWorkspace.projectWorkspace")}>
             {workspaces.map((workspace) => (
               <Button
                 key={workspace.id}
@@ -917,7 +834,7 @@ function ProjectSkillBrowser({
           size="sm"
           onClick={() => result?.parentPath && setFolderPath(result.parentPath)}
           disabled={!result?.parentPath}
-          aria-label="Open parent folder"
+          aria-label={translateInstant("Open parent folder")}
         >
           <ArrowLeft className="h-3.5 w-3.5" />
         </Button>
@@ -926,10 +843,9 @@ function ProjectSkillBrowser({
       <div className="min-h-0 flex-1 overflow-y-auto">
         {browseQuery.isLoading ? (
           <div className="flex items-center justify-center gap-2 p-8 text-sm text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" /> Loading folder…
-          </div>
+            <Loader2 className="h-4 w-4 animate-spin" /> {translateInstant("Loading folder…")}</div>
         ) : browseQuery.error ? (
-          <div className="p-6 text-sm text-destructive">{readableErrorMessage(browseQuery.error, t)}</div>
+          <div className="p-6 text-sm text-destructive">{readableErrorMessage(browseQuery.error)}</div>
         ) : result?.entries.length ? (
           <ul className="divide-y divide-border/60">
             {result.entries.map((entry: CompanySkillProjectBrowseEntry) => {
@@ -954,7 +870,7 @@ function ProjectSkillBrowser({
                   </button>
                   {entry.isSkill ? (
                     <Button size="sm" onClick={() => onAddSkill(workspaceId, entry.path)} disabled={addingKey === key}>
-                      {addingKey === key ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Add skill"}
+                      {addingKey === key ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : translateInstant("Add skill")}
                     </Button>
                   ) : entry.kind === "directory" ? (
                     <ChevronRight className="h-4 w-4 text-muted-foreground" />
@@ -964,10 +880,10 @@ function ProjectSkillBrowser({
             })}
           </ul>
         ) : (
-          <div className="p-8 text-center text-sm text-muted-foreground">This folder is empty.</div>
+          <div className="p-8 text-center text-sm text-muted-foreground">{translateInstant("folders.empty")}</div>
         )}
         {result?.truncated && (
-          <p className="border-t border-border/60 px-5 py-2 text-xs text-muted-foreground">Showing the first 250 entries.</p>
+          <p className="border-t border-border/60 px-5 py-2 text-xs text-muted-foreground">{translateInstant("Showing the first 250 entries.")}</p>
         )}
       </div>
     </div>
@@ -1011,7 +927,7 @@ function SelectStep({
   onAddBrowsedSkill,
   browseAddingKey,
 }: SelectStepProps) {
-  const { t } = useTranslation();
+  useTranslation();
   if (scanError) {
     const grant = isGrantError(scanError);
     return (
@@ -1025,23 +941,16 @@ function SelectStep({
             )}
           </div>
           <p className="text-base font-semibold">
-            {grant
-              ? t("importSkillsFromProject.permissionDeniedTitle", {
-                defaultValue: "You can't import skills here",
-              })
-              : t("importSkillsFromProject.scanFailed", { defaultValue: "Scan failed" })}
+            {grant ? translateInstant("importSkillsFromProject.permissionDeniedTitle") : translateInstant("importSkillsFromProject.scanFailed")}
           </p>
           <p className="mt-1.5 text-sm text-muted-foreground">
             {grant
-              ? t("importSkillsFromProject.permissionDeniedBody", {
-                defaultValue: "Your account doesn't have permission to add skills to this company. Ask an owner to grant the skills permission, then try again.",
-              })
-              : readableErrorMessage(scanError, t)}
+              ? "Your account doesn't have permission to add skills to this organization. Ask an owner to grant the skills permission, then try again."
+              : readableErrorMessage(scanError)}
           </p>
           {!grant && (
             <Button variant="outline" size="sm" className="mt-4" onClick={onRetry}>
-              {t("importSkillsFromProject.tryAgain", { defaultValue: "Try again" })}
-            </Button>
+              {translateInstant("importSkillsFromProject.tryAgain")}</Button>
           )}
         </div>
       </div>
@@ -1070,20 +979,13 @@ function SelectStep({
           <div className="mx-auto mb-4 w-fit bg-muted/50 p-4">
             <FolderSearch className="h-10 w-10 text-muted-foreground/50" />
           </div>
-          <p className="text-base font-semibold">
-            {t("importSkillsFromProject.noSkillsFound", { defaultValue: "No skills found" })}
-          </p>
+          <p className="text-base font-semibold">{translateInstant("importSkillsFromProject.noSkillsFound")}</p>
           <p className="mt-1.5 text-sm text-muted-foreground">
-            {t("importSkillsFromProject.noSkillsFoundPrefix", {
-              defaultValue: "None of the well-known skill folders in this project's workspaces contain a",
-            })}{" "}
-            <code className="rounded bg-muted px-1 py-0.5 text-xs">SKILL.md</code>.{" "}
-            {t("importSkillsFromProject.noSkillsFoundSearchSummary", {
-              defaultValue: "We searched {{folders}} and {{count}} other agent-harness folders.",
-              folders: HIGHLIGHTED_SCAN_FOLDERS.join(", "),
-              count: APPROX_TOTAL_SCAN_FOLDERS - HIGHLIGHTED_SCAN_FOLDERS.length,
-            })}
-          </p>
+            {translateInstant("importSkillsFromProject.noSkillsFoundPrefix")}{" "}
+            <code className="rounded bg-muted px-1 py-0.5 text-xs">SKILL.md</code>{translateInstant(". We searched")}{" "}
+            {HIGHLIGHTED_SCAN_FOLDERS.join(", ")} {translateInstant("and")}{" "}{APPROX_TOTAL_SCAN_FOLDERS -
+              HIGHLIGHTED_SCAN_FOLDERS.length}{" "}
+            {translateInstant("other agent-harness folders.")}</p>
           <Button
             variant="outline"
             size="sm"
@@ -1091,24 +993,17 @@ function SelectStep({
             onClick={() => onBrowseOpenChange(true)}
             data-testid="browse-project-folders-empty"
           >
-            <FolderOpen className="mr-1.5 h-3.5 w-3.5" /> Browse project folders
-          </Button>
+            <FolderOpen className="mr-1.5 h-3.5 w-3.5" /> {translateInstant("Browse project folders")}</Button>
           {onImportFromPath && (
             <p className="mt-3 text-sm text-muted-foreground">
-              {t("importSkillsFromProject.nonStandardFoldersPrefix", {
-                defaultValue: "For skills in non-standard folders, use",
-              })}{" "}
+              {translateInstant("importSkillsFromProject.nonStandardFoldersPrefix")}{" "}
               <button
                 type="button"
                 className="font-medium text-foreground underline underline-offset-2"
                 onClick={onImportFromPath}
               >
-                {t("importSkillsFromProject.importFromPath", {
-                  defaultValue: "Import from path or URL",
-                })}
-              </button>
-              .
-            </p>
+                {translateInstant("importSkillsFromProject.importFromPath")}</button>
+              {translateInstant(".")}</p>
           )}
         </div>
       </div>
@@ -1118,10 +1013,9 @@ function SelectStep({
   return (
     <div className="flex min-h-0 flex-1 flex-col" data-testid="candidate-list">
       <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border/60 px-5 py-2.5">
-        <p className="text-xs text-muted-foreground">Choose discovered skills, or browse any workspace folder.</p>
+        <p className="text-xs text-muted-foreground">{translateInstant("Choose discovered skills, or browse any workspace folder.")}</p>
         <Button variant="outline" size="sm" onClick={() => onBrowseOpenChange(true)} data-testid="browse-project-folders">
-          <FolderOpen className="mr-1.5 h-3.5 w-3.5" /> Browse folders
-        </Button>
+          <FolderOpen className="mr-1.5 h-3.5 w-3.5" /> {translateInstant("Browse folders")}</Button>
       </div>
       <div className="shrink-0 border-b border-border/60 px-5 py-2.5">
         <div className="relative">
@@ -1129,31 +1023,23 @@ function SelectStep({
           <Input
             value={filter}
             onChange={(event) => onFilterChange(event.target.value)}
-            placeholder={t("importSkillsFromProject.searchSkills", {
-              defaultValue: "Search discovered skills…",
-            })}
+            placeholder={translateInstant("importSkillsFromProject.searchSkills")}
             className="h-8 pl-8 text-xs"
-            aria-label={t("importSkillsFromProject.searchSkillsAria", {
-              defaultValue: "Search discovered skills",
-            })}
+            aria-label={translateInstant("importSkillsFromProject.searchSkillsAria")}
           />
         </div>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto">
         {groups.length === 0 ? (
           <div className="flex h-full items-center justify-center p-6 text-sm text-muted-foreground">
-            {t("importSkillsFromProject.noMatchingSkills", {
-              defaultValue: "No skills match “{{filter}}”.",
-              filter: filter.trim(),
-            })}
+            {translateInstant("No skills match “")}{filter.trim()}”.
           </div>
         ) : (
           groups.map((group, groupIndex) => (
             <section key={group.key}>
               {groupIndex > 0 && !group.isPrimary && groups[groupIndex - 1]?.isPrimary && (
                 <header className="border-y border-border/60 bg-muted/30 px-5 py-2 text-xs uppercase tracking-wide text-muted-foreground">
-                  {t("importSkillsFromProject.otherWorkspaces", { defaultValue: "Other Workspaces" })}
-                </header>
+                  {translateInstant("importSkillsFromProject.otherWorkspaces")}</header>
               )}
               <header className="sticky top-0 z-10 border-b border-border/60 bg-background px-5 py-2 text-sm font-medium text-foreground">
                 {group.workspaceName}
@@ -1187,10 +1073,7 @@ function SelectStep({
                               checked={isSelected}
                               onCheckedChange={() => toggleCandidate(candidate)}
                               disabled={!selectable}
-                              aria-label={t("importSkillsFromProject.selectSkillAria", {
-                                defaultValue: "Select {{name}}",
-                                name: candidate.name,
-                              })}
+                              aria-label={`Select ${candidate.name}`}
                             />
                           </div>
                           <div className="min-w-0 flex-1">
@@ -1229,8 +1112,7 @@ function SelectStep({
                                   htmlFor={`rename-${candidate.workspaceId}-${candidate.slug}`}
                                   className="shrink-0 text-xs text-muted-foreground"
                                 >
-                                  {t("importSkillsFromProject.importAs", { defaultValue: "Import as" })}
-                                </label>
+                                  {translateInstant("importSkillsFromProject.importAs")}</label>
                                 <Input
                                   id={`rename-${candidate.workspaceId}-${candidate.slug}`}
                                   value={selectedValue?.slug ?? ""}
@@ -1238,10 +1120,7 @@ function SelectStep({
                                     renameCandidate(candidate, event.target.value)
                                   }
                                   className="h-7 max-w-xs font-mono text-xs"
-                                  aria-label={t("importSkillsFromProject.renameSkillAria", {
-                                    defaultValue: "Rename {{name}}",
-                                    name: candidate.name,
-                                  })}
+                                  aria-label={`Rename ${candidate.name}`}
                                   aria-invalid={
                                     selectedValue
                                       ? !isValidSelectionSlug(selectedValue)
@@ -1250,10 +1129,7 @@ function SelectStep({
                                 />
                                 {selectedValue && !isValidSelectionSlug(selectedValue) && (
                                   <span className="text-xs text-destructive">
-                                    {t("importSkillsFromProject.invalidSlug", {
-                                      defaultValue: "Use a lowercase URL-safe slug.",
-                                    })}
-                                  </span>
+                                    {translateInstant("importSkillsFromProject.invalidSlug")}</span>
                                 )}
                               </div>
                             )}
@@ -1277,7 +1153,7 @@ interface ResultStepProps {
 }
 
 function ResultStep({ result }: ResultStepProps) {
-  const { t } = useTranslation();
+  useTranslation();
   const importedSkills: CompanySkill[] = useMemo(
     () => [...result.imported, ...result.updated],
     [result],
@@ -1289,43 +1165,21 @@ function ResultStep({ result }: ResultStepProps) {
         <div className="flex items-start gap-3 rounded-md border border-emerald-500/30 bg-emerald-500/5 p-3">
           <Link2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
           <div className="text-xs leading-relaxed text-muted-foreground">
-            <span className="font-medium text-foreground">
-              {t("importSkillsFromProject.noFilesCopied", { defaultValue: "No files were copied." })}
-            </span>{" "}
-            {t("importSkillsFromProject.referenceExplanation", {
-              defaultValue: "These skills reference the files in the project workspace — editing them in Skill Studio saves directly back to those files.",
-            })}
-          </div>
+            <span className="font-medium text-foreground">{translateInstant("importSkillsFromProject.noFilesCopied")}</span> {translateInstant("importSkillsFromProject.referenceExplanation")}</div>
         </div>
         <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
           <span className="text-emerald-600 dark:text-emerald-400">
-            ✓ {t("importSkillsFromProject.result.imported", {
-              count: result.imported.length,
-              defaultValue: "{{count}} imported",
-            })}
+            ✓ {result.imported.length} imported
           </span>
-          {result.updated.length > 0 && (
-            <span>↻ {t("importSkillsFromProject.result.updated", {
-              count: result.updated.length,
-              defaultValue: "{{count}} updated",
-            })}</span>
-          )}
-          {result.skipped.length > 0 && (
-            <span>⊘ {t("importSkillsFromProject.result.skipped", {
-              count: result.skipped.length,
-              defaultValue: "{{count}} skipped",
-            })}</span>
-          )}
+          {result.updated.length > 0 && <span>↻ {result.updated.length} {translateInstant("updated")}</span>}
+          {result.skipped.length > 0 && <span>⊘ {result.skipped.length} {translateInstant("skipped")}</span>}
         </div>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto">
         {importedSkills.length > 0 && (
           <section>
             <header className="bg-muted/30 px-5 py-1.5 text-xs uppercase tracking-wide text-muted-foreground">
-              {t("importSkillsFromProject.result.importedHeader", {
-                count: importedSkills.length,
-                defaultValue: "Imported · {{count}}",
-              })}
+              {translateInstant("Imported ·")}{" "}{importedSkills.length}
             </header>
             <ul className="divide-y divide-border/60" data-testid="result-imported">
               {importedSkills.map((skill) => (
@@ -1345,8 +1199,7 @@ function ResultStep({ result }: ResultStepProps) {
                     to={skillStudioRoute(skill.id)}
                     className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-foreground no-underline hover:underline"
                   >
-                    {t("importSkillsFromProject.open", { defaultValue: "Open" })}
-                    <ExternalLink className="h-3 w-3" />
+                    {translateInstant("importSkillsFromProject.open")}{" "}<ExternalLink className="h-3 w-3" />
                   </Link>
                 </li>
               ))}
@@ -1356,10 +1209,7 @@ function ResultStep({ result }: ResultStepProps) {
         {result.skipped.length > 0 && (
           <section>
             <header className="bg-muted/30 px-5 py-1.5 text-xs uppercase tracking-wide text-muted-foreground">
-              {t("importSkillsFromProject.result.skippedHeader", {
-                count: result.skipped.length,
-                defaultValue: "Skipped · {{count}}",
-              })}
+              {translateInstant("Skipped ·")}{" "}{result.skipped.length}
             </header>
             <ul className="divide-y divide-border/60" data-testid="result-skipped">
               {result.skipped.map((row, index) => (
@@ -1382,10 +1232,7 @@ function ResultStep({ result }: ResultStepProps) {
         {result.warnings.length > 0 && (
           <section>
             <header className="bg-muted/30 px-5 py-1.5 text-xs uppercase tracking-wide text-muted-foreground">
-              {t("importSkillsFromProject.result.warningsHeader", {
-                count: result.warnings.length,
-                defaultValue: "Warnings · {{count}}",
-              })}
+              {translateInstant("Warnings ·")}{" "}{result.warnings.length}
             </header>
             <ul className="divide-y divide-border/60" data-testid="result-warnings">
               {result.warnings.map((warning, index) => (

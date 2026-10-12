@@ -65,11 +65,11 @@ Note the frontmatter hits every builder rule: description is 40–300 chars,
 
 - Add `examples/rewrite-status-comment.md` showing a jargon-heavy status
   comment rewritten under the rules (before/after).
-- `pnpm --filter @paperclipai/skills-catalog build:manifest` → regenerates
+- `pnpm --filter @penclipai/skills-catalog build:manifest` → regenerates
   `generated/catalog.json` with the new entry.
 - Add `"paperclipai/optional/content/simplified-english"` to
   `EXPECTED_OPTIONAL_KEYS` in `src/shipped-catalog.test.ts` (alphabetical).
-- `pnpm --filter @paperclipai/skills-catalog test` → green.
+- `pnpm --filter @penclipai/skills-catalog test` → green.
 
 ## Step 5 — PR
 

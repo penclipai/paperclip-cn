@@ -1,3 +1,5 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
 import { useMemo, useState } from "react";
 import { ChevronDown, ChevronRight, Plug, Plus, Search, X } from "lucide-react";
 import { Link } from "@/lib/router";
@@ -52,6 +54,7 @@ export interface WizardToolsStepProps {
 }
 
 export function WizardToolsStep(props: WizardToolsStepProps) {
+  useTranslation();
   const { appGroups, catalogLoading, selections, onSelectionsChange } = props;
   const [search, setSearch] = useState("");
   const [capabilityFilter, setCapabilityFilter] = useState<ToolCapability | null>(null);
@@ -74,7 +77,7 @@ export function WizardToolsStep(props: WizardToolsStepProps) {
       .filter((entry) => entry.tools.length > 0);
   }, [appGroups, search, capabilityFilter]);
 
-  if (catalogLoading) return <LoadingState label="Loading tools…" />;
+  if (catalogLoading) return <LoadingState label={translateInstant("tools.profiles.tools.loading")} />;
 
   // Cold state A (AP17): nothing connected at all.
   if (appGroups.length === 0) {
@@ -82,14 +85,12 @@ export function WizardToolsStep(props: WizardToolsStepProps) {
       <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-border py-12 text-center">
         <Plug className="h-6 w-6 text-muted-foreground" />
         <div>
-          <p className="text-sm font-medium text-foreground">App connections are coming soon</p>
+          <p className="text-sm font-medium text-foreground">{translateInstant("tools.profiles.tools.connectionsComing")}</p>
           <p className="mx-auto max-w-sm text-sm text-muted-foreground">
-            Profiles will be available once app connections are ready. Browse the planned integrations in the
-            meantime.
-          </p>
+            {translateInstant("tools.profiles.tools.connectionsComingDescription")}</p>
         </div>
         <Button asChild variant="outline">
-          <Link to="/apps">Browse app connections</Link>
+          <Link to="/apps">{translateInstant("tools.profiles.tools.browseConnections")}</Link>
         </Button>
       </div>
     );
@@ -103,7 +104,7 @@ export function WizardToolsStep(props: WizardToolsStepProps) {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search tools…"
+            placeholder={translateInstant("tools.profiles.tools.searchPlaceholder")}
             className="pl-8"
           />
         </div>
@@ -129,7 +130,7 @@ export function WizardToolsStep(props: WizardToolsStepProps) {
       {filteredGroups.length === 0 ? (
         // Cold state B (AP17): a search/filter that matches nothing.
         <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-border py-10 text-center">
-          <p className="text-sm font-medium text-foreground">No tools match “{search}”.</p>
+          <p className="text-sm font-medium text-foreground">{translateInstant("No tools match “")}{search}”.</p>
           <button
             type="button"
             onClick={() => {
@@ -138,8 +139,7 @@ export function WizardToolsStep(props: WizardToolsStepProps) {
             }}
             className="text-sm font-medium text-primary hover:underline"
           >
-            Clear search
-          </button>
+            {translateInstant("Clear search")}</button>
         </div>
       ) : (
         <div className="divide-y divide-border overflow-hidden rounded-lg border border-border">
@@ -183,6 +183,7 @@ function AppRow({
   onToggleApp: () => void;
   onToggleTool: (toolId: string) => void;
 }) {
+  useTranslation();
   const [expanded, setExpanded] = useState(false);
   const state = appCheckState(group, selection);
   const checked = state === "checked" ? true : state === "indeterminate" ? "indeterminate" : false;
@@ -203,7 +204,7 @@ function AppRow({
           )}
           <span className="flex flex-col">
             <span className="text-sm font-medium text-foreground">
-              All {group.name} tools ({group.tools.length})
+              {translateInstant("All")}{" "}{group.name}{" "}{translateInstant("tools (")}{group.tools.length})
             </span>
             <span className="text-xs text-muted-foreground">
               {state === "indeterminate"
@@ -255,22 +256,23 @@ function NewToolsRadio({
   value: NewToolsAction;
   onChange: (next: NewToolsAction) => void;
 }) {
+  useTranslation();
   const options: Array<{ value: NewToolsAction; label: string; hint: string; recommended?: boolean }> = [
     {
       value: "deny",
-      label: "Stay blocked until someone allows them",
+      label: translateInstant("tools.profiles.futureTools.reviewLabel"),
       hint: "New tools an app adds later won't be usable until you review them.",
       recommended: true,
     },
     {
       value: "allow",
-      label: "Allowed automatically",
+      label: translateInstant("tools.profiles.futureTools.allowedTitle"),
       hint: "Any tool an app adds later becomes usable right away.",
     },
   ];
   return (
     <fieldset className="space-y-2 rounded-lg border border-border p-4">
-      <legend className="px-1 text-sm font-medium text-foreground">New tools that appear later</legend>
+      <legend className="px-1 text-sm font-medium text-foreground">{translateInstant("tools.profiles.detail.futureTools")}</legend>
       <div className="space-y-2">
         {options.map((opt) => (
           <label key={opt.value} className="flex cursor-pointer items-start gap-2.5">
@@ -286,10 +288,9 @@ function NewToolsRadio({
                 {opt.label}
                 {opt.recommended ? (
                   <Badge variant="outline" className="text-(length:--text-nano)">
-                    Recommended
-                  </Badge>
+                    {translateInstant("Recommended")}</Badge>
                 ) : (
-                  <span className="text-xs font-normal text-amber-600">(risky)</span>
+                  <span className="text-xs font-normal text-amber-600">{translateInstant("tools.common.risky")}</span>
                 )}
               </span>
               <span className="text-xs text-muted-foreground">{opt.hint}</span>
@@ -327,6 +328,7 @@ function AdvancedRules({
   rules: AdvancedRule[];
   onChange: (next: AdvancedRule[]) => void;
 }) {
+  useTranslation();
   const [open, setOpen] = useState(false);
   const [kind, setKind] = useState<AdvancedRuleKind>("tool_name");
   const [value, setValue] = useState("");
@@ -349,14 +351,12 @@ function AdvancedRules({
   return (
     <Collapsible open={open} onOpenChange={setOpen} className="rounded-lg border border-border">
       <CollapsibleTrigger className="flex w-full items-center justify-between px-4 py-3 text-left">
-        <span className="text-sm font-medium text-foreground">Advanced rules</span>
+        <span className="text-sm font-medium text-foreground">{translateInstant("tools.profiles.rules.title")}</span>
         <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", open && "rotate-180")} />
       </CollapsibleTrigger>
       <CollapsibleContent className="space-y-3 border-t border-border px-4 py-3">
         <p className="text-xs text-muted-foreground">
-          Match tools by a name pattern, a risk level, or a specific tool ID. These run on top of the choices
-          above.
-        </p>
+          {translateInstant("tools.profiles.rules.description")}</p>
 
         {rules.length > 0 ? (
           <ul className="space-y-1.5">
@@ -368,7 +368,7 @@ function AdvancedRules({
                 <span className="text-foreground">{ruleSummary(rule)}</span>
                 <button
                   type="button"
-                  aria-label="Remove rule"
+                  aria-label={translateInstant("tools.profiles.rules.removeAria")}
                   onClick={() => onChange(rules.filter((r) => r.id !== rule.id))}
                   className="text-muted-foreground hover:text-destructive"
                 >
@@ -386,7 +386,7 @@ function AdvancedRules({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="include">Allow</SelectItem>
-              <SelectItem value="exclude">Block</SelectItem>
+              <SelectItem value="exclude">{translateInstant("tools.common.block")}</SelectItem>
             </SelectContent>
           </Select>
           <Select value={kind} onValueChange={(v) => setKind(v as AdvancedRuleKind)}>
@@ -407,23 +407,22 @@ function AdvancedRules({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="read">Read-only</SelectItem>
-                <SelectItem value="write">Makes changes</SelectItem>
-                <SelectItem value="destructive">Destructive</SelectItem>
+                <SelectItem value="read">{translateInstant("companySkills.readOnly")}</SelectItem>
+                <SelectItem value="write">{translateInstant("tools.policies.capability.write.label")}</SelectItem>
+                <SelectItem value="destructive">{translateInstant("Destructive")}</SelectItem>
               </SelectContent>
             </Select>
           ) : (
             <Input
               value={value}
               onChange={(e) => setValue(e.target.value)}
-              placeholder={kind === "tool_name" ? "e.g. gmail.send*" : "tool ID"}
+              placeholder={kind === "tool_name" ? translateInstant("tools.profiles.rules.patternPlaceholder") : translateInstant("tools.profiles.rules.toolIdPlaceholder")}
               className="w-44"
             />
           )}
           <Button type="button" variant="outline" size="sm" onClick={addRule}>
             <Plus className="mr-1 h-3.5 w-3.5" />
-            Add rule
-          </Button>
+            {translateInstant("tools.profiles.rules.add")}</Button>
         </div>
       </CollapsibleContent>
     </Collapsible>

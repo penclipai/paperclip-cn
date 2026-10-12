@@ -1,3 +1,5 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
 import { Fragment } from "react";
 import {
   ISSUE_THREAD_INTERACTION_KINDS,
@@ -14,17 +16,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { resolverPolicyLabel } from "../lib/interaction-audience";
-import { translateInstant } from "../i18n";
-import { useTranslation } from "react-i18next";
 
-const INTERACTION_KIND_LABELS: Record<IssueThreadInteractionKind, string> = {
+const INTERACTION_KIND_LABEL_KEYS: Record<IssueThreadInteractionKind, string> = {
   suggest_tasks: "interactionGovernance.kind.suggestTasks",
   ask_user_questions: "interactionGovernance.kind.askUserQuestions",
   request_confirmation: "interactionGovernance.kind.confirmations",
   request_checkbox_confirmation: "interactionGovernance.kind.checkboxConfirmations",
   request_item_verdicts: "interactionGovernance.kind.itemVerdicts",
+  connection_intent: "interactionGovernance.kind.connectionRequests",
 };
+
+function interactionKindLabel(kind: IssueThreadInteractionKind): string {
+  return translateInstant(INTERACTION_KIND_LABEL_KEYS[kind]);
+}
 
 /**
  * Sentinel for "no override" — Radix Select disallows empty-string item values.
@@ -48,26 +52,32 @@ const NARROWING_POLICIES: readonly IssueThreadInteractionCanonicalResolverPolicy
   "human_only",
 ];
 
-const UNSET_LABELS: Record<GovernanceField, string> = {
+const UNSET_LABEL_KEYS: Record<GovernanceField, string> = {
   defaultPolicy: "interactionGovernance.unset.defaultPolicy",
   cap: "interactionGovernance.unset.cap",
 };
 
-const UNSET_EFFECTS: Record<GovernanceField, string> = {
+const UNSET_EFFECT_KEYS: Record<GovernanceField, string> = {
   defaultPolicy: "interactionGovernance.effect.openDefault",
   cap: "interactionGovernance.effect.noCap",
 };
 
 const DEFAULT_POLICY_EFFECTS: Record<IssueThreadInteractionCanonicalResolverPolicy, string> = {
-  anyone: UNSET_EFFECTS.defaultPolicy,
+  anyone: UNSET_EFFECT_KEYS.defaultPolicy,
   not_creator: "interactionGovernance.effect.notCreatorDefault",
   human_only: "interactionGovernance.effect.humanOnlyDefault",
 };
 
 const CAP_EFFECTS: Record<IssueThreadInteractionCanonicalResolverPolicy, string> = {
-  anyone: UNSET_EFFECTS.cap,
+  anyone: UNSET_EFFECT_KEYS.cap,
   not_creator: "interactionGovernance.effect.notCreatorCap",
   human_only: "interactionGovernance.effect.humanOnlyCap",
+};
+
+const RESOLVER_POLICY_LABEL_KEYS: Record<IssueThreadInteractionCanonicalResolverPolicy, string> = {
+  anyone: "Anyone",
+  not_creator: "interactionResolver.not_creator",
+  human_only: "interactionResolver.human_only",
 };
 
 function governanceOptions(field: GovernanceField): {
@@ -77,11 +87,11 @@ function governanceOptions(field: GovernanceField): {
 }[] {
   const effects = field === "cap" ? CAP_EFFECTS : DEFAULT_POLICY_EFFECTS;
   return [
-    { value: GOVERNANCE_UNSET, label: UNSET_LABELS[field], effect: UNSET_EFFECTS[field] },
+    { value: GOVERNANCE_UNSET, label: translateInstant(UNSET_LABEL_KEYS[field]), effect: translateInstant(UNSET_EFFECT_KEYS[field]) },
     ...NARROWING_POLICIES.map((policy) => ({
       value: policy as GovernanceSelectValue,
-      label: translateInstant(`interactionResolver.${policy}`, { defaultValue: resolverPolicyLabel(policy) }),
-      effect: translateInstant(effects[policy], { defaultValue: effects[policy] }),
+      label: translateInstant(RESOLVER_POLICY_LABEL_KEYS[policy]),
+      effect: translateInstant(effects[policy]),
     })),
   ];
 }
@@ -92,9 +102,7 @@ function governanceOptions(field: GovernanceField): {
  * still renders a complete, truthful label instead of falling back to a lie.
  */
 export function governanceValueLabel(field: GovernanceField, value: GovernanceSelectValue): string {
-  return value === GOVERNANCE_UNSET
-    ? translateInstant(UNSET_LABELS[field], { defaultValue: field === "defaultPolicy" ? "Anyone (default)" : "No cap" })
-    : translateInstant(`interactionResolver.${value}`, { defaultValue: resolverPolicyLabel(value) });
+  return translateInstant(value === GOVERNANCE_UNSET ? UNSET_LABEL_KEYS[field] : RESOLVER_POLICY_LABEL_KEYS[normalizeIssueThreadInteractionResolverPolicy(value)]);
 }
 
 /**
@@ -152,7 +160,6 @@ function GovernanceSelect({
   ariaLabel: string;
   mobileLabel: string;
 }) {
-  const { t } = useTranslation();
   const options = governanceOptions(field);
   return (
     <div className="min-w-0">
@@ -240,18 +247,18 @@ export function InteractionGovernancePanel({
   isPending?: boolean;
   errorMessage?: string | null;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   return (
     <div className="space-y-4" data-testid="company-settings-interaction-governance-section">
       <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-        {t("interactionGovernance.title", { defaultValue: "Interaction governance" })}
-      </div>
+        {translateInstant("interactionGovernance.title")}</div>
       <div className="space-y-4">
         <p className="text-sm text-muted-foreground">
-          {t("interactionGovernance.description", {
-            defaultValue: "Thread interactions are open by default: anyone in the company — the board or any agent, including the one that asked — can respond. Narrow a kind only when you need to. Default policy is the audience new cards get when the requester does not ask for one; cap narrows every request of that kind and can never widen one. Tool-approval confirmations always stay human only.",
-          })}
-        </p>
+          {translateInstant("Thread interactions are open by default:")}{" "}
+          <span className="font-medium text-foreground">{translateInstant("Anyone")}</span> {translateInstant("in the organization — the board or any agent, including the one that asked — can respond. Narrow a kind only when you need to.")}{" "}
+          <span className="font-medium text-foreground">{translateInstant("interactionGovernance.column.defaultPolicy")}</span> {translateInstant("is the audience new cards get when the requester does not ask for one;")}{" "}
+          <span className="font-medium text-foreground">{translateInstant("interactionGovernance.column.cap")}</span> {translateInstant("narrows every request of that kind and can never widen one. Tool-approval confirmations always stay")}{" "}
+          <span className="font-medium text-foreground">{translateInstant("interactionResolver.human_only")}</span>{translateInstant(".")}</p>
         {/*
          * Responsive: below `sm` the row collapses to a single column so the
          * two 170px selects never force horizontal overflow on a ~390px
@@ -261,25 +268,22 @@ export function InteractionGovernancePanel({
          */}
         <div className="grid grid-cols-1 gap-y-4 sm:grid-cols-[1fr_auto_auto] sm:items-center sm:gap-x-4 sm:gap-y-2.5">
           <div className="hidden text-xs font-medium text-muted-foreground uppercase tracking-wide sm:block">
-            {t("interactionGovernance.column.kind", { defaultValue: "Kind" })}
-          </div>
+            {translateInstant("interactionGovernance.column.kind")}</div>
           <div className="hidden text-xs font-medium text-muted-foreground uppercase tracking-wide sm:block">
-            {t("interactionGovernance.column.defaultPolicy", { defaultValue: "Default policy" })}
-          </div>
+            {translateInstant("interactionGovernance.column.defaultPolicy")}</div>
           <div className="hidden text-xs font-medium text-muted-foreground uppercase tracking-wide sm:block">
-            {t("interactionGovernance.column.cap", { defaultValue: "Cap" })}
-          </div>
+            {translateInstant("interactionGovernance.column.cap")}</div>
           {ISSUE_THREAD_INTERACTION_KINDS.map((kind) => {
             const entry = governance[kind] ?? {};
-            const kindLabel = t(INTERACTION_KIND_LABELS[kind], { defaultValue: kind.replaceAll("_", " ") });
+            const kindLabel = interactionKindLabel(kind);
             return (
               <Fragment key={kind}>
                 <div className="text-sm font-medium sm:font-normal">{kindLabel}</div>
                 <GovernanceSelect
                   field="defaultPolicy"
                   testId={`governance-${kind}-default`}
-                  ariaLabel={`Default resolver audience for ${kindLabel}`}
-                  mobileLabel={t("interactionGovernance.column.defaultPolicy", { defaultValue: "Default policy" })}
+                  ariaLabel={translateInstant("companySettings.governance.defaultPolicyAria", { kind: kindLabel })}
+                  mobileLabel={translateInstant("interactionGovernance.column.defaultPolicy")}
                   value={toGovernanceSelectValue(entry.defaultPolicy)}
                   disabled={isPending}
                   onChange={(v) => onChange(kind, "defaultPolicy", v)}
@@ -287,8 +291,8 @@ export function InteractionGovernancePanel({
                 <GovernanceSelect
                   field="cap"
                   testId={`governance-${kind}-cap`}
-                  ariaLabel={`Resolver cap for ${kindLabel}`}
-                  mobileLabel={t("interactionGovernance.column.cap", { defaultValue: "Cap" })}
+                  ariaLabel={translateInstant("companySettings.governance.capAria", { kind: kindLabel })}
+                  mobileLabel={translateInstant("interactionGovernance.column.cap")}
                   value={toGovernanceSelectValue(entry.cap)}
                   disabled={isPending}
                   onChange={(v) => onChange(kind, "cap", v)}

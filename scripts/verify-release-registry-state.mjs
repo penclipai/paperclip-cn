@@ -9,7 +9,7 @@ const PRERELEASE_CHANNELS = new Set(["canary", "nightly", "beta"]);
 const EXIT_RETRIABLE_FAILURE = 1;
 const EXIT_NON_RETRIABLE_FAILURE = 2;
 const NPM_ALIAS_RE = /^npm:(@[^/]+\/[^@]+|[^@/][^@]*)@(.+)$/;
-const INTERNAL_PACKAGE_PREFIXES = ["@paperclipai/", "@penclipai/"];
+const INTERNAL_PACKAGE_PREFIXES = ["@penclipai/", "@penclipai/"];
 
 export function isCanaryVersion(version) {
   return CANARY_VERSION_RE.test(version);

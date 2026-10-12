@@ -1,10 +1,13 @@
 #!/usr/bin/env node
 import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readdirSync, statSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, statSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadShardDurations, selectGeneralServerShard } from "./general-server-shard.mjs";
+import { resolvePnpmInvocation } from "./pnpm-invocation.mjs";
+
+import { assertSelectedTests, partitionTestLines } from "./test-line-shard.mjs";
 
 const repoRoot = process.cwd();
 const scriptsDir = path.dirname(fileURLToPath(import.meta.url));
@@ -17,6 +20,7 @@ const serializedShardDurations = loadShardDurations(
 const serverRoot = path.join(repoRoot, "server");
 const serverSrcDir = path.join(repoRoot, "server", "src");
 const serverTestsDir = path.join(repoRoot, "server", "src", "__tests__");
+const serverScriptsDir = path.join(repoRoot, "server", "scripts");
 const nonServerProjects = [
   "@penclipai/shared",
   "@penclipai/skills-catalog",
@@ -24,8 +28,16 @@ const nonServerProjects = [
   "@penclipai/adapter-utils",
   "@penclipai/adapter-claude-local",
   "@penclipai/adapter-codex-local",
+  "@penclipai/adapter-cursor-cloud",
+  "@penclipai/adapter-cursor-local",
+  "@penclipai/adapter-gemini-local",
+  "@penclipai/adapter-grok-local",
+  "@penclipai/hermes-paperclip-adapter",
+  "@penclipai/adapter-kimi-local",
   "@penclipai/adapter-openclaw-gateway",
   "@penclipai/adapter-opencode-local",
+  "@penclipai/adapter-pi-local",
+  "@penclipai/plugin-daytona",
   "@penclipai/plugin-sdk",
   "@penclipai/create-paperclip-plugin",
   "@penclipai/ui",
@@ -64,11 +76,76 @@ const serializedModeName = "serialized";
 const generalModeName = "general";
 const allModeName = "all";
 const generalServerGroupName = "general-server";
+const generalServerWithoutChatGroupName = "general-server-without-chat";
+const generalServerWithoutChatOrNativeRunnerGroupName = "general-server-without-chat-or-native-runner";
+const generalChatGroupName = "general-chat";
+const generalServerNativeRunnerGroupName = "general-server-native-runner";
+const chatSuite = "server/src/__tests__/chat-channels.integration.test.ts";
+// The first suite rebuilds the Runner release binaries with cargo in beforeAll.
+// Inside the PR workflow's plain server shards, which carry no Rust cache,
+// that build was a ~4m30s cold compile of every third-party crate on each run
+// (277s of a 291s shard vitest step, actions run 35246999382, 2026-09-17).
+const nativeRunnerSuites = [
+  "server/src/services/native-runtime/native-codex-runner.integration.test.ts",
+  "server/src/__tests__/dot-runner.test.ts",
+  // These process cases otherwise skip in server shards without Runner binaries.
+  "server/src/services/native-runtime/native-runner-restart-recovery.integration.test.ts",
+];
+// In the PR workflow (pr.yml, the caller of pr-trusted.yml — reusable
+// workflows inherit the caller's GITHUB_WORKFLOW), the last Verify Paperclip
+// Runner vitest shard runs the native-runner group instead, because those
+// lanes restore the shared release-runner-v2 Rust cache (see
+// packages/paperclip-runner/scripts/run-pr-vitest-lane.mjs). Every other
+// caller of the same group keeps the suite in the server shards, so a renamed or
+// unknown workflow degrades to today's slower-but-covered behavior rather
+// than dropping the suite.
+const prWorkflowName = "PR";
+const nativeRunnerSuiteRunsInRustCachedLane = process.env.GITHUB_WORKFLOW === prWorkflowName;
+const withoutChatExcludedSuites = nativeRunnerSuiteRunsInRustCachedLane
+  ? [chatSuite, ...nativeRunnerSuites]
+  : [chatSuite];
+// Release verification selects this explicit group and runs the omitted suites
+// in its cached Runner job. Local callers keep the complete default group.
+const generalServerGroups = [
+  generalServerGroupName,
+  generalServerWithoutChatGroupName,
+  generalServerWithoutChatOrNativeRunnerGroupName,
+];
+function excludedServerSuites(groupName) {
+  if (groupName === generalServerWithoutChatOrNativeRunnerGroupName) return [chatSuite, ...nativeRunnerSuites];
+  if (groupName === generalServerWithoutChatGroupName) return withoutChatExcludedSuites;
+  return [];
+}
 const generalWorkspacesAGroupName = "general-workspaces-a";
 const generalWorkspacesBGroupName = "general-workspaces-b";
+const generalWorkspacesCGroupName = "general-workspaces-c";
 const generalWorkspacesAProjects = ["@penclipai/ui", "penclip"];
-const generalWorkspacesBProjects = nonServerProjects.filter((project) => !generalWorkspacesAProjects.includes(project));
-const generalGroupNames = [generalServerGroupName, generalWorkspacesAGroupName, generalWorkspacesBGroupName];
+// The db project runs in its own lane. Its vitest invocation took 168-250s
+// of a 436-513s workspaces-b job (PR runs 38084171761, 38083084276 and
+// 38083020834, 2026-10-10), which made workspaces-b the slowest check once
+// the server shards were rebalanced. Vitest's native --shard would not help
+// here: the project is already file-parallel and client.test.ts alone is
+// 117-189s of its wall time, so a hash-ordered slice can land both of its
+// slow suites on one runner. Splitting by project is deterministic and
+// leaves the remaining projects at ~265-275s of vitest time, roughly level
+// with this lane.
+const generalWorkspacesCProjects = ["@penclipai/db"];
+const generalWorkspacesBProjects = nonServerProjects.filter(
+  (project) => !generalWorkspacesAProjects.includes(project) && !generalWorkspacesCProjects.includes(project),
+);
+const generalGroupNames = [
+  generalServerGroupName,
+  generalWorkspacesAGroupName,
+  generalWorkspacesBGroupName,
+  generalWorkspacesCGroupName,
+];
+const allowedGeneralGroupNames = [
+  ...generalGroupNames,
+  generalServerWithoutChatGroupName,
+  generalServerWithoutChatOrNativeRunnerGroupName,
+  generalChatGroupName,
+  generalServerNativeRunnerGroupName,
+];
 const serializedServerVitestArgs = [
   "--no-file-parallelism",
   "--maxWorkers=1",
@@ -85,22 +162,8 @@ const windowsInvocationTempPrefix = "v-";
 const isolatedTempEnvironmentVariables = ["TEMP", "TMP", "TMPDIR"];
 
 function quoteCmdArg(value) {
-  if (/^[A-Za-z0-9_/:=.,@+-]+$/.test(value)) return value;
+  if (/^[A-Za-z0-9_/:=.,@+\\-]+$/.test(value)) return value;
   return `"${value.replace(/"/g, '""')}"`;
-}
-
-function resolvePnpmInvocation(args) {
-  const npmExecPath = process.env.npm_execpath;
-  if (npmExecPath && /pnpm/i.test(npmExecPath)) {
-    return { command: process.execPath, args: [npmExecPath, ...args] };
-  }
-  if (process.platform === "win32") {
-    return {
-      command: process.env.ComSpec || "cmd.exe",
-      args: ["/d", "/s", "/c", ["pnpm", ...args].map(quoteCmdArg).join(" ")],
-    };
-  }
-  return { command: "pnpm", args };
 }
 
 function walk(dir) {
@@ -124,6 +187,37 @@ function toRepoPath(file) {
 
 function toServerPath(file) {
   return path.relative(serverRoot, file).split(path.sep).join("/");
+}
+
+// For a multi-line `it.each([...])("name", fn)` call, Vitest 5's `vitest
+// list --includeTaskLocation` and `vitest run <file>:<line>` disagree about
+// which line registers the test: `list` reports (and only matches) the line
+// of the wrapped "name" argument, while `run` only matches the line above
+// it, where Prettier's formatting puts that call's opening `(`. Separately,
+// on this file `list` also occasionally invents an entry whose "location"
+// sits on an ordinary body statement that merely ends in `)(` or starts a
+// line with a quote, with no `it`/`test` call anywhere nearby — a bogus
+// artifact of the same collector, not a real test. Both only showed up on
+// server/src/__tests__/chat-channels.integration.test.ts, a 70,000+ line
+// fixture; smaller files have not reproduced either issue.
+//
+// chatSuiteRunLine classifies a `list`-reported line against the actual
+// source and returns the line `vitest run` accepts, or null if the line
+// does not belong to any real `it`/`test` call (a bogus entry to drop).
+const callAnywherePattern = /(?:^|[^\w$])(?:it|test)(?:\.(?:each|skip|only))?\(/;
+const inlineCallPattern = /\)\(\s*["'`]/;
+
+function chatSuiteRunLine(sourceLines, line) {
+  const text = (sourceLines[line - 1] ?? "").trim();
+  if (callAnywherePattern.test(text) || text.endsWith(")(") || inlineCallPattern.test(text)) {
+    return line;
+  }
+  const previous = (sourceLines[line - 2] ?? "").trim();
+  const isNameArgument = text.startsWith('"') || text.startsWith("'") || text.startsWith("`");
+  if (isNameArgument && previous.endsWith(")(")) {
+    return line - 1;
+  }
+  return null;
 }
 
 function isRouteOrAuthzTest(file) {
@@ -242,10 +336,10 @@ function parseCliOptions(argv) {
   const shardAllowed =
     mode === serializedModeName ||
     (mode === generalModeName &&
-      (group === generalServerGroupName || group === generalWorkspacesAGroupName));
+      ([...generalServerGroups, generalChatGroupName, generalWorkspacesAGroupName].includes(group)));
   if (!shardAllowed && shardIndex !== null) {
     fail(
-      "--shard-index/--shard-count are only valid with --mode serialized, --mode general --group general-server, or --mode general --group general-workspaces-a.",
+      "--shard-index/--shard-count are only valid with serialized mode or a shardable general server/chat/workspaces-a group.",
     );
   }
 
@@ -253,8 +347,8 @@ function parseCliOptions(argv) {
     fail("--group is only valid with --mode general.");
   }
 
-  if (group !== null && !generalGroupNames.includes(group)) {
-    fail(`Unknown group "${group}". Expected one of: ${generalGroupNames.join(", ")}.`);
+  if (group !== null && !allowedGeneralGroupNames.includes(group)) {
+    fail(`Unknown group "${group}". Expected one of: ${allowedGeneralGroupNames.join(", ")}.`);
   }
 
   if (shardIndex !== null) {
@@ -327,17 +421,23 @@ function buildCommandBudgetChunks(files, baseArgs, commandBudget) {
   return chunks;
 }
 
-function runVitest(args, label) {
+function runVitest(args, label, testShard = null) {
   console.log(`\n[test:run] ${label}`);
   invocationIndex += 1;
   const tempRootParent = process.platform === "win32" ? os.tmpdir() : "/tmp";
-  const tempPrefix = process.platform === "win32" ? windowsInvocationTempPrefix : `pcvt-${process.pid}-${invocationIndex}-`;
-  const testRoot = mkdtempSync(path.join(tempRootParent, tempPrefix));
+  // Production workspace/security checks reject symlink aliases. In particular
+  // /tmp is /private/tmp on macOS, so fixture roots must use the canonical path.
+  const testRoot = realpathSync(mkdtempSync(path.join(tempRootParent, "pv-")));
   // Keep per-run paths compact so Unix socket fixtures stay under macOS path limits.
   const env = {
     ...process.env,
     NODE_ENV: "test",
+    PAPERCLIP_TEST_HOST_HOME: process.env.PAPERCLIP_TEST_HOST_HOME
+      ?? (process.env.PAPERCLIP_HOME?.trim() || path.join(os.homedir(), ".paperclip")),
     PAPERCLIP_HOME: path.join(testRoot, "h"),
+    // Config discovery otherwise prefers the checkout's .paperclip/config.json
+    // over PAPERCLIP_HOME, importing preview scheduling policy into unit tests.
+    PAPERCLIP_CONFIG: path.join(testRoot, "h", "config.json"),
     PAPERCLIP_INSTANCE_ID: `vt-${process.pid}-${invocationIndex}`,
     TEMP: path.join(testRoot, "t"),
     TMP: path.join(testRoot, "t"),
@@ -345,11 +445,52 @@ function runVitest(args, label) {
   };
   mkdirSync(env.PAPERCLIP_HOME, { recursive: true });
   mkdirSync(env.TMPDIR, { recursive: true });
+  if (testShard) {
+    const file = path.resolve(repoRoot, chatSuite);
+    const sourceLines = readFileSync(file, "utf8").split("\n");
+    const collect = (filters, name) => {
+      const output = path.join(testRoot, `${name}.json`);
+      const pnpmInvocation = resolvePnpmInvocation([
+        "exec", "vitest", "list", ...sourceOnlyVitestArgs,
+        ...filters, "--allowOnly=false", "--includeTaskLocation", `--json=${output}`,
+      ]);
+      const result = spawnSync(pnpmInvocation.command, pnpmInvocation.args, {
+        cwd: repoRoot, env, stdio: "inherit",
+        shell: false, ...pnpmInvocation.spawnOptions,
+      });
+      if (result.error || result.status !== 0) fail(`Vitest collection failed: ${result.error?.message ?? result.status}`);
+      return JSON.parse(readFileSync(output, "utf8"));
+    };
+    const allCollected = collect(args, "all");
+    const collected = [];
+    const bogusCollected = [];
+    for (const test of allCollected) {
+      (chatSuiteRunLine(sourceLines, test.location.line) === null ? bogusCollected : collected).push(test);
+    }
+    if (bogusCollected.length > 0) {
+      console.warn(
+        `[test:run] dropping ${bogusCollected.length} bogus Vitest collection entr${bogusCollected.length === 1 ? "y" : "ies"} with no matching it()/test() call: ${bogusCollected.map((test) => `${test.location.line}:${JSON.stringify(test.name)}`).join(", ")}`,
+      );
+    }
+    const selected = partitionTestLines(collected, testShard.count, file)[testShard.index];
+    // Validate shard membership with the same `list`-reported lines that
+    // produced `selected`, then switch to the `run`-compatible lines only for
+    // the filters handed to the real `vitest run` below (see
+    // chatSuiteRunLine).
+    const validationFilters = selected.lines.map((line) => `${chatSuite}:${line}`);
+    const validationArgs = [...args.filter((arg) => arg !== chatSuite), ...validationFilters];
+    assertSelectedTests(selected.tests, collect(validationArgs, "selected"), file);
+    console.log(`[test:run] chat shard ${testShard.index + 1}/${testShard.count}: ${selected.tests.length}/${collected.length} tests, ${selected.lines.length} source lines; exact filter coverage verified`);
+    const runFilters = selected.lines.map((line) => `${chatSuite}:${chatSuiteRunLine(sourceLines, line)}`);
+    args = [...args.filter((arg) => arg !== chatSuite), ...runFilters, "--allowOnly=false"];
+  }
   const pnpmInvocation = resolvePnpmInvocation(["exec", "vitest", "run", ...sourceOnlyVitestArgs, ...args]);
   const result = spawnSync(pnpmInvocation.command, pnpmInvocation.args, {
     cwd: repoRoot,
     env,
     stdio: "inherit",
+    shell: false,
+    ...pnpmInvocation.spawnOptions,
   });
   if (result.error) {
     console.error(`[test:run] Failed to start Vitest: ${result.error.message}`);
@@ -380,16 +521,30 @@ function runProjectGroup(projects, groupName, shardIndex = null, shardCount = nu
 }
 
 function runGeneralGroup(routeTests, groupName, shardIndex = null, shardCount = null) {
-  if (groupName === generalServerGroupName) {
+  if (groupName === generalChatGroupName) {
+    runVitest(["--project", "@penclipai/server", ...serializedServerVitestArgs, chatSuite],
+      "chat integration test shard", { index: shardIndex ?? 0, count: shardCount ?? 1 });
+    return;
+  }
+  if (groupName === generalServerNativeRunnerGroupName) {
+    runVitest(
+      ["--project", "@penclipai/server", ...serializedServerVitestArgs, ...nativeRunnerSuites],
+      "native runner vertical-slice suite",
+    );
+    return;
+  }
+  if (generalServerGroups.includes(groupName)) {
+    const excludedSuites = excludedServerSuites(groupName);
+    const files = generalServerTestFiles.filter((file) => !excludedSuites.includes(file));
     if (shardCount !== null && shardCount > 1) {
       const shardFiles = selectGeneralServerShard(
-        generalServerTestFiles,
+        files,
         shardIndex,
         shardCount,
         generalServerShardDurations,
       );
       console.log(
-        `\n[test:run] general-server shard ${shardIndex + 1}/${shardCount} running ${shardFiles.length} of ${generalServerTestFiles.length} suites`,
+        `\n[test:run] general-server shard ${shardIndex + 1}/${shardCount} running ${shardFiles.length} of ${files.length} suites`,
       );
       if (shardFiles.length === 0) {
         return;
@@ -408,10 +563,11 @@ function runGeneralGroup(routeTests, groupName, shardIndex = null, shardCount = 
     }
 
     if (process.platform === "win32") {
+      const chunks = buildCommandBudgetChunks(files, generalServerBaseArgs, windowsGeneralServerCommandBudget);
       console.log(
-        `\n[test:run] general-server running ${generalServerTestFiles.length} suites in ${windowsGeneralServerCommandChunks.length} sequential Windows chunks`,
+        `\n[test:run] general-server running ${files.length} suites in ${chunks.length} sequential Windows chunks`,
       );
-      for (const [index, chunkFiles] of windowsGeneralServerCommandChunks.entries()) {
+      for (const [index, chunkFiles] of chunks.entries()) {
         runVitest(
           [...generalServerBaseArgs, ...chunkFiles],
           `${groupName} Windows chunk ${index + 1}/${windowsGeneralServerCommandChunks.length}`,
@@ -420,7 +576,10 @@ function runGeneralGroup(routeTests, groupName, shardIndex = null, shardCount = 
       return;
     }
 
-    const excludeRouteArgs = generalServerExcludePatterns.flatMap((file) => ["--exclude", file]);
+    const excludeRouteArgs = routeTests.flatMap((file) => ["--exclude", file.serverPath]);
+    for (const suite of excludedSuites) {
+      excludeRouteArgs.push("--exclude", suite.replace(/^server\//, ""));
+    }
     runVitest(
       [
         "--project",
@@ -444,6 +603,11 @@ function runGeneralGroup(routeTests, groupName, shardIndex = null, shardCount = 
 
   if (groupName === generalWorkspacesBGroupName) {
     runProjectGroup(generalWorkspacesBProjects, groupName);
+    return;
+  }
+
+  if (groupName === generalWorkspacesCGroupName) {
+    runProjectGroup(generalWorkspacesCProjects, groupName);
     return;
   }
 
@@ -485,10 +649,15 @@ const routeTests = walk(serverTestsDir)
 // config pins maxWorkers to 1, so the only way to parallelize is across jobs.
 // Suites are partitioned by recorded duration (scripts/general-server-shard.mjs)
 // rather than round-robin, so one slow suite cluster can't stretch a single shard.
-const generalServerTestFiles = walk(serverSrcDir)
+const serializedRepoPaths = new Set(routeTests.map(test => test.repoPath));
+const generalServerTestFiles = [
+  ...walk(serverSrcDir).filter(file => file.endsWith(".test.ts")),
+  ...walk(serverScriptsDir).filter(file => file.endsWith(".test.mjs")),
+]
   .map((file) => toRepoPath(file))
-  .filter((repoPath) => repoPath.endsWith(".test.ts"))
-  .filter((repoPath) => !isRouteOrAuthzTest(repoPath))
+  // Only exclude suites actually assigned to the serialized lane. A name
+  // such as services/openrouter-models.test.ts is not a serialized route.
+  .filter((repoPath) => !serializedRepoPaths.has(repoPath))
   .sort((a, b) => a.localeCompare(b));
 const generalServerExcludePatterns = buildGeneralServerExcludePatterns();
 const generalServerBaseArgs = [
@@ -515,7 +684,7 @@ if (options.dryRun) {
         shardIndex: options.shardIndex,
         shardCount: options.shardCount,
         group: options.group,
-        availableGeneralGroups: generalGroupNames,
+        availableGeneralGroups: allowedGeneralGroupNames,
         serializedSuiteCount: routeTests.length,
         selectedSerializedSuites: serializedSuites.map((routeTest) => routeTest.repoPath),
         generalServerSuiteCount: generalServerTestFiles.length,
@@ -525,30 +694,38 @@ if (options.dryRun) {
         windowsGeneralServerCommandBudget,
         windowsGeneralServerCommandChunks:
           options.mode === generalModeName &&
-          options.group === generalServerGroupName &&
+          generalServerGroups.includes(options.group) &&
           options.shardCount === null
-            ? windowsGeneralServerCommandChunks.map((files) => ({
+            ? buildCommandBudgetChunks(
+                generalServerTestFiles.filter((file) => !excludedServerSuites(options.group).includes(file)),
+                generalServerBaseArgs,
+                windowsGeneralServerCommandBudget,
+              ).map((files) => ({
                 files,
                 commandLength: measurePnpmVitestCommand([...generalServerBaseArgs, ...files]),
               }))
             : null,
         selectedGeneralServerSuites:
-          options.mode === generalModeName &&
-          options.group === generalServerGroupName &&
-          options.shardCount !== null
-            ? selectGeneralServerShard(
-                generalServerTestFiles,
-                options.shardIndex,
-                options.shardCount,
-                generalServerShardDurations,
-              )
-            : null,
+          options.mode === generalModeName && options.group === generalServerNativeRunnerGroupName
+            ? nativeRunnerSuites
+            : options.mode === generalModeName &&
+                generalServerGroups.includes(options.group) &&
+                options.shardCount !== null
+              ? selectGeneralServerShard(
+                  generalServerTestFiles.filter((file) => !excludedServerSuites(options.group).includes(file)),
+                  options.shardIndex,
+                  options.shardCount,
+                  generalServerShardDurations,
+                )
+              : null,
         workspaceProjects:
           options.group === generalWorkspacesAGroupName
             ? generalWorkspacesAProjects
             : options.group === generalWorkspacesBGroupName
               ? generalWorkspacesBProjects
-              : null,
+              : options.group === generalWorkspacesCGroupName
+                ? generalWorkspacesCProjects
+                : null,
         workspacesVitestShard:
           options.group === generalWorkspacesAGroupName &&
           options.shardCount !== null &&

@@ -73,7 +73,7 @@ there is no local SKILL.md to carry it.
 
 ## Steps 4–5 — Manifest, tests, PR
 
-- `pnpm --filter @paperclipai/skills-catalog build:manifest` fetches the
+- `pnpm --filter @penclipai/skills-catalog build:manifest` fetches the
   pinned files from GitHub and inventories them (network required).
 - The skill bundles `scripts/`, so trust level derives to
   `scripts_executables` → it must also be added to the `scriptBearing`

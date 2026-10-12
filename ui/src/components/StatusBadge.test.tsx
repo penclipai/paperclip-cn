@@ -77,10 +77,11 @@ describe("StatusBadge", () => {
 });
 
 describe("StatusGlyph", () => {
-  it("maps in_progress to the Lucide rotate-cw glyph", () => {
+  it("maps in_progress to the animated task-progress glyph", () => {
     const html = renderToStaticMarkup(<StatusGlyph status="in_progress" />);
-    expect(html).toContain("lucide-rotate-cw");
-    expect(html).toContain('d="M21 3v5h-5"');
+    expect(html).toContain("lucide-task-progress-spinner");
+    expect(html).toContain('stroke-dasharray="80 20"');
+    expect(html).toContain("motion-safe:animate-spin");
   });
 
   it("maps in_review to the Lucide circle-dot glyph", () => {
@@ -92,7 +93,7 @@ describe("StatusGlyph", () => {
   it("maps done to the Lucide circle-check glyph", () => {
     const html = renderToStaticMarkup(<StatusGlyph status="done" />);
     expect(html).toContain("lucide-circle-check");
-    expect(html).toContain('d="m9 12 2 2 4-4"');
+    expect(html).toContain('d="m16 9-5.5 5.5L8 12"');
   });
 
   it("maps blocked to the Lucide circle-minus glyph", () => {

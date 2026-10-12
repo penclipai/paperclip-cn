@@ -62,6 +62,23 @@ test.describe("Language switcher", () => {
       request,
       `Language E2E ${Date.now()}`,
     );
+    const agentResponse = await request.post(`/api/companies/${company.id}/agents`, {
+      data: {
+        name: "Language switcher fixture",
+        role: "engineer",
+        adapterType: "process",
+        adapterConfig: { command: process.execPath, args: ["-e", ""] },
+        runtimeConfig: { heartbeat: { enabled: false, wakeOnDemand: false } },
+      },
+    });
+    expect(agentResponse.ok()).toBe(true);
+
+    // The CN fork defaults to zh-CN. Keep the dashboard test explicit, while
+    // the fixture agent prevents the dashboard's empty-company onboarding offer
+    // from covering the account menu we need to exercise.
+    await page.addInitScript(() => {
+      localStorage.setItem("paperclip.locale", "zh-CN");
+    });
 
     await page.goto(`/${company.issuePrefix}/dashboard`);
 
@@ -73,7 +90,7 @@ test.describe("Language switcher", () => {
 
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
     await expect(page).toHaveTitle(/Dashboard/);
-    await expect(page.getByRole("button", { name: "New Issue" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "New Task" })).toBeVisible();
     await page.reload();
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
     await expect(page).toHaveTitle(/Dashboard/);

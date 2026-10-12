@@ -654,9 +654,9 @@ describe("IssueDocumentAnnotations", () => {
     expect(expandedText).toContain("Dotta");
     expect(expandedText).not.toContain("· board");
     expect(expandedText).toContain("UXDesigner");
-    expect(expandedText).toContain("· Agent");
+    expect(expandedText).toContain("· agent");
     // Each rendered comment shows an author avatar.
-    const avatars = expandedThread?.querySelectorAll('[data-slot="avatar"]') ?? [];
+    const avatars = expandedThread?.querySelectorAll('[data-slot="avatar"], [data-slot="agent-avatar"]') ?? [];
     expect(avatars.length).toBe(2);
   });
 

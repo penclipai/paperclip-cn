@@ -6,7 +6,7 @@ import {
   SandboxNotFoundError,
   TimeoutError,
 } from "e2b";
-import { definePlugin } from "@paperclipai/plugin-sdk";
+import { definePlugin } from "@penclipai/plugin-sdk";
 import type {
   PluginEnvironmentAcquireLeaseParams,
   PluginEnvironmentDestroyLeaseParams,
@@ -21,7 +21,7 @@ import type {
   PluginEnvironmentResumeLeaseParams,
   PluginEnvironmentValidateConfigParams,
   PluginEnvironmentValidationResult,
-} from "@paperclipai/plugin-sdk";
+} from "@penclipai/plugin-sdk";
 
 interface E2bDriverConfig {
   template: string;

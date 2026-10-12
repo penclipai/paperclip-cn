@@ -1,7 +1,8 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
 import { useEffect, useMemo } from "react";
 import { Link, Navigate, useParams } from "@/lib/router";
 import { useQuery } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
 import { useCompany } from "@/context/CompanyContext";
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";
 import { pluginsApi } from "@/api/plugins";
@@ -24,7 +25,7 @@ import { NotFoundPage } from "./NotFound";
  * @see doc/plugins/PLUGIN_SPEC.md §24.4 — Company-Context Plugin Page
  */
 export function PluginPage() {
-  const { t } = useTranslation();
+  useTranslation();
   const params = useParams<{
     companyPrefix?: string;
     pluginId?: string;
@@ -121,10 +122,10 @@ export function PluginPage() {
       return;
     }
     setBreadcrumbs([
-      { label: t("Plugins", { defaultValue: "Plugins" }), href: "/company/settings/instance/plugins" },
+      { label: translateInstant("Plugins"), href: "/company/settings/instance/plugins" },
       { label: pageSlot.pluginDisplayName },
     ]);
-  }, [pageSlot, pluginRouteSplat, setBreadcrumbs, routeSidebarActive, t]);
+  }, [pageSlot, pluginRouteSplat, setBreadcrumbs, routeSidebarActive]);
 
   if (!resolvedCompanyId) {
     if (hasInvalidCompanyPrefix) {
@@ -132,13 +133,13 @@ export function PluginPage() {
     }
     return (
       <div className="space-y-4">
-        <p className="text-sm text-muted-foreground">{t("pluginPage.selectCompany")}</p>
+        <p className="text-sm text-muted-foreground">{translateInstant("Select an organization to view this page.")}</p>
       </div>
     );
   }
 
   if (!contributions) {
-    return <div className="text-sm text-muted-foreground">{t("common.loading")}</div>;
+    return <div className="text-sm text-muted-foreground">{translateInstant("tools.advanced.loading")}</div>;
   }
 
   if (!pluginId && pluginRoutePath) {
@@ -148,8 +149,7 @@ export function PluginPage() {
     if (duplicateMatches.length > 1) {
       return (
         <div className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-          {t("pluginPage.routeConflictPrefix")} <code>{pluginRoutePath}</code>. {t("pluginPage.routeConflictSuffix")}
-        </div>
+          {translateInstant("pluginPage.routeConflictPrefix")}{" "}<code>{pluginRoutePath}</code>{translateInstant(". Use the plugin-id route until the conflict is resolved.")}</div>
       );
     }
   }
@@ -172,8 +172,7 @@ export function PluginPage() {
           <Button variant="ghost" size="sm" asChild>
             <Link to={companyPrefix ? `/${companyPrefix}/dashboard` : "/dashboard"}>
               <ArrowLeft className="h-4 w-4 mr-1" />
-              {t("Back", { defaultValue: "Back" })}
-            </Link>
+              {translateInstant("Back")}</Link>
           </Button>
         </div>
       )}

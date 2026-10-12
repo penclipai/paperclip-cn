@@ -1,3 +1,6 @@
+import { useTranslation } from "react-i18next";
+import { translateInstant } from "@/i18n";
+import { AgentAvatar } from "@/components/AgentAvatar";
 import { useCallback, useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Copy, Fingerprint, KeyRound, Link2, ShieldAlert, Variable, ServerCog } from "lucide-react";
@@ -6,7 +9,6 @@ import type {
   SecretProposalAgentRef,
   SecretProposalView,
 } from "@penclipai/shared";
-import { AgentIcon } from "@/components/AgentIconPicker";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,6 +62,7 @@ export function FingerprintChip({
   length: number | null;
   className?: string;
 }) {
+  useTranslation();
   const { pushToast } = useToastActions();
   const label = fingerprintLabel(fingerprint, length);
   if (!fingerprint) {
@@ -76,8 +79,8 @@ export function FingerprintChip({
       type="button"
       onClick={() => {
         copyTextToClipboard(full)
-          .then(() => pushToast({ title: "Fingerprint copied", tone: "success" }))
-          .catch(() => pushToast({ title: "Couldn’t copy fingerprint", tone: "error" }));
+          .then(() => pushToast({ title: translateInstant("Fingerprint copied"), tone: "success" }))
+          .catch(() => pushToast({ title: translateInstant("Couldn’t copy fingerprint"), tone: "error" }));
       }}
       title={`Copy full digest — ${full}`}
       className={cn(
@@ -106,9 +109,10 @@ export function ProposalJustification({
   justification: string;
   className?: string;
 }) {
+  useTranslation();
   return (
     <div className={cn("space-y-0.5", className)}>
-      <p className="text-(length:--text-micro) text-muted-foreground">Reason given by the agent</p>
+      <p className="text-(length:--text-micro) text-muted-foreground">{translateInstant("Reason given by the agent")}</p>
       <p className="whitespace-pre-wrap break-words text-xs text-foreground/80">
         “{justification}”
       </p>
@@ -126,7 +130,7 @@ export function AgentRefChip({
 }) {
   return (
     <span className={cn("inline-flex min-w-0 items-center gap-1", className)}>
-      <AgentIcon icon={agent.icon ?? null} className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+      <AgentAvatar agent={agent} size={16} className="h-3.5 w-3.5 shrink-0 text-muted-foreground"/>
       <span className="min-w-0 truncate">{agent.name}</span>
     </span>
   );
@@ -155,6 +159,7 @@ export function DeliveryBadge({ configPath }: { configPath: string | null }) {
 
 /** Distinct "Proposed" pill used wherever a proposal is inlined among live rows. */
 export function ProposedBadge({ className }: { className?: string }) {
+  useTranslation();
   return (
     <Badge
       variant="outline"
@@ -164,8 +169,7 @@ export function ProposedBadge({ className }: { className?: string }) {
         className,
       )}
     >
-      <ShieldAlert className="size-3" /> Proposed
-    </Badge>
+      <ShieldAlert className="size-3" /> {translateInstant("Proposed")}</Badge>
   );
 }
 
@@ -265,7 +269,7 @@ export function useProposalReview(
         body:
           result.kind === "secret"
             ? (result.proposedName ?? "Secret created")
-            : `${result.target?.name ?? "Agent"} · ${bindingEnvKey(result) || "binding"}`,
+            : `${result.target?.name ?? translateInstant("Agent")} · ${bindingEnvKey(result) || "binding"}`,
         tone: "success",
       });
       setApproveDraft(null);
@@ -381,6 +385,7 @@ function ApproveDialog({
   onCancel: () => void;
   onConfirm: () => void;
 }) {
+  useTranslation();
   const isSecret = draft?.proposal.kind === "secret";
   const previewName = draft
     ? draft.folder.trim()
@@ -409,7 +414,7 @@ function ApproveDialog({
             {/* Provenance recap — keeps the social-engineering surface visible. */}
             <div className="space-y-1.5 rounded-md border border-border bg-muted/30 p-2.5 text-xs">
               <div className="flex items-center gap-1.5 text-muted-foreground">
-                <span>Proposed by</span>
+                <span>{translateInstant("decisionCard.proposedBy")}</span>
                 <AgentRefChip agent={draft.proposal.proposedBy} className="font-medium text-foreground" />
               </div>
               <ProposalJustification justification={draft.proposal.justification} />
@@ -419,7 +424,7 @@ function ApproveDialog({
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-2">
                   <div className="space-y-1">
-                    <Label htmlFor="approve-folder">Folder</Label>
+                    <Label htmlFor="approve-folder">{translateInstant("Folder")}</Label>
                     <Input
                       id="approve-folder"
                       value={draft.folder}
@@ -429,7 +434,7 @@ function ApproveDialog({
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label htmlFor="approve-name">Name</Label>
+                    <Label htmlFor="approve-name">{translateInstant("Name")}</Label>
                     <Input
                       id="approve-name"
                       value={draft.leaf}
@@ -442,27 +447,27 @@ function ApproveDialog({
                   </div>
                 </div>
                 <p className="text-(length:--text-micro) text-muted-foreground">
-                  Lands as{" "}
+                  {translateInstant("Lands as")}{" "}
                   {previewName ? (
                     <SecretPathName name={previewName} className="font-mono" />
                   ) : (
-                    <span className="italic">enter a name</span>
+                    <span className="italic">{translateInstant("enter a name")}</span>
                   )}
                 </p>
 
                 <div className="space-y-1">
-                  <Label htmlFor="approve-description">Description</Label>
+                  <Label htmlFor="approve-description">{translateInstant("Description")}</Label>
                   <Input
                     id="approve-description"
                     value={draft.description}
                     onChange={(event) => onChange({ ...draft, description: event.target.value })}
-                    placeholder="Optional"
+                    placeholder={translateInstant("Optional")}
                   />
                 </div>
 
                 {localConfigs.length > 0 ? (
                   <div className="space-y-1">
-                    <Label htmlFor="approve-provider-config">Provider vault</Label>
+                    <Label htmlFor="approve-provider-config">{translateInstant("secrets.providerVault")}</Label>
                     <select
                       id="approve-provider-config"
                       value={draft.providerConfigId}
@@ -471,7 +476,7 @@ function ApproveDialog({
                       }
                       className="h-9 w-full rounded-md border border-input bg-transparent px-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
                     >
-                      <option value="">Deployment default</option>
+                      <option value="">{translateInstant("secrets.deploymentDefault")}</option>
                       {localConfigs.map((config) => (
                         <option key={config.id} value={config.id}>
                           {config.displayName}
@@ -500,11 +505,10 @@ function ApproveDialog({
 
             <DialogFooter>
               <Button variant="ghost" onClick={onCancel} disabled={pending}>
-                Cancel
-              </Button>
+                {translateInstant("Cancel")}</Button>
               <Button onClick={onConfirm} disabled={pending || !canConfirm}>
                 {pending
-                  ? "Approving…"
+                  ? translateInstant("issueThreadInteraction.toolAction.approving")
                   : isSecret
                     ? "Approve & create"
                     : draft.cascade
@@ -526,6 +530,7 @@ function BindingApproveBody({
   draft: ApproveDraft;
   onChange: (next: ApproveDraft) => void;
 }) {
+  useTranslation();
   const { proposal } = draft;
   const secret = bindingSecretLabel(proposal);
   const envKey = bindingEnvKey(proposal);
@@ -533,7 +538,7 @@ function BindingApproveBody({
     <div className="space-y-3 text-sm">
       <div className="space-y-2 rounded-md border border-border p-3">
         <div className="flex items-center justify-between gap-2">
-          <span className="text-xs text-muted-foreground">Target agent</span>
+          <span className="text-xs text-muted-foreground">{translateInstant("issueThreadInteraction.secretBinding.targetAgent")}</span>
           {proposal.target ? (
             <AgentRefChip agent={proposal.target} className="text-sm font-medium" />
           ) : (
@@ -541,14 +546,14 @@ function BindingApproveBody({
           )}
         </div>
         <div className="flex items-center justify-between gap-2">
-          <span className="text-xs text-muted-foreground">Delivered as</span>
+          <span className="text-xs text-muted-foreground">{translateInstant("Delivered as")}</span>
           <span className="flex items-center gap-1.5">
             <DeliveryBadge configPath={proposal.configPath} />
             <code className="font-mono text-xs">{envKey || proposal.configPath}</code>
           </span>
         </div>
         <div className="flex items-center justify-between gap-2">
-          <span className="text-xs text-muted-foreground">Secret</span>
+          <span className="text-xs text-muted-foreground">{translateInstant("agentConfig.secret")}</span>
           <span className="flex items-center gap-1.5">
             <KeyRound className="size-3.5 text-muted-foreground" />
             <span className="font-medium">{secret.name}</span>
@@ -564,13 +569,11 @@ function BindingApproveBody({
             checked={draft.cascade}
             onCheckedChange={(checked) => onChange({ ...draft, cascade: checked === true })}
             className="mt-0.5"
-            aria-label="Also approve the proposed secret"
+            aria-label={translateInstant("Also approve the proposed secret")}
           />
           <span className="text-foreground/90">
-            Also approve the proposed secret{" "}
-            <span className="font-medium">{secret.name}</span> and create it in the same step. The
-            binding can’t land without it.
-          </span>
+            {translateInstant("Also approve the proposed secret")}{" "}
+            <span className="font-medium">{secret.name}</span> {translateInstant("and create it in the same step. The binding can’t land without it.")}</span>
         </label>
       ) : null}
     </div>
@@ -598,6 +601,7 @@ function RejectDialog({
   onCancel: () => void;
   onConfirm: () => void;
 }) {
+  useTranslation();
   const canConfirm = reason.trim().length > 0;
   return (
     <Dialog open={Boolean(proposal)} onOpenChange={(open) => !open && onCancel()}>
@@ -605,22 +609,20 @@ function RejectDialog({
         {proposal ? (
           <>
             <DialogHeader>
-              <DialogTitle>Reject proposal</DialogTitle>
+              <DialogTitle>{translateInstant("Reject proposal")}</DialogTitle>
               <DialogDescription>
-                The reason is sent back to{" "}
-                <AgentRefChip agent={proposal.proposedBy} className="text-foreground" />. Dependent
-                bindings are rejected too.
-              </DialogDescription>
+                {translateInstant("The reason is sent back to")}{" "}
+                <AgentRefChip agent={proposal.proposedBy} className="text-foreground" />{translateInstant(". Dependent bindings are rejected too.")}</DialogDescription>
             </DialogHeader>
             <div className="space-y-1">
-              <Label htmlFor="reject-reason">Reason</Label>
+              <Label htmlFor="reject-reason">{translateInstant("issueScheduledRetry.reason")}</Label>
               <Textarea
                 id="reject-reason"
                 value={reason}
                 onChange={(event) => onReasonChange(event.target.value)}
                 rows={3}
                 autoFocus
-                placeholder="Why is this being rejected?"
+                placeholder={translateInstant("Why is this being rejected?")}
               />
             </div>
             {error ? (
@@ -630,10 +632,9 @@ function RejectDialog({
             ) : null}
             <DialogFooter>
               <Button variant="ghost" onClick={onCancel} disabled={pending}>
-                Cancel
-              </Button>
+                {translateInstant("Cancel")}</Button>
               <Button variant="destructive" onClick={onConfirm} disabled={pending || !canConfirm}>
-                {pending ? "Rejecting…" : "Reject"}
+                {pending ? translateInstant("Rejecting…") : translateInstant("Reject")}
               </Button>
             </DialogFooter>
           </>
@@ -660,6 +661,7 @@ export function ProposalActions({
   disabled?: boolean;
   size?: "sm" | "xs";
 }) {
+  useTranslation();
   const blocked = !proposal.viewerCanApprove;
   const heightClass = size === "xs" ? "h-7 px-2 text-xs" : "";
   const approveButton = (
@@ -669,8 +671,7 @@ export function ProposalActions({
       disabled={disabled || blocked}
       onClick={() => onApprove(proposal)}
     >
-      Approve
-    </Button>
+      {translateInstant("Approve")}</Button>
   );
   return (
     <div className="flex items-center gap-1.5">
@@ -695,8 +696,7 @@ export function ProposalActions({
         disabled={disabled}
         onClick={() => onReject(proposal)}
       >
-        Reject
-      </Button>
+        {translateInstant("Reject")}</Button>
     </div>
   );
 }

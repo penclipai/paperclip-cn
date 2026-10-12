@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
 import { afterEach, describe, expect, it } from "vitest";
-import { createTestHarness } from "@paperclipai/plugin-sdk/testing";
+import { createTestHarness } from "@penclipai/plugin-sdk/testing";
 import manifest from "../src/manifest.js";
 import plugin, { resolveDefaultBaseRef } from "../src/worker.js";
 

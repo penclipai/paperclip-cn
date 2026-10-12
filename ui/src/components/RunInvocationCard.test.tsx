@@ -36,6 +36,8 @@ function createRun(overrides: Partial<HeartbeatRun> = {}): HeartbeatRun {
   return {
     id: "run-1",
     companyId: "company-1",
+    scopeKind: "issue",
+    issueId: null,
     agentId: "agent-1",
     responsibleUserId: null,
     invocationSource: "on_demand",

@@ -17,7 +17,7 @@ import {
   type PluginSettingsPageProps,
   type PluginSidebarProps,
   type PluginWidgetProps,
-} from "@paperclipai/plugin-sdk/ui";
+} from "@penclipai/plugin-sdk/ui";
 import {
   DEFAULT_CONFIG,
   JOB_KEYS,
@@ -1312,7 +1312,7 @@ function KitchenSinkSharedPickerDemo({ context }: { context: PluginPageProps["co
   return (
     <Section title="Shared Host Pickers">
       <div style={mutedTextStyle}>
-        These controls are imported from `@paperclipai/plugin-sdk/ui` and reuse the host's assignee and project pickers from the new issue pane.
+        These controls are imported from `@penclipai/plugin-sdk/ui` and reuse the host's assignee and project pickers from the new issue pane.
       </div>
       {!context.companyId ? (
         <div style={mutedTextStyle}>Select a company to load picker options.</div>

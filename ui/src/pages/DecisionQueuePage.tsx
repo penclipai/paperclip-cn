@@ -1,6 +1,7 @@
+import { useTranslation } from "react-i18next";
+import { translateInstant } from "@/i18n";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
 import { Check, Loader2, Settings2, X } from "lucide-react";
 import type { Agent, AttentionItem } from "@penclipai/shared";
 import { useParams } from "@/lib/router";
@@ -60,7 +61,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "../components/ui/popove
  * is surfaced.
  */
 export function DecisionQueuePage() {
-  const { t } = useTranslation();
+  useTranslation();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { pushToast } = useToastActions();
@@ -128,8 +129,8 @@ export function DecisionQueuePage() {
   }, [agents]);
 
   useEffect(() => {
-    setBreadcrumbs([{ label: t("whatNeedsMe.title"), href: "/decisions" }, { label: queue?.title ?? queueKey }]);
-  }, [setBreadcrumbs, queue?.title, queueKey, t]);
+    setBreadcrumbs([{ label: translateInstant("whatNeedsMe.title"), href: "/decisions" }, { label: queue?.title ?? queueKey }]);
+  }, [setBreadcrumbs, queue?.title, queueKey]);
 
   // Re-hydrate per-company preferences when the company changes.
   useEffect(() => {
@@ -157,7 +158,7 @@ export function DecisionQueuePage() {
   const filterOptions = useMemo(() => buildAttentionFilterOptions(listItems), [listItems]);
 
   // Filter → sort → group, matching the desk. In the default (ungrouped) view the
-  // list groups by arrival ("New today" / "Earlier", plus a "Decide now" shelf
+  // list groups by arrival ("New today" / translateInstant("Earlier"), plus a "Decide now" shelf
   // when something carries an explicit due decide-by); any explicit group-by keeps
   // the Inbox-style activity grouping.
   const groups = useMemo<AttentionGroup[]>(() => {
@@ -207,14 +208,14 @@ export function DecisionQueuePage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.decisionQueues.list(selectedCompanyId!) }),
     onError: (err) =>
       pushToast({
-        title: t("decisionQueue.updateSeedingFailed"),
-        body: err instanceof Error ? err.message : t("decisionQueue.tryAgain"),
+        title: translateInstant("decisionQueue.updateSeedingFailed"),
+        body: err instanceof Error ? err.message : "Please try again.",
         tone: "error",
       }),
   });
 
   if (!selectedCompanyId) {
-    return <p className="text-sm text-muted-foreground">{t("whatNeedsMe.selectCompany")}</p>;
+    return <p className="text-sm text-muted-foreground">{translateInstant("Select an organization first.")}</p>;
   }
   if (isLoading) {
     return <PageSkeleton variant="approvals" />;
@@ -266,17 +267,16 @@ export function DecisionQueuePage() {
 
       {isEmpty ? (
         <div className="rounded-xl border border-dashed border-border py-14 text-center">
-          <p className="text-sm font-medium text-foreground">{t("decisionQueue.empty")}</p>
+          <p className="text-sm font-medium text-foreground">{translateInstant("decisionQueue.empty")}</p>
           <p className="mt-1 text-xs text-muted-foreground">
-            {t("decisionQueue.emptyDescription")}
-          </p>
+            {translateInstant("decisionQueue.emptyDescription")}</p>
         </div>
       ) : (
         <div className="space-y-4">
           {visibleCount === 0 ? (
             <div className="rounded-xl border border-dashed border-border py-10 text-center">
-              <p className="text-sm font-medium text-foreground">{t("whatNeedsMe.empty.noMatches")}</p>
-              <p className="mt-1 text-xs text-muted-foreground">{t("whatNeedsMe.empty.filteredHelp")}</p>
+              <p className="text-sm font-medium text-foreground">{translateInstant("whatNeedsMe.empty.noMatches")}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{translateInstant("whatNeedsMe.empty.filteredHelp")}</p>
             </div>
           ) : (
             groups.map((group) => {
@@ -322,14 +322,13 @@ export function DecisionQueuePage() {
 
           {agingItems.length > 0 && (
             <Curtain
-              label={t("whatNeedsMe.curtains.aging")}
+              label={translateInstant("whatNeedsMe.curtains.aging")}
               count={agingItems.length}
               open={agingOpen}
               onToggle={() => setAgingOpen((prev) => !prev)}
             >
               <p className="text-xs text-muted-foreground">
-                {t("decisionQueue.agingDescription", { days: ATTENTION_AGING_DAYS })}
-              </p>
+                {translateInstant("Idle past")}{" "}{ATTENTION_AGING_DAYS} {translateInstant("days — kept off the queue. Keep any you still want surfaced.")}</p>
               {agingItems.map((item) => (
                 <AgingItemRow
                   key={item.id}
@@ -370,18 +369,18 @@ function SeedRulesCard({
   pending: boolean;
   onToggle: () => void;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   return (
     <div className="rounded-xl border border-border bg-muted/20 p-3">
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-start gap-2">
           <Settings2 className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
           <div className="min-w-0 space-y-1">
-            <p className="text-sm font-medium text-foreground">{t("decisionQueue.autoSeeding", { state: enabled ? t("decisionQueue.on") : t("decisionQueue.off") })}</p>
+            <p className="text-sm font-medium text-foreground">{translateInstant("Auto-seeding is")}{" "}{enabled ? translateInstant("on") : translateInstant("decisionQueue.off")}</p>
             <p className="text-xs text-muted-foreground">
               {enabled
-                ? t("decisionQueue.autoSeedingEnabledDescription")
-                : t("decisionQueue.autoSeedingDisabledDescription")}
+                ? translateInstant("decisionQueue.autoSeedingEnabledDescription")
+                : translateInstant("decisionQueue.autoSeedingDisabledDescription")}
             </p>
             <ul className="mt-0.5 space-y-0.5">
               {rules.map((rule) => (
@@ -393,14 +392,14 @@ function SeedRulesCard({
             </ul>
             <p className="text-(length:--text-nano) text-muted-foreground">
               {enabled
-                ? t("decisionQueue.autoSeedingEnabledHelp")
-                : t("decisionQueue.autoSeedingDisabledHelp")}
+                ? translateInstant("decisionQueue.autoSeedingEnabledHelp")
+                : translateInstant("decisionQueue.autoSeedingDisabledHelp")}
             </p>
           </div>
         </div>
         <Button type="button" variant="outline" size="xs" className="h-7 shrink-0" disabled={pending} onClick={onToggle}>
           {pending && <Loader2 className="h-3 w-3 animate-spin" />}
-          {enabled ? t("decisionQueue.disable") : t("decisionQueue.enable")}
+          {enabled ? translateInstant("Disable") : translateInstant("Enable")}
         </Button>
       </div>
     </div>
@@ -432,8 +431,8 @@ function QueueItemRow({
   onSnooze: (item: AttentionItem, snoozedUntil: string) => void;
   onExcluded: () => void;
 }) {
+  useTranslation();
   const { pushToast } = useToastActions();
-  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
   const exclude = useMutation({
@@ -449,13 +448,13 @@ function QueueItemRow({
     onSuccess: () => {
       setOpen(false);
       setReason("");
-      pushToast({ title: t("decisionQueue.removed"), body: item.subject.title ?? undefined, tone: "info" });
+      pushToast({ title: translateInstant("decisionQueue.removed"), body: item.subject.title ?? undefined, tone: "info" });
       onExcluded();
     },
     onError: (err) =>
       pushToast({
-        title: t("decisionQueue.excludeFailed"),
-        body: err instanceof Error ? err.message : t("decisionQueue.tryAgain"),
+        title: translateInstant("decisionQueue.excludeFailed"),
+        body: err instanceof Error ? err.message : "Please try again.",
         tone: "error",
       }),
   });
@@ -467,21 +466,19 @@ function QueueItemRow({
           <PopoverTrigger asChild>
             <Button type="button" variant="ghost" size="xs" className="h-7 gap-1 text-muted-foreground">
               <X className="h-3.5 w-3.5" />
-              {t("decisionQueue.exclude")}
-            </Button>
+              {translateInstant("decisionQueue.exclude")}</Button>
           </PopoverTrigger>
           <PopoverContent align="end" className="w-64 space-y-2 p-3">
-            <p className="text-xs font-medium text-foreground">{t("decisionQueue.removeTitle")}</p>
+            <p className="text-xs font-medium text-foreground">{translateInstant("decisionQueue.removeTitle")}</p>
             <textarea
               value={reason}
               onChange={(event) => setReason(event.target.value)}
-              placeholder={t("decisionQueue.reasonOptional")}
+              placeholder={translateInstant("decisionQueue.reasonOptional")}
               className="min-h-16 w-full rounded-sm border border-border bg-background px-2 py-1 text-xs"
             />
             <div className="flex justify-end gap-1">
               <Button type="button" variant="ghost" size="xs" onClick={() => setOpen(false)}>
-                {t("decisionQueue.cancel")}
-              </Button>
+                {translateInstant("decisionQueue.cancel")}</Button>
               <Button
                 type="button"
                 size="xs"
@@ -490,8 +487,7 @@ function QueueItemRow({
                 onClick={() => exclude.mutate()}
               >
                 {exclude.isPending && <Loader2 className="h-3 w-3 animate-spin" />}
-                {t("decisionQueue.exclude")}
-              </Button>
+                {translateInstant("decisionQueue.exclude")}</Button>
             </div>
           </PopoverContent>
         </Popover>

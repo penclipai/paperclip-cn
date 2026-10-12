@@ -38,6 +38,16 @@ vi.mock("react-i18next", async (importOriginal) => {
   };
 });
 
+vi.mock("@/i18n", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../i18n")>();
+  const { translateForTest } = await import("../test-utils/i18n");
+  return {
+    ...actual,
+    translateInstant: (key: string, options?: Record<string, string | number | boolean | null | undefined>) =>
+      translateForTest(key, options, dashboardLanguage.value),
+  };
+});
+
 vi.mock("@/lib/router", () => ({
   Link: ({ children, to, ...props }: { children: ReactNode; to: string }) => (
     <a href={to} {...props}>{children}</a>

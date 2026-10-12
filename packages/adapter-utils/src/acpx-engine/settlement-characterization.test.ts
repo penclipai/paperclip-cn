@@ -40,6 +40,7 @@ import {
   type AcpxEngineExecutorOptions,
 } from "./execute.js";
 import { runChildProcess } from "../server-utils.js";
+import { prepareTestPosixShell } from "../test-fixtures/posix-shell.js";
 import {
   mirrorDirectory,
   prepareSandboxManagedRuntime,
@@ -87,10 +88,10 @@ function createLocalSandboxRunner(
     }) => {
       counter += 1;
       onExecute?.(input);
-      const command = input.command === "bash" ? "/bin/bash" : input.command;
-      return await runChildProcess(`acpx-sandbox-run-${counter}`, command, input.args ?? [], {
+      const shell = prepareTestPosixShell(input);
+      return await runChildProcess(`acpx-sandbox-run-${counter}`, shell.command, shell.args, {
         cwd: input.cwd ?? process.cwd(),
-        env: input.env ?? {},
+        env: shell.env,
         stdin: input.stdin,
         timeoutSec: Math.max(1, Math.ceil((input.timeoutMs ?? 30_000) / 1000)),
         graceSec: 5,
@@ -292,6 +293,110 @@ describe("ACP settlement — Layer A: engine teardown orchestration", () => {
     vi.clearAllMocks();
   });
 
+  it.each(["close_session", "stop_transport", "instruction_collection", "workspace_restore", "phase_reporting", "close_error_reporting"])(
+    "keeps %s visible while its real settlement await is stalled",
+    async (blockedPhase) => {
+      const { stateDir, localCwd, executionTarget } = await setupRemoteSandbox();
+      stubBridges();
+      let resume!: () => void;
+      let entered!: () => void;
+      const gate = new Promise<void>((resolve) => { resume = resolve; });
+      const reached = new Promise<void>((resolve) => { entered = resolve; });
+      const block = () => { entered(); return gate; };
+      const scopes = new Map<symbol, string>();
+      if (blockedPhase === "stop_transport") {
+        vi.mocked(startAdapterExecutionTargetPaperclipBridge).mockImplementation(async () => ({ env: {}, stop: block }) as never);
+      }
+      const execute = createAcpxEngineExecutor({
+        createRuntime: () => ({
+          ensureSession: async () => okHandle,
+          startTurn: () => blockedPhase === "close_error_reporting" ? throwingTurn() : completedTurn(),
+          close: blockedPhase === "close_session" ? block : async () => {
+            if (blockedPhase === "close_error_reporting") throw new Error("close fixture failed");
+          },
+        }) as never,
+        prepareRemoteManagedHome: async (input) => ({
+          stagedRuntime: await input.stage([]),
+          teardown: async () => {
+            if (blockedPhase === "workspace_restore") await block();
+            return { ok: true };
+          },
+        }),
+      });
+      const execution = execute({
+        runId: "pending-settlement-fixture",
+        ...remoteArgs(stateDir, localCwd, executionTarget),
+        onProviderStopped: blockedPhase === "instruction_collection" ? block : async () => {},
+        onExecutionPhase: (phase: string) => {
+          const token = Symbol();
+          scopes.set(token, phase);
+          return () => { scopes.delete(token); };
+        },
+        onEvent: async (event: { eventType: string; payload?: Record<string, unknown> }) => {
+          if (blockedPhase === "phase_reporting" && event.eventType === "run.phase.timing" && event.payload?.phase === "end_session") await block();
+        },
+        onLog: async (_stream: string, text: string) => {
+          if (blockedPhase === "close_error_reporting" && text.includes("close fixture failed")) await block();
+        },
+      } as never);
+      try {
+        await reached;
+        expect([...scopes.values()].at(-1)).toBe(blockedPhase === "close_error_reporting" ? "phase_reporting" : blockedPhase);
+      } finally {
+        resume();
+        expect((await execution).exitCode).toBe(blockedPhase === "close_error_reporting" ? 1 : 0);
+      }
+      expect(scopes.size).toBe(0);
+    },
+  );
+
+  it("keeps the primary Stop cancellation visible until its await settles", async () => {
+    const { stateDir, localCwd, executionTarget } = await setupRemoteSandbox();
+    stubBridges();
+    const controller = new AbortController();
+    let started!: () => void;
+    let cancelled!: () => void;
+    let resume!: () => void;
+    const turnStarted = new Promise<void>((resolve) => { started = resolve; });
+    const cancellationStarted = new Promise<void>((resolve) => { cancelled = resolve; });
+    const gate = new Promise<void>((resolve) => { resume = resolve; });
+    const scopes = new Map<symbol, string>();
+    const execute = createAcpxEngineExecutor({
+      createRuntime: () => ({
+        ensureSession: async () => okHandle,
+        startTurn: () => {
+          started();
+          return {
+            events: (async function* () { await gate; })(),
+            result: gate.then(() => ({ status: "cancelled", stopReason: "cancelled" })),
+            cancel: async () => { cancelled(); await gate; },
+          };
+        },
+        close: async () => {},
+      }) as never,
+    });
+    const execution = execute({
+      runId: "pending-cancel-fixture",
+      ...remoteArgs(stateDir, localCwd, executionTarget),
+      signal: controller.signal,
+      onExecutionPhase: (phase: string) => {
+        const token = Symbol();
+        scopes.set(token, phase);
+        return () => { scopes.delete(token); };
+      },
+    } as never);
+    try {
+      await turnStarted;
+      controller.abort();
+      await cancellationStarted;
+      expect([...scopes.values()].at(-1)).toBe("cancel_turn");
+    } finally {
+      resume();
+      expect((await execution).exitCode).toBe(1);
+    }
+    expect(scopes.size).toBe(0);
+  });
+
   it("test_clean_completed_remote_teardown_runs_bridge_stop_then_sync_back_then_lease_release", async () => {
     // cleanupRemoteBridges (execute.ts:2306-2326) fixes the sub-order for a clean
     // exit: stop both bridges (allSettled) → run the managed-home sync-back
@@ -334,6 +439,7 @@ describe("ACP settlement — Layer A: engine teardown orchestration", () => {
             // The lease is still held while the sync-back runs; it releases only
             // afterward, in the cleanupRemoteBridges finally.
             leaseSizeDuringSyncBack = stagingLocks.size;
+            return { ok: true };
           },
         };
       },
@@ -781,7 +887,8 @@ function makeFsClient(options: {
     },
     run: async (command) => {
       options.runCommands?.push(command);
-      await execFile("sh", ["-c", command], { maxBuffer: 32 * 1024 * 1024 });
+      const shell = prepareTestPosixShell({ command: "sh", args: ["-c", command] });
+      await execFile(shell.command, shell.args, { env: shell.env, maxBuffer: 32 * 1024 * 1024 });
     },
   };
   client.syncIn = async (operations: SandboxSyncOperation[]): Promise<SandboxSyncResult> => {
@@ -1046,6 +1153,7 @@ describe("ACP settlement — Layer C: per-adapter sync-back teardown fires once 
               stagedRuntime,
               teardown: async () => {
                 teardownCalls += 1;
+                return { ok: true };
               },
             };
           },

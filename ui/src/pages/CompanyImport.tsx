@@ -1,6 +1,7 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
 import type {
   CompanyPortabilityCollisionStrategy,
   CompanyPortabilityFileEntry,
@@ -16,6 +17,7 @@ import { authApi } from "../api/auth";
 import { ApiError } from "../api/client";
 import { companiesApi, type CompanyImportJobAccepted } from "../api/companies";
 import { adaptersApi } from "../api/adapters";
+import { instanceSettingsApi } from "../api/instanceSettings";
 import { agentsApi } from "../api/agents";
 import { routinesApi } from "../api/routines";
 import { sidebarPreferencesApi } from "../api/sidebarPreferences";
@@ -26,18 +28,17 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "../components/EmptyState";
 import { AgentConfigForm } from "../components/AgentConfigForm";
 import { cn } from "../lib/utils";
-import { translateInstant } from "../i18n";
 import {
   ArrowRight,
   Check,
   ChevronRight,
   Download,
-  Github,
   Loader2,
   Package,
   Upload,
 } from "lucide-react";
-import { Field, adapterLabels } from "../components/agent-config-primitives";
+import { GithubIcon } from "../components/icons/github-icon";
+import { Field, getAdapterLabels } from "../components/agent-config-primitives";
 import { getAdapterLabel } from "../adapters/adapter-display-registry";
 import { defaultCreateValues } from "../components/agent-config-defaults";
 import { getUIAdapter, listUIAdapters } from "../adapters";
@@ -54,7 +55,7 @@ import {
 } from "../components/FileTree";
 import { readZipArchive } from "../lib/zip";
 import { formatMegabytes } from "../lib/import-preflight";
-import type { CompanyImportTransferDeclaration } from "@penclipai/shared/company-import-transfer";
+import { buildAlreadyImportedMessage, type CompanyImportTransferDeclaration } from "@penclipai/shared/company-import-transfer";
 import {
   CHUNKED_IMPORT_THRESHOLD_BYTES,
   IMPORT_TRANSFER_PART_ATTEMPTS,
@@ -176,9 +177,7 @@ function renderImportFileExtra(node: FileTreeNode, checked: boolean, renameMap: 
       "text-(length:--text-nano) uppercase tracking-wide",
       ACTION_COLORS[node.action] ?? ACTION_COLORS.skip,
     )}>
-      {translateInstant(`companyImport.action.${checked ? node.action : "skip"}`, {
-        defaultValue: checked ? node.action : "skip",
-      })}
+      {checked ? node.action : "skip"}
     </Badge>
   ) : null;
 
@@ -215,10 +214,10 @@ function ImportPreviewPane({
   action: string | null;
   renamedTo: string | null;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   if (!selectedFile || content === null) {
     return (
-      <EmptyState icon={Package} message={t("companyImport.selectPreview")} />
+      <EmptyState icon={Package} message={translateInstant("companyImport.selectPreview")} />
     );
   }
 
@@ -257,7 +256,7 @@ function ImportPreviewPane({
               "uppercase tracking-wide",
               actionColor,
             )}>
-              {translateInstant(`companyImport.action.${action}`, { defaultValue: action })}
+              {action}
             </Badge>
           )}
         </div>
@@ -280,8 +279,7 @@ function ImportPreviewPane({
           </pre>
         ) : (
           <div className="rounded-lg border border-border bg-accent/10 px-4 py-3 text-sm text-muted-foreground">
-            {t("companyExport.binaryPreviewUnavailable")}
-          </div>
+            {translateInstant("companyExport.binaryPreviewUnavailable")}</div>
         )}
       </div>
     </div>
@@ -452,6 +450,7 @@ function ConflictResolutionList({
   onToggleSkip: (slug: string, filePath: string | null) => void;
   onToggleConfirm: (slug: string) => void;
 }) {
+  useTranslation();
   if (conflicts.length === 0) return null;
 
   return (
@@ -459,10 +458,9 @@ function ConflictResolutionList({
       <div className="rounded-md border border-border">
         <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
           <h3 className="text-sm font-medium">
-            {translateInstant("companyImport.renames", { defaultValue: "Renames" })}
-          </h3>
+            {translateInstant("companyImport.renames")}</h3>
           <span className="text-xs text-muted-foreground">
-            {translateInstant("companyImport.itemCount", { defaultValue: "{{count}} item", count: conflicts.length })}
+            {conflicts.length} {translateInstant("pipelines.item")}{conflicts.length === 1 ? "" : "s"}
           </span>
         </div>
         <div className="divide-y divide-border">
@@ -490,9 +488,7 @@ function ConflictResolutionList({
                   )}
                   onClick={() => onToggleSkip(item.slug, item.filePath)}
                 >
-                  {isSkipped
-                    ? translateInstant("companyImport.skipped", { defaultValue: "skipped" })
-                    : translateInstant("companyImport.skip", { defaultValue: "skip" })}
+                  {isSkipped ? translateInstant("skipped") : translateInstant("skip")}
                 </button>
 
                 <Badge variant="outline" className={cn(
@@ -503,7 +499,7 @@ function ConflictResolutionList({
                       ? "text-emerald-500 border-emerald-500/30"
                       : "text-amber-500 border-amber-500/30",
                 )}>
-                  {translateInstant(`companyImport.kind.${item.kind}`, { defaultValue: item.kind })}
+                  {item.kind}
                 </Badge>
 
                 <span className={cn(
@@ -545,10 +541,9 @@ function ConflictResolutionList({
                     {isConfirmed ? (
                       <>
                         <Check className="h-3 w-3" />
-                        {translateInstant("companyImport.confirmed", { defaultValue: "confirmed" })}
-                      </>
+                        {translateInstant("companyImport.confirmed")}</>
                     ) : (
-                      translateInstant("companyImport.confirmRename", { defaultValue: "confirm rename" })
+                      translateInstant("confirm rename")
                     )}
                   </button>
                 )}
@@ -563,10 +558,30 @@ function ConflictResolutionList({
 
 // ── Adapter type options for import ───────────────────────────────────
 
-const IMPORT_ADAPTER_OPTIONS: { value: string; label: string }[] = listUIAdapters().map((adapter) => ({
-  value: adapter.type,
-  label: adapterLabels[adapter.type] ?? getAdapterLabel(adapter.type),
-}));
+const FALLBACK_IMPORT_ADAPTER_TYPE = "claude_local";
+const IMPORT_ADAPTER_OPTIONS: { value: string; label: string }[] = [
+  ...listUIAdapters().map((adapter) => ({
+    value: adapter.type,
+    label: getAdapterLabels()[adapter.type] ?? getAdapterLabel(adapter.type),
+  })),
+  { value: "openai_dot", label: "OpenAI Dot (experimental)" },
+];
+
+// Dot is a picker choice backed by the shared Runner API adapter.
+function importAdapterValues(choice: string, sourceConfig?: Record<string, unknown>): CreateConfigValues {
+  return {
+    ...defaultCreateValues,
+    adapterType: choice === "openai_dot" ? "paperclip_runner" : choice,
+    ...(choice === "openai_dot" ? {
+      adapterSchemaValues: {
+        provider: "openai_dot",
+        allowUnmeteredProvider: sourceConfig?.allowUnmeteredProvider === true,
+        dotAttachmentAccess: sourceConfig?.dotAttachmentAccess === true,
+        dotWorkspaceAccess: sourceConfig?.dotWorkspaceAccess === true,
+      },
+    } : {}),
+  };
+}
 
 // ── Adapter picker for imported agents ───────────────────────────────
 
@@ -575,17 +590,21 @@ interface AdapterPickerItem {
   name: string;
   /** Adapter type from the package manifest (the source's adapter). */
   adapterType: string;
+  /** Display choice, including the separate Dot provider. */
+  adapterChoice: string;
+  adapterConfig: Record<string, unknown>;
   /**
    * Set when the manifest adapter is not installed on the destination: the
    * adapter type the agent falls back to unless the user picks another one.
    * Null when the manifest adapter is usable here (or availability is unknown,
-   * which fails open to the manifest adapter).
+   * which fails open to the manifest adapter except for experimental Runner providers).
    */
   fallbackAdapterType: string | null;
 }
 
 function AdapterPickerList({
   agents,
+  adapterOptions,
   adapterOverrides,
   expandedSlugs,
   configValues,
@@ -594,6 +613,7 @@ function AdapterPickerList({
   onChangeConfig,
 }: {
   agents: AdapterPickerItem[];
+  adapterOptions: { value: string; label: string }[];
   adapterOverrides: Record<string, string>;
   expandedSlugs: Set<string>;
   configValues: Record<string, CreateConfigValues>;
@@ -601,23 +621,26 @@ function AdapterPickerList({
   onToggleExpand: (slug: string) => void;
   onChangeConfig: (slug: string, patch: Partial<CreateConfigValues>) => void;
 }) {
+  useTranslation();
   if (agents.length === 0) return null;
 
   return (
     <div className="mx-5 mt-3">
       <div className="rounded-md border border-border">
         <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
-          <h3 className="text-sm font-medium">{translateInstant("companyImport.adapters", { defaultValue: "Adapters" })}</h3>
+          <h3 className="text-sm font-medium">{translateInstant("companyImport.adapters")}</h3>
           <span className="text-xs text-muted-foreground">
-            {translateInstant("companyImport.agentCount", { defaultValue: "{{count}} agent", count: agents.length })}
+            {agents.length} {translateInstant("companyImport.kind.agent")}{agents.length === 1 ? "" : "s"}
           </span>
         </div>
         <div className="divide-y divide-border">
           {agents.map((agent) => {
             const selectedType =
-              adapterOverrides[agent.slug] ?? agent.fallbackAdapterType ?? agent.adapterType;
+              adapterOverrides[agent.slug] ?? agent.fallbackAdapterType ?? agent.adapterChoice;
             const isExpanded = expandedSlugs.has(agent.slug);
-            const vals = configValues[agent.slug] ?? { ...defaultCreateValues, adapterType: selectedType };
+            const vals = configValues[agent.slug] ?? importAdapterValues(
+              selectedType, selectedType === agent.adapterChoice ? agent.adapterConfig : undefined,
+            );
 
             return (
               <div key={agent.slug}>
@@ -626,8 +649,7 @@ function AdapterPickerList({
                     "text-(length:--text-nano) uppercase tracking-wide",
                     "text-blue-500 border-blue-500/30",
                   )}>
-                    {translateInstant("companyImport.kind.agent", { defaultValue: "agent" })}
-                  </Badge>
+                    {translateInstant("companyImport.kind.agent")}</Badge>
                   <span className="shrink-0 font-mono text-xs text-muted-foreground">
                     {agent.name}
                   </span>
@@ -637,7 +659,7 @@ function AdapterPickerList({
                     value={selectedType}
                     onChange={(e) => onChangeAdapter(agent.slug, e.target.value)}
                   >
-                    {IMPORT_ADAPTER_OPTIONS.map((opt) => (
+                    {adapterOptions.map((opt) => (
                       <option key={opt.value} value={opt.value}>
                         {opt.label}
                       </option>
@@ -654,17 +676,12 @@ function AdapterPickerList({
                     onClick={() => onToggleExpand(agent.slug)}
                   >
                     <ChevronRight className={cn("h-3 w-3 transition-transform", isExpanded && "rotate-90")} />
-                    {translateInstant("companyImport.configureAdapter", { defaultValue: "Configure adapter" })}
-                  </button>
+                    {translateInstant("configure adapter")}</button>
                 </div>
                 {agent.fallbackAdapterType && (
                   <div className="mx-4 mb-2.5 rounded-md border border-amber-500/30 bg-amber-500/5 px-3 py-2">
                     <p className="text-xs text-amber-500">
-                      {translateInstant("companyImport.adapterFallback", {
-                        defaultValue: "source adapter {{source}} is not installed here — this agent will use {{fallback}}.",
-                        source: agent.adapterType,
-                        fallback: adapterLabels[selectedType] ?? getAdapterLabel(selectedType),
-                      })}
+                      {translateInstant("source adapter")}{" "}{agent.adapterChoice === "openai_dot" ? "OpenAI Dot" : agent.adapterType} {translateInstant("is not installed here — this agent will use")}{" "}{getAdapterLabels()[selectedType] ?? getAdapterLabel(selectedType)}
                     </p>
                   </div>
                 )}
@@ -707,11 +724,11 @@ async function readLocalPackageZip(file: File): Promise<{
   files: Record<string, CompanyPortabilityFileEntry>;
 }> {
   if (!/\.zip$/i.test(file.name)) {
-    throw new Error(translateInstant("companyImport.selectZipPackage"));
+    throw new Error("Select a .zip organization package.");
   }
   const archive = await readZipArchive(await file.arrayBuffer());
   if (Object.keys(archive.files).length === 0) {
-    throw new Error(translateInstant("companyImport.emptyZipPackage"));
+    throw new Error("No package files were found in the selected zip archive.");
   }
   return {
     name: file.name,
@@ -745,7 +762,8 @@ interface ImportTransferProgress {
 }
 
 function formatTransferProgress(progress: ImportTransferProgress): string {
-  return `${progress.uploadedParts}/${progress.totalParts} · ${formatMegabytes(progress.uploadedBytes)} / ${formatMegabytes(progress.totalBytes)}`;
+  const currentPart = Math.min(progress.uploadedParts + 1, progress.totalParts);
+  return `Uploading part ${currentPart} of ${progress.totalParts} — ${formatMegabytes(progress.uploadedBytes)} of ${formatMegabytes(progress.totalBytes)} uploaded.`;
 }
 
 // ── Async import job flow ─────────────────────────────────────────────
@@ -803,7 +821,9 @@ async function watchImportJob(
         // rather than masking a possibly-incomplete import as a success; the
         // refreshed company list lets the user confirm what actually landed.
         clearStoredImportJob(storageKey);
-        throw new Error(translateInstant("companyImport.jobMissingAfterRestart"));
+        throw new Error(
+          "The server no longer reports this import job — it may have restarted while the import ran.",
+        );
       }
       if (
         err instanceof ApiError
@@ -816,7 +836,9 @@ async function watchImportJob(
         // stop instead of leaving the import locked in its running state.
         // 429 (rate limited) and 5xx stay transient and fall through below.
         clearStoredImportJob(storageKey);
-        throw new Error(translateInstant("companyImport.statusUnavailable"));
+        throw new Error(
+          "The import status can no longer be read — your session may have expired. Reload and sign in to check on it.",
+        );
       }
       // Any other poll failure is treated as transient (network blip,
       // dropped connection, rate limit, or a 5xx): the job keeps running
@@ -838,7 +860,7 @@ async function watchImportJob(
     }
     if (job?.status === "failed") {
       clearStoredImportJob(storageKey);
-      throw new Error(job.error?.message ?? translateInstant("companyImport.serverImportFailed"));
+      throw new Error(job.error?.message ?? "Import failed on the server.");
     }
     await waitForNextImportJobPoll();
   }
@@ -847,7 +869,7 @@ async function watchImportJob(
 // ── Main page ─────────────────────────────────────────────────────────
 
 export function CompanyImport() {
-  const { t } = useTranslation();
+  useTranslation();
   const {
     selectedCompanyId,
     selectedCompany,
@@ -905,7 +927,12 @@ export function CompanyImport() {
         dashboardPath: string;
         pausedAutomations: boolean;
       }
-    | { kind: "expired" }
+    | {
+        kind: "expired";
+        companyName: string | null;
+        dashboardPath: string | null;
+        pausedAutomations: boolean;
+      }
     | null
   >(null);
   const [activationChecked, setActivationChecked] = useState<Set<string>>(new Set());
@@ -945,8 +972,10 @@ export function CompanyImport() {
     const created = await companiesApi.importTransferCreate(manifest);
     if (created.alreadyCompleted) {
       // The server keys transfers by content, and this exact zip already
-      // finished an apply — its parts are gone, so it cannot be re-run.
-      throw new Error(translateInstant("companyImport.packageAlreadyImported"));
+      // finished an apply — its parts are gone, so it cannot be re-run. Name
+      // the company that apply created so this reads as "your import exists
+      // over there", not as data loss.
+      throw new Error(buildAlreadyImportedMessage(created.company));
     }
     const missing = new Set(created.missingParts);
     let uploadedParts = manifest.parts.length - missing.size;
@@ -980,10 +1009,7 @@ export function CompanyImport() {
           // preview/import resumes from them instead of starting over.
           throw lastError instanceof Error
             ? lastError
-            : new Error(translateInstant("companyImport.partUploadFailed", {
-                part: part.index + 1,
-                total: manifest.parts.length,
-              }));
+            : new Error(`Part ${part.index + 1} of ${manifest.parts.length} failed to upload.`);
         }
         uploadedParts += 1;
         uploadedBytes += part.byteSize;
@@ -1012,21 +1038,6 @@ export function CompanyImport() {
     return ceo?.adapterType ?? "claude_local";
   }, [companyAgents]);
 
-  const localZipHelpText = t("companyImport.localZipHelp");
-  const translatePackageReadError = (err: unknown) => {
-    if (!(err instanceof Error)) return t("companyImport.packageReadFailedBody");
-    return err.message;
-  };
-  const translateImportFlowError = (err: unknown) => {
-    if (!(err instanceof Error)) return t("companyImport.requestDidNotComplete");
-    return err.message;
-  };
-  const summarizeImportCount = (
-    kind: "agents" | "skills" | "projects" | "routines",
-    count: number,
-  ) => t(`companyImport.summary.${kind}`, { count });
-  const skillActionLabel = (action: string) =>
-    t(`companyImport.skillAction.${action}`, { defaultValue: action });
   // Fetch the destination's installed adapters so imported agents keep their
   // manifest adapter whenever it is usable here. Only agents whose manifest
   // adapter is missing (or disabled) fall back to the CEO's adapter — with a
@@ -1042,14 +1053,34 @@ export function CompanyImport() {
     if (!installedAdapters) return null;
     return new Set(installedAdapters.filter((a) => !a.disabled).map((a) => a.type));
   }, [installedAdapters]);
+  const { data: experimentalSettings } = useQuery({
+    queryKey: queryKeys.instance.experimentalSettings,
+    queryFn: () => instanceSettingsApi.getExperimental(),
+    retry: false,
+  });
+  // Each Runner provider choice fails closed until its own opt-in and the
+  // shared adapter's availability are known. Dot does not enable other providers.
+  const runnerInstalled = availableAdapterTypes?.has("paperclip_runner") === true;
+  const nativeRunnerAvailable = runnerInstalled && experimentalSettings?.enableNativeRunner === true;
+  const dotAvailable = runnerInstalled && experimentalSettings?.enableOpenAiDot === true;
+  const importAdapterOptions = useMemo(
+    () => IMPORT_ADAPTER_OPTIONS.filter((option) =>
+      option.value === "paperclip_runner" ? nativeRunnerAvailable
+        : option.value === "openai_dot" ? dotAvailable : true,
+    ),
+    [nativeRunnerAvailable, dotAvailable],
+  );
+
+  const localZipHelpText =
+    "Upload a .zip exported directly from Paperclip. Re-zipped archives created by Finder, Explorer, or other zip tools may not import correctly.";
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: selectedCompany?.name ?? t("Company"), href: "/dashboard" },
-      { label: t("Settings"), href: "/company/settings" },
-      { label: t("Import") },
+      { label: selectedCompany?.name ?? translateInstant("Company"), href: "/dashboard" },
+      { label: translateInstant("Settings"), href: "/company/settings" },
+      { label: translateInstant("Import") },
     ]);
-  }, [selectedCompany?.name, setBreadcrumbs, t]);
+  }, [selectedCompany?.name, setBreadcrumbs]);
 
   // The GitHub/URL source still travels inline (it is just a URL, so it never
   // hits the inline-size ceiling). The local .zip source uploads its raw
@@ -1086,7 +1117,7 @@ export function CompanyImport() {
     mutationFn: async (_generation: number) => {
       const meta = buildImportMetaCommon();
       if (sourceMode === "local") {
-        if (!localPackage) throw new Error(t("companyImport.noSourceConfigured"));
+        if (!localPackage) throw new Error("No source configured.");
         if (usesChunkedTransfer(localPackage.file)) {
           // Too large for one request: upload (or resume) the chunked
           // transfer, then preview against the server-side assembled spool.
@@ -1098,7 +1129,7 @@ export function CompanyImport() {
         return companiesApi.importPreviewPackage(localPackage.file, meta);
       }
       const source = buildGithubSource();
-      if (!source) throw new Error(t("companyImport.noSourceConfigured"));
+      if (!source) throw new Error("No source configured.");
       return companiesApi.importPreview({ source, ...meta });
     },
     onSuccess: (result, generation) => {
@@ -1167,8 +1198,8 @@ export function CompanyImport() {
       if (generation !== previewGenerationRef.current) return;
       pushToast({
         tone: "error",
-        title: t("companyImport.previewFailedTitle"),
-        body: err instanceof Error ? err.message : t("companyImport.previewFailedBody"),
+        title: translateInstant("companyImport.previewFailedTitle"),
+        body: err instanceof Error ? err.message : "Failed to preview import.",
       });
     },
   });
@@ -1225,7 +1256,7 @@ export function CompanyImport() {
       const localFile = sourceMode === "local" ? localPackage?.file : null;
       const githubSource = sourceMode === "local" ? null : buildGithubSource();
       if (sourceMode === "local" ? !localFile : !githubSource) {
-        throw new Error(t("companyImport.noSourceConfigured"));
+        throw new Error("No source configured.");
       }
       const storageKey = currentImportJobStorageKey();
       let accepted: CompanyImportJobAccepted;
@@ -1262,22 +1293,32 @@ export function CompanyImport() {
       if (outcome.status === "completed-expired") {
         // The import finished and wrote all its data, but the job's result
         // expired (or was never retained) before we could read it. This is a
-        // success, not a failure: surface it gently and let the refreshed
-        // switcher carry the user into the new company.
+        // success, not a failure: keep the landed company's identity so the
+        // outcome screen can take the user straight there instead of leaving
+        // them to hunt through the switcher.
+        let expiredCompanyName: string | null = null;
+        let expiredDashboardPath: string | null = null;
         if (outcome.companyId) {
           try {
             const importedCompany = await companiesApi.get(outcome.companyId);
             setSelectedCompanyId(importedCompany.id);
+            expiredCompanyName = importedCompany.name;
+            expiredDashboardPath = `/${importedCompany.issuePrefix}/dashboard`;
           } catch {
             // The company id may be unreadable (permissions, race); the
             // refreshed company list still surfaces the import.
           }
         }
-        setImportOutcome({ kind: "expired" });
+        setImportOutcome({
+          kind: "expired",
+          companyName: expiredCompanyName,
+          dashboardPath: expiredDashboardPath,
+          pausedAutomations: submittedPauseAutomations,
+        });
         pushToast({
           tone: "success",
-          title: t("companyImport.completed"),
-          body: t("companyImport.completedNoSummary"),
+          title: "Import completed",
+          body: "Open the organization to view it.",
         });
         return;
       }
@@ -1311,8 +1352,8 @@ export function CompanyImport() {
       setResumedWatchJobId(null);
       pushToast({
         tone: "error",
-        title: t("companyImport.importFailedTitle"),
-        body: err instanceof Error ? err.message : t("companyImport.importFailedBody"),
+        title: translateInstant("companyImport.importFailedTitle"),
+        body: err instanceof Error ? err.message : "Failed to apply import.",
       });
     },
   });
@@ -1365,8 +1406,8 @@ export function CompanyImport() {
     } catch (err) {
       pushToast({
         tone: "error",
-        title: t("companyImport.packageReadFailedTitle"),
-        body: translatePackageReadError(err),
+        title: translateInstant("companyImport.packageReadFailedTitle"),
+        body: err instanceof Error ? err.message : "Failed to read folder.",
       });
     }
   }
@@ -1508,9 +1549,16 @@ export function CompanyImport() {
     // Reset config values when adapter type changes
     setAdapterConfigValues((prev) => {
       const next = { ...prev };
-      delete next[slug];
+      if (adapterType === "openai_dot" || adapterType === "paperclip_runner") {
+        next[slug] = importAdapterValues(adapterType);
+      } else {
+        delete next[slug];
+      }
       return next;
     });
+    if (adapterType === "openai_dot") {
+      setAdapterExpandedSlugs((prev) => new Set([...prev, slug]));
+    }
   }
 
   function handleAdapterToggleExpand(slug: string) {
@@ -1528,7 +1576,9 @@ export function CompanyImport() {
     const currentType = agent ? effectiveAdapterType(agent) : adapterOverrides[slug] ?? "claude_local";
     setAdapterConfigValues((prev) => ({
       ...prev,
-      [slug]: { ...(prev[slug] ?? { ...defaultCreateValues, adapterType: currentType }), ...patch },
+      [slug]: { ...(prev[slug] ?? importAdapterValues(
+        currentType, currentType === agent?.adapterChoice ? agent.adapterConfig : undefined,
+      )), ...patch },
     }));
   }
 
@@ -1556,9 +1606,7 @@ export function CompanyImport() {
         }
         nextActivated.add(item.key);
       } catch (err) {
-        nextFailures[item.key] = err instanceof Error
-          ? err.message
-          : t("companyImport.activationFailedFallback");
+        nextFailures[item.key] = err instanceof Error ? err.message : "Activation failed.";
       }
     }
     setActivatedKeys(nextActivated);
@@ -1568,8 +1616,8 @@ export function CompanyImport() {
     if (failureCount > 0) {
       pushToast({
         tone: "error",
-        title: t("companyImport.activationPartialFailureTitle"),
-        body: t("companyImport.activationPartialFailureBody", { count: failureCount }),
+        title: translateInstant("companyImport.activationPartialFailureTitle"),
+        body: `${failureCount} item${failureCount === 1 ? "" : "s"} failed to activate; the rest were activated.`,
       });
     }
   }
@@ -1579,25 +1627,45 @@ export function CompanyImport() {
   // CEO's adapter; while availability is unknown the manifest adapter stands.
   const adapterAgents = useMemo<AdapterPickerItem[]>(() => {
     if (!importPreview) return [];
-    return importPreview.manifest.agents.map((a) => ({
-      slug: a.slug,
-      name: a.name,
-      adapterType: a.adapterType,
-      // The fallback must itself be installed: the CEO's adapter when it is,
-      // else any installed adapter, else null so the manifest adapter stands
-      // and the server's unknown-adapter rejection is the backstop.
-      fallbackAdapterType:
-        availableAdapterTypes && !availableAdapterTypes.has(a.adapterType)
-          ? availableAdapterTypes.has(ceoAdapterType)
+    return importPreview.manifest.agents.map((a) => {
+      const adapterChoice = a.adapterType === "paperclip_runner" && a.adapterConfig?.provider === "openai_dot"
+        ? "openai_dot" : a.adapterType;
+      let fallbackAdapterType: string | null = null;
+      if (a.adapterType === "paperclip_runner" && !(adapterChoice === "openai_dot" ? dotAvailable : nativeRunnerAvailable)) {
+        const firstEnabledLegacyAdapter = availableAdapterTypes
+          ? [...availableAdapterTypes].find((type) => type !== "paperclip_runner") ?? null
+          : null;
+        fallbackAdapterType =
+          ceoAdapterType !== "paperclip_runner" &&
+          (!availableAdapterTypes || availableAdapterTypes.has(ceoAdapterType))
             ? ceoAdapterType
-            : [...availableAdapterTypes][0] ?? null
-          : null,
-    }));
-  }, [importPreview, availableAdapterTypes, ceoAdapterType]);
+            : firstEnabledLegacyAdapter ?? FALLBACK_IMPORT_ADAPTER_TYPE;
+      } else if (availableAdapterTypes && !availableAdapterTypes.has(a.adapterType)) {
+        // The fallback must itself be installed: the CEO's adapter when it is,
+        // else any installed adapter, else null so the manifest adapter stands
+        // and the server's unknown-adapter rejection is the backstop.
+        const selectableTypes = [...availableAdapterTypes].filter((type) =>
+          type !== "paperclip_runner" || nativeRunnerAvailable,
+        );
+        fallbackAdapterType = selectableTypes.includes(ceoAdapterType)
+          ? ceoAdapterType
+          : selectableTypes[0] ?? null;
+      }
+
+      return {
+        slug: a.slug,
+        name: a.name,
+        adapterType: a.adapterType,
+        adapterChoice,
+        adapterConfig: a.adapterConfig ?? {},
+        fallbackAdapterType,
+      };
+    });
+  }, [importPreview, availableAdapterTypes, ceoAdapterType, nativeRunnerAvailable, dotAvailable]);
 
   /** The adapter type an imported agent will actually use: an explicit user pick, else the availability fallback, else the manifest adapter. */
   function effectiveAdapterType(agent: AdapterPickerItem): string {
-    return adapterOverrides[agent.slug] ?? agent.fallbackAdapterType ?? agent.adapterType;
+    return adapterOverrides[agent.slug] ?? agent.fallbackAdapterType ?? agent.adapterChoice;
   }
 
   // Build final adapterOverrides for import request. Only agents that diverge
@@ -1609,11 +1677,14 @@ export function CompanyImport() {
     for (const agent of adapterAgents) {
       const selectedType = effectiveAdapterType(agent);
       const configVals = adapterConfigValues[agent.slug];
-      if (selectedType === agent.adapterType && !configVals) continue;
-      const override: CompanyPortabilityAdapterOverride = { adapterType: selectedType };
+      if (selectedType === agent.adapterChoice && !configVals) continue;
+      const apiType = selectedType === "openai_dot" ? "paperclip_runner" : selectedType;
+      const override: CompanyPortabilityAdapterOverride = { adapterType: apiType };
       if (configVals) {
-        const uiAdapter = getUIAdapter(selectedType);
-        override.adapterConfig = uiAdapter.buildAdapterConfig(configVals);
+        if (selectedType === "openai_dot" && configVals.adapterSchemaValues?.allowUnmeteredProvider !== true) {
+          throw new Error("OpenAI Dot requires acknowledgement of external billing. Configure the Dot adapter and enable Allow externally billed provider.");
+        }
+        override.adapterConfig = getUIAdapter(apiType).buildAdapterConfig(configVals);
       }
       overrides[agent.slug] = override;
     }
@@ -1640,15 +1711,35 @@ export function CompanyImport() {
     // Soft success: the import finished and wrote all its data, but the job's
     // in-memory result expired before we could read it. Never a failure — the
     // company list has been refreshed, so the imported company is available
-    // from the switcher.
+    // from the switcher, and when we could read the company we take the user
+    // straight to it.
     return (
       <div className="max-w-6xl space-y-4 px-5 py-5">
         <div>
-          <h2 className="text-base font-semibold">{t("companyImport.completedExpiredTitle")}</h2>
+          <h2 className="text-base font-semibold">Import completed</h2>
           <p className="text-xs text-muted-foreground mt-1">
-            {t("companyImport.completedExpiredBody")}
+            {importOutcome.companyName
+              ? <>{translateInstant("The import finished and")}{" "}<span className="font-medium text-foreground">{importOutcome.companyName}</span>{" "}{translateInstant("is ready. Its detailed summary is no longer available.")}</>
+              : "The import finished and your organization is ready. Its detailed summary is no longer available, but the organization has been added — select it from the organization switcher to view it."}
           </p>
+          {importOutcome.pausedAutomations ? (
+            <p className="text-xs text-muted-foreground mt-1">
+              {translateInstant("Imported agents arrived paused — resume them from the company's Agents page so assigned tasks can start.")}</p>
+          ) : null}
         </div>
+        {importOutcome.dashboardPath ? (
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              data-testid="import-expired-open-company"
+              // Force a fresh dashboard load so newly imported agents are
+              // immediately visible (same reason as the full-outcome CTA).
+              onClick={() => window.location.assign(importOutcome.dashboardPath!)}
+            >
+              {translateInstant("Open organization dashboard")}</Button>
+          </div>
+        ) : null}
       </div>
     );
   }
@@ -1663,34 +1754,26 @@ export function CompanyImport() {
     return (
       <div className="max-w-6xl space-y-4 px-5 py-5">
         <div>
-          <h2 className="text-base font-semibold">{t("companyImport.completedTitle")}</h2>
+          <h2 className="text-base font-semibold">{translateInstant("companyImport.completedTitle")}</h2>
           <p className="text-xs text-muted-foreground mt-1">
-            {t("companyImport.summaryLine", {
-              companyName: result.company.name,
-              agents: summarizeImportCount("agents", result.agents.length),
-              skills: summarizeImportCount("skills", skillResults.length),
-              projects: summarizeImportCount("projects", result.projects.length),
-              routines: summarizeImportCount("routines", result.routines.length),
-            })}
-          </p>
+            {result.company.name}: {result.agents.length} {translateInstant("companyImport.kind.agent")}{result.agents.length === 1 ? "" : "s"},{" "}
+            {skillResults.length} {translateInstant("folders.skill")}{skillResults.length === 1 ? "" : "s"},{" "}
+            {result.projects.length} project{result.projects.length === 1 ? "" : "s"}{translateInstant("companyImport.and")}{" "}
+            {result.routines.length} routine{result.routines.length === 1 ? "" : "s"} {translateInstant("companyImport.processed")}</p>
         </div>
 
         {skillResults.length > 0 && (
           <div className="rounded-md border border-border">
             <div className="border-b border-border px-4 py-2.5">
-              <h3 className="text-sm font-medium">{t("companyImport.skillImportResults")}</h3>
+              <h3 className="text-sm font-medium">{translateInstant("companyImport.skillImportResults")}</h3>
             </div>
             <div className="divide-y divide-border">
               {skillResults.map((skill) => (
                 <div key={`${skill.originalKey}:${skill.id}`} className="flex items-center gap-3 px-4 py-2.5 text-sm">
                   <span className="min-w-0 flex-1 truncate">{skill.originalSlug}</span>
-                  <span className="shrink-0 text-xs text-muted-foreground">
-                    {skillActionLabel(skill.action)}
-                  </span>
+                  <span className="shrink-0 text-xs text-muted-foreground">{skill.action}</span>
                   {skill.slug !== skill.originalSlug && (
-                    <span className="shrink-0 text-xs text-muted-foreground">
-                      {t("companyImport.skillRenamedAs", { slug: skill.slug })}
-                    </span>
+                    <span className="shrink-0 text-xs text-muted-foreground">as {skill.slug}</span>
                   )}
                 </div>
               ))}
@@ -1709,8 +1792,8 @@ export function CompanyImport() {
         {activationItems.length > 0 && (
           <div className="rounded-md border border-border">
             <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
-              <h3 className="text-sm font-medium">{t("companyImport.activateImported")}</h3>
-              <span className="text-xs text-muted-foreground">{t("companyImport.importedPaused")}</span>
+              <h3 className="text-sm font-medium">{translateInstant("companyImport.activateImported")}</h3>
+              <span className="text-xs text-muted-foreground">imported paused</span>
             </div>
             <div className="divide-y divide-border">
               {activationItems.map((item) => {
@@ -1731,19 +1814,15 @@ export function CompanyImport() {
                         ? "text-blue-500 border-blue-500/30"
                         : "text-purple-500 border-purple-500/30",
                     )}>
-                      {t(`companyImport.activationKind.${item.kind}`)}
+                      {item.kind}
                     </Badge>
                     <span className="min-w-0 flex-1 truncate">{item.name}</span>
                     {isActivated ? (
-                      <span className="shrink-0 text-xs text-emerald-500">{t("companyImport.activated")}</span>
+                      <span className="shrink-0 text-xs text-emerald-500">{translateInstant("companyImport.activated")}</span>
                     ) : failure ? (
-                      <span className="shrink-0 text-xs text-destructive">
-                        {t("companyImport.activationFailedPrefix")} {failure}
-                      </span>
+                      <span className="shrink-0 text-xs text-destructive">{translateInstant("companyImport.activationFailedPrefix")}{" "}{failure}</span>
                     ) : (
-                      <span className="shrink-0 text-xs text-muted-foreground">
-                        {t("companyImport.paused")}
-                      </span>
+                      <span className="shrink-0 text-xs text-muted-foreground">{translateInstant("companyImport.paused")}</span>
                     )}
                   </label>
                 );
@@ -1755,13 +1834,16 @@ export function CompanyImport() {
                 onClick={() => void handleActivateSelected()}
                 disabled={isActivating || pendingCount === 0}
               >
-                {isActivating
-                  ? t("companyImport.activating")
-                  : t("companyImport.activateSelected", { count: pendingCount })}
+                {isActivating ? translateInstant("companyImport.activating") : `Activate selected (${pendingCount})`}
               </Button>
             </div>
           </div>
         )}
+
+        {importOutcome.pausedAutomations ? (
+          <p className="text-xs text-muted-foreground">
+            {translateInstant("Anything left paused here stays visible on the company's Agents and Routines pages, which offer the same resume actions — nothing is lost if you leave this page.")}</p>
+        ) : null}
 
         {/* Force a fresh dashboard load so newly imported agents are immediately visible. */}
         <div className="flex flex-wrap items-center gap-2">
@@ -1770,8 +1852,7 @@ export function CompanyImport() {
             variant="outline"
             onClick={() => window.location.assign(dashboardPath)}
           >
-            {t("companyImport.goToDashboard")}
-          </Button>
+            {translateInstant("companyImport.goToDashboard")}</Button>
         </div>
       </div>
     );
@@ -1784,23 +1865,21 @@ export function CompanyImport() {
     return (
       <div className="max-w-6xl space-y-4 px-5 py-5">
         <div>
-          <h2 className="text-base font-semibold">{t("companyImport.resumeWatching")}</h2>
+          <h2 className="text-base font-semibold">{translateInstant("companyImport.resumeWatching")}</h2>
           <p className="text-xs text-muted-foreground mt-1">
-            {t("companyImport.stillRunning")}
-          </p>
+            {translateInstant("companyImport.stillRunning")}</p>
         </div>
         <div className="flex items-start gap-2 rounded-md border border-border bg-muted/30 px-3 py-2.5">
           <Loader2 className="mt-0.5 h-3.5 w-3.5 shrink-0 animate-spin text-muted-foreground" />
           <p className="text-xs text-muted-foreground">
-            {t("companyImport.serverRunning")}
-          </p>
+            {translateInstant("Import running on the server — safe to keep waiting; reconnecting won&apos;t lose it.")}</p>
         </div>
       </div>
     );
   }
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={Download} message={t("companyImport.selectCompany")} />;
+    return <EmptyState icon={Download} message={translateInstant("Select an organization to import into.")} />;
   }
 
   return (
@@ -1808,17 +1887,16 @@ export function CompanyImport() {
       {/* Source form section */}
       <div className="border-b border-border px-5 py-5 space-y-4">
         <div>
-          <h2 className="text-base font-semibold">{t("companyImport.sourceTitle")}</h2>
+          <h2 className="text-base font-semibold">{translateInstant("companyImport.sourceTitle")}</h2>
           <p className="text-xs text-muted-foreground mt-1">
-            {t("companyImport.chooseSource")}
-          </p>
+            {translateInstant("companyImport.chooseSource")}</p>
         </div>
 
         <div className="grid gap-2 md:grid-cols-2">
           {(
             [
-              { key: "github", icon: Github, label: t("companyImport.githubRepo") },
-              { key: "local", icon: Upload, label: t("companyImport.localZip") },
+              { key: "github", icon: GithubIcon, label: translateInstant("companyImport.githubRepo") },
+              { key: "local", icon: Upload, label: translateInstant("companyImport.localZip") },
             ] as const
           ).map(({ key, icon: Icon, label }) => (
             <button
@@ -1861,15 +1939,12 @@ export function CompanyImport() {
                 onClick={() => packageInputRef.current?.click()}
                 disabled={importMutation.isPending}
               >
-                {t("companyImport.chooseZip")}
-              </Button>
+                {translateInstant("companyImport.chooseZip")}</Button>
               {localPackage && (
                 <span className="text-xs text-muted-foreground">
-                  {t("companyImport.localPackageSummary", {
-                    name: localPackage.name,
-                    count: Object.keys(localPackage.files).length,
-                  })}
-                  {localCompressedBytes !== null ? ` (${formatMegabytes(localCompressedBytes)} ZIP)` : ""}
+                  {localPackage.name} {translateInstant("with")}{" "}
+                  {Object.keys(localPackage.files).length} {translateInstant("companyImport.file")}{Object.keys(localPackage.files).length === 1 ? "" : "s"}
+                  {localCompressedBytes !== null ? ` (${formatMegabytes(localCompressedBytes)} zip)` : ""}
                 </span>
               )}
             </div>
@@ -1881,14 +1956,14 @@ export function CompanyImport() {
           </div>
         ) : (
           <Field
-            label={t("companyImport.githubUrl")}
-            hint={t("companyImport.githubUrlHint")}
+            label={translateInstant("companyImport.githubUrl")}
+            hint="Repo tree path or blob URL to COMPANY.md (e.g. github.com/owner/repo/tree/main/company)."
           >
             <input
               className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
               type="text"
               value={importUrl}
-              placeholder={t("companyImport.githubUrlPlaceholder")}
+              placeholder="https://github.com/owner/repo/tree/main/company"
               disabled={importMutation.isPending}
               onChange={(e) => {
                 setImportUrl(e.target.value);
@@ -1898,7 +1973,7 @@ export function CompanyImport() {
           </Field>
         )}
 
-        <Field label={t("companyImport.target")} hint={t("companyImport.targetHint")}>
+        <Field label={translateInstant("companyImport.target")} hint="Import into this organization or create a new one.">
           <select
             className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
             value={targetMode}
@@ -1908,17 +1983,17 @@ export function CompanyImport() {
               resetImportFlowState();
             }}
           >
-            <option value="new">{t("companyImport.newCompany")}</option>
+            <option value="new">{translateInstant("Create new organization")}</option>
             <option value="existing">
-              {t("companyImport.existingCompany", { name: selectedCompany?.name ?? "" })}
+              {translateInstant("Existing company:")}{" "}{selectedCompany?.name}
             </option>
           </select>
         </Field>
 
         {targetMode === "new" && (
           <Field
-            label={t("companyImport.newCompanyName")}
-            hint={t("companyImport.newCompanyNameHint")}
+            label={translateInstant("New organization name")}
+            hint="Optional override. Leave blank to use the package name."
           >
             <input
               className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
@@ -1928,14 +2003,14 @@ export function CompanyImport() {
                 setNewCompanyName(e.target.value);
                 resetMutationState();
               }}
-              placeholder={t("companyImport.newCompanyPlaceholder")}
+              placeholder={translateInstant("Imported Organization")}
             />
           </Field>
         )}
 
         <Field
-          label={t("companyImport.collisionStrategy")}
-          hint={t("companyImport.collisionStrategyHint")}
+          label={translateInstant("companyImport.collisionStrategy")}
+          hint="Board imports can rename, skip, or replace matching organization content."
         >
           <select
             className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
@@ -1946,9 +2021,9 @@ export function CompanyImport() {
               resetImportFlowState();
             }}
           >
-            <option value="rename">{t("companyImport.renameOnConflict")}</option>
-            <option value="skip">{t("companyImport.skipOnConflict")}</option>
-            <option value="replace">{t("companyImport.replaceExisting")}</option>
+            <option value="rename">{translateInstant("companyImport.renameOnConflict")}</option>
+            <option value="skip">{translateInstant("companyImport.skipOnConflict")}</option>
+            <option value="replace">{translateInstant("companyImport.replaceExisting")}</option>
           </select>
         </Field>
 
@@ -1961,28 +2036,26 @@ export function CompanyImport() {
               previewMutation.isPending || importMutation.isPending || !hasSource
             }
           >
-            {previewMutation.isPending ? t("companyImport.previewing") : t("companyImport.previewImport")}
+            {previewMutation.isPending ? translateInstant("companyImport.previewing") : translateInstant("companyImport.previewImport")}
           </Button>
           {!hasSource && !previewMutation.isPending && (
             <span className="text-xs text-muted-foreground">
-              {t("companyImport.chooseForPreview")}
-            </span>
+              {translateInstant("companyImport.chooseForPreview")}</span>
           )}
           {importMutation.isPending && (
             <span className="text-xs text-muted-foreground">
-              {t("companyImport.lockedDuringImport")}
-            </span>
+              {translateInstant("companyImport.lockedDuringImport")}</span>
           )}
         </div>
         {previewMutation.isPending && (
           <div className="mt-3 flex items-start gap-2 rounded-md border border-border bg-muted/30 px-3 py-2.5">
             <Loader2 className="mt-0.5 h-3.5 w-3.5 shrink-0 animate-spin text-muted-foreground" />
             <p className="text-xs text-muted-foreground">
-              {t("companyImport.uploading")}
-              {localCompressedBytes !== null ? ` (${formatMegabytes(localCompressedBytes)} zip)` : ""}
-              {transferProgress ? ` ${formatTransferProgress(transferProgress)}` : ""}
-              {" "}
-              {t("companyImport.largePackageHint")}
+              {transferProgress
+                ? `${formatTransferProgress(transferProgress)} An interrupted upload resumes from the finished parts.`
+                : `Uploading and analyzing your package${
+                    localCompressedBytes !== null ? ` (${formatMegabytes(localCompressedBytes)} zip)` : ""
+                  } — large packages can take a few minutes. Keep this page open.`}
             </p>
           </div>
         )}
@@ -1991,10 +2064,11 @@ export function CompanyImport() {
           previewMutation.variables === previewGenerationRef.current && (
           <div className="mt-3 rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2.5">
             <p className="text-xs text-destructive">
-              {t("companyImport.previewFailed")}{" "}
-              {translateImportFlowError(previewMutation.error)}{" "}
-              {t("companyImport.previewRetryHint")}
-            </p>
+              {translateInstant("companyImport.previewFailed")}{" "}
+              {previewMutation.error instanceof Error
+                ? previewMutation.error.message
+                : translateInstant("companyImport.requestDidNotComplete")}{" "}
+              {translateInstant("Retry, or re-export the package without large attachments to shrink it.")}</p>
           </div>
         )}
       </div>
@@ -2006,23 +2080,17 @@ export function CompanyImport() {
           <div className="sticky top-0 z-10 border-b border-border bg-background px-5 py-3">
             <div className="flex flex-wrap items-center gap-4 text-sm">
               <span className="font-medium">
-                {t("companyImport.importPreview")}
-              </span>
+                {translateInstant("companyImport.importPreview")}</span>
               <span className="text-muted-foreground">
-                {t("companyExport.selectedCount", {
-                  selected: selectedCount,
-                  total: totalFiles,
-                  count: totalFiles,
-                })}
-              </span>
+                {selectedCount} / {totalFiles} {translateInstant("companyImport.file")}{totalFiles === 1 ? "" : "s"} {translateInstant("selected")}</span>
               {conflicts.length > 0 && (
                 <span className="text-amber-500">
-                  {t("companyImport.conflictCount", { count: conflicts.length })}
+                  {conflicts.length} {translateInstant("companyImport.conflict")}{conflicts.length === 1 ? "" : "s"}
                 </span>
               )}
               {importPreview.errors.length > 0 && (
                 <span className="text-destructive">
-                  {t("companyImport.errorCount", { count: importPreview.errors.length })}
+                  {importPreview.errors.length} {translateInstant("runStatus.error")}{importPreview.errors.length === 1 ? "" : "s"}
                 </span>
               )}
             </div>
@@ -2042,6 +2110,7 @@ export function CompanyImport() {
           {/* Adapter picker list */}
           <AdapterPickerList
             agents={adapterAgents}
+            adapterOptions={importAdapterOptions}
             adapterOverrides={adapterOverrides}
             expandedSlugs={adapterExpandedSlugs}
             configValues={adapterConfigValues}
@@ -2062,8 +2131,7 @@ export function CompanyImport() {
                 }}
                 className="accent-foreground"
               />
-              {t("companyImport.startPaused")}
-            </label>
+              {translateInstant("companyImport.startPaused")}</label>
             <Button
               size="sm"
               onClick={() => importMutation.mutate({ previewForImport: importPreview, pauseAutomations })}
@@ -2071,26 +2139,28 @@ export function CompanyImport() {
             >
               <Download className="mr-1.5 h-3.5 w-3.5" />
               {importMutation.isPending
-                ? t("companyImport.importing")
-                : t("companyImport.importButton", { count: selectedCount })}
+                ? translateInstant("companyImport.importing")
+                : `Import ${selectedCount} file${selectedCount === 1 ? "" : "s"}`}
             </Button>
           </div>
           {importMutation.isPending && (
             <div className="mx-5 mt-3 flex items-start gap-2 rounded-md border border-border bg-muted/30 px-3 py-2.5">
               <Loader2 className="mt-0.5 h-3.5 w-3.5 shrink-0 animate-spin text-muted-foreground" />
               <p className="text-xs text-muted-foreground">
-                {t("companyImport.serverRunningLarge")}
-                {transferProgress ? ` ${formatTransferProgress(transferProgress)}` : ""}
+                {transferProgress
+                  ? `${formatTransferProgress(transferProgress)} An interrupted upload resumes from the finished parts.`
+                  : translateInstant("companyImport.serverRunningLarge")}
               </p>
             </div>
           )}
           {importMutation.isError && !importMutation.isPending && (
             <div className="mx-5 mt-3 rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2.5">
               <p className="text-xs text-destructive">
-                {t("companyImport.importFailed")}{" "}
-                {translateImportFlowError(importMutation.error)}{" "}
-                {t("companyImport.partialFailureHint")}
-              </p>
+                {translateInstant("companyImport.importFailed")}{" "}
+                {importMutation.error instanceof Error
+                  ? importMutation.error.message
+                  : translateInstant("companyImport.requestDidNotComplete")}{" "}
+                {translateInstant("companyImport.partialFailureHint")}</p>
             </div>
           )}
 
@@ -2116,7 +2186,7 @@ export function CompanyImport() {
           <div className="grid gap-4 xl:h-(--sz-calc-31) xl:grid-cols-(--gtc-25) xl:gap-0">
             <aside className="flex max-h-(--sz-24rem) flex-col overflow-hidden border-b border-border xl:max-h-none xl:border-b-0 xl:border-r">
               <div className="border-b border-border px-4 py-3 shrink-0">
-                <h2 className="text-base font-semibold">{t("companyImport.packageFiles")}</h2>
+                <h2 className="text-base font-semibold">{translateInstant("companyImport.packageFiles")}</h2>
               </div>
               <div className="flex-1 overflow-y-auto">
                 <FileTree

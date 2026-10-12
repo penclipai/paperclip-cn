@@ -106,7 +106,7 @@ Modules live in a top-level `modules/` directory. Each module is a pnpm workspac
 
 Key fields:
 
-- **`id`**: Unique identifier, used as the npm package name suffix (`@paperclipai/mod-observability`)
+- **`id`**: Unique identifier, used as the npm package name suffix (`@penclipai/mod-observability`)
 - **`slot`**: Optional exclusive category. If set, only one module with this slot can be active. Omit for modules that can coexist freely.
 - **`hooks`**: Which core events this module subscribes to. Declared upfront so the core knows what to emit.
 - **`routes.prefix`**: Mounted under `/api/modules/<prefix>`. The module owns this namespace.
@@ -120,7 +120,7 @@ Key fields:
 The module's `src/index.ts` exports a `register` function that receives the module API:
 
 ```typescript
-import type { ModuleAPI } from "@paperclipai/core";
+import type { ModuleAPI } from "@penclipai/core";
 import { createRouter } from "./routes.js";
 import { onHeartbeat, onBudgetThreshold } from "./hooks.js";
 
@@ -384,7 +384,7 @@ export const modulePages = [
   {
     path: "/observability",
     label: "Observability",
-    component: lazy(() => import("@paperclipai/mod-observability/ui")),
+    component: lazy(() => import("@penclipai/mod-observability/ui")),
   },
 ];
 
@@ -393,7 +393,7 @@ export const dashboardWidgets = [
     id: "token-burn-rate",
     label: "Token Burn Rate",
     placement: "dashboard",
-    component: lazy(() => import("@paperclipai/mod-observability/ui").then(m => ({ default: m.TokenBurnRateWidget }))),
+    component: lazy(() => import("@penclipai/mod-observability/ui").then(m => ({ default: m.TokenBurnRateWidget }))),
   },
 ];
 ```
@@ -646,7 +646,7 @@ Add to `@penclipai/ui`:
 
 Add new package:
 
-10. **`@paperclipai/module-sdk`** — TypeScript types for `ModuleAPI`, `HookEvent`, `HookHandler`, manifest schema
+10. **`@penclipai/module-sdk`** — TypeScript types for `ModuleAPI`, `HookEvent`, `HookHandler`, manifest schema
 
 ### Phase 2: First module (observability)
 

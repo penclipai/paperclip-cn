@@ -1,4 +1,5 @@
 import { memo, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import type { TranscriptEntry } from "../adapters";
 import type { LiveRunForIssue } from "../api/heartbeats";
 import { translateInstant } from "../i18n";
@@ -28,6 +29,7 @@ export const RunChatSurface = memo(function RunChatSurface({
   hasOutput,
   companyId,
 }: RunChatSurfaceProps) {
+  useTranslation();
   const active = isRunActive(run);
   const liveRuns = useMemo(() => (active ? [run] : EMPTY_LIVE_RUNS), [active, run]);
   const linkedRuns = useMemo<IssueChatLinkedRun[]>(

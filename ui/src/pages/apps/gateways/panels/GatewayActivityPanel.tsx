@@ -1,27 +1,143 @@
-import { useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import type { ToolMcpGatewayWithTokens } from "@penclipai/shared";
+import { translateInstant } from "@/i18n";
+import { useMemo, useState } from "react";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { ChevronDown, ChevronRight } from "lucide-react";
+import type { ToolMcpGatewayWithTokens, ToolRedactedValueSummary } from "@penclipai/shared";
 import { toolsApi, type ToolAuditOutcome, type ToolGatewayActivityEvent } from "@/api/tools";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StatusBadge } from "@/components/StatusBadge";
+import { queryKeys } from "@/lib/queryKeys";
 import { ErrorState, RelativeTime } from "@/pages/tools/shared";
-import { cn } from "@/lib/utils";
 
-const OUTCOME_CLASS: Record<ToolAuditOutcome, string> = {
-  allowed: "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
-  blocked: "border-foreground bg-foreground text-background",
-  asked_first: "border-foreground bg-foreground text-background",
-  waiting: "border-border bg-muted text-muted-foreground",
-  failed: "border-destructive/40 bg-destructive/10 text-destructive",
-  unknown: "border-border bg-muted text-muted-foreground",
+const PAGE_SIZE = 25;
+
+const OUTCOME_META: Record<ToolAuditOutcome, { label: string; status: string }> = {
+  allowed: { label: "Allowed", status: "allowed" },
+  blocked: { get label() { return translateInstant("Blocked"); }, status: "denied" },
+  asked_first: { label: "Asked first", status: "require-approval" },
+  waiting: { label: "Waiting", status: "deferred" },
+  failed: { get label() { return translateInstant("Failed"); }, status: "failed" },
+  unknown: { label: "Recorded", status: "unchecked" },
 };
 
-function belongsToGateway(event: ToolGatewayActivityEvent, gateway: ToolMcpGatewayWithTokens): boolean {
-  const details = event.details ?? {};
+function detailString(details: Record<string, unknown> | null, key: string): string | null {
+  const value = details?.[key];
+  return typeof value === "string" && value.trim().length > 0 ? value : null;
+}
+
+function formatSummary(summary: ToolRedactedValueSummary | null | undefined): string | null {
+  if (!summary?.summary) return null;
+  try {
+    return JSON.stringify(JSON.parse(summary.summary), null, 2);
+  } catch {
+    return summary.summary;
+  }
+}
+
+function summaryFromDetails(
+  details: Record<string, unknown> | null,
+  key: "argumentsSummary" | "resultSummary",
+): ToolRedactedValueSummary | null {
+  const value = details?.[key];
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const summary = (value as Record<string, unknown>).summary;
+  return typeof summary === "string" ? { summary } : null;
+}
+
+function durationLabel(event: ToolGatewayActivityEvent): string | null {
+  const started = event.invocation?.startedAt ? new Date(event.invocation.startedAt).getTime() : Number.NaN;
+  const completed = event.invocation?.completedAt ? new Date(event.invocation.completedAt).getTime() : Number.NaN;
+  if (!Number.isFinite(started) || !Number.isFinite(completed) || completed < started) return null;
+  return `${completed - started} ms`;
+}
+
+function Fact({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
   return (
-    details.gatewayId === gateway.id ||
-    details.gatewayPublicId === gateway.gatewayPublicId ||
-    details.gatewaySlug === gateway.displaySlug
+    <div className="flex gap-3 py-1">
+      <dt className="w-28 shrink-0 text-muted-foreground">{label}</dt>
+      <dd className={mono ? "min-w-0 break-all font-mono text-(length:--text-micro) text-foreground" : "min-w-0 text-foreground"}>
+        {value}
+      </dd>
+    </div>
+  );
+}
+
+function ActivityRow({ event }: { event: ToolGatewayActivityEvent }) {
+  useTranslation();
+  const [open, setOpen] = useState(false);
+  const outcome = OUTCOME_META[event.normalizedOutcome] ?? OUTCOME_META.unknown;
+  const actor = event.agentDisplayName ?? "Client";
+  const app = event.appDisplayName ?? event.connectionDisplayName ?? event.applicationDisplayName ?? "App";
+  const tool = event.toolDisplayName ?? event.invocation?.toolName ?? "Tool call";
+  const rawTool = event.invocation?.toolName ?? detailString(event.details, "tool") ?? detailString(event.details, "toolName");
+  const reason = detailString(event.details, "reasonCode");
+  const argumentsText = formatSummary(
+    event.invocation?.argumentsSummary ?? summaryFromDetails(event.details, "argumentsSummary"),
+  );
+  const resultText = formatSummary(
+    event.invocation?.resultSummary ?? summaryFromDetails(event.details, "resultSummary"),
+  );
+  const duration = durationLabel(event);
+
+  return (
+    <li className="text-sm">
+      <button
+        type="button"
+        onClick={() => setOpen((current) => !current)}
+        className="flex w-full items-start gap-2.5 px-4 py-3 text-left hover:bg-accent/50"
+        aria-expanded={open}
+      >
+        {open ? (
+          <ChevronDown className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+        ) : (
+          <ChevronRight className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+        )}
+        <span className="min-w-0 flex-1">
+          <span className="block text-foreground">
+            <span className="font-medium">{actor}</span> used <span className="font-medium">{tool}</span> {translateInstant("in")}{" "}{app}
+          </span>
+        </span>
+        <span className="flex shrink-0 items-center gap-2 whitespace-nowrap">
+          <StatusBadge status={outcome.status} label={outcome.label} />
+          <span className="text-xs text-muted-foreground">
+            · <RelativeTime value={event.createdAt} />
+          </span>
+        </span>
+      </button>
+
+      {open ? (
+        <div className="border-t border-border bg-muted/30 px-4 py-3 pl-10 text-xs">
+          <dl>
+            {rawTool ? <Fact label={translateInstant("tools.agent.columns.tool")} value={rawTool} mono /> : null}
+            {event.invocation?.status ? <Fact label={translateInstant("Call status")} value={event.invocation.status} /> : null}
+            {event.invocation?.policyDecision ? <Fact label={translateInstant("runTranscript.toolDecision.decision")} value={event.invocation.policyDecision} /> : null}
+            {reason ? <Fact label={translateInstant("issueScheduledRetry.reason")} value={reason} mono /> : null}
+            {duration ? <Fact label={translateInstant("Duration")} value={duration} /> : null}
+            {event.invocation?.id ? <Fact label={translateInstant("Invocation ID")} value={event.invocation.id} mono /> : null}
+            {event.invocation?.errorCode ? <Fact label={translateInstant("issueThreadInteraction.secretBinding.errorCode")} value={event.invocation.errorCode} mono /> : null}
+            {event.invocation?.errorMessage ? <Fact label={translateInstant("Error")} value={event.invocation.errorMessage} /> : null}
+          </dl>
+          {argumentsText ? (
+            <div className="mt-2 space-y-1">
+              <div className="text-muted-foreground">{translateInstant("Arguments (redacted)")}</div>
+              <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded-md border border-border bg-background p-3 font-mono text-xs text-foreground">
+                {argumentsText}
+              </pre>
+            </div>
+          ) : null}
+          {resultText ? (
+            <div className="mt-3 space-y-1">
+              <div className="text-muted-foreground">{translateInstant("Result (redacted)")}</div>
+              <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded-md border border-border bg-background p-3 font-mono text-xs text-foreground">
+                {resultText}
+              </pre>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+    </li>
   );
 }
 
@@ -32,15 +148,23 @@ export function GatewayActivityPanel({
   companyId: string;
   gateway: ToolMcpGatewayWithTokens;
 }) {
-  const { t } = useTranslation();
-  const activityQuery = useQuery({
-    queryKey: ["tools", "gateway-activity", companyId, gateway.id],
-    queryFn: () => toolsApi.listActivity(companyId, { window: "7d", limit: 100 }),
+  useTranslation();
+  const activityQuery = useInfiniteQuery({
+    queryKey: queryKeys.tools.activity(companyId, { gateway: gateway.id, window: "30d" }),
+    queryFn: ({ pageParam }) =>
+      toolsApi.listActivity(companyId, {
+        gateway: gateway.id,
+        window: "30d",
+        limit: PAGE_SIZE,
+        cursor: pageParam ?? undefined,
+      }),
+    initialPageParam: null as string | null,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
   });
 
   const events = useMemo(
-    () => (activityQuery.data?.events ?? []).filter((event) => belongsToGateway(event, gateway)),
-    [activityQuery.data, gateway],
+    () => activityQuery.data?.pages.flatMap((page) => page.events) ?? [],
+    [activityQuery.data],
   );
 
   if (activityQuery.isLoading) {
@@ -59,67 +183,27 @@ export function GatewayActivityPanel({
   return (
     <div className="space-y-3">
       <p className="text-sm text-muted-foreground">
-        {t("apps.gateways.activity.description", {
-          defaultValue: "Every call through this gateway in the last 7 days, with why it was allowed, blocked, or paused.",
-        })}
-      </p>
+        {translateInstant("Calls through this gateway from the last 30 days. Open a row to inspect its tool, redacted arguments, result, and decision.")}</p>
       {events.length === 0 ? (
         <div className="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-          {t("apps.gateways.activity.empty", {
-            defaultValue: "No calls have gone through this gateway yet.",
-          })}
-        </div>
+          {translateInstant("apps.gateways.activity.empty")}</div>
       ) : (
         <ul className="divide-y divide-border rounded-lg border border-border">
-          {events.map((event) => {
-            const outcome = event.normalizedOutcome;
-            const tool = event.toolDisplayName ?? t("apps.gateways.activity.fallbackTool", { defaultValue: "tool" });
-            const app =
-              event.appDisplayName ??
-              event.applicationDisplayName ??
-              t("apps.gateways.activity.fallbackApp", { defaultValue: "app" });
-            const actor = event.agentDisplayName ?? t("apps.gateways.activity.fallbackActor", { defaultValue: "Client" });
-            return (
-              <li key={event.id} className="flex items-center justify-between gap-3 px-4 py-3">
-                <div className="min-w-0">
-                  <div className="text-sm font-medium text-foreground">{actor}</div>
-                  <div className="truncate text-xs text-muted-foreground">
-                    {app} · {tool} · <RelativeTime value={event.createdAt} />
-                  </div>
-                </div>
-                <span
-                  className={cn(
-                    "shrink-0 rounded-full border px-2 py-0.5 text-xs font-medium",
-                    OUTCOME_CLASS[outcome],
-                  )}
-                >
-                  {translateOutcomeLabel(outcome, t)}
-                </span>
-              </li>
-            );
-          })}
+          {events.map((event) => <ActivityRow key={event.id} event={event} />)}
         </ul>
       )}
+      {activityQuery.hasNextPage ? (
+        <div className="flex justify-center">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => activityQuery.fetchNextPage()}
+            disabled={activityQuery.isFetchingNextPage}
+          >
+            {activityQuery.isFetchingNextPage ? translateInstant("tools.advanced.loading") : translateInstant("common.loadMore")}
+          </Button>
+        </div>
+      ) : null}
     </div>
   );
-}
-
-function translateOutcomeLabel(
-  outcome: ToolAuditOutcome,
-  t: (key: string, options?: Record<string, unknown>) => string,
-): string {
-  switch (outcome) {
-    case "allowed":
-      return t("apps.gateways.activity.outcome.allowed", { defaultValue: "Allowed" });
-    case "blocked":
-      return t("apps.gateways.activity.outcome.blocked", { defaultValue: "Blocked" });
-    case "asked_first":
-      return t("apps.gateways.activity.outcome.askedFirst", { defaultValue: "Ask first" });
-    case "waiting":
-      return t("apps.gateways.activity.outcome.waiting", { defaultValue: "Waiting" });
-    case "failed":
-      return t("apps.gateways.activity.outcome.failed", { defaultValue: "Failed" });
-    default:
-      return t("apps.gateways.activity.outcome.unknown", { defaultValue: "—" });
-  }
 }

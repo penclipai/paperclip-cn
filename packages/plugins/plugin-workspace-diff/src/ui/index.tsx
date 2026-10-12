@@ -1,5 +1,5 @@
-import type { PluginDetailTabProps } from "@paperclipai/plugin-sdk/ui";
-import { copyTextToClipboard, usePluginData, usePluginToast } from "@paperclipai/plugin-sdk/ui";
+import type { PluginDetailTabProps } from "@penclipai/plugin-sdk/ui";
+import { copyTextToClipboard, usePluginData, usePluginToast } from "@penclipai/plugin-sdk/ui";
 import { DIFFS_TAG_NAME, getSingularPatch } from "@pierre/diffs";
 import type { PatchDiffProps } from "@pierre/diffs/react";
 import { useFileDiffInstance } from "@pierre/diffs/react";
@@ -28,7 +28,7 @@ import {
 import type { WorkspaceDiffResponse } from "../contracts.js";
 
 type WorkspaceDiffData = WorkspaceDiffResponse;
-type WorkspacePatchDiffOptions = PatchDiffProps<undefined>["options"];
+type WorkspacePatchDiffOptions = PatchDiffProps<undefined, undefined>["options"];
 type DiffViewMode = "working-tree" | "head";
 
 type LucideIconProps = { size?: number };
@@ -255,6 +255,10 @@ function WorkspacePatchDiff({
   const { ref } = useFileDiffInstance({
     fileDiff,
     options,
+    // This tab only shows a diff; it does not open an edit session.
+    edit: false,
+    editorOptions: undefined,
+    editStateKey: undefined,
     metrics: undefined,
     lineAnnotations: undefined,
     selectedLines: undefined,

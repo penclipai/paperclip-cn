@@ -1,10 +1,10 @@
-import { existsSync } from "node:fs";
+import { existsSync, promises as fsPromises } from "node:fs";
 import { cp, lstat, mkdir, mkdtemp, readFile, readdir, rm, symlink, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { execFile as execFileCallback } from "node:child_process";
 import { promisify } from "node:util";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   assertSyncOperationsConfined,
@@ -134,6 +134,90 @@ describe("sandbox native file sync", () => {
     while (cleanupDirs.length > 0) {
       const dir = cleanupDirs.pop();
       if (dir) await rm(dir, { recursive: true, force: true }).catch(() => undefined);
+    }
+  });
+
+  it("syncs a selected repository subfolder without parent files, history, or ignored files", async () => {
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-native-nested-workspace-"));
+    cleanupDirs.push(rootDir);
+    const repo = path.join(rootDir, "repo");
+    const selectedDir = path.join(repo, "project");
+    const remoteDir = path.join(rootDir, "remote");
+    await mkdir(selectedDir, { recursive: true });
+    await execFile("git", ["-C", repo, "init"]);
+    await writeFile(path.join(repo, "outside.txt"), "outside boundary\n");
+    await writeFile(path.join(repo, ".gitignore"), "project/private.txt\n");
+    await writeFile(path.join(selectedDir, "draft.md"), "preserved draft\n");
+    await execFile("git", ["-C", repo, "add", "."]);
+    await execFile("git", ["-C", repo, "-c", "user.name=Test", "-c", "user.email=test@example.com", "commit", "-m", "base"]);
+    await writeFile(path.join(selectedDir, "private.txt"), "stay local\n");
+
+    const { client } = makeNativeClient();
+    const prepared = await prepareSandboxManagedRuntime({
+      spec: { transport: "sandbox", provider: "test", sandboxId: "s1", remoteCwd: remoteDir, timeoutMs: 30_000, apiKey: null },
+      adapterKey: "test-adapter",
+      client,
+      workspaceLocalDir: selectedDir,
+    });
+
+    expect(await readFile(path.join(remoteDir, "draft.md"), "utf8")).toBe("preserved draft\n");
+    for (const absent of [".git", "outside.txt", "project", "private.txt"]) {
+      await expect(lstat(path.join(remoteDir, absent))).rejects.toMatchObject({ code: "ENOENT" });
+    }
+    await writeFile(path.join(remoteDir, "draft.md"), "continued draft\n");
+    await prepared.restoreWorkspace();
+    expect(await readFile(path.join(selectedDir, "draft.md"), "utf8")).toBe("continued draft\n");
+    expect(await readFile(path.join(selectedDir, "private.txt"), "utf8")).toBe("stay local\n");
+    expect(await readFile(path.join(repo, "outside.txt"), "utf8")).toBe("outside boundary\n");
+  });
+
+  it("prepares a runtime whose workspace directory does not exist without failing the ignore scan", async () => {
+    // An env test staging only credential assets can hand the runtime a
+    // workspace path that never existed on this host. A directory with no
+    // files has nothing for ignore rules to govern, so the scan is skipped
+    // rather than failed (git-ignore-scan-failed took down the whole
+    // preparation in production).
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-native-absent-workspace-"));
+    cleanupDirs.push(rootDir);
+    const remoteDir = path.join(rootDir, "remote");
+
+    const { client } = makeNativeClient();
+    const prepared = await prepareSandboxManagedRuntime({
+      spec: { transport: "sandbox", provider: "test", sandboxId: "s1", remoteCwd: remoteDir, timeoutMs: 30_000, apiKey: null },
+      adapterKey: "test-adapter",
+      client,
+      workspaceLocalDir: path.join(rootDir, "never-created"),
+    });
+    await prepared.restoreWorkspace();
+  });
+
+  it("fails preparation when the workspace cannot be read for a reason other than absence", async () => {
+    // Only absence means "nothing to sync". A workspace that is there but
+    // unreadable must not quietly become an empty remote workspace, so any
+    // other access error still fails the preparation. Inject a permission
+    // error because Windows can report ENOENT for a path beneath a file and
+    // elevated POSIX test users can still read chmod-protected directories.
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-native-unreadable-workspace-"));
+    cleanupDirs.push(rootDir);
+    const workspace = path.join(rootDir, "workspace");
+    await mkdir(workspace);
+    const access = fsPromises.access.bind(fsPromises);
+    const denied = Object.assign(new Error("Workspace access denied"), { code: "EACCES" });
+    const accessSpy = vi.spyOn(fsPromises, "access").mockImplementation(async (target, mode) => {
+      if (target === workspace) throw denied;
+      return access(target, mode);
+    });
+
+    const { client } = makeNativeClient();
+    try {
+      await expect(prepareSandboxManagedRuntime({
+        spec: { transport: "sandbox", provider: "test", sandboxId: "s1", remoteCwd: path.join(rootDir, "remote"), timeoutMs: 30_000, apiKey: null },
+        adapterKey: "test-adapter",
+        client,
+        workspaceLocalDir: workspace,
+      })).rejects.toBe(denied);
+    } finally {
+      accessSpy.mockRestore();
     }
   });
 
@@ -302,7 +386,11 @@ describe("sandbox native file sync", () => {
       adapterKey: "test-adapter",
       client,
       workspaceLocalDir: localWorkspaceDir,
-      additionalSources: projects.map((project) => ({ localPath: project.localDir, projectId: project.projectId })),
+      additionalSources: projects.map((project) => ({
+        localPath: project.localDir,
+        projectId: project.projectId,
+        ignoreResolution: { kind: "other" },
+      })),
     });
 
     // Each project lands in its OWN `project-<projectId>` directory under the
@@ -365,9 +453,9 @@ describe("sandbox native file sync", () => {
       client,
       workspaceLocalDir: localWorkspaceDir,
       additionalSources: [
-        { localPath: goodDir, projectId: "good-a" },
-        { localPath: path.join(rootDir, "does-not-exist"), projectId: "broken" },
-        { localPath: goodDir, projectId: "good-b" },
+        { localPath: goodDir, projectId: "good-a", ignoreResolution: { kind: "other" } },
+        { localPath: path.join(rootDir, "does-not-exist"), projectId: "broken", ignoreResolution: { kind: "other" } },
+        { localPath: goodDir, projectId: "good-b", ignoreResolution: { kind: "other" } },
       ],
     });
 

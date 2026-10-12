@@ -1,5 +1,5 @@
+import { configFieldsForSection } from "../config-sections";
 import type { AdapterConfigFieldsProps } from "../types";
-import { useTranslation } from "react-i18next";
 import {
   Field,
   DraftInput,
@@ -10,6 +10,7 @@ const inputClass =
   "w-full rounded-md border border-border px-2.5 py-1.5 bg-transparent outline-none text-sm font-mono placeholder:text-muted-foreground/40";
 
 export function HttpConfigFields({
+  section,
   isCreate,
   values,
   set,
@@ -17,9 +18,8 @@ export function HttpConfigFields({
   eff,
   mark,
 }: AdapterConfigFieldsProps) {
-  const { t } = useTranslation();
-  return (
-    <Field label={t("agentConfig.webhookUrl", { defaultValue: "Webhook URL" })} hint={help.webhookUrl}>
+  return configFieldsForSection(section, (
+    <Field label="Webhook URL" hint={help.webhookUrl}>
       <DraftInput
         value={
           isCreate
@@ -36,5 +36,5 @@ export function HttpConfigFields({
         placeholder="https://..."
       />
     </Field>
-  );
+  ));
 }

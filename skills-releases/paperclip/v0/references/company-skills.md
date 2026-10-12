@@ -4,7 +4,7 @@ Use this reference when a board user, CEO, or manager asks you to find a skill, 
 
 ## What Exists
 
-- App-shipped catalog: a curated set of company skills in `@paperclipai/skills-catalog`, browseable and installable without leaving Paperclip.
+- App-shipped catalog: a curated set of company skills in `@penclipai/skills-catalog`, browseable and installable without leaving Paperclip.
 - Company skill library: install, inspect, update, audit, reset, and read company skills for the whole company.
 - Agent skill assignment: add or remove company skills on an existing agent.
 - Hire/create composition: pass `desiredSkills` when creating or hiring an agent so the same assignment model applies immediately.

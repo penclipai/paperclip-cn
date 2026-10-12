@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+import { translateInstant } from "@/i18n";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
@@ -7,12 +9,22 @@ import type {
   McpJsonImportDraft,
   McpJsonImportPreview,
   ToolAppConnectionActionSummary,
+  ToolOAuthStartResult,
 } from "@penclipai/shared";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
 import { toolsApi } from "@/api/tools";
+import { navigateTopLevel } from "@/lib/browserNavigation";
+import { prepareOAuthNavigation, savePendingCloudHandoff } from "@/lib/oauthHandoff";
+import { useNavigate } from "@/lib/router";
+import {
+  OAuthConnectStateScreen,
+  type OAuthConnectPhase,
+} from "@/features/connections/ConnectionSetupFlow";
+import { endpointHost } from "@/pages/apps/generic-mcp-connect";
+import { McpConfigHelpDialog } from "./McpConfigHelpDialog";
 import { ErrorState } from "./shared";
 
 const SAMPLE_CONFIG = `{
@@ -27,7 +39,7 @@ const SAMPLE_CONFIG = `{
 /** Turn an env/header key (e.g. `GITHUB_TOKEN`) into a friendly field label. */
 function humanizeKey(raw: string): string {
   const cleaned = raw.replace(/[_-]+/g, " ").trim().toLowerCase();
-  if (!cleaned) return "Key";
+  if (!cleaned) return translateInstant("Key");
   return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
 }
 
@@ -79,7 +91,7 @@ function missingCredentialFields(draft: McpJsonImportDraft, values: Record<strin
 
 function askFirstLevelsFrom(result: ConnectToolAppResult): string[] {
   const raw = (result.suggestedDefaults as { askFirstRiskLevels?: unknown })?.askFirstRiskLevels;
-  return Array.isArray(raw) ? raw.filter((x): x is string => typeof x === "string") : ["write", "destructive"];
+  return Array.isArray(raw) ? raw.filter((x): x is string => typeof x === "string") : [];
 }
 
 /**
@@ -91,19 +103,57 @@ function askFirstLevelsFrom(result: ConnectToolAppResult): string[] {
  * of the two M8 screens where "MCP" vocabulary is allowed (PAP-10827 vocab map).
  */
 export function PasteConfigTab({ companyId }: { companyId: string }) {
+  useTranslation();
+  const navigate = useNavigate();
   const [draftText, setDraftText] = useState("");
   const [preview, setPreview] = useState<McpJsonImportPreview | null>(null);
+  const [connectionNames, setConnectionNames] = useState<Record<string, string>>({});
   const [credentialValues, setCredentialValues] = useState<Record<string, string>>({});
   const [connectResult, setConnectResult] = useState<ConnectToolAppResult | null>(null);
   const [enabled, setEnabled] = useState<Record<string, boolean>>({});
   const [activatedName, setActivatedName] = useState<string | null>(null);
+  const [oauthPhase, setOAuthPhase] = useState<OAuthConnectPhase>("entry");
+  const [oauthError, setOAuthError] = useState<string | null>(null);
+  const [authorizationHost, setAuthorizationHost] = useState<string | null>(null);
 
   const importMutation = useMutation({
     mutationFn: (mcpJson: string) => toolsApi.importMcpJson(companyId, { mcpJson }),
     onSuccess: (result) => {
       setPreview(result);
+      setConnectionNames(Object.fromEntries(result.drafts.map((draft) => [draft.name, draft.name])));
       setConnectResult(null);
       setActivatedName(null);
+    },
+  });
+
+  const openAuthorizationPage = async (
+    authorizationUrl: string,
+    handoff?: ToolOAuthStartResult["handoff"],
+  ) => {
+    try {
+      const target = await prepareOAuthNavigation({ authorizationUrl, handoff });
+      if (target.kind === "reauthentication" && handoff) {
+        savePendingCloudHandoff(handoff.session);
+      }
+      setAuthorizationHost(target.host);
+      setOAuthPhase(target.kind === "authorization" ? "redirecting" : "starting");
+      navigateTopLevel(target.url);
+    } catch (error) {
+      setOAuthPhase("error");
+      setOAuthError(error instanceof Error ? error.message : "Paperclip couldn’t start secure sign-in. Try again.");
+    }
+  };
+
+  const oauthStartMutation = useMutation({
+    mutationFn: (connectionId: string) => toolsApi.startOAuth(connectionId),
+    onSuccess: (start) => void openAuthorizationPage(start.authorizationUrl, start.handoff),
+    onError: (error) => {
+      setOAuthPhase("error");
+      setOAuthError(
+        error instanceof Error
+          ? error.message
+          : "Paperclip couldn’t start secure sign-in. Try again.",
+      );
     },
   });
 
@@ -113,15 +163,35 @@ export function PasteConfigTab({ companyId }: { companyId: string }) {
       if (!url) throw new Error("Only remote HTTP drafts can be checked and activated from pasted config.");
       return toolsApi.connectApp(companyId, {
         link: url,
-        name: draft.name,
+        name: connectionNames[draft.name]?.trim() || draft.name,
         credentialValues: credentialValuesForDraft(draft, credentialValues),
       });
     },
     onSuccess: (result) => {
       setConnectResult(result);
+      if (result.auth?.kind === "oauth") {
+        setActivatedName(null);
+        setAuthorizationHost(null);
+        setOAuthError(null);
+        if (result.auth.manualClientRequired) {
+          setOAuthPhase("error");
+          setOAuthError(
+            "This server requires OAuth client details from its provider settings. Continue in setup to add them.",
+          );
+          return;
+        }
+        const startUrl = result.auth.startUrl?.trim();
+        if (startUrl) {
+          void openAuthorizationPage(startUrl, result.auth.handoff);
+        } else {
+          setOAuthPhase("starting");
+          oauthStartMutation.mutate(result.connectionId);
+        }
+        return;
+      }
       const defaults: Record<string, boolean> = {};
       for (const action of result.actions.readOnly) defaults[action.catalogEntryId] = true;
-      for (const action of result.actions.canMakeChanges) defaults[action.catalogEntryId] = false;
+      for (const action of result.actions.canMakeChanges) defaults[action.catalogEntryId] = true;
       setEnabled(defaults);
       setActivatedName(null);
     },
@@ -157,18 +227,45 @@ export function PasteConfigTab({ companyId }: { companyId: string }) {
     }
   }, [draftText]);
 
+  if (connectResult?.auth?.kind === "oauth") {
+    const connectionUrl = typeof connectResult.connection.config?.url === "string"
+      ? connectResult.connection.config.url
+      : typeof connectResult.connection.transportConfig?.url === "string"
+        ? connectResult.connection.transportConfig.url
+        : "";
+    return (
+      <OAuthConnectStateScreen
+        identity={{
+          name: connectResult.application.name,
+          unverifiedHost: endpointHost(connectionUrl),
+        }}
+        phase={oauthPhase}
+        error={oauthError}
+        authorizationHost={authorizationHost}
+        onRetry={() => {
+          setOAuthError(null);
+          setAuthorizationHost(null);
+          setOAuthPhase("starting");
+          oauthStartMutation.mutate(connectResult.connectionId);
+        }}
+        onBack={() => navigate(`/apps/${connectResult.connectionId}/permissions`)}
+        onCancel={() => navigate("/apps")}
+      />
+    );
+  }
+
   return (
     <div className="space-y-5">
-      <p className="max-w-2xl text-sm text-muted-foreground">
-        Paste the MCP config snippet from the tool's README and we'll turn it into a friendly setup.
-      </p>
+      <div className="flex max-w-2xl items-start gap-1.5">
+        <p className="text-sm text-muted-foreground">
+          {translateInstant("tools.pasteConfig.description")}</p>
+        <McpConfigHelpDialog />
+      </div>
       <p className="text-xs text-muted-foreground">
-        Just a URL?{" "}
+        {translateInstant("tools.pasteConfig.justUrl")}{" "}
         <Link to="/apps" className="text-primary hover:underline">
-          Browse planned app connections
-        </Link>{" "}
-        instead.
-      </p>
+          {translateInstant("tools.pasteConfig.browseConnections")}</Link>{" "}
+        {translateInstant("tools.pasteConfig.instead")}</p>
 
       <div className="space-y-2">
         <Textarea
@@ -188,8 +285,7 @@ export function PasteConfigTab({ companyId }: { companyId: string }) {
           <p className="text-xs text-amber-600">{localParseError}</p>
         ) : (
           <p className="text-xs text-muted-foreground">
-            Paste an MCP config — the snippet a README tells you to copy.
-          </p>
+            {translateInstant("tools.pasteConfig.pasteHint")}</p>
         )}
       </div>
 
@@ -198,11 +294,10 @@ export function PasteConfigTab({ companyId }: { companyId: string }) {
           onClick={() => importMutation.mutate(draftText)}
           disabled={!canSubmit || Boolean(localParseError)}
         >
-          {importMutation.isPending ? "Checking…" : "Check config"}
+          {importMutation.isPending ? "Checking…" : translateInstant("tools.pasteConfig.checkConfig")}
         </Button>
         <span className="text-xs text-muted-foreground">
-          We'll read it and show what we found before anything is saved.
-        </span>
+          {translateInstant("tools.pasteConfig.checkHint")}</span>
       </div>
 
       {importMutation.isError ? <ErrorState error={importMutation.error} /> : null}
@@ -210,14 +305,12 @@ export function PasteConfigTab({ companyId }: { companyId: string }) {
       {preview ? (
         drafts.length === 0 ? (
           <div className="rounded-lg border border-dashed border-border p-6 text-sm text-muted-foreground">
-            We couldn't find an app in that config. Double-check you pasted the whole snippet.
-          </div>
+            {translateInstant("tools.pasteConfig.empty")}</div>
         ) : (
           <div className="space-y-3">
             <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground">
               <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-              We found {drafts.length} {drafts.length === 1 ? "app" : "apps"} in that config
-            </h3>
+              {translateInstant("We found")}{" "}{drafts.length} {drafts.length === 1 ? translateInstant("apps.gateways.activity.fallbackApp") : "apps"} {translateInstant("in that config")}</h3>
             {drafts.map((draft, index) => {
               const url = draftConnectUrl(draft);
               const missingFields = missingCredentialFields(draft, credentialValues);
@@ -225,6 +318,10 @@ export function PasteConfigTab({ companyId }: { companyId: string }) {
                 <DraftCard
                   key={`${draft.name}-${index}`}
                   draft={draft}
+                  connectionName={connectionNames[draft.name] ?? draft.name}
+                  onConnectionNameChange={(value) =>
+                    setConnectionNames((previous) => ({ ...previous, [draft.name]: value }))
+                  }
                   credentialValues={credentialValues}
                   onCredentialChange={(configPath, value) =>
                     setCredentialValues((prev) => ({ ...prev, [credentialValueKey(draft, configPath)]: value }))
@@ -237,14 +334,10 @@ export function PasteConfigTab({ companyId }: { companyId: string }) {
             })}
             {drafts.some((d) => draftConnectUrl(d)) ? (
               <p className="text-xs text-muted-foreground">
-                Checking a remote app creates a draft connection, stores any header replacements as Paperclip secrets,
-                and runs health/catalog discovery before activation.
-              </p>
+                {translateInstant("tools.pasteConfig.remoteCheckHint")}</p>
             ) : (
               <p className="text-xs text-muted-foreground">
-                We humanized the field names from the config. These run-in-your-workspace tools stay as drafts until an
-                admin maps them to an approved template.
-              </p>
+                {translateInstant("tools.pasteConfig.localDraftHint")}</p>
             )}
           </div>
         )
@@ -275,6 +368,8 @@ export function PasteConfigTab({ companyId }: { companyId: string }) {
 
 function DraftCard({
   draft,
+  connectionName,
+  onConnectionNameChange,
   credentialValues,
   onCredentialChange,
   checking,
@@ -282,12 +377,15 @@ function DraftCard({
   onCheck,
 }: {
   draft: McpJsonImportDraft;
+  connectionName: string;
+  onConnectionNameChange: (value: string) => void;
   credentialValues: Record<string, string>;
   onCredentialChange: (configPath: string, value: string) => void;
   checking: boolean;
   canCheck: boolean;
   onCheck?: () => void;
 }) {
+  useTranslation();
   return (
     <div className="rounded-lg border border-border bg-card p-4">
       <div className="flex items-center justify-between gap-3">
@@ -298,10 +396,20 @@ function DraftCard({
         {onCheck ? (
           <Button size="sm" className="shrink-0" onClick={onCheck} disabled={checking || !canCheck}>
             {checking ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null}
-            Check actions
-          </Button>
+            {translateInstant("tools.pasteConfig.checkActions")}</Button>
         ) : null}
       </div>
+
+      {onCheck ? (
+        <label className="mt-4 block max-w-sm space-y-1 text-xs font-medium text-foreground">
+          {translateInstant("tools.connections.add.connectionName")}<Input
+            value={connectionName}
+            onChange={(event) => onConnectionNameChange(event.target.value)}
+            placeholder={draft.name}
+            className="h-8 text-xs"
+          />
+        </label>
+      ) : null}
 
       {draft.credentialFields.length > 0 ? (
         <div className="mt-4 space-y-3">
@@ -319,7 +427,7 @@ function DraftCard({
                   type="password"
                   value={credentialValues[credentialValueKey(draft, field.configPath)] ?? ""}
                   onChange={(event) => onCredentialChange(field.configPath, event.target.value)}
-                  placeholder="Paste replacement value"
+                  placeholder={translateInstant("tools.pasteConfig.replacementPlaceholder")}
                   className="h-8 max-w-sm text-xs"
                 />
               </div>
@@ -328,10 +436,9 @@ function DraftCard({
         </div>
       ) : draft.credentialRefs.length > 0 ? (
         <p className="mt-3 text-xs text-muted-foreground">
-          Keys from this config stay draft-only until an admin maps them to an approved template.
-        </p>
+          {translateInstant("tools.pasteConfig.keysDraftOnly")}</p>
       ) : (
-        <p className="mt-3 text-xs text-muted-foreground">No keys needed for this one.</p>
+        <p className="mt-3 text-xs text-muted-foreground">{translateInstant("tools.pasteConfig.noKeys")}</p>
       )}
 
       {draft.warnings.length > 0 ? (
@@ -364,6 +471,7 @@ function CatalogReview({
   activatedName: string | null;
   onFinish: () => void;
 }) {
+  useTranslation();
   const askFirstLevels = askFirstLevelsFrom(result);
   const enabledCount = Object.values(enabled).filter(Boolean).length;
   const total = result.actions.readOnly.length + result.actions.canMakeChanges.length;
@@ -373,19 +481,18 @@ function CatalogReview({
         <div>
           <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground">
             <ShieldCheck className="h-4 w-4 text-emerald-600" />
-            Review actions for {result.application.name}
+            {translateInstant("Review actions for")}{" "}{result.application.name}
           </h3>
           <p className="mt-1 text-xs text-muted-foreground">
-            Health and catalog checks passed. Read-only actions start on; actions that can change data start off.
-          </p>
+            {translateInstant("Health and catalog checks passed. Every discovered action starts allowed; you can narrow access after activation.")}</p>
         </div>
         <Button size="sm" onClick={onFinish} disabled={finishing || enabledCount === 0 || Boolean(activatedName)}>
           {finishing ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null}
-          Activate {enabledCount} of {total}
+          {translateInstant("Activate")}{" "}{enabledCount} {translateInstant("issueCommon.of")}{" "}{total}
         </Button>
       </div>
       <ActionGroup
-        title="Read-only"
+        title={translateInstant("companySkills.readOnly")}
         actions={result.actions.readOnly}
         enabled={enabled}
         onToggle={onToggle}
@@ -401,7 +508,7 @@ function CatalogReview({
         askFirstLevels={askFirstLevels}
       />
       {activatedName ? (
-        <p className="text-xs font-medium text-emerald-700">{activatedName} is active for all agents.</p>
+        <p className="text-xs font-medium text-emerald-700">{activatedName}{" "}{translateInstant("is active for all agents.")}</p>
       ) : null}
     </div>
   );
@@ -422,6 +529,7 @@ function ActionGroup({
   onBulk: (on: boolean) => void;
   askFirstLevels: string[];
 }) {
+  useTranslation();
   if (actions.length === 0) return null;
   return (
     <div className="space-y-1">
@@ -432,8 +540,7 @@ function ActionGroup({
             Turn all on
           </Button>
           <Button type="button" size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => onBulk(false)}>
-            Turn all off
-          </Button>
+            {translateInstant("apps.connect.actions.turnAllOff")}</Button>
         </div>
       </div>
       <div className="divide-y divide-border rounded-lg border border-border">
@@ -444,7 +551,7 @@ function ActionGroup({
               <div className="min-w-0 flex-1">
                 <div className="truncate text-sm font-medium text-foreground">{action.title || action.toolName}</div>
                 <div className="truncate text-xs text-muted-foreground">
-                  {askFirstLevels.includes(action.riskLevel) ? "Ask first when enabled" : action.riskLevel}
+                  {askFirstLevels.includes(action.riskLevel) ? translateInstant("tools.pasteConfig.askFirstWhenEnabled") : action.riskLevel}
                 </div>
               </div>
               <ToggleSwitch checked={on} onCheckedChange={(next) => onToggle(action.catalogEntryId, next)} />

@@ -1,6 +1,9 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
+import { interactionReadinessRefetchInterval } from "@/lib/issue-thread-interactions";
+import { AgentAvatar } from "@/components/AgentAvatar";
 import { useCallback, useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
 import { groupWarningsByStage, LOW_TRUST_REVIEW_PRESET } from "@penclipai/shared";
 import type {
   Agent,
@@ -85,7 +88,6 @@ import { instanceSettingsApi } from "../api/instanceSettings";
 import { issuesApi } from "../api/issues";
 import { projectsApi } from "../api/projects";
 import { EmptyState } from "../components/EmptyState";
-import { AgentIcon } from "../components/AgentIconPicker";
 import { IssueChatThread } from "../components/IssueChatThread";
 import { MarkdownBody } from "../components/MarkdownBody";
 import { PageSkeleton } from "../components/PageSkeleton";
@@ -430,17 +432,12 @@ function pipelineActivityTime(pipeline: PipelineListItem) {
 type PipelineSortField = "name" | "activity" | "review" | "inMotion" | "openItems";
 type PipelineSortDir = "asc" | "desc";
 
-function PipelineText({ k, defaultValue }: { k: string; defaultValue: string }) {
-  const { t } = useTranslation();
-  return <>{t(k, { defaultValue })}</>;
-}
-
 const PIPELINE_SORT_OPTIONS: ReadonlyArray<readonly [PipelineSortField, string]> = [
   ["name", "Name"],
-  ["activity", "Last activity"],
-  ["review", "Most to review"],
-  ["inMotion", "Most in motion"],
-  ["openItems", "Most open items"],
+  ["activity", "pipelines.lastActivity"],
+  ["review", "pipelines.sort.mostToReview"],
+  ["inMotion", "pipelines.sort.mostInMotion"],
+  ["openItems", "pipelines.sort.mostOpenItems"],
 ];
 
 function comparePipelinesBySort(field: PipelineSortField, dir: PipelineSortDir) {
@@ -601,7 +598,7 @@ function PipelineStatusChip({ archivedAt }: { archivedAt: Date | string | null }
           : "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300",
       )}
     >
-      {paused ? "Paused" : "Active"}
+      {paused ? translateInstant("Paused") : translateInstant("Active")}
     </Badge>
   );
 }
@@ -623,7 +620,7 @@ export function PipelinesIndexTable({
   search,
   onSearchChange,
 }: PipelinesIndexTableProps) {
-  const { t } = useTranslation();
+  useTranslation();
   const [collapsedPipelineIds, setCollapsedPipelineIds] = useState<Set<string>>(() => new Set());
   const [sortField, setSortField] = useState<PipelineSortField>("name");
   const [sortDir, setSortDir] = useState<PipelineSortDir>("asc");
@@ -668,12 +665,12 @@ export function PipelinesIndexTable({
     <div className="space-y-4">
       <div className="flex flex-col gap-3 border-y border-border py-4 lg:flex-row lg:items-center lg:justify-between">
         <label className="relative block w-full max-w-md">
-          <span className="sr-only">{t("pipelines.searchPipelines", { defaultValue: "Search pipelines" })}</span>
+          <span className="sr-only">{translateInstant("pipelines.searchPipelines")}</span>
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={search}
             onChange={(event) => onSearchChange(event.target.value)}
-            placeholder={t("pipelines.searchPipelines", { defaultValue: "Search pipelines" })}
+            placeholder={translateInstant("pipelines.searchPipelines")}
             className="h-10 pl-9"
           />
         </label>
@@ -689,7 +686,7 @@ export function PipelinesIndexTable({
               )}
               disabled={!connectionsAvailable}
               onClick={() => onViewModeChange("nested")}
-              title={t("pipelines.nestedView", { defaultValue: "Nested view" })}
+              title={translateInstant("pipelines.nestedView")}
             >
               <ListTree className="h-3.5 w-3.5" />
             </button>
@@ -702,7 +699,7 @@ export function PipelinesIndexTable({
                   : "text-muted-foreground hover:text-foreground",
               )}
               onClick={() => onViewModeChange("flat")}
-              title={t("pipelines.flatList", { defaultValue: "Flat list" })}
+              title={translateInstant("pipelines.flatList")}
             >
               <List className="h-3.5 w-3.5" />
             </button>
@@ -710,7 +707,7 @@ export function PipelinesIndexTable({
 
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" size="icon" className="h-8 w-8 shrink-0" title={t("Sort", { defaultValue: "Sort" })}>
+              <Button variant="outline" size="icon" className="h-8 w-8 shrink-0" title={translateInstant("Sort")}>
                 <ArrowUpDown className="h-3.5 w-3.5" />
               </Button>
             </PopoverTrigger>
@@ -726,7 +723,7 @@ export function PipelinesIndexTable({
                     )}
                     onClick={() => selectSort(field)}
                   >
-                    <span>{label}</span>
+                    <span>{translateInstant(label)}</span>
                     {sortField === field && (
                       <span className="text-xs text-muted-foreground">{sortDir === "asc" ? "↑" : "↓"}</span>
                     )}
@@ -739,17 +736,17 @@ export function PipelinesIndexTable({
       </div>
 
       {rows.length === 0 ? (
-        <EmptyState icon={Hexagon} message={t("pipelines.noSearchMatches", { defaultValue: "No pipelines match your search." })} />
+        <EmptyState icon={Hexagon} message={translateInstant("pipelines.noSearchMatches")} />
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full min-w-(--sz-780px) border-collapse text-sm">
             <thead>
               <tr className="border-b border-border text-left text-(length:--text-micro) font-semibold uppercase tracking-widest text-muted-foreground">
-                <th className="py-2 pl-3 pr-4">{t("pipelines.name", { defaultValue: "Name" })}</th>
-                <th className="px-4 py-2">{t("pipelines.attention", { defaultValue: "Attention" })}</th>
-                <th className="px-4 py-2">{t("pipelines.openItems", { defaultValue: "Open items" })}</th>
-                <th className="px-4 py-2">{t("pipelines.status", { defaultValue: "Status" })}</th>
-                <th className="px-4 py-2">{t("pipelines.lastActivity", { defaultValue: "Last activity" })}</th>
+                <th className="py-2 pl-3 pr-4">{translateInstant("pipelines.name")}</th>
+                <th className="px-4 py-2">{translateInstant("pipelines.attention")}</th>
+                <th className="px-4 py-2">{translateInstant("pipelines.openItems")}</th>
+                <th className="px-4 py-2">{translateInstant("pipelines.status")}</th>
+                <th className="px-4 py-2">{translateInstant("pipelines.lastActivity")}</th>
               </tr>
             </thead>
             <tbody>
@@ -793,13 +790,11 @@ export function PipelinesIndexTable({
                         {attentionCount > 0 ? (
                           <span className="inline-flex items-center gap-1.5 font-semibold text-red-700 dark:text-red-400">
                             <span className="h-2 w-2 rounded-full bg-red-600" aria-hidden="true" />
-                            {formatNumber(attentionCount)} to review
-                          </span>
+                            {formatNumber(attentionCount)} {translateInstant("apps.setup.toReview")}</span>
                         ) : null}
                         {inMotionCount > 0 ? (
                           <span className="text-muted-foreground">
-                            {formatNumber(inMotionCount)} in motion
-                          </span>
+                            {formatNumber(inMotionCount)} {translateInstant("in motion")}</span>
                         ) : null}
                         {liveDownstreamCount > 0 ? (
                           <span className="inline-flex items-center gap-1.5 text-emerald-700 dark:text-emerald-300">
@@ -818,8 +813,7 @@ export function PipelinesIndexTable({
             </tbody>
           </table>
           <p className="mt-4 text-sm text-muted-foreground">
-            Showing {formatNumber(rows.length)} of {formatNumber(filteredPipelines.length)}.
-          </p>
+            {translateInstant("Showing")}{" "}{formatNumber(rows.length)} {translateInstant("issueCommon.of")}{" "}{formatNumber(filteredPipelines.length)}{translateInstant(".")}</p>
         </div>
       )}
     </div>
@@ -839,7 +833,7 @@ function NewPipelineDialog({
   pending: boolean;
   error: string | null;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
 
@@ -862,18 +856,16 @@ function NewPipelineDialog({
       <DialogContent>
         <form onSubmit={submit} className="space-y-4">
           <DialogHeader>
-            <DialogTitle>{t("pipelines.newPipeline", { defaultValue: "New pipeline" })}</DialogTitle>
-            <DialogDescription>
-              {t("pipelines.newPipelineDescription", { defaultValue: "Name the pipeline and add a short description." })}
-            </DialogDescription>
+            <DialogTitle>{translateInstant("pipelines.newPipeline")}</DialogTitle>
+            <DialogDescription>{translateInstant("pipelines.newPipelineDescription")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <label className="block space-y-1.5 text-sm font-medium">
-              <span>{t("pipelines.name", { defaultValue: "Name" })}</span>
+              <span>{translateInstant("pipelines.name")}</span>
               <Input value={name} onChange={(event) => setName(event.target.value)} autoFocus />
             </label>
             <label className="block space-y-1.5 text-sm font-medium">
-              <span>{t("pipelines.description", { defaultValue: "Description" })}</span>
+              <span>{translateInstant("pipelines.description")}</span>
               <Textarea
                 value={description}
                 onChange={(event) => setDescription(event.target.value)}
@@ -884,10 +876,9 @@ function NewPipelineDialog({
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={pending}>
-              Cancel
-            </Button>
+              {translateInstant("Cancel")}</Button>
             <Button type="submit" disabled={pending || !name.trim()}>
-              {pending ? "Creating..." : "Create pipeline"}
+              {pending ? translateInstant("Creating...") : "Create pipeline"}
             </Button>
           </DialogFooter>
         </form>
@@ -907,7 +898,7 @@ export function pipelineKeyFromName(name: string) {
 }
 
 function PipelinesIndex() {
-  const { t } = useTranslation();
+  useTranslation();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const navigate = useNavigate();
@@ -916,7 +907,7 @@ function PipelinesIndex() {
   const [viewMode, setViewMode] = useState<PipelineViewMode>("nested");
   const [newPipelineOpen, setNewPipelineOpen] = useState(false);
 
-  useEffect(() => setBreadcrumbs([{ label: t("pipelines.title", { defaultValue: "Pipelines" }) }]), [setBreadcrumbs, t]);
+  useEffect(() => setBreadcrumbs([{ label: translateInstant("pipelines.title") }]), [setBreadcrumbs]);
 
   const pipelinesQuery = useQuery({
     queryKey: selectedCompanyId ? queryKeys.pipelines.list(selectedCompanyId) : ["pipelines", "missing-company"],
@@ -952,7 +943,7 @@ function PipelinesIndex() {
   });
 
   if (!selectedCompanyId) {
-    return <div className="mx-auto max-w-3xl py-10 text-sm text-muted-foreground">{t("pipelines.selectCompany", { defaultValue: "Select a company to view pipelines." })}</div>;
+    return <div className="mx-auto max-w-3xl py-10 text-sm text-muted-foreground">{translateInstant("Select an organization to view pipelines.")}</div>;
   }
   if (pipelinesQuery.isLoading) return <PageSkeleton />;
 
@@ -963,31 +954,25 @@ function PipelinesIndex() {
     <div className="w-full max-w-6xl px-6 py-8">
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">{t("pipelines.work", { defaultValue: "Work" })}</p>
-          <h1 className="text-2xl font-semibold text-foreground">{t("pipelines.title", { defaultValue: "Pipelines" })}</h1>
+          <p className="text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">{translateInstant("pipelines.work")}</p>
+          <h1 className="text-2xl font-semibold text-foreground">{translateInstant("pipelines.title")}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {t("pipelines.indexSummary", {
-              defaultValue: "{{count}} pipeline. Connected ones are grouped from upstream work into downstream work.",
-              count: pipelines.length,
-              formattedCount: formatNumber(pipelines.length),
-            })}
-          </p>
+            {formatNumber(pipelines.length)} pipeline{pipelines.length === 1 ? "" : "s"}{translateInstant(". Connected ones are grouped from upstream work into downstream work.")}</p>
         </div>
         <Button onClick={() => setNewPipelineOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
-          {t("pipelines.newPipeline", { defaultValue: "New pipeline" })}
-        </Button>
+          {translateInstant("pipelines.newPipeline")}</Button>
       </div>
 
       {pipelinesQuery.error ? (
-        <p className="mb-4 text-sm text-destructive">{t("pipelines.loadFailed", { defaultValue: "Could not load pipelines." })}</p>
+        <p className="mb-4 text-sm text-destructive">{translateInstant("pipelines.loadFailed")}</p>
       ) : null}
 
       {pipelines.length === 0 && !pipelinesQuery.error ? (
         <EmptyState
           icon={Hexagon}
-          message={t("pipelines.empty", { defaultValue: "No pipelines yet." })}
-          action={t("pipelines.newPipeline", { defaultValue: "New pipeline" })}
+          message={translateInstant("pipelines.empty")}
+          action={translateInstant("pipelines.newPipeline")}
           onAction={() => setNewPipelineOpen(true)}
         />
       ) : (
@@ -1020,7 +1005,6 @@ function PipelinesIndex() {
 // ---------------------------------------------------------------------------
 
 const UNASSIGNED_STAGE_ID = "__pipeline_unassigned_stage";
-const UNASSIGNED_STAGE_NAME = "Unassigned";
 
 type BoardCase = PipelineCase & {
   activeWork?: PipelineCaseActiveWork | null;
@@ -1128,7 +1112,7 @@ export function createUnassignedStage(pipelineId: string): PipelineStage {
     id: UNASSIGNED_STAGE_ID,
     pipelineId,
     key: "__unassigned",
-    name: UNASSIGNED_STAGE_NAME,
+    name: translateInstant("Unassigned"),
     kind: "working",
     position: Number.MAX_SAFE_INTEGER,
     config: {},
@@ -1229,6 +1213,7 @@ function PipelineCaseCard({
   caseItem: BoardCase;
   isOverlay?: boolean;
 }) {
+  useTranslation();
   const title = getCaseTitle(caseItem);
   const isWorking = isWorkingCase(caseItem);
   const blockerCount = getOpenBlockerCount(caseItem);
@@ -1272,18 +1257,15 @@ function PipelineCaseCard({
           {isWorking ? (
             <Badge variant="outline" className="relative border-emerald-400/40 bg-emerald-50 text-(length:--text-nano) text-emerald-700 dark:border-emerald-300/30 dark:bg-emerald-900/30 dark:text-emerald-300">
               <span className="absolute -left-1 -top-1 h-2 w-2 animate-pulse rounded-full bg-emerald-500"></span>
-              Working
-            </Badge>
+              {translateInstant("Working")}</Badge>
           ) : null}
           {hasNeedsAttention ? (
             <Badge variant="outline" className="border-amber-400/40 bg-amber-50 text-(length:--text-nano) text-amber-700 dark:border-amber-300/30 dark:bg-amber-900/25 dark:text-amber-300">
-              Needs attention
-            </Badge>
+              {translateInstant("Needs attention")}</Badge>
           ) : null}
           {hasChangedNotice ? (
             <Badge variant="outline" className="border-indigo-400/40 bg-indigo-50 text-(length:--text-nano) text-indigo-700 dark:border-indigo-300/30 dark:bg-indigo-900/25 dark:text-indigo-300">
-              This changed
-            </Badge>
+              {translateInstant("This changed")}</Badge>
           ) : null}
           {liveDownstreamCount > 0 ? (
             <Badge variant="outline" className="border-emerald-400/35 bg-emerald-50 text-(length:--text-nano) text-emerald-700 dark:border-emerald-300/30 dark:bg-emerald-900/25 dark:text-emerald-300">
@@ -1294,7 +1276,7 @@ function PipelineCaseCard({
         </div>
         {childrenSummary != null ? (
           <p className="mt-1.5 text-xs text-muted-foreground">
-            Built from {formatNumber(childrenSummary)} {childrenSummary === 1 ? "item" : "items"}
+            {translateInstant("Built from")}{" "}{formatNumber(childrenSummary)} {childrenSummary === 1 ? translateInstant("pipelines.item") : translateInstant("pipelines.items")}
           </p>
         ) : null}
       </Link>
@@ -1327,6 +1309,7 @@ function PipelineBoardColumn({
   isDragTargeted?: boolean;
   isDragBlocked?: boolean;
 }) {
+  useTranslation();
   const { setNodeRef, isOver } = useDroppable({ id: stage.id });
 
   const tone = getPipelineStageColumnTone(stage.kind);
@@ -1361,11 +1344,11 @@ function PipelineBoardColumn({
           ) : null}
         </div>
         <span className="ml-2 flex shrink-0 items-center gap-2 text-xs">
-          <span>{cases.length} item{cases.length === 1 ? "" : "s"}</span>
+          <span>{cases.length} {translateInstant("pipelines.item")}{cases.length === 1 ? "" : "s"}</span>
           {warningCount ? (
             <span className="inline-flex items-center gap-1 text-amber-700 dark:text-amber-300">
               <AlertTriangle className="h-3.5 w-3.5" />
-              {warningCount} warning{warningCount === 1 ? "" : "s"}
+              {warningCount} {translateInstant("companyExport.warning")}{warningCount === 1 ? "" : "s"}
             </span>
           ) : null}
         </span>
@@ -1378,7 +1361,7 @@ function PipelineBoardColumn({
               className="inline-flex max-w-full items-center gap-1 rounded-full border border-border px-2 py-0.5 text-xs font-medium text-muted-foreground hover:text-foreground"
               title={`Edit ${stage.name} automation`}
             >
-              <AgentIcon icon={automationAgent.icon} className="h-3.5 w-3.5 shrink-0" />
+              <AgentAvatar agent={automationAgent} size={16} className="h-3.5 w-3.5 shrink-0"/>
               <span className="truncate">{automationAgent.name}</span>
             </Link>
           ) : null}
@@ -1389,7 +1372,7 @@ function PipelineBoardColumn({
               title={`Breaks into ${breakdownTarget.name}`}
             >
               <span className="shrink-0">→</span>
-              <span className="truncate">Breaks into {breakdownTarget.name}</span>
+              <span className="truncate">{translateInstant("Breaks into")}{" "}{breakdownTarget.name}</span>
             </Link>
           ) : null}
         </div>
@@ -1403,8 +1386,7 @@ function PipelineBoardColumn({
       >
         {isBlockedDropTarget ? (
           <p className="rounded border border-red-200 bg-red-50 px-3 py-2 text-(length:--text-micro) text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200">
-            This move skips the normal flow
-          </p>
+            {translateInstant("This move skips the normal flow")}</p>
         ) : null}
         <SortableContext items={sortableCaseIds} strategy={verticalListSortingStrategy}>
           {cases.length > 0 ? (
@@ -1419,7 +1401,7 @@ function PipelineBoardColumn({
                     ) : (
                       <span className="min-w-0 truncate">{group.label}</span>
                     )}
-                    <span className="shrink-0">{group.cases.length} item{group.cases.length === 1 ? "" : "s"}</span>
+                    <span className="shrink-0">{group.cases.length} {translateInstant("pipelines.item")}{group.cases.length === 1 ? "" : "s"}</span>
                   </div>
                 ) : null}
                 {group.cases.map((item) => <PipelineCaseCard key={item.id} caseItem={item} />)}
@@ -1437,7 +1419,7 @@ function PipelineBoardColumn({
 }
 
 function PipelineBoard({ pipelineId }: { pipelineId: string }) {
-  const { t } = useTranslation();
+  useTranslation();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { pushToast } = useToastActions();
   const { selectedCompanyId } = useCompany();
@@ -1646,7 +1628,7 @@ function PipelineBoard({ pipelineId }: { pipelineId: string }) {
     },
     onError: (error) => {
       pushToast({
-        title: "Move blocked",
+        title: translateInstant("Move blocked"),
         body:
           error instanceof ApiError && error.status === 409
             ? "This item changed while you were looking. The board has been refreshed."
@@ -1691,8 +1673,8 @@ function PipelineBoard({ pipelineId }: { pipelineId: string }) {
     const targetStageKey = stageKeyById.get(targetStageId);
     if (!targetStageKey) return;
 
-    const sourceName = stageNameById.get(sourceStageId ?? "") ?? UNASSIGNED_STAGE_NAME;
-    const targetName = stageNameById.get(targetStageId) ?? UNASSIGNED_STAGE_NAME;
+    const sourceName = stageNameById.get(sourceStageId ?? "") ?? translateInstant("Unassigned");
+    const targetName = stageNameById.get(targetStageId) ?? translateInstant("Unassigned");
     setPendingMove({
       caseId: activeCase.id,
       caseVersion: activeCase.version ?? 1,
@@ -1707,10 +1689,10 @@ function PipelineBoard({ pipelineId }: { pipelineId: string }) {
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: t("pipelines.title", { defaultValue: "Pipelines" }), href: "/pipelines" },
-      { label: pipeline?.name ?? t("pipelines.pipeline", { defaultValue: "Pipeline" }) },
+      { label: translateInstant("pipelines.title"), href: "/pipelines" },
+      { label: pipeline?.name ?? translateInstant("pipelines.pipeline") },
     ]);
-  }, [pipeline?.name, setBreadcrumbs, t]);
+  }, [pipeline?.name, setBreadcrumbs]);
 
   useEffect(() => {
     setGroupByState({ pipelineId, value: readStoredPipelineBoardGroupBy(pipelineId) });
@@ -1718,21 +1700,21 @@ function PipelineBoard({ pipelineId }: { pipelineId: string }) {
 
   if (pipelineQuery.isLoading || casesQuery.isLoading) return <PageSkeleton />;
   if (!pipeline) {
-    return <div className="mx-auto max-w-3xl py-10 text-sm text-muted-foreground">{t("pipelines.notFound", { defaultValue: "Pipeline not found." })}</div>;
+    return <div className="mx-auto max-w-3xl py-10 text-sm text-muted-foreground">{translateInstant("pipelines.notFound")}</div>;
   }
 
   if (orderedStages.length === 0) {
     return (
       <div className="mx-auto max-w-6xl space-y-4 px-6 py-8">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">{t("pipelines.pipeline", { defaultValue: "Pipeline" })}</p>
+          <p className="text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">{translateInstant("pipelines.pipeline")}</p>
           <h1 className="text-2xl font-semibold text-foreground">{pipeline.name}</h1>
-          <p className="text-sm text-muted-foreground">{t("pipelines.noStages", { defaultValue: "No stages are set up for this pipeline yet." })}</p>
+          <p className="text-sm text-muted-foreground">{translateInstant("pipelines.noStages")}</p>
         </div>
         <EmptyState
           icon={Hexagon}
-          message={t("pipelines.addStagesToEnableBoard", { defaultValue: "Add stages in pipeline settings to enable the board." })}
-          action={t("pipelines.openSettings", { defaultValue: "Open settings" })}
+          message={translateInstant("pipelines.addStagesToEnableBoard")}
+          action={translateInstant("pipelines.openSettings")}
           onAction={() => navigate(`/pipelines/${pipelineId}/settings`)}
         />
       </div>
@@ -1745,12 +1727,10 @@ function PipelineBoard({ pipelineId }: { pipelineId: string }) {
     <div className="w-full space-y-4 px-6 py-8">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">{t("pipelines.pipeline", { defaultValue: "Pipeline" })}</p>
+          <p className="text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">{translateInstant("pipelines.pipeline")}</p>
           <h1 className="text-2xl font-semibold text-foreground">{pipeline.name}</h1>
           {pipeline.description ? <p className="mt-1 text-sm text-muted-foreground">{pipeline.description}</p> : null}
-          <p className="mt-1 text-xs text-muted-foreground">
-            {t("pipelines.totalItems", { defaultValue: "{{count}} total item", count: cases.length, formattedCount: formatNumber(cases.length) })}
-          </p>
+          <p className="mt-1 text-xs text-muted-foreground">{cases.length}{" "}{translateInstant("total item")}{cases.length === 1 ? "" : "s"}</p>
           {fedByPipelines.length > 0 ? (
             <div className="mt-2 flex flex-wrap items-center gap-1.5">
               {fedByPipelines.map((source) => (
@@ -1758,10 +1738,10 @@ function PipelineBoard({ pipelineId }: { pipelineId: string }) {
                   key={source.id}
                   to={`/pipelines/${source.id}`}
                   className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-xs font-medium text-muted-foreground hover:text-foreground"
-                  title={t("pipelines.fedByName", { defaultValue: "Fed by {{name}}", name: source.name })}
+                  title={`Fed by ${source.name}`}
                 >
                   <span className="shrink-0">←</span>
-                  <span className="truncate">{t("pipelines.fedByName", { defaultValue: "Fed by {{name}}", name: source.name })}</span>
+                  <span className="truncate">{translateInstant("Fed by")}{" "}{source.name}</span>
                 </Link>
               ))}
             </div>
@@ -1769,27 +1749,22 @@ function PipelineBoard({ pipelineId }: { pipelineId: string }) {
         </div>
         <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
           <Select value={groupBy} onValueChange={handleGroupByChange}>
-            <SelectTrigger className="h-9 w-(--sz-148px)" aria-label={t("pipelines.groupBy", { defaultValue: "Group by" })} title={t("pipelines.groupBy", { defaultValue: "Group by" })}>
+            <SelectTrigger className="h-9 w-(--sz-148px)" aria-label={translateInstant("pipelines.groupBy")} title={translateInstant("pipelines.groupBy")}>
               <Layers className="h-4 w-4 text-muted-foreground" />
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="none">{t("None", { defaultValue: "None" })}</SelectItem>
-              <SelectItem value="builtFor">{t("pipelines.builtFor", { defaultValue: "Built for" })}</SelectItem>
+              <SelectItem value="none">{translateInstant("None")}</SelectItem>
+              <SelectItem value="builtFor">{translateInstant("pipelines.builtFor")}</SelectItem>
             </SelectContent>
           </Select>
           <Button asChild>
             <Link to={`/pipelines/${pipelineId}/add`}>
               <Plus className="mr-2 h-4 w-4" />
-              {t("pipelines.addItems", { defaultValue: "Add items" })}
-            </Link>
+              {translateInstant("pipelines.addItems")}</Link>
           </Button>
           <Button variant="outline" size="icon" asChild>
-            <Link
-              to={`/pipelines/${pipelineId}/settings`}
-              aria-label={t("pipelines.openSettings", { defaultValue: "Open settings" })}
-              title={t("pipelines.openSettings", { defaultValue: "Open settings" })}
-            >
+            <Link to={`/pipelines/${pipelineId}/settings`} aria-label={translateInstant("Pipeline settings")} title={translateInstant("Pipeline settings")}>
               <Settings className="h-4 w-4" />
             </Link>
           </Button>
@@ -1883,12 +1858,12 @@ function PipelineBoard({ pipelineId }: { pipelineId: string }) {
           </DialogHeader>
           {pendingMove && !pendingMove.allowed ? (
             <label className="block space-y-1.5 text-sm font-medium">
-              <span><PipelineText k="pipelines.reason" defaultValue="Reason" /></span>
+              <span>{translateInstant("issueScheduledRetry.reason")}</span>
               <Textarea
                 value={overrideReason}
                 onChange={(event) => setOverrideReason(event.target.value)}
                 rows={3}
-                placeholder={t("pipelines.skipReasonPlaceholder", { defaultValue: "Explain why this item should skip the normal flow." })}
+                placeholder={translateInstant("pipelines.skipReasonPlaceholder")}
                 autoFocus
               />
             </label>
@@ -1903,8 +1878,7 @@ function PipelineBoard({ pipelineId }: { pipelineId: string }) {
                 setOverrideReason("");
               }}
             >
-              Cancel
-            </Button>
+              {translateInstant("Cancel")}</Button>
             {pendingMove?.allowed ? (
               <Button
                 type="button"
@@ -1917,8 +1891,7 @@ function PipelineBoard({ pipelineId }: { pipelineId: string }) {
                   })
                 }
               >
-                Move it
-              </Button>
+                {translateInstant("Move it")}</Button>
             ) : pendingMove ? (
               <Button
                 type="button"
@@ -1934,8 +1907,7 @@ function PipelineBoard({ pipelineId }: { pipelineId: string }) {
                   })
                 }
               >
-                Override and move
-              </Button>
+                {translateInstant("Override and move")}</Button>
             ) : null}
           </DialogFooter>
         </DialogContent>
@@ -1955,7 +1927,8 @@ function NavigateToItem({ pipelineId, caseId }: { pipelineId: string; caseId: st
 }
 
 function NavigateMissingItem() {
-  return <div className="mx-auto max-w-3xl py-10 text-sm text-muted-foreground"><PipelineText k="pipelines.itemNotFound" defaultValue="Item not found." /></div>;
+  useTranslation();
+  return <div className="mx-auto max-w-3xl py-10 text-sm text-muted-foreground">{translateInstant("pipelines.itemNotFound")}</div>;
 }
 
 function LinkRedirect({ to }: { to: string }) {
@@ -1973,7 +1946,7 @@ export function PipelineItemDetail() {
 }
 
 export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: string; caseId: string }) {
-  const { t } = useTranslation();
+  useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
@@ -2108,6 +2081,7 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
     queryKey: conversationIssueId ? queryKeys.issues.interactions(conversationIssueId) : ["pipeline-item", caseId, "missing-conversation-interactions"],
     queryFn: () => issuesApi.listInteractions(conversationIssueId!),
     enabled: Boolean(conversationIssueId),
+    refetchInterval: (query) => interactionReadinessRefetchInterval(query.state.data),
   });
   const { data: agents } = useQuery({
     queryKey: conversationCompanyId ? queryKeys.agents.list(conversationCompanyId) : ["agents", "pipeline-item", "none"],
@@ -2175,7 +2149,7 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
       options.push({ id: `agent:${agent.id}`, label: agent.name });
     }
     if (currentUserId) {
-      options.push({ id: `user:${currentUserId}`, label: "Me" });
+      options.push({ id: `user:${currentUserId}`, label: translateInstant("Me") });
     }
     return options;
   }, [agents, companyMembers?.users, currentUserId]);
@@ -2307,9 +2281,9 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: "Pipelines", href: "/pipelines" },
-      { label: pipeline.data?.name ?? detail?.pipeline.name ?? "Pipeline", href: `/pipelines/${pipelineId}` },
-      { label: detail?.case.title ?? "Item" },
+      { label: translateInstant("pipelines.title"), href: "/pipelines" },
+      { label: pipeline.data?.name ?? detail?.pipeline.name ?? translateInstant("pipelines.pipeline"), href: `/pipelines/${pipelineId}` },
+      { label: detail?.case.title ?? translateInstant("Item") },
     ]);
   }, [detail?.case.title, detail?.pipeline.name, pipeline.data?.name, pipelineId, setBreadcrumbs]);
 
@@ -2329,9 +2303,9 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
     },
     onSuccess: async () => {
       await invalidateItem();
-      pushToast({ title: "Conversation started", tone: "success" });
+      pushToast({ title: translateInstant("Conversation started"), tone: "success" });
     },
-    onError: () => pushToast({ title: "Could not start the conversation", tone: "error" }),
+    onError: () => pushToast({ title: translateInstant("pipelineItemBody.startConversationFailed"), tone: "error" }),
   });
 
   // Body-document selection → "Start conversation & comment": returns the created issue so the
@@ -2342,7 +2316,7 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
       await invalidateItem();
       return ("issue" in result ? result.issue : null) ?? null;
     } catch {
-      pushToast({ title: "Could not start the conversation", tone: "error" });
+      pushToast({ title: translateInstant("pipelineItemBody.startConversationFailed"), tone: "error" });
       return null;
     }
   }, [caseId, invalidateItem, pushToast]);
@@ -2432,10 +2406,17 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
     await queryClient.invalidateQueries({ queryKey: queryKeys.issues.comments(conversationIssueId) });
   }, [conversationIssueId, queryClient]);
 
-  const handleInterruptConversationQueuedRun = useCallback(async (runId: string) => {
-    await heartbeatsApi.cancel(runId);
-    await invalidateConversation();
-  }, [invalidateConversation]);
+  const handleInterruptConversationQueuedRun = useCallback(async (runId: string | null) => {
+    if (!conversationIssueId) return;
+    try {
+      await issuesApi.interruptLatestQueuedComments(conversationIssueId, runId);
+      pushToast({ title: translateInstant("Interrupt requested"), body: "Queued messages will be sent when the previous run has stopped.", tone: "success" });
+    } catch (error) {
+      pushToast({ title: translateInstant("Interrupt failed"), body: error instanceof Error ? error.message : "Unable to send queued messages", tone: "error" });
+    } finally {
+      await invalidateConversation();
+    }
+  }, [conversationIssueId, invalidateConversation, pushToast]);
 
   const handleCancelConversationQueuedComment = useCallback(async (commentId: string) => {
     if (!conversationIssueId) return;
@@ -2453,9 +2434,10 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
     interaction: PipelineConversationActionableInteraction,
     selectedClientKeys?: string[],
     selectedOptionIds?: string[],
+    rememberAction?: boolean,
   ) => {
     if (!conversationIssueId) return;
-    await issuesApi.acceptInteraction(conversationIssueId, interaction.id, { selectedClientKeys, selectedOptionIds });
+    await issuesApi.acceptInteraction(conversationIssueId, interaction.id, { selectedClientKeys, selectedOptionIds, rememberAction });
     await invalidateConversation();
   }, [conversationIssueId, invalidateConversation]);
 
@@ -2497,16 +2479,16 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
         tone: "success",
       });
     },
-    onError: () => pushToast({ title: "Could not resolve the suggestion", tone: "error" }),
+    onError: () => pushToast({ title: translateInstant("Could not resolve the suggestion"), tone: "error" }),
   });
 
   const acknowledgeChange = useMutation({
     mutationFn: () => pipelinesApi.acknowledgeDrift(caseId, { expectedVersion: detail?.case.version }),
     onSuccess: async () => {
       await invalidateItem();
-      pushToast({ title: "Change acknowledged", tone: "success" });
+      pushToast({ title: translateInstant("Change acknowledged"), tone: "success" });
     },
-    onError: () => pushToast({ title: "Could not acknowledge the change", tone: "error" }),
+    onError: () => pushToast({ title: translateInstant("Could not acknowledge the change"), tone: "error" }),
   });
 
   const previousRetryAvailability = useQuery({
@@ -2555,12 +2537,12 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
     onSuccess: async () => {
       setRetryDialogScope(null);
       await invalidateItem();
-      pushToast({ title: "Step automation re-run started", tone: "success" });
+      pushToast({ title: translateInstant("Step automation re-run started"), tone: "success" });
     },
     onError: (error: unknown) => {
       const message = error instanceof ApiError && error.message ? error.message : "Could not re-run this step.";
       setRetryDialogError(message);
-      pushToast({ title: "Could not re-run this step", tone: "error" });
+      pushToast({ title: translateInstant("Could not re-run this step"), tone: "error" });
     },
   });
 
@@ -2580,12 +2562,12 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
         queryClient.invalidateQueries({ queryKey: ["pipelines", "item", caseId, "automation-retry-plan"] }),
         queryClient.invalidateQueries({ queryKey: queryKeys.pipelines.caseChildren(caseId) }),
       ]);
-      pushToast({ title: "Retry started", tone: "success" });
+      pushToast({ title: translateInstant("Retry started"), tone: "success" });
     },
     onError: (error: unknown) => {
       const message = error instanceof ApiError && error.message ? error.message : "Could not retry this automation.";
       setRetryDialogError(message);
-      pushToast({ title: "Could not retry this automation", tone: "error" });
+      pushToast({ title: translateInstant("Could not retry this automation"), tone: "error" });
     },
   });
 
@@ -2622,14 +2604,14 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
     onMutate: () => setLivenessRetryError(null),
     onSuccess: async () => {
       await invalidateItem();
-      pushToast({ title: "Retry started", tone: "success" });
+      pushToast({ title: translateInstant("Retry started"), tone: "success" });
     },
     onError: (error: unknown) => {
       const message = error instanceof ApiError && error.message
         ? error.message
         : "Could not retry. Please try again.";
       setLivenessRetryError(message);
-      pushToast({ title: "Could not retry the automation", tone: "error" });
+      pushToast({ title: translateInstant("Could not retry the automation"), tone: "error" });
     },
   });
 
@@ -2661,9 +2643,9 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
       setMoveDialogOpen(false);
       setMoveStageKey("");
       await invalidateItem();
-      pushToast({ title: "Item moved", tone: "success" });
+      pushToast({ title: translateInstant("Item moved"), tone: "success" });
     },
-    onError: () => pushToast({ title: "Could not move the item", tone: "error" }),
+    onError: () => pushToast({ title: translateInstant("Could not move the item"), tone: "error" }),
   });
   const removeItem = useMutation({
     mutationFn: () => {
@@ -2677,10 +2659,10 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
     onSuccess: async () => {
       setRemoveDialogOpen(false);
       await invalidateItem();
-      pushToast({ title: "Item removed", tone: "success" });
+      pushToast({ title: translateInstant("Item removed"), tone: "success" });
       navigate(`/pipelines/${pipelineId}`);
     },
-    onError: () => pushToast({ title: "Could not remove the item", tone: "error" }),
+    onError: () => pushToast({ title: translateInstant("Could not remove the item"), tone: "error" }),
   });
 
   const reviewConfig = useMemo(
@@ -2738,12 +2720,12 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
       });
       if (nextHref) navigate(nextHref);
     },
-    onError: () => pushToast({ title: "Could not update the review", tone: "error" }),
+    onError: () => pushToast({ title: translateInstant("Could not update the review"), tone: "error" }),
   });
 
   if (pipeline.isLoading || item.isLoading) return <PageSkeleton />;
   if (!detail || !pipeline.data) {
-    return <div className="mx-auto max-w-3xl py-10 text-sm text-muted-foreground"><PipelineText k="pipelines.itemNotFound" defaultValue="Item not found." /></div>;
+    return <div className="mx-auto max-w-3xl py-10 text-sm text-muted-foreground">{translateInstant("pipelines.itemNotFound")}</div>;
   }
 
   const workReferences = extractWorkReferences(detail.case);
@@ -2784,16 +2766,13 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
         <Button asChild>
           <Link to={conversationIssuePath!} state={conversationIssueState} issuePrefetch={conversationIssueDetail.data ?? null}>
             <MessageSquare className="mr-2 h-4 w-4" />
-            {t("pipelines.openConversation", { defaultValue: "Open conversation" })}
-          </Link>
+            {translateInstant("pipelines.openConversation")}</Link>
         </Button>
       )
     : (
         <Button onClick={() => startConversation.mutate()} disabled={startConversation.isPending}>
           <MessageSquare className="mr-2 h-4 w-4" />
-          {startConversation.isPending
-            ? t("pipelines.startingConversation", { defaultValue: "Starting..." })
-            : t("pipelines.startConversation", { defaultValue: "Start a conversation" })}
+          {startConversation.isPending ? translateInstant("pipelines.startingConversation") : translateInstant("pipelines.startConversation")}
         </Button>
       );
   const reviewPanel = detail.stage.kind === "review" && reviewConfig ? (
@@ -2814,7 +2793,7 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
       <div className="mb-6 grid gap-5 lg:grid-cols-(--gtc-45) lg:items-start lg:gap-8">
         <div className="min-w-0">
           <div className="mb-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-            <Link to="/pipelines" className="hover:text-foreground"><PipelineText k="pipelines.title" defaultValue="Pipelines" /></Link>
+            <Link to="/pipelines" className="hover:text-foreground">{translateInstant("pipelines.title")}</Link>
             <ChevronRight className="h-3.5 w-3.5" />
             <Link to={`/pipelines/${pipelineId}`} className="hover:text-foreground">{pipeline.data.name}</Link>
           </div>
@@ -2824,12 +2803,12 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
               {statusLabel}
             </span>
             <div className="flex items-center gap-1 text-sm text-muted-foreground">
-              Stage: <span className="font-medium text-foreground">{detail.stage.name}</span>
+              {translateInstant("Stage:")}{" "}<span className="font-medium text-foreground">{detail.stage.name}</span>
             </div>
           </div>
           {detail.parentCase ? (
             <p className="mt-2 text-sm text-muted-foreground">
-              Built for{" "}
+              {translateInstant("pipelines.builtFor")}{" "}
               <Link
                 to={`/pipelines/${detail.parentCase.case.pipelineId}/items/${detail.parentCase.case.id}`}
                 className="font-medium text-foreground hover:underline"
@@ -2840,7 +2819,7 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
           ) : null}
           {detail.builtFromAutomation ? (
             <p className="mt-1 text-sm text-muted-foreground">
-              Built from{" "}
+              {translateInstant("Built from")}{" "}
               <Link
                 to={detail.builtFromAutomation.stage
                   ? pipelineStageAutomationSettingsHref(
@@ -2862,7 +2841,7 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
             {primaryAction}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" aria-label={t("pipelines.itemActions", { defaultValue: "Item actions" })}>
+                <Button variant="outline" size="icon" aria-label={translateInstant("pipelines.itemActions")}>
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -2881,8 +2860,7 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
                   ) : (
                     <CircleDot className="h-4 w-4" />
                   )}
-                  Re-run this step
-                </DropdownMenuItem>
+                  {translateInstant("Re-run this step")}</DropdownMenuItem>
                 {previousRetryPlan?.allowed ? (
                   <DropdownMenuItem
                     disabled={retryStageAutomation.isPending}
@@ -2897,8 +2875,7 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
                     ) : (
                       <ArrowUpDown className="h-4 w-4" />
                     )}
-                    Retry previous step...
-                  </DropdownMenuItem>
+                    {translateInstant("Retry previous step...")}</DropdownMenuItem>
                 ) : null}
                 <DropdownMenuItem
                   disabled={moveStageOptions.length === 0 || moveItemToStage.isPending}
@@ -2909,8 +2886,7 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
                   }}
                 >
                   <ArrowUpDown className="h-4 w-4" />
-                  Move to stage...
-                </DropdownMenuItem>
+                  {translateInstant("Move to stage...")}</DropdownMenuItem>
                 <DropdownMenuItem
                   variant="destructive"
                   disabled={!removeStage || removeItem.isPending}
@@ -2920,8 +2896,7 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
                   }}
                 >
                   <Trash2 className="h-4 w-4" />
-                  Remove item
-                </DropdownMenuItem>
+                  {translateInstant("pipelines.removeItem")}</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -2931,27 +2906,23 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
       <Dialog open={moveDialogOpen} onOpenChange={setMoveDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle><PipelineText k="pipelines.moveToStage" defaultValue="Move to stage" /></DialogTitle>
+            <DialogTitle>{translateInstant("pipelines.moveToStage")}</DialogTitle>
             <DialogDescription>
-              Manual moves can bypass the normal agent handoff for this item. Let automation move work when possible;
-              use this override only when the board needs to correct the item state.
-            </DialogDescription>
+              {translateInstant("Manual moves can bypass the normal agent handoff for this item. Let automation move work when possible; use this override only when the board needs to correct the item state.")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="rounded-sm border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950 dark:border-amber-900/70 dark:bg-amber-950/30 dark:text-amber-100">
               <div className="flex gap-2">
                 <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
                 <p>
-                  Moving this item may skip stage automation, review expectations, and configured transition paths.
-                  Paperclip will still enforce blockers and other hard safety checks.
-                </p>
+                  {translateInstant("Moving this item may skip stage automation, review expectations, and configured transition paths. Paperclip will still enforce blockers and other hard safety checks.")}</p>
               </div>
             </div>
             <label className="block space-y-2">
-              <span className="text-sm font-medium text-foreground"><PipelineText k="pipelines.stage" defaultValue="Stage" /></span>
+              <span className="text-sm font-medium text-foreground">{translateInstant("pipelines.stage")}</span>
               <Select value={moveStageKey} onValueChange={setMoveStageKey}>
                 <SelectTrigger>
-                  <SelectValue placeholder={t("pipelines.chooseStage", { defaultValue: "Choose a stage" })} />
+                  <SelectValue placeholder={translateInstant("pipelines.chooseStage")} />
                 </SelectTrigger>
                 <SelectContent>
                   {moveStageOptions.map((stage) => (
@@ -2970,14 +2941,13 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
               onClick={() => setMoveDialogOpen(false)}
               disabled={moveItemToStage.isPending}
             >
-              Cancel
-            </Button>
+              {translateInstant("Cancel")}</Button>
             <Button
               type="button"
               onClick={() => moveItemToStage.mutate()}
               disabled={!selectedMoveStage || moveItemToStage.isPending}
             >
-              {moveItemToStage.isPending ? "Moving..." : `Move to ${selectedMoveStage?.name ?? "stage"}`}
+              {moveItemToStage.isPending ? translateInstant("folders.moving") : `Move to ${selectedMoveStage?.name ?? "stage"}`}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -2991,16 +2961,14 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
       }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{retryDialogScope === "previous_stage" ? "Retry previous step" : "Re-run this step"}</DialogTitle>
+            <DialogTitle>{retryDialogScope === "previous_stage" ? "Retry previous step" : translateInstant("Re-run this step")}</DialogTitle>
             <DialogDescription>
-              Review the automation preflight before Paperclip dispatches a fresh run.
-            </DialogDescription>
+              {translateInstant("Review the automation preflight before Paperclip dispatches a fresh run.")}</DialogDescription>
           </DialogHeader>
           {retryPlan.isLoading ? (
             <div className="flex items-center gap-2 py-4 text-sm text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" />
-              Checking retry safety...
-            </div>
+              {translateInstant("Checking retry safety...")}</div>
           ) : retryPlan.error ? (
             <div className="rounded-sm border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
               {retryPlan.error instanceof ApiError && retryPlan.error.message
@@ -3011,18 +2979,18 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
             <div className="space-y-4 py-2">
               <div className="grid gap-3 text-sm sm:grid-cols-2">
                 <div>
-                  <div className="text-xs font-medium uppercase text-muted-foreground"><PipelineText k="pipelines.from" defaultValue="From" /></div>
+                  <div className="text-xs font-medium uppercase text-muted-foreground">From</div>
                   <div className="mt-1 font-medium text-foreground">{retryPlan.data.currentStage.name}</div>
                 </div>
                 <div>
-                  <div id="retry-runs-at-label" className="text-xs font-medium uppercase text-muted-foreground"><PipelineText k="pipelines.runsAt" defaultValue="Runs at" /></div>
+                  <div id="retry-runs-at-label" className="text-xs font-medium uppercase text-muted-foreground">{translateInstant("pipelines.runsAt")}</div>
                   {retryShowTargetDropdown ? (
                     <Select
                       value={retrySelectedTargetId}
                       onValueChange={(value) => setRetryTargetStageId(value)}
                     >
                       <SelectTrigger className="mt-1 w-full" aria-labelledby="retry-runs-at-label">
-                        <SelectValue placeholder={t("pipelines.chooseStep", { defaultValue: "Choose a step" })} />
+                        <SelectValue placeholder={translateInstant("pipelines.chooseStep")} />
                       </SelectTrigger>
                       <SelectContent>
                         {retryAvailableTargets.map((stage) => (
@@ -3037,7 +3005,7 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
                   )}
                 </div>
                 <div className="sm:col-span-2">
-                  <div className="text-xs font-medium uppercase text-muted-foreground"><PipelineText k="pipelines.automation" defaultValue="Automation" /></div>
+                  <div className="text-xs font-medium uppercase text-muted-foreground">{translateInstant("Automation")}</div>
                   <div className="mt-1 flex flex-wrap items-center gap-x-1 gap-y-1 text-foreground">
                     {retryPlan.data.routine ? (
                       <>
@@ -3047,7 +3015,7 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
                         >
                           {retryPlan.data.routine.title}
                         </Link>
-                        <span className="text-muted-foreground">assigned to</span>
+                        <span className="text-muted-foreground">{translateInstant("assigned to")}</span>
                         {retryPlan.data.routine.assigneeAgent ? (
                           <Link
                             to={`/agents/${retryPlan.data.routine.assigneeAgent.id}`}
@@ -3055,9 +3023,9 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
                           >
                             {retryPlan.data.routine.assigneeAgent.name}
                           </Link>
-                          ) : (
-                          <span className="font-medium text-muted-foreground"><PipelineText k="pipelines.noAssignee" defaultValue="No responsible" /></span>
-                          )}
+                        ) : (
+                          <span className="font-medium text-muted-foreground">{translateInstant("issuesList.noResponsible")}</span>
+                        )}
                       </>
                     ) : (
                       "No routine configured"
@@ -3070,15 +3038,14 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
                 {retryPreflightRefreshing ? (
                   <div className="absolute inset-0 z-10 flex items-center justify-center gap-2 rounded-sm bg-background/70 text-sm text-muted-foreground">
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    Checking retry safety...
-                  </div>
+                    {translateInstant("Checking retry safety...")}</div>
                 ) : null}
                 <div className={cn("space-y-4", retryPreflightRefreshing && "opacity-50")}>
                   <div className="grid gap-2 text-sm sm:grid-cols-4">
                     <RetryMetric label="children" value={retryPlan.data.effectCounts.directChildren} />
                     <RetryMetric label="descendants" value={retryPlan.data.effectCounts.descendants} />
-                    <RetryMetric label="linked tasks" value={retryPlan.data.effectCounts.linkedAutomationIssues} />
-                    <RetryMetric label="active work" value={retryPlan.data.effectCounts.activeDescendants} tone={retryPlan.data.effectCounts.activeDescendants > 0 ? "warning" : "default"} />
+                    <RetryMetric label={translateInstant("linked tasks")} value={retryPlan.data.effectCounts.linkedAutomationIssues} />
+                    <RetryMetric label={translateInstant("active work")} value={retryPlan.data.effectCounts.activeDescendants} tone={retryPlan.data.effectCounts.activeDescendants > 0 ? "warning" : "default"} />
                   </div>
 
                   {retryPlan.data.blockers.length > 0 ? (
@@ -3100,8 +3067,7 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
 
                   {retryIsNonImmediateTarget ? (
                     <p className="text-xs text-muted-foreground">
-                      Re-running from an earlier step affects more downstream items.
-                    </p>
+                      {translateInstant("Re-running from an earlier step affects more downstream items.")}</p>
                   ) : null}
 
                   <div className="space-y-2">
@@ -3154,8 +3120,7 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
               onClick={() => setRetryDialogScope(null)}
               disabled={rerunCurrentStageAutomation.isPending || retryStageAutomation.isPending}
             >
-              Cancel
-            </Button>
+              {translateInstant("Cancel")}</Button>
             <Button
               type="button"
               disabled={
@@ -3171,8 +3136,8 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
               }}
             >
               {(rerunCurrentStageAutomation.isPending || retryStageAutomation.isPending)
-                ? "Starting..."
-                : retryPlan.data ? retryPrimaryActionLabel(retryPlan.data) : "Retry"}
+                ? translateInstant("pipelines.startingConversation")
+                : retryPlan.data ? retryPrimaryActionLabel(retryPlan.data) : translateInstant("Retry")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -3192,9 +3157,7 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
       {banner.visible ? (
         <section className="mb-5 flex flex-col gap-3 border-y border-border bg-muted/20 py-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h2 className="text-sm font-semibold text-foreground">
-              {t("pipelines.readyToMoveToStage", { stage: banner.stageName, defaultValue: "Ready to move to {{stage}}?" })}
-            </h2>
+            <h2 className="text-sm font-semibold text-foreground">{translateInstant("Ready to move to")}{" "}{banner.stageName}?</h2>
             {banner.rationale ? <p className="mt-1 text-sm text-muted-foreground">{banner.rationale}</p> : null}
           </div>
           {banner.suggestionId ? (
@@ -3205,8 +3168,7 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
                 disabled={resolveSuggestion.isPending}
               >
                 <Check className="mr-2 h-4 w-4" />
-                {t("common.approve", { defaultValue: "Approve" })}
-              </Button>
+                {translateInstant("common.approve")}</Button>
               <Button
                 size="sm"
                 variant="outline"
@@ -3214,8 +3176,7 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
                 disabled={resolveSuggestion.isPending}
               >
                 <X className="mr-2 h-4 w-4" />
-                {t("pipelines.notYet", { defaultValue: "Not yet" })}
-              </Button>
+                {translateInstant("pipelines.notYet")}</Button>
             </div>
           ) : null}
         </section>
@@ -3236,35 +3197,18 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
             onClick={() => acknowledgeChange.mutate()}
             disabled={acknowledgeChange.isPending}
           >
-            {t("common.acknowledge", { defaultValue: "Acknowledge" })}
-          </Button>
+            {translateInstant("common.acknowledge")}</Button>
         </section>
       ) : null}
 
       {(childrenGate || (breakdown?.waitForPieces ?? false)) && waitingChildren.length > 0 ? (
-        <section
-          aria-label={t("pipelines.waitingChildItems", { defaultValue: "Waiting child items" })}
-          className="mb-5 border-y border-border px-4 py-4"
-        >
+        <section aria-label={translateInstant("pipelines.waitingChildItems")} className="mb-5 border-y border-border px-4 py-4">
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
               <ListTree className="h-4 w-4 text-muted-foreground" />
               {breakdown
-                ? t("pipelines.waitingOnPieces", {
-                  waiting: waitingChildren.length,
-                  total: pieceCountTotal,
-                  label: pieceLabel(pieceCountTotal),
-                  done: pieceCountDone,
-                  defaultValue: "Waiting on {{waiting}} of {{total}} {{label}} · {{done}} finished",
-                })
-                : t("pipelines.waitingOnChildItems", {
-                  waiting: waitingChildren.length,
-                  total: pieceCountTotal,
-                  label: pieceCountTotal === 1
-                    ? t("pipelines.childItem", { defaultValue: "child item" })
-                    : t("pipelines.childItems", { defaultValue: "child items" }),
-                  defaultValue: "Waiting on {{waiting}} of {{total}} {{label}}",
-                })}
+                ? `Waiting on ${waitingChildren.length} of ${pieceCountTotal} ${pieceLabel(pieceCountTotal)} · ${pieceCountDone} finished`
+                : `Waiting on ${waitingChildren.length} of ${pieceCountTotal} child ${pieceCountTotal === 1 ? "item" : "items"}`}
             </div>
             <ul className="divide-y divide-border">
               {waitingChildren.map((row) => (
@@ -3296,13 +3240,8 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
             <details className="group rounded-md border border-border">
               <summary className="flex cursor-pointer list-none items-center gap-2 px-3 py-2 text-sm font-semibold text-foreground [&::-webkit-details-marker]:hidden">
                 <ChevronRight className="h-3.5 w-3.5 text-muted-foreground transition-transform group-open:rotate-90" />
-                {t("pipelines.moreDetails", { defaultValue: "More details" })}
-                <span className="text-(length:--text-micro) font-normal text-muted-foreground">
-                  {t("pipelines.fieldCount", {
-                    count: mainPaneFields.length,
-                    defaultValue: "{{count}} field",
-                    defaultValue_plural: "{{count}} fields",
-                  })}
+                {translateInstant("pipelines.moreDetails")}<span className="text-(length:--text-micro) font-normal text-muted-foreground">
+                  {mainPaneFields.length} {mainPaneFields.length === 1 ? "field" : "fields"}
                 </span>
               </summary>
               <div className="space-y-5 border-t border-border px-3 py-3">
@@ -3327,7 +3266,7 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
             onRetry={() => outputs.refetch()}
           />
 
-          <DetailSection title={t("pipelines.conversation", { defaultValue: "Conversation" })}>
+          <DetailSection title={translateInstant("pipelines.conversation")}>
             {activeConversationIssue ? (
               <div className="py-3">
                 <IssueChatThread
@@ -3382,12 +3321,10 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
               </div>
             ) : (
               <div className="flex flex-col items-start gap-3 py-3 text-sm text-muted-foreground">
-                <p><PipelineText k="pipelines.noActiveConversation" defaultValue="No active conversation yet." /></p>
+                <p>{translateInstant("pipelines.noActiveConversation")}</p>
                 <Button size="sm" variant="outline" onClick={() => startConversation.mutate()} disabled={startConversation.isPending}>
                   <MessageSquare className="mr-2 h-4 w-4" />
-                  {startConversation.isPending
-                    ? t("pipelines.startingConversation", { defaultValue: "Starting..." })
-                    : t("pipelines.startConversation", { defaultValue: "Start a conversation" })}
+                  {startConversation.isPending ? translateInstant("pipelines.startingConversation") : translateInstant("pipelines.startConversation")}
                 </Button>
               </div>
             )}
@@ -3397,7 +3334,7 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
         <aside className="min-w-0 space-y-8">
           {reviewPanel}
 
-          <DetailSection title={t("pipelines.linkedWork", { defaultValue: "Linked work" })}>
+          <DetailSection title={translateInstant("pipelines.linkedWork")}>
             <PipelineWorkReferences references={workReferences} />
           </DetailSection>
 
@@ -3405,41 +3342,19 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
             title={
               breakdown
                 ? pieceCountTotal > 0
-                  ? t("pipelines.builtFromPieces", {
-                    count: pieceCountTotal,
-                    label: pieceLabel(pieceCountTotal),
-                    defaultValue: "Built from {{count}} {{label}}",
-                  })
-                  : t("pipelines.noPiecesNeeded", {
-                    label: pieceNounPluralLabel,
-                    defaultValue: "No {{label}} needed",
-                  })
-                : t("pipelines.builtFromItems", {
-                  count: pieceCountTotal,
-                  label: pieceCountTotal === 1
-                    ? t("pipelines.item", { defaultValue: "item" })
-                    : t("pipelines.items", { defaultValue: "items" }),
-                  defaultValue: "Built from {{count}} {{label}}",
-                })
+                  ? `Built from ${pieceCountTotal} ${pieceLabel(pieceCountTotal)}`
+                  : `No ${pieceNounPluralLabel} needed`
+                : `Built from ${pieceCountTotal} ${pieceCountTotal === 1 ? "item" : "items"}`
             }
           >
             {breakdown && pieceCountTotal > 0 ? (
               <p className="py-2 text-sm text-muted-foreground">
-                {t("pipelines.piecesFinished", {
-                  done: pieceCountDone,
-                  total: pieceCountTotal,
-                  label: pieceLabel(pieceCountTotal),
-                  defaultValue: "{{done}} of {{total}} {{label}} finished",
-                })}
+                {pieceCountDone} {translateInstant("issueCommon.of")}{" "}{pieceCountTotal} {pieceLabel(pieceCountTotal)} finished
               </p>
             ) : null}
             {breakdown && pieceCountTotal === 0 ? (
               <p className="py-2 text-sm text-muted-foreground">
-                {t("pipelines.noSplitNeeded", {
-                  label: pieceNounPluralLabel,
-                  defaultValue: "Nothing was worth splitting - this case moved straight ahead without creating any {{label}}.",
-                })}
-              </p>
+                {translateInstant("Nothing was worth splitting — this case moved straight ahead without creating any")}{" "}{pieceNounPluralLabel}{translateInstant(".")}</p>
             ) : (
               <BuiltFromTree rows={childRows} />
             )}
@@ -3448,15 +3363,12 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
                 to={`/pipelines/${breakdown.targetPipelineId}`}
                 className="mt-2 inline-block text-sm font-medium text-foreground hover:underline"
               >
-                {t("pipelines.openAllPieces", {
-                  label: pieceNounPluralLabel,
-                  defaultValue: "Open all {{label}} ->",
-                })}
+                {translateInstant("Open all")}{" "}{pieceNounPluralLabel} →
               </Link>
             ) : null}
           </DetailSection>
 
-          <DetailSection title={t("pipelines.details", { defaultValue: "Details" })}>
+          <DetailSection title={translateInstant("Details")}>
             {itemFields.length > 0 ? (
               <dl className="divide-y divide-border">
                 {itemFields.map((field) => (
@@ -3467,11 +3379,11 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
                 ))}
               </dl>
             ) : (
-              <p className="py-3 text-sm text-muted-foreground"><PipelineText k="pipelines.noAddedDetails" defaultValue="No added details." /></p>
+              <p className="py-3 text-sm text-muted-foreground">{translateInstant("pipelines.noAddedDetails")}</p>
             )}
           </DetailSection>
 
-          <DetailSection title={t("pipelines.activity", { defaultValue: "Activity" })}>
+          <DetailSection title={translateInstant("Activity")}>
             {eventRows.length > 0 ? (
               <ol className="divide-y divide-border">
                 {eventRows.map((event) => (
@@ -3484,7 +3396,7 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
                 ))}
               </ol>
             ) : (
-              <p className="py-3 text-sm text-muted-foreground"><PipelineText k="pipelines.noActivity" defaultValue="No activity yet." /></p>
+              <p className="py-3 text-sm text-muted-foreground">{translateInstant("No activity yet.")}</p>
             )}
           </DetailSection>
         </aside>
@@ -3493,15 +3405,14 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
       <Dialog open={removeDialogOpen} onOpenChange={setRemoveDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle><PipelineText k="pipelines.removeItem" defaultValue="Remove item" /></DialogTitle>
+            <DialogTitle>{translateInstant("pipelines.removeItem")}</DialogTitle>
             <DialogDescription>
-              This moves the item out of active work. It stays visible in the pipeline history.
-            </DialogDescription>
+              {translateInstant("This moves the item out of active work. It stays visible in the pipeline history.")}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRemoveDialogOpen(false)}><PipelineText k="pipelines.keepItem" defaultValue="Keep item" /></Button>
+            <Button variant="outline" onClick={() => setRemoveDialogOpen(false)}>{translateInstant("pipelines.keepItem")}</Button>
             <Button variant="destructive" onClick={() => removeItem.mutate()} disabled={removeItem.isPending || !removeStage}>
-              {removeItem.isPending ? "Removing..." : "Remove item"}
+              {removeItem.isPending ? translateInstant("Removing...") : translateInstant("pipelines.removeItem")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -3511,6 +3422,7 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
 }
 
 function ActivePipelineWorkBanner({ activeWork }: { activeWork: PipelineCaseActiveWork }) {
+  useTranslation();
   const isAutomation = activeWork.issueRole === "automation";
   const title = isAutomation ? "Automation is running" : "Linked work is running";
   const issueLabel = activeWork.issueIdentifier ?? activeWork.issueTitle;
@@ -3533,9 +3445,8 @@ function ActivePipelineWorkBanner({ activeWork }: { activeWork: PipelineCaseActi
             <Link to={issuePath} className="font-medium underline-offset-2 hover:underline">
               {issueLabel}
             </Link>{" "}
-            is active with {activeWork.agentName}
-            {startedLabel ? ` · ${startedLabel}` : ""}.
-          </p>
+            {translateInstant("is active with")}{" "}{activeWork.agentName}
+            {startedLabel ? ` · ${startedLabel}` : ""}{translateInstant(".")}</p>
         </div>
       </div>
       <Button
@@ -3546,8 +3457,7 @@ function ActivePipelineWorkBanner({ activeWork }: { activeWork: PipelineCaseActi
       >
         <Link to={issuePath}>
           <ExternalLink className="mr-2 h-4 w-4" />
-          Open task
-        </Link>
+          {translateInstant("Open task")}</Link>
       </Button>
     </section>
   );
@@ -3577,6 +3487,7 @@ function WaitingChildRow({
     descendantActiveWorkCount?: number | null;
   };
 }) {
+  useTranslation();
   const liveDownstreamCount = descendantActiveWorkCount(row);
 
   return (
@@ -3593,7 +3504,7 @@ function WaitingChildRow({
               {row.activeWork ? (
                 <span className="inline-flex items-center gap-1.5 text-emerald-700 dark:text-emerald-300">
                   <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" aria-hidden="true" />
-                  Live with {row.activeWork.agentName}
+                  {translateInstant("Live with")}{" "}{row.activeWork.agentName}
                 </span>
               ) : null}
               {liveDownstreamCount > 0 ? (
@@ -3656,7 +3567,7 @@ function reviewDecisionActions(
   if (config.approveToStageKey) {
     actions.push({
       decision: "approve",
-      label: "Approve",
+      label: translateInstant("Approve"),
       targetStageKey: config.approveToStageKey,
       targetStageName: stageLookup.get(config.approveToStageKey) ?? humanizePipelineItemStatus(config.approveToStageKey),
       requireReason: false,
@@ -3676,7 +3587,7 @@ function reviewDecisionActions(
   if (config.rejectToStageKey) {
     actions.push({
       decision: "reject",
-      label: "Reject",
+      label: translateInstant("Reject"),
       targetStageKey: config.rejectToStageKey,
       targetStageName: stageLookup.get(config.rejectToStageKey) ?? humanizePipelineItemStatus(config.rejectToStageKey),
       requireReason: config.requireRejectReason,
@@ -3714,25 +3625,25 @@ function ReviewDecisionPanel({
   onNoteChange: (value: string) => void;
   onDecide: (decision: PipelineReviewDecision) => void;
 }) {
+  useTranslation();
   const trimmedNote = note.trim();
 
   return (
     <section>
-      <h2 className="mb-3 text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground"><PipelineText k="pipelines.review" defaultValue="Review" /></h2>
+      <h2 className="mb-3 text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">{translateInstant("Review")}</h2>
       <div className="border-y border-amber-300 bg-amber-50/70 p-5 text-amber-950 dark:border-amber-900/70 dark:bg-amber-950/30 dark:text-amber-100 sm:p-6">
         <div className="space-y-5">
           <div className="flex items-start gap-3">
             <AlertTriangle className="mt-1 h-5 w-5 shrink-0" />
             <div>
-              <p className="text-2xl font-semibold leading-tight"><PipelineText k="pipelines.inReview" defaultValue="In review" /></p>
+              <p className="text-2xl font-semibold leading-tight">In review</p>
               <p className="mt-1 text-sm opacity-80">
-                Decide where this item goes next.
-              </p>
+                {translateInstant("Decide where this item goes next.")}</p>
             </div>
           </div>
 
           <label className="block space-y-1.5 text-sm font-medium">
-            <span><PipelineText k="pipelines.reason" defaultValue="Reason" /></span>
+            <span>{translateInstant("issueScheduledRetry.reason")}</span>
             <Textarea
               value={note}
               onChange={(event) => onNoteChange(event.target.value)}
@@ -3766,7 +3677,7 @@ function ReviewDecisionPanel({
                   <span className="min-w-0 flex-1">
                     <span className="block">{action.label}</span>
                     <span className="block truncate text-xs font-normal opacity-75">
-                      Move to {action.targetStageName}
+                      {translateInstant("pipelineSettings.moveTo")}{" "}{action.targetStageName}
                     </span>
                   </span>
                 </Button>
@@ -3776,10 +3687,10 @@ function ReviewDecisionPanel({
 
           {nextItemTitle ? (
             <p className="text-xs opacity-75">
-              Next in this review queue: <span className="font-medium">{nextItemTitle}</span>
+              {translateInstant("Next in this review queue:")}{" "}<span className="font-medium">{nextItemTitle}</span>
             </p>
           ) : (
-            <p className="text-xs opacity-75"><PipelineText k="pipelines.noOtherReviewItem" defaultValue="No other item is waiting in this pipeline review queue." /></p>
+            <p className="text-xs opacity-75">{translateInstant("pipelines.noOtherReviewItem")}</p>
           )}
         </div>
       </div>
@@ -3796,13 +3707,14 @@ function PipelineEventText({
   pipelineId: string;
   stages: Map<string, string>;
 }) {
+  useTranslation();
   const kind = event.type.startsWith("case.") ? event.type.slice("case.".length) : event.type;
   if (kind === "automation_executed" && event.automation) {
     const routineName = event.automation.routine?.title ?? "the automation";
     const issue = event.automation.issue;
     return (
       <>
-        Automation completed — ran <span className="font-medium">{routineName}</span>
+        {translateInstant("Automation completed — ran")}{" "}<span className="font-medium">{routineName}</span>
         {issue ? (
           <>
             {" -> "}
@@ -3814,8 +3726,7 @@ function PipelineEventText({
             </Link>
           </>
         ) : null}
-        .
-      </>
+        {translateInstant(".")}</>
     );
   }
   if (kind === "automation_failed") {
@@ -3827,8 +3738,7 @@ function PipelineEventText({
           <>
             {" "}
             <Link to={pipelineStageAutomationSettingsHref(pipelineId, stageId)} className="font-medium text-foreground hover:underline">
-              Fix stage settings
-            </Link>
+              {translateInstant("Fix stage settings")}</Link>
           </>
         ) : null}
       </>
@@ -3858,32 +3768,32 @@ function DetailSection({
 }
 
 const DELIVERABLE_OUTPUT_PATTERNS: Array<[RegExp, string]> = [
-  [/brief/i, "Brief"],
-  [/spec/i, "Spec"],
-  [/report/i, "Report"],
-  [/design/i, "Design"],
+  [/brief/i, "pipelines.outputs.brief"],
+  [/spec/i, "pipelines.outputs.spec"],
+  [/report/i, "pipelines.outputs.report"],
+  [/design/i, "pipelines.outputs.design"],
   [/summary/i, "Summary"],
-  [/plan/i, "Plan"],
+  [/plan/i, "pipelines.outputs.plan"],
 ];
 
 const OUTPUT_SOURCE_ROLE_LABELS: Record<string, string> = {
-  origin: "Origin",
-  conversation: "Conversation",
-  work: "Work",
-  automation: "Automation",
+  get origin() { return translateInstant("pipelines.outputs.origin"); },
+  get conversation() { return translateInstant("pipelines.outputs.conversation"); },
+  get work() { return translateInstant("Work"); },
+  get automation() { return translateInstant("Automation"); },
 };
 
 function deliverableDocumentLabel(item: PipelineCaseDocumentOutputItem): string | null {
   const haystack = `${item.title} ${item.documentKey}`;
   for (const [pattern, label] of DELIVERABLE_OUTPUT_PATTERNS) {
-    if (pattern.test(haystack)) return label;
+    if (pattern.test(haystack)) return translateInstant(label);
   }
   return null;
 }
 
 function humanizeOutputStatus(status: string) {
   const normalized = status.trim().toLowerCase();
-  if (!normalized) return "Unknown";
+  if (!normalized) return translateInstant("Unknown");
   return normalized.charAt(0).toUpperCase() + normalized.slice(1).replace(/_/g, " ");
 }
 
@@ -3937,10 +3847,10 @@ function OutputDeliverableTag({ label }: { label: string }) {
 }
 
 function OutputUnverifiedTag() {
+  useTranslation();
   return (
     <Badge variant="outline" className="border-border px-1.5 text-(length:--text-nano) font-semibold uppercase text-muted-foreground">
-      Unverified
-    </Badge>
+      {translateInstant("Unverified")}</Badge>
   );
 }
 
@@ -3953,6 +3863,7 @@ function OutputPreview({ text, dimmed }: { text: string; dimmed: boolean }) {
 }
 
 function ItemOutputMeta({ item, children }: { item: PipelineCaseOutputItem; children?: ReactNode }) {
+  useTranslation();
   const statusClass = issueStatusText[item.sourceIssueStatus] ?? issueStatusTextDefault;
   const roleLabel = OUTPUT_SOURCE_ROLE_LABELS[item.sourceRole] ?? humanizeOutputStatus(item.sourceRole);
   return (
@@ -3962,7 +3873,7 @@ function ItemOutputMeta({ item, children }: { item: PipelineCaseOutputItem; chil
         className="font-mono text-(length:--text-micro) text-muted-foreground hover:text-foreground hover:underline"
         title={item.sourceIssueTitle}
       >
-        {item.sourceIssueIdentifier ?? "Source task"}
+        {item.sourceIssueIdentifier ?? translateInstant("Source task")}
       </Link>
       <OutputMetaDot />
       <span>{roleLabel}</span>
@@ -3979,7 +3890,7 @@ function ItemOutputMeta({ item, children }: { item: PipelineCaseOutputItem; chil
 }
 
 function ItemOutputDocumentRow({ item }: { item: PipelineCaseDocumentOutputItem }) {
-  const { t } = useTranslation();
+  useTranslation();
   const deliverable = deliverableDocumentLabel(item);
   const lowTrust = isLowTrustOutput(item);
   const href = documentAnchorPath(item);
@@ -4002,8 +3913,8 @@ function ItemOutputDocumentRow({ item }: { item: PipelineCaseDocumentOutputItem 
       <Link
         to={href}
         className="inline-flex h-(--sz-30px) w-(--sz-30px) shrink-0 items-center justify-center rounded-sm text-muted-foreground hover:bg-accent hover:text-foreground"
-        aria-label={t("pipelines.openNamedItem", { defaultValue: "Open {{name}}", name: item.title })}
-        title={t("pipelines.openDocument", { defaultValue: "Open document" })}
+        aria-label={`Open ${item.title}`}
+        title={translateInstant("pipelines.openDocument")}
       >
         <ArrowUpRight className="h-4 w-4" />
       </Link>
@@ -4012,7 +3923,7 @@ function ItemOutputDocumentRow({ item }: { item: PipelineCaseDocumentOutputItem 
 }
 
 function ItemOutputWorkProductRow({ item }: { item: PipelineCaseWorkProductOutputItem }) {
-  const { t } = useTranslation();
+  useTranslation();
   const lowTrust = isLowTrustOutput(item);
   const href = item.url ?? issueDetailPath({ id: item.sourceIssueId, identifier: item.sourceIssueIdentifier });
   return (
@@ -4031,8 +3942,8 @@ function ItemOutputWorkProductRow({ item }: { item: PipelineCaseWorkProductOutpu
       <OutputLink
         to={href}
         className="inline-flex h-(--sz-30px) w-(--sz-30px) shrink-0 items-center justify-center rounded-sm text-muted-foreground hover:bg-accent hover:text-foreground"
-        ariaLabel={t("pipelines.openNamedItem", { defaultValue: "Open {{name}}", name: item.title })}
-        title={t("pipelines.openWorkProduct", { defaultValue: "Open work product" })}
+        ariaLabel={`Open ${item.title}`}
+        title={translateInstant("pipelines.openWorkProduct")}
       >
         <ArrowUpRight className="h-4 w-4" />
       </OutputLink>
@@ -4041,8 +3952,7 @@ function ItemOutputWorkProductRow({ item }: { item: PipelineCaseWorkProductOutpu
 }
 
 function ItemOutputAttachmentRow({ item }: { item: PipelineCaseAttachmentOutputItem }) {
-  const { t } = useTranslation();
-  const filename = item.filename ?? item.title ?? "Attachment";
+  const filename = item.filename ?? item.title ?? translateInstant("Attachment");
   const isImage = item.contentType?.startsWith("image/");
   return (
     <div
@@ -4055,7 +3965,7 @@ function ItemOutputAttachmentRow({ item }: { item: PipelineCaseAttachmentOutputI
           target="_blank"
           rel="noreferrer"
           className="mt-0.5 block h-(--sz-30px) w-10 shrink-0 overflow-hidden rounded-sm border border-border bg-accent/10"
-          aria-label={t("pipelines.openNamedItem", { defaultValue: "Open {{name}}", name: filename })}
+          aria-label={`Open ${filename}`}
         >
           <img src={item.contentPath} alt={filename} className="h-full w-full object-cover" loading="lazy" />
         </a>
@@ -4085,16 +3995,16 @@ function ItemOutputAttachmentRow({ item }: { item: PipelineCaseAttachmentOutputI
           target="_blank"
           rel="noreferrer"
           className="inline-flex h-(--sz-30px) w-(--sz-30px) items-center justify-center rounded-sm text-muted-foreground hover:bg-accent hover:text-foreground"
-          aria-label={t("pipelines.openNamedItem", { defaultValue: "Open {{name}}", name: filename })}
-          title={t("common.open", { defaultValue: "Open" })}
+          aria-label={`Open ${filename}`}
+          title={translateInstant("Open")}
         >
           <ArrowUpRight className="h-4 w-4" />
         </a>
         <a
           href={item.downloadPath}
           className="inline-flex h-(--sz-30px) w-(--sz-30px) items-center justify-center rounded-sm text-muted-foreground hover:bg-accent hover:text-foreground"
-          aria-label={t("pipelines.downloadNamedItem", { defaultValue: "Download {{name}}", name: filename })}
-          title={t("common.download", { defaultValue: "Download" })}
+          aria-label={`Download ${filename}`}
+          title={translateInstant("Download")}
         >
           <Download className="h-4 w-4" />
         </a>
@@ -4114,7 +4024,7 @@ function ItemOutputsSection({
   error: boolean;
   onRetry: () => void;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   if (!loading && !error && items.length === 0) return null;
 
   const documents = items.filter((item): item is PipelineCaseDocumentOutputItem => item.kind === "document");
@@ -4125,7 +4035,7 @@ function ItemOutputsSection({
   if (documents.length > 0) {
     groups.push({
       key: "document",
-      label: t("newIssue.documents", { defaultValue: "Documents" }),
+      label: translateInstant("newIssue.documents"),
       icon: <FileText className="h-4 w-4 text-muted-foreground" />,
       rows: documents.map((item) => <ItemOutputDocumentRow key={item.id} item={item} />),
     });
@@ -4133,7 +4043,7 @@ function ItemOutputsSection({
   if (workProducts.length > 0) {
     groups.push({
       key: "work_product",
-      label: t("pipelines.workProducts", { defaultValue: "Work products" }),
+      label: translateInstant("pipelines.workProducts"),
       icon: <Package className="h-4 w-4 text-muted-foreground" />,
       rows: workProducts.map((item) => <ItemOutputWorkProductRow key={item.id} item={item} />),
     });
@@ -4141,7 +4051,7 @@ function ItemOutputsSection({
   if (attachments.length > 0) {
     groups.push({
       key: "attachment",
-      label: t("newIssue.attachments", { defaultValue: "Attachments" }),
+      label: translateInstant("Attachments"),
       icon: <Paperclip className="h-4 w-4 text-muted-foreground" />,
       rows: attachments.map((item) => <ItemOutputAttachmentRow key={item.id} item={item} />),
     });
@@ -4149,7 +4059,7 @@ function ItemOutputsSection({
 
   return (
     <DetailSection
-      title={t("pipelines.itemOutputs", { defaultValue: "Item outputs" })}
+      title={translateInstant("pipelines.itemOutputs")}
       trailing={
         loading ? null : (
           <Badge variant="ghost" className="bg-muted text-(length:--text-micro) normal-case tracking-normal text-muted-foreground">
@@ -4170,14 +4080,13 @@ function ItemOutputsSection({
       ) : error ? (
         <div className="flex items-center gap-2 py-2.5 text-xs text-destructive">
           <AlertTriangle className="h-4 w-4 shrink-0" />
-          <span><PipelineText k="pipelines.itemOutputsLoadFailed" defaultValue="Couldn't load item outputs." /></span>
+          <span>{translateInstant("pipelines.itemOutputsLoadFailed")}</span>
           <button
             type="button"
             onClick={onRetry}
             className="ml-auto rounded-sm border border-border px-2 py-0.5 text-muted-foreground hover:bg-accent hover:text-foreground"
           >
-            {t("common.retry", { defaultValue: "Retry" })}
-          </button>
+            {translateInstant("common.retry")}</button>
         </div>
       ) : (
         <div>
@@ -4202,8 +4111,9 @@ function BuiltFromTree({
 }: {
   rows: Array<{ case: PipelineCase; stage: PipelineStage }>;
 }) {
+  useTranslation();
   if (rows.length === 0) {
-    return <p className="py-3 text-sm text-muted-foreground"><PipelineText k="pipelines.noBuiltFromItems" defaultValue="No built-from items." /></p>;
+    return <p className="py-3 text-sm text-muted-foreground">{translateInstant("pipelines.noBuiltFromItems")}</p>;
   }
   return (
     <ul className="divide-y divide-border">
@@ -4218,7 +4128,7 @@ function BuiltFromTree({
               <span className="block truncate font-medium text-foreground">{row.case.title}</span>
               {(row.case.childCount ?? 0) > 0 ? (
                 <span className="block text-xs text-muted-foreground">
-                  {row.case.childCount} nested {(row.case.childCount ?? 0) === 1 ? "item" : "items"} hidden
+                  {row.case.childCount} nested {(row.case.childCount ?? 0) === 1 ? translateInstant("pipelines.item") : translateInstant("pipelines.items")} hidden
                 </span>
               ) : null}
             </span>
@@ -4242,6 +4152,7 @@ function formatShortDate(value: Date | string) {
 }
 
 function PipelineAddItems({ pipelineId }: { pipelineId: string }) {
+  useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
@@ -4259,9 +4170,9 @@ function PipelineAddItems({ pipelineId }: { pipelineId: string }) {
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: "Pipelines", href: "/pipelines" },
-      { label: pipeline.data?.name ?? "Pipeline", href: `/pipelines/${pipelineId}` },
-      { label: "Add items" },
+      { label: translateInstant("pipelines.title"), href: "/pipelines" },
+      { label: pipeline.data?.name ?? translateInstant("pipelines.pipeline"), href: `/pipelines/${pipelineId}` },
+      { label: translateInstant("pipelines.addItems") },
     ]);
   }, [pipeline.data?.name, pipelineId, setBreadcrumbs]);
 
@@ -4297,7 +4208,7 @@ function PipelineAddItems({ pipelineId }: { pipelineId: string }) {
 
   if (pipeline.isLoading || intake.isLoading) return <PageSkeleton />;
   if (!pipeline.data || !intake.data) {
-    return <div className="mx-auto max-w-3xl py-10 text-sm text-muted-foreground"><PipelineText k="pipelines.notFound" defaultValue="Pipeline not found." /></div>;
+    return <div className="mx-auto max-w-3xl py-10 text-sm text-muted-foreground">{translateInstant("pipelines.notFound")}</div>;
   }
 
   const firstStageName = intake.data.stageName ?? pipeline.data.stages[0]?.name ?? "first stage";
@@ -4306,19 +4217,18 @@ function PipelineAddItems({ pipelineId }: { pipelineId: string }) {
     <div className="mx-auto max-w-6xl px-6 py-8">
       <div className="mb-6">
         <p className="text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
-          Add to {pipeline.data.name}
+          {translateInstant("Add to")}{" "}{pipeline.data.name}
         </p>
-        <h1 className="text-2xl font-semibold text-foreground"><PipelineText k="pipelines.addItemsTitle" defaultValue="Build your list, then submit it all at once" /></h1>
+        <h1 className="text-2xl font-semibold text-foreground">{translateInstant("pipelines.addItemsTitle")}</h1>
         <p className="text-sm text-muted-foreground">
-          Items will be added to the first stage ({firstStageName}).
+          {translateInstant("Items will be added to the first stage (")}{firstStageName}).
         </p>
       </div>
 
       <div className="mb-5 flex items-center gap-2 border border-border bg-muted/20 px-3 py-2 text-sm text-muted-foreground">
         <Info className="h-4 w-4 shrink-0" />
         <span>
-          These fields come from <span className="font-medium text-foreground">Pipeline settings -&gt; {firstStageName} stage</span>.
-        </span>
+          {translateInstant("These fields come from")}{" "}<span className="font-medium text-foreground">{translateInstant("Pipeline settings -&gt;")}{" "}{firstStageName} stage</span>{translateInstant(".")}</span>
       </div>
 
       <div className="space-y-3">
@@ -4352,20 +4262,18 @@ function PipelineAddItems({ pipelineId }: { pipelineId: string }) {
           onClick={() => setRows((current) => [...current, newDraftRow(false)])}
         >
           <Plus className="mr-2 h-4 w-4" />
-          Add another item
-        </button>
+          {translateInstant("Add another item")}</button>
       </div>
 
       <div className="mt-10 flex items-center justify-between border-t border-border pt-5">
         <Button variant="outline" onClick={() => navigate(`/pipelines/${pipelineId}`)}>
-          Cancel
-        </Button>
+          {translateInstant("Cancel")}</Button>
         <div className="flex items-center gap-4">
           <span className="text-sm text-muted-foreground">
             {rows.length === 0 ? "Add at least one item." : "Count updates live."}
           </span>
           <Button disabled={invalid || submit.isPending} onClick={() => submit.mutate()}>
-            {submit.isPending ? "Submitting..." : `Submit ${itemCountLabel(rows.length)}`}
+            {submit.isPending ? translateInstant("issueThreadInteraction.submitting") : `Submit ${itemCountLabel(rows.length)}`}
           </Button>
         </div>
       </div>
@@ -4392,9 +4300,8 @@ function DraftItemRow({
   onRemove: () => void;
   onChange: (fieldKey: string, value: string) => void;
 }) {
-  const { t } = useTranslation();
-  const itemNumberLabel = t("pipelines.itemNumber", { number: index + 1, defaultValue: "Item {{number}}" });
-  const title = row.values.title?.trim() || itemNumberLabel;
+  useTranslation();
+  const title = row.values.title?.trim() || `Item ${index + 1}`;
   const preview = fields
     .filter((field) => field.key !== "title")
     .map((field) => row.values[field.key])
@@ -4406,25 +4313,16 @@ function DraftItemRow({
     <section className={cn("border border-border bg-background", row.expanded && "border-primary")}>
       <div className="grid grid-cols-(--gtc-17) items-center gap-3 px-4 py-3">
         <button type="button" className="min-w-0 text-left" onClick={onToggle}>
-          <span className="block text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
-            {itemNumberLabel}
-          </span>
+          <span className="block text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">{translateInstant("Item")}{" "}{index + 1}</span>
           <span className="block truncate text-sm font-semibold text-foreground">{title}</span>
           {!row.expanded && preview ? <span className="block truncate text-xs text-muted-foreground">{preview}</span> : null}
           {!row.expanded && row.serverError ? <span className="block text-xs text-destructive">{row.serverError}</span> : null}
         </button>
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={onToggle}
-            aria-label={row.expanded
-              ? t("pipelines.collapseItem", { defaultValue: "Collapse item" })
-              : t("pipelines.expandItem", { defaultValue: "Expand item" })}
-          >
+          <Button variant="outline" size="icon" onClick={onToggle} aria-label={row.expanded ? translateInstant("pipelines.collapseItem") : translateInstant("pipelines.expandItem")}>
             {row.expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
           </Button>
-          <Button variant="outline" size="icon" onClick={onRemove} aria-label={t("pipelines.removeItem", { defaultValue: "Remove item" })}>
+          <Button variant="outline" size="icon" onClick={onRemove} aria-label={translateInstant("pipelines.removeItem")}>
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
@@ -4445,9 +4343,9 @@ function DraftItemRow({
             {row.serverError ? <p className="md:col-span-2 text-sm text-destructive">{row.serverError}</p> : null}
           </div>
           <aside className="border border-border p-4 text-sm">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground"><PipelineText k="pipelines.preview" defaultValue="Preview" /></p>
+            <p className="mb-3 text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">{translateInstant("Preview")}</p>
             <p className="font-semibold text-foreground">{title}</p>
-            <p className="mt-3 text-xs text-muted-foreground"><PipelineText k="pipelines.firstStageOnSubmit" defaultValue="First stage on submit:" /></p>
+            <p className="mt-3 text-xs text-muted-foreground">{translateInstant("pipelines.firstStageOnSubmit")}</p>
             <p className="font-semibold text-foreground">{intake.stageName ?? "First stage"}</p>
           </aside>
         </div>
@@ -4467,18 +4365,18 @@ export function GeneratedField({
   error?: string;
   onChange: (value: string) => void;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   const inputId = `pipeline-intake-${field.key}`;
   return (
     <label className={cn("block space-y-1", field.type === "multiline" && "md:col-span-2")}>
       <span className="text-sm font-medium text-foreground">
         {field.label}
-        {field.required ? <span className="ml-1 font-normal text-destructive">{t("common.required", { defaultValue: "required" })}</span> : null}
+        {field.required ? <span className="ml-1 font-normal text-destructive">{translateInstant("common.required")}</span> : null}
       </span>
       {field.type === "select" ? (
         <Select value={value} onValueChange={onChange}>
           <SelectTrigger id={inputId} aria-invalid={Boolean(error)} className="w-full">
-            <SelectValue placeholder={t("pipelines.choose", { defaultValue: "Choose..." })} />
+            <SelectValue placeholder={translateInstant("pipelines.choose")} />
           </SelectTrigger>
           <SelectContent>
             {(field.options ?? []).map((option) => (
@@ -4650,12 +4548,12 @@ export function buildReviewQueueRows({
 }
 
 function ReviewQueueStatusChip({ failed }: { failed: boolean }) {
+  useTranslation();
   if (!failed) return null;
   return (
     <Badge variant="outline" className="border-amber-200 bg-amber-50 font-semibold text-amber-800 dark:border-amber-900/70 dark:bg-amber-950/30 dark:text-amber-300">
       <AlertTriangle className="h-3 w-3" />
-      Needs attention
-    </Badge>
+      {translateInstant("Needs attention")}</Badge>
   );
 }
 
@@ -4681,6 +4579,7 @@ function ReviewQueueDetailDialog({
   onApprove: (note: string) => void;
   onRequestChanges: (note: string) => void;
 }) {
+  useTranslation();
   const [note, setNote] = useState("");
 
   useEffect(() => {
@@ -4704,12 +4603,12 @@ function ReviewQueueDetailDialog({
 
         <div className="space-y-5">
           <section className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground"><PipelineText k="pipelines.whatIsBeingDecided" defaultValue="What is being decided" /></p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{translateInstant("pipelines.whatIsBeingDecided")}</p>
             <p className="text-sm text-foreground">{row?.prompt}</p>
           </section>
 
           <section className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground"><PipelineText k="pipelines.itemPreview" defaultValue="Item preview" /></p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{translateInstant("pipelines.itemPreview")}</p>
             {fields.length > 0 ? (
               <div className="divide-y divide-border rounded-md border border-border">
                 {fields.map(([key, value]) => (
@@ -4721,8 +4620,7 @@ function ReviewQueueDetailDialog({
               </div>
             ) : (
               <p className="rounded-md border border-border px-3 py-3 text-sm text-muted-foreground">
-                No preview details yet.
-              </p>
+                {translateInstant("No preview details yet.")}</p>
             )}
           </section>
 
@@ -4732,13 +4630,12 @@ function ReviewQueueDetailDialog({
               className="inline-block text-sm font-medium text-primary hover:underline"
               onClick={() => onOpenChange(false)}
             >
-              Open the full item
-            </Link>
+              {translateInstant("Open the full item")}</Link>
           ) : null}
 
           {canDecide ? (
             <label className="block space-y-1.5 text-sm font-medium">
-              <span><PipelineText k="pipelines.note" defaultValue="Note" /></span>
+              <span>{translateInstant("Note")}</span>
               <Textarea
                 value={note}
                 onChange={(event) => setNote(event.target.value)}
@@ -4751,8 +4648,7 @@ function ReviewQueueDetailDialog({
 
         <DialogFooter className="gap-2 sm:gap-2">
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={pending}>
-            Cancel
-          </Button>
+            {translateInstant("Cancel")}</Button>
           {canDecide ? (
             <>
               <Button
@@ -4761,12 +4657,11 @@ function ReviewQueueDetailDialog({
                 onClick={() => onRequestChanges(trimmedNote)}
                 disabled={pending || (requestChangesRequiresNote && !trimmedNote)}
               >
-                {row?.kind === "suggestion" ? "Not yet" : "Request changes"}
+                {row?.kind === "suggestion" ? translateInstant("pipelines.notYet") : translateInstant("issueThreadInteraction.requestChanges")}
               </Button>
               <Button type="button" onClick={() => onApprove(trimmedNote)} disabled={pending}>
                 {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-                Approve
-              </Button>
+                {translateInstant("common.approve")}</Button>
             </>
           ) : null}
         </DialogFooter>
@@ -4804,13 +4699,14 @@ function ReviewQueueSection({
   onRequestChanges: (row: ReviewQueueRow) => void;
   onOpenItem: (row: ReviewQueueRow) => void;
 }) {
+  useTranslation();
   if (rows.length === 0) return null;
 
   return (
     <section className="space-y-2">
       <div className="flex items-baseline justify-between border-b border-border pb-2">
         <h2 className="text-sm font-semibold text-foreground">{title}</h2>
-        <span className="text-xs text-muted-foreground">{formatNumber(rows.length)} item{rows.length === 1 ? "" : "s"}</span>
+        <span className="text-xs text-muted-foreground">{formatNumber(rows.length)} {translateInstant("pipelines.item")}{rows.length === 1 ? "" : "s"}</span>
       </div>
       <div className="divide-y divide-border">
         {rows.map((row) => {
@@ -4876,14 +4772,12 @@ function ReviewQueueSection({
                       event.stopPropagation();
                       onApprove(row);
                     }}>
-                      Approve
-                    </Button>
+                      {translateInstant("common.approve")}</Button>
                     <Button type="button" size="sm" variant="outline" disabled={pending} onClick={(event) => {
                       event.stopPropagation();
                       onDecline(row);
                     }}>
-                      Not yet
-                    </Button>
+                      {translateInstant("pipelines.notYet")}</Button>
                   </>
                 ) : row.kind === "review" ? (
                   <>
@@ -4891,14 +4785,12 @@ function ReviewQueueSection({
                       event.stopPropagation();
                       onApprove(row);
                     }}>
-                      Approve
-                    </Button>
+                      {translateInstant("common.approve")}</Button>
                     <Button type="button" size="sm" variant="outline" disabled={pending} onClick={(event) => {
                       event.stopPropagation();
                       onRequestChanges(row);
                     }}>
-                      Request changes
-                    </Button>
+                      {translateInstant("issueThreadInteraction.requestChanges")}</Button>
                   </>
                 ) : null}
               </div>
@@ -4911,6 +4803,7 @@ function ReviewQueueSection({
 }
 
 export function ReviewQueue() {
+  useTranslation();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const navigate = useNavigate();
@@ -4923,7 +4816,7 @@ export function ReviewQueue() {
   const [detailRow, setDetailRow] = useState<ReviewQueueRow | null>(null);
 
   useEffect(() => {
-    setBreadcrumbs([{ label: "Review queue" }]);
+    setBreadcrumbs([{ label: translateInstant("pipelines.reviewQueue") }]);
   }, [setBreadcrumbs]);
 
   const attentionQuery = useQuery({
@@ -5030,7 +4923,7 @@ export function ReviewQueue() {
 
   const bulkApprove = useMutation({
     mutationFn: async (targetRows: ReviewQueueRow[]) => {
-      if (!selectedCompanyId) throw new Error("Select a company first.");
+      if (!selectedCompanyId) throw new Error("Select an organization first.");
       const reviewRows = targetRows.filter((row) => row.kind === "review");
       const suggestionRows = targetRows.filter((row) => row.kind === "suggestion" && row.suggestionId);
       const tasks: Promise<unknown>[] = [];
@@ -5135,7 +5028,7 @@ export function ReviewQueue() {
   }, [activeRowId, decideRow, openItem, visibleRows]);
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={Hexagon} message="Select a company to view the review queue." />;
+    return <EmptyState icon={Hexagon} message={translateInstant("Select an organization to view the review queue.")} />;
   }
 
   if (attentionQuery.isLoading || reviewCasesQuery.isLoading) {
@@ -5148,9 +5041,9 @@ export function ReviewQueue() {
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-normal text-foreground"><PipelineText k="pipelines.reviewQueue" defaultValue="Review queue" /></h1>
+          <h1 className="text-2xl font-semibold tracking-normal text-foreground">{translateInstant("pipelines.reviewQueue")}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Needs your attention ({formatNumber(visibleRows.length)})
+            {translateInstant("Needs your attention (")}{formatNumber(visibleRows.length)})
           </p>
         </div>
         <Button
@@ -5159,16 +5052,16 @@ export function ReviewQueue() {
           onClick={() => bulkApprove.mutate(selectedRows)}
         >
           {bulkApprove.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-          Approve {formatNumber(selectedCount)} item{selectedCount === 1 ? "" : "s"}
+          {translateInstant("common.approve")}{" "}{formatNumber(selectedCount)} {translateInstant("pipelines.item")}{selectedCount === 1 ? "" : "s"}
         </Button>
       </div>
 
       {attentionQuery.error || reviewCasesQuery.error ? (
-        <p className="text-sm text-amber-700 dark:text-amber-300"><PipelineText k="pipelines.reviewQueueAttentionError" defaultValue="Some items need attention. Try again in a moment." /></p>
+        <p className="text-sm text-amber-700 dark:text-amber-300">{translateInstant("pipelines.reviewQueueAttentionError")}</p>
       ) : null}
 
       {visibleRows.length === 0 ? (
-        <EmptyState icon={Check} message="Nothing needs you right now." />
+        <EmptyState icon={Check} message={translateInstant("Nothing needs you right now.")} />
       ) : (
         <div className="space-y-6">
           {groupedRows.map((group) => (
@@ -5200,8 +5093,7 @@ export function ReviewQueue() {
       )}
 
       <p className="text-xs text-muted-foreground">
-        <PipelineText k="pipelines.reviewQueueShortcutsPrefix" defaultValue="Shortcuts:" /> <span className="font-semibold">j</span>/<span className="font-semibold">k</span> <PipelineText k="pipelines.reviewQueueShortcutsMove" defaultValue="or arrow keys move," /> <span className="font-semibold">Enter</span> <PipelineText k="pipelines.reviewQueueShortcutsOpen" defaultValue="opens item," /> <span className="font-semibold">a</span> <PipelineText k="pipelines.reviewQueueShortcutsApprove" defaultValue="approves." />
-      </p>
+        {translateInstant("pipelines.reviewQueueShortcutsPrefix")}{" "}<span className="font-semibold">j</span>/<span className="font-semibold">k</span> {translateInstant("pipelines.reviewQueueShortcutsMove")}{" "}<span className="font-semibold">Enter</span> {translateInstant("pipelines.reviewQueueShortcutsOpen")}{" "}<span className="font-semibold">a</span> {translateInstant("pipelines.reviewQueueShortcutsApprove")}</p>
 
       <ReviewQueueDetailDialog
         row={detailRow}
@@ -5237,12 +5129,13 @@ const LEARNINGS_PAGE_SIZE = 100;
 const LEARNING_EVENT_TYPES = "review_decided,transition_forced";
 
 export function Learnings() {
+  useTranslation();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const [offset, setOffset] = useState(0);
 
   useEffect(() => {
-    setBreadcrumbs([{ label: "Learnings" }]);
+    setBreadcrumbs([{ label: translateInstant("pipelines.learnings") }]);
   }, [setBreadcrumbs]);
 
   const learningsQuery = useQuery({
@@ -5259,7 +5152,7 @@ export function Learnings() {
   });
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={BookOpenText} message="Select a company to view learnings." />;
+    return <EmptyState icon={BookOpenText} message={translateInstant("Select an organization to view learnings.")} />;
   }
 
   if (learningsQuery.isLoading && !learningsQuery.data) {
@@ -5277,26 +5170,25 @@ export function Learnings() {
   return (
     <div className="space-y-6">
       <div className="border-b border-border pb-5">
-        <h1 className="text-2xl font-semibold tracking-normal text-foreground"><PipelineText k="pipelines.learnings" defaultValue="Learnings" /></h1>
+        <h1 className="text-2xl font-semibold tracking-normal text-foreground">{translateInstant("pipelines.learnings")}</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Patterns from review decisions and hand moves, in plain words.
-        </p>
+          {translateInstant("Patterns from review decisions and hand moves, in plain words.")}</p>
       </div>
 
       <div className="flex items-center justify-end">
         <p className="text-sm text-muted-foreground">
           {learningsQuery.isFetching
-            ? "Refreshing..."
+            ? translateInstant("agentConfig.refreshingModels")
             : events.length > 0
               ? `${formatNumber(firstVisible)}-${formatNumber(lastVisible)}`
-              : "No rows"}
+              : translateInstant("No rows")}
         </p>
       </div>
 
       {learningsQuery.error ? (
-        <p className="text-sm text-destructive"><PipelineText k="pipelines.learningsLoadFailed" defaultValue="Could not load learnings." /></p>
+        <p className="text-sm text-destructive">{translateInstant("pipelines.learningsLoadFailed")}</p>
       ) : groups.length === 0 ? (
-        <EmptyState icon={BookOpenText} message="No learnings yet." />
+        <EmptyState icon={BookOpenText} message={translateInstant("No learnings yet.")} />
       ) : (
         <div className="space-y-6">
           {groups.map((group) => (
@@ -5344,10 +5236,9 @@ export function Learnings() {
           disabled={!canGoPrevious}
           onClick={() => setOffset((current) => Math.max(0, current - LEARNINGS_PAGE_SIZE))}
         >
-          Previous
-        </Button>
+          {translateInstant("Previous")}</Button>
         <span className="text-sm text-muted-foreground">
-          {events.length > 0 ? `${formatNumber(firstVisible)}-${formatNumber(lastVisible)}` : "No rows"}
+          {events.length > 0 ? `${formatNumber(firstVisible)}-${formatNumber(lastVisible)}` : translateInstant("No rows")}
         </span>
         <Button
           type="button"
@@ -5355,8 +5246,7 @@ export function Learnings() {
           disabled={!canGoNext}
           onClick={() => setOffset((current) => pagination?.nextOffset ?? current + LEARNINGS_PAGE_SIZE)}
         >
-          Next
-        </Button>
+          {translateInstant("Next")}</Button>
       </div>
     </div>
   );

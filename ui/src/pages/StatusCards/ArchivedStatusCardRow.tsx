@@ -47,7 +47,7 @@ export function ArchivedStatusCardRow({
           title={card.archivedAt ? formatDateTime(card.archivedAt) : undefined}
         >
           {t("archived")} {shortDate(card.archivedAt)}{" "}
-          {t("statusCards.archived.lastSummary")}{" "}
+          {" "}{t("statusCards.archived.lastSummary")}{" "}
           {shortDate(card.lastGeneratedAt)}
           {rollup
             ? ` · lifetime ${formatTokens(rollup.totalTokens)} / ${formatCents(rollup.totalCostCents)}`

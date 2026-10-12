@@ -295,7 +295,7 @@ function getRuntimeDependencyNames(pkg) {
       : [];
 
   return [...new Set([...dependencies, ...optionalDependencies])].filter((dependencyName) =>
-    dependencyName !== "@paperclipai/plugin-sdk"
+    dependencyName !== "@penclipai/plugin-sdk"
     && dependencyName !== "@penclipai/plugin-sdk"
     && dependencyName !== "@penclipai/shared"
     && dependencyName !== "@penclipai/shared");
@@ -409,6 +409,9 @@ for (const packageJsonPath of findBundledPluginPackageJsons(bundledPluginsDir)) 
       cwd: packageRoot,
       env: standaloneBundledPluginInstallEnv,
     });
+    // Standalone installs prune the host SDK link along with workspace deps.
+    // Restore the development link before compiling against the host contract.
+    runNodeScript(path.resolve(repoRoot, "scripts/link-plugin-dev-sdk.mjs"), [], { cwd: repoRoot });
   }
   if (pkg.scripts?.build) {
     runPnpm(["--dir", packageRoot, "run", "build"], { cwd: packageRoot });

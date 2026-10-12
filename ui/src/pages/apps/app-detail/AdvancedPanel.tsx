@@ -1,16 +1,32 @@
+import { useTranslation } from "react-i18next";
+import { translateInstant } from "@/i18n";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { ArrowUpRight, Loader2, Lock } from "lucide-react";
-import { useTranslation } from "react-i18next";
-import type { AppDefinition, ToolConnection } from "@penclipai/shared";
-import { credentialConfigPath, getAvailableConnectionMethod, humanizeConnectionDisplayName } from "@penclipai/shared";
+import { ArrowUpRight, ChevronRight, Loader2, Lock } from "lucide-react";
+import type {
+  AppDefinition,
+  ConnectionGrant,
+  ToolConnection,
+  ToolConnectionCredentialPolicy,
+} from "@penclipai/shared";
+import { connectionCredentialConfigPath, credentialConfigPath, getAvailableConnectionMethod, humanizeConnectionDisplayName } from "@penclipai/shared";
 import { toolsApi } from "@/api/tools";
 import { Button } from "@/components/ui/button";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
+import { ToggleSwitch } from "@/components/ui/toggle-switch";
 import { useToast } from "@/context/ToastContext";
 import { redactUrlSecrets } from "@/lib/redact-url-secrets";
 import { navigateTopLevel } from "@/lib/browserNavigation";
+import { prepareOAuthNavigation, savePendingCloudHandoff } from "@/lib/oauthHandoff";
+import { cn } from "@/lib/utils";
+import { Link } from "@/lib/router";
 import type { AppDetailSectionProps } from "./types";
+import { RevokeGrantDialog } from "./IdentitiesSection";
 
 export function AdvancedPanel({
   connection,
@@ -19,56 +35,102 @@ export function AdvancedPanel({
   removing,
   onRemove,
   onReplaced,
+  canReplaceCredential = true,
+  credentialUnavailableMessage = "You don't have permission to replace this identity's credential.",
+  appToggleDisabled,
+  onToggleApp,
+  identityGrant = null,
+  identityCurrentUserId = null,
+  identityProviderName,
+  credentialPolicy,
+  identityActionPending = false,
+  onReconnectIdentity,
+  onRevokeIdentity,
 }: Pick<AppDetailSectionProps, "connection" | "appName" | "galleryEntry"> & {
   removing: boolean;
   onRemove: () => void;
   onReplaced: () => void;
+  canReplaceCredential?: boolean;
+  credentialUnavailableMessage?: string;
+  appToggleDisabled: boolean;
+  onToggleApp: () => void;
+  identityGrant?: ConnectionGrant | null;
+  identityCurrentUserId?: string | null;
+  identityProviderName?: string;
+  credentialPolicy?: ToolConnectionCredentialPolicy;
+  identityActionPending?: boolean;
+  onReconnectIdentity?: () => void;
+  onRevokeIdentity?: (grant: ConnectionGrant) => void;
 }) {
-  const { t } = useTranslation();
   return (
-    <div className="space-y-6">
-      <KeySection connection={connection} galleryEntry={galleryEntry} onReplaced={onReplaced} />
+    <div className="space-y-4 border-t border-border pt-8">
       <TechnicalDetails connection={connection} />
-      <DangerZone appName={appName} removing={removing} onRemove={onRemove} />
+      <DangerZone
+        appName={appName}
+        connection={connection}
+        galleryEntry={galleryEntry}
+        removing={removing}
+        onRemove={onRemove}
+        onReplaced={onReplaced}
+        canReplaceCredential={canReplaceCredential}
+        credentialUnavailableMessage={credentialUnavailableMessage}
+        toggleDisabled={appToggleDisabled}
+        onToggleConnection={onToggleApp}
+        identityGrant={identityGrant}
+        identityCurrentUserId={identityCurrentUserId}
+        identityProviderName={identityProviderName ?? appName}
+        credentialPolicy={credentialPolicy}
+        identityActionPending={identityActionPending}
+        onReconnectIdentity={onReconnectIdentity}
+        onRevokeIdentity={onRevokeIdentity}
+      />
     </div>
   );
+}
+
+function connectionMethodUnavailable(connection: ToolConnection, galleryEntry: AppDefinition | null): boolean {
+  const methodKey = connection.config?.connectionMethodKey;
+  return typeof methodKey === "string"
+    && methodKey.length > 0
+    && !!galleryEntry
+    && Array.isArray(galleryEntry.methods)
+    && !getAvailableConnectionMethod(galleryEntry, methodKey);
 }
 
 function KeySection({
   connection,
   galleryEntry,
   onReplaced,
+  canReplace,
+  unavailableMessage,
 }: {
   connection: ToolConnection;
   galleryEntry: AppDefinition | null;
   onReplaced: () => void;
+  canReplace: boolean;
+  unavailableMessage: string;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   const [open, setOpen] = useState(false);
   return (
-    <section className="rounded-xl border border-border bg-card">
-      <div className="flex items-center justify-between px-5 py-4">
+    <section>
+      <div className="flex items-center justify-between">
         <div className="flex items-start gap-3">
           <Lock className="mt-0.5 h-4 w-4 text-muted-foreground" />
           <div>
-            <h2 className="text-sm font-bold text-foreground">
-              {t("apps.detail.advanced.key.title", { defaultValue: "Key" })}
-            </h2>
-            <p className="mt-0.5 text-sm text-muted-foreground">
-              {t("apps.detail.advanced.key.description", {
-                defaultValue: "Your key is stored securely. Replace it if it stopped working or you rotated it.",
-              })}
+            <h2 className="text-sm font-medium text-foreground">{translateInstant("apps.detail.setup.oauth.reconnect")}</h2>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {canReplace ? "Replace the stored credential." : unavailableMessage}
             </p>
           </div>
         </div>
-        {!open && (
+        {canReplace && !open && (
           <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
-            {t("apps.detail.advanced.key.replace", { defaultValue: "Replace key" })}
-          </Button>
+            {translateInstant("apps.detail.setup.oauth.reconnect")}</Button>
         )}
       </div>
       {open && (
-        <div className="border-t border-border px-5 py-4">
+        <div className="pt-4">
           <ReconnectForm
             connection={connection}
             galleryEntry={galleryEntry}
@@ -88,43 +150,111 @@ export function ReconnectCard({
   connection,
   galleryEntry,
   onReconnected,
+  onReconnect,
+  canReconnect = true,
+  reconnectUnavailableMessage,
 }: {
   connection: ToolConnection;
   galleryEntry: AppDefinition | null;
   onReconnected: () => void;
+  onReconnect?: () => void;
+  canReconnect?: boolean;
+  reconnectUnavailableMessage?: string;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   const { pushToast } = useToast();
   const reconnectOAuth = useMutation({
-    mutationFn: () => toolsApi.startOAuth(connection.id),
-    onSuccess: ({ authorizationUrl }) => navigateTopLevel(authorizationUrl),
+    // Reconnect is not a new identity choice. Personal-only connections must
+    // put the replacement token back on the signed-in user's existing grant;
+    // shared and legacy fallback connections keep using the organization slot.
+    mutationFn: () => connection.credentialPolicy === "per_user"
+      ? toolsApi.startOAuth(connection.id, { asCurrentUser: true })
+      : toolsApi.startOAuth(connection.id),
+    onSuccess: async (start) => {
+      try {
+        const target = await prepareOAuthNavigation(start);
+        if (target.kind === "reauthentication" && start.handoff) {
+          savePendingCloudHandoff(start.handoff.session);
+        }
+        navigateTopLevel(target.url);
+      } catch (error) {
+        pushToast({
+          title: translateInstant("Couldn’t start sign-in"),
+          body: error instanceof Error ? error.message : "Please try again.",
+          tone: "error",
+        });
+      }
+    },
     onError: (error) =>
       pushToast({
-        title: t("apps.detail.oauth.startError.title", { defaultValue: "Couldn’t start sign-in" }),
-        body: error instanceof Error ? error.message : t("apps.detail.common.tryAgain", { defaultValue: "Please try again." }),
+        title: translateInstant("Couldn’t start sign-in"),
+        body: error instanceof Error ? error.message : "Please try again.",
         tone: "error",
       }),
   });
+  const verifyVercel = useMutation({
+    mutationFn: () => toolsApi.checkConnectionHealth(connection.id),
+    onSuccess: () => {
+      pushToast({
+        title: translateInstant("Vercel credential verified"),
+        body: `${humanizeConnectionDisplayName(connection)} is back online.`,
+        tone: "success",
+      });
+      onReconnected();
+    },
+    onError: (error) => pushToast({
+      title: translateInstant("Credential still needs attention"),
+      body: error instanceof Error ? error.message : "Review the connector in Vercel Connect and try again.",
+      tone: "error",
+    }),
+  });
   const oauth = connection.authKind === "oauth";
+  const managedByVercel = connection.credentialSource === "vercel_connect";
+  const methodUnavailable = connectionMethodUnavailable(connection, galleryEntry);
 
   return (
-    <div className="rounded-xl border border-amber-500/50 bg-amber-500/10 p-5">
-      <h2 className="text-sm font-bold text-amber-900 dark:text-amber-100">
-        {oauth
-          ? t("apps.detail.advanced.reconnectCard.oauthTitle", { defaultValue: "Reconnect required" })
-          : t("apps.detail.advanced.reconnectCard.title", { defaultValue: "This app needs reconnecting" })}
-      </h2>
-      <p className="mt-1 text-sm text-amber-800 dark:text-amber-200">
-        {connection.healthMessage?.trim() || (oauth
-          ? t("apps.detail.advanced.reconnectCard.oauthDescription", {
-              defaultValue: "Authorization expired or was revoked. Sign in again to restore access.",
-            })
-          : t("apps.detail.advanced.reconnectCard.description", {
-              defaultValue: "The key stopped working. Paste a new one to get it back online.",
-            }))}
-      </p>
-      <div className="mt-3">
-        {oauth ? (
+    <div className="flex flex-col gap-4 rounded-lg border border-amber-500/50 bg-amber-500/10 px-4 py-3">
+      <div className="min-w-0">
+        <h2 className="text-sm font-semibold text-amber-900 dark:text-amber-100">
+          {methodUnavailable ? "Connection no longer supported" : oauth ? translateInstant("apps.detail.advanced.reconnectCard.oauthTitle") : translateInstant("apps.detail.advanced.reconnectCard.title")}
+        </h2>
+        <p className="mt-0.5 text-sm text-amber-800 dark:text-amber-200">
+          {methodUnavailable
+            ? "Add a supported connection from Connectors, then remove this connection."
+            : connection.healthMessage?.trim() || (oauth
+            ? translateInstant("apps.detail.advanced.reconnectCard.oauthDescription")
+            : translateInstant("apps.detail.advanced.reconnectCard.description"))}
+        </p>
+      </div>
+      <div className="shrink-0">
+        {!canReconnect ? (
+          <p className="text-sm text-amber-800 dark:text-amber-200">
+            {reconnectUnavailableMessage ?? "You don't have permission to reconnect this identity."}
+          </p>
+        ) : methodUnavailable ? (
+          <Button size="sm" variant="outline" asChild>
+            <Link to={`/apps/connect?source=${encodeURIComponent(galleryEntry!.slug)}`}>
+              {translateInstant("Add supported connection")}</Link>
+          </Button>
+        ) : onReconnect ? (
+          <Button size="sm" variant="outline" onClick={onReconnect}>{translateInstant("apps.detail.setup.oauth.reconnect")}</Button>
+        ) : managedByVercel && !oauth ? (
+          <div className="flex items-center gap-2">
+            <Button type="button" size="sm" variant="outline" asChild>
+              <a href="https://vercel.com/connect" target="_blank" rel="noreferrer">
+                {translateInstant("Manage in Vercel")}{" "}<ArrowUpRight className="ml-1.5 h-3.5 w-3.5" />
+              </a>
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              disabled={verifyVercel.isPending}
+              onClick={() => verifyVercel.mutate()}
+            >
+              {verifyVercel.isPending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
+              {translateInstant("Check again")}</Button>
+          </div>
+        ) : oauth ? (
           <Button
             type="button"
             size="sm"
@@ -132,9 +262,7 @@ export function ReconnectCard({
             onClick={() => reconnectOAuth.mutate()}
           >
             {reconnectOAuth.isPending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-            {reconnectOAuth.isPending
-              ? t("apps.detail.oauth.openingSignIn", { defaultValue: "Opening sign-in…" })
-              : t("apps.detail.setup.oauth.reconnect", { defaultValue: "Reconnect" })}
+            {reconnectOAuth.isPending ? translateInstant("apps.detail.oauth.openingSignIn") : translateInstant("apps.detail.setup.oauth.reconnect")}
           </Button>
         ) : (
           <ReconnectForm connection={connection} galleryEntry={galleryEntry} onReconnected={onReconnected} />
@@ -155,76 +283,88 @@ function ReconnectForm({
   onCancel?: () => void;
   onReconnected: () => void;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   const { pushToast } = useToast();
-  const method = galleryEntry && Array.isArray(galleryEntry.methods)
-    ? getAvailableConnectionMethod(galleryEntry)
+  const methodKey = typeof connection.config?.connectionMethodKey === "string"
+    ? connection.config.connectionMethodKey
     : null;
-  const fields = (method?.credentialFields ?? []).map((field) => ({
+  const method = galleryEntry && Array.isArray(galleryEntry.methods)
+    ? getAvailableConnectionMethod(galleryEntry, methodKey)
+    : null;
+  const galleryFields = (method?.credentialFields ?? []).map((field) => ({
     ...field,
-    configPath: credentialConfigPath(field),
+    configPath: credentialConfigPath(field, method),
     helpUrl: method?.consoleLinks?.keys ?? method?.consoleLinks?.docs ?? "",
   }));
+  const fields = galleryFields.length > 0 ? galleryFields : (connection.credentialRefs ?? [])
+    .filter((ref) => ref.placement === "header" || ref.placement === "url")
+    .map((ref) => ({
+      configPath: connectionCredentialConfigPath(ref),
+      label: ref.placement === "url" ? translateInstant("MCP server URL") : ref.prefix === "Bearer " ? translateInstant("apps.connect.appKey") : ref.key ?? ref.name,
+      helpUrl: "",
+      required: true,
+    }));
   const [values, setValues] = useState<Record<string, string>>({});
   const [single, setSingle] = useState("");
-  const usesGallery = fields.length > 0 && !!galleryEntry;
+  const usesFields = fields.length > 0;
 
   const reconnect = useMutation({
     mutationFn: () => {
-      const credentialValues = usesGallery
+      const credentialValues = usesFields
         ? values
         : { "credentials.authorization": single.trim() };
       return toolsApi.reconnectConnection(connection.id, credentialValues);
     },
     onSuccess: (result) => {
       const healthy =
-        result.connection.healthStatus === "healthy" || result.connection.healthStatus === "unknown";
+        result.connection.healthStatus === "ok" || result.connection.healthStatus === "healthy" || result.connection.healthStatus === "unknown";
       if (healthy) {
         pushToast({
-          title: t("apps.detail.advanced.reconnect.success.title", { defaultValue: "Reconnected" }),
-          body: t("apps.detail.advanced.reconnect.success.body", {
-            appName: humanizeConnectionDisplayName(connection),
-            defaultValue: "{{appName}} is back online.",
-          }),
+          title: translateInstant("apps.detail.advanced.reconnect.success.title"),
+          body: `${humanizeConnectionDisplayName(connection)} is back online.`,
           tone: "success",
         });
         onReconnected();
       } else {
         pushToast({
-          title: t("apps.detail.advanced.reconnect.stillFailing.title", { defaultValue: "Still not working" }),
-          body: result.connection.healthMessage?.trim() || t("apps.detail.advanced.reconnect.stillFailing.body", {
-            defaultValue: "That key didn't check out. Try another.",
-          }),
+          title: translateInstant("apps.detail.advanced.reconnect.stillFailing.title"),
+          body: result.connection.healthMessage?.trim() || "That key didn't check out. Try another.",
           tone: "error",
         });
       }
     },
     onError: (error) =>
       pushToast({
-        title: t("apps.detail.advanced.reconnect.error.title", { defaultValue: "That key didn't work" }),
-        body: error instanceof Error ? error.message : t("apps.detail.advanced.reconnect.error.body", {
-          defaultValue: "Check the key and try again.",
-        }),
+        title: translateInstant("apps.detail.advanced.reconnect.error.title"),
+        body: error instanceof Error ? error.message : "Check the key and try again.",
         tone: "error",
       }),
   });
 
-  const filled = usesGallery
+  const filled = usesFields
     ? fields.every((f) => f.required === false || (values[f.configPath]?.trim().length ?? 0) > 0)
     : single.trim().length > 0;
 
+  if (connection.credentialSource === "vercel_connect") {
+    return (
+      <p className="text-sm text-muted-foreground">
+        {translateInstant("Credentials for this connection are managed in Vercel Connect.")}</p>
+    );
+  }
+
   return (
     <div className="space-y-3">
-      {usesGallery ? (
+      {usesFields ? (
         fields.map((field) => (
           <div key={field.configPath}>
             <label className="text-xs font-medium text-foreground">{field.label}</label>
             <Input
               type="password"
+              aria-label={field.label}
               autoComplete="off"
               value={values[field.configPath] ?? ""}
               onChange={(e) => setValues({ ...values, [field.configPath]: e.target.value })}
-              placeholder={t("apps.detail.advanced.reconnect.fieldPlaceholder", { defaultValue: "****************" })}
+              placeholder={translateInstant("apps.detail.advanced.reconnect.fieldPlaceholder")}
               className="mt-1 h-10 font-mono"
             />
             {field.helpUrl && (
@@ -234,8 +374,7 @@ function ReconnectForm({
                 rel="noreferrer"
                 className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-foreground underline underline-offset-2"
               >
-                {t("apps.detail.advanced.reconnect.help", { defaultValue: "Where do I find this?" })}
-                <ArrowUpRight className="h-3 w-3" />
+                {translateInstant("apps.detail.advanced.reconnect.help")}{" "}<ArrowUpRight className="h-3 w-3" />
               </a>
             )}
           </div>
@@ -243,24 +382,22 @@ function ReconnectForm({
       ) : (
         <Input
           type="password"
+          aria-label={translateInstant("apps.connect.appKey")}
           autoComplete="off"
           value={single}
           onChange={(e) => setSingle(e.target.value)}
-          placeholder={t("apps.detail.advanced.reconnect.placeholder", { defaultValue: "Paste your new key" })}
+          placeholder={translateInstant("apps.detail.advanced.reconnect.placeholder")}
           className="h-10 font-mono"
         />
       )}
       <div className="flex items-center gap-2">
         <Button size="sm" disabled={!filled || reconnect.isPending} onClick={() => reconnect.mutate()}>
           {reconnect.isPending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-          {reconnect.isPending
-            ? t("apps.detail.advanced.reconnect.checking", { defaultValue: "Checking..." })
-            : t("apps.detail.advanced.reconnect.submit", { defaultValue: "Check & reconnect" })}
+          {reconnect.isPending ? translateInstant("Checking...") : translateInstant("apps.detail.advanced.reconnect.submit")}
         </Button>
         {onCancel && (
           <Button size="sm" variant="ghost" onClick={onCancel} disabled={reconnect.isPending}>
-            {t("apps.detail.common.cancel", { defaultValue: "Cancel" })}
-          </Button>
+            {translateInstant("apps.detail.common.cancel")}</Button>
         )}
       </div>
     </div>
@@ -268,82 +405,207 @@ function ReconnectForm({
 }
 
 function TechnicalDetails({ connection }: { connection: ToolConnection }) {
-  const { t } = useTranslation();
-  const address = connectionAddress(connection);
-  const displayAddress = connection.transport === "local_stdio"
-    ? t("apps.detail.advanced.technical.localCommand", { defaultValue: "Local command" })
-    : address === "Not set"
-      ? t("apps.detail.advanced.technical.notSet", { defaultValue: "Not set" })
-      : address;
-  const transportKey = connection.transport === "mcp_remote"
-    ? "apps.detail.advanced.technical.transport.remoteHttp"
-    : connection.transport === "local_stdio"
-      ? "apps.detail.advanced.technical.transport.localCommand"
-      : "apps.detail.advanced.technical.transport.unknown";
+  useTranslation();
+  const [open, setOpen] = useState(false);
   return (
-    <section className="rounded-xl border border-border bg-card px-5 py-4">
-      <h2 className="text-sm font-bold text-foreground">
-        {t("apps.detail.advanced.technical.title", { defaultValue: "Technical details" })}
-      </h2>
-      <dl className="mt-3 grid gap-2 text-xs sm:grid-cols-(--gtc-59)">
-        <dt className="text-muted-foreground">
-          {t("apps.detail.advanced.technical.address", { defaultValue: "Address" })}
-        </dt>
-        <dd className="break-all font-mono text-foreground">{displayAddress}</dd>
-        <dt className="text-muted-foreground">
-          {t("apps.detail.advanced.technical.connectionType", { defaultValue: "Connection type" })}
-        </dt>
-        <dd className="text-foreground">{t(transportKey, { defaultValue: connectionTransportLabel(connection.transport) })}</dd>
-      </dl>
-    </section>
+    <Collapsible open={open} onOpenChange={setOpen} asChild>
+      <section>
+        <CollapsibleTrigger asChild>
+          <button type="button" className="flex w-full items-center gap-3 py-1 text-left">
+            <span className="min-w-0 flex-1 text-sm font-medium text-foreground">{translateInstant("Connection details")}</span>
+            <ChevronRight
+              className={cn("h-4 w-4 shrink-0 text-muted-foreground transition-transform", open && "rotate-90")}
+            />
+          </button>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <dl className="mt-4 grid gap-2 pb-2 text-xs sm:grid-cols-(--gtc-59)">
+            <dt className="text-muted-foreground">{translateInstant("apps.detail.advanced.technical.address")}</dt>
+            <dd className="break-all font-mono text-foreground">{connectionAddress(connection)}</dd>
+            <dt className="text-muted-foreground">{translateInstant("Type")}</dt>
+            <dd className="text-foreground">{connectionTransportLabel(connection.transport)}</dd>
+          </dl>
+        </CollapsibleContent>
+      </section>
+    </Collapsible>
   );
 }
 
 export function DangerZone({
   appName,
+  connection,
+  galleryEntry = null,
   removing,
   onRemove,
+  onReplaced,
+  canReplaceCredential = true,
+  credentialUnavailableMessage = "You don't have permission to replace this identity's credential.",
+  toggleDisabled = false,
+  onToggleConnection,
+  identityGrant = null,
+  identityCurrentUserId = null,
+  identityProviderName = appName,
+  credentialPolicy,
+  identityActionPending = false,
+  onReconnectIdentity,
+  onRevokeIdentity,
 }: {
   appName: string;
+  connection?: ToolConnection;
+  galleryEntry?: AppDefinition | null;
   removing: boolean;
   onRemove: () => void;
+  onReplaced?: () => void;
+  canReplaceCredential?: boolean;
+  credentialUnavailableMessage?: string;
+  toggleDisabled?: boolean;
+  onToggleConnection?: () => void;
+  identityGrant?: ConnectionGrant | null;
+  identityCurrentUserId?: string | null;
+  identityProviderName?: string;
+  credentialPolicy?: ToolConnectionCredentialPolicy;
+  identityActionPending?: boolean;
+  onReconnectIdentity?: () => void;
+  onRevokeIdentity?: (grant: ConnectionGrant) => void;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
+  const [open, setOpen] = useState(false);
   const [confirming, setConfirming] = useState(false);
+  const [revokeTarget, setRevokeTarget] = useState<ConnectionGrant | null>(null);
+  const paused = connection
+    ? connection.enabled === false || connection.status === "disabled"
+    : false;
+  const methodUnavailable = connection ? connectionMethodUnavailable(connection, galleryEntry) : false;
+
   return (
-    <section className="rounded-xl border border-destructive/40 bg-card">
-      <div className="border-b border-destructive/40 px-5 py-3 text-sm font-bold text-destructive">
-        {t("apps.detail.advanced.danger.title", { defaultValue: "Danger zone" })}
-      </div>
-      <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
-        <div>
-          <p className="text-sm font-medium text-foreground">
-            {t("apps.detail.advanced.danger.removeTitle", { defaultValue: "Remove this app" })}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            {t("apps.detail.advanced.danger.removeDescription", {
-              appName,
-              defaultValue: "Agents lose access to {{appName}} right away. You can connect it again later.",
-            })}
-          </p>
-        </div>
-        {confirming ? (
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={() => setConfirming(false)} disabled={removing}>
-              {t("apps.detail.common.cancel", { defaultValue: "Cancel" })}
-            </Button>
-            <Button variant="destructive" size="sm" onClick={onRemove} disabled={removing}>
-              {removing && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-              {t("apps.detail.advanced.danger.confirmRemove", { defaultValue: "Yes, remove it" })}
-            </Button>
+    <Collapsible
+      open={open}
+      onOpenChange={(nextOpen) => {
+        setOpen(nextOpen);
+        if (!nextOpen) setConfirming(false);
+      }}
+      asChild
+    >
+      <section>
+        <CollapsibleTrigger asChild>
+          <button
+            type="button"
+            className="flex w-full items-center gap-3 py-1 text-left"
+          >
+            <span className="min-w-0 flex-1 text-sm font-medium text-destructive">{translateInstant("apps.detail.advanced.danger.title")}</span>
+            <ChevronRight
+              className={cn("h-4 w-4 shrink-0 text-muted-foreground transition-transform", open && "rotate-90")}
+            />
+          </button>
+        </CollapsibleTrigger>
+
+        <CollapsibleContent>
+          <div className="mt-3 divide-y divide-border border-t border-border">
+            {connection && onToggleConnection ? (
+              <div className="flex items-center justify-between gap-4 py-4">
+                <h2 className="text-sm font-medium text-foreground">{translateInstant("Pause connection")}</h2>
+                <ToggleSwitch
+                  aria-label={translateInstant("Pause connection")}
+                  checked={paused}
+                  disabled={toggleDisabled}
+                  onCheckedChange={onToggleConnection}
+                  size="lg"
+                />
+              </div>
+            ) : null}
+
+            {connection && !methodUnavailable && connection.authKind !== "oauth" ? (
+              <div className="py-4">
+                <KeySection
+                  connection={connection}
+                  galleryEntry={galleryEntry}
+                  onReplaced={onReplaced ?? (() => undefined)}
+                  canReplace={canReplaceCredential}
+                  unavailableMessage={credentialUnavailableMessage}
+                />
+              </div>
+            ) : null}
+
+            {connection?.authKind === "oauth" && !methodUnavailable && (onReconnectIdentity || !canReplaceCredential) ? (
+              <div className="flex flex-wrap items-center justify-between gap-3 py-4">
+                <div>
+                  <p className="text-sm font-medium text-foreground">{translateInstant("apps.detail.setup.oauth.reconnect")}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {canReplaceCredential
+                      ? `Sign in to ${identityProviderName} again.`
+                      : credentialUnavailableMessage}
+                  </p>
+                </div>
+                {canReplaceCredential && onReconnectIdentity ? (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={identityActionPending}
+                    onClick={onReconnectIdentity}
+                  >
+                    {identityActionPending ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null}
+                    {translateInstant("apps.detail.setup.oauth.reconnect")}</Button>
+                ) : null}
+              </div>
+            ) : null}
+
+            {identityGrant?.capabilities?.canRevoke
+              && identityGrant.status !== "revoked"
+              && onRevokeIdentity ? (
+                <div className="flex flex-wrap items-center justify-between gap-3 py-4">
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{translateInstant("Revoke identity")}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {translateInstant("Disconnect the identity currently used by this app.")}</p>
+                  </div>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => setRevokeTarget(identityGrant)}
+                  >
+                    {translateInstant("Revoke")}</Button>
+                </div>
+            ) : null}
+
+            <div className="flex flex-wrap items-center justify-between gap-3 py-4">
+              <div>
+                <p className="text-sm font-medium text-foreground">{translateInstant("apps.detail.advanced.danger.removeTitle")}</p>
+                <p className="text-xs text-muted-foreground">
+                  {`Deletes credentials for ${appName} and removes agent access. Reconnecting requires a new sign-in or key.`}
+                </p>
+              </div>
+              {confirming ? (
+                <div className="flex items-center gap-2">
+                  <Button variant="ghost" size="sm" onClick={() => setConfirming(false)} disabled={removing}>
+                    {translateInstant("apps.detail.common.cancel")}</Button>
+                  <Button variant="destructive" size="sm" onClick={onRemove} disabled={removing}>
+                    {removing && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
+                    {translateInstant("apps.detail.advanced.danger.confirmRemove")}</Button>
+                </div>
+              ) : (
+                <Button variant="destructive" size="sm" onClick={() => setConfirming(true)}>
+                  {translateInstant("apps.detail.advanced.danger.removeButton")}</Button>
+              )}
+            </div>
           </div>
-        ) : (
-          <Button variant="destructive" size="sm" onClick={() => setConfirming(true)}>
-            {t("apps.detail.advanced.danger.removeButton", { defaultValue: "Remove app" })}
-          </Button>
-        )}
-      </div>
-    </section>
+        </CollapsibleContent>
+
+        {revokeTarget && credentialPolicy ? (
+          <RevokeGrantDialog
+            grant={revokeTarget}
+            providerName={identityProviderName}
+            pending={identityActionPending}
+            credentialPolicy={credentialPolicy}
+            isOwnIdentity={revokeTarget.kind === "user" && revokeTarget.subjectUserId === identityCurrentUserId}
+            onCancel={() => setRevokeTarget(null)}
+            onConfirm={() => {
+              onRevokeIdentity?.(revokeTarget);
+              setRevokeTarget(null);
+            }}
+          />
+        ) : null}
+      </section>
+    </Collapsible>
   );
 }
 
@@ -358,5 +620,5 @@ export function connectionAddress(connection: ToolConnection): string {
 export function connectionTransportLabel(transport: ToolConnection["transport"]): string {
   if (transport === "mcp_remote") return "Remote HTTP";
   if (transport === "local_stdio") return "Local command";
-  return "Unknown";
+  return translateInstant("Unknown");
 }

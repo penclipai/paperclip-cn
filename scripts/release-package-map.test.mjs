@@ -121,7 +121,7 @@ test("guard allows upstream-compatible workspace aliases to published CN package
   const problems = findUnpublishableWorkspaceEdges([
     pkg("@penclipai/plugin-workspace-diff", {
       publishFromCi: true,
-      dependencies: { "@paperclipai/plugin-sdk": "workspace:@penclipai/plugin-sdk@*" },
+      dependencies: { "@penclipai/plugin-sdk": "workspace:@penclipai/plugin-sdk@*" },
     }),
     pkg("@penclipai/plugin-sdk", { publishFromCi: true }),
   ]);

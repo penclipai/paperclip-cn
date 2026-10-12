@@ -1,3 +1,5 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
 import { ArrowRight, ShieldCheck } from "lucide-react";
 import type { ActivityEvent } from "@penclipai/shared";
 import {
@@ -30,6 +32,7 @@ export function IssueFieldChangeReceipt({
   resolveUserLabel?: (userId: string) => string | null | undefined;
   className?: string;
 }) {
+  useTranslation();
   const rows = readIssueChangeReceipt(event.details, { resolveAgentLabel, resolveUserLabel });
   const reason = issueAuthorizationReasonLabel(
     typeof event.details?.authorizationReason === "string"
@@ -66,8 +69,7 @@ export function IssueFieldChangeReceipt({
                     rather than implying the whole value is shown. */}
                 {row.truncated ? (
                   <span className="text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
-                    preview
-                  </span>
+                    {translateInstant("preview")}</span>
                 ) : null}
               </dd>
             </div>
@@ -89,7 +91,7 @@ export function IssueFieldChangeReceipt({
               {" · "}
             </>
           ) : null}
-          authorized by {reason}
+          {translateInstant("authorized by")}{" "}{reason}
         </p>
       ) : null}
     </div>

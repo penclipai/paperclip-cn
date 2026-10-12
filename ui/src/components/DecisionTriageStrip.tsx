@@ -1,3 +1,5 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlarmClock, CalendarClock, ChevronDown, Loader2, Plus, UserPlus, X } from "lucide-react";
@@ -77,6 +79,7 @@ interface DecisionTriageStripProps {
  * expiry chip surfaces the underlying decision's TTL read-only.
  */
 export function DecisionTriageStrip({ item, companyId, agents }: DecisionTriageStripProps) {
+  useTranslation();
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
   const sourceKind = item.sourceKind;
@@ -163,8 +166,8 @@ export function DecisionTriageStrip({ item, companyId, agents }: DecisionTriageS
 
       {/* When to decide — the importance signal that drives desk ordering. */}
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs font-medium text-muted-foreground">When to decide</span>
-        <div className="flex flex-wrap items-center gap-1" role="group" aria-label="When to decide">
+        <span className="text-xs font-medium text-muted-foreground">{translateInstant("When to decide")}</span>
+        <div className="flex flex-wrap items-center gap-1" role="group" aria-label={translateInstant("When to decide")}>
           {DECIDE_BY_OPTIONS.map(([value, label]) => (
             <SegmentButton
               key={value}
@@ -201,7 +204,7 @@ export function DecisionTriageStrip({ item, companyId, agents }: DecisionTriageS
 
       {/* Queues — current membership as removable chips + add/create. */}
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs font-medium text-muted-foreground">Queues</span>
+        <span className="text-xs font-medium text-muted-foreground">{translateInstant("Queues")}</span>
         {item.queues.map((queue) => (
           <span
             key={queue.key}
@@ -232,15 +235,14 @@ export function DecisionTriageStrip({ item, companyId, agents }: DecisionTriageS
         {item.snoozedUntil ? (
           <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
             <AlarmClock className="h-3.5 w-3.5" />
-            Snoozed until {new Date(item.snoozedUntil).toLocaleString()}
+            {translateInstant("Snoozed until")}{" "}{new Date(item.snoozedUntil).toLocaleString()}
             <button
               type="button"
               className="text-muted-foreground hover:text-foreground"
               disabled={pending}
               onClick={() => setSnooze.mutate(null)}
             >
-              Clear
-            </button>
+              {translateInstant("Clear")}</button>
           </span>
         ) : (
           <DropdownMenu>
@@ -313,6 +315,7 @@ function QueuePicker({
   disabled?: boolean;
   onAdd: (key: string) => void;
 }) {
+  useTranslation();
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
   const [open, setOpen] = useState(false);
@@ -335,7 +338,7 @@ function QueuePicker({
     },
     onError: (error) =>
       pushToast({
-        title: "Could not create queue",
+        title: translateInstant("Could not create queue"),
         body: error instanceof Error ? error.message : "Please try again.",
         tone: "error",
       }),
@@ -348,8 +351,7 @@ function QueuePicker({
       <PopoverTrigger asChild>
         <Button type="button" variant="outline" size="xs" className="h-7 gap-1" disabled={disabled}>
           <Plus className="h-3.5 w-3.5" />
-          Queue
-        </Button>
+          {translateInstant("Queue")}</Button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-56 p-1">
         {creating ? (
@@ -362,23 +364,21 @@ function QueuePicker({
                 if (event.key === "Enter" && title.trim()) create.mutate(title);
                 if (event.key === "Escape") setCreating(false);
               }}
-              placeholder="New queue name…"
+              placeholder={translateInstant("New queue name…")}
               className="w-full rounded-sm border border-border bg-background px-2 py-1 text-xs"
             />
             <div className="flex justify-end gap-1">
               <Button type="button" variant="ghost" size="xs" onClick={() => setCreating(false)}>
-                Cancel
-              </Button>
+                {translateInstant("Cancel")}</Button>
               <Button type="button" size="xs" disabled={!title.trim() || create.isPending} onClick={() => create.mutate(title)}>
                 {create.isPending && <Loader2 className="h-3 w-3 animate-spin" />}
-                Create
-              </Button>
+                {translateInstant("Create")}</Button>
             </div>
           </div>
         ) : (
           <div className="max-h-64 space-y-0.5 overflow-y-auto">
             {available.length === 0 && (
-              <p className="px-2 py-1.5 text-xs text-muted-foreground">No other queues yet.</p>
+              <p className="px-2 py-1.5 text-xs text-muted-foreground">{translateInstant("No other queues yet.")}</p>
             )}
             {available.map((queue) => (
               <button
@@ -405,8 +405,7 @@ function QueuePicker({
               onClick={() => setCreating(true)}
             >
               <Plus className="h-3.5 w-3.5" />
-              New queue…
-            </button>
+              {translateInstant("New queue…")}</button>
           </div>
         )}
       </PopoverContent>
@@ -435,6 +434,7 @@ function AskAgentPicker({
   disabledReason?: string;
   onRoute: (agent: Agent) => void;
 }) {
+  useTranslation();
   const active = agents.filter((agent) => agent.status !== "terminated");
   return (
     <DropdownMenu>
@@ -448,8 +448,7 @@ function AskAgentPicker({
           title={disabledReason}
         >
           <UserPlus className="h-3.5 w-3.5" />
-          Ask agent for recommendation
-          <ChevronDown className="h-3 w-3" />
+          {translateInstant("Ask agent for recommendation")}<ChevronDown className="h-3 w-3" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="max-h-72 overflow-y-auto">

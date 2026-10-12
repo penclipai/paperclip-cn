@@ -179,7 +179,7 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
       <div className="flex items-center justify-end">
         <Button size="sm" onClick={openCreate}>
           <Plus className="mr-1 h-3.5 w-3.5" />
-          {t("secrets.newUserSecret", { defaultValue: "New user secret" })}
+          {" "}{t("secrets.newUserSecret", { defaultValue: "New user secret" })}
         </Button>
       </div>
 
@@ -187,7 +187,7 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
         {definitionsQuery.isError ? (
           <div className="flex items-center gap-2 py-4 text-sm text-destructive">
             <AlertCircle className="h-4 w-4" />
-            {t("secrets.failedToLoadDefinitions", { defaultValue: "Failed to load definitions:" })}{" "}
+            {" "}{t("secrets.failedToLoadDefinitions", { defaultValue: "Failed to load definitions:" })}{" "}
             {(definitionsQuery.error as Error).message}
             <Button variant="ghost" size="sm" onClick={() => definitionsQuery.refetch()}>
               {t("common.retry", { defaultValue: "Retry" })}
@@ -398,7 +398,7 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
             <DialogDescription>
               {t("secrets.removeDefinitionPrefix", { defaultValue: "This removes the definition" })}{" "}
               <span className="font-mono">{deleteTarget?.key}</span>{" "}
-              {t("secrets.removeDefinitionSuffix", {
+              {" "}{t("secrets.removeDefinitionSuffix", {
                 defaultValue:
                   "for the whole company. Existing member values become unreferenced. This cannot be undone.",
               })}

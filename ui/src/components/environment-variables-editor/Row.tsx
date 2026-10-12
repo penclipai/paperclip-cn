@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
+import { useEffect, useRef, useState } from "react";
 import {
   ChevronDown,
   KeyRound,
@@ -88,7 +89,7 @@ export function EnvironmentVariableRow({
   focusRequest,
   onFocusConsumed,
 }: EnvironmentVariableRowProps) {
-  const { t } = useTranslation();
+  useTranslation();
   const nameInputRef = useRef<HTMLInputElement | null>(null);
   const valueInputRef = useRef<HTMLInputElement | null>(null);
   const valueCellRef = useRef<HTMLDivElement | null>(null);
@@ -174,10 +175,7 @@ export function EnvironmentVariableRow({
       version: "latest",
       textValue: "",
     });
-    onToast(t("envVarEditor.secretCreated", {
-      defaultValue: "Secret {{name}} created",
-      name: created.name,
-    }));
+    onToast(`Secret ${created.name} created`);
     setSecretPopover(null);
   }
 
@@ -189,10 +187,10 @@ export function EnvironmentVariableRow({
 
   const sourceLabel =
     row.source === "text"
-      ? t("envVarEditor.textValue", { defaultValue: "Text value" })
+      ? "Text value"
       : row.source === "secret"
-        ? t("envVarEditor.companySecretReference", { defaultValue: "Company secret reference" })
-        : t("envVarEditor.userSecretReference", { defaultValue: "User secret reference" });
+        ? "Organization secret reference"
+        : "User secret reference";
   const nameErrorId = `${row.id}-name-error`;
   const healthId = `${row.id}-health`;
   const isDirty = dirtyFields.name || dirtyFields.value;
@@ -223,7 +221,7 @@ export function EnvironmentVariableRow({
           value={row.name}
           spellCheck={false}
           disabled={disabled}
-          aria-label={t("envVarEditor.variableNameAria", { defaultValue: "Variable name" })}
+          aria-label={translateInstant("envVarEditor.variableNameAria")}
           aria-invalid={showNameIssue && nameIssue?.level === "error" ? true : undefined}
           aria-describedby={showNameIssue && nameIssue ? nameErrorId : undefined}
           onChange={(event) => onPatch({ name: event.target.value })}
@@ -267,7 +265,7 @@ export function EnvironmentVariableRow({
                     <DropdownMenuTrigger asChild disabled={disabled}>
                       <button
                         type="button"
-                        aria-label={t("envVarEditor.valueSource", { defaultValue: "Value source" })}
+                        aria-label={translateInstant("envVarEditor.valueSource")}
                         className="flex shrink-0 items-center gap-0.5 border-r border-border px-2 text-muted-foreground hover:bg-accent/50 disabled:pointer-events-none"
                       >
                         {row.source === "text" ? (
@@ -285,26 +283,17 @@ export function EnvironmentVariableRow({
                 </Tooltip>
                 <DropdownMenuContent align="start" className="w-56">
                   <DropdownMenuItem className="flex-col items-start gap-0.5" onSelect={() => switchSource("text")}>
-                    <span className="text-sm">{t("envVarEditor.textValue", { defaultValue: "Text value" })}</span>
-                    <span className="text-(length:--text-micro) text-muted-foreground">
-                      {t("envVarEditor.textValueDescription", { defaultValue: "Store the value inline as plain text." })}
-                    </span>
+                    <span className="text-sm">{translateInstant("envVarEditor.textValue")}</span>
+                    <span className="text-(length:--text-micro) text-muted-foreground">{translateInstant("envVarEditor.textValueDescription")}</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem className="flex-col items-start gap-0.5" onSelect={() => switchSource("secret")}>
-                    <span className="text-sm">
-                      {t("envVarEditor.companySecret", { defaultValue: "Company secret" })}
-                    </span>
-                    <span className="text-(length:--text-micro) text-muted-foreground">
-                      {t("envVarEditor.secretReferenceDescription", { defaultValue: "Resolve a stored company secret at run start." })}
-                    </span>
+                    <span className="text-sm">{translateInstant("Organization secret")}</span>
+                    <span className="text-(length:--text-micro) text-muted-foreground">{translateInstant("Resolve a stored organization secret at run start.")}</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem className="flex-col items-start gap-0.5" onSelect={() => switchSource("user_secret")}>
-                    <span className="text-sm">{t("envVarEditor.userSecret", { defaultValue: "User secret" })}</span>
+                    <span className="text-sm">{translateInstant("secrets.userSecret")}</span>
                     <span className="text-(length:--text-micro) text-muted-foreground">
-                      {t("envVarEditor.userSecretReferenceDescription", {
-                        defaultValue: "Resolve the responsible user's own value at run start.",
-                      })}
-                    </span>
+                      {translateInstant("Resolve the responsible user&apos;s own value at run start.")}</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -314,12 +303,12 @@ export function EnvironmentVariableRow({
                   <input
                     ref={valueInputRef}
                     className={valueTextInputClass}
-                    placeholder="value"
+                    placeholder={translateInstant("frontmatter.valuePlaceholder")}
                     value={row.textValue}
                     type={sensitive ? "password" : "text"}
                     spellCheck={false}
                     disabled={disabled}
-                    aria-label={t("envVarEditor.variableValueAria", { defaultValue: "Variable value" })}
+                    aria-label={translateInstant("envVarEditor.variableValueAria")}
                     onChange={(event) => onPatch({ textValue: event.target.value })}
                     onKeyDown={(event) => {
                       if (event.key === "Enter" && isLast) {
@@ -335,19 +324,17 @@ export function EnvironmentVariableRow({
                         onClick={openStoreAsSecret}
                         disabled={disabled}
                         className="flex items-center gap-1 px-2 text-(length:--text-micro) text-amber-700 hover:bg-amber-500/10 dark:text-amber-400"
-                        title={t("envVarEditor.sensitiveValueTitle", { defaultValue: "This value looks sensitive - store it as a secret" })}
+                        title={translateInstant("This value looks sensitive — store it as a secret")}
                       >
                         <ShieldAlert className="size-3.5" />
-                        <span className="hidden @[30rem]/env:inline">
-                          {t("envVarEditor.storeAsSecret", { defaultValue: "Store as secret" })}
-                        </span>
+                        <span className="hidden @[30rem]/env:inline">{translateInstant("envVarEditor.storeAsSecret")}</span>
                       </button>
                       <button
                         type="button"
                         onClick={() => onPatch({ sensitiveDismissed: true })}
                         disabled={disabled}
-                        aria-label={t("envVarEditor.dismissSensitiveSuggestion", { defaultValue: "Dismiss sensitive-value suggestion" })}
-                        title={t("envVarEditor.dismissKeepPlainText", { defaultValue: "Dismiss - keep this value as plain text" })}
+                        aria-label={translateInstant("envVarEditor.dismissSensitiveSuggestion")}
+                        title={translateInstant("Dismiss — keep this value as plain text")}
                         className="flex items-center px-1.5 text-amber-700/60 hover:bg-amber-500/10 hover:text-amber-700 dark:text-amber-400/60 dark:hover:text-amber-400"
                       >
                         <X className="size-3" />
@@ -382,7 +369,7 @@ export function EnvironmentVariableRow({
                             event.stopPropagation();
                             setVersionOpen((prev) => !prev);
                           }}
-                          aria-label={t("agentConfig.secretVersion", { defaultValue: "Version" })}
+                          aria-label={translateInstant("agentConfig.secretVersion")}
                           className={cn(
                             "absolute right-8 top-1/2 z-10 -translate-y-1/2 rounded px-1.5 py-0.5 text-(length:--text-nano) font-medium",
                             versionPinned
@@ -393,12 +380,7 @@ export function EnvironmentVariableRow({
                           {versionTagLabel}
                         </button>
                       </PopoverAnchor>
-                      <PopoverContent
-                        align="end"
-                        className="w-44 p-1"
-                        role="radiogroup"
-                        aria-label={t("agentConfig.secretVersion", { defaultValue: "Secret version" })}
-                      >
+                      <PopoverContent align="end" className="w-44 p-1" role="radiogroup" aria-label={translateInstant("Secret version")}>
                         <button
                           type="button"
                           role="radio"
@@ -412,10 +394,7 @@ export function EnvironmentVariableRow({
                             row.version === "latest" && "font-medium",
                           )}
                         >
-                          {t("secretBindingPicker.latest", { defaultValue: "latest" })}{" "}
-                          <span className="text-(length:--text-micro) text-muted-foreground">
-                            {t("envVarEditor.recommendedSuffix", { defaultValue: "(recommended)" })}
-                          </span>
+                          {translateInstant("secretBindingPicker.latest")}{" "}<span className="text-(length:--text-micro) text-muted-foreground">{translateInstant("envVarEditor.recommendedSuffix")}</span>
                         </button>
                         {Array.from({ length: versions }, (_, idx) => versions - idx)
                           .filter((v) => v > 0)
@@ -445,7 +424,7 @@ export function EnvironmentVariableRow({
                 <div className="grid min-w-0 flex-1 grid-cols-(--gtc-13)">
                   {userSecretsEnabled ? (
                     <select
-                      aria-label={t("envVarEditor.userSecretAria", { defaultValue: "User secret" })}
+                      aria-label={translateInstant("secrets.userSecret")}
                       value={row.userSecretKey}
                       disabled={disabled}
                       onChange={(event) => {
@@ -458,16 +437,9 @@ export function EnvironmentVariableRow({
                       }}
                       className="min-w-0 bg-transparent px-2 py-1.5 text-sm font-mono outline-none disabled:pointer-events-none"
                     >
-                      <option value="">
-                        {t("envVarEditor.selectUserSecret", { defaultValue: "Select user secret..." })}
-                      </option>
+                      <option value="">{translateInstant("envVarEditor.selectUserSecret")}</option>
                       {row.userSecretKey && !userSecretDefinitions?.some((definition) => definition.key === row.userSecretKey) ? (
-                        <option value={row.userSecretKey}>
-                          {t("envVarEditor.unknownUserSecret", {
-                            defaultValue: "Unknown ({{key}})",
-                            key: row.userSecretKey,
-                          })}
-                        </option>
+                        <option value={row.userSecretKey}>{translateInstant("Unknown (")}{row.userSecretKey})</option>
                       ) : null}
                       {(userSecretDefinitions ?? []).map((definition) => (
                         <option key={definition.id} value={definition.key}>
@@ -479,23 +451,23 @@ export function EnvironmentVariableRow({
                   ) : (
                     <input
                       className={valueTextInputClass}
-                      placeholder={t("envVarEditor.userSecretKeyPlaceholder", { defaultValue: "user-secret key" })}
+                      placeholder={translateInstant("envVarEditor.userSecretKeyPlaceholder")}
                       value={row.userSecretKey}
                       spellCheck={false}
                       disabled={disabled}
-                      aria-label={t("envVarEditor.userSecretKeyAria", { defaultValue: "User secret key" })}
+                      aria-label={translateInstant("envVarEditor.userSecretKeyAria")}
                       onChange={(event) => onPatch({ userSecretKey: event.target.value })}
                     />
                   )}
                   <select
-                    aria-label={t("envVarEditor.requirementAria", { defaultValue: "Requirement" })}
+                    aria-label={translateInstant("envVarEditor.requirementAria")}
                     value={row.required ? "required" : "optional"}
                     disabled={disabled}
                     onChange={(event) => onPatch({ required: event.target.value === "required" })}
                     className="border-l border-border bg-transparent px-2 py-1.5 text-xs font-medium text-muted-foreground outline-none disabled:pointer-events-none"
                   >
-                    <option value="required">{t("envVarEditor.required", { defaultValue: "Required" })}</option>
-                    <option value="optional">{t("envVarEditor.optional", { defaultValue: "Optional" })}</option>
+                    <option value="required">{translateInstant("envVarEditor.required")}</option>
+                    <option value="optional">{translateInstant("envVarEditor.optional")}</option>
                   </select>
                 </div>
               )}
@@ -556,14 +528,14 @@ export function EnvironmentVariableRow({
               health.level === "error" ? "text-destructive" : "text-amber-600 dark:text-amber-400",
             )}
           >
-            {t(health.messageKey ?? health.message, { defaultValue: health.message })}
+            {health.message}
           </p>
         ) : null}
 
         {/* 5s undo after Secret→Text */}
         {undoPrev ? (
           <p className="mt-0.5 inline-flex items-center gap-2 text-(length:--text-micro) text-muted-foreground">
-            {t("envVarEditor.revertedToText", { defaultValue: "Reverted to text -" })}{" "}
+            {translateInstant("Reverted to text —")}{" "}
             <button
               type="button"
               className="font-medium text-foreground underline underline-offset-2 hover:text-primary"
@@ -572,8 +544,7 @@ export function EnvironmentVariableRow({
                 setUndoPrev(null);
               }}
             >
-              {t("envVarEditor.undo", { defaultValue: "Undo" })}
-            </button>
+              {translateInstant("envVarEditor.undo")}</button>
           </p>
         ) : null}
       </div>
@@ -586,7 +557,7 @@ export function EnvironmentVariableRow({
             nameIssue.level === "error" ? "text-destructive" : "text-amber-600 dark:text-amber-400",
           )}
         >
-          {t(nameIssue.messageKey ?? nameIssue.message, { defaultValue: nameIssue.message })}
+          {nameIssue.message}
         </p>
       ) : null}
 
@@ -597,7 +568,7 @@ export function EnvironmentVariableRow({
             <DropdownMenuTrigger asChild disabled={disabled}>
               <button
                 type="button"
-                aria-label={t("envVarEditor.moreActions", { defaultValue: "More actions" })}
+                aria-label={translateInstant("envVarEditor.moreActions")}
                 className="rounded p-1 text-muted-foreground opacity-100 hover:bg-accent hover:text-foreground @[40rem]/env:opacity-0 @[40rem]/env:group-hover/row:opacity-100 @[40rem]/env:group-focus-within/row:opacity-100"
               >
                 <MoreHorizontal className="size-4" />
@@ -616,8 +587,7 @@ export function EnvironmentVariableRow({
                   window.setTimeout(openStoreAsSecret, 0);
                 }}
               >
-                {t("envVarEditor.storeAsSecretEllipsis", { defaultValue: "Store as secret..." })}
-              </DropdownMenuItem>
+                {translateInstant("Store as secret…")}</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         ) : null}
@@ -625,10 +595,7 @@ export function EnvironmentVariableRow({
           type="button"
           onClick={onRemove}
           disabled={disabled}
-          aria-label={t("envVarEditor.removeVariable", {
-            defaultValue: "Remove {{name}}",
-            name: row.name.trim() || t("envVarEditor.variableFallback", { defaultValue: "variable" }),
-          })}
+          aria-label={`Remove ${row.name.trim() || "variable"}`}
           className="rounded p-1 text-muted-foreground opacity-100 hover:bg-destructive/10 hover:text-destructive @[40rem]/env:opacity-0 @[40rem]/env:group-hover/row:opacity-100 @[40rem]/env:group-focus-within/row:opacity-100"
         >
           <X className="size-4" />

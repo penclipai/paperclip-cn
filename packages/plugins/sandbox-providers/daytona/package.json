@@ -42,7 +42,7 @@
   ],
   "scripts": {
     "prebuild": "node ../../../../scripts/ensure-plugin-build-deps.mjs",
-    "build": "node ../../../../scripts/fs-ops.mjs rm dist && tsc && node ../../../../scripts/fs-ops.mjs mkdir dist/scripts && node ../../../../scripts/fs-ops.mjs cp --contents src/scripts dist/scripts",
+    "build": "node ../../../../scripts/fs-ops.mjs rm dist && tsc",
     "clean": "node ../../../../scripts/fs-ops.mjs rm dist",
     "typecheck": "node ../../../../scripts/ensure-plugin-build-deps.mjs && tsc --noEmit",
     "test": "vitest run --config vitest.config.ts",

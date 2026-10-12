@@ -1,8 +1,9 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { CompanySecret } from "@penclipai/shared";
 import { AlertCircle, KeyRound, Trash2, UserRound } from "lucide-react";
-import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "../../components/EmptyState";
@@ -25,7 +26,7 @@ import {
  * "User secret definitions" tab.
  */
 export function MyUserSecretsTab({ companyId }: { companyId: string }) {
-  const { t } = useTranslation();
+  useTranslation();
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
   const [dialogFor, setDialogFor] = useState<MyUserSecretEntry | null>(null);
@@ -40,14 +41,11 @@ export function MyUserSecretsTab({ companyId }: { companyId: string }) {
     mutationFn: (secret: CompanySecret) => secretsApi.removeMyUserSecret(companyId, secret.id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.secrets.myUserSecrets(companyId) });
-      pushToast({
-        title: t("secrets.toast.valueCleared", { defaultValue: "Value cleared" }),
-        tone: "info",
-      });
+      pushToast({ title: translateInstant("secrets.toast.valueCleared"), tone: "info" });
     },
     onError: (err) =>
       pushToast({
-        title: t("secrets.toast.clearValueFailed", { defaultValue: "Could not clear value" }),
+        title: translateInstant("secrets.toast.clearValueFailed"),
         body: err instanceof Error ? err.message : undefined,
         tone: "error",
       }),
@@ -62,18 +60,10 @@ export function MyUserSecretsTab({ companyId }: { companyId: string }) {
       <div className="flex items-start gap-2 rounded-md border border-violet-500/30 bg-violet-500/5 px-4 py-3 text-xs text-violet-800 dark:text-violet-200">
         <UserRound className="h-4 w-4 mt-0.5 shrink-0" />
         <p>
-          {t("secrets.mySecretsDescription", {
-            defaultValue:
-              "These are credentials only you provide. Each value is yours alone, used when you are the user responsible for a run, and is never shown back to anyone, including admins.",
-          })}
-          {missingCount > 0 ? (
+          {translateInstant("These are credentials only you provide. Each value is yours alone — used when you are the user responsible for a run — and is never shown back to anyone, including admins.")}{missingCount > 0 ? (
             <span className="font-medium">
               {" "}
-              {t("secrets.requiredValuesMissing", {
-                count: missingCount,
-                defaultValue: "{{count}} required secrets still need your value.",
-              })}
-            </span>
+              {missingCount}{" "}{translateInstant("required secret")}{missingCount === 1 ? " still needs" : "s still need"} {translateInstant("your value.")}</span>
           ) : null}
         </p>
       </div>
@@ -81,20 +71,15 @@ export function MyUserSecretsTab({ companyId }: { companyId: string }) {
       <div>
         {mySecretsQuery.isError ? (
           <div className="flex items-center gap-2 py-4 text-sm text-destructive">
-            <AlertCircle className="h-4 w-4" />
-            {t("secrets.failedToLoadMySecrets", { defaultValue: "Failed to load your secrets:" })}{" "}
+            <AlertCircle className="h-4 w-4" /> {translateInstant("secrets.failedToLoadMySecrets")}{" "}
             {(mySecretsQuery.error as Error).message}
             <Button variant="ghost" size="sm" onClick={() => mySecretsQuery.refetch()}>
-              {t("common.retry", { defaultValue: "Retry" })}
-            </Button>
+              {translateInstant("common.retry")}</Button>
           </div>
         ) : entries.length === 0 && !mySecretsQuery.isPending ? (
           <EmptyState
             icon={KeyRound}
-            message={t("secrets.noUserSecrets", {
-              defaultValue:
-                "No user secrets are defined for this company yet. An admin defines which credentials each member supplies.",
-            })}
+            message={translateInstant("No user secrets are defined for this organization yet. An admin defines which credentials each member supplies.")}
           />
         ) : (
           <ul className="space-y-2">
@@ -135,7 +120,7 @@ function MyUserSecretRow({
   onClear: () => void;
   clearing: boolean;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   const { definition, secret } = entry;
   const state = myValueState(definition, secret);
   const disabledDefinition = definition.status !== "active";
@@ -157,7 +142,7 @@ function MyUserSecretRow({
           </code>
           {disabledDefinition ? (
             <Badge variant="outline" className="text-(length:--text-nano)">
-              {t(`status.${definition.status}`, { defaultValue: definition.status })}
+              {definition.status}
             </Badge>
           ) : null}
         </div>
@@ -171,13 +156,11 @@ function MyUserSecretRow({
 
       <div className="flex shrink-0 items-center gap-2">
         <Badge variant="outline" className={cn("text-(length:--text-micro)", myValueTone(state))}>
-          {myValueLabel(state, t)}
+          {myValueLabel(state)}
         </Badge>
         {!disabledDefinition ? (
           <Button size="sm" variant={secret ? "outline" : "default"} onClick={onSet}>
-            {secret
-              ? t("common.update", { defaultValue: "Update" })
-              : t("secrets.setValue", { defaultValue: "Set value" })}
+            {secret ? translateInstant("common.update") : translateInstant("secrets.setValue")}
           </Button>
         ) : null}
         {secret ? (
@@ -187,8 +170,7 @@ function MyUserSecretRow({
             className="text-muted-foreground hover:text-destructive"
             onClick={onClear}
             disabled={clearing}
-            title={t("secrets.clearMyValue", { defaultValue: "Clear my value" })}
-            aria-label={t("secrets.clearMyValue", { defaultValue: "Clear my value" })}
+            title={translateInstant("secrets.clearMyValue")}
           >
             <Trash2 className="h-3.5 w-3.5" />
           </Button>

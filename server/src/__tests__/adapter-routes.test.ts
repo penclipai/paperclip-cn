@@ -1,6 +1,6 @@
 import express from "express";
 import request from "supertest";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { vi } from "vitest";
 import type { ServerAdapterModule } from "../adapters/index.js";
 
@@ -12,6 +12,14 @@ const mockAdapterPluginStore = vi.hoisted(() => ({
   getAdapterPluginsDir: vi.fn(),
   getDisabledAdapterTypes: vi.fn(),
   setAdapterDisabled: vi.fn(),
+  pausedOverrides: new Set<string>(),
+  getPausedAdapterOverrides: () => [...mockAdapterPluginStore.pausedOverrides],
+  setAdapterOverridePaused: (type: string, paused: boolean) => {
+    const changed = mockAdapterPluginStore.pausedOverrides.has(type) !== paused;
+    if (paused) mockAdapterPluginStore.pausedOverrides.add(type);
+    else mockAdapterPluginStore.pausedOverrides.delete(type);
+    return changed;
+  },
 }));
 
 const mockPluginLoader = vi.hoisted(() => ({
@@ -55,12 +63,29 @@ function registerModuleMocks() {
   vi.doMock("node:child_process", async () => vi.importActual("node:child_process"));
   vi.doMock("../adapters/plugin-loader.js", () => mockPluginLoader);
   vi.doMock("../services/adapter-plugin-store.js", () => mockAdapterPluginStore);
-  vi.doMock("../routes/adapters.js", async () => vi.importActual("../routes/adapters.js"));
-  vi.doMock("../routes/authz.js", async () => vi.importActual("../routes/authz.js"));
-  vi.doMock("../middleware/index.js", async () => vi.importActual("../middleware/index.js"));
 }
 
-function createApp(actorOverrides: Partial<Express.Request["actor"]> = {}) {
+function resetAdapterMocks() {
+  vi.resetAllMocks();
+  mockAdapterPluginStore.pausedOverrides.clear();
+  mockAdapterPluginStore.listAdapterPlugins.mockReturnValue([]);
+  mockAdapterPluginStore.addAdapterPlugin.mockResolvedValue(undefined);
+  mockAdapterPluginStore.removeAdapterPlugin.mockReturnValue(false);
+  mockAdapterPluginStore.getAdapterPluginByType.mockReturnValue(undefined);
+  mockAdapterPluginStore.getAdapterPluginsDir.mockReturnValue("/tmp/paperclip-adapter-routes-test");
+  mockAdapterPluginStore.getDisabledAdapterTypes.mockReturnValue([]);
+  mockAdapterPluginStore.setAdapterDisabled.mockReturnValue(false);
+  mockPluginLoader.buildExternalAdapters.mockResolvedValue([]);
+  mockPluginLoader.loadExternalAdapterPackage.mockResolvedValue(null);
+  mockPluginLoader.getUiParserSource.mockResolvedValue(null);
+  mockPluginLoader.getOrExtractUiParserSource.mockResolvedValue(null);
+  mockPluginLoader.reloadExternalAdapter.mockResolvedValue(null);
+}
+
+function createApp(
+  actorOverrides: Partial<Express.Request["actor"]> = {},
+  options: Parameters<typeof adapterRoutes>[0] = {},
+) {
   const app = express();
   app.use(express.json());
   app.use((req, _res, next) => {
@@ -74,39 +99,20 @@ function createApp(actorOverrides: Partial<Express.Request["actor"]> = {}) {
     };
     next();
   });
-  app.use("/api", adapterRoutes());
+  app.use("/api", adapterRoutes(options));
   app.use(errorHandler);
   return app;
 }
 
 describe("adapter routes", () => {
-  beforeEach(async () => {
-    vi.resetModules();
-    vi.doUnmock("node:child_process");
-    vi.doUnmock("../adapters/registry.js");
-    vi.doUnmock("../adapters/plugin-loader.js");
-    vi.doUnmock("../services/adapter-plugin-store.js");
-    vi.doUnmock("../routes/adapters.js");
-    vi.doUnmock("../routes/authz.js");
-    vi.doUnmock("../middleware/index.js");
+  // Keep the route and middleware on one module graph so HttpError retains
+  // its identity. Reset mock state and adapter overrides between tests.
+  beforeAll(async () => {
     registerModuleMocks();
-    mockAdapterPluginStore.listAdapterPlugins.mockReturnValue([]);
-    mockAdapterPluginStore.addAdapterPlugin.mockResolvedValue(undefined);
-    mockAdapterPluginStore.removeAdapterPlugin.mockReturnValue(false);
-    mockAdapterPluginStore.getAdapterPluginByType.mockReturnValue(undefined);
-    mockAdapterPluginStore.getAdapterPluginsDir.mockReturnValue("/tmp/paperclip-adapter-routes-test");
-    mockAdapterPluginStore.getDisabledAdapterTypes.mockReturnValue([]);
-    mockAdapterPluginStore.setAdapterDisabled.mockReturnValue(false);
-    mockPluginLoader.buildExternalAdapters.mockResolvedValue([]);
-    mockPluginLoader.loadExternalAdapterPackage.mockResolvedValue(null);
-    mockPluginLoader.getUiParserSource.mockResolvedValue(null);
-    mockPluginLoader.getOrExtractUiParserSource.mockResolvedValue(null);
-    mockPluginLoader.reloadExternalAdapter.mockResolvedValue(null);
-    const [registry, routes, middleware] = await Promise.all([
-      vi.importActual<typeof import("../adapters/registry.js")>("../adapters/registry.js"),
-      import("../routes/adapters.js"),
-      import("../middleware/index.js"),
-    ]);
+    resetAdapterMocks();
+    const registry = await import("../adapters/registry.js");
+    const routes = await import("../routes/adapters.js");
+    const middleware = await import("../middleware/index.js");
     registerServerAdapter = registry.registerServerAdapter;
     unregisterServerAdapter = registry.unregisterServerAdapter;
     findServerAdapter = registry.findServerAdapter;
@@ -114,6 +120,10 @@ describe("adapter routes", () => {
     setOverridePaused = registry.setOverridePaused;
     adapterRoutes = routes.adapterRoutes;
     errorHandler = middleware.errorHandler;
+  });
+
+  beforeEach(() => {
+    resetAdapterMocks();
     setOverridePaused("claude_local", false);
     unregisterServerAdapter("hermes_local");
     unregisterServerAdapter("hermes_gateway");
@@ -146,6 +156,34 @@ describe("adapter routes", () => {
       expect(typeof adapter.capabilities.requiresMaterializedRuntimeSkills).toBe("boolean");
       expect(typeof adapter.capabilities.supportsAcp).toBe("boolean");
     }
+  });
+
+  it("keeps paperclip_runner hidden from selection unless the rollout flag is enabled", async () => {
+    const disabledResponse = await request(createApp()).get("/api/adapters");
+    expect(disabledResponse.status).toBe(200);
+    expect(disabledResponse.body.find((adapter: any) => adapter.type === "paperclip_runner"))
+      .toMatchObject({ disabled: true });
+
+    const enabledResponse = await request(createApp({}, {
+      getNativeRunnerEnabled: async () => true,
+    })).get("/api/adapters");
+    expect(enabledResponse.status).toBe(200);
+    expect(enabledResponse.body.find((adapter: any) => adapter.type === "paperclip_runner"))
+      .toMatchObject({
+        disabled: false,
+        capabilities: {
+          supportsInstructionsBundle: true,
+        },
+      });
+  });
+
+  it("keeps the shared implementation available for Dot independently, while honoring adapter-admin disabling", async () => {
+    const options = { getNativeRunnerEnabled: async () => false, getOpenAiDotEnabled: async () => true };
+    const enabled = await request(createApp({}, options)).get("/api/adapters");
+    expect(enabled.body.find((adapter: any) => adapter.type === "paperclip_runner")).toMatchObject({ disabled: false });
+    mockAdapterPluginStore.getDisabledAdapterTypes.mockReturnValue(["paperclip_runner"]);
+    const disabled = await request(createApp({}, options)).get("/api/adapters");
+    expect(disabled.body.find((adapter: any) => adapter.type === "paperclip_runner")).toMatchObject({ disabled: true });
   });
 
   it("GET /api/adapters returns correct capabilities for built-in adapters", async () => {
@@ -238,27 +276,8 @@ describe("adapter routes", () => {
       },
     });
 
-    const hermesLocal = res.body.find((a: any) => a.type === "hermes_local");
-    expect(hermesLocal).toBeDefined();
-    expect(hermesLocal.source).toBe("builtin");
-    expect(hermesLocal.capabilities).toMatchObject({
-      supportsInstructionsBundle: true,
-      supportsSkills: true,
-      supportsLocalAgentJwt: true,
-      requiresMaterializedRuntimeSkills: false,
-      supportsAcp: false,
-    });
-
-    const hermesGateway = res.body.find((a: any) => a.type === "hermes_gateway");
-    expect(hermesGateway).toBeDefined();
-    expect(hermesGateway.source).toBe("builtin");
-    expect(hermesGateway.capabilities).toMatchObject({
-      supportsInstructionsBundle: false,
-      supportsSkills: false,
-      supportsLocalAgentJwt: false,
-      requiresMaterializedRuntimeSkills: false,
-      supportsAcp: false,
-    });
+    expect(res.body.find((a: any) => a.type === "hermes_local")).toBeUndefined();
+    expect(res.body.find((a: any) => a.type === "hermes_gateway")).toBeUndefined();
   });
 
   it("GET /api/adapters derives supportsSkills from listSkills/syncSkills presence", async () => {
@@ -311,6 +330,60 @@ describe("adapter routes", () => {
 
     expect(res.status, JSON.stringify(res.body)).toBe(200);
     expect(res.body.fields).toEqual([]);
+  });
+
+  it("serves provider-scoped Paperclip Runner configuration fields", async () => {
+    const app = createApp();
+
+    const res = await request(app).get("/api/adapters/paperclip_runner/config-schema");
+
+    expect(res.status, JSON.stringify(res.body)).toBe(200);
+    expect(res.body.fields).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        key: "provider",
+        options: expect.arrayContaining([
+          expect.objectContaining({ value: "codex" }),
+          expect.objectContaining({ value: "opencode" }),
+          expect.objectContaining({ value: "claude_managed" }),
+          expect.objectContaining({ value: "aws_agentcore" }),
+          expect.objectContaining({ value: "acpx" }),
+        ]),
+      }),
+      expect.objectContaining({
+        key: "codexPermissionMode",
+        default: "never",
+        meta: { visibleWhen: { key: "provider", value: "codex" } },
+      }),
+      expect.objectContaining({
+        key: "opencodePermissionMode",
+        default: "allow",
+        meta: { visibleWhen: { key: "provider", value: "opencode" } },
+      }),
+      expect.objectContaining({
+        key: "acpxPermissionMode",
+        default: "approve-all",
+        meta: { visibleWhen: { key: "provider", value: "acpx" } },
+      }),
+      expect.objectContaining({
+        key: "model",
+        meta: { visibleWhen: { key: "provider", value: "opencode" } },
+      }),
+      expect.objectContaining({
+        key: "idleTimeoutMs",
+        meta: { visibleWhen: { key: "lifecycleMode", value: "warm" } },
+      }),
+    ]));
+    const acpxAgent = res.body.fields.find((field: { key?: string }) => field.key === "acpxAgent");
+    expect(acpxAgent).toMatchObject({
+      type: "select",
+      default: "claude",
+      meta: { visibleWhen: { key: "provider", value: "acpx" } },
+      options: [
+        { value: "claude", label: "Claude" },
+        { value: "grok", label: "Grok Build" },
+      ],
+    });
+    expect(JSON.stringify(res.body)).not.toContain("Codex via ACPX");
   });
 
   it("serves the built-in claude_local ACP engine config schema", async () => {
@@ -405,26 +478,14 @@ describe("adapter routes", () => {
     );
   });
 
-  it("serves built-in Hermes config schemas", async () => {
+  it("does not serve config schemas for uninstalled external Hermes adapters", async () => {
     const app = createApp();
 
     const local = await request(app).get("/api/adapters/hermes_local/config-schema");
-    expect(local.status, JSON.stringify(local.body)).toBe(200);
-    expect(local.body.fields).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ key: "provider" }),
-        expect.objectContaining({ key: "timeoutSec" }),
-      ]),
-    );
+    expect(local.status, JSON.stringify(local.body)).toBe(404);
 
     const gateway = await request(app).get("/api/adapters/hermes_gateway/config-schema");
-    expect(gateway.status, JSON.stringify(gateway.body)).toBe(200);
-    expect(gateway.body.fields).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ key: "apiBaseUrl", required: true }),
-        expect.objectContaining({ key: "apiKey", required: true }),
-      ]),
-    );
+    expect(gateway.status, JSON.stringify(gateway.body)).toBe(404);
   });
 
   it("GET /api/adapters lists acpx_local only as a model-less tombstone", async () => {

@@ -110,6 +110,18 @@ describe("shipped skills catalog", () => {
     expect(violations).toEqual([]);
   });
 
+  it("audits tracked bundled and optional catalog skill frontmatter", () => {
+    expect(TRACKED_SKILL_FILES).toContain(
+      path.join(
+        REPO_ROOT,
+        "packages/skills-catalog/catalog/bundled/paperclip-operations/summarize-status/SKILL.md",
+      ),
+    );
+    expect(TRACKED_SKILL_FILES).toContain(
+      path.join(REPO_ROOT, "packages/skills-catalog/catalog/optional/finance/ramp/SKILL.md"),
+    );
+  });
+
   it("ships the expected bundled and optional skill set", () => {
     const bundledKeys = catalogSkills
       .filter((skill) => skill.kind === "bundled")

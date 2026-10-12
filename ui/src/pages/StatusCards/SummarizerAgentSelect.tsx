@@ -1,13 +1,11 @@
+import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
+import { AgentAvatar } from "@/components/AgentAvatar";
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { agentsApi } from "@/api/agents";
-import { AgentIcon } from "@/components/AgentIconPicker";
-import {
-  InlineEntitySelector,
-  type InlineEntityOption,
-} from "@/components/InlineEntitySelector";
+import { InlineEntitySelector, type InlineEntityOption } from "@/components/InlineEntitySelector";
 import { isAgentTaskTarget } from "@/lib/company-members";
 import { queryKeys } from "@/lib/queryKeys";
 
@@ -26,7 +24,7 @@ export function SummarizerAgentSelect({
   onChange: (agentId: string) => void;
   enabled?: boolean;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   const agentsQuery = useQuery({
     queryKey: companyId ? queryKeys.agents.list(companyId) : ["agents", "none"],
     queryFn: () => agentsApi.list(companyId!),
@@ -38,28 +36,22 @@ export function SummarizerAgentSelect({
   );
   const agentOptions = useMemo<InlineEntityOption[]>(
     () =>
-      (agentsQuery.data ?? []).filter(isAgentTaskTarget).map((agent) => ({
-        id: `agent:${agent.id}`,
-        label: agent.name,
-        searchText: `${agent.name} ${agent.role} ${agent.title ?? ""}`,
-      })),
+      (agentsQuery.data ?? [])
+        .filter(isAgentTaskTarget)
+        .map((agent) => ({
+          id: `agent:${agent.id}`,
+          label: agent.name,
+          searchText: `${agent.name} ${agent.role} ${agent.title ?? ""}`,
+        })),
     [agentsQuery.data],
   );
 
   const renderAgent = (option: InlineEntityOption | null) => {
-    if (!option || !option.id)
-      return <span>{t("statusCards.summarizer.default")}</span>;
-    const agent = option.id.startsWith("agent:")
-      ? agentById.get(option.id.slice("agent:".length))
-      : null;
+    if (!option || !option.id) return <span>{translateInstant("statusCards.summarizer.default")}</span>;
+    const agent = option.id.startsWith("agent:") ? agentById.get(option.id.slice("agent:".length)) : null;
     return (
       <>
-        {agent ? (
-          <AgentIcon
-            icon={agent.icon}
-            className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
-          />
-        ) : null}
+        {agent ? <AgentAvatar agent={agent} size={16} className="h-3.5 w-3.5 shrink-0 text-muted-foreground"/> : null}
         <span className="truncate">{option.label}</span>
       </>
     );
@@ -69,13 +61,11 @@ export function SummarizerAgentSelect({
     <InlineEntitySelector
       value={value ? `agent:${value}` : ""}
       options={agentOptions}
-      placeholder={t("statusCards.summarizer.default")}
+      placeholder={translateInstant("statusCards.summarizer.default")}
       noneLabel="Summarizer (default)"
-      searchPlaceholder={t("skillStudio.agentsUsing.searchAgents")}
-      emptyMessage="No agents found."
-      onChange={(next) =>
-        onChange(next.startsWith("agent:") ? next.slice("agent:".length) : "")
-      }
+      searchPlaceholder="Search agents..."
+      emptyMessage={translateInstant("No agents found.")}
+      onChange={(next) => onChange(next.startsWith("agent:") ? next.slice("agent:".length) : "")}
       className="h-8 text-sm"
       renderTriggerValue={renderAgent}
       renderOption={(option) => renderAgent(option)}

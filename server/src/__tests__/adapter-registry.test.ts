@@ -1,3 +1,7 @@
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { probeAcpxClaudeInstallation, probeAcpxPiInstallation } from "../vendor/paperclip-runner/live/index.js";
 import { describe, expect, it, beforeEach, afterEach, vi } from "vitest";
 import { buildSandboxNpmInstallCommand } from "@penclipai/adapter-utils";
 import type { ServerAdapterModule } from "../adapters/index.js";
@@ -7,7 +11,6 @@ import {
   findActiveServerAdapter,
   findServerAdapter,
   listAdapterModels,
-  listAdapterModelProfiles,
   registerServerAdapter,
   requireServerAdapter,
   unregisterServerAdapter,
@@ -17,6 +20,21 @@ import {
   setOverridePaused,
   waitForExternalAdapters,
 } from "../adapters/registry.js";
+
+vi.mock("../vendor/paperclip-runner/live/index.js", () => ({
+  probeAcpxClaudeInstallation: vi.fn(async () => undefined),
+  probeAcpxGrokInstallation: vi.fn(async () => undefined),
+  probeAcpxPiInstallation: vi.fn(async () => undefined),
+  probeAcpxCursorInstallation: vi.fn(async () => undefined),
+}));
+
+it("advertises tool-refresh recovery for the selected legacy harness", () => {
+  for (const type of ["claude_local", "codex_local", "grok_local", "gemini_local", "kimi_local", "cursor", "opencode_local", "pi_local"]) {
+    expect(requireServerAdapter(type).supportsToolRefreshOnResume).toBe(true);
+    expect(requireServerAdapter(type).sessionManagement?.supportsSessionResume).toBe(true);
+  }
+  expect(requireServerAdapter("process").supportsToolRefreshOnResume).toBeUndefined();
+});
 
 const externalAdapter: ServerAdapterModule = {
   type: "external_test",
@@ -36,7 +54,10 @@ const externalAdapter: ServerAdapterModule = {
 };
 
 describe("server adapter registry", () => {
+  let testHome: string;
   beforeEach(() => {
+    testHome = mkdtempSync(join(tmpdir(), "paperclip-adapter-registry-"));
+    vi.stubEnv("PAPERCLIP_HOME", testHome);
     unregisterServerAdapter("external_test");
     unregisterServerAdapter("hermes_local");
     unregisterServerAdapter("hermes_gateway");
@@ -50,6 +71,8 @@ describe("server adapter registry", () => {
     unregisterServerAdapter("hermes_gateway");
     unregisterServerAdapter("claude_local");
     setOverridePaused("claude_local", false);
+    vi.unstubAllEnvs();
+    rmSync(testHome, { recursive: true, force: true });
   });
 
   it("registers external adapters and exposes them through lookup helpers", async () => {
@@ -60,31 +83,6 @@ describe("server adapter registry", () => {
     expect(requireServerAdapter("external_test")).toBe(externalAdapter);
     expect(await listAdapterModels("external_test")).toEqual([
       { id: "external-model", label: "External Model" },
-    ]);
-  });
-
-  it("exposes adapter model profiles when adapters declare them", async () => {
-    const adapterWithProfiles: ServerAdapterModule = {
-      ...externalAdapter,
-      modelProfiles: [
-        {
-          key: "cheap",
-          label: "Cheap",
-          adapterConfig: { model: "external-mini" },
-          source: "adapter_default",
-        },
-      ],
-    };
-
-    registerServerAdapter(adapterWithProfiles);
-
-    expect(await listAdapterModelProfiles("external_test")).toEqual([
-      {
-        key: "cheap",
-        label: "Cheap",
-        adapterConfig: { model: "external-mini" },
-        source: "adapter_default",
-      },
     ]);
   });
 
@@ -131,22 +129,9 @@ describe("server adapter registry", () => {
     ]);
   });
 
-  it("ships Hermes adapters as built-ins and still accepts external overrides", () => {
-    const builtInLocal = findServerAdapter("hermes_local");
-    const builtInGateway = findServerAdapter("hermes_gateway");
-
-    expect(builtInLocal).not.toBeNull();
-    expect(builtInLocal?.supportsLocalAgentJwt).toBe(true);
-    expect(builtInLocal?.supportsInstructionsBundle).toBe(true);
-    expect(builtInLocal?.requiresMaterializedRuntimeSkills).toBe(false);
-    expect(builtInLocal?.detectModel).toBeTypeOf("function");
-    expect(builtInLocal?.getConfigSchema).toBeTypeOf("function");
-
-    expect(builtInGateway).not.toBeNull();
-    expect(builtInGateway?.supportsLocalAgentJwt).toBe(false);
-    expect(builtInGateway?.supportsInstructionsBundle).toBe(false);
-    expect(builtInGateway?.requiresMaterializedRuntimeSkills).toBe(false);
-    expect(builtInGateway?.getConfigSchema).toBeTypeOf("function");
+  it("loads Hermes adapters only from external packages", () => {
+    expect(findServerAdapter("hermes_local")).toBeNull();
+    expect(findServerAdapter("hermes_gateway")).toBeNull();
 
     const hermesLocalExternalAdapter: ServerAdapterModule = {
       type: "hermes_local",
@@ -200,8 +185,7 @@ describe("server adapter registry", () => {
     expect(findActiveServerAdapter("hermes_local")?.supportsLocalAgentJwt).toBe(true);
 
     unregisterServerAdapter("hermes_local");
-
-    expect(requireServerAdapter("hermes_local")).toBe(builtInLocal);
+    expect(findServerAdapter("hermes_local")).toBeNull();
 
     registerServerAdapter(hermesGatewayExternalAdapter);
 
@@ -209,8 +193,7 @@ describe("server adapter registry", () => {
     expect(findActiveServerAdapter("hermes_gateway")?.supportsLocalAgentJwt).toBe(false);
 
     unregisterServerAdapter("hermes_gateway");
-
-    expect(requireServerAdapter("hermes_gateway")).toBe(builtInGateway);
+    expect(findServerAdapter("hermes_gateway")).toBeNull();
   });
 
   it("exposes capability flags from registered adapters", () => {
@@ -258,50 +241,129 @@ describe("server adapter registry", () => {
     expect(adapter!.supportsLocalAgentJwt).toBe(true);
   });
 
-  it("built-in local adapters declare cheap model profile defaults where supported", async () => {
-    await expect(listAdapterModelProfiles("claude_local")).resolves.toEqual([
-      expect.objectContaining({
-        key: "cheap",
-        adapterConfig: expect.objectContaining({ model: "claude-sonnet-4-6" }),
-        source: "adapter_default",
-      }),
-    ]);
-    await expect(listAdapterModelProfiles("codex_local")).resolves.toEqual([
-      expect.objectContaining({
-        key: "cheap",
-        adapterConfig: {},
-        source: "adapter_default",
-      }),
-    ]);
-    await expect(listAdapterModelProfiles("gemini_local")).resolves.toEqual([
-      expect.objectContaining({
-        key: "cheap",
-        adapterConfig: expect.objectContaining({ model: "gemini-2.5-flash-lite" }),
-        source: "adapter_default",
-      }),
-    ]);
-    await expect(listAdapterModelProfiles("opencode_local")).resolves.toEqual([
-      expect.objectContaining({
-        key: "cheap",
-        adapterConfig: expect.objectContaining({ model: "openai/gpt-5.1-codex-mini" }),
-        source: "adapter_default",
-      }),
-    ]);
-    await expect(listAdapterModelProfiles("cursor")).resolves.toEqual([
-      expect.objectContaining({
-        key: "cheap",
-        adapterConfig: expect.objectContaining({ model: "gpt-5.1-codex-mini" }),
-        source: "adapter_default",
-      }),
-    ]);
-    await expect(listAdapterModelProfiles("pi_local")).resolves.toEqual([]);
+  it("rejects an incomplete managed runner provider before probing Codex", async () => {
+    const adapter = requireServerAdapter("paperclip_runner");
+    expect(adapter.supportsInstructionsBundle).toBe(true);
+    expect(adapter.instructionsPathKey).toBe("instructionsFilePath");
+    const result = await adapter.testEnvironment({
+      companyId: "company-1",
+      adapterType: "paperclip_runner",
+      config: { provider: "claude_managed" },
+    });
+
+    expect(result).toMatchObject({
+      adapterType: "paperclip_runner",
+      status: "fail",
+      checks: [{
+        code: "paperclip_runner_claude_managed_profile_required",
+        level: "error",
+      }],
+    });
   });
 
+  it.each([
+    ["claude_managed", {
+      managedProfileId: "managed-primary",
+      managedAgentsRetentionAcknowledged: true,
+    }, "claude_managed_profile_selected"],
+    ["aws_agentcore", {
+      agentCoreProfileId: "agentcore-primary",
+      agentCoreRetentionAcknowledged: true,
+    }, "aws_agentcore_profile_selected"],
+  ] as const)("accepts a complete %s profile selection", async (provider, config, code) => {
+    const result = await requireServerAdapter("paperclip_runner").testEnvironment({
+      companyId: "company-1",
+      adapterType: "paperclip_runner",
+      config: { provider, ...config },
+    });
+
+    expect(result).toMatchObject({
+      adapterType: "paperclip_runner",
+      status: "warn",
+      checks: expect.arrayContaining([expect.objectContaining({ code, level: "info" })]),
+    });
+  });
+
+  it.each([
+    ["claude", "claude-sonnet-5"],
+  ] as const)("does not claim runtime readiness from the remote ACPX %s platform alone", async (acpxAgent, model) => {
+    const result = await requireServerAdapter("paperclip_runner").testEnvironment({
+      companyId: "company-1",
+      adapterType: "paperclip_runner",
+      config: { provider: "acpx", acpxAgent, model },
+      executionTarget: {
+        kind: "remote",
+        transport: "sandbox",
+        remoteCwd: "/workspace",
+        providerKey: "test-provider",
+        runner: { execute: vi.fn().mockResolvedValue({ exitCode: 0, timedOut: false, stdout: "Linux\nx86_64\n" }) },
+      },
+    });
+
+    expect(result).toMatchObject({
+      adapterType: "paperclip_runner",
+      status: "warn",
+      checks: [{ code: "acpx_remote_runtime_unverified", level: "warn" }],
+    });
+  });
+
+  it.each([true, false])("checks actual local ACPX installation readiness (%s)", async (ready) => {
+    const probe = vi.mocked(probeAcpxClaudeInstallation);
+    if (ready) probe.mockResolvedValueOnce(undefined);
+    else probe.mockRejectedValueOnce(new Error("Runtime package integrity verification failed"));
+    const result = await requireServerAdapter("paperclip_runner").testEnvironment({
+      companyId: "company-1", adapterType: "paperclip_runner",
+      config: { provider: "acpx", acpxAgent: "claude", model: "custom-claude-model" },
+    });
+    expect(probe).toHaveBeenLastCalledWith("custom-claude-model");
+    expect(result).toMatchObject({
+      status: ready ? "pass" : "fail",
+      checks: [expect.objectContaining({ code: ready ? "acpx_runtime_ready" : "acpx_runtime_unavailable" })],
+    });
+  });
+
+  it.each([true, false])("probes the exact Pi installation without qualification opt-in (ready=%s)", async (ready) => {
+    const probe = vi.mocked(probeAcpxPiInstallation);
+    if (ready) probe.mockResolvedValueOnce(undefined);
+    else probe.mockRejectedValueOnce(new Error("Pi closure unavailable"));
+    const result = await requireServerAdapter("paperclip_runner").testEnvironment({
+      companyId: "company-1",
+      adapterType: "paperclip_runner",
+      config: {
+        provider: "acpx",
+        acpxAgent: "pi",
+        model: "openrouter/deepseek/deepseek-v4-flash-0731",
+      },
+    });
+
+    expect(result).toMatchObject({
+      status: ready ? "pass" : "fail",
+      checks: [{ code: ready ? "acpx_runtime_ready" : "acpx_runtime_unavailable" }],
+    });
+    expect(probe).toHaveBeenLastCalledWith("openrouter/deepseek/deepseek-v4-flash-0731");
+  });
+  it("reports qualification-only readiness for an exact host-authorized candidate", async () => {
+    const key = "PAPERCLIP_RUNNER_ACPX_QUALIFICATION";
+    const previous = process.env[key];
+    process.env[key] = JSON.stringify([{ agent: "copilot", model: "exact-model" }]);
+    try {
+      const result = await requireServerAdapter("paperclip_runner").testEnvironment({
+        companyId: "company-1", adapterType: "paperclip_runner",
+        config: { provider: "acpx", acpxAgent: "copilot", model: "exact-model" },
+      });
+      expect(result).toMatchObject({ status: "warn", checks: [{ code: "acpx_candidate_qualification_only" }] });
+    } finally {
+      if (previous === undefined) delete process.env[key];
+      else process.env[key] = previous;
+    }
+  });
   it("wraps built-in npm runtime installs with the sandbox-aware install helper", () => {
     const expectedClaudeInstall = `if ! command -v 'claude' >/dev/null 2>&1; then ${buildSandboxNpmInstallCommand("@anthropic-ai/claude-code")}; fi`;
     const expectedCodexInstall = `if ! command -v 'codex' >/dev/null 2>&1; then ${buildSandboxNpmInstallCommand("@openai/codex")}; fi`;
     const expectedGeminiInstall = `if ! command -v 'gemini' >/dev/null 2>&1; then ${buildSandboxNpmInstallCommand("@google/gemini-cli")}; fi`;
     const expectedOpenCodeInstall = `if ! command -v 'opencode' >/dev/null 2>&1; then ${buildSandboxNpmInstallCommand("opencode-ai")}; fi`;
+    const expectedRunnerCodexInstall = `if ! command -v 'codex' >/dev/null 2>&1; then ${buildSandboxNpmInstallCommand("@openai/codex@0.160.0")}; fi`;
+    const expectedRunnerOpenCodeInstall = `if ! command -v 'opencode' >/dev/null 2>&1; then ${buildSandboxNpmInstallCommand("opencode-ai@1.18.34")}; fi`;
 
     expect(findActiveServerAdapter("claude_local")?.getRuntimeCommandSpec?.({})).toEqual({
       command: "claude",
@@ -322,6 +384,21 @@ describe("server adapter registry", () => {
       command: "opencode",
       detectCommand: "opencode",
       installCommand: expectedOpenCodeInstall,
+    });
+    expect(findActiveServerAdapter("paperclip_runner")?.getRuntimeCommandSpec?.({ provider: "codex" })).toEqual({
+      command: "codex",
+      detectCommand: "codex",
+      installCommand: expectedRunnerCodexInstall,
+    });
+    expect(findActiveServerAdapter("paperclip_runner")?.getRuntimeCommandSpec?.({ provider: "opencode" })).toEqual({
+      command: "opencode",
+      detectCommand: "opencode",
+      installCommand: expectedRunnerOpenCodeInstall,
+    });
+    expect(findActiveServerAdapter("paperclip_runner")?.getRuntimeCommandSpec?.({ provider: "acpx" })).toEqual({
+      command: "paperclip-runnerd",
+      detectCommand: null,
+      installCommand: null,
     });
   });
 
@@ -369,6 +446,21 @@ describe("server adapter registry", () => {
     expect(await listAdapterModels("claude_local")).toEqual(builtIn?.models ?? []);
     expect(await detectAdapterModel("claude_local")).toBeNull();
     expect(detectModel).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps a paused override paused when reloaded or replaced", () => {
+    const builtIn = findServerAdapter("claude_local");
+    const plugin = { ...externalAdapter, type: "claude_local" };
+    registerServerAdapter(plugin);
+    expect(setOverridePaused("claude_local", true)).toBe(true);
+
+    unregisterServerAdapter("claude_local");
+    const replacement = { ...plugin, models: [{ id: "replacement-model", label: "Replacement" }] };
+    registerServerAdapter(replacement);
+    expect(findActiveServerAdapter("claude_local")).toBe(builtIn);
+
+    expect(setOverridePaused("claude_local", false)).toBe(true);
+    expect(findActiveServerAdapter("claude_local")).toBe(replacement);
   });
 });
 

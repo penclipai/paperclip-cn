@@ -1,3 +1,5 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
 // token-extraction: allowlisted — intentional one-off decoration (DECISION-SHEET.md B1
 // user ruling). The bg-[...gradient...] / shadow-[...] literals in this demo/UX-lab page
 // are deliberate one-off decoration, reverted from --gradient-extract-*/--shadow-extract-*
@@ -129,6 +131,7 @@ const checklist = [
 ];
 
 export function SystemNoticeUxLab() {
+  useTranslation();
   const fixtureById = new Map(systemNoticeFixtures.map((f) => [f.id, f] as const));
 
   const warningCollapsed = fixtureById.get("warning-collapsed")!;
@@ -240,31 +243,31 @@ export function SystemNoticeUxLab() {
           />
           <SystemNotice
             tone="danger"
-            label="System alert"
-            source={{ label: "Paperclip", href: "/PAP/agents" }}
+            label={translateInstant("systemNotice.alert")}
+            source={{ label: translateInstant("Paperclip"), href: "/PAP/agents" }}
             timestamp="2026-05-04T16:48:00.000Z"
             body="Paperclip could not resolve this issue's missing disposition automatically. The source assignment is unchanged and a board decision is required."
             metadata={[
               {
-                title: "Recovery owner",
+                title: translateInstant("systemNotice.successfulRunHandoff.recoveryOwner"),
                 rows: [
                   {
                     kind: "issue",
-                    label: "Recovery issue",
+                    label: translateInstant("systemNotice.successfulRunHandoff.recoveryIssue"),
                     identifier: "PAP-3440",
                     href: "/PAP/issues/PAP-3440",
                     title: "Successful run handoff missing disposition",
                   },
                   {
                     kind: "agent",
-                    label: "Owner",
+                    label: translateInstant("Owner"),
                     name: "CTO",
                     href: "/PAP/agents/cto",
                   },
                 ],
               },
               {
-                title: "Run evidence",
+                title: translateInstant("systemNotice.successfulRunHandoff.runEvidence"),
                 rows: [
                   {
                     kind: "run",
@@ -298,7 +301,7 @@ export function SystemNoticeUxLab() {
                 <AvatarFallback>YO</AvatarFallback>
               </Avatar>
               <div className="flex min-w-0 max-w-(--pct-85) flex-col">
-                <div className="mb-1 px-1 text-sm font-medium text-foreground">You</div>
+                <div className="mb-1 px-1 text-sm font-medium text-foreground">{translateInstant("You")}</div>
                 <div className="min-w-0 max-w-full rounded-2xl bg-muted px-4 py-2.5 text-sm leading-6 text-foreground">
                   <div className="rounded-md border border-red-500/35 bg-red-500/10 px-3 py-2.5 text-sm text-red-950 dark:text-red-100">
                     <div className="flex items-start gap-2">
@@ -321,7 +324,7 @@ export function SystemNoticeUxLab() {
               </div>
             </div>
             <p className="px-1 text-xs text-muted-foreground">
-              Author reads as <span className="font-medium text-foreground">You</span> even though the
+              Author reads as <span className="font-medium text-foreground">{translateInstant("You")}</span> even though the
               author is the Paperclip system. Two containers stack the warning inside a user-style
               bubble, and operational evidence is always visible.
             </p>
@@ -338,7 +341,7 @@ export function SystemNoticeUxLab() {
             <SystemNotice {...dangerCollapsed} />
             <p className="px-1 text-xs text-muted-foreground">
               Same content. The visible body is one short system sentence; reviewers expand{" "}
-              <span className="font-medium text-foreground">Details</span> only when they need run
+              <span className="font-medium text-foreground">{translateInstant("Details")}</span> only when they need run
               evidence. Tone is reinforced by the octagon icon and the &quot;System alert&quot; label,
               not just red.
             </p>
@@ -360,19 +363,18 @@ export function SystemNoticeUxLab() {
         <CardContent className="space-y-3 px-5 pb-5 pt-0 text-sm text-muted-foreground">
           <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
             <div className="mb-1 font-medium text-foreground">Component</div>
-            Use <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">{`<SystemNotice />`}</code>{" "}
-            from <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">@/components/SystemNotice</code>.
+            {translateInstant("routineVariables.helpSummaryPrefix")}{" "}<code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">{`<SystemNotice />`}</code>{" "}
+            {translateInstant("secrets.from")}{" "}<code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">@/components/SystemNotice</code>.
             It accepts <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">tone</code>,{" "}
             <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">label</code>,{" "}
             <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">body</code>,{" "}
-            <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">metadata</code>, and{" "}
-            <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">detailsDefaultOpen</code>.
-          </div>
+            <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">{translateInstant("metadata")}</code>{translateInstant("companyImport.and")}{" "}
+            <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">detailsDefaultOpen</code>{translateInstant(".")}</div>
           <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
             <div className="mb-1 font-medium text-foreground">Routing in IssueChatThread</div>
             Comments where{" "}
             <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">authorType === &quot;system&quot;</code>{" "}
-            or{" "}
+            {translateInstant("issueAssignedBacklogNotice.or")}{" "}
             <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">presentation.kind === &quot;system_notice&quot;</code>{" "}
             should render as a SystemNotice row at full content width — never inside an{" "}
             <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">IssueChatUserMessage</code>{" "}
@@ -382,12 +384,12 @@ export function SystemNoticeUxLab() {
             <div className="mb-1 font-medium text-foreground">Accessibility</div>
             The Details button has{" "}
             <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">aria-expanded</code>{" "}
-            and{" "}
+            {translateInstant("and")}{" "}
             <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">aria-controls</code>{" "}
             wired to the panel id. The container exposes{" "}
             <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">role=&quot;status&quot;</code>{" "}
             and an{" "}
-            <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">aria-label</code>{" "}
+            <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">{translateInstant("aria-label")}</code>{" "}
             equal to the visible tone label so screen readers announce tone with text.
           </div>
           <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">

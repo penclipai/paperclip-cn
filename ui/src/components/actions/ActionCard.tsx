@@ -257,7 +257,7 @@ export function ActionCard({
           <div className="min-w-0 flex-1">
             <p className="text-sm text-foreground">
               <span className="font-medium">{agentName}</span>{" "}
-              {t("actionCard.requestedApproval", { defaultValue: "requested approval to call" })}
+              {" "}{t("actionCard.requestedApproval", { defaultValue: "requested approval to call" })}
             </p>
             <p className="mt-0.5 font-mono text-xs text-muted-foreground break-all">{toolName}</p>
           </div>
@@ -315,7 +315,7 @@ export function ActionCard({
                     number: policyNumber,
                   })}
                 </span>{" "}
-                {t("actionCard.policyRequiresApproval", { defaultValue: "requires approval here." })}
+                {" "}{t("actionCard.policyRequiresApproval", { defaultValue: "requires approval here." })}
               </>
             ) : null}
           </p>

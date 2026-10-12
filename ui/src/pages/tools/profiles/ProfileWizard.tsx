@@ -1,6 +1,7 @@
+import { useTranslation } from "react-i18next";
+import { translateInstant } from "@/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
 import { Check, ChevronDown, Loader2 } from "lucide-react";
 import type { ToolProfileWithDetails } from "@penclipai/shared";
 import { useNavigate } from "@/lib/router";
@@ -28,7 +29,6 @@ import {
 import { useProfilesData } from "./useProfilesData";
 import { WizardToolsStep } from "./WizardToolsStep";
 import { readWizardMeta, resumeStep, withWizardMeta, type WizardStep } from "./wizard-draft";
-import { translateInstant } from "@/i18n";
 
 function slugifyProfileKey(name: string): string {
   return name
@@ -39,19 +39,11 @@ function slugifyProfileKey(name: string): string {
     .slice(0, 160);
 }
 
-const STEP_LABELS: Array<{ step: WizardStep; labelKey: string; defaultLabel: string }> = [
-  { step: 1, labelKey: "tools.profiles.wizard.steps.name", defaultLabel: "Name" },
-  { step: 2, labelKey: "tools.profiles.wizard.steps.chooseTools", defaultLabel: "Choose tools" },
-  { step: 3, labelKey: "tools.profiles.wizard.steps.assign", defaultLabel: "Assign" },
+const STEP_LABELS: Array<{ step: WizardStep; label: string }> = [
+  { step: 1, get label() { return translateInstant("Name"); } },
+  { step: 2, label: "Choose tools" },
+  { step: 3, label: "Assign" },
 ];
-
-const TEMPLATE_TRANSLATIONS: Record<TemplateKey, { titleKey: string; descriptionKey: string }> = {
-  read_only: { titleKey: "tools.profiles.templates.readOnly.title", descriptionKey: "tools.profiles.templates.readOnly.description" },
-  everyday: { titleKey: "tools.profiles.templates.everyday.title", descriptionKey: "tools.profiles.templates.everyday.description" },
-  full_access: { titleKey: "tools.profiles.templates.fullAccess.title", descriptionKey: "tools.profiles.templates.fullAccess.description" },
-  scratch: { titleKey: "tools.profiles.templates.scratch.title", descriptionKey: "tools.profiles.templates.scratch.description" },
-  copy: { titleKey: "tools.profiles.templates.copy.title", descriptionKey: "tools.profiles.templates.copy.description" },
-};
 
 export function ProfileWizard({
   companyId,
@@ -64,7 +56,7 @@ export function ProfileWizard({
   initialTemplate?: TemplateKey;
   initialStep?: WizardStep;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { pushToast } = useToast();
@@ -131,6 +123,7 @@ export function ProfileWizard({
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: queryKeys.tools.profiles(companyId) });
+    queryClient.invalidateQueries({ queryKey: queryKeys.tools.testAgentAccesses() });
   };
 
   const live = useMemo(
@@ -163,7 +156,7 @@ export function ProfileWizard({
       if (!draftId) {
         const created = await toolsApi.createProfile(companyId, {
           profileKey: profileKey || slugifyProfileKey(name) || "profile",
-          name: name.trim() || t("tools.profiles.wizard.untitled", { defaultValue: "Untitled profile" }),
+          name: name.trim() || "Untitled profile",
           description: description.trim() || null,
           status: "draft",
           defaultAction: newToolsAction,
@@ -174,7 +167,7 @@ export function ProfileWizard({
       }
       const updated = await toolsApi.updateProfile(draftId, {
         profileKey: profileKey || undefined,
-        name: name.trim() || t("tools.profiles.wizard.untitled", { defaultValue: "Untitled profile" }),
+        name: name.trim() || "Untitled profile",
         description: description.trim() || null,
         defaultAction: newToolsAction,
         entries,
@@ -189,12 +182,12 @@ export function ProfileWizard({
       invalidate();
     },
     onError: (error: unknown) =>
-      pushToast({ title: t("tools.profiles.toast.saveFailed", { defaultValue: "Could not save" }), body: String((error as Error)?.message ?? error), tone: "error" }),
+      pushToast({ title: translateInstant("Could not save"), body: String((error as Error)?.message ?? error), tone: "error" }),
   });
 
   const finish = useMutation({
     mutationFn: async () => {
-      if (!draftId) throw new Error(t("tools.profiles.wizard.noDraft", { defaultValue: "No draft to finish" }));
+      if (!draftId) throw new Error("No draft to finish");
       const entries = buildEntries(appGroups, selections, advancedRules, newToolsAction);
       const profile = await toolsApi.updateProfile(draftId, {
         defaultAction: newToolsAction,
@@ -210,12 +203,12 @@ export function ProfileWizard({
       return toolsApi.updateProfile(draftId, { status: "active" });
     },
     onSuccess: (profile) => {
-      pushToast({ title: t("tools.profiles.detail.saved", { defaultValue: "Profile saved" }), tone: "success" });
+      pushToast({ title: translateInstant("tools.profiles.detail.saved"), tone: "success" });
       invalidate();
       navigate(`/apps/advanced/profiles/${profile.id}${selectedAgentIds.size === 0 && !companyDefault ? "?created=1" : ""}`);
     },
     onError: (error: unknown) =>
-      pushToast({ title: t("tools.profiles.toast.saveProfileFailed", { defaultValue: "Could not save profile" }), body: String((error as Error)?.message ?? error), tone: "error" }),
+      pushToast({ title: translateInstant("tools.profiles.toast.saveProfileFailed"), body: String((error as Error)?.message ?? error), tone: "error" }),
   });
 
   const saveAndExit = () => {
@@ -224,11 +217,7 @@ export function ProfileWizard({
       { goToStep: step, completedStep: completed },
       {
         onSuccess: () => {
-          pushToast({
-            title: t("tools.profiles.toast.draftSaved", { defaultValue: "Draft saved" }),
-            body: t("tools.profiles.toast.resumeFromList", { defaultValue: "Pick it back up from the profiles list." }),
-            tone: "success",
-          });
+          pushToast({ title: translateInstant("tools.profiles.toast.draftSaved"), body: "Pick it back up from the profiles list.", tone: "success" });
           navigate("/apps/advanced/profiles");
         },
       },
@@ -238,7 +227,7 @@ export function ProfileWizard({
   const busy = saveDraft.isPending || finish.isPending;
   const step1Valid = name.trim().length > 0 && (template !== "copy" || Boolean(copyFromId));
 
-  if (profileId && profiles.isLoading) return <LoadingState label={t("tools.profiles.wizard.loadingDraft", { defaultValue: "Loading draft…" })} />;
+  if (profileId && profiles.isLoading) return <LoadingState label={translateInstant("tools.profiles.wizard.loadingDraft")} />;
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 pb-24">
@@ -301,11 +290,8 @@ export function ProfileWizard({
           <div className="flex items-center gap-3 text-sm text-muted-foreground">
             {step >= 2 ? (
               <span>
-                {t("tools.profiles.wizard.allowedCount", {
-                  defaultValue: "Allows {{allowed}} of {{total}} tools",
-                  allowed: live.allowed,
-                  total: live.total,
-                })}
+                {translateInstant("tools.profiles.table.allows")}{" "}<span className="font-medium text-foreground">{live.allowed}</span> {translateInstant("issueCommon.of")}{" "}{live.total}{" "}
+                tools
               </span>
             ) : null}
             {draftId ? (
@@ -315,20 +301,17 @@ export function ProfileWizard({
                 disabled={busy}
                 className="font-medium text-primary hover:underline disabled:opacity-50"
               >
-                {t("tools.profiles.wizard.saveForLater", { defaultValue: "Save & finish later" })}
-              </button>
+                {translateInstant("Save &amp; finish later")}</button>
             ) : null}
           </div>
 
           <div className="flex items-center gap-2">
             {step > 1 ? (
               <Button variant="outline" disabled={busy} onClick={() => setStep((s) => (s - 1) as WizardStep)}>
-                {t("tools.common.back", { defaultValue: "Back" })}
-              </Button>
+                {translateInstant("tools.common.back")}</Button>
             ) : (
               <Button variant="ghost" disabled={busy} onClick={() => navigate("/apps/advanced/profiles")}>
-                {t("tools.common.cancel", { defaultValue: "Cancel" })}
-              </Button>
+                {translateInstant("tools.common.cancel")}</Button>
             )}
 
             {step === 1 ? (
@@ -339,8 +322,7 @@ export function ProfileWizard({
                 }
               >
                 {busy ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : null}
-                {t("tools.common.continue", { defaultValue: "Continue" })}
-              </Button>
+                {translateInstant("tools.common.continue")}</Button>
             ) : null}
 
             {step === 2 ? (
@@ -349,15 +331,13 @@ export function ProfileWizard({
                 onClick={() => saveDraft.mutate({ goToStep: 3, completedStep: 2 })}
               >
                 {busy ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : null}
-                {t("tools.common.continue", { defaultValue: "Continue" })}
-              </Button>
+                {translateInstant("tools.common.continue")}</Button>
             ) : null}
 
             {step === 3 ? (
               <Button disabled={busy} onClick={() => finish.mutate()}>
                 {busy ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : null}
-                {t("tools.profiles.wizard.saveProfile", { defaultValue: "Save profile" })}
-              </Button>
+                {translateInstant("tools.profiles.wizard.saveProfile")}</Button>
             ) : null}
           </div>
         </div>
@@ -410,26 +390,16 @@ async function reconcileBindings(
     } catch (error) {
       const rollbacks = await Promise.allSettled(completed.reverse().map((done) => done.rollback()));
       const rollbackFailures = rollbacks.filter((result) => result.status === "rejected").length;
-      const suffix = rollbackFailures > 0
-        ? translateInstant("tools.profiles.wizard.rollbackFailures", {
-            defaultValue: "; {{count}} rollback operation(s) also failed",
-            count: rollbackFailures,
-          })
-        : "";
-      throw new Error(translateInstant("tools.profiles.wizard.assignmentUpdateFailed", {
-        defaultValue: "Could not update assignment {{key}}{{suffix}}",
-        key: operation.key,
-        suffix,
-      }), { cause: error });
+      const suffix = rollbackFailures > 0 ? `; ${rollbackFailures} rollback operation(s) also failed` : "";
+      throw new Error(`Could not update assignment ${operation.key}${suffix}`, { cause: error });
     }
   }
 }
 
 function Stepper({ current }: { current: WizardStep }) {
-  const { t } = useTranslation();
   return (
     <ol className="flex items-center gap-2 text-sm">
-      {STEP_LABELS.map(({ step, labelKey, defaultLabel }, idx) => {
+      {STEP_LABELS.map(({ step, label }, idx) => {
         const done = current > step;
         const active = current === step;
         return (
@@ -445,7 +415,7 @@ function Stepper({ current }: { current: WizardStep }) {
               {done ? <Check className="h-3.5 w-3.5" /> : step}
             </span>
             <span className={cn("font-medium", active ? "text-foreground" : "text-muted-foreground")}>
-              {t(labelKey, { defaultValue: defaultLabel })}
+              {label}
             </span>
             {idx < STEP_LABELS.length - 1 ? <span className="mx-1 text-muted-foreground">→</span> : null}
           </li>
@@ -480,27 +450,27 @@ export function StepName({
   profileKey: string;
   onProfileKey: (v: string) => void;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   const [advancedOpen, setAdvancedOpen] = useState(false);
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <h3 className="text-sm font-medium text-foreground">{t("tools.profiles.wizard.startFrom", { defaultValue: "Start from" })}</h3>
+        <h3 className="text-sm font-medium text-foreground">{translateInstant("tools.profiles.wizard.startFrom")}</h3>
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-          {TEMPLATES.map((templateOption) => (
+          {TEMPLATES.map((t) => (
             <button
-              key={templateOption.key}
+              key={t.key}
               type="button"
-              onClick={() => onTemplate(templateOption.key)}
+              onClick={() => onTemplate(t.key)}
               className={cn(
                 "flex flex-col items-start gap-1 rounded-md border px-4 py-3 text-left transition-colors",
-                template === templateOption.key
+                template === t.key
                   ? "border-primary bg-primary/5 ring-1 ring-primary"
                   : "border-border hover:border-primary/40 hover:bg-accent/40",
               )}
             >
-              <span className="text-sm font-medium text-foreground">{t(TEMPLATE_TRANSLATIONS[templateOption.key].titleKey, { defaultValue: templateOption.title })}</span>
-              <span className="text-xs text-muted-foreground">{t(TEMPLATE_TRANSLATIONS[templateOption.key].descriptionKey, { defaultValue: templateOption.description })}</span>
+              <span className="text-sm font-medium text-foreground">{t.title}</span>
+              <span className="text-xs text-muted-foreground">{t.description}</span>
             </button>
           ))}
         </div>
@@ -508,9 +478,9 @@ export function StepName({
 
       {template === "copy" ? (
         <div className="space-y-2">
-          <h3 className="text-sm font-medium text-foreground">{t("tools.profiles.wizard.whichProfile", { defaultValue: "Which profile?" })}</h3>
+          <h3 className="text-sm font-medium text-foreground">{translateInstant("tools.profiles.wizard.whichProfile")}</h3>
           {copyOptions.length === 0 ? (
-            <p className="text-sm text-muted-foreground">{t("tools.profiles.wizard.noCopySource", { defaultValue: "You don't have another profile to copy yet." })}</p>
+            <p className="text-sm text-muted-foreground">{translateInstant("tools.profiles.wizard.noCopySource")}</p>
           ) : (
             <div className="space-y-1.5">
               {copyOptions.map((p) => (
@@ -534,21 +504,21 @@ export function StepName({
 
       <div className="space-y-3">
         <div className="space-y-1.5">
-          <Label htmlFor="profile-name">{t("tools.common.name", { defaultValue: "Name" })}</Label>
+          <Label htmlFor="profile-name">{translateInstant("tools.common.name")}</Label>
           <Input
             id="profile-name"
             value={name}
             onChange={(e) => onName(e.target.value)}
-            placeholder={t("tools.profiles.wizard.namePlaceholder", { defaultValue: "e.g. Everyday work" })}
+            placeholder={translateInstant("tools.profiles.wizard.namePlaceholder")}
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="profile-description">{t("tools.profiles.wizard.descriptionOptional", { defaultValue: "Description (optional)" })}</Label>
+          <Label htmlFor="profile-description">{translateInstant("tools.profiles.wizard.descriptionOptional")}</Label>
           <Textarea
             id="profile-description"
             value={description}
             onChange={(e) => onDescription(e.target.value)}
-            placeholder={t("tools.profiles.wizard.descriptionPlaceholder", { defaultValue: "What is this profile for?" })}
+            placeholder={translateInstant("tools.profiles.wizard.descriptionPlaceholder")}
             rows={2}
           />
         </div>
@@ -557,11 +527,10 @@ export function StepName({
       <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen}>
         <CollapsibleTrigger className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
           <ChevronDown className={cn("h-4 w-4 transition-transform", advancedOpen && "rotate-180")} />
-          {t("tools.common.advanced", { defaultValue: "Advanced" })}
-        </CollapsibleTrigger>
+          {translateInstant("tools.common.advanced")}</CollapsibleTrigger>
         <CollapsibleContent className="pt-2">
           <div className="space-y-1.5">
-            <Label htmlFor="profile-key">{t("tools.common.identifier", { defaultValue: "Identifier" })}</Label>
+            <Label htmlFor="profile-key">{translateInstant("tools.common.identifier")}</Label>
             <Input
               id="profile-key"
               value={profileKey}
@@ -569,8 +538,7 @@ export function StepName({
               className="font-mono text-xs"
             />
             <p className="text-xs text-muted-foreground">
-              {t("tools.profiles.wizard.identifierHelp", { defaultValue: "Used in exports and the API. Auto-filled from the name." })}
-            </p>
+              {translateInstant("tools.profiles.wizard.identifierHelp")}</p>
           </div>
         </CollapsibleContent>
       </Collapsible>
@@ -610,7 +578,7 @@ export function StepAssign({
   companyDefault: boolean;
   onCompanyDefault: (v: boolean) => void;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   const [moreOpen, setMoreOpen] = useState(false);
   // Per-agent overlap context from already-loaded bindings — no extra fetch.
   const contextByAgent = useMemo(() => {
@@ -639,18 +607,15 @@ export function StepAssign({
           onChange={(e) => onCompanyDefault(e.target.checked)}
         />
         <span className="flex flex-col gap-0.5">
-          <span className="text-sm font-medium text-foreground">{t("tools.profiles.assign.makeDefault", { defaultValue: "Make this the company default" })}</span>
+          <span className="text-sm font-medium text-foreground">{translateInstant("Make this the organization default")}</span>
           <span className="text-xs text-muted-foreground">
-            {t("tools.profiles.assign.defaultDescription", { defaultValue: "Every agent without its own profile uses this one." })}
-            {defaultProfileName
-              ? ` ${t("tools.profiles.assign.replaces", { defaultValue: "Replaces “{{name}}”.", name: defaultProfileName })}`
-              : ""}
+            {translateInstant("tools.profiles.assign.defaultDescription")}{defaultProfileName ? ` Replaces “${defaultProfileName}”.` : ""}
           </span>
         </span>
       </label>
 
       <div className="space-y-2">
-        <h3 className="text-sm font-medium text-foreground">{t("tools.profiles.assign.toAgents", { defaultValue: "Assign to agents" })}</h3>
+        <h3 className="text-sm font-medium text-foreground">{translateInstant("tools.profiles.assign.toAgents")}</h3>
         <AgentMultiSelect
           agents={agents}
           selectedAgentIds={selectedAgentIds}
@@ -662,35 +627,31 @@ export function StepAssign({
           getDescription={(agent) => {
             const context = contextByAgent.get(agent.id) ?? [];
             const bits = [...context];
-            if (defaultProfileName) bits.push(t("tools.profiles.assign.companyDefault", { defaultValue: "company default" }));
-            return bits.length > 0
-              ? t("tools.profiles.assign.alreadyHas", { defaultValue: "already has: {{profiles}}", profiles: bits.join(" · ") })
-              : t("tools.profiles.assign.noProfiles", { defaultValue: "no profiles yet" });
+            if (defaultProfileName) bits.push("organization default");
+            return bits.length > 0 ? `already has: ${bits.join(" · ")}` : "no profiles yet";
           }}
         />
         <p className="text-xs text-muted-foreground">
-          {t("tools.profiles.assign.overlapHelp", { defaultValue: "If an agent has several profiles, it can use anything any of them allows." })}
-        </p>
+          {translateInstant("tools.profiles.assign.overlapHelp")}</p>
       </div>
 
       {(projects.length > 0 || routines.length > 0) && onToggleProject && onToggleRoutine ? (
         <Collapsible open={moreOpen} onOpenChange={setMoreOpen} className="rounded-lg border border-border">
           <CollapsibleTrigger className="flex w-full items-center justify-between px-4 py-3 text-left">
-            <span className="text-sm font-medium text-foreground">{t("tools.profiles.assign.moreTargets", { defaultValue: "More targets" })}</span>
+            <span className="text-sm font-medium text-foreground">{translateInstant("tools.profiles.assign.moreTargets")}</span>
             <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", moreOpen && "rotate-180")} />
           </CollapsibleTrigger>
           <CollapsibleContent className="space-y-4 border-t border-border px-4 py-3">
             <p className="text-xs text-muted-foreground">
-              {t("tools.profiles.assign.moreTargetsHelp", { defaultValue: "Assign this profile to a whole project or a scheduled routine instead of (or as well as) individual agents." })}
-            </p>
+              {translateInstant("tools.profiles.assign.moreTargetsHelp")}</p>
             <TargetChecklist
-              label={t("tools.common.projects", { defaultValue: "Projects" })}
+              label={translateInstant("Projects")}
               options={projects}
               selected={selectedProjectIds ?? new Set()}
               onToggle={onToggleProject}
             />
             <TargetChecklist
-              label={t("tools.common.routines", { defaultValue: "Routines" })}
+              label={translateInstant("Routines")}
               options={routines}
               selected={selectedRoutineIds ?? new Set()}
               onToggle={onToggleRoutine}

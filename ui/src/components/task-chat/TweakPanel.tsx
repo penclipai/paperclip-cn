@@ -1,6 +1,8 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
-import { copyTextToClipboard } from "@/lib/clipboard";
+import { useCopyAction } from "@/lib/use-copy-action";
 import { Copy, GripHorizontal, Minus, Plus, RotateCcw } from "lucide-react";
 import {
   EASING_PRESETS,
@@ -44,6 +46,7 @@ function saveSession(key: string, value: unknown) {
  * one file, one dev guard, trivial to strip out later.
  */
 export function TweakPanel() {
+  useTranslation();
   const [pos, setPos] = useState<{ x: number; y: number }>(() =>
     loadSession(POS_KEY, { x: 24, y: 24 }),
   );
@@ -53,6 +56,7 @@ export function TweakPanel() {
     loadSession(OVERRIDES_KEY, {}),
   );
   const [exportText, setExportText] = useState<string | null>(null);
+  const exportCopy = useCopyAction();
   const dragRef = useRef<{ dx: number; dy: number } | null>(null);
 
   // Initialize display values from computed styles, then re-apply any saved
@@ -138,9 +142,9 @@ export function TweakPanel() {
         onPointerUp={onHeaderPointerUp}
       >
         <GripHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
-        <span>Motion tweak panel</span>
+        <span>{translateInstant("Motion tweak panel")}</span>
         <div className="ml-auto flex items-center gap-1">
-          <button type="button" title="Reset all" onClick={resetAll} className="rounded p-0.5 hover:bg-accent">
+          <button type="button" title={translateInstant("Reset all")} onClick={resetAll} className="rounded p-0.5 hover:bg-accent">
             <RotateCcw className="h-3.5 w-3.5" />
           </button>
           <button
@@ -209,21 +213,30 @@ export function TweakPanel() {
               className="flex flex-1 items-center justify-center gap-1 rounded border border-border px-2 py-1 text-xs hover:bg-accent"
             >
               <Copy className="h-3.5 w-3.5" />
-              Copy as @theme
-            </button>
+              {translateInstant("Copy as @theme")}</button>
           </div>
 
           {exportText ? (
-            <textarea
-              readOnly
-              data-testid="task-chat-tweak-export"
-              className="mt-2 h-32 w-full resize-none rounded border border-border bg-muted/40 p-2 font-mono text-(length:--text-nano)"
-              value={exportText}
-              onFocus={(e) => {
-                e.currentTarget.select();
-                void copyTextToClipboard(exportText).catch(() => {});
-              }}
-            />
+            <>
+              <textarea
+                readOnly
+                data-testid="task-chat-tweak-export"
+                className="mt-2 h-32 w-full resize-none rounded border border-border bg-muted/40 p-2 font-mono text-(length:--text-nano)"
+                value={exportText}
+                onFocus={(e) => {
+                  e.currentTarget.select();
+                  void exportCopy.copy(exportText);
+                }}
+              />
+              {/* Focusing the box copies it silently; say so, or the click looks inert. */}
+              <p className="mt-1 text-(length:--text-nano) text-muted-foreground" aria-live="polite">
+                {exportCopy.copied
+                  ? "Copied to clipboard"
+                  : exportCopy.failed
+                    ? "Copy failed — select the text and copy it manually"
+                    : "Click the box to copy"}
+              </p>
+            </>
           ) : null}
         </div>
       )}

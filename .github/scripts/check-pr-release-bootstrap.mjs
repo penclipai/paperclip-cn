@@ -21,7 +21,7 @@ const MANIFEST_PATH = 'scripts/release-package-manifest.json';
 
 // Manifest content comes from the PR head (fork-controlled), so only names
 // matching our scope are ever looked up on the registry.
-const SCOPE_RE = /^@paperclipai\/[a-z0-9][a-z0-9._-]*$/;
+const SCOPE_RE = /^@penclipai\/[a-z0-9][a-z0-9._-]*$/;
 
 const MAX_REGISTRY_LOOKUPS = 5;
 
@@ -58,7 +58,7 @@ export function addedWorkspaceDependencyNames(files) {
     if (file.filename.includes('node_modules')) continue;
     for (const line of (file.patch ?? '').split('\n')) {
       if (!line.startsWith('+')) continue;
-      const match = line.match(/"(@paperclipai\/[a-z0-9][a-z0-9._-]*)"\s*:\s*"workspace:/);
+      const match = line.match(/"(@penclipai\/[a-z0-9][a-z0-9._-]*)"\s*:\s*"workspace:/);
       if (match) names.add(match[1]);
     }
   }

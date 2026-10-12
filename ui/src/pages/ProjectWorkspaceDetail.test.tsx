@@ -3,8 +3,10 @@
 import type { Project, ProjectWorkspace } from "@penclipai/shared";
 import { act, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ProjectWorkspaceDetail } from "./ProjectWorkspaceDetail";
+import { queryKeys } from "../lib/queryKeys";
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -23,6 +25,7 @@ const mockProjectQueryState = vi.hoisted(() => ({
   isLoading: false,
   error: null as unknown,
 }));
+const mockExperimentalSettings = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));
 const mockInvalidateQueries = vi.hoisted(() => vi.fn());
 const mockMutationState = vi.hoisted(() => ({
   mutate: vi.fn(),
@@ -36,11 +39,19 @@ const mockPluginSlotState = vi.hoisted(() => ({
   errorMessage: null as string | null,
 }));
 
-vi.mock("@tanstack/react-query", () => ({
-  useMutation: () => mockMutationState,
-  useQuery: () => mockProjectQueryState,
-  useQueryClient: () => ({ invalidateQueries: mockInvalidateQueries }),
-}));
+vi.mock("@tanstack/react-query", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@tanstack/react-query")>();
+  return {
+    ...actual,
+    useMutation: () => mockMutationState,
+    useQuery: (options: { queryKey?: readonly unknown[] }) => (
+      options.queryKey?.[0] === "instance"
+        ? { data: mockExperimentalSettings.value }
+        : mockProjectQueryState
+    ),
+    useQueryClient: () => ({ invalidateQueries: mockInvalidateQueries }),
+  };
+});
 
 vi.mock("react-i18next", async (importOriginal) => {
   const actual = await importOriginal<typeof import("react-i18next")>();
@@ -386,5 +397,62 @@ describe("ProjectWorkspaceDetail plugin tabs", () => {
     await render();
 
     expect(container.textContent).toContain("Plugin manifest failed");
+  });
+});
+
+describe("ProjectWorkspaceDetail local path under the managed-sandbox-only policy", () => {
+  let root: Root | null = null;
+  let container: HTMLDivElement;
+
+  beforeEach(() => {
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    mockProjectsApi.get.mockResolvedValue(project());
+    mockPluginSlotState.slots = [];
+    mockPluginSlotState.isLoading = false;
+    mockPluginSlotState.errorMessage = null;
+  });
+
+  afterEach(() => {
+    act(() => root?.unmount());
+    root = null;
+    container.remove();
+    vi.clearAllMocks();
+    mockRouteSearch.value = "";
+  });
+
+  async function render(experimentalSettings: Record<string, unknown>) {
+    mockExperimentalSettings.value = experimentalSettings;
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    queryClient.setQueryData(queryKeys.instance.experimentalSettings, experimentalSettings);
+    await act(async () => {
+      root = createRoot(container);
+      root.render(
+        <QueryClientProvider client={queryClient}>
+          <ProjectWorkspaceDetail />
+        </QueryClientProvider>,
+      );
+    });
+    await act(async () => {
+      await flush();
+    });
+  }
+
+  it("shows the local path field and fact row when the policy is off", async () => {
+    await render({});
+
+    expect(container.textContent).toContain("Local path");
+    expect(container.querySelector('input[placeholder="/absolute/path/to/workspace"]')).not.toBeNull();
+    expect(container.textContent).toContain("/tmp/paperclip");
+  });
+
+  it("hides the local path field and fact row when the policy is on", async () => {
+    await render({ enableManagedSandboxOnly: true });
+
+    expect(container.textContent).not.toContain("Local path");
+    expect(container.querySelector('input[placeholder="/absolute/path/to/workspace"]')).toBeNull();
+    expect(container.textContent).not.toContain("/tmp/paperclip");
+    // The repo fact row does not name the host filesystem, so it stays.
+    expect(container.textContent).toContain("Repo URL");
   });
 });

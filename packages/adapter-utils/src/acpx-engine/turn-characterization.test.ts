@@ -27,6 +27,7 @@ import {
   type AcpxEngineExecutorOptions,
 } from "./execute.js";
 import { runChildProcess } from "../server-utils.js";
+import { prepareTestPosixShell } from "../test-fixtures/posix-shell.js";
 
 const tempRoots: string[] = [];
 
@@ -73,10 +74,10 @@ function createLocalSandboxRunner(
     }) => {
       counter += 1;
       onExecute?.(input);
-      const command = input.command === "bash" ? "/bin/bash" : input.command;
-      return await runChildProcess(`acpx-sandbox-run-${counter}`, command, input.args ?? [], {
+      const shell = prepareTestPosixShell(input);
+      return await runChildProcess(`acpx-sandbox-run-${counter}`, shell.command, shell.args, {
         cwd: input.cwd ?? process.cwd(),
-        env: input.env ?? {},
+        env: shell.env,
         stdin: input.stdin,
         timeoutSec: Math.max(1, Math.ceil((input.timeoutMs ?? 30_000) / 1000)),
         graceSec: 5,
@@ -227,7 +228,7 @@ describe("ACPX engine turn characterization", () => {
     runtimeSessionName: "runtime-session",
   };
 
-  it("passes exactly the six turn inputs to startTurn", async () => {
+  it("passes the turn inputs and terminal failure callback to startTurn", async () => {
     const root = await makeTempRoot();
     const stateDir = path.join(root, "state");
     let captured: Record<string, unknown> | null = null;
@@ -276,9 +277,10 @@ describe("ACPX engine turn characterization", () => {
     const signal = input.signal as AbortSignal;
     expect(signal).toBeInstanceOf(AbortSignal);
     expect(signal.aborted).toBe(false);
-    // Exactly the six documented keys are threaded.
+    // Every adapter receives diagnostics, even without a failure classifier.
+    expect(input.onTerminalSessionFailure).toBeTypeOf("function");
     expect(Object.keys(input).sort()).toEqual(
-      ["handle", "mode", "requestId", "signal", "text", "timeoutMs"].sort(),
+      ["handle", "mode", "onTerminalSessionFailure", "requestId", "signal", "text", "timeoutMs"].sort(),
     );
   });
 

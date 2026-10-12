@@ -14,6 +14,8 @@ function writeMessage(message) {
 // Emit the real spawn cwd as early as possible so a consumer capturing stderr
 // sees it even if the session never advances past initialize.
 process.stderr.write(`SPAWN_CWD=${process.cwd()}\n`);
+process.stderr.write(`SPAWN_ENV_EXPLICIT=${process.env.PAPERCLIP_TEST_SPAWN_ENV ?? ""}\n`);
+process.stderr.write(`SPAWN_ENV_AMBIENT=${process.env.PAPERCLIP_TEST_AMBIENT_ONLY ?? ""}\n`);
 
 async function handleRequest(request) {
   if (request.method === "initialize") {

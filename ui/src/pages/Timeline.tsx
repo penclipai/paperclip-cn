@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+import { translateInstant } from "@/i18n";
 /**
  * Work Timeline page (PAP-12424 / Phase C of PAP-12405).
  *
@@ -7,8 +9,6 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
-import type { TFunction } from "i18next";
 import { Bot, Clock3, Coins, GanttChartSquare, Minus, Plus, RotateCcw, type LucideIcon } from "lucide-react";
 import type { WorkTimelineResult } from "@penclipai/shared";
 import { workTimelineApi, type WorkTimelineParams } from "@/api/workTimeline";
@@ -32,6 +32,8 @@ import {
 } from "@/components/timeline/WorkTimelineChart";
 import { formatDuration, TIMELINE_COLORS } from "@/lib/timeline/layout";
 import { cn } from "@/lib/utils";
+import { useLocation } from "@/lib/router";
+import { useStreamlinedUiEnabled } from "@/hooks/useStreamlinedUiEnabled";
 
 type RangePreset = "today" | "7d" | "30d" | "custom";
 const TIMELINE_PAGE_LIMIT = 500;
@@ -129,22 +131,18 @@ function rangeWindow(range: DateRangeState): Pick<WorkTimelineParams, "from" | "
   return { from: from.toISOString(), to: to.toISOString() };
 }
 
-function rangeError(range: DateRangeState, t: TFunction): string | null {
-  if (!range.fromDate || !range.toDate) {
-    return t("timeline.chooseDateRange", { defaultValue: "Choose a start and end date." });
-  }
-  if (!rangeWindow(range)) {
-    return t("timeline.invalidDateRange", { defaultValue: "Start date must be before end date." });
-  }
+function rangeError(range: DateRangeState): string | null {
+  if (!range.fromDate || !range.toDate) return "Choose a start and end date.";
+  if (!rangeWindow(range)) return "Start date must be before end date.";
   return null;
 }
 
-function formatInteger(value: number, locale: string): string {
-  return new Intl.NumberFormat(locale).format(value);
+function formatInteger(value: number): string {
+  return new Intl.NumberFormat("en-US").format(value);
 }
 
-function formatCompactInteger(value: number, locale: string): string {
-  return new Intl.NumberFormat(locale, {
+function formatCompactInteger(value: number): string {
+  return new Intl.NumberFormat("en-US", {
     notation: "compact",
     maximumFractionDigits: 1,
   }).format(value);
@@ -249,28 +247,24 @@ function Segmented<T extends string>({
 
 /** Encoding key for the "Signal" timeline: colour = how each run started. */
 function TimelineLegend() {
-  const { t } = useTranslation();
+  useTranslation();
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-border px-3.5 py-2 text-xs text-muted-foreground">
       <span className="flex items-center gap-1.5">
         <span className="h-2.5 w-4 rounded-sm" style={{ backgroundColor: TIMELINE_COLORS.delegated }} />
-        {t("timeline.legend.delegated", { defaultValue: "Delegated" })}
-      </span>
+        {translateInstant("timeline.legend.delegated")}</span>
       <span className="flex items-center gap-1.5">
         <span className="h-2.5 w-4 rounded-sm" style={{ backgroundColor: TIMELINE_COLORS.automation }} />
-        {t("timeline.legend.automation", { defaultValue: "Automation" })}
-      </span>
+        {translateInstant("timeline.legend.automation")}</span>
       <span className="flex items-center gap-1.5">
         <span
           className="h-2.5 w-4 rounded-sm border border-dashed bg-transparent"
           style={{ borderColor: TIMELINE_COLORS.cancelled }}
         />
-        {t("timeline.legend.cancelled", { defaultValue: "Cancelled" })}
-      </span>
+        {translateInstant("timeline.legend.cancelled")}</span>
       <span className="flex items-center gap-1.5">
         <span className="h-3.5 w-0.5" style={{ backgroundColor: TIMELINE_COLORS.now }} />
-        {t("timeline.legend.now", { defaultValue: "Now" })}
-      </span>
+        {translateInstant("timeline.legend.now")}</span>
     </div>
   );
 }
@@ -280,17 +274,14 @@ function TimelineSummaryStats({
 }: {
   summary: ReturnType<typeof timelineSummary>;
 }) {
-  const { t, i18n } = useTranslation();
-  const locale = i18n.resolvedLanguage ?? i18n.language;
+  useTranslation();
   const stats: { label: string; value: string; icon: LucideIcon }[] = [
-    { label: t("timeline.stats.runs", { defaultValue: "Runs" }), value: formatInteger(summary.runs, locale), icon: GanttChartSquare },
-    { label: t("timeline.stats.agents", { defaultValue: "Agents" }), value: formatInteger(summary.agents, locale), icon: Bot },
-    { label: t("timeline.stats.runTime", { defaultValue: "Run time" }), value: formatDuration(0, summary.activeMs), icon: Clock3 },
+    { label: translateInstant("Runs"), value: formatInteger(summary.runs), icon: GanttChartSquare },
+    { label: translateInstant("Agents"), value: formatInteger(summary.agents), icon: Bot },
+    { label: translateInstant("timeline.stats.runTime"), value: formatDuration(0, summary.activeMs), icon: Clock3 },
     {
-      label: t("timeline.stats.tokensUsed", { defaultValue: "Tokens used" }),
-      value: summary.totalTokens > 0
-        ? formatCompactInteger(summary.totalTokens, locale)
-        : t("timeline.stats.notTracked", { defaultValue: "Not tracked" }),
+      label: translateInstant("timeline.stats.tokensUsed"),
+      value: summary.totalTokens > 0 ? formatCompactInteger(summary.totalTokens) : "Not tracked",
       icon: Coins,
     },
   ];
@@ -313,10 +304,16 @@ function TimelineSummaryStats({
   );
 }
 
-export function Timeline() {
-  const { t, i18n } = useTranslation();
+export function Timeline({ embedded = false }: { embedded?: boolean } = {}) {
+  useTranslation();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
+  const location = useLocation();
+  const { enabled: streamlinedUiEnabled } = useStreamlinedUiEnabled();
+  const scopedProjectId = useMemo(
+    () => streamlinedUiEnabled ? new URLSearchParams(location.search).get("projectId") || undefined : undefined,
+    [location.search, streamlinedUiEnabled],
+  );
   const [zoom, setZoom] = useState<ZoomLevel>("day");
   const [zoomScale, setZoomScale] = useState<number | undefined>(undefined);
   const zoomTouched = useRef(false);
@@ -325,18 +322,20 @@ export function Timeline() {
   const [visibleWindow, setVisibleWindow] = useState<VisibleTimelineWindow | null>(null);
 
   useEffect(() => {
-    setBreadcrumbs([{ label: t("timeline.breadcrumb", { defaultValue: "Timeline" }) }]);
-  }, [setBreadcrumbs, t]);
+    if (!embedded) {
+      setBreadcrumbs([{ label: scopedProjectId ? "Project Timeline" : translateInstant("timeline.breadcrumb") }]);
+    }
+  }, [embedded, scopedProjectId, setBreadcrumbs]);
 
-  const dateRangeError = rangeError(dateRange, t);
+  const dateRangeError = rangeError(dateRange);
   const params: WorkTimelineParams | null = useMemo(() => {
     const window = rangeWindow(dateRange);
     if (!window) return null;
-    return window;
-  }, [dateRange]);
+    return scopedProjectId ? { ...window, projectId: scopedProjectId } : window;
+  }, [dateRange, scopedProjectId]);
 
   const { data, isLoading, error } = useQuery({
-    queryKey: [...queryKeys.workTimeline(selectedCompanyId ?? ""), dateRange.fromDate, dateRange.toDate],
+    queryKey: [...queryKeys.workTimeline(selectedCompanyId ?? ""), dateRange.fromDate, dateRange.toDate, scopedProjectId ?? null],
     queryFn: ({ signal }) => loadTimelineWindow(selectedCompanyId!, params!, signal),
     enabled: !!selectedCompanyId && !!params,
   });
@@ -363,11 +362,8 @@ export function Timeline() {
   if (!selectedCompanyId) {
     return (
       <>
-        <RequestCollapsedSidebar />
-        <EmptyState
-          icon={GanttChartSquare}
-          message={t("timeline.selectCompany", { defaultValue: "Select a company to view its work timeline." })}
-        />
+        {!embedded && <RequestCollapsedSidebar />}
+        <EmptyState icon={GanttChartSquare} message={translateInstant("Select an organization to view its work timeline.")} />
       </>
     );
   }
@@ -376,7 +372,7 @@ export function Timeline() {
     <div className="flex items-center gap-2">
       <GanttChartSquare className="h-6 w-6 text-muted-foreground" />
       <h1 className="text-3xl font-semibold tracking-tight">
-        {t("timeline.title", { defaultValue: "Work Timeline" })}
+        {scopedProjectId ? "Project Timeline" : translateInstant("timeline.title")}
       </h1>
     </div>
   );
@@ -402,8 +398,7 @@ export function Timeline() {
 
   const rangeControls = (
     <label className="flex min-w-0 flex-wrap items-center gap-2 text-xs text-muted-foreground">
-      {t("timeline.range", { defaultValue: "Range" })}
-      <Segmented
+      {translateInstant("timeline.range")}<Segmented
         value={rangePreset}
         onChange={(preset) => {
           if (preset === "custom") return;
@@ -411,9 +406,9 @@ export function Timeline() {
           setDateRange(presetRange(preset));
         }}
         options={[
-          { value: "today", label: t("timeline.range.today", { defaultValue: "Today" }) },
-          { value: "7d", label: t("timeline.range.sevenDays", { defaultValue: "7 days" }) },
-          { value: "30d", label: t("timeline.range.thirtyDays", { defaultValue: "30 days" }) },
+          { value: "today", label: translateInstant("timeline.range.today") },
+          { value: "7d", label: translateInstant("timeline.range.sevenDays") },
+          { value: "30d", label: translateInstant("timeline.range.thirtyDays") },
         ]}
       />
       <Input
@@ -424,9 +419,9 @@ export function Timeline() {
           setDateRange((prev) => ({ ...prev, fromDate: event.target.value }));
         }}
         className="h-8 w-(--sz-150px) text-xs"
-        aria-label={t("timeline.startDate", { defaultValue: "Timeline start date" })}
+        aria-label={translateInstant("timeline.startDate")}
       />
-      <span>{t("timeline.to", { defaultValue: "to" })}</span>
+      <span>{translateInstant("timeline.to")}</span>
       <Input
         type="date"
         value={dateRange.toDate}
@@ -435,7 +430,7 @@ export function Timeline() {
           setDateRange((prev) => ({ ...prev, toDate: event.target.value }));
         }}
         className="h-8 w-(--sz-150px) text-xs"
-        aria-label={t("timeline.endDate", { defaultValue: "Timeline end date" })}
+        aria-label={translateInstant("timeline.endDate")}
       />
     </label>
   );
@@ -443,17 +438,14 @@ export function Timeline() {
   const toolbar = (
     <div className="flex flex-wrap items-start gap-3">
       {summary && <TimelineSummaryStats summary={summary} />}
-      <div
-        className="ml-auto flex items-center gap-1 pt-3"
-        aria-label={t("timeline.zoomControls", { defaultValue: "Timeline zoom controls" })}
-      >
+      <div className="ml-auto flex items-center gap-1 pt-3" aria-label={translateInstant("timeline.zoomControls")}>
         <Button
           type="button"
           variant="outline"
           size="icon-xs"
           onClick={() => adjustZoom(0.8)}
-          aria-label={t("timeline.zoomOut", { defaultValue: "Zoom out" })}
-          title={t("timeline.zoomOut", { defaultValue: "Zoom out" })}
+          aria-label={translateInstant("Zoom out")}
+          title={translateInstant("Zoom out")}
         >
           <Minus className="h-3 w-3" />
         </Button>
@@ -462,8 +454,8 @@ export function Timeline() {
           variant="outline"
           size="icon-xs"
           onClick={() => adjustZoom(1.25)}
-          aria-label={t("timeline.zoomIn", { defaultValue: "Zoom in" })}
-          title={t("timeline.zoomIn", { defaultValue: "Zoom in" })}
+          aria-label={translateInstant("Zoom in")}
+          title={translateInstant("Zoom in")}
         >
           <Plus className="h-3 w-3" />
         </Button>
@@ -472,8 +464,8 @@ export function Timeline() {
           variant="outline"
           size="icon-xs"
           onClick={resetZoom}
-          aria-label={t("timeline.resetZoom", { defaultValue: "Reset zoom" })}
-          title={t("timeline.resetZoom", { defaultValue: "Reset zoom" })}
+          aria-label={translateInstant("timeline.resetZoom")}
+          title={translateInstant("timeline.resetZoom")}
         >
           <RotateCcw className="h-3 w-3" />
         </Button>
@@ -483,7 +475,7 @@ export function Timeline() {
 
   return (
     <div className="space-y-6">
-      <RequestCollapsedSidebar />
+      {!embedded && <RequestCollapsedSidebar />}
       {header}
       {toolbar}
 
@@ -504,9 +496,7 @@ export function Timeline() {
       {error && (
         <EmptyState
           icon={GanttChartSquare}
-          message={t("timeline.loadFailed", {
-            defaultValue: "Couldn't load the timeline. The aggregation endpoint may be unavailable.",
-          })}
+          message={translateInstant("timeline.loadFailed")}
         />
       )}
 
@@ -515,7 +505,7 @@ export function Timeline() {
           <div className="space-y-3">
             <EmptyState
               icon={GanttChartSquare}
-              message={t("timeline.noActivity", { defaultValue: "No activity in this window." })}
+              message={scopedProjectId ? "No project activity in this window." : translateInstant("timeline.noActivity")}
             />
             <div className="flex flex-wrap items-center justify-end gap-3">
               {rangeControls}
@@ -539,15 +529,9 @@ export function Timeline() {
             </Card>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="text-xs text-muted-foreground">
-                {t("timeline.runCount", { count: data.spans.length, defaultValue: "{{count}} runs" })} ·{" "}
-                {t("timeline.windowRange", {
-                  from: new Date(data.window.from).toLocaleString(i18n.resolvedLanguage ?? i18n.language),
-                  to: new Date(data.window.to).toLocaleString(i18n.resolvedLanguage ?? i18n.language),
-                  defaultValue: "{{from}} to {{to}}",
-                })}
-                {data.window.capped
-                  ? t("timeline.windowCapped", { defaultValue: " · window capped" })
-                  : ""}
+                {data.spans.length} {translateInstant("run")}{data.spans.length === 1 ? "" : "s"} ·{" "}
+                {new Date(data.window.from).toLocaleString()} {translateInstant("timeline.to")}{" "}{new Date(data.window.to).toLocaleString()}
+                {data.window.capped ? translateInstant("timeline.windowCapped") : ""}
               </p>
               {rangeControls}
             </div>

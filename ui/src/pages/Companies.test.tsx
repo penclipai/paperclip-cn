@@ -104,7 +104,7 @@ describe("Companies page", () => {
   it("offers the company wizard when self-hosted", async () => {
     const root = await renderPage();
 
-    expect(container.textContent).toContain("New Company");
+    expect(container.textContent).toContain("New Organization");
 
     act(() => {
       root.unmount();
@@ -116,7 +116,7 @@ describe("Companies page", () => {
 
     // Cloud stacks hold exactly one company and POST /companies is a 403 floor,
     // so the entry point must not be offered at all.
-    expect(container.textContent).not.toContain("New Company");
+    expect(container.textContent).not.toContain("New Organization");
     expect(container.textContent).toContain("Acme Labs");
     expect(mockOpenOnboarding).not.toHaveBeenCalled();
 

@@ -1,5 +1,7 @@
-import { getCurrentLocale, translateInstant } from "../i18n";
 import { getPageVisibility, getVisibilityHeaderValue } from "@/lib/page-visibility";
+import { getCurrentLocale, translateInstant } from "../i18n";
+import { tenantSessionRecovery } from "@/lib/tenant-session-recovery";
+import { readApiJson } from "./response";
 
 const BASE = "/api";
 
@@ -20,6 +22,9 @@ export interface RequestOptions {
   signal?: AbortSignal;
   /** Extra request headers (e.g. the async-import opt-in). Mutations only. */
   headers?: Record<string, string>;
+  /** The `fetch` cache mode. Use `"no-store"` for a response that must never
+   *  come from the browser's HTTP cache. */
+  cache?: RequestCache;
 }
 
 function abortError(): DOMException {
@@ -39,38 +44,42 @@ function applyObservabilityHeaders(headers: Headers) {
   }
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+export async function requestResponse(path: string, init?: RequestInit): Promise<Response> {
   const headers = new Headers(init?.headers ?? undefined);
   const body = init?.body;
   if (!(body instanceof FormData) && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
+  applyObservabilityHeaders(headers);
   if (!headers.has("Accept-Language")) {
     headers.set("Accept-Language", getCurrentLocale());
   }
 
   const res = await fetch(`${BASE}${path}`, {
-    headers,
     credentials: "include",
     ...init,
+    headers,
   });
   if (!res.ok) {
-    const errorBody = await res.json().catch(() => null);
-    const requestFailedFallback = translateInstant("api.requestFailedWithStatus", {
-      status: res.status,
-      defaultValue:
-        getCurrentLocale() === "zh-CN"
-          ? `请求失败：${res.status}`
-          : `Request failed: ${res.status}`,
-    });
+    const errorBody = await readApiJson(res);
+    const recovery = tenantSessionRecovery.recoverIfNeeded(res.status, errorBody);
+    if (recovery) return recovery;
     throw new ApiError(
-      (errorBody as { error?: string } | null)?.error ?? requestFailedFallback,
+      (errorBody as { error?: string } | null)?.error ?? translateInstant("api.requestFailedWithStatus", {
+        status: res.status,
+        defaultValue: getCurrentLocale() === "zh-CN" ? `请求失败：${res.status}` : `Request failed: ${res.status}`,
+      }),
       res.status,
       errorBody,
     );
   }
+  return res;
+}
+
+async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const res = await requestResponse(path, init);
   if (res.status === 204) return undefined as T;
-  return res.json();
+  return readApiJson<T>(res);
 }
 
 // --- In-tab request coalescing for identical safe GETs -----------------------
@@ -95,7 +104,11 @@ function coalescedGet<T>(path: string, options?: RequestOptions): Promise<T> {
   let entry = inflightGets.get(path);
   if (!entry) {
     const controller = new AbortController();
-    const promise = request<T>(path, { method: "GET", signal: controller.signal });
+    const promise = request<T>(path, {
+      method: "GET",
+      signal: controller.signal,
+      ...(options?.cache ? { cache: options.cache } : {}),
+    });
     const created: InflightGet = { promise, controller, refs: new Set() };
     // Clear the shared entry once settled so later calls issue a fresh request.
     promise.then(

@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import { pluginManifestV1Schema, type Issue } from "@penclipai/shared";
-import { createTestHarness } from "@paperclipai/plugin-sdk/testing";
+import { createTestHarness } from "@penclipai/plugin-sdk/testing";
 import manifest from "../src/manifest.js";
 import plugin from "../src/worker.js";
 
@@ -15,6 +15,8 @@ function issue(input: Partial<Issue> & Pick<Issue, "id" | "companyId" | "title">
     projectWorkspaceId: null,
     goalId: null,
     parentId: null,
+    visibility: "open",
+    privacyRootIssueId: null,
     title,
     description: null,
     status: "todo",

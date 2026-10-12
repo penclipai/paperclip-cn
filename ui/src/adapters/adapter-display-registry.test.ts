@@ -19,8 +19,6 @@ describe("adapter display registry", () => {
     expect(getAdapterLabel("gemini_local")).toBe("zh:Gemini CLI");
     expect(getAdapterLabel("grok_local")).toBe("zh:Grok Build");
     expect(getAdapterLabel("kimi_local")).toBe("zh:Kimi Code");
-    expect(getAdapterLabel("hermes_local")).toBe("zh:Hermes");
-    expect(getAdapterLabel("hermes_gateway")).toBe("zh:Hermes Gateway");
     expect(getAdapterLabel("opencode_local")).toBe("zh:OpenCode");
     expect(getAdapterLabel("pi_local")).toBe("zh:Pi");
 
@@ -32,8 +30,6 @@ describe("adapter display registry", () => {
       gemini_local: "zh:Gemini CLI",
       grok_local: "zh:Grok Build",
       kimi_local: "zh:Kimi Code",
-      hermes_local: "zh:Hermes",
-      hermes_gateway: "zh:Hermes Gateway",
       opencode_local: "zh:OpenCode",
       pi_local: "zh:Pi",
     });

@@ -1,7 +1,13 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useSearchParams } from "@/lib/router";
 import { authApi } from "../api/auth";
+import { healthApi } from "../api/health";
+import { CloudSignIn } from "@/components/CloudSignIn";
+import { clearCloudSignInAttempt } from "@/lib/cloud-sign-in";
+import { tenantSignInReturnPath } from "@/lib/cloudLinks";
 import { queryKeys } from "../lib/queryKeys";
 import { getRememberedInvitePath } from "../lib/invite-memory";
 import { Button } from "@/components/ui/button";
@@ -13,6 +19,7 @@ import { PaperclipLockup } from "../components/PaperclipLockup";
 type AuthMode = "sign_in" | "sign_up";
 
 export function AuthPage() {
+  useTranslation();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -24,10 +31,15 @@ export function AuthPage() {
   const errorId = "auth-error";
 
   const nextPath = useMemo(
-    () => searchParams.get("next") || getRememberedInvitePath() || "/",
+    () => tenantSignInReturnPath(searchParams.get("next") || getRememberedInvitePath() || "/"),
     [searchParams],
   );
-  const { data: session, isLoading: isSessionLoading } = useQuery({
+  const healthQuery = useQuery({
+    queryKey: queryKeys.health,
+    queryFn: () => healthApi.get(),
+    retry: false,
+  });
+  const { data: session, isLoading: isSessionLoading, error: sessionError } = useQuery({
     queryKey: queryKeys.auth.session,
     queryFn: () => authApi.getSession(),
     retry: false,
@@ -35,6 +47,7 @@ export function AuthPage() {
 
   useEffect(() => {
     if (session) {
+      clearCloudSignInAttempt();
       navigate(nextPath, { replace: true });
     }
   }, [session, navigate, nextPath]);
@@ -72,12 +85,21 @@ export function AuthPage() {
     password.trim().length > 0 &&
     (mode === "sign_in" || (name.trim().length > 0 && password.trim().length >= 8));
 
-  if (isSessionLoading) {
+  if (healthQuery.isLoading || isSessionLoading || session) {
     return (
       <div className="fixed inset-0 flex items-center justify-center">
         <PaperclipLoading className="min-h-0" />
       </div>
     );
+  }
+
+  // A health/session failure must not be mistaken for a self-hosted instance.
+  if (healthQuery.error || sessionError) {
+    return <p role="alert" className="p-6 text-sm text-destructive">{translateInstant("Unable to check sign-in. Refresh and try again.")}</p>;
+  }
+
+  if (healthQuery.data?.cloud) {
+    return <CloudSignIn cloud={healthQuery.data.cloud} returnTo={nextPath} />;
   }
 
   return (
@@ -97,8 +119,8 @@ export function AuthPage() {
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {mode === "sign_in"
-              ? "Use your email and password to access this instance."
-              : "Create an account for this instance. Email confirmation is not required in v1."}
+              ? translateInstant("auth.subtitle.signIn")
+              : translateInstant("auth.subtitle.signUp")}
           </p>
 
           <form
@@ -117,7 +139,7 @@ export function AuthPage() {
           >
             {mode === "sign_up" && (
               <div>
-                <label htmlFor="name" className="text-xs text-muted-foreground mb-1 block">Name</label>
+                <label htmlFor="name" className="text-xs text-muted-foreground mb-1 block">{translateInstant("Name")}</label>
                 <input
                   id="name"
                   name="name"
@@ -134,7 +156,7 @@ export function AuthPage() {
               </div>
             )}
             <div>
-              <label htmlFor="email" className="text-xs text-muted-foreground mb-1 block">Email</label>
+              <label htmlFor="email" className="text-xs text-muted-foreground mb-1 block">{translateInstant("Email")}</label>
               <input
                 id="email"
                 name="email"
@@ -151,7 +173,7 @@ export function AuthPage() {
               />
             </div>
             <div>
-              <label htmlFor="password" className="text-xs text-muted-foreground mb-1 block">Password</label>
+              <label htmlFor="password" className="text-xs text-muted-foreground mb-1 block">{translateInstant("Password")}</label>
               <input
                 id="password"
                 name="password"
@@ -180,13 +202,13 @@ export function AuthPage() {
               {mutation.isPending
                 ? "Working…"
                 : mode === "sign_in"
-                  ? "Sign In"
-                  : "Create Account"}
+                  ? translateInstant("auth.submit.signIn")
+                  : translateInstant("auth.submit.signUp")}
             </Button>
           </form>
 
           <div className="mt-5 text-sm text-muted-foreground">
-            {mode === "sign_in" ? "Need an account?" : "Already have an account?"}{" "}
+            {mode === "sign_in" ? translateInstant("auth.needAccount") : translateInstant("auth.haveAccount")}{" "}
             <button
               type="button"
               className="font-medium text-foreground underline underline-offset-2"
@@ -195,7 +217,7 @@ export function AuthPage() {
                 setMode(mode === "sign_in" ? "sign_up" : "sign_in");
               }}
             >
-              {mode === "sign_in" ? "Create one" : "Sign in"}
+              {mode === "sign_in" ? translateInstant("auth.createOne") : translateInstant("auth.signInLink")}
             </button>
           </div>
         </div>

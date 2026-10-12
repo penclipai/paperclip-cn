@@ -47,8 +47,8 @@ export function withRecoveryModelProfileHint<T extends Record<string, unknown>>(
 ):
   | WithoutRecoveryModelProfileHints<T>
   | (WithoutRecoveryModelProfileHints<T> & typeof STATUS_ONLY_RECOVERY_GUARD_CONTEXT & {
-    modelProfile: typeof RECOVERY_MODEL_PROFILE_KEY;
-  }) {
+      modelProfile: typeof RECOVERY_MODEL_PROFILE_KEY;
+    }) {
   if (workClass === "normal_model") {
     return scrubRecoveryModelProfileHints(input);
   }

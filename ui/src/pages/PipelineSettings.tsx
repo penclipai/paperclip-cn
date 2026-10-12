@@ -1,15 +1,9 @@
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-  type FormEvent,
-  type ReactNode,
-} from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
+import { useWorkspaceIsolationControls } from "@/hooks/useWorkspaceIsolationControls";
+import { AgentAvatar } from "@/components/AgentAvatar";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   extractRoutineVariableNames,
   groupWarningsByStage,
@@ -68,20 +62,10 @@ import { pipelinesApi } from "../api/pipelines";
 import { EmptyState } from "../components/EmptyState";
 import { StageSecretsPanel } from "../components/StageSecretsPanel";
 import { PageSkeleton } from "../components/PageSkeleton";
-import {
-  MarkdownEditor,
-  type MarkdownEditorRef,
-} from "../components/MarkdownEditor";
-import {
-  RoutineVariablesEditor,
-  RoutineVariablesHint,
-} from "../components/RoutineVariablesEditor";
+import { MarkdownEditor, type MarkdownEditorRef } from "../components/MarkdownEditor";
+import { RoutineVariablesEditor, RoutineVariablesHint } from "../components/RoutineVariablesEditor";
 import { PipelineStageHistoryPanel } from "../components/PipelineStageHistoryPanel";
-import { AgentIcon } from "../components/AgentIconPicker";
-import {
-  InlineEntitySelector,
-  type InlineEntityOption,
-} from "../components/InlineEntitySelector";
+import { InlineEntitySelector, type InlineEntityOption } from "../components/InlineEntitySelector";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -105,24 +89,12 @@ import { ToggleSwitch } from "@/components/ui/toggle-switch";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { useCompany } from "../context/CompanyContext";
 import { useToastActions } from "../context/ToastContext";
-import {
-  buildCompanyUserInlineOptions,
-  isAgentTaskTarget,
-} from "../lib/company-members";
+import { buildCompanyUserInlineOptions, isAgentTaskTarget } from "../lib/company-members";
 import { useStandardMarkdownMentionOptions } from "../hooks/useStandardMarkdownMentionOptions";
-import {
-  formatPipelineItemEvent,
-  INTERNAL_FIELD_KEYS,
-} from "../lib/pipeline-item-detail";
+import { formatPipelineItemEvent, INTERNAL_FIELD_KEYS } from "../lib/pipeline-item-detail";
 import { queryKeys } from "../lib/queryKeys";
-import {
-  getRecentAssigneeIds,
-  sortAgentsByRecency,
-} from "../lib/recent-assignees";
-import {
-  getRecentProjectIds,
-  trackRecentProject,
-} from "../lib/recent-projects";
+import { getRecentAssigneeIds, sortAgentsByRecency } from "../lib/recent-assignees";
+import { getRecentProjectIds, trackRecentProject } from "../lib/recent-projects";
 import {
   defaultExecutionWorkspaceModeForProject,
   defaultProjectWorkspaceIdForProject,
@@ -144,25 +116,9 @@ import {
 } from "../lib/pipeline-breakdown";
 import { getPipelineStageColumnTone } from "../lib/pipeline-stage-presentation";
 
-type StageSectionKey =
-  | "instructions"
-  | "advanced"
-  | "secrets"
-  | "activity"
-  | "history";
+type StageSectionKey = "instructions" | "advanced" | "secrets" | "activity" | "history";
 type ApproverKind = "any_human" | "user" | "agent";
 type EditableStageKind = "working" | "review" | "done" | "cancelled";
-
-function PipelineSettingsText({
-  k,
-  defaultValue,
-}: {
-  k: string;
-  defaultValue: string;
-}) {
-  const { t } = useTranslation();
-  return <>{t(k, { defaultValue })}</>;
-}
 
 type StageConfig = {
   // Stage instruction variables are stored in the routine variable shape
@@ -215,26 +171,26 @@ const STAGE_NAV_GROUPS: Array<{
   {
     label: "Stage",
     items: [
-      { id: "instructions", label: "Automation", icon: LayoutGrid },
-      { id: "advanced", label: "Advanced", icon: SlidersHorizontal },
-      { id: "secrets", label: "Secrets", icon: KeyRound },
+      { id: "instructions", get label() { return translateInstant("Automation"); }, icon: LayoutGrid },
+      { id: "advanced", get label() { return translateInstant("Advanced"); }, icon: SlidersHorizontal },
+      { id: "secrets", get label() { return translateInstant("Secrets"); }, icon: KeyRound },
     ],
   },
   {
     label: "Operate",
     items: [
-      { id: "activity", label: "Activity", icon: ActivityIcon },
-      { id: "history", label: "History", icon: HistoryIcon },
+      { id: "activity", get label() { return translateInstant("Activity"); }, icon: ActivityIcon },
+      { id: "history", get label() { return translateInstant("History"); }, icon: HistoryIcon },
     ],
   },
 ];
 
 const STAGE_SECTION_TITLES: Record<StageSectionKey, string> = {
-  instructions: "Automation",
-  secrets: "Secrets",
-  activity: "Activity",
-  history: "History",
-  advanced: "Advanced",
+  get instructions() { return translateInstant("Automation"); },
+  get secrets() { return translateInstant("Secrets"); },
+  get activity() { return translateInstant("Activity"); },
+  get history() { return translateInstant("History"); },
+  get advanced() { return translateInstant("Advanced"); },
 };
 
 function parseStageSectionKey(value: string | null): StageSectionKey | null {
@@ -255,9 +211,7 @@ export function resolvePipelineSettingsFallbackStageId(
   selectedStageId: string | null,
   requestedStageId: string | null,
 ) {
-  const requestedStageExists = Boolean(
-    requestedStageId && stages.some((stage) => stage.id === requestedStageId),
-  );
+  const requestedStageExists = Boolean(requestedStageId && stages.some((stage) => stage.id === requestedStageId));
   if (selectedStageId || requestedStageExists) return null;
   return stages[0]?.id ?? null;
 }
@@ -270,27 +224,25 @@ const STAGE_KIND_OPTIONS: Array<{
 }> = [
   {
     value: "working",
-    label: "Working",
-    description:
-      "Items wait here while work happens. An agent or a person moves them forward.",
+    get label() { return translateInstant("Working"); },
+    description: "Items wait here while work happens. An agent or a person moves them forward.",
     icon: Hammer,
   },
   {
     value: "review",
-    label: "Review",
-    description:
-      "Someone has to approve before items leave. Use this when a person or an agent has to say yes or no.",
+    get label() { return translateInstant("Review"); },
+    description: "Someone has to approve before items leave. Use this when a person or an agent has to say yes or no.",
     icon: BadgeCheck,
   },
   {
     value: "done",
-    label: "Done",
+    get label() { return translateInstant("Done"); },
     description: "The final step. Items that reach here are finished.",
     icon: CircleCheck,
   },
   {
     value: "cancelled",
-    label: "Cancelled",
+    get label() { return translateInstant("Cancelled"); },
     description: "The dead end. Items that reach here are dropped or rejected.",
     icon: Ban,
   },
@@ -320,39 +272,29 @@ function toRoutineVariables(raw: unknown): RoutineVariable[] {
   for (const entry of raw) {
     if (!entry || typeof entry !== "object" || Array.isArray(entry)) continue;
     const record = entry as Record<string, unknown>;
-    const name =
-      typeof record.name === "string" && record.name.trim()
-        ? record.name.trim()
-        : typeof record.key === "string" && record.key.trim()
-          ? record.key.trim()
-          : null;
+    const name = typeof record.name === "string" && record.name.trim()
+      ? record.name.trim()
+      : typeof record.key === "string" && record.key.trim()
+        ? record.key.trim()
+        : null;
     if (!name) continue;
     const rawType = typeof record.type === "string" ? record.type : "text";
-    const type: RoutineVariable["type"] = ROUTINE_VARIABLE_TYPES.has(
-      rawType as RoutineVariable["type"],
-    )
+    const type: RoutineVariable["type"] = ROUTINE_VARIABLE_TYPES.has(rawType as RoutineVariable["type"])
       ? (rawType as RoutineVariable["type"])
       : rawType === "multiline"
         ? "textarea"
         : "text";
     const options = Array.isArray(record.options)
-      ? record.options.filter(
-          (option): option is string => typeof option === "string",
-        )
+      ? record.options.filter((option): option is string => typeof option === "string")
       : [];
     const defaultValue = record.defaultValue as RoutineVariable["defaultValue"];
     result.push({
       name,
-      label:
-        typeof record.label === "string" && record.label.trim()
-          ? record.label.trim()
-          : null,
+      label: typeof record.label === "string" && record.label.trim() ? record.label.trim() : null,
       type,
       defaultValue:
         defaultValue === undefined ||
-        (typeof defaultValue !== "string" &&
-          typeof defaultValue !== "number" &&
-          typeof defaultValue !== "boolean")
+        (typeof defaultValue !== "string" && typeof defaultValue !== "number" && typeof defaultValue !== "boolean")
           ? null
           : defaultValue,
       required: record.required === true,
@@ -380,9 +322,7 @@ function nullableString(value: unknown) {
   return typeof value === "string" && value.trim() ? value.trim() : "";
 }
 
-function nullableExecutionWorkspaceMode(
-  value: unknown,
-): ExecutionWorkspaceMode | "" {
+function nullableExecutionWorkspaceMode(value: unknown): ExecutionWorkspaceMode | "" {
   switch (nullableString(value)) {
     case "inherit":
     case "shared_workspace":
@@ -396,11 +336,9 @@ function nullableExecutionWorkspaceMode(
   }
 }
 
-function nullableExecutionWorkspaceSettings(
-  value: unknown,
-): IssueExecutionWorkspaceSettings | null {
+function nullableExecutionWorkspaceSettings(value: unknown): IssueExecutionWorkspaceSettings | null {
   return value && typeof value === "object" && !Array.isArray(value)
-    ? (value as IssueExecutionWorkspaceSettings)
+    ? value as IssueExecutionWorkspaceSettings
     : null;
 }
 
@@ -415,15 +353,9 @@ export function syncPipelineStageAutomationVariables(
   instructionsBody: string,
   existing: RoutineVariable[],
 ): RoutineVariable[] {
-  const synced = syncRoutineVariablesWithTemplate(
-    [titleTemplate, instructionsBody],
-    existing,
-  );
+  const synced = syncRoutineVariablesWithTemplate([titleTemplate, instructionsBody], existing);
   const syncedNames = new Set(synced.map((variable) => variable.name));
-  return [
-    ...synced,
-    ...existing.filter((variable) => !syncedNames.has(variable.name)),
-  ];
+  return [...synced, ...existing.filter((variable) => !syncedNames.has(variable.name))];
 }
 
 export function buildStageAutomationForSave(input: {
@@ -441,20 +373,13 @@ export function buildStageAutomationForSave(input: {
     titleTemplate: pipelineAutomationTitleTemplate(input.titleTemplate),
     instructionsBody: input.instructionsBody,
     projectId: input.projectId || null,
-    projectWorkspaceId:
-      input.projectId && input.projectWorkspaceId
-        ? input.projectWorkspaceId
-        : null,
+    projectWorkspaceId: input.projectId && input.projectWorkspaceId ? input.projectWorkspaceId : null,
     executionWorkspaceId:
-      input.projectId &&
-      input.executionWorkspacePreference === "reuse_existing" &&
-      input.executionWorkspaceId
+      input.projectId && input.executionWorkspacePreference === "reuse_existing" && input.executionWorkspaceId
         ? input.executionWorkspaceId
         : null,
     executionWorkspacePreference:
-      input.projectId && input.executionWorkspacePreference
-        ? input.executionWorkspacePreference
-        : null,
+      input.projectId && input.executionWorkspacePreference ? input.executionWorkspacePreference : null,
     executionWorkspaceSettings: input.executionWorkspaceSettings,
   };
 }
@@ -465,22 +390,15 @@ function executionWorkspaceSettingsForPreference(
 ): IssueExecutionWorkspaceSettings | null {
   if (!preference) return null;
   return {
-    mode:
-      preference === "reuse_existing"
-        ? issueExecutionWorkspaceModeForExistingWorkspace(
-            reusableWorkspace?.mode,
-          )
-        : preference,
+    mode: preference === "reuse_existing"
+      ? issueExecutionWorkspaceModeForExistingWorkspace(reusableWorkspace?.mode)
+      : preference,
   };
 }
 
 function stageAutomation(stage: PipelineStage | null | undefined) {
   const automation = stageConfig(stage).automation;
-  if (
-    !automation ||
-    typeof automation !== "object" ||
-    Array.isArray(automation)
-  ) {
+  if (!automation || typeof automation !== "object" || Array.isArray(automation)) {
     return {
       assigneeAgentId: "",
       titleTemplate: PIPELINE_AUTOMATION_DEFAULT_TITLE_TEMPLATE,
@@ -489,26 +407,20 @@ function stageAutomation(stage: PipelineStage | null | undefined) {
       projectWorkspaceId: "",
       executionWorkspaceId: "",
       executionWorkspacePreference: "" as ExecutionWorkspaceMode | "",
-      executionWorkspaceSettings:
-        null as IssueExecutionWorkspaceSettings | null,
+      executionWorkspaceSettings: null as IssueExecutionWorkspaceSettings | null,
     };
   }
-  const executionWorkspaceSettings = nullableExecutionWorkspaceSettings(
-    automation.executionWorkspaceSettings,
-  );
+  const executionWorkspaceSettings = nullableExecutionWorkspaceSettings(automation.executionWorkspaceSettings);
   return {
     assigneeAgentId: nullableString(automation.assigneeAgentId),
     titleTemplate: pipelineAutomationTitleTemplate(automation.titleTemplate),
-    instructionsBody:
-      typeof automation.instructionsBody === "string"
-        ? automation.instructionsBody
-        : null,
+    instructionsBody: typeof automation.instructionsBody === "string" ? automation.instructionsBody : null,
     projectId: nullableString(automation.projectId),
     projectWorkspaceId: nullableString(automation.projectWorkspaceId),
     executionWorkspaceId: nullableString(automation.executionWorkspaceId),
     executionWorkspacePreference:
-      nullableExecutionWorkspaceMode(automation.executionWorkspacePreference) ||
-      nullableExecutionWorkspaceMode(executionWorkspaceSettings?.mode),
+      nullableExecutionWorkspaceMode(automation.executionWorkspacePreference)
+      || nullableExecutionWorkspaceMode(executionWorkspaceSettings?.mode),
     executionWorkspaceSettings,
   };
 }
@@ -526,30 +438,15 @@ function stageNewEntriesDisabled(stage: PipelineStage | null | undefined) {
  */
 function stageAutomationDetail(stage: PipelineStage | null | undefined) {
   const automation = stageConfig(stage).automation;
-  if (
-    !automation ||
-    typeof automation !== "object" ||
-    Array.isArray(automation)
-  ) {
-    return {
-      routineId: "",
-      assigneeAgentId: "",
-      env: {} as RoutineEnvConfig,
-      latestRoutineRevisionId: null as string | null,
-    };
+  if (!automation || typeof automation !== "object" || Array.isArray(automation)) {
+    return { routineId: "", assigneeAgentId: "", env: {} as RoutineEnvConfig, latestRoutineRevisionId: null as string | null };
   }
   return {
-    routineId:
-      typeof automation.routineId === "string" ? automation.routineId : "",
-    assigneeAgentId:
-      typeof automation.assigneeAgentId === "string"
-        ? automation.assigneeAgentId
-        : "",
+    routineId: typeof automation.routineId === "string" ? automation.routineId : "",
+    assigneeAgentId: typeof automation.assigneeAgentId === "string" ? automation.assigneeAgentId : "",
     env: (automation.env ?? {}) as RoutineEnvConfig,
     latestRoutineRevisionId:
-      typeof automation.latestRoutineRevisionId === "string"
-        ? automation.latestRoutineRevisionId
-        : null,
+      typeof automation.latestRoutineRevisionId === "string" ? automation.latestRoutineRevisionId : null,
   };
 }
 
@@ -564,26 +461,17 @@ function savedStageVariables(
   savedBody: string,
 ): RoutineVariable[] {
   const existing = toRoutineVariables(stageConfig(stage).variables);
-  return syncPipelineStageAutomationVariables(
-    savedTitleTemplate,
-    savedBody,
-    existing,
-  );
+  return syncPipelineStageAutomationVariables(savedTitleTemplate, savedBody, existing);
 }
 
-function stripVariableEditorMetadata(
-  variables: RoutineVariable[],
-): RoutineVariable[] {
+function stripVariableEditorMetadata(variables: RoutineVariable[]): RoutineVariable[] {
   return variables.map((variable) => {
     const { source: _source, ...rest } = variable as EditorRoutineVariable;
     return rest;
   });
 }
 
-function stripVariablesByName(
-  variables: RoutineVariable[],
-  names: Iterable<string>,
-): RoutineVariable[] {
+function stripVariablesByName(variables: RoutineVariable[], names: Iterable<string>): RoutineVariable[] {
   const nameSet = new Set(names);
   if (nameSet.size === 0) return variables;
   return variables.filter((variable) => !nameSet.has(variable.name));
@@ -594,13 +482,9 @@ function manualVariableNamesForTemplate(
   template: Array<string | null | undefined>,
 ): string[] {
   const templateNames = new Set(
-    extractRoutineVariableNames(template).filter(
-      (name) => !isBuiltinRoutineVariable(name),
-    ),
+    extractRoutineVariableNames(template).filter((name) => !isBuiltinRoutineVariable(name)),
   );
-  return variables
-    .filter((variable) => !templateNames.has(variable.name))
-    .map((variable) => variable.name);
+  return variables.filter((variable) => !templateNames.has(variable.name)).map((variable) => variable.name);
 }
 
 const DEFAULT_CARRY_OVER_POLICY: BreakdownCarryOverPolicy = {
@@ -631,9 +515,7 @@ type CarryOverFieldGroup = {
   fields: CarryOverFieldOption[];
 };
 
-function copyCarryOverPolicy(
-  policy: BreakdownCarryOverPolicy | null | undefined,
-): BreakdownCarryOverPolicy {
+function copyCarryOverPolicy(policy: BreakdownCarryOverPolicy | null | undefined): BreakdownCarryOverPolicy {
   return {
     version: 1,
     mode: policy?.mode === "only" ? "only" : "all_except",
@@ -642,25 +524,17 @@ function copyCarryOverPolicy(
   };
 }
 
-function readVariableField(
-  variable: unknown,
-): { key: string; label: string; required: boolean } | null {
-  if (!variable || typeof variable !== "object" || Array.isArray(variable))
-    return null;
+function readVariableField(variable: unknown): { key: string; label: string; required: boolean } | null {
+  if (!variable || typeof variable !== "object" || Array.isArray(variable)) return null;
   const record = variable as Record<string, unknown>;
-  const key =
-    typeof record.name === "string" && record.name.trim()
-      ? record.name.trim()
-      : typeof record.key === "string" && record.key.trim()
-        ? record.key.trim()
-        : "";
+  const key = typeof record.name === "string" && record.name.trim()
+    ? record.name.trim()
+    : typeof record.key === "string" && record.key.trim()
+      ? record.key.trim()
+      : "";
   if (!key) return null;
-  const label =
-    typeof record.label === "string" && record.label.trim()
-      ? record.label.trim()
-      : key;
-  if (isCarryOverIdentityFieldKey(key) || isCarryOverIdentityFieldKey(label))
-    return null;
+  const label = typeof record.label === "string" && record.label.trim() ? record.label.trim() : key;
+  if (isCarryOverIdentityFieldKey(key) || isCarryOverIdentityFieldKey(label)) return null;
   return { key, label, required: record.required === true };
 }
 
@@ -671,13 +545,8 @@ function fieldOriginLabel(depth: number, pipelineName: string) {
   return `Ancestor ${depth}: ${pipelineName}`;
 }
 
-function pipelineCarryOverFields(source: {
-  pipeline: PipelineWithOptionalConnections;
-  depth: number;
-}): CarryOverFieldOption[] {
-  const stages = [...(source.pipeline.stages ?? [])].sort(
-    (left, right) => left.position - right.position,
-  );
+function pipelineCarryOverFields(source: { pipeline: PipelineWithOptionalConnections; depth: number }): CarryOverFieldOption[] {
+  const stages = [...(source.pipeline.stages ?? [])].sort((left, right) => left.position - right.position);
   const seen = new Set<string>();
   return stages.flatMap((stage) => {
     const variables = stageConfig(stage).variables ?? [];
@@ -685,14 +554,12 @@ function pipelineCarryOverFields(source: {
       const field = readVariableField(variable);
       if (!field || seen.has(field.key)) return [];
       seen.add(field.key);
-      return [
-        {
-          ...field,
-          originId: source.pipeline.id,
-          originLabel: fieldOriginLabel(source.depth, source.pipeline.name),
-          originDescription: source.depth === 0 ? source.pipeline.name : null,
-        },
-      ];
+      return [{
+        ...field,
+        originId: source.pipeline.id,
+        originLabel: fieldOriginLabel(source.depth, source.pipeline.name),
+        originDescription: source.depth === 0 ? source.pipeline.name : null,
+      }];
     });
   });
 }
@@ -713,8 +580,7 @@ function upstreamPipelineIds(
   const ids = new Set<string>();
   for (const candidate of candidates) {
     if (candidate.id === pipeline.id) continue;
-    if (pipelineBreakdownTargetIds(candidate).includes(pipeline.id))
-      ids.add(candidate.id);
+    if (pipelineBreakdownTargetIds(candidate).includes(pipeline.id)) ids.add(candidate.id);
   }
   for (const id of pipeline.connections?.upstreamPipelineIds ?? []) ids.add(id);
   return [...ids];
@@ -728,33 +594,19 @@ function buildCarryOverFieldGroups(
   const byId = new Map<string, PipelineWithOptionalConnections>();
   for (const candidate of candidates) byId.set(candidate.id, candidate);
   const listedCurrentPipeline = byId.get(pipeline.id);
-  byId.set(
-    pipeline.id,
-    listedCurrentPipeline
-      ? { ...listedCurrentPipeline, ...pipeline }
-      : pipeline,
-  );
+  byId.set(pipeline.id, listedCurrentPipeline ? { ...listedCurrentPipeline, ...pipeline } : pipeline);
 
-  const sources: Array<{
-    pipeline: PipelineWithOptionalConnections;
-    depth: number;
-  }> = [];
-  const queue: Array<{
-    pipeline: PipelineWithOptionalConnections;
-    depth: number;
-  }> = [{ pipeline: byId.get(pipeline.id)!, depth: 0 }];
+  const sources: Array<{ pipeline: PipelineWithOptionalConnections; depth: number }> = [];
+  const queue: Array<{ pipeline: PipelineWithOptionalConnections; depth: number }> = [{ pipeline: byId.get(pipeline.id)!, depth: 0 }];
   const visited = new Set<string>();
   while (queue.length > 0) {
     const next = queue.shift()!;
     if (visited.has(next.pipeline.id) || next.depth > 8) continue;
     visited.add(next.pipeline.id);
     sources.push(next);
-    for (const upstreamId of upstreamPipelineIds(next.pipeline, [
-      ...byId.values(),
-    ]).sort()) {
+    for (const upstreamId of upstreamPipelineIds(next.pipeline, [...byId.values()]).sort()) {
       const upstream = byId.get(upstreamId);
-      if (upstream && !visited.has(upstream.id))
-        queue.push({ pipeline: upstream, depth: next.depth + 1 });
+      if (upstream && !visited.has(upstream.id)) queue.push({ pipeline: upstream, depth: next.depth + 1 });
     }
   }
 
@@ -766,15 +618,13 @@ function buildCarryOverFieldGroups(
       return true;
     });
     if (fields.length === 0) return [];
-    return [
-      {
-        id: source.pipeline.id,
-        label: fieldOriginLabel(source.depth, source.pipeline.name),
-        description: source.depth === 0 ? source.pipeline.name : null,
-        depth: source.depth,
-        fields,
-      },
-    ];
+    return [{
+      id: source.pipeline.id,
+      label: fieldOriginLabel(source.depth, source.pipeline.name),
+      description: source.depth === 0 ? source.pipeline.name : null,
+      depth: source.depth,
+      fields,
+    }];
   });
 }
 
@@ -782,27 +632,17 @@ function flattenCarryOverFields(groups: CarryOverFieldGroup[]) {
   return groups.flatMap((group) => group.fields);
 }
 
-function selectedCarryOverFieldKeys(
-  policy: BreakdownCarryOverPolicy,
-  fields: CarryOverFieldOption[],
-) {
-  return fields
-    .filter((field) => isCarryOverFieldEnabled(policy, field.key))
-    .map((field) => field.key);
+function selectedCarryOverFieldKeys(policy: BreakdownCarryOverPolicy, fields: CarryOverFieldOption[]) {
+  return fields.filter((field) => isCarryOverFieldEnabled(policy, field.key)).map((field) => field.key);
 }
 
-function carryOverPolicyForCheckedFields(
-  checkedKeys: Iterable<string>,
-  fields: CarryOverFieldOption[],
-): BreakdownCarryOverPolicy {
+function carryOverPolicyForCheckedFields(checkedKeys: Iterable<string>, fields: CarryOverFieldOption[]): BreakdownCarryOverPolicy {
   const checked = new Set(checkedKeys);
   return {
     version: 1,
     mode: "all_except",
     includeFields: [],
-    excludeFields: fields
-      .filter((field) => !checked.has(field.key))
-      .map((field) => field.key),
+    excludeFields: fields.filter((field) => !checked.has(field.key)).map((field) => field.key),
   };
 }
 
@@ -827,83 +667,51 @@ function buildIncomingCarryOverFieldGroups(
   const byId = new Map<string, PipelineWithOptionalConnections>();
   for (const candidate of candidates) byId.set(candidate.id, candidate);
   const listedCurrentPipeline = byId.get(pipeline.id);
-  byId.set(
-    pipeline.id,
-    listedCurrentPipeline
-      ? { ...listedCurrentPipeline, ...pipeline }
-      : pipeline,
-  );
+  byId.set(pipeline.id, listedCurrentPipeline ? { ...listedCurrentPipeline, ...pipeline } : pipeline);
 
   return [...byId.values()].flatMap((sourcePipeline) => {
     return (sourcePipeline.stages ?? []).flatMap((sourceStage) => {
       const breakdown = readStageBreakdown(sourceStage);
-      if (
-        !breakdown ||
-        breakdown.targetPipelineId !== pipeline.id ||
-        breakdown.targetStageKey !== stage.key
-      ) {
+      if (!breakdown || breakdown.targetPipelineId !== pipeline.id || breakdown.targetStageKey !== stage.key) {
         return [];
       }
-      const sourceFieldGroups = buildCarryOverFieldGroups(sourcePipeline, [
-        ...byId.values(),
-      ]);
+      const sourceFieldGroups = buildCarryOverFieldGroups(sourcePipeline, [...byId.values()]);
       const sourceFields = flattenCarryOverFields(sourceFieldGroups);
-      const fieldByKey = new Map(
-        sourceFields.map((field) => [field.key, field]),
-      );
-      const policy = copyCarryOverPolicy(
-        breakdown.carryOverPolicy ?? DEFAULT_CARRY_OVER_POLICY,
-      );
-      const selectedKeys =
-        policy.mode === "only"
-          ? policy.includeFields.filter(
-              (key) => !isCarryOverIdentityFieldKey(key),
-            )
-          : selectedCarryOverFieldKeys(policy, sourceFields);
+      const fieldByKey = new Map(sourceFields.map((field) => [field.key, field]));
+      const policy = copyCarryOverPolicy(breakdown.carryOverPolicy ?? DEFAULT_CARRY_OVER_POLICY);
+      const selectedKeys = policy.mode === "only"
+        ? policy.includeFields.filter((key) => !isCarryOverIdentityFieldKey(key))
+        : selectedCarryOverFieldKeys(policy, sourceFields);
       const fields = selectedKeys.map((key) => {
         const field = fieldByKey.get(key);
-        return (
-          field ?? {
-            key,
-            label: key,
-            required: false,
-            originId: sourcePipeline.id,
-            originLabel: sourcePipeline.name,
-            originDescription: sourceStage.name,
-          }
-        );
+        return field ?? {
+          key,
+          label: key,
+          required: false,
+          originId: sourcePipeline.id,
+          originLabel: sourcePipeline.name,
+          originDescription: sourceStage.name,
+        };
       });
       if (fields.length === 0) return [];
-      return [
-        {
-          id: `${sourcePipeline.id}:${sourceStage.id}`,
-          label: sourcePipeline.name,
-          description: sourceStage.name,
-          depth: 1,
-          fields,
-        },
-      ];
+      return [{
+        id: `${sourcePipeline.id}:${sourceStage.id}`,
+        label: sourcePipeline.name,
+        description: sourceStage.name,
+        depth: 1,
+        fields,
+      }];
     });
   });
 }
 
-function carryOverPolicyForSave(
-  policy: BreakdownCarryOverPolicy,
-  fields: CarryOverFieldOption[],
-) {
+function carryOverPolicyForSave(policy: BreakdownCarryOverPolicy, fields: CarryOverFieldOption[]) {
   if (fields.length === 0) return copyCarryOverPolicy(policy);
-  return carryOverPolicyForCheckedFields(
-    selectedCarryOverFieldKeys(policy, fields),
-    fields,
-  );
+  return carryOverPolicyForCheckedFields(selectedCarryOverFieldKeys(policy, fields), fields);
 }
 
-function inheritFieldsForSave(
-  policy: BreakdownCarryOverPolicy,
-  fields: CarryOverFieldOption[],
-) {
-  if (fields.length === 0)
-    return policy.mode === "only" ? [...policy.includeFields] : [];
+function inheritFieldsForSave(policy: BreakdownCarryOverPolicy, fields: CarryOverFieldOption[]) {
+  if (fields.length === 0) return policy.mode === "only" ? [...policy.includeFields] : [];
   return selectedCarryOverFieldKeys(policy, fields);
 }
 
@@ -939,11 +747,7 @@ type StageFormValues = {
   automationTitleTemplate: string;
 };
 
-type PipelineTransitionRecord = {
-  fromStageId: string;
-  toStageId: string;
-  label?: string | null;
-};
+type PipelineTransitionRecord = { fromStageId: string; toStageId: string; label?: string | null };
 
 function computeStageForm(
   stage: PipelineStage,
@@ -967,16 +771,12 @@ function computeStageForm(
     requireRequestChangesReason: config.requireRequestChangesReason ?? true,
     requireChildrenTerminal: config.requireChildrenTerminal === true,
     autoAdvanceOnChildrenTerminal:
-      typeof config.autoAdvanceOnChildrenTerminal === "string"
-        ? config.autoAdvanceOnChildrenTerminal
-        : "",
+      typeof config.autoAdvanceOnChildrenTerminal === "string" ? config.autoAdvanceOnChildrenTerminal : "",
     breakdownEnabled: breakdown !== null,
     breakdownTargetPipelineId: breakdown?.targetPipelineId ?? "",
     breakdownTargetStageKey: breakdown?.targetStageKey ?? "",
     breakdownPieceNoun: breakdown?.pieceNoun ?? "piece",
-    breakdownCarryOverPolicy: copyCarryOverPolicy(
-      breakdown?.carryOverPolicy ?? DEFAULT_CARRY_OVER_POLICY,
-    ),
+    breakdownCarryOverPolicy: copyCarryOverPolicy(breakdown?.carryOverPolicy ?? DEFAULT_CARRY_OVER_POLICY),
     breakdownAdvanceTo: breakdown?.advanceTo ?? "",
     breakdownWaitForPieces: breakdown?.waitForPieces ?? false,
     breakdownWhenFinishedMoveTo: breakdown?.whenFinishedMoveTo ?? "",
@@ -987,8 +787,7 @@ function computeStageForm(
     automationProjectId: automation.projectId,
     automationProjectWorkspaceId: automation.projectWorkspaceId,
     automationExecutionWorkspaceId: automation.executionWorkspaceId,
-    automationExecutionWorkspacePreference:
-      automation.executionWorkspacePreference,
+    automationExecutionWorkspacePreference: automation.executionWorkspacePreference,
     automationExecutionWorkspaceSettings: automation.executionWorkspaceSettings,
     automationTitleTemplate: automation.titleTemplate,
   };
@@ -1005,10 +804,7 @@ function approvalValue(config: StageConfig) {
   return "any_human";
 }
 
-function parseApprovalValue(value: string): {
-  kind: ApproverKind;
-  id: string | null;
-} {
+function parseApprovalValue(value: string): { kind: ApproverKind; id: string | null } {
   if (value === "any_human") {
     return { kind: "any_human", id: null };
   }
@@ -1036,29 +832,17 @@ function nextStageKey(name: string, existingKeys: Set<string>) {
 }
 
 function sortedStages(pipeline: PipelineDetail | null | undefined) {
-  return [...(pipeline?.stages ?? [])].sort(
-    (left, right) => left.position - right.position,
-  );
+  return [...(pipeline?.stages ?? [])].sort((left, right) => left.position - right.position);
 }
 
-function canonicalStageKind(
-  kind: string | null | undefined,
-): EditableStageKind {
+function canonicalStageKind(kind: string | null | undefined): EditableStageKind {
   if (kind === "review" || kind === "done" || kind === "cancelled") return kind;
   return "working";
 }
 
-function nextStageByPosition(
-  stages: PipelineStage[],
-  stage: PipelineStage | null | undefined,
-) {
+function nextStageByPosition(stages: PipelineStage[], stage: PipelineStage | null | undefined) {
   if (!stage) return null;
-  return (
-    stages.find(
-      (candidate) =>
-        candidate.id !== stage.id && candidate.position > stage.position,
-    ) ?? null
-  );
+  return stages.find((candidate) => candidate.id !== stage.id && candidate.position > stage.position) ?? null;
 }
 
 function nextStageForInsert(stages: PipelineStage[], position: number) {
@@ -1070,23 +854,12 @@ function stageNavGroups(kind: string): typeof STAGE_NAV_GROUPS {
   return STAGE_NAV_GROUPS;
 }
 
-export function isPipelineSettingsStageSectionAvailable(
-  kind: string,
-  section: StageSectionKey,
-) {
-  return stageNavGroups(kind).some((group) =>
-    group.items.some((item) => item.id === section),
-  );
+export function isPipelineSettingsStageSectionAvailable(kind: string, section: StageSectionKey) {
+  return stageNavGroups(kind).some((group) => group.items.some((item) => item.id === section));
 }
 
-function defaultReviewTarget(
-  stages: PipelineStage[],
-  selectedStageId: string | null,
-  kind: string,
-) {
-  const match = stages.find(
-    (stage) => stage.kind === kind && stage.id !== selectedStageId,
-  );
+function defaultReviewTarget(stages: PipelineStage[], selectedStageId: string | null, kind: string) {
+  const match = stages.find((stage) => stage.kind === kind && stage.id !== selectedStageId);
   if (match) return match.key;
   const fallback = stages.find((stage) => stage.id !== selectedStageId);
   return fallback?.key ?? "";
@@ -1141,8 +914,7 @@ const AUTOMATION_ITEM_BUILTIN_KEYS = new Set([
 
 function primitiveAutomationVariablePreview(value: unknown): string {
   if (typeof value === "string") return value;
-  if (typeof value === "number" || typeof value === "boolean")
-    return String(value);
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
   if (value == null) return "";
   try {
     return JSON.stringify(value, null, 2) ?? "";
@@ -1159,25 +931,19 @@ function automationVariableKind(value: unknown) {
 
 function automationVariablePreviewTitle(variable: AutomationVariableOption) {
   const preview = primitiveAutomationVariablePreview(variable.example);
-  const size =
-    typeof variable.example === "string"
-      ? `${variable.example.length} chars`
-      : `${preview.length} chars`;
+  const size = typeof variable.example === "string" ? `${variable.example.length} chars` : `${preview.length} chars`;
   const lines = [
     variable.description,
     `Example: ${automationVariableKind(variable.example)}, ${size}`,
   ];
   if (variable.exampleSource) lines.push(`From ${variable.exampleSource}`);
-  if (preview)
-    lines.push(preview.length > 500 ? `${preview.slice(0, 500)}...` : preview);
+  if (preview) lines.push(preview.length > 500 ? `${preview.slice(0, 500)}...` : preview);
   return lines.join("\n");
 }
 
 function itemExampleSource(row: PipelineCaseChildRow | null) {
   if (!row) return null;
-  return row.case.caseKey
-    ? `${row.case.title} (${row.case.caseKey})`
-    : row.case.title;
+  return row.case.caseKey ? `${row.case.title} (${row.case.caseKey})` : row.case.title;
 }
 
 function buildAutomationVariableGroups(input: {
@@ -1276,15 +1042,11 @@ function buildAutomationVariableGroups(input: {
     },
   ];
   const fieldVariables: AutomationVariableOption[] = [];
-  const fields =
-    sampleCase?.fields &&
-    typeof sampleCase.fields === "object" &&
-    !Array.isArray(sampleCase.fields)
-      ? sampleCase.fields
-      : {};
+  const fields = sampleCase?.fields && typeof sampleCase.fields === "object" && !Array.isArray(sampleCase.fields)
+    ? sampleCase.fields
+    : {};
   for (const [key, value] of Object.entries(fields)) {
-    if (INTERNAL_FIELD_KEYS.has(key) || AUTOMATION_ITEM_BUILTIN_KEYS.has(key))
-      continue;
+    if (INTERNAL_FIELD_KEYS.has(key) || AUTOMATION_ITEM_BUILTIN_KEYS.has(key)) continue;
     fieldVariables.push({
       key,
       label: key.replace(/[_-]+/g, " ").replace(/([a-z0-9])([A-Z])/g, "$1 $2"),
@@ -1294,34 +1056,26 @@ function buildAutomationVariableGroups(input: {
     });
   }
   const groups: AutomationVariableGroup[] = [
-    {
-      id: "pipeline",
-      label: "Pipeline and stage",
-      variables: pipelineVariables,
-    },
+    { id: "pipeline", label: "Pipeline and stage", variables: pipelineVariables },
     { id: "item", label: "Current item", variables: itemVariables },
   ];
   if (fieldVariables.length > 0) {
-    groups.push({
-      id: "fields",
-      label: "Item fields",
-      variables: fieldVariables,
-    });
+    groups.push({ id: "fields", label: "Item fields", variables: fieldVariables });
   }
   return groups;
 }
 
 function flattenAutomationVariableKeys(groups: AutomationVariableGroup[]) {
-  return [
-    ...new Set(
-      groups.flatMap((group) =>
-        group.variables.map((variable) => variable.key),
-      ),
-    ),
-  ];
+  return [...new Set(groups.flatMap((group) => group.variables.map((variable) => variable.key)))];
 }
 
-function FieldRow({ label, children }: { label: string; children: ReactNode }) {
+function FieldRow({
+  label,
+  children,
+}: {
+  label: string;
+  children: ReactNode;
+}) {
   return (
     <div className="grid gap-2 py-3 text-sm sm:grid-cols-(--gtc-41) sm:items-center">
       <div className="font-medium text-muted-foreground">{label}</div>
@@ -1337,14 +1091,13 @@ function CarriedFieldTokenHelper({
   groups: CarryOverFieldGroup[];
   onInsert: (fieldKey: string) => void;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   if (groups.length === 0) return null;
   return (
     <div className="rounded-md border border-dashed border-border bg-muted/25 px-3 py-2">
       <div className="mb-2 flex flex-wrap items-center gap-2">
         <span className="text-xs font-semibold uppercase text-muted-foreground">
-          {t("pipelineSettings.availableOnChildren")}
-        </span>
+          {translateInstant("pipelineSettings.availableOnChildren")}</span>
       </div>
       <div className="space-y-2">
         {groups.map((group) => (
@@ -1394,9 +1147,7 @@ function AutomationVariableTokenHelper({
       <div className="space-y-2">
         {groups.map((group) => (
           <div key={group.id} className="space-y-1">
-            <p className="text-xs font-medium text-muted-foreground">
-              {group.label}
-            </p>
+            <p className="text-xs font-medium text-muted-foreground">{group.label}</p>
             <div className="flex flex-wrap gap-1.5">
               {group.variables.map((variable) => (
                 <button
@@ -1427,40 +1178,29 @@ function StageSubSidebar({
   stageKind: string;
   onSectionChange: (section: StageSectionKey) => void;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   const groups = stageNavGroups(stageKind);
   return (
     <>
       <div className="md:hidden">
-        <label className="sr-only" htmlFor="stage-section-picker">
-          <PipelineSettingsText
-            k="pipelineSettings.stageSection"
-            defaultValue="Stage section"
-          />
-        </label>
+        <label className="sr-only" htmlFor="stage-section-picker">{translateInstant("pipelineSettings.stageSection")}</label>
         <select
           id="stage-section-picker"
           value={activeSection}
-          onChange={(event) =>
-            onSectionChange(event.target.value as StageSectionKey)
-          }
+          onChange={(event) => onSectionChange(event.target.value as StageSectionKey)}
           className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
         >
           {groups.map((group) => (
             <optgroup key={group.label} label={group.label}>
               {group.items.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.label}
-                </option>
+                <option key={item.id} value={item.id}>{item.label}</option>
               ))}
             </optgroup>
           ))}
         </select>
       </div>
       <nav
-        aria-label={t("pipelineSettings.stageSections", {
-          defaultValue: "Stage sections",
-        })}
+        aria-label={translateInstant("pipelineSettings.stageSections")}
         className="sticky top-14 hidden max-h-(--sz-calc-39) w-52 shrink-0 flex-col gap-4 self-start overflow-y-auto border-r border-border bg-sidebar/30 px-3 py-4 md:flex"
       >
         {groups.map((group) => (
@@ -1515,10 +1255,7 @@ function StageEventsList({
           key={event.id}
           className="grid min-h-11 grid-cols-(--gtc-15) items-center gap-3 border-b border-border/70 px-3 py-2 text-sm last:border-b-0"
         >
-          <span
-            className="text-xs text-muted-foreground"
-            title={new Date(event.createdAt).toLocaleString()}
-          >
+          <span className="text-xs text-muted-foreground" title={new Date(event.createdAt).toLocaleString()}>
             {relativeTime(event.createdAt)}
           </span>
           <div className="min-w-0">
@@ -1540,7 +1277,7 @@ function StageEventsList({
 }
 
 export function PipelineSettings() {
-  const { t } = useTranslation();
+  useTranslation();
   const { pipelineId } = useParams<{ pipelineId: string }>();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
@@ -1548,8 +1285,7 @@ export function PipelineSettings() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
-  const [activeStageSection, setActiveStageSection] =
-    useState<StageSectionKey>("instructions");
+  const [activeStageSection, setActiveStageSection] = useState<StageSectionKey>("instructions");
   const [selectedStageId, setSelectedStageId] = useState<string | null>(null);
   const [stageName, setStageName] = useState("");
   const [stageKind, setStageKind] = useState("open");
@@ -1558,22 +1294,15 @@ export function PipelineSettings() {
   const [stageAssigneeAgentId, setStageAssigneeAgentId] = useState("");
   const [stageProjectId, setStageProjectId] = useState("");
   const [stageProjectWorkspaceId, setStageProjectWorkspaceId] = useState("");
-  const [
-    stageExecutionWorkspacePreference,
-    setStageExecutionWorkspacePreference,
-  ] = useState<ExecutionWorkspaceMode | "">("");
-  const [stageExecutionWorkspaceId, setStageExecutionWorkspaceId] =
-    useState("");
+  const [stageExecutionWorkspacePreference, setStageExecutionWorkspacePreference] =
+    useState<ExecutionWorkspaceMode | "">("");
+  const [stageExecutionWorkspaceId, setStageExecutionWorkspaceId] = useState("");
   const [stageExecutionWorkspaceSettings, setStageExecutionWorkspaceSettings] =
     useState<IssueExecutionWorkspaceSettings | null>(null);
   const [selectedApproval, setSelectedApproval] = useState("any_human");
-  const [issueTitleTemplate, setIssueTitleTemplate] = useState<string>(
-    PIPELINE_AUTOMATION_DEFAULT_TITLE_TEMPLATE,
-  );
+  const [issueTitleTemplate, setIssueTitleTemplate] = useState<string>(PIPELINE_AUTOMATION_DEFAULT_TITLE_TEMPLATE);
   const [instructionsBody, setInstructionsBody] = useState("");
-  const [instructionsVariables, setInstructionsVariables] = useState<
-    RoutineVariable[]
-  >([]);
+  const [instructionsVariables, setInstructionsVariables] = useState<RoutineVariable[]>([]);
   const issueTitleTemplateInputRef = useRef<HTMLInputElement>(null);
   const pendingIssueTitleCursorRef = useRef<number | null>(null);
   const instructionsEditorRef = useRef<MarkdownEditorRef>(null);
@@ -1584,46 +1313,36 @@ export function PipelineSettings() {
   const [rejectTarget, setRejectTarget] = useState("");
   const [requestChangesTarget, setRequestChangesTarget] = useState("");
   const [requireRejectReason, setRequireRejectReason] = useState(true);
-  const [requireRequestChangesReason, setRequireRequestChangesReason] =
-    useState(true);
+  const [requireRequestChangesReason, setRequireRequestChangesReason] = useState(true);
   const [requireChildrenTerminal, setRequireChildrenTerminal] = useState(false);
-  const [autoAdvanceOnChildrenTerminal, setAutoAdvanceOnChildrenTerminal] =
-    useState("");
+  const [autoAdvanceOnChildrenTerminal, setAutoAdvanceOnChildrenTerminal] = useState("");
   const [breakdownEnabled, setBreakdownEnabled] = useState(false);
-  const [breakdownTargetPipelineId, setBreakdownTargetPipelineId] =
-    useState("");
+  const [breakdownTargetPipelineId, setBreakdownTargetPipelineId] = useState("");
   const [breakdownTargetStageKey, setBreakdownTargetStageKey] = useState("");
   const [breakdownPieceNoun, setBreakdownPieceNoun] = useState("piece");
-  const [breakdownCarryOverPolicy, setBreakdownCarryOverPolicy] =
-    useState<BreakdownCarryOverPolicy>(DEFAULT_CARRY_OVER_POLICY);
+  const [breakdownCarryOverPolicy, setBreakdownCarryOverPolicy] = useState<BreakdownCarryOverPolicy>(
+    DEFAULT_CARRY_OVER_POLICY,
+  );
   const [breakdownAdvanceTo, setBreakdownAdvanceTo] = useState("");
   const [breakdownWaitForPieces, setBreakdownWaitForPieces] = useState(false);
-  const [breakdownWhenFinishedMoveTo, setBreakdownWhenFinishedMoveTo] =
-    useState("");
-  const [transitionTargets, setTransitionTargets] = useState<Set<string>>(
-    () => new Set(),
-  );
+  const [breakdownWhenFinishedMoveTo, setBreakdownWhenFinishedMoveTo] = useState("");
+  const [transitionTargets, setTransitionTargets] = useState<Set<string>>(() => new Set());
   const [deleteStageDialogOpen, setDeleteStageDialogOpen] = useState(false);
   const [deleteMoveTargetStageId, setDeleteMoveTargetStageId] = useState("");
   const [pipelineName, setPipelineName] = useState("");
   const [pipelineDescription, setPipelineDescription] = useState("");
-  const [strictTransitionsEnabled, setStrictTransitionsEnabled] =
-    useState(false);
+  const [strictTransitionsEnabled, setStrictTransitionsEnabled] = useState(false);
   const [archiveConfirmation, setArchiveConfirmation] = useState("");
   const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
 
   const pipelineQuery = useQuery({
-    queryKey: pipelineId
-      ? queryKeys.pipelines.detail(pipelineId)
-      : ["pipelines", "detail", "none"],
+    queryKey: pipelineId ? queryKeys.pipelines.detail(pipelineId) : ["pipelines", "detail", "none"],
     queryFn: () => pipelinesApi.get(pipelineId!),
     enabled: !!pipelineId && !!selectedCompanyId,
   });
 
   const agentsQuery = useQuery({
-    queryKey: selectedCompanyId
-      ? queryKeys.agents.list(selectedCompanyId)
-      : ["agents", "none"],
+    queryKey: selectedCompanyId ? queryKeys.agents.list(selectedCompanyId) : ["agents", "none"],
     queryFn: () => agentsApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId,
   });
@@ -1640,30 +1359,23 @@ export function PipelineSettings() {
   });
 
   const healthQuery = useQuery({
-    queryKey: pipelineId
-      ? queryKeys.pipelines.health(pipelineId)
-      : ["pipelines", "health", "none"],
+    queryKey: pipelineId ? queryKeys.pipelines.health(pipelineId) : ["pipelines", "health", "none"],
     queryFn: () => pipelinesApi.getHealth(pipelineId!),
     enabled: !!pipelineId && !!selectedCompanyId,
   });
 
   const usersQuery = useQuery({
-    queryKey: selectedCompanyId
-      ? queryKeys.access.companyUserDirectory(selectedCompanyId)
-      : ["access", "users", "none"],
+    queryKey: selectedCompanyId ? queryKeys.access.companyUserDirectory(selectedCompanyId) : ["access", "users", "none"],
     queryFn: () => accessApi.listUserDirectory(selectedCompanyId!),
     enabled: !!selectedCompanyId,
   });
 
   const projectsQuery = useQuery({
-    queryKey: selectedCompanyId
-      ? queryKeys.projects.list(selectedCompanyId)
-      : ["projects", "none"],
+    queryKey: selectedCompanyId ? queryKeys.projects.list(selectedCompanyId) : ["projects", "none"],
     queryFn: () => projectsApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId,
   });
-  const currentUserId =
-    sessionQuery.data?.user?.id ?? sessionQuery.data?.session?.userId ?? null;
+  const currentUserId = sessionQuery.data?.user?.id ?? sessionQuery.data?.session?.userId ?? null;
   const activeProjects = useMemo(
     () => projectsQuery.data ?? [],
     [projectsQuery.data],
@@ -1677,24 +1389,19 @@ export function PipelineSettings() {
   // Company secrets back the Secrets tab — the same inventory used by routines,
   // agents, and projects. We never create a stage-only secret namespace.
   const secretsQuery = useQuery({
-    queryKey: selectedCompanyId
-      ? queryKeys.secrets.list(selectedCompanyId)
-      : ["secrets", "none"],
+    queryKey: selectedCompanyId ? queryKeys.secrets.list(selectedCompanyId) : ["secrets", "none"],
     queryFn: () => secretsApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId,
   });
 
   const createSecret = useMutation({
     mutationFn: (input: { name: string; value: string }) => {
-      if (!selectedCompanyId)
-        throw new Error("Select a company to create secrets");
+      if (!selectedCompanyId) throw new Error("Select an organization to create secrets");
       return secretsApi.create(selectedCompanyId, input);
     },
     onSuccess: () => {
       if (!selectedCompanyId) return;
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.secrets.list(selectedCompanyId),
-      });
+      queryClient.invalidateQueries({ queryKey: queryKeys.secrets.list(selectedCompanyId) });
     },
   });
 
@@ -1702,17 +1409,13 @@ export function PipelineSettings() {
   // picker; their stages come back on the list payload so we can offer the
   // entry-stage choices without a second fetch per pipeline.
   const pipelinesListQuery = useQuery({
-    queryKey: selectedCompanyId
-      ? queryKeys.pipelines.list(selectedCompanyId)
-      : ["pipelines", "none"],
+    queryKey: selectedCompanyId ? queryKeys.pipelines.list(selectedCompanyId) : ["pipelines", "none"],
     queryFn: () => pipelinesApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId,
   });
 
   const pipelineCasesQuery = useQuery({
-    queryKey: pipelineId
-      ? queryKeys.pipelines.cases(pipelineId)
-      : ["pipelines", "cases", "none-settings"],
+    queryKey: pipelineId ? queryKeys.pipelines.cases(pipelineId) : ["pipelines", "cases", "none-settings"],
     queryFn: () => pipelinesApi.listCases(pipelineId!),
     enabled: !!selectedCompanyId && !!pipelineId,
   });
@@ -1729,44 +1432,23 @@ export function PipelineSettings() {
 
   const pipeline = pipelineQuery.data ?? null;
   const stages = useMemo(() => sortedStages(pipeline), [pipeline]);
-  const selectedStage =
-    stages.find((stage) => stage.id === selectedStageId) ?? stages[0] ?? null;
+  const selectedStage = stages.find((stage) => stage.id === selectedStageId) ?? stages[0] ?? null;
   const incomingCarryOverFieldGroups = useMemo(
-    () =>
-      buildIncomingCarryOverFieldGroups(
-        pipeline,
-        selectedStage,
-        pipelinesListQuery.data ?? [],
-      ),
+    () => buildIncomingCarryOverFieldGroups(pipeline, selectedStage, pipelinesListQuery.data ?? []),
     [pipeline, pipelinesListQuery.data, selectedStage],
   );
   const incomingCarryOverFieldKeys = useMemo(
-    () => [
-      ...new Set(
-        flattenCarryOverFields(incomingCarryOverFieldGroups).map(
-          (field) => field.key,
-        ),
-      ),
-    ],
+    () => [...new Set(flattenCarryOverFields(incomingCarryOverFieldGroups).map((field) => field.key))],
     [incomingCarryOverFieldGroups],
   );
   const sampleCaseRow = useMemo(() => {
     const rows = pipelineCasesQuery.data ?? [];
-    return (
-      rows.find((row) => row.case.stageId === selectedStage?.id) ??
-      rows[0] ??
-      null
-    );
+    return rows.find((row) => row.case.stageId === selectedStage?.id) ?? rows[0] ?? null;
   }, [pipelineCasesQuery.data, selectedStage?.id]);
   const automationVariableGroups = useMemo(
-    () =>
-      pipeline && selectedStage
-        ? buildAutomationVariableGroups({
-            pipeline,
-            stage: selectedStage,
-            sampleRow: sampleCaseRow,
-          })
-        : [],
+    () => pipeline && selectedStage
+      ? buildAutomationVariableGroups({ pipeline, stage: selectedStage, sampleRow: sampleCaseRow })
+      : [],
     [pipeline, sampleCaseRow, selectedStage],
   );
   const automationVariableKeys = useMemo(
@@ -1774,9 +1456,7 @@ export function PipelineSettings() {
     [automationVariableGroups],
   );
   const resolvedAutomationVariableKeys = useMemo(
-    () => [
-      ...new Set([...incomingCarryOverFieldKeys, ...automationVariableKeys]),
-    ],
+    () => [...new Set([...incomingCarryOverFieldKeys, ...automationVariableKeys])],
     [automationVariableKeys, incomingCarryOverFieldKeys],
   );
   const insertInstructionsVariableToken = useCallback((fieldKey: string) => {
@@ -1810,14 +1490,11 @@ export function PipelineSettings() {
     input.setSelectionRange(cursor, cursor);
   }, [issueTitleTemplate]);
 
-  const instructionsKey = selectedStage
-    ? stageInstructionsKey(selectedStage.id)
-    : null;
+  const instructionsKey = selectedStage ? stageInstructionsKey(selectedStage.id) : null;
   const instructionsQuery = useQuery({
-    queryKey:
-      pipelineId && instructionsKey
-        ? queryKeys.pipelines.document(pipelineId, instructionsKey)
-        : ["pipelines", "document", "none-stage"],
+    queryKey: pipelineId && instructionsKey
+      ? queryKeys.pipelines.document(pipelineId, instructionsKey)
+      : ["pipelines", "document", "none-stage"],
     queryFn: async () => {
       try {
         return await pipelinesApi.getDocument(pipelineId!, instructionsKey!);
@@ -1832,34 +1509,16 @@ export function PipelineSettings() {
   // Routine-backed automation is the source of truth. Per-stage documents and
   // the legacy field remain as read-through fallbacks for older stages.
   const savedInstructionsBody = instructionsDocument
-    ? (stageAutomation(selectedStage).instructionsBody ??
-      instructionsDocument.revision?.body ??
-      instructionsDocument.document?.latestBody ??
-      "")
-    : (stageAutomation(selectedStage).instructionsBody ??
-      stageConfig(selectedStage).whatHappensHere ??
-      "");
+    ? stageAutomation(selectedStage).instructionsBody ?? instructionsDocument.revision?.body ?? instructionsDocument.document?.latestBody ?? ""
+    : stageAutomation(selectedStage).instructionsBody ?? stageConfig(selectedStage).whatHappensHere ?? "";
   const savedIssueTitleTemplate = stageAutomation(selectedStage).titleTemplate;
   const savedInstructionsVariables = useMemo(
-    () =>
-      savedStageVariables(
-        selectedStage,
-        savedIssueTitleTemplate,
-        savedInstructionsBody,
-      ),
+    () => savedStageVariables(selectedStage, savedIssueTitleTemplate, savedInstructionsBody),
     [selectedStage, savedInstructionsBody, savedIssueTitleTemplate],
   );
   const savedManualVariableNames = useMemo(
-    () =>
-      manualVariableNamesForTemplate(savedInstructionsVariables, [
-        savedIssueTitleTemplate,
-        savedInstructionsBody,
-      ]),
-    [
-      savedInstructionsBody,
-      savedInstructionsVariables,
-      savedIssueTitleTemplate,
-    ],
+    () => manualVariableNamesForTemplate(savedInstructionsVariables, [savedIssueTitleTemplate, savedInstructionsBody]),
+    [savedInstructionsBody, savedInstructionsVariables, savedIssueTitleTemplate],
   );
 
   const mentionOptions = useStandardMarkdownMentionOptions({
@@ -1896,29 +1555,28 @@ export function PipelineSettings() {
     [orderedProjects],
   );
   const selectedAutomationProject = useMemo(
-    () =>
-      orderedProjects.find((project) => project.id === stageProjectId) ?? null,
+    () => orderedProjects.find((project) => project.id === stageProjectId) ?? null,
     [orderedProjects, stageProjectId],
   );
   const selectedAutomationProjectWorkspace = useMemo(
     () =>
-      selectedAutomationProject?.workspaces.find(
-        (workspace) => workspace.id === stageProjectWorkspaceId,
-      ) ?? null,
+      selectedAutomationProject?.workspaces.find((workspace) => workspace.id === stageProjectWorkspaceId)
+      ?? null,
     [selectedAutomationProject, stageProjectWorkspaceId],
   );
+  const { visible: workspaceIsolationControlsVisible } = useWorkspaceIsolationControls();
   const selectedProjectSupportsExecutionWorkspace =
-    experimentalSettingsQuery.data?.enableIsolatedWorkspaces === true &&
-    Boolean(selectedAutomationProject?.executionWorkspacePolicy?.enabled);
+    workspaceIsolationControlsVisible &&
+    experimentalSettingsQuery.data?.enableIsolatedWorkspaces === true
+    && Boolean(selectedAutomationProject?.executionWorkspacePolicy?.enabled);
   const reusableExecutionWorkspacesQuery = useQuery({
-    queryKey:
-      selectedCompanyId && stageProjectId
-        ? queryKeys.executionWorkspaces.summaryList(selectedCompanyId, {
-            projectId: stageProjectId,
-            projectWorkspaceId: stageProjectWorkspaceId || undefined,
-            reuseEligible: true,
-          })
-        : ["execution-workspaces", "summary", "none-pipeline-stage"],
+    queryKey: selectedCompanyId && stageProjectId
+      ? queryKeys.executionWorkspaces.summaryList(selectedCompanyId, {
+          projectId: stageProjectId,
+          projectWorkspaceId: stageProjectWorkspaceId || undefined,
+          reuseEligible: true,
+        })
+      : ["execution-workspaces", "summary", "none-pipeline-stage"],
     queryFn: () =>
       executionWorkspacesApi.listSummaries(selectedCompanyId!, {
         projectId: stageProjectId,
@@ -1932,17 +1590,13 @@ export function PipelineSettings() {
       stageExecutionWorkspacePreference === "reuse_existing",
   });
   const deduplicatedReusableWorkspaces = useMemo<ExecutionWorkspaceSummary[]>(
-    () =>
-      orderReusableExecutionWorkspaces(
-        reusableExecutionWorkspacesQuery.data ?? [],
-      ),
+    () => orderReusableExecutionWorkspaces(reusableExecutionWorkspacesQuery.data ?? []),
     [reusableExecutionWorkspacesQuery.data],
   );
   const selectedReusableExecutionWorkspace = useMemo(
     () =>
-      deduplicatedReusableWorkspaces.find(
-        (workspace) => workspace.id === stageExecutionWorkspaceId,
-      ) ?? null,
+      deduplicatedReusableWorkspaces.find((workspace) => workspace.id === stageExecutionWorkspaceId)
+      ?? null,
     [deduplicatedReusableWorkspaces, stageExecutionWorkspaceId],
   );
   const approvalOptions = useMemo<InlineEntityOption[]>(
@@ -1969,18 +1623,10 @@ export function PipelineSettings() {
   );
 
   const stageEventsQuery = useQuery({
-    queryKey:
-      selectedCompanyId && pipelineId && selectedStage
-        ? [
-            "pipelines",
-            "stage-events",
-            selectedCompanyId,
-            pipelineId,
-            selectedStage.id,
-          ]
-        : ["pipelines", "stage-events", "none"],
-    queryFn: () =>
-      pipelinesApi.listCompanyCaseEvents(selectedCompanyId!, { limit: 75 }),
+    queryKey: selectedCompanyId && pipelineId && selectedStage
+      ? ["pipelines", "stage-events", selectedCompanyId, pipelineId, selectedStage.id]
+      : ["pipelines", "stage-events", "none"],
+    queryFn: () => pipelinesApi.listCompanyCaseEvents(selectedCompanyId!, { limit: 75 }),
     enabled:
       !!selectedCompanyId &&
       !!pipelineId &&
@@ -1993,35 +1639,29 @@ export function PipelineSettings() {
     return (stageEventsQuery.data?.items ?? []).filter(
       (event) =>
         event.pipeline.id === pipelineId &&
-        (event.fromStageId === selectedStage.id ||
+        (
+          event.fromStageId === selectedStage.id ||
           event.toStageId === selectedStage.id ||
-          event.automation?.stage?.id === selectedStage.id),
+          event.automation?.stage?.id === selectedStage.id
+        ),
     );
   }, [pipelineId, selectedStage, stageEventsQuery.data?.items]);
 
   useEffect(() => {
     if (!pipeline) return;
     setBreadcrumbs([
-      { label: "Pipelines", href: "/pipelines" },
+      { label: translateInstant("pipelines.title"), href: "/pipelines" },
       { label: pipeline.name, href: `/pipelines/${pipeline.id}` },
-      { label: "Settings" },
+      { label: translateInstant("Settings") },
     ]);
   }, [pipeline, setBreadcrumbs]);
 
   // Deep-link from a board-header health warning: ?stage=<id> preselects the
   // flagged stage so the warning's "fix" lands on the right panel.
   const requestedStageId = searchParams.get("stage");
-  const requestedStageExists = Boolean(
-    requestedStageId && stages.some((stage) => stage.id === requestedStageId),
-  );
-  const requestedStageSection = parseStageSectionKey(
-    searchParams.get("section"),
-  );
-  const fallbackStageId = resolvePipelineSettingsFallbackStageId(
-    stages,
-    selectedStageId,
-    requestedStageId,
-  );
+  const requestedStageExists = Boolean(requestedStageId && stages.some((stage) => stage.id === requestedStageId));
+  const requestedStageSection = parseStageSectionKey(searchParams.get("section"));
+  const fallbackStageId = resolvePipelineSettingsFallbackStageId(stages, selectedStageId, requestedStageId);
   useEffect(() => {
     if (requestedStageId && requestedStageExists) {
       setSelectedStageId(requestedStageId);
@@ -2044,13 +1684,9 @@ export function PipelineSettings() {
     setStageAssigneeAgentId(form.assigneeAgentId);
     setStageProjectId(form.automationProjectId);
     setStageProjectWorkspaceId(form.automationProjectWorkspaceId);
-    setStageExecutionWorkspacePreference(
-      form.automationExecutionWorkspacePreference,
-    );
+    setStageExecutionWorkspacePreference(form.automationExecutionWorkspacePreference);
     setStageExecutionWorkspaceId(form.automationExecutionWorkspaceId);
-    setStageExecutionWorkspaceSettings(
-      form.automationExecutionWorkspaceSettings,
-    );
+    setStageExecutionWorkspaceSettings(form.automationExecutionWorkspaceSettings);
     setIssueTitleTemplate(form.automationTitleTemplate);
     setSelectedApproval(form.approval);
     setApproveTarget(form.approveTarget);
@@ -2074,17 +1710,14 @@ export function PipelineSettings() {
   useEffect(() => {
     if (!stageProjectId || !selectedAutomationProject) return;
     if (!stageProjectWorkspaceId) {
-      setStageProjectWorkspaceId(
-        defaultProjectWorkspaceIdForProject(selectedAutomationProject),
-      );
+      setStageProjectWorkspaceId(defaultProjectWorkspaceIdForProject(selectedAutomationProject));
     }
-    if (!stageExecutionWorkspacePreference) {
-      setStageExecutionWorkspacePreference(
-        defaultExecutionWorkspaceModeForProject(selectedAutomationProject),
-      );
+    if (workspaceIsolationControlsVisible && !stageExecutionWorkspacePreference) {
+      setStageExecutionWorkspacePreference(defaultExecutionWorkspaceModeForProject(selectedAutomationProject));
     }
   }, [
     selectedAutomationProject,
+    workspaceIsolationControlsVisible,
     stageExecutionWorkspacePreference,
     stageProjectId,
     stageProjectWorkspaceId,
@@ -2092,25 +1725,14 @@ export function PipelineSettings() {
 
   useEffect(() => {
     if (!selectedStage) return;
-    if (
-      requestedStageSection &&
-      isPipelineSettingsStageSectionAvailable(
-        selectedStage.kind,
-        requestedStageSection,
-      )
-    ) {
+    if (requestedStageSection && isPipelineSettingsStageSectionAvailable(selectedStage.kind, requestedStageSection)) {
       setActiveStageSection(requestedStageSection);
     }
   }, [requestedStageSection, selectedStage?.id, selectedStage?.kind]);
 
   useEffect(() => {
     if (!selectedStage) return;
-    if (
-      !isPipelineSettingsStageSectionAvailable(
-        selectedStage.kind,
-        activeStageSection,
-      )
-    ) {
+    if (!isPipelineSettingsStageSectionAvailable(selectedStage.kind, activeStageSection)) {
       setActiveStageSection("instructions");
     }
   }, [activeStageSection, requestedStageSection, selectedStage]);
@@ -2122,12 +1744,7 @@ export function PipelineSettings() {
     setIssueTitleTemplate(savedIssueTitleTemplate);
     setInstructionsBody(savedInstructionsBody);
     setInstructionsVariables(savedInstructionsVariables);
-  }, [
-    selectedStage?.id,
-    savedInstructionsBody,
-    savedInstructionsVariables,
-    savedIssueTitleTemplate,
-  ]);
+  }, [selectedStage?.id, savedInstructionsBody, savedInstructionsVariables, savedIssueTitleTemplate]);
 
   // Stage secrets hydrate from the backing routine's derived env. Re-running on
   // the serialized saved env clears the dirty state after a save/refetch.
@@ -2140,9 +1757,7 @@ export function PipelineSettings() {
 
   useEffect(() => {
     setDeleteStageDialogOpen(false);
-    setDeleteMoveTargetStageId(
-      stages.find((stage) => stage.id !== selectedStage?.id)?.id ?? "",
-    );
+    setDeleteMoveTargetStageId(stages.find((stage) => stage.id !== selectedStage?.id)?.id ?? "");
   }, [selectedStage?.id, stages]);
 
   useEffect(() => {
@@ -2154,15 +1769,9 @@ export function PipelineSettings() {
 
   const refreshPipeline = async () => {
     if (!pipelineId) return;
-    await queryClient.invalidateQueries({
-      queryKey: queryKeys.pipelines.detail(pipelineId),
-    });
-    await queryClient.invalidateQueries({
-      queryKey: queryKeys.pipelines.intakeForm(pipelineId),
-    });
-    await queryClient.invalidateQueries({
-      queryKey: queryKeys.pipelines.health(pipelineId),
-    });
+    await queryClient.invalidateQueries({ queryKey: queryKeys.pipelines.detail(pipelineId) });
+    await queryClient.invalidateQueries({ queryKey: queryKeys.pipelines.intakeForm(pipelineId) });
+    await queryClient.invalidateQueries({ queryKey: queryKeys.pipelines.health(pipelineId) });
   };
 
   const saveStage = useMutation({
@@ -2174,22 +1783,15 @@ export function PipelineSettings() {
         stageExecutionWorkspacePreference === "reuse_existing" &&
         !stageExecutionWorkspaceId
       ) {
-        throw new Error(
-          "Choose an existing workspace before saving this stage.",
-        );
+        throw new Error("Choose an existing workspace before saving this stage.");
       }
       const parsedApproval = parseApprovalValue(selectedApproval);
       const nextRequiresApproval = stageKind === "review";
       const config: StageConfig = {
         ...stageConfig(selectedStage),
-        variables: stripVariablesByName(
-          instructionsVariables,
-          resolvedAutomationVariableKeys,
-        ),
+        variables: stripVariablesByName(instructionsVariables, resolvedAutomationVariableKeys),
         disabled: newEntriesDisabled,
-        disabledReason: newEntriesDisabled
-          ? disableReason.trim() || null
-          : null,
+        disabledReason: newEntriesDisabled ? disableReason.trim() || null : null,
         automation: buildStageAutomationForSave({
           assigneeAgentId: stageAssigneeAgentId,
           titleTemplate: issueTitleTemplate,
@@ -2198,14 +1800,12 @@ export function PipelineSettings() {
           projectWorkspaceId: stageProjectWorkspaceId,
           executionWorkspaceId: stageExecutionWorkspaceId,
           executionWorkspacePreference: stageExecutionWorkspacePreference,
-          executionWorkspaceSettings:
-            currentAutomationExecutionWorkspaceSettings,
+          executionWorkspaceSettings: currentAutomationExecutionWorkspaceSettings,
         }),
         requireApproval: nextRequiresApproval,
-        approver:
-          nextRequiresApproval && parsedApproval.kind !== "any_human"
-            ? { kind: parsedApproval.kind, id: parsedApproval.id }
-            : { kind: "any_human" },
+        approver: nextRequiresApproval && parsedApproval.kind !== "any_human"
+          ? { kind: parsedApproval.kind, id: parsedApproval.id }
+          : { kind: "any_human" },
         requireChildrenTerminal,
       };
       if (autoAdvanceOnChildrenTerminal) {
@@ -2217,23 +1817,13 @@ export function PipelineSettings() {
       // its own config block; the standalone requireChildrenTerminal /
       // autoAdvanceOnChildrenTerminal fields are derived from it server-side, so
       // we drop them here to avoid two competing sources of truth.
-      if (
-        breakdownEnabled &&
-        breakdownTargetPipelineId &&
-        breakdownTargetStageKey
-      ) {
+      if (breakdownEnabled && breakdownTargetPipelineId && breakdownTargetStageKey) {
         config.breakdown = {
           targetPipelineId: breakdownTargetPipelineId,
           targetStageKey: breakdownTargetStageKey,
           pieceNoun: breakdownPieceNoun.trim() || "piece",
-          carryOverPolicy: carryOverPolicyForSave(
-            breakdownCarryOverPolicy,
-            breakdownCarryOverFieldOptions,
-          ),
-          inheritFields: inheritFieldsForSave(
-            breakdownCarryOverPolicy,
-            breakdownCarryOverFieldOptions,
-          ),
+          carryOverPolicy: carryOverPolicyForSave(breakdownCarryOverPolicy, breakdownCarryOverFieldOptions),
+          inheritFields: inheritFieldsForSave(breakdownCarryOverPolicy, breakdownCarryOverFieldOptions),
           waitForPieces: breakdownWaitForPieces,
           ...(breakdownAdvanceTo ? { advanceTo: breakdownAdvanceTo } : {}),
           ...(breakdownWaitForPieces && breakdownWhenFinishedMoveTo
@@ -2267,9 +1857,7 @@ export function PipelineSettings() {
           const fromStageKey = keyById.get(transition.fromStageId);
           const toStageKey = keyById.get(transition.toStageId);
           if (!fromStageKey || !toStageKey) return [];
-          return [
-            { fromStageKey, toStageKey, label: transition.label ?? null },
-          ];
+          return [{ fromStageKey, toStageKey, label: transition.label ?? null }];
         });
       // Effective "allowed next steps". For review stages the connections are
       // kept in sync with the review outcomes (approve / decline / changes)
@@ -2294,17 +1882,9 @@ export function PipelineSettings() {
         const toStageKey = keyById.get(targetId);
         if (!toStageKey) return [];
         const prior = existingTransitions.find(
-          (transition) =>
-            transition.fromStageId === selectedStage.id &&
-            transition.toStageId === targetId,
+          (transition) => transition.fromStageId === selectedStage.id && transition.toStageId === targetId,
         );
-        return [
-          {
-            fromStageKey: selectedStage.key,
-            toStageKey,
-            label: prior?.label ?? null,
-          },
-        ];
+        return [{ fromStageKey: selectedStage.key, toStageKey, label: prior?.label ?? null }];
       });
 
       await pipelinesApi.updateStage(pipelineId, selectedStage.id, {
@@ -2322,32 +1902,17 @@ export function PipelineSettings() {
     onSuccess: async () => {
       if (pipelineId && instructionsKey) {
         await Promise.all([
-          queryClient.invalidateQueries({
-            queryKey: queryKeys.pipelines.document(pipelineId, instructionsKey),
-          }),
-          queryClient.invalidateQueries({
-            queryKey: queryKeys.pipelines.documentRevisions(
-              pipelineId,
-              instructionsKey,
-            ),
-          }),
+          queryClient.invalidateQueries({ queryKey: queryKeys.pipelines.document(pipelineId, instructionsKey) }),
+          queryClient.invalidateQueries({ queryKey: queryKeys.pipelines.documentRevisions(pipelineId, instructionsKey) }),
         ]);
       }
       await refreshPipeline();
-      pushToast({
-        title: t("pipelineSettings.stageSaved", {
-          defaultValue: "Stage saved",
-        }),
-        tone: "success",
-      });
+      pushToast({ title: translateInstant("pipelineSettings.stageSaved"), tone: "success" });
     },
     onError: async (error) => {
       pushToast({
-        title: "Failed to save stage",
-        body:
-          error instanceof Error
-            ? error.message
-            : "Paperclip could not save the stage.",
+        title: translateInstant("Failed to save stage"),
+        body: error instanceof Error ? error.message : "Paperclip could not save the stage.",
         tone: "error",
       });
     },
@@ -2360,39 +1925,27 @@ export function PipelineSettings() {
       if (!pipelineId || !selectedStage) return null;
       const detail = stageAutomationDetail(selectedStage);
       const env = Object.keys(stageEnv).length > 0 ? stageEnv : null;
-      await pipelinesApi.updateStageAutomationEnv(
-        pipelineId,
-        selectedStage.id,
-        {
-          env,
-          baseRoutineRevisionId: detail.latestRoutineRevisionId,
-        },
-      );
+      await pipelinesApi.updateStageAutomationEnv(pipelineId, selectedStage.id, {
+        env,
+        baseRoutineRevisionId: detail.latestRoutineRevisionId,
+      });
       return null;
     },
     onSuccess: async () => {
       await refreshPipeline();
       if (selectedCompanyId) {
-        await queryClient.invalidateQueries({
-          queryKey: queryKeys.secrets.list(selectedCompanyId),
-        });
+        await queryClient.invalidateQueries({ queryKey: queryKeys.secrets.list(selectedCompanyId) });
       }
-      pushToast({
-        title: t("pipelineSettings.stageSecretsSaved", {
-          defaultValue: "Stage secrets saved",
-        }),
-        tone: "success",
-      });
+      pushToast({ title: translateInstant("pipelineSettings.stageSecretsSaved"), tone: "success" });
     },
     onError: async (error) => {
       pushToast({
-        title: "Failed to save secrets",
-        body:
-          error instanceof ApiError
+        title: translateInstant("Failed to save secrets"),
+        body: error instanceof ApiError
+          ? error.message
+          : error instanceof Error
             ? error.message
-            : error instanceof Error
-              ? error.message
-              : "Paperclip could not save the stage secrets.",
+            : "Paperclip could not save the stage secrets.",
         tone: "error",
       });
     },
@@ -2402,13 +1955,9 @@ export function PipelineSettings() {
     mutationFn: async (afterStage: PipelineStage | null) => {
       if (!pipelineId || !pipeline) return null;
       const lastStage = stages[stages.length - 1] ?? null;
-      const insertPosition = afterStage
-        ? afterStage.position + 1
-        : lastStage
-          ? lastStage.position + 100
-          : 100;
+      const insertPosition = afterStage ? afterStage.position + 1 : (lastStage ? lastStage.position + 100 : 100);
       const nextStage = afterStage
-        ? (stages.find((stage) => stage.position > afterStage.position) ?? null)
+        ? stages.find((stage) => stage.position > afterStage.position) ?? null
         : null;
       const existingKeys = new Set(stages.map((stage) => stage.key));
       const autoAdvanceTarget = nextStageForInsert(stages, insertPosition);
@@ -2420,9 +1969,7 @@ export function PipelineSettings() {
         config: {
           variables: [],
           requireChildrenTerminal: true,
-          ...(autoAdvanceTarget
-            ? { autoAdvanceOnChildrenTerminal: autoAdvanceTarget.key }
-            : {}),
+          ...(autoAdvanceTarget ? { autoAdvanceOnChildrenTerminal: autoAdvanceTarget.key } : {}),
         },
       });
       if (afterStage) {
@@ -2430,36 +1977,19 @@ export function PipelineSettings() {
         const existingTransitions = pipeline.transitions ?? [];
         const edges = existingTransitions
           .filter(
-            (transition) =>
-              !(
-                nextStage &&
-                transition.fromStageId === afterStage.id &&
-                transition.toStageId === nextStage.id
-              ),
+            (transition) => !(nextStage && transition.fromStageId === afterStage.id && transition.toStageId === nextStage.id),
           )
           .flatMap((transition) => {
             const fromStageKey = keyById.get(transition.fromStageId);
             const toStageKey = keyById.get(transition.toStageId);
             if (!fromStageKey || !toStageKey) return [];
-            return [
-              { fromStageKey, toStageKey, label: transition.label ?? null },
-            ];
+            return [{ fromStageKey, toStageKey, label: transition.label ?? null }];
           });
-        edges.push({
-          fromStageKey: afterStage.key,
-          toStageKey: created.key,
-          label: null,
-        });
+        edges.push({ fromStageKey: afterStage.key, toStageKey: created.key, label: null });
         if (nextStage) {
-          edges.push({
-            fromStageKey: created.key,
-            toStageKey: nextStage.key,
-            label: null,
-          });
+          edges.push({ fromStageKey: created.key, toStageKey: nextStage.key, label: null });
         }
-        await pipelinesApi.setTransitions(pipelineId, {
-          transitions: dedupeEdges(edges),
-        });
+        await pipelinesApi.setTransitions(pipelineId, { transitions: dedupeEdges(edges) });
       }
       return created;
     },
@@ -2468,12 +1998,7 @@ export function PipelineSettings() {
       if (created) {
         setSelectedStageId(created.id);
       }
-      pushToast({
-        title: t("pipelineSettings.stageAdded", {
-          defaultValue: "Stage added",
-        }),
-        tone: "success",
-      });
+      pushToast({ title: translateInstant("pipelineSettings.stageAdded"), tone: "success" });
     },
   });
 
@@ -2485,31 +2010,19 @@ export function PipelineSettings() {
       });
     },
     onSuccess: async () => {
-      const nextStageId =
-        deleteMoveTargetStageId ||
-        (stages.find((stage) => stage.id !== selectedStage?.id)?.id ?? null);
+      const nextStageId = deleteMoveTargetStageId || (stages.find((stage) => stage.id !== selectedStage?.id)?.id ?? null);
       setDeleteStageDialogOpen(false);
       setSelectedStageId(nextStageId);
       await refreshPipeline();
       if (selectedCompanyId) {
-        await queryClient.invalidateQueries({
-          queryKey: queryKeys.pipelines.list(selectedCompanyId),
-        });
+        await queryClient.invalidateQueries({ queryKey: queryKeys.pipelines.list(selectedCompanyId) });
       }
-      pushToast({
-        title: t("pipelineSettings.stageDeleted", {
-          defaultValue: "Stage deleted",
-        }),
-        tone: "success",
-      });
+      pushToast({ title: translateInstant("pipelineSettings.stageDeleted"), tone: "success" });
     },
     onError: (error) => {
       pushToast({
-        title: "Failed to delete stage",
-        body:
-          error instanceof Error
-            ? error.message
-            : "Paperclip could not delete the stage.",
+        title: translateInstant("Failed to delete stage"),
+        body: error instanceof Error ? error.message : "Paperclip could not delete the stage.",
         tone: "error",
       });
     },
@@ -2524,16 +2037,9 @@ export function PipelineSettings() {
     onSuccess: async () => {
       await refreshPipeline();
       if (selectedCompanyId) {
-        await queryClient.invalidateQueries({
-          queryKey: queryKeys.pipelines.list(selectedCompanyId),
-        });
+        await queryClient.invalidateQueries({ queryKey: queryKeys.pipelines.list(selectedCompanyId) });
       }
-      pushToast({
-        title: t("pipelineSettings.pipelineUpdated", {
-          defaultValue: "Pipeline updated",
-        }),
-        tone: "success",
-      });
+      pushToast({ title: translateInstant("pipelineSettings.pipelineUpdated"), tone: "success" });
     },
   });
 
@@ -2542,47 +2048,31 @@ export function PipelineSettings() {
       pipelinesApi.update(pipelineId!, { enforceTransitions }),
     onSuccess: async () => {
       await refreshPipeline();
-      pushToast({
-        title: t("pipelineSettings.transitionRulesUpdated", {
-          defaultValue: "Transition rules updated",
-        }),
-        tone: "success",
-      });
+      pushToast({ title: translateInstant("pipelineSettings.transitionRulesUpdated"), tone: "success" });
     },
     onError: (error) => {
       setStrictTransitionsEnabled(pipeline?.enforceTransitions ?? false);
       pushToast({
-        title: "Failed to update transition rules",
-        body:
-          error instanceof Error
-            ? error.message
-            : "Paperclip could not update transition rules.",
+        title: translateInstant("Failed to update transition rules"),
+        body: error instanceof Error ? error.message : "Paperclip could not update transition rules.",
         tone: "error",
       });
     },
   });
 
   const archivePipeline = useMutation({
-    mutationFn: (archived: boolean) =>
-      pipelinesApi.update(pipelineId!, { archived }),
+    mutationFn: (archived: boolean) => pipelinesApi.update(pipelineId!, { archived }),
     onSuccess: async (_result, archived) => {
       setArchiveDialogOpen(false);
       setArchiveConfirmation("");
       if (selectedCompanyId) {
-        await queryClient.invalidateQueries({
-          queryKey: queryKeys.pipelines.list(selectedCompanyId),
-        });
+        await queryClient.invalidateQueries({ queryKey: queryKeys.pipelines.list(selectedCompanyId) });
       }
       if (archived) {
         navigate("/pipelines");
       } else {
         await refreshPipeline();
-        pushToast({
-          title: t("pipelineSettings.pipelineRestored", {
-            defaultValue: "Pipeline restored",
-          }),
-          tone: "success",
-        });
+        pushToast({ title: translateInstant("pipelineSettings.pipelineRestored"), tone: "success" });
       }
     },
   });
@@ -2590,46 +2080,28 @@ export function PipelineSettings() {
   const setStageKindWithDefaults = (kind: string) => {
     setStageKind(kind);
     if (kind === "review") {
-      setApproveTarget(
-        (current) =>
-          current ||
-          defaultReviewTarget(stages, selectedStage?.id ?? null, "done"),
-      );
-      setRejectTarget(
-        (current) =>
-          current ||
-          defaultReviewTarget(stages, selectedStage?.id ?? null, "cancelled"),
-      );
+      setApproveTarget((current) => current || defaultReviewTarget(stages, selectedStage?.id ?? null, "done"));
+      setRejectTarget((current) => current || defaultReviewTarget(stages, selectedStage?.id ?? null, "cancelled"));
     }
   };
 
   const handleAutomationProjectChange = (nextProjectId: string) => {
     if (nextProjectId) trackRecentProject(nextProjectId);
-    const nextProject = orderedProjects.find(
-      (project) => project.id === nextProjectId,
-    );
+    const nextProject = orderedProjects.find((project) => project.id === nextProjectId);
     setStageProjectId(nextProjectId);
-    setStageProjectWorkspaceId(
-      defaultProjectWorkspaceIdForProject(nextProject),
-    );
-    setStageExecutionWorkspacePreference(
-      nextProject ? defaultExecutionWorkspaceModeForProject(nextProject) : "",
-    );
+    setStageProjectWorkspaceId(defaultProjectWorkspaceIdForProject(nextProject));
+    setStageExecutionWorkspacePreference(nextProject && workspaceIsolationControlsVisible ? defaultExecutionWorkspaceModeForProject(nextProject) : "");
     setStageExecutionWorkspaceId("");
     setStageExecutionWorkspaceSettings(null);
   };
 
-  const handleAutomationProjectWorkspaceChange = (
-    nextProjectWorkspaceId: string,
-  ) => {
+  const handleAutomationProjectWorkspaceChange = (nextProjectWorkspaceId: string) => {
     setStageProjectWorkspaceId(nextProjectWorkspaceId);
     setStageExecutionWorkspaceId("");
     setStageExecutionWorkspaceSettings(null);
   };
 
-  const handleAutomationExecutionWorkspacePreferenceChange = (
-    nextPreference: string,
-  ) => {
+  const handleAutomationExecutionWorkspacePreferenceChange = (nextPreference: string) => {
     const preference = nullableExecutionWorkspaceMode(nextPreference);
     setStageExecutionWorkspacePreference(preference);
     setStageExecutionWorkspaceSettings(null);
@@ -2638,17 +2110,10 @@ export function PipelineSettings() {
     }
   };
 
-  const handleAutomationExecutionWorkspaceIdChange = (
-    nextExecutionWorkspaceId: string,
-  ) => {
+  const handleAutomationExecutionWorkspaceIdChange = (nextExecutionWorkspaceId: string) => {
     setStageExecutionWorkspaceId(nextExecutionWorkspaceId);
-    const workspace =
-      deduplicatedReusableWorkspaces.find(
-        (entry) => entry.id === nextExecutionWorkspaceId,
-      ) ?? null;
-    setStageExecutionWorkspaceSettings(
-      executionWorkspaceSettingsForPreference("reuse_existing", workspace),
-    );
+    const workspace = deduplicatedReusableWorkspaces.find((entry) => entry.id === nextExecutionWorkspaceId) ?? null;
+    setStageExecutionWorkspaceSettings(executionWorkspaceSettingsForPreference("reuse_existing", workspace));
   };
 
   const handleStageSectionChange = (section: StageSectionKey) => {
@@ -2658,23 +2123,15 @@ export function PipelineSettings() {
       nextSearchParams.set("stage", selectedStage.id);
     }
     nextSearchParams.set("section", section);
-    navigate(
-      `/pipelines/${pipelineId}/settings?${nextSearchParams.toString()}`,
-      { replace: true },
-    );
+    navigate(`/pipelines/${pipelineId}/settings?${nextSearchParams.toString()}`, { replace: true });
   };
 
   if (!selectedCompanyId) {
-    return (
-      <EmptyState
-        icon={Hexagon}
-        message="Select a company to edit pipeline settings."
-      />
-    );
+    return <EmptyState icon={Hexagon} message={translateInstant("Select an organization to edit pipeline settings.")} />;
   }
 
   if (!pipelineId) {
-    return <EmptyState icon={Hexagon} message="No pipeline selected." />;
+    return <EmptyState icon={Hexagon} message={translateInstant("No pipeline selected.")} />;
   }
 
   if (pipelineQuery.isLoading) {
@@ -2682,34 +2139,26 @@ export function PipelineSettings() {
   }
 
   if (pipelineQuery.error) {
-    return (
-      <p className="text-sm text-destructive">{pipelineQuery.error.message}</p>
-    );
+    return <p className="text-sm text-destructive">{pipelineQuery.error.message}</p>;
   }
 
   if (!pipeline) {
-    return <EmptyState icon={Hexagon} message="Pipeline not found." />;
+    return <EmptyState icon={Hexagon} message={translateInstant("pipelines.notFound")} />;
   }
 
   const isArchived = Boolean(pipeline.archivedAt);
-  const archiveEnabled =
-    archiveConfirmation === pipeline.name && !archivePipeline.isPending;
-  const detailsDirty =
-    pipelineName !== pipeline.name ||
-    pipelineDescription !== (pipeline.description ?? "");
-  const reviewTargetsMissing =
-    stageKind === "review" && (!approveTarget || !rejectTarget);
+  const archiveEnabled = archiveConfirmation === pipeline.name && !archivePipeline.isPending;
+  const detailsDirty = pipelineName !== pipeline.name || pipelineDescription !== (pipeline.description ?? "");
+  const reviewTargetsMissing = stageKind === "review" && (!approveTarget || !rejectTarget);
   const otherStages = stages.filter((stage) => stage.id !== selectedStage?.id);
   const isReviewStage = stageKind === "review";
-  const defaultAutoAdvanceStage =
-    nextStageByPosition(stages, selectedStage) ?? otherStages[0] ?? null;
+  const defaultAutoAdvanceStage = nextStageByPosition(stages, selectedStage) ?? otherStages[0] ?? null;
   const currentAutomationExecutionWorkspaceSettings =
     stageProjectId && stageExecutionWorkspacePreference
-      ? (stageExecutionWorkspaceSettings ??
-        executionWorkspaceSettingsForPreference(
-          stageExecutionWorkspacePreference,
-          selectedReusableExecutionWorkspace,
-        ))
+      ? (
+          stageExecutionWorkspaceSettings
+          ?? executionWorkspaceSettingsForPreference(stageExecutionWorkspacePreference, selectedReusableExecutionWorkspace)
+        )
       : null;
   const canSaveAutomationWorkspace =
     !selectedProjectSupportsExecutionWorkspace ||
@@ -2745,52 +2194,26 @@ export function PipelineSettings() {
         breakdownWhenFinishedMoveTo,
         transitionTargetIds: [...transitionTargets].sort(),
         automationProjectId: stageProjectId,
-        automationProjectWorkspaceId: stageProjectId
-          ? stageProjectWorkspaceId
-          : "",
+        automationProjectWorkspaceId: stageProjectId ? stageProjectWorkspaceId : "",
         automationExecutionWorkspaceId:
-          stageProjectId &&
-          stageExecutionWorkspacePreference === "reuse_existing"
-            ? stageExecutionWorkspaceId
-            : "",
-        automationExecutionWorkspacePreference: stageProjectId
-          ? stageExecutionWorkspacePreference
-          : "",
-        automationExecutionWorkspaceSettings:
-          currentAutomationExecutionWorkspaceSettings,
-        automationTitleTemplate:
-          pipelineAutomationTitleTemplate(issueTitleTemplate),
+          stageProjectId && stageExecutionWorkspacePreference === "reuse_existing" ? stageExecutionWorkspaceId : "",
+        automationExecutionWorkspacePreference: stageProjectId ? stageExecutionWorkspacePreference : "",
+        automationExecutionWorkspaceSettings: currentAutomationExecutionWorkspaceSettings,
+        automationTitleTemplate: pipelineAutomationTitleTemplate(issueTitleTemplate),
       }
     : null;
   const selectedStageKindOption =
-    STAGE_KIND_OPTIONS.find((option) => option.value === stageKind) ??
-    STAGE_KIND_OPTIONS[0]!;
+    STAGE_KIND_OPTIONS.find((option) => option.value === stageKind) ?? STAGE_KIND_OPTIONS[0]!;
   const SelectedStageKindIcon = selectedStageKindOption.icon;
   const issueTitleTemplateDirty =
-    selectedStage != null &&
-    pipelineAutomationTitleTemplate(issueTitleTemplate) !==
-      savedIssueTitleTemplate;
-  const instructionsBodyDirty =
-    selectedStage != null && instructionsBody !== savedInstructionsBody;
+    selectedStage != null && pipelineAutomationTitleTemplate(issueTitleTemplate) !== savedIssueTitleTemplate;
+  const instructionsBodyDirty = selectedStage != null && instructionsBody !== savedInstructionsBody;
   const variablesDirty =
     selectedStage != null &&
-    JSON.stringify(
-      stripVariablesByName(
-        stripVariableEditorMetadata(instructionsVariables),
-        resolvedAutomationVariableKeys,
-      ),
-    ) !==
-      JSON.stringify(
-        stripVariablesByName(
-          savedInstructionsVariables,
-          resolvedAutomationVariableKeys,
-        ),
-      );
-  const selectedAutomationAgent = stageAssigneeAgentId
-    ? (agentById.get(stageAssigneeAgentId) ?? null)
-    : null;
-  const stageEnvDirty =
-    selectedStage != null && JSON.stringify(stageEnv) !== savedStageEnvKey;
+    JSON.stringify(stripVariablesByName(stripVariableEditorMetadata(instructionsVariables), resolvedAutomationVariableKeys)) !==
+      JSON.stringify(stripVariablesByName(savedInstructionsVariables, resolvedAutomationVariableKeys));
+  const selectedAutomationAgent = stageAssigneeAgentId ? agentById.get(stageAssigneeAgentId) ?? null : null;
+  const stageEnvDirty = selectedStage != null && JSON.stringify(stageEnv) !== savedStageEnvKey;
   const stageDirty =
     (savedStageForm != null &&
       currentStageForm != null &&
@@ -2803,75 +2226,45 @@ export function PipelineSettings() {
   const breakdownTargetOptions = (pipelinesListQuery.data ?? []).filter(
     (candidate) => candidate.id !== pipelineId && !candidate.archivedAt,
   );
-  const breakdownTargetPipeline =
-    breakdownTargetOptions.find(
-      (candidate) => candidate.id === breakdownTargetPipelineId,
-    ) ??
-    (pipelinesListQuery.data ?? []).find(
-      (candidate) => candidate.id === breakdownTargetPipelineId,
-    ) ??
-    null;
-  const breakdownTargetStages = [
-    ...(breakdownTargetPipeline?.stages ?? []),
-  ].sort((left, right) => left.position - right.position);
-  const breakdownEntryStage =
-    breakdownTargetStages.find(
-      (stage) => stage.key === breakdownTargetStageKey,
-    ) ?? null;
-  const breakdownCarryOverFieldGroups = buildCarryOverFieldGroups(
-    pipeline,
-    pipelinesListQuery.data ?? [],
+  const breakdownTargetPipeline = breakdownTargetOptions.find((candidate) => candidate.id === breakdownTargetPipelineId)
+    ?? (pipelinesListQuery.data ?? []).find((candidate) => candidate.id === breakdownTargetPipelineId)
+    ?? null;
+  const breakdownTargetStages = [...(breakdownTargetPipeline?.stages ?? [])].sort(
+    (left, right) => left.position - right.position,
   );
-  const breakdownCarryOverFieldOptions = flattenCarryOverFields(
-    breakdownCarryOverFieldGroups,
+  const breakdownEntryStage = breakdownTargetStages.find((stage) => stage.key === breakdownTargetStageKey) ?? null;
+  const breakdownCarryOverFieldGroups = buildCarryOverFieldGroups(pipeline, pipelinesListQuery.data ?? []);
+  const breakdownCarryOverFieldOptions = flattenCarryOverFields(breakdownCarryOverFieldGroups);
+  const breakdownSelectedCarryOverFields = breakdownCarryOverFieldOptions.filter((field) =>
+    isCarryOverFieldEnabled(breakdownCarryOverPolicy, field.key),
   );
-  const breakdownSelectedCarryOverFields =
-    breakdownCarryOverFieldOptions.filter((field) =>
-      isCarryOverFieldEnabled(breakdownCarryOverPolicy, field.key),
-    );
   const breakdownTargetFieldByKey = new Map(
-    (breakdownTargetIntakeQuery.data?.fields ?? []).map((field) => [
-      field.key,
-      field,
-    ]),
+    (breakdownTargetIntakeQuery.data?.fields ?? []).map((field) => [field.key, field]),
   );
   const breakdownIntakeStageName =
-    breakdownTargetIntakeQuery.data?.stageName ??
-    breakdownEntryStage?.name ??
-    null;
-  const breakdownIntakeStageId =
-    breakdownTargetIntakeQuery.data?.stageId ?? null;
+    breakdownTargetIntakeQuery.data?.stageName ?? breakdownEntryStage?.name ?? null;
+  const breakdownIntakeStageId = breakdownTargetIntakeQuery.data?.stageId ?? null;
   const breakdownTargetArchived = Boolean(breakdownTargetPipeline?.archivedAt);
   const breakdownIntakeSettingsHref = breakdownTargetPipelineId
     ? `/pipelines/${breakdownTargetPipelineId}/settings${breakdownIntakeStageId ? `?stage=${breakdownIntakeStageId}` : ""}`
     : null;
   const breakdownPieceNounPlural = pieceNounPlural(breakdownPieceNoun);
-  const stageKeyToName = new Map(
-    stages.map((stage) => [stage.key, stage.name]),
-  );
+  const stageKeyToName = new Map(stages.map((stage) => [stage.key, stage.name]));
   const breakdownCopyNames: BreakdownCopyNames = {
     targetPipelineName: breakdownTargetPipeline?.name ?? "",
     entryStageName: breakdownEntryStage?.name ?? breakdownTargetStageKey,
-    advanceToName: breakdownAdvanceTo
-      ? (stageKeyToName.get(breakdownAdvanceTo) ?? breakdownAdvanceTo)
-      : null,
+    advanceToName: breakdownAdvanceTo ? stageKeyToName.get(breakdownAdvanceTo) ?? breakdownAdvanceTo : null,
     whenFinishedName: breakdownWhenFinishedMoveTo
-      ? (stageKeyToName.get(breakdownWhenFinishedMoveTo) ??
-        breakdownWhenFinishedMoveTo)
+      ? stageKeyToName.get(breakdownWhenFinishedMoveTo) ?? breakdownWhenFinishedMoveTo
       : null,
-    inheritedFieldLabels: breakdownSelectedCarryOverFields.map(
-      (field) => field.label,
-    ),
+    inheritedFieldLabels: breakdownSelectedCarryOverFields.map((field) => field.label),
   };
   const breakdownConfigForCopy = {
     targetPipelineId: breakdownTargetPipelineId,
     targetStageKey: breakdownTargetStageKey,
     pieceNoun: breakdownPieceNoun.trim() || "piece",
     inheritFields: breakdownSelectedCarryOverFields.map((field) => field.key),
-    carryOverPolicy: carryOverPolicyForSave(
-      breakdownCarryOverPolicy,
-      breakdownCarryOverFieldOptions,
-    ),
+    carryOverPolicy: carryOverPolicyForSave(breakdownCarryOverPolicy, breakdownCarryOverFieldOptions),
     advanceTo: breakdownAdvanceTo || null,
     waitForPieces: breakdownWaitForPieces,
     whenFinishedMoveTo: breakdownWhenFinishedMoveTo || null,
@@ -2879,71 +2272,54 @@ export function PipelineSettings() {
   const breakdownSummary = breakdownEnabled
     ? breakdownSummarySentence(breakdownConfigForCopy, breakdownCopyNames)
     : null;
-  const transitionTargetsControl =
-    !isReviewStage && !isPipelineTerminalStageKind(stageKind) ? (
-      <FieldRow label={t("pipelineSettings.allowedNextSteps")}>
-        <div className="space-y-2">
-          {otherStages.map((stage) => {
-            const isCancelled = stage.kind === "cancelled";
-            const checked = isCancelled || transitionTargets.has(stage.id);
-            return (
-              <label
-                key={stage.id}
-                className={cn(
-                  "flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm",
-                  isCancelled && "text-muted-foreground",
-                )}
-              >
-                <input
-                  type="checkbox"
-                  checked={checked}
-                  disabled={isCancelled}
-                  onChange={(event) => {
-                    if (isCancelled) return;
-                    setTransitionTargets((current) => {
-                      const next = new Set(current);
-                      if (event.target.checked) next.add(stage.id);
-                      else next.delete(stage.id);
-                      return next;
-                    });
-                  }}
-                />
-                <span className="flex-1">{stage.name}</span>
-                {isCancelled ? (
-                  <span className="text-xs text-muted-foreground">
-                    <PipelineSettingsText
-                      k="pipelineSettings.alwaysAvailable"
-                      defaultValue="Always available"
-                    />
-                  </span>
-                ) : null}
-              </label>
-            );
-          })}
-        </div>
-      </FieldRow>
-    ) : null;
+  const transitionTargetsControl = !isReviewStage && !isPipelineTerminalStageKind(stageKind) ? (
+    <FieldRow label={translateInstant("pipelineSettings.allowedNextSteps")}>
+      <div className="space-y-2">
+        {otherStages.map((stage) => {
+          const isCancelled = stage.kind === "cancelled";
+          const checked = isCancelled || transitionTargets.has(stage.id);
+          return (
+            <label
+              key={stage.id}
+              className={cn(
+                "flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm",
+                isCancelled && "text-muted-foreground",
+              )}
+            >
+              <input
+                type="checkbox"
+                checked={checked}
+                disabled={isCancelled}
+                onChange={(event) => {
+                  if (isCancelled) return;
+                  setTransitionTargets((current) => {
+                    const next = new Set(current);
+                    if (event.target.checked) next.add(stage.id);
+                    else next.delete(stage.id);
+                    return next;
+                  });
+                }}
+              />
+              <span className="flex-1">{stage.name}</span>
+              {isCancelled ? (
+                <span className="text-xs text-muted-foreground">{translateInstant("pipelineSettings.alwaysAvailable")}</span>
+              ) : null}
+            </label>
+          );
+        })}
+      </div>
+    </FieldRow>
+  ) : null;
   const breakdownSettingsCard = !isPipelineTerminalStageKind(stageKind) ? (
     <div className="rounded-lg border border-border">
       <div className="flex items-start justify-between gap-4 border-b border-border p-4">
         <div className="space-y-1">
-          <h3 className="text-sm font-semibold text-foreground">
-            <PipelineSettingsText
-              k="pipelineSettings.breakIntoSmallerPieces"
-              defaultValue="Break into smaller pieces"
-            />
-          </h3>
+          <h3 className="text-sm font-semibold text-foreground">{translateInstant("pipelineSettings.breakIntoSmallerPieces")}</h3>
           <p className="max-w-md text-sm text-muted-foreground">
-            <PipelineSettingsText
-              k="pipelineSettings.breakIntoSmallerPiecesDescription"
-              defaultValue="The agent decides what the pieces are. Paperclip creates and tracks them."
-            />
-          </p>
+            {translateInstant("pipelineSettings.breakIntoSmallerPiecesDescription")}</p>
         </div>
         <ToggleSwitch
-          aria-label={t("pipelineSettings.breakIntoSmallerPieces", {
-            defaultValue: "Break into smaller pieces",
-          })}
+          aria-label={translateInstant("pipelineSettings.breakIntoSmallerPieces")}
           checked={breakdownEnabled}
           onCheckedChange={(checked) => {
             setBreakdownEnabled(checked);
@@ -2955,17 +2331,11 @@ export function PipelineSettings() {
       </div>
       {breakdownEnabled ? (
         <div className="divide-y divide-border px-4">
-          <FieldRow
-            label={t("pipelineSettings.createEachPieceIn", {
-              defaultValue: "Create each piece in",
-            })}
-          >
+          <FieldRow label={translateInstant("pipelineSettings.createEachPieceIn")}>
             <div className="space-y-1">
               <div className="flex w-full max-w-sm items-center">
                 <select
-                  aria-label={t("pipelineSettings.createEachPieceIn", {
-                    defaultValue: "Create each piece in",
-                  })}
+                  aria-label={translateInstant("pipelineSettings.createEachPieceIn")}
                   value={breakdownTargetPipelineId}
                   onChange={(event) => {
                     setBreakdownTargetPipelineId(event.target.value);
@@ -2973,36 +2343,16 @@ export function PipelineSettings() {
                   }}
                   className="h-10 min-w-0 flex-1 rounded-md border border-input bg-background px-3 text-sm"
                 >
-                  <option value="">
-                    {t("pipelineSettings.choosePipeline", {
-                      defaultValue: "Choose a pipeline",
-                    })}
-                  </option>
+                  <option value="">{translateInstant("pipelineSettings.choosePipeline")}</option>
                   {breakdownTargetOptions.map((candidate) => (
-                    <option key={candidate.id} value={candidate.id}>
-                      {candidate.name}
-                    </option>
+                    <option key={candidate.id} value={candidate.id}>{candidate.name}</option>
                   ))}
                 </select>
                 {breakdownTargetPipelineId ? (
                   <Link
                     to={`/pipelines/${breakdownTargetPipelineId}`}
-                    aria-label={t("pipelineSettings.openPipelineByName", {
-                      defaultValue: "Open {{name}} pipeline",
-                      name:
-                        breakdownTargetPipeline?.name ??
-                        t("pipelineSettings.selected", {
-                          defaultValue: "selected",
-                        }),
-                    })}
-                    title={t("pipelineSettings.openPipelineByName", {
-                      defaultValue: "Open {{name}} pipeline",
-                      name:
-                        breakdownTargetPipeline?.name ??
-                        t("pipelineSettings.selected", {
-                          defaultValue: "selected",
-                        }),
-                    })}
+                    aria-label={`Open ${breakdownTargetPipeline?.name ?? "selected"} pipeline`}
+                    title={`Open ${breakdownTargetPipeline?.name ?? "selected"} pipeline`}
                     className="ml-2 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <ArrowUpRight className="h-4 w-4" />
@@ -3010,103 +2360,55 @@ export function PipelineSettings() {
                 ) : null}
               </div>
               {!breakdownTargetPipelineId ? (
-                <p className="text-xs text-muted-foreground">
-                  <PipelineSettingsText
-                    k="pipelineSettings.pipelineInWorkspace"
-                    defaultValue="A pipeline in this workspace"
-                  />
-                </p>
+                <p className="text-xs text-muted-foreground">{translateInstant("pipelineSettings.pipelineInWorkspace")}</p>
               ) : null}
             </div>
           </FieldRow>
-          <FieldRow
-            label={t("pipelineSettings.startingAt", {
-              defaultValue: "starting at",
-            })}
-          >
+          <FieldRow label={translateInstant("pipelineSettings.startingAt")}>
             <div className="space-y-1">
               <select
-                aria-label={t("pipelineSettings.startingStageForEachPiece", {
-                  defaultValue: "Starting stage for each piece",
-                })}
+                aria-label={translateInstant("pipelineSettings.startingStageForEachPiece")}
                 value={breakdownTargetStageKey}
-                onChange={(event) =>
-                  setBreakdownTargetStageKey(event.target.value)
-                }
+                onChange={(event) => setBreakdownTargetStageKey(event.target.value)}
                 disabled={!breakdownTargetPipelineId}
                 className="h-10 w-full max-w-sm rounded-md border border-input bg-background px-3 text-sm disabled:opacity-50"
               >
-                <option value="">
-                  {t("pipelineSettings.chooseStage", {
-                    defaultValue: "Choose a stage",
-                  })}
-                </option>
+                <option value="">{translateInstant("pipelineSettings.chooseStage")}</option>
                 {breakdownTargetStages.map((stage) => (
-                  <option key={stage.id} value={stage.key}>
-                    {stage.name}
-                  </option>
+                  <option key={stage.id} value={stage.key}>{stage.name}</option>
                 ))}
               </select>
-              <p className="text-xs text-muted-foreground">
-                <PipelineSettingsText
-                  k="pipelineSettings.stageEveryPieceStartsIn"
-                  defaultValue="The stage every new piece starts in"
-                />
-              </p>
+              <p className="text-xs text-muted-foreground">{translateInstant("pipelineSettings.stageEveryPieceStartsIn")}</p>
             </div>
           </FieldRow>
-          <FieldRow
-            label={t("pipelineSettings.callEachPieceA", {
-              defaultValue: "Call each piece a",
-            })}
-          >
+          <FieldRow label={translateInstant("pipelineSettings.callEachPieceA")}>
             <div className="space-y-1">
               <Input
-                aria-label={t("pipelineSettings.callEachPieceA", {
-                  defaultValue: "Call each piece a",
-                })}
+                aria-label={translateInstant("pipelineSettings.callEachPieceA")}
                 value={breakdownPieceNoun}
                 onChange={(event) => setBreakdownPieceNoun(event.target.value)}
-                placeholder={t("pipelineSettings.piece")}
+                placeholder={translateInstant("pipelineSettings.piece")}
                 className="h-10 w-full max-w-sm"
               />
               <p className="text-xs text-muted-foreground">
-                {t("pipelineSettings.progressCopyPrefix")}{" "}
-                {breakdownPieceNounPlural}{" "}
-                {t("pipelineSettings.progressCopySuffix")}
-              </p>
+                {translateInstant("pipelineSettings.progressCopyPrefix")}{" "}{breakdownPieceNounPlural} {translateInstant("pipelineSettings.progressCopySuffix")}</p>
             </div>
           </FieldRow>
-          <FieldRow
-            label={t("pipelineSettings.carryOver", {
-              defaultValue: "Carry over",
-            })}
-          >
+          <FieldRow label={translateInstant("pipelineSettings.carryOver")}>
             <div className="space-y-2">
               <div className="space-y-1 rounded-md border border-dashed border-border bg-muted/30 px-3 py-2 text-xs">
                 <p className="text-muted-foreground">
-                  <PipelineSettingsText
-                    k="pipelineSettings.carryOverDescription"
-                    defaultValue="Values are copied from this item and its ancestors. New eligible fields stay on unless you uncheck them."
-                  />
-                </p>
+                  {translateInstant("pipelineSettings.carryOverDescription")}</p>
                 {breakdownTargetPipelineId ? (
                   <div className="flex flex-wrap items-center gap-1 text-muted-foreground">
-                    <span>
-                      <PipelineSettingsText
-                        k="pipelineSettings.destinationValidation"
-                        defaultValue="Destination validation:"
-                      />
-                    </span>
+                    <span>{translateInstant("pipelineSettings.destinationValidation")}</span>
                     <span className="font-medium text-foreground">
                       {breakdownTargetPipeline?.name ?? "selected pipeline"}
                     </span>
                     {breakdownIntakeStageName ? (
                       <>
                         <span aria-hidden>·</span>
-                        <span className="font-medium text-foreground">
-                          {breakdownIntakeStageName}
-                        </span>
+                        <span className="font-medium text-foreground">{breakdownIntakeStageName}</span>
                       </>
                     ) : null}
                   </div>
@@ -3116,15 +2418,13 @@ export function PipelineSettings() {
                     to={breakdownIntakeSettingsHref}
                     className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
                   >
-                    {t("pipelineSettings.reviewDestinationFields")}
-                    <ArrowUpRight className="h-3 w-3" />
+                    {translateInstant("pipelineSettings.reviewDestinationFields")}<ArrowUpRight className="h-3 w-3" />
                   </Link>
                 ) : null}
                 {breakdownTargetArchived ? (
                   <p className="flex items-center gap-1 text-amber-700 dark:text-amber-300">
                     <Archive className="h-3 w-3 shrink-0" />
-                    {t("pipelineSettings.archivedDestination")}
-                  </p>
+                    {translateInstant("pipelineSettings.archivedDestination")}</p>
                 ) : null}
               </div>
               {breakdownCarryOverFieldGroups.length > 0 ? (
@@ -3134,20 +2434,13 @@ export function PipelineSettings() {
                       <div className="text-xs font-medium text-muted-foreground">
                         {group.label}
                         {group.description ? (
-                          <span className="ml-1 font-normal">
-                            · {group.description}
-                          </span>
+                          <span className="ml-1 font-normal">· {group.description}</span>
                         ) : null}
                       </div>
                       <div className="space-y-1.5">
                         {group.fields.map((field) => {
-                          const checked = isCarryOverFieldEnabled(
-                            breakdownCarryOverPolicy,
-                            field.key,
-                          );
-                          const targetField = breakdownTargetFieldByKey.get(
-                            field.key,
-                          );
+                          const checked = isCarryOverFieldEnabled(breakdownCarryOverPolicy, field.key);
+                          const targetField = breakdownTargetFieldByKey.get(field.key);
                           return (
                             <label
                               key={`${group.id}:${field.key}`}
@@ -3170,15 +2463,11 @@ export function PipelineSettings() {
                               <span className="flex-1">{field.label}</span>
                               {targetField?.required ? (
                                 <span className="text-xs text-muted-foreground">
-                                  {t("pipelineSettings.requiredBy")}{" "}
-                                  {breakdownTargetPipeline?.name ??
-                                    "destination"}
+                                  {translateInstant("pipelineSettings.requiredBy")}{" "}{breakdownTargetPipeline?.name ?? "destination"}
                                 </span>
                               ) : targetField ? (
                                 <span className="text-xs text-muted-foreground">
-                                  {t("pipelineSettings.validatedBy")}{" "}
-                                  {breakdownTargetPipeline?.name ??
-                                    "destination"}
+                                  {translateInstant("pipelineSettings.validatedBy")}{" "}{breakdownTargetPipeline?.name ?? "destination"}
                                 </span>
                               ) : null}
                             </label>
@@ -3191,58 +2480,29 @@ export function PipelineSettings() {
               ) : null}
               {breakdownCarryOverFieldGroups.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  {t("pipelineSettings.noCarryOverFields", {
-                    defaultValue:
-                      "This pipeline and its ancestors do not define any fields that can be carried over yet.",
-                  })}
-                </p>
+                  {translateInstant("pipelineSettings.noCarryOverFields")}</p>
               ) : null}
               <p className="text-xs text-muted-foreground">
-                {t("pipelineSettings.uniqueNameTitleFields", {
-                  defaultValue:
-                    "Name and title fields are kept unique for each new {{piece}}.",
-                  piece:
-                    breakdownPieceNoun.trim() ||
-                    t("pipelineSettings.piece", { defaultValue: "piece" }),
-                })}
-              </p>
+                {translateInstant("Name and title fields are kept unique for each new")}{" "}{breakdownPieceNoun.trim() || translateInstant("pipelineSettings.piece")}{translateInstant(".")}</p>
             </div>
           </FieldRow>
-          <FieldRow
-            label={t("pipelineSettings.thenMoveThisCaseTo", {
-              defaultValue: "Then move this case to",
-            })}
-          >
+          <FieldRow label={translateInstant("pipelineSettings.thenMoveThisCaseTo")}>
             <div className="space-y-1">
               <select
-                aria-label={t("pipelineSettings.thenMoveThisCaseTo", {
-                  defaultValue: "Then move this case to",
-                })}
+                aria-label={translateInstant("pipelineSettings.thenMoveThisCaseTo")}
                 value={breakdownAdvanceTo}
                 onChange={(event) => setBreakdownAdvanceTo(event.target.value)}
                 className="h-10 w-full max-w-sm rounded-md border border-input bg-background px-3 text-sm"
               >
-                <option value="">
-                  {t("pipelineSettings.stayOnThisStep", {
-                    defaultValue: "Stay on this step",
-                  })}
-                </option>
+                <option value="">{translateInstant("pipelineSettings.stayOnThisStep")}</option>
                 {otherStages.map((stage) => (
-                  <option key={stage.id} value={stage.key}>
-                    {stage.name}
-                  </option>
+                  <option key={stage.id} value={stage.key}>{stage.name}</option>
                 ))}
               </select>
-              <p className="text-xs text-muted-foreground">
-                {t("pipelineSettings.asSoonAsPiecesCreated", {
-                  defaultValue: "As soon as the pieces are created",
-                })}
-              </p>
+              <p className="text-xs text-muted-foreground">{translateInstant("pipelineSettings.asSoonAsPiecesCreated")}</p>
             </div>
           </FieldRow>
-          <FieldRow
-            label={t("pipelineSettings.wait", { defaultValue: "Wait" })}
-          >
+          <FieldRow label={translateInstant("pipelineSettings.wait")}>
             <div className="space-y-2">
               <label className="flex items-start gap-2 text-sm">
                 <input
@@ -3253,52 +2513,28 @@ export function PipelineSettings() {
                     const checked = event.target.checked;
                     setBreakdownWaitForPieces(checked);
                     if (checked && !breakdownWhenFinishedMoveTo) {
-                      setBreakdownWhenFinishedMoveTo(
-                        breakdownAdvanceTo ||
-                          defaultAutoAdvanceStage?.key ||
-                          "",
-                      );
+                      setBreakdownWhenFinishedMoveTo(breakdownAdvanceTo || defaultAutoAdvanceStage?.key || "");
                     }
                   }}
                 />
                 <span className="font-medium text-foreground">
-                  {t("pipelineSettings.waitUntilPiecesFinished", {
-                    defaultValue:
-                      "Wait until all {{pieces}} are finished, then move it to",
-                    pieces: breakdownPieceNounPlural,
-                  })}
-                </span>
+                  {translateInstant("Wait until all")}{" "}{breakdownPieceNounPlural} {translateInstant("are finished, then move it to")}</span>
               </label>
               <select
-                aria-label={t("pipelineSettings.moveWhenPiecesFinish", {
-                  defaultValue: "Move this case when all pieces finish",
-                })}
+                aria-label={translateInstant("pipelineSettings.moveWhenPiecesFinish")}
                 value={breakdownWhenFinishedMoveTo}
-                onChange={(event) =>
-                  setBreakdownWhenFinishedMoveTo(event.target.value)
-                }
+                onChange={(event) => setBreakdownWhenFinishedMoveTo(event.target.value)}
                 disabled={!breakdownWaitForPieces}
                 className="h-10 w-full max-w-sm rounded-md border border-input bg-background px-3 text-sm disabled:opacity-50"
               >
-                <option value="">
-                  {t("pipelineSettings.chooseStage", {
-                    defaultValue: "Choose a stage",
-                  })}
-                </option>
+                <option value="">{translateInstant("pipelineSettings.chooseStage")}</option>
                 {otherStages.map((stage) => (
-                  <option key={stage.id} value={stage.key}>
-                    {stage.name}
-                  </option>
+                  <option key={stage.id} value={stage.key}>{stage.name}</option>
                 ))}
               </select>
               {breakdownAdvanceTo ? (
                 <p className="text-xs text-muted-foreground">
-                  {t("pipelineSettings.noSplitFallback", {
-                    defaultValue:
-                      "If nothing is worth splitting, this case still moves to {{stage}}.",
-                    stage: breakdownCopyNames.advanceToName,
-                  })}
-                </p>
+                  {translateInstant("If nothing is worth splitting, this case still moves to")}{" "}{breakdownCopyNames.advanceToName}{translateInstant(".")}</p>
               ) : null}
             </div>
           </FieldRow>
@@ -3324,48 +2560,23 @@ export function PipelineSettings() {
         }}
       >
         <div className="mb-3 flex items-start justify-between gap-3">
-          <Link
-            to={`/pipelines/${pipeline.id}`}
-            className="text-sm text-muted-foreground hover:text-foreground"
-          >
-            {t("pipelineSettings.backToBoard", {
-              defaultValue: "Back to board",
-            })}
-          </Link>
+          <Link to={`/pipelines/${pipeline.id}`} className="text-sm text-muted-foreground hover:text-foreground">
+            {translateInstant("pipelineSettings.backToBoard")}</Link>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                className="h-8 w-8"
-                title={t("pipelineSettings.pipelineActions", {
-                  defaultValue: "Pipeline actions",
-                })}
-              >
+              <Button type="button" variant="outline" size="icon" className="h-8 w-8" title={translateInstant("pipelineSettings.pipelineActions")}>
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               {isArchived ? (
-                <DropdownMenuItem
-                  onSelect={() => archivePipeline.mutate(false)}
-                >
+                <DropdownMenuItem onSelect={() => archivePipeline.mutate(false)}>
                   <Archive className="h-4 w-4" />
-                  {t("pipelineSettings.restorePipeline", {
-                    defaultValue: "Restore pipeline",
-                  })}
-                </DropdownMenuItem>
+                  {translateInstant("pipelineSettings.restorePipeline")}</DropdownMenuItem>
               ) : (
-                <DropdownMenuItem
-                  variant="destructive"
-                  onSelect={() => setArchiveDialogOpen(true)}
-                >
+                <DropdownMenuItem variant="destructive" onSelect={() => setArchiveDialogOpen(true)}>
                   <Archive className="h-4 w-4" />
-                  {t("pipelineSettings.archivePipeline", {
-                    defaultValue: "Archive pipeline",
-                  })}
-                </DropdownMenuItem>
+                  {translateInstant("pipelineSettings.archivePipeline")}</DropdownMenuItem>
               )}
             </DropdownMenuContent>
           </DropdownMenu>
@@ -3373,15 +2584,9 @@ export function PipelineSettings() {
         <div className="grid gap-3 md:grid-cols-(--gtc-13) md:items-end">
           <div className="space-y-3">
             <label className="block space-y-1.5 text-sm font-medium">
-              <span className="sr-only">
-                {t("pipelineSettings.pipelineName", {
-                  defaultValue: "Pipeline name",
-                })}
-              </span>
+              <span className="sr-only">{translateInstant("pipelineSettings.pipelineName")}</span>
               <Input
-                aria-label={t("pipelineSettings.pipelineName", {
-                  defaultValue: "Pipeline name",
-                })}
+                aria-label={translateInstant("pipelineSettings.pipelineName")}
                 value={pipelineName}
                 onChange={(event) => setPipelineName(event.target.value)}
                 required
@@ -3389,1229 +2594,700 @@ export function PipelineSettings() {
               />
             </label>
             <label className="block space-y-1.5 text-sm font-medium">
-              <span className="sr-only">
-                {t("pipelineSettings.pipelineDescription", {
-                  defaultValue: "Pipeline description",
-                })}
-              </span>
+              <span className="sr-only">{translateInstant("pipelineSettings.pipelineDescription")}</span>
               <Textarea
-                aria-label={t("pipelineSettings.pipelineDescription", {
-                  defaultValue: "Pipeline description",
-                })}
+                aria-label={translateInstant("pipelineSettings.pipelineDescription")}
                 value={pipelineDescription}
                 onChange={(event) => setPipelineDescription(event.target.value)}
                 rows={2}
-                placeholder={t("pipelineSettings.addDescription", {
-                  defaultValue: "Add a description",
-                })}
+                placeholder={translateInstant("pipelineSettings.addDescription")}
                 className="min-h-0 resize-none border-0 bg-transparent px-0 py-0 text-sm text-muted-foreground shadow-none focus-visible:ring-0"
               />
             </label>
           </div>
           {detailsDirty || savePipelineDetails.isPending ? (
-            <Button
-              type="submit"
-              disabled={savePipelineDetails.isPending || !pipelineName.trim()}
-            >
+            <Button type="submit" disabled={savePipelineDetails.isPending || !pipelineName.trim()}>
               <Save className="h-4 w-4" />
-              {savePipelineDetails.isPending ? "Saving..." : "Save details"}
+              {savePipelineDetails.isPending ? translateInstant("Saving...") : "Save details"}
             </Button>
           ) : null}
         </div>
         {savePipelineDetails.error ? (
-          <p className="mt-3 text-sm text-destructive">
-            {savePipelineDetails.error.message}
-          </p>
+          <p className="mt-3 text-sm text-destructive">{savePipelineDetails.error.message}</p>
         ) : null}
       </form>
 
       <div className="space-y-6">
-        {stages.length === 0 ? (
-          <EmptyState
-            icon={GitBranch}
-            message="No stages configured."
-            action="Add first stage"
-            onAction={() => addStage.mutate(null)}
-          />
-        ) : (
-          <div className="overflow-x-auto border-y border-border py-4">
-            <div className="flex min-w-max items-center gap-2">
-              {stages.map((stage, index) => {
-                const warningCount =
-                  healthWarningsByStage[stage.id]?.length ?? 0;
-                const canInsertAfter = !isPipelineTerminalStageKind(stage.kind);
-                const tone = getPipelineStageColumnTone(stage.kind);
-                return (
-                  <div key={stage.id} className="flex items-center gap-2">
-                    <div className="flex flex-col items-start gap-1">
-                      <button
-                        type="button"
-                        aria-label={
-                          warningCount > 0
-                            ? `${stage.name}, ${warningCount} ${warningCount === 1 ? "warning" : "warnings"}`
-                            : stage.name
-                        }
-                        className={cn(
-                          "min-h-20 w-48 rounded-md border px-3 py-2 text-left text-sm transition-colors",
-                          tone.outer,
-                          selectedStage?.id === stage.id
-                            ? "ring-2 ring-foreground/25"
-                            : "hover:ring-1 hover:ring-foreground/10",
-                        )}
-                        onClick={() => setSelectedStageId(stage.id)}
-                      >
-                        <span className="flex items-start justify-between gap-2">
-                          <span className="min-w-0 flex-1 font-semibold text-foreground">
-                            {stage.name}
+          {stages.length === 0 ? (
+            <EmptyState
+              icon={GitBranch}
+              message={translateInstant("No stages configured.")}
+              action="Add first stage"
+              onAction={() => addStage.mutate(null)}
+            />
+          ) : (
+            <div className="overflow-x-auto border-y border-border py-4">
+              <div className="flex min-w-max items-center gap-2">
+                {stages.map((stage, index) => {
+                  const warningCount = healthWarningsByStage[stage.id]?.length ?? 0;
+                  const canInsertAfter = !isPipelineTerminalStageKind(stage.kind);
+                  const tone = getPipelineStageColumnTone(stage.kind);
+                  return (
+                    <div key={stage.id} className="flex items-center gap-2">
+                      <div className="flex flex-col items-start gap-1">
+                        <button
+                          type="button"
+                          aria-label={
+                            warningCount > 0
+                              ? `${stage.name}, ${warningCount} ${warningCount === 1 ? "warning" : "warnings"}`
+                              : stage.name
+                          }
+                          className={cn(
+                            "min-h-20 w-48 rounded-md border px-3 py-2 text-left text-sm transition-colors",
+                            tone.outer,
+                            selectedStage?.id === stage.id
+                              ? "ring-2 ring-foreground/25"
+                              : "hover:ring-1 hover:ring-foreground/10",
+                          )}
+                          onClick={() => setSelectedStageId(stage.id)}
+                        >
+                          <span className="flex items-start justify-between gap-2">
+                            <span className="min-w-0 flex-1 font-semibold text-foreground">{stage.name}</span>
+                            {warningCount > 0 ? (
+                              <span className="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-amber-700 dark:text-amber-300">
+                                <AlertTriangle className="h-3.5 w-3.5" />
+                                {warningCount} {warningCount === 1 ? translateInstant("companyExport.warning") : "warnings"}
+                              </span>
+                            ) : null}
                           </span>
-                          {warningCount > 0 ? (
-                            <span className="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-amber-700 dark:text-amber-300">
-                              <AlertTriangle className="h-3.5 w-3.5" />
-                              {warningCount}{" "}
-                              {warningCount === 1 ? "warning" : "warnings"}
-                            </span>
+                          <span className="mt-1 block text-xs text-muted-foreground">{translateInstant("pipelineSettings.step")}{" "}{index + 1}</span>
+                          {stageNewEntriesDisabled(stage) ? (
+                            <span className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-amber-700 dark:text-amber-300">
+                              <AlertTriangle className="h-3 w-3" />
+                              {translateInstant("pipelineSettings.newEntriesPaused")}</span>
                           ) : null}
-                        </span>
-                        <span className="mt-1 block text-xs text-muted-foreground">
-                          {t("pipelineSettings.step")} {index + 1}
-                        </span>
-                        {stageNewEntriesDisabled(stage) ? (
-                          <span className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-amber-700 dark:text-amber-300">
-                            <AlertTriangle className="h-3 w-3" />
-                            {t("pipelineSettings.newEntriesPaused")}
-                          </span>
-                        ) : null}
-                      </button>
-                      <Link
-                        to={`/pipelines/${pipelineId}`}
-                        className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground hover:underline"
-                      >
-                        {t("pipelineSettings.viewQueue")}
-                        <ArrowUpRight className="h-3 w-3" aria-hidden="true" />
-                      </Link>
+                        </button>
+                        <Link
+                          to={`/pipelines/${pipelineId}`}
+                          className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground hover:underline"
+                        >
+                          {translateInstant("pipelineSettings.viewQueue")}<ArrowUpRight className="h-3 w-3" aria-hidden="true" />
+                        </Link>
+                      </div>
+                      {canInsertAfter ? (
+                        <button
+                          type="button"
+                          aria-label={`Insert stage after ${stage.name}`}
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-dashed border-border text-muted-foreground hover:border-foreground hover:text-foreground"
+                          onClick={() => addStage.mutate(stage)}
+                          disabled={addStage.isPending}
+                        >
+                          <Plus className="h-4 w-4" />
+                        </button>
+                      ) : null}
+                      {index === stages.length - 1 ? null : (
+                        <span className="h-px w-8 bg-border" aria-hidden="true" />
+                      )}
                     </div>
-                    {canInsertAfter ? (
-                      <button
-                        type="button"
-                        aria-label={`Insert stage after ${stage.name}`}
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-dashed border-border text-muted-foreground hover:border-foreground hover:text-foreground"
-                        onClick={() => addStage.mutate(stage)}
-                        disabled={addStage.isPending}
-                      >
-                        <Plus className="h-4 w-4" />
-                      </button>
-                    ) : null}
-                    {index === stages.length - 1 ? null : (
-                      <span className="h-px w-8 bg-border" aria-hidden="true" />
-                    )}
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {selectedStage ? (
-          <form
-            className="space-y-5"
-            onSubmit={(event: FormEvent<HTMLFormElement>) => {
-              event.preventDefault();
-              saveStage.mutate();
-            }}
-          >
-            <div className="flex flex-col gap-5 md:flex-row md:gap-0">
-              <StageSubSidebar
-                activeSection={activeStageSection}
-                stageKind={stageKind}
-                onSectionChange={handleStageSectionChange}
-              />
-              <div className="min-w-0 flex-1 md:px-8">
-                <div className="mb-4 flex items-center justify-between gap-3">
-                  <h2 className="text-lg font-semibold text-foreground">
-                    {STAGE_SECTION_TITLES[activeStageSection]}
-                  </h2>
+          {selectedStage ? (
+            <form
+              className="space-y-5"
+              onSubmit={(event: FormEvent<HTMLFormElement>) => {
+                event.preventDefault();
+                saveStage.mutate();
+              }}
+            >
+              <div className="flex flex-col gap-5 md:flex-row md:gap-0">
+                <StageSubSidebar
+                  activeSection={activeStageSection}
+                  stageKind={stageKind}
+                  onSectionChange={handleStageSectionChange}
+                />
+                <div className="min-w-0 flex-1 md:px-8">
+                  <div className="mb-4 flex items-center justify-between gap-3">
+                    <h2 className="text-lg font-semibold text-foreground">
+                      {STAGE_SECTION_TITLES[activeStageSection]}
+                    </h2>
+                    {activeStageSection === "instructions" ? (
+                      <div className="flex items-center gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          className={cn(
+                            "h-8 w-8",
+                            newEntriesDisabled &&
+                              "border-amber-500/50 bg-amber-500/10 text-amber-700 hover:bg-amber-500/20 dark:text-amber-300",
+                          )}
+                          title={newEntriesDisabled ? "Resume new entries" : "Pause new entries"}
+                          aria-label={newEntriesDisabled ? "Resume new entries" : "Pause new entries"}
+                          onClick={() => setNewEntriesDisabled((value) => !value)}
+                        >
+                          {newEntriesDisabled ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          className="h-8 w-8 text-destructive hover:text-destructive"
+                          title={`Delete ${selectedStage.name}`}
+                          aria-label={`Delete ${selectedStage.name}`}
+                          onClick={() => setDeleteStageDialogOpen(true)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : null}
+                  </div>
+
+                  <StageHealthWarnings
+                    className="mb-4"
+                    warnings={healthWarningsByStage[selectedStage.id] ?? []}
+                  />
+
                   {activeStageSection === "instructions" ? (
-                    <div className="flex items-center gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        className={cn(
-                          "h-8 w-8",
-                          newEntriesDisabled &&
-                            "border-amber-500/50 bg-amber-500/10 text-amber-700 hover:bg-amber-500/20 dark:text-amber-300",
-                        )}
-                        title={
-                          newEntriesDisabled
-                            ? "Resume new entries"
-                            : "Pause new entries"
-                        }
-                        aria-label={
-                          newEntriesDisabled
-                            ? "Resume new entries"
-                            : "Pause new entries"
-                        }
-                        onClick={() => setNewEntriesDisabled((value) => !value)}
-                      >
-                        {newEntriesDisabled ? (
-                          <Play className="h-4 w-4" />
-                        ) : (
-                          <Pause className="h-4 w-4" />
-                        )}
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        className="h-8 w-8 text-destructive hover:text-destructive"
-                        title={`Delete ${selectedStage.name}`}
-                        aria-label={`Delete ${selectedStage.name}`}
-                        onClick={() => setDeleteStageDialogOpen(true)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                    <div className="w-full max-w-3xl">
+                      <div className="divide-y divide-border border-b border-border">
+                        <FieldRow label={translateInstant("Name")}>
+                          <Input value={stageName} onChange={(event) => setStageName(event.target.value)} required />
+                        </FieldRow>
+                        <FieldRow label={translateInstant("pipelineSettings.stepType")}>
+                          <div className="max-w-xl space-y-2">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  aria-label={translateInstant("pipelineSettings.stepType")}
+                                  className="h-auto min-h-10 w-full justify-between whitespace-normal px-3 py-2 text-left"
+                                >
+                                  <span className="flex min-w-0 items-center gap-2">
+                                    <SelectedStageKindIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
+                                    <span className="truncate">{selectedStageKindOption.label}</span>
+                                  </span>
+                                  <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="start" className="w-(--sz-calc-40)">
+                                <DropdownMenuRadioGroup value={stageKind} onValueChange={setStageKindWithDefaults}>
+                                  {STAGE_KIND_OPTIONS.map((option) => {
+                                    const Icon = option.icon;
+                                    return (
+                                      <DropdownMenuRadioItem
+                                        key={option.value}
+                                        value={option.value}
+                                        className="items-start gap-3 py-2.5"
+                                      >
+                                        <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                                        <span className="min-w-0">
+                                          <span className="block font-medium text-foreground">{option.label}</span>
+                                          <span className="mt-0.5 block text-xs leading-5 text-muted-foreground">
+                                            {option.description}
+                                          </span>
+                                        </span>
+                                      </DropdownMenuRadioItem>
+                                    );
+                                  })}
+                                </DropdownMenuRadioGroup>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                            <p className="text-sm leading-6 text-muted-foreground">
+                              {selectedStageKindOption.description}
+                            </p>
+                          </div>
+                        </FieldRow>
+
+                        {stageKind === "review" ? (
+                          <FieldRow label={translateInstant("Approver")}>
+                            <InlineEntitySelector
+                              value={selectedApproval === "any_human" ? "" : selectedApproval}
+                              options={approvalOptions}
+                              recentOptionIds={recentAssigneeOptionIds}
+                              placeholder={translateInstant("Approver")}
+                              noneLabel="Any human"
+                              searchPlaceholder="Search approvers..."
+                              emptyMessage={translateInstant("pipelineSettings.noApproversFound")}
+                              onChange={(value) => setSelectedApproval(approverValueFromOption(value))}
+                              renderTriggerValue={(option) => {
+                                if (!option) return <span className="text-muted-foreground">{translateInstant("pipelineSettings.anyHuman")}</span>;
+                                const agent = option.id.startsWith("agent:") ? agentById.get(option.id.slice("agent:".length)) : null;
+                                return (
+                                  <>
+                                    {agent ? <AgentAvatar agent={agent} size={16} className="h-3.5 w-3.5 shrink-0 text-muted-foreground"/> : null}
+                                    <span className="truncate">{option.label}</span>
+                                  </>
+                                );
+                              }}
+                              renderOption={(option) => {
+                                if (!option.id) return <span className="truncate">{option.label}</span>;
+                                const agent = option.id.startsWith("agent:") ? agentById.get(option.id.slice("agent:".length)) : null;
+                                return (
+                                  <>
+                                    {agent ? <AgentAvatar agent={agent} size={16} className="h-3.5 w-3.5 shrink-0 text-muted-foreground"/> : null}
+                                    <span className="truncate">{option.label}</span>
+                                  </>
+                                );
+                              }}
+                            />
+                          </FieldRow>
+                        ) : null}
+
+                        {stageKind === "review" ? (
+                          <FieldRow label={translateInstant("pipelineSettings.reviewOutcomes")}>
+                            <div className="space-y-2">
+                              {([
+                                ["Approved items move to", approveTarget, setApproveTarget, "Choose a stage"],
+                                ["Declined items move to", rejectTarget, setRejectTarget, "Choose a stage"],
+                                ["Items needing changes move to", requestChangesTarget, setRequestChangesTarget, "Stay in review"],
+                              ] as const).map(([label, value, setValue, emptyLabel]) => (
+                                <div
+                                  key={label}
+                                  className="grid grid-cols-1 items-center gap-2 sm:grid-cols-(--gtc-42)"
+                                >
+                                  <span className="text-sm font-medium">{label}</span>
+                                  <select
+                                    aria-label={label}
+                                    value={value}
+                                    onChange={(event) => setValue(event.target.value)}
+                                    className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                                  >
+                                    <option value="">{emptyLabel}</option>
+                                    {otherStages.map((stage) => (
+                                      <option key={stage.id} value={stage.key}>{stage.name}</option>
+                                    ))}
+                                  </select>
+                                </div>
+                              ))}
+                              <div className="grid grid-cols-1 items-center gap-2 sm:grid-cols-(--gtc-42)">
+                                <span className="text-sm font-medium">{translateInstant("pipelineSettings.askNoteRequestingChanges")}</span>
+                                <div className="sm:justify-self-start">
+                                  <ToggleSwitch checked={requireRequestChangesReason} onCheckedChange={setRequireRequestChangesReason} />
+                                </div>
+                              </div>
+                              <div className="grid grid-cols-1 items-center gap-2 sm:grid-cols-(--gtc-42)">
+                                <span className="text-sm font-medium">{translateInstant("pipelineSettings.askNoteDeclining")}</span>
+                                <div className="sm:justify-self-start">
+                                  <ToggleSwitch checked={requireRejectReason} onCheckedChange={setRequireRejectReason} />
+                                </div>
+                              </div>
+                            </div>
+                            {reviewTargetsMissing ? (
+                              <p className="mt-2 text-sm text-muted-foreground">
+                                {translateInstant("pipelineSettings.pickReviewTargetsBeforeSaving")}</p>
+                            ) : null}
+                          </FieldRow>
+                        ) : null}
+
+                      </div>
                     </div>
                   ) : null}
-                </div>
 
-                <StageHealthWarnings
-                  className="mb-4"
-                  warnings={healthWarningsByStage[selectedStage.id] ?? []}
-                />
-
-                {activeStageSection === "instructions" ? (
-                  <div className="w-full max-w-3xl">
-                    <div className="divide-y divide-border border-b border-border">
-                      <FieldRow label={t("Name")}>
-                        <Input
-                          value={stageName}
-                          onChange={(event) => setStageName(event.target.value)}
-                          required
-                        />
-                      </FieldRow>
-                      <FieldRow label={t("pipelineSettings.stepType")}>
-                        <div className="max-w-xl space-y-2">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                type="button"
-                                variant="outline"
-                                aria-label={t("pipelineSettings.stepType", {
-                                  defaultValue: "Step type",
-                                })}
-                                className="h-auto min-h-10 w-full justify-between whitespace-normal px-3 py-2 text-left"
-                              >
-                                <span className="flex min-w-0 items-center gap-2">
-                                  <SelectedStageKindIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
-                                  <span className="truncate">
-                                    {selectedStageKindOption.label}
-                                  </span>
-                                </span>
-                                <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent
-                              align="start"
-                              className="w-(--sz-calc-40)"
-                            >
-                              <DropdownMenuRadioGroup
-                                value={stageKind}
-                                onValueChange={setStageKindWithDefaults}
-                              >
-                                {STAGE_KIND_OPTIONS.map((option) => {
-                                  const Icon = option.icon;
-                                  return (
-                                    <DropdownMenuRadioItem
-                                      key={option.value}
-                                      value={option.value}
-                                      className="items-start gap-3 py-2.5"
-                                    >
-                                      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                                      <span className="min-w-0">
-                                        <span className="block font-medium text-foreground">
-                                          {option.label}
-                                        </span>
-                                        <span className="mt-0.5 block text-xs leading-5 text-muted-foreground">
-                                          {option.description}
-                                        </span>
-                                      </span>
-                                    </DropdownMenuRadioItem>
-                                  );
-                                })}
-                              </DropdownMenuRadioGroup>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                          <p className="text-sm leading-6 text-muted-foreground">
-                            {selectedStageKindOption.description}
-                          </p>
-                        </div>
-                      </FieldRow>
-
-                      {stageKind === "review" ? (
-                        <FieldRow
-                          label={t("pipelineSettings.approver", {
-                            defaultValue: "Approver",
-                          })}
-                        >
+                  {activeStageSection === "instructions" && !isPipelineTerminalStageKind(stageKind) ? (
+                    <div className="mt-8 w-full max-w-3xl space-y-6">
+                      <div className="overflow-x-auto overscroll-x-contain">
+                        <div className="inline-flex min-w-full flex-wrap items-center gap-2 text-sm text-muted-foreground sm:min-w-max sm:flex-nowrap">
+                          <span>{translateInstant("pipelineSettings.whenItemEntersStep")}</span>
                           <InlineEntitySelector
-                            value={
-                              selectedApproval === "any_human"
-                                ? ""
-                                : selectedApproval
-                            }
-                            options={approvalOptions}
+                            value={stageAssigneeOptionId(stageAssigneeAgentId)}
+                            options={stageAssigneeOptions}
                             recentOptionIds={recentAssigneeOptionIds}
-                            placeholder={t("pipelineSettings.approver", {
-                              defaultValue: "Approver",
-                            })}
-                            noneLabel={t("pipelineSettings.anyHuman", {
-                              defaultValue: "Any human",
-                            })}
-                            searchPlaceholder={t(
-                              "pipelineSettings.searchApprovers",
-                              { defaultValue: "Search approvers..." },
-                            )}
-                            emptyMessage={t(
-                              "pipelineSettings.noApproversFound",
-                              { defaultValue: "No approvers found." },
-                            )}
-                            onChange={(value) =>
-                              setSelectedApproval(
-                                approverValueFromOption(value),
-                              )
-                            }
+                            placeholder={translateInstant("pipelineSettings.pickAgent")}
+                            noneLabel="No automation"
+                            searchPlaceholder="Search agents..."
+                            emptyMessage={translateInstant("pipelineSettings.noAgentsFound")}
+                            onChange={(value) => setStageAssigneeAgentId(stageAssigneeIdFromOption(value))}
                             renderTriggerValue={(option) => {
-                              if (!option)
-                                return (
-                                  <span className="text-muted-foreground">
-                                    {t("pipelineSettings.anyHuman", {
-                                      defaultValue: "Any human",
-                                    })}
-                                  </span>
-                                );
-                              const agent = option.id.startsWith("agent:")
-                                ? agentById.get(
-                                    option.id.slice("agent:".length),
-                                  )
+                              if (!option) return <span className="text-muted-foreground">{translateInstant("pipelineSettings.pickAgent")}</span>;
+                              const agent = stageAssigneeIdFromOption(option.id)
+                                ? agentById.get(stageAssigneeIdFromOption(option.id))
                                 : null;
                               return (
                                 <>
-                                  {agent ? (
-                                    <AgentIcon
-                                      icon={agent.icon}
-                                      className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
-                                    />
-                                  ) : null}
-                                  <span className="truncate">
-                                    {option.label}
-                                  </span>
+                                  {agent ? <AgentAvatar agent={agent} size={16} className="h-3.5 w-3.5 shrink-0 text-muted-foreground"/> : null}
+                                  <span className="truncate">{option.label}</span>
                                 </>
                               );
                             }}
                             renderOption={(option) => {
-                              if (!option.id)
-                                return (
-                                  <span className="truncate">
-                                    {option.label}
-                                  </span>
-                                );
-                              const agent = option.id.startsWith("agent:")
-                                ? agentById.get(
-                                    option.id.slice("agent:".length),
-                                  )
-                                : null;
+                              if (!option.id) return <span className="truncate">{option.label}</span>;
+                              const agentId = stageAssigneeIdFromOption(option.id);
+                              const agent = agentId ? agentById.get(agentId) : null;
                               return (
                                 <>
-                                  {agent ? (
-                                    <AgentIcon
-                                      icon={agent.icon}
-                                      className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
-                                    />
-                                  ) : null}
-                                  <span className="truncate">
-                                    {option.label}
-                                  </span>
+                                  {agent ? <AgentAvatar agent={agent} size={16} className="h-3.5 w-3.5 shrink-0 text-muted-foreground"/> : null}
+                                  <span className="truncate">{option.label}</span>
                                 </>
                               );
                             }}
                           />
-                        </FieldRow>
-                      ) : null}
-
-                      {stageKind === "review" ? (
-                        <FieldRow
-                          label={t("pipelineSettings.reviewOutcomes", {
-                            defaultValue: "Review outcomes",
-                          })}
-                        >
-                          <div className="space-y-2">
-                            {(
-                              [
-                                [
-                                  t("pipelineSettings.approvedItemsMoveTo", {
-                                    defaultValue: "Approved items move to",
-                                  }),
-                                  approveTarget,
-                                  setApproveTarget,
-                                  t("pipelineSettings.chooseStage", {
-                                    defaultValue: "Choose a stage",
-                                  }),
-                                ],
-                                [
-                                  t("pipelineSettings.declinedItemsMoveTo", {
-                                    defaultValue: "Declined items move to",
-                                  }),
-                                  rejectTarget,
-                                  setRejectTarget,
-                                  t("pipelineSettings.chooseStage", {
-                                    defaultValue: "Choose a stage",
-                                  }),
-                                ],
-                                [
-                                  t(
-                                    "pipelineSettings.itemsNeedingChangesMoveTo",
-                                    {
-                                      defaultValue:
-                                        "Items needing changes move to",
-                                    },
-                                  ),
-                                  requestChangesTarget,
-                                  setRequestChangesTarget,
-                                  t("pipelineSettings.stayInReview", {
-                                    defaultValue: "Stay in review",
-                                  }),
-                                ],
-                              ] as const
-                            ).map(([label, value, setValue, emptyLabel]) => (
-                              <div
-                                key={label}
-                                className="grid grid-cols-1 items-center gap-2 sm:grid-cols-(--gtc-42)"
-                              >
-                                <span className="text-sm font-medium">
-                                  {label}
-                                </span>
-                                <select
-                                  aria-label={label}
-                                  value={value}
-                                  onChange={(event) =>
-                                    setValue(event.target.value)
-                                  }
-                                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-                                >
-                                  <option value="">{emptyLabel}</option>
-                                  {otherStages.map((stage) => (
-                                    <option key={stage.id} value={stage.key}>
-                                      {stage.name}
-                                    </option>
-                                  ))}
-                                </select>
-                              </div>
-                            ))}
-                            <div className="grid grid-cols-1 items-center gap-2 sm:grid-cols-(--gtc-42)">
-                              <span className="text-sm font-medium">
-                                {t(
-                                  "pipelineSettings.askNoteRequestingChanges",
-                                  {
-                                    defaultValue:
-                                      "Ask for a note when requesting changes",
-                                  },
-                                )}
-                              </span>
-                              <div className="sm:justify-self-start">
-                                <ToggleSwitch
-                                  checked={requireRequestChangesReason}
-                                  onCheckedChange={
-                                    setRequireRequestChangesReason
-                                  }
-                                />
-                              </div>
-                            </div>
-                            <div className="grid grid-cols-1 items-center gap-2 sm:grid-cols-(--gtc-42)">
-                              <span className="text-sm font-medium">
-                                {t("pipelineSettings.askNoteDeclining", {
-                                  defaultValue: "Ask for a note when declining",
-                                })}
-                              </span>
-                              <div className="sm:justify-self-start">
-                                <ToggleSwitch
-                                  checked={requireRejectReason}
-                                  onCheckedChange={setRequireRejectReason}
-                                />
-                              </div>
-                            </div>
-                          </div>
-                          {reviewTargetsMissing ? (
-                            <p className="mt-2 text-sm text-muted-foreground">
-                              {t(
-                                "pipelineSettings.pickReviewTargetsBeforeSaving",
-                                {
-                                  defaultValue:
-                                    "Pick where approved and declined items should go before saving.",
-                                },
-                              )}
-                            </p>
-                          ) : null}
-                        </FieldRow>
-                      ) : null}
-                    </div>
-                  </div>
-                ) : null}
-
-                {activeStageSection === "instructions" &&
-                !isPipelineTerminalStageKind(stageKind) ? (
-                  <div className="mt-8 w-full max-w-3xl space-y-6">
-                    <div className="overflow-x-auto overscroll-x-contain">
-                      <div className="inline-flex min-w-full flex-wrap items-center gap-2 text-sm text-muted-foreground sm:min-w-max sm:flex-nowrap">
-                        <span>
-                          {t("pipelineSettings.whenItemEntersStep", {
-                            defaultValue: "When an item enters this step",
-                          })}
-                        </span>
-                        <InlineEntitySelector
-                          value={stageAssigneeOptionId(stageAssigneeAgentId)}
-                          options={stageAssigneeOptions}
-                          recentOptionIds={recentAssigneeOptionIds}
-                          placeholder={t("pipelineSettings.pickAgent", {
-                            defaultValue: "Pick agent",
-                          })}
-                          noneLabel={t("pipelineSettings.noAutomation", {
-                            defaultValue: "No automation",
-                          })}
-                          searchPlaceholder={t(
-                            "pipelineSettings.searchAgents",
-                            { defaultValue: "Search agents..." },
-                          )}
-                          emptyMessage={t("pipelineSettings.noAgentsFound", {
-                            defaultValue: "No agents found.",
-                          })}
-                          onChange={(value) =>
-                            setStageAssigneeAgentId(
-                              stageAssigneeIdFromOption(value),
-                            )
-                          }
-                          renderTriggerValue={(option) => {
-                            if (!option)
-                              return (
-                                <span className="text-muted-foreground">
-                                  {t("pipelineSettings.pickAgent", {
-                                    defaultValue: "Pick agent",
-                                  })}
-                                </span>
-                              );
-                            const agent = stageAssigneeIdFromOption(option.id)
-                              ? agentById.get(
-                                  stageAssigneeIdFromOption(option.id),
-                                )
-                              : null;
-                            return (
-                              <>
-                                {agent ? (
-                                  <AgentIcon
-                                    icon={agent.icon}
-                                    className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
-                                  />
-                                ) : null}
-                                <span className="truncate">{option.label}</span>
-                              </>
-                            );
-                          }}
-                          renderOption={(option) => {
-                            if (!option.id)
-                              return (
-                                <span className="truncate">{option.label}</span>
-                              );
-                            const agentId = stageAssigneeIdFromOption(
-                              option.id,
-                            );
-                            const agent = agentId
-                              ? agentById.get(agentId)
-                              : null;
-                            return (
-                              <>
-                                {agent ? (
-                                  <AgentIcon
-                                    icon={agent.icon}
-                                    className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
-                                  />
-                                ) : null}
-                                <span className="truncate">{option.label}</span>
-                              </>
-                            );
-                          }}
-                        />
-                        <span>
-                          {t("pipelineSettings.runsInstructionsThenMoves", {
-                            defaultValue:
-                              "runs these instructions, then moves the item to the next step.",
-                          })}
-                        </span>
+                          <span>{translateInstant("pipelineSettings.runsInstructionsThenMoves")}</span>
+                        </div>
                       </div>
-                    </div>
 
-                    {selectedAutomationAgent ? (
-                      <>
-                        <div className="divide-y divide-border border-y border-border">
-                          <FieldRow
-                            label={t("pipelineSettings.projectContext", {
-                              defaultValue: "Project context",
-                            })}
-                          >
-                            <div className="grid gap-2 sm:grid-cols-(--gtc-43)">
-                              <InlineEntitySelector
-                                value={stageProjectId}
-                                options={projectOptions}
-                                recentOptionIds={recentProjectIds}
-                                placeholder={t("pipelineSettings.project", {
-                                  defaultValue: "Project",
-                                })}
-                                noneLabel={t("pipelineSettings.noProject", {
-                                  defaultValue: "No project",
-                                })}
-                                searchPlaceholder={t(
-                                  "pipelineSettings.searchProjects",
-                                  { defaultValue: "Search projects..." },
-                                )}
-                                emptyMessage={t(
-                                  "pipelineSettings.noProjectsFound",
-                                  { defaultValue: "No projects found." },
-                                )}
-                                onChange={handleAutomationProjectChange}
-                                renderTriggerValue={(option) =>
-                                  option && selectedAutomationProject ? (
-                                    <>
-                                      <span
-                                        className="h-3.5 w-3.5 shrink-0 rounded-sm"
-                                        style={{
-                                          backgroundColor:
-                                            selectedAutomationProject.color ??
-                                            "var(--project-seed)",
-                                        }}
-                                      />
-                                      <span className="truncate">
-                                        {option.label}
-                                      </span>
-                                    </>
-                                  ) : (
-                                    <span className="text-muted-foreground">
-                                      {t("pipelineSettings.project", {
-                                        defaultValue: "Project",
-                                      })}
-                                    </span>
-                                  )
-                                }
-                                renderOption={(option) => {
-                                  if (!option.id)
-                                    return (
-                                      <span className="truncate">
-                                        {option.label}
-                                      </span>
-                                    );
-                                  const project = orderedProjects.find(
-                                    (item) => item.id === option.id,
-                                  );
-                                  return (
-                                    <>
-                                      <span
-                                        className="h-3.5 w-3.5 shrink-0 rounded-sm"
-                                        style={{
-                                          backgroundColor:
-                                            project?.color ??
-                                            "var(--project-seed)",
-                                        }}
-                                      />
-                                      <span className="truncate">
-                                        {option.label}
-                                      </span>
-                                    </>
-                                  );
-                                }}
-                              />
-                              {selectedAutomationProject ? (
-                                <select
-                                  aria-label={t(
-                                    "pipelineSettings.projectWorkspace",
-                                    { defaultValue: "Project workspace" },
-                                  )}
-                                  value={stageProjectWorkspaceId}
-                                  onChange={(event) =>
-                                    handleAutomationProjectWorkspaceChange(
-                                      event.target.value,
-                                    )
-                                  }
-                                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-                                >
-                                  <option value="">
-                                    {t("pipelineSettings.projectFallback", {
-                                      defaultValue: "Project fallback",
-                                    })}
-                                  </option>
-                                  {(
-                                    selectedAutomationProject.workspaces ?? []
-                                  ).map((workspace) => (
-                                    <option
-                                      key={workspace.id}
-                                      value={workspace.id}
-                                    >
-                                      {workspace.name}
-                                      {workspace.isPrimary ? " · primary" : ""}
-                                    </option>
-                                  ))}
-                                </select>
-                              ) : (
-                                <div className="flex h-10 items-center rounded-md border border-dashed border-border px-3 text-sm text-muted-foreground">
-                                  {t("pipelineSettings.projectWorkspace", {
-                                    defaultValue: "Project workspace",
-                                  })}
-                                </div>
-                              )}
-                            </div>
-                            {selectedAutomationProject &&
-                            !selectedAutomationProjectWorkspace ? (
-                              <p className="mt-2 text-xs text-muted-foreground">
-                                {t("pipelineSettings.noSavedWorkspaceDefault", {
-                                  defaultValue:
-                                    "This project has no saved workspace default. Paperclip will use the project fallback when automation runs.",
-                                })}
-                              </p>
-                            ) : null}
-                          </FieldRow>
-
-                          {selectedAutomationProject &&
-                          selectedProjectSupportsExecutionWorkspace ? (
-                            <FieldRow
-                              label={t("pipelineSettings.executionWorkspace", {
-                                defaultValue: "Execution workspace",
-                              })}
-                            >
+                      {selectedAutomationAgent ? (
+                        <>
+                          <div className="divide-y divide-border border-y border-border">
+                            <FieldRow label={translateInstant("pipelineSettings.projectContext")}>
                               <div className="grid gap-2 sm:grid-cols-(--gtc-43)">
-                                <select
-                                  aria-label={t(
-                                    "pipelineSettings.executionWorkspaceMode",
-                                    {
-                                      defaultValue: "Execution workspace mode",
-                                    },
-                                  )}
-                                  value={
-                                    stageExecutionWorkspacePreference ||
-                                    "shared_workspace"
-                                  }
-                                  onChange={(event) =>
-                                    handleAutomationExecutionWorkspacePreferenceChange(
-                                      event.target.value,
+                                <InlineEntitySelector
+                                  value={stageProjectId}
+                                  options={projectOptions}
+                                  recentOptionIds={recentProjectIds}
+                                  placeholder={translateInstant("Project")}
+                                  noneLabel={translateInstant("No project")}
+                                  searchPlaceholder="Search projects..."
+                                  emptyMessage={translateInstant("pipelineSettings.noProjectsFound")}
+                                  onChange={handleAutomationProjectChange}
+                                  renderTriggerValue={(option) =>
+                                    option && selectedAutomationProject ? (
+                                      <>
+                                        <span
+                                          className="h-3.5 w-3.5 shrink-0 rounded-sm"
+                                          style={{ backgroundColor: selectedAutomationProject.color ?? "var(--project-seed)" }}
+                                        />
+                                        <span className="truncate">{option.label}</span>
+                                      </>
+                                    ) : (
+                                      <span className="text-muted-foreground">{translateInstant("pipelineSettings.project")}</span>
                                     )
                                   }
-                                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-                                >
-                                  {STAGE_EXECUTION_WORKSPACE_OPTIONS.map(
-                                    (option) => (
-                                      <option
-                                        key={option.value}
-                                        value={option.value}
-                                      >
-                                        {option.label}
-                                      </option>
-                                    ),
-                                  )}
-                                </select>
-                                {stageExecutionWorkspacePreference ===
-                                "reuse_existing" ? (
+                                  renderOption={(option) => {
+                                    if (!option.id) return <span className="truncate">{option.label}</span>;
+                                    const project = orderedProjects.find((item) => item.id === option.id);
+                                    return (
+                                      <>
+                                        <span
+                                          className="h-3.5 w-3.5 shrink-0 rounded-sm"
+                                          style={{ backgroundColor: project?.color ?? "var(--project-seed)" }}
+                                        />
+                                        <span className="truncate">{option.label}</span>
+                                      </>
+                                    );
+                                  }}
+                                />
+                                {selectedAutomationProject ? (
                                   <select
-                                    aria-label={t(
-                                      "pipelineSettings.existingExecutionWorkspace",
-                                      {
-                                        defaultValue:
-                                          "Existing execution workspace",
-                                      },
-                                    )}
-                                    value={stageExecutionWorkspaceId}
-                                    onChange={(event) =>
-                                      handleAutomationExecutionWorkspaceIdChange(
-                                        event.target.value,
-                                      )
-                                    }
+                                    aria-label={translateInstant("pipelineSettings.projectWorkspace")}
+                                    value={stageProjectWorkspaceId}
+                                    onChange={(event) => handleAutomationProjectWorkspaceChange(event.target.value)}
                                     className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
                                   >
-                                    <option value="">
-                                      {t(
-                                        "pipelineSettings.chooseExistingWorkspace",
-                                        {
-                                          defaultValue:
-                                            "Choose an existing workspace",
-                                        },
-                                      )}
-                                    </option>
-                                    {deduplicatedReusableWorkspaces.map(
-                                      (workspace) => (
-                                        <option
-                                          key={workspace.id}
-                                          value={workspace.id}
-                                        >
-                                          {workspace.name} · {workspace.status}{" "}
-                                          ·{" "}
-                                          {workspace.branchName ??
-                                            workspace.cwd ??
-                                            workspace.id.slice(0, 8)}
-                                        </option>
-                                      ),
-                                    )}
+                                    <option value="">{translateInstant("pipelineSettings.projectFallback")}</option>
+                                    {(selectedAutomationProject.workspaces ?? []).map((workspace) => (
+                                      <option key={workspace.id} value={workspace.id}>
+                                        {workspace.name}{workspace.isPrimary ? " · primary" : ""}
+                                      </option>
+                                    ))}
                                   </select>
                                 ) : (
                                   <div className="flex h-10 items-center rounded-md border border-dashed border-border px-3 text-sm text-muted-foreground">
-                                    {stageExecutionWorkspacePreference ===
-                                    "isolated_workspace"
-                                      ? "A new workspace will be created"
-                                      : "Project default workspace"}
-                                  </div>
+                                    {translateInstant("pipelineSettings.projectWorkspace")}</div>
                                 )}
                               </div>
-                              {stageExecutionWorkspacePreference ===
-                                "reuse_existing" &&
-                              selectedReusableExecutionWorkspace ? (
+                              {selectedAutomationProject && !selectedAutomationProjectWorkspace ? (
                                 <p className="mt-2 text-xs text-muted-foreground">
-                                  {t("pipelineSettings.reusingWorkspace", {
-                                    defaultValue:
-                                      "Reusing {{name}} from {{source}}.",
-                                    name: selectedReusableExecutionWorkspace.name,
-                                    source:
-                                      selectedReusableExecutionWorkspace.branchName ??
-                                      selectedReusableExecutionWorkspace.cwd ??
-                                      t("pipelineSettings.existingWorkspace", {
-                                        defaultValue: "existing workspace",
-                                      }),
-                                  })}
-                                </p>
-                              ) : null}
-                              {!canSaveAutomationWorkspace ? (
-                                <p className="mt-2 text-xs text-amber-700 dark:text-amber-300">
-                                  {t(
-                                    "pipelineSettings.chooseWorkspaceBeforeSavingReuse",
-                                    {
-                                      defaultValue:
-                                        "Choose an existing workspace before saving reuse mode.",
-                                    },
-                                  )}
-                                </p>
+                                  {translateInstant("pipelineSettings.noSavedWorkspaceDefault")}</p>
                               ) : null}
                             </FieldRow>
-                          ) : null}
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <AgentIcon
-                            icon={selectedAutomationAgent.icon}
-                            className="h-4 w-4 shrink-0"
-                          />
-                          <span>
-                            {t("pipelineSettings.agentRunsStepAutomatically", {
-                              defaultValue:
-                                "{{agent}} runs this step automatically.",
-                              agent: selectedAutomationAgent.name,
-                            })}
-                          </span>
-                        </div>
-                        <FieldRow label={t("pipelineSettings.issueTitle")}>
-                          <Input
-                            ref={issueTitleTemplateInputRef}
-                            aria-label={t(
-                              "pipelineSettings.issueTitleTemplateAria",
-                            )}
-                            value={issueTitleTemplate}
-                            onChange={(event) =>
-                              setIssueTitleTemplate(event.target.value)
-                            }
-                            placeholder={
-                              PIPELINE_AUTOMATION_DEFAULT_TITLE_TEMPLATE
-                            }
-                            className="font-mono text-sm"
-                          />
-                        </FieldRow>
-                        <AutomationVariableTokenHelper
-                          groups={automationVariableGroups}
-                          onInsert={insertIssueTitleVariableToken}
-                          label={t("pipelineSettings.issueTitleVariables")}
-                        />
-                        {breakdownEnabled ? (
-                          <div className="space-y-1">
-                            <h3 className="text-sm font-semibold text-foreground">
-                              {t("pipelineSettings.whatShouldAgentDecide", {
-                                defaultValue: "What should the agent decide?",
-                              })}
-                            </h3>
-                            <p className="text-sm text-muted-foreground">
-                              {t("pipelineSettings.agentJudgmentDescription", {
-                                defaultValue:
-                                  "The mechanics are handled below. Write only the judgment.",
-                              })}
-                            </p>
+
+                            {selectedAutomationProject && selectedProjectSupportsExecutionWorkspace ? (
+                              <FieldRow label={translateInstant("pipelineSettings.executionWorkspace")}>
+                                <div className="grid gap-2 sm:grid-cols-(--gtc-43)">
+                                  <select
+                                    aria-label={translateInstant("pipelineSettings.executionWorkspaceMode")}
+                                    value={stageExecutionWorkspacePreference || "shared_workspace"}
+                                    onChange={(event) => handleAutomationExecutionWorkspacePreferenceChange(event.target.value)}
+                                    className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                                  >
+                                    {STAGE_EXECUTION_WORKSPACE_OPTIONS.map((option) => (
+                                      <option key={option.value} value={option.value}>
+                                        {option.label}
+                                      </option>
+                                    ))}
+                                  </select>
+                                  {stageExecutionWorkspacePreference === "reuse_existing" ? (
+                                    <select
+                                      aria-label={translateInstant("pipelineSettings.existingExecutionWorkspace")}
+                                      value={stageExecutionWorkspaceId}
+                                      onChange={(event) => handleAutomationExecutionWorkspaceIdChange(event.target.value)}
+                                      className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                                    >
+                                      <option value="">{translateInstant("pipelineSettings.chooseExistingWorkspace")}</option>
+                                      {deduplicatedReusableWorkspaces.map((workspace) => (
+                                        <option key={workspace.id} value={workspace.id}>
+                                          {workspace.name} · {workspace.status} · {workspace.branchName ?? workspace.cwd ?? workspace.id.slice(0, 8)}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  ) : (
+                                    <div className="flex h-10 items-center rounded-md border border-dashed border-border px-3 text-sm text-muted-foreground">
+                                      {stageExecutionWorkspacePreference === "isolated_workspace"
+                                        ? "A new workspace will be created"
+                                        : "Project default workspace"}
+                                    </div>
+                                  )}
+                                </div>
+                                {stageExecutionWorkspacePreference === "reuse_existing" && selectedReusableExecutionWorkspace ? (
+                                  <p className="mt-2 text-xs text-muted-foreground">
+                                    {translateInstant("Reusing")}{" "}{selectedReusableExecutionWorkspace.name} {translateInstant("secrets.from")}{" "}{selectedReusableExecutionWorkspace.branchName ?? selectedReusableExecutionWorkspace.cwd ?? translateInstant("pipelineSettings.existingWorkspace")}{translateInstant(".")}</p>
+                                ) : null}
+                                {!canSaveAutomationWorkspace ? (
+                                  <p className="mt-2 text-xs text-amber-700 dark:text-amber-300">
+                                    {translateInstant("pipelineSettings.chooseWorkspaceBeforeSavingReuse")}</p>
+                                ) : null}
+                              </FieldRow>
+                            ) : null}
                           </div>
-                        ) : null}
-                        <div data-testid="stage-instructions-editor">
-                          <MarkdownEditor
-                            ref={instructionsEditorRef}
-                            value={instructionsBody}
-                            onChange={setInstructionsBody}
-                            placeholder={
-                              breakdownEnabled
-                                ? t(
-                                    "pipelineSettings.breakdownInstructionsPlaceholder",
-                                    {
-                                      defaultValue:
-                                        "Describe the judgment the agent should make - what counts as a piece worth splitting out?",
-                                    },
-                                  )
-                                : t(
-                                    "pipelineSettings.instructionsPlaceholder",
-                                    {
-                                      defaultValue:
-                                        "Tell the agent exactly what to do when an item enters this step...",
-                                    },
-                                  )
-                            }
-                            bordered={false}
-                            contentClassName="min-h-(--sz-120px) text-sm leading-7"
-                            mentions={mentionOptions}
-                            onSubmit={() => {
-                              if (
-                                !saveStage.isPending &&
-                                stageName.trim() &&
-                                !reviewTargetsMissing &&
-                                canSaveAutomationWorkspace
-                              ) {
-                                saveStage.mutate();
-                              }
-                            }}
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <AgentAvatar agent={selectedAutomationAgent} size={16} className="h-4 w-4 shrink-0"/>
+                            <span>{selectedAutomationAgent.name}{" "}{translateInstant("runs this step automatically.")}</span>
+                          </div>
+                          <FieldRow label={translateInstant("pipelineSettings.issueTitle")}>
+                            <Input
+                              ref={issueTitleTemplateInputRef}
+                              aria-label={translateInstant("pipelineSettings.issueTitleTemplateAria")}
+                              value={issueTitleTemplate}
+                              onChange={(event) => setIssueTitleTemplate(event.target.value)}
+                              placeholder={PIPELINE_AUTOMATION_DEFAULT_TITLE_TEMPLATE}
+                              className="font-mono text-sm"
+                            />
+                          </FieldRow>
+                          <AutomationVariableTokenHelper
+                            groups={automationVariableGroups}
+                            onInsert={insertIssueTitleVariableToken}
+                            label={translateInstant("pipelineSettings.issueTitleVariables")}
                           />
-                        </div>
-                        <AutomationVariableTokenHelper
-                          groups={automationVariableGroups}
-                          onInsert={insertInstructionsVariableToken}
-                        />
-                        <CarriedFieldTokenHelper
-                          groups={incomingCarryOverFieldGroups}
-                          onInsert={insertInstructionsVariableToken}
-                        />
-                      </>
-                    ) : (
-                      <EmptyState
-                        icon={Pause}
-                        message={t("pipelineSettings.noAutomationMessage", {
-                          defaultValue:
-                            "Nothing runs here automatically. Items wait until a person moves them, or you can pick an agent to run this step.",
-                        })}
-                      />
-                    )}
-                    <div className="space-y-3">
-                      <RoutineVariablesHint />
-                      <RoutineVariablesEditor
-                        key={selectedStage?.id ?? "stage"}
-                        title={issueTitleTemplate}
-                        description={instructionsBody}
-                        value={instructionsVariables}
-                        onChange={setInstructionsVariables}
-                      />
-                    </div>
-                    {breakdownSettingsCard}
-                  </div>
-                ) : null}
-
-                {activeStageSection === "secrets" ? (
-                  <div className="w-full max-w-3xl">
-                    {(() => {
-                      const detail = stageAutomationDetail(selectedStage);
-                      const automationAgent = detail.assigneeAgentId
-                        ? (agentById.get(detail.assigneeAgentId) ?? null)
-                        : null;
-                      return (
-                        <StageSecretsPanel
-                          hasAutomation={Boolean(
-                            detail.routineId && detail.assigneeAgentId,
-                          )}
-                          agentName={automationAgent?.name ?? null}
-                          agentIcon={automationAgent?.icon ?? null}
-                          secrets={secretsQuery.data ?? []}
-                          secretsLoading={secretsQuery.isLoading}
-                          value={stageEnv}
-                          onChange={setStageEnv}
-                          onCreateSecret={async (name, value) =>
-                            createSecret.mutateAsync({ name, value })
-                          }
-                          onSetupAutomation={() =>
-                            setActiveStageSection("instructions")
-                          }
-                          onSave={() => saveStageEnv.mutate()}
-                          saving={saveStageEnv.isPending}
-                          dirty={stageEnvDirty}
-                        />
-                      );
-                    })()}
-                  </div>
-                ) : null}
-
-                {activeStageSection === "advanced" ? (
-                  <div className="w-full max-w-3xl space-y-8">
-                    <div className="divide-y divide-border border-b border-border">
-                      <div className="py-3">
-                        <h3 className="text-sm font-semibold text-foreground">
-                          {t("pipelineSettings.transitions", {
-                            defaultValue: "Transitions",
-                          })}
-                        </h3>
-                      </div>
-                      <FieldRow
-                        label={t("pipelineSettings.strictMode", {
-                          defaultValue: "Strict mode",
-                        })}
-                      >
-                        <div className="space-y-1.5">
-                          <div className="flex items-center gap-3">
-                            <ToggleSwitch
-                              aria-label={t(
-                                "pipelineSettings.strictlyEnforceTransitions",
-                                {
-                                  defaultValue: "Strictly enforce transitions",
-                                },
-                              )}
-                              checked={strictTransitionsEnabled}
-                              disabled={saveStrictTransitions.isPending}
-                              onCheckedChange={(checked) => {
-                                setStrictTransitionsEnabled(checked);
-                                saveStrictTransitions.mutate(checked);
+                          {breakdownEnabled ? (
+                            <div className="space-y-1">
+                              <h3 className="text-sm font-semibold text-foreground">{translateInstant("pipelineSettings.whatShouldAgentDecide")}</h3>
+                              <p className="text-sm text-muted-foreground">
+                                {translateInstant("pipelineSettings.agentJudgmentDescription")}</p>
+                            </div>
+                          ) : null}
+                          <div data-testid="stage-instructions-editor">
+                            <MarkdownEditor
+                              ref={instructionsEditorRef}
+                              value={instructionsBody}
+                              onChange={setInstructionsBody}
+                              placeholder={
+                                breakdownEnabled
+                                  ? "Describe the judgment the agent should make — what counts as a piece worth splitting out?"
+                                  : translateInstant("pipelineSettings.instructionsPlaceholder")
+                              }
+                              bordered={false}
+                              contentClassName="min-h-(--sz-120px) text-sm leading-7"
+                              mentions={mentionOptions}
+                              onSubmit={() => {
+                                if (!saveStage.isPending && stageName.trim() && !reviewTargetsMissing && canSaveAutomationWorkspace) {
+                                  saveStage.mutate();
+                                }
                               }}
                             />
-                            <span className="text-sm font-medium text-foreground">
-                              {t(
-                                "pipelineSettings.strictlyEnforceTransitions",
-                                {
-                                  defaultValue: "Strictly enforce transitions",
-                                },
-                              )}
-                            </span>
                           </div>
-                          <p className="max-w-2xl text-sm text-muted-foreground">
-                            {strictTransitionsEnabled
-                              ? t("pipelineSettings.strictTransitionsOn", {
-                                  defaultValue:
-                                    "Items can only move to configured next steps. Operators can force an off-path move by giving a reason.",
-                                })
-                              : t("pipelineSettings.strictTransitionsOff", {
-                                  defaultValue:
-                                    "Items can move to any step. Saved allowed-next-step choices are kept, but they are not enforced.",
-                                })}
-                          </p>
-                        </div>
-                      </FieldRow>
-                      {strictTransitionsEnabled
-                        ? transitionTargetsControl
-                        : null}
+                          <AutomationVariableTokenHelper
+                            groups={automationVariableGroups}
+                            onInsert={insertInstructionsVariableToken}
+                          />
+                          <CarriedFieldTokenHelper
+                            groups={incomingCarryOverFieldGroups}
+                            onInsert={insertInstructionsVariableToken}
+                          />
+                        </>
+                      ) : (
+                        <EmptyState
+                          icon={Pause}
+                          message={translateInstant("pipelineSettings.noAutomationMessage")}
+                        />
+                      )}
+                      <div className="space-y-3">
+                        <RoutineVariablesHint />
+                        <RoutineVariablesEditor
+                          key={selectedStage?.id ?? "stage"}
+                          title={issueTitleTemplate}
+                          description={instructionsBody}
+                          value={instructionsVariables}
+                          onChange={setInstructionsVariables}
+                        />
+                      </div>
+                      {breakdownSettingsCard}
                     </div>
-                    {isPipelineTerminalStageKind(
-                      stageKind,
-                    ) ? null : breakdownEnabled ? (
-                      <EmptyState
-                        icon={SlidersHorizontal}
-                        message={t(
-                          "pipelineSettings.childSettingsHiddenForBreakdown",
-                          {
-                            defaultValue:
-                              "Advanced child settings are hidden while Break into smaller pieces is enabled. Configure that workflow in Automation.",
-                          },
-                        )}
-                      />
-                    ) : (
+                  ) : null}
+
+                  {activeStageSection === "secrets" ? (
+                    <div className="w-full max-w-3xl">
+                      {(() => {
+                        const detail = stageAutomationDetail(selectedStage);
+                        const automationAgent = detail.assigneeAgentId
+                          ? agentById.get(detail.assigneeAgentId) ?? null
+                          : null;
+                        return (
+                          <StageSecretsPanel
+                            hasAutomation={Boolean(detail.routineId && detail.assigneeAgentId)}
+                            agentName={automationAgent?.name ?? null}
+                            agentIcon={automationAgent?.icon ?? null}
+                            agent={automationAgent ?? undefined}
+                            secrets={secretsQuery.data ?? []}
+                            secretsLoading={secretsQuery.isLoading}
+                            value={stageEnv}
+                            onChange={setStageEnv}
+                            onCreateSecret={async (name, value) => createSecret.mutateAsync({ name, value })}
+                            onSetupAutomation={() => setActiveStageSection("instructions")}
+                            onSave={() => saveStageEnv.mutate()}
+                            saving={saveStageEnv.isPending}
+                            dirty={stageEnvDirty}
+                          />
+                        );
+                      })()}
+                    </div>
+                  ) : null}
+
+                  {activeStageSection === "advanced" ? (
+                    <div className="w-full max-w-3xl space-y-8">
                       <div className="divide-y divide-border border-b border-border">
                         <div className="py-3">
-                          <h3 className="text-sm font-semibold text-foreground">
-                            {t("pipelineSettings.children", {
-                              defaultValue: "Children",
-                            })}
-                          </h3>
+                          <h3 className="text-sm font-semibold text-foreground">{translateInstant("pipelineSettings.transitions")}</h3>
                         </div>
-                        <FieldRow
-                          label={t("pipelineSettings.blockChildren", {
-                            defaultValue: "Block children",
-                          })}
-                        >
+                        <FieldRow label={translateInstant("pipelineSettings.strictMode")}>
                           <div className="space-y-1.5">
                             <div className="flex items-center gap-3">
                               <ToggleSwitch
-                                checked={requireChildrenTerminal}
-                                onCheckedChange={setRequireChildrenTerminal}
-                              />
-                              <span className="text-sm font-medium text-foreground">
-                                {t("pipelineSettings.blockUntilChildrenDone", {
-                                  defaultValue:
-                                    "Block until all child items are done or cancelled",
-                                })}
-                              </span>
-                            </div>
-                            <p className="max-w-2xl text-sm text-muted-foreground">
-                              {t("pipelineSettings.blockChildrenDescription", {
-                                defaultValue:
-                                  "When on, this step can't move forward while any child item is still open. When off, items can move through even with open children.",
-                              })}
-                            </p>
-                          </div>
-                        </FieldRow>
-                        <FieldRow
-                          label={t("pipelineSettings.advanceChildren", {
-                            defaultValue: "Advance children",
-                          })}
-                        >
-                          <div className="space-y-3">
-                            <div className="flex items-center gap-3">
-                              <ToggleSwitch
-                                checked={Boolean(autoAdvanceOnChildrenTerminal)}
+                                aria-label={translateInstant("pipelineSettings.strictlyEnforceTransitions")}
+                                checked={strictTransitionsEnabled}
+                                disabled={saveStrictTransitions.isPending}
                                 onCheckedChange={(checked) => {
-                                  setAutoAdvanceOnChildrenTerminal(
-                                    checked
-                                      ? autoAdvanceOnChildrenTerminal ||
-                                          defaultAutoAdvanceStage?.key ||
-                                          ""
-                                      : "",
-                                  );
+                                  setStrictTransitionsEnabled(checked);
+                                  saveStrictTransitions.mutate(checked);
                                 }}
                               />
                               <span className="text-sm font-medium text-foreground">
-                                {t(
-                                  "pipelineSettings.advanceWhenLastChildDone",
-                                  {
-                                    defaultValue:
-                                      "Advance when the last child is done",
-                                  },
-                                )}
-                              </span>
-                            </div>
-                            <div className="grid grid-cols-1 items-center gap-2 sm:grid-cols-(--gtc-44)">
-                              <span className="text-sm font-medium text-muted-foreground">
-                                {t("pipelineSettings.moveTo", {
-                                  defaultValue: "Move to",
-                                })}
-                              </span>
-                              <select
-                                aria-label={t(
-                                  "pipelineSettings.moveToStageWhenChildrenFinish",
-                                  {
-                                    defaultValue:
-                                      "Move to stage when children finish",
-                                  },
-                                )}
-                                value={autoAdvanceOnChildrenTerminal}
-                                onChange={(event) =>
-                                  setAutoAdvanceOnChildrenTerminal(
-                                    event.target.value,
-                                  )
-                                }
-                                disabled={!autoAdvanceOnChildrenTerminal}
-                                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm disabled:opacity-50"
-                              >
-                                <option value="">
-                                  {t("pipelineSettings.chooseStage", {
-                                    defaultValue: "Choose a stage",
-                                  })}
-                                </option>
-                                {otherStages.map((stage) => (
-                                  <option key={stage.id} value={stage.key}>
-                                    {stage.name}
-                                  </option>
-                                ))}
-                              </select>
+                                {translateInstant("pipelineSettings.strictlyEnforceTransitions")}</span>
                             </div>
                             <p className="max-w-2xl text-sm text-muted-foreground">
-                              {t(
-                                "pipelineSettings.advanceChildrenDescription",
-                                {
-                                  defaultValue:
-                                    "When on and every child is done, this step moves the item forward automatically. When off, someone has to move it.",
-                                },
-                              )}
+                              {strictTransitionsEnabled
+                                ? translateInstant("pipelineSettings.strictTransitionsOn")
+                                : translateInstant("pipelineSettings.strictTransitionsOff")}
                             </p>
                           </div>
                         </FieldRow>
+                        {strictTransitionsEnabled ? transitionTargetsControl : null}
                       </div>
-                    )}
-                  </div>
-                ) : null}
+                      {isPipelineTerminalStageKind(stageKind) ? null : breakdownEnabled ? (
+                        <EmptyState
+                          icon={SlidersHorizontal}
+                          message={translateInstant("pipelineSettings.childSettingsHiddenForBreakdown")}
+                        />
+                      ) : (
+                        <div className="divide-y divide-border border-b border-border">
+                          <div className="py-3">
+                            <h3 className="text-sm font-semibold text-foreground">{translateInstant("pipelineSettings.children")}</h3>
+                          </div>
+                          <FieldRow label={translateInstant("pipelineSettings.blockChildren")}>
+                            <div className="space-y-1.5">
+                              <div className="flex items-center gap-3">
+                                <ToggleSwitch
+                                  checked={requireChildrenTerminal}
+                                  onCheckedChange={setRequireChildrenTerminal}
+                                />
+                                <span className="text-sm font-medium text-foreground">
+                                  {translateInstant("pipelineSettings.blockUntilChildrenDone")}</span>
+                              </div>
+                              <p className="max-w-2xl text-sm text-muted-foreground">
+                                {translateInstant("pipelineSettings.blockChildrenDescription")}</p>
+                            </div>
+                          </FieldRow>
+                          <FieldRow label={translateInstant("pipelineSettings.advanceChildren")}>
+                            <div className="space-y-3">
+                              <div className="flex items-center gap-3">
+                                <ToggleSwitch
+                                  checked={Boolean(autoAdvanceOnChildrenTerminal)}
+                                  onCheckedChange={(checked) => {
+                                    setAutoAdvanceOnChildrenTerminal(checked ? autoAdvanceOnChildrenTerminal || defaultAutoAdvanceStage?.key || "" : "");
+                                  }}
+                                />
+                                <span className="text-sm font-medium text-foreground">
+                                  {translateInstant("pipelineSettings.advanceWhenLastChildDone")}</span>
+                              </div>
+                              <div className="grid grid-cols-1 items-center gap-2 sm:grid-cols-(--gtc-44)">
+                                <span className="text-sm font-medium text-muted-foreground">{translateInstant("pipelineSettings.moveTo")}</span>
+                                <select
+                                  aria-label={translateInstant("pipelineSettings.moveToStageWhenChildrenFinish")}
+                                  value={autoAdvanceOnChildrenTerminal}
+                                  onChange={(event) => setAutoAdvanceOnChildrenTerminal(event.target.value)}
+                                  disabled={!autoAdvanceOnChildrenTerminal}
+                                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm disabled:opacity-50"
+                                >
+                                  <option value="">{translateInstant("pipelineSettings.chooseStage")}</option>
+                                  {otherStages.map((stage) => (
+                                    <option key={stage.id} value={stage.key}>{stage.name}</option>
+                                  ))}
+                                </select>
+                              </div>
+                              <p className="max-w-2xl text-sm text-muted-foreground">
+                                {translateInstant("pipelineSettings.advanceChildrenDescription")}</p>
+                            </div>
+                          </FieldRow>
+                        </div>
+                      )}
+                    </div>
+                  ) : null}
 
-                {activeStageSection === "activity" ? (
-                  <div className="w-full space-y-3">
-                    {stageEventsQuery.isLoading ? (
-                      <PageSkeleton variant="list" />
-                    ) : (
-                      <StageEventsList
-                        events={stageEvents}
-                        stages={stages}
-                        emptyMessage={t("pipelineSettings.noStageActivity", {
-                          defaultValue: "No stage activity yet.",
-                        })}
-                      />
-                    )}
-                  </div>
-                ) : null}
+                  {activeStageSection === "activity" ? (
+                    <div className="w-full space-y-3">
+                      {stageEventsQuery.isLoading ? (
+                        <PageSkeleton variant="list" />
+                      ) : (
+                        <StageEventsList
+                          events={stageEvents}
+                          stages={stages}
+                          emptyMessage={translateInstant("pipelineSettings.noStageActivity")}
+                        />
+                      )}
+                    </div>
+                  ) : null}
 
-                {activeStageSection === "history" ? (
-                  <div className="w-full max-w-3xl">
-                    {instructionsKey ? (
-                      <PipelineStageHistoryPanel
-                        pipelineId={pipelineId}
-                        documentKey={instructionsKey}
-                        currentRevisionId={
-                          (instructionsDocument?.document?.latestRevisionId as
-                            | string
-                            | null
-                            | undefined) ?? null
-                        }
-                        hasDocument={Boolean(instructionsDocument)}
-                        onRestored={(body, baseRevisionId) => {
-                          setInstructionsBody(body);
-                          void baseRevisionId;
-                        }}
-                      />
-                    ) : null}
-                  </div>
-                ) : null}
+                  {activeStageSection === "history" ? (
+                    <div className="w-full max-w-3xl">
+                      {instructionsKey ? (
+                        <PipelineStageHistoryPanel
+                          pipelineId={pipelineId}
+                          documentKey={instructionsKey}
+                          currentRevisionId={(instructionsDocument?.document?.latestRevisionId as string | null | undefined) ?? null}
+                          hasDocument={Boolean(instructionsDocument)}
+                          onRestored={(body, baseRevisionId) => {
+                            setInstructionsBody(body);
+                            void baseRevisionId;
+                          }}
+                        />
+                      ) : null}
+                    </div>
+                  ) : null}
+                </div>
               </div>
-            </div>
 
-            {saveStage.error ? (
-              <p className="text-sm text-destructive">
-                {saveStage.error.message}
-              </p>
-            ) : null}
+              {saveStage.error ? <p className="text-sm text-destructive">{saveStage.error.message}</p> : null}
 
-            {stageDirty || saveStage.isPending ? (
-              <div className="sticky bottom-0 z-10 -mx-6 mt-6 flex items-center justify-between gap-3 border-t border-border bg-background/95 px-6 py-3 backdrop-blur motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2">
-                <span className="text-sm text-muted-foreground">
-                  {saveStage.isPending
-                    ? t("pipelineSettings.savingChanges", {
-                        defaultValue: "Saving changes...",
-                      })
-                    : t("pipelineSettings.unsavedChanges", {
-                        defaultValue: "You have unsaved changes.",
-                      })}
-                </span>
-                <Button
-                  type="submit"
-                  disabled={
-                    saveStage.isPending ||
-                    !stageName.trim() ||
-                    reviewTargetsMissing ||
-                    !canSaveAutomationWorkspace
-                  }
-                >
-                  {saveStage.isPending ? (
-                    <Check className="h-4 w-4" />
-                  ) : (
-                    <Save className="h-4 w-4" />
-                  )}
-                  {saveStage.isPending
-                    ? t("Saving...", { defaultValue: "Saving..." })
-                    : t("pipelineSettings.saveStage", {
-                        defaultValue: "Save stage",
-                      })}
-                </Button>
-              </div>
-            ) : null}
-          </form>
-        ) : null}
+              {stageDirty || saveStage.isPending ? (
+                <div className="sticky bottom-0 z-10 -mx-6 mt-6 flex items-center justify-between gap-3 border-t border-border bg-background/95 px-6 py-3 backdrop-blur motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2">
+                  <span className="text-sm text-muted-foreground">
+                    {saveStage.isPending ? "Saving changes…" : translateInstant("pipelineSettings.unsavedChanges")}
+                  </span>
+                  <Button
+                    type="submit"
+                    disabled={saveStage.isPending || !stageName.trim() || reviewTargetsMissing || !canSaveAutomationWorkspace}
+                  >
+                    {saveStage.isPending ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}
+                    {saveStage.isPending ? translateInstant("Saving...") : translateInstant("pipelineSettings.saveStage")}
+                  </Button>
+                </div>
+              ) : null}
+            </form>
+          ) : null}
       </div>
       <Dialog
         open={deleteStageDialogOpen}
@@ -4619,62 +3295,33 @@ export function PipelineSettings() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>
-              {t("pipelineSettings.deleteStage", {
-                defaultValue: "Delete stage",
-              })}
-            </DialogTitle>
+            <DialogTitle>{translateInstant("pipelineSettings.deleteStage")}</DialogTitle>
             <DialogDescription>
-              {t("pipelineSettings.deleteStageDescription", {
-                defaultValue:
-                  "Delete {{stage}} from this pipeline. Connected stage transitions are removed.",
-                stage:
-                  selectedStage?.name ??
-                  t("pipelineSettings.thisStage", {
-                    defaultValue: "this stage",
-                  }),
-              })}
-            </DialogDescription>
+              {translateInstant("Delete")}{" "}{selectedStage?.name ?? translateInstant("pipelineSettings.thisStage")} {translateInstant("from this pipeline. Connected stage transitions are removed.")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             {stages.length > 1 ? (
               <label className="block space-y-1.5 text-sm font-medium">
-                <span>
-                  {t("pipelineSettings.moveExistingItemsTo", {
-                    defaultValue: "Move existing items to",
-                  })}
-                </span>
+                <span>{translateInstant("pipelineSettings.moveExistingItemsTo")}</span>
                 <select
-                  aria-label={t("pipelineSettings.moveExistingItemsTo", {
-                    defaultValue: "Move existing items to",
-                  })}
+                  aria-label={translateInstant("pipelineSettings.moveExistingItemsTo")}
                   value={deleteMoveTargetStageId}
-                  onChange={(event) =>
-                    setDeleteMoveTargetStageId(event.target.value)
-                  }
+                  onChange={(event) => setDeleteMoveTargetStageId(event.target.value)}
                   className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
                 >
                   {stages
                     .filter((stage) => stage.id !== selectedStage?.id)
                     .map((stage) => (
-                      <option key={stage.id} value={stage.id}>
-                        {stage.name}
-                      </option>
+                      <option key={stage.id} value={stage.id}>{stage.name}</option>
                     ))}
                 </select>
               </label>
             ) : (
               <p className="text-sm text-muted-foreground">
-                {t("pipelineSettings.onlyStageDeleteNotice", {
-                  defaultValue:
-                    "This is the only stage. Deletion succeeds only if it has no items.",
-                })}
-              </p>
+                {translateInstant("pipelineSettings.onlyStageDeleteNotice")}</p>
             )}
             {deleteStage.error ? (
-              <p className="text-sm text-destructive">
-                {deleteStage.error.message}
-              </p>
+              <p className="text-sm text-destructive">{deleteStage.error.message}</p>
             ) : null}
           </div>
           <DialogFooter>
@@ -4684,23 +3331,15 @@ export function PipelineSettings() {
               onClick={() => setDeleteStageDialogOpen(false)}
               disabled={deleteStage.isPending}
             >
-              {t("Cancel", { defaultValue: "Cancel" })}
-            </Button>
+              {translateInstant("Cancel")}</Button>
             <Button
               type="button"
               variant="destructive"
-              disabled={
-                deleteStage.isPending ||
-                (stages.length > 1 && !deleteMoveTargetStageId)
-              }
+              disabled={deleteStage.isPending || (stages.length > 1 && !deleteMoveTargetStageId)}
               onClick={() => deleteStage.mutate()}
             >
               <Trash2 className="h-4 w-4" />
-              {deleteStage.isPending
-                ? t("Deleting...", { defaultValue: "Deleting..." })
-                : t("pipelineSettings.deleteStage", {
-                    defaultValue: "Delete stage",
-                  })}
+              {deleteStage.isPending ? translateInstant("Deleting...") : translateInstant("pipelineSettings.deleteStage")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -4715,39 +3354,22 @@ export function PipelineSettings() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>
-              {t("pipelineSettings.archivePipeline", {
-                defaultValue: "Archive pipeline",
-              })}
-            </DialogTitle>
+            <DialogTitle>{translateInstant("pipelineSettings.archivePipeline")}</DialogTitle>
             <DialogDescription>
-              {t("pipelineSettings.archivePipelineDescription", {
-                defaultValue:
-                  "Archiving hides this pipeline from everyday views. Its stages and items are kept and can be restored later.",
-              })}
-            </DialogDescription>
+              {translateInstant("pipelineSettings.archivePipelineDescription")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <label className="block space-y-1.5 text-sm font-medium">
-              <span>
-                {t("pipelineSettings.typePipelineNameToConfirm", {
-                  defaultValue: "Type {{name}} to confirm",
-                  name: pipeline.name,
-                })}
-              </span>
+              <span>{translateInstant("Type")}{" "}{pipeline.name}{" "}{translateInstant("to confirm")}</span>
               <Input
-                aria-label={t("pipelineSettings.archiveConfirmation", {
-                  defaultValue: "Archive confirmation",
-                })}
+                aria-label={translateInstant("pipelineSettings.archiveConfirmation")}
                 value={archiveConfirmation}
                 onChange={(event) => setArchiveConfirmation(event.target.value)}
                 autoComplete="off"
               />
             </label>
             {archivePipeline.error ? (
-              <p className="text-sm text-destructive">
-                {archivePipeline.error.message}
-              </p>
+              <p className="text-sm text-destructive">{archivePipeline.error.message}</p>
             ) : null}
           </div>
           <DialogFooter>
@@ -4757,8 +3379,7 @@ export function PipelineSettings() {
               onClick={() => setArchiveDialogOpen(false)}
               disabled={archivePipeline.isPending}
             >
-              {t("Cancel", { defaultValue: "Cancel" })}
-            </Button>
+              {translateInstant("Cancel")}</Button>
             <Button
               type="button"
               variant="destructive"
@@ -4766,13 +3387,7 @@ export function PipelineSettings() {
               onClick={() => archivePipeline.mutate(true)}
             >
               <Archive className="h-4 w-4" />
-              {archivePipeline.isPending
-                ? t("pipelineSettings.archiving", {
-                    defaultValue: "Archiving...",
-                  })
-                : t("pipelineSettings.archivePipeline", {
-                    defaultValue: "Archive pipeline",
-                  })}
+              {archivePipeline.isPending ? translateInstant("Archiving...") : translateInstant("pipelineSettings.archivePipeline")}
             </Button>
           </DialogFooter>
         </DialogContent>

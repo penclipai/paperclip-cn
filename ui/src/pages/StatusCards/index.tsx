@@ -1,3 +1,4 @@
+import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -35,7 +36,7 @@ export function StatusCards() {
   const [actionError, setActionError] = useState<string | null>(null);
 
   useEffect(() => {
-    setBreadcrumbs([{ label: "Status" }]);
+    setBreadcrumbs([{ label: translateInstant("apps.detail.test.askFirst.field.status") }]);
   }, [setBreadcrumbs]);
 
   const activeQuery = useQuery({
@@ -178,7 +179,7 @@ export function StatusCards() {
       {activeQuery.isLoading ? (
         <div className="flex items-center gap-2 py-12 text-sm text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" />{" "}
-          {t("statusCards.list.loading")}
+          {" "}{t("statusCards.list.loading")}
         </div>
       ) : activeQuery.isError ? (
         <InlineBanner tone="danger" title={t("statusCards.list.loadError")}>
@@ -190,7 +191,7 @@ export function StatusCards() {
         <EmptyState
           icon={FlaskConical}
           title={t("statusCards.list.empty")}
-          message="Create a card to keep a living summary of the issues you care about."
+          message={translateInstant("Create a card to keep a living summary of the issues you care about.")}
           action={selectedCompanyId ? "New card" : undefined}
           onAction={() => setCreateOpen(true)}
         />

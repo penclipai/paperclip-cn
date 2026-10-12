@@ -1,31 +1,21 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Shield, ShieldCheck } from "lucide-react";
-import { useTranslation } from "react-i18next";
 import { accessApi } from "@/api/access";
 import { ApiError } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";
 import { Card } from "@/components/ui/card";
-import { useCompany } from "@/context/CompanyContext";
+import { companyDirectoryQueryOptions, useAccountIdentity } from "@/api/companies-query";
 import { useToast } from "@/context/ToastContext";
 import { queryKeys } from "@/lib/queryKeys";
 
-type InstanceAccessUser = Awaited<ReturnType<typeof accessApi.searchAdminUsers>>[number];
-
-function displayUserName(t: ReturnType<typeof useTranslation>["t"], user: InstanceAccessUser | null | undefined, fallbackId?: string | null) {
-  if (!user) return fallbackId ?? "";
-  const name = user.name?.trim();
-  if (user.id === "local-board" && (!name || name === "Board")) {
-    return t("Board", { defaultValue: "Board" });
-  }
-  return name || user.email || user.id;
-}
-
 export function InstanceAccess() {
-  const { t } = useTranslation();
-  const { companies } = useCompany();
+  useTranslation();
+  const { userId: accountUserId, settled: accountSettled } = useAccountIdentity();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { pushToast } = useToast();
   const queryClient = useQueryClient();
@@ -35,16 +25,22 @@ export function InstanceAccess() {
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: t("Settings", { defaultValue: "Settings" }), href: "/company/settings" },
-      { label: t("Instance settings", { defaultValue: "Instance settings" }), href: "/company/settings/instance/general" },
-      { label: t("Access", { defaultValue: "Access" }) },
+      { label: translateInstant("Settings"), href: "/company/settings" },
+      { label: translateInstant("Instance settings"), href: "/company/settings/instance/general" },
+      { label: translateInstant("Access") },
     ]);
-  }, [setBreadcrumbs, t]);
+  }, [setBreadcrumbs]);
 
   const usersQuery = useQuery({
     queryKey: queryKeys.access.adminUsers(search),
     queryFn: () => accessApi.searchAdminUsers(search),
   });
+
+  const companiesQuery = useQuery({
+    ...companyDirectoryQueryOptions(accountUserId),
+    enabled: accountSettled && usersQuery.isSuccess,
+  });
+  const companies = companiesQuery.data ?? [];
 
   const selectedUser = useMemo(
     () => usersQuery.data?.find((user) => user.id === selectedUserId) ?? null,
@@ -79,13 +75,14 @@ export function InstanceAccess() {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.access.userCompanyAccess(selectedUserId!) });
       await queryClient.invalidateQueries({ queryKey: queryKeys.access.adminUsers(search) });
-      pushToast({ title: t("Company access updated", { defaultValue: "Company access updated" }), tone: "success" });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.companies.all });
+      pushToast({ title: translateInstant("Organization access updated"), tone: "success" });
     },
   });
 
   const setAdminMutation = useMutation({
     mutationFn: async (makeAdmin: boolean) => {
-      if (!selectedUserId) throw new Error(t("No user selected", { defaultValue: "No user selected" }));
+      if (!selectedUserId) throw new Error(translateInstant("No user selected"));
       if (makeAdmin) return accessApi.promoteInstanceAdmin(selectedUserId);
       return accessApi.demoteInstanceAdmin(selectedUserId);
     },
@@ -94,26 +91,31 @@ export function InstanceAccess() {
       if (selectedUserId) {
         await queryClient.invalidateQueries({ queryKey: queryKeys.access.userCompanyAccess(selectedUserId) });
       }
-      pushToast({ title: t("Instance role updated", { defaultValue: "Instance role updated" }), tone: "success" });
+      pushToast({ title: translateInstant("Instance role updated"), tone: "success" });
     },
   });
 
-  if (usersQuery.isLoading) {
-    return <div className="text-sm text-muted-foreground">{t("Loading instance users…", {
-      defaultValue: "Loading instance users…",
-    })}</div>;
+  if (usersQuery.isLoading || !accountSettled || (usersQuery.isSuccess && companiesQuery.isPending)) {
+    return <div className="text-sm text-muted-foreground">{translateInstant("Loading instance access…")}</div>;
   }
 
   if (usersQuery.error) {
     const message =
       usersQuery.error instanceof ApiError && usersQuery.error.status === 403
-        ? t("Instance admin access is required to manage users.", {
-          defaultValue: "Instance admin access is required to manage users.",
-        })
+        ? "Instance admin access is required to manage users."
         : usersQuery.error instanceof Error
           ? usersQuery.error.message
-          : t("Failed to load users.", { defaultValue: "Failed to load users." });
+          : "Failed to load users.";
     return <div className="text-sm text-destructive">{message}</div>;
+  }
+
+  if (companiesQuery.error) {
+    return (
+      <div className="space-y-3">
+        <p className="text-sm text-destructive">{translateInstant("Failed to load organizations. Try again before changing access.")}</p>
+        <Button onClick={() => void companiesQuery.refetch()}>{translateInstant("Try again")}</Button>
+      </div>
+    );
   }
 
   return (
@@ -121,24 +123,21 @@ export function InstanceAccess() {
       <div className="space-y-3">
         <div className="flex items-center gap-2">
           <Shield className="h-5 w-5 text-muted-foreground" />
-          <h1 className="text-lg font-semibold">{t("Instance Access", { defaultValue: "Instance Access" })}</h1>
+          <h1 className="text-lg font-semibold">{translateInstant("Instance Access")}</h1>
         </div>
         <p className="max-w-3xl text-sm text-muted-foreground">
-          {t("Search users, manage instance-admin status, and control which companies they can access.", {
-            defaultValue: "Search users, manage instance-admin status, and control which companies they can access.",
-          })}
-        </p>
+          {translateInstant("Search users, manage instance-admin status, and control which organizations they can access.")}</p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-(--gtc-34)">
         <Card className="block space-y-4 p-4">
           <label className="block space-y-2 text-sm">
-            <span className="font-medium">{t("Search users", { defaultValue: "Search users" })}</span>
+            <span className="font-medium">{translateInstant("Search users")}</span>
             <input
               className="w-full rounded-md border border-border bg-background px-3 py-2"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder={t("Search by name or email", { defaultValue: "Search by name or email" })}
+              placeholder={translateInstant("Search by name or email")}
             />
           </label>
           <div className="space-y-2">
@@ -155,7 +154,7 @@ export function InstanceAccess() {
               >
                 <div className="flex items-center justify-between gap-2">
                   <div className="min-w-0">
-                    <div className="truncate font-medium">{displayUserName(t, user)}</div>
+                    <div className="truncate font-medium">{user.name || user.email || user.id}</div>
                     <div className="truncate text-sm text-muted-foreground">{user.email || user.id}</div>
                   </div>
                   {user.isInstanceAdmin ? (
@@ -163,11 +162,7 @@ export function InstanceAccess() {
                   ) : null}
                 </div>
                 <div className="mt-2 text-xs text-muted-foreground">
-                  {t("{{count}} active company memberships", {
-                    defaultValue: "{{count}} active company memberships",
-                    count: user.activeCompanyMembershipCount,
-                  })}
-                </div>
+                  {user.activeCompanyMembershipCount} {translateInstant("active organization memberships")}</div>
               </button>
             ))}
           </div>
@@ -175,27 +170,19 @@ export function InstanceAccess() {
 
         <Card className="block space-y-4 p-5">
           {!selectedUserId ? (
-            <div className="text-sm text-muted-foreground">
-              {t("Select a user to inspect instance access.", {
-                defaultValue: "Select a user to inspect instance access.",
-              })}
-            </div>
+            <div className="text-sm text-muted-foreground">{translateInstant("Select a user to inspect instance access.")}</div>
           ) : userAccessQuery.isLoading ? (
-            <div className="text-sm text-muted-foreground">
-              {t("Loading user access…", { defaultValue: "Loading user access…" })}
-            </div>
+            <div className="text-sm text-muted-foreground">{translateInstant("Loading user access…")}</div>
           ) : userAccessQuery.error ? (
             <div className="text-sm text-destructive">
-              {userAccessQuery.error instanceof Error
-                ? userAccessQuery.error.message
-                : t("Failed to load user access.", { defaultValue: "Failed to load user access." })}
+              {userAccessQuery.error instanceof Error ? userAccessQuery.error.message : translateInstant("Failed to load user access.")}
             </div>
           ) : (
             <>
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
                   <div className="text-lg font-semibold">
-                    {displayUserName(t, selectedUser, selectedUserId)}
+                    {selectedUser?.name || selectedUser?.email || selectedUserId}
                   </div>
                   <div className="text-sm text-muted-foreground">
                     {selectedUser?.email || selectedUserId}
@@ -206,20 +193,15 @@ export function InstanceAccess() {
                   onClick={() => setAdminMutation.mutate(!(selectedUser?.isInstanceAdmin ?? false))}
                   disabled={setAdminMutation.isPending}
                 >
-                  {selectedUser?.isInstanceAdmin
-                    ? t("Remove instance admin", { defaultValue: "Remove instance admin" })
-                    : t("Promote to instance admin", { defaultValue: "Promote to instance admin" })}
+                  {selectedUser?.isInstanceAdmin ? translateInstant("Remove instance admin") : translateInstant("Promote to instance admin")}
                 </Button>
               </div>
 
               <div className="space-y-3">
                 <div>
-                  <h2 className="text-sm font-semibold">{t("Company access", { defaultValue: "Company access" })}</h2>
+                  <h2 className="text-sm font-semibold">{translateInstant("Organization access")}</h2>
                   <p className="text-sm text-muted-foreground">
-                    {t("Toggle company membership for this user. New access defaults to an active operator membership.", {
-                      defaultValue: "Toggle company membership for this user. New access defaults to an active operator membership.",
-                    })}
-                  </p>
+                    {translateInstant("Toggle organization membership for this user. New access defaults to an active operator membership.")}</p>
                 </div>
                 <div className="grid gap-3 md:grid-cols-2">
                   {companies.map((company) => (
@@ -250,15 +232,13 @@ export function InstanceAccess() {
                     onClick={() => updateCompanyAccessMutation.mutate()}
                     disabled={updateCompanyAccessMutation.isPending}
                   >
-                    {updateCompanyAccessMutation.isPending
-                      ? t("Saving…", { defaultValue: "Saving…" })
-                      : t("Save company access", { defaultValue: "Save company access" })}
+                    {updateCompanyAccessMutation.isPending ? translateInstant("Saving…") : "Save organization access"}
                   </Button>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <h2 className="text-sm font-semibold">{t("Current memberships", { defaultValue: "Current memberships" })}</h2>
+                <h2 className="text-sm font-semibold">{translateInstant("Current memberships")}</h2>
                 <div className="space-y-2">
                   {(userAccessQuery.data?.companyAccess ?? []).map((membership) => (
                     <div
@@ -268,7 +248,7 @@ export function InstanceAccess() {
                       <div>
                         <div className="font-medium">{membership.companyName || membership.companyId}</div>
                         <div className="text-muted-foreground">
-                          {membership.membershipRole || t("unset", { defaultValue: "unset" })} • {membership.status}
+                          {membership.membershipRole || translateInstant("unset")} • {membership.status}
                         </div>
                       </div>
                       <div className="text-xs text-muted-foreground">

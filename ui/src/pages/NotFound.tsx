@@ -21,7 +21,7 @@ export function NotFoundPage({ scope = "global", requestedPrefix }: NotFoundPage
   const { companies, selectedCompany } = useCompany();
 
   useEffect(() => {
-    setBreadcrumbs([{ label: t("Not Found", { defaultValue: "Not Found" }) }]);
+    setBreadcrumbs([{ label: t("Not Found") }]);
   }, [setBreadcrumbs, t]);
 
   const fallbackCompany = selectedCompany ?? companies[0] ?? null;
@@ -29,15 +29,11 @@ export function NotFoundPage({ scope = "global", requestedPrefix }: NotFoundPage
   const currentPath = `${location.pathname}${location.search}${location.hash}`;
   const normalizedPrefix = requestedPrefix?.toUpperCase();
 
-  const title = scope === "invalid_company_prefix"
-    ? t("Company not found", { defaultValue: "Company not found" })
-    : t("Page not found", { defaultValue: "Page not found" });
+  const title = scope === "invalid_company_prefix" ? t("Organization not found") : t("Page not found");
   const description =
     scope === "invalid_company_prefix"
-      ? t("No company matches the requested prefix.", {
-          defaultValue: "No company matches the requested prefix.",
-        })
-      : t("This route does not exist.", { defaultValue: "This route does not exist." });
+      ? t("No organization matches prefix \"{{prefix}}\".", { prefix: normalizedPrefix ?? t("unknown") })
+      : t("This route does not exist.");
 
   return (
     <div className="mx-auto max-w-2xl py-10">
@@ -53,18 +49,18 @@ export function NotFoundPage({ scope = "global", requestedPrefix }: NotFoundPage
         </div>
 
         <div className="mt-4 rounded-md border border-border bg-muted/20 px-3 py-2 text-xs text-muted-foreground">
-          {t("Requested path", { defaultValue: "Requested path" })}: <code className="font-mono">{currentPath}</code>
+          {t("Requested path")}: <code className="font-mono">{currentPath}</code>
         </div>
 
         <div className="mt-5 flex flex-wrap gap-2">
           <Button asChild>
             <Link to={dashboardHref}>
               <Compass className="mr-1.5 h-4 w-4" />
-              {t("Open dashboard", { defaultValue: "Open dashboard" })}
+              {t("Open dashboard")}
             </Link>
           </Button>
           <Button variant="outline" asChild>
-            <Link to="/">{t("Go home", { defaultValue: "Go home" })}</Link>
+            <Link to="/">{t("Go home")}</Link>
           </Button>
         </div>
       </Card>

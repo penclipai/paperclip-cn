@@ -29,7 +29,7 @@ export function Approvals() {
   const [actionError, setActionError] = useState<string | null>(null);
 
   useEffect(() => {
-    setBreadcrumbs([{ label: t("Approvals", { defaultValue: "Approvals" }) }]);
+    setBreadcrumbs([{ label: t("Approvals") }]);
   }, [setBreadcrumbs, t]);
 
   const { data, isLoading, error } = useQuery({
@@ -52,7 +52,7 @@ export function Approvals() {
       navigate(`/approvals/${id}?resolved=approved`);
     },
     onError: (err) => {
-      setActionError(err instanceof Error ? err.message : t("Failed to approve", { defaultValue: "Failed to approve" }));
+      setActionError(err instanceof Error ? err.message : t("Failed to approve"));
     },
   });
 
@@ -63,7 +63,7 @@ export function Approvals() {
       queryClient.invalidateQueries({ queryKey: queryKeys.approvals.list(selectedCompanyId!) });
     },
     onError: (err) => {
-      setActionError(err instanceof Error ? err.message : t("Failed to reject", { defaultValue: "Failed to reject" }));
+      setActionError(err instanceof Error ? err.message : t("Failed to reject"));
     },
   });
 
@@ -78,7 +78,7 @@ export function Approvals() {
   ).length;
 
   if (!selectedCompanyId) {
-    return <p className="text-sm text-muted-foreground">{t("Select a company first.", { defaultValue: "Select a company first." })}</p>;
+    return <p className="text-sm text-muted-foreground">{t("Select an organization first.")}</p>;
   }
 
   if (isLoading) {
@@ -90,15 +90,15 @@ export function Approvals() {
       <div className="flex items-center justify-between">
         <Tabs value={statusFilter} onValueChange={(v) => navigate(`/approvals/${v}`)}>
           <PageTabBar items={[
-            { value: "pending", label: <>{t("Pending", { defaultValue: "Pending" })}{pendingCount > 0 && (
-              <span className={cn(
-                "ml-1.5 rounded-full px-1.5 py-0.5 text-(length:--text-nano) font-medium",
+            { value: "pending", label: <>{t("Pending")}{pendingCount > 0 && (
+              <Badge variant="ghost" className={cn(
+                "ml-1.5 px-1.5 text-(length:--text-nano)",
                 "bg-yellow-500/20 text-yellow-500"
               )}>
                 {pendingCount}
-              </span>
+              </Badge>
             )}</> },
-            { value: "all", label: t("All", { defaultValue: "All" }) },
+            { value: "all", label: t("All") },
           ]} />
         </Tabs>
       </div>
@@ -110,9 +110,7 @@ export function Approvals() {
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <ShieldCheck className="h-8 w-8 text-muted-foreground/30 mb-3" />
           <p className="text-sm text-muted-foreground">
-            {statusFilter === "pending"
-              ? t("No pending approvals.", { defaultValue: "No pending approvals." })
-              : t("No approvals yet.", { defaultValue: "No approvals yet." })}
+            {statusFilter === "pending" ? t("No pending approvals.") : t("No approvals yet.")}
           </p>
         </div>
       )}

@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
 import { afterEach, describe, expect, it } from "vitest";
-import type { PluginExecutionWorkspaceMetadata } from "@paperclipai/plugin-sdk";
+import type { PluginExecutionWorkspaceMetadata } from "@penclipai/plugin-sdk";
 import type { WorkspaceDiffQueryOptions } from "../src/contracts.js";
 import { WORKSPACE_DIFF_CAPS, workspaceDiffService } from "../src/workspace-diff.js";
 

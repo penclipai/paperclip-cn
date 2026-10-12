@@ -539,7 +539,7 @@ describe("openclaw gateway adapter execute", () => {
       expect(String(payload?.message ?? "")).toContain("## Paperclip Wake Payload");
       expect(String(payload?.message ?? "").match(/Execution contract/g)).toHaveLength(1);
       expect(String(payload?.message ?? "")).toContain(
-        "Treat this wake payload as the highest-priority change for the current heartbeat.",
+        "Use this wake to continue the task, applying new user direction and preserving its approval gates.",
       );
       expect(String(payload?.message ?? "")).toContain(
         "Do not switch to another issue until you have handled this wake.",

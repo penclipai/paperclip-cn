@@ -1,3 +1,5 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
 import { useState, type ReactNode } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, Loader2, RotateCcw, Undo2 } from "lucide-react";
@@ -51,6 +53,7 @@ export function StalledReviewActions({
   reviewPolicy,
   className,
 }: StalledReviewActionsProps) {
+  useTranslation();
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
   const [note, setNote] = useState("");
@@ -71,7 +74,7 @@ export function StalledReviewActions({
     },
     onError: (error) => {
       pushToast({
-        title: "Could not record the review decision",
+        title: translateInstant("Could not record the review decision"),
         body: error instanceof Error ? error.message : "Please try again.",
         tone: "error",
       });
@@ -104,7 +107,7 @@ export function StalledReviewActions({
       <Textarea
         value={note}
         onChange={(event) => setNote(event.target.value)}
-        placeholder="Add a note — required to request changes, optional otherwise…"
+        placeholder={translateInstant("Add a note — required to request changes, optional otherwise…")}
         className="min-h-16 text-sm"
         data-testid="stalled-review-note"
         disabled={pending}
@@ -126,8 +129,7 @@ export function StalledReviewActions({
             ) : (
               <Undo2 className="h-3.5 w-3.5" aria-hidden />
             )}
-            Send back to work
-          </Button>
+            {translateInstant("Send back to work")}</Button>
           <Button
             type="button"
             variant="outline"
@@ -143,8 +145,7 @@ export function StalledReviewActions({
             ) : (
               <RotateCcw className="h-3.5 w-3.5" aria-hidden />
             )}
-            Request changes
-          </Button>
+            {translateInstant("issueThreadInteraction.requestChanges")}</Button>
           <Button
             type="button"
             size="sm"
@@ -158,8 +159,7 @@ export function StalledReviewActions({
             ) : (
               <CheckCircle2 className="h-3.5 w-3.5" aria-hidden />
             )}
-            Approve
-          </Button>
+            {translateInstant("Approve")}</Button>
         </div>
       </div>
     </div>

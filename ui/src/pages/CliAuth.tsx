@@ -1,6 +1,7 @@
+import { useTranslation } from "react-i18next";
+import { translateInstant } from "@/i18n";
 import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
 import { Link, useParams, useSearchParams } from "@/lib/router";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -9,7 +10,7 @@ import { authApi } from "../api/auth";
 import { queryKeys } from "../lib/queryKeys";
 
 export function CliAuthPage() {
-  const { t } = useTranslation();
+  useTranslation();
   const queryClient = useQueryClient();
   const params = useParams();
   const [searchParams] = useSearchParams();
@@ -48,20 +49,20 @@ export function CliAuthPage() {
   });
 
   if (!challengeId || !token) {
-    return <div className="mx-auto max-w-xl py-10 text-sm text-destructive">{t("cliAuth.invalidUrl")}</div>;
+    return <div className="mx-auto max-w-xl py-10 text-sm text-destructive">{translateInstant("cliAuth.invalidUrl")}</div>;
   }
 
   if (sessionQuery.isLoading || challengeQuery.isLoading) {
-    return <div className="mx-auto max-w-xl py-10 text-sm text-muted-foreground">{t("cliAuth.loading")}</div>;
+    return <div className="mx-auto max-w-xl py-10 text-sm text-muted-foreground">{translateInstant("cliAuth.loading")}</div>;
   }
 
   if (challengeQuery.error) {
     return (
       <div className="mx-auto max-w-xl py-10">
         <Card className="block p-6">
-          <h1 className="text-lg font-semibold">{t("cliAuth.unavailableTitle")}</h1>
+          <h1 className="text-lg font-semibold">{translateInstant("cliAuth.unavailableTitle")}</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            {challengeQuery.error instanceof Error ? challengeQuery.error.message : t("cliAuth.unavailableBody")}
+            {challengeQuery.error instanceof Error ? challengeQuery.error.message : translateInstant("cliAuth.unavailableBody")}
           </p>
         </Card>
       </div>
@@ -70,19 +71,18 @@ export function CliAuthPage() {
 
   const challenge = challengeQuery.data;
   if (!challenge) {
-    return <div className="mx-auto max-w-xl py-10 text-sm text-destructive">{t("cliAuth.unavailableTitle")}</div>;
+    return <div className="mx-auto max-w-xl py-10 text-sm text-destructive">{translateInstant("CLI auth challenge unavailable.")}</div>;
   }
 
   if (challenge.status === "approved") {
     return (
       <div className="mx-auto max-w-xl py-10">
         <Card className="block p-6">
-          <h1 className="text-xl font-semibold">{t("cliAuth.accessApprovedTitle")}</h1>
+          <h1 className="text-xl font-semibold">{translateInstant("cliAuth.accessApprovedTitle")}</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            {t("cliAuth.accessApprovedBody")}
-          </p>
+            {translateInstant("The Paperclip CLI can now finish authentication on the requesting machine.")}</p>
           <p className="mt-4 text-sm text-muted-foreground">
-            {t("cliAuth.command")}: <span className="font-mono text-foreground">{challenge.command}</span>
+            {translateInstant("agentDetail.commandLabel")}{" "}<span className="font-mono text-foreground">{challenge.command}</span>
           </p>
         </Card>
       </div>
@@ -94,11 +94,10 @@ export function CliAuthPage() {
       <div className="mx-auto max-w-xl py-10">
         <Card className="block p-6">
           <h1 className="text-xl font-semibold">
-            {challenge.status === "expired" ? t("cliAuth.expiredTitle") : t("cliAuth.cancelledTitle")}
+            {challenge.status === "expired" ? translateInstant("cliAuth.expiredTitle") : translateInstant("cliAuth.cancelledTitle")}
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            {t("cliAuth.retryBody")}
-          </p>
+            {translateInstant("cliAuth.retryBody")}</p>
         </Card>
       </div>
     );
@@ -108,12 +107,11 @@ export function CliAuthPage() {
     return (
       <div className="mx-auto max-w-xl py-10">
         <Card className="block p-6">
-          <h1 className="text-xl font-semibold">{t("cliAuth.signInRequiredTitle")}</h1>
+          <h1 className="text-xl font-semibold">{translateInstant("cliAuth.signInRequiredTitle")}</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            {t("cliAuth.signInRequiredBody")}
-          </p>
+            {translateInstant("cliAuth.signInRequiredBody")}</p>
           <Button asChild className="mt-4">
-            <Link to={`/auth?next=${encodeURIComponent(currentPath)}`}>{t("cliAuth.signInButton")}</Link>
+            <Link to={`/auth?next=${encodeURIComponent(currentPath)}`}>{translateInstant("cliAuth.signInButton")}</Link>
           </Button>
         </Card>
       </div>
@@ -123,29 +121,28 @@ export function CliAuthPage() {
   return (
     <div className="mx-auto max-w-xl py-10">
       <Card className="block p-6">
-        <h1 className="text-xl font-semibold">{t("cliAuth.approveTitle")}</h1>
+        <h1 className="text-xl font-semibold">{translateInstant("Approve Paperclip CLI access")}</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          {t("cliAuth.approveBody")}
-        </p>
+          {translateInstant("A local Paperclip CLI process is requesting board access to this instance.")}</p>
 
         <div className="mt-5 space-y-3 text-sm">
           <div>
-            <div className="text-muted-foreground">{t("cliAuth.command")}</div>
+            <div className="text-muted-foreground">{translateInstant("cliAuth.command")}</div>
             <div className="font-mono text-foreground">{challenge.command}</div>
           </div>
           <div>
-            <div className="text-muted-foreground">{t("cliAuth.client")}</div>
-            <div className="text-foreground">{challenge.clientName ?? "penclip cli"}</div>
+            <div className="text-muted-foreground">{translateInstant("cliAuth.client")}</div>
+            <div className="text-foreground">{challenge.clientName ?? "paperclipai cli"}</div>
           </div>
           <div>
-            <div className="text-muted-foreground">{t("cliAuth.requestedAccess")}</div>
+            <div className="text-muted-foreground">{translateInstant("cliAuth.requestedAccess")}</div>
             <div className="text-foreground">
-              {challenge.requestedAccess === "instance_admin_required" ? t("cliAuth.instanceAdmin") : t("cliAuth.board")}
+              {challenge.requestedAccess === "instance_admin_required" ? translateInstant("cliAuth.instanceAdmin") : translateInstant("Board")}
             </div>
           </div>
           {challenge.requestedCompanyName && (
             <div>
-              <div className="text-muted-foreground">{t("cliAuth.requestedCompany")}</div>
+              <div className="text-muted-foreground">{translateInstant("Requested organization")}</div>
               <div className="text-foreground">{challenge.requestedCompanyName}</div>
             </div>
           )}
@@ -155,14 +152,13 @@ export function CliAuthPage() {
           <p className="mt-4 text-sm text-destructive">
             {(approveMutation.error ?? cancelMutation.error) instanceof Error
               ? ((approveMutation.error ?? cancelMutation.error) as Error).message
-              : t("cliAuth.updateFailed")}
+              : translateInstant("cliAuth.updateFailed")}
           </p>
         )}
 
         {!challenge.canApprove && (
           <p className="mt-4 text-sm text-destructive">
-            {t("cliAuth.instanceAdminRequired")}
-          </p>
+            {translateInstant("cliAuth.instanceAdminRequired")}</p>
         )}
 
         <div className="mt-5 flex gap-3">
@@ -170,7 +166,7 @@ export function CliAuthPage() {
             onClick={() => approveMutation.mutate()}
             disabled={!challenge.canApprove || approveMutation.isPending || cancelMutation.isPending}
           >
-            {approveMutation.isPending ? t("cliAuth.approving") : t("cliAuth.approveButton")}
+            {approveMutation.isPending ? translateInstant("cliAuth.approving") : translateInstant("cliAuth.approveButton")}
           </Button>
           <Button
             type="button"
@@ -178,7 +174,7 @@ export function CliAuthPage() {
             onClick={() => cancelMutation.mutate()}
             disabled={approveMutation.isPending || cancelMutation.isPending}
           >
-            {cancelMutation.isPending ? t("cliAuth.cancelling") : t("common.cancel")}
+            {cancelMutation.isPending ? translateInstant("Cancelling...") : translateInstant("Cancel")}
           </Button>
         </div>
       </Card>

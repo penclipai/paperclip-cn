@@ -1,3 +1,5 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { IssueComment } from "@penclipai/shared";
@@ -88,6 +90,7 @@ export function OnboardingChat({
   onPlanDetected,
   onReviewPlan,
 }: OnboardingChatProps) {
+  useTranslation();
   const queryClient = useQueryClient();
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
@@ -249,8 +252,7 @@ export function OnboardingChat({
     return (
       <div className="flex items-center justify-center py-8 text-muted-foreground text-sm">
         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-        Loading conversation...
-      </div>
+        {translateInstant("Loading conversation...")}</div>
     );
   }
 
@@ -301,8 +303,7 @@ export function OnboardingChat({
                 {isPlan && (
                   <span className="inline-flex items-center gap-0.5 text-(length:--text-nano) text-green-600 dark:text-green-400 font-medium">
                     <CheckCircle2 className="h-3 w-3" />
-                    Hiring plan detected
-                  </span>
+                    {translateInstant("Hiring plan detected")}</span>
                 )}
               </div>
               <div className="prose prose-sm dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
@@ -350,16 +351,13 @@ export function OnboardingChat({
               <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
               <div>
                 <p className="text-sm font-medium">
-                  {agentName} has prepared a hiring plan
-                </p>
+                  {agentName} {translateInstant("has prepared a hiring plan")}</p>
                 <p className="text-(length:--text-micro) text-muted-foreground">
-                  Review it, make edits, then approve.
-                </p>
+                  {translateInstant("Review it, make edits, then approve.")}</p>
               </div>
             </div>
             <Button size="sm" onClick={onReviewPlan}>
-              Review plan
-              <ArrowRight className="h-3.5 w-3.5 ml-1" />
+              {translateInstant("Review plan")}<ArrowRight className="h-3.5 w-3.5 ml-1" />
             </Button>
           </div>
         </div>
@@ -409,6 +407,7 @@ function WelcomeMessage({
   onDiscuss: () => void;
   onStart: () => void;
 }) {
+  useTranslation();
   const [phase, setPhase] = useState<"waking" | "composing" | "message" | "chips">("waking");
 
   useEffect(() => {
@@ -432,14 +431,12 @@ function WelcomeMessage({
             </span>
           </div>
           <p>
-            Hi! Thanks for bringing me on to lead <strong>{companyName}</strong>.
+            {translateInstant("Hi! Thanks for bringing me on to lead")}{" "}<strong>{companyName}</strong>{translateInstant(".")}</p>
+          <p className="mt-1">
+            {translateInstant("Our mission is:")}{" "}<em>{companyGoal}</em>
           </p>
           <p className="mt-1">
-            Our mission is: <em>{companyGoal}</em>
-          </p>
-          <p className="mt-1">
-            I'm ready to put together a plan for who we should bring on. Want me to get started?
-          </p>
+            {translateInstant("I'm ready to put together a plan for who we should bring on. Want me to get started?")}</p>
         </div>
       )}
 
@@ -450,14 +447,12 @@ function WelcomeMessage({
             className="rounded-full border border-border px-3 py-1 text-xs hover:bg-accent/50 transition-colors text-muted-foreground hover:text-foreground"
             onClick={onDiscuss}
           >
-            Let's discuss first
-          </button>
+            {translateInstant("Let's discuss first")}</button>
           <button
             className="rounded-full border border-foreground bg-foreground text-background px-3 py-1 text-xs hover:opacity-90 transition-opacity"
             onClick={onStart}
           >
-            Yes, get started!
-          </button>
+            {translateInstant("Yes, get started!")}</button>
         </div>
       )}
 

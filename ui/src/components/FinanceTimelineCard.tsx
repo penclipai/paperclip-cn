@@ -1,5 +1,6 @@
-import type { FinanceEvent } from "@penclipai/shared";
+import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
+import type { FinanceEvent } from "@penclipai/shared";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -17,18 +18,18 @@ interface FinanceTimelineCardProps {
 
 export function FinanceTimelineCard({
   rows,
-  emptyMessage = "No financial events in this period.",
+  emptyMessage = "No financial events recorded in this period. Events appear when reported through the API, CLI, or a supported integration.",
 }: FinanceTimelineCardProps) {
-  const { t } = useTranslation();
+  useTranslation();
   return (
     <Card>
       <CardHeader className="px-4 pt-4 pb-1">
-        <CardTitle className="text-base">{t("Recent financial events")}</CardTitle>
-        <CardDescription>{t("Top-ups, fees, credits, commitments, and other non-request charges.")}</CardDescription>
+        <CardTitle className="text-base">{translateInstant("Recent financial events")}</CardTitle>
+        <CardDescription>{translateInstant("Provider charges, subscriptions, fees, and credits. Reported separately from run-cost estimates.")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-3 px-4 pb-4 pt-3">
         {rows.length === 0 ? (
-          <p className="text-sm text-muted-foreground">{t(emptyMessage)}</p>
+          <p className="text-sm text-muted-foreground">{emptyMessage}</p>
         ) : (
           rows.map((row) => (
             <div
@@ -38,7 +39,7 @@ export function FinanceTimelineCard({
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 space-y-2">
                   <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant="secondary">{financeEventKindDisplayName(row.eventKind)}</Badge>
+                    <Badge variant="secondary">{row.metadataJson?.source === "provider_cost_report" ? "Provider cost report" : financeEventKindDisplayName(row.eventKind)}</Badge>
                     <Badge variant={row.direction === "credit" ? "outline" : "secondary"}>
                       {financeDirectionDisplayName(row.direction)}
                     </Badge>
@@ -52,16 +53,16 @@ export function FinanceTimelineCard({
                   {(row.description || row.externalInvoiceId || row.region || row.pricingTier) && (
                     <div className="space-y-1 text-xs text-muted-foreground">
                       {row.description ? <div>{row.description}</div> : null}
-                      {row.externalInvoiceId ? <div>{t("Invoice")} {row.externalInvoiceId}</div> : null}
-                      {row.region ? <div>{t("Region")} {row.region}</div> : null}
-                      {row.pricingTier ? <div>{t("Tier")} {row.pricingTier}</div> : null}
+                      {row.externalInvoiceId ? <div>{translateInstant("invoice")}{" "}{row.externalInvoiceId}</div> : null}
+                      {row.region ? <div>{translateInstant("region")}{" "}{row.region}</div> : null}
+                      {row.pricingTier ? <div>{translateInstant("tier")}{" "}{row.pricingTier}</div> : null}
                     </div>
                   )}
                 </div>
                 <div className="text-right tabular-nums">
-                  <div className="text-sm font-semibold">{formatCents(row.amountCents)}</div>
+                  <div className="text-sm font-semibold">{formatCents(row.amountCents, row.currency)}</div>
                   <div className="text-xs text-muted-foreground">{row.currency}</div>
-                  {row.estimated ? <div className="text-(length:--text-micro) uppercase tracking-(--tracking-eyebrow) text-amber-600">{t("estimated")}</div> : null}
+                  {row.estimated ? <div className="text-(length:--text-micro) uppercase tracking-(--tracking-eyebrow) text-amber-600">{translateInstant("estimated")}</div> : null}
                 </div>
               </div>
             </div>

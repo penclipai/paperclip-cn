@@ -16,17 +16,24 @@ export function getConfigSchema(): AdapterConfigSchema {
         type: "select",
         default: "auto",
         options: [
-          { value: "auto", label: "Auto (ACP preferred)" },
+          { value: "auto", label: "Default (ACP)" },
           { value: "cli", label: "Claude CLI" },
           { value: "acp", label: "ACP" },
         ],
-        hint: "Auto uses ACP when prerequisites pass and falls back to Claude CLI with diagnostics.",
+        hint: "Default uses ACP. If ACP is unavailable, the run fails with a setup error. Choose CLI explicitly to use it.",
       },
       {
         key: "agentCommand",
         label: "ACP server command",
         type: "text",
         hint: "Optional override for the Claude ACP server command. Defaults to the package-local claude-agent-acp binary.",
+        meta: acpVisible,
+      },
+      {
+        key: "agentArgv",
+        label: "ACP server argv (JSON)",
+        type: "textarea",
+        hint: "Optional JSON string array for an exact ACP launch, for example [\"claude-agent-acp\", \"--stdio\"]. This is required on Windows when an override includes arguments; raw command strings remain rejected.",
         meta: acpVisible,
       },
       {

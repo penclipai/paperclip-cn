@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useEffect, useRef, useState } from "react";
 import {
   Check,
@@ -152,11 +153,12 @@ function CopyUrlButton({ url, disabled }: { url: string; disabled?: boolean }) {
 }
 
 function UrlSegment({ entry, compact }: { entry: WorkspaceServiceControlEntry; compact?: boolean }) {
+  useTranslation();
   const displayUrl = formatServiceUrl(entry.url) ?? (entry.port ? `:${entry.port}` : null);
   const live = entry.state === "running" && Boolean(entry.url);
 
   if (!displayUrl) {
-    return <span className="font-mono text-xs text-muted-foreground/70">no url</span>;
+    return <span className="font-mono text-xs text-muted-foreground/70">{translateInstant("workspaceServiceControl.noUrl")}</span>;
   }
   return (
     <>
@@ -186,10 +188,10 @@ function UrlSegment({ entry, compact }: { entry: WorkspaceServiceControlEntry; c
           size="icon-xs"
           disabled={!live}
           className="text-muted-foreground hover:text-foreground"
-          title="Open in new tab"
+          title={translateInstant("issueOutput.openInNewTab")}
         >
           {live ? (
-            <a href={entry.url ?? undefined} target="_blank" rel="noreferrer" aria-label="Open in new tab">
+            <a href={entry.url ?? undefined} target="_blank" rel="noreferrer" aria-label={translateInstant("issueOutput.openInNewTab")}>
               <ExternalLink className="size-3" />
             </a>
           ) : (
@@ -208,6 +210,7 @@ function ActionSlots({
   entry: Pick<WorkspaceServiceControlEntry, "state" | "canStart">;
   onAction: (action: WorkspaceServiceControlAction) => void;
 }) {
+  useTranslation();
   const transitional = isTransitional(entry.state);
   const canStart = entry.canStart ?? true;
 
@@ -219,12 +222,11 @@ function ActionSlots({
         className="w-13 justify-center"
         disabled={!canStart}
         onClick={() => onAction("start")}
-        aria-label="Start"
-        title="Start"
+        aria-label={translateInstant("workspaceRuntime.action.start")}
+        title={translateInstant("workspaceRuntime.action.start")}
       >
         <Play className="size-3" />
-        Start
-      </Button>
+        {translateInstant("workspaceRuntime.action.start")}</Button>
     );
   }
 
@@ -236,8 +238,8 @@ function ActionSlots({
           size="icon-xs"
           disabled={!canStart}
           onClick={() => onAction("start")}
-          aria-label="Start"
-          title="Start"
+          aria-label={translateInstant("workspaceRuntime.action.start")}
+          title={translateInstant("workspaceRuntime.action.start")}
         >
           <Play className="size-3" />
         </Button>
@@ -246,8 +248,8 @@ function ActionSlots({
           size="icon-xs"
           disabled={!canStart}
           onClick={() => onAction("restart")}
-          aria-label="Restart"
-          title="Restart"
+          aria-label={translateInstant("devRestart.restartCommandPrefix")}
+          title={translateInstant("devRestart.restartCommandPrefix")}
           className="border border-border text-foreground"
         >
           <RotateCcw className="size-3" />
@@ -263,8 +265,8 @@ function ActionSlots({
         size="icon-xs"
         disabled={transitional}
         onClick={() => onAction("stop")}
-        aria-label="Stop"
-        title="Stop"
+        aria-label={translateInstant("Stop")}
+        title={translateInstant("Stop")}
         className="border border-border text-foreground"
       >
         <Square className="size-3" />
@@ -274,8 +276,8 @@ function ActionSlots({
         size="icon-xs"
         disabled={transitional || !canStart}
         onClick={() => onAction("restart")}
-        aria-label="Restart"
-        title="Restart"
+        aria-label={translateInstant("devRestart.restartCommandPrefix")}
+        title={translateInstant("devRestart.restartCommandPrefix")}
         className="border border-border text-foreground"
       >
         <RotateCcw className="size-3" />
@@ -291,6 +293,7 @@ function ServiceDetail({
   entry: WorkspaceServiceControlEntry;
   onViewLogs?: () => void;
 }) {
+  useTranslation();
   const detail = entry.exposureDetail ?? (entry.state === "failed" ? entry.failureDetail : null);
   if (!detail) return null;
   const exposureFailed = entry.exposureState === "failed" || entry.exposureState === "cleanup_pending";
@@ -305,8 +308,7 @@ function ServiceDetail({
             onClick={onViewLogs}
             className="font-medium text-foreground underline underline-offset-2 hover:text-foreground/80"
           >
-            View logs
-          </button>
+            {translateInstant("workspaceServiceControl.viewLogs")}</button>
         </>
       ) : null}
     </div>
@@ -428,6 +430,7 @@ function MultiServiceBar({
   defaultServicesOpen?: boolean;
   className?: string;
 }) {
+  useTranslation();
   const [open, setOpen] = useState(defaultServicesOpen ?? false);
   const runningCount = services.filter((entry) => entry.state === "running").length;
   const anyTransitional = services.some((entry) => isTransitional(entry.state));
@@ -462,13 +465,13 @@ function MultiServiceBar({
                 aria-label={`${runningCount} of ${services.length} services running — show services`}
               >
                 <StatusIndicator entry={aggregateEntry} />
-                <span className="whitespace-nowrap">{runningCount}/{services.length} running</span>
+                <span className="whitespace-nowrap">{runningCount}/{services.length} {translateInstant("runStatus.running")}</span>
                 <ChevronDown className="size-3 text-muted-foreground" />
               </button>
             </PopoverTrigger>
             <PopoverContent align="end" className="w-96 p-0" onOpenAutoFocus={(event) => event.preventDefault()}>
               <div className="px-4 pb-1 pt-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                Services · {services.length}
+                {translateInstant("Services ·")}{" "}{services.length}
               </div>
               <div className="divide-y divide-border px-4">
                 {services.map((entry) => (
@@ -476,9 +479,9 @@ function MultiServiceBar({
                 ))}
               </div>
               <div className="flex items-center gap-1 border-t border-border px-4 py-2">
-                <Button variant="ghost" size="xs" onClick={() => onAction("start", null)}>Start all</Button>
-                <Button variant="ghost" size="xs" onClick={() => onAction("stop", null)}>Stop all</Button>
-                <Button variant="ghost" size="xs" onClick={() => onAction("restart", null)}>Restart all</Button>
+                <Button variant="ghost" size="xs" onClick={() => onAction("start", null)}>{translateInstant("workspaceServiceControl.startAll")}</Button>
+                <Button variant="ghost" size="xs" onClick={() => onAction("stop", null)}>{translateInstant("workspaceServiceControl.stopAll")}</Button>
+                <Button variant="ghost" size="xs" onClick={() => onAction("restart", null)}>{translateInstant("workspaceServiceControl.restartAll")}</Button>
                 {onManageServices ? (
                   <Button
                     variant="link"
@@ -486,8 +489,7 @@ function MultiServiceBar({
                     className="ml-auto text-muted-foreground"
                     onClick={onManageServices}
                   >
-                    Manage in Services tab →
-                  </Button>
+                    {translateInstant("workspaceServiceControl.manageServices")}</Button>
                 ) : null}
               </div>
             </PopoverContent>
@@ -500,7 +502,7 @@ function MultiServiceBar({
                 <UrlSegment entry={primary} />
               </>
             ) : (
-              <span className="font-mono text-xs text-muted-foreground/70">no url</span>
+              <span className="font-mono text-xs text-muted-foreground/70">{translateInstant("workspaceServiceControl.noUrl")}</span>
             )}
           </div>
           <div className="mx-3 hidden h-5 w-px bg-border sm:block" />

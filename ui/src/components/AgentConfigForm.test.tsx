@@ -9,8 +9,18 @@ import type { Agent } from "@penclipai/shared";
 import { AgentConfigForm } from "./AgentConfigForm";
 import { ToastProvider } from "../context/ToastContext";
 
-const translations: Record<string, string> = {
+const translations = vi.hoisted(() => ({
   "agentConfig.identity": "身份信息",
+  "Identity": "身份信息",
+  "Reports to": "汇报对象",
+  "Permissions & Configuration": "权限与配置",
+  "Adapter": "适配器",
+  "Test": "检测环境",
+  "Configuration": "配置",
+  "Run Policy": "运行策略",
+  "Advanced Run Policy": "高级运行策略",
+  "Command": "命令",
+  "Timeout (sec)": "超时时间（秒）",
   "agentConfig.name": "名称",
   "agentConfig.agentName": "智能体名称",
   "agentConfig.title": "头衔",
@@ -38,7 +48,7 @@ const translations: Record<string, string> = {
   "agentConfig.cooldownSec": "冷却时间（秒）",
   "agentConfig.maxConcurrentRuns": "最大并发运行数",
   "agentConfig.auto": "自动",
-};
+}));
 
 vi.mock("react-i18next", async (importOriginal) => {
   const actual = await importOriginal<typeof import("react-i18next")>();
@@ -84,6 +94,10 @@ vi.mock("../context/CompanyContext", () => ({
   }),
 }));
 
+vi.mock("../i18n", () => ({
+  translateInstant: (key: string, options?: Record<string, unknown>) => translations[key] ?? String(options?.defaultValue ?? key),
+}));
+
 vi.mock("../adapters", () => ({
   getUIAdapter: () => ({
     ConfigFields: () => null,
@@ -98,6 +112,7 @@ vi.mock("../adapters/metadata", () => ({
 
 vi.mock("../adapters/adapter-display-registry", () => ({
   getAdapterLabel: () => "Claude Code (local)",
+  getAdapterLabels: () => ({ claude_local: "Claude Code (local)" }),
   getAdapterDisplay: () => ({
     label: "Claude Code (local)",
     description: "Local Claude agent",
@@ -245,13 +260,10 @@ describe("AgentConfigForm localization", () => {
     expect(container.textContent).toContain("名称");
     expect(container.textContent).toContain("头衔");
     expect(container.textContent).toContain("汇报对象");
-    expect(container.textContent).toContain("能力");
     expect(container.textContent).toContain("适配器");
     expect(container.textContent).toContain("检测环境");
-    expect(container.textContent).toContain("权限与配置");
-    expect(container.textContent).toContain("命令");
+    expect(container.textContent).toContain("配置");
     expect(container.textContent).toContain("环境变量");
-    expect(container.textContent).toContain("超时时间（秒）");
     expect(container.textContent).toContain("运行策略");
     expect(container.textContent).toContain("按间隔触发心跳");
     expect(container.textContent).toContain("高级运行策略");
@@ -260,11 +272,10 @@ describe("AgentConfigForm localization", () => {
       .filter(Boolean);
     expect(placeholders).toContain("智能体名称");
     expect(placeholders).toContain("例如：工程副总裁");
-    expect(placeholders).toContain("描述这个智能体能做什么...");
 
     expect(container.textContent).not.toContain("Identity");
     expect(container.textContent).not.toContain("Reports to");
-    expect(container.textContent).not.toContain("Permissions & Configuration");
+    expect(container.textContent).not.toContain("Configuration");
 
     act(() => root.unmount());
   });

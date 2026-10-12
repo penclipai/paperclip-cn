@@ -18,6 +18,7 @@ import type {
   AdapterExecutionTargetProcessSessionBridgeHandle,
   PreparedAdapterExecutionTargetRuntime,
 } from "@penclipai/adapter-utils/execution-target";
+import type { WorkspaceRestoreOutcome } from "../workspace-restore-merge.js";
 
 // ---------------------------------------------------------------------------
 // Resource identity
@@ -92,8 +93,13 @@ export interface StagedRuntimeResource {
  * `AcpxPreparedRuntime.remoteManagedHomeTeardown` and `remoteStagingEnvDelta`.
  */
 export interface ManagedHomeResource {
-  /** Per-run copy-back hook. Runs the auth copy-back on every exit path. */
-  readonly teardown: () => Promise<void>;
+  /**
+   * Per-run copy-back hook. Runs the auth copy-back and the workspace restore
+   * on every exit path. Resolves to the workspace-restore outcome — never
+   * rejects — so the run coordinator can surface a failed restore on the run
+   * record without changing the run's exit code or status.
+   */
+  readonly teardown: () => Promise<WorkspaceRestoreOutcome>;
   /** The env keys the seam mutated on this run. */
   readonly envDelta: Record<string, string>;
 }
@@ -427,14 +433,21 @@ export interface PaperclipClaudeSettingsIdentity {
 }
 
 /**
- * The 17 fields the session fingerprint hashes. Company, agent, and task
+ * The 18 fields the session fingerprint hashes. Company, agent, and task
  * identifiers are NOT here; they scope the outer session key only (see
  * `SessionKeyIdentity`). A change to any field here invalidates a warm handle
  * or a resumable session and forces a fresh launch.
  */
 export interface SessionFingerprintIdentity {
+  readonly agentIdentityKeyId?: string;
   readonly acpxAgent: string;
   readonly agentCommand: string;
+  /**
+   * Structured executable and arguments, when configured. This is separate
+   * from the display-safe command name so argument changes invalidate a warm
+   * session without reconstructing an unsafe command string.
+   */
+  readonly agentArgv?: readonly string[];
   readonly cwd: string;
   readonly mode: AcpxRunMode;
   readonly permissionMode: AcpxPermissionMode;

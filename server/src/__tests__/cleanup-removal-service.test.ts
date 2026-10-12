@@ -1,3 +1,4 @@
+import { createAgentLifecycle, configureAgentLifecycle } from "../services/agent-lifecycle.js";
 import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
@@ -41,7 +42,8 @@ describeEmbeddedPostgres("cleanup removal services", () => {
   beforeAll(async () => {
     tempDb = await startEmbeddedPostgresTestDatabase("paperclip-cleanup-removal-");
     db = createDb(tempDb.connectionString);
-  }, 60_000);
+    configureAgentLifecycle(db, { requiredPluginIds: async () => [], runPlugin: async () => "complete", runHost: async () => "complete" });
+  }, 20_000);
 
   afterEach(async () => {
     await db.delete(heartbeatRunEvents);
@@ -146,6 +148,7 @@ describeEmbeddedPostgres("cleanup removal services", () => {
       createdByRunId: runId,
     });
 
+    await db.update(agents).set({ status: "terminated", lifecycleState: "terminated" }).where(eq(agents.id, agentId));
     const removed = await agentService(db).remove(agentId);
 
     expect(removed?.id).toBe(agentId);
@@ -170,7 +173,7 @@ describeEmbeddedPostgres("cleanup removal services", () => {
     await db.insert(companySkills).values({
       id: randomUUID(),
       companyId,
-      key: "penclipai/paperclip-cn/paperclip",
+      key: "paperclipai/paperclip/paperclip",
       slug: "paperclip",
       name: "Paperclip",
       markdown: "# Paperclip",

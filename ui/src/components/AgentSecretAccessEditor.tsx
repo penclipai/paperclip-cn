@@ -1,3 +1,4 @@
+import { translateInstant } from "@/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { KeyRound, Plus, ServerCog, Trash2, Variable } from "lucide-react";
@@ -172,14 +173,14 @@ export interface AgentSecretAccessEditorProps {
 }
 
 function DeliveryBadge({ mode }: { mode: "env" | "api" }) {
+  useTranslation();
   if (mode === "env") {
     return (
       <Badge
         variant="outline"
         className="h-5 gap-1 px-1.5 text-(length:--text-nano) font-normal border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-300"
       >
-        <Variable className="size-3" /> Env var
-      </Badge>
+        <Variable className="size-3" /> {translateInstant("agentSecretAccess.envVar")}</Badge>
     );
   }
   return (
@@ -187,8 +188,7 @@ function DeliveryBadge({ mode }: { mode: "env" | "api" }) {
       variant="outline"
       className="h-5 gap-1 px-1.5 text-(length:--text-nano) font-normal border-violet-500/30 bg-violet-500/10 text-violet-700 dark:text-violet-300"
     >
-      <ServerCog className="size-3" /> API access
-    </Badge>
+      <ServerCog className="size-3" /> {translateInstant("agentSecretAccess.apiAccess")}</Badge>
   );
 }
 
@@ -314,7 +314,7 @@ export function AgentSecretAccessEditor({
                     {secret.pending ? <ProposedBadge /> : null}
                   </div>
                   <p className="flex flex-wrap items-center gap-1 text-muted-foreground">
-                    <span>proposed by {proposal.proposedBy.name}</span>
+                    <span>{translateInstant("proposed by")}{" "}{proposal.proposedBy.name}</span>
                     <span aria-hidden="true">·</span>
                     <span className="truncate italic">“{proposal.justification}”</span>
                   </p>
@@ -454,7 +454,7 @@ export function AgentSecretAccessEditor({
                         disabled={disabled || !selectedSecret}
                         aria-label={t("agentSecrets.version", { defaultValue: "Version" })}
                       >
-                        <option value="latest">latest</option>
+                        <option value="latest">{translateInstant("routineHistory.env.latest")}</option>
                         {selectedSecret
                           ? Array.from({ length: Math.max(0, selectedSecret.latestVersion) }, (_, index) => {
                               const version = selectedSecret.latestVersion - index;
@@ -503,8 +503,7 @@ export function AgentSecretAccessEditor({
       </div>
 
       <p className="text-(length:--text-micro) text-muted-foreground/70">
-        {deliveryModeDescription("api")} The agent reads them by alias through <code>GET /agents/me/secrets</code>.
-      </p>
+        {deliveryModeDescription("api")} {translateInstant("agentSecretAccess.readByAlias")}{" "}<code>GET /agents/me/secrets</code>{translateInstant(".")}</p>
     </div>
   );
 }

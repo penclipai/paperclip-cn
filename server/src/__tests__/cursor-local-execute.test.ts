@@ -1,10 +1,22 @@
-import { describe, expect, it } from "vitest";
-import { existsSync } from "node:fs";
+import { describe, expect, it, vi } from "vitest";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { runChildProcess } from "@penclipai/adapter-utils/server-utils";
 import { execute } from "@penclipai/adapter-cursor-local/server";
+
+// These fixtures verify command discovery, environment and real CLI execution.
+// Callback bridge startup/teardown has its own execution-target coverage; starting
+// that server here adds unrelated process and polling work to command assertions.
+vi.mock("@penclipai/adapter-utils/execution-target", async () => {
+  const actual = await vi.importActual<typeof import("@penclipai/adapter-utils/execution-target")>(
+    "@penclipai/adapter-utils/execution-target",
+  );
+  return {
+    ...actual,
+    startAdapterExecutionTargetPaperclipBridge: async () => null,
+  };
+});
 
 async function writeFakeCursorCommand(commandPath: string): Promise<void> {
   const script = `#!/usr/bin/env node
@@ -75,66 +87,6 @@ console.log(JSON.stringify({
   await fs.chmod(commandPath, 0o755);
 }
 
-function resolveTestPosixShellCommand() {
-  if (process.platform !== "win32") return "sh";
-  const candidates = [
-    "C:\\Program Files\\Git\\usr\\bin\\sh.exe",
-    "C:\\Program Files\\Git\\bin\\bash.exe",
-  ];
-  return candidates.find((candidate) => existsSync(candidate)) ?? "sh";
-}
-
-function rewriteWindowsPathsForGitShell(script: string) {
-  if (process.platform !== "win32") return script;
-  return script.replace(/([A-Za-z]):\\([^'"\s]*)/g, (_match, drive: string, rest: string) =>
-    `/${drive.toLowerCase()}/${rest.replace(/\\/g, "/")}`,
-  );
-}
-
-function toGitShellPath(value: string) {
-  if (process.platform !== "win32") return value;
-  return value.replace(/^([A-Za-z]):\\?/, (_match, drive: string) => `/${drive.toLowerCase()}/`).replace(/\\/g, "/");
-}
-
-function fromGitShellPath(value: string) {
-  if (process.platform !== "win32") return value;
-  return value.replace(/^\/([a-zA-Z])\/(.*)$/, (_match, drive: string, rest: string) =>
-    `${drive.toUpperCase()}:\\${rest.replace(/\//g, "\\")}`,
-  );
-}
-
-function normalizePathValueForSearch(value: string) {
-  if (process.platform !== "win32") return value;
-  return value
-    .replace(/\\/g, "/")
-    .replace(/(^|[;:])([A-Za-z]):\//g, (_match, prefix: string, drive: string) => `${prefix}/${drive.toLowerCase()}/`)
-    .toLowerCase();
-}
-
-function augmentTestPosixPath(env: Record<string, string>) {
-  if (process.platform !== "win32") return env;
-  const entries = [
-    "/usr/bin",
-    "/bin",
-    toGitShellPath(path.dirname(process.execPath)),
-    toGitShellPath("C:\\Program Files\\Git\\usr\\bin"),
-    toGitShellPath("C:\\Program Files\\Git\\bin"),
-  ].filter((entry) => entry.startsWith("/") || existsSync(fromGitShellPath(entry)));
-  return {
-    ...env,
-    PATH: [...entries, env.PATH ?? process.env.PATH ?? ""].join(":"),
-  };
-}
-
-function envForGitShell(env: Record<string, string>) {
-  if (process.platform !== "win32") return env;
-  const home = env.HOME ?? process.env.HOME;
-  return augmentTestPosixPath({
-    ...env,
-    ...(home ? { HOME: toGitShellPath(home) } : {}),
-  });
-}
-
 function createLocalSandboxRunner() {
   let counter = 0;
   return {
@@ -149,20 +101,14 @@ function createLocalSandboxRunner() {
       onSpawn?: (meta: { pid: number; startedAt: string }) => Promise<void>;
     }) => {
       counter += 1;
-      const command = input.command === "sh" ? resolveTestPosixShellCommand() : input.command;
-      const hostCommand = input.command === "sh" ? command : fromGitShellPath(command);
-      const args = [...(input.args ?? [])];
-      if (
-        input.command === "sh" &&
-        (args[0] === "-c" || args[0] === "-lc") &&
-        typeof args[1] === "string"
-      ) {
-        args[1] = rewriteWindowsPathsForGitShell(args[1]);
+      // Both sandbox fixtures install their fake CLI up front. Never fall back
+      // to a network install if discovery regresses on another host or shell.
+      if (input.args?.some(arg => arg.includes("curl https://cursor.com/install"))) {
+        throw new Error("Sandbox fixture did not discover its preinstalled Cursor CLI");
       }
-      const hostCwd = fromGitShellPath(input.cwd ?? process.cwd());
-      return await runChildProcess(`cursor-sandbox-execute-${counter}`, hostCommand, args, {
-        cwd: hostCwd,
-        env: input.command === "sh" ? envForGitShell(input.env ?? {}) : input.env ?? {},
+      return await runChildProcess(`cursor-sandbox-execute-${counter}`, input.command, input.args ?? [], {
+        cwd: input.cwd ?? process.cwd(),
+        env: input.env ?? {},
         stdin: input.stdin,
         timeoutSec: Math.max(1, Math.ceil((input.timeoutMs ?? 30_000) / 1000)),
         graceSec: 5,
@@ -226,9 +172,7 @@ describe("cursor execute", () => {
           },
           promptTemplate: "Follow the paperclip heartbeat.",
         },
-        context: {
-          paperclipLocalizationPromptMarkdown: "Reply in zh-CN.",
-        },
+        context: {},
         authToken: "run-jwt-token",
         onLog: async () => {},
         onMeta: async (meta) => {
@@ -254,15 +198,8 @@ describe("cursor execute", () => {
       );
       expect(capture.prompt).toContain("Paperclip runtime note:");
       expect(capture.prompt).toContain("PAPERCLIP_API_KEY");
-      expect(capture.prompt).toContain("Reply in zh-CN.");
-      expect(capture.prompt.indexOf("Reply in zh-CN.")).toBeLessThan(
-        capture.prompt.indexOf("Paperclip runtime note:"),
-      );
       expect(invocationPrompt).toContain("Paperclip runtime note:");
       expect(invocationPrompt).toContain("PAPERCLIP_API_URL");
-      expect(invocationPrompt.indexOf("Reply in zh-CN.")).toBeLessThan(
-        invocationPrompt.indexOf("Paperclip runtime note:"),
-      );
     } finally {
       if (previousHome === undefined) {
         delete process.env.HOME;
@@ -333,6 +270,8 @@ describe("cursor execute", () => {
 
   it("injects company-library runtime skills into the Cursor skills home before execution", async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-cursor-execute-runtime-skill-"));
+    const processHome = path.join(root, "process-home");
+    const configuredHome = path.join(root, "configured-home");
     const workspace = path.join(root, "workspace");
     const commandPath = path.join(root, "agent");
     const runtimeSkillsRoot = path.join(root, "runtime-skills");
@@ -343,7 +282,7 @@ describe("cursor execute", () => {
     const asciiHeartDir = await createSkillDir(runtimeSkillsRoot, "ascii-heart");
 
     const previousHome = process.env.HOME;
-    process.env.HOME = root;
+    process.env.HOME = processHome;
 
     try {
       const result = await execute({
@@ -365,6 +304,7 @@ describe("cursor execute", () => {
           command: commandPath,
           cwd: workspace,
           model: "auto",
+          env: { HOME: configuredHome },
           paperclipRuntimeSkills: [
             {
               name: "paperclip",
@@ -388,10 +328,12 @@ describe("cursor execute", () => {
 
       expect(result.exitCode).toBe(0);
       expect(result.errorMessage).toBeNull();
-      expect((await fs.lstat(path.join(root, ".cursor", "skills", "ascii-heart"))).isSymbolicLink()).toBe(true);
-      expect(await fs.realpath(path.join(root, ".cursor", "skills", "ascii-heart"))).toBe(
+      const installedSkill = path.join(configuredHome, ".cursor", "skills", "ascii-heart");
+      expect((await fs.lstat(installedSkill)).isSymbolicLink()).toBe(true);
+      expect(await fs.realpath(installedSkill)).toBe(
         await fs.realpath(asciiHeartDir),
       );
+      await expect(fs.lstat(path.join(processHome, ".cursor", "skills", "ascii-heart"))).rejects.toThrow();
     } finally {
       if (previousHome === undefined) {
         delete process.env.HOME;
@@ -406,13 +348,15 @@ describe("cursor execute", () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-cursor-sandbox-execute-"));
     const homeDir = path.join(root, "home");
     const workspace = path.join(root, "workspace");
-    const remoteWorkspaceLocal = path.join(root, "remote-workspace");
-    const remoteWorkspace = toGitShellPath(remoteWorkspaceLocal);
+    const remoteWorkspace = path.join(root, "remote-workspace");
     const capturePath = path.join(root, "capture.json");
     const cursorAgentPath = path.join(homeDir, ".local", "bin", "cursor-agent");
     await fs.mkdir(workspace, { recursive: true });
-    await fs.mkdir(remoteWorkspaceLocal, { recursive: true });
+    await fs.mkdir(remoteWorkspace, { recursive: true });
     await writeFakeSandboxCursorAgent(cursorAgentPath, capturePath);
+
+    const previousHome = process.env.HOME;
+    process.env.HOME = homeDir;
 
     try {
       const result = await execute({
@@ -440,9 +384,6 @@ describe("cursor execute", () => {
         config: {
           command: "agent",
           cwd: workspace,
-          env: {
-            HOME: homeDir,
-          },
           promptTemplate: "Follow the paperclip heartbeat.",
         },
         context: {},
@@ -458,31 +399,30 @@ describe("cursor execute", () => {
         path: string;
       };
       expect(capture.command).toBe(cursorAgentPath);
-      const capturedPath = normalizePathValueForSearch(capture.path);
-      const localBinPathEntry = normalizePathValueForSearch(toGitShellPath(path.join(homeDir, ".local", "bin")));
-      const cursorBinPathEntry = normalizePathValueForSearch(toGitShellPath(path.join(homeDir, ".cursor", "bin")));
-      expect(capturedPath).toContain(localBinPathEntry);
-      expect(capturedPath).toContain(cursorBinPathEntry);
-      expect(capturedPath.indexOf(localBinPathEntry)).toBeLessThan(capturedPath.indexOf(cursorBinPathEntry));
+      expect(capture.path.split(":")[0]).toBe(path.join(homeDir, ".local", "bin"));
       expect(capture.prompt).toContain("Follow the paperclip heartbeat.");
     } finally {
+      if (previousHome === undefined) delete process.env.HOME;
+      else process.env.HOME = previousHome;
       await fs.rm(root, { recursive: true, force: true });
     }
-  }, 180_000);
+  });
 
   it("keeps explicit command overrides for remote sandbox execution", async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-cursor-sandbox-explicit-"));
     const homeDir = path.join(root, "home");
     const workspace = path.join(root, "workspace");
-    const remoteWorkspaceLocal = path.join(root, "remote-workspace");
-    const remoteWorkspace = toGitShellPath(remoteWorkspaceLocal);
+    const remoteWorkspace = path.join(root, "remote-workspace");
     const capturePath = path.join(root, "capture.json");
     const cursorAgentPath = path.join(homeDir, ".local", "bin", "cursor-agent");
     const customCommandPath = path.join(root, "bin", "custom-cursor");
     await fs.mkdir(workspace, { recursive: true });
-    await fs.mkdir(remoteWorkspaceLocal, { recursive: true });
+    await fs.mkdir(remoteWorkspace, { recursive: true });
     await writeFakeSandboxCursorAgent(cursorAgentPath, path.join(root, "unused.json"));
     await writeFakeSandboxCursorAgent(customCommandPath, capturePath);
+
+    const previousHome = process.env.HOME;
+    process.env.HOME = homeDir;
 
     try {
       const result = await execute({
@@ -510,9 +450,6 @@ describe("cursor execute", () => {
         config: {
           command: customCommandPath,
           cwd: workspace,
-          env: {
-            HOME: homeDir,
-          },
           promptTemplate: "Follow the paperclip heartbeat.",
         },
         context: {},
@@ -524,7 +461,9 @@ describe("cursor execute", () => {
       const capture = JSON.parse(await fs.readFile(capturePath, "utf8")) as { command: string };
       expect(capture.command).toBe(customCommandPath);
     } finally {
+      if (previousHome === undefined) delete process.env.HOME;
+      else process.env.HOME = previousHome;
       await fs.rm(root, { recursive: true, force: true });
     }
-  }, 180_000);
+  });
 });

@@ -26,13 +26,13 @@ test("isPrereleaseVersion matches canary and nightly versions", () => {
 test("collectInternalDependencyProblems flags missing internal versions", () => {
   const manifest = {
     dependencies: {
-      "@paperclipai/plugin-sdk": "2026.425.0-canary.5",
+      "@penclipai/plugin-sdk": "2026.425.0-canary.5",
       e2b: "^2.19.0",
     },
   };
   const packageDocsByName = new Map([
     [
-      "@paperclipai/plugin-sdk",
+      "@penclipai/plugin-sdk",
       {
         versions: {
           "2026.427.0-canary.3": {},
@@ -43,19 +43,19 @@ test("collectInternalDependencyProblems flags missing internal versions", () => 
 
   assert.deepEqual(
     collectInternalDependencyProblems(manifest, packageDocsByName),
-    ["dependencies requires @paperclipai/plugin-sdk@2026.425.0-canary.5, but npm does not expose that version"],
+    ["dependencies requires @penclipai/plugin-sdk@2026.425.0-canary.5, but npm does not expose that version"],
   );
 });
 
 test("collectInternalDependencyProblems accepts version-specific manifests when the root document is stale", () => {
   const manifest = {
     dependencies: {
-      "@paperclipai/plugin-sdk": "2026.425.0-canary.5",
+      "@penclipai/plugin-sdk": "2026.425.0-canary.5",
     },
   };
   const packageDocsByName = new Map([
     [
-      "@paperclipai/plugin-sdk",
+      "@penclipai/plugin-sdk",
       {
         versions: {},
       },
@@ -63,8 +63,8 @@ test("collectInternalDependencyProblems accepts version-specific manifests when 
   ]);
   const packageManifestsByKey = new Map([
     [
-      createManifestLookupKey("@paperclipai/plugin-sdk", "2026.425.0-canary.5"),
-      { name: "@paperclipai/plugin-sdk", version: "2026.425.0-canary.5" },
+      createManifestLookupKey("@penclipai/plugin-sdk", "2026.425.0-canary.5"),
+      { name: "@penclipai/plugin-sdk", version: "2026.425.0-canary.5" },
     ],
   ]);
 
@@ -90,14 +90,14 @@ test("collectInternalDependencyProblems ignores peer dependency range specifiers
 test("collectInternalDependencyProblems reports unfetched transitive dependency metadata neutrally", () => {
   const manifest = {
     optionalDependencies: {
-      "@paperclipai/browser": "2026.430.0-canary.0",
+      "@penclipai/browser": "2026.430.0-canary.0",
     },
   };
 
   assert.deepEqual(
     collectInternalDependencyProblems(manifest, new Map()),
     [
-      "optionalDependencies requires @paperclipai/browser@2026.430.0-canary.0, but npm publication metadata was not fetched for that dependency",
+      "optionalDependencies requires @penclipai/browser@2026.430.0-canary.0, but npm publication metadata was not fetched for that dependency",
     ],
   );
 });
@@ -159,7 +159,7 @@ test("verifyPackageRegistryState tolerates a stale root versions map when dist-t
 test("collectInternalDependencyProblems accepts npm aliases to published internal packages", () => {
   const manifest = {
     dependencies: {
-      "@paperclipai/plugin-sdk": "npm:@penclipai/plugin-sdk@2026.505.0",
+      "@penclipai/plugin-sdk": "npm:@penclipai/plugin-sdk@2026.505.0",
       e2b: "^2.19.0",
     },
   };
@@ -180,7 +180,7 @@ test("collectInternalDependencyProblems accepts npm aliases to published interna
 test("collectInternalDependencyProblems flags missing npm alias targets", () => {
   const manifest = {
     dependencies: {
-      "@paperclipai/plugin-sdk": "npm:@penclipai/plugin-sdk@2026.505.1",
+      "@penclipai/plugin-sdk": "npm:@penclipai/plugin-sdk@2026.505.1",
     },
   };
   const packageDocsByName = new Map([
@@ -195,7 +195,7 @@ test("collectInternalDependencyProblems flags missing npm alias targets", () => 
   ]);
 
   assert.deepEqual(collectInternalDependencyProblems(manifest, packageDocsByName), [
-    "dependencies requires @paperclipai/plugin-sdk@npm:@penclipai/plugin-sdk@2026.505.1 (alias target @penclipai/plugin-sdk@2026.505.1), but npm does not expose that version",
+    "dependencies requires @penclipai/plugin-sdk@npm:@penclipai/plugin-sdk@2026.505.1 (alias target @penclipai/plugin-sdk@2026.505.1), but npm does not expose that version",
   ]);
 });
 
@@ -211,19 +211,19 @@ test("verifyPackageRegistryState fails when canary latest is left in place by de
         versions: {
           "2026.425.0-canary.5": {
             dependencies: {
-              "@paperclipai/plugin-sdk": "2026.425.0-canary.5",
+              "@penclipai/plugin-sdk": "2026.425.0-canary.5",
             },
           },
           "2026.427.0-canary.3": {
             dependencies: {
-              "@paperclipai/plugin-sdk": "2026.427.0-canary.3",
+              "@penclipai/plugin-sdk": "2026.427.0-canary.3",
             },
           },
         },
       },
     ],
     [
-      "@paperclipai/plugin-sdk",
+      "@penclipai/plugin-sdk",
       {
         versions: {
           "2026.427.0-canary.3": {},
@@ -244,7 +244,7 @@ test("verifyPackageRegistryState fails when canary latest is left in place by de
     }),
     [
       "@penclipai/plugin-e2b: latest dist-tag still resolves to prerelease 2026.425.0-canary.5; if that state is intentional, rerun the verification script directly with --allow-canary-latest",
-      "@penclipai/plugin-e2b@2026.425.0-canary.5 via latest: dependencies requires @paperclipai/plugin-sdk@2026.425.0-canary.5, but npm does not expose that version",
+      "@penclipai/plugin-e2b@2026.425.0-canary.5 via latest: dependencies requires @penclipai/plugin-sdk@2026.425.0-canary.5, but npm does not expose that version",
     ],
   );
 });
@@ -391,7 +391,7 @@ test("verifyPackageRegistryState still fails when the dist-tag is stale", () => 
 test("verifyPackageRegistryState ignores internal peer dependency ranges", () => {
   const packageDocsByName = new Map([
     [
-      "@paperclipai/plugin-sdk",
+      "@penclipai/plugin-sdk",
       {
         "dist-tags": {
           canary: "2026.430.0-canary.0",
@@ -409,8 +409,8 @@ test("verifyPackageRegistryState ignores internal peer dependency ranges", () =>
 
   assert.deepEqual(
     verifyPackageRegistryState({
-      packageName: "@paperclipai/plugin-sdk",
-      packageDoc: packageDocsByName.get("@paperclipai/plugin-sdk"),
+      packageName: "@penclipai/plugin-sdk",
+      packageDoc: packageDocsByName.get("@penclipai/plugin-sdk"),
       packageDocsByName,
       channel: "canary",
       distTag: "canary",

@@ -1,3 +1,4 @@
+import { configFieldsForSection } from "../config-sections";
 import type { AdapterConfigFieldsProps } from "../types";
 import {
   DraftInput,
@@ -9,6 +10,7 @@ import { useTranslation } from "react-i18next";
 const inputClass =
   "w-full rounded-md border border-border px-2.5 py-1.5 bg-transparent outline-none text-sm font-mono placeholder:text-muted-foreground/40";
 export function KimiLocalConfigFields({
+  section,
   isCreate,
   values,
   set,
@@ -19,7 +21,7 @@ export function KimiLocalConfigFields({
 }: AdapterConfigFieldsProps) {
   const { t } = useTranslation();
   if (hideInstructionsFile) return null;
-  return (
+  return configFieldsForSection(section, (
     <>
       <Field
         label={t("adapter.kimi.instructionsFile.label", { defaultValue: "Agent instructions file" })}
@@ -51,5 +53,5 @@ export function KimiLocalConfigFields({
         </div>
       </Field>
     </>
-  );
+  ));
 }

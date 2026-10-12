@@ -1,9 +1,10 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
 import { ExternalLink, Loader2, Play, ScrollText, Wrench } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "../lib/utils";
 import type { WorkspaceAccessState } from "../lib/workspace-access-state";
-import { useTranslation } from "react-i18next";
 
 /**
  * Workspace access surface (PAP-17572).
@@ -20,7 +21,9 @@ import { useTranslation } from "react-i18next";
  * and `degraded` the "todo" (amber) tone; the icon variants are the contrast-
  * corrected pair the token layer already tunes per mode.
  */
-const STATE_BADGE_CLASSES: Record<WorkspaceAccessState["state"], string> = {
+type ActiveWorkspaceAccessState = Exclude<WorkspaceAccessState["state"], "stopped">;
+
+const STATE_BADGE_CLASSES: Record<ActiveWorkspaceAccessState, string> = {
   provisioning: "border-border text-muted-foreground",
   validating: "border-border text-muted-foreground",
   ready: "border-(--status-task-done) text-(--status-task-icon-done)",
@@ -29,7 +32,7 @@ const STATE_BADGE_CLASSES: Record<WorkspaceAccessState["state"], string> = {
   failed: "border-destructive/50 text-destructive",
 };
 
-const STATE_DEFAULT_LABELS: Record<WorkspaceAccessState["state"], string> = {
+const STATE_LABELS: Record<ActiveWorkspaceAccessState, string> = {
   provisioning: "Provisioning",
   validating: "Validating clone",
   ready: "Ready",
@@ -63,7 +66,7 @@ export function WorkspaceAccessCard({
   onViewLogs: () => void;
   errorMessage?: string | null;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   const Icon = ACTION_ICONS[access.action.kind];
   const isWaiting = access.action.kind === "wait";
   const handlers: Record<WorkspaceAccessState["action"]["kind"], () => void> = {
@@ -82,18 +85,20 @@ export function WorkspaceAccessCard({
       <CardHeader>
         <div className="flex flex-wrap items-center gap-2">
           <CardTitle>{access.title}</CardTitle>
-          <span
-            data-testid="workspace-access-badge"
-            className={cn(
-              "inline-flex items-center rounded-full border bg-background px-2.5 py-1 text-xs",
-              STATE_BADGE_CLASSES[access.state],
-            )}
-          >
-            {(access.state === "repairing" || access.state === "provisioning") && (
-              <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
-            )}
-            {t(`workspaceAccess.state.${access.state}`, { defaultValue: STATE_DEFAULT_LABELS[access.state] })}
-          </span>
+          {access.state !== "stopped" ? (
+            <span
+              data-testid="workspace-access-badge"
+              className={cn(
+                "inline-flex items-center rounded-full border bg-background px-2.5 py-1 text-xs",
+                STATE_BADGE_CLASSES[access.state],
+              )}
+            >
+              {(access.state === "repairing" || access.state === "provisioning") && (
+                <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
+              )}
+              {STATE_LABELS[access.state]}
+            </span>
+          ) : null}
         </div>
         <CardDescription>{access.description}</CardDescription>
       </CardHeader>
@@ -114,17 +119,11 @@ export function WorkspaceAccessCard({
           </Button>
           {access.state === "ready" && !access.handoffAvailable ? (
             <span className="text-xs text-muted-foreground">
-              {t("workspaceAccess.snapshotCredentials", {
-                defaultValue: "Signs in with the snapshot-local credentials captured when this clone was made.",
-              })}
-            </span>
+              {translateInstant("workspaceAccess.snapshotCredentials")}</span>
           ) : null}
           {access.state === "ready" && access.handoffAvailable ? (
             <span className="text-xs text-muted-foreground">
-              {t("workspaceAccess.loginHandoff", {
-                defaultValue: "Uses a single-use login handoff — no password needed.",
-              })}
-            </span>
+              {translateInstant("workspaceAccess.loginHandoff")}</span>
           ) : null}
         </div>
         {errorMessage ? (

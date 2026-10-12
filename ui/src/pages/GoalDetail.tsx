@@ -1,7 +1,8 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
 import { useEffect } from "react";
 import { useParams } from "@/lib/router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
 import { goalsApi } from "../api/goals";
 import { projectsApi } from "../api/projects";
 import { assetsApi } from "../api/assets";
@@ -10,7 +11,6 @@ import { useCompany } from "../context/CompanyContext";
 import { useDialogActions } from "../context/DialogContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { queryKeys } from "../lib/queryKeys";
-import { translateInstant } from "../i18n";
 import { GoalProperties } from "../components/GoalProperties";
 import { GoalTree } from "../components/GoalTree";
 import { StatusBadge } from "../components/StatusBadge";
@@ -32,6 +32,7 @@ export function GoalPropertiesToggleButton({
   panelVisible,
   onShowProperties,
 }: GoalPropertiesToggleButtonProps) {
+  useTranslation();
   return (
     <Button
       variant="ghost"
@@ -41,7 +42,7 @@ export function GoalPropertiesToggleButton({
         panelVisible ? "opacity-0 pointer-events-none w-0 overflow-hidden" : "opacity-100",
       )}
       onClick={onShowProperties}
-      title={translateInstant("goalDetail.showProperties", { defaultValue: "Show properties" })}
+      title={translateInstant("Show properties")}
     >
       <SlidersHorizontal className="h-4 w-4" />
     </Button>
@@ -49,7 +50,7 @@ export function GoalPropertiesToggleButton({
 }
 
 export function GoalDetail() {
-  const { t } = useTranslation();
+  useTranslation();
   const { goalId } = useParams<{ goalId: string }>();
   const { selectedCompanyId, setSelectedCompanyId } = useCompany();
   const { openNewGoal } = useDialogActions();
@@ -102,7 +103,7 @@ export function GoalDetail() {
 
   const uploadImage = useMutation({
     mutationFn: async (file: File) => {
-      if (!resolvedCompanyId) throw new Error(t("common.noCompanySelected", { defaultValue: "No company selected" }));
+      if (!resolvedCompanyId) throw new Error("No organization selected");
       return assetsApi.uploadImage(
         resolvedCompanyId,
         file,
@@ -121,10 +122,10 @@ export function GoalDetail() {
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: t("Goals", { defaultValue: "Goals" }), href: "/goals" },
-      { label: goal?.title ?? goalId ?? t("Goal", { defaultValue: "Goal" }) }
+      { label: translateInstant("Goals"), href: "/goals" },
+      { label: goal?.title ?? goalId ?? translateInstant("Goal") }
     ]);
-  }, [setBreadcrumbs, goal, goalId, t]);
+  }, [setBreadcrumbs, goal, goalId]);
 
   useEffect(() => {
     if (goal) {
@@ -170,7 +171,7 @@ export function GoalDetail() {
           onSave={(description) => updateGoal.mutate({ description })}
           as="p"
           className="text-sm text-muted-foreground"
-          placeholder={t("Add a description...", { defaultValue: "Add a description..." })}
+          placeholder={translateInstant("Add a description...")}
           multiline
           imageUploadHandler={async (file) => {
             const asset = await uploadImage.mutateAsync(file);
@@ -182,10 +183,10 @@ export function GoalDetail() {
       <Tabs defaultValue="children">
         <TabsList>
           <TabsTrigger value="children">
-            {t("goalDetail.subGoalsTab", { count: childGoals.length, defaultValue: "Sub-goals ({{count}})" })}
+            {translateInstant("Sub-Goals (")}{childGoals.length})
           </TabsTrigger>
           <TabsTrigger value="projects">
-            {t("goalDetail.projectsTab", { count: linkedProjects.length, defaultValue: "Projects ({{count}})" })}
+            {translateInstant("Projects (")}{linkedProjects.length})
           </TabsTrigger>
         </TabsList>
 
@@ -197,11 +198,10 @@ export function GoalDetail() {
               onClick={() => openNewGoal({ parentId: goalId })}
             >
               <Plus className="h-3.5 w-3.5 mr-1.5" />
-              {t("goalDetail.newSubGoal", { defaultValue: "Sub-goal" })}
-            </Button>
+              {translateInstant("Sub Goal")}</Button>
           </div>
           {childGoals.length === 0 ? (
-            <p className="text-sm text-muted-foreground">{t("goalDetail.noSubGoals", { defaultValue: "No sub-goals." })}</p>
+            <p className="text-sm text-muted-foreground">{translateInstant("goalDetail.noSubGoals")}</p>
           ) : (
             <GoalTree goals={childGoals} goalLink={(g) => `/goals/${g.id}`} />
           )}
@@ -209,9 +209,7 @@ export function GoalDetail() {
 
         <TabsContent value="projects" className="mt-4">
           {linkedProjects.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              {t("No linked projects.", { defaultValue: "No linked projects." })}
-            </p>
+            <p className="text-sm text-muted-foreground">{translateInstant("No linked projects.")}</p>
           ) : (
             <div className="border border-border">
               {linkedProjects.map((project) => (

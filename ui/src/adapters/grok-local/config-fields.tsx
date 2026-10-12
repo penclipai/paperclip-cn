@@ -1,3 +1,4 @@
+import { configFieldsForSection } from "../config-sections";
 import type { AdapterConfigFieldsProps } from "../types";
 import { useTranslation } from "react-i18next";
 import {
@@ -12,6 +13,7 @@ const instructionsFileHint =
   "Absolute path to a markdown file (e.g. AGENTS.md) that defines this agent's behavior. Paperclip stages it into the Grok workspace as Agents.md when possible.";
 
 export function GrokLocalConfigFields({
+  section,
   isCreate,
   values,
   set,
@@ -22,7 +24,7 @@ export function GrokLocalConfigFields({
 }: AdapterConfigFieldsProps) {
   const { t } = useTranslation();
   if (hideInstructionsFile) return null;
-  return (
+  return configFieldsForSection(section, (
     <>
       <Field
         label={t("agentConfig.instructionsFileLabel", {
@@ -58,5 +60,5 @@ export function GrokLocalConfigFields({
         </div>
       </Field>
     </>
-  );
+  ));
 }

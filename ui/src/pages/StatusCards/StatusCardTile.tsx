@@ -1,3 +1,4 @@
+import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
 import { useMemo, type MouseEvent } from "react";
 import { Link } from "react-router-dom";
@@ -145,7 +146,7 @@ export function StatusCardTile({
           )}
           title={card.title ?? card.interestPrompt}
         >
-          {card.title ?? "New card"}
+          {card.title ?? translateInstant("statusCards.create.newCard")}
         </span>
         <div onClick={(event) => event.stopPropagation()}>
           <DropdownMenu>
@@ -242,7 +243,7 @@ export function StatusCardTile({
                     recompilePending && "animate-pulse",
                   )}
                 />
-                {recompilePending ? "Starting…" : "Run now"}
+                {recompilePending ? translateInstant("workspaceService.status.starting") : translateInstant("Run now")}
               </button>
             )}
           </div>
@@ -288,7 +289,7 @@ export function StatusCardTile({
           >
             <span>
               {card.pendingChangeCount}{" "}
-              {card.pendingChangeCount === 1 ? "change" : "changes"}{" "}
+              {card.pendingChangeCount === 1 ? translateInstant("issueRecoveryAction.repair.change") : translateInstant("issueRecoveryAction.repair.changes")}{" "}
               {t("statusCards.tile.sinceLastUpdate")}
             </span>
             <span className="shrink-0 font-medium text-amber-700 dark:text-amber-400">

@@ -1,3 +1,5 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
 import { ReviewQueueCard } from "../ReviewQueueCard";
 import { QuarantinedActionsReview } from "./SetupPanel";
 import type { AppDetailSectionProps } from "./types";
@@ -11,10 +13,12 @@ export function ReviewPanel({
   Partial<Pick<AppDetailSectionProps, "quarantined" | "pending">> & {
     onReviewQuarantined?: (enabledIds: string[]) => void;
   }) {
+  useTranslation();
   const showsQuarantinedActions = quarantined.length > 0 && !!onReviewQuarantined;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
+      <h2 className="text-lg font-semibold text-foreground">{translateInstant("Review")}</h2>
       {showsQuarantinedActions ? (
         <QuarantinedActionsReview
           entries={quarantined}
@@ -26,6 +30,7 @@ export function ReviewPanel({
         connectionId={connectionId}
         heading="Waiting for your OK"
         emptyState={showsQuarantinedActions ? "hidden" : "reassure"}
+        plain
       />
     </div>
   );

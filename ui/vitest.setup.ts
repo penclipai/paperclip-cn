@@ -63,7 +63,7 @@ if (!i18n.isInitialized) {
     keySeparator: false,
     nsSeparator: false,
     returnNull: false,
-    initImmediate: false,
+    initAsync: false,
     interpolation: {
       escapeValue: false,
     },

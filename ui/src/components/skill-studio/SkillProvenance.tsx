@@ -1,3 +1,4 @@
+import { translateInstant } from "@/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { FolderGit2, GitFork } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -91,7 +92,7 @@ export function ProjectScanNotice({
           {t("skillStudio.provenance.skillLivesIn", {
             defaultValue: "This skill lives in",
           })}{" "}
-          <span className="font-mono text-foreground">{location}</span>.{" "}
+          <span className="font-mono text-foreground">{location}</span>{translateInstant(".")}{" "}
           {t("skillStudio.provenance.uncommittedSaves", {
             defaultValue:
               "Saves write to the project working tree and are not committed.",

@@ -1,3 +1,4 @@
+import { translateInstant } from "@/i18n";
 import { useState } from "react";
 import { Apple, Monitor, Terminal } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -88,8 +89,7 @@ export function PathInstructionsModal({
           {current.steps.map((step, i) => (
             <li key={i} className="flex gap-2">
               <span className="text-muted-foreground font-mono text-xs mt-0.5 shrink-0">
-                {i + 1}.
-              </span>
+                {i + 1}{translateInstant(".")}</span>
               <span>{step}</span>
             </li>
           ))}

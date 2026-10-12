@@ -88,13 +88,13 @@ const RATE_LIMIT_KEY_FIELDS: RateLimitKeyBy[] = ["company", "agent", "applicatio
 const CAPABILITY_OPTIONS: Array<{ value: ToolRiskLevel; labelKey: string; defaultLabel: string; sentenceKey: string; defaultSentence: string }> = [
   { value: "read", labelKey: "tools.policies.capability.read.label", defaultLabel: "Read-only", sentenceKey: "tools.policies.capability.read.sentence", defaultSentence: "read-only actions" },
   { value: "write", labelKey: "tools.policies.capability.write.label", defaultLabel: "Makes changes", sentenceKey: "tools.policies.capability.write.sentence", defaultSentence: "actions that make changes" },
-  { value: "destructive", labelKey: "tools.policies.capability.destructive.label", defaultLabel: "Destructive", sentenceKey: "tools.policies.capability.destructive.sentence", defaultSentence: "destructive actions" },
+  { value: "destructive", labelKey: "tools.policies.capability.destructive.label", get defaultLabel() { return translateInstant("Destructive"); }, sentenceKey: "tools.policies.capability.destructive.sentence", defaultSentence: "destructive actions" },
 ];
 const OUTCOMES: Array<{ value: BuilderPolicyType; labelKey: string; defaultLabel: string }> = [
   { value: "allow", labelKey: "tools.policies.outcome.allow", defaultLabel: "Allow" },
   { value: "block", labelKey: "tools.policies.outcome.block", defaultLabel: "Block" },
   { value: "require_approval", labelKey: "tools.policies.outcome.askFirst", defaultLabel: "Ask first" },
-  { value: "rate_limit", labelKey: "tools.policies.outcome.limit", defaultLabel: "Limit" },
+  { value: "rate_limit", labelKey: "tools.policies.outcome.limit", get defaultLabel() { return translateInstant("Limit"); } },
 ];
 const SUPPORTED_BUILDER_POLICY_TYPES = new Set<string>(OUTCOMES.map((outcome) => outcome.value));
 
@@ -484,7 +484,7 @@ function PolicySimulator({
         <div className="flex-1 space-y-4 overflow-y-auto p-4">
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label>{t("tools.common.agent", { defaultValue: "Agent" })}</Label>
+              <Label>{t("tools.common.agent", { defaultValue: translateInstant("Agent") })}</Label>
               <Select value={agentId} onValueChange={setAgentId}>
                 <SelectTrigger>
                   <SelectValue placeholder={t("tools.policies.simulator.selectAgent", { defaultValue: "Select an agent" })} />
@@ -499,12 +499,12 @@ function PolicySimulator({
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="test-action">{t("tools.common.action", { defaultValue: "Action" })}</Label>
+              <Label htmlFor="test-action">{t("tools.common.action", { defaultValue: translateInstant("Action") })}</Label>
               <Input
                 id="test-action"
                 value={toolName}
                 onChange={(e) => setToolName(e.target.value)}
-                placeholder="e.g. gmail.send_email"
+                placeholder={translateInstant("e.g. gmail.send_email")}
               />
             </div>
           </div>
@@ -531,7 +531,7 @@ function PolicySimulator({
                 )}
               </div>
               <details className="text-xs text-muted-foreground">
-                <summary className="cursor-pointer text-foreground">{t("tools.common.details", { defaultValue: "Details" })}</summary>
+                <summary className="cursor-pointer text-foreground">{t("tools.common.details", { defaultValue: translateInstant("Details") })}</summary>
                 <div className="mt-2 space-y-1 font-mono">
                   <div>{t("tools.policies.simulator.reason", { defaultValue: "reason:" })} {result.reasonCode}</div>
                   <div>{t("tools.policies.simulator.matchedRuleIds", { defaultValue: "matched rule ids:" })} {result.matchedPolicyIds.length ? result.matchedPolicyIds.join(", ") : t("tools.common.none", { defaultValue: "none" })}</div>
@@ -542,7 +542,7 @@ function PolicySimulator({
           ) : null}
         </div>
         <SheetFooter className="border-t border-border">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>{t("tools.common.close", { defaultValue: "Close" })}</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>{t("tools.common.close", { defaultValue: translateInstant("Close") })}</Button>
         </SheetFooter>
       </SheetContent>
     </Sheet>
@@ -608,7 +608,7 @@ function RuleBuilder({
           </h2>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={onCancel}>{t("tools.common.cancel", { defaultValue: "Cancel" })}</Button>
+          <Button variant="outline" size="sm" onClick={onCancel}>{t("tools.common.cancel", { defaultValue: translateInstant("Cancel") })}</Button>
           <Button size="sm" onClick={onSave} disabled={saving}>
             {saving
               ? t("tools.common.saving", { defaultValue: "Saving..." })
@@ -774,7 +774,7 @@ function RuleBuilder({
       <details className="rounded-md border border-border p-3">
         <summary className="flex cursor-pointer items-center gap-2 text-sm font-semibold text-foreground">
           <ChevronDown className="h-4 w-4" />
-          {t("tools.common.advanced", { defaultValue: "Advanced" })}
+          {t("tools.common.advanced", { defaultValue: translateInstant("Advanced") })}
         </summary>
         <div className="mt-3 grid gap-3 lg:grid-cols-2">
           <div className="space-y-1.5">
@@ -782,7 +782,7 @@ function RuleBuilder({
             <Input id="rule-name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder={sentenceText(sentence)} />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="rule-priority">{t("tools.common.priority", { defaultValue: "Priority" })}</Label>
+            <Label htmlFor="rule-priority">{t("tools.common.priority", { defaultValue: translateInstant("Priority") })}</Label>
             <Input id="rule-priority" inputMode="numeric" value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value })} />
           </div>
           <div className="space-y-1.5">
@@ -970,7 +970,7 @@ export function PoliciesTab({ companyId }: { companyId: string }) {
       setConfirm(null);
       pushToast({ title: t("tools.policies.toast.deleted", { defaultValue: "Rule deleted" }), tone: "success" });
     },
-    onError: (err) => pushToast({ title: t("tools.policies.toast.deleteFailed", { defaultValue: "Delete failed" }), body: err instanceof ApiError ? err.message : String(err), tone: "error" }),
+    onError: (err) => pushToast({ title: t("tools.policies.toast.deleteFailed", { defaultValue: translateInstant("Delete failed") }), body: err instanceof ApiError ? err.message : String(err), tone: "error" }),
   });
   const revoke = useMutation({
     mutationFn: (policyId: string) => toolsApi.revokeTrustRule(companyId, policyId),
@@ -1132,7 +1132,7 @@ export function PoliciesTab({ companyId }: { companyId: string }) {
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem onSelect={() => setForm(policyToForm(policy))}>
                                 <Pencil className="mr-2 h-4 w-4" />
-                                {t("tools.common.edit", { defaultValue: "Edit" })}
+                                {t("tools.common.edit", { defaultValue: translateInstant("Edit") })}
                               </DropdownMenuItem>
                               <DropdownMenuItem onSelect={() => duplicate.mutate(policy)}>
                                 <Copy className="mr-2 h-4 w-4" />
@@ -1148,7 +1148,7 @@ export function PoliciesTab({ companyId }: { companyId: string }) {
                                 onSelect={() => setConfirm({ kind: "delete-rule", policy, hits })}
                               >
                                 <Trash2 className="mr-2 h-4 w-4" />
-                                {t("tools.common.delete", { defaultValue: "Delete" })}
+                                {t("tools.common.delete", { defaultValue: translateInstant("Delete") })}
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -1231,7 +1231,7 @@ export function PoliciesTab({ companyId }: { companyId: string }) {
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setConfirm(null)}>{t("tools.common.cancel", { defaultValue: "Cancel" })}</Button>
+              <Button variant="outline" onClick={() => setConfirm(null)}>{t("tools.common.cancel", { defaultValue: translateInstant("Cancel") })}</Button>
               <Button
                 variant="destructive"
                 disabled={deletePolicy.isPending || revoke.isPending}
@@ -1241,7 +1241,7 @@ export function PoliciesTab({ companyId }: { companyId: string }) {
                 }}
               >
                 {confirm.kind === "delete-rule"
-                  ? t("tools.common.delete", { defaultValue: "Delete" })
+                  ? t("tools.common.delete", { defaultValue: translateInstant("Delete") })
                   : t("tools.policies.approvals.forget", { defaultValue: "Forget" })}
               </Button>
             </DialogFooter>

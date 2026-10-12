@@ -501,7 +501,7 @@ export function pluginManagedRoutineService(
       source: "manual",
       assigneeAgentId: overrides?.assigneeAgentId,
       projectId: overrides?.projectId,
-    }, { actor: { agentId: null, userId: null } });
+    }, { agentId: null, userId: null });
     await logActivity(db, {
       companyId,
       actorType: "plugin",

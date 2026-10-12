@@ -1,3 +1,4 @@
+import { translateInstant } from "@/i18n";
 import {
   forwardRef,
   useCallback,
@@ -136,6 +137,8 @@ export interface EnvironmentVariablesEditorProps {
   footerHint?: ReactNode | null;
   /** Reports editor-local draft changes that are not yet promoted to the parent value. */
   onDirtyChange?: (dirty: boolean) => void;
+  /** Parent owns Save/Discard and flushes the editor through its ref. */
+  hideDraftActions?: boolean;
 }
 
 export interface EnvironmentVariablesEditorHandle {
@@ -157,6 +160,7 @@ export const EnvironmentVariablesEditor = forwardRef<EnvironmentVariablesEditorH
   reservedPrefixes = DEFAULT_RESERVED_PREFIXES,
   footerHint,
   onDirtyChange,
+  hideDraftActions = false,
 }: EnvironmentVariablesEditorProps, ref) {
   const { t } = useTranslation();
   const toast = useOptionalToastActions();
@@ -540,7 +544,7 @@ export const EnvironmentVariablesEditor = forwardRef<EnvironmentVariablesEditorH
 
       </div>
 
-      {hasUnsavedChanges && !disabled ? (
+      {hasUnsavedChanges && !disabled && !hideDraftActions ? (
         <div
           role="status"
           className="mt-3 flex w-full flex-col gap-3 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-3 text-amber-950 shadow-sm dark:bg-amber-500/15 dark:text-amber-100 @[34rem]/env:flex-row @[34rem]/env:items-center @[34rem]/env:justify-between"
@@ -582,9 +586,7 @@ export const EnvironmentVariablesEditor = forwardRef<EnvironmentVariablesEditorH
         <p className="inline-flex items-start gap-1 text-(length:--text-micro) text-muted-foreground/70">
           <UserRound className="mt-0.5 size-3 shrink-0" />
           <span>
-            User secrets resolve from the user responsible for the run. Required bindings fail until that user
-            sets their value under Secrets → My secrets.
-          </span>
+            {translateInstant("User secrets resolve from the user responsible for the run. Required bindings fail until that user sets their value under Secrets → My secrets.")}</span>
         </p>
       ) : null}
       </div>

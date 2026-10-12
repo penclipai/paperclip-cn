@@ -147,7 +147,7 @@ function readyPlugin() {
   });
 }
 
-describe.sequential("plugin install and upgrade authz", () => {
+describe("plugin install and upgrade authz", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -163,12 +163,12 @@ describe.sequential("plugin install and upgrade authz", () => {
       res.body.map((plugin: { packageName: string; experimental: boolean; hasBuiltEntrypoints: boolean }) => [plugin.packageName, plugin]),
     );
     expect(packageNames).toContain("@penclipai/plugin-workspace-diff");
-    expect(packageNames).toContain("@paperclipai/plugin-llm-wiki");
+    expect(packageNames).toContain("@penclipai/plugin-llm-wiki");
     expect(packageNames).toContain("@penclipai/plugin-modal");
     expect(packageNames).toContain("@penclipai/plugin-authoring-smoke-example");
     expect(packageNames).not.toContain("@penclipai/plugin-sdk");
     expect(byPackageName.get("@penclipai/plugin-workspace-diff")?.experimental).toBe(true);
-    expect(byPackageName.get("@paperclipai/plugin-llm-wiki")?.experimental).toBe(true);
+    expect(byPackageName.get("@penclipai/plugin-llm-wiki")?.experimental).toBe(true);
     expect(byPackageName.get("@penclipai/plugin-modal")?.experimental).toBe(true);
     expect(byPackageName.get("@penclipai/plugin-authoring-smoke-example")?.experimental).toBe(false);
     expect(typeof byPackageName.get("@penclipai/plugin-workspace-diff")?.hasBuiltEntrypoints).toBe("boolean");
@@ -474,7 +474,7 @@ describe.sequential("plugin install and upgrade authz", () => {
   }, 20_000);
 });
 
-describe.sequential("scoped plugin API routes", () => {
+describe("scoped plugin API routes", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -540,7 +540,7 @@ describe.sequential("scoped plugin API routes", () => {
   }, 20_000);
 });
 
-describe.sequential("plugin local folder routes", () => {
+describe("plugin local folder routes", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockRegistry.getCompanySettings.mockResolvedValue(null);
@@ -595,7 +595,7 @@ describe.sequential("plugin local folder routes", () => {
   });
 });
 
-describe.sequential("plugin tool and bridge authz", () => {
+describe("plugin tool and bridge authz", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -1168,7 +1168,7 @@ describe.sequential("plugin tool and bridge authz", () => {
   });
 });
 
-describe.sequential("operator-hidden plugin management floor", () => {
+describe("operator-hidden plugin management floor", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     process.env.PAPERCLIP_HIDDEN_SETTINGS = "instance.plugins";

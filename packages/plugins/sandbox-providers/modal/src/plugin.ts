@@ -8,7 +8,7 @@ import {
   type Sandbox,
   type SandboxCreateParams,
 } from "modal";
-import { definePlugin } from "@paperclipai/plugin-sdk";
+import { definePlugin } from "@penclipai/plugin-sdk";
 import type {
   PluginEnvironmentAcquireLeaseParams,
   PluginEnvironmentDestroyLeaseParams,
@@ -23,7 +23,7 @@ import type {
   PluginEnvironmentResumeLeaseParams,
   PluginEnvironmentValidateConfigParams,
   PluginEnvironmentValidationResult,
-} from "@paperclipai/plugin-sdk";
+} from "@penclipai/plugin-sdk";
 
 const DEFAULT_WORKDIR = "/workspace/paperclip";
 const DEFAULT_SANDBOX_TIMEOUT_MS = 3_600_000;

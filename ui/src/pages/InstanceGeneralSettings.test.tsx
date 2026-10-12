@@ -57,7 +57,6 @@ describe("InstanceGeneralSettings sign-out", () => {
     queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     mockInstanceSettingsApi.getGeneral.mockResolvedValue({
       censorUsernameInLogs: false,
-      keyboardShortcuts: false,
       feedbackDataSharingPreference: "not_allowed",
       backupRetention: { dailyDays: 7, weeklyWeeks: 4, monthlyMonths: 1 },
     });
@@ -131,10 +130,10 @@ describe("InstanceGeneralSettings sign-out", () => {
     mockAuthApi.signOut.mockRejectedValue(new Error("Sign-out request failed"));
     await renderPage(SELF_HOSTED_HEALTH);
 
-    const keyboardToggle = container.querySelector<HTMLButtonElement>(
-      '[aria-label="Toggle keyboard shortcuts"]',
+    const censorToggle = container.querySelector<HTMLButtonElement>(
+      '[aria-label="Toggle username log censoring"]',
     );
-    flushSync(() => keyboardToggle?.click());
+    flushSync(() => censorToggle?.click());
     await vi.waitFor(() => expect(container.textContent).toContain("Settings update failed"));
 
     flushSync(() => signOutButton()?.click());
@@ -158,10 +157,10 @@ describe("InstanceGeneralSettings sign-out", () => {
     flushSync(() => signOutButton()?.click());
     await vi.waitFor(() => expect(container.textContent).toContain("Sign-out request failed"));
 
-    const keyboardToggle = container.querySelector<HTMLButtonElement>(
-      '[aria-label="Toggle keyboard shortcuts"]',
+    const censorToggle = container.querySelector<HTMLButtonElement>(
+      '[aria-label="Toggle username log censoring"]',
     );
-    flushSync(() => keyboardToggle?.click());
+    flushSync(() => censorToggle?.click());
 
     await vi.waitFor(() => expect(mockInstanceSettingsApi.updateGeneral).toHaveBeenCalledOnce());
     await vi.waitFor(() => expect(container.textContent).not.toContain("Sign-out request failed"));
@@ -176,18 +175,18 @@ describe("InstanceGeneralSettings sign-out", () => {
     );
     await renderPage(SELF_HOSTED_HEALTH);
 
-    const keyboardToggle = container.querySelector<HTMLButtonElement>(
-      '[aria-label="Toggle keyboard shortcuts"]',
+    const censorToggle = container.querySelector<HTMLButtonElement>(
+      '[aria-label="Toggle username log censoring"]',
     );
     flushSync(() => signOutButton()?.click());
     await vi.waitFor(() => expect(mockAuthApi.signOut).toHaveBeenCalledOnce());
 
-    expect(keyboardToggle?.disabled).toBe(true);
-    flushSync(() => keyboardToggle?.click());
+    expect(censorToggle?.disabled).toBe(true);
+    flushSync(() => censorToggle?.click());
     expect(mockInstanceSettingsApi.updateGeneral).not.toHaveBeenCalled();
 
     resolveSignOut?.({ success: true });
-    await vi.waitFor(() => expect(keyboardToggle?.disabled).toBe(false));
+    await vi.waitFor(() => expect(censorToggle?.disabled).toBe(false));
   });
 
   it("disables sign-out while a settings update is pending", async () => {
@@ -199,10 +198,10 @@ describe("InstanceGeneralSettings sign-out", () => {
     );
     await renderPage(SELF_HOSTED_HEALTH);
 
-    const keyboardToggle = container.querySelector<HTMLButtonElement>(
-      '[aria-label="Toggle keyboard shortcuts"]',
+    const censorToggle = container.querySelector<HTMLButtonElement>(
+      '[aria-label="Toggle username log censoring"]',
     );
-    flushSync(() => keyboardToggle?.click());
+    flushSync(() => censorToggle?.click());
     await vi.waitFor(() => expect(mockInstanceSettingsApi.updateGeneral).toHaveBeenCalledOnce());
 
     expect(signOutButton()?.disabled).toBe(true);
@@ -226,7 +225,6 @@ describe("InstanceGeneralSettings operator-hidden sections", () => {
     queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     mockInstanceSettingsApi.getGeneral.mockResolvedValue({
       censorUsernameInLogs: false,
-      keyboardShortcuts: false,
       feedbackDataSharingPreference: "not_allowed",
       backupRetention: { dailyDays: 7, weeklyWeeks: 4, monthlyMonths: 1 },
     });
@@ -250,7 +248,7 @@ describe("InstanceGeneralSettings operator-hidden sections", () => {
         </QueryClientProvider>,
       );
     });
-    await vi.waitFor(() => expect(container.textContent).toContain("Keyboard shortcuts"));
+    await vi.waitFor(() => expect(container.textContent).toContain("Backup retention"));
   }
 
   it("hides an operator-hidden field-backed section and a UI-only section", async () => {

@@ -180,7 +180,7 @@ const PLUGIN_SCOPED_API_RESPONSE_HEADER_ALLOWLIST = new Set([
 ]);
 
 const EXPERIMENTAL_BUNDLED_PLUGIN_PACKAGE_NAMES = new Set([
-  "@paperclipai/plugin-llm-wiki",
+  "@penclipai/plugin-llm-wiki",
   "@penclipai/plugin-modal",
   "@penclipai/plugin-workspace-diff",
 ]);

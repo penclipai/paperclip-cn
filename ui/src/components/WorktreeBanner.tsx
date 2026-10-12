@@ -1,22 +1,18 @@
-import { useCallback, useState } from "react";
+import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
+import { useCallback } from "react";
 import { getWorktreeUiBranding } from "../lib/worktree-branding";
-import { copyTextToClipboard } from "../lib/clipboard";
+import { useCopyAction } from "../lib/use-copy-action";
 
 export function WorktreeBanner() {
-  const { t } = useTranslation();
+  useTranslation();
   const branding = getWorktreeUiBranding();
-  const [copied, setCopied] = useState(false);
+  const { copied, failed, copy } = useCopyAction();
 
   const handleCopyName = useCallback(() => {
     if (!branding) return;
-    void copyTextToClipboard(branding.name)
-      .then(() => {
-        setCopied(true);
-        setTimeout(() => setCopied(false), 1500);
-      })
-      .catch(() => {});
-  }, [branding]);
+    void copy(branding.name);
+  }, [branding, copy]);
 
   if (!branding) return null;
 
@@ -32,15 +28,15 @@ export function WorktreeBanner() {
       }}
     >
       <div className="flex items-center gap-2 overflow-hidden whitespace-nowrap">
-        <span className="shrink-0 opacity-70">{t("worktreeBanner.label")}</span>
+        <span className="shrink-0 opacity-70">{translateInstant("worktreeBanner.label")}</span>
         <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-current opacity-70" aria-hidden="true" />
         <button
           type="button"
           onClick={handleCopyName}
-          title={t("worktreeBanner.copyTitle", { defaultValue: "Click to copy worktree name" })}
+          title={translateInstant("worktreeBanner.copyTitle")}
           className="truncate font-semibold tracking-(--tracking-eyebrow) cursor-pointer hover:opacity-80 transition-opacity bg-transparent border-none p-0 text-current uppercase text-(length:--text-micro)"
         >
-          {copied ? t("Copied!", { defaultValue: "Copied!" }) : branding.name}
+          {copied ? "Copied!" : failed ? "Copy failed" : branding.name}
         </button>
       </div>
     </div>

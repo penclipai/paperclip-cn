@@ -1,3 +1,5 @@
+import { translateInstant } from "@/i18n";
+import { AgentAvatar } from "@/components/AgentAvatar";
 import { useMemo, useState, useRef, useCallback, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
@@ -27,7 +29,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { ListFilter, Layers, ChevronDown, ChevronRight, User, Settings } from "lucide-react";
-import { AgentIcon } from "./AgentIconPicker";
 import { timeAgo } from "../lib/timeAgo";
 
 /* ------------------------------------------------------------------ */
@@ -282,7 +283,7 @@ function CollapsedFeedGroup({
           : <ChevronRight className="h-3 w-3 shrink-0 text-muted-foreground" />
         }
         {group.latestEvent.actorType === "agent"
-          ? <AgentIcon icon={actor?.icon ?? null} className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+          ? <AgentAvatar agent={actor} size={16} className="h-3.5 w-3.5 shrink-0 text-muted-foreground"/>
           : group.latestEvent.actorType === "user"
             ? <User className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
             : <Settings className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
@@ -595,7 +596,7 @@ export function ActivityFeed({ className }: ActivityFeedProps) {
     if (!agents) return null;
     if (agents.length === 0) {
       return {
-        text: "No agents set up yet. Add an agent to get started.",
+        text: translateInstant("No agents set up yet. Add an agent to get started."),
         textKey: "activityFeed.empty.noAgents",
         showPulse: false,
       };
@@ -603,13 +604,13 @@ export function ActivityFeed({ className }: ActivityFeedProps) {
     const allPaused = agents.every((a) => a.status === "paused");
     if (allPaused) {
       return {
-        text: "All agents are paused. Resume agents from the sidebar to see activity.",
+        text: translateInstant("All agents are paused. Resume agents from the sidebar to see activity."),
         textKey: "activityFeed.empty.allPaused",
         showPulse: false,
       };
     }
     return {
-      text: "Your agents are running — activity will appear here shortly.",
+      text: translateInstant("Your agents are running — activity will appear here shortly."),
       textKey: "activityFeed.empty.running",
       showPulse: true,
     };

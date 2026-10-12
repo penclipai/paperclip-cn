@@ -21,7 +21,7 @@ import {
   type ScopeKey,
   type ToolResult,
   type ToolRunContext,
-} from "@paperclipai/plugin-sdk";
+} from "@penclipai/plugin-sdk";
 import type { Goal, Issue } from "@penclipai/shared";
 import {
   DEFAULT_CONFIG,

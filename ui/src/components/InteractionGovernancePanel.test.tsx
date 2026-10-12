@@ -96,7 +96,7 @@ describe("InteractionGovernancePanel", () => {
     ).toContain("Human only");
     expect(
       host.querySelector('[data-testid="governance-request_confirmation-cap"]')?.textContent,
-    ).toContain("Anyone except creator");
+    ).toContain("Anyone except the creator");
     // Untouched kinds still read as open.
     expect(
       host.querySelector('[data-testid="governance-suggest_tasks-default"]')?.textContent,
@@ -124,7 +124,7 @@ describe("InteractionGovernancePanel", () => {
     });
 
     expect(triggerText(host, "governance-request_confirmation-default")).toBe("Human only");
-    expect(triggerText(host, "governance-request_confirmation-cap")).toBe("Anyone except creator");
+    expect(triggerText(host, "governance-request_confirmation-cap")).toBe("Anyone except the creator");
     // The effect prose belongs to the option list, never the trigger.
     expect(host.textContent).not.toContain("New cards wait for a person on the board");
     expect(host.textContent).not.toContain("narrowed to exclude its creator");
@@ -146,9 +146,9 @@ describe("InteractionGovernancePanel", () => {
     const listText = listbox?.textContent ?? "";
     expect(listText).toContain("Anyone (default)");
     expect(listText).toContain(
-      "New cards are open — the board or any agent can respond, including the one that asked.",
+      "Anyone in the company can respond unless the requester narrows the audience.",
     );
-    expect(listText).toContain("New cards wait for a person on the board. Agents are turned away.");
+    expect(listText).toContain("Only humans can resolve this interaction by default.");
     // Each option keeps a label-only typeahead value so keyboard search does not
     // match the effect prose.
     expect(
@@ -161,8 +161,12 @@ describe("InteractionGovernancePanel", () => {
 
   it("renders a select for every interaction kind", () => {
     const { host } = renderPanel();
-    expect(host.querySelectorAll('[data-testid$="-default"]')).toHaveLength(5);
-    expect(host.querySelectorAll('[data-testid$="-cap"]')).toHaveLength(5);
+    expect(host.querySelectorAll('[data-testid$="-default"]')).toHaveLength(
+      INTERACTION_KINDS.length,
+    );
+    expect(host.querySelectorAll('[data-testid$="-cap"]')).toHaveLength(
+      INTERACTION_KINDS.length,
+    );
   });
 
   it("surfaces a save failure", () => {

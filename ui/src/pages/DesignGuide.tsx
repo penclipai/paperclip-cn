@@ -1,3 +1,41 @@
+import { useTranslation } from "react-i18next";
+import { translateInstant } from "@/i18n";
+import { AnimatedDialogContent } from "@/components/AnimatedDialogContent";
+import { ExternalAgentPresetPicker, DotConnectionChecks } from "@/components/new-agent/ExternalAgentInviteContent";
+import { AgentMailApiKeyField } from "@/features/connections/AgentMailApiKeyField";
+import { TaskBrowserFooter } from "@/components/task-side-panel/TaskBrowserFooter";
+import { TaskBrowserActivity } from "@/components/task-side-panel/TaskBrowserActivity";
+import type { TaskBrowser } from "@penclipai/shared";
+import { DispositionRecoveryNotice } from "../components/DispositionRecoveryNotice";
+import { CloudSignIn } from "../components/CloudSignIn";
+import { CloudAccessError } from "../components/CloudAccessGate";
+import { SetupPrompt } from "./apps/chat/SetupPrompt";
+import { MediaArtifactCard } from "@/components/artifacts/MediaArtifactCard";
+
+import { SkillSourceTree } from "./skills/SkillSourceTree";
+import { SkillBinaryFile } from "../components/SkillBinaryFile";
+import { WebhookUrlWarning } from "@/components/routine-triggers/WebhookUrlWarning";
+import { SetupWizardNavigation, SetupWizardFooter } from "../components/SetupWizard";
+import { RemoteMcpDesignExample } from "@/features/connections/remote-mcp/RemoteMcpDesignExample";
+import { AgentConversationSidebar } from "@/components/AgentConversationSidebar";
+import { AgentChatPicker } from "@/components/AgentChatPicker";
+import { TaskChatProjectCreatedCard } from "@/components/task-chat/TaskChatProjectCreatedCard";
+import { TextAttachmentPreview } from "@/components/task-side-panel/TaskAttachmentPanel";
+import { AnnouncementCard } from "@/components/AnnouncementCard";
+import { announcementPreview, announcementAnimationPreview, announcementAnimationPreviewSrc } from "@/lib/announcement-preview";
+import { TaskDetailTasksPanel } from "@/components/task-detail/TaskDetailTasksPanel";
+import { AiConnectionDesignExamples } from "@/components/ai-connections/AiConnectionDesignExamples";
+import { SavedProviderKeySelect } from "../components/onboarding/SavedProviderKeySelect";
+import { AgentAvatar } from "@/components/AgentAvatar";
+import { AgentCharacter } from "@/components/AgentCharacter";
+import { AGENT_PALETTE_IDS, appearanceForPalette } from "@penclipai/shared";
+import { RepositoryEditor } from "@/components/RepositoryEditor";
+import { TaskChatRunnerActivityGroup } from "@/components/task-chat/TaskChatRunnerActivityGroup";
+import { TaskChatMarker } from "@/components/task-chat/TaskChatMarker";
+import { TaskChatComposer } from "@/components/task-chat/TaskChatComposer";
+import { ComposerAddMenu, ComposerModeChip } from "@/components/task-chat/ComposerAddMenu";
+import type { IssueWorkMode } from "@penclipai/shared";
+import { TaskTreeControlDialog, TaskTreeControlMenuItems } from "@/components/TaskTreeControls";
 import { useState } from "react";
 import {
   BookOpen,
@@ -23,6 +61,7 @@ import {
   Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { Badge } from "@/components/ui/badge";
 import { InlineBanner } from "@/components/InlineBanner";
 import { BuiltInLifecycleChip } from "@/components/BuiltInAgentBadges";
@@ -120,6 +159,7 @@ import {
   AvatarGroupCount,
 } from "@/components/ui/avatar";
 import { AgentCapsule, AGENT_GRADIENT_COUNT } from "@/components/AgentCapsule";
+import { AgentRunCard } from "@/components/ActiveAgentsPanel";
 import { StatusBadge, IssueStatusBadge } from "@/components/StatusBadge";
 import { StatusIcon } from "@/components/StatusIcon";
 import { EnforcementBanner } from "@/components/EnforcementBanner";
@@ -134,11 +174,22 @@ import { FilterBar, type FilterValue } from "@/components/FilterBar";
 import { InlineEditor } from "@/components/InlineEditor";
 import { PageSkeleton } from "@/components/PageSkeleton";
 import { Identity } from "@/components/Identity";
+import { AppLogo } from "@/pages/apps/AppLogo";
 import { IssueReferencePill } from "@/components/IssueReferencePill";
+import { LockedIssueChip } from "@/components/LockedIssueChip";
 import { MembershipAction } from "@/components/MembershipAction";
 import { IssueOutputSection } from "@/components/issue-output/IssueOutputSection";
 import { EnvironmentVariablesEditor } from "@/components/environment-variables-editor";
-import type { CompanySecret, EnvBinding } from "@penclipai/shared";
+import { IssueThreadInteractionCard } from "@/components/IssueThreadInteractionCard";
+import {
+  connectedConnectionIntentInteraction,
+  issueThreadInteractionFixtureMeta,
+  pendingConnectionIntentInteraction,
+  retryConnectionIntentInteraction,
+} from "@/fixtures/issueThreadInteractionFixtures";
+import type { CompanySecret, EnvBinding, Issue } from "@penclipai/shared";
+import { CollectionToolbar } from "@/components/CollectionToolbar";
+import { IssueRow } from "@/components/IssueRow";
 import {
   EnvInputsList,
   ExternalSourcesList,
@@ -227,6 +278,15 @@ const DESIGN_GUIDE_DEGRADED_OUTPUTS: IssueWorkProduct[] = [
     metadata: { attachmentId: "cccccccc-cccc-4ccc-8ccc-cccccccccccc", contentType: "video/mp4" },
   } as IssueWorkProduct,
 ];
+
+const DESIGN_GUIDE_TASK = {
+  id: "design-guide-task",
+  identifier: "PAP-427",
+  title: "Reconcile the navigation model across operator surfaces",
+  status: "in_progress",
+  priority: "medium",
+  blockerAttention: false,
+} as unknown as Issue;
 
 /* ------------------------------------------------------------------ */
 /*  Section wrapper                                                    */
@@ -329,7 +389,7 @@ function EnvironmentVariablesEditorShowcase() {
     NODE_ENV: { type: "plain", value: "production" },
     GH_TOKEN: { type: "secret_ref", secretId: "dg-github", version: "latest" },
     DB_URL: { type: "secret_ref", secretId: "dg-db", version: 3 },
-    STRIPE_API_KEY: { type: "plain", value: "sk-live-51H8xL0aBcDeFgHiJkLmNoPq" },
+    STRIPE_API_KEY: { type: "plain", value: "demo-value-not-a-credential" },
   });
   return (
     <div className="max-w-(--sz-640px) rounded-md border border-border p-4">
@@ -372,22 +432,93 @@ function Swatch({ name, cssVar }: { name: string; cssVar: string }) {
 /*  Page                                                               */
 /* ------------------------------------------------------------------ */
 
+function TaskExecutionControlsExample() {
+  const [running, setRunning] = useState(true);
+  const [dialogMode, setDialogMode] = useState<"resume" | "cancel" | "restore" | null>(null);
+  const [wake, setWake] = useState(true);
+  return <div className="max-w-xl space-y-4">
+    <div className="w-52 rounded-md border border-border p-1">
+      <TaskTreeControlMenuItems scope="subtree" canPause={running} canResume={!running} canCancel canRestore={!running}
+        onPause={() => setRunning(false)} onResume={() => setDialogMode("resume")}
+        onCancel={() => setDialogMode("cancel")} onRestore={() => setDialogMode("restore")} />
+    </div>
+    <p className="text-sm text-muted-foreground">{running ? "Running: type to switch Stop to Send." : "Paused: resume from the menu."}</p>
+    <TaskChatProjectCreatedCard item={{ id: "design-project", kind: "project_created", projectId: "example-project", name: "Onboarding improvements", description: "Help new teams reach their first useful result.", timestamp: "2026-09-11T00:00:00Z", repositories: [{ id: "1", name: "paperclipai/paperclip", url: "https://github.com/paperclipai/paperclip" }] }} />
+    {!running ? <TaskChatMarker item={{ id: "design-cancelled", kind: "marker", variant: "interrupted", tone: "neutral", label: translateInstant("Run cancelled"), detail: "The run was cancelled before returning an answer.", collapsible: true }} /> : null}
+    <TaskChatComposer pause={!running ? { scope: "subtree", onResume: () => setDialogMode("resume") } : null} onAdd={async () => {}} workMode="standard" stopScope="subtree" onStop={running ? async () => setRunning(false) : undefined} />
+    <TaskTreeControlDialog open={dialogMode !== null} onOpenChange={(open) => { if (!open) setDialogMode(null); }}
+      mode={dialogMode ?? "cancel"} scope="subtree" affectedCount={3} affectedAgentCount={2} loading={false} pending={false} valid
+      wakeAgents={wake} onWakeAgentsChange={setWake} onRetry={() => {}}
+      onApply={() => { setRunning(dialogMode !== "cancel" && wake); setDialogMode(null); }} />
+  </div>;
+}
+
+function TaskPendingInputExample() {
+  useTranslation();
+  const [open, setOpen] = useState(true);
+  const [pending, setPending] = useState(true);
+  return <div className="max-w-xl">
+    <TaskChatComposer
+      onAdd={async () => {}}
+      workMode="standard"
+      takeover={pending && open ? {
+        id: "design-question",
+        label: translateInstant("issueThreadInteraction.question"),
+        pendingCount: 1,
+        content: <div className="space-y-3 text-sm">
+          <p>Should the agent use the existing draft?</p>
+          <div className="flex gap-2">
+            <Button size="sm" onClick={() => setPending(false)}>Use draft</Button>
+            <Button size="sm" variant="outline" onClick={() => setPending(false)}>Start fresh</Button>
+          </div>
+        </div>,
+        onDismiss: () => setOpen(false),
+        onSkip: () => setPending(false),
+      } : null}
+      pendingTakeover={pending ? { count: 1, label: translateInstant("issueThreadInteraction.question"), onOpen: () => setOpen(true) } : null}
+    />
+  </div>;
+}
+
+function AgentChatPickerExample() {
+  const [state, setState] = useState<"closed" | "empty" | "loading" | "error">("closed");
+  return <div className="flex flex-wrap gap-2">
+    <Button variant="outline" onClick={() => setState("empty")}>Empty picker</Button>
+    <Button variant="outline" onClick={() => setState("loading")}>Loading picker</Button>
+    <Button variant="outline" onClick={() => setState("error")}>Failed picker</Button>
+    <AgentChatPicker agents={[]} open={state !== "closed"} onOpenChange={(open) => { if (!open) setState("closed"); }} onSelect={() => {}}
+      loading={state === "loading"} error={state === "error" ? new Error("Unavailable") : null} onRetry={() => setState("empty")} />
+  </div>;
+}
+
+function ComposerActionsExample() {
+  const [mode, setMode] = useState<IssueWorkMode>("standard");
+  return <div className="flex max-w-xl items-center gap-2 rounded-xl border border-border bg-card p-3">
+    <ComposerAddMenu mode={mode} onModeChange={setMode} onAttachFile={() => {}} onGoal={() => {}} />
+    <ComposerModeChip mode={mode} onRemove={() => setMode("standard")} />
+    <span className="ml-auto text-xs text-muted-foreground">Plus menu · removable mode chip</span>
+  </div>;
+}
+
 export function DesignGuide() {
+  useTranslation();
+  const [agentmailDemoKey, setAgentmailDemoKey] = useState("");
+  const [wizardStep, setWizardStep] = useState(0);
   const [status, setStatus] = useState("todo");
   const [priority, setPriority] = useState("medium");
   const [selectValue, setSelectValue] = useState("in_progress");
   const [menuChecked, setMenuChecked] = useState(true);
   const [collapsibleOpen, setCollapsibleOpen] = useState(false);
-  const [inlineText, setInlineText] = useState("Click to edit this text");
-  const [inlineTitle, setInlineTitle] = useState("Editable Title");
+  const [inlineText, setInlineText] = useState(translateInstant("Click to edit this text"));
+  const [inlineTitle, setInlineTitle] = useState(translateInstant("Editable Title"));
   const [inlineDesc, setInlineDesc] = useState(
     "This is an editable description. Click to edit it — the textarea auto-sizes to fit the content without layout shift."
   );
   const [filters, setFilters] = useState<FilterValue[]>([
-    { key: "status", label: "Status", value: "Active" },
+    { key: "status", label: translateInstant("Status"), value: translateInstant("Active") },
     // PAP-411: priority filter demo row suppressed while SHOW_TASK_PRIORITY_UI is off.
     ...(SHOW_TASK_PRIORITY_UI
-      ? [{ key: "priority", label: "Priority", value: "High" } as FilterValue]
+      ? [{ key: "priority", label: translateInstant("Priority"), value: translateInstant("High") } as FilterValue]
       : []),
   ]);
   const [allowExternal, setAllowExternal] = useState(false);
@@ -398,7 +529,7 @@ export function DesignGuide() {
     <div className="space-y-10 max-w-4xl">
       {/* Page header */}
       <div>
-        <h2 className="text-xl font-bold">Design Guide</h2>
+        <h2 className="text-xl font-bold">{translateInstant("Design Guide")}</h2>
         <p className="text-sm text-muted-foreground mt-1">
           Every component, style, and pattern used across Paperclip.
         </p>
@@ -407,12 +538,12 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  COVERAGE                                                     */}
       {/* ============================================================ */}
-      <Section title="Component Coverage">
+      <Section title={translateInstant("Component Coverage")}>
         <p className="text-sm text-muted-foreground">
           This page should be updated when new UI primitives or app-level patterns ship.
         </p>
         <div className="grid gap-6 md:grid-cols-2">
-          <SubSection title="UI primitives">
+          <SubSection title={translateInstant("UI primitives")}>
             <div className="flex flex-wrap gap-2">
               {[
                 "avatar", "badge", "breadcrumb", "button", "card", "checkbox", "collapsible",
@@ -425,13 +556,14 @@ export function DesignGuide() {
               ))}
             </div>
           </SubSection>
-          <SubSection title="App components">
+          <SubSection title={translateInstant("App components")}>
             <div className="flex flex-wrap gap-2">
               {[
                 "StatusBadge", "StatusIcon", "PriorityIcon", "EntityRow", "EmptyState", "MetricCard",
-                "FilterBar", "InlineEditor", "PageSkeleton", "Identity", "CommentThread", "MarkdownEditor",
-                "PropertiesPanel", "Sidebar", "CommandPalette", "EnvironmentVariablesEditor",
-                "InlineBanner", "BuiltInAgentGate", "BuiltInLifecycleChip",
+                "FilterBar", "InlineEditor", "PageSkeleton", translateInstant("Identity"), "CommentThread", "MarkdownEditor",
+                "PropertiesPanel", translateInstant("Sidebar"), "CommandPalette", "EnvironmentVariablesEditor",
+                "InlineBanner", "BuiltInAgentGate", "BuiltInLifecycleChip", "CollectionToolbar",
+                "IssueRow", "ContextualSidebarFrame",
               ].map((name) => (
                 <Badge key={name} variant="ghost" className="font-mono text-(length:--text-nano)">
                   {name}
@@ -442,41 +574,91 @@ export function DesignGuide() {
         </div>
       </Section>
 
+      <Section title="Announcements">
+        <div className="grid gap-4 md:grid-cols-2">
+          <AnnouncementCard announcement={announcementAnimationPreview} imageSrc="/announcement-preview.svg" animationSrc={announcementAnimationPreviewSrc} onDismiss={() => {}} />
+          <AnnouncementCard announcement={announcementPreview} imageSrc="/announcement-preview.svg" onDismiss={() => {}} />
+          <AnnouncementCard announcement={{ ...announcementPreview, image: undefined, secondaryLink: undefined }} onDismiss={() => {}} />
+        </div>
+      </Section>
+
+      <Section title="Task Execution Controls">
+        <TaskExecutionControlsExample />
+      </Section>
+
+      <Section title="Composer actions">
+        <ComposerActionsExample />
+      </Section>
+
+      <Section title="Task Collection">
+        <p className="max-w-prose text-sm text-muted-foreground">
+          CollectionToolbar owns shared geometry while each page owns its state and behavior.
+          The canonical task row is opt-in during migration: status leads, unread work uses
+          title emphasis, metadata remains stable, and the task identifier trails.
+        </p>
+        <CollectionToolbar
+          context={<span className="text-sm font-medium">{translateInstant("Recent tasks")}</span>}
+          search={<Input aria-label="Search task collection example" placeholder={translateInstant("issuesList.searchPlaceholder")} />}
+          controls={<Button variant="outline" size="sm">{translateInstant("Filter")}</Button>}
+          actions={<Button size="sm">{translateInstant("keyboardShortcuts.newTask")}</Button>}
+          feedback={<span className="text-xs text-muted-foreground">1 task · Updated newest first</span>}
+        />
+        <div className="overflow-hidden rounded-lg border border-border">
+          <IssueRow
+            issue={DESIGN_GUIDE_TASK}
+            presentation="task"
+            unreadState="visible"
+            metadata={<span className="text-xs text-muted-foreground">Updated 12m ago</span>}
+            actions={<Button variant="ghost" size="xs">{translateInstant("More")}</Button>}
+          />
+        </div>
+      </Section>
+
+      <Section title="Theme Toggle">
+        <SubSection title={translateInstant("Variants")}>
+          <div className="flex max-w-sm flex-col items-start gap-3">
+            <ThemeToggle />
+            <ThemeToggle variant="menu-action" />
+            <ThemeToggle variant="compact-menu-action" />
+          </div>
+        </SubSection>
+      </Section>
+
       {/* ============================================================ */}
       {/*  COLORS                                                       */}
       {/* ============================================================ */}
-      <Section title="Colors">
-        <SubSection title="Core">
+      <Section title={translateInstant("Colors")}>
+        <SubSection title={translateInstant("Core")}>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            <Swatch name="Background" cssVar="--background" />
-            <Swatch name="Foreground" cssVar="--foreground" />
-            <Swatch name="Card" cssVar="--card" />
-            <Swatch name="Primary" cssVar="--primary" />
-            <Swatch name="Primary foreground" cssVar="--primary-foreground" />
-            <Swatch name="Secondary" cssVar="--secondary" />
-            <Swatch name="Muted" cssVar="--muted" />
-            <Swatch name="Muted foreground" cssVar="--muted-foreground" />
-            <Swatch name="Accent" cssVar="--accent" />
-            <Swatch name="Destructive" cssVar="--destructive" />
-            <Swatch name="Border" cssVar="--border" />
-            <Swatch name="Ring" cssVar="--ring" />
+            <Swatch name={translateInstant("Background")} cssVar="--background" />
+            <Swatch name={translateInstant("Foreground")} cssVar="--foreground" />
+            <Swatch name={translateInstant("Card")} cssVar="--card" />
+            <Swatch name={translateInstant("Primary")} cssVar="--primary" />
+            <Swatch name={translateInstant("Primary foreground")} cssVar="--primary-foreground" />
+            <Swatch name={translateInstant("Secondary")} cssVar="--secondary" />
+            <Swatch name={translateInstant("Muted")} cssVar="--muted" />
+            <Swatch name={translateInstant("Muted foreground")} cssVar="--muted-foreground" />
+            <Swatch name={translateInstant("Accent")} cssVar="--accent" />
+            <Swatch name={translateInstant("Destructive")} cssVar="--destructive" />
+            <Swatch name={translateInstant("Border")} cssVar="--border" />
+            <Swatch name={translateInstant("Ring")} cssVar="--ring" />
           </div>
         </SubSection>
 
-        <SubSection title="Sidebar">
+        <SubSection title={translateInstant("Sidebar")}>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            <Swatch name="Sidebar" cssVar="--sidebar" />
-            <Swatch name="Sidebar border" cssVar="--sidebar-border" />
+            <Swatch name={translateInstant("Sidebar")} cssVar="--sidebar" />
+            <Swatch name={translateInstant("Sidebar border")} cssVar="--sidebar-border" />
           </div>
         </SubSection>
 
-        <SubSection title="Chart">
+        <SubSection title={translateInstant("Chart")}>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            <Swatch name="Chart 1" cssVar="--chart-1" />
-            <Swatch name="Chart 2" cssVar="--chart-2" />
-            <Swatch name="Chart 3" cssVar="--chart-3" />
-            <Swatch name="Chart 4" cssVar="--chart-4" />
-            <Swatch name="Chart 5" cssVar="--chart-5" />
+            <Swatch name={translateInstant("Chart 1")} cssVar="--chart-1" />
+            <Swatch name={translateInstant("Chart 2")} cssVar="--chart-2" />
+            <Swatch name={translateInstant("Chart 3")} cssVar="--chart-3" />
+            <Swatch name={translateInstant("Chart 4")} cssVar="--chart-4" />
+            <Swatch name={translateInstant("Chart 5")} cssVar="--chart-5" />
           </div>
         </SubSection>
       </Section>
@@ -484,7 +666,18 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  TYPOGRAPHY                                                   */}
       {/* ============================================================ */}
-      <Section title="Typography">
+      <Section title="Runner activity">
+        <TaskChatRunnerActivityGroup item={{ id: "design-runner-activity", kind: "activity_phase", active: true, summary: "", interstitial: { id: "design-runner-commentary", kind: "message", author: "agent", text: "I’ll inspect the activity feed and check the layout.", interstitial: true }, items: [
+          { id: "design-runner-read", kind: "tool", name: "read", target: "TaskChatRunnerTurn.tsx", status: "completed", detail: "Found the activity groups." },
+          { id: "design-runner-check", kind: "tool", name: "exec_command", target: "pnpm check:token-gates", status: "in_progress" },
+        ] }} />
+        <TaskChatRunnerActivityGroup item={{ id: "design-runner-completed", kind: "activity_phase", active: false, summary: "", items: [
+          { id: "design-completed-read", kind: "tool", name: "read", target: "TaskChatRunnerTurn.tsx", status: "completed", detail: "Read the activity groups." },
+          { id: "design-completed-check", kind: "tool", name: "exec_command", target: "pnpm check:token-gates", status: "failed", detail: "A token check needs another pass." },
+        ] }} />
+      </Section>
+
+      <Section title={translateInstant("Typography")}>
         <div className="space-y-3">
           <h2 className="text-xl font-bold">Page Title — text-xl font-bold</h2>
           <h2 className="text-lg font-semibold">Section Title — text-lg font-semibold</h2>
@@ -511,7 +704,7 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  SPACING & RADIUS                                             */}
       {/* ============================================================ */}
-      <Section title="Radius">
+      <Section title={translateInstant("Radius")}>
         <div className="flex items-end gap-4 flex-wrap">
           {[
             ["sm", "var(--radius-sm)"],
@@ -534,28 +727,28 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  BUTTONS                                                      */}
       {/* ============================================================ */}
-      <Section title="Buttons">
-        <SubSection title="Variants">
+      <Section title={translateInstant("Buttons")}>
+        <SubSection title={translateInstant("Variants")}>
           <div className="flex items-center gap-2 flex-wrap">
-            <Button variant="default">Default</Button>
-            <Button variant="secondary">Secondary</Button>
-            <Button variant="outline">Outline</Button>
-            <Button variant="ghost">Ghost</Button>
-            <Button variant="destructive">Destructive</Button>
-            <Button variant="link">Link</Button>
+            <Button variant="default">{translateInstant("Default")}</Button>
+            <Button variant="secondary">{translateInstant("Secondary")}</Button>
+            <Button variant="outline">{translateInstant("Outline")}</Button>
+            <Button variant="ghost">{translateInstant("Ghost")}</Button>
+            <Button variant="destructive">{translateInstant("Destructive")}</Button>
+            <Button variant="link">{translateInstant("Link")}</Button>
           </div>
         </SubSection>
 
-        <SubSection title="Sizes">
+        <SubSection title={translateInstant("Sizes")}>
           <div className="flex items-center gap-2 flex-wrap">
-            <Button size="xs">Extra Small</Button>
-            <Button size="sm">Small</Button>
-            <Button size="default">Default</Button>
-            <Button size="lg">Large</Button>
+            <Button size="xs">{translateInstant("Extra Small")}</Button>
+            <Button size="sm">{translateInstant("Small")}</Button>
+            <Button size="default">{translateInstant("Default")}</Button>
+            <Button size="lg">{translateInstant("Large")}</Button>
           </div>
         </SubSection>
 
-        <SubSection title="Icon buttons">
+        <SubSection title={translateInstant("Icon buttons")}>
           <div className="flex items-center gap-2 flex-wrap">
             <Button variant="ghost" size="icon-xs"><Search /></Button>
             <Button variant="ghost" size="icon-sm"><Search /></Button>
@@ -564,19 +757,19 @@ export function DesignGuide() {
           </div>
         </SubSection>
 
-        <SubSection title="With icons">
+        <SubSection title={translateInstant("With icons")}>
           <div className="flex items-center gap-2 flex-wrap">
-            <Button><Plus /> New Issue</Button>
-            <Button variant="outline"><Upload /> Upload</Button>
-            <Button variant="destructive"><Trash2 /> Delete</Button>
-            <Button size="sm"><Plus /> Add</Button>
+            <Button><Plus /> {translateInstant("New Issue")}</Button>
+            <Button variant="outline"><Upload /> {translateInstant("Upload")}</Button>
+            <Button variant="destructive"><Trash2 /> {translateInstant("Delete")}</Button>
+            <Button size="sm"><Plus /> {translateInstant("Add")}</Button>
           </div>
         </SubSection>
 
-        <SubSection title="States">
+        <SubSection title={translateInstant("States")}>
           <div className="flex items-center gap-2 flex-wrap">
-            <Button disabled>Disabled</Button>
-            <Button variant="outline" disabled>Disabled Outline</Button>
+            <Button disabled>{translateInstant("Disabled")}</Button>
+            <Button variant="outline" disabled>{translateInstant("Disabled Outline")}</Button>
           </div>
         </SubSection>
       </Section>
@@ -584,14 +777,14 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  BADGES                                                       */}
       {/* ============================================================ */}
-      <Section title="Badges">
-        <SubSection title="Variants">
+      <Section title={translateInstant("Badges")}>
+        <SubSection title={translateInstant("Variants")}>
           <div className="flex items-center gap-2 flex-wrap">
-            <Badge variant="default">Default</Badge>
-            <Badge variant="secondary">Secondary</Badge>
-            <Badge variant="outline">Outline</Badge>
-            <Badge variant="destructive">Destructive</Badge>
-            <Badge variant="ghost">Ghost</Badge>
+            <Badge variant="default">{translateInstant("Default")}</Badge>
+            <Badge variant="secondary">{translateInstant("Secondary")}</Badge>
+            <Badge variant="outline">{translateInstant("Outline")}</Badge>
+            <Badge variant="destructive">{translateInstant("Destructive")}</Badge>
+            <Badge variant="ghost">{translateInstant("Ghost")}</Badge>
           </div>
         </SubSection>
       </Section>
@@ -599,8 +792,8 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  STATUS BADGES & ICONS                                        */}
       {/* ============================================================ */}
-      <Section title="Status System">
-        <SubSection title="StatusBadge (all statuses)">
+      <Section title={translateInstant("Status System")}>
+        <SubSection title={translateInstant("StatusBadge (all statuses)")}>
           <div className="flex items-center gap-2 flex-wrap">
             {[
               "active", "running", "paused", "idle", "archived", "planned",
@@ -624,7 +817,11 @@ export function DesignGuide() {
           </div>
         </SubSection>
 
-        <SubSection title="StatusIcon (interactive)">
+        <SubSection title="Idle Slack conversation">
+          <StatusIcon status="in_review" externalConversationState="waiting" showLabel />
+          <IssueStatusBadge status="in_review" externalConversationState="waiting" />
+        </SubSection>
+        <SubSection title={translateInstant("StatusIcon (interactive)")}>
           <div className="flex items-center gap-3 flex-wrap">
             {["backlog", "todo", "in_progress", "in_review", "done", "cancelled", "blocked"].map(
               (s) => (
@@ -643,7 +840,7 @@ export function DesignGuide() {
 
         {/* PAP-411: PriorityIcon showcase gated behind SHOW_TASK_PRIORITY_UI per board decision. */}
         {SHOW_TASK_PRIORITY_UI && (
-        <SubSection title="PriorityIcon (interactive)">
+        <SubSection title={translateInstant("PriorityIcon (interactive)")}>
           <div className="flex items-center gap-3 flex-wrap">
             {["critical", "high", "medium", "low"].map((p) => (
               <div key={p} className="flex items-center gap-1.5">
@@ -659,7 +856,7 @@ export function DesignGuide() {
         </SubSection>
         )}
 
-        <SubSection title="Agent status dots">
+        <SubSection title={translateInstant("Agent status dots")}>
           <div className="flex items-center gap-4 flex-wrap">
             {(["running", "active", "paused", "error", "archived"] as const).map((label) => (
               <div key={label} className="flex items-center gap-2">
@@ -672,7 +869,7 @@ export function DesignGuide() {
           </div>
         </SubSection>
 
-        <SubSection title="Run invocation badges">
+        <SubSection title={translateInstant("Run invocation badges")}>
           <div className="flex items-center gap-2 flex-wrap">
             {[
               ["timer", "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300"],
@@ -691,6 +888,8 @@ export function DesignGuide() {
           <p className="text-xs text-muted-foreground">
             Used wherever a task is referenced — in markdown, the Related Work tab, and activity summaries.
             Pass <code className="font-mono">status</code> to show the target issue&apos;s state at a glance.
+            Use <code className="font-mono">variant="property"</code> for compact badges with direct navigation.
+            Pass <code className="font-mono">onRemove</code> for a separate blocker removal control with reserved space.
             Use <code className="font-mono">strikethrough</code> for &quot;removed&quot; contexts.
           </p>
           <div className="flex items-center gap-2 flex-wrap">
@@ -698,7 +897,21 @@ export function DesignGuide() {
             <IssueReferencePill issue={{ id: "demo-2", identifier: "PAP-456", title: "With in_progress status", status: "in_progress" }} />
             <IssueReferencePill issue={{ id: "demo-3", identifier: "PAP-789", title: "Done status", status: "done" }} />
             <IssueReferencePill issue={{ id: "demo-4", identifier: "PAP-101", title: "Blocked status", status: "blocked" }} />
+            <IssueReferencePill onRemove={() => window.alert("Blocker removed")} issue={{ id: "demo-blocker", identifier: "PAP-303", title: "Hover or focus to remove blocker", status: "in_review" }} />
             <IssueReferencePill strikethrough issue={{ id: "demo-5", identifier: "PAP-202", title: "Removed (strikethrough)", status: "todo" }} />
+          </div>
+        </SubSection>
+
+        <SubSection title="LockedIssueChip">
+          <p className="text-xs text-muted-foreground">
+            Existence-only reference to a private task shown from a surface the viewer can see
+            (a blocker edge, a mention). Mono id + lock, dashed muted border,{" "}
+            <strong>no title, never a link</strong>. Falls back to &quot;Private&quot; when even the
+            identifier is withheld.
+          </p>
+          <div className="flex items-center gap-2 flex-wrap">
+            <LockedIssueChip identifier="PAP-1234" />
+            <LockedIssueChip identifier={null} />
           </div>
         </SubSection>
       </Section>
@@ -714,7 +927,7 @@ export function DesignGuide() {
           <code className="font-mono">--agent-Nb</code>); <code className="font-mono">prefers-reduced-motion</code>{" "}
           skips the liquid rise and pulses and renders the final state.
         </p>
-        <SubSection title="States">
+        <SubSection title={translateInstant("States")}>
           <div className="flex items-end gap-10">
             <div className="flex flex-col items-center gap-2">
               <AgentCapsule state="slot" />
@@ -734,7 +947,7 @@ export function DesignGuide() {
             </div>
           </div>
         </SubSection>
-        <SubSection title="Sizes">
+        <SubSection title={translateInstant("Sizes")}>
           <div className="flex items-end gap-8">
             <div className="flex flex-col items-center gap-2">
               <AgentCapsule state="online" size="sm" gradient={1} />
@@ -769,38 +982,38 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  FORM ELEMENTS                                                */}
       {/* ============================================================ */}
-      <Section title="Form Elements">
+      <Section title={translateInstant("Form Elements")}>
         <div className="grid gap-6 md:grid-cols-2">
-          <SubSection title="Input">
-            <Input placeholder="Default input" />
-            <Input placeholder="Disabled input" disabled className="mt-2" />
+          <SubSection title={translateInstant("Input")}>
+            <Input placeholder={translateInstant("Default input")} />
+            <Input placeholder={translateInstant("Disabled input")} disabled className="mt-2" />
           </SubSection>
 
-          <SubSection title="Textarea">
-            <Textarea placeholder="Write something..." />
+          <SubSection title={translateInstant("Textarea")}>
+            <Textarea placeholder={translateInstant("Write something...")} />
           </SubSection>
 
-          <SubSection title="Checkbox & Label">
+          <SubSection title={translateInstant("Checkbox & Label")}>
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <Checkbox id="check1" defaultChecked />
-                <Label htmlFor="check1">Checked item</Label>
+                <Label htmlFor="check1">{translateInstant("Checked item")}</Label>
               </div>
               <div className="flex items-center gap-2">
                 <Checkbox id="check2" />
-                <Label htmlFor="check2">Unchecked item</Label>
+                <Label htmlFor="check2">{translateInstant("Unchecked item")}</Label>
               </div>
               <div className="flex items-center gap-2">
                 <Checkbox id="check3" disabled />
-                <Label htmlFor="check3">Disabled item</Label>
+                <Label htmlFor="check3">{translateInstant("Disabled item")}</Label>
               </div>
             </div>
           </SubSection>
 
-          <SubSection title="Inline Editor">
+          <SubSection title={translateInstant("Inline Editor")}>
             <div className="space-y-4">
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Title (single-line)</p>
+                <p className="text-xs text-muted-foreground mb-1">{translateInstant("Title (single-line)")}</p>
                 <InlineEditor
                   value={inlineTitle}
                   onSave={setInlineTitle}
@@ -809,7 +1022,7 @@ export function DesignGuide() {
                 />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Body text (single-line)</p>
+                <p className="text-xs text-muted-foreground mb-1">{translateInstant("Body text (single-line)")}</p>
                 <InlineEditor
                   value={inlineText}
                   onSave={setInlineText}
@@ -818,13 +1031,13 @@ export function DesignGuide() {
                 />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Description (multiline, auto-sizing)</p>
+                <p className="text-xs text-muted-foreground mb-1">{translateInstant("Description (multiline, auto-sizing)")}</p>
                 <InlineEditor
                   value={inlineDesc}
                   onSave={setInlineDesc}
                   as="p"
                   className="text-sm text-muted-foreground"
-                  placeholder="Add a description..."
+                  placeholder={translateInstant("Add a description...")}
                   multiline
                 />
               </div>
@@ -836,33 +1049,34 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  SELECT                                                       */}
       {/* ============================================================ */}
-      <Section title="Select">
+      <Section title={translateInstant("Select")}>
+        <p className="mb-4 text-sm text-muted-foreground">Native single-value dropdowns share an inset, theme-aware caret and reserve room for it in the base stylesheet. Multiple-selection lists and controls with a custom icon keep their own appearance.</p>
         <div className="grid gap-6 md:grid-cols-2">
-          <SubSection title="Default size">
+          <SubSection title={translateInstant("Default size")}>
             <Select value={selectValue} onValueChange={setSelectValue}>
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select status" />
+                <SelectValue placeholder={translateInstant("Select status")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="backlog">Backlog</SelectItem>
-                <SelectItem value="todo">Todo</SelectItem>
-                <SelectItem value="in_progress">In Progress</SelectItem>
-                <SelectItem value="in_review">In Review</SelectItem>
-                <SelectItem value="done">Done</SelectItem>
+                <SelectItem value="backlog">{translateInstant("Backlog")}</SelectItem>
+                <SelectItem value="todo">{translateInstant("Todo")}</SelectItem>
+                <SelectItem value="in_progress">{translateInstant("In Progress")}</SelectItem>
+                <SelectItem value="in_review">{translateInstant("In Review")}</SelectItem>
+                <SelectItem value="done">{translateInstant("Done")}</SelectItem>
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">Current value: {selectValue}</p>
           </SubSection>
-          <SubSection title="Small trigger">
+          <SubSection title={translateInstant("Small trigger")}>
             <Select defaultValue="high">
               <SelectTrigger size="sm" className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="critical">Critical</SelectItem>
-                <SelectItem value="high">High</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="low">Low</SelectItem>
+                <SelectItem value="critical">{translateInstant("Critical")}</SelectItem>
+                <SelectItem value="high">{translateInstant("High")}</SelectItem>
+                <SelectItem value="medium">{translateInstant("Medium")}</SelectItem>
+                <SelectItem value="low">{translateInstant("Low")}</SelectItem>
               </SelectContent>
             </Select>
           </SubSection>
@@ -872,35 +1086,30 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  DROPDOWN MENU                                                */}
       {/* ============================================================ */}
-      <Section title="Dropdown Menu">
+      <Section title={translateInstant("Dropdown Menu")}>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm">
-              Quick Actions
-              <ChevronDown className="h-4 w-4" />
+              {translateInstant("Quick Actions")}<ChevronDown className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-56">
             <DropdownMenuItem>
               <Check className="h-4 w-4" />
-              Mark as done
-              <DropdownMenuShortcut>⌘D</DropdownMenuShortcut>
+              {translateInstant("Mark as done")}<DropdownMenuShortcut>⌘D</DropdownMenuShortcut>
             </DropdownMenuItem>
             <DropdownMenuItem>
               <BookOpen className="h-4 w-4" />
-              Open docs
-            </DropdownMenuItem>
+              {translateInstant("Open docs")}</DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuCheckboxItem
               checked={menuChecked}
               onCheckedChange={(value) => setMenuChecked(value === true)}
             >
-              Watch issue
-            </DropdownMenuCheckboxItem>
+              {translateInstant("Watch issue")}</DropdownMenuCheckboxItem>
             <DropdownMenuItem variant="destructive">
               <Trash2 className="h-4 w-4" />
-              Delete issue
-            </DropdownMenuItem>
+              {translateInstant("Delete issue")}</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </Section>
@@ -908,17 +1117,16 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  POPOVER                                                      */}
       {/* ============================================================ */}
-      <Section title="Popover">
+      <Section title={translateInstant("Popover")}>
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="sm">Open Popover</Button>
+            <Button variant="outline" size="sm">{translateInstant("Open Popover")}</Button>
           </PopoverTrigger>
           <PopoverContent className="space-y-2">
-            <p className="text-sm font-medium">Agent heartbeat</p>
+            <p className="text-sm font-medium">{translateInstant("Agent heartbeat")}</p>
             <p className="text-xs text-muted-foreground">
-              Last run succeeded 24s ago. Next timer run in 9m.
-            </p>
-            <Button size="xs">Wake now</Button>
+              {translateInstant("Last run succeeded 24s ago. Next timer run in 9m.")}</p>
+            <Button size="xs">{translateInstant("Wake now")}</Button>
           </PopoverContent>
         </Popover>
       </Section>
@@ -926,17 +1134,16 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  COLLAPSIBLE                                                  */}
       {/* ============================================================ */}
-      <Section title="Collapsible">
+      <Section title={translateInstant("Collapsible")}>
         <Collapsible open={collapsibleOpen} onOpenChange={setCollapsibleOpen} className="space-y-2">
           <CollapsibleTrigger asChild>
             <Button variant="outline" size="sm">
-              {collapsibleOpen ? "Hide" : "Show"} advanced filters
-            </Button>
+              {collapsibleOpen ? translateInstant("Hide") : translateInstant("Show")} {translateInstant("advanced filters")}</Button>
           </CollapsibleTrigger>
           <CollapsibleContent className="rounded-md border border-border p-3">
             <div className="space-y-2">
-              <Label htmlFor="owner-filter">Owner</Label>
-              <Input id="owner-filter" placeholder="Filter by agent name" />
+              <Label htmlFor="owner-filter">{translateInstant("Owner")}</Label>
+              <Input id="owner-filter" placeholder={translateInstant("Filter by agent name")} />
             </div>
           </CollapsibleContent>
         </Collapsible>
@@ -945,29 +1152,29 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  SHEET                                                        */}
       {/* ============================================================ */}
-      <Section title="Sheet">
+      <Section title={translateInstant("Sheet")}>
         <Sheet>
           <SheetTrigger asChild>
-            <Button variant="outline" size="sm">Open Side Panel</Button>
+            <Button variant="outline" size="sm">{translateInstant("Open Side Panel")}</Button>
           </SheetTrigger>
           <SheetContent side="right">
             <SheetHeader>
-              <SheetTitle>Issue Properties</SheetTitle>
-              <SheetDescription>Edit metadata without leaving the current page.</SheetDescription>
+              <SheetTitle>{translateInstant("Issue Properties")}</SheetTitle>
+              <SheetDescription>{translateInstant("Edit metadata without leaving the current page.")}</SheetDescription>
             </SheetHeader>
             <div className="space-y-4 px-4">
               <div className="space-y-1">
-                <Label htmlFor="sheet-title">Title</Label>
-                <Input id="sheet-title" defaultValue="Improve onboarding docs" />
+                <Label htmlFor="sheet-title">{translateInstant("Title")}</Label>
+                <Input id="sheet-title" defaultValue={translateInstant("Improve onboarding docs")} />
               </div>
               <div className="space-y-1">
-                <Label htmlFor="sheet-description">Description</Label>
+                <Label htmlFor="sheet-description">{translateInstant("Description")}</Label>
                 <Textarea id="sheet-description" defaultValue="Capture setup pitfalls and screenshots." />
               </div>
             </div>
             <SheetFooter>
-              <Button variant="outline">Cancel</Button>
-              <Button>Save</Button>
+              <Button variant="outline">{translateInstant("Cancel")}</Button>
+              <Button>{translateInstant("Save")}</Button>
             </SheetFooter>
           </SheetContent>
         </Sheet>
@@ -976,7 +1183,7 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  SCROLL AREA                                                  */}
       {/* ============================================================ */}
-      <Section title="Scroll Area">
+      <Section title={translateInstant("Scroll Area")}>
         <ScrollArea className="h-36 rounded-md border border-border">
           <div className="space-y-2 p-3">
             {Array.from({ length: 12 }).map((_, i) => (
@@ -991,32 +1198,28 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  COMMAND                                                      */}
       {/* ============================================================ */}
-      <Section title="Command (CMDK)">
+      <Section title={translateInstant("Command (CMDK)")}>
         <div className="rounded-md border border-border">
           <Command>
-            <CommandInput placeholder="Type a command or search..." />
+            <CommandInput placeholder={translateInstant("Type a command or search...")} />
             <CommandList>
-              <CommandEmpty>No results found.</CommandEmpty>
-              <CommandGroup heading="Pages">
+              <CommandEmpty>{translateInstant("No results found.")}</CommandEmpty>
+              <CommandGroup heading={translateInstant("Pages")}>
                 <CommandItem>
                   <LayoutDashboard className="h-4 w-4" />
-                  Dashboard
-                </CommandItem>
+                  {translateInstant("Dashboard")}</CommandItem>
                 <CommandItem>
                   <CircleDot className="h-4 w-4" />
-                  Issues
-                </CommandItem>
+                  {translateInstant("Issues")}</CommandItem>
               </CommandGroup>
               <CommandSeparator />
-              <CommandGroup heading="Actions">
+              <CommandGroup heading={translateInstant("Actions")}>
                 <CommandItem>
                   <CommandIcon className="h-4 w-4" />
-                  Open command palette
-                </CommandItem>
+                  {translateInstant("Open command palette")}</CommandItem>
                 <CommandItem>
                   <Plus className="h-4 w-4" />
-                  Create new issue
-                </CommandItem>
+                  {translateInstant("Create new issue")}</CommandItem>
               </CommandGroup>
             </CommandList>
           </Command>
@@ -1026,11 +1229,11 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  BREADCRUMB                                                   */}
       {/* ============================================================ */}
-      <Section title="Breadcrumb">
+      <Section title={translateInstant("Breadcrumb")}>
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink href="#">Projects</BreadcrumbLink>
+              <BreadcrumbLink href="#">{translateInstant("Projects")}</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
@@ -1038,7 +1241,7 @@ export function DesignGuide() {
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbPage>Issue List</BreadcrumbPage>
+              <BreadcrumbPage>{translateInstant("Issue List")}</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
@@ -1047,29 +1250,46 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  CARDS                                                        */}
       {/* ============================================================ */}
-      <Section title="Cards">
-        <SubSection title="Standard Card">
+      <Section title={translateInstant("Cards")}>
+        <SubSection title="Dashboard agent runs">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {["running", "queued", "succeeded", "failed", "timed_out", "cancelled", "interrupted"].map((status) => (
+              <AgentRunCard
+                key={status}
+                companyId="design-guide"
+                run={{
+                  id: `design-guide-${status}`, agentId: "design-guide-agent", agentName: "CodexCoder",
+                  status, adapterType: "codex_local", invocationSource: "on_demand", triggerDetail: "manual",
+                  startedAt: null, finishedAt: null, createdAt: "2026-09-11T12:00:00Z", issueId: "design-guide-task",
+                }}
+                issue={{ identifier: "PAP-559", title: "Recreate this wireframe on pages Paperclip", status: status === "succeeded" ? "done" : "in_progress" }}
+              />
+            ))}
+          </div>
+          <p className="text-xs text-muted-foreground">The dashboard and Live runs page use the same compact cards. In-progress task icons animate across the app, including between runs, to represent task workflow status. Live indicators report active execution. Open a run to view its status and transcript.</p>
+        </SubSection>
+        <SubSection title={translateInstant("Standard Card")}>
           <Card>
             <CardHeader>
-              <CardTitle>Card Title</CardTitle>
-              <CardDescription>Card description with supporting text.</CardDescription>
+              <CardTitle>{translateInstant("Card Title")}</CardTitle>
+              <CardDescription>{translateInstant("Card description with supporting text.")}</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm">Card content goes here. This is the main body area.</p>
+              <p className="text-sm">{translateInstant("Card content goes here. This is the main body area.")}</p>
             </CardContent>
             <CardFooter className="gap-2">
-              <Button size="sm">Action</Button>
-              <Button variant="outline" size="sm">Cancel</Button>
+              <Button size="sm">{translateInstant("Action")}</Button>
+              <Button variant="outline" size="sm">{translateInstant("Cancel")}</Button>
             </CardFooter>
           </Card>
         </SubSection>
 
-        <SubSection title="Metric Cards">
+        <SubSection title={translateInstant("Metric Cards")}>
           <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-4">
-            <MetricCard icon={Bot} value={12} label="Active Agents" description="+3 this week" />
-            <MetricCard icon={CircleDot} value={48} label="Open Issues" />
-            <MetricCard icon={DollarSign} value="$1,234" label="Monthly Cost" description="Under budget" />
-            <MetricCard icon={Zap} value="99.9%" label="Uptime" />
+            <MetricCard icon={Bot} value={12} label={translateInstant("Active Agents")} description={translateInstant("+3 this week")} />
+            <MetricCard icon={CircleDot} value={48} label={translateInstant("Open Issues")} />
+            <MetricCard icon={DollarSign} value="$1,234" label={translateInstant("Monthly Cost")} description={translateInstant("Under budget")} />
+            <MetricCard icon={Zap} value="99.9%" label={translateInstant("Uptime")} />
           </div>
         </SubSection>
       </Section>
@@ -1077,45 +1297,45 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  TABS                                                         */}
       {/* ============================================================ */}
-      <Section title="Tabs">
-        <SubSection title="Default (pill) variant">
+      <Section title={translateInstant("Tabs")}>
+        <SubSection title={translateInstant("Default (pill) variant")}>
           <Tabs defaultValue="overview">
             <TabsList>
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="runs">Runs</TabsTrigger>
-              <TabsTrigger value="config">Config</TabsTrigger>
-              <TabsTrigger value="costs">Costs</TabsTrigger>
+              <TabsTrigger value="overview">{translateInstant("Overview")}</TabsTrigger>
+              <TabsTrigger value="runs">{translateInstant("Runs")}</TabsTrigger>
+              <TabsTrigger value="config">{translateInstant("Config")}</TabsTrigger>
+              <TabsTrigger value="costs">{translateInstant("Costs")}</TabsTrigger>
             </TabsList>
             <TabsContent value="overview">
-              <p className="text-sm text-muted-foreground py-4">Overview tab content.</p>
+              <p className="text-sm text-muted-foreground py-4">{translateInstant("Overview tab content.")}</p>
             </TabsContent>
             <TabsContent value="runs">
-              <p className="text-sm text-muted-foreground py-4">Runs tab content.</p>
+              <p className="text-sm text-muted-foreground py-4">{translateInstant("Runs tab content.")}</p>
             </TabsContent>
             <TabsContent value="config">
-              <p className="text-sm text-muted-foreground py-4">Config tab content.</p>
+              <p className="text-sm text-muted-foreground py-4">{translateInstant("Config tab content.")}</p>
             </TabsContent>
             <TabsContent value="costs">
-              <p className="text-sm text-muted-foreground py-4">Costs tab content.</p>
+              <p className="text-sm text-muted-foreground py-4">{translateInstant("Costs tab content.")}</p>
             </TabsContent>
           </Tabs>
         </SubSection>
 
-        <SubSection title="Line variant">
+        <SubSection title={translateInstant("Line variant")}>
           <Tabs defaultValue="summary">
             <TabsList variant="line">
-              <TabsTrigger value="summary">Summary</TabsTrigger>
-              <TabsTrigger value="details">Details</TabsTrigger>
-              <TabsTrigger value="comments">Comments</TabsTrigger>
+              <TabsTrigger value="summary">{translateInstant("Summary")}</TabsTrigger>
+              <TabsTrigger value="details">{translateInstant("Details")}</TabsTrigger>
+              <TabsTrigger value="comments">{translateInstant("Comments")}</TabsTrigger>
             </TabsList>
             <TabsContent value="summary">
-              <p className="text-sm text-muted-foreground py-4">Summary content with underline tabs.</p>
+              <p className="text-sm text-muted-foreground py-4">{translateInstant("Summary content with underline tabs.")}</p>
             </TabsContent>
             <TabsContent value="details">
-              <p className="text-sm text-muted-foreground py-4">Details content.</p>
+              <p className="text-sm text-muted-foreground py-4">{translateInstant("Details content.")}</p>
             </TabsContent>
             <TabsContent value="comments">
-              <p className="text-sm text-muted-foreground py-4">Comments content.</p>
+              <p className="text-sm text-muted-foreground py-4">{translateInstant("Comments content.")}</p>
             </TabsContent>
           </Tabs>
         </SubSection>
@@ -1124,7 +1344,7 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  ENTITY ROWS                                                  */}
       {/* ============================================================ */}
-      <Section title="Entity Rows">
+      <Section title={translateInstant("Entity Rows")}>
         <div className="border border-border rounded-md">
           <EntityRow
             leading={
@@ -1135,7 +1355,7 @@ export function DesignGuide() {
               </>
             }
             identifier="PAP-001"
-            title="Implement authentication flow"
+            title={translateInstant("Implement authentication flow")}
             subtitle="Responsible: Agent Alpha"
             trailing={<IssueStatusBadge status="in_progress" />}
             onClick={() => {}}
@@ -1148,8 +1368,8 @@ export function DesignGuide() {
               </>
             }
             identifier="PAP-002"
-            title="Set up CI/CD pipeline"
-            subtitle="Completed 2 days ago"
+            title={translateInstant("Set up CI/CD pipeline")}
+            subtitle={translateInstant("Completed 2 days ago")}
             trailing={<IssueStatusBadge status="done" />}
             onClick={() => {}}
           />
@@ -1161,7 +1381,7 @@ export function DesignGuide() {
               </>
             }
             identifier="PAP-003"
-            title="Write API documentation"
+            title={translateInstant("Write API documentation")}
             trailing={<IssueStatusBadge status="todo" />}
             onClick={() => {}}
           />
@@ -1173,8 +1393,8 @@ export function DesignGuide() {
               </>
             }
             identifier="PAP-004"
-            title="Deploy to production"
-            subtitle="Blocked by PAP-001"
+            title={translateInstant("Deploy to production")}
+            subtitle={translateInstant("Blocked by PAP-001")}
             trailing={<IssueStatusBadge status="blocked" />}
             selected
           />
@@ -1244,7 +1464,7 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  FILTER BAR                                                   */}
       {/* ============================================================ */}
-      <Section title="Filter Bar">
+      <Section title={translateInstant("Filter Bar")}>
         <FilterBar
           filters={filters}
           onRemove={(key) => setFilters((f) => f.filter((x) => x.key !== key))}
@@ -1256,24 +1476,23 @@ export function DesignGuide() {
             size="sm"
             onClick={() =>
               setFilters([
-                { key: "status", label: "Status", value: "Active" },
+                { key: "status", label: translateInstant("Status"), value: translateInstant("Active") },
                 // PAP-411: priority filter demo row suppressed while SHOW_TASK_PRIORITY_UI is off.
                 ...(SHOW_TASK_PRIORITY_UI
-                  ? [{ key: "priority", label: "Priority", value: "High" } as FilterValue]
+                  ? [{ key: "priority", label: translateInstant("Priority"), value: translateInstant("High") } as FilterValue]
                   : []),
               ])
             }
           >
-            Reset filters
-          </Button>
+            {translateInstant("Reset filters")}</Button>
         )}
       </Section>
 
       {/* ============================================================ */}
       {/*  AVATARS                                                      */}
       {/* ============================================================ */}
-      <Section title="Avatars">
-        <SubSection title="Sizes">
+      <Section title={translateInstant("Avatars")}>
+        <SubSection title={translateInstant("Sizes")}>
           <div className="flex items-center gap-3">
             <Avatar size="sm"><AvatarFallback>SM</AvatarFallback></Avatar>
             <Avatar><AvatarFallback>DF</AvatarFallback></Avatar>
@@ -1281,7 +1500,7 @@ export function DesignGuide() {
           </div>
         </SubSection>
 
-        <SubSection title="Group">
+        <SubSection title={translateInstant("Group")}>
           <AvatarGroup>
             <Avatar><AvatarFallback>A1</AvatarFallback></Avatar>
             <Avatar><AvatarFallback>A2</AvatarFallback></Avatar>
@@ -1291,27 +1510,51 @@ export function DesignGuide() {
         </SubSection>
       </Section>
 
+      <Section title="App logos">
+        <SubSection title="Official marks and runtime fallback">
+          <div className="flex items-center gap-3">
+            <AppLogo
+              name="Notion"
+              logoUrl="/brands/apps/notion.svg"
+              darkLogoUrl="/brands/apps/notion-dark.svg"
+              size={36}
+            />
+            <AppLogo name="Jira" logoUrl="/brands/apps/jira.svg" darkLogoUrl="/brands/apps/jira-dark.svg" size={44} />
+            <AppLogo name="Fallback" logoUrl="/brands/apps/does-not-exist.svg" size={36} />
+          </div>
+        </SubSection>
+      </Section>
+
       {/* ============================================================ */}
       {/*  IDENTITY                                                     */}
       {/* ============================================================ */}
-      <Section title="Identity">
-        <SubSection title="Sizes">
+      <Section title="Agent personas">
+        <SubSection title="Stable palette identities">
+          <div className="flex flex-wrap gap-3">{AGENT_PALETTE_IDS.map(palette => <AgentAvatar key={palette} appearance={appearanceForPalette(palette)} size={48} label={palette} />)}</div>
+        </SubSection>
+        <SubSection title="Onboarding and live character">
+          <p className="text-sm text-muted-foreground">Place one live character beside the agent name. Onboarding uses a larger padded frame. Onboarding and agent headers follow the pointer across the page; other placements track within their region. Full-page examples are in Storybook under Agents / Personas / Full pages.</p>
+          <div className="flex gap-4"><AgentCharacter muted state="sleepy" motion="still" size={128} /><AgentCharacter size={128} /></div>
+        </SubSection>
+      </Section>
+      <Section title="Human identity">
+        <SubSection title={translateInstant("Sizes")}>
           <div className="flex items-center gap-6">
-            <Identity name="Agent Alpha" size="sm" />
-            <Identity name="Agent Alpha" />
-            <Identity name="Agent Alpha" size="lg" />
+            <Identity name="Alex Morgan" size="sm" />
+            <Identity name="Alex Morgan" />
+            <Identity name="Alex Morgan" size="lg" />
           </div>
         </SubSection>
 
-        <SubSection title="Initials derivation">
+        <SubSection title={translateInstant("Initials derivation")}>
           <div className="flex flex-col gap-2">
-            <Identity name="CEO Agent" size="sm" />
-            <Identity name="Alpha" size="sm" />
-            <Identity name="Quality Assurance Lead" size="sm" />
+            <Identity name="Casey Jordan" size="sm" />
+            <Identity name={translateInstant("Alpha")} size="sm" />
+            <Identity name="Quinn Lee" size="sm" />
           </div>
         </SubSection>
 
-        <SubSection title="Custom initials">
+        <SubSection title={translateInstant("Custom initials")}>
           <Identity name="Backend Service" initials="BS" size="sm" />
         </SubSection>
       </Section>
@@ -1319,19 +1562,19 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  TOOLTIPS                                                     */}
       {/* ============================================================ */}
-      <Section title="Tooltips">
+      <Section title={translateInstant("Tooltips")}>
         <div className="flex items-center gap-4">
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="outline" size="sm">Hover me</Button>
+              <Button variant="outline" size="sm">{translateInstant("Hover me")}</Button>
             </TooltipTrigger>
-            <TooltipContent>This is a tooltip</TooltipContent>
+            <TooltipContent>{translateInstant("This is a tooltip")}</TooltipContent>
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="ghost" size="icon-sm"><Settings /></Button>
             </TooltipTrigger>
-            <TooltipContent>Settings</TooltipContent>
+            <TooltipContent>{translateInstant("Settings")}</TooltipContent>
           </Tooltip>
         </div>
       </Section>
@@ -1339,31 +1582,30 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  DIALOG                                                       */}
       {/* ============================================================ */}
-      <Section title="Dialog">
+      <Section title={translateInstant("Dialog")}>
         <Dialog>
           <DialogTrigger asChild>
-            <Button variant="outline">Open Dialog</Button>
+            <Button variant="outline">{translateInstant("Open Dialog")}</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Dialog Title</DialogTitle>
+              <DialogTitle>{translateInstant("Dialog Title")}</DialogTitle>
               <DialogDescription>
-                This is a sample dialog showing the standard layout with header, content, and footer.
-              </DialogDescription>
+                {translateInstant("This is a sample dialog showing the standard layout with header, content, and footer.")}</DialogDescription>
             </DialogHeader>
             <div className="space-y-3">
               <div>
-                <Label>Name</Label>
-                <Input placeholder="Enter a name" className="mt-1.5" />
+                <Label>{translateInstant("Name")}</Label>
+                <Input placeholder={translateInstant("Enter a name")} className="mt-1.5" />
               </div>
               <div>
-                <Label>Description</Label>
-                <Textarea placeholder="Describe..." className="mt-1.5" />
+                <Label>{translateInstant("Description")}</Label>
+                <Textarea placeholder={translateInstant("Describe...")} className="mt-1.5" />
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline">Cancel</Button>
-              <Button>Save</Button>
+              <Button variant="outline">{translateInstant("Cancel")}</Button>
+              <Button>{translateInstant("Save")}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -1372,12 +1614,12 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  EMPTY STATE                                                  */}
       {/* ============================================================ */}
-      <Section title="Empty State">
+      <Section title={translateInstant("Empty State")}>
         <div className="border border-border rounded-md">
           <EmptyState
             icon={Inbox}
-            message="No items to show. Create your first one to get started."
-            action="Create Item"
+            message={translateInstant("No items to show. Create your first one to get started.")}
+            action={translateInstant("Create Item")}
             onAction={() => {}}
           />
         </div>
@@ -1386,12 +1628,12 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  PROGRESS BARS                                                */}
       {/* ============================================================ */}
-      <Section title="Progress Bars (Budget)">
+      <Section title={translateInstant("Progress Bars (Budget)")}>
         <div className="space-y-3">
           {[
-            { label: "Under budget (40%)", pct: 40, color: "bg-green-400" },
-            { label: "Warning (75%)", pct: 75, color: "bg-yellow-400" },
-            { label: "Over budget (95%)", pct: 95, color: "bg-red-400" },
+            { label: translateInstant("Under budget (40%)"), pct: 40, color: "bg-green-400" },
+            { label: translateInstant("Warning (75%)"), pct: 75, color: "bg-yellow-400" },
+            { label: translateInstant("Over budget (95%)"), pct: 95, color: "bg-red-400" },
           ].map(({ label, pct, color }) => (
             <div key={label} className="space-y-1">
               <div className="flex items-center justify-between">
@@ -1412,7 +1654,7 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  LOG VIEWER                                                   */}
       {/* ============================================================ */}
-      <Section title="Log Viewer">
+      <Section title={translateInstant("Log Viewer")}>
         <div className="bg-neutral-950 rounded-lg p-3 font-mono text-xs max-h-80 overflow-y-auto">
           <div className="text-foreground">[12:00:01] INFO  Agent started successfully</div>
           <div className="text-foreground">[12:00:02] INFO  Processing task PAP-001</div>
@@ -1426,7 +1668,7 @@ export function DesignGuide() {
               <span className="absolute inline-flex h-full w-full rounded-full bg-blue-400 animate-pulse" />
               <span className="inline-flex h-full w-full rounded-full bg-blue-500" />
             </span>
-            <span className="text-blue-600 dark:text-blue-400">Live</span>
+            <span className="text-blue-600 dark:text-blue-400">{translateInstant("Live")}</span>
           </div>
         </div>
       </Section>
@@ -1434,28 +1676,28 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  PROPERTY ROW PATTERN                                         */}
       {/* ============================================================ */}
-      <Section title="Property Row Pattern">
+      <Section title={translateInstant("Property Row Pattern")}>
         <div className="border border-border rounded-md p-4 space-y-1 max-w-sm">
           <div className="flex items-center justify-between py-1.5">
-            <span className="text-xs text-muted-foreground">Status</span>
+            <span className="text-xs text-muted-foreground">{translateInstant("Status")}</span>
             <StatusBadge status="active" />
           </div>
           {/* PAP-411: priority metadata row hidden behind SHOW_TASK_PRIORITY_UI. */}
           {SHOW_TASK_PRIORITY_UI && (
             <div className="flex items-center justify-between py-1.5">
-              <span className="text-xs text-muted-foreground">Priority</span>
+              <span className="text-xs text-muted-foreground">{translateInstant("Priority")}</span>
               <PriorityIcon priority="high" />
             </div>
           )}
           <div className="flex items-center justify-between py-1.5">
-            <span className="text-xs text-muted-foreground">Responsible</span>
+            <span className="text-xs text-muted-foreground">{translateInstant("Responsible")}</span>
             <div className="flex items-center gap-1.5">
               <Avatar size="sm"><AvatarFallback>A</AvatarFallback></Avatar>
               <span className="text-xs">Agent Alpha</span>
             </div>
           </div>
           <div className="flex items-center justify-between py-1.5">
-            <span className="text-xs text-muted-foreground">Created</span>
+            <span className="text-xs text-muted-foreground">{translateInstant("Created")}</span>
             <span className="text-xs">Jan 15, 2025</span>
           </div>
         </div>
@@ -1464,41 +1706,61 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  NAVIGATION PATTERNS                                          */}
       {/* ============================================================ */}
-      <Section title="Navigation Patterns">
-        <SubSection title="Sidebar nav items">
+      <Section title={translateInstant("Navigation Patterns")}>
+        <SubSection title="Independent MCP connections">
+          <p className="text-sm text-muted-foreground">Zapier, Arcade, Composio and Executor each own a connection. Their controlled setup views share Access → Connect. Tool discovery completes setup. Saved connections reuse the standard Permissions action list and per-action Test dialog. Storybook’s Apps / Connections groups use in-memory provider fixtures.</p>
+          <RemoteMcpDesignExample />
+        </SubSection>
+        <SubSection title="Setup wizard">
+          <p className="text-sm text-muted-foreground">Shared by connection setup and trigger previews. Setup navigation takes over the section sidebar; each step owns a single footer.</p>
+          <div className="max-w-sm space-y-6">
+            <SetupWizardNavigation inline labels={["Choose trigger", translateInstant("Configure"), translateInstant("Review")]} step={wizardStep} availableStep={2} onSelect={setWizardStep} />
+            <SetupWizardFooter onSaveExit={() => setWizardStep(0)}><Button onClick={() => setWizardStep((wizardStep + 1) % 3)}>{translateInstant("common.continue")}</Button></SetupWizardFooter>
+          </div>
+        </SubSection>
+        <SubSection title="Agent chat picker">
+          <AgentChatPickerExample />
+          <SubSection title="Agent conversation sidebar">
+            <div className="flex flex-wrap gap-4">
+              <div className="h-96 w-60"><AgentConversationSidebar agents={[]} onSelect={() => {}} onBrowse={() => {}} /></div>
+              <div className="h-96 w-60"><AgentConversationSidebar agents={[]} loading /></div>
+              <div className="h-96 w-60"><AgentConversationSidebar agents={[]} error={new Error("Unavailable")} onRetry={() => {}} /></div>
+            </div>
+          </SubSection>
+        </SubSection>
+        <SubSection title={translateInstant("Sidebar nav items")}>
+          <p className="text-sm text-muted-foreground">
+            Layout accepts sidebarSections to compose additional SidebarSection groups inside the shared sidebar.
+            Use SidebarNavItem for each row, with sibling action buttons for starring or menus.
+            The Chats section shows starred agents, the earliest-created agent when unstarred, then four recent agents without duplicates. Compose and star controls share a vertical column. Compose appears on hover or keyboard focus and remains visible on touch; starred icons remain visible. The picker searches all company agents by name or role without a subtitle, count, continuation labels, or footer. Task breadcrumbs support leading identity and trailing actions beside the label, including single-item task headers; see the Agent chat Storybook.
+          </p>
           <Card className="block w-60 p-3 space-y-0.5">
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium bg-accent text-accent-foreground">
               <LayoutDashboard className="h-4 w-4" />
-              Dashboard
-            </div>
+              {translateInstant("Dashboard")}</div>
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground cursor-pointer">
               <CircleDot className="h-4 w-4" />
-              Issues
-              <Badge variant="ghost" className="ml-auto bg-primary text-primary-foreground px-1.5">
+              {translateInstant("Issues")}<Badge variant="ghost" className="ml-auto bg-primary text-primary-foreground px-1.5">
                 12
               </Badge>
             </div>
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground cursor-pointer">
               <Bot className="h-4 w-4" />
-              Agents
-            </div>
+              {translateInstant("Agents")}</div>
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground cursor-pointer">
               <Hexagon className="h-4 w-4" />
-              Projects
-            </div>
+              {translateInstant("Projects")}</div>
           </Card>
         </SubSection>
 
-        <SubSection title="View toggle">
+        <SubSection title={translateInstant("View toggle")}>
           <div className="flex items-center border border-border rounded-md w-fit">
             <button className="px-3 py-1.5 text-xs font-medium bg-accent text-foreground rounded-l-md">
               <ListTodo className="h-3.5 w-3.5 inline mr-1" />
-              List
-            </button>
+              {translateInstant("List")}</button>
             <button className="px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-accent/50 rounded-r-md">
               <Target className="h-3.5 w-3.5 inline mr-1" />
-              Org
-            </button>
+              {translateInstant("Org")}</button>
           </div>
         </SubSection>
       </Section>
@@ -1506,11 +1768,11 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  GROUPED LIST (Issues pattern)                                */}
       {/* ============================================================ */}
-      <Section title="Grouped List (Issues pattern)">
+      <Section title={translateInstant("Grouped List (Issues pattern)")}>
         <div>
           <div className="flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-t-md">
             <StatusIcon status="in_progress" />
-            <span className="text-sm font-medium">In Progress</span>
+            <span className="text-sm font-medium">{translateInstant("In Progress")}</span>
             <span className="text-xs text-muted-foreground ml-1">2</span>
           </div>
           <div className="border border-border rounded-b-md">
@@ -1518,13 +1780,13 @@ export function DesignGuide() {
             <EntityRow
               leading={SHOW_TASK_PRIORITY_UI ? <PriorityIcon priority="high" /> : undefined}
               identifier="PAP-101"
-              title="Build agent heartbeat system"
+              title={translateInstant("Build agent heartbeat system")}
               onClick={() => {}}
             />
             <EntityRow
               leading={SHOW_TASK_PRIORITY_UI ? <PriorityIcon priority="medium" /> : undefined}
               identifier="PAP-102"
-              title="Add cost tracking dashboard"
+              title={translateInstant("Add cost tracking dashboard")}
               onClick={() => {}}
             />
           </div>
@@ -1534,28 +1796,28 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  COMMENT THREAD PATTERN                                       */}
       {/* ============================================================ */}
-      <Section title="Comment Thread Pattern">
+      <Section title={translateInstant("Comment Thread Pattern")}>
         <div className="space-y-3 max-w-2xl">
-          <h3 className="text-sm font-semibold">Comments (2)</h3>
+          <h3 className="text-sm font-semibold">{translateInstant("Comments (2)")}</h3>
           <div className="space-y-3">
             <div className="rounded-md border border-border p-3">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-medium text-muted-foreground">Agent</span>
+                <span className="text-xs font-medium text-muted-foreground">{translateInstant("Agent")}</span>
                 <span className="text-xs text-muted-foreground">Jan 15, 2025</span>
               </div>
-              <p className="text-sm">Started working on the authentication module. Will need API keys configured.</p>
+              <p className="text-sm">{translateInstant("Started working on the authentication module. Will need API keys configured.")}</p>
             </div>
             <div className="rounded-md border border-border p-3">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-medium text-muted-foreground">Human</span>
+                <span className="text-xs font-medium text-muted-foreground">{translateInstant("Human")}</span>
                 <span className="text-xs text-muted-foreground">Jan 16, 2025</span>
               </div>
-              <p className="text-sm">API keys have been added to the vault. Please proceed.</p>
+              <p className="text-sm">{translateInstant("API keys have been added to the vault. Please proceed.")}</p>
             </div>
           </div>
           <div className="space-y-2">
-            <Textarea placeholder="Leave a comment..." rows={3} />
-            <Button size="sm">Comment</Button>
+            <Textarea placeholder={translateInstant("Leave a comment...")} rows={3} />
+            <Button size="sm">{translateInstant("Comment")}</Button>
           </div>
         </div>
       </Section>
@@ -1563,14 +1825,14 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  COST TABLE PATTERN                                           */}
       {/* ============================================================ */}
-      <Section title="Cost Table Pattern">
+      <Section title={translateInstant("Cost Table Pattern")}>
         <div className="border border-border rounded-lg overflow-hidden">
           <table className="w-full text-xs">
             <thead className="border-b border-border bg-accent/20">
               <tr>
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground">Model</th>
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground">Tokens</th>
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground">Cost</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground">{translateInstant("Model")}</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground">{translateInstant("Tokens")}</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground">{translateInstant("Cost")}</th>
               </tr>
             </thead>
             <tbody>
@@ -1585,7 +1847,7 @@ export function DesignGuide() {
                 <td className="px-3 py-2 font-mono">$1.25</td>
               </tr>
               <tr>
-                <td className="px-3 py-2 font-medium">Total</td>
+                <td className="px-3 py-2 font-medium">{translateInstant("Total")}</td>
                 <td className="px-3 py-2 font-mono">1.7M</td>
                 <td className="px-3 py-2 font-mono font-medium">$19.25</td>
               </tr>
@@ -1597,8 +1859,8 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  SKELETONS                                                    */}
       {/* ============================================================ */}
-      <Section title="Skeletons">
-        <SubSection title="Individual">
+      <Section title={translateInstant("Skeletons")}>
+        <SubSection title={translateInstant("Individual")}>
           <div className="space-y-2">
             <Skeleton className="h-4 w-48" />
             <Skeleton className="h-8 w-full max-w-sm" />
@@ -1606,13 +1868,13 @@ export function DesignGuide() {
           </div>
         </SubSection>
 
-        <SubSection title="Page Skeleton (list)">
+        <SubSection title={translateInstant("Page Skeleton (list)")}>
           <div className="border border-border rounded-md p-4">
             <PageSkeleton variant="list" />
           </div>
         </SubSection>
 
-        <SubSection title="Page Skeleton (detail)">
+        <SubSection title={translateInstant("Page Skeleton (detail)")}>
           <div className="border border-border rounded-md p-4">
             <PageSkeleton variant="detail" />
           </div>
@@ -1622,14 +1884,14 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  SEPARATOR                                                    */}
       {/* ============================================================ */}
-      <Section title="Separator">
+      <Section title={translateInstant("Separator")}>
         <div className="space-y-4">
-          <p className="text-sm text-muted-foreground">Horizontal</p>
+          <p className="text-sm text-muted-foreground">{translateInstant("Horizontal")}</p>
           <Separator />
           <div className="flex items-center gap-4 h-8">
-            <span className="text-sm">Left</span>
+            <span className="text-sm">{translateInstant("Left")}</span>
             <Separator orientation="vertical" />
-            <span className="text-sm">Right</span>
+            <span className="text-sm">{translateInstant("Right")}</span>
           </div>
         </div>
       </Section>
@@ -1725,10 +1987,10 @@ export function DesignGuide() {
       </Section>
 
       {/* ============================================================ */}
-      <Section title="Common Icons (Lucide)">
+      <Section title={translateInstant("Common Icons (Lucide)")}>
         <div className="grid grid-cols-4 md:grid-cols-6 gap-4">
           {[
-            ["Inbox", Inbox],
+            [translateInstant("Inbox"), Inbox],
             ["ListTodo", ListTodo],
             ["CircleDot", CircleDot],
             ["Hexagon", Hexagon],
@@ -1736,14 +1998,14 @@ export function DesignGuide() {
             ["LayoutDashboard", LayoutDashboard],
             ["Bot", Bot],
             ["DollarSign", DollarSign],
-            ["History", History],
-            ["Search", Search],
+            [translateInstant("History"), History],
+            [translateInstant("Search"), Search],
             ["Plus", Plus],
             ["Trash2", Trash2],
-            ["Settings", Settings],
-            ["User", User],
+            [translateInstant("Settings"), Settings],
+            [translateInstant("User"), User],
             ["Mail", Mail],
-            ["Upload", Upload],
+            [translateInstant("Upload"), Upload],
             ["Zap", Zap],
           ].map(([name, Icon]) => {
             const LucideIcon = Icon as React.FC<{ className?: string }>;
@@ -1760,15 +2022,15 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  KEYBOARD SHORTCUTS                                           */}
       {/* ============================================================ */}
-      <Section title="Keyboard Shortcuts">
+      <Section title={translateInstant("Keyboard Shortcuts")}>
         <div className="border border-border rounded-md divide-y divide-border text-sm">
           {[
-            ["Cmd+K / Ctrl+K", "Open Command Palette"],
-            ["C", "New Issue (outside inputs)"],
-            ["[", "Toggle Sidebar"],
-            ["]", "Toggle Properties Panel"],
+            ["Cmd+K / Ctrl+K", translateInstant("Open Command Palette")],
+            ["C", translateInstant("New Issue (outside inputs)")],
+            ["[", translateInstant("Toggle Sidebar")],
+            ["]", translateInstant("Toggle Properties Panel")],
 
-            ["Cmd+Enter / Ctrl+Enter", "Submit markdown comment"],
+            ["Cmd+Enter / Ctrl+Enter", translateInstant("Submit markdown comment")],
           ].map(([key, desc]) => (
             <div key={key} className="flex items-center justify-between px-4 py-2">
               <span className="text-muted-foreground">{desc}</span>
@@ -1831,9 +2093,8 @@ export function DesignGuide() {
           </div>
           <p className="mt-2 text-xs text-muted-foreground">
             Static governance copy with a tone. Used for the PAP-10400 trust-tier banner on Runtime and the
-            effective-access banner on Agent → Tools. Pass <code>title</code>/<code>body</code> and an optional{" "}
-            <code>icon</code>.
-          </p>
+            effective-access banner on Agent → Tools. Pass <code>{translateInstant("issueRelatedWork.source.title")}</code>/<code>body</code> and an optional{" "}
+            <code>icon</code>{translateInstant(".")}</p>
         </SubSection>
 
         <SubSection title="Action approval card — pending / stale (surfaces 11/12)">
@@ -1876,7 +2137,7 @@ export function DesignGuide() {
           <p className="mt-2 text-xs text-muted-foreground">
             Signed payload sha256 + expiry surface on every variant (PAP-10400). The{" "}
             <code>stale</code> variant tints the border amber, banners the catalog-hash mismatch, strikes through
-            the previous hash next to the current one, and renders <code>Approve</code> disabled until the request
+            the previous hash next to the current one, and renders <code>{translateInstant("Approve")}</code> disabled until the request
             is re-issued.
           </p>
         </SubSection>
@@ -1909,10 +2170,10 @@ export function DesignGuide() {
         <SubSection title="BindingsTable (reused in the audit row drilldown)">
           <BindingsTable
             rows={[
-              { label: "Application", value: "Slack · manifest v2.4.1" },
-              { label: "Connection", value: "https://slack.com/api · acme-workspace", mono: true },
-              { label: "Catalog", value: "sha256:9f86d081…f00a08", mono: true },
-              { label: "Payload", value: "sha256:2c26b46b…66e7ae", mono: true },
+              { label: translateInstant("actionCard.application"), value: "Slack · manifest v2.4.1" },
+              { label: translateInstant("Connection"), value: "https://slack.com/api · acme-workspace", mono: true },
+              { label: translateInstant("Catalog"), value: "sha256:9f86d081…f00a08", mono: true },
+              { label: translateInstant("actionCard.payload"), value: "sha256:2c26b46b…66e7ae", mono: true },
             ]}
           />
           <p className="mt-2 text-xs text-muted-foreground">
@@ -1932,8 +2193,7 @@ export function DesignGuide() {
           </div>
           <p className="mt-2 text-xs text-muted-foreground">
             Policy decisions, connection/runtime health, and catalog quarantine all route through the canonical{" "}
-            <code>StatusBadge</code> keys defined in <code>lib/status-colors</code>.
-          </p>
+            <code>StatusBadge</code> keys defined in <code>lib/status-colors</code>{translateInstant(".")}</p>
         </SubSection>
 
         <SubSection title="EmptyState (canonical, with description + action)">
@@ -1947,6 +2207,24 @@ export function DesignGuide() {
         </SubSection>
       </Section>
 
+      <Section title="GitHub skill sources">
+        <p className="text-sm text-muted-foreground">The shared FileTree explorer layout puts disclosure controls beside selection, with compact folder chains, equal-height rows, inline skill descriptions, and trailing status badges. Folders select descendant packages; package checkboxes select only that package, independently of nested skills. Included files use aligned rows without individual checkboxes (`getCheckboxState` returns null); package rows use `renderNodeExtra` for file counts and inspection. Use arrow keys to navigate and Space to select.</p>
+        <SkillSourceTreeShowcase />
+        <SkillBinaryFile file={{ skillId: "example", path: "assets/example.bin", kind: "asset", content: "AAECAw==", encoding: "base64", language: null, markdown: false, editable: false }} />
+      </Section>
+
+      <Section title="Source Repositories">
+        <SubSection title="Empty and disconnected">
+          <RepositoryEditor selected={[]} onChange={() => {}} state="disconnected" onConnect={() => {}} onRetry={() => {}} />
+        </SubSection>
+        <SubSection title="Selected and searchable">
+          <RepositoryEditor selected={[{ id: "1", fullName: "paperclipai/paperclip", url: "https://github.com/paperclipai/paperclip", connections: ["Your GitHub"] }]}
+            available={[{ id: "2", fullName: "paperclipai/docs", url: "https://github.com/paperclipai/docs", connections: ["Company GitHub"] }]}
+            onChange={() => {}} onConnect={() => {}} onRetry={() => {}} />
+        </SubSection>
+        <p className="text-sm text-muted-foreground">Loading, errors, empty search, mobile, and short viewports are covered in the Project repos Storybook stories.</p>
+      </Section>
+
       <Section title="Environment Variables Editor">
         <p className="text-sm text-muted-foreground">
           Reusable env-var editor (agents, projects, environments, routines). One shared grid, an
@@ -1956,6 +2234,107 @@ export function DesignGuide() {
           for all 10 states.
         </p>
         <EnvironmentVariablesEditorShowcase />
+      </Section>
+
+      <Section title="Tasks created from a task">
+        <SubSection title="Subtasks and created work are independent">
+          <div className="max-w-xl">
+            <TaskDetailTasksPanel
+              subtasks={[DESIGN_GUIDE_TASK]}
+              createdTasks={[
+                { ...DESIGN_GUIDE_TASK, projectId: "design-board", project: { id: "design-board", name: "Board UI" } as Issue["project"] },
+                { ...DESIGN_GUIDE_TASK, id: "design-followup", identifier: "PAP-428", title: "Write release notes", status: "todo", projectId: null },
+              ]}
+              projects={[]}
+            />
+          </div>
+        </SubSection>
+        <SubSection title="Empty, loading and failed">
+          <TaskDetailTasksPanel subtasks={[]} createdTasks={[]} projects={[]} />
+          <TaskDetailTasksPanel subtasks={[]} createdTasks={[]} projects={[]} isLoading />
+          <TaskDetailTasksPanel subtasks={[]} createdTasks={[]} projects={[]} hasError onRetry={() => {}} />
+        </SubSection>
+      </Section>
+
+      <Section title="Disposition recovery notice">
+        <SubSection title="Needs attention, with inspectable details">
+          <DispositionRecoveryNotice snapshot={{ kind: "disposition_repair_escalated", actionId: "design-recovery", attemptCount: 2, maxAttempts: 2, reason: "unchanged_source_state_exhausted", assigneeAgentId: null }} defaultExpanded />
+        </SubSection>
+        <p className="text-sm text-muted-foreground">Storybook’s Recovery notice stories show the actionable, pending, acknowledged, unavailable, failed, and mobile states using this production component.</p>
+      </Section>
+
+      <Section title="Pending task input above composer">
+        <p className="mb-3 text-sm text-muted-foreground">A decision card sits above the ordinary message composer. Dismiss the card to keep a reopen control, or resolve it to clear the pending state.</p>
+        <TaskPendingInputExample />
+      </Section>
+
+      <Section title="Execution recovery">
+        <p className="text-sm text-muted-foreground">
+          Recovery runs in the background. Task lists keep their ordinary status without
+          execution badges. Active transcript headers keep saying Working during automatic
+          recovery. Recovery decisions and attempts belong in the run log;
+          there is no execution status card or reconciliation form.
+        </p>
+      </Section>
+
+      <Section title="Cloud sign-in unavailable">
+        <CloudSignIn cloud={{ managed: true, managedBy: "paperclip-cloud", cloudBaseUrl: null, stackSlug: null }} returnTo="/" />
+      </Section>
+
+      <Section title="Saved provider API keys">
+        <SavedProviderKeySelect options={[{ id: "example", label: "Claude API key (Your key)", binding: { type: "user_secret_ref", key: "ANTHROPIC_API_KEY", version: "latest" } }]} value="example" onChange={() => {}} loading={false} error={false} />
+        <SavedProviderKeySelect options={[]} value="" onChange={() => {}} loading error={false} />
+        <SavedProviderKeySelect options={[]} value="" onChange={() => {}} loading={false} error />
+      </Section>
+
+      <Section title="External agent invitation">
+        <p className="text-sm text-muted-foreground">Match the harness picker with provider cards. Connection checks reflect confirmed server evidence. AnimatedDialogContent resizes to its content using motion tokens and respects reduced motion.</p>
+        <ExternalAgentPresetPicker onSelect={() => {}} />
+        <DotConnectionChecks state={{ phase: "testing" }} />
+        <Dialog><DialogTrigger asChild><Button variant="outline">Preview invitation modal</Button></DialogTrigger>
+          <AnimatedDialogContent><div className="space-y-4 p-6"><DialogTitle>{translateInstant("newAgent.inviteExternalAgent")}</DialogTitle><DialogDescription>Choose an agent you already use.</DialogDescription><ExternalAgentPresetPicker onSelect={() => {}} /></div></AnimatedDialogContent>
+        </Dialog>
+      </Section>
+
+      <Section title="Browser setup prompt">
+        <p className="text-sm text-muted-foreground">Use AgentSetupPrompt for prompts handed to an external agent: connections, webhook setup, onboarding, and task handoffs. One click copies the complete prompt, opens its preview, and confirms success inline; clipboard failures offer selectable text.</p>
+        <SetupPrompt prompt="Design guide example. This is a preview, not a real provider setup request." />
+        <p className="text-sm text-muted-foreground">For a named recipient, pass the optional agent name and logo. The same copy feedback, preview, and manual clipboard recovery apply.</p>
+        <SetupPrompt prompt="Design guide example for Dot. No live pairing code." label="Copy setup prompt" title={translateInstant("Connect your Dot")} agent={{ name: "Dot", src: "/brands/adapters/openai-dot.svg" }} />
+      </Section>
+
+      <Section title="Connection Intent">
+        <p className="text-sm text-muted-foreground">
+          The task card is the dialog host for the shared connection setup flow. Provider forms,
+          validation, OAuth, access selection, and completion come from the same feature module as
+          the full-page Apps setup; this card owns only audience, dialog, and task refresh behavior.
+          Pending connections stay in the timeline beside a usable composer. The independently
+          addressable Connections/In-task connections stories cover access, OAuth recovery, narrow
+          layouts, completion, and historical outcomes. AgentMail uses an inline API-key field
+          with fixed access defaults; its field and direct key-page link are shared with Apps setup.
+        </p>
+        <div className="grid gap-4 xl:grid-cols-3">
+          <IssueThreadInteractionCard
+            interaction={pendingConnectionIntentInteraction}
+            currentUserId={issueThreadInteractionFixtureMeta.currentUserId}
+          />
+          <IssueThreadInteractionCard
+            interaction={retryConnectionIntentInteraction}
+            currentUserId={issueThreadInteractionFixtureMeta.currentUserId}
+          />
+          <IssueThreadInteractionCard
+            interaction={connectedConnectionIntentInteraction}
+            currentUserId={issueThreadInteractionFixtureMeta.currentUserId}
+          />
+        </div>
+      </Section>
+
+      <Section title="AgentMail API key">
+        <p className="text-sm text-muted-foreground">AgentMail setup has two steps: pick an agent, then pick an email address. Ask for the API key alongside the agent only when needed. Keep address errors beside the field and additional settings under Advanced options.</p>
+        <p className="text-sm text-muted-foreground">Preview only. This field does not save or submit a credential.</p>
+        <div className="max-w-md">
+          <AgentMailApiKeyField value={agentmailDemoKey} onChange={setAgentmailDemoKey} />
+        </div>
       </Section>
 
       <Section title="Resizable Panels">
@@ -1991,11 +2370,17 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  INLINE BANNER + BUILT-IN AGENTS                              */}
       {/* ============================================================ */}
+      <Section title="Webhook URL warnings">
+        <div className="space-y-3">
+          {["http://localhost:3100", "https://paperclip.internal", "https://paperclip.example-tailnet.ts.net", "http://paperclip.example.com", "not-a-url"].map((url) => <WebhookUrlWarning key={url} url={url} />)}
+        </div>
+      </Section>
+
       <Section title="Inline Banner">
         <p className="text-sm text-muted-foreground">
           Token-backed full-width notice (<span className="font-mono">brandBanner</span> tones). Use{" "}
           <span className="font-mono">info</span> for provenance/context and{" "}
-          <span className="font-mono">warning</span> for paused/attention. Supports an optional bold
+          <span className="font-mono">{translateInstant("companyExport.warning")}</span> for paused/attention. Supports an optional bold
           title and a trailing actions slot. Replaces hand-rolled{" "}
           <span className="font-mono">bg-yellow-*</span>/<span className="font-mono">bg-blue-*</span>{" "}
           banners.
@@ -2003,18 +2388,18 @@ export function DesignGuide() {
         <div className="space-y-3">
           <InlineBanner
             tone="info"
-            title="Built-in agent"
-            actions={<Button variant="outline" size="sm">Reset to defaults</Button>}
+            title={translateInstant("agentDetail.builtIn.title")}
+            actions={<Button variant="outline" size="sm">{translateInstant("agentDetail.builtIn.resetToDefaults")}</Button>}
           >
-            Ships with Paperclip and powers <strong>Briefs</strong>. It can be paused but not deleted.
+            {translateInstant("agentDetail.builtInPrefix")}{" "}<strong>{translateInstant("builtInAgents.features.briefs")}</strong>. It can be paused but not deleted.
           </InlineBanner>
           <InlineBanner
             tone="warning"
             title="Briefs is paused."
             actions={
               <>
-                <Button variant="ghost" size="sm">View agent</Button>
-                <Button size="sm">Resume agent</Button>
+                <Button variant="ghost" size="sm">{translateInstant("liveUpdates.action.viewAgent")}</Button>
+                <Button size="sm">{translateInstant("Resume agent")}</Button>
               </>
             }
           >
@@ -2023,7 +2408,7 @@ export function DesignGuide() {
           <InlineBanner
             tone="danger"
             title="Summary generation failed."
-            actions={<Button size="sm">Retry</Button>}
+            actions={<Button size="sm">{translateInstant("Retry")}</Button>}
           >
             The linked issue reached a terminal state before a summary was written.
           </InlineBanner>
@@ -2033,12 +2418,77 @@ export function DesignGuide() {
         </div>
       </Section>
 
+      <Section title="Text attachment tabs">
+        <p className="text-sm text-muted-foreground">Uploaded text opens in a named task tab. Markdown offers Rendered and Raw icon controls; every text file has a download action.</p>
+        <div className="grid gap-4 md:grid-cols-2">
+          <TextAttachmentPreview title="README.md" text={"# Project notes\n\nReview the **original** file."} markdown downloadUrl="data:text/markdown,%23%20Project%20notes" />
+          <TextAttachmentPreview title="notes.txt" text="Plain text stays literal: <example>" markdown={false} downloadUrl="data:text/plain,Plain%20text" />
+        </div>
+      </Section>
+
+      <Section title="Connection recovery">
+        <SubSection title="Waiting for server">
+          <CloudAccessError temporary retrying={false} onRetry={() => undefined} />
+        </SubSection>
+        <SubSection title="Checking connection">
+          <CloudAccessError temporary retrying onRetry={() => undefined} />
+        </SubSection>
+        <SubSection title="Access check failed">
+          <CloudAccessError temporary={false} retrying={false} onRetry={() => undefined} />
+        </SubSection>
+      </Section>
+
+      <Section title="Browser session footer">
+        <p className="text-sm text-muted-foreground">Fit to pane follows the visible panel. Fixed viewport presets and session actions live in the footer menu. Costs stay in task reporting. The idle countdown appears only in the final five minutes. Full panel, activity, and settings states are in Storybook under Browser Use.</p>
+        {(["running", "idle", "closing-soon", "closed"] as const).map((state) => (
+          <SubSection key={state} title={state === "closing-soon" ? "Closing soon" : state}>
+            <TaskBrowserFooter
+              browser={{
+                id: "design-browser", sessionId: "design-session", issueId: "design-task",
+                status: state === "closing-soon" ? "idle" : state,
+                runStatus: "completed", progress: null, error: null, costCents: 15,
+                idleDeadline: new Date(state === "closing-soon" ? 282000 : 600000).toISOString(),
+                expiresAt: null, createdAt: new Date(0).toISOString(),
+              } satisfies TaskBrowser}
+              now={0}
+              onControl={() => {}}
+              onReconnect={() => {}}
+              onResize={() => {}}
+            />
+          </SubSection>
+        ))}
+      </Section>
+
+      <Section title="Browser activity in the task feed">
+        <p className="text-sm text-muted-foreground">Each browser appears once at its opening time among the task messages. Its status updates in place; the action opens its side-panel tab.</p>
+        {(["starting", "running", "idle", "closed", "failed"] as const).map((status) => (
+          <SubSection key={status} title={status}>
+            <TaskBrowserActivity browser={{
+              id: `design-${status}`, sessionId: `design-${status}`, issueId: "design-task", status,
+              runStatus: "completed", progress: null, error: null, costCents: 0,
+              idleDeadline: null, expiresAt: null, createdAt: new Date(0).toISOString(),
+            }} onOpen={() => {}} />
+          </SubSection>
+        ))}
+      </Section>
+
+      <Section title="Media artifacts">
+        <p className="text-sm text-muted-foreground">Images and videos use gallery tiles. The whole tile opens the task gallery; files and links keep compact, fully clickable rows. Task/Artifact Gallery in Storybook covers playable videos, mixed files, narrow panels, and unavailable previews.</p>
+        <div className="grid max-w-2xl grid-cols-1 gap-3 sm:grid-cols-2">
+          <MediaArtifactCard id="design-image" title="Launch artwork" contentPath="/announcement-preview.svg" contentType="image/svg+xml" originalFilename="launch.svg" detail={translateInstant("Image")} />
+          <MediaArtifactCard id="design-video" title={translateInstant("Video preview unavailable")} contentPath="" contentType="video/mp4" originalFilename="preview.mp4" detail="Video" />
+        </div>
+      </Section>
+
+      <Section title="AI Connections">
+        <AiConnectionDesignExamples />
+      </Section>
+
       <Section title="Built-in Agent Lifecycle Chips">
         <p className="text-sm text-muted-foreground">
           A derived lifecycle chip (amber) for attention states. The lifecycle chip is separate from
           the agent status vocabulary and only shows for{" "}
-          <span className="font-mono">needs_setup</span> / <span className="font-mono">pending_approval</span>.
-        </p>
+          <span className="font-mono">needs_setup</span> / <span className="font-mono">pending_approval</span>{translateInstant(".")}</p>
         <div className="flex flex-wrap items-center gap-4">
           <BuiltInLifecycleChip status="needs_setup" />
           <BuiltInLifecycleChip status="pending_approval" />
@@ -2053,4 +2503,18 @@ export function DesignGuide() {
       </Section>
     </div>
   );
+}
+
+function SkillSourceTreeShowcase() {
+  const candidates = [
+    { path: ".agents/review/SKILL.md", name: translateInstant("Review"), description: "Review changes before release.", error: null, inspection: { requirements: null, references: [], warnings: [], files: [
+      { path: "SKILL.md", kind: "skill", sizeBytes: 120, encoding: "utf8" as const, executable: false },
+      { path: "scripts/check.sh", kind: "script", sizeBytes: 45, encoding: "utf8" as const, executable: true },
+    ] } },
+    { path: ".agents/review/nested/SKILL.md", name: "Nested skill", description: "An independently selected package.", error: null, note: "New skill" },
+    { path: "broken/SKILL.md", name: translateInstant("Needs attention"), description: null, error: "Missing required description." },
+  ];
+  const [selected, setSelected] = useState(new Set(candidates.map(skill => skill.path)));
+  const [excluded, setExcluded] = useState<string[]>([]);
+  return <SkillSourceTree candidates={candidates} selected={selected} excludedFolders={excluded} onChange={(paths, folders) => { setSelected(paths); setExcluded(folders); }} />;
 }

@@ -12,6 +12,7 @@ import {
   terminateLocalService,
 } from "../server/src/services/local-service-supervisor.ts";
 import { getDevServiceControlFilePath, repoRoot } from "./dev-service-profile.ts";
+import { applyDevRunnerOptions } from "./dev-runner-options.ts";
 
 const execFileAsync = promisify(execFile);
 type DevServiceRecord = Awaited<ReturnType<typeof listLocalServiceRegistryRecords>>[number];
@@ -25,6 +26,20 @@ function toDisplayLines(records: DevServiceRecord[]) {
 }
 
 const command = process.argv[2] ?? "list";
+try {
+  const { forwardedArgs } = applyDevRunnerOptions(
+    process.argv.slice(3),
+    process.env,
+    repoRoot,
+  );
+  if (forwardedArgs.length > 0) {
+    throw new Error(`Unknown dev-service option: ${forwardedArgs[0]}`);
+  }
+} catch (error) {
+  console.error(`[paperclip] ${error instanceof Error ? error.message : String(error)}`);
+  process.exit(1);
+}
+
 const records = await pruneDeadDevServiceRecords(
   await listLocalServiceRegistryRecords({
     profileKind: "paperclip-dev",

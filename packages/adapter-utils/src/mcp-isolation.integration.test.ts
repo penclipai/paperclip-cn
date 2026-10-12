@@ -29,11 +29,6 @@ interface McpObservation {
 
 type McpServer = NonNullable<AcpRuntimeOptions["mcpServers"]>[number];
 
-function quoteAcpCommandArg(value: string): string {
-  const normalized = process.platform === "win32" ? value.replace(/\\/g, "/") : value;
-  return JSON.stringify(normalized);
-}
-
 afterEach(async () => {
   await Promise.all(
     cleanupRoots.splice(0).map((root) => fs.rm(root, { recursive: true, force: true })),
@@ -59,7 +54,7 @@ async function runAcpxFixtureSession(
     sessionStore: createRuntimeStore({ stateDir: path.join(root, `acpx-${sessionName}`) }),
     agentRegistry: createAgentRegistry({
       overrides: {
-        isolation_fixture: `${quoteAcpCommandArg(process.execPath)} ${quoteAcpCommandArg(acpFixturePath)}`,
+        isolation_fixture: [process.execPath, acpFixturePath],
       },
     }),
     mcpServers,
@@ -201,7 +196,7 @@ describe("same-machine MCP isolation", () => {
   it("keeps concurrent Codex homes disjoint and supports CLI MCP overrides", async () => {
     const version = await commandVersion("codex");
     if (!version) return;
-    expect(version).toMatch(/^codex-cli \d+\.\d+\.\d+$/);
+    expect(version).toMatch(/^codex-cli \d+\.\d+\.\d+(?:[-+][\w.-]+)?$/);
 
     const root = await createMcpIsolationRoot("paperclip-codex-mcp-isolation-");
     cleanupRoots.push(root);

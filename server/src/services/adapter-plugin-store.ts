@@ -37,6 +37,7 @@ export interface AdapterPluginRecord {
 
 interface AdapterSettings {
   disabledTypes: string[];
+  pausedOverrides?: string[];
 }
 
 // ---------------------------------------------------------------------------
@@ -151,6 +152,7 @@ export function removeAdapterPlugin(type: string): boolean {
   if (idx < 0) return false;
   store.splice(idx, 1);
   writeStore(store);
+  setAdapterOverridePaused(type, false);
   return true;
 }
 
@@ -168,6 +170,20 @@ export function getAdapterPluginsDir(): string {
 
 export function getDisabledAdapterTypes(): string[] {
   return readSettings().disabledTypes;
+}
+
+export function getPausedAdapterOverrides(): string[] {
+  const paused = readSettings().pausedOverrides;
+  return Array.isArray(paused) ? paused.filter((type): type is string => typeof type === "string") : [];
+}
+
+export function setAdapterOverridePaused(type: string, paused: boolean): boolean {
+  const pausedOverrides = new Set(getPausedAdapterOverrides());
+  if (pausedOverrides.has(type) === paused) return false;
+  if (paused) pausedOverrides.add(type);
+  else pausedOverrides.delete(type);
+  writeSettings({ ...readSettings(), pausedOverrides: [...pausedOverrides] });
+  return true;
 }
 
 export function isAdapterDisabled(type: string): boolean {

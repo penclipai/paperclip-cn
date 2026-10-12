@@ -37,19 +37,15 @@ describe("classifySkillDenial", () => {
     );
     expect(denial).not.toBeNull();
     expect(denial?.state).toBe("policy");
-    expect(denial?.title).toBe("Installing external skills is restricted by your company policy.");
-    expect(denial?.titleKey).toBe("skillPolicyDenial.policy.actionTitle");
-    expect(denial?.titleValues).toEqual({ action: "Installing external skills" });
+    expect(denial?.title).toBe("Installing external skills is restricted by your organization policy.");
     expect(denial?.remediation).toBe("Contact a company administrator to change the skill policy.");
-    expect(denial?.remediationKey).toBeUndefined();
   });
 
   it("recognises a policy denial from reason alone (policy_default) and falls back to default remediation", () => {
     const denial = classifySkillDenial(apiError(403, { reason: "policy_default" }));
     expect(denial?.state).toBe("policy");
-    expect(denial?.title).toBe("This action is restricted by your company policy.");
+    expect(denial?.title).toBe("This action is restricted by your organization policy.");
     expect(denial?.remediation).toContain("administrator can change the skill policy");
-    expect(denial?.remediationKey).toBe("skillPolicyDenial.policy.remediation");
   });
 
   it("classifies the policy-admin requirement as State C (platform_admin)", () => {
@@ -65,7 +61,6 @@ describe("classifySkillDenial", () => {
       expect(denial?.state).toBe("platform");
       expect(denial?.title.length).toBeGreaterThan(0);
       expect(denial?.remediation.length).toBeGreaterThan(0);
-      expect(denial?.titleKey).toMatch(/^skillPolicyDenial\./);
     },
   );
 
@@ -78,7 +73,6 @@ describe("classifySkillDenial", () => {
       }),
     );
     expect(denial?.remediation).toBe("Import from an approved managed-skill root.");
-    expect(denial?.remediationKey).toBeUndefined();
   });
 
   it("treats reason=platform_invariant without a known code as a generic safety block", () => {

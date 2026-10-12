@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
 import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import type {
   Agent,
@@ -407,7 +407,7 @@ function FrontmatterCard({
 
 const ROLE_LABELS: Record<string, string> = {
   ceo: "CEO", cto: "CTO", cmo: "CMO", cfo: "CFO", coo: "COO",
-  vp: "VP", manager: "Manager", engineer: "Engineer", agent: "Agent",
+  vp: "VP", manager: "Manager", engineer: "Engineer", get agent() { return translateInstant("Agent"); },
 };
 
 /**
@@ -449,9 +449,9 @@ function generateReadmeFromSelection(
   lines.push("");
 
   const counts: Array<[string, number]> = [];
-  if (agents.length > 0) counts.push(["Agents", agents.length]);
-  if (projects.length > 0) counts.push(["Projects", projects.length]);
-  if (skills.length > 0) counts.push(["Skills", skills.length]);
+  if (agents.length > 0) counts.push([translateInstant("Agents"), agents.length]);
+  if (projects.length > 0) counts.push([translateInstant("Projects"), projects.length]);
+  if (skills.length > 0) counts.push([translateInstant("Skills"), skills.length]);
   if (tasks.length > 0) counts.push(["Tasks", tasks.length]);
 
   if (counts.length > 0) {
@@ -489,7 +489,7 @@ function generateReadmeFromSelection(
   lines.push("## Getting Started");
   lines.push("");
   lines.push("```bash");
-  lines.push("npx penclip company import this-github-url-or-folder");
+  lines.push("npx paperclipai company import this-github-url-or-folder");
   lines.push("```");
   lines.push("");
   lines.push("See [Paperclip](https://paperclip.ing) for more information.");
@@ -539,6 +539,7 @@ function ExportPreviewPane({
   orgChartPreviewUrl?: string;
   onSkillClick?: (skill: string) => void;
 }) {
+  useTranslation();
   if (!selectedFile || content === null) {
     return (
       <EmptyState icon={Package} message={translateInstant("companyExport.selectPreview")} />
@@ -578,8 +579,7 @@ function ExportPreviewPane({
           </pre>
         ) : (
           <div className="rounded-lg border border-border bg-accent/10 px-4 py-3 text-sm text-muted-foreground">
-            Binary asset preview is not available for this file type.
-          </div>
+            {translateInstant("companyExport.binaryPreviewUnavailable")}</div>
         )}
       </div>
     </div>
@@ -624,11 +624,11 @@ function isAbortError(error: unknown): boolean {
 }
 
 function previewErrorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : translateInstant("companyExport.exportFailedBody");
+  return error instanceof Error ? error.message : "Failed to load export data.";
 }
 
 export function CompanyExport() {
-  const { t } = useTranslation();
+  useTranslation();
   const { selectedCompanyId, selectedCompany } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { pushToast } = useToastActions();
@@ -736,9 +736,9 @@ export function CompanyExport() {
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: selectedCompany?.name ?? t("companyExport.companyFallback"), href: "/dashboard" },
-      { label: t("Settings"), href: "/company/settings" },
-      { label: t("companyExport.exportButton") },
+      { label: selectedCompany?.name ?? translateInstant("Organization"), href: "/dashboard" },
+      { label: translateInstant("Settings"), href: "/company/settings" },
+      { label: translateInstant("Export") },
     ]);
   }, [selectedCompany?.name, setBreadcrumbs]);
 
@@ -779,7 +779,7 @@ export function CompanyExport() {
       if (request.requestId !== previewRequestIdRef.current || isAbortError(err)) return;
       pushToast({
         tone: "error",
-        title: t("companyExport.exportFailedTitle"),
+        title: translateInstant("companyExport.exportFailedTitle"),
         body: previewErrorMessage(err),
       });
     },
@@ -813,15 +813,15 @@ export function CompanyExport() {
       downloadZip(result, resultCheckedFiles, result.files);
       pushToast({
         tone: "success",
-        title: t("companyExport.exportDownloadedTitle"),
+        title: translateInstant("companyExport.exportDownloadedTitle"),
         body: `${resultCheckedFiles.size} file${resultCheckedFiles.size === 1 ? "" : "s"} exported as ${result.rootPath}.zip`,
       });
     },
     onError: (err) => {
       pushToast({
         tone: "error",
-        title: t("companyExport.exportFailedTitle"),
-        body: err instanceof Error ? err.message : t("companyExport.buildFailedBody"),
+        title: translateInstant("companyExport.exportFailedTitle"),
+        body: err instanceof Error ? err.message : "Failed to build export package.",
       });
     },
   });
@@ -918,7 +918,7 @@ export function CompanyExport() {
 
     // Regenerate README.md based on checked selection
     if (typeof exportData.files["README.md"] === "string") {
-      const companyName = exportData.manifest.company?.name ?? selectedCompany?.name ?? t("companyExport.companyFallback");
+      const companyName = exportData.manifest.company?.name ?? selectedCompany?.name ?? translateInstant("Company");
       const companyDescription = exportData.manifest.company?.description ?? null;
       filtered["README.md"] = generateReadmeFromSelection(
         exportData.manifest,
@@ -1027,7 +1027,7 @@ export function CompanyExport() {
   }
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={Package} message={t("companyExport.selectCompany")} />;
+    return <EmptyState icon={Package} message={translateInstant("Select an organization to export.")} />;
   }
 
   if (exportPreviewMutation.isPending && !exportData) {
@@ -1038,9 +1038,9 @@ export function CompanyExport() {
     return (
       <EmptyState
         icon={Package}
-        title="Export preview cancelled"
-        message="The preview request was cancelled. Your export settings are unchanged."
-        action="Retry preview"
+        title={translateInstant("Export preview cancelled")}
+        message={translateInstant("The preview request was cancelled. Your export settings are unchanged.")}
+        action={translateInstant("Retry preview")}
         onAction={startPreviewRequest}
         hideActionIcon
       />
@@ -1051,10 +1051,10 @@ export function CompanyExport() {
     return (
       <EmptyState
         icon={Package}
-        title="Export preview failed"
+        title={translateInstant("Export preview failed")}
         message={previewErrorMessage(exportPreviewMutation.error)}
-        description="Retry the preview. You do not need to reload this page."
-        action="Retry preview"
+        description={translateInstant("Retry the preview. You do not need to reload this page.")}
+        action={translateInstant("Retry preview")}
         onAction={startPreviewRequest}
         hideActionIcon
       />
@@ -1065,8 +1065,8 @@ export function CompanyExport() {
     return (
       <EmptyState
         icon={Package}
-        title="Export preview unavailable"
-        message="No export preview is loaded."
+        title={translateInstant("Export preview unavailable")}
+        message={translateInstant("No export preview is loaded.")}
         action="Load preview"
         onAction={startPreviewRequest}
         hideActionIcon
@@ -1087,15 +1087,14 @@ export function CompanyExport() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-4 text-sm">
             <span className="font-medium">
-              {selectedCompany?.name ?? t("companyExport.companyFallback")} export
-            </span>
+              {selectedCompany?.name ?? translateInstant("Organization")} {translateInstant("companyExport.exportLabel")}</span>
             <span className="text-muted-foreground">
-              Exporting {selectedCount.toLocaleString()} of {totalFiles.toLocaleString()} file{totalFiles === 1 ? "" : "s"}
+              {translateInstant(totalFiles === 1 ? "companyExport.exportProgressSingle" : "companyExport.exportProgress", { selected: selectedCount.toLocaleString(), total: totalFiles.toLocaleString() })}
               {selectedCount > 0 && ` (~${formatBytes(estimatedZipBytes)})`}
             </span>
             {warnings.length > 0 && (
               <span className="text-amber-500">
-                {warnings.length} warning{warnings.length === 1 ? "" : "s"}
+                {translateInstant(warnings.length === 1 ? "companyExport.warningCountSingle" : "companyExport.warningCount", { count: warnings.length })}
               </span>
             )}
           </div>
@@ -1112,7 +1111,7 @@ export function CompanyExport() {
           >
             <Download className="mr-1.5 h-3.5 w-3.5" />
             {downloadMutation.isPending
-              ? t("companyExport.building")
+              ? translateInstant("companyExport.building")
               : `Export ${selectedCount.toLocaleString()} file${selectedCount === 1 ? "" : "s"}`}
           </Button>
         </div>
@@ -1130,7 +1129,7 @@ export function CompanyExport() {
       {/* Export fidelity: data the bundle will not carry */}
       {fidelityReport && fidelityReport.warnings.length > 0 && (
         <div className="mx-5 mt-3 rounded-md border border-amber-500/30 bg-amber-500/5 px-4 py-3">
-          <h3 className="mb-1.5 text-xs font-medium">{t("companyExport.notIncluded")}</h3>
+          <h3 className="mb-1.5 text-xs font-medium">{translateInstant("companyExport.notIncluded")}</h3>
           {fidelityReport.warnings.map((warning) => (
             <div
               key={warning.code}
@@ -1149,11 +1148,11 @@ export function CompanyExport() {
       <div className="grid gap-4 xl:h-(--sz-calc-30) xl:grid-cols-(--gtc-25) xl:gap-0">
         <aside className="flex max-h-(--sz-24rem) flex-col overflow-hidden border-b border-border xl:max-h-none xl:border-b-0 xl:border-r">
           <div className="border-b border-border px-4 py-3 shrink-0">
-            <h2 className="text-base font-semibold">{t("companyExport.packageFiles")}</h2>
+            <h2 className="text-base font-semibold">{translateInstant("companyExport.packageFiles")}</h2>
           </div>
           <div className="border-b border-border px-4 py-3 shrink-0">
-            <h3 className="mb-2 text-xs font-medium text-muted-foreground">{t("companyExport.whatToInclude")}</h3>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1.5" role="group" aria-label={t("companyExport.whatToInclude")}>
+            <h3 className="mb-2 text-xs font-medium text-muted-foreground">{translateInstant("companyExport.whatToInclude")}</h3>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1.5" role="group" aria-label={translateInstant("companyExport.whatToInclude")}>
               {EXPORT_CATEGORY_ORDER.map((key) => {
                 const isAttachments = key === "attachments";
                 const disabled = isAttachments && !isAttachmentsCategoryEnabled(categories);
@@ -1170,7 +1169,7 @@ export function CompanyExport() {
                     )}
                     title={
                       disabled
-                        ? t("companyExport.attachmentsRequireTasksOrRoutines")
+                        ? translateInstant("companyExport.attachmentsRequireTasksOrRoutines")
                         : undefined
                     }
                   >
@@ -1191,8 +1190,7 @@ export function CompanyExport() {
               })}
             </div>
             <p className="mt-2 text-xs text-muted-foreground">
-              Task and routine history is opt-in because it can be large.
-            </p>
+              {translateInstant("Task and routine history is opt-in because it can be large.")}</p>
           </div>
           <div className="border-b border-border px-3 py-2 shrink-0">
             <div className="flex items-center gap-2 rounded-md border border-border px-2 py-1">
@@ -1201,7 +1199,7 @@ export function CompanyExport() {
                 type="text"
                 value={treeSearch}
                 onChange={(e) => handleSearchChange(e.target.value)}
-                placeholder={t("companyExport.searchFiles")}
+                placeholder={translateInstant("companyExport.searchFiles")}
                 className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
                 data-page-search-target="true"
               />
@@ -1225,7 +1223,7 @@ export function CompanyExport() {
                   onClick={() => setTaskLimit((prev) => prev + TASKS_PAGE_SIZE)}
                   className="w-full rounded-md border border-border px-3 py-1.5 text-xs text-muted-foreground hover:bg-accent/30 hover:text-foreground transition-colors"
                 >
-                  Show more tasks ({visibleTaskChildren} of {totalTaskChildren})
+                  {translateInstant("companyExport.showMoreTasks")}{visibleTaskChildren} {translateInstant("issueCommon.of")}{" "}{totalTaskChildren})
                 </button>
               </div>
             )}
@@ -1250,15 +1248,13 @@ export function CompanyExport() {
               <div className="flex max-w-md flex-col items-center gap-3">
                 <LoaderCircle className="h-6 w-6 animate-spin text-muted-foreground" />
                 <div>
-                  <p className="text-sm font-medium">Updating export preview…</p>
+                  <p className="text-sm font-medium">{translateInstant("Updating export preview…")}</p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Large task histories can take a minute. You can untick Tasks or cancel this update.
-                  </p>
+                    {translateInstant("Large task histories can take a minute. You can untick Tasks or cancel this update.")}</p>
                 </div>
                 <Button type="button" variant="outline" size="sm" onClick={handleCancelPreview}>
                   <X />
-                  Cancel update
-                </Button>
+                  {translateInstant("Cancel update")}</Button>
               </div>
             </div>
           ) : previewCancelled ? (
@@ -1268,15 +1264,13 @@ export function CompanyExport() {
             >
               <div className="flex max-w-md flex-col items-center gap-3">
                 <div>
-                  <p className="text-sm font-medium">Preview update cancelled</p>
+                  <p className="text-sm font-medium">{translateInstant("Preview update cancelled")}</p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    The previous preview remains available. Retry when you are ready.
-                  </p>
+                    {translateInstant("The previous preview remains available. Retry when you are ready.")}</p>
                 </div>
                 <Button type="button" variant="outline" size="sm" onClick={startPreviewRequest}>
                   <RotateCcw />
-                  Retry preview
-                </Button>
+                  {translateInstant("Retry preview")}</Button>
               </div>
             </div>
           ) : exportPreviewMutation.isError ? (
@@ -1287,15 +1281,14 @@ export function CompanyExport() {
             >
               <div className="flex max-w-md flex-col items-center gap-3">
                 <div>
-                  <p className="text-sm font-medium text-destructive">Export preview failed</p>
+                  <p className="text-sm font-medium text-destructive">{translateInstant("Export preview failed")}</p>
                   <p className="mt-1 text-xs text-muted-foreground">
                     {previewErrorMessage(exportPreviewMutation.error)}
                   </p>
                 </div>
                 <Button type="button" variant="outline" size="sm" onClick={startPreviewRequest}>
                   <RotateCcw />
-                  Retry preview
-                </Button>
+                  {translateInstant("Retry preview")}</Button>
               </div>
             </div>
           ) : null}

@@ -19,8 +19,8 @@ async function createSkillDir(root: string, name: string) {
 }
 
 describe("claude local skill sync", () => {
-  const paperclipKey = "penclipai/paperclip-cn/paperclip";
-  const createAgentKey = "penclipai/paperclip-cn/paperclip-create-agent";
+  const paperclipKey = "paperclipai/paperclip/paperclip";
+  const createAgentKey = "paperclipai/paperclip/paperclip-create-agent";
   const cleanupDirs = new Set<string>();
 
   afterEach(async () => {
@@ -28,7 +28,7 @@ describe("claude local skill sync", () => {
     cleanupDirs.clear();
   });
 
-  it("reports required built-in Paperclip skills as configured when no explicit selection exists", async () => {
+  it("keeps the operational Paperclip skill configured when no explicit selection exists", async () => {
     const snapshot = await listClaudeSkills({
       agentId: "agent-1",
       companyId: "company-1",
@@ -38,9 +38,9 @@ describe("claude local skill sync", () => {
 
     expect(snapshot.mode).toBe("ephemeral");
     expect(snapshot.supported).toBe(true);
-    expect(snapshot.desiredSkills).toEqual(expect.arrayContaining([paperclipKey, createAgentKey]));
+    expect(snapshot.desiredSkills).toEqual([paperclipKey, "paperclipai/paperclip/complain", "paperclipai/paperclip/suggestion-box"]);
     expect(snapshot.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("configured");
-    expect(snapshot.entries.find((entry) => entry.key === createAgentKey)?.state).toBe("configured");
+    expect(snapshot.entries.find((entry) => entry.key === createAgentKey)?.state).toBe("available");
   });
 
   it("respects an explicit desired skill list without mutating a persistent home", async () => {
@@ -57,7 +57,7 @@ describe("claude local skill sync", () => {
 
     expect(snapshot.desiredSkills).toContain(paperclipKey);
     expect(snapshot.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("configured");
-    expect(snapshot.entries.find((entry) => entry.key === createAgentKey)?.state).toBe("configured");
+    expect(snapshot.entries.find((entry) => entry.key === createAgentKey)?.state).toBe("available");
   });
 
   it("normalizes legacy flat Paperclip skill refs to canonical keys", async () => {
@@ -77,23 +77,6 @@ describe("claude local skill sync", () => {
     expect(snapshot.desiredSkills).not.toContain("paperclip");
     expect(snapshot.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("configured");
     expect(snapshot.entries.find((entry) => entry.key === "paperclip")).toBeUndefined();
-  });
-
-  it("normalizes legacy bundled Paperclip repo keys to the Paperclip CN canonical key", async () => {
-    const snapshot = await listClaudeSkills({
-      agentId: "agent-legacy",
-      companyId: "company-1",
-      adapterType: "claude_local",
-      config: {
-        paperclipSkillSync: {
-          desiredSkills: ["paperclipai/paperclip/paperclip"],
-        },
-      },
-    });
-
-    expect(snapshot.desiredSkills).toContain(paperclipKey);
-    expect(snapshot.desiredSkills).not.toContain("paperclipai/paperclip/paperclip");
-    expect(snapshot.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("configured");
   });
 
   it("shows host-level user-installed Claude skills as read-only external entries", async () => {

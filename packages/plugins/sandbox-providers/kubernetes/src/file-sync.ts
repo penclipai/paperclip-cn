@@ -57,7 +57,7 @@ import type {
   PluginPostUploadCommand,
   PluginSyncFileMapping,
   PluginSyncOperation,
-} from "@paperclipai/plugin-sdk";
+} from "@penclipai/plugin-sdk";
 
 const execFileAsync = promisify(execFile);
 

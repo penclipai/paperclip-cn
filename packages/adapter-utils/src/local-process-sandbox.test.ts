@@ -31,6 +31,13 @@ afterEach(async () => {
 });
 
 describe("local process sandbox", () => {
+  it.runIf(process.platform !== "linux")("rejects sandbox scopes on unsupported hosts", async () => {
+    await expect(buildLocalProcessSandboxSpawnTarget({
+      executable: process.execPath, args: ["-e", "process.exit(0)"], cwd: process.cwd(),
+      options: { workspaceDir: process.cwd(), networkScope: "deny" },
+    })).rejects.toThrow("supported only on Linux");
+  });
+
   it("parses read-only and writable extra paths", () => {
     const readOnlyPath = path.resolve("opt", "cache");
     const writablePath = path.resolve("var", "lib", "tool");

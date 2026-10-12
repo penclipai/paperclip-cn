@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Agent, DocumentAnnotationThreadWithComments } from "@penclipai/shared";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -7,7 +8,7 @@ import type { DocumentAnnotationTarget } from "@/api/document-annotations";
 import type { CompanyUserProfile } from "@/lib/company-members";
 import { useDocumentAnnotationMutations } from "@/hooks/useDocumentAnnotationMutations";
 import type { AnnotationAnchorRect, PendingAnchor } from "./DocumentAnnotationLayer";
-import { copyAnnotationLink, ThreadCard, truncate } from "./DocumentAnnotationPanel";
+import { useCopyAnnotationLink, ThreadCard, truncate } from "./DocumentAnnotationPanel";
 
 export interface DocumentAnnotationPopoverProps {
   anchorRect: AnnotationAnchorRect;
@@ -28,7 +29,8 @@ export interface DocumentAnnotationPopoverProps {
 }
 
 export function DocumentAnnotationPopover(props: DocumentAnnotationPopoverProps) {
-  const { t } = useTranslation();
+  useTranslation();
+  const copyAnnotationLink = useCopyAnnotationLink();
   const cardRef = useRef<HTMLDivElement | null>(null);
   const composerRef = useRef<HTMLTextAreaElement | null>(null);
   const [composer, setComposer] = useState("");
@@ -80,9 +82,7 @@ export function DocumentAnnotationPopover(props: DocumentAnnotationPopoverProps)
     <div
       ref={cardRef}
       role="dialog"
-      aria-label={props.pendingAnchor
-        ? t("documentAnnotations.addCommentAriaLabel", { defaultValue: "Add annotation comment" })
-        : t("documentAnnotations.threadAriaLabel", { defaultValue: "Annotation thread" })}
+      aria-label={props.pendingAnchor ? "Add annotation comment" : "Annotation thread"}
       data-testid="document-annotation-popover"
       className="absolute z-(--z-20) w-80 max-w-full rounded-lg border border-border bg-popover text-popover-foreground shadow-xl"
       style={{ top, left }}
@@ -105,18 +105,14 @@ export function DocumentAnnotationPopover(props: DocumentAnnotationPopoverProps)
                 submitComposer();
               }
             }}
-            placeholder={t("documentAnnotations.writeCommentPlaceholder", { defaultValue: "Write a comment…" })}
+            placeholder={translateInstant("Write a comment…")}
             disabled={props.newCommentDisabled || createThread.isPending}
             className="resize-y text-sm"
           />
           <div className="mt-2 flex justify-end gap-2">
-            <Button type="button" size="sm" variant="ghost" onClick={props.onClose}>
-              {t("common.cancel", { defaultValue: "Cancel" })}
-            </Button>
+            <Button type="button" size="sm" variant="ghost" onClick={props.onClose}>{translateInstant("common.cancel")}</Button>
             <Button type="button" size="sm" disabled={!composer.trim() || createThread.isPending || props.newCommentDisabled || !props.baseRevisionId} onClick={submitComposer}>
-              {createThread.isPending
-                ? t("documentAnnotations.posting", { defaultValue: "Posting…" })
-                : t("documentAnnotations.comment", { defaultValue: "Comment" })}
+              {createThread.isPending ? "Posting…" : "Comment"}
             </Button>
           </div>
         </div>

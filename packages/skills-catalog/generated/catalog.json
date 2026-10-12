@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "packageName": "@penclipai/skills-catalog",
   "packageVersion": "0.3.1",
-  "generatedAt": "2026-08-13T00:32:14.235Z",
+  "generatedAt": "2026-10-12T04:41:29.918Z",
   "skills": [
     {
       "id": "paperclipai:bundled:docs:doc-maintenance",
@@ -185,7 +185,7 @@
       "category": "paperclip-operations",
       "slug": "task-planning",
       "name": "task-planning",
-      "description": "Turn a Paperclip issue or request into a structured implementation plan with child task graph, blockers, owners, and acceptance criteria, then save it as the issue `plan` document.",
+      "description": "Write or revise a useful Paperclip plan with a clear outcome and verification. Use when a plan is requested or uncertainty needs resolving before execution.",
       "path": "catalog/bundled/paperclip-operations/task-planning",
       "entrypoint": "SKILL.md",
       "trustLevel": "markdown_only",
@@ -207,11 +207,11 @@
         {
           "path": "SKILL.md",
           "kind": "skill",
-          "sizeBytes": 5022,
-          "sha256": "5d61ba7fa3601827eb9fb0beb6dc630ad1384d553facfd02d48be07d8bb821a2"
+          "sizeBytes": 1553,
+          "sha256": "70c91e251f8ac4c687f58ab7b9cbbf04c94e35d35a08b052be62eb624b6a20f0"
         }
       ],
-      "contentHash": "sha256:e6d7c05eb6eefbba687770a00bf19d4094d77f3b495a9cf1d2fa66619d448563"
+      "contentHash": "sha256:9de6a682706348199126ef98090e9e6fbd3fe193437aa0cbd471669d90667c70"
     },
     {
       "id": "paperclipai:bundled:product:paperclip-capsules",
@@ -1149,8 +1149,8 @@
         {
           "path": "SKILL.md",
           "kind": "skill",
-          "sizeBytes": 11393,
-          "sha256": "5b16668eb17e67ebf93a55e536e39038916fb31461690162c2dccbfd44d4e99b"
+          "sizeBytes": 12639,
+          "sha256": "bbaca494986ed984e48db232f14e0e1c06f2d290eae4d96eab662e01808f5596"
         },
         {
           "path": "examples/notion-mcp-research-gate.md",
@@ -1159,7 +1159,7 @@
           "sha256": "cf3ed32409014d923e39f9c7532eb000457e50744c563d1340b103ec3a8106d9"
         }
       ],
-      "contentHash": "sha256:297d68c5b46890a6cb4fe90f1f76621d55d73c671f6fc80485851eaf205dcf48"
+      "contentHash": "sha256:4732ec12a5a4e85d2c513c68210775e25406077d42a2c8144129cfd41dc1d7fe"
     }
   ]
 }

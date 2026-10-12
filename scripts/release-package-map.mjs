@@ -9,7 +9,7 @@ const repoRoot = resolve(__dirname, "..");
 const manifestPath = join(repoRoot, "scripts", "release-package-manifest.json");
 const roots = ["packages", "server", "ui", "cli"];
 const CHANNEL_ENTRYPOINT_PACKAGE = "penclip";
-const workspacePackageScopes = ["@paperclipai/", "@penclipai/"];
+const workspacePackageScopes = ["@penclipai/", "@penclipai/"];
 
 function normalizeManifestDir(dir) {
   return dir.replaceAll("\\", "/");

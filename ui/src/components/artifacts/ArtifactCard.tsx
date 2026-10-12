@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState, type SyntheticEvent } from "react";
+import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
+import { type SyntheticEvent, useEffect, useRef, useState } from "react";
 import { Download, ExternalLink, Paperclip, Play } from "lucide-react";
 import type { CompanyArtifact } from "@/api/artifacts";
 import { Link } from "@/lib/router";
@@ -33,11 +34,13 @@ function PlaceholderPreview({ label }: { label?: string }) {
   );
 }
 
-function ImagePreview({ artifact }: { artifact: CompanyArtifact }) {
-  const { t } = useTranslation();
+type PreviewArtifact = Pick<CompanyArtifact, "mediaKind" | "contentPath" | "title"> & Partial<Pick<CompanyArtifact, "source" | "previewText">>;
+
+function ImagePreview({ artifact }: { artifact: PreviewArtifact }) {
+  useTranslation();
   const [errored, setErrored] = useState(false);
   if (errored || !artifact.contentPath) {
-    return <PlaceholderPreview label={t("artifacts.media.image")} />;
+    return <PlaceholderPreview label={translateInstant("artifacts.media.image")} />;
   }
   return (
     <PreviewFrame>
@@ -52,7 +55,7 @@ function ImagePreview({ artifact }: { artifact: CompanyArtifact }) {
   );
 }
 
-function VideoPreview({ artifact }: { artifact: CompanyArtifact }) {
+function VideoPreview({ artifact }: { artifact: PreviewArtifact }) {
   const [errored, setErrored] = useState(false);
   const [frameReady, setFrameReady] = useState(false);
   const thumbnailSeekRequested = useRef(false);
@@ -92,7 +95,7 @@ function VideoPreview({ artifact }: { artifact: CompanyArtifact }) {
     thumbnailSeekRequested.current = true;
     const video = event.currentTarget;
     const duration = Number.isFinite(video.duration) && video.duration > 0 ? video.duration : 0;
-    const seekTarget = duration > 0 ? Math.min(0.12, duration / 2) : 0.05;
+    const seekTarget = duration > 0 ? Math.min(1, duration / 4) : 0.05;
     try {
       if (Math.abs(video.currentTime - seekTarget) > 0.001) {
         video.currentTime = seekTarget;
@@ -133,11 +136,10 @@ function VideoPreview({ artifact }: { artifact: CompanyArtifact }) {
   );
 }
 
-function TextPreview({ artifact }: { artifact: CompanyArtifact }) {
-  const { t } = useTranslation();
+function TextPreview({ artifact }: { artifact: PreviewArtifact }) {
   const preview = artifact.previewText?.trim();
   if (!preview) {
-    return <PlaceholderPreview label={artifact.source === "document" ? t("artifacts.media.document") : t("artifacts.media.text")} />;
+    return <PlaceholderPreview label={artifact.source === "document" ? "Document" : "Text"} />;
   }
   return (
     <PreviewFrame className="bg-card">
@@ -151,18 +153,18 @@ function TextPreview({ artifact }: { artifact: CompanyArtifact }) {
   );
 }
 
-export function ArtifactPreview({ artifact }: { artifact: CompanyArtifact }) {
-  const { t } = useTranslation();
+export function ArtifactPreview({ artifact }: { artifact: PreviewArtifact }) {
+  useTranslation();
   switch (artifact.mediaKind) {
     case "image":
-      return <ImagePreview artifact={artifact} />;
+      return <ImagePreview key={artifact.contentPath} artifact={artifact} />;
     case "video":
-      return <VideoPreview artifact={artifact} />;
+      return <VideoPreview key={artifact.contentPath} artifact={artifact} />;
     case "text":
     case "document":
       return <TextPreview artifact={artifact} />;
     case "file":
-      return <PlaceholderPreview label={t("artifacts.media.file")} />;
+      return <PlaceholderPreview label={translateInstant("artifacts.media.file")} />;
     case "empty":
     default:
       return <PlaceholderPreview />;
@@ -195,7 +197,7 @@ function SecondaryAction({
 }
 
 export function ArtifactCard({ artifact }: ArtifactCardProps) {
-  const { t } = useTranslation();
+  useTranslation();
   return (
     <Link
       // design-allow(card-pattern): navigation <Link> card; Card renders a div and would break anchor semantics (C5a Run 3)
@@ -217,12 +219,12 @@ export function ArtifactCard({ artifact }: ArtifactCardProps) {
           </h3>
           <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
             {artifact.openPath ? (
-              <SecondaryAction href={artifact.openPath} title={t("artifacts.openFile")}>
+              <SecondaryAction href={artifact.openPath} title={translateInstant("artifacts.openFile")}>
                 <ExternalLink className="h-3.5 w-3.5" />
               </SecondaryAction>
             ) : null}
             {artifact.downloadPath ? (
-              <SecondaryAction href={artifact.downloadPath} download title={t("artifacts.downloadFile")}>
+              <SecondaryAction href={artifact.downloadPath} download title={translateInstant("artifacts.downloadFile")}>
                 <Download className="h-3.5 w-3.5" />
               </SecondaryAction>
             ) : null}
@@ -230,7 +232,7 @@ export function ArtifactCard({ artifact }: ArtifactCardProps) {
         </div>
 
         <div className="mt-0.5 flex items-center gap-1.5 text-(length:--text-micro) text-muted-foreground/65">
-          <span>{t("artifacts.lastEdited", { date: formatDate(artifact.updatedAt) })}</span>
+          <span>{translateInstant("training.inspector.lastEdited")}{" "}{formatDate(artifact.updatedAt)}</span>
           {artifact.createdByAgent ? (
             <>
               <span className="text-muted-foreground/50">·</span>

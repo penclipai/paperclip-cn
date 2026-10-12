@@ -1,5 +1,5 @@
+import { configFieldsForSection } from "../config-sections";
 import type { AdapterConfigFieldsProps } from "../types";
-import { useTranslation } from "react-i18next";
 import {
   Field,
   DraftInput,
@@ -26,6 +26,7 @@ function parseCommaArgs(value: string): string[] {
 }
 
 export function ProcessConfigFields({
+  section,
   isCreate,
   values,
   set,
@@ -33,10 +34,9 @@ export function ProcessConfigFields({
   eff,
   mark,
 }: AdapterConfigFieldsProps) {
-  const { t } = useTranslation();
-  return (
+  return configFieldsForSection(section, (
     <>
-      <Field label={t("agentConfig.command", { defaultValue: "Command" })} hint={help.command}>
+      <Field configSection="advanced" label="Command" hint={help.command}>
         <DraftInput
           value={
             isCreate
@@ -50,10 +50,10 @@ export function ProcessConfigFields({
           }
           immediate
           className={inputClass}
-          placeholder={t("agentConfig.commandPlaceholder", { defaultValue: "e.g. node, python" })}
+          placeholder="e.g. node, python"
         />
       </Field>
-      <Field label={t("agentConfig.args", { defaultValue: "Args (comma-separated)" })} hint={help.args}>
+      <Field configSection="advanced" label="Args (comma-separated)" hint={help.args}>
         <DraftInput
           value={
             isCreate
@@ -71,9 +71,9 @@ export function ProcessConfigFields({
           }
           immediate
           className={inputClass}
-          placeholder={t("agentConfig.argsPlaceholder", { defaultValue: "e.g. script.js, --flag" })}
+          placeholder="e.g. script.js, --flag"
         />
       </Field>
     </>
-  );
+  ));
 }

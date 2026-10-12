@@ -1,3 +1,4 @@
+import { translateInstant } from "@/i18n";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
@@ -483,8 +484,7 @@ function FieldsForm({
       {form.hasName ? (
         <div>
           <Label htmlFor="fm-name" className="text-xs text-muted-foreground">
-            name
-          </Label>
+            {translateInstant("name")}</Label>
           <Input
             id="fm-name"
             value={form.name}
@@ -500,8 +500,7 @@ function FieldsForm({
       {form.hasDescription ? (
         <div>
           <Label htmlFor="fm-description" className="text-xs text-muted-foreground">
-            description
-          </Label>
+            {translateInstant("issueRelatedWork.source.description")}</Label>
           <Textarea
             id="fm-description"
             value={form.description}
@@ -534,7 +533,7 @@ function FieldsForm({
 
       {form.metadataPresent ? (
         <div>
-          <Label className="text-xs text-muted-foreground">metadata</Label>
+          <Label className="text-xs text-muted-foreground">{translateInstant("metadata")}</Label>
           {form.metadataComplex !== null ? (
             <p className="mt-1 text-xs text-muted-foreground">{t("frontmatter.complexValue")}</p>
           ) : (

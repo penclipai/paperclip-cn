@@ -1,5 +1,6 @@
-import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { translateInstant } from "@/i18n";
+import { useEffect } from "react";
 import { useParams } from "@/lib/router";
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";
 import { useCompany } from "@/context/CompanyContext";
@@ -8,23 +9,23 @@ import { ToolsAdminGate } from "./ToolsAdminGate";
 import { ProfileDetail } from "./ProfileDetail";
 
 export function ProfileDetailRoute() {
-  const { t } = useTranslation();
+  useTranslation();
   const { selectedCompany, selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const params = useParams<{ profileId?: string }>();
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: selectedCompany?.name ?? t("tools.breadcrumbs.company", { defaultValue: "Company" }), href: "/dashboard" },
-      { label: t("tools.breadcrumbs.apps", { defaultValue: "Apps" }), href: "/apps" },
-      { label: t("tools.profiles.title", { defaultValue: "Access profiles" }), href: advancedTabHref("profiles") },
-      { label: t("tools.profiles.detail.breadcrumb", { defaultValue: "Profile detail" }) },
+      { label: selectedCompany?.name ?? translateInstant("Company"), href: "/dashboard" },
+      { label: translateInstant("tools.breadcrumbs.apps"), href: "/apps" },
+      { label: translateInstant("tools.profiles.title"), href: advancedTabHref("profiles") },
+      { label: translateInstant("tools.profiles.detail.breadcrumb") },
     ]);
     return () => setBreadcrumbs([]);
-  }, [setBreadcrumbs, selectedCompany?.name, t]);
+  }, [setBreadcrumbs, selectedCompany?.name]);
 
   if (!selectedCompanyId || !params.profileId) {
-    return <div className="p-6 text-sm text-muted-foreground">{t("tools.profiles.detail.selectCompanyAndProfile", { defaultValue: "Select a company and profile." })}</div>;
+    return <div className="p-6 text-sm text-muted-foreground">{translateInstant("Select an organization and profile.")}</div>;
   }
 
   return (

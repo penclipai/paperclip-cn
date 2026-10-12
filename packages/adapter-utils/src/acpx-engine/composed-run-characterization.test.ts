@@ -49,6 +49,7 @@ import {
   type AcpxEngineExecutorOptions,
 } from "./execute.js";
 import { runChildProcess } from "../server-utils.js";
+import { prepareTestPosixShell } from "../test-fixtures/posix-shell.js";
 
 const tempRoots: string[] = [];
 
@@ -95,10 +96,10 @@ function createLocalSandboxRunner(
     }) => {
       counter += 1;
       onExecute?.(input);
-      const command = input.command === "bash" ? "/bin/bash" : input.command;
-      return await runChildProcess(`acpx-sandbox-run-${counter}`, command, input.args ?? [], {
+      const shell = prepareTestPosixShell(input);
+      return await runChildProcess(`acpx-sandbox-run-${counter}`, shell.command, shell.args, {
         cwd: input.cwd ?? process.cwd(),
-        env: input.env ?? {},
+        env: shell.env,
         stdin: input.stdin,
         timeoutSec: Math.max(1, Math.ceil((input.timeoutMs ?? 30_000) / 1000)),
         graceSec: 5,

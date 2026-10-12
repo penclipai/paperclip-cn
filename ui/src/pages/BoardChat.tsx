@@ -1,3 +1,6 @@
+import { useTranslation } from "react-i18next";
+import { translateInstant } from "@/i18n";
+import { AgentAvatar } from "@/components/AgentAvatar";
 import {
   useEffect,
   useLayoutEffect,
@@ -6,7 +9,6 @@ import {
   useCallback,
   useMemo,
 } from "react";
-import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCompany } from "../context/CompanyContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
@@ -30,7 +32,6 @@ import {
   AgentBubbleActionRow,
   agentBubbleDateLabel,
 } from "../components/AgentBubbleActionRow";
-import { AgentIcon } from "../components/AgentIconPicker";
 import { cn, formatDateTime } from "../lib/utils";
 import type { FeedbackVoteValue } from "@penclipai/shared";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -64,25 +65,13 @@ function agentInitials(name: string): string {
  * Icon-adjacent-to-name header rendered directly above an agent bubble —
  * the shared `[agent icon][agent name]` convention (PAP-105 / PAP-97).
  */
-function AgentBubbleHeader({ name, icon }: { name: string; icon: string | null }) {
-  return (
-    <div className="mb-1 flex items-center gap-1.5 pl-1">
-      <Avatar size="sm" className="shrink-0">
-        <AvatarFallback>
-          {icon ? (
-            <AgentIcon icon={icon} className="h-3.5 w-3.5" />
-          ) : (
-            agentInitials(name)
-          )}
-        </AvatarFallback>
-      </Avatar>
-      <span className="text-sm font-medium text-foreground">{name}</span>
-    </div>
-  );
+function AgentBubbleHeader({ agent }: { agent: import("../components/AgentAvatar").AvatarAgent }) {
+  return <div className="mb-1 flex items-center gap-1.5 pl-1"><AgentAvatar agent={agent} size={24} /><span className="text-sm font-medium text-foreground">{agent.name}</span></div>;
 }
 
 /** Agent-styled chat bubble containing the three-dot typing indicator. */
 function TypingBubble() {
+  useTranslation();
   return (
     <div className="flex justify-start">
       <div
@@ -91,7 +80,7 @@ function TypingBubble() {
           "bg-card border border-border text-foreground [border-radius:14px_14px_14px_4px]",
         )}
       >
-        <span className="typing-dots" aria-label="typing">
+        <span className="typing-dots" aria-label={translateInstant("boardChat.typing")}>
           <span />
           <span />
           <span />
@@ -102,14 +91,14 @@ function TypingBubble() {
 }
 
 export function BoardChat() {
-  const { t } = useTranslation();
+  useTranslation();
   const { selectedCompanyId, selectedCompany } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    setBreadcrumbs([{ label: t("boardChat.conferenceRoom", { defaultValue: "Conference Room" }) }]);
-  }, [setBreadcrumbs, t]);
+    setBreadcrumbs([{ label: translateInstant("Conference Room") }]);
+  }, [setBreadcrumbs]);
 
   const splitContainerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(0);
@@ -557,7 +546,7 @@ export function BoardChat() {
       setInput("");
       setStreamingText("");
       setErrorText("");
-      setStatusText(t("boardChat.connecting", { defaultValue: "Connecting..." }));
+      setStatusText("Connecting...");
 
       try {
         const controller = new AbortController();
@@ -575,10 +564,10 @@ export function BoardChat() {
         clearTimeout(fetchTimeout);
 
         if (!res.ok || !res.body) {
-          throw new Error(t("boardChat.streamUnavailable", { defaultValue: "Board chat stream not available" }));
+          throw new Error("Board chat stream not available");
         }
 
-        setStatusText(t("boardChat.thinking", { defaultValue: "Thinking..." }));
+        setStatusText("Thinking...");
 
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
@@ -608,7 +597,7 @@ export function BoardChat() {
               } else if (event.type === "error") {
                 setErrorText(
                   event.message ||
-                    t("boardChat.streamError", { defaultValue: "The board assistant couldn't respond. Please try again." }),
+                    "The board assistant couldn't respond. Please try again.",
                 );
                 setStatusText("");
               } else if (event.type === "done") {
@@ -636,14 +625,14 @@ export function BoardChat() {
         console.error("Board chat error:", err);
         setStatusText("");
         setErrorText(
-          t("boardChat.assistantUnavailable", { defaultValue: "The board assistant is unavailable right now. Please try again in a moment." }),
+          "The board assistant is unavailable right now. Please try again in a moment.",
         );
       } finally {
         setSending(false);
         composerRef.current?.focus();
       }
     },
-    [sending, selectedCompanyId, boardIssueId, queryClient, t],
+    [sending, selectedCompanyId, boardIssueId, queryClient],
   );
 
   const handleSend = useCallback(() => {
@@ -660,10 +649,9 @@ export function BoardChat() {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center max-w-sm">
-          <h2 className="text-lg font-semibold">{t("No company selected", { defaultValue: "No company selected" })}</h2>
+          <h2 className="text-lg font-semibold">{translateInstant("No organization selected")}</h2>
           <p className="text-sm text-muted-foreground mt-2">
-            {t("boardChat.selectCompanyDescription", { defaultValue: "Select a company to start chatting with your board concierge." })}
-          </p>
+            {translateInstant("Select an organization to start chatting with your board concierge.")}</p>
         </div>
       </div>
     );
@@ -691,10 +679,10 @@ export function BoardChat() {
             />
             <div className="min-w-0 flex-1">
               <h3 className="text-sm font-semibold">
-                {ceoAgent?.name ?? t("boardChat.conferenceRoom", { defaultValue: "Conference Room" })}
+                {ceoAgent?.name ?? translateInstant("Conference Room")}
               </h3>
               <p className="text-xs text-muted-foreground">
-                {selectedCompany?.name ?? t("boardChat.yourCompany", { defaultValue: "Your company" })}
+                {selectedCompany?.name ?? "Your organization"}
               </p>
             </div>
             <div className="flex shrink-0 items-center gap-0.5">
@@ -705,12 +693,12 @@ export function BoardChat() {
                     variant="ghost"
                     size="icon-sm"
                     className="text-muted-foreground"
-                    aria-label={t("boardChat.chatHistory", { defaultValue: "chat history" })}
+                    aria-label={translateInstant("boardChat.chatHistory")}
                   >
                     <History className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent side="bottom">{t("boardChat.chatHistory", { defaultValue: "chat history" })}</TooltipContent>
+                <TooltipContent side="bottom">{translateInstant("boardChat.chatHistory")}</TooltipContent>
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -719,12 +707,12 @@ export function BoardChat() {
                     variant="ghost"
                     size="icon-sm"
                     className="text-muted-foreground"
-                    aria-label={t("boardChat.newChat", { defaultValue: "new chat" })}
+                    aria-label={translateInstant("boardChat.newChat")}
                   >
                     <MessageSquarePlus className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent side="bottom">{t("boardChat.newChat", { defaultValue: "new chat" })}</TooltipContent>
+                <TooltipContent side="bottom">{translateInstant("boardChat.newChat")}</TooltipContent>
               </Tooltip>
             </div>
           </div>
@@ -746,18 +734,11 @@ export function BoardChat() {
                 const ceoName = ceoAgent.name;
                 const companyName = selectedCompany.name;
                 const missionLine = missionText
-                  ? t("boardChat.welcomeMissionLine", {
-                      defaultValue: " - your mission is \"{{mission}}\".",
-                      mission: missionText,
-                    })
+                  ? ` — your mission is "${missionText}".`
                   : ".";
                 const welcomeBody =
-                  t("boardChat.welcomeBody", {
-                    defaultValue: "Welcome to **{{companyName}}**! I'm {{ceoName}}, your team lead. I've read through what you shared in the wizard{{missionLine}}\n\nHere are a few things I can help you put on paper right now. Pick one below and I'll draft it for you using everything you told us.",
-                    companyName,
-                    ceoName,
-                    missionLine,
-                  });
+                  `Welcome to **${companyName}**! I'm ${ceoName}, your team lead. I've read through what you shared in the wizard${missionLine}\n\n` +
+                  `Here are a few things I can help you put on paper right now. Pick one below and I'll draft it for you using everything you told us.`;
 
                 const userHasReplied = sortedComments.some(
                   (c) => !c.authorAgentId && c.authorUserId !== "board-concierge",
@@ -765,36 +746,27 @@ export function BoardChat() {
 
                 const chips: Array<{ label: string; prompt: string }> = [
                   {
-                    label: t("boardChat.quick.companyBrief", { defaultValue: "Draft a Company Brief" }),
-                    prompt: t("boardChat.quick.companyBriefPrompt", {
-                      defaultValue: "Draft a one-page Company Brief for {{companyName}} - include our mission, team roster, and first priorities.",
-                      companyName,
-                    }),
+                    label: translateInstant("Draft an Organization Brief"),
+                    prompt: `Draft a one-page Organization Brief for ${companyName} — include our mission, team roster, and first priorities.`,
                   },
                   {
-                    label: t("boardChat.quick.hiringPlan", { defaultValue: "Create a hiring plan" }),
-                    prompt: t("boardChat.quick.hiringPlanPrompt", {
-                      defaultValue: "Create a hiring plan for {{companyName}}. List the next roles to hire, in priority order, with a short rationale for each.",
-                      companyName,
-                    }),
+                    label: translateInstant("boardChat.quick.hiringPlan"),
+                    prompt: `Create a hiring plan for ${companyName}. List the next roles to hire, in priority order, with a short rationale for each.`,
                   },
                   {
-                    label: t("boardChat.quick.firstThirtyDays", { defaultValue: "Outline our first 30 days" }),
-                    prompt: t("boardChat.quick.firstThirtyDaysPrompt", { defaultValue: "Outline our first 30 days. Break it into weekly priorities with who owns what." }),
+                    label: translateInstant("boardChat.quick.firstThirtyDays"),
+                    prompt: `Outline our first 30 days. Break it into weekly priorities with who owns what.`,
                   },
                   {
-                    label: t("boardChat.quick.introPitch", { defaultValue: "Write an intro pitch" }),
-                    prompt: t("boardChat.quick.introPitchPrompt", {
-                      defaultValue: "Write a short intro pitch for {{companyName}} that I could reuse for investors, customers, or recruits.",
-                      companyName,
-                    }),
+                    label: translateInstant("boardChat.quick.introPitch"),
+                    prompt: `Write a short intro pitch for ${companyName} that I could reuse for investors, customers, or recruits.`,
                   },
                 ];
 
                 return (
                   <>
                     <div className="flex flex-col items-start">
-                      <AgentBubbleHeader name={ceoName} icon={ceoAgent.icon} />
+                      <AgentBubbleHeader agent={{ ...ceoAgent, name: ceoName }} />
                       <div
                         className={cn(
                           boardChatBubbleShell,
@@ -847,11 +819,11 @@ export function BoardChat() {
                 const agent = comment.authorAgentId
                   ? agentMap.get(comment.authorAgentId) ?? null
                   : ceoAgent ?? null;
-                const agentName = agent?.name ?? t("boardChat.assistant", { defaultValue: "Assistant" });
+                const agentName = agent?.name ?? "Assistant";
                 const agentIconValue = agent?.icon ?? null;
                 return (
                   <div key={comment.id} className="flex flex-col items-start">
-                    <AgentBubbleHeader name={agentName} icon={agentIconValue} />
+                    <AgentBubbleHeader agent={agent ?? { id: comment.authorAgentId ?? undefined, name: agentName }} />
                     <div
                       className={cn(
                         boardChatBubbleShell,
@@ -901,7 +873,7 @@ export function BoardChat() {
               {streamingText && (
                 <div className="flex flex-col items-start">
                   {ceoAgent && (
-                    <AgentBubbleHeader name={ceoAgent.name} icon={ceoAgent.icon} />
+                    <AgentBubbleHeader agent={ceoAgent} />
                   )}
                   <div
                     className={cn(
@@ -924,7 +896,7 @@ export function BoardChat() {
               {sending && (
                 <div className="flex items-center gap-2 pl-1 text-xs text-muted-foreground">
                   <img src="/paperclip-thinking.svg" alt="" className="inline-block shrink-0" style={{ width: 14, height: 14 }} />
-                  <span>{statusText || t("boardChat.thinking", { defaultValue: "Thinking..." })}</span>
+                  <span>{statusText || translateInstant("boardChat.thinking")}</span>
                   {elapsedSec > 0 && (
                     <span className="opacity-50">{elapsedSec.toFixed(1)}s</span>
                   )}
@@ -959,7 +931,8 @@ export function BoardChat() {
             <button
               type="button"
               onClick={() => scrollToLatest("smooth")}
-              aria-label={t("boardChat.jumpToLatestMessages", { defaultValue: "Jump to latest messages" })}
+              aria-label={translateInstant("boardChat.jumpToLatestMessages")}
+              // design-allow(card-pattern): floating scroll-to-bottom <button>, not a content card (C5a Run 3)
               className="absolute bottom-24 left-1/2 z-20 grid h-8 w-8 -translate-x-1/2 place-items-center rounded-full border border-border bg-card text-foreground shadow-md transition-colors duration-150 hover:bg-accent hover:border-muted-foreground/30"
             >
               <ArrowDown className="h-4 w-4" />
@@ -984,12 +957,12 @@ export function BoardChat() {
               value={input}
               onChange={setInput}
               onSubmit={handleSend}
-              placeholder={t("boardChat.placeholder", { defaultValue: "Ask anything about your company..." })}
+              placeholder={translateInstant("Ask anything about your organization...")}
               submitKey="enter"
               surface="translucent"
               submitting={sending}
               disabled={sending}
-              sendLabel={t("boardChat.sendMessage", { defaultValue: "Send message" })}
+              sendLabel="Send message"
               className="pointer-events-auto"
             />
           </div>
@@ -999,7 +972,7 @@ export function BoardChat() {
         <div
           role="separator"
           aria-orientation="vertical"
-          aria-label={t("boardChat.resizePanes", { defaultValue: "Resize board chat and agent feed" })}
+          aria-label={translateInstant("boardChat.resizePanes")}
           className="group relative hidden w-3 shrink-0 cursor-col-resize bg-background md:flex"
           onMouseDown={handleSplitDragStart}
         >
@@ -1024,7 +997,7 @@ export function BoardChat() {
               size="icon"
               variant="secondary"
               className="fixed bottom-20 right-4 z-20 h-10 w-10 rounded-full shadow-lg"
-              aria-label={t("boardChat.openAgentFeed", { defaultValue: "Open agent feed" })}
+              aria-label={translateInstant("boardChat.openAgentFeed")}
             >
               <Activity className="h-4 w-4" />
             </Button>

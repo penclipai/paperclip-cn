@@ -214,8 +214,8 @@ Name them by scenario, e.g. `examples/rewrite-release-note.md`.
 Never hand-edit `generated/catalog.json`; it is deterministic build output.
 
 ```sh
-pnpm --filter @paperclipai/skills-catalog build:manifest   # regenerates generated/catalog.json
-pnpm --filter @paperclipai/skills-catalog validate         # must report no errors
+pnpm --filter @penclipai/skills-catalog build:manifest   # regenerates generated/catalog.json
+pnpm --filter @penclipai/skills-catalog validate         # must report no errors
 ```
 
 (External references need network access to GitHub during these steps.)
@@ -227,7 +227,7 @@ Then update `packages/skills-catalog/src/shipped-catalog.test.ts`:
 - if the skill bears scripts, add it to the `scriptBearing` expectation.
 
 ```sh
-pnpm --filter @paperclipai/skills-catalog test
+pnpm --filter @penclipai/skills-catalog test
 ```
 
 The test suite also enforces the ≤300-char frontmatter description budget

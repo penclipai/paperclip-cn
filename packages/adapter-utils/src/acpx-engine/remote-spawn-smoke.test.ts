@@ -64,20 +64,26 @@ async function makeTempDir(prefix: string): Promise<string> {
 async function ensureRealAcpSession(input: {
   cwd: string;
   spawnCwd?: string;
+  agentOverride?: string | string[];
+  spawnEnvironment?: () => Record<string, string>;
   onAgentSpawn?: (meta: { pid: number; startedAt: string }) => Promise<void>;
 }) {
   const stateRoot = await makeTempDir("paperclip-acpx-remote-spawn-state-");
   const stderrChunks: string[] = [];
   const agentCommand = `${JSON.stringify(process.execPath.replaceAll("\\", "/"))} ${JSON.stringify(fixturePath.replaceAll("\\", "/"))}`;
+  const agentOverride = input.agentOverride ?? (process.platform === "win32"
+    ? [process.execPath, fixturePath]
+    : agentCommand);
   const runtimeOptions: PatchedAcpRuntimeOptions = {
     cwd: input.cwd,
     // `spawnCwd` is the host-only knob added by patches/acpx@0.12.0.patch; when
     // unset acpx falls back to `cwd`, so every non-proxy lane is byte-identical.
     ...(input.spawnCwd ? { spawnCwd: input.spawnCwd } : {}),
     sessionStore: createRuntimeStore({ stateDir: path.join(stateRoot, "state") }),
-    agentRegistry: createAgentRegistry({ overrides: { custom: agentCommand } }),
+    agentRegistry: createAgentRegistry({ overrides: { custom: agentOverride } }),
     permissionMode: "approve-all",
     nonInteractivePermissions: "deny",
+    spawnEnvironment: input.spawnEnvironment,
     onAgentStderr: (chunk: string) => stderrChunks.push(chunk),
     onAgentSpawn: input.onAgentSpawn,
   };
@@ -150,6 +156,44 @@ it("spawnCwd redirects the host spawn to a host-valid dir while the advertised s
   // ...while the in-sandbox data path (the advertised `session/new` cwd) is
   // unchanged — still `remoteCwd`.
   expect(outcome.stderr).toContain(`SESSION_NEW_CWD=${remoteCwd}`);
+});
+
+it.skipIf(process.platform !== "win32")("launches an ACP agent through a structured argv override", async () => {
+  const cwd = await makeTempDir("paperclip-acpx-argv-");
+  const outcome = await ensureRealAcpSession({
+    cwd,
+    agentOverride: [process.execPath, fixturePath],
+  });
+
+  expect(outcome.resolved, JSON.stringify(outcome)).toBe(true);
+});
+
+it.skipIf(process.platform !== "win32")("continues rejecting raw agent command strings", async () => {
+  const cwd = await makeTempDir("paperclip-acpx-raw-command-");
+  const rawCommand = `${JSON.stringify(process.execPath)} ${JSON.stringify(fixturePath)}`;
+  const outcome = await ensureRealAcpSession({ cwd, agentOverride: rawCommand });
+
+  expect(outcome.resolved).toBe(false);
+  if (outcome.resolved) return;
+  expect(outcome.error.message).toContain("Raw agent command strings are not supported on Windows");
+});
+
+it("replaces ambient process environment with the explicit spawn environment", async () => {
+  const cwd = await makeTempDir("paperclip-acpx-spawn-env-");
+  const previous = process.env.PAPERCLIP_TEST_AMBIENT_ONLY;
+  process.env.PAPERCLIP_TEST_AMBIENT_ONLY = "ambient-marker";
+  try {
+    const outcome = await ensureRealAcpSession({
+      cwd,
+      spawnEnvironment: () => ({ PAPERCLIP_TEST_SPAWN_ENV: "explicit-marker" }),
+    });
+    expect(outcome.resolved, JSON.stringify(outcome)).toBe(true);
+    expect(outcome.stderr).toContain("SPAWN_ENV_EXPLICIT=explicit-marker");
+    expect(outcome.stderr).toContain("SPAWN_ENV_AMBIENT=\n");
+  } finally {
+    if (previous === undefined) delete process.env.PAPERCLIP_TEST_AMBIENT_ONLY;
+    else process.env.PAPERCLIP_TEST_AMBIENT_ONLY = previous;
+  }
 });
 
 it("kills the ACP agent when process identity persistence rejects", async () => {

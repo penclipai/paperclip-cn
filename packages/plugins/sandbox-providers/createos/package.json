@@ -1,0 +1,63 @@
+{
+  "name": "@penclipai/plugin-createos",
+  "version": "0.1.0",
+  "description": "CreateOS sandbox provider plugin for Paperclip environments",
+  "license": "MIT",
+  "homepage": "https://github.com/paperclipai/paperclip",
+  "bugs": {
+    "url": "https://github.com/paperclipai/paperclip/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/paperclipai/paperclip",
+    "directory": "packages/plugins/sandbox-providers/createos"
+  },
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "publishConfig": {
+    "access": "public",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js"
+      }
+    },
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts"
+  },
+  "files": [
+    "dist"
+  ],
+  "paperclipPlugin": {
+    "manifest": "./dist/manifest.js",
+    "worker": "./dist/worker.js"
+  },
+  "keywords": [
+    "paperclip",
+    "plugin",
+    "sandbox",
+    "createos"
+  ],
+  "scripts": {
+    "prebuild": "pnpm -C ../../../.. --filter @penclipai/plugin-sdk ensure-build-deps",
+    "build": "node ../../../../scripts/fs-ops.mjs rm dist && tsc",
+    "clean": "node ../../../../scripts/fs-ops.mjs rm dist",
+    "typecheck": "pnpm -C ../../../.. --filter @penclipai/plugin-sdk ensure-build-deps && tsc --noEmit",
+    "test": "vitest run --config vitest.config.ts",
+    "prepack": "node ../../../../scripts/fs-ops.mjs rm package.dev.json && node ../../../../scripts/fs-ops.mjs cp package.json package.dev.json && node ../../../../scripts/generate-plugin-package-json.mjs",
+    "postpack": "node ../../../../scripts/fs-ops.mjs mv --if-exists package.dev.json package.json"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.7.3",
+    "vitest": "^4.1.8"
+  },
+  "engines": {
+    "node": ">=24.11.0"
+  },
+  "dependencies": {
+    "tar": "^7.5.22"
+  }
+}

@@ -1,3 +1,4 @@
+import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -264,7 +265,7 @@ export function AddConnectionDialog({
     },
     onError: (err) =>
       pushToast({
-        title: "Could not create connection",
+        title: translateInstant("tools.connections.toast.createFailed"),
         body: err instanceof ApiError ? err.message : String(err),
         tone: "error",
       }),
@@ -278,7 +279,7 @@ export function AddConnectionDialog({
     },
     onError: (err) =>
       pushToast({
-        title: "Probe failed",
+        title: translateInstant("tools.connections.toast.probeFailed"),
         body: err instanceof ApiError ? err.message : String(err),
         tone: "error",
       }),
@@ -294,12 +295,12 @@ export function AddConnectionDialog({
       qc.invalidateQueries({
         queryKey: queryKeys.tools.applications(companyId),
       });
-      pushToast({ title: "Connection activated", tone: "success" });
+      pushToast({ title: translateInstant("tools.connections.toast.activated"), tone: "success" });
       onClose();
     },
     onError: (err) =>
       pushToast({
-        title: "Activation failed",
+        title: translateInstant("tools.connections.toast.activationFailed"),
         body: err instanceof ApiError ? err.message : String(err),
         tone: "error",
       }),
@@ -428,8 +429,7 @@ export function AddConnectionDialog({
                   <span className="font-medium text-foreground">
                     {applicationName.trim()}
                   </span>{" "}
-                  {t("tools.connections.createdAs")} {inferredType}.
-                </div>
+                  {" "}{t("tools.connections.createdAs")} {inferredType}{translateInstant(".")}</div>
               ) : null}
 
               <div className="space-y-1.5">
@@ -598,7 +598,7 @@ export function AddConnectionDialog({
                     <p className="text-xs text-muted-foreground">
                       {t("tools.connections.secretRefPrefix")}
                       <span className="font-mono"> vault://</span>{" "}
-                      {t("tools.connections.secretRefSuffix")}
+                      {" "}{t("tools.connections.secretRefSuffix")}
                     </p>
                   </>
                 ) : null}
@@ -687,7 +687,7 @@ export function AddConnectionDialog({
                 {t("tools.common.back")}
               </Button>
               <Button disabled={!canCreate} onClick={() => create.mutate()}>
-                {create.isPending ? "Creating draft…" : "Create & probe"}
+                {create.isPending ? translateInstant("tools.connections.add.creatingDraft") : translateInstant("tools.connections.add.createAndProbe")}
               </Button>
             </>
           ) : (
@@ -698,13 +698,13 @@ export function AddConnectionDialog({
                 onClick={() => draft && probe.mutate(draft.id)}
               >
                 <Stethoscope className="mr-1 h-3.5 w-3.5" />
-                {probe.isPending ? "Probing…" : "Re-probe"}
+                {probe.isPending ? translateInstant("tools.connections.add.probing") : translateInstant("tools.connections.add.reprobe")}
               </Button>
               <Button
                 disabled={activate.isPending || probe.isPending}
                 onClick={() => draft && activate.mutate(draft.id)}
               >
-                {activate.isPending ? "Activating…" : "Activate"}
+                {activate.isPending ? translateInstant("tools.connections.add.activating") : translateInstant("Activate")}
               </Button>
             </>
           )}

@@ -1,7 +1,12 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
+import { SkillBinaryFile } from "../components/SkillBinaryFile";
+import { SkillSourceProvenance } from "../components/SkillSourceProvenance";
+import { AgentIdentity } from "@/components/AgentIdentity";
+import { AgentAvatar } from "@/components/AgentAvatar";
 import { useEffect, useMemo, useRef, useState, type SVGProps } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "@/lib/router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
 import type {
   AgentDesiredSkillEntry,
   Agent,
@@ -25,20 +30,21 @@ import type {
 import { companySkillsApi } from "../api/companySkills";
 import { foldersApi } from "../api/folders";
 import { agentsApi } from "../api/agents";
-import { translateInstant } from "../i18n";
 import { useCompany } from "../context/CompanyContext";
 import { useBreadcrumbs, type Breadcrumb } from "../context/BreadcrumbContext";
 import { useToastActions } from "../context/ToastContext";
 import { queryKeys } from "../lib/queryKeys";
 import { copyTextToClipboard } from "../lib/clipboard";
+import { useCopyAction } from "../lib/use-copy-action";
 import { EmptyState } from "../components/EmptyState";
 import { MarkdownBody } from "../components/MarkdownBody";
 import { MarkdownEditor } from "../components/MarkdownEditor";
 import { PageSkeleton } from "../components/PageSkeleton";
 import { CopyText } from "../components/CopyText";
 import { Identity } from "../components/Identity";
-import { AgentIcon } from "../components/AgentIconPicker";
+import { AgentMultiSelect } from "../components/AgentMultiSelect";
 import { useAdapterCapabilities } from "../adapters/use-adapter-capabilities";
+import { useStreamlinedUiEnabled } from "../hooks/useStreamlinedUiEnabled";
 import {
   SkillPolicyDenialNotice,
   useSkillPolicyDenial,
@@ -63,7 +69,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { buildLineDiff, type DiffRow } from "../lib/line-diff";
 import { cn, relativeTime } from "../lib/utils";
@@ -78,9 +83,14 @@ import {
   type CompanySkillRouteSubject,
 } from "../lib/company-skill-routes";
 import {
+  resolveSkillsDiscoveryView,
+  withSkillsDiscoveryView,
+} from "./skills/skills-navigation";
+import {
   SKILL_CREATE_ACCENTS,
   buildBlankSkillDraft,
   buildForkSkillDraft,
+  defaultSkillMarkdown,
   normalizeSkillDraftSlug,
   skillAccentColor,
   skillCreateDraftToPayload,
@@ -111,7 +121,9 @@ import {
   MoveToFolderDialog,
   SkillFolderRail,
   folderBreadcrumbTrail,
+  reservedRootLabel,
   isBundledFolder,
+  skillFolderDisplayPath,
   skillFolderPathDisplayFallback,
   subtreeFolderIds,
   treeFromResult,
@@ -125,6 +137,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Code2,
+  Compass,
   Download,
   Eye,
   Filter,
@@ -135,7 +148,6 @@ import {
   FolderOpen,
   FolderSearch,
   GitFork,
-  Github,
   Globe,
   HelpCircle,
   LayoutGrid,
@@ -163,6 +175,7 @@ import {
   X,
   XOctagon,
 } from "lucide-react";
+import { GithubIcon } from "../components/icons/github-icon";
 import type { FolderListItem, FolderListResult } from "@penclipai/shared";
 
 type SkillTreeNode = {
@@ -260,19 +273,19 @@ function sourceMeta(sourceBadge: CompanySkillSourceBadge, sourceLabel: string | 
 
   switch (sourceBadge) {
     case "skills_sh":
-      return { icon: VercelMark, label: sourceLabel ?? "skills.sh", managedLabel: translateInstant("companySkills.sourceManaged.skillsSh") };
+      return { icon: VercelMark, label: sourceLabel ?? "skills.sh", managedLabel: "skills.sh managed" };
     case "github":
       return isSkillsShManaged
-        ? { icon: VercelMark, label: sourceLabel ?? "skills.sh", managedLabel: translateInstant("companySkills.sourceManaged.skillsSh") }
-        : { icon: Github, label: sourceLabel ?? "GitHub", managedLabel: translateInstant("companySkills.sourceManaged.github") };
+        ? { icon: VercelMark, label: sourceLabel ?? "skills.sh", managedLabel: "skills.sh managed" }
+        : { icon: GithubIcon, label: sourceLabel ?? "GitHub", managedLabel: "GitHub managed" };
     case "url":
-      return { icon: Link2, label: sourceLabel ?? "URL", managedLabel: translateInstant("companySkills.sourceManaged.url") };
+      return { icon: Link2, label: sourceLabel ?? "URL", managedLabel: "URL managed" };
     case "local":
-      return { icon: Folder, label: sourceLabel ?? translateInstant("companySkills.source.folder"), managedLabel: translateInstant("companySkills.sourceManaged.folder") };
+      return { icon: Folder, label: sourceLabel ?? translateInstant("Folder"), managedLabel: "Folder managed" };
     case "paperclip":
-      return { icon: Paperclip, label: sourceLabel ?? translateInstant("companySkills.source.paperclipWorkspace"), managedLabel: translateInstant("companySkills.sourceManaged.paperclip", { label: sourceLabel ?? "Paperclip" }) };
+      return { icon: Paperclip, label: sourceLabel ?? "Paperclip", managedLabel: "Paperclip managed" };
     default:
-      return { icon: Boxes, label: sourceLabel ?? translateInstant("companySkills.source.catalog"), managedLabel: translateInstant("companySkills.sourceManaged.catalog") };
+      return { icon: Boxes, label: sourceLabel ?? translateInstant("Catalog"), managedLabel: "Catalog managed" };
   }
 }
 
@@ -288,14 +301,14 @@ function middleTruncate(value: string, maxLength = 72) {
 }
 
 function formatProjectScanSummary(result: CompanySkillProjectScanResult) {
-  return translateInstant("companySkills.projectScanSummary", {
-    discovered: result.discovered,
-    imported: result.imported.length,
-    updated: result.updated.length,
-    conflicts: result.conflicts.length,
-    skipped: result.skipped.length,
-    scannedWorkspaces: result.scannedWorkspaces,
-  });
+  const parts = [
+    `${result.discovered} found`,
+    `${result.imported.length} imported`,
+    `${result.updated.length} updated`,
+  ];
+  if (result.conflicts.length > 0) parts.push(`${result.conflicts.length} conflicts`);
+  if (result.skipped.length > 0) parts.push(`${result.skipped.length} skipped`);
+  return `${parts.join(", ")} across ${result.scannedWorkspaces} workspace${result.scannedWorkspaces === 1 ? "" : "s"}.`;
 }
 
 function fileIcon(kind: CompanySkillFileInventoryEntry["kind"]) {
@@ -318,8 +331,16 @@ function parentDirectoryPaths(filePath: string) {
 
 type SourceFilter = "all" | "company" | "bundled" | "optional" | "external";
 
+const SOURCE_FILTER_KEYS: Record<SourceFilter, string> = {
+  all: "All",
+  company: "companySkills.sourceFilter.organization",
+  bundled: "Bundled",
+  optional: "Optional",
+  external: "External",
+};
+
 function sourceFilterLabel(filter: SourceFilter) {
-  return translateInstant(`companySkills.sourceFilter.${filter}`);
+  return translateInstant(SOURCE_FILTER_KEYS[filter]);
 }
 
 function readonlyMetadataValue(metadata: Record<string, unknown> | null | undefined, key: string): string | null {
@@ -368,7 +389,7 @@ function SourceFilterMenu({
   value: SourceFilter;
   onChange: (next: SourceFilter) => void;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   const filters: SourceFilter[] = ["all", "company", "bundled", "optional", "external"];
   const activeFilterCount = value === "all" ? 0 : 1;
   return (
@@ -378,7 +399,7 @@ function SourceFilterMenu({
           variant="ghost"
           size="icon-sm"
           className={cn("relative shrink-0", activeFilterCount > 0 && "text-blue-600 dark:text-blue-400")}
-          title={activeFilterCount > 0 ? t("companySkills.filtersActive", { count: activeFilterCount }) : t("Filter")}
+          title={activeFilterCount > 0 ? `Filters: ${activeFilterCount}` : translateInstant("Filter")}
         >
           <Filter className="h-3.5 w-3.5" />
           {activeFilterCount > 0 ? (
@@ -389,7 +410,7 @@ function SourceFilterMenu({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
-        <DropdownMenuLabel>{t("Source")}</DropdownMenuLabel>
+        <DropdownMenuLabel>{translateInstant("Source")}</DropdownMenuLabel>
         <DropdownMenuRadioGroup value={value} onValueChange={(next) => onChange(next as SourceFilter)}>
           {filters.map((filter) => (
             <DropdownMenuRadioItem key={filter} value={filter}>
@@ -416,7 +437,7 @@ function CatalogFilterMenu({
   onKindChange: (next: "all" | "bundled" | "optional") => void;
   onCategoryChange: (next: string) => void;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   const activeFilterCount = (kindFilter === "all" ? 0 : 1) + (categoryFilter ? 1 : 0);
   return (
     <DropdownMenu>
@@ -425,7 +446,7 @@ function CatalogFilterMenu({
           variant="ghost"
           size="icon-sm"
           className={cn("relative shrink-0", activeFilterCount > 0 && "text-blue-600 dark:text-blue-400")}
-          title={activeFilterCount > 0 ? t("companySkills.filtersActive", { count: activeFilterCount }) : t("Filter")}
+          title={activeFilterCount > 0 ? `Filters: ${activeFilterCount}` : translateInstant("Filter")}
         >
           <Filter className="h-3.5 w-3.5" />
           {activeFilterCount > 0 ? (
@@ -436,16 +457,16 @@ function CatalogFilterMenu({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="max-h-(--sz-calc-32) w-56 overflow-y-auto">
-        <DropdownMenuLabel>{t("Type")}</DropdownMenuLabel>
+        <DropdownMenuLabel>{translateInstant("Type")}</DropdownMenuLabel>
         <DropdownMenuRadioGroup value={kindFilter} onValueChange={(next) => onKindChange(next as "all" | "bundled" | "optional")}>
-          <DropdownMenuRadioItem value="all">{t("All")}</DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="bundled">{t("Bundled")}</DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="optional">{t("companySkills.sourceFilter.optional")}</DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="all">{translateInstant("All")}</DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="bundled">{translateInstant("Bundled")}</DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="optional">{translateInstant("companySkills.sourceFilter.optional")}</DropdownMenuRadioItem>
         </DropdownMenuRadioGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuLabel>{t("Category")}</DropdownMenuLabel>
+        <DropdownMenuLabel>{translateInstant("Category")}</DropdownMenuLabel>
         <DropdownMenuRadioGroup value={categoryFilter || "__all__"} onValueChange={(next) => onCategoryChange(next === "__all__" ? "" : next)}>
-          <DropdownMenuRadioItem value="__all__">{t("companySkills.allCategories")}</DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="__all__">{translateInstant("companySkills.allCategories")}</DropdownMenuRadioItem>
           {categories.map((category) => (
             <DropdownMenuRadioItem key={category} value={category}>
               {category}
@@ -463,20 +484,20 @@ function TrustChip({ level }: { level: CompanySkillTrustLevel }) {
     markdown_only: {
       icon: ShieldCheck,
       label: translateInstant("companySkills.trust.markdownOnly"),
-      tooltip: translateInstant("companySkills.trust.markdownOnlyTooltip"),
+      tooltip: translateInstant("Text only — no scripts, no binaries, no assets."),
       className: "border-border bg-muted/40 text-muted-foreground",
     },
     assets: {
       icon: Folder,
       label: translateInstant("companySkills.trust.includesAssets"),
       tooltip: translateInstant("companySkills.trust.includesAssetsTooltip"),
-      className: "border-cyan-500/30 bg-cyan-500/10 text-cyan-200",
+      className: "border-cyan-500/30 bg-cyan-500/10 text-cyan-800 dark:text-cyan-200",
     },
     scripts_executables: {
       icon: AlertTriangle,
       label: translateInstant("companySkills.trust.includesScripts"),
       tooltip: translateInstant("companySkills.trust.includesScriptsTooltip"),
-      className: "border-amber-500/40 bg-amber-500/10 text-amber-200",
+      className: "border-amber-500/40 bg-amber-500/10 text-amber-800 dark:text-amber-200",
     },
   } as const;
   const config = map[level] ?? map.markdown_only;
@@ -502,12 +523,12 @@ function CompatChip({ compatibility }: { compatibility: CompanySkillCompatibilit
       icon: HelpCircle,
       label: translateInstant("companySkills.compat.unknownFormat"),
       tooltip: translateInstant("companySkills.compat.unknownFormatTooltip"),
-      className: "border-yellow-500/40 bg-yellow-500/10 text-yellow-200",
+      className: "border-yellow-500/40 bg-yellow-500/10 text-yellow-800 dark:text-yellow-200",
     },
     invalid: {
       icon: XOctagon,
       label: translateInstant("companySkills.compat.invalid"),
-      tooltip: translateInstant("companySkills.compat.invalidTooltip"),
+      tooltip: translateInstant("This skill cannot be installed — content is not valid Agent Skills markdown."),
       className: "border-destructive/40 bg-destructive/10 text-destructive",
     },
   } as const;
@@ -527,7 +548,7 @@ function CompatChip({ compatibility }: { compatibility: CompanySkillCompatibilit
 }
 
 function ProvenanceBadge({ packageName, packageVersion }: { packageName: string | null; packageVersion: string | null }) {
-  const { t } = useTranslation();
+  useTranslation();
   if (!packageName) return null;
   return (
     <Tooltip>
@@ -537,7 +558,7 @@ function ProvenanceBadge({ packageName, packageVersion }: { packageName: string 
           <span>{packageName}{packageVersion ? ` v${packageVersion}` : ""}</span>
         </span>
       </TooltipTrigger>
-      <TooltipContent>{t("companySkills.provenanceTooltip")}</TooltipContent>
+      <TooltipContent>{translateInstant("companySkills.provenanceTooltip")}</TooltipContent>
     </Tooltip>
   );
 }
@@ -552,23 +573,14 @@ function formatBytes(bytes: number) {
 // Skills Store discovery grid (PAP-10879)
 // ---------------------------------------------------------------------------
 
-export type DiscoveryTab = "all" | "installed" | "catalog" | "bundled";
-
-const DISCOVERY_TABS: DiscoveryTab[] = ["all", "installed", "catalog", "bundled"];
+export type DiscoveryTab = "installed" | "discover";
 
 export function resolveDiscoveryTab(tabParam: string | null): DiscoveryTab {
-  return DISCOVERY_TABS.includes(tabParam as DiscoveryTab)
-    ? (tabParam as DiscoveryTab)
-    : "installed";
+  return resolveSkillsDiscoveryView(tabParam);
 }
 
 export function withDiscoveryTab(current: URLSearchParams, tab: DiscoveryTab): URLSearchParams {
-  const params = new URLSearchParams(current);
-  if (tab === "installed") params.delete("tab");
-  else params.set("tab", tab);
-  params.delete("category");
-  if (tab !== "installed") params.delete("folder");
-  return params;
+  return withSkillsDiscoveryView(current, tab);
 }
 
 export function skillDetailBreadcrumbs(
@@ -581,53 +593,11 @@ export function skillDetailBreadcrumbs(
   return [
     { label: translateInstant("Skills"), href: "/skills" },
     ...trail.map((folder, index) => ({
-      label: index === 0 ? localizedFolderLabel(folder) : folder.name,
+      label: index === 0 ? reservedRootLabel(folder) : folder.name,
       href: `/skills?folder=${encodeURIComponent(folder.id)}`,
     })),
     { label: detail.name },
   ];
-}
-
-function localizedFolderLabel(folder: Pick<FolderListItem, "systemKey" | "name">): string {
-  switch (folder.systemKey) {
-    case "my":
-      return translateInstant("folders.mySkills");
-    case "projects":
-      return translateInstant("folders.projects");
-    case "bundled":
-      return translateInstant("folders.bundled");
-    default:
-      return folder.name;
-  }
-}
-
-function localizedSkillFolderDisplayPath(
-  folderResult: FolderListResult | null | undefined,
-  folderId: string | null | undefined,
-): string | null {
-  if (!folderId) return null;
-  const trail = folderBreadcrumbTrail(treeFromResult(folderResult), folderId);
-  if (trail.length === 0) return null;
-  const labels = trail.map((folder, index) => index === 0 ? localizedFolderLabel(folder) : folder.name);
-  if (!trail[0]?.systemKey) labels.unshift(translateInstant("folders.company"));
-  return labels.join(" / ");
-}
-
-function localizedSkillFolderPathFallback(folderPath: string | null | undefined): string | null {
-  const displayPath = skillFolderPathDisplayFallback(folderPath);
-  if (!displayPath) return null;
-  for (const [source, key] of [
-    ["Company", "folders.company"],
-    ["My Skills", "folders.mySkills"],
-    ["Projects", "folders.projects"],
-    ["Bundled", "folders.bundled"],
-  ] as const) {
-    if (displayPath === source) return translateInstant(key);
-    if (displayPath.startsWith(`${source} / `)) {
-      return `${translateInstant(key)}${displayPath.slice(source.length)}`;
-    }
-  }
-  return displayPath;
 }
 
 type DiscoverySort = "agents" | "stars" | "forks" | "recent" | "alphabetical";
@@ -636,19 +606,11 @@ const DISCOVERY_SORT_LABELS: Record<DiscoverySort, string> = {
   agents: "Most agents",
   stars: "Most stars",
   forks: "Most forks",
-  recent: "Recently updated",
-  alphabetical: "Alphabetical",
+  get recent() { return translateInstant("Recently updated"); },
+  get alphabetical() { return translateInstant("Alphabetical"); },
 };
 
 const DISCOVERY_SORTS: DiscoverySort[] = ["agents", "stars", "forks", "recent", "alphabetical"];
-
-function discoverySortLabel(sort: DiscoverySort) {
-  return translateInstant(`companySkills.discoverySort.${sort}`);
-}
-
-function discoveryTabLabel(tab: DiscoveryTab) {
-  return translateInstant(`companySkills.discoveryTab.${tab}`);
-}
 
 export type DiscoveryCard = {
   key: string;
@@ -673,6 +635,7 @@ export type DiscoveryCard = {
   updatedAt: number;
   sourceBadge?: CompanySkillSourceBadge | null;
   sourceLabel?: string | null;
+  sourceKind?: "bundled" | "optional" | null;
 };
 
 export { SkillCardIcon } from "../components/SkillCardIcon";
@@ -703,59 +666,45 @@ function categorySetKey(categories: string[]) {
   return [...categories].sort().join(",");
 }
 
-function skillSettingsToastBody(
-  skill: Pick<CompanySkillDetail, "categories" | "sharingScope">,
-  t: ReturnType<typeof useTranslation>["t"],
-) {
-  const sharing = skill.sharingScope === "private" ? t("companySkills.private") : t("companySkills.company");
-  const categories = skill.categories.length ? skill.categories.join(", ") : t("None", { defaultValue: "None" });
-  return t("companySkills.skillSettingsToastBody", {
-    defaultValue: "Sharing: {{sharing}} | Categories: {{categories}}",
-    sharing,
-    categories,
-  });
-}
-
-function defaultSkillMarkdown(name: string, tagline: string) {
-  const title = name.trim() || translateInstant("companySkills.defaultSkillName");
-  const summary = tagline.trim() || translateInstant("companySkills.defaultSkillSummary");
-  return [
-    "---",
-    `name: ${title}`,
-    `description: ${summary}`,
-    "---",
-    "",
-    `# ${title}`,
-    "",
-    summary,
-    "",
-    `## ${translateInstant("companySkills.defaultSkillWhenToUse")}`,
-    "",
-    `- ${translateInstant("companySkills.defaultSkillWhenToUseBullet")}`,
-    "",
-    `## ${translateInstant("companySkills.defaultSkillWorkflow")}`,
-    "",
-    `1. ${translateInstant("companySkills.defaultSkillStepInspect")}`,
-    `2. ${translateInstant("companySkills.defaultSkillStepApply")}`,
-    `3. ${translateInstant("companySkills.defaultSkillStepReport")}`,
-    "",
-  ].join("\n");
+function skillSettingsToastBody(skill: Pick<CompanySkillDetail, "categories" | "sharingScope">) {
+  const sharing = skill.sharingScope === "private" ? "Sharing: private" : "Sharing: organization";
+  const categories = skill.categories.length ? `Categories: ${skill.categories.join(", ")}` : "Categories: none";
+  return `${sharing} | ${categories}`;
 }
 
 // Merge installed company skills and the install catalog into one card model.
 // Installed skills win on dedup (they carry the richer social-proof metadata);
 // catalog-only skills fill in the rest of the discoverable surface.
-function buildDiscoveryCards(
+function discoveryCardIdentity(key: string): string {
+  return key.trim().toLowerCase();
+}
+
+export function buildDiscoveryCards(
   installed: CompanySkillListItem[],
   catalog: CatalogSkill[],
 ): DiscoveryCard[] {
-  const catalogByKey = new Map(catalog.map((entry) => [entry.key, entry]));
+  const installedByKey = new Map<string, CompanySkillListItem>();
+  for (const skill of installed) {
+    const identity = discoveryCardIdentity(skill.key);
+    const existing = installedByKey.get(identity);
+    if (!existing || new Date(skill.updatedAt).getTime() > new Date(existing.updatedAt).getTime()) {
+      installedByKey.set(identity, skill);
+    }
+  }
+
+  const catalogByKey = new Map<string, CatalogSkill>();
+  for (const entry of catalog) {
+    const identity = discoveryCardIdentity(entry.key);
+    if (!catalogByKey.has(identity)) catalogByKey.set(identity, entry);
+  }
+
   const cards: DiscoveryCard[] = [];
   const installedKeys = new Set<string>();
 
-  for (const skill of installed) {
-    installedKeys.add(skill.key);
-    const catalogMatch = catalogByKey.get(skill.key) ?? null;
+  for (const skill of installedByKey.values()) {
+    const identity = discoveryCardIdentity(skill.key);
+    installedKeys.add(identity);
+    const catalogMatch = catalogByKey.get(identity) ?? null;
     const required = skill.catalogKind === "bundled" || catalogMatch?.kind === "bundled";
     cards.push({
       key: skill.key,
@@ -780,11 +729,12 @@ function buildDiscoveryCards(
       updatedAt: new Date(skill.updatedAt).getTime() || 0,
       sourceBadge: skill.sourceBadge,
       sourceLabel: skill.sourceLabel,
+      sourceKind: skill.catalogKind ?? catalogMatch?.kind ?? null,
     });
   }
 
-  for (const entry of catalog) {
-    if (installedKeys.has(entry.key)) continue;
+  for (const [identity, entry] of catalogByKey) {
+    if (installedKeys.has(identity)) continue;
     const required = entry.kind === "bundled";
     cards.push({
       key: entry.key,
@@ -808,7 +758,8 @@ function buildDiscoveryCards(
       forkedFrom: false,
       updatedAt: 0,
       sourceBadge: "catalog",
-      sourceLabel: entry.packageName ?? "Catalog",
+      sourceLabel: entry.packageName ?? translateInstant("Catalog"),
+      sourceKind: entry.kind,
     });
   }
 
@@ -816,17 +767,7 @@ function buildDiscoveryCards(
 }
 
 function cardsForTab(cards: DiscoveryCard[], tab: DiscoveryTab): DiscoveryCard[] {
-  switch (tab) {
-    case "installed":
-      return cards.filter((card) => card.installed);
-    case "catalog":
-      return cards.filter((card) => card.catalogRef != null);
-    case "bundled":
-      return cards.filter((card) => card.required);
-    case "all":
-    default:
-      return cards;
-  }
+  return tab === "installed" ? cards.filter((card) => card.installed) : cards;
 }
 
 function sortDiscoveryCards(cards: DiscoveryCard[], sort: DiscoverySort, demoteRequired: boolean): DiscoveryCard[] {
@@ -906,7 +847,9 @@ function SkillCard({
   onCreateFolderAndMove?: (card: DiscoveryCard) => void;
   onOpenMove?: (card: DiscoveryCard) => void;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
+  const source = sourceMeta(card.sourceBadge ?? "catalog", card.sourceLabel ?? null);
+  const SourceIcon = source.icon;
   const badgeFolder = showFolderBadge && card.installed
     ? (card.folderId ? folders?.find((folder) => folder.id === card.folderId) ?? null : null)
     : undefined;
@@ -939,7 +882,7 @@ function SkillCard({
             type="checkbox"
             className="mt-1 h-4 w-4 rounded border-border"
             checked={selected}
-            aria-label={t("companySkills.selectSkillAria", { name: card.name })}
+            aria-label={`Select ${card.name}`}
             onClick={(event) => event.stopPropagation()}
             onChange={(event) => onSelectChange?.(card, event.target.checked)}
           />
@@ -948,31 +891,15 @@ function SkillCard({
         <div className="min-w-0 flex-1">
           <div className="truncate font-mono text-sm font-medium text-foreground">{card.name}</div>
           <div className="truncate text-xs text-muted-foreground">
-            {t("companySkills.byAuthor", { author: card.author })}{card.version ? ` · ${card.version}` : ""}
+            {translateInstant("by")}{" "}{card.author}{card.version ? ` · ${card.version}` : ""}
           </div>
           {badgeFolder !== undefined ? (
             <div className="mt-1 flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
               <FolderSwatch color={badgeFolder?.color} className="h-2 w-2" />
-              <span className="truncate">
-                {badgeFolder ? badgeFolder.name : t("folders.unfiled", { defaultValue: "Unfiled" })}
-              </span>
+              <span className="truncate">{badgeFolder ? badgeFolder.name : translateInstant("folders.unfiled")}</span>
             </div>
           ) : null}
         </div>
-        {/* Where the skill came from (PAP-10907 E); native title gives a hover hint. */}
-        {(() => {
-          const meta = sourceMeta(card.sourceBadge ?? "catalog", card.sourceLabel ?? null);
-          const SourceIcon = meta.icon;
-          return (
-            <span
-              className="shrink-0 text-muted-foreground"
-              title={t("companySkills.fromSource", { source: meta.label })}
-              aria-label={t("companySkills.fromSource", { source: meta.label })}
-            >
-              <SourceIcon className="h-3.5 w-3.5" aria-hidden="true" />
-            </span>
-          );
-        })()}
         {canMove && folders && onMove && onCreateFolderAndMove ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -980,7 +907,7 @@ function SkillCard({
                 variant="ghost"
                 size="icon-sm"
                 className="-mr-1 -mt-1 opacity-70 group-hover:opacity-100"
-                aria-label={t("More actions for {{name}}", { name: card.name })}
+                aria-label={`More actions for ${card.name}`}
                 onClick={(event) => event.stopPropagation()}
               >
                 <MoreHorizontal className="h-4 w-4" />
@@ -991,8 +918,7 @@ function SkillCard({
                 <>
                   <DropdownMenuItem onSelect={() => onOpenMove(card)}>
                     <FolderInput className="h-3.5 w-3.5" />
-                    {t("folders.moveTo")}
-                  </DropdownMenuItem>
+                    {translateInstant("Move to folder…")}</DropdownMenuItem>
                   <DropdownMenuSeparator />
                 </>
               ) : null}
@@ -1010,8 +936,7 @@ function SkillCard({
       {card.forkedFrom ? (
         <div className="mt-2 inline-flex items-center gap-1 text-(length:--text-micro) text-muted-foreground">
           <GitFork className="h-3 w-3" aria-hidden="true" />
-          {t("companySkills.forked")}
-        </div>
+          {translateInstant("companySkills.forked")}</div>
       ) : null}
 
       {/* Always reserve two lines so cards line up even without a description. */}
@@ -1025,9 +950,15 @@ function SkillCard({
       </p>
 
       <div className="mt-auto pt-3">
-        {/* Stats: installed agents · stars · forks — stars/forks only when > 0. */}
+        {/* Installation and agent enablement are separate states. */}
         <div className="flex items-center gap-2 text-(length:--text-micro) text-muted-foreground">
-          <span>{t(card.agentCount === 1 ? "companySkills.agentCount_one" : "companySkills.agentCount_other", { count: card.agentCount })}</span>
+          <span>
+            {card.installed
+              ? card.agentCount > 0
+                ? `Enabled for ${card.agentCount} ${card.agentCount === 1 ? "agent" : "agents"}`
+                : "Not enabled for any agents"
+              : "Available to install"}
+          </span>
           {card.starCount > 0 ? (
             <>
               <span aria-hidden="true">·</span>
@@ -1043,18 +974,23 @@ function SkillCard({
         </div>
         <div className="mt-2 flex flex-wrap items-center gap-1">
           {card.installed ? (
-            <span className="inline-flex items-center rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-(length:--text-nano) text-emerald-300">
-              {t("Installed")}
-            </span>
+            <Badge variant="secondary" className="text-(length:--text-nano)">
+              {translateInstant("Installed")}</Badge>
           ) : null}
+          <Badge variant="outline" className="max-w-full text-(length:--text-nano) text-muted-foreground">
+            <SourceIcon className="h-3 w-3" aria-hidden="true" />
+            <span className="truncate">{source.label}</span>
+          </Badge>
           {card.categories.slice(0, 2).map((category) => (
             <SkillCategoryChip key={category} label={category} />
           ))}
           {card.required ? (
             <Badge variant="outline" className="ml-auto border-border bg-muted/60 text-(length:--text-nano) text-muted-foreground">
               <Lock className="h-3 w-3" aria-hidden="true" />
-              {t("Bundled")}
-            </Badge>
+              {translateInstant("Bundled")}</Badge>
+          ) : card.sourceKind === "optional" ? (
+            <Badge variant="outline" className="ml-auto text-(length:--text-nano) text-muted-foreground">
+              {translateInstant("companySkills.sourceFilter.optional")}</Badge>
           ) : null}
         </div>
       </div>
@@ -1075,7 +1011,7 @@ function CategoryNav({
   active: string | null;
   onSelect: (slug: string | null) => void;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   return (
     <nav className="flex flex-col gap-0.5 px-2">
       <button
@@ -1086,7 +1022,7 @@ function CategoryNav({
           active == null ? "bg-accent/60 font-medium text-foreground" : "text-muted-foreground",
         )}
       >
-        <span>{t("All")}</span>
+        <span>{translateInstant("All")}</span>
         <span className="text-xs text-muted-foreground">{total}</span>
       </button>
       {categories.map((category) => (
@@ -1109,8 +1045,6 @@ function CategoryNav({
 
 export function DiscoveryGrid({
   tab,
-  tabCounts,
-  onTabChange,
   categories,
   categoryTotal,
   activeCategory,
@@ -1127,7 +1061,7 @@ export function DiscoveryGrid({
   onCreate,
   onImport,
   onImportFromProject,
-  onBrowseCatalog,
+  onBrowseDiscover,
   onScan,
   scanPending,
   scanStatus,
@@ -1154,10 +1088,9 @@ export function DiscoveryGrid({
   onEnsureMyFolder,
   onOpenMoveCard,
   folderNudgeStorageKey,
+  showBrowseRails = true,
 }: {
   tab: DiscoveryTab;
-  tabCounts: Record<DiscoveryTab, number>;
-  onTabChange: (tab: DiscoveryTab) => void;
   categories: DiscoveryCategory[];
   categoryTotal: number;
   activeCategory: string | null;
@@ -1174,7 +1107,7 @@ export function DiscoveryGrid({
   onCreate: () => void;
   onImport: () => void;
   onImportFromProject: () => void;
-  onBrowseCatalog: () => void;
+  onBrowseDiscover: () => void;
   onScan: (projectId?: string) => void;
   scanPending: boolean;
   scanStatus: string | null;
@@ -1205,23 +1138,44 @@ export function DiscoveryGrid({
   onOpenMoveCard?: (card: DiscoveryCard) => void;
   /** When set and no folders exist yet, show the dismissible all-unfiled nudge (ux-spec §6.3). */
   folderNudgeStorageKey?: string;
+  /** Category/folder navigation stays available in production, but the Streamlined UI relies on search and scrolling. */
+  showBrowseRails?: boolean;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
+  const installedView = tab === "installed";
+  const viewTitle = installedView ? "Installed skills" : "Discover skills";
+  const viewDescription = installedView
+    ? "Skills available to this organization."
+    : "Browse skills from every available source.";
+  const searchLabel = installedView ? "Search installed skills" : "Search discoverable skills";
   // Source filter (github / skills.sh / local / …) lives in the grid so it
   // narrows whatever the parent already filtered by tab/category/search (PAP-10907 E).
   const [sourceBadgeFilter, setSourceBadgeFilter] = useState<string>("all");
   const availableSources = useMemo(() => {
-    const set = new Set<string>();
-    for (const card of cards) if (card.sourceBadge) set.add(card.sourceBadge);
-    return Array.from(set).sort();
+    const facets = new Map<string, string>();
+    for (const card of cards) {
+      if (card.sourceKind) {
+        facets.set(`kind:${card.sourceKind}`, card.sourceKind === "bundled" ? translateInstant("Bundled") : translateInstant("Optional"));
+      }
+      if (card.sourceBadge) {
+        facets.set(`badge:${card.sourceBadge}`, sourceMeta(card.sourceBadge, null).label);
+      }
+    }
+    return Array.from(facets, ([value, label]) => ({ value, label }))
+      .sort((left, right) => left.label.localeCompare(right.label));
   }, [cards]);
   useEffect(() => {
-    if (sourceBadgeFilter !== "all" && !availableSources.includes(sourceBadgeFilter)) {
+    if (sourceBadgeFilter !== "all" && !availableSources.some((source) => source.value === sourceBadgeFilter)) {
       setSourceBadgeFilter("all");
     }
   }, [availableSources, sourceBadgeFilter]);
   const sourceFilteredCards = useMemo(
-    () => (sourceBadgeFilter === "all" ? cards : cards.filter((card) => card.sourceBadge === sourceBadgeFilter)),
+    () => sourceBadgeFilter === "all"
+      ? cards
+      : cards.filter((card) => {
+          const [facet, value] = sourceBadgeFilter.split(":", 2);
+          return facet === "kind" ? card.sourceKind === value : card.sourceBadge === value;
+        }),
     [cards, sourceBadgeFilter],
   );
   const sourceFilterActive = sourceBadgeFilter !== "all";
@@ -1231,7 +1185,7 @@ export function DiscoveryGrid({
   // The nested folder tree owns the left rail whenever folders (reserved roots
   // or user folders) exist for the installed view.
   const showFolderRail = Boolean(
-    folderResult && folderResult.folders.length > 0 && onFolderSelect && folderActionsReady,
+    showBrowseRails && folderResult && folderResult.folders.length > 0 && onFolderSelect && folderActionsReady,
   );
   const activeProjectFolder = useMemo(() => {
     if (!folderResult || folderSelection === "all" || folderSelection === "unfiled") return null;
@@ -1264,43 +1218,48 @@ export function DiscoveryGrid({
           />
         </div>
       ) : null}
-      {/* Secondary category sidebar — the main app nav collapses to a rail while
-          this is present (handled in Layout). */}
-      <aside className={cn("hidden w-60 shrink-0 flex-col overflow-hidden border-r border-border md:flex", showFolderRail && "md:hidden")}>
-        <div className="border-b border-border px-4 py-4">
-          <h2 className="text-sm font-semibold text-foreground">{t("companySkills.storeTitle")}</h2>
-          <p className="text-xs text-muted-foreground">{t("companySkills.storeSubtitle")}</p>
-        </div>
-        <div className="px-4 pb-1 pt-3 text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">
-          {t("companySkills.categories")}
-        </div>
-        <div className="min-h-0 flex-1 overflow-y-auto pb-4">
-          <CategoryNav
-            categories={categories}
-            total={categoryTotal}
-            active={activeCategory}
-            onSelect={onCategoryChange}
-          />
-        </div>
-      </aside>
+      {showBrowseRails ? (
+        <aside className={cn("hidden w-60 shrink-0 flex-col overflow-hidden border-r border-border md:flex", showFolderRail && "md:hidden")}>
+          <div className="border-b border-border px-4 py-4">
+            <h2 className="text-sm font-semibold text-foreground">{translateInstant("Browse by category")}</h2>
+            <p className="text-xs text-muted-foreground">
+              {translateInstant(installedView ? "companySkills.filterInstalled" : "companySkills.filterDiscoverable")}</p>
+          </div>
+          <div className="px-4 pb-1 pt-3 text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">
+            {translateInstant("companySkills.categories")}</div>
+          <div className="min-h-0 flex-1 overflow-y-auto pb-4">
+            <CategoryNav
+              categories={categories}
+              total={categoryTotal}
+              active={activeCategory}
+              onSelect={onCategoryChange}
+            />
+          </div>
+        </aside>
+      ) : null}
 
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         {/* Search + sort + actions */}
         <div className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-3">
+          <div className="w-full">
+            <h1 className="text-lg font-semibold text-foreground">{viewTitle}</h1>
+            <p className="text-xs text-muted-foreground">{viewDescription}</p>
+          </div>
           <div className="flex h-9 min-w-(--sz-12rem) flex-1 items-center gap-2 rounded-md border border-border px-2.5">
             <Search className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
             <input
               value={search}
               onChange={(event) => onSearchChange(event.target.value)}
-              placeholder={t("companySkills.searchPlaceholder")}
+              aria-label={searchLabel}
+              placeholder={`${searchLabel}…`}
               className="h-full w-full bg-transparent text-base outline-none placeholder:text-muted-foreground sm:text-sm"
             />
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">
-                <span className="text-muted-foreground">{t("Sort")}</span>
-                <span className="ml-1.5">{discoverySortLabel(sort)}</span>
+                <span className="text-muted-foreground">{translateInstant("Sort")}</span>
+                <span className="ml-1.5">{DISCOVERY_SORT_LABELS[sort]}</span>
                 <ChevronDown className="ml-1 h-3.5 w-3.5" />
               </Button>
             </DropdownMenuTrigger>
@@ -1308,7 +1267,7 @@ export function DiscoveryGrid({
               <DropdownMenuRadioGroup value={sort} onValueChange={(value) => onSortChange(value as DiscoverySort)}>
                 {DISCOVERY_SORTS.map((option) => (
                   <DropdownMenuRadioItem key={option} value={option}>
-                    {discoverySortLabel(option)}
+                    {DISCOVERY_SORT_LABELS[option]}
                   </DropdownMenuRadioItem>
                 ))}
               </DropdownMenuRadioGroup>
@@ -1318,19 +1277,21 @@ export function DiscoveryGrid({
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm">
-                  <span className="text-muted-foreground">{t("Source")}</span>
-                  <span className="ml-1.5 capitalize">
-                    {sourceBadgeFilter === "all" ? t("All") : sourceMeta(sourceBadgeFilter as CompanySkillSourceBadge, null).label}
+                  <span className="text-muted-foreground">{translateInstant("Source")}</span>
+                  <span className="ml-1.5">
+                    {sourceBadgeFilter === "all"
+                      ? translateInstant("All")
+                      : availableSources.find((source) => source.value === sourceBadgeFilter)?.label ?? translateInstant("All")}
                   </span>
                   <ChevronDown className="ml-1 h-3.5 w-3.5" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuRadioGroup value={sourceBadgeFilter} onValueChange={setSourceBadgeFilter}>
-                  <DropdownMenuRadioItem value="all">{t("companySkills.allSources")}</DropdownMenuRadioItem>
-                  {availableSources.map((badge) => (
-                    <DropdownMenuRadioItem key={badge} value={badge}>
-                      {sourceMeta(badge as CompanySkillSourceBadge, null).label}
+                  <DropdownMenuRadioItem value="all">{translateInstant("companySkills.allSources")}</DropdownMenuRadioItem>
+                  {availableSources.map((source) => (
+                    <DropdownMenuRadioItem key={source.value} value={source.value}>
+                      {source.label}
                     </DropdownMenuRadioItem>
                   ))}
                 </DropdownMenuRadioGroup>
@@ -1342,50 +1303,41 @@ export function DiscoveryGrid({
             size="icon-sm"
             onClick={() => onScan()}
             disabled={scanPending}
-            title={t("companySkills.scanProjectWorkspaces")}
-            aria-label={t("companySkills.scanProjectWorkspaces")}
+            aria-label={translateInstant("companySkills.scanProjectWorkspaces")}
+            title={translateInstant("companySkills.scanProjectWorkspaces")}
           >
             <RefreshCw className={cn("h-4 w-4", scanPending && "animate-spin")} />
-          </Button>
-          <Button asChild variant="outline" size="sm">
-            <Link to="/skills/studio">
-              <FlaskConical className="h-3.5 w-3.5" />
-              {t("companySkills.studio", { defaultValue: "Studio" })}
-            </Link>
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button size="sm" variant="default">
                 <Plus className="mr-1 h-3.5 w-3.5" />
-                {t("companySkills.new")}
-                <ChevronDown className="ml-1 h-3.5 w-3.5" />
+                {translateInstant("New")}<ChevronDown className="ml-1 h-3.5 w-3.5" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onSelect={onCreate}>
                 <Pencil className="mr-2 h-4 w-4" />
-                {t("companySkills.createNewSkill")}
-              </DropdownMenuItem>
-              <DropdownMenuItem onSelect={onBrowseCatalog}>
-                <Boxes className="mr-2 h-4 w-4" />
-                {t("companySkills.browseCatalog")}
-              </DropdownMenuItem>
+                {translateInstant("companySkills.createNewSkill")}</DropdownMenuItem>
+              <DropdownMenuItem onSelect={onBrowseDiscover}>
+                <Compass className="mr-2 h-4 w-4" />
+                {translateInstant("Discover skills")}</DropdownMenuItem>
+              <DropdownMenuItem asChild><Link to="/skills/sources/new"><GithubIcon className="mr-2 h-4 w-4" />{translateInstant("Import from GitHub")}</Link></DropdownMenuItem>
+              <DropdownMenuItem asChild><Link to="/skills/sources">{translateInstant("Manage sources")}</Link></DropdownMenuItem>
               <DropdownMenuItem onSelect={onImport}>
                 <Globe className="mr-2 h-4 w-4" />
-                {t("companySkills.importFromPathOrUrl")}
-              </DropdownMenuItem>
+                {translateInstant("companySkills.importFromPathOrUrl")}</DropdownMenuItem>
               <DropdownMenuItem onSelect={onImportFromProject}>
                 <FolderSearch className="mr-2 h-4 w-4" />
-                {t("companySkills.importFromProject", { defaultValue: "Import skills from project" })}
-              </DropdownMenuItem>
+                {translateInstant("companySkills.importFromProject")}</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          {folderResult && onFolderSelect ? (
+          {showBrowseRails && folderResult && onFolderSelect ? (
             <div className="w-full md:hidden">
               <FolderChip
                 result={folderResult}
                 selection={folderSelection}
-                allLabel={t("folders.allSkills", { defaultValue: "All skills" })}
+                allLabel="All skills"
                 onClick={onOpenMobileFolders ?? (() => undefined)}
               />
             </div>
@@ -1393,25 +1345,22 @@ export function DiscoveryGrid({
           {onCreateFolder && !showFolderRail ? (
             <Button variant="outline" size="sm" onClick={onCreateFolder}>
               <Plus className="mr-1 h-3.5 w-3.5" />
-              {t("folders.newFolder", { defaultValue: "New folder" })}
-            </Button>
+              {translateInstant("folders.newFolder")}</Button>
           ) : null}
           {onToggleSelectMode ? (
             <Button variant="ghost" size="sm" onClick={onToggleSelectMode}>
-              {selectMode
-                ? t("common.done", { defaultValue: "Done" })
-                : t("common.select", { defaultValue: "Select" })}
+              {selectMode ? translateInstant("Done") : translateInstant("Select")}
             </Button>
           ) : null}
         </div>
 
         {/* Mobile category selector (sidebar is hidden below md) */}
-        {categories.length > 0 ? (
+        {showBrowseRails && categories.length > 0 ? (
           <div className="border-b border-border px-4 py-2 md:hidden">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="w-full justify-between">
-                  <span className="capitalize">{activeCategory ?? t("companySkills.allCategories")}</span>
+                  <span className="capitalize">{activeCategory ?? translateInstant("All categories")}</span>
                   <ChevronDown className="h-3.5 w-3.5" />
                 </Button>
               </DropdownMenuTrigger>
@@ -1420,7 +1369,7 @@ export function DiscoveryGrid({
                   value={activeCategory ?? "__all__"}
                   onValueChange={(value) => onCategoryChange(value === "__all__" ? null : value)}
                 >
-                  <DropdownMenuRadioItem value="__all__">{t("companySkills.allWithCount", { count: categoryTotal })}</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="__all__">{translateInstant("All (")}{categoryTotal})</DropdownMenuRadioItem>
                   {categories.map((category) => (
                     <DropdownMenuRadioItem key={category.slug} value={category.slug} className="capitalize">
                       {category.slug} ({category.count})
@@ -1431,30 +1380,6 @@ export function DiscoveryGrid({
             </DropdownMenu>
           </div>
         ) : null}
-
-        {/* Tab strip — Bundled/required lives at the end */}
-        <div className="border-b border-border px-4">
-          <Tabs value={tab} onValueChange={(value) => onTabChange(value as DiscoveryTab)}>
-            <TabsList variant="line" className="p-0">
-              <TabsTrigger value="all" className="px-3">
-                <span>{discoveryTabLabel("all")}</span>
-                <span className="ml-1.5 text-(length:--text-micro) text-muted-foreground">{tabCounts.all}</span>
-              </TabsTrigger>
-              <TabsTrigger value="installed" className="px-3">
-                <span>{discoveryTabLabel("installed")}</span>
-                <span className="ml-1.5 text-(length:--text-micro) text-muted-foreground">{tabCounts.installed}</span>
-              </TabsTrigger>
-              <TabsTrigger value="catalog" className="px-3">
-                <span>{discoveryTabLabel("catalog")}</span>
-                <span className="ml-1.5 text-(length:--text-micro) text-muted-foreground">{tabCounts.catalog}</span>
-              </TabsTrigger>
-              <TabsTrigger value="bundled" className="px-3">
-                <span>{discoveryTabLabel("bundled")}</span>
-                <span className="ml-1.5 text-(length:--text-micro) text-muted-foreground">{tabCounts.bundled}</span>
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
 
         {/* Grid body */}
         <div className="min-h-0 flex-1 overflow-auto p-4">
@@ -1468,19 +1393,18 @@ export function DiscoveryGrid({
                   size="sm"
                   onClick={() => onScan(activeProjectId)}
                   disabled={scanPending}
-                  aria-label={t("companySkills.refreshProjectSkillsAria", { name: activeProjectFolder.name })}
-                  title={t("companySkills.refreshFromProject", { name: activeProjectFolder.name })}
+                  aria-label={`Refresh ${activeProjectFolder.name} project skills`}
+                  title={`Refresh skills from ${activeProjectFolder.name}`}
                 >
                   <RefreshCw className={cn("h-3.5 w-3.5", scanPending && "animate-spin")} />
-                  {t("Refresh")}
-                </Button>
+                  {translateInstant("Refresh")}</Button>
               ) : null}
             </div>
           ) : null}
           {folderNudgeStorageKey && onCreateFolder && folderResult && folderResult.folders.length === 0 && !loading && cards.length > 0 ? (
             <AllUnfiledBanner
               storageKey={folderNudgeStorageKey}
-              itemLabelPlural={t("folders.skills", { defaultValue: "skills" })}
+              itemLabelPlural="skills"
               onCreateFolder={onCreateFolder}
             />
           ) : null}
@@ -1506,20 +1430,23 @@ export function DiscoveryGrid({
                 icon={LayoutGrid}
                 message={
                   totalCount === 0
-                    ? t("companySkills.discoveryEmptyNoSkills")
+                    ? installedView
+                      ? "No installed skills yet. Discover a skill or create one."
+                      : "No skills are available to discover yet."
                     : search || activeCategory || sourceFilterActive
-                      ? t("companySkills.discoveryEmptyFiltered")
-                      : t("companySkills.discoveryEmptyTab")
+                      ? "No skills match your filters."
+                      : translateInstant("companySkills.discoveryEmptyTab")
                 }
               />
               {totalCount === 0 ? (
                 <div className="mt-3 flex flex-col items-center gap-2">
-                  <Button size="sm" onClick={onBrowseCatalog}>
-                    <Boxes className="mr-1.5 h-3.5 w-3.5" /> {t("companySkills.browseCatalog")}
-                  </Button>
+                  {installedView ? (
+                    <Button size="sm" onClick={onBrowseDiscover}>
+                      <Compass className="mr-1.5 h-3.5 w-3.5" /> {translateInstant("Discover skills")}</Button>
+                  ) : null}
+                  <Button size="sm" variant="outline" asChild><Link to="/skills/sources/new">{translateInstant("Import from GitHub")}</Link></Button>
                   <Button size="sm" variant="ghost" onClick={onCreate}>
-                    {t("companySkills.createASkill")}
-                  </Button>
+                    {translateInstant("companySkills.createASkill")}</Button>
                 </div>
               ) : (search || activeCategory || sourceFilterActive) ? (
                 <div className="mt-3 flex justify-center">
@@ -1532,15 +1459,14 @@ export function DiscoveryGrid({
                       setSourceBadgeFilter("all");
                     }}
                   >
-                    {t("companySkills.clearFilters")}
-                  </Button>
+                    {translateInstant("companySkills.clearFilters")}</Button>
                 </div>
               ) : null}
             </div>
           ) : (
             <>
               <p className="mb-3 text-xs text-muted-foreground">
-                {t(sourceFilteredCards.length === 1 ? "companySkills.skillCount_one" : "companySkills.skillCount_other", { count: sourceFilteredCards.length })}
+                {sourceFilteredCards.length} {sourceFilteredCards.length === 1 ? translateInstant("folders.skill") : translateInstant("folders.skills")}
                 {activeCategory ? <span className="capitalize"> · {activeCategory}</span> : null}
               </p>
               <div className="grid gap-3 [grid-template-columns:repeat(auto-fill,minmax(19rem,1fr))]">
@@ -1581,17 +1507,12 @@ function NewSkillWizard({
   error: string | null;
   onCancel: () => void;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   const [step, setStep] = useState(0);
   const [draft, setDraft] = useState<SkillCreateDraft>(initialDraft);
   const [slugDirty, setSlugDirty] = useState(initialDraft.slug.trim().length > 0);
   const categoryDraft = draft.categories.join(", ");
-  const steps = [
-    t("companySkills.createStep.basics"),
-    t("companySkills.createStep.design"),
-    t("companySkills.createStep.content"),
-    t("companySkills.createStep.review"),
-  ];
+  const steps = ["Basics", "Design", "Content", translateInstant("Review")];
 
   useEffect(() => {
     setStep(0);
@@ -1630,7 +1551,7 @@ function NewSkillWizard({
       {draft.forkedFromName ? (
         <div className="flex items-center gap-2 rounded-md border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
           <GitFork className="h-3.5 w-3.5" />
-          {t("companySkills.forkingSkill", { name: draft.forkedFromName })}
+          {translateInstant("Forking")}{" "}{draft.forkedFromName}
         </div>
       ) : null}
 
@@ -1648,7 +1569,7 @@ function NewSkillWizard({
                   : draft.markdown,
               });
             }}
-            placeholder={t("companySkills.skillNamePlaceholder")}
+            placeholder={translateInstant("Skill name")}
             className="h-9"
           />
           <Input
@@ -1673,7 +1594,7 @@ function NewSkillWizard({
                   : draft.markdown,
               });
             }}
-            placeholder={t("companySkills.taglinePlaceholder")}
+            placeholder={translateInstant("One-line promise for the skill")}
             className="min-h-20"
           />
         </div>
@@ -1684,19 +1605,19 @@ function NewSkillWizard({
               size={48}
               card={{
                 key: effectiveSlug || draft.name || "new-skill",
-                name: draft.name || t("companySkills.defaultSkillName"),
+                name: draft.name || "New Skill",
                 slug: effectiveSlug || "skill",
                 iconUrl: null,
                 color: draft.color,
               }}
             />
             <div className="min-w-0">
-              <div className="truncate text-sm font-medium">{draft.name || t("companySkills.defaultSkillName")}</div>
-              <div className="truncate text-xs text-muted-foreground">{draft.tagline || t("companySkills.noTaglineYet")}</div>
+              <div className="truncate text-sm font-medium">{draft.name || translateInstant("skillStudio.create.previewName")}</div>
+              <div className="truncate text-xs text-muted-foreground">{draft.tagline || translateInstant("skillStudio.create.noTagline")}</div>
             </div>
           </div>
           <div>
-            <label className="mb-2 block text-xs font-medium uppercase tracking-wide text-muted-foreground">{t("companySkills.color")}</label>
+            <label className="mb-2 block text-xs font-medium uppercase tracking-wide text-muted-foreground">{translateInstant("companySkills.color")}</label>
             <div className="flex flex-wrap gap-2">
               {SKILL_CREATE_ACCENTS.map((color) => (
                 <button
@@ -1708,7 +1629,7 @@ function NewSkillWizard({
                     draft.color === color ? "border-foreground" : "border-border",
                   )}
                   style={{ backgroundColor: color }}
-                  aria-label={t("companySkills.useColor", { color })}
+                  aria-label={`Use ${color}`}
                 />
               ))}
               <Input
@@ -1719,11 +1640,11 @@ function NewSkillWizard({
             </div>
           </div>
           <div>
-            <label className="mb-2 block text-xs font-medium uppercase tracking-wide text-muted-foreground">{t("companySkills.categories")}</label>
+            <label className="mb-2 block text-xs font-medium uppercase tracking-wide text-muted-foreground">{translateInstant("companySkills.categories")}</label>
             <Input
               value={categoryDraft}
               onChange={(event) => patchDraft({ categories: splitCategoryDraft(event.target.value) })}
-              placeholder={t("companySkills.categoriesPlaceholder", { defaultValue: "engineering, review, memory" })}
+              placeholder={translateInstant("engineering, review, memory")}
               className="h-9"
             />
           </div>
@@ -1739,17 +1660,17 @@ function NewSkillWizard({
       ) : (
         <div className="space-y-4 text-sm">
           <div className="grid grid-cols-(--gtc-26) gap-y-2">
-            <span className="text-muted-foreground">{t("Name")}</span>
-            <span>{draft.name || t("companySkills.untitled")}</span>
-            <span className="text-muted-foreground">{t("Slug")}</span>
-            <span className="font-mono">{effectiveSlug || "skill"}</span>
-            <span className="text-muted-foreground">{t("companySkills.scope")}</span>
-            <span>{draft.sharingScope === "private" ? t("companySkills.private") : t("companySkills.company")}</span>
-            <span className="text-muted-foreground">{t("companySkills.categories")}</span>
-            <span>{draft.categories.length ? draft.categories.join(", ") : t("None")}</span>
+            <span className="text-muted-foreground">{translateInstant("Name")}</span>
+            <span>{draft.name || translateInstant("companySkills.untitled")}</span>
+            <span className="text-muted-foreground">{translateInstant("Slug")}</span>
+            <span className="font-mono">{effectiveSlug || translateInstant("folders.skill")}</span>
+            <span className="text-muted-foreground">{translateInstant("companySkills.scope")}</span>
+            <span>{draft.sharingScope === "private" ? translateInstant("companySkills.private") : translateInstant("Organization")}</span>
+            <span className="text-muted-foreground">{translateInstant("companySkills.categories")}</span>
+            <span>{draft.categories.length ? draft.categories.join(", ") : translateInstant("caseDetail.common.noneLower")}</span>
           </div>
           <div className="space-y-2">
-            <label className="block text-xs font-medium uppercase tracking-wide text-muted-foreground">{t("companySkills.sharing")}</label>
+            <label className="block text-xs font-medium uppercase tracking-wide text-muted-foreground">{translateInstant("companySkills.sharing")}</label>
             <div className="grid gap-2 sm:grid-cols-3">
               {(["company", "private"] as const).map((scope) => (
                 <button
@@ -1761,9 +1682,9 @@ function NewSkillWizard({
                     draft.sharingScope === scope ? "border-foreground bg-accent/50" : "border-border",
                   )}
                 >
-                  <span className="block font-medium">{scope === "company" ? t("companySkills.company") : t("companySkills.private")}</span>
+                  <span className="block font-medium">{scope === "company" ? translateInstant("Organization") : translateInstant("companySkills.private")}</span>
                   <span className="mt-1 block text-xs text-muted-foreground">
-                    {scope === "company" ? t("companySkills.companyScopeDescription") : t("companySkills.privateScopeDescription")}
+                    {scope === "company" ? "Visible inside this organization." : translateInstant("skillStudio.create.scopePrivateDescription")}
                   </span>
                 </button>
               ))}
@@ -1772,8 +1693,8 @@ function NewSkillWizard({
                 disabled
                 className="rounded-md border border-dashed border-border px-3 py-2 text-left text-sm text-muted-foreground"
               >
-                <span className="block font-medium">{t("companySkills.publicLink")}</span>
-                <span className="mt-1 block text-xs">{t("companySkills.comingLater")}</span>
+                <span className="block font-medium">{translateInstant("companySkills.publicLink")}</span>
+                <span className="mt-1 block text-xs">{translateInstant("skillStudio.create.comingLater")}</span>
               </button>
             </div>
           </div>
@@ -1788,19 +1709,16 @@ function NewSkillWizard({
 
       <div className="flex items-center justify-between gap-2 border-t border-border pt-3">
         <Button variant="ghost" size="sm" onClick={onCancel} disabled={isPending}>
-          {t("Cancel")}
-        </Button>
+          {translateInstant("Cancel")}</Button>
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" onClick={() => setStep((value) => Math.max(0, value - 1))} disabled={isPending || step === 0}>
-            {t("Back")}
-          </Button>
+            {translateInstant("Back")}</Button>
           {step < steps.length - 1 ? (
             <Button size="sm" onClick={() => setStep((value) => Math.min(steps.length - 1, value + 1))} disabled={!nameValid}>
-              {t("Next")}
-            </Button>
+              {translateInstant("Next")}</Button>
           ) : (
             <Button size="sm" onClick={submit} disabled={isPending || !nameValid}>
-              {isPending ? t("companySkills.creating") : draft.forkedFromSkillId ? t("companySkills.createFork") : t("companySkills.createSkill")}
+              {isPending ? translateInstant("Creating...") : draft.forkedFromSkillId ? translateInstant("companySkills.createFork") : translateInstant("Create skill")}
             </Button>
           )}
         </div>
@@ -1838,7 +1756,7 @@ function CatalogList({
   onToggleSkill: (catalogRef: string) => void;
   onToggleDir: (catalogRef: string, path: string) => void;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   const lowered = catalogFilter.trim().toLowerCase();
   const filtered = skills.filter((skill) => {
     if (kindFilter !== "all" && skill.kind !== kindFilter) return false;
@@ -1851,8 +1769,7 @@ function CatalogList({
   if (filtered.length === 0) {
     return (
       <div className="px-4 py-6 text-sm text-muted-foreground">
-        {t("companySkills.noCatalogSkillsMatch")}
-      </div>
+        {translateInstant("companySkills.noCatalogSkillsMatch")}</div>
     );
   }
 
@@ -1894,7 +1811,7 @@ function CatalogList({
             type="button"
             className="flex h-9 w-9 shrink-0 items-center justify-center self-center rounded-sm text-muted-foreground opacity-80 transition-(--tp-background-color-color-opacity) hover:bg-accent hover:text-foreground group-hover:opacity-100"
             onClick={() => onToggleSkill(skill.id)}
-            aria-label={t(expanded ? "Collapse {{name}}" : "Expand {{name}}", { name: skill.name })}
+            aria-label={expanded ? `Collapse ${skill.name}` : `Expand ${skill.name}`}
           >
             {expanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
           </button>
@@ -1928,7 +1845,7 @@ function CatalogList({
       {bundled.length > 0 && kindFilter !== "optional" ? (
         <div>
           <div className="border-b border-border bg-background px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            {t("companySkills.catalogSectionBundled", { count: bundled.length })}
+            {translateInstant("Bundled ·")}{" "}{bundled.length}
           </div>
           {bundled.map(renderRow)}
         </div>
@@ -1936,7 +1853,7 @@ function CatalogList({
       {optional.length > 0 && kindFilter !== "bundled" ? (
         <div>
           <div className="border-b border-border bg-background px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            {t("companySkills.catalogSectionOptional", { count: optional.length })}
+            {translateInstant("Optional ·")}{" "}{optional.length}
           </div>
           {optional.map(renderRow)}
         </div>
@@ -1944,7 +1861,7 @@ function CatalogList({
       {installed.length > 0 ? (
         <div>
           <div className="border-b border-border bg-background px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            {t("companySkills.catalogSectionInstalled", { count: installed.length })}
+            {translateInstant("Installed ·")}{" "}{installed.length}
           </div>
           {installed.map(renderRow)}
         </div>
@@ -1978,9 +1895,9 @@ function CatalogDetailPane({
   onOpenInstalled: (skillId: string) => void;
   loadingPrimaryAction: boolean;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   if (!skill) {
-    return <EmptyState icon={Boxes} message={t("companySkills.selectCatalogSkill")} />;
+    return <EmptyState icon={Boxes} message={translateInstant("companySkills.selectCatalogSkill")} />;
   }
 
   const installedHash = installedSkill?.originHash ?? null;
@@ -1995,33 +1912,30 @@ function CatalogDetailPane({
           <span>
             <Button disabled>
               <Download className="mr-1.5 h-3.5 w-3.5" />
-              {t("companySkills.installSkill")}
-            </Button>
+              {translateInstant("companySkills.installSkill")}</Button>
           </span>
         </TooltipTrigger>
-        <TooltipContent>{t("companySkills.cannotInstallInvalidSkill")}</TooltipContent>
+        <TooltipContent>{translateInstant("This skill cannot be installed — its content is not valid Agent Skills markdown.")}</TooltipContent>
       </Tooltip>
     );
   } else if (!isInstalled) {
     cta = (
       <Button onClick={onInstall} disabled={loadingPrimaryAction}>
         {skill.trustLevel === "scripts_executables" ? <AlertTriangle className="mr-1.5 h-3.5 w-3.5" /> : <Download className="mr-1.5 h-3.5 w-3.5" />}
-        {loadingPrimaryAction ? t("companySkills.preparing") : t("companySkills.installSkillInOrganization")}
+        {loadingPrimaryAction ? translateInstant("companySkills.preparing") : "Install skill in this organization"}
       </Button>
     );
   } else if (hashOutOfSync) {
     cta = (
       <Button onClick={onUpdate} disabled={loadingPrimaryAction} className="border-amber-500/40 bg-amber-500/20 text-amber-900 dark:text-amber-100 hover:bg-amber-500/30">
         <ArrowUpCircle className="mr-1.5 h-3.5 w-3.5" />
-        {t("companySkills.updateFromCatalog")}
-      </Button>
+        {translateInstant("companySkills.updateFromCatalog")}</Button>
     );
   } else {
     cta = (
       <Button variant="ghost" onClick={() => installedSkillId && onOpenInstalled(installedSkillId)}>
         <Check className="mr-1.5 h-3.5 w-3.5" />
-        {t("companySkills.installedOpenInLibrary")}
-      </Button>
+        {translateInstant("Installed · Open in library")}</Button>
     );
   }
 
@@ -2056,40 +1970,39 @@ function CatalogDetailPane({
               <TooltipTrigger asChild>
                 <Badge variant="outline" className="border-amber-500/40 bg-amber-500/10 text-(length:--text-micro) text-amber-800 dark:text-amber-200">
                   <ArrowUpCircle className="h-3 w-3" aria-hidden="true" />
-                  {t("companySkills.updateAvailable")}
-                </Badge>
+                  {translateInstant("companySkills.updateAvailable")}</Badge>
               </TooltipTrigger>
-              <TooltipContent>{t("companySkills.catalogHashChanged")}</TooltipContent>
+              <TooltipContent>{translateInstant("companySkills.catalogHashChanged")}</TooltipContent>
             </Tooltip>
           ) : null}
           {skill.requires.length > 0 ? (
-            <span className="rounded-full border border-border bg-muted/40 px-2 py-0.5 text-(length:--text-micro) text-muted-foreground">
-              {t("companySkills.requiresList", { value: skill.requires.join(", ") })}
-            </span>
+            <Badge variant="outline" className="border-border bg-muted/40 text-(length:--text-micro) text-muted-foreground">
+              {translateInstant("Requires:")}{" "}{skill.requires.join(", ")}
+            </Badge>
           ) : null}
           {skill.recommendedForRoles.length > 0 ? (
-            <span className="rounded-full border border-border bg-muted/40 px-2 py-0.5 text-(length:--text-micro) text-muted-foreground">
-              {t("companySkills.rolesList", { value: skill.recommendedForRoles.join(" · ") })}
-            </span>
+            <Badge variant="outline" className="border-border bg-muted/40 text-(length:--text-micro) text-muted-foreground">
+              {translateInstant("Roles:")}{" "}{skill.recommendedForRoles.join(" · ")}
+            </Badge>
           ) : null}
           {skill.tags.length > 0 ? (
-            <span className="rounded-full border border-border bg-muted/40 px-2 py-0.5 text-(length:--text-micro) text-muted-foreground">
-              {t("companySkills.tagsList", { value: skill.tags.join(" · ") })}
-            </span>
+            <Badge variant="outline" className="border-border bg-muted/40 text-(length:--text-micro) text-muted-foreground">
+              {translateInstant("Tags:")}{" "}{skill.tags.join(" · ")}
+            </Badge>
           ) : null}
         </div>
 
         <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-          <span className="uppercase tracking-(--tracking-caps)">{t("Key")}</span>
+          <span className="uppercase tracking-(--tracking-caps)">{translateInstant("Key")}</span>
           <span className="font-mono">{skill.key}</span>
           <span className="uppercase tracking-(--tracking-caps)">·</span>
-          <span className="uppercase tracking-(--tracking-caps)">{t("companySkills.hash")}</span>
+          <span className="uppercase tracking-(--tracking-caps)">{translateInstant("companySkills.hash")}</span>
           <span className="font-mono">{skill.contentHash.slice(0, 24)}…</span>
           <CopyText
             text={skill.contentHash}
-            copiedLabel={t("companySkills.copiedHash")}
-            ariaLabel={t("companySkills.copyContentHash")}
-            title={t("companySkills.copyContentHash")}
+            copiedLabel="Copied hash"
+            ariaLabel="Copy content hash"
+            title={translateInstant("companySkills.copyContentHash")}
             className="inline-flex h-6 w-6 items-center justify-center rounded-sm border border-border text-muted-foreground hover:bg-accent hover:text-foreground"
           >
             <Copy className="h-3 w-3" />
@@ -2105,9 +2018,9 @@ function CatalogDetailPane({
         {fileQuery.isLoading ? (
           <PageSkeleton variant="detail" />
         ) : fileQuery.error ? (
-          <div className="text-sm text-destructive">{fileQuery.error instanceof Error ? fileQuery.error.message : t("companySkills.failedToLoadFile")}</div>
+          <div className="text-sm text-destructive">{fileQuery.error instanceof Error ? fileQuery.error.message : "Failed to load file"}</div>
         ) : !fileQuery.data ? (
-          <div className="text-sm text-muted-foreground">{t("companySkills.selectFileToInspect")}</div>
+          <div className="text-sm text-muted-foreground">{translateInstant("companySkills.selectFileToInspect")}</div>
         ) : fileQuery.data.markdown ? (
           <MarkdownBody softBreaks={false} linkIssueReferences={false}>{body}</MarkdownBody>
         ) : (
@@ -2120,7 +2033,17 @@ function CatalogDetailPane({
   );
 }
 
-function InstallPreviewDialog({
+// Installing only adds a skill to the company library; an agent can use it only
+// once it is also enabled for that agent. Pre-select every agent that can
+// receive the skill so "install" defaults to a state where the skill is
+// actually usable, instead of a library row no agent has.
+export function defaultInstallAgentSelection(
+  agents: Array<Pick<AttachAgentOption, "id" | "supportsSkills" | "required">>,
+): Set<string> {
+  return new Set(agents.filter((agent) => agent.supportsSkills && !agent.required).map((agent) => agent.id));
+}
+
+export function InstallPreviewDialog({
   open,
   onOpenChange,
   skill,
@@ -2130,6 +2053,7 @@ function InstallPreviewDialog({
   defaultSlug,
   defaultForce,
   defaultAction,
+  agents,
   isPending,
   error,
   onConfirm,
@@ -2143,14 +2067,22 @@ function InstallPreviewDialog({
   defaultSlug: string | null;
   defaultForce: boolean;
   defaultAction: "install" | "update" | "replace";
+  agents: AttachAgentOption[];
   isPending: boolean;
   error: string | null;
-  onConfirm: (input: { slug: string | null; force: boolean }) => void;
+  onConfirm: (input: { slug: string | null; force: boolean; agentIds: string[] }) => void;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   const [slug, setSlug] = useState<string>("");
   const [force, setForce] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [selectedAgentIds, setSelectedAgentIds] = useState<Set<string>>(new Set());
+  // Whether the user changed the agent selection this open. Until then the
+  // selection keeps tracking the default: the agents query may resolve after
+  // the dialog opens, and a one-shot seed would freeze an empty selection and
+  // install the skill for nobody.
+  const [selectionTouched, setSelectionTouched] = useState(false);
+  const wasOpenRef = useRef(false);
 
   useEffect(() => {
     if (!open) return;
@@ -2159,24 +2091,36 @@ function InstallPreviewDialog({
     setAdvancedOpen(defaultAction === "replace" || defaultForce);
   }, [open, defaultSlug, defaultForce, defaultAction]);
 
+  useEffect(() => {
+    if (open && !wasOpenRef.current) setSelectionTouched(false);
+    wasOpenRef.current = open;
+  }, [open]);
+
+  // Track the default selection while the dialog is open and untouched; the
+  // user's first change takes over and background refetches never clobber it.
+  useEffect(() => {
+    if (!open || selectionTouched) return;
+    setSelectedAgentIds(defaultAction === "install" ? defaultInstallAgentSelection(agents) : new Set());
+  }, [open, selectionTouched, defaultAction, agents]);
+
   if (!skill) return null;
 
-  let confirmLabel = t("companySkills.installSkill");
+  let confirmLabel = "Install skill";
   let confirmVariant: "default" | "destructive" = "default";
   if (defaultAction === "update") {
-    confirmLabel = t("companySkills.installUpdate");
+    confirmLabel = translateInstant("Install update");
   } else if (defaultAction === "replace") {
-    confirmLabel = t("companySkills.replaceExistingSkill");
+    confirmLabel = "Replace existing skill";
     confirmVariant = "destructive";
   }
-  if (isPending) confirmLabel = t("companySkills.installing");
+  if (isPending) confirmLabel = "Installing…";
 
   return (
     <Dialog open={open} onOpenChange={(value) => (!isPending ? onOpenChange(value) : null)}>
       <DialogContent className="sm:max-w-2xl" showCloseButton={!isPending}>
         <DialogHeader>
           <DialogTitle>
-            {defaultAction === "update" ? t("companySkills.update") : defaultAction === "replace" ? t("companySkills.replace") : t("companySkills.install")} · {skill.name}
+            {defaultAction === "update" ? translateInstant("companySkills.update") : defaultAction === "replace" ? translateInstant("companySkills.replace") : translateInstant("Install")} · {skill.name}
           </DialogTitle>
           <DialogDescription>
             <span className="capitalize">{skill.kind}</span> · {skill.category}
@@ -2187,33 +2131,32 @@ function InstallPreviewDialog({
         <div className="space-y-4 text-sm">
           <div className="rounded-md border border-border p-3">
             <div className="grid grid-cols-(--gtc-26) gap-y-2 text-xs">
-              <div className="text-muted-foreground">{t("companySkills.trustLabel")}</div>
+              <div className="text-muted-foreground">{translateInstant("companySkills.trustLabel")}</div>
               <div className="flex items-center gap-2">
                 <TrustChip level={skill.trustLevel} />
                 {skill.trustLevel === "markdown_only" ? (
-                  <span className="text-muted-foreground">{t("companySkills.safe")}</span>
+                  <span className="text-muted-foreground">{translateInstant("companySkills.safe")}</span>
                 ) : skill.trustLevel === "scripts_executables" ? (
-                  <span className="text-amber-200">{t("companySkills.reviewRequired")}</span>
+                  <span className="text-amber-800 dark:text-amber-200">{translateInstant("companySkills.reviewRequired")}</span>
                 ) : (
-                  <span className="text-muted-foreground">{t("companySkills.nonScriptAssets")}</span>
+                  <span className="text-muted-foreground">{translateInstant("companySkills.nonScriptAssets")}</span>
                 )}
               </div>
-              <div className="text-muted-foreground">{t("companySkills.compatibility")}</div>
+              <div className="text-muted-foreground">{translateInstant("companySkills.compatibility")}</div>
               <div className="flex items-center gap-2">
                 {skill.compatibility === "compatible" ? (
                   <span className="inline-flex items-center gap-1 text-muted-foreground">
                     <Check className="h-3 w-3" aria-hidden="true" />
-                    {t("companySkills.compatible")}
-                  </span>
+                    {translateInstant("companySkills.compatible")}</span>
                 ) : (
                   <CompatChip compatibility={skill.compatibility} />
                 )}
               </div>
-              <div className="text-muted-foreground">{t("companySkills.requires")}</div>
-              <div className="text-foreground">{skill.requires.length === 0 ? t("None") : skill.requires.join(", ")}</div>
-              <div className="text-muted-foreground">{t("companySkills.roles")}</div>
-              <div className="text-foreground">{skill.recommendedForRoles.length === 0 ? t("companySkills.anyRole") : skill.recommendedForRoles.join(" · ")}</div>
-              <div className="text-muted-foreground">{t("companySkills.provenance")}</div>
+              <div className="text-muted-foreground">{translateInstant("companySkills.requires")}</div>
+              <div className="text-foreground">{skill.requires.length === 0 ? translateInstant("caseDetail.common.noneLower") : skill.requires.join(", ")}</div>
+              <div className="text-muted-foreground">{translateInstant("companySkills.roles")}</div>
+              <div className="text-foreground">{skill.recommendedForRoles.length === 0 ? "any" : skill.recommendedForRoles.join(" · ")}</div>
+              <div className="text-muted-foreground">{translateInstant("companySkills.provenance")}</div>
               <div className="min-w-0">
                 <div className="truncate">{packageName ?? "—"}{packageVersion ? ` v${packageVersion}` : ""}</div>
                 <div className="truncate font-mono text-(length:--text-micro) text-muted-foreground">{skill.contentHash}</div>
@@ -2223,7 +2166,7 @@ function InstallPreviewDialog({
 
           <div className="rounded-md border border-border">
             <div className="border-b border-border px-3 py-2 text-xs uppercase tracking-wide text-muted-foreground">
-              {t("companySkills.filesCount", { count: skill.files.length })}
+              {translateInstant("Files (")}{skill.files.length})
             </div>
             <div className="max-h-48 overflow-y-auto">
               {skill.files.map((file) => (
@@ -2237,9 +2180,33 @@ function InstallPreviewDialog({
           </div>
 
           {conflict ? (
-            <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-xs text-amber-200">
-              {t("companySkills.existingSkillConflictPrefix", { key: "" })} <span className="font-mono">{conflict.key}</span> ({conflict.sourceLabel ?? conflict.sourceType}).{" "}
-              {defaultAction === "update" ? t("companySkills.installingWillOverwriteCatalog") : t("companySkills.installingWillReplaceExisting")}
+            <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-xs text-amber-800 dark:text-amber-200">
+              {translateInstant("An existing skill with key")}{" "}<span className="font-mono">{conflict.key}</span> {translateInstant("is installed (")}{conflict.sourceLabel ?? conflict.sourceType}{translateInstant("). Installing will")}{" "}{defaultAction === "update" ? "overwrite the catalog content" : "replace the existing skill"}{translateInstant(".")}</div>
+          ) : null}
+
+          {defaultAction === "install" ? (
+            <div className="rounded-md border border-border p-3">
+              <div className="mb-1 text-xs uppercase tracking-wide text-muted-foreground">{translateInstant("Enable for agents")}</div>
+              <p className="mb-2 text-xs text-muted-foreground">
+                {translateInstant("Installing adds the skill to the organization library. Agents can only use it once it is enabled for them.")}</p>
+              <AgentMultiSelect
+                agents={agents}
+                selectedAgentIds={selectedAgentIds}
+                onChange={(next) => {
+                  setSelectionTouched(true);
+                  setSelectedAgentIds(next);
+                }}
+                showSelectionPreview={false}
+                emptyMessage={translateInstant("No agents in this organization support skills yet.")}
+                isAgentDisabled={(agent) => {
+                  const option = agent as AttachAgentOption;
+                  return option.required || !option.supportsSkills;
+                }}
+                getDescription={(agent) => {
+                  const option = agent as AttachAgentOption;
+                  return `${option.adapterType}${option.required ? " · required" : ""}${!option.supportsSkills ? " · skills not supported" : ""}`;
+                }}
+              />
             </div>
           ) : null}
 
@@ -2249,17 +2216,16 @@ function InstallPreviewDialog({
             className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
           >
             {advancedOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
-            {t("companySkills.advanced")}
-          </button>
+            {translateInstant("companySkills.advanced")}</button>
           {advancedOpen ? (
             <div className="space-y-3 rounded-md border border-border p-3 text-xs">
               <div>
-                <label className="mb-1 block uppercase tracking-wide text-muted-foreground">{t("companySkills.slugOverride")}</label>
+                <label className="mb-1 block uppercase tracking-wide text-muted-foreground">{translateInstant("companySkills.slugOverride")}</label>
                 <Input value={slug} onChange={(event) => setSlug(event.target.value)} placeholder={defaultSlug ?? skill.slug} className="h-8" />
               </div>
               <label className="flex items-center gap-2">
                 <Checkbox checked={force} onCheckedChange={(value) => setForce(Boolean(value))} />
-                <span>{t("companySkills.forceReplaceSameKeySkill")}</span>
+                <span>{translateInstant("companySkills.forceReplaceSameKeySkill")}</span>
               </label>
             </div>
           ) : null}
@@ -2273,11 +2239,16 @@ function InstallPreviewDialog({
 
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={isPending}>
-            {t("Cancel")}
-          </Button>
+            {translateInstant("Cancel")}</Button>
           <Button
             variant={confirmVariant}
-            onClick={() => onConfirm({ slug: slug.trim().length > 0 ? slug.trim() : null, force })}
+            onClick={() =>
+              onConfirm({
+                slug: slug.trim().length > 0 ? slug.trim() : null,
+                force,
+                agentIds: defaultAction === "install" ? Array.from(selectedAgentIds) : [],
+              })
+            }
             disabled={isPending}
           >
             {confirmLabel}
@@ -2315,139 +2286,61 @@ function AttachAgentsPopover({
   onSubmit: (nextIds: string[], versionId: string | null) => void;
   fullWidth?: boolean;
 }) {
-  const { t } = useTranslation();
-  // Each popover instance owns its open state. The detail page renders two of
-  // these (agents tab + sidebar); sharing a single controlled flag made both
-  // open at once and swallowed clicks, so "Add to agent" appeared dead (PAP-10907 H).
-  const [open, setOpen] = useState(false);
-  const [filter, setFilter] = useState("");
-  const [draft, setDraft] = useState<Set<string>>(new Set(attachedAgentIds));
+  useTranslation();
   const [draftVersionId, setDraftVersionId] = useState<string | null>(selectedVersionId);
-
-  useEffect(() => {
-    if (open) {
-      setDraft(new Set(attachedAgentIds));
-      setDraftVersionId(selectedVersionId);
-      setFilter("");
-    }
-  }, [open, attachedAgentIds, selectedVersionId]);
-
-  const filtered = agents
-    .filter((agent) => agent.name.toLowerCase().includes(filter.toLowerCase()))
-    .sort((a, b) => {
-      const aChecked = draft.has(a.id);
-      const bChecked = draft.has(b.id);
-      if (aChecked !== bChecked) return aChecked ? -1 : 1;
-      return a.name.localeCompare(b.name);
-    });
+  const attachedIds = useMemo(() => new Set(attachedAgentIds), [attachedAgentIds]);
   const eligible = agents.filter((agent) => agent.supportsSkills);
   const sortedVersions = [...versions].sort((a, b) => b.revisionNumber - a.revisionNumber);
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button size="sm" className={cn(fullWidth && "w-full")}>
-          <Plus className="mr-1.5 h-3.5 w-3.5" />
-          {t("companySkills.addToAgent")}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-80 p-0" align="end">
-        <div className="border-b border-border px-3 py-2">
-          <Input
-            value={filter}
-            onChange={(event) => setFilter(event.target.value)}
-            placeholder={t("companySkills.filterAgents")}
-            className="h-8"
-          />
-          {sortedVersions.length > 0 ? (
-            <div className="mt-2 flex items-center gap-2 text-xs">
-              <span className="shrink-0 text-muted-foreground">{t("Version")}</span>
-              <select
-                value={draftVersionId ?? "__latest__"}
-                onChange={(event) => setDraftVersionId(event.target.value === "__latest__" ? null : event.target.value)}
-                className="h-8 min-w-0 flex-1 rounded-md border border-border bg-background px-2 text-xs text-foreground"
-              >
-                <option value="__latest__">{t("companySkills.latest")}</option>
-                {sortedVersions.map((version) => (
-                  <option key={version.id} value={version.id}>
-                    v{version.revisionNumber}{version.label ? ` · ${version.label}` : ""}
-                  </option>
-                ))}
-              </select>
-            </div>
-          ) : null}
-        </div>
-        {eligible.length === 0 ? (
-          <div className="px-3 py-4 text-sm text-muted-foreground">
-            {t("companySkills.noAgentsSupportSkills")}
-          </div>
-        ) : (
-          <div className="max-h-60 overflow-y-auto py-1">
-            {filtered.map((agent) => {
-              const disabled = agent.required || !agent.supportsSkills;
-              const checked = draft.has(agent.id);
-              return (
-                <label
-                  key={agent.id}
-                  className={cn(
-                    "flex items-start gap-2 px-3 py-1.5 text-sm hover:bg-accent/30",
-                    disabled && "opacity-60",
-                  )}
-                >
-                  <Checkbox
-                    checked={checked}
-                    disabled={disabled}
-                    onCheckedChange={(value) => {
-                      setDraft((current) => {
-                        const next = new Set(current);
-                        if (value) next.add(agent.id);
-                        else next.delete(agent.id);
-                        return next;
-                      });
-                    }}
-                  />
-                  <AgentIcon icon={agent.icon} className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                  <span className="flex min-w-0 flex-col">
-                    <span className="flex items-center gap-1.5">
-                      <span className="truncate">{agent.name}</span>
-                      {agent.paused ? (
-                        <Badge variant="outline" className="[&>svg]:size-2.5 border-amber-500/30 bg-amber-500/10 px-1.5 text-(length:--text-nano) uppercase tracking-wide text-amber-500">
-                          <Pause className="h-2.5 w-2.5" aria-hidden="true" />
-                          {t("agentStatus.paused", { defaultValue: "Paused" })}
-                        </Badge>
-                      ) : null}
-                    </span>
-                    <span className="text-(length:--text-nano) uppercase tracking-wide text-muted-foreground">
-                      {agent.adapterType}
-                      {agent.required ? ` · ${t("companySkills.required")}` : ""}
-                      {!agent.supportsSkills ? ` · ${t("companySkills.skillsNotSupported")}` : ""}
-                    </span>
-                  </span>
-                </label>
-              );
-            })}
-            {filtered.length === 0 ? (
-              <div className="px-3 py-4 text-sm text-muted-foreground">{t("companySkills.noMatches")}</div>
-            ) : null}
-          </div>
-        )}
-        <div className="flex items-center justify-end gap-2 border-t border-border px-3 py-2">
-          <Button variant="ghost" size="sm" onClick={() => setOpen(false)} disabled={pending}>
-            {t("Cancel")}
-          </Button>
-          <Button
-            size="sm"
-            onClick={() => {
-              onSubmit(Array.from(draft), draftVersionId);
-              setOpen(false);
-            }}
-            disabled={pending}
+    <AgentMultiSelect
+      agents={agents}
+      selectedAgentIds={attachedIds}
+      onSave={(nextIds) => onSubmit(Array.from(nextIds), draftVersionId)}
+      pending={pending}
+      triggerLabel="Add to agent"
+      triggerIcon={<Plus className="mr-1.5 h-3.5 w-3.5" />}
+      triggerVariant="default"
+      triggerSize="sm"
+      triggerFullWidth={fullWidth}
+      triggerClassName={cn(fullWidth && "w-full")}
+      contentAlign="end"
+      showSelectionPreview={false}
+      onOpenChange={(open) => {
+        if (open) setDraftVersionId(selectedVersionId);
+      }}
+      headerContent={sortedVersions.length > 0 ? (
+        <div className="mt-2 flex items-center gap-2 text-xs">
+          <span className="shrink-0 text-muted-foreground">{translateInstant("Version")}</span>
+          <select
+            value={draftVersionId ?? "__latest__"}
+            onChange={(event) => setDraftVersionId(event.target.value === "__latest__" ? null : event.target.value)}
+            className="h-8 min-w-0 flex-1 rounded-md border border-border bg-background px-2 text-xs text-foreground"
           >
-            {pending ? t("issueThreadInteraction.saving") : t("Save")}
-          </Button>
+            <option value="__latest__">{translateInstant("companySkills.latest")}</option>
+            {sortedVersions.map((version) => (
+              <option key={version.id} value={version.id}>
+                v{version.revisionNumber}{version.label ? ` · ${version.label}` : ""}
+              </option>
+            ))}
+          </select>
         </div>
-      </PopoverContent>
-    </Popover>
+      ) : null}
+      emptyMessage={eligible.length === 0 ? translateInstant("No agents in this organization support skills yet.") : translateInstant("agentMultiSelect.empty")}
+      isAgentDisabled={(agent) => {
+        const option = agent as AttachAgentOption;
+        return option.required || !option.supportsSkills;
+      }}
+      getDescription={(agent) => {
+        const option = agent as AttachAgentOption;
+        return `${option.adapterType}${option.required ? " · required" : ""}${!option.supportsSkills ? " · skills not supported" : ""}`;
+      }}
+      renderNameSuffix={(agent) => (agent as AttachAgentOption).paused ? (
+        <Badge variant="outline" className="[&>svg]:size-2.5 border-amber-500/30 bg-amber-500/10 px-1.5 text-(length:--text-nano) uppercase tracking-wide text-amber-500">
+          <Pause className="h-2.5 w-2.5" aria-hidden="true" />
+          {translateInstant("agentStatus.paused")}</Badge>
+      ) : null}
+    />
   );
 }
 
@@ -2569,7 +2462,7 @@ function SkillList({
   onSelectPath: (skillId: string, path: string) => void;
   onClearFilters: () => void;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   const filteredSkills = skills.filter((skill) => {
     const haystack = `${skill.name} ${skill.key} ${skill.slug} ${skill.sourceLabel ?? ""}`.toLowerCase();
     if (!haystack.includes(skillFilter.toLowerCase())) return false;
@@ -2582,17 +2475,15 @@ function SkillList({
     if (sourceFilter !== "all" && skills.length > 0) {
       return (
         <div className="px-4 py-6 text-sm text-muted-foreground">
-          {t("companySkills.noSourceSkillsInstalled", { source: sourceFilterLabel(sourceFilter).toLowerCase() })}{" "}
+          {translateInstant("companySkills.noSourceSkills", { source: sourceFilterLabel(sourceFilter).toLowerCase() })}{" "}
           <button type="button" className="text-foreground underline" onClick={onClearFilters}>
-            {t("companySkills.clearFilter")}
-          </button>
+            {translateInstant("companySkills.clearFilter")}</button>
         </div>
       );
     }
     return (
       <div className="px-4 py-6 text-sm text-muted-foreground">
-        {t("companySkills.noSkillsMatch")}
-      </div>
+        {translateInstant("companySkills.noSkillsMatch")}</div>
     );
   }
 
@@ -2636,7 +2527,7 @@ function SkillList({
                 type="button"
                 className="flex h-9 w-9 shrink-0 items-center justify-center self-center rounded-sm text-muted-foreground opacity-80 transition-(--tp-background-color-color-opacity) hover:bg-accent hover:text-foreground group-hover:opacity-100"
                 onClick={() => onToggleSkill(skill.id)}
-                aria-label={t(expanded ? "Collapse {{name}}" : "Expand {{name}}", { name: skill.name })}
+                aria-label={expanded ? `Collapse ${skill.name}` : `Expand ${skill.name}`}
               >
                 {expanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
               </button>
@@ -2671,15 +2562,11 @@ function SkillList({
 type SkillDetailTab = "overview" | "files" | "versions" | "agents";
 
 const SKILL_DETAIL_TABS: Array<{ value: SkillDetailTab; label: string; icon: typeof FileText }> = [
-  { value: "overview", label: "Overview", icon: FileText },
-  { value: "files", label: "Files", icon: FolderOpen },
+  { value: "overview", get label() { return translateInstant("Overview"); }, icon: FileText },
+  { value: "files", get label() { return translateInstant("Files"); }, icon: FolderOpen },
   { value: "versions", label: "Versions", icon: History },
-  { value: "agents", label: "Agents", icon: Users },
+  { value: "agents", get label() { return translateInstant("Agents"); }, icon: Users },
 ];
-
-function skillDetailTabLabel(tab: SkillDetailTab) {
-  return translateInstant(`companySkills.detailTab.${tab}`);
-}
 
 function currentVersionSelection(detail: CompanySkillDetail | null | undefined) {
   const selected = detail?.usedByAgents.find((agent) => agent.versionId)?.versionId;
@@ -2687,7 +2574,7 @@ function currentVersionSelection(detail: CompanySkillDetail | null | undefined) 
 }
 
 function versionLabel(version: CompanySkillVersion | null | undefined) {
-  if (!version) return translateInstant("companySkills.latest");
+  if (!version) return "Latest";
   return `v${version.revisionNumber}${version.label ? ` · ${version.label}` : ""}`;
 }
 
@@ -2722,7 +2609,7 @@ function SkillVersionDiffDialog({
   onLeftVersionChange: (id: string | null) => void;
   onRightVersionChange: (id: string | null) => void;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   const sorted = [...versions].sort((a, b) => b.revisionNumber - a.revisionNumber);
   const left = sorted.find((version) => version.id === leftVersionId) ?? null;
   const right = sorted.find((version) => version.id === rightVersionId) ?? null;
@@ -2766,24 +2653,24 @@ function SkillVersionDiffDialog({
       <DialogContent className="flex max-h-(--sz-85vh) w-full !max-w-(--pct-90) flex-col overflow-hidden">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <DialogHeader className="shrink-0">
-            <DialogTitle>{t("companySkills.diffSkillFiles")}</DialogTitle>
+            <DialogTitle>{translateInstant("Diff · skill files")}</DialogTitle>
           </DialogHeader>
           <div className="flex flex-wrap items-center gap-3 text-xs">
             <label className="flex items-center gap-2">
-              <span className="rounded-full border border-red-500/30 bg-red-500/10 px-2 py-0.5 font-medium uppercase tracking-wider text-red-400">{t("companySkills.old")}</span>
+              <Badge variant="outline" className="border-red-500/30 bg-red-500/10 uppercase tracking-wider text-red-400">{translateInstant("companySkills.old")}</Badge>
               <select
                 value={leftVersionId ?? ""}
                 onChange={(event) => onLeftVersionChange(event.target.value || null)}
                 className="h-8 w-44 rounded-md border border-border bg-background px-2 text-xs"
               >
-                <option value="">{t("companySkills.initial")}</option>
+                <option value="">{translateInstant("companySkills.initial")}</option>
                 {sorted.map((version) => (
                   <option key={version.id} value={version.id}>{versionLabel(version)}</option>
                 ))}
               </select>
             </label>
             <label className="flex items-center gap-2">
-              <span className="rounded-full border border-green-500/30 bg-green-500/10 px-2 py-0.5 font-medium uppercase tracking-wider text-green-400">{t("companySkills.newVersion")}</span>
+              <Badge variant="outline" className="border-green-500/30 bg-green-500/10 uppercase tracking-wider text-green-400">{translateInstant("New")}</Badge>
               <select
                 value={right?.id ?? ""}
                 onChange={(event) => onRightVersionChange(event.target.value || null)}
@@ -2815,14 +2702,14 @@ function SkillVersionDiffDialog({
           </aside>
           <div className="min-w-0 flex-1 overflow-auto rounded-md border border-border text-xs">
             {!right ? (
-              <div className="p-6 text-center text-sm text-muted-foreground">{t("companySkills.selectVersionToCompare")}</div>
+              <div className="p-6 text-center text-sm text-muted-foreground">{translateInstant("companySkills.selectVersionToCompare")}</div>
             ) : left?.id === right.id ? (
-              <div className="p-6 text-center text-sm text-muted-foreground">{t("companySkills.sameVersion")}</div>
+              <div className="p-6 text-center text-sm text-muted-foreground">{translateInstant("Both sides are the same version.")}</div>
             ) : (
               <div className="font-mono text-xs leading-6">
                 <div className="grid grid-cols-(--gtc-1) border-b border-border/60 bg-muted/30 px-3 py-2 text-(length:--text-micro) uppercase tracking-wide text-muted-foreground">
-                  <span>{t("companySkills.old")}</span>
-                  <span>{t("companySkills.newVersion")}</span>
+                  <span>{translateInstant("companySkills.old")}</span>
+                  <span>{translateInstant("New")}</span>
                   <span />
                   <span>{effectivePath}</span>
                 </div>
@@ -2858,16 +2745,12 @@ function SkillLocationCard({
   folderPath: string | null | undefined;
   onMove?: () => void;
 }) {
-  const { t } = useTranslation();
-  const [copied, setCopied] = useState(false);
-  const canonical = folderPath && folderPath.length > 0
-    ? folderPath
-    : t("folders.unfiled", { defaultValue: "Unfiled" });
+  useTranslation();
+  const { copied, failed, copy } = useCopyAction();
+  const canonical = folderPath && folderPath.length > 0 ? folderPath : "Unfiled";
   return (
     <section>
-      <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-        {t("companySkills.location", { defaultValue: "Location" })}
-      </div>
+      <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">{translateInstant("companySkills.location")}</div>
       <div className="flex items-center gap-2 rounded-md border border-border bg-muted/30 px-2.5 py-1.5">
         <FolderOpen className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
         <span className="min-w-0 flex-1 truncate font-mono text-xs text-foreground" title={canonical}>{canonical}</span>
@@ -2877,24 +2760,16 @@ function SkillLocationCard({
           size="sm"
           variant="outline"
           onClick={() => {
-            void copyTextToClipboard(canonical)
-              .then(() => {
-                setCopied(true);
-                window.setTimeout(() => setCopied(false), 1500);
-              })
-              .catch(() => {});
+            void copy(canonical);
           }}
         >
           <Copy className="mr-1.5 h-3.5 w-3.5" />
-          {copied
-            ? t("common.copied", { defaultValue: "Copied" })
-            : t("companySkills.copyPath", { defaultValue: "Copy path" })}
+          {copied ? translateInstant("Copied") : failed ? translateInstant("Copy failed") : translateInstant("Copy path")}
         </Button>
         {onMove ? (
           <Button size="sm" variant="outline" onClick={onMove}>
             <FolderInput className="mr-1.5 h-3.5 w-3.5" />
-            {t("common.move", { defaultValue: "Move" })}
-          </Button>
+            {translateInstant("common.move")}</Button>
         ) : null}
       </div>
     </section>
@@ -2914,7 +2789,7 @@ function SkillTagsEditor({
   pending: boolean;
   onSave: (categories: string[]) => void;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   const [draft, setDraft] = useState("");
   function addTag(raw: string) {
     const tag = raw.trim().toLowerCase();
@@ -2929,8 +2804,7 @@ function SkillTagsEditor({
     <section>
       <div className="mb-2 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
         <Hash className="h-3 w-3" />
-        {t("folders.tags", { defaultValue: "Tags" })}
-      </div>
+        {translateInstant("folders.tags")}</div>
       <div className="flex flex-wrap gap-1.5">
         {categories.map((tag) => (
           <span
@@ -2940,10 +2814,7 @@ function SkillTagsEditor({
             {tag}
             <button
               type="button"
-              aria-label={t("companySkills.removeTag", {
-                defaultValue: "Remove tag {{tag}}",
-                tag,
-              })}
+              aria-label={`Remove tag ${tag}`}
               disabled={pending}
               onClick={() => onSave(categories.filter((entry) => entry !== tag))}
               className="text-muted-foreground hover:text-foreground disabled:opacity-50"
@@ -2953,9 +2824,7 @@ function SkillTagsEditor({
           </span>
         ))}
         {categories.length === 0 ? (
-          <span className="text-xs text-muted-foreground">
-            {t("companySkills.noTags", { defaultValue: "No tags yet." })}
-          </span>
+          <span className="text-xs text-muted-foreground">{translateInstant("companySkills.noTags")}</span>
         ) : null}
       </div>
       <Input
@@ -2968,7 +2837,7 @@ function SkillTagsEditor({
           }
         }}
         onBlur={() => draft.trim() && addTag(draft)}
-        placeholder={t("companySkills.addTag", { defaultValue: "Add a tag..." })}
+        placeholder={translateInstant("Add a tag…")}
         disabled={pending}
         className="mt-2 h-8 text-sm"
       />
@@ -3062,7 +2931,7 @@ export function SkillDetailPage({
   deletePending: boolean;
   studioHref?: string;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   const [diffOpen, setDiffOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsSharingScope, setSettingsSharingScope] = useState<Exclude<CompanySkillSharingScope, "public_link">>("company");
@@ -3111,7 +2980,7 @@ export function SkillDetailPage({
   }, [isDirty]);
 
   if (!detail) {
-    return loading ? <PageSkeleton variant="detail" /> : <EmptyState icon={Boxes} message={t("companySkills.skillNotFound")} />;
+    return loading ? <PageSkeleton variant="detail" /> : <EmptyState icon={Boxes} message={translateInstant("companySkills.skillNotFound")} />;
   }
 
   const skill = detail;
@@ -3162,7 +3031,7 @@ export function SkillDetailPage({
     return (
       <div className="grid min-h-(--sz-560px) gap-0 lg:grid-cols-(--gtc-28)">
         <aside className="border-b border-border pb-3 lg:border-b-0 lg:border-r lg:pb-0 lg:pr-3">
-          <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">{t("companySkills.files")}</div>
+          <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">{translateInstant("companySkills.files")}</div>
           <SkillTree
             nodes={buildTree(skill.fileInventory)}
             skillId={skill.id}
@@ -3183,29 +3052,28 @@ export function SkillDetailPage({
                     className={cn("px-3 py-1.5 text-sm", viewMode === "preview" ? "text-foreground" : "text-muted-foreground")}
                     onClick={() => setViewMode("preview")}
                   >
-                    <span className="flex items-center gap-1.5"><Eye className="h-3.5 w-3.5" /> {t("companySkills.view")}</span>
+                    <span className="flex items-center gap-1.5"><Eye className="h-3.5 w-3.5" /> {translateInstant("View")}</span>
                   </button>
                   <button
                     className={cn("border-l border-border px-3 py-1.5 text-sm", viewMode === "code" ? "text-foreground" : "text-muted-foreground")}
                     onClick={() => setViewMode("code")}
                   >
-                    <span className="flex items-center gap-1.5"><Code2 className="h-3.5 w-3.5" /> {t("companySkills.code")}</span>
+                    <span className="flex items-center gap-1.5"><Code2 className="h-3.5 w-3.5" /> {translateInstant("companySkills.code")}</span>
                   </button>
                 </div>
               ) : null}
               {skill.editable && file?.editable ? (
                 editMode ? (
                   <>
-                    <Button variant="ghost" size="sm" onClick={() => setEditMode(false)} disabled={savePending}>{t("Cancel")}</Button>
+                    <Button variant="ghost" size="sm" onClick={() => setEditMode(false)} disabled={savePending}>{translateInstant("Cancel")}</Button>
                     <Button size="sm" onClick={onSave} disabled={savePending}>
                       <Save className="mr-1.5 h-3.5 w-3.5" />
-                      {savePending ? t("issueThreadInteraction.saving") : t("Save")}
+                      {savePending ? translateInstant("Saving...") : translateInstant("Save")}
                     </Button>
                   </>
                 ) : (
                   <Button variant="ghost" size="sm" onClick={() => setEditMode(true)}>
-                    <Pencil className="mr-1.5 h-3.5 w-3.5" /> {t("companySkills.edit")}
-                  </Button>
+                    <Pencil className="mr-1.5 h-3.5 w-3.5" /> {translateInstant("companySkills.edit")}</Button>
                 )
               ) : !skill.editable ? (
                 <Button
@@ -3213,10 +3081,10 @@ export function SkillDetailPage({
                   variant="outline"
                   size="sm"
                   onClick={onFork}
-                  title={skill.editableReason ?? t("companySkills.forkToEdit", { defaultValue: "Fork this skill to edit it." })}
+                  title={skill.editableReason ?? translateInstant("companySkills.forkToEdit")}
                 >
                   <GitFork className="mr-1.5 h-3.5 w-3.5" />
-                  {t("companySkills.fork", { defaultValue: "Fork" })}
+                  {skill.sourceType === "github" ? translateInstant("Make a copy") : translateInstant("companySkills.fork")}
                 </Button>
               ) : null}
             </div>
@@ -3224,8 +3092,8 @@ export function SkillDetailPage({
           {fileLoading ? (
             <PageSkeleton variant="detail" />
           ) : !file ? (
-            <div className="text-sm text-muted-foreground">{t("companySkills.selectFileToInspect")}</div>
-          ) : editMode && file.editable ? (
+            <div className="text-sm text-muted-foreground">{translateInstant("companySkills.selectFileToInspect")}</div>
+          ) : file.encoding === "base64" ? <SkillBinaryFile file={file} /> : editMode && file.editable ? (
             file.markdown ? (
               <MarkdownEditor value={draft} onChange={setDraft} bordered={false} className="min-h-(--sz-520px)" />
             ) : (
@@ -3251,31 +3119,43 @@ export function SkillDetailPage({
     return (
       <div className="space-y-6">
         <section>
-          <h2 className="mb-2 text-sm font-medium">{t("companySkills.about")}</h2>
+          <h2 className="mb-2 text-sm font-medium">{translateInstant("companySkills.about")}</h2>
           {fileLoading ? (
             <PageSkeleton variant="detail" />
           ) : file?.markdown ? (
-            <MarkdownBody softBreaks={false} linkIssueReferences={false}>{body || skill.description || t("companySkills.noOverviewYet")}</MarkdownBody>
+            <MarkdownBody softBreaks={false} linkIssueReferences={false}>{body || skill.description || translateInstant("companySkills.noOverviewYet")}</MarkdownBody>
           ) : (
-            <p className="text-sm text-muted-foreground">{skill.description ?? t("companySkills.noOverviewYet")}</p>
+            <p className="text-sm text-muted-foreground">{skill.description ?? translateInstant("companySkills.noOverviewYet")}</p>
           )}
         </section>
         <section className="grid min-w-0 gap-3 text-sm sm:grid-cols-2">
           <div className="min-w-0 border-b border-border py-2">
-            <div className="text-xs text-muted-foreground">{t("Key")}</div>
+            <div className="text-xs text-muted-foreground">{translateInstant("Key")}</div>
             <div className="mt-1 truncate font-mono">{skill.key}</div>
           </div>
           <div className="min-w-0 border-b border-border py-2">
-            <div className="text-xs text-muted-foreground">{t("Source")}</div>
-            <div className="mt-1 truncate">{skill.sourcePath ?? source.label}</div>
+            <div className="text-xs text-muted-foreground">{translateInstant("Source")}</div>
+            <div className="mt-1 min-w-0 [overflow-wrap:anywhere]">{sourceLocatorText ?? source.label}</div>
           </div>
           <div className="min-w-0 border-b border-border py-2">
-            <div className="text-xs text-muted-foreground">{t("Version")}</div>
+            <div className="text-xs text-muted-foreground">{translateInstant("Version")}</div>
             <div className="mt-1">{versionLabel(skill.currentVersion ?? null)}</div>
           </div>
           <div className="min-w-0 border-b border-border py-2">
-            <div className="text-xs text-muted-foreground">{t("companySkills.mode")}</div>
-            <div className="mt-1">{skill.editable ? t("companySkills.editable") : t("companySkills.readOnly")}</div>
+            <div className="text-xs text-muted-foreground">{translateInstant("companySkills.mode")}</div>
+            <div className="mt-1 flex flex-wrap items-center gap-2">
+              {skill.editable ? (
+                translateInstant("Editable")
+              ) : (
+                <>
+                  <span>{translateInstant("Read only")}</span>
+                  <Button type="button" variant="outline" size="xs" onClick={onFork}>
+                    <GitFork className="mr-1 h-3 w-3" />
+                    {skill.sourceType === "github" ? translateInstant("Make a copy") : translateInstant("companySkills.fork")}
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
         </section>
       </div>
@@ -3287,7 +3167,7 @@ export function SkillDetailPage({
       <div className="space-y-3">
         <div className="flex items-center justify-between gap-3">
           <div className="text-sm text-muted-foreground">
-            {versionsLoading ? t("companySkills.loadingVersions") : t(versions.length === 1 ? "companySkills.versionCount_one" : "companySkills.versionCount_other", { count: versions.length })}
+            {versionsLoading ? translateInstant("companySkills.loadingVersions") : `${versions.length} ${versions.length === 1 ? "version" : "versions"}`}
           </div>
           <Button
             type="button"
@@ -3296,21 +3176,20 @@ export function SkillDetailPage({
             onClick={() => openVersionDiff()}
             disabled={sortedVersions.length < 2}
           >
-            <History className="mr-1.5 h-3.5 w-3.5" /> {t("companySkills.compare")}
-          </Button>
+            <History className="mr-1.5 h-3.5 w-3.5" /> {translateInstant("companySkills.compare")}</Button>
         </div>
         <div className="border-y border-border">
           {versionsLoading ? (
             <PageSkeleton variant="list" />
           ) : sortedVersions.length === 0 ? (
-            <div className="py-6 text-sm text-muted-foreground">{t("companySkills.noSavedVersions")}</div>
+            <div className="py-6 text-sm text-muted-foreground">{translateInstant("companySkills.noSavedVersions")}</div>
           ) : (
             sortedVersions.map((version) => (
               <div key={version.id} className="grid gap-2 border-b border-border px-0 py-3 text-sm last:border-b-0 sm:grid-cols-(--gtc-13)">
                 <div className="min-w-0">
                   <div className="font-medium">{versionLabel(version)}</div>
                   <div className="mt-1 text-xs text-muted-foreground">
-                    {relativeTime(version.createdAt)} · {t(version.fileInventory.length === 1 ? "companySkills.fileCount_one" : "companySkills.fileCount_other", { count: version.fileInventory.length })}
+                    {relativeTime(version.createdAt)} · {version.fileInventory.length} files
                   </div>
                 </div>
                 <Button
@@ -3319,8 +3198,7 @@ export function SkillDetailPage({
                   size="sm"
                   onClick={() => openVersionDiff(version.id)}
                 >
-                  {t("companySkills.viewDiff")}
-                </Button>
+                  {translateInstant("companySkills.viewDiff")}</Button>
               </div>
             ))
           )}
@@ -3346,8 +3224,8 @@ export function SkillDetailPage({
       <div className="space-y-3">
         <div className="flex items-center justify-between gap-3">
           <p className="text-sm text-muted-foreground">
-            {t(attached.length === 1 ? "companySkills.agentsAttached_one" : "companySkills.agentsAttached_other", { count: attached.length })}
-            {selectedVersion ? ` · ${versionLabel(selectedVersion)}` : ` · ${t("companySkills.latest")}`}
+            {attached.length} {attached.length === 1 ? translateInstant("agent") : translateInstant("agents")} attached
+            {selectedVersion ? ` · ${versionLabel(selectedVersion)}` : " · Latest"}
           </p>
           <AttachAgentsPopover
             agents={attachAgents}
@@ -3360,23 +3238,21 @@ export function SkillDetailPage({
         </div>
         {attached.length === 0 ? (
           <div className="rounded-md border border-dashed border-border py-8 text-center text-sm text-muted-foreground">
-            {t("companySkills.noAgentsUsingSkill")}
-          </div>
+            {translateInstant("No agents are using this skill yet. Use “Add to agent” to attach it.")}</div>
         ) : (
           <div className="border-y border-border">
             {attached.map((agent) => {
               const meta = attachAgentMetaById.get(agent.id);
               return (
                 <div key={agent.id} className="flex items-center gap-3 border-b border-border py-3 text-sm last:border-b-0">
-                  <AgentIcon icon={meta?.icon ?? null} className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  <AgentAvatar agent={meta} size={16} className="h-4 w-4 shrink-0 text-muted-foreground"/>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">
                       <span className="truncate font-medium">{agent.name}</span>
                       {meta?.paused ? (
                         <Badge variant="outline" className="[&>svg]:size-2.5 border-amber-500/30 bg-amber-500/10 px-1.5 text-(length:--text-nano) uppercase tracking-wide text-amber-500">
                           <Pause className="h-2.5 w-2.5" aria-hidden="true" />
-                          {t("agentStatus.paused", { defaultValue: "Paused" })}
-                        </Badge>
+                          {translateInstant("agentStatus.paused")}</Badge>
                       ) : null}
                     </div>
                     <div className="mt-0.5 text-xs text-muted-foreground">{agent.adapterType}</div>
@@ -3385,8 +3261,7 @@ export function SkillDetailPage({
                     to={`/agents/${agent.urlKey}/skills`}
                     className="shrink-0 text-xs text-muted-foreground no-underline hover:text-foreground"
                   >
-                    {t("View")}
-                  </Link>
+                    {translateInstant("View")}</Link>
                 </div>
               );
             })}
@@ -3429,18 +3304,18 @@ export function SkillDetailPage({
                     <TooltipTrigger asChild>
                       <span
                         className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground"
-                        aria-label={t("companySkills.installedFromSource", { source: source.label })}
+                        aria-label={`Installed from ${source.label}`}
                       >
                         <SourceIcon className="h-4 w-4" />
                       </span>
                     </TooltipTrigger>
-                    <TooltipContent>{t("companySkills.installedFromSource", { source: source.label })}</TooltipContent>
+                    <TooltipContent>{translateInstant("Installed from")}{" "}{source.label}</TooltipContent>
                   </Tooltip>
                 </div>
                 {/* GitHub-style "by" attribution sits directly under the title. */}
                 {detail.authorName ? (
                   <p className="mt-0.5 text-sm text-muted-foreground">
-                    {t("companySkills.byAuthor", { author: detail.authorName })}
+                    {translateInstant("by")}{" "}<span className="text-foreground">{detail.authorName}</span>
                   </p>
                 ) : null}
                 {subtitleText ? (
@@ -3460,7 +3335,7 @@ export function SkillDetailPage({
                         onClick={() => setDescExpanded((value) => !value)}
                         className="mt-0.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
                       >
-                        {descExpanded ? t("companySkills.showLess") : t("companySkills.viewAll")}
+                        {descExpanded ? translateInstant("companySkills.showLess") : translateInstant("companySkills.viewAll")}
                       </button>
                     ) : null}
                   </div>
@@ -3480,51 +3355,38 @@ export function SkillDetailPage({
             <Button variant="outline" size="sm" asChild>
               <Link to={resolvedStudioHref}>
                 <FlaskConical className="mr-1.5 h-3.5 w-3.5" />
-                {t("companySkills.openInStudio", { defaultValue: "Open in Studio" })}
-              </Link>
+                {translateInstant("companySkills.openInStudio")}</Link>
             </Button>
-            {!detail.editable ? (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={onFork}
-                title={detail.editableReason ?? t("companySkills.forkSkill")}
-              >
-                <GitFork className="mr-1.5 h-3.5 w-3.5" />
-                {t("companySkills.fork")}
-              </Button>
-            ) : null}
             <div className="flex items-center overflow-hidden rounded-md border border-border">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-muted-foreground">
                     <Download className="h-3.5 w-3.5" aria-hidden="true" />
                     <span className="font-medium text-foreground">{detail.attachedAgentCount}</span>
-                    <span className="hidden sm:inline">{t(detail.attachedAgentCount === 1 ? "companySkills.installCount_one" : "companySkills.installCount_other", { count: detail.attachedAgentCount })}</span>
+                    <span className="hidden sm:inline">{detail.attachedAgentCount === 1 ? "install" : "installs"}</span>
                   </span>
                 </TooltipTrigger>
-                <TooltipContent>{t("companySkills.installedAgentsTooltip")}</TooltipContent>
+                <TooltipContent>{translateInstant("Agents in this organization that currently have this skill installed.")}</TooltipContent>
               </Tooltip>
               <button
                 type="button"
                 onClick={onToggleStar}
                 disabled={starPending}
                 className="inline-flex items-center gap-1.5 border-l border-border px-2.5 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-accent/40 hover:text-foreground disabled:opacity-50"
-                title={detail.starredByCurrentActor ? t("companySkills.unstarSkill") : t("companySkills.starSkill")}
+                title={detail.starredByCurrentActor ? "Unstar this skill" : "Star this skill"}
               >
                 <Star className={cn("h-3.5 w-3.5", detail.starredByCurrentActor && "fill-current text-yellow-400")} />
-                <span className="hidden sm:inline">{detail.starredByCurrentActor ? t("companySkills.starred") : t("companySkills.star")}</span>
+                <span className="hidden sm:inline">{detail.starredByCurrentActor ? translateInstant("companySkills.starred") : translateInstant("companySkills.star")}</span>
                 <span className="font-medium text-foreground">{detail.starCount}</span>
               </button>
               <button
                 type="button"
                 onClick={onFork}
                 className="inline-flex items-center gap-1.5 border-l border-border px-2.5 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-accent/40 hover:text-foreground"
-                title={t("companySkills.forkSkill")}
+                title={translateInstant("Fork this skill")}
               >
                 <GitFork className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">{t("companySkills.fork")}</span>
+                <span className="hidden sm:inline">{skill.sourceType === "github" ? translateInstant("Make a copy") : translateInstant("companySkills.fork")}</span>
                 <span className="font-medium text-foreground">{detail.forkCount}</span>
               </button>
             </div>
@@ -3543,7 +3405,7 @@ export function SkillDetailPage({
                 return (
                   <TabsTrigger key={tab.value} value={tab.value} className="px-3">
                     <Icon className="mr-1.5 h-3.5 w-3.5" />
-                    {skillDetailTabLabel(tab.value)}
+                    {tab.label}
                   </TabsTrigger>
                 );
               })}
@@ -3553,8 +3415,9 @@ export function SkillDetailPage({
         </main>
 
         <aside className="min-w-0 space-y-6 border-t border-border pt-4 xl:border-l xl:border-t-0 xl:pl-5 xl:pt-0">
+          <SkillSourceProvenance skill={detail} />
           <SkillLocationCard
-            folderPath={folderDisplayPath ?? localizedSkillFolderPathFallback(detail.folderPath)}
+            folderPath={folderDisplayPath ?? skillFolderPathDisplayFallback(detail.folderPath)}
             onMove={onMoveToFolder}
           />
           <SkillTagsEditor
@@ -3563,7 +3426,7 @@ export function SkillDetailPage({
             onSave={(categories) => onUpdateSettings({ categories, sharingScope: detail.sharingScope === "public_link" ? "company" : detail.sharingScope })}
           />
           <section>
-            <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">{t("companySkills.agents")}</div>
+            <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">{translateInstant("companySkills.agents")}</div>
             <div className="space-y-3">
               {/* Big primary action opens the agent multi-selector (PAP-10907). */}
               <AttachAgentsPopover
@@ -3576,7 +3439,7 @@ export function SkillDetailPage({
                 fullWidth
               />
               {detail.usedByAgents.length === 0 ? (
-                <p className="text-xs text-muted-foreground">{t("companySkills.noAgentsAttached")}</p>
+                <p className="text-xs text-muted-foreground">{translateInstant("No agents attached yet.")}</p>
               ) : (
                 <div className="space-y-0.5">
                   {/* Preview up to three attached agents, then summarise the rest. */}
@@ -3588,18 +3451,17 @@ export function SkillDetailPage({
                         to={`/agents/${agent.urlKey}/skills`}
                         className="flex items-center gap-2 rounded-md px-1.5 py-1 text-sm no-underline hover:bg-accent/40"
                       >
-                        <AgentIcon icon={meta?.icon ?? null} className="h-4 w-4 shrink-0 text-muted-foreground" />
+                        <AgentAvatar agent={meta} size={16} className="h-4 w-4 shrink-0 text-muted-foreground"/>
                         <span className="min-w-0 flex-1 truncate text-foreground">{agent.name}</span>
                         {meta?.paused ? (
-                          <Pause className="h-3 w-3 shrink-0 text-amber-500" aria-label={t("agentStatus.paused", { defaultValue: "Paused" })} />
+                          <Pause className="h-3 w-3 shrink-0 text-amber-500" aria-label={translateInstant("Paused")} />
                         ) : null}
                       </Link>
                     );
                   })}
                   {detail.usedByAgents.length > 3 ? (
                     <p className="px-1.5 pt-0.5 text-xs text-muted-foreground">
-                      {t("companySkills.andMore", { count: detail.usedByAgents.length - 3 })}
-                    </p>
+                      {translateInstant("and")}{" "}{detail.usedByAgents.length - 3} {translateInstant("issueProperties.more")}</p>
                   ) : null}
                 </div>
               )}
@@ -3610,10 +3472,10 @@ export function SkillDetailPage({
               available. Bundled/catalog skills surface their source label too
               (PAP-10907). */}
           <section>
-            <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">{t("Source")}</div>
+            <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">{translateInstant("Source")}</div>
             {githubSource ? (
               <div className="flex items-start gap-2 text-sm">
-                <Github className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                <GithubIcon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
                 <div className="min-w-0">
                   <div className="text-foreground">{githubLabel}</div>
                   <a
@@ -3666,28 +3528,27 @@ export function SkillDetailPage({
               (PAP-10907 F). Only GitHub-sourced skills can pull updates. */}
           {detail.sourceType === "github" ? (
             <section>
-              <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">{t("companySkills.updates")}</div>
+              <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">{translateInstant("companySkills.updates")}</div>
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Pin className="h-3.5 w-3.5 shrink-0" aria-label={t("companySkills.pinnedSourceRevision")} />
+                      <Pin className="h-3.5 w-3.5 shrink-0" aria-label={translateInstant("companySkills.pinnedSourceRevision")} />
                     </TooltipTrigger>
-                    <TooltipContent>{t("companySkills.pinnedSourceRevision")}</TooltipContent>
+                    <TooltipContent>{translateInstant("companySkills.pinnedSourceRevision")}</TooltipContent>
                   </Tooltip>
-                  <span className="truncate font-mono text-foreground">{currentPin ?? "untracked"}</span>
+                  <span className="truncate font-mono text-foreground">{currentPin ?? translateInstant("untracked")}</span>
                 </div>
                 <Button variant="outline" size="sm" className="w-full" onClick={onCheckUpdates} disabled={checkUpdatesPending || updateStatusLoading}>
                   <RefreshCw className={cn("mr-1.5 h-3.5 w-3.5", (checkUpdatesPending || updateStatusLoading) && "animate-spin")} />
-                  {t("companySkills.checkForUpdates")}
-                </Button>
+                  {translateInstant("companySkills.checkForUpdates")}</Button>
                 {updateStatus?.supported && updateStatus.hasUpdate ? (
                   <Button size="sm" className="w-full" onClick={onInstallUpdate} disabled={installUpdatePending}>
                     <ArrowUpCircle className={cn("mr-1.5 h-3.5 w-3.5", installUpdatePending && "animate-spin")} />
-                    {t("companySkills.installUpdate")}{latestPin ? ` ${latestPin}` : ""}
+                    {translateInstant("companySkills.installUpdate")}{latestPin ? ` ${latestPin}` : ""}
                   </Button>
                 ) : updateStatus?.supported && !updateStatus.hasUpdate && !updateStatusLoading ? (
-                  <p className="text-xs text-muted-foreground">{t("companySkills.upToDate")}</p>
+                  <p className="text-xs text-muted-foreground">{translateInstant("Up to date.")}</p>
                 ) : null}
               </div>
             </section>
@@ -3706,7 +3567,7 @@ export function SkillDetailPage({
               className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm text-muted-foreground transition-colors hover:bg-accent/30 hover:text-foreground"
             >
               <Settings className="h-4 w-4 shrink-0" />
-              <span className="flex-1">{t("Settings")}</span>
+              <span className="flex-1">{translateInstant("Settings")}</span>
             </button>
           </section>
         </aside>
@@ -3716,7 +3577,7 @@ export function SkillDetailPage({
           unsaved state is obvious (PAP-10907 J). */}
       {isDirty ? (
         <div className="fixed bottom-6 left-1/2 z-40 flex -translate-x-1/2 items-center gap-3 rounded-full border border-border bg-background/95 px-4 py-2 shadow-lg backdrop-blur">
-          <span className="text-sm text-muted-foreground">{t("companySkills.unsavedChanges")}</span>
+          <span className="text-sm text-muted-foreground">{translateInstant("companySkills.unsavedChanges")}</span>
           <Button
             variant="ghost"
             size="sm"
@@ -3726,11 +3587,10 @@ export function SkillDetailPage({
             }}
             disabled={savePending}
           >
-            {t("companySkills.discard")}
-          </Button>
+            {translateInstant("companySkills.discard")}</Button>
           <Button size="sm" onClick={onSave} disabled={savePending}>
             <Save className="mr-1.5 h-3.5 w-3.5" />
-            {savePending ? t("issueThreadInteraction.saving") : t("companySkills.saveChanges")}
+            {savePending ? translateInstant("Saving…") : translateInstant("Save changes")}
           </Button>
         </div>
       ) : null}
@@ -3738,35 +3598,33 @@ export function SkillDetailPage({
       <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{t("companySkills.skillSettings")}</DialogTitle>
-            <DialogDescription>{t("companySkills.skillSettingsDescription", { name: detail.name })}</DialogDescription>
+            <DialogTitle>{translateInstant("companySkills.skillSettings")}</DialogTitle>
+            <DialogDescription>{translateInstant("Manage how")}{" "}{detail.name}{" "}{translateInstant("is grouped and shared.")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-5">
             <div className="space-y-1.5">
-              <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{t("companySkills.categories")}</label>
+              <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{translateInstant("companySkills.categories")}</label>
               <Input
                 value={settingsCategoryDraft}
                 onChange={(event) => setSettingsCategoryDraft(event.target.value)}
-                placeholder={t("companySkills.categoriesPlaceholder", { defaultValue: "engineering, review, memory" })}
+                placeholder={translateInstant("engineering, review, memory")}
                 className="h-9"
                 disabled={updateSettingsPending}
               />
-              <p className="text-xs text-muted-foreground">
-                {t("companySkills.categoriesHint", { defaultValue: "Separate categories with commas. Leave empty to clear categories." })}
-              </p>
+              <p className="text-xs text-muted-foreground">{translateInstant("companySkills.categoriesHint")}</p>
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{t("companySkills.sharing")}</label>
+              <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{translateInstant("companySkills.sharing")}</label>
               <select
                 value={settingsSharingScope}
                 onChange={(event) => setSettingsSharingScope(event.target.value as Exclude<CompanySkillSharingScope, "public_link">)}
                 disabled={updateSettingsPending}
                 className="h-9 w-full rounded-md border border-border bg-background px-2 text-sm text-foreground"
               >
-                <option value="company">{t("companySkills.companyScopeOption")}</option>
-                <option value="private">{t("companySkills.privateScopeOption")}</option>
+                <option value="company">{translateInstant("Organization — visible inside this organization")}</option>
+                <option value="private">{translateInstant("Private — only visible in your library")}</option>
               </select>
-              <p className="text-xs text-muted-foreground">{t("companySkills.publicLinkComingLater")}</p>
+              <p className="text-xs text-muted-foreground">{translateInstant("Public link sharing is coming later.")}</p>
             </div>
             <div className="flex justify-end gap-2 border-t border-border pt-4">
               <Button
@@ -3776,11 +3634,10 @@ export function SkillDetailPage({
                 onClick={() => {
                   setSettingsSharingScope(skill.sharingScope === "public_link" ? "company" : skill.sharingScope);
                   setSettingsCategoryDraft(skill.categories.join(", "));
-              }}
-              disabled={!settingsDirty || updateSettingsPending}
-            >
-                {t("Reset", { defaultValue: "Reset" })}
-              </Button>
+                }}
+                disabled={!settingsDirty || updateSettingsPending}
+              >
+                {translateInstant("Reset")}</Button>
               <Button
                 type="button"
                 size="sm"
@@ -3788,26 +3645,24 @@ export function SkillDetailPage({
                 disabled={!settingsDirty || updateSettingsPending}
               >
                 <Save className="mr-1.5 h-3.5 w-3.5" />
-                {updateSettingsPending
-                  ? t("common.saving", { defaultValue: "Saving..." })
-                  : t("companySkills.saveSettings", { defaultValue: "Save settings" })}
+                {updateSettingsPending ? translateInstant("Saving…") : translateInstant("companySkills.saveSettings")}
               </Button>
             </div>
             {detail.editable ? (
               <div className="rounded-md border border-destructive/40 p-3">
-                <div className="text-xs font-semibold uppercase tracking-wide text-destructive">{t("companySkills.dangerZone")}</div>
+                <div className="text-xs font-semibold uppercase tracking-wide text-destructive">{translateInstant("companySkills.dangerZone")}</div>
                 <div className="mt-2 flex items-center justify-between gap-3">
-                  <p className="min-w-0 text-xs text-muted-foreground">{t("companySkills.removeSkillDescriptionShort")}</p>
+                  <p className="min-w-0 text-xs text-muted-foreground">{translateInstant("Remove this skill from the organization library.")}</p>
                   <Button
                     variant="destructive"
                     size="sm"
                     className="shrink-0"
                     onClick={onDelete}
                     disabled={deletePending}
-                    title={detail.usedByAgents.length > 0 ? t("companySkills.removeDisabledReason") : undefined}
+                    title={detail.usedByAgents.length > 0 ? translateInstant("companySkills.removeDisabledReason") : undefined}
                   >
                     <Trash2 className="mr-1.5 h-3.5 w-3.5" />
-                    {deletePending ? t("companySkills.removing") : t("Remove")}
+                    {deletePending ? "Removing…" : translateInstant("Remove")}
                   </Button>
                 </div>
               </div>
@@ -3870,7 +3725,7 @@ function SkillPane({
   onSubmitAttach: (ids: string[], versionId: string | null) => void;
   attachPending: boolean;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   if (!detail) {
     if (loading) {
       return <PageSkeleton variant="detail" />;
@@ -3878,7 +3733,7 @@ function SkillPane({
     return (
       <EmptyState
         icon={Boxes}
-        message={t("companySkills.selectSkill")}
+        message={translateInstant("companySkills.selectSkill")}
       />
     );
   }
@@ -3892,7 +3747,7 @@ function SkillPane({
   const displaySourcePath = detail.sourcePath ? middleTruncate(detail.sourcePath) : null;
   const removeBlocked = usedBy.length > 0;
   const removeDisabledReason = removeBlocked
-    ? t("companySkills.removeDisabledReason")
+    ? "Detach this skill from all agents before removing it."
     : null;
 
   return (
@@ -3912,8 +3767,7 @@ function SkillPane({
             <Button variant="outline" size="sm" asChild>
               <Link to={skillStudioRoute(detail.id)}>
                 <FlaskConical className="mr-1.5 h-3.5 w-3.5" />
-                {t("companySkills.openInStudio", { defaultValue: "Open in Studio" })}
-              </Link>
+                {translateInstant("companySkills.openInStudio")}</Link>
             </Button>
             <Button
               variant="ghost"
@@ -3923,7 +3777,7 @@ function SkillPane({
               title={removeDisabledReason ?? undefined}
             >
               <Trash2 className="mr-1.5 h-3.5 w-3.5" />
-              {deletePending ? t("companySkills.removing") : t("Remove")}
+              {deletePending ? translateInstant("Removing...") : translateInstant("Remove")}
             </Button>
             {detail.editable ? (
               <button
@@ -3931,7 +3785,7 @@ function SkillPane({
                 onClick={() => setEditMode(!editMode)}
               >
                 <Pencil className="h-3.5 w-3.5" />
-                {editMode ? t("companySkills.stopEditing") : t("companySkills.edit")}
+                {editMode ? translateInstant("Stop editing") : translateInstant("Edit")}
               </button>
             ) : (
               <div className="text-sm text-muted-foreground">{detail.editableReason}</div>
@@ -3942,7 +3796,7 @@ function SkillPane({
         <div className="mt-4 space-y-3 border-t border-border pt-4 text-sm">
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
             <div className="flex min-w-0 items-center gap-2">
-              <span className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-muted-foreground">{t("Source")}</span>
+              <span className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-muted-foreground">{translateInstant("Source")}</span>
               <span className="flex min-w-0 items-center gap-2">
                 <SourceIcon className="h-3.5 w-3.5 text-muted-foreground" />
                 {detail.sourcePath && displaySourcePath ? (
@@ -3955,9 +3809,9 @@ function SkillPane({
                     </span>
                     <CopyText
                       text={detail.sourcePath}
-                      copiedLabel={t("companySkills.copiedPath")}
-                      ariaLabel={t("companySkills.copySourcePath")}
-                      title={t("companySkills.copySourcePath")}
+                      copiedLabel={translateInstant("Copied path")}
+                      ariaLabel={translateInstant("Copy source path")}
+                      title={translateInstant("Copy source path")}
                       className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-sm border border-border text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                     >
                       <Copy className="h-3.5 w-3.5" />
@@ -3970,12 +3824,10 @@ function SkillPane({
             </div>
             {detail.sourceType === "github" && (
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-muted-foreground">{t("companySkills.pin")}</span>
-                <span className="font-mono text-xs">{currentPin ?? t("untracked")}</span>
+                <span className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-muted-foreground">{translateInstant("companySkills.pin")}</span>
+                <span className="font-mono text-xs">{currentPin ?? translateInstant("untracked")}</span>
                 {updateStatus?.trackingRef && (
-                  <span className="text-xs text-muted-foreground">
-                    {t("companySkills.trackingRef", { ref: updateStatus.trackingRef })}
-                  </span>
+                  <span className="text-xs text-muted-foreground">tracking {updateStatus.trackingRef}</span>
                 )}
                 <Button
                   variant="ghost"
@@ -3984,8 +3836,7 @@ function SkillPane({
                   disabled={checkUpdatesPending || updateStatusLoading}
                 >
                   <RefreshCw className={cn("mr-1.5 h-3.5 w-3.5", (checkUpdatesPending || updateStatusLoading) && "animate-spin")} />
-                  {t("companySkills.checkForUpdates")}
-                </Button>
+                  {translateInstant("companySkills.checkForUpdates")}</Button>
                 {updateStatus?.supported && updateStatus.hasUpdate && (
                   <Button
                     size="sm"
@@ -3993,11 +3844,11 @@ function SkillPane({
                     disabled={installUpdatePending}
                   >
                     <RefreshCw className={cn("mr-1.5 h-3.5 w-3.5", installUpdatePending && "animate-spin")} />
-                    {t("companySkills.installUpdate")}{latestPin ? ` ${latestPin}` : ""}
+                    {translateInstant("companySkills.installUpdate")}{latestPin ? ` ${latestPin}` : ""}
                   </Button>
                 )}
                 {updateStatus?.supported && !updateStatus.hasUpdate && !updateStatusLoading && (
-                  <span className="text-xs text-muted-foreground">{t("companySkills.upToDate")}</span>
+                  <span className="text-xs text-muted-foreground">{translateInstant("companySkills.upToDate")}</span>
                 )}
                 {!updateStatus?.supported && updateStatus?.reason && (
                   <span className="text-xs text-muted-foreground">{updateStatus.reason}</span>
@@ -4005,16 +3856,16 @@ function SkillPane({
               </div>
             )}
             <div className="flex items-center gap-2">
-              <span className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-muted-foreground">{t("Key")}</span>
+              <span className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-muted-foreground">{translateInstant("Key")}</span>
               <span className="font-mono text-xs">{detail.key}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-muted-foreground">{t("companySkills.mode")}</span>
-              <span>{detail.editable ? t("companySkills.editable") : t("companySkills.readOnly")}</span>
+              <span className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-muted-foreground">{translateInstant("companySkills.mode")}</span>
+              <span>{detail.editable ? translateInstant("Editable") : translateInstant("Read only")}</span>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-muted-foreground">{t("companySkills.trustLabel")}</span>
+            <span className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-muted-foreground">{translateInstant("companySkills.trustLabel")}</span>
             <TrustChip level={detail.trustLevel} />
             <CompatChip compatibility={detail.compatibility} />
             {readonlyMetadataValue(detail.metadata, "userModifiedAt") ? (
@@ -4022,10 +3873,9 @@ function SkillPane({
                 <TooltipTrigger asChild>
                   <Badge variant="outline" className="border-violet-500/40 bg-violet-500/10 text-(length:--text-micro) text-violet-200">
                     <Pencil className="h-3 w-3" aria-hidden="true" />
-                    {t("companySkills.locallyModified")}
-                  </Badge>
+                    {translateInstant("companySkills.locallyModified")}</Badge>
                 </TooltipTrigger>
-                <TooltipContent>{t("companySkills.locallyModifiedTooltip")}</TooltipContent>
+                <TooltipContent>{translateInstant("You have edited this skill after installing. Updates from the catalog will overwrite your changes.")}</TooltipContent>
               </Tooltip>
             ) : null}
             {(() => {
@@ -4036,7 +3886,7 @@ function SkillPane({
           </div>
           <div className="flex flex-wrap items-start gap-x-3 gap-y-2">
             <div className="flex items-center gap-2">
-              <span className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-muted-foreground">{t("companySkills.usedBy")}</span>
+              <span className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-muted-foreground">{translateInstant("companySkills.usedBy")}</span>
               <AttachAgentsPopover
                 agents={attachAgents}
                 attachedAgentIds={usedBy.map((agent) => agent.id)}
@@ -4047,7 +3897,7 @@ function SkillPane({
               />
             </div>
             {usedBy.length === 0 ? (
-              <span className="text-muted-foreground">{t("companySkills.noAgentsAttached")}</span>
+              <span className="text-muted-foreground">{translateInstant("No agents attached")}</span>
             ) : (
               <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
                 {usedBy.map((agent) => (
@@ -4056,7 +3906,7 @@ function SkillPane({
                     to={`/agents/${agent.urlKey}/skills`}
                     className="group rounded-md border border-transparent p-2 no-underline hover:border-border hover:bg-accent/40"
                   >
-                    <Identity name={agent.name} size="sm" />
+                    <AgentIdentity agent={agent} size="sm" />
                   </Link>
                 ))}
               </div>
@@ -4079,8 +3929,7 @@ function SkillPane({
                 >
                   <span className="flex items-center gap-1.5">
                     <Eye className="h-3.5 w-3.5" />
-                    {t("companySkills.view")}
-                  </span>
+                    {translateInstant("View")}</span>
                 </button>
                 <button
                   className={cn("border-l border-border px-3 py-1.5 text-sm", viewMode === "code" && "text-foreground", viewMode !== "code" && "text-muted-foreground")}
@@ -4088,19 +3937,17 @@ function SkillPane({
                 >
                   <span className="flex items-center gap-1.5">
                     <Code2 className="h-3.5 w-3.5" />
-                    {t("companySkills.code")}
-                  </span>
+                    {translateInstant("companySkills.code")}</span>
                 </button>
               </div>
             )}
             {editMode && file?.editable && (
               <>
                 <Button variant="ghost" size="sm" onClick={() => setEditMode(false)} disabled={savePending}>
-                  {t("Cancel")}
-                </Button>
+                  {translateInstant("Cancel")}</Button>
                 <Button size="sm" onClick={onSave} disabled={savePending}>
                   <Save className="mr-1.5 h-3.5 w-3.5" />
-                  {savePending ? t("issueThreadInteraction.saving") : t("Save")}
+                  {savePending ? translateInstant("Saving...") : translateInstant("Save")}
                 </Button>
               </>
             )}
@@ -4112,7 +3959,7 @@ function SkillPane({
         {fileLoading ? (
           <PageSkeleton variant="detail" />
         ) : !file ? (
-          <div className="text-sm text-muted-foreground">{t("companySkills.selectFileToInspect")}</div>
+          <div className="text-sm text-muted-foreground">{translateInstant("companySkills.selectFileToInspect")}</div>
         ) : editMode && file.editable ? (
           file.markdown ? (
             <MarkdownEditor
@@ -4141,7 +3988,7 @@ function SkillPane({
 }
 
 export function CompanySkills() {
-  const { t, i18n } = useTranslation();
+  useTranslation();
   const { "*": routePath } = useParams<{ "*": string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -4150,6 +3997,7 @@ export function CompanySkills() {
   const { setBreadcrumbs } = useBreadcrumbs();
   const { pushToast } = useToastActions();
   const adapterCaps = useAdapterCapabilities();
+  const { enabled: streamlinedUiEnabled } = useStreamlinedUiEnabled();
   const policyDenial = useSkillPolicyDenial();
   // Route a failed skill mutation to the persistent policy banner when it is an
   // explicit-policy (State B) or platform-safety (State C) denial; otherwise keep
@@ -4221,7 +4069,17 @@ export function CompanySkills() {
     : "all";
   const selectedCatalogRef = searchParams.get("catalog");
   const tabParam = searchParams.get("tab");
-  const discoveryTab = resolveDiscoveryTab(tabParam);
+  const discoveryTab = resolveDiscoveryTab(tabParam ?? (viewParam === "catalog" ? "catalog" : null));
+  const legacyDiscoveryTab = (["all", "installed", "catalog", "bundled"] as const).includes(
+    tabParam as "all" | "installed" | "catalog" | "bundled",
+  )
+    ? (tabParam as "all" | "installed" | "catalog" | "bundled")
+    : "installed";
+  const effectiveDiscoveryTab: DiscoveryTab = streamlinedUiEnabled
+    ? discoveryTab
+    : legacyDiscoveryTab === "installed"
+      ? "installed"
+      : "discover";
   const detailTab: SkillDetailTab = (["overview", "files", "versions", "agents"] as SkillDetailTab[]).includes(tabParam as SkillDetailTab)
     ? (tabParam as SkillDetailTab)
     : parsedRoute.hasExplicitFilePath || selectedPath !== "SKILL.md"
@@ -4234,9 +4092,23 @@ export function CompanySkills() {
   // selected; selecting either drops into the existing master/detail surfaces.
   const isDiscovery = !isStudioNew && !routeSkillToken && !selectedCatalogRef;
   const folderSelection = normalizeFolderSelection(searchParams.get("folder"));
+  const browseRailsEnabled = !streamlinedUiEnabled;
+  const visibleDiscoveryCategory = browseRailsEnabled ? discoveryCategory : null;
+  const visibleFolderSelection: FolderSelection = browseRailsEnabled ? folderSelection : "all";
 
   function setDiscoveryTab(tab: DiscoveryTab) {
     setSearchParams((current) => withDiscoveryTab(current, tab));
+  }
+
+  function setLegacyDiscoveryTab(tab: "all" | "installed" | "catalog" | "bundled") {
+    setSearchParams((current) => {
+      const params = new URLSearchParams(current);
+      if (tab === "installed") params.delete("tab");
+      else params.set("tab", tab);
+      params.delete("category");
+      if (tab !== "installed") params.delete("folder");
+      return params;
+    });
   }
 
   function setFolderSelection(selection: FolderSelection) {
@@ -4300,20 +4172,36 @@ export function CompanySkills() {
     setCreateError(null);
   }, [isStudioNew, studioForkFromId]);
 
-  // The old split catalog view no longer exists — catalog/bundled skills now open
-  // as a regular full page keyed by `?catalog=<ref>`. Strip the legacy `view`
-  // param so stale `?view=catalog` deep links land on the new surface (PAP-10907).
+  // Canonicalize the old split-view and multi-tab URLs into the single Discover
+  // destination while keeping every stale deep link useful.
   useEffect(() => {
-    if (!searchParams.has("view")) return;
+    if (!streamlinedUiEnabled) return;
+    const legacyTab = searchParams.get("tab");
+    const hasLegacyDiscoveryTab = isDiscovery && ["all", "catalog", "bundled"].includes(legacyTab ?? "");
+    const hasRetiredBrowseFilter = isDiscovery && (searchParams.has("category") || searchParams.has("folder"));
+    if (!searchParams.has("view") && !hasLegacyDiscoveryTab && !hasRetiredBrowseFilter) return;
     setSearchParams(
       (current) => {
         const next = new URLSearchParams(current);
+        if (hasLegacyDiscoveryTab || (next.get("view") === "catalog" && !next.has("tab"))) {
+          next.set("tab", "discover");
+        }
         next.delete("view");
+        if (isDiscovery) {
+          next.delete("category");
+          next.delete("folder");
+        }
         return next;
       },
       { replace: true },
     );
-  }, [searchParams, setSearchParams]);
+  }, [isDiscovery, searchParams, setSearchParams, streamlinedUiEnabled]);
+
+  useEffect(() => {
+    if (!streamlinedUiEnabled) return;
+    setSelectMode(false);
+    setSelectedSkillIds([]);
+  }, [streamlinedUiEnabled]);
 
   const skillsQuery = useQuery({
     queryKey: queryKeys.companySkills.list(selectedCompanyId ?? ""),
@@ -4323,7 +4211,7 @@ export function CompanySkills() {
   const skillFoldersQuery = useQuery({
     queryKey: queryKeys.folders.list(selectedCompanyId ?? "", "skill"),
     queryFn: () => foldersApi.list(selectedCompanyId!, "skill"),
-    enabled: Boolean(selectedCompanyId && ((isDiscovery && discoveryTab === "installed") || routeSkillToken)),
+    enabled: Boolean(selectedCompanyId && ((isDiscovery && effectiveDiscoveryTab === "installed") || routeSkillToken)),
   });
 
   const installedSkills = skillsQuery.data ?? [];
@@ -4372,15 +4260,15 @@ export function CompanySkills() {
 
   // The writable folder to seed a new skill into when creating from the browser.
   const defaultNewSkillFolderId = useMemo(() => {
-    if (folderSelection === "all" || folderSelection === "unfiled") return null;
+    if (visibleFolderSelection === "all" || visibleFolderSelection === "unfiled") return null;
     const model = treeFromResult(skillFoldersQuery.data);
-    const folder = model.byId.get(folderSelection);
+    const folder = model.byId.get(visibleFolderSelection);
     if (!folder) return null;
     // Never seed into read-only reserved subtrees (Bundled / Projects).
     if (folder.path === "bundled" || folder.path.startsWith("bundled/")) return null;
     if (folder.path === "projects" || folder.path.startsWith("projects/")) return null;
     return folder.id;
-  }, [folderSelection, skillFoldersQuery.data]);
+  }, [skillFoldersQuery.data, visibleFolderSelection]);
 
   const updateStatusQuery = useQuery({
     queryKey: queryKeys.companySkills.updateStatus(selectedCompanyId ?? "", selectedSkillId ?? ""),
@@ -4452,20 +4340,16 @@ export function CompanySkills() {
   const activeDetail = detailQuery.data ?? displayedDetail;
   useEffect(() => {
     setBreadcrumbs([
-      { label: t("Skills"), href: "/skills" },
+      { label: translateInstant("Skills"), href: "/skills" },
       ...(isStudioNew
-        ? [{
-            label: studioForkFromId
-              ? t("companySkills.forkSkill", { defaultValue: "Fork skill" })
-              : t("companySkills.newSkill", { defaultValue: "New skill" }),
-          }]
+        ? [{ label: studioForkFromId ? translateInstant("companySkills.forkSkill") : "New skill" }]
         : activeDetail
           ? skillDetailBreadcrumbs(activeDetail, skillFoldersQuery.data).slice(1)
           : routeSkillToken
-            ? [{ label: t("Detail") }]
+            ? [{ label: translateInstant("Detail") }]
             : []),
     ]);
-  }, [activeDetail, isStudioNew, routeSkillToken, setBreadcrumbs, skillFoldersQuery.data, studioForkFromId, t]);
+  }, [activeDetail, isStudioNew, routeSkillToken, setBreadcrumbs, skillFoldersQuery.data, studioForkFromId]);
   const activeFile = fileQuery.data ?? displayedFile;
 
   function routeForSkill(skill: CompanySkillRouteSubject, path?: string | null) {
@@ -4499,23 +4383,16 @@ export function CompanySkills() {
       if (result.imported[0]) navigate(routeForSkill(result.imported[0]));
       pushToast({
         tone: "success",
-        title: t("companySkills.skillsImported"),
-        body: t(result.imported.length === 1 ? "companySkills.skillsImportedBody_one" : "companySkills.skillsImportedBody_other", {
-          count: result.imported.length,
-        }),
+        title: translateInstant("companySkills.skillsImported"),
+        body: `${result.imported.length} skill${result.imported.length === 1 ? "" : "s"} added.`,
       });
       if (result.warnings[0]) {
-        pushToast({ tone: "warn", title: t("companySkills.importWarnings"), body: result.warnings[0] });
+        pushToast({ tone: "warn", title: translateInstant("Import warnings"), body: result.warnings[0] });
       }
       setSource("");
     },
     onError: (error) => {
-      reportSkillError(
-        error,
-        t("companySkills.skillImportFailed"),
-        t("companySkills.skillImportFailedBody"),
-        t("companySkills.importingSkills", { defaultValue: "Importing skills" }),
-      );
+      reportSkillError(error, translateInstant("Skill import failed"), "Failed to import skill source.", "Importing skills");
     },
   });
 
@@ -4526,13 +4403,11 @@ export function CompanySkills() {
     ),
     onMutate: (projectId) => {
       setScanStatusMessage(
-        projectId
-          ? t("companySkills.refreshingSkillsList")
-          : t("companySkills.scanningProjectWorkspaces"),
+        projectId ? "Refreshing project skills..." : "Scanning project workspaces for skills...",
       );
     },
     onSuccess: async (result) => {
-      setScanStatusMessage(t("companySkills.refreshingSkillsList"));
+      setScanStatusMessage("Refreshing skills list...");
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.companySkills.list(selectedCompanyId!) }),
         queryClient.invalidateQueries({ queryKey: queryKeys.folders.list(selectedCompanyId!, "skill") }),
@@ -4541,31 +4416,26 @@ export function CompanySkills() {
       setScanStatusMessage(summary);
       pushToast({
         tone: "success",
-        title: t("companySkills.projectSkillScanComplete"),
+        title: translateInstant("Project skill scan complete"),
         body: summary,
       });
       if (result.conflicts[0]) {
         pushToast({
           tone: "warn",
-          title: t("companySkills.skillConflictsFound"),
+          title: translateInstant("Skill conflicts found"),
           body: result.conflicts[0].reason,
         });
       } else if (result.warnings[0]) {
         pushToast({
           tone: "warn",
-          title: t("companySkills.scanWarnings"),
+          title: translateInstant("Scan warnings"),
           body: result.warnings[0],
         });
       }
     },
     onError: (error) => {
       setScanStatusMessage(null);
-      reportSkillError(
-        error,
-        t("companySkills.projectSkillScanFailed"),
-        t("companySkills.projectSkillScanFailedBody"),
-        t("companySkills.scanningProjectsForSkills", { defaultValue: "Scanning projects for skills" }),
-      );
+      reportSkillError(error, translateInstant("Project skill scan failed"), "Failed to scan project workspaces.", "Scanning projects for skills");
     },
   });
 
@@ -4578,19 +4448,14 @@ export function CompanySkills() {
       setCreateError(null);
       pushToast({
         tone: "success",
-        title: skill.forkedFromSkillId ? t("companySkills.skillForkCreated") : t("companySkills.skillCreated"),
-        body: t("companySkills.skillCreatedBody", { name: skill.name }),
+        title: skill.forkedFromSkillId ? translateInstant("companySkills.skillForkCreated") : translateInstant("Skill created"),
+        body: `${skill.name} is now editable in the Paperclip workspace.`,
       });
     },
     onError: (error) => {
-      const message = error instanceof Error ? error.message : t("companySkills.createSkillFailedBody");
+      const message = error instanceof Error ? error.message : "Failed to create skill.";
       setCreateError(message);
-      reportSkillError(
-        error,
-        t("companySkills.skillCreationFailed"),
-        t("companySkills.createSkillFailedBody"),
-        t("companySkills.creatingSkill", { defaultValue: "Creating a skill" }),
-      );
+      reportSkillError(error, "Skill creation failed", "Failed to create skill.", "Creating a skill");
     },
   });
 
@@ -4611,22 +4476,22 @@ export function CompanySkills() {
       setEditMode(false);
       pushToast({
         tone: "success",
-        title: t("companySkills.skillSaved"),
+        title: translateInstant("Skill saved"),
         body: result.path,
       });
     },
     onError: (error) => {
       pushToast({
         tone: "error",
-        title: t("companySkills.saveFailed"),
-        body: error instanceof Error ? error.message : t("companySkills.saveFailedBody"),
+        title: translateInstant("Save failed"),
+        body: error instanceof Error ? error.message : "Failed to save skill file.",
       });
     },
   });
 
   const toggleStar = useMutation({
     mutationFn: () => {
-      if (!activeDetail) throw new Error(t("companySkills.selectSkillFirst"));
+      if (!activeDetail) throw new Error("Select a skill first.");
       return activeDetail.starredByCurrentActor
         ? companySkillsApi.unstar(selectedCompanyId!, activeDetail.id)
         : companySkillsApi.star(selectedCompanyId!, activeDetail.id);
@@ -4641,8 +4506,8 @@ export function CompanySkills() {
     onError: (error) => {
       pushToast({
         tone: "error",
-        title: t("companySkills.starFailed"),
-        body: error instanceof Error ? error.message : t("companySkills.starFailedBody"),
+        title: translateInstant("companySkills.starFailed"),
+        body: error instanceof Error ? error.message : "Failed to update star.",
       });
     },
   });
@@ -4663,19 +4528,13 @@ export function CompanySkills() {
         queryClient.invalidateQueries({ queryKey: queryKeys.companySkills.list(selectedCompanyId!) }),
         queryClient.invalidateQueries({ queryKey: queryKeys.companySkills.detail(selectedCompanyId!, skill.id) }),
       ]);
-      pushToast({
-        tone: "success",
-        title: t("companySkills.skillSettingsUpdated", { defaultValue: "Skill settings updated" }),
-        body: skillSettingsToastBody(skill, t),
-      });
+      pushToast({ tone: "success", title: translateInstant("companySkills.skillSettingsUpdated"), body: skillSettingsToastBody(skill) });
     },
     onError: (error) => {
       pushToast({
         tone: "error",
-        title: t("companySkills.skillSettingsUpdateFailed", { defaultValue: "Skill settings update failed" }),
-        body: error instanceof Error
-          ? error.message
-          : t("companySkills.skillSettingsUpdateFailedBody", { defaultValue: "Failed to update skill settings." }),
+        title: translateInstant("companySkills.skillSettingsUpdateFailed"),
+        body: error instanceof Error ? error.message : "Failed to update skill settings.",
       });
     },
   });
@@ -4692,17 +4551,12 @@ export function CompanySkills() {
       navigate(routeForSkill(skill, selectedPath));
       pushToast({
         tone: "success",
-        title: t("companySkills.skillUpdated"),
-        body: skill.sourceRef ? t("companySkills.pinnedTo", { ref: shortRef(skill.sourceRef) }) : skill.name,
+        title: translateInstant("Skill updated"),
+        body: skill.sourceRef ? `Pinned to ${shortRef(skill.sourceRef)}` : skill.name,
       });
     },
     onError: (error) => {
-      reportSkillError(
-        error,
-        t("companySkills.updateFailed"),
-        t("companySkills.installUpdateFailedBody"),
-        t("companySkills.updatingSkill", { defaultValue: "Updating this skill" }),
-      );
+      reportSkillError(error, translateInstant("Update failed"), "Failed to install skill update.", "Updating this skill");
     },
   });
 
@@ -4748,15 +4602,15 @@ export function CompanySkills() {
     () => buildDiscoveryCards(installedSkills, catalogListQuery.data ?? []),
     [installedSkills, catalogListQuery.data],
   );
-  const discoveryTabCounts = useMemo(() => ({
-    all: discoveryCards.length,
-    installed: discoveryCards.filter((card) => card.installed).length,
-    catalog: discoveryCards.filter((card) => card.catalogRef != null).length,
-    bundled: discoveryCards.filter((card) => card.required).length,
-  }), [discoveryCards]);
   const discoveryTabCards = useMemo(
-    () => cardsForTab(discoveryCards, discoveryTab),
-    [discoveryCards, discoveryTab],
+    () => {
+      if (streamlinedUiEnabled) return cardsForTab(discoveryCards, discoveryTab);
+      if (legacyDiscoveryTab === "installed") return discoveryCards.filter((card) => card.installed);
+      if (legacyDiscoveryTab === "catalog") return discoveryCards.filter((card) => card.catalogRef != null);
+      if (legacyDiscoveryTab === "bundled") return discoveryCards.filter((card) => card.required);
+      return discoveryCards;
+    },
+    [discoveryCards, discoveryTab, legacyDiscoveryTab, streamlinedUiEnabled],
   );
   const discoveryCategoryCounts = useMemo<DiscoveryCategory[]>(() => {
     const counts = new Map<string, number>();
@@ -4773,24 +4627,24 @@ export function CompanySkills() {
   // Selecting a folder shows its whole subtree (folder + descendants), matching
   // the folder-browser model. `null` means no subtree constraint (All/Unfiled).
   const folderSubtreeIds = useMemo(() => {
-    if (folderSelection === "all" || folderSelection === "unfiled") return null;
+    if (visibleFolderSelection === "all" || visibleFolderSelection === "unfiled") return null;
     const model = treeFromResult(skillFoldersQuery.data);
-    if (!model.byId.has(folderSelection)) return null;
-    return subtreeFolderIds(model, folderSelection);
-  }, [folderSelection, skillFoldersQuery.data]);
+    if (!model.byId.has(visibleFolderSelection)) return null;
+    return subtreeFolderIds(model, visibleFolderSelection);
+  }, [skillFoldersQuery.data, visibleFolderSelection]);
   const visibleDiscoveryCards = useMemo(() => {
     const filtered = discoveryTabCards.filter((card) => {
-      if (discoveryCategory && !card.categories.includes(discoveryCategory)) return false;
+      if (visibleDiscoveryCategory && !card.categories.includes(visibleDiscoveryCategory)) return false;
       // Search spans all folders (user story 5): the folder filter only
       // narrows when the user is browsing, never when searching.
-      if (discoveryTab === "installed" && !discoverySearchActive) {
-        if (folderSelection === "unfiled" && card.folderId) return false;
+      if (effectiveDiscoveryTab === "installed" && !discoverySearchActive) {
+        if (visibleFolderSelection === "unfiled" && card.folderId) return false;
         if (folderSubtreeIds && (!card.folderId || !folderSubtreeIds.has(card.folderId))) return false;
       }
       return discoveryMatchesSearch(card, discoverySearch.trim());
     });
-    return sortDiscoveryCards(filtered, discoverySort, discoveryTab !== "bundled");
-  }, [discoveryTabCards, discoveryCategory, discoverySearch, discoverySearchActive, discoverySort, discoveryTab, folderSelection, folderSubtreeIds]);
+    return sortDiscoveryCards(filtered, discoverySort, effectiveDiscoveryTab === "discover");
+  }, [discoverySearch, discoverySearchActive, discoverySort, discoveryTabCards, effectiveDiscoveryTab, folderSubtreeIds, visibleDiscoveryCategory, visibleFolderSelection]);
 
   const selectedCatalogSkill = catalogDetailQuery.data
     ?? (catalogListQuery.data ?? []).find((entry) => entry.id === selectedCatalogRef || entry.key === selectedCatalogRef)
@@ -4826,13 +4680,29 @@ export function CompanySkills() {
     return counts;
   }, [installedSkills]);
   const installCatalog = useMutation({
-    mutationFn: (payload: { catalogSkillId: string; slug: string | null; force: boolean }) =>
+    mutationFn: (payload: { catalogSkillId: string; slug: string | null; force: boolean; agentIds: string[] }) =>
       companySkillsApi.installCatalog(selectedCompanyId!, {
         catalogSkillId: payload.catalogSkillId,
         slug: payload.slug,
         force: payload.force,
       }),
-    onSuccess: async (result) => {
+    onSuccess: async (result, payload) => {
+      // Enable the skill for the agents chosen in the install dialog before any
+      // invalidation, so the refetched skill detail already reflects the
+      // attachments. Mode "add" appends to each agent's desired set without
+      // clobbering concurrent edits. A per-agent failure must not fail the
+      // install itself — the skill is in the library either way.
+      const enableTargets = result.action === "created" ? payload.agentIds : [];
+      let enabledCount = 0;
+      let enableFailures = 0;
+      for (const agentId of enableTargets) {
+        try {
+          await agentsApi.syncSkills(agentId, [{ key: result.skill.key, versionId: null }], "add", selectedCompanyId ?? undefined);
+          enabledCount += 1;
+        } catch {
+          enableFailures += 1;
+        }
+      }
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.companySkills.list(selectedCompanyId!) }),
         queryClient.invalidateQueries({ queryKey: queryKeys.companySkills.detail(selectedCompanyId!, result.skill.id) }),
@@ -4840,26 +4710,33 @@ export function CompanySkills() {
       setInstallDialogState((current) => ({ ...current, open: false, error: null }));
       pushToast({
         tone: "success",
-        title: result.action === "created"
-          ? t("companySkills.skillInstalled")
-          : result.action === "updated"
-            ? t("companySkills.skillUpdated")
-            : t("companySkills.skillIsUpToDate"),
-        body: result.skill.name,
+        title: result.action === "created" ? translateInstant("companySkills.skillInstalled") : result.action === "updated" ? translateInstant("Skill updated") : translateInstant("companySkills.skillIsUpToDate"),
+        body: result.action === "created"
+          ? enabledCount > 0
+            ? `${result.skill.name} — enabled for ${enabledCount} agent${enabledCount === 1 ? "" : "s"}.`
+            : `${result.skill.name} is in the library but not enabled for any agent yet. Use "Add to agent" to enable it.`
+          : result.skill.name,
       });
+      if (enableFailures > 0) {
+        pushToast({
+          tone: "warn",
+          title: translateInstant("Skill installed, but enabling failed"),
+          body: `Could not enable ${result.skill.name} for ${enableFailures} agent${enableFailures === 1 ? "" : "s"}. Use "Add to agent" on the skill page.`,
+        });
+      }
       if (result.warnings[0]) {
-        pushToast({ tone: "warn", title: t("companySkills.installWarnings"), body: result.warnings[0] });
+        pushToast({ tone: "warn", title: translateInstant("companySkills.installWarnings"), body: result.warnings[0] });
       }
       if (result.action === "created") {
         navigate(routeForSkill(result.skill));
       }
     },
     onError: (error) => {
-      const message = error instanceof Error ? error.message : t("companySkills.installCatalogFailedBody");
+      const message = error instanceof Error ? error.message : "Failed to install catalog skill.";
       setInstallDialogState((current) => ({ ...current, error: message }));
       // Also surface explicit-policy / platform denials in the persistent banner
       // so the reason stays visible after the dialog closes.
-      policyDenial.capture(error, t("companySkills.installingSkill", { defaultValue: "Installing this skill" }));
+      policyDenial.capture(error, "Installing this skill");
     },
   });
   const createFolder = useMutation({
@@ -4884,32 +4761,21 @@ export function CompanySkills() {
         } catch (moveError) {
           pushToast({
             tone: "error",
-            title: t("folders.createdMoveFailed", { defaultValue: "Folder created, move failed" }),
-            body: moveError instanceof Error
-              ? moveError.message
-              : t("folders.moveSelectedFailed", {
-                  defaultValue: "Failed to move the selected {{items}}.",
-                  items: t("folders.skills", { defaultValue: "skills" }),
-                }),
+            title: translateInstant("folders.createdMoveFailed"),
+            body: moveError instanceof Error ? moveError.message : "Failed to move the selected skills.",
           });
           return;
         }
       } else {
         setFolderSelection(folder.id);
       }
-      pushToast({
-        tone: "success",
-        title: t("folders.created", { defaultValue: "Folder created" }),
-        body: folder.name,
-      });
+      pushToast({ tone: "success", title: translateInstant("folders.created"), body: folder.name });
     },
     onError: (error) => {
       pushToast({
         tone: "error",
-        title: t("folders.saveFailed", { defaultValue: "Folder save failed" }),
-        body: error instanceof Error
-          ? error.message
-          : t("folders.saveError", { defaultValue: "Failed to save folder." }),
+        title: translateInstant("folders.saveFailed"),
+        body: error instanceof Error ? error.message : "Failed to save folder.",
       });
     },
   });
@@ -4924,10 +4790,8 @@ export function CompanySkills() {
     onError: (error) => {
       pushToast({
         tone: "error",
-        title: t("folders.saveFailed", { defaultValue: "Folder save failed" }),
-        body: error instanceof Error
-          ? error.message
-          : t("folders.updateError", { defaultValue: "Failed to update folder." }),
+        title: translateInstant("folders.saveFailed"),
+        body: error instanceof Error ? error.message : "Failed to update folder.",
       });
     },
   });
@@ -4939,17 +4803,15 @@ export function CompanySkills() {
       setFolderSelection(folder.id);
       pushToast({
         tone: "success",
-        title: t("folders.moved", { defaultValue: "Folder moved" }),
-        body: folder.name,
+        title: translateInstant("folders.moved"),
+        body: skillFolderPathDisplayFallback(folder.path) ?? folder.name,
       });
     },
     onError: (error) => {
       pushToast({
         tone: "error",
-        title: t("folders.moveFailed", { defaultValue: "Folder move failed" }),
-        body: error instanceof Error
-          ? error.message
-          : t("folders.moveError", { defaultValue: "Failed to move folder." }),
+        title: translateInstant("folders.moveFailed"),
+        body: error instanceof Error ? error.message : "Failed to move folder.",
       });
     },
   });
@@ -4962,22 +4824,13 @@ export function CompanySkills() {
         queryClient.invalidateQueries({ queryKey: queryKeys.companySkills.list(selectedCompanyId!) }),
         queryClient.invalidateQueries({ queryKey: queryKeys.folders.list(selectedCompanyId!, "skill") }),
       ]);
-      pushToast({
-        tone: "success",
-        title: t("folders.deleted", { defaultValue: "Folder deleted" }),
-        body: t("folders.itemsMovedToUnfiled", {
-          defaultValue: "{{items}} moved to Unfiled.",
-          items: t("folders.skillsTitle", { defaultValue: "Skills" }),
-        }),
-      });
+      pushToast({ tone: "success", title: translateInstant("folders.deleted"), body: "Skills moved to Unfiled." });
     },
     onError: (error) => {
       pushToast({
         tone: "error",
-        title: t("folders.deleteFailed", { defaultValue: "Folder delete failed" }),
-        body: error instanceof Error
-          ? error.message
-          : t("folders.deleteError", { defaultValue: "Failed to delete folder." }),
+        title: translateInstant("folders.deleteFailed"),
+        body: error instanceof Error ? error.message : "Failed to delete folder.",
       });
     },
   });
@@ -4993,13 +4846,8 @@ export function CompanySkills() {
     onError: (error) => {
       pushToast({
         tone: "error",
-        title: t("folders.itemMoveFailed", { defaultValue: "Move failed" }),
-        body: error instanceof Error
-          ? error.message
-          : t("folders.moveItemError", {
-              defaultValue: "Failed to move {{item}}.",
-              item: t("folders.skill", { defaultValue: "skill" }),
-            }),
+        title: translateInstant("folders.itemMoveFailed"),
+        body: error instanceof Error ? error.message : "Failed to move skill.",
       });
     },
   });
@@ -5015,30 +4863,12 @@ export function CompanySkills() {
         queryClient.invalidateQueries({ queryKey: queryKeys.companySkills.list(selectedCompanyId!) }),
         queryClient.invalidateQueries({ queryKey: queryKeys.folders.list(selectedCompanyId!, "skill") }),
       ]);
-      pushToast({
-        tone: "success",
-        title: t("folders.itemsMoved", {
-          defaultValue: "{{items}} moved",
-          items: t("folders.skillsTitle", { defaultValue: "Skills" }),
-        }),
-        body: t("folders.itemCountFiled", {
-          defaultValue: "{{count}} skills filed.",
-          count: ids.length,
-        }),
-      });
+      pushToast({ tone: "success", title: translateInstant("folders.skillsMoved"), body: `${ids.length} skill${ids.length === 1 ? "" : "s"} filed.` });
     } catch (moveError) {
       pushToast({
         tone: "error",
-        title: t("folders.moveItemsFailed", {
-          defaultValue: "Failed to move {{items}}",
-          items: t("folders.skills", { defaultValue: "skills" }),
-        }),
-        body: moveError instanceof Error
-          ? moveError.message
-          : t("folders.moveSelectedFailed", {
-              defaultValue: "Failed to move the selected {{items}}.",
-              items: t("folders.skills", { defaultValue: "skills" }),
-            }),
+        title: translateInstant("Failed to move skills"),
+        body: moveError instanceof Error ? moveError.message : "Failed to move the selected skills.",
       });
     }
   }
@@ -5053,19 +4883,17 @@ export function CompanySkills() {
     onError: (error) => {
       pushToast({
         tone: "error",
-        title: t("folders.openMySkillsFailed", { defaultValue: "Couldn't open My Skills" }),
-        body: error instanceof Error
-          ? error.message
-          : t("folders.createPersonalError", { defaultValue: "Failed to create your personal folder." }),
+        title: translateInstant("folders.openMySkillsFailed"),
+        body: error instanceof Error ? error.message : "Failed to create your personal folder.",
       });
     },
   });
 
   async function openNewSkill() {
     const model = treeFromResult(skillFoldersQuery.data);
-    const selectedFolder = folderSelection === "all" || folderSelection === "unfiled"
+    const selectedFolder = visibleFolderSelection === "all" || visibleFolderSelection === "unfiled"
       ? null
-      : model.byId.get(folderSelection) ?? null;
+      : model.byId.get(visibleFolderSelection) ?? null;
     if (selectedFolder?.systemKey === "my") {
       try {
         const personalFolder = await ensureMyFolder.mutateAsync();
@@ -5114,10 +4942,8 @@ export function CompanySkills() {
     } catch (error) {
       pushToast({
         tone: "error",
-        title: t("folders.createFailed", { defaultValue: "Folder create failed" }),
-        body: error instanceof Error
-          ? error.message
-          : t("folders.createError", { defaultValue: "Failed to create folder." }),
+        title: translateInstant("folders.createFailed"),
+        body: error instanceof Error ? error.message : "Failed to create folder.",
       });
       return null;
     }
@@ -5141,24 +4967,16 @@ export function CompanySkills() {
       setSelectMode(false);
       pushToast({
         tone: "success",
-        title: ids.length === 1
-          ? t("folders.skillMoved", { defaultValue: "Skill moved" })
-          : t("folders.skillsMoved", { defaultValue: "Skills moved" }),
+        title: ids.length === 1 ? translateInstant("folders.skillMoved") : translateInstant("folders.skillsMoved"),
         body: folderId
-          ? t("folders.filedUnder", {
-              defaultValue: "Filed under {{folder}}.",
-              folder: skillFolderResult?.folders.find((folder) => folder.id === folderId)?.name
-                ?? t("folders.folder", { defaultValue: "folder" }),
-            })
-          : t("folders.movedToUnfiled", { defaultValue: "Moved to Unfiled." }),
+          ? `Filed under ${skillFolderResult?.folders.find((folder) => folder.id === folderId)?.name ?? "folder"}.`
+          : "Moved to Unfiled.",
       });
     } catch (moveError) {
       pushToast({
         tone: "error",
-        title: t("folders.itemMoveFailed", { defaultValue: "Move failed" }),
-        body: moveError instanceof Error
-          ? moveError.message
-          : t("folders.moveErrorGeneric", { defaultValue: "Failed to move." }),
+        title: translateInstant("folders.itemMoveFailed"),
+        body: moveError instanceof Error ? moveError.message : "Failed to move.",
       });
     }
   }
@@ -5225,17 +5043,9 @@ export function CompanySkills() {
         }
         await attachAgentsMutation.mutateAsync({ agentId, desiredSkills: currentEntries });
       }
-      pushToast({
-        tone: "success",
-        title: t("companySkills.agentsUpdated"),
-        body: t(nextAgentIds.length === 1 ? "companySkills.agentsAttached_one" : "companySkills.agentsAttached_other", { count: nextAgentIds.length }),
-      });
+      pushToast({ tone: "success", title: translateInstant("companySkills.agentsUpdated"), body: `${nextAgentIds.length} agent(s) attached.` });
     } catch (error) {
-      pushToast({
-        tone: "error",
-        title: t("companySkills.updateFailed"),
-        body: error instanceof Error ? error.message : t("companySkills.failedToUpdateAgentSkills"),
-      });
+      pushToast({ tone: "error", title: translateInstant("Update failed"), body: error instanceof Error ? error.message : "Failed to update agent skills." });
     }
   }
 
@@ -5285,28 +5095,24 @@ export function CompanySkills() {
       navigate("/skills", { replace: true });
       pushToast({
         tone: "success",
-        title: t("companySkills.skillRemoved"),
-        body: t("companySkills.skillRemovedBody", { name: skill.name }),
+        title: translateInstant("companySkills.skillRemoved"),
+        body: `${skill.name} was removed from the organization skill library.`,
       });
     },
     onError: (error) => {
-      reportSkillError(
-        error,
-        t("companySkills.removeFailed"),
-        t("companySkills.removeSkillFailedBody"),
-        t("companySkills.removingSkill", { defaultValue: "Removing this skill" }),
-      );
+      reportSkillError(error, "Remove failed", "Failed to remove skill.", "Removing this skill");
     },
   });
 
   const skillFolderResult = skillFoldersQuery.data ?? null;
-  const showInstalledFolders = isDiscovery && discoveryTab === "installed";
+  const showInstalledFolders = isDiscovery && effectiveDiscoveryTab === "installed";
+  const showInstalledBulkSelection = showInstalledFolders && !streamlinedUiEnabled;
   // Rail counts reflect the current category/search scope, never the folder
   // filter itself (ux-spec §5.3).
   const railSkillFolderResult = useMemo(() => {
-    if (!skillFolderResult || discoveryTab !== "installed") return skillFolderResult;
+    if (!skillFolderResult || effectiveDiscoveryTab !== "installed") return skillFolderResult;
     const scoped = discoveryTabCards.filter((card) => {
-      if (discoveryCategory && !card.categories.includes(discoveryCategory)) return false;
+      if (visibleDiscoveryCategory && !card.categories.includes(visibleDiscoveryCategory)) return false;
       return discoveryMatchesSearch(card, discoverySearch.trim());
     });
     const direct = new Map<string, number>();
@@ -5328,14 +5134,14 @@ export function CompanySkills() {
         return { ...folder, itemCount };
       }),
     };
-  }, [skillFolderResult, discoveryTab, discoveryTabCards, discoveryCategory, discoverySearch]);
+  }, [discoverySearch, discoveryTabCards, effectiveDiscoveryTab, skillFolderResult, visibleDiscoveryCategory]);
   const activeSkillFolderDisplayPath = useMemo(
-    () => localizedSkillFolderDisplayPath(skillFolderResult, activeDetail?.folderId),
-    [skillFolderResult, activeDetail?.folderId, i18n.language],
+    () => skillFolderDisplayPath(treeFromResult(skillFolderResult), activeDetail?.folderId),
+    [skillFolderResult, activeDetail?.folderId],
   );
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={Boxes} message={t("companySkills.selectCompany", { defaultValue: "Select a company to manage skills." })} />;
+    return <EmptyState icon={Boxes} message={translateInstant("Select an organization to manage skills.")} />;
   }
 
   function handleAddSkillSource() {
@@ -5373,16 +5179,10 @@ export function CompanySkills() {
     ? (catalogListQuery.data ?? []).find((entry) => entry.key === activeDetail.key)?.source ?? null
     : null;
   const studioBackHref = studioForkDetailQuery.data ? routeForSkill(studioForkDetailQuery.data) : "/skills";
-  const studioTitle = studioForkFromId
-    ? t("companySkills.forkSkill", { defaultValue: "Fork skill" })
-    : t("companySkills.createNewSkillTitle", { defaultValue: "Create a new skill" });
+  const studioTitle = studioForkFromId ? "Fork skill" : "Create a new skill";
   const studioDescription = studioForkFromId
-    ? t("companySkills.forkSkillDescription", {
-        defaultValue: "Review the fork metadata and create an editable company copy.",
-      })
-    : t("companySkills.createNewSkillDescription", {
-        defaultValue: "Create an editable company skill in the Paperclip CN workspace.",
-      });
+    ? "Review the fork metadata and create an editable organization copy."
+    : "Create an editable organization skill in the Paperclip workspace.";
   return (
     <>
       {policyDenial.denial ? (
@@ -5393,44 +5193,39 @@ export function CompanySkills() {
       <Dialog open={deleteOpen} onOpenChange={closeDeleteDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{t("companySkills.removeSkillTitle")}</DialogTitle>
+            <DialogTitle>{translateInstant("companySkills.removeSkillAction")}</DialogTitle>
             <DialogDescription>
-              {t("companySkills.removeSkillDescription")}
-            </DialogDescription>
+              {translateInstant("Remove this skill from the organization library. If any agents still use it, removal will be blocked until it is detached.")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-3 text-sm">
             <p>
               {deleteTargetDetail
-                ? t("companySkills.removeSkillTarget", { name: deleteTargetDetail.name })
-                : t("companySkills.removeThisSkillTarget")}
+                ? `You are about to remove ${deleteTargetDetail.name}.`
+                : translateInstant("companySkills.removeThisSkillTarget")}
             </p>
             {deleteTargetDetail?.usedByAgents?.length ? (
               <div className="rounded-md border border-border px-3 py-3 text-muted-foreground">
-                {t("companySkills.currentlyUsedBy", { agents: deleteTargetDetail.usedByAgents.map((agent) => agent.name).join(", ") })}
-              </div>
+                {translateInstant("Currently used by")}{" "}{deleteTargetDetail.usedByAgents.map((agent) => agent.name).join(", ")}{translateInstant(".")}</div>
             ) : null}
             {(deleteTargetDetail?.usedByAgents.length ?? 0) > 0 ? (
               <p className="text-muted-foreground">
-                {t("companySkills.detachToRemove")}
-              </p>
+                {translateInstant("companySkills.detachToRemove")}</p>
             ) : null}
           </div>
           <DialogFooter>
             {(deleteTargetDetail?.usedByAgents.length ?? 0) > 0 ? (
               <Button variant="ghost" onClick={() => closeDeleteDialog(false)}>
-                {t("Close")}
-              </Button>
+                {translateInstant("Close")}</Button>
             ) : (
               <>
                 <Button variant="ghost" onClick={() => closeDeleteDialog(false)} disabled={deleteSkill.isPending}>
-                  {t("Cancel")}
-                </Button>
+                  {translateInstant("Cancel")}</Button>
                 <Button
                   variant="destructive"
                   onClick={() => deleteSkill.mutate()}
                   disabled={deleteSkill.isPending || !deleteTargetSkillId}
                 >
-                  {deleteSkill.isPending ? t("companySkills.removing") : t("companySkills.removeSkillAction")}
+                  {deleteSkill.isPending ? translateInstant("Removing...") : translateInstant("companySkills.removeSkillAction")}
                 </Button>
               </>
             )}
@@ -5441,10 +5236,9 @@ export function CompanySkills() {
       <Dialog open={emptySourceHelpOpen} onOpenChange={setEmptySourceHelpOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{t("companySkills.addSkillSource")}</DialogTitle>
+            <DialogTitle>{translateInstant("Add a skill source")}</DialogTitle>
             <DialogDescription>
-              {t("companySkills.addSkillSourceDescription")}
-            </DialogDescription>
+              {translateInstant("Paste a local path, GitHub URL, or `skills.sh` command into the field first.")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-3 text-sm">
             <a
@@ -5454,10 +5248,9 @@ export function CompanySkills() {
               className="flex items-start justify-between rounded-md border border-border px-3 py-3 text-foreground no-underline transition-colors hover:bg-accent/40"
             >
               <span>
-                <span className="block font-medium">{t("companySkills.browseSkillsSh")}</span>
+                <span className="block font-medium">{translateInstant("companySkills.browseSkillsSh")}</span>
                 <span className="mt-1 block text-muted-foreground">
-                  {t("companySkills.browseSkillsShDescription")}
-                </span>
+                  {translateInstant("Find install commands and paste one here.")}</span>
               </span>
               <ExternalLink className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
             </a>
@@ -5468,10 +5261,9 @@ export function CompanySkills() {
               className="flex items-start justify-between rounded-md border border-border px-3 py-3 text-foreground no-underline transition-colors hover:bg-accent/40"
             >
               <span>
-                <span className="block font-medium">{t("companySkills.searchGitHub")}</span>
+                <span className="block font-medium">{translateInstant("companySkills.searchGitHub")}</span>
                 <span className="mt-1 block text-muted-foreground">
-                  {t("companySkills.searchGitHubDescription")}
-                </span>
+                  {translateInstant("Look for repositories with `SKILL.md`, then paste the repo URL here.")}</span>
               </span>
               <ExternalLink className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
             </a>
@@ -5490,14 +5282,16 @@ export function CompanySkills() {
         defaultSlug={installDialogState.defaultSlug}
         defaultForce={installDialogState.defaultForce}
         defaultAction={installDialogState.defaultAction}
+        agents={eligibleAgentsForAttach}
         isPending={installCatalog.isPending}
         error={installDialogState.error}
-        onConfirm={({ slug, force }) => {
+        onConfirm={({ slug, force, agentIds }) => {
           if (!installDialogState.catalogSkill) return;
           installCatalog.mutate({
             catalogSkillId: installDialogState.catalogSkill.id,
             slug,
             force,
+            agentIds,
           });
         }}
       />
@@ -5505,9 +5299,9 @@ export function CompanySkills() {
       <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>{t("companySkills.importSkill")}</DialogTitle>
+            <DialogTitle>{translateInstant("Import a skill")}</DialogTitle>
             <DialogDescription>
-              {t("companySkills.importSkillDescription")}
+              Paste a local path, GitHub URL, or `skills.sh` command to import a skill into this organization.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
@@ -5515,11 +5309,11 @@ export function CompanySkills() {
               <Input
                 value={source}
                 onChange={(event) => setSource(event.target.value)}
-                placeholder={t("companySkills.sourcePlaceholder")}
+                placeholder={translateInstant("companySkills.sourcePlaceholder")}
                 className="h-9 rounded-none border-0 px-0 shadow-none focus-visible:ring-0"
               />
               <Button size="sm" onClick={handleAddSkillSource} disabled={importSkill.isPending}>
-                {importSkill.isPending ? <RefreshCw className="h-4 w-4 animate-spin" /> : t("Import")}
+                {importSkill.isPending ? <RefreshCw className="h-4 w-4 animate-spin" /> : translateInstant("Import")}
               </Button>
             </div>
             <a
@@ -5529,8 +5323,8 @@ export function CompanySkills() {
               className="flex items-start justify-between rounded-md border border-border px-3 py-3 text-sm text-foreground no-underline transition-colors hover:bg-accent/40"
             >
               <span>
-                <span className="block font-medium">{t("companySkills.browseSkillsSh")}</span>
-                <span className="mt-1 block text-muted-foreground">{t("companySkills.browseSkillsShDescription")}</span>
+                <span className="block font-medium">{translateInstant("companySkills.browseSkillsSh")}</span>
+                <span className="mt-1 block text-muted-foreground">{translateInstant("Find install commands and paste one here.")}</span>
               </span>
               <ExternalLink className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
             </a>
@@ -5541,8 +5335,8 @@ export function CompanySkills() {
               className="flex items-start justify-between rounded-md border border-border px-3 py-3 text-sm text-foreground no-underline transition-colors hover:bg-accent/40"
             >
               <span>
-                <span className="block font-medium">{t("companySkills.searchGitHub")}</span>
-                <span className="mt-1 block text-muted-foreground">{t("companySkills.searchGitHubDescriptionShort")}</span>
+                <span className="block font-medium">{translateInstant("companySkills.searchGitHub")}</span>
+                <span className="mt-1 block text-muted-foreground">Look for repositories with `SKILL.md`, then paste the repo URL.</span>
               </span>
               <ExternalLink className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
             </a>
@@ -5578,7 +5372,7 @@ export function CompanySkills() {
       <DeleteFolderDialog
         open={deleteFolderTarget !== null}
         folder={deleteFolderTarget}
-        itemLabelPlural={t("folders.skills", { defaultValue: "skills" })}
+        itemLabelPlural="skills"
         pending={deleteFolder.isPending}
         onOpenChange={(open) => {
           if (!open) setDeleteFolderTarget(null);
@@ -5592,8 +5386,8 @@ export function CompanySkills() {
         onOpenChange={setMobileFoldersOpen}
         result={railSkillFolderResult}
         selection={folderSelection}
-        allLabel={t("folders.allSkills", { defaultValue: "All skills" })}
-        itemLabelPlural={t("folders.skillsTitle", { defaultValue: "Skills" })}
+        allLabel="All skills"
+        itemLabelPlural={translateInstant("Skills")}
         onSelect={setFolderSelection}
         onCreate={() => openCreateFolder()}
       />
@@ -5603,7 +5397,7 @@ export function CompanySkills() {
           if (!open) setMoveDialog(null);
         }}
         result={railSkillFolderResult}
-        title={moveDialog?.title ?? t("folders.moveToFolder", { defaultValue: "Move to folder" })}
+        title={moveDialog?.title ?? translateInstant("folders.moveToFolder")}
         subtitle={moveDialog?.subtitle ?? null}
         currentFolderId={moveDialog?.currentFolderId ?? null}
         onMove={(folderId) => void performDialogMove(folderId)}
@@ -5618,8 +5412,7 @@ export function CompanySkills() {
               className="mb-3 inline-flex items-center gap-1.5 text-sm text-muted-foreground no-underline transition-colors hover:text-foreground"
             >
               <ChevronLeft className="h-4 w-4" />
-              {t("Back", { defaultValue: "Back" })}
-            </Link>
+              {translateInstant("Back")}</Link>
             <h1 className="text-2xl font-semibold">{studioTitle}</h1>
             <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{studioDescription}</p>
           </div>
@@ -5628,10 +5421,7 @@ export function CompanySkills() {
               {studioForkFromId && studioForkDetailQuery.isLoading ? (
                 <PageSkeleton variant="detail" />
               ) : studioForkFromId && !studioForkDetailQuery.data ? (
-                <EmptyState
-                  icon={Boxes}
-                  message={t("companySkills.forkSourceNotFound", { defaultValue: "Fork source skill not found." })}
-                />
+                <EmptyState icon={Boxes} message={translateInstant("companySkills.forkSourceNotFound")} />
               ) : (
                 <NewSkillWizard
                   initialDraft={studioDraft}
@@ -5645,13 +5435,24 @@ export function CompanySkills() {
           </div>
         </div>
       ) : isDiscovery ? (
+        <>
+        {!streamlinedUiEnabled ? (
+          <div className="px-4 pt-4">
+            <Tabs value={legacyDiscoveryTab} onValueChange={(value) => setLegacyDiscoveryTab(value as "all" | "installed" | "catalog" | "bundled")}>
+              <TabsList variant="line" aria-label={translateInstant("Skills view")}>
+                <TabsTrigger value="all">{translateInstant("All")}</TabsTrigger>
+                <TabsTrigger value="installed">{translateInstant("Installed")}</TabsTrigger>
+                <TabsTrigger value="catalog">{translateInstant("companySkills.source.catalog")}</TabsTrigger>
+                <TabsTrigger value="bundled">{translateInstant("Bundled")}</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+        ) : null}
         <DiscoveryGrid
-          tab={discoveryTab}
-          tabCounts={discoveryTabCounts}
-          onTabChange={setDiscoveryTab}
+          tab={effectiveDiscoveryTab}
           categories={discoveryCategoryCounts}
           categoryTotal={discoveryTabCards.length}
-          activeCategory={discoveryCategory}
+          activeCategory={visibleDiscoveryCategory}
           onCategoryChange={setDiscoveryCategory}
           search={discoverySearch}
           onSearchChange={setDiscoverySearch}
@@ -5661,19 +5462,19 @@ export function CompanySkills() {
           onOpenCard={openDiscoveryCard}
           loading={skillsQuery.isLoading || catalogListQuery.isLoading}
           error={skillsQuery.error?.message ?? catalogListQuery.error?.message ?? null}
-          totalCount={discoveryCards.length}
+          totalCount={discoveryTabCards.length}
           onCreate={() => void openNewSkill()}
           onImport={() => setImportDialogOpen(true)}
           onImportFromProject={() => setImportFromProjectOpen(true)}
-          onBrowseCatalog={() => setDiscoveryTab("catalog")}
+          onBrowseDiscover={() => streamlinedUiEnabled ? setDiscoveryTab("discover") : setLegacyDiscoveryTab("catalog")}
           onScan={(projectId) => scanProjects.mutate(projectId)}
           scanPending={scanProjects.isPending}
           scanStatus={scanStatusMessage}
           folderResult={showInstalledFolders ? railSkillFolderResult : null}
-          folderSelection={folderSelection}
+          folderSelection={visibleFolderSelection}
           foldersLoading={skillFoldersQuery.isLoading}
-          selectMode={showInstalledFolders && selectMode}
-          selectedSkillIds={selectedSkillIds}
+          selectMode={showInstalledBulkSelection && selectMode}
+          selectedSkillIds={showInstalledBulkSelection ? selectedSkillIds : []}
           onFolderSelect={showInstalledFolders ? setFolderSelection : undefined}
           onOpenMobileFolders={showInstalledFolders ? () => setMobileFoldersOpen(true) : undefined}
           onCreateFolder={showInstalledFolders ? () => openCreateFolder() : undefined}
@@ -5683,11 +5484,8 @@ export function CompanySkills() {
             if (!card.skillId) return;
             setMoveDialog({
               skillIds: [card.skillId],
-              title: t("folders.moveNamedItem", {
-                defaultValue: "Move \"{{name}}\"",
-                name: card.name,
-              }),
-              subtitle: t("folders.chooseDestination", { defaultValue: "Choose a destination folder." }),
+              title: `Move "${card.name}"`,
+              subtitle: "Choose a destination folder.",
               currentFolderId: card.folderId ?? null,
             });
           } : undefined}
@@ -5698,11 +5496,11 @@ export function CompanySkills() {
           } : undefined}
           onMoveFolder={showInstalledFolders ? (folder, destination) => void moveFolderBetweenScopes(folder, destination) : undefined}
           onDeleteFolder={showInstalledFolders ? setDeleteFolderTarget : undefined}
-          onToggleSelectMode={showInstalledFolders ? () => {
+          onToggleSelectMode={showInstalledBulkSelection ? () => {
             setSelectMode((current) => !current);
             if (selectMode) setSelectedSkillIds([]);
           } : undefined}
-          onSelectCard={showInstalledFolders ? (card, selected) => {
+          onSelectCard={showInstalledBulkSelection ? (card, selected) => {
             if (!card.skillId) return;
             setSelectedSkillIds((current) =>
               selected
@@ -5717,20 +5515,12 @@ export function CompanySkills() {
             moveSkillToFolder.mutate({ itemId: skillId, folderId });
             pushToast({
               tone: "success",
-              title: t("folders.skillMoved", { defaultValue: "Skill moved" }),
+              title: translateInstant("folders.skillMoved"),
               body: folderId
-                ? t("folders.movedNamedItemToFolder", {
-                    defaultValue: "Moved \"{{name}}\" to {{folder}}.",
-                    name: card.name,
-                    folder: skillFolderResult?.folders.find((folder) => folder.id === folderId)?.name
-                      ?? t("folders.folder", { defaultValue: "folder" }),
-                  })
-                : t("folders.movedNamedItemToUnfiled", {
-                    defaultValue: "Moved \"{{name}}\" to Unfiled.",
-                    name: card.name,
-                  }),
+                ? `Moved "${card.name}" to ${skillFolderResult?.folders.find((folder) => folder.id === folderId)?.name ?? "folder"}.`
+                : `Moved "${card.name}" to Unfiled.`,
               action: {
-                label: t("common.undo", { defaultValue: "Undo" }),
+                label: translateInstant("common.undo"),
                 onClick: () => moveSkillToFolder.mutate({ itemId: skillId, folderId: previousFolderId }),
               },
             });
@@ -5738,11 +5528,13 @@ export function CompanySkills() {
           onCreateFolderAndMoveCard={showInstalledFolders ? (card) => {
             if (card.skillId) openCreateFolder([card.skillId]);
           } : undefined}
-          onMoveSelected={showInstalledFolders ? (folderId) => void moveSelectedSkills(folderId) : undefined}
-          onCreateFolderAndMoveSelected={showInstalledFolders ? () => openCreateFolder(selectedSkillIds) : undefined}
-          onClearSelected={showInstalledFolders ? () => setSelectedSkillIds([]) : undefined}
+          onMoveSelected={showInstalledBulkSelection ? (folderId) => void moveSelectedSkills(folderId) : undefined}
+          onCreateFolderAndMoveSelected={showInstalledBulkSelection ? () => openCreateFolder(selectedSkillIds) : undefined}
+          onClearSelected={showInstalledBulkSelection ? () => setSelectedSkillIds([]) : undefined}
           folderNudgeStorageKey={showInstalledFolders ? `paperclip:skills-folder-nudge:${selectedCompanyId ?? "none"}` : undefined}
+          showBrowseRails={browseRailsEnabled}
         />
+        </>
       ) : activeView === "installed" && selectedSkillId ? (
         <SkillDetailPage
           detail={activeDetail}
@@ -5795,11 +5587,8 @@ export function CompanySkills() {
           onUpdateSettings={(updates) => activeDetail && updateSkillSettings.mutate({ skillId: activeDetail.id, updates })}
           onMoveToFolder={activeDetail ? () => setMoveDialog({
             skillIds: [activeDetail.id],
-            title: t("folders.moveNamedItem", {
-              defaultValue: "Move \"{{name}}\"",
-              name: activeDetail.name,
-            }),
-            subtitle: t("folders.chooseDestination", { defaultValue: "Choose a destination folder." }),
+            title: `Move "${activeDetail.name}"`,
+            subtitle: "Choose a destination folder.",
             currentFolderId: activeDetail.folderId ?? null,
           }) : undefined}
           updateSettingsPending={updateSkillSettings.isPending}
@@ -5817,17 +5606,16 @@ export function CompanySkills() {
               className="inline-flex items-center gap-1.5 text-sm text-muted-foreground no-underline transition-colors hover:text-foreground"
             >
               <ChevronLeft className="h-4 w-4" />
-              {t("companySkills.backToStore")}
-            </Link>
+              {translateInstant("companySkills.backToStore")}</Link>
           </div>
           {catalogListQuery.isLoading || catalogDetailQuery.isLoading ? (
             <PageSkeleton variant="detail" />
           ) : !selectedCatalogSkill ? (
-            <EmptyState icon={Boxes} message={t("companySkills.catalogSkillNotFound")} />
+            <EmptyState icon={Boxes} message={translateInstant("companySkills.catalogSkillNotFound")} />
           ) : (
             <div className="grid gap-0 xl:grid-cols-(--gtc-30)">
               <aside className="border-b border-border px-3 py-4 xl:border-b-0 xl:border-r">
-                <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">{t("companySkills.files")}</div>
+                <div className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">{translateInstant("companySkills.files")}</div>
                 <SkillTree
                   nodes={buildTree(selectedCatalogSkill.files.map((file) => ({ path: file.path, kind: file.kind })))}
                   skillId={selectedCatalogSkill.id}
@@ -5868,7 +5656,7 @@ export function CompanySkills() {
           {skillsQuery.isLoading ? (
             <PageSkeleton variant="detail" />
           ) : (
-            <EmptyState icon={Boxes} message={t("companySkills.skillNotFound")} />
+            <EmptyState icon={Boxes} message={translateInstant("companySkills.skillNotFound")} />
           )}
         </div>
       )}

@@ -1,6 +1,7 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
 import type { Project } from "@penclipai/shared";
 import { projectsApi } from "../api/projects";
 import { useCompany } from "../context/CompanyContext";
@@ -24,15 +25,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ArrowUpDown, Check, Hexagon, Plus } from "lucide-react";
+import { Lock } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
 type ProjectSortField = "name" | "updated" | "created" | "targetDate";
 type ProjectSortDir = "asc" | "desc";
 
 const PROJECT_SORT_OPTIONS: Array<{ field: ProjectSortField; label: string }> = [
-  { field: "name", label: "Name" },
-  { field: "updated", label: "Updated" },
-  { field: "created", label: "Created" },
+  { field: "name", get label() { return translateInstant("Name"); } },
+  { field: "updated", get label() { return translateInstant("Updated"); } },
+  { field: "created", get label() { return translateInstant("Created"); } },
   { field: "targetDate", label: "Target date" },
 ];
 
@@ -78,7 +80,7 @@ function sortProjects(projects: Project[], sortField: ProjectSortField, sortDir:
 }
 
 export function Projects() {
-  const { t } = useTranslation();
+  useTranslation();
   const { selectedCompanyId } = useCompany();
   const { openNewProject } = useDialogActions();
   const { setBreadcrumbs } = useBreadcrumbs();
@@ -86,8 +88,8 @@ export function Projects() {
   const [sortDir, setSortDir] = useState<ProjectSortDir>("asc");
 
   useEffect(() => {
-    setBreadcrumbs([{ label: t("Projects") }]);
-  }, [setBreadcrumbs, t]);
+    setBreadcrumbs([{ label: translateInstant("Projects") }]);
+  }, [setBreadcrumbs]);
 
   const { data: allProjects, isLoading, error } = useQuery({
     queryKey: queryKeys.projects.list(selectedCompanyId!),
@@ -118,10 +120,10 @@ export function Projects() {
 
     return groups;
   }, [membershipsQuery.data, sortedProjects]);
-  const sortLabel = t(PROJECT_SORT_OPTIONS.find((option) => option.field === sortField)?.label ?? "Name");
+  const sortLabel = PROJECT_SORT_OPTIONS.find((option) => option.field === sortField)?.label ?? translateInstant("Name");
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={Hexagon} message={t("Select a company to view projects.")} />;
+    return <EmptyState icon={Hexagon} message={translateInstant("Select an organization to view projects.")} />;
   }
 
   if (isLoading) {
@@ -133,9 +135,9 @@ export function Projects() {
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="ghost" size="sm" className="w-fit text-xs" title={t("Sort")}>
+            <Button variant="ghost" size="sm" className="w-fit text-xs" title={translateInstant("Sort")}>
               <ArrowUpDown className="h-3.5 w-3.5 sm:h-3 sm:w-3 sm:mr-1" />
-              <span>{t("Sort: {{label}}", { label: sortLabel })}</span>
+              <span>{translateInstant("searchFilters.sortPrefix")}{" "}{sortLabel}</span>
             </Button>
           </PopoverTrigger>
           <PopoverContent align="start" className="w-44 p-0">
@@ -158,11 +160,11 @@ export function Projects() {
                     setSortDir(option.field === "name" || option.field === "targetDate" ? "asc" : "desc");
                   }}
                 >
-                  <span>{t(option.label)}</span>
+                  <span>{option.label}</span>
                   {sortField === option.field ? (
                     <span className="flex items-center gap-1 text-xs text-muted-foreground">
                       <Check className="h-3 w-3" />
-                      {sortDir === "asc" ? t("Asc") : t("Desc")}
+                      {sortDir === "asc" ? translateInstant("Asc") : translateInstant("Desc")}
                     </span>
                   ) : null}
                 </button>
@@ -172,8 +174,7 @@ export function Projects() {
         </Popover>
         <Button size="sm" variant="outline" onClick={openNewProject}>
           <Plus className="h-4 w-4 mr-1" />
-          {t("Add Project")}
-        </Button>
+          {translateInstant("Add Project")}</Button>
       </div>
 
       {error && <p className="text-sm text-destructive">{error.message}</p>}
@@ -181,8 +182,8 @@ export function Projects() {
       {!isLoading && projects.length === 0 && (
         <EmptyState
           icon={Hexagon}
-          message={t("No projects yet.")}
-          action={t("Add Project")}
+          message={translateInstant("No projects yet.")}
+          action={translateInstant("Add Project")}
           onAction={openNewProject}
         />
       )}
@@ -190,8 +191,8 @@ export function Projects() {
       {projects.length > 0 && (
         <div className="space-y-6">
           {([
-            [t("My Projects"), groupedProjects.mine],
-            [t("Other Projects"), groupedProjects.other],
+            [translateInstant("My Projects"), groupedProjects.mine],
+            [translateInstant("Other Projects"), groupedProjects.other],
           ] as const).map(([label, sectionProjects]) => {
             if (sectionProjects.length === 0) return null;
 
@@ -200,7 +201,7 @@ export function Projects() {
                 <div className="flex items-center justify-between">
                   <h2 className="text-sm font-medium">{label}</h2>
                   <span className="text-xs text-muted-foreground">
-                    {t("{{count}} projects", { count: sectionProjects.length })}
+                    {translateInstant("projects.projectCount", { count: sectionProjects.length })}
                   </span>
                 </div>
                 <Card className="block py-0 overflow-hidden divide-y divide-border">
@@ -212,12 +213,6 @@ export function Projects() {
                     const starPending = pending && membershipMutation.variables?.starred !== undefined;
                     const joinLeavePending = pending && membershipMutation.variables?.starred === undefined;
                     const starred = isStarred(membershipsQuery.data, "project", project.id);
-                    const taskCount = project.taskCount ?? 0;
-                    const taskCountLabel = t("projects.taskCount", {
-                      count: taskCount,
-                      formattedCount: formatNumber(taskCount),
-                      defaultValue: taskCount === 1 ? "{{formattedCount}} task" : "{{formattedCount}} tasks",
-                    });
                     return (
                       <EntityRow
                         key={project.id}
@@ -229,11 +224,12 @@ export function Projects() {
                         className={state === "left" ? "group text-foreground/55" : "group"}
                         trailing={
                           <div className="flex items-center gap-3">
+                            {project.visibility === "private" ? <Lock className="size-4 shrink-0 text-muted-foreground" aria-label={translateInstant("Private project")} /> : null}
                             <span
                               className="hidden text-xs text-muted-foreground tabular-nums sm:inline"
-                              title={taskCountLabel}
+                              title={translateInstant("projects.taskCount", { count: project.taskCount ?? 0, formattedCount: formatNumber(project.taskCount ?? 0) })}
                             >
-                              {taskCountLabel}
+                              {translateInstant("projects.taskCount", { count: project.taskCount ?? 0, formattedCount: formatNumber(project.taskCount ?? 0) })}
                             </span>
                             {project.budget && (
                               <span className="hidden text-xs text-muted-foreground tabular-nums sm:inline">

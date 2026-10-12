@@ -1,4 +1,3 @@
-import { getCurrentLocale, translateInstant } from "../i18n";
 import {
   authSessionSchema,
   currentUserProfileSchema,
@@ -7,6 +6,9 @@ import {
   type UpdateCurrentUserProfile,
 } from "@penclipai/shared";
 import { redactUrlSecrets } from "@/lib/redact-url-secrets";
+import { getCurrentLocale } from "../i18n";
+import { tenantSessionRecovery } from "@/lib/tenant-session-recovery";
+import { readApiJson } from "./response";
 
 type AuthErrorBody =
   | {
@@ -117,10 +119,7 @@ async function authPost(path: string, body: Record<string, unknown>): Promise<un
     res = await fetch(`/api/auth${path}`, {
       method: "POST",
       credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        "Accept-Language": getCurrentLocale(),
-      },
+      headers: { "Content-Type": "application/json", "Accept-Language": getCurrentLocale() },
       body: JSON.stringify(body),
     });
   } catch (networkError) {
@@ -129,6 +128,8 @@ async function authPost(path: string, body: Record<string, unknown>): Promise<un
   }
   const payload = await res.json().catch(() => null);
   if (!res.ok) {
+    const recovery = tenantSessionRecovery.recoverIfNeeded(res.status, payload);
+    if (recovery) return recovery;
     logAuthHttpError("POST", path, res.status, res.statusText, payload);
     throw extractAuthError(payload as AuthErrorBody, res.status);
   }
@@ -139,11 +140,13 @@ async function authPatch<T>(path: string, body: Record<string, unknown>, parse: 
   const res = await fetch(`/api/auth${path}`, {
     method: "PATCH",
     credentials: "include",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    headers: { "Content-Type": "application/json", Accept: "application/json", "Accept-Language": getCurrentLocale() },
     body: JSON.stringify(body),
   });
   const payload = await res.json().catch(() => null);
   if (!res.ok) {
+    const recovery = tenantSessionRecovery.recoverIfNeeded(res.status, payload);
+    if (recovery) return recovery;
     throw extractAuthError(payload as AuthErrorBody, res.status);
   }
   return parse(payload);
@@ -153,15 +156,15 @@ export const authApi = {
   getSession: async (): Promise<AuthSession | null> => {
     const res = await fetch("/api/auth/get-session", {
       credentials: "include",
-      headers: {
-        Accept: "application/json",
-        "Accept-Language": getCurrentLocale(),
-      },
+      headers: { Accept: "application/json", "Accept-Language": getCurrentLocale() },
+      cache: "no-store",
     });
-    if (res.status === 401) return null;
-    const payload = await res.json().catch(() => null);
+    const payload = await readApiJson(res);
     if (!res.ok) {
-      throw new Error(translateInstant("auth.failedToLoadSession", { status: res.status }));
+      const recovery = tenantSessionRecovery.recoverIfNeeded(res.status, payload);
+      if (recovery) return recovery;
+      if (res.status === 401) return null;
+      throw extractAuthError(payload as AuthErrorBody, res.status);
     }
     const direct = toSession(payload);
     if (direct) return direct;
@@ -184,6 +187,8 @@ export const authApi = {
     });
     const payload = await res.json().catch(() => null);
     if (!res.ok) {
+      const recovery = tenantSessionRecovery.recoverIfNeeded(res.status, payload);
+      if (recovery) return recovery;
       throw new Error((payload as { error?: string } | null)?.error ?? `Failed to load profile (${res.status})`);
     }
     return currentUserProfileSchema.parse(payload);

@@ -14,6 +14,7 @@ import type {
   CompanyPortabilityImportResult,
 } from "@penclipai/shared";
 import {
+  buildAlreadyImportedMessage,
   companyImportTransferApplyPath,
   companyImportTransferPartPath,
   companyImportTransferPreviewPath,
@@ -1160,9 +1161,9 @@ export async function uploadCompanyImportTransfer(
   if (created.alreadyCompleted) {
     // The server keys transfers by content, and this exact zip already
     // finished an apply — its spooled parts are gone, so it cannot re-run.
-    throw new Error(
-      "This exact package was already imported by a completed transfer. Re-export the package to import it again.",
-    );
+    // Name the company that apply created so the rejection points at the
+    // existing import instead of reading as data loss.
+    throw new Error(buildAlreadyImportedMessage(created.company));
   }
   const missing = new Set(created.missingParts);
   let uploadedParts = manifest.parts.length - missing.size;
@@ -1863,9 +1864,8 @@ export function registerCompanyCommands(program: Command): void {
           }
           const tc = getTelemetryClient();
           if (tc) {
-            const isPrivate = sourcePayload.type !== "github";
             const sourceRef = sourcePayload.type === "github" ? sourcePayload.url : from;
-            trackCompanyImported(tc, { sourceType: sourcePayload.type, sourceRef, isPrivate });
+            trackCompanyImported(tc, { sourceType: sourcePayload.type, sourceRef, isPrivate: true });
           }
           let companyUrl: string | undefined;
           if (!ctx.json) {

@@ -59,7 +59,7 @@ test("linkSdkInto creates the plugin-sdk symlink and is idempotent", () => {
 
   assert.equal(linkSdkInto(pkg), true);
 
-  const link = join(pkg, "node_modules", "@paperclipai", "plugin-sdk");
+  const link = join(pkg, "node_modules", "@penclipai", "plugin-sdk");
   assert.ok(lstatSync(link).isSymbolicLink());
 
   // Second call is a no-op because the link already points at the in-repo SDK.
@@ -68,7 +68,7 @@ test("linkSdkInto creates the plugin-sdk symlink and is idempotent", () => {
 
 test("linkSdkInto leaves a real (non-symlink) install in place", () => {
   const pkg = makePackage(join(workDir, "real-install"));
-  const scopeDir = join(pkg, "node_modules", "@paperclipai");
+  const scopeDir = join(pkg, "node_modules", "@penclipai");
   mkdirSync(scopeDir, { recursive: true });
   // Simulate a published-tarball install: a real directory, not a symlink.
   makePackage(join(scopeDir, "plugin-sdk"));
@@ -79,7 +79,7 @@ test("linkSdkInto leaves a real (non-symlink) install in place", () => {
 
 test("linkSdkInto replaces a symlink that points somewhere else", () => {
   const pkg = makePackage(join(workDir, "stale-link"));
-  const scopeDir = join(pkg, "node_modules", "@paperclipai");
+  const scopeDir = join(pkg, "node_modules", "@penclipai");
   mkdirSync(scopeDir, { recursive: true });
   symlinkSync("../somewhere-else", join(scopeDir, "plugin-sdk"), "dir");
 

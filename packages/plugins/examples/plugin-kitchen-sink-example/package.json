@@ -19,17 +19,17 @@
     "typecheck": "pnpm --filter @penclipai/plugin-sdk ensure-build-deps && tsc --noEmit"
   },
   "dependencies": {
-    "@paperclipai/plugin-sdk": "workspace:@penclipai/plugin-sdk@*",
-    "@penclipai/shared": "workspace:@penclipai/shared@*"
+    "@penclipai/plugin-sdk": "workspace:*",
+    "@penclipai/shared": "workspace:*"
   },
   "devDependencies": {
-    "esbuild": "^0.28.1",
+    "esbuild": "^0.28.2",
     "@types/node": "^24.0.0",
     "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.4",
+    "@types/react-dom": "^19.2.5",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "typescript": "^5.7.3"
+    "typescript": "^7.0.2"
   },
   "peerDependencies": {
     "react": ">=18"

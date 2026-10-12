@@ -1,5 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
+import { AgentIdentity } from "../components/AgentIdentity";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "@/lib/router";
 import {
   onboardingStepForCompany,
@@ -7,7 +9,7 @@ import {
 } from "../lib/onboarding-route";
 import { claimOnboardingOffer } from "../lib/onboarding-auto-open";
 import { Link } from "@/lib/router";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { dashboardApi } from "../api/dashboard";
 import { activityApi } from "../api/activity";
 import { accessApi } from "../api/access";
@@ -25,7 +27,6 @@ import { StatusIcon } from "../components/StatusIcon";
 import { usePublishSharedQueryData, useSharedPollingQuery } from "../hooks/useSharedPolling";
 
 import { ActivityRow } from "../components/ActivityRow";
-import { Identity } from "../components/Identity";
 import { timeAgo } from "../lib/timeAgo";
 import { cn, formatCents } from "../lib/utils";
 import { SHOW_TASK_PRIORITY_UI } from "../lib/ui-flags";
@@ -34,6 +35,8 @@ import { ActiveAgentsPanel } from "../components/ActiveAgentsPanel";
 import { ChartCard, RunActivityChart, PriorityChart, IssueStatusChart, SuccessRateChart } from "../components/ActivityCharts";
 import { PageSkeleton } from "../components/PageSkeleton";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { InlineBanner } from "../components/InlineBanner";
 import type { Agent, Issue } from "@penclipai/shared";
 import { PluginSlotOutlet } from "@/plugins/slots";
 import { SmokeLabDashboardCard } from "../components/SmokeLabDashboardCard";
@@ -45,8 +48,32 @@ function getRecentIssues(issues: Issue[]): Issue[] {
     .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
 }
 
+export type PausedAgentBanner =
+  | { kind: "imported"; pausedImportedAgentIds: string[] }
+  | { kind: "all-paused" }
+  | null;
+
+/**
+ * Which paused-agents banner the dashboard should show. Import-paused agents
+ * get the specific banner with a bulk resume (they were parked by the import
+ * safety default and stay parked until someone acts); otherwise a company
+ * whose agents are ALL paused gets a generic explanation, because from the
+ * outside it is indistinguishable from a broken company.
+ */
+export function derivePausedAgentBanner(agents: Agent[] | undefined): PausedAgentBanner {
+  if (!agents || agents.length === 0) return null;
+  const importedPaused = agents.filter(
+    (agent) => agent.status === "paused" && agent.pauseReason === "import",
+  );
+  if (importedPaused.length > 0) {
+    return { kind: "imported", pausedImportedAgentIds: importedPaused.map((agent) => agent.id) };
+  }
+  if (agents.every((agent) => agent.status === "paused")) return { kind: "all-paused" };
+  return null;
+}
+
 export function Dashboard() {
-  const { t } = useTranslation();
+  useTranslation();
   const { selectedCompanyId, companies } = useCompany();
   const { openOnboarding } = useDialogActions();
   const location = useLocation();
@@ -56,10 +83,38 @@ export function Dashboard() {
   const hydratedActivityRef = useRef(false);
   const activityAnimationTimersRef = useRef<number[]>([]);
 
-  const { data: agents } = useQuery({
+  // `isFetching` is read alongside the data: a cached list is served while its
+  // refetch runs, and an empty one from before the first hire must not pass
+  // for the company's current state — see `shouldRouteAgentlessCompanyToOnboarding`.
+  const { data: agents, isFetching: agentsRefreshing } = useQuery({
     queryKey: queryKeys.agents.list(selectedCompanyId!),
     queryFn: () => agentsApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId,
+  });
+
+  // Bulk resume for agents parked by a company import. Sequential on purpose
+  // (mirrors the import page's activation checklist); a per-agent failure is
+  // tolerated so one bad agent never blocks the rest, and the refetch below
+  // re-renders the banner with whatever remains paused.
+  const queryClient = useQueryClient();
+  const resumeImportedAgents = useMutation({
+    mutationFn: async () => {
+      const targets = derivePausedAgentBanner(agents);
+      if (!targets || targets.kind !== "imported") return;
+      for (const agentId of targets.pausedImportedAgentIds) {
+        try {
+          await agentsApi.resume(agentId, selectedCompanyId ?? undefined);
+        } catch {
+          // Leave the agent paused; the banner re-renders with the remainder.
+        }
+      }
+    },
+    onSettled: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.agents.list(selectedCompanyId!) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.dashboard(selectedCompanyId!) }),
+      ]);
+    },
   });
 
   // A company with no agent cannot do anything — no runs, no tasks, nothing
@@ -83,6 +138,7 @@ export function Dashboard() {
   const shouldOpenOnboarding = shouldRouteAgentlessCompanyToOnboarding({
     pathname: location.pathname,
     agentsLoaded: agents !== undefined,
+    agentsRefreshing,
     agentCount: agents?.length ?? 0,
   });
   // Auto-open once per company. Every input to the effect sits behind a query,
@@ -102,7 +158,7 @@ export function Dashboard() {
   }, [shouldOpenOnboarding, selectedCompanyId, openOnboarding]);
 
   useEffect(() => {
-    setBreadcrumbs([{ label: t("dashboard.title") }]);
+    setBreadcrumbs([{ label: translateInstant("Dashboard") }]);
   }, [setBreadcrumbs]);
 
   const dashboardQueryKey = queryKeys.dashboard(selectedCompanyId!);
@@ -244,14 +300,14 @@ export function Dashboard() {
       return (
         <EmptyState
           icon={LayoutDashboard}
-          message="Welcome to Paperclip. Set up your first company and agent to get started."
-          action={t("dashboard.getStarted")}
+          message={translateInstant("dashboard.welcome")}
+          action={translateInstant("dashboard.getStarted")}
           onAction={openOnboarding}
         />
       );
     }
     return (
-      <EmptyState icon={LayoutDashboard} message={t("dashboard.createOrSelectCompany")} />
+      <EmptyState icon={LayoutDashboard} message={translateInstant("Create or select an organization to view the dashboard.")} />
     );
   }
 
@@ -259,30 +315,65 @@ export function Dashboard() {
     return <PageSkeleton variant="dashboard" />;
   }
 
-  const hasNoAgents = agents !== undefined && agents.length === 0;
+  // Same rule as the auto-offer above: a list still being refreshed may be the
+  // empty one cached before the first hire, and the banner's "Create one here"
+  // opens the same agent step the offer does.
+  const hasNoAgents = agents !== undefined && !agentsRefreshing && agents.length === 0;
+  const pausedBanner = derivePausedAgentBanner(agents);
+  const pausedImportedCount =
+    pausedBanner?.kind === "imported" ? pausedBanner.pausedImportedAgentIds.length : 0;
 
   return (
     <div className="space-y-6">
       {error && <p className="text-sm text-destructive">{error.message}</p>}
+
+      {pausedBanner?.kind === "imported" ? (
+        <InlineBanner
+          tone="warning"
+          icon={PauseCircle}
+          title={`${pausedImportedCount} imported agent${pausedImportedCount === 1 ? " is" : "s are"} paused and will not run.`}
+          actions={
+            <Button
+              size="sm"
+              onClick={() => resumeImportedAgents.mutate()}
+              disabled={resumeImportedAgents.isPending}
+              data-testid="dashboard-resume-imported-agents"
+            >
+              {resumeImportedAgents.isPending ? translateInstant("Resuming…") : "Resume all"}
+            </Button>
+          }
+        >
+          {translateInstant("Agents from an organization import arrive paused as a safety default. Resume them so assigned tasks can start.")}</InlineBanner>
+      ) : pausedBanner?.kind === "all-paused" ? (
+        <InlineBanner
+          tone="warning"
+          icon={PauseCircle}
+          title={translateInstant("All agents in this organization are paused — nothing will run.")}
+          actions={
+            <Button variant="ghost" size="sm" asChild>
+              <Link to="/agents">{translateInstant("Review agents")}</Link>
+            </Button>
+          }
+        >
+          {translateInstant("Resume at least one agent to let assigned tasks start.")}</InlineBanner>
+      ) : null}
 
       {hasNoAgents && (
         <div className="flex items-center justify-between gap-3 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 dark:border-amber-500/25 dark:bg-amber-950/60">
           <div className="flex items-center gap-2.5">
             <Bot className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
             <p className="text-sm text-amber-900 dark:text-amber-100">
-              You have no agents.
-            </p>
+              {translateInstant("dashboard.noAgents")}</p>
           </div>
           <button
             onClick={() => openOnboarding({ initialStep: 3, companyId: selectedCompanyId! })}
             className="text-sm font-medium text-amber-700 hover:text-amber-900 dark:text-amber-300 dark:hover:text-amber-100 underline underline-offset-2 shrink-0"
           >
-            Create one here
-          </button>
+            {translateInstant("dashboard.createOneHere")}</button>
         </div>
       )}
 
-      <ActiveAgentsPanel companyId={selectedCompanyId!} />
+      <ActiveAgentsPanel companyId={selectedCompanyId!} dedupeLinkedTasks />
 
       {data && (
         <>
@@ -292,16 +383,14 @@ export function Dashboard() {
                 <PauseCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-700 dark:text-red-300" />
                 <div>
                   <p className="text-sm font-medium text-red-950 dark:text-red-50">
-                    {data.budgets.activeIncidents} active budget incident{data.budgets.activeIncidents === 1 ? "" : "s"}
+                    {translateInstant("dashboard.activeBudgetIncidents", { count: data.budgets.activeIncidents })}
                   </p>
                   <p className="text-xs text-red-900/70 dark:text-red-100/70">
-                    {data.budgets.pausedAgents} agents paused · {data.budgets.pausedProjects} projects paused · {data.budgets.pendingApprovals} pending budget approvals
-                  </p>
+                    {translateInstant("dashboard.budgetSummary", { pausedAgents: data.budgets.pausedAgents, pausedProjects: data.budgets.pausedProjects, pendingApprovals: data.budgets.pendingApprovals })}</p>
                 </div>
               </div>
               <Link to="/costs" className="text-sm underline underline-offset-2 text-red-900 dark:text-red-100">
-                Open budgets
-              </Link>
+                {translateInstant("dashboard.openBudgets")}</Link>
             </div>
           ) : null}
 
@@ -309,51 +398,46 @@ export function Dashboard() {
             <MetricCard
               icon={Bot}
               value={data.agents.active + data.agents.running + data.agents.paused + data.agents.error}
-              label={t("dashboard.agentsEnabled")}
+              label={translateInstant("dashboard.agentsEnabled")}
               to="/agents"
               description={
                 <span>
-                  {data.agents.running} running{", "}
-                  {data.agents.paused} paused{", "}
-                  {data.agents.error} errors
-                </span>
+                  {translateInstant("dashboard.agentSummary", { running: data.agents.running, paused: data.agents.paused, errors: data.agents.error })}</span>
               }
             />
             <MetricCard
               icon={CircleDot}
               value={data.tasks.inProgress}
-              label={t("dashboard.tasksInProgress")}
+              label={translateInstant("dashboard.tasksInProgress")}
               to="/issues"
               description={
                 <span>
-                  {data.tasks.open} open{", "}
-                  {data.tasks.blocked} blocked
-                </span>
+                  {translateInstant("dashboard.taskSummary", { open: data.tasks.open, blocked: data.tasks.blocked })}</span>
               }
             />
             <MetricCard
               icon={DollarSign}
               value={formatCents(data.costs.monthSpendCents)}
-              label={t("dashboard.monthSpend")}
+              label={translateInstant("dashboard.monthSpend")}
               to="/costs"
               description={
                 <span>
                   {data.costs.monthBudgetCents > 0
-                    ? `${data.costs.monthUtilizationPercent}% of ${formatCents(data.costs.monthBudgetCents)} budget`
-                    : t("dashboard.unlimitedBudget")}
+                    ? translateInstant("dashboard.budgetUsage", { percent: data.costs.monthUtilizationPercent, budget: formatCents(data.costs.monthBudgetCents) })
+                    : translateInstant("Unlimited budget")}
                 </span>
               }
             />
             <MetricCard
               icon={ShieldCheck}
               value={data.pendingApprovals + data.budgets.pendingApprovals}
-              label={t("dashboard.pendingApprovals")}
+              label={translateInstant("dashboard.pendingApprovals")}
               to="/approvals"
               description={
                 <span>
                   {data.budgets.pendingApprovals > 0
-                    ? `${data.budgets.pendingApprovals} budget overrides awaiting board review`
-                    : t("dashboard.awaitingBoardReview")}
+                    ? translateInstant("dashboard.budgetOverridesAwaitingReview", { count: data.budgets.pendingApprovals })
+                    : translateInstant("dashboard.awaitingBoardReview")}
                 </span>
               }
             />
@@ -361,20 +445,20 @@ export function Dashboard() {
 
           <SmokeLabDashboardCard companyId={selectedCompanyId!} />
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <ChartCard title={t("dashboard.runActivity")} subtitle={t("dashboard.last14Days")}>
+          <div className={cn("grid grid-cols-2 gap-4", SHOW_TASK_PRIORITY_UI ? "lg:grid-cols-4" : "lg:grid-cols-3")}>
+            <ChartCard title={translateInstant("Run Activity")} subtitle={translateInstant("Last 14 days")}>
               <RunActivityChart activity={data.runActivity} />
             </ChartCard>
-            {/* PAP-411: "Tasks by Priority" chart hidden behind SHOW_TASK_PRIORITY_UI. */}
+            {/* PAP-411: translateInstant("Tasks by Priority") chart hidden behind SHOW_TASK_PRIORITY_UI. */}
             {SHOW_TASK_PRIORITY_UI && (
-              <ChartCard title={t("Tasks by Priority")} subtitle={t("dashboard.last14Days")}>
+              <ChartCard title={translateInstant("Tasks by Priority")} subtitle={translateInstant("Last 14 days")}>
                 <PriorityChart issues={issues ?? []} />
               </ChartCard>
             )}
-            <ChartCard title={t("Tasks by Status")} subtitle={t("dashboard.last14Days")}>
+            <ChartCard title={translateInstant("Tasks by Status")} subtitle={translateInstant("Last 14 days")}>
               <IssueStatusChart issues={issues ?? []} />
             </ChartCard>
-            <ChartCard title={t("dashboard.successRate")} subtitle={t("dashboard.last14Days")}>
+            <ChartCard title={translateInstant("Success Rate")} subtitle={translateInstant("Last 14 days")}>
               <SuccessRateChart activity={data.runActivity} />
             </ChartCard>
           </div>
@@ -392,9 +476,8 @@ export function Dashboard() {
             {recentActivity.length > 0 && (
               <div className="min-w-0">
                 <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-                  Recent Activity
-                </h3>
-                <Card className="block py-0 divide-y divide-border overflow-hidden">
+                  {translateInstant("dashboard.recentActivity")}</h3>
+                <Card className="@container block py-0 divide-y divide-border overflow-hidden">
                   {recentActivity.map((event) => (
                     <ActivityRow
                       key={event.id}
@@ -413,44 +496,42 @@ export function Dashboard() {
             {/* Recent Tasks */}
             <div className="min-w-0">
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-                Recent Tasks
-              </h3>
+                {translateInstant("dashboard.recentTasks")}</h3>
               {recentIssues.length === 0 ? (
                 <Card className="block p-4">
-                  <p className="text-sm text-muted-foreground">{t("dashboard.noTasksYet")}</p>
+                  <p className="text-sm text-muted-foreground">{translateInstant("dashboard.noTasksYet")}</p>
                 </Card>
               ) : (
-                <Card className="block py-0 divide-y divide-border overflow-hidden">
+                <Card className="@container block py-0 divide-y divide-border overflow-hidden">
                   {recentIssues.slice(0, 10).map((issue) => (
                     <Link
                       key={issue.id}
                       to={`/issues/${issue.identifier ?? issue.id}`}
-                      className="px-4 py-3 text-sm cursor-pointer hover:bg-accent/50 transition-colors no-underline text-inherit block"
+                      className="dashboard-list-row text-sm cursor-pointer hover:bg-accent/50 transition-colors no-underline text-inherit block"
                     >
-                      <div className="flex items-start gap-2 sm:items-center sm:gap-3">
-                        {/* Status icon - left column on mobile */}
-                        <span className="shrink-0 sm:hidden">
-                          <StatusIcon status={issue.status} blockerAttention={issue.blockerAttention} />
+                      <div className="flex items-start gap-2 @xl:grid @xl:grid-cols-(--dashboard-task-list-columns) @xl:items-baseline">
+                        <span className="flex size-6 shrink-0 items-center justify-end @xl:self-center">
+                          <StatusIcon status={issue.status} externalConversationState={issue.externalConversationState} blockerAttention={issue.blockerAttention} />
                         </span>
-
-                        {/* Right column on mobile: title + metadata stacked */}
-                        <span className="flex min-w-0 flex-1 flex-col gap-1 sm:contents">
-                          <span className="line-clamp-2 text-sm sm:order-2 sm:flex-1 sm:min-w-0 sm:line-clamp-none sm:truncate">
-                            {issue.title}
-                          </span>
-                          <span className="flex items-center gap-2 sm:order-1 sm:shrink-0">
-                            <span className="hidden sm:inline-flex"><StatusIcon status={issue.status} blockerAttention={issue.blockerAttention} /></span>
-                            <span className="text-xs font-mono text-muted-foreground">
+                        <span className="flex min-w-0 flex-1 flex-col gap-1 @xl:contents">
+                          <span className="flex min-w-0 items-baseline gap-2 @xl:contents">
+                            <span className="min-w-0 flex-1 truncate text-sm leading-6" title={issue.title}>
+                              {issue.title}
+                            </span>
+                            <span className="ml-auto shrink-0 truncate text-right font-mono text-(length:--text-micro) text-muted-foreground @xl:col-start-4 @xl:row-start-1 @xl:w-(--dashboard-list-id-width)">
                               {issue.identifier ?? issue.id.slice(0, 8)}
                             </span>
-                            {issue.assigneeAgentId && (() => {
-                              const name = agentName(issue.assigneeAgentId);
-                              return name
-                                ? <span className="hidden sm:inline-flex"><Identity name={name} size="sm" /></span>
-                                : null;
-                            })()}
-                            <span className="text-xs text-muted-foreground sm:hidden">&middot;</span>
-                            <span className="text-xs text-muted-foreground shrink-0 sm:order-last">
+                          </span>
+                          <span className="flex min-h-6 min-w-0 items-center gap-2 @xl:contents">
+                            <span className="flex min-w-0 flex-1 items-center @xl:col-start-3 @xl:row-start-1 @xl:self-center">
+                              {issue.assigneeAgentId && (() => {
+                                const name = agentName(issue.assigneeAgentId);
+                                return name
+                                  ? <AgentIdentity agent={agents?.find(agent => agent.id === issue.assigneeAgentId) ?? { id: issue.assigneeAgentId ?? undefined, name }} size="sm" className="max-w-32" />
+                                  : null;
+                              })()}
+                            </span>
+                            <span className="ml-auto w-(--dashboard-list-time-width) shrink-0 whitespace-nowrap text-right text-xs text-muted-foreground">
                               {timeAgo(issue.updatedAt)}
                             </span>
                           </span>

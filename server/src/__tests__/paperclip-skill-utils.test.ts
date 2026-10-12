@@ -1,9 +1,11 @@
+import { execFile } from "node:child_process";
+import { createHash } from "node:crypto";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { promisify } from "node:util";
+import { afterEach, describe, expect, it } from "vitest";
 import {
-  ensurePaperclipSkillSymlink,
   listPaperclipSkillEntries,
   removeMaintainerOnlySkillSymlinks,
 } from "@penclipai/adapter-utils/server-utils";
@@ -12,11 +14,367 @@ async function makeTempDir(prefix: string): Promise<string> {
   return fs.mkdtemp(path.join(os.tmpdir(), prefix));
 }
 
+const execFileAsync = promisify(execFile);
+const artifactHelperPath = path.resolve(
+  "skills/paperclip/scripts/paperclip-upload-artifact.sh",
+);
+
+function toBashPath(filePath: string): string {
+  if (process.platform !== "win32") {
+    return filePath;
+  }
+
+  const { root } = path.win32.parse(filePath);
+  if (!/^[A-Za-z]:\\$/.test(root)) {
+    return filePath;
+  }
+
+  return `/mnt/${root[0]!.toLowerCase()}/${filePath
+    .slice(root.length)
+    .replaceAll("\\", "/")}`;
+}
+
+async function makeArtifactHelperHarness(
+  cleanupDirs: Set<string>,
+  options: {
+    apiUrl?: string;
+    ambiguousHttpStatusAfterCommit?: "408" | "409" | "502";
+    commitAfterDropDelaySeconds?: string;
+    dropFirstUpload?: boolean;
+    dropWithoutCommit?: boolean;
+    existingOriginatingRunId?: string;
+    malformedSuccessAfterCommit?: boolean;
+    uploadDelaySeconds?: string;
+  } = {},
+) {
+  const root = await makeTempDir("paperclip-artifact-helper-");
+  cleanupDirs.add(root);
+  const binDir = path.join(root, "bin");
+  const stateDir = path.join(root, "fake-api");
+  const lockDir = path.join(root, "helper-locks");
+  const filePath = path.join(root, "result.txt");
+  await fs.mkdir(binDir, { recursive: true });
+  await fs.mkdir(stateDir, { recursive: true });
+  if (options.existingOriginatingRunId) {
+    await fs.writeFile(path.join(stateDir, "upload-committed"), "", "utf8");
+    await fs.writeFile(
+      path.join(stateDir, "originating-run-id"),
+      options.existingOriginatingRunId,
+      "utf8",
+    );
+  }
+  await fs.writeFile(filePath, "stable generated result\n", "utf8");
+  if (process.platform === "win32" && options.commitAfterDropDelaySeconds) {
+    const delayMs = Number(options.commitAfterDropDelaySeconds) * 1_000;
+    const uploadAttemptPath = path.join(stateDir, "upload-drop-used");
+    const watchUploadAttempt = setInterval(() => {
+      void fs.access(uploadAttemptPath).then(
+        () => {
+          clearInterval(watchUploadAttempt);
+          setTimeout(() => {
+            void fs.writeFile(path.join(stateDir, "upload-committed"), "", "utf8");
+            void fs.writeFile(
+              path.join(stateDir, "originating-run-id"),
+              "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+              "utf8",
+            );
+          }, delayMs).unref();
+        },
+        () => {},
+      );
+    }, 10);
+    watchUploadAttempt.unref();
+  }
+  const sha256 = createHash("sha256")
+    .update(await fs.readFile(filePath))
+    .digest("hex");
+  const fakeCurlPath = path.join(binDir, "curl");
+  const bashRunnerPath = path.join(binDir, "run-artifact-helper");
+  await fs.writeFile(
+    fakeCurlPath,
+    `#!/usr/bin/env bash
+set -euo pipefail
+method=GET
+output_file=""
+url=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -X) method="$2"; shift 2 ;;
+    -o) output_file="$2"; shift 2 ;;
+    -w|-H|-F|--data-binary) shift 2 ;;
+    -sS) shift ;;
+    http://*|https://*) url="$1"; shift ;;
+    *) shift ;;
+  esac
+done
+printf '%s %s\n' "$method" "$url" >>"$FAKE_CURL_STATE_DIR/request-log"
+
+respond() {
+  printf '%s' "$1" >"$output_file"
+  printf '%s' "$2"
+}
+
+attachment_json() {
+  originating_run_id="$PAPERCLIP_RUN_ID"
+  if [[ -f "$FAKE_CURL_STATE_DIR/originating-run-id" ]]; then
+    originating_run_id="$(<"$FAKE_CURL_STATE_DIR/originating-run-id")"
+  fi
+  jq -nc \
+    --arg runId "$originating_run_id" \
+    --arg sha256 "$FAKE_ATTACHMENT_SHA" \
+    '{
+      id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      companyId: "company-1",
+      issueId: "issue-1",
+      originatingRunId: $runId,
+      contentType: "text/plain",
+      byteSize: 24,
+      sha256: $sha256,
+      originalFilename: "result.txt",
+      contentPath: "/api/attachments/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/content",
+      downloadPath: "/api/attachments/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/content?download=1"
+    }'
+}
+
+if [[ "$method" == "GET" && "$url" == */work-products ]]; then
+  if [[ -f "$FAKE_CURL_STATE_DIR/upload-committed" ]]; then
+    work_product_json="$(
+      jq -nc \
+        --arg runId "$PAPERCLIP_RUN_ID" \
+        '{
+          id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+          type: "artifact",
+          provider: "paperclip",
+          createdByRunId: $runId,
+          externalId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          metadata: { attachmentId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }
+        }'
+    )"
+    respond "[$work_product_json]" 200
+  else
+    respond '[]' 200
+  fi
+  exit 0
+fi
+
+if [[ "$method" == "GET" && "$url" == */attachments ]]; then
+  if [[ -f "$FAKE_CURL_STATE_DIR/upload-committed" ]]; then
+    respond "[$(attachment_json)]" 200
+  else
+    respond '[]' 200
+  fi
+  exit 0
+fi
+
+if [[ "$method" == "POST" && "$url" == */attachments ]]; then
+  count=0
+  [[ -f "$FAKE_CURL_STATE_DIR/upload-count" ]] && count="$(<"$FAKE_CURL_STATE_DIR/upload-count")"
+  count=$((count + 1))
+  printf '%s' "$count" >"$FAKE_CURL_STATE_DIR/upload-count"
+  if [[ -n "\${FAKE_CURL_COMMIT_AFTER_DROP_DELAY:-}" && ! -f "$FAKE_CURL_STATE_DIR/upload-drop-used" ]]; then
+    : >"$FAKE_CURL_STATE_DIR/upload-drop-used"
+    (
+      sleep "$FAKE_CURL_COMMIT_AFTER_DROP_DELAY"
+      : >"$FAKE_CURL_STATE_DIR/upload-committed"
+      printf '%s' "$PAPERCLIP_RUN_ID" >"$FAKE_CURL_STATE_DIR/originating-run-id"
+    ) >/dev/null 2>&1 &
+    exit 56
+  fi
+  if [[ "\${FAKE_CURL_DROP_WITHOUT_COMMIT:-0}" == "1" && ! -f "$FAKE_CURL_STATE_DIR/upload-drop-used" ]]; then
+    : >"$FAKE_CURL_STATE_DIR/upload-drop-used"
+    exit 56
+  fi
+  : >"$FAKE_CURL_STATE_DIR/upload-committed"
+  printf '%s' "$PAPERCLIP_RUN_ID" >"$FAKE_CURL_STATE_DIR/originating-run-id"
+  if [[ -n "\${FAKE_CURL_AMBIGUOUS_STATUS:-}" && ! -f "$FAKE_CURL_STATE_DIR/upload-status-used" ]]; then
+    : >"$FAKE_CURL_STATE_DIR/upload-status-used"
+    respond '{"error":"ambiguous upstream response","outcome":"indeterminate","retryable":false}' "$FAKE_CURL_AMBIGUOUS_STATUS"
+    exit 0
+  fi
+  if [[ "\${FAKE_CURL_MALFORMED_SUCCESS:-0}" == "1" && ! -f "$FAKE_CURL_STATE_DIR/malformed-success-used" ]]; then
+    : >"$FAKE_CURL_STATE_DIR/malformed-success-used"
+    respond '{malformed' 201
+    exit 0
+  fi
+  if [[ -n "\${FAKE_CURL_UPLOAD_DELAY:-}" ]]; then
+    sleep "$FAKE_CURL_UPLOAD_DELAY"
+  fi
+  if [[ "\${FAKE_CURL_DROP_FIRST_UPLOAD:-0}" == "1" && ! -f "$FAKE_CURL_STATE_DIR/upload-drop-used" ]]; then
+    : >"$FAKE_CURL_STATE_DIR/upload-drop-used"
+    exit 56
+  fi
+  respond "$(attachment_json)" 201
+  exit 0
+fi
+
+if [[ "$method" == "POST" && "$url" == */work-products ]]; then
+  respond "$(jq -nc --arg runId "$PAPERCLIP_RUN_ID" '{ id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", createdByRunId: $runId }')" 201
+  exit 0
+fi
+
+if [[ "$method" == "POST" && "$url" == */comments ]]; then
+  respond '{"id":"cccccccc-cccc-4ccc-8ccc-cccccccccccc"}' 201
+  exit 0
+fi
+
+printf 'Unexpected fake curl request: %s %s\n' "$method" "$url" >&2
+exit 2
+`,
+    { mode: 0o755 },
+  );
+
+  if (process.platform === "win32") {
+    await fs.writeFile(
+      path.join(binDir, "jq"),
+      String.raw`#!/usr/bin/env node
+const fs = require("node:fs");
+const args = process.argv.slice(2);
+const variables = {};
+const positionals = [];
+for (let index = 0; index < args.length; index += 1) {
+  if (args[index] === "--arg") {
+    variables[args[index + 1]] = args[index + 2];
+    index += 2;
+  } else if (args[index] === "--argjson") {
+    variables[args[index + 1]] = JSON.parse(args[index + 2]);
+    index += 2;
+  } else if (!args[index].startsWith("-")) {
+    positionals.push(args[index]);
+  }
+}
+const filter = positionals[0];
+const input = positionals[1]
+  ? fs.readFileSync(positionals[1], "utf8").trim()
+  : args.some((argument) => /^-[^-]*n/.test(argument))
+    ? ""
+    : fs.readFileSync(0, "utf8").trim();
+const value = input ? JSON.parse(input) : null;
+const write = (result) => {
+  if (result !== undefined && result !== null) {
+    process.stdout.write(typeof result === "string" ? result : JSON.stringify(result));
+  }
+};
+
+if (filter === '.outcome == "indeterminate"') {
+  process.exit(value && value.outcome === "indeterminate" ? 0 : 1);
+}
+if (filter.includes("first(") && filter.includes("$attachments[]")) {
+  const attachment = variables.attachments.find((candidate) => candidate.originatingRunId === variables.runId);
+  write(attachment);
+  process.exit(0);
+}
+if (filter === '.id // empty') write(value.id);
+else if (filter === '.contentPath // empty') write(value.contentPath);
+else if (filter.includes(".contentPath + \"?download=1\"")) write(value.downloadPath ?? (value.contentPath ? value.contentPath + "?download=1" : ""));
+else if (filter === '.byteSize // 0') write(String(value.byteSize ?? 0));
+else if (filter === '.openPath // .contentPath // empty') write(value.openPath ?? value.contentPath);
+else if (filter === '.originalFilename // empty') write(value.originalFilename);
+else if (filter.includes("contentPath: \"/api/attachments")) write({ id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", companyId: "company-1", issueId: "issue-1", originatingRunId: variables.runId, contentType: "text/plain", byteSize: 24, sha256: variables.sha256, originalFilename: "result.txt", contentPath: "/api/attachments/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/content", downloadPath: "/api/attachments/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/content?download=1" });
+else if (filter.includes('createdByRunId: $runId') && filter.includes('externalId:')) write({ id: "bbbbbbbb-bbbb-4bbb-bbbb-bbbbbbbbbbbb", type: "artifact", provider: "paperclip", createdByRunId: variables.runId, externalId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", metadata: { attachmentId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" } });
+else if (filter.includes('createdByRunId: $runId') && filter.includes('id: "bbbbbbbb')) write({ id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", createdByRunId: variables.runId });
+else if (filter.includes("attachmentIds: [$attachmentId]")) write({ body: variables.body, attachmentIds: [variables.attachmentId] });
+else if (filter.includes("type: \"artifact\"") && filter.includes("metadata:")) write({ type: "artifact", provider: "paperclip", title: variables.title, status: variables.status, reviewState: "none", isPrimary: variables.isPrimary, healthStatus: "unknown", summary: variables.summary || null, createdByRunId: variables.runId, metadata: { attachmentId: variables.attachmentId, contentType: variables.contentType, byteSize: variables.byteSize, contentPath: variables.contentPath, openPath: variables.openPath, downloadPath: variables.downloadPath, originalFilename: variables.originalFilename || null } });
+else if (filter.includes("attachment: $attachment")) write({ attachment: variables.attachment, workProduct: variables.workProduct, chatComment: variables.chatComment });
+else if (filter.includes("file: $file")) write({ file: variables.file, issueId: variables.issueId, companyId: variables.companyId, title: variables.title, summary: variables.summary, contentType: variables.contentType, status: variables.status, chatComment: variables.chatComment || null, createWorkProduct: variables.createWorkProduct, isPrimary: variables.isPrimary });
+else throw new Error("Unsupported jq fixture filter: " + filter);
+`,
+      { mode: 0o755 },
+    );
+    await fs.writeFile(
+      bashRunnerPath,
+      `#!/usr/bin/env bash
+set -euo pipefail
+PATH="$(dirname "$0"):$PATH"
+export PATH
+exec /bin/bash "$@"
+`,
+      { mode: 0o755 },
+    );
+  }
+
+  const env = {
+    ...process.env,
+    PATH: process.env.PATH,
+    PAPERCLIP_API_KEY: "test-run-key",
+    PAPERCLIP_API_URL: options.apiUrl ?? "http://paperclip.invalid",
+    PAPERCLIP_COMPANY_ID: "company-1",
+    PAPERCLIP_HELPER_STATE_DIR: toBashPath(lockDir),
+    PAPERCLIP_RUN_ID: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+    PAPERCLIP_TASK_ID: "issue-1",
+    FAKE_ATTACHMENT_SHA: sha256,
+    FAKE_CURL_AMBIGUOUS_STATUS:
+      options.ambiguousHttpStatusAfterCommit ?? "",
+    FAKE_CURL_COMMIT_AFTER_DROP_DELAY:
+      process.platform === "win32" ? "" : options.commitAfterDropDelaySeconds ?? "",
+    FAKE_CURL_STATE_DIR: toBashPath(stateDir),
+    FAKE_CURL_DROP_FIRST_UPLOAD:
+      options.dropFirstUpload ||
+      (process.platform === "win32" && Boolean(options.commitAfterDropDelaySeconds))
+        ? "1"
+        : "0",
+    FAKE_CURL_DROP_WITHOUT_COMMIT: options.dropWithoutCommit ? "1" : "0",
+    FAKE_CURL_MALFORMED_SUCCESS: options.malformedSuccessAfterCommit
+      ? "1"
+      : "0",
+    FAKE_CURL_UPLOAD_DELAY: options.uploadDelaySeconds ?? "",
+    WSLENV: [
+      process.env.WSLENV,
+      "PAPERCLIP_API_KEY",
+      "PAPERCLIP_API_URL",
+      "PAPERCLIP_COMPANY_ID",
+      "PAPERCLIP_HELPER_STATE_DIR",
+      "PAPERCLIP_RUN_ID",
+      "PAPERCLIP_TASK_ID",
+      "FAKE_ATTACHMENT_SHA",
+      "FAKE_CURL_AMBIGUOUS_STATUS",
+      "FAKE_CURL_COMMIT_AFTER_DROP_DELAY",
+      "FAKE_CURL_DROP_FIRST_UPLOAD",
+      "FAKE_CURL_DROP_WITHOUT_COMMIT",
+      "FAKE_CURL_MALFORMED_SUCCESS",
+      "FAKE_CURL_STATE_DIR",
+      "FAKE_CURL_UPLOAD_DELAY",
+    ]
+      .filter(Boolean)
+      .join(":"),
+  };
+  const run = (
+    chatComment?: string,
+    selectedFilePath = filePath,
+    extraArgs: string[] = [],
+  ) =>
+    execFileAsync(
+      "bash",
+      [
+        toBashPath(
+          process.platform === "win32" ? bashRunnerPath : artifactHelperPath,
+        ),
+        ...(process.platform === "win32" ? [toBashPath(artifactHelperPath)] : []),
+        toBashPath(selectedFilePath),
+        "--title",
+        "Stable result",
+        ...(chatComment ? ["--chat-comment", chatComment] : []),
+        ...extraArgs,
+      ],
+      { cwd: root, env },
+    );
+
+  return { env, filePath, lockDir, root, run, sha256, stateDir };
+}
+
 describe("paperclip skill utils", () => {
   const cleanupDirs = new Set<string>();
 
   afterEach(async () => {
-    await Promise.all(Array.from(cleanupDirs).map((dir) => fs.rm(dir, { recursive: true, force: true })));
+    await Promise.all(
+      Array.from(cleanupDirs).map((dir) =>
+        fs.rm(dir, {
+          recursive: true,
+          force: true,
+          maxRetries: process.platform === "win32" ? 5 : 0,
+          retryDelay: 100,
+        }),
+      ),
+    );
     cleanupDirs.clear();
   });
 
@@ -36,8 +394,8 @@ describe("paperclip skill utils", () => {
     const entries = await listPaperclipSkillEntries(moduleDir);
 
     expect(entries.map((entry) => entry.key)).toEqual([
-      "penclipai/paperclip-cn/paperclip",
-      "penclipai/paperclip-cn/paperclip-create-agent",
+      "paperclipai/paperclip/paperclip",
+      "paperclipai/paperclip/paperclip-create-agent",
     ]);
     expect(entries.map((entry) => entry.runtimeName)).toEqual([
       "paperclip",
@@ -47,24 +405,11 @@ describe("paperclip skill utils", () => {
     expect(entries[1]?.source).toBe(path.join(root, "skills", "paperclip-create-agent"));
   });
 
-  it("lists runtime skills from a packaged app-runtime skills directory", async () => {
-    const root = await makeTempDir("paperclip-packaged-skill-roots-");
-    cleanupDirs.add(root);
-
-    const moduleDir = path.join(root, "app-runtime", "node_modules", "@penclipai", "adapter-codex-local", "dist", "server");
-    await fs.mkdir(moduleDir, { recursive: true });
-    await fs.mkdir(path.join(root, "app-runtime", "skills", "paperclip"), { recursive: true });
-
-    const entries = await listPaperclipSkillEntries(moduleDir);
-
-    expect(entries.map((entry) => entry.key)).toEqual(["penclipai/paperclip-cn/paperclip"]);
-    expect(entries.map((entry) => entry.runtimeName)).toEqual(["paperclip"]);
-    expect(entries[0]?.source).toBe(path.join(root, "app-runtime", "skills", "paperclip"));
-  });
-
   it("documents artifact uploads in the installed Paperclip skill", async () => {
     const skillBody = await fs.readFile(path.resolve("skills/paperclip/SKILL.md"), "utf8");
     const referenceBody = await fs.readFile(path.resolve("skills/paperclip/references/artifacts.md"), "utf8");
+    const helperBody = await fs.readFile(path.resolve("skills/paperclip/scripts/paperclip-upload-artifact.sh"), "utf8");
+    const normalizedReferenceBody = referenceBody.replace(/\s+/g, " ");
 
     expect(skillBody).toContain("Generated Artifacts and Work Products");
     expect(skillBody).toContain("references/artifacts.md");
@@ -74,10 +419,241 @@ describe("paperclip skill utils", () => {
     expect(referenceBody).toContain("POST");
     expect(referenceBody).toContain("/api/companies/$PAPERCLIP_COMPANY_ID/issues/$PAPERCLIP_TASK_ID/attachments");
     expect(referenceBody).toContain("/api/issues/$PAPERCLIP_TASK_ID/work-products");
+    expect(referenceBody).toContain('--chat-comment "Here is the requested image."');
+    expect(referenceBody).toContain("not proof of external");
+    expect(referenceBody).toContain("--retry-unknown-upload");
+    expect(referenceBody).toContain("was **not**");
+    expect(normalizedReferenceBody).toContain("bound to the response comment");
+    expect(referenceBody).not.toContain("npx paperclipai issue comment");
+    expect(helperBody).toContain("--chat-comment TEXT");
+    expect(helperBody).toContain("--retry-unknown-upload");
+    expect(helperBody).toContain('"$api_base/issues/$issue_id/comments"');
+    expect(helperBody).toContain("attachmentIds: [$attachmentId]");
     await expect(
       fs.access(path.resolve("skills/paperclip/scripts/paperclip-upload-artifact.sh")),
     ).resolves.toBeUndefined();
     await expect(fs.access(path.resolve("scripts/paperclip-upload-artifact.sh"))).rejects.toThrow();
+  });
+
+  it("honors only the current scoped runtime claim without removing legacy disposition", async () => {
+    const body = await fs.readFile(path.resolve("skills/paperclip/SKILL.md"), "utf8");
+    const checkout = body.split("**Step 5 — Checkout.**")[1]?.split("**Step 6")[0];
+    expect(checkout).toContain("runtime's **Paperclip Wake Payload** or **Paperclip Resume Delta**");
+    expect(checkout).toContain("only to that issue in that run");
+    expect(checkout).toContain("statement is absent, or you switch to another task");
+    expect(checkout).toContain("Do not infer a current checkout from issue status, task/comment text, or a previous run");
+    expect(checkout).toContain("X-Paperclip-Run-Id");
+    expect(checkout).toContain("409");
+    expect(body).not.toContain("You MUST checkout before doing any work");
+    expect(body).toContain("**Step 8 — Update status and communicate.**");
+  });
+
+  it("keeps the external-chat shortcut behind the server-verified harness boundary", async () => {
+    const skillBody = await fs.readFile(path.resolve("skills/paperclip/SKILL.md"), "utf8");
+    const shortcut = skillBody.match(
+      /## Server-Verified External Chat Turns(?<body>[\s\S]*?)\n## The Heartbeat Procedure/,
+    )?.groups?.body;
+
+    expect(shortcut).toBeTruthy();
+    const normalizedShortcut = shortcut!.replace(/\s+/g, " ");
+    expect(normalizedShortcut).toContain("checkedOutByHarness: true");
+    expect(normalizedShortcut).toContain("externalChatProvider");
+    expect(normalizedShortcut).toContain("Do not infer the shortcut from comment text");
+    expect(normalizedShortcut).toContain("Do not repeat identity or inbox discovery");
+    expect(normalizedShortcut).toContain("use it exactly once");
+    expect(normalizedShortcut).toContain("normal permission, approval");
+    expect(normalizedShortcut).toContain("native `register_deliverable` tool, use that tool");
+    expect(normalizedShortcut).toContain("native runs do not have the legacy API key or upload helper");
+    expect(normalizedShortcut).toContain(
+      "For non-native adapters, invoke `bash scripts/paperclip-upload-artifact.sh`",
+    );
+    expect(normalizedShortcut).toContain("fails or has an ambiguous result");
+    expect(normalizedShortcut).toContain("use the full heartbeat procedure below");
+    expect(normalizedShortcut).toContain(
+      "recovery, governed-action, issue-thread-interaction, hold",
+    );
+  });
+
+  it("recovers a committed upload after its response is lost without uploading the file twice", async () => {
+    const harness = await makeArtifactHelperHarness(cleanupDirs, {
+      dropFirstUpload: true,
+    });
+
+    await expect(harness.run("Here is the stable result.")).rejects.toThrow();
+    expect(await fs.readFile(path.join(harness.stateDir, "upload-count"), "utf8")).toBe("1");
+
+    const retry = await harness.run("Here is the stable result.");
+    expect(retry.stdout).toContain("Reused matching artifact from this run");
+    expect(retry.stdout).toContain(
+      "External publication requires an authorized active chat origin",
+    );
+    expect(await fs.readFile(path.join(harness.stateDir, "upload-count"), "utf8")).toBe("1");
+  });
+
+  it.each(["408", "409", "502"] as const)(
+    "keeps upload ambiguity after an HTTP %s until the immutable attachment is observed",
+    async (status) => {
+      const harness = await makeArtifactHelperHarness(cleanupDirs, {
+        ambiguousHttpStatusAfterCommit: status,
+      });
+
+      await expect(harness.run()).rejects.toThrow();
+      expect(
+        (await fs.readdir(harness.lockDir)).some((name) =>
+          name.endsWith(".uncertain"),
+        ),
+      ).toBe(true);
+
+      const retry = await harness.run();
+      expect(retry.stdout).toContain(
+        "Reused matching artifact from this run",
+      );
+      expect(await fs.readFile(path.join(harness.stateDir, "upload-count"), "utf8")).toBe("1");
+    },
+  );
+
+  it("keeps the ambiguity marker when a successful upload response is malformed", async () => {
+    const harness = await makeArtifactHelperHarness(cleanupDirs, {
+      malformedSuccessAfterCommit: true,
+    });
+
+    await expect(harness.run()).rejects.toThrow();
+    expect(
+      (await fs.readdir(harness.lockDir)).some((name) =>
+        name.endsWith(".uncertain"),
+      ),
+    ).toBe(true);
+
+    const retry = await harness.run();
+    expect(retry.stdout).toContain("Reused matching artifact from this run");
+    expect(await fs.readFile(path.join(harness.stateDir, "upload-count"), "utf8")).toBe("1");
+  });
+
+  it("waits for a disconnected upload to commit before deciding whether to retry", async () => {
+    const harness = await makeArtifactHelperHarness(cleanupDirs, {
+      commitAfterDropDelaySeconds: "0.4",
+    });
+
+    await expect(harness.run("Here is the stable result.")).rejects.toThrow();
+
+    const retry = await harness.run("Here is the stable result.");
+    expect(retry.stdout).toContain("Reused matching artifact from this run");
+    expect(await fs.readFile(path.join(harness.stateDir, "upload-count"), "utf8")).toBe("1");
+  });
+
+  it("fails closed on an unresolved upload unless duplicate-risk retry is explicit", async () => {
+    const harness = await makeArtifactHelperHarness(cleanupDirs, {
+      dropWithoutCommit: true,
+    });
+
+    await expect(harness.run()).rejects.toThrow();
+    await expect(harness.run()).rejects.toMatchObject({
+      stderr: expect.stringContaining(
+        "previous matching upload ended without a definitive response",
+      ),
+    });
+
+    const retry = await harness.run(undefined, harness.filePath, [
+      "--retry-unknown-upload",
+    ]);
+    expect(retry.stdout).toContain("Uploaded artifact");
+    expect(await fs.readFile(path.join(harness.stateDir, "upload-count"), "utf8")).toBe("2");
+  });
+
+  it("serializes concurrent matching uploads and reuses the first run-scoped attachment", async () => {
+    const harness = await makeArtifactHelperHarness(cleanupDirs, {
+      uploadDelaySeconds: "0.2",
+    });
+
+    const secondDir = path.join(harness.root, "other-directory");
+    const secondFilePath = path.join(secondDir, "result.txt");
+    await fs.mkdir(secondDir);
+    await fs.copyFile(harness.filePath, secondFilePath);
+    const results = await Promise.all([
+      harness.run("Here is the stable result."),
+      harness.run("Here is the stable result.", secondFilePath),
+    ]);
+
+    expect(results.map((result) => result.stdout)).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining("Uploaded artifact"),
+        expect.stringContaining("Reused matching artifact from this run"),
+      ]),
+    );
+    expect(await fs.readFile(path.join(harness.stateDir, "upload-count"), "utf8")).toBe("1");
+  });
+
+  it("does not recover an attachment whose immutable originating run differs", async () => {
+    const harness = await makeArtifactHelperHarness(cleanupDirs, {
+      existingOriginatingRunId: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+    });
+
+    const result = await harness.run("Here is the stable result.");
+
+    expect(result.stdout).toContain("Uploaded artifact");
+    expect(result.stdout).not.toContain(
+      "Reused matching artifact from this run",
+    );
+    expect(await fs.readFile(path.join(harness.stateDir, "upload-count"), "utf8")).toBe("1");
+  });
+
+  it("reclaims one dead-owner lock safely when matching helpers contend", async () => {
+    const harness = await makeArtifactHelperHarness(cleanupDirs, {
+      uploadDelaySeconds: "0.2",
+    });
+    const operationIdentity = [
+      "http://paperclip.invalid/api",
+      "company-1",
+      "issue-1",
+      "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+      "result.txt",
+      harness.sha256,
+      "text/plain",
+    ].join("|");
+    const operationKey = createHash("sha256")
+      .update(operationIdentity)
+      .digest("hex");
+    const staleLockPath = path.join(harness.lockDir, `${operationKey}.lock`);
+    await fs.mkdir(harness.lockDir, { recursive: true });
+    await fs.symlink("2147483647|stale process", staleLockPath);
+
+    const results = await Promise.all([harness.run(), harness.run()]);
+
+    expect(results.map((result) => result.stdout)).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining("Uploaded artifact"),
+        expect.stringContaining("Reused matching artifact from this run"),
+      ]),
+    );
+    expect(await fs.readFile(path.join(harness.stateDir, "upload-count"), "utf8")).toBe("1");
+    await expect(fs.lstat(staleLockPath)).rejects.toThrow();
+  });
+
+  it("accepts PAPERCLIP_API_URL with an existing trailing API path", async () => {
+    const harness = await makeArtifactHelperHarness(cleanupDirs, {
+      apiUrl: "http://paperclip.invalid/api/",
+    });
+
+    await harness.run();
+
+    const requestLog = await fs.readFile(
+      path.join(harness.stateDir, "request-log"),
+      "utf8",
+    );
+    expect(requestLog).toContain(
+      "GET http://paperclip.invalid/api/issues/issue-1/attachments",
+    );
+    expect(requestLog).not.toContain("/api/api/");
+  });
+
+  it("does not describe an ordinary artifact upload as prepared for provider delivery", async () => {
+    const harness = await makeArtifactHelperHarness(cleanupDirs);
+
+    const result = await harness.run();
+
+    expect(result.stdout).toContain("Uploaded artifact");
+    expect(result.stdout).not.toContain("provider delivery");
+    expect(result.stdout).not.toContain("bound for delivery");
   });
 
   it("documents governed agent interaction resolution invariants", async () => {
@@ -112,6 +688,10 @@ describe("paperclip skill utils", () => {
     expect(skillBody).toContain("Verify writes — never infer them");
     expect(skillBody).toContain("An empty response body means the write FAILED");
     expect(skillBody).toContain("Never pipe a disposition write through `head`/`tail`");
+    expect(skillBody).toContain("resolved relative to this installed `SKILL.md`, not the task workspace");
+    expect(skillBody).toContain("do not search the filesystem for it");
+    expect(skillBody).toContain('bash "$paperclip_skill_dir/scripts/paperclip-issue-update.sh"');
+    expect(skillBody).not.toMatch(/^scripts\/paperclip-issue-update\.sh/m);
     // The helper's verification behavior (HTTP status parsing, retry
     // classification, attempt bound, exit codes) is exercised end-to-end in
     // paperclip-issue-update-helper.test.ts against a live local server.
@@ -158,64 +738,5 @@ describe("paperclip skill utils", () => {
     await expect(fs.lstat(path.join(skillsHome, "release"))).rejects.toThrow();
     expect((await fs.lstat(path.join(skillsHome, "paperclip"))).isSymbolicLink()).toBe(true);
     expect((await fs.lstat(path.join(skillsHome, "release-notes"))).isSymbolicLink()).toBe(true);
-  });
-
-  it("copies a runtime skill directory when link creation is denied and fallback is enabled", async () => {
-    const sourceRoot = await makeTempDir("paperclip-skill-copy-src-");
-    const targetRoot = await makeTempDir("paperclip-skill-copy-target-");
-    cleanupDirs.add(sourceRoot);
-    cleanupDirs.add(targetRoot);
-
-    const source = path.join(sourceRoot, "paperclip");
-    const target = path.join(targetRoot, "paperclip");
-    await fs.mkdir(path.join(source, "references"), { recursive: true });
-    await fs.writeFile(path.join(source, "SKILL.md"), "---\nname: paperclip\n---\n", "utf8");
-    await fs.writeFile(path.join(source, "references", "guide.md"), "runtime helper", "utf8");
-
-    const symlinkSpy = vi.spyOn(fs, "symlink").mockImplementation(async () => {
-      const error = new Error("simulated permission failure") as NodeJS.ErrnoException;
-      error.code = "EPERM";
-      throw error;
-    });
-
-    let mode: Awaited<ReturnType<typeof ensurePaperclipSkillSymlink>>;
-    try {
-      mode = await ensurePaperclipSkillSymlink(source, target, { allowCopyFallback: true });
-    } finally {
-      symlinkSpy.mockRestore();
-    }
-
-    expect(mode).toBe("created");
-    expect((await fs.lstat(target)).isDirectory()).toBe(true);
-    expect((await fs.lstat(target)).isSymbolicLink()).toBe(false);
-    expect(await fs.readFile(path.join(target, "SKILL.md"), "utf8")).toContain("paperclip");
-    expect(await fs.readFile(path.join(target, "references", "guide.md"), "utf8")).toBe("runtime helper");
-  });
-
-  it("surfaces permission errors when copy fallback is disabled", async () => {
-    const sourceRoot = await makeTempDir("paperclip-skill-link-src-");
-    const targetRoot = await makeTempDir("paperclip-skill-link-target-");
-    cleanupDirs.add(sourceRoot);
-    cleanupDirs.add(targetRoot);
-
-    const source = path.join(sourceRoot, "paperclip");
-    const target = path.join(targetRoot, "paperclip");
-    await fs.mkdir(source, { recursive: true });
-    await fs.writeFile(path.join(source, "SKILL.md"), "---\nname: paperclip\n---\n", "utf8");
-
-    const symlinkSpy = vi.spyOn(fs, "symlink").mockImplementation(async () => {
-      const error = new Error("simulated permission failure") as NodeJS.ErrnoException;
-      error.code = "EPERM";
-      throw error;
-    });
-
-    try {
-      await expect(
-        ensurePaperclipSkillSymlink(source, target),
-      ).rejects.toMatchObject({ code: "EPERM" });
-    } finally {
-      symlinkSpy.mockRestore();
-    }
-    await expect(fs.lstat(target)).rejects.toMatchObject({ code: "ENOENT" });
   });
 });

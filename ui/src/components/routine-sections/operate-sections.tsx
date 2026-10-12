@@ -1,239 +1,60 @@
-import { useMemo, useState } from "react";
+import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
-import { Activity as ActivityIcon, Play, SlidersHorizontal } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { timeAgo } from "../../lib/timeAgo";
-import { runRowSubtitle, dedupedTriggerLabel } from "../../lib/routine-run-display";
+import { useMemo } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Activity as ActivityIcon } from "lucide-react";
+import { issuesApi } from "@/api/issues";
+import { queryKeys } from "@/lib/queryKeys";
+import { routineDetailHref } from "../RoutineContextualSidebar";
+import { createIssueDetailLocationState } from "@/lib/issueDetailBreadcrumb";
+import { useToastActions } from "@/context/ToastContext";
+import { IssuesList } from "../IssuesList";
 import { EmptyState } from "../EmptyState";
-import { EntityRow } from "../EntityRow";
-import { FilterBar, type FilterValue } from "../FilterBar";
-import { LiveRunWidget } from "../LiveRunWidget";
 import { RoutineHistoryTab } from "../RoutineHistoryTab";
 import { RoutineActivityRow } from "../RoutineActivityRow";
-import { formatRoutineRunStatus } from "../RoutineList";
 import { useRoutineDetail } from "./context";
 
-const DATE_WINDOW_OPTIONS: { value: string; label: string; ms: number | null }[] = [
-  { value: "any", label: "Any time", ms: null },
-  { value: "24h", label: "Last 24h", ms: 24 * 60 * 60 * 1000 },
-  { value: "7d", label: "Last 7d", ms: 7 * 24 * 60 * 60 * 1000 },
-  { value: "30d", label: "Last 30d", ms: 30 * 24 * 60 * 60 * 1000 },
-];
-
-function dateWindowLabel(value: string, t: ReturnType<typeof useTranslation>["t"]) {
-  switch (value) {
-    case "any":
-      return t("routineDetail.filter.anyTime", { defaultValue: "Any time" });
-    case "24h":
-      return t("routineDetail.filter.last24h", { defaultValue: "Last 24h" });
-    case "7d":
-      return t("routineDetail.filter.last7d", { defaultValue: "Last 7d" });
-    case "30d":
-      return t("routineDetail.filter.last30d", { defaultValue: "Last 30d" });
-    default:
-      return value;
-  }
-}
-
-function routineRunSourceLabel(value: string, t: ReturnType<typeof useTranslation>["t"]) {
-  switch (value) {
-    case "manual":
-      return t("routineDetail.source.manual", { defaultValue: "Manual" });
-    case "schedule":
-      return t("routineDetail.source.schedule", { defaultValue: "Schedule" });
-    case "api":
-      return t("routineDetail.source.api", { defaultValue: "API" });
-    case "webhook":
-      return t("routineDetail.source.webhook", { defaultValue: "Webhook" });
-    default:
-      return value.replaceAll("_", " ");
-  }
-}
-
 export function RunsSection() {
-  const { t } = useTranslation();
-  const ctx = useRoutineDetail();
-  const { routine, routineRuns, hasLiveRun, activeIssueId, onOpenRunDialog } = ctx;
-  const runs = useMemo(() => routineRuns ?? [], [routineRuns]);
-
-  const [sourceFilter, setSourceFilter] = useState("any");
-  const [statusFilter, setStatusFilter] = useState("any");
-  const [dateFilter, setDateFilter] = useState("any");
-
-  const sourceOptions = useMemo(
-    () => [...new Set(runs.map((run) => run.source))].sort(),
-    [runs],
-  );
-  const statusOptions = useMemo(
-    () => [...new Set(runs.map((run) => run.status))].sort(),
-    [runs],
-  );
-
-  const filtered = useMemo(() => {
-    const windowMs = DATE_WINDOW_OPTIONS.find((option) => option.value === dateFilter)?.ms ?? null;
-    const cutoff = windowMs == null ? null : Date.now() - windowMs;
-    return runs.filter((run) => {
-      if (sourceFilter !== "any" && run.source !== sourceFilter) return false;
-      if (statusFilter !== "any" && run.status !== statusFilter) return false;
-      if (cutoff != null && new Date(run.triggeredAt).getTime() < cutoff) return false;
-      return true;
-    });
-  }, [runs, sourceFilter, statusFilter, dateFilter]);
-
-  const activeFilters = useMemo<FilterValue[]>(() => {
-    const list: FilterValue[] = [];
-    if (sourceFilter !== "any") list.push({ key: "source", label: t("routineDetail.filter.source", { defaultValue: "Source" }), value: routineRunSourceLabel(sourceFilter, t) });
-    if (statusFilter !== "any") {
-      list.push({ key: "status", label: t("routineDetail.filter.status", { defaultValue: "Status" }), value: formatRoutineRunStatus(statusFilter, t) ?? statusFilter });
-    }
-    if (dateFilter !== "any") {
-      const label = DATE_WINDOW_OPTIONS.find((option) => option.value === dateFilter)
-        ? dateWindowLabel(dateFilter, t)
-        : dateFilter;
-      list.push({ key: "date", label: t("routineDetail.filter.date", { defaultValue: "Date" }), value: label });
-    }
-    return list;
-  }, [sourceFilter, statusFilter, dateFilter, t]);
-
-  function clearFilters() {
-    setSourceFilter("any");
-    setStatusFilter("any");
-    setDateFilter("any");
-  }
-
-  function removeFilter(key: string) {
-    if (key === "source") setSourceFilter("any");
-    if (key === "status") setStatusFilter("any");
-    if (key === "date") setDateFilter("any");
-  }
+  useTranslation();
+  const { routine, companyId, agents, projects, hasLiveRun, activeIssueId } = useRoutineDetail();
+  const queryClient = useQueryClient();
+  const { pushToast } = useToastActions();
+  const filters = { originKind: "routine_execution", originId: routine.id };
+  const issueQueryKey = [...queryKeys.issues.list(companyId), "routine", routine.id];
+  const { data: issues, isLoading, error } = useQuery({
+    queryKey: issueQueryKey,
+    queryFn: () => issuesApi.list(companyId, filters),
+  });
+  const updateIssue = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) => issuesApi.update(id, data),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.issues.list(companyId) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.routines.detail(routine.id) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.routines.runs(routine.id) });
+    },
+    onError: (updateError) => pushToast({ title: translateInstant("Failed to update task"), body: updateError.message, tone: "error" }),
+  });
 
   return (
-    <div className="space-y-4">
-      {hasLiveRun && activeIssueId ? (
-        <LiveRunWidget issueId={activeIssueId} companyId={routine.companyId} />
-      ) : null}
-
-      {runs.length === 0 ? (
-        <EmptyState
-          icon={Play}
-          message={t("routineDetail.noRunsYetBody", { defaultValue: "No runs yet. Trigger a run from the header or wait for the schedule." })}
-          action={t("Run now", { defaultValue: "Run now" })}
-          onAction={onOpenRunDialog}
-        />
-      ) : (
-        <>
-          {/* Filter chips row (§3.6) */}
-          <div className="space-y-2">
-            <div className="flex flex-wrap items-center gap-2">
-              <Select value={sourceFilter} onValueChange={setSourceFilter}>
-                <SelectTrigger size="sm" className="h-8 w-auto gap-1.5 text-xs" aria-label={t("routineDetail.filterBySource", { defaultValue: "Filter by source" })}>
-                  <span className="text-muted-foreground">{t("routineDetail.filter.sourceWithColon", { defaultValue: "Source:" })}</span>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="any">{t("Any", { defaultValue: "Any" })}</SelectItem>
-                  {sourceOptions.map((source) => (
-                    <SelectItem key={source} value={source}>
-                      {routineRunSourceLabel(source, t)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger size="sm" className="h-8 w-auto gap-1.5 text-xs" aria-label={t("routineDetail.filterByStatus", { defaultValue: "Filter by status" })}>
-                  <span className="text-muted-foreground">{t("routineDetail.filter.statusWithColon", { defaultValue: "Status:" })}</span>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="any">{t("Any", { defaultValue: "Any" })}</SelectItem>
-                  {statusOptions.map((status) => (
-                    <SelectItem key={status} value={status}>
-                      {formatRoutineRunStatus(status, t)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={dateFilter} onValueChange={setDateFilter}>
-                <SelectTrigger size="sm" className="h-8 w-auto gap-1.5 text-xs" aria-label={t("routineDetail.filterByDate", { defaultValue: "Filter by date" })}>
-                  <span className="text-muted-foreground">{t("routineDetail.filter.dateWithColon", { defaultValue: "Date:" })}</span>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {DATE_WINDOW_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {dateWindowLabel(option.value, t)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <FilterBar filters={activeFilters} onRemove={removeFilter} onClear={clearFilters} />
-          </div>
-
-          {filtered.length === 0 ? (
-            <EmptyState
-              icon={SlidersHorizontal}
-              message={t("routineDetail.noRunsMatchFilters", { defaultValue: "No runs match these filters." })}
-              action={t("Clear filters", { defaultValue: "Clear filters" })}
-              onAction={clearFilters}
-            />
-          ) : (
-            <div className="rounded-lg border border-border">
-              {filtered.map((run) => {
-                const label = dedupedTriggerLabel(run.trigger);
-                const title = run.linkedIssue?.title ?? label ?? t("Run", { defaultValue: "Run" });
-                return (
-                  <EntityRow
-                    key={run.id}
-                    leading={
-                      <>
-                        <Badge variant="outline" className="shrink-0">
-                          {routineRunSourceLabel(run.source, t)}
-                        </Badge>
-                        <Badge
-                          variant={run.status === "failed" ? "destructive" : "secondary"}
-                          className="shrink-0"
-                        >
-                          {formatRoutineRunStatus(run.status, t)}
-                        </Badge>
-                      </>
-                    }
-                    identifier={
-                      run.linkedIssue
-                        ? run.linkedIssue.identifier ?? run.linkedIssue.id.slice(0, 8)
-                        : undefined
-                    }
-                    title={title}
-                    subtitle={runRowSubtitle(run, routine.variables)}
-                    reserveSubtitleSpace
-                    trailing={
-                      <span className="text-xs text-muted-foreground">{timeAgo(run.triggeredAt)}</span>
-                    }
-                    to={
-                      run.linkedIssue
-                        ? `/issues/${run.linkedIssue.identifier ?? run.linkedIssue.id}`
-                        : undefined
-                    }
-                  />
-                );
-              })}
-            </div>
-          )}
-        </>
-      )}
-    </div>
+    <IssuesList
+      issues={issues ?? []}
+      isLoading={isLoading}
+      error={error}
+      agents={agents}
+      projects={projects}
+      liveIssueIds={new Set(hasLiveRun && activeIssueId ? [activeIssueId] : [])}
+      viewStateKey={`paperclip:routine-runs:${companyId}:${routine.id}`}
+      searchFilters={filters}
+      issueLinkState={createIssueDetailLocationState("Runs", routineDetailHref(routine.id, "runs"))}
+      rowPresentation="task"
+      toolbarPresentation="collection"
+      onUpdateIssue={(id, data) => updateIssue.mutate({ id, data })}
+    />
   );
 }
 
-export function ActivitySection() {
-  const { t } = useTranslation();
+export function ActivitySection({ isLoading = false, error }: { isLoading?: boolean; error?: Error | null } = {}) {
+  useTranslation();
   const ctx = useRoutineDetail();
   const { activity } = ctx;
   const events = activity ?? [];
@@ -241,7 +62,7 @@ export function ActivitySection() {
   const groups = useMemo(() => {
     const byDay = new Map<string, typeof events>();
     for (const event of events) {
-      let label = t("Earlier", { defaultValue: "Earlier" });
+      let label = "Earlier";
       try {
         label = new Date(event.createdAt).toLocaleDateString(undefined, {
           weekday: "short",
@@ -256,10 +77,13 @@ export function ActivitySection() {
       byDay.set(label, bucket);
     }
     return Array.from(byDay.entries());
-  }, [events, t]);
+  }, [events]);
+
+  if (isLoading) return <p className="text-sm text-muted-foreground">{translateInstant("Loading activity…")}</p>;
+  if (error) return <p role="alert" className="text-sm text-destructive">{error.message}</p>;
 
   if (events.length === 0) {
-    return <EmptyState icon={ActivityIcon} message={t("routineDetail.noActivityYet", { defaultValue: "No activity yet." })} />;
+    return <EmptyState icon={ActivityIcon} message={translateInstant("routineDetail.noActivityYet")} />;
   }
 
   return (

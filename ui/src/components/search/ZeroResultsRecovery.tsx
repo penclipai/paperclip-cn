@@ -66,7 +66,7 @@ export function ZeroResultsRecovery({
               onClick={() => onChange(clearFilterDimension(filters, suggestion.filter))}
             >
               <span className="min-w-0 truncate">
-                {t("searchFilters.zero.remove")} {" "}
+                {t("searchFilters.zero.remove")}{" "}
                 <span className="font-medium">
                   {describeLoosenSuggestion(suggestion.filter, suggestion.values, lookups)}
                 </span>

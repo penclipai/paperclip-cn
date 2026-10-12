@@ -6,6 +6,7 @@ import type { Agent } from "@penclipai/shared";
 import { issuesApi } from "../api/issues";
 import { queryKeys } from "../lib/queryKeys";
 import {
+  interactionReadinessRefetchInterval,
   isIssueThreadInteraction,
   type AskUserQuestionsAnswer,
   type AskUserQuestionsInteraction,
@@ -63,6 +64,7 @@ export function AttentionInteractionResolver({
     queryKey: queryKeys.issues.interactions(issueId),
     queryFn: () => issuesApi.listInteractions(issueId),
     enabled: !!issueId,
+    refetchInterval: (query) => interactionReadinessRefetchInterval(query.state.data),
   });
 
   const interaction = useMemo<IssueThreadInteraction | null>(() => {
@@ -91,10 +93,12 @@ export function AttentionInteractionResolver({
       interaction: SuggestTasksInteraction | RequestConfirmationInteraction | RequestCheckboxConfirmationInteraction;
       selectedClientKeys?: string[];
       selectedOptionIds?: string[];
+      rememberAction?: boolean;
     }) =>
       issuesApi.acceptInteraction(issueId, input.interaction.id, {
         selectedClientKeys: input.selectedClientKeys,
         selectedOptionIds: input.selectedOptionIds,
+        rememberAction: input.rememberAction,
       }),
     onSuccess: invalidate,
   });
@@ -129,7 +133,7 @@ export function AttentionInteractionResolver({
     return (
       <div className="flex items-center gap-2 py-3 text-xs text-muted-foreground">
         <Loader2 className="h-3.5 w-3.5 animate-spin" />
-        {t("attentionQueue.loadingDecision", { defaultValue: "Loading decision…" })}
+        {" "}{t("attentionQueue.loadingDecision", { defaultValue: "Loading decision…" })}
       </div>
     );
   }
@@ -150,8 +154,8 @@ export function AttentionInteractionResolver({
       agentMap={agentMap}
       currentUserId={currentUserId}
       userLabelMap={userLabelMap}
-      onAcceptInteraction={(target, selectedClientKeys, selectedOptionIds) =>
-        acceptMutation.mutateAsync({ interaction: target, selectedClientKeys, selectedOptionIds }).then(() => undefined)
+      onAcceptInteraction={(target, selectedClientKeys, selectedOptionIds, rememberAction) =>
+        acceptMutation.mutateAsync({ interaction: target, selectedClientKeys, selectedOptionIds, rememberAction }).then(() => undefined)
       }
       onRejectInteraction={(target, reason) =>
         rejectMutation.mutateAsync({ interactionId: target.id, reason }).then(() => undefined)

@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { PatchInstanceGeneralSettings, BackupRetentionPolicy } from "@penclipai/shared";
 import {
@@ -22,7 +23,7 @@ import { useSignOut } from "@/hooks/useSignOut";
 const FEEDBACK_TERMS_URL = import.meta.env.VITE_FEEDBACK_TERMS_URL?.trim() || "https://paperclip.ing/tos";
 
 export function InstanceGeneralSettings({ embedded = false }: { embedded?: boolean }) {
-  const { t } = useTranslation();
+  useTranslation();
   const { setBreadcrumbs } = useBreadcrumbs();
   const queryClient = useQueryClient();
   const [actionError, setActionError] = useState<string | null>(null);
@@ -32,8 +33,8 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
   useEffect(() => {
     if (embedded) return;
     setBreadcrumbs([
-      { label: t("Settings"), href: "/company/settings" },
-      { label: t("General") },
+      { label: translateInstant("Settings"), href: "/company/settings" },
+      { label: translateInstant("General") },
     ]);
   }, [embedded, setBreadcrumbs]);
 
@@ -59,12 +60,12 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
       await queryClient.invalidateQueries({ queryKey: queryKeys.instance.generalSettings });
     },
     onError: (error) => {
-      setActionError(error instanceof Error ? error.message : t("Failed to update general settings."));
+      setActionError(error instanceof Error ? error.message : "Failed to update general settings.");
     },
   });
 
   if (generalQuery.isLoading || healthQuery.isLoading) {
-    return <div className="text-sm text-muted-foreground">{t("Loading general settings...")}</div>;
+    return <div className="text-sm text-muted-foreground">{translateInstant("Loading general settings...")}</div>;
   }
 
   if (generalQuery.error) {
@@ -72,25 +73,22 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
       <div className="text-sm text-destructive">
         {generalQuery.error instanceof Error
           ? generalQuery.error.message
-          : t("Failed to load general settings.")}
+          : translateInstant("Failed to load general settings.")}
       </div>
     );
   }
 
   const censorUsernameInLogs = generalQuery.data?.censorUsernameInLogs === true;
-  const keyboardShortcuts = generalQuery.data?.keyboardShortcuts === true;
   const feedbackDataSharingPreference = generalQuery.data?.feedbackDataSharingPreference ?? "prompt";
   const backupRetention: BackupRetentionPolicy = generalQuery.data?.backupRetention ?? DEFAULT_BACKUP_RETENTION;
   const hiddenSettings = new Set(healthQuery.data?.hiddenSettings ?? []);
   const showDeploymentStatus = !hiddenSettings.has("instance.general.deploymentStatus");
   const showCensorUsernameInLogs = !hiddenSettings.has("instance.general.censorUsernameInLogs");
-  const showKeyboardShortcuts = !hiddenSettings.has("instance.general.keyboardShortcuts");
   const showBackupRetention = !hiddenSettings.has("instance.general.backupRetention");
   const showFeedbackDataSharing = !hiddenSettings.has("instance.general.feedbackDataSharingPreference");
   const showSignOut = !hiddenSettings.has("instance.general.signOut");
   const visibleTopics = [
     ...(showCensorUsernameInLogs ? ["log display"] : []),
-    ...(showKeyboardShortcuts ? ["keyboard shortcuts"] : []),
     ...(showBackupRetention ? ["backup retention"] : []),
     ...(showFeedbackDataSharing ? ["data sharing"] : []),
   ];
@@ -100,7 +98,7 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
   const visibleActionError = signOutMutation.error instanceof Error
     ? signOutMutation.error.message
     : signOutMutation.error
-      ? t("Failed to sign out.")
+      ? "Failed to sign out."
       : actionError;
 
   return (
@@ -109,12 +107,10 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <SlidersHorizontal className="h-5 w-5 text-muted-foreground" />
-            <h1 className="text-lg font-semibold">{t("General")}</h1>
+            <h1 className="text-lg font-semibold">{translateInstant("General")}</h1>
           </div>
           <p className="text-sm text-muted-foreground">
-            Configure instance-wide preferences
-            {visibleTopics.length > 0 ? <> including {topicSummary}</> : null}.
-          </p>
+            {translateInstant("Configure instance-wide preferences")}{visibleTopics.length > 0 ? <> including {topicSummary}</> : null}{translateInstant(".")}</p>
         </div>
       ) : null}
 
@@ -128,7 +124,7 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
       <section>
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <h2 className="text-sm font-semibold">{t("Deployment and auth")}</h2>
+            <h2 className="text-sm font-semibold">{translateInstant("Deployment and auth")}</h2>
             <ModeBadge
               deploymentMode={healthQuery.data?.deploymentMode}
               deploymentExposure={healthQuery.data?.deploymentExposure}
@@ -136,23 +132,23 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
           </div>
           <div className="text-sm text-muted-foreground">
             {healthQuery.data?.deploymentMode === "local_trusted"
-              ? t("instanceGeneralSettings.localTrustedDescription")
+              ? translateInstant("instanceGeneralSettings.localTrustedDescription")
               : healthQuery.data?.deploymentExposure === "public"
-                ? t("instanceGeneralSettings.authenticatedPublicDescription")
-                : t("instanceGeneralSettings.authenticatedPrivateDescription")}
+                ? translateInstant("instanceGeneralSettings.authenticatedPublicDescription")
+                : translateInstant("instanceGeneralSettings.authenticatedPrivateDescription")}
           </div>
           <div className="grid gap-3 md:grid-cols-3">
             <StatusBox
-              label={t("Auth readiness")}
-              value={healthQuery.data?.authReady ? t("Ready") : t("Not ready")}
+              label={translateInstant("Auth readiness")}
+              value={healthQuery.data?.authReady ? translateInstant("Ready") : translateInstant("Not ready")}
             />
             <StatusBox
-              label={t("Bootstrap status")}
-              value={healthQuery.data?.bootstrapStatus === "bootstrap_pending" ? t("Setup required") : t("Ready")}
+              label={translateInstant("Bootstrap status")}
+              value={healthQuery.data?.bootstrapStatus === "bootstrap_pending" ? translateInstant("Setup required") : translateInstant("Ready")}
             />
             <StatusBox
-              label={t("Bootstrap invite")}
-              value={healthQuery.data?.bootstrapInviteActive ? t("Active") : t("None")}
+              label={translateInstant("Bootstrap invite")}
+              value={healthQuery.data?.bootstrapInviteActive ? translateInstant("Active") : translateInstant("None")}
             />
           </div>
         </div>
@@ -163,38 +159,15 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
       <section>
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-1.5">
-            <h2 className="text-sm font-semibold">{t("Censor username in logs")}</h2>
+            <h2 className="text-sm font-semibold">{translateInstant("Censor username in logs")}</h2>
             <p className="max-w-2xl text-sm text-muted-foreground">
-              Hide the username segment in home-directory paths and similar operator-visible log output. Standalone
-              username mentions outside of paths are not yet masked in the live transcript view. This is off by
-              default.
-            </p>
+              {translateInstant("Hide the username segment in home-directory paths and similar operator-visible log output. Standalone username mentions outside of paths are not yet masked in the live transcript view. This is off by default.")}</p>
           </div>
           <ToggleSwitch
             checked={censorUsernameInLogs}
             onCheckedChange={() => updateGeneralMutation.mutate({ censorUsernameInLogs: !censorUsernameInLogs })}
             disabled={updateGeneralMutation.isPending || signOutMutation.isPending}
-            aria-label={t("Toggle username log censoring")}
-          />
-        </div>
-      </section>
-      )}
-
-      {showKeyboardShortcuts && (
-      <section>
-        <div className="flex items-start justify-between gap-4">
-          <div className="space-y-1.5">
-            <h2 className="text-sm font-semibold">{t("instanceGeneralSettings.keyboardShortcutsTitle")}</h2>
-            <p className="max-w-2xl text-sm text-muted-foreground">
-              Enable app keyboard shortcuts, including inbox navigation and global shortcuts like creating tasks or
-              toggling panels. This is off by default.
-            </p>
-          </div>
-          <ToggleSwitch
-            checked={keyboardShortcuts}
-            onCheckedChange={() => updateGeneralMutation.mutate({ keyboardShortcuts: !keyboardShortcuts })}
-            disabled={updateGeneralMutation.isPending || signOutMutation.isPending}
-            aria-label={t("instanceGeneralSettings.keyboardShortcutsToggle")}
+            aria-label={translateInstant("Toggle username log censoring")}
           />
         </div>
       </section>
@@ -204,16 +177,13 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
       <section>
         <div className="space-y-5">
           <div className="space-y-1.5">
-            <h2 className="text-sm font-semibold">{t("instanceGeneralSettings.backupRetentionTitle")}</h2>
+            <h2 className="text-sm font-semibold">{translateInstant("instanceGeneralSettings.backupRetentionTitle")}</h2>
             <p className="max-w-2xl text-sm text-muted-foreground">
-              Configure how long automatic database backups are retained. Backups run roughly
-              every hour and are compressed with gzip. Within the daily window all backups are
-              kept; beyond that, one backup per week and one per month are preserved.
-            </p>
+              {translateInstant("Configure how long automatic database backups are retained. Backups run roughly every hour and are compressed with gzip. Within the daily window all backups are kept; beyond that, one backup per week and one per month are preserved.")}</p>
           </div>
 
           <div className="space-y-1.5">
-            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t("instanceGeneralSettings.backupRetentionDaily")}</h3>
+            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{translateInstant("instanceGeneralSettings.backupRetentionDaily")}</h3>
             <div className="flex flex-wrap gap-2">
               {DAILY_RETENTION_PRESETS.map((days) => {
                 const active = backupRetention.dailyDays === days;
@@ -242,7 +212,7 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
           </div>
 
           <div className="space-y-1.5">
-            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t("instanceGeneralSettings.backupRetentionWeekly")}</h3>
+            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{translateInstant("instanceGeneralSettings.backupRetentionWeekly")}</h3>
             <div className="flex flex-wrap gap-2">
               {WEEKLY_RETENTION_PRESETS.map((weeks) => {
                 const active = backupRetention.weeklyWeeks === weeks;
@@ -272,7 +242,7 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
           </div>
 
           <div className="space-y-1.5">
-            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t("instanceGeneralSettings.backupRetentionMonthly")}</h3>
+            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{translateInstant("instanceGeneralSettings.backupRetentionMonthly")}</h3>
             <div className="flex flex-wrap gap-2">
               {MONTHLY_RETENTION_PRESETS.map((months) => {
                 const active = backupRetention.monthlyMonths === months;
@@ -308,11 +278,9 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
       <section>
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <h2 className="text-sm font-semibold">{t("instanceGeneralSettings.feedbackSharingTitle")}</h2>
+            <h2 className="text-sm font-semibold">{translateInstant("instanceGeneralSettings.feedbackSharingTitle")}</h2>
             <p className="max-w-2xl text-sm text-muted-foreground">
-              Control whether thumbs up and thumbs down votes can send the voted AI output to
-              Paperclip Labs. Votes are always saved locally.
-            </p>
+              {translateInstant("instanceGeneralSettings.feedbackSharingDescription")}</p>
             {FEEDBACK_TERMS_URL ? (
               <a
                 href={FEEDBACK_TERMS_URL}
@@ -320,27 +288,24 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
                 rel="noreferrer"
                 className="inline-flex text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
               >
-                Read our terms of service
-              </a>
+                {translateInstant("instanceGeneralSettings.feedbackSharingTerms")}</a>
             ) : null}
           </div>
           {feedbackDataSharingPreference === "prompt" ? (
             <div className="rounded-lg bg-accent/20 px-3 py-2 text-sm text-muted-foreground">
-              No default is saved yet. The next thumbs up or thumbs down choice will ask once and
-              then save the answer here.
-            </div>
+              {translateInstant("instanceGeneralSettings.feedbackSharingPromptNotice")}</div>
           ) : null}
           <div className="flex flex-wrap gap-2">
             {[
               {
                 value: "allowed",
-                label: t("issueFeedback.alwaysAllow"),
-                description: t("instanceGeneralSettings.feedbackSharingAlwaysAllowDescription"),
+                label: translateInstant("issueFeedback.alwaysAllow"),
+                description: translateInstant("instanceGeneralSettings.feedbackSharingAlwaysAllowDescription"),
               },
               {
                 value: "not_allowed",
-                label: t("issueFeedback.dontAllow"),
-                description: t("instanceGeneralSettings.feedbackSharingDontAllowDescription"),
+                label: translateInstant("issueFeedback.dontAllow"),
+                description: translateInstant("instanceGeneralSettings.feedbackSharingDontAllowDescription"),
               },
             ].map((option) => {
               const active = feedbackDataSharingPreference === option.value;
@@ -372,12 +337,10 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
             })}
           </div>
           <p className="text-xs text-muted-foreground">
-            To retest the first-use prompt in local dev, remove the{" "}
-            <code>feedbackDataSharingPreference</code> key from the{" "}
-            <code>instance_settings.general</code> JSON row for this instance, or set it back to{" "}
-            <code>"prompt"</code>. Unset and <code>"prompt"</code> both mean no default has been
-            chosen yet.
-          </p>
+            {translateInstant("instanceGeneralSettings.feedbackSharingRetestPrefix")}{" "}
+            <code>feedbackDataSharingPreference</code> {translateInstant("instanceGeneralSettings.feedbackSharingRetestMiddle")}{" "}
+            <code>instance_settings.general</code> {translateInstant("instanceGeneralSettings.feedbackSharingRetestSuffix")}{" "}
+            <code>"prompt"</code>{translateInstant(". Unset and")}{" "}<code>"prompt"</code> {translateInstant("both mean no default has been chosen yet.")}</p>
         </div>
       </section>
 
@@ -387,10 +350,9 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
       <section>
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-1.5">
-            <h2 className="text-sm font-semibold">{t("Sign out")}</h2>
+            <h2 className="text-sm font-semibold">{translateInstant("Sign out")}</h2>
             <p className="max-w-2xl text-sm text-muted-foreground">
-              Sign out of this Paperclip instance. You will be redirected to the login page.
-            </p>
+              {translateInstant("Sign out of this Paperclip instance. You will be redirected to the login page.")}</p>
           </div>
           <Button
             variant="outline"
@@ -402,7 +364,7 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
             }}
           >
             <LogOut className="size-4" />
-            {signOutMutation.isPending ? t("Signing out...") : t("Sign out")}
+            {signOutMutation.isPending ? translateInstant("Signing out...") : translateInstant("Sign out")}
           </Button>
         </div>
       </section>

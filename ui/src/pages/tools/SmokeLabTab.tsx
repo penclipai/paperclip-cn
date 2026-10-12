@@ -211,24 +211,18 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
             rel="noreferrer"
             className="ml-auto inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
           >
-            <BookOpen className="h-4 w-4" /> Hands-on tutorial
-          </a>
+            <BookOpen className="h-4 w-4" /> {translateInstant("tools.smokeLab.tutorial")}</a>
         </div>
         <p className="mt-1.5 max-w-3xl text-sm text-muted-foreground">
-          Exercise every integration path (P1–P7) end-to-end against deterministic local fixtures —
-          a fake OAuth provider and loopback MCP servers. Nothing here touches a real vendor or a
-          real credential. Start the services, install the fixture apps, then drive the governed
-          lifecycle from a browser smoke run. New here? Follow the{" "}
+          {translateInstant("tools.smokeLab.description")}{" "}
           <a
             href="https://github.com/paperclipai/paperclip/blob/master/doc/connections/SMOKE-LAB-TUTORIAL.md"
             target="_blank"
             rel="noreferrer"
             className="font-medium text-primary hover:underline"
           >
-            hands-on tutorial
-          </a>
-          .
-        </p>
+            {translateInstant("tools.smokeLab.tutorialLower")}</a>
+          {translateInstant(".")}</p>
       </header>
 
       {/* Services */}
@@ -244,32 +238,28 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
               onClick={() => startMutation.mutate()}
               disabled={anyMutating}
             >
-              <Power className="h-4 w-4" /> Start services
-            </Button>
+              <Power className="h-4 w-4" /> {translateInstant("Start services")}</Button>
             <Button
               size="sm"
               variant="outline"
               onClick={() => stopMutation.mutate()}
               disabled={anyMutating}
             >
-              Stop
-            </Button>
+              {translateInstant("Stop")}</Button>
             <Button
               size="sm"
               variant="outline"
               onClick={() => installMutation.mutate()}
               disabled={anyMutating}
             >
-              Install fixture apps
-            </Button>
+              {translateInstant("tools.smokeLab.services.installFixtures")}</Button>
             <Button
               size="sm"
               variant="ghost"
               onClick={() => resetMutation.mutate()}
               disabled={anyMutating}
             >
-              <RotateCcw className="h-4 w-4" /> Reset
-            </Button>
+              <RotateCcw className="h-4 w-4" /> {translateInstant("Reset")}</Button>
           </div>
         </div>
 
@@ -322,12 +312,10 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
         <div className="rounded-lg border border-dashed border-border bg-muted/30 p-3">
           <p className="text-xs font-semibold text-foreground">{t("tools.smokeLab.credentials.title")}</p>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            Type these into the fake provider's real consent page during a P1 (OAuth) smoke. Fixed
-            fixture values — safe to show.
-          </p>
+            {translateInstant("tools.smokeLab.credentials.description")}</p>
           <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1 font-mono text-xs text-foreground">
-            <span>email: {DEMO_EMAIL}</span>
-            <span>password: {DEMO_PASSWORD}</span>
+            <span>{translateInstant("tools.smokeLab.credentials.email")}{" "}{DEMO_EMAIL}</span>
+            <span>{translateInstant("tools.smokeLab.credentials.password")}{" "}{DEMO_PASSWORD}</span>
           </div>
         </div>
       </section>
@@ -337,10 +325,10 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-sm font-semibold text-foreground">{t("tools.smokeLab.matrix.title")}</h2>
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
-            <span className="inline-flex items-center gap-1"><Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" /> pass</span>
-            <span className="inline-flex items-center gap-1"><X className="h-3.5 w-3.5 text-destructive" /> fail</span>
-            <span className="inline-flex items-center gap-1"><Minus className="h-3.5 w-3.5 text-amber-500" /> skipped</span>
-            <span className="inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/30" /> not run</span>
+            <span className="inline-flex items-center gap-1"><Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" /> {translateInstant("tools.smokeLab.status.pass")}</span>
+            <span className="inline-flex items-center gap-1"><X className="h-3.5 w-3.5 text-destructive" /> {translateInstant("tools.smokeLab.status.fail")}</span>
+            <span className="inline-flex items-center gap-1"><Minus className="h-3.5 w-3.5 text-amber-500" /> {translateInstant("tools.smokeLab.status.skipped")}</span>
+            <span className="inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/30" /> {translateInstant("tools.smokeLab.status.notRun")}</span>
           </div>
         </div>
         <div className="overflow-x-auto rounded-lg border border-border">
@@ -380,8 +368,7 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
         </div>
         {steps.length === 0 && (
           <p className="text-xs text-muted-foreground">
-            No steps recorded for the selected run yet. Run a browser smoke to populate the matrix.
-          </p>
+            {translateInstant("tools.smokeLab.matrix.empty")}</p>
         )}
       </section>
 
@@ -402,8 +389,7 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
             ) : (
               <Play className="h-4 w-4" />
             )}
-            Run browser smoke now
-          </Button>
+            {translateInstant("tools.smokeLab.runs.start")}</Button>
         </div>
 
         <div className="grid gap-4 lg:grid-cols-(--gtc-64)">
@@ -444,7 +430,7 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
               <div className="flex flex-col">
                 <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-2.5">
                   <span className="text-xs text-muted-foreground">
-                    Started {formatTime(activeRun.startedAt)} · finished {formatTime(activeRun.finishedAt)}
+                    {translateInstant("Started")}{" "}{formatTime(activeRun.startedAt)} · finished {formatTime(activeRun.finishedAt)}
                   </span>
                   <StatusBadge status={activeRun.status} />
                 </div>
@@ -477,8 +463,7 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
                               rel="noreferrer"
                               className="mt-1 inline-block text-(length:--text-micro) font-medium text-primary hover:underline"
                             >
-                              View screenshot
-                            </a>
+                              {translateInstant("tools.smokeLab.runs.viewScreenshot")}</a>
                           )}
                         </div>
                         {typeof step.durationMs === "number" && (

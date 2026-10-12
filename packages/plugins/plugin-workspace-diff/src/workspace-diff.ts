@@ -3,7 +3,7 @@ import { constants as fsConstants } from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
-import type { PluginExecutionWorkspaceMetadata } from "@paperclipai/plugin-sdk";
+import type { PluginExecutionWorkspaceMetadata } from "@penclipai/plugin-sdk";
 import type {
   WorkspaceDiffCaps,
   WorkspaceDiffFile,

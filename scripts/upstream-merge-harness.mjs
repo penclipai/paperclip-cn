@@ -1,4 +1,5 @@
 import { spawnSync } from "node:child_process";
+import { resolvePnpmInvocation } from "./pnpm-invocation.mjs";
 
 /**
  * Keep this harness small and principle-driven.
@@ -25,12 +26,13 @@ const HARNESS_GROUPS = {
   windowsWorktreeAndEnvCompatibility: [
     "server/src/__tests__/worktree-config.test.ts",
   ],
+  externalAdapterReflection: [
+    "server/src/__tests__/llms-routes.test.ts",
+  ],
 };
 
 const suites = Object.values(HARNESS_GROUPS).flat();
 const extraArgs = process.argv.slice(2);
-const pnpmCommand = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
-const packageManagerExec = process.env.npm_execpath;
 
 console.log("[upstream-merge-harness] running merge-sensitive invariant suites:");
 for (const [groupName, groupSuites] of Object.entries(HARNESS_GROUPS)) {
@@ -40,17 +42,15 @@ for (const [groupName, groupSuites] of Object.entries(HARNESS_GROUPS)) {
   }
 }
 
-const command = packageManagerExec ? process.execPath : pnpmCommand;
-const args = packageManagerExec
-  ? [packageManagerExec, "exec", "vitest", "run", ...suites, ...extraArgs]
-  : ["exec", "vitest", "run", ...suites, ...extraArgs];
+const invocation = resolvePnpmInvocation(["exec", "vitest", "run", ...suites, ...extraArgs]);
 
 const result = spawnSync(
-  command,
-  args,
+  invocation.command,
+  invocation.args,
   {
     stdio: "inherit",
     shell: false,
+    ...invocation.spawnOptions,
   },
 );
 

@@ -1,10 +1,27 @@
-import { existsSync } from "node:fs";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { AdapterExecutionContext, AdapterInvocationMeta } from "@penclipai/adapter-utils";
 import { runChildProcess } from "@penclipai/adapter-utils/server-utils";
+import { prepareTestPosixShell } from "@penclipai/adapter-utils/test-fixtures/posix-shell";
+
+// Every test in this file needs a real teardown, so the mock below delegates
+// to the actual factory by default. Only the wiring test further down reads
+// the call arguments; it does not change this behavior.
+const mockCreateWorkspaceRestoreTeardown = vi.hoisted(() => vi.fn());
+
+vi.mock("@penclipai/adapter-utils/workspace-restore-teardown", async (importOriginal) => {
+  const actual = await importOriginal<Record<string, unknown>>();
+  mockCreateWorkspaceRestoreTeardown.mockImplementation(
+    actual.createWorkspaceRestoreTeardown as (...args: unknown[]) => unknown,
+  );
+  return {
+    ...actual,
+    createWorkspaceRestoreTeardown: mockCreateWorkspaceRestoreTeardown,
+  };
+});
+
 import {
   buildGeminiAcpConfig,
   createGeminiAcpExecutor,
@@ -17,30 +34,6 @@ import {
 // A local stand-in for a sandbox runner: runs the managed-runtime staging
 // scripts (mkdir/tar/find) as real child processes so the remote ACP lane can
 // be exercised end-to-end against the host filesystem.
-function resolveTestPosixShellCommand(command: "bash" | "sh") {
-  if (process.platform !== "win32") return command === "bash" ? "/bin/bash" : "sh";
-  const candidates = command === "bash"
-    ? ["C:\\Program Files\\Git\\bin\\bash.exe", "C:\\Program Files\\Git\\usr\\bin\\bash.exe"]
-    : ["C:\\Program Files\\Git\\usr\\bin\\sh.exe", "C:\\Program Files\\Git\\bin\\bash.exe"];
-  return candidates.find((candidate) => existsSync(candidate)) ?? command;
-}
-
-function rewriteWindowsPathsForGitShell(script: string) {
-  if (process.platform !== "win32") return script;
-  const toGitShellPath = (drive: string, rest: string) =>
-    `/${drive.toLowerCase()}/${rest.replace(/\\/g, "/")}`;
-  return script
-    .replace(/'([A-Za-z]):\\([^']*)'/g, (_match, drive: string, rest: string) =>
-      `'${toGitShellPath(drive, rest)}'`,
-    )
-    .replace(/"([A-Za-z]):\\([^"]*)"/g, (_match, drive: string, rest: string) =>
-      `"${toGitShellPath(drive, rest)}"`,
-    )
-    .replace(/([A-Za-z]):\\([^'"\s]*)/g, (_match, drive: string, rest: string) =>
-      toGitShellPath(drive, rest),
-    );
-}
-
 function createLocalSandboxRunner() {
   let counter = 0;
   return {
@@ -54,29 +47,14 @@ function createLocalSandboxRunner() {
       onLog?: (stream: "stdout" | "stderr", chunk: string) => Promise<void>;
     }) => {
       counter += 1;
-      const isPosixShell = input.command === "sh" || input.command === "bash";
-      const command = isPosixShell
-        ? resolveTestPosixShellCommand(input.command as "bash" | "sh")
-        : input.command;
-      const args = [...(input.args ?? [])];
-      if (
-        isPosixShell &&
-        (args[0] === "-c" || args[0] === "-lc") &&
-        typeof args[1] === "string"
-      ) {
-        args[1] = rewriteWindowsPathsForGitShell(args[1]);
-      }
-      const env = { ...process.env, ...input.env } as Record<string, string>;
-      if (process.platform === "win32" && isPosixShell) {
-        const entries = [
-          "C:\\Program Files\\Git\\usr\\bin",
-          "C:\\Program Files\\Git\\bin",
-        ].filter((entry) => existsSync(entry));
-        env.PATH = [...entries, env.PATH ?? ""].join(path.delimiter);
-      }
-      return await runChildProcess(`gemini-acp-sandbox-run-${counter}`, command, args, {
+      const prepared = prepareTestPosixShell({
+        command: input.command,
+        args: input.args ?? [],
+        env: input.env ?? {},
+      });
+      return await runChildProcess(`gemini-acp-sandbox-run-${counter}`, prepared.command, prepared.args, {
         cwd: input.cwd ?? process.cwd(),
-        env,
+        env: prepared.env,
         stdin: input.stdin,
         timeoutSec: Math.max(1, Math.ceil((input.timeoutMs ?? 30_000) / 1000)),
         graceSec: 5,
@@ -128,11 +106,7 @@ afterEach(async () => {
   else process.env.HOME = originalHome;
   if (originalGeminiApiKey === undefined) delete process.env.GEMINI_API_KEY;
   else process.env.GEMINI_API_KEY = originalGeminiApiKey;
-  await Promise.all(
-    tempRoots
-      .splice(0)
-      .map((root) => fs.rm(root, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 })),
-  );
+  await Promise.all(tempRoots.splice(0).map((root) => fs.rm(root, { recursive: true, force: true })));
 });
 
 class FakeRuntime {
@@ -229,6 +203,12 @@ async function makeTempRoot(prefix: string) {
   return root;
 }
 
+async function createIsolatedGeminiHome(root: string): Promise<{ HOME: string; USERPROFILE: string }> {
+  const home = path.join(root, "home");
+  await fs.mkdir(path.join(home, ".gemini", "skills"), { recursive: true });
+  return { HOME: home, USERPROFILE: home };
+}
+
 function buildContext(root: string, overrides: Partial<AdapterExecutionContext> = {}): AdapterExecutionContext {
   return {
     runId: "run-1",
@@ -298,7 +278,7 @@ describe("gemini_local ACP lane", () => {
     expect(nodeVersionMeetsGeminiAcpMinimum()).toBe(true);
   });
 
-  it("defaults to ACP when prerequisites pass and falls back to CLI only for auto resolution", async () => {
+  it("keeps ACP selected and reports unavailable prerequisites for default and explicit engines", async () => {
     const root = await makeTempRoot("paperclip-gemini-acp-default-");
     const commandPath = path.join(root, "bin", "gemini");
     await fs.mkdir(path.dirname(commandPath), { recursive: true });
@@ -330,19 +310,19 @@ describe("gemini_local ACP lane", () => {
         executionTarget: null,
       }),
     ).resolves.toMatchObject({
-      engine: "cli",
+      engine: "acp",
       explicit: false,
-      fallbackReason: expect.stringContaining("Node"),
+      unavailableReason: expect.stringContaining("Node"),
     });
     await expect(
       resolveGeminiExecutionEngineForRun({
         config: { engine: "acp", command: "/missing/gemini" },
         executionTarget: null,
       }),
-    ).resolves.toEqual({ engine: "acp", explicit: true });
+    ).resolves.toMatchObject({ engine: "acp", explicit: true, unavailableReason: expect.stringContaining("Node") });
   });
 
-  it("falls back to the CLI lane for non-sandbox remote auto runs", async () => {
+  it("reports unavailable ACP for non-sandbox remote auto runs", async () => {
     setNodeVersion("v24.11.0");
     await expect(
       resolveGeminiExecutionEngineForRun({
@@ -364,13 +344,13 @@ describe("gemini_local ACP lane", () => {
         },
       }),
     ).resolves.toMatchObject({
-      engine: "cli",
+      engine: "acp",
       explicit: false,
-      fallbackReason: expect.stringContaining("sandbox remote targets only"),
+      unavailableReason: expect.stringContaining("sandbox remote targets only"),
     });
   });
 
-  it("falls back to the CLI lane for one-shot sandbox auto runs", async () => {
+  it("reports unavailable ACP for one-shot sandbox auto runs", async () => {
     setNodeVersion("v24.11.0");
     await expect(
       resolveGeminiExecutionEngineForRun({
@@ -383,9 +363,9 @@ describe("gemini_local ACP lane", () => {
         },
       }),
     ).resolves.toMatchObject({
-      engine: "cli",
+      engine: "acp",
       explicit: false,
-      fallbackReason: expect.stringContaining("bidirectional remote process"),
+      unavailableReason: expect.stringContaining("bidirectional remote process"),
     });
   });
 
@@ -420,7 +400,8 @@ describe("gemini_local ACP lane", () => {
 
   it("executes Gemini through the shared ACP runtime", async () => {
     const root = await makeTempRoot("paperclip-gemini-acp-run-");
-    process.env.HOME = path.join(root, "home");
+    const isolatedHome = await createIsolatedGeminiHome(root);
+    process.env.HOME = isolatedHome.HOME;
     const runtime = new FakeRuntime({});
     const metas: AdapterInvocationMeta[] = [];
     const logs: Array<{ stream: string; text: string }> = [];
@@ -467,7 +448,8 @@ describe("gemini_local ACP lane", () => {
 
   it("creates the ACP session on the in-sandbox workspace cwd for runner-backed remote runs", async () => {
     const root = await makeTempRoot("paperclip-gemini-acp-remote-cwd-");
-    process.env.HOME = path.join(root, "home");
+    const isolatedHome = await createIsolatedGeminiHome(root);
+    process.env.HOME = isolatedHome.HOME;
     const localCwd = path.join(root, "worktree");
     const remoteCwd = path.join(root, "remote-workspace");
     await fs.mkdir(localCwd, { recursive: true });
@@ -491,7 +473,7 @@ describe("gemini_local ACP lane", () => {
           // a real gemini binary in the local sandbox stand-in.
           agentCommand: "node ./fake-acp.js",
           stateDir: path.join(root, "state"),
-          env: { HOME: path.join(root, "home") },
+          env: isolatedHome,
           promptTemplate: "Do the assigned work.",
         },
         context: {
@@ -523,6 +505,7 @@ describe("gemini_local ACP lane", () => {
     const hostHome = path.join(root, "home");
     await fs.mkdir(localCwd, { recursive: true });
     await fs.mkdir(remoteCwd, { recursive: true });
+    await fs.mkdir(path.join(hostHome, ".gemini", "skills"), { recursive: true });
     // A selected skill so the shipped skills asset has content to seed.
     const skillSource = path.join(root, "skills", "review");
     await fs.mkdir(skillSource, { recursive: true });
@@ -553,7 +536,7 @@ describe("gemini_local ACP lane", () => {
           stateDir: path.join(root, "state"),
           // Drive resolveGeminiSkillsHome to a temp home so the engine prepares
           // skills off the real ~/.gemini, and deliver the key via config env.
-          env: { HOME: hostHome, GEMINI_API_KEY: SECRET_KEY },
+          env: { HOME: hostHome, USERPROFILE: hostHome, GEMINI_API_KEY: SECRET_KEY },
           promptTemplate: "Do the assigned work.",
           paperclipRuntimeSkills: [{ key: "company/review", runtimeName: "review", source: skillSource }],
           paperclipSkillSync: { desiredSkills: ["company/review"] },
@@ -604,6 +587,7 @@ describe("gemini_local ACP lane", () => {
     const root = await makeTempRoot("paperclip-gemini-acp-syncback-");
     const localCwd = path.join(root, "worktree");
     const remoteCwd = path.join(root, "remote-workspace");
+    const isolatedHome = await createIsolatedGeminiHome(root);
     await fs.mkdir(localCwd, { recursive: true });
     await fs.mkdir(remoteCwd, { recursive: true });
     await fs.writeFile(path.join(localCwd, "hello.txt"), "hi", "utf8");
@@ -639,6 +623,7 @@ describe("gemini_local ACP lane", () => {
           cwd: localCwd,
           agentCommand: "node ./fake-acp.js",
           stateDir: path.join(root, "state"),
+          env: isolatedHome,
           promptTemplate: "Do the assigned work.",
         },
         context: {
@@ -662,6 +647,58 @@ describe("gemini_local ACP lane", () => {
     await expect(fs.readFile(path.join(localCwd, "from-sandbox.txt"), "utf8")).resolves.toBe("synced");
   });
 
+  it("passes the Gemini-specific teardown messages to the shared workspace-restore-teardown factory", async () => {
+    // Wiring test only: `createWorkspaceRestoreTeardown` owns the
+    // classify-and-redact contract, proven once for all three adapters by its
+    // own table-driven test in `packages/adapter-utils`. This test proves only
+    // that the Gemini adapter passes its own two message strings to it.
+    // Clear the shared, hoisted mock first: earlier tests in this file also
+    // call through it, and a leftover call could hide a real wiring bug.
+    mockCreateWorkspaceRestoreTeardown.mockClear();
+    const root = await makeTempRoot("paperclip-gemini-acp-teardown-wiring-");
+    const localCwd = path.join(root, "worktree");
+    const remoteCwd = path.join(root, "remote-workspace");
+    const isolatedHome = await createIsolatedGeminiHome(root);
+    await fs.mkdir(localCwd, { recursive: true });
+    await fs.mkdir(remoteCwd, { recursive: true });
+
+    const execute = createGeminiAcpExecutor({
+      createRuntime: (options) => new FakeRuntime(options) as never,
+    });
+    const result = await execute(
+      buildContext(localCwd, {
+        config: {
+          engine: "acp",
+          cwd: localCwd,
+          agentCommand: "node ./fake-acp.js",
+          stateDir: path.join(root, "state"),
+          env: isolatedHome,
+          promptTemplate: "Do the assigned work.",
+        },
+        context: {
+          issueId: "issue-1",
+          paperclipWorkspace: { cwd: localCwd, source: "project_workspace", workspaceId: "workspace-1" },
+        },
+        executionTarget: {
+          kind: "remote",
+          transport: "sandbox",
+          providerKey: "fake-plugin",
+          remoteCwd,
+          runner: createLocalSandboxRunner(),
+        } as never,
+        authToken: "real-run-jwt",
+      }),
+    );
+
+    expect(result.exitCode).toBe(0);
+    expect(mockCreateWorkspaceRestoreTeardown).toHaveBeenCalledWith(
+      expect.objectContaining({
+        startMessage: "[paperclip] Restoring workspace changes from the sandbox.\n",
+        failurePrefix: "[paperclip] Gemini ACP teardown workspace restore failed",
+      }),
+    );
+  });
+
   it("does not persist an api-key auth selector from a host-only credential", async () => {
     const root = await makeTempRoot("paperclip-gemini-acp-hostkey-");
     const localCwd = path.join(root, "worktree");
@@ -669,6 +706,7 @@ describe("gemini_local ACP lane", () => {
     const hostHome = path.join(root, "home");
     await fs.mkdir(localCwd, { recursive: true });
     await fs.mkdir(remoteCwd, { recursive: true });
+    await fs.mkdir(path.join(hostHome, ".gemini", "skills"), { recursive: true });
     // The key exists ONLY in the host process env — never in the adapter-config env
     // — so the remote sandbox (which does not inherit the host environment) will not
     // receive it. Selecting api-key auth off this host-only signal would start
@@ -694,7 +732,7 @@ describe("gemini_local ACP lane", () => {
           cwd: localCwd,
           agentCommand: "node ./fake-acp.js",
           stateDir: path.join(root, "state"),
-          env: { HOME: hostHome },
+          env: { HOME: hostHome, USERPROFILE: hostHome },
           promptTemplate: "Do the assigned work.",
         },
         context: {
@@ -729,7 +767,7 @@ describe("gemini_local ACP lane", () => {
     }
   });
 
-  it("falls back to the CLI lane for a runner-less sandbox even when the ACP command is set", async () => {
+  it("reports unavailable ACP for a runner-less sandbox even when the ACP command is set", async () => {
     setNodeVersion("v24.11.0");
     await expect(
       resolveGeminiExecutionEngineForRun({
@@ -742,9 +780,9 @@ describe("gemini_local ACP lane", () => {
         },
       }),
     ).resolves.toMatchObject({
-      engine: "cli",
+      engine: "acp",
       explicit: false,
-      fallbackReason: expect.stringContaining("bidirectional remote process"),
+      unavailableReason: expect.stringContaining("bidirectional remote process"),
     });
   });
 

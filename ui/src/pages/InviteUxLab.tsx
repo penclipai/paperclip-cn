@@ -1,3 +1,5 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
 // token-extraction: allowlisted — intentional one-off decoration (DECISION-SHEET.md B1
 // user ruling). The bg-[...gradient...] / shadow-[...] literals in this demo/UX-lab page
 // are deliberate one-off decoration, reverted from --gradient-extract-*/--shadow-extract-*
@@ -27,14 +29,14 @@ const inviteRoleOptions = [
   {
     value: "viewer",
     label: "Viewer",
-    description: "Can view company work and follow along.",
-    gets: "View-only company membership.",
+    description: "Can view organization work and follow along.",
+    gets: "View-only organization membership.",
   },
   {
     value: "operator",
     label: "Operator",
-    description: "Recommended for people who need to help run work without managing access.",
-    gets: "Can assign tasks.",
+    description: "Can edit organization work and invite people.",
+    gets: "Full editing and audit access. Cannot approve join requests or manage member permissions.",
   },
   {
     value: "admin",
@@ -45,7 +47,7 @@ const inviteRoleOptions = [
   {
     value: "owner",
     label: "Owner",
-    description: "Full company access, including membership management.",
+    description: "Full organization access, including membership management.",
     gets: "Everything in Admin, plus managing members.",
   },
 ] as const;
@@ -194,41 +196,39 @@ function InviteSummaryPanel({
   requestedAccess: string;
   signedInLabel?: string;
 }) {
+  useTranslation();
   return (
     <>
-      {/* token-extraction: allowlisted — brandColor feeds CompanyPatternIcon's hexToHue() color math via a canvas fill; demo/showcase-only prop, not a rendered CSS value. */}
       <div className="flex items-start gap-4">
         <CompanyPatternIcon
           companyName="Acme Robotics"
           logoUrl="/api/invites/pcp_invite_test/logo"
-          brandColor="#114488"
           className="h-16 w-16 rounded-none border border-zinc-800"
         />
         <div className="min-w-0">
-          <p className="text-xs uppercase tracking-(--tracking-caps) text-zinc-500">You&apos;ve been invited to join Paperclip</p>
+          <p className="text-xs uppercase tracking-(--tracking-caps) text-zinc-500">{translateInstant("You&apos;ve been invited to join Paperclip")}</p>
           <h3 className="mt-2 text-2xl font-semibold text-zinc-100">{title}</h3>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-300">{description}</p>
         </div>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <MetaCard label="Company" value="Acme Robotics" />
-        <MetaCard label="Invited by" value="Board User" />
+        <MetaCard label={translateInstant("Organization")} value="Acme Robotics" />
+        <MetaCard label={translateInstant("Invited by")} value="Board User" />
         <MetaCard label="Requested access" value={requestedAccess} />
-        <MetaCard label="Invite expires" value="Mar 7, 2027" />
+        <MetaCard label={translateInstant("inviteLanding.inviteExpires")} value="Mar 7, 2027" />
       </div>
 
       {inviteMessage ? (
         <div className="border border-amber-500/40 bg-amber-500/10 p-4">
-          <div className="text-xs uppercase tracking-(--tracking-caps) text-amber-200/80">Message from inviter</div>
+          <div className="text-xs uppercase tracking-(--tracking-caps) text-amber-200/80">{translateInstant("inviteLanding.messageFromInviter")}</div>
           <p className="mt-2 text-sm leading-6 text-amber-50">{inviteMessage}</p>
         </div>
       ) : null}
 
       {signedInLabel ? (
         <div className="border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm text-emerald-50">
-          Signed in as <span className="font-medium">{signedInLabel}</span>.
-        </div>
+          {translateInstant("Signed in as")}{" "}<span className="font-medium">{signedInLabel}</span>{translateInstant(".")}</div>
       ) : null}
     </>
   );
@@ -252,11 +252,12 @@ function InlineAuthPreview({
   feedback?: { tone: "info" | "error"; text: string };
   working?: boolean;
 }) {
+  useTranslation();
   return (
     <div className="space-y-5">
       <div>
         <h3 className="text-lg font-semibold text-zinc-100">
-          {mode === "sign_up" ? "Create your account" : "Sign in to continue"}
+          {mode === "sign_up" ? translateInstant("inviteLanding.createYourAccount") : translateInstant("inviteLanding.signInToContinue")}
         </h3>
         <p className="mt-1 text-sm text-zinc-400">
           {mode === "sign_up"
@@ -275,8 +276,7 @@ function InlineAuthPreview({
               : "border-zinc-800 text-zinc-300 hover:border-zinc-600",
           )}
         >
-          Create account
-        </button>
+          {translateInstant("inviteLanding.createAccount")}</button>
         <button
           type="button"
           className={cn(
@@ -286,23 +286,22 @@ function InlineAuthPreview({
               : "border-zinc-800 text-zinc-300 hover:border-zinc-600",
           )}
         >
-          I already have an account
-        </button>
+          {translateInstant("inviteLanding.existingAccount")}</button>
       </div>
 
       <form className="space-y-4">
         {mode === "sign_up" ? (
           <label className="block text-sm">
-            <span className="mb-1 block text-zinc-400">Name</span>
+            <span className="mb-1 block text-zinc-400">{translateInstant("Name")}</span>
             <input name="name" className={fieldClassName} defaultValue="Jane Example" readOnly />
           </label>
         ) : null}
         <label className="block text-sm">
-          <span className="mb-1 block text-zinc-400">Email</span>
+          <span className="mb-1 block text-zinc-400">{translateInstant("Email")}</span>
           <input name="email" type="email" className={fieldClassName} defaultValue="jane@example.com" readOnly />
         </label>
         <label className="block text-sm">
-          <span className="mb-1 block text-zinc-400">Password</span>
+          <span className="mb-1 block text-zinc-400">{translateInstant("Password")}</span>
           <input name="password" type="password" className={fieldClassName} defaultValue="supersecret" readOnly />
         </label>
         {feedback ? (
@@ -311,13 +310,13 @@ function InlineAuthPreview({
           </p>
         ) : null}
         <Button type="button" className="w-full rounded-none" disabled={working}>
-          {working ? "Working..." : mode === "sign_in" ? "Sign in and continue" : "Create account and continue"}
+          {working ? translateInstant("Working...") : mode === "sign_in" ? translateInstant("inviteLanding.signInAndContinue") : translateInstant("inviteLanding.createAccountAndContinue")}
         </Button>
       </form>
 
       <p className="text-xs leading-5 text-zinc-500">
         {mode === "sign_up"
-          ? "Already signed up before? Use the existing-account option instead so the invite lands on the right Paperclip user."
+          ? translateInstant("inviteLanding.alreadySignedUpHint")
           : "No account yet? Switch back to create account so you can accept the invite with a new login."}
       </p>
     </div>
@@ -325,20 +324,21 @@ function InlineAuthPreview({
 }
 
 function AgentRequestPreview() {
+  useTranslation();
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-lg font-semibold text-zinc-100">Submit agent details</h3>
+        <h3 className="text-lg font-semibold text-zinc-100">{translateInstant("inviteLanding.submitAgentDetails")}</h3>
         <p className="mt-1 text-sm text-zinc-400">
           This invite will create an approval request for a new agent in Acme Robotics.
         </p>
       </div>
       <label className="block text-sm">
-        <span className="mb-1 block text-zinc-400">Agent name</span>
+        <span className="mb-1 block text-zinc-400">{translateInstant("Agent name")}</span>
         <input className={fieldClassName} defaultValue="Acme Ops Agent" readOnly />
       </label>
       <label className="block text-sm">
-        <span className="mb-1 block text-zinc-400">Adapter type</span>
+        <span className="mb-1 block text-zinc-400">{translateInstant("Adapter type")}</span>
         <select className={fieldClassName} defaultValue="codex_local" disabled>
           <option value="codex_local">Codex</option>
           <option value="claude_local">Claude Code</option>
@@ -346,7 +346,7 @@ function AgentRequestPreview() {
         </select>
       </label>
       <label className="block text-sm">
-        <span className="mb-1 block text-zinc-400">Capabilities</span>
+        <span className="mb-1 block text-zinc-400">{translateInstant("Capabilities")}</span>
         <textarea
           className={fieldClassName}
           rows={4}
@@ -355,8 +355,7 @@ function AgentRequestPreview() {
         />
       </label>
       <Button type="button" className="w-full rounded-none">
-        Submit request
-      </Button>
+        {translateInstant("inviteLanding.submitRequest")}</Button>
     </div>
   );
 }
@@ -370,10 +369,11 @@ function AcceptInvitePreview({
   isCurrentMember?: boolean;
   error?: string;
 }) {
+  useTranslation();
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-lg font-semibold text-zinc-100">Accept company invite</h3>
+        <h3 className="text-lg font-semibold text-zinc-100">Accept organization invite</h3>
         <p className="mt-1 text-sm text-zinc-400">
           {autoAccept
             ? "Granting your access to Acme Robotics."
@@ -384,11 +384,10 @@ function AcceptInvitePreview({
       </div>
       {error ? <p className="text-xs text-red-400">{error}</p> : null}
       {autoAccept ? (
-        <div className="text-sm text-zinc-400">Submitting request...</div>
+        <div className="text-sm text-zinc-400">{translateInstant("inviteLanding.submittingRequest")}</div>
       ) : (
         <Button type="button" className="w-full rounded-none" disabled={isCurrentMember}>
-          Accept invite
-        </Button>
+          {translateInstant("inviteLanding.acceptInvite")}</Button>
       )}
     </div>
   );
@@ -407,13 +406,13 @@ function InviteResultPreview({
   onboardingTextUrl?: string;
   joinedNow?: boolean;
 }) {
+  useTranslation();
   return (
     <div className="mx-auto max-w-md border border-zinc-800 bg-zinc-950 p-6 text-zinc-100">
       <div className="flex items-center gap-3">
         <CompanyPatternIcon
           companyName="Acme Robotics"
           logoUrl="/api/invites/pcp_invite_test/logo"
-          brandColor="#114488"
           className="h-12 w-12 rounded-none border border-zinc-800"
         />
         <h3 className="text-lg font-semibold">{title}</h3>
@@ -427,10 +426,9 @@ function InviteResultPreview({
         ) : (
           <>
             <div className="border border-zinc-800 p-3">
-              <p className="mb-1 text-xs text-zinc-500">Approval page</p>
+              <p className="mb-1 text-xs text-zinc-500">{translateInstant("inviteLanding.approvalPage")}</p>
               <a className="text-sm text-zinc-200 underline underline-offset-2" href="/company/settings/members">
-                Settings → Members
-              </a>
+                {translateInstant("Settings → Members")}</a>
             </div>
             <p className="text-xs text-zinc-500">
               Refresh this page after you&apos;ve been approved — you&apos;ll be redirected automatically.
@@ -439,14 +437,14 @@ function InviteResultPreview({
         )}
         {claimSecret ? (
           <div className="space-y-1 border border-zinc-800 p-3 text-xs text-zinc-400">
-            <div className="text-zinc-200">Claim secret</div>
+            <div className="text-zinc-200">{translateInstant("inviteLanding.claimSecret")}</div>
             <div className="font-mono break-all">{claimSecret}</div>
             <div className="font-mono break-all">POST /api/agents/claim-api-key</div>
           </div>
         ) : null}
         {onboardingTextUrl ? (
           <div className="text-xs text-zinc-400">
-            Onboarding: <span className="font-mono break-all">{onboardingTextUrl}</span>
+            {translateInstant("Onboarding:")}{" "}<span className="font-mono break-all">{onboardingTextUrl}</span>
           </div>
         ) : null}
       </div>
@@ -455,6 +453,7 @@ function InviteResultPreview({
 }
 
 function AuthScreenPreview({ mode, error }: { mode: "sign_in" | "sign_up"; error?: string }) {
+  useTranslation();
   return (
     <div className="overflow-hidden rounded-(--rad-28) border border-border/70 bg-background shadow-[0_24px_60px_rgba(15,23,42,0.08)]">
       <div className="grid gap-px bg-border/60 md:grid-cols-2">
@@ -462,20 +461,20 @@ function AuthScreenPreview({ mode, error }: { mode: "sign_in" | "sign_up"; error
           <div className="mx-auto w-full max-w-md">
             <div className="mb-8 flex items-center gap-2">
               <FlaskConical className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium">Paperclip</span>
+              <span className="text-sm font-medium">{translateInstant("Paperclip")}</span>
             </div>
             <h3 className="text-xl font-semibold">
               {mode === "sign_in" ? "Sign in to Paperclip" : "Create your Paperclip account"}
             </h3>
             <p className="mt-1 text-sm text-muted-foreground">
               {mode === "sign_in"
-                ? "Use your email and password to access this instance."
-                : "Create an account for this instance. Email confirmation is not required in v1."}
+                ? translateInstant("auth.subtitle.signIn")
+                : translateInstant("auth.subtitle.signUp")}
             </p>
             <div className="mt-6 space-y-4">
               {mode === "sign_up" ? (
                 <label className="block">
-                  <span className="mb-1 block text-xs text-muted-foreground">Name</span>
+                  <span className="mb-1 block text-xs text-muted-foreground">{translateInstant("Name")}</span>
                   <input
                     className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm"
                     defaultValue="Jane Example"
@@ -484,7 +483,7 @@ function AuthScreenPreview({ mode, error }: { mode: "sign_in" | "sign_up"; error
                 </label>
               ) : null}
               <label className="block">
-                <span className="mb-1 block text-xs text-muted-foreground">Email</span>
+                <span className="mb-1 block text-xs text-muted-foreground">{translateInstant("Email")}</span>
                 <input
                   className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm"
                   defaultValue="jane@example.com"
@@ -492,7 +491,7 @@ function AuthScreenPreview({ mode, error }: { mode: "sign_in" | "sign_up"; error
                 />
               </label>
               <label className="block">
-                <span className="mb-1 block text-xs text-muted-foreground">Password</span>
+                <span className="mb-1 block text-xs text-muted-foreground">{translateInstant("Password")}</span>
                 <input
                   className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm"
                   defaultValue="supersecret"
@@ -501,13 +500,13 @@ function AuthScreenPreview({ mode, error }: { mode: "sign_in" | "sign_up"; error
               </label>
               {error ? <p className="text-xs text-destructive">{error}</p> : null}
               <Button type="button" className="w-full">
-                {mode === "sign_in" ? "Sign In" : "Create Account"}
+                {mode === "sign_in" ? translateInstant("auth.submit.signIn") : translateInstant("auth.submit.signUp")}
               </Button>
             </div>
             <div className="mt-5 text-sm text-muted-foreground">
-              {mode === "sign_in" ? "Need an account?" : "Already have an account?"}{" "}
+              {mode === "sign_in" ? translateInstant("auth.needAccount") : translateInstant("auth.haveAccount")}{" "}
               <span className="font-medium text-foreground underline underline-offset-2">
-                {mode === "sign_in" ? "Create one" : "Sign in"}
+                {mode === "sign_in" ? translateInstant("auth.createOne") : translateInstant("auth.signInLink")}
               </span>
             </div>
           </div>
@@ -529,24 +528,24 @@ function AuthScreenPreview({ mode, error }: { mode: "sign_in" | "sign_up"; error
 }
 
 function CompanyInvitesPreview() {
+  useTranslation();
   return (
     <div className="grid gap-5 xl:grid-cols-(--gtc-38)">
       <Card className="rounded-(--rad-28) shadow-none">
         <CardHeader className="space-y-3">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <MailPlus className="h-4 w-4" />
-            Company Invites
+            Organization Invites
           </div>
           <div>
-            <CardTitle>Create invite</CardTitle>
+            <CardTitle>{translateInstant("Create invite")}</CardTitle>
             <CardDescription className="mt-2">
-              Generate a human invite link and choose the default access it should request.
-            </CardDescription>
+              {translateInstant("Generate a human invite link and choose the default access it should request.")}</CardDescription>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <fieldset className="space-y-3">
-            <legend className="text-sm font-medium">Choose a role</legend>
+            <legend className="text-sm font-medium">{translateInstant("Choose a role")}</legend>
             <div className="rounded-2xl border border-border">
               {inviteRoleOptions.map((option, index) => (
                 <label
@@ -564,8 +563,7 @@ function CompanyInvitesPreview() {
                       <span className="text-sm font-medium">{option.label}</span>
                       {option.value === "operator" ? (
                         <Badge variant="outline" className="border-border text-muted-foreground">
-                          Default
-                        </Badge>
+                          {translateInstant("Default")}</Badge>
                       ) : null}
                     </span>
                     <span className="block max-w-2xl text-sm text-muted-foreground">{option.description}</span>
@@ -577,26 +575,23 @@ function CompanyInvitesPreview() {
           </fieldset>
 
           <div className="rounded-xl border border-border px-4 py-3 text-sm text-muted-foreground">
-            Each invite link is single-use. Human invitees get the selected role immediately after sign-in; agent invites still create a join request for approval.
-          </div>
+            {translateInstant("Each invite link is single-use. Human invitees get the selected role immediately after sign-in; agent invites still create a join request for approval.")}</div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <Button type="button">Create invite</Button>
-            <span className="text-sm text-muted-foreground">Invite history below keeps the audit trail.</span>
+            <Button type="button">{translateInstant("Create invite")}</Button>
+            <span className="text-sm text-muted-foreground">{translateInstant("Invite history below keeps the audit trail.")}</span>
           </div>
 
           <div className="space-y-3 rounded-2xl border border-border px-4 py-4">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <div className="text-sm font-medium">Latest invite link</div>
+                <div className="text-sm font-medium">{translateInstant("Latest invite link")}</div>
                 <div className="text-sm text-muted-foreground">
-                  This URL includes the current Paperclip domain returned by the server.
-                </div>
+                  {translateInstant("This URL includes the current Paperclip domain returned by the server.")}</div>
               </div>
               <div className="inline-flex items-center gap-1 text-xs font-medium text-foreground">
                 <Check className="h-3.5 w-3.5" />
-                Copied
-              </div>
+                {translateInstant("Copied")}</div>
             </div>
             <button
               type="button"
@@ -607,8 +602,7 @@ function CompanyInvitesPreview() {
             <div className="flex flex-wrap gap-2">
               <Button type="button" size="sm" variant="outline">
                 <ExternalLink className="h-4 w-4" />
-                Open invite
-              </Button>
+                {translateInstant("Open invite")}</Button>
             </div>
           </div>
         </CardContent>
@@ -618,14 +612,12 @@ function CompanyInvitesPreview() {
         <CardHeader className="space-y-3">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <CardTitle>Invite history</CardTitle>
+              <CardTitle>{translateInstant("Invite history")}</CardTitle>
               <CardDescription className="mt-2">
-                Review invite status, role, inviter, and any linked join request.
-              </CardDescription>
+                {translateInstant("Review invite status, role, inviter, and any linked join request.")}</CardDescription>
             </div>
             <a href="/inbox/requests" className="text-sm underline underline-offset-4">
-              Open join request queue
-            </a>
+              {translateInstant("Open join request queue")}</a>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -633,12 +625,12 @@ function CompanyInvitesPreview() {
             <table className="min-w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-border">
-                  <th className="px-5 py-3 font-medium text-muted-foreground">State</th>
-                  <th className="px-5 py-3 font-medium text-muted-foreground">Role</th>
-                  <th className="px-5 py-3 font-medium text-muted-foreground">Invited by</th>
-                  <th className="px-5 py-3 font-medium text-muted-foreground">Created</th>
-                  <th className="px-5 py-3 font-medium text-muted-foreground">Join request</th>
-                  <th className="px-5 py-3 text-right font-medium text-muted-foreground">Action</th>
+                  <th className="px-5 py-3 font-medium text-muted-foreground">{translateInstant("State")}</th>
+                  <th className="px-5 py-3 font-medium text-muted-foreground">{translateInstant("Role")}</th>
+                  <th className="px-5 py-3 font-medium text-muted-foreground">{translateInstant("Invited by")}</th>
+                  <th className="px-5 py-3 font-medium text-muted-foreground">{translateInstant("Created")}</th>
+                  <th className="px-5 py-3 font-medium text-muted-foreground">{translateInstant("Join request")}</th>
+                  <th className="px-5 py-3 text-right font-medium text-muted-foreground">{translateInstant("Action")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -667,10 +659,9 @@ function CompanyInvitesPreview() {
                     <td className="px-5 py-3 text-right align-top">
                       {invite.action === "Revoke" ? (
                         <Button type="button" size="sm" variant="outline">
-                          Revoke
-                        </Button>
+                          {translateInstant("Revoke")}</Button>
                       ) : (
-                        <span className="text-xs text-muted-foreground">Inactive</span>
+                        <span className="text-xs text-muted-foreground">{translateInstant("Inactive")}</span>
                       )}
                     </td>
                   </tr>
@@ -683,13 +674,12 @@ function CompanyInvitesPreview() {
             <div className="rounded-2xl border border-border p-4">
               <div className="text-sm font-medium">Empty history state</div>
               <div className="mt-2 text-sm text-muted-foreground">
-                No invites have been created for this company yet.
-              </div>
+                {translateInstant("No invites have been created for this organization yet.")}</div>
             </div>
             <div className="rounded-2xl border border-rose-400/40 bg-rose-500/[0.07] p-4">
               <div className="text-sm font-medium text-foreground">Permission error</div>
               <div className="mt-2 text-sm text-muted-foreground">
-                You do not have permission to manage company invites.
+                You do not have permission to manage organization invites.
               </div>
             </div>
           </div>
@@ -700,6 +690,7 @@ function CompanyInvitesPreview() {
 }
 
 export function InviteUxLab() {
+  useTranslation();
   return (
     <div className="space-y-6">
       <div className="overflow-hidden rounded-(--rad-32) border border-border/70 bg-[linear-gradient(135deg,rgba(8,145,178,0.10),transparent_28%),linear-gradient(180deg,rgba(245,158,11,0.10),transparent_44%),var(--background)] shadow-[0_30px_80px_rgba(15,23,42,0.10)]">
@@ -711,7 +702,7 @@ export function InviteUxLab() {
             </div>
             <h1 className="mt-4 text-3xl font-semibold tracking-tight">Invite and signup UX review surface</h1>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
-              This page collects the current invite landing, signup, approval-result, and company invite-management states in one place so styling changes can be reviewed without recreating each backend condition by hand.
+              This page collects the current invite landing, signup, approval-result, and organization invite-management states in one place so styling changes can be reviewed without recreating each backend condition by hand.
             </p>
 
             <div className="mt-5 flex flex-wrap items-center gap-2">
@@ -737,7 +728,7 @@ export function InviteUxLab() {
                 "Inline account creation and sign-in variants, including feedback/error copy",
                 "Human accept, agent request, and auto-accept transitions",
                 "Pending approval, joined-now, claim secret, and onboarding result screens",
-                "Company invite creation, copied-link, history, empty, and permission-error states",
+                "Organization invite creation, copied-link, history, empty, and permission-error states",
               ].map((highlight) => (
                 <div
                   key={highlight}
@@ -766,7 +757,7 @@ export function InviteUxLab() {
           <StatusCard
             icon={<Clock3 className="h-4 w-4" />}
             title="Checking your access"
-            body="Shown after sign-in while the app verifies whether the current user already belongs to the invited company."
+            body="Shown after sign-in while the app verifies whether the current user already belongs to the invited organization."
           />
           <StatusCard
             icon={<KeyRound className="h-4 w-4" />}
@@ -776,13 +767,13 @@ export function InviteUxLab() {
           />
           <StatusCard
             icon={<Link2 className="h-4 w-4" />}
-            title="Invite not available"
+            title={translateInstant("inviteLanding.inviteUnavailable")}
             body="Used for expired, revoked, already-consumed, or otherwise missing invites."
             tone="warn"
           />
           <StatusCard
             icon={<ShieldCheck className="h-4 w-4" />}
-            title="Bootstrap complete"
+            title={translateInstant("inviteLanding.bootstrapComplete")}
             body="Result screen for bootstrap CEO invites after setup has been accepted successfully."
             tone="success"
           />
@@ -794,7 +785,7 @@ export function InviteUxLab() {
           <StatusCard
             icon={<Users className="h-4 w-4" />}
             title="Already a member"
-            body="Acceptance stays disabled and the page redirects into the company once membership is confirmed."
+            body="Acceptance stays disabled and the page redirects into the organization once membership is confirmed."
           />
           <StatusCard
             icon={<UserPlus className="h-4 w-4" />}
@@ -816,7 +807,7 @@ export function InviteUxLab() {
             left={
               <InviteSummaryPanel
                 title="Join Acme Robotics"
-                description="Create your Paperclip account first. If you already have one, switch to sign in and continue the invite with the same email."
+                description={translateInstant("inviteLanding.accountRequiredIntro")}
                 inviteMessage="Welcome aboard."
                 requestedAccess="Operator"
               />
@@ -828,7 +819,7 @@ export function InviteUxLab() {
             left={
               <InviteSummaryPanel
                 title="Join Acme Robotics"
-                description="Create your Paperclip account first. If you already have one, switch to sign in and continue the invite with the same email."
+                description={translateInstant("inviteLanding.accountRequiredIntro")}
                 inviteMessage="Welcome aboard."
                 requestedAccess="Operator"
               />
@@ -848,7 +839,7 @@ export function InviteUxLab() {
             left={
               <InviteSummaryPanel
                 title="Join Acme Robotics"
-                description="Your account is ready. Review the invite details, then accept it to continue."
+                description={translateInstant("inviteLanding.accountReadyIntro")}
                 inviteMessage="Welcome aboard."
                 requestedAccess="Operator"
                 signedInLabel="Jane Example"
@@ -872,12 +863,12 @@ export function InviteUxLab() {
             left={
               <InviteSummaryPanel
                 title="Join Acme Robotics"
-                description="Your account is ready. Review the invite details, then accept it to continue."
+                description={translateInstant("inviteLanding.accountReadyIntro")}
                 requestedAccess="Operator"
                 signedInLabel="Jane Example"
               />
             }
-            right={<AcceptInvitePreview error="This account already belongs to the company." isCurrentMember />}
+            right={<AcceptInvitePreview error="This account already belongs to the organization." isCurrentMember />}
           />
         </div>
       </LabSection>
@@ -896,7 +887,7 @@ export function InviteUxLab() {
             onboardingTextUrl="/api/invites/pcp_invite_test/onboarding.txt"
           />
           <InviteResultPreview
-            title="You joined the company"
+            title={translateInstant("You joined the organization")}
             description="Your account already matched the approved invite, so the board can be opened immediately."
             joinedNow
           />
@@ -921,7 +912,7 @@ export function InviteUxLab() {
 
       <LabSection
         eyebrow="Settings"
-        title="Company invite management"
+        title="Organization invite management"
         description="This section captures the board-side invite creation flow, copied-link state, audit table, and the edge states that are otherwise tedious to stage."
         accentClassName="bg-[linear-gradient(180deg,rgba(244,114,182,0.06),transparent_28%),var(--background)]"
       >

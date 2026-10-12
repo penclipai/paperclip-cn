@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
+import { useEffect, useState } from "react";
 import { Link } from "@/lib/router";
 import { useQuery } from "@tanstack/react-query";
 import { agentsApi, type OrgNode } from "../api/agents";
@@ -86,13 +87,13 @@ function OrgTreeNode({
 }
 
 export function Org() {
-  const { t } = useTranslation();
+  useTranslation();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
 
   useEffect(() => {
-    setBreadcrumbs([{ label: t("Org Chart") }]);
-  }, [setBreadcrumbs, t]);
+    setBreadcrumbs([{ label: translateInstant("Org Chart") }]);
+  }, [setBreadcrumbs]);
 
   const { data, isLoading, error } = useQuery({
     queryKey: queryKeys.org(selectedCompanyId!),
@@ -101,7 +102,7 @@ export function Org() {
   });
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={GitBranch} message={t("orgChart.selectCompany")} />;
+    return <EmptyState icon={GitBranch} message={translateInstant("Select an organization to view org chart.")} />;
   }
 
   if (isLoading) {
@@ -115,7 +116,7 @@ export function Org() {
       {data && data.length === 0 && (
         <EmptyState
           icon={GitBranch}
-          message={t("orgChart.empty")}
+          message={translateInstant("orgChart.empty")}
         />
       )}
 

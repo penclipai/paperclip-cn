@@ -1,3 +1,5 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
 import { AlertTriangle, ChevronRight } from "lucide-react";
 import type { PipelineHealthWarning } from "@penclipai/shared";
 import { Link } from "@/lib/router";
@@ -45,6 +47,7 @@ export function PipelineHealthBar({
   onSelectStage?: (stageId: string) => void;
   className?: string;
 }) {
+  useTranslation();
   if (warnings.length === 0) return null;
   const shown = warnings.slice(0, BOARD_WARNING_CAP);
   const overflow = warnings.length - shown.length;
@@ -59,7 +62,7 @@ export function PipelineHealthBar({
     >
       <h2 id="pipeline-health-bar-heading" className="flex items-center gap-2 text-sm font-semibold">
         <AlertTriangle className="h-4 w-4 shrink-0" />
-        <span>Some steps won't run yet — {warningCount(warnings.length)}</span>
+        <span>{translateInstant("Some steps won't run yet —")}{" "}{warningCount(warnings.length)}</span>
       </h2>
       <ul className="mt-1.5 space-y-1 pl-6 text-sm">
         {shown.map((warning, index) => {
@@ -91,8 +94,7 @@ export function PipelineHealthBar({
       </ul>
       {overflow > 0 ? (
         <p className="mt-1.5 pl-6 text-xs text-amber-800/80 dark:text-amber-200/70">
-          +{overflow} more in stage settings
-        </p>
+          +{overflow} {translateInstant("more in stage settings")}</p>
       ) : null}
     </div>
   );

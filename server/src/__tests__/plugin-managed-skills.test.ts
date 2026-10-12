@@ -95,7 +95,7 @@ describeEmbeddedPostgres("plugin-managed skills", () => {
     await db.insert(plugins).values({
       id: pluginId,
       pluginKey: pluginManifest.id,
-      packageName: "@paperclipai/plugin-managed-skills-test",
+      packageName: "@penclipai/plugin-managed-skills-test",
       version: pluginManifest.version,
       apiVersion: pluginManifest.apiVersion,
       categories: pluginManifest.categories,

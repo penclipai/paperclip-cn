@@ -2,12 +2,14 @@
 
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { existsSync } from "node:fs";
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import ts from "typescript";
+import { SyntaxKind } from "typescript/unstable/ast";
+import * as is from "typescript/unstable/ast/is";
+
+import { withTypeScriptSourceFiles } from "../../../../scripts/typescript-ast-session.mjs";
 
 const DEFAULT_LOCALES = ["en", "zh-CN"];
 const DEFAULT_SCAN_DIRS = ["ui/src", "server/src", "packages", "cli/src", "scripts"];
@@ -115,13 +117,11 @@ function flattenCatalog(value, prefix = "") {
   return entries;
 }
 
-function findDuplicateKeys(text, file) {
+function findDuplicateKeys(text, file, sourceFile) {
   const duplicates = new Map();
 
-  const sourceFile = ts.parseJsonText(file, text);
-
   function propertyName(name) {
-    if (ts.isIdentifier(name) || ts.isStringLiteral(name) || ts.isNumericLiteral(name)) {
+    if (is.isIdentifier(name) || is.isStringLiteral(name) || is.isNumericLiteral(name)) {
       return name.text;
     }
     return undefined;
@@ -138,7 +138,7 @@ function findDuplicateKeys(text, file) {
     const seen = new Map();
 
     for (const property of node.properties) {
-      if (!ts.isPropertyAssignment(property)) continue;
+      if (!is.isPropertyAssignment(property)) continue;
       const name = propertyName(property.name);
       if (name === undefined) continue;
       const key = prefix ? `${prefix}.${name}` : name;
@@ -155,28 +155,32 @@ function findDuplicateKeys(text, file) {
     }
 
     for (const property of node.properties) {
-      if (!ts.isPropertyAssignment(property)) continue;
+      if (!is.isPropertyAssignment(property)) continue;
       const name = propertyName(property.name);
       if (name === undefined) continue;
-      if (ts.isObjectLiteralExpression(property.initializer)) {
+      if (is.isObjectLiteralExpression(property.initializer)) {
         visitObject(property.initializer, prefix ? `${prefix}.${name}` : name);
       }
     }
   }
 
-  const rootStatement = sourceFile.statements.find(ts.isExpressionStatement);
-  if (rootStatement && ts.isObjectLiteralExpression(rootStatement.expression)) {
+  const rootStatement = sourceFile.statements.find(is.isExpressionStatement);
+  if (rootStatement && is.isObjectLiteralExpression(rootStatement.expression)) {
     visitObject(rootStatement.expression);
   }
 
   return [...duplicates.entries()].map(([key, locations]) => ({ key, locations }));
 }
 
-async function readLocaleCatalog(repoRoot, locale) {
+function localeCatalogFile(repoRoot, locale) {
+  return path.join(repoRoot, "ui", "public", "locales", locale, "common.json");
+}
+
+function readLocaleCatalog(repoRoot, locale, sourceFile) {
   const absoluteFile = path.join(repoRoot, "ui", "public", "locales", locale, "common.json");
   const file = toRepoRelative(repoRoot, absoluteFile);
-  const text = await readFile(absoluteFile, "utf8");
-  const duplicates = findDuplicateKeys(text, file).map((duplicate) => ({
+  const text = sourceFile.text;
+  const duplicates = findDuplicateKeys(text, file, sourceFile).map((duplicate) => ({
     locale,
     key: duplicate.key,
     locations: duplicate.locations,
@@ -217,9 +221,15 @@ async function collectSourceFiles(repoRoot, scanDirs, includeTests) {
   const files = [];
 
   async function walk(absoluteDir) {
-    if (!existsSync(absoluteDir)) return;
+    let entries;
+    try {
+      entries = await readdir(absoluteDir, { withFileTypes: true });
+    } catch (error) {
+      if (error?.code === "ENOENT") return;
+      throw error;
+    }
 
-    for (const entry of await readdir(absoluteDir, { withFileTypes: true })) {
+    for (const entry of entries) {
       const absolutePath = path.join(absoluteDir, entry.name);
       if (entry.isDirectory()) {
         if (EXCLUDED_DIR_NAMES.has(entry.name)) continue;
@@ -241,17 +251,10 @@ async function collectSourceFiles(repoRoot, scanDirs, includeTests) {
   return files.sort((left, right) => left.localeCompare(right));
 }
 
-function scriptKindForFile(file) {
-  if (file.endsWith(".tsx")) return ts.ScriptKind.TSX;
-  if (file.endsWith(".jsx")) return ts.ScriptKind.JSX;
-  if (file.endsWith(".ts")) return ts.ScriptKind.TS;
-  return ts.ScriptKind.JS;
-}
-
 function calleeName(expression) {
   if (!expression) return undefined;
-  if (ts.isIdentifier(expression)) return expression.text;
-  if (ts.isPropertyAccessExpression(expression)) {
+  if (is.isIdentifier(expression)) return expression.text;
+  if (is.isPropertyAccessExpression(expression)) {
     const prefix = calleeName(expression.expression);
     return prefix ? `${prefix}.${expression.name.text}` : expression.name.text;
   }
@@ -263,7 +266,7 @@ function isTranslationCallee(name) {
 }
 
 function literalValue(node) {
-  if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
+  if (is.isStringLiteral(node) || is.isNoSubstitutionTemplateLiteral(node)) {
     return node.text;
   }
   return undefined;
@@ -272,16 +275,16 @@ function literalValue(node) {
 function shouldSkipLiteral(node) {
   const parent = node.parent;
   return (
-    ts.isImportDeclaration(parent) ||
-    ts.isExportDeclaration(parent) ||
-    ts.isExternalModuleReference(parent)
+    is.isImportDeclaration(parent) ||
+    is.isExportDeclaration(parent) ||
+    is.isExternalModuleReference(parent)
   );
 }
 
 function usageContext(node) {
   const parent = node.parent;
 
-  if (ts.isCallExpression(parent)) {
+  if (is.isCallExpression(parent)) {
     const name = calleeName(parent.expression);
     const argIndex = parent.arguments.findIndex((arg) => arg === node);
     return {
@@ -291,28 +294,28 @@ function usageContext(node) {
     };
   }
 
-  if (ts.isJsxAttribute(parent)) {
+  if (is.isJsxAttribute(parent)) {
     return {
       kind: "jsx-attribute",
       attribute: parent.name.getText(),
     };
   }
 
-  if (ts.isPropertyAssignment(parent)) {
+  if (is.isPropertyAssignment(parent)) {
     return {
       kind: "property-assignment",
       property: parent.name.getText(),
     };
   }
 
-  if (ts.isVariableDeclaration(parent)) {
+  if (is.isVariableDeclaration(parent)) {
     return {
       kind: "variable-initializer",
       name: parent.name.getText(),
     };
   }
 
-  return { kind: ts.SyntaxKind[parent.kind] ?? "unknown" };
+  return { kind: SyntaxKind[parent.kind] ?? "unknown" };
 }
 
 function buildVariantBaseMap(keySet) {
@@ -331,17 +334,7 @@ function buildVariantBaseMap(keySet) {
   return map;
 }
 
-function scanSourceFile(repoRoot, absoluteFile, keySet, variantBaseMap) {
-  const text = existsSync(absoluteFile) ? ts.sys.readFile(absoluteFile) : undefined;
-  if (text === undefined) return { usages: [], dynamicWarnings: [] };
-
-  const sourceFile = ts.createSourceFile(
-    absoluteFile,
-    text,
-    ts.ScriptTarget.Latest,
-    true,
-    scriptKindForFile(absoluteFile),
-  );
+function scanSourceFile(repoRoot, absoluteFile, sourceFile, keySet, variantBaseMap) {
   const file = toRepoRelative(repoRoot, absoluteFile);
   const usages = [];
   const dynamicWarnings = [];
@@ -373,7 +366,7 @@ function scanSourceFile(repoRoot, absoluteFile, keySet, variantBaseMap) {
       }
     }
 
-    if (ts.isCallExpression(node)) {
+    if (is.isCallExpression(node)) {
       const name = calleeName(node.expression);
       const firstArg = node.arguments[0];
       if (isTranslationCallee(name) && firstArg && literalValue(firstArg) === undefined) {
@@ -385,7 +378,7 @@ function scanSourceFile(repoRoot, absoluteFile, keySet, variantBaseMap) {
       }
     }
 
-    ts.forEachChild(node, visit);
+    node.forEachChild(visit);
   }
 
   visit(sourceFile);
@@ -446,23 +439,34 @@ export async function buildSnapshot({
 } = {}) {
   const repoRoot = path.resolve(root);
   const generatedAt = new Date().toISOString();
-  const localeResults = [];
-
-  for (const locale of DEFAULT_LOCALES) {
-    localeResults.push(await readLocaleCatalog(repoRoot, locale));
-  }
-
-  const keySet = new Set(localeResults.flatMap((result) => Object.keys(result.definitions)));
-  const variantBaseMap = buildVariantBaseMap(keySet);
   const sourceFiles = await collectSourceFiles(repoRoot, scanDirs, includeTests);
-  const usages = [];
-  const dynamicTranslationCallWarnings = [];
+  const localeFiles = DEFAULT_LOCALES.map((locale) => localeCatalogFile(repoRoot, locale));
+  const { localeResults, usages, dynamicTranslationCallWarnings } = withTypeScriptSourceFiles(
+    [...localeFiles, ...sourceFiles],
+    (sourceFileFor) => {
+      const localeResults = DEFAULT_LOCALES.map((locale, index) =>
+        readLocaleCatalog(repoRoot, locale, sourceFileFor(localeFiles[index])),
+      );
+      const keySet = new Set(localeResults.flatMap((result) => Object.keys(result.definitions)));
+      const variantBaseMap = buildVariantBaseMap(keySet);
+      const usages = [];
+      const dynamicTranslationCallWarnings = [];
 
-  for (const sourceFile of sourceFiles) {
-    const result = scanSourceFile(repoRoot, sourceFile, keySet, variantBaseMap);
-    usages.push(...result.usages);
-    dynamicTranslationCallWarnings.push(...result.dynamicWarnings);
-  }
+      for (const sourceFile of sourceFiles) {
+        const result = scanSourceFile(
+          repoRoot,
+          sourceFile,
+          sourceFileFor(sourceFile),
+          keySet,
+          variantBaseMap,
+        );
+        usages.push(...result.usages);
+        dynamicTranslationCallWarnings.push(...result.dynamicWarnings);
+      }
+
+      return { localeResults, usages, dynamicTranslationCallWarnings };
+    },
+  );
 
   usages.sort((left, right) =>
     left.key.localeCompare(right.key) ||

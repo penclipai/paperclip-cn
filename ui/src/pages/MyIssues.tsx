@@ -12,14 +12,16 @@ import { EmptyState } from "../components/EmptyState";
 import { PageSkeleton } from "../components/PageSkeleton";
 import { formatDate } from "../lib/utils";
 import { ListTodo } from "lucide-react";
+import { useStreamlinedUiEnabled } from "../hooks/useStreamlinedUiEnabled";
 
 export function MyIssues() {
   const { t } = useTranslation();
+  const { enabled: streamlinedUiEnabled } = useStreamlinedUiEnabled();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
 
   useEffect(() => {
-    setBreadcrumbs([{ label: t("myIssues.title") }]);
+    setBreadcrumbs([{ label: t("My Tasks") }]);
   }, [setBreadcrumbs, t]);
 
   const { data: issues, isLoading, error } = useQuery({
@@ -29,7 +31,14 @@ export function MyIssues() {
   });
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={ListTodo} message={t("myIssues.selectCompany")} />;
+    return (
+      <EmptyState
+        icon={ListTodo}
+        message={streamlinedUiEnabled
+          ? t("Select an organization to view your tasks.")
+          : t("Select a company to view your tasks.")}
+      />
+    );
   }
 
   if (isLoading) {
@@ -46,7 +55,7 @@ export function MyIssues() {
       {error && <p className="text-sm text-destructive">{error.message}</p>}
 
       {myIssues.length === 0 && (
-        <EmptyState icon={ListTodo} message={t("myIssues.empty")} />
+        <EmptyState icon={ListTodo} message={t("No tasks assigned to you.")} />
       )}
 
       {myIssues.length > 0 && (
@@ -58,7 +67,7 @@ export function MyIssues() {
               title={issue.title}
               to={`/issues/${issue.identifier ?? issue.id}`}
               leading={
-                <StatusIcon status={issue.status} blockerAttention={issue.blockerAttention} />
+                <StatusIcon status={issue.status} externalConversationState={issue.externalConversationState} blockerAttention={issue.blockerAttention} />
               }
               trailing={
                 <span className="text-xs text-muted-foreground">

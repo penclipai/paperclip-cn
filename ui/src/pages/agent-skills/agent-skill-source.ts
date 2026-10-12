@@ -1,4 +1,7 @@
-import { Boxes, Folder, Github, Link2, Paperclip, type LucideIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { translateInstant } from "@/i18n";
+import { Boxes, Folder, Link2, Paperclip, type LucideIcon } from "lucide-react";
+import { GithubIcon } from "@/components/icons/github-icon";
 import type { CompanySkillListItem } from "@penclipai/shared";
 
 export interface AgentSkillSourceMeta {
@@ -83,19 +86,19 @@ function displayLocalSourceLabel(label: string | null | undefined) {
 
 function displayCatalogSourceLabel(label: string | null | undefined) {
   const trimmed = label?.trim();
-  if (!trimmed || isFilesystemLikeLabel(trimmed)) return "Catalog";
+  if (!trimmed || isFilesystemLikeLabel(trimmed)) return translateInstant("Catalog");
   return trimmed;
 }
 
 export function buildAgentSkillSourceMeta(skill: SourceSkill): AgentSkillSourceMeta {
   if (skill.sourceBadge === "github" || skill.sourceType === "github") {
     const repo = githubRepoLabel(skill.sourceLabel) ?? githubRepoLabel(skill.sourceLocator);
-    return { icon: Github, label: repo ? `GitHub · ${repo}` : "GitHub" };
+    return { icon: GithubIcon, label: repo ? `GitHub · ${repo}` : "GitHub" };
   }
 
   if (skill.sourceBadge === "skills_sh" || skill.sourceType === "skills_sh") {
     const repo = githubRepoLabel(skill.sourceLabel) ?? githubRepoLabel(skill.sourceLocator);
-    return { icon: Github, label: repo ? `skills.sh · ${repo}` : "skills.sh" };
+    return { icon: GithubIcon, label: repo ? `skills.sh · ${repo}` : "skills.sh" };
   }
 
   if (skill.sourceBadge === "url" || skill.sourceType === "url") {

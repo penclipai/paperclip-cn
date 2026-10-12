@@ -1,3 +1,5 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 import type { FeedbackDataSharingPreference, FeedbackVoteValue } from "@penclipai/shared";
 import { Button } from "@/components/ui/button";
@@ -30,6 +32,7 @@ export function OutputFeedbackButtons({
   rightSlot?: React.ReactNode;
   inline?: boolean;
 }) {
+  useTranslation();
   const [pendingVote, setPendingVote] = useState<{
     vote: FeedbackVoteValue;
     reason?: string;
@@ -124,8 +127,7 @@ export function OutputFeedbackButtons({
           onClick={() => handleVote("up")}
         >
           <ThumbsUp className="mr-1.5 h-3.5 w-3.5" />
-          Helpful
-        </Button>
+          {translateInstant("Helpful")}</Button>
         <Button
           type="button"
           size="sm"
@@ -135,17 +137,17 @@ export function OutputFeedbackButtons({
           onClick={() => handleVote("down")}
         >
           <ThumbsDown className="mr-1.5 h-3.5 w-3.5" />
-          Needs work
+          {translateInstant("issueFeedback.needsWork")}
         </Button>
         {rightSlot ? <div className="ml-auto">{rightSlot}</div> : null}
       </div>
       {collectingDownvoteReason ? (
         <div className="mt-2 rounded-md border border-border/60 bg-accent/20 p-3">
-          <div className="mb-2 text-sm font-medium">What could have been better?</div>
+          <div className="mb-2 text-sm font-medium">{translateInstant("issueFeedback.reasonPrompt")}</div>
           <Textarea
             value={downvoteReason}
             onChange={(event) => setDownvoteReason(event.target.value)}
-            placeholder="Add a short note"
+            placeholder={translateInstant("issueFeedback.reasonPlaceholder")}
             className="min-h-20 resize-y bg-background"
             disabled={disabled || isSaving}
           />
@@ -161,8 +163,7 @@ export function OutputFeedbackButtons({
                 setDownvoteAllowSharing(undefined);
               }}
             >
-              Dismiss
-            </Button>
+              {translateInstant("Dismiss")}</Button>
             <Button
               type="button"
               size="sm"
@@ -191,25 +192,20 @@ export function OutputFeedbackButtons({
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Save your feedback sharing preference</DialogTitle>
+            <DialogTitle>{translateInstant("issueFeedback.sharingPreferenceTitle")}</DialogTitle>
             <DialogDescription>
-              Choose whether voted AI outputs can be shared with Paperclip Labs. This
-              answer becomes the default for future thumbs up and thumbs down votes.
+              {translateInstant("issueFeedback.sharingPreferenceDescription")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 text-sm text-muted-foreground">
             <p>
-              This vote is always saved locally.
+              {translateInstant("issueFeedback.localVoteNote")}</p>
+            <p>
+              {translateInstant("issueFeedback.allowSharingPrefix")}{" "}<span className="font-medium text-foreground">{translateInstant("issueFeedback.alwaysAllow")}</span> {translateInstant("issueFeedback.allowSharingMiddle")}{" "}
+              <span className="font-medium text-foreground">{translateInstant("issueFeedback.dontAllow")}</span> {translateInstant("issueFeedback.allowSharingSuffix")}
             </p>
             <p>
-              Choose <span className="font-medium text-foreground">Always allow</span> to share
-              this vote and future voted AI outputs. Choose{" "}
-              <span className="font-medium text-foreground">Don't allow</span> to keep this vote
-              and future votes local.
-            </p>
-            <p>
-              You can change this later in Settings &gt; General.
-            </p>
+              {translateInstant("You can change this later in Settings &gt; General.")}</p>
             {termsUrl ? (
               <a
                 href={termsUrl}
@@ -217,8 +213,7 @@ export function OutputFeedbackButtons({
                 rel="noreferrer"
                 className="inline-flex text-sm text-foreground underline underline-offset-4"
               >
-                Read our terms of service
-              </a>
+                {translateInstant("instanceGeneralSettings.feedbackSharingTerms")}</a>
             ) : null}
           </div>
           <DialogFooter>
