@@ -3,7 +3,7 @@
 ## Decision
 
 Conformance adds no UI runtime and no shadcn/ui, AI Elements, React, Tailwind, Next.js,
-or AI SDK dependency to `@paperclipai/paperclip-runner`. A later browser phase
+or AI SDK dependency to `@penclipai/paperclip-runner`. A later browser phase
 should adapt source components selectively after protocol and reducer contracts
 exist.
 

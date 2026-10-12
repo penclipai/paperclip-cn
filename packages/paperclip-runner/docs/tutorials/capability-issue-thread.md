@@ -34,7 +34,7 @@ on the issue-thread surface and the live loop.
 Install the package workspace from the repository root:
 
 ```sh
-NODE_ENV=development pnpm install --filter @paperclipai/paperclip-runner --frozen-lockfile --offline --ignore-scripts
+NODE_ENV=development pnpm install --filter @penclipai/paperclip-runner --frozen-lockfile --offline --ignore-scripts
 ```
 
 This keeps the checked-in lockfile authoritative while using only packages
@@ -46,7 +46,7 @@ inherits `NODE_ENV=production`.
 ## 1. Prove the 106-case conformance suite (about 1 minute)
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner test:capability-evals
+pnpm --filter @penclipai/paperclip-runner test:capability-evals
 ```
 
 This drives all 106 eval-derived cases across the 16 groups entirely in-process
@@ -61,7 +61,7 @@ For the per-group counts, assertion classes, the 18-operation fake-agent matrix,
 and the 16-case bounded Codex binding sample, generate the parity report:
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner report:capability-evals
+pnpm --filter @penclipai/paperclip-runner report:capability-evals
 ```
 
 Expected final line:
@@ -77,7 +77,7 @@ It is generated on demand and is not committed; delete it before running
 ## 2. Run the issue-thread contract and UI tests (about 1 minute)
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner test:scenarios
+pnpm --filter @penclipai/paperclip-runner test:scenarios
 ```
 
 Expected final lines:
@@ -96,7 +96,7 @@ the projected view.
 ## 3. Open the issue thread in fake mode (about 2 minutes)
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner console:issue-thread
+pnpm --filter @penclipai/paperclip-runner console:issue-thread
 ```
 
 Open <http://127.0.0.1:4184/#/issue/hb-baseline?shot=thread-baseline>.
@@ -143,7 +143,7 @@ never scrolls horizontally.
 
 ```sh
 # Recorded evidence generation is deferred from this release.
-pnpm --filter @paperclipai/paperclip-runner check:capability:ui
+pnpm --filter @penclipai/paperclip-runner check:capability:ui
 ```
 
 The first writes 24 images — the twelve slugs at 1440×900 and 390×844 — to
@@ -164,7 +164,7 @@ installed** — nothing above depends on it.
 Headless smoke over the package server:
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner smoke:capability:ui
+pnpm --filter @penclipai/paperclip-runner smoke:capability:ui
 ```
 
 This creates a session, runs live turns, and asserts the identity reads
@@ -186,7 +186,7 @@ criteria. A scripted (`mode=fake`) frame cannot.
 Prove the process and network boundary directly:
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner trace:live-runner -- --json
+pnpm --filter @penclipai/paperclip-runner trace:live-runner -- --json
 ```
 
 This checks a real semantic-tool mutation, a typed result, a same-thread second

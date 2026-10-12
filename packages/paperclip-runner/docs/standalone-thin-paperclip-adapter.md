@@ -18,13 +18,13 @@ enabled and the kill switch is disabled. Both paths use the public
 
 ```sh
 # Default legacy path
-pnpm --filter @paperclipai/paperclip-runner trace:standalone
+pnpm --filter @penclipai/paperclip-runner trace:standalone
 
 # Native standalone path
-pnpm --filter @paperclipai/paperclip-runner trace:standalone -- --feature-flag enabled
+pnpm --filter @penclipai/paperclip-runner trace:standalone -- --feature-flag enabled
 
 # Kill-switch rollback
-pnpm --filter @paperclipai/paperclip-runner trace:standalone -- --feature-flag enabled --kill-switch enabled
+pnpm --filter @penclipai/paperclip-runner trace:standalone -- --feature-flag enabled --kill-switch enabled
 ```
 
 ## Standalone page
@@ -32,7 +32,7 @@ pnpm --filter @paperclipai/paperclip-runner trace:standalone -- --feature-flag e
 Run:
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner demo:standalone
+pnpm --filter @penclipai/paperclip-runner demo:standalone
 ```
 
 Then open `http://127.0.0.1:4182/standalone-demo/`. The page exposes mode

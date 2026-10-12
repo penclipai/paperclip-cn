@@ -26,14 +26,18 @@ GitHub Actions owns `pnpm-lock.yaml`.
 - Pull request CI validates dependency resolution when manifests change.
 - Pushes to `master` regenerate `pnpm-lock.yaml` with `pnpm install --lockfile-only --no-frozen-lockfile`, commit it back if needed, and then run verification with `--frozen-lockfile`.
 
+CN upstream-sync PRs follow the fork-maintenance skill's lockfile ownership
+rule: compare the pre-sync baseline, include only changes required by updated
+package-manager inputs, and verify with a frozen install.
+
 ## Trusted PR Workflow
 
-The PR caller uses `penclipai/paperclip-cn/.github/workflows/pr-trusted.yml@master`.
-The AWS runner group `paperclip-public-pr` must allow
-`penclipai/paperclip-cn/.github/workflows/pr-trusted.yml@refs/heads/master`.
-New workflow versions merged into master then receive runner access without a
-separate SHA allowlist update. Dependabot leaves this first-party reference on
-master.
+The CN PR caller pins
+`penclipai/paperclip-cn/.github/workflows/pr-trusted.yml@849cb762e82d87ba65f5747f6f0d91b4c0f0438e`.
+The AWS runner group `paperclip-public-pr` must allow that exact reference.
+The identity and shard tests compare the trusted workflow at that commit with
+`git show`; later working-tree edits cannot change the pinned workflow.
+Authorize each new pinned reference before updating the caller.
 
 Keep the `.github/**` rule in `.github/CODEOWNERS` and the active master ruleset's
 code-owner review requirement enabled. This covers the caller, the trusted
@@ -1956,6 +1960,16 @@ Each entry must contain only a scheme, hostname, and optional port. Paths,
 credentials, query strings, fragments, and wildcards are ignored. Matching is
 by exact normalized origin, so allowing one port does not allow another.
 Link-local destinations remain denied even when explicitly listed.
+
+## Local AI Login Platform Support
+
+Server-hosted subscription login requires a trusted, private instance and a
+platform that supports confined credential-file reads. It is unavailable on
+Windows; API-key connections remain available. Windows must not advertise local
+subscription login until it can enforce the same file-open boundary.
+
+Remote Pi companion import supports macOS and Linux controllers. Windows
+controllers reject the import before reading the companion path.
 
 ## Company Deletion Toggle
 

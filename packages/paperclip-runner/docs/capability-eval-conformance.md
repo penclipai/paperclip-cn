@@ -60,12 +60,12 @@ contacted, and the browser explorer holds no credential.
 
 ```sh
 # Run the 106-case suite in-process (one vitest file drives all cases).
-pnpm --filter @paperclipai/paperclip-runner test:capability-evals
+pnpm --filter @penclipai/paperclip-runner test:capability-evals
 
 # Build the public surface and write the parity report with per-group counts,
 # assertion classes, the fake-agent matrix, the bounded Codex sample, and the
 # semantic-operation execution counts.
-pnpm --filter @paperclipai/paperclip-runner report:capability-evals
+pnpm --filter @penclipai/paperclip-runner report:capability-evals
 ```
 
 The reporter writes `.paperclip-local/evidence/capability/eval-parity-report.{json,md}`.
@@ -75,7 +75,7 @@ real Codex turn for each of the 16 checked-in eval groups while retaining the
 in-process mock control plane:
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner report:capability-live-evals
+pnpm --filter @penclipai/paperclip-runner report:capability-live-evals
 ```
 Each failure carries its case ID, assertion class, semantic operation,
 authorization decision, and final state diff. The report is generated on demand

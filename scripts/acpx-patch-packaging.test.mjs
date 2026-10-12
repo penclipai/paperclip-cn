@@ -249,7 +249,8 @@ test("Linux-produced Claude bundles retain the SDK and install native packages f
   assert.equal(readFileSync(join(bridge, "package.json"), "utf8"), bridgeBefore);
   assert.deepEqual(stageBundledProviderOptionalDependencies(directory, staged, profiles), staged);
   writeFileSync(join(directory, "package.json"), JSON.stringify(staged));
-  const packs = JSON.parse(execFileSync("npm", ["pack", "--ignore-scripts", "--offline", "--json"], {
+  const npmCli = join(dirname(process.execPath), "node_modules", "npm", "bin", "npm-cli.js");
+  const packs = JSON.parse(execFileSync(process.execPath, [npmCli, "pack", "--ignore-scripts", "--offline", "--json"], {
     cwd: directory, encoding: "utf8", timeout: 30_000,
     env: { ...process.env, HOME: directory, npm_config_cache: join(directory, "cache"), npm_config_update_notifier: "false" },
   }));

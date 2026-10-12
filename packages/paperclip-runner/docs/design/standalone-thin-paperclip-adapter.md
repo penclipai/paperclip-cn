@@ -32,7 +32,7 @@ The dependency direction is one way:
 ```text
 server heartbeat orchestration
   -> PaperclipNativeRuntimeAdapter (core seam)
-      -> @paperclipai/paperclip-runner public contracts
+      -> @penclipai/paperclip-runner public contracts
           -> NativeSessionBackend -> package-owned driver/runner logic
           -> ControlPlanePort      -> server-bound Paperclip implementation
 ```
@@ -1037,11 +1037,11 @@ Deterministic package/mock proof:
 ```sh
 pnpm check:runner-sdk-spec
 
-pnpm --filter @paperclipai/paperclip-runner exec vitest run \
+pnpm --filter @penclipai/paperclip-runner exec vitest run \
   src/conformance/control-plane-port.test.ts \
   src/backends/harness-driver-backend.test.ts
 
-pnpm --filter @paperclipai/paperclip-runner trace:standalone -- \
+pnpm --filter @penclipai/paperclip-runner trace:standalone -- \
   --target mock --scenario happy-path
 ```
 
@@ -1049,7 +1049,7 @@ First real Paperclip tracer and inspection (against an isolated local dev
 instance with the five `PAPERCLIP_*` identifiers/auth variables already set):
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner trace:standalone -- \
+pnpm --filter @penclipai/paperclip-runner trace:standalone -- \
   --target paperclip --scenario happy-path
 
 PAPERCLIP_API_BASE="${PAPERCLIP_API_URL%/}"
@@ -1063,7 +1063,7 @@ curl -fsS \
 Targeted real integration proof:
 
 ```sh
-pnpm --filter @paperclipai/server exec vitest run \
+pnpm --filter @penclipai/server exec vitest run \
   src/__tests__/native-runner-standalone.integration.test.ts \
   src/__tests__/heartbeat-native-runner-selection.test.ts \
   src/__tests__/heartbeat-native-runner-cancellation.test.ts \
@@ -1075,11 +1075,11 @@ pnpm --filter @paperclipai/server exec vitest run \
   src/__tests__/native-finalization-migration.test.ts \
   src/__tests__/legacy-finalization-regression.test.ts
 
-pnpm --filter @paperclipai/server exec vitest run \
+pnpm --filter @penclipai/server exec vitest run \
   src/__tests__/heartbeat-run-event-sequencing.test.ts \
   -t "serializes concurrent lifecycle cancel native and log writers"
 
-pnpm --filter @paperclipai/server exec vitest run \
+pnpm --filter @penclipai/server exec vitest run \
   src/__tests__/native-status-arbiter-corpus.test.ts \
   -t "executes all 52 fixtures in their production consumers"
 ```
@@ -1087,10 +1087,10 @@ pnpm --filter @paperclipai/server exec vitest run \
 Legacy fallback proof after disabling the flag:
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner trace:standalone -- \
+pnpm --filter @penclipai/paperclip-runner trace:standalone -- \
   --target paperclip --scenario legacy-fallback
 
-pnpm --filter @paperclipai/server exec vitest run \
+pnpm --filter @penclipai/server exec vitest run \
   src/__tests__/native-runner-standalone.integration.test.ts \
   -t "uses the unchanged legacy path when the kill switch is off"
 ```

@@ -116,7 +116,7 @@ fn build_metadata() -> serde_json::Value {
     json!({
         "schema": RUNNERD_BUILD_METADATA_SCHEMA,
         "binaryName": "paperclip-runnerd",
-        "packageName": "@paperclipai/paperclip-runner",
+        "packageName": "@penclipai/paperclip-runner",
         "packageVersion": env!("CARGO_PKG_VERSION"),
         "binaryContractVersion": 2,
         "durableSessionCapabilities": ["unlimited_runtime", "connection_lease_renewal"],
@@ -445,6 +445,7 @@ mod tests {
     fn build_metadata_advertises_the_remote_transport_contract() {
         let metadata = build_metadata();
         assert_eq!(metadata["schema"], RUNNERD_BUILD_METADATA_SCHEMA);
+        assert_eq!(metadata["packageName"], "@penclipai/paperclip-runner");
         assert_eq!(metadata["binaryContractVersion"], 2);
         assert_eq!(
             metadata["externalProviderCapabilities"],

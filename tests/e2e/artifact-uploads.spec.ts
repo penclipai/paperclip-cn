@@ -11,7 +11,10 @@ async function json(response: APIResponse) {
 
 async function setup(page: Page, request: APIRequestContext, mobile = false) {
   await page.setViewportSize(mobile ? { width: 390, height: 844 } : { width: 1440, height: 960 });
-  await page.addInitScript(() => localStorage.setItem("paperclip:panel-visible", "true"));
+  await page.addInitScript(() => {
+    localStorage.setItem("paperclip.locale", "en");
+    localStorage.setItem("paperclip:panel-visible", "true");
+  });
   const companies = await json(await request.get("/api/companies"));
   const company = companies.find((row: { name: string }) => row.name === "Artifact Upload Review") ?? await json(await request.post("/api/companies", { data: { name: `Artifact uploads ${randomUUID()}` } }));
   const issue = await json(await request.post(`/api/companies/${company.id}/issues`, {

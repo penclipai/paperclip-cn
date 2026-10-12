@@ -79,13 +79,13 @@ and result mutations (failing closed with `native_event_replay_conflict`).
 ## Running the tests
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner exec vitest run \
+pnpm --filter @penclipai/paperclip-runner exec vitest run \
   src/conformance/control-plane-port.test.ts \
   src/mock-core/capability-mock-control-plane-adapter.test.ts
 ```
 
 Nine tests, no npm alias of their own — they also run inside
-`pnpm --filter @paperclipai/paperclip-runner test`.
+`pnpm --filter @penclipai/paperclip-runner test`.
 
 ## Related
 

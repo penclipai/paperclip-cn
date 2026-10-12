@@ -79,7 +79,7 @@ notifications are ignored instead of being attached to the active session.
 Start it with:
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner demo:live-console -- \
+pnpm --filter @penclipai/paperclip-runner demo:live-console -- \
   --host 127.0.0.1 --port 4174
 ```
 
@@ -129,7 +129,7 @@ multi-user authorization boundary.
 Run deterministic conformance first, then the real Codex boundary:
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner exec vitest run \
+pnpm --filter @penclipai/paperclip-runner exec vitest run \
   src/drivers/codex/codex-app-server-driver.test.ts \
   src/mock-core/live-console-demo-server.test.ts
 ```

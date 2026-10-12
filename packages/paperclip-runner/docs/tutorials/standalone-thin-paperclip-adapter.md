@@ -10,7 +10,7 @@ Paperclip task, or use the repository server/database integration.
 From the repository root:
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner trace:standalone
+pnpm --filter @penclipai/paperclip-runner trace:standalone
 ```
 
 The JSON trace must report:
@@ -24,7 +24,7 @@ The JSON trace must report:
 ## 2. Enable the native standalone path
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner trace:standalone -- --feature-flag enabled
+pnpm --filter @penclipai/paperclip-runner trace:standalone -- --feature-flag enabled
 ```
 
 The trace must report `resolvedMode: "native"`. Both paths execute the same
@@ -35,7 +35,7 @@ inspectable.
 ## 3. Prove the kill switch
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner trace:standalone -- --feature-flag enabled --kill-switch enabled
+pnpm --filter @penclipai/paperclip-runner trace:standalone -- --feature-flag enabled --kill-switch enabled
 ```
 
 The trace must return to `resolvedMode: "legacy"` with
@@ -45,7 +45,7 @@ allowed after the kill switch resolves the path.
 ## 4. Open the standalone demo page
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner demo:standalone
+pnpm --filter @penclipai/paperclip-runner demo:standalone
 ```
 
 Open `http://127.0.0.1:4182/standalone-demo/`. The page starts on the legacy
@@ -56,10 +56,10 @@ trace JSON to inspect replay and idempotency details.
 ## 5. Run the package-local checks
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner exec vitest run \
+pnpm --filter @penclipai/paperclip-runner exec vitest run \
   src/standalone/standalone-demo.test.ts \
   src/conformance/control-plane-port.test.ts
-pnpm --filter @paperclipai/paperclip-runner run build:standalone
+pnpm --filter @penclipai/paperclip-runner run build:standalone
 ```
 
 These checks require no running Paperclip service or credentials.

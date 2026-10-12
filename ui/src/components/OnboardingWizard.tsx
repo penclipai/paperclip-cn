@@ -79,6 +79,7 @@ import {
 } from "../lib/adapter-test-environment";
 import { queryKeys } from "../lib/queryKeys";
 import { Dialog, DialogPortal } from "@/components/ui/dialog";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 import {
   Popover,
   PopoverContent,
@@ -2407,6 +2408,9 @@ function OnboardingWizardInner({
           className="fixed inset-0 z-50 flex"
           onKeyDown={handleKeyDown}
         >
+          <div className="absolute right-4 top-4 z-10 sm:right-6 sm:top-6">
+            <LanguageSwitcher />
+          </div>
           {/* Form column — the wizard opens directly on step 1, so there is no
               front-door choice ahead of it, and it fills the width on every
               step (the mission step's half-width split is gone). */}

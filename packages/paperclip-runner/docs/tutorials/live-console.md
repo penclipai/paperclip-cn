@@ -21,7 +21,7 @@ for this tutorial. The default driver replays deterministic demo chats.
 ## Step 1: Run the deterministic checks
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner exec vitest run \
+pnpm --filter @penclipai/paperclip-runner exec vitest run \
   src/mock-core/live-console-scripted-driver.test.ts \
   src/mock-core/live-console-demo-server.test.ts \
   devtools/browser/src/live/transcript-model.test.ts
@@ -33,7 +33,7 @@ routes, and the pure transcript model the console renders.
 ## Step 2: Start the console
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner console:live-console
+pnpm --filter @penclipai/paperclip-runner console:live-console
 ```
 
 Keep this terminal open. Open `http://127.0.0.1:4180/` in a browser and press
@@ -184,7 +184,7 @@ This step needs a working Codex login on the machine.
 
 ```sh
 PAPERCLIP_LIVE_CONSOLE_DRIVER=codex \
-  pnpm --filter @paperclipai/paperclip-runner console:live-console
+  pnpm --filter @penclipai/paperclip-runner console:live-console
 ```
 
 The routes and the screens are the same. The demo chat list still appears, but

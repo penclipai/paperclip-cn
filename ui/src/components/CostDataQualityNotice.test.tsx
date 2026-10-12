@@ -7,6 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { appearanceForPalette, agentAvatarUrl, type CostDataQualityItem, type CostDataQualityReason, type CostDataQualityReport } from "@penclipai/shared";
 import { ToastProvider, useToastState } from "../context/ToastContext";
 import { CostDataQualityNotice } from "./CostDataQualityNotice";
+import i18n from "@/i18n";
 
 const mocks = vi.hoisted(() => ({ dataQuality: vi.fn(), retryAccounting: vi.fn() }));
 vi.mock("../api/costs", () => ({ costsApi: mocks }));
@@ -40,6 +41,18 @@ describe("actionable cost notices", () => {
   function button(text: string) { return [...container.querySelectorAll("button")].find(button => button.textContent === text)!; }
   async function click(text: string) { await act(async () => button(text).click()); }
   async function loaded() { await act(async () => vi.waitFor(() => expect(container.textContent).toContain("Ready to record"))); }
+
+  it.each([
+    [{ unpricedCount: 1, pendingCount: 0, unknownBillingCount: 0 }, "1 个运行的成本不可用"],
+    [{ unpricedCount: 2, pendingCount: 0, unknownBillingCount: 0 }, "2 个运行的成本不可用"],
+    [{ unpricedCount: 0, pendingCount: 0, unknownBillingCount: 1 }, "1 个计费类别未知"],
+    [{ unpricedCount: 0, pendingCount: 0, unknownBillingCount: 2 }, "2 个计费类别未知"],
+  ] as const)("renders Chinese count labels without English grammar fragments: %s", async (counts, label) => {
+    await i18n.changeLanguage("zh-CN");
+    await render(counts);
+    expect(container.textContent).toBe(label);
+    expect(mocks.dataQuality).not.toHaveBeenCalled();
+  });
 
   it("loads bounded details only on demand using the displayed period", async () => {
     await render(); expect(mocks.dataQuality).not.toHaveBeenCalled();

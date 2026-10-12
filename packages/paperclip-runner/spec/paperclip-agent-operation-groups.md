@@ -1,4 +1,4 @@
-<!-- GENERATED FILE — DO NOT EDIT. Run `pnpm --filter @paperclipai/paperclip-runner exec tsx scripts/generate-operation-groups.ts`. -->
+<!-- GENERATED FILE — DO NOT EDIT. Run `pnpm --filter @penclipai/paperclip-runner exec tsx scripts/generate-operation-groups.ts`. -->
 
 # Paperclip agent operation groups
 
@@ -455,9 +455,9 @@ The machine-readable authority for this document's decisions is `spec/operation-
 Regenerate and check reproducibly:
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner exec tsx scripts/generate-operation-groups.ts
-pnpm --filter @paperclipai/paperclip-runner exec tsx scripts/generate-operation-groups.ts --check
-pnpm --filter @paperclipai/paperclip-runner exec vitest run src/catalog/operation-groups-doc.test.ts src/catalog/reconciliation.test.ts src/catalog/catalog-docs.test.ts
+pnpm --filter @penclipai/paperclip-runner exec tsx scripts/generate-operation-groups.ts
+pnpm --filter @penclipai/paperclip-runner exec tsx scripts/generate-operation-groups.ts --check
+pnpm --filter @penclipai/paperclip-runner exec vitest run src/catalog/operation-groups-doc.test.ts src/catalog/reconciliation.test.ts src/catalog/catalog-docs.test.ts
 ```
 
 The `--check` path fails on catalog membership, optional-group coverage, control-plane coverage, PRP schema families/counts, behavior/scenario membership, legacy alias folds, source-contract targets, generated live contracts, package exports, or byte-level Markdown drift. Generation is offline and uses only checked-in inputs.

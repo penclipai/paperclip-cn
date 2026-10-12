@@ -14,7 +14,7 @@ import or change Paperclip server, UI, database, or control-plane code.
 ## Start it
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner console:live-console
+pnpm --filter @penclipai/paperclip-runner console:live-console
 ```
 
 Then open `http://127.0.0.1:4180/` and choose **Live console**.
@@ -130,13 +130,13 @@ component file carries a raw colour, pixel, or font value.
 ## Verification
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner exec vitest run \
+pnpm --filter @penclipai/paperclip-runner exec vitest run \
   src/mock-core/live-console-scripted-driver.test.ts \
   src/mock-core/live-console-demo-server.test.ts \
   devtools/browser/src/live/transcript-model.test.ts
-pnpm --filter @paperclipai/paperclip-runner test:browser
-pnpm --filter @paperclipai/paperclip-runner check:browser-tokens
-pnpm --filter @paperclipai/paperclip-runner check:forbidden-imports
+pnpm --filter @penclipai/paperclip-runner test:browser
+pnpm --filter @penclipai/paperclip-runner check:browser-tokens
+pnpm --filter @penclipai/paperclip-runner check:forbidden-imports
 ```
 
 See the [tutorial](tutorials/live-console.md).

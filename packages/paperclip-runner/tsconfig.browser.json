@@ -14,22 +14,21 @@
       "vite/client",
       "node"
     ],
-    "baseUrl": ".",
     "paths": {
-      "@paperclipai/paperclip-runner/browser": [
-        "src/browser/index.ts"
+      "@penclipai/paperclip-runner/browser": [
+        "./src/browser/index.ts"
       ],
-      "@paperclipai/paperclip-runner/react": [
-        "src/react/index.ts"
+      "@penclipai/paperclip-runner/react": [
+        "./src/react/index.ts"
       ],
-      "@paperclipai/paperclip-runner/standalone": [
-        "src/standalone/index.ts"
+      "@penclipai/paperclip-runner/standalone": [
+        "./src/standalone/index.ts"
       ],
-      "@paperclipai/paperclip-runner/styles.css": [
-        "styles.css"
+      "@penclipai/paperclip-runner/styles.css": [
+        "./styles.css"
       ],
       "@paperclip-runner-local/capability": [
-        "src/scenarios/index.ts"
+        "./src/scenarios/index.ts"
       ]
     }
   },

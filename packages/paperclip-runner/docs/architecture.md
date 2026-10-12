@@ -31,7 +31,7 @@ recorded in [ADR 0001](adr/0001-runner-testing-eval-package-boundaries.md).
 - `./evals` exposes the stable native-attempt/build-metadata join and explicit
   digest-verified runnerd artifact resolution.
 - `./testing` contains deterministic mocks and conformance kits.
-- The workspace-private `@paperclipai/paperclip-eval-kernel` contains generic
+- The workspace-private `@penclipai/paperclip-eval-kernel` contains generic
   structural matrix orchestration and is a development-only dependency.
   Runner-specific cases, scorers, and reports remain package-local; paid
   campaigns remain external.
@@ -101,8 +101,8 @@ artifact.
 The following imports and package dependencies are rejected:
 
 - `server/`, `ui/`, and `cli/` implementation paths;
-- `@paperclipai/db` and production database schema or client modules;
-- `@paperclipai/shared`, adapter utilities, and other Paperclip workspace
+- `@penclipai/db` and production database schema or client modules;
+- `@penclipai/shared`, adapter utilities, and other Paperclip workspace
   internals unless a boundary review explicitly allows a public contract;
 - relative or absolute imports that escape `packages/paperclip-runner/`.
 
@@ -114,9 +114,9 @@ must fail the checker.
 ## Enforcement
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner check:forbidden-imports
-pnpm --filter @paperclipai/paperclip-runner test
-pnpm --filter @paperclipai/paperclip-runner check:replay-parity
+pnpm --filter @penclipai/paperclip-runner check:forbidden-imports
+pnpm --filter @penclipai/paperclip-runner test
+pnpm --filter @penclipai/paperclip-runner check:replay-parity
 ```
 
 The first command scans the package source, scripts, and manifest. The test

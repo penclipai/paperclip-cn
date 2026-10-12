@@ -66,13 +66,13 @@ a time with zero horizontal overflow.
 
 ```sh
 # Open the explorer on 127.0.0.1:4183.
-pnpm --filter @paperclipai/paperclip-runner demo:scenarios
+pnpm --filter @penclipai/paperclip-runner demo:scenarios
 
 # Scenario runtime, explorer components, and route determinism (49 tests).
-pnpm --filter @paperclipai/paperclip-runner test:scenarios
+pnpm --filter @penclipai/paperclip-runner test:scenarios
 
 # Browser IA, determinism, evidence routes, boundary, a11y, responsive (25).
-pnpm --filter @paperclipai/paperclip-runner test:browser:scenarios
+pnpm --filter @penclipai/paperclip-runner test:browser:scenarios
 
 # Deterministic 24-image acceptance set (12 routes x 2 viewports).
 # Recorded evidence generation is deferred from this release.

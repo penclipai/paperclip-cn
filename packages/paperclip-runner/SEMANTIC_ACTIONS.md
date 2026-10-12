@@ -23,7 +23,7 @@ reviewed schemas and authority boundaries.
 import {
   PAPERCLIP_SEMANTIC_ACTION_CATALOG,
   paperclipSemanticAction,
-} from "@paperclipai/paperclip-runner";
+} from "@penclipai/paperclip-runner";
 
 const writeDocument = paperclipSemanticAction("write_document");
 ```
@@ -48,7 +48,7 @@ allowlisted references only.
 runtime declarations. Change the TypeScript source, then run:
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner generate:semantic-action-catalog
+pnpm --filter @penclipai/paperclip-runner generate:semantic-action-catalog
 ```
 
 The package build and catalog tests compare the checked-in inventory byte for

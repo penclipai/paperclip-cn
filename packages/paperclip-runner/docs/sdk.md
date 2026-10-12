@@ -18,10 +18,10 @@ command content wraps at mobile widths without horizontal page scrolling.
 
 | Import | Purpose |
 | --- | --- |
-| `@paperclipai/paperclip-runner` | Protocol, reducer, and existing package contracts |
-| `@paperclipai/paperclip-runner/browser` | Framework-free HTTP/SSE client, protocol types, transcript projection |
-| `@paperclipai/paperclip-runner/react` | Hook, reference console, and reusable React components |
-| `@paperclipai/paperclip-runner/styles.css` | Scoped light-theme token and component styles |
+| `@penclipai/paperclip-runner` | Protocol, reducer, and existing package contracts |
+| `@penclipai/paperclip-runner/browser` | Framework-free HTTP/SSE client, protocol types, transcript projection |
+| `@penclipai/paperclip-runner/react` | Hook, reference console, and reusable React components |
+| `@penclipai/paperclip-runner/styles.css` | Scoped light-theme token and component styles |
 
 React and React DOM are peer dependencies. The extracted surface adds no
 runtime dependency. It is client-only: it uses `window`, `sessionStorage`,
@@ -31,7 +31,7 @@ than render it on the server.
 ## Framework-free client
 
 ```ts
-import { createRunnerClient } from "@paperclipai/paperclip-runner/browser";
+import { createRunnerClient } from "@penclipai/paperclip-runner/browser";
 
 const client = createRunnerClient({ baseUrl: "/api/liveConsole" });
 const manifests = await client.fetchManifests();
@@ -49,7 +49,7 @@ identities, or removes duplicate events before the shared reducer sees them.
 ## React hook
 
 ```tsx
-import { useRunnerConsole } from "@paperclipai/paperclip-runner/react";
+import { useRunnerConsole } from "@penclipai/paperclip-runner/react";
 
 function Console() {
   const runner = useRunnerConsole({ baseUrl: "/api/liveConsole" });

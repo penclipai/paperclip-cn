@@ -3040,7 +3040,7 @@ function acpxProviderPackageAuthority(
         existsSync(resolve(workspaceRoot, "package.json"))) {
       const workspace = JSON.parse(readFileSync(resolve(workspaceRoot, "package.json"), "utf8"));
       const server = JSON.parse(readFileSync(resolve(serverRoot, "package.json"), "utf8"));
-      if (workspace.name === "paperclip" && workspace.private === true && server.name === "@paperclipai/server") {
+      if (workspace.name === "paperclip" && workspace.private === true && server.name === "@penclipai/server") {
         return { root: workspaceRoot, manifest: resolve(serverRoot, "package.json") };
       }
     }

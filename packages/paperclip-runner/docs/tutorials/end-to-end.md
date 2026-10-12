@@ -57,14 +57,14 @@ flag while preserving server-owned workspace, governance, and status authority.
 The one-command form after installation is:
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner verify
+pnpm --filter @penclipai/paperclip-runner verify
 ```
 
 On a minimal Debian or Ubuntu host without root access, use the rootless browser
 dependency path:
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner verify:rootless
+pnpm --filter @penclipai/paperclip-runner verify:rootless
 ```
 
 ## Cumulative guarantees
@@ -147,7 +147,7 @@ pnpm --filter @paperclipai/paperclip-runner verify:rootless
 ## Step 6: Chat with a live session in the browser
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner console:live-console
+pnpm --filter @penclipai/paperclip-runner console:live-console
 ```
 
 Open `http://127.0.0.1:4180/` and press **Live console**. Work through the
@@ -159,7 +159,7 @@ Codex session.
 ## Step 7: Run the reusable SDK consumers
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner console:sdk
+pnpm --filter @penclipai/paperclip-runner console:sdk
 ```
 
 Open `http://127.0.0.1:4181/reference-console/` and

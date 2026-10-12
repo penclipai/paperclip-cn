@@ -157,11 +157,11 @@ without weakening the explicit cross-site denial.
 
 | Surface | Command |
 | --- | --- |
-| Seed, exposure profile, and identity rotation | `pnpm --filter @paperclipai/paperclip-runner test:scenarios` |
+| Seed, exposure profile, and identity rotation | `pnpm --filter @penclipai/paperclip-runner test:scenarios` |
 | Clean-room HTTP routes end to end (stub provider) | included in `test:scenarios` |
-| Browser entry, blank state, evidence-on-demand, narrow layout, axe | `pnpm --filter @paperclipai/paperclip-runner test:browser:issue-thread` |
-| Real Codex through real runnerd | `pnpm --filter @paperclipai/paperclip-runner smoke:capability:cleanroom` |
-| Live screenshots | `pnpm --filter @paperclipai/paperclip-runner recorded-evidence campaign (deferred)` |
+| Browser entry, blank state, evidence-on-demand, narrow layout, axe | `pnpm --filter @penclipai/paperclip-runner test:browser:issue-thread` |
+| Real Codex through real runnerd | `pnpm --filter @penclipai/paperclip-runner smoke:capability:cleanroom` |
+| Live screenshots | `pnpm --filter @penclipai/paperclip-runner recorded-evidence campaign (deferred)` |
 
 See the [clean-room chat tutorial](tutorials/capability-clean-room-chat.md) for the
 clean-start walkthrough, [execution modes and identity](capability-execution-modes.md)

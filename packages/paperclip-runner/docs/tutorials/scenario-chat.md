@@ -18,13 +18,13 @@ into Paperclip. Real integration is future upload integration and requires separ
 Install the package workspace from the repository root:
 
 ```sh
-pnpm install --filter @paperclipai/paperclip-runner --lockfile=false --offline --ignore-scripts --dev
+pnpm install --filter @penclipai/paperclip-runner --lockfile=false --offline --ignore-scripts --dev
 ```
 
 ## 1. Open the chat (about 1 minute)
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner run demo:scenarios
+pnpm --filter @penclipai/paperclip-runner run demo:scenarios
 ```
 
 Open <http://127.0.0.1:4183/scenario-explorer/#/chat/ap-mcp-gate-01>.
@@ -107,8 +107,8 @@ confirmation: it reproduces an identical timeline.
 ## 6. Run the tests and record the evidence
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner run test:scenarios
-pnpm --filter @paperclipai/paperclip-runner run test:browser:scenarios
+pnpm --filter @penclipai/paperclip-runner run test:scenarios
+pnpm --filter @penclipai/paperclip-runner run test:browser:scenarios
 # Recorded evidence generation is deferred from this release.
 ```
 

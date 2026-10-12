@@ -53,7 +53,20 @@ afterEach(async () => {
   );
 });
 
-describe("ACPX installation integrity", () => {
+it("fails closed when the platform cannot atomically open without following symlinks", () => {
+  expect(() => verifiedExecutableOpenFlags("win32", 0x20000)).toThrow(
+    "requires atomic no-follow",
+  );
+  expect(() => verifiedExecutableOpenFlags("linux", undefined)).toThrow(
+    "requires atomic no-follow",
+  );
+  expect(verifiedExecutableOpenFlags("linux", 0x20000)).not.toBe(0);
+});
+
+// Node cannot atomically pin provider directories or executables on Windows.
+// Production rejects ACPX there, so descriptor-pinning fixtures only apply on
+// platforms where that contract is available.
+describe.runIf(process.platform !== "win32")("ACPX installation integrity", () => {
   it.each([["linux", "x64"], ["darwin", "arm64"], ["darwin", "x64"]] as const)(
     "retains Claude executable admission for a published bundle on %s %s", async (os, cpu) => {
       const parent = await realpath(await mkdtemp(join(tmpdir(), "paperclip-claude-npm-admission-")));
@@ -575,16 +588,6 @@ describe("ACPX installation integrity", () => {
         openssl_modules: "/unverified/providers",
       }),
     ).toEqual({ PATH: "/verified/bin" });
-  });
-
-  it("fails closed when the platform cannot atomically open without following symlinks", () => {
-    expect(() => verifiedExecutableOpenFlags("win32", 0x20000)).toThrow(
-      "requires atomic no-follow",
-    );
-    expect(() => verifiedExecutableOpenFlags("linux", undefined)).toThrow(
-      "requires atomic no-follow",
-    );
-    expect(verifiedExecutableOpenFlags("linux", 0x20000)).not.toBe(0);
   });
 
   it("accepts the exact package, version, executable, and runtime", async () => {
@@ -2360,7 +2363,7 @@ describe("Grok launcher subscription refresh", () => {
     });
     expect(test.execve).toHaveBeenCalledExactlyOnceWith(test.executable, [test.executable, "agent", "--no-leader", "stdio"], { GROK_HOME: "/isolated/grok" });
     expect(test.spawnSync.mock.invocationCallOrder[0]).toBeLessThan(test.execve.mock.invocationCallOrder[0]!);
-    expect(test.fs.openSync).toHaveBeenCalledWith("/isolated/grok/auth.json", constants.O_RDONLY | constants.O_NOFOLLOW);
+    expect(test.fs.openSync).toHaveBeenCalledWith(join("/isolated/grok", "auth.json"), constants.O_RDONLY | constants.O_NOFOLLOW);
     expect(test.fs.closeSync).toHaveBeenCalledWith(42);
   });
   it.each(["/proc/self/fd/8", "/dev/fd/8"])("retains only the verified executable descriptor for %s", async executable => {

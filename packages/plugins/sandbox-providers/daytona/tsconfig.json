@@ -6,7 +6,7 @@
     "lib": ["ES2023"],
     "types": ["node"],
     "paths": {
-      "@paperclipai/plugin-sdk": ["../../sdk/dist/index.d.ts"]
+      "@penclipai/plugin-sdk": ["../../sdk/dist/index.d.ts"]
     }
   },
   "include": ["src"]

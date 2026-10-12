@@ -26,7 +26,7 @@ or paid model invocation is required.
 Run the offline slice with:
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner test:eval-slice
+pnpm --filter @penclipai/paperclip-runner test:eval-slice
 ```
 
 Provider-backed campaigns and recorded evidence are intentionally outside this

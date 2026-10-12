@@ -14,7 +14,7 @@
   },
   "runner": {
     "package": {
-      "name": "@paperclipai/paperclip-runner",
+      "name": "@penclipai/paperclip-runner",
       "version": "0.0.0"
     },
     "binary": {

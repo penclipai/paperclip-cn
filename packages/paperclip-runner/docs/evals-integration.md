@@ -4,7 +4,7 @@
 
 Paperclip Evals consumes two explicit App artifacts:
 
-1. a packed/released `@paperclipai/paperclip-runner` package; and
+1. a packed/released `@penclipai/paperclip-runner` package; and
 2. an explicit `paperclip-runnerd` executable path plus its
    `sha256:<lowercase hex>` digest.
 
@@ -88,7 +88,7 @@ and incompatible negotiation. It never qualifies a debug binary.
 Run it with:
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner check:clean-consumers
+pnpm --filter @penclipai/paperclip-runner check:clean-consumers
 ```
 
 Set `PAPERCLIP_CLEAN_CONSUMER_OUTPUT_DIR` to retain the qualifying inputs and
@@ -100,5 +100,5 @@ and digest, and completes deterministic conformance without provider calls.
 
 ```sh
 PAPERCLIP_CLEAN_CONSUMER_OUTPUT_DIR=/absolute/release/directory \
-  pnpm --filter @paperclipai/paperclip-runner check:clean-consumers
+  pnpm --filter @penclipai/paperclip-runner check:clean-consumers
 ```

@@ -22,23 +22,23 @@ repository root. Install only this workspace without writing
 the root lockfile:
 
 ```sh
-pnpm install --filter @paperclipai/paperclip-runner --lockfile=false --ignore-scripts --dev
-pnpm --filter @paperclipai/paperclip-runner exec playwright install chromium
+pnpm install --filter @penclipai/paperclip-runner --lockfile=false --ignore-scripts --dev
+pnpm --filter @penclipai/paperclip-runner exec playwright install chromium
 ```
 
 On a minimal Linux host, Playwright may also request system browser libraries:
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner exec playwright install-deps chromium
+pnpm --filter @penclipai/paperclip-runner exec playwright install-deps chromium
 ```
 
 ## 1. Check the contract and golden corpus
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner typecheck
-pnpm --filter @paperclipai/paperclip-runner check:replay-goldens
-pnpm --filter @paperclipai/paperclip-runner check:replay-parity
-pnpm --filter @paperclipai/paperclip-runner check:forbidden-imports
+pnpm --filter @penclipai/paperclip-runner typecheck
+pnpm --filter @penclipai/paperclip-runner check:replay-goldens
+pnpm --filter @penclipai/paperclip-runner check:replay-parity
+pnpm --filter @penclipai/paperclip-runner check:forbidden-imports
 ```
 
 Expected: generated schema sources are current, TypeScript and Rust accept the
@@ -47,7 +47,7 @@ same fixtures, all parity summaries match, and the standalone boundary passes.
 ## 2. Replay the happy path in the CLI
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner replay:fixture
+pnpm --filter @penclipai/paperclip-runner replay:fixture
 ```
 
 Expected JSON facts:
@@ -60,7 +60,7 @@ Expected JSON facts:
 Pass a different fixture path to inspect another case:
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner replay:fixture packages/paperclip-runner/protocol/fixtures/replay/source-gap.json
+pnpm --filter @penclipai/paperclip-runner replay:fixture packages/paperclip-runner/protocol/fixtures/replay/source-gap.json
 ```
 
 Expected: `snapshot.integrity` is `gap_detected` and the missing source sequence
@@ -69,7 +69,7 @@ is `3`.
 An unsupported required version exits non-zero and returns a structured error:
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner replay:fixture packages/paperclip-runner/protocol/fixtures/replay/unsupported-required-version.json
+pnpm --filter @penclipai/paperclip-runner replay:fixture packages/paperclip-runner/protocol/fixtures/replay/unsupported-required-version.json
 ```
 
 ## 3. Open the standalone replay page
@@ -77,7 +77,7 @@ pnpm --filter @paperclipai/paperclip-runner replay:fixture packages/paperclip-ru
 Start the package-local Vite server:
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner browser:dev --host 127.0.0.1 --port 4179
+pnpm --filter @penclipai/paperclip-runner browser:dev --host 127.0.0.1 --port 4179
 ```
 
 Open `http://127.0.0.1:4179`, then:
@@ -94,8 +94,8 @@ Stop Vite with `Ctrl+C`.
 ## 4. Run the browser regression path
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner check:browser-tokens
-pnpm --filter @paperclipai/paperclip-runner test:browser
+pnpm --filter @penclipai/paperclip-runner check:browser-tokens
+pnpm --filter @penclipai/paperclip-runner test:browser
 ```
 
 Expected: the Playwright tests pass and temporary screenshots are written under

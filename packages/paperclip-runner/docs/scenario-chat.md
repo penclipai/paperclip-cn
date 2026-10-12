@@ -96,9 +96,9 @@ session** returns to the seeded turn 0 and stays there.
 ## Commands
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner run demo:scenarios       # open the surface
-pnpm --filter @paperclipai/paperclip-runner run test:scenarios       # runtime + component tests
-pnpm --filter @paperclipai/paperclip-runner run test:browser:scenarios
+pnpm --filter @penclipai/paperclip-runner run demo:scenarios       # open the surface
+pnpm --filter @penclipai/paperclip-runner run test:scenarios       # runtime + component tests
+pnpm --filter @penclipai/paperclip-runner run test:browser:scenarios
 # Recorded evidence generation is deferred from this release.
 ```
 

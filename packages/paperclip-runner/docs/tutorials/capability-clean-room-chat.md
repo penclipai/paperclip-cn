@@ -24,7 +24,7 @@ the seed, exposure profile, bounds, and route contract behind what you see here.
 Install the workspace from the repository root:
 
 ```sh
-NODE_ENV=development pnpm install --filter @paperclipai/paperclip-runner --frozen-lockfile --offline --ignore-scripts
+NODE_ENV=development pnpm install --filter @penclipai/paperclip-runner --frozen-lockfile --offline --ignore-scripts
 ```
 
 Setting `NODE_ENV=development` matters even if your shell already has
@@ -34,7 +34,7 @@ build tooling lives there.
 ## 1. Prove the path without a browser (about 1 minute)
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner smoke:capability:cleanroom -- --json
+pnpm --filter @penclipai/paperclip-runner smoke:capability:cleanroom -- --json
 ```
 
 This builds the TypeScript output and `paperclip-runnerd`, starts the package
@@ -61,7 +61,7 @@ Every assertion must read `true`. The two issue identifiers differ because
 ## 2. Open the chat in a browser (about 1 minute)
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner console:issue-thread
+pnpm --filter @penclipai/paperclip-runner console:issue-thread
 ```
 
 Open `http://127.0.0.1:4184/`. The landing surface is the scenario explorer.

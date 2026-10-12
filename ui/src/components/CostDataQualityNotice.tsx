@@ -52,8 +52,8 @@ export function CostDataQualityNotice({ companyId, from, to, reportKey, unpriced
     },
   });
   const label = unavailableCount > 0
-    ? translateInstant("costDataQuality.unavailableRuns", { count: unavailableCount, costLabel: unavailableCount === 1 ? "cost" : "costs" })
-    : translateInstant("costDataQuality.unknownBillingTypes", { count: unknownBillingCount, typeLabel: unknownBillingCount === 1 ? "type" : "types" });
+    ? translateInstant("costDataQuality.unavailableRuns", { count: unavailableCount })
+    : translateInstant("costDataQuality.unknownBillingTypes", { count: unknownBillingCount });
 
   const groups = new Map<string | null, {
     agent: { id?: string; name: string; appearance?: CostDataQualityItem["agentAppearance"] };

@@ -15040,8 +15040,8 @@
   "costDataQuality.noGaps": "此期间已无成本缺口。",
   "costDataQuality.detailsByAgent": "按智能体查看成本详情",
   "costDataQuality.truncated": "每个类别仅显示最近 25 条记录。请选择更短的日期范围以查看更多内容。",
-  "costDataQuality.unavailableRuns": "{{count}} 个运行的{{costLabel}}不可用",
-  "costDataQuality.unknownBillingTypes": "{{count}} 个计费{{typeLabel}}未知",
+  "costDataQuality.unavailableRuns": "{{count}} 个运行的成本不可用",
+  "costDataQuality.unknownBillingTypes": "{{count}} 个计费类别未知",
   "costDataQuality.agentDetails": "{{agentName}} 的成本详情",
   "costDataQuality.unavailableCostCount": "{{count}} 笔{{costLabel}}不可用",
   "costs.otherBillingUsage": "其他计费用量：{{tokens}} 个 Token{{recordedCharges}}，已包含在推理账本中。",
@@ -15053,5 +15053,9 @@
   "Technical details": "技术详情",
   "{{count}} saved message is waiting for recovery.": "有 {{count}} 条已保存的消息等待恢复。",
   "{{count}} saved messages are waiting for recovery.": "有 {{count}} 条已保存的消息等待恢复。",
-  "Starting…": "正在启动…"
+  "Starting…": "正在启动…",
+  "costDataQuality.unavailableRuns_one": "{{count}} 个运行的成本不可用",
+  "costDataQuality.unavailableRuns_other": "{{count}} 个运行的成本不可用",
+  "costDataQuality.unknownBillingTypes_one": "{{count}} 个计费类别未知",
+  "costDataQuality.unknownBillingTypes_other": "{{count}} 个计费类别未知"
 }

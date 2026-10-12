@@ -62,15 +62,15 @@ under `spec/capability/` and need no external repository.
 
 ```sh
 # Rewrite every generated file. Requires the external Paperclip Evals corpus.
-pnpm --filter @paperclipai/paperclip-runner generate:capability-inventory
+pnpm --filter @penclipai/paperclip-runner generate:capability-inventory
 
 # Validate counts, uniqueness, normative dispositions, one-to-one MCP folds,
 # required fields, and generated-file drift. Offline; no external eval repo.
-pnpm --filter @paperclipai/paperclip-runner check:capability-inventory
+pnpm --filter @penclipai/paperclip-runner check:capability-inventory
 
 # Prove the validator rejects an independent MCP classification and rejects
 # missing, duplicate, or unknown MCP folds. Offline.
-pnpm --filter @paperclipai/paperclip-runner test:capability-inventory
+pnpm --filter @penclipai/paperclip-runner test:capability-inventory
 ```
 
 `check:capability-inventory` diffs the checked-in generated files against what the

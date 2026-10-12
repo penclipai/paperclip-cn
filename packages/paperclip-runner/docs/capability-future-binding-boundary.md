@@ -11,7 +11,7 @@ session, or provider credential. The 106-case conformance suite and the browser
 explorer run entirely against the in-process
 [mock ControlPlanePort](capability-mock-control-plane-port.md) and checked-in
 fixtures. The [forbidden-imports boundary](architecture.md) rejects any import
-that crosses into `server/`, `ui/`, `cli/`, `@paperclipai/db`, or other
+that crosses into `server/`, `ui/`, `cli/`, `@penclipai/db`, or other
 Paperclip workspace internals.
 
 ## The preserved seam

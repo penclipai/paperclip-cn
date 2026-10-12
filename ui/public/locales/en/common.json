@@ -15040,8 +15040,8 @@
   "costDataQuality.noGaps": "No cost gaps remain in this period.",
   "costDataQuality.detailsByAgent": "Cost details by agent",
   "costDataQuality.truncated": "Showing the 25 most recent entries in each category. Select a shorter date range to inspect more.",
-  "costDataQuality.unavailableRuns": "{{count}} run {{costLabel}} unavailable",
-  "costDataQuality.unknownBillingTypes": "{{count}} billing {{typeLabel}} unknown",
+  "costDataQuality.unavailableRuns": "{{count}} run costs unavailable",
+  "costDataQuality.unknownBillingTypes": "{{count}} billing types unknown",
   "costDataQuality.agentDetails": "{{agentName}} cost details",
   "costDataQuality.unavailableCostCount": "{{count}} {{costLabel}} unavailable",
   "costs.otherBillingUsage": "Other billing usage: {{tokens}} tokens{{recordedCharges}}, included in the inference ledger.",
@@ -15053,5 +15053,9 @@
   "Technical details": "Technical details",
   "{{count}} saved message is waiting for recovery.": "{{count}} saved message is waiting for recovery.",
   "{{count}} saved messages are waiting for recovery.": "{{count}} saved messages are waiting for recovery.",
-  "Starting…": "Starting…"
+  "Starting…": "Starting…",
+  "costDataQuality.unavailableRuns_one": "{{count}} run cost unavailable",
+  "costDataQuality.unavailableRuns_other": "{{count}} run costs unavailable",
+  "costDataQuality.unknownBillingTypes_one": "{{count}} billing type unknown",
+  "costDataQuality.unknownBillingTypes_other": "{{count}} billing types unknown"
 }
