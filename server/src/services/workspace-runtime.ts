@@ -235,9 +235,14 @@ export interface RuntimeServiceRef {
   reused: boolean;
 }
 
+type ExplicitStopState = "none" | "attempting" | "unverified";
+
 interface RuntimeServiceRecord extends RuntimeServiceRef {
   db?: Db;
   child: ChildProcess | null;
+  /** An explicit stop owns its terminal transition until verified. */
+  explicitStopState: ExplicitStopState;
+  explicitStopPromise: Promise<void> | null;
   leaseRunIds: Set<string>;
   idleTimer: ReturnType<typeof globalThis.setTimeout> | null;
   envFingerprint: string;
@@ -6069,6 +6074,8 @@ function createProvisioningRuntimeServiceRecord(
     reused: false,
     db: input.db,
     child: null,
+    explicitStopState: "none",
+    explicitStopPromise: null,
     leaseRunIds: new Set(),
     idleTimer: null,
     envFingerprint: identity.envFingerprint,
@@ -6449,6 +6456,8 @@ async function spawnLocalRuntimeService(input: StartLocalRuntimeServiceInput): P
           reused: true,
           db: input.db,
           child: null,
+          explicitStopState: "none",
+          explicitStopPromise: null,
           leaseRunIds: leaseRunId ? new Set([leaseRunId]) : new Set(),
           idleTimer: null,
           envFingerprint,
@@ -6536,6 +6545,8 @@ async function spawnLocalRuntimeService(input: StartLocalRuntimeServiceInput): P
     reused: false,
     db: input.db,
     child: null,
+    explicitStopState: "none",
+    explicitStopPromise: null,
     leaseRunIds: leaseRunId ? new Set([leaseRunId]) : new Set(),
     idleTimer: null,
     envFingerprint,
@@ -7053,45 +7064,97 @@ async function cleanupRecordExposure(
   await persistRuntimeServiceRecord(record.db, record).catch(() => undefined);
 }
 
-async function stopRuntimeService(serviceId: string) {
+function stopUnverifiedError(serviceId: string): Error {
+  return new Error(`workspace_runtime_stop_unverified: ${serviceId}`);
+}
+
+function stopRuntimeService(serviceId: string): Promise<void> {
   const record = runtimeServicesById.get(serviceId);
-  if (!record) return;
-  clearIdleTimer(record);
-  // Remove any public exposure first, but keep the process registered and the
-  // row non-stopped until verified termination succeeds.
-  await cleanupRecordExposure(record);
-  if (record.child && record.child.pid) {
-    await terminateLocalService({
-      pid: record.child.pid,
-      processGroupId: record.processGroupId ?? record.child.pid,
-      port: record.port,
-    });
-  } else if (record.providerRef) {
-    const pid = Number.parseInt(record.providerRef, 10);
-    if (Number.isInteger(pid) && pid > 0) {
+  if (!record) return Promise.resolve();
+  if (
+    record.explicitStopState === "attempting"
+    && record.explicitStopPromise
+  ) {
+    return record.explicitStopPromise;
+  }
+
+  const captured = record;
+  clearIdleTimer(captured);
+  captured.explicitStopState = "attempting";
+
+  // Defer the body so the single-flight promise is registered before any
+  // asynchronous cleanup can yield to a second explicit stop request.
+  const stopPromise = Promise.resolve().then(async () => {
+    await cleanupRecordExposure(captured);
+    if (captured.child?.pid) {
       await terminateLocalService({
-        pid,
-        processGroupId: record.processGroupId,
-        port: record.port,
+        pid: captured.child.pid,
+        processGroupId: captured.processGroupId ?? captured.child.pid,
+        port: captured.port,
       });
+    } else if (captured.providerRef) {
+      const pid = Number.parseInt(captured.providerRef, 10);
+      if (Number.isInteger(pid) && pid > 0) {
+        await terminateLocalService({
+          pid,
+          processGroupId: captured.processGroupId,
+          port: captured.port,
+        });
+      }
     }
-  }
-  record.status = "stopped";
-  record.healthStatus = "unknown";
-  record.lastUsedAt = new Date().toISOString();
-  record.stoppedAt = new Date().toISOString();
-  runtimeServicesById.delete(serviceId);
-  if (record.reuseKey && runtimeServicesByReuseKey.get(record.reuseKey) === record.id) {
-    runtimeServicesByReuseKey.delete(record.reuseKey);
-  }
-  await removeLocalServiceRegistryRecord(record.serviceKey);
-  await persistRuntimeServiceRecord(record.db, record);
+
+    if (runtimeServicesById.get(serviceId) !== captured) {
+      throw stopUnverifiedError(serviceId);
+    }
+
+    captured.status = "stopped";
+    captured.healthStatus = "unknown";
+    captured.lastUsedAt = new Date().toISOString();
+    captured.stoppedAt = new Date().toISOString();
+    await removeLocalServiceRegistryRecord(captured.serviceKey);
+    await persistRuntimeServiceRecord(captured.db, captured);
+
+    if (runtimeServicesById.get(serviceId) !== captured) {
+      throw stopUnverifiedError(serviceId);
+    }
+
+    runtimeServicesById.delete(serviceId);
+    if (
+      captured.reuseKey
+      && runtimeServicesByReuseKey.get(captured.reuseKey) === captured.id
+    ) {
+      runtimeServicesByReuseKey.delete(captured.reuseKey);
+    }
+    captured.explicitStopState = "none";
+  });
+
+  captured.explicitStopPromise = stopPromise;
+  void stopPromise.then(
+    () => {
+      if (captured.explicitStopPromise === stopPromise) {
+        captured.explicitStopPromise = null;
+      }
+    },
+    () => {
+      if (runtimeServicesById.get(serviceId) === captured) {
+        captured.explicitStopState = "unverified";
+      }
+      if (captured.explicitStopPromise === stopPromise) {
+        captured.explicitStopPromise = null;
+      }
+    },
+  );
+  return stopPromise;
 }
 
 async function findHealthyRunningRuntimeService(reuseKey: string | null) {
   const existingId = reuseKey ? runtimeServicesByReuseKey.get(reuseKey) : null;
   const existing = existingId ? runtimeServicesById.get(existingId) : null;
-  if (!existing || existing.status !== "running") return null;
+  if (!existing) return null;
+  if (existing.explicitStopState !== "none") {
+    throw stopUnverifiedError(existing.id);
+  }
+  if (existing.status !== "running") return null;
   const healthInput = {
     db: existing.db,
     serviceName: existing.serviceName,
@@ -7318,7 +7381,7 @@ function registerRuntimeService(db: Db | undefined, record: RuntimeServiceRecord
 
   record.child?.on("exit", (code, signal) => {
     const current = runtimeServicesById.get(record.id);
-    if (!current) return;
+    if (current !== record || current.explicitStopState !== "none") return;
     clearIdleTimer(current);
     current.status = code === 0 || signal === "SIGTERM" ? "stopped" : "failed";
     current.healthStatus = current.status === "failed" ? "unhealthy" : "unknown";
@@ -8673,6 +8736,8 @@ export async function reconcilePersistedRuntimeServicesOnStartup(db: Db) {
           reused: true,
           db,
           child: null,
+          explicitStopState: "none",
+          explicitStopPromise: null,
           leaseRunIds: new Set(),
           idleTimer: null,
           envFingerprint: row.reuseKey ?? "",
