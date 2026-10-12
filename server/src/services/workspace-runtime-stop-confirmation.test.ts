@@ -13,11 +13,7 @@ const supervisorMocks = vi.hoisted(() => ({
   removeRegistry: vi.fn(),
   terminate: vi.fn(),
   actualRemoveRegistry: null as null | ((serviceKey: string) => Promise<void>),
-  actualTerminate: null as null | ((input: {
-    pid: number;
-    processGroupId?: number | null;
-    port?: number | null;
-  }) => Promise<void>),
+  actualTerminate: null as null | typeof import("./local-service-supervisor.js").terminateLocalService,
 }));
 
 vi.mock("node:child_process", async (importOriginal) => {
