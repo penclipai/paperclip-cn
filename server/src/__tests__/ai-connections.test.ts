@@ -1641,7 +1641,7 @@ console.log(JSON.stringify({ type: "result", subtype: "success", result: "hello"
       req.actor = { type: "board", source: req.headers["x-local"] === "yes" ? "local_implicit" : "session", userId: String(req.headers["x-test-user"] ?? "alice"), companyIds: [companyId], memberships: [{ companyId, status: "active", membershipRole: "member" }] };
       next();
     });
-    app.use("/api", aiConnectionRoutes(db));
+    app.use("/api", aiConnectionRoutes(db, { platform: "linux" }));
     app.use((error: { status?: number; message: string }, _req: express.Request, res: express.Response, _next: express.NextFunction) => { res.status(error.status ?? 500).json({ error: error.message }); });
     const url = `/api/companies/${companyId}/ai-connections/local`;
     const payload = { provider: "anthropic", method: "subscription", name: "Local account test", ownership: "personal", agentIds: [agentId], allAgents: false };
@@ -1677,7 +1677,7 @@ console.log(JSON.stringify({ type: "result", subtype: "success", result: "hello"
       req.actor = { type: "board", source: "session", userId: "alice", companyIds: [companyId], memberships: [{ companyId, status: "active", membershipRole: "member" }] };
       next();
     });
-    app.use("/api", aiConnectionRoutes(db, { deploymentMode: "authenticated", deploymentExposure: "public", trustedLocalStdioRuntimeHost: "" }));
+    app.use("/api", aiConnectionRoutes(db, { platform: "linux", deploymentMode: "authenticated", deploymentExposure: "public", trustedLocalStdioRuntimeHost: "" }));
     app.use((error: { status?: number; message: string }, _req: express.Request, res: express.Response, _next: express.NextFunction) => { res.status(error.status ?? 500).json({ error: error.message }); });
     const base = `/api/companies/${companyId}/ai-connections/local`;
     const intent = { provider, method: "subscription", ownership: "personal", name: "Hosted account", allAgents: false, agentIds: [] };
@@ -1686,6 +1686,27 @@ console.log(JSON.stringify({ type: "result", subtype: "success", result: "hello"
         const result = await request(app).post(endpoint).send(intent);
         expect(result.status).toBe(422);
         expect(result.body.error).toContain("unavailable on this hosted instance");
+      }
+      expect(reader).not.toHaveBeenCalled();
+    } finally { reader.mockRestore(); }
+  });
+  it.skipIf(process.platform !== "win32")("fails closed before reading a local subscription credential on Windows", async () => {
+    const reader = vi.spyOn(localCredentials, "readVerifiedLocalAiCredential");
+    const app = express();
+    app.use(express.json());
+    app.use((req, _res, next) => {
+      req.actor = { type: "board", source: "local_implicit", userId: "alice", companyIds: [companyId], memberships: [{ companyId, status: "active", membershipRole: "member" }] };
+      next();
+    });
+    app.use("/api", aiConnectionRoutes(db));
+    app.use((error: { status?: number; message: string }, _req: express.Request, res: express.Response, _next: express.NextFunction) => { res.status(error.status ?? 500).json({ error: error.message }); });
+    const base = `/api/companies/${companyId}/ai-connections/local`;
+    const intent = { provider: "anthropic", method: "subscription", ownership: "personal", name: "Windows account", allAgents: false, agentIds: [] };
+    try {
+      for (const endpoint of [base, `${base}/attempts`, `${base}/check`]) {
+        const result = await request(app).post(endpoint).send(intent);
+        expect(result.status).toBe(422);
+        expect(result.body.error).toBe("Server-host subscription sign-in is unavailable on Windows because Paperclip cannot safely read isolated credential files on this platform. Choose a supported sign-in environment or use an API key.");
       }
       expect(reader).not.toHaveBeenCalled();
     } finally { reader.mockRestore(); }
@@ -1700,7 +1721,7 @@ console.log(JSON.stringify({ type: "result", subtype: "success", result: "hello"
       req.actor = { type: "board", source: "session", userId: String(req.headers["x-test-user"] ?? owner), companyIds: [companyId], memberships: [{ companyId, status: "active", membershipRole: req.headers["x-viewer"] ? "viewer" : "member" }] };
       next();
     });
-    app.use("/api", aiConnectionRoutes(db));
+    app.use("/api", aiConnectionRoutes(db, { platform: "linux" }));
     app.use((error: { status?: number; message: string }, _req: express.Request, res: express.Response, _next: express.NextFunction) => { res.status(error.status ?? 500).json({ error: error.message }); });
     const base = `/api/companies/${companyId}/ai-connections/local`;
     const intent = { provider, method: "subscription", ownership: "personal", name: `Self-hosted ${provider}`, allAgents: false, agentIds: [] };

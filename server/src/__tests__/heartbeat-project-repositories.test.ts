@@ -32,7 +32,10 @@ suite("task project repository provisioning", () => {
   let root: string;
   let heartbeat: ReturnType<typeof heartbeatService>;
   beforeAll(async () => {
-    root = await mkdtemp(path.join(os.homedir(), "paperclip-project-repos-"));
+    // The managed checkout appends instance, UUID, repository, and clone-suffix
+    // components. Keep the Windows fixture prefix short enough for Git's loose
+    // object paths while retaining the descriptive POSIX fixture path.
+    root = await mkdtemp(path.join(os.homedir(), process.platform === "win32" ? "pc-r-" : "paperclip-project-repos-"));
     vi.stubEnv("PAPERCLIP_HOME", path.join(root, "home"));
     vi.stubEnv("PAPERCLIP_MULTI_PROJECT_WORKSPACE_SYNC", "false");
     database = await startEmbeddedPostgresTestDatabase("project-repositories");
@@ -123,7 +126,7 @@ suite("task project repository provisioning", () => {
       await drainHeartbeatRunsToQuiescence(db, sandboxHeartbeat);
       const [workspace] = await db.select().from(executionWorkspaces).where(eq(executionWorkspaces.sourceIssueId, issueId));
       expect(workspace).toMatchObject({ companyId, projectId, mode: "isolated_workspace", strategyType: "project_primary" });
-      expect(workspace.cwd).toContain(`/isolated-workspaces/${companyId}/${issueId}`);
+      expect(workspace.cwd).toContain(path.join("isolated-workspaces", companyId, issueId));
       expect(execute.mock.calls.filter(([input]) => input.runId === run!.id)).toHaveLength(1);
       const call = execute.mock.calls.find(([input]) => input.runId === run!.id)![0];
       expect(call.context.paperclipEnvironment.driver).toBe("sandbox");
@@ -342,7 +345,7 @@ suite("task project repository provisioning", () => {
       const hint = hints.find((entry) => entry.workspaceId === repositoryRows[index]!.id);
       expect(hint?.cwd).toBeTruthy();
       expect(await readFile(path.join(hint!.cwd, "README.md"), "utf8")).toBe(`repository ${index}`);
-      expect(execFileSync("git", ["rev-parse", "--show-toplevel"], { cwd: hint!.cwd, encoding: "utf8" }).trim()).toBe(await realpath(hint!.cwd));
+      expect(path.normalize(execFileSync("git", ["rev-parse", "--show-toplevel"], { cwd: hint!.cwd, encoding: "utf8" }).trim())).toBe(path.normalize(await realpath(hint!.cwd)));
     }
   }, 25_000);
 });
