@@ -166,7 +166,16 @@ upload_file() {
   local url="$1"
   local path="$2"
   local content_type="$3"
+  local original_filename="$4"
   local escaped_path
+  local staged_path=""
+  local upload_directory
+  local staged_basename
+  local response_basename
+  local form_path
+  local form_filename
+  local form_value
+  local config_value
   local response_file
   local status_code
   local curl_status=0
@@ -174,14 +183,69 @@ upload_file() {
 
   escaped_path="${path//\\/\\\\}"
   escaped_path="${escaped_path//\"/\\\"}"
-  response_file="$(helper_response_file)"
-  status_code="$(
-    curl -sS -X POST -w '%{http_code}' -o "$response_file" \
-      "$url" \
-      -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
-      -H "X-Paperclip-Run-Id: $PAPERCLIP_RUN_ID" \
-      -F "file=@\"${escaped_path}\";type=${content_type}"
-  )" || curl_status=$?
+  if ! response_file="$(helper_response_file)"; then
+    return 1
+  fi
+  case "$(uname -s 2>/dev/null || true)" in
+    MINGW*|MSYS*)
+      # Git-for-Windows curl converts UTF-8 form arguments through the active
+      # Windows code page. Keep curl's file and response arguments relative to
+      # the state directory; send the form configuration as UTF-8 stdin.
+      if ! staged_path="$(helper_response_file)"; then
+        rm -f "$response_file"
+        return 1
+      fi
+      if ! cp -- "$path" "$staged_path"; then
+        rm -f "$staged_path" "$response_file"
+        return 1
+      fi
+      upload_directory="$(dirname "$response_file")"
+      staged_basename="$(basename "$staged_path")"
+      response_basename="$(basename "$response_file")"
+      if [[ "$(dirname "$staged_path")" != "$upload_directory" || ! -d "$upload_directory" ]]; then
+        rm -f "$staged_path" "$response_file"
+        return 1
+      fi
+      if ! form_path="$(curl_form_config_escape "$staged_basename")" ||
+        ! form_filename="$(curl_form_config_escape "$original_filename")"; then
+        rm -f "$staged_path" "$response_file"
+        return 1
+      fi
+      form_value="file=@\"${form_path}\";type=${content_type};filename=\"${form_filename}\""
+      if ! config_value="$(curl_form_config_escape "$form_value")"; then
+        rm -f "$staged_path" "$response_file"
+        return 1
+      fi
+      if ! (cd -- "$upload_directory"); then
+        rm -f "$staged_path" "$response_file"
+        return 1
+      fi
+      status_code="$(
+        (
+          cd -- "$upload_directory" || exit 125
+          printf 'form = "%s"\n' "$config_value" | curl -sS -X POST -w '%{http_code}' -o "$response_basename" \
+            "$url" \
+            -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
+            -H "X-Paperclip-Run-Id: $PAPERCLIP_RUN_ID" \
+            --form-escape --config -
+        )
+      )" || curl_status=$?
+      rm -f "$staged_path"
+      if [[ "$curl_status" -eq 125 ]]; then
+        rm -f "$response_file"
+        return 1
+      fi
+      ;;
+    *)
+      status_code="$(
+        curl -sS -X POST -w '%{http_code}' -o "$response_file" \
+          "$url" \
+          -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
+          -H "X-Paperclip-Run-Id: $PAPERCLIP_RUN_ID" \
+          -F "file=@\"${escaped_path}\";type=${content_type}"
+      )" || curl_status=$?
+      ;;
+  esac
 
   if [[ "$curl_status" -ne 0 ]]; then
     rm -f "$response_file"
@@ -206,6 +270,18 @@ upload_file() {
 
   cat "$response_file"
   rm -f "$response_file"
+}
+
+# A curl config `form =` value is parsed first by the config reader and then by
+# curl's form parser. Apply this before embedding a value at each layer.
+curl_form_config_escape() {
+  local value="$1"
+  case "$value" in
+    *$'\r'*|*$'\n'*) printf 'CR/LF is not permitted in curl form values.\n' >&2; return 1 ;;
+  esac
+  value="${value//\\/\\\\}"
+  value="${value//\"/\\\"}"
+  printf '%s' "$value"
 }
 
 operation_lock_path=""
@@ -495,7 +571,8 @@ if [[ -z "$attachment" ]]; then
     upload_file \
       "$api_base/companies/$company_id/issues/$issue_id/attachments" \
       "$file_path" \
-      "$content_type"
+      "$content_type" \
+      "$original_filename"
   )" || upload_status=$?
   if [[ "$upload_status" -ne 0 ]]; then
     if [[ "$upload_status" -ne 75 ]]; then
