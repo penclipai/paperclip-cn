@@ -17,6 +17,9 @@ const evidenceClassifierPath = fileURLToPath(
 const workspaceDiffReprojectionPath = fileURLToPath(
   new URL("../services/provider-trace-workspace-diff-reprojection.ts", import.meta.url),
 );
+const fsOpsPath = fileURLToPath(
+  new URL("../../../scripts/fs-ops.mjs", import.meta.url),
+);
 
 describe("server package build script", () => {
   it("builds the compiled package entry during prepack", () => {
@@ -36,12 +39,10 @@ describe("server package build script", () => {
     const buildScript = packageJson.scripts?.build ?? "";
 
     expect(buildScript).toContain(
-      "mkdir -p dist/onboarding-assets dist/built-ins",
+      "node ../scripts/fs-ops.mjs cp --contents src/onboarding-assets dist/onboarding-assets",
     );
-    expect(buildScript).toContain(
-      "cp -R src/onboarding-assets/. dist/onboarding-assets/",
-    );
-    expect(buildScript).toContain("cp -R src/built-ins/. dist/built-ins/");
+    expect(buildScript).toContain("node ../scripts/fs-ops.mjs cp --contents src/built-ins dist/built-ins");
+    expect(buildScript).toContain("node ../scripts/fs-ops.mjs cp --contents src/services/scripts dist/services/scripts");
   });
 
   it("vendors the private runner runtime without a production workspace dependency", () => {
@@ -61,14 +62,14 @@ describe("server package build script", () => {
       "pnpm --filter @penclipai/paperclip-runner build",
     );
     expect(packageJson.scripts?.build).toContain(
-      "cp -Rf ../packages/paperclip-runner/dist/. dist/vendor/paperclip-runner/",
+      "node ../scripts/fs-ops.mjs cp --contents ../packages/paperclip-runner/dist dist/vendor/paperclip-runner",
     );
   });
 
   it("replaces an existing read-only image manifest with the build's copy step", () => {
     const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8"));
     const step = packageJson.scripts.build.split(" && ").find((command: string) =>
-      command.includes("../packages/paperclip-runner/dist/."));
+      command.includes("../packages/paperclip-runner/dist"));
     expect(step).toBeDefined();
     const [command, ...args] = step.split(" ");
     const root = mkdtempSync(path.join(tmpdir(), "runner-vendor-copy-"));
@@ -76,10 +77,13 @@ describe("server package build script", () => {
       const relative = "remote-provider-packs/linux-x64/provider-pack.json";
       const source = path.join(root, "packages/paperclip-runner/dist", relative);
       const destination = path.join(root, "server/dist/vendor/paperclip-runner", relative);
+      const fsOpsDestination = path.join(root, "scripts", "fs-ops.mjs");
       mkdirSync(path.dirname(source), { recursive: true });
       mkdirSync(path.dirname(destination), { recursive: true });
+      mkdirSync(path.dirname(fsOpsDestination), { recursive: true });
       writeFileSync(source, "qualified image identity", { mode: 0o444 });
       writeFileSync(destination, "previous image identity", { mode: 0o444 });
+      writeFileSync(fsOpsDestination, readFileSync(fsOpsPath));
       execFileSync(command, args, { cwd: path.join(root, "server") });
       expect(readFileSync(destination, "utf8")).toBe("qualified image identity");
     } finally {
