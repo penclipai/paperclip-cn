@@ -70,7 +70,7 @@ const support = externalDatabaseUrl
     afterAll(async () => {
       if (externalDatabaseUrl) await db?.$client.end();
       else await database?.cleanup();
-    });
+    }, process.platform === "win32" ? 60_000 : 30_000);
     async function seed(attempt = 1) {
       const companyId = randomUUID(),
         agentId = randomUUID(),

@@ -1,7 +1,6 @@
 import { createHash, randomUUID } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import {
-  chmod,
   mkdir,
   mkdtemp,
   readFile,
@@ -12,6 +11,7 @@ import {
 import { createServer } from "node:http";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 import { eq, sql } from "drizzle-orm";
 import {
   agents,
@@ -748,8 +748,14 @@ const recoveryFakeCodex = resolve(
     const codexCommandResolver = await vi.importActual<{ resolveCodexCommand: () => string }>(
       "../../../../packages/paperclip-runner/src/drivers/codex/codex-command.js",
     );
+    const codexAppServerDriver = await vi.importActual<{
+      createIsolatedCodexAppServerArgs: () => string[];
+    }>(
+      "../../../../packages/paperclip-runner/src/drivers/codex/codex-app-server-driver.js",
+    );
     const resolveFixtureCodex = vi.spyOn(codexCommandResolver, "resolveCodexCommand")
-      .mockReturnValue(join(bin, "codex"));
+      .mockReturnValue(process.execPath);
+    let fixtureCodexArgs: { mockRestore(): void } | undefined;
     process.env.PAPERCLIP_RUNNER_STATE_DIR = stateBase;
     try {
       await Promise.all(
@@ -759,13 +765,23 @@ const recoveryFakeCodex = resolve(
       );
       // Only the provider boundary is synthetic; driver, runnerd, authority
       // rotation, prior-owner DB checks and archive/replacement are real.
-      const quote = (value: string) => `'${value.replaceAll("'", "'\\''")}'`;
-      const command = join(bin, "codex");
+      // Node is a native executable on every supported host. Running this
+      // small launcher through the real runnerd avoids a POSIX shell shim,
+      // which Windows rejects with ERROR_BAD_EXE_FORMAT.
+      const fixtureLauncher = join(workspace, "fake-codex-launcher.mjs");
       await writeFile(
-        command,
-        `#!/bin/sh\nexec ${quote(process.execPath)} ${quote(recoveryFakeCodex)} "$CODEX_HOME/fake-state.json" 16\n`,
+        fixtureLauncher,
+        [
+          'import { join } from "node:path";',
+          'if (!process.env.CODEX_HOME) throw new Error("missing_fixture_codex_home");',
+          'process.argv.splice(2, Infinity, join(process.env.CODEX_HOME, "fake-state.json"), "16");',
+          `await import(${JSON.stringify(pathToFileURL(recoveryFakeCodex).href)});`,
+          "",
+        ].join("\n"),
       );
-      await chmod(command, 0o700);
+      fixtureCodexArgs = vi
+        .spyOn(codexAppServerDriver, "createIsolatedCodexAppServerArgs")
+        .mockReturnValue([fixtureLauncher]);
       await new Promise<void>((done) => server.listen(0, "127.0.0.1", done));
       const address = server.address();
       if (!address || typeof address === "string")
@@ -1234,6 +1250,7 @@ const recoveryFakeCodex = resolve(
         Promise.resolve().then(() => session.close({ reason: "Recovery fixture cleanup" })),
       ));
       const closeFailures = closed.filter((result) => result.status === "rejected");
+      fixtureCodexArgs?.mockRestore();
       resolveFixtureCodex.mockRestore();
       runnerPrpWebSocketInternals.resetForTests();
       server.closeAllConnections();
