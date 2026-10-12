@@ -1633,10 +1633,9 @@ describe("sandbox managed runtime", () => {
 
     await createTarballFromDirectory({ localDir, archivePath });
 
-    const { stdout: gitExecPath } = await execFile("git", ["--exec-path"], { encoding: "utf8" });
+    const { stdout: gitExecPath } = await execFile("git", ["--exec-path"]);
     const gitTar = path.resolve(String(gitExecPath).trim(), "../../../usr/bin/tar.exe");
     const { stdout } = await execFile(gitTar, ["--force-local", "-tf", archivePath], {
-      encoding: "utf8",
       maxBuffer: 32 * 1024 * 1024,
     });
     expect(stdout).toContain("雪-");
