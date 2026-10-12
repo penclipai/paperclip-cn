@@ -10,7 +10,10 @@ The release model is now commit-driven:
 3. Betas are manual, human-approved promotions of a chosen nightly.
 4. Stable releases promote a beta that has soaked for at least 3 days
    (bypass requires a written justification).
-5. Stable release notes live in `releases/vYYYY.MDD.P.md`.
+5. Stable release notes live in `releases/vYYYY.MDD.P.md`. They are
+   drafted automatically when a beta is published (as
+   `releases/beta/v<beta-version>.md` on `master`), edited during the
+   soak, and moved to the versioned name after the stable ships.
 6. Only stable releases get GitHub Releases.
 
 The user-facing guide to the channels is [`CHANNELS.md`](CHANNELS.md).
@@ -49,7 +52,7 @@ Important constraints:
 Every stable release has four separate surfaces:
 
 1. **Verification** — the exact git SHA passes typecheck, tests, and build
-2. **npm** — `penclip` and public workspace packages are published
+2. **npm** — `paperclipai` and public workspace packages are published
 3. **GitHub** — the stable release gets a git tag and GitHub Release
 4. **Website / announcements** — the stable changelog is published externally and announced
 
@@ -71,7 +74,12 @@ internal traceability tag.
   shipped as a beta at least 3 days earlier unless a written justification
   is provided
 - tags point at the original source commit, not a generated release commit
-- stable notes are always `releases/vYYYY.MDD.P.md`
+- stable notes are always `releases/vYYYY.MDD.P.md` in the end state: a
+  promoted beta's notes are drafted and edited at
+  `releases/beta/v<beta-version>.md` on `master` during the soak (the
+  promoted commit cannot carry a file named for a promotion date that was
+  unknown when it was created), and a post-stable canonicalization PR
+  moves them to the versioned name
 - canaries, nightlies, and betas never create GitHub Releases
 - canaries, nightlies, and betas never require changelog generation
 - Docker `:latest` moves only on stable releases; master builds publish
@@ -89,12 +97,11 @@ It:
 - computes the canary version for the current UTC date
 - publishes workspace packages dependency-first under npm dist-tag `canary`
 - waits for each package version to become registry-visible before continuing
-- publishes the user-facing `paperclipai` package last, so `paperclipai@canary` does not advance before the full package set exists
+- publishes the user-facing `paperclipai` package last, so `penclip@canary` does not advance before the full package set exists
 - verifies that `canary` resolves to the just-published version and that published internal dependencies exist on npm
-- installs `paperclipai@canary` into a clean temporary prefix as the final npm gate
+- installs `penclip@canary` into a clean temporary prefix as the final npm gate
 - fails by default if npm leaves `latest` pointing at a canary; use `--allow-canary-latest` only when that state is intentional
 - creates a git tag `canary/vYYYY.MDD.P-canary.N`
-- calls [`.github/workflows/release-smoke.yml`](../.github/workflows/release-smoke.yml) against the published `canary` dist-tag
 
 Users install canaries with:
 
@@ -135,7 +142,7 @@ push, and the Docker dispatch.
 Users install nightlies with:
 
 ```bash
-npx paperclipai@nightly onboard
+npx penclip@nightly onboard
 ```
 
 ### Beta
@@ -158,13 +165,20 @@ Betas are manual promotions. Dispatch
   dispatched at that tag to publish the `:beta` images
 - after publishing, the release smoke suite runs against the exact published
   beta version as verification
+- a `draft_stable_notes` job also generates the eventual stable's notes
+  skeleton — `releases/beta/v<beta-version>.md`, grouped from
+  `git log <last-stable-tag>..<source-commit>` — and force-pushes it to the
+  machine-owned `release-notes/v<beta-version>` branch. Open the PR from
+  the job-summary link (a human opens it so CI runs) and edit the notes
+  during the soak; the stable promotion reads the merged file from
+  `master`
 - `dry_run: true` previews the publish and skips the tag push, Docker
   dispatch, and post-publish smoke
 
 Users install betas with:
 
 ```bash
-npx paperclipai@beta onboard
+npx penclip@beta onboard
 ```
 
 #### Beta fix path: candidate branches
@@ -229,7 +243,11 @@ Before running stable:
 1. pick the beta you are promoting (its source commit is the `source_ref`)
 2. confirm the beta has soaked for 3 days with no open blockers
 3. resolve the target stable version with `./scripts/release.sh stable --date "$(date +%F)" --print-version`
-4. create or update `releases/vYYYY.MDD.P.md` on that source ref
+4. make sure the notes PR from the beta's draft branch
+   (`release-notes/v<beta-version>`, adding
+   `releases/beta/v<beta-version>.md`) is merged on `master` — or, for
+   candidate builds, that the candidate branch itself carries
+   `releases/vYYYY.MDD.P.md`
 5. run the stable workflow from that source ref
 
 Example:
@@ -242,67 +260,19 @@ The workflow:
 
 - re-verifies the exact source ref
 - computes the next stable patch slot for the chosen UTC date
+- resolves the release notes in preflight: `releases/vYYYY.MDD.P.md` at
+  the source commit (the candidate fix path) takes precedence, otherwise
+  `releases/beta/v<beta-version>.md` on `master` (a promoted beta). When
+  neither exists the run fails before the `npm-stable` approval gate with
+  the missing path named
 - publishes `YYYY.MDD.P` under npm dist-tag `latest`
 - creates git tag `vYYYY.MDD.P`
 - dispatches [`docker.yml`](../.github/workflows/docker.yml) at that tag to
   publish `:latest` and the versioned stable images
-- creates or updates the GitHub Release from `releases/vYYYY.MDD.P.md`
-- builds unsigned Electron desktop assets for Windows, macOS, and Linux with the same stable version injected into `electron-builder`
-- uploads those desktop assets to the same GitHub Release as downloadable artifacts
-- runs the reusable release smoke workflow against the published `latest` dist-tag
-
-### Post-Release Verification
-
-After a live stable release completes, verify the published surfaces directly:
-
-```bash
-npm view penclip@latest version dependencies dist-tags --json
-npm view <release-enabled-package>@latest version dependencies dist-tags --json
-gh release view vYYYY.MDD.P --repo penclipai/paperclip-cn --json tagName,name,isDraft,isPrerelease,publishedAt,url,assets
-git ls-remote --tags <paperclip-cn-remote> vYYYY.MDD.P
-gh run view <release-run-id> --repo penclipai/paperclip-cn --json status,conclusion,headSha,url,jobs
-```
-
-For stable releases, the GitHub Release assets should include the supported desktop installer set listed below. Do not use this checklist to record one-off version numbers or run ids.
-
-On Windows PowerShell, prefer inline environment variables inside bash when invoking release helpers:
-
-```powershell
-bash -c 'RELEASE_REMOTE=<paperclip-cn-remote> ./scripts/release.sh stable --date YYYY-MM-DD --print-version'
-```
-
-Do not assume `$env:RELEASE_REMOTE = "..."` has reached a nested bash process unless the command output proves it used the intended remote.
-
-### Desktop Installer Assets
-
-Stable releases now also publish desktop installers through [`.github/workflows/desktop-release.yml`](../.github/workflows/desktop-release.yml).
-
-Current contract:
-
-- Windows x64
-- macOS x64
-- macOS arm64
-- Linux x64
-- unsigned desktop artifacts first
-- stable live releases only
-- attached to the existing GitHub Release `vYYYY.MDD.P`
-- canaries do not publish desktop assets
-
-The desktop packaging workflow injects the stable version through `PAPERCLIP_DESKTOP_RELEASE_VERSION` so the installer file names follow the real release version instead of the package placeholder `0.0.1`.
-
-Notes:
-
-- macOS publishes separate x64 and arm64 builds in this phase
-- this phase does not attempt a universal macOS app
-- notarization/signing remains a follow-up task
-
-You can also run the workflow manually from GitHub Actions when you need a standalone packaging rerun:
-
-- `source_ref`: commit, branch, or tag to package
-- `release_version`: the desktop version to inject, for example `2026.413.0`
-- `artifact_name`: Actions artifact name
-- `upload_to_release`: whether to attach installers to an existing GitHub Release
-- `github_release_tag`: required when uploading, for example `v2026.413.0`
+- creates or updates the GitHub Release from the resolved notes file
+- for master-side beta notes, pushes a `release-notes/v<version>-canonicalize`
+  branch that `git mv`s them to `releases/vYYYY.MDD.P.md` — open and merge
+  its PR to restore the canonical layout
 
 ## Docker Image Tags
 
@@ -326,7 +296,7 @@ mapping keys off `github.ref` either way.
 ### Preview a canary locally
 
 ```bash
-RELEASE_REMOTE=<paperclip-cn-remote> ./scripts/release.sh canary --dry-run
+./scripts/release.sh canary --dry-run
 ```
 
 ### Preview a nightly locally
@@ -350,19 +320,17 @@ Requires HEAD to be a commit that already shipped a nightly (it must carry a
 ### Preview a stable locally
 
 ```bash
-RELEASE_REMOTE=<paperclip-cn-remote> ./scripts/release.sh stable --dry-run
+./scripts/release.sh stable --dry-run
 ```
-
-From PowerShell, use the inline bash form shown in Post-Release Verification when you need to guarantee the variable is visible to the shell script.
 
 ### Publish a stable locally
 
 This is mainly for emergency/manual use. The normal path is the GitHub workflow.
 
 ```bash
-RELEASE_REMOTE=<paperclip-cn-remote> ./scripts/release.sh stable
-git push <paperclip-cn-remote> refs/tags/vYYYY.MDD.P
-PUBLISH_REMOTE=<paperclip-cn-remote> ./scripts/create-github-release.sh YYYY.MDD.P
+./scripts/release.sh stable
+git push public-gh refs/tags/vYYYY.MDD.P
+PUBLISH_REMOTE=public-gh ./scripts/create-github-release.sh YYYY.MDD.P
 ```
 
 ## Stable Changelog Workflow
@@ -372,6 +340,12 @@ Stable changelog files live at:
 - `releases/vYYYY.MDD.P.md`
 
 Canaries do not get changelog files.
+
+The `draft_stable_notes` job seeds a deterministic skeleton (grouped
+commit subjects) on the `release-notes/v<beta-version>` branch at beta
+publish; the flows below turn that skeleton into narrative release notes
+during the soak. Run them against the draft branch's
+`releases/beta/v<beta-version>.md` and push to the notes PR.
 
 Recommended local generation flow:
 
@@ -518,7 +492,6 @@ Then fix forward with a new stable release.
 - [`scripts/release-package-map.mjs`](../scripts/release-package-map.mjs)
 - [`scripts/create-github-release.sh`](../scripts/create-github-release.sh)
 - [`scripts/rollback-latest.sh`](../scripts/rollback-latest.sh)
-- [`.github/workflows/desktop-release.yml`](../.github/workflows/desktop-release.yml)
 - [`doc/RELEASE-CHECKLIST.md`](RELEASE-CHECKLIST.md)
 - [`doc/PUBLISHING.md`](PUBLISHING.md)
 - [`doc/RELEASE-AUTOMATION-SETUP.md`](RELEASE-AUTOMATION-SETUP.md)

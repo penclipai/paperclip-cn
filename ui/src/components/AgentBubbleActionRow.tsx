@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import type {
   FeedbackDataSharingPreference,
   FeedbackVoteValue,
@@ -48,14 +49,15 @@ export function agentBubbleDateLabel(date: Date | string | undefined): string {
  * re-declaring the same button markup on each surface.
  */
 export function BubbleCopyButton({ copyText }: { copyText: string }) {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
 
   return (
     <button
       type="button"
       className="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-      title="Copy message"
-      aria-label="Copy message"
+      title={t("agentBubble.copyMessage", { defaultValue: "Copy message" })}
+      aria-label={t("agentBubble.copyMessage", { defaultValue: "Copy message" })}
       onClick={() => {
         void copyTextToClipboard(copyText)
           .then(() => {
@@ -179,6 +181,7 @@ export function IssueChatFeedbackButtons({
   termsUrl: string | null;
   onVote: (vote: FeedbackVoteValue, options?: { allowSharing?: boolean; reason?: string }) => Promise<void>;
 }) {
+  const { t } = useTranslation();
   const [isSaving, setIsSaving] = useState(false);
   const [optimisticVote, setOptimisticVote] = useState<FeedbackVoteValue | null>(null);
   const [reasonOpen, setReasonOpen] = useState(false);
@@ -258,8 +261,8 @@ export function IssueChatFeedbackButtons({
             ? "text-green-600 dark:text-green-400"
             : "text-muted-foreground hover:bg-accent hover:text-foreground",
         )}
-        title="Helpful"
-        aria-label="Helpful"
+        title={t("agentFeedback.helpful", { defaultValue: "Helpful" })}
+        aria-label={t("agentFeedback.helpful", { defaultValue: "Helpful" })}
         onClick={handleThumbsUp}
       >
         <ThumbsUp className="h-3.5 w-3.5" />
@@ -275,19 +278,19 @@ export function IssueChatFeedbackButtons({
                 ? "text-amber-600 dark:text-amber-400"
                 : "text-muted-foreground hover:bg-accent hover:text-foreground",
             )}
-            title="Needs work"
-            aria-label="Needs work"
+            title={t("agentFeedback.needsWork", { defaultValue: "Needs work" })}
+            aria-label={t("agentFeedback.needsWork", { defaultValue: "Needs work" })}
             onClick={handleThumbsDown}
           >
             <ThumbsDown className="h-3.5 w-3.5" />
           </button>
         </PopoverTrigger>
         <PopoverContent side="top" align="start" className="w-80 p-3">
-          <div className="mb-2 text-sm font-medium">What could have been better?</div>
+          <div className="mb-2 text-sm font-medium">{t("agentFeedback.improvePrompt", { defaultValue: "What could have been better?" })}</div>
           <Textarea
             value={downvoteReason}
             onChange={(event) => setDownvoteReason(event.target.value)}
-            placeholder="Add a short note"
+            placeholder={t("agentFeedback.notePlaceholder", { defaultValue: "Add a short note" })}
             className="min-h-20 resize-y bg-background text-sm"
             disabled={isSaving}
           />
@@ -302,7 +305,7 @@ export function IssueChatFeedbackButtons({
                 setDownvoteReason("");
               }}
             >
-              Dismiss
+              {t("common.dismiss", { defaultValue: "Dismiss" })}
             </Button>
             <Button
               type="button"
@@ -310,7 +313,7 @@ export function IssueChatFeedbackButtons({
               disabled={isSaving || !downvoteReason.trim()}
               onClick={handleSubmitReason}
             >
-              {isSaving ? "Saving..." : "Save note"}
+              {isSaving ? t("common.saving", { defaultValue: "Saving..." }) : t("agentFeedback.saveNote", { defaultValue: "Save note" })}
             </Button>
           </div>
         </PopoverContent>
@@ -341,7 +344,7 @@ export function IssueChatFeedbackButtons({
               <span className="font-medium text-foreground">Don't allow</span> to keep this vote
               and future votes local.
             </p>
-            <p>You can change this later in Instance Settings &gt; General.</p>
+            <p>You can change this later in Settings &gt; General.</p>
             {termsUrl ? (
               <a
                 href={termsUrl}

@@ -1,5 +1,4 @@
 import { test, expect, type Page } from "@playwright/test";
-import { localized } from "./localized-selectors";
 import {
   expectLandsOnFirstTaskWithoutDashboardBounce,
   instrumentNavLog,
@@ -19,7 +18,6 @@ import {
  * exactly that failing condition.
  */
 
-const MISSION = "Verify the first-task launch survives the wizard handoff.";
 const FIRST_TASK_TITLE = "Paperclip onboarding";
 
 /**
@@ -67,31 +65,32 @@ async function runOnboardingWizard(page: Page, companyName: string) {
 
   // Launcher card path (existing companies) — enter the wizard if the
   // route shows a launcher instead of opening the wizard directly.
-  const startBtn = page.getByRole("button", { name: localized.startOnboarding });
+  const startBtn = page.getByRole("button", { name: /Start Onboarding/i });
   if (await startBtn.count()) await startBtn.first().click();
 
   // Step 0: front door (skipped when the wizard opens on the create path).
-  const frontDoor = page.getByText(localized.buildNewTeam);
+  const frontDoor = page.getByText("Build a new company");
   if (await frontDoor.count()) await frontDoor.first().click();
 
   // Step 1: company name.
   await page.getByPlaceholder("Acme Corp").fill(companyName);
-  await page.getByRole("button", { name: localized.next }).click();
+  await page.getByRole("button", { name: /^Next/ }).click();
 
-  // Step 2: mission (direct path default).
-  await page.getByPlaceholder(localized.missionPlaceholder).fill(MISSION);
-  await page.getByRole("button", { name: localized.confirmMission }).click();
+  // Step 1's "Next" creates the company; the mission step no longer runs.
 
-  // Step 3: lead name (prefilled) → Next.
-  await page.getByPlaceholder(localized.chiefOfStaffPlaceholder).waitFor({ timeout: 15_000 });
-  await page.getByRole("button", { name: localized.next }).click();
+  // Step 3: the lead's role, then its name. The role gates "Next", and
+  // choosing one fills the name — so the walk only types here to override it.
+  await page.waitForSelector("#onboarding-agent-role", { timeout: 15_000 });
+  await page.locator("#onboarding-agent-role").click();
+  await page.getByRole("option", { name: "CEO", exact: true }).click();
+  await page.getByRole("button", { name: /^Next/ }).click();
 
   // Step 4: adapter (claude_local default); heartbeat is intercepted.
-  await page.getByRole("button", { name: localized.giveItAHeartbeat }).click();
+  await page.getByRole("button", { name: /^Connect$/ }).click();
 
   // Step 5: review → Get started creates the first task and opens its
   // detail page.
-  const getStarted = page.getByRole("button", { name: localized.getStarted });
+  const getStarted = page.getByRole("button", { name: /Get started/ });
   await getStarted.waitFor({ timeout: 20_000 });
   await getStarted.click();
 }

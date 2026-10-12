@@ -1,5 +1,4 @@
 import { useState, type ReactNode } from "react";
-import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { MarkdownBody } from "@/components/MarkdownBody";
 import { ImageGalleryModal, type GalleryMediaItem } from "@/components/ImageGalleryModal";
@@ -21,6 +20,8 @@ import type { TaskChatMessageItem } from "./task-chat-model";
 
 interface TaskChatBubbleProps {
   item: TaskChatMessageItem;
+  /** Action shown beside the queued state for an interruptible message. */
+  queuedAction?: ReactNode;
   /**
    * The settled run turn rendered on this bubble's footer line (round 9):
    * replaces the plain timestamp with "2:34 PM · ✓ Worked · 38s · 3 tools"
@@ -62,8 +63,7 @@ function galleryItemForImage(src: string, name?: string): GalleryMediaItem {
   };
 }
 
-export function TaskChatBubble({ item, attachedTurn, actions }: TaskChatBubbleProps) {
-  const { t } = useTranslation();
+export function TaskChatBubble({ item, queuedAction, attachedTurn, actions }: TaskChatBubbleProps) {
   // Clicking an embedded image opens the full-screen lightbox (with download);
   // arrow keys walk across the other images in the same bubble.
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
@@ -164,7 +164,7 @@ export function TaskChatBubble({ item, attachedTurn, actions }: TaskChatBubblePr
                   <AttachmentDescription className="max-w-48">{kind.label}</AttachmentDescription>
                 </AttachmentContent>
                 <AttachmentTrigger
-                  aria-label={t("issueAttachments.openAria", { filename: ref.name })}
+                  aria-label={`Open ${ref.name}`}
                   render={<a href={ref.url} target="_blank" rel="noreferrer" />}
                 />
               </Attachment>
@@ -173,8 +173,9 @@ export function TaskChatBubble({ item, attachedTurn, actions }: TaskChatBubblePr
         </AttachmentGroup>
       ) : null}
       {item.optimistic ? (
-        <span className="px-1 text-(length:--text-micro) text-muted-foreground">
-          {item.optimistic === "queued" ? t("Queued") : t("issueChat.sending")}
+        <span className="flex items-center gap-1 px-1 text-(length:--text-micro) text-muted-foreground">
+          <span>{item.optimistic === "queued" ? "Queued" : "Sending…"}</span>
+          {item.optimistic === "queued" ? queuedAction : null}
         </span>
       ) : attachedTurn ? (
         // The settled turn takes over the footer line: timestamp + "✓ Worked"

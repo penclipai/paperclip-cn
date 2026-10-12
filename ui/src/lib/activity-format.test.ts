@@ -66,38 +66,70 @@ describe("activity formatting", () => {
     expect(formatIssueActivityAction("issue.monitor_recovery_issue_created")).toBe("created a monitor recovery issue");
   });
 
-  it("uses locale keys for environment and built-in routine activity", () => {
-    expect(formatActivityVerb("environment.lease_acquired")).toBe("acquired environment lease");
-    expect(formatActivityVerb("environment.lease_released")).toBe("released environment lease");
-    expect(formatActivityVerb("built_in_agent.routine_reconciled")).toBe("built-in agent routine reconciled");
+  // PAP-16506 P4: agents can now resolve an interaction, including a review of
+  // their own work, so an outcome has to read as an outcome in the timeline
+  // instead of leaking the raw action id.
+  it("reads an interaction outcome as an outcome, whoever gave it", () => {
+    expect(formatIssueActivityAction("issue.thread_interaction_accepted")).toBe("accepted the request");
+    expect(formatIssueActivityAction("issue.thread_interaction_rejected")).toBe("rejected the request");
+    expect(formatIssueActivityAction("issue.thread_interaction_withdrawn")).toBe("withdrew the request");
+    expect(formatIssueActivityAction("issue.thread_interaction_expired")).toBe("expired the request");
+    expect(formatActivityVerb("issue.thread_interaction_accepted")).toBe("accepted the request on");
+    expect(formatActivityVerb("issue.thread_interaction_rejected")).toBe("rejected the request on");
   });
 
-  it("maps generated activity actions to locale-backed phrases", () => {
-    const expectedPhrases = {
-      "agent.instructions_file_updated": "updated agent instructions file",
-      "auth.agent_jwt_run_header_mismatch": "recorded agent JWT run header mismatch",
-      "built_in_agent.provisioned": "provisioned built-in agent",
-      "built_in_agent.reset": "reset built-in agent",
-      "built_in_agent.routine_reset": "reset built-in agent routine",
-      "company.skills_scanned": "scanned company skills",
-      "instance.settings.experimental_updated": "updated experimental instance settings",
-      "instance.settings.general_updated": "updated general instance settings",
-      "issue.file_resource_content_read": "read issue file content on",
-      "issue.file_resource_list": "listed issue files for",
-      "issue.file_resource_resolve": "resolved issue file reference on",
-      "issue.read_marked": "marked the issue as read",
-      "issue.thread_interaction_accepted": "accepted a thread interaction on",
-      "issue.thread_interaction_created": "created a thread interaction on",
-      "plugin.installed": "installed plugin",
-      "plugin.uninstalled": "uninstalled plugin",
-      "resource_membership.starred": "starred",
-      "resource_membership.unstarred": "unstarred",
-    };
+  // The accepted/rejected actions fire for every interaction kind, so only a
+  // confirmation may read as an approval.
+  it("says 'approved' only for a confirmation, never for a suggestion or a question", () => {
+    expect(formatIssueActivityAction("issue.thread_interaction_accepted", { interactionKind: "request_confirmation" }))
+      .toBe("approved the request");
+    expect(formatIssueActivityAction("issue.thread_interaction_accepted", { interactionKind: "request_checkbox_confirmation" }))
+      .toBe("approved the request");
+    expect(formatIssueActivityAction("issue.thread_interaction_accepted", { interactionKind: "suggest_tasks" }))
+      .toBe("accepted the task suggestions");
+    expect(formatIssueActivityAction("issue.thread_interaction_accepted", { interactionKind: "ask_user_questions" }))
+      .toBe("accepted the answers");
+    expect(formatIssueActivityAction("issue.thread_interaction_rejected", { interactionKind: "request_confirmation" }))
+      .toBe("rejected the request");
+    expect(formatIssueActivityAction("issue.thread_interaction_rejected", { interactionKind: "suggest_tasks" }))
+      .toBe("declined the task suggestions");
+    expect(formatActivityVerb("issue.thread_interaction_accepted", { interactionKind: "suggest_tasks" }))
+      .toBe("accepted the task suggestions on");
+  });
 
-    expect(Object.fromEntries(Object.keys(expectedPhrases).map((action) => [action, formatActivityVerb(action)])))
-      .toEqual(expectedPhrases);
-    expect(formatIssueActivityAction("issue.file_resource_resolve")).toBe("resolved an issue file reference");
-    expect(formatIssueActivityAction("issue.thread_interaction_accepted")).toBe("accepted a thread interaction");
+  it("keeps the neutral wording for a kind it does not know", () => {
+    expect(formatIssueActivityAction("issue.thread_interaction_accepted", { interactionKind: "request_item_verdicts" }))
+      .toBe("accepted the request");
+    expect(formatIssueActivityAction("issue.thread_interaction_accepted", { interactionKind: "future_kind" }))
+      .toBe("accepted the request");
+    expect(formatIssueActivityAction("issue.thread_interaction_accepted", { interactionKind: 7 }))
+      .toBe("accepted the request");
+  });
+
+  it("names the verb an actor chose on a stalled review", () => {
+    expect(formatIssueActivityAction("issue.stalled_review_decided", { action: "approve" }))
+      .toBe("approved the review");
+    expect(formatIssueActivityAction("issue.stalled_review_decided", { action: "request_changes" }))
+      .toBe("requested changes on the review");
+    expect(formatIssueActivityAction("issue.stalled_review_decided", { action: "send_back" }))
+      .toBe("sent the review back to work");
+    expect(formatActivityVerb("issue.stalled_review_decided", { action: "approve" }))
+      .toBe("approved the review on");
+  });
+
+  it("falls back to a generic verdict line when the decision verb is missing", () => {
+    expect(formatIssueActivityAction("issue.stalled_review_decided")).toBe("recorded a review verdict");
+    expect(formatIssueActivityAction("issue.stalled_review_decided", { action: "shrug" }))
+      .toBe("recorded a review verdict");
+  });
+
+  it("describes a review-policy change without calling the default 'none'", () => {
+    expect(formatIssueActivityAction("issue.updated", { reviewPolicy: null }))
+      .toBe("changed who can approve to anyone");
+    expect(formatIssueActivityAction("issue.updated", { reviewPolicy: "human_only" }))
+      .toBe("changed who can approve to human only");
+    expect(formatIssueActivityAction("issue.updated", { reviewPolicy: "not_creator" }))
+      .toBe("changed who can approve to anyone else");
   });
 
   it("uses plain next-step copy for successful-run handoff activity", () => {

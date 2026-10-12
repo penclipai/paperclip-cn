@@ -70,8 +70,9 @@ export function commentsToTaskChatItems(
       authorName =
         (comment.authorUserId && ctx.userLabelMap?.get(comment.authorUserId)) || undefined;
     }
+    const queued = comment.queueState === "queued" || comment.clientStatus === "queued";
     const optimistic =
-      comment.clientStatus === "queued"
+      queued
         ? "queued"
         : comment.clientStatus === "pending"
           ? "pending"
@@ -90,6 +91,7 @@ export function commentsToTaskChatItems(
       text: comment.body,
       timestamp: formatTaskChatTimestamp(comment.createdAt),
       optimistic,
+      queueTargetRunId: queued ? comment.queueTargetRunId ?? null : null,
       agentIcon,
       onBehalfOfUserName,
       // System notices carry their structured hints through to the render

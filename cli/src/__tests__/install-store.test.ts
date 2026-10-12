@@ -158,7 +158,7 @@ describe("managed install store", () => {
   it("reports managed provenance only for the payload selected by current", () => {
     const manifestPayload = payloadPathFor(paths, "npm", "1.0.0");
     const currentPayload = payloadPathFor(paths, "npm", "2.0.0");
-    const executable = path.join(manifestPayload, "node_modules", "paperclipai", "dist", "index.js");
+    const executable = path.join(manifestPayload, "node_modules", "penclip", "dist", "index.js");
     fs.mkdirSync(path.dirname(executable), { recursive: true });
     fs.writeFileSync(executable, "");
     fs.mkdirSync(currentPayload, { recursive: true });

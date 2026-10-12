@@ -3,13 +3,13 @@
   "version": "0.1.1",
   "description": "Daytona sandbox provider plugin for Paperclip environments",
   "license": "MIT",
-  "homepage": "https://github.com/paperclipai/paperclip",
+  "homepage": "https://github.com/penclipai/paperclip-cn",
   "bugs": {
-    "url": "https://github.com/paperclipai/paperclip/issues"
+    "url": "https://github.com/penclipai/paperclip-cn/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/paperclipai/paperclip",
+    "url": "https://github.com/penclipai/paperclip-cn",
     "directory": "packages/plugins/sandbox-providers/daytona"
   },
   "type": "module",
@@ -42,7 +42,7 @@
   ],
   "scripts": {
     "prebuild": "node ../../../../scripts/ensure-plugin-build-deps.mjs",
-    "build": "node ../../../../scripts/fs-ops.mjs rm dist && tsc",
+    "build": "node ../../../../scripts/fs-ops.mjs rm dist && tsc && node ../../../../scripts/fs-ops.mjs mkdir dist/scripts && node ../../../../scripts/fs-ops.mjs cp --contents src/scripts dist/scripts",
     "clean": "node ../../../../scripts/fs-ops.mjs rm dist",
     "typecheck": "node ../../../../scripts/ensure-plugin-build-deps.mjs && tsc --noEmit",
     "test": "vitest run --config vitest.config.ts",
@@ -53,8 +53,11 @@
     "@daytonaio/sdk": "0.203.0"
   },
   "devDependencies": {
-    "@types/node": "^24.6.0",
+    "@types/node": "^24.0.0",
     "typescript": "^5.7.3",
     "vitest": "^4.1.8"
+  },
+  "engines": {
+    "node": ">=24.11.0"
   }
 }

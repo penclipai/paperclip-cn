@@ -10,11 +10,11 @@ import {
   Square,
   TriangleAlert,
 } from "lucide-react";
-import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { copyTextToClipboard } from "@/lib/clipboard";
+import { translateInstant } from "../i18n";
 
 export type WorkspaceServiceControlState =
   | "stopped"
@@ -36,6 +36,9 @@ export type WorkspaceServiceControlEntry = {
   port?: number | null;
   /** Short human-readable failure summary, e.g. "dev exited with code 1, 12s ago". */
   failureDetail?: string | null;
+  /** HTTPS exposure lifecycle, intentionally separate from process health. */
+  exposureState?: "pending" | "ready" | "failed" | "cleanup_pending" | "removed" | null;
+  exposureDetail?: string | null;
   canStart?: boolean;
 };
 
@@ -62,28 +65,24 @@ function formatServiceUrl(url: string | null | undefined) {
   return url.replace(/^https?:\/\//, "").replace(/\/$/, "");
 }
 
-function statusMeta(entry: WorkspaceServiceControlEntry): {
-  labelKey: string;
-  defaultValue: string;
-  unhealthy: boolean;
-} {
+function statusMeta(entry: WorkspaceServiceControlEntry): { label: string; unhealthy: boolean } {
   switch (entry.state) {
     case "provisioning":
-      return { labelKey: "workspaceServiceControl.status.provisioning", defaultValue: "Provisioning…", unhealthy: false };
+      return { label: translateInstant("workspaceService.status.provisioning", { defaultValue: "Provisioning…" }), unhealthy: false };
     case "starting":
-      return { labelKey: "workspaceRuntime.status.starting", defaultValue: "Starting…", unhealthy: false };
+      return { label: translateInstant("workspaceService.status.starting", { defaultValue: "Starting…" }), unhealthy: false };
     case "stopping":
-      return { labelKey: "workspaceServiceControl.status.stopping", defaultValue: "Stopping…", unhealthy: false };
+      return { label: translateInstant("workspaceService.status.stopping", { defaultValue: "Stopping…" }), unhealthy: false };
     case "restarting":
-      return { labelKey: "workspaceServiceControl.status.restarting", defaultValue: "Restarting…", unhealthy: false };
+      return { label: translateInstant("workspaceService.status.restarting", { defaultValue: "Restarting…" }), unhealthy: false };
     case "failed":
-      return { labelKey: "workspaceRuntime.status.failed", defaultValue: "Failed", unhealthy: false };
+      return { label: translateInstant("workspaceService.status.failed", { defaultValue: "Failed" }), unhealthy: false };
     case "running":
       return entry.healthStatus === "unhealthy"
-        ? { labelKey: "workspaceRuntime.health.unhealthy", defaultValue: "Unhealthy", unhealthy: true }
-        : { labelKey: "workspaceRuntime.status.running", defaultValue: "Running", unhealthy: false };
+        ? { label: translateInstant("workspaceService.status.unhealthy", { defaultValue: "Unhealthy" }), unhealthy: true }
+        : { label: translateInstant("workspaceService.status.running", { defaultValue: "Running" }), unhealthy: false };
     default:
-      return { labelKey: "workspaceRuntime.status.stopped", defaultValue: "Stopped", unhealthy: false };
+      return { label: translateInstant("workspaceService.status.stopped", { defaultValue: "Stopped" }), unhealthy: false };
   }
 }
 
@@ -111,17 +110,16 @@ function StatusIndicator({ entry, className }: { entry: WorkspaceServiceControlE
 }
 
 function CopyUrlButton({ url, disabled }: { url: string; disabled?: boolean }) {
-  const { t } = useTranslation();
   const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">("idle");
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
   }, []);
   const copyLabel = copyState === "copied"
-    ? t("workspaceServiceControl.urlCopied", { defaultValue: "URL copied" })
+    ? translateInstant("workspaceService.copy.copied", { defaultValue: "URL copied" })
     : copyState === "failed"
-      ? t("workspaceServiceControl.copyFailed", { defaultValue: "Copy failed" })
-      : t("workspaceServiceControl.copyUrl", { defaultValue: "Copy URL" });
+      ? translateInstant("workspaceService.copy.failed", { defaultValue: "Copy failed" })
+      : translateInstant("workspaceService.copy.action", { defaultValue: "Copy URL" });
   return (
     <Button
       variant="ghost"
@@ -154,12 +152,11 @@ function CopyUrlButton({ url, disabled }: { url: string; disabled?: boolean }) {
 }
 
 function UrlSegment({ entry, compact }: { entry: WorkspaceServiceControlEntry; compact?: boolean }) {
-  const { t } = useTranslation();
   const displayUrl = formatServiceUrl(entry.url) ?? (entry.port ? `:${entry.port}` : null);
   const live = entry.state === "running" && Boolean(entry.url);
 
   if (!displayUrl) {
-    return <span className="font-mono text-xs text-muted-foreground/70">{t("workspaceServiceControl.noUrl", { defaultValue: "no url" })}</span>;
+    return <span className="font-mono text-xs text-muted-foreground/70">no url</span>;
   }
   return (
     <>
@@ -189,10 +186,10 @@ function UrlSegment({ entry, compact }: { entry: WorkspaceServiceControlEntry; c
           size="icon-xs"
           disabled={!live}
           className="text-muted-foreground hover:text-foreground"
-          title={t("workspaceServiceControl.openInNewTab", { defaultValue: "Open in new tab" })}
+          title="Open in new tab"
         >
           {live ? (
-            <a href={entry.url ?? undefined} target="_blank" rel="noreferrer" aria-label={t("workspaceServiceControl.openInNewTab", { defaultValue: "Open in new tab" })}>
+            <a href={entry.url ?? undefined} target="_blank" rel="noreferrer" aria-label="Open in new tab">
               <ExternalLink className="size-3" />
             </a>
           ) : (
@@ -211,12 +208,8 @@ function ActionSlots({
   entry: Pick<WorkspaceServiceControlEntry, "state" | "canStart">;
   onAction: (action: WorkspaceServiceControlAction) => void;
 }) {
-  const { t } = useTranslation();
   const transitional = isTransitional(entry.state);
   const canStart = entry.canStart ?? true;
-  const startLabel = t("workspaceRuntime.action.start", { defaultValue: "Start" });
-  const stopLabel = t("workspaceRuntime.action.stop", { defaultValue: "Stop" });
-  const restartLabel = t("workspaceRuntime.action.restart", { defaultValue: "Restart" });
 
   if (entry.state === "stopped") {
     return (
@@ -226,11 +219,11 @@ function ActionSlots({
         className="w-13 justify-center"
         disabled={!canStart}
         onClick={() => onAction("start")}
-        aria-label={startLabel}
-        title={startLabel}
+        aria-label="Start"
+        title="Start"
       >
         <Play className="size-3" />
-        {startLabel}
+        Start
       </Button>
     );
   }
@@ -243,8 +236,8 @@ function ActionSlots({
           size="icon-xs"
           disabled={!canStart}
           onClick={() => onAction("start")}
-          aria-label={startLabel}
-          title={startLabel}
+          aria-label="Start"
+          title="Start"
         >
           <Play className="size-3" />
         </Button>
@@ -253,8 +246,8 @@ function ActionSlots({
           size="icon-xs"
           disabled={!canStart}
           onClick={() => onAction("restart")}
-          aria-label={restartLabel}
-          title={restartLabel}
+          aria-label="Restart"
+          title="Restart"
           className="border border-border text-foreground"
         >
           <RotateCcw className="size-3" />
@@ -270,8 +263,8 @@ function ActionSlots({
         size="icon-xs"
         disabled={transitional}
         onClick={() => onAction("stop")}
-        aria-label={stopLabel}
-        title={stopLabel}
+        aria-label="Stop"
+        title="Stop"
         className="border border-border text-foreground"
       >
         <Square className="size-3" />
@@ -281,8 +274,8 @@ function ActionSlots({
         size="icon-xs"
         disabled={transitional || !canStart}
         onClick={() => onAction("restart")}
-        aria-label={restartLabel}
-        title={restartLabel}
+        aria-label="Restart"
+        title="Restart"
         className="border border-border text-foreground"
       >
         <RotateCcw className="size-3" />
@@ -291,19 +284,20 @@ function ActionSlots({
   );
 }
 
-function FailureDetail({
+function ServiceDetail({
   entry,
   onViewLogs,
 }: {
   entry: WorkspaceServiceControlEntry;
   onViewLogs?: () => void;
 }) {
-  const { t } = useTranslation();
-  if (entry.state !== "failed" || !entry.failureDetail) return null;
+  const detail = entry.exposureDetail ?? (entry.state === "failed" ? entry.failureDetail : null);
+  if (!detail) return null;
+  const exposureFailed = entry.exposureState === "failed" || entry.exposureState === "cleanup_pending";
   return (
-    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-      <span>{entry.failureDetail}</span>
-      {onViewLogs ? (
+    <div className={cn("flex items-center gap-1 text-xs", exposureFailed ? "text-destructive" : "text-muted-foreground")}>
+      <span>{detail}</span>
+      {onViewLogs && entry.state === "failed" ? (
         <>
           <span aria-hidden>·</span>
           <button
@@ -311,7 +305,7 @@ function FailureDetail({
             onClick={onViewLogs}
             className="font-medium text-foreground underline underline-offset-2 hover:text-foreground/80"
           >
-            {t("workspaceServiceControl.viewLogs", { defaultValue: "View logs" })}
+            View logs
           </button>
         </>
       ) : null}
@@ -330,16 +324,14 @@ function SingleServiceBar({
   onViewLogs?: () => void;
   className?: string;
 }) {
-  const { t } = useTranslation();
   const meta = statusMeta(entry);
-  const statusLabel = t(meta.labelKey, { defaultValue: meta.defaultValue });
   return (
     <div className={cn("flex w-full flex-col items-stretch gap-1 sm:w-auto sm:items-end", className)}>
       <div className="rounded-lg border border-border bg-background">
         <div className="flex h-9 items-center pl-3 pr-1.5">
           <div className="flex items-center gap-2 sm:min-w-24">
             <StatusIndicator entry={entry} />
-            <span className="whitespace-nowrap text-xs font-medium text-foreground">{statusLabel}</span>
+            <span className="whitespace-nowrap text-xs font-medium text-foreground">{meta.label}</span>
           </div>
           <div className="mx-3 hidden h-5 w-px bg-border sm:block" />
           <div className="hidden w-56 min-w-0 shrink-0 items-center gap-0.5 sm:flex">
@@ -357,7 +349,7 @@ function SingleServiceBar({
           <UrlSegment entry={entry} compact />
         </div>
       </div>
-      <FailureDetail entry={entry} onViewLogs={onViewLogs} />
+      <ServiceDetail entry={entry} onViewLogs={onViewLogs} />
     </div>
   );
 }
@@ -369,20 +361,19 @@ function ServicePopoverRow({
   entry: WorkspaceServiceControlEntry;
   onAction: (action: WorkspaceServiceControlAction, serviceKey: string | null) => void;
 }) {
-  const { t } = useTranslation();
   const meta = statusMeta(entry);
-  const statusLabel = t(meta.labelKey, { defaultValue: meta.defaultValue });
   const displayUrl = formatServiceUrl(entry.url);
   const live = entry.state === "running" && Boolean(entry.url);
-  const secondary = live
-    ? displayUrl
+  const exposureFailed = entry.exposureState === "failed" || entry.exposureState === "cleanup_pending";
+  const secondary = entry.exposureDetail
+    ? entry.exposureDetail
+    : live
+      ? displayUrl
     : entry.state === "starting" && entry.port
-      ? t("workspaceServiceControl.startingOnPort", { defaultValue: "starting on :{{port}}…", port: entry.port })
+      ? `starting on :${entry.port}…`
       : entry.state === "failed" && entry.failureDetail
         ? entry.failureDetail
-        : entry.port
-          ? t("workspaceServiceControl.statusOnPort", { defaultValue: "{{status}} · :{{port}}", status: statusLabel, port: entry.port })
-          : statusLabel;
+        : `${meta.label.toLowerCase().replace(/…$/, "")}${entry.port ? ` · :${entry.port}` : ""}`;
 
   return (
     <div className="flex items-center gap-3 py-2.5">
@@ -404,7 +395,16 @@ function ServicePopoverRow({
               <CopyUrlButton url={entry.url} />
             </>
           ) : (
-            <span className="min-w-0 truncate text-xs text-muted-foreground">{secondary}</span>
+            <span
+              className={cn(
+                "min-w-0 text-xs",
+                exposureFailed
+                  ? "whitespace-normal break-words text-destructive"
+                  : "truncate text-muted-foreground",
+              )}
+            >
+              {secondary}
+            </span>
           )}
         </div>
       </div>
@@ -428,7 +428,6 @@ function MultiServiceBar({
   defaultServicesOpen?: boolean;
   className?: string;
 }) {
-  const { t } = useTranslation();
   const [open, setOpen] = useState(defaultServicesOpen ?? false);
   const runningCount = services.filter((entry) => entry.state === "running").length;
   const anyTransitional = services.some((entry) => isTransitional(entry.state));
@@ -438,7 +437,7 @@ function MultiServiceBar({
 
   const aggregateEntry: WorkspaceServiceControlEntry = {
     key: "__all__",
-    name: t("workspaceServiceControl.allServices", { defaultValue: "All services" }),
+    name: "All services",
     state: anyTransitional
       ? "starting"
       : anyFailed
@@ -460,16 +459,16 @@ function MultiServiceBar({
               <button
                 type="button"
                 className="flex h-full items-center gap-2 rounded-l-lg pr-1 text-xs font-medium text-foreground hover:bg-accent"
-                aria-label={t("workspaceServiceControl.runningCountAria", { defaultValue: "{{runningCount}} of {{totalCount}} services running — show services", runningCount, totalCount: services.length })}
+                aria-label={`${runningCount} of ${services.length} services running — show services`}
               >
                 <StatusIndicator entry={aggregateEntry} />
-                <span className="whitespace-nowrap">{t("workspaceServiceControl.runningCount", { defaultValue: "{{runningCount}}/{{totalCount}} running", runningCount, totalCount: services.length })}</span>
+                <span className="whitespace-nowrap">{runningCount}/{services.length} running</span>
                 <ChevronDown className="size-3 text-muted-foreground" />
               </button>
             </PopoverTrigger>
             <PopoverContent align="end" className="w-96 p-0" onOpenAutoFocus={(event) => event.preventDefault()}>
               <div className="px-4 pb-1 pt-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                {t("workspaceServiceControl.servicesCount", { defaultValue: "Services · {{count}}", count: services.length })}
+                Services · {services.length}
               </div>
               <div className="divide-y divide-border px-4">
                 {services.map((entry) => (
@@ -477,9 +476,9 @@ function MultiServiceBar({
                 ))}
               </div>
               <div className="flex items-center gap-1 border-t border-border px-4 py-2">
-                <Button variant="ghost" size="xs" onClick={() => onAction("start", null)}>{t("workspaceServiceControl.startAll", { defaultValue: "Start all" })}</Button>
-                <Button variant="ghost" size="xs" onClick={() => onAction("stop", null)}>{t("workspaceServiceControl.stopAll", { defaultValue: "Stop all" })}</Button>
-                <Button variant="ghost" size="xs" onClick={() => onAction("restart", null)}>{t("workspaceServiceControl.restartAll", { defaultValue: "Restart all" })}</Button>
+                <Button variant="ghost" size="xs" onClick={() => onAction("start", null)}>Start all</Button>
+                <Button variant="ghost" size="xs" onClick={() => onAction("stop", null)}>Stop all</Button>
+                <Button variant="ghost" size="xs" onClick={() => onAction("restart", null)}>Restart all</Button>
                 {onManageServices ? (
                   <Button
                     variant="link"
@@ -487,7 +486,7 @@ function MultiServiceBar({
                     className="ml-auto text-muted-foreground"
                     onClick={onManageServices}
                   >
-                    {t("workspaceServiceControl.manageServices", { defaultValue: "Manage in Services tab →" })}
+                    Manage in Services tab →
                   </Button>
                 ) : null}
               </div>
@@ -501,7 +500,7 @@ function MultiServiceBar({
                 <UrlSegment entry={primary} />
               </>
             ) : (
-              <span className="font-mono text-xs text-muted-foreground/70">{t("workspaceServiceControl.noUrl", { defaultValue: "no url" })}</span>
+              <span className="font-mono text-xs text-muted-foreground/70">no url</span>
             )}
           </div>
           <div className="mx-3 hidden h-5 w-px bg-border sm:block" />

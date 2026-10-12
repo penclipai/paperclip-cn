@@ -25,7 +25,6 @@ jobs:
       - name: Block manual lockfile edits
         if: >-
           github.head_ref != 'chore/refresh-lockfile' &&
-          !startsWith(github.head_ref, 'codex/upstream-sync-') &&
           github.event.pull_request.user.login != 'dependabot[bot]'
         run: |
           # Diff the PR branch against its merge base so recent base-branch commits
@@ -46,16 +45,20 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: 24
-          package-manager-cache: false
 
       - name: Validate Dockerfile deps stage
         run: node ./scripts/check-docker-deps-stage.mjs
+
+      - name: Validate Node version policy
+        run: pnpm check:node-version
 
       - name: Reject git push in adapter/runtime code
         run: node ./scripts/check-no-git-push.mjs
 
       - name: Test no-git-push check
-        run: node --test ./scripts/check-no-git-push.test.mjs ./.github/scripts/tests/check-release-workflow.test.mjs
+        run: node --test ./scripts/check-no-git-push.test.mjs
+      - name: Test PR quality-gate scripts
+        run: node --test '.github/scripts/tests/*.test.mjs'
 
       - name: Test general-server shard partition
         run: node --test ./scripts/__tests__/run-vitest-stable-shard.test.mjs
@@ -129,7 +132,7 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: 24
-          package-manager-cache: false
+          cache: pnpm
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -213,7 +216,7 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: 24
-          package-manager-cache: false
+          cache: pnpm
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -272,7 +275,7 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: 24
-          package-manager-cache: false
+          cache: pnpm
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -289,9 +292,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # A successful PR run on 2026-08-04 (30876682788) spent 256s in
-          # serialized shard 2/4, making its 305s job the run's slowest check.
-          # Five shards reduce the measured 739s suite total to about 148s per
+          # A successful PR run on 2026-08-17 (32012408876) spent 291s in
+          # serialized shard 1/5 while its siblings ran 170-201s: round-robin
+          # clustered the heavy suites on one runner. Shards are now balanced
+          # by recorded duration (scripts/serialized-shard-durations.json),
+          # which levels the measured 968s suite total to about 194s per
           # runner before setup overhead.
           - shard_index: 0
             shard_count: 5
@@ -329,7 +334,7 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: 24
-          package-manager-cache: false
+          cache: pnpm
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -363,7 +368,7 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: 24
-          package-manager-cache: false
+          cache: pnpm
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -378,13 +383,12 @@ jobs:
       # workspace build sees a lockfile that matches the manifest.
       - name: Release canary dry run via release.sh internal build
         env:
-          RELEASE_REMOTE: origin
           USED_ARTIFACT_LOCKFILE: ${{ needs.policy.outputs.lockfile_regenerated || '0' }}
         run: |
           git checkout -B master HEAD
           if [ "$USED_ARTIFACT_LOCKFILE" = "1" ]; then
             git add pnpm-lock.yaml
-            if ! git diff --cached --quiet -- pnpm-lock.yaml; then
+            if ! git diff --cached --quiet; then
               git -c user.email=ci@paperclip.local -c user.name=CI \
                 commit --no-verify -m "ci(canary): stage regenerated lockfile"
             fi
@@ -439,7 +443,7 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: 24
-          package-manager-cache: false
+          cache: pnpm
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile

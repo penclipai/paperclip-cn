@@ -80,17 +80,35 @@ elif [[ ! -t 0 ]]; then
   comment="$(cat)"
 fi
 
-require_command jq
+# jq is preferred when available, but the helper is also used from the
+# Windows/Git-Bash workflow where jq is not part of the default toolchain.
+# Node is already a Paperclip runtime prerequisite, so keep a small fallback
+# that preserves JSON escaping without introducing another dependency.
+json_tool="jq"
+if ! command -v jq >/dev/null 2>&1; then
+  require_command node
+  json_tool="node"
+fi
 
-payload="$(
-  jq -nc \
-    --arg status "$status" \
-    --arg comment "$comment" \
-    '
-      (if $status == "" then {} else {status: $status} end) +
-      (if $comment == "" then {} else {comment: $comment} end)
-    '
-)"
+if [[ "$json_tool" == "jq" ]]; then
+  payload="$(
+    jq -nc \
+      --arg status "$status" \
+      --arg comment "$comment" \
+      '
+        (if $status == "" then {} else {status: $status} end) +
+        (if $comment == "" then {} else {comment: $comment} end)
+      '
+  )"
+else
+  payload="$(node -e '
+    const [status, comment] = process.argv.slice(1);
+    const payload = {};
+    if (status) payload.status = status;
+    if (comment) payload.comment = comment;
+    process.stdout.write(JSON.stringify(payload));
+  ' "$status" "$comment")"
+fi
 
 if [[ "$dry_run" == "1" ]]; then
   printf '%s\n' "$payload"
@@ -102,9 +120,76 @@ if [[ -z "${PAPERCLIP_API_URL:-}" || -z "${PAPERCLIP_API_KEY:-}" || -z "${PAPERC
   exit 1
 fi
 
-curl -sS -X PATCH \
-  "$PAPERCLIP_API_URL/api/issues/$issue_id" \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
-  -H "X-Paperclip-Run-Id: $PAPERCLIP_RUN_ID" \
-  -H 'Content-Type: application/json' \
-  --data-binary "$payload"
+# A successful PATCH always returns the updated issue JSON. An empty body or a
+# connection-level failure means the write did NOT land, even when a pipeline
+# exit code says otherwise, so verify the response instead of inferring success.
+# Two attempts total: the shared heartbeat policy stops a control-plane write
+# after two consecutive failures, so the helper must not send a third.
+max_attempts=2
+attempt=1
+while :; do
+  http_code=""
+  body=""
+  set +e
+  response="$(
+    curl -sS -m 30 -X PATCH \
+      "$PAPERCLIP_API_URL/api/issues/$issue_id" \
+      -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
+      -H "X-Paperclip-Run-Id: $PAPERCLIP_RUN_ID" \
+      -H 'Content-Type: application/json' \
+      --data-binary "$payload" \
+      -w '\n%{http_code}'
+  )"
+  curl_exit=$?
+  set -e
+
+  if [[ "$curl_exit" -eq 0 ]]; then
+    http_code="${response##*$'\n'}"
+    body="${response%$'\n'*}"
+  fi
+
+  if [[ "$curl_exit" -eq 0 && "$http_code" == 2* ]]; then
+    if [[ -z "$body" ]]; then
+      printf 'Issue update FAILED: HTTP %s with an empty response body. A real update echoes the issue JSON; treat this write as not saved.\n' "$http_code" >&2
+      exit 1
+    fi
+    if [[ -n "$status" ]]; then
+      if [[ "$json_tool" == "jq" ]]; then
+        returned_status="$(jq -r '.status // empty' <<<"$body" 2>/dev/null || true)"
+      else
+        returned_status="$(node -e '
+          let value = "";
+          try {
+            const parsed = JSON.parse(require("node:fs").readFileSync(0, "utf8"));
+            if (typeof parsed?.status === "string") value = parsed.status;
+          } catch {}
+          process.stdout.write(value);
+        ' <<<"$body" 2>/dev/null || true)"
+      fi
+      if [[ "$returned_status" != "$status" ]]; then
+        printf 'Issue update FAILED: server echoed status %s instead of requested %s.\n' "${returned_status:-<none>}" "$status" >&2
+        printf '%s\n' "$body" >&2
+        exit 1
+      fi
+    fi
+    printf '%s\n' "$body"
+    exit 0
+  fi
+
+  # 4xx (other than 429) is a definitive rejection; retrying cannot change it.
+  if [[ "$curl_exit" -eq 0 && "$http_code" == 4* && "$http_code" != "429" ]]; then
+    printf 'Issue update rejected (HTTP %s).\n' "$http_code" >&2
+    [[ -n "$body" ]] && printf '%s\n' "$body" >&2
+    exit 1
+  fi
+
+  if (( attempt >= max_attempts )); then
+    printf 'Issue update FAILED after %d attempts (curl exit %s, HTTP %s). The status/comment was NOT saved — report this write as failed, do not assume it landed.\n' "$max_attempts" "$curl_exit" "${http_code:-000}" >&2
+    [[ -n "$body" ]] && printf '%s\n' "$body" >&2
+    exit 1
+  fi
+
+  printf 'Issue update attempt %d/%d failed (curl exit %s, HTTP %s); retrying...\n' "$attempt" "$max_attempts" "$curl_exit" "${http_code:-000}" >&2
+  sleep $((attempt * 2))
+  attempt=$((attempt + 1))
+done

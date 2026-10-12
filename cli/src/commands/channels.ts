@@ -104,7 +104,7 @@ export async function channelsCommand(
     const version = entry.version ?? pc.yellow("unavailable");
     console.log(`  ${pc.bold(entry.channel.padEnd(8))} ${version}`);
     console.log(`  ${" ".repeat(8)} ${pc.dim(`${entry.cadence} — ${entry.audience}`)}`);
-    console.log(`  ${" ".repeat(8)} ${pc.dim(`npx paperclipai@${entry.distTag} onboard`)}`);
+    console.log(`  ${" ".repeat(8)} ${pc.dim(`npx penclip@${entry.distTag} onboard`)}`);
     console.log("");
   }
 
@@ -115,5 +115,5 @@ export async function channelsCommand(
   } else {
     console.log(`This install is version ${pc.bold(packageVersion)} on the ${pc.bold(currentChannel)} channel.`);
   }
-  console.log(`Docker images use the same names: ghcr.io/paperclipai/paperclip:{latest,beta,nightly,canary}`);
+  console.log(`Docker images use the same names: ghcr.io/penclipai/paperclip-cn:{latest,beta,nightly,canary}`);
 }

@@ -9,6 +9,7 @@ import {
   buildSandboxNpmInstallCommand,
   getAdapterSessionManagement,
 } from "@penclipai/adapter-utils";
+import type { AdapterLoginCapability } from "@penclipai/adapter-utils";
 import {
   execute as claudeExecute,
   listClaudeSkills,
@@ -19,24 +20,15 @@ import {
   sessionCodec as claudeSessionCodec,
   getQuotaWindows as claudeGetQuotaWindows,
   getConfigSchema as getClaudeConfigSchema,
+  CLAUDE_SETUP_TOKEN_COMMAND,
+  parseSetupTokenPrompt,
+  parseSetupTokenCredential,
 } from "@penclipai/adapter-claude-local/server";
 import {
   agentConfigurationDoc as claudeAgentConfigurationDoc,
   models as claudeModels,
   modelProfiles as claudeModelProfiles,
 } from "@penclipai/adapter-claude-local";
-import {
-  execute as codeBuddyExecute,
-  listCodeBuddySkills,
-  listCodeBuddyModels,
-  syncCodeBuddySkills,
-  testEnvironment as codeBuddyTestEnvironment,
-  sessionCodec as codeBuddySessionCodec,
-} from "@penclipai/adapter-codebuddy-local/server";
-import {
-  agentConfigurationDoc as codeBuddyAgentConfigurationDoc,
-  models as codeBuddyModels,
-} from "@penclipai/adapter-codebuddy-local";
 import {
   execute as codexExecute,
   listCodexSkills,
@@ -45,6 +37,8 @@ import {
   sessionCodec as codexSessionCodec,
   getQuotaWindows as codexGetQuotaWindows,
   getConfigSchema as getCodexConfigSchema,
+  CODEX_DEVICE_LOGIN_COMMAND,
+  parseDeviceLoginPrompt,
 } from "@penclipai/adapter-codex-local/server";
 import {
   agentConfigurationDoc as codexAgentConfigurationDoc,
@@ -95,6 +89,17 @@ import {
   models as grokModels,
 } from "@penclipai/adapter-grok-local";
 import {
+  execute as kimiExecute,
+  listKimiSkills,
+  syncKimiSkills,
+  testEnvironment as kimiTestEnvironment,
+  sessionCodec as kimiSessionCodec,
+} from "@penclipai/adapter-kimi-local/server";
+import {
+  agentConfigurationDoc as kimiAgentConfigurationDoc,
+  models as kimiModels,
+} from "@penclipai/adapter-kimi-local";
+import {
   createHermesGatewayServerAdapter,
   createHermesLocalServerAdapter,
 } from "@penclipai/hermes-paperclip-adapter";
@@ -133,34 +138,11 @@ import {
   agentConfigurationDoc as piAgentConfigurationDoc,
   modelProfiles as piModelProfiles,
 } from "@penclipai/adapter-pi-local";
-import {
-  execute as qwenExecute,
-  listQwenSkills,
-  syncQwenSkills,
-  testEnvironment as qwenTestEnvironment,
-  sessionCodec as qwenSessionCodec,
-} from "@penclipai/adapter-qwen-local/server";
-import {
-  agentConfigurationDoc as qwenAgentConfigurationDoc,
-  models as qwenModels,
-} from "@penclipai/adapter-qwen-local";
 import { BUILTIN_ADAPTER_TYPES } from "./builtin-adapter-types.js";
 import { buildExternalAdapters } from "./plugin-loader.js";
 import { getDisabledAdapterTypes } from "../services/adapter-plugin-store.js";
 import { processAdapter } from "./process/index.js";
 import { httpAdapter } from "./http/index.js";
-import type { AdapterExecutionContext, AdapterExecutionResult } from "./types.js";
-import { injectPaperclipRuntimePromptLayersIntoContext } from "./prompt-context.js";
-
-function wrapExecuteWithPaperclipPromptLayers(
-  execute: (ctx: AdapterExecutionContext) => Promise<AdapterExecutionResult>,
-) {
-  return async (ctx: AdapterExecutionContext): Promise<AdapterExecutionResult> =>
-    execute({
-      ...ctx,
-      context: injectPaperclipRuntimePromptLayersIntoContext(ctx.context),
-    });
-}
 
 function readConfiguredCommand(config: Record<string, unknown>, fallback: string): string {
   const value = typeof config.command === "string" ? config.command.trim() : "";
@@ -216,15 +198,51 @@ The standalone ACPX adapter has been retired. Use:
 Paperclip keeps this tombstone registered so stale acpx_local rows fail clearly instead of falling back to the process adapter.
 `;
 
+// The Claude interactive login capability. Claude runs `claude setup-token` on a
+// real pseudo-terminal. The user pastes a browser code back into the flow. The
+// flow uses a fixed host-side timeout and records a stored session identifier on
+// success. The capability data holds no secret; the callbacks return runtime
+// values only.
+const claudeLoginCapability: AdapterLoginCapability = {
+  panelMode: "submitted_browser_code",
+  timeoutPolicy: "fixed",
+  getCommand: () => CLAUDE_SETUP_TOKEN_COMMAND,
+  parsePrompt: (output) => {
+    const prompt = parseSetupTokenPrompt(output);
+    return prompt ? { url: prompt.url } : null;
+  },
+  captureCredential: (output) => {
+    const token = parseSetupTokenCredential(output);
+    return token === null ? null : Buffer.from(token, "utf8");
+  },
+  completionClaim: "storedSessionId",
+};
+
+// The Codex interactive login capability. Codex runs `codex login --device-auth`
+// on a real pseudo-terminal, because a pipe emits no login prompt. The flow shows
+// a one-time code that the user enters in the browser. The caller sets the
+// host-side timeout. The device-login flow writes its credential inside the
+// sandbox, so the capability declares no terminal credential capture and no
+// completion claim.
+const codexLoginCapability: AdapterLoginCapability = {
+  panelMode: "displayed_code",
+  timeoutPolicy: "caller_bounded",
+  getCommand: () => CODEX_DEVICE_LOGIN_COMMAND,
+  parsePrompt: (output) => {
+    const prompt = parseDeviceLoginPrompt(output);
+    return prompt ? { url: prompt.url, code: prompt.code } : null;
+  },
+};
+
 const claudeLocalAdapter: ServerAdapterModule = {
   type: "claude_local",
-  execute: stampClaudeAgentIdHeader(wrapExecuteWithPaperclipPromptLayers(claudeExecute)),
+  execute: stampClaudeAgentIdHeader(claudeExecute),
   testEnvironment: claudeTestEnvironment,
   acp: {
     agentId: "claude",
     skillsMode: "ephemeral",
     prerequisites: {
-      nodeRange: ">=22.12.0",
+      nodeRange: ">=24.11.0",
       packages: ["@agentclientprotocol/claude-agent-acp"],
     },
   },
@@ -245,6 +263,7 @@ const claudeLocalAdapter: ServerAdapterModule = {
   agentConfigurationDoc: claudeAgentConfigurationDoc,
   getConfigSchema: getClaudeConfigSchema,
   getQuotaWindows: claudeGetQuotaWindows,
+  loginCapability: claudeLoginCapability,
 };
 
 const acpxLocalAdapter: ServerAdapterModule = {
@@ -291,13 +310,13 @@ const acpxLocalAdapter: ServerAdapterModule = {
 
 const codexLocalAdapter: ServerAdapterModule = {
   type: "codex_local",
-  execute: wrapExecuteWithPaperclipPromptLayers(codexExecute),
+  execute: codexExecute,
   testEnvironment: codexTestEnvironment,
   acp: {
     agentId: "codex",
     skillsMode: "ephemeral",
     prerequisites: {
-      nodeRange: ">=22.13.0",
+      nodeRange: ">=24.11.0",
       packages: ["@agentclientprotocol/codex-acp"],
     },
   },
@@ -317,25 +336,12 @@ const codexLocalAdapter: ServerAdapterModule = {
   agentConfigurationDoc: codexAgentConfigurationDoc,
   getConfigSchema: getCodexConfigSchema,
   getQuotaWindows: codexGetQuotaWindows,
-};
-
-const codeBuddyLocalAdapter: ServerAdapterModule = {
-  type: "codebuddy_local",
-  execute: wrapExecuteWithPaperclipPromptLayers(codeBuddyExecute),
-  testEnvironment: codeBuddyTestEnvironment,
-  listSkills: listCodeBuddySkills,
-  syncSkills: syncCodeBuddySkills,
-  sessionCodec: codeBuddySessionCodec,
-  sessionManagement: getAdapterSessionManagement("codebuddy_local") ?? undefined,
-  models: codeBuddyModels,
-  listModels: listCodeBuddyModels,
-  supportsLocalAgentJwt: true,
-  agentConfigurationDoc: codeBuddyAgentConfigurationDoc,
+  loginCapability: codexLoginCapability,
 };
 
 const cursorLocalAdapter: ServerAdapterModule = {
   type: "cursor",
-  execute: wrapExecuteWithPaperclipPromptLayers(cursorExecute),
+  execute: cursorExecute,
   testEnvironment: cursorTestEnvironment,
   listSkills: listCursorSkills,
   syncSkills: syncCursorSkills,
@@ -369,13 +375,13 @@ const cursorCloudAdapter: ServerAdapterModule = {
 
 const geminiLocalAdapter: ServerAdapterModule = {
   type: "gemini_local",
-  execute: wrapExecuteWithPaperclipPromptLayers(geminiExecute),
+  execute: geminiExecute,
   testEnvironment: geminiTestEnvironment,
   acp: {
     agentId: "gemini",
     skillsMode: "ephemeral",
     prerequisites: {
-      nodeRange: ">=20.0.0",
+      nodeRange: ">=24.11.0",
       packages: ["@google/gemini-cli"],
     },
   },
@@ -416,6 +422,32 @@ const grokLocalAdapter: ServerAdapterModule = {
   agentConfigurationDoc: grokAgentConfigurationDoc,
 };
 
+const kimiLocalAdapter: ServerAdapterModule = {
+  type: "kimi_local",
+  execute: kimiExecute,
+  testEnvironment: kimiTestEnvironment,
+  acp: {
+    agentId: "kimi",
+    skillsMode: "ephemeral",
+    prerequisites: {
+      nodeRange: ">=20.0.0",
+      packages: ["@moonshot-ai/kimi-code"],
+    },
+  },
+  listSkills: listKimiSkills,
+  syncSkills: syncKimiSkills,
+  sessionCodec: kimiSessionCodec,
+  sessionManagement: getAdapterSessionManagement("kimi_local") ?? undefined,
+  models: kimiModels,
+  supportsLocalAgentJwt: true,
+  supportsInstructionsBundle: true,
+  instructionsPathKey: "instructionsFilePath",
+  requiresMaterializedRuntimeSkills: true,
+  getRuntimeCommandSpec: (config) =>
+    buildNpmRuntimeCommandSpec(config, "kimi", "@moonshot-ai/kimi-code"),
+  agentConfigurationDoc: kimiAgentConfigurationDoc,
+};
+
 const hermesGatewayAdapter = createHermesGatewayServerAdapter();
 
 const hermesLocalAdapter = createHermesLocalServerAdapter();
@@ -433,7 +465,7 @@ const openclawGatewayAdapter: ServerAdapterModule = {
 
 const openCodeLocalAdapter: ServerAdapterModule = {
   type: "opencode_local",
-  execute: wrapExecuteWithPaperclipPromptLayers(openCodeExecute),
+  execute: openCodeExecute,
   testEnvironment: openCodeTestEnvironment,
   listSkills: listOpenCodeSkills,
   syncSkills: syncOpenCodeSkills,
@@ -452,7 +484,7 @@ const openCodeLocalAdapter: ServerAdapterModule = {
 
 const piLocalAdapter: ServerAdapterModule = {
   type: "pi_local",
-  execute: wrapExecuteWithPaperclipPromptLayers(piExecute),
+  execute: piExecute,
   testEnvironment: piTestEnvironment,
   listSkills: listPiSkills,
   syncSkills: syncPiSkills,
@@ -468,22 +500,6 @@ const piLocalAdapter: ServerAdapterModule = {
   getRuntimeCommandSpec: (config) =>
     buildNpmRuntimeCommandSpec(config, "pi", "@mariozechner/pi-coding-agent"),
   agentConfigurationDoc: piAgentConfigurationDoc,
-};
-
-const qwenLocalAdapter: ServerAdapterModule = {
-  type: "qwen_local",
-  execute: wrapExecuteWithPaperclipPromptLayers(qwenExecute),
-  testEnvironment: qwenTestEnvironment,
-  listSkills: listQwenSkills,
-  syncSkills: syncQwenSkills,
-  sessionCodec: qwenSessionCodec,
-  sessionManagement: getAdapterSessionManagement("qwen_local") ?? undefined,
-  models: qwenModels,
-  supportsLocalAgentJwt: true,
-  supportsInstructionsBundle: true,
-  instructionsPathKey: "instructionsFilePath",
-  requiresMaterializedRuntimeSkills: true,
-  agentConfigurationDoc: qwenAgentConfigurationDoc,
 };
 
 const adaptersByType = new Map<string, ServerAdapterModule>();
@@ -502,14 +518,13 @@ function registerBuiltInAdapters() {
     acpxLocalAdapter,
     claudeLocalAdapter,
     codexLocalAdapter,
-    codeBuddyLocalAdapter,
     openCodeLocalAdapter,
     piLocalAdapter,
-    qwenLocalAdapter,
     cursorCloudAdapter,
     cursorLocalAdapter,
     geminiLocalAdapter,
     grokLocalAdapter,
+    kimiLocalAdapter,
     hermesGatewayAdapter,
     hermesLocalAdapter,
     openclawGatewayAdapter,

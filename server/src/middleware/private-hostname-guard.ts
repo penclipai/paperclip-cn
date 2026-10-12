@@ -42,12 +42,16 @@ export function resolvePrivateHostnameAllowSet(opts: { allowedHostnames: string[
   return allowSet;
 }
 
-function blockedHostnameMessage(hostname: string): string {
-  return (
-    `Hostname '${hostname}' is not allowed for this Paperclip instance. ` +
-    `If you want to allow this hostname, please run npx penclip allowed-hostname ${hostname}`
-  );
-}
+// The hostname comes from the request Host header, so an unauthenticated
+// requester controls it. Never put that value into the guidance command. An
+// operator or an agent can paste the guidance into a shell, and that outer
+// shell evaluates a backtick, `$( )`, or `$NAME` span in the host before any
+// CLI receives argv. A direct-exec form such as `npx` does not stop the
+// outer shell. Emit a static `<host>` placeholder and do not echo the raw request
+// value. The operator supplies the real hostname.
+const BLOCKED_HOSTNAME_MESSAGE =
+  "This hostname is not allowed for this Paperclip instance. " +
+  "If you want to allow a hostname, run npx penclip allowed-hostname <host>.";
 
 export function privateHostnameGuard(opts: {
   enabled: boolean;
@@ -82,7 +86,7 @@ export function privateHostnameGuard(opts: {
       return;
     }
 
-    const error = blockedHostnameMessage(hostname);
+    const error = BLOCKED_HOSTNAME_MESSAGE;
     if (wantsJson) {
       res.status(403).json({ error });
     } else {

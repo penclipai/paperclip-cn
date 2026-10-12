@@ -5,12 +5,10 @@ summary: CLI installation and setup
 
 The Paperclip CLI handles instance setup, diagnostics, and control-plane operations.
 
-Examples on this page use the installed `penclip` command. If you are running without installing first, prefix the command with `npx`.
-
 ## Usage
 
 ```sh
-penclip --help
+pnpm penclip --help
 ```
 
 ## Global Options
@@ -31,7 +29,7 @@ Company-scoped commands also accept `--company-id <id>`.
 For clean local instances, pass `--data-dir` on the command you run:
 
 ```sh
-penclip run --data-dir ./tmp/paperclip-dev
+npx penclip run --data-dir ./tmp/paperclip-dev
 ```
 
 ## Context Profiles
@@ -40,33 +38,33 @@ Store defaults to avoid repeating flags:
 
 ```sh
 # Set defaults
-penclip context set --api-base http://localhost:3100 --company-id <id>
+npx penclip context set --api-base http://localhost:3100 --company-id <id>
 
 # View current context
-penclip context show
+pnpm penclip context show
 
 # List profiles
-penclip context list
+pnpm penclip context list
 
 # Switch profile
-penclip context use default
+npx penclip context use default
 ```
 
 To avoid storing secrets in context, use an env var:
 
 ```sh
-penclip context set --api-key-env-var-name PAPERCLIP_API_KEY
+npx penclip context set --api-key-env-var-name PAPERCLIP_API_KEY
 export PAPERCLIP_API_KEY=...
 ```
 
 Secret operations are available under `paperclipai secrets`:
 
 ```sh
-pnpm penclip secrets declarations --company-id <company-id> --kind secret
-pnpm penclip secrets create --company-id <company-id> --name anthropic-api-key --value-env ANTHROPIC_API_KEY
-pnpm penclip secrets link --company-id <company-id> --name prod-stripe-key --provider aws_secrets_manager --external-ref <provider-ref>
-pnpm penclip secrets doctor --company-id <company-id>
-pnpm penclip secrets migrate-inline-env --company-id <company-id> --apply
+npx penclip secrets declarations --company-id <company-id> --kind secret
+npx penclip secrets create --company-id <company-id> --name anthropic-api-key --value-env ANTHROPIC_API_KEY
+npx penclip secrets link --company-id <company-id> --name prod-stripe-key --provider aws_secrets_manager --external-ref <provider-ref>
+npx penclip secrets doctor --company-id <company-id>
+npx penclip secrets migrate-inline-env --company-id <company-id> --apply
 ```
 
 Context is stored at `~/.paperclip/context.json`.

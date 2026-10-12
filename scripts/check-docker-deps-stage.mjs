@@ -8,6 +8,14 @@ const repoRoot = process.cwd();
 const dockerfilePath = path.join(repoRoot, "Dockerfile");
 const workspacePath = path.join(repoRoot, "pnpm-workspace.yaml");
 
+// Deprecated compatibility shims are intentionally not copied into the
+// production image. They remain workspace packages so maintainers can build or
+// migrate them locally, but the image must use the consolidated Hermes package
+// and keep the shim external-only.
+const EXCLUDED_IMAGE_PACKAGE_MANIFESTS = new Set([
+  "packages/adapters/hermes-gateway/package.json",
+]);
+
 function extractDepsStage(dockerfileText) {
   const lines = dockerfileText.split("\n");
   const captured = [];
@@ -140,7 +148,9 @@ function main() {
 
   const requiredPackageJsons = [...new Set(
     workspaceRoots.flatMap((root) => walkPackageJsonFiles(root, 2)),
-  )].sort();
+  )]
+    .filter((pkg) => !EXCLUDED_IMAGE_PACKAGE_MANIFESTS.has(pkg))
+    .sort();
 
   const copySources = parseCopySources(depsStage);
   const copyMatchers = copySources.map((source) => ({

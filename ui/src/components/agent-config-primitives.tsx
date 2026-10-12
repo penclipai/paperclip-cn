@@ -85,6 +85,7 @@ export function translateRoleLabel(
 /* ---- Primitive components ---- */
 
 export function HintIcon({ text }: { text: string }) {
+  const { t } = useTranslation();
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -93,17 +94,18 @@ export function HintIcon({ text }: { text: string }) {
         </button>
       </TooltipTrigger>
       <TooltipContent side="top" className="max-w-xs">
-        {text}
+        {t(text, { defaultValue: text })}
       </TooltipContent>
     </Tooltip>
   );
 }
 
 export function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+  const { t } = useTranslation();
   return (
     <div>
       <div className="flex items-center gap-1.5 mb-1">
-        <label className="text-xs text-muted-foreground">{label}</label>
+        <label className="text-xs text-muted-foreground">{t(label, { defaultValue: label })}</label>
         {hint && <HintIcon text={hint} />}
       </div>
       {children}
@@ -124,10 +126,11 @@ export function ToggleField({
   onChange: (v: boolean) => void;
   toggleTestId?: string;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-1.5">
-        <span className="text-xs text-muted-foreground">{label}</span>
+        <span className="text-xs text-muted-foreground">{t(label, { defaultValue: label })}</span>
         {hint && <HintIcon text={hint} />}
       </div>
       {/* Gallery feedback r3: was a hand-rolled h-5 w-9 pill with a bg-green-600
@@ -165,11 +168,12 @@ export function ToggleWithNumber({
   numberPrefix?: string;
   showNumber: boolean;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-1.5">
-          <span className="text-xs text-muted-foreground">{label}</span>
+          <span className="text-xs text-muted-foreground">{t(label, { defaultValue: label })}</span>
           {hint && <HintIcon text={hint} />}
         </div>
         <ToggleSwitch
@@ -179,14 +183,14 @@ export function ToggleWithNumber({
       </div>
       {showNumber && (
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          {numberPrefix && <span>{numberPrefix}</span>}
+          {numberPrefix && <span>{t(numberPrefix, { defaultValue: numberPrefix })}</span>}
           <input
             type="number"
             className="w-16 rounded-md border border-border px-2 py-0.5 bg-transparent outline-none text-xs font-mono text-center"
             value={number}
             onChange={(e) => onNumberChange(Number(e.target.value))}
           />
-          <span>{numberLabel}</span>
+          <span>{t(numberLabel, { defaultValue: numberLabel })}</span>
           {numberHint && <HintIcon text={numberHint} />}
         </div>
       )}
@@ -209,6 +213,7 @@ export function CollapsibleSection({
   bordered?: boolean;
   children: React.ReactNode;
 }) {
+  const { t } = useTranslation();
   return (
     <div className={cn(bordered && "border-t border-border")}>
       <button
@@ -217,7 +222,7 @@ export function CollapsibleSection({
       >
         {open ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
         {icon}
-        {title}
+        {t(title, { defaultValue: title })}
       </button>
       {open && <div className="px-4 pb-3">{children}</div>}
     </div>

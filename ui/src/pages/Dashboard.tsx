@@ -1,5 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useLocation } from "@/lib/router";
+import {
+  onboardingStepForCompany,
+  shouldRouteAgentlessCompanyToOnboarding,
+} from "../lib/onboarding-route";
+import { claimOnboardingOffer } from "../lib/onboarding-auto-open";
 import { Link } from "@/lib/router";
 import { useQuery } from "@tanstack/react-query";
 import { dashboardApi } from "../api/dashboard";
@@ -43,6 +49,7 @@ export function Dashboard() {
   const { t } = useTranslation();
   const { selectedCompanyId, companies } = useCompany();
   const { openOnboarding } = useDialogActions();
+  const location = useLocation();
   const { setBreadcrumbs } = useBreadcrumbs();
   const [animatedActivityIds, setAnimatedActivityIds] = useState<Set<string>>(new Set());
   const seenActivityIdsRef = useRef<Set<string>>(new Set());
@@ -55,9 +62,48 @@ export function Dashboard() {
     enabled: !!selectedCompanyId,
   });
 
+  // A company with no agent cannot do anything — no runs, no tasks, nothing
+  // to show. The banner below already says so and offers a link; this takes
+  // the customer there instead of asking them to notice.
+  //
+  // It also closes the gap a Cloud-provisioned stack falls into. Cloud creates
+  // the company before the tenant boots, so the companyless redirect never
+  // fires and a seeded customer lands here, on an empty dashboard, straight
+  // out of signup.
+  //
+  // Opened as the dialog rather than navigated to: the wizard is already
+  // mounted globally, so there is no route to race and no redirect to loop.
+  // Placed with the other hooks — the early returns below mean anything
+  // further down would be called conditionally.
+  //
+  // The company and the step are both passed. Opening with empty options would
+  // start the wizard at the front door with no company, and the new-company
+  // path there would create a *second* company instead of giving this one an
+  // agent.
+  const shouldOpenOnboarding = shouldRouteAgentlessCompanyToOnboarding({
+    pathname: location.pathname,
+    agentsLoaded: agents !== undefined,
+    agentCount: agents?.length ?? 0,
+  });
+  // Auto-open once per company. Every input to the effect sits behind a query,
+  // so a refetch re-runs it, and the customer can also navigate away and come
+  // back — both would otherwise call `openOnboarding` again and reopen a
+  // wizard that was deliberately closed. `claimOnboardingOffer` holds the
+  // companies already offered; see it for why that outlives this component.
+  useEffect(() => {
+    if (!shouldOpenOnboarding || !selectedCompanyId) return;
+    if (!claimOnboardingOffer(selectedCompanyId)) return;
+    openOnboarding({
+      companyId: selectedCompanyId,
+      initialStep: onboardingStepForCompany(),
+    });
+    // No mission lookup to wait on any more: the step this opens is the same
+    // whatever the goals say, so waiting only delayed the open.
+  }, [shouldOpenOnboarding, selectedCompanyId, openOnboarding]);
+
   useEffect(() => {
     setBreadcrumbs([{ label: t("dashboard.title") }]);
-  }, [setBreadcrumbs, t]);
+  }, [setBreadcrumbs]);
 
   const dashboardQueryKey = queryKeys.dashboard(selectedCompanyId!);
   const sharedDashboard = useSharedPollingQuery({
@@ -198,7 +244,7 @@ export function Dashboard() {
       return (
         <EmptyState
           icon={LayoutDashboard}
-          message={t("dashboard.welcome")}
+          message="Welcome to Paperclip. Set up your first company and agent to get started."
           action={t("dashboard.getStarted")}
           onAction={openOnboarding}
         />
@@ -224,14 +270,14 @@ export function Dashboard() {
           <div className="flex items-center gap-2.5">
             <Bot className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
             <p className="text-sm text-amber-900 dark:text-amber-100">
-              {t("dashboard.noAgents")}
+              You have no agents.
             </p>
           </div>
           <button
-            onClick={() => openOnboarding({ initialStep: 2, companyId: selectedCompanyId! })}
+            onClick={() => openOnboarding({ initialStep: 3, companyId: selectedCompanyId! })}
             className="text-sm font-medium text-amber-700 hover:text-amber-900 dark:text-amber-300 dark:hover:text-amber-100 underline underline-offset-2 shrink-0"
           >
-            {t("dashboard.createOneHere")}
+            Create one here
           </button>
         </div>
       )}
@@ -246,19 +292,15 @@ export function Dashboard() {
                 <PauseCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-700 dark:text-red-300" />
                 <div>
                   <p className="text-sm font-medium text-red-950 dark:text-red-50">
-                    {t("dashboard.activeBudgetIncidents", { count: data.budgets.activeIncidents })}
+                    {data.budgets.activeIncidents} active budget incident{data.budgets.activeIncidents === 1 ? "" : "s"}
                   </p>
                   <p className="text-xs text-red-900/70 dark:text-red-100/70">
-                    {t("dashboard.budgetSummary", {
-                      pausedAgents: data.budgets.pausedAgents,
-                      pausedProjects: data.budgets.pausedProjects,
-                      pendingApprovals: data.budgets.pendingApprovals,
-                    })}
+                    {data.budgets.pausedAgents} agents paused · {data.budgets.pausedProjects} projects paused · {data.budgets.pendingApprovals} pending budget approvals
                   </p>
                 </div>
               </div>
               <Link to="/costs" className="text-sm underline underline-offset-2 text-red-900 dark:text-red-100">
-                {t("dashboard.openBudgets")}
+                Open budgets
               </Link>
             </div>
           ) : null}
@@ -271,11 +313,9 @@ export function Dashboard() {
               to="/agents"
               description={
                 <span>
-                  {t("dashboard.agentSummary", {
-                    running: data.agents.running,
-                    paused: data.agents.paused,
-                    errors: data.agents.error,
-                  })}
+                  {data.agents.running} running{", "}
+                  {data.agents.paused} paused{", "}
+                  {data.agents.error} errors
                 </span>
               }
             />
@@ -286,10 +326,8 @@ export function Dashboard() {
               to="/issues"
               description={
                 <span>
-                  {t("dashboard.taskSummary", {
-                    open: data.tasks.open,
-                    blocked: data.tasks.blocked,
-                  })}
+                  {data.tasks.open} open{", "}
+                  {data.tasks.blocked} blocked
                 </span>
               }
             />
@@ -301,10 +339,7 @@ export function Dashboard() {
               description={
                 <span>
                   {data.costs.monthBudgetCents > 0
-                    ? t("dashboard.budgetUsage", {
-                      percent: data.costs.monthUtilizationPercent,
-                      budget: formatCents(data.costs.monthBudgetCents),
-                    })
+                    ? `${data.costs.monthUtilizationPercent}% of ${formatCents(data.costs.monthBudgetCents)} budget`
                     : t("dashboard.unlimitedBudget")}
                 </span>
               }
@@ -317,7 +352,7 @@ export function Dashboard() {
               description={
                 <span>
                   {data.budgets.pendingApprovals > 0
-                    ? t("dashboard.budgetOverridesAwaitingReview", { count: data.budgets.pendingApprovals })
+                    ? `${data.budgets.pendingApprovals} budget overrides awaiting board review`
                     : t("dashboard.awaitingBoardReview")}
                 </span>
               }
@@ -332,11 +367,11 @@ export function Dashboard() {
             </ChartCard>
             {/* PAP-411: "Tasks by Priority" chart hidden behind SHOW_TASK_PRIORITY_UI. */}
             {SHOW_TASK_PRIORITY_UI && (
-              <ChartCard title={t("dashboard.issuesByPriority")} subtitle={t("dashboard.last14Days")}>
+              <ChartCard title={t("Tasks by Priority")} subtitle={t("dashboard.last14Days")}>
                 <PriorityChart issues={issues ?? []} />
               </ChartCard>
             )}
-            <ChartCard title={t("dashboard.issuesByStatus")} subtitle={t("dashboard.last14Days")}>
+            <ChartCard title={t("Tasks by Status")} subtitle={t("dashboard.last14Days")}>
               <IssueStatusChart issues={issues ?? []} />
             </ChartCard>
             <ChartCard title={t("dashboard.successRate")} subtitle={t("dashboard.last14Days")}>
@@ -357,7 +392,7 @@ export function Dashboard() {
             {recentActivity.length > 0 && (
               <div className="min-w-0">
                 <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-                  {t("dashboard.recentActivity")}
+                  Recent Activity
                 </h3>
                 <Card className="block py-0 divide-y divide-border overflow-hidden">
                   {recentActivity.map((event) => (
@@ -378,7 +413,7 @@ export function Dashboard() {
             {/* Recent Tasks */}
             <div className="min-w-0">
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-                {t("dashboard.recentTasks")}
+                Recent Tasks
               </h3>
               {recentIssues.length === 0 ? (
                 <Card className="block p-4">

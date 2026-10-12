@@ -328,21 +328,23 @@ export function TaskChatComposer({
     const reassignment = hasReassignment ? parseAssigneeValue(assigneeValue) : undefined;
     const reopen = shouldImplicitlyReopenComment(issueStatus, assigneeValue) ? true : undefined;
 
+    // The thread renders the outgoing comment optimistically, so remove its
+    // text from the composer at the same time. The editor remains writable for
+    // the next draft while the request is pending.
+    bodyRef.current = "";
+    if (draftTimer.current) {
+      clearTimeout(draftTimer.current);
+      draftTimer.current = null;
+    }
+    if (draftKey) clearDraft(draftKey);
+    setBody("");
     setSubmitting(true);
     try {
       if (pendingMode !== workMode && onWorkModeChange) {
         await onWorkModeChange(pendingMode);
       }
       await onAdd(fullBody, reopen, reassignment);
-      if (bodyRef.current === submittedBody) {
-        bodyRef.current = "";
-        if (draftTimer.current) {
-          clearTimeout(draftTimer.current);
-          draftTimer.current = null;
-        }
-        if (draftKey) clearDraft(draftKey);
-        setBody("");
-      } else if (draftKey) {
+      if (draftKey && bodyRef.current) {
         // The editor stays writable while the request is pending. Preserve
         // text entered after this submission started as the next draft.
         saveDraft(draftKey, bodyRef.current);
@@ -354,7 +356,17 @@ export function TaskChatComposer({
         setPendingAssignee(null);
       }
     } catch {
-      // Keep the body and its draft available for retry.
+      // Restore the failed message for retry without discarding a next draft
+      // that was entered while the request was pending.
+      const nextDraft = bodyRef.current;
+      const restoredBody = nextDraft ? `${submittedBody}\n\n${nextDraft}` : submittedBody;
+      bodyRef.current = restoredBody;
+      if (draftTimer.current) {
+        clearTimeout(draftTimer.current);
+        draftTimer.current = null;
+      }
+      if (draftKey) saveDraft(draftKey, restoredBody);
+      setBody(restoredBody);
     } finally {
       setSubmitting(false);
     }
@@ -363,7 +375,7 @@ export function TaskChatComposer({
   return (
     <div
       className={cn(
-        "rounded-xl border border-input bg-card p-(--sz-18px) shadow-(--shadow-extract-7) transition-[border-color,box-shadow] focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/15",
+        "paperclip-task-chat-composer rounded-xl border border-input bg-card p-(--sz-18px) shadow-(--shadow-extract-7) transition-[border-color,box-shadow] focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/15",
       )}
       onKeyDownCapture={(e) => {
         // Shift+Tab cycles the pending mode; captured on the wrapper so it
@@ -392,7 +404,7 @@ export function TaskChatComposer({
           className={cn(disabled && "opacity-60")}
           contentClassName={
             mobile
-              ? "max-h-(--sz-28dvh) min-h-(--sz-48px) overflow-y-auto px-1 py-1 text-base scrollbar-auto-hide"
+              ? "max-h-(--sz-28dvh) min-h-(--sz-72px) overflow-y-auto px-1 py-1 text-base scrollbar-auto-hide"
               : "max-h-(--sz-28dvh) min-h-(--sz-48px) overflow-y-auto px-1 py-1 text-sm scrollbar-auto-hide"
           }
         />

@@ -11,14 +11,9 @@ describe("server package build script", () => {
     };
     const buildScript = packageJson.scripts?.build ?? "";
 
-    expect(buildScript).toContain(
-      "node ../scripts/fs-ops.mjs mkdir dist/onboarding-assets dist/built-ins",
-    );
-    expect(buildScript).toContain(
-      "node ../scripts/fs-ops.mjs cp src/onboarding-assets dist/onboarding-assets --contents",
-    );
-    expect(buildScript).toContain(
-      "node ../scripts/fs-ops.mjs cp src/built-ins dist/built-ins --contents",
-    );
+    expect(buildScript).toContain("mkdir -p dist/onboarding-assets dist/built-ins dist/services/scripts");
+    expect(buildScript).toContain("cp -R src/onboarding-assets/. dist/onboarding-assets/");
+    expect(buildScript).toContain("cp -R src/built-ins/. dist/built-ins/");
+    expect(buildScript).toContain("cp -R src/services/scripts/. dist/services/scripts/");
   });
 });

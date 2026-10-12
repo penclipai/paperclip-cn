@@ -1,5 +1,5 @@
-import { useTranslation } from "react-i18next";
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AGENT_ADAPTER_TYPES } from "@penclipai/shared";
 import type { AgentAdapterType, JoinRequest } from "@penclipai/shared";
@@ -9,13 +9,10 @@ import { useCompany } from "@/context/CompanyContext";
 import { Link, useNavigate, useParams } from "@/lib/router";
 import { accessApi } from "../api/access";
 import { authApi } from "../api/auth";
-import { companiesListQueryOptions } from "../api/companies-query";
+import { fetchCompanyListForCurrentAccount, useCompanyListQuery } from "../api/companies-query";
 import { healthApi } from "../api/health";
 import { getAdapterLabel } from "../adapters/adapter-display-registry";
-import {
-  clearPendingInviteToken,
-  rememberPendingInviteToken,
-} from "../lib/invite-memory";
+import { clearPendingInviteToken, rememberPendingInviteToken } from "../lib/invite-memory";
 import { queryKeys } from "../lib/queryKeys";
 import { formatDate } from "../lib/utils";
 
@@ -27,6 +24,7 @@ const ENABLED_INVITE_ADAPTERS = new Set([
   "claude_local",
   "codex_local",
   "gemini_local",
+  "kimi_local",
   "opencode_local",
   "pi_local",
   "cursor",
@@ -38,9 +36,7 @@ function readNestedString(value: unknown, path: string[]): string | null {
     if (!current || typeof current !== "object") return null;
     current = (current as Record<string, unknown>)[segment];
   }
-  return typeof current === "string" && current.trim().length > 0
-    ? current
-    : null;
+  return typeof current === "string" && current.trim().length > 0 ? current : null;
 }
 
 const fieldClassName =
@@ -171,10 +167,7 @@ function AwaitingJoinApprovalPanel({
 
   return (
     <div className="min-h-screen bg-zinc-950 px-6 py-12 text-zinc-100">
-      <div
-        className="mx-auto max-w-md border border-zinc-800 bg-zinc-950 p-6"
-        data-testid="invite-pending-approval"
-      >
+      <div className="mx-auto max-w-md border border-zinc-800 bg-zinc-950 p-6" data-testid="invite-pending-approval">
         <div className="flex items-center gap-3">
           <InviteCompanyLogo
             companyDisplayName={companyDisplayName}
@@ -182,50 +175,33 @@ function AwaitingJoinApprovalPanel({
             companyBrandColor={companyBrandColor}
             className="h-12 w-12 border border-zinc-800 rounded-none"
           />
-          <h1 className="text-lg font-semibold">
-            {t("inviteLanding.requestToJoin", {
-              company: companyDisplayName,
-            })}
-          </h1>
+          <h1 className="text-lg font-semibold">Request to join {companyDisplayName}</h1>
         </div>
         <div className="mt-4 space-y-3">
           <p className="text-sm text-zinc-400">
-            {t("inviteLanding.awaitingApprovalBody", {
-              approver: approverLabel,
-            })}
+            Your request is still awaiting approval. {approverLabel} must approve your request to join.
           </p>
           <div className="border border-zinc-800 p-3">
-            <p className="text-xs text-zinc-500 mb-1">
-              {t("inviteLanding.approvalPage")}
-            </p>
-            <p className="text-sm text-zinc-200">
-              {t("inviteLanding.companySettingsMembers")}
-            </p>
+            <p className="text-xs text-zinc-500 mb-1">{t("inviteLanding.approvalPage")}</p>
+            <p className="text-sm text-zinc-200">Settings → Members</p>
           </div>
           <p className="text-sm text-zinc-400">
-            {t("inviteLanding.askThemToVisitPrefix")}
-            <span className="text-zinc-200">
-              {t("inviteLanding.companySettingsMembers")}
-            </span>
-            {t("inviteLanding.askThemToVisitSuffix")}
+            Ask them to visit <span className="text-zinc-200">Settings → Members</span> to approve your request.
           </p>
           <p className="text-xs text-zinc-500">
-            {t("inviteLanding.refreshAfterApproval")}
+            Refresh this page after you've been approved — you'll be redirected automatically.
           </p>
         </div>
         {claimSecret && claimApiKeyPath ? (
           <div className="mt-4 space-y-1 border border-zinc-800 p-3 text-xs text-zinc-400">
-            <div className="text-zinc-200">
-              {t("inviteLanding.claimSecret")}
-            </div>
+            <div className="text-zinc-200">{t("inviteLanding.claimSecret")}</div>
             <div className="font-mono break-all">{claimSecret}</div>
             <div className="font-mono break-all">POST {claimApiKeyPath}</div>
           </div>
         ) : null}
         {onboardingTextUrl ? (
           <div className="mt-4 text-xs text-zinc-400">
-            {t("inviteLanding.onboarding")}{" "}
-            <span className="font-mono break-all">{onboardingTextUrl}</span>
+            Onboarding: <span className="font-mono break-all">{onboardingTextUrl}</span>
           </div>
         ) : null}
       </div>
@@ -245,13 +221,9 @@ export function InviteLandingPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [agentName, setAgentName] = useState("");
-  const [adapterType, setAdapterType] =
-    useState<AgentAdapterType>("claude_local");
+  const [adapterType, setAdapterType] = useState<AgentAdapterType>("claude_local");
   const [capabilities, setCapabilities] = useState("");
-  const [result, setResult] = useState<{
-    kind: "bootstrap" | "join";
-    payload: unknown;
-  } | null>(null);
+  const [result, setResult] = useState<{ kind: "bootstrap" | "join"; payload: unknown } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [authFeedback, setAuthFeedback] = useState<AuthFeedback | null>(null);
   const [autoAcceptStarted, setAutoAcceptStarted] = useState(false);
@@ -274,11 +246,31 @@ export function InviteLandingPage() {
     retry: false,
   });
 
-  const companiesQuery = useQuery({
-    ...companiesListQueryOptions,
+  // Whose list this is, is no longer this page's problem: the entry is keyed by
+  // account, so another account's list is unreachable rather than merely
+  // distrusted. What is left for the gate below is narrower and still real — do
+  // we have an answer *yet*. Without it, a pending query reads as an empty list,
+  // which reads as "not a member", which auto-accepts an invite the customer may
+  // already hold.
+  //
+  // Hence `staleTime: 0` and a mount-scoped flag rather than `isSuccess`: a
+  // cached list is the right account's now, but it can be thirty seconds old, and
+  // acting on "not a member" is the direction that costs something.
+  //
+  // `local_trusted` has no accounts at all, so there is no identity to key on and
+  // nothing to check the list against; the gate stays open.
+  const companiesQuery = useCompanyListQuery({
     enabled: !!sessionQuery.data && !!inviteQuery.data?.companyId,
+    staleTime: 0,
   });
-  const companyList = companiesQuery.data?.companies ?? [];
+  const membershipIsAccountScoped = healthQuery.data?.deploymentMode !== "local_trusted";
+  // No `sessionQuery.data` term: the query only fetches while a session exists, so
+  // the flag cannot be true without one, and if the session lapses the observer
+  // re-keys to the anonymous entry and holds no data to leak.
+  const membershipListIsCurrent = membershipIsAccountScoped
+    ? companiesQuery.isFetchedAfterMount
+    : true;
+  const companyList = membershipListIsCurrent ? companiesQuery.data?.companies ?? [] : [];
 
   useEffect(() => {
     if (token) rememberPendingInviteToken(token);
@@ -289,18 +281,19 @@ export function InviteLandingPage() {
   }, [token]);
 
   useEffect(() => {
+    if (!membershipListIsCurrent) return;
     const list = companiesQuery.data?.companies;
     if (!list || !inviteQuery.data?.companyId) return;
     if (list.some((c) => c.id === inviteQuery.data!.companyId)) {
       clearPendingInviteToken(token);
     }
-  }, [companiesQuery.data, inviteQuery.data, token]);
+  }, [companiesQuery.data, inviteQuery.data, membershipListIsCurrent, token]);
 
   const invite = inviteQuery.data;
   const isCheckingExistingMembership =
     Boolean(sessionQuery.data) &&
     Boolean(invite?.companyId) &&
-    companiesQuery.isLoading;
+    !membershipListIsCurrent;
   const isCurrentMember =
     Boolean(invite?.companyId) &&
     companyList.some((company) => company.id === invite?.companyId);
@@ -315,15 +308,12 @@ export function InviteLandingPage() {
   const inviteJoinRequestType = invite?.joinRequestType ?? null;
   const canCompleteAcceptedHumanInvite =
     inviteJoinRequestType === "human" &&
-    (inviteJoinRequestStatus === "pending_approval" ||
-      inviteJoinRequestStatus === "approved");
+    (inviteJoinRequestStatus === "pending_approval" || inviteJoinRequestStatus === "approved");
   const requiresHumanAccount =
     healthQuery.data?.deploymentMode === "authenticated" &&
     !sessionQuery.data &&
     invite?.allowedJoinTypes !== "agent";
-  const showsAgentForm =
-    invite?.inviteType !== "bootstrap_ceo" &&
-    invite?.allowedJoinTypes === "agent";
+  const showsAgentForm = invite?.inviteType !== "bootstrap_ceo" && invite?.allowedJoinTypes === "agent";
   const shouldAutoAcceptHumanInvite =
     Boolean(sessionQuery.data) &&
     !showsAgentForm &&
@@ -341,8 +331,7 @@ export function InviteLandingPage() {
   const authCanSubmit =
     email.trim().length > 0 &&
     password.trim().length > 0 &&
-    (authMode === "sign_in" ||
-      (name.trim().length > 0 && password.trim().length >= 8));
+    (authMode === "sign_in" || (name.trim().length > 0 && password.trim().length >= 8));
 
   const acceptMutation = useMutation({
     mutationFn: async () => {
@@ -353,10 +342,7 @@ export function InviteLandingPage() {
       if (isCurrentMember) {
         throw new Error("This account already belongs to the company.");
       }
-      if (
-        invite.inviteType === "bootstrap_ceo" ||
-        invite.allowedJoinTypes !== "agent"
-      ) {
+      if (invite.inviteType === "bootstrap_ceo" || invite.allowedJoinTypes !== "agent") {
         return accessApi.acceptInvite(token, { requestType: "human" });
       }
       return accessApi.acceptInvite(token, {
@@ -372,16 +358,9 @@ export function InviteLandingPage() {
       const asBootstrap = isBootstrapAcceptancePayload(payload);
       setResult({ kind: asBootstrap ? "bootstrap" : "join", payload });
       await queryClient.invalidateQueries({ queryKey: queryKeys.auth.session });
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.access.currentBoardAccess,
-      });
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.companies.all,
-      });
-      if (
-        invite?.companyId &&
-        isApprovedHumanJoinPayload(payload, showsAgentForm)
-      ) {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.access.currentBoardAccess });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.companies.all });
+      if (invite?.companyId && isApprovedHumanJoinPayload(payload, showsAgentForm)) {
         setSelectedCompanyId(invite.companyId, { source: "manual" });
         navigate("/", { replace: true });
       }
@@ -392,12 +371,7 @@ export function InviteLandingPage() {
   });
 
   useEffect(() => {
-    if (
-      !shouldAutoAcceptHumanInvite ||
-      autoAcceptStarted ||
-      acceptMutation.isPending
-    )
-      return;
+    if (!shouldAutoAcceptHumanInvite || autoAcceptStarted || acceptMutation.isPending) return;
     setAutoAcceptStarted(true);
     setError(null);
     acceptMutation.mutate();
@@ -420,17 +394,15 @@ export function InviteLandingPage() {
       rememberPendingInviteToken(token);
       await queryClient.invalidateQueries({ queryKey: queryKeys.auth.session });
       await queryClient.invalidateQueries({ queryKey: queryKeys.health });
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.access.currentBoardAccess,
-      });
-      const { companies: freshCompanies } = await queryClient.fetchQuery(
-        companiesListQueryOptions,
-      );
+      await queryClient.invalidateQueries({ queryKey: queryKeys.access.currentBoardAccess });
+      // Keyed to the account that just signed in — the helper resolves the
+      // identity past the invalidation above rather than trusting the session
+      // entry still sitting in the cache — and forced past whatever is cached
+      // for it. This replaces the hand-rolled cancel-and-refetch this PR
+      // originally carried, which #11488 made both unnecessary and weaker.
+      const { companies: freshCompanies } = await fetchCompanyListForCurrentAccount(queryClient);
 
-      if (
-        invite?.companyId &&
-        freshCompanies.some((company) => company.id === invite.companyId)
-      ) {
+      if (invite?.companyId && freshCompanies.some((company) => company.id === invite.companyId)) {
         clearPendingInviteToken(token);
         setSelectedCompanyId(invite.companyId, { source: "manual" });
         navigate("/", { replace: true });
@@ -469,45 +441,24 @@ export function InviteLandingPage() {
   }, [invite, isCurrentMember, sessionQuery.data, showsAgentForm]);
 
   if (!token) {
-    return (
-      <div className="mx-auto max-w-xl py-10 text-sm text-destructive">
-        {t("inviteLanding.invalidInviteToken")}
-      </div>
-    );
+    return <div className="mx-auto max-w-xl py-10 text-sm text-destructive">{t("inviteLanding.invalidInviteToken")}</div>;
   }
 
-  if (
-    inviteQuery.isLoading ||
-    healthQuery.isLoading ||
-    sessionQuery.isLoading
-  ) {
-    return (
-      <div className="mx-auto max-w-xl py-10 text-sm text-muted-foreground">
-        {t("inviteLanding.loadingInvite")}
-      </div>
-    );
+  if (inviteQuery.isLoading || healthQuery.isLoading || sessionQuery.isLoading) {
+    return <div className="mx-auto max-w-xl py-10 text-sm text-muted-foreground">{t("inviteLanding.loadingInvite")}</div>;
   }
 
   if (isCheckingExistingMembership) {
-    return (
-      <div className="mx-auto max-w-xl py-10 text-sm text-muted-foreground">
-        {t("inviteLanding.checkingYourAccess")}
-      </div>
-    );
+    return <div className="mx-auto max-w-xl py-10 text-sm text-muted-foreground">{t("inviteLanding.checkingYourAccess")}</div>;
   }
 
   if (inviteQuery.error || !invite) {
     return (
       <div className="mx-auto max-w-xl py-10">
-        <div
-          className="border border-border bg-card p-6"
-          data-testid="invite-error"
-        >
-          <h1 className="text-lg font-semibold">
-            {t("inviteLanding.inviteUnavailable")}
-          </h1>
+        <div className="border border-border bg-card p-6" data-testid="invite-error">
+          <h1 className="text-lg font-semibold">{t("inviteLanding.inviteUnavailable")}</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            {t("inviteLanding.inviteUnavailableBody")}
+            This invite may be expired, revoked, or already used.
           </p>
         </div>
       </div>
@@ -519,17 +470,10 @@ export function InviteLandingPage() {
     inviteJoinRequestType === "human" &&
     isCurrentMember
   ) {
-    return (
-      <div className="mx-auto max-w-xl py-10 text-sm text-muted-foreground">
-        {t("inviteLanding.openingCompany")}
-      </div>
-    );
+    return <div className="mx-auto max-w-xl py-10 text-sm text-muted-foreground">{t("inviteLanding.openingCompany")}</div>;
   }
 
-  if (
-    inviteJoinRequestStatus === "pending_approval" &&
-    !canCompleteAcceptedHumanInvite
-  ) {
+  if (inviteJoinRequestStatus === "pending_approval" && !canCompleteAcceptedHumanInvite) {
     return (
       <AwaitingJoinApprovalPanel
         companyDisplayName={companyDisplayName}
@@ -543,13 +487,8 @@ export function InviteLandingPage() {
   if (inviteJoinRequestStatus && !canCompleteAcceptedHumanInvite) {
     return (
       <div className="mx-auto max-w-xl py-10">
-        <div
-          className="border border-border bg-card p-6"
-          data-testid="invite-error"
-        >
-          <h1 className="text-lg font-semibold">
-            {t("inviteLanding.inviteUnavailable")}
-          </h1>
+        <div className="border border-border bg-card p-6" data-testid="invite-error">
+          <h1 className="text-lg font-semibold">{t("inviteLanding.inviteUnavailable")}</h1>
           <p className="mt-2 text-sm text-muted-foreground">
             {inviteJoinRequestStatus === "rejected"
               ? "This join request was not approved."
@@ -564,9 +503,7 @@ export function InviteLandingPage() {
     return (
       <div className="min-h-screen bg-zinc-950 px-6 py-12 text-zinc-100">
         <div className="mx-auto max-w-md border border-zinc-800 bg-zinc-950 p-6">
-          <h1 className="text-lg font-semibold">
-            {t("inviteLanding.bootstrapComplete")}
-          </h1>
+          <h1 className="text-lg font-semibold">{t("inviteLanding.bootstrapComplete")}</h1>
           <div className="mt-4">
             <Button asChild className="rounded-none">
               <Link to="/">{t("inviteLanding.openBoard")}</Link>
@@ -583,49 +520,42 @@ export function InviteLandingPage() {
       claimApiKeyPath?: string;
       onboarding?: Record<string, unknown>;
     };
-    const claimSecret =
-      typeof payload.claimSecret === "string" ? payload.claimSecret : null;
-    const claimApiKeyPath =
-      typeof payload.claimApiKeyPath === "string"
-        ? payload.claimApiKeyPath
-        : null;
-    const onboardingTextUrl = readNestedString(payload.onboarding, [
-      "textInstructions",
-      "url",
-    ]);
+    const claimSecret = typeof payload.claimSecret === "string" ? payload.claimSecret : null;
+    const claimApiKeyPath = typeof payload.claimApiKeyPath === "string" ? payload.claimApiKeyPath : null;
+    const onboardingTextUrl = readNestedString(payload.onboarding, ["textInstructions", "url"]);
     const joinedNow = !showsAgentForm && payload.status === "approved";
 
-    return joinedNow ? (
-      <div className="min-h-screen bg-zinc-950 px-6 py-12 text-zinc-100">
-        <div className="mx-auto max-w-md border border-zinc-800 bg-zinc-950 p-6">
-          <div className="flex items-center gap-3">
-            <InviteCompanyLogo
-              companyDisplayName={companyDisplayName}
-              companyLogoUrl={companyLogoUrl}
-              companyBrandColor={companyBrandColor}
-              className="h-12 w-12 border border-zinc-800 rounded-none"
-            />
-            <h1 className="text-lg font-semibold">
-              {t("inviteLanding.joinedCompany")}
-            </h1>
-          </div>
-          <div className="mt-4">
-            <Button asChild className="w-full rounded-none">
-              <Link to="/">{t("inviteLanding.openBoard")}</Link>
-            </Button>
+    return (
+      joinedNow ? (
+        <div className="min-h-screen bg-zinc-950 px-6 py-12 text-zinc-100">
+          <div className="mx-auto max-w-md border border-zinc-800 bg-zinc-950 p-6">
+            <div className="flex items-center gap-3">
+              <InviteCompanyLogo
+                companyDisplayName={companyDisplayName}
+                companyLogoUrl={companyLogoUrl}
+                companyBrandColor={companyBrandColor}
+                className="h-12 w-12 border border-zinc-800 rounded-none"
+              />
+              <h1 className="text-lg font-semibold">{t("inviteLanding.joinedCompany")}</h1>
+            </div>
+            <div className="mt-4">
+              <Button asChild className="w-full rounded-none">
+                <Link to="/">{t("inviteLanding.openBoard")}</Link>
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
-    ) : (
-      <AwaitingJoinApprovalPanel
-        companyDisplayName={companyDisplayName}
-        companyLogoUrl={companyLogoUrl}
-        companyBrandColor={companyBrandColor}
-        invitedByUserName={invitedByUserName}
-        claimSecret={claimSecret}
-        claimApiKeyPath={claimApiKeyPath}
-        onboardingTextUrl={onboardingTextUrl}
-      />
+      ) : (
+        <AwaitingJoinApprovalPanel
+          companyDisplayName={companyDisplayName}
+          companyLogoUrl={companyLogoUrl}
+          companyBrandColor={companyBrandColor}
+          invitedByUserName={invitedByUserName}
+          claimSecret={claimSecret}
+          claimApiKeyPath={claimApiKeyPath}
+          onboardingTextUrl={onboardingTextUrl}
+        />
+      )
     );
   }
 
@@ -643,12 +573,10 @@ export function InviteLandingPage() {
               />
               <div className="min-w-0">
                 <p className="text-xs uppercase tracking-(--tracking-caps) text-zinc-500">
-                  {t("inviteLanding.invited")}
+                  You&apos;ve been invited to join Paperclip
                 </p>
                 <h1 className="mt-2 text-2xl font-semibold">
-                  {invite.inviteType === "bootstrap_ceo"
-                    ? "Set up Paperclip"
-                    : `Join ${companyDisplayName}`}
+                  {invite.inviteType === "bootstrap_ceo" ? "Set up Paperclip" : `Join ${companyDisplayName}`}
                 </h1>
                 <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-300">
                   {showsAgentForm
@@ -662,56 +590,35 @@ export function InviteLandingPage() {
 
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="border border-zinc-800 p-3">
-                <div className="text-xs uppercase tracking-(--tracking-caps) text-zinc-500">
-                  {t("Company")}
-                </div>
+                <div className="text-xs uppercase tracking-(--tracking-caps) text-zinc-500">{t("Company")}</div>
+                <div className="mt-1 text-sm text-zinc-100">{companyDisplayName}</div>
+              </div>
+              <div className="border border-zinc-800 p-3">
+                <div className="text-xs uppercase tracking-(--tracking-caps) text-zinc-500">{t("inviteLanding.invitedBy")}</div>
+                <div className="mt-1 text-sm text-zinc-100">{invitedByUserName ?? "Paperclip board"}</div>
+              </div>
+              <div className="border border-zinc-800 p-3">
+                <div className="text-xs uppercase tracking-(--tracking-caps) text-zinc-500">{t("inviteLanding.requestedAccess")}</div>
                 <div className="mt-1 text-sm text-zinc-100">
-                  {companyDisplayName}
+                  {showsAgentForm ? "Agent join request" : requestedHumanRole ?? "Company access"}
                 </div>
               </div>
               <div className="border border-zinc-800 p-3">
-                <div className="text-xs uppercase tracking-(--tracking-caps) text-zinc-500">
-                  {t("inviteLanding.invitedBy")}
-                </div>
-                <div className="mt-1 text-sm text-zinc-100">
-                  {invitedByUserName ?? "Paperclip board"}
-                </div>
-              </div>
-              <div className="border border-zinc-800 p-3">
-                <div className="text-xs uppercase tracking-(--tracking-caps) text-zinc-500">
-                  {t("inviteLanding.requestedAccess")}
-                </div>
-                <div className="mt-1 text-sm text-zinc-100">
-                  {showsAgentForm
-                    ? "Agent join request"
-                    : (requestedHumanRole ?? "Company access")}
-                </div>
-              </div>
-              <div className="border border-zinc-800 p-3">
-                <div className="text-xs uppercase tracking-(--tracking-caps) text-zinc-500">
-                  {t("inviteLanding.inviteExpires")}
-                </div>
-                <div className="mt-1 text-sm text-zinc-100">
-                  {formatDate(invite.expiresAt)}
-                </div>
+                <div className="text-xs uppercase tracking-(--tracking-caps) text-zinc-500">{t("inviteLanding.inviteExpires")}</div>
+                <div className="mt-1 text-sm text-zinc-100">{formatDate(invite.expiresAt)}</div>
               </div>
             </div>
 
             {inviteMessage ? (
               <div className="border border-amber-500/40 bg-amber-500/10 p-4">
-                <div className="text-xs uppercase tracking-(--tracking-caps) text-amber-200/80">
-                  {t("inviteLanding.messageFromInviter")}
-                </div>
-                <p className="mt-2 text-sm leading-6 text-amber-50">
-                  {inviteMessage}
-                </p>
+                <div className="text-xs uppercase tracking-(--tracking-caps) text-amber-200/80">{t("inviteLanding.messageFromInviter")}</div>
+                <p className="mt-2 text-sm leading-6 text-amber-50">{inviteMessage}</p>
               </div>
             ) : null}
 
             {sessionQuery.data ? (
               <div className="border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm text-emerald-50">
-                {t("inviteLanding.signedInAsPrefix")}{" "}
-                <span className="font-medium">{sessionLabel}</span>.
+                Signed in as <span className="font-medium">{sessionLabel}</span>.
               </div>
             ) : null}
           </section>
@@ -720,17 +627,13 @@ export function InviteLandingPage() {
             {showsAgentForm ? (
               <div className="space-y-4">
                 <div>
-                  <h2 className="text-lg font-semibold">
-                    {t("inviteLanding.submitAgentDetails")}
-                  </h2>
+                  <h2 className="text-lg font-semibold">{t("inviteLanding.submitAgentDetails")}</h2>
                   <p className="mt-1 text-sm text-zinc-400">
-                    {t("inviteLanding.createsApproval")} {companyDisplayName}.
+                    This invite will create an approval request for a new agent in {companyDisplayName}.
                   </p>
                 </div>
                 <label className="block text-sm">
-                  <span className="mb-1 block text-zinc-400">
-                    {t("Agent name")}
-                  </span>
+                  <span className="mb-1 block text-zinc-400">{t("Agent name")}</span>
                   <input
                     className={fieldClassName}
                     value={agentName}
@@ -738,34 +641,21 @@ export function InviteLandingPage() {
                   />
                 </label>
                 <label className="block text-sm">
-                  <span className="mb-1 block text-zinc-400">
-                    {t("Adapter type")}
-                  </span>
+                  <span className="mb-1 block text-zinc-400">{t("Adapter type")}</span>
                   <select
                     className={fieldClassName}
                     value={adapterType}
-                    onChange={(event) =>
-                      setAdapterType(event.target.value as AgentAdapterType)
-                    }
+                    onChange={(event) => setAdapterType(event.target.value as AgentAdapterType)}
                   >
                     {joinAdapterOptions.map((type) => (
-                      <option
-                        key={type}
-                        value={type}
-                        disabled={!ENABLED_INVITE_ADAPTERS.has(type)}
-                      >
-                        {getAdapterLabel(type)}
-                        {!ENABLED_INVITE_ADAPTERS.has(type)
-                          ? " (Coming soon)"
-                          : ""}
+                      <option key={type} value={type} disabled={!ENABLED_INVITE_ADAPTERS.has(type)}>
+                        {getAdapterLabel(type)}{!ENABLED_INVITE_ADAPTERS.has(type) ? " (Coming soon)" : ""}
                       </option>
                     ))}
                   </select>
                 </label>
                 <label className="block text-sm">
-                  <span className="mb-1 block text-zinc-400">
-                    {t("Capabilities")}
-                  </span>
+                  <span className="mb-1 block text-zinc-400">{t("Capabilities")}</span>
                   <textarea
                     className={fieldClassName}
                     rows={4}
@@ -776,9 +666,7 @@ export function InviteLandingPage() {
                 {error ? <p className="text-xs text-red-400">{error}</p> : null}
                 <Button
                   className="w-full rounded-none"
-                  disabled={
-                    acceptMutation.isPending || agentName.trim().length === 0
-                  }
+                  disabled={acceptMutation.isPending || agentName.trim().length === 0}
                   onClick={() => acceptMutation.mutate()}
                 >
                   {acceptMutation.isPending ? "Working..." : joinButtonLabel}
@@ -788,9 +676,7 @@ export function InviteLandingPage() {
               <div className="space-y-5">
                 <div>
                   <h2 className="text-lg font-semibold">
-                    {authMode === "sign_up"
-                      ? "Create your account"
-                      : "Sign in to continue"}
+                    {authMode === "sign_up" ? "Create your account" : "Sign in to continue"}
                   </h2>
                   <p className="mt-1 text-sm text-zinc-400">
                     {authMode === "sign_up"
@@ -812,7 +698,7 @@ export function InviteLandingPage() {
                       setAuthMode("sign_up");
                     }}
                   >
-                    {t("inviteLanding.createAccount")}
+                    Create account
                   </button>
                   <button
                     type="button"
@@ -826,26 +712,19 @@ export function InviteLandingPage() {
                       setAuthMode("sign_in");
                     }}
                   >
-                    {t("inviteLanding.existingAccount")}
+                    I already have an account
                   </button>
                 </div>
 
                 <form
                   className="space-y-4"
                   method="post"
-                  action={
-                    authMode === "sign_up"
-                      ? "/api/auth/sign-up/email"
-                      : "/api/auth/sign-in/email"
-                  }
+                  action={authMode === "sign_up" ? "/api/auth/sign-up/email" : "/api/auth/sign-in/email"}
                   onSubmit={(event) => {
                     event.preventDefault();
                     if (authMutation.isPending) return;
                     if (!authCanSubmit) {
-                      setAuthFeedback({
-                        tone: "error",
-                        message: "Please fill in all required fields.",
-                      });
+                      setAuthFeedback({ tone: "error", message: "Please fill in all required fields." });
                       return;
                     }
                     authMutation.mutate();
@@ -854,9 +733,7 @@ export function InviteLandingPage() {
                 >
                   {authMode === "sign_up" ? (
                     <label className="block text-sm" htmlFor="invite-name">
-                      <span className="mb-1 block text-zinc-400">
-                        {t("Name")}
-                      </span>
+                      <span className="mb-1 block text-zinc-400">{t("Name")}</span>
                       <input
                         id="invite-name"
                         name="name"
@@ -869,20 +746,14 @@ export function InviteLandingPage() {
                         autoComplete="name"
                         required
                         aria-required="true"
-                        aria-invalid={
-                          authFeedback?.tone === "error" ? true : undefined
-                        }
-                        aria-describedby={
-                          authFeedback ? authErrorId : undefined
-                        }
+                        aria-invalid={authFeedback?.tone === "error" ? true : undefined}
+                        aria-describedby={authFeedback ? authErrorId : undefined}
                         autoFocus
                       />
                     </label>
                   ) : null}
                   <label className="block text-sm" htmlFor="invite-email">
-                    <span className="mb-1 block text-zinc-400">
-                      {t("Email")}
-                    </span>
+                    <span className="mb-1 block text-zinc-400">{t("Email")}</span>
                     <input
                       id="invite-email"
                       name="email"
@@ -896,17 +767,13 @@ export function InviteLandingPage() {
                       autoComplete="username"
                       required
                       aria-required="true"
-                      aria-invalid={
-                        authFeedback?.tone === "error" ? true : undefined
-                      }
+                      aria-invalid={authFeedback?.tone === "error" ? true : undefined}
                       aria-describedby={authFeedback ? authErrorId : undefined}
                       autoFocus={authMode === "sign_in"}
                     />
                   </label>
                   <label className="block text-sm" htmlFor="invite-password">
-                    <span className="mb-1 block text-zinc-400">
-                      {t("Password")}
-                    </span>
+                    <span className="mb-1 block text-zinc-400">{t("Password")}</span>
                     <input
                       id="invite-password"
                       name="password"
@@ -917,16 +784,10 @@ export function InviteLandingPage() {
                         setPassword(event.target.value);
                         setAuthFeedback(null);
                       }}
-                      autoComplete={
-                        authMode === "sign_in"
-                          ? "current-password"
-                          : "new-password"
-                      }
+                      autoComplete={authMode === "sign_in" ? "current-password" : "new-password"}
                       required
                       aria-required="true"
-                      aria-invalid={
-                        authFeedback?.tone === "error" ? true : undefined
-                      }
+                      aria-invalid={authFeedback?.tone === "error" ? true : undefined}
                       aria-describedby={authFeedback ? authErrorId : undefined}
                     />
                   </label>
@@ -935,9 +796,7 @@ export function InviteLandingPage() {
                       id={authErrorId}
                       role="alert"
                       className={`text-xs ${
-                        authFeedback.tone === "info"
-                          ? "text-amber-300"
-                          : "text-red-400"
+                        authFeedback.tone === "info" ? "text-amber-300" : "text-red-400"
                       }`}
                     >
                       {authFeedback.message}
@@ -970,29 +829,25 @@ export function InviteLandingPage() {
                     {isCurrentMember
                       ? "Already in this company"
                       : shouldAutoAcceptHumanInvite
-                        ? "Completing company access"
-                        : invite.inviteType === "bootstrap_ceo"
-                          ? "Accept bootstrap invite"
-                          : "Accept company invite"}
+                      ? "Completing company access"
+                      : invite.inviteType === "bootstrap_ceo"
+                        ? "Accept bootstrap invite"
+                        : "Accept company invite"}
                   </h2>
                   <p className="mt-1 text-sm text-zinc-400">
                     {shouldAutoAcceptHumanInvite
                       ? `Granting your access to ${companyDisplayName}.`
                       : isCurrentMember
-                        ? `This account already belongs to ${companyDisplayName}.`
-                        : `This will ${
-                            invite.inviteType === "bootstrap_ceo"
-                              ? "finish setting up Paperclip"
-                              : `grant or complete your access to ${companyDisplayName}`
-                          }.`}
+                      ? `This account already belongs to ${companyDisplayName}.`
+                      : `This will ${
+                          invite.inviteType === "bootstrap_ceo" ? "finish setting up Paperclip" : `grant or complete your access to ${companyDisplayName}`
+                        }.`}
                   </p>
                 </div>
                 {error ? <p className="text-xs text-red-400">{error}</p> : null}
                 {shouldAutoAcceptHumanInvite ? (
                   <div className="text-sm text-zinc-400">
-                    {acceptMutation.isPending
-                      ? "Submitting request..."
-                      : "Finishing sign-in..."}
+                    {acceptMutation.isPending ? "Submitting request..." : "Finishing sign-in..."}
                   </div>
                 ) : (
                   <Button
@@ -1001,9 +856,7 @@ export function InviteLandingPage() {
                     onClick={() => {
                       if (isCurrentMember && invite.companyId) {
                         clearPendingInviteToken(token);
-                        setSelectedCompanyId(invite.companyId, {
-                          source: "manual",
-                        });
+                        setSelectedCompanyId(invite.companyId, { source: "manual" });
                         navigate("/", { replace: true });
                         return;
                       }

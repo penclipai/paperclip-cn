@@ -16,29 +16,28 @@ const MIGRATION_FILES = [
 const cleanups: Array<() => Promise<void>> = [];
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
 const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : describe.skip;
-const MIGRATION_TEST_TIMEOUT = process.platform === "win32" ? 60_000 : 30_000;
 
 describeEmbeddedPostgres("status card migrations", () => {
   afterEach(async () => {
     await Promise.all(cleanups.splice(0).map((cleanup) => cleanup()));
   });
 
-  it(
-    "can be reapplied after the schema already exists",
-    async () => {
-      const database = await startEmbeddedPostgresTestDatabase("paperclip-status-card-migrations-");
-      cleanups.push(database.cleanup);
-      const sql = postgres(database.connectionString, { max: 1 });
-      cleanups.push(async () => sql.end());
+  // Same reason as every other embedded-Postgres migration test here: starting
+  // the server and replaying migrations against it does not fit vitest's 5s
+  // default. This suite has not tripped yet only because it replays fewer
+  // statements than its neighbours — it is the same latent failure.
+  it("can be reapplied after the schema already exists", async () => {
+    const database = await startEmbeddedPostgresTestDatabase("paperclip-status-card-migrations-");
+    cleanups.push(database.cleanup);
+    const sql = postgres(database.connectionString, { max: 1 });
+    cleanups.push(async () => sql.end());
 
-      for (const migrationFile of MIGRATION_FILES) {
-        const migrationSql = await fs.promises.readFile(
-          new URL(`./migrations/${migrationFile}`, import.meta.url),
-          "utf8",
-        );
-        await sql.unsafe(migrationSql);
-      }
-    },
-    MIGRATION_TEST_TIMEOUT,
-  );
+    for (const migrationFile of MIGRATION_FILES) {
+      const migrationSql = await fs.promises.readFile(
+        new URL(`./migrations/${migrationFile}`, import.meta.url),
+        "utf8",
+      );
+      await sql.unsafe(migrationSql);
+    }
+  }, 30_000);
 });

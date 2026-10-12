@@ -80,10 +80,10 @@ test("bundled package staging materializes workspace dependency versions", () =>
 test("bundled package staging installs only dependencies included in the tarball", () => {
   const installManifest = createBundledInstallManifest(
     {
-      name: "@paperclipai/db",
+      name: "@penclipai/db",
       version: "2026.723.0-canary.8",
       dependencies: {
-        "@paperclipai/shared": "2026.723.0-canary.8",
+        "@penclipai/shared": "2026.723.0-canary.8",
         "drizzle-orm": "^0.45.2",
         "embedded-postgres": "^18.1.0-beta.16",
       },

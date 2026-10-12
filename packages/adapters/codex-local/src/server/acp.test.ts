@@ -328,7 +328,7 @@ describe("codex_local ACP lane", () => {
     const commandPath = path.join(root, "bin", "codex-acp");
     await fs.mkdir(path.dirname(commandPath), { recursive: true });
     await fs.writeFile(commandPath, "#!/usr/bin/env sh\n", "utf8");
-    setNodeVersion("v22.13.0");
+    setNodeVersion("v24.11.0");
 
     expect(resolveCodexExecutionEngine({})).toEqual({ engine: "acp", explicit: false });
     await expect(
@@ -348,7 +348,7 @@ describe("codex_local ACP lane", () => {
       explicit: true,
     });
 
-    setNodeVersion("v22.12.0");
+    setNodeVersion("v24.10.0");
     await expect(
       resolveCodexExecutionEngineForRun({
         config: { agentCommand: commandPath },
@@ -427,7 +427,7 @@ describe("codex_local ACP lane", () => {
   });
 
   it("uses ACP for bridged sandbox auto runs when the ACP command is configured as a shell command", async () => {
-    setNodeVersion("v22.13.0");
+    setNodeVersion("v24.11.0");
     await expect(
       resolveCodexExecutionEngineForRun({
         config: { agentCommand: "codex-acp" },
@@ -453,7 +453,7 @@ describe("codex_local ACP lane", () => {
   });
 
   it("falls back to the CLI lane for one-shot sandbox auto runs", async () => {
-    setNodeVersion("v22.13.0");
+    setNodeVersion("v24.11.0");
     await expect(
       resolveCodexExecutionEngineForRun({
         config: {},
@@ -472,7 +472,7 @@ describe("codex_local ACP lane", () => {
   });
 
   it("falls back to the CLI lane for non-sandbox remote auto runs", async () => {
-    setNodeVersion("v22.13.0");
+    setNodeVersion("v24.11.0");
     await expect(
       resolveCodexExecutionEngineForRun({
         config: {},
@@ -531,9 +531,9 @@ describe("codex_local ACP lane", () => {
   });
 
   it("checks the Node version required by the ACPX runtime", () => {
-    setNodeVersion("v22.12.0");
+    setNodeVersion("v24.10.0");
     expect(nodeVersionMeetsCodexAcpMinimum()).toBe(false);
-    setNodeVersion("v22.13.0");
+    setNodeVersion("v24.11.0");
     expect(nodeVersionMeetsCodexAcpMinimum()).toBe(true);
   });
 
@@ -542,7 +542,7 @@ describe("codex_local ACP lane", () => {
     const commandPath = path.join(root, "bin", "codex-acp");
     await fs.mkdir(path.dirname(commandPath), { recursive: true });
     await fs.writeFile(commandPath, "#!/usr/bin/env sh\n", "utf8");
-    setNodeVersion("v22.13.0");
+    setNodeVersion("v24.11.0");
 
     const result = await testCodexAcpEnvironment({
       adapterType: "codex_local",
@@ -595,7 +595,7 @@ describe("codex_local ACP lane", () => {
     await fs.writeFile(commandPath, "#!/usr/bin/env sh\n", "utf8");
     await fs.mkdir(sharedCodexHome, { recursive: true });
     await fs.writeFile(path.join(sharedCodexHome, "auth.json"), '{"OPENAI_API_KEY":"sk-shared"}', "utf8");
-    setNodeVersion("v22.13.0");
+    setNodeVersion("v24.11.0");
     process.env.CODEX_HOME = sharedCodexHome;
     delete process.env.OPENAI_API_KEY;
 
@@ -643,7 +643,7 @@ describe("codex_local ACP lane", () => {
     await fs.mkdir(path.dirname(commandPath), { recursive: true });
     await fs.writeFile(commandPath, "#!/usr/bin/env sh\n", "utf8");
     await fs.mkdir(sharedCodexHome, { recursive: true });
-    setNodeVersion("v22.13.0");
+    setNodeVersion("v24.11.0");
     process.env.CODEX_HOME = sharedCodexHome;
     delete process.env.OPENAI_API_KEY;
 
@@ -684,7 +684,7 @@ describe("codex_local ACP lane", () => {
       "codex-home",
     );
     await fs.mkdir(sharedCodexHome, { recursive: true });
-    setNodeVersion("v22.13.0");
+    setNodeVersion("v24.11.0");
     process.env.CODEX_HOME = sharedCodexHome;
     delete process.env.OPENAI_API_KEY;
 
@@ -1188,7 +1188,7 @@ describe("codex_local ACP lane", () => {
   });
 
   it("falls back to the CLI lane for a runner-less sandbox even when the ACP command is set", async () => {
-    setNodeVersion("v22.13.0");
+    setNodeVersion("v24.11.0");
     // Isolate the missing bidirectional runner as the sole fallback cause:
     // provide a valid ACP command and Node version so the only difference from
     // the runner-backed ACP case is the absent `runner`.

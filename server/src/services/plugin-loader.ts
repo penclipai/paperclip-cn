@@ -91,7 +91,7 @@ const DEV_TSX_LOADER_PATH = path.resolve(__dirname, "../../../cli/node_modules/t
 
 /**
  * Model-provider API keys that sandbox-provider plugins (e.g.
- * `@paperclipai/plugin-kubernetes`) are allowed to read from the
+ * `@penclipai/plugin-kubernetes`) are allowed to read from the
  * server's process environment so they can inject them into per-run
  * pod Secrets. All other host env vars remain stripped from plugin
  * workers (see `PluginWorkerManager.spawnProcess`). The passthrough
@@ -109,7 +109,7 @@ const ADAPTER_ENV_PASSTHROUGH = [
 
 /**
  * In-cluster Kubernetes service-discovery vars. A sandbox-provider plugin that
- * runs in-cluster (e.g. `@paperclipai/plugin-kubernetes` with inCluster=true)
+ * runs in-cluster (e.g. `@penclipai/plugin-kubernetes` with inCluster=true)
  * builds its API client via `KubeConfig.loadFromCluster()`, which reads these
  * to construct the apiserver URL. Without them the worker fails with "Invalid
  * URL" at lease acquisition. The CA + token are files under
@@ -144,10 +144,10 @@ const SANDBOX_PROVIDER_CREDENTIAL_ENV_PASSTHROUGH: Record<
   string,
   { driverKey: string; envVars: readonly string[] }
 > = {
-  "@paperclipai/plugin-daytona": { driverKey: "daytona", envVars: ["DAYTONA_API_KEY"] },
-  "@paperclipai/plugin-e2b": { driverKey: "e2b", envVars: ["E2B_API_KEY"] },
-  "@paperclipai/plugin-exe-dev": { driverKey: "exe-dev", envVars: ["EXE_API_KEY"] },
-  "@paperclipai/plugin-novita-sandbox": { driverKey: "novita", envVars: ["NOVITA_API_KEY"] },
+  "@penclipai/plugin-daytona": { driverKey: "daytona", envVars: ["DAYTONA_API_KEY"] },
+  "@penclipai/plugin-e2b": { driverKey: "e2b", envVars: ["E2B_API_KEY"] },
+  "@penclipai/plugin-exe-dev": { driverKey: "exe-dev", envVars: ["EXE_API_KEY"] },
+  "@penclipai/plugin-novita-sandbox": { driverKey: "novita", envVars: ["NOVITA_API_KEY"] },
 };
 
 export function buildPluginWorkerEnv(input: {
@@ -1964,25 +1964,61 @@ export function pluginLoader(
       // Fetch all plugins in ready status, ordered by installOrder
       const readyPlugins = (await registry.listByStatus("ready")) as PluginRecord[];
 
-      if (readyPlugins.length === 0) {
+      // Retry plugins stranded in error status. An activation failure is often
+      // environmental — missing package dependencies, a stale build output, a
+      // module that moved under a pull — and the fix lands on disk without any
+      // write to the plugin row, so the row would otherwise stay dead until an
+      // operator flips it back by hand. One attempt per boot cannot crash-loop
+      // within a running process, and a failed attempt re-records the error
+      // through the normal markError path. The flip to ready must run BEFORE
+      // activation: the error status only legally transitions to ready or
+      // uninstalled, so a retry that failed while still in error status could
+      // not re-mark itself as errored.
+      const erroredPlugins = (await registry.listByStatus("error")) as PluginRecord[];
+      const retriedPlugins: PluginRecord[] = [];
+      for (const plugin of erroredPlugins) {
+        try {
+          const flipped = (await registry.updateStatus(plugin.id, { status: "ready" })) as PluginRecord | null;
+          if (flipped) retriedPlugins.push(flipped);
+        } catch (err) {
+          log.warn(
+            {
+              pluginId: plugin.id,
+              pluginKey: plugin.pluginKey,
+              err: err instanceof Error ? err.message : String(err),
+            },
+            "plugin-loader: could not queue errored plugin for a boot retry",
+          );
+        }
+      }
+      if (retriedPlugins.length > 0) {
+        log.info(
+          { count: retriedPlugins.length, pluginKeys: retriedPlugins.map((plugin) => plugin.pluginKey) },
+          "plugin-loader: retrying plugins that failed activation on a previous boot",
+        );
+      }
+
+      const pluginsToLoad = [...readyPlugins, ...retriedPlugins];
+
+      if (pluginsToLoad.length === 0) {
         log.info("plugin-loader: no ready plugins to load");
         return { total: 0, succeeded: 0, failed: 0, results: [] };
       }
 
       log.info(
-        { count: readyPlugins.length },
+        { count: pluginsToLoad.length },
         "plugin-loader: found ready plugins to load",
       );
 
       // Load plugins in parallel
       const results = await Promise.allSettled(
-        readyPlugins.map((plugin) => activatePlugin(plugin))
+        pluginsToLoad.map((plugin) => activatePlugin(plugin))
       );
 
       const loadResults = results.map((r, i) => {
         if (r.status === "fulfilled") return r.value;
         return {
-          plugin: readyPlugins[i]!,
+          plugin: pluginsToLoad[i]!,
           success: false,
           error: String(r.reason),
           registered: { worker: false, eventSubscriptions: 0, jobs: 0, webhooks: 0, tools: 0 },
@@ -1994,7 +2030,7 @@ export function pluginLoader(
 
       log.info(
         {
-          total: readyPlugins.length,
+          total: pluginsToLoad.length,
           succeeded,
           failed,
         },
@@ -2002,7 +2038,7 @@ export function pluginLoader(
       );
 
       return {
-        total: readyPlugins.length,
+        total: pluginsToLoad.length,
         succeeded,
         failed,
         results: loadResults,
@@ -2466,8 +2502,9 @@ export function pluginLoader(
       );
 
       if (options.markErrorOnFailure) {
-        // Mark the plugin as errored in the database so it is not retried
-        // automatically on next startup without operator intervention.
+        // Mark the plugin as errored in the database. The running process
+        // leaves it inactive; the next boot's loadAll retries it once, and the
+        // lifecycle enable() path can revive it sooner by hand.
         // markError also deactivates the plugin runtime in this process.
         try {
           await lifecycleManager.markError(pluginId, `Activation failed: ${errorMessage}`);

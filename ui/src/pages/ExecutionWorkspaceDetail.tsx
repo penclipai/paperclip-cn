@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, Navigate, useLocation, useNavigate, useParams } from "@/lib/router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ExecutionWorkspace, Issue, Project, ProjectWorkspace, RoutineListItem, WorkspaceOperation } from "@penclipai/shared";
@@ -13,6 +14,7 @@ import { CopyText } from "../components/CopyText";
 import { ExecutionWorkspaceCloseDialog } from "../components/ExecutionWorkspaceCloseDialog";
 import { MissingPluginTabPlaceholder } from "../components/MissingPluginTabPlaceholder";
 import { agentsApi } from "../api/agents";
+import { ApiError } from "../api/client";
 import { executionWorkspacesApi } from "../api/execution-workspaces";
 import { heartbeatsApi } from "../api/heartbeats";
 import { issuesApi } from "../api/issues";
@@ -35,14 +37,17 @@ import {
   type WorkspaceRuntimeControlRequest,
 } from "../components/WorkspaceRuntimeControls";
 import { WorkspaceServiceControlBar } from "../components/WorkspaceServiceControlBar";
+import { WorkspaceAccessCard } from "../components/WorkspaceAccessCard";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { useCompany } from "../context/CompanyContext";
 import { useToastActions } from "../context/ToastContext";
-import { useTranslation } from "react-i18next";
-import { translateInstant } from "../i18n";
 import { collectLiveIssueIds } from "../lib/liveIssueIds";
 import { queryKeys } from "../lib/queryKeys";
 import { cn, formatDateTime, issueUrl, projectRouteRef, projectWorkspaceUrl } from "../lib/utils";
+import {
+  resolveWorkspaceAccessState,
+  type WorkspaceLoginHandoffFailureInfo,
+} from "../lib/workspace-access-state";
 import {
   getWorkspaceSpecificRoutineVariableNames,
   routineHasWorkspaceSpecificVariables,
@@ -149,7 +154,7 @@ function formatJson(value: Record<string, unknown> | null | undefined) {
 }
 
 function formatOptionalDateTime(value: Date | string | null | undefined) {
-  return value ? formatDateTime(value) : translateInstant("Never");
+  return value ? formatDateTime(value) : "Never";
 }
 
 function normalizeText(value: string) {
@@ -166,14 +171,14 @@ function parseWorkspaceRuntimeJson(value: string) {
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
       return {
         ok: false as const,
-        error: translateInstant("executionWorkspace.workspaceCommandsJsonObjectError"),
+        error: "Workspace commands JSON must be a JSON object.",
       };
     }
     return { ok: true as const, value: parsed as Record<string, unknown> };
   } catch (error) {
     return {
       ok: false as const,
-      error: error instanceof Error ? error.message : translateInstant("executionWorkspace.invalidJson"),
+      error: error instanceof Error ? error.message : "Invalid JSON.",
     };
   }
 }
@@ -204,7 +209,7 @@ export function readConfiguredRuntimeServicePorts(runtimeConfig: Record<string, 
       entries.push({
         collection,
         index,
-        name: typeof config.name === "string" && config.name.trim() ? config.name : translateInstant("executionWorkspace.serviceNumber", { count: index + 1 }),
+        name: typeof config.name === "string" && config.name.trim() ? config.name : `Service ${index + 1}`,
         port: typeof portValue === "number" ? portValue : null,
         invalidPort: (typeof portConfig === "number" || hasObjectPortValue)
           && (typeof portValue !== "number" || !Number.isInteger(portValue) || portValue < 1 || portValue > 65535),
@@ -329,7 +334,7 @@ function validateForm(form: WorkspaceFormState) {
     try {
       new URL(repoUrl);
     } catch {
-      return translateInstant("executionWorkspace.repoUrlInvalid");
+      return "Repo URL must be a valid URL.";
     }
   }
 
@@ -339,7 +344,7 @@ function validateForm(form: WorkspaceFormState) {
       return runtimeJson.error;
     }
     const invalidPort = readConfiguredRuntimeServicePorts(runtimeJson.value).find((service) => service.invalidPort);
-    if (invalidPort) return translateInstant("executionWorkspace.invalidFixedPort", { name: invalidPort.name });
+    if (invalidPort) return `${invalidPort.name} has an invalid fixed port.`;
   }
 
   return null;
@@ -368,19 +373,21 @@ function Field({
 function workspaceOperationPhaseLabel(phase: string) {
   switch (phase) {
     case "worktree_prepare":
-      return translateInstant("executionWorkspace.operationPhase.worktreePrepare");
+      return "Worktree setup";
     case "workspace_config_freshness":
-      return translateInstant("executionWorkspace.operationPhase.configFreshness");
+      return "Config freshness";
     case "workspace_provision":
-      return translateInstant("executionWorkspace.operationPhase.provision");
+      return "Provision";
+    case "workspace_seed":
+      return "Database seed";
     case "workspace_runtime_provision":
-      return translateInstant("executionWorkspace.operationPhase.runtimeProvision");
+      return "Runtime provision";
     case "workspace_teardown":
-      return translateInstant("executionWorkspace.operationPhase.teardown");
+      return "Teardown";
     case "worktree_cleanup":
-      return translateInstant("executionWorkspace.operationPhase.worktreeCleanup");
+      return "Worktree cleanup";
     case "workspace_finalize":
-      return translateInstant("executionWorkspace.operationPhase.finalize");
+      return "Finalize";
     default:
       return phase;
   }
@@ -395,14 +402,16 @@ export type RuntimeProvisionStatus =
 
 /**
  * Derives the lazy runtime-provisioning state from the configured command and the
- * `workspace_runtime_provision` operation-log entries (most-recent first). Returns
+ * database-seed or runtime-provision operation-log entries (most-recent first). Returns
  * "eager" when no runtime provision command is configured (the legacy path).
  */
 export function resolveRuntimeProvisionStatus(input: {
   runtimeProvisionCommand: string | null | undefined;
   operations: WorkspaceOperation[] | undefined;
 }): RuntimeProvisionStatus {
-  const latest = (input.operations ?? []).find((operation) => operation.phase === "workspace_runtime_provision") ?? null;
+  const latest = (input.operations ?? []).find((operation) => (
+    operation.phase === "workspace_seed" || operation.phase === "workspace_runtime_provision"
+  )) ?? null;
   if (latest) {
     const at = latest.finishedAt ?? latest.startedAt ?? null;
     if (latest.status === "running") return { kind: "provisioning", at };
@@ -412,6 +421,27 @@ export function resolveRuntimeProvisionStatus(input: {
   }
   const configured = Boolean(input.runtimeProvisionCommand && input.runtimeProvisionCommand.trim());
   return configured ? { kind: "deferred" } : { kind: "eager" };
+}
+
+/**
+ * Read the structured refusal the login-handoff endpoint returns.
+ *
+ * The server keeps a machine `reason` (and, where it probed, the workspace's own
+ * readiness) on the error body so the UI can name the cause instead of showing a
+ * bare HTTP failure. Anything else is a genuine transport error.
+ */
+export function readWorkspaceHandoffFailure(error: unknown): WorkspaceLoginHandoffFailureInfo | null {
+  if (!(error instanceof ApiError)) return null;
+  const body = error.body as
+    | { reason?: unknown; detail?: unknown; readiness?: unknown }
+    | null
+    | undefined;
+  if (!body || typeof body.reason !== "string") return null;
+  return {
+    reason: body.reason,
+    detail: typeof body.detail === "string" ? body.detail : null,
+    readiness: (body.readiness as WorkspaceLoginHandoffFailureInfo["readiness"]) ?? null,
+  };
 }
 
 function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
@@ -447,11 +477,9 @@ export function RuntimeProvisionStatusValue({
   if (status.kind === "deferred") {
     return (
       <div className="flex flex-col gap-1">
-        <StatusPill className="border-amber-500/40 text-amber-600 dark:text-amber-400">
-          {t("executionWorkspace.provisionStatusDeferred")}
-        </StatusPill>
+        <StatusPill className="border-amber-500/40 text-amber-600 dark:text-amber-400">{t("executionWorkspace.provisionStatusDeferred")}</StatusPill>
         <span className="text-xs text-muted-foreground">
-          {t("executionWorkspace.provisionStatusDeferredHint")}
+          Runs once before the first runtime-service start.
         </span>
       </div>
     );
@@ -460,28 +488,24 @@ export function RuntimeProvisionStatusValue({
     return (
       <StatusPill className="border-border text-muted-foreground">
         <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
-        {t("executionWorkspace.provisionStatusProvisioning")}
+        Provisioning…
       </StatusPill>
     );
   }
   if (status.kind === "provisioned") {
     return (
       <StatusPill className="border-emerald-500/40 text-emerald-600 dark:text-emerald-400">
-        {status.at
-          ? t("executionWorkspace.provisionStatusProvisionedAt", { time: formatDateTime(status.at) })
-          : t("executionWorkspace.provisionStatusProvisioned")}
+        Provisioned{status.at ? ` · ${formatDateTime(status.at)}` : ""}
       </StatusPill>
     );
   }
   return (
     <div className="flex flex-col gap-1">
       <StatusPill className="border-destructive/50 text-destructive">
-        {status.at
-          ? t("executionWorkspace.provisionStatusFailedAt", { time: formatDateTime(status.at) })
-          : t("executionWorkspace.provisionStatusFailed")}
+        Provisioning failed{status.at ? ` · ${formatDateTime(status.at)}` : ""}
       </StatusPill>
       <button type="button" onClick={onViewLogs} className="self-start text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground">
-        {t("executionWorkspace.viewRuntimeLogs")}
+        View runtime logs
       </button>
     </div>
   );
@@ -493,11 +517,7 @@ function MonoValue({ value, copy }: { value: string; copy?: boolean }) {
     <div className="inline-flex max-w-full items-start gap-2">
       <span className="break-all font-mono text-xs">{value}</span>
       {copy ? (
-        <CopyText
-          text={value}
-          className="shrink-0 text-muted-foreground hover:text-foreground"
-          copiedLabel={t("common.copied")}
-        >
+        <CopyText text={value} className="shrink-0 text-muted-foreground hover:text-foreground" copiedLabel={t("common.copied")}>
           <Copy className="h-3.5 w-3.5" />
         </CopyText>
       ) : null}
@@ -530,6 +550,7 @@ function ExecutionWorkspaceIssuesList({
   error: Error | null;
   project: Project | null;
 }) {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   const { data: agents } = useQuery({
@@ -627,7 +648,7 @@ function WorkspaceRoutineRow({
         </div>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
           <span>{routine.assigneeAgentId ? t("executionWorkspace.defaultAgentSet") : t("executionWorkspace.chooseAgentWhenRunning")}</span>
-          <span>{t("executionWorkspace.lastRun", { time: formatOptionalDateTime(routine.lastRun?.triggeredAt ?? routine.lastTriggeredAt) })}</span>
+          <span>Last run {formatOptionalDateTime(routine.lastRun?.triggeredAt ?? routine.lastTriggeredAt)}</span>
           <span className="flex flex-wrap gap-1">
             {variableNames.map((name) => (
               <span key={name} className="rounded-sm bg-muted px-1.5 py-0.5 font-mono text-(length:--text-micro) text-muted-foreground">
@@ -727,7 +748,7 @@ function ExecutionWorkspaceRoutinesList({
         <CardHeader>
           <CardTitle>{t("executionWorkspace.workspaceRoutines")}</CardTitle>
           <CardDescription>
-            {t("executionWorkspace.workspaceRoutinesDescription")}
+            Routines that use workspace-specific variables can be run against this execution workspace.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -741,7 +762,7 @@ function ExecutionWorkspaceRoutinesList({
             <div className="flex flex-col items-center gap-2 py-10 text-center">
               <Repeat className="h-5 w-5 text-muted-foreground" />
               <p className="text-sm text-muted-foreground">
-                {t("executionWorkspace.noWorkspaceRoutines")}
+                No routines use workspace-specific variables yet.
               </p>
             </div>
           ) : (
@@ -796,6 +817,8 @@ export function ExecutionWorkspaceDetail() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [runtimeActionErrorMessage, setRuntimeActionErrorMessage] = useState<string | null>(null);
   const [runtimeActionMessage, setRuntimeActionMessage] = useState<string | null>(null);
+  const [handoffFailure, setHandoffFailure] = useState<WorkspaceLoginHandoffFailureInfo | null>(null);
+  const [handoffErrorMessage, setHandoffErrorMessage] = useState<string | null>(null);
   const [pendingRuntimeActions, setPendingRuntimeActions] = useState<WorkspaceRuntimeControlRequest[]>([]);
   const activeRouteTab = workspaceId ? resolveExecutionWorkspaceTab(location.pathname, workspaceId) : null;
   const pluginTabFromSearch = useMemo(() => {
@@ -867,14 +890,8 @@ export function ExecutionWorkspaceDetail() {
     [workspacePluginDetailSlots],
   );
   const workspaceTabItems = useMemo(
-    () => orderExecutionWorkspaceTabItems([
-      ...EXECUTION_WORKSPACE_BASE_TAB_ITEMS.map((item) => ({
-        ...item,
-        label: t(`executionWorkspace.tabs.${item.value === "runtime_logs" ? "runtimeLogs" : item.value}`),
-      })),
-      ...workspacePluginTabItems,
-    ]),
-    [t, workspacePluginTabItems],
+    () => orderExecutionWorkspaceTabItems([...EXECUTION_WORKSPACE_BASE_TAB_ITEMS, ...workspacePluginTabItems]),
+    [workspacePluginTabItems],
   );
   const inheritedRuntimeConfig = linkedProjectWorkspace?.runtimeConfig?.workspaceRuntime ?? null;
   const effectiveRuntimeConfig = workspace?.config?.workspaceRuntime ?? inheritedRuntimeConfig;
@@ -925,7 +942,7 @@ export function ExecutionWorkspaceDetail() {
       { label: workspace.name },
     ];
     setBreadcrumbs(crumbs);
-  }, [setBreadcrumbs, workspace, project, projectRef, t]);
+  }, [setBreadcrumbs, workspace, project, projectRef]);
 
   const updateWorkspace = useMutation({
     mutationFn: (patch: Record<string, unknown>) => executionWorkspacesApi.update(workspace!.id, patch),
@@ -991,7 +1008,68 @@ export function ExecutionWorkspaceDetail() {
     },
   });
 
-  if (workspaceQuery.isLoading) return <p className="text-sm text-muted-foreground">{t("executionWorkspace.loadingWorkspace")}</p>;
+  /**
+   * Password-independent workspace entry (PAP-17572).
+   *
+   * The server answers with a ticket-bearing URL, and the workspace answers *that*
+   * with a redirect — which is what keeps the ticket out of session history.
+   *
+   * The target tab is opened synchronously on click and only pointed at the URL
+   * once the ticket arrives. Opening it after the request resolves would be a
+   * popup the browser did not attribute to the click, and Safari and Firefox
+   * block exactly that. If the tab could not be opened anyway, fall back to
+   * navigating this one rather than silently doing nothing.
+   */
+  const openWorkspace = useMutation({
+    mutationFn: async () => {
+      const target = window.open("about:blank", "_blank", "noopener,noreferrer");
+      try {
+        return { ticket: await executionWorkspacesApi.requestLoginHandoff(workspace!.id), target };
+      } catch (error) {
+        target?.close();
+        throw error;
+      }
+    },
+    onSuccess: ({ ticket, target }) => {
+      setHandoffFailure(null);
+      setHandoffErrorMessage(null);
+      if (target && !target.closed) target.location.replace(ticket.url);
+      else window.location.assign(ticket.url);
+    },
+    onError: async (error) => {
+      // A structured refusal is rendered as workspace state by the access card,
+      // so only an unrecognized transport error needs its own message line.
+      const failure = readWorkspaceHandoffFailure(error);
+      setHandoffFailure(failure);
+      setHandoffErrorMessage(
+        failure ? null : error instanceof Error ? error.message : "Failed to open the workspace.",
+      );
+      // The refusal reason often comes from an operation that has since advanced,
+      // so refresh the log the access card derives its state from.
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.executionWorkspaces.workspaceOperations(workspace!.id),
+      });
+    },
+  });
+  const repairWorkspace = useMutation({
+    mutationFn: () => executionWorkspacesApi.repair(workspace!.id),
+    onSuccess: (result) => {
+      queryClient.setQueryData(queryKeys.executionWorkspaces.detail(result.workspace.id), result.workspace);
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.executionWorkspaces.workspaceOperations(result.workspace.id),
+      });
+      setHandoffFailure(null);
+      setHandoffErrorMessage(null);
+      setRuntimeActionErrorMessage(null);
+      setRuntimeActionMessage("Workspace database repaired.");
+    },
+    onError: (error) => {
+      setRuntimeActionMessage(null);
+      setRuntimeActionErrorMessage(error instanceof Error ? error.message : "Failed to repair the workspace.");
+    },
+  });
+
+  if (workspaceQuery.isLoading) return <p className="text-sm text-muted-foreground">Loading workspace…</p>;
   if (workspaceQuery.error) {
     return (
       <p className="text-sm text-destructive">
@@ -1014,6 +1092,11 @@ export function ExecutionWorkspaceDetail() {
     sections: runtimeControlSections,
     runtimeServices: workspace.runtimeServices ?? [],
     pendingRequests: pendingRuntimeActions,
+  });
+  const workspaceAccess = resolveWorkspaceAccessState({
+    runtimeServices: workspace.runtimeServices ?? [],
+    operations: workspaceOperationsQuery.data,
+    handoffFailure,
   });
 
   const pluginSlotContext = {
@@ -1067,7 +1150,7 @@ export function ExecutionWorkspaceDetail() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0 space-y-2">
             <div className="text-xs font-medium uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
-              {t("executionWorkspace.title")}
+              Execution workspace
             </div>
             <h1 className="truncate text-xl font-semibold sm:text-2xl">{workspace.name}</h1>
           </div>
@@ -1084,6 +1167,20 @@ export function ExecutionWorkspaceDetail() {
         </div>
         {runtimeActionErrorMessage ? <p className="text-sm text-destructive">{runtimeActionErrorMessage}</p> : null}
         {!runtimeActionErrorMessage && runtimeActionMessage ? <p className="text-sm text-muted-foreground">{runtimeActionMessage}</p> : null}
+
+        <WorkspaceAccessCard
+          access={workspaceAccess}
+          isBusy={openWorkspace.isPending || repairWorkspace.isPending}
+          onOpen={() => openWorkspace.mutate()}
+          onStart={() => {
+            runRuntimeControlRequests(
+              resolveWorkspaceServiceControlRequests(runtimeControlSections, "start", null),
+            );
+          }}
+          onRepair={() => repairWorkspace.mutate()}
+          onViewLogs={() => handleTabChange("runtime_logs")}
+          errorMessage={handoffErrorMessage}
+        />
 
         <PluginSlotOutlet
           slotTypes={["toolbarButton", "contextMenuItem"]}
@@ -1127,7 +1224,7 @@ export function ExecutionWorkspaceDetail() {
               <CardHeader>
                 <CardTitle>{t("executionWorkspace.workspaceSettings")}</CardTitle>
                 <CardDescription>
-                  {t("executionWorkspace.workspaceSettingsDescription")}
+                  Edit the concrete path, repo, branch, provisioning, teardown, and runtime overrides attached to this execution workspace. Saved changes affect future runs; Paperclip may refresh or replace a reused workspace when config changes.
                 </CardDescription>
                 <CardAction>
                   <Button
@@ -1170,7 +1267,7 @@ export function ExecutionWorkspaceDetail() {
                       />
                     </Field>
 
-                  <Field label={t("executionWorkspace.baseRef")}>
+                    <Field label={t("executionWorkspace.baseRef")}>
                       <Input
                         className="font-mono"
                         value={form.baseRef}
@@ -1264,7 +1361,7 @@ export function ExecutionWorkspaceDetail() {
                     <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
                       <div className="space-y-1">
                         <div className="text-sm font-medium text-foreground">
-                          {t("executionWorkspace.runtimeConfigSource")}
+                          Runtime config source
                         </div>
                         <p className="text-sm text-muted-foreground">
                           {runtimeConfigSource === "execution_workspace"
@@ -1287,7 +1384,7 @@ export function ExecutionWorkspaceDetail() {
                           } : current)
                         }
                       >
-                        {t("executionWorkspace.resetToInherit")}
+                        Reset to inherit
                       </Button>
                     </div>
                   </div>
@@ -1295,7 +1392,7 @@ export function ExecutionWorkspaceDetail() {
                   <details className="rounded-md border border-dashed border-border/70 bg-background px-4 py-3">
                     <summary className="cursor-pointer text-sm font-medium">{t("executionWorkspace.advancedRuntimeJson")}</summary>
                     <p className="mt-2 text-sm text-muted-foreground">
-                      {t("executionWorkspace.advancedRuntimeJsonDescription")}
+                      Override the inherited workspace command model only when this execution workspace truly needs different service or job behavior.
                     </p>
                     <div className="mt-3">
                       <Field label={t("executionWorkspace.workspaceCommandsJson")} hint={t("executionWorkspace.workspaceCommandsJsonHint")}>
@@ -1334,7 +1431,7 @@ export function ExecutionWorkspaceDetail() {
                       <div>
                         <div className="text-sm font-medium">{t("executionWorkspace.servicePorts")}</div>
                         <p className="mt-1 text-sm text-muted-foreground">
-                          {t("executionWorkspace.servicePortsDescription")}
+                          Set a fixed port for a service or leave it blank to use its configured automatic behavior. Editing an inherited service creates an execution-workspace runtime override.
                         </p>
                       </div>
                       <div className="grid gap-3 sm:grid-cols-2">
@@ -1374,7 +1471,7 @@ export function ExecutionWorkspaceDetail() {
                         </div>
                       ) : null}
                       <p className="text-sm text-muted-foreground">
-                        {t("executionWorkspace.servicePortsValidation")}
+                        Paperclip checks fixed ports again when a service starts and rejects cross-workspace conflicts.
                       </p>
                     </div>
                   ) : null}
@@ -1384,7 +1481,7 @@ export function ExecutionWorkspaceDetail() {
               <div className="mt-6 flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center">
                 <Button className="w-full sm:w-auto" disabled={!isDirty || updateWorkspace.isPending} onClick={saveChanges}>
                   {updateWorkspace.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                  {t("Save changes")}
+                  Save changes
                 </Button>
                 <Button
                   variant="outline"
@@ -1397,7 +1494,7 @@ export function ExecutionWorkspaceDetail() {
                     setRuntimeActionMessage(null);
                   }}
                 >
-                  {t("Reset")}
+                  Reset
                 </Button>
                 {errorMessage ? <p className="text-sm text-destructive">{errorMessage}</p> : null}
                 {!errorMessage && !isDirty ? <p className="text-sm text-muted-foreground">{t("executionWorkspace.noUnsavedChanges")}</p> : null}
@@ -1423,7 +1520,7 @@ export function ExecutionWorkspaceDetail() {
                   t("None")
                 )}
               </DetailRow>
-              <DetailRow label={t("executionWorkspace.sourceIssue")}>
+              <DetailRow label="Source task">
                 {sourceIssue ? (
                   <Link to={issueUrl(sourceIssue)} className="hover:underline">
                     {sourceIssue.identifier ?? sourceIssue.id} · {sourceIssue.title}
@@ -1476,7 +1573,7 @@ export function ExecutionWorkspaceDetail() {
                       {workspace.repoUrl}
                       <ExternalLink className="h-3.5 w-3.5 shrink-0" />
                     </a>
-                    <CopyText text={workspace.repoUrl} className="shrink-0 text-muted-foreground hover:text-foreground" copiedLabel="Copied">
+                    <CopyText text={workspace.repoUrl} className="shrink-0 text-muted-foreground hover:text-foreground" copiedLabel={t("common.copied")}>
                       <Copy className="h-3.5 w-3.5" />
                     </CopyText>
                   </div>
@@ -1510,7 +1607,7 @@ export function ExecutionWorkspaceDetail() {
             </CardHeader>
             <CardContent>
             {workspaceOperationsQuery.isLoading ? (
-              <p className="text-sm text-muted-foreground">{t("executionWorkspace.loadingOperations")}</p>
+              <p className="text-sm text-muted-foreground">Loading workspace operations…</p>
             ) : workspaceOperationsQuery.error ? (
               <p className="text-sm text-destructive">
                 {workspaceOperationsQuery.error instanceof Error
@@ -1579,7 +1676,7 @@ export function ExecutionWorkspaceDetail() {
         ) : isExecutionWorkspacePluginTab(activeTab) ? (
           <MissingPluginTabPlaceholder
             defaultTabHref={executionWorkspaceTabPath(workspace.id, "issues")}
-            defaultTabLabel={t("executionWorkspace.backToIssues")}
+            defaultTabLabel="Back to tasks"
           />
         ) : activeTab === "routines" ? (
           <ExecutionWorkspaceRoutinesList

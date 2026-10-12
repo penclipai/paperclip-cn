@@ -54,7 +54,7 @@ export async function handleOnboardService(
   const canPrompt = options.yes !== true && deps.isInteractive();
   if (!explicitlyRequested && !canPrompt) {
     deps.info(
-      "Background service not installed. Use `paperclipai onboard --install-service` or `paperclipai service install` to opt in.",
+      "Background service not installed. Use `penclip onboard --install-service` or `penclip service install` to opt in.",
     );
     return false;
   }

@@ -14,8 +14,9 @@ const COMPANY_NAME = `Release-Smoke-${Date.now()}`;
 const AGENT_NAME = "CEO";
 const MISSION =
   "Verify that the published Docker image can complete onboarding.";
-const FIRST_TASK_TITLE =
-  /^(Hire your first engineer and create a hiring plan|招聘首位工程师并制定招聘计划)$/;
+// Seeded by the wizard's launch step (DEFAULT_TASK_TITLE in
+// ui/src/components/OnboardingWizard.tsx).
+const FIRST_TASK_TITLE = "Paperclip onboarding";
 
 function asRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" && !Array.isArray(value)
@@ -152,20 +153,23 @@ test.describe("Docker authenticated onboarding smoke", () => {
     await page.getByPlaceholder(localized.missionPlaceholder).fill(MISSION);
     await page.getByRole("button", { name: localized.confirmMission }).click();
 
-    const leadName = page.getByPlaceholder(localized.chiefOfStaffPlaceholder);
-    await leadName.waitFor({ timeout: 30_000 });
-    await leadName.fill(AGENT_NAME);
+    const roleSelect = page.locator("#onboarding-agent-role");
+    await expect(roleSelect).toBeVisible({ timeout: 20_000 });
+    await roleSelect.click();
+    await page.getByRole("option", { name: "CEO", exact: true }).click();
+    await page.locator("#onboarding-agent-name").fill(AGENT_NAME);
     await page.getByRole("button", { name: localized.next }).click();
 
-    await page
-      .getByRole("button", { name: localized.giveItAHeartbeat })
-      .click();
+    const connectButton = page.getByRole("button", { name: localized.appConnect });
+    await expect(connectButton).toBeVisible({ timeout: 10_000 });
+    await expect(connectButton).toBeEnabled({ timeout: 30_000 });
+    await connectButton.click();
 
     const getStarted = page.getByRole("button", { name: localized.getStarted });
-    await getStarted.waitFor({ timeout: 30_000 });
+    await getStarted.waitFor({ timeout: 60_000 });
 
     await getStarted.click();
-    await expect(page).toHaveURL(/\/dashboard$/, { timeout: 30_000 });
+    await expect(page).toHaveURL(/\/issues\//, { timeout: 30_000 });
 
     const baseUrl = new URL(page.url()).origin;
 
@@ -216,12 +220,18 @@ test.describe("Docker authenticated onboarding smoke", () => {
     expect(issuesRes.ok()).toBe(true);
     const issues = (await issuesRes.json()) as Array<{
       id: string;
+      identifier: string | null;
       title: string;
       assigneeAgentId: string | null;
     }>;
-    const issue = issues.find((entry) => FIRST_TASK_TITLE.test(entry.title));
+    const issue = issues.find((entry) => entry.title === FIRST_TASK_TITLE);
     expect(issue).toBeTruthy();
     expect(issue!.assigneeAgentId).toBe(ceoAgent!.id);
+
+    const seededRef = issue!.identifier ?? issue!.id;
+    expect(new URL(page.url()).pathname.endsWith(`/issues/${seededRef}`)).toBe(
+      true
+    );
 
     await expect.poll(
       async () => {

@@ -40,6 +40,21 @@
     "publishFromCi": true
   },
   {
+    "dir": "packages/adapters/hermes",
+    "name": "@penclipai/hermes-paperclip-adapter",
+    "publishFromCi": true
+  },
+  {
+    "dir": "packages/adapters/hermes-gateway",
+    "name": "@penclipai/adapter-hermes-gateway",
+    "publishFromCi": false
+  },
+  {
+    "dir": "packages/adapters/kimi-local",
+    "name": "@penclipai/adapter-kimi-local",
+    "publishFromCi": true
+  },
+  {
     "dir": "packages/adapters/opencode-local",
     "name": "@penclipai/adapter-opencode-local",
     "publishFromCi": true
@@ -60,16 +75,6 @@
     "publishFromCi": true
   },
   {
-    "dir": "packages/adapters/hermes",
-    "name": "@penclipai/hermes-paperclip-adapter",
-    "publishFromCi": true
-  },
-  {
-    "dir": "packages/adapters/hermes-gateway",
-    "name": "@penclipai/adapter-hermes-gateway",
-    "publishFromCi": false
-  },
-  {
     "dir": "packages/shared",
     "name": "@penclipai/shared",
     "publishFromCi": true
@@ -77,12 +82,12 @@
   {
     "dir": "packages/skills-catalog",
     "name": "@penclipai/skills-catalog",
-    "publishFromCi": false
+    "publishFromCi": true
   },
   {
     "dir": "packages/teams-catalog",
     "name": "@penclipai/teams-catalog",
-    "publishFromCi": false
+    "publishFromCi": true
   },
   {
     "dir": "packages/db",
@@ -97,7 +102,7 @@
   {
     "dir": "packages/plugins/plugin-workspace-diff",
     "name": "@penclipai/plugin-workspace-diff",
-    "publishFromCi": false
+    "publishFromCi": true
   },
   {
     "dir": "server",
@@ -132,7 +137,7 @@
   {
     "dir": "packages/plugins/sandbox-providers/cloudflare",
     "name": "@penclipai/plugin-cloudflare-sandbox",
-    "publishFromCi": false
+    "publishFromCi": true
   },
   {
     "dir": "packages/plugins/sandbox-providers/daytona",
@@ -142,7 +147,7 @@
   {
     "dir": "packages/plugins/sandbox-providers/exe-dev",
     "name": "@penclipai/plugin-exe-dev",
-    "publishFromCi": false
+    "publishFromCi": true
   },
   {
     "dir": "packages/plugins/sandbox-providers/e2b",
@@ -157,12 +162,12 @@
   {
     "dir": "packages/plugins/sandbox-providers/kubernetes",
     "name": "@penclipai/plugin-kubernetes",
-    "publishFromCi": false
+    "publishFromCi": true
   },
   {
     "dir": "packages/plugins/sandbox-providers/novita",
     "name": "@penclipai/plugin-novita-sandbox",
-    "publishFromCi": false
+    "publishFromCi": true
   },
   {
     "dir": "ui",

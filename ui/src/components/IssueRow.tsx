@@ -1,10 +1,5 @@
 import type { ReactNode } from "react";
-import { useTranslation } from "react-i18next";
-import type {
-  ExternalObjectSummary,
-  Issue,
-  IssueRecoveryAction,
-} from "@penclipai/shared";
+import type { ExternalObjectSummary, Issue, IssueRecoveryAction } from "@penclipai/shared";
 import { Link } from "@/lib/router";
 import { Archive, Eye, Flag } from "lucide-react";
 import {
@@ -18,6 +13,11 @@ import {
   RECOVERY_CHIP_DEFAULT_TONE,
   recoveryChipLabel,
 } from "../lib/recovery-display";
+import {
+  formatRecoveryLineageSummary,
+  readRecoveryRetryLineage,
+  type RecoveryLivenessContext,
+} from "../lib/recovery-lineage";
 import { StatusIcon } from "./StatusIcon";
 import { productivityReviewTriggerLabel } from "./ProductivityReviewBadge";
 import { hasAssignedBacklogBlocker } from "../lib/issue-blockers";
@@ -66,6 +66,38 @@ interface IssueRowProps {
   showDivider?: boolean;
 }
 
+export function InboxArchiveButton({
+  onArchive,
+  disabled,
+}: {
+  onArchive: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      data-slot="icon-button"
+      onClick={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        onArchive();
+      }}
+      onKeyDown={(event) => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+        event.preventDefault();
+        event.stopPropagation();
+        onArchive();
+      }}
+      disabled={disabled}
+      className="inline-flex shrink-0 items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100 disabled:pointer-events-none disabled:opacity-30"
+      aria-label="Archive"
+    >
+      <Archive className="h-3.5 w-3.5" />
+      Archive
+    </button>
+  );
+}
+
 export function IssueRow({
   issue,
   issueLinkState,
@@ -93,14 +125,13 @@ export function IssueRow({
   chevronInGuide = false,
   showDivider = false,
 }: IssueRowProps) {
-  const { t } = useTranslation();
   const issuePathId = issue.identifier ?? issue.id;
   const identifier = issue.identifier ?? issue.id.slice(0, 8);
   // A row participates in the unread system whenever `unreadState` is supplied
   // (inbox rows). It then reserves a fixed leading dot slot on all rows — read
   // and unread alike — so the mark-read dot sits in the far-left gutter without
   // shifting content, matching the sibling non-issue inbox rows.
-  const showUnreadSlot = unreadState !== null;
+  const showUnreadSlot = unreadState != null;
   const showUnreadDot = unreadState === "visible" || unreadState === "fading";
   const unreadDotButton = (
     <button
@@ -122,7 +153,7 @@ export function IssueRow({
         "inline-flex h-4 w-4 items-center justify-center rounded-full transition-colors",
         selected ? "hover:bg-muted/80" : "hover:bg-blue-500/20",
       )}
-      aria-label={t("Mark as read", { defaultValue: "Mark as read" })}
+      aria-label="Mark as read"
     >
       <span
         className={cn(
@@ -133,9 +164,7 @@ export function IssueRow({
       />
     </button>
   );
-  const selectedStatusClass = selected
-    ? "!text-muted-foreground !border-muted-foreground"
-    : undefined;
+  const selectedStatusClass = selected ? "!text-muted-foreground !border-muted-foreground" : undefined;
   const detailState = withIssueDetailHeaderSeed(issueLinkState, issue);
   const productivityReview = issue.productivityReview ?? null;
   const productivityReviewIndicator = productivityReview ? (
@@ -144,42 +173,32 @@ export function IssueRow({
         "inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-300",
         selected ? "border-muted-foreground text-muted-foreground" : null,
       )}
-      title={t("productivityReview.rowTitle", {
-        defaultValue: "Productivity review: {{label}}",
-        label: productivityReviewTriggerLabel(productivityReview.trigger, t),
-      })}
-      aria-label={t("productivityReview.openTitle", {
-        defaultValue: "Productivity review open",
-      })}
+      title={`Productivity review: ${productivityReviewTriggerLabel(productivityReview.trigger)}`}
+      aria-label="Productivity review open"
     >
       <Eye className="h-2.5 w-2.5" aria-hidden />
     </span>
   ) : null;
   const hasChecklistStep = checklistStepNumber !== null;
   const checklistStep = hasChecklistStep ? (
-    <span
-      className="shrink-0 font-mono text-xs text-muted-foreground"
-      aria-hidden="true"
-    >
+    <span className="shrink-0 font-mono text-xs text-muted-foreground" aria-hidden="true">
       {checklistStepNumber}.
     </span>
   ) : null;
   const recoveryAction = issue.activeRecoveryAction ?? null;
+  // The row already carries the issue's own scheduled retry, so the chip can tell a retry the
+  // scheduler is actually running from one whose due time simply passed.
   const recoveryIndicator = recoveryAction
-    ? renderRecoveryChip(recoveryAction, selected)
+    ? renderRecoveryChip(recoveryAction, selected, { scheduledRetry: issue.scheduledRetry ?? null })
     : null;
   const parkedBlockerIndicator = hasAssignedBacklogBlocker(issue.blockedBy) ? (
-    <Badge
-      variant="outline"
+    <Badge variant="outline"
       data-testid="issue-row-parked-blocker"
-      className="ml-1.5 inline-flex shrink-0 items-center gap-0.5 rounded-full border border-amber-500/60 bg-amber-500/15 px-2 py-0.5 text-(length:--text-nano) font-medium text-amber-700 dark:text-amber-300"
-      title={t("issueBlocked.parkedWorkTitle", {
-        defaultValue:
-          "Blocked by parked work - at least one assigned blocker is in backlog and will not wake its assignee.",
-      })}
+      className="[&>svg]:size-2.5 ml-1.5 gap-0.5 border-amber-500/60 bg-amber-500/15 text-(length:--text-nano) text-amber-700 dark:text-amber-300"
+      title="Blocked by parked work — at least one assigned blocker is in backlog and will not wake its assignee."
     >
       <Flag className="h-2.5 w-2.5" aria-hidden />
-      {t("issueBlocked.parkedWork", { defaultValue: "Blocked by parked work" })}
+      Blocked by parked work
     </Badge>
   ) : null;
 
@@ -211,41 +230,24 @@ export function IssueRow({
         data-inbox-issue-link
         id={checklistRowId}
         aria-current={checklistCurrentStep ? "step" : undefined}
-        onClickCapture={() =>
-          rememberIssueDetailLocationState(issuePathId, detailState)
-        }
+        onClickCapture={() => rememberIssueDetailLocationState(issuePathId, detailState)}
         className={cn(
           // Overlay Link keeps ONLY positioning + focus ring so header controls
           // stay clickable above it; visual washes belong on the root above.
           "absolute inset-0 rounded-lg no-underline text-inherit focus-visible:z-10 focus-visible:outline-none focus-visible:ring-(length:--rad-3) focus-visible:ring-ring",
         )}
       >
-        <span className="sr-only">
-          {t("issueRow.open")} {identifier}: {issue.title}
-        </span>
+        <span className="sr-only">Open {identifier}: {issue.title}</span>
       </Link>
       <span className="flex shrink-0 items-center gap-1 pt-px sm:hidden">
-        {mobileLeading ?? (
-          <StatusIcon
-            status={issue.status}
-            blockerAttention={issue.blockerAttention}
-            size="md"
-            className={selectedStatusClass}
-          />
-        )}
+        {mobileLeading ?? <StatusIcon status={issue.status} blockerAttention={issue.blockerAttention} size="md" className={selectedStatusClass} />}
         {productivityReviewIndicator}
         {parkedBlockerIndicator}
         {recoveryIndicator}
       </span>
       <span className="flex min-w-0 flex-1 flex-col gap-1 sm:contents">
-        <span
-          className={cn(
-            "line-clamp-2 text-sm sm:order-2 sm:min-w-0 sm:flex-1 sm:truncate sm:line-clamp-none",
-            titleClassName,
-          )}
-        >
-          {issue.title}
-          {titleSuffix}
+        <span className={cn("line-clamp-2 text-sm sm:order-2 sm:min-w-0 sm:flex-1 sm:truncate sm:line-clamp-none", titleClassName)}>
+          {issue.title}{titleSuffix}
         </span>
         {checklistDependencyChips ? (
           <span className="flex flex-wrap gap-1 sm:order-3 sm:ml-(--sz-calc-13)">
@@ -268,43 +270,38 @@ export function IssueRow({
           ) : null}
           {treeGuides > 0
             ? Array.from({ length: treeGuides }, (_, level) => {
-                // The innermost guide lands on THIS row's own chevron column; if
-                // the row has a chevron, break the line around it so it isn't
-                // crossed out.
-                const gapForChevron =
-                  chevronInGuide && level === treeGuides - 1;
-                return (
-                  // Tree guide: occupies the same flex slot as the parent's
-                  // chevron column so the line lands under the parent's status
-                  // column; stretched past the row padding so consecutive rows
-                  // read as one continuous line.
-                  <span
-                    key={`guide-${level}`}
-                    aria-hidden="true"
-                    className="relative hidden w-4 shrink-0 self-stretch sm:block"
-                  >
-                    {/* The connector drops from under the ancestor's STATUS icon,
+              // The innermost guide lands on THIS row's own chevron column; if
+              // the row has a chevron, break the line around it so it isn't
+              // crossed out.
+              const gapForChevron = chevronInGuide && level === treeGuides - 1;
+              return (
+              // Tree guide: occupies the same flex slot as the parent's
+              // chevron column so the line lands under the parent's status
+              // column; stretched past the row padding so consecutive rows
+              // read as one continuous line.
+              <span key={`guide-${level}`} aria-hidden="true" className="relative hidden w-4 shrink-0 self-stretch sm:block">
+                {/* The connector drops from under the ancestor's STATUS icon,
                     not its chevron: the status column sits one level (w-4 slot
                     + gap-2 = 2rem) right of this guide slot's left edge.
                     bg-background underlay: dark-mode --border is translucent,
                     so overlapping row segments would stack brighter without
                     an opaque base. */}
-                    <span className="absolute -inset-y-3 left-8 w-px bg-background">
-                      {gapForChevron ? (
-                        // Two border segments centering a 14px (h-3.5) transparent
-                        // gap for the row's own chevron.
-                        <span className="absolute inset-0 flex flex-col">
-                          <span className="flex-1 bg-border" />
-                          <span className="h-3.5 shrink-0" />
-                          <span className="flex-1 bg-border" />
-                        </span>
-                      ) : (
-                        <span className="absolute inset-0 bg-border" />
-                      )}
+                <span className="absolute -inset-y-3 left-8 w-px bg-background">
+                  {gapForChevron ? (
+                    // Two border segments centering a 14px (h-3.5) transparent
+                    // gap for the row's own chevron.
+                    <span className="absolute inset-0 flex flex-col">
+                      <span className="flex-1 bg-border" />
+                      <span className="h-3.5 shrink-0" />
+                      <span className="flex-1 bg-border" />
                     </span>
-                  </span>
-                );
-              })
+                  ) : (
+                    <span className="absolute inset-0 bg-border" />
+                  )}
+                </span>
+              </span>
+              );
+            })
             : null}
           {desktopLeadingSpacer ? (
             <span className="hidden w-3.5 shrink-0 sm:block" />
@@ -312,12 +309,7 @@ export function IssueRow({
           {desktopMetaLeading ?? (
             <>
               <span className="hidden shrink-0 items-center gap-1 sm:inline-flex">
-                <StatusIcon
-                  status={issue.status}
-                  blockerAttention={issue.blockerAttention}
-                  size="md"
-                  className={selectedStatusClass}
-                />
+                <StatusIcon status={issue.status} blockerAttention={issue.blockerAttention} size="md" className={selectedStatusClass} />
                 {productivityReviewIndicator}
               </span>
               {checklistStep}
@@ -330,109 +322,25 @@ export function IssueRow({
           )}
           {mobileMeta ? (
             <>
-              <span
-                className="text-xs text-muted-foreground sm:hidden"
-                aria-hidden="true"
-              >
+              <span className="text-xs text-muted-foreground sm:hidden" aria-hidden="true">
                 &middot;
               </span>
-              <span className="text-xs text-muted-foreground sm:hidden">
-                {mobileMeta}
-              </span>
+              <span className="text-xs text-muted-foreground sm:hidden">{mobileMeta}</span>
             </>
           ) : null}
         </span>
       </span>
-      {onArchive || desktopTrailing || trailingMeta || externalObjectSummary ? (
+      {(onArchive || desktopTrailing || trailingMeta || externalObjectSummary) ? (
         <span className="ml-auto hidden shrink-0 items-center gap-2 sm:order-3 sm:flex sm:gap-3">
+          {onArchive ? (
+            <InboxArchiveButton onArchive={onArchive} disabled={archiveDisabled} />
+          ) : null}
           {externalObjectSummary ? (
-            <ExternalObjectStatusSummary
-              summary={externalObjectSummary}
-              compact
-            />
+            <ExternalObjectStatusSummary summary={externalObjectSummary} compact />
           ) : null}
           {desktopTrailing}
           {trailingMeta ? (
-            <span className="text-xs text-muted-foreground">
-              {trailingMeta}
-            </span>
-          ) : null}
-        </span>
-      ) : null}
-      {showUnreadSlot ? (
-        <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center self-center">
-          {showUnreadDot ? (
-            <button
-              type="button"
-              data-slot="icon-button"
-              onClick={(event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                onMarkRead?.();
-              }}
-              onKeyDown={(event) => {
-                if (event.key === "Enter" || event.key === " ") {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  onMarkRead?.();
-                }
-              }}
-              className={cn(
-                "inline-flex h-4 w-4 items-center justify-center rounded-full transition-colors",
-                selected ? "hover:bg-muted/80" : "hover:bg-blue-500/20",
-              )}
-              aria-label={t("Mark as read", { defaultValue: "Mark as read" })}
-            >
-              <span
-                className={cn(
-                  "block h-2 w-2 rounded-full transition-opacity duration-300",
-                  selected
-                    ? "bg-muted-foreground/70"
-                    : "bg-blue-600 dark:bg-blue-400",
-                  unreadState === "fading" ? "opacity-0" : "opacity-100",
-                )}
-              />
-            </button>
-          ) : onArchive ? (
-            <button
-              type="button"
-              data-slot="icon-button"
-              onClick={(event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                onArchive();
-              }}
-              onKeyDown={(event) => {
-                if (event.key !== "Enter" && event.key !== " ") return;
-                event.preventDefault();
-                event.stopPropagation();
-                onArchive();
-              }}
-              disabled={archiveDisabled}
-              className="inline-flex h-4 w-4 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100 disabled:pointer-events-none disabled:opacity-30"
-              aria-label={t("Dismiss from inbox", {
-                defaultValue: "Dismiss from inbox",
-              })}
-            >
-              <Archive className="h-3.5 w-3.5" />
-              <span className="sr-only">
-                {t("Dismiss from inbox", {
-                  defaultValue: "Dismiss from inbox",
-                })}
-              </span>
-            </button>
-          ) : null}
-          {externalObjectSummary ? (
-            <ExternalObjectStatusSummary
-              summary={externalObjectSummary}
-              compact
-            />
-          ) : null}
-          {desktopTrailing}
-          {trailingMeta ? (
-            <span className="text-xs text-muted-foreground">
-              {trailingMeta}
-            </span>
+            <span className="text-xs text-muted-foreground">{trailingMeta}</span>
           ) : null}
         </span>
       ) : null}
@@ -451,26 +359,31 @@ export function IssueRow({
 function renderRecoveryChip(
   action: IssueRecoveryAction,
   selected: boolean,
+  liveness: RecoveryLivenessContext,
 ): ReactNode {
-  const state = deriveActiveRecoveryDisplayState(action);
+  const state = deriveActiveRecoveryDisplayState(action, liveness);
   if (!state) return null;
   const tone = RECOVERY_CHIP_DEFAULT_TONE[state];
   const Icon = tone.icon;
-  const label = recoveryChipLabel(state, action.kind);
+  const lineage = readRecoveryRetryLineage(action, liveness);
+  const label = recoveryChipLabel(state, action.kind, lineage);
+  const detail = lineage ? formatRecoveryLineageSummary(lineage) : null;
   return (
-    <Badge
-      variant="outline"
+    <Badge variant="outline"
       data-testid="issue-row-recovery-indicator"
       data-recovery-state={state}
       data-recovery-kind={action.kind}
+      data-recovery-lane={lineage?.lane}
       role="status"
-      aria-label={label}
+      aria-label={detail ? `${label} — ${detail}` : label}
       className={cn(
         "ml-1.5 gap-0.5 text-(length:--text-nano)",
         tone.className,
         selected ? "!border-muted-foreground !text-muted-foreground" : null,
       )}
-      title={`${label} — open the source task to act.`}
+      title={detail
+        ? `${label} — ${detail}. Open the source task to act.`
+        : `${label} — open the source task to act.`}
     >
       <Icon className="h-2.5 w-2.5" aria-hidden />
       {label}

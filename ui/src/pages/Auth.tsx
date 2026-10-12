@@ -1,4 +1,3 @@
-import { useTranslation } from "react-i18next";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useSearchParams } from "@/lib/router";
@@ -9,12 +8,11 @@ import { Button } from "@/components/ui/button";
 import { AsciiArtAnimation } from "@/components/AsciiArtAnimation";
 import { PaperclipLoading } from "@/components/AnimatedPaperclipIcon";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { Sparkles } from "lucide-react";
+import { PaperclipLockup } from "../components/PaperclipLockup";
 
 type AuthMode = "sign_in" | "sign_up";
 
 export function AuthPage() {
-  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -57,9 +55,11 @@ export function AuthPage() {
       setError(null);
       await queryClient.invalidateQueries({ queryKey: queryKeys.auth.session });
       await queryClient.invalidateQueries({ queryKey: queryKeys.health });
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.companies.all,
-      });
+      // Reset rather than invalidate: the `["companies"]` entry is shared app-wide and
+      // is not account-scoped, so invalidating leaves the previous account's list
+      // readable (and any fetch for that session in flight) until the refetch lands.
+      // Sign-in can change accounts, so drop the list outright.
+      await queryClient.resetQueries({ queryKey: queryKeys.companies.all });
       navigate(nextPath, { replace: true });
     },
     onError: (err) => {
@@ -70,8 +70,7 @@ export function AuthPage() {
   const canSubmit =
     email.trim().length > 0 &&
     password.trim().length > 0 &&
-    (mode === "sign_in" ||
-      (name.trim().length > 0 && password.trim().length >= 8));
+    (mode === "sign_in" || (name.trim().length > 0 && password.trim().length >= 8));
 
   if (isSessionLoading) {
     return (
@@ -89,15 +88,12 @@ export function AuthPage() {
       {/* Left half — form */}
       <div className="w-full md:w-1/2 flex flex-col overflow-y-auto">
         <div className="w-full max-w-md mx-auto my-auto px-8 py-12">
-          <div className="flex items-center gap-2 mb-8">
-            <Sparkles className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium">Paperclip</span>
+          <div className="mb-8">
+            <PaperclipLockup className="h-5 w-auto" />
           </div>
 
           <h1 className="text-xl font-semibold">
-            {mode === "sign_in"
-              ? "Sign in to Paperclip"
-              : "Create your Paperclip account"}
+            {mode === "sign_in" ? "Sign in to Paperclip" : "Create your Paperclip account"}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {mode === "sign_in"
@@ -108,11 +104,7 @@ export function AuthPage() {
           <form
             className="mt-6 space-y-4"
             method="post"
-            action={
-              mode === "sign_up"
-                ? "/api/auth/sign-up/email"
-                : "/api/auth/sign-in/email"
-            }
+            action={mode === "sign_up" ? "/api/auth/sign-up/email" : "/api/auth/sign-in/email"}
             onSubmit={(event) => {
               event.preventDefault();
               if (mutation.isPending) return;
@@ -125,12 +117,7 @@ export function AuthPage() {
           >
             {mode === "sign_up" && (
               <div>
-                <label
-                  htmlFor="name"
-                  className="text-xs text-muted-foreground mb-1 block"
-                >
-                  {t("auth.name")}
-                </label>
+                <label htmlFor="name" className="text-xs text-muted-foreground mb-1 block">Name</label>
                 <input
                   id="name"
                   name="name"
@@ -147,12 +134,7 @@ export function AuthPage() {
               </div>
             )}
             <div>
-              <label
-                htmlFor="email"
-                className="text-xs text-muted-foreground mb-1 block"
-              >
-                {t("auth.email")}
-              </label>
+              <label htmlFor="email" className="text-xs text-muted-foreground mb-1 block">Email</label>
               <input
                 id="email"
                 name="email"
@@ -169,12 +151,7 @@ export function AuthPage() {
               />
             </div>
             <div>
-              <label
-                htmlFor="password"
-                className="text-xs text-muted-foreground mb-1 block"
-              >
-                {t("auth.password")}
-              </label>
+              <label htmlFor="password" className="text-xs text-muted-foreground mb-1 block">Password</label>
               <input
                 id="password"
                 name="password"
@@ -182,9 +159,7 @@ export function AuthPage() {
                 type="password"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
-                autoComplete={
-                  mode === "sign_in" ? "current-password" : "new-password"
-                }
+                autoComplete={mode === "sign_in" ? "current-password" : "new-password"}
                 required
                 aria-required="true"
                 aria-invalid={error ? true : undefined}
@@ -211,9 +186,7 @@ export function AuthPage() {
           </form>
 
           <div className="mt-5 text-sm text-muted-foreground">
-            {mode === "sign_in"
-              ? "Need an account?"
-              : "Already have an account?"}{" "}
+            {mode === "sign_in" ? "Need an account?" : "Already have an account?"}{" "}
             <button
               type="button"
               className="font-medium text-foreground underline underline-offset-2"

@@ -94,7 +94,7 @@ const zipPackageUpload = multer({
 const IMPORT_TRANSFER_PART_SIZE_LIMIT_BYTES = 64 * 1024 * 1024;
 
 // The declaration body and response shapes are the shared wire contract in
-// @paperclipai/shared/company-import-transfer — the browser and CLI clients
+// @penclipai/shared/company-import-transfer — the browser and CLI clients
 // type against the same schemas and path builders.
 const importTransferManifestSchema = companyImportTransferDeclarationSchema;
 
@@ -316,9 +316,9 @@ export function companyRoutes(db: Db, storage?: StorageService, options?: Compan
     from: z.string().optional(),
     to: z.string().optional(),
     userId: z.string().min(1).optional(),
-    goalId: z.string().uuid().optional(),
-    projectId: z.string().uuid().optional(),
-    issueId: z.string().uuid().optional(),
+    goalId: z.string().guid().optional(),
+    projectId: z.string().guid().optional(),
+    issueId: z.string().guid().optional(),
     limit: z.string().optional(),
     offset: z.string().optional(),
   }).passthrough();

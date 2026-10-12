@@ -1,14 +1,18 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { AlertTriangle, Clock, FlaskConical, Lock, Play, Search } from "lucide-react";
 import type {
   InstanceExperimentalSettings,
   InstanceExperimentalSettingsWithManaged,
+  InstanceFeatureKey,
   IssueGraphLivenessAutoRecoveryPreview,
   ManagedSettingMetadata,
   PatchInstanceExperimentalSettings,
 } from "@penclipai/shared";
+import { experimentalSettingKey } from "@penclipai/shared";
 import { instanceSettingsApi } from "@/api/instanceSettings";
+import { useHiddenSettings } from "@/hooks/useHiddenSettings";
 import { getWorktreeInstanceId, isWorktreeRuntime } from "../lib/worktree-branding";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { queryKeys } from "../lib/queryKeys";
@@ -25,7 +29,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useTranslation } from "react-i18next";
 
 function issueHref(identifier: string | null, issueId: string) {
   if (!identifier) return `/issues/${issueId}`;
@@ -78,11 +81,10 @@ function formatActivationTimestamp(iso: string): string {
 const SHOW_CONFERENCE_ROOM_EXPERIMENTAL_SETTING = false;
 
 function ManagedByCloudBadge() {
-  const { t } = useTranslation();
   return (
     <Badge variant="outline" className="text-muted-foreground">
       <Lock aria-hidden="true" />
-      {t("Managed by Paperclip Cloud", { defaultValue: "Managed by Paperclip Cloud" })}
+      Managed by Paperclip Cloud
     </Badge>
   );
 }
@@ -94,6 +96,7 @@ function ExperimentalToggleCard({
   checked,
   onCheckedChange,
   disabled,
+  settingKey,
   managed,
   ariaLabel,
 }: {
@@ -103,10 +106,14 @@ function ExperimentalToggleCard({
   checked: boolean;
   onCheckedChange: (checked: boolean) => void;
   disabled: boolean;
+  /** Flag key backing this card; operator-hidden keys render nothing. */
+  settingKey: InstanceFeatureKey;
   managed?: ManagedSettingMetadata;
   ariaLabel: string;
 }) {
+  const { hidden: hiddenSettings } = useHiddenSettings();
   const isManaged = managed?.managed === true;
+  if (hiddenSettings.has(experimentalSettingKey(settingKey))) return null;
   return (
     <Card className="block p-5">
       <div className="flex items-start justify-between gap-4">
@@ -153,27 +160,19 @@ function RecoveryPreviewDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
-          <DialogTitle>{t("Confirm auto-recovery", { defaultValue: "Confirm auto-recovery" })}</DialogTitle>
+          <DialogTitle>{t("Confirm auto-recovery")}</DialogTitle>
           <DialogDescription>
             {preview
-              ? t(
-                  count === 1
-                    ? "{{count}} recovery task matches the last {{hours}} hours."
-                    : "{{count}} recovery tasks match the last {{hours}} hours.",
-                  { count, hours: preview.lookbackHours },
-                )
-              : t("Checking recovery candidates before enabling.", {
-                defaultValue: "Checking recovery candidates before enabling.",
-              })}
+              ? `${count} recovery ${count === 1 ? "task" : "tasks"} match the last ${preview.lookbackHours} hours.`
+              : t("Checking recovery candidates before enabling.")}
           </DialogDescription>
         </DialogHeader>
 
         <div className="max-h-(--sz-calc-36) space-y-3 overflow-y-auto pr-1">
           {preview && preview.items.length === 0 ? (
             <div className="rounded-md border border-border bg-muted/30 px-3 py-4 text-sm text-muted-foreground">
-              {t("No recovery tasks would be created right now. Auto-recovery can still run for future liveness incidents in this window.", {
-                defaultValue: "No recovery tasks would be created right now. Auto-recovery can still run for future liveness incidents in this window.",
-              })}
+              No recovery tasks would be created right now. Auto-recovery can still run for future liveness incidents in
+              this window.
             </div>
           ) : null}
 
@@ -193,7 +192,7 @@ function RecoveryPreviewDialog({
               <p className="mt-1 text-sm text-foreground">{item.title}</p>
               <p className="mt-1 text-xs text-muted-foreground">{item.reason}</p>
               <div className="mt-2 text-xs text-muted-foreground">
-                {t("Recovery target:", { defaultValue: "Recovery target:" })}{" "}
+                Recovery target:{" "}
                 <a
                   href={issueHref(item.recoveryIdentifier, item.recoveryIssueId)}
                   className="text-primary underline-offset-2 hover:underline"
@@ -207,26 +206,21 @@ function RecoveryPreviewDialog({
 
         {preview && preview.skippedOutsideLookback > 0 ? (
           <p className="text-xs text-muted-foreground">
-            {t(
-              preview.skippedOutsideLookback === 1
-                ? "{{count}} current finding is outside the configured lookback and will not be touched."
-                : "{{count}} current findings are outside the configured lookback and will not be touched.",
-              { count: preview.skippedOutsideLookback },
-            )}
+            {preview.skippedOutsideLookback} current{" "}
+            {preview.skippedOutsideLookback === 1 ? "finding is" : "findings are"} outside the configured lookback and
+            will not be touched.
           </p>
         ) : null}
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
-            {t("Cancel", { defaultValue: "Cancel" })}
+            Cancel
           </Button>
           <Button variant="outline" onClick={onEnableOnly} disabled={isPending || !preview}>
-            {t("Enable only", { defaultValue: "Enable only" })}
+            Enable only
           </Button>
           <Button onClick={onEnableAndRun} disabled={isPending || !preview}>
-            {count > 0
-              ? t("Enable and create {{count}}", { count })
-              : t("Enable", { defaultValue: "Enable" })}
+            {count > 0 ? `Enable and create ${count}` : t("Enable")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -250,11 +244,10 @@ export function InstanceExperimentalSettings() {
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: t("Settings", { defaultValue: "Settings" }), href: "/company/settings" },
-      { label: t("Instance settings", { defaultValue: "Instance settings" }), href: "/company/settings/instance/general" },
-      { label: t("Experimental", { defaultValue: "Experimental" }) },
+      { label: t("Settings"), href: "/company/settings" },
+      { label: t("Experimental") },
     ]);
-  }, [setBreadcrumbs, t]);
+  }, [setBreadcrumbs]);
 
   const experimentalQuery = useQuery({
     queryKey: queryKeys.instance.experimentalSettings,
@@ -295,9 +288,7 @@ export function InstanceExperimentalSettings() {
       if (context?.previousSettings) {
         queryClient.setQueryData(queryKeys.instance.experimentalSettings, context.previousSettings);
       }
-      setActionError(error instanceof Error ? error.message : t("instanceExperimentalSettings.updateFailed", {
-        defaultValue: "Failed to update experimental settings.",
-      }));
+      setActionError(error instanceof Error ? error.message : "Failed to update experimental settings.");
     },
   });
 
@@ -310,9 +301,7 @@ export function InstanceExperimentalSettings() {
       setPreviewDialogOpen(true);
     },
     onError: (error) => {
-      setActionError(error instanceof Error ? error.message : t("instanceExperimentalSettings.previewFailed", {
-        defaultValue: "Failed to preview recovery tasks.",
-      }));
+      setActionError(error instanceof Error ? error.message : "Failed to preview recovery tasks.");
     },
   });
 
@@ -328,9 +317,7 @@ export function InstanceExperimentalSettings() {
       ]);
     },
     onError: (error) => {
-      setActionError(error instanceof Error ? error.message : t("instanceExperimentalSettings.createRecoveryTasksFailed", {
-        defaultValue: "Failed to create recovery tasks.",
-      }));
+      setActionError(error instanceof Error ? error.message : "Failed to create recovery tasks.");
     },
   });
 
@@ -353,9 +340,7 @@ export function InstanceExperimentalSettings() {
   }, [autoRecoveryManaged]);
 
   if (experimentalQuery.isLoading) {
-    return <div className="text-sm text-muted-foreground">{t("instanceExperimentalSettings.loading", {
-      defaultValue: "Loading experimental settings...",
-    })}</div>;
+    return <div className="text-sm text-muted-foreground">{t("instanceExperimentalSettings.loading")}</div>;
   }
 
   if (experimentalQuery.error) {
@@ -363,9 +348,7 @@ export function InstanceExperimentalSettings() {
       <div className="text-sm text-destructive">
         {experimentalQuery.error instanceof Error
           ? experimentalQuery.error.message
-          : t("instanceExperimentalSettings.loadFailed", {
-            defaultValue: "Failed to load experimental settings.",
-          })}
+          : t("instanceExperimentalSettings.loadFailed")}
       </div>
     );
   }
@@ -424,9 +407,7 @@ export function InstanceExperimentalSettings() {
   function previewForEnable() {
     if (autoRecoveryManaged) return;
     if (!lookbackHoursIsValid) {
-      setActionError(t("instanceExperimentalSettings.lookbackHoursInvalid", {
-        defaultValue: "Lookback hours must be a whole number from 1 to 720.",
-      }));
+      setActionError("Lookback hours must be a whole number from 1 to 720.");
       return;
     }
     closeRecoveryPreview();
@@ -456,16 +437,14 @@ export function InstanceExperimentalSettings() {
   }
 
   return (
-    <div className="max-w-4xl space-y-6">
+    <div className="max-w-6xl space-y-6">
       <div className="space-y-2">
         <div className="flex items-center gap-2">
           <FlaskConical className="h-5 w-5 text-muted-foreground" />
-          <h1 className="text-lg font-semibold">{t("Experimental", { defaultValue: "Experimental" })}</h1>
+          <h1 className="text-lg font-semibold">{t("Experimental")}</h1>
         </div>
         <p className="text-sm text-muted-foreground">
-          {t("instanceExperimentalSettings.subtitle", {
-            defaultValue: "Opt into features that are still being evaluated before they become default behavior.",
-          })}
+          Opt into features that are still being evaluated before they become default behavior.
         </p>
       </div>
 
@@ -476,13 +455,10 @@ export function InstanceExperimentalSettings() {
         <div className="flex items-start gap-3">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
           <div className="space-y-1 text-sm">
-            <p className="font-medium text-foreground">{t("instanceExperimentalSettings.warningTitle", {
-              defaultValue: "Experimental features may break at any time.",
-            })}</p>
+            <p className="font-medium text-foreground">{t("instanceExperimentalSettings.warningTitle")}</p>
             <p className="text-muted-foreground">
-              {t("instanceExperimentalSettings.warningBody", {
-                defaultValue: "These features are opt-in and come with no compatibility guarantees. They may change, break, or be removed without notice. Avoid relying on them for critical or production workflows.",
-              })}
+              These features are opt-in and come with no compatibility guarantees. They may change, break, or be
+              removed without notice. Avoid relying on them for critical or production workflows.
             </p>
           </div>
         </div>
@@ -495,15 +471,14 @@ export function InstanceExperimentalSettings() {
       )}
 
       <ExperimentalToggleCard
-        title={t("instanceExperimentalSettings.appsTitle", { defaultValue: "Apps" })}
-        description={t("instanceExperimentalSettings.appsDescription", {
-          defaultValue: "Show the Apps navigation and allow access to app connections, gateways, and advanced app tooling.",
-        })}
+        title={t("instanceExperimentalSettings.appsTitle")}
+        description={t("instanceExperimentalSettings.appsDescription")}
         checked={enableApps}
         onCheckedChange={(checked) => toggleMutation.mutate({ enableApps: checked })}
         disabled={toggleMutation.isPending}
+        settingKey="enableApps"
         managed={managedKeys.enableApps}
-        ariaLabel={t("instanceExperimentalSettings.appsToggle", { defaultValue: "Toggle apps experimental setting" })}
+        ariaLabel={t("instanceExperimentalSettings.appsToggle")}
       />
 
       <Card className="block p-5">
@@ -511,19 +486,15 @@ export function InstanceExperimentalSettings() {
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-1.5">
               <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-sm font-semibold">{t("instanceExperimentalSettings.autoCreateRecoveryTasksTitle", {
-                  defaultValue: "Auto-Create Recovery Tasks",
-                })}</h2>
+                <h2 className="text-sm font-semibold">Auto-Create Recovery Tasks</h2>
                 {autoRecoveryManaged ? <ManagedByCloudBadge /> : null}
               </div>
               <p className="max-w-2xl text-sm text-muted-foreground">
-                {t("instanceExperimentalSettings.autoCreateRecoveryTasksDescription", {
-                  defaultValue: "Let the heartbeat scheduler create recovery tasks for task dependency chains found inside the configured lookback window.",
-                })}
+                Let the heartbeat scheduler create recovery tasks for task dependency chains found inside the
+                configured lookback window.
               </p>
             </div>
             <ToggleSwitch
-              data-testid="issue-graph-liveness-auto-recovery-toggle"
               checked={enableIssueGraphLivenessAutoRecovery}
               onCheckedChange={() => {
                 if (autoRecoveryManaged) return;
@@ -534,9 +505,7 @@ export function InstanceExperimentalSettings() {
                 previewForEnable();
               }}
               disabled={recoveryActionPending || autoRecoveryManaged}
-              aria-label={t("instanceExperimentalSettings.autoCreateRecoveryTasksToggle", {
-                defaultValue: "Toggle task graph liveness auto-recovery",
-              })}
+              aria-label="Toggle task graph liveness auto-recovery"
             />
           </div>
 
@@ -544,7 +513,7 @@ export function InstanceExperimentalSettings() {
             <label className="space-y-1.5">
               <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
                 <Clock className="h-3.5 w-3.5" />
-                {t("Lookback hours", { defaultValue: "Lookback hours" })}
+                Lookback hours
               </span>
               <Input
                 type="number"
@@ -561,9 +530,7 @@ export function InstanceExperimentalSettings() {
                 variant="outline"
                 onClick={() => {
                   if (!lookbackHoursIsValid) {
-                    setActionError(t("instanceExperimentalSettings.lookbackHoursInvalid", {
-                      defaultValue: "Lookback hours must be a whole number from 1 to 720.",
-                    }));
+                    setActionError("Lookback hours must be a whole number from 1 to 720.");
                     return;
                   }
                   toggleMutation.mutate({
@@ -572,7 +539,7 @@ export function InstanceExperimentalSettings() {
                 }}
                 disabled={recoveryActionPending || parsedLookbackHours === lookbackHours}
               >
-                {t("Save hours", { defaultValue: "Save hours" })}
+                Save hours
               </Button>
               <Button
                 variant="outline"
@@ -580,14 +547,12 @@ export function InstanceExperimentalSettings() {
                 disabled={recoveryActionPending}
               >
                 <Search className="h-4 w-4" />
-                {t("Preview", { defaultValue: "Preview" })}
+                Preview
               </Button>
               <Button
                 onClick={() => {
                   if (!lookbackHoursIsValid) {
-                    setActionError(t("instanceExperimentalSettings.lookbackHoursInvalid", {
-                      defaultValue: "Lookback hours must be a whole number from 1 to 720.",
-                    }));
+                    setActionError("Lookback hours must be a whole number from 1 to 720.");
                     return;
                   }
                   runRecoveryMutation.mutate(parsedLookbackHours);
@@ -595,40 +560,26 @@ export function InstanceExperimentalSettings() {
                 disabled={recoveryActionPending || !enableIssueGraphLivenessAutoRecovery}
               >
                 <Play className="h-4 w-4" />
-                {t("Run now", { defaultValue: "Run now" })}
+                Run now
               </Button>
             </div>
           </div>
 
           <p className="text-xs text-muted-foreground">
-            {t(
-              lookbackHours === 1
-                ? "Current window: last {{count}} hour."
-                : "Current window: last {{count}} hours.",
-              {
-                count: lookbackHours,
-                defaultValue:
-                  lookbackHours === 1
-                    ? "Current window: last {{count}} hour."
-                    : "Current window: last {{count}} hours.",
-              },
-            )}
+            Current window: last {lookbackHours} {lookbackHours === 1 ? "hour" : "hours"}.
           </p>
         </div>
       </Card>
 
       <ExperimentalToggleCard
-        title={t("Auto-Restart Dev Server When Idle", { defaultValue: "Auto-Restart Dev Server When Idle" })}
-        description={t("instanceExperimentalSettings.autoRestartDevServerDescription", {
-          defaultValue: "In `pnpm dev:once`, wait for all queued and running local agent runs to finish, then restart the server automatically when backend changes or migrations make the current boot stale.",
-        })}
+        title={t("Auto-Restart Dev Server When Idle")}
+        description="In `pnpm dev:once`, wait for all queued and running local agent runs to finish, then restart the server automatically when backend changes or migrations make the current boot stale."
         checked={autoRestartDevServerWhenIdle}
         onCheckedChange={(checked) => toggleMutation.mutate({ autoRestartDevServerWhenIdle: checked })}
         disabled={toggleMutation.isPending}
+        settingKey="autoRestartDevServerWhenIdle"
         managed={managedKeys.autoRestartDevServerWhenIdle}
-        ariaLabel={t("instanceExperimentalSettings.autoRestartDevServerToggle", {
-          defaultValue: "Toggle guarded dev-server auto-restart",
-        })}
+        ariaLabel="Toggle guarded dev-server auto-restart"
       />
 
       <ExperimentalToggleCard
@@ -637,44 +588,42 @@ export function InstanceExperimentalSettings() {
         checked={enableBetaSkills}
         onCheckedChange={(checked) => toggleMutation.mutate({ enableBetaSkills: checked })}
         disabled={toggleMutation.isPending}
+        settingKey="enableBetaSkills"
         managed={managedKeys.enableBetaSkills}
         ariaLabel={t("instanceExperimentalSettings.betaSkillsToggle")}
       />
 
       <ExperimentalToggleCard
-        title={t("instanceExperimentalSettings.builtInAgentsTitle", { defaultValue: "Built-in Agents" })}
-        description={t("instanceExperimentalSettings.builtInAgentsDescription", {
-          defaultValue: "Show Paperclip-managed built-in agent surfaces, including built-in roster badges, the Built-in agents tab, and built-in agent setup controls.",
-        })}
+        title={t("instanceExperimentalSettings.builtInAgentsTitle")}
+        description="Show Paperclip-managed built-in agent surfaces, including built-in roster badges, the Built-in agents tab, and built-in agent setup controls."
         checked={enableBuiltInAgents}
         onCheckedChange={(checked) => toggleMutation.mutate({ enableBuiltInAgents: checked })}
         disabled={toggleMutation.isPending}
+        settingKey="enableBuiltInAgents"
         managed={managedKeys.enableBuiltInAgents}
-        ariaLabel={t("instanceExperimentalSettings.builtInAgentsToggle", { defaultValue: "Toggle built-in agents experimental setting" })}
+        ariaLabel={t("instanceExperimentalSettings.builtInAgentsToggle")}
       />
 
       <ExperimentalToggleCard
-        title={t("instanceExperimentalSettings.casesTitle", { defaultValue: "Cases" })}
-        description={t("instanceExperimentalSettings.casesDescription", {
-          defaultValue: "Durable work products (blog posts, tweet storms…) that tasks create and iterate on. Adds the Cases tab and the agent case API.",
-        })}
-        footnote={t("instanceExperimentalSettings.casesDisabledDescription", {
-          defaultValue: "Turning Cases off hides the tab and blocks the case API; existing case data is kept.",
-        })}
+        title={t("instanceExperimentalSettings.casesTitle")}
+        description="Durable work products (blog posts, tweet storms…) that tasks create and iterate on. Adds the Cases tab and the agent case API."
+        footnote={t("instanceExperimentalSettings.casesDisabledDescription")}
         checked={enableCases}
         onCheckedChange={(checked) => toggleMutation.mutate({ enableCases: checked })}
         disabled={toggleMutation.isPending}
+        settingKey="enableCases"
         managed={managedKeys.enableCases}
-        ariaLabel={t("instanceExperimentalSettings.casesToggle", { defaultValue: "Toggle cases experimental setting" })}
+        ariaLabel={t("instanceExperimentalSettings.casesToggle")}
       />
 
       <ExperimentalToggleCard
         title={t("instanceExperimentalSettings.classicTaskInterfaceTitle")}
-        description={t("instanceExperimentalSettings.classicTaskInterfaceDescription")}
+        description="Restores the previous task detail page: the page-level header with inline description editing, the plain comment thread, and the fixed Properties sidebar. Chat-only features — streaming activity folding, inline plan and question cards, the three-mode composer — are unavailable in the classic view."
         footnote={t("instanceExperimentalSettings.classicTaskInterfaceFootnote")}
         checked={enableClassicTaskInterface}
         onCheckedChange={(checked) => toggleMutation.mutate({ enableClassicTaskInterface: checked })}
         disabled={toggleMutation.isPending}
+        settingKey="enableClassicTaskInterface"
         managed={managedKeys.enableClassicTaskInterface}
         ariaLabel={t("instanceExperimentalSettings.classicTaskInterfaceToggle")}
       />
@@ -686,91 +635,87 @@ export function InstanceExperimentalSettings() {
           checked={enableConferenceRoomChat}
           onCheckedChange={(checked) => toggleMutation.mutate({ enableConferenceRoomChat: checked })}
           disabled={toggleMutation.isPending}
+          settingKey="enableConferenceRoomChat"
           managed={managedKeys.enableConferenceRoomChat}
           ariaLabel={t("instanceExperimentalSettings.conferenceChatToggle")}
         />
       ) : null}
 
       <ExperimentalToggleCard
-        title={t("instanceExperimentalSettings.decisionsTitle", { defaultValue: "Decisions" })}
-        description={t("instanceExperimentalSettings.decisionsDescription", {
-          defaultValue: "Show the Decisions item in the main sidebar — the attention home that surfaces the tasks awaiting your input — while the surface is still being evaluated.",
-        })}
+        title={t("instanceExperimentalSettings.decisionsTitle")}
+        description="Show the Decisions item in the main sidebar — the attention home that surfaces the tasks awaiting your input — while the surface is still being evaluated."
         checked={enableDecisions}
         onCheckedChange={(checked) => toggleMutation.mutate({ enableDecisions: checked })}
         disabled={toggleMutation.isPending}
+        settingKey="enableDecisions"
         managed={managedKeys.enableDecisions}
-        ariaLabel={t("instanceExperimentalSettings.decisionsToggle", { defaultValue: "Toggle decisions experimental setting" })}
+        ariaLabel={t("instanceExperimentalSettings.decisionsToggle")}
       />
 
       <ExperimentalToggleCard
-        title={t("instanceExperimentalSettings.externalObjectsTitle", { defaultValue: "Enable External Objects" })}
-        description={t("instanceExperimentalSettings.externalObjectsDescription", {
-          defaultValue: "Detect external URLs in issues and show resolved status for pull requests, tickets, and other referenced work objects.",
-        })}
-        checked={enableExternalObjects}
-        onCheckedChange={(checked) => toggleMutation.mutate({ enableExternalObjects: checked })}
-        disabled={toggleMutation.isPending}
-        managed={managedKeys.enableExternalObjects}
-        ariaLabel={t("instanceExperimentalSettings.externalObjectsToggle", { defaultValue: "Toggle external objects experimental setting" })}
-      />
-
-      <ExperimentalToggleCard
-        title={t("instanceExperimentalSettings.environmentsTitle", { defaultValue: "Enable Environments" })}
-        description={t("instanceExperimentalSettings.environmentsDescription", {
-          defaultValue: "Show environment management in company settings and allow project and agent environment assignment controls.",
-        })}
+        title="Enable Environments"
+        description="Show environment management in company settings and allow project and agent environment assignment controls."
         checked={enableEnvironments}
         onCheckedChange={(checked) => toggleMutation.mutate({ enableEnvironments: checked })}
         disabled={toggleMutation.isPending}
+        settingKey="enableEnvironments"
         managed={managedKeys.enableEnvironments}
-        ariaLabel={t("instanceExperimentalSettings.environmentsToggle", { defaultValue: "Toggle environments experimental setting" })}
+        ariaLabel="Toggle environments experimental setting"
       />
 
       <ExperimentalToggleCard
-        title={t("instanceExperimentalSettings.fileViewerTitle", { defaultValue: "Experimental File Viewer" })}
-        description={t("instanceExperimentalSettings.fileViewerDescription", {
-          defaultValue: "Show task detail controls for browsing and previewing workspace files relative to a task.",
-        })}
-        checked={enableExperimentalFileViewer}
-        onCheckedChange={(checked) => toggleMutation.mutate({ enableExperimentalFileViewer: checked })}
+        title={t("instanceExperimentalSettings.externalObjectsTitle")}
+        description="Detect external URLs in issues and show resolved status for pull requests, tickets, and other referenced work objects."
+        checked={enableExternalObjects}
+        onCheckedChange={(checked) => toggleMutation.mutate({ enableExternalObjects: checked })}
         disabled={toggleMutation.isPending}
-        managed={managedKeys.enableExperimentalFileViewer}
-        ariaLabel={t("instanceExperimentalSettings.fileViewerToggle", { defaultValue: "Toggle experimental file viewer setting" })}
+        settingKey="enableExternalObjects"
+        managed={managedKeys.enableExternalObjects}
+        ariaLabel={t("instanceExperimentalSettings.externalObjectsToggle")}
       />
 
       <ExperimentalToggleCard
-        title={t("instanceExperimentalSettings.goalsSidebarLinkTitle", { defaultValue: "Goals Sidebar Link" })}
-        description={t("instanceExperimentalSettings.goalsSidebarLinkDescription", {
-          defaultValue: "Restore the Goals item in the main sidebar while the goals surface is being evaluated.",
-        })}
-        checked={enableGoalsSidebarLink}
-        onCheckedChange={(checked) => toggleMutation.mutate({ enableGoalsSidebarLink: checked })}
-        disabled={toggleMutation.isPending}
-        managed={managedKeys.enableGoalsSidebarLink}
-        ariaLabel={t("instanceExperimentalSettings.goalsSidebarLinkToggle", { defaultValue: "Toggle goals sidebar link experimental setting" })}
-      />
-
-      <ExperimentalToggleCard
-        title={t("instanceExperimentalSettings.isolatedWorkspacesTitle", { defaultValue: "Enable Isolated Workspaces" })}
-        description={t("instanceExperimentalSettings.isolatedWorkspacesDescription", {
-          defaultValue: "Show execution workspace controls in project configuration and allow isolated workspace behavior for new and existing task runs.",
-        })}
+        title="Enable Isolated Workspaces"
+        description="Show execution workspace controls in project configuration and allow isolated workspace behavior for new and existing task runs."
         checked={enableIsolatedWorkspaces}
         onCheckedChange={(checked) => toggleMutation.mutate({ enableIsolatedWorkspaces: checked })}
         disabled={toggleMutation.isPending}
+        settingKey="enableIsolatedWorkspaces"
         managed={managedKeys.enableIsolatedWorkspaces}
-        ariaLabel={t("instanceExperimentalSettings.isolatedWorkspacesToggle", { defaultValue: "Toggle isolated workspaces experimental setting" })}
+        ariaLabel="Toggle isolated workspaces experimental setting"
       />
 
       <ExperimentalToggleCard
-        title={t("instanceExperimentalSettings.managedSandboxOnlyTitle")}
-        description={t("instanceExperimentalSettings.managedSandboxOnlyDescription")}
+        title="Experimental File Viewer"
+        description="Show task detail controls for browsing and previewing workspace files relative to a task."
+        checked={enableExperimentalFileViewer}
+        onCheckedChange={(checked) => toggleMutation.mutate({ enableExperimentalFileViewer: checked })}
+        disabled={toggleMutation.isPending}
+        settingKey="enableExperimentalFileViewer"
+        managed={managedKeys.enableExperimentalFileViewer}
+        ariaLabel="Toggle experimental file viewer setting"
+      />
+
+      <ExperimentalToggleCard
+        title={t("instanceExperimentalSettings.goalsSidebarLinkTitle")}
+        description={t("instanceExperimentalSettings.goalsSidebarLinkDescription")}
+        checked={enableGoalsSidebarLink}
+        onCheckedChange={(checked) => toggleMutation.mutate({ enableGoalsSidebarLink: checked })}
+        disabled={toggleMutation.isPending}
+        settingKey="enableGoalsSidebarLink"
+        managed={managedKeys.enableGoalsSidebarLink}
+        ariaLabel={t("instanceExperimentalSettings.goalsSidebarLinkToggle")}
+      />
+
+      <ExperimentalToggleCard
+        title="Managed Environment Only"
+        description="Hide the local environment and run all agents in the platform-managed environment."
         checked={enableManagedSandboxOnly}
         onCheckedChange={(checked) => toggleMutation.mutate({ enableManagedSandboxOnly: checked })}
         disabled={toggleMutation.isPending}
+        settingKey="enableManagedSandboxOnly"
         managed={managedKeys.enableManagedSandboxOnly}
-        ariaLabel={t("instanceExperimentalSettings.managedSandboxOnlyToggle")}
+        ariaLabel="Toggle managed environment only experimental setting"
       />
 
       {inWorktree ? (
@@ -783,7 +728,9 @@ export function InstanceExperimentalSettings() {
                   {worktreeRunExecutionManaged ? <ManagedByCloudBadge /> : null}
                 </div>
                 <p className="max-w-2xl text-sm text-muted-foreground">
-                  {t("instanceExperimentalSettings.worktreeRunExecutionDescription")}
+                  This is an isolated git-worktree preview instance. Turn this on to let the scheduler execute runs
+                  here. Only tasks created after enabling will run automatically — copied/pre-existing tasks stay
+                  parked. Toggling off and on resets the cutoff.
                 </p>
               </div>
               <ToggleSwitch
@@ -801,9 +748,11 @@ export function InstanceExperimentalSettings() {
               <div className="flex items-center gap-2 rounded-md border border-emerald-500/30 bg-emerald-500/5 px-3 py-2 text-sm text-foreground">
                 <Play className="h-4 w-4 shrink-0 text-emerald-600" />
                 <span>
-                  {t("instanceExperimentalSettings.worktreeRunExecutionArmed", {
-                    timestamp: formatActivationTimestamp(worktreeRunExecutionState.activatedAt),
-                  })}
+                  Running tasks created after{" "}
+                  <span className="font-medium">
+                    {formatActivationTimestamp(worktreeRunExecutionState.activatedAt)}
+                  </span>
+                  .
                 </span>
               </div>
             ) : null}
@@ -812,12 +761,12 @@ export function InstanceExperimentalSettings() {
               <div className="flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-sm">
                 <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
                 <div className="space-y-0.5">
-                  <p className="font-medium text-foreground">{t("instanceExperimentalSettings.worktreeRunExecutionSuppressedTitle")}</p>
+                  <p className="font-medium text-foreground">Execution is suppressed — effectively off.</p>
                   <p className="text-muted-foreground">
                     {worktreeRunExecutionState.reason === "instance_mismatch"
                       ? t("instanceExperimentalSettings.worktreeRunExecutionInstanceMismatch")
-                      : t("instanceExperimentalSettings.worktreeRunExecutionMissingCutoff")} {" "}
-                    {t("instanceExperimentalSettings.worktreeRunExecutionRearm")}
+                      : t("instanceExperimentalSettings.worktreeRunExecutionMissingCutoff")}{" "}
+                    Toggle it off and back on to arm execution for tasks created here.
                   </p>
                 </div>
               </div>
@@ -828,32 +777,35 @@ export function InstanceExperimentalSettings() {
 
       <ExperimentalToggleCard
         title={t("instanceExperimentalSettings.serverInfoDebugViewTitle")}
-        description={t("instanceExperimentalSettings.serverInfoDebugViewDescription")}
+        description='Show a "Server" section in the account drawer with the current server restart time and running commit.'
         checked={enableServerInfoDebugView}
         onCheckedChange={(checked) => toggleMutation.mutate({ enableServerInfoDebugView: checked })}
         disabled={toggleMutation.isPending}
+        settingKey="enableServerInfoDebugView"
         managed={managedKeys.enableServerInfoDebugView}
         ariaLabel={t("instanceExperimentalSettings.serverInfoDebugViewToggle")}
       />
 
       <ExperimentalToggleCard
         title={t("instanceExperimentalSettings.simplifiedEnglishInteractionsTitle")}
-        description={t("instanceExperimentalSettings.simplifiedEnglishInteractionsDescription")}
+        description="Instruct agents to write user interactions (plan confirmations, questions, suggested tasks, checkbox prompts) in ASD-STE100 Simplified Technical English, with brief context on what information the decision needs and what happens for each choice."
         checked={enableSimplifiedEnglishInteractions}
         onCheckedChange={(checked) =>
           toggleMutation.mutate({ enableSimplifiedEnglishInteractions: checked })
         }
         disabled={toggleMutation.isPending}
+        settingKey="enableSimplifiedEnglishInteractions"
         managed={managedKeys.enableSimplifiedEnglishInteractions}
-        ariaLabel={t("instanceExperimentalSettings.simplifiedEnglishInteractionsToggle")}
+        ariaLabel="Toggle simplified english interactions experimental setting"
       />
 
       <ExperimentalToggleCard
         title={t("instanceExperimentalSettings.smokeLabTitle")}
-        description={t("instanceExperimentalSettings.smokeLabDescription")}
+        description='Add a t("instanceExperimentalSettings.smokeLabTitle") tab under Apps → Developer and an "Integration smoke" card on the dashboard for exercising every integration path against deterministic local fixtures (fake OAuth provider + loopback MCP servers). Private (non-public) deployments only.'
         checked={enableSmokeLab}
         onCheckedChange={(checked) => toggleMutation.mutate({ enableSmokeLab: checked })}
         disabled={toggleMutation.isPending}
+        settingKey="enableSmokeLab"
         managed={managedKeys.enableSmokeLab}
         ariaLabel={t("instanceExperimentalSettings.smokeLabToggle")}
       />
@@ -871,6 +823,7 @@ export function InstanceExperimentalSettings() {
           )
         }
         disabled={toggleMutation.isPending || statusCardsBlockedByManagedSummaries}
+        settingKey="enableStatusCards"
         managed={managedKeys.enableStatusCards}
         ariaLabel={t("instanceExperimentalSettings.statusCardsToggle")}
       />
@@ -888,6 +841,7 @@ export function InstanceExperimentalSettings() {
           )
         }
         disabled={toggleMutation.isPending || summariesRequiredByManagedStatusCards}
+        settingKey="enableSummaries"
         managed={managedKeys.enableSummaries}
         ariaLabel={t("instanceExperimentalSettings.summariesToggle")}
       />
@@ -898,6 +852,7 @@ export function InstanceExperimentalSettings() {
         checked={enableIssuePlanDecompositions}
         onCheckedChange={(checked) => toggleMutation.mutate({ enableIssuePlanDecompositions: checked })}
         disabled={toggleMutation.isPending}
+        settingKey="enableIssuePlanDecompositions"
         managed={managedKeys.enableIssuePlanDecompositions}
         ariaLabel={t("instanceExperimentalSettings.planDecompositionToggle")}
       />
@@ -908,6 +863,7 @@ export function InstanceExperimentalSettings() {
         checked={enableTaskWatchdogs}
         onCheckedChange={(checked) => toggleMutation.mutate({ enableTaskWatchdogs: checked })}
         disabled={toggleMutation.isPending}
+        settingKey="enableTaskWatchdogs"
         managed={managedKeys.enableTaskWatchdogs}
         ariaLabel={t("instanceExperimentalSettings.taskWatchdogsToggle")}
       />

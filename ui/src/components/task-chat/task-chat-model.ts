@@ -70,6 +70,8 @@ export interface TaskChatMessageItem {
   streaming?: boolean;
   /** Optimistic local echo state (matches IssueChatComment.clientStatus). */
   optimistic?: "pending" | "queued";
+  /** Live run this queued message is waiting behind. */
+  queueTargetRunId?: string | null;
   /** Assigned agent icon name (AgentIconName) for the avatar header. */
   agentIcon?: string | null;
   /**

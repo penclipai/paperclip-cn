@@ -5,6 +5,7 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
+import { isSupportedNodeVersion, MINIMUM_NODE_VERSION } from "@penclipai/shared/node-version";
 import {
   addManagedPathBlock,
   assertManagedShimWritable,
@@ -23,7 +24,7 @@ import {
 
 const execFileAsync = promisify(execFile);
 export const PUBLIC_NPM_REGISTRY = "https://registry.npmjs.org";
-const DEFAULT_GITHUB_REPO = "paperclipai/paperclip";
+const DEFAULT_GITHUB_REPO = "penclipai/paperclip-cn";
 const EXACT_VERSION_PATTERN = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/;
 
 export type InstallOptions = { canary?: boolean; version?: string; ref?: string; repo?: string; yes?: boolean };
@@ -84,9 +85,8 @@ export function resolveGitInstallWorkspacePackages(checkoutPath: string): Releas
 }
 
 function assertSupportedNodeVersion(): void {
-  const major = Number(process.versions.node.split(".")[0]);
-  if (!Number.isFinite(major) || major < 20) {
-    throw new Error(`Managed installs require Node.js 20 or newer (found ${process.version}).`);
+  if (!isSupportedNodeVersion(process.versions.node)) {
+    throw new Error(`Managed installs require Node.js ${MINIMUM_NODE_VERSION} or newer (found ${process.version}).`);
   }
 }
 
@@ -120,7 +120,7 @@ function parseResolvedVersion(stdout: string): string {
 export async function resolvePublishedVersion(spec: string, runCommand: CommandRunner): Promise<string> {
   const result = await runCommand(
     "npm",
-    ["view", `paperclipai@${spec}`, "version", "--json", `--registry=${PUBLIC_NPM_REGISTRY}`],
+    ["view", `penclip@${spec}`, "version", "--json", `--registry=${PUBLIC_NPM_REGISTRY}`],
     { maxBuffer: 1024 * 1024 },
   );
   return parseResolvedVersion(result.stdout);
@@ -166,7 +166,7 @@ export async function resolveGitHubRef(repo: string, ref: string, runCommand: Co
 }
 
 function payloadEntrypoint(payloadPath: string): string {
-  return path.join(payloadPath, "node_modules", "paperclipai", "dist", "index.js");
+  return path.join(payloadPath, "node_modules", "penclip", "dist", "index.js");
 }
 
 export async function smokePayload(payloadPath: string, expectedVersion: string, runCommand: CommandRunner): Promise<void> {
@@ -204,7 +204,7 @@ export async function installNpmPayload(
   try {
     fs.writeFileSync(
       npmUserConfigPath,
-      `registry=${PUBLIC_NPM_REGISTRY}\n@paperclipai:registry=${PUBLIC_NPM_REGISTRY}\n`,
+      `registry=${PUBLIC_NPM_REGISTRY}\n@penclipai:registry=${PUBLIC_NPM_REGISTRY}\n`,
       { mode: 0o600 },
     );
     await runCommand(
@@ -213,9 +213,9 @@ export async function installNpmPayload(
         "install",
         "--prefix",
         stagingPath,
-        `paperclipai@${version}`,
+        `penclip@${version}`,
         `--registry=${PUBLIC_NPM_REGISTRY}`,
-        `--@paperclipai:registry=${PUBLIC_NPM_REGISTRY}`,
+        `--@penclipai:registry=${PUBLIC_NPM_REGISTRY}`,
         "--no-audit",
         "--no-fund",
       ],
@@ -246,7 +246,7 @@ export async function installGitPayload(repo: string, sha: string, runCommand: C
   const identifier = sha.slice(0, 12);
   const payloadPath = payloadPathFor(paths, "git", identifier);
   if (fs.existsSync(payloadPath)) {
-    const metadata = JSON.parse(fs.readFileSync(path.join(payloadPath, "node_modules", "paperclipai", "package.json"), "utf8")) as { version: string };
+    const metadata = JSON.parse(fs.readFileSync(path.join(payloadPath, "node_modules", "penclip", "package.json"), "utf8")) as { version: string };
     await smokePayload(payloadPath, metadata.version, runCommand);
     return { payloadPath, reused: true, version: metadata.version };
   }
@@ -294,7 +294,7 @@ export async function installGitPayload(repo: string, sha: string, runCommand: C
     }
     await runCommand("npm", ["pack", "--pack-destination", stagingRoot], { cwd: path.join(checkoutPath, "cli"), env: buildEnv(), maxBuffer: 16 * 1024 * 1024 });
     const tarballs = fs.readdirSync(stagingRoot).filter((entry) => entry.endsWith(".tgz"));
-    const cliTarball = tarballs.find((entry) => entry === `paperclipai-${metadata.version}.tgz`);
+    const cliTarball = tarballs.find((entry) => entry === `penclip-${metadata.version}.tgz`);
     const workspaceTarballs = tarballs.filter((entry) => entry !== cliTarball);
     if (!cliTarball || workspaceTarballs.length !== workspacePackages.length) {
       throw new Error(`Git install packaging produced ${workspaceTarballs.length} workspace tarballs; expected ${workspacePackages.length}.`);
@@ -378,13 +378,13 @@ export async function installCommand(
       writeManagedShim(paths); pruneInstallPayloads(nextManifest, paths); return payload;
     }, paths);
     await ensureShimOnPath(options);
-    console.log(pc.green(`${installed.reused ? "Activated cached" : "Installed"} paperclipai git payload ${sha.slice(0, 12)}.`));
+    console.log(pc.green(`${installed.reused ? "Activated cached" : "Installed"} penclip git payload ${sha.slice(0, 12)}.`));
     return;
   }
   const request = resolveNpmInstallRequest(options);
-  console.log(`Resolving paperclipai@${request.spec} from ${PUBLIC_NPM_REGISTRY}...`);
+  console.log(`Resolving penclip@${request.spec} from ${PUBLIC_NPM_REGISTRY}...`);
   const version = await resolvePublishedVersion(request.spec, runCommand);
-  console.log(`Installing paperclipai@${version}...`);
+  console.log(`Installing penclip@${version}...`);
 
   const paths = resolveInstallStorePaths();
   const installed = await withInstallStoreLock(async () => {
@@ -414,7 +414,7 @@ export async function installCommand(
   }, paths);
   await ensureShimOnPath(options);
 
-  console.log(pc.green(`${installed.reused ? "Activated cached" : "Installed"} paperclipai ${version} (${request.channel}).`));
+  console.log(pc.green(`${installed.reused ? "Activated cached" : "Installed"} penclip ${version} (${request.channel}).`));
   console.log(pc.dim(`Payload: ${installed.payloadPath}`));
-  console.log(`Run ${pc.cyan("paperclipai --version")} to verify the managed install.`);
+  console.log(`Run ${pc.cyan("penclip --version")} to verify the managed install.`);
 }

@@ -1,7 +1,5 @@
 import { memo, useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-import type { TFunction } from "i18next";
 import type {
   Agent,
   Approval,
@@ -22,7 +20,6 @@ import { OutputFeedbackButtons } from "./OutputFeedbackButtons";
 import { ApprovalCard } from "./ApprovalCard";
 import { AgentIcon } from "./AgentIconPicker";
 import { formatAssigneeUserLabel } from "../lib/assignees";
-import { translateStatusLabel } from "../lib/i18n-labels";
 import { formatTimelineWorkspaceLabel, type IssueTimelineAssignee, type IssueTimelineEvent } from "../lib/issue-timeline-events";
 import { timeAgo } from "../lib/timeAgo";
 import { cn, formatDateTime } from "../lib/utils";
@@ -172,14 +169,13 @@ function shouldImplicitlyReopenComment(issueStatus: string | undefined, assignee
   return resumesToTodo && assigneeValue.startsWith("agent:");
 }
 
-function formatTimelineStatusValue(value: string | null, t: TFunction): string {
-  if (!value) return t("None", { defaultValue: "None" });
-  return translateStatusLabel(t, value);
+function humanizeValue(value: string | null): string {
+  if (!value) return "None";
+  return value.replace(/_/g, " ");
 }
 
 function formatTimelineAssigneeLabel(
   assignee: IssueTimelineAssignee,
-  t: TFunction,
   agentMap?: Map<string, Agent>,
   currentUserId?: string | null,
 ) {
@@ -187,15 +183,14 @@ function formatTimelineAssigneeLabel(
     return agentMap?.get(assignee.agentId)?.name ?? assignee.agentId.slice(0, 8);
   }
   if (assignee.userId) {
-    return formatAssigneeUserLabel(assignee.userId, currentUserId) ?? t("Board", { defaultValue: "Board" });
+    return formatAssigneeUserLabel(assignee.userId, currentUserId) ?? "Board";
   }
-  return t("Unassigned", { defaultValue: "Unassigned" });
+  return "Unassigned";
 }
 
 function formatTimelineActorName(
   actorType: IssueTimelineEvent["actorType"],
   actorId: string,
-  t: TFunction,
   agentMap?: Map<string, Agent>,
   currentUserId?: string | null,
 ) {
@@ -203,9 +198,9 @@ function formatTimelineActorName(
     return agentMap?.get(actorId)?.name ?? actorId.slice(0, 8);
   }
   if (actorType === "system") {
-    return t("System", { defaultValue: "System" });
+    return "System";
   }
-  return formatAssigneeUserLabel(actorId, currentUserId) ?? t("Board", { defaultValue: "Board" });
+  return formatAssigneeUserLabel(actorId, currentUserId) ?? "Board";
 }
 
 function initialsForName(name: string) {
@@ -223,12 +218,6 @@ function formatRunStatusLabel(status: string) {
     default:
       return status.replace(/_/g, " ");
   }
-}
-
-function translateRunStatusLabel(t: TFunction, status: string) {
-  return t(`runStatus.${status}`, {
-    defaultValue: formatRunStatusLabel(status),
-  });
 }
 
 function runTimestamp(run: LinkedRunItem) {
@@ -257,7 +246,6 @@ function runStatusClass(status: string) {
 }
 
 function CopyMarkdownButton({ text }: { text: string }) {
-  const { t } = useTranslation();
   const [status, setStatus] = useState<"idle" | "copied" | "failed">("idle");
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -267,11 +255,7 @@ function CopyMarkdownButton({ text }: { text: string }) {
     }
   }, []);
 
-  const label = status === "copied"
-    ? t("Copied", { defaultValue: "Copied" })
-    : status === "failed"
-      ? t("Copy failed", { defaultValue: "Copy failed" })
-      : t("Copy", { defaultValue: "Copy" });
+  const label = status === "copied" ? "Copied" : status === "failed" ? "Copy failed" : "Copy";
 
   return (
     <button
@@ -285,7 +269,7 @@ function CopyMarkdownButton({ text }: { text: string }) {
             : "text-muted-foreground hover:bg-accent/60 hover:text-foreground",
       )}
       title={label}
-      aria-label={t("commentThread.copyCommentAsMarkdown", { defaultValue: "Copy comment as markdown" })}
+      aria-label="Copy comment as markdown"
       onClick={() => {
         void copyTextToClipboard(text)
           .then(() => setStatus("copied"))
@@ -339,7 +323,6 @@ function CommentCard({
   queued?: boolean;
   externalReferences?: MarkdownExternalReferenceMap;
 }) {
-  const { t } = useTranslation();
   const isHighlighted = highlightCommentId === comment.id;
   const isPending = comment.clientStatus === "pending";
   const isQueued = queued || comment.queueState === "queued" || comment.clientStatus === "queued";
@@ -367,17 +350,17 @@ function CommentCard({
             />
           </Link>
         ) : (
-          <Identity name={t("You", { defaultValue: "You" })} size="sm" />
+          <Identity name="You" size="sm" />
         )}
         <span className="flex items-center gap-1.5">
           {isQueued ? (
-            <span className="inline-flex items-center rounded-full border border-amber-400/60 bg-amber-100/70 px-2 py-0.5 text-(length:--text-nano) font-medium uppercase tracking-(--tracking-eyebrow) text-amber-800 dark:border-amber-400/40 dark:bg-amber-500/20 dark:text-amber-200">
-              {t("commentThread.queued", { defaultValue: "Queued" })}
-            </span>
+            <Badge variant="outline" className="border-amber-400/60 bg-amber-100/70 text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow) text-amber-800 dark:border-amber-400/40 dark:bg-amber-500/20 dark:text-amber-200">
+              Queued
+            </Badge>
           ) : null}
           {followUpRequested ? (
             <Badge variant="outline" className="text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow)">
-              {t("commentThread.followUp", { defaultValue: "Follow-up" })}
+              Follow-up
             </Badge>
           ) : null}
           {companyId && !isPending && !isDeleted ? (
@@ -397,11 +380,7 @@ function CommentCard({
             />
           ) : null}
           {isPending ? (
-            <span className="text-xs text-muted-foreground">
-              {isQueued
-                ? t("commentThread.queueing", { defaultValue: "Queueing..." })
-                : t("Sending...", { defaultValue: "Sending..." })}
-            </span>
+            <span className="text-xs text-muted-foreground">{isQueued ? "Queueing..." : "Sending..."}</span>
           ) : (
             <a
               href={`#comment-${comment.id}`}
@@ -414,9 +393,7 @@ function CommentCard({
         </span>
       </div>
       {isDeleted ? (
-        <div className="text-sm italic text-muted-foreground">
-          {t("commentThread.deleted", { defaultValue: "Comment deleted" })}
-        </div>
+        <div className="text-sm italic text-muted-foreground">Comment deleted</div>
       ) : (
         <MarkdownBody className="text-sm" softBreaks externalReferences={externalReferences}>{comment.body}</MarkdownBody>
       )}
@@ -496,11 +473,8 @@ function TimelineEventCard({
   agentMap?: Map<string, Agent>;
   currentUserId?: string | null;
 }) {
-  const { t } = useTranslation(undefined, { useSuspense: false });
-  const actorName = formatTimelineActorName(event.actorType, event.actorId, t, agentMap, currentUserId);
-  const actionLabel = event.followUpRequested
-    ? t("requested follow-up", { defaultValue: "requested follow-up" })
-    : t("updated this task", { defaultValue: "updated this task" });
+  const actorName = formatTimelineActorName(event.actorType, event.actorId, agentMap, currentUserId);
+  const actionLabel = event.followUpRequested ? "requested follow-up" : "updated this task";
 
   return (
     <div id={`activity-${event.id}`} className="flex items-start gap-2.5 py-1.5">
@@ -523,14 +497,14 @@ function TimelineEventCard({
         {event.statusChange ? (
           <div className="flex flex-wrap items-center gap-2 text-sm">
             <span className="w-14 text-(length:--text-nano) font-medium uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
-              {t("Status", { defaultValue: "Status" })}
+              Status
             </span>
             <span className="text-muted-foreground">
-              {formatTimelineStatusValue(event.statusChange.from, t)}
+              {humanizeValue(event.statusChange.from)}
             </span>
             <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
             <span className="font-medium text-foreground">
-              {formatTimelineStatusValue(event.statusChange.to, t)}
+              {humanizeValue(event.statusChange.to)}
             </span>
           </div>
         ) : null}
@@ -538,14 +512,14 @@ function TimelineEventCard({
         {event.assigneeChange ? (
           <div className="flex flex-wrap items-center gap-2 text-sm">
             <span className="w-14 text-(length:--text-nano) font-medium uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
-              {t("Assignee", { defaultValue: "Assignee" })}
+              Assignee
             </span>
             <span className="text-muted-foreground">
-              {formatTimelineAssigneeLabel(event.assigneeChange.from, t, agentMap, currentUserId)}
+              {formatTimelineAssigneeLabel(event.assigneeChange.from, agentMap, currentUserId)}
             </span>
             <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
             <span className="font-medium text-foreground">
-              {formatTimelineAssigneeLabel(event.assigneeChange.to, t, agentMap, currentUserId)}
+              {formatTimelineAssigneeLabel(event.assigneeChange.to, agentMap, currentUserId)}
             </span>
           </div>
         ) : null}
@@ -553,7 +527,7 @@ function TimelineEventCard({
         {event.workspaceChange ? (
           <div className="flex flex-wrap items-center gap-2 text-sm">
             <span className="w-14 text-(length:--text-nano) font-medium uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
-              {t("Workspace", { defaultValue: "Workspace" })}
+              Workspace
             </span>
             <span className="text-muted-foreground">
               {formatTimelineWorkspaceLabel(event.workspaceChange.from)}
@@ -609,13 +583,8 @@ const TimelineList = memo(function TimelineList({
   highlightCommentId?: string | null;
   externalReferences?: MarkdownExternalReferenceMap;
 }) {
-  const { t } = useTranslation(undefined, { useSuspense: false });
   if (timeline.length === 0) {
-    return (
-      <p className="text-sm text-muted-foreground">
-        {t("commentThread.emptyTimeline", { defaultValue: "No timeline entries yet." })}
-      </p>
-    );
+    return <p className="text-sm text-muted-foreground">No timeline entries yet.</p>;
   }
 
   return (
@@ -664,7 +633,7 @@ const TimelineList = memo(function TimelineList({
                   <Link to={`/agents/${run.agentId}`} className="font-medium text-foreground transition-colors hover:underline">
                     {actorName}
                   </Link>
-                  <span className="text-muted-foreground">{t("Run", { defaultValue: "Run" }).toLowerCase()}</span>
+                  <span className="text-muted-foreground">run</span>
                   <Link
                     to={`/agents/${run.agentId}/runs/${run.runId}`}
                     className="inline-flex items-center rounded-md border border-border bg-accent/40 px-2 py-1 font-mono text-xs text-muted-foreground transition-colors hover:bg-accent/60 hover:text-foreground"
@@ -672,7 +641,7 @@ const TimelineList = memo(function TimelineList({
                     {run.runId.slice(0, 8)}
                   </Link>
                   <span className={cn("font-medium", runStatusClass(run.status))}>
-                    {translateRunStatusLabel(t, run.status)}
+                    {formatRunStatusLabel(run.status)}
                   </span>
                   <a
                     href={`#run-${run.runId}`}
@@ -686,18 +655,23 @@ const TimelineList = memo(function TimelineList({
                 <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-(length:--text-micro) text-muted-foreground">
                   {run.environment ? (
                     <span>
-                      {t("commentThread.environment", { defaultValue: "Environment" })} <span className="text-foreground">{run.environment.name}</span>
-                      <span> · {run.environment.driver}</span>
+                      Environment <span className="text-foreground">{run.environment.name}</span>
+                      {/* The raw "sandbox" driver key stays off run details — the
+                          environment's name and the Provider entry below already
+                          identify it; other drivers (ssh, local) remain useful. */}
+                      {run.environment.driver !== "sandbox" ? (
+                        <span> · {run.environment.driver}</span>
+                      ) : null}
                     </span>
                   ) : null}
                   {run.environmentLease?.provider ? (
                     <span>
-                      {t("Provider", { defaultValue: "Provider" })} <span className="text-foreground">{run.environmentLease.provider}</span>
+                      Provider <span className="text-foreground">{run.environmentLease.provider}</span>
                     </span>
                   ) : null}
                   {run.environmentLease ? (
                     <span>
-                      {t("commentThread.lease", { defaultValue: "Lease" })}{" "}
+                      Lease{" "}
                       <span className="font-mono text-foreground">
                         {run.environmentLease.id.slice(0, 8)}
                       </span>
@@ -711,10 +685,7 @@ const TimelineList = memo(function TimelineList({
                   ) : null}
                   {run.environmentLease?.failureReason ? (
                     <span className="text-destructive">
-                      {t("commentThread.failure", {
-                        defaultValue: "Failure: {{reason}}",
-                        reason: run.environmentLease.failureReason,
-                      })}
+                      Failure: {run.environmentLease.failureReason}
                     </span>
                   ) : null}
                 </div>
@@ -778,7 +749,6 @@ export function CommentThread({
   composerDisabledReason = null,
   externalReferences,
 }: CommentThreadProps) {
-  const { t } = useTranslation();
   const [body, setBody] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [attaching, setAttaching] = useState(false);
@@ -979,12 +949,7 @@ export function CommentThread({
 
   return (
     <div className="space-y-4">
-      <h3 className="text-sm font-semibold">
-        {t("commentThread.timelineCount", {
-          defaultValue: "Timeline ({{count}})",
-          count: timeline.length + queuedComments.length,
-        })}
-      </h3>
+      <h3 className="text-sm font-semibold">Timeline ({timeline.length + queuedComments.length})</h3>
 
       <TimelineList
         timeline={timeline}
@@ -1010,10 +975,7 @@ export function CommentThread({
         <div className="space-y-3">
           <div className="flex items-center justify-between gap-2">
             <h4 className="text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-amber-700 dark:text-amber-300">
-              {t("commentThread.queuedCommentsCount", {
-                defaultValue: "Queued Comments ({{count}})",
-                count: queuedComments.length,
-              })}
+              Queued Comments ({queuedComments.length})
             </h4>
             {onInterruptQueued && queuedComments[0]?.queueTargetRunId ? (
               <Button
@@ -1023,9 +985,7 @@ export function CommentThread({
                 disabled={interruptingQueuedRunId === queuedComments[0].queueTargetRunId}
                 onClick={() => void onInterruptQueued(queuedComments[0]!.queueTargetRunId!)}
               >
-                {interruptingQueuedRunId === queuedComments[0].queueTargetRunId
-                  ? t("commentThread.interrupting", { defaultValue: "Interrupting..." })
-                  : t("commentThread.interrupt", { defaultValue: "Interrupt" })}
+                {interruptingQueuedRunId === queuedComments[0].queueTargetRunId ? "Interrupting..." : "Interrupt"}
               </Button>
             ) : null}
           </div>
@@ -1056,7 +1016,7 @@ export function CommentThread({
             ref={editorRef}
             value={body}
             onChange={setBody}
-            placeholder={t("commentThread.leaveCommentPlaceholder", { defaultValue: "Leave a comment..." })}
+            placeholder="Leave a comment..."
             mentions={mentions}
             onSubmit={handleSubmit}
             imageUploadHandler={imageUploadHandler}
@@ -1077,30 +1037,24 @@ export function CommentThread({
                   size="icon-sm"
                   onClick={() => attachInputRef.current?.click()}
                   disabled={attaching}
-                  title={t("Attach image", { defaultValue: "Attach image" })}
+                  title="Attach image"
                 >
                   <Paperclip className="h-4 w-4" />
                 </Button>
               </div>
             )}
             {enableReassign && reassignOptions.length > 0 && (
-                <InlineEntitySelector
-                  value={reassignTarget}
-                  options={reassignOptions}
-                placeholder={t("issueChat.assigneePlaceholder", { defaultValue: "Responsible" })}
-                noneLabel={t("issueChat.noAssignee", { defaultValue: "No responsible" })}
-                searchPlaceholder={t("issueChat.searchAssignees", { defaultValue: "Search responsible..." })}
-                emptyMessage={t("issueChat.noAssigneesFound", { defaultValue: "No responsible found." })}
+              <InlineEntitySelector
+                value={reassignTarget}
+                options={reassignOptions}
+                placeholder="Responsible"
+                noneLabel="No responsible"
+                searchPlaceholder="Search responsible..."
+                emptyMessage="No responsible found."
                 onChange={setReassignTarget}
                 className="text-xs h-8"
                 renderTriggerValue={(option) => {
-                  if (!option) {
-                    return (
-                      <span className="text-muted-foreground">
-                        {t("issueChat.assigneePlaceholder", { defaultValue: "Responsible" })}
-                      </span>
-                    );
-                  }
+                  if (!option) return <span className="text-muted-foreground">Responsible</span>;
                   const agentId = option.id.startsWith("agent:") ? option.id.slice("agent:".length) : null;
                   const agent = agentId ? agentMap?.get(agentId) : null;
                   return (
@@ -1128,9 +1082,7 @@ export function CommentThread({
               />
             )}
             <Button size="sm" disabled={!canSubmit} onClick={handleSubmit}>
-              {submitting
-                ? t("Posting...", { defaultValue: "Posting..." })
-                : t("Comment", { defaultValue: "Comment" })}
+              {submitting ? "Posting..." : "Comment"}
             </Button>
           </div>
         </div>

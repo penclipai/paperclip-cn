@@ -79,7 +79,7 @@ export async function serviceHealthChecks(
           name: "Service definition",
           status: "fail",
           message: `Missing or drifted definition at ${manager.definitionPath}`,
-          repairHint: "Run `paperclipai service install` to regenerate the service definition",
+          repairHint: "Run `penclip service install` to regenerate the service definition",
         },
   );
 
@@ -93,7 +93,7 @@ export async function serviceHealthChecks(
           message: health.ok
             ? `${status.serviceName} is inactive but the configured port is serving another Paperclip process`
             : `${status.serviceName} is ${status.detail ?? "inactive"}`,
-          repairHint: "Run `paperclipai service start`, or stop the conflicting foreground process first",
+          repairHint: "Run `penclip service start`, or stop the conflicting foreground process first",
         },
   );
 
@@ -107,14 +107,14 @@ export async function serviceHealthChecks(
           name: "Service health",
           status: "fail",
           message: health.error ?? "Health endpoint did not report ok",
-          repairHint: "Inspect `paperclipai service status` and `paperclipai service logs`",
+          repairHint: "Inspect `penclip service status` and `penclip service logs`",
         }
       : expectedVersion && health.version !== expectedVersion
         ? {
             name: "Service version",
             status: "fail",
             message: `Running ${health.version ?? "unknown"}; managed install is ${expectedVersion}`,
-            repairHint: "Run `paperclipai service restart --expected-version " + expectedVersion + "`",
+            repairHint: "Run `penclip service restart --expected-version " + expectedVersion + "`",
           }
         : {
             name: "Service health",
@@ -128,7 +128,7 @@ export async function serviceHealthChecks(
       name: "Service linger",
       status: "warn",
       message: "Start-on-login is enabled but systemd user lingering is off",
-      repairHint: "Re-run `paperclipai service install --enable-linger` if the service must survive logout",
+      repairHint: "Re-run `penclip service install --enable-linger` if the service must survive logout",
     });
   }
 

@@ -20,6 +20,11 @@ vi.mock("@/context/SidebarContext", () => ({
 vi.mock("@/hooks/useIssuePlanDocument", () => ({
   useIssuePlanDocument: () => ({ data: null }),
 }));
+vi.mock("@/lib/router", () => ({
+  Link: ({ to, children, ...props }: { to: string; children: React.ReactNode }) => (
+    <a href={to} {...props}>{children}</a>
+  ),
+}));
 vi.mock("@/components/MarkdownEditor", () => ({
   MarkdownEditor: forwardRef(function MockMarkdownEditor(
     { value }: { value: string },
@@ -53,7 +58,48 @@ function render(ui: ReactElement) {
   flushSync(() => root!.render(<ThemeProvider>{ui}</ThemeProvider>));
 }
 
+function fakeScrollGeometry(
+  element: HTMLElement,
+  { scrollHeight = 1000, clientHeight = 400, scrollTop = 600 } = {},
+) {
+  let currentScrollTop = scrollTop;
+  Object.defineProperty(element, "scrollHeight", { value: scrollHeight, configurable: true });
+  Object.defineProperty(element, "clientHeight", { value: clientHeight, configurable: true });
+  Object.defineProperty(element, "scrollTop", {
+    get: () => currentScrollTop,
+    set: (value: number) => {
+      currentScrollTop = value;
+    },
+    configurable: true,
+  });
+}
+
 describe("TaskChatThread draft pass-through", () => {
+  it("keeps the composer dock aligned with the thread's horizontal padding", () => {
+    render(
+      <TaskChatThread
+        comments={[{
+          id: "comment-1",
+          companyId: "company-1",
+          issueId: "issue-1",
+          authorType: "user",
+          authorAgentId: null,
+          authorUserId: "user-1",
+          body: "Waiting for the dependency.",
+          presentation: null,
+          metadata: null,
+          createdAt: new Date("2026-08-15T12:00:00.000Z"),
+          updatedAt: new Date("2026-08-15T12:00:00.000Z"),
+        }]}
+        onAdd={async () => {}}
+      />,
+    );
+
+    const dock = container.querySelector('[data-testid="task-chat-composer-dock"]');
+    expect(dock?.classList).toContain("px-4");
+    expect(dock?.classList).not.toContain("px-1");
+  });
+
   it("forwards draftKey so the composer restores a task's saved draft", () => {
     localStorage.setItem("task-chat-draft:issue-1", "half-written thought");
 
@@ -70,16 +116,420 @@ describe("TaskChatThread draft pass-through", () => {
   });
 });
 
-describe("TaskChatThread composer alignment (PAP-498)", () => {
-  it("keeps the composer dock at 80% of the thread width", () => {
+describe("TaskChatThread composer alignment", () => {
+  it("matches the thread width at every breakpoint", () => {
     render(<TaskChatThread comments={[]} onAdd={async () => {}} />);
 
     const dock = container
       .querySelector('[data-testid="mock-editor"]')
       ?.closest("div.sticky") as HTMLElement | null;
 
-    expect(dock?.className).toContain("w-(--pct-80)");
-    expect(dock?.className).not.toContain("w-full");
+    expect(dock?.className).toContain("w-full");
+    expect(dock?.className).toContain("max-w-(--tc-shell-max-w)");
+    expect(dock?.className).not.toContain("md:w-(--pct-80)");
+  });
+});
+
+describe("TaskChatThread blocker links", () => {
+  it("shows the direct and server-selected terminal blocker at the top and bottom", () => {
+    const terminalBlocker = {
+      id: "terminal-2",
+      identifier: "PAP-777",
+      title: "Actual work",
+      status: "in_progress" as const,
+      priority: "high" as const,
+      assigneeAgentId: "agent-2",
+      assigneeUserId: null,
+    };
+    const directBlocker = {
+      id: "direct-2",
+      identifier: "PAP-600",
+      title: "Waiting in review",
+      status: "in_review" as const,
+      priority: "medium" as const,
+      assigneeAgentId: "agent-1",
+      assigneeUserId: null,
+      terminalBlockers: [terminalBlocker],
+    };
+
+    render(
+      <TaskChatThread
+        comments={[]}
+        onAdd={async () => {}}
+        issueStatus="blocked"
+        blockedBy={[
+          {
+            id: "direct-1",
+            identifier: "PAP-500",
+            title: "Different dependency",
+            status: "todo",
+            priority: "low",
+            assigneeAgentId: null,
+            assigneeUserId: null,
+          },
+          directBlocker,
+        ]}
+        blockerAttention={{
+          state: "needs_attention",
+          reason: "attention_required",
+          unresolvedBlockerCount: 2,
+          coveredBlockerCount: 0,
+          stalledBlockerCount: 0,
+          attentionBlockerCount: 1,
+          sampleBlockerIdentifier: "PAP-777",
+          sampleStalledBlockerIdentifier: null,
+          terminalBlockerIssueId: terminalBlocker.id,
+        }}
+      />,
+    );
+
+    const notices = container.querySelectorAll('[data-testid="task-chat-blocker-links"]');
+    expect(notices).toHaveLength(2);
+    expect(notices[0]?.getAttribute("data-placement")).toBe("top");
+    expect(notices[1]?.getAttribute("data-placement")).toBe("bottom");
+    for (const notice of notices) {
+      expect(notice.textContent).toContain("Blocked byPAP-600Waiting in review");
+      expect(notice.textContent).toContain("Ultimately blocked byPAP-777Actual work");
+      expect(notice.querySelector('a[href="/issues/PAP-600"]')).not.toBeNull();
+      expect(notice.querySelector('a[href="/issues/PAP-777"]')).not.toBeNull();
+    }
+    expect(container.textContent).not.toContain("Different dependency");
+    expect(container.textContent).not.toContain("This task resumes automatically");
+  });
+
+  it("shows the ordered live-work queue at the top and bottom", () => {
+    const terminalBlocker = {
+      id: "terminal-running",
+      identifier: "PAP-17426",
+      title: "Restore live alias projection",
+      status: "in_progress" as const,
+      priority: "high" as const,
+      assigneeAgentId: "agent-3",
+      assigneeUserId: null,
+    };
+
+    render(
+      <TaskChatThread
+        comments={[]}
+        onAdd={async () => {}}
+        issueStatus="blocked"
+        liveIssueIds={new Set(["direct-running", "terminal-running"])}
+        blockerAttention={{
+          state: "covered",
+          reason: "active_dependency",
+          unresolvedBlockerCount: 2,
+          coveredBlockerCount: 2,
+          stalledBlockerCount: 0,
+          attentionBlockerCount: 0,
+          sampleBlockerIdentifier: "PAP-17426",
+          sampleStalledBlockerIdentifier: null,
+          blockingTreeLive: true,
+          directBlockerIssueId: "direct-running",
+          terminalBlockerIssueId: terminalBlocker.id,
+          terminalBlocker,
+        }}
+        blockedBy={[
+          {
+            id: "direct-queued",
+            identifier: "PAP-17427",
+            title: "Verify the completed projection",
+            status: "todo",
+            priority: "medium",
+            assigneeAgentId: "agent-4",
+            assigneeUserId: null,
+          },
+          {
+            id: "direct-running",
+            identifier: "PAP-17425",
+            title: "Verify the live projection",
+            status: "in_progress",
+            priority: "medium",
+            assigneeAgentId: "agent-2",
+            assigneeUserId: null,
+            terminalBlockers: [terminalBlocker],
+          },
+          {
+            id: "direct-done",
+            identifier: "PAP-17424",
+            title: "Run the guarded cutover",
+            status: "done",
+            priority: "medium",
+            assigneeAgentId: "agent-1",
+            assigneeUserId: null,
+          },
+        ]}
+      />,
+    );
+
+    const notices = container.querySelectorAll('[data-testid="task-chat-live-work-links"]');
+    expect(notices).toHaveLength(2);
+    expect(notices[0]?.getAttribute("data-placement")).toBe("top");
+    expect(notices[1]?.getAttribute("data-placement")).toBe("bottom");
+    for (const notice of notices) {
+      expect(notice.textContent).toContain("Waiting on live work");
+      const orderedLinks = [...notice.querySelectorAll('[data-testid="task-chat-live-work-step"] a')]
+        .map((link) => link.textContent);
+      expect(orderedLinks).toEqual([
+        "PAP-17424Run the guarded cutover",
+        "PAP-17425Verify the live projection",
+        "PAP-17427Verify the completed projection",
+      ]);
+      expect(notice.textContent).toContain("Now runningPAP-17426Restore live alias projection");
+      expect(notice.querySelector('a[href="/issues/PAP-17426"]')).not.toBeNull();
+    }
+    expect(container.querySelector('[data-testid="task-chat-blocker-links"]')).toBeNull();
+  });
+
+  it("keeps the compact blocker rows when covered work is no longer live", () => {
+    render(
+      <TaskChatThread
+        comments={[]}
+        onAdd={async () => {}}
+        issueStatus="blocked"
+        liveIssueIds={new Set()}
+        blockerAttention={{
+          state: "covered",
+          reason: "active_dependency",
+          unresolvedBlockerCount: 1,
+          coveredBlockerCount: 1,
+          stalledBlockerCount: 0,
+          attentionBlockerCount: 0,
+          sampleBlockerIdentifier: "PAP-500",
+          sampleStalledBlockerIdentifier: null,
+          blockingTreeLive: false,
+        }}
+        blockedBy={[{
+          id: "direct-1",
+          identifier: "PAP-500",
+          title: "Direct dependency",
+          status: "todo",
+          priority: "medium",
+          assigneeAgentId: "agent-1",
+          assigneeUserId: null,
+        }]}
+      />,
+    );
+
+    expect(container.querySelector('[data-testid="task-chat-live-work-links"]')).toBeNull();
+    expect(container.querySelectorAll('[data-testid="task-chat-blocker-links"]')).toHaveLength(2);
+  });
+
+  it("shows only the direct row when the blocker has no deeper unresolved leaf", () => {
+    render(
+      <TaskChatThread
+        comments={[]}
+        onAdd={async () => {}}
+        issueStatus="blocked"
+        blockedBy={[{
+          id: "direct-1",
+          identifier: "PAP-500",
+          title: "Direct dependency",
+          status: "in_progress",
+          priority: "medium",
+          assigneeAgentId: "agent-1",
+          assigneeUserId: null,
+        }]}
+      />,
+    );
+
+    expect(container.querySelectorAll('[data-testid="task-chat-blocker-links"]')).toHaveLength(2);
+    expect(container.textContent).toContain("Blocked byPAP-500Direct dependency");
+    expect(container.textContent).not.toContain("Ultimately blocked by");
+  });
+
+  it("keeps a server-selected intermediate blocker on its direct chain", () => {
+    const selectedIntermediate = {
+      id: "intermediate-2",
+      identifier: "PAP-650",
+      title: "Stalled intermediate review",
+    };
+    const selectedDirect = {
+      id: "direct-2",
+      identifier: "PAP-600",
+      title: "Selected dependency",
+      status: "blocked" as const,
+      priority: "medium" as const,
+      assigneeAgentId: "agent-1",
+      assigneeUserId: null,
+      terminalBlockers: [{
+        id: "leaf-2",
+        identifier: "PAP-700",
+        title: "Deeper structural leaf",
+        status: "todo" as const,
+        priority: "medium" as const,
+        assigneeAgentId: "agent-2",
+        assigneeUserId: null,
+      }],
+    };
+
+    render(
+      <TaskChatThread
+        comments={[]}
+        onAdd={async () => {}}
+        issueStatus="blocked"
+        blockedBy={[
+          {
+            id: "direct-1",
+            identifier: "PAP-500",
+            title: "Unrelated dependency",
+            status: "todo",
+            priority: "low",
+            assigneeAgentId: null,
+            assigneeUserId: null,
+          },
+          selectedDirect,
+        ]}
+        blockerAttention={{
+          state: "stalled",
+          reason: "stalled_review",
+          unresolvedBlockerCount: 2,
+          coveredBlockerCount: 0,
+          stalledBlockerCount: 1,
+          attentionBlockerCount: 1,
+          sampleBlockerIdentifier: "PAP-650",
+          sampleStalledBlockerIdentifier: "PAP-650",
+          directBlockerIssueId: selectedDirect.id,
+          terminalBlockerIssueId: selectedIntermediate.id,
+          terminalBlocker: selectedIntermediate,
+        }}
+      />,
+    );
+
+    for (const notice of container.querySelectorAll('[data-testid="task-chat-blocker-links"]')) {
+      expect(notice.textContent).toContain("Blocked byPAP-600Selected dependency");
+      expect(notice.textContent).toContain("Ultimately blocked byPAP-650Stalled intermediate review");
+    }
+    expect(container.textContent).not.toContain("Unrelated dependency");
+    expect(container.textContent).not.toContain("Deeper structural leaf");
+  });
+
+  it("auto-follows the new bottom blocker row when a pinned thread becomes blocked", () => {
+    const comment = {
+      id: "comment-1",
+      companyId: "company-1",
+      issueId: "issue-1",
+      authorType: "user" as const,
+      authorAgentId: null,
+      authorUserId: "user-1",
+      body: "Waiting for the dependency.",
+      presentation: null,
+      metadata: null,
+      createdAt: new Date("2026-08-15T12:00:00.000Z"),
+      updatedAt: new Date("2026-08-15T12:00:00.000Z"),
+    };
+    const directBlocker = {
+      id: "direct-1",
+      identifier: "PAP-500",
+      title: "Direct dependency",
+      status: "in_progress" as const,
+      priority: "medium" as const,
+      assigneeAgentId: "agent-1",
+      assigneeUserId: null,
+    };
+    const baseProps = {
+      comments: [comment],
+      onAdd: async () => {},
+      blockedBy: [directBlocker],
+    };
+
+    render(<TaskChatThread {...baseProps} issueStatus="in_progress" />);
+    const scroller = container.querySelector<HTMLElement>('[data-testid="task-chat-scroller"]')!;
+    fakeScrollGeometry(scroller);
+
+    render(<TaskChatThread {...baseProps} issueStatus="blocked" />);
+
+    expect(scroller.scrollTop).toBe(scroller.scrollHeight);
+  });
+
+  it("does not show blocker rows outside the blocked state", () => {
+    render(
+      <TaskChatThread
+        comments={[]}
+        onAdd={async () => {}}
+        issueStatus="in_progress"
+        blockedBy={[{
+          id: "direct-1",
+          identifier: "PAP-500",
+          title: "Direct dependency",
+          status: "in_progress",
+          priority: "medium",
+          assigneeAgentId: "agent-1",
+          assigneeUserId: null,
+        }]}
+      />,
+    );
+
+    expect(container.querySelector('[data-testid="task-chat-blocker-links"]')).toBeNull();
+  });
+});
+
+describe("TaskChatThread queued message actions", () => {
+  it("interrupts the exact run that a persisted queued message is waiting behind", () => {
+    const onInterruptQueued = vi.fn(async () => {});
+    const queuedComment = {
+      id: "comment-queued",
+      companyId: "company-1",
+      issueId: "issue-1",
+      authorType: "user" as const,
+      authorAgentId: null,
+      authorUserId: "user-1",
+      body: "Use the latest requirements instead.",
+      presentation: null,
+      metadata: null,
+      queueState: "queued" as const,
+      queueTargetRunId: "run-active",
+      createdAt: new Date("2026-08-14T12:00:00.000Z"),
+      updatedAt: new Date("2026-08-14T12:00:00.000Z"),
+    };
+
+    render(
+      <TaskChatThread
+        comments={[queuedComment]}
+        onAdd={async () => {}}
+        onInterruptQueued={onInterruptQueued}
+      />,
+    );
+
+    const interrupt = [...container.querySelectorAll("button")].find(
+      (button) => button.textContent === "Interrupt",
+    );
+    expect(container.textContent).toContain("Queued");
+    expect(interrupt).not.toBeUndefined();
+
+    flushSync(() => interrupt!.click());
+    expect(onInterruptQueued).toHaveBeenCalledOnce();
+    expect(onInterruptQueued).toHaveBeenCalledWith("run-active");
+  });
+
+  it("disables the action while the queued run is being interrupted", () => {
+    render(
+      <TaskChatThread
+        comments={[{
+          id: "comment-queued",
+          companyId: "company-1",
+          issueId: "issue-1",
+          authorType: "user",
+          authorAgentId: null,
+          authorUserId: "user-1",
+          body: "Use the latest requirements instead.",
+          presentation: null,
+          metadata: null,
+          clientStatus: "queued",
+          queueTargetRunId: "run-active",
+          createdAt: new Date("2026-08-14T12:00:00.000Z"),
+          updatedAt: new Date("2026-08-14T12:00:00.000Z"),
+        }]}
+        onAdd={async () => {}}
+        onInterruptQueued={async () => {}}
+        interruptingQueuedRunId="run-active"
+      />,
+    );
+
+    const interrupting = [...container.querySelectorAll("button")].find(
+      (button) => button.textContent === "Interrupting…",
+    );
+    expect(interrupting).not.toBeUndefined();
+    expect(interrupting?.disabled).toBe(true);
   });
 });
 
@@ -103,6 +553,50 @@ describe("TaskChatThread mobile composer dock (PAP-495)", () => {
 });
 
 describe("TaskChatThread live transcript", () => {
+  it("surfaces the live runtime status while no transcript has streamed yet", () => {
+    // Sandbox runs spend their first minutes in preparation phases (config
+    // seed, workspace sync) with zero transcript entries. The tail must show
+    // the run's runtime-progress status instead of an opaque wait message.
+    const baseRun = {
+      id: "run-prep",
+      status: "running" as const,
+      invocationSource: "issue" as const,
+      triggerDetail: null,
+      startedAt: "2026-08-07T00:00:00.000Z",
+      finishedAt: null,
+      createdAt: "2026-08-07T00:00:00.000Z",
+      agentId: "agent-1",
+      agentName: "Coder",
+      adapterType: "claude_local",
+    };
+
+    render(
+      <TaskChatThread
+        comments={[]}
+        onAdd={async () => {}}
+        issueStatus="in_progress"
+        activeRun={{ ...baseRun, currentStatusMessage: "Syncing workspace to environment" }}
+      />,
+    );
+
+    const tail = container.querySelector('[data-testid="task-chat-live-transcript"]');
+    expect(tail).not.toBeNull();
+    expect(tail!.textContent).toContain("Syncing workspace to environment");
+    expect(tail!.textContent).not.toContain("Waiting for transcript...");
+
+    // Without a runtime status, the generic wait message still shows.
+    render(
+      <TaskChatThread
+        comments={[]}
+        onAdd={async () => {}}
+        issueStatus="in_progress"
+        activeRun={{ ...baseRun, id: "run-prep-2" }}
+      />,
+    );
+    const tail2 = container.querySelector('[data-testid="task-chat-live-transcript"]');
+    expect(tail2!.textContent).toContain("Waiting for transcript...");
+  });
+
   it("renders in-flight output through TaskChatLiveTail, dropping the debug plumbing (PAP-463 C1)", () => {
     // Interleave the exact noise the old RunTranscriptView tail surfaced (init
     // row, stdout/stderr/system dumps) with real content. Only the streamed

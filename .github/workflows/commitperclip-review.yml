@@ -9,7 +9,6 @@ on:
 
 permissions:
   pull-requests: write
-  security-events: write
   checks: write
   contents: read
 
@@ -17,8 +16,6 @@ jobs:
   review:
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    env:
-      HAS_COMMITPERCLIP_KEY: ${{ secrets.COMMITPERCLIP_KEY != '' }}
     steps:
       - name: Checkout base branch (never PR code)
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -26,7 +23,6 @@ jobs:
           ref: master
 
       - name: Dependency Review
-        if: github.repository == 'paperclipai/paperclip'
         uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
         with:
           base-ref: ${{ github.event.pull_request.base.sha }}
@@ -35,10 +31,9 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: Generate commitperclip token
-        if: env.HAS_COMMITPERCLIP_KEY == 'true'
         id: token
         run: |
           TOKEN=$(node .github/scripts/get-bot-token.mjs)
@@ -53,21 +48,11 @@ jobs:
         run: node .github/scripts/run-quality-gates.mjs
         continue-on-error: true
         env:
-          GH_TOKEN: ${{ steps.token.outputs.value || github.token }}
+          GH_TOKEN: ${{ steps.token.outputs.value }}
           GH_REPO: ${{ github.repository }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_AUTHOR: ${{ github.event.pull_request.user.login }}
           PR_BRANCH: ${{ github.event.pull_request.head.ref }}
-
-      - name: Run security gates
-        run: node .github/scripts/check-pr-security.mjs
-        continue-on-error: true
-        timeout-minutes: 3
-        env:
-          GH_TOKEN: ${{ steps.token.outputs.value || github.token }}
-          GH_REPO: ${{ github.repository }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
 
       - name: Fail if quality gates failed
         if: >-

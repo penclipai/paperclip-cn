@@ -30,8 +30,8 @@ describe("collectChannelState", () => {
   };
 
   const fakeRunner: CommandRunner = async (_command, args) => {
-    const spec = (args ?? []).find((arg) => arg.startsWith("paperclipai@"));
-    const tag = spec?.slice("paperclipai@".length) ?? "";
+    const spec = (args ?? []).find((arg) => arg.startsWith("penclip@"));
+    const tag = spec?.slice("penclip@".length) ?? "";
     const version = versionsByTag[tag];
     if (!version) throw new Error(`unexpected dist-tag: ${tag}`);
     return { stdout: JSON.stringify(version), stderr: "" };
@@ -56,8 +56,8 @@ describe("collectChannelState", () => {
 
   it("degrades a single unavailable channel to null without failing the rest", async () => {
     const flakyRunner: CommandRunner = async (command, args, options) => {
-      const spec = (args ?? []).find((arg) => arg.startsWith("paperclipai@"));
-      if (spec === "paperclipai@nightly") throw new Error("registry timeout");
+      const spec = (args ?? []).find((arg) => arg.startsWith("penclip@"));
+      if (spec === "penclip@nightly") throw new Error("registry timeout");
       return fakeRunner(command, args, options);
     };
 

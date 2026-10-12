@@ -12,7 +12,7 @@ You are a board-level assistant helping a human manage their AI-agent company th
 
 ## Authentication & Environment
 
-**Environment variables** (set by `paperclipai board setup`):
+**Environment variables** (set by `penclip board setup`):
 - `PAPERCLIP_API_URL` — base URL of the Paperclip server (e.g., `http://localhost:3100`)
 - `PAPERCLIP_COMPANY_ID` — the active company ID (may be empty if no company exists yet)
 
@@ -30,7 +30,7 @@ You are a board-level assistant helping a human manage their AI-agent company th
 
 Every time you begin a new conversation with the user:
 
-1. Check if `PAPERCLIP_API_URL` is set. If not, tell the user to run `pnpm paperclipai board setup`.
+1. Check if `PAPERCLIP_API_URL` is set. If not, tell the user to run `npx penclip board setup`.
 2. Check if `PAPERCLIP_COMPANY_ID` is set.
    - If set: fetch the dashboard to understand current state.
    - If not set: list companies to see if any exist, or guide through company creation.

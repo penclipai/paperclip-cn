@@ -72,7 +72,7 @@ function escapeRegExp(value: string): string {
 }
 
 export function resolveServiceShimPath(homeDir = os.homedir()): string {
-  return process.env.PAPERCLIP_SHIM_PATH?.trim() || path.join(homeDir, ".local", "bin", "paperclipai");
+  return process.env.PAPERCLIP_SHIM_PATH?.trim() || path.join(homeDir, ".local", "bin", "penclip");
 }
 
 export function systemdServiceName(instanceId: string): string {
@@ -293,12 +293,12 @@ export async function detectServiceManager(input: { instanceId?: string; platfor
   const platform = input.platform ?? process.platform;
   const runner = input.runner ?? defaultCommandRunner;
   if (platform === "darwin") return { supported: true, manager: new LaunchdServiceManager(instanceId, runner) };
-  if (platform !== "linux") return { supported: false, reason: `Service management is not supported on ${platform}. Use paperclipai run instead.` };
+  if (platform !== "linux") return { supported: false, reason: `Service management is not supported on ${platform}. Use penclip run instead.` };
   try {
     await runner("systemctl", ["--user", "show-environment"]);
     return { supported: true, manager: new SystemdServiceManager(instanceId, runner) };
   } catch {
-    return { supported: false, reason: "No usable systemd user manager was detected (common in containers and WSL1). Use paperclipai run instead." };
+    return { supported: false, reason: "No usable systemd user manager was detected (common in containers and WSL1). Use penclip run instead." };
   }
 }
 
@@ -307,5 +307,5 @@ export async function assertForegroundRunAllowed(instanceId: string, force = fal
   const detection = await detector({ instanceId });
   if (!detection.supported) return;
   const status = await detection.manager.status();
-  if (status.active) throw new Error(`Paperclip instance '${instanceId}' is already running as ${status.serviceName}. Use 'paperclipai service status --instance ${instanceId}' or pass --force to bypass this safety check.`);
+  if (status.active) throw new Error(`Paperclip instance '${instanceId}' is already running as ${status.serviceName}. Use 'penclip service status --instance ${instanceId}' or pass --force to bypass this safety check.`);
 }

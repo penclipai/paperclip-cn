@@ -267,7 +267,7 @@ pnpm penclip configure --section secrets
 Inline secret migration command:
 
 ```sh
-pnpm penclip secrets migrate-inline-env --company-id <company-id> --apply
+npx penclip secrets migrate-inline-env --company-id <company-id> --apply
 
 # direct database maintenance fallback
 pnpm secrets:migrate-inline-env --apply

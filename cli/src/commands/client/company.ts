@@ -2022,7 +2022,7 @@ async function createCompanyForContext(ctx: {
   } catch (error) {
     if (isBoardAccessRequiredError(error) || isInstanceAdminRequiredError(error)) {
       throw new Error(
-        "Creating companies requires board/instance-admin authentication. Agent API keys are scoped to one company; use `paperclipai company list --json` or `paperclipai company current --json` to select the scoped company, or rerun create with a board token/login.",
+        "Creating companies requires board/instance-admin authentication. Agent API keys are scoped to one company; use `penclip company list --json` or `penclip company current --json` to select the scoped company, or rerun create with a board token/login.",
       );
     }
     throw error;

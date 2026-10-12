@@ -41,10 +41,12 @@ interface TaskChatThreadViewProps {
    * fixtures omit it and the bubbles render actionless.
    */
   renderMessageActions?: (item: TaskChatMessageItem) => ReactNode;
+  /** Renders an interrupt action beside a queued human message. */
+  renderQueuedAction?: (item: TaskChatMessageItem) => ReactNode;
   /** Content appended inside the transcript scroller after the settled thread. */
   tail?: ReactNode;
   /** Optional streaming-aware key when `tail` changes without changing `items`. */
-  contentKey?: number;
+  contentKey?: unknown;
   className?: string;
   /** When false, render the list without the scroll container (e.g. previews). */
   scroll?: boolean;
@@ -56,6 +58,7 @@ function renderItem(
   renderInteraction?: (item: TaskChatInteractionItem) => ReactNode,
   renderBrief?: () => ReactNode,
   renderMessageActions?: (item: TaskChatMessageItem) => ReactNode,
+  renderQueuedAction?: (item: TaskChatMessageItem) => ReactNode,
 ) {
   switch (item.kind) {
     case "message": {
@@ -69,6 +72,7 @@ function renderItem(
         <TaskChatBubble
           item={item}
           actions={actions}
+          queuedAction={renderQueuedAction?.(item)}
           attachedTurn={
             item.attachedTurn ? (
               <TaskChatTurn
@@ -135,6 +139,7 @@ export function TaskChatThreadView({
   renderInteraction,
   renderBrief,
   renderMessageActions,
+  renderQueuedAction,
   tail,
   contentKey,
   className,
@@ -149,7 +154,14 @@ export function TaskChatThreadView({
       ) : null}
       {items.map((item) => (
         <div key={item.id}>
-          {renderItem(item, onApprovalDecision, renderInteraction, renderBrief, renderMessageActions)}
+          {renderItem(
+            item,
+            onApprovalDecision,
+            renderInteraction,
+            renderBrief,
+            renderMessageActions,
+            renderQueuedAction,
+          )}
         </div>
       ))}
       {tail}

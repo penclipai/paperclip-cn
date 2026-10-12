@@ -29,7 +29,6 @@ import {
   type ReactNode,
   type ComponentType,
 } from "react";
-import { useTranslation } from "react-i18next";
 import * as ReactModule from "react";
 import { useQuery } from "@tanstack/react-query";
 import type {
@@ -257,11 +256,11 @@ function buildPluginUiUrl(contribution: PluginUiContribution): string {
 /**
  * Import a plugin's UI entry module with bare-specifier rewriting.
  *
- * Plugin bundles are built with `external: ["@penclipai/plugin-sdk/ui", "react", "react-dom"]`,
+ * Plugin bundles are built with `external: ["@paperclipai/plugin-sdk/ui", "react", "react-dom"]`,
  * so their ESM output contains bare specifier imports like:
  *
  * ```js
- * import { usePluginData } from "@penclipai/plugin-sdk/ui";
+ * import { usePluginData } from "@paperclipai/plugin-sdk/ui";
  * import React from "react";
  * ```
  *
@@ -283,20 +282,6 @@ function applyJsxRuntimeKey(
 ): Record<string, unknown> {
   if (key === undefined) return props ?? {};
   return { ...(props ?? {}), key };
-}
-
-function splitStaticJsxChildren(
-  props: Record<string, unknown> | null | undefined,
-): { props: Record<string, unknown>; children: unknown[] } {
-  const normalized = props ?? {};
-  const children = normalized.children;
-  if (!Array.isArray(children)) {
-    return { props: normalized, children: [] };
-  }
-
-  const propsWithoutChildren = { ...normalized };
-  delete propsWithoutChildren.children;
-  return { props: propsWithoutChildren, children };
 }
 
 function createReactShimSource(reactModule: object): string {
@@ -326,16 +311,19 @@ function getShimBlobUrl(specifier: "react" | "react-dom" | "react-dom/client" | 
       source = createReactShimSource(ReactModule);
       break;
     case "react/jsx-runtime":
+      // Prefer the host's real jsx runtime: rebuilding jsx/jsxs on top of
+      // createElement(type, { children }) drops React's static-children
+      // marking, so dev React emits "unique key" warnings for every
+      // multi-child element rendered by a plugin component.
       source = `
-        const R = globalThis.__paperclipPluginBridge__?.react;
+        const BRIDGE = globalThis.__paperclipPluginBridge__;
+        const RUNTIME = BRIDGE?.reactJsxRuntime;
+        const R = BRIDGE?.react;
         const withKey = ${applyJsxRuntimeKey.toString()};
-        const splitStaticChildren = ${splitStaticJsxChildren.toString()};
-        export const jsx = (type, props, key) => R.createElement(type, withKey(props, key));
-        export const jsxs = (type, props, key) => {
-          const split = splitStaticChildren(props);
-          return R.createElement(type, withKey(split.props, key), ...split.children);
-        };
-        export const Fragment = R.Fragment;
+        const fallbackJsx = (type, props, key) => R.createElement(type, withKey(props, key));
+        export const jsx = RUNTIME?.jsx ?? fallbackJsx;
+        export const jsxs = RUNTIME?.jsxs ?? fallbackJsx;
+        export const Fragment = RUNTIME?.Fragment ?? R.Fragment;
       `;
       break;
     case "react-dom":
@@ -391,7 +379,7 @@ function getShimBlobUrl(specifier: "react" | "react-dom" | "react-dom/client" | 
  * - `import { ... } from "react";`
  * - `import React from "react";`
  * - `import * as React from "react";`
- * - `import { ... } from "@penclipai/plugin-sdk/ui";`
+ * - `import { ... } from "@paperclipai/plugin-sdk/ui";`
  *
  * Also handles re-exports:
  * - `export { ... } from "react";`
@@ -403,10 +391,6 @@ function rewriteBareSpecifiers(source: string): string {
     "'@paperclipai/plugin-sdk/ui'": `'${getShimBlobUrl("sdk-ui")}'`,
     '"@paperclipai/plugin-sdk/ui/hooks"': `"${getShimBlobUrl("sdk-ui")}"`,
     "'@paperclipai/plugin-sdk/ui/hooks'": `'${getShimBlobUrl("sdk-ui")}'`,
-    '"@penclipai/plugin-sdk/ui"': `"${getShimBlobUrl("sdk-ui")}"`,
-    "'@penclipai/plugin-sdk/ui'": `'${getShimBlobUrl("sdk-ui")}'`,
-    '"@penclipai/plugin-sdk/ui/hooks"': `"${getShimBlobUrl("sdk-ui")}"`,
-    "'@penclipai/plugin-sdk/ui/hooks'": `'${getShimBlobUrl("sdk-ui")}'`,
     '"react/jsx-runtime"': `"${getShimBlobUrl("react/jsx-runtime")}"`,
     "'react/jsx-runtime'": `'${getShimBlobUrl("react/jsx-runtime")}'`,
     '"react-dom/client"': `"${getShimBlobUrl("react-dom/client")}"`,
@@ -478,7 +462,7 @@ async function importPluginModule(url: string): Promise<Record<string, unknown>>
  * exports to the correct `pluginKey:exportName` registry keys.
  *
  * Plugin modules are loaded with bare-specifier rewriting so that imports
- * of `@penclipai/plugin-sdk/ui`, `@penclipai/plugin-sdk/ui`, `react`, and `react-dom` resolve to the
+ * of `@paperclipai/plugin-sdk/ui`, `react`, and `react-dom` resolve to the
  * host-provided implementations via the bridge registry.
  *
  * Web-component registrations still work: if the module has a named export
@@ -718,7 +702,6 @@ export function usePluginSlots(filters: SlotFilters): UsePluginSlotsResult {
 type PluginSlotErrorBoundaryProps = {
   slot: ResolvedPluginSlot;
   className?: string;
-  renderErrorLabel: string;
   children: ReactNode;
 };
 
@@ -747,7 +730,7 @@ class PluginSlotErrorBoundary extends Component<PluginSlotErrorBoundaryProps, Pl
     if (this.state.hasError) {
       return (
         <div className={cn("rounded-md border border-destructive/30 bg-destructive/5 px-2 py-1 text-xs text-destructive", this.props.className)}>
-          {this.props.slot.pluginDisplayName}: {this.props.renderErrorLabel}
+          {this.props.slot.pluginDisplayName}: failed to render
         </div>
       );
     }
@@ -847,7 +830,6 @@ export function PluginSlotMount({
   className,
   missingBehavior = "hidden",
 }: PluginSlotMountProps) {
-  const { t } = useTranslation();
   usePluginRegistrySubscription();
   const [, forceRerender] = useState(0);
   const component = resolveRegisteredComponent(slot);
@@ -881,13 +863,7 @@ export function PluginSlotMount({
   if (component.kind === "react") {
     const node = createElement(component.component, { slot, context });
     return (
-      <PluginSlotErrorBoundary
-        slot={slot}
-        className={className}
-        renderErrorLabel={t("pluginUi.slotFailedToRender", {
-          defaultValue: "failed to render",
-        })}
-      >
+      <PluginSlotErrorBoundary slot={slot} className={className}>
         <PluginBridgeScope pluginId={slot.pluginId} context={context}>
           {className ? <div className={className}>{node}</div> : node}
         </PluginBridgeScope>
@@ -896,13 +872,7 @@ export function PluginSlotMount({
   }
 
   return (
-    <PluginSlotErrorBoundary
-      slot={slot}
-      className={className}
-      renderErrorLabel={t("pluginUi.slotFailedToRender", {
-        defaultValue: "failed to render",
-      })}
-    >
+    <PluginSlotErrorBoundary slot={slot} className={className}>
       <PluginWebComponentMount
         tagName={component.tagName}
         slot={slot}
@@ -932,7 +902,6 @@ export function PluginSlotOutlet({
   errorClassName,
   missingBehavior = "hidden",
 }: PluginSlotOutletProps) {
-  const { t } = useTranslation();
   const { slots, errorMessage } = usePluginSlots({
     slotTypes,
     entityType,
@@ -942,10 +911,7 @@ export function PluginSlotOutlet({
   if (errorMessage) {
     return (
       <div className={cn("rounded-md border border-destructive/30 bg-destructive/5 px-2 py-1 text-xs text-destructive", errorClassName)}>
-        {t("pluginUi.extensionsUnavailable", {
-          message: errorMessage,
-          defaultValue: "Plugin extensions unavailable: {{message}}",
-        })}
+        Plugin extensions unavailable: {errorMessage}
       </div>
     );
   }

@@ -34,7 +34,8 @@ import { useAppsEnabled } from "../hooks/useAppsEnabled";
 import { useCompanyPageMemory } from "../hooks/useCompanyPageMemory";
 import { healthApi } from "../api/health";
 import { instanceSettingsApi } from "../api/instanceSettings";
-import { shouldSyncCompanySelectionFromRoute } from "../lib/company-selection";
+import { resolveArchivedCompanyBounce, shouldSyncCompanySelectionFromRoute } from "../lib/company-selection";
+import { useOptionalToastActions } from "../context/ToastContext";
 import {
   applyMainContentScrollTop,
   NavigationScrollMemory,
@@ -96,6 +97,8 @@ export function Layout() {
   } = useSidebar();
   const { openNewIssue, openOnboarding } = useDialogActions();
   const { togglePanelVisible } = usePanel();
+  // Optional: Layout also renders in harnesses without a ToastProvider.
+  const pushToast = useOptionalToastActions()?.pushToast ?? null;
   const {
     companies,
     loading: companiesLoading,
@@ -112,7 +115,11 @@ export function Layout() {
   const location = useLocation();
   const navigationType = useNavigationType();
   const { enabled: appsEnabled } = useAppsEnabled();
-  const isCompanySettingsRoute = location.pathname.includes("/company/settings");
+  const isCompanySettingsRoute = [
+    "/company/settings",
+    "/company/export",
+    "/company/import",
+  ].some((settingsPath) => location.pathname.includes(settingsPath));
   const companyPathSegments = getCompanyPathSegments(location.pathname, companyPrefix);
   const isToolsRoute = companyPathSegments[0]?.toLowerCase() === "tools";
   const isAppsRoute = companyPathSegments[0]?.toLowerCase() === "apps";
@@ -242,6 +249,27 @@ export function Layout() {
       return;
     }
 
+    // Stale state (remembered paths, history, bookmarks, restored tabs)
+    // deposits users into archived companies long after archiving; a cold
+    // arrival bounces to an active company instead of dwelling there.
+    // Deliberate visits (the company is already the selection) stay put.
+    const bounce = resolveArchivedCompanyBounce({
+      matchedCompany,
+      selectedCompanyId,
+      companies,
+    });
+    if (bounce) {
+      pushToast?.({
+        title: `${matchedCompany.name} is archived`,
+        body: `Switched to ${bounce.name}.`,
+        tone: "info",
+        dedupeKey: `archived-company-bounce:${matchedCompany.id}`,
+      });
+      setSelectedCompanyId(bounce.id, { source: "route_sync" });
+      navigate(`/${bounce.issuePrefix}/dashboard`, { replace: true });
+      return;
+    }
+
     if (
       shouldSyncCompanySelectionFromRoute({
         selectionSource,
@@ -259,6 +287,7 @@ export function Layout() {
     location.pathname,
     location.search,
     navigate,
+    pushToast,
     selectionSource,
     selectedCompanyId,
     setSelectedCompanyId,

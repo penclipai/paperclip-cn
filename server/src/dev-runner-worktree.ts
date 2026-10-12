@@ -1,6 +1,7 @@
 import { existsSync, lstatSync, readFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { hasVerifiedWorktreeSeedManifest } from "./worktree-seed-manifest.js";
 
 const LEGACY_WINDOWS_HOME_PREFIX_RE =
   /^([A-Za-z]:[\\/].*?AppData[\\/]Roaming[\\/])(Paperclip CN|Paperclip)([\\/]|$)/i;
@@ -76,6 +77,10 @@ export function resolveWorktreeEnvFilePath(rootDir: string): string {
 
 export function isWorktreeSeedPending(rootDir: string): boolean {
   const markerDir = path.resolve(rootDir, ".paperclip");
+  const manifestPath = path.resolve(markerDir, "seed-manifest.json");
+  if (existsSync(manifestPath)) {
+    return !hasVerifiedWorktreeSeedManifest(manifestPath);
+  }
   return existsSync(path.resolve(markerDir, "seed-pending"))
     && !existsSync(path.resolve(markerDir, "seed-complete"));
 }

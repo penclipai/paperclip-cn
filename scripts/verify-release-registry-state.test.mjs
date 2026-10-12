@@ -202,7 +202,7 @@ test("collectInternalDependencyProblems flags missing npm alias targets", () => 
 test("verifyPackageRegistryState fails when canary latest is left in place by default", () => {
   const packageDocsByName = new Map([
     [
-      "@paperclipai/plugin-e2b",
+      "@penclipai/plugin-e2b",
       {
         "dist-tags": {
           latest: "2026.425.0-canary.5",
@@ -234,8 +234,8 @@ test("verifyPackageRegistryState fails when canary latest is left in place by de
 
   assert.deepEqual(
     verifyPackageRegistryState({
-      packageName: "@paperclipai/plugin-e2b",
-      packageDoc: packageDocsByName.get("@paperclipai/plugin-e2b"),
+      packageName: "@penclipai/plugin-e2b",
+      packageDoc: packageDocsByName.get("@penclipai/plugin-e2b"),
       packageDocsByName,
       channel: "canary",
       distTag: "canary",
@@ -243,8 +243,8 @@ test("verifyPackageRegistryState fails when canary latest is left in place by de
       allowCanaryLatest: false,
     }),
     [
-      "@paperclipai/plugin-e2b: latest dist-tag still resolves to prerelease 2026.425.0-canary.5; if that state is intentional, rerun the verification script directly with --allow-canary-latest",
-      "@paperclipai/plugin-e2b@2026.425.0-canary.5 via latest: dependencies requires @paperclipai/plugin-sdk@2026.425.0-canary.5, but npm does not expose that version",
+      "@penclipai/plugin-e2b: latest dist-tag still resolves to prerelease 2026.425.0-canary.5; if that state is intentional, rerun the verification script directly with --allow-canary-latest",
+      "@penclipai/plugin-e2b@2026.425.0-canary.5 via latest: dependencies requires @paperclipai/plugin-sdk@2026.425.0-canary.5, but npm does not expose that version",
     ],
   );
 });
@@ -252,7 +252,7 @@ test("verifyPackageRegistryState fails when canary latest is left in place by de
 test("verifyPackageRegistryProblems marks canary latest drift as non-retriable", () => {
   const packageDocsByName = new Map([
     [
-      "@paperclipai/plugin-e2b",
+      "@penclipai/plugin-e2b",
       {
         "dist-tags": {
           latest: "2026.425.0-canary.5",
@@ -266,8 +266,8 @@ test("verifyPackageRegistryProblems marks canary latest drift as non-retriable",
   ]);
 
   const problems = verifyPackageRegistryProblems({
-    packageName: "@paperclipai/plugin-e2b",
-    packageDoc: packageDocsByName.get("@paperclipai/plugin-e2b"),
+    packageName: "@penclipai/plugin-e2b",
+    packageDoc: packageDocsByName.get("@penclipai/plugin-e2b"),
     packageDocsByName,
     channel: "canary",
     distTag: "canary",
@@ -282,7 +282,7 @@ test("verifyPackageRegistryProblems marks canary latest drift as non-retriable",
 test("verifyPackageRegistryProblems accepts the nightly channel and flags nightly latest drift", () => {
   const packageDocsByName = new Map([
     [
-      "@paperclipai/plugin-e2b",
+      "@penclipai/plugin-e2b",
       {
         "dist-tags": {
           latest: "2026.425.0-nightly.1",
@@ -296,8 +296,8 @@ test("verifyPackageRegistryProblems accepts the nightly channel and flags nightl
   ]);
 
   const problems = verifyPackageRegistryProblems({
-    packageName: "@paperclipai/plugin-e2b",
-    packageDoc: packageDocsByName.get("@paperclipai/plugin-e2b"),
+    packageName: "@penclipai/plugin-e2b",
+    packageDoc: packageDocsByName.get("@penclipai/plugin-e2b"),
     packageDocsByName,
     channel: "nightly",
     distTag: "nightly",

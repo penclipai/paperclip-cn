@@ -1,16 +1,42 @@
 export type CompanySelectionSource = "manual" | "route_sync" | "bootstrap";
 
-interface AutoSelectableCompany {
+interface BounceCandidateCompany {
   id: string;
-  status?: string;
+  name: string;
+  issuePrefix: string;
+  status: string;
 }
 
-type AutoSelectedCompanyParams = {
-  companies: readonly AutoSelectableCompany[];
+/**
+ * Decides whether a navigation that landed on an archived company's URL
+ * should bounce to an active company instead of dwelling in the archive.
+ *
+ * Stale state deposits users into archived companies long after archiving:
+ * remembered last-visited paths, browser history, bookmarks, and restored
+ * tabs all outlive the archive. Rendering those pages is safe, but it is
+ * never where the user wants to *be* — the sidebar does not even list the
+ * company. Cold arrivals therefore bounce to an active company.
+ *
+ * Deliberate visits still work: when the archived company is already the
+ * selection (the user chose it from the companies list), there is no
+ * bounce, so its settings and unarchive flows stay reachable. When no
+ * active company exists there is nowhere better to go, so the archive
+ * renders rather than bouncing into a dead end.
+ */
+export function resolveArchivedCompanyBounce(params: {
+  matchedCompany: BounceCandidateCompany | null;
   selectedCompanyId: string | null;
-  storedCompanyId: string | null;
-  isFetching: boolean;
-};
+  companies: BounceCandidateCompany[];
+}): BounceCandidateCompany | null {
+  const { matchedCompany, selectedCompanyId, companies } = params;
+  if (!matchedCompany || matchedCompany.status !== "archived") return null;
+  if (selectedCompanyId === matchedCompany.id) return null;
+
+  const selectedActive = companies.find(
+    (company) => company.id === selectedCompanyId && company.status !== "archived",
+  );
+  return selectedActive ?? companies.find((company) => company.status !== "archived") ?? null;
+}
 
 export function shouldSyncCompanySelectionFromRoute(params: {
   selectionSource: CompanySelectionSource;
@@ -27,42 +53,4 @@ export function shouldSyncCompanySelectionFromRoute(params: {
   }
 
   return true;
-}
-
-export function resolveAutoSelectedCompanyId(params: {
-  companies: readonly AutoSelectableCompany[];
-  selectedCompanyId: string | null;
-  storedCompanyId: string | null;
-  isFetching: boolean;
-}): string | null {
-  const { companies, selectedCompanyId, storedCompanyId, isFetching } = params;
-
-  if (companies.length === 0) return null;
-
-  const activeCompanies = companies.filter((company) => company.status !== "archived");
-  const selectableCompanies = activeCompanies.length > 0 ? activeCompanies : companies;
-  const requestedCompanyId = selectedCompanyId ?? storedCompanyId;
-
-  if (storedCompanyId && selectableCompanies.some((company) => company.id === storedCompanyId)) {
-    return null;
-  }
-
-  if (selectedCompanyId && selectableCompanies.some((company) => company.id === selectedCompanyId)) {
-    return null;
-  }
-
-  // After creating a company we can briefly have a fresh selected id but stale company data.
-  // Keep the requested selection stable until the refetch settles instead of snapping to a fallback.
-  if (isFetching && requestedCompanyId) {
-    return null;
-  }
-
-  return selectableCompanies[0]!.id;
-}
-
-export function shouldClearSelectedCompanyId(params: AutoSelectedCompanyParams): boolean {
-  const { companies, selectedCompanyId, storedCompanyId, isFetching } = params;
-
-  if (isFetching || companies.length > 0) return false;
-  return Boolean(selectedCompanyId || storedCompanyId);
 }

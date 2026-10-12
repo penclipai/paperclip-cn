@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   HUMAN_COMPANY_MEMBERSHIP_ROLE_LABELS,
   type Agent,
 } from "@penclipai/shared";
-import { Shield, ShieldCheck, Trash2, Users } from "lucide-react";
+import { Shield, ShieldCheck, Trash2 } from "lucide-react";
 import { accessApi, type CompanyMember } from "@/api/access";
 import { agentsApi } from "@/api/agents";
 import { ApiError } from "@/api/client";
@@ -21,12 +20,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";
 import { useCompany } from "@/context/CompanyContext";
 import { useToast } from "@/context/ToastContext";
 import { Link, Navigate } from "@/lib/router";
 import { queryKeys } from "@/lib/queryKeys";
 import { usePluginSlots } from "@/plugins/slots";
+import { translateInstant } from "@/i18n";
 
 const reassignmentIssueStatuses = "backlog,todo,in_progress,in_review,blocked,failed,timed_out";
 type EditableMemberStatus = "pending" | "active" | "suspended";
@@ -49,7 +50,7 @@ export function CompanyAccess() {
       { label: t("Settings"), href: "/company/settings" },
       { label: t("Members") },
     ]);
-  }, [selectedCompany?.name, setBreadcrumbs, t]);
+  }, [selectedCompany?.name, setBreadcrumbs]);
 
   const membersQuery = useQuery({
     queryKey: queryKeys.access.companyMembers(selectedCompanyId ?? ""),
@@ -178,7 +179,7 @@ export function CompanyAccess() {
         title: t("Member removed"),
         body:
           result.reassignedIssueCount > 0
-            ? t("{{count}} assigned issues cleaned up.", { count: result.reassignedIssueCount })
+            ? `${result.reassignedIssueCount} assigned task${result.reassignedIssueCount === 1 ? "" : "s"} cleaned up.`
             : undefined,
         tone: "success",
       });
@@ -238,46 +239,28 @@ export function CompanyAccess() {
 
   return (
     <div className="max-w-6xl space-y-8">
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <ShieldCheck className="h-5 w-5 text-muted-foreground" />
-          <h1 className="text-lg font-semibold">{t("Company Members")}</h1>
-        </div>
-        <p className="max-w-3xl text-sm text-muted-foreground">
-          {t("Manage the people who can work in {{name}}. Members can collaborate across the company by default.", { name: selectedCompany?.name })}
-        </p>
-        <div className="rounded-lg border border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
-          {t("Core keeps this page focused on membership, invite approvals, and safe member removal.")}
-        </div>
+      <div className="flex items-center gap-2">
+        <ShieldCheck className="h-5 w-5 text-muted-foreground" />
+        <h1 className="text-lg font-semibold">{t("Company Members")}</h1>
       </div>
 
       {access && !access.currentUserRole && (
-        <div className="rounded-xl border border-amber-500/40 px-4 py-3 text-sm text-amber-200">
-          {t("This account can manage access here through instance-admin privileges, but it does not currently hold an active company membership.")}
+        <div className="rounded-xl bg-amber-500/10 px-4 py-3 text-sm text-amber-800 dark:text-amber-200">
+          This account can manage access here through instance-admin privileges, but it does not currently hold an active company membership.
         </div>
       )}
 
       <section className="space-y-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 text-muted-foreground" />
-            <h2 className="text-base font-semibold">{t("Humans")}</h2>
-          </div>
-          <p className="max-w-3xl text-sm text-muted-foreground">
-            {t("Manage human company memberships and status here.")}
-          </p>
-        </div>
-
         {access?.canApproveJoinRequests && pendingHumanJoinRequests.length > 0 ? (
-          <div className="space-y-3 rounded-xl border border-border px-4 py-4">
+          <div className="space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
                 <h3 className="text-sm font-semibold">{t("Pending human joins")}</h3>
                 <p className="text-sm text-muted-foreground">
-                  {t("Review pending join requests before they become active company members.")}
+                  Review pending join requests before they become active company members.
                 </p>
               </div>
-              <Badge variant="outline">{t("{{count}} pending", { count: pendingHumanJoinRequests.length })}</Badge>
+              <Badge variant="outline">{pendingHumanJoinRequests.length} pending</Badge>
             </div>
             <div className="space-y-3">
               {pendingHumanJoinRequests.map((request) => (
@@ -297,15 +280,10 @@ export function CompanyAccess() {
                   }
                   context={
                     request.invite
-                      ? t("{{type}} join invite{{suffix}}", {
-                          type: translateJoinType(t, request.invite.allowedJoinTypes),
-                          suffix: request.invite.humanRole
-                            ? ` • ${t("default role {{role}}", { role: translateHumanRole(t, request.invite.humanRole) })}`
-                            : "",
-                        })
+                      ? `${request.invite.allowedJoinTypes} join invite${request.invite.humanRole ? ` • default role ${request.invite.humanRole}` : ""}`
                       : t("Invite metadata unavailable")
                   }
-                  detail={t("Submitted {{date}}", { date: new Date(request.createdAt).toLocaleString() })}
+                  detail={`Submitted ${new Date(request.createdAt).toLocaleString()}`}
                   approveLabel={t("Approve human")}
                   rejectLabel={t("Reject human")}
                   disabled={joinRequestActionPending}
@@ -317,62 +295,79 @@ export function CompanyAccess() {
           </div>
         ) : null}
 
-        <div className="overflow-hidden rounded-xl border border-border">
-          <div className="grid grid-cols-(--gtc-24) gap-3 border-b border-border px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            <div>{t("User account")}</div>
-            <div>{t("Role")}</div>
-            <div>{t("Status")}</div>
-            <div className="text-right">{t("Action")}</div>
-          </div>
-          {members.length === 0 ? (
-            <div className="px-4 py-8 text-sm text-muted-foreground">{t("No user memberships found for this company yet.")}</div>
-          ) : (
-            members.map((member) => {
-              const removalReason = member.removal?.reason ?? null;
-              const canArchive = member.removal?.canArchive ?? true;
-              return (
-                <div
-                  key={member.id}
-                  className="grid grid-cols-(--gtc-24) gap-3 border-b border-border px-4 py-3 last:border-b-0"
-                >
-                  <div className="min-w-0">
-                    <div className="truncate font-medium">{member.user?.name?.trim() || member.user?.email || member.principalId}</div>
-                    <div className="truncate text-xs text-muted-foreground">{member.user?.email || member.principalId}</div>
-                  </div>
-                  <div className="text-sm">
-                    {member.membershipRole
-                      ? translateHumanRole(t, member.membershipRole)
-                      : t("Unset")}
-                  </div>
-                  <div>
-                    <Badge variant={member.status === "active" ? "secondary" : member.status === "suspended" ? "destructive" : "outline"}>
-                      {translateMemberStatus(t, member.status)}
-                    </Badge>
-                  </div>
-                  <div className="space-y-1 text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button size="sm" variant="outline" onClick={() => setEditingMemberId(member.id)}>
-                        {t("Edit")}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setRemovingMemberId(member.id)}
-                        disabled={!canArchive}
-                        title={removalReason ? t(removalReason, { defaultValue: removalReason }) : undefined}
-                      >
-                        <Trash2 className="mr-1 h-3.5 w-3.5" />
-                        {t("Remove")}
-                      </Button>
-                    </div>
-                    {removalReason ? (
-                      <div className="text-xs text-muted-foreground">{t(removalReason, { defaultValue: removalReason })}</div>
-                    ) : null}
-                  </div>
-                </div>
-              );
-            })
-          )}
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-(--sz-44rem) text-left text-sm">
+            <thead>
+              <tr className="border-b border-border text-muted-foreground">
+                <th className="px-3 py-2 font-medium">Name</th>
+                <th className="px-3 py-2 font-medium">Email</th>
+                <th className="px-3 py-2 font-medium">{t("Role")}</th>
+                <th className="px-3 py-2 font-medium">{t("Status")}</th>
+                <th className="px-3 py-2 text-right font-medium">{t("Action")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {members.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-3 py-8 text-muted-foreground">
+                    No user memberships found for this company yet.
+                  </td>
+                </tr>
+              ) : members.map((member) => {
+                const removalReason = member.removal?.reason ?? null;
+                const canArchive = member.removal?.canArchive ?? true;
+                const displayName = memberDisplayName(member);
+                return (
+                  <tr key={member.id} className="border-b border-border last:border-b-0">
+                    <td className="px-3 py-3">
+                      <div className="flex min-w-0 items-center gap-2.5">
+                        <Avatar size="sm">
+                          {member.user?.image ? <AvatarImage src={member.user.image} alt={displayName} /> : null}
+                          <AvatarFallback>{memberInitials(member)}</AvatarFallback>
+                        </Avatar>
+                        <span className="truncate font-medium">{displayName}</span>
+                      </div>
+                    </td>
+                    <td className="px-3 py-3 text-muted-foreground">
+                      {member.user?.email || member.principalId}
+                    </td>
+                    <td className="px-3 py-3">
+                      {member.membershipRole
+                        ? HUMAN_COMPANY_MEMBERSHIP_ROLE_LABELS[member.membershipRole]
+                        : t("Unset")}
+                    </td>
+                    <td className="px-3 py-3">
+                      <Badge variant={member.status === "active" ? "secondary" : member.status === "suspended" ? "destructive" : "outline"}>
+                        {member.status.replace("_", " ")}
+                      </Badge>
+                    </td>
+                    <td className="px-3 py-3 text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button size="sm" variant="outline" onClick={() => setEditingMemberId(member.id)}>
+                          Edit
+                        </Button>
+                        <span
+                          className="inline-flex"
+                          title={!canArchive ? removalReason ?? undefined : undefined}
+                        >
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setRemovingMemberId(member.id)}
+                            disabled={!canArchive}
+                            title={!canArchive ? removalReason ?? undefined : undefined}
+                          >
+                            <Trash2 className="mr-1 h-3.5 w-3.5" />
+                            Remove
+                          </Button>
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       </section>
 
@@ -381,7 +376,7 @@ export function CompanyAccess() {
           <DialogHeader>
             <DialogTitle>{t("Edit member")}</DialogTitle>
             <DialogDescription>
-              {t("Update company role and membership status for {{name}}.", { name: memberDisplayName(t, editingMember) })}
+              Update company role and membership status for {editingMember?.user?.name || editingMember?.user?.email || editingMember?.principalId}.
             </DialogDescription>
           </DialogHeader>
           {editingMember && (
@@ -399,7 +394,7 @@ export function CompanyAccess() {
                     <option value="">{t("Unset")}</option>
                     {Object.entries(HUMAN_COMPANY_MEMBERSHIP_ROLE_LABELS).map(([value, label]) => (
                       <option key={value} value={value}>
-                        {t(label)}
+                        {label}
                       </option>
                     ))}
                   </select>
@@ -423,7 +418,7 @@ export function CompanyAccess() {
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditingMemberId(null)}>
-              {t("Cancel")}
+              Cancel
             </Button>
             <Button
               onClick={() => {
@@ -447,24 +442,24 @@ export function CompanyAccess() {
           <DialogHeader>
             <DialogTitle>{t("Remove member")}</DialogTitle>
             <DialogDescription>
-              {t("Archive {{name}} and move active assignments before hiding this user from assignment fields.", { name: memberDisplayName(t, removingMember) })}
+              Archive {memberDisplayName(removingMember)} and move active assignments before hiding this user from assignment fields.
             </DialogDescription>
           </DialogHeader>
           {removingMember && (
             <div className="space-y-5">
               <div className="rounded-lg border border-border px-3 py-3">
-                <div className="text-sm font-medium">{memberDisplayName(t, removingMember)}</div>
+                <div className="text-sm font-medium">{memberDisplayName(removingMember)}</div>
                 <div className="text-sm text-muted-foreground">{removingMember.user?.email || removingMember.principalId}</div>
                 <div className="mt-2 text-sm text-muted-foreground">
                   {assignedIssuesQuery.isLoading
-                    ? t("Checking assigned issues...")
-                    : t("{{count}} open assigned issues", { count: assignedIssues.length })}
+                    ? "Checking assigned tasks..."
+                    : `${assignedIssues.length} open assigned task${assignedIssues.length === 1 ? "" : "s"}`}
                 </div>
               </div>
 
               {assignedIssues.length > 0 ? (
                 <div className="space-y-2">
-                  <div className="text-sm font-medium">{t("Issue reassignment")}</div>
+                  <div className="text-sm font-medium">Task reassignment</div>
                   <select
                     className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
                     value={reassignmentTarget}
@@ -475,7 +470,7 @@ export function CompanyAccess() {
                       <optgroup label={t("Humans")}>
                         {activeReassignmentUsers.map((member) => (
                           <option key={member.id} value={`user:${member.principalId}`}>
-                            {memberDisplayName(t, member)}
+                            {memberDisplayName(member)}
                           </option>
                         ))}
                       </optgroup>
@@ -499,7 +494,7 @@ export function CompanyAccess() {
                     ))}
                     {assignedIssues.length > 6 ? (
                       <div className="px-3 py-2 text-sm text-muted-foreground">
-                        {t("{{count}} more issues", { count: assignedIssues.length - 6 })}
+                        {assignedIssues.length - 6} more task{assignedIssues.length - 6 === 1 ? "" : "s"}
                       </div>
                     ) : null}
                   </div>
@@ -509,7 +504,7 @@ export function CompanyAccess() {
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setRemovingMemberId(null)}>
-              {t("Cancel")}
+              Cancel
             </Button>
             <Button
               variant="destructive"
@@ -546,7 +541,7 @@ export function CompanyAccessLegacyRoute() {
       { label: t("Settings"), href: "/company/settings" },
       { label: t("Access") },
     ]);
-  }, [setBreadcrumbs, t]);
+  }, [setBreadcrumbs]);
 
   const permissionsSlot = slots.find((slot) => slot.routePath === "permissions");
   if (permissionsSlot) {
@@ -565,7 +560,7 @@ export function CompanyAccessLegacyRoute() {
           <h1 className="text-lg font-semibold">{t("Advanced Permissions")}</h1>
         </div>
         <p className="text-sm text-muted-foreground">
-          {t("Advanced access, scoped assignment, and explicit grant controls are provided by installed company settings extensions.")}
+          Advanced access, scoped assignment, and explicit grant controls are provided by installed company settings extensions.
         </p>
       </div>
 
@@ -573,10 +568,10 @@ export function CompanyAccessLegacyRoute() {
         <div className="space-y-2">
           <h2 className="text-sm font-semibold">{t("Advanced permissions unavailable")}</h2>
           <p className="text-sm text-muted-foreground">
-            {t("Core Paperclip keeps enforcing company boundaries and any existing restrictive policy data, but editing advanced permissions requires an installed extension.")}
+            Core Paperclip keeps enforcing company boundaries and any existing restrictive policy data, but editing advanced permissions requires an installed extension.
           </p>
           {errorMessage ? (
-            <p className="text-sm text-destructive">{t("Plugin extensions unavailable: {{message}}", { message: errorMessage })}</p>
+            <p className="text-sm text-destructive">Plugin extensions unavailable: {errorMessage}</p>
           ) : null}
         </div>
         <div className="flex flex-wrap gap-2">
@@ -592,39 +587,18 @@ export function CompanyAccessLegacyRoute() {
   );
 }
 
-function memberDisplayName(t: TFunction, member: CompanyMember | null) {
-  if (!member) return t("this member");
+function memberDisplayName(member: CompanyMember | null) {
+  if (!member) return translateInstant("this member");
   return member.user?.name?.trim() || member.user?.email || member.principalId;
 }
 
-function translateHumanRole(t: TFunction, role: string) {
-  const labels: Record<string, string> = {
-    owner: t("Owner"),
-    admin: t("Admin"),
-    operator: t("Operator"),
-    viewer: t("Viewer"),
-  };
-  return labels[role] ?? t(role, { defaultValue: role });
-}
-
-function translateJoinType(t: TFunction, type: string) {
-  const labels: Record<string, string> = {
-    human: t("Human"),
-    agent: t("Agent"),
-    both: t("Human or agent"),
-  };
-  return labels[type] ?? t(type, { defaultValue: type });
-}
-
-function translateMemberStatus(t: TFunction, status: CompanyMember["status"]) {
-  const labels: Record<string, string> = {
-    pending: t("Pending"),
-    active: t("Active"),
-    suspended: t("Suspended"),
-    archived: t("Archived"),
-    pending_approval: t("Pending approval"),
-  };
-  return labels[status] ?? t(status.replace("_", " "), { defaultValue: status.replace("_", " ") });
+function memberInitials(member: CompanyMember) {
+  const value = memberDisplayName(member).trim();
+  const parts = value.split(/\s+/).filter(Boolean);
+  if (parts.length > 1) {
+    return `${parts[0]?.[0] ?? ""}${parts.at(-1)?.[0] ?? ""}`.toUpperCase();
+  }
+  return value.slice(0, 2).toUpperCase();
 }
 
 function isAssignableAgent(agent: Agent) {
@@ -659,7 +633,7 @@ function PendingJoinRequestCard({
   onReject: () => void;
 }) {
   return (
-    <div className="rounded-xl border border-border px-4 py-4">
+    <div className="py-3">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-2">
           <div>

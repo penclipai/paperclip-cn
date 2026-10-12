@@ -7,7 +7,7 @@ import {
   type UiLocale,
 } from "@penclipai/shared";
 
-type TranslationParams = Record<string, string | number | boolean | null | undefined>;
+export type TranslationParams = Record<string, string | number | boolean | null | undefined>;
 type TranslationDictionary = Record<string, string>;
 type TranslationBundles = Record<UiLocale, TranslationDictionary>;
 

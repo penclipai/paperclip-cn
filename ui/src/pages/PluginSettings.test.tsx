@@ -1,7 +1,6 @@
 // @vitest-environment jsdom
 
 import { act } from "react";
-import type { ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -18,14 +17,6 @@ const mockPluginsApi = vi.hoisted(() => ({
 }));
 
 const mockSetBreadcrumbs = vi.hoisted(() => vi.fn());
-
-vi.mock("react-i18next", () => ({
-  initReactI18next: { type: "3rdParty", init: () => {} },
-  useTranslation: () => ({
-    t: (key: string, options?: Record<string, unknown>) =>
-      typeof options?.defaultValue === "string" ? options.defaultValue : key,
-  }),
-}));
 
 vi.mock("@/api/plugins", () => ({
   pluginsApi: mockPluginsApi,
@@ -45,7 +36,7 @@ vi.mock("@/context/CompanyContext", () => ({
 }));
 
 vi.mock("@/lib/router", () => ({
-  Link: ({ to, children }: { to: string; children: ReactNode }) => <a href={to}>{children}</a>,
+  Link: ({ to, children }: { to: string; children: React.ReactNode }) => <a href={to}>{children}</a>,
   Navigate: () => null,
   useParams: () => ({ companyPrefix: "PAP", pluginId: "plugin-1" }),
 }));
@@ -59,11 +50,6 @@ vi.mock("@/components/PageTabBar", () => ({
   PageTabBar: () => null,
 }));
 
-vi.mock("@/components/ui/tabs", () => ({
-  Tabs: ({ children }: { children: ReactNode }) => <div>{children}</div>,
-  TabsContent: ({ children }: { children: ReactNode }) => <div>{children}</div>,
-}));
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -72,20 +58,6 @@ async function flushReact() {
     await Promise.resolve();
     await new Promise((resolve) => window.setTimeout(resolve, 0));
   });
-}
-
-async function waitForAssertion(assertion: () => void) {
-  let lastError: unknown;
-  for (let attempt = 0; attempt < 20; attempt += 1) {
-    try {
-      assertion();
-      return;
-    } catch (error) {
-      lastError = error;
-      await flushReact();
-    }
-  }
-  throw lastError;
 }
 
 function basePlugin(overrides: Record<string, unknown> = {}) {
@@ -192,10 +164,8 @@ describe("PluginSettings", () => {
   it("routes environment-provider plugins to instance environments when they have no instance config", async () => {
     const root = await renderSettings(container);
 
-    await waitForAssertion(() => {
-      expect(container.textContent).toContain("Configure this plugin from Instance Settings → Environments.");
-      expect(container.textContent).toContain("secret bindings still resolve through the selected company context");
-    });
+    expect(container.textContent).toContain("Configure this plugin from Settings → Environments.");
+    expect(container.textContent).toContain("secret bindings still resolve through the selected company context");
     const link = container.querySelector('a[href="/company/settings/instance/environments"]');
     expect(link?.textContent).toContain("Open Environments");
 
@@ -208,7 +178,7 @@ describe("PluginSettings", () => {
     const declaration = wikiFolderDeclaration();
     mockPluginsApi.get.mockResolvedValue(basePlugin({
       pluginKey: "paperclipai.plugin-llm-wiki",
-      packageName: "@paperclipai/plugin-llm-wiki",
+      packageName: "@penclipai/plugin-llm-wiki",
       status: "ready",
       manifestJson: {
         displayName: "LLM Wiki",

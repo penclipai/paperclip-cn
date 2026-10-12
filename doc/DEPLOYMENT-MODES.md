@@ -87,8 +87,8 @@ Examples:
 
 ```sh
 pnpm penclip onboard --yes
-pnpm penclip onboard --yes --bind lan
-pnpm penclip run --bind tailnet
+npx penclip onboard --yes --bind lan
+npx penclip run --bind tailnet
 ```
 
 `configure --section server` follows the same interactive behavior.
@@ -148,7 +148,7 @@ rejected.
 The CLI fallback remains supported in all authenticated setup states:
 
 ```sh
-pnpm paperclipai auth bootstrap-ceo
+pnpm penclip auth bootstrap-ceo
 ```
 
 That command prints a one-time first-admin invite URL. Browser claim and

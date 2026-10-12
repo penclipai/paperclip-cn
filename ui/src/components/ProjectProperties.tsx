@@ -1,7 +1,5 @@
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
-import { translateInstant } from "../i18n";
-import { filterManagedSandboxSelectableEnvironments } from "@/lib/managed-sandbox-environment";
+import { environmentDisplayLabel, filterManagedSandboxSelectableEnvironments } from "@/lib/managed-sandbox-environment";
 import { Link } from "@/lib/router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Project, SharedWorkspaceConcurrency } from "@penclipai/shared";
@@ -26,8 +24,7 @@ import { DraftInput } from "./agent-config-primitives";
 import { InlineEditor } from "./InlineEditor";
 import { EnvironmentVariablesEditor } from "./environment-variables-editor";
 import { Badge } from "@/components/ui/badge";
-
-const PROJECT_STATUSES = ["backlog", "planned", "in_progress", "completed", "cancelled"];
+import { useTranslation } from "react-i18next";
 
 interface ProjectPropertiesProps {
   project: Project;
@@ -57,11 +54,12 @@ export type ProjectConfigFieldKey =
   | "execution_workspace_teardown_command";
 
 function SaveIndicator({ state }: { state: ProjectFieldSaveState }) {
+  const { t } = useTranslation();
   if (state === "saving") {
     return (
       <span className="inline-flex items-center gap-1 text-(length:--text-micro) text-muted-foreground">
         <Loader2 className="h-3 w-3 animate-spin" />
-        {translateInstant("projectProperties.saving")}
+        {t("projectProperties.saving")}
       </span>
     );
   }
@@ -69,7 +67,7 @@ function SaveIndicator({ state }: { state: ProjectFieldSaveState }) {
     return (
       <span className="inline-flex items-center gap-1 text-(length:--text-micro) text-green-600 dark:text-green-400">
         <Check className="h-3 w-3" />
-        {translateInstant("projectProperties.saved")}
+        {t("projectProperties.saved")}
       </span>
     );
   }
@@ -77,7 +75,7 @@ function SaveIndicator({ state }: { state: ProjectFieldSaveState }) {
     return (
       <span className="inline-flex items-center gap-1 text-(length:--text-micro) text-destructive">
         <AlertCircle className="h-3 w-3" />
-        {translateInstant("projectProperties.failed")}
+        {t("projectProperties.failed")}
       </span>
     );
   }
@@ -121,6 +119,14 @@ function PropertyRow({
 }
 
 function ProjectStatusPicker({ status, onChange }: { status: string; onChange: (status: string) => void }) {
+  const { t } = useTranslation();
+  const projectStatuses = [
+    { value: "backlog", label: t("status.backlog") },
+    { value: "planned", label: t("status.planned") },
+    { value: "in_progress", label: t("status.inProgress") },
+    { value: "completed", label: t("status.completed") },
+    { value: "cancelled", label: t("status.cancelled") },
+  ];
   const [open, setOpen] = useState(false);
   const colorClass = statusBadge[status] ?? statusBadgeDefault;
 
@@ -137,18 +143,18 @@ function ProjectStatusPicker({ status, onChange }: { status: string; onChange: (
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-40 p-1" align="start">
-        {PROJECT_STATUSES.map((value) => (
+        {projectStatuses.map((s) => (
           <Button
-            key={value}
+            key={s.value}
             variant="ghost"
             size="sm"
-            className={cn("w-full justify-start gap-2 text-xs", value === status && "bg-accent")}
+            className={cn("w-full justify-start gap-2 text-xs", s.value === status && "bg-accent")}
             onClick={() => {
-              onChange(value);
+              onChange(s.value);
               setOpen(false);
             }}
           >
-            {translateInstant(value === "in_progress" ? "status.inProgress" : `status.${value}`)}
+            {s.label}
           </Button>
         ))}
       </PopoverContent>
@@ -165,29 +171,29 @@ function ArchiveDangerZone({
   onArchive: (archived: boolean) => void;
   archivePending?: boolean;
 }) {
+  const { t } = useTranslation();
   const [confirming, setConfirming] = useState(false);
   const isArchive = !project.archivedAt;
-  const confirmation = translateInstant(
-    isArchive ? "projectProperties.confirmArchive" : "projectProperties.confirmUnarchive",
-    { name: project.name },
-  );
+  const action = isArchive ? t("projectProperties.archiveProject") : t("projectProperties.unarchiveProject");
 
   return (
     <div className="space-y-3 rounded-md border border-destructive/40 bg-destructive/5 px-4 py-4">
       <p className="text-sm text-muted-foreground">
         {isArchive
-          ? translateInstant("projectProperties.archiveDescription")
-          : translateInstant("projectProperties.unarchiveDescription")}
+          ? t("projectProperties.archiveDescription")
+          : t("projectProperties.unarchiveDescription")}
       </p>
       {archivePending ? (
         <Button size="sm" variant="destructive" disabled>
           <Loader2 className="h-3 w-3 animate-spin mr-1" />
-          {translateInstant(isArchive ? "projectProperties.archiving" : "projectProperties.unarchiving")}
+          {isArchive ? t("projectProperties.archiving") : t("projectProperties.unarchiving")}
         </Button>
       ) : confirming ? (
         <div className="flex items-center gap-2">
           <span className="text-sm text-destructive font-medium">
-            {confirmation}
+            {isArchive
+              ? t("projectProperties.confirmArchive", { name: project.name })
+              : t("projectProperties.confirmUnarchive", { name: project.name })}
           </span>
           <Button
             size="sm"
@@ -197,14 +203,14 @@ function ArchiveDangerZone({
               onArchive(isArchive);
             }}
           >
-            {translateInstant("projectProperties.confirm")}
+            {t("projectProperties.confirm")}
           </Button>
           <Button
             size="sm"
             variant="outline"
             onClick={() => setConfirming(false)}
           >
-            {translateInstant("projectProperties.cancel")}
+            {t("projectProperties.cancel")}
           </Button>
         </div>
       ) : (
@@ -214,9 +220,9 @@ function ArchiveDangerZone({
           onClick={() => setConfirming(true)}
         >
           {isArchive ? (
-            <><Archive className="h-3 w-3 mr-1" />{translateInstant("projectProperties.archiveProject")}</>
+            <><Archive className="h-3 w-3 mr-1" />{t("projectProperties.archiveProject")}</>
           ) : (
-            <><ArchiveRestore className="h-3 w-3 mr-1" />{translateInstant("projectProperties.unarchiveProject")}</>
+            <><ArchiveRestore className="h-3 w-3 mr-1" />{t("projectProperties.unarchiveProject")}</>
           )}
         </Button>
       )}
@@ -226,6 +232,15 @@ function ArchiveDangerZone({
 
 export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSaveState, onArchive, archivePending }: ProjectPropertiesProps) {
   const { t } = useTranslation();
+  const sharedWorkspaceConcurrencyOptions: {
+    value: SharedWorkspaceConcurrency;
+    label: string;
+    help: string;
+  }[] = [
+    { value: "auto", label: t("projectProperties.concurrency.auto"), help: t("projectProperties.concurrency.autoHelp") },
+    { value: "serialize", label: t("projectProperties.concurrency.serialize"), help: t("projectProperties.concurrency.serializeHelp") },
+    { value: "allow", label: t("projectProperties.concurrency.allow"), help: t("projectProperties.concurrency.allowHelp") },
+  ];
   const { selectedCompanyId } = useCompany();
   const queryClient = useQueryClient();
   const [goalOpen, setGoalOpen] = useState(false);
@@ -243,23 +258,6 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
     onUpdate?.(data);
   };
   const fieldState = (field: ProjectConfigFieldKey): ProjectFieldSaveState => getFieldSaveState?.(field) ?? "idle";
-  const sharedWorkspaceConcurrencyOptions = [
-    {
-      value: "auto" as const,
-      label: t("projectProperties.concurrency.auto", { defaultValue: "Auto" }),
-      help: t("projectProperties.concurrency.autoHelp", { defaultValue: "Concurrent runs on local/SSH runners; runs take turns in cloud sandboxes." }),
-    },
-    {
-      value: "serialize" as const,
-      label: t("projectProperties.concurrency.serialize", { defaultValue: "Serialize" }),
-      help: t("projectProperties.concurrency.serializeHelp", { defaultValue: "Runs always take turns in the shared project workspace." }),
-    },
-    {
-      value: "allow" as const,
-      label: t("projectProperties.concurrency.allow", { defaultValue: "Allow" }),
-      help: t("projectProperties.concurrency.allowHelp", { defaultValue: "Runs never wait for the workspace; concurrent edits are possible." }),
-    },
-  ];
 
   const { data: allGoals } = useQuery({
     queryKey: queryKeys.goals.list(selectedCompanyId!),
@@ -491,7 +489,7 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
       return;
     }
     if (!isAbsolutePath(cwd)) {
-      setWorkspaceError(t("projectProperties.localFolderAbsolutePathRequired", { defaultValue: "Local folder must be a full absolute path." }));
+      setWorkspaceError(t("projectProperties.localFolderAbsolutePathRequired"));
       return;
     }
     setWorkspaceError(null);
@@ -506,7 +504,7 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
       return;
     }
     if (!looksLikeRepoUrl(repoUrl)) {
-      setWorkspaceError(t("projectProperties.validRepoUrlRequired", { defaultValue: "Repo must use a valid GitHub or GitHub Enterprise repo URL." }));
+      setWorkspaceError(t("projectProperties.validRepoUrlRequired"));
       return;
     }
     setWorkspaceError(null);
@@ -613,7 +611,7 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
                       className="text-muted-foreground hover:text-foreground"
                       type="button"
                       onClick={() => removeGoal(goal.id)}
-                      aria-label={t("projectProperties.removeGoal", { goal: goal.title })}
+                      aria-label={t("projectProperties.removeGoalAriaLabel", { goalTitle: goal.title })}
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -672,7 +670,7 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
               onChange={(env) => commitField("env", { env: env ?? null })}
             />
             <p className="text-(length:--text-micro) text-muted-foreground">
-              {t("projectProperties.environmentHelp")}
+              {t("projectProperties.envHelp")}
             </p>
           </div>
         </PropertyRow>
@@ -855,6 +853,18 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
                           service.command ?? t("projectProperties.noUrl")
                         )}
                       </div>
+                      {service.exposure && service.exposure.state !== "removed" ? (
+                        <div
+                          className={cn(
+                            "text-(length:--text-nano)",
+                            service.exposure.state === "failed" || service.exposure.state === "cleanup_pending"
+                              ? "text-destructive"
+                              : "text-muted-foreground",
+                          )}
+                        >
+                          HTTPS {service.exposure.state.replace("_", " ")}
+                        </div>
+                      ) : null}
                     </div>
                     <div className="text-(length:--text-nano) text-muted-foreground whitespace-nowrap">
                       {service.lifecycle}
@@ -1033,7 +1043,7 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
                       {onUpdate || onFieldUpdate ? (
                         <select
                           className="w-full rounded border border-border bg-transparent px-2 py-1 text-xs outline-none"
-                          aria-label={t("projectProperties.sharedWorkspaceConcurrency", { defaultValue: "Shared workspace concurrency" })}
+                          aria-label={t("projectProperties.sharedWorkspaceConcurrency")}
                           value={executionWorkspaceSharedConcurrency}
                           onChange={(e) =>
                             commitField(
@@ -1102,7 +1112,7 @@ export function ProjectProperties({ project, onUpdate, onFieldUpdate, getFieldSa
                               <option value="">{t("projectProperties.noEnvironment")}</option>
                               {runSelectableEnvironments.map((environment) => (
                                 <option key={environment.id} value={environment.id}>
-                                  {environment.name} · {environment.driver}
+                                  {environmentDisplayLabel(environment)}
                                 </option>
                               ))}
                             </select>

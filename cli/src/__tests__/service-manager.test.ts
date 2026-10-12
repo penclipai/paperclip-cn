@@ -117,7 +117,7 @@ describe("service adapter dispatch", () => {
   it("returns a foreground-run skip on unsupported hosts", async () => {
     const runner: CommandRunner = async () => { throw new Error("no bus"); };
     const detection = await detectServiceManager({ platform: "linux", instanceId: "default", runner });
-    expect(detection).toEqual({ supported: false, reason: expect.stringContaining("paperclipai run") });
+    expect(detection).toEqual({ supported: false, reason: expect.stringContaining("penclip run") });
   });
 });
 

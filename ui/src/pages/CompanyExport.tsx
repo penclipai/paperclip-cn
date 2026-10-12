@@ -1,5 +1,6 @@
-import { useTranslation } from "react-i18next";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { translateInstant } from "@/i18n";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import type {
   Agent,
@@ -39,12 +40,15 @@ import {
 import { useAgentOrder } from "../hooks/useAgentOrder";
 import { useProjectOrder } from "../hooks/useProjectOrder";
 import { buildPortableSidebarOrder } from "../lib/company-portability-sidebar";
+import { getPortableFileDataUrl, getPortableFileText, isPortableImageFile } from "../lib/portable-files";
 import {
-  getPortableFileDataUrl,
-  getPortableFileText,
-  isPortableImageFile,
-} from "../lib/portable-files";
-import { Download, Package, Search } from "lucide-react";
+  Download,
+  LoaderCircle,
+  Package,
+  RotateCcw,
+  Search,
+  X,
+} from "lucide-react";
 import {
   type FileTreeNode,
   type FileTreeTone,
@@ -96,16 +100,11 @@ function filterPaperclipYaml(yaml: string, checkedFiles: Set<string>): string {
   const out: string[] = [];
 
   // Sections whose entries are slug-keyed and should be filtered
-  const filterableSections = new Set([
-    "agents",
-    "projects",
-    "tasks",
-    "routines",
-  ]);
+  const filterableSections = new Set(["agents", "projects", "tasks", "routines"]);
   const sidebarSections = new Set(["agents", "projects"]);
 
   let currentSection: string | null = null; // top-level key (e.g. "agents")
-  let currentEntry: string | null = null; // slug under that section
+  let currentEntry: string | null = null;   // slug under that section
   let includeEntry = true;
   let currentSidebarList: string | null = null;
   let currentSidebarHeaderLine: string | null = null;
@@ -164,8 +163,7 @@ function filterPaperclipYaml(yaml: string, checkedFiles: Set<string>): string {
       if (sidebarMatch && !line.startsWith("    ")) {
         flushSidebarSection();
         const sidebarKey = sidebarMatch[1];
-        currentSidebarList =
-          sidebarKey && sidebarSections.has(sidebarKey) ? sidebarKey : null;
+        currentSidebarList = sidebarKey && sidebarSections.has(sidebarKey) ? sidebarKey : null;
         currentSidebarHeaderLine = currentSidebarList ? line : null;
         continue;
       }
@@ -218,14 +216,9 @@ function filterPaperclipYaml(yaml: string, checkedFiles: Set<string>): string {
   flushSection();
 
   let filtered = out.join("\n");
-  const logoPathMatch = filtered.match(
-    /^\s{2}logoPath:\s*["']?([^"'\n]+)["']?\s*$/m,
-  );
+  const logoPathMatch = filtered.match(/^\s{2}logoPath:\s*["']?([^"'\n]+)["']?\s*$/m);
   if (logoPathMatch && !checkedFiles.has(logoPathMatch[1]!)) {
-    filtered = filtered.replace(
-      /^\s{2}logoPath:\s*["']?([^"'\n]+)["']?\s*\n?/m,
-      "",
-    );
+    filtered = filtered.replace(/^\s{2}logoPath:\s*["']?([^"'\n]+)["']?\s*\n?/m, "");
   }
 
   return filtered;
@@ -238,8 +231,7 @@ function filterTree(nodes: FileTreeNode[], query: string): FileTreeNode[] {
   return nodes
     .map((node) => {
       if (node.kind === "file") {
-        return node.name.toLowerCase().includes(lower) ||
-          node.path.toLowerCase().includes(lower)
+        return node.name.toLowerCase().includes(lower) || node.path.toLowerCase().includes(lower)
           ? node
           : null;
       }
@@ -252,19 +244,13 @@ function filterTree(nodes: FileTreeNode[], query: string): FileTreeNode[] {
 }
 
 /** Collect all ancestor dir paths for files that match a filter */
-function collectMatchedParentDirs(
-  nodes: FileTreeNode[],
-  query: string,
-): Set<string> {
+function collectMatchedParentDirs(nodes: FileTreeNode[], query: string): Set<string> {
   const dirs = new Set<string>();
   const lower = query.toLowerCase();
 
   function walk(node: FileTreeNode, ancestors: string[]) {
     if (node.kind === "file") {
-      if (
-        node.name.toLowerCase().includes(lower) ||
-        node.path.toLowerCase().includes(lower)
-      ) {
+      if (node.name.toLowerCase().includes(lower) || node.path.toLowerCase().includes(lower)) {
         for (const a of ancestors) dirs.add(a);
       }
     } else {
@@ -291,11 +277,7 @@ function paginateTaskNodes(
   limit: number,
   searchQuery: string,
   selectedFile: string | null,
-): {
-  nodes: FileTreeNode[];
-  totalTaskChildren: number;
-  visibleTaskChildren: number;
-} {
+): { nodes: FileTreeNode[]; totalTaskChildren: number; visibleTaskChildren: number } {
   let totalTaskChildren = 0;
   let visibleTaskChildren = 0;
 
@@ -311,13 +293,12 @@ function paginateTaskNodes(
 
       for (const child of node.children) {
         const childFiles = collectAllPaths([child], "file");
-        const containsSelected =
-          selectedFile !== null && childFiles.has(selectedFile);
-        const isSearchMatch =
-          searchQuery &&
-          (child.name.toLowerCase().includes(lower) ||
-            child.path.toLowerCase().includes(lower) ||
-            [...childFiles].some((p) => p.toLowerCase().includes(lower)));
+        const containsSelected = selectedFile !== null && childFiles.has(selectedFile);
+        const isSearchMatch = searchQuery && (
+          child.name.toLowerCase().includes(lower) ||
+          child.path.toLowerCase().includes(lower) ||
+          [...childFiles].some((p) => p.toLowerCase().includes(lower))
+        );
         if (containsSelected || isSearchMatch) {
           pinned.push(child);
         } else {
@@ -352,8 +333,7 @@ function filterExportForDownload(
 ): Record<string, CompanyPortabilityFileEntry> {
   const filteredFiles: Record<string, CompanyPortabilityFileEntry> = {};
   for (const path of Object.keys(files)) {
-    if (selectedFiles.has(path))
-      filteredFiles[path] = effectiveFiles[path] ?? files[path]!;
+    if (selectedFiles.has(path)) filteredFiles[path] = effectiveFiles[path] ?? files[path]!;
   }
   return filteredFiles;
 }
@@ -363,11 +343,7 @@ function downloadZip(
   selectedFiles: Set<string>,
   effectiveFiles: Record<string, CompanyPortabilityFileEntry>,
 ) {
-  const filteredFiles = filterExportForDownload(
-    exported.files,
-    selectedFiles,
-    effectiveFiles,
-  );
+  const filteredFiles = filterExportForDownload(exported.files, selectedFiles, effectiveFiles);
   const zipBytes = createZipArchive(filteredFiles, exported.rootPath);
   const zipBuffer = new ArrayBuffer(zipBytes.byteLength);
   new Uint8Array(zipBuffer).set(zipBytes);
@@ -408,9 +384,7 @@ function FrontmatterCard({
                       type="button"
                       className={cn(
                         "inline-flex items-center rounded-md border border-border bg-background px-2 py-0.5 text-xs",
-                        key === "skills" &&
-                          onSkillClick &&
-                          "cursor-pointer hover:bg-accent/50 hover:border-foreground/30 transition-colors",
+                        key === "skills" && onSkillClick && "cursor-pointer hover:bg-accent/50 hover:border-foreground/30 transition-colors",
                       )}
                       onClick={() => key === "skills" && onSkillClick?.(item)}
                     >
@@ -432,15 +406,8 @@ function FrontmatterCard({
 // ── Client-side README generation ────────────────────────────────────
 
 const ROLE_LABELS: Record<string, string> = {
-  ceo: "CEO",
-  cto: "CTO",
-  cmo: "CMO",
-  cfo: "CFO",
-  coo: "COO",
-  vp: "VP",
-  manager: "Manager",
-  engineer: "Engineer",
-  agent: "Agent",
+  ceo: "CEO", cto: "CTO", cmo: "CMO", cfo: "CFO", coo: "COO",
+  vp: "VP", manager: "Manager", engineer: "Engineer", agent: "Agent",
 };
 
 /**
@@ -460,11 +427,7 @@ function generateReadmeFromSelection(
   const tasks = manifest.issues.filter((t) => slugs.tasks.has(t.slug));
   const skills = manifest.skills.filter((s) => {
     // Skill files live under skills/{key}/...
-    return [...checkedFiles].some(
-      (f) =>
-        f.startsWith(`skills/${s.key}/`) ||
-        (f.startsWith(`skills/`) && f.includes(`/${s.slug}/`)),
-    );
+    return [...checkedFiles].some((f) => f.startsWith(`skills/${s.key}/`) || f.startsWith(`skills/`) && f.includes(`/${s.slug}/`));
   });
 
   const lines: string[] = [];
@@ -526,15 +489,13 @@ function generateReadmeFromSelection(
   lines.push("## Getting Started");
   lines.push("");
   lines.push("```bash");
-  lines.push("pnpm paperclipai company import this-github-url-or-folder");
+  lines.push("npx penclip company import this-github-url-or-folder");
   lines.push("```");
   lines.push("");
   lines.push("See [Paperclip](https://paperclip.ing) for more information.");
   lines.push("");
   lines.push("---");
-  lines.push(
-    `Exported from [Paperclip](https://paperclip.ing) on ${new Date().toISOString().split("T")[0]}`,
-  );
+  lines.push(`Exported from [Paperclip](https://paperclip.ing) on ${new Date().toISOString().split("T")[0]}`);
   lines.push("");
 
   return lines.join("\n");
@@ -542,52 +503,56 @@ function generateReadmeFromSelection(
 
 // ── Preview pane ──────────────────────────────────────────────────────
 
+export function resolveExportPreviewImageSrc(input: {
+  src: string;
+  selectedFile: string;
+  allFiles: Record<string, CompanyPortabilityFileEntry>;
+  orgChartPreviewUrl?: string;
+}): string | null {
+  const { src, selectedFile, allFiles, orgChartPreviewUrl } = input;
+  if (/^(?:https?:|data:)/i.test(src)) return null;
+
+  // Preview generation deliberately avoids the comparatively expensive PNG
+  // renderer. Use the independently generated SVG endpoint so the README
+  // never shows a broken image; downloaded bundles still contain the PNG.
+  if (src.replace(/^\.\//, "") === "images/org-chart.png" && orgChartPreviewUrl) {
+    return orgChartPreviewUrl;
+  }
+
+  const dir = selectedFile.includes("/") ? selectedFile.slice(0, selectedFile.lastIndexOf("/") + 1) : "";
+  const resolved = dir + src;
+  const entry = allFiles[resolved] ?? allFiles[src];
+  if (!entry) return null;
+  return getPortableFileDataUrl(resolved in allFiles ? resolved : src, entry);
+}
+
 function ExportPreviewPane({
   selectedFile,
   content,
   allFiles,
+  orgChartPreviewUrl,
   onSkillClick,
 }: {
   selectedFile: string | null;
   content: CompanyPortabilityFileEntry | null;
   allFiles: Record<string, CompanyPortabilityFileEntry>;
+  orgChartPreviewUrl?: string;
   onSkillClick?: (skill: string) => void;
 }) {
-  const { t } = useTranslation();
   if (!selectedFile || content === null) {
     return (
-      <EmptyState
-        icon={Package}
-        message={t("companyExport.selectPreview")}
-      />
+      <EmptyState icon={Package} message={translateInstant("companyExport.selectPreview")} />
     );
   }
 
   const textContent = getPortableFileText(content);
   const isMarkdown = selectedFile.endsWith(".md") && textContent !== null;
-  const parsed =
-    isMarkdown && textContent ? parseFrontmatter(textContent) : null;
-  const imageSrc = isPortableImageFile(selectedFile, content)
-    ? getPortableFileDataUrl(selectedFile, content)
-    : null;
+  const parsed = isMarkdown && textContent ? parseFrontmatter(textContent) : null;
+  const imageSrc = isPortableImageFile(selectedFile, content) ? getPortableFileDataUrl(selectedFile, content) : null;
 
   // Resolve relative image paths within the export package (e.g. images/org-chart.png)
   const resolveImageSrc = isMarkdown
-    ? (src: string) => {
-        // Skip absolute URLs and data URIs
-        if (/^(?:https?:|data:)/i.test(src)) return null;
-        // Resolve relative to the directory of the current markdown file
-        const dir = selectedFile.includes("/")
-          ? selectedFile.slice(0, selectedFile.lastIndexOf("/") + 1)
-          : "";
-        const resolved = dir + src;
-        const entry = allFiles[resolved] ?? allFiles[src];
-        if (!entry) return null;
-        return getPortableFileDataUrl(
-          resolved in allFiles ? resolved : src,
-          entry,
-        );
-      }
+    ? (src: string) => resolveExportPreviewImageSrc({ src, selectedFile, allFiles, orgChartPreviewUrl })
     : undefined;
 
   return (
@@ -599,31 +564,13 @@ function ExportPreviewPane({
         {parsed ? (
           <>
             <FrontmatterCard data={parsed.data} onSkillClick={onSkillClick} />
-            {parsed.body.trim() && (
-              <MarkdownBody
-                resolveImageSrc={resolveImageSrc}
-                softBreaks={false}
-                linkIssueReferences={false}
-              >
-                {parsed.body}
-              </MarkdownBody>
-            )}
+            {parsed.body.trim() && <MarkdownBody resolveImageSrc={resolveImageSrc} softBreaks={false} linkIssueReferences={false}>{parsed.body}</MarkdownBody>}
           </>
         ) : isMarkdown ? (
-          <MarkdownBody
-            resolveImageSrc={resolveImageSrc}
-            softBreaks={false}
-            linkIssueReferences={false}
-          >
-            {textContent ?? ""}
-          </MarkdownBody>
+          <MarkdownBody resolveImageSrc={resolveImageSrc} softBreaks={false} linkIssueReferences={false}>{textContent ?? ""}</MarkdownBody>
         ) : imageSrc ? (
           <div className="flex min-h-(--sz-520px) items-center justify-center rounded-lg border border-border bg-accent/10 p-6">
-            <img
-              src={imageSrc}
-              alt={selectedFile}
-              className="max-h-(--sz-480px) max-w-full object-contain"
-            />
+            <img src={imageSrc} alt={selectedFile} className="max-h-(--sz-480px) max-w-full object-contain" />
           </div>
         ) : textContent !== null ? (
           <pre className="overflow-x-auto whitespace-pre-wrap break-words border-0 bg-transparent p-0 font-mono text-sm text-foreground">
@@ -631,7 +578,7 @@ function ExportPreviewPane({
           </pre>
         ) : (
           <div className="rounded-lg border border-border bg-accent/10 px-4 py-3 text-sm text-muted-foreground">
-            {t("companyExport.binaryPreviewUnavailable")}
+            Binary asset preview is not available for this file type.
           </div>
         )}
       </div>
@@ -647,9 +594,7 @@ function filePathFromLocation(pathname: string): string | null {
   const relativePathname = toCompanyRelativePath(pathname);
   const idx = relativePathname.indexOf(marker);
   if (idx === -1) return null;
-  const filePath = decodeURIComponent(
-    relativePathname.slice(idx + marker.length),
-  );
+  const filePath = decodeURIComponent(relativePathname.slice(idx + marker.length));
   return filePath || null;
 }
 
@@ -665,6 +610,23 @@ function expandAncestors(filePath: string): string[] {
   return dirs;
 }
 
+interface ExportPreviewMutationInput {
+  includeIssues: boolean;
+  includeSkills: boolean;
+  requestId: number;
+  signal: AbortSignal;
+}
+
+function isAbortError(error: unknown): boolean {
+  return error instanceof DOMException
+    ? error.name === "AbortError"
+    : error instanceof Error && error.name === "AbortError";
+}
+
+function previewErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : translateInstant("companyExport.exportFailedBody");
+}
+
 export function CompanyExport() {
   const { t } = useTranslation();
   const { selectedCompanyId, selectedCompany } = useCompany();
@@ -672,16 +634,17 @@ export function CompanyExport() {
   const { pushToast } = useToastActions();
   const navigate = useNavigate();
   const location = useLocation();
-  const { data: session, isFetched: isSessionFetched } = useQuery({
+  const initialFileFromUrl = useRef(filePathFromLocation(location.pathname));
+  const { data: session } = useQuery({
     queryKey: queryKeys.auth.session,
     queryFn: () => authApi.getSession(),
   });
-  const { data: agents = [], isFetched: areAgentsFetched } = useQuery({
+  const { data: agents = [] } = useQuery({
     queryKey: queryKeys.agents.list(selectedCompanyId!),
     queryFn: () => agentsApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId,
   });
-  const { data: projects = [], isFetched: areProjectsFetched } = useQuery({
+  const { data: projects = [] } = useQuery({
     queryKey: queryKeys.projects.list(selectedCompanyId!),
     queryFn: () => projectsApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId,
@@ -692,23 +655,33 @@ export function CompanyExport() {
     enabled: !!selectedCompanyId,
   });
 
-  const [exportData, setExportData] =
-    useState<CompanyPortabilityExportPreviewResult | null>(null);
+  const [exportData, setExportData] = useState<CompanyPortabilityExportPreviewResult | null>(null);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [expandedDirs, setExpandedDirs] = useState<Set<string>>(new Set());
-  const [categories, setCategories] = useState<ExportCategorySelection>(
-    buildDefaultExportCategorySelection,
-  );
+  const [categories, setCategories] = useState<ExportCategorySelection>(() => ({
+    ...buildDefaultExportCategorySelection(),
+    // Task history is the expensive part of a large-company export. Keep it
+    // opt-in so opening this settings page uses the lightweight preview path.
+    tasks: false,
+    routines: false,
+    attachments: false,
+  }));
   const [treeSearch, setTreeSearch] = useState("");
   const [taskLimit, setTaskLimit] = useState(TASKS_PAGE_SIZE);
+  const [previewCancelled, setPreviewCancelled] = useState(false);
   const savedExpandedRef = useRef<Set<string> | null>(null);
-  const initialFileFromUrl = useRef(filePathFromLocation(location.pathname));
+  const previewAbortControllerRef = useRef<AbortController | null>(null);
+  const previewRequestIdRef = useRef(0);
+  const previewCompanyIdRef = useRef<string | null>(null);
   const currentUserId = session?.user?.id ?? session?.session?.userId ?? null;
   const visibleAgents = useMemo(
     () => agents.filter((agent: Agent) => agent.status !== "terminated"),
     [agents],
   );
-  const visibleProjects = useMemo(() => projects, [projects]);
+  const visibleProjects = useMemo(
+    () => projects,
+    [projects],
+  );
   const { orderedAgents } = useAgentOrder({
     agents: visibleAgents,
     companyId: selectedCompanyId,
@@ -720,19 +693,15 @@ export function CompanyExport() {
     userId: currentUserId,
   });
   const sidebarOrder = useMemo(
-    () =>
-      buildPortableSidebarOrder({
-        agents: visibleAgents,
-        orderedAgents,
-        projects: visibleProjects,
-        orderedProjects,
-      }),
+    () => buildPortableSidebarOrder({
+      agents: visibleAgents,
+      orderedAgents,
+      projects: visibleProjects,
+      orderedProjects,
+    }),
     [orderedAgents, orderedProjects, visibleAgents, visibleProjects],
   );
-  const sidebarOrderKey = useMemo(
-    () => JSON.stringify(sidebarOrder ?? null),
-    [sidebarOrder],
-  );
+  const includeIssues = categories.tasks || categories.routines;
 
   // Navigate-aware file selection: updates state + URL without page reload.
   // `replace` = true skips history entry (used for initial load); false = pushes (used for clicks).
@@ -767,26 +736,26 @@ export function CompanyExport() {
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: selectedCompany?.name ?? t("Company"), href: "/dashboard" },
+      { label: selectedCompany?.name ?? t("companyExport.companyFallback"), href: "/dashboard" },
       { label: t("Settings"), href: "/company/settings" },
-      { label: t("Export") },
+      { label: t("companyExport.exportButton") },
     ]);
-  }, [selectedCompany?.name, setBreadcrumbs, t]);
+  }, [selectedCompany?.name, setBreadcrumbs]);
 
   const exportPreviewMutation = useMutation({
-    mutationFn: () =>
+    mutationFn: ({ includeIssues: withIssues, includeSkills, signal }: ExportPreviewMutationInput) =>
       companiesApi.exportPreview(selectedCompanyId!, {
-        include: { company: true, agents: true, projects: true, issues: true },
+        include: { company: true, agents: true, projects: true, issues: withIssues, skills: includeSkills },
         sidebarOrder,
-      }),
-    onSuccess: (result) => {
+      }, { signal }),
+    onSuccess: (result, request) => {
+      if (request.requestId !== previewRequestIdRef.current) return;
       setExportData(result);
       // Expand top-level dirs (except tasks — collapsed by default)
       const tree = buildFileTree(result.files);
       const topDirs = new Set<string>();
       for (const node of tree) {
-        if (node.kind === "dir" && node.name !== "tasks")
-          topDirs.add(node.path);
+        if (node.kind === "dir" && node.name !== "tasks") topDirs.add(node.path);
       }
 
       // If URL contains a deep-linked file path, select it and expand ancestors
@@ -797,30 +766,45 @@ export function CompanyExport() {
         setExpandedDirs(new Set([...topDirs, ...ancestors]));
       } else {
         // Default to README.md if present, otherwise fall back to first file
-        const defaultFile =
-          "README.md" in result.files
-            ? "README.md"
-            : Object.keys(result.files)[0];
+        const defaultFile = "README.md" in result.files
+          ? "README.md"
+          : Object.keys(result.files)[0];
         if (defaultFile) {
           selectFile(defaultFile, true);
         }
         setExpandedDirs(topDirs);
       }
     },
-    onError: (err) => {
+    onError: (err, request) => {
+      if (request.requestId !== previewRequestIdRef.current || isAbortError(err)) return;
       pushToast({
         tone: "error",
         title: t("companyExport.exportFailedTitle"),
-        body:
-          err instanceof Error ? err.message : t("companyExport.exportFailedBody"),
+        body: previewErrorMessage(err),
       });
     },
   });
 
+  function startPreviewRequest() {
+    if (!selectedCompanyId) return;
+    previewAbortControllerRef.current?.abort();
+    const controller = new AbortController();
+    const requestId = previewRequestIdRef.current + 1;
+    previewRequestIdRef.current = requestId;
+    previewAbortControllerRef.current = controller;
+    setPreviewCancelled(false);
+    exportPreviewMutation.mutate({
+      includeIssues,
+      includeSkills: categories.skills,
+      requestId,
+      signal: controller.signal,
+    });
+  }
+
   const downloadMutation = useMutation({
     mutationFn: () =>
       companiesApi.exportBundle(selectedCompanyId!, {
-        include: { company: true, agents: true, projects: true, issues: true },
+        include: { company: true, agents: true, projects: true, issues: includeIssues, skills: categories.skills },
         selectedFiles: Array.from(checkedFiles).sort(),
         sidebarOrder,
       }),
@@ -830,37 +814,33 @@ export function CompanyExport() {
       pushToast({
         tone: "success",
         title: t("companyExport.exportDownloadedTitle"),
-        body: t("companyExport.exportDownloadedBody", {
-          count: resultCheckedFiles.size,
-          rootPath: result.rootPath,
-        }),
+        body: `${resultCheckedFiles.size} file${resultCheckedFiles.size === 1 ? "" : "s"} exported as ${result.rootPath}.zip`,
       });
     },
     onError: (err) => {
       pushToast({
         tone: "error",
         title: t("companyExport.exportFailedTitle"),
-        body:
-          err instanceof Error
-            ? err.message
-            : t("companyExport.buildFailedBody"),
+        body: err instanceof Error ? err.message : t("companyExport.buildFailedBody"),
       });
     },
   });
 
   useEffect(() => {
-    if (!selectedCompanyId || exportPreviewMutation.isPending) return;
-    if (!isSessionFetched || !areAgentsFetched || !areProjectsFetched) return;
-    setExportData(null);
-    exportPreviewMutation.mutate();
+    if (!selectedCompanyId) return;
+    if (previewCompanyIdRef.current !== selectedCompanyId) {
+      previewCompanyIdRef.current = selectedCompanyId;
+      setExportData(null);
+      setSelectedFile(null);
+    }
+    startPreviewRequest();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    selectedCompanyId,
-    isSessionFetched,
-    areAgentsFetched,
-    areProjectsFetched,
-    sidebarOrderKey,
-  ]);
+  }, [selectedCompanyId, includeIssues, categories.skills]);
+
+  useEffect(() => () => {
+    previewRequestIdRef.current += 1;
+    previewAbortControllerRef.current?.abort();
+  }, []);
 
   const tree = useMemo(
     () => (exportData ? buildFileTree(exportData.files) : []),
@@ -885,30 +865,21 @@ export function CompanyExport() {
   const categoryCounts = useMemo(
     () =>
       exportData
-        ? countExportFilesByCategory(
-            Object.keys(exportData.files),
-            exportData.manifest.issues,
-          )
+        ? countExportFilesByCategory(Object.keys(exportData.files), exportData.manifest.issues)
         : null,
     [exportData],
   );
 
-  const { displayTree, totalTaskChildren, visibleTaskChildren } =
-    useMemo(() => {
-      let result = tree;
-      if (treeSearch) result = filterTree(result, treeSearch);
-      const paginated = paginateTaskNodes(
-        result,
-        taskLimit,
-        treeSearch,
-        selectedFile,
-      );
-      return {
-        displayTree: paginated.nodes,
-        totalTaskChildren: paginated.totalTaskChildren,
-        visibleTaskChildren: paginated.visibleTaskChildren,
-      };
-    }, [tree, treeSearch, taskLimit, selectedFile]);
+  const { displayTree, totalTaskChildren, visibleTaskChildren } = useMemo(() => {
+    let result = tree;
+    if (treeSearch) result = filterTree(result, treeSearch);
+    const paginated = paginateTaskNodes(result, taskLimit, treeSearch, selectedFile);
+    return {
+      displayTree: paginated.nodes,
+      totalTaskChildren: paginated.totalTaskChildren,
+      visibleTaskChildren: paginated.visibleTaskChildren,
+    };
+  }, [tree, treeSearch, taskLimit, selectedFile]);
 
   // Files the current toggles exclude render dimmed, so a toggle's effect is
   // visible in the tree. Directories dim once none of their files export.
@@ -942,18 +913,13 @@ export function CompanyExport() {
     // Filter .paperclip.yaml
     const yamlPath = exportData.paperclipExtensionPath;
     if (yamlPath && typeof exportData.files[yamlPath] === "string") {
-      filtered[yamlPath] = filterPaperclipYaml(
-        exportData.files[yamlPath],
-        checkedFiles,
-      );
+      filtered[yamlPath] = filterPaperclipYaml(exportData.files[yamlPath], checkedFiles);
     }
 
     // Regenerate README.md based on checked selection
     if (typeof exportData.files["README.md"] === "string") {
-      const companyName =
-        exportData.manifest.company?.name ?? selectedCompany?.name ?? "Company";
-      const companyDescription =
-        exportData.manifest.company?.description ?? null;
+      const companyName = exportData.manifest.company?.name ?? selectedCompany?.name ?? t("companyExport.companyFallback");
+      const companyDescription = exportData.manifest.company?.description ?? null;
       filtered["README.md"] = generateReadmeFromSelection(
         exportData.manifest,
         checkedFiles,
@@ -1048,9 +1014,16 @@ export function CompanyExport() {
   }
 
   function handleDownload() {
-    if (!exportData || checkedFiles.size === 0 || downloadMutation.isPending)
-      return;
+    if (!exportData || checkedFiles.size === 0 || downloadMutation.isPending) return;
     downloadMutation.mutate();
+  }
+
+  function handleCancelPreview() {
+    previewRequestIdRef.current += 1;
+    previewAbortControllerRef.current?.abort();
+    previewAbortControllerRef.current = null;
+    exportPreviewMutation.reset();
+    setPreviewCancelled(true);
   }
 
   if (!selectedCompanyId) {
@@ -1061,8 +1034,44 @@ export function CompanyExport() {
     return <PageSkeleton variant="detail" />;
   }
 
+  if (previewCancelled && !exportData) {
+    return (
+      <EmptyState
+        icon={Package}
+        title="Export preview cancelled"
+        message="The preview request was cancelled. Your export settings are unchanged."
+        action="Retry preview"
+        onAction={startPreviewRequest}
+        hideActionIcon
+      />
+    );
+  }
+
+  if (exportPreviewMutation.isError && !exportData) {
+    return (
+      <EmptyState
+        icon={Package}
+        title="Export preview failed"
+        message={previewErrorMessage(exportPreviewMutation.error)}
+        description="Retry the preview. You do not need to reload this page."
+        action="Retry preview"
+        onAction={startPreviewRequest}
+        hideActionIcon
+      />
+    );
+  }
+
   if (!exportData) {
-    return <EmptyState icon={Package} message={t("companyExport.loadingData")} />;
+    return (
+      <EmptyState
+        icon={Package}
+        title="Export preview unavailable"
+        message="No export preview is loaded."
+        action="Load preview"
+        onAction={startPreviewRequest}
+        hideActionIcon
+      />
+    );
   }
 
   const previewContent = selectedFile
@@ -1072,38 +1081,39 @@ export function CompanyExport() {
     : null;
 
   return (
-    <div>
+    <div className="max-w-6xl">
       {/* Sticky top action bar */}
       <div className="sticky top-0 z-10 border-b border-border bg-background px-5 py-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-4 text-sm">
             <span className="font-medium">
-              {t("companyExport.header", {
-                companyName: selectedCompany?.name ?? t("companyExport.companyFallback"),
-              })}
+              {selectedCompany?.name ?? t("companyExport.companyFallback")} export
             </span>
             <span className="text-muted-foreground">
-              {t("companyExport.selectionSummary", {
-                selected: selectedCount.toLocaleString(),
-                total: totalFiles.toLocaleString(),
-                sizeSuffix: selectedCount > 0 ? ` (~${formatBytes(estimatedZipBytes)})` : "",
-              })}
+              Exporting {selectedCount.toLocaleString()} of {totalFiles.toLocaleString()} file{totalFiles === 1 ? "" : "s"}
+              {selectedCount > 0 && ` (~${formatBytes(estimatedZipBytes)})`}
             </span>
             {warnings.length > 0 && (
               <span className="text-amber-500">
-                {t("companyExport.warningCount", { count: warnings.length })}
+                {warnings.length} warning{warnings.length === 1 ? "" : "s"}
               </span>
             )}
           </div>
           <Button
             size="sm"
             onClick={handleDownload}
-            disabled={selectedCount === 0 || downloadMutation.isPending}
+            disabled={
+              selectedCount === 0
+              || downloadMutation.isPending
+              || exportPreviewMutation.isPending
+              || exportPreviewMutation.isError
+              || previewCancelled
+            }
           >
             <Download className="mr-1.5 h-3.5 w-3.5" />
             {downloadMutation.isPending
               ? t("companyExport.building")
-              : t("companyExport.exportButton", { count: selectedCount })}
+              : `Export ${selectedCount.toLocaleString()} file${selectedCount === 1 ? "" : "s"}`}
           </Button>
         </div>
       </div>
@@ -1112,9 +1122,7 @@ export function CompanyExport() {
       {warnings.length > 0 && (
         <div className="mx-5 mt-3 rounded-md border border-amber-500/30 bg-amber-500/5 px-4 py-3">
           {warnings.map((w) => (
-            <div key={w} className="text-xs text-amber-500">
-              {w}
-            </div>
+            <div key={w} className="text-xs text-amber-500">{w}</div>
           ))}
         </div>
       )}
@@ -1122,17 +1130,13 @@ export function CompanyExport() {
       {/* Export fidelity: data the bundle will not carry */}
       {fidelityReport && fidelityReport.warnings.length > 0 && (
         <div className="mx-5 mt-3 rounded-md border border-amber-500/30 bg-amber-500/5 px-4 py-3">
-          <h3 className="mb-1.5 text-xs font-medium">
-            {t("companyExport.notIncluded")}
-          </h3>
+          <h3 className="mb-1.5 text-xs font-medium">{t("companyExport.notIncluded")}</h3>
           {fidelityReport.warnings.map((warning) => (
             <div
               key={warning.code}
               className={cn(
                 "text-xs",
-                warning.severity === "blocker"
-                  ? "font-medium text-destructive"
-                  : "text-amber-500",
+                warning.severity === "blocker" ? "font-medium text-destructive" : "text-amber-500",
               )}
             >
               {warning.message}
@@ -1145,33 +1149,24 @@ export function CompanyExport() {
       <div className="grid gap-4 xl:h-(--sz-calc-30) xl:grid-cols-(--gtc-25) xl:gap-0">
         <aside className="flex max-h-(--sz-24rem) flex-col overflow-hidden border-b border-border xl:max-h-none xl:border-b-0 xl:border-r">
           <div className="border-b border-border px-4 py-3 shrink-0">
-            <h2 className="text-base font-semibold">
-              {t("companyExport.packageFiles")}
-            </h2>
+            <h2 className="text-base font-semibold">{t("companyExport.packageFiles")}</h2>
           </div>
           <div className="border-b border-border px-4 py-3 shrink-0">
-            <h3 className="mb-2 text-xs font-medium text-muted-foreground">
-              {t("companyExport.whatToInclude")}
-            </h3>
-            <div
-              className="grid grid-cols-2 gap-x-4 gap-y-1.5"
-              role="group"
-              aria-label={t("companyExport.whatToInclude")}
-            >
+            <h3 className="mb-2 text-xs font-medium text-muted-foreground">{t("companyExport.whatToInclude")}</h3>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1.5" role="group" aria-label={t("companyExport.whatToInclude")}>
               {EXPORT_CATEGORY_ORDER.map((key) => {
                 const isAttachments = key === "attachments";
-                const disabled =
-                  isAttachments && !isAttachmentsCategoryEnabled(categories);
+                const disabled = isAttachments && !isAttachmentsCategoryEnabled(categories);
                 const checked = categories[key] && !disabled;
                 const count = categoryCounts?.[key] ?? 0;
+                const countLoaded = exportData.manifest.includes.issues
+                  || (key !== "tasks" && key !== "routines" && key !== "attachments");
                 return (
                   <label
                     key={key}
                     className={cn(
                       "flex items-center gap-2 text-sm",
-                      disabled
-                        ? "cursor-not-allowed opacity-50"
-                        : "cursor-pointer",
+                      disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",
                     )}
                     title={
                       disabled
@@ -1187,16 +1182,17 @@ export function CompanyExport() {
                       className="accent-foreground"
                       data-export-category={key}
                     />
-                    <span className="min-w-0 truncate">
-                      {t(EXPORT_CATEGORY_LABELS[key], { defaultValue: EXPORT_CATEGORY_LABELS[key] })}
-                    </span>
+                    <span className="min-w-0 truncate">{EXPORT_CATEGORY_LABELS[key]}</span>
                     <span className="text-xs text-muted-foreground">
-                      {count.toLocaleString()}
+                      {countLoaded ? count.toLocaleString() : "—"}
                     </span>
                   </label>
                 );
               })}
             </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Task and routine history is opt-in because it can be large.
+            </p>
           </div>
           <div className="border-b border-border px-3 py-2 shrink-0">
             <div className="flex items-center gap-2 rounded-md border border-border px-2 py-1">
@@ -1229,22 +1225,80 @@ export function CompanyExport() {
                   onClick={() => setTaskLimit((prev) => prev + TASKS_PAGE_SIZE)}
                   className="w-full rounded-md border border-border px-3 py-1.5 text-xs text-muted-foreground hover:bg-accent/30 hover:text-foreground transition-colors"
                 >
-                  {t("companyExport.showMoreTasksSummary", {
-                    visible: visibleTaskChildren,
-                    total: totalTaskChildren,
-                  })}
+                  Show more tasks ({visibleTaskChildren} of {totalTaskChildren})
                 </button>
               </div>
             )}
           </div>
         </aside>
-        <div className="min-w-0 overflow-y-auto xl:pl-6">
+        <div className="relative min-w-0 overflow-y-auto xl:pl-6">
           <ExportPreviewPane
             selectedFile={selectedFile}
             content={previewContent}
             allFiles={effectiveFiles}
+            orgChartPreviewUrl={`/api/companies/${encodeURIComponent(selectedCompanyId)}/org.svg`}
             onSkillClick={handleSkillClick}
           />
+          {exportPreviewMutation.isPending ? (
+            <div
+              className="absolute inset-0 z-10 flex min-h-(--sz-520px) items-center justify-center bg-background/90 px-6 text-center"
+              role="status"
+              aria-live="polite"
+              aria-busy="true"
+              data-export-preview-state="loading"
+            >
+              <div className="flex max-w-md flex-col items-center gap-3">
+                <LoaderCircle className="h-6 w-6 animate-spin text-muted-foreground" />
+                <div>
+                  <p className="text-sm font-medium">Updating export preview…</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Large task histories can take a minute. You can untick Tasks or cancel this update.
+                  </p>
+                </div>
+                <Button type="button" variant="outline" size="sm" onClick={handleCancelPreview}>
+                  <X />
+                  Cancel update
+                </Button>
+              </div>
+            </div>
+          ) : previewCancelled ? (
+            <div
+              className="absolute inset-0 z-10 flex min-h-(--sz-520px) items-center justify-center bg-background/90 px-6 text-center"
+              data-export-preview-state="cancelled"
+            >
+              <div className="flex max-w-md flex-col items-center gap-3">
+                <div>
+                  <p className="text-sm font-medium">Preview update cancelled</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    The previous preview remains available. Retry when you are ready.
+                  </p>
+                </div>
+                <Button type="button" variant="outline" size="sm" onClick={startPreviewRequest}>
+                  <RotateCcw />
+                  Retry preview
+                </Button>
+              </div>
+            </div>
+          ) : exportPreviewMutation.isError ? (
+            <div
+              className="absolute inset-0 z-10 flex min-h-(--sz-520px) items-center justify-center bg-background/90 px-6 text-center"
+              role="alert"
+              data-export-preview-state="error"
+            >
+              <div className="flex max-w-md flex-col items-center gap-3">
+                <div>
+                  <p className="text-sm font-medium text-destructive">Export preview failed</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {previewErrorMessage(exportPreviewMutation.error)}
+                  </p>
+                </div>
+                <Button type="button" variant="outline" size="sm" onClick={startPreviewRequest}>
+                  <RotateCcw />
+                  Retry preview
+                </Button>
+              </div>
+            </div>
+          ) : null}
         </div>
       </div>
     </div>

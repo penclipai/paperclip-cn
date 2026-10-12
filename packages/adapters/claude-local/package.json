@@ -2,13 +2,13 @@
   "name": "@penclipai/adapter-claude-local",
   "version": "0.3.1",
   "license": "MIT",
-  "homepage": "https://github.com/penclipai/paperclip-cn",
+  "homepage": "https://github.com/paperclipai/paperclip",
   "bugs": {
-    "url": "https://github.com/penclipai/paperclip-cn/issues"
+    "url": "https://github.com/paperclipai/paperclip/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/penclipai/paperclip-cn",
+    "url": "https://github.com/paperclipai/paperclip",
     "directory": "packages/adapters/claude-local"
   },
   "type": "module",
@@ -53,12 +53,16 @@
     "probe:quota:raw": "pnpm exec tsx src/cli/quota-probe.ts --json --raw-cli"
   },
   "dependencies": {
-    "@agentclientprotocol/claude-agent-acp": "^0.63.0",
+    "@agentclientprotocol/claude-agent-acp": "^0.69.0",
     "@penclipai/adapter-utils": "workspace:*",
+    "@penclipai/shared": "workspace:*",
     "picocolors": "^1.1.1"
   },
   "devDependencies": {
-    "@types/node": "^22.20.1",
+    "@types/node": "^24.0.0",
     "typescript": "^5.7.3"
+  },
+  "engines": {
+    "node": ">=24.11.0"
   }
 }

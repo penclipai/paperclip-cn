@@ -11,6 +11,9 @@ const scriptsDir = path.dirname(fileURLToPath(import.meta.url));
 const generalServerShardDurations = loadShardDurations(
   path.join(scriptsDir, "general-server-shard-durations.json"),
 );
+const serializedShardDurations = loadShardDurations(
+  path.join(scriptsDir, "serialized-shard-durations.json"),
+);
 const serverRoot = path.join(repoRoot, "server");
 const serverSrcDir = path.join(repoRoot, "server", "src");
 const serverTestsDir = path.join(repoRoot, "server", "src", "__tests__");
@@ -48,6 +51,7 @@ const additionalSerializedServerTests = new Set([
   "server/src/__tests__/invite-expiry.test.ts",
   "server/src/__tests__/invite-join-manager.test.ts",
   "server/src/__tests__/invite-onboarding-text.test.ts",
+  "server/src/__tests__/invite-url-public-base-url.test.ts",
   "server/src/__tests__/issues-checkout-wakeup.test.ts",
   "server/src/__tests__/issues-service.test.ts",
   "server/src/__tests__/opencode-local-adapter-environment.test.ts",
@@ -69,12 +73,13 @@ const serializedServerVitestArgs = [
   "--no-file-parallelism",
   "--maxWorkers=1",
 ];
+const sourceOnlyVitestArgs = ["--exclude", "**/dist/**"];
 const routeTestExcludePatterns = [
   "src/**/*route*.test.ts",
   "src/**/*authz*.test.ts",
 ];
-// cmd.exe limits a command line to 8,191 characters, and pnpm wraps the
-// Vitest invocation again. Reserve roughly half the ceiling for that expansion.
+// cmd.exe limits a command line to 8,191 characters. Reserve roughly half the
+// ceiling because pnpm wraps the Vitest invocation again on Windows.
 const windowsGeneralServerCommandBudget = 4_000;
 const windowsInvocationTempPrefix = "v-";
 const isolatedTempEnvironmentVariables = ["TEMP", "TMP", "TMPDIR"];
@@ -278,7 +283,18 @@ function parseCliOptions(argv) {
 }
 
 function selectSerializedSuites(routeTests, shardIndex, shardCount) {
-  return routeTests.filter((_, index) => index % shardCount === shardIndex);
+  // Same duration-aware LPT partition as the general-server lane. Round-robin
+  // over the alphabetical list clustered the heavy heartbeat/issues suites on
+  // one shard (291s vs 170-201s test steps across the matrix in actions run
+  // 32012408876), which made that shard the whole PR run's slowest check.
+  const byRepoPath = new Map(routeTests.map((routeTest) => [routeTest.repoPath, routeTest]));
+  const shardFiles = selectGeneralServerShard(
+    routeTests.map((routeTest) => routeTest.repoPath),
+    shardIndex,
+    shardCount,
+    serializedShardDurations,
+  );
+  return shardFiles.map((file) => byRepoPath.get(file));
 }
 
 function buildGeneralServerExcludePatterns() {
@@ -295,21 +311,18 @@ function measurePnpmVitestCommand(args) {
 function buildCommandBudgetChunks(files, baseArgs, commandBudget) {
   const chunks = [];
   let current = [];
-
   for (const file of files) {
     const candidate = [...current, file];
     if (measurePnpmVitestCommand([...baseArgs, ...candidate]) <= commandBudget) {
       current = candidate;
       continue;
     }
-
     if (current.length === 0) {
       fail(`Suite path exceeds the Windows command budget (${commandBudget}): ${file}`);
     }
     chunks.push(current);
     current = [file];
   }
-
   if (current.length > 0) chunks.push(current);
   return chunks;
 }
@@ -318,25 +331,21 @@ function runVitest(args, label) {
   console.log(`\n[test:run] ${label}`);
   invocationIndex += 1;
   const tempRootParent = process.platform === "win32" ? os.tmpdir() : "/tmp";
-  const tempPrefix =
-    process.platform === "win32"
-      ? windowsInvocationTempPrefix
-      : `pcvt-${process.pid}-${invocationIndex}-`;
+  const tempPrefix = process.platform === "win32" ? windowsInvocationTempPrefix : `pcvt-${process.pid}-${invocationIndex}-`;
   const testRoot = mkdtempSync(path.join(tempRootParent, tempPrefix));
-  const tempDir = path.join(testRoot, "t");
   // Keep per-run paths compact so Unix socket fixtures stay under macOS path limits.
   const env = {
     ...process.env,
     NODE_ENV: "test",
     PAPERCLIP_HOME: path.join(testRoot, "h"),
     PAPERCLIP_INSTANCE_ID: `vt-${process.pid}-${invocationIndex}`,
-    TEMP: tempDir,
-    TMP: tempDir,
-    TMPDIR: tempDir,
+    TEMP: path.join(testRoot, "t"),
+    TMP: path.join(testRoot, "t"),
+    TMPDIR: path.join(testRoot, "t"),
   };
   mkdirSync(env.PAPERCLIP_HOME, { recursive: true });
-  mkdirSync(tempDir, { recursive: true });
-  const pnpmInvocation = resolvePnpmInvocation(["exec", "vitest", "run", ...args]);
+  mkdirSync(env.TMPDIR, { recursive: true });
+  const pnpmInvocation = resolvePnpmInvocation(["exec", "vitest", "run", ...sourceOnlyVitestArgs, ...args]);
   const result = spawnSync(pnpmInvocation.command, pnpmInvocation.args, {
     cwd: repoRoot,
     env,
@@ -404,10 +413,7 @@ function runGeneralGroup(routeTests, groupName, shardIndex = null, shardCount = 
       );
       for (const [index, chunkFiles] of windowsGeneralServerCommandChunks.entries()) {
         runVitest(
-          [
-            ...generalServerBaseArgs,
-            ...chunkFiles,
-          ],
+          [...generalServerBaseArgs, ...chunkFiles],
           `${groupName} Windows chunk ${index + 1}/${windowsGeneralServerCommandChunks.length}`,
         );
       }
@@ -537,18 +543,8 @@ if (options.dryRun) {
                 generalServerShardDurations,
               )
             : null,
-        selectedGeneralWorkspaceProjects:
-          options.mode !== generalModeName
-            ? null
-            : options.group === generalWorkspacesAGroupName
-              ? generalWorkspacesAProjects
-              : options.group === generalWorkspacesBGroupName
-                ? generalWorkspacesBProjects
-                : null,
         workspaceProjects:
-          options.mode !== generalModeName
-            ? null
-            : options.group === generalWorkspacesAGroupName
+          options.group === generalWorkspacesAGroupName
             ? generalWorkspacesAProjects
             : options.group === generalWorkspacesBGroupName
               ? generalWorkspacesBProjects

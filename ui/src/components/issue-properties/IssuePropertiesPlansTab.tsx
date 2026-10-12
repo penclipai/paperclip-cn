@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import type { Issue, IssueThreadInteraction } from "@penclipai/shared";
+import type { Issue, IssueDocument, IssueThreadInteraction } from "@penclipai/shared";
+import { isArtifactReviewDocumentKey } from "@penclipai/shared";
 import { issuesApi } from "@/api/issues";
 import { queryKeys } from "@/lib/queryKeys";
 import { IssuePlanDecompositionsSection } from "@/components/IssuePlanDecompositionsSection";
@@ -26,6 +27,46 @@ function hasPendingPlanConfirmation(interactions: IssueThreadInteraction[] | und
       && interaction.status === "pending"
       && interaction.payload.target?.type === "issue_document"
       && interaction.payload.target.key === "plan",
+  );
+}
+
+function OtherDocumentSection({ issueId, doc, locationHash }: { issueId: string; doc: IssueDocument; locationHash: string }) {
+  const { t, i18n } = useTranslation();
+  const [annotationPanelOpen, setAnnotationPanelOpen] = useState(false);
+  return (
+    <section data-testid="issue-other-document" className="space-y-2 border-t border-border pt-4 first:border-t-0 first:pt-0">
+      <div className="flex items-baseline justify-between gap-2">
+        <h3 className="text-sm font-semibold">{documentDisplayTitle(doc)}</h3>
+        <div className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
+          {t("issueProperties.plans.revisionUpdated", { revision: doc.latestRevisionNumber ?? 1, updatedAt: new Date(doc.updatedAt).toLocaleString(i18n.language, {
+            month: "short",
+            day: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+          }) })}
+          <DocumentAnnotationsCountChip
+            issueId={issueId}
+            docKey={doc.key}
+            panelOpen={annotationPanelOpen}
+            onToggle={() => setAnnotationPanelOpen((open) => !open)}
+          />
+        </div>
+      </div>
+      <IssueDocumentAnnotations
+        issueId={issueId}
+        doc={doc}
+        bodyMarkdown={doc.body}
+        draftDirty={false}
+        draftConflicted={false}
+        historicalPreview={false}
+        locationHash={locationHash}
+        panelOpen={annotationPanelOpen}
+        onPanelOpenChange={setAnnotationPanelOpen}
+        panelPlacement="popover"
+      >
+        <MarkdownBody>{doc.body}</MarkdownBody>
+      </IssueDocumentAnnotations>
+    </section>
   );
 }
 
@@ -55,8 +96,11 @@ export function IssuePropertiesPlansTab({ issue }: IssuePropertiesPlansTabProps)
   const hasPlans = (data?.length ?? 0) > 0;
   const pendingPlanConfirmation = hasPendingPlanConfirmation(interactions);
   // Every other non-system document (e.g. `synthesis`) renders below the plan;
-  // the `plan` doc itself stays on its dedicated annotated surface above.
-  const otherDocuments = (documents ?? []).filter((doc) => doc.key !== "plan");
+  // the `plan` doc itself stays on its dedicated annotated surface above, and
+  // proxy `artifact-review-*` documents surface only through their Work product.
+  const otherDocuments = (documents ?? []).filter(
+    (doc) => doc.key !== "plan" && !isArtifactReviewDocumentKey(doc.key),
+  );
 
   if (!planDocument && !hasPlans && otherDocuments.length === 0) {
     return (
@@ -88,15 +132,12 @@ export function IssuePropertiesPlansTab({ issue }: IssuePropertiesPlansTabProps)
       {planDocument ? (
         <section data-testid="issue-plan-document" className="space-y-2">
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            {t("issueProperties.plans.revisionUpdated", {
-              revision: planDocument.latestRevisionNumber ?? 1,
-              updatedAt: new Date(planDocument.updatedAt).toLocaleString(i18n.resolvedLanguage, {
-                month: "short",
-                day: "numeric",
-                hour: "numeric",
-                minute: "2-digit",
-              }),
-            })}
+            {t("issueProperties.plans.revisionUpdated", { revision: planDocument.latestRevisionNumber ?? 1, updatedAt: new Date(planDocument.updatedAt).toLocaleString(i18n.language, {
+              month: "short",
+              day: "numeric",
+              hour: "numeric",
+              minute: "2-digit",
+            }) })}
             <DocumentAnnotationsCountChip
               issueId={issue.id}
               docKey="plan"
@@ -125,23 +166,7 @@ export function IssuePropertiesPlansTab({ issue }: IssuePropertiesPlansTabProps)
         </section>
       ) : null}
       {otherDocuments.map((doc) => (
-        <section key={doc.key} data-testid="issue-other-document" className="space-y-2 border-t border-border pt-4 first:border-t-0 first:pt-0">
-          <div className="flex items-baseline justify-between gap-2">
-            <h3 className="text-sm font-semibold">{documentDisplayTitle(doc)}</h3>
-            <span className="shrink-0 text-xs text-muted-foreground">
-              {t("issueProperties.plans.revisionUpdated", {
-                revision: doc.latestRevisionNumber ?? 1,
-                updatedAt: new Date(doc.updatedAt).toLocaleString(i18n.resolvedLanguage, {
-                  month: "short",
-                  day: "numeric",
-                  hour: "numeric",
-                  minute: "2-digit",
-                }),
-              })}
-            </span>
-          </div>
-          <MarkdownBody>{doc.body}</MarkdownBody>
-        </section>
+        <OtherDocumentSection key={doc.key} issueId={issue.id} doc={doc} locationHash={location.hash} />
       ))}
       {hasPlans ? (
         <IssuePlanDecompositionsSection issueId={issue.id} issueIdentifier={issue.identifier} />

@@ -1,6 +1,7 @@
-import { useCallback, useState, type ReactNode } from "react";
+import { useCallback, useRef, useState, type ReactNode } from "react";
 import { useNavigate } from "@/lib/router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import {
   Pause,
   Play,
@@ -12,7 +13,6 @@ import {
   Trash2,
   CheckCircle2,
 } from "lucide-react";
-import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -60,12 +60,10 @@ export function RunButton({
   label?: string;
   size?: "sm" | "default";
 }) {
-  const { t } = useTranslation();
-
   return (
     <Button variant="outline" size={size} onClick={onClick} disabled={disabled}>
       <Play className="h-3.5 w-3.5 sm:mr-1" />
-      <span className="hidden sm:inline">{t(label, { defaultValue: label })}</span>
+      <span className="hidden sm:inline">{label}</span>
     </Button>
   );
 }
@@ -83,13 +81,11 @@ export function PauseResumeButton({
   disabled?: boolean;
   size?: "sm" | "default";
 }) {
-  const { t } = useTranslation();
-
   if (isPaused) {
     return (
       <Button variant="outline" size={size} onClick={onResume} disabled={disabled}>
         <Play className="h-3.5 w-3.5 sm:mr-1" />
-        <span className="hidden sm:inline">{t("Resume", { defaultValue: "Resume" })}</span>
+        <span className="hidden sm:inline">Resume</span>
       </Button>
     );
   }
@@ -97,7 +93,7 @@ export function PauseResumeButton({
   return (
     <Button variant="outline" size={size} onClick={onPause} disabled={disabled}>
       <Pause className="h-3.5 w-3.5 sm:mr-1" />
-      <span className="hidden sm:inline">{t("Pause", { defaultValue: "Pause" })}</span>
+      <span className="hidden sm:inline">Pause</span>
     </Button>
   );
 }
@@ -111,8 +107,6 @@ export function ClearErrorButton({
   disabled?: boolean;
   size?: "sm" | "default";
 }) {
-  const { t } = useTranslation();
-
   return (
     <Button
       variant="outline"
@@ -120,14 +114,10 @@ export function ClearErrorButton({
       onClick={onClick}
       disabled={disabled}
       className="border-destructive/60 text-destructive hover:bg-destructive/10 hover:text-destructive dark:border-destructive/50"
-      aria-label={t("agentActions.clearErrorAria", {
-        defaultValue: "Clear error and return agent to idle",
-      })}
+      aria-label="Clear error and return agent to idle"
     >
       <CheckCircle2 className="h-3.5 w-3.5 sm:mr-1" />
-      <span className="hidden sm:inline">
-        {t("agentActions.clearError", { defaultValue: "Clear error" })}
-      </span>
+      <span className="hidden sm:inline">Clear error</span>
     </Button>
   );
 }
@@ -176,6 +166,8 @@ export function AgentActionButtons({
   workActionsDisabled = false,
   workActionsDisabledReason,
   navigateToRunOnInvoke = true,
+  hasPendingNavigationChanges = false,
+  onBeforeNavigate,
   onActionError,
   onTerminateSuccess,
   pauseConfirm,
@@ -193,6 +185,10 @@ export function AgentActionButtons({
   workActionsDisabled?: boolean;
   workActionsDisabledReason?: string;
   navigateToRunOnInvoke?: boolean;
+  /** Whether the caller currently has an unsaved draft that navigation would discard. */
+  hasPendingNavigationChanges?: boolean;
+  /** Return false to stop an action whose success would navigate away. */
+  onBeforeNavigate?: () => boolean;
   /**
    * When set, pausing prompts a confirmation dialog first (e.g. for built-in
    * agents that power a feature). Omit for the immediate-pause default.
@@ -219,13 +215,29 @@ export function AgentActionButtons({
   const { pushToast } = useToastActions();
   const [moreOpen, setMoreOpen] = useState(false);
   const [pauseConfirmOpen, setPauseConfirmOpen] = useState(false);
+  const pendingNavigationChangesRef = useRef(hasPendingNavigationChanges);
+  const beforeNavigateRef = useRef(onBeforeNavigate);
+  const agentActionStartedDirtyRef = useRef(false);
+  const duplicateStartedDirtyRef = useRef(false);
+  pendingNavigationChangesRef.current = hasPendingNavigationChanges;
+  beforeNavigateRef.current = onBeforeNavigate;
+
+  function confirmNavigationStart(startedDirtyRef: React.MutableRefObject<boolean>) {
+    startedDirtyRef.current = pendingNavigationChangesRef.current;
+    return beforeNavigateRef.current?.() !== false;
+  }
+
+  function confirmLateNavigationChanges(startedDirtyRef: React.MutableRefObject<boolean>) {
+    return (
+      !pendingNavigationChangesRef.current ||
+      startedDirtyRef.current ||
+      beforeNavigateRef.current?.() !== false
+    );
+  }
 
   const resolvedCompanyId = companyId ?? agent.companyId;
   const canonicalAgentRef = agentRouteRef(agent);
   const isPaused = agent.status === "paused";
-  const assignButtonLabel = assignLabel === "Assign Task"
-    ? t("agentDetail.assignTask")
-    : t(assignLabel, { defaultValue: assignLabel });
   const isError = agent.status === "error";
 
   const reportError = useCallback(
@@ -233,7 +245,7 @@ export function AgentActionButtons({
       if (onActionError) {
         onActionError(message);
       } else {
-        pushToast({ title: t("agentDetail.actionFailed"), body: message, tone: "error" });
+        pushToast({ title: t("agentActions.error.actionFailed", { defaultValue: "Action failed" }), body: message, tone: "error" });
       }
     },
     [onActionError, pushToast, t],
@@ -266,21 +278,23 @@ export function AgentActionButtons({
       onActionError?.(null);
       invalidateAgent();
       if (action === "terminate") {
+        if (!confirmLateNavigationChanges(agentActionStartedDirtyRef)) return;
         onTerminateSuccess?.(data as Agent);
       }
       if (action === "invoke" && navigateToRunOnInvoke && data && typeof data === "object" && "id" in data) {
+        if (!confirmLateNavigationChanges(agentActionStartedDirtyRef)) return;
         navigate(`/agents/${canonicalAgentRef}/runs/${(data as HeartbeatRun).id}`);
       }
     },
     onError: (err) => {
-      reportError(err instanceof Error ? err.message : t("agentDetail.actionFailed"));
+      reportError(err instanceof Error ? err.message : "Action failed");
     },
   });
 
   const duplicateAgent = useMutation({
     mutationFn: async () => {
       if (!resolvedCompanyId) {
-        throw new Error(t("agentActions.notReadyToDuplicate"));
+        throw new Error("Agent is not ready to duplicate");
       }
       const instructionsBundle = await loadDuplicateInstructionsBundle(agent.id, resolvedCompanyId);
       const payload = buildDuplicateAgentPayload(agent, instructionsBundle);
@@ -299,27 +313,25 @@ export function AgentActionButtons({
       if (resolvedCompanyId) {
         await queryClient.invalidateQueries({ queryKey: queryKeys.agents.list(resolvedCompanyId) });
       }
-      pushToast({ title: t("agentActions.duplicated"), body: createdAgent.name, tone: "success" });
+      pushToast({ title: "Agent duplicated", body: createdAgent.name, tone: "success" });
+      if (!confirmLateNavigationChanges(duplicateStartedDirtyRef)) return;
       navigate(`/agents/${agentRouteRef(createdAgent)}/dashboard`);
     },
     onError: (err) => {
-      const message = err instanceof Error ? err.message : t("agentActions.duplicateFailed");
+      const message = err instanceof Error ? err.message : "Failed to duplicate agent";
       onActionError?.(message);
-      pushToast({ title: t("agentActions.couldNotDuplicate"), body: message, tone: "error" });
+      pushToast({ title: "Could not duplicate agent", body: message, tone: "error" });
     },
   });
 
   const handleDuplicateAgent = useCallback(() => {
     if (duplicateAgent.isPending) return;
     const nextName = duplicateAgentName(agent.name);
-    const confirmed = window.confirm(t("agentActions.duplicateConfirm", {
-      name: agent.name,
-      nextName,
-    }));
+    const confirmed = window.confirm(`Duplicate ${agent.name} as ${nextName}?`);
     setMoreOpen(false);
-    if (!confirmed) return;
+    if (!confirmed || !confirmNavigationStart(duplicateStartedDirtyRef)) return;
     duplicateAgent.mutate();
-  }, [agent.name, duplicateAgent, t]);
+  }, [agent.name, duplicateAgent]);
 
   const resetTaskSession = useMutation({
     mutationFn: () => agentsApi.resetSession(agent.id, null, resolvedCompanyId ?? undefined),
@@ -329,7 +341,7 @@ export function AgentActionButtons({
       queryClient.invalidateQueries({ queryKey: queryKeys.agents.taskSessions(agent.id) });
     },
     onError: (err) => {
-      reportError(err instanceof Error ? err.message : t("agentActions.resetSessionFailed"));
+      reportError(err instanceof Error ? err.message : "Failed to reset session");
     },
   });
 
@@ -349,10 +361,13 @@ export function AgentActionButtons({
         title={workActionsDisabled ? workActionsDisabledReason : undefined}
       >
         <Plus className="h-3.5 w-3.5 sm:mr-1" />
-        <span className="hidden sm:inline">{assignButtonLabel}</span>
+        <span className="hidden sm:inline">{assignLabel}</span>
       </Button>
       <RunButton
-        onClick={() => agentAction.mutate("invoke")}
+        onClick={() => {
+          if (navigateToRunOnInvoke && !confirmNavigationStart(agentActionStartedDirtyRef)) return;
+          agentAction.mutate("invoke");
+        }}
         disabled={assignAndRunDisabled}
         label={runLabel}
         size={size}
@@ -382,9 +397,9 @@ export function AgentActionButtons({
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction onClick={() => agentAction.mutate("pause")}>
-                {t("agentAction.pauseAnyway")}
+                Pause anyway
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -398,14 +413,7 @@ export function AgentActionButtons({
       {children}
       <Popover open={moreOpen} onOpenChange={setMoreOpen}>
         <PopoverTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon-xs"
-            aria-label={t("Open actions for {{name}}", {
-              defaultValue: "Open actions for {{name}}",
-              name: agent.name,
-            })}
-          >
+          <Button variant="ghost" size="icon-xs" aria-label={`Open actions for ${agent.name}`}>
             <MoreHorizontal className="h-4 w-4" />
           </Button>
         </PopoverTrigger>
@@ -420,7 +428,7 @@ export function AgentActionButtons({
             ) : (
               <Copy className="h-3 w-3" />
             )}
-            {t("agentDetail.duplicateAgent")}
+            Duplicate Agent
           </button>
           <button
             className="flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50"
@@ -432,7 +440,7 @@ export function AgentActionButtons({
             }}
           >
             <Copy className="h-3 w-3" />
-            {t("agentDetail.copyAgentId")}
+            Copy Agent ID
           </button>
           <button
             className="flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50"
@@ -442,18 +450,21 @@ export function AgentActionButtons({
             }}
           >
             <RotateCcw className="h-3 w-3" />
-            {t("agentDetail.resetSessions")}
+            Reset Sessions
           </button>
-          <button
-            className="flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50 text-destructive"
-            onClick={() => {
-              agentAction.mutate("terminate");
-              setMoreOpen(false);
-            }}
-          >
-            <Trash2 className="h-3 w-3" />
-            {t("agentDetail.terminate")}
-          </button>
+          {!hideTerminate && (
+            <button
+              className="flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50 text-destructive"
+              onClick={() => {
+                setMoreOpen(false);
+                if (onTerminateSuccess && !confirmNavigationStart(agentActionStartedDirtyRef)) return;
+                agentAction.mutate("terminate");
+              }}
+            >
+              <Trash2 className="h-3 w-3" />
+              Terminate
+            </button>
+          )}
         </PopoverContent>
       </Popover>
     </div>

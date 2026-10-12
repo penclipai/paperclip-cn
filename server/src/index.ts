@@ -11,6 +11,7 @@ import { createInterface } from "node:readline/promises";
 import { stdin, stdout } from "node:process";
 import { pathToFileURL } from "node:url";
 import type { Request as ExpressRequest, RequestHandler } from "express";
+import { warnIfUnsupportedNodeVersion } from "@penclipai/shared/node-version";
 import { and, eq } from "drizzle-orm";
 import {
   createDb,
@@ -66,6 +67,7 @@ import {
   routineService,
   statusCardService,
   toolAccessService,
+  workspaceOperationService,
 } from "./services/index.js";
 import { queueIssueAssignmentWakeup } from "./services/issue-assignment-wakeup.js";
 import { createSecretProposalsService } from "./services/secret-proposals.js";
@@ -75,6 +77,7 @@ import {
   createCodexDeviceLoginReaper,
   createProductionLoginSessionReaperRuntime,
 } from "./services/codex-device-login-reaper.js";
+import { createProductionSetupTokenReaper } from "./services/setup-token-reaper.js";
 import { resolveWorktreeRunExecutionActivationState } from "./services/instance-settings.js";
 import {
   parseAdapterRegistryEnv,
@@ -82,7 +85,15 @@ import {
 } from "./services/adapter-registry-bootstrap.js";
 import { createFeedbackTraceShareClientFromConfig } from "./services/feedback-share-client.js";
 import { buildRuntimeApiCandidateUrls, choosePrimaryRuntimeApiUrl } from "./runtime-api.js";
+import { isLoopbackHost, rewriteLoopbackUrlPort } from "./url-utils.js";
 import { createPluginWorkerManager } from "./services/plugin-worker-manager.js";
+import {
+  createDuplexAggregateByteLedgerTelemetry,
+  DuplexAggregateByteLedger,
+  type DuplexAggregateByteLedgerMetricSink,
+} from "@penclipai/adapter-utils/duplex-aggregate-byte-ledger";
+import { resolveDuplexAggregateCeilingBytesFromEnv } from "./duplex-aggregate-ceiling-env.js";
+import { DUPLEX_COUNTER_AGGREGATE_BYTE_ACCOUNTING_UNDERFLOW_TOTAL } from "@penclipai/adapter-utils/duplex-telemetry";
 import { createStorageServiceFromConfig } from "./storage/index.js";
 import { printStartupBanner } from "./startup-banner.js";
 import { getBoardClaimWarningUrl, initializeBoardClaimChallenge } from "./board-claim.js";
@@ -93,10 +104,16 @@ import { ensureDecisionSigningSecret } from "./services/decision-signing.js";
 import { createDecisionRetentionNotifyOriginAgent, createDecisionWakeOriginAgent } from "./services/decision-wakeup.js";
 import {
   coordinateHeartbeatSchedulerShutdown,
+  finalizeServerShutdown,
   loadWithoutCoordinatedShutdownSignalHooks,
 } from "./shutdown.js";
 import { systemdNotify } from "./services/systemd-notify.js";
 import { flushInFlightRunLogMirrors } from "./services/run-log-store.js";
+import {
+  createEmbeddedPostgresSupervisor,
+  type EmbeddedPostgresSupervisor,
+  type SupervisedEmbeddedPostgres,
+} from "./embedded-postgres-supervisor.js";
 import type {
   InstanceDatabaseBackupRunResult,
   InstanceDatabaseBackupTrigger,
@@ -113,10 +130,8 @@ type BetterAuthSessionResult = {
   user: BetterAuthSessionUser | null;
 };
 
-type EmbeddedPostgresInstance = {
+type EmbeddedPostgresInstance = SupervisedEmbeddedPostgres & {
   initialise(): Promise<void>;
-  start(): Promise<void>;
-  stop(): Promise<void>;
 };
 
 type EmbeddedPostgresCtor = new (opts: {
@@ -140,6 +155,8 @@ export interface StartedServer {
 }
 
 export async function startServer(): Promise<StartedServer> {
+  warnIfUnsupportedNodeVersion(process.versions.node, (message) => logger.warn(message));
+
   // Tracing must be active (or have failed and logged) before the first DB
   // connection or the HTTP server exists — see instrumentation.ts.
   await instrumentationReady;
@@ -239,11 +256,6 @@ export async function startServer(): Promise<StartedServer> {
     return "applied (pending migrations)";
   }
   
-  function isLoopbackHost(host: string): boolean {
-    const normalized = host.trim().toLowerCase();
-    return normalized === "127.0.0.1" || normalized === "localhost" || normalized === "::1";
-  }
-
   function isPostgresConnectionString(connectionString: string): boolean {
     try {
       const parsed = new URL(connectionString);
@@ -269,19 +281,6 @@ export async function startServer(): Promise<StartedServer> {
     }
   }
 
-  function rewriteLocalUrlPort(rawUrl: string | undefined, port: number): string | undefined {
-    if (!rawUrl) return undefined;
-    try {
-      const parsed = new URL(rawUrl);
-      // The URL API normalizes default ports like :80/:443 to "", so treat them as stable URLs.
-      if (!parsed.port) return rawUrl;
-      parsed.port = String(port);
-      return parsed.toString();
-    } catch {
-      return rawUrl;
-    }
-  }
-  
   const LOCAL_BOARD_USER_ID = "local-board";
   const LOCAL_BOARD_USER_EMAIL = "local@paperclip.local";
   const LOCAL_BOARD_USER_NAME = "Board";
@@ -345,6 +344,7 @@ export async function startServer(): Promise<StartedServer> {
   let db;
   let pluginMigrationDb;
   let embeddedPostgres: EmbeddedPostgresInstance | null = null;
+  let embeddedPostgresSupervisor: EmbeddedPostgresSupervisor | null = null;
   let embeddedPostgresStartedByThisProcess = false;
   let migrationSummary: MigrationSummary = "skipped";
   let activeDatabaseConnectionString: string;
@@ -481,7 +481,7 @@ export async function startServer(): Promise<StartedServer> {
         }
         port = detectedPort;
         logger.info(`Using embedded PostgreSQL because no DATABASE_URL set (dataDir=${dataDir}, port=${port})`);
-        embeddedPostgres = new EmbeddedPostgres({
+        const createEmbeddedPostgres = () => new EmbeddedPostgres({
           databaseDir: dataDir,
           user: "paperclip",
           password: "paperclip",
@@ -491,6 +491,7 @@ export async function startServer(): Promise<StartedServer> {
           onLog: appendEmbeddedPostgresLog,
           onError: appendEmbeddedPostgresLog,
         });
+        embeddedPostgres = createEmbeddedPostgres();
 
         if (!clusterAlreadyInitialized) {
           try {
@@ -539,6 +540,36 @@ export async function startServer(): Promise<StartedServer> {
           }
         }
         embeddedPostgresStartedByThisProcess = true;
+        embeddedPostgresSupervisor = createEmbeddedPostgresSupervisor({
+          initialInstance: embeddedPostgres,
+          createInstance: createEmbeddedPostgres,
+          beforeRestart: () => {
+            const runningPostgresPid = getRunningPid();
+            if (runningPostgresPid) {
+              throw new Error(`Refusing embedded PostgreSQL recovery because the data directory reports a live process (pid=${runningPostgresPid})`);
+            }
+            if (existsSync(postmasterPidFile)) rmSync(postmasterPidFile, { force: true });
+          },
+          onUnexpectedExit: (code, signal) => logger.error(
+            { code, signal, recentLogs: logBuffer.getRecentLogs() },
+            "Embedded PostgreSQL exited unexpectedly; attempting recovery",
+          ),
+          onRestartAttemptFailed: (err, attempt) => logger.error(
+            { err, attempt, recentLogs: logBuffer.getRecentLogs() },
+            "Embedded PostgreSQL recovery attempt failed",
+          ),
+          onRestarted: (attempt) => logger.info(
+            { attempt, port },
+            "Embedded PostgreSQL recovered after unexpected exit",
+          ),
+          onRecoveryExhausted: (err) => {
+            logger.fatal(
+              { err, recentLogs: logBuffer.getRecentLogs() },
+              "Embedded PostgreSQL recovery exhausted; stopping the unhealthy server",
+            );
+            process.kill(process.pid, "SIGTERM");
+          },
+        });
       }
     }
   
@@ -593,7 +624,7 @@ export async function startServer(): Promise<StartedServer> {
   const requestedListenPort = config.port;
   const listenPort = await detectPort(requestedListenPort);
   if (config.authBaseUrlMode === "explicit" && config.authPublicBaseUrl) {
-    config.authPublicBaseUrl = rewriteLocalUrlPort(config.authPublicBaseUrl, listenPort);
+    config.authPublicBaseUrl = rewriteLoopbackUrlPort(config.authPublicBaseUrl, listenPort);
   }
   
   let authReady = config.deploymentMode === "local_trusted";
@@ -765,9 +796,57 @@ export async function startServer(): Promise<StartedServer> {
       databaseBackupInFlight = false;
     }
   };
-  const pluginWorkerManager = createPluginWorkerManager();
+  // The process-owned aggregate byte ledger for the sandbox duplex channel. One
+  // ledger per host process bounds the aggregate bytes that all live duplex routes
+  // retain. The route-count controller bounds only the route count, so without this
+  // ledger the per-route byte bounds multiply to many gigabytes at the maximum
+  // route count. The manager injects this same object into every worker handle, so
+  // one shared gauge bounds every host-side retention site.
+  //
+  // The optional operator override reads PAPERCLIP_MAX_AGGREGATE_DUPLEX_ROUTE_BYTES.
+  // An absent variable uses the documented default. A present invalid, blank,
+  // whitespace-only, non-finite, zero, negative, non-integer, unsafe, or
+  // over-maximum value does not fail startup. The host process is multi-tenant, so
+  // one invalid environment value must not brick the whole host. The helper sends
+  // the raw string to the resolver, so a present blank value is invalid, not
+  // absent. The resolver rejects the invalid override and returns the safe default.
+  // The reporter logs the rejection loudly at error, so the misconfiguration stays
+  // visible while the host stays up. The log line carries only the rejected numeric
+  // value, never the raw string.
+  const duplexAggregateCeilingBytes = resolveDuplexAggregateCeilingBytesFromEnv(
+    process.env.PAPERCLIP_MAX_AGGREGATE_DUPLEX_ROUTE_BYTES,
+    (rejectedValue) => {
+      logger.error(
+        { rejectedValue },
+        "duplex aggregate byte ceiling override rejected; using the safe default",
+      );
+    },
+  );
+  // The server has no process metric pipeline yet, so the ledger telemetry maps to
+  // the structured logger. The gauge logs at debug. A reservation rejection logs at
+  // warn, because it marks an availability limit hit. An accounting-underflow defect
+  // logs at error, because it marks a real cleanup bug. Each record carries only the
+  // fixed metric name and the numeric value; no route, company, run, or payload
+  // value reaches a log line.
+  const duplexAggregateByteLedgerMetricSink: DuplexAggregateByteLedgerMetricSink = {
+    setGauge(name, value) {
+      logger.debug({ metric: name, value }, "duplex aggregate byte ledger gauge");
+    },
+    incrementCounter(name) {
+      if (name === DUPLEX_COUNTER_AGGREGATE_BYTE_ACCOUNTING_UNDERFLOW_TOTAL) {
+        logger.error({ metric: name }, "duplex aggregate byte ledger accounting underflow");
+        return;
+      }
+      logger.warn({ metric: name }, "duplex aggregate byte ledger reservation rejected");
+    },
+  };
+  const duplexAggregateByteLedger = new DuplexAggregateByteLedger({
+    ceilingBytes: duplexAggregateCeilingBytes,
+    telemetry: createDuplexAggregateByteLedgerTelemetry(duplexAggregateByteLedgerMetricSink),
+  });
+  const pluginWorkerManager = createPluginWorkerManager({ duplexAggregateByteLedger });
   const heartbeat = config.heartbeatSchedulerEnabled
-    ? heartbeatService(db as any, { pluginWorkerManager })
+    ? heartbeatService(db as any, { pluginWorkerManager, duplexAggregateByteLedger })
     : null;
   const decisionServiceOptions = {
     wakeOriginAgent: createDecisionWakeOriginAgent(heartbeat?.wakeup ?? null),
@@ -803,6 +882,7 @@ export async function startServer(): Promise<StartedServer> {
     deploymentExposure: config.deploymentExposure,
     allowedHostnames: config.allowedHostnames,
     bindHost: config.host,
+    authPublicBaseUrl: config.authPublicBaseUrl,
     authReady,
     companyDeletionEnabled: config.companyDeletionEnabled,
     pluginMigrationDb: pluginMigrationDb as any,
@@ -867,11 +947,38 @@ export async function startServer(): Promise<StartedServer> {
     },
   });
 
+  try {
+    const result = await workspaceOperationService(db as any)
+      .reconcileStaleRuntimeControlOperations();
+    if (result.reconciled > 0) {
+      logger.warn(
+        { reconciled: result.reconciled, operationIds: result.operationIds },
+        "reconciled stale managed runtime control operations from a previous server process",
+      );
+    }
+  } catch (err) {
+    logger.error({ err }, "startup reconciliation of managed runtime control operations failed");
+  }
+
   void reconcilePersistedRuntimeServicesOnStartup(db as any)
     .then((result) => {
-      if (result.reconciled > 0) {
+      if (
+        result.reconciled > 0
+        || result.restarted > 0
+        || result.restartFailed > 0
+        || result.backfilled > 0
+      ) {
         logger.warn(
-          { reconciled: result.reconciled },
+          {
+            reconciled: result.reconciled,
+            adopted: result.adopted,
+            stopped: result.stopped,
+            // Managed HTTP-only services taken down so they come back on a
+            // verified HTTPS origin (PAP-17158).
+            httpsBackfilled: result.backfilled,
+            restarted: result.restarted,
+            restartFailed: result.restartFailed,
+          },
           "reconciled persisted runtime services from a previous server process",
         );
       }
@@ -1014,6 +1121,46 @@ export async function startServer(): Promise<StartedServer> {
       }));
   };
 
+  // The retry backstop for orphan sandboxes. An acquire that rejects a
+  // foreign-company insert tears the provisioned sandbox down. If that teardown
+  // also fails, the acquire records a lease-less `pending_cleanup` lease row. No
+  // other path releases that sandbox, so the master pending-cleanup sweep retries
+  // the provider teardown and releases the orphan. The sweep runs on startup and
+  // on the scheduler interval.
+  //
+  // This backstop is independent of the heartbeat scheduler toggle. A leaked
+  // provider sandbox costs money whether or not the instance schedules
+  // heartbeats, so both the enabled and the disabled path run the sweep. A
+  // disabled heartbeat scheduler must not strand a paid sandbox forever.
+  //
+  // The master pending-cleanup sweep is the single owner of these rows. Its
+  // atomic per-attempt claim makes two overlapping sweeps safe, so the enabled
+  // path can also run the sweep from the orphaned-run reaper without a second
+  // teardown. The heartbeat scheduler owns the sweep when it is enabled; the
+  // disabled path creates its own runtime to own the same sweep.
+  // The interval sweep waits this long after a lease's last write before it
+  // retries the teardown. The window matches the orphaned-run reaper staleness,
+  // so a just-failed lease does not draw a retry on every tick. The startup
+  // sweep passes zero, so a restart retries a stranded orphan at once.
+  const ENVIRONMENT_LEASE_CLEANUP_SWEEP_BACKOFF_MS = 5 * 60 * 1000;
+  const environmentLeaseCleanupHeartbeat =
+    heartbeat ?? heartbeatService(db as any, { pluginWorkerManager });
+  const runEnvironmentLeaseCleanupSweep = (backoffMs: number) =>
+    environmentLeaseCleanupHeartbeat
+      .sweepPendingCleanupLeases({ backoffMs })
+      .then((result) => {
+        if (result.destroyed > 0 || result.capped > 0) {
+          logger.info(result, "environment lease cleanup sweep retried orphan sandbox teardowns");
+        }
+      })
+      .catch((err) => {
+        logger.error({ err }, "environment lease cleanup sweep failed");
+      });
+  const scheduleEnvironmentLeaseCleanupSweep = () => {
+    if (heartbeatSchedulerStopped) return;
+    trackHeartbeatSchedulerWork(runEnvironmentLeaseCleanupSweep(ENVIRONMENT_LEASE_CLEANUP_SWEEP_BACKOFF_MS));
+  };
+
   if (heartbeat) {
     const secretProposals = createSecretProposalsService(db as any);
     const decisionExecutor = decisionService(db as any, decisionServiceOptions);
@@ -1031,7 +1178,9 @@ export async function startServer(): Promise<StartedServer> {
     const mergedPullRequestConfirmations = issueThreadInteractionService(db as any, {
       wakeup: heartbeat.wakeup,
     });
-    const terminalWorkspaces = executionWorkspaceService(db as any);
+    const terminalWorkspaces = executionWorkspaceService(db as any, {
+      workspaceReaperCooldownDays: config.workspaceReaperCooldownDays,
+    });
     const scheduleMergedPullRequestConfirmationSweep = () => {
       if (heartbeatSchedulerStopped) return;
       trackHeartbeatSchedulerWork(mergedPullRequestConfirmations
@@ -1063,7 +1212,8 @@ export async function startServer(): Promise<StartedServer> {
             result.skippedActiveRun
             + result.skippedNonTerminalTree
             + result.skippedUndelivered
-            + result.skippedRace;
+            + result.skippedRace
+            + result.skippedCooldown;
           const nowMs = Date.now();
           if (skipped > 0 && nowMs - lastTerminalWorkspaceSkipLogAt >= terminalWorkspaceSkipLogIntervalMs) {
             lastTerminalWorkspaceSkipLogAt = nowMs;
@@ -1109,6 +1259,33 @@ export async function startServer(): Promise<StartedServer> {
           logger.error({ err }, "adapter login reaper sweep failed");
         }));
     };
+
+    // The restart-safe cleanup backstop for the Claude setup-token login flow. It
+    // runs on startup and on the scheduler interval, so a sandbox lease survives a
+    // server restart and a release failure. It releases any lease whose login
+    // session is terminal, past its deadline, or already consumed.
+    const setupTokenReaper = createProductionSetupTokenReaper({
+      db: db as any,
+      environmentRuntime: environmentRuntimeService(db as any, { pluginWorkerManager }),
+      log: (line) => logger.info(line),
+    });
+    const logSetupTokenReaperResult = (
+      result: Awaited<ReturnType<typeof setupTokenReaper.sweep>>,
+    ) => {
+      if (result.released > 0 || result.failed > 0) {
+        logger.info(result, "setup-token login reaper released leases");
+      }
+    };
+    const scheduleSetupTokenReaperSweep = () => {
+      if (heartbeatSchedulerStopped) return;
+      trackHeartbeatSchedulerWork(setupTokenReaper
+        .sweep()
+        .then(logSetupTokenReaperResult)
+        .catch((err) => {
+          logger.error({ err }, "setup-token login reaper sweep failed");
+        }));
+    };
+
     const tools = toolAccessService(db as any, {
       deploymentMode: config.deploymentMode,
       deploymentExposure: config.deploymentExposure,
@@ -1246,6 +1423,19 @@ export async function startServer(): Promise<StartedServer> {
         logger.error({ err }, "startup adapter login reaper sweep failed");
       });
 
+    // Run the setup-token login reaper once at startup, so a login sandbox lease
+    // that outlived a server restart releases before timer ticks start.
+    await setupTokenReaper
+      .sweep()
+      .then(logSetupTokenReaperResult)
+      .catch((err) => {
+        logger.error({ err }, "startup setup-token login reaper sweep failed");
+      });
+
+    // Retry any orphan sandbox teardown left by a failed acquire before a server
+    // restart, so a leaked sandbox does not stay allocated across the restart.
+    await runEnvironmentLeaseCleanupSweep(0);
+
     const runRetentionSweep = async () => {
       const activeCompanies = await db.select({ id: companies.id }).from(companies).where(eq(companies.status, "active"));
       let archived = 0;
@@ -1305,6 +1495,8 @@ export async function startServer(): Promise<StartedServer> {
         scheduleMergedPullRequestConfirmationSweep();
         scheduleTerminalWorkspaceSweep();
         scheduleAdapterLoginReaperSweep();
+        scheduleSetupTokenReaperSweep();
+        scheduleEnvironmentLeaseCleanupSweep();
 
         if (heartbeatSchedulerStopped) return;
         trackHeartbeatSchedulerWork(routines
@@ -1442,8 +1634,14 @@ export async function startServer(): Promise<StartedServer> {
       }));
     });
   } else {
+    // The heartbeat scheduler is disabled, but the orphan-sandbox cleanup sweep
+    // is still required. A failed acquire can leak a paid provider sandbox, so
+    // this path retries the teardown at startup and on the interval, exactly as
+    // the enabled path does.
+    await runEnvironmentLeaseCleanupSweep(0);
     startHeartbeatSchedulerInterval(() => {
       scheduleExternalObjectRefreshSweep(new Date());
+      scheduleEnvironmentLeaseCleanupSweep();
     });
   }
   
@@ -1600,21 +1798,23 @@ export async function startServer(): Promise<StartedServer> {
         logger.error({ err, signal }, "run-log in-flight mirror flush failed");
       }
 
-      const appShutdown = (app as { locals?: { paperclipShutdown?: () => void } }).locals?.paperclipShutdown;
-      appShutdown?.();
+      const appShutdown = (app as { locals?: { paperclipShutdown?: () => Promise<void> } }).locals
+        ?.paperclipShutdown;
+      const stopEmbeddedPostgres = embeddedPostgres && embeddedPostgresStartedByThisProcess
+        ? () => embeddedPostgresSupervisor?.shutdown() ?? embeddedPostgres!.stop()
+        : null;
 
-      if (embeddedPostgres && embeddedPostgresStartedByThisProcess) {
-        logger.info({ signal }, "Stopping embedded PostgreSQL");
-        try {
-          await embeddedPostgres?.stop();
-        } catch (err) {
-          logger.error({ err }, "Failed to stop embedded PostgreSQL cleanly");
-        }
-      }
-
-      // Flush buffered OTel spans before the process goes away; without this
-      // await the exporter's final batch is dropped on exit.
-      await shutdownInstrumentation();
+      // Await the ordered application teardown before the process exits. A live
+      // setup-token login session must stop and release its sandbox lease before
+      // the database and the provider stop, so an orderly shutdown never leaves a
+      // sandbox lease or confidential login state alive past the process exit.
+      await finalizeServerShutdown({
+        signal,
+        shutdownAppServices: appShutdown,
+        stopEmbeddedPostgres,
+        shutdownInstrumentation,
+        log: logger,
+      });
 
       process.exit(0);
     };

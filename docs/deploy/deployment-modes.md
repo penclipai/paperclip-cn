@@ -17,7 +17,7 @@ The default mode. Optimized for single-operator local use.
 
 ```sh
 # Set during onboard
-penclip onboard
+pnpm penclip onboard
 # Choose "local_trusted"
 ```
 
@@ -35,14 +35,14 @@ For private network access (Tailscale, VPN, LAN).
 - **Bind**: choose `loopback`, `lan`, `tailnet`, or `custom`
 
 ```sh
-penclip onboard
+pnpm penclip onboard
 # Choose "authenticated" -> "private"
 ```
 
 Allow custom Tailscale hostnames:
 
 ```sh
-penclip allowed-hostname my-machine
+npx penclip allowed-hostname my-machine
 ```
 
 ### `authenticated` + `public`
@@ -55,7 +55,7 @@ For internet-facing deployment.
 - **Bind**: usually `loopback` behind a reverse proxy; `lan/custom` is advanced
 
 ```sh
-penclip onboard
+pnpm penclip onboard
 # Choose "authenticated" -> "public"
 ```
 
@@ -78,7 +78,7 @@ A signed-in user visits this URL to claim board ownership. This:
 Update the deployment mode:
 
 ```sh
-penclip configure --section server
+pnpm penclip configure --section server
 ```
 
 Runtime override via environment variable:
