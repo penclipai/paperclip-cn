@@ -95,6 +95,13 @@ let LEASED_HMR_PORT: number;
 let NEXT_APP_PORT: number;
 let NEXT_HMR_PORT: number;
 
+// A Windows child can release one half of its pair just after afterEach's
+// listener probe observes it free. Do not reuse a pair this fixture already
+// started in a later case: every regression still proves reuse within its own
+// case, while a previous guest's asynchronous teardown cannot race its HMR
+// bind.
+const previouslyAllocatedFixturePorts = new Set<number>();
+
 /**
  * The real, unredirected Paperclip home directory. `beforeEach` later points
  * `PAPERCLIP_HOME` at a throwaway temp dir for the suite under test, so this
@@ -311,10 +318,17 @@ const GUEST_COMMAND =
       // case runs, so the window between the probe and the guest bind stays
       // as short as possible.
       const locallyLeasedPorts = await readLocallyLeasedPorts();
+      for (const port of previouslyAllocatedFixturePorts) locallyLeasedPorts.add(port);
       LEASED_APP_PORT = await findFreeExposureAppPort(RUNTIME_EXPOSURE_SUITE_APP_PORT_START, locallyLeasedPorts);
       LEASED_HMR_PORT = deriveViteHmrPort(LEASED_APP_PORT);
+      locallyLeasedPorts.add(LEASED_APP_PORT);
+      locallyLeasedPorts.add(LEASED_HMR_PORT);
       NEXT_APP_PORT = await findFreeExposureAppPort(LEASED_APP_PORT + 1, locallyLeasedPorts);
       NEXT_HMR_PORT = deriveViteHmrPort(NEXT_APP_PORT);
+      previouslyAllocatedFixturePorts.add(LEASED_APP_PORT);
+      previouslyAllocatedFixturePorts.add(LEASED_HMR_PORT);
+      previouslyAllocatedFixturePorts.add(NEXT_APP_PORT);
+      previouslyAllocatedFixturePorts.add(NEXT_HMR_PORT);
 
       workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "pap17419-workspace-"));
       paperclipHome = await fs.mkdtemp(path.join(os.tmpdir(), "pap17419-home-"));
