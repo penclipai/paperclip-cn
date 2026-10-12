@@ -1621,6 +1621,31 @@ describe("sandbox managed runtime", () => {
     expect(stdout.split("\n").map((entry) => entry.trim()).filter(Boolean)).toEqual(["payload.txt"]);
   });
 
+  it.skipIf(process.platform !== "win32")("archives UTF-8 filenames through Git's GNU tar", async () => {
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-sandbox-unicode-tar-"));
+    cleanupDirs.push(rootDir);
+    const localDir = path.join(rootDir, "source");
+    const archivePath = path.join(rootDir, "archive.tar");
+    const fileName = "雪-💾.txt";
+    await mkdir(localDir, { recursive: true });
+    const contents = Buffer.from("payload\n", "utf8");
+    await writeFile(path.join(localDir, fileName), contents);
+
+    await createTarballFromDirectory({ localDir, archivePath });
+
+    const { stdout: gitExecPath } = await execFile("git", ["--exec-path"], { encoding: "utf8" });
+    const gitTar = path.resolve(String(gitExecPath).trim(), "../../../usr/bin/tar.exe");
+    const { stdout } = await execFile(gitTar, ["--force-local", "-tf", archivePath], {
+      encoding: "utf8",
+      maxBuffer: 32 * 1024 * 1024,
+    });
+    expect(stdout).toContain("雪-");
+    const extractDir = path.join(rootDir, "extract");
+    await mkdir(extractDir, { recursive: true });
+    await execFile(gitTar, ["--force-local", "-xf", archivePath, "-C", extractDir]);
+    await expect(readFile(path.join(extractDir, fileName))).resolves.toEqual(contents);
+  });
+
   it("excludes transient symlinked home dirs from the asset tar while keeping required content", async () => {
     const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-sandbox-home-tmp-"));
     cleanupDirs.push(rootDir);
@@ -3283,9 +3308,9 @@ describe("sandbox managed runtime", () => {
     // escaping, an ignored file named `secret[1].txt` would exclude the
     // unrelated sibling `secret1.txt` too (both match the glob `secret[1].txt`,
     // whose `[1]` is a one-character class matching the literal digit `1`).
-    expect(escapeTarExcludeLiteral("secret[1].txt")).toBe("secret\\[1].txt");
-    expect(escapeTarExcludeLiteral("wildcard*name")).toBe("wildcard\\*name");
-    expect(escapeTarExcludeLiteral("question?mark")).toBe("question\\?mark");
+    expect(escapeTarExcludeLiteral("secret[1].txt")).toBe("secret[[]1[]].txt");
+    expect(escapeTarExcludeLiteral("wildcard*name")).toBe("wildcard[*]name");
+    expect(escapeTarExcludeLiteral("question?mark")).toBe("question[?]mark");
 
     const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-ignore-glob-"));
     cleanupDirs.push(rootDir);

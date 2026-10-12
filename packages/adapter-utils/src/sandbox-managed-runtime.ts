@@ -226,13 +226,19 @@ export interface SandboxAdditionalSource {
  * path, so a Git-ignored path that happens to contain one of them is matched
  * literally instead of as a pattern. Without this, a repository-controlled
  * path containing e.g. `*` could exclude unrelated sibling files that
- * happen to match the resulting glob. GNU tar and bsdtar both honor a
- * backslash as a `fnmatch` escape character, so this is not command
+ * happen to match the resulting glob. GNU tar and bsdtar both honor bracket
+ * character classes for literal glob metacharacters, so this is not command
  * injection — `createTarballFromDirectory` and the SSH tar equivalent both
  * pass `--exclude` values as argument-vector entries, never through a shell.
  */
 export function escapeTarExcludeLiteral(entry: string): string {
-  return entry.replace(/\\/g, "\\\\").replace(/([*?[])/g, "\\$1");
+  return entry.replace(/[\\*?\[\]]/g, (character) => ({
+    "\\": "\\\\",
+    "*": "[*]",
+    "?": "[?]",
+    "[": "[[]",
+    "]": "[]]",
+  })[character]!);
 }
 
 /**
@@ -880,8 +886,24 @@ async function persistDurableSeedArchive(input: {
   }
 }
 
+async function resolveWindowsGitTar(): Promise<string | null> {
+  if (process.platform !== "win32") return null;
+  try {
+    const { stdout } = await execFile("git", ["--exec-path"], {
+      encoding: "utf8",
+      maxBuffer: 1024 * 1024,
+      timeout: 10_000,
+    });
+    const candidate = path.resolve(String(stdout).trim(), "../../../usr/bin/tar.exe");
+    return (await fs.stat(candidate)).isFile() ? candidate : null;
+  } catch {
+    return null;
+  }
+}
+
 async function execTar(args: string[]): Promise<void> {
-  await execFile("tar", args, {
+  const gitTar = await resolveWindowsGitTar();
+  await execFile(gitTar ?? "tar", gitTar ? ["--force-local", ...args] : args, {
     env: {
       ...process.env,
       COPYFILE_DISABLE: "1",

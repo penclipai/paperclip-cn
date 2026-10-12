@@ -1971,6 +1971,31 @@ subscription login until it can enforce the same file-open boundary.
 Remote Pi companion import supports macOS and Linux controllers. Windows
 controllers reject the import before reading the companion path.
 
+Windows cannot use a negative PID probe as evidence that a process group has
+stopped. Native cleanup and dead-runner recovery therefore retain process
+identity and wait for ownership evidence when no process-tree retirement
+authority is available. A missing direct runner PID does not authorize a
+replacement run or physical cleanup.
+
+Default remote runner staging requires the controller binary to match the
+remote operating system and architecture. A Windows controller targeting a
+Linux runner must supply the Linux artifact through
+`PAPERCLIP_RUNNER_REMOTE_BINARY_PATH`; build metadata and checksum verification
+still apply to that explicit artifact.
+
+Windows self-host cloud connector enrollment uses Windows PowerShell ACL APIs
+to protect the instance root, secrets directory, and private identity file for
+the current token SID. Reparse points, foreign owners, or ACL failures stop
+local identity access. As with POSIX private storage, the operator must control
+the pre-existing parent above the instance root. Managed environment identity
+overrides do not read or repair local identity storage. POSIX storage retains
+its directory `0700` and file `0600` modes.
+
+Windows archive-based workspace transfers prefer GNU tar from the active Git
+for Windows installation. It preserves UTF-8 filenames supplied in NUL-delimited
+path lists. If that tool is unavailable, the system tar remains the fallback;
+it can reject Unicode path lists rather than complete the transfer.
+
 ## Company Deletion Toggle
 
 Company deletion is intended as a dev/debug capability and can be disabled at runtime:

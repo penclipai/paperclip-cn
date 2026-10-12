@@ -252,7 +252,7 @@ describe("remote managed runtime", () => {
     // the fixed heavy-directory excludes the SSH lane already applies.
     expect(exclude).toContain("secret.env");
     expect(exclude).toContain("build");
-    expect(exclude).toContain("weird\\[1].txt");
+    expect(exclude).toContain("weird[[]1[]].txt");
     expect(exclude).toContain("node_modules");
   });
 
