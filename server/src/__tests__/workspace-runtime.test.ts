@@ -244,7 +244,11 @@ function toBashPathForTest(value: string) {
 }
 
 function nodeEvalCommandForTest(script: string) {
-  return `${shellQuote(toBashPathForTest(process.execPath))} -e ${shellQuote(script)}`;
+  // Git Bash passes a command string to Node. Base64 preserves native Windows
+  // paths inside the fixture source so Node, rather than `sh -c`, parses it.
+  const encoded = Buffer.from(script, "utf8").toString("base64");
+  const decoder = `eval(Buffer.from(${JSON.stringify(encoded)}, "base64").toString("utf8"))`;
+  return `${shellQuote(toBashPathForTest(process.execPath))} -e ${shellQuote(decoder)}`;
 }
 
 async function writeNativeNodeToolForTest(input: { directory: string; name: string; script: string }) {
@@ -274,6 +278,22 @@ async function runBashScriptForTest(scriptPath: string, options: { cwd: string; 
   const env = process.platform === "win32" && posixPath
     ? { ...options.env, PATH: posixPath.split(path.delimiter).map(toBashPathForTest).join(":") }
     : options.env;
+  // Direct provision-script fixtures must use the same environment mapping as
+  // buildWorkspaceCommandEnv; otherwise inherited Windows paths bypass it.
+  if (process.platform === "win32") {
+    for (const key of [
+      "PAPERCLIP_HOME",
+      "PAPERCLIP_CONFIG",
+      "PAPERCLIP_WORKTREES_DIR",
+      "PAPERCLIP_WORKSPACE_CWD",
+      "PAPERCLIP_WORKSPACE_PATH",
+      "PAPERCLIP_WORKSPACE_WORKTREE_PATH",
+      "PAPERCLIP_WORKSPACE_BASE_CWD",
+      "PAPERCLIP_WORKSPACE_REPO_ROOT",
+    ] as const) {
+      if (env[key] !== undefined) env[key] = toWorkspacePosixShellPath(env[key]!);
+    }
+  }
   const prepared = prepareTestPosixShell({ command: "bash", args: [toBashPathForTest(scriptPath)], env });
   return execFileAsync(prepared.command, prepared.args, { ...options, env: prepared.env });
 }
@@ -1580,7 +1600,7 @@ describe("realizeExecutionWorkspace", () => {
       name: "git",
       script: [
         'const fs = require("node:fs");',
-        `fs.appendFileSync(${JSON.stringify(calls)}, JSON.stringify(process.argv.slice(1)) + "\\n");`,
+        `fs.appendFileSync(${JSON.stringify(calls)}, JSON.stringify(process.argv.slice(process.platform === "win32" ? 2 : 1)) + "\\n");`,
         `fs.writeSync(2, ${JSON.stringify(stderr)});`,
         `process.exit(${code});`,
       ].join("\n"),
@@ -1937,7 +1957,7 @@ describe("realizeExecutionWorkspace", () => {
       "PAP-448-run-provision-command\n",
     );
     await expect(fs.readFile(path.join(workspace.cwd, ".paperclip-provision-base"), "utf8")).resolves.toBe(
-      `${repoRoot}\n`,
+      `${toBashPathForTest(repoRoot)}\n`,
     );
     await expect(fs.readFile(path.join(workspace.cwd, ".paperclip-provision-created"), "utf8")).resolves.toBe(
       "true\n",
@@ -5320,10 +5340,10 @@ describe("ensureRuntimeServicesForRun", () => {
     expect(executionServices[0]?.url).not.toBe(primaryServices[0]?.url);
 
     const primaryResponse = await fetch(primaryServices[0]!.url!);
-    expect(await primaryResponse.text()).toBe(toBashPathForTest(path.join(primaryWorkspaceRoot, ".paperclip", "runtime-services")));
+    expect(await primaryResponse.text()).toBe(path.join(primaryWorkspaceRoot, ".paperclip", "runtime-services"));
 
     const executionResponse = await fetch(executionServices[0]!.url!);
-    expect(await executionResponse.text()).toBe(toBashPathForTest(path.join(worktreeWorkspaceRoot, ".paperclip", "runtime-services")));
+    expect(await executionResponse.text()).toBe(path.join(worktreeWorkspaceRoot, ".paperclip", "runtime-services"));
   });
 
   it("does not leak parent Paperclip instance env into runtime service commands", async () => {

@@ -1,5 +1,6 @@
 import { configuredEnvironmentProjection } from "../../vendor/paperclip-runner/index.js";
 import { prepareTestPosixShell } from "@penclipai/adapter-utils/test-fixtures/posix-shell";
+import { shellQuote } from "@penclipai/adapter-utils/ssh";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { PgDialect } from "drizzle-orm/pg-core";
@@ -6852,6 +6853,26 @@ describe("native warm session supervision", () => {
     // while the fake runner maps that one remote location to a real host dir.
     const hostRemoteCwd = join(home, "remote");
     const remoteCwd = toTestPosixPath(hostRemoteCwd);
+    const remoteNodeBridge = join(home, "remote-node-bridge.mjs");
+    await writeFile(remoteNodeBridge, [
+      'import { spawn } from "node:child_process";',
+      'import path from "node:path";',
+      'const remoteRoot = ' + JSON.stringify(remoteCwd) + ';',
+      'const hostRoot = ' + JSON.stringify(hostRemoteCwd) + ';',
+      'const mapPath = (value) => typeof value === "string" && (value === remoteRoot || value.startsWith(remoteRoot + "/"))',
+      '  ? hostRoot + value.slice(remoteRoot.length).replaceAll("/", path.sep)',
+      '  : value;',
+      'const mapValue = (value) => Array.isArray(value) ? value.map(mapValue)',
+      '  : value && typeof value === "object" ? Object.fromEntries(Object.entries(value).map(([key, child]) => [key, mapValue(child)]))',
+      '  : mapPath(value);',
+      'const mapArgument = (value) => {',
+      '  try { return JSON.stringify(mapValue(JSON.parse(value))); } catch { return mapPath(value); }',
+      '};',
+      'const child = spawn(process.execPath, process.argv.slice(2).map(mapArgument), { stdio: "inherit", env: process.env });',
+      'child.once("error", (error) => { process.stderr.write(String(error)); process.exitCode = 1; });',
+      'child.once("exit", (code) => { process.exitCode = code ?? 1; });',
+      '',
+    ].join("\n"));
     let currentLease = "", failCleanup = false, failProbe = false, closed = false;
     const commands: Array<{ leaseId: string; command: string }> = [];
     const commandRunner = (leaseId: string): import("@penclipai/adapter-utils/command-managed-runtime").CommandManagedRuntimeRunner => ({ execute: async input => {
@@ -6870,6 +6891,14 @@ describe("native warm session supervision", () => {
       if (input.stdin != null && (args[0] === "-c" || args[0] === "-lc")) {
         Object.assign(env, { PAPERCLIP_TEST_STDIN: input.stdin });
         args[1] = `printf '%s' "$PAPERCLIP_TEST_STDIN" | (${args[1]})`;
+      }
+      if (process.platform === "win32" && args[1]?.includes("node --input-type=module")) {
+        // The fake Linux checkpoint serializes its roots as JSON. Git Bash does
+        // not convert a quoted JSON value before native Node reads it, so bridge
+        // only those virtual sandbox roots at the process boundary.
+        const nodePath = shellQuote(toTestPosixPath(process.execPath));
+        const bridgePath = shellQuote(toTestPosixPath(remoteNodeBridge));
+        args[1] = `node() { "$(cygpath -w ${nodePath})" "$(cygpath -w ${bridgePath})" "$@"; }\n${args[1]}`;
       }
       if (process.platform === "win32" && args[1]?.includes("Agent directory probe deadline")) {
         // Git Bash intentionally leaves a single-quoted POSIX path unchanged

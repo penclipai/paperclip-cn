@@ -10,6 +10,7 @@ import {
   RUNTIME_EXPOSURE_APP_PORT_MAX,
   RUNTIME_EXPOSURE_APP_PORT_MIN,
 } from "@penclipai/shared";
+import { shellQuote } from "@penclipai/adapter-utils/ssh";
 
 import type { BrokerClient, BrokerListenerRequest } from "./runtime-exposure/broker-client.js";
 import {
@@ -207,7 +208,13 @@ afterAll(async () => {
   await fs.rm(guestDir, { recursive: true, force: true });
 });
 
-const guestCommand = (file: string) => `node ${path.join(guestDir, file)}`;
+const guestCommand = (file: string) => {
+  // Runtime services execute configured commands through a POSIX shell. Keep this
+  // locally-created guest path in that command's portable shell form on Windows.
+  const nativePath = path.join(guestDir, file);
+  const shellPath = process.platform === "win32" ? nativePath.replace(/\\/g, "/") : nativePath;
+  return `node ${shellQuote(shellPath)}`;
+};
 
 function createBroker() {
   const calls: string[] = [];

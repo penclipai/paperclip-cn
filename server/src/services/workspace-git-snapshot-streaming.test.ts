@@ -79,9 +79,9 @@ it("streams and stages all four real Git filename lanes above 32 MiB through the
   await git(["commit", "--allow-empty", "-qm", "fixture"]);
   // Windows uses fewer, deeper ASCII parent paths to keep each real Git lane
   // above 32 MiB; POSIX keeps its original 40,000-file fixture.
-  const fixtureCount = process.platform === "win32" ? 10_503 : 40_000;
+  const fixtureCount = process.platform === "win32" ? 9_000 : 40_000;
   const fixtureSegments = Array.from(
-    { length: process.platform === "win32" ? 14 : 3 },
+    { length: process.platform === "win32" ? 17 : 3 },
     () => "nested-".repeat(30),
   );
   const parent = path.join(repo, ...fixtureSegments, "storybook-output");
@@ -149,12 +149,14 @@ it("streams and stages all four real Git filename lanes above 32 MiB through the
   };
   const runtime = await stage(snapshot);
   const remoteParent = path.join(remote, path.relative(repo, parent));
-  let stagedCount = 0;
-  for await (const entry of await fs.opendir(remoteParent)) {
-    expect(await fs.readFile(path.join(remoteParent, entry.name), "utf8")).toBe("base");
-    stagedCount++;
+  const stagedFiles: string[] = [];
+  for await (const entry of await fs.opendir(remoteParent)) stagedFiles.push(entry.name);
+  for (let start = 0; start < stagedFiles.length; start += 100) {
+    await Promise.all(stagedFiles.slice(start, start + 100).map(async (name) => {
+      expect(await fs.readFile(path.join(remoteParent, name), "utf8")).toBe("base");
+    }));
   }
-  expect(stagedCount).toBe(fixtureCount);
+  expect(stagedFiles).toHaveLength(fixtureCount);
   for (const name of unusual) expect(await fs.readFile(path.join(remote, name), "utf8")).toBe(name);
   const manifestFile = isPathManifest(snapshot.overlayPaths) ? snapshot.overlayPaths.filePath : "";
   await runtime.cleanupWorkspaceSnapshot();
