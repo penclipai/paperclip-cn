@@ -2993,6 +2993,13 @@ export function formatManagedGitWorktreeBranchInspection(input: ManagedGitWorktr
   };
 }
 
+export function toWorkspacePosixShellPath(value: string): string {
+  if (process.platform !== "win32" || value.length === 0) return value;
+  const normalized = value.replace(/\\/g, "/");
+  const driveMatch = normalized.match(/^([A-Za-z]):\/(.*)$/);
+  return driveMatch ? `/${driveMatch[1]!.toLowerCase()}/${driveMatch[2]}` : value;
+}
+
 function buildWorkspaceCommandEnv(input: {
   base: ExecutionWorkspaceInput;
   repoRoot: string;
@@ -3022,6 +3029,21 @@ function buildWorkspaceCommandEnv(input: {
   env.PAPERCLIP_ISSUE_IDENTIFIER = input.issue?.identifier ?? "";
   env.PAPERCLIP_ISSUE_TITLE = input.issue?.title ?? "";
   env.PAPERCLIP_ISSUE_WORK_MODE = input.issue?.workMode ?? "";
+  // Workspace commands always run through a POSIX shell. Git Bash does not
+  // treat native drive paths as shell paths, so convert only the path-valued
+  // variables that the command consumes while preserving their drive.
+  for (const key of [
+    "PAPERCLIP_HOME",
+    "PAPERCLIP_CONFIG",
+    "PAPERCLIP_WORKTREES_DIR",
+    "PAPERCLIP_WORKSPACE_CWD",
+    "PAPERCLIP_WORKSPACE_PATH",
+    "PAPERCLIP_WORKSPACE_WORKTREE_PATH",
+    "PAPERCLIP_WORKSPACE_BASE_CWD",
+    "PAPERCLIP_WORKSPACE_REPO_ROOT",
+  ] as const) {
+    if (env[key] !== undefined) env[key] = toWorkspacePosixShellPath(env[key]!);
+  }
   return env;
 }
 
