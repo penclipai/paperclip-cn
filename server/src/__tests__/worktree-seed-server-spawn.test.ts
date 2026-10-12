@@ -22,6 +22,17 @@ async function runGit(cwd: string, args: string[]) {
   await execFileAsync("git", args, { cwd });
 }
 
+function shellQuote(value: string) {
+  return `'${value.replace(/'/g, `'"'"'`)}'`;
+}
+
+function toPosixShellPath(value: string) {
+  if (process.platform !== "win32") return value;
+  return value
+    .replace(/^([A-Za-z]):[\\/]/, (_match, drive: string) => `/${drive.toLowerCase()}/`)
+    .replace(/\\/g, "/");
+}
+
 async function writeConfig(configPath: string, instanceId: string) {
   const instanceRoot = path.dirname(configPath);
   await fs.mkdir(path.dirname(configPath), { recursive: true });
@@ -145,12 +156,12 @@ describe("managed worktree seed source through the server spawn path", () => {
       expect(seedDatabase).not.toHaveBeenCalled();
       expect(inspectLegacyDatabase).not.toHaveBeenCalled();
       const provisionScript = fileURLToPath(new URL("../../../scripts/provision-worktree-runtime.sh", import.meta.url));
-      // Git Bash does not accept a drive-letter script argument directly. Run
-      // the real script through the shared POSIX-shell fixture so its path is
-      // translated before spawning Bash on Windows.
+      // Git Bash does not accept a drive-letter script argument directly. The
+      // fixture selects Git Bash, while this converts the direct script
+      // argument before POSIX single-quoting it so $ and backticks stay data.
       const provisionShell = prepareTestPosixShell({
         command: "bash",
-        args: ["-c", `exec ${JSON.stringify(provisionScript)}`],
+        args: ["-c", `exec ${shellQuote(toPosixShellPath(provisionScript))}`],
         env: { ...process.env, PAPERCLIP_WORKSPACE_CWD: cwd },
       });
       const provision = await execFileAsync(provisionShell.command, provisionShell.args, {
