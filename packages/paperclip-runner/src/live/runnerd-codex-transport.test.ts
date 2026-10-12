@@ -2164,7 +2164,7 @@ it.each(["installed", "explicit"] as const)("records the selected %s Codex comma
     await expect(transport.request("thread/start", { cwd: root, model: "gpt-6.1-sol", dynamicTools: [] }))
       .rejects.toThrow("fixture_stop_before_runner_launch");
     expect(template).toMatchObject({ provider: { command, model: "gpt-6.1-sol" } });
-    const launchArgs = (template as Record<string, unknown> | null)?.runtimeLaunchArgs;
+    const launchArgs = (template as { provider?: { args?: string[] } } | null)?.provider?.args;
     expect(launchArgs).toEqual(expect.arrayContaining([
       expect.stringContaining(JSON.stringify(command) + '="read"'),
     ]));
