@@ -1910,6 +1910,15 @@ function serializeVersionFileInventory(
   }));
 }
 
+function resolveExecutableIntent(
+  mode: number,
+  previousExecutable: boolean | undefined,
+  requestedExecutable?: boolean,
+) {
+  if (process.platform !== "win32") return Boolean(mode & 0o111);
+  return requestedExecutable ?? previousExecutable ?? false;
+}
+
 function toCompanySkillVersion(row: CompanySkillVersionRow): CompanySkillVersion {
   return {
     ...row,
@@ -3412,8 +3421,13 @@ export function companySkillService(db: Db) {
       ?? await getByKey(companyId, ref);
   }
 
-  async function getVersion(companyId: string, skillId: string, versionId: string): Promise<CompanySkillVersion | null> {
-    const row = await db
+  async function getVersion(
+    companyId: string,
+    skillId: string,
+    versionId: string,
+    database: DbOrTransaction = db,
+  ): Promise<CompanySkillVersion | null> {
+    const row = await database
       .select()
       .from(companySkillVersions)
       .where(and(
@@ -3425,8 +3439,11 @@ export function companySkillService(db: Db) {
     return row ? toCompanySkillVersion(row) : null;
   }
 
-  async function getCurrentVersion(skill: CompanySkill): Promise<CompanySkillVersion | null> {
-    return skill.currentVersionId ? getVersion(skill.companyId, skill.id, skill.currentVersionId) : null;
+  async function getCurrentVersion(
+    skill: CompanySkill,
+    database: DbOrTransaction = db,
+  ): Promise<CompanySkillVersion | null> {
+    return skill.currentVersionId ? getVersion(skill.companyId, skill.id, skill.currentVersionId, database) : null;
   }
 
   async function isStarredByActor(companyId: string, skillId: string, actor: SkillActor | null | undefined) {
@@ -4333,7 +4350,11 @@ export function companySkillService(db: Db) {
     return readLoadedSkillFile(skill, relativePath);
   }
 
-  async function readLoadedSkillFile(skill: CompanySkill, relativePath: string): Promise<CompanySkillFileDetail> {
+  async function readLoadedSkillFile(
+    skill: CompanySkill,
+    relativePath: string,
+    database: DbOrTransaction = db,
+  ): Promise<CompanySkillFileDetail> {
     const normalizedPath = normalizePortablePath(relativePath || "SKILL.md");
     const fileEntry = skill.fileInventory.find((entry) => entry.path === normalizedPath);
     if (!fileEntry) {
@@ -4342,7 +4363,7 @@ export function companySkillService(db: Db) {
 
     const source = deriveSkillSourceInfo(skill);
     if (skill.metadata?.skillSourceId && skill.metadata?.snapshotHash && skill.currentVersionId) {
-      const version = await getCurrentVersion(skill);
+      const version = await getCurrentVersion(skill, database);
       const file = version?.fileInventory.find(entry => entry.path === normalizedPath);
       if (!file) throw notFound("Installed skill snapshot is missing a file.");
       return { ...file, skillId: skill.id, language: file.encoding === "base64" ? null : inferLanguageFromPath(normalizedPath),
@@ -4354,7 +4375,15 @@ export function companySkillService(db: Db) {
       const absolutePath = resolveLocalSkillFilePath(skill, normalizedPath);
       const diskBytes = absolutePath ? await fs.readFile(absolutePath).catch(() => null) : null;
       if (diskBytes !== null) {
-        const file = snapshotFile(normalizedPath, fileEntry.kind, diskBytes, Boolean((await fs.stat(absolutePath!)).mode & 0o111));
+        const stat = await fs.stat(absolutePath!);
+        const currentVersion = process.platform === "win32" ? await getCurrentVersion(skill, database) : null;
+        const previousExecutable = currentVersion?.fileInventory.find((entry) => entry.path === normalizedPath)?.executable;
+        const file = snapshotFile(
+          normalizedPath,
+          fileEntry.kind,
+          diskBytes,
+          resolveExecutableIntent(stat.mode, previousExecutable),
+        );
         return { ...file, skillId: skill.id, language: file.encoding === "base64" ? null : inferLanguageFromPath(normalizedPath),
           markdown: file.encoding !== "base64" && isMarkdownPath(normalizedPath), editable: source.editable && file.encoding !== "base64" };
       } else if (normalizedPath === "SKILL.md") {
@@ -4646,10 +4675,24 @@ export function companySkillService(db: Db) {
     });
   }
 
-  async function refreshEditedSkillInventory(skill: CompanySkill, tx: DbOrTransaction) {
+  async function refreshEditedSkillInventory(
+    skill: CompanySkill,
+    tx: DbOrTransaction,
+    requestedExecutable?: { path: string; executable: boolean },
+  ) {
     const entries = await collectLocalSkillInventory(normalizeSkillDirectory(skill)!, inferLocalSkillInventoryMode(skill));
+    const currentVersion = process.platform === "win32" ? await getCurrentVersion(skill, tx) : null;
     const inventory = await Promise.all(entries.map(async (entry) => ({
-      ...snapshotFile(entry.path, entry.kind, await fs.readFile(path.join(normalizeSkillDirectory(skill)!, entry.path)), Boolean((await fs.stat(path.join(normalizeSkillDirectory(skill)!, entry.path))).mode & 0o111)),
+      ...snapshotFile(
+        entry.path,
+        entry.kind,
+        await fs.readFile(path.join(normalizeSkillDirectory(skill)!, entry.path)),
+        resolveExecutableIntent(
+          (await fs.stat(path.join(normalizeSkillDirectory(skill)!, entry.path))).mode,
+          currentVersion?.fileInventory.find((versionEntry) => versionEntry.path === entry.path)?.executable,
+          requestedExecutable?.path === entry.path ? requestedExecutable.executable : undefined,
+        ),
+      ),
     })));
     await tx.update(companySkills).set({
       fileInventory: serializeFileInventory(inventory),
@@ -4691,6 +4734,11 @@ export function companySkillService(db: Db) {
       }
       const previousContent = await fs.readFile(absolutePath).catch(() => null);
       const previousMode = (await fs.stat(absolutePath).catch(() => null))?.mode ?? 0o644;
+      const previousVersion = await getCurrentVersion(skill, tx);
+      const previousExecutable = resolveExecutableIntent(
+        previousMode,
+        previousVersion?.fileInventory.find((entry) => entry.path === normalizedPath)?.executable,
+      );
       const restore = async () => {
         if (previousContent === null) await fs.rm(absolutePath, { force: true });
         else {
@@ -4699,7 +4747,8 @@ export function companySkillService(db: Db) {
         }
       };
       format.onRollback?.(restore, skill.currentVersionId);
-      const mode = (format.executable ?? Boolean(previousMode & 0o111)) ? 0o755 : 0o644;
+      const executable = format.executable ?? previousExecutable;
+      const mode = executable ? 0o755 : 0o644;
       try {
         await fs.mkdir(path.dirname(absolutePath), { recursive: true });
         await fs.writeFile(absolutePath, bytes);
@@ -4724,15 +4773,19 @@ export function companySkillService(db: Db) {
             .where(eq(companySkills.id, skill.id));
         }
 
-        const inventory = await refreshEditedSkillInventory(skill, tx);
-        if (!previousContent?.equals(bytes) || Boolean(previousMode & 0o111) !== Boolean(mode & 0o111)) {
+        const inventory = await refreshEditedSkillInventory(
+          skill,
+          tx,
+          format.executable === undefined ? undefined : { path: normalizedPath, executable: format.executable },
+        );
+        if (!previousContent?.equals(bytes) || previousExecutable !== executable) {
           await createVersion(companyId, skillId, {}, actor, {
             database: tx, skipInventoryRefresh: true, skill, fileInventory: inventory,
           });
         }
 
         const updated = await getById(companyId, skillId, tx);
-        const detail = updated ? await readLoadedSkillFile(updated, normalizedPath) : null;
+        const detail = updated ? await readLoadedSkillFile(updated, normalizedPath, tx) : null;
         if (!detail) throw notFound("Skill file not found");
         await format.afterUpdate?.(updated?.currentVersionId ?? null);
         return detail;
@@ -5864,7 +5917,8 @@ export function companySkillService(db: Db) {
       if (!resolved) throw unprocessable("Invalid skill file path");
       const targetPath = resolved.targetPath;
       await fs.mkdir(path.dirname(targetPath), { recursive: true });
-      await fs.writeFile(targetPath, content, "utf8");
+      await fs.writeFile(targetPath, skillFileBytes(detail), { mode: detail.executable ? 0o555 : 0o444 });
+      if (process.platform !== "win32") await fs.chmod(targetPath, detail.executable ? 0o555 : 0o444);
       if (normalizedPath === "SKILL.md") wroteSkillFile = true;
     }
 
@@ -5934,7 +5988,8 @@ export function companySkillService(db: Db) {
       const target = path.resolve(skillDir, relativePath);
       const existingContent = await fs.readFile(target).catch(() => null);
       if (!existingContent?.equals(skillFileBytes(content))) return false;
-      if (Boolean((await fs.stat(target)).mode & 0o111) !== Boolean(content.executable)) return false;
+      if (process.platform !== "win32"
+        && Boolean((await fs.stat(target)).mode & 0o111) !== Boolean(content.executable)) return false;
     }
     return true;
   }

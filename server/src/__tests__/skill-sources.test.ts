@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { promises as fs } from 'node:fs';
+import { existsSync, promises as fs } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
@@ -14,6 +14,14 @@ import { skillSourceService, type SkillSourceContext } from '../services/skill-s
 import { companySkillService } from '../services/company-skills.js';
 
 const support = await getEmbeddedPostgresTestSupport();
+const gitBash = 'C:\\Program Files\\Git\\bin\\bash.exe';
+
+async function runMaterializedScript(scriptPath: string) {
+  const command = process.platform === 'win32' ? (existsSync(gitBash) ? gitBash : 'bash') : scriptPath;
+  const args = process.platform === 'win32' ? [scriptPath] : [];
+  return promisify(execFile)(command, args);
+}
+
 describe.skipIf(!support.supported)('skill source persistence', () => {
   let testDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
   let db: ReturnType<typeof createDb>;
@@ -75,8 +83,10 @@ describe.skipIf(!support.supported)('skill source persistence', () => {
       const runtime = await skills.listRuntimeSkillEntries(companyId, { materializeMissing: true });
       const staged = runtime.find(entry => entry.key === skill.key)!;
       expect(await fs.readFile(path.join(staged.source, 'assets/image.png'))).toEqual(initial['deep/one/assets/image.png']);
-      expect((await fs.stat(path.join(staged.source, 'scripts/run.sh'))).mode & 0o111).toBeTruthy();
-      expect((await promisify(execFile)(path.join(staged.source, 'scripts/run.sh'))).stdout.trim()).toBe('hello');
+      if (process.platform !== 'win32') {
+        expect((await fs.stat(path.join(staged.source, 'scripts/run.sh'))).mode & 0o111).toBeTruthy();
+      }
+      expect((await runMaterializedScript(path.join(staged.source, 'scripts/run.sh'))).stdout.trim()).toBe('hello');
     } finally { fetchSpy.mockRestore(); }
     await expect(sources.refresh(companyId, result.source.id, context, { revision: 0, selectedPaths: [], excludedFolders: [] })).rejects.toThrow(/changed/);
     const disconnected = await sources.disconnect(companyId, result.source.id, context);
@@ -103,6 +113,17 @@ describe.skipIf(!support.supported)('skill source persistence', () => {
     await expect(skills.updateFile(companyId, copy.skill.id, 'assets/data.bin', 'not base64!', null, { encoding: 'base64' })).rejects.toThrow(/base64/);
     await skills.updateFile(companyId, copy.skill.id, 'assets/data.bin', Buffer.from([0,128,1]).toString('base64'), null, { encoding: 'base64', executable: true });
     expect(await skills.readFile(companyId, copy.skill.id, 'assets/data.bin')).toMatchObject({ content: Buffer.from([0,128,1]).toString('base64'), executable: true });
+    await skills.updateFile(companyId, copy.skill.id, 'run.sh', '#!/bin/sh\necho retained', null, { executable: true });
+    await skills.updateFile(companyId, copy.skill.id, 'run.sh', '#!/bin/sh\necho retained after edit');
+    expect(await skills.readFile(companyId, copy.skill.id, 'run.sh')).toMatchObject({ executable: true });
+    const copyRuntime = await skills.listRuntimeSkillEntries(companyId, { materializeMissing: true });
+    const copySource = copyRuntime.find((entry) => entry.key === copy.skill.key)!.source;
+    if (process.platform !== 'win32') {
+      expect((await fs.stat(path.join(copySource, 'run.sh'))).mode & 0o111).toBeTruthy();
+    }
+    expect((await runMaterializedScript(path.join(copySource, 'run.sh'))).stdout.trim()).toBe('retained after edit');
+    await skills.updateFile(companyId, copy.skill.id, 'run.sh', '#!/bin/sh\necho disabled', null, { executable: false });
+    expect(await skills.readFile(companyId, copy.skill.id, 'run.sh')).toMatchObject({ executable: false });
     expect(copy.skill.metadata?.skillSourceId).toBeUndefined();
     files = { ...files, 'keep/reference.md': 'changed', 'declined/two/SKILL.md': md('two'), 'fresh/SKILL.md': md('fresh') }; commit = 'd'.repeat(40);
     let refreshed = await service.refresh(companyId, created.source.id, context);
