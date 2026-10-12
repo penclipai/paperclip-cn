@@ -9,6 +9,7 @@ import {
   readdir,
   rename,
   rm,
+  rmdir,
   writeFile,
 } from "node:fs/promises";
 import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
@@ -181,6 +182,10 @@ async function removeMaterializedTree(
   skillsHome: string,
   removeTree: (path: string) => Promise<void>,
 ): Promise<void> {
+  if (process.platform === "win32") {
+    await removeEmptyMaterializedTreeOnWindows(skillsHome);
+    return;
+  }
   const exists = await lstat(skillsHome).then(
     () => true,
     (error: NodeJS.ErrnoException) => {
@@ -191,6 +196,49 @@ async function removeMaterializedTree(
   if (!exists) return;
   await unprotectMaterializedTree(skillsHome);
   await removeTree(skillsHome);
+}
+
+async function removeEmptyMaterializedTreeOnWindows(
+  skillsHome: string,
+): Promise<void> {
+  const stat = await lstat(skillsHome).catch((error: NodeJS.ErrnoException) => {
+    if (error.code === "ENOENT") return null;
+    throw error;
+  });
+  if (!stat) return;
+  if (stat.isSymbolicLink() || !stat.isDirectory()) {
+    throw new Error(
+      "native_runtime_context_unsupported: immutable assigned skills cannot be released on win32",
+    );
+  }
+  // Windows cannot safely restore the POSIX directory seal. Empty homes have
+  // no assigned snapshot, so remove only that exact directory without chmod,
+  // recursive traversal, or following a reparse point. Let rmdir provide the
+  // atomic emptiness check rather than inspecting a path that could be swapped.
+  await rmdir(skillsHome).catch((error: NodeJS.ErrnoException) => {
+    if (error.code === "ENOENT") return;
+    if (error.code === "ENOTEMPTY" || error.code === "EEXIST") {
+      throw new Error(
+        "native_runtime_context_unsupported: immutable assigned skills cannot be released on win32",
+      );
+    }
+    throw error;
+  });
+}
+
+/**
+ * Assigned skills are an immutable provider input. Windows does not preserve
+ * the directory seal used by this materializer, so never publish an assigned
+ * snapshot there as though it were immutable.
+ */
+export function assertNativeRuntimeSkillSealingSupported(
+  context: NativeRuntimeContextSnapshot | null,
+): void {
+  if (process.platform === "win32" && (context?.skills.length ?? 0) > 0) {
+    throw new Error(
+      "native_runtime_context_unsupported: immutable assigned skills cannot be sealed on win32",
+    );
+  }
 }
 
 /** Removes a previously sealed skills snapshot at an explicit lifecycle boundary. */
@@ -239,6 +287,7 @@ export async function materializeNativeRuntimeSkills(
       await assertSafeTree(skill.bundle.rootPath);
     }
   }
+  assertNativeRuntimeSkillSealingSupported(context);
 
   const skillsHomeExists = await lstat(skillsHome).then(
     () => true,

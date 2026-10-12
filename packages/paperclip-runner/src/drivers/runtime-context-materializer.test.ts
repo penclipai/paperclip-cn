@@ -25,8 +25,10 @@ import {
 } from "../contracts/runtime-context.js";
 import { nativeMcpLaunchBinding } from "./native-mcp.js";
 import {
+  assertNativeRuntimeSkillSealingSupported,
   materializeNativeRuntimeSkills,
   prepareIsolatedCodexHome,
+  releaseMaterializedNativeRuntimeSkills,
 } from "./runtime-context-materializer.js";
 
 const roots: string[] = [];
@@ -93,6 +95,78 @@ function context(
 }
 
 describe("runtime context materialization", () => {
+  it("allows empty runtime contexts on every supported platform", () => {
+    expect(() => assertNativeRuntimeSkillSealingSupported(null)).not.toThrow();
+    const empty = context("/skills", "/instructions");
+    empty.skills = [];
+    empty.aggregateDigest = canonicalNativeRuntimeContextDigest(empty);
+    expect(() => assertNativeRuntimeSkillSealingSupported(empty)).not.toThrow();
+  });
+
+  (process.platform === "win32" ? it : it.skip)(
+    "refuses Windows assigned skills before creating an isolated home",
+    async () => {
+      const root = await mkdtemp(join(tmpdir(), "paperclip-runtime-win32-"));
+      roots.push(root);
+      const assigned = join(root, "assigned-source");
+      const instructions = join(root, "instructions-source");
+      const codexHome = join(root, "codex-home");
+      await Promise.all([mkdir(assigned), mkdir(instructions)]);
+      await writeFile(join(assigned, "SKILL.md"), "# Assigned\\n");
+      await writeFile(join(instructions, "AGENTS.md"), "Instructions\\n");
+      const sourceBytes = await readFile(join(assigned, "SKILL.md"));
+
+      await expect(prepareIsolatedCodexHome({
+        context: context(assigned, instructions),
+        codexHome,
+      })).rejects.toThrow("native_runtime_context_unsupported");
+
+      expect(await readFile(join(assigned, "SKILL.md"))).toEqual(sourceBytes);
+      await expect(lstat(codexHome)).rejects.toThrow();
+      expect(
+        (await readdir(root)).filter((entry) =>
+          entry.startsWith(".paperclip-skills-staging-"),
+        ),
+      ).toEqual([]);
+    },
+  );
+
+  (process.platform === "win32" ? it : it.skip)(
+    "releases only an empty Windows skills home without recursive cleanup",
+    async () => {
+      const root = await mkdtemp(join(tmpdir(), "paperclip-runtime-win32-release-"));
+      roots.push(root);
+      const empty = join(root, "empty", "skills");
+      const retained = join(root, "retained", "skills");
+      await materializeNativeRuntimeSkills(null, empty);
+      await releaseMaterializedNativeRuntimeSkills(empty);
+      await expect(lstat(empty)).rejects.toThrow();
+
+      await mkdir(join(retained, "legacy"), { recursive: true });
+      await writeFile(join(retained, "legacy", "SKILL.md"), "# Retained\\n");
+      const retainedBytes = await readFile(join(retained, "legacy", "SKILL.md"));
+      await expect(
+        releaseMaterializedNativeRuntimeSkills(retained),
+      ).rejects.toThrow("native_runtime_context_unsupported");
+      expect(await readFile(join(retained, "legacy", "SKILL.md"))).toEqual(
+        retainedBytes,
+      );
+
+      const external = join(root, "external");
+      const reparse = join(root, "reparse", "skills");
+      await mkdir(external);
+      await writeFile(join(external, "sentinel.txt"), "must-not-remove\n");
+      await mkdir(dirname(reparse), { recursive: true });
+      await symlink(external, reparse, "junction");
+      await expect(
+        releaseMaterializedNativeRuntimeSkills(reparse),
+      ).rejects.toThrow("native_runtime_context_unsupported");
+      await expect(readFile(join(external, "sentinel.txt"), "utf8")).resolves.toBe(
+        "must-not-remove\n",
+      );
+    },
+  );
+
   it("restores the legacy working-copy contract without changing its digest or adding new fields", () => {
     const old = context("/skills", "/instructions");
     old.instructions.workingCopy = { rootPath: "/old-run/copy", entryPath: "AGENTS.md" };
@@ -118,7 +192,7 @@ describe("runtime context materialization", () => {
     })).toThrow("contains forbidden URL data");
   });
 
-  it("copies only assigned skills and writes an isolated MCP config", async () => {
+  (process.platform === "win32" ? it.skip : it)("copies only assigned skills and writes an isolated MCP config", async () => {
     const root = await mkdtemp(join(tmpdir(), "paperclip-runtime-context-"));
     roots.push(root);
     const assigned = join(root, "assigned-source");
@@ -195,7 +269,7 @@ command = "untrusted-command"
     await expect(stat(join(target, "auth.json"))).rejects.toThrow();
   });
 
-  it("rejects repeated assignments without changing the current assignment", async () => {
+  (process.platform === "win32" ? it.skip : it)("rejects repeated assignments without changing the current assignment", async () => {
     const root = await mkdtemp(join(tmpdir(), "paperclip-runtime-repeat-"));
     roots.push(root);
     const assigned = join(root, "assigned-source");
@@ -228,7 +302,7 @@ command = "untrusted-command"
       .toThrow();
   });
 
-  it("rejects source symlinks without changing the current assignment", async () => {
+  it("rejects source symlinks before Windows capability admission", async () => {
     const root = await mkdtemp(join(tmpdir(), "paperclip-runtime-symlink-"));
     roots.push(root);
     const assigned = join(root, "assigned-source");
@@ -242,21 +316,27 @@ command = "untrusted-command"
     await writeFile(external, "secret\n");
     await symlink(external, join(unsafe, "SKILL.md"));
 
-    await prepareIsolatedCodexHome({
-      context: context(assigned, instructions),
-      codexHome,
-    });
+    if (process.platform !== "win32") {
+      await prepareIsolatedCodexHome({
+        context: context(assigned, instructions),
+        codexHome,
+      });
+    }
     await expect(prepareIsolatedCodexHome({
       context: context(unsafe, instructions, "unsafe"),
       codexHome,
     })).rejects.toThrow("runtime context asset contains a symlink");
-    await expect(readFile(
-      join(codexHome, "skills", "assigned", "SKILL.md"),
-      "utf8",
-    )).resolves.toBe("# Assigned\n");
+    if (process.platform === "win32") {
+      await expect(lstat(codexHome)).rejects.toThrow();
+    } else {
+      await expect(readFile(
+        join(codexHome, "skills", "assigned", "SKILL.md"),
+        "utf8",
+      )).resolves.toBe("# Assigned\n");
+    }
   });
 
-  it("rejects overlapping portable names without changing the current assignment", async () => {
+  it("rejects overlapping portable names before Windows capability admission", async () => {
     const root = await mkdtemp(join(tmpdir(), "paperclip-runtime-atomic-"));
     roots.push(root);
     const assigned = join(root, "assigned-source");
@@ -268,10 +348,12 @@ command = "untrusted-command"
     await writeFile(join(replacement, "SKILL.md"), "# Replacement\n");
     await writeFile(join(instructions, "AGENTS.md"), "Instructions\n");
 
-    await prepareIsolatedCodexHome({
-      context: context(assigned, instructions),
-      codexHome,
-    });
+    if (process.platform !== "win32") {
+      await prepareIsolatedCodexHome({
+        context: context(assigned, instructions),
+        codexHome,
+      });
+    }
     const replacementContext = context(replacement, instructions, "group/child");
     for (const runtimeName of ["group", "GROUP", "group.", "group "]) {
       const collidingSkill = {
@@ -293,11 +375,15 @@ command = "untrusted-command"
           context: collidingContext,
           codexHome,
         })).rejects.toThrow("skill names must not overlap");
-        await expect(readFile(
-          join(codexHome, "skills", "assigned", "SKILL.md"),
-          "utf8",
-        )).resolves.toBe("# Assigned\n");
-        await expect(stat(join(codexHome, "skills", "group"))).rejects.toThrow();
+        if (process.platform === "win32") {
+          await expect(lstat(codexHome)).rejects.toThrow();
+        } else {
+          await expect(readFile(
+            join(codexHome, "skills", "assigned", "SKILL.md"),
+            "utf8",
+          )).resolves.toBe("# Assigned\n");
+          await expect(stat(join(codexHome, "skills", "group"))).rejects.toThrow();
+        }
       }
     }
 
@@ -319,7 +405,7 @@ command = "untrusted-command"
     })).rejects.toThrow("skill names must not overlap");
   });
 
-  it("rejects an existing destination before filesystem mutation", async () => {
+  (process.platform === "win32" ? it.skip : it)("rejects an existing destination before filesystem mutation", async () => {
     const root = await mkdtemp(join(tmpdir(), "paperclip-runtime-existing-"));
     roots.push(root);
     const assigned = join(root, "assigned-source");
@@ -370,7 +456,7 @@ command = "untrusted-command"
     ).toEqual([]);
   });
 
-  it("cleans private staging when fresh publication fails", async () => {
+  (process.platform === "win32" ? it.skip : it)("cleans private staging when fresh publication fails", async () => {
     const root = await mkdtemp(join(tmpdir(), "paperclip-runtime-publish-"));
     roots.push(root);
     const assigned = join(root, "assigned-source");

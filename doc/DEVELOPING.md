@@ -1977,6 +1977,12 @@ identity and wait for ownership evidence when no process-tree retirement
 authority is available. A missing direct runner PID does not authorize a
 replacement run or physical cleanup.
 
+Windows supports native runtime contexts with no assigned skills. Immutable
+assigned-skill snapshots require POSIX directory sealing, so Windows rejects
+them before publishing a new skills home or replacing a retained snapshot.
+Empty skills homes use nonrecursive directory removal; nonempty homes and
+reparse points remain intact and return `native_runtime_context_unsupported`.
+
 Default remote runner staging requires the controller binary to match the
 remote operating system and architecture. A Windows controller targeting a
 Linux runner must supply the Linux artifact through

@@ -81,6 +81,7 @@ import type {
 } from "../contracts/native-execution.js";
 import { nativeMcpLaunchBinding } from "../drivers/native-mcp.js";
 import {
+  assertNativeRuntimeSkillSealingSupported,
   prepareIsolatedCodexHome,
   releaseMaterializedNativeRuntimeSkills,
 } from "../drivers/runtime-context-materializer.js";
@@ -4711,6 +4712,9 @@ class DurablePrpCodexTransport implements CodexAppServerTransport {
     }
     const provider = this.options.provider ?? "codex";
     const sourceRuntimeContext = this.options.runtimeContext ?? null;
+    if (provider === "codex") {
+      assertNativeRuntimeSkillSealingSupported(sourceRuntimeContext);
+    }
     if (provider === "codex" && this.options.runnerFilesystemRoot && !this.options.codexCommand) {
       throw new Error("runner_remote_provider_artifact_incompatible: remote Codex omitted its qualified guest executable; verify the selected environment's Codex artifacts");
     }
@@ -5623,6 +5627,9 @@ class DurablePrpCodexTransport implements CodexAppServerTransport {
     }
     // Route and immutable endpoint admission precedes every launch-material
     // write. A refused transition leaves its retained home/context untouched.
+    if (provider === "codex") {
+      assertNativeRuntimeSkillSealingSupported(sourceRuntimeContext);
+    }
     if (runtimeContext !== null) {
       writeFileSync(
         localRuntimeContextPath,
