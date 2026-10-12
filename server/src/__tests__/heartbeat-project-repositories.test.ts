@@ -324,8 +324,18 @@ suite("task project repository provisioning", () => {
       const git = (...args: string[]) => execFileSync("git", args, { cwd: source, stdio: "ignore" });
       git("init", "-b", "main");
       await writeFile(path.join(source, "README.md"), `repository ${index}`);
-      git("add", ".");
-      git("-c", "user.name=Test", "-c", "user.email=test@example.com", "commit", "-m", "seed");
+      const longRelativePath = process.platform === "win32" && count === 2 && index === 1
+        ? path.join(...Array.from({ length: 3 }, () => "nested-".repeat(8)), "payload.txt")
+        : null;
+      if (longRelativePath) {
+        await mkdir(path.dirname(path.join(source, longRelativePath)), { recursive: true });
+        await writeFile(path.join(source, longRelativePath), "long managed clone payload");
+        git("-c", "core.longpaths=true", "add", ".");
+        git("-c", "core.longpaths=true", "-c", "user.name=Test", "-c", "user.email=test@example.com", "commit", "-m", "seed");
+      } else {
+        git("add", ".");
+        git("-c", "user.name=Test", "-c", "user.email=test@example.com", "commit", "-m", "seed");
+      }
       repositoryRows.push({ id: randomUUID(), companyId, projectId, name: `Repo ${index}`, sourceType: "git_repo", repoUrl: pathToFileURL(source).href, cwd: null, isPrimary: index === 0 });
     }
     await db.insert(companies).values({ id: companyId, name: "Repo test", issuePrefix: `R${companyId.slice(0, 6)}`, defaultResponsibleUserId: "responsible-user" });
@@ -345,6 +355,13 @@ suite("task project repository provisioning", () => {
       const hint = hints.find((entry) => entry.workspaceId === repositoryRows[index]!.id);
       expect(hint?.cwd).toBeTruthy();
       expect(await readFile(path.join(hint!.cwd, "README.md"), "utf8")).toBe(`repository ${index}`);
+      if (process.platform === "win32" && count === 2 && index === 1) {
+        const longRelativePath = path.join(...Array.from({ length: 3 }, () => "nested-".repeat(8)), "payload.txt");
+        const clonedLongPath = path.join(hint!.cwd, longRelativePath);
+        expect(clonedLongPath.length).toBeGreaterThan(260);
+        await expect(readFile(clonedLongPath, "utf8")).resolves.toBe("long managed clone payload");
+        expect(execFileSync("git", ["config", "--local", "--get", "core.longpaths"], { cwd: hint!.cwd, encoding: "utf8" }).trim()).toBe("true");
+      }
       expect(path.normalize(execFileSync("git", ["rev-parse", "--show-toplevel"], { cwd: hint!.cwd, encoding: "utf8" }).trim())).toBe(path.normalize(await realpath(hint!.cwd)));
     }
   }, 25_000);

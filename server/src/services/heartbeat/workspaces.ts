@@ -590,7 +590,18 @@ async function materializeManagedProjectWorkspace(
     try {
       await execFile(
         "git",
-        [...(auth?.configArgs ?? []), "clone", "--no-hardlinks", "--", input.localSource ?? input.repoUrl, cloneTmpDir],
+        [
+          ...(process.platform === "win32" ? ["-c", "core.longpaths=true"] : []),
+          ...(auth?.configArgs ?? []),
+          "clone",
+          // `-c` applies during clone setup; `--config` persists the setting in
+          // this controlled checkout before its initial fetch and checkout.
+          ...(process.platform === "win32" ? ["--config", "core.longpaths=true"] : []),
+          "--no-hardlinks",
+          "--",
+          input.localSource ?? input.repoUrl,
+          cloneTmpDir,
+        ],
         {
           env: {
             // Spread order matters: the sanitizer strips PAPERCLIP_*, which would remove the
