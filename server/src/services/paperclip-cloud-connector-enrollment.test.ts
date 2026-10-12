@@ -1,4 +1,5 @@
-import { mkdtempSync, readFileSync, rmSync, statSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, symlinkSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -12,6 +13,81 @@ import {
 } from "./paperclip-cloud-connector-enrollment.js";
 import { paperclipCloudConnectorConfigFromEnv } from "./paperclip-cloud-connector.js";
 import { reconcilePaperclipCloudConnectorEnrollmentStatus } from "./paperclip-cloud-connector-status.js";
+
+const WINDOWS_ACL_TARGET_ENV = "PAPERCLIP_CLOUD_CONNECTOR_ACL_TARGET";
+const WINDOWS_ACL_SNAPSHOT_SCRIPT = String.raw`
+$ErrorActionPreference = 'Stop'
+$target = $env:PAPERCLIP_CLOUD_CONNECTOR_ACL_TARGET
+$item = Get-Item -LiteralPath $target -Force
+$sections = [System.Security.AccessControl.AccessControlSections]::Access -bor [System.Security.AccessControl.AccessControlSections]::Owner
+$acl = if ($item.PSIsContainer) {
+  [System.IO.Directory]::GetAccessControl($target, $sections)
+} else {
+  [System.IO.File]::GetAccessControl($target, $sections)
+}
+$readData = [System.Security.AccessControl.FileSystemRights]::ReadData
+[pscustomobject]@{
+  owner = $acl.GetOwner([System.Security.Principal.SecurityIdentifier]).Value
+  current = [System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+  protected = $acl.AreAccessRulesProtected
+  readerSids = @($acl.GetAccessRules($true, $true, [System.Security.Principal.SecurityIdentifier]) | Where-Object {
+    $_.AccessControlType -eq [System.Security.AccessControl.AccessControlType]::Allow -and ($_.FileSystemRights -band $readData) -ne 0
+  } | ForEach-Object { $_.IdentityReference.Value })
+} | ConvertTo-Json -Compress
+`;
+const WINDOWS_ACL_SNAPSHOT_SCRIPT_BASE64 = Buffer
+  .from(WINDOWS_ACL_SNAPSHOT_SCRIPT, "utf16le")
+  .toString("base64");
+const WINDOWS_ADD_FOREIGN_READ_ACE_SCRIPT = String.raw`
+$ErrorActionPreference = 'Stop'
+$target = $env:PAPERCLIP_CLOUD_CONNECTOR_ACL_TARGET
+$item = Get-Item -LiteralPath $target -Force
+if (($item.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0) { exit 1 }
+$acl = [System.IO.File]::GetAccessControl($target, [System.Security.AccessControl.AccessControlSections]::Access)
+$everyone = [System.Security.Principal.SecurityIdentifier]::new('S-1-1-0')
+$acl.AddAccessRule([System.Security.AccessControl.FileSystemAccessRule]::new(
+  $everyone,
+  [System.Security.AccessControl.FileSystemRights]::ReadData,
+  [System.Security.AccessControl.AccessControlType]::Allow
+))
+[System.IO.File]::SetAccessControl($target, $acl)
+`;
+const WINDOWS_ADD_FOREIGN_READ_ACE_SCRIPT_BASE64 = Buffer
+  .from(WINDOWS_ADD_FOREIGN_READ_ACE_SCRIPT, "utf16le")
+  .toString("base64");
+
+function windowsAclSnapshot(target: string): { owner: string; current: string; protected: boolean; readerSids: string | string[] } {
+  return JSON.parse(execFileSync("powershell.exe", [
+    "-NoLogo",
+    "-NoProfile",
+    "-NonInteractive",
+    "-ExecutionPolicy",
+    "Bypass",
+    "-EncodedCommand",
+    WINDOWS_ACL_SNAPSHOT_SCRIPT_BASE64,
+  ], {
+    encoding: "utf8",
+    env: { ...process.env, [WINDOWS_ACL_TARGET_ENV]: target },
+    stdio: ["ignore", "pipe", "ignore"],
+    windowsHide: true,
+  })) as { owner: string; current: string; protected: boolean; readerSids: string | string[] };
+}
+
+function addWindowsForeignReadAce(target: string): void {
+  execFileSync("powershell.exe", [
+    "-NoLogo",
+    "-NoProfile",
+    "-NonInteractive",
+    "-ExecutionPolicy",
+    "Bypass",
+    "-EncodedCommand",
+    WINDOWS_ADD_FOREIGN_READ_ACE_SCRIPT_BASE64,
+  ], {
+    env: { ...process.env, [WINDOWS_ACL_TARGET_ENV]: target },
+    stdio: "ignore",
+    windowsHide: true,
+  });
+}
 
 describe("Paperclip Cloud self-host enrollment", () => {
   let root = "";
@@ -73,8 +149,23 @@ describe("Paperclip Cloud self-host enrollment", () => {
     });
     expect(pending.status).toBe("pending");
     expect(pending.verificationUrl).toBe("https://my.example.test/connections/enroll?id=enroll-test");
-    expect(statSync(path.dirname(paperclipCloudConnectorIdentityPath())).mode & 0o777).toBe(0o700);
-    expect(statSync(paperclipCloudConnectorIdentityPath()).mode & 0o777).toBe(0o600);
+    if (process.platform === "win32") {
+      const identityPath = paperclipCloudConnectorIdentityPath();
+      for (const target of [path.dirname(path.dirname(identityPath)), path.dirname(identityPath), identityPath]) {
+        const acl = windowsAclSnapshot(target);
+        expect(acl.owner).toBe(acl.current);
+        expect(acl.protected).toBe(true);
+        expect(Array.isArray(acl.readerSids) ? acl.readerSids : [acl.readerSids]).toEqual([acl.current]);
+      }
+      addWindowsForeignReadAce(identityPath);
+      expect(windowsAclSnapshot(identityPath).readerSids).toContain("S-1-1-0");
+      expect(loadPaperclipCloudConnectorIdentity()).not.toBeNull();
+      const repaired = windowsAclSnapshot(identityPath);
+      expect(Array.isArray(repaired.readerSids) ? repaired.readerSids : [repaired.readerSids]).toEqual([repaired.current]);
+    } else {
+      expect(statSync(path.dirname(paperclipCloudConnectorIdentityPath())).mode & 0o777).toBe(0o700);
+      expect(statSync(paperclipCloudConnectorIdentityPath()).mode & 0o777).toBe(0o600);
+    }
     expect(readFileSync(paperclipCloudConnectorIdentityPath(), "utf8")).not.toContain("approval-code");
 
     await expect(completePaperclipCloudConnectorEnrollment({
@@ -113,6 +204,41 @@ describe("Paperclip Cloud self-host enrollment", () => {
       request: vi.fn() as typeof fetch,
     })).rejects.toThrow(/requires HTTPS/);
     expect(paperclipCloudConnectorEnrollmentStatus().status).toBe("not_configured");
+  });
+
+  it("fails closed when the secrets directory is a Windows reparse point", async () => {
+    if (process.platform !== "win32") return;
+    const secretsDirectory = path.dirname(paperclipCloudConnectorIdentityPath());
+    const instanceRoot = path.dirname(secretsDirectory);
+    const reparseTarget = path.join(root, "reparse-target");
+    mkdirSync(path.dirname(instanceRoot), { recursive: true });
+    mkdirSync(instanceRoot);
+    mkdirSync(reparseTarget);
+    try {
+      symlinkSync(reparseTarget, secretsDirectory, "junction");
+    } catch (error) {
+      if (typeof error === "object" && error !== null && "code" in error && error.code === "EPERM") return;
+      throw error;
+    }
+    const managedEnv = {
+      PAPERCLIP_CLOUD_CONNECTOR_INSTANCE_ID: "managed-instance",
+      PAPERCLIP_CLOUD_CONNECTOR_SIGN_PRIVATE_KEY: "managed-signing-key",
+      PAPERCLIP_CLOUD_CONNECTOR_SEAL_PRIVATE_KEY: "managed-sealing-key",
+      PAPERCLIP_CLOUD_CONNECTOR_ENVIRONMENT: "production",
+    };
+    expect(paperclipCloudConnectorEnrollmentStatus(managedEnv)).toMatchObject({
+      configured: true,
+      status: "active",
+      instanceId: "managed-instance",
+    });
+    expect(paperclipCloudConnectorConfigFromEnv(managedEnv)).toMatchObject({
+      instanceId: "managed-instance",
+      environment: "production",
+    });
+    await expect(startPaperclipCloudConnectorEnrollment({
+      origin: "https://private.example.test",
+      request: vi.fn() as typeof fetch,
+    })).rejects.toThrow(/identity storage could not be secured/);
   });
 
   it.each([

@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import {
   createHash,
   createPrivateKey,
@@ -16,6 +17,79 @@ import { runtimePublicOrigin } from "./cloud-runtime-identity.js";
 const IDENTITY_VERSION = 1;
 const ENROLLMENT_FILE = "paperclip-cloud-connector.json";
 const REQUEST_TYPE = "paperclip-cloud-connector-request+jwt";
+const WINDOWS_ACL_TARGETS_ENV = "PAPERCLIP_CLOUD_CONNECTOR_ACL_TARGETS";
+
+// Windows PowerShell does not permit arguments after -EncodedCommand. Targets are
+// supplied through a child-only environment variable, never interpolated into command
+// text or emitted by the command.
+const WINDOWS_PRIVATE_PATH_ACL_SCRIPT = String.raw`
+$ErrorActionPreference = 'Stop'
+$targets = @((ConvertFrom-Json -InputObject $env:PAPERCLIP_CLOUD_CONNECTOR_ACL_TARGETS).targets)
+if ($targets.Count -eq 0) { exit 10 }
+$sections = [System.Security.AccessControl.AccessControlSections]::Access -bor [System.Security.AccessControl.AccessControlSections]::Owner
+$currentSid = [System.Security.Principal.WindowsIdentity]::GetCurrent().User
+if ($null -eq $currentSid) { exit 13 }
+$readData = [System.Security.AccessControl.FileSystemRights]::ReadData
+foreach ($entry in $targets) {
+  $target = [string]$entry.path
+  $kind = [string]$entry.kind
+  $created = [bool]$entry.created
+  if ([string]::IsNullOrWhiteSpace($target)) { exit 11 }
+  $item = Get-Item -LiteralPath $target -Force
+  if (($item.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0) { exit 12 }
+  $isDirectory = [bool]$item.PSIsContainer
+  if (($kind -eq 'directory') -ne $isDirectory) { exit 14 }
+  $acl = if ($isDirectory) {
+    [System.IO.Directory]::GetAccessControl($target, $sections)
+  } else {
+    [System.IO.File]::GetAccessControl($target, $sections)
+  }
+  if ($acl.GetOwner([System.Security.Principal.SecurityIdentifier]).Value -ne $currentSid.Value) {
+    if (-not $created) { exit 15 }
+    $acl.SetOwner($currentSid)
+  }
+  $acl.SetAccessRuleProtection($true, $false)
+  foreach ($rule in @($acl.Access)) {
+    $acl.RemoveAccessRuleSpecific($rule)
+  }
+  $inheritance = if ($isDirectory) {
+    [System.Security.AccessControl.InheritanceFlags]::ContainerInherit -bor [System.Security.AccessControl.InheritanceFlags]::ObjectInherit
+  } else {
+    [System.Security.AccessControl.InheritanceFlags]::None
+  }
+  $rule = [System.Security.AccessControl.FileSystemAccessRule]::new(
+    $currentSid,
+    [System.Security.AccessControl.FileSystemRights]::FullControl,
+    $inheritance,
+    [System.Security.AccessControl.PropagationFlags]::None,
+    [System.Security.AccessControl.AccessControlType]::Allow
+  )
+  $acl.AddAccessRule($rule)
+  if ($isDirectory) {
+    [System.IO.Directory]::SetAccessControl($target, $acl)
+  } else {
+    [System.IO.File]::SetAccessControl($target, $acl)
+  }
+  $verified = if ($isDirectory) {
+    [System.IO.Directory]::GetAccessControl($target, $sections)
+  } else {
+    [System.IO.File]::GetAccessControl($target, $sections)
+  }
+  if (-not $verified.AreAccessRulesProtected) { exit 16 }
+  if ($verified.GetOwner([System.Security.Principal.SecurityIdentifier]).Value -ne $currentSid.Value) { exit 17 }
+  $hasCurrentReader = $false
+  foreach ($rule in @($verified.GetAccessRules($true, $true, [System.Security.Principal.SecurityIdentifier]))) {
+    if ($rule.IdentityReference.Value -ne $currentSid.Value) { exit 18 }
+    if ($rule.AccessControlType -eq [System.Security.AccessControl.AccessControlType]::Allow -and ($rule.FileSystemRights -band $readData) -ne 0) {
+      $hasCurrentReader = $true
+    }
+  }
+  if (-not $hasCurrentReader) { exit 19 }
+}
+`;
+const WINDOWS_PRIVATE_PATH_ACL_SCRIPT_BASE64 = Buffer
+  .from(WINDOWS_PRIVATE_PATH_ACL_SCRIPT, "utf16le")
+  .toString("base64");
 
 export type LocalConnectorEnvironment = "development" | "staging" | "production";
 
@@ -62,6 +136,7 @@ export function paperclipCloudConnectorIdentityPath(): string {
 export function loadPaperclipCloudConnectorIdentity(): PaperclipCloudConnectorIdentity | null {
   const filePath = paperclipCloudConnectorIdentityPath();
   if (!existsSync(filePath)) return null;
+  secureExistingIdentityPaths(filePath);
   try {
     const parsed = JSON.parse(readFileSync(filePath, "utf8")) as unknown;
     return parseIdentity(parsed);
@@ -73,7 +148,6 @@ export function loadPaperclipCloudConnectorIdentity(): PaperclipCloudConnectorId
 export function paperclipCloudConnectorEnrollmentStatus(
   env: NodeJS.ProcessEnv = process.env,
 ): PaperclipCloudConnectorEnrollmentStatus {
-  const identity = loadPaperclipCloudConnectorIdentity();
   const managedInstanceId = env.PAPERCLIP_CLOUD_CONNECTOR_INSTANCE_ID?.trim();
   const managedSignPrivateKey = env.PAPERCLIP_CLOUD_CONNECTOR_SIGN_PRIVATE_KEY?.trim();
   const managedSealPrivateKey = env.PAPERCLIP_CLOUD_CONNECTOR_SEAL_PRIVATE_KEY?.trim();
@@ -102,6 +176,7 @@ export function paperclipCloudConnectorEnrollmentStatus(
       origins: publicOrigin ? [publicOrigin] : [],
     };
   }
+  const identity = loadPaperclipCloudConnectorIdentity();
   const { brokerBaseUrl, environment } = connectorTarget(env, identity);
   if (!identity) {
     return { configured: false, status: "not_configured", brokerBaseUrl, instanceId: null, environment, origins: [] };
@@ -318,13 +393,61 @@ function createIdentity(env: NodeJS.ProcessEnv): PaperclipCloudConnectorIdentity
 function saveIdentity(identity: PaperclipCloudConnectorIdentity): void {
   const filePath = paperclipCloudConnectorIdentityPath();
   const directory = path.dirname(filePath);
-  mkdirSync(directory, { recursive: true, mode: 0o700 });
+  const instanceRoot = path.dirname(directory);
+  mkdirSync(path.dirname(instanceRoot), { recursive: true });
+  const instanceRootCreated = mkdirSync(instanceRoot, { recursive: true }) === instanceRoot;
+  const directoryCreated = mkdirSync(directory, { recursive: true, mode: 0o700 }) === directory;
   chmodSync(directory, 0o700);
+  secureIdentityPaths(instanceRoot, directory, existsSync(filePath) ? filePath : undefined, {
+    instanceRootCreated,
+    directoryCreated,
+  });
   const temporaryPath = `${filePath}.${process.pid}.${randomUUID()}.tmp`;
   writeFileSync(temporaryPath, `${JSON.stringify(identity, null, 2)}\n`, { encoding: "utf8", mode: 0o600, flag: "wx" });
   chmodSync(temporaryPath, 0o600);
   renameSync(temporaryPath, filePath);
   chmodSync(filePath, 0o600);
+  secureIdentityPaths(instanceRoot, directory, filePath, { instanceRootCreated: false, directoryCreated: false });
+}
+
+function secureExistingIdentityPaths(filePath: string): void {
+  const directory = path.dirname(filePath);
+  secureIdentityPaths(path.dirname(directory), directory, filePath, { instanceRootCreated: false, directoryCreated: false });
+}
+
+function secureIdentityPaths(
+  instanceRoot: string,
+  directory: string,
+  filePath: string | undefined,
+  created: { instanceRootCreated: boolean; directoryCreated: boolean },
+): void {
+  if (process.platform !== "win32") return;
+  try {
+    execFileSync("powershell.exe", [
+      "-NoLogo",
+      "-NoProfile",
+      "-NonInteractive",
+      "-ExecutionPolicy",
+      "Bypass",
+      "-EncodedCommand",
+      WINDOWS_PRIVATE_PATH_ACL_SCRIPT_BASE64,
+    ], {
+      env: {
+        ...process.env,
+        [WINDOWS_ACL_TARGETS_ENV]: JSON.stringify({
+          targets: [
+            { path: instanceRoot, kind: "directory", created: created.instanceRootCreated },
+            { path: directory, kind: "directory", created: created.directoryCreated },
+            ...(filePath ? [{ path: filePath, kind: "file", created: false }] : []),
+          ],
+        }),
+      },
+      stdio: "ignore",
+      windowsHide: true,
+    });
+  } catch {
+    throw new Error("Paperclip Cloud connector identity storage could not be secured");
+  }
 }
 
 function parseIdentity(value: unknown): PaperclipCloudConnectorIdentity {

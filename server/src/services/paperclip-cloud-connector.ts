@@ -195,7 +195,6 @@ export class PaperclipCloudConnectorError extends Error {
 export function paperclipCloudConnectorConfigFromEnv(
   env: NodeJS.ProcessEnv = process.env,
 ): PaperclipCloudConnectorConfig | null {
-  const localIdentity = loadPaperclipCloudConnectorIdentity();
   const legacyConfigured = [
     env.PAPERCLIP_ID_CONNECTOR_INSTANCE_ID,
     env.PAPERCLIP_ID_CONNECTOR_SIGN_PRIVATE_KEY,
@@ -209,6 +208,7 @@ export function paperclipCloudConnectorConfigFromEnv(
   const managedEnvironment = env.PAPERCLIP_CLOUD_CONNECTOR_ENVIRONMENT?.trim();
   const hasManagedIdentityOverride = [managedInstanceId, managedSignPrivateKey, managedSealPrivateKey]
     .some(Boolean);
+  const localIdentity = hasManagedIdentityOverride ? null : loadPaperclipCloudConnectorIdentity();
   const localStatus = hasManagedIdentityOverride ? null : paperclipCloudConnectorEnrollmentStatus(env);
   const hasActiveLocalIdentity = localIdentity?.status === "active" && localStatus?.configured === true;
   if (!hasManagedIdentityOverride && !hasActiveLocalIdentity && legacyConfigured) {
