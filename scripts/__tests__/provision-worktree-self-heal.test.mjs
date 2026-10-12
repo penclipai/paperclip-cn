@@ -2,10 +2,14 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import test from "node:test";
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
+import vm from "node:vm";
 
 const script = new URL("../provision-worktree.sh", import.meta.url).pathname;
+const dotenv = createRequire(new URL("../../cli/package.json", import.meta.url))("dotenv");
 const runtimeScript = new URL("../provision-worktree-runtime.sh", import.meta.url).pathname;
 
 // Keep the PATH minimal so the fallback ladder is deterministic: node must be
@@ -714,4 +718,86 @@ test("patch content changes invalidate an otherwise matching install fingerprint
   fs.writeFileSync(path.join(first.worktreeCwd, "patches/dependency.diff"), "changed patch");
   assert.equal(runProvision(baseCwd, options).result.status, 0);
   assert.equal(fs.readFileSync(callsPath, "utf8"), "install\ninstall\n");
+});
+
+
+test("fallback dotenv output round-trips opaque values without JSON backslash escapes", { skip: process.platform === "win32" }, () => {
+  // This fixture runs the actual fallback writer and parses the resulting file
+  // through the installed dotenv implementation. Its payload is host-neutral:
+  // Windows path-shaped values exercise the encoder even when this POSIX harness
+  // cannot create a real Windows filesystem path.
+  const baseCwd = makeBaseWorkspace({ helpExit: 1, initExit: 0 });
+  const windowsPath = String.raw`C:\new\Paperclip Worktrees\alpha`;
+  const protocolUrl = "postgres://user:pass@localhost:5432/paperclip?application_name=worktree";
+  const quotedToken = "quote' and `backtick`";
+  const branchName = "feature with spaces # hash";
+  const { result, worktreeCwd, worktreesHome } = runProvision(baseCwd, {
+    env: {
+      PAPERCLIP_WORKSPACE_BRANCH: branchName,
+    },
+    setupInstance(home) {
+      fs.writeFileSync(path.join(home, "instances", "default", ".env"), [
+        `PAPERCLIP_AGENT_JWT_SECRET='${windowsPath} # opaque'`,
+        `PAPERCLIP_TOOL_ACTION_SIGNING_SECRET='${protocolUrl}'`,
+        `BETTER_AUTH_SECRET="${quotedToken}"`,
+        "",
+      ].join("\n"));
+    },
+  });
+
+  assert.equal(result.status, 0, result.stderr);
+  const parsed = dotenv.parse(fs.readFileSync(path.join(worktreeCwd, ".paperclip", ".env")));
+  assert.equal(parsed.PAPERCLIP_AGENT_JWT_SECRET, `${windowsPath} # opaque`);
+  assert.equal(parsed.PAPERCLIP_TOOL_ACTION_SIGNING_SECRET, protocolUrl);
+  assert.equal(parsed.BETTER_AUTH_SECRET, quotedToken);
+  assert.equal(parsed.PAPERCLIP_HOME, worktreesHome);
+  assert.equal(parsed.PAPERCLIP_CONFIG, path.join(worktreeCwd, ".paperclip", "config.json"));
+  assert.equal(parsed.PAPERCLIP_CONTEXT, path.join(worktreesHome, "context.json"));
+  assert.equal(parsed.PAPERCLIP_WORKTREE_NAME, branchName);
+});
+
+test("fallback dotenv writer fails closed before writing an unrepresentable .env", { skip: process.platform === "win32" }, () => {
+  const baseCwd = makeBaseWorkspace({ helpExit: 1, initExit: 0 });
+  const incompatibleSecret = "both ' and ` with C:\\new";
+  const { result, worktreeCwd } = runProvision(baseCwd, {
+    setupInstance(home) {
+      fs.writeFileSync(path.join(home, "instances", "default", ".env"),
+        `BETTER_AUTH_SECRET="${incompatibleSecret}"\n`);
+    },
+  });
+
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /cannot be represented without dotenv escape changes/);
+  assert.equal(fs.existsSync(path.join(worktreeCwd, ".paperclip", ".env")), false);
+});
+
+
+test("dotenv serializer source round-trips portable values on every host", () => {
+  // Keep a minimal Windows-executable regression beside the POSIX script run.
+  // It evaluates the serializer extracted from the production heredoc, so this
+  // assertion cannot drift into a mirrored implementation.
+  const provisionScript = fileURLToPath(new URL("../provision-worktree.sh", import.meta.url));
+  const source = fs.readFileSync(provisionScript, "utf8");
+  const start = source.indexOf("function serializeDotenvValue(value) {");
+  const end = source.indexOf("async function findAvailablePort", start);
+  assert.ok(start >= 0 && end > start, "expected fallback dotenv serializer in provision script");
+  const serializeDotenvValue = vm.runInNewContext(`${source.slice(start, end)}; serializeDotenvValue`);
+  const values = {
+    windows_path: String.raw`C:\new\Paperclip Worktrees\alpha`,
+    posix_path: "/var/lib/paperclip/instances/alpha/config.json",
+    url: "postgres://user:pass@localhost:5432/paperclip?application_name=worktree",
+    hash_and_spaces: "token # with spaces",
+    quotes_and_backtick: "quote' and `backtick`",
+    double_quote: 'say "hello"',
+    literal_backslash_n: String.raw`C:\new\runtime`,
+  };
+  for (const [name, value] of Object.entries(values)) {
+    assert.equal(dotenv.parse(`VALUE=${serializeDotenvValue(value)}\n`).VALUE, value, name);
+  }
+  for (const value of ["line\nbreak", "line\rbreak", "both ' and ` with C:\\new"]) {
+    assert.throws(
+      () => serializeDotenvValue(value),
+      /cannot be represented without dotenv escape changes|cannot contain line breaks/,
+    );
+  }
 });

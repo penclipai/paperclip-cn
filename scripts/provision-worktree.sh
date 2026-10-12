@@ -252,7 +252,8 @@ function parseEnvFile(contents) {
     const value = rawValue.trim();
     if (
       (value.startsWith("\"") && value.endsWith("\"")) ||
-      (value.startsWith("'") && value.endsWith("'"))
+      (value.startsWith("'") && value.endsWith("'")) ||
+      (value.startsWith("`") && value.endsWith("`"))
     ) {
       entries[key] = value.slice(1, -1);
       continue;
@@ -442,7 +443,8 @@ function parseEnvFile(contents) {
     }
     if (
       (value.startsWith("\"") && value.endsWith("\"")) ||
-      (value.startsWith("'") && value.endsWith("'"))
+      (value.startsWith("'") && value.endsWith("'")) ||
+      (value.startsWith("`") && value.endsWith("`"))
     ) {
       entries[key] = value.slice(1, -1);
       continue;
@@ -450,6 +452,25 @@ function parseEnvFile(contents) {
     entries[key] = value.replace(/\s+#.*$/, "").trim();
   }
   return entries;
+}
+
+function serializeDotenvValue(value) {
+  if (/\r|\n/.test(value)) {
+    throw new Error("Worktree .env values cannot contain line breaks");
+  }
+  // dotenv preserves the contents of a matching quote pair verbatim except
+  // double-quoted \n and \r. Pick an unused delimiter instead of JSON escaping:
+  // Windows separators, #, spaces, URLs, and propagated secrets stay exact.
+  for (const quote of ["'", "`"]) {
+    if (!value.includes(quote)) return `${quote}${value}${quote}`;
+  }
+  if (!value.includes("\"") && !/\\[nr]/.test(value)) {
+    return `"${value}"`;
+  }
+  // A single-line value containing both safe delimiters and a literal \n or
+  // \r cannot use dotenv's double quotes without changing bytes. Reject it
+  // rather than write a plausible but corrupted worktree .env value.
+  throw new Error("Worktree .env value cannot be represented without dotenv escape changes");
 }
 
 async function findAvailablePort(preferredPort, reserved = new Set()) {
@@ -625,12 +646,12 @@ async function main() {
   }
 
   const envLines = [
-    "PAPERCLIP_HOME=" + JSON.stringify(worktreeHome),
-    "PAPERCLIP_INSTANCE_ID=" + JSON.stringify(instanceId),
-    "PAPERCLIP_CONFIG=" + JSON.stringify(configPath),
-    "PAPERCLIP_CONTEXT=" + JSON.stringify(path.resolve(worktreeHome, "context.json")),
+    "PAPERCLIP_HOME=" + serializeDotenvValue(worktreeHome),
+    "PAPERCLIP_INSTANCE_ID=" + serializeDotenvValue(instanceId),
+    "PAPERCLIP_CONFIG=" + serializeDotenvValue(configPath),
+    "PAPERCLIP_CONTEXT=" + serializeDotenvValue(path.resolve(worktreeHome, "context.json")),
     "PAPERCLIP_IN_WORKTREE=true",
-    "PAPERCLIP_WORKTREE_NAME=" + JSON.stringify(worktreeName),
+    "PAPERCLIP_WORKTREE_NAME=" + serializeDotenvValue(worktreeName),
   ];
 
   // Secrets that must be carried over from the source instance so the worktree's
@@ -646,7 +667,7 @@ async function main() {
   for (const key of propagatedSecretKeys) {
     const value = nonEmpty(sourceEnvEntries[key]);
     if (value) {
-      envLines.push(key + "=" + JSON.stringify(value));
+      envLines.push(key + "=" + serializeDotenvValue(value));
     }
   }
 
@@ -667,7 +688,7 @@ if [[ -n "$source_config_path" ]]; then
     if [[ -e "$worktree_config_path" || -e "$worktree_env_path" ]]; then
       echo "Existing isolated Paperclip worktree config is stale for this host; regenerating." >&2
     fi
-    if paperclipai_command_available; then
+    if penclip_command_available; then
       if run_isolated_worktree_init; then
         :
       else
