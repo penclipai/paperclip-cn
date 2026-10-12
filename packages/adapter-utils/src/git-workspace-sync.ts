@@ -603,6 +603,14 @@ export async function withShallowGitWorkspaceClone<T>(
       timeout: 10_000,
       maxBuffer: 64 * 1024,
     });
+    if (process.platform === "win32") {
+      // This is a fresh, controlled temporary clone. Its local config does not
+      // inherit the source repository's long-path setting before checkout.
+      await runLocalGit(cloneDir, ["config", "core.longpaths", "true"], {
+        timeout: 10_000,
+        maxBuffer: 64 * 1024,
+      });
+    }
     if (originUrl) {
       // The clone is what lands in the sandbox. Without `origin`, the branch
       // there reads as an unpublishable root snapshot even though its head is a

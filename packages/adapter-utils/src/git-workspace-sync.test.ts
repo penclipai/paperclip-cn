@@ -269,6 +269,28 @@ describe("git workspace sync", () => {
     });
   });
 
+  it.skipIf(process.platform !== "win32")("checks out long paths in the controlled temporary clone", async () => {
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-git-long-clone-"));
+    cleanupDirs.push(rootDir);
+    const repo = await createRepo(rootDir);
+    await git(repo, ["config", "--unset", "core.longpaths"]);
+    const segments = Array.from({ length: 3 }, () => "nested-".repeat(30));
+    const relativeFile = path.join(...segments, "payload.txt");
+    await mkdir(path.dirname(path.join(repo, relativeFile)), { recursive: true });
+    await writeFile(path.join(repo, relativeFile), "long clone payload", "utf8");
+    await git(repo, ["-c", "core.longpaths=true", "add", "--", relativeFile]);
+    await git(repo, ["-c", "core.longpaths=true", "commit", "-m", "long clone path"]);
+    const snapshot = await readGitWorkspaceSnapshot(repo);
+    expect(snapshot).not.toBeNull();
+    const sourceConfig = await readFile(path.join(repo, ".git", "config"));
+
+    await withShallowGitWorkspaceClone({ localDir: repo, snapshot: snapshot! }, async (cloneDir) => {
+      await expect(readFile(path.join(cloneDir, relativeFile), "utf8")).resolves.toBe("long clone payload");
+      expect(await git(cloneDir, ["config", "--get", "core.longpaths"])).toBe("true");
+    });
+    await expect(readFile(path.join(repo, ".git", "config"))).resolves.toEqual(sourceConfig);
+  });
+
   it.skipIf(process.platform === "win32")("preserves nested repository symlinks after the temporary clone is removed", async () => {
     const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-git-nested-links-"));
     cleanupDirs.push(rootDir);
