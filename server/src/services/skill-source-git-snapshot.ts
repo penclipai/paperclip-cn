@@ -27,6 +27,10 @@ const MAX_CACHED_SNAPSHOTS = 4;
 const snapshots = new Map<string, { directory: string; commitSha: string; entries: GitSkillTreeEntry[]; users: number; expires: number; timer?: NodeJS.Timeout }>();
 let activeDownloads = 0;
 
+// Git for Windows rejects Node's extended null-device path in Git config.
+// Its own `NUL` spelling keeps system/global config and hooks disabled.
+const gitNullDevice = process.platform === 'win32' ? 'NUL' : os.devNull;
+
 /** Only structured numeric progress crosses the process boundary; never forward stderr. */
 export function parseGitDownloadProgress(line: string): NonNullable<SkillSourceScanProgress['download']> | null {
   const match = /(?:^|\s)(Receiving objects|Resolving deltas):\s+(\d{1,3})%[^\r\n]*/.exec(line);
@@ -52,8 +56,8 @@ function gitEnvironment(token: string) {
   return {
     PATH: process.env.PATH, SystemRoot: process.env.SystemRoot, TMPDIR: process.env.TMPDIR,
     ...authorization,
-    LANG: 'C', LC_ALL: 'C', GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_SYSTEM: os.devNull,
-    GIT_CONFIG_GLOBAL: os.devNull, GIT_ASKPASS: '', SSH_ASKPASS: '', GIT_NO_REPLACE_OBJECTS: '1',
+    LANG: 'C', LC_ALL: 'C', GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_SYSTEM: gitNullDevice,
+    GIT_CONFIG_GLOBAL: gitNullDevice, GIT_ASKPASS: '', SSH_ASKPASS: '', GIT_NO_REPLACE_OBJECTS: '1',
   };
 }
 
@@ -72,7 +76,7 @@ async function directoryBytes(directory: string): Promise<number> {
 async function runGit(directory: string, args: string[], token: string, options: GitSkillSnapshotOptions & { download?: boolean; maxOutput?: number } = {}): Promise<Buffer> {
   options.signal?.throwIfAborted();
   return new Promise((resolve, reject) => {
-    const child = spawn('git', ['-c', `core.hooksPath=${os.devNull}`, '-c', 'init.templateDir=', '-c', 'protocol.allow=never',
+    const child = spawn('git', ['-c', `core.hooksPath=${gitNullDevice}`, '-c', 'init.templateDir=', '-c', 'protocol.allow=never',
       '-c', 'protocol.https.allow=always', '-c', 'http.followRedirects=false', '-c', 'gc.auto=0', '-c', 'maintenance.auto=false', ...args],
     { cwd: directory, env: gitEnvironment(token), stdio: ['ignore', 'pipe', 'pipe'], detached: process.platform !== 'win32' });
     const chunks: Buffer[] = [];
