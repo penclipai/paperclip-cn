@@ -43,8 +43,9 @@ async function swipeToLastOption(page: Page, picker: Locator, list = picker.getB
       const distance = Math.min(180, bounds.height - 40);
       await session.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x, y }] });
       for (let step = 1; step <= 12; step += 1) {
+        // Decelerate before lifting to keep a fling from consuming the next tap.
         await session.send("Input.dispatchTouchEvent", {
-          type: "touchMove", touchPoints: [{ x, y: y - distance * step / 12 }],
+          type: "touchMove", touchPoints: [{ x, y: y - distance * (1 - (1 - step / 12) ** 3) }],
         });
         // Pace native finger movement across compositor frames.
         await page.waitForTimeout(20);
