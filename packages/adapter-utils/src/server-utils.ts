@@ -3814,7 +3814,7 @@ const LEGACY_BUNDLED_PAPERCLIP_SKILL_KEY_PREFIXES = [
   "penclipai/paperclip/",
 ] as const;
 
-function canonicalizeBundledPaperclipSkillKey(value: string): string {
+export function canonicalizeBundledPaperclipSkillKey(value: string): string {
   const normalized = value.trim().toLowerCase();
   for (const prefix of LEGACY_BUNDLED_PAPERCLIP_SKILL_KEY_PREFIXES) {
     if (normalized.startsWith(prefix)) {

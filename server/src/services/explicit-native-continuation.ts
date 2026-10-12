@@ -255,6 +255,12 @@ export async function admitExplicitNativeContinuation(input: {
     } else {
       if (leases.some(lease => !lease.releasedAt || lease.cleanupStatus === "failed")) return blocked("local_cleanup", "Waiting for the previous environment to finish cleanup. Your message will start automatically.");
       if (!unusedAdmission && !cancelledStartup) {
+        // Windows signal-0 proves only that one PID is absent, not that
+        // the native process tree retired. Preserve its identity fence.
+        if (process.platform === "win32" && run.runtimeMode === "native" &&
+            (run.processPid || run.processGroupId)) {
+          return blocked("process_running", "Waiting for the previous process to stop. Your message will start automatically.");
+        }
         // A missing process identity is not evidence that a provider exited.
         if (!run.processPid && !run.processGroupId &&
             !await hasNativeLocalProcessStop(db, companyId, run.id) &&

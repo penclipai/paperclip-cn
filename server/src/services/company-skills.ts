@@ -1906,7 +1906,7 @@ function serializeVersionFileInventory(
     kind: entry.kind,
     content: entry.content,
     ...(entry.encoding ? { encoding: entry.encoding } : {}),
-    ...(entry.executable ? { executable: true } : {}),
+    ...(typeof entry.executable === "boolean" ? { executable: entry.executable } : {}),
   }));
 }
 
@@ -1934,7 +1934,7 @@ function toCompanySkillVersion(row: CompanySkillVersionRow): CompanySkillVersion
           kind: (String(entry.kind ?? "other") as CompanySkillFileInventoryEntry["kind"]),
           content: String(entry.content ?? ""),
           ...(entry.encoding === "base64" ? { encoding: "base64" as const } : {}),
-          ...(entry.executable === true ? { executable: true } : {}),
+          ...(typeof entry.executable === "boolean" ? { executable: entry.executable } : {}),
         }];
       })
       : [],
@@ -3616,7 +3616,7 @@ export function companySkillService(db: Db) {
         kind: detail.kind,
         content: detail.content,
         ...(detail.encoding ? { encoding: detail.encoding } : {}),
-        ...(detail.executable ? { executable: true } : {}),
+        ...(typeof detail.executable === "boolean" ? { executable: detail.executable } : {}),
       });
     }
     return out;

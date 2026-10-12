@@ -80,6 +80,7 @@ import {
   isForbiddenConfigEnvKey,
   normalizePaperclipRunnerAdapterConfig,
   PAPERCLIP_OPERATIONAL_SKILL_KEY,
+  canonicalizeBundledPaperclipSkillKey,
   parseObject,
   resolvePaperclipInstanceRootForAdapter,
   readPaperclipSkillSyncPreference,
@@ -2815,7 +2816,7 @@ export function agentRoutes(
       mode,
     ).filter(
       (entry) => !isConnectorSkill(entry.key) && (adapterType !== "paperclip_runner"
-        || entry.key.trim().toLowerCase() !== PAPERCLIP_OPERATIONAL_SKILL_KEY),
+        || canonicalizeBundledPaperclipSkillKey(entry.key) !== PAPERCLIP_OPERATIONAL_SKILL_KEY),
     );
     const desiredSkills = desiredSkillEntries.map((entry) => entry.key);
     const resolvedKeys = new Set([

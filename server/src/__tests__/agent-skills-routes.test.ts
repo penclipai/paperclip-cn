@@ -1204,7 +1204,7 @@ describe("agent skill routes", () => {
           adapterType: "claude_local",
         }),
         expect.objectContaining({
-          "AGENTS.md": "You are an agent in a Paperclip company.\n",
+          "AGENTS.md": await readFile(new URL("../onboarding-assets/default/AGENTS.md", import.meta.url), "utf8"),
         }),
         { entryFile: "AGENTS.md", replaceExisting: false },
       );

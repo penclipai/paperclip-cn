@@ -512,6 +512,14 @@ describeEmbeddedPostgres("issue queued-comment routes", () => {
     await db.update(heartbeatRuns).set({ processPid: 999999999 }).where(eq(heartbeatRuns.id, seeded.runId));
     await heartbeatService(db).resumeQueuedCommentInterrupt(seeded.companyId, seeded.wakeId);
     const [wake] = await db.select().from(agentWakeupRequests).where(eq(agentWakeupRequests.id, seeded.wakeId));
+    if (process.platform === "win32" && runtime === "native") {
+      // An absent direct PID cannot prove retirement of the native process tree.
+      expect(wake.status).toBe("deferred_issue_execution");
+      expect(wake.payload?.executionWait).toMatchObject({ reason: "process_running" });
+      expect(wake.runId).toBe(waiting.runId);
+      expect(await db.select().from(heartbeatRuns)).toHaveLength(2);
+      return;
+    }
     expect(wake.status).toBe("coalesced");
     const [successor] = await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, wake.runId!));
     expect(successor.contextSnapshot).toMatchObject({ ...seeded.context, forceFreshSession: true, previousRunId: seeded.runId });
