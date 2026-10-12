@@ -552,11 +552,10 @@ async function forceKillWindowsProcessTree(pid: number) {
   const taskkillCommand = process.env.SystemRoot
     ? path.join(process.env.SystemRoot, "System32", "taskkill.exe")
     : "taskkill.exe";
-  try {
-    await execFileAsync(taskkillCommand, ["/PID", String(pid), "/T", "/F"], { windowsHide: true });
-  } catch (error) {
-    if (isPidAlive(pid)) throw error;
-  }
+  await execFileAsync(taskkillCommand, ["/PID", String(pid), "/T", "/F"], {
+    windowsHide: true,
+    timeout: 5_000,
+  });
 }
 
 export async function terminateLocalService(
@@ -566,21 +565,26 @@ export async function terminateLocalService(
 ) {
   if (!Number.isInteger(record.pid) || record.pid <= 0) return;
   const isWindows = process.platform === "win32";
-  if (isWindows) {
-    await forceKillWindowsProcessTree(record.pid);
-    return;
-  }
   const signal = opts?.signal ?? "SIGTERM";
   const targetProcessGroup = !isWindows && Boolean(record.processGroupId && record.processGroupId > 0);
 
-  const targetIsGone = async () => {
+  const targetIsGone = async (remainingMs?: number) => {
     const targetAlive = targetProcessGroup
       ? isProcessGroupAlive(record.processGroupId)
       : isPidAlive(record.pid);
     if (targetAlive) return false;
     if (!record.port) return true;
-    const portOwnerPid = await readLocalServicePortOwner(record.port);
+    const portOwnerPid = await readLocalServicePortOwner(
+      record.port,
+      isWindows
+        ? { throwOnError: true, timeoutMs: Math.max(1, remainingMs ?? 1) }
+        : undefined,
+    );
     if (!portOwnerPid) return true;
+    // Once the recorded root has exited, Windows must show no listener for
+    // the recorded port. A replacement listener is not evidence that it is
+    // safe to delete the service state, and it is never terminated here.
+    if (isWindows) return false;
     const ownerProcessId = targetProcessGroup ? record.processGroupId! : record.pid;
     return !(await isLocalServiceProcessOwnedBy(portOwnerPid, ownerProcessId));
   };
@@ -588,11 +592,25 @@ export async function terminateLocalService(
   const waitUntilGone = async (timeoutMs: number) => {
     const deadline = Date.now() + timeoutMs;
     do {
-      if (await targetIsGone()) return true;
-      await delay(100);
+      const remainingMs = deadline - Date.now();
+      if (isWindows && remainingMs <= 0) return false;
+      if (await targetIsGone(Math.max(1, remainingMs))) return true;
+      if (remainingMs <= 0) break;
+      await delay(Math.min(100, remainingMs));
     } while (Date.now() < deadline);
-    return await targetIsGone();
+    if (isWindows) return false;
+    return await targetIsGone(Math.max(1, deadline - Date.now()));
   };
+
+  if (isWindows) {
+    await forceKillWindowsProcessTree(record.pid);
+    // taskkill /T can return while Windows still retires the killed tree's
+    // listener. Do not let callers delete the registry or workspace before
+    // the recorded root and port have no listener.
+    if (await waitUntilGone(opts?.verifyAfterMs ?? 2_000)) return;
+    const listener = record.port ? ` and listener on port ${record.port}` : "";
+    throw new Error(`Failed to terminate local service process ${record.pid}${listener}`);
+  }
 
   try {
     if (targetProcessGroup) {
@@ -624,11 +642,17 @@ export async function terminateLocalService(
   throw new Error(`Failed to terminate local service ${target}${listener}`);
 }
 
-export async function readLocalServicePortOwner(port: number) {
+export async function readLocalServicePortOwner(
+  port: number,
+  opts?: { timeoutMs?: number; throwOnError?: boolean },
+) {
   if (!Number.isInteger(port) || port <= 0) return null;
   try {
     if (process.platform === "win32") {
-      const { stdout } = await execFileAsync("netstat", ["-ano", "-p", "tcp"]);
+      const { stdout } = await execFileAsync("netstat", ["-ano", "-p", "tcp"], {
+        ...(opts?.timeoutMs !== undefined ? { timeout: opts.timeoutMs } : {}),
+        windowsHide: true,
+      });
       for (const line of stdout.split(/\r?\n/)) {
         const columns = line.trim().split(/\s+/);
         if (columns.length < 5 || columns[0]?.toUpperCase() !== "TCP") continue;
@@ -643,13 +667,16 @@ export async function readLocalServicePortOwner(port: number) {
       }
       return null;
     }
-    const { stdout } = await execFileAsync("lsof", ["-nP", `-iTCP:${port}`, "-sTCP:LISTEN", "-t"]);
+    const { stdout } = await execFileAsync("lsof", ["-nP", `-iTCP:${port}`, "-sTCP:LISTEN", "-t"], {
+      ...(opts?.timeoutMs !== undefined ? { timeout: opts.timeoutMs } : {}),
+    });
     const firstPid = stdout
       .split("\n")
       .map((line) => Number.parseInt(line.trim(), 10))
       .find((value) => Number.isInteger(value) && value > 0);
     return firstPid ?? null;
-  } catch {
+  } catch (error) {
+    if (opts?.throwOnError) throw error;
     return null;
   }
 }

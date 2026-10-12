@@ -42,7 +42,7 @@ describe("local service supervision", () => {
     await resetRuntimeServicesForTests({ terminateProcesses: true });
   });
 
-  it("keeps request-logging runtime stdio usable after the supervisor side closes", async () => {
+  it("keeps request-logging runtime stdio usable after the supervisor side closes and waits for a Windows service listener to retire", async () => {
     if (!(await canRunWorkspaceShell())) return;
 
     const workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-service-stdio-"));
@@ -127,8 +127,7 @@ describe("local service supervision", () => {
     }
   }, 15_000);
 
-  it("does not wait for an unrelated process that takes over the service port", async () => {
-    if (process.platform === "win32") return;
+  it("does not terminate an unrelated port owner after the recorded service exits", async () => {
     const unrelatedListener = net.createServer();
     await new Promise<void>((resolve) => unrelatedListener.listen(0, "127.0.0.1", resolve));
     const address = unrelatedListener.address();
@@ -139,19 +138,48 @@ describe("local service supervision", () => {
       stdio: "ignore",
     });
     child.unref();
+    const childExit = process.platform === "win32"
+      ? new Promise<void>((resolve) => child.once("exit", () => resolve()))
+      : null;
 
     try {
-      await terminateLocalService({
+      const target = {
         pid: child.pid!,
         processGroupId: child.pid!,
         port,
-      });
+      };
+      if (process.platform === "win32") {
+        await expect(terminateLocalService(target, { verifyAfterMs: 500 })).rejects.toThrow();
+        let exitTimeout: ReturnType<typeof setTimeout> | undefined;
+        try {
+          await Promise.race([
+            childExit,
+            new Promise<void>((_, reject) => {
+              exitTimeout = setTimeout(() => {
+                reject(new Error("Expected taskkill to terminate the recorded child process"));
+              }, 2_000);
+            }),
+          ]);
+        } finally {
+          clearTimeout(exitTimeout);
+        }
+      } else {
+        await terminateLocalService(target);
+      }
       expect(await readLocalServicePortOwner(port)).toBe(process.pid);
     } finally {
-      try {
-        process.kill(-child.pid!, "SIGKILL");
-      } catch {
-        // The target process group was already terminated.
+      if (process.platform === "win32") {
+        try {
+          process.kill(child.pid!, "SIGKILL");
+        } catch {
+          // The target process was already terminated.
+        }
+      } else {
+        try {
+          process.kill(-child.pid!, "SIGKILL");
+        } catch {
+          // The target process group was already terminated.
+        }
       }
       await new Promise<void>((resolve, reject) => {
         unrelatedListener.close((error) => error ? reject(error) : resolve());
