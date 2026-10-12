@@ -3881,12 +3881,14 @@ describe("buildPaperclipEnv", () => {
 describe("runtime skill assignment boundaries", () => {
   it("preserves an explicitly empty assignment instead of discovering bundled connector skills", async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-skills-empty-"));
+    // Keep module-relative fallbacks inside this fixture instead of host roots.
+    const moduleDir = path.join(root, "module", "a", "b", "c", "d", "e");
     try {
       await fs.mkdir(path.join(root, "agentmail"));
       await fs.writeFile(path.join(root, "agentmail", "SKILL.md"), "---\nname: agentmail\ndescription: Email connector\n---\n");
-      const discovered = await readPaperclipRuntimeSkillEntries({}, root, [root]);
+      const discovered = await readPaperclipRuntimeSkillEntries({}, moduleDir, [root]);
       expect(discovered.some((entry) => entry.runtimeName === "agentmail")).toBe(true);
-      expect(await readPaperclipRuntimeSkillEntries({ paperclipRuntimeSkills: [] }, root, [root])).toEqual([]);
+      expect(await readPaperclipRuntimeSkillEntries({ paperclipRuntimeSkills: [] }, moduleDir, [root])).toEqual([]);
     } finally {
       await fs.rm(root, { recursive: true, force: true });
     }
@@ -3894,12 +3896,13 @@ describe("runtime skill assignment boundaries", () => {
 
   it("preserves bundled and configured required-skill metadata", async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-skills-required-"));
+    const moduleDir = path.join(root, "module", "a", "b", "c", "d", "e");
     try {
       await fs.mkdir(path.join(root, "optional"));
       await fs.mkdir(path.join(root, "required"));
       await fs.writeFile(path.join(root, "optional", "SKILL.md"), "---\nrequired: false\n---\n# Optional\n");
       await fs.writeFile(path.join(root, "required", "SKILL.md"), "# Required\n");
-      const discovered = await readPaperclipRuntimeSkillEntries({}, root, [root]);
+      const discovered = await readPaperclipRuntimeSkillEntries({}, moduleDir, [root]);
       expect(discovered.find((entry) => entry.runtimeName === "optional")).toMatchObject({
         required: false,
         requiredReason: null,

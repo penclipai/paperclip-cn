@@ -118,4 +118,5 @@ describe("stopEmbeddedPostgresBounded", () => {
     await rawStop;
     await Promise.resolve();
     expect(cleanup).toHaveBeenCalledTimes(1);
+  });
 });

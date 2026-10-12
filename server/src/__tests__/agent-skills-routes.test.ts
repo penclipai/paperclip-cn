@@ -1185,6 +1185,7 @@ describe("agent skill routes", () => {
   });
 
   it("materializes minimal default instructions for non-CEO agents with no prompt template", async () => {
+    const defaultInstructions = await readFile(new URL("../onboarding-assets/default/AGENTS.md", import.meta.url), "utf8");
     const res = await requestApp(await createApp(), (baseUrl) => request(baseUrl)
       .post("/api/companies/company-1/agents")
       .send({
@@ -1204,7 +1205,7 @@ describe("agent skill routes", () => {
           adapterType: "claude_local",
         }),
         expect.objectContaining({
-          "AGENTS.md": await readFile(new URL("../onboarding-assets/default/AGENTS.md", import.meta.url), "utf8"),
+          "AGENTS.md": defaultInstructions,
         }),
         { entryFile: "AGENTS.md", replaceExisting: false },
       );
