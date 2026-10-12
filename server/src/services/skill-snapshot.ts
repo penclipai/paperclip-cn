@@ -4,11 +4,11 @@ import type { CompanySkillVersionFileInventoryEntry } from '@penclipai/shared';
 export function skillFileBytes(file: { content: string; encoding?: string }): Buffer {
   return Buffer.from(file.content, file.encoding === 'base64' ? 'base64' : 'utf8');
 }
-export function snapshotFile(path: string, kind: CompanySkillVersionFileInventoryEntry['kind'], bytes: Buffer, executable = false): CompanySkillVersionFileInventoryEntry {
+export function snapshotFile(path: string, kind: CompanySkillVersionFileInventoryEntry['kind'], bytes: Buffer, executable?: boolean): CompanySkillVersionFileInventoryEntry {
   const text = bytes.toString('utf8');
   const binary = bytes.includes(0) || !Buffer.from(text).equals(bytes);
   return { path, kind, content: binary ? bytes.toString('base64') : text,
-    ...(binary ? { encoding: 'base64' as const } : {}), ...(executable ? { executable: true } : {}) };
+    ...(binary ? { encoding: 'base64' as const } : {}), ...(typeof executable === 'boolean' ? { executable } : {}) };
 }
 export function skillSnapshotHash(files: CompanySkillVersionFileInventoryEntry[]) {
   const hash = createHash('sha256');

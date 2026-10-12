@@ -82,6 +82,7 @@ import type {
 import { nativeMcpLaunchBinding } from "../drivers/native-mcp.js";
 import {
   assertNativeRuntimeSkillSealingSupported,
+  preflightIsolatedCodexHome,
   prepareIsolatedCodexHome,
   releaseMaterializedNativeRuntimeSkills,
 } from "../drivers/runtime-context-materializer.js";
@@ -2491,6 +2492,15 @@ async function settleRetainedRunnerdSessionOwned(
     if (Date.now() >= deadline) throw maintenanceDenied();
   };
   await authorize();
+  const isolatedCodexHomePreflight = await bounded(
+    preflightIsolatedCodexHome({
+      sourceCodexHome:
+        input.sourceCodexHome ?? resolveSourceCodexHome(input.environment),
+      apiKey:
+        input.environment?.CODEX_API_KEY ?? input.environment?.OPENAI_API_KEY,
+    }),
+  );
+  await authorize();
   await bounded(
     releaseMaterializedNativeRuntimeSkills(resolve(codexHome, "skills")),
   );
@@ -2502,6 +2512,7 @@ async function settleRetainedRunnerdSessionOwned(
         input.sourceCodexHome ?? resolveSourceCodexHome(input.environment),
       apiKey:
         input.environment?.CODEX_API_KEY ?? input.environment?.OPENAI_API_KEY,
+      preflight: isolatedCodexHomePreflight,
     }),
   );
   // A previously journaled suspend must be honored before a later drain.
@@ -4673,6 +4684,16 @@ class DurablePrpCodexTransport implements CodexAppServerTransport {
       await this.#resume();
       return this.#openedThreadResponse(params);
     }
+    const provider = this.options.provider ?? "codex";
+    const sourceRuntimeContext = this.options.runtimeContext ?? null;
+    const isolatedCodexHomePreflight = provider === "codex"
+      ? await preflightIsolatedCodexHome({
+          sourceCodexHome:
+            this.options.sourceCodexHome ?? resolveSourceCodexHome(this.options.environment),
+          apiKey:
+            this.options.environment?.CODEX_API_KEY ?? this.options.environment?.OPENAI_API_KEY,
+        })
+      : null;
     const token = randomUUID().replaceAll("-", "");
     const identity = this.options.prpIdentity ?? {
       runnerInstanceId: `runner_lab_${token}`,
@@ -4710,8 +4731,6 @@ class DurablePrpCodexTransport implements CodexAppServerTransport {
         mode: 0o700,
       });
     }
-    const provider = this.options.provider ?? "codex";
-    const sourceRuntimeContext = this.options.runtimeContext ?? null;
     if (provider === "codex") {
       assertNativeRuntimeSkillSealingSupported(sourceRuntimeContext);
     }
@@ -4748,6 +4767,7 @@ class DurablePrpCodexTransport implements CodexAppServerTransport {
         apiKey:
           this.options.environment?.CODEX_API_KEY ??
           this.options.environment?.OPENAI_API_KEY,
+        preflight: isolatedCodexHomePreflight ?? undefined,
         nativeMcp: nativeMcpLaunchBinding(this.options.environment),
       });
     }
@@ -5370,6 +5390,14 @@ class DurablePrpCodexTransport implements CodexAppServerTransport {
     this.#eventIdentity = structuredClone(identity);
     const provider = this.options.provider ?? "codex";
     const sourceRuntimeContext = this.options.runtimeContext ?? null;
+    const isolatedCodexHomePreflight = provider === "codex"
+      ? await preflightIsolatedCodexHome({
+          sourceCodexHome:
+            this.options.sourceCodexHome ?? resolveSourceCodexHome(this.options.environment),
+          apiKey:
+            this.options.environment?.CODEX_API_KEY ?? this.options.environment?.OPENAI_API_KEY,
+        })
+      : null;
     const runtimeContext =
       this.options.runnerRuntimeContext ?? sourceRuntimeContext;
     const localRuntimeContextPath = resolve(this.#root, "runtime-context.json");
@@ -5652,6 +5680,7 @@ class DurablePrpCodexTransport implements CodexAppServerTransport {
         apiKey:
           this.options.environment?.CODEX_API_KEY ??
           this.options.environment?.OPENAI_API_KEY,
+        preflight: isolatedCodexHomePreflight ?? undefined,
         nativeMcp: nativeMcpLaunchBinding(this.options.environment),
       });
     }

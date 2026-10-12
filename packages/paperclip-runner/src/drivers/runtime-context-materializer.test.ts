@@ -10,8 +10,10 @@ import {
   symlink,
   writeFile,
 } from "node:fs/promises";
+import { execFile } from "node:child_process";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
+import { promisify } from "node:util";
 import { afterEach, describe, expect, it } from "vitest";
 
 import {
@@ -27,11 +29,55 @@ import { nativeMcpLaunchBinding } from "./native-mcp.js";
 import {
   assertNativeRuntimeSkillSealingSupported,
   materializeNativeRuntimeSkills,
+  preflightIsolatedCodexHome,
   prepareIsolatedCodexHome,
   releaseMaterializedNativeRuntimeSkills,
 } from "./runtime-context-materializer.js";
 
 const roots: string[] = [];
+const execFileAsync = promisify(execFile);
+const WINDOWS_POWERSHELL_PATH = join(
+  process.env.SystemRoot ?? process.env.SYSTEMROOT ?? "C:\\Windows",
+  "System32",
+  "WindowsPowerShell",
+  "v1.0",
+  "powershell.exe",
+);
+
+async function windowsPrivateAcl(path: string): Promise<{
+  owner: string;
+  protected: boolean;
+  readers: string[];
+  ruleCount: number;
+  fullControl: boolean;
+  current: string;
+}> {
+  const script = String.raw`
+$path = $env:PAPERCLIP_RUNTIME_TEST_ACL_PATH
+$sid = [System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+$sections = [System.Security.AccessControl.AccessControlSections]::Access -bor [System.Security.AccessControl.AccessControlSections]::Owner
+$item = Get-Item -LiteralPath $path -Force
+$acl = if ($item.PSIsContainer) { [System.IO.Directory]::GetAccessControl($path, $sections) } else { [System.IO.File]::GetAccessControl($path, $sections) }
+$rules = @($acl.GetAccessRules($true, $true, [System.Security.Principal.SecurityIdentifier]))
+$readers = @($rules | Where-Object { $_.AccessControlType -eq 'Allow' -and ($_.FileSystemRights -band [System.Security.AccessControl.FileSystemRights]::ReadData) -ne 0 } | ForEach-Object { $_.IdentityReference.Value })
+$fullControl = $rules.Count -eq 1 -and $rules[0].AccessControlType -eq 'Allow' -and (($rules[0].FileSystemRights -band [System.Security.AccessControl.FileSystemRights]::FullControl) -eq [System.Security.AccessControl.FileSystemRights]::FullControl)
+@{ owner = $acl.GetOwner([System.Security.Principal.SecurityIdentifier]).Value; protected = $acl.AreAccessRulesProtected; readers = $readers; ruleCount = $rules.Count; fullControl = $fullControl; current = $sid } | ConvertTo-Json -Compress
+`;
+  const { stdout } = await execFileAsync(WINDOWS_POWERSHELL_PATH, [
+    "-NoLogo", "-NoProfile", "-NonInteractive", "-Command", script,
+  ], {
+    env: { ...process.env, PAPERCLIP_RUNTIME_TEST_ACL_PATH: path },
+    windowsHide: true,
+  });
+  return JSON.parse(stdout) as {
+    owner: string;
+    protected: boolean;
+    readers: string[];
+    ruleCount: number;
+    fullControl: boolean;
+    current: string;
+  };
+}
 
 async function makeWritable(root: string): Promise<void> {
   const info = await lstat(root).catch(() => null);
@@ -553,13 +599,29 @@ command = "untrusted-command"
     await expect(readFile(join(codexHome, "auth.json"), "utf8")).resolves.toBe(
       JSON.stringify({ OPENAI_API_KEY: "fresh-ephemeral-key" }),
     );
-    expect((await stat(join(codexHome, "auth.json"))).mode & 0o777).toBe(0o600);
+    const authPath = join(codexHome, "auth.json");
+    if (process.platform === "win32") {
+      const acl = await windowsPrivateAcl(authPath);
+      expect(acl.protected).toBe(true);
+      expect(acl.owner).toBe(acl.current);
+      expect(acl.readers).toEqual([acl.current]);
+      expect(acl.ruleCount).toBe(1);
+      expect(acl.fullControl).toBe(true);
+      const homeAcl = await windowsPrivateAcl(codexHome);
+      expect(homeAcl.protected).toBe(true);
+      expect(homeAcl.owner).toBe(homeAcl.current);
+      expect(homeAcl.readers).toEqual([homeAcl.current]);
+      expect(homeAcl.ruleCount).toBe(1);
+      expect(homeAcl.fullControl).toBe(true);
+    } else {
+      expect((await stat(authPath)).mode & 0o777).toBe(0o600);
+    }
 
     await prepareIsolatedCodexHome({ context: null, codexHome: emptyCodexHome });
     await expect(stat(join(emptyCodexHome, "auth.json"))).rejects.toThrow();
   });
 
-  it("copies regular host auth but refuses symlinked auth", async () => {
+  it("copies host auth only where source credential ownership is supported", async () => {
     const root = await mkdtemp(join(tmpdir(), "paperclip-runtime-host-auth-"));
     roots.push(root);
     const codexHome = join(root, "codex-home");
@@ -569,23 +631,106 @@ command = "untrusted-command"
     await mkdir(sourceHome);
     await writeFile(join(sourceHome, "auth.json"), "host-auth", { mode: 0o600 });
 
-    await prepareIsolatedCodexHome({
-      context: null,
-      codexHome,
-      sourceCodexHome: sourceHome,
-    });
-    await expect(readFile(join(codexHome, "auth.json"), "utf8")).resolves.toBe(
-      "host-auth",
-    );
+    if (process.platform === "win32") {
+      const sourceBytes = await readFile(join(sourceHome, "auth.json"));
+      await expect(prepareIsolatedCodexHome({
+        context: null,
+        codexHome,
+        sourceCodexHome: sourceHome,
+      })).rejects.toThrow("native_runtime_context_unsupported");
+      expect(await readFile(join(sourceHome, "auth.json"))).toEqual(sourceBytes);
+      await expect(lstat(codexHome)).rejects.toThrow();
+    } else {
+      await prepareIsolatedCodexHome({
+        context: null,
+        codexHome,
+        sourceCodexHome: sourceHome,
+      });
+      await expect(readFile(join(codexHome, "auth.json"), "utf8")).resolves.toBe(
+        "host-auth",
+      );
+    }
 
     await rm(join(sourceHome, "auth.json"));
     await writeFile(secret, "must-not-copy");
     await symlink(secret, join(sourceHome, "auth.json"));
-    await prepareIsolatedCodexHome({
-      context: null,
-      codexHome: symlinkCodexHome,
-      sourceCodexHome: sourceHome,
-    });
+    if (process.platform === "win32") {
+      await expect(prepareIsolatedCodexHome({
+        context: null,
+        codexHome: symlinkCodexHome,
+        sourceCodexHome: sourceHome,
+      })).rejects.toThrow("native_runtime_context_unsupported");
+    } else {
+      await prepareIsolatedCodexHome({
+        context: null,
+        codexHome: symlinkCodexHome,
+        sourceCodexHome: sourceHome,
+      });
+    }
     await expect(stat(join(symlinkCodexHome, "auth.json"))).rejects.toThrow();
+    await expect(readFile(secret, "utf8")).resolves.toBe("must-not-copy");
   });
+
+  (process.platform === "win32" ? it : it.skip)(
+    "keeps value-free managed config while refusing host auth links and unsafe config",
+    async () => {
+      const root = await mkdtemp(join(tmpdir(), "paperclip-runtime-win32-source-"));
+      roots.push(root);
+      const managedSource = join(root, "managed-source");
+      const managedTarget = join(root, "managed-target");
+      const authSource = join(root, "auth-source");
+      const junctionSource = join(root, "junction-source");
+      const unsafeSource = join(root, "unsafe-source");
+      const external = join(root, "external");
+      await Promise.all([mkdir(managedSource), mkdir(authSource), mkdir(unsafeSource), mkdir(external)]);
+      await writeFile(join(managedSource, "config.toml"), `model_provider = "paperclip"
+[model_providers.paperclip]
+name = "Selected connection"
+base_url = "https://paperclip.example/api"
+wire_api = "responses"
+requires_openai_auth = false
+`);
+      await prepareIsolatedCodexHome({ context: null, codexHome: managedTarget, sourceCodexHome: managedSource });
+      await expect(readFile(join(managedTarget, "config.toml"), "utf8")).resolves.toContain('model_provider = "paperclip"');
+
+      await writeFile(join(authSource, "auth.json"), "host-auth");
+      await expect(prepareIsolatedCodexHome({ context: null, codexHome: join(root, "auth-target"), sourceCodexHome: authSource })).rejects.toThrow("native_runtime_context_unsupported");
+      await symlink(authSource, junctionSource, "junction");
+      await expect(prepareIsolatedCodexHome({ context: null, codexHome: join(root, "junction-target"), sourceCodexHome: junctionSource })).rejects.toThrow("native_runtime_context_unsupported");
+
+      await writeFile(join(external, "config.toml"), "host-owned");
+      await symlink(join(external, "config.toml"), join(unsafeSource, "config.toml"));
+      await expect(prepareIsolatedCodexHome({ context: null, codexHome: join(root, "unsafe-target"), sourceCodexHome: unsafeSource })).rejects.toThrow("native_runtime_context_unsupported");
+      await expect(readFile(join(external, "config.toml"), "utf8")).resolves.toBe("host-owned");
+
+      const absentSource = join(root, "absent-source");
+      const absentTarget = join(root, "absent-target");
+      await mkdir(absentSource);
+      await prepareIsolatedCodexHome({ context: null, codexHome: absentTarget, sourceCodexHome: absentSource });
+      await expect(readFile(join(absentTarget, "config.toml"), "utf8")).resolves.toContain("shell_snapshot = false");
+      await expect(lstat(join(absentTarget, "auth.json"))).rejects.toThrow();
+
+      const appearedAuthSource = join(root, "appeared-auth-source");
+      const appearedAuthTarget = join(root, "appeared-auth-target");
+      const appearedSecret = join(root, "appeared-secret.json");
+      await mkdir(appearedAuthSource);
+      const absentPreflight = await preflightIsolatedCodexHome({ sourceCodexHome: appearedAuthSource });
+      await writeFile(appearedSecret, "must-not-read-or-copy");
+      await symlink(appearedSecret, join(appearedAuthSource, "auth.json"));
+      await prepareIsolatedCodexHome({ context: null, codexHome: appearedAuthTarget, sourceCodexHome: appearedAuthSource, preflight: absentPreflight });
+      await expect(lstat(join(appearedAuthTarget, "auth.json"))).rejects.toThrow();
+      await expect(readFile(appearedSecret, "utf8")).resolves.toBe("must-not-read-or-copy");
+
+      const targetExternal = join(root, "target-external");
+      const targetJunction = join(root, "target-junction");
+      await mkdir(targetExternal);
+      await writeFile(join(targetExternal, "sentinel.txt"), "must-not-mutate");
+      await symlink(targetExternal, targetJunction, "junction");
+      await expect(prepareIsolatedCodexHome({ context: null, codexHome: targetJunction, apiKey: "ephemeral" })).rejects.toThrow("native_runtime_context_unsupported");
+      await expect(readFile(join(targetExternal, "sentinel.txt"), "utf8")).resolves.toBe("must-not-mutate");
+      await expect(lstat(join(targetExternal, "config.toml"))).rejects.toThrow();
+      await expect(lstat(join(targetExternal, "auth.json"))).rejects.toThrow();
+      expect((await readdir(targetExternal)).filter((entry) => entry.startsWith(".paperclip-skills-staging-"))).toEqual([]);
+    },
+  );
 });

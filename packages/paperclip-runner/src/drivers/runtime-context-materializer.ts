@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { execFile } from "node:child_process";
 import { constants } from "node:fs";
 import {
   chmod,
@@ -13,10 +14,55 @@ import {
   writeFile,
 } from "node:fs/promises";
 import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
+import { promisify } from "node:util";
 import { parse as parseToml } from "smol-toml";
 
 import type { NativeRuntimeContextSnapshot } from "../contracts/runtime-context.js";
 import type { NativeMcpLaunchBinding } from "./native-mcp.js";
+
+const execFileAsync = promisify(execFile);
+const WINDOWS_PRIVATE_PATH_ACL_TARGETS = "PAPERCLIP_RUNTIME_ACL_TARGETS";
+const WINDOWS_POWERSHELL_PATH = join(
+  process.env.SystemRoot ?? process.env.SYSTEMROOT ?? "C:\\Windows",
+  "System32",
+  "WindowsPowerShell",
+  "v1.0",
+  "powershell.exe",
+);
+const WINDOWS_PRIVATE_PATH_ACL_SCRIPT = String.raw`
+$ErrorActionPreference = 'Stop'
+$targets = @((ConvertFrom-Json -InputObject $env:PAPERCLIP_RUNTIME_ACL_TARGETS).targets)
+if ($targets.Count -eq 0) { exit 10 }
+$sections = [System.Security.AccessControl.AccessControlSections]::Access -bor [System.Security.AccessControl.AccessControlSections]::Owner
+$currentSid = [System.Security.Principal.WindowsIdentity]::GetCurrent().User
+if ($null -eq $currentSid) { exit 11 }
+foreach ($entry in $targets) {
+  $target = [string]$entry.path
+  $kind = [string]$entry.kind
+  $item = Get-Item -LiteralPath $target -Force
+  if (($item.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0) { exit 12 }
+  $isDirectory = [bool]$item.PSIsContainer
+  if (($kind -eq 'directory') -ne $isDirectory) { exit 13 }
+  $acl = if ($isDirectory) { [System.IO.Directory]::GetAccessControl($target, $sections) } else { [System.IO.File]::GetAccessControl($target, $sections) }
+  if ($acl.GetOwner([System.Security.Principal.SecurityIdentifier]).Value -ne $currentSid.Value) { exit 14 }
+  $acl.SetAccessRuleProtection($true, $false)
+  foreach ($rule in @($acl.Access)) { $acl.RemoveAccessRuleSpecific($rule) }
+  $inheritance = if ($isDirectory) { [System.Security.AccessControl.InheritanceFlags]::ContainerInherit -bor [System.Security.AccessControl.InheritanceFlags]::ObjectInherit } else { [System.Security.AccessControl.InheritanceFlags]::None }
+  $acl.AddAccessRule([System.Security.AccessControl.FileSystemAccessRule]::new($currentSid, [System.Security.AccessControl.FileSystemRights]::FullControl, $inheritance, [System.Security.AccessControl.PropagationFlags]::None, [System.Security.AccessControl.AccessControlType]::Allow))
+  if ($isDirectory) { [System.IO.Directory]::SetAccessControl($target, $acl) } else { [System.IO.File]::SetAccessControl($target, $acl) }
+  $verified = if ($isDirectory) { [System.IO.Directory]::GetAccessControl($target, $sections) } else { [System.IO.File]::GetAccessControl($target, $sections) }
+  if (-not $verified.AreAccessRulesProtected -or $verified.GetOwner([System.Security.Principal.SecurityIdentifier]).Value -ne $currentSid.Value) { exit 15 }
+  $verifiedRules = @($verified.GetAccessRules($true, $true, [System.Security.Principal.SecurityIdentifier]))
+  if ($verifiedRules.Count -ne 1) { exit 16 }
+  $verifiedRule = $verifiedRules[0]
+  if ($verifiedRule.IdentityReference.Value -ne $currentSid.Value -or $verifiedRule.AccessControlType -ne [System.Security.AccessControl.AccessControlType]::Allow) { exit 17 }
+  if (($verifiedRule.FileSystemRights -band [System.Security.AccessControl.FileSystemRights]::FullControl) -ne [System.Security.AccessControl.FileSystemRights]::FullControl) { exit 18 }
+}
+`;
+const WINDOWS_PRIVATE_PATH_ACL_SCRIPT_BASE64 = Buffer.from(
+  WINDOWS_PRIVATE_PATH_ACL_SCRIPT,
+  "utf16le",
+).toString("base64");
 
 async function assertSafeTree(root: string, child = ""): Promise<void> {
   const directory = child ? join(root, child) : root;
@@ -303,10 +349,14 @@ export async function materializeNativeRuntimeSkills(
   }
 
   const parent = dirname(skillsHome);
+  if (process.platform === "win32") {
+    await prepareWindowsMaterializationParent(parent);
+  } else {
+    await mkdir(parent, { recursive: true, mode: 0o700 });
+    await chmod(parent, 0o700);
+  }
   const nonce = randomUUID();
   const stagingHome = join(parent, `.paperclip-skills-staging-${nonce}`);
-  await mkdir(parent, { recursive: true, mode: 0o700 });
-  await chmod(parent, 0o700);
   await mkdir(stagingHome, { mode: 0o700 });
   try {
     for (const skill of context?.skills ?? []) {
@@ -335,6 +385,75 @@ export async function materializeNativeRuntimeSkills(
   }
 }
 
+function sameBoundedFileIdentity(
+  left: { dev: bigint; ino: bigint; size: bigint; mtimeNs: bigint },
+  right: { dev: bigint; ino: bigint; size: bigint; mtimeNs: bigint },
+): boolean {
+  return left.dev === right.dev && left.ino === right.ino && left.size === right.size
+    && left.mtimeNs === right.mtimeNs;
+}
+
+async function prepareWindowsMaterializationParent(parent: string): Promise<void> {
+  let stat = await lstat(parent).catch((error: NodeJS.ErrnoException) => {
+    if (error.code === "ENOENT") return null;
+    throw error;
+  });
+  if (!stat) {
+    // The runner creates this one fresh leaf beneath its already trusted runtime
+    // root. Do not recursively create or traverse caller-controlled ancestors.
+    const ancestor = await lstat(dirname(parent));
+    if (ancestor.isSymbolicLink() || !ancestor.isDirectory()) {
+      throw new Error("native_runtime_context_unsupported: isolated Codex home cannot be secured on win32");
+    }
+    await mkdir(parent, { mode: 0o700 });
+    stat = await lstat(parent);
+  }
+  if (stat.isSymbolicLink() || !stat.isDirectory()) {
+    throw new Error("native_runtime_context_unsupported: isolated Codex home cannot be secured on win32");
+  }
+  await secureWindowsPrivatePaths([{ path: parent, kind: "directory" }]);
+}
+
+async function readBoundedSourceConfig(path: string): Promise<Buffer | null> {
+  // The controller selects and trusts the sourceCodexHome parent; this reader
+  // verifies only the final config entry's bounded identity while it is read.
+  const pathBefore = await lstat(path, { bigint: true }).catch(
+    (error: NodeJS.ErrnoException) => {
+      if (error.code === "ENOENT") return null;
+      throw error;
+    },
+  );
+  if (!pathBefore) return null;
+  if (!pathBefore.isFile() || pathBefore.isSymbolicLink() || pathBefore.size > 1024n * 1024n) {
+    throw new Error("native_runtime_context_unsupported: managed Codex config is not a bounded regular file");
+  }
+  const handle = await open(path, constants.O_RDONLY | (constants.O_NOFOLLOW ?? 0));
+  try {
+    const before = await handle.stat({ bigint: true });
+    if (!before.isFile() || before.size > 1024n * 1024n || !sameBoundedFileIdentity(pathBefore, before)) {
+      throw new Error("native_runtime_context_unsupported: managed Codex config changed during read");
+    }
+    const expectedLength = Number(before.size);
+    const bytes = Buffer.allocUnsafe(expectedLength + 1);
+    let offset = 0;
+    while (offset < bytes.length) {
+      const { bytesRead } = await handle.read(bytes, offset, bytes.length - offset, offset);
+      if (bytesRead === 0) break;
+      offset += bytesRead;
+    }
+    const after = await handle.stat({ bigint: true });
+    const pathAfter = await lstat(path, { bigint: true });
+    if (offset !== expectedLength || !sameBoundedFileIdentity(before, after)
+      || !pathAfter.isFile() || pathAfter.isSymbolicLink()
+      || !sameBoundedFileIdentity(before, pathAfter)) {
+      throw new Error("native_runtime_context_unsupported: managed Codex config changed during read");
+    }
+    return bytes.subarray(0, expectedLength);
+  } finally {
+    await handle.close();
+  }
+}
+
 async function readSourceCodexAuth(sourceAuth: string): Promise<Buffer | null> {
   const handle = await open(
     sourceAuth,
@@ -359,7 +478,7 @@ async function readSourceCodexAuth(sourceAuth: string): Promise<Buffer | null> {
 /** Copy only Paperclip's value-free provider projection, never host tools or hooks. */
 async function managedCodexProviderConfig(sourceHome?: string | null): Promise<string> {
   if (!sourceHome?.trim()) return "";
-  const source = await readSourceCodexAuth(join(sourceHome, "config.toml"));
+  const source = await readBoundedSourceConfig(join(sourceHome, "config.toml"));
   if (!source) return "";
   let parsed;
   try { parsed = parseToml(source.toString("utf8")); } catch { return ""; }
@@ -379,19 +498,74 @@ async function managedCodexProviderConfig(sourceHome?: string | null): Promise<s
   return `model_provider = "paperclip"\n[model_providers.paperclip]\nname = "Paperclip connection"\nbase_url = ${JSON.stringify(provider.base_url)}\nwire_api = "responses"\nrequires_openai_auth = false\n${provider.env_key ? 'env_key = "PAPERCLIP_AI_PROVIDER_KEY"\n' : ""}`;
 }
 
+async function assertWindowsHostAuthUnavailable(sourceHome?: string | null): Promise<void> {
+  if (process.platform !== "win32" || !sourceHome?.trim()) return;
+  const authPath = join(sourceHome, "auth.json");
+  const entry = await lstat(authPath).catch((error: NodeJS.ErrnoException) => {
+    if (error.code === "ENOENT") return null;
+    throw error;
+  });
+  if (entry) {
+    throw new Error(
+      "native_runtime_context_unsupported: importing host Codex auth is unsupported on win32",
+    );
+  }
+}
+
+async function secureWindowsPrivatePaths(
+  targets: Array<{ path: string; kind: "directory" | "file" }>,
+): Promise<void> {
+  if (process.platform !== "win32") return;
+  try {
+    await execFileAsync(WINDOWS_POWERSHELL_PATH, [
+      "-NoLogo", "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass",
+      "-EncodedCommand", WINDOWS_PRIVATE_PATH_ACL_SCRIPT_BASE64,
+    ], {
+      env: {
+        ...process.env,
+        [WINDOWS_PRIVATE_PATH_ACL_TARGETS]: JSON.stringify({ targets }),
+      },
+      windowsHide: true,
+      timeout: 5_000,
+      maxBuffer: 1024,
+    });
+  } catch {
+    throw new Error("native_runtime_context_unsupported: isolated Codex home cannot be secured on win32");
+  }
+}
+
+export type IsolatedCodexHomePreflight = {
+  providerConfig: string;
+  apiKey: string | undefined;
+};
+
+export async function preflightIsolatedCodexHome(input: {
+  sourceCodexHome?: string | null;
+  apiKey?: string | null;
+}): Promise<IsolatedCodexHomePreflight> {
+  const providerConfig = await managedCodexProviderConfig(input.sourceCodexHome);
+  const apiKey = input.apiKey?.trim();
+  if (!providerConfig && !apiKey) {
+    await assertWindowsHostAuthUnavailable(input.sourceCodexHome);
+  }
+  return { providerConfig, apiKey };
+}
+
 export async function prepareIsolatedCodexHome(input: {
   context: NativeRuntimeContextSnapshot | null;
   codexHome: string;
   sourceCodexHome?: string | null;
   nativeMcp?: NativeMcpLaunchBinding | null;
   apiKey?: string | null;
+  preflight?: IsolatedCodexHomePreflight;
 }): Promise<void> {
+  const { providerConfig, apiKey } = input.preflight
+    ?? await preflightIsolatedCodexHome(input);
   await materializeNativeRuntimeSkills(
     input.context,
     join(input.codexHome, "skills"),
   );
 
-  const providerConfig = await managedCodexProviderConfig(input.sourceCodexHome);
   const configPath = join(input.codexHome, "config.toml");
   await rm(configPath, { force: true });
   await writeFile(configPath, [
@@ -414,12 +588,12 @@ export async function prepareIsolatedCodexHome(input: {
           "",
         ]
       : []),
-  ].join("\n"), { mode: 0o600 });
+  ].join("\n"), { mode: 0o600, flag: "wx" });
+  await secureWindowsPrivatePaths([{ path: configPath, kind: "file" }]);
 
   const targetAuth = join(input.codexHome, "auth.json");
   await rm(targetAuth, { force: true });
   if (providerConfig) return;
-  const apiKey = input.apiKey?.trim();
   if (apiKey) {
     // The pinned Codex app-server authenticates API-key automation through its
     // login cache rather than the CLI-only CODEX_API_KEY path. Keep this file
@@ -427,16 +601,18 @@ export async function prepareIsolatedCodexHome(input: {
     await writeFile(
       targetAuth,
       JSON.stringify({ OPENAI_API_KEY: apiKey }),
-      { mode: 0o600 },
+      { mode: 0o600, flag: "wx" },
     );
     await chmod(targetAuth, 0o600);
+    await secureWindowsPrivatePaths([{ path: targetAuth, kind: "file" }]);
     return;
   }
 
   const sourceHome = input.sourceCodexHome?.trim();
-  if (!sourceHome) return;
+  if (!sourceHome || process.platform === "win32") return;
   const sourceAuth = await readSourceCodexAuth(join(sourceHome, "auth.json"));
   if (!sourceAuth) return;
-  await writeFile(targetAuth, sourceAuth, { mode: 0o600 });
+  await writeFile(targetAuth, sourceAuth, { mode: 0o600, flag: "wx" });
   await chmod(targetAuth, 0o600);
+  await secureWindowsPrivatePaths([{ path: targetAuth, kind: "file" }]);
 }
