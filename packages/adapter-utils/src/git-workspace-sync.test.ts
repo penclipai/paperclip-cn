@@ -285,8 +285,9 @@ describe("git workspace sync", () => {
     const sourceConfig = await readFile(path.join(repo, ".git", "config"));
 
     await withShallowGitWorkspaceClone({ localDir: repo, snapshot: snapshot! }, async (cloneDir) => {
+      expect(path.join(cloneDir, relativeFile).length).toBeGreaterThan(260);
       await expect(readFile(path.join(cloneDir, relativeFile), "utf8")).resolves.toBe("long clone payload");
-      expect(await git(cloneDir, ["config", "--get", "core.longpaths"])).toBe("true");
+      expect(await git(cloneDir, ["config", "--local", "--get", "core.longpaths"])).toBe("true");
     });
     await expect(readFile(path.join(repo, ".git", "config"))).resolves.toEqual(sourceConfig);
   });
