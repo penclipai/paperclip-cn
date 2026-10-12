@@ -9,8 +9,9 @@ const roots: string[] = [];
 afterEach(async () => { await Promise.all(roots.splice(0).map(root => rm(root, { recursive: true, force: true }))); });
 const root = async () => { const directory = await mkdtemp(join(tmpdir(), "dot-bridge-")); roots.push(directory); return directory; };
 const authorize = async () => {};
+const confinedFileOpensAvailable = process.platform === "linux" || process.platform === "darwin";
 describe("Runner workspace bridge", () => {
-  it("guards new writes, existing content, traversal and symlinks", async () => {
+  it.skipIf(!confinedFileOpensAvailable)("guards new writes, existing content, traversal and symlinks", async () => {
     const directory = await root(), outside = await root();
     const result = await executeWorkspaceTool(directory, "workspace_write", { path: "hello.txt", text: "hello 🌍", expectedSha256: null }, authorize) as any;
     expect(result.byteSize).toBe(Buffer.byteLength("hello 🌍"));
@@ -26,7 +27,7 @@ describe("Runner workspace bridge", () => {
     expect((await readWorkspaceUploadFile(directory, "hello.txt")).toString()).toBe("updated");
     await expect(executeWorkspaceTool(directory, "workspace_read", { path: "outside/private.txt" }, authorize)).rejects.toThrow("symlink");
   });
-  it.each(["workspace", "skill"])("preserves Unicode characters across %s text pages", async mode => {
+  it.skipIf(!confinedFileOpensAvailable).each(["workspace", "skill"])("preserves Unicode characters across %s text pages", async mode => {
     const text = "a".repeat(5999) + "🌍" + "z".repeat(6000) + "🚀";
     const directory = await root();
     await writeFile(join(directory, "unicode.txt"), text);
@@ -49,6 +50,24 @@ describe("Runner workspace bridge", () => {
     }
     expect(combined).toBe(text);
     await expect(read(6000)).rejects.toThrow("offset_splits_character");
+  });
+
+  it.skipIf(confinedFileOpensAvailable)("fails closed when the platform cannot confine file descriptors", async () => {
+    const directory = await root();
+    const file = join(directory, "unwritten.txt");
+    const existing = join(directory, "existing.txt");
+    const bundle = await materializeAsset([{ path: "SKILL.md", content: Buffer.from("pinned"), mode: 0o444 }]);
+    const context = { skills: [{ key: "assigned", runtimeName: "assigned", versionId: "version-1", bundle }] } as any;
+
+    await expect(executeWorkspaceTool(directory, "workspace_write", {
+      path: "unwritten.txt", text: "must not write", expectedSha256: null,
+    }, authorize)).rejects.toThrow("confined file opens");
+    await expect(readFile(file)).rejects.toMatchObject({ code: "ENOENT" });
+    await writeFile(existing, "must not disclose");
+    await expect(executeWorkspaceTool(directory, "workspace_read", {
+      path: "existing.txt",
+    }, authorize)).rejects.toThrow("confined file opens");
+    await expect(readAssignedSkill(context, { skill: "assigned" })).rejects.toThrow("confined file opens");
   });
 
   it("excludes instance state from workspace reads, writes, listings and upload reads", async () => {
@@ -128,7 +147,7 @@ if sys.argv[1] != "completion":
       expect(await readFile(join(directory, "ticks.txt"), "utf8")).toBe(final);
     });
 
-  it("serializes overlapping writes so only one observed hash can commit", async () => {
+  it.skipIf(!confinedFileOpensAvailable)("serializes overlapping writes so only one observed hash can commit", async () => {
     const directory = await root();
     const initial = await executeWorkspaceTool(directory, "workspace_write", { path: "shared.txt", text: "initial", expectedSha256: null }, authorize) as any;
     let entered!: () => void, release!: () => void, authorizations = 0;
@@ -165,7 +184,7 @@ if sys.argv[1] != "completion":
     const large = await executeWorkspaceTool(directory, "workspace_run", { program: "/bin/sh", args: ["-c", "yes x | head -c 50000"] }, authorize) as any;
     expect(large.truncated).toBe(true); expect(Buffer.byteLength(large.output)).toBeLessThanOrEqual(24000);
   });
-  it("reads only a pinned skill file and detects tampering", async () => {
+  it.skipIf(!confinedFileOpensAvailable)("reads only a pinned skill file and detects tampering", async () => {
     const bundle = await materializeAsset([{ path: "SKILL.md", content: Buffer.from("# Assigned skill\nUse the pinned instructions."), mode: 0o444 }]);
     const context = { skills: [{ key: "assigned", runtimeName: "assigned", versionId: "version-1", bundle }] } as any;
     expect(await readAssignedSkill(context, { skill: "assigned" })).toMatchObject({ versionId: "version-1", text: "# Assigned skill\nUse the pinned instructions." });

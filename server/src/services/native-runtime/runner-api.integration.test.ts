@@ -60,7 +60,7 @@ else if(m.id!==undefined) send({id:m.id,result:{}});
 `);
     await chmod(provider, 0o700);
     const bundle = createRunnerdCodexTransport({
-      runnerBinary: defaultCapabilityRunnerdBinary(), codexCommand: provider, codexArgs: [],
+      runnerBinary: defaultCapabilityRunnerdBinary(), codexCommand: process.execPath, codexArgs: [provider],
       stateDirectory: join(server.root, `scripted-runner-${receiptFormat}`), lifecyclePolicy: { mode: "per_turn", idleTimeoutMs: null },
       prpIdentity: { runnerInstanceId: "api-test", environmentLeaseId: "api-test-lease", runId: fixture.runId, normalizedSessionId: "api-test-session", turnId: "api-test-turn", itemId: "api-test-item" },
       controlPlaneRegistration: prp => registerRunnerPrpAuthority({ companyId: fixture.companyId, runId: fixture.runId, authority: prp }),
@@ -498,7 +498,13 @@ else if(m.id!==undefined) send({id:m.id,result:{}});
     await writeFile(outside, "must-not-upload");
     await symlink(outside, join(fixture.workspace, "escape.txt"));
     await expect(upload([{ path: "escape.txt" }])).rejects.toThrow();
-    await expect(upload([{ path: "sample.txt" }])).resolves.toMatchObject({ status: 201 });
+    if (process.platform === "win32") {
+      await expect(upload([{ path: "sample.txt" }])).rejects.toThrow(
+        "Workspace uploads require a platform with confined file opens",
+      );
+    } else {
+      await expect(upload([{ path: "sample.txt" }])).resolves.toMatchObject({ status: 201 });
+    }
     const download = await fixture.authority.execute({ tool: "call_api", callId: "download", arguments: { operationId: "GET /api/assets/{assetId}/content", pathParams: { assetId: fixture.binaryArtifactId } } }) as any;
     expect(download).toMatchObject({ status: 206, byteSize: 32000, artifact: { artifactId: fixture.binaryArtifactId, byteSize: 32000 } });
     expect((await fixture.snapshot()).assets).toEqual(expect.arrayContaining([expect.objectContaining({ id: download.artifact.artifactId, companyId: fixture.companyId, createdByAgentId: fixture.agentId })]));

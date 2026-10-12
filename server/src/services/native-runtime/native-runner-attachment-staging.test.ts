@@ -5,7 +5,10 @@ import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { stageNativeRunnerAttachmentBytes } from "./native-runner-file-handoff.js";
 
-const control = vi.hoisted(() => ({ redirectedPath: null as string | null }));
+const control = vi.hoisted(() => ({
+  redirectedPath: null as string | null,
+  redirectedOpenCount: 0,
+}));
 vi.mock("node:fs/promises", async (original) => {
   const actual = await original<typeof import("node:fs/promises")>();
   return {
@@ -13,8 +16,9 @@ vi.mock("node:fs/promises", async (original) => {
     open: (...args: Parameters<typeof actual.open>) => {
       if (
         control.redirectedPath &&
-        String(args[0]).includes("/.paperclip-inbound/")
+        String(args[0]).split(path.sep).includes(".paperclip-inbound")
       ) {
+        control.redirectedOpenCount += 1;
         return actual.open(control.redirectedPath, constants.O_RDWR);
       }
       return actual.open(...args);
@@ -53,15 +57,22 @@ describe("confined native attachment staging", () => {
     });
     await slot.cleanup();
     control.redirectedPath = outside;
+    control.redirectedOpenCount = 0;
     try {
       await expect(
         stageNativeRunnerAttachmentBytes({
           workspaceRoot,
           body: Buffer.from("new"),
         }),
-      ).rejects.toThrow("path_denied");
+      ).rejects.toThrow(
+        process.platform === "win32"
+          ? "descriptor_unverifiable"
+          : "path_denied",
+      );
+      expect(control.redirectedOpenCount).toBeGreaterThan(0);
     } finally {
       control.redirectedPath = null;
+      control.redirectedOpenCount = 0;
     }
     expect(await readFile(outside, "utf8")).toBe("untouched external bytes");
     expect(

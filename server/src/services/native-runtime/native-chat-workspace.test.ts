@@ -125,7 +125,7 @@ describe("native external chat workspace boundary", () => {
       materializeNativeChatTaskRoot(scopeB),
     ]);
     expect(rootA).not.toBe(rootB);
-    expect(path.relative(rootA, rootB)).toBe(`../${issueB}`);
+    expect(path.relative(rootA, rootB)).toBe(path.join("..", issueB));
     expect(path.relative(legacy, rootA).startsWith("..")).toBe(true);
     expect(await readdir(rootA)).toEqual([]);
     expect(await readdir(rootB)).toEqual([]);
@@ -231,7 +231,9 @@ describe("native external chat workspace boundary", () => {
       cwd: "/task-owned-worktree",
       providerRef: "/task-owned-worktree",
     };
-    expect(nativeChatWorkspaceCwd(scope, workspace, true)).toBe(workspace.cwd);
+    expect(nativeChatWorkspaceCwd(scope, workspace, true)).toBe(
+      path.resolve(workspace.cwd),
+    );
     expect(nativeChatWorkspaceCwd(scope, null, false)).toBeNull();
     for (const override of [
       { sourceIssueId: issueB },
