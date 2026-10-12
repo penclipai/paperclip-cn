@@ -172,7 +172,9 @@ if (!support.supported) console.warn(`Skipping idle sleep Postgres tests: ${supp
     db = createDb(database.connectionString);
   }, 60_000);
   afterEach(async () => { await db.execute(sql`TRUNCATE companies, plugins, environments CASCADE`); });
-  afterAll(async () => { await database?.cleanup(); });
+  // NTFS reclamation for these large clusters takes over 30s after Postgres
+  // exits. Keep complete cleanup within a Windows-specific hook budget.
+  afterAll(async () => { await database?.cleanup(); }, process.platform === "win32" ? 60_000 : 30_000);
 
   const read = () => readIdleSleepSafety(db, owned, () => now, ownerId, emptyLocal);
   async function seed() {

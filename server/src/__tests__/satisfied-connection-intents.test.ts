@@ -27,7 +27,7 @@ describePostgres("already available connection requests", () => {
     await db.insert(authUsers).values({ id: "connection-owner", name: "Owner", email: "owner@example.test", createdAt: new Date(), updatedAt: new Date() });
   }, 20_000);
   beforeEach(async () => { await db.execute(sql`truncate table companies cascade`); });
-  afterAll(async () => { await db.$client.end({ timeout: 1 }); await temp?.cleanup(); });
+  afterAll(async () => { await db.$client.end({ timeout: 1 }); await temp?.cleanup(); }, process.platform === "win32" ? 60_000 : 30_000);
 
   async function seed() {
     const companyId = randomUUID();
