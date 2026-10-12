@@ -115,7 +115,7 @@ describe.skipIf(!support.supported)("heartbeat workspace preparation boundary", 
     const { input, source, issue } = await fixture(true);
     const first = await prepareHeartbeatWorkspace(db, input);
     expect(first.executionWorkspace.cwd).not.toBe(source);
-    expect(await readFile(join(first.executionWorkspace.cwd, "README.md"), "utf8")).toBe("source content\n");
+    expect((await readFile(join(first.executionWorkspace.cwd, "README.md"), "utf8")).replace(/\r\n/g, "\n")).toBe("source content\n");
     expect(await readIssue(issue.id)).toMatchObject({ executionWorkspaceId: first.persistedExecutionWorkspace!.id, executionWorkspacePreference: "reuse_existing" });
     await writeFile(join(first.executionWorkspace.cwd, "retained.txt"), "keep this work");
     await reuse(input, first.persistedExecutionWorkspace!);

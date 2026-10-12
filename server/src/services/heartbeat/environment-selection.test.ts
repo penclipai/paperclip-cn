@@ -130,7 +130,7 @@ describe.skipIf(!support.supported)("heartbeat environment selection boundary", 
     const result = await selectHeartbeatEnvironment(db, input);
     expect(result.nativeChatWorkspaceScope).toMatchObject({ companyId: input.agent.companyId, agentId: input.agent.id, issueId: issue.id, projectId: null });
     expect(result.nativeChatExpectedCwd).toBe(result.nativeChatWorkspaceScope?.taskRoot);
-    expect(result.nativeChatExpectedCwd).toContain(`chat-workspaces/${input.agent.companyId}/${input.agent.id}/${issue.id}`);
+    expect(result.nativeChatExpectedCwd).toContain(join("chat-workspaces", input.agent.companyId, input.agent.id, issue.id));
   });
 
   it("rejects a project chat without a task-owned isolated workspace", async () => {

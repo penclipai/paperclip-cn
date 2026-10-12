@@ -150,7 +150,7 @@ describe("heartbeat workspace module", () => {
     const results = await Promise.all(attempts);
     expect(resolveGitAuth).toHaveBeenCalledTimes(1);
     expect(new Set(results.map(result => result.cwd)).size).toBe(1);
-    expect(await fs.readFile(path.join(results[0]!.cwd, "README.md"), "utf8")).toBe("shared checkout\n");
+    expect((await fs.readFile(path.join(results[0]!.cwd, "README.md"), "utf8")).replace(/\r\n/g, "\n")).toBe("shared checkout\n");
     expect((await runGit("git", ["-C", results[0]!.cwd, "remote", "get-url", "origin"])).stdout.trim()).toBe(repoUrl);
   });
 
@@ -163,8 +163,8 @@ describe("heartbeat workspace module", () => {
       ensureManagedProjectWorkspace({ companyId: "company-one", projectId: "shared-project", repoUrl }),
     ));
     expect(first!.cwd).not.toBe(second!.cwd);
-    expect(await fs.readFile(path.join(first!.cwd, "README.md"), "utf8")).toBe("first repository\n");
-    expect(await fs.readFile(path.join(second!.cwd, "README.md"), "utf8")).toBe("second repository\n");
+    expect((await fs.readFile(path.join(first!.cwd, "README.md"), "utf8")).replace(/\r\n/g, "\n")).toBe("first repository\n");
+    expect((await fs.readFile(path.join(second!.cwd, "README.md"), "utf8")).replace(/\r\n/g, "\n")).toBe("second repository\n");
   });
 
   it("releases a failed checkout attempt so the next caller can retry", async () => {
@@ -176,6 +176,6 @@ describe("heartbeat workspace module", () => {
     await expect(ensureManagedProjectWorkspace(input)).rejects.toThrow("credential lookup failed");
     const result = await legacyEnsureManagedProjectWorkspace(input);
     expect(resolveGitAuth).toHaveBeenCalledTimes(2);
-    expect(await fs.readFile(path.join(result.cwd, "README.md"), "utf8")).toBe("retry succeeded\n");
+    expect((await fs.readFile(path.join(result.cwd, "README.md"), "utf8")).replace(/\r\n/g, "\n")).toBe("retry succeeded\n");
   });
 });
