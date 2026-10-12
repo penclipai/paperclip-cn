@@ -7,6 +7,7 @@ import { afterEach, expect, it } from "vitest";
 import { disposeGitWorkspaceSnapshot, readGitWorkspaceSnapshot, runLocalGit, setExpensiveWorkspaceGitExecutor, type GitWorkspaceSnapshot } from "@penclipai/adapter-utils/git-workspace-sync";
 import { isPathManifest, workspacePaths } from "@penclipai/adapter-utils/workspace-manifest";
 import { prepareSandboxManagedRuntime, type PreparedSandboxManagedRuntime, type SandboxManagedRuntimeClient } from "@penclipai/adapter-utils/sandbox-managed-runtime";
+import { prepareTestPosixShell } from "@penclipai/adapter-utils/test-fixtures/posix-shell";
 import { createWorkspaceGitOperationScheduler } from "./workspace-git-operation-scheduler.js";
 
 const exec = promisify(execFile);
@@ -16,6 +17,10 @@ async function execute(command: string, args: string[], options: ExecFileOptions
     const stderr = String((error as { stderr?: unknown }).stderr ?? "");
     throw new Error(`Fixture command failed: ${String(error)}\n${stderr.slice(-8192)}`, { cause: error });
   }
+}
+async function executeTestPosixShell(command: string, options: ExecFileOptions = {}): Promise<void> {
+  const shell = prepareTestPosixShell({ command: "sh", args: ["-c", command], env: process.env });
+  await execute(shell.command, shell.args, { ...options, env: shell.env });
 }
 const directories: string[] = [];
 const snapshots: GitWorkspaceSnapshot[] = [];
@@ -34,7 +39,7 @@ function localClient(commands: string[]): SandboxManagedRuntimeClient {
     readFile: async (file) => fs.readFile(file),
     listFiles: async (dir) => fs.readdir(dir),
     remove: async (file) => { await fs.rm(file, { recursive: true, force: true }); },
-    run: async (command) => { await execute("sh", ["-c", command]); },
+    run: async (command) => { await executeTestPosixShell(command); },
     syncIn: async (operations) => {
       for (const operation of operations) {
         for (const mapping of operation.files) {
@@ -43,7 +48,7 @@ function localClient(commands: string[]): SandboxManagedRuntimeClient {
         }
         for (const command of operation.postUploadCommands ?? []) {
           commands.push(command.command);
-          await execute("sh", ["-c", command.command], { maxBuffer: 64 * 1024 });
+          await executeTestPosixShell(command.command, { maxBuffer: 64 * 1024 });
         }
       }
       return { operations: [] };
@@ -51,8 +56,9 @@ function localClient(commands: string[]): SandboxManagedRuntimeClient {
   };
 }
 
-// macOS adds per-file process and filesystem overhead to the real deletion lane.
-const realGitTimeoutMs = process.platform === "darwin" ? 300_000 : 180_000;
+// Windows NTFS adds per-file overhead across fixture creation, staging, and four
+// Git scan/deletion passes. This real 32 MiB fixture needs its own bounded budget.
+const realGitTimeoutMs = process.platform === "win32" ? 600_000 : process.platform === "darwin" ? 300_000 : 180_000;
 it("streams and stages all four real Git filename lanes above 32 MiB through the shared scheduler", async () => {
   const root = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), "pc-stream-git-")));
   directories.push(root);
@@ -61,19 +67,38 @@ it("streams and stages all four real Git filename lanes above 32 MiB through the
   const env = { ...process.env, GIT_AUTHOR_NAME: "Test", GIT_COMMITTER_NAME: "Test", GIT_AUTHOR_EMAIL: "test@example.test", GIT_COMMITTER_EMAIL: "test@example.test" };
   const git = (args: string[]) => runLocalGit(repo, args, { env, timeout: 120_000, maxBuffer: 64 * 1024 });
   await git(["init"]);
+  // A host-wide excludes file can contain `*.js`, which would erase every
+  // large fixture record. Pin this real repository to its own empty excludes
+  // file so all four Git lanes observe the fixture rather than host policy.
+  const excludesFile = path.join(root, "fixture-global-excludes");
+  await fs.writeFile(excludesFile, "");
+  await git(["config", "core.excludesFile", excludesFile]);
+  // The 32 MiB lane deliberately uses deep, long paths; Git for Windows
+  // otherwise silently omits them under its default legacy path policy.
+  await git(["config", "core.longpaths", "true"]);
   await git(["commit", "--allow-empty", "-qm", "fixture"]);
-  // Leave room for the fixture/staging root below macOS's 1,024-byte path
-  // limit while keeping each 40,000-name Git lane above the 32 MiB boundary.
-  const parent = path.join(repo, ...Array.from({ length: 3 }, () => "nested-".repeat(30)), "storybook-output");
+  // Windows uses fewer, deeper ASCII parent paths to keep each real Git lane
+  // above 32 MiB; POSIX keeps its original 40,000-file fixture.
+  const fixtureCount = process.platform === "win32" ? 10_503 : 40_000;
+  const fixtureSegments = Array.from(
+    { length: process.platform === "win32" ? 14 : 3 },
+    () => "nested-".repeat(30),
+  );
+  const parent = path.join(repo, ...fixtureSegments, "storybook-output");
   await fs.mkdir(parent, { recursive: true });
   const fileName = (index: number) => `${"asset-".repeat(36)}${index}.js`;
   const writeFiles = async (content: string) => {
-    for (let start = 0; start < 40_000; start += 100) {
-      await Promise.all(Array.from({ length: 100 }, (_, offset) => fs.writeFile(path.join(parent, fileName(start + offset)), content)));
+    for (let start = 0; start < fixtureCount; start += 100) {
+      await Promise.all(Array.from({ length: Math.min(100, fixtureCount - start) }, (_, offset) => fs.writeFile(path.join(parent, fileName(start + offset)), content)));
     }
   };
   await writeFiles("base");
-  const unusual = [" space ", "line\nbreak", "-option", "雪-💾", "wild[?]*"];
+  // Keep every Git lane adversarial on Windows without requesting names the
+  // native filesystem cannot create (newline, `?`, and `*`). The Git-provided
+  // GNU tar stages this Unicode name through the NUL list on Windows.
+  const unusual = process.platform === "win32"
+    ? [" leading-space", "-option", "apostrophe-'s", "snow-雪-💾", "wild[brackets]$dollar", "braces{literal}"]
+    : [" space ", "line\nbreak", "-option", "雪-💾", "wild[?]*"];
   for (const name of unusual) await fs.writeFile(path.join(repo, name), name);
   const scheduler = createWorkspaceGitOperationScheduler({ concurrency: 2, queueCapacity: 8 });
   const bindScheduler = () => setExpensiveWorkspaceGitExecutor((input) => scheduler.run({
@@ -95,8 +120,12 @@ it("streams and stages all four real Git filename lanes above 32 MiB through the
       count++;
       bytes += Buffer.byteLength(relative) + 1;
     }
-    expect(count).toBe(40_000);
-    expect(bytes).toBe(34_988_890);
+    const relativeParent = [...fixtureSegments, "storybook-output"].join("/");
+    const expectedBytes = Array.from({ length: fixtureCount }, (_, index) =>
+      Buffer.byteLength(`${relativeParent}/${fileName(index)}\0`),
+    ).reduce((total, value) => total + value, 0);
+    expect(count).toBe(fixtureCount);
+    expect(bytes).toBe(expectedBytes);
     expect(bytes).toBeGreaterThan(32 * 1024 * 1024);
   };
   // Standalone callers must use the same streaming semantics.
@@ -125,7 +154,7 @@ it("streams and stages all four real Git filename lanes above 32 MiB through the
     expect(await fs.readFile(path.join(remoteParent, entry.name), "utf8")).toBe("base");
     stagedCount++;
   }
-  expect(stagedCount).toBe(40_000);
+  expect(stagedCount).toBe(fixtureCount);
   for (const name of unusual) expect(await fs.readFile(path.join(remote, name), "utf8")).toBe(name);
   const manifestFile = isPathManifest(snapshot.overlayPaths) ? snapshot.overlayPaths.filePath : "";
   await runtime.cleanupWorkspaceSnapshot();
