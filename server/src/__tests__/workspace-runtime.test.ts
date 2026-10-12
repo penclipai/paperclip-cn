@@ -101,9 +101,20 @@ vi.mock("node:child_process", async (importOriginal) => {
   const { promisify: nativePromisify } = await import("node:util");
   const nativeExecFileAsync = nativePromisify(actual.execFile);
   const promisifyCustom = Symbol.for("nodejs.util.promisify.custom");
+  const shouldFailListenerProbe = (input: unknown[]) => {
+    const [command] = input;
+    const strictQuery = input.some((value) => (
+      value !== null
+      && typeof value === "object"
+      && "timeout" in value
+      && typeof value.timeout === "number"
+    ));
+    return listenerProbeUnavailableFixture.enabled
+      && (command === "netstat" || command === "lsof")
+      && !strictQuery;
+  };
   const execFile = (...input: unknown[]) => {
-      const [command] = input;
-      if (listenerProbeUnavailableFixture.enabled && (command === "netstat" || command === "lsof")) {
+      if (shouldFailListenerProbe(input)) {
         const callback = [...input].reverse().find((value) => typeof value === "function") as
           | ((error: Error, stdout: string, stderr: string) => void)
           | undefined;
@@ -114,8 +125,7 @@ vi.mock("node:child_process", async (importOriginal) => {
   };
   Object.defineProperty(execFile, promisifyCustom, {
     value: (...input: unknown[]) => {
-      const [command] = input;
-      if (!(listenerProbeUnavailableFixture.enabled && (command === "netstat" || command === "lsof"))) {
+      if (!shouldFailListenerProbe(input)) {
         return (nativeExecFileAsync as (...args: unknown[]) => unknown)(...input);
       }
       let child: unknown;
@@ -241,6 +251,14 @@ function toBashPathForTest(value: string) {
   const normalized = path.resolve(value).replace(/\\/g, "/");
   const driveMatch = normalized.match(/^([A-Za-z]):\/(.*)$/);
   return driveMatch ? `/${driveMatch[1]!.toLowerCase()}/${driveMatch[2]}` : normalized;
+}
+
+function fromBashPathForTest(value: string) {
+  if (process.platform !== "win32") return value;
+  const driveMatch = value.match(/^\/([A-Za-z])\/(.*)$/);
+  return driveMatch
+    ? `${driveMatch[1]!.toUpperCase()}:\\${driveMatch[2]!.replaceAll("/", "\\")}`
+    : value;
 }
 
 function nodeEvalCommandForTest(script: string) {
@@ -1600,7 +1618,11 @@ describe("realizeExecutionWorkspace", () => {
       name: "git",
       script: [
         'const fs = require("node:fs");',
-        `fs.appendFileSync(${JSON.stringify(calls)}, JSON.stringify(process.argv.slice(process.platform === "win32" ? 1 : 2)) + "\\n");`,
+        'const path = require("node:path");',
+        'const args = process.platform === "win32"',
+        '  ? [path.basename(process.argv[1] ?? ""), ...process.argv.slice(2)]',
+        '  : process.argv.slice(2);',
+        `fs.appendFileSync(${JSON.stringify(calls)}, JSON.stringify(args) + "\\n");`,
         `fs.writeSync(2, ${JSON.stringify(stderr)});`,
         `process.exit(${code});`,
       ].join("\n"),
@@ -2105,10 +2127,31 @@ describe("realizeExecutionWorkspace", () => {
     process.env.PAPERCLIP_WORKTREES_DIR = isolatedWorktreeHome;
     delete process.env.PAPERCLIP_CONFIG;
     // Keep this server-side fixture on provision-worktree.sh's config writer path;
-    // CLI/database seeding is covered by the CLI worktree tests. Preserve the
-    // host PATH so Windows can resolve git.exe and Git Bash's sh.exe.
+    // CLI/database seeding is covered by the CLI worktree tests. A controlled
+    // pnpm makes the CLI probe pass and worktree init return 127, selecting
+    // that script's existing fallback config writer without invoking the host CLI.
+    const fakeBin = path.join(repoRoot, "fixture-bin");
+    const fakePnpmPath = path.join(fakeBin, "pnpm");
 
     await fs.mkdir(sharedConfigDir, { recursive: true });
+    await fs.mkdir(fakeBin, { recursive: true });
+    await fs.writeFile(
+      fakePnpmPath,
+      [
+        "#!/bin/sh",
+        'if [ "$1" = "penclip" ] && [ "$2" = "--help" ]; then',
+        "  exit 0",
+        "fi",
+        'if [ "$1" = "penclip" ] && [ "$2" = "worktree" ] && [ "$3" = "init" ]; then',
+        "  exit 127",
+        "fi",
+        "exit 1",
+        "",
+      ].join("\n"),
+      "utf8",
+    );
+    await fs.chmod(fakePnpmPath, 0o755);
+    process.env.PATH = `${fakeBin}${path.delimiter}${previousPath ?? ""}`;
     await fs.writeFile(
       sharedConfigPath,
       JSON.stringify(
@@ -2704,7 +2747,7 @@ describe("realizeExecutionWorkspace", () => {
 
       expect(result.stderr).toContain("Existing isolated Paperclip worktree config is stale for this host; regenerating.");
       const regeneratedEnv = parseEnvContents(await fs.readFile(path.join(paperclipDir, ".env"), "utf8"));
-      expect(regeneratedEnv.PAPERCLIP_CONFIG).toBe(path.join(worktreeRoot, ".paperclip", "config.json"));
+      expect(fromBashPathForTest(regeneratedEnv.PAPERCLIP_CONFIG!)).toBe(path.join(worktreeRoot, ".paperclip", "config.json"));
       await expect(fs.readFile(path.join(paperclipDir, "config.json"), "utf8")).resolves.toContain(
         toBashPathForTest(worktreeRoot),
       );
