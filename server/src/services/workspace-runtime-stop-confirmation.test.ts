@@ -270,23 +270,31 @@ describe("workspace runtime explicit stop confirmation", () => {
   it("blocks replacement while successful stop finalization is still pending", async () => {
     const [runtime] = await startFixtureRuntime();
     let releaseRegistryRemoval!: () => void;
+    let signalRegistryRemovalEntered!: () => void;
     const registryRemoval = new Promise<void>((resolve) => {
       releaseRegistryRemoval = resolve;
     });
+    const registryRemovalEntered = new Promise<void>((resolve) => {
+      signalRegistryRemovalEntered = resolve;
+    });
     supervisorMocks.removeRegistry.mockImplementationOnce(async (serviceKey: string) => {
+      signalRegistryRemovalEntered();
       await registryRemoval;
       await supervisorMocks.actualRemoveRegistry!(serviceKey);
     });
 
     const stop = stopRuntimeServicesForExecutionWorkspace(stopInput(runtime!.id));
-    await vi.waitFor(() => {
+    try {
+      // If strict termination fails before the gate, this race rejects with that
+      // failure rather than waiting for an arbitrary test timeout.
+      await Promise.race([registryRemovalEntered, stop]);
       expect(supervisorMocks.removeRegistry).toHaveBeenCalledTimes(1);
-    });
-
-    await expect(startFixtureRuntime())
-      .rejects.toThrow("workspace_runtime_stop_unverified");
-    releaseRegistryRemoval();
-    await expect(stop).resolves.toBeUndefined();
+      await expect(startFixtureRuntime())
+        .rejects.toThrow("workspace_runtime_stop_unverified");
+    } finally {
+      releaseRegistryRemoval();
+      await stop;
+    }
 
     await expect(startFixtureRuntime()).resolves.toHaveLength(1);
   });
