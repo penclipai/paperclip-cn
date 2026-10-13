@@ -1842,7 +1842,7 @@ describe("sandbox managed runtime", () => {
   });
 
   it.skipIf(process.platform !== "win32")("archives UTF-8 filenames through Git's GNU tar", async () => {
-    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-sandbox-unicode-tar-"));
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "v-paperclip-sandbox-unicode-tar-"));
     cleanupDirs.push(rootDir);
     const localDir = path.join(rootDir, "source");
     const archivePath = path.join(rootDir, "archive.tar");
@@ -1861,8 +1861,30 @@ describe("sandbox managed runtime", () => {
     expect(stdout).toContain("雪-");
     const extractDir = path.join(rootDir, "extract");
     await mkdir(extractDir, { recursive: true });
-    await execFile(gitTar, ["--force-local", "-xf", archivePath, "-C", extractDir]);
+    await execFile(gitTar, ["--force-local", "-xf", archivePath, "-C", extractDir.replaceAll("\\", "/")]);
     await expect(readFile(path.join(extractDir, fileName))).resolves.toEqual(contents);
+
+    const previousTemp = process.env.TEMP;
+    const remoteDir = path.join(rootDir, "remote");
+    let runtime: PreparedSandboxManagedRuntime | undefined;
+    try {
+      process.env.TEMP = rootDir;
+      runtime = await prepareSandboxManagedRuntime({
+        spec: { transport: "sandbox", provider: "test", sandboxId: "unicode-roundtrip", remoteCwd: remoteDir, timeoutMs: 30_000, apiKey: null },
+        adapterKey: "test-adapter", client: makeFilesystemClient(), workspaceLocalDir: localDir,
+      });
+      const changed = Buffer.from("changed 雪\n", "utf8");
+      await writeFile(path.join(remoteDir, fileName), changed);
+      await runtime.restoreWorkspace();
+      await expect(readFile(path.join(localDir, fileName))).resolves.toEqual(changed);
+    } finally {
+      try {
+        await runtime?.cleanupWorkspaceSnapshot();
+      } finally {
+        if (previousTemp === undefined) delete process.env.TEMP;
+        else process.env.TEMP = previousTemp;
+      }
+    }
   });
 
   it("excludes transient symlinked home dirs from the asset tar while keeping required content", async () => {

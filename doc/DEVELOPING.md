@@ -2007,7 +2007,9 @@ its directory `0700` and file `0600` modes.
 
 Windows archive-based workspace transfers prefer GNU tar from the active Git
 for Windows installation. It preserves UTF-8 filenames supplied in NUL-delimited
-path lists. If that tool is unavailable, the system tar remains the fallback;
+path lists. The helper passes forward-slash local directories to GNU tar's `-C`
+option so Windows backslash sequences are not decoded as escapes.
+If that tool is unavailable, the system tar remains the fallback;
 it can reject Unicode path lists rather than complete the transfer.
 
 ## Company Deletion Toggle

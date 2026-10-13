@@ -906,9 +906,15 @@ async function resolveWindowsGitTar(): Promise<string | null> {
   }
 }
 
+function normalizeWindowsGitTarDirectoryArgs(args: string[]): string[] {
+  if (process.platform !== "win32") return args;
+  // GNU tar unquotes -C operands, including native Windows backslash escapes.
+  return args.map((arg, index) => args[index - 1] === "-C" ? arg.replaceAll("\\", "/") : arg);
+}
+
 async function execTar(args: string[]): Promise<void> {
   const gitTar = await resolveWindowsGitTar();
-  await execFile(gitTar ?? "tar", gitTar ? ["--force-local", ...args] : args, {
+  await execFile(gitTar ?? "tar", gitTar ? ["--force-local", ...normalizeWindowsGitTarDirectoryArgs(args)] : args, {
     env: {
       ...process.env,
       COPYFILE_DISABLE: "1",
