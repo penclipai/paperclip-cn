@@ -241,6 +241,15 @@ A cancelled run record does not prove that execution stopped.
 The host also checks process ownership, controller leases, and environment cleanup.
 Required plugin cleanup cannot start while these checks are incomplete.
 
+For local workspace services, `workspace_runtime_stop_unverified` means the host
+could not confirm termination. It retains the original registry identity and a
+durable `failed`/`unhealthy` record with `stoppedAt = null`. A controller restart
+does not clear this quarantine or permit service reuse or workspace deletion.
+On Windows, `workspace_runtime_listener_ownership_unavailable` also ends startup
+when an allocated listener's owner cannot be verified. Reconcile the original
+process and listener ownership before retrying cleanup; a different port owner
+does not authorize terminating that process or adopting it as the service.
+
 The worker starts after a committed command.
 A periodic scan recovers work after a process stops.
 A database lease permits one active attempt for each agent.
