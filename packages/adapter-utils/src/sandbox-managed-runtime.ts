@@ -712,19 +712,20 @@ function buildWorkspaceTarExtractCommand(input: {
 }
 
 // Named builder (C3): remove paths deleted in the host git worktree from the
-// sandbox workspace. Every path is shell-quoted; the caller supplies only
-// already-confined relative paths from the git snapshot.
+// sandbox workspace. Entries arrive as NUL-delimited argv after host
+// confinement; control paths are shell-quoted.
 function buildRemoveDeletedPathsCommand(input: { remoteDir: string; manifestPath: string }): string {
-  // NUL input plus bounded xargs batches preserve whitespace and never create
-  // one argument list for the full snapshot. Refuse symlink ancestors.
+  // Bounded NUL argv batches preserve literal filenames without one argument
+  // list for the full snapshot. Check every entry's ancestors before deleting
+  // any entry in its batch, refusing symlink and non-directory ancestors.
   const remove = `for entry do
     parent=$entry
     while [ "\${parent#*/}" != "$parent" ]; do
       parent=\${parent%/*}
       if [ -L "$parent" ] || { [ -e "$parent" ] && [ ! -d "$parent" ]; }; then exit 42; fi
     done
-    rm -rf -- "$entry" || exit
-  done`;
+  done
+  exec rm -rf -- "$@"`;
   return `cd ${shellQuote(input.remoteDir)} && xargs -0 -r -n 64 sh -c ${shellQuote(remove)} sh < ${shellQuote(input.manifestPath)} && rm -f -- ${shellQuote(input.manifestPath)}`;
 }
 

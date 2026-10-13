@@ -1149,6 +1149,142 @@ describe("sandbox managed runtime", () => {
     ))).toBe(true);
   });
 
+  it("removes more than one bounded batch of deleted literal paths through the native sync seam", async () => {
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-sandbox-delete-batches-"));
+    cleanupDirs.push(rootDir);
+    const sourceRepoDir = path.join(rootDir, "source-repo");
+    const localWorkspaceDir = path.join(rootDir, "local-worktree");
+    const remoteWorkspaceDir = path.join(rootDir, "remote-workspace");
+    const deletedPaths = [
+      "white space.txt",
+      "雪.txt",
+      "-leading.txt",
+      ...Array.from({ length: 65 }, (_, index) => `removed-${String(index).padStart(2, "0")}.txt`),
+    ];
+
+    await mkdir(sourceRepoDir, { recursive: true });
+    await git(sourceRepoDir, ["init"]);
+    await git(sourceRepoDir, ["checkout", "-b", "main"]);
+    await git(sourceRepoDir, ["config", "user.name", "Paperclip Test"]);
+    await git(sourceRepoDir, ["config", "user.email", "test@paperclip.dev"]);
+    for (const relativePath of deletedPaths) {
+      await writeFile(path.join(sourceRepoDir, relativePath), `${relativePath}\n`, "utf8");
+    }
+    await git(sourceRepoDir, ["add", "."]);
+    await git(sourceRepoDir, ["commit", "-m", "base"]);
+    await git(sourceRepoDir, ["worktree", "add", "-b", "work", localWorkspaceDir, "HEAD"]);
+    for (const relativePath of deletedPaths) await rm(path.join(localWorkspaceDir, relativePath));
+
+    const client = makeFilesystemClient();
+    const captured: SandboxSyncOperation[] = [];
+    attachNativeRecordingSyncIn(client, captured);
+    await prepareSandboxManagedRuntime({
+      spec: { transport: "sandbox", provider: "test", sandboxId: "deleted-batches", remoteCwd: remoteWorkspaceDir, timeoutMs: 30_000, apiKey: null },
+      adapterKey: "test-adapter",
+      client,
+      workspaceLocalDir: localWorkspaceDir,
+    });
+
+    const workspaceOperation = captured.find((operation) => operation.files.some((mapping) => (
+      path.posix.basename(mapping.targetPath) === "deleted.nul"
+    )));
+    const removeCommand = workspaceOperation?.postUploadCommands?.at(-1)?.command;
+    expect(removeCommand).toContain("xargs -0 -r -n 64");
+    for (const relativePath of deletedPaths) {
+      await expect(readFile(path.join(remoteWorkspaceDir, relativePath), "utf8")).rejects.toMatchObject({ code: "ENOENT" });
+    }
+  });
+
+  it.each(process.platform === "win32" ? ["regular file"] : ["regular file", "symlink"])(
+    "refuses a %s deleted-path ancestor before deleting its current batch",
+    async (unsafeAncestor) => {
+      const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-sandbox-delete-unsafe-"));
+      cleanupDirs.push(rootDir);
+      const sourceRepoDir = path.join(rootDir, "source-repo");
+      const localWorkspaceDir = path.join(rootDir, "local-worktree");
+      const remoteWorkspaceDir = path.join(rootDir, "remote-workspace");
+      const outsideDir = path.join(rootDir, "outside");
+      const currentBatchPath = "a-current-batch.txt";
+      const deletedPaths = [
+        currentBatchPath,
+        "b-unsafe/removed.txt",
+        ...Array.from({ length: 63 }, (_, index) => `z-removed-${String(index).padStart(2, "0")}.txt`),
+      ];
+
+      await mkdir(sourceRepoDir, { recursive: true });
+      await git(sourceRepoDir, ["init"]);
+      await git(sourceRepoDir, ["checkout", "-b", "main"]);
+      await git(sourceRepoDir, ["config", "user.name", "Paperclip Test"]);
+      await git(sourceRepoDir, ["config", "user.email", "test@paperclip.dev"]);
+      for (const relativePath of deletedPaths) {
+        await mkdir(path.dirname(path.join(sourceRepoDir, relativePath)), { recursive: true });
+        await writeFile(path.join(sourceRepoDir, relativePath), `${relativePath}\n`, "utf8");
+      }
+      await git(sourceRepoDir, ["add", "."]);
+      await git(sourceRepoDir, ["commit", "-m", "base"]);
+      await git(sourceRepoDir, ["worktree", "add", "-b", "work", localWorkspaceDir, "HEAD"]);
+      for (const relativePath of deletedPaths) await rm(path.join(localWorkspaceDir, relativePath));
+      await mkdir(outsideDir);
+      await writeFile(path.join(outsideDir, "sentinel.txt"), "outside\n", "utf8");
+
+      const client = makeFilesystemClient();
+      const captured: SandboxSyncOperation[] = [];
+      let remoteManifestPath: string | null = null;
+      let deleteCommandFailure: unknown;
+      client.syncIn = async (operations): Promise<SandboxSyncResult> => {
+        const resultOperations: SandboxSyncResult["operations"] = [];
+        for (const operation of operations) {
+          captured.push(operation);
+          for (const mapping of operation.files) {
+            const bytes = await readFile(mapping.sourcePath);
+            await mkdir(path.posix.dirname(mapping.targetPath), { recursive: true });
+            await writeFile(mapping.targetPath, bytes);
+            if (path.posix.basename(mapping.targetPath) === "deleted.nul") remoteManifestPath = mapping.targetPath;
+          }
+          const commands = operation.postUploadCommands ?? [];
+          for (const [index, command] of commands.entries()) {
+            if (index === commands.length - 1 && command.command.includes("xargs -0 -r -n 64")) {
+              await rm(path.join(remoteWorkspaceDir, "b-unsafe"), { recursive: true, force: true });
+              if (unsafeAncestor === "regular file") {
+                await writeFile(path.join(remoteWorkspaceDir, "b-unsafe"), "not a directory\n", "utf8");
+              } else {
+                await symlink(outsideDir, path.join(remoteWorkspaceDir, "b-unsafe"), "dir");
+              }
+            }
+            try {
+              await execFile("sh", ["-c", command.command], { maxBuffer: 32 * 1024 * 1024 });
+            } catch (error) {
+              if (command.command.includes("xargs -0 -r -n 64")) deleteCommandFailure = error;
+              throw error;
+            }
+          }
+          resultOperations.push({ operationId: operation.operationId, filesTransferred: operation.files.length, bytesTransferred: 0 });
+        }
+        return { operations: resultOperations };
+      };
+
+      let failure: unknown;
+      try {
+        await prepareSandboxManagedRuntime({
+          spec: { transport: "sandbox", provider: "test", sandboxId: "deleted-unsafe", remoteCwd: remoteWorkspaceDir, timeoutMs: 30_000, apiKey: null },
+          adapterKey: "test-adapter",
+          client,
+          workspaceLocalDir: localWorkspaceDir,
+        });
+      } catch (error) {
+        failure = error;
+      }
+
+      expect(deleteCommandFailure).toBe(failure);
+      expect(failure).toMatchObject({ code: expect.any(Number) });
+      expect((failure as { code: number }).code).not.toBe(0);
+      expect(captured.some((operation) => operation.postUploadCommands?.some((command) => command.command.includes("xargs -0 -r -n 64")))).toBe(true);
+      await expect(readFile(path.join(remoteWorkspaceDir, currentBatchPath), "utf8")).resolves.toBe(`${currentBatchPath}\n`);
+      await expect(readFile(path.join(outsideDir, "sentinel.txt"), "utf8")).resolves.toBe("outside\n");
+      await expect(lstat(remoteManifestPath!)).resolves.toBeDefined();
+    },
+  );
+
   it("repairs stale host index deletions when the sandbox restores a clean git worktree", async () => {
     const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-sandbox-clean-restore-"));
     cleanupDirs.push(rootDir);
