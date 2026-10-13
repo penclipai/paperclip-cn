@@ -199,7 +199,7 @@ type DiscoveredBundledPlugin = {
 let bundledPluginsCache: Promise<DiscoveredBundledPlugin[]> | null = null;
 
 function resolveBundledPluginRoot(): string {
-  return BUNDLED_LOCAL_PLUGIN_ROOT;
+  return process.env.PAPERCLIP_BUNDLED_PLUGINS_DIR?.trim() || BUNDLED_LOCAL_PLUGIN_ROOT;
 }
 
 function titleCasePluginName(packageName: string): string {
