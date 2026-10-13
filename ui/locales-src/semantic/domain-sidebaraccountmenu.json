@@ -1,0 +1,12 @@
+{
+  "sidebarAccountMenu.languageDescription": {
+    "en": "Choose the interface language for this browser.",
+    "zh-CN": "为当前浏览器选择界面语言。",
+    "reviewedEnglishHash": "4998b7a24b7776e314fef8145dcce373d7bb9d960741d21dc1d716d9c1d1dfa5"
+  },
+  "sidebarAccountMenu.languageLabel": {
+    "en": "Language",
+    "zh-CN": "语言",
+    "reviewedEnglishHash": "a4fe65264ef7dbb38d104b1e81eb3350f3142f3d16f32bdec39b1d9b42c1b8d1"
+  }
+}

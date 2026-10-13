@@ -1,0 +1,102 @@
+{
+  "decisionQueue.agingDescription": {
+    "en": "Idle past {{days}} days — kept off the queue. Keep any you still want surfaced.",
+    "zh-CN": "已闲置超过 {{days}} 天，暂不在此队列显示。请保留仍需关注的事项。",
+    "reviewedEnglishHash": "6286e3d7827b120a29f2c6538a7331693473644e649097dccde737a4baea97f8"
+  },
+  "decisionQueue.autoSeeding": {
+    "en": "Auto-seeding is {{state}}",
+    "zh-CN": "自动填充已{{state}}",
+    "reviewedEnglishHash": "3e21c3b433eae7d3cb9d18c22cd10eca6307f32e4b96990b88a9b03c38e40c38"
+  },
+  "decisionQueue.autoSeedingDisabledDescription": {
+    "en": "Automatic adds are paused. These rules would add decisions to the queue when on:",
+    "zh-CN": "自动添加已暂停。开启后，这些规则会将决策添加到队列：",
+    "reviewedEnglishHash": "e92e243c850e2742ee14170e95078f24510843caf1a68a7f4b01a3840d445d5c"
+  },
+  "decisionQueue.autoSeedingDisabledHelp": {
+    "en": "Adding or removing decisions by hand still works while automatic seeding is off.",
+    "zh-CN": "自动填充关闭时，仍可手动添加或移除决策。",
+    "reviewedEnglishHash": "ba43f0eedaddcb07831b06634a9bafdba176a794d4e18fa745e071b01c98a774"
+  },
+  "decisionQueue.autoSeedingEnabledDescription": {
+    "en": "This queue fills itself automatically. Decisions are added the moment they match any of its rules:",
+    "zh-CN": "此队列会自动填充。决策符合任一规则时会立即加入：",
+    "reviewedEnglishHash": "da434ae6ba8701f635d560e02ab29ed927bea4e98b32e1eaf7cf472ef93bafeb"
+  },
+  "decisionQueue.autoSeedingEnabledHelp": {
+    "en": "Turning it off stops new automatic adds only — decisions already here stay, and you can still add or remove decisions by hand.",
+    "zh-CN": "关闭后只会停止新的自动添加。已在此处的决策会保留，你仍可手动添加或移除决策。",
+    "reviewedEnglishHash": "661f61f336b3167965eb2b42ddc56f754310f4a0f7308bb3cddf7ef5ab28dee5"
+  },
+  "decisionQueue.cancel": {
+    "en": "Cancel",
+    "zh-CN": "取消",
+    "reviewedEnglishHash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+  },
+  "decisionQueue.disable": {
+    "en": "Disable",
+    "zh-CN": "禁用",
+    "reviewedEnglishHash": "b7e3e4aa4257b9a11a82f59faf34c8450ca10d4116885b0a29fedf60842d81d5"
+  },
+  "decisionQueue.empty": {
+    "en": "This queue is empty.",
+    "zh-CN": "此队列为空。",
+    "reviewedEnglishHash": "1c3c77cb30ab7992979d6617af30aa866f2fb44beb43ece1613002cd59528e83"
+  },
+  "decisionQueue.emptyDescription": {
+    "en": "Decisions land here when they match the queue's rules or an agent adds them.",
+    "zh-CN": "符合队列规则或由智能体添加的决策会出现在这里。",
+    "reviewedEnglishHash": "b065343b4037aba4c45dbcad139c61752e6482d5780f54bb66cb5ea322492f6b"
+  },
+  "decisionQueue.enable": {
+    "en": "Enable",
+    "zh-CN": "启用",
+    "reviewedEnglishHash": "5342e09f2729fbc6514528e727aeb9857afb31719d43568e6b18661ace7d1014"
+  },
+  "decisionQueue.exclude": {
+    "en": "Exclude",
+    "zh-CN": "排除",
+    "reviewedEnglishHash": "5b76f62e1ba0401f8f18752e4bfd03c076de0a21eefcf26422725ffa28f6b4cd"
+  },
+  "decisionQueue.excludeFailed": {
+    "en": "Could not exclude",
+    "zh-CN": "排除失败",
+    "reviewedEnglishHash": "ce5519cbe493afd0a59742495fd978476a3db46014a8debe22c94bb1ad00464b"
+  },
+  "decisionQueue.off": {
+    "en": "off",
+    "zh-CN": "关闭",
+    "reviewedEnglishHash": "b4dc66dde806261bdda8607d8707aa727d308cd80272381a5583f63899918467"
+  },
+  "decisionQueue.on": {
+    "en": "on",
+    "zh-CN": "开启",
+    "reviewedEnglishHash": "b8d31e852725afb1e26d53bab6095b2bff1749c9275be13ed1c05a56ed31ec09"
+  },
+  "decisionQueue.reasonOptional": {
+    "en": "Reason (optional)…",
+    "zh-CN": "原因（可选）…",
+    "reviewedEnglishHash": "395a199963d91d7e9a49483b5cee518eabe4f0197469f299b022624fa4440029"
+  },
+  "decisionQueue.removeTitle": {
+    "en": "Remove from this queue",
+    "zh-CN": "从此队列移除",
+    "reviewedEnglishHash": "e8cd13b57b82fca9c71ac15b8b17bbcc343d66d0fe5f90df2f27682f74523632"
+  },
+  "decisionQueue.removed": {
+    "en": "Removed from queue",
+    "zh-CN": "已从队列移除",
+    "reviewedEnglishHash": "6a332fb31d80f382971a43db7c103e4b0396a633b13531bf72ce7860b35cf06f"
+  },
+  "decisionQueue.tryAgain": {
+    "en": "Please try again.",
+    "zh-CN": "请重试。",
+    "reviewedEnglishHash": "eea4fb33efd382834952e3e7ab52f8dc41ccc2c3f5c3f246f0505235e0e962aa"
+  },
+  "decisionQueue.updateSeedingFailed": {
+    "en": "Could not update seeding",
+    "zh-CN": "更新自动填充失败",
+    "reviewedEnglishHash": "24e5e1e909558420684f9402c867b64218f5c64e04d633822da5b9c3ef3c1f13"
+  }
+}

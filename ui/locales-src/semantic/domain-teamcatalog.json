@@ -1,0 +1,512 @@
+{
+  "teamCatalog.agentHierarchy": {
+    "en": "Agent hierarchy",
+    "zh-CN": "智能体层级",
+    "reviewedEnglishHash": "279db185cac22dab688197ba8859ec78e518f501301253ddfbe2fd4898945b81"
+  },
+  "teamCatalog.agentsImported": {
+    "en": "Agents imported",
+    "zh-CN": "已导入智能体",
+    "reviewedEnglishHash": "449a9caf3664a9bb69c367292f95bf453a19c5d8cddb9d9ab660e46a5b9ee3a9"
+  },
+  "teamCatalog.allowExternalSources": {
+    "en": "Allow external sources",
+    "zh-CN": "允许外部来源",
+    "reviewedEnglishHash": "2535649cd2d6efe80809d0845282ea1c90526f622ea806b44f2ebc9cea8b6f01"
+  },
+  "teamCatalog.allowExternalSourcesDescription": {
+    "en": "Resolve github/url skill and team sources at install time.",
+    "zh-CN": "安装时解析 GitHub/URL 技能和团队来源。",
+    "reviewedEnglishHash": "9392e168fb59eb1458b52dae7f5624d6be075e283351021159bd1b77c17ae399"
+  },
+  "teamCatalog.allowLocalPathSources": {
+    "en": "Allow local-path sources",
+    "zh-CN": "允许本地路径来源",
+    "reviewedEnglishHash": "cc80f883fbb7c40c5c2bd3ee651c61f23c8d5cd0dd653a46271fca5c8ca88e9c"
+  },
+  "teamCatalog.allowLocalPathSourcesDescription": {
+    "en": "Required for local_path / agent_package sources. Development use only.",
+    "zh-CN": "local_path / agent_package 来源需要此项。仅用于开发。",
+    "reviewedEnglishHash": "da8e57ccf27ced2627cf4b00b59999a2a398892acfd181c8bc1dd9ed8e3aa809"
+  },
+  "teamCatalog.allowUnpinnedOptionalSources": {
+    "en": "Allow unpinned optional sources",
+    "zh-CN": "允许未固定的可选来源",
+    "reviewedEnglishHash": "91c8e0b424e242f7c2f54cd26a11327c172f808e3fabc3cd725f38cd31b93ca1"
+  },
+  "teamCatalog.allowUnpinnedOptionalSourcesDescription": {
+    "en": "Permit optional sources that are not pinned to a ref or checksum.",
+    "zh-CN": "允许未固定到 ref 或 checksum 的可选来源。",
+    "reviewedEnglishHash": "f7fa4b7b9f11f377fa5c8b7aa2dc44e8d0eddcf42ee7c03d832be75d48654e30"
+  },
+  "teamCatalog.backToCatalog": {
+    "en": "Back to catalog",
+    "zh-CN": "返回目录",
+    "reviewedEnglishHash": "5945b61656beeccdd64f5791924f5f782ad9994d9a0a7dfd22e6bf206786b638"
+  },
+  "teamCatalog.catalogPackageProvenance": {
+    "en": "Catalog package provenance",
+    "zh-CN": "目录包来源",
+    "reviewedEnglishHash": "8dc3a7c8b4e66e3fe667a60ad5b1971ff2d4f9a47390dd8e766664a7ae90c7c8"
+  },
+  "teamCatalog.category.all": {
+    "en": "All categories",
+    "zh-CN": "全部类别",
+    "reviewedEnglishHash": "9d5097a837102a179a2d08a921a260c5058495e78469c3f1bad37a1b4bf59053"
+  },
+  "teamCatalog.category.label": {
+    "en": "Category",
+    "zh-CN": "类别",
+    "reviewedEnglishHash": "292c06f0045a45d044be282b132b7055ae224e18e02b523a451d8ea96fadfd24"
+  },
+  "teamCatalog.categorySelected": {
+    "en": "Category · {{category}}",
+    "zh-CN": "类别 · {{category}}",
+    "reviewedEnglishHash": "50e9011c0ba45a23aead0479eb566779e77290cf467c929709bb3776d1df7e60"
+  },
+  "teamCatalog.collisionStrategy": {
+    "en": "Collision strategy",
+    "zh-CN": "冲突策略",
+    "reviewedEnglishHash": "f2d126a181a16c44df7aa6a8181a208e825fe5448aad3aa9ed5e674d5a1eae90"
+  },
+  "teamCatalog.compat.compatible": {
+    "en": "Compatible",
+    "zh-CN": "兼容",
+    "reviewedEnglishHash": "04c72ef3388c185b5db24dca4823f75254826840b764bd41315226f9fb5b8280"
+  },
+  "teamCatalog.compat.invalid": {
+    "en": "Invalid",
+    "zh-CN": "无效",
+    "reviewedEnglishHash": "96c34a0719eb565c268a1626c44313a20de4f83927890933bd9b480849adb76c"
+  },
+  "teamCatalog.compat.unknown": {
+    "en": "Unknown compat",
+    "zh-CN": "兼容性未知",
+    "reviewedEnglishHash": "4cc6d369d53b9aedbcf136c455a80b33ddd4b674468a42c4ee955183f11aad86"
+  },
+  "teamCatalog.confirmInstallWithExecutables": {
+    "en": "Confirm — install with executables",
+    "zh-CN": "确认 - 安装含可执行文件的团队",
+    "reviewedEnglishHash": "0216231778b4a45e19aa9d3abe994640d5eee22210ef9e1c6ea8c6a13bbc546c"
+  },
+  "teamCatalog.emptyCatalog": {
+    "en": "No team catalog configured.",
+    "zh-CN": "未配置团队目录。",
+    "reviewedEnglishHash": "2f0fd7da3c5150d74b241e9ca1e9d43b5540fd26900fe2697600a4126a7d68ee"
+  },
+  "teamCatalog.external": {
+    "en": "external",
+    "zh-CN": "外部",
+    "reviewedEnglishHash": "3c4623849a49a53911c4a3e48d8cead8a1858960bccdea7a1b978d73ec2f06d7"
+  },
+  "teamCatalog.externalSourceWarning": {
+    "en": "This team references {{count}} external source",
+    "zh-CN": "此团队引用 {{count}} 个外部来源",
+    "reviewedEnglishHash": "16fda32ff6564fe732029f7d206ff288e6ed46fde292d9e2fed7f810931b3f19"
+  },
+  "teamCatalog.externalSourceWarning_other": {
+    "en": "This team references {{count}} external sources",
+    "zh-CN": "此团队引用 {{count}} 个外部来源",
+    "reviewedEnglishHash": "e7e6d89d938256095849b879ce6835f9e557310e4da8a51de20ef98299cd824a"
+  },
+  "teamCatalog.externalSourcesCount": {
+    "en": "External sources · {{count}}",
+    "zh-CN": "外部来源 · {{count}}",
+    "reviewedEnglishHash": "e18dcaed15ddcee0f1f4fe1004042376f6bddddf6c04705016a2ae857d2b48bd"
+  },
+  "teamCatalog.fullCompanyPackage": {
+    "en": "Use this team as a full-company package (no target manager)",
+    "zh-CN": "将此团队作为完整公司包使用（无目标 manager）",
+    "reviewedEnglishHash": "5f0101914e8a3f7bcf935eb8a94741e67d9541af4cbe662ccf17249c41e75aef"
+  },
+  "teamCatalog.group.bundled": {
+    "en": "Bundled · {{count}}",
+    "zh-CN": "内置 · {{count}}",
+    "reviewedEnglishHash": "507d8bf99f44cdf8aec302e0fc0e31450a2e8c61d1489f523802644126e6805c"
+  },
+  "teamCatalog.group.installed": {
+    "en": "Installed · {{count}}",
+    "zh-CN": "已安装 · {{count}}",
+    "reviewedEnglishHash": "c417f98a9a9ec3ea99cdb194903b94dd9c73405484684b1d2d0b61361168be2d"
+  },
+  "teamCatalog.group.optional": {
+    "en": "Optional · {{count}}",
+    "zh-CN": "可选 · {{count}}",
+    "reviewedEnglishHash": "bf2758a97c4e5eacd092fb40cdc09f10a3daa36203fdf88ea57c88feba2f7285"
+  },
+  "teamCatalog.hasExternalSources": {
+    "en": "Has external sources",
+    "zh-CN": "含外部来源",
+    "reviewedEnglishHash": "6404f1d336b9e9e4b15e0da82b68f2cfa4e38ae62ce15468a63906ac391204cf"
+  },
+  "teamCatalog.installBlocked": {
+    "en": "Install blocked",
+    "zh-CN": "安装被阻止",
+    "reviewedEnglishHash": "ffc9a6c85f898c14ec76cca13b85ef7a92f82e3d3eda508930108c1e1b795ff7"
+  },
+  "teamCatalog.installBlockedCount": {
+    "en": "Install blocked: {{count}} error",
+    "zh-CN": "安装被阻止：{{count}} 个错误",
+    "reviewedEnglishHash": "3d08b6e010e9e47614749427f9fa112f7f46664aba04f2f96a0da83296cec221"
+  },
+  "teamCatalog.installBlockedCount_other": {
+    "en": "Install blocked: {{count}} errors",
+    "zh-CN": "安装被阻止：{{count}} 个错误",
+    "reviewedEnglishHash": "c2e255c8e4ca2ecf45a592774f55473ab5ef7fa62c691d88d452fd2cf5f70bc1"
+  },
+  "teamCatalog.installFailed": {
+    "en": "Install failed",
+    "zh-CN": "安装失败",
+    "reviewedEnglishHash": "33b4717bdc2f2510e66d9981e0af2f22bfcad2eedde192bf1a1b7ebc9d849929"
+  },
+  "teamCatalog.installTeam": {
+    "en": "Install team",
+    "zh-CN": "安装团队",
+    "reviewedEnglishHash": "212938ef6b2b569a507eead4ffe5b8b3049996f046a4a8b47ce2df21ff77996d"
+  },
+  "teamCatalog.installTeamName": {
+    "en": "Install {{name}}",
+    "zh-CN": "安装 {{name}}",
+    "reviewedEnglishHash": "ea91769937315719ecb27504756bf09c87d541994eaf3d9d24ef01ede069a893"
+  },
+  "teamCatalog.installWithExecutables": {
+    "en": "Install with executables",
+    "zh-CN": "安装含可执行文件的团队",
+    "reviewedEnglishHash": "b4bae1cb34f9ff1307a797a02e01743ffaa507307ceed0b026c35e22caba99a5"
+  },
+  "teamCatalog.installed": {
+    "en": "Installed",
+    "zh-CN": "已安装",
+    "reviewedEnglishHash": "f8b32f4e92bd84ce1fcd177bec17d43093de3ee8303bb40c1b9ea521ed6a70f6"
+  },
+  "teamCatalog.installedTeamOutOfDate": {
+    "en": "Update available — installed team is out of date",
+    "zh-CN": "有可用更新 - 已安装团队已过期",
+    "reviewedEnglishHash": "d18ea456d87f3cad252d3de382c1e20111a91c3f1ed115045a74fd06aa1b0050"
+  },
+  "teamCatalog.installingDescription": {
+    "en": "Resolving skills, importing agents, projects, and routines. This may take a moment.",
+    "zh-CN": "正在解析技能，并导入智能体、项目和例行任务。这可能需要一点时间。",
+    "reviewedEnglishHash": "ce59e0d4655af98c660f69263bc12fece82ff9b655885e1577d953fefeba0c8f"
+  },
+  "teamCatalog.installingTeam": {
+    "en": "Installing {{name}}...",
+    "zh-CN": "正在安装 {{name}}...",
+    "reviewedEnglishHash": "796a93b62ac72398c75e4452b0bd2929873258c705eda9124ba2e89fc14cc45c"
+  },
+  "teamCatalog.invalidPackageManifest": {
+    "en": "This team cannot be installed — the package manifest is invalid.",
+    "zh-CN": "无法安装此团队 - 包 manifest 无效。",
+    "reviewedEnglishHash": "88f0793ef0eca90de825c7e786457411b11317e01f8fda650fe40e9126980965"
+  },
+  "teamCatalog.kind.all": {
+    "en": "All kinds",
+    "zh-CN": "全部类型",
+    "reviewedEnglishHash": "ddd0c2108e40c8b8a3b9b7c9acb0353001b80725cbc226b1b7b0d8be0a0b0c84"
+  },
+  "teamCatalog.kind.bundled": {
+    "en": "Bundled",
+    "zh-CN": "内置",
+    "reviewedEnglishHash": "79d3a1f108e8d9c37f573ce55f27741845eb61f64c3272f91608f653ee4439e5"
+  },
+  "teamCatalog.kind.label": {
+    "en": "Kind",
+    "zh-CN": "类型",
+    "reviewedEnglishHash": "f5387f9bb6ed70315a77fdcb9335facc27a9bf241f35955bd2755c55e0c016c7"
+  },
+  "teamCatalog.kind.optional": {
+    "en": "Optional",
+    "zh-CN": "可选",
+    "reviewedEnglishHash": "59be71333c960fd08e7e4fe9862206d9355f0a9884121a5b50ef8b36efdfe4cf"
+  },
+  "teamCatalog.loadFailed": {
+    "en": "Failed to load team catalog.",
+    "zh-CN": "加载团队目录失败。",
+    "reviewedEnglishHash": "57a8ad73bbe1605eeae21c7a1e8c8c9317de60de3050ed44dadabb7c0f302131"
+  },
+  "teamCatalog.localPathSourcesBlocked": {
+    "en": "This team has local-path sources. Enable “Allow local-path sources” to continue, or install it from the CLI.",
+    "zh-CN": "此团队包含本地路径来源。启用“允许本地路径来源”后继续，或从 CLI 安装。",
+    "reviewedEnglishHash": "4eb0559603adbbb837030a8e8980af6d6b18b95394c70d7d5da7e66c3a9859f8"
+  },
+  "teamCatalog.noAgentsInTeam": {
+    "en": "No agents in this team.",
+    "zh-CN": "此团队中没有智能体。",
+    "reviewedEnglishHash": "61cb8bb724590763e4e3f2c6e32081d7721743a6509a9cd48733ab7851627660"
+  },
+  "teamCatalog.noRequiredSkills": {
+    "en": "No required skills.",
+    "zh-CN": "没有必需技能。",
+    "reviewedEnglishHash": "2e23f58d6c9ab07367c2889fa057a664239399218a26744d73932e9000a34f50"
+  },
+  "teamCatalog.noTeamsMatchFilter": {
+    "en": "No teams match this filter.",
+    "zh-CN": "没有团队匹配当前筛选。",
+    "reviewedEnglishHash": "4338defdd67e1c3fb9a2635e593bc5e7d0a41895aa9757b05a9b237c220d3985"
+  },
+  "teamCatalog.notInstallableFromBrowser": {
+    "en": "not installable from the browser",
+    "zh-CN": "无法从浏览器安装",
+    "reviewedEnglishHash": "c450ab18f15946ce744abd3276e2f2cb9af9b31a99951f9f9ba3c327407c6d5d"
+  },
+  "teamCatalog.partialStateNotRolledBack": {
+    "en": "Partial state is not rolled back. Review the company activity log before retrying.",
+    "zh-CN": "部分状态不会回滚。重试前请检查公司活动日志。",
+    "reviewedEnglishHash": "c00238cec5dd2cc140483f41035ea5f9a461d04ff24c14574e89369a96c13360"
+  },
+  "teamCatalog.pinned": {
+    "en": "Pinned",
+    "zh-CN": "已固定",
+    "reviewedEnglishHash": "f20c879465551f0d1457a13d4390d0f1ece456b115d75463169c5d55341b9b1e"
+  },
+  "teamCatalog.preparingPreview": {
+    "en": "Preparing preview...",
+    "zh-CN": "正在准备预览...",
+    "reviewedEnglishHash": "31c8f38499dc0a10e7b9d3917e52f716a19a170ec945728a5eedc47767fc8a1b"
+  },
+  "teamCatalog.projectsImported": {
+    "en": "Projects imported",
+    "zh-CN": "已导入项目",
+    "reviewedEnglishHash": "d8458892a690bfc2c9e021f34c9ee9acaccd997631dae9567e3f6a634af68ec0"
+  },
+  "teamCatalog.reinstallLatest": {
+    "en": "Re-install latest",
+    "zh-CN": "重新安装最新版本",
+    "reviewedEnglishHash": "04212e94fbbadeb77007124fa8d05251d6721783c8befd1c864a9da364803017"
+  },
+  "teamCatalog.renameCollisions": {
+    "en": "Rename collisions",
+    "zh-CN": "重命名冲突项",
+    "reviewedEnglishHash": "9dccfdff70d0e35a355cfe6b83055bf00612d85514e3f4b825192aebed22e2ef"
+  },
+  "teamCatalog.requiredSecretsMissing": {
+    "en": "Required secrets missing: {{count}}",
+    "zh-CN": "缺少必需密钥：{{count}}",
+    "reviewedEnglishHash": "906845b655263b80d8b04164e324b4d48be1cb6d19471f54808e079449574f41"
+  },
+  "teamCatalog.requiredSkills": {
+    "en": "Required skills",
+    "zh-CN": "必需技能",
+    "reviewedEnglishHash": "dc7f3b37cfdab2486fe03c437463fa3b3904425e941fe15940bac3b8e6237ee0"
+  },
+  "teamCatalog.requiresInstallPermissions": {
+    "en": "Requires board operator or agent-create permissions.",
+    "zh-CN": "需要董事会操作者或创建智能体权限。",
+    "reviewedEnglishHash": "6f4b72ac523025636eb4adb8036dd57d23caa6f2771bd1288f03c5ef9100828e"
+  },
+  "teamCatalog.resetFilters": {
+    "en": "Reset filters",
+    "zh-CN": "重置筛选",
+    "reviewedEnglishHash": "10afa98480f2d06ceca3fa92be8380b7dc9fe71e50ea30b6beba82b2a9c9db02"
+  },
+  "teamCatalog.resolved": {
+    "en": "resolved",
+    "zh-CN": "已解析",
+    "reviewedEnglishHash": "dc676b42859915c826f8bbaef6511998f7aedbd6e332565faeda17fc33ec6320"
+  },
+  "teamCatalog.risk.any": {
+    "en": "Any risk",
+    "zh-CN": "任意风险",
+    "reviewedEnglishHash": "fe3b6ecd3d0f48e2cbef36422e27f6f742945289ac2e88ee4d2fe0aa9bcfaf64"
+  },
+  "teamCatalog.risk.blocked": {
+    "en": "Blocked",
+    "zh-CN": "已阻止",
+    "reviewedEnglishHash": "18f2a0947f9d6523991b29b450307f22773f57d65f7efb98d48a167df04d6b1d"
+  },
+  "teamCatalog.risk.hasWarnings": {
+    "en": "Has warnings",
+    "zh-CN": "有警告",
+    "reviewedEnglishHash": "6e567a298002198287d3009ba2fd74ed2789a18c57d2914f79c582ae2b20add0"
+  },
+  "teamCatalog.risk.label": {
+    "en": "Risk",
+    "zh-CN": "风险",
+    "reviewedEnglishHash": "0711a8d636e4c068ae59fa80c03ad68e7bd9fe473c1f9248fd2cf3716e3fb715"
+  },
+  "teamCatalog.risk.safe": {
+    "en": "Safe only",
+    "zh-CN": "仅安全",
+    "reviewedEnglishHash": "b819540de6ec8d9fa2dbf8e93e99326b11d32acbfedb77f2fed2a6ebe93c9285"
+  },
+  "teamCatalog.rootAgent": {
+    "en": "root agent",
+    "zh-CN": "根智能体",
+    "reviewedEnglishHash": "d8d5101b0c51354bbd7642887c16481500e692e0ccd8c66b429dcc79f81fa676"
+  },
+  "teamCatalog.rootAgents": {
+    "en": "Root agents",
+    "zh-CN": "根智能体",
+    "reviewedEnglishHash": "2223100ba417e954c6e61454f84e5019ad44b92efccc1d75e06fd4c1c9a0dda6"
+  },
+  "teamCatalog.searchTeams": {
+    "en": "Search teams",
+    "zh-CN": "搜索团队",
+    "reviewedEnglishHash": "3ad7e221faf1041994c4506c7adc4ccc4ef681f135048a8a6067d07c55349f1e"
+  },
+  "teamCatalog.secretsAndEnvInputs": {
+    "en": "Secrets & env inputs",
+    "zh-CN": "密钥和环境输入",
+    "reviewedEnglishHash": "d892aca40c0449ddf8360a41b628ba5b7c048098ac0d8665c20f3e8812449443"
+  },
+  "teamCatalog.selectCompany": {
+    "en": "Select a company to browse the team catalog.",
+    "zh-CN": "选择一家公司来浏览团队目录。",
+    "reviewedEnglishHash": "32792860b9ad525b3c5f14e34a8d80e8029a081e4aa18793c794b39c55c23ef5"
+  },
+  "teamCatalog.selectTeamDetails": {
+    "en": "Select a team to view details.",
+    "zh-CN": "选择一个团队以查看详情。",
+    "reviewedEnglishHash": "6a4629a02cd05d15543a2e6bdc3d07ee41c5587f5a60e2039b1c8f6f6327b451"
+  },
+  "teamCatalog.skillAction.already_in_package": {
+    "en": "Bundled in package",
+    "zh-CN": "已包含在包中",
+    "reviewedEnglishHash": "ee7bc8b05d26dc7c74e09fe709741eb98053ecd4c0e2a987f0e4d94fd3041ce6"
+  },
+  "teamCatalog.skillAction.blocked": {
+    "en": "Blocked",
+    "zh-CN": "已阻止",
+    "reviewedEnglishHash": "18f2a0947f9d6523991b29b450307f22773f57d65f7efb98d48a167df04d6b1d"
+  },
+  "teamCatalog.skillAction.catalog_install_required": {
+    "en": "Will install from catalog",
+    "zh-CN": "将从目录安装",
+    "reviewedEnglishHash": "58c50e9e59bd7cf09c68d9a2e9f45509abd90ab5009bf842e5f1e5b36f03d8e6"
+  },
+  "teamCatalog.skillAction.external_import_required": {
+    "en": "Will import from source",
+    "zh-CN": "将从来源导入",
+    "reviewedEnglishHash": "76a51ff8943bfcae04944ec513e10b271251ac1ac8eea5d75a6825a19bd75e51"
+  },
+  "teamCatalog.skillPlanHelp": {
+    "en": "Before agents are imported, the catalog resolves the skills they depend on. This is the resolution plan.",
+    "zh-CN": "导入智能体前，目录会解析它们依赖的技能。这里是解析计划。",
+    "reviewedEnglishHash": "be3e2b924b2f354a8d43345f68eacd1743b702ea0cd0a6c7aeb8e3aed5a1192c"
+  },
+  "teamCatalog.skillsResolved": {
+    "en": "Skills resolved",
+    "zh-CN": "已解析技能",
+    "reviewedEnglishHash": "363f2fa2e5983f3778a6c2269483a92029390a29ad35725cc3594397d1720da5"
+  },
+  "teamCatalog.skipCollisions": {
+    "en": "Skip collisions",
+    "zh-CN": "跳过冲突项",
+    "reviewedEnglishHash": "8787dd40d2511e08e3561772a8b12496653d7f4401a7ea8ab4b37f2b2a70f5ef"
+  },
+  "teamCatalog.sourcePolicyHelp": {
+    "en": "This team references {{count}} external source. Review each one and decide what to allow before continuing.",
+    "zh-CN": "此团队引用 {{count}} 个外部来源。继续前请检查每一项并决定允许范围。",
+    "reviewedEnglishHash": "210b8a5984b4c440371d05b66ce8e4a8aeb61b56acfe6532a14632f1be02df85"
+  },
+  "teamCatalog.sourcePolicyHelp_other": {
+    "en": "This team references {{count}} external sources. Review each one and decide what to allow before continuing.",
+    "zh-CN": "此团队引用 {{count}} 个外部来源。继续前请检查每一项并决定允许范围。",
+    "reviewedEnglishHash": "8b13f980e13077295ed4981113d36931afa851d33e066abebbfcb4bd0641c776"
+  },
+  "teamCatalog.starterTasks": {
+    "en": "Starter tasks",
+    "zh-CN": "起始任务",
+    "reviewedEnglishHash": "4df4effed4b47cfa5804c8d64a9a19c1902a57a6b7065c982039429cb3b7dfa2"
+  },
+  "teamCatalog.step.preview": {
+    "en": "Preview",
+    "zh-CN": "预览",
+    "reviewedEnglishHash": "324b134f57c70c729ae3dc4d298bb451656717d70523e942c1ce667b8024ea07"
+  },
+  "teamCatalog.step.skill_plan": {
+    "en": "Skills",
+    "zh-CN": "技能",
+    "reviewedEnglishHash": "66d0f523a379b2de6f8d5fba3a817ebc395f7bcaa54cc132ca9dfa665d1e9378"
+  },
+  "teamCatalog.step.source_policy": {
+    "en": "Sources",
+    "zh-CN": "来源",
+    "reviewedEnglishHash": "caf85b0888d78f1f83771a07b25c3d30fa1210242f2fae6e5ae5d9a686602800"
+  },
+  "teamCatalog.step.target_manager": {
+    "en": "Manager",
+    "zh-CN": "Manager",
+    "reviewedEnglishHash": "8b2085f74dfa9c78a23b7d573c23d27d6d0b0e50c82a9b13138b193325be3814"
+  },
+  "teamCatalog.stepProgress": {
+    "en": "Step {{current}} of {{total}} · {{step}}",
+    "zh-CN": "步骤 {{current}} / {{total}} · {{step}}",
+    "reviewedEnglishHash": "9bcfd1daf931fe77834a434672e2e33c1b4904db81878f3a05475b39ac7f6bf2"
+  },
+  "teamCatalog.summary": {
+    "en": "Summary",
+    "zh-CN": "摘要",
+    "reviewedEnglishHash": "8e76a94ac8320d515375e625bef1829238b097ecbd33611b59eeefd4ffefebfb"
+  },
+  "teamCatalog.targetManager": {
+    "en": "Target manager",
+    "zh-CN": "目标 manager",
+    "reviewedEnglishHash": "48ca2348f0360ea194d036127aed37949a2f98e139ed7a628988324638d430f1"
+  },
+  "teamCatalog.targetManagerHelp": {
+    "en": "This team's root agents need a manager in your company. Pick the agent who will become their parent. Internal team hierarchy is preserved.",
+    "zh-CN": "此团队的根智能体需要公司中的一个 manager。请选择将成为其父级的智能体。内部团队层级会保留。",
+    "reviewedEnglishHash": "0d299fb4c05d1235274803f08904d1db6dddd83702cf8154cd7da4a24f04652e"
+  },
+  "teamCatalog.teamImportedToast": {
+    "en": "{{name}} was imported.",
+    "zh-CN": "{{name}} 已导入。",
+    "reviewedEnglishHash": "5a9ffe44a5b726f0aee31613955b7f21ebf06042e6130e029ebaedb33978e21c"
+  },
+  "teamCatalog.teamInstalled": {
+    "en": "Team installed",
+    "zh-CN": "团队已安装",
+    "reviewedEnglishHash": "60bf729afa13676025eb35f0700a54fb59a40410c5e41429eb817fa8a84f09ef"
+  },
+  "teamCatalog.teamInstalledBody": {
+    "en": "{{name}} was imported into your company. Imported entities are stamped with catalog provenance.",
+    "zh-CN": "{{name}} 已导入到你的公司。导入的实体已带上目录来源标记。",
+    "reviewedEnglishHash": "dbf476e816b646a1862c2275fa9b4d8840603011a83550efd52811c8783cd850"
+  },
+  "teamCatalog.title": {
+    "en": "Teams",
+    "zh-CN": "团队",
+    "reviewedEnglishHash": "1e1a1c078af2887a56987f6da6ffc8f9b98261c9b2b8910e3b9ee23f294e2007"
+  },
+  "teamCatalog.unpinned": {
+    "en": "Unpinned",
+    "zh-CN": "未固定",
+    "reviewedEnglishHash": "ebe3b5488bc6a5fdc500ad367a9d96c0885b47c312da2370625a0f3c6de7e4ec"
+  },
+  "teamCatalog.unpinnedReference": {
+    "en": "unpinned reference",
+    "zh-CN": "未固定引用",
+    "reviewedEnglishHash": "2afeb610e410adda52cbc783f5e1624c730560b64696a135c3f22623cf4fbbbd"
+  },
+  "teamCatalog.unsupportedInBrowserInstall": {
+    "en": "Unsupported in browser install",
+    "zh-CN": "浏览器安装不支持",
+    "reviewedEnglishHash": "0911c79af054f7a5c76b168b00b047df039369cf5b6a1f7a17ff0013285c75a2"
+  },
+  "teamCatalog.updateAvailable": {
+    "en": "Update available",
+    "zh-CN": "有可用更新",
+    "reviewedEnglishHash": "ff8b555d818f0b25bbdd1bec8b479660bac7fc276acbe993e759bf67fed32c34"
+  },
+  "teamCatalog.viewActivityLog": {
+    "en": "View activity log",
+    "zh-CN": "查看活动日志",
+    "reviewedEnglishHash": "d46b15d8c18712fa9d5b37d625126c2c346b776916f16dfc341f248c6f7f5366"
+  },
+  "teamCatalog.viewImportedAgents": {
+    "en": "View imported agents",
+    "zh-CN": "查看导入的智能体",
+    "reviewedEnglishHash": "fa8a9affd3863d28f64751fc509a187996306716282507685de6d108a8b4f607"
+  },
+  "teamCatalog.viewImportedProjects": {
+    "en": "View imported projects",
+    "zh-CN": "查看导入的项目",
+    "reviewedEnglishHash": "1187c07e620a671bc3a48cc5301b8d4ee14578115e02adeb7f9764ad0a8a6552"
+  },
+  "teamCatalog.viewRoutines": {
+    "en": "View routines",
+    "zh-CN": "查看例行任务",
+    "reviewedEnglishHash": "acab7ed03e11021b407a0ee31085c2f79ab63c1633317467e893d0fee3831d52"
+  }
+}

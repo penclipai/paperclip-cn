@@ -1,0 +1,77 @@
+{
+  "inboxAgentPolicy.allowAgentAriaLabel": {
+    "en": "Allow {{name}} to tidy my inbox",
+    "zh-CN": "允许 {{name}} 整理我的收件箱",
+    "reviewedEnglishHash": "8830a21d359f5592c4bf1825fec6295f99d29c6d0c70b0fbde4d8176d81c2e89"
+  },
+  "inboxAgentPolicy.allowedAgents": {
+    "en": "Agents allowed to tidy my inbox",
+    "zh-CN": "可整理我收件箱的智能体",
+    "reviewedEnglishHash": "d849f31dad4a11608f1810de9061b156da2e94ddbe415c7416b2e73ab2ce52ce"
+  },
+  "inboxAgentPolicy.ariaLabel": {
+    "en": "Inbox agent archiving policy",
+    "zh-CN": "收件箱智能体归档策略",
+    "reviewedEnglishHash": "9dba8922312a5660cb614dacb17432480a0a3dcdc8152f1145599d2b12248f00"
+  },
+  "inboxAgentPolicy.description": {
+    "en": "Choose whether the agents you manage may archive tasks out of your inbox on your behalf. You can undo any archive, and every agent archive is attributed in the task's properties.",
+    "zh-CN": "选择你管理的智能体能否代你归档收件箱中的任务。任何归档都可以撤销，任务属性中也会记录执行归档的智能体。",
+    "reviewedEnglishHash": "998e091da08c9782362bfc4868f8805d36bc19dad99f7a0af546c8d74203d1fc"
+  },
+  "inboxAgentPolicy.loadFailed": {
+    "en": "Failed to load inbox agent policy.",
+    "zh-CN": "无法加载收件箱智能体策略。",
+    "reviewedEnglishHash": "3b66e0953e064e8fb40ee3c336c2b6baebe97abc830ba2c1d00af490dda2d721"
+  },
+  "inboxAgentPolicy.loading": {
+    "en": "Loading inbox agent policy...",
+    "zh-CN": "正在加载收件箱智能体策略...",
+    "reviewedEnglishHash": "010e66f70079f2a33a47164457b593a9a58b0b6f54014dac030074560563e63b"
+  },
+  "inboxAgentPolicy.mode.allowlist.description": {
+    "en": "Restrict inbox tidying to the agents you pick below.",
+    "zh-CN": "仅允许下方选择的智能体整理收件箱。",
+    "reviewedEnglishHash": "ea27e1b1563c7bedac2ed5439a07982f78022c3b8e0883dd5a5769ee05b0ef48"
+  },
+  "inboxAgentPolicy.mode.allowlist.title": {
+    "en": "Only chosen agents",
+    "zh-CN": "仅限所选智能体",
+    "reviewedEnglishHash": "ff0b72ddcd4c41b72e07f88baec84190301cf6f21b7e403474602aaeba4a428f"
+  },
+  "inboxAgentPolicy.mode.disabled.description": {
+    "en": "Agents can never archive tasks from your inbox.",
+    "zh-CN": "智能体不能归档你收件箱中的任务。",
+    "reviewedEnglishHash": "7d3cc88caf21b56eb4b6e1108b47915da2e4b468e6347199af135b63c9541407"
+  },
+  "inboxAgentPolicy.mode.disabled.title": {
+    "en": "Off",
+    "zh-CN": "关闭",
+    "reviewedEnglishHash": "ca7981b46ecf2c1787b6d76d81d9fd7fa0ca95842e2fcc2a452869891a9334d1"
+  },
+  "inboxAgentPolicy.mode.open.description": {
+    "en": "Let any agent you manage archive tasks out of your inbox.",
+    "zh-CN": "允许你管理的任意智能体归档收件箱中的任务。",
+    "reviewedEnglishHash": "d2820c83bc3ee6fb309176ca09257f07f5d38b7300e4b39c714ef88495e7a21e"
+  },
+  "inboxAgentPolicy.mode.open.title": {
+    "en": "Any of my agents",
+    "zh-CN": "我的任意智能体",
+    "reviewedEnglishHash": "4146a13b798954ae59be654aeeba75c1264b832b370276ca9e6037df5bc03ad9"
+  },
+  "inboxAgentPolicy.noAgents": {
+    "en": "You don't manage any agents yet.",
+    "zh-CN": "你还没有管理任何智能体。",
+    "reviewedEnglishHash": "282803fdcd9c3c4448676965b9fd93df679d53d06d1a5c13b63c60b015a6a756"
+  },
+  "inboxAgentPolicy.saveFailed": {
+    "en": "Failed to save inbox agent policy.",
+    "zh-CN": "无法保存收件箱智能体策略。",
+    "reviewedEnglishHash": "0cb3feff96ee1bb78852639cc49819e597c51b3acd297d2c60a2a42080554ebd"
+  },
+  "inboxAgentPolicy.title": {
+    "en": "Let agents tidy my inbox",
+    "zh-CN": "让智能体整理我的收件箱",
+    "reviewedEnglishHash": "e2e2d36a8d54bf7eb9cc8f910436519794b940926aa875a310e5ceb70c1aa2ad"
+  }
+}

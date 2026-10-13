@@ -1,0 +1,37 @@
+{
+  "dnd.announcements.dragCancel": {
+    "en": "Cancelled dragging draggable item {{id}}.",
+    "zh-CN": "已取消拖拽项目 {{id}}。",
+    "reviewedEnglishHash": "b6fae7bcf5cf58a68664d3b6867c3ed807392b0d5f424e084724528ebebcb9de"
+  },
+  "dnd.announcements.dragEnd": {
+    "en": "Dropped draggable item {{id}} over droppable area {{overId}}.",
+    "zh-CN": "已将可拖拽项目 {{id}} 放到可放置区域 {{overId}}。",
+    "reviewedEnglishHash": "545897bbd994e3ba2987977f7a25de6255561677c8830e54b74c3c7bb9d55865"
+  },
+  "dnd.announcements.dragEndNone": {
+    "en": "Dropped draggable item {{id}}.",
+    "zh-CN": "已放下可拖拽项目 {{id}}。",
+    "reviewedEnglishHash": "d6773645ec99424f85ac7b1098b78302e09e7bce9c952cf86272a4024ade8a03"
+  },
+  "dnd.announcements.dragOver": {
+    "en": "Draggable item {{id}} is over droppable area {{overId}}.",
+    "zh-CN": "可拖拽项目 {{id}} 当前位于可放置区域 {{overId}} 上。",
+    "reviewedEnglishHash": "b327c6edd06ca96633a9eddf5b4db86a6f8ef735460bbbf18165a908b105ba0b"
+  },
+  "dnd.announcements.dragOverNone": {
+    "en": "Draggable item {{id}} is no longer over a droppable area.",
+    "zh-CN": "可拖拽项目 {{id}} 已离开可放置区域。",
+    "reviewedEnglishHash": "bb6306f25abcaef7da8d9801767285bf05a72dd67e35bc475cf5a151e629024b"
+  },
+  "dnd.announcements.dragStart": {
+    "en": "Picked up draggable item {{id}}.",
+    "zh-CN": "已拿起可拖拽项目 {{id}}。",
+    "reviewedEnglishHash": "23c3a3cab431f799871b20ae05300f3f36aa21652f2e7630f02383c823d2fd6b"
+  },
+  "dnd.screenReaderInstructions.draggable": {
+    "en": "To pick up a draggable item, press the space bar. While dragging, use the arrow keys to move the item. Press space again to drop the item in its new position, or press escape to cancel.",
+    "zh-CN": "要拿起可拖拽项目，请按空格键。拖拽时可使用方向键移动项目。再次按空格键可将项目放到新位置，按 Esc 可取消。",
+    "reviewedEnglishHash": "c06035503e3a59a8c27459f7faee713bfed36af4fa9eac9b5e6c6a49b6a04cd7"
+  }
+}

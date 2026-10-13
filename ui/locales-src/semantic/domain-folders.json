@@ -1,0 +1,497 @@
+{
+  "folders.actionsFor": {
+    "en": "Folder actions for {{name}}",
+    "zh-CN": "{{name}} 的文件夹操作",
+    "reviewedEnglishHash": "e01795b9ed1d2b227a5ecd7116d91f241e5da0decf162856579b90d61f4ce44b"
+  },
+  "folders.allRoutines": {
+    "en": "All routines",
+    "zh-CN": "所有例行任务",
+    "reviewedEnglishHash": "4a8c7842a533faf3b5fa847eec44a4a0f8a59071584557d971de2df72b95ba00"
+  },
+  "folders.allSkills": {
+    "en": "All skills",
+    "zh-CN": "所有技能",
+    "reviewedEnglishHash": "78abcbbfb830971cd353a89a93eac14d8f8ee85931e8519951a2c55dd0920d58"
+  },
+  "folders.bundled": {
+    "en": "Bundled",
+    "zh-CN": "内置",
+    "reviewedEnglishHash": "79d3a1f108e8d9c37f573ce55f27741845eb61f64c3272f91608f653ee4439e5"
+  },
+  "folders.chooseDestination": {
+    "en": "Choose a destination folder.",
+    "zh-CN": "选择目标文件夹。",
+    "reviewedEnglishHash": "b2be2d288f7cf424b44bd6423900b3e4866bd2e1798b4c2571f3321f6d955af6"
+  },
+  "folders.collapse": {
+    "en": "Collapse folder",
+    "zh-CN": "折叠文件夹",
+    "reviewedEnglishHash": "de183e2e0cd2c3a954db2252c4eabaa1eb8f66123cd10c5a8c59be2ae3a0e53e"
+  },
+  "folders.company": {
+    "en": "Company",
+    "zh-CN": "公司",
+    "reviewedEnglishHash": "de4743c879734dc38cb3e270ecefcae077c3c2e626f9298115d5a03c8613f89b"
+  },
+  "folders.createError": {
+    "en": "Failed to create folder.",
+    "zh-CN": "无法创建文件夹。",
+    "reviewedEnglishHash": "e1c450fd01ebec8b33181fda17ccd5839c0a1fd8f22ed2785b3b9637ebd929ad"
+  },
+  "folders.createFailed": {
+    "en": "Folder create failed",
+    "zh-CN": "文件夹创建失败",
+    "reviewedEnglishHash": "f21798af3cffc31a2110bfb0552ea24bf4580052bd3fa3f7adf77a8e99060317"
+  },
+  "folders.createFirst": {
+    "en": "Create your first folder",
+    "zh-CN": "创建第一个文件夹",
+    "reviewedEnglishHash": "f83fdd9d4a674350e4e9258c579a97eecc262b55019ea81fab42f552c5ad6641"
+  },
+  "folders.createFolder": {
+    "en": "Create folder",
+    "zh-CN": "创建文件夹",
+    "reviewedEnglishHash": "82b9e1ef0b404cf1d86bd535846025f5330027ae454629f59f3946757e99ce99"
+  },
+  "folders.createPersonalError": {
+    "en": "Failed to create your personal folder.",
+    "zh-CN": "无法创建个人文件夹。",
+    "reviewedEnglishHash": "e45066fd7159b9ce277da1c9799681c1baa1aed0163459f04b047ed307a93466"
+  },
+  "folders.created": {
+    "en": "Folder created",
+    "zh-CN": "文件夹已创建",
+    "reviewedEnglishHash": "b1dfe0e9670cba076e2639e830f0f18847f28657a1ba4e49e423650adce7e9b3"
+  },
+  "folders.createdMoveFailed": {
+    "en": "Folder created, move failed",
+    "zh-CN": "文件夹已创建，但移动失败",
+    "reviewedEnglishHash": "cc944912a7387787c07ef555691740355c4718b7f7146d75b1a4275b6ce42e1b"
+  },
+  "folders.current": {
+    "en": "current",
+    "zh-CN": "当前",
+    "reviewedEnglishHash": "97b0560280ed60a5a1eaa1bc45492543c8a986ad5a25b468c427eb83c3e88191"
+  },
+  "folders.deleteDescription": {
+    "en": "The {{count}} {{items}} in this folder won't be deleted. They'll move to Unfiled.",
+    "zh-CN": "此文件夹中的 {{count}} 个{{items}}不会被删除，而会移至“未分类”。",
+    "reviewedEnglishHash": "39758e6168360bdfd66995abdac1682fe05d23f5335fd8ea3b67f013ee6cb3fb"
+  },
+  "folders.deleteError": {
+    "en": "Failed to delete folder.",
+    "zh-CN": "无法删除文件夹。",
+    "reviewedEnglishHash": "d6b6dd50c8594b5cda1c3a761b90d5ce4dfc964e56bfa65c9696f947cd5d84de"
+  },
+  "folders.deleteFailed": {
+    "en": "Folder delete failed",
+    "zh-CN": "文件夹删除失败",
+    "reviewedEnglishHash": "cdb83bbddabd2dfff1364361ea9f9dad9d16ee267260a8d7439d6088b9d8a8df"
+  },
+  "folders.deleteFolder": {
+    "en": "Delete folder",
+    "zh-CN": "删除文件夹",
+    "reviewedEnglishHash": "39f35f2d44d6115225998ed9765a26b85e46143761a8563262ad48b63e17f1ff"
+  },
+  "folders.deleted": {
+    "en": "Folder deleted",
+    "zh-CN": "文件夹已删除",
+    "reviewedEnglishHash": "796dc50ba898b20e69f0f05bf02875b0d37fcfc1497b2e03e92bb0b3675990ad"
+  },
+  "folders.deselectAll": {
+    "en": "Deselect all",
+    "zh-CN": "取消全选",
+    "reviewedEnglishHash": "967549497036d51303efbdc904bb5e5654551058d0854be757b36280abd3ec8b"
+  },
+  "folders.dismissSuggestion": {
+    "en": "Dismiss folder suggestion",
+    "zh-CN": "关闭文件夹建议",
+    "reviewedEnglishHash": "5bd76b4dfb0dc1cd520aedda43813b8922d2ef4ac01b31cfe290a61ccb09c6aa"
+  },
+  "folders.editColor": {
+    "en": "Edit color",
+    "zh-CN": "编辑颜色",
+    "reviewedEnglishHash": "0ef08627434532c9f09f8794279dfb0258e840e1c558e79790b7c0fc84917655"
+  },
+  "folders.editFolder": {
+    "en": "Edit folder",
+    "zh-CN": "编辑文件夹",
+    "reviewedEnglishHash": "fe82f5a54ad3a3ddd2bca3a96a0beacabfafb62fb5b9bde71d2b0249f0fbbbe0"
+  },
+  "folders.empty": {
+    "en": "This folder is empty.",
+    "zh-CN": "此文件夹为空。",
+    "reviewedEnglishHash": "bd88d713ecd33916fd3cc729c91257813f1306ea31e4ccc814b7722591ec63d1"
+  },
+  "folders.expand": {
+    "en": "Expand folder",
+    "zh-CN": "展开文件夹",
+    "reviewedEnglishHash": "a5e635fd384f3fd0eccb697f881c0785518a3f1310c32c98be178079f4d5291a"
+  },
+  "folders.filedIn": {
+    "en": "filed in",
+    "zh-CN": "归档到",
+    "reviewedEnglishHash": "8effe18fb31887c553d20d7750535193e12e0aeecb1e2bd1eb35ca47cbfe32cb"
+  },
+  "folders.filedUnder": {
+    "en": "Filed under {{folder}}.",
+    "zh-CN": "已归档到 {{folder}}。",
+    "reviewedEnglishHash": "e779879cf52ce80eae40f248767a7ad070159f6be576174f25df8c16334fe45b"
+  },
+  "folders.folder": {
+    "en": "folder",
+    "zh-CN": "文件夹",
+    "reviewedEnglishHash": "034a0062488256f14c8b14d025ec3988b148938f7f9db94ca0ac73f4b3614d8a"
+  },
+  "folders.groupSuggestion": {
+    "en": "Group these {{items}} into folders to keep things tidy.",
+    "zh-CN": "将这些{{items}}整理到文件夹中，方便查找。",
+    "reviewedEnglishHash": "86f6eb44ff1d54743cd1baf45bea40f9feb316eba2920e6caa50c3a22ee60aa8"
+  },
+  "folders.itemCountFiled": {
+    "en": "{{count}} skills filed.",
+    "zh-CN": "已归档 {{count}} 个技能。",
+    "reviewedEnglishHash": "94f400a384ee5fa125cf948da9ed6e65768c07832cb19537665d4060ae0db7b4"
+  },
+  "folders.itemMoveFailed": {
+    "en": "Move failed",
+    "zh-CN": "移动失败",
+    "reviewedEnglishHash": "55185d67bf51c3f10e80af820c5188f85ee16cf8880968868572b6b6dc615b63"
+  },
+  "folders.itemsMoved": {
+    "en": "{{items}} moved",
+    "zh-CN": "{{items}}已移动",
+    "reviewedEnglishHash": "e59994c10b755ad0b7f861e0606be1b2736b4fa8058e1a74dca81c449fb6371f"
+  },
+  "folders.itemsMovedToUnfiled": {
+    "en": "{{items}} moved to Unfiled.",
+    "zh-CN": "{{items}}已移至“未分类”。",
+    "reviewedEnglishHash": "2611e5cafb53702e3ea064a0fa686012460037bec1ab7324ec3b9e88ff82f089"
+  },
+  "folders.moveError": {
+    "en": "Failed to move folder.",
+    "zh-CN": "无法移动文件夹。",
+    "reviewedEnglishHash": "8f6b0ac27b8866301a2547ed8ea70922481662968b04f1539433d76f0416351b"
+  },
+  "folders.moveErrorGeneric": {
+    "en": "Failed to move.",
+    "zh-CN": "无法移动。",
+    "reviewedEnglishHash": "ebe20e29be0a872ce452dfa05144685df3652e2388a0c5389e936108af00e7cc"
+  },
+  "folders.moveFailed": {
+    "en": "Folder move failed",
+    "zh-CN": "文件夹移动失败",
+    "reviewedEnglishHash": "4adda1bcbe270331e33bf10411e7e8042d5f254318b987634de83808aedfed05"
+  },
+  "folders.moveHere": {
+    "en": "Move here",
+    "zh-CN": "移动到此处",
+    "reviewedEnglishHash": "56f124777749d1f839229c5e4d257f615127a70b40a3ec4e41c731798537d10e"
+  },
+  "folders.moveItemError": {
+    "en": "Failed to move {{item}}.",
+    "zh-CN": "无法移动{{item}}。",
+    "reviewedEnglishHash": "1cc16a4c0dc8a34379af2ae4f1b38fe3a2b330189b53d7d3b8c7e398ac83c6f8"
+  },
+  "folders.moveItemsFailed": {
+    "en": "Failed to move {{items}}",
+    "zh-CN": "无法移动{{items}}",
+    "reviewedEnglishHash": "c045cb7d35f73ddfb3ecb8478d3bd495ccc8fc4dab7cb0fbab4aaa96c2697cfa"
+  },
+  "folders.moveNamedItem": {
+    "en": "Move \"{{name}}\"",
+    "zh-CN": "移动“{{name}}”",
+    "reviewedEnglishHash": "73f9eb6eac6cd2d326e6d991159e2005c0dc6d82cb8009f65458dc2538ddfe7f"
+  },
+  "folders.moveSelectedFailed": {
+    "en": "Failed to move the selected {{items}}.",
+    "zh-CN": "无法移动所选{{items}}。",
+    "reviewedEnglishHash": "9447cd63015ec27c3d10bb5f917329b87f2eb2d8d18a968340b9bdfdd059d23d"
+  },
+  "folders.moveTo": {
+    "en": "Move to...",
+    "zh-CN": "移动到...",
+    "reviewedEnglishHash": "ebebc2b3c629e8a4e7e08a00159c5baa1598d2feae817114961af5ad372bf29a"
+  },
+  "folders.moveToDestination": {
+    "en": "Move to {{destination}}",
+    "zh-CN": "移动到{{destination}}",
+    "reviewedEnglishHash": "8158c380ff61f6272aeb96de6ff78e764f027ea478143828f935356827d98540"
+  },
+  "folders.moveToFolder": {
+    "en": "Move to folder",
+    "zh-CN": "移动到文件夹",
+    "reviewedEnglishHash": "91d631e150a39784af97883c492d6b3291cd70dc21b1274898155d9795458f7b"
+  },
+  "folders.moved": {
+    "en": "Folder moved",
+    "zh-CN": "文件夹已移动",
+    "reviewedEnglishHash": "03adda2e37b9198efabc23b882277628de17eb5670f23a0342337c19b759c881"
+  },
+  "folders.movedNamedItemToFolder": {
+    "en": "Moved \"{{name}}\" to {{folder}}.",
+    "zh-CN": "已将“{{name}}”移至 {{folder}}。",
+    "reviewedEnglishHash": "442722904dc9427862a464a8a206c9d26b851aeaa761ea8c485efacf02f89d94"
+  },
+  "folders.movedNamedItemToUnfiled": {
+    "en": "Moved \"{{name}}\" to Unfiled.",
+    "zh-CN": "已将“{{name}}”移至“未分类”。",
+    "reviewedEnglishHash": "1c2b7915080fbbe42667dd8f6ad8ce76b2f61222087495f3d4f58b72f1ff018e"
+  },
+  "folders.movedToUnfiled": {
+    "en": "Moved to Unfiled.",
+    "zh-CN": "已移至“未分类”。",
+    "reviewedEnglishHash": "82f0c284c115ae8c153e1d70ad92f0db0f27f80f40e90b0a456bdda4fa1542fa"
+  },
+  "folders.moving": {
+    "en": "Moving...",
+    "zh-CN": "正在移动...",
+    "reviewedEnglishHash": "f44f4aefa83526e3803914be22d8b61a5b8f337d0debd42065d40ebd303cf88c"
+  },
+  "folders.movingTo": {
+    "en": "Moving to",
+    "zh-CN": "移动到",
+    "reviewedEnglishHash": "94a7ed5489cc4665ba0e00be384036186f27c79140f1c0229d76b32a7733a767"
+  },
+  "folders.mySkills": {
+    "en": "My Skills",
+    "zh-CN": "我的技能",
+    "reviewedEnglishHash": "ea424d66243dffe95c9093fd34e53f91170f639b7b4c99c828ef55f82c01dabf"
+  },
+  "folders.namePlaceholder": {
+    "en": "Folder name",
+    "zh-CN": "文件夹名称",
+    "reviewedEnglishHash": "14d34edf50ef6c8738db97eb3fc56d0d5c8521b4555404b3ad456cedbb0c815d"
+  },
+  "folders.navigationLabel": {
+    "en": "{{items}} folders",
+    "zh-CN": "{{items}}文件夹",
+    "reviewedEnglishHash": "a264c1eb09dfc3368131e1c2b7312c283a64400d85bceca5bff9b674988cefcb"
+  },
+  "folders.newFolder": {
+    "en": "New folder",
+    "zh-CN": "新建文件夹",
+    "reviewedEnglishHash": "cf28f49ec597a6ede5ae0fc5e121b6f0321d0ddfa645ff39cd44febac0b2ac75"
+  },
+  "folders.newFolderEllipsis": {
+    "en": "New folder...",
+    "zh-CN": "新建文件夹...",
+    "reviewedEnglishHash": "8b24f3e753ed1954e97a43640d965660038a911bc0d1964e3f2edf683303c9b9"
+  },
+  "folders.newFolderInside": {
+    "en": "New folder inside...",
+    "zh-CN": "在此处新建文件夹...",
+    "reviewedEnglishHash": "6d9396a1e60b26481338450f085c641fd9a1cb6486f32edc0aa5e76cf4ac62c7"
+  },
+  "folders.newRoutineHere": {
+    "en": "New routine in this folder",
+    "zh-CN": "在此文件夹中新建例行任务",
+    "reviewedEnglishHash": "086c8aefb7d9222f995530e1c76b878bec84716ed6de43d0afdbe84154372b89"
+  },
+  "folders.newSectionFolder": {
+    "en": "New {{section}} folder",
+    "zh-CN": "在{{section}}中新建文件夹",
+    "reviewedEnglishHash": "41c65a8f26d29e3eb3295d7faea0f968f47e2fe1c54e422e63ebb7dcff324d0f"
+  },
+  "folders.newSubfolder": {
+    "en": "New subfolder",
+    "zh-CN": "新建子文件夹",
+    "reviewedEnglishHash": "1f054525307b8b570a4009a10b9f9eb371596cae2d5c1806c9583f7c8768d001"
+  },
+  "folders.newTopLevel": {
+    "en": "New top-level folder...",
+    "zh-CN": "新建顶层文件夹...",
+    "reviewedEnglishHash": "22400670230a7a1589f84ab8273a92d29ed7a1bc52b4dac214673801d1e0e45a"
+  },
+  "folders.noCompanyFolders": {
+    "en": "No company folders yet.",
+    "zh-CN": "尚无公司文件夹。",
+    "reviewedEnglishHash": "e1364094c70c5c4d13a460f6a71b4abaa4ce817ad1a73312823231eaa90e1b68"
+  },
+  "folders.noMatch": {
+    "en": "No folders match.",
+    "zh-CN": "没有匹配的文件夹。",
+    "reviewedEnglishHash": "cfbf414bcac10f8653cd967418c74298043a7e4554d14d73d9cc03d76ecadb11"
+  },
+  "folders.noRoutinesMatch": {
+    "en": "No routines match this view.",
+    "zh-CN": "没有符合当前视图的例行任务。",
+    "reviewedEnglishHash": "7bf937cf568942d133380bcb806fbaa699275bf34b5a3526c51a7593a0c8048d"
+  },
+  "folders.openMySkillsFailed": {
+    "en": "Couldn't open My Skills",
+    "zh-CN": "无法打开“我的技能”",
+    "reviewedEnglishHash": "41e651acd494d0ae733deced7c253e1d1c1aa94901dd7497fef52043b3cd7dc4"
+  },
+  "folders.organizeRoutines": {
+    "en": "Organize routines in this company.",
+    "zh-CN": "整理此公司的例行任务。",
+    "reviewedEnglishHash": "47055d88b46171d772a0ed7b1902b2780784c38a9fe2ffaa020410c73adad8dd"
+  },
+  "folders.organizeSkills": {
+    "en": "Organize installed company skills.",
+    "zh-CN": "整理已安装的公司技能。",
+    "reviewedEnglishHash": "d218105bb5c49d979e6865dcfb26e93d90d5a4d47769a1d1c94f3a3b1c35b027"
+  },
+  "folders.path": {
+    "en": "Folder path",
+    "zh-CN": "文件夹路径",
+    "reviewedEnglishHash": "98bca2fab915abe0541e612db447c6cf9ad18d1aaa595f052c5d1bf6a697995b"
+  },
+  "folders.pickDestination": {
+    "en": "Pick a destination folder.",
+    "zh-CN": "请选择目标文件夹。",
+    "reviewedEnglishHash": "1b4df9890211d2c4911ac5570f0da6ec3d340e4ea28d8ef40135d4501327132a"
+  },
+  "folders.projects": {
+    "en": "Projects",
+    "zh-CN": "项目",
+    "reviewedEnglishHash": "04e2a9728af7584043c5d58ae29e7cd811883e8dab15fc6287675270669a3ada"
+  },
+  "folders.readOnly": {
+    "en": "read-only",
+    "zh-CN": "只读",
+    "reviewedEnglishHash": "4fed3970dcc0d31dccddbf69ef55b00f32d2ca787f1757894914bc0365ea7aa5"
+  },
+  "folders.rename": {
+    "en": "Rename",
+    "zh-CN": "重命名",
+    "reviewedEnglishHash": "3064d79a295cefe4b384b8fe5cb29fd6b06d7eb1ad94b8895f4148039d06b330"
+  },
+  "folders.resizeSkillFolders": {
+    "en": "Resize skill folders",
+    "zh-CN": "调整技能文件夹宽度",
+    "reviewedEnglishHash": "d8cb8ea6c818044e2befdb637d427164b0419a15b2637ff98f8c424f870bf527"
+  },
+  "folders.routine": {
+    "en": "routine",
+    "zh-CN": "例行任务",
+    "reviewedEnglishHash": "fde55b36ec36cbcd2832b6b9f8f59ea0cf6d942c528053ca1171c063069a74cf"
+  },
+  "folders.routineCount": {
+    "en": "{{count}} routines",
+    "zh-CN": "{{count}} 个例行任务",
+    "reviewedEnglishHash": "2482cb25b7d84a60909f567603292306cfbf9a4a50f8edddc2aa9d10ec11c733"
+  },
+  "folders.routineCountFiled": {
+    "en": "{{count}} routines filed.",
+    "zh-CN": "已归档 {{count}} 个例行任务。",
+    "reviewedEnglishHash": "0414f5e3b03bbd7dd23040ea5c7a4246856fb31b4d5063946ae0d0c1a9f6460c"
+  },
+  "folders.routineCountFiled_one": {
+    "en": "{{count}} routine filed.",
+    "zh-CN": "已归档 {{count}} 个例行任务。",
+    "reviewedEnglishHash": "143a79fe2c3be27486100465a88febdc1bac2adaa1652038fe5d008bfa62a6fe"
+  },
+  "folders.routineCountFiled_other": {
+    "en": "{{count}} routines filed.",
+    "zh-CN": "已归档 {{count}} 个例行任务。",
+    "reviewedEnglishHash": "0414f5e3b03bbd7dd23040ea5c7a4246856fb31b4d5063946ae0d0c1a9f6460c"
+  },
+  "folders.routineCount_one": {
+    "en": "{{count}} routine",
+    "zh-CN": "{{count}} 个例行任务",
+    "reviewedEnglishHash": "eb6bb92719189a7d75d80acc400e7f66a718d1d74e257338f40a516a203b20a6"
+  },
+  "folders.routineCount_other": {
+    "en": "{{count}} routines",
+    "zh-CN": "{{count}} 个例行任务",
+    "reviewedEnglishHash": "2482cb25b7d84a60909f567603292306cfbf9a4a50f8edddc2aa9d10ec11c733"
+  },
+  "folders.routineMoved": {
+    "en": "Routine moved",
+    "zh-CN": "例行任务已移动",
+    "reviewedEnglishHash": "0710300f56cc8c6305d0145f4e06304c7bfbe29ffb285ecb1badbd4421ac691b"
+  },
+  "folders.routines": {
+    "en": "routines",
+    "zh-CN": "例行任务",
+    "reviewedEnglishHash": "2a90353984b239a91775226e200db4a5195338a4ee2d8ab166aeeca3333fad92"
+  },
+  "folders.routinesTitle": {
+    "en": "Routines",
+    "zh-CN": "例行任务",
+    "reviewedEnglishHash": "61b7bb44e2b47b7c0ccaccff4872fdcf3e298345d0f003ea4bf54e8c84e2a889"
+  },
+  "folders.saveError": {
+    "en": "Failed to save folder.",
+    "zh-CN": "无法保存文件夹。",
+    "reviewedEnglishHash": "d26c3288c781eadfb867541209bfabb0a03b7a1049d0a2cbff3ea4353f4e9024"
+  },
+  "folders.saveFailed": {
+    "en": "Folder save failed",
+    "zh-CN": "文件夹保存失败",
+    "reviewedEnglishHash": "b0b2fe03ac2afae4b2c9992497540c03e7cf07ab79ddbd9bd5f3e41c27fbd867"
+  },
+  "folders.search": {
+    "en": "Search folders",
+    "zh-CN": "搜索文件夹",
+    "reviewedEnglishHash": "b2132d5f1a39c61010955915c6643a11ba0e686e7a48f8b06983eae234e2af74"
+  },
+  "folders.selectedCount": {
+    "en": "{{count}} selected",
+    "zh-CN": "已选择 {{count}} 项",
+    "reviewedEnglishHash": "c7f761b38b197daa6b822be7397d8e2701c3dbb12b79b4a90eb1c37969bed5a6"
+  },
+  "folders.skill": {
+    "en": "skill",
+    "zh-CN": "技能",
+    "reviewedEnglishHash": "9c53c074d7ac6a2728b638ac1f376c5fa9eb8f71603017c3ea638c2fd40548df"
+  },
+  "folders.skillFolders": {
+    "en": "Skill folders",
+    "zh-CN": "技能文件夹",
+    "reviewedEnglishHash": "87294e029ecb2260240baa6d4cfbfa1484e0c7627b529107482e27fae9f32d58"
+  },
+  "folders.skillMoved": {
+    "en": "Skill moved",
+    "zh-CN": "技能已移动",
+    "reviewedEnglishHash": "f9a58f8339b501491cda9136c9072430e2f97883f59057adc8e122979683e35f"
+  },
+  "folders.skills": {
+    "en": "skills",
+    "zh-CN": "技能",
+    "reviewedEnglishHash": "32c1cf49a2feee269ed74dd860f72644ac71029839b21b1ce0c212efafa9ef07"
+  },
+  "folders.skillsMoved": {
+    "en": "Skills moved",
+    "zh-CN": "技能已移动",
+    "reviewedEnglishHash": "7d315bbc84ea4b0a8a436d4a505176890ff9f250d9d9e9946183a4b7b5333a41"
+  },
+  "folders.skillsTitle": {
+    "en": "Skills",
+    "zh-CN": "技能",
+    "reviewedEnglishHash": "66d0f523a379b2de6f8d5fba3a817ebc395f7bcaa54cc132ca9dfa665d1e9378"
+  },
+  "folders.system": {
+    "en": "System",
+    "zh-CN": "系统",
+    "reviewedEnglishHash": "6725e7bbcd28f3a8a586fa34bf191fd72dde8b61756932cd3237c17a6f196f1a"
+  },
+  "folders.tags": {
+    "en": "Tags",
+    "zh-CN": "标签",
+    "reviewedEnglishHash": "1331275bc537b4c2bf1e46f7275677967515342e30b572e6852fa6f51b831fe8"
+  },
+  "folders.title": {
+    "en": "Folders",
+    "zh-CN": "文件夹",
+    "reviewedEnglishHash": "c4d6bb200f4c058a9b16e900cb5495e59b52fda24cf011eedef8645c90051a8c"
+  },
+  "folders.unfiled": {
+    "en": "Unfiled",
+    "zh-CN": "未分类",
+    "reviewedEnglishHash": "d64dc9ae400c2871ac7bd579442b769d5f9bc99e2fc83f804d334ecc1398a1c7"
+  },
+  "folders.updateError": {
+    "en": "Failed to update folder.",
+    "zh-CN": "无法更新文件夹。",
+    "reviewedEnglishHash": "72be324de8685f78db0b81eac5400f31e10541b3fce0261217f9cff172802760"
+  },
+  "folders.useColor": {
+    "en": "Use folder color {{color}}",
+    "zh-CN": "使用文件夹颜色 {{color}}",
+    "reviewedEnglishHash": "132547570ae94514fd044777648b68873f04bee4a862c0e9a69fba5188e0bca7"
+  }
+}

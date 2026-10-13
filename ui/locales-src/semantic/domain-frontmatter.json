@@ -1,0 +1,142 @@
+{
+  "frontmatter.add": {
+    "en": "Add frontmatter",
+    "zh-CN": "添加 Frontmatter",
+    "reviewedEnglishHash": "d3629db00997afd9a349ed9a192c621dc02fe86b4352f220c7413648048f9798"
+  },
+  "frontmatter.addField": {
+    "en": "add field",
+    "zh-CN": "添加字段",
+    "reviewedEnglishHash": "2af202ccb3444681744efe941867d5c3ed3de12f69b4b0a5c1570d61e3dc2e8c"
+  },
+  "frontmatter.addTool": {
+    "en": "Add tool",
+    "zh-CN": "添加工具",
+    "reviewedEnglishHash": "3076805f860711e6c8bbef6ebcae1b065c096101dd83da8ecd1cfc20dcdf0a5e"
+  },
+  "frontmatter.addToolPlaceholder": {
+    "en": "Add a tool...",
+    "zh-CN": "添加工具...",
+    "reviewedEnglishHash": "e3e58322408dc45d5b4c3a8c9b37e8642488548e12c3a2823bcb2f515c1f8d9c"
+  },
+  "frontmatter.complexValue": {
+    "en": "Complex value - edit in YAML.",
+    "zh-CN": "复杂值，请在 YAML 中编辑。",
+    "reviewedEnglishHash": "cda99c0cb1ef1f240e6c77796fd55e183c24fea2c32f16829cf300695acc8597"
+  },
+  "frontmatter.fieldIndex": {
+    "en": "field {{index}}",
+    "zh-CN": "字段 {{index}}",
+    "reviewedEnglishHash": "d2bbc13c433b7213f393997eb02817e58eb182432a898034ba3fcc0e1c6fe07e"
+  },
+  "frontmatter.fields": {
+    "en": "Fields",
+    "zh-CN": "字段",
+    "reviewedEnglishHash": "616f48c1db195b6f23031e5064d19920ab9f1c394100bbad51800d1020f7702d"
+  },
+  "frontmatter.fieldsUnavailable": {
+    "en": "Switch to YAML to edit. This frontmatter uses YAML features the form can't safely round-trip (for example comments, anchors, or custom ordering). Editing there preserves it byte-for-byte.",
+    "zh-CN": "请切换到 YAML 编辑。此 Frontmatter 使用了表单无法安全往返处理的 YAML 功能（例如注释、锚点或自定义顺序）；在 YAML 中编辑可逐字节保留内容。",
+    "reviewedEnglishHash": "f12a50c6466c7fe8f066ec387f7241b4431eba868549f84fc8b687abe934bda0"
+  },
+  "frontmatter.issueCount.one": {
+    "en": "{{count}} issue",
+    "zh-CN": "{{count}} 个问题",
+    "reviewedEnglishHash": "5722b414dca929156e4a215eceefe7d48211a72cb6f2f731ae910db401a0c0a4"
+  },
+  "frontmatter.issueCount.other": {
+    "en": "{{count}} issues",
+    "zh-CN": "{{count}} 个问题",
+    "reviewedEnglishHash": "30293c03a543ce241c75e76098aaca08f32f48225ccea58ecb56969d87a0e648"
+  },
+  "frontmatter.keyPlaceholder": {
+    "en": "key",
+    "zh-CN": "键",
+    "reviewedEnglishHash": "2c70e12b7a0646f92279f427c7b38e7334d8e5389cff167a1dc30e73f826b683"
+  },
+  "frontmatter.metadataCount": {
+    "en": "{{count}} metadata",
+    "zh-CN": "{{count}} 项元数据",
+    "reviewedEnglishHash": "b606cfaac07218635060c3ad0f774768f0301fc569e80ed28f33ea370f3c3d49"
+  },
+  "frontmatter.metadataKey": {
+    "en": "Metadata key {{index}}",
+    "zh-CN": "元数据键 {{index}}",
+    "reviewedEnglishHash": "191dad8de67d684e5ecd3d8a66cb33af19a368c7ba0ad564d0d11cd056fe6fa2"
+  },
+  "frontmatter.none": {
+    "en": "This file has no frontmatter.",
+    "zh-CN": "此文件没有 Frontmatter。",
+    "reviewedEnglishHash": "e9f9a8566309c8c8e0f933eec3f9b289fc8bd1fa10670395bcda2a1c4ffc6e4f"
+  },
+  "frontmatter.rawYamlPreserve": {
+    "en": "Editing raw YAML to preserve formatting the form can't reconstruct.",
+    "zh-CN": "正在编辑原始 YAML，以保留表单无法重建的格式。",
+    "reviewedEnglishHash": "995aee50c2a8717ceff2a78730aafff3a7bff1df4a9e8f6c1b1472ddba72d1fb"
+  },
+  "frontmatter.removeField": {
+    "en": "Remove {{field}}",
+    "zh-CN": "移除{{field}}",
+    "reviewedEnglishHash": "990587e380199224b9ed78b718511150d245108259a41efa7853cb29c61b8d17"
+  },
+  "frontmatter.removeTool": {
+    "en": "Remove {{value}}",
+    "zh-CN": "移除 {{value}}",
+    "reviewedEnglishHash": "a504c92aa27f739a963c32feca7e4297a2d73ae46b86ff98a1373fa35ce290ba"
+  },
+  "frontmatter.title": {
+    "en": "Frontmatter",
+    "zh-CN": "Frontmatter",
+    "reviewedEnglishHash": "323d638f6497063aee8978ec2d264a193091e965e622d3ae2985cfd09af52e82"
+  },
+  "frontmatter.toolCount.one": {
+    "en": "{{count}} tool",
+    "zh-CN": "{{count}} 个工具",
+    "reviewedEnglishHash": "c2ce825c00366d503abbcf3fa6a8e1089360f4ce8bff74211df8c553f7199683"
+  },
+  "frontmatter.toolCount.other": {
+    "en": "{{count}} tools",
+    "zh-CN": "{{count}} 个工具",
+    "reviewedEnglishHash": "f1b9324764c0a9c0633d57b1379cc777c4569958a3d59d097802a471fb08dba3"
+  },
+  "frontmatter.validation.descriptionRequired": {
+    "en": "SKILL.md needs a description.",
+    "zh-CN": "SKILL.md 需要描述。",
+    "reviewedEnglishHash": "2b9040c7bf9144738afdd75d067c27851e61232f88bbd0e6c49c8cfbf89af421"
+  },
+  "frontmatter.validation.listExpected": {
+    "en": "Expected a list - edit in YAML.",
+    "zh-CN": "应为列表，请在 YAML 中编辑。",
+    "reviewedEnglishHash": "6d748644c1ab65e09acaeeed10a3d865409c4152613a297a4adf94746ba01fe0"
+  },
+  "frontmatter.validation.nameRequired": {
+    "en": "SKILL.md needs a name.",
+    "zh-CN": "SKILL.md 需要名称。",
+    "reviewedEnglishHash": "a7328230b21dff032e7d71c2e5d93acb9e9406f66017b0be10c4151fa36f87a4"
+  },
+  "frontmatter.validation.slugFormat": {
+    "en": "Use lowercase letters, numbers and hyphens.",
+    "zh-CN": "请使用小写字母、数字和连字符。",
+    "reviewedEnglishHash": "b42ce9e450a98d91f908ae0d86f10f6a7f28e883d9bb405d3a6bcd3857a2e02f"
+  },
+  "frontmatter.valueFor": {
+    "en": "Value for {{field}}",
+    "zh-CN": "{{field}} 的值",
+    "reviewedEnglishHash": "993f8a1d1a53e8cdfa4eea8a26f2ee9c0edef47b1d0ba7df9408e75c38b20e36"
+  },
+  "frontmatter.valuePlaceholder": {
+    "en": "value",
+    "zh-CN": "值",
+    "reviewedEnglishHash": "cd42404d52ad55ccfa9aca4adc828aa5800ad9d385a0671fbcbf724118320619"
+  },
+  "frontmatter.yamlLabel": {
+    "en": "Frontmatter YAML",
+    "zh-CN": "Frontmatter YAML",
+    "reviewedEnglishHash": "ed16c742ef423609af3c0fa4c956641a7278d89674e1d384cae0a745d0c4311f"
+  },
+  "frontmatter.yamlSourceOfTruth": {
+    "en": "Raw YAML is the source of truth in this mode.",
+    "zh-CN": "在此模式下，原始 YAML 是权威来源。",
+    "reviewedEnglishHash": "2b3b3fb24f887691fa5011550a4afa766b77d11890e86e5a8f6572c76bfe403a"
+  }
+}

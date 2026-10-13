@@ -1,0 +1,17 @@
+{
+  "issueCases.role.origin": {
+    "en": "origin",
+    "zh-CN": "来源",
+    "reviewedEnglishHash": "181fdd46fc4a7246b9f4f1eba3129ba5d724011af5f10223b3589955d1df108a"
+  },
+  "issueCases.role.reference": {
+    "en": "reference",
+    "zh-CN": "引用",
+    "reviewedEnglishHash": "52367a6622b19f08825e915fad80c542ad4f4c34dbcebad9f5007994b3e39208"
+  },
+  "issueCases.role.work": {
+    "en": "work",
+    "zh-CN": "工作",
+    "reviewedEnglishHash": "00e13ed7af55b27622f1d6eab5bec0147e68efe28dc2b12461117afa1a5ed40e"
+  }
+}

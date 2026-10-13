@@ -1,0 +1,7 @@
+{
+  "api.requestFailedWithStatus": {
+    "en": "Request failed: {{status}}",
+    "zh-CN": "请求失败：{{status}}",
+    "reviewedEnglishHash": "7a7ccdba9ab0a79a9ab4cc0c0a6ba8f04aee434e45e7802a109d0ffba6d9caf5"
+  }
+}

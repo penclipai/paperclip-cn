@@ -1,0 +1,532 @@
+{
+  "issueChat.agentPaused.bodyAfterName": {
+    "en": "is paused. New runs will not start until the agent is resumed.",
+    "zh-CN": "已暂停。恢复该智能体前不会启动新的运行。",
+    "reviewedEnglishHash": "75e58df61175cf6039ca124af7fa1aad436bb3d3da4630a98639e7a8d7ddff91"
+  },
+  "issueChat.agentPaused.budgetDetail": {
+    "en": "It was paused by a budget hard stop.",
+    "zh-CN": "该智能体因预算硬停止而暂停。",
+    "reviewedEnglishHash": "672b9653b3b070d5c313fceb935525b3a64d4e7efbac0cce38c933e2a18a4ede"
+  },
+  "issueChat.agentPaused.manualDetail": {
+    "en": "It was paused manually.",
+    "zh-CN": "该智能体已手动暂停。",
+    "reviewedEnglishHash": "701eb898302d3e37a9b9c1c63db6f9d8f68d41cbfcb22c70bdb63092aa83df9c"
+  },
+  "issueChat.agentPaused.systemDetail": {
+    "en": "It was paused by the system.",
+    "zh-CN": "该智能体已由系统暂停。",
+    "reviewedEnglishHash": "8da06634354f74dc3df7654e8149b62d05124905ce87a16d04f36be1851c7ddb"
+  },
+  "issueChat.ago": {
+    "en": "{{duration}} ago",
+    "zh-CN": "{{duration}}前",
+    "reviewedEnglishHash": "6cdd839f9c028648f86443b266ce47cc470334fd474cdb94717855157c9be5e0"
+  },
+  "issueChat.assigneePlaceholder": {
+    "en": "Assignee",
+    "zh-CN": "负责人",
+    "reviewedEnglishHash": "5e20d20e3978dcf8550bd758d863b782ac0d139d51be8034836ed21e35104567"
+  },
+  "issueChat.attachFile": {
+    "en": "Attach file",
+    "zh-CN": "附加文件",
+    "reviewedEnglishHash": "87fbe4fb79b1d700fa6166d7a503779c005919d2fa3c25988aa944aab751d17a"
+  },
+  "issueChat.attachedToIssue": {
+    "en": "Attached to task",
+    "zh-CN": "已附加到任务",
+    "reviewedEnglishHash": "95fcc6e493f834026cd4c86484bf7d0d7920b2d19a21806592cde449cec9fe01"
+  },
+  "issueChat.attachmentAttachedToTask": {
+    "en": "Attached to task",
+    "zh-CN": "已附加到任务",
+    "reviewedEnglishHash": "95fcc6e493f834026cd4c86484bf7d0d7920b2d19a21806592cde449cec9fe01"
+  },
+  "issueChat.attachmentInsertedInline": {
+    "en": "Inserted inline",
+    "zh-CN": "已插入正文",
+    "reviewedEnglishHash": "096fb2cc191e2944bef0c31c351ce2c15baf110ea3a15c32d62db5364fde0e2f"
+  },
+  "issueChat.attachmentTypeNotSupported": {
+    "en": "This file type cannot be attached here",
+    "zh-CN": "这种文件类型不能在这里附加",
+    "reviewedEnglishHash": "363c718ff34e6616ab3f8a9d3e08ec265038adffc530a7aa92f4b1a224eaf41a"
+  },
+  "issueChat.attachmentUploadFailed": {
+    "en": "Upload failed",
+    "zh-CN": "上传失败",
+    "reviewedEnglishHash": "6efc5d27f30b20c103ca1a855bfc65cdbdf9de98c3f8ac93a3df3f319c3388bd"
+  },
+  "issueChat.attachmentUploadingToTask": {
+    "en": "Uploading to task",
+    "zh-CN": "正在上传到任务",
+    "reviewedEnglishHash": "06a172f2dfe484c646eab332d757a544e800c84fccfcff197f2c648d1a92ba1f"
+  },
+  "issueChat.changeInSettings": {
+    "en": "You can change this later in Instance Settings > General.",
+    "zh-CN": "之后可在“实例设置 > 常规”中更改。",
+    "reviewedEnglishHash": "cc8e28d23cd41cedf8601b0004ec657f238c36eaa9ccb857c4ea0260e19ac4e4"
+  },
+  "issueChat.commentDeleted": {
+    "en": "Comment deleted",
+    "zh-CN": "评论已删除",
+    "reviewedEnglishHash": "7199a134a33912a51d190c0c7245336c3e2a7b604cfbd786dbd27c29e53dfe5b"
+  },
+  "issueChat.commentDeletedBody": {
+    "en": "The thread now shows a deleted-comment marker.",
+    "zh-CN": "讨论串现在会显示已删除评论标记。",
+    "reviewedEnglishHash": "c345076a67ec2e38ff7e48973fd50ef91fb89d76c6b83d07976de04b1b4020db"
+  },
+  "issueChat.copySystemNoticeLink": {
+    "en": "Copy link",
+    "zh-CN": "复制链接",
+    "reviewedEnglishHash": "dbf362d4f210c780513a9258278d4d07abe8a224f84ba7ad775d819039342e77"
+  },
+  "issueChat.copySystemNoticeLinkAria": {
+    "en": "Copy link to system notice",
+    "zh-CN": "复制系统通知链接",
+    "reviewedEnglishHash": "26e0f88be5dc5a88dcbf3efc3d894c71eaea69eff7871ec898896a6c7c646bae"
+  },
+  "issueChat.copySystemNoticeText": {
+    "en": "Copy notice text",
+    "zh-CN": "复制通知文本",
+    "reviewedEnglishHash": "c545e526e70995c1c085226ec53220511860acae2807d5395db07bef200627b5"
+  },
+  "issueChat.copySystemNoticeTextAria": {
+    "en": "Copy system notice",
+    "zh-CN": "复制系统通知",
+    "reviewedEnglishHash": "7c87ec1979e0e80a58472ea0027e44544e80af30a9a1efbf1d7852a930147921"
+  },
+  "issueChat.deferredWake": {
+    "en": "⏸ Deferred wake",
+    "zh-CN": "⏸ 延后唤醒",
+    "reviewedEnglishHash": "427ced70f0ed8dfadd29da162d2f4ae77ddc7663c2c5245c8b89325beab4b7a4"
+  },
+  "issueChat.deleteComment": {
+    "en": "Delete comment",
+    "zh-CN": "删除评论",
+    "reviewedEnglishHash": "e43811a170283c8ebe08b698097e8064f2cd53355ade98b43633378c695bbbad"
+  },
+  "issueChat.deleteCommentDescription": {
+    "en": "This replaces the comment with a deleted-comment marker.",
+    "zh-CN": "这会用已删除评论标记替换该评论。",
+    "reviewedEnglishHash": "b8a3f4fc503a2acbc2f0831cb8ba6a3f235f68336bc4c4946d04f1b5db66c3ed"
+  },
+  "issueChat.deleteCommentTitle": {
+    "en": "Delete comment?",
+    "zh-CN": "删除评论？",
+    "reviewedEnglishHash": "4bb3b704104ebc54b1a19e0723b31efc32b48f639c0b99701c7310c1fbfafe6c"
+  },
+  "issueChat.deletedComment": {
+    "en": "{{authorName}} deleted this comment",
+    "zh-CN": "{{authorName}} 删除了这条评论",
+    "reviewedEnglishHash": "f90b076e943b297c846227190079eb5f34f4755ff79243cf1a8823bc40abe821"
+  },
+  "issueChat.deletedCommentSuffix": {
+    "en": "deleted this comment",
+    "zh-CN": "删除了这条评论",
+    "reviewedEnglishHash": "9cc59fcd869a66a1f751e2190f2886ef605f8e04d588626bd7a4b2962a27edb1"
+  },
+  "issueChat.dropToUpload": {
+    "en": "Drop to upload",
+    "zh-CN": "拖放以上传",
+    "reviewedEnglishHash": "936e6ec129907e978641f8a31687a161f001d86be81638e1baf37760d855545b"
+  },
+  "issueChat.dropToUploadDescription": {
+    "en": "Images insert into the reply. Other files are added to this task.",
+    "zh-CN": "图片会插入回复，其他文件会添加到此任务。",
+    "reviewedEnglishHash": "1b09ae1511325d04082b0fef1c017d9a37ac02e2a661e61b668a1b63e4355e6d"
+  },
+  "issueChat.dropToUploadHint": {
+    "en": "Images insert into the reply. Other files are added to this task.",
+    "zh-CN": "图片会插入回复，其他文件会添加到此任务。",
+    "reviewedEnglishHash": "1b09ae1511325d04082b0fef1c017d9a37ac02e2a661e61b668a1b63e4355e6d"
+  },
+  "issueChat.emptyConversation": {
+    "en": "This task conversation is empty. Start with a message below.",
+    "zh-CN": "这个任务对话还是空的。请从下面发送第一条消息。",
+    "reviewedEnglishHash": "a9ce9840a62c100d96161ba092ee940bf026581ca4146ce3a338ab5058cf3a8e"
+  },
+  "issueChat.emptyRunOutput": {
+    "en": "No run output yet.",
+    "zh-CN": "还没有运行输出。",
+    "reviewedEnglishHash": "2a4bb3c8e80c7061eb17f8590623a10df8c2a9a0d6da44c57795d4b3ee779b80"
+  },
+  "issueChat.expiredConfirmation": {
+    "en": "Expired confirmation",
+    "zh-CN": "已过期确认",
+    "reviewedEnglishHash": "dc8bfef2f9f01038a977da960407844cade4b824fcdb36e9ed472df8a2327b4c"
+  },
+  "issueChat.fallbackErrorBody": {
+    "en": "Showing a safe fallback transcript instead of crashing the issues page.",
+    "zh-CN": "已显示安全降级的对话回退视图，避免任务页面直接崩溃。",
+    "reviewedEnglishHash": "13364bb930c0ff4b9cbd3aaac0a7c24d15fd6e370bfc7817bf2bf45fa849cef9"
+  },
+  "issueChat.fallbackErrorTitle": {
+    "en": "Chat renderer hit an internal state error.",
+    "zh-CN": "聊天渲染器进入了异常状态。",
+    "reviewedEnglishHash": "50b111f173228473388d4efb3dcd9335a5778fbe02e5481a1865fec556f21aa7"
+  },
+  "issueChat.fallbackTranscript": {
+    "en": "Showing a safe fallback transcript instead of crashing the tasks page.",
+    "zh-CN": "当前显示安全的备用运行记录，以避免任务页面崩溃。",
+    "reviewedEnglishHash": "ad7427270dc8248f6b1fddcc56675fdf6f52514a01878b064fdbbd3bf9737f45"
+  },
+  "issueChat.feedback.alwaysAllow": {
+    "en": "Always allow",
+    "zh-CN": "始终允许",
+    "reviewedEnglishHash": "977618bd8bc7eef4d3bada0cf1a791d8362cd5fd8680e9673566abab2e76dded"
+  },
+  "issueChat.feedback.changeLater": {
+    "en": "You can change this later in Instance Settings > General.",
+    "zh-CN": "你之后可以在“实例设置 > 常规”里更改这个选项。",
+    "reviewedEnglishHash": "cc8e28d23cd41cedf8601b0004ec657f238c36eaa9ccb857c4ea0260e19ac4e4"
+  },
+  "issueChat.feedback.chooseAllowMiddle": {
+    "en": "to share this vote and future voted AI outputs. Choose",
+    "zh-CN": "以分享这次投票和未来已投票的 AI 输出。选择",
+    "reviewedEnglishHash": "5f1e4cc9cb7240a4b950ffdf714efc72bb59c5ffc0768ad4108caf7f5a958dec"
+  },
+  "issueChat.feedback.chooseDenySuffix": {
+    "en": "to keep this vote and future votes local.",
+    "zh-CN": "以将这次投票和未来投票保留在本地。",
+    "reviewedEnglishHash": "197083e8f55fb410626d526a63580e76b6aad179d3b505503f6dccfa67150049"
+  },
+  "issueChat.feedback.choosePrefix": {
+    "en": "Choose",
+    "zh-CN": "选择",
+    "reviewedEnglishHash": "c7f937836f5d82d53bc507752075f87e25009ec11bc9fd4e282f0b645e47af7c"
+  },
+  "issueChat.feedback.dontAllow": {
+    "en": "Don't allow",
+    "zh-CN": "不允许",
+    "reviewedEnglishHash": "9803bdd2047b13432e0b2a210a50a34ef2189f57f13c84501ec84dd7d2ffc1e9"
+  },
+  "issueChat.feedback.helpful": {
+    "en": "Helpful",
+    "zh-CN": "有帮助",
+    "reviewedEnglishHash": "63c432db3ebb9aecdda9286be5cdd301c6a019ef9ab2a1574e6e4aabeb91e354"
+  },
+  "issueChat.feedback.localVote": {
+    "en": "This vote is always saved locally.",
+    "zh-CN": "这次投票始终会保存在本地。",
+    "reviewedEnglishHash": "a7cd6ce4e69c38e22d4b7fd102490d08781bcec5709b2b674ba9660e753fc556"
+  },
+  "issueChat.feedback.needsWork": {
+    "en": "Needs work",
+    "zh-CN": "需要改进",
+    "reviewedEnglishHash": "738a3278e945747c2a8478620d9417d6f5df2730c6e1c9dd64d2eef545231933"
+  },
+  "issueChat.feedback.notePlaceholder": {
+    "en": "Add a short note",
+    "zh-CN": "添加简短备注",
+    "reviewedEnglishHash": "1adb884ad7345cf3544f4ef7bf60c341ab5fc9cc3680e6fc05b3d23a71536afe"
+  },
+  "issueChat.feedback.preferenceDescription": {
+    "en": "Choose whether voted AI outputs can be shared with Paperclip Labs. This answer becomes the default for future thumbs up and thumbs down votes.",
+    "zh-CN": "选择已投票的 AI 输出是否可以分享给 Paperclip Labs。这个答案会成为今后点赞和点踩的默认设置。",
+    "reviewedEnglishHash": "1e435dd128b424cf4b45b74b890c0a045a2deeb1843d914f4fb624bf40e1e478"
+  },
+  "issueChat.feedback.preferenceTitle": {
+    "en": "Save your feedback sharing preference",
+    "zh-CN": "保存你的反馈分享偏好",
+    "reviewedEnglishHash": "1c562b5e2b712a50e903cc5273c0d55ad47052fa6064205172720b335a8f4063"
+  },
+  "issueChat.feedback.readTerms": {
+    "en": "Read our terms of service",
+    "zh-CN": "阅读服务条款",
+    "reviewedEnglishHash": "50aceeb579a2002a7c4da4f9eaac3510a49694f665144d883def069e6251643e"
+  },
+  "issueChat.feedback.saveNote": {
+    "en": "Save note",
+    "zh-CN": "保存备注",
+    "reviewedEnglishHash": "6501e1ced8da0bffc5e2c7e20a42162e80176b31980e7b073fbf9955854fda4a"
+  },
+  "issueChat.feedback.whatCouldBeBetter": {
+    "en": "What could have been better?",
+    "zh-CN": "哪里可以做得更好？",
+    "reviewedEnglishHash": "829e701d9a216100eef2e58bee4a2a7d7436d898cddb1d1027f859d4e9fc610d"
+  },
+  "issueChat.fileTypeCannotAttach": {
+    "en": "This file type cannot be attached here",
+    "zh-CN": "这里不能附加这种文件类型",
+    "reviewedEnglishHash": "363c718ff34e6616ab3f8a9d3e08ec265038adffc530a7aa92f4b1a224eaf41a"
+  },
+  "issueChat.followUp": {
+    "en": "Follow-up",
+    "zh-CN": "跟进",
+    "reviewedEnglishHash": "09b2d9cd1123792aad06158c9acb18ce855b7011b78f3923c91804b3ef6bf176"
+  },
+  "issueChat.forDuration": {
+    "en": "for {{duration}}",
+    "zh-CN": "持续 {{duration}}",
+    "reviewedEnglishHash": "f25e2940477b1892a44a0b586a17ec646284dd5bb9e6342c95a12ca149b7b925"
+  },
+  "issueChat.goBack": {
+    "en": "Go back",
+    "zh-CN": "返回",
+    "reviewedEnglishHash": "6aadac2f2b7a6b8e3e01909529190a0c2910592cfb85f5d65901b37c820236fa"
+  },
+  "issueChat.hideConfirmation": {
+    "en": "Hide confirmation",
+    "zh-CN": "隐藏确认",
+    "reviewedEnglishHash": "0dabb2c2bdbb864a9105b7a2df3ead7615041b3369ebaa79f3f788aef47c7582"
+  },
+  "issueChat.insertedInline": {
+    "en": "Inserted inline",
+    "zh-CN": "已内联插入",
+    "reviewedEnglishHash": "096fb2cc191e2944bef0c31c351ce2c15baf110ea3a15c32d62db5364fde0e2f"
+  },
+  "issueChat.interrupt": {
+    "en": "Interrupt",
+    "zh-CN": "中断",
+    "reviewedEnglishHash": "b62523141249e0f2b5370aa7b791e71304e64eb4de37108905b9e2bea71c49f6"
+  },
+  "issueChat.interrupting": {
+    "en": "Interrupting...",
+    "zh-CN": "正在中断...",
+    "reviewedEnglishHash": "f60f33ede21dceccda0e76cab49570fb72ffcb00f474c7d8ceb1e2611c247363"
+  },
+  "issueChat.legacyRecovery": {
+    "en": "Legacy recovery task",
+    "zh-CN": "旧版恢复任务",
+    "reviewedEnglishHash": "179cd4ad25145527275871f8a4265662ef5b6b0e2e83c89269ab2fb52adaebfa"
+  },
+  "issueChat.legacyRecoveryHint": {
+    "en": "Legacy recovery task. Newer recovery actions live on the source task",
+    "zh-CN": "这是旧版恢复任务。新版恢复操作位于源任务上",
+    "reviewedEnglishHash": "9dabc76e49e9e58bf81fcdc654198ec121fdc88e937f02be3808713925ae02c6"
+  },
+  "issueChat.legacyRecoveryIssue.body": {
+    "en": "Legacy recovery issue. Newer recovery actions live on the source issue",
+    "zh-CN": "这是旧版恢复任务。新版恢复操作位于源任务",
+    "reviewedEnglishHash": "04673aa7abe3c036508a0df6524c50fd330ff24c7127f90ed2a755b6df814157"
+  },
+  "issueChat.legacyRecoveryIssue.label": {
+    "en": "Legacy recovery issue",
+    "zh-CN": "旧版恢复任务",
+    "reviewedEnglishHash": "c4717e03300f5ce2317af9085c99a78342940c45f91f0c020d45bbb801d2f1ce"
+  },
+  "issueChat.noAdditionalDetails": {
+    "en": "No additional details.",
+    "zh-CN": "没有更多详情。",
+    "reviewedEnglishHash": "dfe09e30656262b0905025952e57c8fdc657ab92518cd622d290fbc12e3680ed"
+  },
+  "issueChat.noAssignee": {
+    "en": "No assignee",
+    "zh-CN": "无负责人",
+    "reviewedEnglishHash": "d64d8cecf4ebff54afe8a87fed86f1dd654047995cd310132fc461f4355fdf9c"
+  },
+  "issueChat.noAssigneeSelected": {
+    "en": "No assignee selected",
+    "zh-CN": "未选择负责人",
+    "reviewedEnglishHash": "d4ab143a2404bc44e5d005e8524c2c2e036aeb163bb0307b7efc6494e14b99a9"
+  },
+  "issueChat.noAssigneeSelectedBody": {
+    "en": "Pick an assignee or click Send again to post without one.",
+    "zh-CN": "请选择负责人，或再次点击发送以不指定负责人直接发布。",
+    "reviewedEnglishHash": "20fa0fad4384e335fb05ee37b5a80f80dd4804f72a22b136283b4c2a1ed06b11"
+  },
+  "issueChat.noAssigneeSelectedDescription": {
+    "en": "This comment will post without an assignee, so no agent will be woken to work. Go back to choose an assignee, or send anyway.",
+    "zh-CN": "此评论将不带负责人发布，因此不会唤醒智能体处理。返回选择负责人，或仍然发送。",
+    "reviewedEnglishHash": "04b3fc41060709c6295c4a0485ae2e5b62e109ebcca4f9fb03fa9303385bfcd0"
+  },
+  "issueChat.noAssigneeSelectedTitle": {
+    "en": "No assignee selected",
+    "zh-CN": "未选择负责人",
+    "reviewedEnglishHash": "d4ab143a2404bc44e5d005e8524c2c2e036aeb163bb0307b7efc6494e14b99a9"
+  },
+  "issueChat.noAssigneesFound": {
+    "en": "No assignees found.",
+    "zh-CN": "未找到负责人。",
+    "reviewedEnglishHash": "0c8e659070b4df17be7a53891dac05736b74f7284e2a23f0af5ec1e530f087c1"
+  },
+  "issueChat.noMessageContent": {
+    "en": "No message content.",
+    "zh-CN": "没有消息内容。",
+    "reviewedEnglishHash": "d810b883c6c03ca8791fda36a813a1858168b3b446bdb7068aecba0b367e5b0f"
+  },
+  "issueChat.noOutputStillRunning": {
+    "en": "no output for {{duration}} - still running",
+    "zh-CN": "已 {{duration}} 没有输出，仍在运行",
+    "reviewedEnglishHash": "14311919ecebf30656893ecea2e7f055553546056457b9f62dd60e4b3d2dd499"
+  },
+  "issueChat.noResponsible": {
+    "en": "No responsible selected",
+    "zh-CN": "未选择责任人",
+    "reviewedEnglishHash": "fd52c10c27b19c25d1ddbb290ec7cc63fa97587c3cc8f3c63c638b77c27699e6"
+  },
+  "issueChat.noResponsibleHint": {
+    "en": "This comment will be posted without an assignee, so no agent will be woken to act on it. Go back to pick a responsible, or send anyway.",
+    "zh-CN": "此评论将在没有负责人的情况下发布，因此不会唤醒智能体处理。请返回选择责任人，或仍然发送。",
+    "reviewedEnglishHash": "fd51a22d814b72c8583f89d222c77df8a921fd380f767d19e0bc862d28410a4e"
+  },
+  "issueChat.noRunOutputYet": {
+    "en": "No run output yet.",
+    "zh-CN": "暂无运行输出。",
+    "reviewedEnglishHash": "2a4bb3c8e80c7061eb17f8590623a10df8c2a9a0d6da44c57795d4b3ee779b80"
+  },
+  "issueChat.planningModeOn": {
+    "en": "Planning mode is on for this submission. Click to switch to Standard.",
+    "zh-CN": "本次提交已开启规划模式。点击可切换为标准模式。",
+    "reviewedEnglishHash": "df14cb986cafa72bf92386158b0a5feadd9cd648d598465f201420fe5fcdc921"
+  },
+  "issueChat.posting": {
+    "en": "Posting...",
+    "zh-CN": "正在发布...",
+    "reviewedEnglishHash": "e24da73ee9535f119e776d47e2983fba65a0a9b5a1a4d8cf51f2d896286ed134"
+  },
+  "issueChat.queued": {
+    "en": "Queued",
+    "zh-CN": "已排队",
+    "reviewedEnglishHash": "661ff40a07e037bbd5f7d4ec97a4df1503096ca910e7c9e2d7a4e9abd4e4e1a0"
+  },
+  "issueChat.removeAttachmentAria": {
+    "en": "Remove {{filename}}",
+    "zh-CN": "移除 {{filename}}",
+    "reviewedEnglishHash": "fd2fbc8b1eb17b32d4d2265d96e08c979f8af1bee462f1a0755a34d49789eb19"
+  },
+  "issueChat.rendererErrorBody": {
+    "en": "Showing a safe fallback transcript instead of crashing the task page.",
+    "zh-CN": "正在显示安全的备用对话记录，避免任务页面崩溃。",
+    "reviewedEnglishHash": "140ae7a4d47b3d10b9826cae2b6d1fa5b57721465b746d7b87b4d5e730a793ab"
+  },
+  "issueChat.rendererErrorTitle": {
+    "en": "Chat renderer hit an internal state error.",
+    "zh-CN": "聊天渲染器遇到内部状态错误。",
+    "reviewedEnglishHash": "50b111f173228473388d4efb3dcd9335a5778fbe02e5481a1865fec556f21aa7"
+  },
+  "issueChat.replyPlaceholder": {
+    "en": "Reply",
+    "zh-CN": "回复",
+    "reviewedEnglishHash": "c253f451bdd56431ff15f638498d0003c36aabd5b07e5d21aaa7f1391410747c"
+  },
+  "issueChat.run": {
+    "en": "run",
+    "zh-CN": "运行",
+    "reviewedEnglishHash": "acba25512100f80b56fc3ccd14c65be55d94800cda77585c5f41a887e398f9be"
+  },
+  "issueChat.running": {
+    "en": "Running",
+    "zh-CN": "运行中",
+    "reviewedEnglishHash": "f4ccae29e1bb0c20a124570a1b43f4347ea94bba9f84ffdfddd9c7445b126128"
+  },
+  "issueChat.searchAssignees": {
+    "en": "Search assignees...",
+    "zh-CN": "搜索负责人...",
+    "reviewedEnglishHash": "ad7ec86de2987b2b0c3e3bd218dcf5dbe43f5e93d308d3239bdf26268644904d"
+  },
+  "issueChat.sendAnyway": {
+    "en": "Send anyway",
+    "zh-CN": "仍然发送",
+    "reviewedEnglishHash": "3bdd9831a45e431303f6f5e04af9188ba064d1951cde919f3d89a3180635de54"
+  },
+  "issueChat.sending": {
+    "en": "Sending...",
+    "zh-CN": "正在发送...",
+    "reviewedEnglishHash": "286a3af7348e83123a2525936b12ff839504effef55b21c921edbb179247b523"
+  },
+  "issueChat.staleDispositionWarning": {
+    "en": "Stale disposition warning",
+    "zh-CN": "处置状态过期警告",
+    "reviewedEnglishHash": "3227440ce2a322116f301c56177ddc95e0d2f40ee67fdb1e159e400cc659f2e4"
+  },
+  "issueChat.switchToPlanning": {
+    "en": "Switch to planning",
+    "zh-CN": "切换到规划",
+    "reviewedEnglishHash": "21a88a8d14a2a354ae35db146c2ef2312d9866bfe97fc68e4a47f01ed8974cf8"
+  },
+  "issueChat.switchToStandard": {
+    "en": "Switch to standard",
+    "zh-CN": "切换到标准",
+    "reviewedEnglishHash": "45e7ffd95050986f38baab5bc894c049f63adc202c4c60f6d016675e40e15d72"
+  },
+  "issueChat.tool": {
+    "en": "Tool",
+    "zh-CN": "工具",
+    "reviewedEnglishHash": "2e53bdcd0740867b597599e733c04a994f55fb17c89a61595183a001742e5705"
+  },
+  "issueChat.tool.args": {
+    "en": "Args",
+    "zh-CN": "参数",
+    "reviewedEnglishHash": "e82e22633f85f0c502adb24c3070c645dc0f088ff56782af85d4d4e63ffa69aa"
+  },
+  "issueChat.tool.input": {
+    "en": "Input",
+    "zh-CN": "输入",
+    "reviewedEnglishHash": "36ecb4f8669133ce744c21982ba4abe2ecd7086e1dc2226ccd6f266f3a5005f8"
+  },
+  "issueChat.tool.result": {
+    "en": "Result",
+    "zh-CN": "结果",
+    "reviewedEnglishHash": "6e7d50e84f4731ef74187cf8cfa2672184eed8866b0b0074a772f4a64e0f4ba2"
+  },
+  "issueChat.toolCalls": {
+    "en": "Tool calls",
+    "zh-CN": "工具调用",
+    "reviewedEnglishHash": "da5122dc0f97b158bfbd27c5bd479322f34e0916a0cd4626d42c03bb0000e4b4"
+  },
+  "issueChat.unableToCopyMessage": {
+    "en": "Unable to copy message",
+    "zh-CN": "无法复制消息",
+    "reviewedEnglishHash": "65c476aa258f27bae2212083814146e56f419b9f6b0cc62dc754f8155b59e7c8"
+  },
+  "issueChat.unableToCopySystemNotice": {
+    "en": "Unable to copy system notice",
+    "zh-CN": "无法复制系统通知",
+    "reviewedEnglishHash": "c463ba4b7fd88242ed516aa7085f75d1913197d9e522e69c4d7abe84a4eda06e"
+  },
+  "issueChat.unableToCopySystemNoticeLink": {
+    "en": "Unable to copy system notice link",
+    "zh-CN": "无法复制系统通知链接",
+    "reviewedEnglishHash": "ab48af5bf1591920e83f6549e9c8b6ebdec3be1cd1f0652ea8d5378e0614700b"
+  },
+  "issueChat.unableToCopyText": {
+    "en": "Unable to copy text",
+    "zh-CN": "无法复制文本",
+    "reviewedEnglishHash": "9d2629bce893c36bd56b79b87ca963ddd7d16f10bc76591031b45fac329fc870"
+  },
+  "issueChat.unableToDeleteComment": {
+    "en": "Unable to delete the comment",
+    "zh-CN": "无法删除评论",
+    "reviewedEnglishHash": "9c42969f5cf9e498699042254f554e4c31995d634bb5f246ebf4507eea774c80"
+  },
+  "issueChat.updatedThisTask": {
+    "en": "updated this task",
+    "zh-CN": "更新了此任务",
+    "reviewedEnglishHash": "9cc0b812eefb0a21772cc84aa45f3864b9b2565e00018a280b4627e54b027822"
+  },
+  "issueChat.uploadingToIssue": {
+    "en": "Uploading to issue",
+    "zh-CN": "正在上传到任务",
+    "reviewedEnglishHash": "2c2ab9522553ecc85dd12a429a772327c96e9945fd4bab7cc91b37d4244e1eec"
+  },
+  "issueChat.usingTool": {
+    "en": "Using {{toolName}}",
+    "zh-CN": "正在使用 {{toolName}}",
+    "reviewedEnglishHash": "953b64e973efbd7128c7bae03d9a44034db648234376c5d66def9f26a32a3d33"
+  },
+  "issueChat.viewRun": {
+    "en": "View run",
+    "zh-CN": "查看运行",
+    "reviewedEnglishHash": "aaf7fccc7d1315f23f35073f1d89aa8357c5d0cdb9b00a03ee2a4291e976b9ac"
+  },
+  "issueChat.workModeShortcutHint": {
+    "en": "Cmd/Ctrl+. cycles modes",
+    "zh-CN": "Cmd/Ctrl+. 循环切换模式",
+    "reviewedEnglishHash": "d994cdccf0cf567124119b58cd24032859b2ccb7e05ed34c1b47d742c2ee34e1"
+  },
+  "issueChat.worked": {
+    "en": "Worked",
+    "zh-CN": "已处理",
+    "reviewedEnglishHash": "e7f93aad5026eeaf437ab765ac7ed441766985593f80c1f132919cdbac57834a"
+  },
+  "issueChat.working": {
+    "en": "Working",
+    "zh-CN": "处理中",
+    "reviewedEnglishHash": "a92f0449a9f7235bf69dc2e8ff7070bfae3f00ec8f8f26e5457a9beac53466ac"
+  }
+}

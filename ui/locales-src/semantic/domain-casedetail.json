@@ -1,0 +1,247 @@
+{
+  "caseDetail.actions.changeStatus": {
+    "en": "Change case status",
+    "zh-CN": "更改案例状态",
+    "reviewedEnglishHash": "11df1e0cf2ceacf0d49e96c9ae7acf40dad5fadbd6d6b11d22ade70c20deecef"
+  },
+  "caseDetail.actions.copyMarkdown": {
+    "en": "Copy as markdown",
+    "zh-CN": "复制为 Markdown",
+    "reviewedEnglishHash": "fec6709d0f0a779bf2f20340b223675e55a6802d3e0461be1aca4c587ea3af51"
+  },
+  "caseDetail.actions.more": {
+    "en": "More case actions",
+    "zh-CN": "更多案例操作",
+    "reviewedEnglishHash": "1b33c141d08c30ea8ab1e5caf13383756da16a5f167c5bb55acf16ead3c5a5e6"
+  },
+  "caseDetail.breadcrumb.cases": {
+    "en": "Cases",
+    "zh-CN": "案例",
+    "reviewedEnglishHash": "2249bd503ec47d7224fd147948bbd6fc286c2b653d5d46422989529ff31e4666"
+  },
+  "caseDetail.breadcrumb.fallback": {
+    "en": "Case",
+    "zh-CN": "案例",
+    "reviewedEnglishHash": "15f86e24ed25aed154934fb1f3275d9b33e1ebaa64350694ed8661a7d6fc0f21"
+  },
+  "caseDetail.common.none": {
+    "en": "None",
+    "zh-CN": "无",
+    "reviewedEnglishHash": "dc937b59892604f5a86ac96936cd7ff09e25f18ae6b758e8014a24c7fa039e91"
+  },
+  "caseDetail.common.noneLower": {
+    "en": "none",
+    "zh-CN": "无",
+    "reviewedEnglishHash": "140bedbf9c3f6d56a9846d2ba7088798683f4da0c248231336e6a05679e4fdfe"
+  },
+  "caseDetail.common.noneYet": {
+    "en": "None yet",
+    "zh-CN": "暂无",
+    "reviewedEnglishHash": "adb85cf22bfc3254304164852b939485b2071dc53cd828a40828eb8505057ccd"
+  },
+  "caseDetail.common.saving": {
+    "en": "Saving...",
+    "zh-CN": "保存中...",
+    "reviewedEnglishHash": "dc85af8f2b1d0d6756547cd5f79557466e25e682b882f68d277bd7f125851321"
+  },
+  "caseDetail.copy.key": {
+    "en": "- Key: {{value}}",
+    "zh-CN": "- 键：{{value}}",
+    "reviewedEnglishHash": "862d0ca68fc9e3a298e0100c2118f5c706b59ef292a1f91d3f91687f70dafa28"
+  },
+  "caseDetail.copy.labels": {
+    "en": "- Labels: {{value}}",
+    "zh-CN": "- 标签：{{value}}",
+    "reviewedEnglishHash": "35c150bc5145f04a2c448cffd771de2c2480754aa9efeb91e4afe0a109664b36"
+  },
+  "caseDetail.copy.noLabels": {
+    "en": "- Labels: none",
+    "zh-CN": "- 标签：无",
+    "reviewedEnglishHash": "64b1d7aa53aa289594df7754f18754ff8c2a3434c4485eb453fef0b2e5c0ac70"
+  },
+  "caseDetail.copy.status": {
+    "en": "- Status: {{value}}",
+    "zh-CN": "- 状态：{{value}}",
+    "reviewedEnglishHash": "0f82bcb277bbde1ae2b771a42174b0bab6167ee5d18e8aad584284269c387df4"
+  },
+  "caseDetail.copy.type": {
+    "en": "- Type: {{value}}",
+    "zh-CN": "- 类型：{{value}}",
+    "reviewedEnglishHash": "9add3104a97b1cbcd32bfc010eca2752c4cf03684ac586458acce92130a3d349"
+  },
+  "caseDetail.fileCount.one": {
+    "en": "{{count}} file",
+    "zh-CN": "{{count}} 个文件",
+    "reviewedEnglishHash": "bdb7a751beb311f85d93ffd8c95ef2afc0d2edf229acd490b7a49bbcea605485"
+  },
+  "caseDetail.fileCount.other": {
+    "en": "{{count}} files",
+    "zh-CN": "{{count}} 个文件",
+    "reviewedEnglishHash": "95964e2dcccd3ddd080eed1bb4b23699fef06269ff8ef777264692d5fbe78c80"
+  },
+  "caseDetail.labels.button": {
+    "en": "Labels",
+    "zh-CN": "标签",
+    "reviewedEnglishHash": "934b8899c3d918d4b40bbb3512aed9c4ecd639c4be8e2263106536922a423121"
+  },
+  "caseDetail.labels.caseKey": {
+    "en": "case key",
+    "zh-CN": "案例键",
+    "reviewedEnglishHash": "a741eb3c912be5a2aa563b82629a177b641297047763f6c4cb82ad8d6b317e23"
+  },
+  "caseDetail.labels.create": {
+    "en": "Create \"{{name}}\"",
+    "zh-CN": "创建“{{name}}”",
+    "reviewedEnglishHash": "66618242656e83cc71a89b1c72d90f6c8b2de1609d02ab232f834bb78e3d87f2"
+  },
+  "caseDetail.labels.empty": {
+    "en": "No labels yet.",
+    "zh-CN": "暂无标签。",
+    "reviewedEnglishHash": "a3a46c677b6788670d751f21d56e1f30423d976e085df9596f2d39a9350d8446"
+  },
+  "caseDetail.labels.newColor": {
+    "en": "New label color",
+    "zh-CN": "新标签颜色",
+    "reviewedEnglishHash": "a4b3896f7b5747325881d65547b75906fb88e093ceb9a81a7d120420125a202c"
+  },
+  "caseDetail.labels.searchPlaceholder": {
+    "en": "Search labels...",
+    "zh-CN": "搜索标签...",
+    "reviewedEnglishHash": "8b2837c0480a2a77560ea210a259598bd38e71d637d2a29a44682da59c137863"
+  },
+  "caseDetail.notFound.back": {
+    "en": "← Back to cases",
+    "zh-CN": "← 返回案例",
+    "reviewedEnglishHash": "c3f279a2ea540e79ad3345d8b45dbc134a9acfb4da5bc06aabe901a309360006"
+  },
+  "caseDetail.notFound.message": {
+    "en": "Case not found.",
+    "zh-CN": "找不到案例。",
+    "reviewedEnglishHash": "70f7c9a45e729533760def0747a3d7800439e8af59f8bfcb2bc5cc7b1d14f25f"
+  },
+  "caseDetail.properties.attachments": {
+    "en": "Attachments",
+    "zh-CN": "附件",
+    "reviewedEnglishHash": "634de114775082f002bb5cfdba0a28e768be807c798159c549e7bc930525b476"
+  },
+  "caseDetail.properties.case": {
+    "en": "Case",
+    "zh-CN": "案例",
+    "reviewedEnglishHash": "15f86e24ed25aed154934fb1f3275d9b33e1ebaa64350694ed8661a7d6fc0f21"
+  },
+  "caseDetail.properties.children": {
+    "en": "Children",
+    "zh-CN": "子案例",
+    "reviewedEnglishHash": "3583a358a585b13b6d6228f12d2baf3ef937fcf50bed4a521b70f95a520bc933"
+  },
+  "caseDetail.properties.childrenCount": {
+    "en": "Children {{count}}",
+    "zh-CN": "子案例 {{count}}",
+    "reviewedEnglishHash": "0085d99d504abeca20c9a7b47f4cde8cb32748c62b9fa86ddb017ea5f5319ed6"
+  },
+  "caseDetail.properties.fields": {
+    "en": "Fields",
+    "zh-CN": "字段",
+    "reviewedEnglishHash": "616f48c1db195b6f23031e5064d19920ab9f1c394100bbad51800d1020f7702d"
+  },
+  "caseDetail.properties.files": {
+    "en": "Files",
+    "zh-CN": "文件",
+    "reviewedEnglishHash": "abc7e9892806b047b4d4786b3685285543f76ca314c4c76246d5f6544c7856c9"
+  },
+  "caseDetail.properties.key": {
+    "en": "Key",
+    "zh-CN": "键",
+    "reviewedEnglishHash": "99a52df3ff3d499488e2fa28150c4106a2cb5e928891a830a9aa3922b2d32160"
+  },
+  "caseDetail.properties.labels": {
+    "en": "Labels",
+    "zh-CN": "标签",
+    "reviewedEnglishHash": "934b8899c3d918d4b40bbb3512aed9c4ecd639c4be8e2263106536922a423121"
+  },
+  "caseDetail.properties.linkedTasks": {
+    "en": "Linked tasks",
+    "zh-CN": "关联任务",
+    "reviewedEnglishHash": "f0b70ce5a7ed41036e2fa13577e99380efb40a703cd4d9f4cdc605aeab888650"
+  },
+  "caseDetail.properties.tasks": {
+    "en": "Tasks",
+    "zh-CN": "任务",
+    "reviewedEnglishHash": "b3a60e61a5233d0506ac737405a2a45280349683cac68722f18d0b73eb495ef4"
+  },
+  "caseDetail.properties.type": {
+    "en": "Type",
+    "zh-CN": "类型",
+    "reviewedEnglishHash": "baaddf70fb5d432b8bd948ef91d6f910124a6d138edae4d5f000c4610ddc8eae"
+  },
+  "caseDetail.relationships.ariaLabel": {
+    "en": "Case relationships",
+    "zh-CN": "案例关系",
+    "reviewedEnglishHash": "8d5d2b254eae1c34e6445dec8b4a5d8529ea530a24e2835d8eebb7da7b061076"
+  },
+  "caseDetail.relationships.childrenCount": {
+    "en": "Children {{count}}",
+    "zh-CN": "子案例 {{count}}",
+    "reviewedEnglishHash": "0085d99d504abeca20c9a7b47f4cde8cb32748c62b9fa86ddb017ea5f5319ed6"
+  },
+  "caseDetail.relationships.parent": {
+    "en": "Parent",
+    "zh-CN": "父案例",
+    "reviewedEnglishHash": "5f7953f7c9b6ba16602898e540795140db39847cf03fd10d32ef636cded0360e"
+  },
+  "caseDetail.sections.attachmentsCount": {
+    "en": "Attachments ({{count}})",
+    "zh-CN": "附件（{{count}}）",
+    "reviewedEnglishHash": "2e8cf616a05311c0c906b2a290235c8d3c79791cb36a223dcdde4de581e0db68"
+  },
+  "caseDetail.sections.description": {
+    "en": "Description",
+    "zh-CN": "描述",
+    "reviewedEnglishHash": "526e0087cc3f254d9f86f6c7d8e23d954c4dfda2b312efc29194ae8a860106ba"
+  },
+  "caseDetail.status.approved": {
+    "en": "Approved",
+    "zh-CN": "已批准",
+    "reviewedEnglishHash": "87b42e40c2a290e01d87b721bf381c3c5e259d1eb0a4660e41fdbf8bc73f7ddd"
+  },
+  "caseDetail.status.cancelled": {
+    "en": "Cancelled",
+    "zh-CN": "已取消",
+    "reviewedEnglishHash": "d353a99eb4556847ceeb3c306ac886cf6b4fa13043eb1864b9aeb0607fd5f2cc"
+  },
+  "caseDetail.status.done": {
+    "en": "Done",
+    "zh-CN": "已完成",
+    "reviewedEnglishHash": "11a6767d5674c7e45f7e00dc525762275b3a48491ad6045427d2609cc496c516"
+  },
+  "caseDetail.status.draft": {
+    "en": "Draft",
+    "zh-CN": "草稿",
+    "reviewedEnglishHash": "ebf12ef47cf575b3ba9a3cc019c5310146fdac88f6d1be6618d6e91158c2f174"
+  },
+  "caseDetail.status.inProgress": {
+    "en": "In progress",
+    "zh-CN": "进行中",
+    "reviewedEnglishHash": "c1f88e9d6c4145cf0530ae020155384d5688d70ed82a07a35d783bbc4b32238c"
+  },
+  "caseDetail.status.inReview": {
+    "en": "In review",
+    "zh-CN": "审核中",
+    "reviewedEnglishHash": "c39059141ced2ea71d38d312b6bdaa6da1da299820b4021169382a2e54f57672"
+  },
+  "caseDetail.tabs.activity": {
+    "en": "Activity",
+    "zh-CN": "活动",
+    "reviewedEnglishHash": "38da1505ca8373288489495101b14f24ac95078f520ad64df18272aa6054f750"
+  },
+  "caseDetail.tabs.overview": {
+    "en": "Overview",
+    "zh-CN": "概览",
+    "reviewedEnglishHash": "d4b1ea5708dd532930a85188b45aff6f0a3ed458500c7577e0127a538eb0d100"
+  },
+  "caseDetail.tabs.properties": {
+    "en": "Properties",
+    "zh-CN": "属性",
+    "reviewedEnglishHash": "ae43692b2a310b8ed2443d2b7d2a3e4cf0b6d73115badd72831b3d22381f235f"
+  }
+}

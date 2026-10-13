@@ -1,0 +1,427 @@
+{
+  "projectWorkspace.advancedRuntimeJson": {
+    "en": "Advanced runtime JSON",
+    "zh-CN": "高级运行时 JSON",
+    "reviewedEnglishHash": "8dfbbbbc159186df9ba381ad976cb79eff6eb1c380cd1d081038924bf47e9907"
+  },
+  "projectWorkspace.advancedRuntimeJsonHint": {
+    "en": "Paperclip derives Services and Jobs from this JSON. Prefer editing named commands first; use raw JSON for advanced lifecycle, port, readiness, or environment settings.",
+    "zh-CN": "Paperclip 会从这份 JSON 推导服务和任务。优先先编辑具名命令；只有在需要更高级的生命周期、端口、就绪检查或环境设置时，再直接编辑原始 JSON。",
+    "reviewedEnglishHash": "dedd41d8638e73286ea74b0e6027c30bf9efca5e039c4c3392565c8e25d9dcec"
+  },
+  "projectWorkspace.backToConfiguration": {
+    "en": "Back to configuration",
+    "zh-CN": "返回配置",
+    "reviewedEnglishHash": "920ca663d74de5ebc171f80b1653d14fbacd3fed2b918d5df1acb66bc474ec53"
+  },
+  "projectWorkspace.backToWorkspaces": {
+    "en": "Back to workspaces",
+    "zh-CN": "返回工作区列表",
+    "reviewedEnglishHash": "174743719f05df8ccbcd02ecbe3dd4953407753169bb2034eca20a42781a6f63"
+  },
+  "projectWorkspace.branch": {
+    "en": "Branch",
+    "zh-CN": "分支",
+    "reviewedEnglishHash": "52656e8104eef3fddd3d4546903fa0de93c0625abf47b3dd8130f7705d6a513e"
+  },
+  "projectWorkspace.branchCopied": {
+    "en": "Branch copied",
+    "zh-CN": "已复制分支",
+    "reviewedEnglishHash": "a172c77bd3ee7c22ea0468ea2638a73bd693262671d720be2a534cc36e77cf5c"
+  },
+  "projectWorkspace.breadcrumb.workspaces": {
+    "en": "Workspaces",
+    "zh-CN": "工作区",
+    "reviewedEnglishHash": "1377264ba3b0a7172621971b49ac3e82e33b64b14328d9275d02807e67ea8460"
+  },
+  "projectWorkspace.cleanupCommand": {
+    "en": "Cleanup command",
+    "zh-CN": "清理命令",
+    "reviewedEnglishHash": "062a91a9fb17b4b465bab8b4744296effd079216f520e7596aaa3396a3a9d87e"
+  },
+  "projectWorkspace.cleanupCommandHint": {
+    "en": "Runs before project-level execution workspace teardown",
+    "zh-CN": "在项目级执行工作区清理前运行",
+    "reviewedEnglishHash": "79b63225cd9e2646e1e2b71462fd718ab5de553f8abd071bc95a2733a919fd37"
+  },
+  "projectWorkspace.closeWorkspace": {
+    "en": "Close workspace",
+    "zh-CN": "关闭工作区",
+    "reviewedEnglishHash": "e5086f0455d55b206da77974bb935991057fcb784b1748ec85214a7f8375935b"
+  },
+  "projectWorkspace.configuration": {
+    "en": "Configuration",
+    "zh-CN": "配置",
+    "reviewedEnglishHash": "b332c3492d5eb10a118eb6d8b0dcd689bc2477ce2ae16b303753b942b54377bc"
+  },
+  "projectWorkspace.copyBranch": {
+    "en": "Copy branch",
+    "zh-CN": "复制分支",
+    "reviewedEnglishHash": "f46eff6ae9cfb119229edc0bd0259dbcad3cff7b16cdf1251c4b18329c06fcc2"
+  },
+  "projectWorkspace.copyPath": {
+    "en": "Copy path",
+    "zh-CN": "复制路径",
+    "reviewedEnglishHash": "720ff4160412b943370afdb8fc1c082ff057d54713d5fb4b4b7a9634bfabf5fe"
+  },
+  "projectWorkspace.currentState": {
+    "en": "Current state",
+    "zh-CN": "当前状态",
+    "reviewedEnglishHash": "760732d82a09183191f0b38552fad63b063df21153476c0d628a32d8c5255aeb"
+  },
+  "projectWorkspace.defaultRef": {
+    "en": "Default ref",
+    "zh-CN": "默认引用",
+    "reviewedEnglishHash": "b6e3242fdf9a9ffe348943ce7f2a57a124f7f4a9acef6d4f6a1d5477299d83ed"
+  },
+  "projectWorkspace.description": {
+    "en": "Configure the concrete workspace Paperclip attaches to this project. These values drive per-workspace checkout behavior, default runtime services for child execution workspaces, and let you override setup or cleanup commands when one workspace needs special handling.",
+    "zh-CN": "配置 Paperclip CN 附加到此项目的具体工作区。这些值会驱动每个工作区的检出行为、子执行工作区的默认运行时服务，并允许你在工作区需要特殊处理时覆盖准备或清理命令。",
+    "reviewedEnglishHash": "a31090fda7ba7498194bf93c258d6505c301a16b22caa8b97df6f36ddf6bc146"
+  },
+  "projectWorkspace.executionWorkspace": {
+    "en": "Execution workspace",
+    "zh-CN": "执行工作区",
+    "reviewedEnglishHash": "d31c92b6bb53c871049f335506f5e1f410c271061bbc79655d7101fb4749cdfe"
+  },
+  "projectWorkspace.failedToControlRuntimeCommands": {
+    "en": "Failed to control workspace commands.",
+    "zh-CN": "控制工作区命令失败。",
+    "reviewedEnglishHash": "2f75add6dd0a2c01b444f71261df7452f26869a2447bd97fee132f1a6dc0d7fa"
+  },
+  "projectWorkspace.failedToLoadWorkspace": {
+    "en": "Failed to load workspace",
+    "zh-CN": "加载工作区失败",
+    "reviewedEnglishHash": "a34df4c39207b559a84339f303a2b7fd1b1a40c06e4449264f906bd30f6ef4dc"
+  },
+  "projectWorkspace.failedToSave": {
+    "en": "Failed to save workspace.",
+    "zh-CN": "保存工作区失败。",
+    "reviewedEnglishHash": "08f774be682a9f5cb94326a45cc9ce318fbc0ba0d5af0c113d33ec145cfa1663"
+  },
+  "projectWorkspace.failedToUpdate": {
+    "en": "Failed to update workspace.",
+    "zh-CN": "更新工作区失败。",
+    "reviewedEnglishHash": "def40bab1de5e23476f976956352258f135521af739af72ba5eab73eecbd9b22"
+  },
+  "projectWorkspace.isPrimaryDescription": {
+    "en": "This is the project's primary codebase workspace.",
+    "zh-CN": "这是该项目的主代码库工作区。",
+    "reviewedEnglishHash": "4b72f9842536dc5a52aafddb2d3d443cb7d961b8dc8e2b7b96edcbf735e11b2b"
+  },
+  "projectWorkspace.linkedTasks": {
+    "en": "Linked tasks",
+    "zh-CN": "关联任务",
+    "reviewedEnglishHash": "f0b70ce5a7ed41036e2fa13577e99380efb40a703cd4d9f4cdc605aeab888650"
+  },
+  "projectWorkspace.loadingPlugin": {
+    "en": "Loading workspace plugin...",
+    "zh-CN": "正在加载工作区插件…",
+    "reviewedEnglishHash": "dc194cb61576c9ebe221ba649ab18d561e98af8245a7206da109836db6fc5ccb"
+  },
+  "projectWorkspace.loadingWorkspace": {
+    "en": "Loading workspace…",
+    "zh-CN": "正在加载工作区…",
+    "reviewedEnglishHash": "86ffadbbcc8f0e31de98162082f55cbe10e720679b061fbea712740862ca76e5"
+  },
+  "projectWorkspace.localPath": {
+    "en": "Local path",
+    "zh-CN": "本地路径",
+    "reviewedEnglishHash": "e335847f885ededb491cd84ae6511aca468c9be1c6078836a0e6f9466936e556"
+  },
+  "projectWorkspace.makePrimary": {
+    "en": "Make primary",
+    "zh-CN": "设为主工作区",
+    "reviewedEnglishHash": "07d68ed8fbd7664e5fb4a6f54706b5a0fee75a65e21269c124032a165bd11a16"
+  },
+  "projectWorkspace.noServicesStarted": {
+    "en": "No services have been started for this workspace yet.",
+    "zh-CN": "这个工作区还没有启动任何服务。",
+    "reviewedEnglishHash": "487061dba93bfd65f2793f5593271d3e3f47b793790fe177ba3136cdd96c4a9e"
+  },
+  "projectWorkspace.noUnsavedChanges": {
+    "en": "No unsaved changes.",
+    "zh-CN": "没有未保存的更改。",
+    "reviewedEnglishHash": "75d79f0a2f2e48fbba92ef49c0f7cf14383dad935c9a344279b7d2dd50487e66"
+  },
+  "projectWorkspace.noWorkspaceCommandsConfigured": {
+    "en": "No workspace command config is defined for this workspace yet.",
+    "zh-CN": "这个工作区还没有定义任何工作区命令配置。",
+    "reviewedEnglishHash": "314800b3a329cb7f90af16ffea630ca5ad77a62f06d4afd52778d4f8cd313d81"
+  },
+  "projectWorkspace.noWorkspaceJobsConfigured": {
+    "en": "No one-shot jobs are configured for this workspace yet.",
+    "zh-CN": "这个工作区还没有配置任何一次性任务。",
+    "reviewedEnglishHash": "f147fa74e0a659394807aebcb062b07928b16fcdd24fa58fdd208874dd4fef70"
+  },
+  "projectWorkspace.none": {
+    "en": "None",
+    "zh-CN": "无",
+    "reviewedEnglishHash": "dc937b59892604f5a86ac96936cd7ff09e25f18ae6b758e8014a24c7fa039e91"
+  },
+  "projectWorkspace.path": {
+    "en": "Path",
+    "zh-CN": "路径",
+    "reviewedEnglishHash": "62fa5a5b0d3c318835a213e22a4b335c42515443d598741d0413e8c47f9ecf67"
+  },
+  "projectWorkspace.pathCopied": {
+    "en": "Path copied",
+    "zh-CN": "已复制路径",
+    "reviewedEnglishHash": "b942ecef1a9c29a4d733a1b93ad80efb22a7f20512a695b0386c462740e7ead3"
+  },
+  "projectWorkspace.pluginTabUnavailable": {
+    "en": "Workspace plugin tab is not available.",
+    "zh-CN": "工作区插件标签页不可用。",
+    "reviewedEnglishHash": "a825d1d1614b858bb2d45be5ce834b02b6e77897c7468f7346fb2944a3ad86d6"
+  },
+  "projectWorkspace.primaryWorkspace": {
+    "en": "Primary workspace",
+    "zh-CN": "主工作区",
+    "reviewedEnglishHash": "9832c6f6aec674c3e7d241d60c8dd7e3c672d650075a99ae9392fcc432738c42"
+  },
+  "projectWorkspace.projectWorkspace": {
+    "en": "Project workspace",
+    "zh-CN": "项目工作区",
+    "reviewedEnglishHash": "ce016e7f0a41c4f32109216e1e253653946e643adf1114a7e6d08e4323de1a7a"
+  },
+  "projectWorkspace.remoteProvider": {
+    "en": "Remote provider",
+    "zh-CN": "远程服务商",
+    "reviewedEnglishHash": "04ecc2164b9916e85c6d44d417ff329cd7ffdf2a3108a0496fd34b09a2664141"
+  },
+  "projectWorkspace.remoteWorkspaceRef": {
+    "en": "Remote workspace ref",
+    "zh-CN": "远程工作区引用",
+    "reviewedEnglishHash": "942ecb0796a7415fa46d2623a43ea75b7eb7f9a3f64000a05c766faa2fd303c8"
+  },
+  "projectWorkspace.repoRef": {
+    "en": "Repo ref",
+    "zh-CN": "仓库引用",
+    "reviewedEnglishHash": "c79be6d1c2a5bbc56048be9670bdba387a0712388b0bc61a7b6c8eb8b4bf9817"
+  },
+  "projectWorkspace.repoUrl": {
+    "en": "Repo URL",
+    "zh-CN": "仓库地址",
+    "reviewedEnglishHash": "de5c1d1e3353a3312de8339e07811d6eb466e271e6f2fa3ab0d2a4189b8af72a"
+  },
+  "projectWorkspace.reset": {
+    "en": "Reset",
+    "zh-CN": "重置",
+    "reviewedEnglishHash": "daee7606b339f3c339076fe2c9f372a3ff40c8ee896005d829c7481b64ca5303"
+  },
+  "projectWorkspace.retryClose": {
+    "en": "Retry close",
+    "zh-CN": "重试关闭",
+    "reviewedEnglishHash": "46dde379c0e07f375482b2d7f4eae60a5c099ebcf84c7b684dba1aae1289023e"
+  },
+  "projectWorkspace.runtimeCommandsDisabledHint": {
+    "en": "Project workspaces need a working directory before local commands can run, and services also need runtime config.",
+    "zh-CN": "项目工作区需要先有工作目录，才能运行本地命令；服务还需要相应的运行时配置。",
+    "reviewedEnglishHash": "7278b40836b05f23825ffafa4d702fca1381d7f7ee0094f07b082ad077860795"
+  },
+  "projectWorkspace.runtimeJobCompleted": {
+    "en": "Workspace job completed.",
+    "zh-CN": "工作区任务已完成。",
+    "reviewedEnglishHash": "7761344999d37dbcf4e18c799ce33c85d574eff8b06b8a88c5ea9a7c6bb44b0b"
+  },
+  "projectWorkspace.runtimeServiceRestarted": {
+    "en": "Workspace service restarted. Issue execution is not paused.",
+    "zh-CN": "工作区服务已重启。议题执行未暂停。",
+    "reviewedEnglishHash": "1636fec5e85866f22cf0c543e3b64afafea8ebb019479bd130cccea7a6da80e4"
+  },
+  "projectWorkspace.runtimeServiceStarted": {
+    "en": "Workspace service started.",
+    "zh-CN": "工作区服务已启动。",
+    "reviewedEnglishHash": "26704ee775b26961f95f7a832ed5480639d9278bd061ea202f0c296b66f22a70"
+  },
+  "projectWorkspace.runtimeServiceStopped": {
+    "en": "Workspace service stopped. Issue execution is not paused.",
+    "zh-CN": "工作区服务已停止。议题执行未暂停。",
+    "reviewedEnglishHash": "5cca317058f55480eef4cf1705e092141ca8178d1eeae0ac3a41631bd543912e"
+  },
+  "projectWorkspace.saveChanges": {
+    "en": "Save changes",
+    "zh-CN": "保存更改",
+    "reviewedEnglishHash": "dd0ae7a5cbcf233968657563dce34639e681861e2df6d3f845c08d49981c0999"
+  },
+  "projectWorkspace.secondaryWorkspace": {
+    "en": "Secondary workspace",
+    "zh-CN": "次要工作区",
+    "reviewedEnglishHash": "8ef18ad551d097162ca15d446f61666cbb911797e089e5182feaa217027b0690"
+  },
+  "projectWorkspace.service": {
+    "en": "Service",
+    "zh-CN": "服务",
+    "reviewedEnglishHash": "d677190e0a9990e7d5fa9e4c1bbde44271fb8959c4acb6d43e02ed991128b4bf"
+  },
+  "projectWorkspace.serviceCount": {
+    "en": "{{running}}/{{total}} services",
+    "zh-CN": "{{running}}/{{total}} 个服务",
+    "reviewedEnglishHash": "f9b304d0fe35dcd7977c2c3dc01af114147bae7e7f2515f20c53a87b1ef80c73"
+  },
+  "projectWorkspace.servicesAndJobs": {
+    "en": "Services and jobs",
+    "zh-CN": "服务与任务",
+    "reviewedEnglishHash": "4165c310f33625598056d1d3a4c3924ef6c71c3174eb7a981288fe57de79b138"
+  },
+  "projectWorkspace.servicesAndJobsDesc": {
+    "en": "Long-running services stay supervised here, while one-shot jobs run on demand against this workspace. Execution workspaces inherit this config unless they override it.",
+    "zh-CN": "长驻服务会在这里被持续监管，一次性任务则会按需在此工作区运行。执行工作区会继承这份配置，除非它们自行覆盖。",
+    "reviewedEnglishHash": "21e32d6d4e311143c8bbb42313a706710597a127c56b8ef6d3d7cf9f04289cf6"
+  },
+  "projectWorkspace.setupCommand": {
+    "en": "Setup command",
+    "zh-CN": "准备命令",
+    "reviewedEnglishHash": "6300595b1dfda2108c7a97c9f2ba64630b438a5d3dfafc8c13b1199b00e41542"
+  },
+  "projectWorkspace.setupCommandHint": {
+    "en": "Runs when this workspace needs custom bootstrap",
+    "zh-CN": "工作区需要自定义初始化时执行",
+    "reviewedEnglishHash": "78c7d692b1ed6c1853a68c849126a3963e06dde473c5249ef28f5cc0da774d47"
+  },
+  "projectWorkspace.sharedWorkspaceKey": {
+    "en": "Shared workspace key",
+    "zh-CN": "共享工作区 Key",
+    "reviewedEnglishHash": "efb2ff5f7a820898d1d709502c260042a5372f7f1071f79b83211585629054ec"
+  },
+  "projectWorkspace.sourceType": {
+    "en": "Source type",
+    "zh-CN": "来源类型",
+    "reviewedEnglishHash": "24e59ff38c6b902933e5c82b77e463488886fc66eb3ac9f489cf290d203cb360"
+  },
+  "projectWorkspace.sourceType.gitRepo": {
+    "en": "Remote git repo",
+    "zh-CN": "远程 Git 仓库",
+    "reviewedEnglishHash": "b5ea0d022c21ae97aaccbef85ca098f6b9f2936f66c04dfae7acf120939be9f3"
+  },
+  "projectWorkspace.sourceType.gitRepoDesc": {
+    "en": "A repo URL with optional refs and local checkout.",
+    "zh-CN": "带有可选引用和本地检出的仓库地址。",
+    "reviewedEnglishHash": "150b978b52d5b68c71fbb508347dc2a1b2a95b6566540270d93b0115c00aaf45"
+  },
+  "projectWorkspace.sourceType.localGit": {
+    "en": "Local git checkout",
+    "zh-CN": "本地 Git 检出",
+    "reviewedEnglishHash": "a12b368fe63830fbbd46db591bb0f8f9ca61d5072981e47d3fdd668150076ab3"
+  },
+  "projectWorkspace.sourceType.localGitDesc": {
+    "en": "A local path Paperclip can use directly.",
+    "zh-CN": "Paperclip CN 可以直接使用的本地路径。",
+    "reviewedEnglishHash": "28025adf65832284ad953b8ce3963e89ff1afb78ed9aff7c42922df29840a963"
+  },
+  "projectWorkspace.sourceType.nonGit": {
+    "en": "Local non-git path",
+    "zh-CN": "本地非 Git 路径",
+    "reviewedEnglishHash": "8c1755dafe78f58f99b1097b3c6a635c2ff13daf35781e42c8347d07cf13ee60"
+  },
+  "projectWorkspace.sourceType.nonGitDesc": {
+    "en": "A local folder without git semantics.",
+    "zh-CN": "不具备 Git 语义的本地目录。",
+    "reviewedEnglishHash": "9727331f3dd04d8bbdceeea19747ecf7afac2ab9c6c047c1a759ba529270ff7f"
+  },
+  "projectWorkspace.sourceType.remoteManaged": {
+    "en": "Remote-managed workspace",
+    "zh-CN": "远程托管工作区",
+    "reviewedEnglishHash": "9b8562b1089218a73106432519b8b77e06051ef688c155c24e373aba623f90ca"
+  },
+  "projectWorkspace.sourceType.remoteManagedDesc": {
+    "en": "A hosted workspace tracked by external reference.",
+    "zh-CN": "由外部引用追踪的托管工作区。",
+    "reviewedEnglishHash": "a0c398aba0a73791d064dfb314911912a798aa45157076aba70dcebe21479a3e"
+  },
+  "projectWorkspace.startServices": {
+    "en": "Start services",
+    "zh-CN": "启动服务",
+    "reviewedEnglishHash": "e325cb9431ba6e02c8ce5f51c618ea042630899b202e4627b3970b4e50b865d3"
+  },
+  "projectWorkspace.stopServices": {
+    "en": "Stop services",
+    "zh-CN": "停止服务",
+    "reviewedEnglishHash": "423dc54fd3494d12012ee60154f3afa50a80b5409246704001f053381b4cbca1"
+  },
+  "projectWorkspace.title": {
+    "en": "Project workspace",
+    "zh-CN": "项目工作区",
+    "reviewedEnglishHash": "ce016e7f0a41c4f32109216e1e253653946e643adf1114a7e6d08e4323de1a7a"
+  },
+  "projectWorkspace.updatedRelative": {
+    "en": "Updated {{time}}",
+    "zh-CN": "更新于 {{time}}",
+    "reviewedEnglishHash": "6379f4b4efb9b0a5342283ad3b0d99edf9df796e29d5791b24e14999ac127e78"
+  },
+  "projectWorkspace.validation.absolutePathRequired": {
+    "en": "Local workspace path must be absolute.",
+    "zh-CN": "本地工作区路径必须是绝对路径。",
+    "reviewedEnglishHash": "6c74fbf6e632f8afbb3e2e7f302d9a2cf9c5c021544e602759426884c074fbb6"
+  },
+  "projectWorkspace.validation.invalidJson": {
+    "en": "Runtime services JSON must be a JSON object.",
+    "zh-CN": "运行时服务 JSON 必须是一个 JSON 对象。",
+    "reviewedEnglishHash": "a46c20693149ec540421e5906896d5e0625da6676b4ed755031124e2ed45a466"
+  },
+  "projectWorkspace.validation.pathOrRepoRequired": {
+    "en": "Workspace requires at least one local path or repo URL.",
+    "zh-CN": "工作区至少需要一个本地路径或仓库地址。",
+    "reviewedEnglishHash": "4b9a0b9a07c7eb6c932d4095f918fda22af44bc54dc82cf875cc36355d7207eb"
+  },
+  "projectWorkspace.validation.remoteManagedRequired": {
+    "en": "Remote-managed workspaces require a remote workspace ref or repo URL.",
+    "zh-CN": "远程托管工作区需要远程工作区引用或仓库地址。",
+    "reviewedEnglishHash": "56e4356bc11de81ffd09906992d530771eb954d5ba54a2457fd0573e137cb2da"
+  },
+  "projectWorkspace.validation.validUrlRequired": {
+    "en": "Repo URL must be a valid URL.",
+    "zh-CN": "仓库地址必须是有效的 URL。",
+    "reviewedEnglishHash": "fe0386d81ada2fbfbebe9663c61d011be2a9cfc56b51b1867e93f8bc58878265"
+  },
+  "projectWorkspace.visibility": {
+    "en": "Visibility",
+    "zh-CN": "可见性",
+    "reviewedEnglishHash": "7448611d5f93aa8acac6a06d76c00b3f23d985bd7fbedbc771409a85ad4a23c5"
+  },
+  "projectWorkspace.visibility.advanced": {
+    "en": "Advanced",
+    "zh-CN": "高级",
+    "reviewedEnglishHash": "9f088dbebd6c3c70a5ddbc2c943b11e4ca9acea5757b0b4f2b32479f0dbb747e"
+  },
+  "projectWorkspace.visibility.default": {
+    "en": "Default",
+    "zh-CN": "默认",
+    "reviewedEnglishHash": "21b111cbfe6e8fca2d181c43f53ad548b22e38aca955b9824706a504b0a07a2d"
+  },
+  "projectWorkspace.workspaceCommands": {
+    "en": "Workspace commands",
+    "zh-CN": "工作区命令",
+    "reviewedEnglishHash": "6cc6282c5ab30392bd8bc3039a1b84f1612b8ef3a6c2a5b3955f30a78f2279e6"
+  },
+  "projectWorkspace.workspaceCommandsJson": {
+    "en": "Workspace commands JSON",
+    "zh-CN": "工作区命令 JSON",
+    "reviewedEnglishHash": "bd7ac36ac97f1654e1e62f211941a437f9b82e721c26e5e05001437aa62cf659"
+  },
+  "projectWorkspace.workspaceCommandsJsonHint": {
+    "en": "Execution workspaces inherit this config unless they override it. Legacy `services` arrays still work, but `commands` supports both services and jobs.",
+    "zh-CN": "执行工作区会继承这份配置，除非它们自行覆盖。旧的 `services` 数组仍然可用，但 `commands` 同时支持服务和任务。",
+    "reviewedEnglishHash": "cf62e415fa233339775139b8af1273916eab76ce1bf142ae8e48a14d4819ada1"
+  },
+  "projectWorkspace.workspaceFacts": {
+    "en": "Workspace facts",
+    "zh-CN": "工作区信息",
+    "reviewedEnglishHash": "f98c41069e7daa44fcde26d47aa363e0b7b865d51f123292d22f2f4981039574"
+  },
+  "projectWorkspace.workspaceId": {
+    "en": "Workspace ID",
+    "zh-CN": "工作区 ID",
+    "reviewedEnglishHash": "889d892993c3e5f02854f567e39a114f149162d9bedfc1f170415ef6235edb31"
+  },
+  "projectWorkspace.workspaceName": {
+    "en": "Workspace name",
+    "zh-CN": "工作区名称",
+    "reviewedEnglishHash": "9619649d8dc1394f89089621a11621651aa271453d81b3af8f7bcc7fa5fe5f1f"
+  },
+  "projectWorkspace.workspaceNotFound": {
+    "en": "Workspace not found for this project.",
+    "zh-CN": "在该项目中找不到此工作区。",
+    "reviewedEnglishHash": "8b1b2a72adf5324ffb6aacccbc41e084f8a8d9b6484123e10ccaf51fc378ae8c"
+  }
+}

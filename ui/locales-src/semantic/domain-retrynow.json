@@ -1,0 +1,27 @@
+{
+  "retryNow.missingIssueId": {
+    "en": "Missing issue id",
+    "zh-CN": "缺少任务 ID",
+    "reviewedEnglishHash": "be387694446b00e329fec125dc39f0e408772a8c5c27f77b6d7a0fd3ab2debfa"
+  },
+  "retryNow.outcome.gateSuppressed": {
+    "en": "Couldn't retry now",
+    "zh-CN": "暂时无法立即重试",
+    "reviewedEnglishHash": "7452a71d0f62b354567997ee092f21a95099aa76050a11827b4006d13a94dddf"
+  },
+  "retryNow.outcome.promoted": {
+    "en": "Retry promoted",
+    "zh-CN": "已提升重试",
+    "reviewedEnglishHash": "5a40bcc86017337a69bcb83934597bb5b97e839cf52cd986e9f3b9f489f763c2"
+  },
+  "retryNow.requestFailed": {
+    "en": "The request failed. Try again in a moment.",
+    "zh-CN": "请求失败，请稍后重试。",
+    "reviewedEnglishHash": "f6446c53c3fcb360ec63b062d0641eca9a788e7120c1063570996fe9f5bae0db"
+  },
+  "retryNow.requestFailedWithStatus": {
+    "en": "Request failed ({{status}})",
+    "zh-CN": "请求失败（{{status}}）",
+    "reviewedEnglishHash": "2d17914c47b4706cff4ad20f981be0206e881c9d2bcc6f7167abc398d4045ae4"
+  }
+}

@@ -1,0 +1,202 @@
+{
+  "runTranscript.collapseCommandDetails": {
+    "en": "Collapse command details",
+    "zh-CN": "折叠命令详情",
+    "reviewedEnglishHash": "3c58133f2654a26748092ef523210f29eece25edf2a9a2b4ade6b4ed30532d48"
+  },
+  "runTranscript.collapseToolDetails": {
+    "en": "Collapse tool details",
+    "zh-CN": "折叠工具详情",
+    "reviewedEnglishHash": "f3775beed6ad90c4629dbdf7fdb492b38523c8e016ccf5d45daf061a5cd00bd7"
+  },
+  "runTranscript.commandFailed": {
+    "en": "Command failed",
+    "zh-CN": "命令失败",
+    "reviewedEnglishHash": "8c45c79c6d1192a31ad25b0ef73829fc9e57546ab383184a6e7064a78ed483a3"
+  },
+  "runTranscript.completed": {
+    "en": "Completed",
+    "zh-CN": "已完成",
+    "reviewedEnglishHash": "22a970d2e5b1cc233e462be7c7b64e135a275bb09d83d87683bf4236c43113a1"
+  },
+  "runTranscript.errored": {
+    "en": "Errored",
+    "zh-CN": "出错",
+    "reviewedEnglishHash": "d23d6aeb8ba32567472bcfee8b009bfe688f25dcff93a7fe82d933badb13e894"
+  },
+  "runTranscript.executedCommand": {
+    "en": "Executed command",
+    "zh-CN": "已执行命令",
+    "reviewedEnglishHash": "b4ebb6e0825516c383b242d4b602f461afd2ccd97a0ec8e755f1beaec8d71ff8"
+  },
+  "runTranscript.executedCommandCount": {
+    "en": "Executed {{count}} commands",
+    "zh-CN": "已执行 {{count}} 条命令",
+    "reviewedEnglishHash": "1939ae4673e7fa9391fbbf1efd6b535842c7cfb7eec4d766bf87ab578692cb6f"
+  },
+  "runTranscript.executingCommand": {
+    "en": "Executing command",
+    "zh-CN": "正在执行命令",
+    "reviewedEnglishHash": "d7ad4e191ef9da2e5eedbbbd152da6a29e3ad951b771849b888aeacdb8387bd0"
+  },
+  "runTranscript.expandCommandDetails": {
+    "en": "Expand command details",
+    "zh-CN": "展开命令详情",
+    "reviewedEnglishHash": "cb2c46bb2953857e82bfb9c65704e66cbb7f57729116ec9565b9eb44f151f917"
+  },
+  "runTranscript.expandToolDetails": {
+    "en": "Expand tool details",
+    "zh-CN": "展开工具详情",
+    "reviewedEnglishHash": "157f2a0cc0af5de23ab80af786aacc04159697f34a9a6a881db679214a10075f"
+  },
+  "runTranscript.input": {
+    "en": "Input",
+    "zh-CN": "输入",
+    "reviewedEnglishHash": "36ecb4f8669133ce744c21982ba4abe2ecd7086e1dc2226ccd6f266f3a5005f8"
+  },
+  "runTranscript.logLines_one": {
+    "en": "{{count}} log line",
+    "zh-CN": "{{count}} 行日志",
+    "reviewedEnglishHash": "0dc283b61aa084cf429dc7b6a1e44c34087a6887c73a622ae029f86cda209667"
+  },
+  "runTranscript.logLines_other": {
+    "en": "{{count}} log lines",
+    "zh-CN": "{{count}} 行日志",
+    "reviewedEnglishHash": "9b5776ee4fee312e89bcf5610408f3e813102bfb777ab6ff282b5db70d51fe2f"
+  },
+  "runTranscript.result": {
+    "en": "Result",
+    "zh-CN": "结果",
+    "reviewedEnglishHash": "6e7d50e84f4731ef74187cf8cfa2672184eed8866b0b0074a772f4a64e0f4ba2"
+  },
+  "runTranscript.running": {
+    "en": "Running",
+    "zh-CN": "运行中",
+    "reviewedEnglishHash": "f4ccae29e1bb0c20a124570a1b43f4347ea94bba9f84ffdfddd9c7445b126128"
+  },
+  "runTranscript.streaming": {
+    "en": "Streaming",
+    "zh-CN": "流式输出中",
+    "reviewedEnglishHash": "a951c5945635e2d32e944bf67ddf3101bc3c5c9b2e3087ef39c384dc0e61a0d0"
+  },
+  "runTranscript.systemMessages_one": {
+    "en": "{{count}} system message",
+    "zh-CN": "{{count}} 条系统消息",
+    "reviewedEnglishHash": "b827380c1962b5afcc8d1a3656106280bc99266ec2e507cc242b6c5ebdeef43b"
+  },
+  "runTranscript.systemMessages_other": {
+    "en": "{{count}} system messages",
+    "zh-CN": "{{count}} 条系统消息",
+    "reviewedEnglishHash": "9478fc0d8c7ae919f6b11cdf6ce40f17218b064629a270a45476f52264c26684"
+  },
+  "runTranscript.toolCount": {
+    "en": "{{count}} tools",
+    "zh-CN": "{{count}} 个工具",
+    "reviewedEnglishHash": "f1b9324764c0a9c0633d57b1379cc777c4569958a3d59d097802a471fb08dba3"
+  },
+  "runTranscript.toolDecision.action": {
+    "en": "action",
+    "zh-CN": "操作",
+    "reviewedEnglishHash": "bd938c688f49b77c7fc537c6b9222e2c97ebddd63076b87f2feaec66fb9c05d0"
+  },
+  "runTranscript.toolDecision.actionRequest": {
+    "en": "Action request {{id}}",
+    "zh-CN": "操作请求 {{id}}",
+    "reviewedEnglishHash": "60307ac951849cf0c79249c2b9f8028f52c483f97cc3330f0498df45feed3b32"
+  },
+  "runTranscript.toolDecision.allowed": {
+    "en": "Allowed",
+    "zh-CN": "已允许",
+    "reviewedEnglishHash": "1bb201d188352e9b4633f85e4fb8a31ea93fd14dec702443fd3e2713d657fd2d"
+  },
+  "runTranscript.toolDecision.approved": {
+    "en": "Approved",
+    "zh-CN": "已批准",
+    "reviewedEnglishHash": "87b42e40c2a290e01d87b721bf381c3c5e259d1eb0a4660e41fdbf8bc73f7ddd"
+  },
+  "runTranscript.toolDecision.audit": {
+    "en": "audit",
+    "zh-CN": "审计",
+    "reviewedEnglishHash": "b81f37a043a6f767e7c94d105f4bd31282f3ecc20680bb9d09bd93461cf4c863"
+  },
+  "runTranscript.toolDecision.cancelled": {
+    "en": "Cancelled",
+    "zh-CN": "已取消",
+    "reviewedEnglishHash": "d353a99eb4556847ceeb3c306ac886cf6b4fa13043eb1864b9aeb0607fd5f2cc"
+  },
+  "runTranscript.toolDecision.card": {
+    "en": "card",
+    "zh-CN": "卡片",
+    "reviewedEnglishHash": "8367cd66fdd136bba8ba23f8805bb050dd6289401c8ec3b0be44a3c233eef90d"
+  },
+  "runTranscript.toolDecision.decision": {
+    "en": "Decision",
+    "zh-CN": "决策",
+    "reviewedEnglishHash": "640ae4baf96061fee1798e9181e2b7a5145585233df2c27a501623afb0096ec1"
+  },
+  "runTranscript.toolDecision.denied": {
+    "en": "Denied",
+    "zh-CN": "已拒绝",
+    "reviewedEnglishHash": "da404deb110f7cc92a5b2c85c8e8ab103bd48837cf300f8387d13d54f3adea65"
+  },
+  "runTranscript.toolDecision.executed": {
+    "en": "Executed",
+    "zh-CN": "已执行",
+    "reviewedEnglishHash": "3aa8b683ebf3703c6fc5beb6c8ec6093227799ab6fdabad18cd80aa626e46f39"
+  },
+  "runTranscript.toolDecision.failed": {
+    "en": "Failed",
+    "zh-CN": "失败",
+    "reviewedEnglishHash": "031a8f0f659df890dfd53c92e45295b0f14c997185bae46e168831e403b273f7"
+  },
+  "runTranscript.toolDecision.invocation": {
+    "en": "invocation",
+    "zh-CN": "调用",
+    "reviewedEnglishHash": "40493fe6739aee8019fcd0c22c87b5811255e4ac5e09fb895119c4de495226a8"
+  },
+  "runTranscript.toolDecision.needsApproval": {
+    "en": "Needs approval",
+    "zh-CN": "需要审批",
+    "reviewedEnglishHash": "db0e960b68b57894a7a33ce69c53c58b7bc4e98ae59499824a2d3a43bb47a120"
+  },
+  "runTranscript.toolDecision.pending": {
+    "en": "Pending",
+    "zh-CN": "待处理",
+    "reviewedEnglishHash": "331551b0de4157c9abc7b72b61b96a2a928fd6db3cdf029c1fc44b08ad633aa6"
+  },
+  "runTranscript.toolDecision.rateLimited": {
+    "en": "Rate limited",
+    "zh-CN": "已限流",
+    "reviewedEnglishHash": "a06130a5a2818ae524dd3b9b83846510af328eeeee38fb620eb0b398436cd552"
+  },
+  "runTranscript.toolDecision.timedOut": {
+    "en": "Timed out",
+    "zh-CN": "已超时",
+    "reviewedEnglishHash": "9718cc761cfd5810041ef007ae258fa1308b8487d0f30c5f36a442f8fe5f76c5"
+  },
+  "runTranscript.usedTool": {
+    "en": "Used {{tool}}",
+    "zh-CN": "已使用 {{tool}}",
+    "reviewedEnglishHash": "8beadf360fd5da698b8250398db8adbdd6aace30aa3ace3ae4968be82f08035b"
+  },
+  "runTranscript.usedToolCalls": {
+    "en": "Used {{tool}} ({{count}} calls)",
+    "zh-CN": "已使用 {{tool}}（{{count}} 次调用）",
+    "reviewedEnglishHash": "74ef39b319d6ea95fa317edcf960d31c234ecaf83c8664efcbe7b182c4cbeeba"
+  },
+  "runTranscript.user": {
+    "en": "User",
+    "zh-CN": "用户",
+    "reviewedEnglishHash": "b512d97e7cbf97c273e4db073bbb547aa65a84589227f8f3d9e4a72b9372a24d"
+  },
+  "runTranscript.usingTool": {
+    "en": "Using {{tool}}",
+    "zh-CN": "正在使用 {{tool}}",
+    "reviewedEnglishHash": "ba2ee2bae522103cac6ed85cee1e8bb6ed077b30e0871312d88c061e38cb812a"
+  },
+  "runTranscript.waitingForResult": {
+    "en": "Waiting for result...",
+    "zh-CN": "正在等待结果...",
+    "reviewedEnglishHash": "3baf0a61c565f0a4638c937dec8c8551dcc08f6143048cf7d68cdc78c0575610"
+  }
+}

@@ -1,0 +1,662 @@
+{
+  "companyImport.action.create": {
+    "en": "create",
+    "zh-CN": "新建",
+    "reviewedEnglishHash": "fa8847b0c33183273f5945508b31c3208a9e4ece58ca47233a05628d8dba3799"
+  },
+  "companyImport.action.overwrite": {
+    "en": "overwrite",
+    "zh-CN": "覆盖",
+    "reviewedEnglishHash": "d093b090a7cce6316bf817fca56cd17f42018eb8982dd49367ecb839d6996466"
+  },
+  "companyImport.action.replace": {
+    "en": "replace",
+    "zh-CN": "替换",
+    "reviewedEnglishHash": "7ab3778776cde4fa728a162a53ad3abcc967d1bd7361039e0942888240c4ce86"
+  },
+  "companyImport.action.skip": {
+    "en": "skip",
+    "zh-CN": "跳过",
+    "reviewedEnglishHash": "42e93b9bb77d8a73e8412111b8f3d6befab66bf48fdcdefa80bb111819aa0cb1"
+  },
+  "companyImport.action.update": {
+    "en": "update",
+    "zh-CN": "更新",
+    "reviewedEnglishHash": "2937013f2181810606b2a799b05bda2849f3e369a20982a4138f0e0a55984ce4"
+  },
+  "companyImport.activateImported": {
+    "en": "Activate imported agents and routines",
+    "zh-CN": "启用导入的智能体和例程",
+    "reviewedEnglishHash": "2c27dd18687833415062a97344c4b08b478ccc257aef65b3bf9b684d5a0cf26f"
+  },
+  "companyImport.activateSelected": {
+    "en": "Activate selected ({{count}})",
+    "zh-CN": "启用所选项（{{count}}）",
+    "reviewedEnglishHash": "53d47ecf5024b46e42248c4047d19d7ca253d4730374637221d314942c3b9183"
+  },
+  "companyImport.activated": {
+    "en": "activated",
+    "zh-CN": "项已启用",
+    "reviewedEnglishHash": "dd61d5ff27c4b48b94df0644e4da8a3264c24a7c4286f2e51c2d4ed05f656868"
+  },
+  "companyImport.activating": {
+    "en": "Activating...",
+    "zh-CN": "正在启用...",
+    "reviewedEnglishHash": "fd2db6af73fce661208152c17a3cc94b44237e31075a563ef8df5ac66b98f8cd"
+  },
+  "companyImport.activationFailedFallback": {
+    "en": "Activation failed.",
+    "zh-CN": "启用失败。",
+    "reviewedEnglishHash": "0bff4edde2f4e2b7213cccea25381e29a7180679882d3c5739bd8c5ccc61b490"
+  },
+  "companyImport.activationFailedPrefix": {
+    "en": "failed:",
+    "zh-CN": "失败：",
+    "reviewedEnglishHash": "a6964edfab2c18eb95c09e496d064fef6c3d8fe189d290ec116b4a89884a8ce8"
+  },
+  "companyImport.activationKind.agent": {
+    "en": "agent",
+    "zh-CN": "智能体",
+    "reviewedEnglishHash": "d4f0bc5a29de06b510f9aa428f1eedba926012b591fef7a518e776a7c9bd1824"
+  },
+  "companyImport.activationKind.routine": {
+    "en": "routine",
+    "zh-CN": "例程",
+    "reviewedEnglishHash": "fde55b36ec36cbcd2832b6b9f8f59ea0cf6d942c528053ca1171c063069a74cf"
+  },
+  "companyImport.activationPartialFailureBody_one": {
+    "en": "{{count}} item failed to activate; the rest were activated.",
+    "zh-CN": "{{count}} 个项目启用失败，其余项目已启用。",
+    "reviewedEnglishHash": "cebbf9b5c9112d236bf46ab34eb5b5b3e67a127c3dda883a57be61d48df6a536"
+  },
+  "companyImport.activationPartialFailureBody_other": {
+    "en": "{{count}} items failed to activate; the rest were activated.",
+    "zh-CN": "{{count}} 个项目启用失败，其余项目已启用。",
+    "reviewedEnglishHash": "f300a068f8c648be5c597f4d0e9f186559dc57f8854035b78d36c256944cdf04"
+  },
+  "companyImport.activationPartialFailureTitle": {
+    "en": "Some items were not activated",
+    "zh-CN": "部分项目未能启用",
+    "reviewedEnglishHash": "3bd449d7bda6ebd70467fe946f1a9ea01d7396d7e0f6338acc51da16b0904ecb"
+  },
+  "companyImport.adapterFallback": {
+    "en": "source adapter {{source}} is not installed here — this agent will use {{fallback}}.",
+    "zh-CN": "源适配器 {{source}} 未在此安装；此智能体将使用 {{fallback}}。",
+    "reviewedEnglishHash": "2cf6d30f5f2123d8921ccad741edff65e9fc072eff8094e02fb7ed9c7001c574"
+  },
+  "companyImport.adapters": {
+    "en": "Adapters",
+    "zh-CN": "适配器",
+    "reviewedEnglishHash": "d20547a8145f719f3b409dea95d7227ec37133072585d6fd9f2f13767166fe93"
+  },
+  "companyImport.agentCount": {
+    "en": "{{count}} agent",
+    "zh-CN": "{{count}} 个智能体",
+    "reviewedEnglishHash": "fbddbb9eca4b3148dfd4a959da033c74fd47246f4f6cdd2a17be7fba5ddf5645"
+  },
+  "companyImport.and": {
+    "en": ", and",
+    "zh-CN": "，以及",
+    "reviewedEnglishHash": "4aa9bfd2f175a94ad5a7cb321e1aea9790c73eb366a3415b47a00aeaa9fbf24a"
+  },
+  "companyImport.chooseForPreview": {
+    "en": "Choose a package above to enable the preview.",
+    "zh-CN": "选择上方的包以启用预览。",
+    "reviewedEnglishHash": "192d5a95330e5ac6632403ccfed7333887e1b14e92e4e5190f92b270d9461483"
+  },
+  "companyImport.chooseSource": {
+    "en": "Choose a GitHub repo or upload a local Paperclip zip package.",
+    "zh-CN": "选择 GitHub 仓库或上传本地 Paperclip zip 包。",
+    "reviewedEnglishHash": "1c2429b04882702a6fd41613a237c986ad100830e6c1d573d365e01aebe2050a"
+  },
+  "companyImport.chooseZip": {
+    "en": "Choose zip",
+    "zh-CN": "选择 Zip",
+    "reviewedEnglishHash": "d1fe8266d658fed44d210fcde6bc547f4405718a56d37bc29523459f97a3ce4b"
+  },
+  "companyImport.collisionStrategy": {
+    "en": "Collision strategy",
+    "zh-CN": "冲突策略",
+    "reviewedEnglishHash": "f2d126a181a16c44df7aa6a8181a208e825fe5448aad3aa9ed5e674d5a1eae90"
+  },
+  "companyImport.collisionStrategyHint": {
+    "en": "Board imports can rename, skip, or replace matching company content.",
+    "zh-CN": "董事会导入时，可以对冲突内容进行重命名、跳过或替换。",
+    "reviewedEnglishHash": "ed7423639ca8944ef6a0a66d992c913e17e6024bb03afb9a29af102ac88bce40"
+  },
+  "companyImport.completed": {
+    "en": "Import completed",
+    "zh-CN": "导入完成",
+    "reviewedEnglishHash": "69135372f0c4f5932599f73cd581a933674e5282c2274c51d3cecf88b80215a5"
+  },
+  "companyImport.completedExpiredBody": {
+    "en": "The import finished and your company is ready. Its detailed summary is no longer available, but the company has been added — open it to view it.",
+    "zh-CN": "导入已完成，公司已准备就绪。详细摘要已不可用，但公司已添加。打开它即可查看。",
+    "reviewedEnglishHash": "4e24c4128e734e25fa383fea8b39155dc5f67e64e4e19e8a2e8d62da02946131"
+  },
+  "companyImport.completedExpiredTitle": {
+    "en": "Import completed",
+    "zh-CN": "导入已完成",
+    "reviewedEnglishHash": "69135372f0c4f5932599f73cd581a933674e5282c2274c51d3cecf88b80215a5"
+  },
+  "companyImport.completedNoSummary": {
+    "en": "The import finished and your company is ready. Its detailed summary is no longer available, but the company has been added — open it to view it.",
+    "zh-CN": "导入已完成，公司已准备就绪。详细摘要已不可用，但公司已添加，可打开查看。",
+    "reviewedEnglishHash": "4e24c4128e734e25fa383fea8b39155dc5f67e64e4e19e8a2e8d62da02946131"
+  },
+  "companyImport.completedTitle": {
+    "en": "Import complete",
+    "zh-CN": "导入完成",
+    "reviewedEnglishHash": "a9c747fe220f0a9f1cf16923b4fd8d8dc7d11e9f15a58eeb28d1c7c769267185"
+  },
+  "companyImport.configureAdapter": {
+    "en": "Configure adapter",
+    "zh-CN": "配置适配器",
+    "reviewedEnglishHash": "9a019256f5ec87cbba6b190837d4f0f78f8ff10bb7409507624b2fe9dfd6515e"
+  },
+  "companyImport.confirmRename": {
+    "en": "confirm rename",
+    "zh-CN": "确认重命名",
+    "reviewedEnglishHash": "d216585d96c4c89f19935c1e7e6f87daf709df27659e17f1c91e7e99eef51ed8"
+  },
+  "companyImport.confirmed": {
+    "en": "confirmed",
+    "zh-CN": "已确认",
+    "reviewedEnglishHash": "9599915bd8cd62b6b42e6c37b5b681a76991a7c5be1fde9971278ce65b99d550"
+  },
+  "companyImport.conflict": {
+    "en": "conflict",
+    "zh-CN": "个冲突",
+    "reviewedEnglishHash": "fa9e1d22205ad852b0dc9509ec4e31644e88742c4dfce93c08f011fee1cd8a1a"
+  },
+  "companyImport.conflictCount": {
+    "en": "{{count}} conflicts",
+    "zh-CN": "{{count}} 个冲突",
+    "reviewedEnglishHash": "bd094a665f7b71f536c8324b4ac79766ea839f9646726f191337256875002f26"
+  },
+  "companyImport.conflictCount_one": {
+    "en": "{{count}} conflict",
+    "zh-CN": "{{count}} 个冲突",
+    "reviewedEnglishHash": "4142c8a9ddad0cbde12d4b12b6cb484d3de0f9260475478203315bf6462d63bd"
+  },
+  "companyImport.conflictCount_other": {
+    "en": "{{count}} conflicts",
+    "zh-CN": "{{count}} 个冲突",
+    "reviewedEnglishHash": "bd094a665f7b71f536c8324b4ac79766ea839f9646726f191337256875002f26"
+  },
+  "companyImport.emptyZipPackage": {
+    "en": "No package files were found in the selected zip archive.",
+    "zh-CN": "所选 zip 压缩包中没有找到可导入的公司文件。",
+    "reviewedEnglishHash": "e0128f2363e55e1fa8dd42cd37bb91ed9304808413ed734bbfc0e065f16998b6"
+  },
+  "companyImport.errorCount": {
+    "en": "{{count}} errors",
+    "zh-CN": "{{count}} 个错误",
+    "reviewedEnglishHash": "f72bee75f24781b3b067d9e57ccad6e11b3ba89e264b9465f7a1f5df01e856dd"
+  },
+  "companyImport.errorCount_one": {
+    "en": "{{count}} error",
+    "zh-CN": "{{count}} 个错误",
+    "reviewedEnglishHash": "dd0728fcfb699967d88ff864982fde1085fce98d88ab819da477eaa090bae98b"
+  },
+  "companyImport.errorCount_other": {
+    "en": "{{count}} errors",
+    "zh-CN": "{{count}} 个错误",
+    "reviewedEnglishHash": "f72bee75f24781b3b067d9e57ccad6e11b3ba89e264b9465f7a1f5df01e856dd"
+  },
+  "companyImport.existingCompany": {
+    "en": "Existing company: {{name}}",
+    "zh-CN": "现有公司：{{name}}",
+    "reviewedEnglishHash": "45195d6ca9ec0056d906b4b3c6f641d6151e7f0a53d4b83a713f641f0118c1e2"
+  },
+  "companyImport.failedCount": {
+    "en": "failed:",
+    "zh-CN": "项失败：",
+    "reviewedEnglishHash": "a6964edfab2c18eb95c09e496d064fef6c3d8fe189d290ec116b4a89884a8ce8"
+  },
+  "companyImport.file": {
+    "en": "file",
+    "zh-CN": "个文件",
+    "reviewedEnglishHash": "3b9c358f36f0a31b6ad3e14f309c7cf198ac9246e8316f9ce543d5b19ac02b80"
+  },
+  "companyImport.githubRepo": {
+    "en": "GitHub repo",
+    "zh-CN": "GitHub 仓库",
+    "reviewedEnglishHash": "0a2e4df8c1d1d6526d7106232bb600196cdb4e30efca6f921a9bbec1c7b972f0"
+  },
+  "companyImport.githubUrl": {
+    "en": "GitHub URL",
+    "zh-CN": "GitHub 地址",
+    "reviewedEnglishHash": "76a692132c70056e8d34d45e7625282d51c79f410b7e5bd8b4848ac8ccaae193"
+  },
+  "companyImport.githubUrlHint": {
+    "en": "Repo tree path or blob URL to COMPANY.md (e.g. github.com/owner/repo/tree/main/company).",
+    "zh-CN": "仓库 tree 路径或指向 COMPANY.md 的 blob 地址，例如 github.com/owner/repo/tree/main/company。",
+    "reviewedEnglishHash": "89e8783f6b8f2d969267c6f2962c008f5be40ee8bd065149f1509e09f1d4e961"
+  },
+  "companyImport.githubUrlPlaceholder": {
+    "en": "https://github.com/owner/repo/tree/main/company",
+    "zh-CN": "https://github.com/owner/repo/tree/main/company",
+    "reviewedEnglishHash": "c7c129d5bd55b64bb2aec39665115d1a50295b39670196e77049adea3b9b7b8c"
+  },
+  "companyImport.goToDashboard": {
+    "en": "Go to dashboard",
+    "zh-CN": "前往仪表盘",
+    "reviewedEnglishHash": "f085ee865703cd07b9914933c4a3f883f5cdfefcc0617ddfedbb568ef9ed8bc2"
+  },
+  "companyImport.importButton": {
+    "en": "Import",
+    "zh-CN": "导入",
+    "reviewedEnglishHash": "2cff9baabf56ca002610e113bc94deb6ededddfc3c130365b6e88ed5195bf774"
+  },
+  "companyImport.importButton_one": {
+    "en": "Import {{count}} file",
+    "zh-CN": "导入 {{count}} 个文件",
+    "reviewedEnglishHash": "9aaf6de6012055f56940fe58fabb4f51b0a71a655c0214f3578383a2e01ad448"
+  },
+  "companyImport.importButton_other": {
+    "en": "Import {{count}} files",
+    "zh-CN": "导入 {{count}} 个文件",
+    "reviewedEnglishHash": "06540380d1db7fdb9094bd4955bc4d85e8e59246ed032a1eb1a4893ed1c70afa"
+  },
+  "companyImport.importCompleteBody": {
+    "en": "Company import complete.",
+    "zh-CN": "公司导入完成。",
+    "reviewedEnglishHash": "f8e44fb9be04c431b82608ae3fc76151f39a392e31280e6cadccfc33d1ccac64"
+  },
+  "companyImport.importCompleteBody_one": {
+    "en": "{{companyName}}: {{count}} agent processed.",
+    "zh-CN": "{{companyName}}：处理了 {{count}} 个智能体。",
+    "reviewedEnglishHash": "dd3bbfaddeeab32ad8aa642827c627cb1817c4ce2c186ffc938e24dfc29024b4"
+  },
+  "companyImport.importCompleteBody_other": {
+    "en": "{{companyName}}: {{count}} agents processed.",
+    "zh-CN": "{{companyName}}：处理了 {{count}} 个智能体。",
+    "reviewedEnglishHash": "a7433f982cfaacb56cd8e5f70953b65b987ba0592755ee11d1a8beab39489424"
+  },
+  "companyImport.importCompleteTitle": {
+    "en": "Import complete",
+    "zh-CN": "导入完成",
+    "reviewedEnglishHash": "a9c747fe220f0a9f1cf16923b4fd8d8dc7d11e9f15a58eeb28d1c7c769267185"
+  },
+  "companyImport.importFailed": {
+    "en": "Import failed:",
+    "zh-CN": "导入失败：",
+    "reviewedEnglishHash": "113b8e2f4761d74c0c3fa13a4e00524cc71e297e629e30fe41d38d561806d1d4"
+  },
+  "companyImport.importFailedBody": {
+    "en": "Failed to apply import.",
+    "zh-CN": "应用导入失败。",
+    "reviewedEnglishHash": "026e5ceeb357b11645dbe348003a4319a0dfd1cd87bd6e84929163c64934dcce"
+  },
+  "companyImport.importFailedTitle": {
+    "en": "Import failed",
+    "zh-CN": "导入失败",
+    "reviewedEnglishHash": "0a26f41abd00f95e7009b406e82083295f837ac1bc76e2acc1f7d66b3539c18e"
+  },
+  "companyImport.importPreview": {
+    "en": "Import preview",
+    "zh-CN": "导入预览",
+    "reviewedEnglishHash": "ed144b77c0d788cee838cd350e67c427470530686ade97a9686064b787df0786"
+  },
+  "companyImport.importedPaused": {
+    "en": "imported in a paused state",
+    "zh-CN": "导入后默认保持暂停",
+    "reviewedEnglishHash": "ac46d4158e9bd9421c7a785a67ffd50398b64ace12193c14a8042ef548de924b"
+  },
+  "companyImport.importing": {
+    "en": "Importing...",
+    "zh-CN": "正在导入...",
+    "reviewedEnglishHash": "b7a3cd401b23dd41033eac7b578d42ba0b28379396a17192d1a782f793844b77"
+  },
+  "companyImport.itemCount": {
+    "en": "{{count}} item",
+    "zh-CN": "{{count}} 项",
+    "reviewedEnglishHash": "93c85e9a47e959f45043eb357a87c136173e3237df91a9c49180f16c82892cae"
+  },
+  "companyImport.jobMissingAfterRestart": {
+    "en": "The server no longer reports this import job — it may have restarted while the import ran.",
+    "zh-CN": "服务器已无法找到此导入任务，可能是在导入期间发生了重启。",
+    "reviewedEnglishHash": "2fa1356f0bffe988bbe8324ab4b27e908554747ef0be75ab92232e96bba44d56"
+  },
+  "companyImport.kind.agent": {
+    "en": "agent",
+    "zh-CN": "智能体",
+    "reviewedEnglishHash": "d4f0bc5a29de06b510f9aa428f1eedba926012b591fef7a518e776a7c9bd1824"
+  },
+  "companyImport.kind.issue": {
+    "en": "issue",
+    "zh-CN": "任务",
+    "reviewedEnglishHash": "4a502846d070e2088b7025abe80629830bf03d7ab5624d5e91f332bc9d049d3f"
+  },
+  "companyImport.kind.project": {
+    "en": "project",
+    "zh-CN": "项目",
+    "reviewedEnglishHash": "244210e48437b6556980a70249a99369934a352429034cef9d7bd253b3bf2c01"
+  },
+  "companyImport.kind.skill": {
+    "en": "skill",
+    "zh-CN": "技能",
+    "reviewedEnglishHash": "9c53c074d7ac6a2728b638ac1f376c5fa9eb8f71603017c3ea638c2fd40548df"
+  },
+  "companyImport.largePackageHint": {
+    "en": "— large packages can take a few minutes. Keep this page open.",
+    "zh-CN": "- 大型包可能需要几分钟，请保持此页面打开。",
+    "reviewedEnglishHash": "253c6fe51eee59f7aa23f306deb69917f57872353f502c3f98751449e8efe45f"
+  },
+  "companyImport.localPackageSummary_one": {
+    "en": "{{name}} with {{count}} file",
+    "zh-CN": "{{name}}，包含 {{count}} 个文件",
+    "reviewedEnglishHash": "50937a4a8f8ac466f174d86ba11108e43aa91682679f1264d1bd9eb1f81d9990"
+  },
+  "companyImport.localPackageSummary_other": {
+    "en": "{{name}} with {{count}} files",
+    "zh-CN": "{{name}}，包含 {{count}} 个文件",
+    "reviewedEnglishHash": "5619ae75f77cb1503c7e727558afc7acdd86f171adeb3245b060eff7e0f00e15"
+  },
+  "companyImport.localZip": {
+    "en": "Local zip",
+    "zh-CN": "本地压缩包",
+    "reviewedEnglishHash": "6a0b2c3c6b3a7cfbec7b934439a8c523fa421105e73e82a043a9b66ce05adcef"
+  },
+  "companyImport.localZipHelp": {
+    "en": "Upload a .zip exported directly from Paperclip CN. Re-zipped archives created by Finder, Explorer, or other zip tools may not import correctly.",
+    "zh-CN": "请上传直接由 Paperclip CN 导出的 .zip。使用 Finder、Explorer 或其他压缩工具重新打包的归档文件，可能无法正确导入。",
+    "reviewedEnglishHash": "4ab9c20978f45cb974ccc02b77b7eeb630c4da80fb18e460285bdf1ed634a2d2"
+  },
+  "companyImport.lockedDuringImport": {
+    "en": "Import in progress — the package and settings unlock when it finishes.",
+    "zh-CN": "导入进行中，完成后将解锁包和设置。",
+    "reviewedEnglishHash": "776046e3e021138aee44945bc11d5a2ffbb424a528cfb56923e2a86f47768674"
+  },
+  "companyImport.newCompany": {
+    "en": "Create new company",
+    "zh-CN": "创建新公司",
+    "reviewedEnglishHash": "5b3e4ab03933801475a471048f12e15d613b6d421df2ddfc76893879cfe27943"
+  },
+  "companyImport.newCompanyName": {
+    "en": "New company name",
+    "zh-CN": "新公司名称",
+    "reviewedEnglishHash": "8145ac2cba63a24572b23cafd480f33fdd5e012b1e332651a6c80b7f742e5413"
+  },
+  "companyImport.newCompanyNameHint": {
+    "en": "Optional override. Leave blank to use the package name.",
+    "zh-CN": "可选覆盖。留空则使用包名。",
+    "reviewedEnglishHash": "2e773b2394341131d7063fbab091a931d741fe9876c903709d2b246c97f0213b"
+  },
+  "companyImport.newCompanyPlaceholder": {
+    "en": "Imported Company",
+    "zh-CN": "导入的公司",
+    "reviewedEnglishHash": "04c2a3d9282ce01eb2bc313c05c8cd6c70951a7466e2e234f2b3afb4ec9605f0"
+  },
+  "companyImport.noSourceConfigured": {
+    "en": "No source configured.",
+    "zh-CN": "尚未配置导入来源。",
+    "reviewedEnglishHash": "eaf17c2cfc1a3ff3017d2b25b684449969ce2cbb76210f74768c8f27bfcddb5e"
+  },
+  "companyImport.packageAlreadyImported": {
+    "en": "This exact package was already imported by a completed transfer. Re-export the package to import it again.",
+    "zh-CN": "完全相同的包已通过已完成的传输导入。请重新导出后再试。",
+    "reviewedEnglishHash": "77dbb49bacb71de56ad8156a7ccb5e97dadd392fdbf14d944e79bc992c070ce7"
+  },
+  "companyImport.packageFiles": {
+    "en": "Package files",
+    "zh-CN": "包内文件",
+    "reviewedEnglishHash": "0ae7e5128ad41af58ce7768f994f151df1fdf39be2b5c79b68604343035d3a6b"
+  },
+  "companyImport.packageReadFailedBody": {
+    "en": "Failed to read package.",
+    "zh-CN": "读取公司包失败。",
+    "reviewedEnglishHash": "12b37e69a6b7f8ba26426f29a6dd5790698639bc47e6c8c9165eb651b8858f2f"
+  },
+  "companyImport.packageReadFailedTitle": {
+    "en": "Package read failed",
+    "zh-CN": "读取包失败",
+    "reviewedEnglishHash": "4bb06e81c69099d8526ee42e3493fb23800a6b0d38857dccc136796fda1bcff9"
+  },
+  "companyImport.partUploadFailed": {
+    "en": "Part {{part}} of {{total}} failed to upload.",
+    "zh-CN": "第 {{part}} 个（共 {{total}} 个）分片上传失败。",
+    "reviewedEnglishHash": "c4f146459695db34d34e595c0acd204c58c655a42fcb3b7b680cd1fefca211d9"
+  },
+  "companyImport.partialFailureHint": {
+    "en": "Nothing may have been created, or the import stopped partway — check the target company before retrying.",
+    "zh-CN": "可能尚未创建任何内容，也可能导入中途停止。重试前请检查目标公司。",
+    "reviewedEnglishHash": "d3b0bff6fb0c76378b4f8682b4a0589bfe8d62ea1efb83e2c07e395f392d0335"
+  },
+  "companyImport.paused": {
+    "en": "paused",
+    "zh-CN": "已暂停",
+    "reviewedEnglishHash": "a7a9dc5bcf71adb2edc202814060a5ab6fca515382e9f1133dcc47d52d9090a2"
+  },
+  "companyImport.previewFailed": {
+    "en": "Preview failed:",
+    "zh-CN": "预览失败：",
+    "reviewedEnglishHash": "99683894c89570dbb7ed3afa4212f04cfd0cf48c239f86c0eb7f85ae2ef7e601"
+  },
+  "companyImport.previewFailedBody": {
+    "en": "Failed to preview import.",
+    "zh-CN": "无法预览导入内容。",
+    "reviewedEnglishHash": "4ed200fd76ce8ceb6cb641ebd50f81938b8c47e55f07de1249e67f768168b7ab"
+  },
+  "companyImport.previewFailedTitle": {
+    "en": "Preview failed",
+    "zh-CN": "预览失败",
+    "reviewedEnglishHash": "97ce5234adcb496777f58f98c34ad8d328f18f41a2b2aa8e7f2a32453dd8f6fc"
+  },
+  "companyImport.previewImport": {
+    "en": "Preview import",
+    "zh-CN": "预览导入",
+    "reviewedEnglishHash": "ab5c8e55ce2c0b2f486e54e721dfcbf250f28fbea8b0a816684b3fdc752ea150"
+  },
+  "companyImport.previewRetryHint": {
+    "en": "Retry, or use the CLI folder import for very large packages.",
+    "zh-CN": "请重试；对于超大包，可使用 CLI 文件夹导入。",
+    "reviewedEnglishHash": "b5b6221a5b9dffa25c72f5c46395fd0d25303624e91b0d03f6937cedca474631"
+  },
+  "companyImport.previewing": {
+    "en": "Previewing...",
+    "zh-CN": "正在预览...",
+    "reviewedEnglishHash": "9b0c77929c1cd4aae9ef020dbfcd9d86b7eeec374c522922b0ff752bbf14c71b"
+  },
+  "companyImport.processed": {
+    "en": "processed.",
+    "zh-CN": "已处理。",
+    "reviewedEnglishHash": "90ea383abdfac0f9d1d1ce639479206ce39ef3dc4f34b4732f1ba4e1a5b3c8d7"
+  },
+  "companyImport.project": {
+    "en": "project",
+    "zh-CN": "个项目",
+    "reviewedEnglishHash": "244210e48437b6556980a70249a99369934a352429034cef9d7bd253b3bf2c01"
+  },
+  "companyImport.renameOnConflict": {
+    "en": "Rename on conflict",
+    "zh-CN": "冲突时重命名",
+    "reviewedEnglishHash": "c90814771b07b38ddf3db796d14169bc52228b3f2128e1240e85b2e09ae23d00"
+  },
+  "companyImport.renames": {
+    "en": "Renames",
+    "zh-CN": "重命名",
+    "reviewedEnglishHash": "bff42c25bfc4b8999b0aa55df1c67c2d7e42cc20574aa87ec9900ad8f89507e2"
+  },
+  "companyImport.replaceExisting": {
+    "en": "Replace existing",
+    "zh-CN": "替换已有内容",
+    "reviewedEnglishHash": "c72a3c56ffad61576583f803df07fc275187186cd0d4a44654ec6f5e874a3124"
+  },
+  "companyImport.requestDidNotComplete": {
+    "en": "the request did not complete.",
+    "zh-CN": "请求未能完成。",
+    "reviewedEnglishHash": "3ce408400c5cd6fbde27db6c4fe5925bb2bcee06a4cb6804b1d5404d3690a9cd"
+  },
+  "companyImport.resumeWatching": {
+    "en": "Resume watching import",
+    "zh-CN": "继续查看导入进度",
+    "reviewedEnglishHash": "a933e16f329dcfc6e6a711c299d6418907e8b977c3054d141957ed453f6e90dd"
+  },
+  "companyImport.selectCompany": {
+    "en": "Select a company to import into.",
+    "zh-CN": "请选择要导入到哪家公司。",
+    "reviewedEnglishHash": "30d6539abcf4158d177a869f99c007d5456d5126a9d98e21b3f7ce018d0b1fcc"
+  },
+  "companyImport.selectPreview": {
+    "en": "Select a file to preview its contents.",
+    "zh-CN": "选择一个文件来预览内容。",
+    "reviewedEnglishHash": "e7aff2e8e1c53e449a6ff5a19bf03f9582a59b51ea0786ea4c43e3c6de323b19"
+  },
+  "companyImport.selectZipPackage": {
+    "en": "Select a .zip company package.",
+    "zh-CN": "请选择一个 .zip 公司包。",
+    "reviewedEnglishHash": "2e7c377a3fd67d2592aaeb6a7c6a1c7896af47962b1001874f3831f32f84ffde"
+  },
+  "companyImport.selected": {
+    "en": "selected",
+    "zh-CN": "已选择",
+    "reviewedEnglishHash": "d7cbbb688b2e506c022e95cef8c4f629a29b9b36a6e50324e70dff466dbb95af"
+  },
+  "companyImport.serverImportFailed": {
+    "en": "Import failed on the server.",
+    "zh-CN": "服务器导入失败。",
+    "reviewedEnglishHash": "abd1e775883bad4f3765b6dc3959ddca8eeb7ec3cdfa63d3dbc2da7580433df1"
+  },
+  "companyImport.serverRunning": {
+    "en": "Import running on the server — safe to keep waiting; reconnecting won't lose it.",
+    "zh-CN": "导入正在服务器上运行，可以继续等待；重新连接不会丢失进度。",
+    "reviewedEnglishHash": "29e5a2577d150e84dc9389eeac8bf4da7ccf677a08c2d8e5b58ff5584553d9ad"
+  },
+  "companyImport.serverRunningLarge": {
+    "en": "Import running on the server — safe to keep waiting; reconnecting won't lose it. Large packages can take several minutes.",
+    "zh-CN": "导入正在服务器上运行，可以继续等待；重新连接不会丢失进度。大型包可能需要几分钟。",
+    "reviewedEnglishHash": "76c5d31dd313e2f9250cfd8196ac189d0397f1c0be1dffd75bbdca62034a6bbb"
+  },
+  "companyImport.skillAction.created": {
+    "en": "created",
+    "zh-CN": "已创建",
+    "reviewedEnglishHash": "406effb1e9c59672c66a598c2b21e331b23b16c54024e96d6df3e7c173549791"
+  },
+  "companyImport.skillAction.renamed": {
+    "en": "renamed",
+    "zh-CN": "已重命名",
+    "reviewedEnglishHash": "017e9e217af8bbb732e91d3f534e0702b9f492edd2c3a9994383aa9bfa700f77"
+  },
+  "companyImport.skillAction.replaced": {
+    "en": "replaced",
+    "zh-CN": "已替换",
+    "reviewedEnglishHash": "6c1aa50442a93e42c0eb2907cf4e017cd19547891fa190f3ea473582b0479290"
+  },
+  "companyImport.skillAction.skipped": {
+    "en": "skipped",
+    "zh-CN": "已跳过",
+    "reviewedEnglishHash": "389595a44dc9dce7dee673f243e805244bae603d6a65a536ad493340ec99ced3"
+  },
+  "companyImport.skillImportResults": {
+    "en": "Skill import results",
+    "zh-CN": "技能导入结果",
+    "reviewedEnglishHash": "44784eda0726a7df539391eca5c5b7148895b653bbb5656bd4a9c5394baea738"
+  },
+  "companyImport.skillRenamedAs": {
+    "en": "as {{slug}}",
+    "zh-CN": "命名为 {{slug}}",
+    "reviewedEnglishHash": "e3349017852eb813d91f24b70c0ac0cb0a1b53892572353ec0245425f79bde3e"
+  },
+  "companyImport.skip": {
+    "en": "skip",
+    "zh-CN": "跳过",
+    "reviewedEnglishHash": "42e93b9bb77d8a73e8412111b8f3d6befab66bf48fdcdefa80bb111819aa0cb1"
+  },
+  "companyImport.skipOnConflict": {
+    "en": "Skip on conflict",
+    "zh-CN": "冲突时跳过",
+    "reviewedEnglishHash": "e5984701c988350d7f97423ac94ed79bedaf0f4a3ffa14e00621ea6f7938e71e"
+  },
+  "companyImport.skipped": {
+    "en": "skipped",
+    "zh-CN": "已跳过",
+    "reviewedEnglishHash": "389595a44dc9dce7dee673f243e805244bae603d6a65a536ad493340ec99ced3"
+  },
+  "companyImport.sourceHint": {
+    "en": "Choose a GitHub repo or upload a local Paperclip CN zip package.",
+    "zh-CN": "选择 GitHub 仓库，或上传本地 Paperclip CN zip 包。",
+    "reviewedEnglishHash": "c267672521599cf0adf9c1258d8b73ccdfa5a1da9d4f218c4d248c4539b67b29"
+  },
+  "companyImport.sourceTitle": {
+    "en": "Import source",
+    "zh-CN": "导入来源",
+    "reviewedEnglishHash": "dbff5bdee4bda1d23898720392b0fb3defe1cf15fd572fb57df0d7d1fb600ce5"
+  },
+  "companyImport.startPaused": {
+    "en": "Start imported agents and routines paused",
+    "zh-CN": "导入后保持智能体和例程暂停",
+    "reviewedEnglishHash": "1289f896671a7ac1e240bb19159fede3b1daa36e6afbece86662f6dd29a060d1"
+  },
+  "companyImport.statusUnavailable": {
+    "en": "The import status can no longer be read — your session may have expired. Reload and sign in to check on it.",
+    "zh-CN": "无法读取导入状态，登录会话可能已过期。请刷新、重新登录并检查导入结果。",
+    "reviewedEnglishHash": "97c9e48c3e0e61cefd65bdcae68f932d029c4b6badfd5363f0a0e537291dc1c4"
+  },
+  "companyImport.stillRunning": {
+    "en": "An import you started earlier is still running on the server.",
+    "zh-CN": "你之前启动的导入仍在服务器上运行。",
+    "reviewedEnglishHash": "d6e8190691fbba61cc3007d063039208f92ad08bc9c51755c9107734823374ea"
+  },
+  "companyImport.summary.agents_one": {
+    "en": "{{count}} agent",
+    "zh-CN": "{{count}} 个智能体",
+    "reviewedEnglishHash": "fbddbb9eca4b3148dfd4a959da033c74fd47246f4f6cdd2a17be7fba5ddf5645"
+  },
+  "companyImport.summary.agents_other": {
+    "en": "{{count}} agents",
+    "zh-CN": "{{count}} 个智能体",
+    "reviewedEnglishHash": "977a7422900b40a5ade4526c98653a1b04619b8ff81240ead3699dea1b7df70e"
+  },
+  "companyImport.summary.projects_one": {
+    "en": "{{count}} project",
+    "zh-CN": "{{count}} 个项目",
+    "reviewedEnglishHash": "b057cb2960f8ba44d190c0462886de10977067d9b5f17f78766ec3306e4999b9"
+  },
+  "companyImport.summary.projects_other": {
+    "en": "{{count}} projects",
+    "zh-CN": "{{count}} 个项目",
+    "reviewedEnglishHash": "019c0e9d9d1c1e9ee9ab047de4ef6ddac2eeecf4d3a524cdf8730b37b16dad42"
+  },
+  "companyImport.summary.routines_one": {
+    "en": "{{count}} routine",
+    "zh-CN": "{{count}} 个例程",
+    "reviewedEnglishHash": "eb6bb92719189a7d75d80acc400e7f66a718d1d74e257338f40a516a203b20a6"
+  },
+  "companyImport.summary.routines_other": {
+    "en": "{{count}} routines",
+    "zh-CN": "{{count}} 个例程",
+    "reviewedEnglishHash": "2482cb25b7d84a60909f567603292306cfbf9a4a50f8edddc2aa9d10ec11c733"
+  },
+  "companyImport.summary.skills_one": {
+    "en": "{{count}} skill",
+    "zh-CN": "{{count}} 个技能",
+    "reviewedEnglishHash": "6bd99717dc537cf48ed3a0af01a26b8139c4df71b8fa3a6f9bf8a722a02364ae"
+  },
+  "companyImport.summary.skills_other": {
+    "en": "{{count}} skills",
+    "zh-CN": "{{count}} 个技能",
+    "reviewedEnglishHash": "849075cabee9381f017a0360a08fe03a4357bbc8da6165955f1e1f45a0b4afbe"
+  },
+  "companyImport.summaryLine": {
+    "en": "{{companyName}}: {{agents}}, {{skills}}, {{projects}}, and {{routines}} processed.",
+    "zh-CN": "{{companyName}}：已处理 {{agents}}、{{skills}}、{{projects}}，以及 {{routines}}。",
+    "reviewedEnglishHash": "08a3e7a14187811c3388276c24b1c42bb98755ba52c23c92e0a499d8b037c19d"
+  },
+  "companyImport.target": {
+    "en": "Target",
+    "zh-CN": "导入目标",
+    "reviewedEnglishHash": "978354db0c00fc78c3a5524f462a73bc425df3fb2767e51a5f46352ae26ae6f9"
+  },
+  "companyImport.targetHint": {
+    "en": "Import into this company or create a new one.",
+    "zh-CN": "导入到当前公司，或创建一家公司。",
+    "reviewedEnglishHash": "2a08495baa79997a5d976eed21a8f360771fcdaa609068d1e64656e007560701"
+  },
+  "companyImport.uploading": {
+    "en": "Uploading and analyzing your package",
+    "zh-CN": "正在上传并分析你的包",
+    "reviewedEnglishHash": "ffa613d2cf4a465e0d7072627bc1f60687a13786dc25ce3d7d862c307290bd85"
+  }
+}

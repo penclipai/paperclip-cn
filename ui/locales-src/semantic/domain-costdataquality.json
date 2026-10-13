@@ -1,0 +1,182 @@
+{
+  "costDataQuality.agentDetails": {
+    "en": "{{agentName}} cost details",
+    "zh-CN": "{{agentName}} 的成本详情",
+    "reviewedEnglishHash": "bbdb712d25daa99503d31ca27a94d5905fedadf461c1ff7f0773917b2eb4a85c"
+  },
+  "costDataQuality.agentNotRerun": {
+    "en": "The agent was not rerun.",
+    "zh-CN": "未重新运行智能体。",
+    "reviewedEnglishHash": "1cf192c04e07482b37657cd4e80d1e1ae7feeaf3901021f6f67c1e8ea82660a9"
+  },
+  "costDataQuality.detailsByAgent": {
+    "en": "Cost details by agent",
+    "zh-CN": "按智能体查看成本详情",
+    "reviewedEnglishHash": "3be96e075f41b038b83588efd4056359570999ba1428337265a2bb6908a0cc75"
+  },
+  "costDataQuality.detailsLoadFailed": {
+    "en": "Cost details could not be loaded.",
+    "zh-CN": "无法加载成本详情。",
+    "reviewedEnglishHash": "aadf8e2370b1f488dd9870b110a6be8e9ffba37df420ad55108b7db50dccd44e"
+  },
+  "costDataQuality.loadingAffectedRuns": {
+    "en": "Loading affected runs…",
+    "zh-CN": "正在加载受影响的运行…",
+    "reviewedEnglishHash": "3dd744c710c76ae2c314e0b21c80df66d93c43730c81433086ac184d068fbc56"
+  },
+  "costDataQuality.missingModel.description": {
+    "en": "Token usage was recorded without a model, so Paperclip cannot estimate its cost. Select an explicit model in the agent’s configuration for future runs. Changing settings will not reprice this past run.",
+    "zh-CN": "已记录 Token 用量，但未提供模型，因此 Paperclip CN 无法估算成本。后续运行请在智能体配置中选择明确的模型。更改设置不会重新计算此历史运行的价格。",
+    "reviewedEnglishHash": "8a2f92f815d7e8a463d28ce190442345163aead211d78ea7cbf52c9563223b35"
+  },
+  "costDataQuality.missingModel.label": {
+    "en": "Model not reported",
+    "zh-CN": "未报告模型",
+    "reviewedEnglishHash": "794a63740481b19e298510958c44a13ed5387454897a155342dd5dc5c9e64b12"
+  },
+  "costDataQuality.missingPrice.description": {
+    "en": "The provider did not supply a reliable price for this usage. There is no action required for this past entry. New API runs with complete usage and a supported model are estimated automatically.",
+    "zh-CN": "提供商未为此用量提供可靠价格。此历史记录无需处理。具备用量明细且使用受支持模型的新 API 运行会自动估算成本。",
+    "reviewedEnglishHash": "b3b4379f35de33e631ebe4c587c0669ce992a063a6563ae38a47ca0d6f64133f"
+  },
+  "costDataQuality.missingPrice.label": {
+    "en": "Cost unavailable",
+    "zh-CN": "成本不可用",
+    "reviewedEnglishHash": "b1e2387a957bebec8a5583e79edec127123f87e105d3beda824f1eb928e54712"
+  },
+  "costDataQuality.noGaps": {
+    "en": "No cost gaps remain in this period.",
+    "zh-CN": "此期间已无成本缺口。",
+    "reviewedEnglishHash": "4349449b01d5b7724dddac5fdde3e94c6c773744dd67fafbd0472db569aece18"
+  },
+  "costDataQuality.noNewData": {
+    "en": "No new cost data is available.",
+    "zh-CN": "暂无新的成本数据。",
+    "reviewedEnglishHash": "dae054421f570246896b29c2ddd6e46242e5f0dedb3aad74db1ae59a64eac3ab"
+  },
+  "costDataQuality.receiptUnavailable.description": {
+    "en": "This run stopped without final usage data. Its cost remains unresolved for budget checks. Paperclip will record a late receipt if one arrives; rerunning the agent will not recover this usage.",
+    "zh-CN": "此运行停止时没有最终用量数据。其成本仍无法用于预算检查。若之后收到延迟回执，Paperclip CN 会记录它；重新运行智能体无法恢复这部分用量。",
+    "reviewedEnglishHash": "099cacf82d65da6c19358e4a62c741bf7619a0a943f9ad81020e60e0a7f77df2"
+  },
+  "costDataQuality.receiptUnavailable.label": {
+    "en": "Final usage unavailable",
+    "zh-CN": "最终用量不可用",
+    "reviewedEnglishHash": "0acba8cbd24cb911ab28df766ecc2ee69674cddb7ad69d3c9e6c883cc626bfc3"
+  },
+  "costDataQuality.recorded": {
+    "en": "Costs recorded.",
+    "zh-CN": "成本已记录。",
+    "reviewedEnglishHash": "5968d6d63a1987730edad2c28ff22540ad7fe71710828131be14fa8227c4744b"
+  },
+  "costDataQuality.recording": {
+    "en": "Recording saved costs…",
+    "zh-CN": "正在记录已保存的成本…",
+    "reviewedEnglishHash": "f6dcf9eb8aecd843c27d0e57df2649e0e43d6eccb9395f1b956ae8c0c4db73f1"
+  },
+  "costDataQuality.recordingFailed": {
+    "en": "Cost recording failed. Try again shortly.",
+    "zh-CN": "成本记录失败，请稍后重试。",
+    "reviewedEnglishHash": "a3e7c2053f97e2f1b6146495d8a3848574288d93da86a1b2f304aa6bc0d3ea67"
+  },
+  "costDataQuality.retryLoading": {
+    "en": "Retry loading",
+    "zh-CN": "重新加载",
+    "reviewedEnglishHash": "a0f859bc4db2c2348e91bc2a886828e0cd2e694703b9f0ddc65bcdce76279841"
+  },
+  "costDataQuality.retryRecording": {
+    "en": "Retry cost recording",
+    "zh-CN": "重试记录成本",
+    "reviewedEnglishHash": "ba3ca96329bc23c92db6c256e1ad0f344083880093770b97b701711a7f5796a8"
+  },
+  "costDataQuality.retryable.description": {
+    "en": "Saved usage data is ready to be recorded. Paperclip retries automatically, or you can retry now. This records costs only; it does not rerun the agent.",
+    "zh-CN": "已保存的用量数据可供记录。Paperclip CN 会自动重试，也可立即手动重试。此操作仅记录成本，不会重新运行智能体。",
+    "reviewedEnglishHash": "0dbb47a676f86c90e196c74af2b7b10effafaa0d44a067c42611bdc6fac83ef4"
+  },
+  "costDataQuality.retryable.label": {
+    "en": "Ready to record",
+    "zh-CN": "可记录",
+    "reviewedEnglishHash": "faf7eee20c49c43fd393b6595bbe335251a2dbb15a6468822ed9b0a30a2424ad"
+  },
+  "costDataQuality.services": {
+    "en": "Paperclip services",
+    "zh-CN": "Paperclip CN 服务",
+    "reviewedEnglishHash": "6485381e70ebb3980808085a1aee588bcc352c85375f27bfe2022ace082c8fa8"
+  },
+  "costDataQuality.showingCachedDetails": {
+    "en": "Showing the last loaded cost details. Updates will resume automatically.",
+    "zh-CN": "正在显示上次加载的成本详情。更新会自动恢复。",
+    "reviewedEnglishHash": "115d4a4efacac421c490e16e2117e249d9ab270f52c622968fb8ea8553c9c938"
+  },
+  "costDataQuality.truncated": {
+    "en": "Showing the 25 most recent entries in each category. Select a shorter date range to inspect more.",
+    "zh-CN": "每个类别仅显示最近 25 条记录。请选择更短的日期范围以查看更多内容。",
+    "reviewedEnglishHash": "771282d2a447c6cfb289763e90478befff3e5bd799949e71f663909e5edd14c7"
+  },
+  "costDataQuality.unavailableCostCount": {
+    "en": "{{count}} {{costLabel}} unavailable",
+    "zh-CN": "{{count}} 笔{{costLabel}}不可用",
+    "reviewedEnglishHash": "dff423e59978fe5967303ecc101f2ab29ef8b76a76e25837427710701bf8ab90"
+  },
+  "costDataQuality.unavailableRuns": {
+    "en": "{{count}} run costs unavailable",
+    "zh-CN": "{{count}} 个运行的成本不可用",
+    "reviewedEnglishHash": "af111a9a12b7c3de38bd18f932c80f8b547e658f7694285e16541049cae0c7f7"
+  },
+  "costDataQuality.unavailableRuns_one": {
+    "en": "{{count}} run cost unavailable",
+    "zh-CN": "{{count}} 个运行的成本不可用",
+    "reviewedEnglishHash": "caac9b7bea34563d32fa734adb05bf9d7c3773012d1cbb5f6ab4f4d81b49e401"
+  },
+  "costDataQuality.unavailableRuns_other": {
+    "en": "{{count}} run costs unavailable",
+    "zh-CN": "{{count}} 个运行的成本不可用",
+    "reviewedEnglishHash": "af111a9a12b7c3de38bd18f932c80f8b547e658f7694285e16541049cae0c7f7"
+  },
+  "costDataQuality.unknownAgent": {
+    "en": "Unknown agent",
+    "zh-CN": "未知智能体",
+    "reviewedEnglishHash": "342b4ab21e2eb31aa0d820359715d027c0e1cde4599ac21394c0e4009bd8aed0"
+  },
+  "costDataQuality.unknownBilling.description": {
+    "en": "This run did not identify API or subscription billing. Any recorded charges are included in the inference ledger. For future runs, select an AI connection in the agent’s configuration so Paperclip can identify its billing.",
+    "zh-CN": "此运行未识别出 API 或订阅计费。任何已记录的费用均包含在推理账本中。后续运行请在智能体配置中选择 AI 连接，以便 Paperclip CN 识别其计费方式。",
+    "reviewedEnglishHash": "ddc82e55adaf017f7316f69880cc3a90c109bf699f7beb4c786995c0bf867be3"
+  },
+  "costDataQuality.unknownBilling.label": {
+    "en": "Billing category unknown",
+    "zh-CN": "计费类别未知",
+    "reviewedEnglishHash": "a545221d4064818a87600309cdc2c9332bab743f1b01ac4073e302559735b518"
+  },
+  "costDataQuality.unknownBillingTypes": {
+    "en": "{{count}} billing types unknown",
+    "zh-CN": "{{count}} 个计费类别未知",
+    "reviewedEnglishHash": "063218140ebc4c50e21a6310d30d4bedcc85319719048044b26eae08182bcc7e"
+  },
+  "costDataQuality.unknownBillingTypes_one": {
+    "en": "{{count}} billing type unknown",
+    "zh-CN": "{{count}} 个计费类别未知",
+    "reviewedEnglishHash": "a708375349d5a31e10cc71dca222fa520706e8a45c9a17318b9e962296e59169"
+  },
+  "costDataQuality.unknownBillingTypes_other": {
+    "en": "{{count}} billing types unknown",
+    "zh-CN": "{{count}} 个计费类别未知",
+    "reviewedEnglishHash": "063218140ebc4c50e21a6310d30d4bedcc85319719048044b26eae08182bcc7e"
+  },
+  "costDataQuality.viewRun": {
+    "en": "View run",
+    "zh-CN": "查看运行",
+    "reviewedEnglishHash": "aaf7fccc7d1315f23f35073f1d89aa8357c5d0cdb9b00a03ee2a4291e976b9ac"
+  },
+  "costDataQuality.waitingReceipt.description": {
+    "en": "This run has stopped. Paperclip is waiting for its final usage data and will record it automatically. You do not need to rerun the agent.",
+    "zh-CN": "此运行已停止。Paperclip CN 正在等待最终用量数据，并会自动记录。无需重新运行智能体。",
+    "reviewedEnglishHash": "f4bd2248f0dc71c44d2f86578ab1e720ab75cdce850ef78124e842eed700974e"
+  },
+  "costDataQuality.waitingReceipt.label": {
+    "en": "Receiving usage",
+    "zh-CN": "正在接收用量",
+    "reviewedEnglishHash": "52dce6c3a3275760ffd3853cb11e59ec690be60e4b489ed3e1eaf75cec9916f2"
+  }
+}

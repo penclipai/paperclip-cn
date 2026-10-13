@@ -1,0 +1,12 @@
+{
+  "worktreeBanner.copyTitle": {
+    "en": "Click to copy worktree name",
+    "zh-CN": "点击复制工作树名称",
+    "reviewedEnglishHash": "d75060fcbb42622ca6940d412499542204504209eb92f45f9e7d5901f16b358d"
+  },
+  "worktreeBanner.label": {
+    "en": "Worktree",
+    "zh-CN": "工作树",
+    "reviewedEnglishHash": "c893ba3003855aabfee294479c03266349e97e1675ade569b480e56ce4c2bde3"
+  }
+}

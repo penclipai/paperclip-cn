@@ -1,0 +1,12 @@
+{
+  "orgChart.empty": {
+    "en": "No agents in the organization. Create agents to build your org chart.",
+    "zh-CN": "组织里还没有智能体。先创建一些智能体，再来查看组织结构。",
+    "reviewedEnglishHash": "30519ad7322a683610d21d763548157a3a899be2f1caafb490537c3cb259e922"
+  },
+  "orgChart.selectCompany": {
+    "en": "Select a company to view org chart.",
+    "zh-CN": "请选择一家公司以查看组织结构图。",
+    "reviewedEnglishHash": "589a7bab640550af4f1bd53ad8ac71a41a8d8fb875779fcb3d77fa7ebff978a3"
+  }
+}

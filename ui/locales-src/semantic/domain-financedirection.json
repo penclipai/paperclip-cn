@@ -1,0 +1,12 @@
+{
+  "financeDirection.credit": {
+    "en": "Credit",
+    "zh-CN": "返还",
+    "reviewedEnglishHash": "fb1875d0a5e85f29f239c293e5837e234fa07068b040fd11c2078c28df7d72d4"
+  },
+  "financeDirection.debit": {
+    "en": "Debit",
+    "zh-CN": "支出",
+    "reviewedEnglishHash": "ae224acb87e2e940b74478398ea002778f8d29538decc84156deb173a349f1e2"
+  }
+}

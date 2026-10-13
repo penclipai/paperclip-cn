@@ -1,0 +1,157 @@
+{
+  "workspaceFileBrowser.browsingUnavailableForIssue": {
+    "en": "Workspace browsing isn't available for this issue.",
+    "zh-CN": "此任务不可浏览工作区。",
+    "reviewedEnglishHash": "97c171f53b0eb243cbcc80687e93315661e60a66d140cc8885348414411c5012"
+  },
+  "workspaceFileBrowser.chooseCompanyBody": {
+    "en": "Choose a company before browsing another project workspace.",
+    "zh-CN": "浏览其他项目工作区前，请先选择公司。",
+    "reviewedEnglishHash": "e5b767832fcfa824815ca1e64cf9fe66794e6e7800a9f62d5049148970b6dd50"
+  },
+  "workspaceFileBrowser.couldNotLoadFiles": {
+    "en": "Couldn't load files",
+    "zh-CN": "无法加载文件",
+    "reviewedEnglishHash": "8a2c692760451ecf05665f52d36f16267e661577816a7611fbe872b3648eb595"
+  },
+  "workspaceFileBrowser.currentFolder": {
+    "en": "Current folder",
+    "zh-CN": "当前文件夹",
+    "reviewedEnglishHash": "1a5db52359a6d8133d24773339696c4b609922bdb11b057449947919979c341e"
+  },
+  "workspaceFileBrowser.itemsFound": {
+    "en": "{{count}} item found.",
+    "zh-CN": "找到 {{count}} 个条目。",
+    "reviewedEnglishHash": "3fdbc626a30ec2b93451997d935e3b99b314a048401e68b617114e67f2a5483f"
+  },
+  "workspaceFileBrowser.itemsFound_other": {
+    "en": "{{count}} items found.",
+    "zh-CN": "找到 {{count}} 个条目。",
+    "reviewedEnglishHash": "2ad482854c146cf749c2e2ee50d249429b8efb1d2dbc4a4761646956bf6d17dd"
+  },
+  "workspaceFileBrowser.loadFilesFailedBody": {
+    "en": "Something went wrong loading workspace files.",
+    "zh-CN": "加载工作区文件时出现问题。",
+    "reviewedEnglishHash": "ed53ff83b480afb1fa5b4795975b59a16fedcfa82a564ac51ff6165fb6ad1a48"
+  },
+  "workspaceFileBrowser.loadMoreFromFolder": {
+    "en": "Load more from this folder",
+    "zh-CN": "从此文件夹加载更多",
+    "reviewedEnglishHash": "e37b9f58929096a031e99d3528cb0e3c5e94ee3106d74f877683a530c61d876c"
+  },
+  "workspaceFileBrowser.loadingFolder": {
+    "en": "Loading folder...",
+    "zh-CN": "正在加载文件夹...",
+    "reviewedEnglishHash": "e54f895605402f414ab000f945500c3ce5e5fb2220949558bb5c7ac1c5d80497"
+  },
+  "workspaceFileBrowser.loadingProjectWorkspaces": {
+    "en": "Loading project workspaces",
+    "zh-CN": "正在加载项目工作区",
+    "reviewedEnglishHash": "93bac55507e05a90b6ad8222842e869f4e7ae99ca545b343d54348613f4360fa"
+  },
+  "workspaceFileBrowser.loadingWorkspaceFiles": {
+    "en": "Loading workspace files...",
+    "zh-CN": "正在加载工作区文件...",
+    "reviewedEnglishHash": "7f060355bc72ab2a1db5773e3a022fdc3cdca439fe45d590552ba854d46ee3e4"
+  },
+  "workspaceFileBrowser.noFilesMatch": {
+    "en": "No files match \"{{query}}\"",
+    "zh-CN": "没有文件匹配“{{query}}”",
+    "reviewedEnglishHash": "66879174b22f6d98036109bd9f87fd195c409417af552abbc905f5bef73225d1"
+  },
+  "workspaceFileBrowser.noMatchingFiles": {
+    "en": "No matching files.",
+    "zh-CN": "没有匹配的文件。",
+    "reviewedEnglishHash": "6ba2ede6c6019b640f63e7e48c5ee8238e701c6e539ce9abb5a7a9d9c71d8a73"
+  },
+  "workspaceFileBrowser.noProjectWorkspaces": {
+    "en": "No project workspaces",
+    "zh-CN": "没有项目工作区",
+    "reviewedEnglishHash": "7aa49b4707c69e9b0b08f57560da1b1625a390109875f05147cdfc70f0378b9f"
+  },
+  "workspaceFileBrowser.noProjectWorkspacesBody": {
+    "en": "No same-company project has a registered workspace to browse.",
+    "zh-CN": "同一公司下还没有可浏览的已注册项目工作区。",
+    "reviewedEnglishHash": "47b7896f513afec792aaa67e682b87009f4711e0ae1738f38026b03f85eb373e"
+  },
+  "workspaceFileBrowser.noRecentlyChangedFiles": {
+    "en": "No recently changed files yet",
+    "zh-CN": "暂无最近变更文件",
+    "reviewedEnglishHash": "9e13e5ac0cecbadeb2fc25cfb1e36fbc16ca0002db7061d16b9c75a01b0142c3"
+  },
+  "workspaceFileBrowser.noWorkspaceBody": {
+    "en": "This issue does not have a workspace to browse. Files appear here once a run creates one.",
+    "zh-CN": "此任务还没有可浏览的工作区。运行创建工作区后，文件会显示在这里。",
+    "reviewedEnglishHash": "b010dc03a2225feb4e2cc79fefea7dc720c136db4828639cc18e4c2eaeb6d13e"
+  },
+  "workspaceFileBrowser.noWorkspaceTitle": {
+    "en": "No workspace yet",
+    "zh-CN": "还没有工作区",
+    "reviewedEnglishHash": "133e716aadbe8631797e6f62816321462743926fd2dd8260776cf965f9b4d48d"
+  },
+  "workspaceFileBrowser.registeredWorkspacesBody": {
+    "en": "Registered workspaces will appear here.",
+    "zh-CN": "已注册的工作区会显示在这里。",
+    "reviewedEnglishHash": "bc138572dc5a81d8cb4f0fb360b9d82ce71922483960faa7159e699d60182963"
+  },
+  "workspaceFileBrowser.remoteNotSupportedBody": {
+    "en": "This workspace is hosted remotely and is not available for inline preview yet.",
+    "zh-CN": "此工作区托管在远端，暂不支持内联预览。",
+    "reviewedEnglishHash": "8e3144a2dec03c3c8a30469f9298c69065d6eeeac192579f984868467880a7e1"
+  },
+  "workspaceFileBrowser.remoteNotSupportedTitle": {
+    "en": "Remote workspace preview not supported",
+    "zh-CN": "暂不支持远程工作区预览",
+    "reviewedEnglishHash": "118565fc423845cf75a08d98c2b7cacbf54c6e9e6c1b7e01d06c246298481a4e"
+  },
+  "workspaceFileBrowser.searchAria": {
+    "en": "Search workspace files",
+    "zh-CN": "搜索工作区文件",
+    "reviewedEnglishHash": "81293eedc55283a8f38961dc942f024a98cb4cff4d9b5a7d1380c54aa6e5fc92"
+  },
+  "workspaceFileBrowser.searchPlaceholder": {
+    "en": "Search files by name or path...",
+    "zh-CN": "按名称或路径搜索文件...",
+    "reviewedEnglishHash": "ccde702ca39da315bf4da2c7c0a0e25ddfe83fc89fd3f8183b0e49829604edbf"
+  },
+  "workspaceFileBrowser.showingFirstRefine": {
+    "en": "Showing first {{count}} - refine the search to narrow.",
+    "zh-CN": "正在显示前 {{count}} 项 - 请细化搜索以缩小范围。",
+    "reviewedEnglishHash": "6fda635a13a32509b1ac928bd5c43f15b7e508486c58a8e2a5e493e08f97fed6"
+  },
+  "workspaceFileBrowser.trySearchingByNameOrPath": {
+    "en": "Try searching by name or path.",
+    "zh-CN": "尝试按名称或路径搜索。",
+    "reviewedEnglishHash": "63a6442ff44ee0c3ccf8c985d3d56afdac9a4b992ec5dfc3950fa2409027737f"
+  },
+  "workspaceFileBrowser.unableToLoadWorkspaceFiles": {
+    "en": "Unable to load workspace files.",
+    "zh-CN": "无法加载工作区文件。",
+    "reviewedEnglishHash": "fa81979af547f6a7769d1f4d66fa98d5cb4146f61034df39fe5578131867fe5b"
+  },
+  "workspaceFileBrowser.unavailableBody": {
+    "en": "These workspace files can't be browsed right now.",
+    "zh-CN": "当前无法浏览这些工作区文件。",
+    "reviewedEnglishHash": "55bf0d64c9a39106795285ef040106a002b4afd7d89bdfdd4cc2e991c9278fdf"
+  },
+  "workspaceFileBrowser.unavailableTitle": {
+    "en": "Workspace unavailable",
+    "zh-CN": "工作区不可用",
+    "reviewedEnglishHash": "f29d3f31dc6e215a84d55322e5d23fc43997a76f0e1ed4e774a2b96e50eb7328"
+  },
+  "workspaceFileBrowser.workspaceFiles": {
+    "en": "Workspace files",
+    "zh-CN": "工作区文件",
+    "reviewedEnglishHash": "bb2e2d0fd34f9c6da8b8ac53083dbb51b94014c7f4463ab0f77043efe1cd5dea"
+  },
+  "workspaceFileBrowser.workspaceUnavailableBody": {
+    "en": "The isolated worktree for this issue has been cleaned up, so files cannot be previewed.",
+    "zh-CN": "此任务的隔离工作树已清理，因此无法预览文件。",
+    "reviewedEnglishHash": "f472e17436eb79b53585017001a8cf41952f5f40f824f76e477de94fc8ba4ad5"
+  },
+  "workspaceFileBrowser.workspaceUnavailableTitle": {
+    "en": "Workspace is no longer available",
+    "zh-CN": "工作区已不可用",
+    "reviewedEnglishHash": "cb2826c669f7ae884cf7f79d8fe691c585f246bc5c8a12b66b7fc6f3f814acfd"
+  }
+}

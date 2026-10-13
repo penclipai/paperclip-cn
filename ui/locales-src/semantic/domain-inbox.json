@@ -1,0 +1,347 @@
+{
+  "inbox.adapter": {
+    "en": "adapter:",
+    "zh-CN": "适配器：",
+    "reviewedEnglishHash": "ff5e712559ce4c0e377de4524b51e98add262d470c25c7a731da91feeb45981c"
+  },
+  "inbox.agentErrors": {
+    "en": "{{count}} agent has errors",
+    "zh-CN": "{{count}} 个智能体发生错误",
+    "reviewedEnglishHash": "f611c98d064fd66cc05af8f5e4da5c81e53b22360d423e9fe2a4231544fce220"
+  },
+  "inbox.agentJoinRequest": {
+    "en": "Agent join request{{agent}}",
+    "zh-CN": "智能体加入请求{{agent}}",
+    "reviewedEnglishHash": "bed1b546716292643b804bfd222a03b9d250ce8866644c7bb650251cabf43c66"
+  },
+  "inbox.alerts": {
+    "en": "Alerts",
+    "zh-CN": "提醒",
+    "reviewedEnglishHash": "f62e9267d196c761f503dbffb17b9a52c4134de48b9959754c4bd78a9ad053b8"
+  },
+  "inbox.allApprovalStatuses": {
+    "en": "All approval statuses",
+    "zh-CN": "所有审批状态",
+    "reviewedEnglishHash": "eadb0e28eb2711236996b1c2b19e85720d5d30a08eeb8484b66df23c951952d8"
+  },
+  "inbox.allCategories": {
+    "en": "All categories",
+    "zh-CN": "所有分类",
+    "reviewedEnglishHash": "9d5097a837102a179a2d08a921a260c5058495e78469c3f1bad37a1b4bf59053"
+  },
+  "inbox.approvalStatus": {
+    "en": "Approval status",
+    "zh-CN": "审批状态",
+    "reviewedEnglishHash": "5a66175a2ba3931a1b078892ef7eed48697cb573a51486317e36a4209d8d68e6"
+  },
+  "inbox.approvals": {
+    "en": "Approvals",
+    "zh-CN": "审批",
+    "reviewedEnglishHash": "2bfc3471571e5c008cb26bd839b0d4cbcb1132fc9d6c8206bb595fa26e83a45b"
+  },
+  "inbox.approve": {
+    "en": "Approve",
+    "zh-CN": "批准",
+    "reviewedEnglishHash": "6007acbe30b2cd98703e83350ea665c06009fcd51f26dd73b309294235f45f21"
+  },
+  "inbox.archived": {
+    "en": "Archived",
+    "zh-CN": "已归档",
+    "reviewedEnglishHash": "bdb86505f8062d15f152cef71dd4ca89609d5bf8e98771dcd2c9f70d247403da"
+  },
+  "inbox.budgetUtilization": {
+    "en": "Budget at {{percent}}% utilization this month",
+    "zh-CN": "本月预算已使用 {{percent}}%",
+    "reviewedEnglishHash": "2a6c4fe9ba98c9385d5b6b0baf589c2ce10850427e3bdbc9c1e990c0da8ee598"
+  },
+  "inbox.category": {
+    "en": "Category",
+    "zh-CN": "分类",
+    "reviewedEnglishHash": "292c06f0045a45d044be282b132b7055ae224e18e02b523a451d8ea96fadfd24"
+  },
+  "inbox.chooseColumns": {
+    "en": "Choose which inbox columns stay visible",
+    "zh-CN": "选择要显示的收件箱列",
+    "reviewedEnglishHash": "ad899478db8b91da14ce5b38b9c3765b2c16ce48cc275e155941bf87aa30d804"
+  },
+  "inbox.disableNesting": {
+    "en": "Disable parent-child nesting",
+    "zh-CN": "关闭父子任务嵌套",
+    "reviewedEnglishHash": "8c5a4b177b78f1f530ec95e359257c5cd886d233c41eb77b2c7dc40222ad47b3"
+  },
+  "inbox.dismiss": {
+    "en": "Dismiss",
+    "zh-CN": "忽略",
+    "reviewedEnglishHash": "48845bff334a50a59aaecf499f28a7a24c3b4b891b8b18a9f1169ad8e8a6b261"
+  },
+  "inbox.dismissFromInbox": {
+    "en": "Dismiss from inbox",
+    "zh-CN": "从收件箱中忽略",
+    "reviewedEnglishHash": "314eb6905f9fc4959495c7ef2accade1a063b534184fa7ff289a9e41727e6808"
+  },
+  "inbox.earlier": {
+    "en": "Earlier",
+    "zh-CN": "更早",
+    "reviewedEnglishHash": "e10ae990740118886b011c218c7d0777c5c203954e0038747965ddbe5aea1744"
+  },
+  "inbox.empty.filters": {
+    "en": "No inbox items match these filters.",
+    "zh-CN": "没有符合这些筛选条件的收件箱项目。",
+    "reviewedEnglishHash": "6215f5f864700f2299ce414e7b3f40e26555e1248ac900288409de9337c81506"
+  },
+  "inbox.empty.recent": {
+    "en": "No recent inbox items.",
+    "zh-CN": "没有最近的收件箱项目。",
+    "reviewedEnglishHash": "7a612a8906f17e31005e24e1dc12503ca745409940ebb738dd72b65a5e13fd32"
+  },
+  "inbox.empty.search": {
+    "en": "No inbox items match your search.",
+    "zh-CN": "没有符合搜索条件的收件箱项目。",
+    "reviewedEnglishHash": "035ac018f0edb5cba8bf99ef771d668fb3861611150162077803fb01a24cc9ef"
+  },
+  "inbox.empty.unread": {
+    "en": "No new inbox items.",
+    "zh-CN": "没有新的收件箱项目。",
+    "reviewedEnglishHash": "d2b837d7882a7850443fa8079ab4c8f1019605fd83f601f255341353a2a9b173"
+  },
+  "inbox.empty.zero": {
+    "en": "Inbox zero.",
+    "zh-CN": "收件箱已清空。",
+    "reviewedEnglishHash": "9399b9e57bfb84b09c2e8f25445f20530de1281cf6e77b2279005bb924d68308"
+  },
+  "inbox.enableNesting": {
+    "en": "Enable parent-child nesting",
+    "zh-CN": "启用父子任务嵌套",
+    "reviewedEnglishHash": "18cf6dba7656852e8cd0293d7814bac179ce184698bcaa0f94da0d4fc470c1e4"
+  },
+  "inbox.errors": {
+    "en": "errors",
+    "zh-CN": "个错误",
+    "reviewedEnglishHash": "be4bd56772770471b639574d919a92de16c0e522ea5601e2892461691bdf9545"
+  },
+  "inbox.failedRun": {
+    "en": "Failed run{{agent}}",
+    "zh-CN": "运行失败{{agent}}",
+    "reviewedEnglishHash": "bd0ee994ca649abd5e87119310026bf6080bc6a28fce29e27faba7c44da91015"
+  },
+  "inbox.failedRuns": {
+    "en": "Failed runs",
+    "zh-CN": "失败运行",
+    "reviewedEnglishHash": "24afc952b6cc94759fc61339a5514b871b6adf51dd0716ded6fad2a22fc84a30"
+  },
+  "inbox.failedToApprove": {
+    "en": "Failed to approve",
+    "zh-CN": "审批通过失败",
+    "reviewedEnglishHash": "de0c2e40fd7a091dd181e135e3f5c4cd3db5295af5f627334d0334fa0dd228c5"
+  },
+  "inbox.failedToApproveJoinRequest": {
+    "en": "Failed to approve join request",
+    "zh-CN": "批准加入请求失败",
+    "reviewedEnglishHash": "3b65e5b7c998c9dc2c00af7a7ee1331ac05d9993935e621b74f42cf54ebe2022"
+  },
+  "inbox.failedToArchiveTask": {
+    "en": "Failed to archive task",
+    "zh-CN": "归档任务失败",
+    "reviewedEnglishHash": "ab3328ec3513c7fb900ab2acf17020abc4dff2ceec35ecc4244baafcf8a0efdc"
+  },
+  "inbox.failedToReject": {
+    "en": "Failed to reject",
+    "zh-CN": "拒绝失败",
+    "reviewedEnglishHash": "46960413b9a81e252b8c2d5871203b256e933d75f71421a818b2e9e7fca1a908"
+  },
+  "inbox.failedToRejectJoinRequest": {
+    "en": "Failed to reject join request",
+    "zh-CN": "拒绝加入请求失败",
+    "reviewedEnglishHash": "4d68f6e11d9ae57f64e18f55600d0b6fb0e2b8e5ae494ba4735d32699cc47190"
+  },
+  "inbox.failedToUndoArchive": {
+    "en": "Failed to undo inbox archive",
+    "zh-CN": "撤销收件箱归档失败",
+    "reviewedEnglishHash": "f52fe16f6a79e73b0354b9ed699b5206b758708a381de0e6297dd5c5c034b505"
+  },
+  "inbox.fromIp": {
+    "en": "from IP",
+    "zh-CN": "来源 IP",
+    "reviewedEnglishHash": "339ac5d9a05253e7ea2334538216e3942228807c20db6fd8fd7964f8a0ff8ac7"
+  },
+  "inbox.group": {
+    "en": "Group",
+    "zh-CN": "分组",
+    "reviewedEnglishHash": "34ca0e76608842ff3e7d924a455a396a82f471052c15e3f2ed7f090ac702e5c1"
+  },
+  "inbox.groupBy.assignee": {
+    "en": "Responsible",
+    "zh-CN": "负责人",
+    "reviewedEnglishHash": "bc110a6d0722098ac63e93b5fd6222afe478819ec5a6f4ce2557330684eb6264"
+  },
+  "inbox.groupBy.none": {
+    "en": "None",
+    "zh-CN": "不分组",
+    "reviewedEnglishHash": "dc937b59892604f5a86ac96936cd7ff09e25f18ae6b758e8014a24c7fa039e91"
+  },
+  "inbox.groupBy.project": {
+    "en": "Project",
+    "zh-CN": "项目",
+    "reviewedEnglishHash": "985959785319747668373cc6dee294b11db782b03cdd90a2851fbdc0637c6b7b"
+  },
+  "inbox.groupBy.type": {
+    "en": "Type",
+    "zh-CN": "类型",
+    "reviewedEnglishHash": "baaddf70fb5d432b8bd948ef91d6f910124a6d138edae4d5f000c4610ddc8eae"
+  },
+  "inbox.groupBy.workspace": {
+    "en": "Workspace",
+    "zh-CN": "工作区",
+    "reviewedEnglishHash": "87bb59ba2f92f2a5a9f13e021fd58dd14ae5c065b1046146875e6e68d5ebc8b7"
+  },
+  "inbox.joinRequests": {
+    "en": "Join requests",
+    "zh-CN": "加入请求",
+    "reviewedEnglishHash": "a1321fc27dc597a57ccbc6dc1e94fdf27668528d297d22c30dc7e15c5431d7bd"
+  },
+  "inbox.markAllRead": {
+    "en": "Mark all as read",
+    "zh-CN": "全部标记为已读",
+    "reviewedEnglishHash": "d7592650e1c90a85fc6151e5454c57227d9474f1ce9fdbf184178bea34974c44"
+  },
+  "inbox.markAllReadDescription": {
+    "en": "This will mark {{count}} unread item(s) as read.",
+    "zh-CN": "这会将 {{count}} 个未读项目标记为已读。",
+    "reviewedEnglishHash": "e340cc1b8c41a9796c702281e77c36ca458cfdaaffdeeb92431a8f0f9ddf65c3"
+  },
+  "inbox.markAllReadTitle": {
+    "en": "Mark all as read?",
+    "zh-CN": "全部标记为已读？",
+    "reviewedEnglishHash": "0bf166e29608656d16cd76e6433dcbf5dbaf61460bf657822d17975f4f248c5a"
+  },
+  "inbox.markAsRead": {
+    "en": "Mark as read",
+    "zh-CN": "标记为已读",
+    "reviewedEnglishHash": "50c8b81faf51e7d1433c62086339c8eed71f7577278b1b797e684b3da3465b73"
+  },
+  "inbox.markReadPrefix": {
+    "en": "This will mark",
+    "zh-CN": "这会将",
+    "reviewedEnglishHash": "5317ddf52a821f7ddbba9c23e205c96684eb06b7c78fefc6b19c0435bdc879b4"
+  },
+  "inbox.markReadSuffix": {
+    "en": "as read.",
+    "zh-CN": "标记为已读。",
+    "reviewedEnglishHash": "5777cbb15a3df61e519b378020ad154baf8a208340a4df18fba05d350c12afb2"
+  },
+  "inbox.marking": {
+    "en": "Marking…",
+    "zh-CN": "正在标记…",
+    "reviewedEnglishHash": "98a436e57b71dd50e137eb611e1378e3ac605acae291745ce601cbb0ebb7ba66"
+  },
+  "inbox.myRecentTasks": {
+    "en": "My recent tasks",
+    "zh-CN": "我最近的任务",
+    "reviewedEnglishHash": "0b598c2cf848fccdef14ab9150b212ca1e062fd36a664a6d58741a12b799fcd2"
+  },
+  "inbox.needsAction": {
+    "en": "Needs action",
+    "zh-CN": "需要处理",
+    "reviewedEnglishHash": "e382d466c25613b68d82a7438e14c7615d0785cb283d0c051c0a486b4628abea"
+  },
+  "inbox.newTaskInGroup": {
+    "en": "New task in {{group}}",
+    "zh-CN": "在 {{group}} 中新建任务",
+    "reviewedEnglishHash": "3acd861db6db7b23cfdbc8142cbdd2e8e7dec729f284325942723013d84d3f30"
+  },
+  "inbox.otherResults": {
+    "en": "Other results",
+    "zh-CN": "其他结果",
+    "reviewedEnglishHash": "d2fcaa7d025063fa94debdf913053a7f2e87de006ca0c73bf330979d87c1828c"
+  },
+  "inbox.reject": {
+    "en": "Reject",
+    "zh-CN": "拒绝",
+    "reviewedEnglishHash": "ab604a360777735fe2993aec7d4ffae415f1515b0a4c989269603fd3d5c07b61"
+  },
+  "inbox.requested": {
+    "en": "requested",
+    "zh-CN": "请求者",
+    "reviewedEnglishHash": "c6a91ee7f93b091b009a611956b9c0a9b414e4ee111666cdf3e87e2271defa79"
+  },
+  "inbox.requestedBy": {
+    "en": "requested by {{name}}",
+    "zh-CN": "由 {{name}} 请求",
+    "reviewedEnglishHash": "3cfd0142faf9c5a22d2450533bb1954f7eb414e298e553b845b565b08e8e42bc"
+  },
+  "inbox.requestedFromIp": {
+    "en": "requested {{time}} from IP {{ip}}",
+    "zh-CN": "于 {{time}} 从 IP {{ip}} 发起请求",
+    "reviewedEnglishHash": "4199582ca734696d728801e1c6ed5d9c7933cb43cedf8f4c8d7d2287dd77e057"
+  },
+  "inbox.resolved": {
+    "en": "Resolved",
+    "zh-CN": "已解决",
+    "reviewedEnglishHash": "5be3c2c8354e1eb924b03a3dcc7fa4172e9aa0f4917b46b44fcc7daf8835d7a7"
+  },
+  "inbox.retry": {
+    "en": "Retry",
+    "zh-CN": "重试",
+    "reviewedEnglishHash": "942087cc2d41e01304b7195558d093d10c72af8e838c7556d6a02d471ee71852"
+  },
+  "inbox.retrySkipped": {
+    "en": "Retry was skipped.",
+    "zh-CN": "未执行重试。",
+    "reviewedEnglishHash": "1b8e35e74fac0cc55509a855616577216fcdf948f969c2ba03a615b4b1a08dfc"
+  },
+  "inbox.retrying": {
+    "en": "Retrying…",
+    "zh-CN": "正在重试…",
+    "reviewedEnglishHash": "a16c8b1c95956fbabce3ed5506c7e1b4a2d10c86f7adfc7ae084f2d3df9f5174"
+  },
+  "inbox.searchPlaceholder": {
+    "en": "Search inbox…",
+    "zh-CN": "搜索收件箱…",
+    "reviewedEnglishHash": "d684b9b792bde6c0ad95c4f621f76fd4d7a5095656d00e15d7d4a4f31e958ce1"
+  },
+  "inbox.selectCompany": {
+    "en": "Select a company to view inbox.",
+    "zh-CN": "请先选择公司以查看收件箱。",
+    "reviewedEnglishHash": "593895d9d781983a840e58535503133d1a9eac465e464cc82be3f55df03044d6"
+  },
+  "inbox.sort": {
+    "en": "Sort",
+    "zh-CN": "排序",
+    "reviewedEnglishHash": "bec69036aa27e7fab7d44cad3909477b76631c39ba46fd7841ea71aae7e5a735"
+  },
+  "inbox.tabs.all": {
+    "en": "All",
+    "zh-CN": "全部",
+    "reviewedEnglishHash": "a52ace420f2175d08b1577a1bea5445e36801229c074ef9ed6c55a73401fd9c2"
+  },
+  "inbox.tabs.blocked": {
+    "en": "Blocked",
+    "zh-CN": "已阻塞",
+    "reviewedEnglishHash": "18f2a0947f9d6523991b29b450307f22773f57d65f7efb98d48a167df04d6b1d"
+  },
+  "inbox.tabs.mine": {
+    "en": "Mine",
+    "zh-CN": "我的",
+    "reviewedEnglishHash": "f57afb7d275a26df0de0e933b28c16f2462e84c09ad605945a4c6163f2be3baa"
+  },
+  "inbox.tabs.recent": {
+    "en": "Recent",
+    "zh-CN": "最近",
+    "reviewedEnglishHash": "690dbe9dc0993c4256683738fc3fd541cfa96f60d299be33343615dd58179d93"
+  },
+  "inbox.tabs.unread": {
+    "en": "Unread",
+    "zh-CN": "未读",
+    "reviewedEnglishHash": "1b9f384c1436f607447ff66db22dcfe569141506b7499589a9b4857580075b26"
+  },
+  "inbox.title": {
+    "en": "Inbox",
+    "zh-CN": "收件箱",
+    "reviewedEnglishHash": "94835ea2fcf775cd77cb9c9cee01b5cbd9bc515467aab1215f48a5ade9ca5274"
+  },
+  "inbox.updated": {
+    "en": "updated {{time}}",
+    "zh-CN": "更新于 {{time}}",
+    "reviewedEnglishHash": "3f488b87847935d42852fbd1836c818aa0a2ce59dd3d68f1b7915779b0b2c348"
+  }
+}

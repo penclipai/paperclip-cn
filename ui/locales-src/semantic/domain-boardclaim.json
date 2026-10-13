@@ -1,0 +1,77 @@
+{
+  "boardClaim.claimBody": {
+    "en": "This will promote your user to instance admin and migrate company ownership access from local trusted mode.",
+    "zh-CN": "此操作会将你的用户提升为实例管理员，并将公司访问权限从本地信任模式迁移过来。",
+    "reviewedEnglishHash": "5804ac3ab84d6987fcf7d7953eb700bbcfa47cb40a6e7688ee3f33c7bb8fd49b"
+  },
+  "boardClaim.claimButton": {
+    "en": "Claim ownership",
+    "zh-CN": "认领所有权",
+    "reviewedEnglishHash": "7f2ebb1c5b00fca9fb7c8d229ec8020fc393507cb41a5d1f6d2a85e381700751"
+  },
+  "boardClaim.claimTitle": {
+    "en": "Claim Board ownership",
+    "zh-CN": "认领董事会所有权",
+    "reviewedEnglishHash": "fb94488405b21f95025219fc0a1dfbf85a38666991cbfe4a17dbbb9575409c56"
+  },
+  "boardClaim.claimedBody": {
+    "en": "This instance is now linked to your authenticated user.",
+    "zh-CN": "此实例已关联到你的认证用户。",
+    "reviewedEnglishHash": "a5661a2901ea7f1513cc03ccdf1fc3af9d394725f71c0aad6ebb4ec49d9bc274"
+  },
+  "boardClaim.claimedTitle": {
+    "en": "Board ownership claimed",
+    "zh-CN": "董事会所有权已认领",
+    "reviewedEnglishHash": "d2127feb776aea444df2229332113a016b2f7f8071085765e49964a6c6a10efb"
+  },
+  "boardClaim.claiming": {
+    "en": "Claiming…",
+    "zh-CN": "认领中…",
+    "reviewedEnglishHash": "702f4ab2f2deb555beb292c47fd1335cb4fdd3e91a1a9ce5ecc316a7a25e7a53"
+  },
+  "boardClaim.failedToClaim": {
+    "en": "Failed to claim board ownership",
+    "zh-CN": "认领董事会所有权失败",
+    "reviewedEnglishHash": "a598c43178a63e891736a9cf72b00ac91e948d8d1ff80197b6a24b8323b2ba4c"
+  },
+  "boardClaim.invalidUrl": {
+    "en": "Invalid board claim URL.",
+    "zh-CN": "无效的 Board Claim 链接。",
+    "reviewedEnglishHash": "1dec9c583064f072854b36a6600d85a510aac1fbb0d7bf20de5b0814e0da8194"
+  },
+  "boardClaim.loading": {
+    "en": "Loading claim challenge...",
+    "zh-CN": "正在加载 Claim 挑战...",
+    "reviewedEnglishHash": "ec52a8fe1f7b88052c4cc4c5b4f0f1e50072f3d9ecb976bc788776a6e6c059b1"
+  },
+  "boardClaim.openBoard": {
+    "en": "Open board",
+    "zh-CN": "打开控制台",
+    "reviewedEnglishHash": "673ae8242de169d3e0c9ec18b6fe6eadab2510808604ff14192a0f287d39a3f2"
+  },
+  "boardClaim.signInButton": {
+    "en": "Sign in / Create account",
+    "zh-CN": "登录 / 创建账号",
+    "reviewedEnglishHash": "5d4f5eb117173ca08f73015e55c801cc28dbdacea8a6349890e08213047f38be"
+  },
+  "boardClaim.signInRequired": {
+    "en": "Sign in required",
+    "zh-CN": "需要先登录",
+    "reviewedEnglishHash": "255346f25669fce12875a9610ec696967138d102614a832c6a27468e5ad754a6"
+  },
+  "boardClaim.signInRequiredBody": {
+    "en": "Sign in or create an account, then return to this page to claim Board ownership.",
+    "zh-CN": "请先登录或创建账号，然后回到此页面认领董事会所有权。",
+    "reviewedEnglishHash": "56ba53d4363b7fdf29fd8fdee5e07c92d60010928a832780856d3d38b51752ad"
+  },
+  "boardClaim.unavailableBody": {
+    "en": "Challenge is invalid or expired.",
+    "zh-CN": "挑战已失效或已过期。",
+    "reviewedEnglishHash": "ef7f2fbfba3af9a486a9a52d20420218bc369dd0f4afe910175455443b28f0a9"
+  },
+  "boardClaim.unavailableTitle": {
+    "en": "Claim challenge unavailable",
+    "zh-CN": "Claim 挑战不可用",
+    "reviewedEnglishHash": "8e6d8ef5649374304732d390bd26d99e2b1bf619722d9e63131b74bcd26dea0e"
+  }
+}

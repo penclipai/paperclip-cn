@@ -1,0 +1,367 @@
+{
+  "whatNeedsMe.badgeLabel": {
+    "en": "decisions",
+    "zh-CN": "决策",
+    "reviewedEnglishHash": "3183d37be5060278b0f0b2ea1095fea98e027d276f661719821018f5511f4927"
+  },
+  "whatNeedsMe.bundle.agent": {
+    "en": "An agent",
+    "zh-CN": "一名智能体",
+    "reviewedEnglishHash": "ea6a03636c62be3ae0671ef47fe39ce34318f24540c7c9bb958c3a253a2a8f32"
+  },
+  "whatNeedsMe.bundle.pending": {
+    "en": "· {{count}} pending",
+    "zh-CN": "· 待处理 {{count}} 条",
+    "reviewedEnglishHash": "ed3d9e2552eb8774d2fc76adcec6e650be2a993d0ca6dd3f05c4c833c7c17c74"
+  },
+  "whatNeedsMe.bundle.proposed": {
+    "en": "{{agent}} proposed {{count}} decision",
+    "zh-CN": "{{agent}} 提议了 {{count}} 条决策",
+    "reviewedEnglishHash": "59f79f71e773fb9734527f8a7c246179eb60ce6f604e325a1fd925f0471e0b6d"
+  },
+  "whatNeedsMe.bundle.proposed_one": {
+    "en": "{{agent}} proposed {{count}} decision",
+    "zh-CN": "{{agent}} 提议了 {{count}} 条决策",
+    "reviewedEnglishHash": "59f79f71e773fb9734527f8a7c246179eb60ce6f604e325a1fd925f0471e0b6d"
+  },
+  "whatNeedsMe.bundle.proposed_other": {
+    "en": "{{agent}} proposed {{count}} decisions",
+    "zh-CN": "{{agent}} 提议了 {{count}} 条决策",
+    "reviewedEnglishHash": "82c397fb3af79f402e0514e3a03be10dc636909a1a27d768c50d606ea30d0b53"
+  },
+  "whatNeedsMe.common.noProject": {
+    "en": "No project",
+    "zh-CN": "无项目",
+    "reviewedEnglishHash": "f34c2be0d1c5f5622eb03be1f67e13dee2ce3dbb71201d909e76a761c29d8bcb"
+  },
+  "whatNeedsMe.curtains.aging": {
+    "en": "Aging",
+    "zh-CN": "待处理过久",
+    "reviewedEnglishHash": "90dd095da6be9e4c755eac57dc8d59073723d13db6f4e68e1ab98dca98ae4316"
+  },
+  "whatNeedsMe.curtains.agingDescription": {
+    "en": "Idle past {{days}} days — kept off the desk. Keep any you still want surfaced.",
+    "zh-CN": "已闲置超过 {{days}} 天，暂不在决策台显示。请保留仍需关注的事项。",
+    "reviewedEnglishHash": "c74f976db6ac4c2d2793c9d6efe2e6d6995f818398e4ad09a7ffd450451f031f"
+  },
+  "whatNeedsMe.curtains.dismissed": {
+    "en": "Dismissed",
+    "zh-CN": "已忽略",
+    "reviewedEnglishHash": "9d74727714dba768278ea3e26ae526fedfa685d772a0d6669e506f44c1d676d4"
+  },
+  "whatNeedsMe.curtains.expired": {
+    "en": "Expired",
+    "zh-CN": "已过期",
+    "reviewedEnglishHash": "424a2551d356754c882d04ac16c63e6b50b80b159549d23231001f629455756e"
+  },
+  "whatNeedsMe.curtains.snoozed": {
+    "en": "Snoozed",
+    "zh-CN": "已暂缓",
+    "reviewedEnglishHash": "88096584e4a882bee52cfedc606ce969ae05e84dea1e8284268056e7a66925fe"
+  },
+  "whatNeedsMe.dateGroups.earlier": {
+    "en": "Earlier",
+    "zh-CN": "更早",
+    "reviewedEnglishHash": "e10ae990740118886b011c218c7d0777c5c203954e0038747965ddbe5aea1744"
+  },
+  "whatNeedsMe.dateGroups.thisWeek": {
+    "en": "This week",
+    "zh-CN": "本周",
+    "reviewedEnglishHash": "8c4eef5ab2532515ef24a662db70f6e5b8063c7f924342b2a463f763f1091634"
+  },
+  "whatNeedsMe.dateGroups.today": {
+    "en": "Today",
+    "zh-CN": "今天",
+    "reviewedEnglishHash": "2b065c7c9ce466e5ebcad757987d5d660ee4c9ea708bc62c43444b53334738ba"
+  },
+  "whatNeedsMe.dateGroups.yesterday": {
+    "en": "Yesterday",
+    "zh-CN": "昨天",
+    "reviewedEnglishHash": "566181254b293aa66653e43313be9e39c12d44f9ac4fcd3236ef1e9c50a2903f"
+  },
+  "whatNeedsMe.dateRange.all": {
+    "en": "All",
+    "zh-CN": "全部",
+    "reviewedEnglishHash": "a52ace420f2175d08b1577a1bea5445e36801229c074ef9ed6c55a73401fd9c2"
+  },
+  "whatNeedsMe.dateRange.clear": {
+    "en": "Clear",
+    "zh-CN": "清除",
+    "reviewedEnglishHash": "83b12c2216efb4fdc924e1deb5182e905e4926ed0c1c324d467107f46d5a26a9"
+  },
+  "whatNeedsMe.dateRange.custom": {
+    "en": "Custom",
+    "zh-CN": "自定义",
+    "reviewedEnglishHash": "494ca78f7374e46fb2de9ad9f2dbd4aaae89b50b2ca044177a1566a59e06627e"
+  },
+  "whatNeedsMe.dateRange.from": {
+    "en": "From",
+    "zh-CN": "开始日期",
+    "reviewedEnglishHash": "218197693424e0154cefc0af31aed96c084b987e08136e91d5528ddbb5461e24"
+  },
+  "whatNeedsMe.dateRange.last_7_days": {
+    "en": "Last 7 days",
+    "zh-CN": "最近 7 天",
+    "reviewedEnglishHash": "0603deca4fcb660f1c06a02621423721bd48084970ecf2b2de0e326dc783d191"
+  },
+  "whatNeedsMe.dateRange.this_month": {
+    "en": "This month",
+    "zh-CN": "本月",
+    "reviewedEnglishHash": "fd787ef3d46c9b82d8cf2130a66bf71e81435981c2a3280759e73fcefb26988c"
+  },
+  "whatNeedsMe.dateRange.to": {
+    "en": "To",
+    "zh-CN": "结束日期",
+    "reviewedEnglishHash": "f4b06ef6d3c81436f60a318c81c42f8f7e2d774d45a22f3b9b5f3b6980d28146"
+  },
+  "whatNeedsMe.dateRange.today": {
+    "en": "Today",
+    "zh-CN": "今天",
+    "reviewedEnglishHash": "2b065c7c9ce466e5ebcad757987d5d660ee4c9ea708bc62c43444b53334738ba"
+  },
+  "whatNeedsMe.dateRange.yesterday": {
+    "en": "Yesterday",
+    "zh-CN": "昨天",
+    "reviewedEnglishHash": "566181254b293aa66653e43313be9e39c12d44f9ac4fcd3236ef1e9c50a2903f"
+  },
+  "whatNeedsMe.decided": {
+    "en": "Decided",
+    "zh-CN": "已决定",
+    "reviewedEnglishHash": "30ba702eee51c2a58e8237ce27c7d2caa308ce1341c50226149c40b1ea79d5df"
+  },
+  "whatNeedsMe.decisionCount.one": {
+    "en": "{{count}} decision",
+    "zh-CN": "{{count}} 条决策",
+    "reviewedEnglishHash": "c7c58aae9a4485b4dbbb6654b16c57c6771f896d6645d436e0746011acc8656e"
+  },
+  "whatNeedsMe.decisionCount.other": {
+    "en": "{{count}} decisions",
+    "zh-CN": "{{count}} 条决策",
+    "reviewedEnglishHash": "8f0f22bf2a768ffff0b9fadb9c2b18b6da7937efc12b8d4be3e387b4e5818a78"
+  },
+  "whatNeedsMe.empty.caughtUp": {
+    "en": "You're all caught up",
+    "zh-CN": "所有事项都已处理",
+    "reviewedEnglishHash": "2f485b9971dfa582a6386835535ce5b524c439bc684a6b50a1c2b0ecb029e0a4"
+  },
+  "whatNeedsMe.empty.caughtUpSentence": {
+    "en": "You're all caught up.",
+    "zh-CN": "所有事项都已处理。",
+    "reviewedEnglishHash": "aebca55641976f4b8900fb92eae1e81e1fc683bd64a1647ad030ebe709213fdf"
+  },
+  "whatNeedsMe.empty.filteredHelp": {
+    "en": "Adjust or clear the filters to see the rest.",
+    "zh-CN": "调整或清除筛选条件以查看其余内容。",
+    "reviewedEnglishHash": "955c4e3ea39d81eb9df39eff8f6d0ecfe920a5999aae7f2a02591495793a4b1d"
+  },
+  "whatNeedsMe.empty.noMatches": {
+    "en": "No decisions match your filters.",
+    "zh-CN": "没有符合筛选条件的决策。",
+    "reviewedEnglishHash": "080dd6d70ca9dd21a4c6f79448723a657262a4e15ff48dddc5d9bbc942dff0ff"
+  },
+  "whatNeedsMe.empty.nothingNeedsDecision": {
+    "en": "Nothing needs a decision from you right now.",
+    "zh-CN": "当前没有需要你决策的事项。",
+    "reviewedEnglishHash": "158178704c028e5e744efea3a36bddfa9fa3005fcadb2bd9c059f13eb99298e0"
+  },
+  "whatNeedsMe.filters.clear": {
+    "en": "Clear",
+    "zh-CN": "清除",
+    "reviewedEnglishHash": "83b12c2216efb4fdc924e1deb5182e905e4926ed0c1c324d467107f46d5a26a9"
+  },
+  "whatNeedsMe.filters.noWorkspace": {
+    "en": "No workspace",
+    "zh-CN": "无工作区",
+    "reviewedEnglishHash": "fce263d326818c6258e1db247a3b5b9e2c828c2259589915440bb7cf9a67e65a"
+  },
+  "whatNeedsMe.filters.project": {
+    "en": "Project",
+    "zh-CN": "项目",
+    "reviewedEnglishHash": "985959785319747668373cc6dee294b11db782b03cdd90a2851fbdc0637c6b7b"
+  },
+  "whatNeedsMe.filters.severity": {
+    "en": "Severity",
+    "zh-CN": "严重程度",
+    "reviewedEnglishHash": "5e9f98120dbe568255ee059f39671686982b113d4e917b6d6faf149918c81709"
+  },
+  "whatNeedsMe.filters.type": {
+    "en": "Type",
+    "zh-CN": "类型",
+    "reviewedEnglishHash": "baaddf70fb5d432b8bd948ef91d6f910124a6d138edae4d5f000c4610ddc8eae"
+  },
+  "whatNeedsMe.filters.workspace": {
+    "en": "Workspace",
+    "zh-CN": "工作区",
+    "reviewedEnglishHash": "87bb59ba2f92f2a5a9f13e021fd58dd14ae5c065b1046146875e6e68d5ebc8b7"
+  },
+  "whatNeedsMe.from": {
+    "en": "· from",
+    "zh-CN": "· 来自",
+    "reviewedEnglishHash": "6c534be303394b55e6bb01bd34f9e6abf308dd759ed9a9029dc2475330a97db2"
+  },
+  "whatNeedsMe.group.date": {
+    "en": "Date",
+    "zh-CN": "日期",
+    "reviewedEnglishHash": "99c40ab405926cb5ad1def9cff4d7ce624f8f8abfff4e85f655347fcb949d08e"
+  },
+  "whatNeedsMe.group.none": {
+    "en": "None",
+    "zh-CN": "不分组",
+    "reviewedEnglishHash": "dc937b59892604f5a86ac96936cd7ff09e25f18ae6b758e8014a24c7fa039e91"
+  },
+  "whatNeedsMe.group.project": {
+    "en": "Project",
+    "zh-CN": "项目",
+    "reviewedEnglishHash": "985959785319747668373cc6dee294b11db782b03cdd90a2851fbdc0637c6b7b"
+  },
+  "whatNeedsMe.group.severity": {
+    "en": "Severity",
+    "zh-CN": "严重程度",
+    "reviewedEnglishHash": "5e9f98120dbe568255ee059f39671686982b113d4e917b6d6faf149918c81709"
+  },
+  "whatNeedsMe.group.type": {
+    "en": "Type",
+    "zh-CN": "类型",
+    "reviewedEnglishHash": "baaddf70fb5d432b8bd948ef91d6f910124a6d138edae4d5f000c4610ddc8eae"
+  },
+  "whatNeedsMe.loadingDecided": {
+    "en": "Loading decided decisions…",
+    "zh-CN": "正在加载已决定事项...",
+    "reviewedEnglishHash": "44462192446e36e39bfc3b7c4e84dff2428ae903127cbea2b69777b4f99b5714"
+  },
+  "whatNeedsMe.loadingExpired": {
+    "en": "Loading expired decisions…",
+    "zh-CN": "正在加载已过期事项...",
+    "reviewedEnglishHash": "16b6f10a835cf5e528c12d42edaaf7d83c1f07d15b459671943e5ebaab1ef6cb"
+  },
+  "whatNeedsMe.noDecided": {
+    "en": "No decided decisions.",
+    "zh-CN": "暂无已决定事项。",
+    "reviewedEnglishHash": "455204da7de595a82496fe9fa66e1aa5e14559b564431f51f6479f9a1ddf8497"
+  },
+  "whatNeedsMe.noExpired": {
+    "en": "No expired decisions.",
+    "zh-CN": "暂无已过期事项。",
+    "reviewedEnglishHash": "56b04ba292bda188ba5fb794aeda5b0a322709cf00b4f747d1bc4cd293a0737d"
+  },
+  "whatNeedsMe.proposed": {
+    "en": "proposed",
+    "zh-CN": "已提议",
+    "reviewedEnglishHash": "81e766d8978e574dc9655e6143e02bb7826dd82dbe0b84c7c969e91abee021c5"
+  },
+  "whatNeedsMe.selectCompany": {
+    "en": "Select a company first.",
+    "zh-CN": "请先选择公司。",
+    "reviewedEnglishHash": "6de8f07f0bc62039040e04e845a4ea4849c355f421f2287423e4832b2a0ae3de"
+  },
+  "whatNeedsMe.severity.critical": {
+    "en": "Critical",
+    "zh-CN": "严重",
+    "reviewedEnglishHash": "427dd2969bd140bec3c1bcc7983da982f4815938cd4510ad0b2bad48ac5b55f9"
+  },
+  "whatNeedsMe.severity.high": {
+    "en": "High",
+    "zh-CN": "高",
+    "reviewedEnglishHash": "c4ebc6d4a5832cd9415f906ad03661110c705a72381c8b8b145761d02e2dd23a"
+  },
+  "whatNeedsMe.severity.low": {
+    "en": "Low",
+    "zh-CN": "低",
+    "reviewedEnglishHash": "f793de205ead5ac302c4a1627829dea41f176b1068b993a32373fc869918374b"
+  },
+  "whatNeedsMe.severity.medium": {
+    "en": "Medium",
+    "zh-CN": "中",
+    "reviewedEnglishHash": "8e588cd187741f1cd76f5fab77b7208782a8c21d764ce7d7a4cf3ac4e0968873"
+  },
+  "whatNeedsMe.sort.newest": {
+    "en": "Newest first",
+    "zh-CN": "最新优先",
+    "reviewedEnglishHash": "ffb6f5764bddb68c49177c75a9b4a9638878f862bd5d3b1375b8eb1d40538e15"
+  },
+  "whatNeedsMe.sort.oldest": {
+    "en": "Oldest first",
+    "zh-CN": "最早优先",
+    "reviewedEnglishHash": "6e2ebdab3c02a3e6afd09432dbb9508b46e3174dfbf752e6b80d4b645189078c"
+  },
+  "whatNeedsMe.sourceKinds.agentErrorAlert": {
+    "en": "Agent error",
+    "zh-CN": "智能体错误",
+    "reviewedEnglishHash": "2934a62999d9eed5c8b5c2bd6eba765817fd9c1a8c805e0808d226cd40138f7a"
+  },
+  "whatNeedsMe.sourceKinds.approval": {
+    "en": "Approval",
+    "zh-CN": "审批",
+    "reviewedEnglishHash": "147fb813a2515718ef6121c61c9636d6ffbcb055bcdb45dbb483af667aa94c8b"
+  },
+  "whatNeedsMe.sourceKinds.blockerAttention": {
+    "en": "Blocked dependency",
+    "zh-CN": "依赖阻塞",
+    "reviewedEnglishHash": "c4b95fcddef41ed0130a2ff1511a476286d83c7b3902f98ec66564b164d0e8d7"
+  },
+  "whatNeedsMe.sourceKinds.budgetAlert": {
+    "en": "Budget",
+    "zh-CN": "预算",
+    "reviewedEnglishHash": "1c6225ec7092ad2f4a4acd79f8fc6854aa10653763fb053a6cf2bb2d2a4148ab"
+  },
+  "whatNeedsMe.sourceKinds.failedRun": {
+    "en": "Failed run",
+    "zh-CN": "失败运行",
+    "reviewedEnglishHash": "3f23cd69ecb80fe461453ba7bd900139e1af654a5ff3b6d069be5f6538c6f196"
+  },
+  "whatNeedsMe.sourceKinds.issueThreadInteraction": {
+    "en": "Decision requested",
+    "zh-CN": "需要决策",
+    "reviewedEnglishHash": "a1db1b31d8647e725f3aae130321aad9655fa17bbe5cca9000b9e159a1c227de"
+  },
+  "whatNeedsMe.sourceKinds.joinRequest": {
+    "en": "Join request",
+    "zh-CN": "加入请求",
+    "reviewedEnglishHash": "d7d9cd19632538b7ce6d66bce2e347dc37cb601512314a67efebae3d22476b50"
+  },
+  "whatNeedsMe.sourceKinds.productivityReview": {
+    "en": "Productivity review",
+    "zh-CN": "效率审查",
+    "reviewedEnglishHash": "ea7d21e2add2f9969936ce7ec11cb0c07b245812166ac4a7033a85683c94ad7a"
+  },
+  "whatNeedsMe.sourceKinds.recoveryAction": {
+    "en": "Recovery",
+    "zh-CN": "恢复操作",
+    "reviewedEnglishHash": "48f6a8d5688b0cf59fb8109b7903507ed9d2e1580be2ad7ae169df659e1ddeea"
+  },
+  "whatNeedsMe.sourceKinds.review": {
+    "en": "Review",
+    "zh-CN": "审核",
+    "reviewedEnglishHash": "aff0766a5290e117b8433c351bae7b7b23bed682b2369bd822d88a647cc58512"
+  },
+  "whatNeedsMe.title": {
+    "en": "Decisions",
+    "zh-CN": "决策",
+    "reviewedEnglishHash": "cfa6a08af3ed587100e647bd922ea291b8b542ee523cee20b10b416a2f8d7adc"
+  },
+  "whatNeedsMe.toast.dismissed": {
+    "en": "Dismissed",
+    "zh-CN": "已忽略",
+    "reviewedEnglishHash": "9d74727714dba768278ea3e26ae526fedfa685d772a0d6669e506f44c1d676d4"
+  },
+  "whatNeedsMe.toast.undo": {
+    "en": "Undo",
+    "zh-CN": "撤销",
+    "reviewedEnglishHash": "a8283ade31856f71220db0e6f60a257c6889dc4dad0f275f66ad44b9ed9bf8d5"
+  },
+  "whatNeedsMe.toolbar.filter": {
+    "en": "Filter",
+    "zh-CN": "筛选",
+    "reviewedEnglishHash": "638e249f4a15ebb84957da130701d138a6e06d88dceeaa2e6dcd91db70cc1381"
+  },
+  "whatNeedsMe.toolbar.group": {
+    "en": "Group",
+    "zh-CN": "分组",
+    "reviewedEnglishHash": "34ca0e76608842ff3e7d924a455a396a82f471052c15e3f2ed7f090ac702e5c1"
+  },
+  "whatNeedsMe.toolbar.sort": {
+    "en": "Sort",
+    "zh-CN": "排序",
+    "reviewedEnglishHash": "bec69036aa27e7fab7d44cad3909477b76631c39ba46fd7841ea71aae7e5a735"
+  }
+}

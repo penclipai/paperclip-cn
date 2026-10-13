@@ -1,0 +1,932 @@
+{
+  "issueRecoveryAction.ancestry.ancestor": {
+    "en": "Forward-only",
+    "zh-CN": "仅向前",
+    "reviewedEnglishHash": "8ab1faed8623af38af1dd62423f510156efa59b8cfea1c244574bf815828d3b6"
+  },
+  "issueRecoveryAction.ancestry.diverged": {
+    "en": "Diverged",
+    "zh-CN": "已分叉",
+    "reviewedEnglishHash": "ec67106c49d8f54b19ee1388c342a79740c2a24b637545e2ebd4432498149a46"
+  },
+  "issueRecoveryAction.ancestry.unknown": {
+    "en": "Ancestry unknown",
+    "zh-CN": "祖先关系未知",
+    "reviewedEnglishHash": "83119bdbae0ca36e84801ae673329771e787bf496796c1bd9012d304be974437"
+  },
+  "issueRecoveryAction.ariaLabel": {
+    "en": "Recovery action: {{state}}",
+    "zh-CN": "恢复操作：{{state}}",
+    "reviewedEnglishHash": "9a0f605d9b1aacd92cdc830410f9f77872c2c20f6547839e6434d52192280627"
+  },
+  "issueRecoveryAction.ariaState.escalated": {
+    "en": "escalated",
+    "zh-CN": "已升级",
+    "reviewedEnglishHash": "ad9ce018a0f651a0819485fcabf03d8b110fb604195ea30f8af962b0154bfbc2"
+  },
+  "issueRecoveryAction.ariaState.in_progress": {
+    "en": "in progress",
+    "zh-CN": "恢复处理中",
+    "reviewedEnglishHash": "2b6b853c9e59dbf44fdd9dd5919557d3ca4bf448807949acaea7697e6cd1d92d"
+  },
+  "issueRecoveryAction.ariaState.needed": {
+    "en": "needed",
+    "zh-CN": "需要恢复",
+    "reviewedEnglishHash": "c0cea2dd285281f7893d49fb1f28644d36777194b1c4655dbeb3b49944daa04f"
+  },
+  "issueRecoveryAction.ariaState.observe_only": {
+    "en": "observing active run",
+    "zh-CN": "正在观察活跃运行",
+    "reviewedEnglishHash": "70a09b3753135bec19dfa20897b6605eb896b78d642a9aa087b61658cff6a397"
+  },
+  "issueRecoveryAction.ariaState.resolved": {
+    "en": "resolved",
+    "zh-CN": "已处理",
+    "reviewedEnglishHash": "dc676b42859915c826f8bbaef6511998f7aedbd6e332565faeda17fc33ec6320"
+  },
+  "issueRecoveryAction.attempt": {
+    "en": "attempt",
+    "zh-CN": "次尝试",
+    "reviewedEnglishHash": "c7ce66d0fb14e3c2d4d920918cc6cc7e488668b08dddeb7b85e44de3b9f3eb01"
+  },
+  "issueRecoveryAction.attemptOf": {
+    "en": "attempt {{attempt}} of {{maxAttempts}}",
+    "zh-CN": "第 {{attempt}} / {{maxAttempts}} 次尝试",
+    "reviewedEnglishHash": "d78cc82ee87ed0dd62936a780863c95361939d411a08f9a84c05a846681b9739"
+  },
+  "issueRecoveryAction.attemptsUnbounded": {
+    "en": "Attempts not bounded",
+    "zh-CN": "尝试次数未设上限",
+    "reviewedEnglishHash": "3ccd1bed1b82653e3550613d9dc84be000ae894ff1d380a62c21cd09e8be2e6f"
+  },
+  "issueRecoveryAction.board": {
+    "en": "Board",
+    "zh-CN": "董事会",
+    "reviewedEnglishHash": "4816cbfd74aa8297b9c9cdaae89e2f0d2ced6041e952dfcd114e01b4c82e9c6d"
+  },
+  "issueRecoveryAction.breakGlass.ancestryVerdict": {
+    "en": "Ancestry verdict",
+    "zh-CN": "祖先关系判定",
+    "reviewedEnglishHash": "bee6031be0d44aad2521a5704027465226a4489a194704fed0450c2c23d34761"
+  },
+  "issueRecoveryAction.breakGlass.confirm": {
+    "en": "Reconcile anyway (break-glass)",
+    "zh-CN": "仍要对齐（紧急绕过）",
+    "reviewedEnglishHash": "b991363557ffaac93effeb8079128f35b9c93af0cfff5201372805ca21a8a852"
+  },
+  "issueRecoveryAction.breakGlass.description": {
+    "en": "This overrides Paperclip's safety check and points the recorded workspace at the live branch without an ancestry proof. Confirm the divergence below and record why before continuing.",
+    "zh-CN": "此操作会绕过 Paperclip 的安全检查，在没有祖先关系证明的情况下将记录的工作区指向实时分支。继续前请确认下方差异并记录原因。",
+    "reviewedEnglishHash": "7d8341ecdaf26b06fd9afcd68f0ff612598add42f6e054e49e74d5b72d3914a3"
+  },
+  "issueRecoveryAction.breakGlass.live": {
+    "en": "Live · checked out",
+    "zh-CN": "实时 · 已检出",
+    "reviewedEnglishHash": "842e7ba2e546580ed0edb7c0cda49a12a07a155c566ff66b1b009d5c5c6854d4"
+  },
+  "issueRecoveryAction.breakGlass.pending": {
+    "en": "Reconciling…",
+    "zh-CN": "正在对齐…",
+    "reviewedEnglishHash": "8adbed64b583bc9b4379ffae0f962dd40fd8fc517bb69aa6397616fec3b6d471"
+  },
+  "issueRecoveryAction.breakGlass.reason": {
+    "en": "Reason",
+    "zh-CN": "原因",
+    "reviewedEnglishHash": "f81ab834de5f84918dc040b884267c2b61cb1a52d46442de10e97f35a94d0500"
+  },
+  "issueRecoveryAction.breakGlass.reasonPlaceholder": {
+    "en": "e.g. Verified the live branch carries only the intended follow-up commits; safe to adopt.",
+    "zh-CN": "例如：已确认实时分支仅包含预期的后续提交，可以安全采用。",
+    "reviewedEnglishHash": "df2b78ba2b3d6a498b097caa2969ae3c59ade420a31d0d859e22425441cbcf97"
+  },
+  "issueRecoveryAction.breakGlass.reasonRequired": {
+    "en": "(required — recorded in the audit log)",
+    "zh-CN": "（必填，将记录到审计日志）",
+    "reviewedEnglishHash": "b0e8acff4c3668af67842833c421e6cf7c727bc6647658e958a5018cc4cbec4b"
+  },
+  "issueRecoveryAction.breakGlass.recorded": {
+    "en": "Recorded · expected",
+    "zh-CN": "记录值 · 预期",
+    "reviewedEnglishHash": "1869f1a4dfff278f47f21df574370ad580b2fa76b5d3569147957e523674c9de"
+  },
+  "issueRecoveryAction.breakGlass.title": {
+    "en": "Break-glass reconciliation",
+    "zh-CN": "紧急绕过对齐",
+    "reviewedEnglishHash": "735123667236007ab1585edd9f9e0009ef67e2204072c8c978cf32216bfc6bf0"
+  },
+  "issueRecoveryAction.breakGlass.trigger": {
+    "en": "I've verified this — reconcile anyway",
+    "zh-CN": "我已核实，仍要对齐",
+    "reviewedEnglishHash": "d3c1046737b8d5b4298087e7446dcf2ac6f5746ac38e62ed9f6e2f0e9ba61f68"
+  },
+  "issueRecoveryAction.claimed.activeRun": {
+    "en": "(active run)",
+    "zh-CN": "（活跃运行）",
+    "reviewedEnglishHash": "66a9e1b6ac3b6f353c348fc0b9c11e30cef36f1510c5e51b0683369b0b166c61"
+  },
+  "issueRecoveryAction.claimed.anotherTask": {
+    "en": "another task",
+    "zh-CN": "另一个任务",
+    "reviewedEnglishHash": "ffc544fd84f30cb5bf3a8b2ea9659d230375ffb5314cc8c9a7e0eb65efe00425"
+  },
+  "issueRecoveryAction.claimed.held": {
+    "en": "(claim held)",
+    "zh-CN": "（占用仍有效）",
+    "reviewedEnglishHash": "20b3f8653513f650b62b3df3620245980e95c72b42a3fc17db32193e03daef6b"
+  },
+  "issueRecoveryAction.claimed.issue": {
+    "en": "issue {{id}}",
+    "zh-CN": "任务 {{id}}",
+    "reviewedEnglishHash": "0015efb086dd869f94d453eb6e8e4a23f5ff2921ab2570d5e0e78b4f88a2b0b8"
+  },
+  "issueRecoveryAction.claimedBy": {
+    "en": "Worktree claimed by",
+    "zh-CN": "Worktree 已被占用：",
+    "reviewedEnglishHash": "94f9b2563b3622572a64925b29ff47259ea43e6af5ad2aa9f7f0ba7e1a474af5"
+  },
+  "issueRecoveryAction.claimedHint": {
+    "en": "— the lossless repair can't run while another workspace holds the live branch.",
+    "zh-CN": "- 另一个工作区持有实时分支时，无法执行无损修复。",
+    "reviewedEnglishHash": "8469c8c1380fcb75e0f6186475a2bcec0d2c6474ca6e9fdc984f2bcc2ae995ca"
+  },
+  "issueRecoveryAction.confirmDivergence": {
+    "en": ". Confirm the divergence below and record why before continuing.",
+    "zh-CN": "。继续前请确认下方分歧并记录原因。",
+    "reviewedEnglishHash": "4e812217cc664bcc7194b9978bbd78b7bdbc55cf13978fe8fcf28077812b42ad"
+  },
+  "issueRecoveryAction.current.headline.active_run_watchdog": {
+    "en": "The active run has been silent. Recovery is observing without interrupting it.",
+    "zh-CN": "活跃运行长时间无输出。恢复机制正在观察，不会打断它。",
+    "reviewedEnglishHash": "ffa7d05b4a282c19bfdb0af65e737210b6a93cc5e1860141c43cfd4b63ee597b"
+  },
+  "issueRecoveryAction.current.headline.configuration_validation": {
+    "en": "Paperclip stopped before dispatching this run because required secret/env bindings are missing.",
+    "zh-CN": "因缺少必需的密钥或环境变量绑定，Paperclip 在派发本次运行前已停止。",
+    "reviewedEnglishHash": "e2ceb951da27dadab09f8ef2c1ac4553f1f8b56f459e8a0f48ea3cf2d55f8027"
+  },
+  "issueRecoveryAction.current.headline.deliberate_wait_without_target": {
+    "en": "This task's last run stopped to wait, but there is no reviewer, blocker, monitor, or approval to wait for. Paperclip is repairing the next step; the task stays with its owner.",
+    "zh-CN": "此任务上次运行因等待而停止，但没有评审者、阻塞项、监控或审批在等待。Paperclip 正在修复下一步；任务仍归原负责人。",
+    "reviewedEnglishHash": "0af056573852ee6bed42ab09b4a8905c3bca1a147fbdd5382edc08bb5cd817fa"
+  },
+  "issueRecoveryAction.current.headline.issue_graph_liveness": {
+    "en": "Paperclip could not find a clear next step for this open task. Choose whether to continue work, send it for review, mark it done, or record what is blocking it.",
+    "zh-CN": "Paperclip 无法为这个开放任务找到明确的下一步。请选择继续工作、送审、标记完成，或记录阻塞原因。",
+    "reviewedEnglishHash": "ae6d3dbd99070b51521ded6c78a128060e67a35c08ea9ca6b61a1535b2722f06"
+  },
+  "issueRecoveryAction.current.headline.missing_disposition": {
+    "en": "This task's run finished, but no next step was chosen. Choose what happens next — try the task again, mark it done, or send it for review.",
+    "zh-CN": "此任务的运行已结束，但尚未选择下一步。请选择后续操作：重试、标记完成或送审。",
+    "reviewedEnglishHash": "5c7640ca9c7c1da29978ec0c455a889e9117df1620c0943a851e1323d9d83f23"
+  },
+  "issueRecoveryAction.current.headline.stranded_assigned_issue": {
+    "en": "Paperclip retried this task's last run, but there is still no queued run, reviewer, blocker, or other next owner. To get it moving, choose what happens next — try the task again, mark it done, or send it for review.",
+    "zh-CN": "Paperclip 已重试此任务的上次运行，但仍没有排队运行、评审者、阻塞项或其他后续负责人。请选择下一步以继续推进：重试、标记完成或送审。",
+    "reviewedEnglishHash": "a42569cdf0df25a9c8a9e24c7a6394fe45fe39dd513616257e0ecb18b115f9c5"
+  },
+  "issueRecoveryAction.current.headline.workspace_validation": {
+    "en": "Paperclip stopped this run because the task's git workspace could not be validated.",
+    "zh-CN": "因无法验证此任务的 Git 工作区，Paperclip 已停止本次运行。",
+    "reviewedEnglishHash": "d3dc994e058b38dee808d7bbdc7de5983a385333b323236ad1d91f6a60029b09"
+  },
+  "issueRecoveryAction.current.kind.active_run_watchdog": {
+    "en": "Active Watchdog",
+    "zh-CN": "活跃运行看护",
+    "reviewedEnglishHash": "c4490d74955087a92cdca1b17f7c2cc470abefdd97446fa6fae1ba58f32af9dd"
+  },
+  "issueRecoveryAction.current.kind.configuration_validation": {
+    "en": "Configuration Validation",
+    "zh-CN": "配置验证",
+    "reviewedEnglishHash": "2b595e2302616da3e946b77bfee73afc342912fc8f74132f19d1c6597f1b27c3"
+  },
+  "issueRecoveryAction.current.kind.deliberate_wait_without_target": {
+    "en": "Wait Without A Target",
+    "zh-CN": "无明确目标的等待",
+    "reviewedEnglishHash": "e42d925efb9014f72a04e652f3d0a6f84d3426b863a58af227583b174762bdc5"
+  },
+  "issueRecoveryAction.current.kind.issue_graph_liveness": {
+    "en": "Task Needs Next Step",
+    "zh-CN": "任务需要下一步",
+    "reviewedEnglishHash": "e8bed105c44ed77b3c5198dfa6c9e38dcddaac96d7adb7dc6920f592196953e6"
+  },
+  "issueRecoveryAction.current.kind.missing_disposition": {
+    "en": "Missing Disposition",
+    "zh-CN": "缺少处置状态",
+    "reviewedEnglishHash": "5a6469841c8e814f78c49a4ebb26ad21abd789675548b46ab46cb344f58ce202"
+  },
+  "issueRecoveryAction.current.kind.stranded_assigned_issue": {
+    "en": "Stranded Task",
+    "zh-CN": "滞留任务",
+    "reviewedEnglishHash": "cd5de606dbe9f1ee7d327c5a60334535389f36a61c648dde9c90966c4520e184"
+  },
+  "issueRecoveryAction.current.kind.workspace_validation": {
+    "en": "Workspace Validation",
+    "zh-CN": "工作区验证",
+    "reviewedEnglishHash": "83db4235dc2dd161002e6d6c9d3cb5f484e42bdf5e216e2a188b42e2a1f475ef"
+  },
+  "issueRecoveryAction.current.owner.returnsTo": {
+    "en": "→ Returns to:",
+    "zh-CN": "→ 返回给：",
+    "reviewedEnglishHash": "1e820759b882e4a12abfb57fda9c1c98dde83653dab2a693e1f81cdf98e994c8"
+  },
+  "issueRecoveryAction.current.resolve.done.label": {
+    "en": "Mark task done",
+    "zh-CN": "标记任务已完成",
+    "reviewedEnglishHash": "b33502efc8bfa4f8788182b033588e765aa0ae1bbab902a0df3388c51bb8c627"
+  },
+  "issueRecoveryAction.detached": {
+    "en": "detached",
+    "zh-CN": "分离状态",
+    "reviewedEnglishHash": "88e34e4cdbb5c6066cb1b0d0abe74714bd72f86259433bc8287614e4ae052605"
+  },
+  "issueRecoveryAction.detachedUnknown": {
+    "en": "detached / unknown",
+    "zh-CN": "detached / 未知",
+    "reviewedEnglishHash": "05fae70b0dcf83790eeb9548ed2ecfa421f865ddbbe6aac801dbd0d7d86b7ce0"
+  },
+  "issueRecoveryAction.divergenceDiagnosis": {
+    "en": "Divergence diagnosis",
+    "zh-CN": "分歧诊断",
+    "reviewedEnglishHash": "02f094ee4caa2c1c6dcf84f98c3166cbf2e73506e36f2b43ac061b170d216c6d"
+  },
+  "issueRecoveryAction.expectedRecorded": {
+    "en": "Expected · recorded",
+    "zh-CN": "预期 · 已记录",
+    "reviewedEnglishHash": "42e4fef0e4bb78e3530ddc0a4ac1afe075a6d4743d537675cf0ab4c59ee60de9"
+  },
+  "issueRecoveryAction.footer.decisionRequired": {
+    "en": "The card stays open until an explicit decision is recorded.",
+    "zh-CN": "记录明确决策前，此卡片会保持打开。",
+    "reviewedEnglishHash": "84526fcecca2c263ccd715e4f1a31ac67bbe69674c1862d4cc0ab1dec5762e0d"
+  },
+  "issueRecoveryAction.footer.observeOnly": {
+    "en": "Recovery is observing without interrupting the live run.",
+    "zh-CN": "恢复机制正在观察，不会打断实时运行。",
+    "reviewedEnglishHash": "b2a50809e555e5c0316790e8905f7ac67744e4465f0ccbff88ab6a3935f9d738"
+  },
+  "issueRecoveryAction.headline.active_run_watchdog": {
+    "en": "The active run has been silent. Recovery is observing without interrupting it.",
+    "zh-CN": "活跃运行已长时间无输出。恢复机制正在观察，暂不打断它。",
+    "reviewedEnglishHash": "ffa7d05b4a282c19bfdb0af65e737210b6a93cc5e1860141c43cfd4b63ee597b"
+  },
+  "issueRecoveryAction.headline.configuration_validation": {
+    "en": "Paperclip stopped before dispatching this run because required secret/env bindings are missing.",
+    "zh-CN": "因缺少必需的密钥/环境变量绑定，Paperclip 在派发运行前已停止。",
+    "reviewedEnglishHash": "e2ceb951da27dadab09f8ef2c1ac4553f1f8b56f459e8a0f48ea3cf2d55f8027"
+  },
+  "issueRecoveryAction.headline.issue_graph_liveness": {
+    "en": "Paperclip detected this task lost a live action path. A recovery owner needs to act.",
+    "zh-CN": "Paperclip 检测到此任务失去了实时操作路径，需要恢复负责人处理。",
+    "reviewedEnglishHash": "5621354eee5b09c81b8c2991932a8dcf254e6c985d313f360f8f781d4269f4c7"
+  },
+  "issueRecoveryAction.headline.missing_disposition": {
+    "en": "This task's run finished, but no next step was chosen.",
+    "zh-CN": "此任务的运行已结束，但尚未选择下一步。",
+    "reviewedEnglishHash": "a6b655b083705d7c30835e1f2ca7ef4cf556ee7758d7e0c4070db7200a6514b6"
+  },
+  "issueRecoveryAction.headline.resolved": {
+    "en": "Recovery resolved as {{outcome}}.",
+    "zh-CN": "恢复已处理为{{outcome}}。",
+    "reviewedEnglishHash": "1fd40d02ce89ff4af0879fe8ec16c7613f51e200e385db1f89a0bc0a0b9ed33a"
+  },
+  "issueRecoveryAction.headline.stranded_assigned_issue": {
+    "en": "Paperclip retried this task's last run and it still has no live execution path.",
+    "zh-CN": "Paperclip 已重试此任务的上一次运行，但它仍没有可继续执行的实时路径。",
+    "reviewedEnglishHash": "2dffbb5ec0fb083a70bc28fcc86528d84974631a32c3bce76cc0b0fdbb700157"
+  },
+  "issueRecoveryAction.headline.workspace_validation": {
+    "en": "Paperclip stopped this run because the task's git workspace could not be validated.",
+    "zh-CN": "因无法验证此任务的 git 工作区，Paperclip 已停止本次运行。",
+    "reviewedEnglishHash": "d3dc994e058b38dee808d7bbdc7de5983a385333b323236ad1d91f6a60029b09"
+  },
+  "issueRecoveryAction.kind.active_run_watchdog": {
+    "en": "Active Watchdog",
+    "zh-CN": "活跃运行看护",
+    "reviewedEnglishHash": "c4490d74955087a92cdca1b17f7c2cc470abefdd97446fa6fae1ba58f32af9dd"
+  },
+  "issueRecoveryAction.kind.configuration_validation": {
+    "en": "Configuration Validation",
+    "zh-CN": "配置校验",
+    "reviewedEnglishHash": "2b595e2302616da3e946b77bfee73afc342912fc8f74132f19d1c6597f1b27c3"
+  },
+  "issueRecoveryAction.kind.issue_graph_liveness": {
+    "en": "Graph Liveness",
+    "zh-CN": "任务图活跃性",
+    "reviewedEnglishHash": "d6bf82b69f3d2e2fe031a38c0e87d3dc42cd3a98afbdb4fd80542995bbd7cc6d"
+  },
+  "issueRecoveryAction.kind.missing_disposition": {
+    "en": "Missing Disposition",
+    "zh-CN": "缺少处置状态",
+    "reviewedEnglishHash": "5a6469841c8e814f78c49a4ebb26ad21abd789675548b46ab46cb344f58ce202"
+  },
+  "issueRecoveryAction.kind.stranded_assigned_issue": {
+    "en": "Stranded Task",
+    "zh-CN": "滞留任务",
+    "reviewedEnglishHash": "cd5de606dbe9f1ee7d327c5a60334535389f36a61c648dde9c90966c4520e184"
+  },
+  "issueRecoveryAction.kind.workspace_validation": {
+    "en": "Workspace Validation",
+    "zh-CN": "工作区校验",
+    "reviewedEnglishHash": "83db4235dc2dd161002e6d6c9d3cb5f484e42bdf5e216e2a188b42e2a1f475ef"
+  },
+  "issueRecoveryAction.lineage.board": {
+    "en": "Automatic recovery is exhausted, so the board must choose the next step. The task itself still belongs to its original owner.",
+    "zh-CN": "自动恢复已用尽，因此看板必须选择下一步；任务本身仍归原负责人。",
+    "reviewedEnglishHash": "efd50a35aaaebeb3ed6560fff097ea3f2c7c49f881cd217db3a2634ec04e0b1a"
+  },
+  "issueRecoveryAction.lineage.recoveryOwner": {
+    "en": "The original owner could not record a next step within its retry budget. A recovery owner is now repairing the path only — the task itself still belongs to its original owner.",
+    "zh-CN": "原负责人未能在重试预算内记录下一步。恢复负责人正在修复执行路径；任务本身仍归原负责人。",
+    "reviewedEnglishHash": "87adaae79b64abcd54390b20ce35f2ec10d222d171dfde044ad9dff0c28fc92c"
+  },
+  "issueRecoveryAction.lineage.retryExpired": {
+    "en": "This task's automatic retry came due and did not run, so nothing is moving it forward right now. Someone must retry it or record the next step. The task stays with its original owner.",
+    "zh-CN": "此任务的自动重试已到期但未执行，目前没有任何操作在推进它。请重试或记录下一步；任务仍归原负责人。",
+    "reviewedEnglishHash": "9e684f73a557d939ba6b4f1946ffa6714e524d818c72862fdc911d7821b5dd88"
+  },
+  "issueRecoveryAction.lineage.sourceOwnerExhausted": {
+    "en": "This task's last run stopped to wait, but nothing was waiting for it. The original owner has used every automatic repair attempt, so the next step needs a decision. The task stays with its owner.",
+    "zh-CN": "此任务上次运行因等待而停止，但实际上没有等待对象。原负责人已用尽自动修复次数，下一步需要明确决策；任务仍归原负责人。",
+    "reviewedEnglishHash": "03ede396460062da4d894a00e8121a26239615bd78e8ae9d15e3404e34abe7e6"
+  },
+  "issueRecoveryAction.lineage.sourceOwnerRetrying": {
+    "en": "This task's last run stopped to wait, but nothing was waiting for it. Paperclip is retrying the original owner to record a real next step. The task stays with its owner, and no action is needed yet.",
+    "zh-CN": "此任务上次运行因等待而停止，但实际上没有等待对象。Paperclip 正在重试原负责人以记录有效的下一步；任务仍归原负责人，暂无需操作。",
+    "reviewedEnglishHash": "66f300a3a4fb8151c9a29b32f5bd16c7c0f2e6099bda3ed0a8ff6a71fa4a5d59"
+  },
+  "issueRecoveryAction.metadata.correctiveRun": {
+    "en": "Corrective run",
+    "zh-CN": "修正运行",
+    "reviewedEnglishHash": "87e1de42b233e044c417a08096186d096710b168ebb3ad6b8c4f80039b72163f"
+  },
+  "issueRecoveryAction.metadata.evidence": {
+    "en": "Evidence",
+    "zh-CN": "证据",
+    "reviewedEnglishHash": "03867aea70acaf4c5dce37a76cf5a04dab1716d6ff70bf03761c439daa8be984"
+  },
+  "issueRecoveryAction.metadata.nextAction": {
+    "en": "Next action",
+    "zh-CN": "下一步",
+    "reviewedEnglishHash": "365987d015f79bfb9698ff14a8b19af6d94c689c6f5b6a5a17c4adf187fbe321"
+  },
+  "issueRecoveryAction.metadata.owner": {
+    "en": "Owner",
+    "zh-CN": "负责人",
+    "reviewedEnglishHash": "4b1b8aa3608a26da451ae0630d75b60ab1bc2dd229c41a80838fc7993e835c46"
+  },
+  "issueRecoveryAction.metadata.ownerRetries": {
+    "en": "Owner retries",
+    "zh-CN": "负责人重试",
+    "reviewedEnglishHash": "1db44f58edf4cf429040802a3161f666a5b0816ea8f4bb75c6f50273b4da1fc7"
+  },
+  "issueRecoveryAction.metadata.recoveryOwner": {
+    "en": "Recovery owner",
+    "zh-CN": "恢复负责人",
+    "reviewedEnglishHash": "27c6c04ca0373d41e3f43b433db4d2034f49994ca0a6c1aeeda4960fc362d7ea"
+  },
+  "issueRecoveryAction.metadata.resolution": {
+    "en": "Resolution",
+    "zh-CN": "处理结果",
+    "reviewedEnglishHash": "d4055fafa3794fa88b1e89e70c167d5a9575067a1442a6d94e9520d65a575378"
+  },
+  "issueRecoveryAction.metadata.retryProgress": {
+    "en": "Retry progress",
+    "zh-CN": "重试进度",
+    "reviewedEnglishHash": "edb85d9febd3cc16a5a30f4358248f434266d14293a32a336869d1e389b626d0"
+  },
+  "issueRecoveryAction.metadata.sourceRun": {
+    "en": "Source run",
+    "zh-CN": "源运行",
+    "reviewedEnglishHash": "bb84312ee41d3ebcfebcbd78c54e2a25927fc7a6c5f74c8c67fd218c438e86e7"
+  },
+  "issueRecoveryAction.metadata.taskOwner": {
+    "en": "Task owner",
+    "zh-CN": "任务负责人",
+    "reviewedEnglishHash": "e600ccf8d8990dcf7fc4fdf867a2ccd5779162af8b2f1f0f4bdb8ae9074d637e"
+  },
+  "issueRecoveryAction.metadata.wake": {
+    "en": "Wake",
+    "zh-CN": "唤醒",
+    "reviewedEnglishHash": "33a7e908344d7d3901a5fcfc60a6d528bf077050c78a1432da3f6422070aa01b"
+  },
+  "issueRecoveryAction.nextAction.chooseDisposition": {
+    "en": "Choose and record a valid issue disposition.",
+    "zh-CN": "选择并记录有效的任务处置状态。",
+    "reviewedEnglishHash": "f58c2d1f9641888e81f50c986f82f63de0fa2681aac71de3fd67a92104b31909"
+  },
+  "issueRecoveryAction.nextAction.chooseDispositionWithoutTranscript": {
+    "en": "Choose and record a valid issue disposition without copying transcript content.",
+    "zh-CN": "选择并记录有效的任务处置状态，不要复制转录内容。",
+    "reviewedEnglishHash": "b30bd7c9ad52681c9b8b4c8fe1fb56eebb80b2de5c66032bafb947bcee2316e6"
+  },
+  "issueRecoveryAction.nextAction.restoreLivePath": {
+    "en": "Restore a live execution path, fix the runtime/adapter failure, or record an intentional manual resolution.",
+    "zh-CN": "恢复实时执行路径、修复运行时/适配器故障，或记录一次明确的手动处理结果。",
+    "reviewedEnglishHash": "182953df0aa594e162fc0900deac91c9f6841f3c8ea53d29df2ac35b82cf8641"
+  },
+  "issueRecoveryAction.nextAction.restoreLivePathShort": {
+    "en": "Restore a live execution path.",
+    "zh-CN": "恢复实时执行路径。",
+    "reviewedEnglishHash": "f6a87cd9734eb5a4a3409f989dc838daf8f2e0358b96aa65bed6ac710b45b69e"
+  },
+  "issueRecoveryAction.nextAction.reviewStaleActiveRun": {
+    "en": "Review stale active run",
+    "zh-CN": "查看停滞的活跃运行",
+    "reviewedEnglishHash": "cfb1ecc6c7e8d6d7f73d0505948f70c8faa58a9eec23fd9e032d959315b02ffe"
+  },
+  "issueRecoveryAction.noAncestryProof": {
+    "en": "without an ancestry proof",
+    "zh-CN": "且没有祖先关系证明",
+    "reviewedEnglishHash": "d4c337c4d9a093a482cb9ecba46cc2f9de596c7c61480f1fd6ff44403522236d"
+  },
+  "issueRecoveryAction.outcome.blocked": {
+    "en": "blocked",
+    "zh-CN": "已阻塞",
+    "reviewedEnglishHash": "6973dddd3ef9cb6a2932702f31777faad9c9bf3124d147a84f31aadb6d139546"
+  },
+  "issueRecoveryAction.outcome.cancelled": {
+    "en": "cancelled",
+    "zh-CN": "已取消",
+    "reviewedEnglishHash": "8b47045eb7b8ca42aa967f33ee1d014ba89f8d1ac207426b482d34b5c0d90935"
+  },
+  "issueRecoveryAction.outcome.delegated": {
+    "en": "delegated to follow-up",
+    "zh-CN": "已委派跟进",
+    "reviewedEnglishHash": "4337e2bb3af9146be930a23c312027813bbe6f8bcf54ce0a4a89c411b8091245"
+  },
+  "issueRecoveryAction.outcome.escalated": {
+    "en": "escalated",
+    "zh-CN": "已升级",
+    "reviewedEnglishHash": "ad9ce018a0f651a0819485fcabf03d8b110fb604195ea30f8af962b0154bfbc2"
+  },
+  "issueRecoveryAction.outcome.false_positive": {
+    "en": "false positive",
+    "zh-CN": "误报",
+    "reviewedEnglishHash": "594d50685604cf6cc55c4560bc72029111a7855f3cffac4a8d292d72195361da"
+  },
+  "issueRecoveryAction.outcome.handedBack": {
+    "en": "handed back to original owner",
+    "zh-CN": "已交回原负责人",
+    "reviewedEnglishHash": "78f65780749b66c9422c30afa0222a31159715550c7283b525230d7ddd2aa51f"
+  },
+  "issueRecoveryAction.outcome.ownerCompleted": {
+    "en": "completed by recovery owner",
+    "zh-CN": "已由恢复负责人完成",
+    "reviewedEnglishHash": "2eb97acdb4c2cbdf9f844d58e19f2fa34afcf0dc868927d322b576708a5377b9"
+  },
+  "issueRecoveryAction.outcome.restored": {
+    "en": "restored",
+    "zh-CN": "已恢复",
+    "reviewedEnglishHash": "eb00bf0aba491c620ddf47bf68068be4cc52c39bf3b8b554e2c51ff74e5e915e"
+  },
+  "issueRecoveryAction.overrideConfirm": {
+    "en": "I've verified this — reconcile anyway",
+    "zh-CN": "我已验证 - 仍要协调",
+    "reviewedEnglishHash": "d3c1046737b8d5b4298087e7446dcf2ac6f5746ac38e62ed9f6e2f0e9ba61f68"
+  },
+  "issueRecoveryAction.overridePrefix": {
+    "en": "This overrides Paperclip's safety check and points the recorded workspace at the live branch",
+    "zh-CN": "这将绕过 Paperclip 的安全检查，并把已记录工作区指向实时分支",
+    "reviewedEnglishHash": "a5cafac05c3107fe48a710629895e8a6f9ff919624e0ddde5f49f98292514549"
+  },
+  "issueRecoveryAction.owner.board": {
+    "en": "Board",
+    "zh-CN": "看板",
+    "reviewedEnglishHash": "4816cbfd74aa8297b9c9cdaae89e2f0d2ced6041e952dfcd114e01b4c82e9c6d"
+  },
+  "issueRecoveryAction.owner.decidesNextStep": {
+    "en": "decides the next step only",
+    "zh-CN": "仅决定下一步",
+    "reviewedEnglishHash": "425ea6663c198b96345e3ac679c1618a7fa5ff3943f16e276ec767e57225835e"
+  },
+  "issueRecoveryAction.owner.keepsTask": {
+    "en": "keeps this task",
+    "zh-CN": "持有此任务",
+    "reviewedEnglishHash": "6fffd5953b752238c174e9c2caae14878ec16b4ae0833768c3909a0bcf7e89e4"
+  },
+  "issueRecoveryAction.owner.originalRetrying": {
+    "en": "Original owner — retrying itself",
+    "zh-CN": "原负责人 — 正在自行重试",
+    "reviewedEnglishHash": "21196882d8338935e77d9c5c7adabc5bf129223988b762a5073e71d64739d1e1"
+  },
+  "issueRecoveryAction.owner.recovery": {
+    "en": "Recovery:",
+    "zh-CN": "恢复：",
+    "reviewedEnglishHash": "a812f4b201b62c1204df171b8da2f85cd7c91efdc6d67dee63cac97952f2afbc"
+  },
+  "issueRecoveryAction.owner.repairsNextStep": {
+    "en": "repairs the next step only",
+    "zh-CN": "仅修复下一步",
+    "reviewedEnglishHash": "907769bcccc54a915e8aaeb590374cc22a0218c9ea2e6573090fe11cea28466f"
+  },
+  "issueRecoveryAction.owner.returnsTo": {
+    "en": "Returns to:",
+    "zh-CN": "返回给：",
+    "reviewedEnglishHash": "fdabbe3389af1f04a0a4b443880ffaa5c03a2af8c4b25e709026a5361f5ba7a7"
+  },
+  "issueRecoveryAction.owner.system": {
+    "en": "System",
+    "zh-CN": "系统",
+    "reviewedEnglishHash": "6725e7bbcd28f3a8a586fa34bf191fd72dde8b61756932cd3237c17a6f196f1a"
+  },
+  "issueRecoveryAction.owner.unassigned": {
+    "en": "unassigned - pick one to wake them",
+    "zh-CN": "未分配，请选择负责人并唤醒",
+    "reviewedEnglishHash": "749f3573ffbb6ff65b73c464aad0df620f19e90ae9ce0aa76fb50ef0f31da7d9"
+  },
+  "issueRecoveryAction.owner.unknownAgent": {
+    "en": "agent {{id}}",
+    "zh-CN": "智能体 {{id}}",
+    "reviewedEnglishHash": "bd9a80c246e4d3bb42457e770ef749043c0e7f3f0561a8888fb49b2277f84af4"
+  },
+  "issueRecoveryAction.owner.user": {
+    "en": "user {{id}}",
+    "zh-CN": "用户 {{id}}",
+    "reviewedEnglishHash": "9282b205fc24612841e86e58aa62a4e094a31c27947c18ba07658561a5299731"
+  },
+  "issueRecoveryAction.ownerRetries": {
+    "en": "The original owner used {{attempt}} of {{maxAttempts}} automatic attempts.",
+    "zh-CN": "原负责人已使用 {{attempt}} / {{maxAttempts}} 次自动尝试。",
+    "reviewedEnglishHash": "c8fc3051bd2a566cd65c4db43b762151db6c82a8fa8f045f2066e2257035acf4"
+  },
+  "issueRecoveryAction.reconcileForward": {
+    "en": "Reconcile forward & continue",
+    "zh-CN": "向前对齐并继续",
+    "reviewedEnglishHash": "b2b80494794f9ce41294db04e62b76e450bee7bfd43d41304ae2e702489e976b"
+  },
+  "issueRecoveryAction.reissue.ancestry": {
+    "en": "Ancestry",
+    "zh-CN": "祖先关系",
+    "reviewedEnglishHash": "65a0468287c169ce0b450cc01121877fb73c10bf0ef677eb4c8cfaf758f2498c"
+  },
+  "issueRecoveryAction.reissue.baseRef": {
+    "en": "Base ref",
+    "zh-CN": "基准引用",
+    "reviewedEnglishHash": "9c6c10f9d4c60b5349abb6d5f9e09faf1dcb0be57a2aac85c5363ce8b350d35e"
+  },
+  "issueRecoveryAction.reissue.confirm": {
+    "en": "Create isolated re-issue",
+    "zh-CN": "创建隔离的重新派发任务",
+    "reviewedEnglishHash": "3d7a1128dda702f34f40d356cb887147de5429a026c1dd55a1469dcf7392b056"
+  },
+  "issueRecoveryAction.reissue.description": {
+    "en": "Creates a fresh copy of this task on an isolated git worktree based on the live branch. Your current workspace and its commits are left untouched.",
+    "zh-CN": "基于实时分支，在隔离的 Git 工作树中创建该任务的新副本。当前工作区及其提交不会被修改。",
+    "reviewedEnglishHash": "251d91cd12acf0b273ba5360a6bd258adf72980cfb2d028c22a47b5aecbdbd55"
+  },
+  "issueRecoveryAction.reissue.pending": {
+    "en": "Creating…",
+    "zh-CN": "正在创建…",
+    "reviewedEnglishHash": "c79ed9492e3c17199ab50694e07f5525cc6d598a02531528b0eb5ed933cd5466"
+  },
+  "issueRecoveryAction.reissue.recommended": {
+    "en": "Recommended",
+    "zh-CN": "推荐",
+    "reviewedEnglishHash": "d70604e8430461372849bbd123d85771e11423870a507e8fa4650a7e9a5a50ef"
+  },
+  "issueRecoveryAction.reissue.recorded": {
+    "en": "Recorded",
+    "zh-CN": "记录值",
+    "reviewedEnglishHash": "c7175fa7a0db0d3ca4b26d27675d2e4e0776634ce5ffa35c88daa749b57d6846"
+  },
+  "issueRecoveryAction.reissue.title": {
+    "en": "Re-issue on isolated workspace",
+    "zh-CN": "在隔离工作区中重新派发",
+    "reviewedEnglishHash": "21625ad566f26063cb1a762ea50dd9ff6ac2ac05a7baffc348b6d3909186f73e"
+  },
+  "issueRecoveryAction.reissue.trigger": {
+    "en": "Re-issue on isolated workspace",
+    "zh-CN": "在隔离工作区中重新派发",
+    "reviewedEnglishHash": "21625ad566f26063cb1a762ea50dd9ff6ac2ac05a7baffc348b6d3909186f73e"
+  },
+  "issueRecoveryAction.repair.change": {
+    "en": "change",
+    "zh-CN": "更改",
+    "reviewedEnglishHash": "12ea12eace7d655f471ce55e34f89b1b77a3d9d05a445ca82877dd2235beaa51"
+  },
+  "issueRecoveryAction.repair.changes": {
+    "en": "changes",
+    "zh-CN": "更改",
+    "reviewedEnglishHash": "d0b4ba2311b3e84977dc4bb320fe72cd85426f5cf14b487a4c5352ae3ad8cb37"
+  },
+  "issueRecoveryAction.repair.confirm": {
+    "en": "Quarantine changes & restore branch",
+    "zh-CN": "隔离改动并恢复分支",
+    "reviewedEnglishHash": "e648b8fc3facc4e9306c2bca115640b986ab7c25d8be9337b5dc4b5b1ca6cea4"
+  },
+  "issueRecoveryAction.repair.contended": {
+    "en": "Held by {{claimant}} — re-issue on an isolated workspace instead.",
+    "zh-CN": "正由 {{claimant}} 占用，请改为在隔离工作区中重新派发。",
+    "reviewedEnglishHash": "900a478fc594b7eed445e0f81b2a1379c47d679a59af89428a133f6f34c9208a"
+  },
+  "issueRecoveryAction.repair.description": {
+    "en": "This is lossless — no reason required. Your uncommitted changes are committed onto a fresh rescue branch, then the recorded branch is restored so the task can resume. The live branch is left exactly as it is.",
+    "zh-CN": "此操作不会丢失数据，也无需填写原因。未提交改动会提交到新的救援分支，然后恢复记录的分支以便任务继续；实时分支会保持原样。",
+    "reviewedEnglishHash": "d38bf6fcd1f4f515ca0a4708b5dfd46c1efdf2365892209f5f30b9c93e728a36"
+  },
+  "issueRecoveryAction.repair.dirtyChanges": {
+    "en": "Dirty changes",
+    "zh-CN": "未清理的改动",
+    "reviewedEnglishHash": "29f59cc3022760ec00dc2a4d6759feefd441c49c109f77ac12ed22867842b0d1"
+  },
+  "issueRecoveryAction.repair.dirtyCount": {
+    "en": "{{count}} uncommitted {{changeLabel}}",
+    "zh-CN": "{{count}} 个未提交{{changeLabel}}",
+    "reviewedEnglishHash": "2dd4b689d5465ca2177b885d2368f4b8c9143af4802feb860e90be0ecc0d1eeb"
+  },
+  "issueRecoveryAction.repair.leftUntouched": {
+    "en": "(left untouched)",
+    "zh-CN": "（保持不变）",
+    "reviewedEnglishHash": "2500b7aef382c84f6b8cc22009ecae8a8d551c7f391bf215afe64771c406bd45"
+  },
+  "issueRecoveryAction.repair.liveBranch": {
+    "en": "Live branch",
+    "zh-CN": "实时分支",
+    "reviewedEnglishHash": "b0d6b594fab4fa520bb3cf112aab2d5c4bf5a9be6cb93243f5939c141719ddc8"
+  },
+  "issueRecoveryAction.repair.pending": {
+    "en": "Repairing…",
+    "zh-CN": "正在修复…",
+    "reviewedEnglishHash": "fb4c616eb490770481a5e2b1b6259a5e83e9592bff9d03426cd9fdfd9fcba286"
+  },
+  "issueRecoveryAction.repair.recordedBranch": {
+    "en": "recorded branch",
+    "zh-CN": "记录的分支",
+    "reviewedEnglishHash": "9a6e1632d7df0de7a9b735dfc7f8f0663284d31787ef2582d7b492a8007c0473"
+  },
+  "issueRecoveryAction.repair.rescueBranch": {
+    "en": "Rescue branch",
+    "zh-CN": "救援分支",
+    "reviewedEnglishHash": "e1151230ccd41def84054a80add15decf10b4b36c769c03198c7b2e6e3ccd422"
+  },
+  "issueRecoveryAction.repair.restoreTo": {
+    "en": "Restore to",
+    "zh-CN": "恢复到",
+    "reviewedEnglishHash": "9d1b67712eb65277cb84751506a98dcceda6d1bc18b7438a78da6cbeaece93c8"
+  },
+  "issueRecoveryAction.repair.title": {
+    "en": "Repair workspace",
+    "zh-CN": "修复工作区",
+    "reviewedEnglishHash": "152f148bfd570201ba068f257671d868e8fba93dde079636ec8443daeb77fb9b"
+  },
+  "issueRecoveryAction.repair.trigger": {
+    "en": "Repair workspace — quarantine changes & restore branch",
+    "zh-CN": "修复工作区：隔离改动并恢复分支",
+    "reviewedEnglishHash": "e8da323de87ad8ba5d67084c6061d6f50945ed63f99c536ea1f0eae0ffe524e9"
+  },
+  "issueRecoveryAction.repair.uncommittedChanges": {
+    "en": "Uncommitted changes",
+    "zh-CN": "未提交改动",
+    "reviewedEnglishHash": "a388bd2d373c39832003ef3699f39ff89d2c1ebb5c936f1ab8ed4e49f478daef"
+  },
+  "issueRecoveryAction.repairWorkspace": {
+    "en": "Repair workspace — quarantine changes & restore branch",
+    "zh-CN": "修复工作区 - 隔离更改并恢复分支",
+    "reviewedEnglishHash": "e8da323de87ad8ba5d67084c6061d6f50945ed63f99c536ea1f0eae0ffe524e9"
+  },
+  "issueRecoveryAction.resolve.ariaLabel": {
+    "en": "Resolve recovery",
+    "zh-CN": "处理恢复",
+    "reviewedEnglishHash": "0e77e521a1d9ecc8ff9d21166db00189e61b97e3b518369aaf69a4cf28d6e56b"
+  },
+  "issueRecoveryAction.resolve.done.description": {
+    "en": "Restore by recording the requested work as complete.",
+    "zh-CN": "记录请求的工作已完成，从而恢复此任务。",
+    "reviewedEnglishHash": "c6d924687c72cce6030482109ace7ed2951bce39d72021cd8756517543965138"
+  },
+  "issueRecoveryAction.resolve.done.label": {
+    "en": "Mark issue done",
+    "zh-CN": "标记任务已完成",
+    "reviewedEnglishHash": "a11fed3df9b23ef0c388e6d41199e64107ed3ab358561f3c7022ef42351d9cdc"
+  },
+  "issueRecoveryAction.resolve.false_positive_done.description": {
+    "en": "Dismiss recovery and mark the source issue complete.",
+    "zh-CN": "关闭恢复并将源任务标记为完成。",
+    "reviewedEnglishHash": "97a2bcdad694993a1ed7c302ddc7f79c301ffdb7577c0277b7262b7ea9874a6b"
+  },
+  "issueRecoveryAction.resolve.false_positive_done.label": {
+    "en": "False positive, done",
+    "zh-CN": "误报，已完成",
+    "reviewedEnglishHash": "d72c84ea61e73cdbb3d3887b3f1af7e9b813cea52fa2a3c850bf5e10c1cea03c"
+  },
+  "issueRecoveryAction.resolve.false_positive_in_review.description": {
+    "en": "Dismiss recovery and send the source issue for review.",
+    "zh-CN": "关闭恢复并将源任务送审。",
+    "reviewedEnglishHash": "0361da3376a5e7f7333e0e149382931f3cea8e875af6c02295a5a5567d56ed87"
+  },
+  "issueRecoveryAction.resolve.false_positive_in_review.label": {
+    "en": "False positive, review",
+    "zh-CN": "误报，送审",
+    "reviewedEnglishHash": "26b07b9b467385f1c036076d7d9df23d35d0700e5958b86c77c4277a397f811c"
+  },
+  "issueRecoveryAction.resolve.heading": {
+    "en": "Resolve recovery",
+    "zh-CN": "处理恢复",
+    "reviewedEnglishHash": "0e77e521a1d9ecc8ff9d21166db00189e61b97e3b518369aaf69a4cf28d6e56b"
+  },
+  "issueRecoveryAction.resolve.in_review.description": {
+    "en": "Hand off to a reviewer with a real review path.",
+    "zh-CN": "交给评审者，并建立真实的评审路径。",
+    "reviewedEnglishHash": "6c2fe06e3143d55bf433f91b3e96666aa7f0be6dc0571147466d2732f734ada8"
+  },
+  "issueRecoveryAction.resolve.in_review.label": {
+    "en": "Send for review",
+    "zh-CN": "送审",
+    "reviewedEnglishHash": "f7cb7531a9bfc8bc299858b947e524fde1f37882197ac9d0502d4ba8d0d9b470"
+  },
+  "issueRecoveryAction.resolve.todo.description": {
+    "en": "Dismiss recovery and return the source issue to todo.",
+    "zh-CN": "关闭恢复并将源任务返回待办。",
+    "reviewedEnglishHash": "ec3396b37b0103ca303143d03aca63e3dcf33346d036ee76fe9d267d3a88fc4c"
+  },
+  "issueRecoveryAction.resolve.todo.label": {
+    "en": "Try again",
+    "zh-CN": "重试",
+    "reviewedEnglishHash": "d8b8392e2c542950ca64867168e4ef87d4ad606882d5898f826b51c6d553988f"
+  },
+  "issueRecoveryAction.resolve.trigger": {
+    "en": "Resolve…",
+    "zh-CN": "处理...",
+    "reviewedEnglishHash": "a55fea5685607a813253d568b45f1cf3888cadc6356579823f75522064d40fa8"
+  },
+  "issueRecoveryAction.resolvedAs": {
+    "en": "Resolved as {{outcome}}",
+    "zh-CN": "已处理为{{outcome}}",
+    "reviewedEnglishHash": "09b88e4da8e4464a3eb96a3dedc388096676fdcf23b466f7e6cecb1941bc3fb2"
+  },
+  "issueRecoveryAction.resolvedAsWithTime": {
+    "en": "Resolved as {{outcome}} · {{time}}",
+    "zh-CN": "已处理为{{outcome}} · {{time}}",
+    "reviewedEnglishHash": "9a2138dafe82c8e3727d515d3c4f6b738a1e427cfd9a9c1545bb40c28e219270"
+  },
+  "issueRecoveryAction.retry.exhausted": {
+    "en": "Automatic retries used up",
+    "zh-CN": "自动重试次数已用尽",
+    "reviewedEnglishHash": "d074fd7d7abf106533c300307c88700e0d24d62afcd7922c649a9f284638ba5e"
+  },
+  "issueRecoveryAction.retry.missed": {
+    "en": "Retry missed",
+    "zh-CN": "重试已错过",
+    "reviewedEnglishHash": "a3e392ad94c401ecd28ca42278c96840cec05456871b98c5e3f1c3ca3ad7f41c"
+  },
+  "issueRecoveryAction.retry.missedWithOffset": {
+    "en": "Retry missed {{offset}}",
+    "zh-CN": "重试已错过 {{offset}}",
+    "reviewedEnglishHash": "5f31d6e671d713b4083d30a21055a25747ab8ef7d33150eef8b1291901665773"
+  },
+  "issueRecoveryAction.retry.next": {
+    "en": "Next try {{offset}}",
+    "zh-CN": "下次尝试 {{offset}}",
+    "reviewedEnglishHash": "32578b9164a6c6a0ba610d898d0f665da0cbb9fdf1eb677c0b47ae2668b0df5e"
+  },
+  "issueRecoveryAction.retry.nextNow": {
+    "en": "Next try now",
+    "zh-CN": "立即重试",
+    "reviewedEnglishHash": "3101ffa0c22f8d0f7d80352672431669a0d8054c0deb1b088b43c11b46c61e1c"
+  },
+  "issueRecoveryAction.retry.running": {
+    "en": "Attempt running now",
+    "zh-CN": "当前正在尝试",
+    "reviewedEnglishHash": "5ff776172449b075cd1320b5cfbcf0392758c14329f4c6fb3b0395d8ff265464"
+  },
+  "issueRecoveryAction.returnsTo": {
+    "en": "→ Returns to:",
+    "zh-CN": "→ 返回至：",
+    "reviewedEnglishHash": "1e820759b882e4a12abfb57fda9c1c98dde83653dab2a693e1f81cdf98e994c8"
+  },
+  "issueRecoveryAction.runShort": {
+    "en": "run {{id}}",
+    "zh-CN": "运行 {{id}}",
+    "reviewedEnglishHash": "ac3a7d54b2250a4ebbb4c9ad27504d0f91ac99f24dfc717427de96e729cce004"
+  },
+  "issueRecoveryAction.state.escalated": {
+    "en": "RECOVERY ESCALATED",
+    "zh-CN": "恢复已升级",
+    "reviewedEnglishHash": "f577dda4e1ed7d9bbacc24ede5e56c91f1c0cf241e6604d8ac4812d733644aa4"
+  },
+  "issueRecoveryAction.state.in_progress": {
+    "en": "RECOVERY IN PROGRESS",
+    "zh-CN": "恢复处理中",
+    "reviewedEnglishHash": "477f0e940d7e1c8039de6bd0ce689e6d7be6380c95393ec54dde6ff116df5448"
+  },
+  "issueRecoveryAction.state.needed": {
+    "en": "RECOVERY NEEDED",
+    "zh-CN": "需要恢复",
+    "reviewedEnglishHash": "85e5d2f1700b766206f1a172bf2cfa058062dfc8d095358cc2c4ec6e002f25c2"
+  },
+  "issueRecoveryAction.state.observe_only": {
+    "en": "OBSERVING ACTIVE RUN",
+    "zh-CN": "观察活跃运行",
+    "reviewedEnglishHash": "a43568b473aed3198cba148084c1fe606e9af760ab1e85a514c25e9ab1eded72"
+  },
+  "issueRecoveryAction.state.resolved": {
+    "en": "RECOVERY RESOLVED",
+    "zh-CN": "恢复已处理",
+    "reviewedEnglishHash": "ed726d68fabbb9fc479dd330a88cd5f8b874c2c49e44f5398d5ce5ffd100f175"
+  },
+  "issueRecoveryAction.time.inMinutes": {
+    "en": "in {{count}}m",
+    "zh-CN": "{{count}} 分钟后",
+    "reviewedEnglishHash": "b1bd2173b1c7fa65a07d4a8e452816cdf65b90132158ee41282e624a1acae97a"
+  },
+  "issueRecoveryAction.time.minutesAgo": {
+    "en": "{{count}}m ago",
+    "zh-CN": "{{count}} 分钟前",
+    "reviewedEnglishHash": "96da0d6c543c29bdad16bee63e9c9d4bd4516ac1c9d0296e73b2f24bc8ed74d6"
+  },
+  "issueRecoveryAction.time.soon": {
+    "en": "soon",
+    "zh-CN": "很快",
+    "reviewedEnglishHash": "4a754148b88a68e18df1a02489950666d187e904cd88d2dc0aa16c103b94045f"
+  },
+  "issueRecoveryAction.timesOut": {
+    "en": "Times out {{time}}",
+    "zh-CN": "{{time}} 超时",
+    "reviewedEnglishHash": "152f6ce9b25969b5882b09c17ed39b72e4fac05faffb99f442135c484ca43c0e"
+  },
+  "issueRecoveryAction.unassigned": {
+    "en": "unassigned — pick one to wake them",
+    "zh-CN": "未分配 - 选择负责人以将其唤醒",
+    "reviewedEnglishHash": "68903e71411ef144740882e34a2b159f3ba993383fe5b53d57a26488a7dbc244"
+  },
+  "issueRecoveryAction.wake.boardDecision": {
+    "en": "Board decision required",
+    "zh-CN": "需要看板决策。",
+    "reviewedEnglishHash": "e6936688911dc7f5cbfc4d7132419d4af2eafe81a96f3a7303e666cc5dd4bee3"
+  },
+  "issueRecoveryAction.wake.checkScheduled": {
+    "en": "Check scheduled",
+    "zh-CN": "已安排检查",
+    "reviewedEnglishHash": "c0f5c8bac39b835405adce97bb69679a605cfec76d108142427fdee9d14d621a"
+  },
+  "issueRecoveryAction.wake.checkScheduledWithInterval": {
+    "en": "Check scheduled · {{interval}}",
+    "zh-CN": "已安排检查 · {{interval}}",
+    "reviewedEnglishHash": "d14201c14e358170139901969b5219e036d1c3d4a52d5a4b1e4c61057f68e6b1"
+  },
+  "issueRecoveryAction.wake.correctiveWakeQueued": {
+    "en": "Corrective wake queued",
+    "zh-CN": "已排队修正唤醒",
+    "reviewedEnglishHash": "248c43a4306b25b83c51f1b1fe479aa13da1690e1498a2e91842be15018327ee"
+  },
+  "issueRecoveryAction.wake.escalatedToBoard": {
+    "en": "Escalated to board",
+    "zh-CN": "已升级到看板",
+    "reviewedEnglishHash": "0848d993bfcd7b09cba5c1cdda117d52d2014a0b76d318a5ed3415b8c1c17cb5"
+  },
+  "issueRecoveryAction.wake.manual": {
+    "en": "Manual",
+    "zh-CN": "手动",
+    "reviewedEnglishHash": "b0b9fe24ffa9629125bdc59b122f80d605ab604eb1b74485c2f2ecfde26576ae"
+  },
+  "issueRecoveryAction.wake.manualNeeded": {
+    "en": "Manual follow-up needed",
+    "zh-CN": "需要手动跟进。",
+    "reviewedEnglishHash": "9bd119bac8f57bc4aa574fd0a5a157633d977a1b6b17f8e2e0921a203ebefd05"
+  },
+  "issueRecoveryAction.wake.monitorScheduled": {
+    "en": "Monitor scheduled",
+    "zh-CN": "已安排监控",
+    "reviewedEnglishHash": "f22599fb34ec67c4e5e8fb472a2673e68e6b054ed2996196aa05a08696456386"
+  },
+  "issueRecoveryAction.wake.monitorScheduledWithInterval": {
+    "en": "Monitor scheduled · {{interval}}",
+    "zh-CN": "已安排监控 · {{interval}}",
+    "reviewedEnglishHash": "7d6e29516528134e920794ef0f22df4ef8626219022fbf333f84fd6a633c58e9"
+  },
+  "issueRecoveryAction.wake.ownerPrompt": {
+    "en": "An agent will be asked to choose the next step",
+    "zh-CN": "将请求一名智能体选择下一步。",
+    "reviewedEnglishHash": "9beb9b59c183fe5908c15e692b6663f1fd182c448e8e56ebd4175fe4f83c6af2"
+  },
+  "issueRecoveryAction.wake.ownerRetry": {
+    "en": "Paperclip is retrying the original owner",
+    "zh-CN": "Paperclip 正在重试原负责人。",
+    "reviewedEnglishHash": "833a8a2ef858ae2e311c43c243d121a7986ca6396b318df6fbe4cc27cfd9e255"
+  },
+  "issueRecoveryAction.wake.recoveryOwner": {
+    "en": "A recovery owner is repairing the next step",
+    "zh-CN": "恢复负责人正在修复下一步。",
+    "reviewedEnglishHash": "f927e4ab70529d434525502c839e5d15f75b5c003db15cf562958a9a8b3f949d"
+  },
+  "issueRecoveryAction.wake.repairNeeded": {
+    "en": "Repair needed before retry",
+    "zh-CN": "重试前需要修复。",
+    "reviewedEnglishHash": "a014a14c3a38e328ee70a0eb80fddfcf944deb83e84e636fae2acf12fa469dc1"
+  },
+  "issueRecoveryAction.wake.retriesExhausted": {
+    "en": "Automatic retries are finished — a decision is needed",
+    "zh-CN": "自动重试已结束，需要作出决策。",
+    "reviewedEnglishHash": "82f7e2819462328f0e2842a17624205a09c4a6701ce22f376977c9da904b8aad"
+  },
+  "issueRecoveryAction.wake.retryMissed": {
+    "en": "The scheduled retry did not run — a retry or a decision is needed",
+    "zh-CN": "计划的重试未执行，需要重试或作出决策。",
+    "reviewedEnglishHash": "ed36a28b3ab9d5d8178230ff140c6cd5abd9d9041d15085215614984aef1f1dc"
+  },
+  "issueRecoveryAction.wake.unknown": {
+    "en": "{{type}}",
+    "zh-CN": "{{type}}",
+    "reviewedEnglishHash": "90e22a954b94d18d9e613f4f3b9bef52acc2cfb623a44d04509d7fc845d83cb3"
+  }
+}

@@ -1,0 +1,1112 @@
+{
+  "agentDetail.actionFailed": {
+    "en": "Action failed",
+    "zh-CN": "操作失败",
+    "reviewedEnglishHash": "6e1704d8eca96bd7170a983e6370041cd4a75617570d9a83145517d7576b2a8d"
+  },
+  "agentDetail.activeKeys": {
+    "en": "Active Keys",
+    "zh-CN": "有效密钥",
+    "reviewedEnglishHash": "140448ef2ac2ee190396f0ede715d635f17e6a5a514dedc0e1b19c73fa994689"
+  },
+  "agentDetail.adapterConfigNextRunNotice": {
+    "en": "Saved adapter config affects the next run. Active runs keep the config they started with, and config changes may start a fresh adapter session.",
+    "zh-CN": "已保存的适配器配置将在下次运行时生效。当前运行继续使用启动时的配置；配置变更可能会启动新的适配器会话。",
+    "reviewedEnglishHash": "1085735dd7644de2c46f2d68d2f23216d34bbbbfaa9e58b7da22faf09788d5ee"
+  },
+  "agentDetail.adapterLabel": {
+    "en": "Adapter:",
+    "zh-CN": "适配器：",
+    "reviewedEnglishHash": "6fada5c76cd6b5534bc02da5e5d85325b6db9c3789d150ed74509a25bc9c7a49"
+  },
+  "agentDetail.adapterResultJson": {
+    "en": "adapter result JSON",
+    "zh-CN": "适配器结果 JSON",
+    "reviewedEnglishHash": "4774d3f79fc946b538ad41aa4116ff2602aafef71f98a4f3a9f712693214fa7a"
+  },
+  "agentDetail.after": {
+    "en": "After",
+    "zh-CN": "之后",
+    "reviewedEnglishHash": "7b68fe5510851da3d89100c569d3265e044d8656d95750c376b7a0972dea7330"
+  },
+  "agentDetail.agentSaved": {
+    "en": "Agent saved",
+    "zh-CN": "智能体已保存",
+    "reviewedEnglishHash": "8ed40b78471d95dc3867a13226ec780d09ec06391d639fbd10e82f5b035825fd"
+  },
+  "agentDetail.agents": {
+    "en": "Agents",
+    "zh-CN": "智能体",
+    "reviewedEnglishHash": "279b44d2ab4b40c0fc132f8f3051293544cca91de9c8aa14f2cd29adb132b0ee"
+  },
+  "agentDetail.apiKeyCreatedCopyNow": {
+    "en": "API key created — copy it now, it will not be shown again.",
+    "zh-CN": "API 密钥已创建 - 请立即复制，之后不会再次显示。",
+    "reviewedEnglishHash": "37fc2c91872607c4aafc0bf31f7e1e37fe65644dd91c10b502ebb2355f7bac1f"
+  },
+  "agentDetail.apiKeys": {
+    "en": "API Keys",
+    "zh-CN": "API 密钥",
+    "reviewedEnglishHash": "c08f17eb9e11a353282ea8baf010aea1b95785e1523e02c04c6a95388eb80c3c"
+  },
+  "agentDetail.apiKeysDescription": {
+    "en": "API keys allow this agent to authenticate calls to the Paperclip server.",
+    "zh-CN": "API 密钥允许此智能体认证调用 Paperclip 服务器。",
+    "reviewedEnglishHash": "aaab6905c91b2072b31ab6422011e72c6c184e1fa71c9ccd944bf089585de218"
+  },
+  "agentDetail.approveAgent": {
+    "en": "Approve agent",
+    "zh-CN": "批准智能体",
+    "reviewedEnglishHash": "65b17eebf5ba677a4f9d26e81473ece59d6854069ed2b8f77acdc4ab05b2f496"
+  },
+  "agentDetail.assignTask": {
+    "en": "Assign Task",
+    "zh-CN": "分配任务",
+    "reviewedEnglishHash": "5dcdad5a47f7716b78e05ca1f38cfecee202e99db17025cad4b6b1f019a18417"
+  },
+  "agentDetail.backToRuns": {
+    "en": "Back to runs",
+    "zh-CN": "返回运行",
+    "reviewedEnglishHash": "5f3641135a1e889bec7fcf5af8b75f63fa18102e899c3f5bee27d11773273387"
+  },
+  "agentDetail.baseRefLabel": {
+    "en": "Base ref:",
+    "zh-CN": "基础引用：",
+    "reviewedEnglishHash": "f42675a408e70992884320150255d17abfbd6171e8f0de42a7162264738859d1"
+  },
+  "agentDetail.before": {
+    "en": "Before",
+    "zh-CN": "之前",
+    "reviewedEnglishHash": "9bb725005055412c75a8e8d1fb5a0780595174ac8bbe5a24f768647bd4e4debe"
+  },
+  "agentDetail.branchLabel": {
+    "en": "Branch:",
+    "zh-CN": "分支：",
+    "reviewedEnglishHash": "b8a50d7f479c6c2766b6297eeefd420d5a8810cae6393bf8beaf7fd85eca5ffa"
+  },
+  "agentDetail.budget": {
+    "en": "Budget",
+    "zh-CN": "预算",
+    "reviewedEnglishHash": "1c6225ec7092ad2f4a4acd79f8fc6854aa10653763fb053a6cf2bb2d2a4148ab"
+  },
+  "agentDetail.builtIn.description": {
+    "en": "Ships with Paperclip and powers {{feature}}. Configure it like any agent — model, instructions, budget. It can be paused but not deleted; pausing it pauses {{feature}}.",
+    "zh-CN": "此智能体随 Paperclip CN 提供，并为{{feature}}功能提供支持。你可以像配置其他智能体一样设置模型、说明和预算。它可以暂停但不能删除；暂停后{{feature}}功能也会暂停。",
+    "reviewedEnglishHash": "dac0e047e0af347e933baac2b8b006bdd3c829b04ba502b28b2843d376b87be2"
+  },
+  "agentDetail.builtIn.resetToDefaults": {
+    "en": "Reset to defaults",
+    "zh-CN": "恢复默认设置",
+    "reviewedEnglishHash": "e240e635ff6dce4ff2ac0b90a84889cff420f2c9a56014543e78f366681820db"
+  },
+  "agentDetail.builtIn.resetting": {
+    "en": "Resetting…",
+    "zh-CN": "正在重置…",
+    "reviewedEnglishHash": "1505f40de62c4f2620f934141fe63916300b6d82ca8701e1f1be53ea22eba6b1"
+  },
+  "agentDetail.builtIn.title": {
+    "en": "Built-in agent",
+    "zh-CN": "内置智能体",
+    "reviewedEnglishHash": "4bdd2857aa666efe8a13a19f6321e5b6113d996401d6106688329818e8136ab4"
+  },
+  "agentDetail.builtInDescription": {
+    "en": ". Configure it like any agent — model, instructions, budget. It can be paused but not deleted; pausing it pauses",
+    "zh-CN": "。可像其他智能体一样配置模型、说明和预算。它可以暂停但不能删除；暂停它也会暂停",
+    "reviewedEnglishHash": "c6d76dea3e46984398f8dc8a7bb46d1426c4554210fb278427131a0955cce79a"
+  },
+  "agentDetail.builtInPrefix": {
+    "en": "Ships with Paperclip and powers",
+    "zh-CN": "随 Paperclip 提供，用于支持",
+    "reviewedEnglishHash": "f7a276fa780bdf7751d98da4cf0b00e28d967ebdec5a0d5b8a105f0c5ce255e5"
+  },
+  "agentDetail.cachedTokens": {
+    "en": "Cached tokens",
+    "zh-CN": "缓存 token",
+    "reviewedEnglishHash": "3efd7d161de384ad85f35fc004c013544c05e9291517abb0c8a0091c62957dcc"
+  },
+  "agentDetail.cachedTokensShort": {
+    "en": "Cached",
+    "zh-CN": "缓存",
+    "reviewedEnglishHash": "a251c18205f10e5ce440c6c940270de4b8ca2bfd19ad8d9a15e28590a9fa7a13"
+  },
+  "agentDetail.canAssignTasks": {
+    "en": "Can assign tasks",
+    "zh-CN": "可以分配任务",
+    "reviewedEnglishHash": "05d8436a2d02fb20232d381cfd588cd8a70a380209bb0fca2ac8b6a83cc994f8"
+  },
+  "agentDetail.canCreateAgents": {
+    "en": "Can create new agents",
+    "zh-CN": "可以创建新智能体",
+    "reviewedEnglishHash": "55d2d6192402d57ab094511d2b44ced0a88f04bdd30a2c2e925178c7bd95090a"
+  },
+  "agentDetail.canCreateAgentsDescription": {
+    "en": "Lets this agent create or hire agents. This also grants task assignment authority.",
+    "zh-CN": "允许该智能体创建或雇佣智能体，同时授予任务分配权限。",
+    "reviewedEnglishHash": "90b2e41347bc19ddf4bbed116123b57a71ee905aff2b0c9691ebb66a76b76c14"
+  },
+  "agentDetail.canCreateSkills": {
+    "en": "Can create/import skills",
+    "zh-CN": "可以创建/导入技能",
+    "reviewedEnglishHash": "77c0a3767b0dd6346f93e3b2b0378e5551f922da94dbbe7224d8a95bc1de7380"
+  },
+  "agentDetail.canCreateSkillsDescription": {
+    "en": "Lets this agent install, import, create, and scan company skills without creating agents.",
+    "zh-CN": "允许该智能体安装、导入、创建和扫描公司技能，但不授予创建智能体权限。",
+    "reviewedEnglishHash": "3b729725e5744a222a753f60dd5e858ed622ffb3ebf3a0acb1875562dc6d43ea"
+  },
+  "agentDetail.cancelling": {
+    "en": "Cancelling...",
+    "zh-CN": "正在取消...",
+    "reviewedEnglishHash": "7b26131098bb18b289ece1bb10b18d1c97a1c79c4cf0feb3fed272febd54bd84"
+  },
+  "agentDetail.changedKeys": {
+    "en": "Changed: {{keys}}",
+    "zh-CN": "已更改：{{keys}}",
+    "reviewedEnglishHash": "9c14c571e91c644c1c3782343f639e15545a163110f5a1983b0b6400e859b40e"
+  },
+  "agentDetail.changedParenthetical": {
+    "en": "(changed)",
+    "zh-CN": "（已更改）",
+    "reviewedEnglishHash": "5311f2a881bcfed8e64b52819ccece3dc5bd2ae112f8ceb7895641bfcf2551dc"
+  },
+  "agentDetail.cleanupLabel": {
+    "en": "Cleanup:",
+    "zh-CN": "清理：",
+    "reviewedEnglishHash": "01f08357306827160f87f5ca376967577c0896199aade066c26dddfca619346c"
+  },
+  "agentDetail.clearSessionConfirm": {
+    "en": "Clear session for {{count}} issue touched by this run?",
+    "zh-CN": "要清除此运行触及的 {{count}} 个任务的会话吗？",
+    "reviewedEnglishHash": "bd0f734c6494e463ebe54b90730ddf15b7aab3d60ba29f3b92b5e14c23813273"
+  },
+  "agentDetail.clearSessionConfirm_plural": {
+    "en": "Clear session for {{count}} issues touched by this run?",
+    "zh-CN": "要清除此运行触及的 {{count}} 个任务的会话吗？",
+    "reviewedEnglishHash": "54888c9d3a54d6a171e4e2b1e72a668101468a36f3e55590d9e071f0c43e0d90"
+  },
+  "agentDetail.clearSessionForTheseIssues": {
+    "en": "clear session for these issues",
+    "zh-CN": "清除这些任务的会话",
+    "reviewedEnglishHash": "020cf665121c390f5dfc634c5b420752814ac1e83333f4cd2a3fe6e84dd6c462"
+  },
+  "agentDetail.clearingSession": {
+    "en": "clearing session...",
+    "zh-CN": "正在清除会话...",
+    "reviewedEnglishHash": "7a70b1ef5f3b549f9ad8d20ae63e52da088475caeccc16c46be63c368a5a6bac"
+  },
+  "agentDetail.commandLabel": {
+    "en": "Command:",
+    "zh-CN": "命令：",
+    "reviewedEnglishHash": "a7a9c91545a4fca09a90650077d02d690238f536456fc8ae9c3c23ed5d13d379"
+  },
+  "agentDetail.commandNotes": {
+    "en": "Command notes",
+    "zh-CN": "命令说明",
+    "reviewedEnglishHash": "9d924bb2a70c9e832fc2f3d00635324c31facdd07bd50b33de63293a753c2670"
+  },
+  "agentDetail.configuration": {
+    "en": "Configuration",
+    "zh-CN": "配置",
+    "reviewedEnglishHash": "b332c3492d5eb10a118eb6d8b0dcd689bc2477ce2ae16b303753b942b54377bc"
+  },
+  "agentDetail.configurationRevisions": {
+    "en": "Configuration Revisions",
+    "zh-CN": "配置修订",
+    "reviewedEnglishHash": "2aa8f007fec31ea45ec6ab97e8660674f904d225771347e26c0134c3cef058fa"
+  },
+  "agentDetail.contextLabel": {
+    "en": "Context",
+    "zh-CN": "上下文",
+    "reviewedEnglishHash": "a6e600a10fede40f648be37a700467776215ed2da3c271e9d02fa2987190a0a0"
+  },
+  "agentDetail.copyAgentId": {
+    "en": "Copy Agent ID",
+    "zh-CN": "复制智能体 ID",
+    "reviewedEnglishHash": "48fe747f5f5b8bf02be17e2b80e0db8fe5b1e04c4508c8e8a5a7490fc1a06eb7"
+  },
+  "agentDetail.copyAsMarkdown": {
+    "en": "Copy as markdown",
+    "zh-CN": "复制为 Markdown",
+    "reviewedEnglishHash": "fec6709d0f0a779bf2f20340b223675e55a6802d3e0461be1aca4c587ea3af51"
+  },
+  "agentDetail.copyInstructionsFileAsMarkdown": {
+    "en": "Copy instructions file as markdown",
+    "zh-CN": "复制智能体说明文件为 Markdown",
+    "reviewedEnglishHash": "8b3e0eeda3cd9444f2eeaa8bc4c7994596cdcf606303ffbbd536a36cad5d484d"
+  },
+  "agentDetail.costShort": {
+    "en": "Cost",
+    "zh-CN": "成本",
+    "reviewedEnglishHash": "204a5eb2cd28bcfdf3be9f8c765948e9e831609e3c57048cdbd6b8a94cf49126"
+  },
+  "agentDetail.costs": {
+    "en": "Costs",
+    "zh-CN": "成本",
+    "reviewedEnglishHash": "b88fc5fc4765148eb545962cddf4f19e4ca0380a533c047005f567a77695dcfd"
+  },
+  "agentDetail.couldNotSaveAgent": {
+    "en": "Could not save agent",
+    "zh-CN": "无法保存智能体",
+    "reviewedEnglishHash": "582fdf692c06c15b93e2f34a749db552b7d41974e609f43625c4fe7b68bf26d5"
+  },
+  "agentDetail.createApiKey": {
+    "en": "Create API Key",
+    "zh-CN": "创建 API 密钥",
+    "reviewedEnglishHash": "e133f431df938989b5c8ffa7c6210406eb98374762399194c38aae50790f6b3e"
+  },
+  "agentDetail.createdByThisRun": {
+    "en": "Created by this run",
+    "zh-CN": "由本次运行创建",
+    "reviewedEnglishHash": "2ec788a52f12d842e5afc192b0da14e0c7e4863e1afe64f8559895fe12beb4eb"
+  },
+  "agentDetail.createdDate": {
+    "en": "Created {{date}}",
+    "zh-CN": "创建于 {{date}}",
+    "reviewedEnglishHash": "1bb2c8090cb4ec5eda072f4b16137d56a4205647aee53d692e09f6e7bc7e6c48"
+  },
+  "agentDetail.dashboard": {
+    "en": "Dashboard",
+    "zh-CN": "仪表盘",
+    "reviewedEnglishHash": "67b696468610b879ed7f224dbf6b0861f27e39d20454cb9d7af1ec52d3e5eeaa"
+  },
+  "agentDetail.deleteFileConfirm": {
+    "en": "Delete {{file}}?",
+    "zh-CN": "要删除 {{file}} 吗？",
+    "reviewedEnglishHash": "b4749437935b8cce18a69a9d301cb97d8d01b02e357490185d897575da7a2133"
+  },
+  "agentDetail.dependsOnPaused": {
+    "en": "depends on this agent. While paused,",
+    "zh-CN": "依赖此智能体。暂停期间，",
+    "reviewedEnglishHash": "e8204fd6601cf5fca790e40c2cdc055085adf0a813a3515fb54d19142799e535"
+  },
+  "agentDetail.deprecatedVirtualFile": {
+    "en": "Deprecated virtual file",
+    "zh-CN": "已弃用的虚拟文件",
+    "reviewedEnglishHash": "14230ef1bb190dae60b7dc6a15ef06d380b00374df981bcfca71607e94df407f"
+  },
+  "agentDetail.details": {
+    "en": "Details",
+    "zh-CN": "详情",
+    "reviewedEnglishHash": "45989de49fb7f66dfe17a8fc26f3a02c7abcd74f7e8e6cf9f39fa0e3775780df"
+  },
+  "agentDetail.dismissMembershipNotice": {
+    "en": "Dismiss agent membership notice",
+    "zh-CN": "关闭智能体成员通知",
+    "reviewedEnglishHash": "e8f6751a592decdf7849a14e1f4e9e4f79e5b5433fc834a81f9b0d27c932aff5"
+  },
+  "agentDetail.duplicateAgent": {
+    "en": "Duplicate Agent",
+    "zh-CN": "复制智能体",
+    "reviewedEnglishHash": "404582091d6fe7a4c3697d8fe1f1602cb5586f003f39e8aa909672612870edb1"
+  },
+  "agentDetail.duration": {
+    "en": "Duration: {{duration}}",
+    "zh-CN": "持续时间：{{duration}}",
+    "reviewedEnglishHash": "d667f71cf0791f49d345ab8c0bcbde9912c5c5265dd646a258d56e95c375a780"
+  },
+  "agentDetail.entryFile": {
+    "en": "entry",
+    "zh-CN": "入口",
+    "reviewedEnglishHash": "923fe53966c6cd9343e11af776cd4b05be315ea4b200b02e4d5dfb0f929b73bf"
+  },
+  "agentDetail.environmentLabel": {
+    "en": "Environment",
+    "zh-CN": "环境",
+    "reviewedEnglishHash": "9e471951a1b4106e54be128a21112b02914fe98cc79b2c92b49ee80c5464487c"
+  },
+  "agentDetail.errorLabel": {
+    "en": "Error:",
+    "zh-CN": "错误：",
+    "reviewedEnglishHash": "617062906764f3b8912525512fc2f3747ddcc1623b932718d6e4910baee5a8a4"
+  },
+  "agentDetail.eventsCount": {
+    "en": "Events ({{count}})",
+    "zh-CN": "事件（{{count}}）",
+    "reviewedEnglishHash": "0a5886a7d9c308b602447ee56bfc6e53e05e3a6665fac5bd7aee47d61406ab99"
+  },
+  "agentDetail.eventsPrefix": {
+    "en": "Events (",
+    "zh-CN": "事件（",
+    "reviewedEnglishHash": "6e9b7c69f37fffdbc5f5960713e819f8bb01948646f72ad9871405c9a98c28e3"
+  },
+  "agentDetail.exitCode": {
+    "en": "Exit code {{code}}",
+    "zh-CN": "退出码 {{code}}",
+    "reviewedEnglishHash": "65448b1c1a8e2ba7051413447699fa5b2ed892062422001426f5c7221b2bc578"
+  },
+  "agentDetail.failedToClearSessions": {
+    "en": "Failed to clear sessions",
+    "zh-CN": "无法清除会话",
+    "reviewedEnglishHash": "ed9e6fe6eb0b269c71e44030f0ec56deaee2c9e8ac05a3ace0133b0f8ae04bda"
+  },
+  "agentDetail.failedToLoadMoreRunLog": {
+    "en": "Failed to load more run log",
+    "zh-CN": "无法加载更多运行日志",
+    "reviewedEnglishHash": "3b62d2b970475cdc3348d11e501ef7188809a3c47db10e842dde61398acddaa5"
+  },
+  "agentDetail.failedToLoadRunLog": {
+    "en": "Failed to load run log",
+    "zh-CN": "无法加载运行日志",
+    "reviewedEnglishHash": "a4a2e5345fb62ab98c1de1c88abbf7f0931425b69eaf24df79c42e5aed0f7d07"
+  },
+  "agentDetail.failedToLoadWorkspaceOperationLog": {
+    "en": "Failed to load workspace operation log",
+    "zh-CN": "无法加载工作区操作日志",
+    "reviewedEnglishHash": "42a6e0b2d6468412fca9796ea1585a51b2ea71114d03fd104d4d2db35b26854c"
+  },
+  "agentDetail.failedToResumeRun": {
+    "en": "Failed to resume run",
+    "zh-CN": "无法恢复运行",
+    "reviewedEnglishHash": "568735470438fdd8b35c9675c8ec81bcd3a9b2a95537fb69d54276f0f3be92a4"
+  },
+  "agentDetail.failedToRetryRun": {
+    "en": "Failed to retry run",
+    "zh-CN": "无法重试运行",
+    "reviewedEnglishHash": "0ce80ccb89b6e7836a5c93a24119166afe2c71432f1c0e227f848eb8b78effc7"
+  },
+  "agentDetail.failedToRunClaudeLogin": {
+    "en": "Failed to run Claude login",
+    "zh-CN": "无法运行 Claude 登录",
+    "reviewedEnglishHash": "130ad905ccc837d18da9f8af60cf49402ccff02af160c37d31c1b4c2ae3b73d8"
+  },
+  "agentDetail.failedToUpdatePermissions": {
+    "en": "Failed to update permissions",
+    "zh-CN": "更新权限失败",
+    "reviewedEnglishHash": "2b52d8b009f9988e165856452a37d8cd0282a3066f76bf42a1047eb0452acaee"
+  },
+  "agentDetail.failedToUpdateSkills": {
+    "en": "Failed to update skills",
+    "zh-CN": "无法更新技能",
+    "reviewedEnglishHash": "6de194e3d7008412d7df773d5cf6fee3e69a4967105ead99835f61b41b07ce7a"
+  },
+  "agentDetail.failureDetails": {
+    "en": "Failure details",
+    "zh-CN": "失败详情",
+    "reviewedEnglishHash": "6317e0c6b663177f594ccedae9c6d45fcf474072fca8c9f4215cbc806313a9be"
+  },
+  "agentDetail.fileContentsPlaceholder": {
+    "en": "File contents",
+    "zh-CN": "文件内容",
+    "reviewedEnglishHash": "69423babe8e61aab549f347bcc8b9d77b7dcaca198fb0597bde0b5f97f968e38"
+  },
+  "agentDetail.files": {
+    "en": "Files",
+    "zh-CN": "文件",
+    "reviewedEnglishHash": "abc7e9892806b047b4d4786b3685285543f76ca314c4c76246d5f6544c7856c9"
+  },
+  "agentDetail.generationSkipped": {
+    "en": "generation is skipped and the",
+    "zh-CN": "生成会被跳过，并且",
+    "reviewedEnglishHash": "8b2f4962bc46b8ca0a5ba7f993efa0b2a4c0129f08ff5f260a38e11708f350b6"
+  },
+  "agentDetail.hideFullLog": {
+    "en": "Hide full log",
+    "zh-CN": "隐藏完整日志",
+    "reviewedEnglishHash": "747af741b4013f1fdfff99732e26e606d3684b2fcdde8092e71c047f8f6174e1"
+  },
+  "agentDetail.importSkillsFirst": {
+    "en": "Import skills into the company library first, then attach them here.",
+    "zh-CN": "请先将技能导入公司库，然后在这里附加到智能体。",
+    "reviewedEnglishHash": "f25507e2a419bc01ee145c15c681c7bf5b1a8f459efb454a3afe80d2e596e699"
+  },
+  "agentDetail.inputTokens": {
+    "en": "Input tokens",
+    "zh-CN": "输入 token",
+    "reviewedEnglishHash": "dd856eeb50463bae46757d871d833fcb63d29a39356e7db40fea337f6462c947"
+  },
+  "agentDetail.inputTokensShort": {
+    "en": "Input",
+    "zh-CN": "输入",
+    "reviewedEnglishHash": "36ecb4f8669133ce744c21982ba4abe2ecd7086e1dc2226ccd6f266f3a5005f8"
+  },
+  "agentDetail.installedSkills": {
+    "en": "Installed skills",
+    "zh-CN": "已安装技能",
+    "reviewedEnglishHash": "39cd5c4eaaade8b3052242d9f57115b85a6bd7000431c41227a19bfcceaf2e55"
+  },
+  "agentDetail.instructions": {
+    "en": "Instructions",
+    "zh-CN": "说明",
+    "reviewedEnglishHash": "934652dce41d62d3c9ff34b2c5e44e3addaedc67d6137328a9fe75a63c51dbac"
+  },
+  "agentDetail.instructionsBundle.entryFileTooltip": {
+    "en": "The main file the agent reads first when loading instructions. Defaults to AGENTS.md.",
+    "zh-CN": "智能体加载说明时首先读取的主文件。默认是 AGENTS.md。",
+    "reviewedEnglishHash": "57604ed3a13b716451434244f6b447380aea036ad541bc96d0c49ba6075fe7f6"
+  },
+  "agentDetail.instructionsBundle.managedPlaceholder": {
+    "en": "(managed)",
+    "zh-CN": "（托管）",
+    "reviewedEnglishHash": "ffdb0bcd42f9abd10be6f27d88a7c1462fcea4ab788be0ad65459c56ee05c231"
+  },
+  "agentDetail.instructionsBundle.mode": {
+    "en": "Mode",
+    "zh-CN": "模式",
+    "reviewedEnglishHash": "5e23ec6a300dc60a79641769017e16e9bf042cbd8fd0a54586a048ab9da972ff"
+  },
+  "agentDetail.instructionsBundle.modeTooltip": {
+    "en": "Managed: Paperclip stores and serves the instructions bundle. External: you provide a path on disk where the instructions live.",
+    "zh-CN": "托管模式：Paperclip 负责存储并提供说明包。外部模式：你提供说明文件所在的磁盘路径。",
+    "reviewedEnglishHash": "1f6587a4d41a6a2b697ee53fae164524ec8af94efba4582b9375d6b900d587ff"
+  },
+  "agentDetail.instructionsBundle.rootPathTooltip": {
+    "en": "The absolute directory on disk where the instructions bundle lives. In managed mode this is set by Paperclip automatically.",
+    "zh-CN": "说明包所在的磁盘绝对目录。托管模式下该路径由 Paperclip 自动设置。",
+    "reviewedEnglishHash": "8e07f676c690731d3f1c99245e480c4147a4a82cddcbc31dd36a6a9b66012151"
+  },
+  "agentDetail.instructionsLocalOnly": {
+    "en": "Instructions bundles are only available for local adapters.",
+    "zh-CN": "说明文件包仅适用于本地适配器。",
+    "reviewedEnglishHash": "ac25d90e4493d1c807840c22b97a69bf7be4061b2190561c827b3bc6a45c4ce4"
+  },
+  "agentDetail.instructionsNextRunNotice": {
+    "en": "Saved instructions affect the next run. Active runs keep the instructions they started with, and instruction changes may start a fresh adapter session.",
+    "zh-CN": "已保存的说明将在下次运行时生效。当前运行继续使用启动时的说明；说明变更可能会启动新的适配器会话。",
+    "reviewedEnglishHash": "2bd6467dbe7186ec24f0640d895bf00fb5d4bf5c43ed365fe30b08e3ed2e46ae"
+  },
+  "agentDetail.invalidReportingChain": {
+    "en": "Invalid reporting chain",
+    "zh-CN": "汇报链无效",
+    "reviewedEnglishHash": "bf9c6d9dc8a902fc2e58f3e4ca9c5c63b48f9fb5fd1fcbe7a2bddd592f85af1b"
+  },
+  "agentDetail.invalidReportingChainDescription": {
+    "en": "{{name}} cannot accept tasks or start runs until its reporting chain is repaired.",
+    "zh-CN": "{{name}} 在修复汇报链之前不能接受任务或启动运行。",
+    "reviewedEnglishHash": "1519415a25f365024e7e1476534004e9f850c545c5118374ad68f917eab3de1e"
+  },
+  "agentDetail.invalidReportingChainFallbackGuidance": {
+    "en": "Assign this agent to an active manager/root, or explicitly pause or terminate the affected agent/subtree.",
+    "zh-CN": "将此智能体分配给活跃的经理/根节点，或明确暂停/终止受影响的智能体或子树。",
+    "reviewedEnglishHash": "d897533c4b5f1b4113963e7d36a375744aec68c27ff761934c24a08ac2cf0172"
+  },
+  "agentDetail.invocation": {
+    "en": "Invocation",
+    "zh-CN": "调用",
+    "reviewedEnglishHash": "05adee5dad7136295d772e75f9aa41b53ac6fc403e2503a9991214096105b287"
+  },
+  "agentDetail.issuesByPriority": {
+    "en": "Issues by Priority",
+    "zh-CN": "按优先级统计任务",
+    "reviewedEnglishHash": "c78ad14353619a3e435cb0c4bd389f2a534a5590d05a720d234fa51d1ee92703"
+  },
+  "agentDetail.issuesByStatus": {
+    "en": "Issues by Status",
+    "zh-CN": "按状态统计任务",
+    "reviewedEnglishHash": "8e042929ddf0a6c8c4a3580af41228894cba36a65b9000164b0c2f49f4a6fead"
+  },
+  "agentDetail.issuesTouched": {
+    "en": "Issues Touched ({{count}})",
+    "zh-CN": "触及的任务（{{count}}）",
+    "reviewedEnglishHash": "b863404a571cb6e412ae9327b94c95b6b23272179ea77127b5e9d8500e1c04cd"
+  },
+  "agentDetail.jumpToLive": {
+    "en": "Jump to live",
+    "zh-CN": "跳到实时位置",
+    "reviewedEnglishHash": "ce39c3a6bdb971c25cd078b1fd319af581eead81e5d42e3b84cac7013a620433"
+  },
+  "agentDetail.keyNamePlaceholder": {
+    "en": "Key name (e.g. production)",
+    "zh-CN": "密钥名称（例如 production）",
+    "reviewedEnglishHash": "72bae87bbd883eaf1d60dfee100a342b73edb4c4d49c3c63a5dff43331e0b3a2"
+  },
+  "agentDetail.languageFile": {
+    "en": "{{language}} file",
+    "zh-CN": "{{language}} 文件",
+    "reviewedEnglishHash": "cab0a292dfa44d0e1a765d1d37d3ff4313f71f00304e246357fae881af6d6030"
+  },
+  "agentDetail.last14Days": {
+    "en": "Last 14 days",
+    "zh-CN": "最近 14 天",
+    "reviewedEnglishHash": "d9f1e16176a554790b3215a9bd1c9b5f4ffa38f7e670ecfa850932598ad02718"
+  },
+  "agentDetail.latestRun": {
+    "en": "Latest Run",
+    "zh-CN": "最新运行",
+    "reviewedEnglishHash": "d1451ce7cfe1ec604020ac124520bf72bfec89470013579ad323a72af1b6830d"
+  },
+  "agentDetail.live": {
+    "en": "Live",
+    "zh-CN": "实时",
+    "reviewedEnglishHash": "b64ac05f17e64d037db81a98f51e2688216e292ae9748f979f04dfbac49fd7fc"
+  },
+  "agentDetail.liveRun": {
+    "en": "Live Run",
+    "zh-CN": "实时运行",
+    "reviewedEnglishHash": "a8a2029f4b5928dd585c2aa55551690054da0c3ed622f6db73ea493791f5dce5"
+  },
+  "agentDetail.loadMoreLog": {
+    "en": "Load more log",
+    "zh-CN": "加载更多日志",
+    "reviewedEnglishHash": "43baac37f546e5be54e1f272096b5a85557522784041da7378b135e435317a22"
+  },
+  "agentDetail.loadingKeys": {
+    "en": "Loading keys...",
+    "zh-CN": "正在加载密钥...",
+    "reviewedEnglishHash": "e0c65255e48f08109d807e0dbce7076992c07c2df29ee8a3db2ff5fdffe9efd2"
+  },
+  "agentDetail.loadingLog": {
+    "en": "Loading log...",
+    "zh-CN": "正在加载日志...",
+    "reviewedEnglishHash": "e838607e867cd34bb5af0d93f19cdb1f2a23412262996437fd9f4f52c20eaa34"
+  },
+  "agentDetail.loadingRunLogs": {
+    "en": "Loading run logs...",
+    "zh-CN": "正在加载运行日志...",
+    "reviewedEnglishHash": "b719a3040d392dee09317cab7f1458fa69d211ac601880cf9c3d309431f065fa"
+  },
+  "agentDetail.locationLabel": {
+    "en": "Location: {{location}}",
+    "zh-CN": "位置：{{location}}",
+    "reviewedEnglishHash": "a1860f966f9bb6ea6871d0be36657a462f6429cfc9d3b81aa372e46cb78e354c"
+  },
+  "agentDetail.loginToClaudeCode": {
+    "en": "Login to Claude Code",
+    "zh-CN": "登录 Claude Code",
+    "reviewedEnglishHash": "5814b86353824c834a07b648d10831c39edc375f25e775609ae770851da00201"
+  },
+  "agentDetail.loginUrl": {
+    "en": "Login URL",
+    "zh-CN": "登录 URL",
+    "reviewedEnglishHash": "104575e9463efd59c88d42183d10a0d1ff31b1c6c165483b8f1f948106cac53a"
+  },
+  "agentDetail.loginUrlLabel": {
+    "en": "Login URL:",
+    "zh-CN": "登录链接：",
+    "reviewedEnglishHash": "53aff5fe70f807360b0de951387f0298dc96a5f6604df245f5a94db4c813249b"
+  },
+  "agentDetail.manageSkillsInAdapter": {
+    "en": "Manage skills in the adapter directly.",
+    "zh-CN": "请在适配器中直接管理技能。",
+    "reviewedEnglishHash": "b4eb894530cf674a60102de1c644d8836fe79c9f23267d0e2b8b0512cfa9ee9e"
+  },
+  "agentDetail.membership.leftNotice": {
+    "en": "You left this agent. It no longer appears in your sidebar.",
+    "zh-CN": "你已离开此智能体。它不会再显示在你的侧边栏中。",
+    "reviewedEnglishHash": "5ad48442d872e26ed5795f9ba8b8b01e4f05c54b9eddc8dcee7ba0109038f173"
+  },
+  "agentDetail.moreIssues": {
+    "en": "+{{count}} more issues",
+    "zh-CN": "+{{count}} 个更多任务",
+    "reviewedEnglishHash": "2e2185e9eb9d5f9bb7c34bc1c868273408f358a0c569f5b6de5221854f41f726"
+  },
+  "agentDetail.moreTasks": {
+    "en": "more tasks",
+    "zh-CN": "个更多任务",
+    "reviewedEnglishHash": "e57109ca138964bda3202bdbd3822d39457dc998652a939524b16dd5ba677394"
+  },
+  "agentDetail.newFileInBundle": {
+    "en": "New file in this bundle",
+    "zh-CN": "此文件包中的新文件",
+    "reviewedEnglishHash": "3eb813e1c60f3c6e4657bd800a016de3c83f94126380c95f2efd72521ad50694"
+  },
+  "agentDetail.noActiveApiKeys": {
+    "en": "No active API keys.",
+    "zh-CN": "没有有效 API 密钥。",
+    "reviewedEnglishHash": "de64e83d5cc4043e305c1b31fccfd549ac764072f38fe34439c634e595750c9d"
+  },
+  "agentDetail.noCompanySkillsInstalled": {
+    "en": "No company-library skills installed on this agent.",
+    "zh-CN": "此智能体尚未安装公司库技能。",
+    "reviewedEnglishHash": "85042709a20039f2fb58453fbed985ea9e17645805b34814a28b78704f89a6db"
+  },
+  "agentDetail.noConfigurationRevisions": {
+    "en": "No configuration revisions yet.",
+    "zh-CN": "还没有配置修订。",
+    "reviewedEnglishHash": "47fc563753980d6943278c0539717b21745281930b5e9f0c566a2bd18203105e"
+  },
+  "agentDetail.noLogEvents": {
+    "en": "No log events.",
+    "zh-CN": "没有日志事件。",
+    "reviewedEnglishHash": "d1e81320705024e97d9de7cb4f81429793cff209ac035d813e0552baaefc1961"
+  },
+  "agentDetail.noPersistedLogLines": {
+    "en": "No persisted log lines.",
+    "zh-CN": "没有持久化日志行。",
+    "reviewedEnglishHash": "9b93ec6bdfb3c22c89e84fde94caf6ba989434b48725f67fb52b91194f9419fe"
+  },
+  "agentDetail.noPersistedTranscript": {
+    "en": "No persisted transcript for this run.",
+    "zh-CN": "此运行没有持久化转录。",
+    "reviewedEnglishHash": "e8b062b8f52b09bad13ad938e5283d23db499b4d10bcdc00b198638a05824f84"
+  },
+  "agentDetail.noRecentIssues": {
+    "en": "No recent issues.",
+    "zh-CN": "暂无最近任务。",
+    "reviewedEnglishHash": "cdcc402eb597eb4f92cc06fd2db6b451c455280d8d6cf71ba0322c1e51458fc5"
+  },
+  "agentDetail.noRecentTasks": {
+    "en": "No recent tasks.",
+    "zh-CN": "暂无最近任务。",
+    "reviewedEnglishHash": "e555bbe6ef5e4aa62fdb93479f0544b47b7db4badb3adff383bdcaf99e405643"
+  },
+  "agentDetail.noRunsYet": {
+    "en": "No runs yet.",
+    "zh-CN": "还没有运行。",
+    "reviewedEnglishHash": "72a85758b69c1d33a7a08eeca633ef45383a116840fbeee8167dfda13fedd0d7"
+  },
+  "agentDetail.noTrackedChanges": {
+    "en": "no tracked changes",
+    "zh-CN": "没有跟踪到的更改",
+    "reviewedEnglishHash": "83a4a77e733a7cbf555ff29bc0430bda94467b2a1896973bfb2b828956782954"
+  },
+  "agentDetail.onBehalfOf": {
+    "en": "On behalf of",
+    "zh-CN": "代表",
+    "reviewedEnglishHash": "cdccf734b4e3a497be61038badd9d38c9216f43c6778d25f4eb637edb8ccb8b0"
+  },
+  "agentDetail.operationTimeRangeSuffix": {
+    "en": " to {{time}}",
+    "zh-CN": " 到 {{time}}",
+    "reviewedEnglishHash": "588d98e6706932d46ce2bbe8216c4143adeb99306149fcffd2413c128dbc8be4"
+  },
+  "agentDetail.otherSkills": {
+    "en": "Other skills",
+    "zh-CN": "其他技能",
+    "reviewedEnglishHash": "7160172aa4821c8d9481af37230227b698112fa5264130deae86eeab97ab69ad"
+  },
+  "agentDetail.outputTokens": {
+    "en": "Output tokens",
+    "zh-CN": "输出 token",
+    "reviewedEnglishHash": "a9b50ea0c4a7e3469e7ac21e5497c3b11159a5968330807180eba6b5f0f36bfa"
+  },
+  "agentDetail.outputTokensShort": {
+    "en": "Output",
+    "zh-CN": "输出",
+    "reviewedEnglishHash": "b2439bcb8dee14b685f137f294b0e0cb62f5aadf45143ce01d79777d435a93b4"
+  },
+  "agentDetail.pageWarning": {
+    "en": "page shows a warning.",
+    "zh-CN": "页面会显示警告。",
+    "reviewedEnglishHash": "f336157ccd9e79cb7ccc867123ae63b7c1b0b6bbd424e36efc6143165856e135"
+  },
+  "agentDetail.pendingApprovalNotice": {
+    "en": "This agent is pending board approval and cannot be invoked yet.",
+    "zh-CN": "此智能体正在等待董事会批准，暂时不能调用。",
+    "reviewedEnglishHash": "241a4b1ba23dd66132d43558cfb58b5d2e025d554bbac5da6f43f07508bb7a9f"
+  },
+  "agentDetail.permissions": {
+    "en": "Permissions",
+    "zh-CN": "权限",
+    "reviewedEnglishHash": "abccc78cc93c07931feccfbd0665c003373b48334fd8d4cf5c6d0c714e68f26e"
+  },
+  "agentDetail.promptLabel": {
+    "en": "Prompt",
+    "zh-CN": "提示词",
+    "reviewedEnglishHash": "5c39123805ffb4e2f01ba096f17a5b18afb43c4f223afa4ba2d5a3f31cf74e09"
+  },
+  "agentDetail.recentIssues": {
+    "en": "Recent Issues",
+    "zh-CN": "最近任务",
+    "reviewedEnglishHash": "6f4bb646b1af575fa87a9a88f5e85346019e6670a12bd5c555d5f5959af30666"
+  },
+  "agentDetail.repairReportingChainBeforeWork": {
+    "en": "Repair this agent's reporting chain before assigning tasks or starting runs",
+    "zh-CN": "先修复此智能体的汇报链，才能分配任务或启动运行",
+    "reviewedEnglishHash": "af2df4e7c8d8a9ab6c20f9baad088f1bff1355bb2d7e67f2b7befbbaff1ccfde"
+  },
+  "agentDetail.repoRootLabel": {
+    "en": "Repo root:",
+    "zh-CN": "仓库根目录：",
+    "reviewedEnglishHash": "72decaf8ca457d83061811d46040af5c643f6105bcfd28c3d0b1b5748a5144ab"
+  },
+  "agentDetail.reportingChainBroken": {
+    "en": "cannot accept tasks or start runs until its reporting chain is repaired.",
+    "zh-CN": "在汇报链修复前无法接受任务或启动运行。",
+    "reviewedEnglishHash": "67219418c580675196c12aed89a5b93613d4b2254403d087add8d4b90a9cb78c"
+  },
+  "agentDetail.requestedSkillsMissing": {
+    "en": "Requested skills missing from the company library",
+    "zh-CN": "请求的技能不在公司库中",
+    "reviewedEnglishHash": "d14e8d37acee2b7dd243beb8ad45dadfec48c1ce936c27833afa0b87cf9fc215"
+  },
+  "agentDetail.requiredByPaperclip": {
+    "en": "Required by Paperclip",
+    "zh-CN": "Paperclip 必需",
+    "reviewedEnglishHash": "3d725fbe20f315b02a260c888653fb3919fa2614eee3834f218aca39f48d620c"
+  },
+  "agentDetail.resetSessions": {
+    "en": "Reset Sessions",
+    "zh-CN": "重置会话",
+    "reviewedEnglishHash": "03984477f11971b6fb42c751f734a7111b4da7b71d2a5fbaef4ea313bfb4b8c4"
+  },
+  "agentDetail.restore": {
+    "en": "Restore",
+    "zh-CN": "恢复",
+    "reviewedEnglishHash": "a76e13b9839270eb73ed11417f7d8acca55df0ad52065799361631d0fff74f27"
+  },
+  "agentDetail.resume": {
+    "en": "Resume",
+    "zh-CN": "恢复",
+    "reviewedEnglishHash": "d640c7421da066618a39daf4266da5f61f66a9b1afcd626481b831a17064965d"
+  },
+  "agentDetail.resuming": {
+    "en": "Resuming...",
+    "zh-CN": "正在恢复...",
+    "reviewedEnglishHash": "4414358c3ee74a8880323060e49a74381c2dd343a50c1074de4effff61ffdc74"
+  },
+  "agentDetail.retry": {
+    "en": "Retry",
+    "zh-CN": "重试",
+    "reviewedEnglishHash": "942087cc2d41e01304b7195558d093d10c72af8e838c7556d6a02d471ee71852"
+  },
+  "agentDetail.retrying": {
+    "en": "Retrying...",
+    "zh-CN": "正在重试...",
+    "reviewedEnglishHash": "84a657bcf3d968b4e10c205225a62eefddcc2ee18b3fcb6b02a8e0a61a8a08bd"
+  },
+  "agentDetail.reusedExistingWorkspace": {
+    "en": "Reused existing workspace",
+    "zh-CN": "复用了现有工作区",
+    "reviewedEnglishHash": "cb0d01ddd639ec01118ca6c73dea457d97ef524a70929b03d2237da26e6bd604"
+  },
+  "agentDetail.revokedDate": {
+    "en": "Revoked {{date}}",
+    "zh-CN": "吊销于 {{date}}",
+    "reviewedEnglishHash": "a4842bc9479f813395a776bb30f5eb8b3e6b0c36545bc870c0e91d9d25f5cd1c"
+  },
+  "agentDetail.revokedKeys": {
+    "en": "Revoked Keys",
+    "zh-CN": "已吊销密钥",
+    "reviewedEnglishHash": "eee9ab4ffcdf552119b7368ec8cce0d33c2ed7134b6eb0fa2088536ac25d2539"
+  },
+  "agentDetail.runActivity": {
+    "en": "Run Activity",
+    "zh-CN": "运行活动",
+    "reviewedEnglishHash": "fe11724808acbe9ce7db7beebf168d0d09fc20d7c004fdc2fdf9f07590fd95d8"
+  },
+  "agentDetail.runCrumb": {
+    "en": "Run {{id}}",
+    "zh-CN": "运行 {{id}}",
+    "reviewedEnglishHash": "b9766aac24cead007ee47439382b81df8584a25176224229f5dae49ab49784ee"
+  },
+  "agentDetail.runHeartbeat": {
+    "en": "Run Heartbeat",
+    "zh-CN": "运行心跳",
+    "reviewedEnglishHash": "2ff5f14d80ea9c38c130589b3083145f1b61d4986b4fda885db09869c5fcd5a8"
+  },
+  "agentDetail.runSource.assignment": {
+    "en": "Assignment",
+    "zh-CN": "分配",
+    "reviewedEnglishHash": "153cdaaec56103da0c71f1ff5a0786849d190d369ece1e63940081d8b3ecbd8d"
+  },
+  "agentDetail.runSource.automation": {
+    "en": "Automation",
+    "zh-CN": "自动化",
+    "reviewedEnglishHash": "d909750b1bbb71a39b6330ba8f81f4f8f6e889ed96d7ab366e74857909750c64"
+  },
+  "agentDetail.runSource.onDemand": {
+    "en": "On-demand",
+    "zh-CN": "按需",
+    "reviewedEnglishHash": "ceaa244452fe23cb5376fd4370aeae23112e4209a530e010c5c814a5f53c338c"
+  },
+  "agentDetail.runSource.timer": {
+    "en": "Timer",
+    "zh-CN": "定时器",
+    "reviewedEnglishHash": "cdeec2b374c18dd4b59abc6d8c7001c4b163b3261ae62ac84b15560490f037a0"
+  },
+  "agentDetail.runningClaudeLogin": {
+    "en": "Running claude login...",
+    "zh-CN": "正在运行 Claude 登录...",
+    "reviewedEnglishHash": "58ac84a4daea8d230bac151304606f6aa22cf2837c924a4168e471135e70b806"
+  },
+  "agentDetail.runs": {
+    "en": "Runs",
+    "zh-CN": "运行",
+    "reviewedEnglishHash": "848f54e89660cea4357644039ac5d7146f76c8e85df5c04076e08feb7e7547f0"
+  },
+  "agentDetail.saveFailed": {
+    "en": "Save failed",
+    "zh-CN": "保存失败",
+    "reviewedEnglishHash": "53ad6f999b1f062fb8fc100ddac854c3b96a36c1e03c6c8c61ce892d068b33c9"
+  },
+  "agentDetail.saving": {
+    "en": "Saving...",
+    "zh-CN": "正在保存...",
+    "reviewedEnglishHash": "dc85af8f2b1d0d6756547cd5f79557466e25e682b882f68d277bd7f125851321"
+  },
+  "agentDetail.savingChanges": {
+    "en": "Saving changes...",
+    "zh-CN": "正在保存更改...",
+    "reviewedEnglishHash": "86c6e0d74cc948c0bfa3c286bd9e756a6d1010545d2c5cb12f8c21daee401e5b"
+  },
+  "agentDetail.savingSoon": {
+    "en": "Saving soon...",
+    "zh-CN": "即将保存...",
+    "reviewedEnglishHash": "58ec588428651ed982424bd4d656ede3c9451336b9b152554ae7bbebe92bcfe7"
+  },
+  "agentDetail.seeAll": {
+    "en": "See All",
+    "zh-CN": "查看全部",
+    "reviewedEnglishHash": "44c9d36485b791c3bb9243af06a1b34c1b0f662594d698da5db17368a91a225f"
+  },
+  "agentDetail.selectedSkills": {
+    "en": "Selected skills",
+    "zh-CN": "已选技能",
+    "reviewedEnglishHash": "a4b2c46ce29b131a477d7cd5e6cc6664ab77b92f47e0799b79ba8e6d0c6b0a88"
+  },
+  "agentDetail.session": {
+    "en": "Session",
+    "zh-CN": "会话",
+    "reviewedEnglishHash": "6959b4159575d8dd76d9f3bbe2c6437904f861e7860c35abd18deffb1c3425a0"
+  },
+  "agentDetail.showFullLog": {
+    "en": "Show full log",
+    "zh-CN": "显示完整日志",
+    "reviewedEnglishHash": "4a55ed011aa13c7aea15bbcb90b131ec2cebea4e5fdf9c8dd5ecc7902212bc04"
+  },
+  "agentDetail.showingFirst": {
+    "en": "Showing the first",
+    "zh-CN": "显示前",
+    "reviewedEnglishHash": "7e92a4e10a391dc768715d8aae9f823a0980c49830e2e51173187c9b4cf2e6a6"
+  },
+  "agentDetail.showingFirstKb": {
+    "en": "Showing the first {{shown}} KB",
+    "zh-CN": "正在显示前 {{shown}} KB",
+    "reviewedEnglishHash": "b78cdb9bc554d8e74dc324fbefb792545fc83877d23cbc279c203681eeeb1653"
+  },
+  "agentDetail.showingFirstKbOf": {
+    "en": "Showing the first {{shown}} KB of {{total}} KB",
+    "zh-CN": "正在显示前 {{shown}} KB，共 {{total}} KB",
+    "reviewedEnglishHash": "cf4da9147abca7db38749956a268aeb8bab8a55d87737a8bd3d3c42c3f5b74ef"
+  },
+  "agentDetail.signal": {
+    "en": "(signal: {{signal}})",
+    "zh-CN": "（信号：{{signal}}）",
+    "reviewedEnglishHash": "4c93b7e5fdc60aa67984ed339d02aefc7a1557f6314098352255341cd1f10876"
+  },
+  "agentDetail.signalPrefix": {
+    "en": "(signal:",
+    "zh-CN": "（信号：",
+    "reviewedEnglishHash": "145327d02eb0cc8a2cc9aa98c67572e3da21fe8e7e39a21754022c0c414a45e5"
+  },
+  "agentDetail.skillMode.ephemeral": {
+    "en": "Applied when the agent runs",
+    "zh-CN": "智能体运行时应用",
+    "reviewedEnglishHash": "7a76e135543a5b329ccf3a36ae55dc4dc3d667580310a0b1a2715fd7e9e2299b"
+  },
+  "agentDetail.skillMode.persistent": {
+    "en": "Kept in the workspace",
+    "zh-CN": "保留在工作区中",
+    "reviewedEnglishHash": "a45133eab53bdeced5c2d57c3849545e0f4d8e971cf54d530650327b99b0dd84"
+  },
+  "agentDetail.skillMode.unknown": {
+    "en": "Unknown",
+    "zh-CN": "未知",
+    "reviewedEnglishHash": "b764cdc0eab7137467211272fa539f1260d1bf2e71bcf6ff3bdc960f5c16aa14"
+  },
+  "agentDetail.skillMode.unsupported": {
+    "en": "Tracked only",
+    "zh-CN": "仅跟踪",
+    "reviewedEnglishHash": "a714c282c6d70a085f89cdfd3e0c81176fd0a89cd3ac040f49c96c29aed6d22d"
+  },
+  "agentDetail.skills": {
+    "en": "Skills",
+    "zh-CN": "技能",
+    "reviewedEnglishHash": "66d0f523a379b2de6f8d5fba3a817ebc395f7bcaa54cc132ca9dfa665d1e9378"
+  },
+  "agentDetail.skillsApplied": {
+    "en": "Skills applied",
+    "zh-CN": "已应用技能",
+    "reviewedEnglishHash": "dc1826ca60eef3e5f0c85c5c61feb580ff0de9c471dd3574491aaf6870881b7c"
+  },
+  "agentDetail.skillsUnsupported.customAcp": {
+    "en": "Paperclip cannot manage skills for custom ACP commands yet.",
+    "zh-CN": "Paperclip 暂时无法管理自定义 ACP 命令的技能。",
+    "reviewedEnglishHash": "3f19494c31bd162263fcf9a25a970b0a26847389a6f17871af5412ca777c6128"
+  },
+  "agentDetail.skillsUnsupported.generic": {
+    "en": "Paperclip cannot manage skills for this adapter yet. Manage them in the adapter directly.",
+    "zh-CN": "Paperclip 暂时无法管理此适配器的技能。请在适配器中直接管理。",
+    "reviewedEnglishHash": "50d3ab86096864fdf57c7f4f2239296fd289130b00cdc2814b6d69b917d72688"
+  },
+  "agentDetail.skillsUnsupported.openClaw": {
+    "en": "Paperclip cannot manage OpenClaw skills here. Visit your OpenClaw instance to manage this agent's skills.",
+    "zh-CN": "Paperclip 无法在这里管理 OpenClaw 技能。请前往你的 OpenClaw 实例管理此智能体的技能。",
+    "reviewedEnglishHash": "49be839d7a6bc45254c97cc8b8e03bae1bfec0dc5309c4f204aee6512b673837"
+  },
+  "agentDetail.stderrExcerpt": {
+    "en": "stderr excerpt",
+    "zh-CN": "stderr 摘要",
+    "reviewedEnglishHash": "957d1931021ead09effe5daa44b1937610a93f7cd8076ea3a133c3effb0f7ab3"
+  },
+  "agentDetail.stdoutExcerpt": {
+    "en": "stdout excerpt",
+    "zh-CN": "stdout 摘要",
+    "reviewedEnglishHash": "66ced6705bcef5e64fcd9e6e693119c6da5f8f1abdb9c371cb75999176a96dc4"
+  },
+  "agentDetail.successRate": {
+    "en": "Success Rate",
+    "zh-CN": "成功率",
+    "reviewedEnglishHash": "5068c6c343ffda3e486241d5e345451b8f730db575a59fdf6ec2ee78227c1aec"
+  },
+  "agentDetail.taskAssignHint.agentCreator": {
+    "en": "Enabled automatically while this agent can create new agents.",
+    "zh-CN": "当此智能体可以创建新智能体时自动启用。",
+    "reviewedEnglishHash": "36da96fcb4106adbebc120123b4d9100a37f6d289b721f94fe4f0f1ca10165ac"
+  },
+  "agentDetail.taskAssignHint.ceoRole": {
+    "en": "Enabled automatically for CEO agents.",
+    "zh-CN": "CEO 智能体会自动启用。",
+    "reviewedEnglishHash": "e7a0e8c2a21619690379ed6163333639bbbe4857a49ac8640becdf604c628fce"
+  },
+  "agentDetail.taskAssignHint.disabled": {
+    "en": "Disabled unless explicitly granted.",
+    "zh-CN": "除非显式授权，否则保持禁用。",
+    "reviewedEnglishHash": "fde881c0800015c03363e8365069190b0b8e87374dcf4b7596eb745e26e30536"
+  },
+  "agentDetail.taskAssignHint.explicitGrant": {
+    "en": "Enabled via explicit company permission grant.",
+    "zh-CN": "已通过显式公司权限授权启用。",
+    "reviewedEnglishHash": "1f3bcb012abd16be5a067f831f2e19ac71dd4d4a6a77985cb09b6bc536393da2"
+  },
+  "agentDetail.taskAssignHint.simpleDefault": {
+    "en": "Enabled by simple company-wide task assignment defaults.",
+    "zh-CN": "已通过简单的公司级任务分配默认设置启用。",
+    "reviewedEnglishHash": "46478ceae7830243e26de799e2eb5b8a7f3e7a27ac13d9b6005014d417f68e5c"
+  },
+  "agentDetail.tasksByPriority": {
+    "en": "Tasks by Priority",
+    "zh-CN": "按优先级统计任务",
+    "reviewedEnglishHash": "19d3129acccc328ce5ed9b20c3b7319160786d594a0f2684d5ae1a94645a96ac"
+  },
+  "agentDetail.tasksByStatus": {
+    "en": "Tasks by Status",
+    "zh-CN": "按状态统计任务",
+    "reviewedEnglishHash": "4b4be15a426db912b38bd5584f78526bd165e451ace1ad4d3c75e964874d2a85"
+  },
+  "agentDetail.tasksTouched": {
+    "en": "Tasks Touched (",
+    "zh-CN": "涉及的任务（",
+    "reviewedEnglishHash": "56b756a2ea845103f42ef0134d1fbe621dd99d64956c258496b813fffbc8a29f"
+  },
+  "agentDetail.terminate": {
+    "en": "Terminate",
+    "zh-CN": "终止",
+    "reviewedEnglishHash": "f913f09210e8cbbc3f3420da61b8858ef4c124ec834950cce8cd26f3b152acdb"
+  },
+  "agentDetail.tools": {
+    "en": "Tools",
+    "zh-CN": "工具",
+    "reviewedEnglishHash": "ea93d6a262ecb87a9fa4d09edbd7654c046597936a8e235fc3949eb01775ff99"
+  },
+  "agentDetail.totalCost": {
+    "en": "Total cost",
+    "zh-CN": "总成本",
+    "reviewedEnglishHash": "f39a526e87604300b912cd8bd5fde36d7a8c0a614b7a1fa36bc27050ba3d3a6d"
+  },
+  "agentDetail.transcriptCount": {
+    "en": "Transcript ({{count}})",
+    "zh-CN": "转录（{{count}}）",
+    "reviewedEnglishHash": "cd4ebdbaef54c7548de904cac4c5c07dc00d66cc689e8fcedf0a0edd7d1fd616"
+  },
+  "agentDetail.transcriptMode.nice": {
+    "en": "Nice",
+    "zh-CN": "整理",
+    "reviewedEnglishHash": "fdc96ffbf256523aec8846ae56321053c7ab751c99eb766e6bb4a7d362a4f060"
+  },
+  "agentDetail.transcriptMode.raw": {
+    "en": "Raw",
+    "zh-CN": "原始",
+    "reviewedEnglishHash": "848123d14f84faa22d3dc567c6dec9dd70151f208eff68a1206ed28010ea2df4"
+  },
+  "agentDetail.transcriptPrefix": {
+    "en": "Transcript (",
+    "zh-CN": "运行记录（",
+    "reviewedEnglishHash": "fd6a2ef44b18e52ef959420aae3dcb685633678863675192fe843d0e8426c1a3"
+  },
+  "agentDetail.userInstalledSkillsUnmanaged": {
+    "en": "({{count}}) User-installed skills, not managed by Paperclip",
+    "zh-CN": "（{{count}}）用户安装的技能，未由 Paperclip 管理",
+    "reviewedEnglishHash": "c836077187d83f7cbb51aa785ee24a0e9162d19275729990e4a9985da638bdf9"
+  },
+  "agentDetail.viewCompanySkillsLibrary": {
+    "en": "View company skills library",
+    "zh-CN": "查看公司技能库",
+    "reviewedEnglishHash": "e4a15b5d250494aa6c3905972f121ff06a11952473eee4edb021329002c0633b"
+  },
+  "agentDetail.viewDetails": {
+    "en": "View details",
+    "zh-CN": "查看详情",
+    "reviewedEnglishHash": "d1bf045bb524dae5b02c471c230958bcd1bf232d7a49367b1cdf977855a06b41"
+  },
+  "agentDetail.virtualFile": {
+    "en": "virtual file",
+    "zh-CN": "虚拟文件",
+    "reviewedEnglishHash": "e0e99522c4b6d0b5914de0f509db55de5989c7f0dcd474a432930a3ecb9e3db5"
+  },
+  "agentDetail.virtualFileTooltip": {
+    "en": "Legacy inline prompt — this deprecated virtual file preserves the old promptTemplate content",
+    "zh-CN": "旧版内联提示词 - 这个已弃用的虚拟文件用于保留旧的 promptTemplate 内容",
+    "reviewedEnglishHash": "767eebd8465a57377bc9b44ecf294db34ca0c981ee774af6b56f69ad17e09044"
+  },
+  "agentDetail.waitingForTranscript": {
+    "en": "Waiting for transcript...",
+    "zh-CN": "正在等待转录...",
+    "reviewedEnglishHash": "8f7d4ad6562d888ca4ac59b2dbfcd59a69bb57c33d24ffac673cdb3082380362"
+  },
+  "agentDetail.workingDirLabel": {
+    "en": "Working dir:",
+    "zh-CN": "工作目录：",
+    "reviewedEnglishHash": "802469e923e35cf7d7573cce33008509bf3a8464af408544b13f87dc9c36495b"
+  },
+  "agentDetail.workspaceOperationsCount": {
+    "en": "Workspace ({{count}})",
+    "zh-CN": "工作区（{{count}}）",
+    "reviewedEnglishHash": "2956ee837fd44b18ad299956308b75eaf7eb81062fe1be36aaf6e6da18ef80d8"
+  },
+  "agentDetail.workspacePhase.workspaceConfigFreshness": {
+    "en": "Config freshness",
+    "zh-CN": "配置时效检查",
+    "reviewedEnglishHash": "bf4c3a58d65ae6ec9e8af2ed37610ae7f11ddb09b91d65c320caab85e2212b80"
+  },
+  "agentDetail.workspacePhase.workspaceProvision": {
+    "en": "Provision",
+    "zh-CN": "预配",
+    "reviewedEnglishHash": "41112adcd22c7aa168c005094848158ea2fe248992b8f6b09ebeea66e0d40b60"
+  },
+  "agentDetail.workspacePhase.workspaceTeardown": {
+    "en": "Teardown",
+    "zh-CN": "拆除",
+    "reviewedEnglishHash": "3a013079020e15d38c4d05992712b9dd7d25348425c88814ff12f536ec4d0c96"
+  },
+  "agentDetail.workspacePhase.worktreeCleanup": {
+    "en": "Worktree cleanup",
+    "zh-CN": "清理工作树",
+    "reviewedEnglishHash": "2a0930d8050cf484aa2bd1be8a8dd3041c016dfe2862aef2565f72a41c76f141"
+  },
+  "agentDetail.workspacePhase.worktreePrepare": {
+    "en": "Worktree setup",
+    "zh-CN": "准备工作树",
+    "reviewedEnglishHash": "550db5f21cb4afa0af0ebc30dc709d67c37b0d0ea81326910538972569b4f6f3"
+  },
+  "agentDetail.workspacePrefix": {
+    "en": "Workspace (",
+    "zh-CN": "工作区（",
+    "reviewedEnglishHash": "2452b15a6645ec804cad0db5258320204a9fe1915c4dc34a294c6b2e27270c6b"
+  },
+  "agentDetail.workspaceStatus.failed": {
+    "en": "failed",
+    "zh-CN": "失败",
+    "reviewedEnglishHash": "5d28a90f4498a81461efbaf6f628a19d9778390bb5c81a393dd936181cc3d826"
+  },
+  "agentDetail.workspaceStatus.running": {
+    "en": "running",
+    "zh-CN": "运行中",
+    "reviewedEnglishHash": "c071cf5f5ed6f884cc70155b6f05f755fd46a302d05e4261b7e92ce878bbfed8"
+  },
+  "agentDetail.workspaceStatus.skipped": {
+    "en": "skipped",
+    "zh-CN": "已跳过",
+    "reviewedEnglishHash": "389595a44dc9dce7dee673f243e805244bae603d6a65a536ad493340ec99ced3"
+  },
+  "agentDetail.workspaceStatus.succeeded": {
+    "en": "succeeded",
+    "zh-CN": "成功",
+    "reviewedEnglishHash": "5dceaeceb6d8a49d3665594710ace68dfbc1800e2d663d7febb302b4dbee3d27"
+  },
+  "agentDetail.worktreeLabel": {
+    "en": "Worktree:",
+    "zh-CN": "工作树：",
+    "reviewedEnglishHash": "b7f496bf79f7faffdda8a8d71e887b7714bbb8cf091d510ef80958e2e84c4bf4"
+  }
+}

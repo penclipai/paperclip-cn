@@ -1,0 +1,32 @@
+{
+  "issueContinuationHandoff.badge": {
+    "en": "handoff",
+    "zh-CN": "交接",
+    "reviewedEnglishHash": "249215fed826e1cff9368c2c7490760a16f7bd49f875d39a9f23eaf1505d076d"
+  },
+  "issueContinuationHandoff.collapse": {
+    "en": "Collapse continuation handoff",
+    "zh-CN": "折叠延续交接",
+    "reviewedEnglishHash": "d05124b8b452a0bdaf784a5ba190d7ea5729da1a8c94f101576e688f3d571e34"
+  },
+  "issueContinuationHandoff.expand": {
+    "en": "Expand continuation handoff",
+    "zh-CN": "展开延续交接",
+    "reviewedEnglishHash": "85436654991f7e5dbfc5953e0f7815e1d98126c9f01a2349abe03e41961822ae"
+  },
+  "issueContinuationHandoff.revisionSuffix": {
+    "en": " - revision {{count}}",
+    "zh-CN": " - 修订 {{count}}",
+    "reviewedEnglishHash": "31d3e9ab259d5d6d1a7193c90b9be4c5c434d0ffaec427bdac5d233f2d4f7b3d"
+  },
+  "issueContinuationHandoff.title": {
+    "en": "Continuation handoff",
+    "zh-CN": "延续交接",
+    "reviewedEnglishHash": "f052bd23e972d882d681717e168b3a09dc2d7dac5b5aaf7170ff0b810cc1ceda"
+  },
+  "issueContinuationHandoff.updated": {
+    "en": "Updated {{time}}",
+    "zh-CN": "更新于 {{time}}",
+    "reviewedEnglishHash": "6379f4b4efb9b0a5342283ad3b0d99edf9df796e29d5791b24e14999ac127e78"
+  }
+}

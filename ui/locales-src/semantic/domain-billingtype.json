@@ -1,0 +1,32 @@
+{
+  "billingType.credits": {
+    "en": "Credits",
+    "zh-CN": "额度",
+    "reviewedEnglishHash": "2a6b24ad287220345e96eb8021fe29d42b0785766c8df658827e7251da2d36dc"
+  },
+  "billingType.fixed": {
+    "en": "Fixed",
+    "zh-CN": "固定费用",
+    "reviewedEnglishHash": "1246fc93bca00b90d0fcaf2f7b7b41546f08817ce552c25eabc7dca19181c65a"
+  },
+  "billingType.meteredApi": {
+    "en": "Metered API",
+    "zh-CN": "按量 API",
+    "reviewedEnglishHash": "e8dcab0a47e05692fdb7ec0053f29cee4aa72764ed77bae6aa36b03e53089810"
+  },
+  "billingType.subscription": {
+    "en": "Subscription",
+    "zh-CN": "订阅",
+    "reviewedEnglishHash": "4999c6c6c7badf456f5b0053b09a2076bdb2391a09ab10c9064a680f8f9a0b30"
+  },
+  "billingType.subscriptionOverage": {
+    "en": "Subscription overage",
+    "zh-CN": "订阅超额",
+    "reviewedEnglishHash": "a221d5ff3aa1c6cfb4833c44fab04fb7a3eef4ae8570eaf9eada008f32831b02"
+  },
+  "billingType.unknown": {
+    "en": "Unknown",
+    "zh-CN": "未知",
+    "reviewedEnglishHash": "b764cdc0eab7137467211272fa539f1260d1bf2e71bcf6ff3bdc960f5c16aa14"
+  }
+}

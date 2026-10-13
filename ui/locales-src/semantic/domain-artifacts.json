@@ -1,0 +1,192 @@
+{
+  "artifacts.allStacks": {
+    "en": "All stacks",
+    "zh-CN": "全部堆栈",
+    "reviewedEnglishHash": "278e106339d2dd351a002475d765a8d9d04334d00765a328f5903736fb3c39dc"
+  },
+  "artifacts.clearSearch": {
+    "en": "Clear artifact search",
+    "zh-CN": "清除产物搜索",
+    "reviewedEnglishHash": "3bbc1b58ad114a7aef32a5d51854712c41dc207e9678f7a444159dd44436f00e"
+  },
+  "artifacts.downloadFile": {
+    "en": "Download file",
+    "zh-CN": "下载文件",
+    "reviewedEnglishHash": "9de4149fb9716cfc2d9f757708f261e93698c5bef33d41a0c5b927decc88e169"
+  },
+  "artifacts.emptyAll": {
+    "en": "No artifacts yet. Outputs attached to issues will appear here.",
+    "zh-CN": "还没有产物。附加到任务的输出会显示在这里。",
+    "reviewedEnglishHash": "440470fa1743cb128b1ec130eb0b001aa7f7add4752d035e10db74844ecf4d26"
+  },
+  "artifacts.emptyKind": {
+    "en": "No artifacts of this type yet.",
+    "zh-CN": "还没有这种类型的产物。",
+    "reviewedEnglishHash": "4ced60bc514ac4e99c3c88e0c21a5f5b21dd7754c78b3d57179bb6a52018d674"
+  },
+  "artifacts.emptySearch": {
+    "en": "No artifacts match this search.",
+    "zh-CN": "没有产物匹配本次搜索。",
+    "reviewedEnglishHash": "c4e7a963bb0483916be17ac48cf8f1838fd2f676f8c8167483cc5fd0d0a07850"
+  },
+  "artifacts.emptySelectedStack": {
+    "en": "No artifacts in this stack match the current filters.",
+    "zh-CN": "当前筛选条件下，这个堆栈中没有匹配的产物。",
+    "reviewedEnglishHash": "16f4a28e29bb6e3f15157adf950b2d73b5ee4a40958ea12e7b917575b0d03961"
+  },
+  "artifacts.emptyStackSearch": {
+    "en": "No artifact stacks match this search.",
+    "zh-CN": "没有产物堆栈匹配本次搜索。",
+    "reviewedEnglishHash": "a3b3ddf7910b88d31d14a41782bd72a5513b53c35a01d2b8fca4fad97be033d5"
+  },
+  "artifacts.emptyStacks": {
+    "en": "No artifact stacks yet.",
+    "zh-CN": "还没有产物堆栈。",
+    "reviewedEnglishHash": "7f21bb0ea0e278e3ba83b0cf1e9bbd8daec773945960c12b6543014d3aceb56d"
+  },
+  "artifacts.filter.all": {
+    "en": "All",
+    "zh-CN": "全部",
+    "reviewedEnglishHash": "a52ace420f2175d08b1577a1bea5445e36801229c074ef9ed6c55a73401fd9c2"
+  },
+  "artifacts.filter.documents": {
+    "en": "Documents",
+    "zh-CN": "文档",
+    "reviewedEnglishHash": "b4e929d8bcfe04189801a8ed61496d177d9e30d1b2826f4c9c4d00b3e705fa8b"
+  },
+  "artifacts.filter.files": {
+    "en": "Files",
+    "zh-CN": "文件",
+    "reviewedEnglishHash": "abc7e9892806b047b4d4786b3685285543f76ca314c4c76246d5f6544c7856c9"
+  },
+  "artifacts.filter.images": {
+    "en": "Images",
+    "zh-CN": "图片",
+    "reviewedEnglishHash": "be7e2f20129365c2899b2c11bfc465541e61b1858f45bf0248cf99b9271bc707"
+  },
+  "artifacts.filter.text": {
+    "en": "Text",
+    "zh-CN": "文本",
+    "reviewedEnglishHash": "71988c4d8e0803ba4519f0b2864c1331c14a1890bf8694e251379177bfedb5c3"
+  },
+  "artifacts.filter.videos": {
+    "en": "Videos",
+    "zh-CN": "视频",
+    "reviewedEnglishHash": "c9a9639463c21952df7b8b15ebd3f526a3d49a3c2c5fdc32b0d8405263b6322f"
+  },
+  "artifacts.filterAria": {
+    "en": "Filter artifacts by type",
+    "zh-CN": "按类型筛选产物",
+    "reviewedEnglishHash": "ff8bce095215ebd79fcfcf60dd617a682cab335386c96981ab9d9ecddfbaa56f"
+  },
+  "artifacts.group.count": {
+    "en": "{{formattedCount}} artifacts",
+    "zh-CN": "{{formattedCount}} 个产物",
+    "reviewedEnglishHash": "fd55d60197a23095c010cf4a4fc5d908f1500ecd63a59d5465a4b27a45fd004e"
+  },
+  "artifacts.group.count_one": {
+    "en": "{{formattedCount}} artifact",
+    "zh-CN": "{{formattedCount}} 个产物",
+    "reviewedEnglishHash": "f35de0a12f69d9df4d8b598de3a7e9ae7196a2d11c401d80efc94a64fa54112c"
+  },
+  "artifacts.group.count_other": {
+    "en": "{{formattedCount}} artifacts",
+    "zh-CN": "{{formattedCount}} 个产物",
+    "reviewedEnglishHash": "fd55d60197a23095c010cf4a4fc5d908f1500ecd63a59d5465a4b27a45fd004e"
+  },
+  "artifacts.group.none": {
+    "en": "None",
+    "zh-CN": "不分组",
+    "reviewedEnglishHash": "dc937b59892604f5a86ac96936cd7ff09e25f18ae6b758e8014a24c7fa039e91"
+  },
+  "artifacts.group.parentTask": {
+    "en": "Parent task",
+    "zh-CN": "父任务",
+    "reviewedEnglishHash": "fb8d859156cd03a007e209638ed58987ba36bd1dd63f09d1c0dedb5052099bbf"
+  },
+  "artifacts.group.task": {
+    "en": "Task",
+    "zh-CN": "任务",
+    "reviewedEnglishHash": "4bc74b21357c6cf5cca8f66b4d4ee948be64d0396feb434c9645e168ad61ceaf"
+  },
+  "artifacts.group.updated": {
+    "en": "Updated {{date}}",
+    "zh-CN": "更新于 {{date}}",
+    "reviewedEnglishHash": "a89934bccef706f326efe8a137787612ba8c3fc05e94656dc57668355140393a"
+  },
+  "artifacts.groupAria": {
+    "en": "Group artifacts (currently {{group}})",
+    "zh-CN": "产物分组（当前：{{group}}）",
+    "reviewedEnglishHash": "f134a2aaf0c8ac16cd0ea412f1ae16f6dad19df1269aaf0639b0d92233f0d9e0"
+  },
+  "artifacts.groupBy": {
+    "en": "Group by",
+    "zh-CN": "分组方式",
+    "reviewedEnglishHash": "956a51f6b098a41b7c3108015f0790bb24af7693717b07cee39d5df6a5da1826"
+  },
+  "artifacts.groupTitle": {
+    "en": "Group artifacts",
+    "zh-CN": "产物分组",
+    "reviewedEnglishHash": "49a9799e9ea9f87cf7720b6ec909b5f33d82becf7e5f2fd502bb2be764f58668"
+  },
+  "artifacts.lastEdited": {
+    "en": "Last edited {{date}}",
+    "zh-CN": "最后编辑于 {{date}}",
+    "reviewedEnglishHash": "d2f6a046169074b957cc8c32717345102c92d8193c6e9fa6cec7154c936fca30"
+  },
+  "artifacts.loadingMore": {
+    "en": "Loading more artifacts...",
+    "zh-CN": "正在加载更多产物...",
+    "reviewedEnglishHash": "ad61c51608d945274cd15ec310cf91e320b1b474f18afb800a5cd569a06a1362"
+  },
+  "artifacts.media.document": {
+    "en": "Document",
+    "zh-CN": "文档",
+    "reviewedEnglishHash": "d6bd8c0aeee80fedb2dbf05c973100c3db04be90c072a88572533f2684131a36"
+  },
+  "artifacts.media.file": {
+    "en": "File",
+    "zh-CN": "文件",
+    "reviewedEnglishHash": "50009ce1da4d15e1c4a04024df691eed5f0d598e2c4c67092f205366d0adf99e"
+  },
+  "artifacts.media.image": {
+    "en": "Image",
+    "zh-CN": "图片",
+    "reviewedEnglishHash": "1aa4cb0bcca76e92e30677e809bb3d4b5c066715ef4d558184e319496bcc5125"
+  },
+  "artifacts.media.text": {
+    "en": "Text",
+    "zh-CN": "文本",
+    "reviewedEnglishHash": "71988c4d8e0803ba4519f0b2864c1331c14a1890bf8694e251379177bfedb5c3"
+  },
+  "artifacts.openFile": {
+    "en": "Open file in new tab",
+    "zh-CN": "在新标签页打开文件",
+    "reviewedEnglishHash": "f31b6190b24b5351cb4a66806a64431337b5e142f534b5f6ac2c2fc1bd412cba"
+  },
+  "artifacts.searchAria": {
+    "en": "Search artifacts",
+    "zh-CN": "搜索产物",
+    "reviewedEnglishHash": "c71436cce0eb861d68e7ded1ef04ddf0265a67ea69d5fb00698167018553dd8a"
+  },
+  "artifacts.searchPlaceholder": {
+    "en": "Search artifacts...",
+    "zh-CN": "搜索产物...",
+    "reviewedEnglishHash": "59aadbdf0d35a2f91af5956d09add328d7cc6bc4700115e0cca71eab7a6cfd90"
+  },
+  "artifacts.selectCompany": {
+    "en": "Select a company to view artifacts.",
+    "zh-CN": "选择一家公司来查看产物。",
+    "reviewedEnglishHash": "c1d86da6dda17558102f5254d3626211010c17a4d1ce84f1eabafa6653326948"
+  },
+  "artifacts.title": {
+    "en": "Artifacts",
+    "zh-CN": "产物",
+    "reviewedEnglishHash": "314ae71b8c8dc9c952f0ffc58e35e6d9a41b5cf4756471c7cab0c9476cd5d20b"
+  },
+  "artifacts.updating": {
+    "en": "Updating artifacts...",
+    "zh-CN": "正在更新产物...",
+    "reviewedEnglishHash": "e40329f09171d0397e164a5eefe7802ca48b39081d2b35f0cf078e29ddf2b5e8"
+  }
+}

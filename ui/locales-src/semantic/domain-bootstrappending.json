@@ -1,0 +1,77 @@
+{
+  "bootstrapPending.activeInviteHelp": {
+    "en": "A bootstrap invite is already active. Check your Paperclip CN startup logs for the first-admin URL, or run this command on the host to rotate it:",
+    "zh-CN": "已有一个初始化邀请处于激活状态。请查看 Paperclip CN 启动日志中的首个管理员 URL，或在宿主机运行此命令进行轮换：",
+    "reviewedEnglishHash": "bd6cfe387fc2e82cb611d74b574391ac8ede3db935f09e639509c6887a7bca45"
+  },
+  "bootstrapPending.adminTitle": {
+    "en": "You're the instance admin",
+    "zh-CN": "你已成为实例管理员",
+    "reviewedEnglishHash": "7b0496df7733378f11bcc67e745c31120b0534e17b64a7a6c071bc734e2fa3b1"
+  },
+  "bootstrapPending.claimBody": {
+    "en": "No admin has claimed this instance yet. Claim it now to become the first admin and start onboarding.",
+    "zh-CN": "还没有管理员领取此实例。立即领取，成为首个管理员并开始引导流程。",
+    "reviewedEnglishHash": "c5c1f5e47599200df8158e46f768763967ea9acad17e01de6e8ad7af3c0d79e7"
+  },
+  "bootstrapPending.claimedBody": {
+    "en": "Refresh to sign in, or ask the existing admin to invite you from Instance settings -> Access.",
+    "zh-CN": "刷新后登录，或请现有管理员从“实例设置 -> 访问”邀请你。",
+    "reviewedEnglishHash": "da968c69272a3840366398edb0e0106400a08d0384f768a0f05ad19f79e79020"
+  },
+  "bootstrapPending.claimedTitle": {
+    "en": "Someone else has already claimed this instance.",
+    "zh-CN": "已有其他人领取了此实例。",
+    "reviewedEnglishHash": "e9efa2de4beb928709be71d07062d533cea5c69790b44b1f393f45db73c491d6"
+  },
+  "bootstrapPending.commandHelp": {
+    "en": "Run this command on the host that runs Paperclip CN to print a one-time first-admin invite URL:",
+    "zh-CN": "在运行 Paperclip CN 的宿主机上执行此命令，打印一次性的首个管理员邀请 URL：",
+    "reviewedEnglishHash": "f7840523e7dfb0488d39d11e15ce7983ed2403e576b4dde84a95d19e4ba44bd8"
+  },
+  "bootstrapPending.finishFromHost": {
+    "en": "Prefer to finish setup from the host?",
+    "zh-CN": "想从宿主机完成设置？",
+    "reviewedEnglishHash": "d29e5c6f243f37b2199cd708f538763fca68d77f483bf169a92e3e021f2cf196"
+  },
+  "bootstrapPending.finishTitle": {
+    "en": "Finish setting up this Paperclip CN",
+    "zh-CN": "完成此 Paperclip CN 的设置",
+    "reviewedEnglishHash": "99e975f5a5efbe6a46e50a62ec8d85545544a30b31d55c70df7eb688fc75e597"
+  },
+  "bootstrapPending.inviteOnlyBody": {
+    "en": "This instance runs in invite-only mode. The operator must generate a one-time first-admin invite URL from the host. Once you have the link, open it from this browser to finish setup.",
+    "zh-CN": "此实例运行在仅邀请模式。操作者必须在宿主机生成一次性的首个管理员邀请 URL。拿到链接后，请在此浏览器中打开以完成设置。",
+    "reviewedEnglishHash": "b781534e7d40d7bca60b8eee107a8afcf538bd03ddc98e2e13366a4c9d08738a"
+  },
+  "bootstrapPending.publicModeDisabled": {
+    "en": "Browser-based claim is intentionally disabled in public mode so anyone on the network can't promote themselves.",
+    "zh-CN": "公开模式下有意禁用浏览器领取，避免网络上的任何人自行提升权限。",
+    "reviewedEnglishHash": "bbdfcda48c5f0c1e0abfa377261312ec7e9d85e7d15ff8db848f5139e9641dff"
+  },
+  "bootstrapPending.serverUnreachable": {
+    "en": "We couldn't reach the server. Try again in a moment.",
+    "zh-CN": "无法连接服务器，请稍后重试。",
+    "reviewedEnglishHash": "2fca89bf798a816ce03b0d04dc70563bfcc95658c4498210f064f6af8eeadd23"
+  },
+  "bootstrapPending.sessionExpired": {
+    "en": "Your session expired. Sign in again to claim this instance.",
+    "zh-CN": "你的会话已过期。请重新登录后领取此实例。",
+    "reviewedEnglishHash": "7c6edab35d57a6eabfccdd0533f92113ef91b0a3fa5479e2b2f472d65b01a90a"
+  },
+  "bootstrapPending.setupComplete": {
+    "en": "Setup is complete. Taking you to onboarding to create your first company...",
+    "zh-CN": "设置已完成。正在前往引导流程创建你的第一家公司...",
+    "reviewedEnglishHash": "27005e8ba8b8441df1bb886e8a0fabbbbfabcece52bf0c2378020129598a68a0"
+  },
+  "bootstrapPending.signInBody": {
+    "en": "No admin has claimed this instance yet. Sign in or create your Paperclip CN account to become the first admin from this browser.",
+    "zh-CN": "还没有管理员领取此实例。请登录或创建 Paperclip CN 账号，从此浏览器成为首个管理员。",
+    "reviewedEnglishHash": "cf865c10246943716545568f266955c8aa871f3af1086bfbf55de09f159f8bcc"
+  },
+  "bootstrapPending.waitingTitle": {
+    "en": "This Paperclip CN is waiting on its first admin",
+    "zh-CN": "此 Paperclip CN 正在等待首个管理员",
+    "reviewedEnglishHash": "f72751e9ee8fef1f5b5b07b2545cac468b1e106310772d11229cbba18e8c5643"
+  }
+}

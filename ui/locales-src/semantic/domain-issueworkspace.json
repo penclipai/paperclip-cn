@@ -1,0 +1,112 @@
+{
+  "issueWorkspace.adapterManaged": {
+    "en": "Adapter managed",
+    "zh-CN": "适配器托管",
+    "reviewedEnglishHash": "17348d1ce6fd7d761ef79659d18221c65e409178ebedd4b58955b58ed775ba45"
+  },
+  "issueWorkspace.browseFiles": {
+    "en": "Browse files…",
+    "zh-CN": "浏览文件...",
+    "reviewedEnglishHash": "62f9b06784b659380933e9357f439ef205502885ab713045b05a73b45d7bde07"
+  },
+  "issueWorkspace.chooseExistingWorkspace": {
+    "en": "Choose an existing workspace",
+    "zh-CN": "选择一个现有工作区",
+    "reviewedEnglishHash": "f8f73210599b2f45b60a6cfdf3d5884c8e8c4d37ca4f042ed9b6b972dabfc859"
+  },
+  "issueWorkspace.cloudSandbox": {
+    "en": "Cloud sandbox",
+    "zh-CN": "云沙箱",
+    "reviewedEnglishHash": "20b4a6ba8b119552a9172983505939087b4f7bd0ac46957772a9dd5f919434ec"
+  },
+  "issueWorkspace.current": {
+    "en": "Current:",
+    "zh-CN": "当前：",
+    "reviewedEnglishHash": "c09f632874c2511b5b12667c928faefc9417da295a2f7187083254a3c81a75bc"
+  },
+  "issueWorkspace.edit": {
+    "en": "Edit",
+    "zh-CN": "编辑",
+    "reviewedEnglishHash": "464c4ffd019e1e9691dcf0537c797353ef2b1c1d4833d3d463e5b74ae4547344"
+  },
+  "issueWorkspace.environment": {
+    "en": "Environment:",
+    "zh-CN": "环境：",
+    "reviewedEnglishHash": "340e3fe1f8281d7070af99b12b978e9e1d0ef8e853314ed1b6dc1dcafc8bb8f7"
+  },
+  "issueWorkspace.existingIsolatedWorkspace": {
+    "en": "Existing isolated workspace",
+    "zh-CN": "现有隔离工作区",
+    "reviewedEnglishHash": "cb171f74e1ee762f8e3446920b21bd7bd3c38c0c846a154161420aa9e72ea1be"
+  },
+  "issueWorkspace.freshIsolated": {
+    "en": "A fresh isolated workspace will be created when this issue runs.",
+    "zh-CN": "当此任务运行时，将创建一个全新的隔离工作区。",
+    "reviewedEnglishHash": "cae298ad3bda604c9f27b031b94e2ce353d3fc9d7f369b10a7203962dfb04be6"
+  },
+  "issueWorkspace.isolatedWorkspace": {
+    "en": "Isolated workspace",
+    "zh-CN": "隔离工作区",
+    "reviewedEnglishHash": "291e49271552dbfa0f2ce5c8d5b83957e5016b63aa2a9684d6574526b691f80a"
+  },
+  "issueWorkspace.newIsolatedWorkspace": {
+    "en": "New isolated workspace",
+    "zh-CN": "新建隔离工作区",
+    "reviewedEnglishHash": "0c67029f9e1abe735ac27650f8571b05c0ee4fa68c69a256f1110aaa22cabbc9"
+  },
+  "issueWorkspace.openFileByPath": {
+    "en": "Open file by path…",
+    "zh-CN": "按路径打开文件...",
+    "reviewedEnglishHash": "1f9a7fd51ed0083a1fcb2aac901454585b638357486c6d15ebfc1d5c09412777"
+  },
+  "issueWorkspace.operatorBranch": {
+    "en": "Operator branch",
+    "zh-CN": "操作员分支",
+    "reviewedEnglishHash": "ff9526ee68f46e5ad0e1e0f2ab1b58c0350971ace32aa8c53c3b6f1030b5d2eb"
+  },
+  "issueWorkspace.projectDefault": {
+    "en": "Project default",
+    "zh-CN": "沿用项目默认",
+    "reviewedEnglishHash": "e8cb80e5c5cb7d7ab993752ca5a5df422767c827ca28cf19b92111fe136df828"
+  },
+  "issueWorkspace.projectDefaultWhenRuns": {
+    "en": "This issue will use the project default workspace configuration when it runs.",
+    "zh-CN": "当此任务运行时，将使用项目默认的工作区配置。",
+    "reviewedEnglishHash": "e4978cd034bc8c8ee8f6a13d4862f180f01f9f6a6c6b152b7abb865f7ad22337"
+  },
+  "issueWorkspace.repo": {
+    "en": "Repo:",
+    "zh-CN": "仓库：",
+    "reviewedEnglishHash": "8d01a908bca02414035aab08a61d65f5d062b212bffca04ecdea8d3bcab5e28e"
+  },
+  "issueWorkspace.reuseExistingWorkspace": {
+    "en": "Reuse existing workspace",
+    "zh-CN": "复用现有工作区",
+    "reviewedEnglishHash": "c84ba2b63629f77ddd5c954fe73568893e2b62e6bd6813d4b7389f0cedf67fc0"
+  },
+  "issueWorkspace.reuseWhenRuns": {
+    "en": "This issue will reuse an existing workspace when it runs.",
+    "zh-CN": "当此任务运行时，将复用一个现有工作区。",
+    "reviewedEnglishHash": "2ad2b696282983a1a61f07d3544651e3fb244b6d3179f7576675fba29621f0dd"
+  },
+  "issueWorkspace.reusing": {
+    "en": "Reusing:",
+    "zh-CN": "复用：",
+    "reviewedEnglishHash": "cc296a0910c24565a662d3b941f5bf5b77f28ff6978c440a92e2281b04727348"
+  },
+  "issueWorkspace.save": {
+    "en": "Save",
+    "zh-CN": "保存",
+    "reviewedEnglishHash": "1509f561f2416598629b886ad7d3c05a7e221e4e0675c84bbff4ee6d9e03913d"
+  },
+  "issueWorkspace.viewWorkspaceDetails": {
+    "en": "View workspace details →",
+    "zh-CN": "查看工作区详情 →",
+    "reviewedEnglishHash": "2e9561430d517b1da08063838b62924d9018ac161fbd340f262684da68d3af8e"
+  },
+  "issueWorkspace.workspace": {
+    "en": "Workspace",
+    "zh-CN": "工作区",
+    "reviewedEnglishHash": "87bb59ba2f92f2a5a9f13e021fd58dd14ae5c065b1046146875e6e68d5ebc8b7"
+  }
+}

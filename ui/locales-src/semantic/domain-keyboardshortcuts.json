@@ -1,0 +1,137 @@
+{
+  "keyboardShortcuts.archiveItem": {
+    "en": "Archive item",
+    "zh-CN": "归档项目",
+    "reviewedEnglishHash": "0fd57cea79115d493b96a483d87524408e6915f0a01a97e89574382c19000878"
+  },
+  "keyboardShortcuts.closeAndDisabledHint": {
+    "en": "to close - Shortcuts are disabled in text fields",
+    "zh-CN": "关闭 - 文本输入区域中禁用快捷键",
+    "reviewedEnglishHash": "833a3b6873cd3f0f8ddef46de51c7dd979edc3ff510e94078729871e29ca0ddf"
+  },
+  "keyboardShortcuts.collapseOrExpandSidebar": {
+    "en": "Collapse or expand sidebar",
+    "zh-CN": "收起或展开侧边栏",
+    "reviewedEnglishHash": "2202c5cb9db0bdaa9ae847a545d37a1791357bf984d22f846069d942d9f23ae9"
+  },
+  "keyboardShortcuts.collapseSelectedGroup": {
+    "en": "Collapse selected group",
+    "zh-CN": "收起选中分组",
+    "reviewedEnglishHash": "933a60afce8a6b41bc84816560ce35716c585b462ad290b06495835e2e0067ff"
+  },
+  "keyboardShortcuts.disabledInTextFields": {
+    "en": "Shortcuts are disabled in text fields",
+    "zh-CN": "在文本输入区域中禁用快捷键",
+    "reviewedEnglishHash": "126a995a9bc48470f1970dc71e005bef311254890472649650a2daa68ffd7bba"
+  },
+  "keyboardShortcuts.expandSelectedGroup": {
+    "en": "Expand selected group",
+    "zh-CN": "展开选中分组",
+    "reviewedEnglishHash": "6ecae6bf37bf0525eca47f60926ae7b6ce7dbb2460b2b620eafac97c93d8897e"
+  },
+  "keyboardShortcuts.focusCommentComposer": {
+    "en": "Focus comment composer",
+    "zh-CN": "聚焦评论输入框",
+    "reviewedEnglishHash": "a0f6da743c0710316cf2223878c8fa11df1109f49895e551147ce55d90c75601"
+  },
+  "keyboardShortcuts.goToInbox": {
+    "en": "Go to inbox",
+    "zh-CN": "前往收件箱",
+    "reviewedEnglishHash": "cde5bedaa1cc432c0260858ee6567b5be9000bc4bf60e9b23870ff55ff1c7577"
+  },
+  "keyboardShortcuts.markAsRead": {
+    "en": "Mark as read",
+    "zh-CN": "标为已读",
+    "reviewedEnglishHash": "50c8b81faf51e7d1433c62086339c8eed71f7577278b1b797e684b3da3465b73"
+  },
+  "keyboardShortcuts.markAsUnread": {
+    "en": "Mark as unread",
+    "zh-CN": "标为未读",
+    "reviewedEnglishHash": "2c19d584bf8ad518f53b352bd41eb71714ffc130b6ec1dad8b4de26d4501ec77"
+  },
+  "keyboardShortcuts.moveDown": {
+    "en": "Move down",
+    "zh-CN": "向下移动",
+    "reviewedEnglishHash": "40bb50da160cdc21d6029a927b68f92b07fd450688e609826cbc70d202db96da"
+  },
+  "keyboardShortcuts.moveUp": {
+    "en": "Move up",
+    "zh-CN": "向上移动",
+    "reviewedEnglishHash": "c66feb5eb8f217c76bfb0f1b41e3ee73ab41cb9959fae8284911bd3ad3816086"
+  },
+  "keyboardShortcuts.newTask": {
+    "en": "New task",
+    "zh-CN": "新建任务",
+    "reviewedEnglishHash": "3e992276b2298a1fb8035727de54620ff01bbcfc451133124145633b2c8f8475"
+  },
+  "keyboardShortcuts.openSelectedItem": {
+    "en": "Open selected item",
+    "zh-CN": "打开选中项",
+    "reviewedEnglishHash": "948dbc15b31394c94644b59a49fd7e78fbeae3c8a3402fa79ed107a7eb75864f"
+  },
+  "keyboardShortcuts.press": {
+    "en": "Press",
+    "zh-CN": "按",
+    "reviewedEnglishHash": "9ed1273e9b5a55799f5e954a482c04fc2e01af5fa06dbff7706b35067be01299"
+  },
+  "keyboardShortcuts.pressEscPrefix": {
+    "en": "Press",
+    "zh-CN": "按",
+    "reviewedEnglishHash": "9ed1273e9b5a55799f5e954a482c04fc2e01af5fa06dbff7706b35067be01299"
+  },
+  "keyboardShortcuts.quickArchiveBackToInbox": {
+    "en": "Quick-archive back to inbox",
+    "zh-CN": "快速归档并返回收件箱",
+    "reviewedEnglishHash": "630428a4c87f5f6b023e266fb224b93ea21933e5b8161fdd083976ad46857875"
+  },
+  "keyboardShortcuts.searchCurrentPage": {
+    "en": "Search current page or quick search",
+    "zh-CN": "搜索当前页面或快速搜索",
+    "reviewedEnglishHash": "4dac6ee7d1ea34bbebe7f4a63b0c76eab8f4cd3d297be69eccb5b73f53574c3a"
+  },
+  "keyboardShortcuts.section.global": {
+    "en": "Global",
+    "zh-CN": "全局",
+    "reviewedEnglishHash": "a258b30f88c30650e73073d5bdde5cfcc6987100ae62d37789e5c46a0d85b7c6"
+  },
+  "keyboardShortcuts.section.inbox": {
+    "en": "Inbox",
+    "zh-CN": "收件箱",
+    "reviewedEnglishHash": "94835ea2fcf775cd77cb9c9cee01b5cbd9bc515467aab1215f48a5ade9ca5274"
+  },
+  "keyboardShortcuts.section.taskDetail": {
+    "en": "Task detail",
+    "zh-CN": "任务详情",
+    "reviewedEnglishHash": "be4654d6726af242dca8672ed380c0f1b12334a131040491d8d92fe35b418568"
+  },
+  "keyboardShortcuts.showKeyboardShortcuts": {
+    "en": "Show keyboard shortcuts",
+    "zh-CN": "显示快捷键",
+    "reviewedEnglishHash": "3d0ced5dc621bc9eccde69033c0080ae9e9d482f2092afcfd3eaa1ffc339a511"
+  },
+  "keyboardShortcuts.then": {
+    "en": "then",
+    "zh-CN": "然后",
+    "reviewedEnglishHash": "21af6f1260f927f5b9b3ff5ca4a5d19493a1a47a5977240d8dca31bc47a63527"
+  },
+  "keyboardShortcuts.title": {
+    "en": "Keyboard shortcuts",
+    "zh-CN": "快捷键",
+    "reviewedEnglishHash": "e9bef0b0f3c25e6eaf3a754817a8b4f62e1c8473cb2be3e190975926dbf72d6f"
+  },
+  "keyboardShortcuts.toClose": {
+    "en": "to close",
+    "zh-CN": "关闭",
+    "reviewedEnglishHash": "ce9c329f815c3a63a87ac3de0c453ec6a36c8e853c9255d789315b300d7d56fa"
+  },
+  "keyboardShortcuts.togglePanel": {
+    "en": "Toggle panel",
+    "zh-CN": "切换面板",
+    "reviewedEnglishHash": "ed98852805c90543a89bc689f6e99b7058821efde6fcd59874bc37e1e6f48d78"
+  },
+  "keyboardShortcuts.toggleSidebar": {
+    "en": "Toggle sidebar",
+    "zh-CN": "切换侧边栏",
+    "reviewedEnglishHash": "041aefc44394f530201bae091dfe8e618888d210dda7ba4c3dd8fb1b8c91f22b"
+  }
+}

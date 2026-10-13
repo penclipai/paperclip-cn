@@ -1,0 +1,1312 @@
+{
+  " (in {{input}}, out {{output}})": {
+    "en": " (in {{input}}, out {{output}})",
+    "zh-CN": "（输入 {{input}}，输出 {{output}}）",
+    "reviewedEnglishHash": "0f625c7ab49b39521a93eadb8a9269e4a83c3d842bed2fffca41d7a0345085f6"
+  },
+  " (in {{input}}, out {{output}}, cached {{cached}})": {
+    "en": " (in {{input}}, out {{output}}, cached {{cached}})",
+    "zh-CN": "（输入 {{input}}，输出 {{output}}，缓存 {{cached}}）",
+    "reviewedEnglishHash": "d73f5ccb4337350448781fed4d8ffb973745635c9b2544b10239272bd87b4bbf"
+  },
+  "). Installing will": {
+    "en": "). Installing will",
+    "zh-CN": "）。安装将",
+    "reviewedEnglishHash": "3e4c9b6c5177033f62691f76735370378f1ab2f510735f5b32872d8fe3890d7b"
+  },
+  "+ Issue a new token": {
+    "en": "+ Issue a new token",
+    "zh-CN": "+ 签发新令牌",
+    "reviewedEnglishHash": "6cc76e036410145f9c9cdae0929b836ae9714467bb32020256cb5fecf2645be9"
+  },
+  "0 imported": {
+    "en": "0 imported",
+    "zh-CN": "未导入",
+    "reviewedEnglishHash": "ba82f1b013d03447ca45a65d6273773f9056551b5e00ec404c51f8f505202e6f"
+  },
+  "0 imported {{label}} in this run.": {
+    "en": "0 imported {{label}} in this run.",
+    "zh-CN": "本次运行未导入{{label}}。",
+    "reviewedEnglishHash": "149ab69f77511c2abbb68eded3a44a1a2d94604c9a12ee43ac8e0f697e54fd4c"
+  },
+  "1 issue held": {
+    "en": "1 issue held",
+    "zh-CN": "1 个任务已暂停",
+    "reviewedEnglishHash": "19360049e59dfb42ac3fbded000a89b2e719a8f8f67172506366abca05f4a1b3"
+  },
+  "I already created the app": {
+    "en": "I already created the app",
+    "zh-CN": "我已创建应用",
+    "reviewedEnglishHash": "b71ded6b394f5c74565fc591f128aae1b4ae36676e27b3e6338d9f7a1e559064"
+  },
+  "I already have an App": {
+    "en": "I already have an App",
+    "zh-CN": "我已有 App",
+    "reviewedEnglishHash": "0f0c9744935141475624fdf195603577479bffc913377d441e701e4e0aadf629"
+  },
+  "I checked Slack and no app was created. Create a new app.": {
+    "en": "I checked Slack and no app was created. Create a new app.",
+    "zh-CN": "我已检查 Slack，尚未创建应用。创建新应用。",
+    "reviewedEnglishHash": "9e3ee61e356ef73ffcd1ed8e27a0455f5ad28c333168caa9b3dd51a953023ad5"
+  },
+  "I haven't created this App on GitHub.": {
+    "en": "I haven't created this App on GitHub.",
+    "zh-CN": "我尚未在 GitHub 上创建此 App。",
+    "reviewedEnglishHash": "3df1cdca19b4400e5e1ccc07a8c6ef7fa0fe1c9a1ff8c8d233624659310cbe8a"
+  },
+  "I understand this will cancel {{count}} issues.": {
+    "en": "I understand this will cancel {{count}} issues.",
+    "zh-CN": "我理解这会取消 {{count}} 个任务。",
+    "reviewedEnglishHash": "e3b9c188c40318e88ab817d102f2b8c933eb6f2893870892b3d1473db04c5e95"
+  },
+  "I&apos;ve verified this — reconcile anyway": {
+    "en": "I've verified this — reconcile anyway",
+    "zh-CN": "我已经验证了这一点—无论如何都要对账",
+    "reviewedEnglishHash": "d3c1046737b8d5b4298087e7446dcf2ac6f5746ac38e62ed9f6e2f0e9ba61f68"
+  },
+  "I'm ready to put together a plan for who we should bring on. Want me to get started?": {
+    "en": "I'm ready to put together a plan for who we should bring on. Want me to get started?",
+    "zh-CN": "我已经准备好为我们应该招募的人制定一个计划。要我开始吗？",
+    "reviewedEnglishHash": "68554bd4cceecc51e4793dfba38afbb06aa54d1edbfb3e5cf541ba46e8556dce"
+  },
+  "I've sent the test message": {
+    "en": "I've sent the test message",
+    "zh-CN": "我已发送测试消息",
+    "reviewedEnglishHash": "a3c904fc3c0dfb8cbb2bed07c9c87ffba75713e5d22244840da02e71636ac396"
+  },
+  "ID": {
+    "en": "ID",
+    "zh-CN": "ID",
+    "reviewedEnglishHash": "3843971dcfdee5083e6289e1bbdbb003e538b5a8a668fc43ae4f19d415ac18a2"
+  },
+  "Icon": {
+    "en": "Icon",
+    "zh-CN": "图标",
+    "reviewedEnglishHash": "a35abcd6dac9a2e5c1d7d6a58b9bcd2e7b00cad33a8aa63b75766f1ba6ce207b"
+  },
+  "Icon buttons": {
+    "en": "Icon buttons",
+    "zh-CN": "图标按钮",
+    "reviewedEnglishHash": "19cccce848ccb3a9c9d9fd8dcfe687ce3a491f22fcc3ae62912fdb114aa4053a"
+  },
+  "Identity": {
+    "en": "Identity",
+    "zh-CN": "身份标识",
+    "reviewedEnglishHash": "999f23fcd7bec7075e54bb5dea0d9c548bfe7261f95b911ed8e23d2f4188724f"
+  },
+  "Identity linked": {
+    "en": "Identity linked",
+    "zh-CN": "身份已关联",
+    "reviewedEnglishHash": "ce755132aac6fe72fc4bad8387978ad25bb66aca20bece54bedaf591d9d92b24"
+  },
+  "Identity readiness could not be checked": {
+    "en": "Identity readiness could not be checked",
+    "zh-CN": "无法检查身份是否就绪",
+    "reviewedEnglishHash": "eadefdc5c2de902ac3ed5f8b4d1e2cea415d3ebf852127d02569b95b854b5388"
+  },
+  "Idle past": {
+    "en": "Idle past",
+    "zh-CN": "已闲置超过",
+    "reviewedEnglishHash": "ed89ccf7bda2fee289c84fe7f5848c8d5179049084d27582e776b587b3751d4e"
+  },
+  "If a run is already active, keep just one follow-up run queued.": {
+    "en": "If a run is already active, keep just one follow-up run queued.",
+    "zh-CN": "如果已有运行在执行，只保留一个后续运行进入队列。",
+    "reviewedEnglishHash": "9975f76ec3576d4e5c564a7fff516bfcd465c182e7ac87a3245e1d718347bc37"
+  },
+  "If auth fails, set": {
+    "en": "If auth fails, set",
+    "zh-CN": "如果认证失败，请设置",
+    "reviewedEnglishHash": "2768d5f599b835fbb422477ae4b929158e044ea65fbd9889ec641e74b19e816d"
+  },
+  "If authentication fails, connect your subscription in the browser above or use an API key.": {
+    "en": "If authentication fails, connect your subscription in the browser above or use an API key.",
+    "zh-CN": "如果身份验证失败，请在上面的浏览器中连接您的订阅或使用API密钥。",
+    "reviewedEnglishHash": "1c16105f97d13b5f35309e63a7e009fbf1635f7ff4058405b5e95562900c004a"
+  },
+  "If disabled, new tasks stay on the project's primary checkout unless someone opts in.": {
+    "en": "If disabled, new tasks stay on the project's primary checkout unless someone opts in.",
+    "zh-CN": "若关闭此选项，新任务会留在项目的主检出中，除非有人主动选择独立检出。",
+    "reviewedEnglishHash": "e03fbea8a63e02912b8a64316c037819ec96c1ad35023cf667b31ce0a23adbf8"
+  },
+  "If login is required, connect the provider above and retry.": {
+    "en": "If login is required, connect the provider above and retry.",
+    "zh-CN": "如果需要登录，请连接上面的提供商并重试。",
+    "reviewedEnglishHash": "2b4ddb21ef94427f260aaf81699f3cf12a4fd08ad778f68093f2bf31d4500f94"
+  },
+  "If login is required, run": {
+    "en": "If login is required, run",
+    "zh-CN": "如果需要登录，请运行",
+    "reviewedEnglishHash": "66bbc08c4c8f10d968952091c6e4d5f0f45287fdb83248b93919a6dc90c71a34"
+  },
+  "If nothing is worth splitting, this case still moves to": {
+    "en": "If nothing is worth splitting, this case still moves to",
+    "zh-CN": "如果没有需要拆分的内容，此案例仍会移至",
+    "reviewedEnglishHash": "80d81bd2eb08e143d400f7f777fcaeb4eb904d2f8a842955eaadb6353bc25f29"
+  },
+  "If the Request URL is missing or different, paste this URL into Event Subscriptions. If verification fails, check that your public HTTPS server is reachable and your Signing Secret is correct.": {
+    "en": "If the Request URL is missing or different, paste this URL into Event Subscriptions. If verification fails, check that your public HTTPS server is reachable and your Signing Secret is correct.",
+    "zh-CN": "如果请求 URL 缺失或不同，请将此 URL 粘贴到事件订阅中。如果验证失败，请检查公开 HTTPS 服务器是否可访问，以及签名密钥是否正确。",
+    "reviewedEnglishHash": "f35fe901dc55be0e6fd36b7f8891a22a5eec22f62c2cbb8d64b4b22b634d2d17"
+  },
+  "If your app uses custom headers instead, set Authorization to Bearer followed by a space and this key.": {
+    "en": "If your app uses custom headers instead, set Authorization to Bearer followed by a space and this key.",
+    "zh-CN": "如果您的应用程序使用自定义标头，请将 Authorization 设置为 Bearer，后跟一个空格和此键。",
+    "reviewedEnglishHash": "4d7327f21d8e8214c04728534810cdb392ede06ca4c05891ae68760f24ba2de8"
+  },
+  "If you’re new to this organization, request access and wait for an admin to approve.": {
+    "en": "If you’re new to this organization, request access and wait for an admin to approve.",
+    "zh-CN": "如果您尚未加入此组织，请申请访问权限并等待管理员批准。",
+    "reviewedEnglishHash": "2bb42e53831f3fde6bf56e0b3a6311af47a8b6a0b637226498a6ae61667efb70"
+  },
+  "Ignore windows that were missed while the scheduler or routine was paused.": {
+    "en": "Ignore windows that were missed while the scheduler or routine was paused.",
+    "zh-CN": "忽略调度器或例行任务暂停期间错过的时间窗口。",
+    "reviewedEnglishHash": "77dc55fe40bf2c20d6b0ecbae135901b76bbd17b1283af9f2391341bf89ae0c8"
+  },
+  "Ignored files": {
+    "en": "Ignored files",
+    "zh-CN": "忽略的文件",
+    "reviewedEnglishHash": "0384b20e69beda1308e0361f8beafd184385c07f94471f2340fed6abd2ff6fd9"
+  },
+  "Image": {
+    "en": "Image",
+    "zh-CN": "图片",
+    "reviewedEnglishHash": "1aa4cb0bcca76e92e30677e809bb3d4b5c066715ef4d558184e319496bcc5125"
+  },
+  "Image preview unavailable": {
+    "en": "Image preview unavailable",
+    "zh-CN": "图片预览不可用",
+    "reviewedEnglishHash": "637262a20bd52f6687fe85a6c4b532c464dceecb8ce95e99a5f8641fe0c982e4"
+  },
+  "Image:": {
+    "en": "Image:",
+    "zh-CN": "图片:",
+    "reviewedEnglishHash": "8eafb03464d1348bfacb61ffd762a5cd24171532cfaa20c54345bb1e8d853c38"
+  },
+  "Images ·": {
+    "en": "Images ·",
+    "zh-CN": "图片·",
+    "reviewedEnglishHash": "cdcb437e6fb52148926241b75340ece276648c9160bc7044b91bfa6a125f48ae"
+  },
+  "Implement authentication flow": {
+    "en": "Implement authentication flow",
+    "zh-CN": "实现身份认证流程",
+    "reviewedEnglishHash": "8b4c3fedf954a051d9877724b06eb8794bd1594b689f32b973954c6f93c5e5ef"
+  },
+  "Implicit grants from role": {
+    "en": "Implicit grants from role",
+    "zh-CN": "角色隐式权限",
+    "reviewedEnglishHash": "b12615f8c307471000aa969b02e1f59209274d928cd57abf3367b1556785603e"
+  },
+  "Import": {
+    "en": "Import",
+    "zh-CN": "导入",
+    "reviewedEnglishHash": "2cff9baabf56ca002610e113bc94deb6ededddfc3c130365b6e88ed5195bf774"
+  },
+  "Import a skill": {
+    "en": "Import a skill",
+    "zh-CN": "导入技能",
+    "reviewedEnglishHash": "211f9507b0900fb656127f356c641b69cf7bf0bd7ce1dc93feabcd844acd8a17"
+  },
+  "Import and export have moved to dedicated pages accessible from the": {
+    "en": "Import and export have moved to dedicated pages accessible from the",
+    "zh-CN": "导入和导出已移动到专用页面，可从",
+    "reviewedEnglishHash": "1b105805ce38460fc27b680992d5d50d1428ac3f83e26312d49e75642b99ba84"
+  },
+  "Import company": {
+    "en": "Import company",
+    "zh-CN": "导入公司",
+    "reviewedEnglishHash": "e333ee2b08b227b7f5192c427eab2d904b4d301229b0001cc7bed494ec65f3eb"
+  },
+  "Import folder Repository": {
+    "en": "Import folder Repository",
+    "zh-CN": "导入仓库文件夹",
+    "reviewedEnglishHash": "d34bb9d3e348b70c6b5a1c7fc8e532b1c93ca19284e3dd7e3675abaed870ffc3"
+  },
+  "Import from GitHub": {
+    "en": "Import from GitHub",
+    "zh-CN": "从 GitHub 导入",
+    "reviewedEnglishHash": "383efa96431be7e48e377ca5c95d72363965da0046b3d88ca31bb149aa4c8012"
+  },
+  "Import from URL": {
+    "en": "Import from URL",
+    "zh-CN": "从 URL 导入",
+    "reviewedEnglishHash": "e5e2b7c332423db1d6c7a1d066435d6f09070d0d6b5173ecaf11c39724d6df83"
+  },
+  "Import from URL or path": {
+    "en": "Import from URL or path",
+    "zh-CN": "从 URL 或路径导入",
+    "reviewedEnglishHash": "ca5062300ad54d8a46999232e435fd7f45c8bba0dbe03f47f328a9f6dd21befc"
+  },
+  "Import organization": {
+    "en": "Import organization",
+    "zh-CN": "导入组织",
+    "reviewedEnglishHash": "837ee932677d818ee4f55fa17cef2f9c911d467e2d812f6b3e5afd088f506bd5"
+  },
+  "Import running on the server — safe to keep waiting; reconnecting won&apos;t lose it.": {
+    "en": "Import running on the server — safe to keep waiting; reconnecting won't lose it.",
+    "zh-CN": "导入正在服务器上进行，可以继续安心等待；重新连接不会丢失导入进度。",
+    "reviewedEnglishHash": "29e5a2577d150e84dc9389eeac8bf4da7ccf677a08c2d8e5b58ff5584553d9ad"
+  },
+  "Import skills from GitHub and refresh them when you’re ready.": {
+    "en": "Import skills from GitHub and refresh them when you’re ready.",
+    "zh-CN": "从 GitHub 导入技能，并在准备就绪时刷新。",
+    "reviewedEnglishHash": "cebdc3614b5f0c23a600310a7a45a27903b75edd4141195cb810333fe17ae02f"
+  },
+  "Import warnings": {
+    "en": "Import warnings",
+    "zh-CN": "导入警告",
+    "reviewedEnglishHash": "39b2572fa78db6563083c518b7a2d902a8b36f5d8a345553fa00af3a8fc73f79"
+  },
+  "Imported Organization": {
+    "en": "Imported Organization",
+    "zh-CN": "导入的组织",
+    "reviewedEnglishHash": "7771473043b6e7eaa29ecf1268370bffcdf79e8a355106ca5c187ee89c554f02"
+  },
+  "Imported agents arrived paused — resume them from the company's Agents page so assigned tasks can start.": {
+    "en": "Imported agents arrived paused — resume them from the company's Agents page so assigned tasks can start.",
+    "zh-CN": "导入的智能体处于暂停状态。请在公司的“智能体”页面恢复它们，以便启动已分配的任务。",
+    "reviewedEnglishHash": "94f886962ac01f38817e364fbd7971f66cb58d1ce43dc712d5b9508ed5ce3905"
+  },
+  "Imported entities are stamped with": {
+    "en": "Imported entities are stamped with",
+    "zh-CN": "导入的实体会标记",
+    "reviewedEnglishHash": "9322a01edf97b8a4dd8c474777bd9cbff40fed39b0a7f3108290479d4f49aa09"
+  },
+  "Imported ·": {
+    "en": "Imported ·",
+    "zh-CN": "已导入 ·",
+    "reviewedEnglishHash": "5595f71ada486e7354d3fed88f2fe59299a0e3653943bc5d2404537fc6dcff43"
+  },
+  "Improve onboarding docs": {
+    "en": "Improve onboarding docs",
+    "zh-CN": "完善 Onboarding 文档",
+    "reviewedEnglishHash": "5c7593cd3fe9e6e0cdf08b24a9fed4917141e401fcb39ac3c638b367e590b8f7"
+  },
+  "In ": {
+    "en": "In ",
+    "zh-CN": "在 ",
+    "reviewedEnglishHash": "592b238e52a53311de76c3dbd871d41143c23318ea42ad7d6c02a73508c6d4af"
+  },
+  "In Azure, create an Azure Bot. Choose Single Tenant, use that Application ID, set its messaging endpoint to the Paperclip URL below, and add the Microsoft Teams channel.": {
+    "en": "In Azure, create an Azure Bot. Choose Single Tenant, use that Application ID, set its messaging endpoint to the Paperclip URL below, and add the Microsoft Teams channel.",
+    "zh-CN": "在 Azure 中创建 Azure Bot。选择“单租户”，使用上述应用 ID，将消息传递终结点设为下方的 Paperclip URL，并添加 Microsoft Teams 频道。",
+    "reviewedEnglishHash": "cf68483b5e003b4c923cde50077d2f8d58ed59cc75d980276559526440ec2337"
+  },
+  "In Discord Developer Portal, create an application. Copy its Application ID from General Information.": {
+    "en": "In Discord Developer Portal, create an application. Copy its Application ID from General Information.",
+    "zh-CN": "在 Discord 开发者门户中创建应用，并从“常规信息”页面复制其应用 ID。",
+    "reviewedEnglishHash": "c64fd948d699faaa937df009c339d2473e9fd76dc1b920d0d836d2d2483e8b31"
+  },
+  "In Microsoft Entra, create a single-tenant app registration. Copy its Application (client) ID and Directory (tenant) ID, then create a client secret and copy its value.": {
+    "en": "In Microsoft Entra, create a single-tenant app registration. Copy its Application (client) ID and Directory (tenant) ID, then create a client secret and copy its value.",
+    "zh-CN": "在 Microsoft Entra 中注册单租户应用。复制其应用（客户端）ID 和目录（租户）ID，然后创建客户端密钥并复制密钥值。",
+    "reviewedEnglishHash": "4a2aace304499dabc627d1a38d74a3c231c003d7c11780280ec5ac4a8c54a9e0"
+  },
+  "In Progress": {
+    "en": "In Progress",
+    "zh-CN": "进行中",
+    "reviewedEnglishHash": "b4cc4b07c300103a4bc38e01e084cc945144a7eb0ae61d74d62ca49b8abe0908"
+  },
+  "In Review": {
+    "en": "In Review",
+    "zh-CN": "审核中",
+    "reviewedEnglishHash": "2677214a9268a5476279e6c6259f054939e93f628ada8ea178a256294faa0713"
+  },
+  "In Slack app settings, add this redirect URL under OAuth &amp; Permissions. Add user scopes": {
+    "en": "In Slack app settings, add this redirect URL under OAuth & Permissions. Add user scopes",
+    "zh-CN": "在 Slack 应用设置的“OAuth & 权限”中添加此重定向 URL，并添加以下用户作用域：",
+    "reviewedEnglishHash": "a1453f1f7dbad9ee0c017c0d12771575e0bf809eb231d605874b9f6ead23a87f"
+  },
+  "In Slack app settings, find": {
+    "en": "In Slack app settings, find",
+    "zh-CN": "在 Slack 应用设置中找到",
+    "reviewedEnglishHash": "92481a492ef8f5e2da2b20781ae467cc16d7be06b7ed7e55e3b1da3aaac286ed"
+  },
+  "In Teams Developer Portal, create an app, add a bot with the same Application ID, then apply the manifest settings shown below. The block binds the Teams resource-specific consent permissions to that Entra app; these are not Microsoft Graph permissions in Entra. These permissions let the installed app receive every message in a team or group chat without an @mention, so describe that access to installers. Download the package and install it in the target team or group chat.": {
+    "en": "In Teams Developer Portal, create an app, add a bot with the same Application ID, then apply the manifest settings shown below. The block binds the Teams resource-specific consent permissions to that Entra app; these are not Microsoft Graph permissions in Entra. These permissions let the installed app receive every message in a team or group chat without an @mention, so describe that access to installers. Download the package and install it in the target team or group chat.",
+    "zh-CN": "在 Teams Developer Portal 中创建应用，添加使用相同应用 ID 的机器人，然后应用下方显示的清单设置。此配置将 Teams 资源特定同意权限绑定到该 Entra 应用，这些权限并非 Entra 中的 Microsoft Graph 权限。启用后，已安装的应用无需被 @提及即可接收团队或群聊中的所有消息，请向安装者说明此访问权限。下载应用包，并将其安装到目标团队或群聊中。",
+    "reviewedEnglishHash": "d8d35eddf7560219eb762feef0b7e02a288a522d1d87cd1f6f1466c89addfc3c"
+  },
+  "In `pnpm dev:once`, wait for all queued and running local agent runs to finish, then restart the server automatically when backend changes or migrations make the current boot stale.": {
+    "en": "In `pnpm dev:once`, wait for all queued and running local agent runs to finish, then restart the server automatically when backend changes or migrations make the current boot stale.",
+    "zh-CN": "在 `pnpm dev:once` 模式下，等待所有排队中和运行中的本地智能体运行结束后，当后端变更或迁移让当前启动状态过时，再自动重启服务器。",
+    "reviewedEnglishHash": "4c4156aa9770780f94c0d995ef71741dc55e6d69b7e9922c6370708c6dcda0f6"
+  },
+  "Inactive": {
+    "en": "Inactive",
+    "zh-CN": "未激活",
+    "reviewedEnglishHash": "ac7c949f1211b7814bdd28a698e6c04e05e1a83f9f86e7ad43d2086d00e98afd"
+  },
+  "Inbox": {
+    "en": "Inbox",
+    "zh-CN": "收件箱",
+    "reviewedEnglishHash": "94835ea2fcf775cd77cb9c9cee01b5cbd9bc515467aab1215f48a5ade9ca5274"
+  },
+  "Inbox disconnected. Email history remains in its tasks.": {
+    "en": "Inbox disconnected. Email history remains in its tasks.",
+    "zh-CN": "收件箱已断开连接，邮件历史仍保留在对应任务中。",
+    "reviewedEnglishHash": "f8ffe56dc75e85f83a067c494d1a34a847a0b4c3d7f6b0d7502da2eaef407f98"
+  },
+  "Inbox reconnected.": {
+    "en": "Inbox reconnected.",
+    "zh-CN": "收件箱已重新连接。",
+    "reviewedEnglishHash": "0ffeb92c4231a474c89726c018756b0f6105a90c91f2e03e4262a605c0330112"
+  },
+  "Inbox zero.": {
+    "en": "Inbox zero.",
+    "zh-CN": "收件箱清空。",
+    "reviewedEnglishHash": "9399b9e57bfb84b09c2e8f25445f20530de1281cf6e77b2279005bb924d68308"
+  },
+  "Include bot authors": {
+    "en": "Include bot authors",
+    "zh-CN": "包含机器人作者",
+    "reviewedEnglishHash": "1d32654778c8233d0c81a8facf977c9e6f3635851ec630159db4ba41bd66b315"
+  },
+  "Include draft PRs": {
+    "en": "Include draft PRs",
+    "zh-CN": "包含草稿 PR",
+    "reviewedEnglishHash": "433fa0da3bc98c8461f51dc4f29de604f7e87fd8d758a553e9b9b2f87f8e01bf"
+  },
+  "Included": {
+    "en": "Included",
+    "zh-CN": "已包含",
+    "reviewedEnglishHash": "ba829a98b799408899294035fa50f73daa14b204e672049da9697d5b3e8d5757"
+  },
+  "Included implicitly by the {{role}} role. Add an explicit grant only if it should stay after the role changes.": {
+    "en": "Included implicitly by the {{role}} role. Add an explicit grant only if it should stay after the role changes.",
+    "zh-CN": "该权限已由 {{role}} 角色隐式包含。只有在角色变更后仍需保留时，才需要添加显式授权。",
+    "reviewedEnglishHash": "fad809a3d57cf7d01888a2f72165481003a3b08f6edf69231d50f6a15f0e84ed"
+  },
+  "Included in every GitHub task. Type / to select a skill for the agent to use.": {
+    "en": "Included in every GitHub task. Type / to select a skill for the agent to use.",
+    "zh-CN": "包含在每个 GitHub 任务中。输入 / 可选择智能体要使用的技能。",
+    "reviewedEnglishHash": "5fd094270b6fce2242048424e9c64fb5930f2d4690f22f1102b8ad794bc68d2a"
+  },
+  "Includes": {
+    "en": "Includes",
+    "zh-CN": "包括",
+    "reviewedEnglishHash": "df498282bede20a9dfff2ee882b7bd646bc7769513fc97e596f1649f123b949c"
+  },
+  "Including sub-issues {{cost}}": {
+    "en": "Including sub-issues {{cost}}",
+    "zh-CN": "包含子任务 {{cost}}",
+    "reviewedEnglishHash": "d7aefb5a091df047437a9a80f77e6b62c3918086feb0f51d1270cbfb714b45f4"
+  },
+  "Incoming email can create tasks and trigger agent work. Set up an allowlist in AgentMail to limit who can contact this inbox.": {
+    "en": "Incoming email can create tasks and trigger agent work. Set up an allowlist in AgentMail to limit who can contact this inbox.",
+    "zh-CN": "传入的电子邮件可以创建任务并触发智能体工作。在AgentMail中设置允许列表，以限制可以联系此收件箱的人员。",
+    "reviewedEnglishHash": "50c1c42c86a48a8b3539f6a7714b66c9791c9001d153c4a5b3484cfd104f4a1c"
+  },
+  "Incoming email creates tasks for": {
+    "en": "Incoming email creates tasks for",
+    "zh-CN": "收到邮件后，会为以下智能体创建任务：",
+    "reviewedEnglishHash": "03722ca1c518f68951a07ce7dec523c5d5a3e8f585aa47b5c6cc253760e26525"
+  },
+  "Independent of Chat connectors. Turning this off hides setup and management; existing bots keep running. GitHub tool connections stay available.": {
+    "en": "Independent of Chat connectors. Turning this off hides setup and management; existing bots keep running. GitHub tool connections stay available.",
+    "zh-CN": "此设置与聊天连接器相互独立。关闭后会隐藏设置和管理入口，已有机器人继续运行，GitHub 工具连接仍可使用。",
+    "reviewedEnglishHash": "25e8fe903cc2be59afffe2f574bf1037dae4e0693a6ae86a520a6a90e1de44ec"
+  },
+  "Individual": {
+    "en": "Individual",
+    "zh-CN": "单项",
+    "reviewedEnglishHash": "010dd7b94f5f3d31b17799f0a5419c71e80438ef34ef70b0cb0500dabee32eeb"
+  },
+  "Individual account": {
+    "en": "Individual account",
+    "zh-CN": "个人账户",
+    "reviewedEnglishHash": "911d8eb13829576cec5391d940e725e35b0f358a24bc9b75fa184195d0740879"
+  },
+  "Inference ledger": {
+    "en": "Inference ledger",
+    "zh-CN": "推理明细",
+    "reviewedEnglishHash": "41faba7cc38d6027c27caeb1cf4eac6b99a4ad05c28828f1c24db8d8e9275fbe"
+  },
+  "Inference spend": {
+    "en": "Inference spend",
+    "zh-CN": "推理成本",
+    "reviewedEnglishHash": "e24719c4a6e9f32442dc3ad414635566b4d1192cedebb59df685ce4dc8b7c128"
+  },
+  "Inference spend, platform fees, credits, and live quota windows.": {
+    "en": "Inference spend, platform fees, credits, and live quota windows.",
+    "zh-CN": "集中查看推理成本、平台账务、额度返还和实时配额。",
+    "reviewedEnglishHash": "4141e6f67e2c5a32ef902dab89a4675ed045fbc2e27548ea0d5f307617a65987"
+  },
+  "Info": {
+    "en": "Info",
+    "zh-CN": "提示",
+    "reviewedEnglishHash": "170322a32f3c35b2c61576a5553d352d7b3c8ae7086dab78f15fc891a28c067c"
+  },
+  "Initials derivation": {
+    "en": "Initials derivation",
+    "zh-CN": "缩写生成",
+    "reviewedEnglishHash": "9cec7db78edf46ed3b2fc27bf6a3830e95575d40afb8e9fc896ba76a83c5e487"
+  },
+  "Inline Editor": {
+    "en": "Inline Editor",
+    "zh-CN": "内联编辑器",
+    "reviewedEnglishHash": "3485cc646e1ea0c3e91958be097d3495a0fbb5d213141771968827298f072c05"
+  },
+  "Inline comment options": {
+    "en": "Inline comment options",
+    "zh-CN": "内联评论选项",
+    "reviewedEnglishHash": "1caeb608e61726f74d6e37771b3eba00056bdf1a05a191eecc0dbbfaeb5034d8"
+  },
+  "Input": {
+    "en": "Input",
+    "zh-CN": "输入",
+    "reviewedEnglishHash": "36ecb4f8669133ce744c21982ba4abe2ecd7086e1dc2226ccd6f266f3a5005f8"
+  },
+  "Input tokens": {
+    "en": "Input tokens",
+    "zh-CN": "输入词元",
+    "reviewedEnglishHash": "dd856eeb50463bae46757d871d833fcb63d29a39356e7db40fea337f6462c947"
+  },
+  "Inspect run": {
+    "en": "Inspect run",
+    "zh-CN": "检查运行",
+    "reviewedEnglishHash": "2671a485bfeea8203131f87b78ffce9eaae65e0e48f118c2d5e9c8c77ebbac29"
+  },
+  "Inspect {{name}} input": {
+    "en": "Inspect {{name}} input",
+    "zh-CN": "查看 {{name}} 输入",
+    "reviewedEnglishHash": "109be00ba4ef97d1856e28995fc125ab6b7feeb41b8bb57ff52f0a51fc2c6ff1"
+  },
+  "Install": {
+    "en": "Install",
+    "zh-CN": "安装",
+    "reviewedEnglishHash": "569ca49f4aaf7846e952c1d4aeca72febd0b79fa1c4f9db08fd3127551218572"
+  },
+  "Install Adapter": {
+    "en": "Install Adapter",
+    "zh-CN": "安装适配器",
+    "reviewedEnglishHash": "76bd921a3ef83af8ade007cdf752d6d6482f677057fd06704cf5e845d73fc593"
+  },
+  "Install Example": {
+    "en": "Install Example",
+    "zh-CN": "安装示例",
+    "reviewedEnglishHash": "b1b87151deda1fc9ed368ea3415cc2bc1c1af7637716ac1468dcd74b2f31b044"
+  },
+  "Install External Adapter": {
+    "en": "Install External Adapter",
+    "zh-CN": "安装外部适配器",
+    "reviewedEnglishHash": "4d74bb6ede8b3209442b3bd8cfb7d19f55c22e0cc15b3e70e887b6236ca9409c"
+  },
+  "Install Plugin": {
+    "en": "Install Plugin",
+    "zh-CN": "安装插件",
+    "reviewedEnglishHash": "70720c526fa276194a414d80bd80669cf9fb2938b12aabc3393229a2f5c4de17"
+  },
+  "Install a plugin to extend functionality.": {
+    "en": "Install a plugin to extend functionality.",
+    "zh-CN": "安装插件以扩展功能。",
+    "reviewedEnglishHash": "b6cb35a2d4a919a75f00ce2a9ef038d8094cf122665fadc5f587c17b65cc5578"
+  },
+  "Install an adapter package to extend model support.": {
+    "en": "Install an adapter package to extend model support.",
+    "zh-CN": "安装适配器包以扩展模型支持。",
+    "reviewedEnglishHash": "68814655e4643c489496dd6015db83933978ff1a095672ea20b36d5a17ecfce0"
+  },
+  "Install blocked:": {
+    "en": "Install blocked:",
+    "zh-CN": "安装受阻：",
+    "reviewedEnglishHash": "70e41643b35c61aa750b1028a5b0932f9d27dfd2919d54a1f0b21944bc87d537"
+  },
+  "Install bot in this server": {
+    "en": "Install bot in this server",
+    "zh-CN": "在此服务器中安装机器人",
+    "reviewedEnglishHash": "8f6e4fbe8635fdc688ce7d8bb4321430d11531bdcc22da433ab699d6a9a135b0"
+  },
+  "Install failed": {
+    "en": "Install failed",
+    "zh-CN": "安装失败",
+    "reviewedEnglishHash": "33b4717bdc2f2510e66d9981e0af2f22bfcad2eedde192bf1a1b7ebc9d849929"
+  },
+  "Install in Slack": {
+    "en": "Install in Slack",
+    "zh-CN": "安装到 Slack",
+    "reviewedEnglishHash": "d6f87ef67b8f569fa865ef3ce8517d4239430e6d5591df4baf24ee330b781c88"
+  },
+  "Install skills to the organization, then enable them on this agent.": {
+    "en": "Install skills to the organization, then enable them on this agent.",
+    "zh-CN": "先将技能安装到组织，再为此智能体启用。",
+    "reviewedEnglishHash": "20cac58dcb6ab2523484e49cce6efb996215c6aeebd55788c3a3100c682467e8"
+  },
+  "Install update": {
+    "en": "Install update",
+    "zh-CN": "安装更新",
+    "reviewedEnglishHash": "cada4215d34483e4475456df3ddd22c134acffb2173b251f785fe08ced4e7652"
+  },
+  "Installed": {
+    "en": "Installed",
+    "zh-CN": "已安装",
+    "reviewedEnglishHash": "f8b32f4e92bd84ce1fcd177bec17d43093de3ee8303bb40c1b9ea521ed6a70f6"
+  },
+  "Installed Plugins": {
+    "en": "Installed Plugins",
+    "zh-CN": "已安装插件",
+    "reviewedEnglishHash": "15c826069645c629381c0c4ee2c5fca12721851795a43dfae0e4671b33ed57c6"
+  },
+  "Installed apps load tools into": {
+    "en": "Installed apps load tools into",
+    "zh-CN": "已安装的应用会在每次运行时将工具加载到",
+    "reviewedEnglishHash": "fec48810ecc19ef15951c7931147e67749944baaeac3693e4ef3eab7b8586715"
+  },
+  "Installed from": {
+    "en": "Installed from",
+    "zh-CN": "安装来源",
+    "reviewedEnglishHash": "6a3654064aa84de6ad0a301dbc1f0bbe5b7520c2e4c7e2a7b461ca596fb81de2"
+  },
+  "Installed from local path": {
+    "en": "Installed from local path",
+    "zh-CN": "从本地路径安装",
+    "reviewedEnglishHash": "743c385f9d621d747049134627844c276b0b010ac5e157ab2f2dd8c12533d7a6"
+  },
+  "Installed from npm": {
+    "en": "Installed from npm",
+    "zh-CN": "从 npm 安装",
+    "reviewedEnglishHash": "9478a781379aae3442e9188024fb4ba15176c1591d5e66d6ba7d292c92cbe156"
+  },
+  "Installed in the shared Claude/OpenCode skills home.": {
+    "en": "Installed in the shared Claude/OpenCode skills home.",
+    "zh-CN": "已安装到共享的 Claude/OpenCode 技能目录。",
+    "reviewedEnglishHash": "09ebe32049e5331c58c523fead0f501a8ec18267e21e241a75bc50cd730abbd5"
+  },
+  "Installed ·": {
+    "en": "Installed ·",
+    "zh-CN": "已安装 ·",
+    "reviewedEnglishHash": "84a7bd69023e2af1f60a178404284f82ee67af90f5fabfdb63f7d836e9227025"
+  },
+  "Installed · Open in library": {
+    "en": "Installed · Open in library",
+    "zh-CN": "已安装 · 在技能库中打开",
+    "reviewedEnglishHash": "d02ec26d4ef07f2fbd3b6ea6ecdeb0cec252d625a9fe1f20e9bd04a754abe402"
+  },
+  "Installing": {
+    "en": "Installing",
+    "zh-CN": "安装中",
+    "reviewedEnglishHash": "8749b1693f74941144464b73f49e322066f437079a400d0b11abffc6dffae2cc"
+  },
+  "Installing adds the skill to the company library. Agents can only use it once it is enabled for them.": {
+    "en": "Installing adds the skill to the company library. Agents can only use it once it is enabled for them.",
+    "zh-CN": "安装后，技能会添加到公司技能库。只有为智能体启用后，它们才能使用该技能。",
+    "reviewedEnglishHash": "ccbb66cc5e9e7a837bcee4b69df1a0455e27b0eec6620824a6863c027461b23e"
+  },
+  "Installing adds the skill to the organization library. Agents can only use it once it is enabled for them.": {
+    "en": "Installing adds the skill to the organization library. Agents can only use it once it is enabled for them.",
+    "zh-CN": "安装后，技能会添加到组织技能库。只有为智能体启用该技能后，智能体才能使用。",
+    "reviewedEnglishHash": "1187e59d812c80a4e6f04cda28ce92d5284613818606cce77bf3509490a6507e"
+  },
+  "Installing...": {
+    "en": "Installing...",
+    "zh-CN": "安装中...",
+    "reviewedEnglishHash": "07ae7fd684564e68cac0181cc95916cb616319dfe87d79129cfcef36ea83a328"
+  },
+  "Instance Access": {
+    "en": "Instance Access",
+    "zh-CN": "实例访问",
+    "reviewedEnglishHash": "6769eb35c7abb67644f1793f732ce273963d502849c71add26480fd6a58d0c15"
+  },
+  "Instance Settings": {
+    "en": "Instance Settings",
+    "zh-CN": "实例设置",
+    "reviewedEnglishHash": "68c30d24b0cd4e5ad1e33ea6f90a080c0e586bdf5d43cc100072b22e9c5f1d49"
+  },
+  "Instance access": {
+    "en": "Instance access",
+    "zh-CN": "实例访问",
+    "reviewedEnglishHash": "f1e76a72ea8e2f9c055011af467bf797321fd71f2f5a8cf37902ebfd24d8d6ee"
+  },
+  "Instance adapters": {
+    "en": "Instance adapters",
+    "zh-CN": "实例适配器",
+    "reviewedEnglishHash": "ce71058c314f6a0a0a26ad575503988d2557fc8a76812e0a4354501e43bc0f86"
+  },
+  "Instance admin access is required to manage users.": {
+    "en": "Instance admin access is required to manage users.",
+    "zh-CN": "管理用户需要实例管理员权限。",
+    "reviewedEnglishHash": "1dccd82928242527d8134c93dc3a02cbdf89d6b5689b4c8ef02b1189a8839d62"
+  },
+  "Instance environments": {
+    "en": "Instance environments",
+    "zh-CN": "实例环境",
+    "reviewedEnglishHash": "4ce9fb72ddc3a1d55cda335d842707d3ae84ac23623035099de81ab16e09cef9"
+  },
+  "Instance experimental": {
+    "en": "Instance experimental",
+    "zh-CN": "实例实验功能",
+    "reviewedEnglishHash": "c6a7e4ab761e349552f77ca8f139635c0880bae1278c2ea47663810fed8b5aa9"
+  },
+  "Instance general": {
+    "en": "Instance general",
+    "zh-CN": "实例常规",
+    "reviewedEnglishHash": "f1355db1e41cca50eb43bda1eaf9a41cf3717987015aad2e44764e2822e82b97"
+  },
+  "Instance heartbeats": {
+    "en": "Instance heartbeats",
+    "zh-CN": "实例心跳",
+    "reviewedEnglishHash": "cea8da47522b97732d45affe43bfb4657dda99994c83cfca7152e0c0283614ea"
+  },
+  "Instance plugins": {
+    "en": "Instance plugins",
+    "zh-CN": "实例插件",
+    "reviewedEnglishHash": "7965a0ab8be0eaa10070a7ec624f12f24eb44f18311793506720d41272ef391e"
+  },
+  "Instance profile": {
+    "en": "Instance profile",
+    "zh-CN": "实例资料",
+    "reviewedEnglishHash": "1d3ecdf8158dd551a473c613d35c3fed9b3e9f6c62c57689e6a8858738691cf1"
+  },
+  "Instance role updated": {
+    "en": "Instance role updated",
+    "zh-CN": "实例角色已更新",
+    "reviewedEnglishHash": "71730005923aae31a6b0836da59c3a26140f664d18e0deb8cf53f75cca6adaa2"
+  },
+  "Instance settings": {
+    "en": "Instance settings",
+    "zh-CN": "实例设置",
+    "reviewedEnglishHash": "07817164b305fb0ad5ca18585d7090a1855497c27b120ed18d029ed6940fea17"
+  },
+  "Instance setup required": {
+    "en": "Instance setup required",
+    "zh-CN": "需要完成实例初始化",
+    "reviewedEnglishHash": "b7f6e4d0266787dd5fedf10e274685a99e9e5667c8e39802db8d958e6f30cf84"
+  },
+  "Instruct agents to write user interactions (plan confirmations, questions, suggested tasks, checkbox prompts) in ASD-STE100 Simplified Technical English, with brief context on what information the decision needs and what happens for each choice.": {
+    "en": "Instruct agents to write user interactions (plan confirmations, questions, suggested tasks, checkbox prompts) in ASD-STE100 Simplified Technical English, with brief context on what information the decision needs and what happens for each choice.",
+    "zh-CN": "要求智能体使用 ASD-STE100 简化技术英语编写用户交互内容（计划确认、问题、建议任务、复选框提示），并简要说明决策所需的信息以及每个选项的结果。",
+    "reviewedEnglishHash": "d22276c41621cd4f987b26c5bedbb995809fe1a4897ecf653b30bf2cacb829d8"
+  },
+  "Instruction file editor": {
+    "en": "Instruction file editor",
+    "zh-CN": "指令文件编辑器",
+    "reviewedEnglishHash": "c5c435629fd82a563984a5f0144e86a932555adcd207f9d1832f67d4315b832f"
+  },
+  "Instruction file view": {
+    "en": "Instruction file view",
+    "zh-CN": "指令文件视图",
+    "reviewedEnglishHash": "348b6a6aacf38b27cf19260bef6db6c4ee0dca26b171f18634dc4facb64e7eb4"
+  },
+  "Instructions": {
+    "en": "Instructions",
+    "zh-CN": "说明",
+    "reviewedEnglishHash": "934652dce41d62d3c9ff34b2c5e44e3addaedc67d6137328a9fe75a63c51dbac"
+  },
+  "Instructions bundles are only available for local adapters.": {
+    "en": "Instructions bundles are only available for local adapters.",
+    "zh-CN": "说明文件包仅适用于本地适配器。",
+    "reviewedEnglishHash": "ac25d90e4493d1c807840c22b97a69bf7be4061b2190561c827b3bc6a45c4ce4"
+  },
+  "Internal server error": {
+    "en": "Internal server error",
+    "zh-CN": "服务器内部错误",
+    "reviewedEnglishHash": "f74d744451ed13502cccccac6c65505d59099b6621cc4debe58575e9442d66e6"
+  },
+  "Internal tools for developing, testing, and debugging Paperclip.": {
+    "en": "Internal tools for developing, testing, and debugging Paperclip.",
+    "zh-CN": "用于开发、测试和调试 Paperclip 的内部工具。",
+    "reviewedEnglishHash": "6a2266866b748e7c5e3da127757dc5990d288d82edb8269b6623c894fa79e1fe"
+  },
+  "Interpretation outcomes": {
+    "en": "Interpretation outcomes",
+    "zh-CN": "解读结果",
+    "reviewedEnglishHash": "4c4e9640ff430a5126bf18feac6f758f2c7f7a8dc5f96470f76691aaff4849d0"
+  },
+  "Interpretation stages": {
+    "en": "Interpretation stages",
+    "zh-CN": "解释阶段",
+    "reviewedEnglishHash": "f709de89f552ddca0f4605f391ffc68002923fa70ca7dfd007cd0feabc074c56"
+  },
+  "Interrupt": {
+    "en": "Interrupt",
+    "zh-CN": "中断",
+    "reviewedEnglishHash": "b62523141249e0f2b5370aa7b791e71304e64eb4de37108905b9e2bea71c49f6"
+  },
+  "Interrupt failed": {
+    "en": "Interrupt failed",
+    "zh-CN": "中断失败",
+    "reviewedEnglishHash": "53d754e8ad852d35b7003cf19ca8e686ef7d7533f56f7c947b70f9a5a0c7e4f1"
+  },
+  "Interrupt grace period (sec)": {
+    "en": "Interrupt grace period (sec)",
+    "zh-CN": "中断宽限期（秒）",
+    "reviewedEnglishHash": "1709050c87497723a6c4b954c343ad3a201250165fbf73cdfcfd502ac3b4df55"
+  },
+  "Interrupt requested": {
+    "en": "Interrupt requested",
+    "zh-CN": "已请求中断",
+    "reviewedEnglishHash": "766c2332064aba42761c51189b90538ed6fe15ec26daa0a16645e87661678e28"
+  },
+  "Interrupted": {
+    "en": "Interrupted",
+    "zh-CN": "被打断",
+    "reviewedEnglishHash": "132d124d6bb3d811116f98aa03bc474f5783517d4c82635c031745912e62e1c8"
+  },
+  "Interrupted by board": {
+    "en": "Interrupted by board",
+    "zh-CN": "已由董事会中断",
+    "reviewedEnglishHash": "99d8dfd0e0f140bcb01a40e426d2010a0ba805b2c99f338f2cf814d8dcf75fa3"
+  },
+  "Interrupted by board after {{duration}}": {
+    "en": "Interrupted by board after {{duration}}",
+    "zh-CN": "{{duration}}后由董事会中断",
+    "reviewedEnglishHash": "9490a2231742656c6146500849b362d2f55e9f441fb1f540ecf80c6a6187bd69"
+  },
+  "Interrupting...": {
+    "en": "Interrupting...",
+    "zh-CN": "正在中断...",
+    "reviewedEnglishHash": "f60f33ede21dceccda0e76cab49570fb72ffcb00f474c7d8ceb1e2611c247363"
+  },
+  "Invalid org chain": {
+    "en": "Invalid org chain",
+    "zh-CN": "组织汇报链无效",
+    "reviewedEnglishHash": "5443c0aa5001d75fd19cd35ef305a56ee441afaa980d50210662f8cb39517e8e"
+  },
+  "Invite a person": {
+    "en": "Invite a person",
+    "zh-CN": "邀请成员",
+    "reviewedEnglishHash": "f76f965ea88c96030ea12da0e770ca94ac46d34a456bcabbd5f6bf2cafab02d3"
+  },
+  "Invite context": {
+    "en": "Invite context",
+    "zh-CN": "邀请上下文",
+    "reviewedEnglishHash": "b13541ba608ff3385dcc20bce4e05f58e05e257c1e0d7619b144bec7db74e4ce"
+  },
+  "Invite created": {
+    "en": "Invite created",
+    "zh-CN": "邀请已创建",
+    "reviewedEnglishHash": "eb00b164c6b4ab08adaf483d52fd63ac8822a24271bf32ffe1204a350f7021b5"
+  },
+  "Invite history": {
+    "en": "Invite history",
+    "zh-CN": "邀请历史",
+    "reviewedEnglishHash": "0269fea65ff5e59e23cca735e1459021d6d84fd7aa61ae2a59a92f47006df6eb"
+  },
+  "Invite history below keeps the audit trail.": {
+    "en": "Invite history below keeps the audit trail.",
+    "zh-CN": "下方的邀请历史会保留完整审计轨迹。",
+    "reviewedEnglishHash": "030769230dd5036b005359edd9f49f5f58df94e1d2895da5f0b31deb2324f0a7"
+  },
+  "Invite humans and agents": {
+    "en": "Invite humans and agents",
+    "zh-CN": "邀请人类和智能体",
+    "reviewedEnglishHash": "c36dbf7a4ea76c65cde7a02366137a5142137c23d2f706a322c4aec52c924695"
+  },
+  "Invite metadata unavailable": {
+    "en": "Invite metadata unavailable",
+    "zh-CN": "邀请元数据不可用",
+    "reviewedEnglishHash": "1ba4d74c6db5a3c4b52bc344515c057c32d6a8d00b0af3ef9e27002d343a5920"
+  },
+  "Invite people": {
+    "en": "Invite people",
+    "zh-CN": "邀请成员",
+    "reviewedEnglishHash": "27bf0f2d3f3f549002f193566e19b010a40b80c1a5564cf65a80d83f2f2c0462"
+  },
+  "Invite people to request access to this company. New invite links are copied to your clipboard when they are generated.": {
+    "en": "Invite people to request access to this company. New invite links are copied to your clipboard when they are generated.",
+    "zh-CN": "邀请成员申请访问此公司。新的邀请链接生成后会自动复制到你的剪贴板。",
+    "reviewedEnglishHash": "3bd23ecc0b926de46ba857b62832c1621eb3a4e7cfa06894b54be9dbef618ad0"
+  },
+  "Invite people to request access to this organization. New invite links are copied to your clipboard when they are generated.": {
+    "en": "Invite people to request access to this organization. New invite links are copied to your clipboard when they are generated.",
+    "zh-CN": "邀请人们请求访问该组织。新的邀请链接在生成后会复制到您的剪贴板。",
+    "reviewedEnglishHash": "b8b2979cab3cc59bb33dd8820e8beecd8d4c932889727e49704a49cdb3c69304"
+  },
+  "Invite people to talk to": {
+    "en": "Invite people to talk to",
+    "zh-CN": "邀请他人与以下智能体聊天：",
+    "reviewedEnglishHash": "33275b67c1711114572d59b1090c75121c16d867c029e6500205e9d3f64bcebf"
+  },
+  "Invite people to your organization.": {
+    "en": "Invite people to your organization.",
+    "zh-CN": "邀请人们加入您的组织。",
+    "reviewedEnglishHash": "22344f54a6a332bc85539619f9fdeea5e56ca0de806eeaa0481ad67614f9dc92"
+  },
+  "Invite people to {{name}}": {
+    "en": "Invite people to {{name}}",
+    "zh-CN": "邀请成员加入 {{name}}",
+    "reviewedEnglishHash": "1e5a3fccd53fc96948ddd325db11d1dbceb3fe7e1b90dd44c2bdc3b4cabac084"
+  },
+  "Invite ready below and copied to clipboard.": {
+    "en": "Invite ready below and copied to clipboard.",
+    "zh-CN": "邀请链接已生成，并已复制到剪贴板。",
+    "reviewedEnglishHash": "2956aad1ae8302e2f6583eaee28f8afa9a2b4a49e793b614fda4d49ea21f4a34"
+  },
+  "Invite ready below.": {
+    "en": "Invite ready below.",
+    "zh-CN": "邀请链接已生成，见下方。",
+    "reviewedEnglishHash": "c7f94a6092d62023eb64b39bcfd1bc8e64988665a242db3c8cda95983f8ffe57"
+  },
+  "Invite revoked": {
+    "en": "Invite revoked",
+    "zh-CN": "邀请已撤销",
+    "reviewedEnglishHash": "d8fb3309e7d72c4dcefaa8eb45bab1def3a285ea898289b23de332e7bda5ea21"
+  },
+  "Invite the bot to a channel, then mention it to start a conversation.": {
+    "en": "Invite the bot to a channel, then mention it to start a conversation.",
+    "zh-CN": "邀请机器人加入频道，然后提及它以开始对话。",
+    "reviewedEnglishHash": "ec7e38b6fec494cdb7c6293bad975ea99c871bdf82daaff50de83e1ef20c647c"
+  },
+  "Invite your assistant": {
+    "en": "Invite your assistant",
+    "zh-CN": "邀请您的助手",
+    "reviewedEnglishHash": "be917e1b233c881be7f8ad3ce9fe6ddeb1b2ed116fc799d80344b5c51459e723"
+  },
+  "Invited by": {
+    "en": "Invited by",
+    "zh-CN": "邀请人",
+    "reviewedEnglishHash": "c7a6f15607da632554734bcbcc9f1ab82da2b651c75ff391e4b7979189b24f1f"
+  },
+  "Invites": {
+    "en": "Invites",
+    "zh-CN": "邀请",
+    "reviewedEnglishHash": "f212a985ab1612db36f99f8ce3d228fb1a0332c07daf544534846bf2cdf8c6fb"
+  },
+  "Invocation": {
+    "en": "Invocation",
+    "zh-CN": "调用信息",
+    "reviewedEnglishHash": "05adee5dad7136295d772e75f9aa41b53ac6fc403e2503a9991214096105b287"
+  },
+  "Invocation ID": {
+    "en": "Invocation ID",
+    "zh-CN": "调用 ID",
+    "reviewedEnglishHash": "56d237ee606ca2dd8d5070926b0ff7dc22c8c1ca7f2f0c9381a835f3d227cddb"
+  },
+  "Invoice": {
+    "en": "Invoice",
+    "zh-CN": "账单",
+    "reviewedEnglishHash": "b832002da297545ff2c6cc36303a5f9b9779a2d7e47ba81c07ef86aca92181c0"
+  },
+  "Invoke OpenClaw via gateway protocol": {
+    "en": "Invoke OpenClaw via gateway protocol",
+    "zh-CN": "通过网关协议调用 OpenClaw",
+    "reviewedEnglishHash": "4d68a2be92013653bc653553e639111037a2934c824e4e6a47a09bf24934815e"
+  },
+  "Issue": {
+    "en": "Issue",
+    "zh-CN": "任务",
+    "reviewedEnglishHash": "48dc76dfa23ae03fea1372c5ed6c0e1bd62eaeca7bba6d804eb0afa87972f031"
+  },
+  "Issue List": {
+    "en": "Issue List",
+    "zh-CN": "任务列表",
+    "reviewedEnglishHash": "b8a227c7fc41bc78c9cc08fb94f1023a5a58196278886df1424404d1aa08edd3"
+  },
+  "Issue Properties": {
+    "en": "Issue Properties",
+    "zh-CN": "任务属性",
+    "reviewedEnglishHash": "851c108249a2629441edabc9b4280d021c89aff73f9f9d0e9f754e7dc5e666aa"
+  },
+  "Issue Widget": {
+    "en": "Issue Widget",
+    "zh-CN": "任务小组件",
+    "reviewedEnglishHash": "977a3384be4b5e91bcfb00080c8c6496c5d73d618dc1eaad848b34bffe007abf"
+  },
+  "Issue a reusable token for an external client. Its name is also used as the client label.": {
+    "en": "Issue a reusable token for an external client. Its name is also used as the client label.",
+    "zh-CN": "为外部客户端签发可重复使用的令牌，令牌名称也会用作客户端标签。",
+    "reviewedEnglishHash": "fbfce168232e9cb35bf0bfe4652d48e5668d011ddf4e95516082f09f5f2b1d2b"
+  },
+  "Issue a token": {
+    "en": "Issue a token",
+    "zh-CN": "签发令牌",
+    "reviewedEnglishHash": "1418067b77b66bc6249d2f1e84d3cc1127eb880cf976632e86bc4f688e3a252b"
+  },
+  "Issue a token before copying a snippet; the full": {
+    "en": "Issue a token before copying a snippet; the full",
+    "zh-CN": "复制配置片段前，请先签发令牌；配置必须包含完整的",
+    "reviewedEnglishHash": "76ae8e3f0789203bfd0b94d50268ff0a4a725eef794da75ce8d2ff316c997dff"
+  },
+  "Issue archived from inbox": {
+    "en": "Issue archived from inbox",
+    "zh-CN": "任务已从收件箱归档",
+    "reviewedEnglishHash": "80f423d003d0e5b098ebf1b3c1c34ef10ae291bfd899b9549fcfd7d3d2d1a326"
+  },
+  "Issue comment": {
+    "en": "Issue comment",
+    "zh-CN": "任务评论",
+    "reviewedEnglishHash": "b58fb1935afc1fba043435806a01889da8688f1c3afb99ad709cbd7e3ea7b517"
+  },
+  "Issue detail": {
+    "en": "Issue detail",
+    "zh-CN": "任务详情",
+    "reviewedEnglishHash": "93c9061d444320472562db963eb5f8fb8da51d593044fb99b2f2249a3dbecf11"
+  },
+  "Issue documents": {
+    "en": "Issue documents",
+    "zh-CN": "任务文档",
+    "reviewedEnglishHash": "5620a6e0df67fc7989316631771bf270e02b0a78b95d0068e905d78d076826ef"
+  },
+  "Issue execution is held until resume. Human comments can still wake the assignee for triage.": {
+    "en": "Issue execution is held until resume. Human comments can still wake the assignee for triage.",
+    "zh-CN": "此任务的执行会保持暂停，直到恢复。人工评论仍可唤醒处理人进行分流。",
+    "reviewedEnglishHash": "898254e1a4042aa878137c8abcfaf958d6fd0afec8aa793fa977da0741c65f15"
+  },
+  "Issue labels and tags.": {
+    "en": "Issue labels and tags.",
+    "zh-CN": "任务标签与标记。",
+    "reviewedEnglishHash": "7145dac27a93bc350b8bea84c210e46982dd8af859c2d6dca57d05f150c5c648"
+  },
+  "Issue reassignment": {
+    "en": "Issue reassignment",
+    "zh-CN": "任务重新分配",
+    "reviewedEnglishHash": "35bb5fd2274f138f302cef09f3104269f53e8b1757328ce99df4f49685504d28"
+  },
+  "Issue state chip on the left edge.": {
+    "en": "Issue state chip on the left edge.",
+    "zh-CN": "左侧边缘的任务状态标识。",
+    "reviewedEnglishHash": "06b8dbced265901509aa26a3bff04cc0b7c0fd4dc08cbd34d105da1c4b09e111"
+  },
+  "Issue update failed": {
+    "en": "Issue update failed",
+    "zh-CN": "更新任务失败",
+    "reviewedEnglishHash": "fd3bf32c68f7365cf10d8bea7cea972386caae7e4916c3c7cc9dff68712f0de6"
+  },
+  "Issue-linked usage": {
+    "en": "Issue-linked usage",
+    "zh-CN": "任务关联使用量",
+    "reviewedEnglishHash": "5e3c7f1f1bb1742ad56dd13aa8e2ef8455ecf783a8ffb257ed1a7eb7b167c169"
+  },
+  "Issues": {
+    "en": "Issues",
+    "zh-CN": "任务",
+    "reviewedEnglishHash": "666067dd376e5d4553b8fd554f855855819ad213ae825022d2a32dfa28431115"
+  },
+  "Issues by Priority": {
+    "en": "Issues by Priority",
+    "zh-CN": "按优先级统计的任务",
+    "reviewedEnglishHash": "c78ad14353619a3e435cb0c4bd389f2a534a5590d05a720d234fa51d1ee92703"
+  },
+  "Issues by Status": {
+    "en": "Issues by Status",
+    "zh-CN": "按状态统计的任务",
+    "reviewedEnglishHash": "8e042929ddf0a6c8c4a3580af41228894cba36a65b9000164b0c2f49f4a6fead"
+  },
+  "It is now available in Client snippets for a copy-ready configuration.": {
+    "en": "It is now available in Client snippets for a copy-ready configuration.",
+    "zh-CN": "现在可在“客户端配置片段”中生成可直接复制的配置。",
+    "reviewedEnglishHash": "e48b3317db58712d1f2cbca0c74f40bb70a1918c2d30d9f72f1a327ffc5a4e42"
+  },
+  "It will be unregistered and removed from the adapter store.": {
+    "en": "It will be unregistered and removed from the adapter store.",
+    "zh-CN": "它会被取消注册，并从适配器存储中移除。",
+    "reviewedEnglishHash": "e8d74d203a7e2dd343b5640b3e04869387f70342955cd36d23207eb388eada20"
+  },
+  "Item": {
+    "en": "Item",
+    "zh-CN": "道具",
+    "reviewedEnglishHash": "652bcc3a478428893cc505ae19f847b49be52f861bedc64bb192ceed409fa733"
+  },
+  "Item moved": {
+    "en": "Item moved",
+    "zh-CN": "条目已移动",
+    "reviewedEnglishHash": "05082e4b8c4fe432bcefb395fc111dd9a8bd19f2bfe56355eb07508b54c2285e"
+  },
+  "Item pagination": {
+    "en": "Item pagination",
+    "zh-CN": "项目分页",
+    "reviewedEnglishHash": "3ca1c211751463fee311eb23334c0800e620a4d4e6a53b6db5954b6c10a92725"
+  },
+  "Item removed": {
+    "en": "Item removed",
+    "zh-CN": "条目已移除",
+    "reviewedEnglishHash": "79df300fef285cb9e2f51147d1d96c8834e2bb933da3da692c0e27c94c2e1018"
+  },
+  "Items will be added to the first stage (": {
+    "en": "Items will be added to the first stage (",
+    "zh-CN": "条目将添加到第一个阶段 (",
+    "reviewedEnglishHash": "172a3c4e880305a8377a0f053780f7092edc02bebad4f739b3a3afa8f74f8a8b"
+  },
+  "identity. Paperclip will check your current organization membership on every action.": {
+    "en": "identity. Paperclip will check your current organization membership on every action.",
+    "zh-CN": "身份时确认。Paperclip 会在每次操作时检查您当前的组织成员资格。",
+    "reviewedEnglishHash": "5ae51bfb89a71e9b2affdf99c18336ec8c9d47cad22cebb6be29da04077faed3"
+  },
+  "if it isn&apos;t verified. Save changes if Slack asks.": {
+    "en": "if it isn't verified. Save changes if Slack asks.",
+    "zh-CN": "（如果尚未验证）。如果 Slack 提示，请保存更改。",
+    "reviewedEnglishHash": "6f3f6848db0b3b63398be1eceda483f29186ef9fb11e7f4935ddb61a1c908fe6"
+  },
+  "if needed.": {
+    "en": "if needed.",
+    "zh-CN": "（如有需要）。",
+    "reviewedEnglishHash": "80b41565d71ab28e4f6a7f459c7dc87f43ab77b2cf0898d7da5462f3360f4496"
+  },
+  "in": {
+    "en": "in",
+    "zh-CN": "输入",
+    "reviewedEnglishHash": "582967534d0f909d196b97f9e6921342777aea87b46fa52df165389db1fb8ccf"
+  },
+  "in Composio": {
+    "en": "in Composio",
+    "zh-CN": "（在 Composio 中）",
+    "reviewedEnglishHash": "9f5e935e46973cb8779ce3748a734a1f7ffce4b7c18f3dd1208f666ed923b222"
+  },
+  "in Composio, then return here.": {
+    "en": "in Composio, then return here.",
+    "zh-CN": "在 Composio 中的连接，然后返回此处。",
+    "reviewedEnglishHash": "4e36417043fdf36c2a1f87cf6108f1a39ec28007dbbd0717df51431b92e087de"
+  },
+  "in Slack": {
+    "en": "in Slack",
+    "zh-CN": "在 Slack 中聊天",
+    "reviewedEnglishHash": "123530c557ecdd6e1252df572f7981c977e58346b258090635a4a2d5921ac6ad"
+  },
+  "in Slack.": {
+    "en": "in Slack.",
+    "zh-CN": "（在 Slack 中）。",
+    "reviewedEnglishHash": "017245d54fdbfc775542123bb869cc77ab3a5e63f996368d8281c7298efba2eb"
+  },
+  "in Telegram": {
+    "en": "in Telegram",
+    "zh-CN": "在 Telegram 中",
+    "reviewedEnglishHash": "df102afbe84a74f3c1b3f8087a691489fc3cdeccd659f46edd39418bc9cdfc1c"
+  },
+  "in env or run": {
+    "en": "in env or run",
+    "zh-CN": "到环境变量中，或运行",
+    "reviewedEnglishHash": "e32cc5581db0aed811c16e2247826c8d68a17637eaea90dcfa74a5fd3b8f017a"
+  },
+  "in motion": {
+    "en": "in motion",
+    "zh-CN": "项正在进行",
+    "reviewedEnglishHash": "a9bd522f3b80c902c77236800fe3d69e23a2da1ad16f0f864b739192d57d39d0"
+  },
+  "in recorded usage charges for this period, separate from monthly fees.": {
+    "en": "in recorded usage charges for this period, separate from monthly fees.",
+    "zh-CN": "的已记录用量费用，该费用与月费分开计算。",
+    "reviewedEnglishHash": "67d0d7fed06f979baed6eb43556af02bc235f0ea3c5853377ed25b591811fd5d"
+  },
+  "in that config": {
+    "en": "in that config",
+    "zh-CN": "（在该配置中）",
+    "reviewedEnglishHash": "d71ef3bc1fa967f94dc86d459c375aa6e757b176abe21a0c7f320d4ced707c94"
+  },
+  "in the organization — the board or any agent, including the one that asked — can respond. Narrow a kind only when you need to.": {
+    "en": "in the organization — the board or any agent, including the one that asked — can respond. Narrow a kind only when you need to.",
+    "zh-CN": "在组织内，董事会或任何智能体（包括提出请求的智能体）都可以回复。仅在需要时再缩小范围。",
+    "reviewedEnglishHash": "db1cd68bce3a74e8d6d0fc0979e244cb24c19cf26a58b776794878bd45f91b74"
+  },
+  "in the raw response": {
+    "en": "in the raw response",
+    "zh-CN": "可在原始响应中查看",
+    "reviewedEnglishHash": "05fb37411178ec022461e3e2643ebc76e48d8eb4bc074fda4e4e93e42a025dec"
+  },
+  "in the title &amp; instructions. The variable name is read-only — rename by editing the placeholder.": {
+    "en": "in the title & instructions. The variable name is read-only — rename by editing the placeholder.",
+    "zh-CN": "在标题和说明中。变量名称是只读的 - 通过编辑占位符来重命名。",
+    "reviewedEnglishHash": "d184c0a570b08ccda29eaaff6eb34d97fbfb603f35c4546e3ec67e410ceb63e2"
+  },
+  "in this folder won't be deleted. They'll move to Unfiled.": {
+    "en": "in this folder won't be deleted. They'll move to Unfiled.",
+    "zh-CN": "该文件夹中的内容不会被删除。他们将移至未归档。",
+    "reviewedEnglishHash": "5dde52c6ed6b17f3dbcae2717953721f215c78cebed62d46f2f5f7ffcb8f90af"
+  },
+  "in this period. Totals include known costs only.": {
+    "en": "in this period. Totals include known costs only.",
+    "zh-CN": "无法获取成本。汇总仅计入已知成本。",
+    "reviewedEnglishHash": "9a95ca27b87a36a821fe7877f002aaa6e5b7cc08da9989a6668a6b4f61dc2a51"
+  },
+  "in your roster, badged": {
+    "en": "in your roster, badged",
+    "zh-CN": "在您的名册中，徽章",
+    "reviewedEnglishHash": "3f4e690f729001c98eed092a070fd6a4c0b782ce20c7586ec8eefce1deda164f"
+  },
+  "include /": {
+    "en": "include /",
+    "zh-CN": "包含 /",
+    "reviewedEnglishHash": "42bac0a576bc8e9ecd9183e1d0da8b8fc7689822ec2870effc195d8528439f23"
+  },
+  "init": {
+    "en": "init",
+    "zh-CN": "初始化",
+    "reviewedEnglishHash": "bb54068aea85faa7e487530083366be9962390af822e4c71ef1aca7033c83e66"
+  },
+  "input": {
+    "en": "input",
+    "zh-CN": "输入",
+    "reviewedEnglishHash": "c96c6d5be8d08a12e7b5cdc1b207fa6b2430974c86803d8891675e76fd992c20"
+  },
+  "input /": {
+    "en": "input /",
+    "zh-CN": "input /",
+    "reviewedEnglishHash": "7a994109e5b7654173aacdc7867ce9c3efc542e9df6fb17115126de940b5ffcb"
+  },
+  "input cached": {
+    "en": "input cached",
+    "zh-CN": "输入缓存",
+    "reviewedEnglishHash": "215e3a991f6f4ae9bdfb389d1e12937ad4a2bc819695f611c13f17aebfb51dfd"
+  },
+  "installed plugin": {
+    "en": "installed plugin",
+    "zh-CN": "安装了插件",
+    "reviewedEnglishHash": "d47f9f86b91e261e8ec487f09407f7e9e3f35bc874a0f45e60a0a1d5aef38afe"
+  },
+  "instance_settings.general": {
+    "en": "instance_settings.general",
+    "zh-CN": "instance_settings.general",
+    "reviewedEnglishHash": "d63c34ef789d34e5be24c41163915eb1d371820001c4cb6c93ee307f4acd5dbf"
+  },
+  "into folders to keep things tidy.": {
+    "en": "into folders to keep things tidy.",
+    "zh-CN": "放入文件夹以保持整洁。",
+    "reviewedEnglishHash": "9c030405a629f55d11db21799eac8a37f9a10a3a9cf9151a316d8ef45e8f9999"
+  },
+  "invoice": {
+    "en": "invoice",
+    "zh-CN": "发票",
+    "reviewedEnglishHash": "52d6e3de4fa0dcc29946695f93940c3e7f26f30e1e39f4b1a49ad98839112786"
+  },
+  "invoked a heartbeat": {
+    "en": "invoked a heartbeat",
+    "zh-CN": "触发了心跳",
+    "reviewedEnglishHash": "5ae5dbdd71dae26c4d3bf702877aea9a06d70329d90a07f2aafb155bc734abd6"
+  },
+  "invoked heartbeat for": {
+    "en": "invoked heartbeat for",
+    "zh-CN": "触发了心跳",
+    "reviewedEnglishHash": "d2899821918ab678a0dee8b2f28a06f1a7a9a59d3f0b635877d244eb964d33d5"
+  },
+  "is active for all agents.": {
+    "en": "is active for all agents.",
+    "zh-CN": "已对所有智能体启用。",
+    "reviewedEnglishHash": "8b382c5907a58e8aa6c31f2b17ef6cc257c504c3a4205f651771b094a135ba00"
+  },
+  "is active with": {
+    "en": "is active with",
+    "zh-CN": "正在由以下智能体处理：",
+    "reviewedEnglishHash": "be0c19e306bba3a0af0da11fdbabc93a3f9f791a677c63d77dcae983f52de1f7"
+  },
+  "is configured to use": {
+    "en": "is configured to use",
+    "zh-CN": "配置为使用",
+    "reviewedEnglishHash": "95130f6f467ef7e020c95c74ed2e7f0329a3f6b84f03efb88dea006602402dfe"
+  },
+  "is created.": {
+    "en": "is created.",
+    "zh-CN": "已创建。",
+    "reviewedEnglishHash": "78fc38983bd39ba8cd74b3e0e3f466aa239af0b9fe13b9d831a54e1419ebff74"
+  },
+  "is disconnected": {
+    "en": "is disconnected",
+    "zh-CN": "已断开连接",
+    "reviewedEnglishHash": "39c209654e7ca850892802e292abcf1820cf1626a5eb2f4f5429771642de6490"
+  },
+  "is enabled but missing from the organization library.": {
+    "en": "is enabled but missing from the organization library.",
+    "zh-CN": "已启用，但在组织技能库中找不到。",
+    "reviewedEnglishHash": "4bd2d0eb7e0f7850ad5f5fc5db76009ea3dcd1fc2cf2ae861d8d11272fff1d7c"
+  },
+  "is grouped and shared.": {
+    "en": "is grouped and shared.",
+    "zh-CN": "的分组和共享方式。",
+    "reviewedEnglishHash": "bcb1da7e50716ccd9fac3364e6f4d0044947a88dd38f1583f21ca5ec0a58b3d1"
+  },
+  "is installed (": {
+    "en": "is installed (",
+    "zh-CN": "的技能已安装（",
+    "reviewedEnglishHash": "fe8135efc156802044c6c39a3bd830eee98c0cc30cbd6b30a216fb9885836c17"
+  },
+  "is not configured for low-trust review": {
+    "en": "is not configured for low-trust review",
+    "zh-CN": "未配置低信任评审",
+    "reviewedEnglishHash": "50c5fb1071ac18d233f360f5f390d494c59c8040d4ee5121ba2981190a1a238f"
+  },
+  "is not installed here — this agent will use": {
+    "en": "is not installed here — this agent will use",
+    "zh-CN": "未在此处安装——此智能体将使用",
+    "reviewedEnglishHash": "efd160edb49d9a79b91df9a9a6d1a9ecfdf45d7ed8c9782ccf7fd76dd4769b7f"
+  },
+  "is off for": {
+    "en": "is off for",
+    "zh-CN": "已对以下智能体关闭：",
+    "reviewedEnglishHash": "edb839351deaa64c59ea52cd17de5c473df2e4dfe2a4fde7349e275f6e05fee4"
+  },
+  "is paused and will not start work on this task until it is resumed": {
+    "en": "is paused and will not start work on this task until it is resumed",
+    "zh-CN": "已暂停，在恢复之前不会开始此任务的工作",
+    "reviewedEnglishHash": "c1601e7c45cfa3336f081e2cf59c58867e4b40ccf129adb76fa2fef88328f434"
+  },
+  "is paused.": {
+    "en": "is paused.",
+    "zh-CN": "已暂停。",
+    "reviewedEnglishHash": "4ad51942d6a8ad4abc61115ca821598f55ede62c719a9399be10efc46b0aeae5"
+  },
+  "is ready. Its detailed summary is no longer available.": {
+    "en": "is ready. Its detailed summary is no longer available.",
+    "zh-CN": "已准备就绪。详细摘要已不可用。",
+    "reviewedEnglishHash": "ec0c541f31f8481d00414c34db76522b985e77ad38d5e118b3c7074f202e58d9"
+  },
+  "is set. You can clear it in this CEO adapter config and retry the probe.": {
+    "en": "is set. You can clear it in this CEO adapter config and retry the probe.",
+    "zh-CN": "已设置时失败。你可以在这个 CEO 适配器配置中清空它，然后重新探测。",
+    "reviewedEnglishHash": "fb98c487688d7cf1569d0b70e404fdb654afa45895fbcf96cb049fddf9e75c51"
+  },
+  "is signed in. Click Connect to use this account.": {
+    "en": "is signed in. Click Connect to use this account.",
+    "zh-CN": "已登录。单击“连接”以使用此账户。",
+    "reviewedEnglishHash": "8561b4408512036ecb54a540f58b50550650ee894af0e6cad01f672c80444125"
+  },
+  "is the audience new cards get when the requester does not ask for one;": {
+    "en": "is the audience new cards get when the requester does not ask for one;",
+    "zh-CN": "是请求者未指定受众时新卡片采用的受众；",
+    "reviewedEnglishHash": "045943523eeef31d3ab864ac57d6c349953e0de0db3b9b56f775be377cb1b549"
+  },
+  "is the repository’s default branch.": {
+    "en": "is the repository’s default branch.",
+    "zh-CN": "是仓库的默认分支。",
+    "reviewedEnglishHash": "f28e4c745d4e732d309eceebe736a33197e44cdaf264f5f8dd800dd13e016f9c"
+  },
+  "issue": {
+    "en": "issue",
+    "zh-CN": "任务",
+    "reviewedEnglishHash": "4a502846d070e2088b7025abe80629830bf03d7ab5624d5e91f332bc9d049d3f"
+  },
+  "issue approval linked": {
+    "en": "issue approval linked",
+    "zh-CN": "关联了任务审批",
+    "reviewedEnglishHash": "21cc03d831313c5831df56d19da4f2d20b5f3de9501d7e38218530bb4597f578"
+  },
+  "issue read marked": {
+    "en": "issue read marked",
+    "zh-CN": "标记为已读",
+    "reviewedEnglishHash": "fce596bb47dc28e1c38bdfb4de8ba7fb1264931d333ddf0433fd8c676766d5dd"
+  },
+  "issues": {
+    "en": "issues",
+    "zh-CN": "任务",
+    "reviewedEnglishHash": "02e3fe5aad80ca85ace4db35008faabe7950c53998160c66c9072b6fd33dec0f"
+  },
+  "issuesTouched": {
+    "en": "Issues Touched ({{count}})",
+    "zh-CN": "涉及的任务 ({{count}})",
+    "reviewedEnglishHash": "b863404a571cb6e412ae9327b94c95b6b23272179ea77127b5e9d8500e1c04cd"
+  },
+  "iterations": {
+    "en": "iterations",
+    "zh-CN": "迭代",
+    "reviewedEnglishHash": "2a09eb92d4d3611d8a96496be7b9bc728ffeb545590ee8b9b28c65ee6ad2ea2c"
+  },
+  "{{input}} input · {{output}} output": {
+    "en": "{{input}} input · {{output}} output",
+    "zh-CN": "{{input}} 输入 · {{output}} 输出",
+    "reviewedEnglishHash": "c14b4f211bf1e227aa5f2725335106444e3dc15957ae2150198e901ec8136e6d"
+  },
+  "{{input}} input · {{output}} output · {{providers}} providers · {{models}} models": {
+    "en": "{{input}} input · {{output}} output · {{providers}} providers · {{models}} models",
+    "zh-CN": "{{input}} 输入 · {{output}} 输出 · {{providers}} 个服务商 · {{models}} 个模型",
+    "reviewedEnglishHash": "0e0b9ec4093b0c86e561033299ed43ab55e61501509efa11ebd3b1ff98798e3f"
+  },
+  "{{issueId}}": {
+    "en": "{{issueId}}",
+    "zh-CN": "{{issueId}}",
+    "reviewedEnglishHash": "189e6ce72f0a5d379b060e770d7afdc3130b9a39c95dd4d283c5406a57c433d4"
+  },
+  "”. Include your workspace path.": {
+    "en": "”. Include your workspace path.",
+    "zh-CN": "”选择账户管理地址，并在地址中包含工作区路径。",
+    "reviewedEnglishHash": "35546fa73f95648f7cb4530ffc02997e2473b344f63d58a1f0b09fcc160952b7"
+  }
+}

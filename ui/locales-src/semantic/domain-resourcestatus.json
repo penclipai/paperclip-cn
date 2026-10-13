@@ -1,0 +1,102 @@
+{
+  "resourceStatus.drifted": {
+    "en": "Drifted",
+    "zh-CN": "已偏离",
+    "reviewedEnglishHash": "bb85e2687d4222fbace035b17a1c489ac8b241df839140f2d9c2eb060709a9a8"
+  },
+  "resourceStatus.driftedTitle": {
+    "en": "You've edited this; your changes are kept, not overwritten",
+    "zh-CN": "你已编辑此资源；这些更改会保留，不会被覆盖",
+    "reviewedEnglishHash": "993846ba180493ed61731fe8dac6befbd4978ddedf6d5a3924fb1a01e8131326"
+  },
+  "resourceStatus.error": {
+    "en": "Error",
+    "zh-CN": "错误",
+    "reviewedEnglishHash": "54a0e8c17ebb21a11f8a25b8042786ef7efe52441e6cc87e92c67e0c4c0c6e78"
+  },
+  "resourceStatus.errorTitle": {
+    "en": "Failed to load or reconcile",
+    "zh-CN": "加载或协调失败",
+    "reviewedEnglishHash": "4e42ee640e89878f58320bb8331b7eb529486c4ffe129d00535936714f146845"
+  },
+  "resourceStatus.missing": {
+    "en": "Missing",
+    "zh-CN": "缺失",
+    "reviewedEnglishHash": "6be36ca49ee85210c5d1ad9c377d90a9859c66d889110a2a5b0dccd390d12e20"
+  },
+  "resourceStatus.missingTitle": {
+    "en": "Expected resource absent; reconcile will recreate it",
+    "zh-CN": "预期资源缺失；协调操作会重新创建",
+    "reviewedEnglishHash": "f4936f59ff7986abc59f39d1f93bb406c16c14faedf359598f7ea473b4336a6d"
+  },
+  "resourceStatus.needsSetup": {
+    "en": "Needs setup",
+    "zh-CN": "需要设置",
+    "reviewedEnglishHash": "b6df2441064f141677e6dabf15a7c0c5b4344771ffbad603f1d0dee659c81817"
+  },
+  "resourceStatus.needsSetupTitle": {
+    "en": "Present but not usable yet",
+    "zh-CN": "资源已存在，但暂不可用",
+    "reviewedEnglishHash": "968a205913144398362966c5778e890a41063aadf76f4b028c886aecf01eb6d3"
+  },
+  "resourceStatus.pendingApproval": {
+    "en": "Pending approval",
+    "zh-CN": "等待审批",
+    "reviewedEnglishHash": "bb33a7f41817b38d13854b7f47501050851951e77bba690419fc75be5cd5a372"
+  },
+  "resourceStatus.pendingApprovalTitle": {
+    "en": "Waiting on board hire approval before it can run",
+    "zh-CN": "需要等待董事会批准雇用后才能运行",
+    "reviewedEnglishHash": "96a74263220d3ec0b9e685356665d791ee471ae2c586029110e87ea04f8c9630"
+  },
+  "resourceStatus.proposalPending": {
+    "en": "Proposal pending",
+    "zh-CN": "提案待审核",
+    "reviewedEnglishHash": "f8a713a24dfda798da2b19b1edf6c9afb87505818a6b1b77afa8eb0860f54827"
+  },
+  "resourceStatus.proposalPendingTitle": {
+    "en": "A proposed update is waiting for your review",
+    "zh-CN": "一项更新提案正在等待审核",
+    "reviewedEnglishHash": "ae9d508636c9ad06744a958aeaea5eeaf4e4c256af4f50b779f46ae333b80f65"
+  },
+  "resourceStatus.ready": {
+    "en": "Ready",
+    "zh-CN": "已就绪",
+    "reviewedEnglishHash": "5fa7aac5375c5815787fba3f49559f9b45b14023147ce0652803387974144e5f"
+  },
+  "resourceStatus.readyTitle": {
+    "en": "Materialized and matches the shipped default",
+    "zh-CN": "已生成并与随附默认值一致",
+    "reviewedEnglishHash": "4dd6c838decdfcb4a57729ae32ec390d21d36aa51bd477e447f4d832501b7904"
+  },
+  "resourceStatus.scheduleOff": {
+    "en": "Schedule off",
+    "zh-CN": "计划已关闭",
+    "reviewedEnglishHash": "e96f8077b459c809735a7995e909477929310915772d7ab50248a74c1461ab15"
+  },
+  "resourceStatus.scheduleOffTitle": {
+    "en": "No background work runs until you enable it - costs zero tokens",
+    "zh-CN": "启用前不会运行后台工作，也不会消耗词元",
+    "reviewedEnglishHash": "effbd5a6df02d2352afcfaff2e3d364e63ddd19e6d38f6e207712ec4efd49d4f"
+  },
+  "resourceStatus.updateAvailable": {
+    "en": "Update available",
+    "zh-CN": "有可用更新",
+    "reviewedEnglishHash": "ff8b555d818f0b25bbdd1bec8b479660bac7fc276acbe993e759bf67fed32c34"
+  },
+  "resourceStatus.updateAvailableTitle": {
+    "en": "Unedited - a newer shipped default can be applied",
+    "zh-CN": "尚未编辑，可以应用更新的随附默认值",
+    "reviewedEnglishHash": "adcafe189181860347b720ac3ec3722620a06cf0e269aaff0fe59318e7e76fe6"
+  },
+  "resourceStatus.weekly": {
+    "en": "Weekly",
+    "zh-CN": "每周",
+    "reviewedEnglishHash": "2975132481a7a6957cfa95055d04e706f21f1a613f448d0a17463f2eacca4636"
+  },
+  "resourceStatus.weeklyTitle": {
+    "en": "Runs on the weekly schedule",
+    "zh-CN": "按每周计划运行",
+    "reviewedEnglishHash": "47fd02dd7f2aa529e1bbe5839c4b772e7a9587faf3c1445176f094da54669637"
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "agentActions.clearError": {
+    "en": "Clear error",
+    "zh-CN": "清除错误",
+    "reviewedEnglishHash": "62eb53cf43f8d762c29532c65815cd48c8932cddb0ca4d19af266d9a5962b68d"
+  },
+  "agentActions.clearErrorAria": {
+    "en": "Clear error and return agent to idle",
+    "zh-CN": "清除错误并将智能体恢复为空闲",
+    "reviewedEnglishHash": "3fa076871930df3c9d987195754cd5c417eca7bcc76d302788ffbc42f5939dd0"
+  },
+  "agentActions.couldNotDuplicate": {
+    "en": "Could not duplicate agent",
+    "zh-CN": "无法复制智能体",
+    "reviewedEnglishHash": "db10f77ebeb7f8c9141eb62da8b32d5cabefab92f66e8b61fadb7c21c14eb775"
+  },
+  "agentActions.duplicateConfirm": {
+    "en": "Duplicate {{name}} as {{nextName}}?",
+    "zh-CN": "将 {{name}} 复制为 {{nextName}}？",
+    "reviewedEnglishHash": "c64997f0155b23a4103a184f13067cc5efb6a8ae1cf5c08cee1a3a5fbcec6836"
+  },
+  "agentActions.duplicateFailed": {
+    "en": "Failed to duplicate agent",
+    "zh-CN": "复制智能体失败",
+    "reviewedEnglishHash": "ee1f45283c17588422dfaf16e987e86b2bab6569a029553334e9e7c41dd39813"
+  },
+  "agentActions.duplicated": {
+    "en": "Agent duplicated",
+    "zh-CN": "智能体已复制",
+    "reviewedEnglishHash": "eec8cfadc35432760d5d54281511461cd6976d6285c9b4525b416896808176e6"
+  },
+  "agentActions.error.actionFailed": {
+    "en": "Action failed",
+    "zh-CN": "操作失败",
+    "reviewedEnglishHash": "6e1704d8eca96bd7170a983e6370041cd4a75617570d9a83145517d7576b2a8d"
+  },
+  "agentActions.notReadyToDuplicate": {
+    "en": "Agent is not ready to duplicate",
+    "zh-CN": "智能体尚未准备好复制",
+    "reviewedEnglishHash": "4ab0dbb396ca4d634135820e91480c4664587ad67ddc23fa0ea011594e2ad1d2"
+  },
+  "agentActions.resetSessionFailed": {
+    "en": "Failed to reset session",
+    "zh-CN": "重置会话失败",
+    "reviewedEnglishHash": "0ecbdfe91e4c0dd4d905751efa0a131a1a93c4fdb87a713bc229f7593441518c"
+  }
+}

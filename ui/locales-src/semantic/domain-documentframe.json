@@ -1,0 +1,22 @@
+{
+  "documentFrame.current": {
+    "en": "Current",
+    "zh-CN": "当前",
+    "reviewedEnglishHash": "e0d1b68224bf0b31ef16b206c65b5f8f6b89d18161f4a7cdcb8d0ac8d952549a"
+  },
+  "documentFrame.noRevisions": {
+    "en": "No revisions yet",
+    "zh-CN": "暂无修订",
+    "reviewedEnglishHash": "c02f268b0b8894ba107f1e2b5f0869b717cb0b39258ff2fda593596a337b2e99"
+  },
+  "documentFrame.revisionHistory": {
+    "en": "Revision history",
+    "zh-CN": "修订历史",
+    "reviewedEnglishHash": "5ae0d3d186c734b2819d6c42359e15e53d85b641a099018bd4378daf1a26b29f"
+  },
+  "documentFrame.updatedRelative": {
+    "en": "updated {{time}}",
+    "zh-CN": "更新于 {{time}}",
+    "reviewedEnglishHash": "3f488b87847935d42852fbd1836c818aa0a2ce59dd3d68f1b7915779b0b2c348"
+  }
+}

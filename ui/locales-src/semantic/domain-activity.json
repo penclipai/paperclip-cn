@@ -1,0 +1,22 @@
+{
+  "activity.changedPriorityFromTo": {
+    "en": "Changed priority from {{from}} to {{to}} on",
+    "zh-CN": "将优先级从 {{from}} 改为 {{to}}：",
+    "reviewedEnglishHash": "703fc8d39d04584cb83df3e283138abbe95dd6e21ee87a7e485d554e1f3a5f98"
+  },
+  "activity.changedPriorityTo": {
+    "en": "Changed priority to {{priority}} on",
+    "zh-CN": "将优先级改为 {{priority}}：",
+    "reviewedEnglishHash": "c0df893c7c0e2b8c90d87e4b92b0aa6e98cf0187c8cdc95450fb360dbdcf9f72"
+  },
+  "activity.changedStatusFromTo": {
+    "en": "Changed status from {{from}} to {{to}} on",
+    "zh-CN": "将状态从 {{from}} 改为 {{to}}：",
+    "reviewedEnglishHash": "f33143b8682cef1d4b7052621c72cff7a09e8fe92ed0d78f21cd8a783fa70fa1"
+  },
+  "activity.changedStatusTo": {
+    "en": "Changed status to {{status}} on",
+    "zh-CN": "将状态改为 {{status}}：",
+    "reviewedEnglishHash": "9cf0eaf872bf9aaf726f32866cf43c616e8ea136f5ab0e3153e8d8696bf1360d"
+  }
+}

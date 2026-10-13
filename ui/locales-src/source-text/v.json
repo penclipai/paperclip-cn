@@ -1,0 +1,257 @@
+{
+  "Validation error": {
+    "en": "Validation error",
+    "zh-CN": "参数校验失败",
+    "reviewedEnglishHash": "2aa2d0b411dd04b1e0fa093fdbf64e672f34f8e4729a18e1f456d2957b61e60f"
+  },
+  "Validation issue": {
+    "en": "Validation issue",
+    "zh-CN": "验证问题",
+    "reviewedEnglishHash": "93e835f589e56f7d5f8b642366171800be1d38a4dd673d8f799f6e025b12b958"
+  },
+  "Validation problems": {
+    "en": "Validation problems",
+    "zh-CN": "验证问题",
+    "reviewedEnglishHash": "27006e6ee1a07c3c23612a570ccccae7341832a225b956aad1e972cec06b99c1"
+  },
+  "Variables": {
+    "en": "Variables",
+    "zh-CN": "变量",
+    "reviewedEnglishHash": "02db55bac5e3f7ceb98fdea15d7dfcfd40efcc41b777d10c2a8483b571f332bd"
+  },
+  "Variants": {
+    "en": "Variants",
+    "zh-CN": "变体",
+    "reviewedEnglishHash": "63d2643b059ee912fde1a2395209738f9c3056cdad2acd87b583dbc77b4cf786"
+  },
+  "Vercel credential verified": {
+    "en": "Vercel credential verified",
+    "zh-CN": "Vercel 凭据已验证",
+    "reviewedEnglishHash": "48706ce3b76e9d05b1f02c0402044cee82880771bc0b58adb5f5386c9cba1699"
+  },
+  "Verification caveat": {
+    "en": "Verification caveat",
+    "zh-CN": "验证警告",
+    "reviewedEnglishHash": "07351fa7a6ea7cb25d1056eecf21ff75d443507cf17a4b91633b1c9f4fdd5f7d"
+  },
+  "Verification results": {
+    "en": "Verification results",
+    "zh-CN": "验证结果",
+    "reviewedEnglishHash": "14a01310ac6ab318a3537375acfad22be6210a4585786c5e715c28935100588e"
+  },
+  "Verified Railway host key": {
+    "en": "Verified Railway host key",
+    "zh-CN": "已验证的 Railway 主机密钥",
+    "reviewedEnglishHash": "74d7e1c06134e969ec3a57c54bd8f1fcba9a14ecece9440802fda0fb139ce326"
+  },
+  "Version": {
+    "en": "Version",
+    "zh-CN": "版本",
+    "reviewedEnglishHash": "dd167905de0defcaf72de673ee44c07431770d129ccffab286bd2edfdaf62396"
+  },
+  "Version (optional)": {
+    "en": "Version (optional)",
+    "zh-CN": "版本（可选）",
+    "reviewedEnglishHash": "df410f15550058cbdc48a7cf03b70efa3903d40b27eb46228d3712efa8afdcb6"
+  },
+  "Via": {
+    "en": "Via",
+    "zh-CN": "通过",
+    "reviewedEnglishHash": "2ed8b8066255f7d211ce8989fea9f2659f1f330b814a50fcfeb0befd3f7b9b1a"
+  },
+  "Video": {
+    "en": "Video",
+    "zh-CN": "视频",
+    "reviewedEnglishHash": "d534be829e32196b4d1e53b67103cf1e376b1d60071857572598c196abfefbc6"
+  },
+  "Video preview unavailable": {
+    "en": "Video preview unavailable",
+    "zh-CN": "视频预览不可用",
+    "reviewedEnglishHash": "ba6b8bccdba03d348ecec44cbd62f1c159cf7a18e54ba829858721bb1a7769b8"
+  },
+  "View": {
+    "en": "View",
+    "zh-CN": "预览",
+    "reviewedEnglishHash": "dcc839a4015c4b7dd9db959a8f757833b8adb92462a751b973386e453c6d58a3"
+  },
+  "View Slack App Manifest": {
+    "en": "View Slack App Manifest",
+    "zh-CN": "查看 Slack 应用清单",
+    "reviewedEnglishHash": "d0918c4c7d0100877ff5f54287b13358d2219987fd9e2ed051a3da0dea46c06e"
+  },
+  "View activity": {
+    "en": "View activity",
+    "zh-CN": "查看活动",
+    "reviewedEnglishHash": "4bf3f8ddd7bf23d20706d76ecfc9d888846fbf994efcce6dc8d07f4c8db54ee1"
+  },
+  "View activity log →": {
+    "en": "View activity log →",
+    "zh-CN": "查看活动日志 →",
+    "reviewedEnglishHash": "696d74a6e983e6e7274b841a3e7b2958867975565016464943a5343ee9f2c988"
+  },
+  "View affected ({{count}})": {
+    "en": "View affected ({{count}})",
+    "zh-CN": "查看受影响项（{{count}}）",
+    "reviewedEnglishHash": "e0b3842640833dc8ff4c0ed7c47e49c46b20b32b2b14fd98503d780d3afd3125"
+  },
+  "View all runs": {
+    "en": "View all runs",
+    "zh-CN": "查看所有运行",
+    "reviewedEnglishHash": "346de5a03a7af536b0e37f255333cd185b52e4db3b0a4df05cf7c5916e23268c"
+  },
+  "View commit": {
+    "en": "View commit",
+    "zh-CN": "查看提交",
+    "reviewedEnglishHash": "83b2eddb4177dcce81aba0dcf03d7bd1f24e524611cae04a512fa9a63d58102a"
+  },
+  "View data": {
+    "en": "View data",
+    "zh-CN": "查看数据",
+    "reviewedEnglishHash": "249495a1a8ee38797cb29e545fcd3b50a5a236533674bbedd9a80e1251f9cdd0"
+  },
+  "View details": {
+    "en": "View details",
+    "zh-CN": "查看详情",
+    "reviewedEnglishHash": "d1bf045bb524dae5b02c471c230958bcd1bf232d7a49367b1cdf977855a06b41"
+  },
+  "View diff": {
+    "en": "View diff",
+    "zh-CN": "查看差异",
+    "reviewedEnglishHash": "0e5d6873018e6c694649856f665d50b005c1f80868336f34246baf8237717092"
+  },
+  "View full error": {
+    "en": "View full error",
+    "zh-CN": "查看完整错误",
+    "reviewedEnglishHash": "2a64ebe088c4ba122a633993b1060ca8d8a5a7a5bad7ff6e31d0b5e04b2e209d"
+  },
+  "View image": {
+    "en": "View image",
+    "zh-CN": "查看图片",
+    "reviewedEnglishHash": "5bb55a4bb4fd0e197d9e90119f580514d5ea9aa6fe79253f1bd4aa67bf083900"
+  },
+  "View imported agents →": {
+    "en": "View imported agents →",
+    "zh-CN": "查看导入的智能体 →",
+    "reviewedEnglishHash": "e6c95ca67e707021a7d0b34d4fbbcad2e532450a1c2a30ca45c779623b76aaa1"
+  },
+  "View imported projects →": {
+    "en": "View imported projects →",
+    "zh-CN": "查看导入的项目 →",
+    "reviewedEnglishHash": "7aab92af7da6bca17fc88ac89b389f4832f3e537371dde9a7fd2f43847597832"
+  },
+  "View in Honeycomb": {
+    "en": "View in Honeycomb",
+    "zh-CN": "在Honeycomb中查看",
+    "reviewedEnglishHash": "358cde948ef1e415c30b3dacb95e80e20aea44832e078d46235a6abca4ac989b"
+  },
+  "View mode": {
+    "en": "View mode",
+    "zh-CN": "视图模式",
+    "reviewedEnglishHash": "18997f2413b5dcc8f9ba4cf1f8147f6eee6e22f861ce1fefc22285e74b79c45c"
+  },
+  "View more": {
+    "en": "View more",
+    "zh-CN": "查看更多",
+    "reviewedEnglishHash": "267e5558ef02172793ce657f69e7362cfa6a9573f1b52d1ffcac27d4f187cb09"
+  },
+  "View on GitHub": {
+    "en": "View on GitHub",
+    "zh-CN": "在 GitHub 上查看",
+    "reviewedEnglishHash": "20672423d71690888afb7caa922ea2a23592d49346341b1eee292de65189a296"
+  },
+  "View original request and resolution": {
+    "en": "View original request and resolution",
+    "zh-CN": "查看原始请求和解决方案",
+    "reviewedEnglishHash": "b6a8ff6f8d0fe2f556421ee3e2ba0c0c923f42dc8220638f1cc9ab5939c51a88"
+  },
+  "View profile": {
+    "en": "View profile",
+    "zh-CN": "查看资料",
+    "reviewedEnglishHash": "d4788f256f730423b529aea4112d63000109e84253f2588a340df4d827821d81"
+  },
+  "View routine activity": {
+    "en": "View routine activity",
+    "zh-CN": "查看日常活动",
+    "reviewedEnglishHash": "cd1bd79b590009183dcad16b4598cb5c6b46926eb06e5e193c8bd5ea0cc9d6da"
+  },
+  "View routines →": {
+    "en": "View routines →",
+    "zh-CN": "查看例行任务 →",
+    "reviewedEnglishHash": "e0c07ec9592abebccb54fbd04dcdc50da88876590bae52123571908e3d9cade6"
+  },
+  "View run": {
+    "en": "View run",
+    "zh-CN": "查看运行",
+    "reviewedEnglishHash": "aaf7fccc7d1315f23f35073f1d89aa8357c5d0cdb9b00a03ee2a4291e976b9ac"
+  },
+  "View saved plan": {
+    "en": "View saved plan",
+    "zh-CN": "查看保存的计划",
+    "reviewedEnglishHash": "33ea4b19991f3e69d62e53091ff7d27304cf19a7ed560ffb5c25b5b1c98213c0"
+  },
+  "View toggle": {
+    "en": "View toggle",
+    "zh-CN": "视图切换",
+    "reviewedEnglishHash": "3f2f0df8a6c314c5af155ba93d70d886da2b4b05dd1cbc42ca3ac616f17511f1"
+  },
+  "View usage": {
+    "en": "View usage",
+    "zh-CN": "查看使用情况",
+    "reviewedEnglishHash": "2e4ae39a4ee5a0280ead9b65a47f3aafa0eddf25382cd52895b97dda7532015d"
+  },
+  "View-only company membership.": {
+    "en": "View-only company membership.",
+    "zh-CN": "仅查看的公司成员身份。",
+    "reviewedEnglishHash": "8cf7908f030cabc0493feafd98c10eb009240bd4940d928a82b21ea09a905e63"
+  },
+  "Viewer": {
+    "en": "Viewer",
+    "zh-CN": "查看者",
+    "reviewedEnglishHash": "678bfa6af48b17cde7e32964ff2a268394373b68af81109ce7c42fc1dff25a02"
+  },
+  "Viewing historical revision": {
+    "en": "Viewing historical revision",
+    "zh-CN": "正在查看历史修订",
+    "reviewedEnglishHash": "9699f8b800015bb18561510c9032f7f3fe309b2ebe5ac7716a1f58f5b127d8ec"
+  },
+  "Viewing revision {{number}}": {
+    "en": "Viewing revision {{number}}",
+    "zh-CN": "正在查看修订 {{number}}",
+    "reviewedEnglishHash": "6021114698e3fe3064271f75e0731b266c5aa3d918f42c7d386c0548874f34b8"
+  },
+  "Viewing revision {{revision}}": {
+    "en": "Viewing revision {{revision}}",
+    "zh-CN": "正在查看修订 {{revision}}",
+    "reviewedEnglishHash": "2edfd8c429adf295279950ed1a69dc9f74ac8d68fb7c1e988ce539621027af59"
+  },
+  "Visible": {
+    "en": "Visible",
+    "zh-CN": "可见的",
+    "reviewedEnglishHash": "8411f5abb4c710b176d8f28c735f55a5f1e1ac648a8a48432ce4c10014a9bb91"
+  },
+  "Visible + hidden": {
+    "en": "Visible + hidden",
+    "zh-CN": "可见+隐藏",
+    "reviewedEnglishHash": "a27b96a9040759ccc81c77956da28302f9d83d952f848a2cc761c89a1dc6a324"
+  },
+  "Visit task": {
+    "en": "Visit task",
+    "zh-CN": "参观任务",
+    "reviewedEnglishHash": "ecacc67b009d5b6870ed801bb45358cfdb5dea649dad45965a0beb9aad04ad83"
+  },
+  "validation errors and will be skipped.": {
+    "en": "validation errors and will be skipped.",
+    "zh-CN": "个验证错误，将被跳过。",
+    "reviewedEnglishHash": "ee8cb75471c341fbfd1eac7a5b4658c7b034e27e6884a4e0af9429a117a8af00"
+  },
+  "via Vercel Connect": {
+    "en": "via Vercel Connect",
+    "zh-CN": "通过 Vercel Connect",
+    "reviewedEnglishHash": "d34e03fbdfb4a5d5db22b28aa71c7b5982400881ca0586c0ba8dcd2c49305c67"
+  },
+  "virtual file": {
+    "en": "virtual file",
+    "zh-CN": "虚拟文件",
+    "reviewedEnglishHash": "e0e99522c4b6d0b5914de0f509db55de5989c7f0dcd474a432930a3ecb9e3db5"
+  }
+}

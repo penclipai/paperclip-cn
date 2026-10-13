@@ -1,0 +1,197 @@
+{
+  "newProject.addGoal": {
+    "en": "+ Goal",
+    "zh-CN": "+ 目标",
+    "reviewedEnglishHash": "cb105d461fc435b9a2ac3e727bce4dc25c8ac332915ee11d1ed2c3929dc400ab"
+  },
+  "newProject.allGoalsSelected": {
+    "en": "All goals already selected.",
+    "zh-CN": "已选择所有目标。",
+    "reviewedEnglishHash": "945b2d3054208a21a3ebb2496c88585cda42c853d3d3c34092a6e9aeaae018a4"
+  },
+  "newProject.choosePath": {
+    "en": "Choose path",
+    "zh-CN": "选择路径",
+    "reviewedEnglishHash": "a332391d061ab701f3bc9ba2382e4292fd3f3daf2abe505859aee79f72b20b9c"
+  },
+  "newProject.createProject": {
+    "en": "Create project",
+    "zh-CN": "创建项目",
+    "reviewedEnglishHash": "fa67e4d0dae58c3c8058225d684422aeed4bab255589b96fc99c6422faabbcb5"
+  },
+  "newProject.creating": {
+    "en": "Creating…",
+    "zh-CN": "创建中…",
+    "reviewedEnglishHash": "c79ed9492e3c17199ab50694e07f5525cc6d598a02531528b0eb5ed933cd5466"
+  },
+  "newProject.descriptionPlaceholder": {
+    "en": "Add description...",
+    "zh-CN": "添加描述...",
+    "reviewedEnglishHash": "94123522b73f30f2554019fa8f6ac2c98b92aa95335bbf807f69fe3edf34548f"
+  },
+  "newProject.failedToCreateProject": {
+    "en": "Failed to create project.",
+    "zh-CN": "创建项目失败。",
+    "reviewedEnglishHash": "a80c1dd00d4796654e8c5a41f186e91c24ecdf92aa7e4d67db639b27beaaa973"
+  },
+  "newProject.githubRepoFallback": {
+    "en": "Git repo",
+    "zh-CN": "Git 仓库",
+    "reviewedEnglishHash": "95ddc9c4dfd317418f55db3e58b2746e769a164fbfb3eb21e9303da7a31fc214"
+  },
+  "newProject.goal": {
+    "en": "Goal",
+    "zh-CN": "目标",
+    "reviewedEnglishHash": "cdbf6975e8a35b0d03558be6822dfae166482c24fb86b0433f60e8167f5c91e4"
+  },
+  "newProject.localFolderFallback": {
+    "en": "Local folder",
+    "zh-CN": "本地目录",
+    "reviewedEnglishHash": "b53e4dccdfe92f2a7c063640dee6dcdcd0f9dedd6ea17be2a146749a97ca870b"
+  },
+  "newProject.localFolderHint": {
+    "en": "Set an absolute path on this machine where local agents will read and write files for this project.",
+    "zh-CN": "在这台机器上指定一个绝对路径，供本地智能体读取和写入这个项目的文件。",
+    "reviewedEnglishHash": "56fc239dd18b10bea8ba3aa58ce67882677bc403c8477b0e4973a51b9021e369"
+  },
+  "newProject.localFolderInvalid": {
+    "en": "Local folder must be a full absolute path.",
+    "zh-CN": "本地目录必须是完整的绝对路径。",
+    "reviewedEnglishHash": "14606c00ec3d4a07fe492c1a83ff388b4a2ec328828ad999af24daa4ce94eff5"
+  },
+  "newProject.localFolderLabel": {
+    "en": "Local folder",
+    "zh-CN": "本地目录",
+    "reviewedEnglishHash": "b53e4dccdfe92f2a7c063640dee6dcdcd0f9dedd6ea17be2a146749a97ca870b"
+  },
+  "newProject.localFolderPlaceholder": {
+    "en": "/absolute/path/to/workspace",
+    "zh-CN": "/absolute/path/to/workspace",
+    "reviewedEnglishHash": "f8bdc2305f39d599cc8f63295a706d4b983d20d448928c2e41f6006af74c80df"
+  },
+  "newProject.noCompanySelected": {
+    "en": "Select a company first.",
+    "zh-CN": "请先选择公司",
+    "reviewedEnglishHash": "6de8f07f0bc62039040e04e845a4ea4849c355f421f2287423e4832b2a0ae3de"
+  },
+  "newProject.noGoal": {
+    "en": "No goal",
+    "zh-CN": "暂无目标",
+    "reviewedEnglishHash": "8cc826eac57effd580763f8d6b175be9124558343e1f1cc57273acf1f1941ea8"
+  },
+  "newProject.pathHelp.description": {
+    "en": "Paste the absolute path into the input field, for example:",
+    "zh-CN": "将绝对路径粘贴到输入框中，例如：",
+    "reviewedEnglishHash": "750edec6426f217f14b786ebfb0ee8cd486076ff8462e035af16a4aa675eb84a"
+  },
+  "newProject.pathHelp.linuxLabel": {
+    "en": "Linux (terminal)",
+    "zh-CN": "Linux（终端）",
+    "reviewedEnglishHash": "c2e6a089669097de9b86bf68179556c14c11ae2ce54d8e7087482963787ae143"
+  },
+  "newProject.pathHelp.linuxStep1": {
+    "en": "Open a terminal and navigate to the directory.",
+    "zh-CN": "打开终端并进入目标目录。",
+    "reviewedEnglishHash": "edbbb35c8f2090a37b4505ac4a1aef9dd7dc5ff01ea9e843f3409852c67c7910"
+  },
+  "newProject.pathHelp.linuxStep2": {
+    "en": "Run pwd to print the full path.",
+    "zh-CN": "运行 pwd 查看完整路径。",
+    "reviewedEnglishHash": "f35cd2cec07917a0fe17f549bf3f9b66427ca0305c96cfb1081b29113a8f2cfc"
+  },
+  "newProject.pathHelp.linuxStep3": {
+    "en": "Copy the output and paste it here.",
+    "zh-CN": "复制输出并粘贴到这里。",
+    "reviewedEnglishHash": "996c48792b45b673d2cfb60e5faa22817e1d123a97e60213d77c5d6e623a8bd5"
+  },
+  "newProject.pathHelp.macLabel": {
+    "en": "macOS (Finder)",
+    "zh-CN": "macOS（Finder）",
+    "reviewedEnglishHash": "ef6013bde788b9565348ba12e081c2a75b3e0000fd95d75350a340e6d304a9ab"
+  },
+  "newProject.pathHelp.macStep1": {
+    "en": "Find the folder in Finder.",
+    "zh-CN": "在 Finder 中找到文件夹。",
+    "reviewedEnglishHash": "3aa7d055e671b883b6f194b8561b947bdbc0a49f46fecb3d5637cb47b3a6dd5b"
+  },
+  "newProject.pathHelp.macStep2": {
+    "en": "Hold Option and right-click the folder.",
+    "zh-CN": "按住 Option 键并右键该文件夹。",
+    "reviewedEnglishHash": "0e13446c02366c845c13f6c27e9e7c9c89535ebc5c9290f84f9c2d8a78e2e924"
+  },
+  "newProject.pathHelp.macStep3": {
+    "en": "Click \"Copy as Pathname\", then paste it here.",
+    "zh-CN": "点击“作为路径名称拷贝”，然后粘贴到这里。",
+    "reviewedEnglishHash": "764c06cea33f50c6954f0102a23153e509d295a86fa5cf465d23339d87859cef"
+  },
+  "newProject.pathHelp.ok": {
+    "en": "OK",
+    "zh-CN": "好的",
+    "reviewedEnglishHash": "565339bc4d33d72817b583024112eb7f5cdf3e5eef0252d6ec1b9c9a94e12bb3"
+  },
+  "newProject.pathHelp.title": {
+    "en": "How to get a full path",
+    "zh-CN": "如何获取完整路径",
+    "reviewedEnglishHash": "dc9f3a6626d2ece450d6c94a3ee9cbfcf2d7b53f2486dab3a25914861625fb8c"
+  },
+  "newProject.pathHelp.windowsLabel": {
+    "en": "Windows (File Explorer)",
+    "zh-CN": "Windows（文件资源管理器）",
+    "reviewedEnglishHash": "4749e06b400ae508acb64aa9b3bdb9652c3751b1973b106ea2bdfa17370aba81"
+  },
+  "newProject.pathHelp.windowsStep1": {
+    "en": "Find the folder in File Explorer.",
+    "zh-CN": "在文件资源管理器中找到文件夹。",
+    "reviewedEnglishHash": "2301a201d352330fed10712283c480f755fadac4576f0106ce770e5ed1359263"
+  },
+  "newProject.pathHelp.windowsStep2": {
+    "en": "Hold Shift and right-click the folder.",
+    "zh-CN": "按住 Shift 键并右键该文件夹。",
+    "reviewedEnglishHash": "423a43eb73232565a3da1626c9c9fe9fc6c330f13563c9b910b021b25bae4a19"
+  },
+  "newProject.pathHelp.windowsStep3": {
+    "en": "Click \"Copy as path\", then paste it here.",
+    "zh-CN": "点击“复制为路径”，然后粘贴到这里。",
+    "reviewedEnglishHash": "0566371657761ccf9afab6b451e59ab72a2634c1818791c078018b292fc2cd8c"
+  },
+  "newProject.projectNamePlaceholder": {
+    "en": "Project name",
+    "zh-CN": "项目名称",
+    "reviewedEnglishHash": "25498193b898195dca035317a941c506276da563d690c4cccf94af50643dbb44"
+  },
+  "newProject.removeGoalAriaLabel": {
+    "en": "Remove goal {{goalTitle}}",
+    "zh-CN": "移除目标 {{goalTitle}}",
+    "reviewedEnglishHash": "8f61279e6c6a7e0d68fb674d5052acfc1449a18a24932b6c2ab6163de10f0eaa"
+  },
+  "newProject.repoUrlHint": {
+    "en": "Link a Git repository so agents can clone, read, and push code for this project.",
+    "zh-CN": "关联一个 Git 仓库后，智能体就能克隆、读取并推送这个项目的代码。",
+    "reviewedEnglishHash": "29924ec803a1f0c2b50ecca317a77d91eaca3820e5a4a47d237fa9c01fcca4bc"
+  },
+  "newProject.repoUrlInvalid": {
+    "en": "Repo must use a valid HTTP(S) Git repository URL.",
+    "zh-CN": "仓库地址必须是有效的 HTTP(S) Git 仓库链接。",
+    "reviewedEnglishHash": "02c0071b51d943a253d3e76f07161d2118abd2d90e3ff4f4bbd8f509d4415ec3"
+  },
+  "newProject.repoUrlLabel": {
+    "en": "Git repo",
+    "zh-CN": "Git 仓库",
+    "reviewedEnglishHash": "95ddc9c4dfd317418f55db3e58b2746e769a164fbfb3eb21e9303da7a31fc214"
+  },
+  "newProject.repoUrlPlaceholder": {
+    "en": "https://gitlab.example.com/team/demo-repo",
+    "zh-CN": "https://gitlab.example.com/team/demo-repo",
+    "reviewedEnglishHash": "a6142e0b87c86789ee689c8f3946f587fd68cdd1f6be8babefd9c7f1c77e0e9c"
+  },
+  "newProject.targetDatePlaceholder": {
+    "en": "Target date",
+    "zh-CN": "目标日期",
+    "reviewedEnglishHash": "834cc86be240611d7e6bf07a86628e8a51d17cc5edd90f8795ffd5888d9e8647"
+  },
+  "newProject.title": {
+    "en": "New project",
+    "zh-CN": "新建项目",
+    "reviewedEnglishHash": "a41eb2bf7245d3bcca0c66f7b9a2c8b30a6cf975fc4bed8297811b2777956280"
+  }
+}

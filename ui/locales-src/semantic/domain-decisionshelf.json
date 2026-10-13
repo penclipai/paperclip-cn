@@ -1,0 +1,37 @@
+{
+  "decisionShelf.idleForDays_one": {
+    "en": "Idle for {{count}} day",
+    "zh-CN": "已闲置 {{count}} 天",
+    "reviewedEnglishHash": "fcdcca5b8e14cb8897f9db2abfdfa00cdb421cc8ac9001442a113f4c2cee3c3d"
+  },
+  "decisionShelf.idleForDays_other": {
+    "en": "Idle for {{count}} days",
+    "zh-CN": "已闲置 {{count}} 天",
+    "reviewedEnglishHash": "698f458f07bcf1fed7088536fe1ca704749ece6bc55083ac12b93c14bc41b819"
+  },
+  "decisionShelf.keepFailed": {
+    "en": "Could not keep this decision",
+    "zh-CN": "无法保留此决策",
+    "reviewedEnglishHash": "f5156cd3b49f0448aa3421d9dd85729e589f3b3ba13da2a5f9a60d91e57877d4"
+  },
+  "decisionShelf.keepOnDesk": {
+    "en": "Keep on desk",
+    "zh-CN": "保留在工作台",
+    "reviewedEnglishHash": "00ede66c9842be195c8b70523d9be144dac9596e51da279fcbc79ccb8087f968"
+  },
+  "decisionShelf.kept": {
+    "en": "Kept",
+    "zh-CN": "已保留",
+    "reviewedEnglishHash": "c159e7465c1ab24cd6efabb03d87f48f72368f560d5d2718edfa9e4a5a670c36"
+  },
+  "decisionShelf.keptOnDesk": {
+    "en": "Kept on desk",
+    "zh-CN": "已保留在工作台",
+    "reviewedEnglishHash": "d5c41d425cac9474fd71c602bca97bff5a21ec848a2c779068d8a149a3c5fa00"
+  },
+  "decisionShelf.tryAgain": {
+    "en": "Please try again.",
+    "zh-CN": "请重试。",
+    "reviewedEnglishHash": "eea4fb33efd382834952e3e7ab52f8dc41ccc2c3f5c3f246f0505235e0e962aa"
+  }
+}

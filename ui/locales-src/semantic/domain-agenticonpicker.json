@@ -1,0 +1,12 @@
+{
+  "agentIconPicker.noIconsMatch": {
+    "en": "No icons match",
+    "zh-CN": "没有匹配的图标",
+    "reviewedEnglishHash": "838e82679d03ebe6063232a4d183657db484a1b0fcee1b6649d6898f8370c02c"
+  },
+  "agentIconPicker.searchPlaceholder": {
+    "en": "Search icons...",
+    "zh-CN": "搜索图标...",
+    "reviewedEnglishHash": "d47dbbe19a63e486ec061c26e9f3b69f24a98569bb52bc184060f8879e6806c4"
+  }
+}

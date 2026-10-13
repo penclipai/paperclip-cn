@@ -1,0 +1,412 @@
+{
+  "common.acknowledge": {
+    "en": "Acknowledge",
+    "zh-CN": "确认",
+    "reviewedEnglishHash": "f9236d9e87b6235ec4f2d7e00d60f5a68670c6dcf70f6f2f354a4325f79f1b27"
+  },
+  "common.actions": {
+    "en": "Actions",
+    "zh-CN": "操作",
+    "reviewedEnglishHash": "ff8059dc6752afdd30d275932b1d5031a2ec854b387a8c57ecc6689915293a43"
+  },
+  "common.activate": {
+    "en": "Activate",
+    "zh-CN": "启用",
+    "reviewedEnglishHash": "24433c70eba5b15368fe2e1dda94fe3d61db2357aa144363b9ab487e60235ab2"
+  },
+  "common.add": {
+    "en": "Add",
+    "zh-CN": "添加",
+    "reviewedEnglishHash": "9fd728c66c9a256b121472dabf32a34317aed01d8427d70ec830289cf23a7cc8"
+  },
+  "common.agents": {
+    "en": "Agents",
+    "zh-CN": "智能体",
+    "reviewedEnglishHash": "279b44d2ab4b40c0fc132f8f3051293544cca91de9c8aa14f2cd29adb132b0ee"
+  },
+  "common.approve": {
+    "en": "Approve",
+    "zh-CN": "批准",
+    "reviewedEnglishHash": "6007acbe30b2cd98703e83350ea665c06009fcd51f26dd73b309294235f45f21"
+  },
+  "common.archive": {
+    "en": "Archive",
+    "zh-CN": "归档",
+    "reviewedEnglishHash": "66f4804ee23ddc092d1bae43cb88186aa541187fff7c1cc8a4aa17e59a9f4123"
+  },
+  "common.asc": {
+    "en": "Asc",
+    "zh-CN": "升序",
+    "reviewedEnglishHash": "cddeba5cfc9a05ad4415f0d25b1c9be2d44103e5b12352a2a811f0c7ebffffe7"
+  },
+  "common.assignee": {
+    "en": "Assignee",
+    "zh-CN": "负责人",
+    "reviewedEnglishHash": "5e20d20e3978dcf8550bd758d863b782ac0d139d51be8034836ed21e35104567"
+  },
+  "common.back": {
+    "en": "Back",
+    "zh-CN": "返回",
+    "reviewedEnglishHash": "76900f1bfd16c8d4dd3d25e6f46638d7165aee23883ccea6bfe071c514421769"
+  },
+  "common.cancel": {
+    "en": "Cancel",
+    "zh-CN": "取消",
+    "reviewedEnglishHash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+  },
+  "common.clear": {
+    "en": "Clear",
+    "zh-CN": "清除",
+    "reviewedEnglishHash": "83b12c2216efb4fdc924e1deb5182e905e4926ed0c1c324d467107f46d5a26a9"
+  },
+  "common.close": {
+    "en": "Close",
+    "zh-CN": "关闭",
+    "reviewedEnglishHash": "7d9eb7acb13e24625c404401d8e88b2350e32162455885f18276cf802f7701ed"
+  },
+  "common.code": {
+    "en": "Code",
+    "zh-CN": "代码",
+    "reviewedEnglishHash": "340f463033e0fd5ddeabb922df4d4f1b5747494d0f5ed9894f13b6e13ca831f5"
+  },
+  "common.color": {
+    "en": "Color",
+    "zh-CN": "颜色",
+    "reviewedEnglishHash": "6b73191a0a4b67420e61d51c9f207c35277eaf18fbbf5beb52a320a23fe09653"
+  },
+  "common.comment": {
+    "en": "Comment",
+    "zh-CN": "评论",
+    "reviewedEnglishHash": "44f5e3fbec57be75ebfb2e42caf7f5ee1542f84748a0380b6f20238c4a257e1b"
+  },
+  "common.configure": {
+    "en": "Configure",
+    "zh-CN": "配置",
+    "reviewedEnglishHash": "6defafa2caa65304173956e3fbc26b6947c50bc769c08c3da32c1032fa6519d4"
+  },
+  "common.continue": {
+    "en": "Continue",
+    "zh-CN": "继续",
+    "reviewedEnglishHash": "31fbef162594de01bab0cd525c51f74de7bcb15063029fa1a54b2cf5944c80d8"
+  },
+  "common.copied": {
+    "en": "Copied",
+    "zh-CN": "已复制",
+    "reviewedEnglishHash": "8d525e5f158b9afe05f3122af363ac67763bdc4e1395b46597b320c289766ce3"
+  },
+  "common.copy": {
+    "en": "Copy",
+    "zh-CN": "复制",
+    "reviewedEnglishHash": "e21f935f11d7e966dbbae78da9daa378fe8142a14e7c0cd7434183005faa6c5c"
+  },
+  "common.create": {
+    "en": "Create",
+    "zh-CN": "创建",
+    "reviewedEnglishHash": "4759498ac2a719c619e2c8cf8ee60af2d2407425e95d308eb208425b2a6d427a"
+  },
+  "common.created": {
+    "en": "Created",
+    "zh-CN": "创建时间",
+    "reviewedEnglishHash": "d70b9e24bca26b409b9458ceca6c9e5c2b5c3171c37ff050c6f6a0d7a4420d2a"
+  },
+  "common.creating": {
+    "en": "Creating...",
+    "zh-CN": "正在创建...",
+    "reviewedEnglishHash": "def70944c9bb9c3b77129e6fc48cfcd043031a86ae747060a3e97985d254c4f2"
+  },
+  "common.default": {
+    "en": "Default",
+    "zh-CN": "默认",
+    "reviewedEnglishHash": "21b111cbfe6e8fca2d181c43f53ad548b22e38aca955b9824706a504b0a07a2d"
+  },
+  "common.defaultParenthetical": {
+    "en": "(default)",
+    "zh-CN": "（默认）",
+    "reviewedEnglishHash": "b3ffbbff2d64d47bfe99e116f0b68ae2edb0fcb3a112dba9513f2e0d49d25563"
+  },
+  "common.delete": {
+    "en": "Delete",
+    "zh-CN": "删除",
+    "reviewedEnglishHash": "e2d0a54968ead24efc0dffa6ac78fc606dceec34a0f586177a74a54cc2272cf8"
+  },
+  "common.deleting": {
+    "en": "Deleting...",
+    "zh-CN": "正在删除...",
+    "reviewedEnglishHash": "685ecb984ac29ce868b226a6599304fa3a6635a640749836ea12d1da8eb8689c"
+  },
+  "common.desc": {
+    "en": "Desc",
+    "zh-CN": "降序",
+    "reviewedEnglishHash": "5c4419a6999d2a7a29e0e1d00876b4c5992d56d1dbc9a03ecc515eaa554b7f04"
+  },
+  "common.description": {
+    "en": "Description",
+    "zh-CN": "描述",
+    "reviewedEnglishHash": "526e0087cc3f254d9f86f6c7d8e23d954c4dfda2b312efc29194ae8a860106ba"
+  },
+  "common.disable": {
+    "en": "Disable",
+    "zh-CN": "禁用",
+    "reviewedEnglishHash": "b7e3e4aa4257b9a11a82f59faf34c8450ca10d4116885b0a29fedf60842d81d5"
+  },
+  "common.disabled": {
+    "en": "disabled",
+    "zh-CN": "已禁用",
+    "reviewedEnglishHash": "17eb3c0168d0d7b21ede5481150f17233427d89833ec121b4dbc4fb96cfab71e"
+  },
+  "common.dismiss": {
+    "en": "Dismiss",
+    "zh-CN": "关闭",
+    "reviewedEnglishHash": "48845bff334a50a59aaecf499f28a7a24c3b4b891b8b18a9f1169ad8e8a6b261"
+  },
+  "common.done": {
+    "en": "Done",
+    "zh-CN": "完成",
+    "reviewedEnglishHash": "11a6767d5674c7e45f7e00dc525762275b3a48491ad6045427d2609cc496c516"
+  },
+  "common.download": {
+    "en": "Download",
+    "zh-CN": "下载",
+    "reviewedEnglishHash": "d6eafe82359100423c93c5ce53c352c1b51ca1e699215fcec3f5c5dd9bf12d24"
+  },
+  "common.edit": {
+    "en": "Edit",
+    "zh-CN": "编辑",
+    "reviewedEnglishHash": "464c4ffd019e1e9691dcf0537c797353ef2b1c1d4833d3d463e5b74ae4547344"
+  },
+  "common.filter": {
+    "en": "Filter",
+    "zh-CN": "筛选",
+    "reviewedEnglishHash": "638e249f4a15ebb84957da130701d138a6e06d88dceeaa2e6dcd91db70cc1381"
+  },
+  "common.filters": {
+    "en": "Filters",
+    "zh-CN": "筛选器",
+    "reviewedEnglishHash": "546ebb8eb993ea561029d9febd84c363bdb09010bb2cb915a8287762b76b9a64"
+  },
+  "common.general": {
+    "en": "General",
+    "zh-CN": "常规",
+    "reviewedEnglishHash": "c910d474dcd724bff83ddedeb06bf1eceaf9fb3af7c76bb282be057f36e6dffa"
+  },
+  "common.hint": {
+    "en": "Hint",
+    "zh-CN": "提示",
+    "reviewedEnglishHash": "a7b4cf9f7e429771071ef073b93bbfff8d271b9429dd9bb77581128a3e68e0ae"
+  },
+  "common.instructions": {
+    "en": "Instructions",
+    "zh-CN": "说明",
+    "reviewedEnglishHash": "934652dce41d62d3c9ff34b2c5e44e3addaedc67d6137328a9fe75a63c51dbac"
+  },
+  "common.justNow": {
+    "en": "just now",
+    "zh-CN": "刚刚",
+    "reviewedEnglishHash": "7ddb44d8a533a7535d85cedddf35d7f3414632ad4e10a0d7ca697723e1d97993"
+  },
+  "common.key": {
+    "en": "Key",
+    "zh-CN": "键名",
+    "reviewedEnglishHash": "99a52df3ff3d499488e2fa28150c4106a2cb5e928891a830a9aa3922b2d32160"
+  },
+  "common.loadMore": {
+    "en": "Load more",
+    "zh-CN": "加载更多",
+    "reviewedEnglishHash": "ac8991ef01019cf55a2426194a05959e0cb886333f1a332ff4f442320d165400"
+  },
+  "common.loading": {
+    "en": "Loading...",
+    "zh-CN": "加载中...",
+    "reviewedEnglishHash": "47d2a515ef2f05b87d688656286a61e4f743da4b878684c7654969db17711c40"
+  },
+  "common.loadingEllipsis": {
+    "en": "Loading...",
+    "zh-CN": "加载中...",
+    "reviewedEnglishHash": "47d2a515ef2f05b87d688656286a61e4f743da4b878684c7654969db17711c40"
+  },
+  "common.more": {
+    "en": "More",
+    "zh-CN": "更多",
+    "reviewedEnglishHash": "d47d7cb0e4f8fd2be5ee07826694c18917d83ca77d0a01698582d05f432db996"
+  },
+  "common.moreCount": {
+    "en": "+{{count}} more",
+    "zh-CN": "+{{count}} 个更多",
+    "reviewedEnglishHash": "48380badf7a45c74d3fac6b89d19d777585cb9052d135d1ec482b932bc99e98a"
+  },
+  "common.move": {
+    "en": "Move",
+    "zh-CN": "移动",
+    "reviewedEnglishHash": "6ecc3df6bffdd06c58cd4f6e276929e119c8f653c53f5a6a5a5e66dfa1c3fc93"
+  },
+  "common.name": {
+    "en": "Name",
+    "zh-CN": "名称",
+    "reviewedEnglishHash": "dcd1d5223f73b3a965c07e3ff5dbee3eedcfedb806686a05b9b3868a2c3d6d50"
+  },
+  "common.never": {
+    "en": "Never",
+    "zh-CN": "从未",
+    "reviewedEnglishHash": "6300ef800bb884295b0b4b35682b75cecd7cc550d202db56d04a0643b8fb873f"
+  },
+  "common.next": {
+    "en": "Next",
+    "zh-CN": "下一步",
+    "reviewedEnglishHash": "1ff57a29d7c9d11bdf61c1b80f2b289b44c1ea844824d4b94a0d52b6ba5fc858"
+  },
+  "common.noCompanySelected": {
+    "en": "No company selected",
+    "zh-CN": "未选择公司",
+    "reviewedEnglishHash": "8d7d800978ab828b142ad1de9af6ca3c25570974c35d7e972eaeca28c80edd01"
+  },
+  "common.none": {
+    "en": "None",
+    "zh-CN": "暂无",
+    "reviewedEnglishHash": "dc937b59892604f5a86ac96936cd7ff09e25f18ae6b758e8014a24c7fa039e91"
+  },
+  "common.open": {
+    "en": "Open",
+    "zh-CN": "打开",
+    "reviewedEnglishHash": "ed077f3d8125d60dca1979c7133601bd187d47c73ed9975028f677e49e709942"
+  },
+  "common.optional": {
+    "en": "Optional",
+    "zh-CN": "可选",
+    "reviewedEnglishHash": "59be71333c960fd08e7e4fe9862206d9355f0a9884121a5b50ef8b36efdfe4cf"
+  },
+  "common.optionalParenthetical": {
+    "en": "(optional)",
+    "zh-CN": "（可选）",
+    "reviewedEnglishHash": "0059798b7f7023e4d9e5c4595f7b9ba7ee64f69993ee524824d57e5a48b1228c"
+  },
+  "common.priority": {
+    "en": "Priority",
+    "zh-CN": "优先级",
+    "reviewedEnglishHash": "d60dbba079223254d4c49c230a515bc107a997e69f811365da2387f8557b9cec"
+  },
+  "common.project": {
+    "en": "Project",
+    "zh-CN": "项目",
+    "reviewedEnglishHash": "985959785319747668373cc6dee294b11db782b03cdd90a2851fbdc0637c6b7b"
+  },
+  "common.remove": {
+    "en": "Remove",
+    "zh-CN": "移除",
+    "reviewedEnglishHash": "c3812fc4acb861d5182fc2b8155f327f736fbe5e5eb86a7bd7afcb6dc5497282"
+  },
+  "common.required": {
+    "en": "required",
+    "zh-CN": "必填",
+    "reviewedEnglishHash": "d0a3630555bbec7fc05a98d311c23b00fd1ab4d8296ac4a4125976d80b6a6959"
+  },
+  "common.reset": {
+    "en": "Reset",
+    "zh-CN": "重置",
+    "reviewedEnglishHash": "daee7606b339f3c339076fe2c9f372a3ff40c8ee896005d829c7481b64ca5303"
+  },
+  "common.retry": {
+    "en": "Retry",
+    "zh-CN": "重试",
+    "reviewedEnglishHash": "942087cc2d41e01304b7195558d093d10c72af8e838c7556d6a02d471ee71852"
+  },
+  "common.runningEllipsis": {
+    "en": "Running...",
+    "zh-CN": "运行中...",
+    "reviewedEnglishHash": "4977a7e5bb3675c438962dfb7f407945964386a321b7f3a1b0a7571f7ebb07fb"
+  },
+  "common.save": {
+    "en": "Save",
+    "zh-CN": "保存",
+    "reviewedEnglishHash": "1509f561f2416598629b886ad7d3c05a7e221e4e0675c84bbff4ee6d9e03913d"
+  },
+  "common.saveChanges": {
+    "en": "Save changes",
+    "zh-CN": "保存更改",
+    "reviewedEnglishHash": "dd0ae7a5cbcf233968657563dce34639e681861e2df6d3f845c08d49981c0999"
+  },
+  "common.saved": {
+    "en": "Saved",
+    "zh-CN": "已保存",
+    "reviewedEnglishHash": "b5c120b316c237a0deab3140267aebedba61947d3ae268d708a53d5be119e9fb"
+  },
+  "common.saving": {
+    "en": "Saving...",
+    "zh-CN": "正在保存...",
+    "reviewedEnglishHash": "dc85af8f2b1d0d6756547cd5f79557466e25e682b882f68d277bd7f125851321"
+  },
+  "common.select": {
+    "en": "Select",
+    "zh-CN": "选择",
+    "reviewedEnglishHash": "2a78025de6aae5e7ff88e5a951bb3a78ddd67388913529cf9e2dd9653e62b02d"
+  },
+  "common.status": {
+    "en": "Status",
+    "zh-CN": "状态",
+    "reviewedEnglishHash": "920e413c7d411b61ef3e8c63b1cb6ad058d5f95f8b481dbafe60248387d8c355"
+  },
+  "common.tryAgain": {
+    "en": "Try again",
+    "zh-CN": "请重试",
+    "reviewedEnglishHash": "d8b8392e2c542950ca64867168e4ef87d4ad606882d5898f826b51c6d553988f"
+  },
+  "common.unarchive": {
+    "en": "Unarchive",
+    "zh-CN": "取消归档",
+    "reviewedEnglishHash": "f565318d124534cfe0a7630d518f548cd339e464f48d50eda453abd3728ac2a7"
+  },
+  "common.unavailable": {
+    "en": "Unavailable",
+    "zh-CN": "不可用",
+    "reviewedEnglishHash": "ca184496974204a0bd3fd4925e0540bc4b0df6fcc232994d29754272b7183812"
+  },
+  "common.undo": {
+    "en": "Undo",
+    "zh-CN": "撤销",
+    "reviewedEnglishHash": "a8283ade31856f71220db0e6f60a257c6889dc4dad0f275f66ad44b9ed9bf8d5"
+  },
+  "common.unexpectedError": {
+    "en": "Unexpected error",
+    "zh-CN": "发生未知错误",
+    "reviewedEnglishHash": "d24c41ae530aa23cf3859982199700454c99b66747770438e0f76f449b5fb3bd"
+  },
+  "common.unknown": {
+    "en": "unknown",
+    "zh-CN": "未知",
+    "reviewedEnglishHash": "b23a6a8439c0dde5515893e7c90c1e3233b8616e634470f20dc4928bcf3609bc"
+  },
+  "common.unsavedChanges": {
+    "en": "Unsaved changes",
+    "zh-CN": "有未保存的更改",
+    "reviewedEnglishHash": "a710c2b90913b5375ca6ac865341e49dd6daa42f6d95182e6ed1a7b1b650ff4c"
+  },
+  "common.update": {
+    "en": "Update",
+    "zh-CN": "更新",
+    "reviewedEnglishHash": "c1c1009d3f37ec058070a62e22caf9ac9dae2169d452487c5c271a8bcf57a291"
+  },
+  "common.updated": {
+    "en": "Updated",
+    "zh-CN": "更新时间",
+    "reviewedEnglishHash": "3a5ecca188c0579c00ee24cf3cab21bd02c15a06f7a70cc8e0a8ff2381dcbbfd"
+  },
+  "common.view": {
+    "en": "View",
+    "zh-CN": "查看",
+    "reviewedEnglishHash": "dcc839a4015c4b7dd9db959a8f757833b8adb92462a751b973386e453c6d58a3"
+  },
+  "common.viewDetails": {
+    "en": "View details",
+    "zh-CN": "查看详情",
+    "reviewedEnglishHash": "d1bf045bb524dae5b02c471c230958bcd1bf232d7a49367b1cdf977855a06b41"
+  },
+  "common.working": {
+    "en": "Working...",
+    "zh-CN": "处理中...",
+    "reviewedEnglishHash": "b93900bded315d0407c83ebc9631745e17bcdbb7d4932723ee6e24a2b422c151"
+  },
+  "common.workingEllipsis": {
+    "en": "Working...",
+    "zh-CN": "处理中...",
+    "reviewedEnglishHash": "b93900bded315d0407c83ebc9631745e17bcdbb7d4932723ee6e24a2b422c151"
+  }
+}

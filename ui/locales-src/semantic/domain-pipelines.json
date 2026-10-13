@@ -1,0 +1,557 @@
+{
+  "pipelines.activity": {
+    "en": "Activity",
+    "zh-CN": "活动",
+    "reviewedEnglishHash": "38da1505ca8373288489495101b14f24ac95078f520ad64df18272aa6054f750"
+  },
+  "pipelines.addItems": {
+    "en": "Add items",
+    "zh-CN": "添加条目",
+    "reviewedEnglishHash": "13583d03136d8481dabd4aa828b0eabb9c0f1590bd6dc6105186970ced55f4e0"
+  },
+  "pipelines.addItemsTitle": {
+    "en": "Build your list, then submit it all at once",
+    "zh-CN": "先构建列表，然后一次性提交",
+    "reviewedEnglishHash": "591126c29b4efe4c06cbda03a7b952aeeec97f3a8e57037f184ad52d28cc40cb"
+  },
+  "pipelines.addStagesToEnableBoard": {
+    "en": "Add stages in pipeline settings to enable the board.",
+    "zh-CN": "在管道设置中添加阶段后即可启用看板。",
+    "reviewedEnglishHash": "4d94fe22b55448614150e4eba4aa1571d73ccbc26d7d118e71256dc94dd5d39e"
+  },
+  "pipelines.attention": {
+    "en": "Attention",
+    "zh-CN": "需关注",
+    "reviewedEnglishHash": "c2eb8cd9d95643145e80db9cca75e934d9ee19cb10e9e6383a8f3cb14b57a624"
+  },
+  "pipelines.automation": {
+    "en": "Automation",
+    "zh-CN": "自动化",
+    "reviewedEnglishHash": "d909750b1bbb71a39b6330ba8f81f4f8f6e889ed96d7ab366e74857909750c64"
+  },
+  "pipelines.builtFor": {
+    "en": "Built for",
+    "zh-CN": "构建目标",
+    "reviewedEnglishHash": "0ae12b05cf0fd9ca25b2d10d4b4f31711a4e92ae36db50b1fe4cf0b7ade83ad8"
+  },
+  "pipelines.builtFromItems": {
+    "en": "Built from {{count}} {{label}}",
+    "zh-CN": "由 {{count}} 个{{label}}构建",
+    "reviewedEnglishHash": "6a749ffc90212df275de206844d720de61963e56430374b5e37635af32ba2a47"
+  },
+  "pipelines.builtFromPieces": {
+    "en": "Built from {{count}} {{label}}",
+    "zh-CN": "由 {{count}} 个{{label}}构建",
+    "reviewedEnglishHash": "6a749ffc90212df275de206844d720de61963e56430374b5e37635af32ba2a47"
+  },
+  "pipelines.childItem": {
+    "en": "child item",
+    "zh-CN": "子条目",
+    "reviewedEnglishHash": "f0b52e70d3b837c9e57efbe4570e6718c705923289ce5d682044bc7ccdc3dac5"
+  },
+  "pipelines.childItems": {
+    "en": "child items",
+    "zh-CN": "子条目",
+    "reviewedEnglishHash": "1a2d3027e55a27bdd8b905776f3b160245632ac66d940d69080be285c073c317"
+  },
+  "pipelines.choose": {
+    "en": "Choose...",
+    "zh-CN": "选择...",
+    "reviewedEnglishHash": "895ba517a993c95a933624b2689aa1b46335872a3a024a402924b51e6cdfa527"
+  },
+  "pipelines.chooseStage": {
+    "en": "Choose a stage",
+    "zh-CN": "选择阶段",
+    "reviewedEnglishHash": "15a9299c0b66ffcb1e0d5e98242f7d0941ff6ac582d2d38c5e3e768ae629b8fe"
+  },
+  "pipelines.chooseStep": {
+    "en": "Choose a step",
+    "zh-CN": "选择步骤",
+    "reviewedEnglishHash": "f1fb3b3ce71b8232a361b37d5ccbb8a5483b85e4fa4f8c16357c89cc7cf1abac"
+  },
+  "pipelines.collapseItem": {
+    "en": "Collapse item",
+    "zh-CN": "折叠条目",
+    "reviewedEnglishHash": "0a1a7333fc5c5da7c80fd108ce0e32ad88e4365915be013099f58b290af011de"
+  },
+  "pipelines.conversation": {
+    "en": "Conversation",
+    "zh-CN": "会话",
+    "reviewedEnglishHash": "ccca1817575365871461752f3229dd59ede742ae69e350e20fd00a6ce3d149e3"
+  },
+  "pipelines.description": {
+    "en": "Description",
+    "zh-CN": "描述",
+    "reviewedEnglishHash": "526e0087cc3f254d9f86f6c7d8e23d954c4dfda2b312efc29194ae8a860106ba"
+  },
+  "pipelines.details": {
+    "en": "Details",
+    "zh-CN": "详情",
+    "reviewedEnglishHash": "45989de49fb7f66dfe17a8fc26f3a02c7abcd74f7e8e6cf9f39fa0e3775780df"
+  },
+  "pipelines.downloadNamedItem": {
+    "en": "Download {{name}}",
+    "zh-CN": "下载 {{name}}",
+    "reviewedEnglishHash": "043437f9a8abba216a5da59078ca43482396f0619c94bfdffdd6b5c62b9a31eb"
+  },
+  "pipelines.empty": {
+    "en": "No pipelines yet.",
+    "zh-CN": "暂无管道。",
+    "reviewedEnglishHash": "72183d31fea778eda991919836700da60aece2dc979728318c2a84bf6d363692"
+  },
+  "pipelines.expandItem": {
+    "en": "Expand item",
+    "zh-CN": "展开条目",
+    "reviewedEnglishHash": "18f105fe679eda5dbc1940d6b40e6b7d3179d3d3fce384c19f03213590651c7b"
+  },
+  "pipelines.fedByName": {
+    "en": "Fed by {{name}}",
+    "zh-CN": "来自 {{name}}",
+    "reviewedEnglishHash": "5f0a1cb4e05307618b49b117bd4e8f810504a47ad964bbf37b8b904ffd400b53"
+  },
+  "pipelines.fieldCount": {
+    "en": "{{count}} field",
+    "zh-CN": "{{count}} 个字段",
+    "reviewedEnglishHash": "ec3ccbf743df4c71147a6d83dab988ddb392bd84dc268854f775e123d2a7d00a"
+  },
+  "pipelines.fieldCount_plural": {
+    "en": "{{count}} fields",
+    "zh-CN": "{{count}} 个字段",
+    "reviewedEnglishHash": "626e85667f37f2b625abb725053ed0f1f04883523b612585a64059974e7a3a87"
+  },
+  "pipelines.firstStageOnSubmit": {
+    "en": "First stage on submit:",
+    "zh-CN": "提交后的首个阶段：",
+    "reviewedEnglishHash": "007b29c287122c8bdb2ee46b257c31e3e880c486a484b511504034f822afbb16"
+  },
+  "pipelines.flatList": {
+    "en": "Flat list",
+    "zh-CN": "平铺列表",
+    "reviewedEnglishHash": "2abb78c9e066ea86208d7194e050316ca9daa0684b4ba92b84fa137589deac5a"
+  },
+  "pipelines.from": {
+    "en": "From",
+    "zh-CN": "来自",
+    "reviewedEnglishHash": "218197693424e0154cefc0af31aed96c084b987e08136e91d5528ddbb5461e24"
+  },
+  "pipelines.groupBy": {
+    "en": "Group by",
+    "zh-CN": "分组方式",
+    "reviewedEnglishHash": "956a51f6b098a41b7c3108015f0790bb24af7693717b07cee39d5df6a5da1826"
+  },
+  "pipelines.inReview": {
+    "en": "In review",
+    "zh-CN": "复查中",
+    "reviewedEnglishHash": "c39059141ced2ea71d38d312b6bdaa6da1da299820b4021169382a2e54f57672"
+  },
+  "pipelines.indexSummary_one": {
+    "en": "{{formattedCount}} pipeline. Connected ones are grouped from upstream work into downstream work.",
+    "zh-CN": "{{formattedCount}} 个管道。已连接的管道会按上游工作到下游工作的关系分组。",
+    "reviewedEnglishHash": "c7f54a07111c47bdc9274be01eb8d8f1b2eebd610952cce8055c9791ae2006f3"
+  },
+  "pipelines.indexSummary_other": {
+    "en": "{{formattedCount}} pipelines. Connected ones are grouped from upstream work into downstream work.",
+    "zh-CN": "{{formattedCount}} 个管道。已连接的管道会按上游工作到下游工作的关系分组。",
+    "reviewedEnglishHash": "6b7f7f8153765b755b8d572e69cac1095c5c3afb69cd4d388c6246ebdad326c8"
+  },
+  "pipelines.item": {
+    "en": "item",
+    "zh-CN": "条目",
+    "reviewedEnglishHash": "4a33eacd5fa65f2b2e2871cd131286b53c415b131666d71173bb6e3fe59361b3"
+  },
+  "pipelines.itemActions": {
+    "en": "Item actions",
+    "zh-CN": "条目操作",
+    "reviewedEnglishHash": "a145120d719eaee6af8bfd913afaa85a25a71d784391b104f9de54c0e0b21886"
+  },
+  "pipelines.itemNotFound": {
+    "en": "Item not found.",
+    "zh-CN": "未找到条目。",
+    "reviewedEnglishHash": "48048a3f93468d950ca0acb57a20790ed971303a8d6cc669d639410d1b087f6e"
+  },
+  "pipelines.itemNumber": {
+    "en": "Item {{number}}",
+    "zh-CN": "条目 {{number}}",
+    "reviewedEnglishHash": "6d6368adea4d73a776959bbafd43c3b5f1791dd357e7d81f71a346f28d19bf6c"
+  },
+  "pipelines.itemOutputs": {
+    "en": "Item outputs",
+    "zh-CN": "条目产物",
+    "reviewedEnglishHash": "aeaa10ffee7428067df9ae92b6c040a56df04911b2746ddb02ed07e6e05cbeb3"
+  },
+  "pipelines.itemOutputsLoadFailed": {
+    "en": "Couldn't load item outputs.",
+    "zh-CN": "无法加载条目输出。",
+    "reviewedEnglishHash": "6c171fae369c4ed1e6ed97cc0c26ba39aeb839b784923e381bc97e13212ef8db"
+  },
+  "pipelines.itemPreview": {
+    "en": "Item preview",
+    "zh-CN": "条目预览",
+    "reviewedEnglishHash": "c4df5b53cae54b8cb2788fdbb56bf2eb79d42c508589189f82528826c15c1490"
+  },
+  "pipelines.items": {
+    "en": "items",
+    "zh-CN": "条目",
+    "reviewedEnglishHash": "5f3c4f8580d392e422e7c2f6802674ac27966c98d95c39696e4b2490168e5488"
+  },
+  "pipelines.keepItem": {
+    "en": "Keep item",
+    "zh-CN": "保留条目",
+    "reviewedEnglishHash": "8105da9a37b8a3e2c87ac1c4c664c7b0ace6c9f3db190565fb977dead8c0ab1f"
+  },
+  "pipelines.lastActivity": {
+    "en": "Last activity",
+    "zh-CN": "最近活动",
+    "reviewedEnglishHash": "06475633ed3e14cfefd643b9c86d1330966e94edebcf3a10862fecd369a3e5da"
+  },
+  "pipelines.learnings": {
+    "en": "Learnings",
+    "zh-CN": "经验总结",
+    "reviewedEnglishHash": "71cc0d3f8db84d73d55bd64224208f7cb468af4f2402696fd0f241a534ac20a6"
+  },
+  "pipelines.learningsLoadFailed": {
+    "en": "Could not load learnings.",
+    "zh-CN": "无法加载经验总结。",
+    "reviewedEnglishHash": "ceb0103cde1ecd7562a8d5dca35f9354852b315f90685ade55841afe12c409c9"
+  },
+  "pipelines.linkedWork": {
+    "en": "Linked work",
+    "zh-CN": "关联工作",
+    "reviewedEnglishHash": "e5455759ff0eb447fe8958e193a150976018aaf6134c04029f406b576a8d8fa3"
+  },
+  "pipelines.loadFailed": {
+    "en": "Could not load pipelines.",
+    "zh-CN": "无法加载管道。",
+    "reviewedEnglishHash": "81da5459511e5f5d67364191b5d8580b00f8f6dba2715f4235ee22931498d355"
+  },
+  "pipelines.moreDetails": {
+    "en": "More details",
+    "zh-CN": "更多详情",
+    "reviewedEnglishHash": "b5eff1dbd0154de8292af10fe3c9424573c847dcca5320f9828b637639addd2a"
+  },
+  "pipelines.moveToStage": {
+    "en": "Move to stage",
+    "zh-CN": "移动到阶段",
+    "reviewedEnglishHash": "e64cc92ef733312fc2906ef87a272f0d3659d447e01b4cc7ebec0a1fbcb4cfcb"
+  },
+  "pipelines.name": {
+    "en": "Name",
+    "zh-CN": "名称",
+    "reviewedEnglishHash": "dcd1d5223f73b3a965c07e3ff5dbee3eedcfedb806686a05b9b3868a2c3d6d50"
+  },
+  "pipelines.nestedView": {
+    "en": "Nested view",
+    "zh-CN": "嵌套视图",
+    "reviewedEnglishHash": "0ecbbbb2517a65b67fe657b237bd6a4eb3023b9d1eb51f0c6da107ba74753d05"
+  },
+  "pipelines.newPipeline": {
+    "en": "New pipeline",
+    "zh-CN": "新建管道",
+    "reviewedEnglishHash": "43604bb124f1605cc22f5878198a89033d69d236903cf68ff21291931e252ba7"
+  },
+  "pipelines.newPipelineDescription": {
+    "en": "Name the pipeline and add a short description.",
+    "zh-CN": "为管道命名并添加简短描述。",
+    "reviewedEnglishHash": "694004bb9e962d2480e7b86dff5e38d46f4a949255d6ed36c8d695b29e5d0b48"
+  },
+  "pipelines.noActiveConversation": {
+    "en": "No active conversation yet.",
+    "zh-CN": "暂无活跃对话。",
+    "reviewedEnglishHash": "ac58416e04bd15d38abec5baec9744438ab2cf0cc823b541ec11d8ef04cb72fc"
+  },
+  "pipelines.noActivity": {
+    "en": "No activity yet.",
+    "zh-CN": "暂无活动。",
+    "reviewedEnglishHash": "a288d2d0a21eed3c166d051806b178bc88cbd4a5390fd7c7aa6725826c237c98"
+  },
+  "pipelines.noAddedDetails": {
+    "en": "No added details.",
+    "zh-CN": "暂无补充详情。",
+    "reviewedEnglishHash": "06aab586078425810640e4cedc534ed51ca165b9d5dc3b9202a645cc4a16e198"
+  },
+  "pipelines.noAssignee": {
+    "en": "No assignee",
+    "zh-CN": "未分配",
+    "reviewedEnglishHash": "d64d8cecf4ebff54afe8a87fed86f1dd654047995cd310132fc461f4355fdf9c"
+  },
+  "pipelines.noBuiltFromItems": {
+    "en": "No built-from items.",
+    "zh-CN": "暂无来源条目。",
+    "reviewedEnglishHash": "54df01aecd14b07f8be656afeb8468dab04bb234d98d164dde0c9c908ca76cac"
+  },
+  "pipelines.noOtherReviewItem": {
+    "en": "No other item is waiting in this pipeline review queue.",
+    "zh-CN": "此管道复查队列中没有其他等待条目。",
+    "reviewedEnglishHash": "3e03b036e34cdff3f93cd0f52861375b5bce7b20659d32bc5a47fdd1c820c599"
+  },
+  "pipelines.noPiecesNeeded": {
+    "en": "No {{label}} needed",
+    "zh-CN": "不需要{{label}}",
+    "reviewedEnglishHash": "2e09cf75775326ce5e468de9fbcd9ee76981559da50c11dca6a16d0c8d9fa98f"
+  },
+  "pipelines.noSearchMatches": {
+    "en": "No pipelines match your search.",
+    "zh-CN": "没有符合搜索条件的管道。",
+    "reviewedEnglishHash": "f887cf4cff7ef40aec77a2ca88e4052fd68404275742694d51af01616dc9572d"
+  },
+  "pipelines.noSplitNeeded": {
+    "en": "Nothing was worth splitting - this case moved straight ahead without creating any {{label}}.",
+    "zh-CN": "没有值得拆分的内容，此案例未创建任何{{label}}就直接推进。",
+    "reviewedEnglishHash": "74563e45bedf99e8d627cac2ea09f0f9fe04c989a71429f442286d742eecd067"
+  },
+  "pipelines.noStages": {
+    "en": "No stages are set up for this pipeline yet.",
+    "zh-CN": "此管道尚未设置阶段。",
+    "reviewedEnglishHash": "bebb89c9fdacc4002cdd0b9823a782d946bf0d973713bddc021791fa00cafbb2"
+  },
+  "pipelines.notFound": {
+    "en": "Pipeline not found.",
+    "zh-CN": "未找到管道。",
+    "reviewedEnglishHash": "97115fd9946b99b2ff59d2d5dd891170afef4fec903496ebc480fe0c2a58ede7"
+  },
+  "pipelines.notYet": {
+    "en": "Not yet",
+    "zh-CN": "暂不",
+    "reviewedEnglishHash": "a9549d7d06368d83960c3a2e8172032a860f86e3e840a467cff021759e0e1ba0"
+  },
+  "pipelines.note": {
+    "en": "Note",
+    "zh-CN": "备注",
+    "reviewedEnglishHash": "d8da2c49df39d91df7ecd199b92da7bf264f026242ccc69b08daeadfe587c45b"
+  },
+  "pipelines.openAllPieces": {
+    "en": "Open all {{label}} ->",
+    "zh-CN": "打开全部{{label}} ->",
+    "reviewedEnglishHash": "50d55a5a5d2b630207a13249e31b3637a0806c94acee9b851a4ed8b0ec43eeea"
+  },
+  "pipelines.openConversation": {
+    "en": "Open conversation",
+    "zh-CN": "打开会话",
+    "reviewedEnglishHash": "7047b9af7a4cd0703f857363d089bf8d411f164bf6f9377dda1b7bcfef390e69"
+  },
+  "pipelines.openDocument": {
+    "en": "Open document",
+    "zh-CN": "打开文档",
+    "reviewedEnglishHash": "07e93c9ea2c61d9593a06198edeb9fc3e8f77541b5914d3b7815b907f8f528c5"
+  },
+  "pipelines.openItems": {
+    "en": "Open items",
+    "zh-CN": "未关闭条目",
+    "reviewedEnglishHash": "161e4d503fd39a329cae8f57735774921c72b9580f3ae984c23d12bba688e6cd"
+  },
+  "pipelines.openNamedItem": {
+    "en": "Open {{name}}",
+    "zh-CN": "打开 {{name}}",
+    "reviewedEnglishHash": "e0f8c156c3df563d698eb036605a0db336b9a9778cfec39a8a77130c5cf0c60a"
+  },
+  "pipelines.openSettings": {
+    "en": "Open settings",
+    "zh-CN": "打开设置",
+    "reviewedEnglishHash": "ca381c1e76e681b6c18fa984a2e2fda6ed4a9f28e914f539db34a6dcb3737149"
+  },
+  "pipelines.openWorkProduct": {
+    "en": "Open work product",
+    "zh-CN": "打开工作产物",
+    "reviewedEnglishHash": "73e348fe85b0f80855f6bb595f32f4e74610551be9ba3871560f337cd8e36bb8"
+  },
+  "pipelines.outputs.brief": {
+    "en": "Brief",
+    "zh-CN": "简报",
+    "reviewedEnglishHash": "ac40ae1e8d41291c59c7f09640725d31f88930b2074aad8adb17959d97bc1497"
+  },
+  "pipelines.outputs.conversation": {
+    "en": "Conversation",
+    "zh-CN": "会话",
+    "reviewedEnglishHash": "ccca1817575365871461752f3229dd59ede742ae69e350e20fd00a6ce3d149e3"
+  },
+  "pipelines.outputs.design": {
+    "en": "Design",
+    "zh-CN": "设计",
+    "reviewedEnglishHash": "0072e6b934945d5ba08f9729e00847391922f2f6026a435e704634fb93bf4502"
+  },
+  "pipelines.outputs.origin": {
+    "en": "Origin",
+    "zh-CN": "来源",
+    "reviewedEnglishHash": "d3e1c5f8a6e240fc97f057908e6f99feebc73acb865b641a38e28d6ae9b1264c"
+  },
+  "pipelines.outputs.plan": {
+    "en": "Plan",
+    "zh-CN": "计划",
+    "reviewedEnglishHash": "fa8ed0bdabdd6bcb1c0746f1d3e15212f7f3439d74339fbaaf16c60c0a80fb8e"
+  },
+  "pipelines.outputs.report": {
+    "en": "Report",
+    "zh-CN": "报告",
+    "reviewedEnglishHash": "b6ce788d9786917c9d19adaa0d904213365607c7f683d7277f508dcf142b4cc2"
+  },
+  "pipelines.outputs.spec": {
+    "en": "Spec",
+    "zh-CN": "规格说明",
+    "reviewedEnglishHash": "9bdc1337d7016d5825e164ca3a90ad5cb013b39396a1a1ee6324f8dc5ed6a1ee"
+  },
+  "pipelines.piecesFinished": {
+    "en": "{{done}} of {{total}} {{label}} finished",
+    "zh-CN": "{{done}} / {{total}} 个{{label}}已完成",
+    "reviewedEnglishHash": "edaea0b9c42e42afe60b30425b5c05f851fa55c1ad392f68021eadb8a6fe38d3"
+  },
+  "pipelines.pipeline": {
+    "en": "Pipeline",
+    "zh-CN": "管道",
+    "reviewedEnglishHash": "37e1c775f452d695697b6e3389169e4109236f420f9ece420af0d5e7bb9b1533"
+  },
+  "pipelines.preview": {
+    "en": "Preview",
+    "zh-CN": "预览",
+    "reviewedEnglishHash": "324b134f57c70c729ae3dc4d298bb451656717d70523e942c1ce667b8024ea07"
+  },
+  "pipelines.readyToMoveToStage": {
+    "en": "Ready to move to {{stage}}?",
+    "zh-CN": "准备移至 {{stage}} 吗？",
+    "reviewedEnglishHash": "09d26870fbcbd3d5f2de9372126cc967f4462dc307a40fd63ed38a59c803cde5"
+  },
+  "pipelines.reason": {
+    "en": "Reason",
+    "zh-CN": "原因",
+    "reviewedEnglishHash": "f81ab834de5f84918dc040b884267c2b61cb1a52d46442de10e97f35a94d0500"
+  },
+  "pipelines.removeItem": {
+    "en": "Remove item",
+    "zh-CN": "移除条目",
+    "reviewedEnglishHash": "5a89edf2867d98dd75fe7d7fd924ba09743f09012868a7ccc3c17bb4841b4f79"
+  },
+  "pipelines.review": {
+    "en": "Review",
+    "zh-CN": "复查",
+    "reviewedEnglishHash": "aff0766a5290e117b8433c351bae7b7b23bed682b2369bd822d88a647cc58512"
+  },
+  "pipelines.reviewQueue": {
+    "en": "Review queue",
+    "zh-CN": "复查队列",
+    "reviewedEnglishHash": "3e1654beab977badfc0c2a98c92420f4c4ea4b162c39edbb1be2e0cea9befdcf"
+  },
+  "pipelines.reviewQueueAttentionError": {
+    "en": "Some items need attention. Try again in a moment.",
+    "zh-CN": "部分条目需要关注。请稍后重试。",
+    "reviewedEnglishHash": "63a63ac7055edad1fef341bd971e5a0f02fe588fd948e7b125e9da80c138631d"
+  },
+  "pipelines.reviewQueueShortcutsApprove": {
+    "en": "approves.",
+    "zh-CN": "批准。",
+    "reviewedEnglishHash": "d842c2b4db72c6d996de7de07d31219caee0b156df044408ae88c770f194ebf4"
+  },
+  "pipelines.reviewQueueShortcutsMove": {
+    "en": "or arrow keys move,",
+    "zh-CN": "或方向键移动，",
+    "reviewedEnglishHash": "c01065488ad6fe2c8eb76816bf62d59ce18717a1bed8cccc4ea4d025459eb9c2"
+  },
+  "pipelines.reviewQueueShortcutsOpen": {
+    "en": "opens item,",
+    "zh-CN": "打开条目，",
+    "reviewedEnglishHash": "3610a81ee7ce7fe7d222471c33673a6d3748ffdb9e46236581e2455b895c2998"
+  },
+  "pipelines.reviewQueueShortcutsPrefix": {
+    "en": "Shortcuts:",
+    "zh-CN": "快捷键：",
+    "reviewedEnglishHash": "9d62c2fff5962f69baff462664bb2436eaae96a7c1c7a18402389217bfab14f0"
+  },
+  "pipelines.runsAt": {
+    "en": "Runs at",
+    "zh-CN": "运行时间",
+    "reviewedEnglishHash": "1b2499936a6525b9a56ecaf601ea14fef811dc6f46975c03cc4865083808c9b8"
+  },
+  "pipelines.searchPipelines": {
+    "en": "Search pipelines",
+    "zh-CN": "搜索管道",
+    "reviewedEnglishHash": "fd422543d2571278a61ec78f91ae216ae4c045fbc755161927afee9ba7044f2d"
+  },
+  "pipelines.selectCompany": {
+    "en": "Select a company to view pipelines.",
+    "zh-CN": "选择一家公司以查看管道。",
+    "reviewedEnglishHash": "4ba9cbf01ca8e9ed6bafe6f2e26790406a7fd0b589ec8bf5377d6e0d4dccb5d7"
+  },
+  "pipelines.skipReasonPlaceholder": {
+    "en": "Explain why this item should skip the normal flow.",
+    "zh-CN": "说明为什么此条目应跳过正常流程。",
+    "reviewedEnglishHash": "44fa41d4bdf395f515e9e6b5f14e44b4a55d8e140ff78d7f252bec898df2d872"
+  },
+  "pipelines.sort.mostInMotion": {
+    "en": "Most in motion",
+    "zh-CN": "进行中最多",
+    "reviewedEnglishHash": "2020a53f2a1f26d81364735dd728c1052c34e9ec0296ec5ff935018145db9084"
+  },
+  "pipelines.sort.mostOpenItems": {
+    "en": "Most open items",
+    "zh-CN": "未完成最多",
+    "reviewedEnglishHash": "a50f67fe98c5ed06b55e4dee58a844989396909ad27be05ccf036bb042077456"
+  },
+  "pipelines.sort.mostToReview": {
+    "en": "Most to review",
+    "zh-CN": "待审核最多",
+    "reviewedEnglishHash": "055ae8298848b274cc8dde972459ef56f7f0d6659e12f31371bf549049ee90f1"
+  },
+  "pipelines.stage": {
+    "en": "Stage",
+    "zh-CN": "阶段",
+    "reviewedEnglishHash": "de838855e4a6e04ea2f284b246a07a1126e7fcd151be9449e112006ad7db5c50"
+  },
+  "pipelines.startConversation": {
+    "en": "Start a conversation",
+    "zh-CN": "开始会话",
+    "reviewedEnglishHash": "258150cb3ee4ce738acc5aa1fa7289def8792bc04685cc092203702d18c5515e"
+  },
+  "pipelines.startingConversation": {
+    "en": "Starting...",
+    "zh-CN": "正在开始...",
+    "reviewedEnglishHash": "82b93630a921dddf9537234a46a389a16a25711d2def80b8c41cc53489f4513a"
+  },
+  "pipelines.status": {
+    "en": "Status",
+    "zh-CN": "状态",
+    "reviewedEnglishHash": "920e413c7d411b61ef3e8c63b1cb6ad058d5f95f8b481dbafe60248387d8c355"
+  },
+  "pipelines.title": {
+    "en": "Pipelines",
+    "zh-CN": "管道",
+    "reviewedEnglishHash": "d1a8fffeb935847ec893742b24793f3c6c6e04bf3738d778506861427cc8b5b5"
+  },
+  "pipelines.totalItems_one": {
+    "en": "{{formattedCount}} total item",
+    "zh-CN": "共 {{formattedCount}} 个条目",
+    "reviewedEnglishHash": "7c9a124bb8835212de4696cd5ac9c07f6cd486f0c77d222874c703f87f37aa01"
+  },
+  "pipelines.totalItems_other": {
+    "en": "{{formattedCount}} total items",
+    "zh-CN": "共 {{formattedCount}} 个条目",
+    "reviewedEnglishHash": "5b5dc61290dbe0540489c4326602aa87cd9ac55dfe0601be46f5b5baabf2ad2a"
+  },
+  "pipelines.waitingChildItems": {
+    "en": "Waiting child items",
+    "zh-CN": "等待子条目",
+    "reviewedEnglishHash": "d2b775d57a7a1fc7ab9918e5a192dffc01dd80f8764027199fce3067d27f5563"
+  },
+  "pipelines.waitingOnChildItems": {
+    "en": "Waiting on {{waiting}} of {{total}} {{label}}",
+    "zh-CN": "正在等待 {{waiting}} / {{total}} 个{{label}}",
+    "reviewedEnglishHash": "ba729e20fca8095d6bcbc96f0c9b4cfaf7091127d8761977f09b4474a8d5bb17"
+  },
+  "pipelines.waitingOnPieces": {
+    "en": "Waiting on {{waiting}} of {{total}} {{label}} · {{done}} finished",
+    "zh-CN": "正在等待 {{waiting}} / {{total}} 个{{label}} · 已完成 {{done}} 个",
+    "reviewedEnglishHash": "eb5d0d755e39378949fa7428cab9e56c74821547c7d6339427758be7dff30853"
+  },
+  "pipelines.whatIsBeingDecided": {
+    "en": "What is being decided",
+    "zh-CN": "正在决策的内容",
+    "reviewedEnglishHash": "a955af4531becbd64ded2e3dccb806754bdb6d2bf4a305b928a9fb465af6387d"
+  },
+  "pipelines.work": {
+    "en": "Work",
+    "zh-CN": "工作",
+    "reviewedEnglishHash": "104ab9213e28e4ff5ba0b4086457503e8a4656815cfec7bcf2799d76a3db081d"
+  },
+  "pipelines.workProducts": {
+    "en": "Work products",
+    "zh-CN": "工作产物",
+    "reviewedEnglishHash": "5c96c6bdb65d04b8123c4716c8f65807a969fdc390b2c4df70e81ffdb4512c1e"
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "actionCard.application": {
+    "en": "Application",
+    "zh-CN": "应用",
+    "reviewedEnglishHash": "e7ad522ea327e5ba95534ef8355038ef7f7b86328c7cf9175886f60464c40d28"
+  },
+  "actionCard.approve": {
+    "en": "Approve",
+    "zh-CN": "批准",
+    "reviewedEnglishHash": "6007acbe30b2cd98703e83350ea665c06009fcd51f26dd73b309294235f45f21"
+  },
+  "actionCard.approveDisabledTitle": {
+    "en": "Re-issue the request before approving — the catalog hash changed.",
+    "zh-CN": "工具目录哈希已更改，请重新发出请求后再批准。",
+    "reviewedEnglishHash": "09773d0a1d1176639ae23634e32876289432844fdcf0571abe63653c975a2f14"
+  },
+  "actionCard.catalog": {
+    "en": "Catalog",
+    "zh-CN": "工具目录",
+    "reviewedEnglishHash": "3877d14889a9909b9c6ec38d2390599cdc741b73e37505864863ef8e57fb3594"
+  },
+  "actionCard.connection": {
+    "en": "Connection",
+    "zh-CN": "连接",
+    "reviewedEnglishHash": "639a40e82b9a96f0cbeed5f006cf5634c8d1b990b3c83753c00a910fc268d2a6"
+  },
+  "actionCard.currentCatalogHash": {
+    "en": "Current catalog hash",
+    "zh-CN": "当前工具目录哈希",
+    "reviewedEnglishHash": "540922c9135cff79a8dc2c1acffe60f83948c0609150010406554e66277deb19"
+  },
+  "actionCard.deny": {
+    "en": "Deny",
+    "zh-CN": "拒绝",
+    "reviewedEnglishHash": "05a2d7332eb9d8bf164487c743a2e93c21b16bb2061a93e3ee2ceb508eadb753"
+  },
+  "actionCard.editAndResign": {
+    "en": "Edit & re-sign",
+    "zh-CN": "编辑并重新签名",
+    "reviewedEnglishHash": "6da7aeb419e8884e5214017c713536747637ef29deaa416a7f3b9c620abfca10"
+  },
+  "actionCard.input": {
+    "en": "Input",
+    "zh-CN": "输入",
+    "reviewedEnglishHash": "36ecb4f8669133ce744c21982ba4abe2ecd7086e1dc2226ccd6f266f3a5005f8"
+  },
+  "actionCard.manifestVersion": {
+    "en": "manifest v{{version}}",
+    "zh-CN": "清单 v{{version}}",
+    "reviewedEnglishHash": "ebbc63df49a0bc9cec4b34d9ace4353f9d83b180d89bba1f8b1e0cecb0df29db"
+  },
+  "actionCard.noExpiry": {
+    "en": "no expiry set",
+    "zh-CN": "未设置过期时间",
+    "reviewedEnglishHash": "fcbeaba82c15dac602e4b313670da97fbd4a562d364395501dfb0c7cd4faccef"
+  },
+  "actionCard.payload": {
+    "en": "Payload",
+    "zh-CN": "载荷",
+    "reviewedEnglishHash": "99733344956dde482674bdb7ee44a5a2f203569c8a0a5c7a10284f97cd5d65c8"
+  },
+  "actionCard.policyNumber": {
+    "en": "Policy #{{number}}",
+    "zh-CN": "策略 #{{number}}",
+    "reviewedEnglishHash": "eeb09daceadfb6c6c94abc370f79cf5beb22922f67e57891ec43b42fa19b2422"
+  },
+  "actionCard.policyRequiresApproval": {
+    "en": "requires approval here.",
+    "zh-CN": "需要在此审批。",
+    "reviewedEnglishHash": "c7e3768a993c0680562ed92e16a4a0b5bf61d8ee7f2f6d025d61329165bf8c24"
+  },
+  "actionCard.previousCatalogHash": {
+    "en": "Previous catalog hash",
+    "zh-CN": "先前的工具目录哈希",
+    "reviewedEnglishHash": "ba0cd6985bc2d991cb68cdc8c0438a72c99aae1d3ae0918a2efbf9239ba11be4"
+  },
+  "actionCard.requestedApproval": {
+    "en": "requested approval to call",
+    "zh-CN": "请求批准调用",
+    "reviewedEnglishHash": "2258c9ee619ce6b51b18f66acd6744b5635e185a2f7af10f78fda1701502f283"
+  },
+  "actionCard.signed": {
+    "en": "signed",
+    "zh-CN": "已签名",
+    "reviewedEnglishHash": "4a3cdfae6f291c8f544daea5b72905cf9e74c1ed427d831ad0d7ca00c73c794d"
+  },
+  "actionCard.staleBody": {
+    "en": "The application's tool catalog hash no longer matches the one this approval was issued against. Approval is disabled — the agent must edit & re-sign to request again.",
+    "zh-CN": "应用的工具目录哈希与发出此审批时的哈希已不一致。审批已禁用；智能体必须编辑并重新签名后再次发出请求。",
+    "reviewedEnglishHash": "05af262bce4f26d03b01f3553ecdda45354081655911cd99c243306b07a9c86d"
+  },
+  "actionCard.staleTitle": {
+    "en": "Catalog changed since this request was signed.",
+    "zh-CN": "此请求签名后，工具目录已发生变化。",
+    "reviewedEnglishHash": "5c01858afd3bbf51fa994aadb039f60e7b05581fae4389ab210c348532a8f196"
+  },
+  "actionCard.whyAsking": {
+    "en": "Why I'm asking",
+    "zh-CN": "请求原因",
+    "reviewedEnglishHash": "9484d188507e2c90c1c554e583678cfcf43829f767589b5daff265334b063ed0"
+  }
+}

@@ -1,0 +1,1337 @@
+{
+  "skillStudio.actions.back": {
+    "en": "Back",
+    "zh-CN": "返回",
+    "reviewedEnglishHash": "76900f1bfd16c8d4dd3d25e6f46638d7165aee23883ccea6bfe071c514421769"
+  },
+  "skillStudio.actions.cancel": {
+    "en": "Cancel",
+    "zh-CN": "取消",
+    "reviewedEnglishHash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+  },
+  "skillStudio.actions.create": {
+    "en": "Create",
+    "zh-CN": "创建",
+    "reviewedEnglishHash": "4759498ac2a719c619e2c8cf8ee60af2d2407425e95d308eb208425b2a6d427a"
+  },
+  "skillStudio.actions.delete": {
+    "en": "Delete",
+    "zh-CN": "删除",
+    "reviewedEnglishHash": "e2d0a54968ead24efc0dffa6ac78fc606dceec34a0f586177a74a54cc2272cf8"
+  },
+  "skillStudio.actions.revert": {
+    "en": "Revert",
+    "zh-CN": "撤销更改",
+    "reviewedEnglishHash": "0026c505347863ae188a99df6946e16ac83262585044660440699346d24784e7"
+  },
+  "skillStudio.actions.save": {
+    "en": "Save",
+    "zh-CN": "保存",
+    "reviewedEnglishHash": "1509f561f2416598629b886ad7d3c05a7e221e4e0675c84bbff4ee6d9e03913d"
+  },
+  "skillStudio.actions.saveChanges": {
+    "en": "Save changes",
+    "zh-CN": "保存更改",
+    "reviewedEnglishHash": "dd0ae7a5cbcf233968657563dce34639e681861e2df6d3f845c08d49981c0999"
+  },
+  "skillStudio.actions.saving": {
+    "en": "Saving…",
+    "zh-CN": "正在保存…",
+    "reviewedEnglishHash": "23e39291d6135814ed7c936e278974544b0df5fbf0eb0427b6700979b7472a93"
+  },
+  "skillStudio.actions.savingDots": {
+    "en": "Saving...",
+    "zh-CN": "正在保存...",
+    "reviewedEnglishHash": "dc85af8f2b1d0d6756547cd5f79557466e25e682b882f68d277bd7f125851321"
+  },
+  "skillStudio.agentsUsing.addAgent": {
+    "en": "Add agent…",
+    "zh-CN": "添加智能体…",
+    "reviewedEnglishHash": "51189bf03b3a84f3f10e03573c956fb15d4d028de13bcdfbe00968dee88756b7"
+  },
+  "skillStudio.agentsUsing.addAgentHint": {
+    "en": "Add an agent below to assign this skill.",
+    "zh-CN": "在下方添加智能体并为其分配此技能。",
+    "reviewedEnglishHash": "4d7a74467bf2135b2d986be82f9c057c25b77e248fa59140806af0c17c474047"
+  },
+  "skillStudio.agentsUsing.agentVersionAria": {
+    "en": "{{name}} version",
+    "zh-CN": "{{name}} 的版本",
+    "reviewedEnglishHash": "38dfecb82ada8c79543eb530b1f3a076311c2e3507adb56b415f6be3959cdf56"
+  },
+  "skillStudio.agentsUsing.allEligibleAssigned": {
+    "en": "All eligible agents already have this skill.",
+    "zh-CN": "所有符合条件的智能体都已拥有此技能。",
+    "reviewedEnglishHash": "e8e90b54634e2f11bb6cfe0aad7adab2104466c66ac467b182e8d43ffd6717d3"
+  },
+  "skillStudio.agentsUsing.badgeAria_one": {
+    "en": "{{count}} agent uses this skill",
+    "zh-CN": "{{count}} 个智能体正在使用此技能",
+    "reviewedEnglishHash": "f83cc05e8db6b877c1e8d337e5b828c4aedd8f85153f4c238ea571408b4e3418"
+  },
+  "skillStudio.agentsUsing.badgeAria_other": {
+    "en": "{{count}} agents use this skill",
+    "zh-CN": "{{count}} 个智能体正在使用此技能",
+    "reviewedEnglishHash": "4bf3a32cb9cd48b9f3ac32f217b12dd4d795476af5324863dd195ea34acc5d4e"
+  },
+  "skillStudio.agentsUsing.behindLatest_one": {
+    "en": "{{count}} version behind latest",
+    "zh-CN": "落后最新版 {{count}} 个版本",
+    "reviewedEnglishHash": "e608098eec84bb3a5a54ce9157c87471b672be5800261d74dac1091bcdd186d1"
+  },
+  "skillStudio.agentsUsing.behindLatest_other": {
+    "en": "{{count}} versions behind latest",
+    "zh-CN": "落后最新版 {{count}} 个版本",
+    "reviewedEnglishHash": "263c62d6678cfbdff517da993db7b62b2c824395dad91b63d27cb1dafa2bcd94"
+  },
+  "skillStudio.agentsUsing.confirmRemoveAria": {
+    "en": "Confirm removing this skill from {{name}}",
+    "zh-CN": "确认从 {{name}} 移除此技能",
+    "reviewedEnglishHash": "daa2563b6e575e17650f8adae8940acafceee9f29ec87507b08613bc6abc0c32"
+  },
+  "skillStudio.agentsUsing.count_one": {
+    "en": "{{count}} agent",
+    "zh-CN": "{{count}} 个智能体",
+    "reviewedEnglishHash": "fbddbb9eca4b3148dfd4a959da033c74fd47246f4f6cdd2a17be7fba5ddf5645"
+  },
+  "skillStudio.agentsUsing.count_other": {
+    "en": "{{count}} agents",
+    "zh-CN": "{{count}} 个智能体",
+    "reviewedEnglishHash": "977a7422900b40a5ade4526c98653a1b04619b8ff81240ead3699dea1b7df70e"
+  },
+  "skillStudio.agentsUsing.description_one": {
+    "en": "{{count}} agent has this skill in its desired set.",
+    "zh-CN": "{{count}} 个智能体的期望技能中包含此技能。",
+    "reviewedEnglishHash": "81bc54d441c27eecd00a484d6df98aa208df490197e4cd5fc0c3528ac9b979e4"
+  },
+  "skillStudio.agentsUsing.description_other": {
+    "en": "{{count}} agents have this skill in their desired sets.",
+    "zh-CN": "{{count}} 个智能体的期望技能中包含此技能。",
+    "reviewedEnglishHash": "cd813689dda73a7fdbfd339db0c7fe50e360180f362d18e57eeaaf0b6bbb9acc"
+  },
+  "skillStudio.agentsUsing.latest": {
+    "en": "Latest",
+    "zh-CN": "最新版",
+    "reviewedEnglishHash": "8730d3c2022abf1f9665e4ca1da43e4d068843482053675af19176b0f6f51a3e"
+  },
+  "skillStudio.agentsUsing.latestVersion": {
+    "en": "Latest (v{{revision}})",
+    "zh-CN": "最新版 (v{{revision}})",
+    "reviewedEnglishHash": "765d70189f5f2ee9678cc7936b193b751a11f95028757850036fbc4d8ea8d750"
+  },
+  "skillStudio.agentsUsing.loadingAgents": {
+    "en": "Loading agents...",
+    "zh-CN": "正在加载智能体...",
+    "reviewedEnglishHash": "a4e0608f9963b61351cc3c10d40f1d7344cd741a69f9e3b2b637623f4b36d4d4"
+  },
+  "skillStudio.agentsUsing.noneAssigned": {
+    "en": "No agents have this skill assigned yet.",
+    "zh-CN": "尚未为任何智能体分配此技能。",
+    "reviewedEnglishHash": "765a266e6b0682c74acc68fe31b430d3c1cffff494dd1fc17cd24e558181265f"
+  },
+  "skillStudio.agentsUsing.permissionDenied": {
+    "en": "You don't have permission to change this agent's skills.",
+    "zh-CN": "你没有权限更改此智能体的技能。",
+    "reviewedEnglishHash": "ac98e751c8a21584e4f5bb2d8ea3185875d06d306381a4ab1bdf786ad99947c8"
+  },
+  "skillStudio.agentsUsing.removeAria": {
+    "en": "Remove this skill from {{name}}",
+    "zh-CN": "从 {{name}} 移除此技能",
+    "reviewedEnglishHash": "88b191fd334c21a9f8b2d32289ff20e7e605fe12efdeb0d9fdfa9186b8d7fc49"
+  },
+  "skillStudio.agentsUsing.searchAgents": {
+    "en": "Search agents...",
+    "zh-CN": "搜索智能体...",
+    "reviewedEnglishHash": "32f4468b0b6f9410941a7940ea86374fa42a3e6846896c361c465680dca0c7ba"
+  },
+  "skillStudio.agentsUsing.skillVersionAria": {
+    "en": "{{name}} skill version",
+    "zh-CN": "{{name}} 的技能版本",
+    "reviewedEnglishHash": "99d260520839ab3a100ebfb18e3756fd210c5fc0d814f88dfb7ac12fcd724fb4"
+  },
+  "skillStudio.agentsUsing.title": {
+    "en": "Agents using {{name}}",
+    "zh-CN": "使用 {{name}} 的智能体",
+    "reviewedEnglishHash": "87ce74c1b62ede76252b2d8ef07568bc2de0be938d696095bf8e39d8c3d63149"
+  },
+  "skillStudio.agentsUsing.unassigned": {
+    "en": "This skill isn't assigned to any agents.",
+    "zh-CN": "此技能未分配给任何智能体。",
+    "reviewedEnglishHash": "c4ac8bbf11678039b8005de01861e953033a4ed2690f97a99ccacc8e6b40dd3c"
+  },
+  "skillStudio.agentsUsing.updateFailedBody": {
+    "en": "Failed to update agent skills.",
+    "zh-CN": "更新智能体技能失败。",
+    "reviewedEnglishHash": "f491569a7cec22f8f4ac012454714cdcac61c54cbdd67bcecd7c17478ac4bc62"
+  },
+  "skillStudio.agentsUsing.updateFailedTitle": {
+    "en": "Update failed",
+    "zh-CN": "更新失败",
+    "reviewedEnglishHash": "e58282fd73fb8580874eef14682a44e6d0054908d7a1b925de6f64ad303afe03"
+  },
+  "skillStudio.breadcrumbs.newSkill": {
+    "en": "New skill",
+    "zh-CN": "新建技能",
+    "reviewedEnglishHash": "9bf06a86c934b7de42a4b6afbda51b543723dd4d4b8dc747ee32cacd58281195"
+  },
+  "skillStudio.breadcrumbs.skills": {
+    "en": "Skills",
+    "zh-CN": "技能",
+    "reviewedEnglishHash": "66d0f523a379b2de6f8d5fba3a817ebc395f7bcaa54cc132ca9dfa665d1e9378"
+  },
+  "skillStudio.breadcrumbs.studio": {
+    "en": "Studio",
+    "zh-CN": "工作室",
+    "reviewedEnglishHash": "0aa91af2ec4c1fd761cc39b838088c06ef2190a5f72ab1e4f6fe7e7487bce5b7"
+  },
+  "skillStudio.create.appearanceDescription": {
+    "en": "Tune how the skill appears in the store and Studio switcher.",
+    "zh-CN": "调整技能在商店和工作室切换器中的显示方式。",
+    "reviewedEnglishHash": "b87e0c2d950f3d456eaffad6b93240e0f2fccf836081cf9f00fd6ecc11d6b499"
+  },
+  "skillStudio.create.appearanceTitle": {
+    "en": "Appearance",
+    "zh-CN": "外观",
+    "reviewedEnglishHash": "3907fa7f80722a6fc58cd8c1bd30abf7638095d6774f183b6e831b7093957d1b"
+  },
+  "skillStudio.create.basicsDescription": {
+    "en": "Name the skill and set the route-safe slug.",
+    "zh-CN": "为技能命名并设置可安全用于路由的 Slug。",
+    "reviewedEnglishHash": "0701145e12e7a307a3e6389dd8b2357bdc882a892d5ea014ba081943ffeae707"
+  },
+  "skillStudio.create.basicsTitle": {
+    "en": "Basics",
+    "zh-CN": "基本信息",
+    "reviewedEnglishHash": "8fdd2ee8475e29bcb7acc41b731a943957e4dc3d07012c23f8b7b028de620267"
+  },
+  "skillStudio.create.categoriesPlaceholder": {
+    "en": "engineering, review, memory",
+    "zh-CN": "engineering, review, memory",
+    "reviewedEnglishHash": "60bdd3ca934986f7a5a8565fb2ffe2000fe816a14f763482455e7d9c320c1f32"
+  },
+  "skillStudio.create.comingLater": {
+    "en": "Coming later.",
+    "zh-CN": "即将推出。",
+    "reviewedEnglishHash": "3ff09ef158dc5fa2a419f8d47003b342b90f0155d988672f0bf61a74ec944347"
+  },
+  "skillStudio.create.createFork": {
+    "en": "Create fork",
+    "zh-CN": "创建副本",
+    "reviewedEnglishHash": "d217b73b9ff2c7400e80132208bc3d579137fccaa7fff78a4192276864e70454"
+  },
+  "skillStudio.create.createSkill": {
+    "en": "Create skill",
+    "zh-CN": "创建技能",
+    "reviewedEnglishHash": "1a9030082a20b6d99a9cbd4c7ca4a8ffd0768520f223b866fa34204f18c0bf64"
+  },
+  "skillStudio.create.creating": {
+    "en": "Creating...",
+    "zh-CN": "正在创建...",
+    "reviewedEnglishHash": "def70944c9bb9c3b77129e6fc48cfcd043031a86ae747060a3e97985d254c4f2"
+  },
+  "skillStudio.create.description": {
+    "en": "Create an editable company skill and open it directly in Studio.",
+    "zh-CN": "创建可编辑的公司技能，并直接在工作室中打开。",
+    "reviewedEnglishHash": "ab7c5c6620957983eba8faafa43afd96cdd5c324ce0f5a7c9aea5d75829ea8ac"
+  },
+  "skillStudio.create.editableBody": {
+    "en": "{{name}} is now editable in the Paperclip CN workspace.",
+    "zh-CN": "现在可以在 Paperclip CN 工作区中编辑 {{name}}。",
+    "reviewedEnglishHash": "d0e2d376feab5ffed906bf0f7ba075f5dcc27055a6c2b7dc1a214b4d69e73f51"
+  },
+  "skillStudio.create.failedBody": {
+    "en": "Failed to create skill.",
+    "zh-CN": "创建技能失败。",
+    "reviewedEnglishHash": "993d12daccdd2de05519ad8f5219f833748726ac21130661f880ee25f677d995"
+  },
+  "skillStudio.create.failedTitle": {
+    "en": "Skill creation failed",
+    "zh-CN": "技能创建失败",
+    "reviewedEnglishHash": "bb3edc7034fe7d133d5cca103739233f34d01fc206212432205e349eec53706d"
+  },
+  "skillStudio.create.forkCreated": {
+    "en": "Skill fork created",
+    "zh-CN": "技能副本已创建",
+    "reviewedEnglishHash": "7806f0fc7194ca33abd839eecd7d40361ee138e204278c0279a7452138d3db5c"
+  },
+  "skillStudio.create.forkSourceNotFound": {
+    "en": "Fork source not found. You can still create a blank skill.",
+    "zh-CN": "找不到复制来源。你仍可创建空白技能。",
+    "reviewedEnglishHash": "e993a0331e068b6ee75f530b3e8acb7817f47e9990cbe0139e0c89fde813f3b0"
+  },
+  "skillStudio.create.forkTitle": {
+    "en": "Fork skill",
+    "zh-CN": "复制技能",
+    "reviewedEnglishHash": "fa941eb0ebcedd633dbd2aecba409f587bbdb65c35a3370621a8f7500f9e2714"
+  },
+  "skillStudio.create.forking": {
+    "en": "Forking {{name}}",
+    "zh-CN": "正在复制 {{name}}",
+    "reviewedEnglishHash": "1c73cfb0673c2c9071bfa82e08f1c30a97b089d4012b9311f1791c7275a58f43"
+  },
+  "skillStudio.create.hexColor": {
+    "en": "Hex color",
+    "zh-CN": "十六进制颜色",
+    "reviewedEnglishHash": "91f4e4b13e5701e3a41161e89938efbcc7f72bc1a09b7b535bfc7bf017b76c2b"
+  },
+  "skillStudio.create.loadingForkSource": {
+    "en": "Loading fork source...",
+    "zh-CN": "正在加载复制来源...",
+    "reviewedEnglishHash": "1604c13e4409daa0632931764a993e9f2d408fb0b6a50e36a675777883c5449a"
+  },
+  "skillStudio.create.namePlaceholder": {
+    "en": "Code review",
+    "zh-CN": "代码审查",
+    "reviewedEnglishHash": "3d2006711d4cf0010ce16f31a49a5a2fc2e47bc87bf4e5f48ca49098411a7055"
+  },
+  "skillStudio.create.noTagline": {
+    "en": "No tagline yet.",
+    "zh-CN": "尚无简介。",
+    "reviewedEnglishHash": "8e4cf121c0a33902804d8b8e77a19a432f3711ec63553fcf8bb1c636899ed7c1"
+  },
+  "skillStudio.create.previewAuthor": {
+    "en": "you",
+    "zh-CN": "你",
+    "reviewedEnglishHash": "bb0347a468d97e98a9c00e37cebec1ab930f6f1221cae0f1fbb92b07e1900ba2"
+  },
+  "skillStudio.create.previewName": {
+    "en": "New Skill",
+    "zh-CN": "新技能",
+    "reviewedEnglishHash": "7fe2a91dd45375d4c0ad3e6bf7d65410dc6bbc8639c5c11f93e0fdad49989055"
+  },
+  "skillStudio.create.scopeCompany": {
+    "en": "Company",
+    "zh-CN": "公司",
+    "reviewedEnglishHash": "de4743c879734dc38cb3e270ecefcae077c3c2e626f9298115d5a03c8613f89b"
+  },
+  "skillStudio.create.scopeCompanyDescription": {
+    "en": "Visible inside this company.",
+    "zh-CN": "公司内所有成员可见。",
+    "reviewedEnglishHash": "ab5f5c605e288fa3c438b35c17397e0788450733ac96e72dd669bf8e11856923"
+  },
+  "skillStudio.create.scopePrivate": {
+    "en": "Private",
+    "zh-CN": "私有",
+    "reviewedEnglishHash": "c63eb6720c6e88493897548d3620d45e539d18574465f7b26fdddcbade044ee2"
+  },
+  "skillStudio.create.scopePrivateDescription": {
+    "en": "Only visible in your library.",
+    "zh-CN": "仅在你的技能库中可见。",
+    "reviewedEnglishHash": "efbca2276ff1f738498bab1e90e4836e6e2528b53d914bc6f99057c8e23f0790"
+  },
+  "skillStudio.create.scopePublic": {
+    "en": "Public",
+    "zh-CN": "公开",
+    "reviewedEnglishHash": "591935b15b1c88e2d5f6be0a054604fcf36f0585a6f51098fa3803826fff278c"
+  },
+  "skillStudio.create.sharingDescription": {
+    "en": "Choose who can discover this skill inside Paperclip CN.",
+    "zh-CN": "选择哪些人可以在 Paperclip CN 中发现此技能。",
+    "reviewedEnglishHash": "678c71eed4ce883cb0b47be605ec9654f6f38b31ad3a6f7bb06e54b3a7044aa5"
+  },
+  "skillStudio.create.sharingTitle": {
+    "en": "Sharing",
+    "zh-CN": "共享范围",
+    "reviewedEnglishHash": "bbedc70e985fe0b6b32c173bf2676cab7d103138c05397f2835d821715b48a89"
+  },
+  "skillStudio.create.skillCreated": {
+    "en": "Skill created",
+    "zh-CN": "技能已创建",
+    "reviewedEnglishHash": "b25ab5d5e2a5af58dd832b1ef11c91c333e857bdcfaed5d140af826e0630a8ce"
+  },
+  "skillStudio.create.slugPlaceholder": {
+    "en": "code-review",
+    "zh-CN": "code-review",
+    "reviewedEnglishHash": "717d32bb32dbbc160a16199742dea33a0f51d557381f7c5fefa452be9ebdf9ce"
+  },
+  "skillStudio.create.starterContent": {
+    "en": "Starter content",
+    "zh-CN": "初始内容",
+    "reviewedEnglishHash": "237b19788583e3fbb416348805284a1d6a08d17ec9f2d2c2b1152a4eac9b639b"
+  },
+  "skillStudio.create.taglinePlaceholder": {
+    "en": "Review repository changes for correctness, tests, and maintainability.",
+    "zh-CN": "审查仓库变更的正确性、测试情况和可维护性。",
+    "reviewedEnglishHash": "1ca7c5025827d11315d9f9445669e6f7e6b40bde7122f855802df6faf77cba53"
+  },
+  "skillStudio.create.title": {
+    "en": "Create a new skill",
+    "zh-CN": "创建新技能",
+    "reviewedEnglishHash": "334c7dd95ab433ad83541f61e995b2da07b9065bb9f8d7db74e241d2bf8e0ebc"
+  },
+  "skillStudio.create.useColor": {
+    "en": "Use {{color}}",
+    "zh-CN": "使用 {{color}}",
+    "reviewedEnglishHash": "b7b3b27e3f3e49277f18ac7c0820613f1e53f2023d891a741b73f5c81606fd26"
+  },
+  "skillStudio.errors.cancelRun": {
+    "en": "Couldn't cancel run",
+    "zh-CN": "无法取消运行",
+    "reviewedEnglishHash": "0d6c4ea0238e4680d1971674ac43ad5de78e152a86626aab231fd4dbcc292bc7"
+  },
+  "skillStudio.errors.createFile": {
+    "en": "Couldn't create file",
+    "zh-CN": "无法创建文件",
+    "reviewedEnglishHash": "3aaf994784d53235ee46c08ac42a08382b46baab4ff6e4e4bc117277e4638f02"
+  },
+  "skillStudio.errors.deleteFile": {
+    "en": "Couldn't delete file",
+    "zh-CN": "无法删除文件",
+    "reviewedEnglishHash": "90bc051ff51657739fc47f6e6e5b305cb4d1693e445f38795cca8def7ddb7c90"
+  },
+  "skillStudio.errors.deleteInput": {
+    "en": "Couldn't delete input",
+    "zh-CN": "无法删除输入",
+    "reviewedEnglishHash": "ca18ad6f4d281d6a2a1772fad6771eeb29c6030528e8b310496125cb86efce3e"
+  },
+  "skillStudio.errors.deleteRun": {
+    "en": "Couldn't delete run",
+    "zh-CN": "无法删除运行",
+    "reviewedEnglishHash": "97a1ea214d8a0a00a37b46eae53f4642e5aa766933948c329b16ce4b6f2a29e1"
+  },
+  "skillStudio.errors.deleteTemplate": {
+    "en": "Couldn't delete template",
+    "zh-CN": "无法删除模板",
+    "reviewedEnglishHash": "34ab19c89c1bc38333c0d9e59e96cda39148bcd6ac1c6a0b7f3e87003d8a0b5c"
+  },
+  "skillStudio.errors.rerun": {
+    "en": "Couldn't re-run",
+    "zh-CN": "无法重新运行",
+    "reviewedEnglishHash": "e1191c018530ebe3809c584057ba542777eaf2b4e39c3cba3308e429595fece5"
+  },
+  "skillStudio.errors.saveFile": {
+    "en": "Couldn't save file",
+    "zh-CN": "无法保存文件",
+    "reviewedEnglishHash": "3594c90631d78f43cabce5e03099b990816976307ef6e50bb7fbbf05717c3267"
+  },
+  "skillStudio.errors.saveInput": {
+    "en": "Couldn't save input",
+    "zh-CN": "无法保存输入",
+    "reviewedEnglishHash": "3fdbffd0ed4477aa9e1493faaeb1a51521d5d5884cbc168f132af7edd19d14ff"
+  },
+  "skillStudio.errors.saveTemplate": {
+    "en": "Couldn't save template",
+    "zh-CN": "无法保存模板",
+    "reviewedEnglishHash": "62758540969d7cb18bb465c0d1088e0d0008f8e35dc4bc1dcd2f37664bc13cd0"
+  },
+  "skillStudio.errors.startRun": {
+    "en": "Couldn't start run",
+    "zh-CN": "无法启动运行",
+    "reviewedEnglishHash": "9fa364d20cc5cb35f21ea3b073f76d0259e274cc77bae3896dbd7572465d97d6"
+  },
+  "skillStudio.errors.tryAgain": {
+    "en": "Please try again.",
+    "zh-CN": "请重试。",
+    "reviewedEnglishHash": "eea4fb33efd382834952e3e7ab52f8dc41ccc2c3f5c3f246f0505235e0e962aa"
+  },
+  "skillStudio.errors.updateTemplate": {
+    "en": "Couldn't update template",
+    "zh-CN": "无法更新模板",
+    "reviewedEnglishHash": "4471951bc6e54f6fbe4013d140986d7c75445ab91cf68e39e08f29c2bf188d91"
+  },
+  "skillStudio.fields.body": {
+    "en": "Body",
+    "zh-CN": "正文",
+    "reviewedEnglishHash": "6ccaa6415b5ee449e3c5c716f57b4608ebe3b780f5aa6b077bc5d8eee5d961f9"
+  },
+  "skillStudio.fields.categories": {
+    "en": "Categories",
+    "zh-CN": "分类",
+    "reviewedEnglishHash": "b8b1d894c683725260dcd78f8ed64f979331a1ab61fc8311e9ccfc300fd5de20"
+  },
+  "skillStudio.fields.color": {
+    "en": "Color",
+    "zh-CN": "颜色",
+    "reviewedEnglishHash": "6b73191a0a4b67420e61d51c9f207c35277eaf18fbbf5beb52a320a23fe09653"
+  },
+  "skillStudio.fields.content": {
+    "en": "Content",
+    "zh-CN": "内容",
+    "reviewedEnglishHash": "47bd29075f8b8019f0beec6d86beda7c9bf67aaf05053dcbe0b3bcb63968517f"
+  },
+  "skillStudio.fields.description": {
+    "en": "Description",
+    "zh-CN": "说明",
+    "reviewedEnglishHash": "526e0087cc3f254d9f86f6c7d8e23d954c4dfda2b312efc29194ae8a860106ba"
+  },
+  "skillStudio.fields.name": {
+    "en": "Name",
+    "zh-CN": "名称",
+    "reviewedEnglishHash": "dcd1d5223f73b3a965c07e3ff5dbee3eedcfedb806686a05b9b3868a2c3d6d50"
+  },
+  "skillStudio.fields.slug": {
+    "en": "Slug",
+    "zh-CN": "Slug",
+    "reviewedEnglishHash": "d15387ecc6c5e22dee4fb57610138e155c1c84cc8c1a187ff7fa2f1edb3beff6"
+  },
+  "skillStudio.fields.tagline": {
+    "en": "Tagline",
+    "zh-CN": "简介",
+    "reviewedEnglishHash": "fdab2c2f2be28eaff200bf5121b1b60a4b58890652fdc50609a8649a55d8b314"
+  },
+  "skillStudio.files.addFile": {
+    "en": "Add file",
+    "zh-CN": "添加文件",
+    "reviewedEnglishHash": "2c83c00f0e83b39c456f29fba21070cb968056429046300b97673e0fed68c639"
+  },
+  "skillStudio.files.addFolder": {
+    "en": "Add folder",
+    "zh-CN": "添加文件夹",
+    "reviewedEnglishHash": "5bbfc5a69b25b49c3281037127900ce3f2fe9a8024c4d586fff34a1d58d89197"
+  },
+  "skillStudio.files.confirmDeleteFile": {
+    "en": "Delete {{path}}?",
+    "zh-CN": "删除 {{path}}？",
+    "reviewedEnglishHash": "5b88fa0b0b5a0d5a0d88b2ab817c22e142cb13b1149ed91d8fa15708924a5d46"
+  },
+  "skillStudio.files.confirmDiscard": {
+    "en": "Discard unsaved edits and switch files?",
+    "zh-CN": "放弃未保存的编辑并切换文件？",
+    "reviewedEnglishHash": "8f639fa507ef75afd74d374195b072440fa5ecc532a354ff7dbe4a0cc101160d"
+  },
+  "skillStudio.files.createDescription": {
+    "en": "Saved changes create a new version immediately. External sources are not updated until you publish or install an update.",
+    "zh-CN": "保存更改后会立即创建新版本。发布或安装更新前，外部来源不会同步更新。",
+    "reviewedEnglishHash": "083269633fb9f8ed94d949390b3172cb2fe9ebb692b6d6307c540dfdd2e4f9e6"
+  },
+  "skillStudio.files.deleteFile": {
+    "en": "Delete file",
+    "zh-CN": "删除文件",
+    "reviewedEnglishHash": "28e18dc9db382d81d5c2e056abe2655575404a55828822b0757419101a346de2"
+  },
+  "skillStudio.files.deleteFolder": {
+    "en": "Delete folder",
+    "zh-CN": "删除文件夹",
+    "reviewedEnglishHash": "39f35f2d44d6115225998ed9765a26b85e46143761a8563262ad48b63e17f1ff"
+  },
+  "skillStudio.files.deleteFolderDescription": {
+    "en": "This removes every skill file under the folder and saves the result as the next version.",
+    "zh-CN": "此操作会移除该文件夹下的所有技能文件，并将结果保存为下一个版本。",
+    "reviewedEnglishHash": "2055145168d1205e3f5a33786720922843724dd9652efcf6188ca5e70756768a"
+  },
+  "skillStudio.files.editCopy": {
+    "en": "Edit a copy",
+    "zh-CN": "编辑副本",
+    "reviewedEnglishHash": "10b8272192c2bffcdd6a03e02b62d0bda7875d0ac7509deeb7edf3840a0416a0"
+  },
+  "skillStudio.files.editCopyDescription": {
+    "en": "Make an editable copy to change it — the original stays untouched.",
+    "zh-CN": "创建可编辑副本后再修改，原始技能将保持不变。",
+    "reviewedEnglishHash": "12741dd950f49823482f28aecb1f79683179a38225bc06a1b1d16f5a5caa8018"
+  },
+  "skillStudio.files.empty": {
+    "en": "This skill has no files yet.",
+    "zh-CN": "此技能尚无文件。",
+    "reviewedEnglishHash": "f677a0f2d473e1f5fec05245bf412827eacea1b09c6555805b5b16c0ebfa69c6"
+  },
+  "skillStudio.files.fileExists": {
+    "en": "A file already exists at that path.",
+    "zh-CN": "该路径下已存在文件。",
+    "reviewedEnglishHash": "036ff1df1f6187ce933686d4d90b9b8ab2d9c15029e62f59c6b5ee09e5aa6db6"
+  },
+  "skillStudio.files.filePath": {
+    "en": "File path",
+    "zh-CN": "文件路径",
+    "reviewedEnglishHash": "2fb6d38632ea2c0625dce0f2e881d8a50f51ce503f89c9b35c11dba08800ce9f"
+  },
+  "skillStudio.files.folderEmpty": {
+    "en": "No files exist under that folder.",
+    "zh-CN": "该文件夹下没有文件。",
+    "reviewedEnglishHash": "358bb187bc3a82f809eb3b5be97165f9f315ac3aa73f94965d44ae523e7764f4"
+  },
+  "skillStudio.files.folderExists": {
+    "en": "A folder already exists at that path.",
+    "zh-CN": "该路径下已存在文件夹。",
+    "reviewedEnglishHash": "df1b81d8ee950e1e3bfa2c469c53c55d05b21bf0fd02820bcd9706aa5bbd41f8"
+  },
+  "skillStudio.files.folderPath": {
+    "en": "Folder path",
+    "zh-CN": "文件夹路径",
+    "reviewedEnglishHash": "98bca2fab915abe0541e612db447c6cf9ad18d1aaa595f052c5d1bf6a697995b"
+  },
+  "skillStudio.files.folderPathRequired": {
+    "en": "Folder path is required.",
+    "zh-CN": "文件夹路径为必填项。",
+    "reviewedEnglishHash": "91bac2fff87c1d86e973f0a0ac03fb074b61d6bb287f13b846031f12a53b63fe"
+  },
+  "skillStudio.files.folderSeedDescription": {
+    "en": "A README.md seed file is created so the folder appears in the file tree.",
+    "zh-CN": "系统会创建一个 README.md 初始文件，使该文件夹显示在文件树中。",
+    "reviewedEnglishHash": "07f10711eadb62e3eaaca8844e7315e9d05b560cbc1e4f2956d3e8b4e2b11932"
+  },
+  "skillStudio.files.pathRequired": {
+    "en": "{{label}} is required.",
+    "zh-CN": "{{label}}为必填项。",
+    "reviewedEnglishHash": "3b6621ddb5fc80569f52f5b1c6e3b555671e52734f8bf8db3ba4ec62824ecc6d"
+  },
+  "skillStudio.files.readOnlyReason": {
+    "en": "This skill is read-only because it comes from an external source.",
+    "zh-CN": "此技能来自外部来源，因此为只读。",
+    "reviewedEnglishHash": "cc235b680b7fcaca33a0840ce47b6d695eb1d0d118202f3d35fb006da832afe0"
+  },
+  "skillStudio.files.skillMdCannotDelete": {
+    "en": "SKILL.md cannot be deleted",
+    "zh-CN": "无法删除 SKILL.md",
+    "reviewedEnglishHash": "6d30e9630e4ae8ca8f9f2816aa8bbac349ad4a80bc815050bef587dd71b97e4d"
+  },
+  "skillStudio.files.skillMdCannotDeleteSentence": {
+    "en": "SKILL.md cannot be deleted.",
+    "zh-CN": "无法删除 SKILL.md。",
+    "reviewedEnglishHash": "7504fb9255b8e81a9dc638933f9455a8e3af2b20ba6f0a23ad93befdf8ef8dc0"
+  },
+  "skillStudio.files.treeLabel": {
+    "en": "Skill files",
+    "zh-CN": "技能文件",
+    "reviewedEnglishHash": "9c95bd62313841471c345a0f0b190e8a8920f5c2f91aeac0a61e62231b8b37a5"
+  },
+  "skillStudio.files.unsavedWarning": {
+    "en": "Unsaved edits live only in this Studio session. Save to create the next version before running tests or switching files.",
+    "zh-CN": "未保存的编辑仅保留在当前工作室会话中。请先保存以创建新版本，再运行测试或切换文件。",
+    "reviewedEnglishHash": "9484eaf86e613e5fdfbada26fe6be7995dbcff9650e712e54061f43b0b956e60"
+  },
+  "skillStudio.fork.agentsUse_one": {
+    "en": "{{count}} agent currently uses this skill",
+    "zh-CN": "当前有 {{count}} 个智能体使用此技能",
+    "reviewedEnglishHash": "ddd5ecb1b68319efd550c22292bc9026f4383bd66c6203c95f4fb810970970ed"
+  },
+  "skillStudio.fork.agentsUse_other": {
+    "en": "{{count}} agents currently use this skill",
+    "zh-CN": "当前有 {{count}} 个智能体使用此技能",
+    "reviewedEnglishHash": "01ba4e49e668ab5a90b282fc6013452c86aee8c1a8e1e09720d8b49b319743fd"
+  },
+  "skillStudio.fork.createAndSwitch_one": {
+    "en": "Create copy & switch {{count}} agent",
+    "zh-CN": "创建副本并切换 {{count}} 个智能体",
+    "reviewedEnglishHash": "9249f5e62562fbc4d4b4640b6e0f4e7d1ac8f371501a3666fe8c6e79753f5758"
+  },
+  "skillStudio.fork.createAndSwitch_other": {
+    "en": "Create copy & switch {{count}} agents",
+    "zh-CN": "创建副本并切换 {{count}} 个智能体",
+    "reviewedEnglishHash": "2d887b0fd307fa18d85c3245b37cedfd0e1967aaca48cdb4aa407a614ee02c7d"
+  },
+  "skillStudio.fork.createAnotherCopy": {
+    "en": "Create another copy",
+    "zh-CN": "再创建一个副本",
+    "reviewedEnglishHash": "87a01d3ca6e2508298aeb156583559dcc705901f427b5f660ae66b5fc0bb696b"
+  },
+  "skillStudio.fork.createCopy": {
+    "en": "Create copy",
+    "zh-CN": "创建副本",
+    "reviewedEnglishHash": "982a7984a6a48773444135bec96b0472d06aca0440c6dc1fff82c75decc5ab72"
+  },
+  "skillStudio.fork.createFailedBody": {
+    "en": "The fork request failed.",
+    "zh-CN": "创建副本请求失败。",
+    "reviewedEnglishHash": "aba25c0914266a3b2dc5dcdeb89a069d3d2e20a96dd95c14768523eb9061e565"
+  },
+  "skillStudio.fork.createFailedTitle": {
+    "en": "Couldn't create a copy",
+    "zh-CN": "无法创建副本",
+    "reviewedEnglishHash": "310170f98646aaa3a4e408a09272bb820c8821f13c1ea238d43628fa5a5769fd"
+  },
+  "skillStudio.fork.createdAndSwitched_one": {
+    "en": "Created a copy of {{name}} and switched {{count}} agent to it.",
+    "zh-CN": "已创建 {{name}} 的副本，并将 {{count}} 个智能体切换到该副本。",
+    "reviewedEnglishHash": "7dbcc8899c78a0a8b732e54991228a8e9e70911dadedf1c1ad3514b06cb6c67b"
+  },
+  "skillStudio.fork.createdAndSwitched_other": {
+    "en": "Created a copy of {{name}} and switched {{count}} agents to it.",
+    "zh-CN": "已创建 {{name}} 的副本，并将 {{count}} 个智能体切换到该副本。",
+    "reviewedEnglishHash": "08324df36cb907193a28c51fd441e1223659e586b5619b117401b1f8e4d17b8e"
+  },
+  "skillStudio.fork.createdEditable": {
+    "en": "Created a copy of {{name}}. It's now editable.",
+    "zh-CN": "已创建 {{name}} 的副本，现在可以编辑。",
+    "reviewedEnglishHash": "029d04a49718faadf772b7b3602fbb7baee09e7197b6c76058fdd394aece20ce"
+  },
+  "skillStudio.fork.description": {
+    "en": "{{name}} is read-only because it comes from an external source. Creating a fully editable copy in your workspace leaves the original untouched and still updatable.",
+    "zh-CN": "{{name}} 来自外部来源，因此为只读。在工作区中创建可完全编辑的副本不会改动原始技能，原始技能仍可继续更新。",
+    "reviewedEnglishHash": "87052ad118613c7141c2dc20e9c55a6f991dcb65de4d2a0931de09b82fe227ee"
+  },
+  "skillStudio.fork.editingCopy": {
+    "en": "Editing a copy",
+    "zh-CN": "正在编辑副本",
+    "reviewedEnglishHash": "a1502ebf5fe25dd9cb6ad16494c12a0c3e8318eead2c30e6a1bde43200795a93"
+  },
+  "skillStudio.fork.existingCopyMessage": {
+    "en": "An unedited copy of this skill already exists. Open it instead of making another.",
+    "zh-CN": "此技能已有一个尚未编辑的副本。请打开该副本，而不是重复创建。",
+    "reviewedEnglishHash": "d79a6caa86e9e09fd9a4fb3d8d08dfa23f8f4f77489652e39140dd6d9af7a823"
+  },
+  "skillStudio.fork.existingCopyTitle": {
+    "en": "You already have a copy",
+    "zh-CN": "你已有一个副本",
+    "reviewedEnglishHash": "b196859524376577887f07dc98c0c0f805dd85a51b944c9c64e411dfe48c6d47"
+  },
+  "skillStudio.fork.noAgentsUse": {
+    "en": "No agents currently use this skill",
+    "zh-CN": "当前没有智能体使用此技能",
+    "reviewedEnglishHash": "56cecbbf17e59474edfd5d6477ae07b39f722a9fb6192e66dc66c7c026063e0e"
+  },
+  "skillStudio.fork.noAssignments": {
+    "en": "Nothing is assigned to it, so your copy won't change any agent's behavior.",
+    "zh-CN": "此技能尚未分配给任何智能体，因此副本不会改变任何智能体的行为。",
+    "reviewedEnglishHash": "38ad6e2c0e4d8eab9e8be13897d46903840ab50a6e0e328eac8171db5e52bad4"
+  },
+  "skillStudio.fork.openExistingCopy": {
+    "en": "Open your existing copy",
+    "zh-CN": "打开现有副本",
+    "reviewedEnglishHash": "b6026ce978b50e20497b45b7d136c5f56e0227d215ab24c132d8d832fe57cef7"
+  },
+  "skillStudio.fork.switchAgents": {
+    "en": "Switch these agents to the copy",
+    "zh-CN": "将这些智能体切换到副本",
+    "reviewedEnglishHash": "d734b5ee6319f29fa8d2cc43856750181961d0b54f5c13b146a7f6c5058ffa80"
+  },
+  "skillStudio.fork.switchAgentsOff": {
+    "en": "These agents keep running the original; your copy won't change what they do.",
+    "zh-CN": "这些智能体将继续使用原始技能；你的副本不会改变它们的行为。",
+    "reviewedEnglishHash": "6cc4bcdd6c858998757e421766898887e6e1c69b66153cc33791ed51bfdf49e2"
+  },
+  "skillStudio.fork.switchAgentsOn": {
+    "en": "These agents will run your copy instead of the original.",
+    "zh-CN": "这些智能体将改用你的副本，而不是原始技能。",
+    "reviewedEnglishHash": "30dcfe512b5e69aca23913c4337649d7d01581bbba8b3d5be2ffdfcbfb1a8445"
+  },
+  "skillStudio.fork.title": {
+    "en": "Edit a copy of {{name}}",
+    "zh-CN": "编辑 {{name}} 的副本",
+    "reviewedEnglishHash": "186f21c58d9196201439beccce4dbe98cd3c443847e7fc5f7cd9ea5c0175d0c9"
+  },
+  "skillStudio.header.menu": {
+    "en": "Studio menu",
+    "zh-CN": "工作室菜单",
+    "reviewedEnglishHash": "b7bc60e8f9c3844e89cb621741f50488cef9e148851fdf2a81314230213a9172"
+  },
+  "skillStudio.inputs.actionsFor": {
+    "en": "Input actions for {{name}}",
+    "zh-CN": "{{name}} 的输入操作",
+    "reviewedEnglishHash": "3cffe1f9522277996d5896f738815d50104076bebc12a00415d574aeca274f89"
+  },
+  "skillStudio.inputs.collapse": {
+    "en": "Collapse input",
+    "zh-CN": "折叠输入",
+    "reviewedEnglishHash": "55720f6ca31fc250a04598de52b3d3b8f7b9d45192c416c372632db29170fd98"
+  },
+  "skillStudio.inputs.confirmDiscard": {
+    "en": "Discard unsaved changes to this input?",
+    "zh-CN": "放弃对此输入的未保存更改？",
+    "reviewedEnglishHash": "f3dcc461481fa4fa048251d0ae4e3eccf3df1673d165a54e89191726cacda71d"
+  },
+  "skillStudio.inputs.copyContent": {
+    "en": "Copy content",
+    "zh-CN": "复制内容",
+    "reviewedEnglishHash": "4ad7ba818148fe2db9bb55b7ecb555e7832d5835920e94561c4f28c3516f2a89"
+  },
+  "skillStudio.inputs.editorLabel": {
+    "en": "Skill test input",
+    "zh-CN": "技能测试输入",
+    "reviewedEnglishHash": "b36f6be0a6f9ed5c81a6ab842a1381d7b3cf5c9682ac0563827c759bb957f137"
+  },
+  "skillStudio.inputs.editorPlaceholder": {
+    "en": "Paste text - treated as a new task description.",
+    "zh-CN": "粘贴文本，系统会将其作为新任务描述。",
+    "reviewedEnglishHash": "a8e9082dd78c6c103b63e01bbf0fc2aff1949c817367a691e790a4d1e4d80245"
+  },
+  "skillStudio.inputs.expand": {
+    "en": "Expand input",
+    "zh-CN": "展开输入",
+    "reviewedEnglishHash": "8999b91a9b7602e9c04223f83a80cb7e3f8ecb1af9a5c3b84b90e08501dfec1d"
+  },
+  "skillStudio.inputs.folded": {
+    "en": "Input folded",
+    "zh-CN": "输入已折叠",
+    "reviewedEnglishHash": "32c15719fd6c491f85b068312ef8cf5f038883ddb7a1ee2139f91b160437b7de"
+  },
+  "skillStudio.inputs.folderHint": {
+    "en": "Use “/” for folders, e.g. onboarding/happy-path",
+    "zh-CN": "使用“/”表示文件夹，例如 onboarding/happy-path",
+    "reviewedEnglishHash": "51b6a98f49e450267fc0bd0fecbe57ccb2f302006303cc5cac17db1404e2f7f3"
+  },
+  "skillStudio.inputs.loading": {
+    "en": "Loading inputs…",
+    "zh-CN": "正在加载输入…",
+    "reviewedEnglishHash": "828e10622494186b4b4fcdee896e8a1fc15239ddcf75be30120c9f460a539511"
+  },
+  "skillStudio.inputs.new": {
+    "en": "New input",
+    "zh-CN": "新建输入",
+    "reviewedEnglishHash": "6ab4b7742a1a35615ac7e7cd9c921b65fcc73bfc0622b43fb804765b326c55c7"
+  },
+  "skillStudio.inputs.newUnsaved": {
+    "en": "New input (not saved)",
+    "zh-CN": "新建输入（未保存）",
+    "reviewedEnglishHash": "dfc15bd19b4d36605895eba16b63c95f97331478c8f1e02446057a45020468ad"
+  },
+  "skillStudio.inputs.noneSelected": {
+    "en": "No input selected",
+    "zh-CN": "未选择输入",
+    "reviewedEnglishHash": "60e878f72164d458381bda0c3739983c4c4359c027e82dc3ccc2f7b009b26027"
+  },
+  "skillStudio.inputs.saveAs": {
+    "en": "Save as input",
+    "zh-CN": "另存为输入",
+    "reviewedEnglishHash": "32f0265144e0e17dc76c0d5a1243abcd222047f942a5f72929c09a9c4170dac5"
+  },
+  "skillStudio.inputs.saveDialogDescription": {
+    "en": "Runs snapshot input at run time — editing later won't change past runs.",
+    "zh-CN": "运行时会保存输入快照，之后的编辑不会影响过去的运行。",
+    "reviewedEnglishHash": "66fb8b9b1165f72fd28cfb7883076e28ad97251ecd8f4236bb3405e7679d388c"
+  },
+  "skillStudio.inputs.saveDialogTitle": {
+    "en": "Save test input",
+    "zh-CN": "保存测试输入",
+    "reviewedEnglishHash": "a94553cb633d28e29ebcb26f87be9990c94a5367a6dc6a0d7e0b51ac6fa346b5"
+  },
+  "skillStudio.inputs.title": {
+    "en": "Input",
+    "zh-CN": "输入",
+    "reviewedEnglishHash": "36ecb4f8669133ce744c21982ba4abe2ecd7086e1dc2226ccd6f266f3a5005f8"
+  },
+  "skillStudio.inputs.treeLabel": {
+    "en": "Test inputs",
+    "zh-CN": "测试输入",
+    "reviewedEnglishHash": "0d2e939f653a98f82f58c25cd60a314c048ac131328598aafd101783856f64f4"
+  },
+  "skillStudio.landing.recentlyUpdated": {
+    "en": "Recently updated",
+    "zh-CN": "最近更新",
+    "reviewedEnglishHash": "474b2a869ac1477d2c174d764815230c13edb7a9d194d5aa8ea349c6d0c9dee2"
+  },
+  "skillStudio.landing.recentlyVisited": {
+    "en": "Recently visited",
+    "zh-CN": "最近访问",
+    "reviewedEnglishHash": "b3f3bc0459891f929c90627003c83706176458edabc08d0ffdabcd4744a6f3e6"
+  },
+  "skillStudio.landing.updated": {
+    "en": "updated {{time}}",
+    "zh-CN": "更新于 {{time}}",
+    "reviewedEnglishHash": "3f488b87847935d42852fbd1836c818aa0a2ce59dd3d68f1b7915779b0b2c348"
+  },
+  "skillStudio.provenance.editCopyInstead": {
+    "en": "Edit a copy instead",
+    "zh-CN": "改为编辑副本",
+    "reviewedEnglishHash": "533010cfd540001f9a4196ac27d14b42111be0d2c610cfbb2810095310164c1b"
+  },
+  "skillStudio.provenance.forkedFrom": {
+    "en": "Forked from {{source}}",
+    "zh-CN": "派生自 {{source}}",
+    "reviewedEnglishHash": "f238aee6d5d3d003ed92bf31c2ce0895f9984ed1587b696a92260481cbb8a2f5"
+  },
+  "skillStudio.provenance.forkedFromPrefix": {
+    "en": "Forked from",
+    "zh-CN": "派生自",
+    "reviewedEnglishHash": "7ff4e6c3ca27241b33b094f7633b1b02bd4271384753874047e8b6807ac306b2"
+  },
+  "skillStudio.provenance.originalSkill": {
+    "en": "the original skill",
+    "zh-CN": "原始技能",
+    "reviewedEnglishHash": "e217e7a4aa546264ff552ea72697da74f44be862e8e2c9fe9a54145640633fee"
+  },
+  "skillStudio.provenance.projectWorkingTree": {
+    "en": "the project working tree",
+    "zh-CN": "项目工作树",
+    "reviewedEnglishHash": "4ef20d39d44fdf0c3035a96eafff166f7b85654416d3295208b1d8d2df0776b9"
+  },
+  "skillStudio.provenance.skillLivesIn": {
+    "en": "This skill lives in",
+    "zh-CN": "此技能位于",
+    "reviewedEnglishHash": "b5a0b6b200eadac0bc6cd19c1476745d6b8893794dfcfcfacec58d1fbc090e11"
+  },
+  "skillStudio.provenance.uncommittedSaves": {
+    "en": "Saves write to the project working tree and are not committed.",
+    "zh-CN": "保存内容会写入项目工作树，但不会自动提交。",
+    "reviewedEnglishHash": "2ee5553465765d876c076fe789f47d81dc6a848599201659859ca6e019f4effb"
+  },
+  "skillStudio.runTemplates.advanced": {
+    "en": "Advanced",
+    "zh-CN": "高级设置",
+    "reviewedEnglishHash": "9f088dbebd6c3c70a5ddbc2c943b11e4ca9acea5757b0b4f2b32479f0dbb747e"
+  },
+  "skillStudio.runTemplates.builtIn": {
+    "en": "Built in",
+    "zh-CN": "内置",
+    "reviewedEnglishHash": "78a6a8fe9be5ec07665beecc3284374e1629c53a0df9f93ce41f9db742a6c576"
+  },
+  "skillStudio.runTemplates.confirmDelete": {
+    "en": "Delete run template “{{name}}”?",
+    "zh-CN": "删除运行模板“{{name}}”？",
+    "reviewedEnglishHash": "b701ee416aab017579ee6a6c31050c6f08344b9f04b2bbfbf8a29fa480a37be8"
+  },
+  "skillStudio.runTemplates.copyName": {
+    "en": "{{name}} copy",
+    "zh-CN": "{{name}} 副本",
+    "reviewedEnglishHash": "6305eb6721a4044505137484d97b1c7772ac20a3cac03279e8adc4c70f8e401d"
+  },
+  "skillStudio.runTemplates.create": {
+    "en": "Create run template",
+    "zh-CN": "创建运行模板",
+    "reviewedEnglishHash": "1306b1ea628075b99adba7890363d0fd52f185d12df93d0c39309d97c43f79a8"
+  },
+  "skillStudio.runTemplates.createDescription": {
+    "en": "Save reusable run instructions for Skill Studio.",
+    "zh-CN": "为技能工作室保存可复用的运行说明。",
+    "reviewedEnglishHash": "29550dae60d92e3aac4998aa002399f5b9df811a296af72dabfac41d2c192d72"
+  },
+  "skillStudio.runTemplates.custom": {
+    "en": "Custom",
+    "zh-CN": "自定义",
+    "reviewedEnglishHash": "494ca78f7374e46fb2de9ad9f2dbd4aaae89b50b2ca044177a1566a59e06627e"
+  },
+  "skillStudio.runTemplates.default": {
+    "en": "Default test template",
+    "zh-CN": "默认测试模板",
+    "reviewedEnglishHash": "06e2da91a6c5d54154f627138c1ad21c98cb1cb5f704c7834e2d5fd374ee7d09"
+  },
+  "skillStudio.runTemplates.delete": {
+    "en": "Delete run template",
+    "zh-CN": "删除运行模板",
+    "reviewedEnglishHash": "de584e70409231337888829d1e858f20f71da10563c6fafd51c5e11b41f206b3"
+  },
+  "skillStudio.runTemplates.deleteCustom": {
+    "en": "Delete custom template",
+    "zh-CN": "删除自定义模板",
+    "reviewedEnglishHash": "08edc0924dda0d998cb5c9ab1f18fdad4bca466c71ba894274346d332fdadbb5"
+  },
+  "skillStudio.runTemplates.deletedBody": {
+    "en": "{{name}} was removed from Skill Studio runs.",
+    "zh-CN": "已从技能工作室运行中移除 {{name}}。",
+    "reviewedEnglishHash": "5dbfd4c6428f9a86dcaefe8f880af04a6b8d8ef89e61dbd0589f1eb7cb0cf192"
+  },
+  "skillStudio.runTemplates.deletedTitle": {
+    "en": "Template deleted",
+    "zh-CN": "模板已删除",
+    "reviewedEnglishHash": "8fa9d4a8b8272f3508d9c383fd45dbf2e63028d87251bf95f67b6082815eecfe"
+  },
+  "skillStudio.runTemplates.descriptionPlaceholder": {
+    "en": "Short instructions for common skill checks",
+    "zh-CN": "常用技能检查的简短说明",
+    "reviewedEnglishHash": "d03d6192cf93d6e54900597a036da79a48a9a866945fed7f15caf49168cac55b"
+  },
+  "skillStudio.runTemplates.duplicate": {
+    "en": "Duplicate run template",
+    "zh-CN": "复制运行模板",
+    "reviewedEnglishHash": "d75ef08f8c129a788378ec78d918fe93d58e881182e621caa1c41ec9661e0269"
+  },
+  "skillStudio.runTemplates.duplicateBuiltIn": {
+    "en": "Duplicate built-in template",
+    "zh-CN": "复制内置模板",
+    "reviewedEnglishHash": "4b61c8e828540db57e3417980362275bd6dfecece831a7b5bd4b61a71007067c"
+  },
+  "skillStudio.runTemplates.duplicateShort": {
+    "en": "Duplicate template",
+    "zh-CN": "复制模板",
+    "reviewedEnglishHash": "b876040a89849eb5e1de4b18b5a31de1233cb0cd723ff4b23be61a63352be3fb"
+  },
+  "skillStudio.runTemplates.edit": {
+    "en": "Edit run template",
+    "zh-CN": "编辑运行模板",
+    "reviewedEnglishHash": "2842f471425cfe0468246803bcc174a6eb6793e40ebd164dc0560bfe5cda7299"
+  },
+  "skillStudio.runTemplates.editCustom": {
+    "en": "Edit custom template",
+    "zh-CN": "编辑自定义模板",
+    "reviewedEnglishHash": "72b92d094d8b176fd7638603a329ed34f686250015d748a5a863de8603b1d51d"
+  },
+  "skillStudio.runTemplates.editDescription": {
+    "en": "Update the custom run instructions used by Skill Studio.",
+    "zh-CN": "更新技能工作室使用的自定义运行说明。",
+    "reviewedEnglishHash": "73e4fa32c3d81cce359d788d9c73305013e277f776b8967b32137aa7582f9c6e"
+  },
+  "skillStudio.runTemplates.empty": {
+    "en": "No templates.",
+    "zh-CN": "没有模板。",
+    "reviewedEnglishHash": "1c9dddadddb3b9fde548797ba4fc4d90ec030a9485cf36b8515bf0ad3bb23655"
+  },
+  "skillStudio.runTemplates.label": {
+    "en": "Run template",
+    "zh-CN": "运行模板",
+    "reviewedEnglishHash": "b940a3fbe1da598bc04512a2322489875dee3d2e0027fdac206a5c41b6f944b7"
+  },
+  "skillStudio.runTemplates.loadFailed": {
+    "en": "Run templates couldn't load",
+    "zh-CN": "无法加载运行模板",
+    "reviewedEnglishHash": "a21f524a775a0f38ff3ea17b403d6d728361ef230b7c6c7af9d7aea60554cff6"
+  },
+  "skillStudio.runTemplates.loadFailedSentence": {
+    "en": "Run templates could not load.",
+    "zh-CN": "无法加载运行模板。",
+    "reviewedEnglishHash": "b698b60fe284ee46a00f6171dba80c52aa31c7dce1b989343543c4b4fc6515b8"
+  },
+  "skillStudio.runTemplates.loading": {
+    "en": "Loading run templates",
+    "zh-CN": "正在加载运行模板",
+    "reviewedEnglishHash": "e01bd301991df960c6f5d33d11f941587e3d69ebcd750c1a24d5242908268a0e"
+  },
+  "skillStudio.runTemplates.loadingDots": {
+    "en": "Loading templates...",
+    "zh-CN": "正在加载模板...",
+    "reviewedEnglishHash": "8b31692427def1cac88f94f4b4bc78001770708bca09aab0e00decb4bac307ca"
+  },
+  "skillStudio.runTemplates.loadingOne": {
+    "en": "Loading template...",
+    "zh-CN": "正在加载模板...",
+    "reviewedEnglishHash": "f687834dd2b9e00a4bdda0b7a7d496e6f760e43d298a4d7e12f745ad2f2c479a"
+  },
+  "skillStudio.runTemplates.namePlaceholder": {
+    "en": "Focused smoke",
+    "zh-CN": "聚焦冒烟测试",
+    "reviewedEnglishHash": "791d5c0fcd15c6ee89f5c1c0f2a3c72d6ddd8bf5d7c9b623eb4653118c994f99"
+  },
+  "skillStudio.runTemplates.none": {
+    "en": "No template",
+    "zh-CN": "无模板",
+    "reviewedEnglishHash": "46b57ee92f038c976849af46defe76dce5b0d94bd5d5dd9aefd9c977168994d2"
+  },
+  "skillStudio.runTemplates.noneDescription": {
+    "en": "Run only the input text.",
+    "zh-CN": "仅运行输入文本。",
+    "reviewedEnglishHash": "f926120f6e82080c8720df2042c0359ec20275a1d2420dc3254f2eb66e408c7c"
+  },
+  "skillStudio.runTemplates.notReady": {
+    "en": "Run templates are not ready.",
+    "zh-CN": "运行模板尚未就绪。",
+    "reviewedEnglishHash": "63fe7d860d4753af550a8f2e5949ad4a18229bb322b4620e6da4be9be7096ee8"
+  },
+  "skillStudio.runTemplates.placeholdersLabel": {
+    "en": "Placeholders:",
+    "zh-CN": "占位符：",
+    "reviewedEnglishHash": "f28f35e8ea6ebcf2d198b25614a7e1a0463d83d9e5f3d1b1e33ba90a3025b70e"
+  },
+  "skillStudio.runTemplates.readyBody": {
+    "en": "{{name}} is ready for Skill Studio runs.",
+    "zh-CN": "{{name}} 已可用于技能工作室运行。",
+    "reviewedEnglishHash": "64681424ea9765c9ce71dbd8e56231f5b6ae95c86bb1ea4cdc95df2f62924cc6"
+  },
+  "skillStudio.runTemplates.resetBody": {
+    "en": "The saved run template is no longer available. Default test template is selected.",
+    "zh-CN": "已保存的运行模板不再可用，现已选择默认测试模板。",
+    "reviewedEnglishHash": "1424acb9eb6ab6055ee55c4017721c21db6e1cbb7570beabdbfed533e745e17d"
+  },
+  "skillStudio.runTemplates.resetTitle": {
+    "en": "Run template reset",
+    "zh-CN": "运行模板已重置",
+    "reviewedEnglishHash": "e086416755d82c5af64e3abd107d09a5eb373286c61d6aef0bdfeba79c1f0355"
+  },
+  "skillStudio.runTemplates.runsUseInputOnly": {
+    "en": "Runs will use only the input text.",
+    "zh-CN": "运行将仅使用输入文本。",
+    "reviewedEnglishHash": "dcda7d05f46bd40c3dec72bab852cad95831da33bc7b3a687198ddcfae00f628"
+  },
+  "skillStudio.runTemplates.save": {
+    "en": "Save template",
+    "zh-CN": "保存模板",
+    "reviewedEnglishHash": "47f72a2f3e91d32d2b5a6444a009e133b8b5233a0d6aff0655a36b450c1308ba"
+  },
+  "skillStudio.runTemplates.savedTitle": {
+    "en": "Template saved",
+    "zh-CN": "模板已保存",
+    "reviewedEnglishHash": "1b34f8ff69d42e9b12239a5aa35ebe73b9be56be70fd8adc2ee9e2160c1e5de1"
+  },
+  "skillStudio.runTemplates.search": {
+    "en": "Search templates...",
+    "zh-CN": "搜索模板...",
+    "reviewedEnglishHash": "79760c54dcedf91cd828e3a6078665d0c377d6afbe69264ebd65326db81d8f18"
+  },
+  "skillStudio.runTemplates.select": {
+    "en": "Select template",
+    "zh-CN": "选择模板",
+    "reviewedEnglishHash": "8e56330b72291e9222ce819e05bc30292979f842ed7d08bc76cab8595ba9da24"
+  },
+  "skillStudio.runTemplates.selectedMissing": {
+    "en": "Selected template is no longer available.",
+    "zh-CN": "所选模板不再可用。",
+    "reviewedEnglishHash": "3fb121a0db47f7a66ad3c51523182984d5c0756d068b09214357a6436a787337"
+  },
+  "skillStudio.runTemplates.selectionReset": {
+    "en": "Selected run template is no longer available. The selection was reset.",
+    "zh-CN": "所选运行模板不再可用，选择已重置。",
+    "reviewedEnglishHash": "a69660211d1e049cf6896ce2d02b3a11cd2c07f6973f41cb1e4a661a4107f941"
+  },
+  "skillStudio.runTemplates.shortLabel": {
+    "en": "Template",
+    "zh-CN": "模板",
+    "reviewedEnglishHash": "0575f29df888a27e85b607111bd2fca420fd47432231bab2b9de8b81204ca4f2"
+  },
+  "skillStudio.runTemplates.updatedTitle": {
+    "en": "Template updated",
+    "zh-CN": "模板已更新",
+    "reviewedEnglishHash": "cc9213d2617d81c9299c81e4e1e93402a48a877716c4ce26f6a9e67080bfd7f6"
+  },
+  "skillStudio.runs.adHocPaste": {
+    "en": "ad-hoc paste",
+    "zh-CN": "临时粘贴",
+    "reviewedEnglishHash": "97bf7fe5a1cff3ba7de76d803faca00fc3cdb2204795aae5734003766c5123e5"
+  },
+  "skillStudio.runs.agentPaused": {
+    "en": "Paused",
+    "zh-CN": "已暂停",
+    "reviewedEnglishHash": "e159b06187d369a0615f66ce577582b5c983d4ea59b3a62b702049f61753f0bf"
+  },
+  "skillStudio.runs.created": {
+    "en": "Created",
+    "zh-CN": "创建时间",
+    "reviewedEnglishHash": "d70b9e24bca26b409b9458ceca6c9e5c2b5c3171c37ff050c6f6a0d7a4420d2a"
+  },
+  "skillStudio.runs.detailsLoading": {
+    "en": "Run details are still loading.",
+    "zh-CN": "运行详情仍在加载。",
+    "reviewedEnglishHash": "6b7868608ae68fb40a3765191980ea363d4a0f6ea0b4f090372988fd0d92e839"
+  },
+  "skillStudio.runs.documents": {
+    "en": "Documents",
+    "zh-CN": "文档",
+    "reviewedEnglishHash": "b4e929d8bcfe04189801a8ed61496d177d9e30d1b2826f4c9c4d00b3e705fa8b"
+  },
+  "skillStudio.runs.draftAtFailure": {
+    "en": "Draft at failure",
+    "zh-CN": "失败时的草稿",
+    "reviewedEnglishHash": "39d035d4476ea4e1fd5c0bf09b8cce27404c3d1de4adaafe116bb808177ff247"
+  },
+  "skillStudio.runs.empty": {
+    "en": "No test runs yet. Pick an agent and Run.",
+    "zh-CN": "尚无测试运行。请选择智能体并运行。",
+    "reviewedEnglishHash": "b255891684153e37de8823b07dddc0bda8a220fa318b1621c73e5d69bbf8c561"
+  },
+  "skillStudio.runs.failed": {
+    "en": "Run failed",
+    "zh-CN": "运行失败",
+    "reviewedEnglishHash": "97fddf2d43e8dfc8e31d22f8ba3957b67b9109306346435f0172ba7439e4658a"
+  },
+  "skillStudio.runs.failedFallback": {
+    "en": "The test task ended with an error.",
+    "zh-CN": "测试任务因错误而结束。",
+    "reviewedEnglishHash": "5c8600f3387cd371d0d15578a41097956990165d50fc050d0abed04af3ab602c"
+  },
+  "skillStudio.runs.interactions": {
+    "en": "Interactions",
+    "zh-CN": "交互",
+    "reviewedEnglishHash": "9089e4b79eb7fd01b29300f8d1dd9321b9fdffce4f2d46f4475642c78dc6f1b9"
+  },
+  "skillStudio.runs.loading": {
+    "en": "Loading runs…",
+    "zh-CN": "正在加载运行…",
+    "reviewedEnglishHash": "8438ea394d1520d98769e60d34cc254b28e0101bce6cbc0e0c1d14959ffb3909"
+  },
+  "skillStudio.runs.loadingOne": {
+    "en": "Loading run…",
+    "zh-CN": "正在加载运行…",
+    "reviewedEnglishHash": "ad8b3027693b8553675a92c106a51e969f12420409a136d054bb5714d8e9c0a3"
+  },
+  "skillStudio.runs.noAgents": {
+    "en": "No agents.",
+    "zh-CN": "没有智能体。",
+    "reviewedEnglishHash": "04e3179bbc03e72c30b62c967df659d66062f78011a007097e4244e98849ef00"
+  },
+  "skillStudio.runs.noOutputMarkdown": {
+    "en": "_No output_",
+    "zh-CN": "_无输出_",
+    "reviewedEnglishHash": "f136184631ca6d8320901a49d3c351895f5bbd1c5cd49144192382c0e90573aa"
+  },
+  "skillStudio.runs.notFound": {
+    "en": "Run not found.",
+    "zh-CN": "找不到运行。",
+    "reviewedEnglishHash": "3e498fa2dc954e5328b2557b8ef0cfacc8675cfd6856ecaa800dbe0b39197673"
+  },
+  "skillStudio.runs.openTestTask": {
+    "en": "Open test task ↗",
+    "zh-CN": "打开测试任务 ↗",
+    "reviewedEnglishHash": "0c16eec1cfdd39b0848471c68067b6ff7c06673258f0af16695de931307df262"
+  },
+  "skillStudio.runs.outputSnapshot": {
+    "en": "Output snapshot",
+    "zh-CN": "输出快照",
+    "reviewedEnglishHash": "1a9c81c2637dd3a14638aea75ca9f3d95a2f2962581dbc28015609e7375e17d5"
+  },
+  "skillStudio.runs.pickAgent": {
+    "en": "Pick an agent",
+    "zh-CN": "选择智能体",
+    "reviewedEnglishHash": "012c15d65531b096a0819031a762890f0c43f3af734fb3efaac1f32e14c08bed"
+  },
+  "skillStudio.runs.removedAgent": {
+    "en": "{{name}} (removed)",
+    "zh-CN": "{{name}}（已移除）",
+    "reviewedEnglishHash": "d5318ff4180d59da3b0ffbf4665f80ed4b7e732743b3d56880f61b8b34f94f86"
+  },
+  "skillStudio.runs.rerun": {
+    "en": "Re-run",
+    "zh-CN": "重新运行",
+    "reviewedEnglishHash": "31e1d3ece08bf00578c31c9df4ff6412b4c2cec631c817f5670bba07424f5793"
+  },
+  "skillStudio.runs.run": {
+    "en": "Run",
+    "zh-CN": "运行",
+    "reviewedEnglishHash": "00d60e31a4e6b8344d4201f25a6a7dee770713107f6d097abb01559d32b17f26"
+  },
+  "skillStudio.runs.runTitle": {
+    "en": "Run",
+    "zh-CN": "运行",
+    "reviewedEnglishHash": "00d60e31a4e6b8344d4201f25a6a7dee770713107f6d097abb01559d32b17f26"
+  },
+  "skillStudio.runs.savedInput": {
+    "en": "saved input",
+    "zh-CN": "已保存输入",
+    "reviewedEnglishHash": "d008102ca20bc12006f4cd1a39b5fd774c68191a82c77fc58e9bde3d72de978a"
+  },
+  "skillStudio.runs.searchAgents": {
+    "en": "Search agents…",
+    "zh-CN": "搜索智能体…",
+    "reviewedEnglishHash": "e05cb78e973da37232be8465b57995620a02d3cfa153ffe0c62cfdb6eb253494"
+  },
+  "skillStudio.runs.skillVersion": {
+    "en": "Skill version",
+    "zh-CN": "技能版本",
+    "reviewedEnglishHash": "4ba072982170dfa705cc61afa38ddaa25a24b13a695693298ead6f8dfab05156"
+  },
+  "skillStudio.runs.title": {
+    "en": "Test runs",
+    "zh-CN": "测试运行",
+    "reviewedEnglishHash": "70b86f32d7b06f9293c42e7ca508783c07bb9cfaa191797f248f8a59695fa6f8"
+  },
+  "skillStudio.runs.unknownAgent": {
+    "en": "Agent",
+    "zh-CN": "智能体",
+    "reviewedEnglishHash": "11b39c93777e8f1f3983bdba7c72b22fe68cfea20c677e9de53e17cb7dbfb19f"
+  },
+  "skillStudio.runs.working": {
+    "en": "Working… output will appear here.",
+    "zh-CN": "正在运行…输出将显示在此处。",
+    "reviewedEnglishHash": "b716072fd3518b2716c711c3ee3af60e18dcc3521bc8b56651215472f44d061c"
+  },
+  "skillStudio.share.action": {
+    "en": "Share link",
+    "zh-CN": "分享链接",
+    "reviewedEnglishHash": "712a4823ccb996b066d3afb5cd01ccd1a62118a9f751d73a966dd55f6d0ab583"
+  },
+  "skillStudio.share.copiedBody": {
+    "en": "Skill Studio link copied to clipboard.",
+    "zh-CN": "技能工作室链接已复制到剪贴板。",
+    "reviewedEnglishHash": "2ec2fa0ded4d2cf2531f3af111d511e25878cd108eea20babe7580c1976032fa"
+  },
+  "skillStudio.share.copiedTitle": {
+    "en": "Link copied",
+    "zh-CN": "链接已复制",
+    "reviewedEnglishHash": "d12860c21e78baa522ac743ecfbd77fb9cf4558e581e0e54afcace23b3ce1849"
+  },
+  "skillStudio.share.failedBody": {
+    "en": "Could not copy the link.",
+    "zh-CN": "无法复制链接。",
+    "reviewedEnglishHash": "f5e805d39112ad2ea889fb17a7fca8949d356f58e427ed807f8a27e5d3be3060"
+  },
+  "skillStudio.share.failedTitle": {
+    "en": "Copy failed",
+    "zh-CN": "复制失败",
+    "reviewedEnglishHash": "5b50e7a693fee952b9ed0e7c240bf4cba69b1dbf02af718145b297e4110591f3"
+  },
+  "skillStudio.states.loadingSkill": {
+    "en": "Loading skill…",
+    "zh-CN": "正在加载技能…",
+    "reviewedEnglishHash": "5c57e60fe4ca906b3e30ac595aa37683fbcca65c404b78bc7cb0e89843d1e43e"
+  },
+  "skillStudio.states.loadingSkills": {
+    "en": "Loading skills...",
+    "zh-CN": "正在加载技能...",
+    "reviewedEnglishHash": "7cf5fa27969286cfd187577d1e2cb8eb2c4ccfe1e6a16af92f15ca5e840a0910"
+  },
+  "skillStudio.states.selectCompany": {
+    "en": "Select a company to open Skill Studio.",
+    "zh-CN": "请选择公司以打开技能工作室。",
+    "reviewedEnglishHash": "97ce0652aee21cc53c191cc846298624d2168a2b63cc681202837ad60b63d070"
+  },
+  "skillStudio.states.selectSkill": {
+    "en": "Select a skill to open Studio.",
+    "zh-CN": "请选择技能以在工作室中打开。",
+    "reviewedEnglishHash": "4173f6cd118861e0aec0022ba5ce26111e8e06c223b7f33262592d931393686c"
+  },
+  "skillStudio.states.skillNotFound": {
+    "en": "Skill not found.",
+    "zh-CN": "找不到技能。",
+    "reviewedEnglishHash": "97cd06e1a48e2a01578039f52aaf2236c9dcec1c70a386a9d00edfed7f624522"
+  },
+  "skillStudio.status.readOnly": {
+    "en": "Read-only",
+    "zh-CN": "只读",
+    "reviewedEnglishHash": "72bb90897ab1eadc924fa1358773c5949372c1f06d8dd53d730bbfa3b0c5b695"
+  },
+  "skillStudio.status.removed": {
+    "en": "removed",
+    "zh-CN": "已移除",
+    "reviewedEnglishHash": "e1f79758cc42e6fe6037941205d1fbc37f5780f13aa077d0ba8287fd93cecd52"
+  },
+  "skillStudio.status.unsaved": {
+    "en": "Unsaved",
+    "zh-CN": "未保存",
+    "reviewedEnglishHash": "6250d5725dda6d9fa7aeab21eded4904a7dbbe66200b8035a03694217c7cb1b4"
+  },
+  "skillStudio.status.unsavedEdits": {
+    "en": "Unsaved edits",
+    "zh-CN": "未保存的编辑",
+    "reviewedEnglishHash": "4cea356a17a185109e9c19f555fa7ba3538c8e1e00703b3e8712a5bd63b8d434"
+  },
+  "skillStudio.switcher.noMatches": {
+    "en": "No matching skills.",
+    "zh-CN": "没有匹配的技能。",
+    "reviewedEnglishHash": "18f3ee30c2ff2bf647efac6f2b9bb6ae9a659ea4756a5e1a7e0937c6af569e5a"
+  },
+  "skillStudio.switcher.search": {
+    "en": "Search skills...",
+    "zh-CN": "搜索技能...",
+    "reviewedEnglishHash": "65104bc415b313989de7206fb2d3fb2996bdae06591c8fd713aa57baa289295b"
+  },
+  "skillStudio.switcher.selectSkill": {
+    "en": "Select skill",
+    "zh-CN": "选择技能",
+    "reviewedEnglishHash": "4511ad1cfc1d13418a9d520a739f3eade31582edd2e91d5f4828b72684b4abb7"
+  },
+  "skillStudio.tabs.input": {
+    "en": "Input",
+    "zh-CN": "输入",
+    "reviewedEnglishHash": "36ecb4f8669133ce744c21982ba4abe2ecd7086e1dc2226ccd6f266f3a5005f8"
+  },
+  "skillStudio.tabs.runs": {
+    "en": "Runs",
+    "zh-CN": "运行",
+    "reviewedEnglishHash": "848f54e89660cea4357644039ac5d7146f76c8e85df5c04076e08feb7e7547f0"
+  },
+  "skillStudio.tabs.skill": {
+    "en": "Skill",
+    "zh-CN": "技能",
+    "reviewedEnglishHash": "6df1bb18a59ab97df82e307b93fe4f3bbda34d531bcbb79ec573dda23ba64918"
+  },
+  "skillStudio.versions.diff": {
+    "en": "Diff v{{left}} → v{{right}}",
+    "zh-CN": "比较 v{{left}} → v{{right}}",
+    "reviewedEnglishHash": "da084c6aab87bd667b27e8c13e0a97dfc22adbec694ae001f51280c342f1f796"
+  },
+  "skillStudio.versions.empty": {
+    "en": "No versions yet. Save changes to create the first.",
+    "zh-CN": "尚无版本。保存更改以创建第一个版本。",
+    "reviewedEnglishHash": "1fba7c480a664b6193b8b1dc4f8c04224faa11f15f7a35711dd95ae1a0cc077f"
+  },
+  "skillStudio.versions.loading": {
+    "en": "Loading versions…",
+    "zh-CN": "正在加载版本…",
+    "reviewedEnglishHash": "9780e2c99c1b82b2a7336512333a6310b086207783df2421f098bcc9e237027f"
+  },
+  "skillStudio.versions.restoreAs": {
+    "en": "Restore as v{{version}}",
+    "zh-CN": "还原为 v{{version}}",
+    "reviewedEnglishHash": "c255df9796f7d48caf79fc918d61da6133fb6e307142268f877b5024b233e60e"
+  },
+  "skillStudio.versions.restoreLabel": {
+    "en": "Restore of v{{version}}",
+    "zh-CN": "还原自 v{{version}}",
+    "reviewedEnglishHash": "623a648d67ed7ae9f55c122de3409a806c2fb284ff9f75b44b5b92c1dfccdbad"
+  },
+  "skillStudio.versions.title": {
+    "en": "Version history",
+    "zh-CN": "版本历史",
+    "reviewedEnglishHash": "a6df11e706c514f13d6ff158dbf98e7ddcf822d7409790852b742268752867b3"
+  },
+  "skillStudio.versions.version": {
+    "en": "Version {{version}}",
+    "zh-CN": "版本 {{version}}",
+    "reviewedEnglishHash": "c6b6b4b58937ac03375604bd0a9252f6c1926496d870272ba68f78fb3497891a"
+  }
+}

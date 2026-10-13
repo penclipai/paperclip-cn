@@ -1,0 +1,32 @@
+{
+  "projects.projectCount": {
+    "en": "{{count}} projects",
+    "zh-CN": "{{count}} 个项目",
+    "reviewedEnglishHash": "019c0e9d9d1c1e9ee9ab047de4ef6ddac2eeecf4d3a524cdf8730b37b16dad42"
+  },
+  "projects.projectCount_one": {
+    "en": "{{count}} project",
+    "zh-CN": "{{count}} 个项目",
+    "reviewedEnglishHash": "b057cb2960f8ba44d190c0462886de10977067d9b5f17f78766ec3306e4999b9"
+  },
+  "projects.projectCount_other": {
+    "en": "{{count}} projects",
+    "zh-CN": "{{count}} 个项目",
+    "reviewedEnglishHash": "019c0e9d9d1c1e9ee9ab047de4ef6ddac2eeecf4d3a524cdf8730b37b16dad42"
+  },
+  "projects.taskCount": {
+    "en": "{{formattedCount}} tasks",
+    "zh-CN": "{{formattedCount}} 个任务",
+    "reviewedEnglishHash": "a6742bee8b10ccd3a46b76db7c9dce0ec985c5552c760e2980aaef5be6233e81"
+  },
+  "projects.taskCount_one": {
+    "en": "{{formattedCount}} task",
+    "zh-CN": "{{formattedCount}} 个任务",
+    "reviewedEnglishHash": "75f42636b3f290a0826a5c2235a439035ba7b84e1e169f5dfb9e0041adcf8687"
+  },
+  "projects.taskCount_other": {
+    "en": "{{formattedCount}} tasks",
+    "zh-CN": "{{formattedCount}} 个任务",
+    "reviewedEnglishHash": "a6742bee8b10ccd3a46b76db7c9dce0ec985c5552c760e2980aaef5be6233e81"
+  }
+}

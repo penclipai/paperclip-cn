@@ -1,0 +1,37 @@
+{
+  "markdownEditor.drop": {
+    "en": "Drop",
+    "zh-CN": "拖放",
+    "reviewedEnglishHash": "c8af9ae37a48273f981bc82af63517e3a2195c4076360e73546c306a044dd38b"
+  },
+  "markdownEditor.dropFileToUpload": {
+    "en": "Drop file to upload",
+    "zh-CN": "拖放文件以上传",
+    "reviewedEnglishHash": "37f0481e5ac98dcd50caf836771dbc3c4af53b8580c2ba67ee787ee3b9f21e0d"
+  },
+  "markdownEditor.dropImageToUpload": {
+    "en": "Drop image to upload",
+    "zh-CN": "拖放图片以上传",
+    "reviewedEnglishHash": "3dfdf9a351cfbfe90f15d489762a7bc84215f373018f3a2c2d566fb3965d9fa2"
+  },
+  "markdownEditor.editableMarkdown": {
+    "en": "Editable markdown",
+    "zh-CN": "可编辑 Markdown",
+    "reviewedEnglishHash": "ce19b47a444cb55de2d1433cc82e8817d24eb2fc5f5c1519f271ef1f163ba801"
+  },
+  "markdownEditor.retryRichEditor": {
+    "en": "Retry rich editor",
+    "zh-CN": "重试富文本编辑器",
+    "reviewedEnglishHash": "a4cbab20343b714d0267ffd89c52199a9dfe5f36ce137489b532c2fe991ff418"
+  },
+  "markdownEditor.richEditorUnavailable": {
+    "en": "Rich editor unavailable for this markdown. Showing raw source instead.",
+    "zh-CN": "此 Markdown 无法使用富文本编辑器，正在显示原始内容。",
+    "reviewedEnglishHash": "8207a3f8cd3a05b2afb189e57574b72701fead879ffc026962395d28cf56da38"
+  },
+  "markdownEditor.toUpload": {
+    "en": "to upload",
+    "zh-CN": "以上传",
+    "reviewedEnglishHash": "7117feeef18539a4a29bb060a651c0fc218fbe9ff4ed8a7aef9b5e360abae643"
+  }
+}

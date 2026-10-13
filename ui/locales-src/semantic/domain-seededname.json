@@ -1,0 +1,17 @@
+{
+  "seededName.ceo": {
+    "en": "CEO",
+    "zh-CN": "CEO",
+    "reviewedEnglishHash": "57f0df0e3d01f3f2b0aaf23f34e9555027766525ce779fbe5f0b044021d6fd15"
+  },
+  "seededName.cto": {
+    "en": "CTO",
+    "zh-CN": "CTO",
+    "reviewedEnglishHash": "e7f67dded93a78700d529f3294c3085bae8d30cd0b3290dec82b0e2007a0078f"
+  },
+  "seededName.onboarding": {
+    "en": "Onboarding",
+    "zh-CN": "入门引导",
+    "reviewedEnglishHash": "a2198f472ce2fbee82a5546090a5dd896b1da3bb678e8963d19eaa03e08ca092"
+  }
+}

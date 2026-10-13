@@ -1,0 +1,242 @@
+{
+  "issueDocuments.autosaving": {
+    "en": "Autosaving...",
+    "zh-CN": "正在自动保存...",
+    "reviewedEnglishHash": "afa493a83351b6491059dd9e4b84e69f010ddbd39974e359715f4eeeb695502d"
+  },
+  "issueDocuments.bodyRequired": {
+    "en": "Document body cannot be empty",
+    "zh-CN": "文档正文不能为空",
+    "reviewedEnglishHash": "0c3002b4da9fb30da123da5fc642f61f13fbdd45ab8926c0fb4428202f39eb4d"
+  },
+  "issueDocuments.collapseDocumentAria": {
+    "en": "Collapse {{key}} document",
+    "zh-CN": "折叠 {{key}} 文档",
+    "reviewedEnglishHash": "aa22cef3fc39d6e3f0606f504cfebee7771f0be3fdd4a1a189d7dfb7adafb1e0"
+  },
+  "issueDocuments.confirmDelete": {
+    "en": "Delete this document? This cannot be undone.",
+    "zh-CN": "确认删除这份文档吗？此操作无法撤销。",
+    "reviewedEnglishHash": "dcaf5e0d5199786619f05f4a24104be3cb75115859fd1f5c7ba1c327f0dfdd0c"
+  },
+  "issueDocuments.copyDocument": {
+    "en": "Copy document",
+    "zh-CN": "复制文档",
+    "reviewedEnglishHash": "c054131e44515b546a1a4186ac900b4807fe3a656ba9b3761f99ec8c2c5d6fc1"
+  },
+  "issueDocuments.copyFailed": {
+    "en": "Could not copy document",
+    "zh-CN": "无法复制文档",
+    "reviewedEnglishHash": "8db0d8313354681f8a0456294297a8d66bf0dec8381a53ece3e9f9c39dafc92a"
+  },
+  "issueDocuments.couldNotSave": {
+    "en": "Could not save",
+    "zh-CN": "无法保存",
+    "reviewedEnglishHash": "16efcd21d74fc1d209855cf3bc9a19da1839f4d3f720689586dffbd128477f25"
+  },
+  "issueDocuments.createDocument": {
+    "en": "Create document",
+    "zh-CN": "创建文档",
+    "reviewedEnglishHash": "ac6e978406f25036d59fb3024f93c05668665361a5236005af4d7aa8b3303f58"
+  },
+  "issueDocuments.deleteDocument": {
+    "en": "Delete document",
+    "zh-CN": "删除文档",
+    "reviewedEnglishHash": "04f6d09aa840de5bde7f7ecece4829c0a6718eb4e8f9dc2923753db931536e05"
+  },
+  "issueDocuments.deleteFailed": {
+    "en": "Failed to delete document",
+    "zh-CN": "删除文档失败",
+    "reviewedEnglishHash": "62de8fe94b0bf2716f7f1f603651f64159d364b548ec84a7a2f136260c97f4a4"
+  },
+  "issueDocuments.documentActions": {
+    "en": "Document actions",
+    "zh-CN": "文档操作",
+    "reviewedEnglishHash": "97fa0725b718c1b9f3ab58e28c18732f71c3ff063a6243f8baebd70086ba93f7"
+  },
+  "issueDocuments.documentKey": {
+    "en": "Document key",
+    "zh-CN": "文档 key",
+    "reviewedEnglishHash": "75622cdf9465d1a6e890cff6c09aadbc2c011ae13c5625591a8d6418ec1392a6"
+  },
+  "issueDocuments.documentKeyPatternError": {
+    "en": "Document key must start with a letter or number and use only lowercase letters, numbers, -, or _.",
+    "zh-CN": "文档 key 必须以字母或数字开头，并且只能使用小写字母、数字、- 或 _。",
+    "reviewedEnglishHash": "22455a1e5bbcc49a8aa7eb2fc7b7ec6b742e2f2d782973edb0b42c0029c8221b"
+  },
+  "issueDocuments.documentKeyPatternHint": {
+    "en": "Use lowercase letters, numbers, -, or _, and start with a letter or number.",
+    "zh-CN": "只能使用小写字母、数字、- 或 _，并以字母或数字开头。",
+    "reviewedEnglishHash": "f05ffd379077272de983ec9a0d492d326213f11fe118fb2faa19296c91c2f688"
+  },
+  "issueDocuments.downloadDocument": {
+    "en": "Download document",
+    "zh-CN": "下载文档",
+    "reviewedEnglishHash": "9e250af974c824ee28724e8a04401c54e483610ff65f567d4dcda26231d784d8"
+  },
+  "issueDocuments.editDocument": {
+    "en": "Edit document",
+    "zh-CN": "编辑文档",
+    "reviewedEnglishHash": "630f2e78e1f229bd3ca28421b2d9d259ec688ce8ba05d7ada901c152f73a0c25"
+  },
+  "issueDocuments.expandDocumentAria": {
+    "en": "Expand {{key}} document",
+    "zh-CN": "展开 {{key}} 文档",
+    "reviewedEnglishHash": "a28cbc658833189718c5a4ea4d2d1ab343a675662920a061b74ff995210927c3"
+  },
+  "issueDocuments.hideRemote": {
+    "en": "Hide remote",
+    "zh-CN": "隐藏远端",
+    "reviewedEnglishHash": "59fc5d72e3041cc08d2c7b06573951d10854409c7d50b33683a40e12e6993a12"
+  },
+  "issueDocuments.historicalPreviewNotice": {
+    "en": "This is a historical preview. Restoring it creates a new latest revision and keeps history append-only.",
+    "zh-CN": "这是历史版本预览。恢复后会创建一个新的最新修订，并保持历史只追加不覆盖。",
+    "reviewedEnglishHash": "8c15312663e5eae686d17c44ef9f6375c4805307f7147f12e606317df36e6eb8"
+  },
+  "issueDocuments.keepMyDraft": {
+    "en": "Keep my draft",
+    "zh-CN": "保留我的草稿",
+    "reviewedEnglishHash": "cdb80bb94da38a42f06987347870066abf11197c7194267c4ad4cce953ab32df"
+  },
+  "issueDocuments.keyAndBodyRequired": {
+    "en": "Document key and body are required",
+    "zh-CN": "文档 key 和正文必填",
+    "reviewedEnglishHash": "13ad09d4c6ec8b8980e43f5c46bf57d7dfaeb6f121bd2f118485bb1aaa7661d3"
+  },
+  "issueDocuments.lockDocument": {
+    "en": "Lock document",
+    "zh-CN": "锁定文档",
+    "reviewedEnglishHash": "9950ef893ee825931f9496392822a415af7f5e937d8f58808e5e3a788e7967a6"
+  },
+  "issueDocuments.lockDocumentAria": {
+    "en": "Lock {{key}} document",
+    "zh-CN": "锁定 {{key}} 文档",
+    "reviewedEnglishHash": "1719e6860f8d72f0ee9d432da04cbe5c6e6b9516a946bcb3c15cdb59ffba71b3"
+  },
+  "issueDocuments.lockUpdateFailed": {
+    "en": "Failed to update document lock",
+    "zh-CN": "更新文档锁定状态失败",
+    "reviewedEnglishHash": "9ed8dbcf52210e61ac3039c999730a209267f53932653a56852ffe34b497bf18"
+  },
+  "issueDocuments.lockedDocument": {
+    "en": "Locked document",
+    "zh-CN": "已锁定的文档",
+    "reviewedEnglishHash": "b09d58e20fc02ffeb17611e5dc6af1e166a716a247c7bd76bbb717448ab51f51"
+  },
+  "issueDocuments.lockedUnlockBeforeEditing": {
+    "en": "Document is locked. Unlock it before editing.",
+    "zh-CN": "文档已锁定。请先解锁再编辑。",
+    "reviewedEnglishHash": "7a8f68f869746163ca93ff8ad454388ca9b0cd2954fa2cd67107aee447db1797"
+  },
+  "issueDocuments.markdownBodyPlaceholder": {
+    "en": "Markdown body",
+    "zh-CN": "Markdown 正文",
+    "reviewedEnglishHash": "4ddfc15ba3f746ed4bcaf435250b1d0b759f0d0f537f63b9b28d8121ede30e03"
+  },
+  "issueDocuments.newDocument": {
+    "en": "New document",
+    "zh-CN": "新建文档",
+    "reviewedEnglishHash": "1b26844054631e28dfa22ad9be21f455586054f6336616dc1d1abe38c002e0a6"
+  },
+  "issueDocuments.optionalTitle": {
+    "en": "Optional title",
+    "zh-CN": "可选标题",
+    "reviewedEnglishHash": "67fc5f45e20b33388a0079b45fa55d143343bfe789bbb384234f368ba1ba8f7b"
+  },
+  "issueDocuments.outOfDate": {
+    "en": "Out of date",
+    "zh-CN": "已过期",
+    "reviewedEnglishHash": "c8f1506a7d60a32e0097661fdc16aa9b24609db5c78302244e8c1c884975357f"
+  },
+  "issueDocuments.overwriteRemote": {
+    "en": "Overwrite remote",
+    "zh-CN": "覆盖远端",
+    "reviewedEnglishHash": "d4fe5b8cf6057ab07a03693dcc5be8ea6216de93332f8588006d8f1a6c77fc07"
+  },
+  "issueDocuments.reloadRemote": {
+    "en": "Reload remote",
+    "zh-CN": "重新加载远端",
+    "reviewedEnglishHash": "499fed1b65ad02f1d1351ee97cf0f565a0f0f4a272f0606a6a669eee46cc4ef6"
+  },
+  "issueDocuments.remoteChangedLoadFailed": {
+    "en": "Document changed remotely and the latest version could not be loaded",
+    "zh-CN": "文档已在远端变化，但无法加载最新版本",
+    "reviewedEnglishHash": "1d1c47bd63ab6b4faad32501a92a4614f98f3ba1257b46cdf7453bfc3c4bb55e"
+  },
+  "issueDocuments.remoteChangedNotice": {
+    "en": "This document changed while you were editing. Your local draft is preserved and autosave is paused.",
+    "zh-CN": "你编辑期间这份文档已在远端发生变化。你的本地草稿仍会保留，自动保存也会暂停。",
+    "reviewedEnglishHash": "fcbbd08cf5e60bedf8d9330df3b503bf2b81f8e2acfbdbd2aedc6316d1fe38d0"
+  },
+  "issueDocuments.remoteRevision": {
+    "en": "Remote revision {{number}}",
+    "zh-CN": "远端修订 {{number}}",
+    "reviewedEnglishHash": "77fee64565022a9e1da9248b01d2fe15ec65d7386f61339b810f3ee782a1d63d"
+  },
+  "issueDocuments.restoreFailed": {
+    "en": "Failed to restore document revision",
+    "zh-CN": "恢复文档修订失败",
+    "reviewedEnglishHash": "1e5055596515e0b9ba9a84618f129d6950797bdf8f51626f2c63285766575ef3"
+  },
+  "issueDocuments.restoreThisRevision": {
+    "en": "Restore this revision",
+    "zh-CN": "恢复此修订",
+    "reviewedEnglishHash": "e0a9d24c3b5e5fb650c6a56b904a72e8861681227558d66ec53d2d3b1bf83cb2"
+  },
+  "issueDocuments.restoring": {
+    "en": "Restoring...",
+    "zh-CN": "正在恢复...",
+    "reviewedEnglishHash": "fa31c224c001bb2b773a9a2296b4011cdb374c1747443b7c0235ae331cf14fec"
+  },
+  "issueDocuments.returnToLatest": {
+    "en": "Return to latest",
+    "zh-CN": "返回最新版本",
+    "reviewedEnglishHash": "f6b3b853ed208532cd0eb8e9dd5444ee1f7e717291e64c6684a123a0252bc055"
+  },
+  "issueDocuments.reviewRemote": {
+    "en": "Review remote",
+    "zh-CN": "查看远端",
+    "reviewedEnglishHash": "478fba4045cc9913a9b9faf39bd5c1f6a3d85cc50e815082bc0a5aa26601d692"
+  },
+  "issueDocuments.revisionNumber": {
+    "en": "rev {{number}}",
+    "zh-CN": "修订 {{number}}",
+    "reviewedEnglishHash": "ac56ae756ce5a2a4735d20d536451536f687727eea0c130ccab0c39e46f1f035"
+  },
+  "issueDocuments.saveFailed": {
+    "en": "Failed to save document",
+    "zh-CN": "保存文档失败",
+    "reviewedEnglishHash": "210b653bb478a0cd3621afb179b186e0ee6d024a8d5cadb52416d59eca5022ae"
+  },
+  "issueDocuments.saveOrCancelBeforeHistoricalRevision": {
+    "en": "Save or cancel your local changes before viewing an older revision.",
+    "zh-CN": "查看较早修订前，请先保存或取消本地更改。",
+    "reviewedEnglishHash": "3adaa0ba0122d245f81761fcae66b6d2c2eb7b79b5e5a6cf0ad5993424c10248"
+  },
+  "issueDocuments.saveOrCancelBeforeLockChange": {
+    "en": "Save or cancel local changes before changing the document lock.",
+    "zh-CN": "更改文档锁定状态前，请先保存或取消本地更改。",
+    "reviewedEnglishHash": "70226f57971c7ffa07990850df9188858df8589a0abfdb8fbc45892f6d54719e"
+  },
+  "issueDocuments.unlockDocument": {
+    "en": "Unlock document",
+    "zh-CN": "解锁文档",
+    "reviewedEnglishHash": "a1cf639c9e9d070600c3878bdc58c7371a5b56bc883ca776d90b0210f31f3c4d"
+  },
+  "issueDocuments.unlockDocumentAria": {
+    "en": "Unlock {{key}} document",
+    "zh-CN": "解锁 {{key}} 文档",
+    "reviewedEnglishHash": "5ed27e20b4c10f3b1b6c393cdf40984f74b2c9b1d63e8066b77bc18507de5a42"
+  },
+  "issueDocuments.viewingHistoricalRevision": {
+    "en": "Viewing historical revision",
+    "zh-CN": "正在查看历史修订",
+    "reviewedEnglishHash": "9699f8b800015bb18561510c9032f7f3fe309b2ebe5ac7716a1f58f5b127d8ec"
+  },
+  "issueDocuments.viewingRevision": {
+    "en": "Viewing revision {{number}}",
+    "zh-CN": "正在查看修订 {{number}}",
+    "reviewedEnglishHash": "6021114698e3fe3064271f75e0731b266c5aa3d918f42c7d386c0548874f34b8"
+  }
+}

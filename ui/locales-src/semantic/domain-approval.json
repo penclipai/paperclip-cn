@@ -1,0 +1,37 @@
+{
+  "approval.approving": {
+    "en": "Approving...",
+    "zh-CN": "审批中...",
+    "reviewedEnglishHash": "cee0e61bdf8c8bdad542041d29fc84e32bfcb4180606f71f8754954f1db0ff48"
+  },
+  "approval.limitObserved": {
+    "en": "Limit observed",
+    "zh-CN": "已观测上限",
+    "reviewedEnglishHash": "75ab0ca1568941159a79c4799cd749c25fd41d848c57cf9941f5360668e5e8af"
+  },
+  "approval.onApproval": {
+    "en": "On approval",
+    "zh-CN": "审批后",
+    "reviewedEnglishHash": "e65731c1d9ec104d1ad6edf83609759471b9236e928fb6cf89a3d56108a0acdc"
+  },
+  "approval.proposedComment": {
+    "en": "Proposed comment",
+    "zh-CN": "建议评论",
+    "reviewedEnglishHash": "36e856c1e4704d78dfda6febb76937cd0079acd5d8ba4390f190fc422a271217"
+  },
+  "approval.recommendedAction": {
+    "en": "Recommended action",
+    "zh-CN": "建议操作",
+    "reviewedEnglishHash": "0cdf19eece16f608eb0d9ba0291a07b91e7af1e33416d8a6e8fe0a5d910b20aa"
+  },
+  "approval.rejecting": {
+    "en": "Rejecting...",
+    "zh-CN": "驳回中...",
+    "reviewedEnglishHash": "47f29154e1b7452303bdedfe9fe1a5c1f5c314263de7a0e3a8f60c4b1883b173"
+  },
+  "approval.requestCreated": {
+    "en": "Approval request created {{time}}",
+    "zh-CN": "审批请求创建于 {{time}}",
+    "reviewedEnglishHash": "cd41c0d8677bc115e09a4926a7fd9149d0bae09047be98a3ea5afd61a1b12382"
+  }
+}

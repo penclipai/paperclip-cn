@@ -1,0 +1,12 @@
+{
+  "pipelineWorkReferences.empty": {
+    "en": "No linked work yet.",
+    "zh-CN": "暂无关联工作。",
+    "reviewedEnglishHash": "bf35d97177d2b80eb23c9ff0a863398facae0c4656b08509a7c58acd1a2230ae"
+  },
+  "pipelineWorkReferences.folder": {
+    "en": "Folder",
+    "zh-CN": "文件夹",
+    "reviewedEnglishHash": "74ccd43303847f2655300641a934959cdb11689ce171aa0f00faa92917fbd340"
+  }
+}

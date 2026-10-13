@@ -1,0 +1,7 @@
+{
+  "decisionResolver.unavailable": {
+    "en": "This decision is no longer available — it may have been resolved elsewhere.",
+    "zh-CN": "此决策已不可用，可能已在其他位置处理。",
+    "reviewedEnglishHash": "e3f188cda1be6b590de5646136abf4e9430700b02a8dbc412f444df643f54dc5"
+  }
+}

@@ -1,0 +1,132 @@
+{
+  "artifactsPanel.approvedHireTasksCreated": {
+    "en": "Approved - hire tasks created",
+    "zh-CN": "已批准 - 已创建招聘任务",
+    "reviewedEnglishHash": "e7b836e263b74985058ea33aef3abf595fa2f137abcccf758a6d1708705378ac"
+  },
+  "artifactsPanel.changesRequestedCeoRevising": {
+    "en": "Changes requested - CEO is revising",
+    "zh-CN": "已请求修改 - CEO 正在修订",
+    "reviewedEnglishHash": "9be16c53b7b2986c4bda2caa8fa0fd23c27a553dcce0baf86389336e1c03f962"
+  },
+  "artifactsPanel.documentEmpty": {
+    "en": "Document is empty.",
+    "zh-CN": "文档为空。",
+    "reviewedEnglishHash": "149458228eeb7e853eb05adcf3c7770f5ba293c181c39372819b841d9e947385"
+  },
+  "artifactsPanel.documentFallback": {
+    "en": "Document",
+    "zh-CN": "文档",
+    "reviewedEnglishHash": "d6bd8c0aeee80fedb2dbf05c973100c3db04be90c072a88572533f2684131a36"
+  },
+  "artifactsPanel.documentUnavailable": {
+    "en": "Document not available yet.",
+    "zh-CN": "文档暂不可用。",
+    "reviewedEnglishHash": "f97a51c62e53d670167a45c1cde979b4f9808bd923824ad643366af03d740b00"
+  },
+  "artifactsPanel.emptyAll": {
+    "en": "Your team's deliverables and plans will appear here as they're produced.",
+    "zh-CN": "团队产出的交付物和计划会显示在这里。",
+    "reviewedEnglishHash": "8d8cf5b92bb7c1c37f1e5452bb059592dec0ca3da34d7479efd1fbb83d1319f2"
+  },
+  "artifactsPanel.emptyFilter": {
+    "en": "No artifacts match this filter.",
+    "zh-CN": "没有符合此筛选条件的产物。",
+    "reviewedEnglishHash": "e9f6756fd8e79c3da4c0cd71837c7fa7af914dbaa9d23d29a1c47a7072ba6b7a"
+  },
+  "artifactsPanel.filter.all": {
+    "en": "All",
+    "zh-CN": "全部",
+    "reviewedEnglishHash": "a52ace420f2175d08b1577a1bea5445e36801229c074ef9ed6c55a73401fd9c2"
+  },
+  "artifactsPanel.filter.completed": {
+    "en": "Completed",
+    "zh-CN": "已完成",
+    "reviewedEnglishHash": "22a970d2e5b1cc233e462be7c7b64e135a275bb09d83d87683bf4236c43113a1"
+  },
+  "artifactsPanel.filter.forReview": {
+    "en": "For Review",
+    "zh-CN": "待审核",
+    "reviewedEnglishHash": "b86832322d80814b4bef64acc92691ded6c6223077ed5a6c4ad25ec1a01c05de"
+  },
+  "artifactsPanel.filter.inProgress": {
+    "en": "In Progress",
+    "zh-CN": "进行中",
+    "reviewedEnglishHash": "b4cc4b07c300103a4bc38e01e084cc945144a7eb0ae61d74d62ca49b8abe0908"
+  },
+  "artifactsPanel.generating": {
+    "en": "Generating...",
+    "zh-CN": "正在生成...",
+    "reviewedEnglishHash": "49286f33b674a0a6ae415811c6602fb5b12a3e6e2205130bd026d7ca163ccc40"
+  },
+  "artifactsPanel.loadingDocument": {
+    "en": "Loading document...",
+    "zh-CN": "正在加载文档...",
+    "reviewedEnglishHash": "f651afe11c137eeff561e6b1d31602249a3bdf7848f5ac3aa89319c72a9c84f0"
+  },
+  "artifactsPanel.needsReview": {
+    "en": "This document needs your review.",
+    "zh-CN": "此文档需要你审核。",
+    "reviewedEnglishHash": "ba12212b60a47ba40028423090114e9e93e2b2349f602076cbddba70070e44f2"
+  },
+  "artifactsPanel.status.changesRequested": {
+    "en": "Changes Requested",
+    "zh-CN": "已请求修改",
+    "reviewedEnglishHash": "36f684a51c88f921b20960ce8664683109e1587bfa6436243d27e7f9fb0d339a"
+  },
+  "artifactsPanel.status.completed": {
+    "en": "Completed",
+    "zh-CN": "已完成",
+    "reviewedEnglishHash": "22a970d2e5b1cc233e462be7c7b64e135a275bb09d83d87683bf4236c43113a1"
+  },
+  "artifactsPanel.status.failed": {
+    "en": "Failed",
+    "zh-CN": "失败",
+    "reviewedEnglishHash": "031a8f0f659df890dfd53c92e45295b0f14c997185bae46e168831e403b273f7"
+  },
+  "artifactsPanel.status.forReview": {
+    "en": "For Review",
+    "zh-CN": "待审核",
+    "reviewedEnglishHash": "b86832322d80814b4bef64acc92691ded6c6223077ed5a6c4ad25ec1a01c05de"
+  },
+  "artifactsPanel.status.inProgress": {
+    "en": "In Progress",
+    "zh-CN": "进行中",
+    "reviewedEnglishHash": "b4cc4b07c300103a4bc38e01e084cc945144a7eb0ae61d74d62ca49b8abe0908"
+  },
+  "artifactsPanel.type.artifact": {
+    "en": "Artifact",
+    "zh-CN": "产物",
+    "reviewedEnglishHash": "e06171a1c467f2d4d883a386b5323dbd1a493627030e4bc6210d6c87c49f359e"
+  },
+  "artifactsPanel.type.branch": {
+    "en": "Branch",
+    "zh-CN": "分支",
+    "reviewedEnglishHash": "52656e8104eef3fddd3d4546903fa0de93c0625abf47b3dd8130f7705d6a513e"
+  },
+  "artifactsPanel.type.commit": {
+    "en": "Commit",
+    "zh-CN": "提交",
+    "reviewedEnglishHash": "82a9c46ffa4789945d9f2359d75891558ef6faa8dee09e4b25e4e0597704f5bd"
+  },
+  "artifactsPanel.type.document": {
+    "en": "Document",
+    "zh-CN": "文档",
+    "reviewedEnglishHash": "d6bd8c0aeee80fedb2dbf05c973100c3db04be90c072a88572533f2684131a36"
+  },
+  "artifactsPanel.type.preview_url": {
+    "en": "Preview URL",
+    "zh-CN": "预览 URL",
+    "reviewedEnglishHash": "c4269502c8924c725139bf3deb1b5bf89048309cce5c66f019baa97debc98eaa"
+  },
+  "artifactsPanel.type.pull_request": {
+    "en": "Pull request",
+    "zh-CN": "拉取请求",
+    "reviewedEnglishHash": "f3dba6629c69d91bd65527f178591b6ab2ac3843cfbf76943801e8dd45bcb7d6"
+  },
+  "artifactsPanel.type.runtime_service": {
+    "en": "Runtime service",
+    "zh-CN": "运行时服务",
+    "reviewedEnglishHash": "8542c027b769ea04231295b3f21e8915bfd3cd858f8774a368331ec16f24752b"
+  }
+}

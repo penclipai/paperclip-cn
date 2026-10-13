@@ -1,0 +1,27 @@
+{
+  "kanban.nextStepAriaLabel": {
+    "en": "Needs next step",
+    "zh-CN": "需要下一步",
+    "reviewedEnglishHash": "e45a2c0f61e00966ee04515bc7f1c3b726c576ec5ae8a884e106fc1db867f524"
+  },
+  "kanban.nextStepBadge": {
+    "en": "Next step",
+    "zh-CN": "下一步",
+    "reviewedEnglishHash": "298a9207a732a11d42bba41239147e22ace14e6cbddb5bb022abd814e3e47472"
+  },
+  "kanban.nextStepTitle": {
+    "en": "This issue needs a next step",
+    "zh-CN": "此任务需要下一步",
+    "reviewedEnglishHash": "61e47232775ee6f4f63a0ff37ef9418ed27aa3e7967e1382490f6eefe67018c6"
+  },
+  "kanban.showMore": {
+    "en": "Show {{count}} more",
+    "zh-CN": "再显示 {{count}} 个",
+    "reviewedEnglishHash": "d94a0e3b18cc208ec8b9217a2ecc28facd39ab3f54aa3a9092b5418209124314"
+  },
+  "kanban.showingCount": {
+    "en": "Showing {{shown}} of {{total}}",
+    "zh-CN": "显示 {{shown}} / {{total}}",
+    "reviewedEnglishHash": "b4780203aeffa7079d441ffb249255a2a05426a323fd276cb808d5b0093d9b1b"
+  }
+}

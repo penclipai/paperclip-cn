@@ -1,0 +1,307 @@
+{
+  "cases.actions.changeStatus": {
+    "en": "Change case status",
+    "zh-CN": "更改案例状态",
+    "reviewedEnglishHash": "11df1e0cf2ceacf0d49e96c9ae7acf40dad5fadbd6d6b11d22ade70c20deecef"
+  },
+  "cases.columns.chooseVisible": {
+    "en": "Choose visible columns",
+    "zh-CN": "选择显示的列",
+    "reviewedEnglishHash": "6d57d5992556a833f7784e707ed751de15c3937b17ae30e96030ea4fa9413361"
+  },
+  "cases.columns.createdAt": {
+    "en": "Created at",
+    "zh-CN": "创建时间",
+    "reviewedEnglishHash": "775b5bf9646856d5c599dc8bff4aa3244de6e04badd263185840f391d403f94a"
+  },
+  "cases.columns.desktopRows": {
+    "en": "Desktop case rows",
+    "zh-CN": "桌面端案例行",
+    "reviewedEnglishHash": "5b0058bde5c1814b6085a0752e7d239ba1e28db45ebe45fc00d00f5c348577bc"
+  },
+  "cases.columns.id": {
+    "en": "ID",
+    "zh-CN": "ID",
+    "reviewedEnglishHash": "3843971dcfdee5083e6289e1bbdbb003e538b5a8a668fc43ae4f19d415ac18a2"
+  },
+  "cases.columns.key": {
+    "en": "Key",
+    "zh-CN": "键",
+    "reviewedEnglishHash": "99a52df3ff3d499488e2fa28150c4106a2cb5e928891a830a9aa3922b2d32160"
+  },
+  "cases.columns.parent": {
+    "en": "Parent case",
+    "zh-CN": "父案例",
+    "reviewedEnglishHash": "67636e37bde9aac212c414e227627d4c51b5f5f7c8ea546d1bd073d9d7783dc9"
+  },
+  "cases.columns.project": {
+    "en": "Project",
+    "zh-CN": "项目",
+    "reviewedEnglishHash": "985959785319747668373cc6dee294b11db782b03cdd90a2851fbdc0637c6b7b"
+  },
+  "cases.columns.resetDefaults": {
+    "en": "Reset defaults",
+    "zh-CN": "恢复默认列",
+    "reviewedEnglishHash": "4542d49a520543f9c895e3beedc4ca2988ba4776f6d924350b46744ebc29cdd5"
+  },
+  "cases.columns.status": {
+    "en": "Status",
+    "zh-CN": "状态",
+    "reviewedEnglishHash": "920e413c7d411b61ef3e8c63b1cb6ad058d5f95f8b481dbafe60248387d8c355"
+  },
+  "cases.columns.title": {
+    "en": "Title",
+    "zh-CN": "标题",
+    "reviewedEnglishHash": "7e8cd2056da73a7fefb6cd91f4e5d199d08d9058c517b9a2476b1b520324d674"
+  },
+  "cases.columns.type": {
+    "en": "Type",
+    "zh-CN": "类型",
+    "reviewedEnglishHash": "baaddf70fb5d432b8bd948ef91d6f910124a6d138edae4d5f000c4610ddc8eae"
+  },
+  "cases.columns.updated": {
+    "en": "Updated",
+    "zh-CN": "更新时间",
+    "reviewedEnglishHash": "3a5ecca188c0579c00ee24cf3cab21bd02c15a06f7a70cc8e0a8ff2381dcbbfd"
+  },
+  "cases.common.noProject": {
+    "en": "No project",
+    "zh-CN": "无项目",
+    "reviewedEnglishHash": "f34c2be0d1c5f5622eb03be1f67e13dee2ce3dbb71201d909e76a761c29d8bcb"
+  },
+  "cases.common.none": {
+    "en": "None",
+    "zh-CN": "无",
+    "reviewedEnglishHash": "dc937b59892604f5a86ac96936cd7ff09e25f18ae6b758e8014a24c7fa039e91"
+  },
+  "cases.common.unknownProject": {
+    "en": "Unknown project",
+    "zh-CN": "未知项目",
+    "reviewedEnglishHash": "ed51cfeff0d96984b5a5fd0be3bb17df29251b7b41b720a5d11964e1d336ac7f"
+  },
+  "cases.empty.description": {
+    "en": "Cases are durable work products — blog posts, tweet storms, docs pages — that tasks create and iterate on. In v1 they're created by agents, not from the UI.",
+    "zh-CN": "案例是由任务创建并持续迭代的持久工作成果，例如博客文章、推文串和文档页面。V1 中案例由智能体创建，不能从界面直接创建。",
+    "reviewedEnglishHash": "fca393da935fbde8b707efe49d440b8524a55b1db1908dd5a27182e43f300b26"
+  },
+  "cases.empty.featureFlagPrefix": {
+    "en": "Feature is gated by the",
+    "zh-CN": "此功能由",
+    "reviewedEnglishHash": "fea763e6cdaf0b72ae2643ffd2d8040f508cf0c5d80a97697ecee471994265fd"
+  },
+  "cases.empty.featureFlagSuffix": {
+    "en": "experimental flag (Settings → Experimental).",
+    "zh-CN": "实验开关控制（设置 → 实验功能）。",
+    "reviewedEnglishHash": "11168efe33b342c37b41b215d67532be27319ccb70ac39053bc39eddc6a2726b"
+  },
+  "cases.empty.skillPromptIntro": {
+    "en": "To start creating cases, add this to a skill:",
+    "zh-CN": "要开始创建案例，请将以下内容加入技能：",
+    "reviewedEnglishHash": "592628332fbdfd19679aa6680f705d284c059f7eda541ea8fd4d78f50a162f59"
+  },
+  "cases.empty.skillReferencePrefix": {
+    "en": "See the Paperclip CN skill →",
+    "zh-CN": "请参阅 Paperclip CN 技能 →",
+    "reviewedEnglishHash": "a683056cb1fa6b9a9187ab4b4fff0235f6b075cc7d4f7d10f5316278d180c009"
+  },
+  "cases.empty.skillReferenceSuffix": {
+    "en": "for the API.",
+    "zh-CN": "了解 API。",
+    "reviewedEnglishHash": "e9c183a408336cfdb0a5fd10ff839821157a41a8d9fba2a42aef7fc26b0bfbfd"
+  },
+  "cases.empty.title": {
+    "en": "No cases yet",
+    "zh-CN": "暂无案例",
+    "reviewedEnglishHash": "709b3afd531f2b0d60b84ae197d7049da718a12582d3f7e7e6b690887558471e"
+  },
+  "cases.experimental": {
+    "en": "Experimental",
+    "zh-CN": "实验功能",
+    "reviewedEnglishHash": "3dc9f569422dcfdadcb2c33f3eb2ee6fcebc8ba679bd63e690f9ddd0ff7c24be"
+  },
+  "cases.filteredEmpty.message": {
+    "en": "No cases match these filters.",
+    "zh-CN": "没有符合筛选条件的案例。",
+    "reviewedEnglishHash": "1b03f825591047af94dc17240652cf29891b594a5487f19c4d5936f6814e65f9"
+  },
+  "cases.filters.all": {
+    "en": "All",
+    "zh-CN": "全部",
+    "reviewedEnglishHash": "a52ace420f2175d08b1577a1bea5445e36801229c074ef9ed6c55a73401fd9c2"
+  },
+  "cases.filters.allLabels": {
+    "en": "All labels",
+    "zh-CN": "全部标签",
+    "reviewedEnglishHash": "3e8340066184126c9c94d5fee1da0ac7756f891428c1a908017b08fe2b869c01"
+  },
+  "cases.filters.clear": {
+    "en": "Clear filters",
+    "zh-CN": "清除筛选",
+    "reviewedEnglishHash": "7179ea0035fca783ec62b7185659b68c75f2a7c12b909306a57183dc9b3fa44b"
+  },
+  "cases.filters.label": {
+    "en": "Label",
+    "zh-CN": "标签",
+    "reviewedEnglishHash": "0e66373f45dcf3dd656151e519f7ee5e3d558d9c22cb87df339bbdd2b6c6a3c1"
+  },
+  "cases.filters.noTypes": {
+    "en": "No types yet",
+    "zh-CN": "暂无类型",
+    "reviewedEnglishHash": "0c1355281bf6e951b1a4847c068841bbd3a408fe780b2917089f946fa4aee9c0"
+  },
+  "cases.filters.project": {
+    "en": "Project",
+    "zh-CN": "项目",
+    "reviewedEnglishHash": "985959785319747668373cc6dee294b11db782b03cdd90a2851fbdc0637c6b7b"
+  },
+  "cases.filters.search": {
+    "en": "Search",
+    "zh-CN": "搜索",
+    "reviewedEnglishHash": "49c266baaaa70981ea188fa714d5c40cf13830d786a861c9943ae0d26a7f3fe9"
+  },
+  "cases.filters.status": {
+    "en": "Status",
+    "zh-CN": "状态",
+    "reviewedEnglishHash": "920e413c7d411b61ef3e8c63b1cb6ad058d5f95f8b481dbafe60248387d8c355"
+  },
+  "cases.filters.type": {
+    "en": "Type",
+    "zh-CN": "类型",
+    "reviewedEnglishHash": "baaddf70fb5d432b8bd948ef91d6f910124a6d138edae4d5f000c4610ddc8eae"
+  },
+  "cases.group.none": {
+    "en": "None",
+    "zh-CN": "不分组",
+    "reviewedEnglishHash": "dc937b59892604f5a86ac96936cd7ff09e25f18ae6b758e8014a24c7fa039e91"
+  },
+  "cases.group.project": {
+    "en": "Project",
+    "zh-CN": "项目",
+    "reviewedEnglishHash": "985959785319747668373cc6dee294b11db782b03cdd90a2851fbdc0637c6b7b"
+  },
+  "cases.group.status": {
+    "en": "Status",
+    "zh-CN": "状态",
+    "reviewedEnglishHash": "920e413c7d411b61ef3e8c63b1cb6ad058d5f95f8b481dbafe60248387d8c355"
+  },
+  "cases.group.type": {
+    "en": "Type",
+    "zh-CN": "类型",
+    "reviewedEnglishHash": "baaddf70fb5d432b8bd948ef91d6f910124a6d138edae4d5f000c4610ddc8eae"
+  },
+  "cases.groupCount.one": {
+    "en": "{{count}} case",
+    "zh-CN": "{{count}} 个案例",
+    "reviewedEnglishHash": "e991cddae8dc0db3c8d7223f3cc6f895352eb2bbb8addde7ada2adb7345e912c"
+  },
+  "cases.groupCount.other": {
+    "en": "{{count}} cases",
+    "zh-CN": "{{count}} 个案例",
+    "reviewedEnglishHash": "8700ff245d12062d641128a743cd11497eb736c9953a76331432569589d60691"
+  },
+  "cases.labels.caseId": {
+    "en": "case ID",
+    "zh-CN": "案例 ID",
+    "reviewedEnglishHash": "9c869d6f7ed1f0c6b91577c7a543347987678e72884229572a478e4ca961bd92"
+  },
+  "cases.labels.caseKey": {
+    "en": "case key",
+    "zh-CN": "案例键",
+    "reviewedEnglishHash": "a741eb3c912be5a2aa563b82629a177b641297047763f6c4cb82ad8d6b317e23"
+  },
+  "cases.search.ariaLabel": {
+    "en": "Search cases",
+    "zh-CN": "搜索案例",
+    "reviewedEnglishHash": "22c2a4061665d165ca1ac59267361ba389d728a028dfb07cd577d78c21253ab4"
+  },
+  "cases.search.placeholder": {
+    "en": "Search cases...",
+    "zh-CN": "搜索案例...",
+    "reviewedEnglishHash": "7485f988914700c2eb38bcc60cf54bc0dceb56dab79e1b2e18a9f21111514807"
+  },
+  "cases.sort.createdAt": {
+    "en": "Created at",
+    "zh-CN": "创建时间",
+    "reviewedEnglishHash": "775b5bf9646856d5c599dc8bff4aa3244de6e04badd263185840f391d403f94a"
+  },
+  "cases.sort.id": {
+    "en": "ID",
+    "zh-CN": "ID",
+    "reviewedEnglishHash": "3843971dcfdee5083e6289e1bbdbb003e538b5a8a668fc43ae4f19d415ac18a2"
+  },
+  "cases.sort.lastUpdated": {
+    "en": "Last updated",
+    "zh-CN": "最近更新",
+    "reviewedEnglishHash": "382ac5f308f76c24b2c981e2041943bc2be2229cbd285ad362b9af1cfc386ef8"
+  },
+  "cases.sort.project": {
+    "en": "Project",
+    "zh-CN": "项目",
+    "reviewedEnglishHash": "985959785319747668373cc6dee294b11db782b03cdd90a2851fbdc0637c6b7b"
+  },
+  "cases.sort.status": {
+    "en": "Status",
+    "zh-CN": "状态",
+    "reviewedEnglishHash": "920e413c7d411b61ef3e8c63b1cb6ad058d5f95f8b481dbafe60248387d8c355"
+  },
+  "cases.sort.title": {
+    "en": "Title",
+    "zh-CN": "标题",
+    "reviewedEnglishHash": "7e8cd2056da73a7fefb6cd91f4e5d199d08d9058c517b9a2476b1b520324d674"
+  },
+  "cases.sort.type": {
+    "en": "Type",
+    "zh-CN": "类型",
+    "reviewedEnglishHash": "baaddf70fb5d432b8bd948ef91d6f910124a6d138edae4d5f000c4610ddc8eae"
+  },
+  "cases.title": {
+    "en": "Cases",
+    "zh-CN": "案例",
+    "reviewedEnglishHash": "2249bd503ec47d7224fd147948bbd6fc286c2b653d5d46422989529ff31e4666"
+  },
+  "cases.toolbar.columns": {
+    "en": "Columns",
+    "zh-CN": "列",
+    "reviewedEnglishHash": "53aade77cd69a77bbb51bf8ca4e7ea8b282db75edce8883775e47042478d35b5"
+  },
+  "cases.toolbar.filters": {
+    "en": "Filters",
+    "zh-CN": "筛选",
+    "reviewedEnglishHash": "546ebb8eb993ea561029d9febd84c363bdb09010bb2cb915a8287762b76b9a64"
+  },
+  "cases.toolbar.group": {
+    "en": "Group",
+    "zh-CN": "分组",
+    "reviewedEnglishHash": "34ca0e76608842ff3e7d924a455a396a82f471052c15e3f2ed7f090ac702e5c1"
+  },
+  "cases.toolbar.sort": {
+    "en": "Sort",
+    "zh-CN": "排序",
+    "reviewedEnglishHash": "bec69036aa27e7fab7d44cad3909477b76631c39ba46fd7841ea71aae7e5a735"
+  },
+  "cases.tree.collapse": {
+    "en": "Collapse {{title}}",
+    "zh-CN": "折叠 {{title}}",
+    "reviewedEnglishHash": "70c216244f059cf8784050d446d11c17d4120cd945508bda57399c8fe8d057d6"
+  },
+  "cases.tree.expand": {
+    "en": "Expand {{title}}",
+    "zh-CN": "展开 {{title}}",
+    "reviewedEnglishHash": "be9b82ddf9156121ef6e216d0066675618c332eb3116b6cd67b7bfe484c8fda8"
+  },
+  "cases.tree.parent": {
+    "en": "Parent",
+    "zh-CN": "父案例",
+    "reviewedEnglishHash": "5f7953f7c9b6ba16602898e540795140db39847cf03fd10d32ef636cded0360e"
+  },
+  "cases.tree.showFlat": {
+    "en": "Show flat case list",
+    "zh-CN": "显示平铺案例列表",
+    "reviewedEnglishHash": "92f7380848872bac6e2f1e437002f9718892fda809700a253b8f12ad57a63dc7"
+  },
+  "cases.tree.showHierarchy": {
+    "en": "Show parent/children tree",
+    "zh-CN": "显示父子案例树",
+    "reviewedEnglishHash": "879fb924111ecc9e39c14d2d52fca2ab76379da1c62640d6088a7d0dc48d35e6"
+  }
+}

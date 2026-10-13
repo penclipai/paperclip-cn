@@ -1,0 +1,212 @@
+{
+  "systemNotice.alert": {
+    "en": "System alert",
+    "zh-CN": "系统警报",
+    "reviewedEnglishHash": "2b1c663ea2e661f4ed7993f002aa603c24ac81e5a12bbd7be2ed4c0937617d45"
+  },
+  "systemNotice.metadata.cause": {
+    "en": "Cause",
+    "zh-CN": "原因",
+    "reviewedEnglishHash": "7ba6317aefb0fec5ce658adf785cc80f92545ab8fded8021644c853c6e0aa89f"
+  },
+  "systemNotice.metadata.causeCode": {
+    "en": "Cause code",
+    "zh-CN": "原因代码",
+    "reviewedEnglishHash": "5fd0ae2876dc83dd57f0d2691d05f49d4ecb2f171f37a2795982cdc809d748a5"
+  },
+  "systemNotice.metadata.completedRun": {
+    "en": "Completed run",
+    "zh-CN": "已完成运行",
+    "reviewedEnglishHash": "9c87eb4ab704778bce33470ed3d0e616fd35e5064b08e1ee6fa51d7bf8cc8271"
+  },
+  "systemNotice.metadata.nextStep": {
+    "en": "Next step",
+    "zh-CN": "下一步",
+    "reviewedEnglishHash": "298a9207a732a11d42bba41239147e22ace14e6cbddb5bb022abd814e3e47472"
+  },
+  "systemNotice.metadata.notes": {
+    "en": "Notes",
+    "zh-CN": "备注",
+    "reviewedEnglishHash": "8a7525b1492fb84833f5c4a69b30f4bfbb134f9b666b61a2c1872d63d234c085"
+  },
+  "systemNotice.metadata.owner": {
+    "en": "Owner",
+    "zh-CN": "负责人",
+    "reviewedEnglishHash": "4b1b8aa3608a26da451ae0630d75b60ab1bc2dd229c41a80838fc7993e835c46"
+  },
+  "systemNotice.metadata.reason": {
+    "en": "Reason",
+    "zh-CN": "原因",
+    "reviewedEnglishHash": "f81ab834de5f84918dc040b884267c2b61cb1a52d46442de10e97f35a94d0500"
+  },
+  "systemNotice.metadata.recoveryRun": {
+    "en": "Recovery run",
+    "zh-CN": "恢复运行",
+    "reviewedEnglishHash": "f6f107313733d2b009d951e0ba968ebc71461584241c6702e2c1f00175a240a8"
+  },
+  "systemNotice.metadata.runContext": {
+    "en": "Run context",
+    "zh-CN": "运行上下文",
+    "reviewedEnglishHash": "20887b38690b3769b24c17fa4bb7a16f14640184bb88596fc9da73eb1445160f"
+  },
+  "systemNotice.metadata.statusBefore": {
+    "en": "Status before",
+    "zh-CN": "之前状态",
+    "reviewedEnglishHash": "bf55accae7107e3001d4dcbdaa472881a4d9935a530d2719fac253ad324b7d4f"
+  },
+  "systemNotice.notice": {
+    "en": "System notice",
+    "zh-CN": "系统通知",
+    "reviewedEnglishHash": "e37cedd7319f328e904d1a1e736536cb61f1d46b905d014fe972ed0b06546207"
+  },
+  "systemNotice.successfulRunHandoff.assignee": {
+    "en": "Assignee",
+    "zh-CN": "负责人",
+    "reviewedEnglishHash": "5e20d20e3978dcf8550bd758d863b782ac0d139d51be8034836ed21e35104567"
+  },
+  "systemNotice.successfulRunHandoff.automaticRetry": {
+    "en": "Automatic retry",
+    "zh-CN": "自动重试",
+    "reviewedEnglishHash": "2a39daf25019b6ca8f5dc74446a049d87b61a39e132d4920b650c9aece5e3bd2"
+  },
+  "systemNotice.successfulRunHandoff.correctiveHandoffRun": {
+    "en": "Corrective handoff run",
+    "zh-CN": "修正交接运行",
+    "reviewedEnglishHash": "97963288eef71ecdbb338f9a1280106bca3a26c0540050ad1aa6e46615b3687c"
+  },
+  "systemNotice.successfulRunHandoff.detectedProgress": {
+    "en": "Detected progress",
+    "zh-CN": "检测到的进展",
+    "reviewedEnglishHash": "739e47cd8eacf150ba4a8a001f9ba11da0fbe5aee7837ab8452c77f669107f3d"
+  },
+  "systemNotice.successfulRunHandoff.latestHandoffRunStatus": {
+    "en": "Latest handoff run status",
+    "zh-CN": "最新交接运行状态",
+    "reviewedEnglishHash": "bd12905d302a70d30443a935ad0c7026108a3d23b767a4130f74b64e5eb07026"
+  },
+  "systemNotice.successfulRunHandoff.latestIssueStatus": {
+    "en": "Latest issue status",
+    "zh-CN": "最新任务状态",
+    "reviewedEnglishHash": "afc2d96bb3c2fcbf7d5d23cc15851126cf8cbc902a99f2cc8ca9bdfc66a18257"
+  },
+  "systemNotice.successfulRunHandoff.missingDisposition": {
+    "en": "Missing disposition",
+    "zh-CN": "缺失处置状态",
+    "reviewedEnglishHash": "8b4f1a2155d969d9dd4b3e4922a45c2d99314c57da2e8322021c308aec9b2d4d"
+  },
+  "systemNotice.successfulRunHandoff.missingDispositionBody": {
+    "en": "Paperclip needs a disposition before this issue can continue.",
+    "zh-CN": "需要先为这个任务记录处置状态，才能继续推进。",
+    "reviewedEnglishHash": "40451885a4503d37c8e24bc2702e0dea63728cc78067da8e5f301ed0da18d7a3"
+  },
+  "systemNotice.successfulRunHandoff.missingDispositionTitle": {
+    "en": "Missing issue disposition",
+    "zh-CN": "缺少任务处置状态",
+    "reviewedEnglishHash": "6d1977a3c9d779ccd35ea9665d09f080050a59712bcb1f47a6f270c13e5292ac"
+  },
+  "systemNotice.successfulRunHandoff.normalizedCause": {
+    "en": "Normalized cause",
+    "zh-CN": "归一化原因",
+    "reviewedEnglishHash": "e7c585b00c10ab4234ad33040233ec26b7320b0916d35e46f0f1b4f06c473248"
+  },
+  "systemNotice.successfulRunHandoff.recoveryBlockedBody": {
+    "en": "Paperclip could not resolve this issue's missing disposition automatically. The issue is blocked on a recovery owner.",
+    "zh-CN": "系统无法自动补齐这个任务缺失的处置状态。该任务已阻塞，等待恢复负责人处理。",
+    "reviewedEnglishHash": "8cca23ef1382beecb7d4d40ff40ffa6cb4e018c53eea8d3551e45b413ae59074"
+  },
+  "systemNotice.successfulRunHandoff.recoveryBlockedTitle": {
+    "en": "Missing disposition recovery blocked",
+    "zh-CN": "缺少处置状态的恢复已阻塞",
+    "reviewedEnglishHash": "dc052ccdd486d6a036b7912dd6842cf31f68cc1061fa925c2319234e19370b0c"
+  },
+  "systemNotice.successfulRunHandoff.recoveryIssue": {
+    "en": "Recovery issue",
+    "zh-CN": "恢复任务",
+    "reviewedEnglishHash": "52e3934387e3259f153020fd6c1a98f3c2c372ccec32bb93bd9fa5bb9cc481ed"
+  },
+  "systemNotice.successfulRunHandoff.recoveryOwner": {
+    "en": "Recovery owner",
+    "zh-CN": "恢复负责人",
+    "reviewedEnglishHash": "27c6c04ca0373d41e3f43b433db4d2034f49994ca0a6c1aeeda4960fc362d7ea"
+  },
+  "systemNotice.successfulRunHandoff.requiredAction": {
+    "en": "Required action",
+    "zh-CN": "需要处理",
+    "reviewedEnglishHash": "832713bc001529b25b99ee36f1c77c6051bc13f5b46305a485414bc9685bc2d6"
+  },
+  "systemNotice.successfulRunHandoff.runEvidence": {
+    "en": "Run evidence",
+    "zh-CN": "运行依据",
+    "reviewedEnglishHash": "96767cbe736737069003dd4b86a167b8b6ebc1d70bb73277876a41ba7913aa3e"
+  },
+  "systemNotice.successfulRunHandoff.runStatus": {
+    "en": "Run status",
+    "zh-CN": "运行状态",
+    "reviewedEnglishHash": "3b75c8793470c1283b3b7e9f5491c4c5ada22ddb25e7ecfb0a83a7dc4ea2c78a"
+  },
+  "systemNotice.successfulRunHandoff.sourceAssignee": {
+    "en": "Source assignee",
+    "zh-CN": "来源负责人",
+    "reviewedEnglishHash": "41bfbd66988519073cc4922636e9f90196dc978c8ae1d8508ce3e13a1ac3aa74"
+  },
+  "systemNotice.successfulRunHandoff.sourceIssue": {
+    "en": "Source issue",
+    "zh-CN": "来源任务",
+    "reviewedEnglishHash": "bc23e41adf441fff279bdae6aaf833d1cb12d3b07d6af1228ad63020823a4c5c"
+  },
+  "systemNotice.successfulRunHandoff.sourceRun": {
+    "en": "Source run",
+    "zh-CN": "来源运行",
+    "reviewedEnglishHash": "bb84312ee41d3ebcfebcbd78c54e2a25927fc7a6c5f74c8c67fd218c438e86e7"
+  },
+  "systemNotice.successfulRunHandoff.successfulRun": {
+    "en": "Successful run",
+    "zh-CN": "成功运行",
+    "reviewedEnglishHash": "f029c8013ba6a77c8a1100177beced49d78e23151ceb1bdf5f35beedf89699cd"
+  },
+  "systemNotice.successfulRunHandoff.suggestedAction": {
+    "en": "Suggested action",
+    "zh-CN": "建议操作",
+    "reviewedEnglishHash": "96662cd1ccdd5c73667380a79dd25f6355b590e5ec09d65c92ca077804b4b03a"
+  },
+  "systemNotice.successfulRunHandoff.validDispositions": {
+    "en": "Valid dispositions",
+    "zh-CN": "有效处置状态",
+    "reviewedEnglishHash": "f8fadf3219a47c25796708c118e6caa2fb96d7f6185305f2cfd2a566d5deb5d4"
+  },
+  "systemNotice.successfulRunHandoff.value.chooseValidDisposition": {
+    "en": "Choose and record a valid issue disposition without copying transcript content",
+    "zh-CN": "选择并记录有效的任务处置状态，不要复制运行记录内容",
+    "reviewedEnglishHash": "1481eb2964b31ef5d4058ddf58243875b8c92a68ad4257f7019813592fed6538"
+  },
+  "systemNotice.successfulRunHandoff.value.clearNextStep": {
+    "en": "Clear next step",
+    "zh-CN": "补充下一步处置",
+    "reviewedEnglishHash": "bc9d7ac3df0497e6493acb4b0b61c7a7474822c092c3d9420aee595de74d32da"
+  },
+  "systemNotice.successfulRunHandoff.value.correctiveHandoffQueued": {
+    "en": "One corrective handoff wake queued",
+    "zh-CN": "已排队一次修正性交接唤醒",
+    "reviewedEnglishHash": "c4d7eabd5aa71cef2c107980382a4b593e910869fc40e2f81d39477802e567b7"
+  },
+  "systemNotice.successfulRunHandoff.value.successfulRunMissingState": {
+    "en": "Successful run missing issue state",
+    "zh-CN": "成功运行缺少任务处置状态",
+    "reviewedEnglishHash": "4efff01b7c59fa34f9db1263a6c214760fe546869e3dfd04e044307db3795d91"
+  },
+  "systemNotice.successfulRunHandoff.value.usefulOutputNoActionEvidence": {
+    "en": "Run produced useful output but no concrete action evidence",
+    "zh-CN": "运行产出了有用内容，但没有记录具体行动依据",
+    "reviewedEnglishHash": "c610d92cef8d9ef2a6da13769dfd2a7bdd0ccf729ba0072c0316208d216f176b"
+  },
+  "systemNotice.successfulRunHandoff.value.validDispositions": {
+    "en": "Done, cancelled, in review with an owner, blocked with blockers, delegated follow-up, or explicit continuation",
+    "zh-CN": "已完成、已取消、带负责人的审核中、带阻塞项的已阻塞、委派后续任务，或明确继续执行",
+    "reviewedEnglishHash": "da25f6178fda1722ee57bd24d60c253677d0152e6bed7e60707e81bd11dea889"
+  },
+  "systemNotice.warning": {
+    "en": "System warning",
+    "zh-CN": "系统警告",
+    "reviewedEnglishHash": "5398b157325f2088c430891d6dc0e358422468237eeae537f9e0998249f22936"
+  }
+}

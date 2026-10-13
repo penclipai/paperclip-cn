@@ -1,0 +1,602 @@
+{
+  "onboarding.adapterEnvironmentCheck": {
+    "en": "Adapter environment check",
+    "zh-CN": "适配器环境检查",
+    "reviewedEnglishHash": "3f84811ec2f78fdbd55763034f0bd353f781a553c0c234680f7959a114b82138"
+  },
+  "onboarding.adapterEnvironmentCheckDescription": {
+    "en": "Runs a live probe that asks the adapter CLI to respond with hello.",
+    "zh-CN": "运行一次实时探测，请适配器 CLI 回复 hello。",
+    "reviewedEnglishHash": "c6c8414e2036c49efdfb277cf753c1e42ac64d2c974179c6b7a9e604144a1018"
+  },
+  "onboarding.adapterEnvironmentTestFailed": {
+    "en": "Adapter environment test failed",
+    "zh-CN": "适配器环境测试失败",
+    "reviewedEnglishHash": "7effce27ad293483c40eb56b3c3ff4773b44688a8d286909762d7294912e5b8c"
+  },
+  "onboarding.adapterType": {
+    "en": "Adapter type",
+    "zh-CN": "适配器类型",
+    "reviewedEnglishHash": "03298f6641cee814d73463df62a98fb37838540b7084bacbc2f9d51cce0bb4b4"
+  },
+  "onboarding.agentCreated": {
+    "en": "Agent created",
+    "zh-CN": "智能体已创建",
+    "reviewedEnglishHash": "2d32a05d6aef64edbfc678c638c76a418822ef1e8dd6b03af07b5a2e9422b22e"
+  },
+  "onboarding.agentOnlineReady": {
+    "en": "is online and ready to work!",
+    "zh-CN": "已在线并准备开始工作！",
+    "reviewedEnglishHash": "7ddcdccc74f5105ccea3d0889aecba0f841b3ea9f35be05767162b38f36af0b9"
+  },
+  "onboarding.andRetry": {
+    "en": "and retry.",
+    "zh-CN": "然后重试。",
+    "reviewedEnglishHash": "018dd1dec21ef0e1dd9fd202f8cb9481448e251dced812a3628e528ad1383a7d"
+  },
+  "onboarding.answerFewQuestions": {
+    "en": "Answer a few questions",
+    "zh-CN": "回答几个问题",
+    "reviewedEnglishHash": "f4adf96c1a673707bdff7f16f311959d1f3e718f251f21451bbad875384c7f99"
+  },
+  "onboarding.anthropicApiKeyUnsetRetryFailed": {
+    "en": "Retried with ANTHROPIC_API_KEY unset in adapter config, but the environment test is still failing.",
+    "zh-CN": "已在适配器配置中取消设置 ANTHROPIC_API_KEY 后重试，但环境测试仍然失败。",
+    "reviewedEnglishHash": "0be1a4e3dd2666a378b785a4f36e0d6d3ced8795af9832b01f553b9547ed141b"
+  },
+  "onboarding.backToQuestions": {
+    "en": "<- Back to questions",
+    "zh-CN": "<- 返回问题",
+    "reviewedEnglishHash": "c7ba2a715717e1a5dd6cda4aea3b8ee6ed3ec2e0253dcd073dd19d6e9035b9f0"
+  },
+  "onboarding.backToStart": {
+    "en": "<- Back to start",
+    "zh-CN": "<- 返回开始",
+    "reviewedEnglishHash": "82dfab0860998648046b38874be066e4c7291d109191a1e28849f5d97e4229f1"
+  },
+  "onboarding.bringingToLife": {
+    "en": "Bringing to life...",
+    "zh-CN": "正在唤醒...",
+    "reviewedEnglishHash": "642fae2347ebbbfda8a50ab0aefc038a24785bb82fd9f08dcc9225f8f0787a89"
+  },
+  "onboarding.changeMissionLater": {
+    "en": "You can always change your mission later in settings.",
+    "zh-CN": "你随时可以稍后在设置中修改使命。",
+    "reviewedEnglishHash": "b814f459e2e4167640c698ec5204bdffe8008f0eda351dd64b35c5fc9cbc9fd1"
+  },
+  "onboarding.changeTeamName": {
+    "en": "<- Change team name",
+    "zh-CN": "<- 修改团队名称",
+    "reviewedEnglishHash": "e27b668eb5b58705a3de147d1aac0f6ff53afd08feca8d5b3c389a839822be53"
+  },
+  "onboarding.chiefOfStaff": {
+    "en": "Chief of staff",
+    "zh-CN": "幕僚长",
+    "reviewedEnglishHash": "e9fb0d7ae82a48d6c4a9ecef9f8e8933260c5999f81c47071f395af2e05ba3c4"
+  },
+  "onboarding.chooseHowAgentRunsTasks": {
+    "en": "Choose how this agent will run tasks.",
+    "zh-CN": "选择该智能体如何运行任务。",
+    "reviewedEnglishHash": "2c76df900721fb578aa56afdbb4dd11c40871576c7eeed2f4563f3ff06f2b2e9"
+  },
+  "onboarding.claudeFailedWhile": {
+    "en": "Claude failed while",
+    "zh-CN": "Claude 失败时",
+    "reviewedEnglishHash": "ab641d5ae7a7c83764e8d615f5f94517d0431783bf33f9998752864f8f80c5f0"
+  },
+  "onboarding.clearAnthropicAndRetry": {
+    "en": "is set. You can clear it in this adapter config and retry the probe.",
+    "zh-CN": "已设置。你可以在此适配器配置中清除它，然后重试探测。",
+    "reviewedEnglishHash": "30ec4c81c0ee3ced4a0414cf1e8148a764607ddfd04388d0aad9fcf34c68d93d"
+  },
+  "onboarding.clearAnthropicInCeoConfigAndRetry": {
+    "en": "is set. You can clear it in this CEO adapter config and retry the probe.",
+    "zh-CN": "已设置。你可以在此 CEO 适配器配置中清除它，然后重试探测。",
+    "reviewedEnglishHash": "fb98c487688d7cf1569d0b70e404fdb654afa45895fbcf96cb049fddf9e75c51"
+  },
+  "onboarding.companyDescription": {
+    "en": "This is the organization your agents will work for.",
+    "zh-CN": "这是智能体将为其工作的组织。",
+    "reviewedEnglishHash": "c2521848a0d53e07e2ef76c735da90b7f63ed2849bd2240641547ca4d29ddc88"
+  },
+  "onboarding.companyNamePlaceholder": {
+    "en": "Acme Corp",
+    "zh-CN": "Acme Corp",
+    "reviewedEnglishHash": "a73cb4563ee2e72ce0ce805d444364ecca6bebe02d04917915d6481de184abe3"
+  },
+  "onboarding.confirmMission": {
+    "en": "Confirm mission",
+    "zh-CN": "确认使命",
+    "reviewedEnglishHash": "d934c654fc9ee07c9ebe683fb6e66ba57972474249ff495f9a276852df809c44"
+  },
+  "onboarding.connect": {
+    "en": "Connect",
+    "zh-CN": "连接",
+    "reviewedEnglishHash": "1a2303ede07493acc7caaa7c737f3c52bcc9cf04372be19ed1b0af6b9f2c791e"
+  },
+  "onboarding.connectModel": {
+    "en": "Connect a model",
+    "zh-CN": "连接模型",
+    "reviewedEnglishHash": "87bdaaf8ac10de0f551d24a7e1bf3b64dcae03872f097937c919faed8f0b1d6a"
+  },
+  "onboarding.connecting": {
+    "en": "Connecting...",
+    "zh-CN": "连接中...",
+    "reviewedEnglishHash": "5f04ae9ed6a865bb382c66ef4bd4e57df4ce19d4142b8c87ac40d65ae54d278f"
+  },
+  "onboarding.createAgentFailed": {
+    "en": "Failed to create agent",
+    "zh-CN": "创建智能体失败",
+    "reviewedEnglishHash": "71b8459f6e0b7cc17c0e8aee5f0aa5aeff7a1813b64aa1b0be69acf206a21990"
+  },
+  "onboarding.createAndOpenTask": {
+    "en": "Create & Open Task",
+    "zh-CN": "创建并打开任务",
+    "reviewedEnglishHash": "c3a226817711fb1252749178d801382f5ffd6a0fa2495ff36c16fbaaa952c2a3"
+  },
+  "onboarding.createCompanyFailed": {
+    "en": "Failed to create company",
+    "zh-CN": "创建公司失败",
+    "reviewedEnglishHash": "15fe94608c8a143707a3bb520569ea615c4711e4a8c28d06250a104bab287e77"
+  },
+  "onboarding.createFirstAgent": {
+    "en": "Create your first agent",
+    "zh-CN": "创建第一个智能体",
+    "reviewedEnglishHash": "88dcddea044f78719b662b88cb82646d94adc9e741a9909d9eec926c3a599096"
+  },
+  "onboarding.createFirstTaskAndOpenDashboard": {
+    "en": "We'll create the first task for {{agentName}} and take you to the dashboard.",
+    "zh-CN": "我们会为 {{agentName}} 创建第一个任务，然后带你进入仪表盘。",
+    "reviewedEnglishHash": "6fad56646ae9aa05ddf2908e08403ef3453eb1b1973ed0d564a538f5ca9b6ad9"
+  },
+  "onboarding.createTeamLead": {
+    "en": "Create your team lead",
+    "zh-CN": "创建团队负责人",
+    "reviewedEnglishHash": "8b00b2a0953e632346e36f1f1cbd0d9321cadb63c4d2eca1ab6ab451aef0707e"
+  },
+  "onboarding.creating": {
+    "en": "Creating...",
+    "zh-CN": "创建中...",
+    "reviewedEnglishHash": "def70944c9bb9c3b77129e6fc48cfcd043031a86ae747060a3e97985d254c4f2"
+  },
+  "onboarding.defaultTaskDescription": {
+    "en": "You are the CEO. You set the direction for the company.\n\n- hire a founding engineer\n- write a hiring plan\n- break the roadmap into concrete tasks and start delegating work",
+    "zh-CN": "你是 CEO，负责为公司设定方向。\n\n- 招聘一名创始工程师\n- 制定招聘计划\n- 将路线图拆解成具体任务并开始分派",
+    "reviewedEnglishHash": "0d146e7e1b13c1fcfe3e08da87665566dd94fa4cc9805fb3ce2be72e7914c92b"
+  },
+  "onboarding.defaultTaskTitle": {
+    "en": "Hire your first engineer and create a hiring plan",
+    "zh-CN": "招聘首位工程师并制定招聘计划",
+    "reviewedEnglishHash": "a2c44069f4bae788f9229190296a3a7d3d4159e5e449c3eb5668c314e10fdbed"
+  },
+  "onboarding.defineYourMission": {
+    "en": "Define your mission",
+    "zh-CN": "定义你的使命",
+    "reviewedEnglishHash": "1fe6434ade1b575aa38f76d75fdd77ce355426f91482876a602f80a3c69b6a0f"
+  },
+  "onboarding.draftMissionEdit": {
+    "en": "Here's your draft mission - edit it however you like:",
+    "zh-CN": "这是使命草稿 - 可按需编辑：",
+    "reviewedEnglishHash": "4390c8e964177d0520709f7c53b7d08a61f397f126da3a3b7942afaf546b0049"
+  },
+  "onboarding.emptyAgentSlot": {
+    "en": "an empty slot for an agent",
+    "zh-CN": "一个空的智能体槽位",
+    "reviewedEnglishHash": "12d2595ce108419cc4b0ce74fdf164011ee925ac2ec6896804af9ff8713464d5"
+  },
+  "onboarding.firstAgentSetupApproved": {
+    "en": "Approved during onboarding first-agent setup.",
+    "zh-CN": "已在引导期间批准首个智能体设置。",
+    "reviewedEnglishHash": "0482c2ee26a97f8000637735123416961a691355c709909a00532b7a260c9e3e"
+  },
+  "onboarding.gatewayUrl": {
+    "en": "Gateway URL",
+    "zh-CN": "网关 URL",
+    "reviewedEnglishHash": "3d06950825de7452bc87464f967ef6f37a33d9b32cbae2f4a1bf9b56431c8795"
+  },
+  "onboarding.generateMissionFromAnswers": {
+    "en": "Generate mission from answers",
+    "zh-CN": "根据回答生成使命",
+    "reviewedEnglishHash": "9db63dac7ccc4348c879a70758f08acb8af2908683e17f6a90cdc4bb47536bb4"
+  },
+  "onboarding.generateMyMission": {
+    "en": "Generate my mission",
+    "zh-CN": "生成我的使命",
+    "reviewedEnglishHash": "33da68589386af19288b396f7004aef51020822b67dc8c91691374109abdde83"
+  },
+  "onboarding.generatedMission.challenge": {
+    "en": "Our biggest challenge is {{challenge}}.",
+    "zh-CN": "我们最大的挑战是{{challenge}}。",
+    "reviewedEnglishHash": "1196a54c602f25e1a2edd6ba3c7c3d824e5d456ebf70433411e749b2c07cf3ac"
+  },
+  "onboarding.generatedMission.firstPriorityAutomate": {
+    "en": "First priority: automate {{priority}}",
+    "zh-CN": "首要优先级：自动化{{priority}}",
+    "reviewedEnglishHash": "fa58e1ac1b46ce953e7b00422e4a38d29a74a892850f75337c36a224be004c77"
+  },
+  "onboarding.generatedMission.keyChallenge": {
+    "en": "Key challenge: {{challenge}}",
+    "zh-CN": "关键挑战：{{challenge}}",
+    "reviewedEnglishHash": "a9ed85537ffc2755853a2fda4dddfcf490064a6b391e1cf9f4691114221fbb24"
+  },
+  "onboarding.generatedMission.success": {
+    "en": "Success looks like {{success}}.",
+    "zh-CN": "成功意味着{{success}}。",
+    "reviewedEnglishHash": "6056cd978e4466eb41196cefb0224448d480d63dc46b2904262ac288e817dfff"
+  },
+  "onboarding.generatedMission.weServe": {
+    "en": "We serve {{target}}.",
+    "zh-CN": "我们服务{{target}}。",
+    "reviewedEnglishHash": "ca2aaf271346e2b471aa3c8807dd3703fbd4c3d89fb6b20d326447e0495b3e30"
+  },
+  "onboarding.generatedMissionEdit": {
+    "en": "Generated mission - edit however you like:",
+    "zh-CN": "已生成使命 - 可按需编辑：",
+    "reviewedEnglishHash": "96cc417e6677ea8a2a304792e47a4c944c292d7da91bf9bedd5c3e97caf1043c"
+  },
+  "onboarding.getStarted": {
+    "en": "Get started",
+    "zh-CN": "开始使用",
+    "reviewedEnglishHash": "61e8d44ad423a4a0951b21b9d11440a1c23a881fe79335c367f63be251c64800"
+  },
+  "onboarding.giveItAHeartbeat": {
+    "en": "Give it a heartbeat",
+    "zh-CN": "给它一次心跳",
+    "reviewedEnglishHash": "5417616ca478eca9519da020fc98f3d71f5b16ab9a002953ce3f5e2fc1136949"
+  },
+  "onboarding.giveItSomethingToDo": {
+    "en": "Give it something to do",
+    "zh-CN": "给它安排一件事",
+    "reviewedEnglishHash": "a36bf609ede03c1195ef60002152966227b797b2db08fc36520928b0e39926d3"
+  },
+  "onboarding.giveTaskDescription": {
+    "en": "Give your agent a small task to start with - a bug fix, a research question, writing a script.",
+    "zh-CN": "给智能体一个小任务作为开始 - 修复 bug、研究问题或编写脚本。",
+    "reviewedEnglishHash": "4d36eb2437b8be601a16e3c91c9f4b34c8866c71d66ee233f9282a9d2c14ba9c"
+  },
+  "onboarding.helpMeFigureItOut": {
+    "en": "Help me figure it out",
+    "zh-CN": "帮我梳理",
+    "reviewedEnglishHash": "55ea94b6b8171bfac1b9621cd34f8a23d2e1c03214bd4a9468f4ba4cd6cfd16a"
+  },
+  "onboarding.howDefineMission": {
+    "en": "How would you like to define your mission?",
+    "zh-CN": "你想如何定义使命？",
+    "reviewedEnglishHash": "dbdff3d67e51e7bcd8b96f1904f15a7c92588ed95cd6897c7d300074764e937c"
+  },
+  "onboarding.iKnowMyMission": {
+    "en": "I know my mission",
+    "zh-CN": "我知道使命",
+    "reviewedEnglishHash": "cc521e054b8cf8c991fa33e5c6f74efecff3ef8da05ebf918c5b943313d914d0"
+  },
+  "onboarding.ifAuthFailsSet": {
+    "en": "If auth fails, set",
+    "zh-CN": "如果认证失败，请设置",
+    "reviewedEnglishHash": "2768d5f599b835fbb422477ae4b929158e044ea65fbd9889ec641e74b19e816d"
+  },
+  "onboarding.ifLoginRequiredRun": {
+    "en": "If login is required, run",
+    "zh-CN": "如果需要登录，请运行",
+    "reviewedEnglishHash": "66bbc08c4c8f10d968952091c6e4d5f0f45287fdb83248b93919a6dc90c71a34"
+  },
+  "onboarding.inEnvOrRun": {
+    "en": "in env or run",
+    "zh-CN": "到环境变量中，或运行",
+    "reviewedEnglishHash": "e32cc5581db0aed811c16e2247826c8d68a17637eaea90dcfa74a5fd3b8f017a"
+  },
+  "onboarding.incompleteState": {
+    "en": "Onboarding state is incomplete. Please restart onboarding and try again.",
+    "zh-CN": "引导状态不完整。请重新开始引导后再试。",
+    "reviewedEnglishHash": "9e4fb7174f662df524fb784ac597a64573ebbc2b7510593030833136c1856cb4"
+  },
+  "onboarding.launchFirstTaskFailed": {
+    "en": "Failed to launch first task",
+    "zh-CN": "无法启动首个任务",
+    "reviewedEnglishHash": "38057469b0d5892c2aa9c3c452cd2ebbd449565bd4060124d92b884d522642cb"
+  },
+  "onboarding.launching": {
+    "en": "Launching...",
+    "zh-CN": "启动中...",
+    "reviewedEnglishHash": "b1601ddd5a45de0ac1645f9813374ccc24e7c214414625fe2534366f0d3fd5e4"
+  },
+  "onboarding.manualDebug": {
+    "en": "Manual debug",
+    "zh-CN": "手动调试",
+    "reviewedEnglishHash": "b21b558929c992676a95cfded41528190cfdee35795d20af382555879ac18150"
+  },
+  "onboarding.missionGoalOptional": {
+    "en": "Mission / goal (optional)",
+    "zh-CN": "使命 / 目标（可选）",
+    "reviewedEnglishHash": "6b18da239e5b7f7e667fa3933c5b4d30d2b3b1ff9e16e61627883499aba1f124"
+  },
+  "onboarding.missionGuidesPrefix": {
+    "en": "Your mission guides everything - your lead agent, who you bring on, and the work",
+    "zh-CN": "使命会指导一切，包括团队负责人、后续加入的成员，以及",
+    "reviewedEnglishHash": "281b9f02fb1454575b1b7d3645e26988f7f325dd8d543cd2f995b1ac290650f2"
+  },
+  "onboarding.missionGuidesSuffix": {
+    "en": "takes on.",
+    "zh-CN": "承接的工作。",
+    "reviewedEnglishHash": "94d7d3d75755048926fb0f7dc8f0111d3092a2e0acf7c8f102f1be39a8bccce4"
+  },
+  "onboarding.missionPrompt.content": {
+    "en": "Scale a content business",
+    "zh-CN": "扩大内容业务",
+    "reviewedEnglishHash": "44f1b3216c6efeb8bf69b225e32d5af4d66683578226a8d43e1671c3cea10db8"
+  },
+  "onboarding.missionPrompt.marketplace": {
+    "en": "Launch a marketplace",
+    "zh-CN": "启动一个交易市场",
+    "reviewedEnglishHash": "03205b1c8b6b2ef2e5667264f0e80d7b45130093b9547057cdc4e8a444d195af"
+  },
+  "onboarding.missionPrompt.saas": {
+    "en": "Build a SaaS product",
+    "zh-CN": "打造一个 SaaS 产品",
+    "reviewedEnglishHash": "7d8c8b1d643f79eb930719b669349f3d0c5094beeda42c492bb7084348a23691"
+  },
+  "onboarding.modelConnected": {
+    "en": "Model connected",
+    "zh-CN": "模型已连接",
+    "reviewedEnglishHash": "d1f66281279fe9479532a4ea821491627b043b0e96d0c7bcfe82b7cffb5ea224"
+  },
+  "onboarding.moreAgentAdapterTypes": {
+    "en": "More Agent Adapter Types",
+    "zh-CN": "更多智能体适配器类型",
+    "reviewedEnglishHash": "646c4e05c9e3bc134b67849263fd4d5e83e976b055627c2e1e2ad4ed85e94f65"
+  },
+  "onboarding.nameLeadMiddle": {
+    "en": "toward its mission. We default to",
+    "zh-CN": "推进使命。默认使用",
+    "reviewedEnglishHash": "bb58b5ea2f710241851dd21b418ae312ef8d7fb072c85f4b33970eb480cce02c"
+  },
+  "onboarding.nameLeadPrefix": {
+    "en": "Name your lead. They'll help drive",
+    "zh-CN": "为负责人命名。它会帮助",
+    "reviewedEnglishHash": "3f1b0c2ce20aefd9713023efb83b168e63924fc6b50ed25ed91da1a2baf2e0b1"
+  },
+  "onboarding.nameLeadSuffix": {
+    "en": "- rename it to anything you like.",
+    "zh-CN": "- 你也可以改成任何喜欢的名称。",
+    "reviewedEnglishHash": "244d87f052353b90c15f8519755c787440c67de3bafbbd048f20be0584f7dc4e"
+  },
+  "onboarding.nameYourCompany": {
+    "en": "Name your company",
+    "zh-CN": "命名你的公司",
+    "reviewedEnglishHash": "c2a6abf9648a9f775ec8ca7041d86371e4e4f2323788f121e3908a342377b3e0"
+  },
+  "onboarding.nameYourTeam": {
+    "en": "Name your team",
+    "zh-CN": "命名你的团队",
+    "reviewedEnglishHash": "8f44e2dbeb2da1891cb9b6ba2f54001ae5d67796105091b74444143a86ac5bff"
+  },
+  "onboarding.noModelsDiscovered": {
+    "en": "No models discovered.",
+    "zh-CN": "未发现模型。",
+    "reviewedEnglishHash": "636179326ac4335547be83cdf68b07158cd234fd1e9641e6e96e5764c36c7b25"
+  },
+  "onboarding.noOpenCodeModelsDiscovered": {
+    "en": "No OpenCode models discovered. Run {{command}} and authenticate providers.",
+    "zh-CN": "未发现 OpenCode 模型。请运行 {{command}} 并完成提供商认证。",
+    "reviewedEnglishHash": "1b0e1d687e70f905b14082625b897b25909f1aa782104546d3316863574a842a"
+  },
+  "onboarding.openCodeExplicitModelRequired": {
+    "en": "OpenCode requires an explicit model in provider/model format.",
+    "zh-CN": "OpenCode 需要以 provider/model 格式明确指定模型。",
+    "reviewedEnglishHash": "821bca377add8284b85110030eec6cde0acdb33b62464410c7e7717148f491c5"
+  },
+  "onboarding.openCodeModelUnavailable": {
+    "en": "Configured OpenCode model is unavailable: {{model}}",
+    "zh-CN": "配置的 OpenCode 模型不可用：{{model}}",
+    "reviewedEnglishHash": "598218165689f02acd380cdf396ef54963615b89915df1b7bddcfc3fc6a07520"
+  },
+  "onboarding.openCodeModelsLoadFailed": {
+    "en": "Failed to load OpenCode models.",
+    "zh-CN": "无法加载 OpenCode 模型。",
+    "reviewedEnglishHash": "c2dab824502ad48df96a08ad282ed76a951ed1b9815cdd506fbd263fd060c008"
+  },
+  "onboarding.openCodeModelsLoading": {
+    "en": "OpenCode models are still loading. Please wait and try again.",
+    "zh-CN": "OpenCode 模型仍在加载中。请稍候重试。",
+    "reviewedEnglishHash": "9ea513400c72783981cd332c88e878a026ae37c13b11ddeaa5b3ff6e339e61f9"
+  },
+  "onboarding.pickAdapterAndModel": {
+    "en": "Pick the adapter and model your lead will run on, then check the environment.",
+    "zh-CN": "选择负责人要使用的适配器和模型，然后检查环境。",
+    "reviewedEnglishHash": "4d25863d2d9bffb607c3886a99bf9cbd95bc62d9fbf0ef3162766fab90147e2c"
+  },
+  "onboarding.placeholder.automateFirst": {
+    "en": "e.g. Social media scheduling and content repurposing",
+    "zh-CN": "例如：社交媒体排期和内容复用",
+    "reviewedEnglishHash": "05735c990effe84bbb51d205f09ffbc250d0e24192434c9004f494b3814b2adb"
+  },
+  "onboarding.placeholder.biggestBottleneck": {
+    "en": "e.g. Can't produce content fast enough across multiple channels",
+    "zh-CN": "例如：无法足够快地在多个渠道产出内容",
+    "reviewedEnglishHash": "d8f0ac84f81ed3ac47994f5cfd0557f90fc8a88e724429956a6cd7a373f5c179"
+  },
+  "onboarding.placeholder.companyMission": {
+    "en": "What is this company trying to achieve?",
+    "zh-CN": "这家公司想实现什么？",
+    "reviewedEnglishHash": "1b8aba7699c4ec7c6e2a9e56d875d9f6514c9a780d4b5ab18b44b579c349b4b8"
+  },
+  "onboarding.placeholder.currentWorkflows": {
+    "en": "e.g. Manual content creation, spreadsheet tracking, email outreach",
+    "zh-CN": "例如：手动内容创作、表格跟踪、邮件触达",
+    "reviewedEnglishHash": "8ebaf373e62bdac89281a591bda27bde17056cc069bd994af2f2a96e8850ff4a"
+  },
+  "onboarding.placeholder.painPoints": {
+    "en": "e.g. Can't produce content fast enough, no time for social media",
+    "zh-CN": "例如：内容产出不够快，没有时间运营社交媒体",
+    "reviewedEnglishHash": "d47f78674b46cecf75676c75c700dfcfbda5f826b9768acbc39141bf2c311bef"
+  },
+  "onboarding.placeholder.sixMonthSuccess": {
+    "en": "e.g. Publishing daily content across 4 platforms with a team of AI agents",
+    "zh-CN": "例如：用一组 AI 智能体在 4 个平台每天发布内容",
+    "reviewedEnglishHash": "4852fe65fd9687876675e39094a9cbc15f92a589febce1675a646e8372991fcc"
+  },
+  "onboarding.placeholder.taskDescription": {
+    "en": "Add more detail about what the agent should do...",
+    "zh-CN": "补充智能体需要执行的具体细节...",
+    "reviewedEnglishHash": "3a3eae406a41ebef820d469a1bfe43f47556313340c4598d05aa1f855f3a1edc"
+  },
+  "onboarding.placeholder.taskTitle": {
+    "en": "e.g. Research competitor pricing",
+    "zh-CN": "例如：研究竞品定价",
+    "reviewedEnglishHash": "f2433c7442ede42deff6e0e461b911680dd5c8f6dcc8ef1e8701c53b55d59540"
+  },
+  "onboarding.placeholder.teamMission": {
+    "en": "What is your team trying to achieve?",
+    "zh-CN": "你的团队想实现什么？",
+    "reviewedEnglishHash": "d15827bafd71c6efcfee0e2a3bda7ae1b8ed6e329a525c9b30a10f35e6dbf4dd"
+  },
+  "onboarding.placeholder.teamWork": {
+    "en": "e.g. We create educational YouTube content about AI",
+    "zh-CN": "例如：我们制作关于 AI 的教育类 YouTube 内容",
+    "reviewedEnglishHash": "b6d99f2f9e970f5d3caecc2c1a19b2e26c9440514af07f81f19785dfdb0a0a6c"
+  },
+  "onboarding.placeholder.whoServe": {
+    "en": "e.g. Non-technical professionals curious about AI tools",
+    "zh-CN": "例如：对 AI 工具感兴趣的非技术专业人士",
+    "reviewedEnglishHash": "4713f7c0190e2444eaef587962a36a61b84742f0593c3fb95ea1d4b03854f7f1"
+  },
+  "onboarding.question.automateFirst": {
+    "en": "What would you automate first?",
+    "zh-CN": "你最想先自动化什么？",
+    "reviewedEnglishHash": "c638c2484eb7667a6e6591d6d8184310a3e8e25c7dbdfa086e367af14d907e11"
+  },
+  "onboarding.question.biggestBottleneck": {
+    "en": "What's your biggest bottleneck right now?",
+    "zh-CN": "目前最大的瓶颈是什么？",
+    "reviewedEnglishHash": "b7049487a64755ef4a82448801dcc0e5218f4a5e8c1b64b66dee1f66234ca5e2"
+  },
+  "onboarding.question.currentWorkflows": {
+    "en": "What are your current workflows?",
+    "zh-CN": "你们当前的工作流程是什么？",
+    "reviewedEnglishHash": "76521ddba841f87958c4e33058ef805e2635f1a11b01cd5e0325b6bbbe1f427f"
+  },
+  "onboarding.question.painPoints": {
+    "en": "What pain points would you solve with AI?",
+    "zh-CN": "你希望用 AI 解决哪些痛点？",
+    "reviewedEnglishHash": "5ed114213b2e5a8d14ff597c5022a07b593cfbdba3e15171d5e6a53a896aba5a"
+  },
+  "onboarding.question.sixMonthSuccess": {
+    "en": "What would success look like in 6 months?",
+    "zh-CN": "6 个月后的成功是什么样子？",
+    "reviewedEnglishHash": "8ab260a0ba84129884fe4be3a8d11d5998f88cd2be52365adecb1da586ff1b43"
+  },
+  "onboarding.question.teamWork": {
+    "en": "What does your team work on?",
+    "zh-CN": "你的团队做什么？",
+    "reviewedEnglishHash": "027a3e836ce92dce08b1e8f50395e0fa1d2b16068a91a5bce6a4984f1952828c"
+  },
+  "onboarding.question.whoServe": {
+    "en": "Who do you serve?",
+    "zh-CN": "你服务谁？",
+    "reviewedEnglishHash": "b632e9a614be81fd19d902349fc82c978529654bd423361f4a7fffedcbd71725"
+  },
+  "onboarding.readyToLaunch": {
+    "en": "Ready to launch",
+    "zh-CN": "准备启动",
+    "reviewedEnglishHash": "ea59953e15f330f80aeacc20f7df2db41487ffd27310c86c77849a8e3eadcd12"
+  },
+  "onboarding.readyToLaunchDescription": {
+    "en": "Everything is set up. Launching now will create the starter task, wake the agent, and open the task.",
+    "zh-CN": "一切已设置完成。现在启动会创建起始任务、唤醒智能体并打开任务。",
+    "reviewedEnglishHash": "b614632c9ef94727c3bb24197b6e4af24f8826658daab63c8c69031dbf74fd16"
+  },
+  "onboarding.selectCompanyBeforeTestingAdapterEnvironment": {
+    "en": "Create or select a company before testing adapter environment.",
+    "zh-CN": "请先创建或选择公司，再测试适配器环境。",
+    "reviewedEnglishHash": "6736645ef6db3915eb86064099de94e78887a26ed205218577ae346cc0921430"
+  },
+  "onboarding.startConversationWithAgent": {
+    "en": "Start a conversation with {{agentName}} to discuss strategy and plan who to bring on.",
+    "zh-CN": "和 {{agentName}} 开始对话，讨论策略并规划下一步要引入哪些成员。",
+    "reviewedEnglishHash": "a94f2489a87516acba36a615354f1a98020a891db0905b762cd655bd481946b3"
+  },
+  "onboarding.stepAria": {
+    "en": "Step {{step}}",
+    "zh-CN": "第 {{step}} 步",
+    "reviewedEnglishHash": "da302a6d9705cd6a5ac5ceed73b99b593aff5cf55dc96df443be63472e2eec39"
+  },
+  "onboarding.team.automate": {
+    "en": "What would you automate first?",
+    "zh-CN": "你最想先自动化什么？",
+    "reviewedEnglishHash": "c638c2484eb7667a6e6591d6d8184310a3e8e25c7dbdfa086e367af14d907e11"
+  },
+  "onboarding.team.painPoints": {
+    "en": "What pain points would you solve with AI?",
+    "zh-CN": "你希望用 AI 解决哪些痛点？",
+    "reviewedEnglishHash": "5ed114213b2e5a8d14ff597c5022a07b593cfbdba3e15171d5e6a53a896aba5a"
+  },
+  "onboarding.team.title": {
+    "en": "Tell us about your team",
+    "zh-CN": "介绍一下你的团队",
+    "reviewedEnglishHash": "90962a71e5bc0ca16ef904ffcdac103f0ce3d5a30f32f7d6f9beb872002d64c8"
+  },
+  "onboarding.team.work": {
+    "en": "What does your team work on?",
+    "zh-CN": "你的团队主要做什么？",
+    "reviewedEnglishHash": "027a3e836ce92dce08b1e8f50395e0fa1d2b16068a91a5bce6a4984f1952828c"
+  },
+  "onboarding.team.workflows": {
+    "en": "What are your current workflows?",
+    "zh-CN": "你目前有哪些工作流程？",
+    "reviewedEnglishHash": "76521ddba841f87958c4e33058ef805e2635f1a11b01cd5e0325b6bbbe1f427f"
+  },
+  "onboarding.teamLeadReady": {
+    "en": "Everything's set up - your team lead is online and ready to work.",
+    "zh-CN": "一切已设置完成 - 团队负责人已在线并准备开始工作。",
+    "reviewedEnglishHash": "4231d822660010c884eada3fad9efac1e56a2d1a7a2dd9d8ca8cd938913bd963"
+  },
+  "onboarding.teamLeadTakingShape": {
+    "en": "your team lead, taking shape",
+    "zh-CN": "你的团队负责人正在成形",
+    "reviewedEnglishHash": "1d4face8d6d375e054da20dbc160970ec7c4d881950e11b3d6b873d7d082b617"
+  },
+  "onboarding.teamName": {
+    "en": "Team name",
+    "zh-CN": "团队名称",
+    "reviewedEnglishHash": "0952fcc6feaa8268e818e856cb0d25bb9c2790e459800ea1021c9ca6c0356f10"
+  },
+  "onboarding.teamNameDescription": {
+    "en": "What should we call your team?",
+    "zh-CN": "团队应该叫什么？",
+    "reviewedEnglishHash": "64b8e179b449b84e22a34a07be2422846c1662f0958c5249f4b40e86e72da88d"
+  },
+  "onboarding.tellUsAboutTeam": {
+    "en": "Tell us about your team",
+    "zh-CN": "告诉我们你的团队",
+    "reviewedEnglishHash": "90962a71e5bc0ca16ef904ffcdac103f0ce3d5a30f32f7d6f9beb872002d64c8"
+  },
+  "onboarding.tellUsAboutTeamDescription": {
+    "en": "We'll use this to set up your lead agent and plan which agents to add.",
+    "zh-CN": "我们会用这些信息设置负责人智能体，并规划要添加哪些智能体。",
+    "reviewedEnglishHash": "4c8c2789b6b8cd60b9c7d4e1158908a2ea84a9c77ca0110323568be1f39efb09"
+  },
+  "onboarding.testNow": {
+    "en": "Test now",
+    "zh-CN": "立即测试",
+    "reviewedEnglishHash": "e082db1a50523ff94a644485aac3741329eac44086e206261ced4776c8a3f803"
+  },
+  "onboarding.typeItDirectly": {
+    "en": "Type it directly",
+    "zh-CN": "直接输入",
+    "reviewedEnglishHash": "3bda023a99f12aefe34265c667658ee42fbc348708d0870bc69c80cc0520ee44"
+  },
+  "onboarding.unsetAnthropicApiKey": {
+    "en": "Unset ANTHROPIC_API_KEY",
+    "zh-CN": "取消设置 ANTHROPIC_API_KEY",
+    "reviewedEnglishHash": "88e3ffad48cb37be3360c88091b57d4b657ace7cc68a81bed1f70622d2136b94"
+  },
+  "onboarding.unsetAnthropicApiKeyRetryFailed": {
+    "en": "Failed to unset ANTHROPIC_API_KEY and retry.",
+    "zh-CN": "无法取消设置 ANTHROPIC_API_KEY 并重试。",
+    "reviewedEnglishHash": "10e549fb84eaddd4d1947e4189436572c399c9206e6e6010226b878ce9c67345"
+  },
+  "onboarding.webhookUrl": {
+    "en": "Webhook URL",
+    "zh-CN": "Webhook URL",
+    "reviewedEnglishHash": "84805a7574a82052bdd5b3b98119cfd838d04036ec4bd3d667a95698e7097ad6"
+  }
+}

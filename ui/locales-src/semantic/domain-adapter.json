@@ -1,0 +1,12 @@
+{
+  "adapter.kimi.instructionsFile.hint": {
+    "en": "Absolute path to a markdown file (e.g. AGENTS.md) that defines this agent's behavior. Prepended to the Kimi prompt at runtime.",
+    "zh-CN": "定义该智能体行为的 Markdown 文件绝对路径（如 AGENTS.md）；运行时会添加到 Kimi 提示词前。",
+    "reviewedEnglishHash": "c9c0fc1d20a1ec9d6489163c23a29a68bdd9984d48e76fed14b7e86653590cf8"
+  },
+  "adapter.kimi.instructionsFile.label": {
+    "en": "Agent instructions file",
+    "zh-CN": "智能体指令文件",
+    "reviewedEnglishHash": "ce46e7f310ea3f645b0a845b158cdbe9ba9ce12fdfdc3233b378fb54543f14c4"
+  }
+}

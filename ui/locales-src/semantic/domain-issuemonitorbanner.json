@@ -1,0 +1,7 @@
+{
+  "issueMonitorBanner.replyWakes": {
+    "en": "Sending a reply wakes the agent now — before the scheduled check.",
+    "zh-CN": "发送回复会立即唤醒智能体，无需等待计划检查。",
+    "reviewedEnglishHash": "c39c874e08165ab8e6d8ed6dbbb37f5803bbc44214f9f1fc6352d4d18357895e"
+  }
+}

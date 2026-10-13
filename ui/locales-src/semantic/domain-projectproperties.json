@@ -1,0 +1,442 @@
+{
+  "projectProperties.addDescription": {
+    "en": "Add a description...",
+    "zh-CN": "添加描述…",
+    "reviewedEnglishHash": "eed0f05bd942078d68a83ed8fce3f4ded530da32b24092842512234e395acab3"
+  },
+  "projectProperties.advancedCheckoutHelp": {
+    "en": "Provision runs inside the derived worktree before agent execution. Teardown is stored here for future cleanup flows.",
+    "zh-CN": "准备命令会在衍生工作树中、智能体执行前运行。清理命令会保存在这里，供后续清理流程使用。",
+    "reviewedEnglishHash": "63da1d23fd5a64fb85493b2541bcd8a5acfae489846d8244e04032b79b7c3ad5"
+  },
+  "projectProperties.allGoalsLinked": {
+    "en": "All goals linked.",
+    "zh-CN": "所有目标均已关联。",
+    "reviewedEnglishHash": "142561c2b33a2533802d7292e5ef6971ed5d0b22171caeb5db469f8a7c34b26e"
+  },
+  "projectProperties.archiveDescription": {
+    "en": "Archive this project to hide it from the sidebar and project selectors.",
+    "zh-CN": "归档后，这个项目会从侧边栏和项目选择器中隐藏。",
+    "reviewedEnglishHash": "4b63f9ea1622456fbd1a0163134dfde8c1aa03a89d4aee8fc81c273d4d0de490"
+  },
+  "projectProperties.archiveProject": {
+    "en": "Archive project",
+    "zh-CN": "归档项目",
+    "reviewedEnglishHash": "b9f22e2a07b45b3dff0d56ca177b1de72c933b2b0c088981d737f6cfa70ecc6a"
+  },
+  "projectProperties.archiving": {
+    "en": "Archiving…",
+    "zh-CN": "归档中…",
+    "reviewedEnglishHash": "af9e1c99f1935d3d96e657af2f1694c11773e1270b6fcfcb7765adb72b21cec6"
+  },
+  "projectProperties.baseRef": {
+    "en": "Base ref",
+    "zh-CN": "基础引用",
+    "reviewedEnglishHash": "9c6c10f9d4c60b5349abb6d5f9e09faf1dcb0be57a2aac85c5363ce8b350d35e"
+  },
+  "projectProperties.branchTemplate": {
+    "en": "Branch template",
+    "zh-CN": "分支模板",
+    "reviewedEnglishHash": "af312cfa7a52834504e0fd30c7b2d3ed48aa15bfd4c7bf97af932a574ef8fe74"
+  },
+  "projectProperties.cancel": {
+    "en": "Cancel",
+    "zh-CN": "取消",
+    "reviewedEnglishHash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+  },
+  "projectProperties.changeLocalFolder": {
+    "en": "Change local folder",
+    "zh-CN": "修改本地目录",
+    "reviewedEnglishHash": "213dcf7304b8c98cf4fdea2d0ba22600ef327427cb0471442313d46fcaa7db30"
+  },
+  "projectProperties.changeRepo": {
+    "en": "Change repo",
+    "zh-CN": "修改仓库",
+    "reviewedEnglishHash": "435c99fc3da8db3ce4832f40a7d22fe0458bcc1c93469772ef8423f3ea493d00"
+  },
+  "projectProperties.clearLocalFolderAriaLabel": {
+    "en": "Clear local folder",
+    "zh-CN": "清除本地目录",
+    "reviewedEnglishHash": "845edc73f97b59d2aeb07136da0d0827f616605bac1a34d6d66a6196b1dfcef9"
+  },
+  "projectProperties.clearRepoAriaLabel": {
+    "en": "Clear repo",
+    "zh-CN": "清除仓库",
+    "reviewedEnglishHash": "a83416f3d3903481ac22a4e00878395030a8364928a613821f40a7ad7b73cf57"
+  },
+  "projectProperties.codebase": {
+    "en": "Codebase",
+    "zh-CN": "代码库",
+    "reviewedEnglishHash": "75d4293db937ea5558410cf497b4a23cacc5b35f4588d67a418e47432d702368"
+  },
+  "projectProperties.codebaseHelp": {
+    "en": "Repo identifies the source of truth. Local folder is the default place agents write code.",
+    "zh-CN": "仓库地址用于标识代码的事实来源，本地目录则是智能体默认写入代码的位置。",
+    "reviewedEnglishHash": "5de0dddf7b5724035bbb3857164dcf791bf12034d4479930ffb1f5f6dcd4bd59"
+  },
+  "projectProperties.codebaseHelpAriaLabel": {
+    "en": "Codebase help",
+    "zh-CN": "代码库说明",
+    "reviewedEnglishHash": "4505bd9bd0e2291e48e87f2e54f36f801fde04ef47707255eed9f114b332d3df"
+  },
+  "projectProperties.concurrency.allow": {
+    "en": "Allow",
+    "zh-CN": "允许并发",
+    "reviewedEnglishHash": "e213c161d5cefa520c8dd4155c9569076d9a40406111465136a6f1b207045761"
+  },
+  "projectProperties.concurrency.allowHelp": {
+    "en": "Runs never wait for the workspace; concurrent edits are possible.",
+    "zh-CN": "运行不会等待工作区，可能发生并发编辑。",
+    "reviewedEnglishHash": "98d65a52ea83b5aacbb04e7ba586dd0b0b78da1d0132b069882b262e5b9f5b4c"
+  },
+  "projectProperties.concurrency.auto": {
+    "en": "Auto",
+    "zh-CN": "自动",
+    "reviewedEnglishHash": "0286249762f7c94349cdc0ba3bb2255baf9a80036e2193ead1d77696f888582f"
+  },
+  "projectProperties.concurrency.autoHelp": {
+    "en": "Concurrent runs on local/SSH runners; runs take turns in cloud sandboxes.",
+    "zh-CN": "本地/SSH 运行器可并发运行；云沙箱中的运行会依次执行。",
+    "reviewedEnglishHash": "16c9022b7c2e8ea60f6e137b1e011927063cef7a83c747763db6b621973094c9"
+  },
+  "projectProperties.concurrency.serialize": {
+    "en": "Serialize",
+    "zh-CN": "串行执行",
+    "reviewedEnglishHash": "be3403d5e885cfa5e4d6dbbe8bad4d7c754b6a52be4fc9d4ff529dd4dbf079d8"
+  },
+  "projectProperties.concurrency.serializeHelp": {
+    "en": "Runs always take turns in the shared project workspace.",
+    "zh-CN": "运行始终在共享项目工作区中依次执行。",
+    "reviewedEnglishHash": "e956e9f828a32d96569f12afed08356ddb59015d326f8a2732b7a263deae3282"
+  },
+  "projectProperties.confirm": {
+    "en": "Confirm",
+    "zh-CN": "确认",
+    "reviewedEnglishHash": "eebdd24a77d9ad32222660c07777163bf5f6732df2b172351f3f8d5783e4f529"
+  },
+  "projectProperties.confirmArchive": {
+    "en": "Archive \"{{name}}\"?",
+    "zh-CN": "确认归档“{{name}}”吗？",
+    "reviewedEnglishHash": "3b86cabce5aa31569897dd47035616a4d74da69b919430c965b421bd995dbb0f"
+  },
+  "projectProperties.confirmClearLocalFolder": {
+    "en": "Clear local folder from this workspace?",
+    "zh-CN": "确认清除此工作区的本地目录吗？",
+    "reviewedEnglishHash": "415bd333755cd0010f0ef39340f6fb427c97abc7952932a1fa5c653f8256762c"
+  },
+  "projectProperties.confirmClearRepo": {
+    "en": "Clear repo from this workspace?",
+    "zh-CN": "确认清除此工作区的仓库吗？",
+    "reviewedEnglishHash": "b85c58968b947d5d7894bc9ccea8e2c763050fc5526bd95e71699268aad49d79"
+  },
+  "projectProperties.confirmDeleteLocalFolder": {
+    "en": "Delete this workspace local folder?",
+    "zh-CN": "确认删除此工作区的本地目录吗？",
+    "reviewedEnglishHash": "33a987d85172b1bbc99a63b3ca01fda2d601102656b2fe9c11b9c6f8594788c8"
+  },
+  "projectProperties.confirmDeleteRepo": {
+    "en": "Delete this workspace repo?",
+    "zh-CN": "确认删除此工作区的仓库吗？",
+    "reviewedEnglishHash": "f03224b956735d9bb7b8dd2d200481b71c42cdddf0397b27fe9d32906da88c67"
+  },
+  "projectProperties.confirmUnarchive": {
+    "en": "Unarchive \"{{name}}\"?",
+    "zh-CN": "确认取消归档“{{name}}”吗？",
+    "reviewedEnglishHash": "65af16e12123c2ac44d5dabe3319f200ceba3aad5fb0c6b61041c0ca147bc186"
+  },
+  "projectProperties.created": {
+    "en": "Created",
+    "zh-CN": "创建时间",
+    "reviewedEnglishHash": "d70b9e24bca26b409b9458ceca6c9e5c2b5c3171c37ff050c6f6a0d7a4420d2a"
+  },
+  "projectProperties.dangerZone": {
+    "en": "Danger Zone",
+    "zh-CN": "危险操作",
+    "reviewedEnglishHash": "3c1c01b405853556e3e1c12bbd758e94d73f5ed474a5643bb068eaa7cb549c6e"
+  },
+  "projectProperties.defaultIsolatedCheckout": {
+    "en": "New issues default to isolated checkout",
+    "zh-CN": "新任务默认使用隔离检出",
+    "reviewedEnglishHash": "2378e40dbbda36a9cff968f80102030c7869123c7c9f7c6cc7d28ea1f8898bf2"
+  },
+  "projectProperties.defaultIsolatedCheckoutHelp": {
+    "en": "If disabled, new issues stay on the project's primary checkout unless someone opts in.",
+    "zh-CN": "关闭后，新任务会默认停留在项目主检出上，除非有人主动切换。",
+    "reviewedEnglishHash": "26bb34cbdf433059c2e32bd3b683b913cbdf6ce4630a952d5ce3deb50e6bb1e7"
+  },
+  "projectProperties.description": {
+    "en": "Description",
+    "zh-CN": "描述",
+    "reviewedEnglishHash": "526e0087cc3f254d9f86f6c7d8e23d954c4dfda2b312efc29194ae8a860106ba"
+  },
+  "projectProperties.disabled": {
+    "en": "Disabled",
+    "zh-CN": "已禁用",
+    "reviewedEnglishHash": "75081b593d15cf6e631971bc6768723f593b88b172477e40ae7d363e4829816d"
+  },
+  "projectProperties.enableIsolatedCheckouts": {
+    "en": "Enable isolated issue checkouts",
+    "zh-CN": "启用隔离任务检出",
+    "reviewedEnglishHash": "442cc06ef1e09bd2e24abba3b75e2057757dddb3574043a99caec40ad0e4557f"
+  },
+  "projectProperties.enableIsolatedCheckoutsHelp": {
+    "en": "Let issues choose between the project's primary checkout and an isolated execution workspace.",
+    "zh-CN": "让任务可以在项目主检出和独立执行工作区之间选择。",
+    "reviewedEnglishHash": "e02d08dce5b4694a2193391f734f4af113cfc5114fb9fe45062593418a8d160c"
+  },
+  "projectProperties.enabled": {
+    "en": "Enabled",
+    "zh-CN": "已启用",
+    "reviewedEnglishHash": "92c1cdfdf4cb9cf6fcca962f206de36fd5d60db1178bc9461052f8de703a0e06"
+  },
+  "projectProperties.env": {
+    "en": "Env",
+    "zh-CN": "环境变量",
+    "reviewedEnglishHash": "494d9aa0c06844324346a03866c58b4a61326837fff8b6088ea87d9af14961aa"
+  },
+  "projectProperties.envHelp": {
+    "en": "Applied to all runs for issues in this project. Project values override agent env on key conflicts.",
+    "zh-CN": "应用到该项目下所有任务的运行环境。遇到同名键时，项目环境变量会覆盖智能体环境变量。",
+    "reviewedEnglishHash": "e50479d8e5c8b705ecb8cae7280aaf04f09a6796165fded983fe9a17d8339c9f"
+  },
+  "projectProperties.environment": {
+    "en": "Environment",
+    "zh-CN": "环境",
+    "reviewedEnglishHash": "9e471951a1b4106e54be128a21112b02914fe98cc79b2c92b49ee80c5464487c"
+  },
+  "projectProperties.environmentHelp": {
+    "en": "Applied to all runs for tasks in this project. Project values override agent env on key conflicts.",
+    "zh-CN": "应用于此项目中所有任务的运行。键冲突时，项目环境变量会覆盖智能体环境变量。",
+    "reviewedEnglishHash": "1ef386b842afd3c6179f1c66fb570354eb6dac581baa35b6e10d2b596a9f485e"
+  },
+  "projectProperties.executionWorkspaces": {
+    "en": "Execution Workspaces",
+    "zh-CN": "执行工作区",
+    "reviewedEnglishHash": "50070986462459ebbf174f380a8a487e351f631e8e7826ae94fa172ff79155b6"
+  },
+  "projectProperties.executionWorkspacesHelp": {
+    "en": "Project-owned defaults for isolated issue checkouts and execution workspace behavior.",
+    "zh-CN": "为项目设置隔离任务检出和执行工作区行为的默认规则。",
+    "reviewedEnglishHash": "25c3e06df5e8189f5b30630e31076b6ab1d343d905000453abd874a8841ea1bb"
+  },
+  "projectProperties.executionWorkspacesHelpAriaLabel": {
+    "en": "Execution workspaces help",
+    "zh-CN": "执行工作区说明",
+    "reviewedEnglishHash": "edd694f942f626a21bad533844e1d9c4468b8d1cfd30c7c900eb5aa860e29739"
+  },
+  "projectProperties.failed": {
+    "en": "Failed",
+    "zh-CN": "失败",
+    "reviewedEnglishHash": "031a8f0f659df890dfd53c92e45295b0f14c997185bae46e168831e403b273f7"
+  },
+  "projectProperties.failedToDeleteWorkspace": {
+    "en": "Failed to delete workspace.",
+    "zh-CN": "删除工作区失败。",
+    "reviewedEnglishHash": "f06ebbe9a37d7b79f0e54cb1aef1cfbaeec8b6d62ee09b8190b98c1f118c0c69"
+  },
+  "projectProperties.failedToSaveWorkspace": {
+    "en": "Failed to save workspace.",
+    "zh-CN": "保存工作区失败。",
+    "reviewedEnglishHash": "08f774be682a9f5cb94326a45cc9ce318fbc0ba0d5af0c113d33ec145cfa1663"
+  },
+  "projectProperties.failedToUpdateWorkspace": {
+    "en": "Failed to update workspace.",
+    "zh-CN": "更新工作区失败。",
+    "reviewedEnglishHash": "def40bab1de5e23476f976956352258f135521af739af72ba5eab73eecbd9b22"
+  },
+  "projectProperties.gitWorktree": {
+    "en": "Git worktree",
+    "zh-CN": "Git 工作树",
+    "reviewedEnglishHash": "3810db7102a8bc4de2d61c84fdce3dc49e9165fded1359dcd43c444b55194ded"
+  },
+  "projectProperties.goal": {
+    "en": "Goal",
+    "zh-CN": "目标",
+    "reviewedEnglishHash": "cdbf6975e8a35b0d03558be6822dfae166482c24fb86b0433f60e8167f5c91e4"
+  },
+  "projectProperties.goals": {
+    "en": "Goals",
+    "zh-CN": "目标",
+    "reviewedEnglishHash": "116cd3982a9bc435ecd50e5978b68f5f1d542c0ef071fdb598f06a9000dd33cb"
+  },
+  "projectProperties.hideAdvancedCheckoutSettings": {
+    "en": "Hide advanced checkout settings",
+    "zh-CN": "隐藏高级检出设置",
+    "reviewedEnglishHash": "9980c7cfbf5417e0f9ceac0f207746e0bdb105251de16dfa9f516b53278b0982"
+  },
+  "projectProperties.hostManagedImplementation": {
+    "en": "Host-managed implementation:",
+    "zh-CN": "由宿主管理的实现：",
+    "reviewedEnglishHash": "a908a6bbd4cc6a5ca85f61a19efb45bb033c6eacc1e4ef7a435aea44e8fd01a6"
+  },
+  "projectProperties.lead": {
+    "en": "Lead",
+    "zh-CN": "负责人",
+    "reviewedEnglishHash": "645978287991a6f40bcaf5840f5653b89b75b3bd1ea78cf9f39192e2400ac23e"
+  },
+  "projectProperties.legacyWorkspaceNotice": {
+    "en": "Additional legacy workspace records exist on this project. Paperclip CN is using the primary workspace as the codebase view.",
+    "zh-CN": "这个项目中仍保留额外的旧版工作区记录。Paperclip CN 当前会把主工作区作为代码库视图。",
+    "reviewedEnglishHash": "b6a3ee68d98a02faeb48c5ed4df467fc0c572d1ceb3ad791df0f8cb6381ba29d"
+  },
+  "projectProperties.localFolder": {
+    "en": "Local folder",
+    "zh-CN": "本地目录",
+    "reviewedEnglishHash": "b53e4dccdfe92f2a7c063640dee6dcdcd0f9dedd6ea17be2a146749a97ca870b"
+  },
+  "projectProperties.localFolderAbsolutePathRequired": {
+    "en": "Local folder must be a full absolute path.",
+    "zh-CN": "本地目录必须是完整的绝对路径。",
+    "reviewedEnglishHash": "14606c00ec3d4a07fe492c1a83ff388b4a2ec328828ad999af24daa4ce94eff5"
+  },
+  "projectProperties.managedFolder": {
+    "en": "Paperclip CN-managed folder.",
+    "zh-CN": "由 Paperclip CN 管理的目录。",
+    "reviewedEnglishHash": "4e1a9d98c897aa2c369a753ac3cc5ebfe9dc6b70ebc45198087ddb6209b30735"
+  },
+  "projectProperties.name": {
+    "en": "Name",
+    "zh-CN": "名称",
+    "reviewedEnglishHash": "dcd1d5223f73b3a965c07e3ff5dbee3eedcfedb806686a05b9b3868a2c3d6d50"
+  },
+  "projectProperties.noDescription": {
+    "en": "No description",
+    "zh-CN": "暂无描述",
+    "reviewedEnglishHash": "bcd8cc53f40e3d4eb34694e37dfb1e220f1f1d3bdbaa9c8e7d7f43639b95318e"
+  },
+  "projectProperties.noEnvironment": {
+    "en": "No environment",
+    "zh-CN": "不使用环境",
+    "reviewedEnglishHash": "8d33facf68a970a119e009277c184253ca1840163e56d5c9d1abfc7eeb54f30e"
+  },
+  "projectProperties.noUrl": {
+    "en": "No URL",
+    "zh-CN": "无 URL",
+    "reviewedEnglishHash": "d15bb2d40a641b3ca8429a0664e3cdbab94bb60337c9b53cba3572709028aa81"
+  },
+  "projectProperties.notSet": {
+    "en": "Not set.",
+    "zh-CN": "未设置。",
+    "reviewedEnglishHash": "ec9afcb53b443ff0333986f43e8b6a26f79ca6579bba017e8123c405b60d6c0f"
+  },
+  "projectProperties.projectNamePlaceholder": {
+    "en": "Project name",
+    "zh-CN": "项目名称",
+    "reviewedEnglishHash": "25498193b898195dca035317a941c506276da563d690c4cccf94af50643dbb44"
+  },
+  "projectProperties.provisionCommand": {
+    "en": "Provision command",
+    "zh-CN": "准备命令",
+    "reviewedEnglishHash": "bfbc86f8f1c03ac240a2d28aeda30dfa029c36c9850010484af8b9a33be2633b"
+  },
+  "projectProperties.removeGoal": {
+    "en": "Remove goal {{goal}}",
+    "zh-CN": "移除目标 {{goal}}",
+    "reviewedEnglishHash": "fe6c3ade467ef01e498f46d73da8479092cf623b2f4f3a05888b065b983f6ed9"
+  },
+  "projectProperties.removeGoalAriaLabel": {
+    "en": "Remove goal {{goalTitle}}",
+    "zh-CN": "移除目标 {{goalTitle}}",
+    "reviewedEnglishHash": "8f61279e6c6a7e0d68fb674d5052acfc1449a18a24932b6c2ab6163de10f0eaa"
+  },
+  "projectProperties.repo": {
+    "en": "Repo",
+    "zh-CN": "仓库",
+    "reviewedEnglishHash": "91dba14806ebf9d3c0c4683c108b1277da787d80fe22a6ebede264fd2530460c"
+  },
+  "projectProperties.runtimeProvisionCommand": {
+    "en": "Runtime provision command",
+    "zh-CN": "运行时准备命令",
+    "reviewedEnglishHash": "e538baaa678ee7520520f64d5938301eb174f42e7ab34b8109f014de5c592207"
+  },
+  "projectProperties.runtimeProvisionCommandHelp": {
+    "en": "Runs once before the first runtime-service start (heavy setup, e.g. DB seed). Leave empty to keep eager provisioning.",
+    "zh-CN": "在首次启动运行时服务前执行一次（用于数据库初始化等较重的准备工作）。留空则保持预先准备。",
+    "reviewedEnglishHash": "bc07753c51ab11220f1c4d698360aa221fc9b7366dee5e62b91d3a04292d8757"
+  },
+  "projectProperties.save": {
+    "en": "Save",
+    "zh-CN": "保存",
+    "reviewedEnglishHash": "1509f561f2416598629b886ad7d3c05a7e221e4e0675c84bbff4ee6d9e03913d"
+  },
+  "projectProperties.saved": {
+    "en": "Saved",
+    "zh-CN": "已保存",
+    "reviewedEnglishHash": "b5c120b316c237a0deab3140267aebedba61947d3ae268d708a53d5be119e9fb"
+  },
+  "projectProperties.saving": {
+    "en": "Saving",
+    "zh-CN": "保存中",
+    "reviewedEnglishHash": "096b73624b092bdc6c7377ec5e6e989e2ce826b9f294de8368fb8f3ec1341f30"
+  },
+  "projectProperties.selectCompanyToCreateSecrets": {
+    "en": "Select a company to create secrets",
+    "zh-CN": "请选择一家公司以创建密钥",
+    "reviewedEnglishHash": "1935ffb5c5850146a831b31ed0b9b53bace8de8d72d6e1fdf321420459d7e4df"
+  },
+  "projectProperties.setLocalFolder": {
+    "en": "Set local folder",
+    "zh-CN": "设置本地目录",
+    "reviewedEnglishHash": "698944672c9534c1e74988daeef188435be6065c31f608309ac83b79a2b6fe90"
+  },
+  "projectProperties.setRepo": {
+    "en": "Set repo",
+    "zh-CN": "设置仓库",
+    "reviewedEnglishHash": "4aac48ab1452204f9d2f7469b9cf034e617e2a07b132cc00775d8e73feb9724d"
+  },
+  "projectProperties.sharedWorkspaceConcurrency": {
+    "en": "Shared workspace concurrency",
+    "zh-CN": "共享工作区并发策略",
+    "reviewedEnglishHash": "85c39d5188939426f0419fa918455c12fc9f86a9b2fd4074164008ce4cf598d0"
+  },
+  "projectProperties.showAdvancedCheckoutSettings": {
+    "en": "Show advanced checkout settings",
+    "zh-CN": "显示高级检出设置",
+    "reviewedEnglishHash": "67863632b6e7c395732eabe462b3214588c07ab45aa4485124b0d684d4513f86"
+  },
+  "projectProperties.statusLabel": {
+    "en": "Status",
+    "zh-CN": "状态",
+    "reviewedEnglishHash": "920e413c7d411b61ef3e8c63b1cb6ad058d5f95f8b481dbafe60248387d8c355"
+  },
+  "projectProperties.targetDate": {
+    "en": "Target Date",
+    "zh-CN": "目标日期",
+    "reviewedEnglishHash": "be1422226c2669dad5c44027b1ffd342d1c6a1ed97dafae63b87b5cb5f9f0d9c"
+  },
+  "projectProperties.teardownCommand": {
+    "en": "Teardown command",
+    "zh-CN": "清理命令",
+    "reviewedEnglishHash": "b6a156773cbf656fd63b39421949c6f89e1a8f4a6899d6d0a5d6f392724197ce"
+  },
+  "projectProperties.unarchiveDescription": {
+    "en": "Unarchive this project to restore it in the sidebar and project selectors.",
+    "zh-CN": "取消归档后，这个项目会重新出现在侧边栏和项目选择器中。",
+    "reviewedEnglishHash": "36b12ead1239d5558a36ca68c82795323a8482b6c71d42ae75712170bc8320c7"
+  },
+  "projectProperties.unarchiveProject": {
+    "en": "Unarchive project",
+    "zh-CN": "取消归档项目",
+    "reviewedEnglishHash": "0b53b71430d8d3728c506560d8f9cc9d4aa4d9194d34ffc7f5c0cf158a5c9333"
+  },
+  "projectProperties.unarchiving": {
+    "en": "Unarchiving…",
+    "zh-CN": "取消归档中…",
+    "reviewedEnglishHash": "80a70ba60960740dd13a3e03414f3e13d385c01eb677bdf8e972104fac7eee2e"
+  },
+  "projectProperties.updated": {
+    "en": "Updated",
+    "zh-CN": "更新时间",
+    "reviewedEnglishHash": "3a5ecca188c0579c00ee24cf3cab21bd02c15a06f7a70cc8e0a8ff2381dcbbfd"
+  },
+  "projectProperties.validRepoUrlRequired": {
+    "en": "Repo must use a valid GitHub or GitHub Enterprise repo URL.",
+    "zh-CN": "仓库必须使用有效的 GitHub 或 GitHub Enterprise 仓库 URL。",
+    "reviewedEnglishHash": "4baf885f37f92be8b90107ec793d70c9fd379a5bda8e2b092ba490be169d5b40"
+  },
+  "projectProperties.worktreeParentDir": {
+    "en": "Worktree parent dir",
+    "zh-CN": "工作树父目录",
+    "reviewedEnglishHash": "d25dc4593bdd43556a8f375ef5073ee6de05df61c4dfc0fced62b5259c78b298"
+  }
+}

@@ -1,0 +1,192 @@
+{
+  "status.achieved": {
+    "en": "Achieved",
+    "zh-CN": "已达成",
+    "reviewedEnglishHash": "f6c90c7cd91411e7fcc4425a8161dfe9d4e50f1ec9e3cac8f78bc9079249e36d"
+  },
+  "status.active": {
+    "en": "Active",
+    "zh-CN": "活跃",
+    "reviewedEnglishHash": "92340695899bd2d86223e4a007620e0d6502fc0e08809773634c7e0743764a9c"
+  },
+  "status.approved": {
+    "en": "Approved",
+    "zh-CN": "已批准",
+    "reviewedEnglishHash": "87b42e40c2a290e01d87b721bf381c3c5e259d1eb0a4660e41fdbf8bc73f7ddd"
+  },
+  "status.archived": {
+    "en": "Archived",
+    "zh-CN": "已归档",
+    "reviewedEnglishHash": "bdb86505f8062d15f152cef71dd4ca89609d5bf8e98771dcd2c9f70d247403da"
+  },
+  "status.backlog": {
+    "en": "Backlog",
+    "zh-CN": "待规划",
+    "reviewedEnglishHash": "bf986e9a4f860eb0f3d2def12019dc81c8370e4fdd01940635c2265bae5791d0"
+  },
+  "status.blocked": {
+    "en": "Blocked",
+    "zh-CN": "已阻塞",
+    "reviewedEnglishHash": "18f2a0947f9d6523991b29b450307f22773f57d65f7efb98d48a167df04d6b1d"
+  },
+  "status.cancelled": {
+    "en": "Cancelled",
+    "zh-CN": "已取消",
+    "reviewedEnglishHash": "d353a99eb4556847ceeb3c306ac886cf6b4fa13043eb1864b9aeb0607fd5f2cc"
+  },
+  "status.comingSoon": {
+    "en": "Coming soon",
+    "zh-CN": "即将推出",
+    "reviewedEnglishHash": "4f7d64017689437e6d93f5724f3f797054f3935d98a13148025b616b8db8fb2c"
+  },
+  "status.completed": {
+    "en": "Completed",
+    "zh-CN": "已完成",
+    "reviewedEnglishHash": "22a970d2e5b1cc233e462be7c7b64e135a275bb09d83d87683bf4236c43113a1"
+  },
+  "status.deleted": {
+    "en": "Deleted",
+    "zh-CN": "已删除",
+    "reviewedEnglishHash": "b48ff39c2e0f5451b9b29b09c2a74d2760db230749ffd48a6e901cc91fef9a8d"
+  },
+  "status.disabled": {
+    "en": "Disabled",
+    "zh-CN": "已禁用",
+    "reviewedEnglishHash": "75081b593d15cf6e631971bc6768723f593b88b172477e40ae7d363e4829816d"
+  },
+  "status.done": {
+    "en": "Done",
+    "zh-CN": "已完成",
+    "reviewedEnglishHash": "11a6767d5674c7e45f7e00dc525762275b3a48491ad6045427d2609cc496c516"
+  },
+  "status.draft": {
+    "en": "Draft",
+    "zh-CN": "草稿",
+    "reviewedEnglishHash": "ebf12ef47cf575b3ba9a3cc019c5310146fdac88f6d1be6618d6e91158c2f174"
+  },
+  "status.error": {
+    "en": "Error",
+    "zh-CN": "错误",
+    "reviewedEnglishHash": "54a0e8c17ebb21a11f8a25b8042786ef7efe52441e6cc87e92c67e0c4c0c6e78"
+  },
+  "status.failed": {
+    "en": "Failed",
+    "zh-CN": "失败",
+    "reviewedEnglishHash": "031a8f0f659df890dfd53c92e45295b0f14c997185bae46e168831e403b273f7"
+  },
+  "status.idle": {
+    "en": "Idle",
+    "zh-CN": "空闲",
+    "reviewedEnglishHash": "ab0171ca0494d441cb6fe96e2efbe1c2a129f1d87cd6c17f03613cfd111149dd"
+  },
+  "status.inProgress": {
+    "en": "In Progress",
+    "zh-CN": "进行中",
+    "reviewedEnglishHash": "b4cc4b07c300103a4bc38e01e084cc945144a7eb0ae61d74d62ca49b8abe0908"
+  },
+  "status.inReview": {
+    "en": "In Review",
+    "zh-CN": "审核中",
+    "reviewedEnglishHash": "2677214a9268a5476279e6c6259f054939e93f628ada8ea178a256294faa0713"
+  },
+  "status.invalidOrgChain": {
+    "en": "Invalid reporting chain",
+    "zh-CN": "报告链无效",
+    "reviewedEnglishHash": "bf9c6d9dc8a902fc2e58f3e4ca9c5c63b48f9fb5fd1fcbe7a2bddd592f85af1b"
+  },
+  "status.passed": {
+    "en": "Passed",
+    "zh-CN": "已通过",
+    "reviewedEnglishHash": "436fe71bb9561f0596161c4d50c7b23327b4189acaf63dc89f4f9205b67a7528"
+  },
+  "status.paused": {
+    "en": "Paused",
+    "zh-CN": "已暂停",
+    "reviewedEnglishHash": "e159b06187d369a0615f66ce577582b5c983d4ea59b3a62b702049f61753f0bf"
+  },
+  "status.pending": {
+    "en": "Pending",
+    "zh-CN": "待处理",
+    "reviewedEnglishHash": "331551b0de4157c9abc7b72b61b96a2a928fd6db3cdf029c1fc44b08ad633aa6"
+  },
+  "status.pendingApproval": {
+    "en": "Pending Approval",
+    "zh-CN": "待审批",
+    "reviewedEnglishHash": "6da02e71e215fc0154208f2a8e1638143e56a833c246d756cc28226023e00c9a"
+  },
+  "status.planned": {
+    "en": "Planned",
+    "zh-CN": "已规划",
+    "reviewedEnglishHash": "fb6f7c93e6bf3dfac450d268bf57844ae92b9c93f7d027b07f715bfbc467d225"
+  },
+  "status.queued": {
+    "en": "Queued",
+    "zh-CN": "排队中",
+    "reviewedEnglishHash": "661ff40a07e037bbd5f7d4ec97a4df1503096ca910e7c9e2d7a4e9abd4e4e1a0"
+  },
+  "status.ready": {
+    "en": "Ready",
+    "zh-CN": "就绪",
+    "reviewedEnglishHash": "5fa7aac5375c5815787fba3f49559f9b45b14023147ce0652803387974144e5f"
+  },
+  "status.recovered": {
+    "en": "Recovered",
+    "zh-CN": "已恢复",
+    "reviewedEnglishHash": "37ce0a91ee27ce924ba6768729d754294214673b76c50f15d002996ae76d1dba"
+  },
+  "status.rejected": {
+    "en": "Rejected",
+    "zh-CN": "已拒绝",
+    "reviewedEnglishHash": "aea4a04a80426ed865ec2058b16854b9146166d22c1f3282a18f285941c42eba"
+  },
+  "status.revisionRequested": {
+    "en": "Revision Requested",
+    "zh-CN": "需修改",
+    "reviewedEnglishHash": "952c5319b625e50ce5e0f257622a22441e252125366fecc2ac433468f981e545"
+  },
+  "status.running": {
+    "en": "Running",
+    "zh-CN": "运行中",
+    "reviewedEnglishHash": "f4ccae29e1bb0c20a124570a1b43f4347ea94bba9f84ffdfddd9c7445b126128"
+  },
+  "status.skipped": {
+    "en": "Skipped",
+    "zh-CN": "已跳过",
+    "reviewedEnglishHash": "12698ce1ea5cd4ab13ff4b7e6b1239908c41a4b2dfa0c2661cfb53fc2aa71bd0"
+  },
+  "status.starting": {
+    "en": "Starting",
+    "zh-CN": "启动中",
+    "reviewedEnglishHash": "aeed4d26bb5f0c312bc8a9ee9ce362899252110089263414690ae7b5d6625427"
+  },
+  "status.succeeded": {
+    "en": "Succeeded",
+    "zh-CN": "成功",
+    "reviewedEnglishHash": "6d9a6f97a5fdaf3b90a0cf02e0b43d8b7ec1d05c0e4718e02ddd1c5b450e5b39"
+  },
+  "status.suspended": {
+    "en": "Suspended",
+    "zh-CN": "已暂停",
+    "reviewedEnglishHash": "e392a3891c070abe312d9c08bb6a4a9f5342424dd15c80f1d5cf67d14b79650a"
+  },
+  "status.terminated": {
+    "en": "Terminated",
+    "zh-CN": "已终止",
+    "reviewedEnglishHash": "56a88f4f4f9f3b52168ab577ae44489de933bdc57b83aea4918dc072f4086459"
+  },
+  "status.timedOut": {
+    "en": "Timed out",
+    "zh-CN": "已超时",
+    "reviewedEnglishHash": "9718cc761cfd5810041ef007ae258fa1308b8487d0f30c5f36a442f8fe5f76c5"
+  },
+  "status.todo": {
+    "en": "Todo",
+    "zh-CN": "待办",
+    "reviewedEnglishHash": "4ff402d768211082ae1a70ae586a4c7a907c57d66467279a71283219968c04bc"
+  },
+  "status.warning": {
+    "en": "Warning",
+    "zh-CN": "警告",
+    "reviewedEnglishHash": "e981ddae45d8f4ca53f1ccbe613ad254a041dacf65a06026099a6302d332113b"
+  }
+}

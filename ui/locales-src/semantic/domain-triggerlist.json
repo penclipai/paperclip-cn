@@ -1,0 +1,32 @@
+{
+  "triggerList.apiTrigger": {
+    "en": "API trigger",
+    "zh-CN": "API 触发器",
+    "reviewedEnglishHash": "ef556ef20b2789667beaefef6b0f634eb981a2ec9a051c47c05d593f9ad79131"
+  },
+  "triggerList.disableTrigger": {
+    "en": "Disable trigger",
+    "zh-CN": "禁用触发器",
+    "reviewedEnglishHash": "0dfb1492cb32f7fcfd229e8951b4bc5ba3b64d50a95306e3b5f349cb718466fa"
+  },
+  "triggerList.enableTrigger": {
+    "en": "Enable trigger",
+    "zh-CN": "启用触发器",
+    "reviewedEnglishHash": "1e3e32dba984018d3bd7cd84c91bbe04f8d3046986161c71713d754ee376e85a"
+  },
+  "triggerList.lastFired": {
+    "en": "Last fired",
+    "zh-CN": "上次触发",
+    "reviewedEnglishHash": "309d3f5d2679c31f20c4a406ced635e81478e6ba20ce15408f5bc3390617dd34"
+  },
+  "triggerList.lastResult": {
+    "en": "Last result",
+    "zh-CN": "上次结果",
+    "reviewedEnglishHash": "ab9c681a6929b3c5433885013d08b36385290bd2ee582ffe49b7a36c2da92019"
+  },
+  "triggerList.nextRun": {
+    "en": "Next run",
+    "zh-CN": "下次运行",
+    "reviewedEnglishHash": "b3c0ab96930c9e21f118b971e6e6a964da71f14b30366b11bc8b76c048878fb9"
+  }
+}

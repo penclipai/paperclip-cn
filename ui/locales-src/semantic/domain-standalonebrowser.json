@@ -1,0 +1,37 @@
+{
+  "standaloneBrowser.linkCopied": {
+    "en": "Link copied",
+    "zh-CN": "链接已复制",
+    "reviewedEnglishHash": "d12860c21e78baa522ac743ecfbd77fb9cf4558e581e0e54afcace23b3ce1849"
+  },
+  "standaloneBrowser.openInBrowser": {
+    "en": "Open in Browser",
+    "zh-CN": "在浏览器中打开",
+    "reviewedEnglishHash": "32f8dcaafb6ccafc0f9acfebc5c8131a1a5072f2e5212a0c52aba80ce8255cac"
+  },
+  "standaloneBrowser.openInBrowserHint": {
+    "en": "Try opening the page in your browser.",
+    "zh-CN": "请尝试在浏览器中打开此页面。",
+    "reviewedEnglishHash": "702a3e7b5901aeeba4aaea989c92a2dfdc26a1526e4dd38e30d98ab2c910aca1"
+  },
+  "standaloneBrowser.refresh": {
+    "en": "Refresh",
+    "zh-CN": "刷新",
+    "reviewedEnglishHash": "0e91610117029a62a478b7fa7df0b8598bebe3ab1e192d4b1882e310719c9671"
+  },
+  "standaloneBrowser.share": {
+    "en": "Share",
+    "zh-CN": "分享",
+    "reviewedEnglishHash": "29887a5ff9846ccc23327565a07e17fa6dcaea6211f1898ae825f84ae38f4223"
+  },
+  "standaloneBrowser.shareFailed": {
+    "en": "Share failed",
+    "zh-CN": "分享失败",
+    "reviewedEnglishHash": "609fbf097c29767ad3afb69c29bd84fbe15b36b9903c62411e419229c8c12cdd"
+  },
+  "standaloneBrowser.sharingUnavailable": {
+    "en": "Sharing is unavailable",
+    "zh-CN": "当前无法分享",
+    "reviewedEnglishHash": "278cb088bf912be8dfe3c5f871113871cc6e2a2938a77b8a18dbcba5395079d9"
+  }
+}

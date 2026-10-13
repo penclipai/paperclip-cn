@@ -1,0 +1,12 @@
+{
+  "routineEditor.activityScope": {
+    "en": "Activity scope",
+    "zh-CN": "活动范围",
+    "reviewedEnglishHash": "98a37b44fa795fa6e173c4f0fcab29b8a2e649e3223de4e4121630be165b7950"
+  },
+  "routineEditor.scheduleTriggerHint": {
+    "en": "Add a schedule trigger to gate runs on activity. Webhook, manual, and API fires always run.",
+    "zh-CN": "添加计划触发器，以根据活动控制运行。Webhook、手动和 API 触发始终会运行。",
+    "reviewedEnglishHash": "c62e42a18e4893d5cd879dd80194f1a14d5aa04a82b319f5d4fb8b196961d362"
+  }
+}

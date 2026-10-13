@@ -1,0 +1,1052 @@
+{
+  ". Find Client ID and Client Secret under Basic Information.": {
+    "en": ". Find Client ID and Client Secret under Basic Information.",
+    "zh-CN": "。在“基本信息”中找到客户端 ID 和客户端密钥。",
+    "reviewedEnglishHash": "43c6d5ed9aa868a1106722b8fc0d11c25bc45c4ed72a2e98808109ce3f420cad"
+  },
+  "Failed": {
+    "en": "Failed",
+    "zh-CN": "失败",
+    "reviewedEnglishHash": "031a8f0f659df890dfd53c92e45295b0f14c997185bae46e168831e403b273f7"
+  },
+  "Failed after {{duration}}": {
+    "en": "Failed after {{duration}}",
+    "zh-CN": "{{duration}}后失败",
+    "reviewedEnglishHash": "8658ffbfbeffb922fd0553efd93645fc8287a0b8aa8d6d42e17222409ebd469e"
+  },
+  "Failed runs": {
+    "en": "Failed runs",
+    "zh-CN": "失败的运行",
+    "reviewedEnglishHash": "24afc952b6cc94759fc61339a5514b871b6adf51dd0716ded6fad2a22fc84a30"
+  },
+  "Failed to activate imported entities.": {
+    "en": "Failed to activate imported entities.",
+    "zh-CN": "激活导入实体失败。",
+    "reviewedEnglishHash": "7f2809a79c0e0bc14b4360e475b40cf77047a037fab58c0374a2510c02badbbb"
+  },
+  "Failed to add trigger": {
+    "en": "Failed to add trigger",
+    "zh-CN": "添加触发器失败",
+    "reviewedEnglishHash": "3c4a07f9ab8406f27af31ead31d59f62c350b4a0cb9beb39261b893a2fe845dc"
+  },
+  "Failed to approve": {
+    "en": "Failed to approve",
+    "zh-CN": "批准失败",
+    "reviewedEnglishHash": "de0c2e40fd7a091dd181e135e3f5c4cd3db5295af5f627334d0334fa0dd228c5"
+  },
+  "Failed to approve join request": {
+    "en": "Failed to approve join request",
+    "zh-CN": "批准加入请求失败",
+    "reviewedEnglishHash": "3b65e5b7c998c9dc2c00af7a7ee1331ac05d9993935e621b74f42cf54ebe2022"
+  },
+  "Failed to archive company": {
+    "en": "Failed to archive company",
+    "zh-CN": "归档公司失败",
+    "reviewedEnglishHash": "83277dfeb130cdcc0d80994161b36ac2eb743e71726220b2ba5c81b6efd6a52e"
+  },
+  "Failed to archive project": {
+    "en": "Failed to archive project",
+    "zh-CN": "归档项目失败",
+    "reviewedEnglishHash": "e0fd3e202e750ad686ca95f46f538da5da1fa3b9b9501d1302fbbde8b6b086e2"
+  },
+  "Failed to clear sessions": {
+    "en": "Failed to clear sessions",
+    "zh-CN": "清除会话失败",
+    "reviewedEnglishHash": "ed9e6fe6eb0b269c71e44030f0ec56deaee2c9e8ac05a3ace0133b0f8ae04bda"
+  },
+  "Failed to copy {{label}}": {
+    "en": "Failed to copy {{label}}",
+    "zh-CN": "复制 {{label}} 失败",
+    "reviewedEnglishHash": "1b5ee5a270a28d528cf56c97d139a4b79c1592421eeaa16c69d09f70ed438730"
+  },
+  "Failed to create agent": {
+    "en": "Failed to create agent",
+    "zh-CN": "创建智能体失败",
+    "reviewedEnglishHash": "71b8459f6e0b7cc17c0e8aee5f0aa5aeff7a1813b64aa1b0be69acf206a21990"
+  },
+  "Failed to create company": {
+    "en": "Failed to create company",
+    "zh-CN": "创建公司失败",
+    "reviewedEnglishHash": "15fe94608c8a143707a3bb520569ea615c4711e4a8c28d06250a104bab287e77"
+  },
+  "Failed to create invite": {
+    "en": "Failed to create invite",
+    "zh-CN": "创建邀请失败",
+    "reviewedEnglishHash": "23a0de73f2e96e10fa0f371d3f1a5190025130180a85690369a9a8de67b667e4"
+  },
+  "Failed to create recovery tasks.": {
+    "en": "Failed to create recovery tasks.",
+    "zh-CN": "创建恢复任务失败。",
+    "reviewedEnglishHash": "ef9ad6180ef13a6f429d5762a00e2fe84b86b1cba7991d9f8e281b95b540c399"
+  },
+  "Failed to create routine": {
+    "en": "Failed to create routine",
+    "zh-CN": "创建例行任务失败",
+    "reviewedEnglishHash": "7374cba284beb86a7a000045f2547a0e3210bc60c73ea51f58e55199bd0a0d2f"
+  },
+  "Failed to create task": {
+    "en": "Failed to create task",
+    "zh-CN": "创建任务失败",
+    "reviewedEnglishHash": "9b9d7af18a613f0e84f9b38779b41907be14e5cccff2cf8ecddf6aacea702af0"
+  },
+  "Failed to delete document": {
+    "en": "Failed to delete document",
+    "zh-CN": "删除文档失败",
+    "reviewedEnglishHash": "62de8fe94b0bf2716f7f1f603651f64159d364b548ec84a7a2f136260c97f4a4"
+  },
+  "Failed to delete environment": {
+    "en": "Failed to delete environment",
+    "zh-CN": "删除环境失败",
+    "reviewedEnglishHash": "382f89dda2bc26603cf6af65949ad48e0e52d4c89db8506df87a3a6a04f6e744"
+  },
+  "Failed to delete stage": {
+    "en": "Failed to delete stage",
+    "zh-CN": "删除阶段失败",
+    "reviewedEnglishHash": "0bfd9c20ba4a0abf650f42045dd2a23d1756f3f8b4060c6125089109d7636ec8"
+  },
+  "Failed to delete trigger": {
+    "en": "Failed to delete trigger",
+    "zh-CN": "删除触发器失败",
+    "reviewedEnglishHash": "86096d6fbe637665ecf625ea4da5e66c636cfd7f903c330dc320b1a49ac268e6"
+  },
+  "Failed to disable 1 timer heartbeat: {{detail}}": {
+    "en": "Failed to disable 1 timer heartbeat: {{detail}}",
+    "zh-CN": "禁用 1 个定时心跳失败：{{detail}}",
+    "reviewedEnglishHash": "759ce79ae4748f99ddc1f5a2ce60b603ed07ff77b304392aae6b18be4b0a3201"
+  },
+  "Failed to disable all heartbeats.": {
+    "en": "Failed to disable all heartbeats.",
+    "zh-CN": "全部禁用心跳失败。",
+    "reviewedEnglishHash": "f44d608af2bf90ab4376511fcfd5a35f2d9869d81a5fea14ecaccf59077bc3d4"
+  },
+  "Failed to disable plugin": {
+    "en": "Failed to disable plugin",
+    "zh-CN": "禁用插件失败",
+    "reviewedEnglishHash": "ceb9e4f93985907307f528e3bba50a18000be2f143ccc16f99ab1571a6e66b9e"
+  },
+  "Failed to disable {{failed}} of {{enabled}} timer heartbeats. First error: {{detail}}": {
+    "en": "Failed to disable {{failed}} of {{enabled}} timer heartbeats. First error: {{detail}}",
+    "zh-CN": "禁用 {{enabled}} 个定时心跳中的 {{failed}} 个失败。首个错误：{{detail}}",
+    "reviewedEnglishHash": "4390ef03596903b8779679889c4d04d4e9bc58380722e7057a4f46928949b82a"
+  },
+  "Failed to duplicate agent": {
+    "en": "Failed to duplicate agent",
+    "zh-CN": "复制智能体失败",
+    "reviewedEnglishHash": "ee1f45283c17588422dfaf16e987e86b2bab6569a029553334e9e7c41dd39813"
+  },
+  "Failed to enable plugin": {
+    "en": "Failed to enable plugin",
+    "zh-CN": "启用插件失败",
+    "reviewedEnglishHash": "71e15485a3ea888d29508c21630bdb7636de4154ff97d7bf9b5cca88413605bc"
+  },
+  "Failed to finish connection.": {
+    "en": "Failed to finish connection.",
+    "zh-CN": "完成连接失败。",
+    "reviewedEnglishHash": "3e00bd414038565fa50f7ec26664d812bd86461c5d57ffa5f72da32ac97cfeab"
+  },
+  "Failed to import skill source.": {
+    "en": "Failed to import skill source.",
+    "zh-CN": "导入技能来源失败。",
+    "reviewedEnglishHash": "cc7383bcaeed82e4e287b41665e1d0dd7a0db1166ce22f7781244e6b31cf8832"
+  },
+  "Failed to install plugin": {
+    "en": "Failed to install plugin",
+    "zh-CN": "安装插件失败",
+    "reviewedEnglishHash": "3a078590c1e208015cbf52eadce56245d97d7503a01b65157cbd805d3fa6a70b"
+  },
+  "Failed to install skill update.": {
+    "en": "Failed to install skill update.",
+    "zh-CN": "安装技能更新失败。",
+    "reviewedEnglishHash": "54b0f39cdcf0ff2fa42501edc437ab04a6243393cf6cf049ad34019a474fd53c"
+  },
+  "Failed to load OpenCode models.": {
+    "en": "Failed to load OpenCode models.",
+    "zh-CN": "加载 OpenCode 模型失败。",
+    "reviewedEnglishHash": "c2dab824502ad48df96a08ad282ed76a951ed1b9815cdd506fbd263fd060c008"
+  },
+  "Failed to load app state": {
+    "en": "Failed to load app state",
+    "zh-CN": "加载应用状态失败",
+    "reviewedEnglishHash": "e372828724a70526dd488e400b646e8ccd509ccf9a329c130122a5c8681bd1ef"
+  },
+  "Failed to load bundled examples.": {
+    "en": "Failed to load bundled examples.",
+    "zh-CN": "加载内置示例失败。",
+    "reviewedEnglishHash": "5ecd45c1b91dcca287adbc21e376f2eed428016d2f897d7b1b8cab853723bd8b"
+  },
+  "Failed to load bundled plugins.": {
+    "en": "Failed to load bundled plugins.",
+    "zh-CN": "加载内置插件失败。",
+    "reviewedEnglishHash": "be9b5091ec441d62b92122a5bbc6c51aece80b8a343179962f7b4519e8ea0523"
+  },
+  "Failed to load company members.": {
+    "en": "Failed to load company members.",
+    "zh-CN": "加载公司成员失败。",
+    "reviewedEnglishHash": "53e0ba553c6a95ef73cedd623cf79842f414f80837ce66ae01c124b13b95fe4e"
+  },
+  "Failed to load experimental settings.": {
+    "en": "Failed to load experimental settings.",
+    "zh-CN": "加载实验功能设置失败。",
+    "reviewedEnglishHash": "73f7e3e898d5cc931e08ef801da3426e20036c4da94ae3a40178c229d18ba92e"
+  },
+  "Failed to load general settings.": {
+    "en": "Failed to load general settings.",
+    "zh-CN": "加载常规设置失败。",
+    "reviewedEnglishHash": "95b3c636a8c08d22d6f9bbaf6e72eb66734c700ec52399a2c535e46d83083a4b"
+  },
+  "Failed to load invites.": {
+    "en": "Failed to load invites.",
+    "zh-CN": "加载邀请失败。",
+    "reviewedEnglishHash": "d62fcfaa307f6974702eaa0c1c72088f1ddb2097eef6353c30acadc12204c7a9"
+  },
+  "Failed to load join requests.": {
+    "en": "Failed to load join requests.",
+    "zh-CN": "加载加入请求失败。",
+    "reviewedEnglishHash": "de1cbe58e21d7c45bd5280c913fe870f37681fc0a7dde01a1ae088abb8187274"
+  },
+  "Failed to load local folder settings.": {
+    "en": "Failed to load local folder settings.",
+    "zh-CN": "加载本地文件夹设置失败。",
+    "reviewedEnglishHash": "122abf059cffff799d09d4be7750cbb18110844ba998f74abade73437c06fc00"
+  },
+  "Failed to load more run log": {
+    "en": "Failed to load more run log",
+    "zh-CN": "加载更多运行日志失败",
+    "reviewedEnglishHash": "3b62d2b970475cdc3348d11e501ef7188809a3c47db10e842dde61398acddaa5"
+  },
+  "Failed to load organizations. Try again before changing access.": {
+    "en": "Failed to load organizations. Try again before changing access.",
+    "zh-CN": "加载组织失败。请重试成功后再更改访问权限。",
+    "reviewedEnglishHash": "cc196023199e043d4ae9e00d7a8c3ce21964c77796d58c371667c13e31b8bb4a"
+  },
+  "Failed to load plugins.": {
+    "en": "Failed to load plugins.",
+    "zh-CN": "加载插件失败。",
+    "reviewedEnglishHash": "4725f8bc7a47062c874194c81de22dd7609c3f6aa962b09a6d4b4e756e930eed"
+  },
+  "Failed to load profile.": {
+    "en": "Failed to load profile.",
+    "zh-CN": "加载个人资料失败。",
+    "reviewedEnglishHash": "530aef9d0b9be28d48554dcd615908898a0f5743b8e382ba2ca8e1586163a8cb"
+  },
+  "Failed to load routines": {
+    "en": "Failed to load routines",
+    "zh-CN": "加载例行任务失败",
+    "reviewedEnglishHash": "8917291223f82f4828b39847ef6c20ffb4f84f7ad6e9672a20613f336fe0564a"
+  },
+  "Failed to load run log": {
+    "en": "Failed to load run log",
+    "zh-CN": "加载运行日志失败",
+    "reviewedEnglishHash": "a4a2e5345fb62ab98c1de1c88abbf7f0931425b69eaf24df79c42e5aed0f7d07"
+  },
+  "Failed to load scheduler heartbeats.": {
+    "en": "Failed to load scheduler heartbeats.",
+    "zh-CN": "加载调度器心跳失败。",
+    "reviewedEnglishHash": "7eab38a5ae824e9ff8d3b32287271b6810f53b72c44ed1f028bbf8aca71b5bc1"
+  },
+  "Failed to load user access.": {
+    "en": "Failed to load user access.",
+    "zh-CN": "加载用户访问权限失败。",
+    "reviewedEnglishHash": "12e7f244b9749e487ff53de9c3d97872cbcfd04fa618eb53955a2397a392fa3d"
+  },
+  "Failed to load users.": {
+    "en": "Failed to load users.",
+    "zh-CN": "加载用户失败。",
+    "reviewedEnglishHash": "29647e1097e821eb686f682094ca00900df34282795ea602d74ab9beaa51f3d6"
+  },
+  "Failed to load workspace operation log": {
+    "en": "Failed to load workspace operation log",
+    "zh-CN": "加载工作区操作日志失败",
+    "reviewedEnglishHash": "42a6e0b2d6468412fca9796ea1585a51b2ea71114d03fd104d4d2db35b26854c"
+  },
+  "Failed to load workspaces.": {
+    "en": "Failed to load workspaces.",
+    "zh-CN": "无法加载工作区。",
+    "reviewedEnglishHash": "c7033771ac3e65af7a8d0bcee63940f948508affb3ad93382f625b858f381f62"
+  },
+  "Failed to move routines": {
+    "en": "Failed to move routines",
+    "zh-CN": "移动例行任务失败",
+    "reviewedEnglishHash": "cd16aeca56e41a2b06d2fc3d05796084558a8b3591391591e2480b43f239b605"
+  },
+  "Failed to move skills": {
+    "en": "Failed to move skills",
+    "zh-CN": "移动技能失败",
+    "reviewedEnglishHash": "7eeade8600860ab148515e5aa580add693447d9857e76e30fccd05151bbc019e"
+  },
+  "Failed to preview push.": {
+    "en": "Failed to preview push.",
+    "zh-CN": "预览推送失败。",
+    "reviewedEnglishHash": "1ef160cd9c7ab27af137f9cc9ab880c40341c428d307e5f32bacaf20ee9720f7"
+  },
+  "Failed to preview recovery tasks.": {
+    "en": "Failed to preview recovery tasks.",
+    "zh-CN": "预览恢复任务失败。",
+    "reviewedEnglishHash": "d6b2af51cda9b8d41658ca0567e48742bd2de9c6946a8ca3349367a86dca97e6"
+  },
+  "Failed to reject": {
+    "en": "Failed to reject",
+    "zh-CN": "拒绝失败",
+    "reviewedEnglishHash": "46960413b9a81e252b8c2d5871203b256e933d75f71421a818b2e9e7fca1a908"
+  },
+  "Failed to reject join request": {
+    "en": "Failed to reject join request",
+    "zh-CN": "拒绝加入请求失败",
+    "reviewedEnglishHash": "4d68f6e11d9ae57f64e18f55600d0b6fb0e2b8e5ae494ba4735d32699cc47190"
+  },
+  "Failed to relink template": {
+    "en": "Failed to relink template",
+    "zh-CN": "重新关联模板失败",
+    "reviewedEnglishHash": "b65f3f9a737a250608220c9a0a2ca115875ee419b63c5cdadf78f7527dcbbf5a"
+  },
+  "Failed to remove avatar.": {
+    "en": "Failed to remove avatar.",
+    "zh-CN": "移除头像失败。",
+    "reviewedEnglishHash": "f90661198c6813e4910673b568f387d1558190e923d911d6900690f700ecc5cf"
+  },
+  "Failed to remove member": {
+    "en": "Failed to remove member",
+    "zh-CN": "移除成员失败",
+    "reviewedEnglishHash": "1cff79b7eb0ba83724c806e7d3d413e80648ff3508b07017f248d02386bf86c0"
+  },
+  "Failed to reset session": {
+    "en": "Failed to reset session",
+    "zh-CN": "重置会话失败",
+    "reviewedEnglishHash": "0ecbdfe91e4c0dd4d905751efa0a131a1a93c4fdb87a713bc229f7593441518c"
+  },
+  "Failed to restore document revision": {
+    "en": "Failed to restore document revision",
+    "zh-CN": "恢复文档修订失败",
+    "reviewedEnglishHash": "1e5055596515e0b9ba9a84618f129d6950797bdf8f51626f2c63285766575ef3"
+  },
+  "Failed to resume run": {
+    "en": "Failed to resume run",
+    "zh-CN": "恢复运行失败",
+    "reviewedEnglishHash": "568735470438fdd8b35c9675c8ec81bcd3a9b2a95537fb69d54276f0f3be92a4"
+  },
+  "Failed to retry run": {
+    "en": "Failed to retry run",
+    "zh-CN": "重试运行失败",
+    "reviewedEnglishHash": "0ce80ccb89b6e7836a5c93a24119166afe2c71432f1c0e227f848eb8b78effc7"
+  },
+  "Failed to revoke invite": {
+    "en": "Failed to revoke invite",
+    "zh-CN": "撤销邀请失败",
+    "reviewedEnglishHash": "ac674f0b0e047e9d0fcbfb382a3397e1bf84b6c624c618f43009e65f331e8567"
+  },
+  "Failed to rotate webhook secret": {
+    "en": "Failed to rotate webhook secret",
+    "zh-CN": "轮换 Webhook 密钥失败",
+    "reviewedEnglishHash": "1caaab4fa334b7925bbd606f02c91af6edc5860d1290d55f03f851c36cd813a3"
+  },
+  "Failed to run Claude login": {
+    "en": "Failed to run Claude login",
+    "zh-CN": "运行 Claude 登录失败",
+    "reviewedEnglishHash": "130ad905ccc837d18da9f8af60cf49402ccff02af160c37d31c1b4c2ae3b73d8"
+  },
+  "Failed to run push.": {
+    "en": "Failed to run push.",
+    "zh-CN": "运行推送失败。",
+    "reviewedEnglishHash": "387039ee83c4901e3359a3ea32448bee8649c87b89d46cfe3bfb177f8968eaf6"
+  },
+  "Failed to save": {
+    "en": "Failed to save",
+    "zh-CN": "保存失败",
+    "reviewedEnglishHash": "2c07997249abaa7682c5ac2d3b25f8b7d25c45661be0bde90b2f74f19987e607"
+  },
+  "Failed to save configuration.": {
+    "en": "Failed to save configuration.",
+    "zh-CN": "保存配置失败。",
+    "reviewedEnglishHash": "3c2844d8e92e0170ee4ec726b337edd517eb90026e9843fd134f9074a307167a"
+  },
+  "Failed to save document": {
+    "en": "Failed to save document",
+    "zh-CN": "保存文档失败",
+    "reviewedEnglishHash": "210b653bb478a0cd3621afb179b186e0ee6d024a8d5cadb52416d59eca5022ae"
+  },
+  "Failed to save environment variables": {
+    "en": "Failed to save environment variables",
+    "zh-CN": "保存环境变量失败",
+    "reviewedEnglishHash": "01ee01929bc12fd0f99b57164cb9c055e54db8a1b02555b544e5900610633e96"
+  },
+  "Failed to save feedback": {
+    "en": "Failed to save feedback",
+    "zh-CN": "保存反馈失败",
+    "reviewedEnglishHash": "ad0dfc664cec55abaa9e02a92fd1c1a0007b8a00e43840a6b0160c2ddfce8a30"
+  },
+  "Failed to save folder": {
+    "en": "Failed to save folder",
+    "zh-CN": "保存文件夹失败",
+    "reviewedEnglishHash": "64879e714ac971fa8db757f5c51fa05653571264e7d1cecaa4c805466d71d705"
+  },
+  "Failed to save local folder.": {
+    "en": "Failed to save local folder.",
+    "zh-CN": "保存本地文件夹失败。",
+    "reviewedEnglishHash": "29c1e28e2078ce191b7b00b76cec7d3c4907e6c454ace6543599e0abdaa7a79d"
+  },
+  "Failed to save routine": {
+    "en": "Failed to save routine",
+    "zh-CN": "保存例行任务失败",
+    "reviewedEnglishHash": "34cf35e3379f573ced7c79ee534168c5e3f65224fdfd6e737b66950273163e7c"
+  },
+  "Failed to save secrets": {
+    "en": "Failed to save secrets",
+    "zh-CN": "保存密钥失败",
+    "reviewedEnglishHash": "3e52459715672845524522bfaa7bda1e372cf4e96bc65e8271cdf1e95bc38c28"
+  },
+  "Failed to save skill file.": {
+    "en": "Failed to save skill file.",
+    "zh-CN": "保存技能文件失败。",
+    "reviewedEnglishHash": "192171d96fcbc81363aa56726530fb819c996d05fe61c22366f4677eaae68a21"
+  },
+  "Failed to save stage": {
+    "en": "Failed to save stage",
+    "zh-CN": "保存阶段失败",
+    "reviewedEnglishHash": "fb32087029ed4aba42eb7e8c03e9abf13f717ae6f140c3ab72cc91940c27de56"
+  },
+  "Failed to scan project workspaces.": {
+    "en": "Failed to scan project workspaces.",
+    "zh-CN": "扫描项目工作区失败。",
+    "reviewedEnglishHash": "c7b1f73c0ab954efe15b03ab301b69fd931b2fae5eefe1838721450e2387c58a"
+  },
+  "Failed to sign out.": {
+    "en": "Failed to sign out.",
+    "zh-CN": "退出登录失败。",
+    "reviewedEnglishHash": "d991a0cac66bc5545addf9471b99db64f09aa14c9839ada6eff0b2fb911830d8"
+  },
+  "Failed to start connection.": {
+    "en": "Failed to start connection.",
+    "zh-CN": "启动连接失败。",
+    "reviewedEnglishHash": "f6b8e29978be23092e57087160de7c0a2384f04731c39b75534dc8e852a661d7"
+  },
+  "Failed to unarchive project": {
+    "en": "Failed to unarchive project",
+    "zh-CN": "取消归档项目失败",
+    "reviewedEnglishHash": "63df5eb6607bfdb9357e798e63df91b236596f87b25a7a847ca86093d2efc0b7"
+  },
+  "Failed to uninstall plugin": {
+    "en": "Failed to uninstall plugin",
+    "zh-CN": "卸载插件失败",
+    "reviewedEnglishHash": "633e573dbad1a7a8cc69099a81593068be72ddf338d31555ecc81fbb0e2c95e1"
+  },
+  "Failed to unset ANTHROPIC_API_KEY and retry.": {
+    "en": "Failed to unset ANTHROPIC_API_KEY and retry.",
+    "zh-CN": "清空 ANTHROPIC_API_KEY 并重试失败。",
+    "reviewedEnglishHash": "10e549fb84eaddd4d1947e4189436572c399c9206e6e6010226b878ce9c67345"
+  },
+  "Failed to update experimental settings.": {
+    "en": "Failed to update experimental settings.",
+    "zh-CN": "更新实验功能设置失败。",
+    "reviewedEnglishHash": "4dca3a12e5a744e51a97bf81de5f0241a8d16b0083fe6ac8792b1a75ac260345"
+  },
+  "Failed to update general settings.": {
+    "en": "Failed to update general settings.",
+    "zh-CN": "更新常规设置失败。",
+    "reviewedEnglishHash": "675545acc5d1951d1b6b3666a7ca13f2fb85951cb36e420154d51319329b1274"
+  },
+  "Failed to update heartbeat.": {
+    "en": "Failed to update heartbeat.",
+    "zh-CN": "更新心跳失败。",
+    "reviewedEnglishHash": "2cb2dbd0a597529ce58a36dcb9c02edf4faae22121e13f3c7b27c8aecdfa0b21"
+  },
+  "Failed to update member": {
+    "en": "Failed to update member",
+    "zh-CN": "更新成员失败",
+    "reviewedEnglishHash": "b5a62f4d97fd0718e58e32b0f5aac2bed6f9464bc6adeadaae98bb6a328f999a"
+  },
+  "Failed to update permissions": {
+    "en": "Failed to update permissions",
+    "zh-CN": "更新权限失败",
+    "reviewedEnglishHash": "2b52d8b009f9988e165856452a37d8cd0282a3066f76bf42a1047eb0452acaee"
+  },
+  "Failed to update profile.": {
+    "en": "Failed to update profile.",
+    "zh-CN": "更新个人资料失败。",
+    "reviewedEnglishHash": "6c0c2acb56277f07aa404916662b4ef69e8e2ba29e6d49583125271e32da3cb1"
+  },
+  "Failed to update routine": {
+    "en": "Failed to update routine",
+    "zh-CN": "更新例行任务失败",
+    "reviewedEnglishHash": "658553fd32ab2e2aef302319570a2b007c7bf33405ddc48685e214a1a1251fde"
+  },
+  "Failed to update skills": {
+    "en": "Failed to update skills",
+    "zh-CN": "技能更新失败",
+    "reviewedEnglishHash": "6de194e3d7008412d7df773d5cf6fee3e69a4967105ead99835f61b41b07ce7a"
+  },
+  "Failed to update task": {
+    "en": "Failed to update task",
+    "zh-CN": "更新任务失败",
+    "reviewedEnglishHash": "be6f0c0f980b459f5a7426a7b9a0256d0df875e32b378484649f9e0e9c9b1ce0"
+  },
+  "Failed to update transition rules": {
+    "en": "Failed to update transition rules",
+    "zh-CN": "更新流转规则失败",
+    "reviewedEnglishHash": "aa35c7df67e6d504864d5d289b568bfd0fe30f539708aaaa6afd5a594de81be0"
+  },
+  "Failed to update trigger": {
+    "en": "Failed to update trigger",
+    "zh-CN": "更新触发器失败",
+    "reviewedEnglishHash": "4707ca6abf3f933dee62022741f5f5aba3c9d9de68a170e41fa2bfb2e17e81a1"
+  },
+  "Failed to upload avatar.": {
+    "en": "Failed to upload avatar.",
+    "zh-CN": "上传头像失败。",
+    "reviewedEnglishHash": "cc7c19d57d95481d0adeb6d35ba1946aa34dc2e635a361c9bbe6a49c4881a541"
+  },
+  "Failed with exit code {{exitCode}}": {
+    "en": "Failed with exit code {{exitCode}}",
+    "zh-CN": "执行失败，退出码 {{exitCode}}",
+    "reviewedEnglishHash": "81b1f54de7317a487713336a48fe6a0407eaf36c9812217fe0ffdcca11e8d5c6"
+  },
+  "Failure details": {
+    "en": "Failure details",
+    "zh-CN": "失败详情",
+    "reviewedEnglishHash": "6317e0c6b663177f594ccedae9c6d45fcf474072fca8c9f4215cbc806313a9be"
+  },
+  "Failure:": {
+    "en": "Failure:",
+    "zh-CN": "失效",
+    "reviewedEnglishHash": "f130e747d546a5ff4121caf686260ccab8fe1357f9442cc9da7aa79ecf5ebea6"
+  },
+  "False": {
+    "en": "False",
+    "zh-CN": "否",
+    "reviewedEnglishHash": "60a33e6cf5151f2d52eddae9685cfa270426aa89d8dbc7dfb854606f1d1a40fe"
+  },
+  "Fast response": {
+    "en": "Fast response",
+    "zh-CN": "快速响应",
+    "reviewedEnglishHash": "b68363dba366488490c7f56a0d1fc83edf2763127bc98fc99ea8611ecdb92672"
+  },
+  "Fast responses": {
+    "en": "Fast responses",
+    "zh-CN": "快速响应",
+    "reviewedEnglishHash": "ddef68c517c7a2159931afef82bda6b9cd47f42373b071903431554e5d85b5ff"
+  },
+  "Fed by": {
+    "en": "Fed by",
+    "zh-CN": "上游来源：",
+    "reviewedEnglishHash": "aeab8bc9a4fd52bb6111cdec2cb2f63169b7cd0017b6291459c7d34d85841bf3"
+  },
+  "Feedback": {
+    "en": "Feedback",
+    "zh-CN": "反馈",
+    "reviewedEnglishHash": "aac77df347205252b074d45aff7891debdba0ff1466cc0c351416d1662bb71ab"
+  },
+  "Feedback saved": {
+    "en": "Feedback saved",
+    "zh-CN": "反馈已保存",
+    "reviewedEnglishHash": "e812e0b80090d923bd9d8b9ca36ccf928fd7e288debe496b79c739449f6bca72"
+  },
+  "Feedback saved and sharing enabled": {
+    "en": "Feedback saved and sharing enabled",
+    "zh-CN": "反馈已保存，并已启用共享",
+    "reviewedEnglishHash": "3ef000edf98f1b85d9f32b5406d644f11b0372d89c6d03c11f3039a47ecf0d1c"
+  },
+  "Feedback saved. Future votes will share": {
+    "en": "Feedback saved. Future votes will share",
+    "zh-CN": "反馈已保存，后续投票将默认共享",
+    "reviewedEnglishHash": "510bbe8f61127a2e61d96884e4265f6ab5e7ec3f265385aaab980f3aeb6e88bd"
+  },
+  "Feedback saved. Future votes will stay local": {
+    "en": "Feedback saved. Future votes will stay local",
+    "zh-CN": "反馈已保存，后续投票将保持仅本地可见",
+    "reviewedEnglishHash": "1fc74647e162936ca9bb08c9285a109f9800174617079768178f47a2eb97c138"
+  },
+  "Feedback trace not found": {
+    "en": "Feedback trace not found",
+    "zh-CN": "未找到反馈追踪记录",
+    "reviewedEnglishHash": "e7470e0d7bbf75dfdc889d1610b8eca8a20706b7b6a152833847ec9bc48df757"
+  },
+  "File contents": {
+    "en": "File contents",
+    "zh-CN": "文件内容",
+    "reviewedEnglishHash": "69423babe8e61aab549f347bcc8b9d77b7dcaca198fb0597bde0b5f97f968e38"
+  },
+  "File delivery outcomes": {
+    "en": "File delivery outcomes",
+    "zh-CN": "文件传送结果",
+    "reviewedEnglishHash": "e0229aa59efcc9edfa6e82f06c0f365adb6c5e64735760adfb0503e1eed24a0f"
+  },
+  "File is empty.": {
+    "en": "File is empty.",
+    "zh-CN": "文件是空的。",
+    "reviewedEnglishHash": "912dda303fa818afdeb6c13d4d09f9625ff8a8140b7b43f8dea5de1b369a97e0"
+  },
+  "File no longer available. Close this tab or choose another file.": {
+    "en": "File no longer available. Close this tab or choose another file.",
+    "zh-CN": "文件不再可用。关闭此选项卡或选择另一个文件。",
+    "reviewedEnglishHash": "e33f3900faa504f43aa718cce1d7f561ff79e04d535e02416ef6079b0a759176"
+  },
+  "File preview mode": {
+    "en": "File preview mode",
+    "zh-CN": "文件预览模式",
+    "reviewedEnglishHash": "ba7ca35405b7bae0e88e1f8f11f74ff35d2b1d92a733dc3ea6e4d205c1f805ac"
+  },
+  "Files": {
+    "en": "Files",
+    "zh-CN": "文件",
+    "reviewedEnglishHash": "abc7e9892806b047b4d4786b3685285543f76ca314c4c76246d5f6544c7856c9"
+  },
+  "Files (": {
+    "en": "Files (",
+    "zh-CN": "文件（",
+    "reviewedEnglishHash": "73c224c7acc6e841a4c2af50c75af3f30d33291fbadfd51ed58b27663fee0763"
+  },
+  "Files and images": {
+    "en": "Files and images",
+    "zh-CN": "文件和图像",
+    "reviewedEnglishHash": "bad8aa9e10667a5596d141791068ae2eec95c4b4452e192074a1e4355783ac4d"
+  },
+  "Files stay on this task until you send them to the channel.": {
+    "en": "Files stay on this task until you send them to the channel.",
+    "zh-CN": "文件将保留在此任务中，直到您将其发送到频道。",
+    "reviewedEnglishHash": "c68a82b033538667539f9dcbc725ab3a188fd84d2a1698c03bc21218633c625b"
+  },
+  "Files this agent produced": {
+    "en": "Files this agent produced",
+    "zh-CN": "该智能体生成的文件",
+    "reviewedEnglishHash": "1f34ff83bea951de02f12f1f4c3529acf74a0eabde689347af4afe314c4d47e3"
+  },
+  "Files ·": {
+    "en": "Files ·",
+    "zh-CN": "文件·",
+    "reviewedEnglishHash": "bbcf4d5ad0dbde3f2037187ea8f25fd87af487b011924d4477e2c9e77755c777"
+  },
+  "Filter": {
+    "en": "Filter",
+    "zh-CN": "筛选",
+    "reviewedEnglishHash": "638e249f4a15ebb84957da130701d138a6e06d88dceeaa2e6dcd91db70cc1381"
+  },
+  "Filter Bar": {
+    "en": "Filter Bar",
+    "zh-CN": "筛选栏",
+    "reviewedEnglishHash": "75d3ce3739283a7be81a1d8efec3899dee4bddfb19811af1b43488f72951fd0d"
+  },
+  "Filter by agent name": {
+    "en": "Filter by agent name",
+    "zh-CN": "按智能体名称筛选",
+    "reviewedEnglishHash": "0f60d859d663d733eb24dcaaf0a8fea1f3255c55fec819fc9284666e7ee881f6"
+  },
+  "Filter by issue label": {
+    "en": "Filter by issue label",
+    "zh-CN": "按任务标签筛选",
+    "reviewedEnglishHash": "649f2d502d86a5cda9e39226201c8b7ce8e5306220ec7a98b4a4027ecb565e44"
+  },
+  "Filter by priority": {
+    "en": "Filter by priority",
+    "zh-CN": "按优先级筛选",
+    "reviewedEnglishHash": "48b74b8f81c021ef7f3135288dc6c2f3ac0f15d6c0fa7ec4392d7fb6488efc62"
+  },
+  "Filter by task status": {
+    "en": "Filter by task status",
+    "zh-CN": "按任务状态筛选",
+    "reviewedEnglishHash": "979aaadd7bcd85d0e9e746cedee0ae4e5776db205f2496166644b1b781907b49"
+  },
+  "Filter by type": {
+    "en": "Filter by type",
+    "zh-CN": "按类型筛选",
+    "reviewedEnglishHash": "51035b5b67dca0d1ea2348d44a4b18658fd03a3ea4f774aaadc2ac6bcb4c61bc"
+  },
+  "Filter by workspace": {
+    "en": "Filter by workspace",
+    "zh-CN": "按工作区筛选",
+    "reviewedEnglishHash": "7e5aae00f559b3417a859c4b82c58babb9310bde3459c7db550e309923181852"
+  },
+  "Filter choices": {
+    "en": "Filter choices",
+    "zh-CN": "过滤器选择",
+    "reviewedEnglishHash": "386caed3a289cd7b44c0af1e1d303b83d4e9f789339f3c54f51fc89955cc492a"
+  },
+  "Filter options": {
+    "en": "Filter options",
+    "zh-CN": "过滤器选项",
+    "reviewedEnglishHash": "62b7223959c2ebdbd78e88783b07b33f9f0c25acccbed7ebb7b05489606521e8"
+  },
+  "Filter suggested tasks": {
+    "en": "Filter suggested tasks",
+    "zh-CN": "过滤建议任务",
+    "reviewedEnglishHash": "fa7c7e087a1b70e281a3f2bf6d16197e050668e9991ddd21938f0bafb137273e"
+  },
+  "Filters": {
+    "en": "Filters",
+    "zh-CN": "筛选",
+    "reviewedEnglishHash": "546ebb8eb993ea561029d9febd84c363bdb09010bb2cb915a8287762b76b9a64"
+  },
+  "Filters: {{count}}": {
+    "en": "Filters: {{count}}",
+    "zh-CN": "筛选：{{count}}",
+    "reviewedEnglishHash": "1893a93fd706ec63c51812e3ccc76ab528c1421f1012231f76ed5891bb732fe0"
+  },
+  "Finance": {
+    "en": "Finance",
+    "zh-CN": "账务",
+    "reviewedEnglishHash": "b696d75511dc16f2b52563e3113a498311a79866f4672862197aa9a8c5c0da12"
+  },
+  "Finance events": {
+    "en": "Finance events",
+    "zh-CN": "账务事件",
+    "reviewedEnglishHash": "6fbed76e2c32ee0ebd136455103c66613ef6636424dbfab3199f133a1a27928d"
+  },
+  "Finance headline totals are USD only. Other currencies are listed separately; no exchange-rate conversion is applied.": {
+    "en": "Finance headline totals are USD only. Other currencies are listed separately; no exchange-rate conversion is applied.",
+    "zh-CN": "财务汇总仅计入 USD。其他币种单独列出，不进行汇率换算。",
+    "reviewedEnglishHash": "0e1e0797ff86833194c980125e954af47a019a102c6294130bb38b6a116134f7"
+  },
+  "Finance ledger": {
+    "en": "Finance ledger",
+    "zh-CN": "账务总览",
+    "reviewedEnglishHash": "46bfab69ff187f2ff82b60c99bb4b671f20da19fcf2e11d60af7c3d87d299420"
+  },
+  "Finance net": {
+    "en": "Finance net",
+    "zh-CN": "净支出",
+    "reviewedEnglishHash": "b6985edcc86e54e44f3fd82cc9cdccb7ab3c9e3216e0e576fbaab3201b9ef524"
+  },
+  "Financial event mix": {
+    "en": "Financial event mix",
+    "zh-CN": "账务构成",
+    "reviewedEnglishHash": "ca44745da64924633ec0658af820a9a12bb3a0655226ba43bc2980c6aa1f1d84"
+  },
+  "Financial events could not be loaded. Please try again shortly.": {
+    "en": "Financial events could not be loaded. Please try again shortly.",
+    "zh-CN": "无法加载财务事件，请稍后重试。",
+    "reviewedEnglishHash": "6ed21fb100e514fd6b363cacbd9131c0298c0c14ec3ae83477fefe9c54f6c3ab"
+  },
+  "Find an agent": {
+    "en": "Find an agent",
+    "zh-CN": "查找智能体",
+    "reviewedEnglishHash": "321aa8e948b816be4dba78e663e90a28d2b70a9bdd2b8a40549dd626b80116b2"
+  },
+  "Find blocked work": {
+    "en": "Find blocked work",
+    "zh-CN": "查找阻塞工作",
+    "reviewedEnglishHash": "3118bf057167bd7e8317c8bc7f00e6cd1b250f64792dd9f4cdb1ad28a4951125"
+  },
+  "Find install commands and paste one here.": {
+    "en": "Find install commands and paste one here.",
+    "zh-CN": "找到安装命令后粘贴到这里。",
+    "reviewedEnglishHash": "073af77555d5e9eadf6921ded3d3e1e5efce4b6b3b0352e8e7a656804c097865"
+  },
+  "Finding categories": {
+    "en": "Finding categories",
+    "zh-CN": "审查发现类别",
+    "reviewedEnglishHash": "6f31e9d6dcf75799f07739ffb2b4e6a40d6bea6a3c37aa6d6c47addc91bf71d0"
+  },
+  "Findings": {
+    "en": "Findings",
+    "zh-CN": "审查发现",
+    "reviewedEnglishHash": "e171c2ff25b55e5a2d63d081ec3a65e272d11afec9169a03822c970aac37e79e"
+  },
+  "Fingerprint copied": {
+    "en": "Fingerprint copied",
+    "zh-CN": "指纹已复制",
+    "reviewedEnglishHash": "8c837ec1bc2f0dae32e261e04648a4a6b404e5dc47740f8149a99db7b0e21df2"
+  },
+  "Finish connecting": {
+    "en": "Finish connecting",
+    "zh-CN": "请完成",
+    "reviewedEnglishHash": "802dfbb2c965e6469cacc9b234596abdbe01f05241aed584ed680f9afed1c3fc"
+  },
+  "Finish connecting this account.": {
+    "en": "Finish connecting this account.",
+    "zh-CN": "请完成此账户的连接。",
+    "reviewedEnglishHash": "91131e5e04431eadfaf2566c9f37bfda2a234a3240a63db1962b1226525636ca"
+  },
+  "Finish the existing request below. Use Reset only when you intend to start a new call.": {
+    "en": "Finish the existing request below. Use Reset only when you intend to start a new call.",
+    "zh-CN": "请完成下方已有的请求。仅在打算发起新调用时使用“重置”。",
+    "reviewedEnglishHash": "3fdd9c79ef1fbaa2c2588e309f992e02828ed1d215e7698925980b49e8eee55d"
+  },
+  "Finished 2m ago": {
+    "en": "Finished 2m ago",
+    "zh-CN": "2 分钟前完成",
+    "reviewedEnglishHash": "e7890b9d4d4335f5b844d7fa1f1cfc1129cfc8141035c6d76337ebf9666cf7c8"
+  },
+  "Finished work": {
+    "en": "Finished work",
+    "zh-CN": "已完成",
+    "reviewedEnglishHash": "41443187c57888bb2a481c896bb6219024b339b46df814348d39686b25b5eb2d"
+  },
+  "Finished {{time}}": {
+    "en": "Finished {{time}}",
+    "zh-CN": "{{time}}完成",
+    "reviewedEnglishHash": "0d8996408d187151b92eb4923d835c65667354d2defa1f51f2f9a570b0f9cbd2"
+  },
+  "First task: propose with a plan document": {
+    "en": "First task: propose with a plan document",
+    "zh-CN": "首次任务：通过计划文档提出方案",
+    "reviewedEnglishHash": "49698152f4dce00240e9f2ca0e25e70161407d3477b1c1235eee2b7ad624db1f"
+  },
+  "First-party": {
+    "en": "First-party",
+    "zh-CN": "官方",
+    "reviewedEnglishHash": "ee374836b96dbc0141836f632b3773e02b81e97e4428400a3692a32126b53008"
+  },
+  "First-party deterministic sandbox provider plugin for exercising Paperclip provider-plugin integration without external infrastructure.": {
+    "en": "First-party deterministic sandbox provider plugin for exercising Paperclip provider-plugin integration without external infrastructure.",
+    "zh-CN": "第一方确定性沙箱提供方插件，用于在没有外部基础设施时验证 Paperclip 提供方插件集成。",
+    "reviewedEnglishHash": "cfa59cd084cef8731551b425c3098943ac90b95ed935848d8b621c611359f866"
+  },
+  "First-party sandbox provider plugin that provisions Cloudflare sandboxes through an operator-deployed Worker bridge.": {
+    "en": "First-party sandbox provider plugin that provisions Cloudflare sandboxes through an operator-deployed Worker bridge.",
+    "zh-CN": "第一方沙箱提供方插件，通过操作者部署的 Worker 桥接器创建 Cloudflare 沙箱。",
+    "reviewedEnglishHash": "21a6b8ce3059c5659c0c74f440432a6c1d572d609159fe5b54a824c61fab8c44"
+  },
+  "First-party sandbox provider plugin that provisions Daytona sandboxes as Paperclip execution environments.": {
+    "en": "First-party sandbox provider plugin that provisions Daytona sandboxes as Paperclip execution environments.",
+    "zh-CN": "第一方沙箱提供方插件，用于把 Daytona 沙箱配置为 Paperclip CN 执行环境。",
+    "reviewedEnglishHash": "e9dc442ea42ed1ee404383f06842d069ccd549472e7c5829350396d22290d73f"
+  },
+  "First-party sandbox provider plugin that provisions E2B cloud sandboxes as Paperclip execution environments.": {
+    "en": "First-party sandbox provider plugin that provisions E2B cloud sandboxes as Paperclip execution environments.",
+    "zh-CN": "第一方沙箱提供方插件，用于把 E2B 云沙箱配置为 Paperclip 执行环境。",
+    "reviewedEnglishHash": "48cc2726ba27048c0db35a26f25f94f7af5a7d05ee31441d8f700c531dc0c3b4"
+  },
+  "First-party sandbox provider plugin that provisions Modal sandboxes as Paperclip execution environments.": {
+    "en": "First-party sandbox provider plugin that provisions Modal sandboxes as Paperclip execution environments.",
+    "zh-CN": "第一方沙箱提供方插件，用于把 Modal 沙箱配置为 Paperclip 执行环境。",
+    "reviewedEnglishHash": "eff8aa9f0ef3392c180e5fae34717cacabcbd4362a546419b64602e239d1598f"
+  },
+  "First-party smoke plugin that exercises Paperclip orchestration-grade plugin APIs.": {
+    "en": "First-party smoke plugin that exercises Paperclip orchestration-grade plugin APIs.",
+    "zh-CN": "第一方冒烟插件，用于验证 Paperclip 编排级插件 API。",
+    "reviewedEnglishHash": "99a410a384a4031f11ccb270e82a0bf3f87fa4922bd3f166f36bae7576db15e9"
+  },
+  "Fit": {
+    "en": "Fit",
+    "zh-CN": "适配",
+    "reviewedEnglishHash": "9f872ed43d00d8bdb372b1c05bd345b22f2ad5f7f41e06656d05625602e065b1"
+  },
+  "Fit chart to screen": {
+    "en": "Fit chart to screen",
+    "zh-CN": "让图表适应屏幕",
+    "reviewedEnglishHash": "3dc2e33313f5cf3c3169383689c218d7884a1aadff00569021dc4a6e0cc10a4d"
+  },
+  "Fit to pane": {
+    "en": "Fit to pane",
+    "zh-CN": "适合窗格",
+    "reviewedEnglishHash": "4afeed1a87c035b1e9a0950bd981fe66f94da916b2bb1bf9ec3c2929f7e057ca"
+  },
+  "Fit to screen": {
+    "en": "Fit to screen",
+    "zh-CN": "适应屏幕",
+    "reviewedEnglishHash": "32bb0d298ca1545c909c4424cb93a9fce54a07c1a80a42432512d50f9513a075"
+  },
+  "Fit to this pane instead": {
+    "en": "Fit to this pane instead",
+    "zh-CN": "改为适合此窗格",
+    "reviewedEnglishHash": "0b459f0661b173b5dbaacb172be932b1f098e87c6f87942713bd21b92b94383c"
+  },
+  "Five fields: minute hour day-of-month month day-of-week": {
+    "en": "Five fields: minute hour day-of-month month day-of-week",
+    "zh-CN": "五段格式：分钟 小时 日 月 星期",
+    "reviewedEnglishHash": "7abb912add4d394ad508772597c69d6ca6bd9e945b5d624ad9b3d3a42b71dfcc"
+  },
+  "Fix stage settings": {
+    "en": "Fix stage settings",
+    "zh-CN": "修正阶段设置",
+    "reviewedEnglishHash": "f004e056ad4e5992a5cb27a3f9145a606eaa144f6d6b602d0dbb626c0ac9076a"
+  },
+  "Fixed": {
+    "en": "Fixed",
+    "zh-CN": "固定",
+    "reviewedEnglishHash": "1246fc93bca00b90d0fcaf2f7b7b41546f08817ce552c25eabc7dca19181c65a"
+  },
+  "Fixture rows": {
+    "en": "Fixture rows",
+    "zh-CN": "测试数据行数",
+    "reviewedEnglishHash": "fa71dd52d3cb162b580b84a43cf98dc3029ce5190441c3e2b804c990ed48d321"
+  },
+  "Fixture shape": {
+    "en": "Fixture shape",
+    "zh-CN": "测试数据结构",
+    "reviewedEnglishHash": "c842f33685820b4fa7387e7e0fa6c08f3a557980e875c36775d9efc82a3a76d2"
+  },
+  "Focus comment composer": {
+    "en": "Focus comment composer",
+    "zh-CN": "聚焦评论输入框",
+    "reviewedEnglishHash": "a0f6da743c0710316cf2223878c8fa11df1109f49895e551147ce55d90c75601"
+  },
+  "Fold Inbox into Tasks. One Tasks row carries the unread badge, and a Views menu reaches every inbox view (Mine, Unread, Blocked, Recent, Everything) and every task view.": {
+    "en": "Fold Inbox into Tasks. One Tasks row carries the unread badge, and a Views menu reaches every inbox view (Mine, Unread, Blocked, Recent, Everything) and every task view.",
+    "zh-CN": "将收件箱并入任务列表。侧边栏中的单个“任务”入口显示未读徽章，通过“视图”菜单可访问所有收件箱视图（我的、未读、受阻、最近、全部）和任务视图。",
+    "reviewedEnglishHash": "88c0df75cdda840a9ab3012615c383a338ec400fcb1dfe78548ec0276684b783"
+  },
+  "Folder": {
+    "en": "Folder",
+    "zh-CN": "文件夹",
+    "reviewedEnglishHash": "74ccd43303847f2655300641a934959cdb11689ce171aa0f00faa92917fbd340"
+  },
+  "Follow-up": {
+    "en": "Follow-up",
+    "zh-CN": "跟进",
+    "reviewedEnglishHash": "09b2d9cd1123792aad06158c9acb18ce855b7011b78f3923c91804b3ef6bf176"
+  },
+  "For": {
+    "en": "For",
+    "zh-CN": "用于",
+    "reviewedEnglishHash": "ca15ebc05a3c5c1348753b209c4452c54022dbe565d9943b11c795e3af9eb0b0"
+  },
+  "For example: Keep replies brief and explain technical terms.": {
+    "en": "For example: Keep replies brief and explain technical terms.",
+    "zh-CN": "例如：回复保持简短，并解释技术术语。",
+    "reviewedEnglishHash": "e192ab65aa916dd938e53e23eff53ed1b3fe33362d78312d7ec92888d433b90e"
+  },
+  "For you:": {
+    "en": "For you:",
+    "zh-CN": "为你：",
+    "reviewedEnglishHash": "112b0babdec843b4ba8ee7bc6047988553b82b54254eef19eefa6281b8b03047"
+  },
+  "Forbidden": {
+    "en": "Forbidden",
+    "zh-CN": "禁止访问",
+    "reviewedEnglishHash": "78342a0905a72ce44da083dcb5d23b8ea0c16992ba2a82eece97e033d76ba3d3"
+  },
+  "Foreground": {
+    "en": "Foreground",
+    "zh-CN": "前景",
+    "reviewedEnglishHash": "ad4e241834eccd5c8763f0fbb554a1591ebf7cdd78d37e5e52bb913ed3341f5c"
+  },
+  "Fork this skill": {
+    "en": "Fork this skill",
+    "zh-CN": "派生此技能",
+    "reviewedEnglishHash": "1525ade070c6951ad22ceb2f536c6de1be1ddb0725be383da46b6917da21a2d8"
+  },
+  "Forking": {
+    "en": "Forking",
+    "zh-CN": "正在派生",
+    "reviewedEnglishHash": "e56efe53bdd4a561bfe8abdb98ff7215d38ccdb64652f4dee70ce4b3f429df9b"
+  },
+  "Form Elements": {
+    "en": "Form Elements",
+    "zh-CN": "表单元素",
+    "reviewedEnglishHash": "87340ea44c3d8e3175576e3dcdc57607584686d235238a3ce2cdb85fb06bc468"
+  },
+  "Fresh browsers are the default. Selected profiles let agents use their saved website logins. Manage profiles in": {
+    "en": "Fresh browsers are the default. Selected profiles let agents use their saved website logins. Manage profiles in",
+    "zh-CN": "默认使用全新浏览器。选择已保存的浏览器配置后，智能体可使用其中保存的网站登录状态。请在以下平台管理配置：",
+    "reviewedEnglishHash": "f2318fddc8cc6676b4729d5300ff540a80432dbe4004e1ea8eb95d1053d3e939"
+  },
+  "Full agent config": {
+    "en": "Full agent config",
+    "zh-CN": "完整智能体配置",
+    "reviewedEnglishHash": "edfeef664d7a00cccea1e51d31bdce9445025480f52f90e137a8590f033a87ab"
+  },
+  "Full company access, including membership and permission management.": {
+    "en": "Full company access, including membership and permission management.",
+    "zh-CN": "拥有完整的公司访问权限，包括成员与权限管理。",
+    "reviewedEnglishHash": "aea739b4342b401e90a02cf8e3d4beabbbb2a45e21084195b2067274b6617d25"
+  },
+  "Full company access, including membership management.": {
+    "en": "Full company access, including membership management.",
+    "zh-CN": "拥有完整的公司访问权限，包括成员管理。",
+    "reviewedEnglishHash": "b7f360457948fd1db63ee975244e1aba90b59e16321c15c110f5cd3c44cd5415"
+  },
+  "Full error output": {
+    "en": "Full error output",
+    "zh-CN": "完整错误输出",
+    "reviewedEnglishHash": "414e8495f202750c1f32c39ef4cba96f24168a4f195f47559692e9fb9976381c"
+  },
+  "Full transcript": {
+    "en": "Full transcript",
+    "zh-CN": "完整转录",
+    "reviewedEnglishHash": "dfccfd678bec3565845c2f82e1d9d958561833b45ef342b2abde46d2e2781782"
+  },
+  "Future messages from": {
+    "en": "Future messages from",
+    "zh-CN": "今后来自",
+    "reviewedEnglishHash": "5e527e30091076acc0a5dba2534f13fb266e3d8a1caecabde060f22fe00b8cb2"
+  },
+  "failed requester wake-up": {
+    "en": "failed requester wake-up",
+    "zh-CN": "请求者唤醒失败",
+    "reviewedEnglishHash": "e5f3dbc24fe8f014e917df7f9185f30481e89787c05d52e52845a605021c0ebb"
+  },
+  "failed requester wake-up for": {
+    "en": "failed requester wake-up for",
+    "zh-CN": "请求者唤醒失败：",
+    "reviewedEnglishHash": "fa16dd4e7ac7b71c5b1f95601f8cdf56b6f270572882d27ed6c60e0df4b0de43"
+  },
+  "files reviewed ·": {
+    "en": "files reviewed ·",
+    "zh-CN": "个文件已审查 ·",
+    "reviewedEnglishHash": "4db531032353a784c407572ea514fefd5c5227cee2fba91df171a8f11ff1b590"
+  },
+  "folders": {
+    "en": "folders",
+    "zh-CN": "文件夹",
+    "reviewedEnglishHash": "63b8533061410c19b6a9b7c7bf81a935f1845164e860440ca1197002e3c81cb9"
+  },
+  "for skills…": {
+    "en": "for skills…",
+    "zh-CN": "中的技能…",
+    "reviewedEnglishHash": "307d879d6b2ff86d4d07c980000bda1007f2c3147638c34292c47b7d0786065a"
+  },
+  "for the same project as this gateway. The key is stored securely and used only for account sync.": {
+    "en": "for the same project as this gateway. The key is stored securely and used only for account sync.",
+    "zh-CN": "中为此网关所属的同一个项目创建密钥。密钥会安全存储，且仅用于同步账户。",
+    "reviewedEnglishHash": "807cb762b7b15eaaf4757ab01e5a0cc3f4ec008361aa091ed169146874df65dc"
+  },
+  "for the whole organization. Existing member values become unreferenced and active bindings must be remapped.": {
+    "en": "for the whole organization. Existing member values become unreferenced and active bindings must be remapped.",
+    "zh-CN": "（整个组织范围）。现有成员的值将不再被引用，使用中的绑定需要重新映射。",
+    "reviewedEnglishHash": "9c2721dc8339592ce0cbc00847dfdc1666f85068751989c84e5cc745854d2cc0"
+  },
+  "for this agent.": {
+    "en": "for this agent.",
+    "zh-CN": "对于这个智能体。",
+    "reviewedEnglishHash": "cc16afa877f0d0a94d4cacad439c0855c7faf7140861d75b5fdb7a2e5b135ebb"
+  },
+  "for {{duration}}": {
+    "en": "for {{duration}}",
+    "zh-CN": "持续 {{duration}}",
+    "reviewedEnglishHash": "f25e2940477b1892a44a0b586a17ec646284dd5bb9e6342c95a12ca149b7b925"
+  },
+  "frame": {
+    "en": "frame",
+    "zh-CN": "框架",
+    "reviewedEnglishHash": "9dff50df08c635815f4b19da10f756605a34a79a48d4ba48712782502975a70e"
+  },
+  "frames": {
+    "en": "frames",
+    "zh-CN": "框架",
+    "reviewedEnglishHash": "594cfd2607d4f09e1ce6241203e418cacfed545063792bc5eab7afaadbf0c4e0"
+  },
+  "frames ·": {
+    "en": "frames ·",
+    "zh-CN": "框架·",
+    "reviewedEnglishHash": "e775ba8d8ae6fab08a7ad922958a7f7449c2cf90c8fc3dfcba068fffb3bffd5d"
+  },
+  "from Paperclip only.": {
+    "en": "from Paperclip only.",
+    "zh-CN": "（仅从 Paperclip 中）。",
+    "reviewedEnglishHash": "de5b917b814f66fef7bd37868d0d0188cd76721339506b99a3b760df52f873e6"
+  },
+  "from npm and hot-swap": {
+    "en": "from npm and hot-swap",
+    "zh-CN": "并热替换",
+    "reviewedEnglishHash": "ef9ce977ffba4f27830643656e81c13e002af5cf52d39dd3d9818860c71abf8c"
+  },
+  "from npm and hot-swap the running adapter module. Existing agents will use the new version on their next run.": {
+    "en": "from npm and hot-swap the running adapter module. Existing agents will use the new version on their next run.",
+    "zh-CN": "（从 npm 获取），并热替换正在运行的适配器模块。现有智能体将在下次运行时使用新版本。",
+    "reviewedEnglishHash": "1eeab2ad7e723f97f44b20fb183b960e6b28e13bc267a50ba08419ddf90e4d81"
+  },
+  "from this pipeline. Connected stage transitions are removed.": {
+    "en": "from this pipeline. Connected stage transitions are removed.",
+    "zh-CN": "（当前流水线中）。关联的阶段流转也会移除。",
+    "reviewedEnglishHash": "85a944da3c519e9ad85db81b87d335e7e1993444af2f56455c5906c215809d98"
+  },
+  "· from ": {
+    "en": "· from ",
+    "zh-CN": "· 来自 ",
+    "reviewedEnglishHash": "6b23b9e02f09ca0eec9525d850e96e43c78d33bcc46033a84798a81329e1f974"
+  },
+  "— first record used as column headers": {
+    "en": "— first record used as column headers",
+    "zh-CN": "—用作列标题的第一条记录",
+    "reviewedEnglishHash": "ab5b71983fcd7b2d2e4460d3dc4edf4168923e5be61b2079753b8b4c20fbd0dc"
+  }
+}

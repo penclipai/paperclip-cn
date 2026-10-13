@@ -1,0 +1,137 @@
+{
+  "routineVariables.builtin.date.description": {
+    "en": "Current date in YYYY-MM-DD format (UTC) at the time the routine runs.",
+    "zh-CN": "例行任务运行时的当前日期，格式为 YYYY-MM-DD（UTC）。",
+    "reviewedEnglishHash": "2855ef35c0c136149e2523f24f4b0043b343335b1cfd580d46b983174ffc33c6"
+  },
+  "routineVariables.builtin.timestamp.description": {
+    "en": "Human-readable date and time (UTC) at the time the routine runs.",
+    "zh-CN": "例行任务运行时的人类可读日期和时间（UTC）。",
+    "reviewedEnglishHash": "43844b717c0fcb8fea64f724ca8fb540bce45a6d4f2f9c99be77a776db42a8fb"
+  },
+  "routineVariables.builtinVariables": {
+    "en": "Built-in variables",
+    "zh-CN": "内置变量",
+    "reviewedEnglishHash": "d6a95f07940aaef2fe215b497f33def62f2080d7ca1f218a38460422018c8bf9"
+  },
+  "routineVariables.builtinVariablesBody": {
+    "en": "These are filled in automatically — no setup needed and they will not appear in the Variables list.",
+    "zh-CN": "这些变量会自动填充，无需配置，也不会出现在变量列表中。",
+    "reviewedEnglishHash": "c0e4e61f9f2e9ee9fe261fffd730c86fdb82653a3e929a0a6aed8ba907361178"
+  },
+  "routineVariables.customVariables": {
+    "en": "Custom variables",
+    "zh-CN": "自定义变量",
+    "reviewedEnglishHash": "6e1560c270da67edaf06cea65b64d55109154603be2b89bf5c705db6afb8fe5c"
+  },
+  "routineVariables.customVariablesBodyPrefix": {
+    "en": "anywhere in the title or instructions. Paperclip detects each placeholder, lists it under",
+    "zh-CN": "放在标题或说明中的任意位置。Paperclip 会检测每个占位符，并把它列在",
+    "reviewedEnglishHash": "26b4419d7d0e1135319d22d8814abedf82f3feecfbb0d8c33b852707ba0e1932"
+  },
+  "routineVariables.customVariablesBodySuffix": {
+    "en": "and prompts for a value before each run.",
+    "zh-CN": "下，然后在每次运行前请求填写。",
+    "reviewedEnglishHash": "88a09869af365fd9f38c385d9db5a6e1b168cfa01ba687fa028b002aa2816282"
+  },
+  "routineVariables.dateRule": {
+    "en": "Variable names ending in capital Date, such as startDate, are created as date variables by default.",
+    "zh-CN": "名称以大写 Date 结尾的变量（例如 startDate）默认创建为日期变量。",
+    "reviewedEnglishHash": "b3b6177f964bfb2a2f65b0fa3ed3be6def2ded50e26cf9fcc45ea7395bc29fa8"
+  },
+  "routineVariables.defaultOption": {
+    "en": "Default option",
+    "zh-CN": "默认选项",
+    "reviewedEnglishHash": "e98cdb115555b9b79150c470a4237d0b7ab50aeee17a714d6adf05798c8e3404"
+  },
+  "routineVariables.defaultValue": {
+    "en": "Default value",
+    "zh-CN": "默认值",
+    "reviewedEnglishHash": "e6fdffbb82b605ae5e6e49e3aef0d7114b57792358ecd84f68be6fafde57e319"
+  },
+  "routineVariables.descriptionColumn": {
+    "en": "Description",
+    "zh-CN": "说明",
+    "reviewedEnglishHash": "526e0087cc3f254d9f86f6c7d8e23d954c4dfda2b312efc29194ae8a860106ba"
+  },
+  "routineVariables.detectedFromPlaceholders": {
+    "en": "Detected from `{{placeholder}}` placeholders in the routine title and instructions.",
+    "zh-CN": "从例行任务标题和说明中的 `{{placeholder}}` 占位符检测到。",
+    "reviewedEnglishHash": "b72670f6f75f885c40e030def3c31a16e2e2f36ca9c806d2ceacc3ef215ac1b7"
+  },
+  "routineVariables.exampleColumn": {
+    "en": "Example",
+    "zh-CN": "示例",
+    "reviewedEnglishHash": "d029f87e3d80f8fd9b1be67c7426b4cc1ff47b4a9d0a8461c826a59d8c5eb6cd"
+  },
+  "routineVariables.helpDescription": {
+    "en": "How to prompt for inputs and which variables Paperclip fills in automatically.",
+    "zh-CN": "了解如何提示输入，以及 Paperclip 会自动填充哪些变量。",
+    "reviewedEnglishHash": "c32330f9aff60e36a6fcc37165c644a178c16ecc59c465543baec69dda4c0713"
+  },
+  "routineVariables.helpSummaryPrefix": {
+    "en": "Use",
+    "zh-CN": "使用",
+    "reviewedEnglishHash": "c36d819e7bc6d2b7da51394411c733db89c395987885ca6770167a3b9bc45c3c"
+  },
+  "routineVariables.helpSummarySuffix": {
+    "en": "placeholders in the title or instructions to prompt for inputs when the routine runs.",
+    "zh-CN": "占位符，在标题或说明中提示例行任务运行时输入。",
+    "reviewedEnglishHash": "cf39f9a4162430ed564b08b5dc1c5aafc02fee05fa11d55bcf844c05351d2468"
+  },
+  "routineVariables.helpTitle": {
+    "en": "Routine variables",
+    "zh-CN": "例行任务变量",
+    "reviewedEnglishHash": "991b3b5169c176289e9e1e0e33f1f69ce99384af84ac2e506c8f12eb57b9ed18"
+  },
+  "routineVariables.nameRule": {
+    "en": "Names must start with a letter and may use letters, numbers, and underscores.",
+    "zh-CN": "名称必须以字母开头，可以包含字母、数字和下划线。",
+    "reviewedEnglishHash": "00f8d741f5af06811bf2d9a440906584fd75870ad44a7f5f021ff6f6d2064101"
+  },
+  "routineVariables.noDefault": {
+    "en": "No default",
+    "zh-CN": "无默认值",
+    "reviewedEnglishHash": "706e7d9f0e1dc1ec7df9d700d109ec76d1b00e77e8fb7a444af04483e49a989c"
+  },
+  "routineVariables.options": {
+    "en": "Options",
+    "zh-CN": "选项",
+    "reviewedEnglishHash": "d0db8b5e364b6989e4b8f38a2b3846b87d99a51c1592ebf35d21cc66405a8e39"
+  },
+  "routineVariables.placeholderColumn": {
+    "en": "Placeholder",
+    "zh-CN": "占位符",
+    "reviewedEnglishHash": "f4b24fed0274a31618ac1b665ee162af331b4b70fdff74f3f9ddedc94b4da745"
+  },
+  "routineVariables.promptBeforeRun": {
+    "en": "Prompt the user for this value before each manual run.",
+    "zh-CN": "每次手动运行前都会向用户询问这个值。",
+    "reviewedEnglishHash": "2b4cc78d810885576414da7052940c0b68673bbe5f8a0fe769ab6a44be6df556"
+  },
+  "routineVariables.reuseRule": {
+    "en": "The same name reused across the title and instructions is treated as one variable.",
+    "zh-CN": "标题和说明中重复使用的同名变量会被视为同一个变量。",
+    "reviewedEnglishHash": "1d070af9f6d139b98b9be6db7373454fd16a21f0376d4c9a5115c27399ccf339"
+  },
+  "routineVariables.showHelp": {
+    "en": "Show variable help",
+    "zh-CN": "显示变量帮助",
+    "reviewedEnglishHash": "e638b7dd849900bd4bd3e7e2772b092acce9ad72e998f85d52c160b96eda6b1f"
+  },
+  "routineVariables.typePlaceholderPrefix": {
+    "en": "Type",
+    "zh-CN": "输入",
+    "reviewedEnglishHash": "baaddf70fb5d432b8bd948ef91d6f910124a6d138edae4d5f000c4610ddc8eae"
+  },
+  "routineVariables.typeRule": {
+    "en": "Pick a type (text, textarea, number, boolean, select), default value, and whether it is required.",
+    "zh-CN": "选择类型（文本、多行文本、数字、布尔、下拉选项）、默认值，以及是否必填。",
+    "reviewedEnglishHash": "600d1c9360db31e92aed42d613d8460f21a8ad851cc0e61a39293756511e3b0d"
+  },
+  "routineVariables.variablesList": {
+    "en": "Variables",
+    "zh-CN": "变量",
+    "reviewedEnglishHash": "02db55bac5e3f7ceb98fdea15d7dfcfd40efcc41b777d10c2a8483b571f332bd"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "chatComposer.attachFiles": {
+    "en": "Attach files",
+    "zh-CN": "附加文件",
+    "reviewedEnglishHash": "e697cc1e45afa5418934fb94f7d9c1bf8e45628cade57a6d31871f5961978d77"
+  },
+  "chatComposer.dropToAttach": {
+    "en": "Drop to attach",
+    "zh-CN": "拖放以附加",
+    "reviewedEnglishHash": "34a7a637100fb1cdd2cac099258ce346105ab6cf7d96a499426f4f103ae76f80"
+  }
+}

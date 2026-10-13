@@ -1,0 +1,167 @@
+{
+  "dashboard.activeBudgetIncidents": {
+    "en": "{{count}} active budget incidents",
+    "zh-CN": "{{count}} 个活跃预算事件",
+    "reviewedEnglishHash": "749f28b2109d59259a298df4cda170dfeebb78ee4cdc2df0273ce55a92041603"
+  },
+  "dashboard.agentSummary": {
+    "en": "{{running}} running, {{paused}} paused, {{errors}} errors",
+    "zh-CN": "{{running}} 个运行中，{{paused}} 个已暂停，{{errors}} 个错误",
+    "reviewedEnglishHash": "e1304aa808a145f4d798a7965d24ca27efc71e7810778d2145e499d21489190e"
+  },
+  "dashboard.agentsEnabled": {
+    "en": "Agents Enabled",
+    "zh-CN": "已启用智能体",
+    "reviewedEnglishHash": "868836bd07e6cc5c286ebdea0f04f04dde0902c90b62265f0ecd961c655d3f07"
+  },
+  "dashboard.awaitingBoardReview": {
+    "en": "Awaiting board review",
+    "zh-CN": "等待董事会审核",
+    "reviewedEnglishHash": "19d0be454cbc0740143fe3bfce24cca92cffd5ada189c1d7fec0c2bc1f1868d9"
+  },
+  "dashboard.budgetOverridesAwaitingReview": {
+    "en": "{{count}} budget overrides awaiting board review",
+    "zh-CN": "{{count}} 条预算特许等待董事会审核",
+    "reviewedEnglishHash": "367bb3a84d4ec91fe78985a1f6a701971151166d899da96082086b86406e8497"
+  },
+  "dashboard.budgetSummary": {
+    "en": "{{pausedAgents}} agents paused · {{pausedProjects}} projects paused · {{pendingApprovals}} pending budget approvals",
+    "zh-CN": "{{pausedAgents}} 个智能体已暂停 · {{pausedProjects}} 个项目已暂停 · {{pendingApprovals}} 条预算审批待处理",
+    "reviewedEnglishHash": "912cb3d518449570fead0e0921e873f93451233eb7a568dfc57d52d2a641d22a"
+  },
+  "dashboard.budgetUsage": {
+    "en": "{{percent}}% of {{budget}} budget",
+    "zh-CN": "已使用预算 {{percent}}%，总预算 {{budget}}",
+    "reviewedEnglishHash": "18555cecdb25a164ba4d57b7c2c7d27c319072fee9f3e6860c02712fa6d0a5ad"
+  },
+  "dashboard.createOneHere": {
+    "en": "Create one here",
+    "zh-CN": "在这里创建一个",
+    "reviewedEnglishHash": "8c89c0c5dc3ed2825c3733c04d15cf888518818e7c622c4e78d9c04d696be829"
+  },
+  "dashboard.createOrSelectCompany": {
+    "en": "Create or select a company to view the dashboard.",
+    "zh-CN": "创建或选择一家公司以查看仪表盘。",
+    "reviewedEnglishHash": "34e178b2ca3c73d75bddae25b84395c09f3f1ad19dae7cbbaa5dc0302e8541a5"
+  },
+  "dashboard.getStarted": {
+    "en": "Get Started",
+    "zh-CN": "开始使用",
+    "reviewedEnglishHash": "983f311018642b0ae60c71253b5735579906d43d260ea926ebe5e815b1c97abb"
+  },
+  "dashboard.issuesByPriority": {
+    "en": "Issues by Priority",
+    "zh-CN": "按优先级统计任务",
+    "reviewedEnglishHash": "c78ad14353619a3e435cb0c4bd389f2a534a5590d05a720d234fa51d1ee92703"
+  },
+  "dashboard.issuesByStatus": {
+    "en": "Issues by Status",
+    "zh-CN": "按状态统计任务",
+    "reviewedEnglishHash": "8e042929ddf0a6c8c4a3580af41228894cba36a65b9000164b0c2f49f4a6fead"
+  },
+  "dashboard.issuesDayTooltip": {
+    "en": "{{date}}: {{count}} issues",
+    "zh-CN": "{{date}}：{{count}} 个任务",
+    "reviewedEnglishHash": "73195fcdd6bf0ed1d70b878afef5e35200695d3af9f23bb0103e93b262ee55d1"
+  },
+  "dashboard.last14Days": {
+    "en": "Last 14 days",
+    "zh-CN": "最近 14 天",
+    "reviewedEnglishHash": "d9f1e16176a554790b3215a9bd1c9b5f4ffa38f7e670ecfa850932598ad02718"
+  },
+  "dashboard.monthSpend": {
+    "en": "Month Spend",
+    "zh-CN": "本月支出",
+    "reviewedEnglishHash": "b10177a40c608f418bea1e82d0edcd8e5707bcf50e483853f8686fb58a0da1ec"
+  },
+  "dashboard.noAgents": {
+    "en": "You have no agents.",
+    "zh-CN": "你还没有智能体。",
+    "reviewedEnglishHash": "6461ce7cef79538bef595f368a4eae958f2e24fc1638016d1f048c59894bcef8"
+  },
+  "dashboard.noTasksYet": {
+    "en": "No tasks yet.",
+    "zh-CN": "还没有任务。",
+    "reviewedEnglishHash": "5a889457d27958e345b5aa4791823c763698b1560c0ec3603952196e7ae75b7d"
+  },
+  "dashboard.openBudgets": {
+    "en": "Open budgets",
+    "zh-CN": "查看预算",
+    "reviewedEnglishHash": "f5376c2582f72e20ab78d06c93be0123408c0f4c8bd74704c054fdee524e750c"
+  },
+  "dashboard.pendingApprovals": {
+    "en": "Pending Approvals",
+    "zh-CN": "待审批",
+    "reviewedEnglishHash": "495aae902643b78a537ee9003aa26c5c036e46033b612b927a3c53cd31dc9b17"
+  },
+  "dashboard.recentActivity": {
+    "en": "Recent Activity",
+    "zh-CN": "最近活动",
+    "reviewedEnglishHash": "9ef7d438ce5b0a38eff194ebaff4030d1d2621737ce362b7117c367d7cdce57c"
+  },
+  "dashboard.recentTasks": {
+    "en": "Recent Tasks",
+    "zh-CN": "最近任务",
+    "reviewedEnglishHash": "49a027ddc61602c1b0210420e655bda959fcaa787de22956a94d45811a5de1eb"
+  },
+  "dashboard.runActivity": {
+    "en": "Run Activity",
+    "zh-CN": "运行活动",
+    "reviewedEnglishHash": "fe11724808acbe9ce7db7beebf168d0d09fc20d7c004fdc2fdf9f07590fd95d8"
+  },
+  "dashboard.runDayTooltipFailed": {
+    "en": "  failed: {{count}}",
+    "zh-CN": "  失败：{{count}}",
+    "reviewedEnglishHash": "74df3feb5732cdcdac5229191ef3b6e7ceb0f78505f13e4678b56baac88f3589"
+  },
+  "dashboard.runDayTooltipOther": {
+    "en": "  other: {{count}}",
+    "zh-CN": "  其他：{{count}}",
+    "reviewedEnglishHash": "8a0ffb4c0fbf2b3a3e2991a0c8eb758a669ca53b4675a0d85b4128137192a0f7"
+  },
+  "dashboard.runDayTooltipRecovered": {
+    "en": "  recovered: {{count}} (retry succeeded)",
+    "zh-CN": "  已恢复：{{count}}（重试成功）",
+    "reviewedEnglishHash": "28d75653423824ba33d6397a4effa6cb42261b19875e47526b70db2356f1ca06"
+  },
+  "dashboard.runDayTooltipSucceeded": {
+    "en": "  succeeded: {{count}}",
+    "zh-CN": "  成功：{{count}}",
+    "reviewedEnglishHash": "0a5181808694079a746f7aac58fc511168f35d0785c41b86216fd259df40ce99"
+  },
+  "dashboard.runDayTooltipTotal": {
+    "en": "{{date}}: {{count}} runs",
+    "zh-CN": "{{date}}：{{count}} 次运行",
+    "reviewedEnglishHash": "2a20e2d7078362e7cbb6951b94e91498d8a0d7afce9441ffff558673f5b93e97"
+  },
+  "dashboard.successRate": {
+    "en": "Success Rate",
+    "zh-CN": "成功率",
+    "reviewedEnglishHash": "5068c6c343ffda3e486241d5e345451b8f730db575a59fdf6ec2ee78227c1aec"
+  },
+  "dashboard.taskSummary": {
+    "en": "{{open}} open, {{blocked}} blocked",
+    "zh-CN": "{{open}} 个未关闭，{{blocked}} 个阻塞",
+    "reviewedEnglishHash": "0e41ceb4893b5b0a38bb7380bba0df865fe5b6ace7e06e87e2d419fb47e37438"
+  },
+  "dashboard.tasksInProgress": {
+    "en": "Tasks In Progress",
+    "zh-CN": "进行中的任务",
+    "reviewedEnglishHash": "63bf7d342080af7fbf981914df937aeca3ded4f0f5078338b4e0ce4cd994170e"
+  },
+  "dashboard.title": {
+    "en": "Dashboard",
+    "zh-CN": "仪表盘",
+    "reviewedEnglishHash": "67b696468610b879ed7f224dbf6b0861f27e39d20454cb9d7af1ec52d3e5eeaa"
+  },
+  "dashboard.unlimitedBudget": {
+    "en": "Unlimited budget",
+    "zh-CN": "预算不限",
+    "reviewedEnglishHash": "3c7719943f33a6ed95b636ccbdf846e0e33da0bad7acf471a772ea02d70360d1"
+  },
+  "dashboard.welcome": {
+    "en": "Welcome to Paperclip CN. Set up your first company and agent to get started.",
+    "zh-CN": "欢迎使用 Paperclip CN。先创建你的第一家公司，再配好第一个智能体吧。",
+    "reviewedEnglishHash": "22280b037a646a9895b227de0d4c64355c8b27e9484e5ab8257b321e6fa3491a"
+  }
+}

@@ -1,0 +1,157 @@
+{
+  "liveUpdates.action.viewAgent": {
+    "en": "View agent",
+    "zh-CN": "查看智能体",
+    "reviewedEnglishHash": "7ce7832e35e85d35b2c72cac68cc729c52799016aaa965f9c89fe3520c48e1ee"
+  },
+  "liveUpdates.action.viewInbox": {
+    "en": "View inbox",
+    "zh-CN": "查看收件箱",
+    "reviewedEnglishHash": "1c8264bf1b95e945dd6d9df3d9cdfae3171012806bf3f821bb06392e180a718c"
+  },
+  "liveUpdates.action.viewIssue": {
+    "en": "View {{issueRef}}",
+    "zh-CN": "查看 {{issueRef}}",
+    "reviewedEnglishHash": "6e18253bd884547e0943903ce0cfe44dea406d466f3a0dab968d7a9094034a92"
+  },
+  "liveUpdates.action.viewRun": {
+    "en": "View run",
+    "zh-CN": "查看运行",
+    "reviewedEnglishHash": "aaf7fccc7d1315f23f35073f1d89aa8357c5d0cdb9b00a03ee2a4291e976b9ac"
+  },
+  "liveUpdates.activity.issueCommentedAndUpdatedTitle": {
+    "en": "{{actor}} commented and updated {{issueRef}}",
+    "zh-CN": "{{actor}} 评论并更新了 {{issueRef}}",
+    "reviewedEnglishHash": "1157f4e011c15ce2706a069f99418d92a57ffb47cd58eb3c05b08d57c8085aa7"
+  },
+  "liveUpdates.activity.issueCommentedTitle": {
+    "en": "{{actor}} commented on {{issueRef}}",
+    "zh-CN": "{{actor}} 评论了 {{issueRef}}",
+    "reviewedEnglishHash": "cc4190450c79b4b321e59ab4058cd389b7e1176cff588897f281dd86b241e157"
+  },
+  "liveUpdates.activity.issueCreatedTitle": {
+    "en": "{{actor}} created {{issueRef}}",
+    "zh-CN": "{{actor}} 创建了 {{issueRef}}",
+    "reviewedEnglishHash": "ff92a8446179c57fe6d18178dbdf7524c58ba6c069f2a86af601fee31f1bbcf0"
+  },
+  "liveUpdates.activity.issueReopenedAndCommentedTitle": {
+    "en": "{{actor}} reopened and commented on {{issueRef}}",
+    "zh-CN": "{{actor}} 重新打开并评论了 {{issueRef}}",
+    "reviewedEnglishHash": "aa0539a12d21ab75c3acf31c1bfa776e020883f23263a161a45f182c1e88acb7"
+  },
+  "liveUpdates.activity.issueUpdatedTitle": {
+    "en": "{{actor}} updated {{issueRef}}",
+    "zh-CN": "{{actor}} 更新了 {{issueRef}}",
+    "reviewedEnglishHash": "012b93b4a002a9d1a4839ece4f9b179f067c53dd6de3b5a6c6d82fb536594af3"
+  },
+  "liveUpdates.actor.board": {
+    "en": "Board",
+    "zh-CN": "董事会",
+    "reviewedEnglishHash": "4816cbfd74aa8297b9c9cdaae89e2f0d2ced6041e952dfcd114e01b4c82e9c6d"
+  },
+  "liveUpdates.actor.someone": {
+    "en": "Someone",
+    "zh-CN": "有人",
+    "reviewedEnglishHash": "864c855e3d64399dc06fa30ebb75526c2c2e73db7216b16a3d4cf03e8a52ec3b"
+  },
+  "liveUpdates.actor.system": {
+    "en": "System",
+    "zh-CN": "系统",
+    "reviewedEnglishHash": "6725e7bbcd28f3a8a586fa34bf191fd72dde8b61756932cd3237c17a6f196f1a"
+  },
+  "liveUpdates.agentFallback": {
+    "en": "Agent {{id}}",
+    "zh-CN": "智能体 {{id}}",
+    "reviewedEnglishHash": "ca9119c4b65db13c05508daa99e3f30621c5afa91e29af8878219eacdaed9688"
+  },
+  "liveUpdates.agentStatus.erroredTitle": {
+    "en": "{{name}} errored",
+    "zh-CN": "{{name}} 发生错误",
+    "reviewedEnglishHash": "6de67152496c85e7965ce94ecd1681ada2d2f0111fd32326352f72c0173918c6"
+  },
+  "liveUpdates.agentStatus.startedTitle": {
+    "en": "{{name}} started",
+    "zh-CN": "{{name}} 已开始运行",
+    "reviewedEnglishHash": "5093a31424adb2ab7ae4a7908a698f9ca67a04368e98217f43b5913918b0c2f1"
+  },
+  "liveUpdates.issueFallbackRef": {
+    "en": "Issue {{id}}",
+    "zh-CN": "任务 {{id}}",
+    "reviewedEnglishHash": "52253f682b267594472f4f4c48dfdf6bc529a86216ea96228cfaf34906b79ea1"
+  },
+  "liveUpdates.issueUpdate.descriptionChanged": {
+    "en": "description changed",
+    "zh-CN": "描述已变更",
+    "reviewedEnglishHash": "f8ddbb34d0e507e1000c27404a3fe54991fd8eceaa5b62e50d230d738b32eab3"
+  },
+  "liveUpdates.issueUpdate.priorityChanged": {
+    "en": "priority -> {{priority}}",
+    "zh-CN": "优先级 -> {{priority}}",
+    "reviewedEnglishHash": "6b2ebd8b2f3d9f172e9260aa445f7d082d0c933e3bf33c0dd74df599f33693ca"
+  },
+  "liveUpdates.issueUpdate.reassigned": {
+    "en": "reassigned",
+    "zh-CN": "已重新分配",
+    "reviewedEnglishHash": "5003c01bfe5f998c209f9ab335e6e1463831e5d0066f19d74a0d10bc036480bc"
+  },
+  "liveUpdates.issueUpdate.reopened": {
+    "en": "reopened",
+    "zh-CN": "已重新打开",
+    "reviewedEnglishHash": "d050aeb86e2df908a2cfe14d94d675812e798633d6e53367fe5150d5cec5d5b0"
+  },
+  "liveUpdates.issueUpdate.reopenedFrom": {
+    "en": "reopened from {{from}}",
+    "zh-CN": "从 {{from}} 重新打开",
+    "reviewedEnglishHash": "624a2bec9e3da7ce1e1ff5c539d69456ba655336387195dc98b55905bf258865"
+  },
+  "liveUpdates.issueUpdate.statusChanged": {
+    "en": "status -> {{status}}",
+    "zh-CN": "状态 -> {{status}}",
+    "reviewedEnglishHash": "7ff364e0b9368b9f667c657c8e8a47ce939d79d4ba453b31f82de4b0dadaf7d3"
+  },
+  "liveUpdates.issueUpdate.titleChanged": {
+    "en": "title changed",
+    "zh-CN": "标题已变更",
+    "reviewedEnglishHash": "176dc851faba67bdb7681f558b3152a87162929140625327f67f2a9b2b9d2387"
+  },
+  "liveUpdates.issueUpdate.unassigned": {
+    "en": "unassigned",
+    "zh-CN": "已取消分配",
+    "reviewedEnglishHash": "2f23e841e448e200fd6a93f331ec1a6b945fb030f2314f7a07a8aa0ec89c4f36"
+  },
+  "liveUpdates.joinRequest.body": {
+    "en": "A new join request is waiting for approval.",
+    "zh-CN": "有一个新的加入请求正在等待批准。",
+    "reviewedEnglishHash": "2ef160cf9da8c70e0921fb1b01384ff8540f727675fd9dba1142973905633e0f"
+  },
+  "liveUpdates.joinRequest.title": {
+    "en": "{{actor}} wants to join",
+    "zh-CN": "{{actor}} 想要加入",
+    "reviewedEnglishHash": "09257ab264a60b19201bf5559881463119a1088999558450ee573a3b488ee09c"
+  },
+  "liveUpdates.runStatus.cancelledTitle": {
+    "en": "{{name}} run cancelled",
+    "zh-CN": "{{name}} 运行已取消",
+    "reviewedEnglishHash": "299da754d1e52f12ea674b5742b95b19d93e2311688557bf15f93dd683b21a15"
+  },
+  "liveUpdates.runStatus.failedTitle": {
+    "en": "{{name}} run failed",
+    "zh-CN": "{{name}} 运行失败",
+    "reviewedEnglishHash": "1b16d8c082af48acdf393a5fde5b7659d0997c3cf1e1d9fe517d92d9e783844a"
+  },
+  "liveUpdates.runStatus.succeededTitle": {
+    "en": "{{name}} run succeeded",
+    "zh-CN": "{{name}} 运行成功",
+    "reviewedEnglishHash": "83d643e86b82bd80a2a98c4f144ee94acc623a40b99c5f57636a99b8d561f775"
+  },
+  "liveUpdates.runStatus.timedOutTitle": {
+    "en": "{{name}} run timed out",
+    "zh-CN": "{{name}} 运行超时",
+    "reviewedEnglishHash": "86f39bc2d47c06b4c08c37e0d9a619e7a34a64c0ebde2dc3dff962dc0e69cf52"
+  },
+  "liveUpdates.runStatus.triggerDetail": {
+    "en": "Trigger: {{triggerDetail}}",
+    "zh-CN": "触发来源：{{triggerDetail}}",
+    "reviewedEnglishHash": "693575d42977f23c117e8eb74edc5d40d9e5b971c6492c40bb6b0c74b5139eb7"
+  }
+}

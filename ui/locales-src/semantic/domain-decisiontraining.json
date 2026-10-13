@@ -1,0 +1,297 @@
+{
+  "decisionTraining.capturing": {
+    "en": "Capturing current state…",
+    "zh-CN": "正在捕获当前状态...",
+    "reviewedEnglishHash": "8f43c56533d1b2037b768afdca4ee178a61cfe5ae59fa94e211c08ea02c7a0dc"
+  },
+  "decisionTraining.drawer.actions.openRecord": {
+    "en": "Open full record",
+    "zh-CN": "打开完整记录",
+    "reviewedEnglishHash": "02ac00232a49c11ecafcbcd7f77a36cfe81af2049af9c9c7707473c3c39d98ca"
+  },
+  "decisionTraining.drawer.actions.saveExample": {
+    "en": "Save example",
+    "zh-CN": "保存样例",
+    "reviewedEnglishHash": "fd227002c1d4855b138e32328cf64de89c22d921bb26a2bf6b26a996e2be484a"
+  },
+  "decisionTraining.drawer.actions.saveNotes": {
+    "en": "Save notes",
+    "zh-CN": "保存笔记",
+    "reviewedEnglishHash": "eb76a6cc99ba688173d54fc9bc625784822e7429b886f1a52d36c6c8230caa88"
+  },
+  "decisionTraining.drawer.author.user": {
+    "en": "User {{id}}",
+    "zh-CN": "用户 {{id}}",
+    "reviewedEnglishHash": "83965fb5754e06c9601a2a1e02fe56a0e49b101614836861cce6b8f43111f301"
+  },
+  "decisionTraining.drawer.author.you": {
+    "en": "You",
+    "zh-CN": "你",
+    "reviewedEnglishHash": "08b041935798fbf6fd6ff51099ffedb140a475889986d14f5559ff8e7fc571dd"
+  },
+  "decisionTraining.drawer.codeResolution.exact": {
+    "en": "exact (from the deciding run)",
+    "zh-CN": "精确提交（来自决策运行）",
+    "reviewedEnglishHash": "b90cdfeaa47c272214cde0ebd801cd1d183638c37db49f414dc3cc1b0c5d0352"
+  },
+  "decisionTraining.drawer.codeResolution.nearestRun": {
+    "en": "nearest run before cutoff",
+    "zh-CN": "截止时间前最近的运行",
+    "reviewedEnglishHash": "bcdce31277da87f64be0953fb0b2f12ea78e52536329bbbd2908ebf58ca82c33"
+  },
+  "decisionTraining.drawer.codeResolution.none": {
+    "en": "no commit found",
+    "zh-CN": "未找到提交",
+    "reviewedEnglishHash": "f21b025f4e247c72682d46bdd409037de56aaaa2ccc26d825a507c4f47a6afda"
+  },
+  "decisionTraining.drawer.codeResolution.workspace": {
+    "en": "workspace default",
+    "zh-CN": "工作区默认值",
+    "reviewedEnglishHash": "02829ff19be940ef06c0e3dd08a4b96282a45ef5c4bd0a605b8b0702b759178d"
+  },
+  "decisionTraining.drawer.context.fallbackTitle": {
+    "en": "Decision",
+    "zh-CN": "决策",
+    "reviewedEnglishHash": "640ae4baf96061fee1798e9181e2b7a5145585233df2c27a501623afb0096ec1"
+  },
+  "decisionTraining.drawer.context.label": {
+    "en": "Decision",
+    "zh-CN": "决策",
+    "reviewedEnglishHash": "640ae4baf96061fee1798e9181e2b7a5145585233df2c27a501623afb0096ec1"
+  },
+  "decisionTraining.drawer.context.pending": {
+    "en": "Decision pending - cutoff will be now",
+    "zh-CN": "决策待处理 - 截止时间为现在",
+    "reviewedEnglishHash": "9ed4b6e66bfb0d84bc099eb0d63a40f8c08a8a6e3c69ebc5d8ef038cb6fb5668"
+  },
+  "decisionTraining.drawer.context.resolved": {
+    "en": "Resolved · {{outcome}}",
+    "zh-CN": "已解决 · {{outcome}}",
+    "reviewedEnglishHash": "8d7fd5103f5ede7f763e2dec3969565ed8f52fd2e8935c59f1390b10272cde9d"
+  },
+  "decisionTraining.drawer.delete.description": {
+    "en": "This removes the frozen snapshot and your notes. This can't be undone.",
+    "zh-CN": "这会删除冻结快照和你的笔记，且无法撤销。",
+    "reviewedEnglishHash": "2221d9eb387d41e12adf9d43571b997252b81445dd319321e1b8d708018ae028"
+  },
+  "decisionTraining.drawer.delete.title": {
+    "en": "Delete this training example?",
+    "zh-CN": "删除此训练样例？",
+    "reviewedEnglishHash": "bc036ab2655f912173d3ba127e1f4492bc2e07e3f13967eda2b38394e1cf42ad"
+  },
+  "decisionTraining.drawer.description.create": {
+    "en": "Freeze this decision's state and record how you'd want it decided.",
+    "zh-CN": "冻结此决策的状态，并记录你希望如何处理该决策。",
+    "reviewedEnglishHash": "977958b55758847da7f94d830675961e001a0b42170c8882e90ae027e6c664fd"
+  },
+  "decisionTraining.drawer.description.saved": {
+    "en": "The frozen state is read-only; your notes stay editable.",
+    "zh-CN": "冻结状态为只读；你的笔记仍可编辑。",
+    "reviewedEnglishHash": "af67675b52153dcffecdb4f85a0ff91978e1b15c37948cf53e3047572b3a8ac0"
+  },
+  "decisionTraining.drawer.loading": {
+    "en": "Loading example...",
+    "zh-CN": "正在加载样例...",
+    "reviewedEnglishHash": "2b303b999b1a3e0056449ee0c0c9226d055145f2916d8e90dd1ac0dcd3660137"
+  },
+  "decisionTraining.drawer.notFound": {
+    "en": "Example not found.",
+    "zh-CN": "未找到样例。",
+    "reviewedEnglishHash": "3fd4ce6d6e9de767989a84d0d264434ba7e0ad51a81c0a80863d036dc626e920"
+  },
+  "decisionTraining.drawer.notes.empty": {
+    "en": "No notes yet.",
+    "zh-CN": "暂无笔记。",
+    "reviewedEnglishHash": "57bde4deb215bfafd265380441109093117699d85e5c895f591ffcf6eb10c47e"
+  },
+  "decisionTraining.drawer.notes.placeholder": {
+    "en": "How you thought about it, what signals mattered, what you decided and why...",
+    "zh-CN": "记录你的思考过程、关键依据、最终决定及原因...",
+    "reviewedEnglishHash": "49c72b290da806f895cd0023a8e66439ff180794e88cfa29c118f6c203e4ab9c"
+  },
+  "decisionTraining.drawer.notes.previousRevisions": {
+    "en": "{{count}} previous revisions",
+    "zh-CN": "之前的 {{count}} 个修订版本",
+    "reviewedEnglishHash": "af2408bc7976633770d6c1869f276c845d2312053c119b1152953ca1deeb8122"
+  },
+  "decisionTraining.drawer.notes.title": {
+    "en": "Notes",
+    "zh-CN": "笔记",
+    "reviewedEnglishHash": "8a7525b1492fb84833f5c4a69b30f4bfbb134f9b666b61a2c1872d63d234c085"
+  },
+  "decisionTraining.drawer.notes.yourNotes": {
+    "en": "Your notes",
+    "zh-CN": "你的笔记",
+    "reviewedEnglishHash": "55576676783c7f797f5a83c9db47604a670d315864ecd6d00ea49e2661dd378b"
+  },
+  "decisionTraining.drawer.outcome.accepted": {
+    "en": "accepted",
+    "zh-CN": "已接受",
+    "reviewedEnglishHash": "070c160a6299c5438070b1aa737b14fc2992ed49579c14264884886a5876f971"
+  },
+  "decisionTraining.drawer.outcome.answered": {
+    "en": "answered",
+    "zh-CN": "已回答",
+    "reviewedEnglishHash": "68c780cd132a0299c7cd3fa8649783cbc2872a98d90cd4ed6b9696e3c61c4c68"
+  },
+  "decisionTraining.drawer.outcome.approved": {
+    "en": "approved",
+    "zh-CN": "已批准",
+    "reviewedEnglishHash": "2687f86ed6784b8a5fca36e6c468e12aa44dc3c7e8137e3160d1a95079bdcd02"
+  },
+  "decisionTraining.drawer.outcome.cancelled": {
+    "en": "cancelled",
+    "zh-CN": "已取消",
+    "reviewedEnglishHash": "8b47045eb7b8ca42aa967f33ee1d014ba89f8d1ac207426b482d34b5c0d90935"
+  },
+  "decisionTraining.drawer.outcome.expired": {
+    "en": "expired",
+    "zh-CN": "已过期",
+    "reviewedEnglishHash": "fa64ea1e82e1206f828ab2a02917c7e92accb98e3b95881a1b4ad52b914b66e3"
+  },
+  "decisionTraining.drawer.outcome.failed": {
+    "en": "failed",
+    "zh-CN": "失败",
+    "reviewedEnglishHash": "5d28a90f4498a81461efbaf6f628a19d9778390bb5c81a393dd936181cc3d826"
+  },
+  "decisionTraining.drawer.outcome.rejected": {
+    "en": "rejected",
+    "zh-CN": "已拒绝",
+    "reviewedEnglishHash": "20cd938a2ea64f612b3523bc9219130c6fc66cd09b394ea38437488c0b8898b2"
+  },
+  "decisionTraining.drawer.provenance.created": {
+    "en": "Created {{time}}",
+    "zh-CN": "创建于 {{time}}",
+    "reviewedEnglishHash": "bbdec5db7bb51fc2cea56e249b9441d18b70256eb2e6a2d909e7530966a5d78c"
+  },
+  "decisionTraining.drawer.provenance.edited": {
+    "en": "Edited {{time}}",
+    "zh-CN": "编辑于 {{time}}",
+    "reviewedEnglishHash": "8a531d9205dd2b9346463f6a310e3c14b8133eb7dcccfb805c99ff4f0e85429c"
+  },
+  "decisionTraining.drawer.snapshot.capturing": {
+    "en": "Capturing current state...",
+    "zh-CN": "正在捕获当前状态...",
+    "reviewedEnglishHash": "04d2bff4c608983e3936ce1370c1c45dd7438a16d5cea3894ed5400c661f7872"
+  },
+  "decisionTraining.drawer.snapshot.commentSummary": {
+    "en": "{{count}} - last {{id}}",
+    "zh-CN": "{{count}} 条 - 最后一条 {{id}}",
+    "reviewedEnglishHash": "1fd834031bf25129d4d54cad01795a2f9a8f3f9b7980d3bdf1e3564c4a8e2e6d"
+  },
+  "decisionTraining.drawer.snapshot.comments": {
+    "en": "Comments",
+    "zh-CN": "评论",
+    "reviewedEnglishHash": "355f79f29d7d3c2df917ad07f7441e3ce4b0ac48892b778076dbdca401851712"
+  },
+  "decisionTraining.drawer.snapshot.commit": {
+    "en": "Commit",
+    "zh-CN": "提交",
+    "reviewedEnglishHash": "82a9c46ffa4789945d9f2359d75891558ef6faa8dee09e4b25e4e0597704f5bd"
+  },
+  "decisionTraining.drawer.snapshot.createHeading": {
+    "en": "State frozen with this example",
+    "zh-CN": "与此样例一起冻结的状态",
+    "reviewedEnglishHash": "6fbcc97aa291e4611a2b93f7ac8f80309c2e4c422a3d6661c1c62db041611b98"
+  },
+  "decisionTraining.drawer.snapshot.cutoff": {
+    "en": "Cutoff",
+    "zh-CN": "截止时间",
+    "reviewedEnglishHash": "46ade032210498beacdf0811edac41fcfc1dd26137c498d0b335a72dd45b2d8d"
+  },
+  "decisionTraining.drawer.snapshot.noneBeforeCutoff": {
+    "en": "None before cutoff",
+    "zh-CN": "截止时间前无记录",
+    "reviewedEnglishHash": "dfebd9c256205e5f51689ce93dc86c646ce1de9334c2958c1332dd7988fdfd8c"
+  },
+  "decisionTraining.drawer.snapshot.now": {
+    "en": "now",
+    "zh-CN": "现在",
+    "reviewedEnglishHash": "ed5eb9a37e2d8231af3388319b941995f6dc8755c56043d0cc52b5fe405a87de"
+  },
+  "decisionTraining.drawer.snapshot.readOnly": {
+    "en": "Read-only",
+    "zh-CN": "只读",
+    "reviewedEnglishHash": "72bb90897ab1eadc924fa1358773c5949372c1f06d8dd53d730bbfa3b0c5b695"
+  },
+  "decisionTraining.drawer.snapshot.runSummary": {
+    "en": "{{count}} before cutoff",
+    "zh-CN": "截止时间前 {{count}} 个",
+    "reviewedEnglishHash": "713486fefaa502582de2804f52d9a55512f9f994ad98eadeda5c9b4138d2b234"
+  },
+  "decisionTraining.drawer.snapshot.runs": {
+    "en": "Runs",
+    "zh-CN": "运行",
+    "reviewedEnglishHash": "848f54e89660cea4357644039ac5d7146f76c8e85df5c04076e08feb7e7547f0"
+  },
+  "decisionTraining.drawer.snapshot.savedHeading": {
+    "en": "Frozen state",
+    "zh-CN": "冻结状态",
+    "reviewedEnglishHash": "867f9922a71f54f89a81bdf110e17c9357079dc4f6aecf31425578f31c849b95"
+  },
+  "decisionTraining.drawer.title.create": {
+    "en": "Train this decision",
+    "zh-CN": "训练此决策",
+    "reviewedEnglishHash": "cdd16d74f766cc6c59e6bb874c8646bb99d397681f9249e7ab507815f5b9a6b4"
+  },
+  "decisionTraining.drawer.title.saved": {
+    "en": "Training example",
+    "zh-CN": "训练样例",
+    "reviewedEnglishHash": "7f42c51c7685f393e57ae6a7012c2c667cac207938e95e9b591ab554539bf5e3"
+  },
+  "decisionTraining.drawer.toast.deleteFailed": {
+    "en": "Could not delete example",
+    "zh-CN": "无法删除样例",
+    "reviewedEnglishHash": "142717808593acb23721ec600bc2f3444ee07340c1f4ff1c8da60d32213a1556"
+  },
+  "decisionTraining.drawer.toast.deleted": {
+    "en": "Training example deleted",
+    "zh-CN": "训练样例已删除",
+    "reviewedEnglishHash": "cea2e869cfe8bc5c6a5bee4e87da21319400192e9c9c8edede09106b719a2ab3"
+  },
+  "decisionTraining.drawer.toast.notesUpdateFailed": {
+    "en": "Could not update notes",
+    "zh-CN": "无法更新笔记",
+    "reviewedEnglishHash": "2da95bb3f098d9694897df1fc12f29cf5aadabdfb55fcb1d663862f1a896ef43"
+  },
+  "decisionTraining.drawer.toast.notesUpdated": {
+    "en": "Notes updated",
+    "zh-CN": "笔记已更新",
+    "reviewedEnglishHash": "f5094d90963b20c9c827a2f276819e2450fe15e9c85d65bf8928915f74b1168a"
+  },
+  "decisionTraining.drawer.toast.trainFailed": {
+    "en": "Could not train this decision",
+    "zh-CN": "无法训练此决策",
+    "reviewedEnglishHash": "683e09d2d1d11a0e34a4a1699e184ef1b49c3448ae8a1a3fbbbab25db3df19e2"
+  },
+  "decisionTraining.drawer.toast.trained": {
+    "en": "Decision trained",
+    "zh-CN": "决策已加入训练",
+    "reviewedEnglishHash": "8affba4252948537955849beb6fa3c48f151e8c13d4c39975f64f09260fa1d0b"
+  },
+  "decisionTraining.drawer.untrainable": {
+    "en": "This decision can't be trained - it isn't anchored to an issue.",
+    "zh-CN": "此决策未关联任务，无法加入训练。",
+    "reviewedEnglishHash": "b7ffb3f40e4effa2a2fcb3747e8e4233a1847004cd6ca7d7171ba76f2e4c9ce2"
+  },
+  "decisionTraining.loadingExample": {
+    "en": "Loading example…",
+    "zh-CN": "正在加载样例...",
+    "reviewedEnglishHash": "15998483da1cc8517a5e41b6f9a48255445b73fec1e31e50f89330c997280438"
+  },
+  "decisionTraining.notAnchored": {
+    "en": "This decision can't be trained — it isn't anchored to an issue.",
+    "zh-CN": "无法训练此决策，因为它未关联到任务。",
+    "reviewedEnglishHash": "06e9449814b3dff77c0da263b0a13508a37b5119be5eb2e2bf1aaeacdc73a9b6"
+  },
+  "decisionTraining.previous": {
+    "en": "previous",
+    "zh-CN": "上一条",
+    "reviewedEnglishHash": "6da0633528deaa0144e7b058315f0b753ec0b945163a72bf96a0d18180f9de0d"
+  },
+  "decisionTraining.view": {
+    "en": "View",
+    "zh-CN": "查看",
+    "reviewedEnglishHash": "dcc839a4015c4b7dd9db959a8f757833b8adb92462a751b973386e453c6d58a3"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "companyActivity.agentDescription": {
+    "en": "Every recorded agent action, newest first — with the responsible person and run behind each one.",
+    "zh-CN": "所有已记录的智能体操作，按最新优先显示，并标明负责人和所属运行。",
+    "reviewedEnglishHash": "693aedcd30240a1c073ce274616aa44984ce4630aacefe22cf4446e9aa7dc8da"
+  },
+  "companyActivity.agentScope": {
+    "en": "Agent actions",
+    "zh-CN": "智能体操作",
+    "reviewedEnglishHash": "a21eef047f65f596173063c18b61e0cce7a6df7329428b172f342333a10128cd"
+  },
+  "companyActivity.allDescription": {
+    "en": "Everything happening in your company, newest first — people, agents, and the system. Each line is one recorded action.",
+    "zh-CN": "公司中发生的所有事件，按最新优先显示——包括人员、智能体和系统。每一行代表一条已记录的操作。",
+    "reviewedEnglishHash": "455266f7758638d7f8e0633d3034365ac525b98f74d0460e97b664592e7fcc82"
+  },
+  "companyActivity.allScope": {
+    "en": "All activity",
+    "zh-CN": "全部活动",
+    "reviewedEnglishHash": "29ebb2ef2da630f1485c14455185d10ffc3f57dbafb30821eb0ff8227038b749"
+  },
+  "companyActivity.scopeLabel": {
+    "en": "Activity scope",
+    "zh-CN": "活动范围",
+    "reviewedEnglishHash": "98a37b44fa795fa6e173c4f0fcab29b8a2e649e3223de4e4121630be165b7950"
+  },
+  "companyActivity.title": {
+    "en": "Activity",
+    "zh-CN": "活动",
+    "reviewedEnglishHash": "38da1505ca8373288489495101b14f24ac95078f520ad64df18272aa6054f750"
+  }
+}

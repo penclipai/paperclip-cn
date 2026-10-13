@@ -1,0 +1,27 @@
+{
+  "issueSiblingNavigation.ariaLabel": {
+    "en": "Sub-task navigation",
+    "zh-CN": "子任务导航",
+    "reviewedEnglishHash": "7df4565e400f7e7f77e4ce0c1a102c955734d7e5b10706b8df5fd005324266c1"
+  },
+  "issueSiblingNavigation.next": {
+    "en": "Next",
+    "zh-CN": "下一个",
+    "reviewedEnglishHash": "1ff57a29d7c9d11bdf61c1b80f2b289b44c1ea844824d4b94a0d52b6ba5fc858"
+  },
+  "issueSiblingNavigation.nextAria": {
+    "en": "Next sub-task: {{identifier}} - {{title}}",
+    "zh-CN": "下一个子任务：{{identifier}} - {{title}}",
+    "reviewedEnglishHash": "dbe0067326802be5031723a52e1c224ddd871cbae0cae18ceeb5d414fbca3a13"
+  },
+  "issueSiblingNavigation.previous": {
+    "en": "Previous",
+    "zh-CN": "上一个",
+    "reviewedEnglishHash": "a57b08a480b822a0a572b993391c292ede593bf8000b406675b180bbb16260fa"
+  },
+  "issueSiblingNavigation.previousAria": {
+    "en": "Previous sub-task: {{identifier}} - {{title}}",
+    "zh-CN": "上一个子任务：{{identifier}} - {{title}}",
+    "reviewedEnglishHash": "59235fdf79431bac559d53b68061ef49b4850f8bacfcd355ef29beebfcd841d5"
+  }
+}

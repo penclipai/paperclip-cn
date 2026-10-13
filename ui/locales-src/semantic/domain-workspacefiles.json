@@ -1,0 +1,42 @@
+{
+  "workspaceFiles.unavailable.cleaned.body": {
+    "en": "The isolated worktree for this issue has been cleaned up, so files cannot be previewed.",
+    "zh-CN": "此任务的隔离 worktree 已清理，因此无法预览文件。",
+    "reviewedEnglishHash": "f472e17436eb79b53585017001a8cf41952f5f40f824f76e477de94fc8ba4ad5"
+  },
+  "workspaceFiles.unavailable.cleaned.title": {
+    "en": "Workspace is no longer available",
+    "zh-CN": "工作区已不可用",
+    "reviewedEnglishHash": "cb2826c669f7ae884cf7f79d8fe691c585f246bc5c8a12b66b7fc6f3f814acfd"
+  },
+  "workspaceFiles.unavailable.generic.body": {
+    "en": "These workspace files can't be browsed right now.",
+    "zh-CN": "目前无法浏览这些工作区文件。",
+    "reviewedEnglishHash": "55bf0d64c9a39106795285ef040106a002b4afd7d89bdfdd4cc2e991c9278fdf"
+  },
+  "workspaceFiles.unavailable.generic.title": {
+    "en": "Workspace unavailable",
+    "zh-CN": "工作区不可用",
+    "reviewedEnglishHash": "f29d3f31dc6e215a84d55322e5d23fc43997a76f0e1ed4e774a2b96e50eb7328"
+  },
+  "workspaceFiles.unavailable.none.body": {
+    "en": "This issue does not have a workspace to browse. Files appear here once a run creates one.",
+    "zh-CN": "此任务没有可浏览的工作区。运行创建工作区后，文件会显示在这里。",
+    "reviewedEnglishHash": "b010dc03a2225feb4e2cc79fefea7dc720c136db4828639cc18e4c2eaeb6d13e"
+  },
+  "workspaceFiles.unavailable.none.title": {
+    "en": "No workspace yet",
+    "zh-CN": "尚无工作区",
+    "reviewedEnglishHash": "133e716aadbe8631797e6f62816321462743926fd2dd8260776cf965f9b4d48d"
+  },
+  "workspaceFiles.unavailable.remote.body": {
+    "en": "This workspace is hosted remotely and is not available for inline preview yet.",
+    "zh-CN": "此工作区托管在远程位置，暂时无法内联预览。",
+    "reviewedEnglishHash": "8e3144a2dec03c3c8a30469f9298c69065d6eeeac192579f984868467880a7e1"
+  },
+  "workspaceFiles.unavailable.remote.title": {
+    "en": "Remote workspace preview not supported",
+    "zh-CN": "暂不支持预览远程工作区",
+    "reviewedEnglishHash": "118565fc423845cf75a08d98c2b7cacbf54c6e9e6c1b7e01d06c246298481a4e"
+  }
+}

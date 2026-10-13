@@ -1,0 +1,77 @@
+{
+  "issueRelatedWork.externalObjects": {
+    "en": "External objects",
+    "zh-CN": "外部对象",
+    "reviewedEnglishHash": "9279c11de25294b9a2a2912c3aeb20683a7d4da946d592580acf4adc0b7ac2dc"
+  },
+  "issueRelatedWork.externalObjectsDescription": {
+    "en": "Remote work referenced from this issue - pull requests, deployments, tickets in other systems, and more.",
+    "zh-CN": "此任务引用的远端工作，例如拉取请求、部署、其他系统中的工单等。",
+    "reviewedEnglishHash": "4b78f1ea83278c5d05172af23849b837fbd1ecd473484765580890ef02f07e72"
+  },
+  "issueRelatedWork.externalObjectsLoadFailed": {
+    "en": "Couldn't load external objects.",
+    "zh-CN": "无法加载外部对象。",
+    "reviewedEnglishHash": "42d33ac2522ca095ce52e3df971697891ba29f80b0ef9c5b25a779b64b6a6df3"
+  },
+  "issueRelatedWork.loadingExternalObjects": {
+    "en": "Loading external objects...",
+    "zh-CN": "正在加载外部对象...",
+    "reviewedEnglishHash": "e2d930568bf6b6977f988972688637103c87176829899fc0cec9e6c824c755e3"
+  },
+  "issueRelatedWork.noExternalObjects": {
+    "en": "This issue does not reference any external objects yet.",
+    "zh-CN": "此任务尚未引用任何外部对象。",
+    "reviewedEnglishHash": "e44c5d10ee56aa8b626d9414f81343ce002bd2917211eeaf3031288cfad80730"
+  },
+  "issueRelatedWork.noReferencedBy": {
+    "en": "No other tasks reference this issue yet.",
+    "zh-CN": "尚无其他任务引用此任务。",
+    "reviewedEnglishHash": "8a25ca5d9e6002a49b9a2977326fd694c03e1a27f5b0e43da28ee94b576a8620"
+  },
+  "issueRelatedWork.noReferences": {
+    "en": "This issue does not reference any other tasks yet.",
+    "zh-CN": "此任务尚未引用其他任务。",
+    "reviewedEnglishHash": "dd87cd5c634727b985f0fe622e6a2436070e426332d307aa79391394095c4bf7"
+  },
+  "issueRelatedWork.referencedBy": {
+    "en": "Referenced by",
+    "zh-CN": "被引用",
+    "reviewedEnglishHash": "b65181bd6bc27f70ec182cfff5d4d5f31f2fd4a3520d0c9fda0d4993f3519fb6"
+  },
+  "issueRelatedWork.referencedByDescription": {
+    "en": "Other tasks that currently point at this issue.",
+    "zh-CN": "当前指向此任务的其他任务。",
+    "reviewedEnglishHash": "b17f84a007eb1cd51c43c829da6e875154c6fa77226d34ed4b3d5f9abd788cae"
+  },
+  "issueRelatedWork.references": {
+    "en": "References",
+    "zh-CN": "引用",
+    "reviewedEnglishHash": "69824d3b0e70ca6aaa0da1613b65fd914c442bf1f7ad1bb22bcdfbdfe1a05e39"
+  },
+  "issueRelatedWork.referencesDescription": {
+    "en": "Other tasks this issue currently points at in its title, description, comments, or documents.",
+    "zh-CN": "此任务当前在标题、描述、评论或文档中指向的其他任务。",
+    "reviewedEnglishHash": "80aa389d6bacd9dcec9b765c040a85bb4861986d62541b8f582e917857557a26"
+  },
+  "issueRelatedWork.source.comment": {
+    "en": "comment",
+    "zh-CN": "评论",
+    "reviewedEnglishHash": "c44bb2fd516909dab78ae0bfedcd5672b131b996c4b7a4328ee55fba170da776"
+  },
+  "issueRelatedWork.source.description": {
+    "en": "description",
+    "zh-CN": "描述",
+    "reviewedEnglishHash": "c9046f7a37ad0ea7cee73355984fa5428982f8b37c8f7bcec91f7ac71a7cd104"
+  },
+  "issueRelatedWork.source.document": {
+    "en": "document",
+    "zh-CN": "文档",
+    "reviewedEnglishHash": "43cc23fa52b87b4cc1d02b5b114154151d6adddb17c9fddc06b027fa99e24008"
+  },
+  "issueRelatedWork.source.title": {
+    "en": "title",
+    "zh-CN": "标题",
+    "reviewedEnglishHash": "aaf2320646108059a87ab5017a86aee454f5378ed95003dbb2e12f4ca5266e0e"
+  }
+}

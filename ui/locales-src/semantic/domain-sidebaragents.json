@@ -1,0 +1,7 @@
+{
+  "sidebarAgents.builtInAgentStatus": {
+    "en": "Built-in agent {{status}}",
+    "zh-CN": "内置智能体状态：{{status}}",
+    "reviewedEnglishHash": "bd09ad5b319f3bc9c98c3fe077415977048515325ae7908ba9eca9f674df086e"
+  }
+}

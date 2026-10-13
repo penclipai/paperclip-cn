@@ -1,0 +1,217 @@
+{
+  "documentAnnotations.addCommentAriaLabel": {
+    "en": "Add annotation comment",
+    "zh-CN": "添加文档批注评论",
+    "reviewedEnglishHash": "bbe4df5f86f00d4320f1d396715f372a79236590e8e195011da315df82f0d317"
+  },
+  "documentAnnotations.addCommentOnSelectionShortcut": {
+    "en": "Add comment on selection (⌘⇧M)",
+    "zh-CN": "为选中文本添加评论（⌘⇧M）",
+    "reviewedEnglishHash": "19140b40caf8ccd0f1b8ea6434b3104107d33fc159214b6b04b894b81fbf98d8"
+  },
+  "documentAnnotations.addReplyFailed": {
+    "en": "Failed to add reply.",
+    "zh-CN": "添加回复失败。",
+    "reviewedEnglishHash": "b97686baec62842d68da5c5474a868a39db1b17d30fe8ecbe867c78d99e367e2"
+  },
+  "documentAnnotations.agent": {
+    "en": "Agent",
+    "zh-CN": "智能体",
+    "reviewedEnglishHash": "11b39c93777e8f1f3983bdba7c72b22fe68cfea20c677e9de53e17cb7dbfb19f"
+  },
+  "documentAnnotations.agentRoleSuffix": {
+    "en": "· agent",
+    "zh-CN": "· 智能体",
+    "reviewedEnglishHash": "b5c454e79224b1f276605f0f1ab4b50f2a34bd0681e6432046dcdd9ade08d18d"
+  },
+  "documentAnnotations.anchorMovedNeedsReview": {
+    "en": "Anchor moved - needs review",
+    "zh-CN": "锚点已移动 - 需要查看",
+    "reviewedEnglishHash": "ed712cc731d2846f0bbb4485bf32b4ab347f82a31fd305d5bf5d7d3100b7bf88"
+  },
+  "documentAnnotations.board": {
+    "en": "Board",
+    "zh-CN": "看板",
+    "reviewedEnglishHash": "4816cbfd74aa8297b9c9cdaae89e2f0d2ced6041e952dfcd114e01b4c82e9c6d"
+  },
+  "documentAnnotations.closePanel": {
+    "en": "Close annotation panel",
+    "zh-CN": "关闭批注面板",
+    "reviewedEnglishHash": "f3bbe766c799902ca65806cd8fcef1e3e77a859f98f06cc2b52d5b78c4d0cf3c"
+  },
+  "documentAnnotations.comment": {
+    "en": "Comment",
+    "zh-CN": "评论",
+    "reviewedEnglishHash": "44f5e3fbec57be75ebfb2e42caf7f5ee1542f84748a0380b6f20238c4a257e1b"
+  },
+  "documentAnnotations.commentCount": {
+    "en": "{{count}} comments",
+    "zh-CN": "{{count}} 条评论",
+    "reviewedEnglishHash": "3313c3ed57add98d84a952640940903b6720d20da0cb0c134cf697c1eba32bf7"
+  },
+  "documentAnnotations.commentCountOne": {
+    "en": "{{count}} comment",
+    "zh-CN": "{{count}} 条评论",
+    "reviewedEnglishHash": "7f6fbb6d425c5387203e267050f37a180710fdc2a7bffe3f79a8988e0802f296"
+  },
+  "documentAnnotations.comments": {
+    "en": "comments",
+    "zh-CN": "评论",
+    "reviewedEnglishHash": "2b4244fb2663714ee7241914de64ede5288e4cb2921611e2a41193f11de11922"
+  },
+  "documentAnnotations.commentsOnRevision": {
+    "en": "Comments on {{documentKey}} revision {{revision}}",
+    "zh-CN": "{{documentKey}} 修订 {{revision}} 的评论",
+    "reviewedEnglishHash": "bab02b8e0d5470fd1cdcfbe502dbc7033c0c47c560ea94acb8377aa0c5dec23a"
+  },
+  "documentAnnotations.copyLink": {
+    "en": "Copy link",
+    "zh-CN": "复制链接",
+    "reviewedEnglishHash": "dbf362d4f210c780513a9258278d4d07abe8a224f84ba7ad775d819039342e77"
+  },
+  "documentAnnotations.createCommentFailed": {
+    "en": "Failed to create comment",
+    "zh-CN": "创建评论失败",
+    "reviewedEnglishHash": "9f67d0daa2142031161b0f23edebec2ef530a2e54d641dbcfe942bd1f1eb11a4"
+  },
+  "documentAnnotations.emptyFiltered": {
+    "en": "No {{filter}} comments.",
+    "zh-CN": "没有{{filter}}评论。",
+    "reviewedEnglishHash": "2634b08de7730a639a71cd67acd805687ed02bcfd010b5493b7747a444f86c96"
+  },
+  "documentAnnotations.emptyOpen": {
+    "en": "No open comments yet. Select text to add one.",
+    "zh-CN": "暂无打开的评论。选中文本即可添加。",
+    "reviewedEnglishHash": "0f97ff4c61fb2d77342f1787cd6df4417a643483f24baa5544f5229004835af5"
+  },
+  "documentAnnotations.filter.open": {
+    "en": "Open",
+    "zh-CN": "打开",
+    "reviewedEnglishHash": "ed077f3d8125d60dca1979c7133601bd187d47c73ed9975028f677e49e709942"
+  },
+  "documentAnnotations.filter.orphaned": {
+    "en": "Orphaned",
+    "zh-CN": "孤立",
+    "reviewedEnglishHash": "8d8278071d8e96451b600428f9b500a633ccd0e4bbd8fa651a6d8da358972c93"
+  },
+  "documentAnnotations.filter.resolved": {
+    "en": "Resolved",
+    "zh-CN": "已解决",
+    "reviewedEnglishHash": "5be3c2c8354e1eb924b03a3dcc7fa4172e9aa0f4917b46b44fcc7daf8835d7a7"
+  },
+  "documentAnnotations.filter.stale": {
+    "en": "Stale",
+    "zh-CN": "已失效",
+    "reviewedEnglishHash": "40c9e59c5e152b0ae9affc84d8461c29b75a7709e4506307eeedf246b526014e"
+  },
+  "documentAnnotations.moreActions": {
+    "en": "More actions",
+    "zh-CN": "更多操作",
+    "reviewedEnglishHash": "f8d46c2570e70736d62beb6e2e8df321d7cb4842a2b894f2025c47b31871d9f1"
+  },
+  "documentAnnotations.moreThreadActions": {
+    "en": "More thread actions",
+    "zh-CN": "更多评论线程操作",
+    "reviewedEnglishHash": "a96a172d641cb155f111f6e4069e8f9d16db1e5df1649dfca54d589a432534b7"
+  },
+  "documentAnnotations.noRevisionYet": {
+    "en": "Document has no revision yet.",
+    "zh-CN": "文档还没有修订版本。",
+    "reviewedEnglishHash": "07b27d13da4fceaa0bbeee889fe1ae27349b337cf99e63f30a055053467da5c1"
+  },
+  "documentAnnotations.noSelectionToAnchor": {
+    "en": "No selection to anchor to.",
+    "zh-CN": "没有可锚定的选中文本。",
+    "reviewedEnglishHash": "da3402ce0305c09fab0ed57470d05335de680e763db9862c5b1b55fde0a02180"
+  },
+  "documentAnnotations.openCommentsOn": {
+    "en": "Open comments on {{docKey}}",
+    "zh-CN": "打开 {{docKey}} 的评论",
+    "reviewedEnglishHash": "4c564bc80a6f0bc7c6a718e40f7865227f26fe9d50a7fcf1fa087500700a1b11"
+  },
+  "documentAnnotations.openThread": {
+    "en": "Open annotation thread",
+    "zh-CN": "打开批注线程",
+    "reviewedEnglishHash": "d56472c34388f08eda9309c5c8415912af45fdaaa2254215ee7d0a15d90a8af3"
+  },
+  "documentAnnotations.openUnresolvedCommentsOn": {
+    "en": "Open {{count}} unresolved comments on {{docKey}}",
+    "zh-CN": "打开 {{docKey}} 的 {{count}} 条未解决评论",
+    "reviewedEnglishHash": "91b04199b8589cade35ac3ba6f1242f4da05a6ea753a2430b142ef6ca8ef111a"
+  },
+  "documentAnnotations.panelAriaLabel": {
+    "en": "Annotations for {{documentKey}}, revision {{revision}}",
+    "zh-CN": "{{documentKey}} 修订 {{revision}} 的批注",
+    "reviewedEnglishHash": "2fd48c4b88f4f92a6c4b2ffcac26224f02985f771f541ed75ae3e0598a9dade1"
+  },
+  "documentAnnotations.posting": {
+    "en": "Posting...",
+    "zh-CN": "正在发布...",
+    "reviewedEnglishHash": "e24da73ee9535f119e776d47e2983fba65a0a9b5a1a4d8cf51f2d896286ed134"
+  },
+  "documentAnnotations.reopen": {
+    "en": "Reopen",
+    "zh-CN": "重新打开",
+    "reviewedEnglishHash": "a886d1dc4f128e2791731e8b288c8d7c74f8a8608e23ca8e167b3038ab48054f"
+  },
+  "documentAnnotations.reply": {
+    "en": "Reply",
+    "zh-CN": "回复",
+    "reviewedEnglishHash": "c253f451bdd56431ff15f638498d0003c36aabd5b07e5d21aaa7f1391410747c"
+  },
+  "documentAnnotations.replyPlaceholder": {
+    "en": "Reply...",
+    "zh-CN": "回复...",
+    "reviewedEnglishHash": "772fa553df6a6c4cdfe9c1c366d98ad789d5dd602afcfdee1b8faeeb508cc16d"
+  },
+  "documentAnnotations.resolve": {
+    "en": "Resolve",
+    "zh-CN": "解决",
+    "reviewedEnglishHash": "c8f193b315c86f3a9d5ff6c85697aa6112760966f93f92da5f7a4153f3c0bc8c"
+  },
+  "documentAnnotations.selectionActions": {
+    "en": "Selection actions",
+    "zh-CN": "选中文本操作",
+    "reviewedEnglishHash": "b847ffdd0a1bfe55c557072392a14b10dbfa4787ae190f66bbad860b577d3a1f"
+  },
+  "documentAnnotations.sending": {
+    "en": "Sending...",
+    "zh-CN": "正在发送...",
+    "reviewedEnglishHash": "286a3af7348e83123a2525936b12ff839504effef55b21c921edbb179247b523"
+  },
+  "documentAnnotations.status.open": {
+    "en": "Open",
+    "zh-CN": "打开",
+    "reviewedEnglishHash": "ed077f3d8125d60dca1979c7133601bd187d47c73ed9975028f677e49e709942"
+  },
+  "documentAnnotations.status.orphaned": {
+    "en": "Orphaned",
+    "zh-CN": "孤立",
+    "reviewedEnglishHash": "8d8278071d8e96451b600428f9b500a633ccd0e4bbd8fa651a6d8da358972c93"
+  },
+  "documentAnnotations.status.resolved": {
+    "en": "Resolved",
+    "zh-CN": "已解决",
+    "reviewedEnglishHash": "5be3c2c8354e1eb924b03a3dcc7fa4172e9aa0f4917b46b44fcc7daf8835d7a7"
+  },
+  "documentAnnotations.status.stale": {
+    "en": "Stale",
+    "zh-CN": "已失效",
+    "reviewedEnglishHash": "40c9e59c5e152b0ae9affc84d8461c29b75a7709e4506307eeedf246b526014e"
+  },
+  "documentAnnotations.threadAriaLabel": {
+    "en": "Annotation thread",
+    "zh-CN": "文档批注讨论串",
+    "reviewedEnglishHash": "ee8c607d5cf89af2340b3cb21c79c6ba9699010de81aff3b3a8e31f390519bd7"
+  },
+  "documentAnnotations.updateStatusFailed": {
+    "en": "Failed to update comment status.",
+    "zh-CN": "更新评论状态失败。",
+    "reviewedEnglishHash": "100e2b7c81b8ab957cd16cdebf777c9604b19e53dd3c06c240ed551a6fb1759c"
+  },
+  "documentAnnotations.writeCommentPlaceholder": {
+    "en": "Write a comment...",
+    "zh-CN": "写一条评论...",
+    "reviewedEnglishHash": "a89a1ed2c716e99653907dc06964731fb0e4ce6874ddd8a6d34b78dc473af9b0"
+  }
+}

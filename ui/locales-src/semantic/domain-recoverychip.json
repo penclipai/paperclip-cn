@@ -1,0 +1,27 @@
+{
+  "recoveryChip.openSourceIssueTitle": {
+    "en": "{{label}} - open the source issue to act.",
+    "zh-CN": "{{label}} - 打开源任务处理。",
+    "reviewedEnglishHash": "7a7259237db675c232d8dd545039123a7f56b9fd24bf210b39b278a58779035c"
+  },
+  "recoveryChip.state.escalated": {
+    "en": "Recovery escalated",
+    "zh-CN": "恢复已升级",
+    "reviewedEnglishHash": "b976b9c412db5314bdd09f658467998df21a9acb99e2b94901a333263e28bbcf"
+  },
+  "recoveryChip.state.in_progress": {
+    "en": "Recovery in progress",
+    "zh-CN": "恢复处理中",
+    "reviewedEnglishHash": "93d357e36b842fd5c5da1003b8cb5956e191324722abdfe6d7a18c10c06a08d0"
+  },
+  "recoveryChip.state.needed": {
+    "en": "Recovery needed",
+    "zh-CN": "需要恢复",
+    "reviewedEnglishHash": "1ffe056fff955d2e2cc8eddfb7b0a6e191c9fd56dd36f6f38a2cb1edc080c6a2"
+  },
+  "recoveryChip.state.observe_only": {
+    "en": "Observing active run",
+    "zh-CN": "观察活跃运行",
+    "reviewedEnglishHash": "e8ad00fb2f88650fae3a23bddd493c582211b2ad063ab49dea571d219c8e5589"
+  }
+}

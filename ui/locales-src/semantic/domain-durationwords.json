@@ -1,0 +1,57 @@
+{
+  "durationWords.hour": {
+    "en": "{{count}} hour",
+    "zh-CN": "{{count}} 小时",
+    "reviewedEnglishHash": "8b90982590c4f2cfc3d4fe24347d3239b6154a03f0e6b45aee6dba65c972b3f1"
+  },
+  "durationWords.hourWord": {
+    "en": "hour",
+    "zh-CN": "小时",
+    "reviewedEnglishHash": "9ac0add475dd38e6ab3a3fb5ab4579c886eb654f57764210a352fd62e9dd9706"
+  },
+  "durationWords.hours": {
+    "en": "{{count}} hours",
+    "zh-CN": "{{count}} 小时",
+    "reviewedEnglishHash": "e6ee367ba26346af1a8d956329c4ed1746f506948f13effb5138463a73e8955d"
+  },
+  "durationWords.hoursMinutes": {
+    "en": "{{hours}} {{hourWord}} {{minutes}} {{minuteWord}}",
+    "zh-CN": "{{hours}} {{hourWord}} {{minutes}} {{minuteWord}}",
+    "reviewedEnglishHash": "dd3a9a86c7dacdbd5732d9130ec82da88adc02d84d0790d325d41b182232c87d"
+  },
+  "durationWords.hoursWord": {
+    "en": "hours",
+    "zh-CN": "小时",
+    "reviewedEnglishHash": "404314b1f4bd8fa2ff42a84cd851ddc011c76fb64e12dfe3748101b03ed8ce7c"
+  },
+  "durationWords.minute": {
+    "en": "{{count}} minute",
+    "zh-CN": "{{count}} 分钟",
+    "reviewedEnglishHash": "0572a72db04fe01f480d5a1209fb253108e94f7b2131cf950241c1fd601620f6"
+  },
+  "durationWords.minuteWord": {
+    "en": "minute",
+    "zh-CN": "分钟",
+    "reviewedEnglishHash": "28cdd20eaf134a05f18369414cb2df5e36c6a4e4f551b8c9cff8548029c41d6c"
+  },
+  "durationWords.minutes": {
+    "en": "{{count}} minutes",
+    "zh-CN": "{{count}} 分钟",
+    "reviewedEnglishHash": "42b5bdcf226152993245fe36895cb9bdf3a9c29db353b6e4eb9abe12ce462174"
+  },
+  "durationWords.minutesWord": {
+    "en": "minutes",
+    "zh-CN": "分钟",
+    "reviewedEnglishHash": "90e63d85fa1ab2c8ed65222f3ebd794b1e524b4b7cf84bec451542d0451b2985"
+  },
+  "durationWords.second": {
+    "en": "{{count}} second",
+    "zh-CN": "{{count}} 秒",
+    "reviewedEnglishHash": "150e066faf453493d4bacce6dbc657e3f950639b8d21f9cf6e8a27aac91d3ad1"
+  },
+  "durationWords.seconds": {
+    "en": "{{count}} seconds",
+    "zh-CN": "{{count}} 秒",
+    "reviewedEnglishHash": "ac39ac544dd0021726d4a49cdb5c4453e8b9ef01b2449b6ca4b20e23c3bec926"
+  }
+}

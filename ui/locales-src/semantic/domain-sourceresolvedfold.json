@@ -1,0 +1,72 @@
+{
+  "sourceResolvedFold.ariaLabel": {
+    "en": "Source-resolved watchdog fold",
+    "zh-CN": "折叠已解决的来源看护项",
+    "reviewedEnglishHash": "b1780fd40397a2433ea57104db3e2b0967e3a795682e73e7f8f7e306e66abf29"
+  },
+  "sourceResolvedFold.atTime": {
+    "en": "at {{time}}",
+    "zh-CN": "于 {{time}}",
+    "reviewedEnglishHash": "df8eeaa237400bfd3d65b0062a8acbc2cacf656800bf70e02fb13237643b3820"
+  },
+  "sourceResolvedFold.badge": {
+    "en": "Source-resolved",
+    "zh-CN": "来源已解决",
+    "reviewedEnglishHash": "ef82f9cf0418151fdf40cecc7030da0ae2ffd524f00ad77a0e4270cf8d62df16"
+  },
+  "sourceResolvedFold.body": {
+    "en": "This run was folded as a source-resolved false positive.",
+    "zh-CN": "此运行已作为来源已解决的误报被折叠。",
+    "reviewedEnglishHash": "25e03a9693d373a5ad9a12620b3aae143d88ff105f5ff0e90dc820a76657dd2a"
+  },
+  "sourceResolvedFold.evaluationIssue": {
+    "en": "Evaluation issue",
+    "zh-CN": "评估任务",
+    "reviewedEnglishHash": "72ebe2b31d54db512c7fc1575e06868eeb9550b9493e3d2794278cd8d5e61630"
+  },
+  "sourceResolvedFold.heading": {
+    "en": "SOURCE-RESOLVED FOLD",
+    "zh-CN": "来源已解决折叠",
+    "reviewedEnglishHash": "b2eafb16daf0c8fbaed40e0b3e11a7c6c0f4832054262ede85386051b2d3d876"
+  },
+  "sourceResolvedFold.processCleanup": {
+    "en": "Process cleanup",
+    "zh-CN": "进程清理",
+    "reviewedEnglishHash": "2e6ef1815056bf21624c1c53f420cf5f0ba343eec4e631d8c549ab7aef9106e2"
+  },
+  "sourceResolvedFold.sameRunEvidence": {
+    "en": "Same-run evidence",
+    "zh-CN": "同一运行证据",
+    "reviewedEnglishHash": "434922c97cf37614fd19dd41619a11d2456b51853c2c7724cda58dac7cf4eb07"
+  },
+  "sourceResolvedFold.silenceAgeBeforeFold": {
+    "en": "Silence age before fold",
+    "zh-CN": "折叠前静默时长",
+    "reviewedEnglishHash": "f1af4dc6e8747652982e934cda09abc2f33040269c9a605e1124b44c7cd794c5"
+  },
+  "sourceResolvedFold.silenceStarted": {
+    "en": "(silence started {{time}})",
+    "zh-CN": "（静默开始于 {{time}}）",
+    "reviewedEnglishHash": "cbb2bcc94e9afdc4ee37ffb4779de4b5beae6f6c5859548d922cf2bc0d5ff817"
+  },
+  "sourceResolvedFold.sourceIssue": {
+    "en": "Source issue",
+    "zh-CN": "来源任务",
+    "reviewedEnglishHash": "bc23e41adf441fff279bdae6aaf833d1cb12d3b07d6af1228ad63020823a4c5c"
+  },
+  "sourceResolvedFold.systemAudit": {
+    "en": "system audit",
+    "zh-CN": "系统审计",
+    "reviewedEnglishHash": "057523181b45a0d1a1a439f28bdd2f54267931713babc4992e9dfde76596d2f0"
+  },
+  "sourceResolvedFold.title": {
+    "en": "System folded this run as a source-resolved false positive.",
+    "zh-CN": "系统已将此运行折叠为来源已解决的误报。",
+    "reviewedEnglishHash": "1643b5e23da480a8532b918d662364b7dd0c0a7e60346508e318c83276158a21"
+  },
+  "sourceResolvedFold.unknown": {
+    "en": "unknown",
+    "zh-CN": "未知",
+    "reviewedEnglishHash": "b23a6a8439c0dde5515893e7c90c1e3233b8616e634470f20dc4928bcf3609bc"
+  }
+}

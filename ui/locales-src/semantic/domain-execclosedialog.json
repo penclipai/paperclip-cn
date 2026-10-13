@@ -1,0 +1,197 @@
+{
+  "execCloseDialog.aheadBehind": {
+    "en": "Ahead / behind",
+    "zh-CN": "领先 / 落后",
+    "reviewedEnglishHash": "3f89fb27aba1a1eba22af6da58e8afaebfe375abc3b85cc59ae996edfed999e9"
+  },
+  "execCloseDialog.alreadyArchived": {
+    "en": "This workspace is already archived.",
+    "zh-CN": "此工作区已归档。",
+    "reviewedEnglishHash": "bb335e88702d44b0faed28d548bb6708d4c0e3310282d129672dfc1f96694134"
+  },
+  "execCloseDialog.archiveDescriptionSuffix": {
+    "en": "and clean up any owned workspace artifacts. Paperclip keeps the workspace record and task history, but removes it from active workspace views.",
+    "zh-CN": "并清理其拥有的工作区成果。Paperclip 会保留工作区记录和任务历史，但会将其从活跃工作区视图中移除。",
+    "reviewedEnglishHash": "2b91546e82e50b85308c7be6c4aa91ce1bb2bc63ea0ea17b59eeb3eba01b63c2"
+  },
+  "execCloseDialog.archiveDescription_post": {
+    "en": "and clean up any owned workspace artifacts. Paperclip keeps the workspace record and issue history, but removes it from active workspace views.",
+    "zh-CN": "并清理其拥有的工作区产物。Paperclip CN 会保留工作区记录和任务历史，但将其从活跃工作区视图中移除。",
+    "reviewedEnglishHash": "36b3cec668f9c8372358f9f57fddf6263f7d83d7f294cfd2c27b53cf45183278"
+  },
+  "execCloseDialog.archiveDescription_pre": {
+    "en": "Archive",
+    "zh-CN": "归档",
+    "reviewedEnglishHash": "66f4804ee23ddc092d1bae43cb88186aa541187fff7c1cc8a4aa17e59a9f4123"
+  },
+  "execCloseDialog.attachedRuntimeServices": {
+    "en": "Attached runtime services",
+    "zh-CN": "附加的运行时服务",
+    "reviewedEnglishHash": "51e1d884203a117220f50ea98fbd2a15993fb6450b6a98e8cc8ddf504f9acf5d"
+  },
+  "execCloseDialog.baseRef": {
+    "en": "Base ref",
+    "zh-CN": "基准 ref",
+    "reviewedEnglishHash": "9c6c10f9d4c60b5349abb6d5f9e09faf1dcb0be57a2aac85c5363ce8b350d35e"
+  },
+  "execCloseDialog.blockingIssues": {
+    "en": "Blocking issues",
+    "zh-CN": "阻塞的任务",
+    "reviewedEnglishHash": "6a19bd4215ed3c59713d4743b4a0d101940d4743abc1e0af8c4839be27a5eb9d"
+  },
+  "execCloseDialog.blockingReasons": {
+    "en": "Blocking reasons",
+    "zh-CN": "阻塞原因",
+    "reviewedEnglishHash": "fa594e191f7adbe2f9238c4ec162b23da42ff43188809d859bc9a147a8efccbe"
+  },
+  "execCloseDialog.blockingTasks": {
+    "en": "Blocking tasks",
+    "zh-CN": "阻塞任务",
+    "reviewedEnglishHash": "aae9f3055444f50767f528bad99c33c96793aaca5bea68dc39f6baf4837f3038"
+  },
+  "execCloseDialog.checkingSafety": {
+    "en": "Checking whether this workspace is safe to close...",
+    "zh-CN": "正在检查此工作区是否可以安全关闭...",
+    "reviewedEnglishHash": "cb92922bed6788c7479a7d417396ae48059a57da6ac9f2e541c0dadcba66f256"
+  },
+  "execCloseDialog.cleanupActions": {
+    "en": "Cleanup actions",
+    "zh-CN": "清理操作",
+    "reviewedEnglishHash": "fc44694fb02b251695e7bf9960fc7176ecc4f286be4eb515290e342d0858b4e3"
+  },
+  "execCloseDialog.cleanupFailedRetry": {
+    "en": "Cleanup previously failed on this workspace. Retrying close will rerun the cleanup flow and update the workspace status if it succeeds.",
+    "zh-CN": "上次清理此工作区时失败。重试关闭会重新运行清理流程，如果成功则更新工作区状态。",
+    "reviewedEnglishHash": "fbb99b6bf39bb5508d0eeb5d9fb2d6b6c347639e4b1339fef988dcbfb855f9c5"
+  },
+  "execCloseDialog.closeWorkspace": {
+    "en": "Close workspace",
+    "zh-CN": "关闭工作区",
+    "reviewedEnglishHash": "e5086f0455d55b206da77974bb935991057fcb784b1748ec85214a7f8375935b"
+  },
+  "execCloseDialog.dirtyTrackedFiles": {
+    "en": "Dirty tracked files",
+    "zh-CN": "已修改的跟踪文件",
+    "reviewedEnglishHash": "73ba934e628277409c9f96872279ba8e345d2be2ddca03e37a62d22e41e2e74e"
+  },
+  "execCloseDialog.disposable": {
+    "en": "This workspace is disposable and can be archived.",
+    "zh-CN": "此工作区是一次性的，可以被归档。",
+    "reviewedEnglishHash": "b8cc064efbd02244e82c14e17ba1ce106dc42cb1bd7a5e7c45690afd2c0a534b"
+  },
+  "execCloseDialog.failedToClose": {
+    "en": "Failed to close workspace",
+    "zh-CN": "关闭工作区失败",
+    "reviewedEnglishHash": "8e5f6a8fbebe2d2a9a56a374c4874c899851b0e897a54a29f653e1559fa8ef88"
+  },
+  "execCloseDialog.gitStatus": {
+    "en": "Git status",
+    "zh-CN": "Git 状态",
+    "reviewedEnglishHash": "591239c6ff9f76993425b30ce339ceacced8f040b918ccb251c7c966d18126dc"
+  },
+  "execCloseDialog.lastChecked": {
+    "en": "Last checked",
+    "zh-CN": "上次检查",
+    "reviewedEnglishHash": "0c0c351a971353b542ec8856072cf27244a7f2308097a0ad3bf8452f61b897cb"
+  },
+  "execCloseDialog.mergedIntoBase": {
+    "en": "Merged into base",
+    "zh-CN": "已合并到基准",
+    "reviewedEnglishHash": "82d48cbd54609a2d37a0039e3ab377722cee66068151568769100dfb5aa9d7d3"
+  },
+  "execCloseDialog.no": {
+    "en": "No",
+    "zh-CN": "否",
+    "reviewedEnglishHash": "1ea442a134b2a184bd5d40104401f2a37fbc09ccf3f4bc9da161c6099be3691d"
+  },
+  "execCloseDialog.noAdditionalDetails": {
+    "en": "No additional details",
+    "zh-CN": "无其他详情",
+    "reviewedEnglishHash": "f3109479aedcbe3e61ffb1c2dfe58a44aaf834db64bba24ea54e2a9526b77c57"
+  },
+  "execCloseDialog.otherLinkedIssues": {
+    "en": "Other linked issues",
+    "zh-CN": "其他关联任务",
+    "reviewedEnglishHash": "ca32aa8b542bc27cb36fe0ef4ad93dc3795d8a554a3c005760d3e11943340ee3"
+  },
+  "execCloseDialog.otherLinkedTasks": {
+    "en": "Other linked tasks",
+    "zh-CN": "其他关联任务",
+    "reviewedEnglishHash": "bf52ec294567935bce738780f7a6e2d6d4eb5972af6cd265697ed1ca859424be"
+  },
+  "execCloseDialog.primaryWorkspace": {
+    "en": "This execution workspace currently points at the project's primary workspace path.",
+    "zh-CN": "此执行工作区当前指向项目的主工作区路径。",
+    "reviewedEnglishHash": "c8c33be7aef43cb64a99b365391ffee167f4f14657373594b6d9d8a5c0dc1034"
+  },
+  "execCloseDialog.readinessFailed": {
+    "en": "Failed to inspect workspace close readiness.",
+    "zh-CN": "检查工作区关闭就绪状态失败。",
+    "reviewedEnglishHash": "fbc032a2835bf7ad19335d17a3b14090c2d4030403a6d5286803f6675cd264d8"
+  },
+  "execCloseDialog.repoRoot": {
+    "en": "Repo root:",
+    "zh-CN": "仓库根目录：",
+    "reviewedEnglishHash": "72decaf8ca457d83061811d46040af5c643f6105bcfd28c3d0b1b5748a5144ab"
+  },
+  "execCloseDialog.retryClose": {
+    "en": "Retry close",
+    "zh-CN": "重试关闭",
+    "reviewedEnglishHash": "46dde379c0e07f375482b2d7f4eae60a5c099ebcf84c7b684dba1aae1289023e"
+  },
+  "execCloseDialog.separateCheckout": {
+    "en": "This execution workspace has its own checkout path and can be archived independently.",
+    "zh-CN": "此执行工作区有独立的检出路径，可以单独归档。",
+    "reviewedEnglishHash": "22a46f3368f20e53340169880839338bdd77cdf512c838d0b198c44b70d7866d"
+  },
+  "execCloseDialog.sharedSession": {
+    "en": "This is a shared workspace session. Archiving it removes this session record but keeps the underlying project workspace.",
+    "zh-CN": "这是一个共享工作区会话。归档它会移除此会话记录，但保留底层项目工作区。",
+    "reviewedEnglishHash": "faa246e61934ed4e06c8bb8f687eee3ed1b1ca81e5819cfbd2e8f1a90e79f8d2"
+  },
+  "execCloseDialog.stateBlocked": {
+    "en": "Close is blocked",
+    "zh-CN": "关闭被阻止",
+    "reviewedEnglishHash": "45c83954ad16a7c968169c4f4f1b6fce915d845640dc1a83a2392e34e5b792f1"
+  },
+  "execCloseDialog.stateReady": {
+    "en": "Close is ready",
+    "zh-CN": "可以关闭",
+    "reviewedEnglishHash": "03f38b265812812e0dfa1f4e4c85e6f20af6677dc008ca8b0e0a7103641a9112"
+  },
+  "execCloseDialog.stateWarning": {
+    "en": "Close is allowed with warnings",
+    "zh-CN": "可以关闭，但有警告",
+    "reviewedEnglishHash": "b1c701c31251e439c619d94708fad418897578e8134b4a827bc3ce74b3a17efb"
+  },
+  "execCloseDialog.untrackedFiles": {
+    "en": "Untracked files",
+    "zh-CN": "未跟踪的文件",
+    "reviewedEnglishHash": "be1f1a6c500fda9c752edef971f34c0723656f4730e67658071ed7b9492fee8e"
+  },
+  "execCloseDialog.warnings": {
+    "en": "Warnings",
+    "zh-CN": "警告",
+    "reviewedEnglishHash": "0e04cd10f9afd7e546e176b34b56a243d8c741198aa0bfee27d7661a370dc043"
+  },
+  "execCloseDialog.workspaceCloseRetried": {
+    "en": "Workspace close retried",
+    "zh-CN": "已重试关闭工作区",
+    "reviewedEnglishHash": "6578b1b01178618528480cfe3b93ebdcb718c060490fb728cea22f3d27890fb4"
+  },
+  "execCloseDialog.workspaceClosed": {
+    "en": "Workspace closed",
+    "zh-CN": "工作区已关闭",
+    "reviewedEnglishHash": "4d4984dacd6a430156558e2b4bfb5caf06b088a622523aaf647a4623733b4397"
+  },
+  "execCloseDialog.workspacePath": {
+    "en": "Workspace path:",
+    "zh-CN": "工作区路径：",
+    "reviewedEnglishHash": "c9ce77f9b6fd2082f93b8fa8ac6f67e3bc2798941a46e699bf9c0a6cf9d06bc0"
+  },
+  "execCloseDialog.yes": {
+    "en": "Yes",
+    "zh-CN": "是",
+    "reviewedEnglishHash": "85a39ab345d672ff8ca9b9c6876f3adcacf45ee7c1e2dbd2408fd338bd55e07e"
+  }
+}

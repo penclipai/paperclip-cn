@@ -1,0 +1,12 @@
+{
+  "issueFilters.externalObjectStatus": {
+    "en": "External object status",
+    "zh-CN": "外部对象状态",
+    "reviewedEnglishHash": "48bc2014d5fb4ce52ba4be6c608b73c59aeb5232c6466f1156f0fb9f917325c7"
+  },
+  "issueFilters.liveRunsOnly": {
+    "en": "Live runs only",
+    "zh-CN": "仅显示实时运行",
+    "reviewedEnglishHash": "596632fc019ac3aeb6166f5ae7e84dcbafca112638bd4d9b203c49b32b8fa528"
+  }
+}

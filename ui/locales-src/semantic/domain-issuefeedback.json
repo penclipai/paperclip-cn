@@ -1,0 +1,72 @@
+{
+  "issueFeedback.allowSharingMiddle": {
+    "en": "to share this vote and future voted AI outputs. Choose",
+    "zh-CN": "以分享这次投票和未来已投票的 AI 输出。选择",
+    "reviewedEnglishHash": "5f1e4cc9cb7240a4b950ffdf714efc72bb59c5ffc0768ad4108caf7f5a958dec"
+  },
+  "issueFeedback.allowSharingPrefix": {
+    "en": "Choose",
+    "zh-CN": "选择",
+    "reviewedEnglishHash": "c7f937836f5d82d53bc507752075f87e25009ec11bc9fd4e282f0b645e47af7c"
+  },
+  "issueFeedback.allowSharingSuffix": {
+    "en": "to keep this vote and future votes local.",
+    "zh-CN": "以让这次投票和未来投票仅保存在本地。",
+    "reviewedEnglishHash": "197083e8f55fb410626d526a63580e76b6aad179d3b505503f6dccfa67150049"
+  },
+  "issueFeedback.alwaysAllow": {
+    "en": "Always allow",
+    "zh-CN": "始终允许",
+    "reviewedEnglishHash": "977618bd8bc7eef4d3bada0cf1a791d8362cd5fd8680e9673566abab2e76dded"
+  },
+  "issueFeedback.changeLater": {
+    "en": "You can change this later in Instance Settings > General.",
+    "zh-CN": "之后可在“实例设置 > 常规”中修改。",
+    "reviewedEnglishHash": "cc8e28d23cd41cedf8601b0004ec657f238c36eaa9ccb857c4ea0260e19ac4e4"
+  },
+  "issueFeedback.dontAllow": {
+    "en": "Don't allow",
+    "zh-CN": "不允许",
+    "reviewedEnglishHash": "9803bdd2047b13432e0b2a210a50a34ef2189f57f13c84501ec84dd7d2ffc1e9"
+  },
+  "issueFeedback.localVoteNote": {
+    "en": "This vote is always saved locally.",
+    "zh-CN": "这次投票始终会保存在本地。",
+    "reviewedEnglishHash": "a7cd6ce4e69c38e22d4b7fd102490d08781bcec5709b2b674ba9660e753fc556"
+  },
+  "issueFeedback.needsWork": {
+    "en": "Needs work",
+    "zh-CN": "需要改进",
+    "reviewedEnglishHash": "738a3278e945747c2a8478620d9417d6f5df2730c6e1c9dd64d2eef545231933"
+  },
+  "issueFeedback.readTerms": {
+    "en": "Read our terms of service",
+    "zh-CN": "阅读服务条款",
+    "reviewedEnglishHash": "50aceeb579a2002a7c4da4f9eaac3510a49694f665144d883def069e6251643e"
+  },
+  "issueFeedback.reasonPlaceholder": {
+    "en": "Add a short note",
+    "zh-CN": "添加简短说明",
+    "reviewedEnglishHash": "1adb884ad7345cf3544f4ef7bf60c341ab5fc9cc3680e6fc05b3d23a71536afe"
+  },
+  "issueFeedback.reasonPrompt": {
+    "en": "What could have been better?",
+    "zh-CN": "哪里还可以做得更好？",
+    "reviewedEnglishHash": "829e701d9a216100eef2e58bee4a2a7d7436d898cddb1d1027f859d4e9fc610d"
+  },
+  "issueFeedback.saveNote": {
+    "en": "Save note",
+    "zh-CN": "保存说明",
+    "reviewedEnglishHash": "6501e1ced8da0bffc5e2c7e20a42162e80176b31980e7b073fbf9955854fda4a"
+  },
+  "issueFeedback.sharingPreferenceDescription": {
+    "en": "Choose whether voted AI outputs can be shared with Paperclip Labs. This answer becomes the default for future thumbs up and thumbs down votes.",
+    "zh-CN": "选择已投票的 AI 输出是否可以分享给 Paperclip Labs。这个选择会成为以后点赞和点踩投票的默认设置。",
+    "reviewedEnglishHash": "1e435dd128b424cf4b45b74b890c0a045a2deeb1843d914f4fb624bf40e1e478"
+  },
+  "issueFeedback.sharingPreferenceTitle": {
+    "en": "Save your feedback sharing preference",
+    "zh-CN": "保存反馈分享偏好",
+    "reviewedEnglishHash": "1c562b5e2b712a50e903cc5273c0d55ad47052fa6064205172720b335a8f4063"
+  }
+}

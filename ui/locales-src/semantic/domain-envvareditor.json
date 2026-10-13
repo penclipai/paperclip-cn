@@ -1,0 +1,357 @@
+{
+  "envVarEditor.addVariable": {
+    "en": "Add variable",
+    "zh-CN": "添加变量",
+    "reviewedEnglishHash": "e10f539e38e1a1059e3848c5cfe7a53e9df104a685bdebd67768b0fbc72a0913"
+  },
+  "envVarEditor.allSecretsGroup": {
+    "en": "All secrets",
+    "zh-CN": "全部密钥",
+    "reviewedEnglishHash": "0b38e3daeb93829ede23034bcd2d0c1a50d4c89a7d38cf230b2f99c1d8a5f5a8"
+  },
+  "envVarEditor.bindSecret": {
+    "en": "Bind {{name}}",
+    "zh-CN": "绑定 {{name}}",
+    "reviewedEnglishHash": "f7503b2a14dadffd89ea34cbaf469f575d47a244263224e89b09259c9f91a2ff"
+  },
+  "envVarEditor.bindingMode": {
+    "en": "Binding mode",
+    "zh-CN": "绑定模式",
+    "reviewedEnglishHash": "5ae405fd398b6fc355a8b6df7a14f4994418a7e89101d6bfd6bb4c42c0570742"
+  },
+  "envVarEditor.browseSecrets": {
+    "en": "Browse secrets",
+    "zh-CN": "浏览密钥",
+    "reviewedEnglishHash": "cc54373f8148ecf41d995bbb7d907171d68bbb815d7af1155459b5ca87a1c2f5"
+  },
+  "envVarEditor.companySecret": {
+    "en": "Company secret",
+    "zh-CN": "公司密钥",
+    "reviewedEnglishHash": "06901dd7ff33d09826c0be8770428de9c8743ab79a3e7925bf5a8a9d4b641851"
+  },
+  "envVarEditor.companySecretReference": {
+    "en": "Company secret reference",
+    "zh-CN": "公司密钥引用",
+    "reviewedEnglishHash": "e9f1520e602b47451ac2101ad6593eee53f7a3281c4c3bde6a2c870a0f8528f5"
+  },
+  "envVarEditor.createSecretFromPlainValue": {
+    "en": "Create secret from plain value",
+    "zh-CN": "从明文值创建密钥",
+    "reviewedEnglishHash": "4fdadcaa5285209066532c01d270b82858ced76a5ee6c966af11db0c76ea7805"
+  },
+  "envVarEditor.createSecretNamedPrefix": {
+    "en": "Create secret",
+    "zh-CN": "创建密钥",
+    "reviewedEnglishHash": "b72a982613b6b66eda0bfc5454792313cd6bd08d3ad22206725a8d0f2bac601e"
+  },
+  "envVarEditor.currentSecretGroup": {
+    "en": "Current",
+    "zh-CN": "当前",
+    "reviewedEnglishHash": "e0d1b68224bf0b31ef16b206c65b5f8f6b89d18161f4a7cdcb8d0ac8d952549a"
+  },
+  "envVarEditor.dismissKeepPlainText": {
+    "en": "Dismiss - keep this value as plain text",
+    "zh-CN": "忽略 - 保持为明文值",
+    "reviewedEnglishHash": "31974ed66549d1cef45ee92f67060e632eddca6628ae3617ea4be1a3a0ffff3a"
+  },
+  "envVarEditor.dismissSensitiveSuggestion": {
+    "en": "Dismiss sensitive-value suggestion",
+    "zh-CN": "忽略敏感值建议",
+    "reviewedEnglishHash": "25c10e5dddcc02aa1733cbe7e5514eb986c4d132e61d6c3fd93235131187e36a"
+  },
+  "envVarEditor.duplicateName": {
+    "en": "Duplicate name",
+    "zh-CN": "名称重复",
+    "reviewedEnglishHash": "72e44e2a40e5f599c3b7cee77703a6572a81ff4212894c6792964d3d2f28bda0"
+  },
+  "envVarEditor.empty": {
+    "en": "No environment variables",
+    "zh-CN": "暂无环境变量",
+    "reviewedEnglishHash": "620e429338127cd1e27c108fc54372554ba22b07cd665985412fbb0b2cbb173c"
+  },
+  "envVarEditor.importedVariables": {
+    "en": "Imported {{count}} variable(s)",
+    "zh-CN": "已导入 {{count}} 个变量",
+    "reviewedEnglishHash": "0f53bc0de079ef89853b8e756831e9975d4ee4d2ef12d5c2ab0b54ef41d8d989"
+  },
+  "envVarEditor.invalidName": {
+    "en": "Invalid name - use letters, digits and _",
+    "zh-CN": "名称无效 - 只能使用字母、数字和 _",
+    "reviewedEnglishHash": "7221be657efa27232a600ab0d7e797a407322b1efa8fbe6dd90620a1fd175aba"
+  },
+  "envVarEditor.missingSecret": {
+    "en": "Missing secret",
+    "zh-CN": "缺失密钥",
+    "reviewedEnglishHash": "6ce2aa320518ff3dfe8139af2b30349cfe988a29f4dd0a7888f8eebf1413827f"
+  },
+  "envVarEditor.missingSecretTitle": {
+    "en": "Missing secret ({{id}})",
+    "zh-CN": "缺失密钥（{{id}}）",
+    "reviewedEnglishHash": "f669054e596dc11f4f191ed68bebec8332a52c71dc04e4763ee487b65681fc87"
+  },
+  "envVarEditor.moreActions": {
+    "en": "More actions",
+    "zh-CN": "更多操作",
+    "reviewedEnglishHash": "f8d46c2570e70736d62beb6e2e8df321d7cb4842a2b894f2025c47b31871d9f1"
+  },
+  "envVarEditor.noMatchingSecrets": {
+    "en": "No matching secrets",
+    "zh-CN": "没有匹配的密钥",
+    "reviewedEnglishHash": "a336141effeacf6d6d87a329eba8bcab78a76f782b50dd34d31aa7da03a2994d"
+  },
+  "envVarEditor.optional": {
+    "en": "Optional",
+    "zh-CN": "可选",
+    "reviewedEnglishHash": "59be71333c960fd08e7e4fe9862206d9355f0a9884121a5b50ef8b36efdfe4cf"
+  },
+  "envVarEditor.plain": {
+    "en": "Plain",
+    "zh-CN": "明文",
+    "reviewedEnglishHash": "8b854ade2cd01bdca1aa982f6ecff0086f70e3d2140d7fae2786a2e4150eeb4c"
+  },
+  "envVarEditor.recentlyUsed": {
+    "en": "Recently used:",
+    "zh-CN": "最近使用：",
+    "reviewedEnglishHash": "69bdec2db570cdf0d17982308806581d0707c6aed4a263fa68abf5d41c367467"
+  },
+  "envVarEditor.recentlyUsedGroup": {
+    "en": "Recently used",
+    "zh-CN": "最近使用",
+    "reviewedEnglishHash": "1e7cf8df9b6aa46c6aff58a6b6713c4205062e90a4d1d537a6d6185332a54f0e"
+  },
+  "envVarEditor.recommendedSuffix": {
+    "en": "(recommended)",
+    "zh-CN": "（推荐）",
+    "reviewedEnglishHash": "1185133b5b8946c2bbfc985f75f9984487043d5bc9ad389aa0e84386da9633f3"
+  },
+  "envVarEditor.removeVariable": {
+    "en": "Remove {{name}}",
+    "zh-CN": "移除 {{name}}",
+    "reviewedEnglishHash": "43e1269ac88aba53770f74a888e94434ed456cafba03b1bd4bd40350f31befb0"
+  },
+  "envVarEditor.required": {
+    "en": "Required",
+    "zh-CN": "必填",
+    "reviewedEnglishHash": "4850b174b713d88cfc63de107830d5388929020e78abc91fc19bba7a6821625f"
+  },
+  "envVarEditor.requirementAria": {
+    "en": "Requirement",
+    "zh-CN": "必填要求",
+    "reviewedEnglishHash": "f5f5690b0ecc41d3ffb099de27cfbdde6e2ab3c0b1a821cc6da487816747adf5"
+  },
+  "envVarEditor.reservedPrefix": {
+    "en": "Reserved prefix - provided automatically and may be overridden",
+    "zh-CN": "保留前缀 - 系统会自动提供，可能被覆盖",
+    "reviewedEnglishHash": "b035ff5cd7d3d22cf058762f328ecc8001bed3aaf37168d3e3931c430b1551e9"
+  },
+  "envVarEditor.revert": {
+    "en": "Revert",
+    "zh-CN": "还原",
+    "reviewedEnglishHash": "0026c505347863ae188a99df6946e16ac83262585044660440699346d24784e7"
+  },
+  "envVarEditor.revertedToText": {
+    "en": "Reverted to text -",
+    "zh-CN": "已还原为明文 -",
+    "reviewedEnglishHash": "9d147bc43146c85c520514f522af5ca0fe21df27d44e7a13b4a1667c41173871"
+  },
+  "envVarEditor.seal": {
+    "en": "Seal",
+    "zh-CN": "加密保存",
+    "reviewedEnglishHash": "50ed6511896524fba31c0fba1da4cacb320526fde3e585380ab14750f912ecff"
+  },
+  "envVarEditor.searchSecrets": {
+    "en": "Search secrets…",
+    "zh-CN": "搜索密钥…",
+    "reviewedEnglishHash": "01b390cb5448c2b6129ab32e3ddac72eed5a8fd7e8fa4c3fe14b0fd7d03a4d10"
+  },
+  "envVarEditor.secret": {
+    "en": "Secret",
+    "zh-CN": "密钥",
+    "reviewedEnglishHash": "7e32a729b1226ed1270f282a8c63054d09b26bc9ec53ea69771ce38158dfade8"
+  },
+  "envVarEditor.secretCreated": {
+    "en": "Secret {{name}} created",
+    "zh-CN": "已创建密钥 {{name}}",
+    "reviewedEnglishHash": "8491788f25479dc5b23dde4f463e3307a998c466e8d6bec6d66480b8dc278aa2"
+  },
+  "envVarEditor.secretDisabledHealth": {
+    "en": "Runs will fail until re-enabled or rebound.",
+    "zh-CN": "重新启用或重新绑定前，运行会失败。",
+    "reviewedEnglishHash": "8c5b84d730fbe46b0e870133e8fe20ada75bd4d5bb0ce9889e377882504e9d9e"
+  },
+  "envVarEditor.secretMissingHealth": {
+    "en": "This secret no longer exists - runs will fail until you rebind.",
+    "zh-CN": "此密钥已不存在 - 请重新绑定，否则运行会失败。",
+    "reviewedEnglishHash": "3893d57c3e4ad9acd5bed8278f576b234b82bca7b4b061ac1834f30b886c6d26"
+  },
+  "envVarEditor.secretNameAria": {
+    "en": "Secret name",
+    "zh-CN": "密钥名称",
+    "reviewedEnglishHash": "5cdf573b8913b247a7474c95761848abcdd4f2abeb12a6e286977b9af958418c"
+  },
+  "envVarEditor.secretNameExists": {
+    "en": "A secret with this name already exists",
+    "zh-CN": "已存在同名密钥",
+    "reviewedEnglishHash": "f4eb8c200a6e260d6f6469386b40e587242c98420f38fe13c84a576cba5e6831"
+  },
+  "envVarEditor.secretNamePattern": {
+    "en": "Use lowercase letters, digits and _",
+    "zh-CN": "请使用小写字母、数字和 _",
+    "reviewedEnglishHash": "0ca44e03e4f892470e840a50d60d8576b0d372dcf572c1615ff4e4437318b2b0"
+  },
+  "envVarEditor.secretNameRequired": {
+    "en": "Name is required",
+    "zh-CN": "名称为必填项",
+    "reviewedEnglishHash": "604fd1b2e29c688a7efbb25cdfc4f7d3502da6b1e395aa9fec82e3c0c48f3de2"
+  },
+  "envVarEditor.secretReference": {
+    "en": "Secret reference",
+    "zh-CN": "密钥引用",
+    "reviewedEnglishHash": "d994377983b5e6412e94c2b999e5df59891b9c848cc692e0a2846c2b28a0a8a5"
+  },
+  "envVarEditor.secretReferenceDescription": {
+    "en": "Resolve a stored company secret at run start.",
+    "zh-CN": "运行开始时解析已保存的公司密钥。",
+    "reviewedEnglishHash": "f5adb5f7d3ab835da9bd7b8aa30a3a0832de231f4109bfd378dbdb8f37516bcf"
+  },
+  "envVarEditor.secretValueAria": {
+    "en": "Secret value",
+    "zh-CN": "密钥值",
+    "reviewedEnglishHash": "6ef47d9880313fd844d217f37d65e9fa8e6c8c5755ed993718bc63e469ea2b2b"
+  },
+  "envVarEditor.secretValueRequired": {
+    "en": "Value is required",
+    "zh-CN": "值为必填项",
+    "reviewedEnglishHash": "1fbf278b53995ff39f69ce0e2aef7d56406fb890b82cd87febce6995e98776cd"
+  },
+  "envVarEditor.selectSecret": {
+    "en": "Select secret",
+    "zh-CN": "选择密钥",
+    "reviewedEnglishHash": "72a2a90fd493dfb97b6c83b589a869b1e89f4354257f322900185aa835c86960"
+  },
+  "envVarEditor.selectSecretEllipsis": {
+    "en": "Select secret…",
+    "zh-CN": "选择密钥…",
+    "reviewedEnglishHash": "002572e95b714189834c3742e547d27ef3f704ae1bf1478a681a08e4a2008ecd"
+  },
+  "envVarEditor.selectUserSecret": {
+    "en": "Select user secret...",
+    "zh-CN": "选择用户密钥...",
+    "reviewedEnglishHash": "25697923cce1994ba37f63e983ea602365124041431743738321f2db3f7fece1"
+  },
+  "envVarEditor.sensitiveValueTitle": {
+    "en": "This value looks sensitive - store it as a secret",
+    "zh-CN": "此值看起来像敏感信息 - 建议存为密钥",
+    "reviewedEnglishHash": "104e84f25be52eb176680f821358d5cbb20085c05403f0e0cec5aae4071ee038"
+  },
+  "envVarEditor.storeAndBind": {
+    "en": "Store & bind",
+    "zh-CN": "保存并绑定",
+    "reviewedEnglishHash": "b11682f46d179b4a2a67523f42da8bb9fe78e603def09f0c5d4a3656796582c2"
+  },
+  "envVarEditor.storeAsSecret": {
+    "en": "Store as secret",
+    "zh-CN": "存为密钥",
+    "reviewedEnglishHash": "2ffb23b2802199e50cb07660d7abdfae535ccb2995a6034a6ae93f0ee1e25aec"
+  },
+  "envVarEditor.storeAsSecretDescriptionPrefix": {
+    "en": "Moves the typed value into an encrypted company secret and binds",
+    "zh-CN": "将输入值移入加密的公司密钥，并把",
+    "reviewedEnglishHash": "33eb3127f91a31b7372cee7e78aabd651af5ebed0ec4bd29781bb66404560ab9"
+  },
+  "envVarEditor.storeAsSecretDescriptionSuffix": {
+    "en": "to it.",
+    "zh-CN": "绑定到该密钥。",
+    "reviewedEnglishHash": "661b490be7bbd414f41c6b38bea5608e35ae21d73b2495c557cdd4b772c41b30"
+  },
+  "envVarEditor.storeAsSecretEllipsis": {
+    "en": "Store as secret...",
+    "zh-CN": "存为密钥...",
+    "reviewedEnglishHash": "7e2ace0f732c074a7a70845eed320b14674a6f2b75525e10f9d32d8414eeae7b"
+  },
+  "envVarEditor.storeValueAsSecret": {
+    "en": "Store value as secret",
+    "zh-CN": "将值存为密钥",
+    "reviewedEnglishHash": "26f01e474333e3a9769e4478a0e2e743e55a536dfcfa49a20d7e69b8efbc34ac"
+  },
+  "envVarEditor.textValue": {
+    "en": "Text value",
+    "zh-CN": "明文值",
+    "reviewedEnglishHash": "93dd746bd58485c66a3f25d193f7fe95c6c2d6e7f86b644642abc8ebabe523e7"
+  },
+  "envVarEditor.textValueDescription": {
+    "en": "Store the value inline as plain text.",
+    "zh-CN": "将值以内联明文保存。",
+    "reviewedEnglishHash": "18de4f220fe1e871f8fa49c6277e4ab783bdeca53be17a9bc1b225983b217a06"
+  },
+  "envVarEditor.thisVariable": {
+    "en": "this variable",
+    "zh-CN": "此变量",
+    "reviewedEnglishHash": "7ab1059a5f2a8f97da3bbd2ff8260db39caee4025777c8712a4b0fe497ce1241"
+  },
+  "envVarEditor.undo": {
+    "en": "Undo",
+    "zh-CN": "撤销",
+    "reviewedEnglishHash": "a8283ade31856f71220db0e6f60a257c6889dc4dad0f275f66ad44b9ed9bf8d5"
+  },
+  "envVarEditor.unknownUserSecret": {
+    "en": "Unknown ({{key}})",
+    "zh-CN": "未知（{{key}}）",
+    "reviewedEnglishHash": "1eb3025f1792a45ae35d92b90bfa4731c4fcd688536e1cbe6f3128e60acc9266"
+  },
+  "envVarEditor.upOneFolder": {
+    "en": "Up one folder",
+    "zh-CN": "上一级文件夹",
+    "reviewedEnglishHash": "ef9a7ae0b5bec50ea75e6d2651aa79bf983fc61f1eb765927421dedab8094462"
+  },
+  "envVarEditor.userSecret": {
+    "en": "User secret",
+    "zh-CN": "用户密钥",
+    "reviewedEnglishHash": "62c03b86e0b7355f367a62acaf50ad041cd3ef5996ac72faf0c7718565d0c5c5"
+  },
+  "envVarEditor.userSecretAria": {
+    "en": "User secret",
+    "zh-CN": "用户密钥",
+    "reviewedEnglishHash": "62c03b86e0b7355f367a62acaf50ad041cd3ef5996ac72faf0c7718565d0c5c5"
+  },
+  "envVarEditor.userSecretKeyAria": {
+    "en": "User secret key",
+    "zh-CN": "用户密钥键名",
+    "reviewedEnglishHash": "2f31631316ca04af3fc83d982df89efb0d8eec846a28c595ed48d2ce17604aec"
+  },
+  "envVarEditor.userSecretKeyPlaceholder": {
+    "en": "user-secret key",
+    "zh-CN": "用户密钥键名",
+    "reviewedEnglishHash": "eee73c336184711264332c53c727a66cc826dc9364c7f0c7cd80c658ee0deca4"
+  },
+  "envVarEditor.userSecretReference": {
+    "en": "User secret reference",
+    "zh-CN": "用户密钥引用",
+    "reviewedEnglishHash": "f0bd3ae91810759f230af6068682a6747ae5ab595718e0a3d5731315a34dcd3f"
+  },
+  "envVarEditor.userSecretReferenceDescription": {
+    "en": "Resolve the responsible user's own value at run start.",
+    "zh-CN": "在运行开始时解析负责人的个人值。",
+    "reviewedEnglishHash": "b75f2e64d6682083f9b3dc632dbf5e9a281ad1746a5cc00a3137a8d3a1324d7f"
+  },
+  "envVarEditor.valueSource": {
+    "en": "Value source",
+    "zh-CN": "值来源",
+    "reviewedEnglishHash": "980b10e3e81d06b15cad61fc1a6f6be37e7492cf8b6b102882ba65a4662e0322"
+  },
+  "envVarEditor.variableFallback": {
+    "en": "variable",
+    "zh-CN": "变量",
+    "reviewedEnglishHash": "3b325109deb02ebf8150c4cc76e908d55f977082fe74bfd455e298770351b77d"
+  },
+  "envVarEditor.variableNameAria": {
+    "en": "Variable name",
+    "zh-CN": "变量名称",
+    "reviewedEnglishHash": "0b64682bead3a63aff51f9d8e6ca1fe2d3a667318b56de644863d84e8973f896"
+  },
+  "envVarEditor.variableValueAria": {
+    "en": "Variable value",
+    "zh-CN": "变量值",
+    "reviewedEnglishHash": "f94d74f144948b423c348f1a33add24986c4ba3e30ffba8fd7060fd1fa71e3a4"
+  }
+}

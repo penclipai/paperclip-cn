@@ -1,0 +1,67 @@
+{
+  "issueOutput.alsoProduced": {
+    "en": "Also produced",
+    "zh-CN": "同时产出",
+    "reviewedEnglishHash": "a17e2163cb177831e14cf1f0b8b5c8d12fbbdba0d051135441750164d41ac115"
+  },
+  "issueOutput.ariaLabel": {
+    "en": "Issue outputs",
+    "zh-CN": "任务输出",
+    "reviewedEnglishHash": "9c81cd852864ff627adea450ef5015cc04159e9ef049988306490b791b09a3c4"
+  },
+  "issueOutput.download": {
+    "en": "Download",
+    "zh-CN": "下载",
+    "reviewedEnglishHash": "d6eafe82359100423c93c5ce53c352c1b51ca1e699215fcec3f5c5dd9bf12d24"
+  },
+  "issueOutput.downloadAria": {
+    "en": "Download {{filename}}",
+    "zh-CN": "下载 {{filename}}",
+    "reviewedEnglishHash": "ef434d3d819552fab22b6ecf87d314d2d27ad156e9ea8107dee85c0c1b42fc15"
+  },
+  "issueOutput.fileDetailsUnavailable": {
+    "en": "File details unavailable",
+    "zh-CN": "文件详情不可用",
+    "reviewedEnglishHash": "d0c2f23107baea2597b482763687062bfd888a76f176466eba6abf24f5828cae"
+  },
+  "issueOutput.metadataUnavailable": {
+    "en": "Output metadata is unavailable - this file can't be played or downloaded here.",
+    "zh-CN": "输出元数据不可用 - 无法在此播放或下载此文件。",
+    "reviewedEnglishHash": "621bb4539726cd9cc61ef30f801264bfe2630c3dc7a82d9abc5c711a3a3e47c9"
+  },
+  "issueOutput.open": {
+    "en": "Open",
+    "zh-CN": "打开",
+    "reviewedEnglishHash": "ed077f3d8125d60dca1979c7133601bd187d47c73ed9975028f677e49e709942"
+  },
+  "issueOutput.openAria": {
+    "en": "Open {{filename}}",
+    "zh-CN": "打开 {{filename}}",
+    "reviewedEnglishHash": "941531dd6ffd482c9e3ddfa0668e7e60e227e543fc903df7e872e6a161acb6b9"
+  },
+  "issueOutput.openInNewTab": {
+    "en": "Open in new tab",
+    "zh-CN": "在新标签页中打开",
+    "reviewedEnglishHash": "e0af5c0bc2457475ab3c6e78ea06374a904469684daf6bffa229ac990b21aca3"
+  },
+  "issueOutput.primary": {
+    "en": "Primary",
+    "zh-CN": "主要",
+    "reviewedEnglishHash": "efe10c80ec8a9f38624cbb47103010a8cf32488a503e4b4bfe4f92307a9cefa7"
+  },
+  "issueOutput.title": {
+    "en": "Output",
+    "zh-CN": "输出",
+    "reviewedEnglishHash": "b2439bcb8dee14b685f137f294b0e0cb62f5aadf45143ce01d79777d435a93b4"
+  },
+  "issueOutput.videoOutput": {
+    "en": "Video output",
+    "zh-CN": "视频输出",
+    "reviewedEnglishHash": "4dc9f1d0d7a71218f5d6e88fd6bef752704bf21adfaeb298e5c9347cd4acf947"
+  },
+  "issueOutput.videoOutputWithTitle": {
+    "en": "Video output: {{title}}",
+    "zh-CN": "视频输出：{{title}}",
+    "reviewedEnglishHash": "05e69bd106a19bcb368340afc7c8fa0e7b317a0841028020cc1f9a85f315618f"
+  }
+}

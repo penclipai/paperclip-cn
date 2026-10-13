@@ -1,0 +1,22 @@
+{
+  "goalLevel.agent": {
+    "en": "Agent",
+    "zh-CN": "智能体",
+    "reviewedEnglishHash": "11b39c93777e8f1f3983bdba7c72b22fe68cfea20c677e9de53e17cb7dbfb19f"
+  },
+  "goalLevel.company": {
+    "en": "Company",
+    "zh-CN": "公司",
+    "reviewedEnglishHash": "de4743c879734dc38cb3e270ecefcae077c3c2e626f9298115d5a03c8613f89b"
+  },
+  "goalLevel.task": {
+    "en": "Task",
+    "zh-CN": "任务",
+    "reviewedEnglishHash": "4bc74b21357c6cf5cca8f66b4d4ee948be64d0396feb434c9645e168ad61ceaf"
+  },
+  "goalLevel.team": {
+    "en": "Team",
+    "zh-CN": "团队",
+    "reviewedEnglishHash": "5985039f106df054b43c3529139613bf7c2372937539f344c7c5ee47d00a0d63"
+  }
+}

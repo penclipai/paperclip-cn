@@ -1,0 +1,807 @@
+{
+  "% usage": {
+    "en": "% usage",
+    "zh-CN": "％ 用法",
+    "reviewedEnglishHash": "1a1367a9e1733abcd7e997a401ee34d34f56631c20bfef74655b142edba00887"
+  },
+  "% used": {
+    "en": "% used",
+    "zh-CN": "已用过",
+    "reviewedEnglishHash": "19e8fbbc0d7bbb594255aa6a35489b66b1b5e9bbebe3cbf104dbdde08f9377b9"
+  },
+  ". Under": {
+    "en": ". Under",
+    "zh-CN": "。在以下位置：",
+    "reviewedEnglishHash": "a408a6c399899faf8a3e84e649c7e03200041f31b981c139f29dc3a230932c7b"
+  },
+  ". Unset and": {
+    "en": ". Unset and",
+    "zh-CN": "。未设置和",
+    "reviewedEnglishHash": "18ae32c054083f6390c562c0883bc4238804e9991a85a15d949e821c9ade1062"
+  },
+  ". Use the plugin-id route until the conflict is resolved.": {
+    "en": ". Use the plugin-id route until the conflict is resolved.",
+    "zh-CN": "。解决冲突前，请使用 plugin-id 路由。",
+    "reviewedEnglishHash": "d633310e21f74fab1249c6d19df76e851bfcbe7df517f96b133aea5bc8141321"
+  },
+  "UI primitives": {
+    "en": "UI primitives",
+    "zh-CN": "UI 基础组件",
+    "reviewedEnglishHash": "8d9de12fe1ebc8643e3699e503a1766f87954f4d8c60b617e8380a0e241b7c7e"
+  },
+  "UX Lab": {
+    "en": "UX Lab",
+    "zh-CN": "体验实验室",
+    "reviewedEnglishHash": "ff3eaed8aa19a88ea6920735e2106f9b66eb3d684e8b8b71d77135c02c958811"
+  },
+  "Unable to apply subtree control": {
+    "en": "Unable to apply subtree control",
+    "zh-CN": "无法应用子树控制",
+    "reviewedEnglishHash": "acbb199b5b8aa5f45772c3fcdd1ea9cdc3d207b6d378d8a5cb00308150d7e252"
+  },
+  "Unable to archive this issue from the inbox": {
+    "en": "Unable to archive this issue from the inbox",
+    "zh-CN": "无法将此任务从收件箱归档",
+    "reviewedEnglishHash": "4ca087526a8efe1db9c0dc84583269334a7872fe03a93831266c72875fc6d17c"
+  },
+  "Unable to cancel the question": {
+    "en": "Unable to cancel the question",
+    "zh-CN": "无法取消问题",
+    "reviewedEnglishHash": "3f254a42223fab089a79880f49dabcb7a539afab1e00f368ec8a90e52b67fa5c"
+  },
+  "Unable to check sign-in. Refresh and try again.": {
+    "en": "Unable to check sign-in. Refresh and try again.",
+    "zh-CN": "无法检查登录状态。请刷新后重试。",
+    "reviewedEnglishHash": "152f7dacfc7f96724d48f7b0d7a73ee102fc8d5095c9b25eb022e9a0b2eeed06"
+  },
+  "Unable to interrupt the active run": {
+    "en": "Unable to interrupt the active run",
+    "zh-CN": "无法中断当前活跃运行",
+    "reviewedEnglishHash": "69bcf1ad32a1c27100ee6e226e0aecc3bc9664f4fb25c2f83d594f075875a562"
+  },
+  "Unable to load issue preview.": {
+    "en": "Unable to load issue preview.",
+    "zh-CN": "无法加载任务预览。",
+    "reviewedEnglishHash": "f9786e4af99027630da96379031dba70a22ca7c16c4783ab85c6ed3050ed0ab1"
+  },
+  "Unable to load preview.": {
+    "en": "Unable to load preview.",
+    "zh-CN": "无法加载预览。",
+    "reviewedEnglishHash": "c55adb9df6293c3f4b44e5277257b6b8a446fc6d4367dfdef33bc51efb57c575"
+  },
+  "Unable to pause work": {
+    "en": "Unable to pause work",
+    "zh-CN": "无法暂停工作",
+    "reviewedEnglishHash": "129719b91c539120fdf0a0e0a3f938e305c0bd846f6c66a9b66d3e8ac27bf946"
+  },
+  "Unable to post comment": {
+    "en": "Unable to post comment",
+    "zh-CN": "无法发布评论",
+    "reviewedEnglishHash": "181529d8a7b049d3af6c14a0ab2efc217ac4aad6ff8b70f9a66e2fbab459b291"
+  },
+  "Unable to save issue changes": {
+    "en": "Unable to save issue changes",
+    "zh-CN": "无法保存任务变更",
+    "reviewedEnglishHash": "f1945d70f14d60cf7fbe1c0fbe39bfd3e37cd1ea015abbbcfc0808a1513416f5"
+  },
+  "Unable to save sub-issue changes": {
+    "en": "Unable to save sub-issue changes",
+    "zh-CN": "无法保存子任务变更",
+    "reviewedEnglishHash": "0e5f741030fa0be06484a1847f95fe9cf6e3a06d487bcbb58fcb919ae4bbc711"
+  },
+  "Unable to trigger the monitor right now": {
+    "en": "Unable to trigger the monitor right now",
+    "zh-CN": "当前无法触发监控",
+    "reviewedEnglishHash": "a241d6bc95c79a9be2bc5cf4594aa564cab7f7088e7968b7462de9f9fa705f93"
+  },
+  "Unable to update approval": {
+    "en": "Unable to update approval",
+    "zh-CN": "无法更新审批",
+    "reviewedEnglishHash": "01dee78ac60d45dc69104f91f4868bdbdec83b14f7d49ad0d3033cc0c66d31fd"
+  },
+  "Unanswered question": {
+    "en": "Unanswered question",
+    "zh-CN": "未回答的问题",
+    "reviewedEnglishHash": "a36c3c6b4b6b799623b5131974e7e2e14c6cb95e7382f8bb72ccc981b4f87d1b"
+  },
+  "Unassigned": {
+    "en": "Unassigned",
+    "zh-CN": "未分配",
+    "reviewedEnglishHash": "14d33bd014e6b4e7c3590a8a12e1ec4951d777593d6d6aef9ebe5faac9c8dac0"
+  },
+  "Unattributed": {
+    "en": "Unattributed",
+    "zh-CN": "未归属",
+    "reviewedEnglishHash": "a5c4e03c56e08f721a783d784a2eda789a4fd2b5c814bfc7ce2a0e726172dac5"
+  },
+  "Unattributed costs have no recorded user in this organization.": {
+    "en": "Unattributed costs have no recorded user in this organization.",
+    "zh-CN": "未归属成本在此组织中没有记录的用户。",
+    "reviewedEnglishHash": "ba96ff0be97e7e086bab5a85855caa54b943c65540929ca14d8bedb862d7e809"
+  },
+  "Unauthorized": {
+    "en": "Unauthorized",
+    "zh-CN": "未授权",
+    "reviewedEnglishHash": "d089c8a9fc28e4e50223eb38c9409e362521be9380a37341304fbac7a4cd9e5f"
+  },
+  "Unavailable for this sign-in method.": {
+    "en": "Unavailable for this sign-in method.",
+    "zh-CN": "不适用于此登录方法。",
+    "reviewedEnglishHash": "f46c306121ca2080b388beed59da6cb7563ac5fd5da2f282d1c4b9ad9ccb13c6"
+  },
+  "Unchecked item": {
+    "en": "Unchecked item",
+    "zh-CN": "未勾选项",
+    "reviewedEnglishHash": "0b21710e717fd33634b588d3ba74b305a4e312122aaff207cb4318562ae2b60c"
+  },
+  "Under": {
+    "en": "Under",
+    "zh-CN": "在以下位置：",
+    "reviewedEnglishHash": "80e4ad056bd7eb907b42aac6795f2295df87a1bd9a196ea0ff1dd3eb11fabf8b"
+  },
+  "Under Repository permissions, set": {
+    "en": "Under Repository permissions, set",
+    "zh-CN": "在仓库权限中设置",
+    "reviewedEnglishHash": "6874414a6b5eabb58893bf1852ef58f58c65ff6b215b3facf84af1a4bd34f114"
+  },
+  "Under budget": {
+    "en": "Under budget",
+    "zh-CN": "低于预算",
+    "reviewedEnglishHash": "fffd741228ea2d63a8192632b55dc349deab9c7b9981c15a054d385517d4631c"
+  },
+  "Under budget (40%)": {
+    "en": "Under budget (40%)",
+    "zh-CN": "低于预算（40%）",
+    "reviewedEnglishHash": "2867ec0792afc0e9a78b46158f89b8d57a45483cb4384b7d64228834daa20950"
+  },
+  "Under the target user or organization, create a new GitHub App. Give it a globally unique name (34 characters or fewer), use the Paperclip homepage URL below, and leave user authorization off.": {
+    "en": "Under the target user or organization, create a new GitHub App. Give it a globally unique name (34 characters or fewer), use the Paperclip homepage URL below, and leave user authorization off.",
+    "zh-CN": "在目标用户或组织下创建新的 GitHub App。设置一个全球唯一的名称（最多 34 个字符），使用下方的 Paperclip 首页 URL，并关闭用户授权。",
+    "reviewedEnglishHash": "d17f40b3ba275d5383bdae00e3536855f2dd9326ac3dfd789e7567e5f3be6199"
+  },
+  "Uninstall": {
+    "en": "Uninstall",
+    "zh-CN": "卸载",
+    "reviewedEnglishHash": "fe199528850a4e24c14d9ece87a07b40bdcfa5fe504c175c117b997c29259ca6"
+  },
+  "Uninstall Plugin": {
+    "en": "Uninstall Plugin",
+    "zh-CN": "卸载插件",
+    "reviewedEnglishHash": "6bac25dc7bc81ab6043f5b31a464791ddc5bc2a0ad187ef08272dd7d89be1722"
+  },
+  "Uninstalling...": {
+    "en": "Uninstalling...",
+    "zh-CN": "卸载中...",
+    "reviewedEnglishHash": "67c43c3364c63834c00d70d2900fb2e0d13a3c0f98f33e5343dbf56e664c651e"
+  },
+  "Unknown": {
+    "en": "Unknown",
+    "zh-CN": "未知",
+    "reviewedEnglishHash": "b764cdc0eab7137467211272fa539f1260d1bf2e71bcf6ff3bdc960f5c16aa14"
+  },
+  "Unknown (": {
+    "en": "Unknown (",
+    "zh-CN": "未知（",
+    "reviewedEnglishHash": "8a20143eecdc9befcaecf6135ddf4efb422ccc407154754355b3af098019cf31"
+  },
+  "Unknown agent": {
+    "en": "Unknown agent",
+    "zh-CN": "未知智能体",
+    "reviewedEnglishHash": "342b4ab21e2eb31aa0d820359715d027c0e1cde4599ac21394c0e4009bd8aed0"
+  },
+  "Unknown agent requester": {
+    "en": "Unknown agent requester",
+    "zh-CN": "未知的智能体请求者",
+    "reviewedEnglishHash": "ef1e967cb399e455c4dbb20a37e5ad2155748f249554694ab5d38dcd35dcb65d"
+  },
+  "Unknown error": {
+    "en": "Unknown error",
+    "zh-CN": "未知错误",
+    "reviewedEnglishHash": "27c2ccd962c2b8dccb52fe3688ab236f186f7a41fd57d810478712048e9ad3f8"
+  },
+  "Unknown human requester": {
+    "en": "Unknown human requester",
+    "zh-CN": "未知的人类请求者",
+    "reviewedEnglishHash": "08c8b631ee643cc5912c13f15ba351503e0d85a02c140c2f1209e8af03b17bb6"
+  },
+  "Unknown inviter": {
+    "en": "Unknown inviter",
+    "zh-CN": "未知邀请人",
+    "reviewedEnglishHash": "7cf15ed2a34f6bb5ec71c43b99d99d1d5ff8e5df15361a61cf1efe36a3e4c3fd"
+  },
+  "Unknown manager (stale ID)": {
+    "en": "Unknown manager (stale ID)",
+    "zh-CN": "未知上级（过期 ID）",
+    "reviewedEnglishHash": "7c4ea0f2a6f44356a471086e4253aac6dc535fa5e7a71f1fbaab8674031f59c0"
+  },
+  "Unknown project": {
+    "en": "Unknown project",
+    "zh-CN": "未知项目",
+    "reviewedEnglishHash": "ed51cfeff0d96984b5a5fd0be3bb17df29251b7b41b720a5d11964e1d336ac7f"
+  },
+  "Unlimited": {
+    "en": "Unlimited",
+    "zh-CN": "不限额",
+    "reviewedEnglishHash": "11dde17d6c3e2098e13810f19beedb83a10fb7035853db1a054ddecf0679b99f"
+  },
+  "Unlimited budget": {
+    "en": "Unlimited budget",
+    "zh-CN": "预算不限",
+    "reviewedEnglishHash": "3c7719943f33a6ed95b636ccbdf846e0e33da0bad7acf471a772ea02d70360d1"
+  },
+  "Unlink GitHub account": {
+    "en": "Unlink GitHub account",
+    "zh-CN": "解除 GitHub 账户关联",
+    "reviewedEnglishHash": "2e1ae0ba6a273914eaa939b4d495716431cf2f8608ad88eacb464ddc8f7696a7"
+  },
+  "Unlinked identity detected": {
+    "en": "Unlinked identity detected",
+    "zh-CN": "检测到未关联的身份",
+    "reviewedEnglishHash": "f9a121ab44124ed524fd76392078eb5a82f056058113123660420dde300799c4"
+  },
+  "Unread": {
+    "en": "Unread",
+    "zh-CN": "未读",
+    "reviewedEnglishHash": "1b9f384c1436f607447ff66db22dcfe569141506b7499589a9b4857580075b26"
+  },
+  "Unsaved changes": {
+    "en": "Unsaved changes",
+    "zh-CN": "尚未保存的更改",
+    "reviewedEnglishHash": "a710c2b90913b5375ca6ac865341e49dd6daa42f6d95182e6ed1a7b1b650ff4c"
+  },
+  "Unset": {
+    "en": "Unset",
+    "zh-CN": "未设置",
+    "reviewedEnglishHash": "8d2dd4e8c7caa1acb407c161aad48d1201e93e0f6dcf54c8f19ae6fb3fd15127"
+  },
+  "Unset ANTHROPIC_API_KEY": {
+    "en": "Unset ANTHROPIC_API_KEY",
+    "zh-CN": "清空 ANTHROPIC_API_KEY",
+    "reviewedEnglishHash": "88e3ffad48cb37be3360c88091b57d4b657ace7cc68a81bed1f70622d2136b94"
+  },
+  "Unverified": {
+    "en": "Unverified",
+    "zh-CN": "未验证",
+    "reviewedEnglishHash": "33c8e8de41c3a35124251370e2a36e4d589f8789d80630abbbeceb933d3fb58f"
+  },
+  "Unverified server": {
+    "en": "Unverified server",
+    "zh-CN": "未验证的服务器",
+    "reviewedEnglishHash": "ed7c13036ffed781b7582375afead6843e86953c2f53e85f0df2d51f64b04e8a"
+  },
+  "Up to date": {
+    "en": "Up to date",
+    "zh-CN": "已是最新",
+    "reviewedEnglishHash": "ce29b7f85b9eaf7dac52e625accb4b0cb56a856ebe9a9de9a09b613b6d978dca"
+  },
+  "Up to date.": {
+    "en": "Up to date.",
+    "zh-CN": "已是最新版本。",
+    "reviewedEnglishHash": "50620fd9619f77e6d87b55a26fbe666a2401b71ffa4e75fba828a49be7974196"
+  },
+  "Update budget": {
+    "en": "Update budget",
+    "zh-CN": "更新预算",
+    "reviewedEnglishHash": "dc98d20c00a2f620df67990f4fb85fdd0e6b4825873ba498b2882bbe1172d51e"
+  },
+  "Update company role and membership status for {{name}}.": {
+    "en": "Update company role and membership status for {{name}}.",
+    "zh-CN": "更新 {{name}} 的公司角色和成员状态。",
+    "reviewedEnglishHash": "4b191ac6ae553c6c500c976406374ee98a8dc21c832c627af0d707d36095fcf9"
+  },
+  "Update company role, membership status, and explicit grants for {{name}}.": {
+    "en": "Update company role, membership status, and explicit grants for {{name}}.",
+    "zh-CN": "更新 {{name}} 的公司角色、成员状态和显式授权。",
+    "reviewedEnglishHash": "f92bd56c66e8f6ab57245cb1bf38e919aaeb8dc18ce1d0e7918a6d56c391daea"
+  },
+  "Update failed": {
+    "en": "Update failed",
+    "zh-CN": "更新失败",
+    "reviewedEnglishHash": "e58282fd73fb8580874eef14682a44e6d0054908d7a1b925de6f64ad303afe03"
+  },
+  "Update organization role and membership status for": {
+    "en": "Update organization role and membership status for",
+    "zh-CN": "为以下用户更新组织角色和成员状态：",
+    "reviewedEnglishHash": "ca2b332452992af430ff322ed071d7e1f9b2e91d5ae6493fdca6df37951c2946"
+  },
+  "Update reservation": {
+    "en": "Update reservation",
+    "zh-CN": "更新预订",
+    "reviewedEnglishHash": "2d7f9646986acafeb9236cfce611b8852b23e525e06e52ab7be92b4c20cc63d0"
+  },
+  "Update this page whenever new UI primitives or app-level patterns ship.": {
+    "en": "Update this page whenever new UI primitives or app-level patterns ship.",
+    "zh-CN": "新增 UI 基础组件或应用层模式后，请同步更新此页。",
+    "reviewedEnglishHash": "8ab8b5340e90139b70de198a4397d4e817d09bcaac032a37bf78e483162af7f2"
+  },
+  "Update was not sent": {
+    "en": "Update was not sent",
+    "zh-CN": "更新未发送",
+    "reviewedEnglishHash": "313813f30237c2d702d40f79a593dbb34cf601d7656b345a91e87c3462b2d216"
+  },
+  "Update your display name and avatar.": {
+    "en": "Update your display name and avatar.",
+    "zh-CN": "更新你的显示名称和头像。",
+    "reviewedEnglishHash": "5f946ed3f16ad3e34bb6c14741640b68ae4a7a0a53d1efd7117619a9c693453d"
+  },
+  "Updated": {
+    "en": "Updated",
+    "zh-CN": "已更新",
+    "reviewedEnglishHash": "3a5ecca188c0579c00ee24cf3cab21bd02c15a06f7a70cc8e0a8ff2381dcbbfd"
+  },
+  "Updated in the last 7 days": {
+    "en": "Updated in the last 7 days",
+    "zh-CN": "最近 7 天更新",
+    "reviewedEnglishHash": "a8503d7379c14cd898207a6be75f11fb88352e151b05d8b65a293df6e8b06e14"
+  },
+  "Updated {{time}}": {
+    "en": "Updated {{time}}",
+    "zh-CN": "{{time}}前更新",
+    "reviewedEnglishHash": "6379f4b4efb9b0a5342283ad3b0d99edf9df796e29d5791b24e14999ac127e78"
+  },
+  "Updating export preview…": {
+    "en": "Updating export preview…",
+    "zh-CN": "正在更新导出预览…",
+    "reviewedEnglishHash": "cb20152df2932e2548f6a67e03f406619bf163ba4d6ebb40b6c20908f387f6d2"
+  },
+  "Updating...": {
+    "en": "Updating...",
+    "zh-CN": "正在更新...",
+    "reviewedEnglishHash": "0a4e0b71b7f3583747a2885b292087c9c6f78873bdd7b3b84cb70c1d0a9a7bc4"
+  },
+  "Updating…": {
+    "en": "Updating…",
+    "zh-CN": "正在更新…",
+    "reviewedEnglishHash": "dfe40efe921fe88e332575a3516f4e8cd6bbb71437cf260b2bb9b947c65d1484"
+  },
+  "Upload": {
+    "en": "Upload",
+    "zh-CN": "上传",
+    "reviewedEnglishHash": "865e89de78d94c747184d6a7e6f5244b453d8062343c07e014ae698cfb0260e8"
+  },
+  "Upload a PNG, JPEG, WEBP, GIF, or SVG logo image.": {
+    "en": "Upload a PNG, JPEG, WEBP, GIF, or SVG logo image.",
+    "zh-CN": "上传 PNG、JPEG、WEBP、GIF 或 SVG Logo 图片。",
+    "reviewedEnglishHash": "fd8a49c56c55e970d4a95dd8295b0411991423863d383f2d5ede6ba960e45ce9"
+  },
+  "Upload an app · Upload a custom app": {
+    "en": "Upload an app · Upload a custom app",
+    "zh-CN": "上传应用 · 上传自定义应用",
+    "reviewedEnglishHash": "08d248a066d964aab75f4d0cf44b8d72d0f52cea5fa0e55a1950ef8f4cea100f"
+  },
+  "Upload attachment": {
+    "en": "Upload attachment",
+    "zh-CN": "上传附件",
+    "reviewedEnglishHash": "dacea186cf5b68d420cc6d6b74b71b7479f24bb97e5336c5bcdc42f16cc3fd99"
+  },
+  "Upload failed": {
+    "en": "Upload failed",
+    "zh-CN": "上传失败",
+    "reviewedEnglishHash": "6efc5d27f30b20c103ca1a855bfc65cdbdf9de98c3f8ac93a3df3f319c3388bd"
+  },
+  "Upload photo": {
+    "en": "Upload photo",
+    "zh-CN": "上传照片",
+    "reviewedEnglishHash": "32258ba63e8086c4280d09d458bfcf52183a288549b1547298560141f2bf880b"
+  },
+  "Uploading logo...": {
+    "en": "Uploading logo...",
+    "zh-CN": "正在上传 Logo...",
+    "reviewedEnglishHash": "def73c874daa508e643db530903f2aad73c55fec79fd00e1e8ca50036fec5ac3"
+  },
+  "Uploading...": {
+    "en": "Uploading...",
+    "zh-CN": "上传中...",
+    "reviewedEnglishHash": "72cb29c90ccd8361ee82d02fabe81a3f01605c7b8fea4c9996fc01d84e3fbb48"
+  },
+  "Upstream providers": {
+    "en": "Upstream providers",
+    "zh-CN": "上游服务商",
+    "reviewedEnglishHash": "89ad52e9874c4741f0416156fd10d1cac385cae44554872cd3a3cab2e21a4600"
+  },
+  "Uptime": {
+    "en": "Uptime",
+    "zh-CN": "运行时长",
+    "reviewedEnglishHash": "d63ab4711473b0398feb4b56622605d5d2ec7ecd3b1bb5070a7dd56de96aaf88"
+  },
+  "Usage not observed.": {
+    "en": "Usage not observed.",
+    "zh-CN": "未观察到使用情况。",
+    "reviewedEnglishHash": "c5966ca45ad6972bf07bca651be0c14132632c7348290e0a7670294dda136c2e"
+  },
+  "Usage not reported.": {
+    "en": "Usage not reported.",
+    "zh-CN": "未报告使用情况。",
+    "reviewedEnglishHash": "75d1617bd59d83d533b3b061beaf5b5c162cd7edf8386e4f53c5f5b46da34dfb"
+  },
+  "Usage threshold": {
+    "en": "Usage threshold",
+    "zh-CN": "使用门槛",
+    "reviewedEnglishHash": "b4bad4e56a31d21baf9c2c7f73ab6be7cfff724d62e192535f353c71f202476f"
+  },
+  "Usage was recorded. Test answers are not saved.": {
+    "en": "Usage was recorded. Test answers are not saved.",
+    "zh-CN": "记录使用情况。测试答案不会保存。",
+    "reviewedEnglishHash": "0d7317a94f9653417b4b516ca69deda83e32f4b5d218794e77fea01067578261"
+  },
+  "Use API keys instead": {
+    "en": "Use API keys instead",
+    "zh-CN": "使用 API 密钥代替",
+    "reviewedEnglishHash": "13febab47b8de21be7b95a1b1665b37bb10a21fcc92069125d07287e314b6175"
+  },
+  "Use Isolated Workspaces By Default": {
+    "en": "Use Isolated Workspaces By Default",
+    "zh-CN": "默认使用隔离工作区",
+    "reviewedEnglishHash": "10a22b32ed9524922a01bdad84f01fe636c0adc31810474315583146a83c459a"
+  },
+  "Use a company invite or sign in with an account that already belongs to this org.": {
+    "en": "Use a company invite or sign in with an account that already belongs to this org.",
+    "zh-CN": "请使用公司邀请链接，或使用已经属于该组织的账号登录。",
+    "reviewedEnglishHash": "1cbef2701b59756203404a51977778ce6c9249e6aed234b215bce5fa1cbbb03a"
+  },
+  "Use a dedicated account": {
+    "en": "Use a dedicated account",
+    "zh-CN": "使用专用账户",
+    "reviewedEnglishHash": "efd607dec0dc41ba9dc2ee816dad089da314587e0538117d8f47b1b5d0bf1e18"
+  },
+  "Use a different account": {
+    "en": "Use a different account",
+    "zh-CN": "使用其他账户",
+    "reviewedEnglishHash": "d2fe9116400cf32af5650464b88491a8640f69f97c71a5697a240e4e2a8c1734"
+  },
+  "Use a shared API connection for company decisions.": {
+    "en": "Use a shared API connection for company decisions.",
+    "zh-CN": "使用共享 API 连接进行公司决策。",
+    "reviewedEnglishHash": "e384e38b893ea08d36b8824ab7374acd3378f03a4362a31ebdaee13592c8484f"
+  },
+  "Use a shared API connection for short acknowledgements.": {
+    "en": "Use a shared API connection for short acknowledgements.",
+    "zh-CN": "使用共享 API 连接进行简短确认。",
+    "reviewedEnglishHash": "4e5d99315679931739cd55f3b3f77b186682b902b65e35bf01d1042fa476ca23"
+  },
+  "Use agent default": {
+    "en": "Use agent default",
+    "zh-CN": "使用智能体默认值",
+    "reviewedEnglishHash": "e8be37887c64bd7d5b03ff6694af815797994d1d855286258f0c04830072028a"
+  },
+  "Use an existing app": {
+    "en": "Use an existing app",
+    "zh-CN": "使用现有应用",
+    "reviewedEnglishHash": "bd2fe40d5d27e0b0e30c05e0b55db0a5064e32dd6a00539cdf7aae376d21251a"
+  },
+  "Use connection": {
+    "en": "Use connection",
+    "zh-CN": "使用连接",
+    "reviewedEnglishHash": "bcb76497501bff25f884b9af02e2577d6cb416b02f9efa1479044749466a344f"
+  },
+  "Use exact ID": {
+    "en": "Use exact ID",
+    "zh-CN": "使用准确的 ID",
+    "reviewedEnglishHash": "71da1cefdfc2aecd9eddb0fb6d3135853689833aec736190c1f03146ded9a870"
+  },
+  "Use existing AI connections.": {
+    "en": "Use existing AI connections.",
+    "zh-CN": "使用现有的人工智能连接。",
+    "reviewedEnglishHash": "86b556b58f44ef75199c76e18b9514dd38b215e3dcf55b9197fbf2768c0e8885"
+  },
+  "Use existing App credentials": {
+    "en": "Use existing App credentials",
+    "zh-CN": "使用现有 App 凭据",
+    "reviewedEnglishHash": "ff7b0bf4de31377d0218292885792c6b963d7df65cf39f088b8fa753a85ac19c"
+  },
+  "Use existing app registration": {
+    "en": "Use existing app registration",
+    "zh-CN": "使用现有应用注册",
+    "reviewedEnglishHash": "e7a8befdbbcddbd83ad84aee5918418d36234ea1f941d7ce32e9fcfb626db536"
+  },
+  "Use lowercase letters, numbers, -, or _, and start with a letter or number.": {
+    "en": "Use lowercase letters, numbers, -, or _, and start with a letter or number.",
+    "zh-CN": "请使用小写字母、数字、- 或 _，并以字母或数字开头。",
+    "reviewedEnglishHash": "f05ffd379077272de983ec9a0d492d326213f11fe118fb2faa19296c91c2f688"
+  },
+  "Use responsible person&apos;s GitHub": {
+    "en": "Use responsible person's GitHub",
+    "zh-CN": "使用负责人的 GitHub",
+    "reviewedEnglishHash": "d33270d6791172640e4089a5ef00f80aecf198d32a49f72b63a79d389676c2aa"
+  },
+  "Use saved login": {
+    "en": "Use saved login",
+    "zh-CN": "使用已保存的登录信息",
+    "reviewedEnglishHash": "9f072738a514de512d47755a8f1aaa307ca004cb6c8a39b75527e53dea30ac4c"
+  },
+  "Use the": {
+    "en": "Use the",
+    "zh-CN": "使用",
+    "reviewedEnglishHash": "3ffa30fbc4099141cf71265ae1c4347ea77d68bdad70cd7676d1627511dfc816"
+  },
+  "Use the end-user ID configured for this gateway’s sign-in. This may differ from your email address.": {
+    "en": "Use the end-user ID configured for this gateway’s sign-in. This may differ from your email address.",
+    "zh-CN": "请使用此网关登录配置中的最终用户 ID。它可能与您的电子邮箱地址不同。",
+    "reviewedEnglishHash": "40f288af06d9cbf7ce8d64908ba14df11c803f174e8456ccb1aa998df1852ab0"
+  },
+  "Use the existing inbox instead": {
+    "en": "Use the existing inbox instead",
+    "zh-CN": "改用现有收件箱",
+    "reviewedEnglishHash": "69515538f7b39120cf3dc5271864785ba0221ba977c901014ceb4ab98d0ffab3"
+  },
+  "Use the power icon to hide adapters from agent menus without removing them.": {
+    "en": "Use the power icon to hide adapters from agent menus without removing them.",
+    "zh-CN": "可以使用电源图标把适配器从智能体菜单中隐藏，而无需直接移除。",
+    "reviewedEnglishHash": "6c56ed72aeb0cb0a2e49cca0f10aa0c0489293fb352aae6dedb656c946af3092"
+  },
+  "Use the project workspace policy": {
+    "en": "Use the project workspace policy",
+    "zh-CN": "使用项目工作区策略",
+    "reviewedEnglishHash": "8bf3f9b7a6c9c9ad47c7b3838aa1e02c3fd242562520886a3a01acedb849263c"
+  },
+  "Use the provider’s model ID or your gateway’s alias. You can also enter one on the agent.": {
+    "en": "Use the provider’s model ID or your gateway’s alias. You can also enter one on the agent.",
+    "zh-CN": "使用提供商的模型 ID 或网关的别名。您也可以在智能体上输入一个。",
+    "reviewedEnglishHash": "d87f92ae28a59ff6386a08cd698ff9fc2af54c346573169535c76d9daba9181f"
+  },
+  "Use the remaining Paperclip budget": {
+    "en": "Use the remaining Paperclip budget",
+    "zh-CN": "使用 Paperclip 的剩余预算",
+    "reviewedEnglishHash": "40c92fd203481e4c126aaff32b0a5a4dbdc1281e9238f153c053788924b439eb"
+  },
+  "Use the simplified main sidebar, shared Tasks and Inbox presentation, focused task detail layout, and contextual navigation across Agents, Routines, Skills, and Settings.": {
+    "en": "Use the simplified main sidebar, shared Tasks and Inbox presentation, focused task detail layout, and contextual navigation across Agents, Routines, Skills, and Settings.",
+    "zh-CN": "使用精简主侧边栏、统一的任务与收件箱界面、聚焦的任务详情布局，以及智能体、例行任务、技能和设置之间的上下文导航。",
+    "reviewedEnglishHash": "07709940c02a8b6fbd2c747dbeba341f64862f3c165a362be5124050046f29b7"
+  },
+  "Use these exact portal sections and reuse the same Application ID in all three places.": {
+    "en": "Use these exact portal sections and reuse the same Application ID in all three places.",
+    "zh-CN": "请使用以下指定的门户栏目，并在三个位置使用相同的应用 ID。",
+    "reviewedEnglishHash": "8bea85095ea9773ea454599598aa1e8bd77a97482e49432095bf44e07e4c5871"
+  },
+  "Use this connection as an agent tool": {
+    "en": "Use this connection as an agent tool",
+    "zh-CN": "将此连接作为智能体工具使用",
+    "reviewedEnglishHash": "3035ada6aaeb8638e531343a52c5503d10dc74867f94f92aee632df12881698c"
+  },
+  "Use this team as a full-organization package (no target manager)": {
+    "en": "Use this team as a full-organization package (no target manager)",
+    "zh-CN": "将此团队用作完整组织包（不指定目标管理者）",
+    "reviewedEnglishHash": "e349224eb7fa1b658420af4284e453ff63353c8cf7ddd060c8c5a7eea56c07be"
+  },
+  "Use your Paperclip organization from Codex, Claude, OpenCode, or another assistant.": {
+    "en": "Use your Paperclip organization from Codex, Claude, OpenCode, or another assistant.",
+    "zh-CN": "从 Codex、Claude、OpenCode 或其他助手访问您的 Paperclip 组织。",
+    "reviewedEnglishHash": "635499d63afddef0d1f3378e948ef888716df568114e7f4ce1a7e3d79767a445"
+  },
+  "Use your current board user": {
+    "en": "Use your current board user",
+    "zh-CN": "使用当前董事会用户",
+    "reviewedEnglishHash": "65756130d1e8a65041aebbda69f1a4dab5693dc0b6796eaf4c16416019901d92"
+  },
+  "Used by": {
+    "en": "Used by",
+    "zh-CN": "使用于",
+    "reviewedEnglishHash": "681bf81aba87bd68c0443365babc7401b9a112b2149cd634384cef915d26cda1"
+  },
+  "Used only by": {
+    "en": "Used only by",
+    "zh-CN": "仅供",
+    "reviewedEnglishHash": "81d7706490ffd2ce1d1884cd8810aceb4de64ca6a63407b17b13536bf1ef1a42"
+  },
+  "Used {{toolLabel}}": {
+    "en": "Used {{toolLabel}}",
+    "zh-CN": "已使用 {{toolLabel}}",
+    "reviewedEnglishHash": "824b53c8348332a3f8dd4c71c4a21a3a2911144778f738b9a201cccf33edcfce"
+  },
+  "Used {{toolLabel}} ({{count}} calls)": {
+    "en": "Used {{toolLabel}} ({{count}} calls)",
+    "zh-CN": "已使用 {{toolLabel}}（{{count}} 次调用）",
+    "reviewedEnglishHash": "bc44009b408959e2516532b3c7ab67a4ee8d3c7bb75d9219a5fc15e42f1be421"
+  },
+  "User": {
+    "en": "User",
+    "zh-CN": "用户",
+    "reviewedEnglishHash": "b512d97e7cbf97c273e4db073bbb547aa65a84589227f8f3d9e4a72b9372a24d"
+  },
+  "User account": {
+    "en": "User account",
+    "zh-CN": "用户账号",
+    "reviewedEnglishHash": "78388698fe5ef634970eb00f6a1d420dd8853a3e5e6b7e142a6c9eea05062ebe"
+  },
+  "User profile not found for this company.": {
+    "en": "User profile not found for this company.",
+    "zh-CN": "在这个公司中找不到该用户资料。",
+    "reviewedEnglishHash": "3d5cc01945b5f4664925f7a3feb0dc6cb23395931368c7abcf0eaa31ef2252eb"
+  },
+  "User profile not found for this organization.": {
+    "en": "User profile not found for this organization.",
+    "zh-CN": "在此组织中找不到该用户的资料。",
+    "reviewedEnglishHash": "0de65a834f3f982a1b13cbd9b48c6c76496a30d3047c6bb1fe00ee36c2e05db3"
+  },
+  "User secrets resolve from the user responsible for the run. Required bindings fail until that user sets their value under Secrets → My secrets.": {
+    "en": "User secrets resolve from the user responsible for the run. Required bindings fail until that user sets their value under Secrets → My secrets.",
+    "zh-CN": "用户机密由负责运行的用户解析。所需的绑定将失败，直到该用户在 Secrets → My Secrets 下设置其值。",
+    "reviewedEnglishHash": "e903e92b61c8ec07e25983d3b09ee68d9eeb96ae8013b64d71b1071868dde4ba"
+  },
+  "Users": {
+    "en": "Users",
+    "zh-CN": "用户",
+    "reviewedEnglishHash": "6b0cc904d081a8c11cfdaec667f05132cbfa8a57f5040d27d5fc0f2fc50d0dc6"
+  },
+  "Uses the shared chat-style run surface from task activity.": {
+    "en": "Uses the shared chat-style run surface from task activity.",
+    "zh-CN": "使用来自任务活动的共享聊天样式运行表面。",
+    "reviewedEnglishHash": "75b6fd395c44f05287c3d495aa18092e99cc612cc48d7ce6d74a33ee417a0f12"
+  },
+  "Using {{toolLabel}}": {
+    "en": "Using {{toolLabel}}",
+    "zh-CN": "正在使用 {{toolLabel}}",
+    "reviewedEnglishHash": "5e04bf9201938173373d541b52f87e90a86b29f5f835f8ffbc1024e546b0ced6"
+  },
+  "unassigned the issue": {
+    "en": "unassigned the issue",
+    "zh-CN": "取消分配了此任务",
+    "reviewedEnglishHash": "c0d95745ba3296c8d7118e3213694177a0025215931f5398249a015647c09d86"
+  },
+  "unavailable": {
+    "en": "unavailable",
+    "zh-CN": "不可用",
+    "reviewedEnglishHash": "ba691ba042bcedd9a61a36f5969026bc95859dccdc7e47f24e6bce35673baf2f"
+  },
+  "unconfirmed": {
+    "en": "unconfirmed",
+    "zh-CN": "未证实",
+    "reviewedEnglishHash": "c78a686d7cf5224908a78db81aad8ee8bc987f4b2bab7eceebae29bfad601c58"
+  },
+  "uninstalled plugin": {
+    "en": "uninstalled plugin",
+    "zh-CN": "卸载了插件",
+    "reviewedEnglishHash": "fa756cb36ac79cd2ee759edf00972c56cd970421c1eb2da70ced7b25e159e070"
+  },
+  "unknown": {
+    "en": "unknown",
+    "zh-CN": "未知",
+    "reviewedEnglishHash": "b23a6a8439c0dde5515893e7c90c1e3233b8616e634470f20dc4928bcf3609bc"
+  },
+  "unpriced": {
+    "en": "unpriced",
+    "zh-CN": "未定价",
+    "reviewedEnglishHash": "b894c55492d4803f6cc8d09de04f533eb36d0f960f711f825a2a560aa7743b1b"
+  },
+  "unread": {
+    "en": "unread",
+    "zh-CN": "未读",
+    "reviewedEnglishHash": "2cc1c371db104eb5ce6b02f54dec7429154bdbfe83b5ececd3822c596dd03f28"
+  },
+  "unset": {
+    "en": "unset",
+    "zh-CN": "未设置",
+    "reviewedEnglishHash": "6cbf83e080936a8f15fc9acf8777b21dd8ed68c88be41e29f33ed5b5e1adbe52"
+  },
+  "unstarred": {
+    "en": "unstarred",
+    "zh-CN": "取消收藏了",
+    "reviewedEnglishHash": "3a065c49bb8dee018a2fdbe83b694324d9632705069b8d7e740cbcfc41295c6d"
+  },
+  "untracked": {
+    "en": "untracked",
+    "zh-CN": "未跟踪",
+    "reviewedEnglishHash": "86ed2df8017823dff5b258f8082cf4be80ad80fed3388b6818d9a631a49e464e"
+  },
+  "updated": {
+    "en": "updated",
+    "zh-CN": "更新了",
+    "reviewedEnglishHash": "27eb5e51506c911f6fc4bb345c0d9db6f60415fceab7c18e1e9b862637415777"
+  },
+  "updated a document": {
+    "en": "updated a document",
+    "zh-CN": "更新了文档",
+    "reviewedEnglishHash": "dc27a3d0322daab0d20d1df65b96b5afb6eb27727b5a222fe17873c810b9ae8c"
+  },
+  "updated agent instructions file": {
+    "en": "updated agent instructions file",
+    "zh-CN": "更新了智能体说明文件",
+    "reviewedEnglishHash": "16a2412b3cd7d000f3c2187485791cf363b258e8bf93888040142b543d40f55d"
+  },
+  "updated budget for": {
+    "en": "updated budget for",
+    "zh-CN": "更新了其预算",
+    "reviewedEnglishHash": "775594b4de419142a03b45dee849f144907cfc6ac734189faad5ba2305e45bb9"
+  },
+  "updated company": {
+    "en": "updated company",
+    "zh-CN": "更新了公司",
+    "reviewedEnglishHash": "4c156d68bec9e187e06ae0fae8bcae5061ee8593cbf6536dcbd9d6f0146c07b1"
+  },
+  "updated document on": {
+    "en": "updated document on",
+    "zh-CN": "更新了其文档",
+    "reviewedEnglishHash": "687df02526ddb673c21232bd23f6047b73e0a0823e74de62cc4a6c5b6b90e235"
+  },
+  "updated experimental instance settings": {
+    "en": "updated experimental instance settings",
+    "zh-CN": "更新了实例实验功能设置",
+    "reviewedEnglishHash": "93524600385f39666fbdb79353e7512b3b712c2ad18c86baf67d45e7cfcdd934"
+  },
+  "updated general instance settings": {
+    "en": "updated general instance settings",
+    "zh-CN": "更新了实例常规设置",
+    "reviewedEnglishHash": "3d4930bb410875931e581a66803a032e4a7d8ef8708aa84165691e412b34e810"
+  },
+  "updated instance settings": {
+    "en": "updated instance settings",
+    "zh-CN": "更新了实例设置",
+    "reviewedEnglishHash": "90536d5b498ab2489b9c8a4f61256a465bd20d782a5a2b3aaf4d5af6a255ed94"
+  },
+  "updated the agent": {
+    "en": "updated the agent",
+    "zh-CN": "更新了智能体",
+    "reviewedEnglishHash": "87de823b2540526e24a62d4895090cea7f1bfba0977a1d7ddec11b2cd9701aac"
+  },
+  "updated the description": {
+    "en": "updated the description",
+    "zh-CN": "更新了描述",
+    "reviewedEnglishHash": "ff7b0c3fba84f8dbec5d1c86e39a14162fe087d15dd60a3a7d90737ca7512bb4"
+  },
+  "updated the issue": {
+    "en": "updated the issue",
+    "zh-CN": "更新了任务",
+    "reviewedEnglishHash": "ad4620e293fd2dc203dece6af03742d7f26212689f60aa5c0d81520b9fe17184"
+  },
+  "updated the title": {
+    "en": "updated the title",
+    "zh-CN": "更新了标题",
+    "reviewedEnglishHash": "d56b71b2a23dd7a10a52dcb48857228561432abca7580ba5bb05f73596c4571c"
+  },
+  "updated this task": {
+    "en": "updated this task",
+    "zh-CN": "更新了这个任务",
+    "reviewedEnglishHash": "9cc0b812eefb0a21772cc84aa45f3864b9b2565e00018a280b4627e54b027822"
+  },
+  "updated trigger for": {
+    "en": "updated trigger for",
+    "zh-CN": "更新了触发器",
+    "reviewedEnglishHash": "67c3c149c4beaf3ad5813a34ec7c6997dbb8de472c58cca43e057dcf4dd54f50"
+  },
+  "updated {{time}}": {
+    "en": "updated {{time}}",
+    "zh-CN": "更新于 {{time}}",
+    "reviewedEnglishHash": "3f488b87847935d42852fbd1836c818aa0a2ce59dd3d68f1b7915779b0b2c348"
+  },
+  "updated {{value}}": {
+    "en": "updated {{value}}",
+    "zh-CN": "更新了 {{value}}",
+    "reviewedEnglishHash": "b2f11301dde887c04cb2169c7a80f1e7922a29f124d2d3340d833284cb552f48"
+  },
+  "updated:&gt;7d": {
+    "en": "updated:>7d",
+    "zh-CN": "updated:>7d",
+    "reviewedEnglishHash": "3fc5865a4d766c1cb9c3006b952c27ea9966e6b5efdf65b49a7f297e295ddaa5"
+  },
+  "usage": {
+    "en": "usage",
+    "zh-CN": "用量",
+    "reviewedEnglishHash": "0a4e4c29432ecb01b95f87d87ffaff9cb4f36ce4b89ff1a1a136ad1c7392ae07"
+  },
+  "usage events are unpriced. Known spend excludes their unknown cost.": {
+    "en": "usage events are unpriced. Known spend excludes their unknown cost.",
+    "zh-CN": "使用率事件未定价。已知支出不包括其未知费用。",
+    "reviewedEnglishHash": "a56858596305acb65027bfa83cee84f23d7b9d39ab12fdaef69014cba4086473"
+  },
+  "use your current Paperclip permissions in": {
+    "en": "use your current Paperclip permissions in",
+    "zh-CN": "的消息将使用您当前的 Paperclip 权限，所属组织：",
+    "reviewedEnglishHash": "a861a24afdad652b7dd204e8af5de4706424fd773425c291af3ad13024cc7c91"
+  },
+  "use, or ask an administrator to update": {
+    "en": "use, or ask an administrator to update",
+    "zh-CN": "使用，或要求管理员更新",
+    "reviewedEnglishHash": "ca745469b30aeca73c6cc85a1b8d8c4af85bbeab92905071ee9a4fee901be40b"
+  },
+  "utilization this month": {
+    "en": "utilization this month",
+    "zh-CN": "本月使用率",
+    "reviewedEnglishHash": "be7a25a60059aa2fc3a2bf620357b8a37f73757e46f7deb6a612763ebb70f279"
+  },
+  "· Updated": {
+    "en": "· Updated",
+    "zh-CN": "· 更新",
+    "reviewedEnglishHash": "525dce7521c592f334b41c8228325b2b02973ffdef3bec7417e306d7ec000c28"
+  }
+}

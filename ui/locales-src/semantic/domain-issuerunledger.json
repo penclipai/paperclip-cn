@@ -1,0 +1,522 @@
+{
+  "issueRunLedger.actingOnBehalfOfTitle": {
+    "en": "Acting on behalf of {{user}}",
+    "zh-CN": "代表 {{user}} 执行",
+    "reviewedEnglishHash": "fc7b17845073e083a9d2f1710bf9d0612cb1dc8d460ec2384fc21df1d9b65162"
+  },
+  "issueRunLedger.ariaLabel": {
+    "en": "Issue run ledger",
+    "zh-CN": "任务运行账本",
+    "reviewedEnglishHash": "50f9241f4194498bed263c107e51b5b870557451282305a3a993743f2676b542"
+  },
+  "issueRunLedger.byAgent": {
+    "en": "by {{agentName}}",
+    "zh-CN": "由 {{agentName}} 运行",
+    "reviewedEnglishHash": "7d5370c51dcec39dae5b797d3e104a644cc9e38e3932234d922a83fcad93244c"
+  },
+  "issueRunLedger.childWork": {
+    "en": "Child work",
+    "zh-CN": "子任务",
+    "reviewedEnglishHash": "ae375d5fcb1551cd58f159d226776055f92d7979c3c267f05be25a6807b4e9b6"
+  },
+  "issueRunLedger.childWorkAllTerminal": {
+    "en": "all {{total}} terminal ({{done}} done, {{cancelled}} cancelled)",
+    "zh-CN": "全部 {{total}} 个已结束（{{done}} 个完成，{{cancelled}} 个已取消）",
+    "reviewedEnglishHash": "9ea85f9a247a8b50b6440b65e489a778a0ccd2e895f46b7bea0c0152403d9ec2"
+  },
+  "issueRunLedger.childWorkSummary": {
+    "en": "{{active}} active, {{done}} done, {{cancelled}} cancelled",
+    "zh-CN": "{{active}} 个活跃，{{done}} 个完成，{{cancelled}} 个已取消",
+    "reviewedEnglishHash": "430f8d1bf8e72763e49cc6246d18e2d5a15555cd9a361a96eba22b9fcb197a75"
+  },
+  "issueRunLedger.continuationAttempt": {
+    "en": "Continuation attempt {{count}}",
+    "zh-CN": "延续尝试 {{count}}",
+    "reviewedEnglishHash": "acb75f9ce138e16d0022f334ba73f6996abec0b7918a77cb061c011cd494e9bf"
+  },
+  "issueRunLedger.elapsed": {
+    "en": "Elapsed",
+    "zh-CN": "耗时",
+    "reviewedEnglishHash": "a194a68a45d32cab740ebf46bee7c7dfa1420e1ea2f7df95ac5f9d36c6695323"
+  },
+  "issueRunLedger.emptyHistoricalRuns": {
+    "en": "Historical runs without liveness metadata will appear here once linked to this issue.",
+    "zh-CN": "关联到此任务后，缺少活跃性元数据的历史运行会显示在这里。",
+    "reviewedEnglishHash": "472bbfb2f1b9b5bd2fd4250c599996025fae36d7987f41758a51f37441d467cc"
+  },
+  "issueRunLedger.emptyRunsAndActivity": {
+    "en": "Runs and activity will appear here once this issue has history.",
+    "zh-CN": "此任务产生历史后，运行和活动会显示在这里。",
+    "reviewedEnglishHash": "e980787854176a8ecd08513347aa0541146a8f72231a73c24ba6f20cdd5d8720"
+  },
+  "issueRunLedger.exhausted": {
+    "en": "Exhausted",
+    "zh-CN": "已耗尽",
+    "reviewedEnglishHash": "a51ee30495b32b9124d15bebb60d720364896753b77a03827ae8d8c1a08146d0"
+  },
+  "issueRunLedger.lastUsefulAction": {
+    "en": "Last useful action",
+    "zh-CN": "最近有效操作",
+    "reviewedEnglishHash": "72876fff40e86f6491bec470011e7190c70783edee81c1bdda89cd1791766916"
+  },
+  "issueRunLedger.lastUsefulAction.noActionRecordedYet": {
+    "en": "No action recorded yet",
+    "zh-CN": "尚未记录操作",
+    "reviewedEnglishHash": "84b3d9ad1d6af648f0279da61c8d681c22d89f9c19ba7c79eeb28e67d75e688c"
+  },
+  "issueRunLedger.lastUsefulAction.noConcreteAction": {
+    "en": "No concrete action",
+    "zh-CN": "没有具体操作",
+    "reviewedEnglishHash": "d072580b9534b9221788d2792574d71a284ff11fd75099b59716fcbb8f743dcb"
+  },
+  "issueRunLedger.lastUsefulAction.noUsefulOutput": {
+    "en": "No useful output",
+    "zh-CN": "没有有效输出",
+    "reviewedEnglishHash": "37bc6978c00f3c2f98a3d48adba2240d84c9ffc11a1ab60d35d43961708b0948"
+  },
+  "issueRunLedger.lastUsefulAction.noneRecorded": {
+    "en": "None recorded",
+    "zh-CN": "未记录",
+    "reviewedEnglishHash": "aab6c5e6053517193c5d39d9c1fe31681bbff8841fd968b9c2d6d91202829ba3"
+  },
+  "issueRunLedger.lastUsefulAction.waitingForNextAttempt": {
+    "en": "Waiting for next attempt",
+    "zh-CN": "等待下一次尝试",
+    "reviewedEnglishHash": "a8bded6cd0ef14bb489507998aa7b8c562d491771af8679cb9d3778a6b751289"
+  },
+  "issueRunLedger.latestRun": {
+    "en": "Latest run",
+    "zh-CN": "最新运行",
+    "reviewedEnglishHash": "36adcd07b9bda0b9f1549c552e2fc660ab3781202fcee02e0aa2c1829e566e76"
+  },
+  "issueRunLedger.live": {
+    "en": "live",
+    "zh-CN": "实时",
+    "reviewedEnglishHash": "247610f4dedd4ab7247d07dbda19c81ca9817f85820742cad49d407ffae9e4ed"
+  },
+  "issueRunLedger.liveness.advanced": {
+    "en": "Advanced",
+    "zh-CN": "有进展",
+    "reviewedEnglishHash": "9f088dbebd6c3c70a5ddbc2c943b11e4ca9acea5757b0b4f2b32479f0dbb747e"
+  },
+  "issueRunLedger.liveness.advancedDescription": {
+    "en": "Run produced concrete evidence of progress.",
+    "zh-CN": "运行产生了具体进展证据。",
+    "reviewedEnglishHash": "a4a1d1706c6b46d3cdcb1e8086bca10550aaf70d0b19b19e73148df84f4fd20c"
+  },
+  "issueRunLedger.liveness.blocked": {
+    "en": "Blocked",
+    "zh-CN": "已阻塞",
+    "reviewedEnglishHash": "18f2a0947f9d6523991b29b450307f22773f57d65f7efb98d48a167df04d6b1d"
+  },
+  "issueRunLedger.liveness.blockedDescription": {
+    "en": "Run or issue declared a blocker.",
+    "zh-CN": "运行或任务声明了阻塞项。",
+    "reviewedEnglishHash": "aa19e7243c3da4cbb580d831b3b7f6fe730218925013c6138a2403928ab83194"
+  },
+  "issueRunLedger.liveness.checksAfterFinish": {
+    "en": "Checks after finish",
+    "zh-CN": "结束后检查",
+    "reviewedEnglishHash": "7e7da8b2c2bcd19d6610fb4d4fc4bcf2f19017d3bb020039ad9e058e6ba9fb27"
+  },
+  "issueRunLedger.liveness.checksAfterFinishDescription": {
+    "en": "Liveness is evaluated after the run finishes.",
+    "zh-CN": "运行结束后会评估活跃性。",
+    "reviewedEnglishHash": "9ef0c0067dc8f6b2973699f87bfad829ce4f538c9c587b56dc42be54c044ded7"
+  },
+  "issueRunLedger.liveness.completed": {
+    "en": "Completed",
+    "zh-CN": "已完成",
+    "reviewedEnglishHash": "22a970d2e5b1cc233e462be7c7b64e135a275bb09d83d87683bf4236c43113a1"
+  },
+  "issueRunLedger.liveness.completedDescription": {
+    "en": "Issue reached a terminal state.",
+    "zh-CN": "任务已进入终态。",
+    "reviewedEnglishHash": "9b95cdf112ab6e90804435c4dfd4645749e15216910064ae91667eabd43c6213"
+  },
+  "issueRunLedger.liveness.emptyResponse": {
+    "en": "Empty response",
+    "zh-CN": "空响应",
+    "reviewedEnglishHash": "25cae3e9481af1acb3928c8a8f48d9780900f7ef8d064734c3300ede32298b94"
+  },
+  "issueRunLedger.liveness.emptyResponseDescription": {
+    "en": "Run finished without useful output.",
+    "zh-CN": "运行结束时没有有效输出。",
+    "reviewedEnglishHash": "3b4b2172700cd92b399a5531af4d99dc1da6bbbf5c1779f66b575306afd68633"
+  },
+  "issueRunLedger.liveness.failed": {
+    "en": "Failed",
+    "zh-CN": "失败",
+    "reviewedEnglishHash": "031a8f0f659df890dfd53c92e45295b0f14c997185bae46e168831e403b273f7"
+  },
+  "issueRunLedger.liveness.failedDescription": {
+    "en": "Run ended unsuccessfully.",
+    "zh-CN": "运行未成功结束。",
+    "reviewedEnglishHash": "c2016eef1d2b4e2f8e815d8162fef7e0c559a6ebcb7969fab99500b4d52ed4bf"
+  },
+  "issueRunLedger.liveness.needsFollowup": {
+    "en": "Needs follow-up",
+    "zh-CN": "需要跟进",
+    "reviewedEnglishHash": "7594b78e4bc01ce00100e6795ca734182bd97a6211d75f7e35cf638b6076b596"
+  },
+  "issueRunLedger.liveness.needsFollowupDescription": {
+    "en": "Run produced useful output but did not prove concrete progress.",
+    "zh-CN": "运行产生了有用输出，但未证明有具体进展。",
+    "reviewedEnglishHash": "027b06a13fc4b63284f5f7f56e81f8c687bbc1c4aff807ab15c0856a6a36931f"
+  },
+  "issueRunLedger.liveness.noLivenessData": {
+    "en": "No liveness data",
+    "zh-CN": "无活跃性数据",
+    "reviewedEnglishHash": "0c25b5c8fd8e016ffea5c40b12206046004db3ffb215327e791d0e630a8ecc30"
+  },
+  "issueRunLedger.liveness.noLivenessDataDescription": {
+    "en": "This run has no persisted liveness classification.",
+    "zh-CN": "此运行没有持久化的活跃性分类。",
+    "reviewedEnglishHash": "405e298d1c867302979ba7d85afa07f2c935d0f2596ae0f0d86c784a0f42284c"
+  },
+  "issueRunLedger.liveness.planOnly": {
+    "en": "Plan only",
+    "zh-CN": "仅规划",
+    "reviewedEnglishHash": "d98936aefe993ef27f80f15d6ce8baf2f5f5afa3e0ab39c8fd1a261d82ca5a4a"
+  },
+  "issueRunLedger.liveness.planOnlyDescription": {
+    "en": "Run described future work without concrete action evidence.",
+    "zh-CN": "运行描述了后续工作，但没有具体操作证据。",
+    "reviewedEnglishHash": "420f269d6ddee53c38abb775a2d4336376ac783dea77305f3dcff751e319df43"
+  },
+  "issueRunLedger.liveness.retryPending": {
+    "en": "Retry pending",
+    "zh-CN": "重试待处理",
+    "reviewedEnglishHash": "355257ddfc9bfbcb98e3b536707f72269681fea0c8d13a7e52001b28de6a16b9"
+  },
+  "issueRunLedger.liveness.retryPendingDescription": {
+    "en": "Paperclip queued an automatic retry that has not started yet.",
+    "zh-CN": "Paperclip 已排队一个尚未开始的自动重试。",
+    "reviewedEnglishHash": "6af0dfe308004bda9de1b4a389f1d17944151478f3ecb2f225dffb777445dd09"
+  },
+  "issueRunLedger.livenessReason.concreteActionEvidence": {
+    "en": "Run produced concrete action evidence: {{evidence}}",
+    "zh-CN": "运行产生了具体操作证据：{{evidence}}",
+    "reviewedEnglishHash": "7620bd0cd7706ba5b16bde27bc256e11773fbd8aebb15ecfb91c600c1895f37a"
+  },
+  "issueRunLedger.livenessReason.concreteBlocker": {
+    "en": "Run output declared a concrete blocker",
+    "zh-CN": "运行输出声明了具体阻塞项",
+    "reviewedEnglishHash": "27ebc3905a74798266ce1b034179470def0054056df70266d25fcd90d83dca0e"
+  },
+  "issueRunLedger.livenessReason.futureWorkNotSafeToAutoContinue": {
+    "en": "Run described future work that is not safe to auto-continue",
+    "zh-CN": "运行描述了不适合自动继续的后续工作",
+    "reviewedEnglishHash": "12815d74dec514e76205ac0b3134bc2667158d01084907e1d6773a0f30665c9c"
+  },
+  "issueRunLedger.livenessReason.futureWorkWithoutEvidence": {
+    "en": "Run described runnable future work without concrete action evidence",
+    "zh-CN": "运行描述了可执行的后续工作，但没有具体操作证据",
+    "reviewedEnglishHash": "1a8b76b7f45ea2a0a9a3d11e2192a34ca1f7edc6792ecd0540adc222b81a3d05"
+  },
+  "issueRunLedger.livenessReason.issueIsDone": {
+    "en": "Issue is done",
+    "zh-CN": "任务已完成",
+    "reviewedEnglishHash": "fc8d3d42c0e6e3c72bcdb376b8a65e185720802fc5b210b94a084b428d081208"
+  },
+  "issueRunLedger.livenessReason.issueStatusBlocked": {
+    "en": "Issue status is blocked",
+    "zh-CN": "任务状态为已阻塞",
+    "reviewedEnglishHash": "1781c3e14c9200049f35b56f788cf02769ffd5d8e7e5392d6b3283768c465621"
+  },
+  "issueRunLedger.livenessReason.noUsefulOutput": {
+    "en": "No useful output",
+    "zh-CN": "没有有效输出",
+    "reviewedEnglishHash": "37bc6978c00f3c2f98a3d48adba2240d84c9ffc11a1ab60d35d43961708b0948"
+  },
+  "issueRunLedger.livenessReason.runEndedWithCode": {
+    "en": "Run ended with {{status}} ({{code}})",
+    "zh-CN": "运行以{{status}}结束（{{code}}）",
+    "reviewedEnglishHash": "f3edd62d2b058a504477af2aedf3a8c3905f928a5c15327d9245e972ded61190"
+  },
+  "issueRunLedger.livenessReason.runEndedWithStatus": {
+    "en": "Run ended with {{status}}",
+    "zh-CN": "运行以{{status}}结束",
+    "reviewedEnglishHash": "30e34c5a8e309f9dab41fb8563af6c996847e4aa21c224fce863fd98ff579c89"
+  },
+  "issueRunLedger.livenessReason.usefulOutputNoEvidence": {
+    "en": "Run produced useful output but no concrete action evidence",
+    "zh-CN": "运行产生了有用输出，但没有具体操作证据",
+    "reviewedEnglishHash": "c610d92cef8d9ef2a6da13769dfd2a7bdd0ccf729ba0072c0316208d216f176b"
+  },
+  "issueRunLedger.modelProfile.applied": {
+    "en": "Applied: {{value}}",
+    "zh-CN": "已应用：{{value}}",
+    "reviewedEnglishHash": "219c7d7bf93233cf6bb08aa98e79725f9ee77a6ac4cdf459eec5357ecf5d08d0"
+  },
+  "issueRunLedger.modelProfile.cheapFellBackToPrimary": {
+    "en": "Cheap profile fell back to primary",
+    "zh-CN": "低成本档位已回退到主模型",
+    "reviewedEnglishHash": "b8ce5c5113d9e8fa13da857fcc11642cecca21ca2f37c284ce682a42cfcc3663"
+  },
+  "issueRunLedger.modelProfile.fallback": {
+    "en": "Fallback: {{value}}",
+    "zh-CN": "回退：{{value}}",
+    "reviewedEnglishHash": "13a5f4e007b427e8e971ff69e8d006c6be0e5a1132b56dd034ac1250ce2cdac5"
+  },
+  "issueRunLedger.modelProfile.profile": {
+    "en": "Profile: {{value}}",
+    "zh-CN": "档位：{{value}}",
+    "reviewedEnglishHash": "da8b083fcc7479201c9ea72c5c2d2b502088e2ef01db3a2f7cb56420e6459be8"
+  },
+  "issueRunLedger.modelProfile.profileApplied": {
+    "en": "Profile: {{requested}} -> {{applied}}",
+    "zh-CN": "档位：{{requested}} -> {{applied}}",
+    "reviewedEnglishHash": "8a44fa6d83d6397fc1a45cd12d3a0688c95cce55d7183def7fae3f75ef509334"
+  },
+  "issueRunLedger.modelProfile.profileUnavailable": {
+    "en": "Profile: {{value}} (unavailable)",
+    "zh-CN": "档位：{{value}}（不可用）",
+    "reviewedEnglishHash": "69abe445e0e7b16ba09014b9b66663a01c581f929307dda015ab6536ee929415"
+  },
+  "issueRunLedger.modelProfile.profileUnavailableBare": {
+    "en": "{{value}} profile unavailable",
+    "zh-CN": "{{value}} 档位不可用",
+    "reviewedEnglishHash": "acd724a61bfc82d2a832d581eff8568949741ec2bd27ea26cd3cad8df30a2e54"
+  },
+  "issueRunLedger.modelProfile.requested": {
+    "en": "Requested: {{value}}",
+    "zh-CN": "请求：{{value}}",
+    "reviewedEnglishHash": "66dc5e2735f2d424097ae2d5be58b56fa000313edf014e3d624e5aeb6c745306"
+  },
+  "issueRunLedger.modelProfile.source": {
+    "en": "Source: {{value}}",
+    "zh-CN": "来源：{{value}}",
+    "reviewedEnglishHash": "dc496e4e86925ba126dccb866b334a346b025cef54a84cc123da4d06d7aacd34"
+  },
+  "issueRunLedger.moreCount": {
+    "en": "+{{count}} more",
+    "zh-CN": "+{{count}} 个更多",
+    "reviewedEnglishHash": "48380badf7a45c74d3fac6b89d19d777585cb9052d135d1ec482b932bc99e98a"
+  },
+  "issueRunLedger.nextActionPrefix": {
+    "en": "Next action: ",
+    "zh-CN": "下一步：",
+    "reviewedEnglishHash": "5037bb88efcc19698ecf0fa07ec9791c2d417e6402003ff046550c3a2e708f80"
+  },
+  "issueRunLedger.noRunsLinkedYet": {
+    "en": "No runs linked yet.",
+    "zh-CN": "尚未关联运行。",
+    "reviewedEnglishHash": "0c903c0e2b1d30a436a7f229f2d5098a288c4b93f5b60aad9f7caf29cc911829"
+  },
+  "issueRunLedger.olderItemsNotShown": {
+    "en": "{{count}} older items not shown",
+    "zh-CN": "还有 {{count}} 个较早项目未显示",
+    "reviewedEnglishHash": "39d8098752bc5caa9a39638dbd140bdc1d25e5714483c4a5207c020e0c26cf09"
+  },
+  "issueRunLedger.onBehalfOf": {
+    "en": "on behalf of",
+    "zh-CN": "代表",
+    "reviewedEnglishHash": "653bb65e88dbb9e30d4db244f7ccf44d456b3d6c065eadd35e439e0b2d27f8dc"
+  },
+  "issueRunLedger.outputSilence.silenceSnoozed": {
+    "en": "Silence snoozed",
+    "zh-CN": "静默已暂缓",
+    "reviewedEnglishHash": "335a36f8f6f9a527757296fde9e12c4086d0422fd8ff0eaf6b414b437ec39487"
+  },
+  "issueRunLedger.outputSilence.silenceWatch": {
+    "en": "Silence watch",
+    "zh-CN": "静默观察",
+    "reviewedEnglishHash": "1678f53a07cbe82cf3bef63f95aca34ee8861f9b43f8aed512096cd3cd466569"
+  },
+  "issueRunLedger.outputSilence.staleRun": {
+    "en": "Stale run",
+    "zh-CN": "运行停滞",
+    "reviewedEnglishHash": "b777966bbbcba66e75f98a69357eff9f262e851ed9493e6bb7f295590009e877"
+  },
+  "issueRunLedger.retryOf": {
+    "en": "Retry of",
+    "zh-CN": "重试来源",
+    "reviewedEnglishHash": "17d90ce4743f7a4bf84eaddc5397ee5d94101d0573bc421aee54ed3b8e947199"
+  },
+  "issueRunLedger.silenceAge.hours": {
+    "en": "{{count}} hours",
+    "zh-CN": "{{count}} 小时",
+    "reviewedEnglishHash": "e6ee367ba26346af1a8d956329c4ed1746f506948f13effb5138463a73e8955d"
+  },
+  "issueRunLedger.silenceAge.minutes": {
+    "en": "{{count}} minutes",
+    "zh-CN": "{{count}} 分钟",
+    "reviewedEnglishHash": "42b5bdcf226152993245fe36895cb9bdf3a9c29db353b6e4eb9abe12ce462174"
+  },
+  "issueRunLedger.silenceAge.oneHour": {
+    "en": "1 hour",
+    "zh-CN": "1 小时",
+    "reviewedEnglishHash": "f8b8883f0c9d8d823a8df096ebde57ec04abe9f9cbc4eea1cbc3454c5025c484"
+  },
+  "issueRunLedger.silenceAge.oneMinute": {
+    "en": "1 minute",
+    "zh-CN": "1 分钟",
+    "reviewedEnglishHash": "e67b6f61f579060a649fa280b8697bc9bf5173a34f20570c25e603e1ed1a5905"
+  },
+  "issueRunLedger.silenceAge.underOneMinute": {
+    "en": "under 1 minute",
+    "zh-CN": "不到 1 分钟",
+    "reviewedEnglishHash": "f5e4c64ee5903d4529d3148dacb6fc6960283a96d2ba0d8767da6fa73e6ba5e7"
+  },
+  "issueRunLedger.stop": {
+    "en": "Stop",
+    "zh-CN": "停止原因",
+    "reviewedEnglishHash": "cae7d57bc067a514b8e34c9589631a95c7dc051638ddd2a190773269279a99df"
+  },
+  "issueRunLedger.stopReason.adapterFailed": {
+    "en": "adapter failed",
+    "zh-CN": "适配器失败",
+    "reviewedEnglishHash": "9e9af982b335903c2a6277eee05577902ea894a1c82925f9f09126bd1a1de4ff"
+  },
+  "issueRunLedger.stopReason.budgetPaused": {
+    "en": "budget paused",
+    "zh-CN": "预算暂停",
+    "reviewedEnglishHash": "a720ba3422c21b236ee57eb3eafa4ae82a6f8283806233b656af96843c8d4e8a"
+  },
+  "issueRunLedger.stopReason.completedWithDuration": {
+    "en": "completed ({{duration}})",
+    "zh-CN": "已完成（{{duration}}）",
+    "reviewedEnglishHash": "53448d030e505db77df5ac1ad2153c940f12206a925f713fecd2e65522974f6e"
+  },
+  "issueRunLedger.stopReason.maxTurnsExhausted": {
+    "en": "max turns exhausted",
+    "zh-CN": "达到最大轮次",
+    "reviewedEnglishHash": "a6c371cbf4da3e460add80a7dd42061103f636dbf7e31ccf6ccc84d3d15a96ec"
+  },
+  "issueRunLedger.stopReason.pausedByBoard": {
+    "en": "paused by board",
+    "zh-CN": "由面板暂停",
+    "reviewedEnglishHash": "0c48b774e95ef27999e8b1b50e2afe5b1d674228d3b6cc39845e0f2aba95b2be"
+  },
+  "issueRunLedger.stopReason.processLost": {
+    "en": "process lost",
+    "zh-CN": "进程丢失",
+    "reviewedEnglishHash": "738c295f37b9e4d1e4d13d03eefd5f10528cd03e88f416fdae074474a695b589"
+  },
+  "issueRunLedger.stopReason.timeout": {
+    "en": "timeout",
+    "zh-CN": "超时",
+    "reviewedEnglishHash": "f77d1bb58da886e3cbeebbf35a0b3d217b003506792268052c6a730fbc5ec9bc"
+  },
+  "issueRunLedger.stopReason.timeoutWithDuration": {
+    "en": "timeout ({{duration}})",
+    "zh-CN": "超时（{{duration}}）",
+    "reviewedEnglishHash": "f1fdf053bc5a5e1e4dd46e5c7cf320d154b1c00bce8b573d40ea68f3534daec0"
+  },
+  "issueRunLedger.stopReason.unmanagedBackgroundTaskStopped": {
+    "en": "unmanaged background task stopped",
+    "zh-CN": "未托管的后台任务已停止",
+    "reviewedEnglishHash": "082c3af731557837de8f2352ff8d74f716ffcc51f7c2b6b6eb8e06d889cce5f9"
+  },
+  "issueRunLedger.stopStatus.noStopReason": {
+    "en": "No stop reason",
+    "zh-CN": "无停止原因",
+    "reviewedEnglishHash": "704cedbe1f6a6611f358a9edf863d7279b8ef8f9ca861834c90c08ec9a176bcc"
+  },
+  "issueRunLedger.stopStatus.retryPending": {
+    "en": "Retry pending",
+    "zh-CN": "重试待处理",
+    "reviewedEnglishHash": "355257ddfc9bfbcb98e3b536707f72269681fea0c8d13a7e52001b28de6a16b9"
+  },
+  "issueRunLedger.stopStatus.stillRunning": {
+    "en": "Still running",
+    "zh-CN": "仍在运行",
+    "reviewedEnglishHash": "89acce558ffc103d4b09ae539c9cf3651c6d11e708ce3033678391b14fac454c"
+  },
+  "issueRunLedger.stopStatus.waitingToStart": {
+    "en": "Waiting to start",
+    "zh-CN": "等待开始",
+    "reviewedEnglishHash": "f5e5f81fd2567874402915699d24f77022e28cb1db332841895e424d18ba7472"
+  },
+  "issueRunLedger.summary.automaticRetryScheduledFor": {
+    "en": "Automatic retry scheduled for {{agentName}}",
+    "zh-CN": "已为 {{agentName}} 安排自动重试",
+    "reviewedEnglishHash": "1e28df5c868cba225f7d60e8aa38c0bf3e34bc3e0c3c2c72b8ba14f54e1c85b7"
+  },
+  "issueRunLedger.summary.queuedFor": {
+    "en": "Queued for {{agentName}}",
+    "zh-CN": "已为 {{agentName}} 排队",
+    "reviewedEnglishHash": "25e69b9a9900acc9a68e26d8f4806ea2c9e35b11d834850cf4557d3a8ffb5dcc"
+  },
+  "issueRunLedger.summary.runningNowBy": {
+    "en": "Running now by {{agentName}}",
+    "zh-CN": "{{agentName}} 正在运行",
+    "reviewedEnglishHash": "308c9f1f0c06e157630682c34c7d3a563b44dfb38cd88f13adaf0eab304e05d6"
+  },
+  "issueRunLedger.summary.statusBy": {
+    "en": "{{status}} by {{agentName}}",
+    "zh-CN": "{{agentName}} · {{status}}",
+    "reviewedEnglishHash": "4f1f9cc898d3be2240d65bbdbbfd851899dbc897c3ffaf38e65a8f8181a10ce7"
+  },
+  "issueRunLedger.title": {
+    "en": "Run ledger",
+    "zh-CN": "运行账本",
+    "reviewedEnglishHash": "d70212d76d59525835c26f1e01425ea1e03182d7ff52f0dcb26e5371110793ed"
+  },
+  "issueRunLedger.waitingForFirstRunRecord": {
+    "en": "Waiting for the first run record.",
+    "zh-CN": "等待第一条运行记录。",
+    "reviewedEnglishHash": "0e2961f11fba5968e743c799a81876c9a81af1267174e8846c836da8c3872ec8"
+  },
+  "issueRunLedger.watchdog.continueMonitoring": {
+    "en": "Continue monitoring",
+    "zh-CN": "继续监控",
+    "reviewedEnglishHash": "78802065bcaf83de62635a93ef0e818148d8b42b66881d5f671067fb92eafb4a"
+  },
+  "issueRunLedger.watchdog.decisionNotRecorded": {
+    "en": "Watchdog decision not recorded",
+    "zh-CN": "未记录看护决定",
+    "reviewedEnglishHash": "152723f3492e2d61ae5a3ea62b2a35c7fa96785191f59ac8d2e4b9abb97da9ba"
+  },
+  "issueRunLedger.watchdog.extendedPeriod": {
+    "en": "an extended period",
+    "zh-CN": "一段较长时间",
+    "reviewedEnglishHash": "7741d4a11da4e2bd0fae733f56e8a27f565369eb7631a1c18f4a0f4617a4eecc"
+  },
+  "issueRunLedger.watchdog.forRecoveryContext": {
+    "en": "for recovery context.",
+    "zh-CN": "查看恢复上下文。",
+    "reviewedEnglishHash": "d4b07d9d9980d3ba59968d16e77a738525c7e26cfe6945b23e87ebc3da10058c"
+  },
+  "issueRunLedger.watchdog.latestRunSilentFor": {
+    "en": "Latest active run has been silent for {{duration}}.",
+    "zh-CN": "最新活跃运行已静默 {{duration}}。",
+    "reviewedEnglishHash": "180fa6e976025d99014de971d0eb1f6fb791db88c65f45d99250ba60b2f738d9"
+  },
+  "issueRunLedger.watchdog.markFalsePositive": {
+    "en": "Mark false positive",
+    "zh-CN": "标记为误报",
+    "reviewedEnglishHash": "d5125919eb3bdbad2aa09d43dd76788deb26680b97bad461e4951ba27f46fd03"
+  },
+  "issueRunLedger.watchdog.onlyBoardOrOwner": {
+    "en": "Only the board or the assigned recovery owner can record watchdog decisions",
+    "zh-CN": "只有面板或已指派的恢复负责人可以记录看护决定",
+    "reviewedEnglishHash": "40d65f1212180cb265412952791f225ae8d83e21e3ec69cf3c36715658940c5d"
+  },
+  "issueRunLedger.watchdog.outputSilenceWarning": {
+    "en": "Output silence watchdog warning",
+    "zh-CN": "输出静默看护警告",
+    "reviewedEnglishHash": "a24738457036d9e639239f933f58a4fca1b14e499f1ab86ae1b73d2dbea26aac"
+  },
+  "issueRunLedger.watchdog.recordFailed": {
+    "en": "Paperclip could not record the watchdog decision.",
+    "zh-CN": "Paperclip 无法记录看护决定。",
+    "reviewedEnglishHash": "e45ace3279dbc7ac918494d92f29c6575559d802cd750766a6d849ede2da46a1"
+  },
+  "issueRunLedger.watchdog.review": {
+    "en": "Review",
+    "zh-CN": "查看",
+    "reviewedEnglishHash": "aff0766a5290e117b8433c351bae7b7b23bed682b2369bd822d88a647cc58512"
+  },
+  "issueRunLedger.watchdog.snoozeOneHour": {
+    "en": "Snooze 1h",
+    "zh-CN": "暂缓 1 小时",
+    "reviewedEnglishHash": "346de4c52716add342cc485346c91958dab0220862eb8209c4532cd2b17fa24c"
+  },
+  "issueRunLedger.watchdog.staleRunAlert": {
+    "en": "Stale-run watchdog alert",
+    "zh-CN": "运行停滞看护警报",
+    "reviewedEnglishHash": "b8b1090ad2fc4a0a95839d3aba5f391d5cb47555b7ba28ad496c984f3b6f6898"
+  }
+}

@@ -1,0 +1,397 @@
+{
+  "training.actions.cancel": {
+    "en": "Cancel",
+    "zh-CN": "取消",
+    "reviewedEnglishHash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+  },
+  "training.actions.edit": {
+    "en": "Edit",
+    "zh-CN": "编辑",
+    "reviewedEnglishHash": "464c4ffd019e1e9691dcf0537c797353ef2b1c1d4833d3d463e5b74ae4547344"
+  },
+  "training.actions.exportJsonl": {
+    "en": "Export JSONL",
+    "zh-CN": "导出 JSONL",
+    "reviewedEnglishHash": "87000e5f335c493aaae1eb9d7c58fd1471e63b1b10971a7a200ceb5be1407a3a"
+  },
+  "training.actions.saveNotes": {
+    "en": "Save notes",
+    "zh-CN": "保存笔记",
+    "reviewedEnglishHash": "eb76a6cc99ba688173d54fc9bc625784822e7429b886f1a52d36c6c8230caa88"
+  },
+  "training.authors.localBoard": {
+    "en": "Local board",
+    "zh-CN": "本地董事会",
+    "reviewedEnglishHash": "fa62a9b1745821cee9e14de1ef0455ca8548baa8ac648f9dacfc0baca7b7c6d4"
+  },
+  "training.breadcrumbs.decisions": {
+    "en": "Decisions",
+    "zh-CN": "决策",
+    "reviewedEnglishHash": "cfa6a08af3ed587100e647bd922ea291b8b542ee523cee20b10b416a2f8d7adc"
+  },
+  "training.breadcrumbs.example": {
+    "en": "Example",
+    "zh-CN": "样例",
+    "reviewedEnglishHash": "d029f87e3d80f8fd9b1be67c7426b4cc1ff47b4a9d0a8461c826a59d8c5eb6cd"
+  },
+  "training.breadcrumbs.training": {
+    "en": "Training",
+    "zh-CN": "训练",
+    "reviewedEnglishHash": "36a798e3f39239ccdec697ee348d2ce0a7b8d2d9087940496e2ca5d0853399f2"
+  },
+  "training.columns.author": {
+    "en": "Author",
+    "zh-CN": "作者",
+    "reviewedEnglishHash": "d95082a2ee57f3e40e3050662a346e26a872fd4d0baf57d293ac5a883f0f4ff5"
+  },
+  "training.columns.created": {
+    "en": "Created",
+    "zh-CN": "创建时间",
+    "reviewedEnglishHash": "d70b9e24bca26b409b9458ceca6c9e5c2b5c3171c37ff050c6f6a0d7a4420d2a"
+  },
+  "training.columns.decision": {
+    "en": "Decision",
+    "zh-CN": "决策",
+    "reviewedEnglishHash": "640ae4baf96061fee1798e9181e2b7a5145585233df2c27a501623afb0096ec1"
+  },
+  "training.columns.edited": {
+    "en": "Edited",
+    "zh-CN": "编辑时间",
+    "reviewedEnglishHash": "7117f0807129493fd1f4d6942340d55e82980ef0a82bf629871829666824c7b3"
+  },
+  "training.columns.outcome": {
+    "en": "Outcome",
+    "zh-CN": "结果",
+    "reviewedEnglishHash": "4e80abb5b14656d4eed8fd93705fd4c774d7653b05162763770bd23f1755db1a"
+  },
+  "training.columns.snapshot": {
+    "en": "Snapshot",
+    "zh-CN": "快照",
+    "reviewedEnglishHash": "6ad27bd4ec33b079208334dfea86ff96900f95ca640dda1d2638d694d077668b"
+  },
+  "training.common.noProject": {
+    "en": "No project",
+    "zh-CN": "无项目",
+    "reviewedEnglishHash": "f34c2be0d1c5f5622eb03be1f67e13dee2ce3dbb71201d909e76a761c29d8bcb"
+  },
+  "training.common.untitledExample": {
+    "en": "Decision training example",
+    "zh-CN": "决策训练样例",
+    "reviewedEnglishHash": "62e5f5f0c66e3ea2148eaceb251d09eeaa8d7108cd44dcd149d3da3d8822ee2f"
+  },
+  "training.filters.authorAll": {
+    "en": "Author: All",
+    "zh-CN": "作者：全部",
+    "reviewedEnglishHash": "67c24b5496d36b47ff4d889ab9635b4a5c36e4d21d5b76fbd9cd627a239c3362"
+  },
+  "training.filters.authorAria": {
+    "en": "Filter by author",
+    "zh-CN": "按作者筛选",
+    "reviewedEnglishHash": "dfc51bda57bcd08a3c32c4b316a99454cf5a73bbdd9144050e527feeb22105bf"
+  },
+  "training.filters.kindAll": {
+    "en": "Decision kind: All",
+    "zh-CN": "决策类型：全部",
+    "reviewedEnglishHash": "fdae76ed14c460a5b2d2bc1fc70c7f59bcb6f0ab0e91ec0e4c4e32c2ee497e41"
+  },
+  "training.filters.kindAria": {
+    "en": "Filter by decision kind",
+    "zh-CN": "按决策类型筛选",
+    "reviewedEnglishHash": "8a1bc82385f1ecb565fdbf7b61105e9f43d0dbc0934b33680de7747dae9c5936"
+  },
+  "training.filters.projectAll": {
+    "en": "Project: All",
+    "zh-CN": "项目：全部",
+    "reviewedEnglishHash": "315abd371c23f9e8ad55fab742440d8dac6a1e2b25528ee54a1fe5da1751da32"
+  },
+  "training.filters.projectAria": {
+    "en": "Filter by project",
+    "zh-CN": "按项目筛选",
+    "reviewedEnglishHash": "9e2a0aec37e5b42da5bcee32bfdef4f50794b723598c35aacee4313b48a0cb50"
+  },
+  "training.filters.searchAria": {
+    "en": "Search training examples",
+    "zh-CN": "搜索训练样例",
+    "reviewedEnglishHash": "0612a3d03739ea12974c48165e2e41d4bf9e9cac179bf27fa346910843584e7b"
+  },
+  "training.filters.searchPlaceholder": {
+    "en": "Search notes, tasks...",
+    "zh-CN": "搜索笔记、任务...",
+    "reviewedEnglishHash": "7349dee3f2a6ccb780e259864d9c772d2330d028bd0c9f7aa2294a30627258b5"
+  },
+  "training.inspector.backToTraining": {
+    "en": "Training",
+    "zh-CN": "训练",
+    "reviewedEnglishHash": "36a798e3f39239ccdec697ee348d2ce0a7b8d2d9087940496e2ca5d0853399f2"
+  },
+  "training.inspector.cutoffSuffix": {
+    "en": "· cutoff",
+    "zh-CN": "· 截止于",
+    "reviewedEnglishHash": "5e42cd4c0f183cf737c185b55385d304977d773c26a60d0d36a94348dc6e2950"
+  },
+  "training.inspector.editsVersioned": {
+    "en": "· edits are versioned",
+    "zh-CN": "· 编辑记录已版本化",
+    "reviewedEnglishHash": "6bf6d6fea8ab1541565715441f9d7317d3143e783ca24692e211152d5f2bb58c"
+  },
+  "training.inspector.frozenState": {
+    "en": "Frozen state",
+    "zh-CN": "冻结状态",
+    "reviewedEnglishHash": "867f9922a71f54f89a81bdf110e17c9357079dc4f6aecf31425578f31c849b95"
+  },
+  "training.inspector.lastEdited": {
+    "en": "Last edited",
+    "zh-CN": "最后编辑于",
+    "reviewedEnglishHash": "43c314d49d49336b7ca97945499f476a3f3500c77602b0fc390903bf6acf3d17"
+  },
+  "training.inspector.loadError": {
+    "en": "Could not load training example.",
+    "zh-CN": "无法加载训练样例。",
+    "reviewedEnglishHash": "0ffeed75bf2dc8aceb1380099ac1cfe6e9170fd1e7916e326a713390231721c9"
+  },
+  "training.inspector.loading": {
+    "en": "Loading training example...",
+    "zh-CN": "正在加载训练样例...",
+    "reviewedEnglishHash": "9dddacff625174563491792e155d2c8f3deab91ef43d48e1728e73b1ff23e79e"
+  },
+  "training.inspector.noNotes": {
+    "en": "No notes recorded.",
+    "zh-CN": "未记录笔记。",
+    "reviewedEnglishHash": "a567e3ebbe5c7ec46063d10fabda17ba668195c909aeab142b07fe471ddd39db"
+  },
+  "training.inspector.notFound": {
+    "en": "Training example not found.",
+    "zh-CN": "未找到训练样例。",
+    "reviewedEnglishHash": "fea41286d9545d8e5c0f51b5e7bacaf936b3c51146090542678060d9f7be4123"
+  },
+  "training.inspector.notesInputAria": {
+    "en": "Training notes",
+    "zh-CN": "训练笔记",
+    "reviewedEnglishHash": "d7a1f19ec153c53ea5754383e66bd0df068eecd87dbc6fde3a2ebec44bc0de28"
+  },
+  "training.inspector.notesMeta": {
+    "en": "Last edited {{date}} - edits are versioned",
+    "zh-CN": "最后编辑于 {{date}} - 编辑记录已版本化",
+    "reviewedEnglishHash": "11d311a508dafee3b07f682dfce8a524b78a19c88b06cc30eca2f381d587ed3f"
+  },
+  "training.inspector.notesTitle": {
+    "en": "Training notes",
+    "zh-CN": "训练笔记",
+    "reviewedEnglishHash": "d7a1f19ec153c53ea5754383e66bd0df068eecd87dbc6fde3a2ebec44bc0de28"
+  },
+  "training.inspector.readOnly": {
+    "en": "read-only",
+    "zh-CN": "只读",
+    "reviewedEnglishHash": "4fed3970dcc0d31dccddbf69ef55b00f32d2ca787f1757894914bc0365ea7aa5"
+  },
+  "training.inspector.summary": {
+    "en": "{{identifier}} - {{outcome}} - cutoff {{date}}",
+    "zh-CN": "{{identifier}} - {{outcome}} - 截止于 {{date}}",
+    "reviewedEnglishHash": "41c377563fd8e121b59c97e3fd47434868bd053d41be122cbee3f3186b67a469"
+  },
+  "training.library.description": {
+    "en": "Human decision traces with frozen state for future eval cases.",
+    "zh-CN": "包含冻结状态的人类决策轨迹，可用于未来评估样例。",
+    "reviewedEnglishHash": "2014e4a91dfa80efe05d8338aded960b87a25e71b6f21f5ffd3982c5b1e09e94"
+  },
+  "training.library.empty": {
+    "en": "No training examples match these filters.",
+    "zh-CN": "没有符合这些筛选条件的训练样例。",
+    "reviewedEnglishHash": "81adced2766e8ac741c8c67fe11db2a237190e89a4053930687087a84b7a8ea9"
+  },
+  "training.library.loadError": {
+    "en": "Could not load training examples.",
+    "zh-CN": "无法加载训练样例。",
+    "reviewedEnglishHash": "a88cfa81bbad9a76bd05facf6bc5985597626d2a4a14416db3e16aa2c88a0ad1"
+  },
+  "training.library.loading": {
+    "en": "Loading training examples...",
+    "zh-CN": "正在加载训练样例...",
+    "reviewedEnglishHash": "547e17f6b079c32ff2031196812fc1ce2270bb7df71a9f77d3ac16ad8af3d438"
+  },
+  "training.library.title": {
+    "en": "Training examples",
+    "zh-CN": "训练样例",
+    "reviewedEnglishHash": "4601dc4064963596cd3e93d6f2556b1a72eecf655e95656d088d8b97639f380b"
+  },
+  "training.outcomes.accepted": {
+    "en": "Accepted",
+    "zh-CN": "已接受",
+    "reviewedEnglishHash": "a00fb0c50741f81bb51d35b4475a4357f8039aabd896a21036bc516839401595"
+  },
+  "training.outcomes.answered": {
+    "en": "Answered",
+    "zh-CN": "已回答",
+    "reviewedEnglishHash": "665590354e719bcf6610c39fe617cf8cf8109e96a59e64c73a41a028b74369f9"
+  },
+  "training.outcomes.approved": {
+    "en": "Approved",
+    "zh-CN": "已批准",
+    "reviewedEnglishHash": "87b42e40c2a290e01d87b721bf381c3c5e259d1eb0a4660e41fdbf8bc73f7ddd"
+  },
+  "training.outcomes.cancelled": {
+    "en": "Cancelled",
+    "zh-CN": "已取消",
+    "reviewedEnglishHash": "d353a99eb4556847ceeb3c306ac886cf6b4fa13043eb1864b9aeb0607fd5f2cc"
+  },
+  "training.outcomes.changesRequested": {
+    "en": "Changes requested",
+    "zh-CN": "已请求更改",
+    "reviewedEnglishHash": "10a92a8ad3ee5891bd0733ce52bd7c8d94825077fa79a593f711cba61e768478"
+  },
+  "training.outcomes.expired": {
+    "en": "Expired",
+    "zh-CN": "已过期",
+    "reviewedEnglishHash": "424a2551d356754c882d04ac16c63e6b50b80b159549d23231001f629455756e"
+  },
+  "training.outcomes.failed": {
+    "en": "Failed",
+    "zh-CN": "失败",
+    "reviewedEnglishHash": "031a8f0f659df890dfd53c92e45295b0f14c997185bae46e168831e403b273f7"
+  },
+  "training.outcomes.pendingAtCapture": {
+    "en": "Pending at capture",
+    "zh-CN": "捕获时待处理",
+    "reviewedEnglishHash": "9f6c5b20fc00ddcee21358c6037a5325e12fa4c7be05dc0d35cc8bd9ec1bb255"
+  },
+  "training.outcomes.rejected": {
+    "en": "Rejected",
+    "zh-CN": "已拒绝",
+    "reviewedEnglishHash": "aea4a04a80426ed865ec2058b16854b9146166d22c1f3282a18f285941c42eba"
+  },
+  "training.outcomes.revisionRequested": {
+    "en": "Revision requested",
+    "zh-CN": "已请求修订",
+    "reviewedEnglishHash": "a509fe54e7998dee8d517ef8e7f65f7672590ad92ec3aad13ad7c8c3a7c00371"
+  },
+  "training.snapshot.comments.one": {
+    "en": "{{count}} comment",
+    "zh-CN": "{{count}} 条评论",
+    "reviewedEnglishHash": "7f6fbb6d425c5387203e267050f37a180710fdc2a7bffe3f79a8988e0802f296"
+  },
+  "training.snapshot.comments.other": {
+    "en": "{{count}} comments",
+    "zh-CN": "{{count}} 条评论",
+    "reviewedEnglishHash": "3313c3ed57add98d84a952640940903b6720d20da0cb0c134cf697c1eba32bf7"
+  },
+  "training.snapshot.commentsSuffix": {
+    "en": "comments ·",
+    "zh-CN": "条评论 ·",
+    "reviewedEnglishHash": "f799977e86434f2caa9a69bd446f80fdc72fc8620de972094a195cf0f0565a82"
+  },
+  "training.snapshot.noRepository": {
+    "en": "no repo",
+    "zh-CN": "无仓库",
+    "reviewedEnglishHash": "916c6de840ca2650c8ee6f935190dbbe66d6bb15958bc5b371bd4bf5f2a01f10"
+  },
+  "training.snapshot.runs.one": {
+    "en": "{{count}} run",
+    "zh-CN": "{{count}} 次运行",
+    "reviewedEnglishHash": "d0e4b16000f73ccbbf97863bb97f4a7b43c8c88a746f954063c808ba3143a498"
+  },
+  "training.snapshot.runs.other": {
+    "en": "{{count}} runs",
+    "zh-CN": "{{count}} 次运行",
+    "reviewedEnglishHash": "8b3ce3003800f93b313030b8d36119a6d6649d37d4cbf2eeafdaf270f5d6dc3e"
+  },
+  "training.snapshot.runsSuffix": {
+    "en": "runs ·",
+    "zh-CN": "次运行 ·",
+    "reviewedEnglishHash": "b340bea086e5ba228ecf59a67a7b9f492ba45116823efb742bc1d93063cc8c0e"
+  },
+  "training.sourceKinds.approval": {
+    "en": "Approval",
+    "zh-CN": "审批",
+    "reviewedEnglishHash": "147fb813a2515718ef6121c61c9636d6ffbcb055bcdb45dbb483af667aa94c8b"
+  },
+  "training.sourceKinds.executionDecision": {
+    "en": "Execution decision",
+    "zh-CN": "执行决策",
+    "reviewedEnglishHash": "b3413679c0700edb7b6ffe6e3bbb24045bd63d3ba548dbf27e6695e4b3d635d8"
+  },
+  "training.sourceKinds.interaction": {
+    "en": "Interaction",
+    "zh-CN": "交互",
+    "reviewedEnglishHash": "b7d2863247e0230fc402347740098d2e3f799aae27be97da0936e97aca77e16c"
+  },
+  "training.tabs.code": {
+    "en": "Code",
+    "zh-CN": "代码",
+    "reviewedEnglishHash": "340f463033e0fd5ddeabb922df4d4f1b5747494d0f5ed9894f13b6e13ca831f5"
+  },
+  "training.tabs.decision": {
+    "en": "Decision",
+    "zh-CN": "决策",
+    "reviewedEnglishHash": "640ae4baf96061fee1798e9181e2b7a5145585233df2c27a501623afb0096ec1"
+  },
+  "training.tabs.issue": {
+    "en": "Issue",
+    "zh-CN": "任务",
+    "reviewedEnglishHash": "48dc76dfa23ae03fea1372c5ed6c0e1bd62eaeca7bba6d804eb0afa87972f031"
+  },
+  "training.tabs.runs": {
+    "en": "Runs",
+    "zh-CN": "运行",
+    "reviewedEnglishHash": "848f54e89660cea4357644039ac5d7146f76c8e85df5c04076e08feb7e7547f0"
+  },
+  "training.tabs.thread": {
+    "en": "Thread",
+    "zh-CN": "讨论串",
+    "reviewedEnglishHash": "5373c7f8a5a69019e959540ef127be3302afdd5e2313244e6d08cbd5e975d06d"
+  },
+  "training.thread.authors.agent": {
+    "en": "Agent",
+    "zh-CN": "智能体",
+    "reviewedEnglishHash": "11b39c93777e8f1f3983bdba7c72b22fe68cfea20c677e9de53e17cb7dbfb19f"
+  },
+  "training.thread.authors.comment": {
+    "en": "Comment",
+    "zh-CN": "评论",
+    "reviewedEnglishHash": "44f5e3fbec57be75ebfb2e42caf7f5ee1542f84748a0380b6f20238c4a257e1b"
+  },
+  "training.thread.authors.system": {
+    "en": "System",
+    "zh-CN": "系统",
+    "reviewedEnglishHash": "6725e7bbcd28f3a8a586fa34bf191fd72dde8b61756932cd3237c17a6f196f1a"
+  },
+  "training.thread.authors.user": {
+    "en": "User",
+    "zh-CN": "用户",
+    "reviewedEnglishHash": "b512d97e7cbf97c273e4db073bbb547aa65a84589227f8f3d9e4a72b9372a24d"
+  },
+  "training.thread.cutoff": {
+    "en": "CUTOFF · {{date}}",
+    "zh-CN": "截止时间 · {{date}}",
+    "reviewedEnglishHash": "9bbe28e2a8b439302917cdb0f99cf1aa1059d83e85239cf4c7311de415c7f049"
+  },
+  "training.thread.cutoffLabel": {
+    "en": "CUTOFF ·",
+    "zh-CN": "截止时间 ·",
+    "reviewedEnglishHash": "cdcbc391563bd820fb32abe568057ec9378564670b289e47151b4b1e98f537c2"
+  },
+  "training.thread.excludedAfterCutoff": {
+    "en": "Excluded from snapshot · after cutoff",
+    "zh-CN": "已排除在快照外 · 晚于截止时间",
+    "reviewedEnglishHash": "0016824f44acba316fc39b17a83ca59e3ef774f604b8a9c50bf1e2353af5bd81"
+  },
+  "training.thread.unknownTime": {
+    "en": "Unknown time",
+    "zh-CN": "未知时间",
+    "reviewedEnglishHash": "bdda387b434325c2d39b17268f63a3a6185ced1cf719e054107981a7baeeca1f"
+  },
+  "training.toasts.notesUpdateError": {
+    "en": "Could not update notes",
+    "zh-CN": "无法更新笔记",
+    "reviewedEnglishHash": "2da95bb3f098d9694897df1fc12f29cf5aadabdfb55fcb1d663862f1a896ef43"
+  },
+  "training.toasts.notesUpdated": {
+    "en": "Notes updated",
+    "zh-CN": "笔记已更新",
+    "reviewedEnglishHash": "f5094d90963b20c9c827a2f276819e2450fe15e9c85d65bf8928915f74b1168a"
+  },
+  "training.toasts.tryAgain": {
+    "en": "Please try again.",
+    "zh-CN": "请重试。",
+    "reviewedEnglishHash": "eea4fb33efd382834952e3e7ab52f8dc41ccc2c3f5c3f246f0505235e0e962aa"
+  }
+}

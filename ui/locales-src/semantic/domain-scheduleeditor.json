@@ -1,0 +1,327 @@
+{
+  "scheduleEditor.addTime": {
+    "en": "+ Add time",
+    "zh-CN": "+ 添加时间",
+    "reviewedEnglishHash": "55c17eb954c51d5323c11f9e83928b1b69ba72c57f3fcc8327ce8b59229a65f9"
+  },
+  "scheduleEditor.cronExpression": {
+    "en": "Cron expression",
+    "zh-CN": "Cron 表达式",
+    "reviewedEnglishHash": "9e6e7de6b9d693c91fd6d65d2888a0d80095b07349affaf44454659a1b170d9c"
+  },
+  "scheduleEditor.cronFieldsHint": {
+    "en": "Five fields: minute hour day-of-month month day-of-week",
+    "zh-CN": "五个字段：分钟 小时 月内日期 月份 周内日期",
+    "reviewedEnglishHash": "7abb912add4d394ad508772597c69d6ca6bd9e945b5d624ad9b3d3a42b71dfcc"
+  },
+  "scheduleEditor.day.button.fri": {
+    "en": "F",
+    "zh-CN": "五",
+    "reviewedEnglishHash": "f67ab10ad4e4c53121b6a5fe4da9c10ddee905b978d3788d2723d7bfacbe28a9"
+  },
+  "scheduleEditor.day.button.mon": {
+    "en": "M",
+    "zh-CN": "一",
+    "reviewedEnglishHash": "08f271887ce94707da822d5263bae19d5519cb3614e0daedc4c7ce5dab7473f1"
+  },
+  "scheduleEditor.day.button.sat": {
+    "en": "S",
+    "zh-CN": "六",
+    "reviewedEnglishHash": "8de0b3c47f112c59745f717a626932264c422a7563954872e237b223af4ad643"
+  },
+  "scheduleEditor.day.button.sun": {
+    "en": "S",
+    "zh-CN": "日",
+    "reviewedEnglishHash": "8de0b3c47f112c59745f717a626932264c422a7563954872e237b223af4ad643"
+  },
+  "scheduleEditor.day.button.thu": {
+    "en": "T",
+    "zh-CN": "四",
+    "reviewedEnglishHash": "e632b7095b0bf32c260fa4c539e9fd7b852d0de454e9be26f24d0d6f91d069d3"
+  },
+  "scheduleEditor.day.button.tue": {
+    "en": "T",
+    "zh-CN": "二",
+    "reviewedEnglishHash": "e632b7095b0bf32c260fa4c539e9fd7b852d0de454e9be26f24d0d6f91d069d3"
+  },
+  "scheduleEditor.day.button.wed": {
+    "en": "W",
+    "zh-CN": "三",
+    "reviewedEnglishHash": "fcb5f40df9be6bae66c1d77a6c15968866a9e6cbd7314ca432b019d17392f6f4"
+  },
+  "scheduleEditor.day.long.friday": {
+    "en": "Friday",
+    "zh-CN": "周五",
+    "reviewedEnglishHash": "e21f3f372a46d4be7b49f6809fc91baefeadae004af06485518e124a142c0271"
+  },
+  "scheduleEditor.day.long.monday": {
+    "en": "Monday",
+    "zh-CN": "周一",
+    "reviewedEnglishHash": "6a00dfc1dc867e8454c2c8856e1512d9bf02a76710e3411c0972aec886c76c61"
+  },
+  "scheduleEditor.day.long.saturday": {
+    "en": "Saturday",
+    "zh-CN": "周六",
+    "reviewedEnglishHash": "dbe35c7363c2f7ec747b902fb240907fc58ae00b98f107be2d4c7b9cd7f6226e"
+  },
+  "scheduleEditor.day.long.sunday": {
+    "en": "Sunday",
+    "zh-CN": "周日",
+    "reviewedEnglishHash": "873fef760e5d001ba0a843bf1846713fd92538699f323ef00d51f97a2ad2756c"
+  },
+  "scheduleEditor.day.long.thursday": {
+    "en": "Thursday",
+    "zh-CN": "周四",
+    "reviewedEnglishHash": "fc2662062ffdef9610020183ea2b087c21d71150d78a7c7463be8a9050bd3ac9"
+  },
+  "scheduleEditor.day.long.tuesday": {
+    "en": "Tuesday",
+    "zh-CN": "周二",
+    "reviewedEnglishHash": "7d8af1de1262f150187d5938bf649d6c35726970685f916d1ec6392a801b9762"
+  },
+  "scheduleEditor.day.long.wednesday": {
+    "en": "Wednesday",
+    "zh-CN": "周三",
+    "reviewedEnglishHash": "c0a6cc829cd08735294765c75938a7da2b0f222d52e98bff13cb237cd99deaac"
+  },
+  "scheduleEditor.day.short.fri": {
+    "en": "Fri",
+    "zh-CN": "周五",
+    "reviewedEnglishHash": "66dab40cea1dea5c070c83f775b1ebc2b612b1b9cca1c62ad38815c4ff47b25d"
+  },
+  "scheduleEditor.day.short.mon": {
+    "en": "Mon",
+    "zh-CN": "周一",
+    "reviewedEnglishHash": "f40d7f51f69edfaffa29c42910fbc6af6a822f1279162d486b4a7e11c3e0ae9b"
+  },
+  "scheduleEditor.day.short.sat": {
+    "en": "Sat",
+    "zh-CN": "周六",
+    "reviewedEnglishHash": "fdeb71b569e0034d827041c354d2a609ee60b2d3ab71eb0e390faa70c10e36e1"
+  },
+  "scheduleEditor.day.short.sun": {
+    "en": "Sun",
+    "zh-CN": "周日",
+    "reviewedEnglishHash": "db18f17fe532007616d0d0fcc303281c35aafc940b13e6af55e63f8fed304718"
+  },
+  "scheduleEditor.day.short.thu": {
+    "en": "Thu",
+    "zh-CN": "周四",
+    "reviewedEnglishHash": "7da11212ed340ea7976a39891c56c6f1e791a175a4bad537ba1cf21f5c83f6fd"
+  },
+  "scheduleEditor.day.short.tue": {
+    "en": "Tue",
+    "zh-CN": "周二",
+    "reviewedEnglishHash": "d1eb39b09bf52b68d1c4cb75b98211855dcff0bb908c62c7b969b04ef9ce81f0"
+  },
+  "scheduleEditor.day.short.wed": {
+    "en": "Wed",
+    "zh-CN": "周三",
+    "reviewedEnglishHash": "58339f45df960408051cce029b5b76f049c70c0cb1059b97ff3d4d6ed7a68644"
+  },
+  "scheduleEditor.daysOfMonth": {
+    "en": "Days of the month",
+    "zh-CN": "每月日期",
+    "reviewedEnglishHash": "1f4fa866f71b449ca1b961baadc9db6093e8b0371a958a5a01a3472e239b1b8b"
+  },
+  "scheduleEditor.daysOfWeek": {
+    "en": "Days of the week",
+    "zh-CN": "每周日期",
+    "reviewedEnglishHash": "f1f5ac605348ba796d47603c53d3c96195ec50c91bd240cd021ee09b299bf0a5"
+  },
+  "scheduleEditor.frequencyAriaLabel": {
+    "en": "Schedule frequency",
+    "zh-CN": "计划频率",
+    "reviewedEnglishHash": "feed2d11fc52ba9a20bb7f4c8339ee3240915f90bb6740f9fd2f617fa27190f6"
+  },
+  "scheduleEditor.hours": {
+    "en": "hours",
+    "zh-CN": "小时",
+    "reviewedEnglishHash": "404314b1f4bd8fa2ff42a84cd851ddc011c76fb64e12dfe3748101b03ed8ce7c"
+  },
+  "scheduleEditor.minutePastHour": {
+    "en": "Minute past the hour",
+    "zh-CN": "每小时第几分钟",
+    "reviewedEnglishHash": "d1b7dc0893ec6203dffa025d70004a1f60e7e5d94f8eebc76deb6ee935fbd3a4"
+  },
+  "scheduleEditor.minutes": {
+    "en": "minutes",
+    "zh-CN": "分钟",
+    "reviewedEnglishHash": "90e63d85fa1ab2c8ed65222f3ebd794b1e524b4b7cf84bec451542d0451b2985"
+  },
+  "scheduleEditor.monthEndHint": {
+    "en": "Days 29-31 are skipped in months that don't have them.",
+    "zh-CN": "如果月份没有 29-31 日，这些日期会跳过。",
+    "reviewedEnglishHash": "592577e2594412b04176be54eb87c1df77e5bc09a16366f907912d458207a4c8"
+  },
+  "scheduleEditor.nextFires": {
+    "en": "Next: {{times}}.",
+    "zh-CN": "下一次：{{times}}。",
+    "reviewedEnglishHash": "741408ed3115c688af200bf590826a8dc23e89d15cc48365b63b4e037c7dd5ee"
+  },
+  "scheduleEditor.noEveryMinuteOptions": {
+    "en": "No options - runs every minute, around the clock.",
+    "zh-CN": "无需配置 - 全天每分钟运行一次。",
+    "reviewedEnglishHash": "ddd631926322a25dc7012def7504889c420ce5d8d20bcc0ac94f8e011ac02436"
+  },
+  "scheduleEditor.noScheduleSet": {
+    "en": "No schedule set",
+    "zh-CN": "未设置调度",
+    "reviewedEnglishHash": "92a6e8b334ebed51bce7110090fc0a7a49069a2cbc6f9a228e55ee56a00c04f8"
+  },
+  "scheduleEditor.onlyCertainHours": {
+    "en": "Only between certain hours",
+    "zh-CN": "仅在特定小时之间",
+    "reviewedEnglishHash": "e269e5c0c01e256301cc8fc7a0a224d06fe5a3fcf18be331cc49f0ea1cb66128"
+  },
+  "scheduleEditor.preset.customCron": {
+    "en": "Custom (cron expression)",
+    "zh-CN": "自定义（Cron 表达式）",
+    "reviewedEnglishHash": "1030392f051e18793ccb79266fff827ed44164f717973d545a3db3f66ba0f7ce"
+  },
+  "scheduleEditor.preset.daily": {
+    "en": "Daily - at one or more times",
+    "zh-CN": "每天 - 一个或多个时间",
+    "reviewedEnglishHash": "d6e30372a26792cd129e2aa9f38e486b1d2d465b70c67cd3bf45c37fd41f2b6f"
+  },
+  "scheduleEditor.preset.everyHour": {
+    "en": "Every hour",
+    "zh-CN": "每小时",
+    "reviewedEnglishHash": "a4bac4655d4593de610532554e85f05ea00c06ca357fb3e3284ae088021705b6"
+  },
+  "scheduleEditor.preset.everyMinute": {
+    "en": "Every minute",
+    "zh-CN": "每分钟",
+    "reviewedEnglishHash": "3c14fb8a28813883d919fca5e56e69c8c40503174ad75ff25bef9f6ff15217b2"
+  },
+  "scheduleEditor.preset.everyNHours": {
+    "en": "Every N hours",
+    "zh-CN": "每 N 小时",
+    "reviewedEnglishHash": "e966e3904c8ee6230634b2083a5c077cc234ce045f16ad35b2003a066f581590"
+  },
+  "scheduleEditor.preset.everyNMinutes": {
+    "en": "Every N minutes",
+    "zh-CN": "每 N 分钟",
+    "reviewedEnglishHash": "025156c3d57afa0b1cc5cefb5804e3ab302b3ef187a5d9963dc2a079eb0fa231"
+  },
+  "scheduleEditor.preset.hourly": {
+    "en": "Hourly",
+    "zh-CN": "每小时",
+    "reviewedEnglishHash": "eab0cd8fdf9bccecc74e5a010b32af35986e3929184a599f5aea3b8195340ee2"
+  },
+  "scheduleEditor.preset.monthly": {
+    "en": "Monthly - on selected dates",
+    "zh-CN": "每月 - 所选日期",
+    "reviewedEnglishHash": "a6441d74e15c5727b4701f50bc895224e8ec4a7980d4972e7ea3482170f5b343"
+  },
+  "scheduleEditor.preset.selectedWeekdays": {
+    "en": "On selected days of the week",
+    "zh-CN": "每周所选日期",
+    "reviewedEnglishHash": "94bf675a3737b50efa2dde3858fb17d26ef35b5118a593776c6b60f0d407f093"
+  },
+  "scheduleEditor.preset.weekly": {
+    "en": "Weekly",
+    "zh-CN": "每周",
+    "reviewedEnglishHash": "2975132481a7a6957cfa95055d04e706f21f1a613f448d0a17463f2eacca4636"
+  },
+  "scheduleEditor.quick.allDays": {
+    "en": "All days",
+    "zh-CN": "每天",
+    "reviewedEnglishHash": "fc91b0ee2e9f68eb1b21666de8d009ebce48b78eb9c86cbd7d8dbef7f02aee2a"
+  },
+  "scheduleEditor.quick.fifteenthOnly": {
+    "en": "15th only",
+    "zh-CN": "仅 15 日",
+    "reviewedEnglishHash": "9a2b484d172486759e63faa1b27da1fe4619ad5446a9f7d5c7e01693ba799887"
+  },
+  "scheduleEditor.quick.firstAndFifteenth": {
+    "en": "1st & 15th",
+    "zh-CN": "1 日和 15 日",
+    "reviewedEnglishHash": "aadf108d9b8f832485953378640bee07861bc9160171b56c019db8bc41872d9a"
+  },
+  "scheduleEditor.quick.firstOnly": {
+    "en": "1st only",
+    "zh-CN": "仅 1 日",
+    "reviewedEnglishHash": "09ec35f633774f0ba05cd09157c18f12b639d35b24d94fe48f0e2986fe7722f4"
+  },
+  "scheduleEditor.quick.lastDayTwentyEighth": {
+    "en": "Last day (28th)",
+    "zh-CN": "最后一天（28 日）",
+    "reviewedEnglishHash": "afe9afd82a0f21f17575d902f858a16eb98deb6c9970940a4f0fa1aa39288a4b"
+  },
+  "scheduleEditor.quick.monWedFri": {
+    "en": "Mon · Wed · Fri",
+    "zh-CN": "周一 · 周三 · 周五",
+    "reviewedEnglishHash": "9f3ee65d57f1b1fc4c3490b203c8f06e96f7752114ad870706f5a3b6d200720f"
+  },
+  "scheduleEditor.quick.tueThu": {
+    "en": "Tue · Thu",
+    "zh-CN": "周二 · 周四",
+    "reviewedEnglishHash": "78a4e94f574f857ca390e85bd6302e9fa6b28a234beed35c0b04f3965e65bd10"
+  },
+  "scheduleEditor.quick.weekdays": {
+    "en": "Weekdays",
+    "zh-CN": "工作日",
+    "reviewedEnglishHash": "6f4b602bb52984dc6244023f94410f3711649f7fe93b8de47b3b3a608312f49e"
+  },
+  "scheduleEditor.quick.weekends": {
+    "en": "Weekends",
+    "zh-CN": "周末",
+    "reviewedEnglishHash": "93dcf1d1d25ef25b6fb485d2fcdd16c3bf5710878b8779db5cd7c9e63276f9a4"
+  },
+  "scheduleEditor.runEvery": {
+    "en": "Run every",
+    "zh-CN": "每隔",
+    "reviewedEnglishHash": "24947227759d0aca2442b9d5147b91df17dd79fdaba1b0e467271f0f4dbdfc70"
+  },
+  "scheduleEditor.runsOnceAnHourAt": {
+    "en": "Runs once an hour at",
+    "zh-CN": "每小时运行一次，时间为",
+    "reviewedEnglishHash": "d6047576e36a7edb1b495791dddc1221cbd67aa412f047edb8ecea7b7b97967b"
+  },
+  "scheduleEditor.sameMinuteHint": {
+    "en": "All times in one schedule share the same minute. Changing one minute updates them all.",
+    "zh-CN": "同一个调度中的所有时间共享同一分钟。修改一个分钟会同步更新全部时间。",
+    "reviewedEnglishHash": "bc550fdb77584a666088c20c0772010728de9f3555f66a606dc37047a34a8128"
+  },
+  "scheduleEditor.summaryPrefix": {
+    "en": "Summary - ",
+    "zh-CN": "摘要 - ",
+    "reviewedEnglishHash": "19aafbe0ed44ec6f842a4cd14b762a262dbbb3a0fe8b64dedb747520b56c5d04"
+  },
+  "scheduleEditor.timesOfDay": {
+    "en": "Times of day",
+    "zh-CN": "一天中的时间",
+    "reviewedEnglishHash": "d6f4df412b49fd99fdaccb115e2f3a15d99336b1992bb50dd862490e998777b7"
+  },
+  "scheduleEditor.validation.enterFiveFieldCron": {
+    "en": "Enter a 5-field cron expression.",
+    "zh-CN": "请输入 5 字段 Cron 表达式。",
+    "reviewedEnglishHash": "317636a73582103734fcadffc92858dc881f5444c7bb8477063bb9beb9dca24e"
+  },
+  "scheduleEditor.validation.exactlyFiveFields": {
+    "en": "Use exactly 5 fields; this has {{count}}.",
+    "zh-CN": "请使用 5 个字段；当前有 {{count}} 个。",
+    "reviewedEnglishHash": "cf7ec04765c55b5d9f15e95468dffc600d650ba2298a0450636c7d200c06772d"
+  },
+  "scheduleEditor.validation.validCron": {
+    "en": "Valid cron.",
+    "zh-CN": "Cron 有效。",
+    "reviewedEnglishHash": "5cc6766c0920ada6a473ad1d55678411ee582eb4eeeb2b8a301a3aa6d59ff971"
+  },
+  "scheduleEditor.validation.validCronFields": {
+    "en": "Cron fields must use valid numbers, ranges, lists, wildcards, or steps.",
+    "zh-CN": "Cron 字段必须使用有效数字、范围、列表、通配符或步进。",
+    "reviewedEnglishHash": "a9b7c68b0a4610d07fb8b3e82c3531cb04d22a8c03584dc866b5dffb86ac4b99"
+  },
+  "scheduleEditor.validation.validCronNoUpcomingFires": {
+    "en": "Valid cron, but no upcoming fires were found.",
+    "zh-CN": "Cron 有效，但没有找到即将触发的时间。",
+    "reviewedEnglishHash": "0b9b5c7fd76178dd2bbf1f3537f0316cc322ddc88bf52eb465ce3aaf29a3d7ba"
+  },
+  "scheduleEditor.weekdaysOnly": {
+    "en": "Weekdays only (Mon-Fri)",
+    "zh-CN": "仅工作日（周一至周五）",
+    "reviewedEnglishHash": "3109694a9e8b809c9115f1e8bc9a3ef45ea63530977f5614eaaa93f3fdea10b6"
+  }
+}

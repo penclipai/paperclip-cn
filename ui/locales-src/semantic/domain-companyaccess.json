@@ -1,0 +1,12 @@
+{
+  "companyAccess.moreTask": {
+    "en": "{{count}} more task",
+    "zh-CN": "还有 {{count}} 项任务",
+    "reviewedEnglishHash": "b317aa28d71b731f578ff5c800f562be4a58c8c0d35293bcd18bd0119def8dc1"
+  },
+  "companyAccess.moreTasks": {
+    "en": "{{count}} more tasks",
+    "zh-CN": "还有 {{count}} 项任务",
+    "reviewedEnglishHash": "f4502411b689d96c1b68c00597246d6821b313e4a0b2c711564af1468ad39c66"
+  }
+}

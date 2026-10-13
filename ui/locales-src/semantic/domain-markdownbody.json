@@ -1,0 +1,47 @@
+{
+  "markdownBody.copyCode": {
+    "en": "Copy code",
+    "zh-CN": "复制代码",
+    "reviewedEnglishHash": "49a0053f3b0d5045a4ef3edfe5c39be60a7ea272cc22b7c33d646624346ccd4d"
+  },
+  "markdownBody.issueLink": {
+    "en": "Issue {{identifier}}",
+    "zh-CN": "任务 {{identifier}}",
+    "reviewedEnglishHash": "2a6ea444eb80c65782ddecce95d9ce10040c6645f121623d0737a5d1e9eb5b0b"
+  },
+  "markdownBody.issueLinkWithTitle": {
+    "en": "Issue {{identifier}}: {{title}}",
+    "zh-CN": "任务 {{identifier}}：{{title}}",
+    "reviewedEnglishHash": "d7985502b5e07e98a721591c8fbab12b6ea305f29bf68fa183d810b7bb045091"
+  },
+  "markdownBody.mermaidRenderFailed": {
+    "en": "Failed to render Mermaid diagram.",
+    "zh-CN": "无法渲染 Mermaid 图表。",
+    "reviewedEnglishHash": "ce8bc46c0433e64955f33a95283c053bd296ef96b0720752cac50817ceed80bc"
+  },
+  "markdownBody.mermaidRendering": {
+    "en": "Rendering Mermaid diagram...",
+    "zh-CN": "正在渲染 Mermaid 图表...",
+    "reviewedEnglishHash": "1cecfea4dd3c4a595511db16486672309705d26a051bd8934bdf47cb7d825765"
+  },
+  "markdownBody.mermaidUnableToRender": {
+    "en": "Unable to render Mermaid diagram: {{error}}",
+    "zh-CN": "无法渲染 Mermaid 图表：{{error}}",
+    "reviewedEnglishHash": "0901c509681aeff90c1d10608b95c7c340fc2acaee9d66ac9ed26627c8c78ed8"
+  },
+  "markdownBody.scrollableTable": {
+    "en": "Scrollable table",
+    "zh-CN": "可滚动表格",
+    "reviewedEnglishHash": "92d78d88918e2a9e29af7260d6cc0b9144b307fe721c42e408f9019a86b16acf"
+  },
+  "markdownBody.unwrapLines": {
+    "en": "Unwrap lines",
+    "zh-CN": "取消换行",
+    "reviewedEnglishHash": "6de95a89b8eef199e26f88aaa78f1a6758a90adafd7c968ff942426668cc51ef"
+  },
+  "markdownBody.wrapLines": {
+    "en": "Wrap lines",
+    "zh-CN": "自动换行",
+    "reviewedEnglishHash": "6727132ac799a2564bfae0065fed0ce09ed99e4e1ecee7b954d4d38892ff7590"
+  }
+}

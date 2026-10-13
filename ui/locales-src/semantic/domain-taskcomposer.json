@@ -1,0 +1,52 @@
+{
+  "taskComposer.runSettings.agentDefault": {
+    "en": "Agent default",
+    "zh-CN": "智能体默认设置",
+    "reviewedEnglishHash": "90340504c623ec22c4e31f08fa0003726c20337b889dd44cf4fe622553273acb"
+  },
+  "taskComposer.runSettings.chooseAgentToSelectModelAndEffort": {
+    "en": "Choose an agent to select its model and effort.",
+    "zh-CN": "请选择智能体以选择其模型和推理强度。",
+    "reviewedEnglishHash": "b8a314904d55b750181df884289712fe01ba07c8c2a9c13d8237c26c093ab680"
+  },
+  "taskComposer.runSettings.commandHarnessNoModelOrEffort": {
+    "en": "This agent runs a command. Its harness does not expose a model or effort setting.",
+    "zh-CN": "此智能体运行命令。其运行框架不提供模型或推理强度设置。",
+    "reviewedEnglishHash": "2978393d079b0cb00cadcd2f6e8fcfe6f9c7e01e869cd7b86e44be5d6b1eeddc"
+  },
+  "taskComposer.runSettings.customIdsHint": {
+    "en": "Custom IDs: openrouter/provider/model. Provider access is checked when the run starts.",
+    "zh-CN": "自定义 ID：openrouter/provider/model。运行开始时会检查提供商访问权限。",
+    "reviewedEnglishHash": "72b9f789042908f92afeee8644d5d6201fca237d44ec0dc50eb064c265e49237"
+  },
+  "taskComposer.runSettings.customModelIdsHint": {
+    "en": "Custom model IDs can be pasted here. Provider access is checked when the run starts.",
+    "zh-CN": "可以在此粘贴自定义模型 ID。运行开始时会检查提供商访问权限。",
+    "reviewedEnglishHash": "605123f15b26f2cacb0d56decc7c48e61c6f5192b6e71f5969caca3b861bb859"
+  },
+  "taskComposer.runSettings.effort": {
+    "en": "Effort",
+    "zh-CN": "推理强度",
+    "reviewedEnglishHash": "4387e5d3966fc436532792769763cd1ab7cccd6464d4c01c2b91261894e96b77"
+  },
+  "taskComposer.runSettings.gatewayRemoteModelNoPerTaskSetting": {
+    "en": "This gateway chooses its model remotely; Paperclip has no per-task model setting for it.",
+    "zh-CN": "此网关远程选择模型；Paperclip 不提供单任务模型设置。",
+    "reviewedEnglishHash": "9a1309d140d62b264768487d1dff73a11d25a7e899111bd51cb8b975c97df53c"
+  },
+  "taskComposer.runSettings.httpEndpointServiceChoosesModel": {
+    "en": "This agent calls an HTTP endpoint. The destination service chooses its model.",
+    "zh-CN": "此智能体调用 HTTP 端点。目标服务决定其模型。",
+    "reviewedEnglishHash": "35aa9aa4ded5c5e7690005d3dc7fe9faec0ab469980f80dd4aa2542b6a9b67b4"
+  },
+  "taskComposer.runSettings.modelIdFormat": {
+    "en": "Use openrouter/provider/model with no spaces.",
+    "zh-CN": "请使用不含空格的 openrouter/provider/model。",
+    "reviewedEnglishHash": "d63e1e9e313c4913713a7c326e8f7cd3f26657349645f3875b3b3302c1c29a5f"
+  },
+  "taskComposer.runSettings.modelIdsNoSpaces": {
+    "en": "Model IDs cannot contain spaces.",
+    "zh-CN": "模型 ID 不能包含空格。",
+    "reviewedEnglishHash": "737c5bd5522f1a4a6599a207a6a03eff708de7ab340fe3bee256c0719c6c4982"
+  }
+}

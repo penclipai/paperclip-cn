@@ -1,0 +1,287 @@
+{
+  "issuesList.allSubIssuesDone": {
+    "en": "All sub-issues done",
+    "zh-CN": "所有子任务已完成",
+    "reviewedEnglishHash": "b231907f931e44a8ac946b4bd6818c24827964721441f4316a512fc4e6094ee3"
+  },
+  "issuesList.allSubtasksDone": {
+    "en": "All sub-tasks done",
+    "zh-CN": "所有子任务均已完成",
+    "reviewedEnglishHash": "12117470c55b1508241234ca077592608ca49ecbab0667f79c6d48f12977a182"
+  },
+  "issuesList.andMoreBlockers": {
+    "en": " ... and {{count}} more",
+    "zh-CN": " ... 另有 {{count}} 个",
+    "reviewedEnglishHash": "eb82a56d6dee90a15dd7e1f063f50f3baf407c9c43812e18df21477d3295e999"
+  },
+  "issuesList.blockedByChip": {
+    "en": "blocked by {{label}}{{suffix}}",
+    "zh-CN": "被 {{label}}{{suffix}} 阻塞",
+    "reviewedEnglishHash": "c4ec26aa49451e10a5badbc16cc6ae5d582459a78a915e5657982bfd567e8ba5"
+  },
+  "issuesList.blockerStepSuffix": {
+    "en": " · step {{step}}",
+    "zh-CN": " · 步骤 {{step}}",
+    "reviewedEnglishHash": "bf7db0db6592f1d282e1cd4697873275b1110dc9a6762654fc6891e48128d179"
+  },
+  "issuesList.cardsPerColumn": {
+    "en": "Cards per column",
+    "zh-CN": "每列卡片数",
+    "reviewedEnglishHash": "4300aad951a54499182b16f1303ca88367bbf2bdaba72610fe568e51d218829a"
+  },
+  "issuesList.cardsPerColumnOption": {
+    "en": "{{count}} per column",
+    "zh-CN": "每列 {{count}} 个",
+    "reviewedEnglishHash": "ce462eda0c8326cef6ea375edb5933bb11454be0e1c56e1a50fda6121ed17d7c"
+  },
+  "issuesList.chooseColumns": {
+    "en": "Choose which task columns stay visible",
+    "zh-CN": "选择要显示的任务列",
+    "reviewedEnglishHash": "7576d1c4cfd5e7c901b6bf73667409b6776ab2cd9a5e65a379e0001254ab0670"
+  },
+  "issuesList.collapseColdLanes": {
+    "en": "Collapse cold lanes",
+    "zh-CN": "折叠冷门列",
+    "reviewedEnglishHash": "ffec84b96425c1d24801da1b65b260323919980db9a679e917c9544dd2ef0a3a"
+  },
+  "issuesList.columns": {
+    "en": "Columns",
+    "zh-CN": "列",
+    "reviewedEnglishHash": "53aade77cd69a77bbb51bf8ca4e7ea8b282db75edce8883775e47042478d35b5"
+  },
+  "issuesList.columnsShowingUpTo": {
+    "en": "Some board columns are showing up to",
+    "zh-CN": "部分看板列最多显示",
+    "reviewedEnglishHash": "13ee71132340e97667e66040b4e5efdda60b95063fd7f49a7eb9a9a747544961"
+  },
+  "issuesList.costSummaryTitle": {
+    "en": "Runs: {{runs}} · Sub-tasks: {{tasks}}",
+    "zh-CN": "运行：{{runs}} · 子任务：{{tasks}}",
+    "reviewedEnglishHash": "f721b969074523c27a9227c42e4dd7d139205b4a3e86d16bdad1bd2c95c3fac0"
+  },
+  "issuesList.defaultColumnsSummary": {
+    "en": "status, id, updated",
+    "zh-CN": "状态、编号、更新时间",
+    "reviewedEnglishHash": "5fd9f7e236a0f8bd384e115aedbb6d93dda261b88d17235543fd16305edd9199"
+  },
+  "issuesList.expandColdLanes": {
+    "en": "Expand cold lanes",
+    "zh-CN": "展开冷门列",
+    "reviewedEnglishHash": "59f3f0fda28f7e6489494cc9f748f98e01cad6ebcf70dbd8bac696ec18abfc9b"
+  },
+  "issuesList.filter": {
+    "en": "Filter",
+    "zh-CN": "筛选",
+    "reviewedEnglishHash": "638e249f4a15ebb84957da130701d138a6e06d88dceeaa2e6dcd91db70cc1381"
+  },
+  "issuesList.filters": {
+    "en": "Filters",
+    "zh-CN": "筛选",
+    "reviewedEnglishHash": "546ebb8eb993ea561029d9febd84c363bdb09010bb2cb915a8287762b76b9a64"
+  },
+  "issuesList.group": {
+    "en": "Group",
+    "zh-CN": "分组",
+    "reviewedEnglishHash": "34ca0e76608842ff3e7d924a455a396a82f471052c15e3f2ed7f090ac702e5c1"
+  },
+  "issuesList.live": {
+    "en": "Live",
+    "zh-CN": "实时",
+    "reviewedEnglishHash": "b64ac05f17e64d037db81a98f51e2688216e292ae9748f979f04dfbac49fd7fc"
+  },
+  "issuesList.loadingMoreIssues": {
+    "en": "Loading more tasks...",
+    "zh-CN": "正在加载更多任务...",
+    "reviewedEnglishHash": "45100abbe0d45c58078250f6bd9e9643a34ebe50889069772612a54ad9bcbb30"
+  },
+  "issuesList.needsNextStep": {
+    "en": "This task needs a next step",
+    "zh-CN": "此任务需要明确下一步",
+    "reviewedEnglishHash": "aa4b55368cd2026a27e271ba2daabecbd41f311d5ec0ddf39f040813f8163a28"
+  },
+  "issuesList.newIssueIn": {
+    "en": "New issue in {{group}}",
+    "zh-CN": "在 {{group}} 中新建任务",
+    "reviewedEnglishHash": "b6d83c020839504a3a0f4837090cd29de9f6626147070ac658b27bed5c8ecaa6"
+  },
+  "issuesList.newIssueInGroup": {
+    "en": "New issue in {{group}}",
+    "zh-CN": "在 {{group}} 中新建任务",
+    "reviewedEnglishHash": "b6d83c020839504a3a0f4837090cd29de9f6626147070ac658b27bed5c8ecaa6"
+  },
+  "issuesList.nextUp": {
+    "en": "Next up",
+    "zh-CN": "下一步",
+    "reviewedEnglishHash": "c5ae65235e0aa6ba5ccb0c1985dff33587cba83fec6429f303918aef2e0de793"
+  },
+  "issuesList.noActionableSubIssues": {
+    "en": "No actionable sub-issues",
+    "zh-CN": "没有可执行的子任务",
+    "reviewedEnglishHash": "9bfb16facf8e80e499dc5365fb9a6ba24a1839672f2bacb130fce98b283fade3"
+  },
+  "issuesList.noActionableSubtasks": {
+    "en": "No actionable sub-tasks",
+    "zh-CN": "无可执行子任务",
+    "reviewedEnglishHash": "0b9b040df28c5a1966fe2663b4efa52036399af706e53024928354549071a07c"
+  },
+  "issuesList.noActiveSubIssues": {
+    "en": "No active sub-issues",
+    "zh-CN": "没有活跃子任务",
+    "reviewedEnglishHash": "3bae8e5dd4802332ceab76ea7619c760a339067abbc48125a618fb0a52491b74"
+  },
+  "issuesList.noActiveSubtasks": {
+    "en": "No active sub-tasks",
+    "zh-CN": "无活跃子任务",
+    "reviewedEnglishHash": "f699b33aa6398d063780e4cfe2e1e087b39833e07f629ec22271ab323e182ecb"
+  },
+  "issuesList.noIssuesMatch": {
+    "en": "No tasks match the current filters or search.",
+    "zh-CN": "没有匹配当前筛选或搜索的任务。",
+    "reviewedEnglishHash": "8a02f4ca1995d80d8023a22dd5e7df116da88a8f5ee1c1ecb71490b2185b0978"
+  },
+  "issuesList.noResponsible": {
+    "en": "No responsible",
+    "zh-CN": "无责任人",
+    "reviewedEnglishHash": "15abdee5d453108e6c6f7c666d0bf99f73862b0c5c500125840a6e30b4a1297b"
+  },
+  "issuesList.olderThanDay": {
+    "en": "Older than a day",
+    "zh-CN": "早于一天前",
+    "reviewedEnglishHash": "070fdb30d4bffa83684e763f6c9ed3dcdf838555141a4586069e6f52e6917c8b"
+  },
+  "issuesList.olderThanWeek": {
+    "en": "Older than a week",
+    "zh-CN": "早于一周前",
+    "reviewedEnglishHash": "abadd577d6db29bd8bfd3ebd7be9c88ddb151b163d8fdcc570e7760be73b5f3a"
+  },
+  "issuesList.perColumn": {
+    "en": "per column",
+    "zh-CN": "每列",
+    "reviewedEnglishHash": "b0f72a9b49134b36d1400b83975b76fe5a6fae6614180f887fe95dd8152d9899"
+  },
+  "issuesList.quickFilters": {
+    "en": "Quick filters",
+    "zh-CN": "快捷筛选",
+    "reviewedEnglishHash": "e01c5f270819f8ff9932d97c27452a62d6bca3f624f8effda757f35d02f11126"
+  },
+  "issuesList.refineFilters": {
+    "en": "tasks. Refine filters or search to reveal the rest.",
+    "zh-CN": "个任务。请优化筛选或搜索条件以显示其余任务。",
+    "reviewedEnglishHash": "b8dd8887a817c6d48e3e4b29e7d6c074573baa4798b4ee52ca558c8959d61110"
+  },
+  "issuesList.refineSearch": {
+    "en": "matches. Refine the search to narrow further.",
+    "zh-CN": "条匹配结果。请优化搜索条件以进一步缩小范围。",
+    "reviewedEnglishHash": "29af9c59f6949b9554b386f495fe910d63110d0c8141793a0927b7ecb29a4102"
+  },
+  "issuesList.renderingIssues": {
+    "en": "Rendering {{shown}} of {{total}} tasks",
+    "zh-CN": "正在渲染 {{shown}} / {{total}} 个任务",
+    "reviewedEnglishHash": "c4d394bf233d06da2c6eb2c49fe9a401cf1aa567b67f26c9874ec90915e093f6"
+  },
+  "issuesList.resetBoardDensity": {
+    "en": "Reset board density",
+    "zh-CN": "重置看板密度",
+    "reviewedEnglishHash": "78a955456b087edcb003ecf8d9f91b3b0e7f8489fa32a66b576cbe8150027c16"
+  },
+  "issuesList.runtime": {
+    "en": "runtime",
+    "zh-CN": "运行时长",
+    "reviewedEnglishHash": "d92c6a81b2ff50096bcda80885427d1f59a25b5f483f7055523504925d16ab23"
+  },
+  "issuesList.runtimeDuration": {
+    "en": "{{duration}} runtime",
+    "zh-CN": "运行时长 {{duration}}",
+    "reviewedEnglishHash": "156d66b0d53de4139dd891ceaff698f835896ca4bc055fea369a3530b2788e03"
+  },
+  "issuesList.scrollToLoadMoreIssues": {
+    "en": "Scroll to load more tasks",
+    "zh-CN": "滚动以加载更多任务",
+    "reviewedEnglishHash": "df9865df4faceca9973215f5e444be66e05aef13cdfc1e602dc40e671d0ba7ba"
+  },
+  "issuesList.searchAria": {
+    "en": "Search tasks",
+    "zh-CN": "搜索任务",
+    "reviewedEnglishHash": "46c6f1dea7e9258082e020741ba70be8509a940520d0e5343e54cec46bb4c328"
+  },
+  "issuesList.searchPlaceholder": {
+    "en": "Search tasks...",
+    "zh-CN": "搜索任务...",
+    "reviewedEnglishHash": "c1af8370c5f6898615094c9c38f59b3dc1c07d41ede16bcef24a024217f47bc5"
+  },
+  "issuesList.searchResponsible": {
+    "en": "Search responsible...",
+    "zh-CN": "搜索责任人...",
+    "reviewedEnglishHash": "9cb8d79fc8b40d38d1394f46e89e24851c22f20e8987707576b42f55c5e7054f"
+  },
+  "issuesList.showingUpTo": {
+    "en": "Showing up to",
+    "zh-CN": "最多显示",
+    "reviewedEnglishHash": "3cee7f3ff1068d04b24035d33ed629040223ef4559076fea1fc9aaf7a0f18a38"
+  },
+  "issuesList.statusSegmentTitle": {
+    "en": "{{status}}: {{count}}",
+    "zh-CN": "{{status}}：{{count}}",
+    "reviewedEnglishHash": "8c592f7deaf22a88ba8969216510e163113e54ab8f1a518a20da7f24a97b3afc"
+  },
+  "issuesList.subIssueBlockedCount": {
+    "en": "{{count}} blocked",
+    "zh-CN": "{{count}} 个已阻塞",
+    "reviewedEnglishHash": "d65073a4e78e0fddab939ef8b33de6c9e535f88236c2da97a33d0ca47033d9d3"
+  },
+  "issuesList.subIssueDoneCount": {
+    "en": "{{done}}/{{total}} done",
+    "zh-CN": "{{done}}/{{total}} 已完成",
+    "reviewedEnglishHash": "3984e002dad3fda492a8a0dad4b9457ff856b70c3eb167f3b89bd089846ee72e"
+  },
+  "issuesList.subIssueInProgressCount": {
+    "en": "{{count}} in progress",
+    "zh-CN": "{{count}} 个进行中",
+    "reviewedEnglishHash": "e927bf4644731c56fb38c510a706ae357184d964f0d23d12f98f85c5f0554643"
+  },
+  "issuesList.subIssueRunSummary": {
+    "en": "{{runCount}} runs across {{issueCount}} sub-issues",
+    "zh-CN": "{{runCount}} 个运行，覆盖 {{issueCount}} 个子任务",
+    "reviewedEnglishHash": "2c2a7947aa31cba33fcc7b915f955a280b9957f25f8e461e16b28cbfcef00cb7"
+  },
+  "issuesList.subIssuesCompletionProgress": {
+    "en": "Sub-issues completion progress",
+    "zh-CN": "子任务完成进度",
+    "reviewedEnglishHash": "ffa35e26dacfa8ecaefda0aab04c2b970fa538e88debfb9d51dc7e12eda88871"
+  },
+  "issuesList.subtaskProgressAria": {
+    "en": "Sub-tasks completion progress",
+    "zh-CN": "子任务完成进度",
+    "reviewedEnglishHash": "43b10c32144fc33ad0714e686063382ed4355baf1f9ce3f2716e30096f1c857b"
+  },
+  "issuesList.tokenCount": {
+    "en": "{{tokens}} tokens",
+    "zh-CN": "{{tokens}} 词元",
+    "reviewedEnglishHash": "e34f3b856859428343c24872a3cb64c49e52cde50395c5ca3e3002dbb29bf47d"
+  },
+  "issuesList.tokens": {
+    "en": "tokens",
+    "zh-CN": "token",
+    "reviewedEnglishHash": "c51e455b41df6c017327e16001dd064b8b6733faeaa69b23d9bd79c8079237d5"
+  },
+  "issuesList.updatedAtTime": {
+    "en": "Updated {{time}}",
+    "zh-CN": "更新于 {{time}}",
+    "reviewedEnglishHash": "6379f4b4efb9b0a5342283ad3b0d99edf9df796e29d5791b24e14999ac127e78"
+  },
+  "issuesList.useComfortableCards": {
+    "en": "Use comfortable cards",
+    "zh-CN": "使用舒适卡片",
+    "reviewedEnglishHash": "0b8829c58f086ac80039be4aad6fcdffc34448fdee7b9c63cdfdfe737492a08c"
+  },
+  "issuesList.useCompactCards": {
+    "en": "Use compact cards",
+    "zh-CN": "使用紧凑卡片",
+    "reviewedEnglishHash": "1e39fb16f1bfe1076c2ff83e7af5af58fbdf9d1c36afd91de8b387421385f2c9"
+  },
+  "issuesList.waitingOnBlockers": {
+    "en": "Waiting on blockers",
+    "zh-CN": "等待阻塞项",
+    "reviewedEnglishHash": "65f8a4c52b9702c5074ae10d0096ac959a74f4a37006bca76de7df3d1866e644"
+  }
+}

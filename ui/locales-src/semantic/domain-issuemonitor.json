@@ -1,0 +1,12 @@
+{
+  "issueMonitor.nextCheck": {
+    "en": "Next check {{date}} ({{offset}})",
+    "zh-CN": "下次检查 {{date}}（{{offset}}）",
+    "reviewedEnglishHash": "ae7e2cf2a29ddd1a01c86760db810ab0b9505d52d965ead1e1ead7037b0972c8"
+  },
+  "issueMonitor.scheduled": {
+    "en": "Monitor scheduled",
+    "zh-CN": "监控已计划",
+    "reviewedEnglishHash": "f22599fb34ec67c4e5e8fb472a2673e68e6b054ed2996196aa05a08696456386"
+  }
+}

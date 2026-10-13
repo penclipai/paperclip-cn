@@ -1,0 +1,57 @@
+{
+  "routineRun.agentRequired": {
+    "en": "Agent *",
+    "zh-CN": "智能体 *",
+    "reviewedEnglishHash": "1193d8daea292c186054794b22b78809f9ca0535a0d90073bcc14f176041e975"
+  },
+  "routineRun.chooseValue": {
+    "en": "Choose a value",
+    "zh-CN": "选择一个值",
+    "reviewedEnglishHash": "c039634cb4cc25abe57177a50cecfb13c0204b8451a2919cebd811ae07271601"
+  },
+  "routineRun.chooseWorkspaceBeforeRunning": {
+    "en": "Choose an existing workspace before running.",
+    "zh-CN": "请先选择一个现有工作区，再运行。",
+    "reviewedEnglishHash": "ecc98732b69e8eb5d57fa1252227c0c0eea8f25b3cbaf4bcc765762ce67b1a15"
+  },
+  "routineRun.defaultAgentRequired": {
+    "en": "Default agent required for this run.",
+    "zh-CN": "本次运行需要默认智能体。",
+    "reviewedEnglishHash": "b0d7683fc7268fbd248d2e718d1920b97e98a9b319332201f056c13fcce894ed"
+  },
+  "routineRun.description": {
+    "en": "Choose the agent and optional project for this one run. Routine defaults are prefilled and won't be changed.",
+    "zh-CN": "为这次运行选择智能体和可选项目。例行任务默认值会预先填入，且不会被修改。",
+    "reviewedEnglishHash": "244cc10d36a7ce3d3e2cad0337e3e27e71c0f38a2979214828f518578f12ed52"
+  },
+  "routineRun.missingRequired": {
+    "en": "Missing: {{fields}}",
+    "zh-CN": "缺少：{{fields}}",
+    "reviewedEnglishHash": "8294f1a8a152a475d13410fb2b06cf9b72d4af7ad2db7abd66887e30ef98178f"
+  },
+  "routineRun.noAgentsFound": {
+    "en": "No agents found.",
+    "zh-CN": "未找到智能体。",
+    "reviewedEnglishHash": "61666542b1caa1e26dcc1b3594c7520ea98cc285effe5884ed74684563662205"
+  },
+  "routineRun.noValue": {
+    "en": "No value",
+    "zh-CN": "无值",
+    "reviewedEnglishHash": "4fd0272a5628ce4f09730ecebb720da9009d13fa5582dbce46a96b2b9b9a2a8d"
+  },
+  "routineRun.searchAgents": {
+    "en": "Search agents...",
+    "zh-CN": "搜索智能体...",
+    "reviewedEnglishHash": "32f4468b0b6f9410941a7940ea86374fa42a3e6846896c361c465680dca0c7ba"
+  },
+  "routineRun.selectAgent": {
+    "en": "Select an agent",
+    "zh-CN": "选择智能体",
+    "reviewedEnglishHash": "7d4cf06874635248d725bcf641438f58529d029c16d9c2a88cdb5aee88142b1d"
+  },
+  "routineRun.title": {
+    "en": "Run routine",
+    "zh-CN": "运行例行任务",
+    "reviewedEnglishHash": "1f1580e15ddc9c90d8ea691030d883c06096809be6565be8a31947ec7edf3c4c"
+  }
+}

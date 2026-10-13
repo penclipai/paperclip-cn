@@ -1,0 +1,12 @@
+{
+  "issueReferences.added": {
+    "en": "Added references",
+    "zh-CN": "新增引用",
+    "reviewedEnglishHash": "add693ab1d659a0fe27cd4b6405540f0f364c2e397eed7064a1db64040e270fb"
+  },
+  "issueReferences.removed": {
+    "en": "Removed references",
+    "zh-CN": "移除引用",
+    "reviewedEnglishHash": "2a89fc590d30985370fcd85289e7ecb2cdacfd06789e2b011ba8d09d27a34537"
+  }
+}

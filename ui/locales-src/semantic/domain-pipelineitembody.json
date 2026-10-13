@@ -1,0 +1,72 @@
+{
+  "pipelineItemBody.addBody": {
+    "en": "Add the item body",
+    "zh-CN": "添加条目正文",
+    "reviewedEnglishHash": "a4fe5ab656fe62380741c80f56bbe70bda1a305f93c9ff8d5b39d4dc3c90b1e8"
+  },
+  "pipelineItemBody.bodyChangedElsewhere": {
+    "en": "Body changed elsewhere",
+    "zh-CN": "正文已在其他位置变化",
+    "reviewedEnglishHash": "1602befac10333d602c1fff7bcf6139cdca4f27680b89a8b8c185a0c0ce10a82"
+  },
+  "pipelineItemBody.bodyChangedElsewhereDescription": {
+    "en": "This item body was updated by someone else. Reloaded the latest - re-apply your edit.",
+    "zh-CN": "此条目正文已被其他人更新。已重新加载最新版本，请重新应用你的编辑。",
+    "reviewedEnglishHash": "e90850c2b1fbc868107ccebde8d3e87595f480b0aa781b57499a9aa568ec425d"
+  },
+  "pipelineItemBody.documentLabel": {
+    "en": "Item body document",
+    "zh-CN": "条目正文文档",
+    "reviewedEnglishHash": "222be82e4d605ca72c6e60ae56eebd0e58ee0a93302692ec960123a70f6b98b5"
+  },
+  "pipelineItemBody.editingUnsaved": {
+    "en": "● Editing · unsaved",
+    "zh-CN": "● 正在编辑 · 未保存",
+    "reviewedEnglishHash": "2260483e5fdfdba7b970e0375aa7f19b52b03e5035d94a20dfe898d3a135aeae"
+  },
+  "pipelineItemBody.emptyMessage": {
+    "en": "No body yet. Capture the item's details here.",
+    "zh-CN": "还没有正文。在这里记录此条目的详细信息。",
+    "reviewedEnglishHash": "20155a77f3afcc28478ef30cd38f9f44dc1df137104d52826fe4177b19c4fa95"
+  },
+  "pipelineItemBody.historicalPreviewNotice": {
+    "en": "Historical preview. New comments are disabled while previewing a historical revision. Restoring it creates a new latest revision and keeps history append-only.",
+    "zh-CN": "历史版本预览。预览历史修订时不能新增评论。恢复后会创建一个新的最新修订，并保持历史只追加不覆盖。",
+    "reviewedEnglishHash": "1ea58997af151d4858724a56a244af962212a202b2f59da5f1ee9ab35339afd3"
+  },
+  "pipelineItemBody.itemBody": {
+    "en": "Item body",
+    "zh-CN": "条目正文",
+    "reviewedEnglishHash": "256f4ed7fb87c60501486aaa9963633815c0631a274ac2862f9799944bb90a9c"
+  },
+  "pipelineItemBody.markdownPlaceholder": {
+    "en": "Write the item body in Markdown...",
+    "zh-CN": "用 Markdown 编写条目正文...",
+    "reviewedEnglishHash": "a714cf7b51215d60cd90dca9f20a5523f47aa216cc5777bdc0068cbb7078624f"
+  },
+  "pipelineItemBody.restoreRevisionFailed": {
+    "en": "Could not restore the revision",
+    "zh-CN": "无法恢复此修订",
+    "reviewedEnglishHash": "c448c28e03711ce8bce1fee3213160bcd7e50d1f5b75b4afea17d3b58e7e61b1"
+  },
+  "pipelineItemBody.revisionRestored": {
+    "en": "Revision restored",
+    "zh-CN": "修订已恢复",
+    "reviewedEnglishHash": "96cc9071419bf42caf8b27f453da7399fb3b50c55bd2d46bffdff87533a996d6"
+  },
+  "pipelineItemBody.saveBodyFailed": {
+    "en": "Could not save the body",
+    "zh-CN": "无法保存正文",
+    "reviewedEnglishHash": "e0a85d778b0183750e1748423cee246fd3420e6796bcbad26b0f7c849860b1b1"
+  },
+  "pipelineItemBody.saveHint": {
+    "en": "Saving creates rev {{revision}} · ⌘↵ to save · Esc to cancel",
+    "zh-CN": "保存会创建 rev {{revision}} · ⌘↵ 保存 · Esc 取消",
+    "reviewedEnglishHash": "6a60b14b064a45db74276264bd30ff753c786de47d9d7a2365dd9d6546ac8c25"
+  },
+  "pipelineItemBody.startConversationFailed": {
+    "en": "Could not start the conversation",
+    "zh-CN": "无法开始会话",
+    "reviewedEnglishHash": "84ffc7a8c34f2803e465bd04e9232a2f880cae758877de3e3a663b3d4e292f10"
+  }
+}

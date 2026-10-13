@@ -1,0 +1,232 @@
+{
+  "routines.advancedDeliveryHint": {
+    "en": "Keep policy controls secondary to the work definition.",
+    "zh-CN": "让策略控制保持为工作定义之外的次要设置。",
+    "reviewedEnglishHash": "264481cebdc6ae5082e3042d54da4b00a7696c21bccc96cdbaab2cbc694ef15a"
+  },
+  "routines.advancedDeliverySettings": {
+    "en": "Advanced delivery settings",
+    "zh-CN": "高级投递设置",
+    "reviewedEnglishHash": "6fbfb2fa312aaddb3a69332d03dec9a22ebc32c10e95fa4398f619836e953fe7"
+  },
+  "routines.builtInRoutines": {
+    "en": "Built-in routines",
+    "zh-CN": "内置例行任务",
+    "reviewedEnglishHash": "f81d47affaac37b1b6114163ee930271d8a55a34b1e5d3b5eb9723482d201cd0"
+  },
+  "routines.builtInTitle.refreshStaleSummarySlots": {
+    "en": "Refresh stale summary slots",
+    "zh-CN": "刷新过期的状态摘要",
+    "reviewedEnglishHash": "cb46c76f728caecee10fa6831b53f10f2ec632c8665f3b6820de3a5fb66929fa"
+  },
+  "routines.builtInTitle.reviewRecentAgentTrajectories": {
+    "en": "Review recent agent trajectories for coaching proposals",
+    "zh-CN": "审查近期智能体轨迹并提出辅导建议",
+    "reviewedEnglishHash": "445466627eec7bb28df70dbbbc6c07182cafccb3332cb5a63f59c6b7eeffbef7"
+  },
+  "routines.count": {
+    "en": "{{count}} routine",
+    "zh-CN": "{{count}} 个例行任务",
+    "reviewedEnglishHash": "eb6bb92719189a7d75d80acc400e7f66a718d1d74e257338f40a516a203b20a6"
+  },
+  "routines.count_other": {
+    "en": "{{count}} routines",
+    "zh-CN": "{{count}} 个例行任务",
+    "reviewedEnglishHash": "2482cb25b7d84a60909f567603292306cfbf9a4a50f8edddc2aa9d10ec11c733"
+  },
+  "routines.create": {
+    "en": "Create routine",
+    "zh-CN": "创建例行任务",
+    "reviewedEnglishHash": "f0fe070861695af8b64df8f119cf857fa197c39086f9f08a4840792dcd48f1cf"
+  },
+  "routines.createDraftSuccess": {
+    "en": "Draft saved. Add a default agent before enabling automation.",
+    "zh-CN": "草稿已保存。启用自动化前请先添加默认智能体。",
+    "reviewedEnglishHash": "ed85f399febe3651f5fbcb42aec2d0f0714733bbf875b3892cce17df09e75af2"
+  },
+  "routines.createFailed": {
+    "en": "Failed to create routine",
+    "zh-CN": "创建例行任务失败",
+    "reviewedEnglishHash": "7374cba284beb86a7a000045f2547a0e3210bc60c73ea51f58e55199bd0a0d2f"
+  },
+  "routines.createSuccess": {
+    "en": "Routine created",
+    "zh-CN": "例行任务已创建",
+    "reviewedEnglishHash": "73aa781897d2168d2e5b33bbb98c06a8b215c54b99c023e6a63b64396169b298"
+  },
+  "routines.creating": {
+    "en": "Creating...",
+    "zh-CN": "创建中...",
+    "reviewedEnglishHash": "def70944c9bb9c3b77129e6fc48cfcd043031a86ae747060a3e97985d254c4f2"
+  },
+  "routines.customRoutines": {
+    "en": "Custom routines",
+    "zh-CN": "自定义例行任务",
+    "reviewedEnglishHash": "9454c52303759a42461b30837720700a137e6dde8cbc6422ef014ba01d08d24d"
+  },
+  "routines.defaultAgentRequired": {
+    "en": "Default agent required",
+    "zh-CN": "需要默认智能体",
+    "reviewedEnglishHash": "2761f376d7aad0e897852801b16fb159cb217d08bba0aa43819ee61011a02545"
+  },
+  "routines.defaultAgentRequiredBody": {
+    "en": "Set a default agent before enabling routine automation.",
+    "zh-CN": "启用例行任务自动化前，请先设置默认智能体。",
+    "reviewedEnglishHash": "1885fd9975c55136f7394376064cadd8d673119e715e87c3552d174a755580dd"
+  },
+  "routines.description": {
+    "en": "Recurring work definitions that materialize into auditable execution tasks.",
+    "zh-CN": "将周期性工作定义转化为可审计的执行任务。",
+    "reviewedEnglishHash": "2b8bf160a00c364577d550473c7fe51c0300e5495f33b2691b347f1626aeacb8"
+  },
+  "routines.group": {
+    "en": "Group",
+    "zh-CN": "分组",
+    "reviewedEnglishHash": "34ca0e76608842ff3e7d924a455a396a82f471052c15e3f2ed7f090ac702e5c1"
+  },
+  "routines.groupBy.assignee": {
+    "en": "Agent",
+    "zh-CN": "智能体",
+    "reviewedEnglishHash": "11b39c93777e8f1f3983bdba7c72b22fe68cfea20c677e9de53e17cb7dbfb19f"
+  },
+  "routines.groupBy.folder": {
+    "en": "Folder",
+    "zh-CN": "文件夹",
+    "reviewedEnglishHash": "74ccd43303847f2655300641a934959cdb11689ce171aa0f00faa92917fbd340"
+  },
+  "routines.groupBy.none": {
+    "en": "None",
+    "zh-CN": "不分组",
+    "reviewedEnglishHash": "dc937b59892604f5a86ac96936cd7ff09e25f18ae6b758e8014a24c7fa039e91"
+  },
+  "routines.groupBy.project": {
+    "en": "Project",
+    "zh-CN": "项目",
+    "reviewedEnglishHash": "985959785319747668373cc6dee294b11db782b03cdd90a2851fbdc0637c6b7b"
+  },
+  "routines.instructionsPlaceholder": {
+    "en": "Add instructions...",
+    "zh-CN": "添加指令...",
+    "reviewedEnglishHash": "d49e19c5685d2f96c0d5183139ae026295b48095b4e78dcc5d8fc735f5b8157b"
+  },
+  "routines.loadFailed": {
+    "en": "Failed to load routines",
+    "zh-CN": "加载例行任务失败",
+    "reviewedEnglishHash": "8917291223f82f4828b39847ef6c20ffb4f84f7ad6e9672a20613f336fe0564a"
+  },
+  "routines.newRoutine": {
+    "en": "New routine",
+    "zh-CN": "新建例行任务",
+    "reviewedEnglishHash": "d5e520f554b1000e47dd32930855b555ba9fac79d86ca76a7d7542ebfcdaf398"
+  },
+  "routines.noActiveRoutines": {
+    "en": "No active routines. Use Create routine to define the first recurring workflow.",
+    "zh-CN": "暂无启用的例行任务。使用“新建例行任务”定义第一个重复工作流。",
+    "reviewedEnglishHash": "7ba430dfc06859c540c6dbab7b1ebab14947c80fe1348e95dec8736b7866c732"
+  },
+  "routines.noProject": {
+    "en": "No project",
+    "zh-CN": "无项目",
+    "reviewedEnglishHash": "f34c2be0d1c5f5622eb03be1f67e13dee2ce3dbb71201d909e76a761c29d8bcb"
+  },
+  "routines.noResponsibleFound": {
+    "en": "No responsible found.",
+    "zh-CN": "未找到责任人。",
+    "reviewedEnglishHash": "045a8ffe4067d6d274a98c9df98f861c38048d1158dc5d2080fefb05bea81936"
+  },
+  "routines.pageTitle": {
+    "en": "Routines",
+    "zh-CN": "例行任务",
+    "reviewedEnglishHash": "61b7bb44e2b47b7c0ccaccff4872fdcf3e298345d0f003ea4bf54e8c84e2a889"
+  },
+  "routines.postCreateHint": {
+    "en": "Add the first trigger to turn it into a live workflow.",
+    "zh-CN": "先添加第一个触发器，将它变成可执行的工作流。",
+    "reviewedEnglishHash": "0dd3f88980b42a24b2a944234a586c5b0bc9a70e1c0109cfe13d1116815ab720"
+  },
+  "routines.project": {
+    "en": "Project",
+    "zh-CN": "项目",
+    "reviewedEnglishHash": "985959785319747668373cc6dee294b11db782b03cdd90a2851fbdc0637c6b7b"
+  },
+  "routines.recentRuns": {
+    "en": "Recent Runs",
+    "zh-CN": "最近运行",
+    "reviewedEnglishHash": "53972e864229c7cc77a4d8fa1a7127fcf98c7dbc383fc9482b4a5afe10dfcfcb"
+  },
+  "routines.responsible": {
+    "en": "Responsible",
+    "zh-CN": "责任人",
+    "reviewedEnglishHash": "bc110a6d0722098ac63e93b5fd6222afe478819ec5a6f4ce2557330684eb6264"
+  },
+  "routines.runFailed": {
+    "en": "Routine run failed",
+    "zh-CN": "例行任务运行失败",
+    "reviewedEnglishHash": "296c7ca6e9b82b39e4ddc83e5a9ab87dbe6d1f041045a313b739d1e846076425"
+  },
+  "routines.selectCompany": {
+    "en": "Select a company to view routines.",
+    "zh-CN": "选择一家公司以查看例行任务。",
+    "reviewedEnglishHash": "3418ac74952c01dbdbec6770241098b499ec59255b536d5123bc488d64371a01"
+  },
+  "routines.selectRoutine": {
+    "en": "Select {{name}}",
+    "zh-CN": "选择 {{name}}",
+    "reviewedEnglishHash": "04d3c4b2571894ecd22cd7101bf513f57c7342f47a991fcac689fb94bc61393f"
+  },
+  "routines.sort": {
+    "en": "Sort",
+    "zh-CN": "排序",
+    "reviewedEnglishHash": "bec69036aa27e7fab7d44cad3909477b76631c39ba46fd7841ea71aae7e5a735"
+  },
+  "routines.sortField.created": {
+    "en": "Created",
+    "zh-CN": "创建时间",
+    "reviewedEnglishHash": "d70b9e24bca26b409b9458ceca6c9e5c2b5c3171c37ff050c6f6a0d7a4420d2a"
+  },
+  "routines.sortField.lastRun": {
+    "en": "Last run",
+    "zh-CN": "上次运行",
+    "reviewedEnglishHash": "512a48218ba2179153629504206e7d54a7767e19ee2aa21574a7c614e5c92537"
+  },
+  "routines.sortField.title": {
+    "en": "Title",
+    "zh-CN": "标题",
+    "reviewedEnglishHash": "7e8cd2056da73a7fefb6cd91f4e5d199d08d9058c517b9a2476b1b520324d674"
+  },
+  "routines.sortField.updated": {
+    "en": "Updated",
+    "zh-CN": "更新时间",
+    "reviewedEnglishHash": "3a5ecca188c0579c00ee24cf3cab21bd02c15a06f7a70cc8e0a8ff2381dcbbfd"
+  },
+  "routines.titlePlaceholder": {
+    "en": "Routine title",
+    "zh-CN": "例行任务标题",
+    "reviewedEnglishHash": "26d0f82a0da1d5efee4075b412d5e99ed6873b18adf56af7d40b8a38f221026e"
+  },
+  "routines.unassigned": {
+    "en": "Unassigned",
+    "zh-CN": "未分配",
+    "reviewedEnglishHash": "14d33bd014e6b4e7c3590a8a12e1ec4951d777593d6d6aef9ebe5faac9c8dac0"
+  },
+  "routines.unknownAssignee": {
+    "en": "Unknown agent",
+    "zh-CN": "未知智能体",
+    "reviewedEnglishHash": "342b4ab21e2eb31aa0d820359715d027c0e1cde4599ac21394c0e4009bd8aed0"
+  },
+  "routines.unknownFolder": {
+    "en": "Unknown folder",
+    "zh-CN": "未知文件夹",
+    "reviewedEnglishHash": "29223804c8c16938498c18132fd092d6eabcf6c5b38fbc9c2ce05a8f60279ab3"
+  },
+  "routines.unknownProject": {
+    "en": "Unknown project",
+    "zh-CN": "未知项目",
+    "reviewedEnglishHash": "ed51cfeff0d96984b5a5fd0be3bb17df29251b7b41b720a5d11964e1d336ac7f"
+  },
+  "routines.updateFailed": {
+    "en": "Failed to update routine",
+    "zh-CN": "更新例行任务失败",
+    "reviewedEnglishHash": "658553fd32ab2e2aef302319570a2b007c7bf33405ddc48685e214a1a1251fde"
+  }
+}

@@ -4,3 +4,5 @@
 announcements/** text=auto eol=lf
 patches/*.patch text eol=lf whitespace=-space-before-tab
 packages/paperclip-runner/** text=auto eol=lf
+ui/locales-src/**/*.json text eol=lf
+ui/public/locales/*/common.json text eol=lf

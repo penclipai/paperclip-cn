@@ -1,0 +1,182 @@
+{
+  "instanceGeneralSettings.authenticatedPrivateDescription": {
+    "en": "Authenticated private mode requires sign-in and is intended for LAN, VPN, or other private-network deployments.",
+    "zh-CN": "认证私有模式要求登录，适合局域网、VPN 或其他私有网络部署场景。",
+    "reviewedEnglishHash": "ae84d6535ad53634a6ef820c2a6ec1cf4edecfaa51326c3df71b4ebae4546431"
+  },
+  "instanceGeneralSettings.authenticatedPublicDescription": {
+    "en": "Authenticated public mode requires sign-in for board access and is intended for public URLs.",
+    "zh-CN": "认证公开模式要求登录后才能访问董事会，适合公开 URL 场景。",
+    "reviewedEnglishHash": "7fbabbdad41d0d381415ecd8723e839f381b9f96f172d12ffaa0f23c9897eeb6"
+  },
+  "instanceGeneralSettings.backupRetentionDaily": {
+    "en": "Daily",
+    "zh-CN": "每日",
+    "reviewedEnglishHash": "b36c2611dcdfa190ede846948d9aba8f39581de0177cbd98586506019f979b75"
+  },
+  "instanceGeneralSettings.backupRetentionDaysCount": {
+    "en": "{{count}} days",
+    "zh-CN": "保留 {{count}} 天",
+    "reviewedEnglishHash": "ca4c4a68ebc951cc38bffb8522bc8a7a57554127b153533cbf380fa0c524d220"
+  },
+  "instanceGeneralSettings.backupRetentionDescription": {
+    "en": "Configure how long to keep automatic database backups at each tier. Daily backups are kept in full, then thinned to one per week and one per month. Backups are compressed with gzip.",
+    "zh-CN": "配置自动数据库备份在各层级的保留时长。每日备份会完整保留，然后逐步压缩为每周一份和每月一份。备份会使用 gzip 压缩。",
+    "reviewedEnglishHash": "12494c6aa29fe498261968b5f3766cdd39e40ea1004bc9237397ac4e1e8923ae"
+  },
+  "instanceGeneralSettings.backupRetentionMonthly": {
+    "en": "Monthly",
+    "zh-CN": "每月",
+    "reviewedEnglishHash": "9b11f6b707d2a03e0265465f32520bc1bc213de121de958539662d0ec1453fcb"
+  },
+  "instanceGeneralSettings.backupRetentionMonthsCount": {
+    "en": "{{count}} months",
+    "zh-CN": "保留 {{count}} 个月",
+    "reviewedEnglishHash": "c3efb7db2987102dadde329c0f88c7bb5ce3f8d5ed0621d890fe1e9428db3795"
+  },
+  "instanceGeneralSettings.backupRetentionTitle": {
+    "en": "Backup retention",
+    "zh-CN": "备份保留策略",
+    "reviewedEnglishHash": "2bb27baba5e428ad15cce03fa2cc36801b7f49eb66fe15e0abbeae13b9d3d7bd"
+  },
+  "instanceGeneralSettings.backupRetentionWeekly": {
+    "en": "Weekly",
+    "zh-CN": "每周",
+    "reviewedEnglishHash": "2975132481a7a6957cfa95055d04e706f21f1a613f448d0a17463f2eacca4636"
+  },
+  "instanceGeneralSettings.backupRetentionWeeksCount": {
+    "en": "{{count}} weeks",
+    "zh-CN": "保留 {{count}} 周",
+    "reviewedEnglishHash": "3d86e46b4cf5cfe5b7ea4e2e4ca3d657aadf61c4860e875680ddffff94c69b42"
+  },
+  "instanceGeneralSettings.feedbackSharingAlwaysAllowDescription": {
+    "en": "Share voted AI outputs automatically.",
+    "zh-CN": "自动共享已投票的 AI 输出。",
+    "reviewedEnglishHash": "af8b81ffe6bec52b50ab96fa5f93112ec2637db5ec937099716e4cef78918889"
+  },
+  "instanceGeneralSettings.feedbackSharingDescription": {
+    "en": "Control whether thumbs up and thumbs down votes can send the voted AI output to Paperclip Labs. Votes are always saved locally.",
+    "zh-CN": "控制点赞和点踩时，相关 AI 输出是否可以发送给 Paperclip Labs。投票结果始终会保存在本地。",
+    "reviewedEnglishHash": "60f0f7e1ee2086e08337359901b437511ff9f25115c46efe9e9afe736d34725e"
+  },
+  "instanceGeneralSettings.feedbackSharingDontAllowDescription": {
+    "en": "Keep voted AI outputs local only.",
+    "zh-CN": "仅在本地保留已投票的 AI 输出。",
+    "reviewedEnglishHash": "512de6fe57833aa35b86a02f5bcfa9d602123fb76d323315d65d015ae27ae3da"
+  },
+  "instanceGeneralSettings.feedbackSharingPromptNotice": {
+    "en": "No default is saved yet. The next thumbs up or thumbs down choice will ask once and then save the answer here.",
+    "zh-CN": "当前还没有保存默认选择。下一次点赞或点踩时会询问一次，并把结果保存到这里。",
+    "reviewedEnglishHash": "c5be824192ff30a898f930c1e3c388b7b6d0540c1d3fea1eb1369a6c47f26b5a"
+  },
+  "instanceGeneralSettings.feedbackSharingRetestExplanation": {
+    "en": "Unset and \"prompt\" both mean no default has been chosen yet.",
+    "zh-CN": "未设置和 \"prompt\" 都表示还没有选定默认值。",
+    "reviewedEnglishHash": "958b811eb6a7fb65278d56007e5f49785d2fa795cd9edcaeea9f76de98cbd2ed"
+  },
+  "instanceGeneralSettings.feedbackSharingRetestMiddle": {
+    "en": "key from the",
+    "zh-CN": "键，并从这个实例的",
+    "reviewedEnglishHash": "fb6361789e753031869a0ae26ee28e9503b1c2d5be50da38fc72d9b0d58c5e3c"
+  },
+  "instanceGeneralSettings.feedbackSharingRetestPrefix": {
+    "en": "To retest the first-use prompt in local dev, remove the",
+    "zh-CN": "如果你想在本地开发里重新测试首次提示，请删除",
+    "reviewedEnglishHash": "f06fed6df27099d644bd30751e823fd8162bd42c8adba000c81f0ea36587bd86"
+  },
+  "instanceGeneralSettings.feedbackSharingRetestSuffix": {
+    "en": "JSON row for this instance, or set it back to",
+    "zh-CN": "JSON 记录中对应的值，或者把它重新设为",
+    "reviewedEnglishHash": "51f2c1774abc449a17bdb5d71a8bf9e7d6edb4789500a5a75f4ce4badb38efc8"
+  },
+  "instanceGeneralSettings.feedbackSharingTerms": {
+    "en": "Read our terms of service",
+    "zh-CN": "阅读服务条款",
+    "reviewedEnglishHash": "50aceeb579a2002a7c4da4f9eaac3510a49694f665144d883def069e6251643e"
+  },
+  "instanceGeneralSettings.feedbackSharingTitle": {
+    "en": "AI feedback sharing",
+    "zh-CN": "AI 反馈共享",
+    "reviewedEnglishHash": "6925c1da7288469fdaa0bc802dd8b3986eaaadb57d90905d42fbe12df93c87c2"
+  },
+  "instanceGeneralSettings.keyboardShortcutsDescription": {
+    "en": "Enable app keyboard shortcuts, including inbox navigation and global shortcuts like creating issues or toggling panels. This is off by default.",
+    "zh-CN": "启用应用内键盘快捷键，包括收件箱导航，以及创建任务、切换面板等全局快捷操作。此选项默认关闭。",
+    "reviewedEnglishHash": "725aad9bfe215c2a01b1a368cb820cd7b22c895039a78f676b2729ff013b2fc9"
+  },
+  "instanceGeneralSettings.keyboardShortcutsTitle": {
+    "en": "Keyboard shortcuts",
+    "zh-CN": "键盘快捷键",
+    "reviewedEnglishHash": "e9bef0b0f3c25e6eaf3a754817a8b4f62e1c8473cb2be3e190975926dbf72d6f"
+  },
+  "instanceGeneralSettings.keyboardShortcutsToggle": {
+    "en": "Toggle keyboard shortcuts",
+    "zh-CN": "切换键盘快捷键",
+    "reviewedEnglishHash": "6980780a77d8dbcde2ecbf90c2d0b536e4899a64736b85a32988c9ae5fa03542"
+  },
+  "instanceGeneralSettings.localTrustedDescription": {
+    "en": "Local trusted mode is optimized for a local operator. Browser requests run as local board context and no sign-in is required.",
+    "zh-CN": "本地可信模式针对本机操作者优化。浏览器请求会以本地董事会上下文运行，不需要登录。",
+    "reviewedEnglishHash": "d49be8c985f5e9fbc0380e00f845516242515c2809662a3ca7758f1e2dd5757e"
+  },
+  "instanceGeneralSettings.retentionDays_one": {
+    "en": "{{count}} day",
+    "zh-CN": "{{count}} 天",
+    "reviewedEnglishHash": "02b4fc598525057abd522bb7fb34807d9b537508448292bb1112f7fe692ce64b"
+  },
+  "instanceGeneralSettings.retentionDays_other": {
+    "en": "{{count}} days",
+    "zh-CN": "{{count}} 天",
+    "reviewedEnglishHash": "ca4c4a68ebc951cc38bffb8522bc8a7a57554127b153533cbf380fa0c524d220"
+  },
+  "instanceGeneralSettings.retentionMonths_one": {
+    "en": "{{count}} month",
+    "zh-CN": "{{count}} 个月",
+    "reviewedEnglishHash": "6078fd581736fdcab90b51f95e0547b23986005b712ca49db7e4a09bcea7c63b"
+  },
+  "instanceGeneralSettings.retentionMonths_other": {
+    "en": "{{count}} months",
+    "zh-CN": "{{count}} 个月",
+    "reviewedEnglishHash": "c3efb7db2987102dadde329c0f88c7bb5ce3f8d5ed0621d890fe1e9428db3795"
+  },
+  "instanceGeneralSettings.retentionWeeks_one": {
+    "en": "{{count}} week",
+    "zh-CN": "{{count}} 周",
+    "reviewedEnglishHash": "7c1d4f18923e614b954fee8865a8edbc5399230190c45f89212e34278bc59a6e"
+  },
+  "instanceGeneralSettings.retentionWeeks_other": {
+    "en": "{{count}} weeks",
+    "zh-CN": "{{count}} 周",
+    "reviewedEnglishHash": "3d86e46b4cf5cfe5b7ea4e2e4ca3d657aadf61c4860e875680ddffff94c69b42"
+  },
+  "instanceGeneralSettings.runtimeDefaultLocaleDescription": {
+    "en": "Choose the default language for Paperclip runtime notes and agent-facing natural-language guidance when a wakeup is not tied to an explicit UI request. This does not change each operator's UI language preference.",
+    "zh-CN": "选择当唤醒请求没有显式 UI 语言时，Paperclip 运行时提示和面向智能体的自然语言说明默认使用的语言。这个设置不会改变每个操作者自己的 UI 语言偏好。",
+    "reviewedEnglishHash": "bb09e648505fcc03fea2d4492a5d0fbb447bb061d2e7ce109f4633a0a948d2a5"
+  },
+  "instanceGeneralSettings.runtimeDefaultLocaleEn": {
+    "en": "English",
+    "zh-CN": "英文",
+    "reviewedEnglishHash": "ba118bf7fc9c1aedc1edb28a0aa86e0b43b681f222af6616e13c43be87815b06"
+  },
+  "instanceGeneralSettings.runtimeDefaultLocaleEnDescription": {
+    "en": "Use English when a run starts without an explicit request locale.",
+    "zh-CN": "当一次运行在没有显式请求语言时，默认使用英文。",
+    "reviewedEnglishHash": "8e33c5bf8b9b22c8f2956e457f7d9ef5b3f8b8186dee07520fc38b64059b7ddd"
+  },
+  "instanceGeneralSettings.runtimeDefaultLocaleTitle": {
+    "en": "Runtime default language",
+    "zh-CN": "运行时默认语言",
+    "reviewedEnglishHash": "09ba09361237f3476c5af0106d9a1a2f3df5ceba5b5f689bc3792f9ba2933d6e"
+  },
+  "instanceGeneralSettings.runtimeDefaultLocaleZhCn": {
+    "en": "Simplified Chinese",
+    "zh-CN": "简体中文",
+    "reviewedEnglishHash": "d560cfcd35da08123cc256b6712e9973d7c8c0f178ef9796e951d865acd20ba9"
+  },
+  "instanceGeneralSettings.runtimeDefaultLocaleZhCnDescription": {
+    "en": "Use Simplified Chinese when a run starts without an explicit request locale.",
+    "zh-CN": "当一次运行在没有显式请求语言时，默认使用简体中文。",
+    "reviewedEnglishHash": "d600112d614a8a05eaa50fbea52e1b56cbc90441ebeb90c323cd5db48cb5f6cf"
+  }
+}

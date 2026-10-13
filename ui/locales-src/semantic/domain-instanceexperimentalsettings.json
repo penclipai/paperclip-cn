@@ -1,0 +1,637 @@
+{
+  "instanceExperimentalSettings.appsDescription": {
+    "en": "Show the Apps navigation and allow access to app connections, gateways, and advanced app tooling.",
+    "zh-CN": "显示“应用”导航，并允许访问应用连接、网关和高级应用工具。",
+    "reviewedEnglishHash": "8a66a441859de9364878516a02e4a95f1d7edc59e49a97cacad502c74bc0969a"
+  },
+  "instanceExperimentalSettings.appsTitle": {
+    "en": "Apps",
+    "zh-CN": "应用",
+    "reviewedEnglishHash": "89dd748442c194857825848e1500abbbc5f52fb067ad27fb05dc9fb23eebba3b"
+  },
+  "instanceExperimentalSettings.appsToggle": {
+    "en": "Toggle apps experimental setting",
+    "zh-CN": "切换“应用”实验功能",
+    "reviewedEnglishHash": "164dcf0dfbaf9bc0ea194c40eea9796a34c4331183cf54545487e7b56989c19f"
+  },
+  "instanceExperimentalSettings.autoCreateRecoveryTasksDescription": {
+    "en": "Automatically create recovery tasks when work needs follow-up.",
+    "zh-CN": "当工作需要跟进时自动创建恢复任务。",
+    "reviewedEnglishHash": "3d902c82353c6a3771a029ae1f8ab8d6b7c92816d23636d43003f05746f2a7b5"
+  },
+  "instanceExperimentalSettings.autoCreateRecoveryTasksTitle": {
+    "en": "Auto-create recovery tasks",
+    "zh-CN": "自动创建恢复任务",
+    "reviewedEnglishHash": "e66eeaa012ca0eebe3ba69c39980d431ba76c3fcd4e082a29b3542553ad78796"
+  },
+  "instanceExperimentalSettings.autoCreateRecoveryTasksToggle": {
+    "en": "Auto-create recovery tasks",
+    "zh-CN": "自动创建恢复任务",
+    "reviewedEnglishHash": "e66eeaa012ca0eebe3ba69c39980d431ba76c3fcd4e082a29b3542553ad78796"
+  },
+  "instanceExperimentalSettings.autoRecoveryAria": {
+    "en": "Toggle task graph liveness auto-recovery",
+    "zh-CN": "切换任务图存活性自动恢复",
+    "reviewedEnglishHash": "0ae3609a5ad92b99e4b9347a8c65d4ae84de3343c102ea8da5060aa43b2da6f3"
+  },
+  "instanceExperimentalSettings.autoRecoveryDescription": {
+    "en": "Let the heartbeat scheduler create recovery tasks for task dependency chains found inside the configured lookback window.",
+    "zh-CN": "允许心跳调度器为配置回溯窗口内发现的任务依赖链创建恢复任务。",
+    "reviewedEnglishHash": "7e7aaf60817c8f07390696360b7bf2be94ca251f633695a656be7420119355f5"
+  },
+  "instanceExperimentalSettings.autoRecoveryTitle": {
+    "en": "Auto-Create Recovery Tasks",
+    "zh-CN": "自动创建恢复任务",
+    "reviewedEnglishHash": "255a6c50e17c89cc6df3de9fe4dfa51bd501ae5347222596ea1546b863a3d81b"
+  },
+  "instanceExperimentalSettings.autoRestartDevServerDescription": {
+    "en": "Restart the dev server automatically when local runtime changes require it.",
+    "zh-CN": "当本地运行时变更需要重启时，自动重启开发服务器。",
+    "reviewedEnglishHash": "ba71a20495e6ecf7a7810b700f59da946572be6a6b67dbbfe3e06b8b7d18b436"
+  },
+  "instanceExperimentalSettings.autoRestartDevServerTitle": {
+    "en": "Auto restart dev server",
+    "zh-CN": "自动重启开发服务器",
+    "reviewedEnglishHash": "8ecaf4ca370a7d2126094d2f6f8a4ef65962dcb747e0e404cf8af261f5162b77"
+  },
+  "instanceExperimentalSettings.autoRestartDevServerToggle": {
+    "en": "Auto restart dev server",
+    "zh-CN": "自动重启开发服务器",
+    "reviewedEnglishHash": "8ecaf4ca370a7d2126094d2f6f8a4ef65962dcb747e0e404cf8af261f5162b77"
+  },
+  "instanceExperimentalSettings.betaSkillsDescription": {
+    "en": "Allow agents to pin beta releases of the Paperclip core skill. Disabling this returns every agent to the default live skill without removing saved pins.",
+    "zh-CN": "允许智能体固定 Paperclip 核心技能的 beta 版本。禁用后，所有智能体会恢复默认 live 技能，但不会删除已保存的固定版本。",
+    "reviewedEnglishHash": "a19f96229d5811092bc5a1f627b107679a5b3e3f2c05280504d64403021a80a6"
+  },
+  "instanceExperimentalSettings.betaSkillsTitle": {
+    "en": "Beta skills",
+    "zh-CN": "Beta 技能",
+    "reviewedEnglishHash": "f9c378a36b089aab277247a4fe838738db7293a2b4a845550ad9af4e430ecfe0"
+  },
+  "instanceExperimentalSettings.betaSkillsToggle": {
+    "en": "Toggle beta skills experimental setting",
+    "zh-CN": "切换 Beta 技能实验功能设置",
+    "reviewedEnglishHash": "18bcdc9204fc1763a77120c01da144fca5c7a5a7ed5ddef9eb16ee1e3bb02e7c"
+  },
+  "instanceExperimentalSettings.builtInAgentsDescription": {
+    "en": "Show Paperclip CN-managed built-in agent surfaces, including roster badges, the Built-in agents tab, and setup controls.",
+    "zh-CN": "显示由 Paperclip CN 管理的内置智能体界面，包括名单徽章、“内置智能体”标签页和设置控件。",
+    "reviewedEnglishHash": "4dc62963d8d4bb7aee0c77c3fdb9ce8e6af0283e174f88dd937a13dc0f17af46"
+  },
+  "instanceExperimentalSettings.builtInAgentsTitle": {
+    "en": "Built-in Agents",
+    "zh-CN": "内置智能体",
+    "reviewedEnglishHash": "d65ba4e58d87949d4984b94409c7882c164d61663e7f5deedb7e795b7ccaca71"
+  },
+  "instanceExperimentalSettings.builtInAgentsToggle": {
+    "en": "Toggle built-in agents experimental setting",
+    "zh-CN": "切换内置智能体实验功能设置",
+    "reviewedEnglishHash": "9a7e402262ad29ede477c3eb40fcd65d289d3719686167f83a79e086b2c5bf26"
+  },
+  "instanceExperimentalSettings.casesDescription": {
+    "en": "Durable work products such as blog posts and tweet storms that tasks create and iterate on. Adds the Cases tab and the agent case API.",
+    "zh-CN": "由任务创建并持续迭代的博客文章、推文串等持久工作成果。启用后会添加“案例”标签页和智能体案例 API。",
+    "reviewedEnglishHash": "d26785ea4ee0d3cffa26e0d3a29cd7bd6cff88b26346fede9d0557178aca2802"
+  },
+  "instanceExperimentalSettings.casesDisabledDescription": {
+    "en": "Turning Cases off hides the tab and blocks the case API; existing case data is kept.",
+    "zh-CN": "关闭案例功能会隐藏标签页并阻止案例 API，但会保留现有案例数据。",
+    "reviewedEnglishHash": "071a24195955a896fcdae8bf707e5be820858e38ce9ca406aef1401cd9d1546d"
+  },
+  "instanceExperimentalSettings.casesTitle": {
+    "en": "Cases",
+    "zh-CN": "案例",
+    "reviewedEnglishHash": "2249bd503ec47d7224fd147948bbd6fc286c2b653d5d46422989529ff31e4666"
+  },
+  "instanceExperimentalSettings.casesToggle": {
+    "en": "Toggle cases experimental setting",
+    "zh-CN": "切换案例实验功能设置",
+    "reviewedEnglishHash": "c1e5a9cc2dca15522dfcb99b271745103ee20637f23d3c0de14965797f8c3582"
+  },
+  "instanceExperimentalSettings.checkingRecoveryCandidates": {
+    "en": "Checking recovery candidates...",
+    "zh-CN": "正在检查恢复候选项...",
+    "reviewedEnglishHash": "112756a5c5758c6b18f97c9bb269f1a63e304b3d30383bfc464f5c35e2b141f0"
+  },
+  "instanceExperimentalSettings.classicTaskInterfaceDescription": {
+    "en": "Restores the previous task detail page: the page-level header with inline description editing, the plain comment thread, and the fixed Properties sidebar. Chat-only features — streaming activity folding, inline plan and question cards, and the three-mode composer — are unavailable in the classic view.",
+    "zh-CN": "恢复旧版任务详情页，包括页面级标题、描述内联编辑、普通评论讨论串和固定属性侧栏。经典视图不支持流式活动折叠、内联计划和问题卡片以及三模式编辑器等聊天专属功能。",
+    "reviewedEnglishHash": "9bfb92d86960ea5b077b7e950ff9637e0d2d4f7cd642c7061a563ec881e7269e"
+  },
+  "instanceExperimentalSettings.classicTaskInterfaceFootnote": {
+    "en": "Switching takes effect immediately. No task data is affected.",
+    "zh-CN": "切换会立即生效，不会影响任何任务数据。",
+    "reviewedEnglishHash": "0483cf02391d11194a5183f27eeea9a8cb197d3abf67b8e0bb65088584f2664d"
+  },
+  "instanceExperimentalSettings.classicTaskInterfaceTitle": {
+    "en": "Classic Task Interface",
+    "zh-CN": "经典任务界面",
+    "reviewedEnglishHash": "bc2e9527f09d202caaecd6f950734a2429214835deb6e318afb4fffb5d2507ee"
+  },
+  "instanceExperimentalSettings.classicTaskInterfaceToggle": {
+    "en": "Toggle classic task interface experimental setting",
+    "zh-CN": "切换经典任务界面实验功能设置",
+    "reviewedEnglishHash": "ee0ace71d8c4315b594a07cbea541ac83a9089be325d531ccba8af04aab9138c"
+  },
+  "instanceExperimentalSettings.cloudSyncDescription": {
+    "en": "Sync selected instance data with the cloud when enabled.",
+    "zh-CN": "启用后将选定的实例数据同步到云端。",
+    "reviewedEnglishHash": "f530c0965f530fcaad26e18aa6f3844e74bce3b4b75b300b5c800e90056133de"
+  },
+  "instanceExperimentalSettings.cloudSyncTitle": {
+    "en": "Cloud sync",
+    "zh-CN": "云同步",
+    "reviewedEnglishHash": "b656469b64fc80dad7a7faf7dff978a34a3e7c89eccb9340ea5204985112fc44"
+  },
+  "instanceExperimentalSettings.cloudSyncToggle": {
+    "en": "Cloud sync",
+    "zh-CN": "云同步",
+    "reviewedEnglishHash": "b656469b64fc80dad7a7faf7dff978a34a3e7c89eccb9340ea5204985112fc44"
+  },
+  "instanceExperimentalSettings.conferenceChatDescription": {
+    "en": "Adds a Conference Room — one chat where you and your whole team work together — plus the live activity feed and the redesigned onboarding. Also restyles task threads as chat bubbles. Turn off anytime to restore the classic UI.",
+    "zh-CN": "添加“会议室”，让你和整个团队在同一聊天中协作，并提供实时活动流和重新设计的引导流程。任务讨论串也会改为聊天气泡样式；可随时关闭以恢复经典界面。",
+    "reviewedEnglishHash": "85a01bb1573efac0a3df384bbaa872650893b6892bccb50cf469b6017b185c76"
+  },
+  "instanceExperimentalSettings.conferenceChatTitle": {
+    "en": "Conference Room Chat",
+    "zh-CN": "会议室聊天",
+    "reviewedEnglishHash": "d312c1e7609ca6df74c82d48a544727456a9bcf37a4cd31774c6c7c74e00dc71"
+  },
+  "instanceExperimentalSettings.conferenceChatToggle": {
+    "en": "Toggle conference room chat experimental setting",
+    "zh-CN": "切换会议室聊天实验功能设置",
+    "reviewedEnglishHash": "27a1027532b5cc6b9adf4f8b775fcaa12decefd2c65601646240984d6749e058"
+  },
+  "instanceExperimentalSettings.conferenceRoomDescription": {
+    "en": "Enable shared issue chat rooms for coordinated discussion.",
+    "zh-CN": "启用用于协同讨论的共享任务聊天室。",
+    "reviewedEnglishHash": "9e3c017aea3cb64112d4766707cd201530d982232c6087eda4dc7423ddbc3e40"
+  },
+  "instanceExperimentalSettings.conferenceRoomTitle": {
+    "en": "Conference room",
+    "zh-CN": "会议室",
+    "reviewedEnglishHash": "becafdd2da1c8e5058b18622e9ace97116e49c1bb72091a9c4aaf718be325a44"
+  },
+  "instanceExperimentalSettings.conferenceRoomToggle": {
+    "en": "Conference room",
+    "zh-CN": "会议室",
+    "reviewedEnglishHash": "becafdd2da1c8e5058b18622e9ace97116e49c1bb72091a9c4aaf718be325a44"
+  },
+  "instanceExperimentalSettings.confirmAutoRecovery": {
+    "en": "Enable automatic recovery task creation now?",
+    "zh-CN": "现在启用自动恢复任务创建吗？",
+    "reviewedEnglishHash": "013e77b7fb0ba97a869f01935ee06f1aa02f900f9ec2f81aade52761879a4d70"
+  },
+  "instanceExperimentalSettings.createRecoveryTasksFailed": {
+    "en": "Create recovery tasks failed",
+    "zh-CN": "创建恢复任务失败",
+    "reviewedEnglishHash": "1c3c8dbd32acc75b51804f37f0a86aba8fc783a17f4a450e0d5b2c3892df848c"
+  },
+  "instanceExperimentalSettings.currentWindow": {
+    "en": "Current window",
+    "zh-CN": "当前窗口",
+    "reviewedEnglishHash": "0cce3fe5b858b51df36ff739ed36777d8ff58ffd7aa035631574fb79b46a1109"
+  },
+  "instanceExperimentalSettings.decisionsDescription": {
+    "en": "Show the Decisions item in the main sidebar, the attention home that surfaces tasks awaiting your input, while the surface is still being evaluated.",
+    "zh-CN": "在主侧栏显示“决策”入口，用于集中呈现等待你输入的任务；此界面仍在评估中。",
+    "reviewedEnglishHash": "2ca7940274a881ae88d49e42693638485e021341f691348a4d333b7e20a072d4"
+  },
+  "instanceExperimentalSettings.decisionsTitle": {
+    "en": "Decisions",
+    "zh-CN": "决策",
+    "reviewedEnglishHash": "cfa6a08af3ed587100e647bd922ea291b8b542ee523cee20b10b416a2f8d7adc"
+  },
+  "instanceExperimentalSettings.decisionsToggle": {
+    "en": "Toggle decisions experimental setting",
+    "zh-CN": "切换决策实验功能设置",
+    "reviewedEnglishHash": "ecd6c0c1c4970b668afb873e123e9f2204aa93efd9ec0c50d081df3f080fcae8"
+  },
+  "instanceExperimentalSettings.enableAndCreate": {
+    "en": "Enable and create",
+    "zh-CN": "启用并创建",
+    "reviewedEnglishHash": "34967e54e9946d3c2bd3b0fba3651d199c79c6d01fd785cf9d596a3a50271713"
+  },
+  "instanceExperimentalSettings.enableOnly": {
+    "en": "Enable only",
+    "zh-CN": "仅启用",
+    "reviewedEnglishHash": "9c67b2400b5343e70ffbe85d72607fd6c5e8de95281a56128ea66051bca1474a"
+  },
+  "instanceExperimentalSettings.environmentsDescription": {
+    "en": "Enable company environment configuration and workspace targets.",
+    "zh-CN": "启用公司环境配置和工作区目标。",
+    "reviewedEnglishHash": "e2ce10a377bb2423104fde1c15ed64441801499892ae7189e5bf89a76f063068"
+  },
+  "instanceExperimentalSettings.environmentsTitle": {
+    "en": "Environments",
+    "zh-CN": "环境",
+    "reviewedEnglishHash": "07437cd651bed86ed83d954361d8e85f2de81677e267224bd85ec2c83349bf96"
+  },
+  "instanceExperimentalSettings.environmentsToggle": {
+    "en": "Environments",
+    "zh-CN": "环境",
+    "reviewedEnglishHash": "07437cd651bed86ed83d954361d8e85f2de81677e267224bd85ec2c83349bf96"
+  },
+  "instanceExperimentalSettings.executionSuppressed": {
+    "en": "Execution is suppressed — effectively off.",
+    "zh-CN": "执行已被抑制，实际等同于关闭。",
+    "reviewedEnglishHash": "7f517ce7f9bb3d8efa29a961ede5ed623fc5129d19bc9cf092f411b3f4856bce"
+  },
+  "instanceExperimentalSettings.externalObjectsDescription": {
+    "en": "Detect external URLs in tasks and show resolved status for pull requests, tickets, and other referenced work objects.",
+    "zh-CN": "检测任务中的外部 URL，并显示 Pull Request、工单和其他引用工作对象的解析状态。",
+    "reviewedEnglishHash": "4a8e4378d08da64318ed8500ec0b25246c7f3f6e150b3bd375c838bbf77a7950"
+  },
+  "instanceExperimentalSettings.externalObjectsTitle": {
+    "en": "Enable External Objects",
+    "zh-CN": "启用外部对象",
+    "reviewedEnglishHash": "ea85e671d52a8ee7dcf8d2c2a69ef9503071a444e99504d435343d5bd187fc31"
+  },
+  "instanceExperimentalSettings.externalObjectsToggle": {
+    "en": "Toggle external objects experimental setting",
+    "zh-CN": "切换外部对象实验功能设置",
+    "reviewedEnglishHash": "6d68653e9dda0009eba3dd70950bb5167c24e3a1375a1a8695e437542ecfcb31"
+  },
+  "instanceExperimentalSettings.fileViewerDescription": {
+    "en": "Enable browsing and previewing workspace files from task pages.",
+    "zh-CN": "允许在任务页面浏览和预览工作区文件。",
+    "reviewedEnglishHash": "16ea3de4a338e2185355c711de9e255ae200133c7526862a17ac9323ce964211"
+  },
+  "instanceExperimentalSettings.fileViewerTitle": {
+    "en": "File viewer",
+    "zh-CN": "文件查看器",
+    "reviewedEnglishHash": "b32f63260872b27b8f94dadb35ce39a64413a8c21c6a92a44a85b1d88bf946d5"
+  },
+  "instanceExperimentalSettings.fileViewerToggle": {
+    "en": "File viewer",
+    "zh-CN": "文件查看器",
+    "reviewedEnglishHash": "b32f63260872b27b8f94dadb35ce39a64413a8c21c6a92a44a85b1d88bf946d5"
+  },
+  "instanceExperimentalSettings.goalsSidebarLinkDescription": {
+    "en": "Restore the Goals item in the main sidebar while the goals surface is being evaluated.",
+    "zh-CN": "在目标界面仍处于评估期间，将“目标”入口恢复到主侧栏。",
+    "reviewedEnglishHash": "4f370832b26d4ac36178f3dc4e3736616ef5ef7aee9393afa304b744bc53cd91"
+  },
+  "instanceExperimentalSettings.goalsSidebarLinkTitle": {
+    "en": "Goals Sidebar Link",
+    "zh-CN": "目标侧栏入口",
+    "reviewedEnglishHash": "1229533e285027712d96aecf87095eb71666ad4ab27ee17ed0c9a506abf4bebe"
+  },
+  "instanceExperimentalSettings.goalsSidebarLinkToggle": {
+    "en": "Toggle goals sidebar link experimental setting",
+    "zh-CN": "切换目标侧栏入口实验功能设置",
+    "reviewedEnglishHash": "22dd3785b5263f5c1f866345f58e9ee11a9c64311ea5bf47e3bfeb4aa500cd53"
+  },
+  "instanceExperimentalSettings.isolatedWorkspacesDescription": {
+    "en": "Run agent work in isolated workspaces when configured.",
+    "zh-CN": "在配置后让智能体工作运行于隔离工作区中。",
+    "reviewedEnglishHash": "72b2484400a5ab01ea174aa8be924e018d986bc3b9571342ad38fcee4bc63c16"
+  },
+  "instanceExperimentalSettings.isolatedWorkspacesTitle": {
+    "en": "Isolated workspaces",
+    "zh-CN": "隔离工作区",
+    "reviewedEnglishHash": "93a9cff78cee95443bf9c187c9ce14f8df23c9f46e00992476e6377820027d12"
+  },
+  "instanceExperimentalSettings.isolatedWorkspacesToggle": {
+    "en": "Isolated workspaces",
+    "zh-CN": "隔离工作区",
+    "reviewedEnglishHash": "93a9cff78cee95443bf9c187c9ce14f8df23c9f46e00992476e6377820027d12"
+  },
+  "instanceExperimentalSettings.issuePlanDecompositionPanelDescription": {
+    "en": "Show accepted-plan decomposition history on issue detail pages. Intended for debugging and validating subtask creation behavior while the presentation is still being refined.",
+    "zh-CN": "在任务详情页显示已接受计划的拆解历史。用于在展示方式仍在优化时调试和验证子任务创建行为。",
+    "reviewedEnglishHash": "eb694baca5a375264c2f10b0e99ec00fdcef4415818a34a8a2f2644d2d8a9667"
+  },
+  "instanceExperimentalSettings.issuePlanDecompositionPanelTitle": {
+    "en": "Issue Plan Decomposition Panel",
+    "zh-CN": "任务计划拆解面板",
+    "reviewedEnglishHash": "8f08a8baf2484ce8bac764875a1e6d30509c150d459d5e1e381d370f667d7a38"
+  },
+  "instanceExperimentalSettings.issuePlanDecompositionPanelToggle": {
+    "en": "Toggle issue plan decomposition panel experimental setting",
+    "zh-CN": "切换任务计划拆解面板实验功能设置",
+    "reviewedEnglishHash": "d2b5bcccc140bfdfd1995abde972323303e734377887d36ed70d5b65722b6153"
+  },
+  "instanceExperimentalSettings.loadFailed": {
+    "en": "Failed to load experimental settings.",
+    "zh-CN": "加载实验设置失败。",
+    "reviewedEnglishHash": "73f7e3e898d5cc931e08ef801da3426e20036c4da94ae3a40178c229d18ba92e"
+  },
+  "instanceExperimentalSettings.loading": {
+    "en": "Loading experimental settings...",
+    "zh-CN": "正在加载实验设置...",
+    "reviewedEnglishHash": "2f2d8e11776aaaa196899714d661f0995c38dbfe371980140e08f589bf171be0"
+  },
+  "instanceExperimentalSettings.lookbackHours": {
+    "en": "Lookback hours",
+    "zh-CN": "回溯小时数",
+    "reviewedEnglishHash": "4249665906ce596f3e682f794edc338459fb7e20afa7b3b44da0b489da758500"
+  },
+  "instanceExperimentalSettings.lookbackHoursInvalid": {
+    "en": "Enter a lookback window between 1 and 720 hours.",
+    "zh-CN": "请输入 1 到 720 小时之间的回溯窗口。",
+    "reviewedEnglishHash": "87025ae672f37e9ae01ed9f6af52d03775e41eaea2d548c0f076a8320e2ead48"
+  },
+  "instanceExperimentalSettings.managedByCloud": {
+    "en": "Managed by Paperclip Cloud",
+    "zh-CN": "由 Paperclip Cloud 管理",
+    "reviewedEnglishHash": "1c9b7618c1cd77c2669b1f7c7f37567581db3e95cb9a595ea8b87017dd063d60"
+  },
+  "instanceExperimentalSettings.managedSandboxOnlyDescription": {
+    "en": "Hide the local environment and run all agents in the platform-managed sandbox environment.",
+    "zh-CN": "隐藏本地环境，并让所有智能体都在平台托管的沙箱环境中运行。",
+    "reviewedEnglishHash": "8df08911ff1a6cb4a03c2f651e1f4f8fc6fd7d335814aee5c63544852470f77b"
+  },
+  "instanceExperimentalSettings.managedSandboxOnlyTitle": {
+    "en": "Managed Sandbox Only",
+    "zh-CN": "仅使用托管沙箱",
+    "reviewedEnglishHash": "f7ce75876da2892b1861f38b7f169c9e1f3e3b0a37c5d062727365351629cd16"
+  },
+  "instanceExperimentalSettings.managedSandboxOnlyToggle": {
+    "en": "Toggle managed sandbox only experimental setting",
+    "zh-CN": "切换仅使用托管沙箱实验功能设置",
+    "reviewedEnglishHash": "129ac5d57752b38903b3e989495752d67a2c2381cd08286b6dbde784509b8c5e"
+  },
+  "instanceExperimentalSettings.noRecoveryTasksNow": {
+    "en": "No recovery tasks need to be created right now.",
+    "zh-CN": "当前不需要创建恢复任务。",
+    "reviewedEnglishHash": "50250d5d00c8649516d3db66f75c8a986c5d2d8b8d73213304001521dbc2fa23"
+  },
+  "instanceExperimentalSettings.outsideLookback": {
+    "en": "outside the configured lookback and will not be touched.",
+    "zh-CN": "项位于配置的回溯范围之外，不会被处理。",
+    "reviewedEnglishHash": "8309687fcfb19a5d2b1fca0d7fb690edfe554fbbba0f522a07782307110f51af"
+  },
+  "instanceExperimentalSettings.planDecompositionDescription": {
+    "en": "Show accepted-plan decomposition history on task detail pages. Intended for debugging and validating subtask creation behavior while the presentation is still being refined.",
+    "zh-CN": "在任务详情页显示已接受计划的分解历史，用于调试和验证子任务创建行为；界面仍在完善中。",
+    "reviewedEnglishHash": "3e9fb613987375742d79a73acc193c5828f0246a8609f25dcf2b22fdb692e68c"
+  },
+  "instanceExperimentalSettings.planDecompositionTitle": {
+    "en": "Task Plan Decomposition Panel",
+    "zh-CN": "任务计划分解面板",
+    "reviewedEnglishHash": "40d166a26a49dc11823c5bc474e21ce383de67c24e88edeb421a7245f4d622e7"
+  },
+  "instanceExperimentalSettings.planDecompositionToggle": {
+    "en": "Toggle task plan decomposition panel experimental setting",
+    "zh-CN": "切换任务计划分解面板实验功能设置",
+    "reviewedEnglishHash": "51f902df83adc1652a999e7b1ccf0d796ded8cf408a38f716c871584e493bf95"
+  },
+  "instanceExperimentalSettings.previewExecutionHint": {
+    "en": "This is an isolated git-worktree preview instance. Turn this on to let the scheduler execute runs here. Only tasks created after enabling will run automatically — copied/pre-existing tasks stay parked. Toggling off and on resets the cutoff.",
+    "zh-CN": "这是隔离的 git worktree 预览实例。启用后，调度器可在此执行运行。只有启用后创建的任务会自动运行；复制或已存在的任务仍保持停放。关闭再开启会重置截止时间。",
+    "reviewedEnglishHash": "1cf25435e06c37acece60ad2d06a73d45ebc4ebc4b2a19528e2f2a320395187e"
+  },
+  "instanceExperimentalSettings.previewFailed": {
+    "en": "Preview failed",
+    "zh-CN": "预览失败",
+    "reviewedEnglishHash": "97ce5234adcb496777f58f98c34ad8d328f18f41a2b2aa8e7f2a32453dd8f6fc"
+  },
+  "instanceExperimentalSettings.recoveryPreviewSummary": {
+    "en": "{{count}} recovery candidates found.",
+    "zh-CN": "发现 {{count}} 个恢复候选项。",
+    "reviewedEnglishHash": "bd0515aecd8931b81a1d2b696b929ca9dcc9d3f4c0e848286563d36e9807fc8c"
+  },
+  "instanceExperimentalSettings.recoveryState.blockedByAssignedBacklogIssue": {
+    "en": "Blocked by an assigned backlog task",
+    "zh-CN": "被已分配的待办任务阻塞",
+    "reviewedEnglishHash": "acbe79d0851998125f2f958fa506d99583b7606109be9d3e44f0e769a4ea9d60"
+  },
+  "instanceExperimentalSettings.recoveryState.blockedByCancelledIssue": {
+    "en": "Blocked by a cancelled task",
+    "zh-CN": "被已取消任务阻塞",
+    "reviewedEnglishHash": "d394603c9783661d137bdb414145ac2dfd93578f7694c80e70b7ae5587ae8e67"
+  },
+  "instanceExperimentalSettings.recoveryState.blockedByUnassignedIssue": {
+    "en": "Blocked by an unassigned task",
+    "zh-CN": "被未分配任务阻塞",
+    "reviewedEnglishHash": "1f6163e46600ffbd559f9b1bfaceb61dbd7661a2bc9fbafe397a423743f38245"
+  },
+  "instanceExperimentalSettings.recoveryState.blockedByUninvokableAssignee": {
+    "en": "Blocked by an unavailable assignee",
+    "zh-CN": "被不可用的负责人阻塞",
+    "reviewedEnglishHash": "805b376196d1a6031237c8e5d3110d428658f08c6bc38309ad4c085a41656b4b"
+  },
+  "instanceExperimentalSettings.recoveryState.inReviewWithoutActionPath": {
+    "en": "In review without an action path",
+    "zh-CN": "审核中但没有后续操作路径",
+    "reviewedEnglishHash": "79ee3b4799e1391ed1ddf59c657c60f0151ae8183935dfa1d688349881cfed15"
+  },
+  "instanceExperimentalSettings.recoveryState.invalidReviewParticipant": {
+    "en": "Invalid review participant",
+    "zh-CN": "审核参与者无效",
+    "reviewedEnglishHash": "2d28a00f42c54555c2a3d7a1ec19968e66a2ae19de91cf15c3f2e17b15979117"
+  },
+  "instanceExperimentalSettings.recoveryTarget": {
+    "en": "Recovery target",
+    "zh-CN": "恢复目标",
+    "reviewedEnglishHash": "969dd1c5df90680279c5df99ff13298892f344b1c186ae40a0a3079f8ccb20b1"
+  },
+  "instanceExperimentalSettings.runNow": {
+    "en": "Run now",
+    "zh-CN": "立即运行",
+    "reviewedEnglishHash": "0991397702fabb407256a08adbb643c936aa03a49b9e78a2e62f4303c8a03e4c"
+  },
+  "instanceExperimentalSettings.runningAfter": {
+    "en": "Running tasks created after",
+    "zh-CN": "运行创建于此时间之后的任务",
+    "reviewedEnglishHash": "590de07dbd7e534957fea808ecdbc048de816026cf2b29724ef0d7b2dad85518"
+  },
+  "instanceExperimentalSettings.saveHours": {
+    "en": "Save hours",
+    "zh-CN": "保存小时数",
+    "reviewedEnglishHash": "306dea41a5ee31ff8913dd31ac0e1559d0869f00123f39dc6c613bf2d365ec4a"
+  },
+  "instanceExperimentalSettings.serverInfoDebugViewDescription": {
+    "en": "Show a \"Server\" section in the account drawer with the current server restart time and running commit.",
+    "zh-CN": "在账户抽屉中显示“服务器”区域，包含当前服务器重启时间和正在运行的提交。",
+    "reviewedEnglishHash": "da21aa822f8ef28e0b0346add0acc1d9af4352c9fc5aa3867eaefba84fd50e3c"
+  },
+  "instanceExperimentalSettings.serverInfoDebugViewTitle": {
+    "en": "Server Info Debug View",
+    "zh-CN": "服务器信息调试视图",
+    "reviewedEnglishHash": "bf7d35b54ddf6ebf39aedd421c9ee616fc2e1c676e960cdae8d63a3f19169a48"
+  },
+  "instanceExperimentalSettings.serverInfoDebugViewToggle": {
+    "en": "Toggle server info debug view experimental setting",
+    "zh-CN": "切换服务器信息调试视图实验功能设置",
+    "reviewedEnglishHash": "e1406edda7054bd5b38214f0387e8ad0fe7ee113eed9c9da3173381b39f1b8db"
+  },
+  "instanceExperimentalSettings.simplifiedEnglishInteractionsDescription": {
+    "en": "Instruct agents to write user interactions (plan confirmations, questions, suggested tasks, and checkbox prompts) in ASD-STE100 Simplified Technical English, with brief context on what information the decision needs and what happens for each choice.",
+    "zh-CN": "要求智能体使用 ASD-STE100 简化技术英语编写用户交互（计划确认、问题、建议任务和复选框提示），并简要说明决策需要哪些信息以及各选项会产生什么结果。",
+    "reviewedEnglishHash": "048b7ab2b8864399f33bc5bf312f5fe1ec3baec848e97bec290c5b8aa417ad8b"
+  },
+  "instanceExperimentalSettings.simplifiedEnglishInteractionsTitle": {
+    "en": "Simplified English Interactions",
+    "zh-CN": "简化英语交互",
+    "reviewedEnglishHash": "6f7129868f1e81525882a2180efcd7c70a6b8f775053e3f021cd90d481f95db1"
+  },
+  "instanceExperimentalSettings.simplifiedEnglishInteractionsToggle": {
+    "en": "Toggle simplified English interactions experimental setting",
+    "zh-CN": "切换简化英语交互实验功能设置",
+    "reviewedEnglishHash": "295fd74074fad0b3bb08a7e71037f3c01defe43f3ae5f08f84aceec53dae4080"
+  },
+  "instanceExperimentalSettings.skippedOutsideLookback": {
+    "en": "Skipped outside lookback window",
+    "zh-CN": "因超出回溯窗口而跳过",
+    "reviewedEnglishHash": "24d349477de6ca616aa24f0a0459788b6877fc354ade4a558f725f5512f6b1a6"
+  },
+  "instanceExperimentalSettings.smokeLabDescription": {
+    "en": "Add a \"Smoke Lab\" tab under Apps → Developer and an \"Integration smoke\" card on the dashboard for exercising every integration path against deterministic local fixtures (fake OAuth provider + loopback MCP servers). Private (non-public) deployments only.",
+    "zh-CN": "在“应用 → 开发者”下添加“冒烟实验室”标签页，并在仪表盘上添加“集成冒烟测试”卡片，用于通过确定性的本地夹具（模拟 OAuth 提供方 + 回环 MCP 服务器）验证所有集成路径。仅限非公开部署。",
+    "reviewedEnglishHash": "098ef8a6ce1269e4429cee2fbd56cb946bb84dac2b378528db3f0a81ed4550c7"
+  },
+  "instanceExperimentalSettings.smokeLabTitle": {
+    "en": "Smoke Lab",
+    "zh-CN": "冒烟实验室",
+    "reviewedEnglishHash": "876badbfdc245f318e7954ed1287330ac40ca94860c092d58cd5a90f55280fba"
+  },
+  "instanceExperimentalSettings.smokeLabToggle": {
+    "en": "Toggle smoke lab experimental setting",
+    "zh-CN": "切换“冒烟实验室”实验功能",
+    "reviewedEnglishHash": "a4deb51b5dfe361e72b1c23c902df92068a311496e659919ee2dcdc22a2eafa5"
+  },
+  "instanceExperimentalSettings.statusCardsDescription": {
+    "en": "Enable the experimental shared status-card board and its gated API. Existing card data is kept when this is disabled.",
+    "zh-CN": "启用实验性的共享状态卡片看板及其受控 API。禁用后仍会保留现有卡片数据。",
+    "reviewedEnglishHash": "7e3b32f64f5656d06661b7f696a35f7e98677316cb7eaf806aa2ef2340eda4a0"
+  },
+  "instanceExperimentalSettings.statusCardsFootnote": {
+    "en": "Enabling Status Cards also enables Summaries.",
+    "zh-CN": "启用状态卡片时也会启用摘要。",
+    "reviewedEnglishHash": "25c3f2274bc1e75d6f2bd5876be7b20510d2cbb42f137f8a76b588dad65dfabe"
+  },
+  "instanceExperimentalSettings.statusCardsTitle": {
+    "en": "Status Cards",
+    "zh-CN": "状态卡片",
+    "reviewedEnglishHash": "a992c41e645a01c68d99589190bb5a7094e6eb8c78da70c427fbaf84da841352"
+  },
+  "instanceExperimentalSettings.statusCardsToggle": {
+    "en": "Toggle status cards experimental setting",
+    "zh-CN": "切换状态卡片实验功能设置",
+    "reviewedEnglishHash": "41d6cd1267f26acfcfe0b2cf2b09725cff2dff950716df2f3d0c0f85aff915ce"
+  },
+  "instanceExperimentalSettings.streamlinedNavDescription": {
+    "en": "Reduces the maximum number of items in the left navigation bar — nests Projects under Work with a dedicated Projects page, and shows only active agents (max 5 recently-active) in the sidebar.",
+    "zh-CN": "使用精简导航布局。",
+    "reviewedEnglishHash": "17875df9f8916fdd37aff66386c39a9de6a506a1a3bcf46c86d77f9e88537c82"
+  },
+  "instanceExperimentalSettings.streamlinedNavTitle": {
+    "en": "Streamlined Left Navigation Bar",
+    "zh-CN": "精简导航",
+    "reviewedEnglishHash": "dcb6039d53a79f7ee6c468e9e9493202bf389bf2d1d3511a4e2a8709af98c010"
+  },
+  "instanceExperimentalSettings.streamlinedNavToggle": {
+    "en": "Toggle streamlined left navigation experimental setting",
+    "zh-CN": "精简导航",
+    "reviewedEnglishHash": "1ef0b80c75e5d261080aed5b5e58a53a314a2084d27fe98878b0fee755d089e1"
+  },
+  "instanceExperimentalSettings.subtitle": {
+    "en": "Try guarded features before they become default.",
+    "zh-CN": "在功能默认启用前先试用受控功能。",
+    "reviewedEnglishHash": "6d18f1a00bf8e447b2464b718a4e2ca33fbcabe6a8672a4619c7a1444f634eb4"
+  },
+  "instanceExperimentalSettings.summariesDescription": {
+    "en": "Show Summarizer-generated status slots on project and workspace pages, with on-demand refresh and revision history. Existing summary data is kept when this is disabled.",
+    "zh-CN": "在项目和工作区页面显示由摘要智能体生成的状态摘要，支持按需刷新和修订历史。关闭后仍会保留现有摘要数据。",
+    "reviewedEnglishHash": "b36fdb9b1097c685661de9c46b6f98c6003bd6b2dac9bba7df6520628cdcf49b"
+  },
+  "instanceExperimentalSettings.summariesFootnote": {
+    "en": "Status Cards requires Summaries. Disabling Summaries also disables Status Cards.",
+    "zh-CN": "状态卡片依赖摘要。禁用摘要时也会禁用状态卡片。",
+    "reviewedEnglishHash": "f65c6afbc5954a84bdd74e1ead57b1cbcb9c336c09dc1ff66f18a9e27d115e19"
+  },
+  "instanceExperimentalSettings.summariesTitle": {
+    "en": "Summaries",
+    "zh-CN": "摘要",
+    "reviewedEnglishHash": "87bc590e047d3df4a8e448ac83e371fad69dd73607752cccb0ff7d34263cef8f"
+  },
+  "instanceExperimentalSettings.summariesToggle": {
+    "en": "Toggle summaries experimental setting",
+    "zh-CN": "切换摘要实验功能",
+    "reviewedEnglishHash": "fb6d1386c6a15fecf05cb841a507586c859a73de2cca7f2524afc5458842463b"
+  },
+  "instanceExperimentalSettings.taskWatchdogsDescription": {
+    "en": "Show task detail controls for configuring watchdog agents that verify stopped task subtrees and restore live paths when work should continue.",
+    "zh-CN": "启用任务看护，用于跟进和健康检查。",
+    "reviewedEnglishHash": "e49db28aff6a1cd08cb1a34cc2ed1d9304009143afdc80b09fbba68a6e1aa3e9"
+  },
+  "instanceExperimentalSettings.taskWatchdogsTitle": {
+    "en": "Task Watchdogs",
+    "zh-CN": "任务看护",
+    "reviewedEnglishHash": "e379b53ac9cde57f23268cba5bf970532eb0687b3af9c5ae12c7f76bbecf0d2c"
+  },
+  "instanceExperimentalSettings.taskWatchdogsToggle": {
+    "en": "Toggle task watchdogs experimental setting",
+    "zh-CN": "任务看护",
+    "reviewedEnglishHash": "66733ea5a3e97b0cb36efa4e5c3a5642f297093bc5096d3f1a5299dce3f5c691"
+  },
+  "instanceExperimentalSettings.updateFailed": {
+    "en": "Update failed",
+    "zh-CN": "更新失败",
+    "reviewedEnglishHash": "e58282fd73fb8580874eef14682a44e6d0054908d7a1b925de6f64ad303afe03"
+  },
+  "instanceExperimentalSettings.warningBody": {
+    "en": "These features are opt-in and come with no compatibility guarantees. They may change, break, or be removed without notice. Avoid relying on them for critical or production workflows.",
+    "zh-CN": "实验功能在开发期间可能变更或重置。",
+    "reviewedEnglishHash": "2bf20acf9e5a2c8bd9ac36ec5c1f1d7648969daab200cde2dae1b891db0ee162"
+  },
+  "instanceExperimentalSettings.warningTitle": {
+    "en": "Experimental features may break at any time.",
+    "zh-CN": "实验设置",
+    "reviewedEnglishHash": "c56337a6aee9131e901513a636c3dea3c37e7eb81796fb6bd64fb53cbb6923a8"
+  },
+  "instanceExperimentalSettings.workspacesDescription": {
+    "en": "Show execution workspace controls in project configuration and allow isolated workspace behavior for new and existing task runs.",
+    "zh-CN": "在项目配置中显示执行工作区控件，并允许新旧任务运行使用隔离工作区。",
+    "reviewedEnglishHash": "0744839207f63ac58ad81e23707654185a1470545cee268ca8acf142b840b753"
+  },
+  "instanceExperimentalSettings.worktreeRunExecutionArmed": {
+    "en": "Running tasks created after {{timestamp}}.",
+    "zh-CN": "将运行在 {{timestamp}} 之后创建的任务。",
+    "reviewedEnglishHash": "adf1300b01ca86e272c3e41de6635f242c83692a5ce5ddeaae35cca7016b9c19"
+  },
+  "instanceExperimentalSettings.worktreeRunExecutionDescription": {
+    "en": "This is an isolated git-worktree preview instance. Turn this on to let the scheduler execute runs here. Only tasks created after enabling will run automatically; copied or pre-existing tasks stay parked. Toggling off and on resets the cutoff.",
+    "zh-CN": "这是一个隔离的 Git worktree 预览实例。启用后，调度器可以在此执行运行。只有启用后创建的任务会自动运行；复制或预先存在的任务仍保持停放。关闭后重新启用会重置生效时间。",
+    "reviewedEnglishHash": "d3ff03fcfbaf358be10ed7b85ce3a77cdfb0012c374259f5cc2b316e3ee4d066"
+  },
+  "instanceExperimentalSettings.worktreeRunExecutionInstanceMismatch": {
+    "en": "This setting was armed in a different instance and copied here, so no tasks run automatically.",
+    "zh-CN": "此设置在另一个实例中启用后被复制到这里，因此任务不会自动运行。",
+    "reviewedEnglishHash": "bb8225347471b1849d27cd117498e4dff8d1ce1bed140c73ad725560ae0249bc"
+  },
+  "instanceExperimentalSettings.worktreeRunExecutionMissingCutoff": {
+    "en": "This setting is missing its activation cutoff, so no tasks run automatically.",
+    "zh-CN": "此设置缺少生效时间，因此任务不会自动运行。",
+    "reviewedEnglishHash": "122b697179700cdf42f6f20a696d137daef5ccd829bef1907e0b9d950bf65b6f"
+  },
+  "instanceExperimentalSettings.worktreeRunExecutionMissingInstanceId": {
+    "en": "This preview instance has no stable instance ID, so no tasks run automatically.",
+    "zh-CN": "此预览实例没有稳定的实例 ID，因此任务不会自动运行。",
+    "reviewedEnglishHash": "57ef929567611e3b17dad0ce56c2eb8b1e941cd48031ad09a06fcad0707cb541"
+  },
+  "instanceExperimentalSettings.worktreeRunExecutionRearm": {
+    "en": "Toggle it off and back on to arm execution for tasks created here.",
+    "zh-CN": "请关闭后重新启用，为在此创建的任务激活自动执行。",
+    "reviewedEnglishHash": "bb5fd3d44f2ca7a41394637ca8e27c549696317105f80028465b66817c9a8751"
+  },
+  "instanceExperimentalSettings.worktreeRunExecutionSuppressedTitle": {
+    "en": "Execution is suppressed; this setting is effectively off.",
+    "zh-CN": "执行已被抑制；此设置实际处于关闭状态。",
+    "reviewedEnglishHash": "3e2b01a7742d8da0da307a8a5fabccb5c7328fc05e6a5221b603e7cea4fa0357"
+  },
+  "instanceExperimentalSettings.worktreeRunExecutionTitle": {
+    "en": "Run tasks in this worktree",
+    "zh-CN": "在此 worktree 中运行任务",
+    "reviewedEnglishHash": "ddf0b4126c8d5127ee4da6b934da522e13e2307d321f7e3b297e0a10f8978887"
+  },
+  "instanceExperimentalSettings.worktreeRunExecutionToggle": {
+    "en": "Toggle worktree run execution setting",
+    "zh-CN": "切换 worktree 运行执行设置",
+    "reviewedEnglishHash": "0818b1789db9ffab75cb608348b0b77e3e03c432db2fa3382da41d13ffb2fc04"
+  }
+}

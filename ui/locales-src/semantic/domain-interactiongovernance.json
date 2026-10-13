@@ -1,0 +1,97 @@
+{
+  "interactionGovernance.column.cap": {
+    "en": "Cap",
+    "zh-CN": "上限",
+    "reviewedEnglishHash": "1257ac04471db97becf0cd70818dbd6e4437f11afefd321065f199a14d986cb9"
+  },
+  "interactionGovernance.column.defaultPolicy": {
+    "en": "Default policy",
+    "zh-CN": "默认政策",
+    "reviewedEnglishHash": "8cca8b216a06c5f70be1bfc63e97ef2b793fdf5772a2b2c818a408b00f12d7e1"
+  },
+  "interactionGovernance.column.kind": {
+    "en": "Kind",
+    "zh-CN": "类型",
+    "reviewedEnglishHash": "f5387f9bb6ed70315a77fdcb9335facc27a9bf241f35955bd2755c55e0c016c7"
+  },
+  "interactionGovernance.description": {
+    "en": "Thread interactions are open by default: anyone in the company — the board or any agent, including the one that asked — can respond. Narrow a kind only when you need to. Default policy is the audience new cards get when the requester does not ask for one; cap narrows every request of that kind and can never widen one. Tool-approval confirmations always stay human only.",
+    "zh-CN": "线程交互默认开放：公司中的任何人都可以响应，包括看板、任意智能体以及发起交互的智能体。仅在需要时缩小某类交互的范围。默认政策是在请求者未指定时新卡片采用的受众；上限会缩小该类交互的每个请求，且绝不会放宽。工具审批确认始终仅限人工处理。",
+    "reviewedEnglishHash": "38e2cc061bd0d5934915b19a5365f879832c29983daa510c1013ca7a161d8c0f"
+  },
+  "interactionGovernance.effect.humanOnlyCap": {
+    "en": "Every request is human only.",
+    "zh-CN": "每个请求都仅限人工处理。",
+    "reviewedEnglishHash": "5e5a4a0693e358f8acd8fd69906610cb30b148bd3e33b00f8bb68001a1baaa5f"
+  },
+  "interactionGovernance.effect.humanOnlyDefault": {
+    "en": "Only humans can resolve this interaction by default.",
+    "zh-CN": "默认情况下，仅人工可以处理此交互。",
+    "reviewedEnglishHash": "69b49d58f915c751b71ab892442720ea2fc8d036f981bf22b05593a509433574"
+  },
+  "interactionGovernance.effect.noCap": {
+    "en": "No cap; use the audience requested by the interaction.",
+    "zh-CN": "不设上限；采用交互请求指定的受众。",
+    "reviewedEnglishHash": "e5ec6cca656fabf6059ec20f67c291896ccc6960ce594f938a56773411dd02bd"
+  },
+  "interactionGovernance.effect.notCreatorCap": {
+    "en": "Every request excludes its creator.",
+    "zh-CN": "每个请求都会排除其创建者。",
+    "reviewedEnglishHash": "bdd1d3b1103f34ddf25127994f97d02b3fa76e544f8495c65e0f52390712a158"
+  },
+  "interactionGovernance.effect.notCreatorDefault": {
+    "en": "The creator cannot resolve its own interaction by default.",
+    "zh-CN": "默认情况下，创建者不能处理自己发起的交互。",
+    "reviewedEnglishHash": "8b7285b33fad54add7faf04289202a36587a8188a60cdcbb947ab110016bd2df"
+  },
+  "interactionGovernance.effect.openDefault": {
+    "en": "Anyone in the company can respond unless the requester narrows the audience.",
+    "zh-CN": "除非请求者缩小受众范围，否则公司中的任何人都可以响应。",
+    "reviewedEnglishHash": "5b906edb476f58ca1d8d65ce580f06bbe0e84837158cca0ca3de525532bf3d06"
+  },
+  "interactionGovernance.kind.askUserQuestions": {
+    "en": "Ask user questions",
+    "zh-CN": "向用户提问",
+    "reviewedEnglishHash": "85f982633587e0c1eafe2c5f2a82800426e783e8a4393531204abd5392f8b9ff"
+  },
+  "interactionGovernance.kind.checkboxConfirmations": {
+    "en": "Checkbox confirmations",
+    "zh-CN": "复选确认",
+    "reviewedEnglishHash": "b7f92c403f79c2e90cdddc0396d6d3e9495b844914a90c5e95a39c83df284261"
+  },
+  "interactionGovernance.kind.confirmations": {
+    "en": "Confirmations",
+    "zh-CN": "确认",
+    "reviewedEnglishHash": "5dfa99a6fa762317d2573a51f75567281f5460a2521f37713a82f5eac0b22c77"
+  },
+  "interactionGovernance.kind.connectionRequests": {
+    "en": "Connection requests",
+    "zh-CN": "连接请求",
+    "reviewedEnglishHash": "7c3a0985aafb420faa8c95171b7f2d641b6406fda16be73775560ca0806254f8"
+  },
+  "interactionGovernance.kind.itemVerdicts": {
+    "en": "Item verdicts",
+    "zh-CN": "逐项裁决",
+    "reviewedEnglishHash": "7023d1056988ae1c0e92e56492056cc349af28f9f74033f16cb39bcb8c02cd42"
+  },
+  "interactionGovernance.kind.suggestTasks": {
+    "en": "Suggested tasks",
+    "zh-CN": "建议任务",
+    "reviewedEnglishHash": "5addd6fff8dd7969a12d449ba08a6d85be3de71d4b66f8797768be5f7e9da9aa"
+  },
+  "interactionGovernance.title": {
+    "en": "Interaction governance",
+    "zh-CN": "交互治理",
+    "reviewedEnglishHash": "55a23137de6cd800fabdc8d7134ac4cabf9e803aa298adec7f4ef08c49e5fc9f"
+  },
+  "interactionGovernance.unset.cap": {
+    "en": "No cap",
+    "zh-CN": "无上限",
+    "reviewedEnglishHash": "59db2115b7b072e590aae53c8d80b1bcf1e6b08fe3c5edb4351a3d9c07e5aca6"
+  },
+  "interactionGovernance.unset.defaultPolicy": {
+    "en": "Anyone (default)",
+    "zh-CN": "任何人（默认）",
+    "reviewedEnglishHash": "9a3ee13fc2e37a3962254e1383c073e279648b0eb54608b2ee9b34348d68663a"
+  }
+}

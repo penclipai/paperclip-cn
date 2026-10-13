@@ -1,0 +1,17 @@
+{
+  "appErrorBoundary.description": {
+    "en": "Something went wrong while running the app. Reloading usually fixes this.",
+    "zh-CN": "运行应用时出现问题，通常重新加载页面即可解决。",
+    "reviewedEnglishHash": "c2ff184312475284e4dac0399dea086cb161007246d02be4767aa7159df49599"
+  },
+  "appErrorBoundary.reload": {
+    "en": "Reload page",
+    "zh-CN": "重新加载页面",
+    "reviewedEnglishHash": "437d0d63bfbd97326878414b17d443b5cf971bb426262793732682a828c0a442"
+  },
+  "appErrorBoundary.title": {
+    "en": "Paperclip hit an error",
+    "zh-CN": "Paperclip CN 遇到错误",
+    "reviewedEnglishHash": "e8f13f5da96fd4ab79644675b341157f3aa387d8ea16162bee08b5b77701b68c"
+  }
+}

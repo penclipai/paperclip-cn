@@ -1,0 +1,7 @@
+{
+  "projectBudget.amountPerMonth": {
+    "en": "{{amount}}/mo",
+    "zh-CN": "{{amount}}/月",
+    "reviewedEnglishHash": "35c0953d369304b8c380234c0bb104f30b8cd88f74dbcf847f0d1d5eb7168a1c"
+  }
+}

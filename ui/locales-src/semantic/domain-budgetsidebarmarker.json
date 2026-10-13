@@ -1,0 +1,17 @@
+{
+  "budgetSidebarMarker.critical": {
+    "en": "Paused by budget",
+    "zh-CN": "因预算暂停",
+    "reviewedEnglishHash": "96976bb1070b45883cae2303363e69ab423b09ee97f1687c3fef64d9158c7c13"
+  },
+  "budgetSidebarMarker.healthy": {
+    "en": "Budget healthy",
+    "zh-CN": "预算健康",
+    "reviewedEnglishHash": "4308191dc0a5e30ea4edf10216f0f70571c051541ce335b86d60b3d1eebf33c5"
+  },
+  "budgetSidebarMarker.warning": {
+    "en": "Budget warning",
+    "zh-CN": "预算警告",
+    "reviewedEnglishHash": "5e68cb15b2d6f8eb45e90c1d98cb0f7a72f7fbdc4a323ebefb62cac85e3da1f8"
+  }
+}

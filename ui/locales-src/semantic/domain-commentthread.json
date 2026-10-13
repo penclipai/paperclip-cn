@@ -1,0 +1,72 @@
+{
+  "commentThread.copyCommentAsMarkdown": {
+    "en": "Copy comment as markdown",
+    "zh-CN": "复制评论为 Markdown",
+    "reviewedEnglishHash": "35d333304060937645506358f4d412557b68076163720e940ab89e169ce8a8ee"
+  },
+  "commentThread.deleted": {
+    "en": "Comment deleted",
+    "zh-CN": "评论已删除",
+    "reviewedEnglishHash": "7199a134a33912a51d190c0c7245336c3e2a7b604cfbd786dbd27c29e53dfe5b"
+  },
+  "commentThread.emptyTimeline": {
+    "en": "No timeline entries yet.",
+    "zh-CN": "暂无时间线条目。",
+    "reviewedEnglishHash": "a3f327b5ce04a13c857ed30c8a4e605ec60f82e2d41fecfe730af782834b4811"
+  },
+  "commentThread.environment": {
+    "en": "Environment",
+    "zh-CN": "环境",
+    "reviewedEnglishHash": "9e471951a1b4106e54be128a21112b02914fe98cc79b2c92b49ee80c5464487c"
+  },
+  "commentThread.failure": {
+    "en": "Failure: {{reason}}",
+    "zh-CN": "失败：{{reason}}",
+    "reviewedEnglishHash": "0dcf35679111ac2b1aad12bf492c1e01b545b07e616bc178db83b0023976a8b4"
+  },
+  "commentThread.followUp": {
+    "en": "Follow-up",
+    "zh-CN": "跟进",
+    "reviewedEnglishHash": "09b2d9cd1123792aad06158c9acb18ce855b7011b78f3923c91804b3ef6bf176"
+  },
+  "commentThread.interrupt": {
+    "en": "Interrupt",
+    "zh-CN": "中断",
+    "reviewedEnglishHash": "b62523141249e0f2b5370aa7b791e71304e64eb4de37108905b9e2bea71c49f6"
+  },
+  "commentThread.interrupting": {
+    "en": "Interrupting...",
+    "zh-CN": "正在中断...",
+    "reviewedEnglishHash": "f60f33ede21dceccda0e76cab49570fb72ffcb00f474c7d8ceb1e2611c247363"
+  },
+  "commentThread.lease": {
+    "en": "Lease",
+    "zh-CN": "租约",
+    "reviewedEnglishHash": "a789e9e05ec6ae7401058b895806dc807487de2b1101e60b57e4ee78ec528faa"
+  },
+  "commentThread.leaveCommentPlaceholder": {
+    "en": "Leave a comment...",
+    "zh-CN": "留下评论...",
+    "reviewedEnglishHash": "4dff58ab6888329da4e7c184bbdf5d6e69303f3ba87f54c185c44a5013a77031"
+  },
+  "commentThread.queued": {
+    "en": "Queued",
+    "zh-CN": "已排队",
+    "reviewedEnglishHash": "661ff40a07e037bbd5f7d4ec97a4df1503096ca910e7c9e2d7a4e9abd4e4e1a0"
+  },
+  "commentThread.queuedCommentsCount": {
+    "en": "Queued Comments ({{count}})",
+    "zh-CN": "已排队评论（{{count}}）",
+    "reviewedEnglishHash": "de288e3f8ff39ea0f4a828bee4127b4274860112ddb13e96223b276529ab4b3b"
+  },
+  "commentThread.queueing": {
+    "en": "Queueing...",
+    "zh-CN": "排队中...",
+    "reviewedEnglishHash": "d6e3ff1af9acecf6b84268bb8402843c1a9ba820186fda64675b92513ac254a0"
+  },
+  "commentThread.timelineCount": {
+    "en": "Timeline ({{count}})",
+    "zh-CN": "时间线（{{count}}）",
+    "reviewedEnglishHash": "4f8d46577b71791f3972238c9ee29dd32cb0ad7d3f6eb6c91a93a57be8fdaa12"
+  }
+}

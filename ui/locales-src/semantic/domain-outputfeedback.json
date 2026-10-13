@@ -1,0 +1,82 @@
+{
+  "outputFeedback.alwaysAllow": {
+    "en": "Always allow",
+    "zh-CN": "始终允许",
+    "reviewedEnglishHash": "977618bd8bc7eef4d3bada0cf1a791d8362cd5fd8680e9673566abab2e76dded"
+  },
+  "outputFeedback.alwaysAllowExplanation": {
+    "en": "Choose Always allow to share this vote and future voted AI outputs.",
+    "zh-CN": "选择“始终允许”后，这次投票以及未来被投票的 AI 输出都可以共享。",
+    "reviewedEnglishHash": "1601c7c83875dc9f032a42379bdfd78d64849e71e5d7cfc8da5c1989774c1d7c"
+  },
+  "outputFeedback.changeLaterHint": {
+    "en": "You can change this later in Instance Settings > General.",
+    "zh-CN": "你之后可以在“实例设置 > 常规”里修改这个选项。",
+    "reviewedEnglishHash": "cc8e28d23cd41cedf8601b0004ec657f238c36eaa9ccb857c4ea0260e19ac4e4"
+  },
+  "outputFeedback.dismiss": {
+    "en": "Dismiss",
+    "zh-CN": "暂不填写",
+    "reviewedEnglishHash": "48845bff334a50a59aaecf499f28a7a24c3b4b891b8b18a9f1169ad8e8a6b261"
+  },
+  "outputFeedback.dontAllow": {
+    "en": "Don't allow",
+    "zh-CN": "不允许",
+    "reviewedEnglishHash": "9803bdd2047b13432e0b2a210a50a34ef2189f57f13c84501ec84dd7d2ffc1e9"
+  },
+  "outputFeedback.dontAllowExplanation": {
+    "en": "Choose Don't allow to keep this vote and future votes local.",
+    "zh-CN": "选择“不允许”后，这次投票以及未来的投票都会仅保留在本地。",
+    "reviewedEnglishHash": "b7e102c68103b531f02618aff98cbd559dd058a074bec04e571c7ae8aef88f13"
+  },
+  "outputFeedback.downvotePromptPlaceholder": {
+    "en": "Add a short note",
+    "zh-CN": "补充一条简短说明",
+    "reviewedEnglishHash": "1adb884ad7345cf3544f4ef7bf60c341ab5fc9cc3680e6fc05b3d23a71536afe"
+  },
+  "outputFeedback.downvotePromptTitle": {
+    "en": "What could have been better?",
+    "zh-CN": "哪里还能做得更好？",
+    "reviewedEnglishHash": "829e701d9a216100eef2e58bee4a2a7d7436d898cddb1d1027f859d4e9fc610d"
+  },
+  "outputFeedback.helpful": {
+    "en": "Helpful",
+    "zh-CN": "有帮助",
+    "reviewedEnglishHash": "63c432db3ebb9aecdda9286be5cdd301c6a019ef9ab2a1574e6e4aabeb91e354"
+  },
+  "outputFeedback.localOnlyNotice": {
+    "en": "This vote is always saved locally.",
+    "zh-CN": "这次投票始终会保存在本地。",
+    "reviewedEnglishHash": "a7cd6ce4e69c38e22d4b7fd102490d08781bcec5709b2b674ba9660e753fc556"
+  },
+  "outputFeedback.needsWork": {
+    "en": "Needs work",
+    "zh-CN": "还需改进",
+    "reviewedEnglishHash": "738a3278e945747c2a8478620d9417d6f5df2730c6e1c9dd64d2eef545231933"
+  },
+  "outputFeedback.promptDescription": {
+    "en": "Choose whether voted AI outputs can be shared with Paperclip Labs. This answer becomes the default for future thumbs up and thumbs down votes.",
+    "zh-CN": "选择这些已投票的 AI 输出是否可以共享给 Paperclip Labs。这个答案会成为之后点赞和点踩时的默认选项。",
+    "reviewedEnglishHash": "1e435dd128b424cf4b45b74b890c0a045a2deeb1843d914f4fb624bf40e1e478"
+  },
+  "outputFeedback.promptTitle": {
+    "en": "Save your feedback sharing preference",
+    "zh-CN": "保存你的反馈共享偏好",
+    "reviewedEnglishHash": "1c562b5e2b712a50e903cc5273c0d55ad47052fa6064205172720b335a8f4063"
+  },
+  "outputFeedback.readTerms": {
+    "en": "Read our terms of service",
+    "zh-CN": "阅读服务条款",
+    "reviewedEnglishHash": "50aceeb579a2002a7c4da4f9eaac3510a49694f665144d883def069e6251643e"
+  },
+  "outputFeedback.saveNote": {
+    "en": "Save note",
+    "zh-CN": "保存说明",
+    "reviewedEnglishHash": "6501e1ced8da0bffc5e2c7e20a42162e80176b31980e7b073fbf9955854fda4a"
+  },
+  "outputFeedback.saving": {
+    "en": "Saving...",
+    "zh-CN": "保存中...",
+    "reviewedEnglishHash": "dc85af8f2b1d0d6756547cd5f79557466e25e682b882f68d277bd7f125851321"
+  }
+}

@@ -1,0 +1,157 @@
+{
+  "auditFeed.action": {
+    "en": "Action",
+    "zh-CN": "操作",
+    "reviewedEnglishHash": "64cff1319d2fd2cbb7a1e84ccecf22c1cc07b24435cdb522f8c0aa525d6002a6"
+  },
+  "auditFeed.allActions": {
+    "en": "All actions",
+    "zh-CN": "全部操作",
+    "reviewedEnglishHash": "83140cf1308a728e7cb578ecff7e85e00ce35c919cd0d41dfe5d49112efda0a8"
+  },
+  "auditFeed.allAgents": {
+    "en": "All agents",
+    "zh-CN": "全部智能体",
+    "reviewedEnglishHash": "54c32d3e2cfa1cc879f746643e6b41360541692fc0a163f3793595510398e6f5"
+  },
+  "auditFeed.allEntities": {
+    "en": "All entities",
+    "zh-CN": "全部实体",
+    "reviewedEnglishHash": "15414070792295344aac0723f5b2f8a15fe162f94aad38a825dedc876f9cbe07"
+  },
+  "auditFeed.allResponsibleUsers": {
+    "en": "All responsible users",
+    "zh-CN": "全部责任用户",
+    "reviewedEnglishHash": "efee37a555813bca3636bee772e8c478d8ac97c091f1c47ae9729f9685bdd1e4"
+  },
+  "auditFeed.clearFilters": {
+    "en": "Clear filters",
+    "zh-CN": "清除筛选",
+    "reviewedEnglishHash": "7179ea0035fca783ec62b7185659b68c75f2a7c12b909306a57183dc9b3fa44b"
+  },
+  "auditFeed.description": {
+    "en": "Everything your agents did, newest first — each line is one recorded action, with the person responsible for it. Click through to the task or run for the full context.",
+    "zh-CN": "按时间倒序查看智能体的所有操作。每行是一条带责任人的操作记录，可点击任务或运行查看完整上下文。",
+    "reviewedEnglishHash": "98e0dbcba2ab76a52006587650c27fda67f3eb9887b904c2233eee8b16be1f9c"
+  },
+  "auditFeed.emptyAgentDescription": {
+    "en": "As soon as your agents start doing things, their actions show up here.",
+    "zh-CN": "智能体开始执行操作后，其活动会显示在此处。",
+    "reviewedEnglishHash": "7280b68ca169223439efbc81b4da34b20dc39d54c6ab9b064355db2ba422e58d"
+  },
+  "auditFeed.emptyAllDescription": {
+    "en": "As soon as anyone in your company does something, it shows up here.",
+    "zh-CN": "公司中有人执行操作后，活动会显示在此处。",
+    "reviewedEnglishHash": "29840ec0b75c5b5bf73c5eabe90fc0a3a8e4f62319cb1b9b16ad66903e428f3c"
+  },
+  "auditFeed.enterpriseTitle": {
+    "en": "Agent audit is a Paperclip Enterprise view",
+    "zh-CN": "智能体审计是 Paperclip Enterprise 功能",
+    "reviewedEnglishHash": "0f33f93b0cf2f2977fbb04780566fe5184bd7ced2d7d0c0231d693798ec2bb7a"
+  },
+  "auditFeed.entity": {
+    "en": "Entity",
+    "zh-CN": "实体",
+    "reviewedEnglishHash": "2ed3bb60c9af04774f0ea421f81bd64e65083c969a43360c5887b6e17d050794"
+  },
+  "auditFeed.exportCsv": {
+    "en": "Export CSV",
+    "zh-CN": "导出 CSV",
+    "reviewedEnglishHash": "91f71c14c8d6cc647e8658f9a4b9dcb885ff3f7fef1d3e774f46eae35bff0bcd"
+  },
+  "auditFeed.exportFailedBody": {
+    "en": "Could not export the audit log.",
+    "zh-CN": "无法导出审计日志。",
+    "reviewedEnglishHash": "a5a8eccb59309cb368c44967d0a6938ed2133c9f0282ec4c7cc31d865f43e9b1"
+  },
+  "auditFeed.exportFailedTitle": {
+    "en": "Export failed",
+    "zh-CN": "导出失败",
+    "reviewedEnglishHash": "e94d3ee06ecf6aacdf8caf324ce34fef57c55aebc5b39496d42f724fe094cb35"
+  },
+  "auditFeed.exportedBody": {
+    "en": "Your CSV download has started.",
+    "zh-CN": "CSV 下载已开始。",
+    "reviewedEnglishHash": "0ab920d4f8b3a134b91da82d0a10a61bc4cd316e2403fd59c929d2bcd44908c0"
+  },
+  "auditFeed.exportedTitle": {
+    "en": "Audit exported",
+    "zh-CN": "审计记录已导出",
+    "reviewedEnglishHash": "92ca28898ae7a5c11b6526fcf51eeef8822ff1d7bd4f4a005e8ef1268ea8d90b"
+  },
+  "auditFeed.exporting": {
+    "en": "Exporting…",
+    "zh-CN": "正在导出…",
+    "reviewedEnglishHash": "a2dd9cbb7013bb70fc7a4e5f3df1335bc1dd3e221592c9fef817d367341c39f4"
+  },
+  "auditFeed.fromDate": {
+    "en": "From date",
+    "zh-CN": "开始日期",
+    "reviewedEnglishHash": "3813fd079009b900370730c8257f14aee2df6f72bbb4c0a165d67b26682bffc0"
+  },
+  "auditFeed.loadFailed": {
+    "en": "Failed to load the audit log.",
+    "zh-CN": "无法加载审计日志。",
+    "reviewedEnglishHash": "304388ac5e130b63af6ffe35652a7796894f77d5317999a58a971ebbc2d87d5f"
+  },
+  "auditFeed.noMatchingActions": {
+    "en": "No actions match these filters",
+    "zh-CN": "没有符合这些筛选条件的操作",
+    "reviewedEnglishHash": "ba222548c3c5d9334684ef8c0213d5a4b93c82db66e0277c5518121fd33f24c9"
+  },
+  "auditFeed.permissionPrefix": {
+    "en": "The agent audit log gives you a searchable, exportable record of everything your agents did — every comment, task change, approval, and run — with the responsible person for each action. Ask an administrator to grant you the",
+    "zh-CN": "智能体审计日志提供可搜索、可导出的完整操作记录，包括每条评论、任务变更、审批和运行，并标明每项操作的责任人。请联系管理员授予你",
+    "reviewedEnglishHash": "795b34a7abcdd38dbe2c714262f9c8acf07a5e4a4324720f3db8e60c320d476e"
+  },
+  "auditFeed.permissionSuffix": {
+    "en": "permission to view it.",
+    "zh-CN": "权限后查看。",
+    "reviewedEnglishHash": "03d2059c416dafea670813397934ce2999b4d47b7b8ebaf68ffe7a419bb0ea43"
+  },
+  "auditFeed.refreshingAccess": {
+    "en": "Refreshing audit access…",
+    "zh-CN": "正在刷新审计访问权限…",
+    "reviewedEnglishHash": "1e133c2d9c75211f14e94ea0f7b9b2ddc89258fbf39e51ce8d42ad9c929b54e1"
+  },
+  "auditFeed.responsibleUser": {
+    "en": "Responsible user",
+    "zh-CN": "责任用户",
+    "reviewedEnglishHash": "aafb04857380906bd0a5d94fb5a8c1d19208064e92d9b403039cb455bc96856b"
+  },
+  "auditFeed.taskFallback": {
+    "en": "the task",
+    "zh-CN": "该任务",
+    "reviewedEnglishHash": "fd27a43ca87fa5cdc982e88f601a0ef6b7e8affd3ee86b04531e405b950aacbc"
+  },
+  "auditFeed.title": {
+    "en": "Audit",
+    "zh-CN": "审计",
+    "reviewedEnglishHash": "bb6aea28739637ea0edb0fbb6e228db85821b76bf8f5e15d1c02ed3949814fc4"
+  },
+  "auditFeed.toDate": {
+    "en": "To date",
+    "zh-CN": "结束日期",
+    "reviewedEnglishHash": "485348889fedcc4b3fd8a6c95bed0b36c44153b81cdadcbc117c999fdebf916d"
+  },
+  "auditFeed.tryAgain": {
+    "en": "Try again",
+    "zh-CN": "重试",
+    "reviewedEnglishHash": "d8b8392e2c542950ca64867168e4ef87d4ad606882d5898f826b51c6d553988f"
+  },
+  "auditFeed.tryDifferentFilters": {
+    "en": "Try a wider date range or different filters.",
+    "zh-CN": "请尝试更宽的日期范围或不同的筛选条件。",
+    "reviewedEnglishHash": "b070431d045a73ce22124fb0950d909b17bee55a39a348103e9e83d4a03de782"
+  },
+  "auditFeed.userFallback": {
+    "en": "a user",
+    "zh-CN": "某位用户",
+    "reviewedEnglishHash": "38649849c77ed762909ab95e7a533bd7f6aec1d73a15c3cb38fbd72d3961d236"
+  },
+  "auditFeed.viewRun": {
+    "en": "View run",
+    "zh-CN": "查看运行",
+    "reviewedEnglishHash": "aaf7fccc7d1315f23f35073f1d89aa8357c5d0cdb9b00a03ee2a4291e976b9ac"
+  }
+}

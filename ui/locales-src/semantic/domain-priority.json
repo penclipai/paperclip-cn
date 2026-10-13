@@ -1,0 +1,22 @@
+{
+  "priority.critical": {
+    "en": "Critical",
+    "zh-CN": "严重",
+    "reviewedEnglishHash": "427dd2969bd140bec3c1bcc7983da982f4815938cd4510ad0b2bad48ac5b55f9"
+  },
+  "priority.high": {
+    "en": "High",
+    "zh-CN": "高",
+    "reviewedEnglishHash": "c4ebc6d4a5832cd9415f906ad03661110c705a72381c8b8b145761d02e2dd23a"
+  },
+  "priority.low": {
+    "en": "Low",
+    "zh-CN": "低",
+    "reviewedEnglishHash": "f793de205ead5ac302c4a1627829dea41f176b1068b993a32373fc869918374b"
+  },
+  "priority.medium": {
+    "en": "Medium",
+    "zh-CN": "中",
+    "reviewedEnglishHash": "8e588cd187741f1cd76f5fab77b7208782a8c21d764ce7d7a4cf3ac4e0968873"
+  }
+}

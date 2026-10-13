@@ -1,0 +1,832 @@
+{
+  "routineDetail.activeTriggerCount": {
+    "en": "{{count}} active",
+    "zh-CN": "{{count}} 个启用",
+    "reviewedEnglishHash": "4802553ea222b16ad738b68543a5d17b939ee6ea20cdcb46453107d9ebf7b2cf"
+  },
+  "routineDetail.addFirstTrigger": {
+    "en": "Add your first trigger",
+    "zh-CN": "添加第一个触发器",
+    "reviewedEnglishHash": "ad3a31a3ebb9ae6ac86a8022c59deddfbe5dae8affe434bacdd24217cef92fdd"
+  },
+  "routineDetail.addInstructions": {
+    "en": "Add instructions...",
+    "zh-CN": "添加说明...",
+    "reviewedEnglishHash": "d49e19c5685d2f96c0d5183139ae026295b48095b4e78dcc5d8fc735f5b8157b"
+  },
+  "routineDetail.addSchedule": {
+    "en": "Add a schedule",
+    "zh-CN": "添加计划",
+    "reviewedEnglishHash": "3d19f1acee38d48925b9b6b498317322e2ee17802c9fa6f43e006f11c1b20d7d"
+  },
+  "routineDetail.addTrigger": {
+    "en": "Add trigger",
+    "zh-CN": "添加触发器",
+    "reviewedEnglishHash": "58fd308928ddaee36eb178a5b600160246b6c36f3f9b18fb2eb1c84ab80cc58a"
+  },
+  "routineDetail.addTriggerFailedBody": {
+    "en": "Paperclip could not create the trigger.",
+    "zh-CN": "Paperclip 无法创建触发器。",
+    "reviewedEnglishHash": "fd1dc6005b3dd0ca81fad397a72b5ee633cfc7fcb1125d7ee9520a204a534b45"
+  },
+  "routineDetail.assignmentFor": {
+    "en": "For",
+    "zh-CN": "用于",
+    "reviewedEnglishHash": "ca15ebc05a3c5c1348753b209c4452c54022dbe565d9943b11c795e3af9eb0b0"
+  },
+  "routineDetail.automationEnabled": {
+    "en": "Automation enabled.",
+    "zh-CN": "自动化已启用。",
+    "reviewedEnglishHash": "bd08450d63406844c2e2473a30f93a9d5b0d441f4c71f5cbe440be45411c6362"
+  },
+  "routineDetail.automationPaused": {
+    "en": "Automation paused.",
+    "zh-CN": "自动化已暂停。",
+    "reviewedEnglishHash": "9ac97bafbb1dae0039828b9b7ef1b00ba4da9610add69921484e7ccdb549c598"
+  },
+  "routineDetail.boundSecretCount": {
+    "en": "{{count}} bound",
+    "zh-CN": "已绑定 {{count}} 个",
+    "reviewedEnglishHash": "b0422c446ef75f748b21e98943dd922de1a6226940eddce80ef576f2868f1a9b"
+  },
+  "routineDetail.catchUp": {
+    "en": "Catch-up",
+    "zh-CN": "补跑",
+    "reviewedEnglishHash": "1c2d0f8e6b923cd0a11a66153c02e876c1909705e2040bc56728a741f375316f"
+  },
+  "routineDetail.catchUp.enqueueMissedWithCap": {
+    "en": "Catch up missed schedule windows in capped batches after recovery.",
+    "zh-CN": "恢复后按上限分批补齐错过的调度窗口。",
+    "reviewedEnglishHash": "f61e7d087fc7f5a1f9a07eba79a35d9647ba84d7eee1f92694e091397ff54aa2"
+  },
+  "routineDetail.catchUp.skipMissed": {
+    "en": "Ignore schedule windows that were missed while the routine or scheduler was paused.",
+    "zh-CN": "忽略例行任务或调度器暂停期间错过的调度窗口。",
+    "reviewedEnglishHash": "cab9dc9046d590bbfcb92c5fa2b68eb7bbdbfd9caae516bbeeab5b215f948454"
+  },
+  "routineDetail.catchUpPolicy": {
+    "en": "Catch-up policy",
+    "zh-CN": "补跑策略",
+    "reviewedEnglishHash": "7e194dbbe6211c06771eb8fd211acdcfa0a456dfd6dec3af00d9e1ea14e32ec3"
+  },
+  "routineDetail.changedElsewhereReload": {
+    "en": "Routine changed elsewhere. Reload to merge.",
+    "zh-CN": "例行任务已在别处变更。重新加载以合并。",
+    "reviewedEnglishHash": "3148fbdb84a4b02882e327af29e3d5cfb86be194a5d8f874cf994b7d8ea37c7f"
+  },
+  "routineDetail.concurrency": {
+    "en": "Concurrency",
+    "zh-CN": "并发",
+    "reviewedEnglishHash": "8708492f3ef5c138d635939ee1a71b0a17d25f56920c64ea44122ef2c966be73"
+  },
+  "routineDetail.concurrency.alwaysEnqueue": {
+    "en": "Queue every trigger occurrence, even if several runs stack up.",
+    "zh-CN": "排队每次触发，即使多个运行会堆积。",
+    "reviewedEnglishHash": "1d8944578a61f1d6bd9f4acdcb32484d1f6d0eba4c355e33751a678b8e5bf7c1"
+  },
+  "routineDetail.concurrency.coalesceIfActive": {
+    "en": "Keep one follow-up run queued while an active run is still working.",
+    "zh-CN": "当已有运行仍在工作时，只保留一个后续运行排队。",
+    "reviewedEnglishHash": "f81f576dbdbb1235d762af342c168ce3055aa1efeefe33c34c5a506059120abb"
+  },
+  "routineDetail.concurrency.skipIfActive": {
+    "en": "Drop overlapping trigger occurrences while the routine is already active.",
+    "zh-CN": "当例行任务已在运行时，丢弃重叠触发。",
+    "reviewedEnglishHash": "ca3216548bcc2420d7f3de81d681506d09698f5339d4ce96644881665c16cc8e"
+  },
+  "routineDetail.concurrencyPolicy": {
+    "en": "Concurrency policy",
+    "zh-CN": "并发策略",
+    "reviewedEnglishHash": "a8ac65f38acd5ac8487de34b1132b7340f35b2bb113bcc5e0696a99aced3cbcd"
+  },
+  "routineDetail.copiedSecretValue": {
+    "en": "{{label}} copied",
+    "zh-CN": "已复制{{label}}",
+    "reviewedEnglishHash": "7cac41711ac225152a34561324d34012ef6e0b835c0af5cb69fddb3e0931dc2e"
+  },
+  "routineDetail.copySecretFailed": {
+    "en": "Failed to copy {{label}}",
+    "zh-CN": "复制{{label}}失败",
+    "reviewedEnglishHash": "1b5ee5a270a28d528cf56c97d139a4b79c1592421eeaa16c69d09f70ed438730"
+  },
+  "routineDetail.defaultAgentRequiredBody": {
+    "en": "Set a default agent before enabling routine automation.",
+    "zh-CN": "请先设置默认智能体，再启用例行任务自动化。",
+    "reviewedEnglishHash": "1885fd9975c55136f7394376064cadd8d673119e715e87c3552d174a755580dd"
+  },
+  "routineDetail.defaultAgentRequiredNotice": {
+    "en": "Default agent required. This routine can stay as a draft and still run manually, but automation stays paused until you assign a default agent.",
+    "zh-CN": "需要默认智能体。此例行任务可以保持为草稿并手动运行，但在分配默认智能体前，自动化会保持暂停。",
+    "reviewedEnglishHash": "07c2de4a8829569682ad7051e9345b312c51b178ba7da2487ed21c42803c485e"
+  },
+  "routineDetail.defaultAgentRequiredTitle": {
+    "en": "Default agent required",
+    "zh-CN": "需要默认智能体",
+    "reviewedEnglishHash": "2761f376d7aad0e897852801b16fb159cb217d08bba0aa43819ee61011a02545"
+  },
+  "routineDetail.deleteTriggerDescription": {
+    "en": "\"{{label}}\" will be removed. This can't be undone.",
+    "zh-CN": "“{{label}}”将被移除。此操作无法撤销。",
+    "reviewedEnglishHash": "b64536c22c0c35c59771b6c1933880dcc42ac9244c434573889569cfbe359c89"
+  },
+  "routineDetail.deleteTriggerFailed": {
+    "en": "Failed to delete trigger",
+    "zh-CN": "删除触发器失败",
+    "reviewedEnglishHash": "86096d6fbe637665ecf625ea4da5e66c636cfd7f903c330dc320b1a49ac268e6"
+  },
+  "routineDetail.deleteTriggerFailedBody": {
+    "en": "Paperclip could not delete the trigger.",
+    "zh-CN": "Paperclip 无法删除触发器。",
+    "reviewedEnglishHash": "79940d23c658116430d590ea66bb409d368e2ee444c48193b1b8023e7a96664d"
+  },
+  "routineDetail.deleteTriggerTitle": {
+    "en": "Delete trigger?",
+    "zh-CN": "删除触发器？",
+    "reviewedEnglishHash": "d4043a7d07b3f8209cd3c6a6eeb478cb8b6c385ba2bafdbb176af54bf8f818b7"
+  },
+  "routineDetail.dirty.catchUp": {
+    "en": "the catch-up policy",
+    "zh-CN": "补跑策略",
+    "reviewedEnglishHash": "d4abae3db21d0959a6943427d2ea3db03bb2ca23bd944d6257fa4c65604dc7e3"
+  },
+  "routineDetail.dirty.concurrency": {
+    "en": "the concurrency policy",
+    "zh-CN": "并发策略",
+    "reviewedEnglishHash": "f6cd91903edd18e79b66bdcfd433685c993cf30a4b373ddfe9cd2552989c2a9b"
+  },
+  "routineDetail.dirty.defaultAgent": {
+    "en": "the default agent",
+    "zh-CN": "默认智能体",
+    "reviewedEnglishHash": "730b86dbeb212af8090bad623dc37d37279b813cb842668a9d1ed9968cd58d80"
+  },
+  "routineDetail.dirty.description": {
+    "en": "the description",
+    "zh-CN": "说明",
+    "reviewedEnglishHash": "734b09bc156cb750969eef90a79c1a253b8eef447fe193867b1c28d64bc7b1db"
+  },
+  "routineDetail.dirty.priority": {
+    "en": "the priority",
+    "zh-CN": "优先级",
+    "reviewedEnglishHash": "6b75dd28dd04c1a7742ed9d8887a323e9a13dcd177b2290a3d508a04023f329f"
+  },
+  "routineDetail.dirty.project": {
+    "en": "the project",
+    "zh-CN": "项目",
+    "reviewedEnglishHash": "059df477b2cb17de69fe3c613c4a8c0fafde2f3678015a9d05041253a5de3c5e"
+  },
+  "routineDetail.dirty.secrets": {
+    "en": "the secrets",
+    "zh-CN": "密钥",
+    "reviewedEnglishHash": "b0cf292870f1c333c86aace18de4bbb322e962fc4953e2ae0816fa5ba2c0d889"
+  },
+  "routineDetail.dirty.title": {
+    "en": "the title",
+    "zh-CN": "标题",
+    "reviewedEnglishHash": "09cb2aa33cd8ccd7e989a8ed0588a7e57d0fd3c0a035ed861388a327a1c06418"
+  },
+  "routineDetail.dirty.variables": {
+    "en": "the variables",
+    "zh-CN": "变量",
+    "reviewedEnglishHash": "ee87e5c506d7645e29a9c355f6dd1dbbada7d97089871b7001eb7f8dcd1014ed"
+  },
+  "routineDetail.discardChanges": {
+    "en": "Discard changes",
+    "zh-CN": "放弃更改",
+    "reviewedEnglishHash": "f9bfa3dc7c8fcdea10ec324b8f3a6876f76fc8f541aa41b2e1da20979064dc0b"
+  },
+  "routineDetail.discardChangesDescription": {
+    "en": "This will revert {{count}} unsaved changes in this section.",
+    "zh-CN": "这会还原本节中的 {{count}} 个未保存更改。",
+    "reviewedEnglishHash": "852e3e8e3582fe501b29cd3d59a85e7c37d76d250b6de3b7bfd0886c50faee10"
+  },
+  "routineDetail.discardChangesDescription_one": {
+    "en": "This will revert {{count}} unsaved change in this section.",
+    "zh-CN": "这会还原本节中的 {{count}} 个未保存更改。",
+    "reviewedEnglishHash": "c4e6881903368393f4b027ee76722e3e89c3064eeb3b97cc22667c93f3bf1da8"
+  },
+  "routineDetail.discardChangesDescription_other": {
+    "en": "This will revert {{count}} unsaved changes in this section.",
+    "zh-CN": "这会还原本节中的 {{count}} 个未保存更改。",
+    "reviewedEnglishHash": "852e3e8e3582fe501b29cd3d59a85e7c37d76d250b6de3b7bfd0886c50faee10"
+  },
+  "routineDetail.discardChangesTitle": {
+    "en": "Discard changes?",
+    "zh-CN": "放弃更改？",
+    "reviewedEnglishHash": "85bcf41666a53691403e5143716318c50c069dbdd8fde2e2cc589d210f177c06"
+  },
+  "routineDetail.editInstructions": {
+    "en": "Edit instructions",
+    "zh-CN": "编辑说明",
+    "reviewedEnglishHash": "23e275114309dfff8acf2f6f2eca9be1d05479e914ce1bdc35968ad322b01db9"
+  },
+  "routineDetail.enableAutomaticTriggers": {
+    "en": "Enable automatic triggers",
+    "zh-CN": "启用自动触发",
+    "reviewedEnglishHash": "caf1977652efb1543f29a09a696e6f01f4093176f641640d55ffd90b7b4bc72b"
+  },
+  "routineDetail.filter.anyTime": {
+    "en": "Any time",
+    "zh-CN": "任意时间",
+    "reviewedEnglishHash": "5e7de49a40c3d7546e1c0e7a514ca92bd4c524553f6f3eadb8b9de6b35909dfe"
+  },
+  "routineDetail.filter.date": {
+    "en": "Date",
+    "zh-CN": "日期",
+    "reviewedEnglishHash": "99c40ab405926cb5ad1def9cff4d7ce624f8f8abfff4e85f655347fcb949d08e"
+  },
+  "routineDetail.filter.dateWithColon": {
+    "en": "Date:",
+    "zh-CN": "日期：",
+    "reviewedEnglishHash": "b51489bde8d895135531d774a017a1213584cee230b5581347527b285b88f652"
+  },
+  "routineDetail.filter.last24h": {
+    "en": "Last 24h",
+    "zh-CN": "最近 24 小时",
+    "reviewedEnglishHash": "3033b37ea23466d2462bf62af2599d64e8fc6b845e231dc511a2d04d1f9514cf"
+  },
+  "routineDetail.filter.last30d": {
+    "en": "Last 30d",
+    "zh-CN": "最近 30 天",
+    "reviewedEnglishHash": "bbada0d68c50286ddc13079a48a7337b50d72c8edd5e86735e7cb433b43a4b9e"
+  },
+  "routineDetail.filter.last7d": {
+    "en": "Last 7d",
+    "zh-CN": "最近 7 天",
+    "reviewedEnglishHash": "9976054f2ae7088cb22aba9dadef1a70cbf6702dacfbc4d6c3d705d42a55990b"
+  },
+  "routineDetail.filter.source": {
+    "en": "Source",
+    "zh-CN": "来源",
+    "reviewedEnglishHash": "0e570ca6fabe24f94e52c1833f3ffd25567022beb826fa16891f3322051bc221"
+  },
+  "routineDetail.filter.sourceWithColon": {
+    "en": "Source:",
+    "zh-CN": "来源：",
+    "reviewedEnglishHash": "c707ee4ecc24044266322a90cf1a23752824f57a628facc169ddbe215ada4adb"
+  },
+  "routineDetail.filter.status": {
+    "en": "Status",
+    "zh-CN": "状态",
+    "reviewedEnglishHash": "920e413c7d411b61ef3e8c63b1cb6ad058d5f95f8b481dbafe60248387d8c355"
+  },
+  "routineDetail.filter.statusWithColon": {
+    "en": "Status:",
+    "zh-CN": "状态：",
+    "reviewedEnglishHash": "755c8b2a9fb114460e0909ab65c8cd47696b7648cbcdad3dbccd937c40660d0f"
+  },
+  "routineDetail.filterByDate": {
+    "en": "Filter by date",
+    "zh-CN": "按日期筛选",
+    "reviewedEnglishHash": "385d4932fa7d5e929a56678f09c2959c246ebdab2c10210031b7a7b108efd680"
+  },
+  "routineDetail.filterBySource": {
+    "en": "Filter by source",
+    "zh-CN": "按来源筛选",
+    "reviewedEnglishHash": "e150d205164c213c3f3ef203c4d0e9efa51779f9fe54efc8b2cbfd4b0187adc4"
+  },
+  "routineDetail.filterByStatus": {
+    "en": "Filter by status",
+    "zh-CN": "按状态筛选",
+    "reviewedEnglishHash": "94d5a7703a8250de4c9e24b29839ffafa5d8477efb19c56ebce83470102e6212"
+  },
+  "routineDetail.keepEditing": {
+    "en": "Keep editing",
+    "zh-CN": "继续编辑",
+    "reviewedEnglishHash": "e76fd2add01005ae11754d75ec97923c1a20a5f42e37d469c80f06a14e433511"
+  },
+  "routineDetail.loadFailedBody": {
+    "en": "We couldn't load this routine.",
+    "zh-CN": "无法加载这个例行任务。",
+    "reviewedEnglishHash": "737c9508fbf29f62149a009e3ac33e29cf58e2cab65d2ea533d8a2978efc0dde"
+  },
+  "routineDetail.manageBoundSecrets": {
+    "en": "Manage bound secrets",
+    "zh-CN": "管理已绑定密钥",
+    "reviewedEnglishHash": "0b00dd96451975b2cd94bd5abca0d0ecf55630a58d72b85208971f4ecba5709c"
+  },
+  "routineDetail.managedBy": {
+    "en": "Managed by {{name}}",
+    "zh-CN": "由 {{name}} 管理",
+    "reviewedEnglishHash": "857e630570ad0a42c76d322e18d6443e18085fd098c24218e81a00a473351c90"
+  },
+  "routineDetail.nav.activity": {
+    "en": "Activity",
+    "zh-CN": "活动",
+    "reviewedEnglishHash": "38da1505ca8373288489495101b14f24ac95078f520ad64df18272aa6054f750"
+  },
+  "routineDetail.nav.delivery": {
+    "en": "Delivery",
+    "zh-CN": "交付",
+    "reviewedEnglishHash": "52bfe584a5fc450539e2aa651b990fa2415060492a243816ab2994292089c6fd"
+  },
+  "routineDetail.nav.history": {
+    "en": "History",
+    "zh-CN": "历史",
+    "reviewedEnglishHash": "0e769600933790607b2a13b33ddfade0fa17810eb62c3b28ee23e59516516491"
+  },
+  "routineDetail.nav.operate": {
+    "en": "Operate",
+    "zh-CN": "运行",
+    "reviewedEnglishHash": "58c3939c4ce986c8214c952908728775a4e2bc3ef188b6aaea9620dbd805658e"
+  },
+  "routineDetail.nav.overview": {
+    "en": "Overview",
+    "zh-CN": "概览",
+    "reviewedEnglishHash": "d4b1ea5708dd532930a85188b45aff6f0a3ed458500c7577e0127a538eb0d100"
+  },
+  "routineDetail.nav.routine": {
+    "en": "Routine",
+    "zh-CN": "例行任务",
+    "reviewedEnglishHash": "0b5baf309897ec7e2def5db089f1f4ec5b15d5912296577d655d00ca0fc40b59"
+  },
+  "routineDetail.nav.runs": {
+    "en": "Runs",
+    "zh-CN": "运行",
+    "reviewedEnglishHash": "848f54e89660cea4357644039ac5d7146f76c8e85df5c04076e08feb7e7547f0"
+  },
+  "routineDetail.nav.secrets": {
+    "en": "Secrets",
+    "zh-CN": "密钥",
+    "reviewedEnglishHash": "d8707d411d997657b1ca20b02711bdef4f5e144ea47c7b4a5307d95150c0b2be"
+  },
+  "routineDetail.nav.section": {
+    "en": "Routine section",
+    "zh-CN": "例行任务分区",
+    "reviewedEnglishHash": "0f3c4f87d442a219bc6cf254aea430eeaba76490e85d0b1419f88b01abc3fe4a"
+  },
+  "routineDetail.nav.sections": {
+    "en": "Routine sections",
+    "zh-CN": "例行任务分区",
+    "reviewedEnglishHash": "05ddb20fccb7fc9e8982d78cb70c34b78968ce5432eac23e733607b1401257b7"
+  },
+  "routineDetail.nav.triggers": {
+    "en": "Triggers",
+    "zh-CN": "触发器",
+    "reviewedEnglishHash": "e62f2148a64d96bbe686416d73a233e656bf7e9fb9c2160598b525f6a99c8de6"
+  },
+  "routineDetail.nav.variables": {
+    "en": "Variables",
+    "zh-CN": "变量",
+    "reviewedEnglishHash": "02db55bac5e3f7ceb98fdea15d7dfcfd40efcc41b777d10c2a8483b571f332bd"
+  },
+  "routineDetail.newTrigger": {
+    "en": "New trigger",
+    "zh-CN": "新建触发器",
+    "reviewedEnglishHash": "a38f4ea67a30a344dfe690963ab4e063a5a3d151be24b971e45297147a996ee3"
+  },
+  "routineDetail.nextAt": {
+    "en": "Next: {{time}}",
+    "zh-CN": "下次：{{time}}",
+    "reviewedEnglishHash": "c89ce48a5063e58fd89be0ed5cea1e9e2811f3e9ec8a8cf7382556d3218280ea"
+  },
+  "routineDetail.nextFireAt": {
+    "en": "Next fire {{time}}",
+    "zh-CN": "下次触发 {{time}}",
+    "reviewedEnglishHash": "5e87999ac609a503de47685629e73cd61eb02b8bc0f0123c147853aaecaabadf"
+  },
+  "routineDetail.nextFiveFires": {
+    "en": "Next 5 fires",
+    "zh-CN": "接下来 5 次触发",
+    "reviewedEnglishHash": "10b02c89b237563af94ccaf3fce91d20f1e416f429cdf7ec1b0cbda20861d1f0"
+  },
+  "routineDetail.noActivityYet": {
+    "en": "No activity yet.",
+    "zh-CN": "暂无活动。",
+    "reviewedEnglishHash": "a288d2d0a21eed3c166d051806b178bc88cbd4a5390fd7c7aa6725826c237c98"
+  },
+  "routineDetail.noRunsMatchFilters": {
+    "en": "No runs match these filters.",
+    "zh-CN": "没有运行符合这些筛选条件。",
+    "reviewedEnglishHash": "aedae6e517ebb7db3538116f0effb6a465b267077bcaf35211319996acdfa2e2"
+  },
+  "routineDetail.noRunsYetBody": {
+    "en": "No runs yet. Trigger a run from the header or wait for the schedule.",
+    "zh-CN": "暂无运行。可以从页头触发运行，或等待计划触发。",
+    "reviewedEnglishHash": "e5e464b6c6ed0250a360169474ef048674ed08ee38a7e36257453c68be46d352"
+  },
+  "routineDetail.noSchedulePreview": {
+    "en": "No enabled schedule trigger to preview. Add a schedule in Triggers to see how this policy treats upcoming fires.",
+    "zh-CN": "没有可预览的已启用计划触发器。请在“触发器”中添加计划，查看此策略如何处理后续触发。",
+    "reviewedEnglishHash": "54271cadfcc1716dc7c1c6dd6cb74f86083cf8053a651954db95dfb512fd0db1"
+  },
+  "routineDetail.noTriggersYet": {
+    "en": "No triggers yet",
+    "zh-CN": "还没有触发器",
+    "reviewedEnglishHash": "362ec1f12075d1e3aae64b22a63baac08ec21ad5a9f57364b0fd0776106c7220"
+  },
+  "routineDetail.noTriggersYetPeriod": {
+    "en": "No triggers yet.",
+    "zh-CN": "暂无触发器。",
+    "reviewedEnglishHash": "4d6663215ba49a0770dcdaf490c74891a1e80e3bbe8213e35d5021970086d3ef"
+  },
+  "routineDetail.noVariablesYet": {
+    "en": "No variables yet. Add a {{placeholder}} in the title or instructions to create one.",
+    "zh-CN": "暂无变量。在标题或说明中添加 {{placeholder}} 即可创建变量。",
+    "reviewedEnglishHash": "56192d62567ca91f15aabea5a95fbdbfe7c46d4cb87d6c7801bdf0da93766556"
+  },
+  "routineDetail.openRunsEmptyAria": {
+    "en": "No runs. Open runs.",
+    "zh-CN": "暂无运行。打开运行。",
+    "reviewedEnglishHash": "b6004279d997e3a192f710d9f385058f6b430183ab4273a95c9286a3d6ecf2cf"
+  },
+  "routineDetail.openRunsWithStatusAria": {
+    "en": "Last run {{status}}. Open runs.",
+    "zh-CN": "上次运行 {{status}}。打开运行。",
+    "reviewedEnglishHash": "e9d2dbc9ae7dfa52c35356a17e122386e4f55ae4e6c13cdb163330895a60cbb4"
+  },
+  "routineDetail.openSecretsAria": {
+    "en": "{{count}} secrets bound. Open secrets.",
+    "zh-CN": "已绑定 {{count}} 个密钥。打开密钥。",
+    "reviewedEnglishHash": "3a9968d68eec2dadbd28279cffa3a5ba779d22eea785126eadca13e2851ba4db"
+  },
+  "routineDetail.openTriggersAria": {
+    "en": "{{count}} triggers. Open triggers.",
+    "zh-CN": "{{count}} 个触发器。打开触发器。",
+    "reviewedEnglishHash": "8624e8b8d64dbf5e5456046d7d13064551f5dd01e05dd5f3e9ebd3200f0b91cf"
+  },
+  "routineDetail.outOfDate": {
+    "en": "Out of date",
+    "zh-CN": "版本已过期",
+    "reviewedEnglishHash": "c8f1506a7d60a32e0097661fdc16aa9b24609db5c78302244e8c1c884975357f"
+  },
+  "routineDetail.outOfDateBody": {
+    "en": "This routine changed while you were editing. Reload to merge the latest revision before saving again.",
+    "zh-CN": "你编辑期间这个例行任务已发生变化。请重新加载并合并最新修订后再保存。",
+    "reviewedEnglishHash": "e1c07d9615f614e5280f2572cca2dba3aeffc633a773a898ec0a480c916fef2b"
+  },
+  "routineDetail.overwriteAnyway": {
+    "en": "Overwrite anyway",
+    "zh-CN": "仍然覆盖",
+    "reviewedEnglishHash": "9511749cbd44948d0dc35c5b31fa5aae47aa6f40739361838de5784ac7f28da2"
+  },
+  "routineDetail.overwriteTooltip": {
+    "en": "Replaces the newer revision with your local edits.",
+    "zh-CN": "用你的本地编辑替换较新的版本。",
+    "reviewedEnglishHash": "fec05c5b616364ae6402cc65e3324f718dcc4dcb5c0a491c366c04124075e922"
+  },
+  "routineDetail.pauseAutomaticTriggers": {
+    "en": "Pause automatic triggers",
+    "zh-CN": "暂停自动触发",
+    "reviewedEnglishHash": "0231dbe5cafb33a331d42b77a29f8a3e2fd5948d7e6e49fe582f9450f2b12916"
+  },
+  "routineDetail.pendingChanges": {
+    "en": "Pending changes",
+    "zh-CN": "待保存更改",
+    "reviewedEnglishHash": "54ae644fbb47b1f09b0b4751b5e46fe636348c7e9ae3ec016176cc2c05415874"
+  },
+  "routineDetail.policy.always_enqueue": {
+    "en": "always enqueue",
+    "zh-CN": "始终排队",
+    "reviewedEnglishHash": "47e334abfdf295e042a23fa1fa0caf73020a3d040796eb61810e6f36217ad997"
+  },
+  "routineDetail.policy.coalesce_if_active": {
+    "en": "coalesce if active",
+    "zh-CN": "运行中合并",
+    "reviewedEnglishHash": "a1899c0564aceb202502f5aa3e01bd747ff6a9a22e5c83a805bce01085e02826"
+  },
+  "routineDetail.policy.enqueue_missed_with_cap": {
+    "en": "enqueue missed with cap",
+    "zh-CN": "按上限补跑错过窗口",
+    "reviewedEnglishHash": "ac6bca62abd4b489ff541fb817360a94cbdb59702c03f1ea6a73305a8764fa1e"
+  },
+  "routineDetail.policy.skip_if_active": {
+    "en": "skip if active",
+    "zh-CN": "运行中跳过",
+    "reviewedEnglishHash": "a31d33dc721c16d7769ed61c702d7a5f5aff345a1b14fa01a127b6a507a24b69"
+  },
+  "routineDetail.policy.skip_missed": {
+    "en": "skip missed",
+    "zh-CN": "跳过错过窗口",
+    "reviewedEnglishHash": "4a4842084fd5be9a2bef907ad22bba15635d2933a938ee7e669b46a06a6834a2"
+  },
+  "routineDetail.policyDescription.always_enqueue": {
+    "en": "Queue every trigger occurrence, even if several runs stack up.",
+    "zh-CN": "为每次触发都排队，即使多个运行堆叠。",
+    "reviewedEnglishHash": "1d8944578a61f1d6bd9f4acdcb32484d1f6d0eba4c355e33751a678b8e5bf7c1"
+  },
+  "routineDetail.policyDescription.coalesce_if_active": {
+    "en": "Keep one follow-up run queued while an active run is still working.",
+    "zh-CN": "当已有运行仍在工作时，只保留一个后续排队运行。",
+    "reviewedEnglishHash": "f81f576dbdbb1235d762af342c168ce3055aa1efeefe33c34c5a506059120abb"
+  },
+  "routineDetail.policyDescription.enqueue_missed_with_cap": {
+    "en": "Catch up missed schedule windows after recovery; sub-hourly schedules are combined into one catch-up run, slower schedules replay each missed window up to a cap.",
+    "zh-CN": "恢复后补跑错过的计划窗口；小时内多次触发的计划会合并为一次补跑，较低频计划会逐个重放错过的窗口，直到达到上限。",
+    "reviewedEnglishHash": "5137b63345e0bb4f21c036f14a38e30f5a7adf2d0c5dbd68ca6c9d6b03d005c2"
+  },
+  "routineDetail.policyDescription.skip_if_active": {
+    "en": "Drop overlapping trigger occurrences while the routine is already active.",
+    "zh-CN": "当例行任务已处于活动状态时，丢弃重叠触发。",
+    "reviewedEnglishHash": "ca3216548bcc2420d7f3de81d681506d09698f5339d4ce96644881665c16cc8e"
+  },
+  "routineDetail.policyDescription.skip_missed": {
+    "en": "Ignore schedule windows that were missed while paused.",
+    "zh-CN": "忽略暂停期间错过的计划窗口。",
+    "reviewedEnglishHash": "403c69b07373abc7e3feee8b89b2abe252212dfb73fa4da3849780da5d2dccbc"
+  },
+  "routineDetail.policyTitle.always_enqueue": {
+    "en": "Always enqueue",
+    "zh-CN": "始终排队",
+    "reviewedEnglishHash": "14769882600a7ef2502b1bbf681bd83971e67117576169171dc08404bdaeff45"
+  },
+  "routineDetail.policyTitle.coalesce_if_active": {
+    "en": "Coalesce if active",
+    "zh-CN": "活动时合并",
+    "reviewedEnglishHash": "ee3319ab1628d0c6340b3af4147df5dab9203470f796a2080806260a49de20c5"
+  },
+  "routineDetail.policyTitle.enqueue_missed_with_cap": {
+    "en": "Enqueue missed with cap",
+    "zh-CN": "按上限补跑",
+    "reviewedEnglishHash": "97c8825e971347d288d71621df216c495fd3093493818329bedf82d20b51c823"
+  },
+  "routineDetail.policyTitle.skip_if_active": {
+    "en": "Skip if active",
+    "zh-CN": "活动时跳过",
+    "reviewedEnglishHash": "128f844b123f2a29759062e0406a935b488660726a33307ae8e25421f83b84f0"
+  },
+  "routineDetail.policyTitle.skip_missed": {
+    "en": "Skip missed",
+    "zh-CN": "跳过错过项",
+    "reviewedEnglishHash": "23ab424e7bc844bb2f152bcda87cd670d18b289e8b587a3ab90bf7d0a0c9ea68"
+  },
+  "routineDetail.previewAssumesPreviousRun": {
+    "en": "Preview assumes the previous run is still in flight when the next fires. Times shown in",
+    "zh-CN": "预览假设下一次触发时上一个运行仍在进行。时间显示为",
+    "reviewedEnglishHash": "175c07ce53a27cb31b75cec25184d43da340088f266d73de8e141db60d9affb5"
+  },
+  "routineDetail.readOnlyStrip": {
+    "en": "Read-only - you don't own this routine.",
+    "zh-CN": "只读 - 你不拥有此例行任务。",
+    "reviewedEnglishHash": "f652b37ab5d86598b64668ec1d2fae015fd986c9617c62272a51e4ed984c2553"
+  },
+  "routineDetail.reloadLatest": {
+    "en": "Reload latest",
+    "zh-CN": "重新加载最新版本",
+    "reviewedEnglishHash": "cb5bbbf3fd17d086f63cb5f58d8b68a6e6121b7385046a585863cc0460fadf82"
+  },
+  "routineDetail.replayWindowSeconds": {
+    "en": "Replay window (seconds)",
+    "zh-CN": "重放窗口（秒）",
+    "reviewedEnglishHash": "88c7ec0cb4218eda4971a995ff82400829aa190bca88296da05e38fd705ff4db"
+  },
+  "routineDetail.rotateSecret": {
+    "en": "Rotate secret",
+    "zh-CN": "轮换密钥",
+    "reviewedEnglishHash": "4405518d273bb7b5bd171390bb3386fb2c46f9bf55609bbc8c8f91adeed5a3bd"
+  },
+  "routineDetail.rotateWebhookSecretFailed": {
+    "en": "Failed to rotate webhook secret",
+    "zh-CN": "轮换 Webhook 密钥失败",
+    "reviewedEnglishHash": "1caaab4fa334b7925bbd606f02c91af6edc5860d1290d55f03f851c36cd813a3"
+  },
+  "routineDetail.rotateWebhookSecretFailedBody": {
+    "en": "Paperclip could not rotate the webhook secret.",
+    "zh-CN": "Paperclip 无法轮换 Webhook 密钥。",
+    "reviewedEnglishHash": "1d49f9c861d9e44e800c60428286054f433ec0b90dd554ed827e9e703fba14d8"
+  },
+  "routineDetail.routineChanged": {
+    "en": "Routine changed",
+    "zh-CN": "例行任务已变化",
+    "reviewedEnglishHash": "cd400efa4e49f559b27632d0bab50697d9e687bf01bc6274e97996a1d99eac1f"
+  },
+  "routineDetail.routineChangedBody": {
+    "en": "Someone else updated this routine. Reload to see the latest revision.",
+    "zh-CN": "其他人更新了这个例行任务。请重新加载以查看最新修订。",
+    "reviewedEnglishHash": "be054fbd151f1c704460cff38d021716ac7f07bd00fa32c51875c41b2b364980"
+  },
+  "routineDetail.runFailedBody": {
+    "en": "Paperclip could not start the routine run.",
+    "zh-CN": "Paperclip 无法启动例行任务运行。",
+    "reviewedEnglishHash": "5628bbf83ac3d58dba8413ebdf9701bb24bd99dea60a66e54f2a8f00ab257d6e"
+  },
+  "routineDetail.saveFailed": {
+    "en": "Failed to save routine",
+    "zh-CN": "保存例行任务失败",
+    "reviewedEnglishHash": "34cf35e3379f573ced7c79ee534168c5e3f65224fdfd6e737b66950273163e7c"
+  },
+  "routineDetail.saveFailedBody": {
+    "en": "Paperclip could not save the routine.",
+    "zh-CN": "Paperclip 无法保存例行任务。",
+    "reviewedEnglishHash": "e2293cfe5ae84a2c98d90bb204180f5ebda34428dd88e0c0479eef079cf7276d"
+  },
+  "routineDetail.saveSecretNow": {
+    "en": "Save this now. Paperclip will not show the secret value again.",
+    "zh-CN": "请立即保存。Paperclip 不会再次显示密钥值。",
+    "reviewedEnglishHash": "70e9778951e475929344fb034a3f38b1adb267252ad4ba690ee68cded08561f9"
+  },
+  "routineDetail.saveTrigger": {
+    "en": "Save trigger",
+    "zh-CN": "保存触发器",
+    "reviewedEnglishHash": "7ad121c939a8909f6dac283604060dbbdf4d4f736799e2193a6caed2ff32bfb9"
+  },
+  "routineDetail.secretsApplyPrefix": {
+    "en": "Routine secrets apply to every task this routine creates. They override matching keys in project and agent env.",
+    "zh-CN": "例行任务密钥会应用到此例行任务创建的每个任务。它们会覆盖项目和智能体环境中的同名 key。",
+    "reviewedEnglishHash": "2e5039980e4e0e524067bf05772664c43e09d0e5220d226606698d1f27f339aa"
+  },
+  "routineDetail.secretsReservedSuffix": {
+    "en": "names are reserved.",
+    "zh-CN": "名称为保留项。",
+    "reviewedEnglishHash": "a23f67d34f6831c39b9a5ee32adf16d3b0388697709713fb109902a2b8207686"
+  },
+  "routineDetail.selectCompany": {
+    "en": "Select a company to view routines.",
+    "zh-CN": "选择一家公司来查看例行任务。",
+    "reviewedEnglishHash": "3418ac74952c01dbdbec6770241098b499ec59255b536d5123bc488d64371a01"
+  },
+  "routineDetail.showActivityPanel": {
+    "en": "Show triggers, runs and activity",
+    "zh-CN": "显示触发器、运行和活动",
+    "reviewedEnglishHash": "e43837af041bea5600dd07c16e36c196047be5d64b3882d4ae0d6fbb97a2afb5"
+  },
+  "routineDetail.signingMode": {
+    "en": "Signing mode",
+    "zh-CN": "签名模式",
+    "reviewedEnglishHash": "0ba52a4363cea122a1df4f5ba2117fffd5c09cf5d12f625a43d4853d3fff0192"
+  },
+  "routineDetail.signingMode.bearer": {
+    "en": "Expect a shared bearer token in the Authorization header.",
+    "zh-CN": "要求在 Authorization 头中使用共享 bearer 令牌。",
+    "reviewedEnglishHash": "0f9380d258c325acb6ae3d1f859e135837ffbb07e31d3b0c2a02a5546dafddc8"
+  },
+  "routineDetail.signingMode.githubHmac": {
+    "en": "Accept GitHub-style X-Hub-Signature-256 header (HMAC over raw body, no timestamp).",
+    "zh-CN": "接受 GitHub 风格的 X-Hub-Signature-256 头（对原始正文做 HMAC，无时间戳）。",
+    "reviewedEnglishHash": "6de8205c6c6f303618f3ba0c2ff3063d4c3a0fd99c7928a4b9637f4e6aef6f9f"
+  },
+  "routineDetail.signingMode.hmacSha256": {
+    "en": "Expect an HMAC SHA-256 signature over the request using the shared secret.",
+    "zh-CN": "要求使用共享密钥对请求进行 HMAC SHA-256 签名。",
+    "reviewedEnglishHash": "4a089f5ec02f73b03ae147ab3b9deab7bd91c7418c8407080ce36aea3fa78121"
+  },
+  "routineDetail.signingMode.none": {
+    "en": "No authentication - the webhook URL itself acts as a shared secret.",
+    "zh-CN": "不做认证 - Webhook 地址本身就是共享密钥。",
+    "reviewedEnglishHash": "fbe96e2fa2ecab58c267e05cbadd14087d12b8aeb07e5871206a0af9f110dac2"
+  },
+  "routineDetail.skipToSection": {
+    "en": "Skip to section",
+    "zh-CN": "跳转到例行任务分区",
+    "reviewedEnglishHash": "7da8cfce801b55dccdc65a604c0e4612c84f95889114b375b2248cc76972c4d0"
+  },
+  "routineDetail.source.api": {
+    "en": "API",
+    "zh-CN": "API",
+    "reviewedEnglishHash": "c8e5998f6a3955c21d858936fe05c69621724d7f825c6e17793002a0fa798bf9"
+  },
+  "routineDetail.source.manual": {
+    "en": "Manual",
+    "zh-CN": "手动",
+    "reviewedEnglishHash": "b0b9fe24ffa9629125bdc59b122f80d605ab604eb1b74485c2f2ecfde26576ae"
+  },
+  "routineDetail.source.schedule": {
+    "en": "Schedule",
+    "zh-CN": "计划",
+    "reviewedEnglishHash": "f4830a1dae2980447c716bd4b5779b7013575ef09f70ef4731457218792487b3"
+  },
+  "routineDetail.source.webhook": {
+    "en": "Webhook",
+    "zh-CN": "Webhook",
+    "reviewedEnglishHash": "4814f62c108d82de42a65c515d56fc220b7fe8521510fd128919664daaa167bb"
+  },
+  "routineDetail.triggerARun": {
+    "en": "Trigger a run",
+    "zh-CN": "触发运行",
+    "reviewedEnglishHash": "177f8dfa8e3d5c924c83dcd29b1a64a16b212ed04507d2af4f133ef9598f3590"
+  },
+  "routineDetail.triggerAdded": {
+    "en": "Trigger added",
+    "zh-CN": "已添加触发器",
+    "reviewedEnglishHash": "bdfe6f7147f9c23c12b5c3d3e383ca3e08f5a6e489a1196462b622b7809f6e97"
+  },
+  "routineDetail.triggerAddedBody": {
+    "en": "The routine schedule was saved.",
+    "zh-CN": "例行任务调度已保存。",
+    "reviewedEnglishHash": "8a3c9b6431634be4ef3082c56c1a357e04b8523bd847126667bede84549e39fb"
+  },
+  "routineDetail.triggerAriaLabel": {
+    "en": "Trigger: {{label}}",
+    "zh-CN": "触发器：{{label}}",
+    "reviewedEnglishHash": "28bfcd31ba38a38f4ef20853aeca9329af5e96546e813fd324dcfa02dce333c0"
+  },
+  "routineDetail.triggerCount": {
+    "en": "{{count}} triggers",
+    "zh-CN": "{{count}} 个触发器",
+    "reviewedEnglishHash": "2b13056527b02294623e3c4d71cd77b61a07930571e8b49bf16a7ba17e17e233"
+  },
+  "routineDetail.triggerCount_one": {
+    "en": "{{count}} trigger",
+    "zh-CN": "{{count}} 个触发器",
+    "reviewedEnglishHash": "95e8c4975d3c152907501c8ca5095c8cb823f2ca9eb5f1932b84024658baf321"
+  },
+  "routineDetail.triggerCount_other": {
+    "en": "{{count}} triggers",
+    "zh-CN": "{{count}} 个触发器",
+    "reviewedEnglishHash": "2b13056527b02294623e3c4d71cd77b61a07930571e8b49bf16a7ba17e17e233"
+  },
+  "routineDetail.triggerDeleted": {
+    "en": "Trigger deleted",
+    "zh-CN": "触发器已删除",
+    "reviewedEnglishHash": "f05261cf7c2fa31f7cbc12f6416a12adb16a802814cad7c653ea30d3ddc8874c"
+  },
+  "routineDetail.triggerSaved": {
+    "en": "Trigger saved",
+    "zh-CN": "触发器已保存",
+    "reviewedEnglishHash": "85c8b3c8d5e427b85813b494d7d148ebd2f546b4591135a30fc78b55d631ee1f"
+  },
+  "routineDetail.triggerSavedBody": {
+    "en": "The routine cadence update was saved.",
+    "zh-CN": "例行任务节奏更新已保存。",
+    "reviewedEnglishHash": "107e7fbab734e7d68e98579d1234513aed03c540ff3fd8a6fcde122bc3bb65a3"
+  },
+  "routineDetail.triggersDescription": {
+    "en": "Triggers fire this routine on a schedule or via webhook.",
+    "zh-CN": "触发器可通过定时或 Webhook 触发这个例行任务。",
+    "reviewedEnglishHash": "d837f156c4e6a4bed2157cda875d320ecfad243b3db736909203902e548b058e"
+  },
+  "routineDetail.unsavedChangeCount": {
+    "en": "{{count}} unsaved changes",
+    "zh-CN": "{{count}} 个未保存更改",
+    "reviewedEnglishHash": "830e596f947249d9049319b8b78bd95d4387bc7d4a51da8f419c9c542b5a276c"
+  },
+  "routineDetail.unsavedChangeCount_one": {
+    "en": "{{count}} unsaved change",
+    "zh-CN": "{{count}} 个未保存更改",
+    "reviewedEnglishHash": "4ee752b7912af36833acdfed07334eeb9064893a4e1f3aa575751dfa65892c49"
+  },
+  "routineDetail.unsavedChangeCount_other": {
+    "en": "{{count}} unsaved changes",
+    "zh-CN": "{{count}} 个未保存更改",
+    "reviewedEnglishHash": "830e596f947249d9049319b8b78bd95d4387bc7d4a51da8f419c9c542b5a276c"
+  },
+  "routineDetail.unsavedChanges": {
+    "en": "Unsaved changes",
+    "zh-CN": "未保存更改",
+    "reviewedEnglishHash": "a710c2b90913b5375ca6ac865341e49dd6daa42f6d95182e6ed1a7b1b650ff4c"
+  },
+  "routineDetail.updateFailedBody": {
+    "en": "Paperclip could not update the routine.",
+    "zh-CN": "Paperclip 无法更新例行任务。",
+    "reviewedEnglishHash": "8a9065aa3123a45e5b9a082ba1a29d085ae5526f54d19d85b711cf0f4be36478"
+  },
+  "routineDetail.updateTriggerFailed": {
+    "en": "Failed to update trigger",
+    "zh-CN": "更新触发器失败",
+    "reviewedEnglishHash": "4707ca6abf3f933dee62022741f5f5aba3c9d9de68a170e41fa2bfb2e17e81a1"
+  },
+  "routineDetail.updateTriggerFailedBody": {
+    "en": "Paperclip could not update the trigger.",
+    "zh-CN": "Paperclip 无法更新触发器。",
+    "reviewedEnglishHash": "121d437c9c61cf5128cce723b14e98ccf348c11f144dc1a5b2b9679f66db0015"
+  },
+  "routineDetail.variablesAutoDetectedPrefix": {
+    "en": "Variables are auto-detected from",
+    "zh-CN": "变量会从标题和说明中的",
+    "reviewedEnglishHash": "6ccf8839827791430b01b34facad85e8c3338b5f3334cbfb8516da10800d1d03"
+  },
+  "routineDetail.variablesAutoDetectedSuffix": {
+    "en": "in the title and instructions. The variable name is read-only - rename by editing the placeholder.",
+    "zh-CN": "自动检测。变量名为只读 - 如需重命名，请编辑占位符。",
+    "reviewedEnglishHash": "86a8191dd69f1ff6bd2452169916adbe1e29b6e3c4510a889c63441544bf2279"
+  },
+  "routineDetail.viewAllActivity": {
+    "en": "View all activity",
+    "zh-CN": "查看全部活动",
+    "reviewedEnglishHash": "b9db058fd79ee064cfee9985d885df1fa6c053bcf18db7a5cdbe0c484b6522bb"
+  },
+  "routineDetail.webhookSecret": {
+    "en": "Webhook secret",
+    "zh-CN": "Webhook 密钥",
+    "reviewedEnglishHash": "342da97208cceb8a09066c5d9af52fec5415460dbf8fc205de4ad9bd56d65fbc"
+  },
+  "routineDetail.webhookSecretRotated": {
+    "en": "Webhook secret rotated",
+    "zh-CN": "Webhook 密钥已轮换",
+    "reviewedEnglishHash": "7eeaca4f875d25847f0b9cf68b2c53a0d7bec8c4f5fb936c5336560985e1b1db"
+  },
+  "routineDetail.webhookTriggerCreated": {
+    "en": "Webhook trigger created",
+    "zh-CN": "Webhook 触发器已创建",
+    "reviewedEnglishHash": "ef8b5535cac3f05496e348cf6c2ed3e111bdcecd9d9b7eccb6472b7bb679564d"
+  },
+  "routineDetail.webhookTriggerIndex": {
+    "en": "Webhook trigger {{current}} of {{total}}",
+    "zh-CN": "Webhook 触发器 {{current}} / {{total}}",
+    "reviewedEnglishHash": "4f9d8953dee2f17ff0337fc1bfd52989b87c1c655e31063456cca656f398af74"
+  },
+  "routineDetail.webhookTriggerRestored": {
+    "en": "Webhook trigger restored",
+    "zh-CN": "Webhook 触发器已恢复",
+    "reviewedEnglishHash": "7450a8d6a17ad7507e8b5b6198db03a8f02676c12ae1aa1dd74c8a2b1f86d649"
+  },
+  "routineDetail.webhookTriggersRestored": {
+    "en": "{{count}} webhook triggers restored",
+    "zh-CN": "已恢复 {{count}} 个 Webhook 触发器",
+    "reviewedEnglishHash": "6c6f3f30b4da70ac57467ed4c634a45d7ad957f49acd68143b126c382d333d63"
+  },
+  "routineDetail.webhookUrl": {
+    "en": "Webhook URL",
+    "zh-CN": "Webhook URL",
+    "reviewedEnglishHash": "84805a7574a82052bdd5b3b98119cfd838d04036ec4bd3d667a95698e7097ad6"
+  }
+}

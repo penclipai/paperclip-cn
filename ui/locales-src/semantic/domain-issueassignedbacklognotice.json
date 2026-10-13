@@ -1,0 +1,47 @@
+{
+  "issueAssignedBacklogNotice.assignee": {
+    "en": "the assignee",
+    "zh-CN": "负责人",
+    "reviewedEnglishHash": "f584ae3a02bdc5200f51eaccf5cdbc770a9132a970182b79f099cbe1c1e3acee"
+  },
+  "issueAssignedBacklogNotice.body": {
+    "en": "{{assignee}} will not be asked to work on this until status changes to To do or In progress.",
+    "zh-CN": "在状态改为“待办”或“进行中”之前，不会要求 {{assignee}} 处理此任务。",
+    "reviewedEnglishHash": "e26011417dbe2fd1bc11f556e689f6d53509f8868aa8127786f0ca3b9f0086da"
+  },
+  "issueAssignedBacklogNotice.bodyAfterAssignee": {
+    "en": "will not be woken until status changes to",
+    "zh-CN": "不会被唤醒，直到状态改为",
+    "reviewedEnglishHash": "70d6a2bfb83513147b258f72aec7dbfa27418e27cbba30c61852f984afb66795"
+  },
+  "issueAssignedBacklogNotice.comments": {
+    "en": "Comments still notify the assignee for questions or triage. Leave this parked only if the work is intentionally on hold.",
+    "zh-CN": "评论仍会通知负责人，以便提问或分诊。仅在有意暂停工作时将其保持停放。",
+    "reviewedEnglishHash": "e9afc81592ee4cb12722f3bf1027ed3ad4051c6328537f72e13ae99420db076f"
+  },
+  "issueAssignedBacklogNotice.commentsStillWake": {
+    "en": "Comments still wake the assignee for questions or triage. Leave this parked only if the work is intentionally on hold.",
+    "zh-CN": "评论仍会唤醒负责人以处理问题或分诊。只有在任务确实需要暂时搁置时，才保持这个状态。",
+    "reviewedEnglishHash": "5b2262f0b4b213e7a89d6bc6378634394c02c932c88038d0df700b78efd17dc5"
+  },
+  "issueAssignedBacklogNotice.or": {
+    "en": "or",
+    "zh-CN": "或",
+    "reviewedEnglishHash": "7175517a370b5cd2e664e3fd29c4ea9db5ce17058eb9772fe090a5485e49dad6"
+  },
+  "issueAssignedBacklogNotice.parked": {
+    "en": "Parked",
+    "zh-CN": "已搁置",
+    "reviewedEnglishHash": "f32a2c334c3b228f0e65d33bdbf39700ff2e34c1f6a583a417da755ebcbadb41"
+  },
+  "issueAssignedBacklogNotice.resumeNow": {
+    "en": "Resume now",
+    "zh-CN": "立即恢复",
+    "reviewedEnglishHash": "6eddb459af90e11fd55c6405e6b55447957aef9debbbcd9a28e5af8f3987f13c"
+  },
+  "issueAssignedBacklogNotice.resuming": {
+    "en": "Resuming…",
+    "zh-CN": "正在恢复…",
+    "reviewedEnglishHash": "c494e3ca3e3b04a3b0b2e0036c7b6246c92a0e86f822377b0941973c8829ef21"
+  }
+}

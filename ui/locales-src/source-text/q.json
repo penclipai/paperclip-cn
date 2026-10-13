@@ -1,0 +1,122 @@
+{
+  "&quot;": {
+    "en": "\"",
+    "zh-CN": "\"",
+    "reviewedEnglishHash": "8a331fdde7032f33a71e1b2e257d80166e348e00fcb17914f48bdb57a1c63007"
+  },
+  "Query": {
+    "en": "Query",
+    "zh-CN": "询问",
+    "reviewedEnglishHash": "b80a37564fbb3c0753202a1f92d5da8ccfb906b244f2842bba2232cea9883abd"
+  },
+  "Question cancelled": {
+    "en": "Question cancelled",
+    "zh-CN": "问题已取消",
+    "reviewedEnglishHash": "e8960873b52bc79f658d08a16a1d3a6c312b07af707cd7a13587f070dd32cf8f"
+  },
+  "Question context": {
+    "en": "Question context",
+    "zh-CN": "问题背景",
+    "reviewedEnglishHash": "2b0dfe494052c793b594373bd2821b9cb14ca4a56dfaf7ab4bf0aa1459e2f9d1"
+  },
+  "Question pagination": {
+    "en": "Question pagination",
+    "zh-CN": "问题分页",
+    "reviewedEnglishHash": "032747727a6c9f98ddc0095892e195ada5b4a252f5abffe8f1d644469f55e2dd"
+  },
+  "Queue": {
+    "en": "Queue",
+    "zh-CN": "队列",
+    "reviewedEnglishHash": "3b2fe03e368939166bc6e318840b23fcade3ee55d6681b6ef16e7f08c00f23af"
+  },
+  "Queue every trigger occurrence, even if the routine is already running.": {
+    "en": "Queue every trigger occurrence, even if the routine is already running.",
+    "zh-CN": "即使例行任务已在运行，也为每次触发都排队。",
+    "reviewedEnglishHash": "033757fd40147ff6e40e487ad8fa7b9dea8c2be88c99b6da486962506a4cd14f"
+  },
+  "Queued": {
+    "en": "Queued",
+    "zh-CN": "已排队",
+    "reviewedEnglishHash": "661ff40a07e037bbd5f7d4ec97a4df1503096ca910e7c9e2d7a4e9abd4e4e1a0"
+  },
+  "Queued Comments (": {
+    "en": "Queued Comments (",
+    "zh-CN": "已排队评论(",
+    "reviewedEnglishHash": "7d936b234e37f54a92cc5b32dff2acf8acda67d064c30051b23871729859c42a"
+  },
+  "Queued Comments ({{count}})": {
+    "en": "Queued Comments ({{count}})",
+    "zh-CN": "排队中的评论（{{count}}）",
+    "reviewedEnglishHash": "de288e3f8ff39ea0f4a828bee4127b4274860112ddb13e96223b276529ab4b3b"
+  },
+  "Queued message actions": {
+    "en": "Queued message actions",
+    "zh-CN": "排队的消息操作",
+    "reviewedEnglishHash": "85ac386e5d1bda8f541b86ae1f21caf200b3e68293e56508a427b14065f5580e"
+  },
+  "Queued messages": {
+    "en": "Queued messages",
+    "zh-CN": "排队的消息",
+    "reviewedEnglishHash": "f8e64a37950a97d04e40ef2a8e8256f2ec667ad78869f33a5fb810d781d8856f"
+  },
+  "Queued...": {
+    "en": "Queued...",
+    "zh-CN": "排队中...",
+    "reviewedEnglishHash": "c0c05da9e9a62cc335f5e3ba07a840efc78b9218ebe0908819be6cf71b71373b"
+  },
+  "Queues": {
+    "en": "Queues",
+    "zh-CN": "队列",
+    "reviewedEnglishHash": "be77db1156d1f1b555249e6dfa14d2d3e1d7b288f7e3f887696bf6208dde867e"
+  },
+  "Quick Actions": {
+    "en": "Quick Actions",
+    "zh-CN": "快捷操作",
+    "reviewedEnglishHash": "2cc2b6f7f200e65c4614ab131097964980d0d546c327ed66ee6b7bc571a74ad2"
+  },
+  "Quick filters": {
+    "en": "Quick filters",
+    "zh-CN": "快捷筛选",
+    "reviewedEnglishHash": "e01c5f270819f8ff9932d97c27452a62d6bca3f624f8effda757f35d02f11126"
+  },
+  "Quick-archive back to inbox": {
+    "en": "Quick-archive back to inbox",
+    "zh-CN": "快速归档并返回收件箱",
+    "reviewedEnglishHash": "630428a4c87f5f6b023e266fb224b93ea21933e5b8161fdd083976ad46857875"
+  },
+  "Quota from the Claude subscription connected to this server.": {
+    "en": "Quota from the Claude subscription connected to this server.",
+    "zh-CN": "来自连接到此服务器的Claude订阅的配额。",
+    "reviewedEnglishHash": "29f74a67b483d03206cf958db7979021ba130890715be890a4fa830e35dfdd74"
+  },
+  "Quota from the Codex subscription connected to this server.": {
+    "en": "Quota from the Codex subscription connected to this server.",
+    "zh-CN": "来自连接到此服务器的Codex订阅的配额。",
+    "reviewedEnglishHash": "cdc16ce92b477a1cfd55f0e6572de52befa5f8fa9a0c9b7bb2c4ff818d92a2a6"
+  },
+  "Quote multi-word project names": {
+    "en": "Quote multi-word project names",
+    "zh-CN": "多词项目名请加引号",
+    "reviewedEnglishHash": "cac260f350dbf3a36e05dc40471240d3a3eecfc573882e74c9db88d2889bc68d"
+  },
+  "Qwen": {
+    "en": "Qwen",
+    "zh-CN": "Qwen",
+    "reviewedEnglishHash": "28a5651e858aeea9486f74eec1417f604b13c5fd71452cad0769641156e07f8b"
+  },
+  "Qwen (local)": {
+    "en": "Qwen (local)",
+    "zh-CN": "Qwen（本地）",
+    "reviewedEnglishHash": "1698964bb815a5c7d474ca75116856712528f5388badca04b8f79edab244570d"
+  },
+  "queued requester wake-up": {
+    "en": "queued requester wake-up",
+    "zh-CN": "已将请求者唤醒加入队列",
+    "reviewedEnglishHash": "0546b1153d969b36638969c6a0d4450e1f9c8afc1d686810d62b53936854f764"
+  },
+  "queued requester wake-up for": {
+    "en": "queued requester wake-up for",
+    "zh-CN": "已为以下内容排队唤醒请求者：",
+    "reviewedEnglishHash": "6a4c43138a1c75ef3808eed989c89add419c1148460d502accba76eaab8d9764"
+  }
+}

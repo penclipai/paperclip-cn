@@ -1,0 +1,42 @@
+{
+  "dashboardLive.activeRecentTitle": {
+    "en": "Active / recent",
+    "zh-CN": "活跃 / 最近",
+    "reviewedEnglishHash": "29047d81c75e035304354f8adc3f776ce47700256829f8904c29d0b3ad340245"
+  },
+  "dashboardLive.breadcrumb": {
+    "en": "Live runs",
+    "zh-CN": "实时运行",
+    "reviewedEnglishHash": "905f1fefa6932455352d64e7ad9067e9cc02a85d01bb9b0a17ba726d289a0a58"
+  },
+  "dashboardLive.createCompanyEmpty": {
+    "en": "Create a company to view live runs.",
+    "zh-CN": "创建一家公司后即可查看实时运行。",
+    "reviewedEnglishHash": "538174deb922af7b9e942251631195c4b171c5c0d0c00d679af19f1affefe720"
+  },
+  "dashboardLive.description": {
+    "en": "Active runs first, followed by the most recent completed runs.",
+    "zh-CN": "优先显示活跃运行，随后显示最近完成的运行。",
+    "reviewedEnglishHash": "e4351c0f7022fd922fe2034a9cf8cce20273465c8eb6587310721c67b59a20ff"
+  },
+  "dashboardLive.noActiveRuns": {
+    "en": "No active or recent agent runs.",
+    "zh-CN": "还没有活跃或最近的智能体运行。",
+    "reviewedEnglishHash": "ae4f00afad4e95aecc7e0a04642d4abf10a98c772382c5c2934496b35891127d"
+  },
+  "dashboardLive.selectCompanyEmpty": {
+    "en": "Select a company to view live runs.",
+    "zh-CN": "选择一家公司以查看实时运行。",
+    "reviewedEnglishHash": "049804a849f3fdb3a56dda4de9254122bcac0495e168c535bf18c72a6aa98acd"
+  },
+  "dashboardLive.showingLimit": {
+    "en": "Showing up to {{count}}",
+    "zh-CN": "最多显示 {{count}} 条",
+    "reviewedEnglishHash": "d30e1333268efed8a6f86cdae8be740a3eed4d9fb446d566b755a85803707c98"
+  },
+  "dashboardLive.title": {
+    "en": "Live agent runs",
+    "zh-CN": "实时智能体运行",
+    "reviewedEnglishHash": "6663a17b699c35a575b08f8893c501a0182fea388561a92f6a875cbfa55c3d88"
+  }
+}
