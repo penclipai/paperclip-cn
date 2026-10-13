@@ -36,6 +36,13 @@ type FakeOptions = {
 
 const BIND_CONFLICT_LOG = 'could not bind IPv4 address "127.0.0.1": Address already in use';
 
+async function expectEventuallyRemoved(dataDirs: string[]): Promise<void> {
+  await expect.poll(
+    () => dataDirs.every((dataDir) => !fs.existsSync(dataDir)),
+    { interval: 10, timeout: 1_000 },
+  ).toBe(true);
+}
+
 function makeFakeCtor(failFirst: number) {
   const constructed: FakeOptions[] = [];
   let started = 0;
@@ -76,12 +83,12 @@ describe("startEmbeddedPostgresWithRetry", () => {
     // The first two attempts fail, the third succeeds.
     expect(constructed).toHaveLength(3);
 
-    // Each attempt uses a fresh data directory. The two failed directories are
-    // removed. The returned directory still exists.
+    // Each attempt uses a fresh data directory. Reclaim is asynchronous after
+    // stop authority is established, so wait for the two failed directories
+    // instead of incorrectly requiring synchronous filesystem removal.
     const dataDirs = constructed.map((options) => options.databaseDir);
     expect(new Set(dataDirs).size).toBe(3);
-    expect(fs.existsSync(dataDirs[0])).toBe(false);
-    expect(fs.existsSync(dataDirs[1])).toBe(false);
+    await expectEventuallyRemoved(dataDirs.slice(0, 2));
     expect(started.dataDir).toBe(dataDirs[2]);
     expect(fs.existsSync(started.dataDir)).toBe(true);
 
@@ -105,10 +112,9 @@ describe("startEmbeddedPostgresWithRetry", () => {
     // The retry stops at the bound and does not loop forever.
     expect(constructed).toHaveLength(MAX_ATTEMPTS);
 
-    // Every failed attempt removes its data directory.
-    for (const options of constructed) {
-      expect(fs.existsSync(options.databaseDir)).toBe(false);
-    }
+    // Every failed attempt eventually removes its data directory after stop
+    // authority is established.
+    await expectEventuallyRemoved(constructed.map((options) => options.databaseDir));
   });
 
   it("keeps the real failure reason instead of a generic fallback", async () => {

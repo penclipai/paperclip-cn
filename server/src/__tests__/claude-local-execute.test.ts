@@ -977,7 +977,7 @@ describe("claude execute", () => {
       const capture = JSON.parse(await fs.readFile(capturePath1, "utf8")) as CapturePayload;
       expect(capture.argv).toContain("--dangerously-skip-permissions");
       expect(capture.argv).not.toContain("--allowedTools");
-      expect(capture.claudeConfigDir?.replace(/\//g, "\\")).toBe(path.join(remoteWorkspace, ".paperclip-runtime", "claude", "config"));
+      expect(capture.claudeConfigDir).toBe(path.posix.join(remoteWorkspace, ".paperclip-runtime", "claude", "config"));
       expect(capture.claudeConfigEntries).toContain("settings.json");
       expect(capture.paperclipApiUrl).toMatch(/^http:\/\/127\.0\.0\.1:\d+$/);
       expect(capture.paperclipApiKey).not.toBe("run-jwt-token");

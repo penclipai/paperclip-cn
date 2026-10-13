@@ -18,12 +18,16 @@ const repoRoot = path.resolve(
 const bashCommand = process.platform === "win32"
   ? "C:\\Program Files\\Git\\bin\\bash.exe"
   : "bash";
-const npmCli = path.join(path.dirname(process.execPath), "node_modules", "npm", "bin", "npm-cli.js");
+const npmCli = [
+  path.join(path.dirname(process.execPath), "node_modules", "npm", "bin", "npm-cli.js"),
+  path.join(path.dirname(process.execPath), "..", "lib", "node_modules", "npm", "bin", "npm-cli.js"),
+].find((candidate) => existsSync(candidate));
 const pnpmCommand = process.platform === "win32"
   ? path.join(process.env.PNPM_HOME ?? "", "pnpm")
   : "pnpm";
 
 function runNpm(args, options) {
+  assert.ok(npmCli, "expected the Node installation to include the npm CLI");
   return spawnSync(process.execPath, [npmCli, ...args], options);
 }
 

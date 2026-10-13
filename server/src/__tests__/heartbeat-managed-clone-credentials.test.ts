@@ -67,7 +67,7 @@ async function writeFakeGit(bin: string, script: string): Promise<string | undef
     ].join("\n"), "utf8");
     return `--require "${preloadPath.replace(/\\/g, "/")}"`;
   }
-  await fs.writeFile(commandPath, `#!/usr/bin/env node\n${script}`, "utf8");
+  await fs.writeFile(commandPath, `#!${process.execPath}\n${script}`, "utf8");
   await fs.chmod(commandPath, 0o755);
 }
 
