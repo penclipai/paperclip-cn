@@ -716,14 +716,18 @@ function buildWorkspaceTarExtractCommand(input: {
 // confinement; control paths are shell-quoted.
 function buildRemoveDeletedPathsCommand(input: { remoteDir: string; manifestPath: string }): string {
   // Bounded NUL argv batches preserve literal filenames without one argument
-  // list for the full snapshot. Check every entry's ancestors before deleting
-  // any entry in its batch, refusing symlink and non-directory ancestors.
-  const remove = `for entry do
+  // list for the full snapshot. Validate every entry's static ancestors before
+  // deleting its batch. Adjacent entries can reuse only a previously validated
+  // common ancestor chain; a later filesystem change remains outside this check.
+  const remove = `previous=
+  for entry do
     parent=$entry
     while [ "\${parent#*/}" != "$parent" ]; do
       parent=\${parent%/*}
+      case "$previous" in "$parent"/*) break ;; esac
       if [ -L "$parent" ] || { [ -e "$parent" ] && [ ! -d "$parent" ]; }; then exit 42; fi
     done
+    previous=$entry
   done
   exec rm -rf -- "$@"`;
   return `cd ${shellQuote(input.remoteDir)} && xargs -0 -r -n 64 sh -c ${shellQuote(remove)} sh < ${shellQuote(input.manifestPath)} && rm -f -- ${shellQuote(input.manifestPath)}`;

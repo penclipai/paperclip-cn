@@ -1195,6 +1195,88 @@ describe("sandbox managed runtime", () => {
     }
   });
 
+  const unsortedDeletedPathFixtures = process.platform === "win32"
+    ? [["a Windows-safe space, Unicode, and quote name", "two unusual 雪's.txt"]] as const
+    : [
+      ["a Windows-safe space, Unicode, and quote name", "two unusual 雪's.txt"],
+      ["a POSIX newline name", "two\nline.txt"],
+    ] as const;
+
+  it.each(unsortedDeletedPathFixtures)(
+    "removes unsorted deleted paths with %s and distinct ancestor chains through the native sync seam",
+    async (_fixtureName, unusualLeaf) => {
+      const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-sandbox-delete-unsorted-"));
+      cleanupDirs.push(rootDir);
+      const sourceRepoDir = path.join(rootDir, "source-repo");
+      const localWorkspaceDir = path.join(rootDir, "local-worktree");
+      const remoteWorkspaceDir = path.join(rootDir, "remote-workspace");
+      // The bracket is literal, so a shared parent also exercises quoted `case`
+      // matching rather than a shell pattern supplied by the filename.
+      const sharedParent = "shared[lit]";
+      const sharedOnePath = `${sharedParent}/one.txt`;
+      const unusualPath = `${sharedParent}/${unusualLeaf}`;
+      const deletedPaths = [
+        "z-unique/deep/leaf.txt",
+        sharedOnePath,
+        unusualPath,
+        "a-unique/other.txt",
+      ];
+      const unsortedManifestPaths = [
+        unusualPath,
+        sharedOnePath,
+        "z-unique/deep/leaf.txt",
+        "a-unique/other.txt",
+      ];
+
+      await mkdir(sourceRepoDir, { recursive: true });
+      await git(sourceRepoDir, ["init"]);
+      await git(sourceRepoDir, ["checkout", "-b", "main"]);
+      await git(sourceRepoDir, ["config", "user.name", "Paperclip Test"]);
+      await git(sourceRepoDir, ["config", "user.email", "test@paperclip.dev"]);
+      for (const relativePath of deletedPaths) {
+        await mkdir(path.dirname(path.join(sourceRepoDir, relativePath)), { recursive: true });
+        await writeFile(path.join(sourceRepoDir, relativePath), `${relativePath}\n`, "utf8");
+      }
+      await git(sourceRepoDir, ["add", "."]);
+      await git(sourceRepoDir, ["commit", "-m", "base"]);
+      await git(sourceRepoDir, ["worktree", "add", "-b", "work", localWorkspaceDir, "HEAD"]);
+      for (const relativePath of deletedPaths) await rm(path.join(localWorkspaceDir, relativePath));
+
+      const client = makeFilesystemClient();
+      const captured: SandboxSyncOperation[] = [];
+      client.syncIn = async (operations): Promise<SandboxSyncResult> => {
+        const resultOperations: SandboxSyncResult["operations"] = [];
+        for (const operation of operations) {
+          captured.push(operation);
+          for (const mapping of operation.files) {
+            await mkdir(path.posix.dirname(mapping.targetPath), { recursive: true });
+            const bytes = path.posix.basename(mapping.targetPath) === "deleted.nul"
+              ? Buffer.from(`${unsortedManifestPaths.join("\0")}\0`, "utf8")
+              : await readFile(mapping.sourcePath);
+            await writeFile(mapping.targetPath, bytes);
+          }
+          for (const command of operation.postUploadCommands ?? []) {
+            await execFile("sh", ["-c", command.command], { maxBuffer: 32 * 1024 * 1024 });
+          }
+          resultOperations.push({ operationId: operation.operationId, filesTransferred: operation.files.length, bytesTransferred: 0 });
+        }
+        return { operations: resultOperations };
+      };
+
+      await prepareSandboxManagedRuntime({
+        spec: { transport: "sandbox", provider: "test", sandboxId: "deleted-unsorted", remoteCwd: remoteWorkspaceDir, timeoutMs: 30_000, apiKey: null },
+        adapterKey: "test-adapter",
+        client,
+        workspaceLocalDir: localWorkspaceDir,
+      });
+
+      expect(captured.some((operation) => operation.postUploadCommands?.some((command) => command.command.includes("xargs -0 -r -n 64")))).toBe(true);
+      for (const relativePath of deletedPaths) {
+        await expect(readFile(path.join(remoteWorkspaceDir, relativePath), "utf8")).rejects.toMatchObject({ code: "ENOENT" });
+      }
+    },
+  );
+
   it.each(process.platform === "win32" ? ["regular file"] : ["regular file", "symlink"])(
     "refuses a %s deleted-path ancestor before deleting its current batch",
     async (unsafeAncestor) => {
@@ -1207,7 +1289,8 @@ describe("sandbox managed runtime", () => {
       const currentBatchPath = "a-current-batch.txt";
       const deletedPaths = [
         currentBatchPath,
-        "b-unsafe/removed.txt",
+        "b-shared/current-safe.txt",
+        "b-shared/unsafe/removed.txt",
         ...Array.from({ length: 63 }, (_, index) => `z-removed-${String(index).padStart(2, "0")}.txt`),
       ];
 
@@ -1244,11 +1327,11 @@ describe("sandbox managed runtime", () => {
           const commands = operation.postUploadCommands ?? [];
           for (const [index, command] of commands.entries()) {
             if (index === commands.length - 1 && command.command.includes("xargs -0 -r -n 64")) {
-              await rm(path.join(remoteWorkspaceDir, "b-unsafe"), { recursive: true, force: true });
+              await rm(path.join(remoteWorkspaceDir, "b-shared", "unsafe"), { recursive: true, force: true });
               if (unsafeAncestor === "regular file") {
-                await writeFile(path.join(remoteWorkspaceDir, "b-unsafe"), "not a directory\n", "utf8");
+                await writeFile(path.join(remoteWorkspaceDir, "b-shared", "unsafe"), "not a directory\n", "utf8");
               } else {
-                await symlink(outsideDir, path.join(remoteWorkspaceDir, "b-unsafe"), "dir");
+                await symlink(outsideDir, path.join(remoteWorkspaceDir, "b-shared", "unsafe"), "dir");
               }
             }
             try {
@@ -1280,6 +1363,7 @@ describe("sandbox managed runtime", () => {
       expect((failure as { code: number }).code).not.toBe(0);
       expect(captured.some((operation) => operation.postUploadCommands?.some((command) => command.command.includes("xargs -0 -r -n 64")))).toBe(true);
       await expect(readFile(path.join(remoteWorkspaceDir, currentBatchPath), "utf8")).resolves.toBe(`${currentBatchPath}\n`);
+      await expect(readFile(path.join(remoteWorkspaceDir, "b-shared", "current-safe.txt"), "utf8")).resolves.toBe("b-shared/current-safe.txt\n");
       await expect(readFile(path.join(outsideDir, "sentinel.txt"), "utf8")).resolves.toBe("outside\n");
       await expect(lstat(remoteManifestPath!)).resolves.toBeDefined();
     },
