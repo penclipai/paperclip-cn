@@ -63,10 +63,11 @@ blocker, package publication, merging, and release are outside this change.
   mappings have zero added, removed, or changed values against the captured
   pre-migration catalogs. Generation is idempotent, and checked-out catalog
   bytes retain LF even with Git's Windows `core.autocrlf=true` setting.
-- All 26 catalog/audit/artifact tests passed. Focused coverage includes review
+- All 27 catalog/audit/artifact tests passed. Focused coverage includes review
   invalidation, duplicate and invalid entries,
   numeric key ordering, prototype-like keys, stale copied/packaged resources,
-  translation aliases and lexical masks, default and unknown namespaces, and
+  translation aliases and lexical masks (including loops, switch, and classes),
+  default and unknown namespaces, exact server lookups versus i18next plurals, and
   the approved English/Chinese monthly ordinal contract.
 - Localization regressions, repository typecheck/build, upstream merge harness,
   token gates, and module boundary checks passed. Windows directory packaging

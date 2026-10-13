@@ -243,6 +243,35 @@ test("snapshot classifies imported translation bindings, aliases, and rejects un
   );
 });
 
+test("snapshot applies loop lexical bindings only inside the loop and keeps var function-scoped", async () => {
+  await withFixture(
+    baseFiles({
+      en: { "common.ok": "OK", "common.outside": "Outside" },
+      zh: { "common.ok": "确定", "common.outside": "循环外" },
+      source: `
+        import { t } from "i18next";
+        export function ConstLoop() {
+          for (const t of []) { t("common.ok"); }
+          return t("common.outside");
+        }
+        export function VarLoop() {
+          for (var t of []) { t("common.ok"); }
+          return t("common.ok");
+        }
+      `,
+    }),
+    async (root) => {
+      const snapshot = await buildSnapshot({ root });
+      const translationUsages = Object.values(snapshot.keys)
+        .flatMap((record) => record.usages)
+        .filter((usage) => usage.context.kind === "translation-call");
+      assert.equal(translationUsages.length, 1);
+      assert.equal(translationUsages[0].file, "ui/src/App.tsx");
+      assert.equal(snapshot.undefinedStaticTranslationCallFindings.length, 0);
+    },
+  );
+});
+
 test("snapshot reports undefined static calls and dynamic calls only for proven translation bindings", async () => {
   await withFixture(
     baseFiles({
@@ -318,6 +347,28 @@ test("snapshot honors explicit common and translation namespace selectors withou
             const undefined = "translation";
             return t("app.later-shadow");
           }
+          export function LaterClassDeclaration() {
+            const { t } = useTranslation(undefined);
+            class undefined {}
+            return t("app.class-shadow");
+          }
+          export function ClassMasksI18next() {
+            class i18n { static t(key: string) { return key; } }
+            return i18n.t("app.class-instance");
+          }
+          export function LoopAndSwitchOutside() {
+            const { t } = useTranslation(undefined);
+            for (const undefined of []) { void undefined; }
+            switch ("case") { case "case": { const undefined = "translation"; void undefined; break; } }
+            return t("common.loop-outside");
+          }
+          export function LoopInside() {
+            for (const undefined of []) {
+              const { t } = useTranslation(undefined);
+              return t("common.loop-inside");
+            }
+            return null;
+          }
         `,
       }),
       "ui/src/i18n/locales/en.json": JSON.stringify({ app: { noCompanies: { title: "Create" } } }),
@@ -325,9 +376,9 @@ test("snapshot honors explicit common and translation namespace selectors withou
     },
     async (root) => {
       const snapshot = await buildSnapshot({ root });
-      assert.equal(snapshot.undefinedStaticTranslationCallFindings.length, 0);
-      assert.equal(snapshot.unresolvedTranslationCallWarnings.length, 4);
-      assert.deepEqual(snapshot.unresolvedTranslationCallWarnings.map((warning) => warning.namespace), ["namespace", "namespace", "undefined", "undefined"]);
+      assert.deepEqual(snapshot.undefinedStaticTranslationCallFindings.map((finding) => finding.key), ["common.loop-outside"]);
+      assert.equal(snapshot.unresolvedTranslationCallWarnings.length, 6);
+      assert.deepEqual(snapshot.unresolvedTranslationCallWarnings.map((warning) => warning.namespace), ["namespace", "namespace", "undefined", "undefined", "undefined", "undefined"]);
     },
   );
 });
@@ -336,8 +387,8 @@ test("snapshot resolves only known relative i18n modules and honors nested local
   await withFixture(
     {
       ...baseFiles({
-        en: { "common.ok": "OK" },
-        zh: { "common.ok": "确定" },
+        en: { "common.ok": "OK", "items_one": "One item", "items_other": "Many items" },
+        zh: { "common.ok": "确定", "items_one": "一项", "items_other": "多项" },
         source: `
           import { t } from "./utils";
           import { translateInstant as translate } from "@/i18n";
@@ -396,14 +447,20 @@ test("snapshot recognizes server translate and request wrappers at their key arg
         import { translate as serverTranslate } from "./i18n.js";
         import { translateRequest } from "./request-localization.js";
         export function localize(req, locale, dynamicKey) {
-          return [serverTranslate(locale, "common.ok"), serverTranslate(locale, dynamicKey), translateRequest(req, "common.missing")];
+          return [
+            serverTranslate(locale, "common.ok"),
+            serverTranslate(locale, dynamicKey),
+            translateRequest(req, "common.missing"),
+            serverTranslate(locale, "items", { count: 2 }),
+            translateRequest(req, "items", { count: 2 }),
+          ];
         }
       `,
     },
     async (root) => {
       const snapshot = await buildSnapshot({ root });
       assert.equal(snapshot.keys["common.ok"].usages[0].context.kind, "translation-call");
-      assert.deepEqual(snapshot.undefinedStaticTranslationCallFindings.map((finding) => finding.key), ["common.missing"]);
+      assert.deepEqual(snapshot.undefinedStaticTranslationCallFindings.map((finding) => finding.key), ["common.missing", "items", "items"]);
       assert.equal(snapshot.dynamicTranslationCallWarnings.length, 1);
       assert.equal(snapshot.dynamicTranslationCallWarnings[0].expression, "dynamicKey");
     },

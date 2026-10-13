@@ -369,12 +369,42 @@ function knownI18nModule(moduleName, sourceFile) {
   return undefined;
 }
 
-function scopeDeclaresName(scope, name) {
-  if (scope.parameters?.some((parameter) => bindingNames(parameter.name).includes(name))) return true;
+function isLexicalScopeBoundary(node) {
+  return is.isBlock(node) || Boolean(node.parameters) || [
+    SyntaxKind.CaseBlock,
+    SyntaxKind.ForStatement,
+    SyntaxKind.ForInStatement,
+    SyntaxKind.ForOfStatement,
+    SyntaxKind.CatchClause,
+  ].includes(node.kind);
+}
+
+function isVarDeclaration(node, sourceFile) {
+  return is.isVariableDeclaration(node) && /^var\b/.test(node.parent?.getText(sourceFile).trimStart() ?? "");
+}
+
+function functionOrSourceDeclaresVar(scope, name, sourceFile) {
   let found = false;
   function visit(node, isRoot = false) {
     if (found) return;
-    if (is.isFunctionDeclaration(node) && node.name?.text === name) {
+    if (!isRoot && node.parameters) return;
+    if (isVarDeclaration(node, sourceFile) && bindingNames(node.name).includes(name)) {
+      found = true;
+      return;
+    }
+    node.forEachChild((child) => visit(child));
+  }
+  visit(scope, true);
+  return found;
+}
+
+function scopeDeclaresName(scope, name, sourceFile) {
+  if (scope.parameters?.some((parameter) => bindingNames(parameter.name).includes(name))) return true;
+  if ((scope.parameters || scope === sourceFile) && functionOrSourceDeclaresVar(scope, name, sourceFile)) return true;
+  let found = false;
+  function visit(node, isRoot = false) {
+    if (found) return;
+    if ((is.isFunctionDeclaration(node) || is.isClassDeclaration(node)) && node.name?.text === name) {
       found = true;
       return;
     }
@@ -394,7 +424,7 @@ function scopeDeclaresName(scope, name) {
         return;
       }
     }
-    if (!isRoot && (is.isBlock(node) || node.parameters)) return;
+    if (!isRoot && isLexicalScopeBoundary(node)) return;
     node.forEachChild((child) => visit(child));
   }
   visit(scope, true);
@@ -403,8 +433,8 @@ function scopeDeclaresName(scope, name) {
 
 function isLexicallyBound(node, name, sourceFile) {
   for (let current = node.parent; current; current = current.parent) {
-    if (current === sourceFile || is.isBlock(current) || current.parameters) {
-      if (scopeDeclaresName(current, name)) return true;
+    if (current === sourceFile || isLexicalScopeBoundary(current)) {
+      if (scopeDeclaresName(current, name, sourceFile)) return true;
     }
     if (current === sourceFile) break;
   }
@@ -452,8 +482,9 @@ function collectTranslationBindings(sourceFile) {
   }
 
   function lexicalScope(node) {
+    const functionScoped = isVarDeclaration(node, sourceFile);
     for (let current = node.parent; current && current !== sourceFile; current = current.parent) {
-      if (is.isBlock(current) || current.parameters) return current;
+      if (functionScoped ? Boolean(current.parameters) : isLexicalScopeBoundary(current)) return current;
     }
     return sourceFile;
   }
@@ -476,7 +507,7 @@ function collectTranslationBindings(sourceFile) {
     const clause = statement.importClause;
     if (!module || !clause) continue;
     if (clause.name && (module.kind === "i18next" || module.kind === "common" || module.kind === "legacy")) {
-      add(instances, clause.name.text, { catalog: module.catalog, binding: `instance:${clause.name.text}`, keyIndex: 0, scope: sourceFile, namespaceAware: module.kind === "i18next" });
+      add(instances, clause.name.text, { catalog: module.catalog, binding: `instance:${clause.name.text}`, keyIndex: 0, scope: sourceFile, namespaceAware: module.kind === "i18next", pluralAware: true });
     }
     const named = clause.namedBindings;
     if (!named || !is.isNamedImports(named)) continue;
@@ -488,15 +519,15 @@ function collectTranslationBindings(sourceFile) {
       } else if (module.kind === "legacy" && imported === "useTranslation") {
         add(hooks, local, { catalog: "translation", binding: `hook:${local}`, scope: sourceFile });
       } else if ((module.kind === "common" || module.kind === "legacy") && ["translateInstant", "t", "td"].includes(imported)) {
-        add(direct, local, { catalog: module.catalog, binding: `import:${local}`, keyIndex: 0, scope: sourceFile });
+        add(direct, local, { catalog: module.catalog, binding: `import:${local}`, keyIndex: 0, scope: sourceFile, pluralAware: true });
       } else if (module.kind === "i18next" && ["t", "translate"].includes(imported)) {
-        add(direct, local, { catalog: "common", binding: `import:${local}`, keyIndex: 0, scope: sourceFile, namespaceAware: true });
+        add(direct, local, { catalog: "common", binding: `import:${local}`, keyIndex: 0, scope: sourceFile, namespaceAware: true, pluralAware: true });
       } else if (module.kind === "i18next" && imported === "i18n") {
-        add(instances, local, { catalog: "common", binding: `instance:${local}`, keyIndex: 0, scope: sourceFile, namespaceAware: true });
+        add(instances, local, { catalog: "common", binding: `instance:${local}`, keyIndex: 0, scope: sourceFile, namespaceAware: true, pluralAware: true });
       } else if (module.kind === "server" && imported === "translate") {
-        add(direct, local, { catalog: "common", binding: `import:${local}`, keyIndex: 1, scope: sourceFile });
+        add(direct, local, { catalog: "common", binding: `import:${local}`, keyIndex: 1, scope: sourceFile, pluralAware: false });
       } else if (module.kind === "request" && imported === "translateRequest") {
-        add(direct, local, { catalog: "common", binding: `import:${local}`, keyIndex: 1, scope: sourceFile });
+        add(direct, local, { catalog: "common", binding: `import:${local}`, keyIndex: 1, scope: sourceFile, pluralAware: false });
       }
     }
   }
@@ -519,6 +550,7 @@ function collectTranslationBindings(sourceFile) {
                 keyIndex: 0,
                 scope: lexicalScope(node),
                 namespaceAware: true,
+                pluralAware: true,
                 ...(namespace?.unresolvedNamespace ? { unresolvedNamespace: namespace.unresolvedNamespace } : {}),
               });
             } else {
@@ -529,9 +561,11 @@ function collectTranslationBindings(sourceFile) {
       } else {
         addLocalBindings(node, lexicalScope(node));
       }
-    } else if (is.isFunctionDeclaration(node) && node.name) {
+    } else if ((is.isFunctionDeclaration(node) || is.isClassDeclaration(node)) && node.name) {
       addLocal(node.name.text, lexicalScope(node));
-      for (const parameter of node.parameters) addLocalBindings(parameter, node);
+      if (is.isFunctionDeclaration(node)) {
+        for (const parameter of node.parameters) addLocalBindings(parameter, node);
+      }
     } else if ((is.isArrowFunction(node) || is.isFunctionExpression(node) || is.isMethodDeclaration(node)) && node.parameters) {
       for (const parameter of node.parameters) addLocalBindings(parameter, node);
     }
@@ -646,7 +680,7 @@ function scanSourceFile(repoRoot, absoluteFile, sourceFile, catalogs) {
       } else if (translation && keyArg && literalValue(keyArg) !== undefined) {
         const key = literalValue(keyArg);
         const catalog = catalogs[translation.catalog];
-        const hasRuntimeVariant = hasCountOption(node, translation.keyIndex, sourceFile) && catalog?.variantBaseMap.has(key);
+        const hasRuntimeVariant = translation.pluralAware && hasCountOption(node, translation.keyIndex, sourceFile) && catalog?.variantBaseMap.has(key);
         if (key && !catalog?.keySet.has(key) && !hasRuntimeVariant) {
           undefinedStaticTranslationCallFindings.push({
             ...locationFor(keyArg),
