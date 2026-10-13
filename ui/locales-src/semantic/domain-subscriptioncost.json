@@ -1,0 +1,62 @@
+{
+  "subscriptionCost.activeCount_one": {
+    "en": "{{count}} active subscription",
+    "zh-CN": "{{count}} 个活跃订阅",
+    "reviewedEnglishHash": "2f57d3fc9c861cbdc8f9b0552b637c0fa9e6f7bbee16ed3e0e618d5faf8a78a3"
+  },
+  "subscriptionCost.activeCount_other": {
+    "en": "{{count}} active subscriptions",
+    "zh-CN": "{{count}} 个活跃订阅",
+    "reviewedEnglishHash": "f2fe42dc2d4d5ffddcd074305489ec1c1e1519ad418541418a1806150f943b3a"
+  },
+  "subscriptionCost.annualPaymentNote": {
+    "en": " · annual payment ÷ 12",
+    "zh-CN": " · 年付 ÷ 12",
+    "reviewedEnglishHash": "e590f6a9ca4708460a00e6bdcfce22b0a80cc5ce6b26704d6a6361a5b44e5473"
+  },
+  "subscriptionCost.monthlyAmount": {
+    "en": "{{amount}}/month",
+    "zh-CN": "每月 {{amount}}",
+    "reviewedEnglishHash": "322415065bee4551d608ae923e17a638c9b47473db1f241bebbd4643b8513ce0"
+  },
+  "subscriptionCost.planChecked": {
+    "en": "Plan checked {{checkedAt}}",
+    "zh-CN": "套餐检查时间：{{checkedAt}}",
+    "reviewedEnglishHash": "182dfd246dcbd9dff9d68c9863b7f447c12436ad4bceff0538946d907f1613af"
+  },
+  "subscriptionCost.planCheckedUnavailable": {
+    "en": "Plan checked {{checkedAt}} · latest check unavailable",
+    "zh-CN": "套餐检查时间：{{checkedAt}} · 最近一次检查不可用",
+    "reviewedEnglishHash": "e756a3349a99dd583b4c665a5c2964254f14daaa00b8e4e8c1286c4152ada19c"
+  },
+  "subscriptionCost.planLabel": {
+    "en": "Plan",
+    "zh-CN": "套餐",
+    "reviewedEnglishHash": "fa8ed0bdabdd6bcb1c0746f1d3e15212f7f3439d74339fbaaf16c60c0a80fb8e"
+  },
+  "subscriptionCost.unidentifiedAccountCount_one": {
+    "en": "{{count}} unconfirmed account identity",
+    "zh-CN": "{{count}} 个未确认的账户身份",
+    "reviewedEnglishHash": "cfa2772c0f477beb6c3589b4ac6cdbe2da1be959b1857249de091da57b7118e1"
+  },
+  "subscriptionCost.unidentifiedAccountCount_other": {
+    "en": "{{count}} unconfirmed account identities",
+    "zh-CN": "{{count}} 个未确认的账户身份",
+    "reviewedEnglishHash": "bf9a3b6561e31124a451a19048609218a6d2fde58327900c83e99f3ad0abda6f"
+  },
+  "subscriptionCost.unknownPriceCount_one": {
+    "en": " · {{count}} price unknown",
+    "zh-CN": " · {{count}} 个价格未知",
+    "reviewedEnglishHash": "4eebd853943262982e37da8b4baca138cd68bb1f0d97774bc3b300b4c77fc8a3"
+  },
+  "subscriptionCost.unknownPriceCount_other": {
+    "en": " · {{count}} prices unknown",
+    "zh-CN": " · {{count}} 个价格未知",
+    "reviewedEnglishHash": "8f8af81269040c3700141cd8c07aaffb00823792fb3b31cb7a9253eb4f52581a"
+  },
+  "subscriptionCost.usageSummary": {
+    "en": "{{input}} in · {{output}} out",
+    "zh-CN": "输入 {{input}} · 输出 {{output}}",
+    "reviewedEnglishHash": "f8687cf4c9a3901f26a78d457dca21332791ebf4f5e847e57e4ea730124a6e59"
+  }
+}

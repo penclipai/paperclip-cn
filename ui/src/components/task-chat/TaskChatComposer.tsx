@@ -1,5 +1,6 @@
 import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 import { AgentAvatar } from "../AgentAvatar";
 import {
   useEffect,
@@ -300,19 +301,19 @@ function AssigneeIdentityAvatar({
 }
 
 /** v7 per-mode placeholder copy; `{agent}` is the pending assignee's name. */
-function modePlaceholder(mode: IssueWorkMode, agentName: string, mobile: boolean): string {
+function modePlaceholder(mode: IssueWorkMode, agentName: string, mobile: boolean, t: TFunction): string {
   if (mobile) {
-    if (mode === "planning") return `Plan with ${agentName}…`;
-    if (mode === "ask") return `Ask ${agentName}…`;
-    return `Message ${agentName}…`;
+    if (mode === "planning") return t("taskChatComposer.placeholder.mobilePlanning", { agentName });
+    if (mode === "ask") return t("taskChatComposer.placeholder.mobileAsk", { agentName });
+    return t("taskChatComposer.placeholder.mobileMessage", { agentName });
   }
   switch (mode) {
     case "planning":
-      return `Plan with ${agentName} — shapes the plan doc, no code changes…`;
+      return t("taskChatComposer.placeholder.planning", { agentName });
     case "ask":
-      return `Ask ${agentName} a question — read-only, nothing runs…`;
+      return t("taskChatComposer.placeholder.ask", { agentName });
     default:
-      return `Message ${agentName} — describe what you want done…`;
+      return t("taskChatComposer.placeholder.message", { agentName });
   }
 }
 
@@ -414,7 +415,7 @@ export function TaskChatComposer({
   onRunnerGoalCommand,
   onRunnerGoalReassign,
 }: TaskChatComposerProps) {
-  useTranslation();
+  const { t } = useTranslation();
   const streamlined = useStreamlinedTaskChatPresentation();
   const stopControl = useComposerStop(onStop, stopPending);
   const [localBody, setBody] = useState(() => (draftKey ? loadDraft(draftKey) : ""));
@@ -642,13 +643,14 @@ export function TaskChatComposer({
     enableReassign && reassignOptions && reassignOptions.length > 0,
   );
   const assigneeValue = creation ? currentAssigneeValue : pendingAssignee ?? currentAssigneeValue;
-  const assigneeLabel =
-    reassignOptions?.find((o) => o.id === assigneeValue)?.label ?? "Unassigned";
-  const assigneeName =
-    assigneeLabel === "Unassigned" ? "the agent" : assigneeLabel;
+  const selectedAssignee = assigneeValue
+    ? reassignOptions?.find((option) => option.id === assigneeValue)
+    : undefined;
+  const assigneeLabel = selectedAssignee?.label ?? t("Unassigned");
+  const assigneeName = selectedAssignee?.label ?? t("taskChatComposer.defaultAgentName");
   const effectivePlaceholder = queuedEdit
-    ? "Edit queued message…"
-    : (placeholder ?? modePlaceholder(pendingMode, assigneeName, mobile));
+    ? t("Edit queued message…")
+    : (placeholder ?? modePlaceholder(pendingMode, assigneeName, mobile, t));
   const goalUnavailable = runnerGoalCapability?.availability !== "available";
   const goalCommandOption: ActionCommandOption = {
     id: "action:goal",
@@ -1348,7 +1350,7 @@ export function TaskChatComposer({
               onChange={changeBody}
               placeholder={
                 disabled
-                  ? (disabledReason ?? "Composer disabled")
+                  ? (disabledReason ?? t("Composer disabled"))
                   : effectivePlaceholder
               }
               readOnly={disabled || !!uncertainSubmission || Boolean(creation && submitting)}
@@ -1580,28 +1582,28 @@ export function TaskChatComposer({
               title={
                 showStop
                   ? stopControl.stopping
-                    ? "Stopping…"
-                    : "Stop response"
+                    ? t("Stopping…")
+                    : t("Stop response")
                   : queuedEdit
                     ? queuedEdit.stale
-                      ? "Queue as new message"
-                      : "Save queued message"
+                      ? t("Queue as new message")
+                      : t("Save queued message")
                     : uploadPending
-                      ? "Waiting for upload to finish"
+                      ? t("Waiting for upload to finish")
                       : uploadFailed
-                        ? "Remove the failed attachment to send"
-                        : creation ? `${creation.submitLabel} (⌘+Enter)` : "Send (⌘+Enter)"
+                        ? t("Remove the failed attachment to send")
+                        : creation ? `${creation.submitLabel} (⌘+Enter)` : t("Send (⌘+Enter)")
               }
               aria-label={
                 showStop
                   ? stopControl.stopping
-                    ? "Stopping…"
-                    : "Stop"
+                    ? t("Stopping…")
+                    : t("Stop")
                   : queuedEdit
                     ? queuedEdit.stale
-                      ? "Queue as new message"
-                      : "Save queued message"
-                    : creation?.submitLabel ?? "Send"
+                      ? t("Queue as new message")
+                      : t("Save queued message")
+                    : creation?.submitLabel ?? t("Send")
               }
               aria-busy={submitting}
               className={cn(

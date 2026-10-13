@@ -62,7 +62,7 @@ function SubscriptionConnectionStep({ companyId, provider, initialMethod, fixedM
       managedSandboxEnvironmentId: resolveManagedSandboxEnvironmentId(envs.data),
       visibleEnvironmentIds: envs.data?.map((env) => env.id),
     });
-  } catch (error) { environmentError = error instanceof Error ? error.message : "Could not resolve the sign-in environment."; }
+  } catch (error) { environmentError = error instanceof Error ? error.message : translateInstant("Could not resolve the sign-in environment."); }
   const loginEnvironments = (envs.data ?? []).filter((env) =>
     env.status === "active" && (env.driver === "local" || (env.driver === "sandbox" &&
     typeof env.config.provider === "string" &&
@@ -118,6 +118,6 @@ function ApiKeyConnectionStep({ companyId, provider, connectionId, name: initial
     {save.error && <p role="alert" className="text-sm text-destructive">{save.error.message}</p>}
     <ProviderApiKeyCard providerName={provider === "google" ? "Google" : "OpenRouter"} value={apiKey} onChange={setApiKey} onSubmit={() => save.mutate()} disabled={disabled || save.isPending} placeholder={translateInstant("Enter API key here")} autoFocus />
     {defaults}
-    <div className="flex justify-between gap-2"><Button variant="ghost" onClick={onCancel}>{translateInstant("Cancel")}</Button><Button disabled={disabled || !name.trim() || !apiKey.trim() || save.isPending} onClick={() => save.mutate()}>{save.isPending ? "Connecting…" : "Connect"}</Button></div>
+    <div className="flex justify-between gap-2"><Button variant="ghost" onClick={onCancel}>{translateInstant("Cancel")}</Button><Button disabled={disabled || !name.trim() || !apiKey.trim() || save.isPending} onClick={() => save.mutate()}>{save.isPending ? translateInstant("Connecting…") : translateInstant("Connect")}</Button></div>
   </div>;
 }

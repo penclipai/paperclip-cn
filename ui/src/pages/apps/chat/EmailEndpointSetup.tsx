@@ -298,8 +298,8 @@ function EmailEndpointSetupForm({ companyId }: { companyId: string }) {
       .map(suffix => `${username.slice(0, 64 - suffix.length)}${suffix}`)
       .filter(name => !knownAddresses.has(`${name}@${domain}`)) : [];
   const assignedInbox = addressMode === "existing" && inboxes.data?.some(i => i.id !== requestId && i.address === address && i.status !== "archived");
-  const addressError = addressTaken ? "This email address is already in use. Choose a different address."
-    : assignedInbox ? "This inbox is already assigned to an agent." : null;
+  const addressError = addressTaken ? translateInstant("This email address is already in use. Choose a different address.")
+    : assignedInbox ? translateInstant("This inbox is already assigned to an agent.") : null;
   const error = connect.error ?? (!addressTaken ? setup.error : null) ?? resumeAccount.error ?? inspected.error ?? agents.error;
   const busy = connect.isPending || setup.isPending;
   const identityReady = inboxes.isSuccess && (!resumeId || requestId !== resumeId || !!pendingEndpoint) && (!pendingEndpoint || pendingEndpoint.assignedAgentId === agentId);
@@ -328,12 +328,12 @@ function EmailEndpointSetupForm({ companyId }: { companyId: string }) {
   };
   return <div className="mx-auto max-w-xl space-y-6 p-6">
     <header className="space-y-2">
-      <h1 className="text-xl font-bold">{step === 2 ? "Your agent’s email is ready" : translateInstant("Give an agent an email address")}</h1>
+      <h1 className="text-xl font-bold">{step === 2 ? translateInstant("Your agent’s email is ready") : translateInstant("Give an agent an email address")}</h1>
     </header>
     {step < 2 && inboxes.isError && <div role="alert" className="space-y-2 text-sm">
       <p className="text-destructive">{translateInstant("Could not load email setup progress.")}{" "}{inboxes.error.message}</p>
       <Button type="button" variant="outline" size="sm" disabled={busy || inboxes.isFetching} onClick={() => { void inboxes.refetch(); }}>
-        {inboxes.isFetching ? translateInstant("tools.advanced.loading") : "Retry loading inboxes"}
+        {inboxes.isFetching ? translateInstant("tools.advanced.loading") : translateInstant("Retry loading inboxes")}
       </Button>
     </div>}
     {step < 2 && resumeId === requestId && inboxes.isSuccess && !pendingEndpoint && <p role="alert" className="text-sm text-destructive">{translateInstant("This email setup could not be found. Return to Connectors and start a new connection.")}</p>}
@@ -361,7 +361,7 @@ function EmailEndpointSetupForm({ companyId }: { companyId: string }) {
       {error && <p role="alert" className="text-sm text-destructive">{error.message}</p>}
       <div className="flex items-center justify-between gap-3 border-t border-border pt-5">
         <Button type="button" variant="ghost" disabled={busy} onClick={cancel}>{translateInstant("Cancel")}</Button>
-        <Button disabled={!canContinue}>{connect.isPending ? "Connecting…" : translateInstant("common.continue")}<ArrowRight className="size-4" /></Button>
+        <Button disabled={!canContinue}>{connect.isPending ? translateInstant("Connecting…") : translateInstant("common.continue")}<ArrowRight className="size-4" /></Button>
       </div>
     </form>}
     {step === 1 && <form className="space-y-6" onSubmit={event => { event.preventDefault(); if (canCreate) setup.mutate(); }}>
@@ -395,8 +395,8 @@ function EmailEndpointSetupForm({ companyId }: { companyId: string }) {
           onClick={() => { setAllowInboxKey(false); setStep(0); }}>{translateInstant("Choose a key for a new address")}</Button>}
         {addressError && <p id="email-address-error" role="alert" className="text-sm text-destructive">{addressError}</p>}
         {checkingNewAddress && !addressError && <p id="email-address-status" role="status" className="text-sm text-muted-foreground">
-          {addressCheck.checking ? "Checking address…" : addressCheck.error ? `Could not check this address. ${addressCheck.error}`
-            : addressCheck.result?.status === "unknown" ? "AgentMail confirms availability when you create the address." : null}
+          {addressCheck.checking ? translateInstant("Checking address…") : addressCheck.error ? `${translateInstant("Could not check this address.")} ${addressCheck.error}`
+            : addressCheck.result?.status === "unknown" ? translateInstant("AgentMail confirms availability when you create the address.") : null}
         </p>}
         {suggestions.length > 0 && <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm" aria-label={translateInstant("Suggested email addresses")}>
           <span className="text-muted-foreground">{translateInstant("Try:")}</span>
@@ -405,7 +405,7 @@ function EmailEndpointSetupForm({ companyId }: { companyId: string }) {
         </div>}
         {!scopedKey && !pendingAddress && <Button type="button" variant="link" size="sm" className="h-auto p-0" disabled={busy}
           onClick={() => { setAddressMode(addressMode === "new" ? "existing" : "new"); setup.reset(); }}>
-          {addressMode === "new" ? "Use an existing inbox" : "Create a new address"}
+          {addressMode === "new" ? translateInstant("Use an existing inbox") : translateInstant("Create a new address")}
         </Button>}
       </div>
       <Card className="py-4">
@@ -423,12 +423,12 @@ function EmailEndpointSetupForm({ companyId }: { companyId: string }) {
           <div className="space-y-2">
             <Label htmlFor="email-mode">{translateInstant("Receiving")}</Label>
             <select id="email-mode" value={mode} disabled={busy} className={selectClass} onChange={event => setMode(event.target.value as typeof mode)}>
-              <option value="websocket">{translateInstant("Live connection")}</option><option value="webhook">Webhook</option>
+              <option value="websocket">{translateInstant("Live connection")}</option><option value="webhook">{translateInstant("Webhook")}</option>
             </select>
           </div>
           <EmailSafetyNotice />
           <div className="space-y-2 text-sm">
-            <p>{lowTrust && scoped ? "Low-trust review configured" : "Manage which tasks and tools this agent can access."}</p>
+            <p>{lowTrust && scoped ? translateInstant("Low-trust review configured") : translateInstant("Manage which tasks and tools this agent can access.")}</p>
             <Button type="button" variant="outline" size="sm" onClick={openTrust}>{translateInstant("Review trust settings")}</Button>
           </div>
         </div>
@@ -438,7 +438,7 @@ function EmailEndpointSetupForm({ companyId }: { companyId: string }) {
       <div className="flex items-center justify-between gap-3 border-t border-border pt-5">
         <Button type="button" variant="ghost" disabled={busy} onClick={() => { setup.reset(); setStep(0); }}><ArrowLeft className="size-4" />{translateInstant("Back")}</Button>
         <Button disabled={!canCreate}>
-          {setup.isPending ? "Connecting…" : pendingAddress ? translateInstant("Finish connecting") : addressMode === "new" ? "Create email address" : "Connect email address"}<ArrowRight className="size-4" />
+          {setup.isPending ? translateInstant("Connecting…") : pendingAddress ? translateInstant("Finish connecting") : addressMode === "new" ? translateInstant("Create email address") : translateInstant("Connect email address")}<ArrowRight className="size-4" />
         </Button>
       </div>
     </form>}
@@ -625,7 +625,7 @@ export function EmailEndpointSettings({
   if (!inbox)
     return (
       <p role={query.error ? "alert" : undefined}>
-        {query.error?.message ?? "Loading email inbox…"}
+        {query.error?.message ?? translateInstant("Loading email inbox…")}
       </p>
     );
   return (
@@ -640,7 +640,7 @@ export function EmailEndpointSettings({
                 <span className="min-w-0 break-all">{inbox.address}</span>
                 <Copy aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
               </CopyText>
-            ) : "Email inbox"}
+            ) : translateInstant("Email inbox")}
           </h1>
           {inbox.address && (
             <a href={`https://console.agentmail.to/dashboard/inboxes/${encodeURIComponent(inbox.address)}`}
@@ -684,11 +684,11 @@ export function EmailEndpointSettings({
         <dl className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-1">
             <dt className="text-xs text-muted-foreground">{translateInstant("Receiving mode")}</dt>
-            <dd className="text-sm">{inbox.receiveMode === "websocket" ? translateInstant("Live connection") : "Webhook"}</dd>
+            <dd className="text-sm">{inbox.receiveMode === "websocket" ? translateInstant("Live connection") : translateInstant("Webhook")}</dd>
           </div>
           <div className="space-y-1">
             <dt className="text-xs text-muted-foreground">{translateInstant("Last mail check")}</dt>
-            <dd className="font-mono text-xs">{inbox.lastSyncAt ? formatDateTime(inbox.lastSyncAt) : "Not checked yet"}</dd>
+            <dd className="font-mono text-xs">{inbox.lastSyncAt ? formatDateTime(inbox.lastSyncAt) : translateInstant("Not checked yet")}</dd>
           </div>
         </dl>
         {inbox.lastError && <p role="alert" className="text-sm text-destructive">{inbox.lastError}</p>}
@@ -709,14 +709,14 @@ export function EmailEndpointSettings({
               disabled={reconnect.isPending} value={receiveMode || inbox.receiveMode}
               onChange={(e) => setReceiveMode(e.target.value as "websocket" | "webhook")}>
               <option value="websocket">{translateInstant("Live connection")}</option>
-              <option value="webhook">Webhook</option>
+              <option value="webhook">{translateInstant("Webhook")}</option>
             </select>
           </div>
           {reconnect.error && <p role="alert" className="text-sm text-destructive">{reconnect.error.message}</p>}
           {reconnect.isSuccess && <p role="status" className="text-sm">{translateInstant("Inbox reconnected.")}</p>}
           <div className="flex justify-end">
             <Button variant="outline" disabled={!replacementKey || reconnect.isPending} onClick={() => reconnect.mutate()}>
-              {reconnect.isPending ? "Reconnecting…" : translateInstant("Reconnect inbox")}
+              {reconnect.isPending ? translateInstant("Reconnecting…") : translateInstant("Reconnect inbox")}
             </Button>
           </div>
         </div>

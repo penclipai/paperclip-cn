@@ -82,11 +82,11 @@ export function EmailMessageCard({
           )}
         </p>
         <p className="break-words text-xs text-muted-foreground">
-          To: {message.to.join(", ")}
+          {translateInstant("To:")} {message.to.join(", ")}
         </p>
         {!!message.cc?.length && (
           <p className="break-words text-xs text-muted-foreground">
-            Cc: {message.cc.join(", ")}
+            {translateInstant("Cc:")} {message.cc.join(", ")}
           </p>
         )}
         <p className="text-sm font-semibold">{message.subject}</p>

@@ -1504,7 +1504,7 @@ export function StepTargetManager({
         <div className="space-y-1.5" aria-describedby="target-manager-help">
           <SectionHeader>{translateInstant("teamCatalog.targetManager")}</SectionHeader>
           <Command className="rounded-md border border-border">
-            <CommandInput placeholder="Search agents…" />
+            <CommandInput placeholder={translateInstant("Search agents…")} />
             <CommandList>
               <CommandEmpty>{translateInstant("No agents found.")}</CommandEmpty>
               <CommandGroup>

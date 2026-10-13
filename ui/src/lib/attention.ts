@@ -9,6 +9,7 @@ import type {
   AttentionSourceKind,
   AttentionWorkspaceRef,
 } from "@penclipai/shared";
+import { translateInstant } from "@/i18n";
 
 export type AttentionListOptions = AttentionFeedQuery;
 
@@ -47,23 +48,26 @@ interface SourceMeta {
   label: string;
 }
 
-const SOURCE_META: Record<AttentionSourceKind, SourceMeta> = {
-  approval: { label: "Approval" },
-  decision: { label: "Decision" },
-  issue_thread_interaction: { label: "Decision requested" },
-  join_request: { label: "Join request" },
-  recovery_action: { label: "Recovery" },
+const SOURCE_META: Record<AttentionSourceKind, { labelKey: string; defaultLabel: string }> = {
+  approval: { labelKey: "whatNeedsMe.sourceKinds.approval", defaultLabel: "Approval" },
+  decision: { labelKey: "whatNeedsMe.sourceKinds.decision", defaultLabel: "Decision" },
+  issue_thread_interaction: { labelKey: "whatNeedsMe.sourceKinds.issueThreadInteraction", defaultLabel: "Decision requested" },
+  join_request: { labelKey: "whatNeedsMe.sourceKinds.joinRequest", defaultLabel: "Join request" },
+  recovery_action: { labelKey: "whatNeedsMe.sourceKinds.recoveryAction", defaultLabel: "Recovery" },
   // Read compatibility for persisted decisions from the retired feature.
-  productivity_review: { label: "Task" },
-  blocker_attention: { label: "Blocked dependency" },
-  review: { label: "Review" },
-  failed_run: { label: "Failed run" },
-  budget_alert: { label: "Budget" },
-  agent_error_alert: { label: "Agent error" },
+  productivity_review: { labelKey: "Task", defaultLabel: "Task" },
+  blocker_attention: { labelKey: "whatNeedsMe.sourceKinds.blockerAttention", defaultLabel: "Blocked dependency" },
+  review: { labelKey: "whatNeedsMe.sourceKinds.review", defaultLabel: "Review" },
+  failed_run: { labelKey: "whatNeedsMe.sourceKinds.failedRun", defaultLabel: "Failed run" },
+  budget_alert: { labelKey: "whatNeedsMe.sourceKinds.budgetAlert", defaultLabel: "Budget" },
+  agent_error_alert: { labelKey: "whatNeedsMe.sourceKinds.agentErrorAlert", defaultLabel: "Agent error" },
 };
 
 export function sourceMeta(kind: AttentionSourceKind): SourceMeta {
-  return SOURCE_META[kind] ?? { label: kind.replaceAll("_", " ") };
+  const meta = SOURCE_META[kind];
+  return meta
+    ? { label: translateInstant(meta.labelKey, { defaultValue: meta.defaultLabel }) }
+    : { label: kind.replaceAll("_", " ") };
 }
 
 interface SeverityStyle {
@@ -73,15 +77,16 @@ interface SeverityStyle {
   label: string;
 }
 
-const SEVERITY_STYLE: Record<AttentionSeverity, SeverityStyle> = {
-  critical: { accent: "bg-red-500", dot: "bg-red-500", label: "Critical" },
-  high: { accent: "bg-orange-500", dot: "bg-orange-500", label: "High" },
-  medium: { accent: "bg-yellow-500", dot: "bg-yellow-500", label: "Medium" },
-  low: { accent: "bg-blue-500", dot: "bg-blue-500", label: "Low" },
+const SEVERITY_STYLE: Record<AttentionSeverity, Omit<SeverityStyle, "label"> & { labelKey: string; defaultLabel: string }> = {
+  critical: { accent: "bg-red-500", dot: "bg-red-500", labelKey: "whatNeedsMe.severity.critical", defaultLabel: "Critical" },
+  high: { accent: "bg-orange-500", dot: "bg-orange-500", labelKey: "whatNeedsMe.severity.high", defaultLabel: "High" },
+  medium: { accent: "bg-yellow-500", dot: "bg-yellow-500", labelKey: "whatNeedsMe.severity.medium", defaultLabel: "Medium" },
+  low: { accent: "bg-blue-500", dot: "bg-blue-500", labelKey: "whatNeedsMe.severity.low", defaultLabel: "Low" },
 };
 
 export function severityStyle(severity: AttentionSeverity): SeverityStyle {
-  return SEVERITY_STYLE[severity] ?? SEVERITY_STYLE.low;
+  const style = SEVERITY_STYLE[severity] ?? SEVERITY_STYLE.low;
+  return { accent: style.accent, dot: style.dot, label: translateInstant(style.labelKey, { defaultValue: style.defaultLabel }) };
 }
 
 // ---------------------------------------------------------------------------
@@ -371,9 +376,9 @@ export function buildDeskShelves(items: AttentionItem[], now: number): DeskShelf
   const earlier = rest.filter((item) => !attentionIsNewToday(item, now));
 
   const shelves: DeskShelf[] = [];
-  if (decideNow.length > 0) shelves.push({ key: "desk:decide-now", label: "Decide now", items: decideNow });
-  if (newToday.length > 0) shelves.push({ key: "desk:new-today", label: "New today", items: newToday });
-  if (earlier.length > 0) shelves.push({ key: "desk:earlier", label: "Earlier", items: earlier });
+  if (decideNow.length > 0) shelves.push({ key: "desk:decide-now", label: translateInstant("Decide now"), items: decideNow });
+  if (newToday.length > 0) shelves.push({ key: "desk:new-today", label: translateInstant("New today"), items: newToday });
+  if (earlier.length > 0) shelves.push({ key: "desk:earlier", label: translateInstant("Earlier"), items: earlier });
   return shelves;
 }
 

@@ -99,6 +99,11 @@
     "zh-CN": "复制",
     "reviewedEnglishHash": "e21f935f11d7e966dbbae78da9daa378fe8142a14e7c0cd7434183005faa6c5c"
   },
+  "common.copyLabel": {
+    "en": "Copy {{label}}",
+    "zh-CN": "复制{{label}}",
+    "reviewedEnglishHash": "948cb2b94225689c69e34729a3d9d811556fa8f97b6b21b58e94f2413b996f6d"
+  },
   "common.create": {
     "en": "Create",
     "zh-CN": "创建",
@@ -343,6 +348,11 @@
     "en": "Status",
     "zh-CN": "状态",
     "reviewedEnglishHash": "920e413c7d411b61ef3e8c63b1cb6ad058d5f95f8b481dbafe60248387d8c355"
+  },
+  "common.tools": {
+    "en": "Tools",
+    "zh-CN": "工具",
+    "reviewedEnglishHash": "ea93d6a262ecb87a9fa4d09edbd7654c046597936a8e235fc3949eb01775ff99"
   },
   "common.tryAgain": {
     "en": "Try again",

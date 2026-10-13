@@ -32,7 +32,7 @@ const selectClass = "h-9 w-full rounded-md border border-input bg-background px-
 function FieldHelp({ label, children }: { label: string; children: ReactNode }) {
   const [open, setOpen] = useState(false);
   return <Tooltip open={open} onOpenChange={setOpen}>
-    <TooltipTrigger asChild><button type="button" aria-label={`Help with ${label}`} onClick={() => setOpen(!open)} className="rounded-sm text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><HelpCircle className="size-4" /></button></TooltipTrigger>
+    <TooltipTrigger asChild><button type="button" aria-label={translateInstant("connectionUi.remoteMcp.helpWith", { label, defaultValue: "Help with {{label}}" })} onClick={() => setOpen(!open)} className="rounded-sm text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><HelpCircle className="size-4" /></button></TooltipTrigger>
     <TooltipContent className="max-w-xs">{children}</TooltipContent>
   </Tooltip>;
 }
@@ -122,19 +122,19 @@ export function RemoteMcpConnectionSetup({ provider, state: s, actions: a, agent
     <div className="flex items-center gap-2"><Label htmlFor={`${uid}-url`}>{translateInstant("MCP server URL")}</Label><FieldHelp label={translateInstant("MCP server URL")}>{provider.urlHelp}</FieldHelp></div>
     <Input id={`${uid}-url`} type="password" autoComplete="off" spellCheck={false} placeholder={provider.placeholder} value={s.url} aria-invalid={s.connectStatus === "invalid_url"} aria-describedby={`${uid}-url-help`} onChange={(event) => change({ url: event.target.value })} />
     <p id={`${uid}-url-help`} className="text-xs text-muted-foreground">{provider.urlHelp}</p>
-    {provider.id === "executor" ? <div className="space-y-2"><div className="flex items-center gap-2"><Label htmlFor={`${uid}-management`}>Console URL (optional)</Label>
-      <FieldHelp label="Executor console URL">The URL of your Executor organization’s integrations page. Used to open and manage imported accounts.</FieldHelp></div>
+    {provider.id === "executor" ? <div className="space-y-2"><div className="flex items-center gap-2"><Label htmlFor={`${uid}-management`}>{translateInstant("Console URL (optional)")}</Label>
+      <FieldHelp label={translateInstant("Executor console URL")}>{translateInstant("The URL of your Executor organization’s integrations page. Used to open and manage imported accounts.")}</FieldHelp></div>
       <Input id={`${uid}-management`} type="url" value={s.managementUrl ?? ""} placeholder="https://executor.sh/your-organization/integrations" onChange={event => change({ managementUrl: event.target.value })} />
     </div> : null}
   </div>;
 
   return <div className={host === "dialog" ? "min-w-0 text-foreground" : "mx-auto max-w-6xl p-4 text-foreground sm:p-8"} data-remote-mcp-provider={provider.id}>
     <StepHeader headingRef={heading} appIdentity={{ name: provider.name, logoUrl: null }}
-      title={upstreamServiceName ? `Connect ${upstreamServiceName} through ${provider.name}` : s.step === "draft" ? "Continue your setup" : s.setupComplete ? s.step === "access" ? "Who can use this connection" : s.step === "connect" ? `Reconnect ${provider.name}` : provider.name : undefined}
-      subtitle={currentStep >= 0 && !s.setupComplete ? `Paperclip will use ${provider.name} on your behalf.` : s.step === "draft" ? `Your ${provider.name} setup is ready to resume.` : s.step === "permissions" ? `Connected${s.identity ? ` as ${s.identity}` : ""} · ${s.tools.length} actions available` : `Manage this ${provider.name} connection.`}
+      title={upstreamServiceName ? translateInstant("connectionUi.remoteMcp.connectThrough", { service: upstreamServiceName, provider: provider.name, defaultValue: "Connect {{service}} through {{provider}}" }) : s.step === "draft" ? translateInstant("Continue your setup") : s.setupComplete ? s.step === "access" ? translateInstant("Who can use this connection") : s.step === "connect" ? translateInstant("connectionUi.remoteMcp.reconnect", { provider: provider.name, defaultValue: "Reconnect {{provider}}" }) : provider.name : undefined}
+      subtitle={currentStep >= 0 && !s.setupComplete ? translateInstant("connectionUi.remoteMcp.useOnYourBehalf", { provider: provider.name, defaultValue: "Paperclip will use {{provider}} on your behalf." }) : s.step === "draft" ? translateInstant("connectionUi.remoteMcp.setupReadyToResume", { provider: provider.name, defaultValue: "Your {{provider}} setup is ready to resume." }) : s.step === "permissions" ? translateInstant(s.tools.length === 1 ? "connectionUi.remoteMcp.connectedActionsAvailable_one" : "connectionUi.remoteMcp.connectedActionsAvailable_other", { identity: s.identity ?? "", count: s.tools.length, defaultValue: s.tools.length === 1 ? "Connected{{identity}} · {{count}} action available" : "Connected{{identity}} · {{count}} actions available" }) : translateInstant("connectionUi.remoteMcp.manageConnection", { provider: provider.name, defaultValue: "Manage this {{provider}} connection." })}
       step={currentStep >= 0 && !s.setupComplete ? "key" : "gallery"} activeIndex={currentStep} labels={steps.map(() => "Connect")} onCancel={busy || s.step === "management" || s.step === "permissions" || s.step === "draft" ? undefined : onCancel ?? a.saveExit} />
     <main className="space-y-6">
-        {upstreamServiceName && <InlineBanner compact>{provider.name} handles the connection and requests to {upstreamServiceName}{translateInstant(".")}{" "}{provider.id === "composio" ? "After connecting this account, sign in to the app in Composio." : "Manage app sign-in in the provider, then refresh your gateway here."}</InlineBanner>}
+        {upstreamServiceName && <InlineBanner compact>{translateInstant("connectionUi.remoteMcp.providerHandlesService", { provider: provider.name, service: upstreamServiceName, defaultValue: "{{provider}} handles the connection and requests to {{service}}." })}{" "}{provider.id === "composio" ? translateInstant("After connecting this account, sign in to the app in Composio.") : translateInstant("Manage app sign-in in the provider, then refresh your gateway here.")}</InlineBanner>}
         {s.notice && <p role="status" className="text-sm text-muted-foreground">{s.notice}</p>}
 
         {s.step === "access" && <AccessStepContent agents={agents} lockedAgentId={lockedAgentId} authKind="oauth" grantKinds={fixedGrantKind ? [fixedGrantKind] : undefined} grantKind={s.grantKind} setGrantKind={(grantKind) => { if (grantKind !== "agent") change({ grantKind }); }}
@@ -156,11 +156,11 @@ export function RemoteMcpConnectionSetup({ provider, state: s, actions: a, agent
         {s.step === "connect" && <>
           <div className="space-y-3">
             <ol className="list-decimal space-y-2 pl-5 text-sm">{provider.instructions.map((instruction) => <li key={instruction}>{instruction}</li>)}</ol>
-            {external("setup", `Open ${provider.name} setup guide`)}
+            {external("setup", translateInstant("connectionUi.remoteMcp.openSetupGuide", { provider: provider.name, defaultValue: "Open {{provider}} setup guide" }))}
           </div>
           {s.connectStatus === "sign_in" && provider.supportsBrowserAuth ? <>
-            <div role="status"><InlineBanner title={`Finish signing in to ${provider.name}`}>
-              Complete sign-in in the provider window, then return here. Paperclip is waiting for confirmation.
+            <div role="status"><InlineBanner title={translateInstant("connectionUi.remoteMcp.finishSigningIn", { provider: provider.name, defaultValue: "Finish signing in to {{provider}}" })}>
+              {translateInstant("Complete sign-in in the provider window, then return here. Paperclip is waiting for confirmation.")}
             </InlineBanner></div>
             <p className="text-sm text-muted-foreground">If a window did not open, {authorizationUrl ? <a className="text-current underline" href={authorizationUrl} onClick={() => a.openProvider("sign_in")} target="_blank" rel="noopener noreferrer">open sign-in again</a> : external("sign_in", "open sign-in again")}{translateInstant(".")}</p>
             {footer(<><Button variant="outline" onClick={a.cancelConnect}>Cancel sign-in</Button><Button disabled>{translateInstant("Waiting for sign-in")}</Button></>)}

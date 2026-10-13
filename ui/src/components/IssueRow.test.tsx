@@ -32,7 +32,10 @@ vi.mock("react-i18next", async (importOriginal) => {
   return {
     ...actual,
     useTranslation: () => ({
-      t: (key: string, options?: { defaultValue?: string }) => options?.defaultValue ?? key,
+      t: (key: string, options?: Record<string, unknown>) => {
+        const fallback = typeof options?.defaultValue === "string" ? options.defaultValue : key;
+        return fallback.replace(/\{\{(\w+)\}\}/g, (_, token: string) => String(options?.[token] ?? ""));
+      },
     }),
   };
 });

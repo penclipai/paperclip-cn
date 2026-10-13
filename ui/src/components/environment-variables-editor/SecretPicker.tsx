@@ -57,6 +57,7 @@ function buildFolderGroup(
   secrets: readonly CompanySecret[],
   currentPath: readonly string[],
   currentSecretId: string,
+  t: (key: string, options?: Record<string, unknown>) => string,
 ): SearchableSelectGroup<string, SecretOption> {
   const currentLength = currentPath.length;
   const folders = new Map<string, SecretOption>();
@@ -109,7 +110,7 @@ function buildFolderGroup(
     options.push({
       key: `folder-up-${pathKey(currentPath)}`,
       value: folderValue(parentPath),
-      label: "Up one folder",
+      label: t("envVarEditor.upOneFolder"),
       title: pathLabel(parentPath),
       searchText: pathLabel(parentPath),
       kind: "back",
@@ -121,7 +122,7 @@ function buildFolderGroup(
 
   return {
     id: "browse-secrets",
-    label: currentPath.length > 0 ? pathLabel(currentPath) : "Browse secrets",
+    label: currentPath.length > 0 ? pathLabel(currentPath) : t("envVarEditor.browseSecrets"),
     options,
   };
 }
@@ -156,7 +157,7 @@ export function SecretPicker({
   triggerClassName,
   disablePortal,
 }: SecretPickerProps) {
-  useTranslation();
+  const { t } = useTranslation();
   const [currentPathKey, setCurrentPathKey] = useState("");
   const boundSecret = useMemo(
     () => secrets.find((secret) => secret.id === secretId) ?? null,
@@ -174,13 +175,13 @@ export function SecretPicker({
     if (boundMissing) {
       result.push({
         id: "current-missing",
-        label: translateInstant("Current"),
+        label: t("envVarEditor.currentSecretGroup"),
         options: [
           {
             key: `missing-${secretId}`,
             value: secretId,
-            label: `Missing secret (${secretId.slice(0, 8)}…)`,
-            title: `Missing secret (${secretId})`,
+            label: t("envVarEditor.missingSecretTitle", { id: `${secretId.slice(0, 8)}…` }),
+            title: t("envVarEditor.missingSecretTitle", { id: secretId }),
             missing: true,
             disabled: true,
           },
@@ -194,7 +195,7 @@ export function SecretPicker({
     if (recent.length > 0) {
       result.push({
         id: "recently-used",
-        label: translateInstant("envVarEditor.recentlyUsedGroup"),
+        label: t("envVarEditor.recentlyUsedGroup"),
         options: recent.map((secret) => ({
           key: `recent-${secret.id}`,
           value: secret.id,
@@ -210,7 +211,7 @@ export function SecretPicker({
 
     result.push({
       id: "all-secrets",
-      label: recent.length > 0 ? "All secrets" : undefined,
+      label: recent.length > 0 ? t("envVarEditor.allSecretsGroup") : undefined,
       options: secrets.map((secret) => ({
         key: `all-${secret.id}`,
         value: secret.id,
@@ -227,18 +228,18 @@ export function SecretPicker({
     });
 
     return result;
-  }, [boundMissing, recentlyUsedSecrets, secretId, secrets]);
+  }, [boundMissing, recentlyUsedSecrets, secretId, secrets, t]);
 
   const deriveGroups = useCallback(
     (query: string, baseGroups: readonly SearchableSelectGroup<string, SecretOption>[]) => {
       if (!hasFolderPaths) return baseGroups;
       if (normalizeSearchText(query)) return baseGroups;
 
-      const browseGroup = buildFolderGroup(secrets, currentPath, secretId);
+      const browseGroup = buildFolderGroup(secrets, currentPath, secretId, t);
       const stableGroups = baseGroups.filter((group) => group.id === "current-missing" || group.id === "recently-used");
       return browseGroup.options.length > 0 ? [...stableGroups, browseGroup] : stableGroups;
     },
-    [currentPath, hasFolderPaths, secretId, secrets],
+    [currentPath, hasFolderPaths, secretId, secrets, t],
   );
 
   return (
@@ -256,9 +257,9 @@ export function SecretPicker({
       deriveGroups={deriveGroups}
       disabled={disabled}
       disablePortal={disablePortal}
-      placeholder={translateInstant("envVarEditor.selectSecretEllipsis")}
-      searchPlaceholder="Search secrets…"
-      emptyMessage={translateInstant("envVarEditor.noMatchingSecrets")}
+      placeholder={t("envVarEditor.selectSecretEllipsis")}
+      searchPlaceholder={t("envVarEditor.searchSecrets")}
+      emptyMessage={t("envVarEditor.noMatchingSecrets")}
       triggerClassName={cn(
         "h-(--sz-34px) min-h-(--sz-34px) font-mono text-sm",
         boundMissing && "border-destructive text-destructive",
@@ -267,7 +268,7 @@ export function SecretPicker({
       )}
       renderValue={(option) => {
         if (!option) {
-          return <span className="text-muted-foreground">{translateInstant("envVarEditor.selectSecretEllipsis")}</span>;
+          return <span className="text-muted-foreground">{t("envVarEditor.selectSecretEllipsis")}</span>;
         }
         if (option.missing) {
           return (
@@ -327,10 +328,10 @@ export function SecretPicker({
                 <Plus className="size-3.5 shrink-0" />
                 {query.trim() ? (
                   <span>
-                    {translateInstant("secretBindingPicker.createSecret")}{" "}<span className="font-mono">&ldquo;{query.trim()}&rdquo;</span>…
+                    {t("secretBindingPicker.createSecret")}{" "}<span className="font-mono">&ldquo;{query.trim()}&rdquo;</span>…
                   </span>
                 ) : (
-                  <span>{translateInstant("Create new secret…")}</span>
+                  <span>{t("envVarEditor.createNewSecret")}</span>
                 )}
               </span>
             ),

@@ -9,6 +9,16 @@
     "zh-CN": "。请禁用其中一个插件，或更改其路由。",
     "reviewedEnglishHash": "c8204595835747ee7c95f03fb3825814a495fad0f6aa43d305d84c2fc0b8147f"
   },
+  "30 Days": {
+    "en": "30 Days",
+    "zh-CN": "30 天",
+    "reviewedEnglishHash": "4ae21a9bc8175e7084384deebb79ea20df371828751414ed0b2eaad19fcb476b"
+  },
+  "7 Days": {
+    "en": "7 Days",
+    "zh-CN": "7 天",
+    "reviewedEnglishHash": "a9ad9dc1405e67bbc08b030e5c32020517e5a7ae95a8bbe5c3fdd55779c905e0"
+  },
   "7-day actions": {
     "en": "7-day actions",
     "zh-CN": "7 天内操作",
@@ -54,6 +64,11 @@
     "zh-CN": "调试",
     "reviewedEnglishHash": "47fc5bfb5680bd7a9d55085c13c03c5c75ab3a5e2beb3eebd08067146a17a0f1"
   },
+  "Decide now": {
+    "en": "Decide now",
+    "zh-CN": "立即决策",
+    "reviewedEnglishHash": "8b60cfd14d5a368d0ac6689a0bd0d66ec8353b5a352eff019437f3574790b09b"
+  },
   "Decide where this item goes next.": {
     "en": "Decide where this item goes next.",
     "zh-CN": "决定此条目接下来应进入哪个阶段。",
@@ -89,6 +104,11 @@
     "zh-CN": "决定理由",
     "reviewedEnglishHash": "733f30ba30b55e4a81475e33038b0e92c061795ea7bf9d82e7e9a1a0cedae3bc"
   },
+  "Declared by the skill author. Importing does not install dependencies or run scripts.": {
+    "en": "Declared by the skill author. Importing does not install dependencies or run scripts.",
+    "zh-CN": "由技能作者声明。导入不会安装依赖或运行脚本。",
+    "reviewedEnglishHash": "8c99c7320b0137cfdb51b3c1274ecbe524647b574609271b775189950f5578c3"
+  },
   "Decline": {
     "en": "Decline",
     "zh-CN": "拒绝",
@@ -103,6 +123,11 @@
     "en": "Default",
     "zh-CN": "默认",
     "reviewedEnglishHash": "21b111cbfe6e8fca2d181c43f53ad548b22e38aca955b9824706a504b0a07a2d"
+  },
+  "Default (ACP)": {
+    "en": "Default (ACP)",
+    "zh-CN": "默认（ACP）",
+    "reviewedEnglishHash": "db3da2a98fda28e7f42505d1de3036cf445998b0dba297a7a6fcc5da35db8e69"
   },
   "Default (pill) variant": {
     "en": "Default (pill) variant",
@@ -124,10 +149,20 @@
     "zh-CN": "默认尺寸",
     "reviewedEnglishHash": "5cbce0f8801347fcf33103e863704bd259726ffaf66d00a4d100b23016832801"
   },
+  "Default uses ACP. If ACP is unavailable, the run fails with a setup error. Choose CLI explicitly to use it.": {
+    "en": "Default uses ACP. If ACP is unavailable, the run fails with a setup error. Choose CLI explicitly to use it.",
+    "zh-CN": "默认使用 ACP。若 ACP 不可用，运行会因设置错误而失败；请明确选择 CLI 使用它。",
+    "reviewedEnglishHash": "3c378609aa8d260f8444053baa218193ca20d9af31cc7c4bc34471663fa2312d"
+  },
   "Default:": {
     "en": "Default:",
     "zh-CN": "默认：",
     "reviewedEnglishHash": "d1f6d9e71b8b00f7c1f69c3f711180c84731d36c29ae206819908859843df440"
+  },
+  "Defaults to 0, which closes the ACP process after each run while retaining persistent session state.": {
+    "en": "Defaults to 0, which closes the ACP process after each run while retaining persistent session state.",
+    "zh-CN": "默认值为 0：每次运行后关闭 ACP 进程，同时保留持久会话状态。",
+    "reviewedEnglishHash": "01653b2fd423ba51d6e086ec6a8c1f638560ea417b109fbb5f126b7882825725"
   },
   "Deferred wake": {
     "en": "Deferred wake",
@@ -283,6 +318,11 @@
     "en": "Dense card",
     "zh-CN": "紧凑卡片",
     "reviewedEnglishHash": "d99c6cd2e8889dc3c869a38c074e1283d40a27bed1b4195617cdc2d58e47a91a"
+  },
+  "Deny": {
+    "en": "Deny",
+    "zh-CN": "拒绝",
+    "reviewedEnglishHash": "05a2d7332eb9d8bf164487c743a2e93c21b16bb2061a93e3ee2ceb508eadb753"
   },
   "Deploy to production": {
     "en": "Deploy to production",
@@ -684,10 +724,30 @@
     "zh-CN": "已完成",
     "reviewedEnglishHash": "11a6767d5674c7e45f7e00dc525762275b3a48491ad6045427d2609cc496c516"
   },
+  "Done editing": {
+    "en": "Done editing",
+    "zh-CN": "完成编辑",
+    "reviewedEnglishHash": "058f24ef2d7c45139f2d2d661d8f94a3cedc5389db51b696fa97a2ba6d786784"
+  },
+  "Dot agent connection": {
+    "en": "Dot agent connection",
+    "zh-CN": "Dot 智能体连接",
+    "reviewedEnglishHash": "2ced6ac4c5e4a3aee4f3338dfa6dc9a618e10f0a40e2b131bdb0f9b2e5680166"
+  },
+  "Dot connection": {
+    "en": "Dot connection",
+    "zh-CN": "Dot 连接",
+    "reviewedEnglishHash": "dfb16ae3cc95c0d5d72967c14d2f7e5b8d60027fa40d76c4a89e3a36a04d38c7"
+  },
   "Dot connection checks": {
     "en": "Dot connection checks",
     "zh-CN": "点连接检查",
     "reviewedEnglishHash": "0c8a99e80eed8f3fc03b5887cf41b76e9329baeadb3074e6a0e35f3872b1a580"
+  },
+  "Dot does not report token usage or cost. Paperclip cannot enforce a provider spend ceiling; known company and agent budget limits still apply.": {
+    "en": "Dot does not report token usage or cost. Paperclip cannot enforce a provider spend ceiling; known company and agent budget limits still apply.",
+    "zh-CN": "Dot 不报告词元使用量或成本。Paperclip 无法强制提供商支出上限；已知的组织和智能体预算限制仍然生效。",
+    "reviewedEnglishHash": "e22939899c00945bf722bbaaa564ce37d3cffa7dfb53f4ac67bc882e747dfba2"
   },
   "Dot has not reported useful activity for 15 minutes. Inspect the Dot before assigning replacement work; Paperclip cannot confirm its external stop.": {
     "en": "Dot has not reported useful activity for 15 minutes. Inspect the Dot before assigning replacement work; Paperclip cannot confirm its external stop.",

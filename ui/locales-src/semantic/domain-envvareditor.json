@@ -34,6 +34,11 @@
     "zh-CN": "公司密钥引用",
     "reviewedEnglishHash": "e9f1520e602b47451ac2101ad6593eee53f7a3281c4c3bde6a2c870a0f8528f5"
   },
+  "envVarEditor.createNewSecret": {
+    "en": "Create new secret…",
+    "zh-CN": "新建密钥…",
+    "reviewedEnglishHash": "e51d402a190315fd4ba16880b54688a59fcf05e8778fdb6b83ebdffd4a50c795"
+  },
   "envVarEditor.createSecretFromPlainValue": {
     "en": "Create secret from plain value",
     "zh-CN": "从明文值创建密钥",

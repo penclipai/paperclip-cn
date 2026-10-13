@@ -1,0 +1,22 @@
+{
+  "builtInAgentPaused.body": {
+    "en": "Resume the agent to generate this {{noun}}.",
+    "zh-CN": "恢复智能体以生成此{{noun}}。",
+    "reviewedEnglishHash": "0ddc62c20e2340746c8a207a2808e5637484cbc59f0a1aedd6aeb7757accaa33"
+  },
+  "builtInAgentPaused.item": {
+    "en": "item",
+    "zh-CN": "内容",
+    "reviewedEnglishHash": "4a33eacd5fa65f2b2e2871cd131286b53c415b131666d71173bb6e3fe59361b3"
+  },
+  "builtInAgentPaused.title": {
+    "en": "{{agent}} is paused",
+    "zh-CN": "{{agent}} 已暂停",
+    "reviewedEnglishHash": "31f4e72a43dd804b6f16e096a638f375f442259c202b7bd9482f83af4b4804f6"
+  },
+  "builtInAgentPaused.viewAgent": {
+    "en": "View agent",
+    "zh-CN": "查看智能体",
+    "reviewedEnglishHash": "7ce7832e35e85d35b2c72cac68cc729c52799016aaa965f9c89fe3520c48e1ee"
+  }
+}

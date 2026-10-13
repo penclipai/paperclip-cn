@@ -592,10 +592,10 @@ export function ConnectionSetupFlow(props: ConnectionSetupFlowProps = {}) {
   const provider = source || existing.data?.config?.sourceTemplateKey;
   const method = searchParams.get("method") || existing.data?.config?.connectionMethodKey;
   if (lookup && existing.isPending) return <p className="p-6 text-sm text-muted-foreground">{translateInstant("Loading connection…")}</p>;
-  if (lookup && existing.isError) return <div role="alert" className="space-y-3 p-6"><p>Could not load this connection. Your saved access and credentials have not changed.</p><Button variant="outline" onClick={() => void existing.refetch()}>{translateInstant("Try again")}</Button></div>;
+  if (lookup && existing.isError) return <div role="alert" className="space-y-3 p-6"><p>{translateInstant("Could not load this connection. Your saved access and credentials have not changed.")}</p><Button variant="outline" onClick={() => void existing.refetch()}>{translateInstant("Try again")}</Button></div>;
   if (isMemoryConnectorId(provider) && !(existing.data && existing.data.status !== "draft" && existing.data.config?.sourceTemplateKey === provider)) {
     if (!memory.loaded) return <p className="p-6 text-sm text-muted-foreground">{translateInstant("Loading connection settings…")}</p>;
-    if (!memory.enabled) return <p role="status" className="p-6 text-sm text-muted-foreground">Enable memory connectors in Settings → Experimental to set up this connection.</p>;
+    if (!memory.enabled) return <p role="status" className="p-6 text-sm text-muted-foreground">{translateInstant("Enable memory connectors in Settings → Experimental to set up this connection.")}</p>;
   }
   if (!props.byoOnly && (props.credentialSource ?? "paperclip_vault") === "paperclip_vault"
     && isRemoteMcpConnectorId(provider) && (!method || isRemoteMcpConnectorMethod(provider, method))) {
@@ -1860,7 +1860,7 @@ function StandardConnectionSetupFlow({
   });
 
   if (!selectedCompanyId) {
-    return <div className="p-6 text-sm text-muted-foreground">Select an organization to connect apps.</div>;
+    return <div className="p-6 text-sm text-muted-foreground">{translateInstant("Select an organization to connect apps.")}</div>;
   }
 
   if (
@@ -1869,9 +1869,9 @@ function StandardConnectionSetupFlow({
   ) {
     return (
       <div className="mx-auto max-w-xl rounded-xl border border-border bg-card p-6">
-        <h2 className="text-lg font-semibold text-foreground">Couldn’t load connection setup</h2>
+        <h2 className="text-lg font-semibold text-foreground">{translateInstant("Couldn’t load connection setup")}</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          Paperclip couldn’t check the retained connection. The retained connection was not changed.
+          {translateInstant("Paperclip couldn’t check the retained connection. The retained connection was not changed.")}
         </p>
         <div className="mt-5 flex flex-wrap gap-2">
           <Button
@@ -1896,9 +1896,9 @@ function StandardConnectionSetupFlow({
   if (resumeConnectionId && connectionsQuery.isFetchedAfterMount && !resumeConnection) {
     return (
       <div className="mx-auto max-w-xl rounded-xl border border-border bg-card p-6">
-        <h2 className="text-lg font-semibold text-foreground">This setup can’t be resumed</h2>
+        <h2 className="text-lg font-semibold text-foreground">{translateInstant("This setup can’t be resumed")}</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          The saved connection no longer exists or is not available to this organization.
+          {translateInstant("The saved connection no longer exists or is not available to this organization.")}
         </p>
         <Button type="button" variant="outline" className="mt-5" onClick={() => navigate("/apps")}>{translateInstant("apps.common.backToApps")}</Button>
       </div>
@@ -1914,9 +1914,9 @@ function StandardConnectionSetupFlow({
   ) {
     return (
       <div className="mx-auto max-w-xl rounded-xl border border-border bg-card p-6">
-        <h2 className="text-lg font-semibold text-foreground">This setup can’t be resumed</h2>
+        <h2 className="text-lg font-semibold text-foreground">{translateInstant("This setup can’t be resumed")}</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          This saved draft does not match the requested provider. The connection was not changed.
+          {translateInstant("This saved draft does not match the requested provider. The connection was not changed.")}
         </p>
         <Button type="button" variant="outline" className="mt-5" onClick={() => navigate("/apps")}>{translateInstant("apps.common.backToApps")}</Button>
       </div>
@@ -1931,11 +1931,11 @@ function StandardConnectionSetupFlow({
   ) {
     return (
       <div className="mx-auto max-w-xl rounded-xl border border-border bg-card p-6">
-        <h2 className="text-lg font-semibold text-foreground">This connection can’t be reconnected</h2>
+        <h2 className="text-lg font-semibold text-foreground">{translateInstant("This connection can’t be reconnected")}</h2>
         <p className="mt-2 text-sm text-muted-foreground">
           {!reconnectConnection
-            ? "The retained connection no longer exists or is not available to this organization."
-            : "This reconnect link does not match the retained connection's provider."}
+            ? translateInstant("connections.setup.retainedUnavailable")
+            : translateInstant("This reconnect link does not match the retained connection's provider.")}
         </p>
         <Button type="button" variant="outline" className="mt-5" onClick={() => navigate("/apps")}>{translateInstant("apps.common.backToApps")}</Button>
       </div>
@@ -1945,9 +1945,9 @@ function StandardConnectionSetupFlow({
   if ((resumeConnectionId || reconnectConnectionId) && galleryQuery.isError) {
     return (
       <div className="mx-auto max-w-xl rounded-xl border border-border bg-card p-6">
-        <h2 className="text-lg font-semibold text-foreground">Couldn’t load connection setup</h2>
+        <h2 className="text-lg font-semibold text-foreground">{translateInstant("Couldn’t load connection setup")}</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          Paperclip couldn’t load the provider details needed to restore this connection. The retained connection was not changed.
+          {translateInstant("Paperclip couldn’t load the provider details needed to restore this connection. The retained connection was not changed.")}
         </p>
         <div className="mt-5 flex flex-wrap gap-2">
           <Button type="button" onClick={() => void galleryQuery.refetch()}>{translateInstant("Try again")}</Button>
@@ -1960,9 +1960,9 @@ function StandardConnectionSetupFlow({
   if (reconnectConnectionId && unavailableReconnectId === reconnectConnectionId) {
     return (
       <div className="mx-auto max-w-xl rounded-xl border border-border bg-card p-6">
-        <h2 className="text-lg font-semibold text-foreground">This connection can’t be reconnected</h2>
+        <h2 className="text-lg font-semibold text-foreground">{translateInstant("This connection can’t be reconnected")}</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          Paperclip no longer has a supported setup method for this retained connection. The retained connection was not changed.
+          {translateInstant("Paperclip no longer has a supported setup method for this retained connection. The retained connection was not changed.")}
         </p>
         <Button type="button" variant="outline" className="mt-5" onClick={() => navigate("/apps")}>{translateInstant("apps.common.backToApps")}</Button>
       </div>
@@ -1976,7 +1976,7 @@ function StandardConnectionSetupFlow({
     || hydratedResumeConnectionId !== resumeConnection?.id
   )) {
     return (
-      <div className="mx-auto max-w-xl space-y-4" aria-label="Loading saved connection setup">
+      <div className="mx-auto max-w-xl space-y-4" aria-label={translateInstant("Loading saved connection setup")}>
         <Skeleton className="h-8 w-48" />
         <Skeleton className="h-40 w-full rounded-xl" />
       </div>
@@ -1990,7 +1990,7 @@ function StandardConnectionSetupFlow({
     || Boolean(requestedAppKey && !entry)
   )) {
     return (
-      <div className="mx-auto max-w-xl space-y-4" aria-label="Loading retained connection setup">
+      <div className="mx-auto max-w-xl space-y-4" aria-label={translateInstant("Loading retained connection setup")}>
         <Skeleton className="h-8 w-48" />
         <Skeleton className="h-40 w-full rounded-xl" />
       </div>
@@ -2002,16 +2002,16 @@ function StandardConnectionSetupFlow({
       <div className="max-w-5xl" data-testid="connection-existing-choice">
         <div className="mb-6">
           <h1 className="text-2xl font-bold tracking-tight">
-            Use an existing {requestedAppKey ? translateInstant("tools.profiles.selector.connectionLower") : "app connection"}
+            {translateInstant("Use an existing")} {requestedAppKey ? translateInstant("tools.profiles.selector.connectionLower") : translateInstant("app connection")}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Reuse a connection without changing who already has access, or connect a new one.
+            {translateInstant("Reuse a connection without changing who already has access, or connect a new one.")}
           </p>
         </div>
         <ConnectionChoiceList
           choices={existingConnections.map((connection) => ({
             id: connection.id, name: connection.name,
-            description: connection.status === "active" && connection.enabled ? "Ready to use" : "Setup needs attention",
+            description: connection.status === "active" && connection.enabled ? translateInstant("Ready to use") : translateInstant("Setup needs attention"),
           }))}
           pendingId={existingConnectionPendingId}
           onSelect={async (id) => {
@@ -2019,7 +2019,7 @@ function StandardConnectionSetupFlow({
             setExistingConnectionError(null);
             try { await onUseExisting(id); }
             catch (error) {
-              setExistingConnectionError(error instanceof Error ? error.message : "Couldn’t use this connection.");
+              setExistingConnectionError(error instanceof Error ? error.message : translateInstant("Couldn’t use this connection."));
               setExistingConnectionPendingId(null);
             }
           }}
@@ -2029,7 +2029,7 @@ function StandardConnectionSetupFlow({
         ) : null}
         <div className="mt-5 flex flex-wrap gap-2">
           <Button type="button" variant="outline" onClick={() => setShowConnectionChoice(false)}>
-            {configuredConnection ? "Review connection setup" : "Connect new"}
+            {configuredConnection ? translateInstant("Review connection setup") : translateInstant("Connect new")}
           </Button>
           {onCancel ? <Button type="button" variant="ghost" onClick={onCancel}>{translateInstant("Cancel")}</Button> : null}
         </div>
@@ -2430,13 +2430,13 @@ function StandardConnectionSetupFlow({
 
       {managedConnectorUnavailable && entry ? (
         <div className="mx-auto max-w-xl rounded-xl border border-border bg-card p-6">
-          <h2 className="text-lg font-semibold text-foreground">{entry.name} sign-in is unavailable</h2>
+          <h2 className="text-lg font-semibold text-foreground">{translateInstant("connectionUi.setup.signInUnavailable", { provider: entry.name, defaultValue: "{{provider}} sign-in is unavailable" })}</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            This instance is connected to Paperclip, but {entry.name} sign-in is not currently available. Try again shortly or contact your instance administrator.
+            {translateInstant("connectionUi.setup.signInUnavailableDescription", { provider: entry.name, defaultValue: "This instance is connected to Paperclip, but {{provider}} sign-in is not currently available. Try again shortly or contact your instance administrator." })}
           </p>
           {customOAuthMethod ? (
             <Button type="button" variant="link" className="mt-4 h-auto p-0 text-xs" onClick={() => setConnectionMethodKey(customOAuthMethod.key)}>
-              Use your own {entry.name} OAuth app
+              {translateInstant("connectionUi.setup.useOwnOAuthApp", { provider: entry.name, defaultValue: "Use your own {{provider}} OAuth app" })}
             </Button>
           ) : null}
           <div className="mt-6 flex items-center justify-between gap-3">
@@ -2464,7 +2464,7 @@ function StandardConnectionSetupFlow({
 
             {customOAuthMethod ? (
               <Button type="button" variant="link" className="mt-4 h-auto p-0 text-xs" onClick={() => setConnectionMethodKey(customOAuthMethod.key)}>
-                Use your own {entry.name} OAuth app
+                {translateInstant("connectionUi.setup.useOwnOAuthApp", { provider: entry.name, defaultValue: "Use your own {{provider}} OAuth app" })}
               </Button>
             ) : null}
 
@@ -3089,7 +3089,7 @@ function GalleryStep({
             {zapierSource
               ? translateInstant("apps.connect.zapierDescription")
               : byo
-              ? "Paste your MCP server’s URL and every discovered tool will be available immediately."
+              ? translateInstant("Paste your MCP server’s URL and every discovered tool will be available immediately.")
               : translateInstant("apps.connect.link.description")}
           </p>
           {!zapierSource && (
@@ -3674,7 +3674,9 @@ function KeyStep({
       disabled={submitting}
       onClick={() => onMethodChange(usingCustomOAuth ? managedOAuthMethod : customerOAuthMethod)}
     >
-      {usingCustomOAuth ? "Use Paperclip instead" : `Use your own ${isGoogleWorkspaceConnectorProfileId(managedOAuthMethod.connectorProfile ?? "") ? "Google" : entry.name} OAuth app`}
+      {usingCustomOAuth
+        ? translateInstant("Use Paperclip instead")
+        : translateInstant("connectionUi.setup.useOwnOAuthApp", { provider: isGoogleWorkspaceConnectorProfileId(managedOAuthMethod.connectorProfile ?? "") ? "Google" : entry.name, defaultValue: "Use your own {{provider}} OAuth app" })}
     </Button>
   ) : capabilityMethods.length > 1 ? (
     // PAP-659 C1: the ranked default is already selected. This stays as the
@@ -3979,7 +3981,11 @@ function OAuthClientFields({
     <div className="space-y-4 rounded-lg border border-border p-4">
       <div>
         <div className="text-sm font-medium text-foreground">
-          {required ? method.oauthClientSecretRequired ? "Your OAuth app" : `${entry.name} needs its own OAuth app` : "Use your own OAuth app"}
+          {required
+            ? method.oauthClientSecretRequired
+              ? translateInstant("Your OAuth app")
+              : translateInstant("connectionUi.setup.providerNeedsOwnOAuthApp", { provider: entry.name, defaultValue: "{{provider}} needs its own OAuth app" })
+            : translateInstant("Use your own OAuth app")}
         </div>
         {/*
           When these fields are required it is a provider limitation, not a step

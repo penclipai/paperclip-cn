@@ -4,6 +4,7 @@ import {
   Layers,
   Network,
 } from "lucide-react";
+import { translateInstant } from "@/i18n";
 
 /**
  * The Advanced door is mounted under `/apps/advanced` (PAP-10862, plan D8).
@@ -20,7 +21,7 @@ export function advancedTabHref(tab: ToolTabKey): string {
 // M8a/M8b — the prosumer-facing Advanced setup tabs (PAP-10839 wires). The only
 // screens where "MCP" vocabulary is permitted (PAP-10827).
 export const ADVANCED_TABS = [
-  { key: "paste-config", label: "Paste a config", icon: ClipboardPaste },
+  { key: "paste-config", get label() { return translateInstant("Paste a config"); }, icon: ClipboardPaste },
 ] as const;
 
 // The pre-Apps developer surface, kept reachable behind the Advanced door.

@@ -4,6 +4,11 @@
     "zh-CN": "。在“基本信息”中找到客户端 ID 和客户端密钥。",
     "reviewedEnglishHash": "43c6d5ed9aa868a1106722b8fc0d11c25bc45c4ed72a2e98808109ce3f420cad"
   },
+  "Fail": {
+    "en": "Fail",
+    "zh-CN": "失败",
+    "reviewedEnglishHash": "09230b3dbc35635f04595dc627c267a62174ba6435078ab5083dce4252c999a1"
+  },
   "Failed": {
     "en": "Failed",
     "zh-CN": "失败",
@@ -509,10 +514,30 @@
     "zh-CN": "失效",
     "reviewedEnglishHash": "f130e747d546a5ff4121caf686260ccab8fe1357f9442cc9da7aa79ecf5ebea6"
   },
+  "Fallback if the ACP agent asks for input outside an interactive session.": {
+    "en": "Fallback if the ACP agent asks for input outside an interactive session.",
+    "zh-CN": "当 ACP 智能体在交互会话外请求输入时使用的回退策略。",
+    "reviewedEnglishHash": "17fa0b5190ae800852033b0224e9b59a8dcac6df8acd81e9b5bd9e9bbd192a97"
+  },
   "False": {
     "en": "False",
     "zh-CN": "否",
     "reviewedEnglishHash": "60a33e6cf5151f2d52eddae9685cfa270426aa89d8dbc7dfb854606f1d1a40fe"
+  },
+  "Fast mode": {
+    "en": "Fast mode",
+    "zh-CN": "快速模式",
+    "reviewedEnglishHash": "1b7f9ecb7cd6a212557188989a5bd6807c566415b08b331f56284041aafb2daa"
+  },
+  "Fast mode consumes credits/tokens much faster than standard Codex runs.": {
+    "en": "Fast mode consumes credits/tokens much faster than standard Codex runs.",
+    "zh-CN": "快速模式消耗积分和词元的速度远高于标准 Codex 运行。",
+    "reviewedEnglishHash": "e22cfbeff23571633136a3c55d0f32ac9e9bbaa6f4acba16b346856c3f180fdf"
+  },
+  "Fast mode will be passed through for this manual model. If Codex rejects it, turn the toggle off.": {
+    "en": "Fast mode will be passed through for this manual model. If Codex rejects it, turn the toggle off.",
+    "zh-CN": "将为此手动模型传递快速模式。若 Codex 拒绝，请关闭此开关。",
+    "reviewedEnglishHash": "4a317b81f6a6a4ca15829babd696876e0ac2109888c2d2ab6ee65688caa0994c"
   },
   "Fast response": {
     "en": "Fast response",
@@ -729,6 +754,11 @@
     "zh-CN": "找到安装命令后粘贴到这里。",
     "reviewedEnglishHash": "073af77555d5e9eadf6921ded3d3e1e5efce4b6b3b0352e8e7a656804c097865"
   },
+  "Find, read, and create files in Drive.": {
+    "en": "Find, read, and create files in Drive.",
+    "zh-CN": "在 Drive 中查找、读取和创建文件。",
+    "reviewedEnglishHash": "3bebb54774541eda67693d93be256efffff18219a7b04e00e3ed7897eaf273c2"
+  },
   "Finding categories": {
     "en": "Finding categories",
     "zh-CN": "审查发现类别",
@@ -928,6 +958,11 @@
     "en": "Fresh browsers are the default. Selected profiles let agents use their saved website logins. Manage profiles in",
     "zh-CN": "默认使用全新浏览器。选择已保存的浏览器配置后，智能体可使用其中保存的网站登录状态。请在以下平台管理配置：",
     "reviewedEnglishHash": "f2318fddc8cc6676b4729d5300ff540a80432dbe4004e1ea8eb95d1053d3e939"
+  },
+  "From connections": {
+    "en": "From connections",
+    "zh-CN": "来自连接",
+    "reviewedEnglishHash": "5fd784c66ef6ec11e20168aeedd05314436034062672de32272d1d23d6af1e52"
   },
   "Full agent config": {
     "en": "Full agent config",

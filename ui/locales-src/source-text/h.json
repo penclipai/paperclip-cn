@@ -9,6 +9,11 @@
     "zh-CN": "用于管理智能体和项目的硬性预算上限。服务商订阅配额会单独显示在“服务商”页签中。",
     "reviewedEnglishHash": "666a3a619c81b1059c1cf039d61a9f781b7521aab19842aadfd6c8bd47146a16"
   },
+  "Harness": {
+    "en": "Harness",
+    "zh-CN": "执行框架",
+    "reviewedEnglishHash": "e3b5b45953d79a150092df37922ee6261a81040f5fb3c084fa00efffe8b98589"
+  },
   "Harness / Runtime": {
     "en": "Harness / Runtime",
     "zh-CN": "执行框架 / 运行环境",
@@ -104,10 +109,20 @@
     "zh-CN": "隐藏",
     "reviewedEnglishHash": "ac20a57bfde0bbc40bfe70895eb1cfacc944aaff06ca784053623c569b3e1b3d"
   },
+  "Hide child outputs from normal pipeline boards and parent rollups.": {
+    "en": "Hide child outputs from normal pipeline boards and parent rollups.",
+    "zh-CN": "在常规流水线看板和父项汇总中隐藏子项输出。",
+    "reviewedEnglishHash": "95d4de8b45a4781dc6645fa4b0bab2570fadde8da91de051237741db63b1a539"
+  },
   "Hide details": {
     "en": "Hide details",
     "zh-CN": "隐藏详情",
     "reviewedEnglishHash": "c9722a7a962a84359c87e56fe578f36a2bc75e66eee3ebce15963229fa12667d"
+  },
+  "Hide downstream output items under those children.": {
+    "en": "Hide downstream output items under those children.",
+    "zh-CN": "隐藏这些子项下游的输出项。",
+    "reviewedEnglishHash": "a32e8ce3400b5155ee12d5cd1f2141fc7c49a1b9579aa1d04bd045e93eba73da"
   },
   "Hide from agent menus": {
     "en": "Hide from agent menus",

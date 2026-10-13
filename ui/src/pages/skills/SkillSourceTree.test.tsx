@@ -2,6 +2,7 @@
 import { act, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { describe, it, expect, vi } from 'vitest';
+import { translateInstant } from '@/i18n';
 import { SkillSourceTree, updateSkillTreeSelection } from './SkillSourceTree';
 (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
 const candidates = [
@@ -14,6 +15,9 @@ function changeSearch(host: HTMLElement, value: string) {
   const input = host.querySelector<HTMLInputElement>('input[aria-label="Search discovered skills"]')!;
   Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(input, value);
   input.dispatchEvent(new Event('input', { bubbles: true }));
+}
+function checkboxForPath(host: HTMLElement, path: string) {
+  return host.querySelector<HTMLInputElement>(`[data-file-tree-path="${path}"] input[type="checkbox"]`);
 }
 describe('skill source selection tree', () => {
   it('toggles descendants independently of the root skill and other folders', () => {
@@ -33,16 +37,16 @@ describe('skill source selection tree', () => {
     }
     try {
       await act(async () => root.render(<Example />));
-      const checkbox = host.querySelector<HTMLInputElement>('[aria-label="Import folder .agents/one"]')!;
+      const checkbox = checkboxForPath(host, '.agents/one')!;
       expect(checkbox.type).toBe('checkbox');
       await act(async () => checkbox.click());
       expect(exclusions).toEqual(['.agents/one']);
-      expect(host.querySelector<HTMLInputElement>('[aria-label="Import .agents/one/SKILL.md"]')?.checked).toBe(false);
-      expect(host.querySelector<HTMLInputElement>('[aria-label="Import SKILL.md"]')?.checked).toBe(true);
+      expect(checkboxForPath(host, '.agents/one/SKILL.md')?.checked).toBe(false);
+      expect(checkboxForPath(host, 'SKILL.md')?.checked).toBe(true);
       const collapse = host.querySelector<HTMLButtonElement>('[aria-label="Collapse one"]')!;
       await act(async () => collapse.click());
       expect(host.querySelector('[data-file-tree-path=".agents/one"]')?.getAttribute('aria-expanded')).toBe('false');
-      expect(host.querySelector('[aria-label="Import .agents/one/SKILL.md"]')).toBeNull();
+      expect(checkboxForPath(host, '.agents/one/SKILL.md')).toBeNull();
     } finally { await act(async () => root.unmount()); host.remove(); }
   });
   it('searches descriptions, selects full folders with Space, and keeps hidden siblings selected', async () => {
@@ -96,9 +100,9 @@ describe('skill source selection tree', () => {
       expect([...selection]).toEqual(compactCandidates.map(skill => skill.path));
       expect(exclusions).toEqual([]);
       await act(async () => [...host.querySelectorAll('button')].find(button => button.textContent === 'Collapse all')!.click());
-      expect(host.querySelector('[aria-label="Import .agents/skills/review/SKILL.md"]')).toBeNull();
+      expect(checkboxForPath(host, '.agents/skills/review/SKILL.md')).toBeNull();
       await act(async () => [...host.querySelectorAll('button')].find(button => button.textContent === 'Expand all')!.click());
-      expect(host.querySelector<HTMLInputElement>('[aria-label="Import .agents/skills/review/SKILL.md"]')?.checked).toBe(true);
+      expect(checkboxForPath(host, '.agents/skills/review/SKILL.md')?.checked).toBe(true);
     } finally { await act(async () => root.unmount()); host.remove(); }
   });
 
@@ -117,7 +121,7 @@ describe('skill source selection tree', () => {
     try {
       await act(async () => root.render(<Example />));
       // New nested packages stay visible while their parent package is collapsed.
-      expect(host.querySelector('[aria-label="Import .agents/one/nested/SKILL.md"]')).not.toBeNull();
+      expect(checkboxForPath(host, '.agents/one/nested/SKILL.md')).not.toBeNull();
       await act(async () => host.querySelector<HTMLButtonElement>('[aria-label="Expand One"]')!.click());
       const row = host.querySelector<HTMLElement>('[data-file-tree-path=".agents/one/SKILL.md/scripts/run.sh"]')!;
       expect(row.textContent).toContain('Included');
@@ -127,11 +131,14 @@ describe('skill source selection tree', () => {
       expect(selection.size).toBe(packages.length);
       await act(async () => row.click());
       expect(preview).toHaveBeenCalledWith(packages[1], 'scripts/run.sh');
-      await act(async () => host.querySelector<HTMLInputElement>('[aria-label="Import .agents/one/SKILL.md"]')!.click());
+      await act(async () => checkboxForPath(host, '.agents/one/SKILL.md')!.click());
       expect(selection.has('.agents/one/SKILL.md')).toBe(false);
       expect(selection.has('.agents/one/nested/SKILL.md')).toBe(true);
       // The inspector button owns its keys; Space must not toggle the package checkbox.
-      const inspect = host.querySelector<HTMLButtonElement>('[aria-label="Inspect One"]')!;
+      const inspectLabel = translateInstant('skillSourceTree.inspectFileAria', { name: 'One' });
+      const inspect = [...host.querySelectorAll<HTMLButtonElement>('button')].find(
+        button => button.getAttribute('aria-label') === inspectLabel,
+      )!;
       await act(async () => inspect.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true })));
       expect(selection.has('.agents/one/SKILL.md')).toBe(false);
       await act(async () => changeSearch(host, 'scripts/run.sh'));

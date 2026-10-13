@@ -59,6 +59,11 @@
     "zh-CN": "管理公司",
     "reviewedEnglishHash": "0e45b27b4027644bf6d93c171e7fadad87ae3c06e2cdcd09799a3cafc0f394cf"
   },
+  "Manage GitHub access": {
+    "en": "Manage GitHub access",
+    "zh-CN": "管理 GitHub 访问权限",
+    "reviewedEnglishHash": "7874aa288d9713db1ce23164cf46a6a8cc47f3bde07212a964ab772e79da790b"
+  },
   "Manage GitHub connection": {
     "en": "Manage GitHub connection",
     "zh-CN": "管理 GitHub 连接",
@@ -74,6 +79,11 @@
     "zh-CN": "管理组织",
     "reviewedEnglishHash": "be0fe4c3bfd3f88486582c3cb4536a87eea558d8c318c1d3ff5e3a10fe28c537"
   },
+  "Manage Postgres projects, branches, and queries.": {
+    "en": "Manage Postgres projects, branches, and queries.",
+    "zh-CN": "管理 Postgres 项目、分支和查询。",
+    "reviewedEnglishHash": "bc1d7f52e8a3b3acd6612a54292d3048402ffa34b2da80452773987ef29c6262"
+  },
   "Manage access": {
     "en": "Manage access",
     "zh-CN": "管理访问权限",
@@ -88,6 +98,11 @@
     "en": "Manage active task checkouts",
     "zh-CN": "管理活跃任务签出",
     "reviewedEnglishHash": "6a8baa9dfa364c3c53c4b88e033d80f09cffb18aeea72876bd8ebfafffe53b0d"
+  },
+  "Manage app sign-in in the provider, then refresh your gateway here.": {
+    "en": "Manage app sign-in in the provider, then refresh your gateway here.",
+    "zh-CN": "请在提供商中管理应用登录，然后在此处刷新你的网关。",
+    "reviewedEnglishHash": "8881973a797b96dc206012238bcd10a80ddc35accab6e1f554b78f36555b233c"
   },
   "Manage company user memberships, membership status, and explicit permission grants for {{name}}.": {
     "en": "Manage company user memberships, membership status, and explicit permission grants for {{name}}.",
@@ -184,10 +199,20 @@
     "zh-CN": "管理工具权限",
     "reviewedEnglishHash": "cb2aaaa9da5648475a0bccb8a76d3b68c9382d40f63863864d3ad8b4c864a3ea"
   },
+  "Manage which tasks and tools this agent can access.": {
+    "en": "Manage which tasks and tools this agent can access.",
+    "zh-CN": "管理此智能体可访问的任务和工具。",
+    "reviewedEnglishHash": "8e7e4e6bd25076ae04492497c66b8524b532eea87073d8a5ce840ed9e9871f1a"
+  },
   "Managed": {
     "en": "Managed",
     "zh-CN": "托管",
     "reviewedEnglishHash": "8f2de600bf940a26c63a7ac23984a12ca8970fcf1a85947aa5566c34e23eea07"
+  },
+  "Managed Agent profile": {
+    "en": "Managed Agent profile",
+    "zh-CN": "受管智能体配置档案",
+    "reviewedEnglishHash": "436bfdcad969dec6dc71d18d92ed8a0e84b807fa1908a93806c704712707b458"
   },
   "Managed Environment Only": {
     "en": "Managed Environment Only",
@@ -294,6 +319,11 @@
     "zh-CN": "标记中…",
     "reviewedEnglishHash": "98a436e57b71dd50e137eb611e1378e3ac605acae291745ce601cbb0ebb7ba66"
   },
+  "Max": {
+    "en": "Max",
+    "zh-CN": "最高",
+    "reviewedEnglishHash": "a1a5936d3b0f8a69fd62c91ed9990d3bd414c5e78c603e2837c65c9f46a93eb8"
+  },
   "Max duration": {
     "en": "Max duration",
     "zh-CN": "最长耗时",
@@ -304,10 +334,25 @@
     "zh-CN": "每次运行的最大回合数",
     "reviewedEnglishHash": "25c125e0557d509140c5644566e7154df9726b4cd4467da0066aedcc47fc8265"
   },
+  "Maximize side panel": {
+    "en": "Maximize side panel",
+    "zh-CN": "最大化侧边面板",
+    "reviewedEnglishHash": "2770d4aa0bee94900ca2f84ff27afaad7bca864906132f324782e08c55f99be6"
+  },
   "Maximum cost per browser run (USD)": {
     "en": "Maximum cost per browser run (USD)",
     "zh-CN": "每次浏览器运行的费用上限（USD）",
     "reviewedEnglishHash": "b822c9653c2cdd0e0723a26fa7d0bcded7aba5befdb3c08cd68804a1c6221b5d"
+  },
+  "Maximum iterations": {
+    "en": "Maximum iterations",
+    "zh-CN": "最大迭代次数",
+    "reviewedEnglishHash": "4e1bbd0ee2d322e13761958a1a8ae135d0692a451312ec09d7bd15a34560369c"
+  },
+  "Maximum output tokens": {
+    "en": "Maximum output tokens",
+    "zh-CN": "最大输出词元数",
+    "reviewedEnglishHash": "28b2aeb30c06c74f4de24a83f005d508a636ee59d2ebdf0ce2ef614cb196b0db"
   },
   "Me": {
     "en": "Me",
@@ -604,10 +649,25 @@
     "zh-CN": "更多任务操作",
     "reviewedEnglishHash": "3e9621fab5dfa88b40b99943c7c1935fcef31ef176d624bfddbc56f19943b716"
   },
+  "Most agents": {
+    "en": "Most agents",
+    "zh-CN": "智能体最多",
+    "reviewedEnglishHash": "54d38fac34f3d3af80e9a83ed5181cddfa88f7fa5e6c4c417590d560303df3c6"
+  },
+  "Most forks": {
+    "en": "Most forks",
+    "zh-CN": "复刻最多",
+    "reviewedEnglishHash": "9dafd3bc09e34e74874bc8f42407f37ae93dc94eed78a19294c57d5b5bab48a5"
+  },
   "Most recent": {
     "en": "Most recent",
     "zh-CN": "最新",
     "reviewedEnglishHash": "7459b8690410d3da0417aab2c54d61c54472d9f59b353a09e11570dd5542fc2a"
+  },
+  "Most stars": {
+    "en": "Most stars",
+    "zh-CN": "星标最多",
+    "reviewedEnglishHash": "e0ab48c820fc48429a817112438bfcb8b28d920640b3b8bda7b458c0ef383ba4"
   },
   "Most urgent": {
     "en": "Most urgent",

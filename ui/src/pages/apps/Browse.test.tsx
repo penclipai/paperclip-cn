@@ -5,6 +5,7 @@ import { createRoot } from "react-dom/client";
 import { focusManager, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Browse } from "./Browse";
+import i18n from "@/i18n";
 import { aiConnectionRouterAppDefinition, getAppStoreDefinition } from "@penclipai/shared";
 import { queryKeys } from "@/lib/queryKeys";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -659,6 +660,29 @@ describe("Connectors landing page", () => {
     await search("no-such-app");
     expect(container.textContent).toContain("No connectors match");
     expect(container.querySelector('[aria-label="Connector catalog pages"]')).toBeNull();
+  });
+
+  it("rebuilds filtered catalog copy when the interface language changes", async () => {
+    await i18n.changeLanguage("en");
+    i18n.addResourceBundle("zh-CN", "common", {
+      "Send and read messages in your team's channels.": "在团队频道中收发消息。",
+    }, true, true);
+    experimentalMock.mockResolvedValue({ enableChatConnectors: false, enableGitHubReviewBots: true });
+    listGalleryMock.mockResolvedValue({ apps: [getAppStoreDefinition("slack")] });
+
+    try {
+      await renderBrowse();
+      await search("Slack");
+      expect(container.textContent).toContain("Send and read messages in your team's channels.");
+
+      await i18n.changeLanguage("zh-CN");
+      await flushReact();
+      expect(container.querySelector<HTMLInputElement>('header input')?.value).toBe("Slack");
+      expect(container.textContent).toContain("在团队频道中收发消息。");
+    } finally {
+      await i18n.changeLanguage("en");
+      i18n.removeResourceBundle("zh-CN", "common");
+    }
   });
 
   it("offers each provider once and carries the exact selected toolkit to setup", async () => {

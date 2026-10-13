@@ -64,6 +64,11 @@
     "zh-CN": "包名",
     "reviewedEnglishHash": "75da9a761bf383998ec0bf73274a145f1cd2f17e9a9ab68ba0be94fc7cd2355d"
   },
+  "Package reference warnings": {
+    "en": "Package reference warnings",
+    "zh-CN": "包引用警告",
+    "reviewedEnglishHash": "0993412a25c06b738cceb9a41734d7ec5a051fc014c92db1a62a06859cbd054f"
+  },
   "Page": {
     "en": "Page",
     "zh-CN": "页",
@@ -219,6 +224,16 @@
     "zh-CN": "Paperclip 无法验证此智能体的当前连接。现有配置未发生变化。",
     "reviewedEnglishHash": "112d33c2905b909711bed3bf0201ba29c364e3daa3c453f1958a7efd245e3133"
   },
+  "Paperclip couldn’t check the retained connection. The retained connection was not changed.": {
+    "en": "Paperclip couldn’t check the retained connection. The retained connection was not changed.",
+    "zh-CN": "Paperclip 无法检查保留的连接，保留的连接未发生变化。",
+    "reviewedEnglishHash": "f7640f54c6a8092a09c3ec48f4d60a9b1d342e72b1eeeb45735b1cd83734f194"
+  },
+  "Paperclip couldn’t load the provider details needed to restore this connection. The retained connection was not changed.": {
+    "en": "Paperclip couldn’t load the provider details needed to restore this connection. The retained connection was not changed.",
+    "zh-CN": "Paperclip 无法加载恢复此连接所需的提供商详情，保留的连接未发生变化。",
+    "reviewedEnglishHash": "e1168a08294f3c2180059b8852998a9935611306104312bb95e987ea2365d015"
+  },
   "Paperclip creates a fresh one-hour runtime token when an agent run starts, then revokes it when the run ends. Codex can receive the same gateway through both an app connection and the managed-gateway path, so one run may leave two revoked rows. These are audit history, not repeated manual tokens.": {
     "en": "Paperclip creates a fresh one-hour runtime token when an agent run starts, then revokes it when the run ends. Codex can receive the same gateway through both an app connection and the managed-gateway path, so one run may leave two revoked rows. These are audit history, not repeated manual tokens.",
     "zh-CN": "智能体运行开始时，Paperclip 会创建一个有效期为一小时的新运行时令牌，并在运行结束时撤销。Codex 可通过应用连接和托管网关两种路径接入同一网关，因此一次运行可能留下两条已撤销记录。这些属于审计历史，并非重复的手动令牌。",
@@ -233,6 +248,16 @@
     "en": "Paperclip does not verify sender restrictions. AgentMail controls new messages and replies separately; check both lists.",
     "zh-CN": "Paperclip CN不验证发件人限制。AgentMail分别控制新消息和回复；请检查两个列表。",
     "reviewedEnglishHash": "db40f3b549c8f9eb474cb52425a783ea331fb1be55d246cc525d08275d892175"
+  },
+  "Paperclip estimate; AWS does not provide a per-session currency hard stop.": {
+    "en": "Paperclip estimate; AWS does not provide a per-session currency hard stop.",
+    "zh-CN": "这是 Paperclip 的估算；AWS 不提供每会话货币硬停止。",
+    "reviewedEnglishHash": "501676baf1f8cb1bfbb1ad9e618aed1362fb8dba083469feaaa53a2b48fce6da"
+  },
+  "Paperclip no longer has a supported setup method for this retained connection. The retained connection was not changed.": {
+    "en": "Paperclip no longer has a supported setup method for this retained connection. The retained connection was not changed.",
+    "zh-CN": "Paperclip 不再提供此保留连接支持的设置方式，保留的连接未发生变化。",
+    "reviewedEnglishHash": "5cc17583bbbe1ec9c8e6e75b0b70c1ff799ffab4fa4b5c7f0120ac8c4c5c69ad"
   },
   "Paperclip now separates request-level inference usage from account-level finance events. That keeps provider reporting honest when the biller is OpenRouter, Cloudflare, Bedrock, or another intermediary.": {
     "en": "Paperclip now separates request-level inference usage from account-level finance events. That keeps provider reporting honest when the biller is OpenRouter, Cloudflare, Bedrock, or another intermediary.",
@@ -309,6 +334,11 @@
     "zh-CN": "已完成部分的状态不会回滚。请在重试前查看组织活动日志。",
     "reviewedEnglishHash": "4de2554b37feacb015b14304243debf9c8da160fcfec23ce56f8f0c54fb6f6e2"
   },
+  "Partially estimated": {
+    "en": "Partially estimated",
+    "zh-CN": "部分为估算值",
+    "reviewedEnglishHash": "4178459d7eab9d5397a930849d6856d6ad5df9a103a63a176fd7b3a285d5c853"
+  },
   "Participants:": {
     "en": "Participants:",
     "zh-CN": "参与者：",
@@ -333,6 +363,11 @@
     "en": "Password (alternative auth)",
     "zh-CN": "密码（备用认证）",
     "reviewedEnglishHash": "a0623db13679ee2a783da5856422bf76ec61bc34a58a9f23dc8c7d580f4c92bb"
+  },
+  "Paste a config": {
+    "en": "Paste a config",
+    "zh-CN": "粘贴配置",
+    "reviewedEnglishHash": "27261473ca2777b7f9fa01091259c9a23fa1f274d28aea2af680c3df5dd1ce19"
   },
   "Paste a local path, GitHub URL, or ": {
     "en": "Paste a local path, GitHub URL, or ",
@@ -398,6 +433,11 @@
     "en": "Paste this key into your app’s signing secret field.",
     "zh-CN": "将此密钥粘贴到应用程序的签名秘密字段中。",
     "reviewedEnglishHash": "3dd90f15925bb11da62960f485cc4788b8ffb23c1735cdf8af566df7be5dcf91"
+  },
+  "Paste your MCP server’s URL and every discovered tool will be available immediately.": {
+    "en": "Paste your MCP server’s URL and every discovered tool will be available immediately.",
+    "zh-CN": "粘贴你的 MCP 服务器 URL，发现的每个工具都会立即可用。",
+    "reviewedEnglishHash": "ff8a761d76b647cd0aeadf5b1efab3df432f65828768ee5a290f0173704e5994"
   },
   "Path": {
     "en": "Path",
@@ -589,10 +629,25 @@
     "zh-CN": "允许",
     "reviewedEnglishHash": "229efc8f526335f103d962810fe99f785811ad8ed36b9437a4a215a44c7152fe"
   },
+  "Permission mode": {
+    "en": "Permission mode",
+    "zh-CN": "权限模式",
+    "reviewedEnglishHash": "c7a8e6db5cbb4c7180dc0a588ac85d4c5e98d7d9f5b92c87bd146758e6023463"
+  },
   "Permissions": {
     "en": "Permissions",
     "zh-CN": "权限",
     "reviewedEnglishHash": "abccc78cc93c07931feccfbd0665c003373b48334fd8d4cf5c6d0c714e68f26e"
+  },
+  "Persistent": {
+    "en": "Persistent",
+    "zh-CN": "持久",
+    "reviewedEnglishHash": "f067b731a9eb7fda659d8a6f16dcfd2233516f5f87281c196925d26d4b65f9eb"
+  },
+  "Persistent keeps ACP session state between runs. One-shot starts fresh each run.": {
+    "en": "Persistent keeps ACP session state between runs. One-shot starts fresh each run.",
+    "zh-CN": "持久模式会在运行之间保留 ACP 会话状态；单次模式每次运行都重新开始。",
+    "reviewedEnglishHash": "2f4fdb5f420f3e8a6555c087aaf5d48728e63ba3e52be3a5143a392cb030bd4c"
   },
   "Personal": {
     "en": "Personal",
@@ -609,6 +664,11 @@
     "zh-CN": "个人账户",
     "reviewedEnglishHash": "96c55b36cc6bd6e17364b0af3a64b128bd86b49dd6588e7a832e66ddf5b36592"
   },
+  "Personal accounts": {
+    "en": "Personal accounts",
+    "zh-CN": "个人账户",
+    "reviewedEnglishHash": "66d74d1a1a11dfd8bcaaa6bad808a326bfcfae6c62af0afa646e73630390cb29"
+  },
   "Photon dashboard": {
     "en": "Photon dashboard",
     "zh-CN": "Photon 仪表盘",
@@ -618,6 +678,11 @@
     "en": "Photon line setup",
     "zh-CN": "Photon 线路设置",
     "reviewedEnglishHash": "d3a4d1f056e9455322fd67bb599da90dfe13fb46cd41f6d0bbe393db44460f6f"
+  },
+  "Pi thinking level": {
+    "en": "Pi thinking level",
+    "zh-CN": "Pi 思考级别",
+    "reviewedEnglishHash": "00e42c47ca35f4d8a624de71b93b4c8d0509ff3a9fbaff1dfbebdfaef774acde"
   },
   "Pick a workspace to reuse": {
     "en": "Pick a workspace to reuse",
@@ -648,6 +713,11 @@
     "en": "Pipeline settings ->",
     "zh-CN": "流水线设置 ->",
     "reviewedEnglishHash": "b5eb83977525ad820e965ad9e18f37eb49c16678f6f7edd60f0746b645783e8a"
+  },
+  "Plan": {
+    "en": "Plan",
+    "zh-CN": "计划",
+    "reviewedEnglishHash": "fa8ed0bdabdd6bcb1c0746f1d3e15212f7f3439d74339fbaaf16c60c0a80fb8e"
   },
   "Plan checked": {
     "en": "Plan checked",
@@ -864,6 +934,11 @@
     "zh-CN": "预览被跑步者截断。",
     "reviewedEnglishHash": "c8a44a1ed087a82cfbc1cd19fffc8b32e5fd7f4139163654e97185c583674d73"
   },
+  "Preview unavailable for a package that failed validation.": {
+    "en": "Preview unavailable for a package that failed validation.",
+    "zh-CN": "未通过验证的包无法预览。",
+    "reviewedEnglishHash": "bb6891e457061b4cbe899cc4efefe9aee996d12b466d74a09dfe93fc25e7ea33"
+  },
   "Preview unavailable.": {
     "en": "Preview unavailable.",
     "zh-CN": "预览不可用。",
@@ -899,10 +974,20 @@
     "zh-CN": "上一页令牌",
     "reviewedEnglishHash": "df6458a506029de55368850ef8951fb2ddaac73c3db63982c25d57ada4a109f8"
   },
+  "Previously selected key · unavailable": {
+    "en": "Previously selected key · unavailable",
+    "zh-CN": "之前选择的密钥 · 不可用",
+    "reviewedEnglishHash": "84dee9a85b9a69ec46583b68d8170e7ffa14df8395d2bd47596c5a6c38fa3abe"
+  },
   "Price per billing period": {
     "en": "Price per billing period",
     "zh-CN": "每个计费周期的价格",
     "reviewedEnglishHash": "7dbebe108aca744b0cfb6cb2d4620c64ac464eaf5844cb236a6a438c1073f709"
+  },
+  "Price unknown": {
+    "en": "Price unknown",
+    "zh-CN": "价格未知",
+    "reviewedEnglishHash": "d7ffab45541e0ca7df7b83692f995407930abf32f8059803e0e36579d6972d51"
   },
   "Primary": {
     "en": "Primary",
@@ -1203,6 +1288,11 @@
     "en": "Provider URL",
     "zh-CN": "提供商网址",
     "reviewedEnglishHash": "c3e446ef62b7abd90a61bd76ed363133bdb88118b02e34d165b92dd9686415ca"
+  },
+  "Provider account available": {
+    "en": "Provider account available",
+    "zh-CN": "可用的提供商账户",
+    "reviewedEnglishHash": "a361419981c08dab946109d9ec97cd63c6ca6c4217d2a0679e44dc02928f323e"
   },
   "Provider authorization uses": {
     "en": "Provider authorization uses",

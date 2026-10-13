@@ -1709,7 +1709,7 @@ export function Secrets() {
   }
 
   function renderUpRow(variant: "table" | "card") {
-    const parentLabel = parentFolderPath ? parentFolderPath.split("/").pop()! : "All secrets";
+    const parentLabel = parentFolderPath ? parentFolderPath.split("/").pop()! : translateInstant("envVarEditor.allSecretsGroup");
     return (
       <Link
         to={folderLinkTo(parentFolderPath)}
@@ -1728,10 +1728,11 @@ export function Secrets() {
   }
 
   function renderSecretsBreadcrumb() {
-    const currentName = breadcrumbs.length > 0 ? breadcrumbs[breadcrumbs.length - 1].name : "All secrets";
-    const parentLabel = parentFolderPath ? parentFolderPath.split("/").pop()! : "All secrets";
+    const rootLabel = translateInstant("envVarEditor.allSecretsGroup");
+    const currentName = breadcrumbs.length > 0 ? breadcrumbs[breadcrumbs.length - 1].name : rootLabel;
+    const parentLabel = parentFolderPath ? parentFolderPath.split("/").pop()! : rootLabel;
     const fullTrail: { name: string; path: string }[] = [
-      { name: "All secrets", path: "" },
+      { name: rootLabel, path: "" },
       ...breadcrumbs,
     ];
     // Middle-truncate deep paths: root · … · last two.
@@ -1779,7 +1780,7 @@ export function Secrets() {
               >
                 <ChevronLeft className="h-4 w-4" />
               </Link>
-              {parentLabel !== "All secrets" ? (
+              {parentFolderPath ? (
                 <span className="shrink-0 text-muted-foreground">{parentLabel} /</span>
               ) : null}
               <span aria-current="page" className="truncate font-medium text-foreground">
@@ -1999,13 +2000,13 @@ export function Secrets() {
                     <EmptyState
                       icon={FolderOpen}
                       message={translateInstant("No secrets in this folder yet.")}
-                      action="New secret here"
+                      action={translateInstant("New secret here")}
                       onAction={openCreateSecret}
                     />
                   ) : (
                     <EmptyState
                       icon={Search}
-                      message={searching ? "No secrets match your search." : translateInstant("secrets.noFilterMatches")}
+                      message={searching ? translateInstant("secrets.noSearchMatches") : translateInstant("secrets.noFilterMatches")}
                     />
                   )
                 ) : (
@@ -3624,7 +3625,7 @@ function ProviderVaultCard({
             </Badge>
             {config.healthStatus ? (
               <span className="text-xs text-muted-foreground">
-                Health {config.healthStatus.replace("_", " ")} · {formatRelative(config.healthCheckedAt)}
+                {translateInstant("secrets.health")} {config.healthStatus.replace("_", " ")} · {formatRelative(config.healthCheckedAt)}
               </span>
             ) : (
               <span className="text-xs text-muted-foreground">{translateInstant("secrets.healthNotChecked")}</span>

@@ -269,10 +269,20 @@
     "zh-CN": "新任务会轮换分配；现有任务保留其账户。",
     "reviewedEnglishHash": "e293f245a127bc42d361efe74838a65e8eab293aadeed51d620e02e3c4a0b1c7"
   },
+  "New today": {
+    "en": "New today",
+    "zh-CN": "今日新增",
+    "reviewedEnglishHash": "51a7540f41dcb94773ed93e8ba728135eeecc7dd25055f4292cb826ec985c7ab"
+  },
   "New token for": {
     "en": "New token for",
     "zh-CN": "为以下网关签发新令牌：",
     "reviewedEnglishHash": "e049eb94f38907062e9fb10e02faccf9f94ac640c55d8c7ace5e62eb6ce6dcaf"
+  },
+  "New tools an app adds later won't be usable until you review them.": {
+    "en": "New tools an app adds later won't be usable until you review them.",
+    "zh-CN": "应用日后新增的工具需经你审核后才能使用。",
+    "reviewedEnglishHash": "2751e3ac7df3e6fc93aa84aac9e0dddcb346d7760ff8f72aca554148633136df"
   },
   "New top-level folder…": {
     "en": "New top-level folder…",
@@ -379,6 +389,11 @@
     "zh-CN": "尚无访问事件记录。每次运行时解析都会在此写入一条经过脱敏的记录。",
     "reviewedEnglishHash": "1c5156d13dd8345f88c228b8a064645cad9d6cf2942e1bf084cbdcfaa56905dc"
   },
+  "No access was granted. You can start a new connection from your assistant.": {
+    "en": "No access was granted. You can start a new connection from your assistant.",
+    "zh-CN": "未授予访问权限。你可以在助手中发起新的连接。",
+    "reviewedEnglishHash": "70f5a1191331446fc7f56adb6ad61ffde2a1925c0a300b1638e4fde1345333fa"
+  },
   "No accessible repositories.": {
     "en": "No accessible repositories.",
     "zh-CN": "没有可访问的仓库。",
@@ -408,6 +423,11 @@
     "en": "No active subtree pause hold is available to resume.",
     "zh-CN": "没有可恢复的活跃子树暂停。",
     "reviewedEnglishHash": "4b035f398c24a9973733be68113ffffb732867ab40dbfcc0534104b2e9bf3db1"
+  },
+  "No activity": {
+    "en": "No activity",
+    "zh-CN": "暂无活动",
+    "reviewedEnglishHash": "0cf9505f9f97c8359cc143ba3e88bedaba3a4ae92c2794ffd1b097270732ed18"
   },
   "No activity yet.": {
     "en": "No activity yet.",
@@ -1399,6 +1419,11 @@
     "zh-CN": "尚未提交评定",
     "reviewedEnglishHash": "1968a9825689417a628cbf717f91ab135c1c1786e76d40ade8a8d26d0433f7c0"
   },
+  "No visible subscriptions": {
+    "en": "No visible subscriptions",
+    "zh-CN": "没有可见的订阅",
+    "reviewedEnglishHash": "d31142aa935343b6e493219d481ef41a65f4b219dbfeeef62ed32e99da6878c6"
+  },
   "No webhook deliveries recorded yet.": {
     "en": "No webhook deliveries recorded yet.",
     "zh-CN": "还没有 Webhook 投递记录。",
@@ -1449,6 +1474,16 @@
     "zh-CN": "未找到",
     "reviewedEnglishHash": "0019dfc4b32d63c1392aa264aed2253c1e0c2fb09216f8e2cc269bbfb8bb49b5"
   },
+  "Not checked yet": {
+    "en": "Not checked yet",
+    "zh-CN": "尚未检查",
+    "reviewedEnglishHash": "881d23f6ba57497b40797690f315aa3fbc386dcd01d989609597ba82961c9c0e"
+  },
+  "Not connected": {
+    "en": "Not connected",
+    "zh-CN": "未连接",
+    "reviewedEnglishHash": "0303e182467081801f8b614862519a3b174c0ae84ff08b70e7d126080c3f4b95"
+  },
   "Not created yet": {
     "en": "Not created yet",
     "zh-CN": "尚未创建",
@@ -1458,6 +1493,11 @@
     "en": "Not default",
     "zh-CN": "非默认",
     "reviewedEnglishHash": "e87b5ee5169239888bd907e04848c558a5623ac7a7aabdf5728cba4da6d9c8b7"
+  },
+  "Not enabled for any agents": {
+    "en": "Not enabled for any agents",
+    "zh-CN": "未为任何智能体启用",
+    "reviewedEnglishHash": "700c55372195de57002c813979ab8a4f1f826ea5f79bcdc64396afffb5b1bb45"
   },
   "Not found": {
     "en": "Not found",

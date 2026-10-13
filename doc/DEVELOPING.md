@@ -568,6 +568,25 @@ The small upstream `translation` resources are separate from the production
 catalog and retain their own tests. For sync-fork-specific auditing and wording
 rules, see the [CN localization policy](../.agents/skills/paperclip-cn-fork-maintenance/references/ui-localization-policy.md).
 
+For missing-copy investigations, combine the binding-aware key audit with the
+read-only visible-text inventory and an isolated browser pass:
+
+```sh
+pnpm audit:i18n-visible -- --out .omx/i18n-browser-audit/visible-before.json
+pnpm test:i18n
+pnpm test:e2e:i18n
+```
+
+The visible inventory is a review aid, not a zero-English gate. Classify each
+candidate's owner before changing it; user content, technical identifiers and
+third-party descriptions remain verbatim. New shared or interpolated messages
+use semantic keys, including i18next's `_one`/`_other` suffixes for plural copy.
+Resolve translated metadata at render time, or include the active language in
+memo dependencies, so switching languages preserves drafts and refreshes labels.
+The E2E smoke starts a disposable instance and checks language switching and raw
+user content. Full route/dialog coverage is recorded separately using the
+[browser audit checklist](../.agents/skills/paperclip-cn-fork-maintenance/references/browser-i18n-audit.md).
+
 #### Embedded Postgres template cache
 
 Suites that call `startEmbeddedPostgresTestDatabase` (from `@penclipai/db`)

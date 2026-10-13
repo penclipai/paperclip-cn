@@ -1,4 +1,6 @@
 import { configFieldsForSection } from "../config-sections";
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
 import type { AdapterConfigFieldsProps } from "../types";
 import {
   Field,
@@ -21,9 +23,10 @@ export function PiLocalConfigFields({
   mark,
   hideInstructionsFile,
 }: AdapterConfigFieldsProps) {
+  useTranslation();
   if (hideInstructionsFile) return null;
   return configFieldsForSection(section, (
-    <Field label="Agent instructions file" hint={instructionsFileHint}>
+    <Field label={translateInstant("Agent instructions file")} hint={translateInstant(instructionsFileHint)}>
       <div className="flex items-center gap-2">
         <DraftInput
           value={

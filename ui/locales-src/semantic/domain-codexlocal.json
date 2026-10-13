@@ -1,0 +1,7 @@
+{
+  "codexLocal.fastModeUnsupportedModels": {
+    "en": "Fast mode currently only works on {{models}} or manual model IDs. Paperclip will ignore this toggle until the model is switched.",
+    "zh-CN": "快速模式目前仅适用于 {{models}} 或手动模型 ID。在切换模型前，Paperclip 会忽略此开关。",
+    "reviewedEnglishHash": "b3edffd3f7707cbad0abed4e23888420892dfd6da8d5105cad42190533dfefc6"
+  }
+}

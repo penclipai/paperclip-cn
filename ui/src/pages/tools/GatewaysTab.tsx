@@ -296,7 +296,7 @@ export function GatewaysTab({ companyId }: { companyId: string }) {
               />
             </label>
             <label className="space-y-1.5 text-sm">
-              <span className="text-xs font-medium text-muted-foreground">Access profile</span>
+              <span className="text-xs font-medium text-muted-foreground">{translateInstant("tools.gateways.form.accessProfile")}</span>
               <select
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                 value={createDraft.profileId}
@@ -386,13 +386,13 @@ export function GatewaysTab({ companyId }: { companyId: string }) {
                     <dd className="mt-0.5 text-foreground">{formatScope(gateway, projectNames, agentNames)}</dd>
                   </div>
                   <div>
-                    <dt className="text-xs font-medium text-muted-foreground">Allowed tools</dt>
+                    <dt className="text-xs font-medium text-muted-foreground">{translateInstant("tools.gateways.allowedTools")}</dt>
                     <dd className="mt-0.5 text-foreground">
                       {profile ? `${formatAllowedTools(profile)} via ${profile.name}` : `Profile ${shortId(gateway.profileId)}`}
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs font-medium text-muted-foreground">Last activity</dt>
+                    <dt className="text-xs font-medium text-muted-foreground">{translateInstant("tools.gateways.lastActivity")}</dt>
                     <dd className="mt-0.5 text-foreground">
                       {lastActivity ? <RelativeTime value={lastActivity} /> : translateInstant("tools.gateways.neverUsed")}
                     </dd>
@@ -428,7 +428,7 @@ export function GatewaysTab({ companyId }: { companyId: string }) {
                               [gateway.id]: { ...tokenDraft, clientLabel: event.target.value },
                             }))
                           }
-                          placeholder="Cursor on work laptop"
+                          placeholder={translateInstant("tools.gateways.token.clientLabelPlaceholder")}
                           required
                         />
                       </label>

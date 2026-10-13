@@ -621,7 +621,7 @@ export function Costs({
                   onClick={() => setPreset(key)}
                   aria-pressed={preset === key}
                 >
-                  {PRESET_LABELS[key]}
+                  {translateInstant(PRESET_LABELS[key])}
                 </Button>
               ))}
             </div>
@@ -656,7 +656,7 @@ export function Costs({
               subtitle={subscriptions ? <div className="space-y-1">
                 <CostEstimateLabel eventCount={subscriptions.api.eventCount} estimatedEventCount={subscriptions.api.estimatedEventCount} />
                 <div><SubscriptionTokenUsage usage={subscriptions.api} /></div>
-              </div> : subscriptionError ? "API usage is unavailable" : "API usage is loading"}
+              </div> : subscriptionError ? translateInstant("costs.apiUsageUnavailable") : translateInstant("costs.apiUsageLoading")}
               icon={DollarSign}
             />
             <SubscriptionCostCard key={companyId} companyId={companyId} report={subscriptions} error={subscriptionError} onChanged={invalidateSubscriptions} />
@@ -669,9 +669,9 @@ export function Costs({
               )}
               subtitle={
                 activeBudgetIncidents.length > 0
-                  ? `${budgetData?.pausedAgentCount ?? 0} agents paused · ${budgetData?.pausedProjectCount ?? 0} projects paused`
+                  ? translateInstant("{{agents}} agents paused · {{projects}} projects paused", { agents: budgetData?.pausedAgentCount ?? 0, projects: budgetData?.pausedProjectCount ?? 0 })
                   : spendData?.summary.budgetCents && spendData.summary.budgetCents > 0
-                    ? preset === "mtd" ? `${formatCents(spendData.summary.spendCents)} of ${formatCents(spendData.summary.budgetCents)} this month` : "Monthly limit"
+                    ? preset === "mtd" ? translateInstant("costs.budgetSpentThisMonth", { spent: formatCents(spendData.summary.spendCents), budget: formatCents(spendData.summary.budgetCents) }) : translateInstant("costs.monthlyLimit")
                     : translateInstant("No monthly cap configured")
               }
               icon={Coins}
@@ -684,19 +684,19 @@ export function Costs({
                   <span className="block whitespace-nowrap">{formatCents(financeData.summary.debitCents)} {translateInstant("debits")}</span>
                   <span className="block whitespace-nowrap">{formatCents(financeData.summary.creditCents)} {translateInstant("credits")}</span>
                 </>
-              ) : "Financial data unavailable"}
+              ) : translateInstant("costs.financialDataUnavailable")}
               icon={ReceiptText}
             />
             <MetricTile
               label={translateInstant("Finance events")}
               value={financeData ? String(financeData.summary.eventCount) : "—"}
-              subtitle={financeData ? `${formatCents(financeData.summary.estimatedDebitCents)} estimated in range` : "Financial data unavailable"}
+              subtitle={financeData ? translateInstant("{{amount}} estimated in range", { amount: formatCents(financeData.summary.estimatedDebitCents) }) : translateInstant("costs.financialDataUnavailable")}
               icon={ArrowUpRight}
             />
           </div>
-          {subscriptions && Number(subscriptions.subscription.costCents) > 0 && <p className="text-sm text-muted-foreground">Subscription accounts also have {formatCents(Number(subscriptions.subscription.costCents))} in recorded usage charges for this period, separate from monthly fees.</p>}
+          {subscriptions && Number(subscriptions.subscription.costCents) > 0 && <p className="text-sm text-muted-foreground">{translateInstant("costs.subscriptionRecordedUsage", { amount: formatCents(Number(subscriptions.subscription.costCents)) })}</p>}
           {subscriptions && subscriptions.unknown.eventCount > 0 && <p className="text-sm text-muted-foreground">{translateInstant("costs.otherBillingUsage", { tokens: formatTokens(subscriptions.unknown.inputTokens + subscriptions.unknown.cachedInputTokens + subscriptions.unknown.outputTokens), recordedCharges: Number(subscriptions.unknown.costCents) > 0 ? translateInstant("costs.recordedCharges", { amount: formatCents(Number(subscriptions.unknown.costCents)) }) : "" })}</p>}
-          {subscriptionError && subscriptions && <p role="status" className="text-sm text-muted-foreground">Showing the last loaded API and subscription usage. Updates will resume automatically.</p>}
+          {subscriptionError && subscriptions && <p role="status" className="text-sm text-muted-foreground">{translateInstant("costs.subscriptionUsageStale")}</p>}
           {discoverSubscriptions.error && <div role="status" className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
             <p>{translateInstant("Connected accounts could not be checked. Existing subscription estimates are still shown.")}</p>
             {subscriptions?.canRefresh && <Button variant="outline" size="sm" disabled={discoverSubscriptions.isPending}
@@ -838,7 +838,7 @@ export function Costs({
                   </Card>
                   {userSpendError && (
                     <p role="status" className="text-sm text-muted-foreground">
-                      {userSpendData ? "User costs could not be refreshed. Showing the last loaded data." : "User costs could not be loaded. Please try again shortly."}
+                      {userSpendData ? translateInstant("costs.userCostsStale") : translateInstant("costs.userCostsUnavailable")}
                     </p>
                   )}
                   {userSpendData && <CostByUserTable report={userSpendData} />}
@@ -1132,7 +1132,7 @@ export function Costs({
         </TabsContent>
 
         <TabsContent value="finance" className="mt-4 space-y-4">
-          {financeData?.summary.providerReportedCentsExact !== undefined && <p className="text-sm text-muted-foreground">Provider API cost reports: {formatCents(financeData.summary.providerReportedCents ?? 0)}{translateInstant(". Report totals overlap invoices and run estimates and are shown separately from recorded charges.")}</p>}
+          {financeData?.summary.providerReportedCentsExact !== undefined && <p className="text-sm text-muted-foreground">{translateInstant("costs.providerApiCostReport", { amount: formatCents(financeData.summary.providerReportedCents ?? 0) })}</p>}
 
           {showCustomPrompt ? (
             <p className="text-sm text-muted-foreground">{translateInstant("Select a start and end date to load data.")}</p>

@@ -2792,7 +2792,7 @@ function IssueDetailActivityTab({
           ) : (
             <div className="space-y-1 text-xs text-muted-foreground tabular-nums">
               <div className="flex flex-wrap gap-3">
-                <span className="font-medium text-foreground">This task</span>
+                <span className="font-medium text-foreground">{translateInstant("issueDetail.thisTask")}</span>
                 {issueCostSummary.hasCost ? (
                   <span className="font-medium text-foreground">
                     ${issueCostSummary.cost.toFixed(4)}
@@ -7225,7 +7225,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
             title={translateInstant("issueDetail.blockedByParkedWorkDescription")}
           >
             <Flag className="h-3 w-3" />
-            Blocked by parked work
+            {translateInstant("issueDetail.blockedByParkedWorkTitle")}
           </Badge>
         ) : null}
 

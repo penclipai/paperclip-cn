@@ -1,3 +1,5 @@
+import { translateInstant } from "@/i18n";
+
 /**
  * Prosumer copy for the Apps surface (PAP-10856).
  *
@@ -153,15 +155,21 @@ const GENERIC: AppCopy = {
   short: "Give your agents access to this app.",
 };
 
-/** Curated, gate-safe copy for a gallery app. */
+/** Curated application copy is resolved at render time for the selected locale. */
 export function appCopyFor(key: string, fallbackTagline?: string | null): AppCopy {
   const curated = APP_COPY[key];
-  if (curated) return curated;
+  if (curated) return {
+    tagline: translateInstant(curated.tagline),
+    short: translateInstant(curated.short),
+  };
   if (fallbackTagline) {
     const cleaned = sanitizeProsumerCopy(fallbackTagline);
     if (cleaned) return { tagline: cleaned, short: cleaned };
   }
-  return GENERIC;
+  return {
+    tagline: translateInstant(GENERIC.tagline),
+    short: translateInstant(GENERIC.short),
+  };
 }
 
 /**
@@ -175,7 +183,7 @@ export function credentialFieldLabel(
   rawLabel: string,
   fieldCount: number,
 ): string {
-  if (fieldCount <= 1) return `Your ${appName} key`;
+  if (fieldCount <= 1) return translateInstant("apps.gallery.yourAppKey", { appName });
   const cleaned = sanitizeProsumerCopy(rawLabel);
-  return cleaned || `Your ${appName} key`;
+  return cleaned || translateInstant("apps.gallery.yourAppKey", { appName });
 }

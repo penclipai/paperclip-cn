@@ -23,7 +23,7 @@ import {
   toggleApp,
   toggleTool,
   toolCapability,
-  CAPABILITY_LABEL,
+  capabilityLabel,
   type AdvancedRule,
   type AdvancedRuleKind,
   type AppGroup,
@@ -121,7 +121,7 @@ export function WizardToolsStep(props: WizardToolsStepProps) {
                   : "border-border text-muted-foreground hover:bg-accent",
               )}
             >
-              {CAPABILITY_LABEL[cap]}
+              {capabilityLabel(cap)}
             </button>
           ))}
         </div>
@@ -191,7 +191,7 @@ function AppRow({
   return (
     <div>
       <div className="flex items-center gap-2.5 px-3 py-2">
-        <Checkbox checked={checked} onCheckedChange={onToggleApp} aria-label={`All ${group.name} tools`} />
+        <Checkbox checked={checked} onCheckedChange={onToggleApp} aria-label={translateInstant("tools.profiles.wizard.allAppTools", { app: group.name, defaultValue: "All {{app}} tools" })} />
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
@@ -204,12 +204,12 @@ function AppRow({
           )}
           <span className="flex flex-col">
             <span className="text-sm font-medium text-foreground">
-              {translateInstant("All")}{" "}{group.name}{" "}{translateInstant("tools (")}{group.tools.length})
+              {translateInstant("tools.profiles.selection.all", { app: group.name, count: group.tools.length, defaultValue: "All {{app}} tools ({{count}})" })}
             </span>
             <span className="text-xs text-muted-foreground">
               {state === "indeterminate"
                 ? appSelectionLabel(group, selection)
-                : "includes tools " + group.name + " adds later"}
+                : translateInstant("tools.profiles.wizard.includesFutureTools", { app: group.name, defaultValue: "Includes tools {{app}} adds later" })}
             </span>
           </span>
         </button>
@@ -233,7 +233,7 @@ function AppRow({
                   <span className="flex flex-wrap items-center gap-2">
                     <code className="font-mono text-xs text-foreground">{tool.toolName}</code>
                     <Badge variant={CAPABILITY_VARIANT[cap]} className="text-(length:--text-nano)">
-                      {CAPABILITY_LABEL[cap]}
+                      {capabilityLabel(cap)}
                     </Badge>
                   </span>
                   {tool.title || tool.description ? (
@@ -261,13 +261,13 @@ function NewToolsRadio({
     {
       value: "deny",
       label: translateInstant("tools.profiles.futureTools.reviewLabel"),
-      hint: "New tools an app adds later won't be usable until you review them.",
+      hint: translateInstant("New tools an app adds later won't be usable until you review them."),
       recommended: true,
     },
     {
       value: "allow",
       label: translateInstant("tools.profiles.futureTools.allowedTitle"),
-      hint: "Any tool an app adds later becomes usable right away.",
+      hint: translateInstant("Any tool an app adds later becomes usable right away."),
     },
   ];
   return (

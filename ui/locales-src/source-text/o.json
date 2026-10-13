@@ -49,6 +49,11 @@
     "zh-CN": "关",
     "reviewedEnglishHash": "ca7981b46ecf2c1787b6d76d81d9fd7fa0ca95842e2fcc2a452869891a9334d1"
   },
+  "Old": {
+    "en": "Old",
+    "zh-CN": "旧版",
+    "reviewedEnglishHash": "bca97160f4e1211fe659338d0a9705a7dff8aa3ea2e1be1cc1958100a33962c2"
+  },
   "Old Inbox links redirect to the matching view. Turning this off restores the separate Inbox; no data changes.": {
     "en": "Old Inbox links redirect to the matching view. Turning this off restores the separate Inbox; no data changes.",
     "zh-CN": "旧收件箱链接会跳转到对应视图。关闭后会恢复独立收件箱，数据不受影响。",
@@ -94,6 +99,11 @@
     "zh-CN": "用一句话描述技能的作用",
     "reviewedEnglishHash": "f88c725cc131fe4ea7efef34e7710f0610dd2a2e5bf625b2b0b73cc5a6b8ea4d"
   },
+  "One-shot": {
+    "en": "One-shot",
+    "zh-CN": "单次",
+    "reviewedEnglishHash": "4c6e65c60f5bd2e3f08215b97d2ffbe21ea9142b027194a8500c9bd84f1bdf7a"
+  },
   "Only board users can view feedback trace bundles": {
     "en": "Only board users can view feedback trace bundles",
     "zh-CN": "只有看板用户可以查看反馈追踪包",
@@ -113,6 +123,11 @@
     "en": "Only selected people in your company.",
     "zh-CN": "仅限您公司中选定的人员。",
     "reviewedEnglishHash": "c4dd628b010b86039ff9b3afb8c81871bbc166b1f1a1e68351b74b59dfd1454a"
+  },
+  "Only the addressed person can choose an identity or authorize this connection.": {
+    "en": "Only the addressed person can choose an identity or authorize this connection.",
+    "zh-CN": "只有被指定的人员可以选择身份或授权此连接。",
+    "reviewedEnglishHash": "5729ea8c72d055f942a92b59257520dfd42fc979c9251b9efbe9c085bcff674a"
   },
   "Only the people you choose.": {
     "en": "Only the people you choose.",
@@ -339,6 +354,11 @@
     "zh-CN": "打开文件... (g f)",
     "reviewedEnglishHash": "ac25d0b74213ed22a3b458af83a907b7243e7e1122ead94d794d8553c51f251d"
   },
+  "Open gallery": {
+    "en": "Open gallery",
+    "zh-CN": "打开图库",
+    "reviewedEnglishHash": "1f0a436c1f49d160ccb27d19428d03be7756901fa24a24197fde876054f23462"
+  },
   "Open hired agent": {
     "en": "Open hired agent",
     "zh-CN": "打开已雇佣智能体",
@@ -379,6 +399,16 @@
     "zh-CN": "打开链接",
     "reviewedEnglishHash": "aab63f85c7f1cd14d92f057b29a894ee524c891cc75a0e0225709b7685d0a0eb"
   },
+  "Open on GitHub": {
+    "en": "Open on GitHub",
+    "zh-CN": "在 GitHub 上打开",
+    "reviewedEnglishHash": "03f69885814b5b7aa5e4758e46733da443a237e2ec63488bddd230f501ff166a"
+  },
+  "Open on GitHub to preview or download this file.": {
+    "en": "Open on GitHub to preview or download this file.",
+    "zh-CN": "在 GitHub 上打开以预览或下载此文件。",
+    "reviewedEnglishHash": "54f0bb55c230667caa128cdf52bb68dfeb819fb3e4b4c8fa6ec579a8de1e4e8c"
+  },
   "Open organization dashboard": {
     "en": "Open organization dashboard",
     "zh-CN": "打开组织仪表盘",
@@ -388,6 +418,11 @@
     "en": "Open parent folder",
     "zh-CN": "打开上级文件夹",
     "reviewedEnglishHash": "a00d48483e7b4dbbad566ae280ea39ddb15b3e689f47bf8317eefc3daffa95ae"
+  },
+  "Open preview": {
+    "en": "Open preview",
+    "zh-CN": "打开预览",
+    "reviewedEnglishHash": "f7afe3dde18c1446eb3218cfaedae0aaf6ca9f39f5ceae076701036cd8950d00"
   },
   "Open pull request": {
     "en": "Open pull request",
@@ -413,6 +448,11 @@
     "en": "Open selected item",
     "zh-CN": "打开选中项",
     "reviewedEnglishHash": "948dbc15b31394c94644b59a49fd7e78fbeae3c8a3402fa79ed107a7eb75864f"
+  },
+  "Open service": {
+    "en": "Open service",
+    "zh-CN": "打开服务",
+    "reviewedEnglishHash": "40f3c53f26e85116125935e024c1c398c20f0977e347dabd5e82278931e747a9"
   },
   "Open sidebar": {
     "en": "Open sidebar",
@@ -584,6 +624,11 @@
     "zh-CN": "可选",
     "reviewedEnglishHash": "59be71333c960fd08e7e4fe9862206d9355f0a9884121a5b50ef8b36efdfe4cf"
   },
+  "Optional ACP session state directory. Defaults to Paperclip-managed organization/agent scoped storage.": {
+    "en": "Optional ACP session state directory. Defaults to Paperclip-managed organization/agent scoped storage.",
+    "zh-CN": "可选的 ACP 会话状态目录。默认使用 Paperclip 管理的组织和智能体范围存储。",
+    "reviewedEnglishHash": "7462217851683151ac09b9ba6719063e885ea3346660c763fa7222c8873a4c9d"
+  },
   "Optional CPU allocation in cores.": {
     "en": "Optional CPU allocation in cores.",
     "zh-CN": "可选 CPU 配额（核数）。",
@@ -673,6 +718,26 @@
     "en": "Optional organization description",
     "zh-CN": "组织说明（可选）",
     "reviewedEnglishHash": "4322c2356e4210949c5a3903752fc7f9c09c7c0026a80fa9509866f6e3dd1c2f"
+  },
+  "Optional override for the Claude ACP server command. Defaults to the package-local claude-agent-acp binary.": {
+    "en": "Optional override for the Claude ACP server command. Defaults to the package-local claude-agent-acp binary.",
+    "zh-CN": "可选覆盖 Claude ACP 服务器命令。默认使用包内的 claude-agent-acp 二进制文件。",
+    "reviewedEnglishHash": "11a60acc5a8c79178c8a97c473142050187c6afd1558e0b04c8d51a930f5f213"
+  },
+  "Optional override for the Gemini ACP server command. Defaults to gemini --acp.": {
+    "en": "Optional override for the Gemini ACP server command. Defaults to gemini --acp.",
+    "zh-CN": "可选覆盖 Gemini ACP 服务器命令。默认使用 gemini --acp。",
+    "reviewedEnglishHash": "69f78b94e8530f359c3d39c937344c10a5ec61f7552c8c7320901d84a34fdcea"
+  },
+  "Optional override. Leave blank to use the package name.": {
+    "en": "Optional override. Leave blank to use the package name.",
+    "zh-CN": "可选覆盖。留空则使用包名称。",
+    "reviewedEnglishHash": "2e773b2394341131d7063fbab091a931d741fe9876c903709d2b246c97f0213b"
+  },
+  "Optional per-agent hard ceiling. Leave 1.00 to use a conservative default.": {
+    "en": "Optional per-agent hard ceiling. Leave 1.00 to use a conservative default.",
+    "zh-CN": "可选的每智能体硬上限。保留 1.00 可使用保守的默认值。",
+    "reviewedEnglishHash": "8d9e9fbc835d7c52b3edc0d53299ab15cf3d78530e926fe1cd7bb6441c84b655"
   },
   "Optional personal authorization enables private search on supported runtimes. It cannot read channels the bot hasn’t joined or let the bot write as you. Basic channel reading works without it.": {
     "en": "Optional personal authorization enables private search on supported runtimes. It cannot read channels the bot hasn’t joined or let the bot write as you. Basic channel reading works without it.",
@@ -843,6 +908,11 @@
     "en": "Output truncated to 8 KiB.",
     "zh-CN": "输出截断为 8 KiB。",
     "reviewedEnglishHash": "71045c3c3bab4c2d4f970ac3862e46dce4163c1f38bb39cfeccc604f4055267f"
+  },
+  "Outside this package": {
+    "en": "Outside this package",
+    "zh-CN": "包外部",
+    "reviewedEnglishHash": "8e6abf834b9eb3468fb8f7a75fe90d6a2300f574dbe1e3f2fbf4216a43dd9885"
   },
   "Over budget (95%)": {
     "en": "Over budget (95%)",

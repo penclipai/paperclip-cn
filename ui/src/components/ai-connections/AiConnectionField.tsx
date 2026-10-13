@@ -167,14 +167,14 @@ export function AiConnectionField({
       >
         <DialogContent className="max-h-(--sz-85vh) overflow-y-auto sm:max-w-2xl" onCloseAutoFocus={restoreFocus}>
           <DialogHeader>
-            <DialogTitle>{pendingAdoption?.mode === "router" ? `Use ${accounts.data?.pools?.find(pool => pool.id === pendingAdoption.connectionId)?.name ?? "this pool"}?` : `Adopt Connections for ${agentName}`}</DialogTitle>
+            <DialogTitle>{pendingAdoption?.mode === "router" ? translateInstant("connectionUi.adoption.usePool", { pool: accounts.data?.pools?.find(pool => pool.id === pendingAdoption.connectionId)?.name ?? translateInstant("connectionUi.adoption.thisPool") }) : translateInstant("connectionUi.adoption.adoptForAgent", { agent: agentName })}</DialogTitle>
             <DialogDescription>
-              {pendingAdoption?.mode === "router" ? "Reset existing sessions that use an account outside this pool." : "Saving validates access to the selected connection. Existing sessions keep their account or require an explicit reset before adoption."}
+              {pendingAdoption?.mode === "router" ? translateInstant("Reset existing sessions that use an account outside this pool.") : translateInstant("Saving validates access to the selected connection. Existing sessions keep their account or require an explicit reset before adoption.")}
             </DialogDescription>
           </DialogHeader>
           {pendingAdoption?.mode !== "router" && <p className="text-sm">
             {pendingAdoption?.mode === "responsible_user"
-              ? `Responsible user’s default. For you: ${accounts.data?.connections.find((account) => account.isDefault && account.provider === provider)?.name ?? "Not connected"}. Other users use their own default.`
+              ? translateInstant("connectionUi.adoption.responsibleUserDefault", { connection: accounts.data?.connections.find((account) => account.isDefault && account.provider === provider)?.name ?? translateInstant("Not connected") })
               : accounts.data?.connections.find(
                   (account) => account.id === pendingAdoption?.connectionId,
                 )?.name}
@@ -193,7 +193,7 @@ export function AiConnectionField({
                 setPendingAdoption(undefined);
               }}
             >
-              {pendingAdoption?.mode === "router" ? "Use pool" : "Use this binding when saved"}
+              {pendingAdoption?.mode === "router" ? translateInstant("Use pool") : translateInstant("Use this binding when saved")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -201,9 +201,9 @@ export function AiConnectionField({
       <Dialog open={connecting} onOpenChange={(open) => { if (!selectDefault.isPending) setConnecting(open); }}>
         <DialogContent className="max-h-(--sz-85vh) overflow-y-auto sm:max-w-2xl" onCloseAutoFocus={restoreFocus}>
           <DialogHeader>
-            <DialogTitle>{reconnecting ? "Reconnect account" : "Connect account"}</DialogTitle>
+            <DialogTitle>{reconnecting ? translateInstant("Reconnect account") : translateInstant("Connect account")}</DialogTitle>
             <DialogDescription>
-              {advancedSetup ? "Choose a provider connection for this agent." : reconnecting ? "Sign in again to repair your current default account. Its agent access stays the same." : "This account will become your default for this provider. Your tasks will use it; other users keep their own default."}
+              {advancedSetup ? translateInstant("Choose a provider connection for this agent.") : reconnecting ? translateInstant("Sign in again to repair your current default account. Its agent access stays the same.") : translateInstant("This account will become your default for this provider. Your tasks will use it; other users keep their own default.")}
             </DialogDescription>
           </DialogHeader>
           {advancedSetup ? <AiProviderSetup

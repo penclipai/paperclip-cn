@@ -411,7 +411,7 @@ function StudioCreateMode({
             skills={skills}
             loading={skillsLoading}
             onSelectSkill={onSelectSkill}
-            emptyLabel="New skill"
+            emptyLabel={translateInstant("skillStudio.breadcrumbs.newSkill")}
           />
         </header>
         <div className="min-h-0 flex-1 overflow-y-auto">
@@ -566,7 +566,7 @@ function StudioNewSkillPanel({
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="skill-slug">{translateInstant("Slug")}</Label>
+            <Label htmlFor="skill-slug">{translateInstant("skillStudio.fields.slug")}</Label>
             <Input
               id="skill-slug"
               value={draft.slug}
@@ -626,7 +626,7 @@ function StudioNewSkillPanel({
                   draft.color === color ? "border-foreground" : "border-border",
                 )}
                 style={{ backgroundColor: color }}
-                aria-label={`Use ${color}`}
+                aria-label={translateInstant("skillStudio.create.useColor", { color })}
               />
             ))}
             <Input
@@ -666,7 +666,7 @@ function StudioNewSkillPanel({
             >
               <span className="block font-medium">{scope === "company" ? translateInstant("Organization") : translateInstant("skillStudio.create.scopePrivate")}</span>
               <span className="mt-1 block text-xs text-muted-foreground">
-                {scope === "company" ? "Visible inside this organization." : translateInstant("skillStudio.create.scopePrivateDescription")}
+                {scope === "company" ? translateInstant("skillStudio.create.scopeCompanyDescription") : translateInstant("skillStudio.create.scopePrivateDescription")}
               </span>
             </button>
           ))}
@@ -695,7 +695,7 @@ function StudioNewSkillPanel({
           {translateInstant("skillStudio.actions.cancel")}</Button>
         <Button onClick={() => createSkill.mutate()} disabled={createSkill.isPending || !nameValid}>
           <FilePlus className="h-4 w-4" />
-          {createSkill.isPending ? translateInstant("Creating...") : draft.forkedFromSkillId ? translateInstant("skillStudio.create.createFork") : translateInstant("Create skill")}
+          {createSkill.isPending ? translateInstant("skillStudio.create.creating") : draft.forkedFromSkillId ? translateInstant("skillStudio.create.createFork") : translateInstant("skillStudio.create.createSkill")}
         </Button>
       </div>
     </div>
@@ -731,7 +731,7 @@ function StudioEmptyState({
             skills={skills}
             loading={skillsLoading}
             onSelectSkill={onSelectSkill}
-            emptyLabel={translateInstant("Select skill")}
+            emptyLabel={translateInstant("skillStudio.switcher.selectSkill")}
           />
         </header>
         <div className="flex flex-1 items-center justify-center">
@@ -805,7 +805,7 @@ function StudioLanding({
             skills={skills}
             loading={skillsLoading}
             onSelectSkill={onSelectSkill}
-            emptyLabel={translateInstant("Select skill")}
+            emptyLabel={translateInstant("skillStudio.switcher.selectSkill")}
           />
           <Button variant="ghost" size="sm" className="ml-auto" onClick={onCreateNew}>
             <Plus className="mr-1.5 h-3.5 w-3.5" />
@@ -1204,7 +1204,7 @@ function SkillSwitcher({
   skills,
   loading,
   onSelectSkill,
-  emptyLabel = translateInstant("Select skill"),
+  emptyLabel = translateInstant("skillStudio.switcher.selectSkill"),
 }: {
   skill: CompanySkillDetail | null;
   skills: CompanySkillListItem[];
@@ -1230,9 +1230,9 @@ function SkillSwitcher({
       value={skill?.id ?? ""}
       groups={groups}
       loading={loading}
-      loadingMessage="Loading skills..."
+      loadingMessage={translateInstant("skillStudio.states.loadingSkills")}
       placeholder={emptyLabel}
-      searchPlaceholder="Search skills..."
+      searchPlaceholder={translateInstant("skillStudio.switcher.search")}
       emptyMessage={translateInstant("skillStudio.switcher.noMatches")}
       onValueChange={(value) => {
         if (value !== skill?.id) onSelectSkill(value);
@@ -1479,7 +1479,7 @@ function SkillPane({
             }
             onSelectFile={selectFile}
             showCheckboxes={false}
-            ariaLabel="Skill files"
+            ariaLabel={translateInstant("skillStudio.files.treeLabel")}
           />
         </div>
         <SkillSourceProvenance skill={skill} />

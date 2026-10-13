@@ -223,7 +223,7 @@ export function PasteConfigTab({ companyId }: { companyId: string }) {
       JSON.parse(trimmed);
       return null;
     } catch {
-      return "That doesn't look like valid JSON yet — paste the whole snippet, including the outer braces.";
+      return translateInstant("That doesn't look like valid JSON yet — paste the whole snippet, including the outer braces.");
     }
   }, [draftText]);
 
@@ -294,7 +294,7 @@ export function PasteConfigTab({ companyId }: { companyId: string }) {
           onClick={() => importMutation.mutate(draftText)}
           disabled={!canSubmit || Boolean(localParseError)}
         >
-          {importMutation.isPending ? "Checking…" : translateInstant("tools.pasteConfig.checkConfig")}
+          {importMutation.isPending ? translateInstant("Checking…") : translateInstant("tools.pasteConfig.checkConfig")}
         </Button>
         <span className="text-xs text-muted-foreground">
           {translateInstant("tools.pasteConfig.checkHint")}</span>
@@ -310,7 +310,10 @@ export function PasteConfigTab({ companyId }: { companyId: string }) {
           <div className="space-y-3">
             <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground">
               <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-              {translateInstant("We found")}{" "}{drafts.length} {drafts.length === 1 ? translateInstant("apps.gateways.activity.fallbackApp") : "apps"} {translateInstant("in that config")}</h3>
+              {translateInstant(drafts.length === 1 ? "connectionUi.pasteConfig.foundApps_one" : "connectionUi.pasteConfig.foundApps_other", {
+                count: drafts.length,
+                defaultValue: drafts.length === 1 ? "We found {{count}} app in that config" : "We found {{count}} apps in that config",
+              })}</h3>
             {drafts.map((draft, index) => {
               const url = draftConnectUrl(draft);
               const missingFields = missingCredentialFields(draft, credentialValues);
@@ -500,7 +503,7 @@ function CatalogReview({
         askFirstLevels={askFirstLevels}
       />
       <ActionGroup
-        title="Can make changes"
+        title={translateInstant("Can make changes")}
         actions={result.actions.canMakeChanges}
         enabled={enabled}
         onToggle={onToggle}

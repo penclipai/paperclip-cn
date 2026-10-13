@@ -33,26 +33,26 @@ const ALL = "__all";
 
 /** Action-domain prefixes offered in the filter (server does a prefix match). */
 const ACTION_DOMAINS: { value: string; label: string }[] = [
-  { value: ALL, label: "All actions" },
-  { value: "issue.", label: "Tasks" },
-  { value: "agent.", label: "Agents" },
-  { value: "heartbeat.", label: "Runs" },
-  { value: "approval.", label: "Approvals" },
-  { value: "project.", label: "Projects" },
-  { value: "goal.", label: "Goals" },
-  { value: "tool_gateway.", label: "Tools" },
-  { value: "cost.", label: "Costs" },
-  { value: "company.", label: "Company" },
+  { value: ALL, get label() { return translateInstant("auditFeed.allActions"); } },
+  { value: "issue.", get label() { return translateInstant("sidebar.issues"); } },
+  { value: "agent.", get label() { return translateInstant("Agents"); } },
+  { value: "heartbeat.", get label() { return translateInstant("Runs"); } },
+  { value: "approval.", get label() { return translateInstant("Approvals"); } },
+  { value: "project.", get label() { return translateInstant("Projects"); } },
+  { value: "goal.", get label() { return translateInstant("Goals"); } },
+  { value: "tool_gateway.", get label() { return translateInstant("common.tools"); } },
+  { value: "cost.", get label() { return translateInstant("Costs"); } },
+  { value: "company.", get label() { return translateInstant("Company"); } },
 ];
 
 /** Entity types offered in the filter (server does an exact match). */
 const ENTITY_TYPES: { value: string; label: string }[] = [
-  { value: ALL, label: "All entities" },
-  { value: "issue", label: "Task" },
-  { value: "agent", label: "Agent" },
-  { value: "project", label: "Project" },
-  { value: "goal", label: "Goal" },
-  { value: "company", label: "Company" },
+  { value: ALL, get label() { return translateInstant("auditFeed.allEntities"); } },
+  { value: "issue", get label() { return translateInstant("Task"); } },
+  { value: "agent", get label() { return translateInstant("Agent"); } },
+  { value: "project", get label() { return translateInstant("Project"); } },
+  { value: "goal", get label() { return translateInstant("Goal"); } },
+  { value: "company", get label() { return translateInstant("Company"); } },
 ];
 
 /**
@@ -179,8 +179,9 @@ function AuditRow({
   agentMap: Map<string, Agent>;
   userProfileMap: Map<string, CompanyUserProfile>;
 }) {
-  useTranslation();
-  const verb = formatActivityVerb(record.action, record.details, { agentMap, userProfileMap });
+  const { t } = useTranslation();
+  const rawVerb = formatActivityVerb(record.action, record.details, { agentMap, userProfileMap });
+  const verb = t(rawVerb, { defaultValue: rawVerb });
   const responsible = record.responsibleUserId ? userProfileMap.get(record.responsibleUserId) : null;
   // Suppress the "on behalf of" chip when the human actor *is* the responsible user.
   const showOnBehalf = Boolean(

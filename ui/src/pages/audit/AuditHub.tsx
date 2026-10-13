@@ -1,6 +1,6 @@
 import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { History } from "lucide-react";
 import { EmptyState } from "@/components/EmptyState";
 import { PageTabBar } from "@/components/PageTabBar";
@@ -21,7 +21,20 @@ import {
 } from "./audit-navigation";
 
 export function AuditHub({ section }: { section: AuditSection }) {
-  useTranslation();
+  const { i18n } = useTranslation();
+  const localizedSections = useMemo(
+    () => AUDIT_SECTIONS.map((candidate) => ({
+      ...candidate,
+      label: translateInstant({
+        activity: "companyActivity.title",
+        runs: "Runs",
+        costs: "Costs",
+        budgets: "Budgets",
+        timeline: "sidebar.timeline",
+      }[candidate.value]),
+    })),
+    [i18n.resolvedLanguage],
+  );
   const navigate = useNavigate();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
@@ -43,12 +56,12 @@ export function AuditHub({ section }: { section: AuditSection }) {
   ].includes(actionParam ?? "") ? actionParam! : "__all";
 
   useEffect(() => {
-    const current = AUDIT_SECTIONS.find((candidate) => candidate.value === section);
+    const current = localizedSections.find((candidate) => candidate.value === section);
     setBreadcrumbs([
       { label: translateInstant("auditFeed.title"), href: section === "activity" ? undefined : "/activity" },
       ...(section === "activity" || !current ? [] : [{ label: current.label }]),
     ]);
-  }, [section, setBreadcrumbs]);
+  }, [localizedSections, section, setBreadcrumbs]);
 
   const handleModeChange = useCallback(
     (next: AuditFeedMode) => {
@@ -97,7 +110,7 @@ export function AuditHub({ section }: { section: AuditSection }) {
           navigate(auditSectionHref(next, scope));
         }}
       >
-        <PageTabBar items={AUDIT_SECTIONS} value={section} align="start" />
+        <PageTabBar items={localizedSections} value={section} align="start" />
       </Tabs>
 
       {section === "activity" && routineId ? (

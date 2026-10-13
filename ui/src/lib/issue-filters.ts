@@ -1,4 +1,5 @@
 import type { ExternalObjectSummary, Issue } from "@penclipai/shared";
+import { translateInstant } from "@/i18n";
 
 export type IssueFilterWorkspaceLookup = {
   mode?: string | null;
@@ -62,28 +63,33 @@ export const externalObjectFilterOrder = [
   "none",
 ];
 
-const EXTERNAL_OBJECT_FILTER_LABELS: Record<string, string> = {
-  failed: "Any failed",
-  waiting: "Any waiting",
-  running: "Any running",
-  auth_required: "Auth required",
-  unreachable: "Unreachable",
-  stale: "Stale",
-  none: "No external objects",
+const EXTERNAL_OBJECT_FILTER_LABEL_KEYS: Record<string, string> = {
+  failed: "issueFilters.externalObjects.anyFailed",
+  waiting: "issueFilters.externalObjects.anyWaiting",
+  running: "issueFilters.externalObjects.anyRunning",
+  auth_required: "issueFilters.externalObjects.authRequired",
+  unreachable: "issueFilters.externalObjects.unreachable",
+  stale: "issueFilters.externalObjects.stale",
+  none: "issueFilters.externalObjects.none",
+};
+const EXTERNAL_OBJECT_FILTER_DEFAULTS: Record<string, string> = {
+  failed: "Any failed", waiting: "Any waiting", running: "Any running", auth_required: "Auth required",
+  unreachable: "Unreachable", stale: "Stale", none: "No external objects",
 };
 
 export function externalObjectFilterLabel(value: string): string {
-  return EXTERNAL_OBJECT_FILTER_LABELS[value] ?? issueFilterLabel(value);
+  const key = EXTERNAL_OBJECT_FILTER_LABEL_KEYS[value];
+  return key ? translateInstant(key, { defaultValue: EXTERNAL_OBJECT_FILTER_DEFAULTS[value] }) : issueFilterLabel(value);
 }
 
 export const issueStatusOrder = ["in_progress", "todo", "backlog", "in_review", "blocked", "done", "cancelled"];
 export const issuePriorityOrder = ["critical", "high", "medium", "low"];
 
 export const issueQuickFilterPresets = [
-  { label: "All", statuses: [] as string[] },
-  { label: "Active", statuses: ["todo", "in_progress", "in_review", "blocked"] },
-  { label: "Backlog", statuses: ["backlog"] },
-  { label: "Done", statuses: ["done", "cancelled"] },
+  { get label() { return translateInstant("issueFilters.quick.all", { defaultValue: "All" }); }, statuses: [] as string[] },
+  { get label() { return translateInstant("issueFilters.quick.active", { defaultValue: "Active" }); }, statuses: ["todo", "in_progress", "in_review", "blocked"] },
+  { get label() { return translateInstant("issueFilters.quick.backlog", { defaultValue: "Backlog" }); }, statuses: ["backlog"] },
+  { get label() { return translateInstant("issueFilters.quick.done", { defaultValue: "Done" }); }, statuses: ["done", "cancelled"] },
 ];
 
 export function issueFilterLabel(value: string): string {

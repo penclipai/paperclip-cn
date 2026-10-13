@@ -121,20 +121,20 @@ export function AiConnectionSelect({
         <SelectTrigger id={selectId} aria-label={translateInstant("Connection")} className="w-full">
           <SelectValue
             placeholder={
-              loading ? "Loading connections…" : "Choose a connection"
+              loading ? translateInstant("Loading connections…") : translateInstant("Choose a connection")
             }
           >
             {selected
-              ? <ConnectionLabel connection={selected} label={value?.mode === "responsible_user" ? "Responsible user’s default" : undefined} />
+              ? <ConnectionLabel connection={selected} label={value?.mode === "responsible_user" ? translateInstant("Responsible user’s default") : undefined} />
               : value?.mode === "responsible_user"
-                ? "Responsible user’s default"
-                : value ? "Unavailable connection" : undefined}
+                ? translateInstant("Responsible user’s default")
+                : value ? translateInstant("Unavailable connection") : undefined}
           </SelectValue>
         </SelectTrigger>
         <SelectContent>
           {incompatible && selected && (
             <SelectItem value={selected.id} disabled>
-              <ConnectionLabel connection={selected} label={`${selected.name} · Incompatible`} />
+              <ConnectionLabel connection={selected} label={`${selected.name} · ${translateInstant("Incompatible")}`} />
             </SelectItem>
           )}
           {compatible.map((c) => (
@@ -143,7 +143,7 @@ export function AiConnectionSelect({
               value={c.id}
               disabled={Boolean(aiConnectionProblem(c))}
             >
-              <ConnectionLabel connection={c} label={`${c.name}${c.status !== "connected" ? " · Reconnect" : ""}`} />
+              <ConnectionLabel connection={c} label={`${c.name}${c.status !== "connected" ? ` · ${translateInstant("Reconnect")}` : ""}`} />
             </SelectItem>
           ))}
           {(canUseDefault || value?.mode === "responsible_user") && (

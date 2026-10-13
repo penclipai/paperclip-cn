@@ -263,7 +263,7 @@ function connectorAction(
   href: string | null;
   title?: string;
 } {
-  if (row.entry?.aiConnectionRouter) return { label: "Add connection pool", href: row.entry.availability?.available === false ? null : connectHrefFor(row.entry), title: row.entry.availability?.reason };
+  if (row.entry?.aiConnectionRouter) return { label: translateInstant("Add connection pool"), href: row.entry.availability?.available === false ? null : connectHrefFor(row.entry), title: row.entry.availability?.reason };
   if (row.aggregatorApp && isInstalled(row)) return { label: translateInstant("Manage"), href: null };
   const applicationId = row.applications[0]?.id ?? null;
   const chatHref = (row.slug === "agentmail" || chatConnectorsEnabled)
@@ -277,12 +277,12 @@ function connectorAction(
     if (chatHref) return { label: translateInstant("Add connection"), href: chatHref };
     if (row.entry && applicationId) {
       return {
-        label: "Add account",
+        label: translateInstant("Add account"),
         href: additionalConnectionHref(row.entry, applicationId),
       };
     }
     return {
-      label: "Add account",
+      label: translateInstant("Add account"),
       href: applicationId ? `/apps/app/${applicationId}/permissions` : null,
     };
   }
@@ -301,7 +301,9 @@ function connectorAction(
   // Tool connectors retain their capability-specific setup verbs.
   if (row.entry) {
     return {
-      label: row.entry.methods?.some(method => method.purpose === "ai") ? translateInstant("Connect") : connectionSetupVerbForApp(row.entry),
+      label: row.entry.methods?.some(method => method.purpose === "ai")
+        ? translateInstant("Connect")
+        : translateInstant(connectionSetupVerbForApp(row.entry)),
       href: connectHrefFor(row.entry),
     };
   }
@@ -337,7 +339,7 @@ function accountActionHref(
  * account; unconnected providers retain the same catalog setup flows.
  */
 export function Browse({ renderAccountDetails = (connection) => connection.connectionPurpose === "ai" && !aiConnectionRouterPluginKey(connection) ? <ManagedAiConnectionRow connection={connection} /> : null }: { renderAccountDetails?: (connection: ToolConnection) => ReactNode } = {}) {
-  useTranslation();
+  const { i18n } = useTranslation();
   const navigate = useNavigate();
   const preselectedChatAgentId =
     typeof window === "undefined"
@@ -691,7 +693,7 @@ export function Browse({ renderAccountDetails = (connection) => connection.conne
         name: application.name,
         description:
           application.description ??
-          "A custom connector configured for this organization.",
+          translateInstant("A custom connector configured for this organization."),
         brandKey: applicationSlug ?? application.name,
         entry: null,
         applications: [application],
@@ -720,7 +722,10 @@ export function Browse({ renderAccountDetails = (connection) => connection.conne
           key: `chat:${endpoint.provider}`,
           slug: endpoint.provider,
           name: names[endpoint.provider],
-          description: `Chat with agents through ${names[endpoint.provider]}.`,
+          description: translateInstant("connectionUi.catalog.chatWithAgentsThrough", {
+            provider: names[endpoint.provider],
+            defaultValue: `Chat with agents through ${names[endpoint.provider]}.`,
+          }),
           brandKey: endpoint.provider,
           entry: null,
           applications: [],
@@ -746,7 +751,10 @@ export function Browse({ renderAccountDetails = (connection) => connection.conne
       ![app.name, app.slug, ...app.aliases].some((alias) => nativeIdentities.has(aggregatorAppIdentity(alias))))
       .map((app) => ({
         key: `aggregator:${app.slug}`, slug: app.slug, name: app.name,
-        description: `Connect through ${app.routes.map((route) => AGGREGATOR_NAMES[route.provider]).join(" or ")}.`,
+        description: translateInstant("connectionUi.catalog.connectThroughProviders", {
+          providers: app.routes.map((route) => AGGREGATOR_NAMES[route.provider]).join(translateInstant("apps.connections.orSeparator")),
+          defaultValue: `Connect through ${app.routes.map((route) => AGGREGATOR_NAMES[route.provider]).join(" or ")}.`,
+        }),
         brandKey: app.slug, logoUrl: app.routes[0]?.logoUrl, entry: null,
         applications: [], connections: [], chatEndpoints: [], aggregatorApp: app,
         upstreamApps: upstreamAppsBySlug.get(app.slug) ?? [], upstreamCatalogApp: app,
@@ -781,6 +789,8 @@ export function Browse({ renderAccountDetails = (connection) => connection.conne
     connectionsQuery.data,
     gallery,
     galleryQuery.data,
+    i18n.resolvedLanguage,
+    i18n.language,
     upstreamAppsBySlug,
   ]);
 
@@ -970,10 +980,19 @@ export function Browse({ renderAccountDetails = (connection) => connection.conne
       {accountLoadErrors.length ? <p role="alert" className="text-sm text-destructive">{translateInstant("Couldn’t load")}{" "}{Array.from(new Set(accountLoadErrors)).join(" or ")}{" "}{translateInstant("accounts. Use Refresh in the connection’s menu to try again.")}</p> : null}
 
       {!loading && catalogRows.length > 0 ? <nav aria-label={translateInstant("Connector catalog pages")} className="flex flex-wrap items-center justify-between gap-3 text-sm">
-        <p className="text-muted-foreground" role="status">{pageStart + 1}–{Math.min(pageStart + CATALOG_PAGE_SIZE, catalogRows.length)} {translateInstant("issueCommon.of")}{" "}{catalogRows.length.toLocaleString()} connectors</p>
+        <p className="text-muted-foreground" role="status">{translateInstant("connectionUi.catalog.pagination.range", {
+          start: pageStart + 1,
+          end: Math.min(pageStart + CATALOG_PAGE_SIZE, catalogRows.length),
+          total: catalogRows.length.toLocaleString(),
+          defaultValue: "{{start}}–{{end}} of {{total}} connectors",
+        })}</p>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" disabled={currentPage === 1} onClick={() => { setPage(currentPage - 1); catalogTop.current?.scrollIntoView?.({ block: "start" }); }}>{translateInstant("Previous")}</Button>
-          <span className="text-xs text-muted-foreground">{translateInstant("Page")}{" "}{currentPage} {translateInstant("issueCommon.of")}{" "}{pageCount}</span>
+          <span className="text-xs text-muted-foreground">{translateInstant("connectionUi.catalog.pagination.page", {
+            current: currentPage,
+            total: pageCount,
+          defaultValue: "Page {{current}} of {{total}}",
+          })}</span>
           <Button variant="outline" size="sm" disabled={currentPage === pageCount} onClick={() => { setPage(currentPage + 1); catalogTop.current?.scrollIntoView?.({ block: "start" }); }}>{translateInstant("Next")}</Button>
         </div>
       </nav> : null}
@@ -1115,7 +1134,18 @@ export function ConnectorCard({
               const providerName = AGGREGATOR_NAMES[route.provider];
               const managedSnapshot = row.upstreamApps?.find(app => (app.provider ?? "composio") === route.provider && app.accounts.length > 0);
               const managed = Boolean(managedSnapshot);
-              const label = `${managed ? "Manage" : translateInstant("Connect")} ${row.name} through ${providerName}, a third-party service`;
+              const label = translateInstant(
+                managed
+                  ? "connectionUi.catalog.aggregator.manageAria"
+                  : "connectionUi.catalog.aggregator.connectAria",
+                {
+                  app: row.name,
+                  provider: providerName,
+                  defaultValue: managed
+                    ? "Manage {{app}} through {{provider}}, a third-party service"
+                    : "Connect {{app}} through {{provider}}, a third-party service",
+                },
+              );
               return <Tooltip key={route.provider}><TooltipTrigger asChild>
                 <button type="button" aria-label={label} onClick={() => managed ? onManageAggregator?.(row.aggregatorApp!, managedSnapshot?.connectionId) : onConnectAggregator?.(row.aggregatorApp!)} className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                   <AppLogo name={providerName} brandKey={route.provider} size={16} compact />
@@ -1124,7 +1154,12 @@ export function ConnectorCard({
             })}
           </div>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            {row.aggregatorApp && row.upstreamApps?.some(app => app.accounts.length > 0) ? `Accounts managed in ${[...new Set(row.upstreamApps?.map(app => AGGREGATOR_NAMES[app.provider ?? "composio"]))].join(" and ")}.` : row.description}
+            {row.aggregatorApp && row.upstreamApps?.some(app => app.accounts.length > 0)
+              ? translateInstant("connectionUi.catalog.aggregator.accountsManaged", {
+                providers: [...new Set(row.upstreamApps?.map(app => AGGREGATOR_NAMES[app.provider ?? "composio"]))].join(translateInstant("apps.connections.andSeparator")),
+                defaultValue: "Accounts managed in {{providers}}.",
+              })
+              : row.description}
           </p>
         </div>
         <Button
@@ -1505,7 +1540,7 @@ function CustomConnectorCard({
           />
           <CustomConnectorOption
             icon={ClipboardPaste}
-            title="Paste a config"
+            title={translateInstant("Paste a config")}
             description={translateInstant("Paste an existing setup snippet and connect it.")}
             onClick={() => onNavigate("/apps/advanced/paste-config")}
           />

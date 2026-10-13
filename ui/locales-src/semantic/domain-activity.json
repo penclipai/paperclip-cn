@@ -18,5 +18,25 @@
     "en": "Changed status to {{status}} on",
     "zh-CN": "将状态改为 {{status}}：",
     "reviewedEnglishHash": "9cf0eaf872bf9aaf726f32866cf43c616e8ea136f5ab0e3153e8d8696bf1360d"
+  },
+  "activity.issueRead": {
+    "en": "read",
+    "zh-CN": "已阅读",
+    "reviewedEnglishHash": "3316348dbadfb7b11c7c2ea235949419e23f9fa898ad2c198f999617912a9925"
+  },
+  "activity.issueWorkProductCreated": {
+    "en": "created a work product",
+    "zh-CN": "创建了工作成果",
+    "reviewedEnglishHash": "2625f8dcdcfc622d5157b6acd3c6fae318546baaace1610dc4a0ff8efca3c9c7"
+  },
+  "activity.routineCreated": {
+    "en": "created a routine",
+    "zh-CN": "创建了例行任务",
+    "reviewedEnglishHash": "29027fc865792d43119b7343af1f92f149860f88c562d2d70f5e725691794e9c"
+  },
+  "activity.routineRevisionCreated": {
+    "en": "created a routine revision",
+    "zh-CN": "创建了例行任务修订版本",
+    "reviewedEnglishHash": "02dc0444b83e4957b83ebdf36b897a5b8d1751f69aefe637e986c915d5d77897"
   }
 }

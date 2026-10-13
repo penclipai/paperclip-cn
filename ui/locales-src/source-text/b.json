@@ -164,6 +164,11 @@
     "zh-CN": "计费类型",
     "reviewedEnglishHash": "2ebd3c26f0d8f847e7531355a6c33b689ca9fa1ca2ebe480ccdc17f236c0cc4c"
   },
+  "Binary asset · included without changes": {
+    "en": "Binary asset · included without changes",
+    "zh-CN": "二进制资源 · 已原样包含",
+    "reviewedEnglishHash": "17dcc223d82cabd6109b40af0f5b590624a8ca06b3075d2abe59849de410b8bc"
+  },
   "Binary file; text diff is unavailable.": {
     "en": "Binary file; text diff is unavailable.",
     "zh-CN": "二进制文件；文本差异不可用。",
@@ -233,6 +238,11 @@
     "en": "Board Approval",
     "zh-CN": "董事会审批",
     "reviewedEnglishHash": "ceee9033cc3bade85c0478a54822a7b99b1058c97d8508c414c69d533cf5dcf0"
+  },
+  "Board imports can rename, skip, or replace matching organization content.": {
+    "en": "Board imports can rename, skip, or replace matching organization content.",
+    "zh-CN": "看板导入可以重命名、跳过或替换匹配的组织内容。",
+    "reviewedEnglishHash": "f303b67b55e2d13564d0a6a5b8a7f7ebefb221650cbf4cb4f87aa0155d6dee13"
   },
   "Board update": {
     "en": "Board update",
@@ -309,6 +319,11 @@
     "zh-CN": "已复制分支",
     "reviewedEnglishHash": "a172c77bd3ee7c22ea0468ea2638a73bd693262671d720be2a534cc36e77cf5c"
   },
+  "Branch · no remote link": {
+    "en": "Branch · no remote link",
+    "zh-CN": "分支 · 无远程链接",
+    "reviewedEnglishHash": "b39f12c4512e6616ec4a46934b4e11ad6c38fcfec54b0023d735973f2f059468"
+  },
   "Branches": {
     "en": "Branches",
     "zh-CN": "分支",
@@ -363,6 +378,11 @@
     "en": "Browse projects",
     "zh-CN": "浏览项目",
     "reviewedEnglishHash": "8eac1d4abf06ff4fcb40a2db7f98e53e59a1dcabef68008d71f4cf8f2e5365e0"
+  },
+  "Browse skills from every available source.": {
+    "en": "Browse skills from every available source.",
+    "zh-CN": "浏览所有可用来源的技能。",
+    "reviewedEnglishHash": "4e2bd63eba57f624b75a0da096610a0f71e7bdc5bb2f9ad1f7623f3d307d4230"
   },
   "Browse skills.sh": {
     "en": "Browse skills.sh",
@@ -543,6 +563,11 @@
     "en": "By user",
     "zh-CN": "用户：",
     "reviewedEnglishHash": "860ab0fed06c73cd878d13ba0cad5f003b2350594acf741ff8379ccf86ac82c0"
+  },
+  "Bypass sandbox": {
+    "en": "Bypass sandbox",
+    "zh-CN": "绕过沙箱",
+    "reviewedEnglishHash": "9af1dd7047986872c830ea2358d49e15b17406b4290903f573e4c16a0c8636a9"
   },
   "bash ./scripts/provision-worktree-runtime.sh": {
     "en": "bash ./scripts/provision-worktree-runtime.sh",

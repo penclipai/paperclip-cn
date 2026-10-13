@@ -139,6 +139,16 @@
     "zh-CN": "{{count}} 条决策",
     "reviewedEnglishHash": "8f0f22bf2a768ffff0b9fadb9c2b18b6da7937efc12b8d4be3e387b4e5818a78"
   },
+  "whatNeedsMe.decisionCount_one": {
+    "en": "{{count}} decision",
+    "zh-CN": "{{count}} 条决策",
+    "reviewedEnglishHash": "c7c58aae9a4485b4dbbb6654b16c57c6771f896d6645d436e0746011acc8656e"
+  },
+  "whatNeedsMe.decisionCount_other": {
+    "en": "{{count}} decisions",
+    "zh-CN": "{{count}} 条决策",
+    "reviewedEnglishHash": "8f0f22bf2a768ffff0b9fadb9c2b18b6da7937efc12b8d4be3e387b4e5818a78"
+  },
   "whatNeedsMe.empty.caughtUp": {
     "en": "You're all caught up",
     "zh-CN": "所有事项都已处理",
@@ -303,6 +313,11 @@
     "en": "Budget",
     "zh-CN": "预算",
     "reviewedEnglishHash": "1c6225ec7092ad2f4a4acd79f8fc6854aa10653763fb053a6cf2bb2d2a4148ab"
+  },
+  "whatNeedsMe.sourceKinds.decision": {
+    "en": "Decision",
+    "zh-CN": "决策",
+    "reviewedEnglishHash": "640ae4baf96061fee1798e9181e2b7a5145585233df2c27a501623afb0096ec1"
   },
   "whatNeedsMe.sourceKinds.failedRun": {
     "en": "Failed run",

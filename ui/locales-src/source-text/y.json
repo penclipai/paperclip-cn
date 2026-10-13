@@ -119,6 +119,11 @@
     "zh-CN": "您的机器人用户 OAuth 令牌必须以下列前缀开头：",
     "reviewedEnglishHash": "80bd918bbda1d323b0ec420e5a44fe38b967f157104b03e38c1c63d4affb3ca0"
   },
+  "Your OAuth app": {
+    "en": "Your OAuth app",
+    "zh-CN": "你的 OAuth 应用",
+    "reviewedEnglishHash": "756387898b7ff2cebbf76dc0c4b8880041517a7cc261163e20366f6e5fd80c4f"
+  },
   "Your Slack connection is working.": {
     "en": "Your Slack connection is working.",
     "zh-CN": "您的 Slack 连接工作正常。",
@@ -138,6 +143,11 @@
     "en": "Your agents are running — activity will appear here shortly.",
     "zh-CN": "你的智能体正在运行，活动很快会显示在这里。",
     "reviewedEnglishHash": "d80cafb3847a691419076e23430d570e0e40fbf1d32954b998d120d97de4278e"
+  },
+  "Your agent’s email is ready": {
+    "en": "Your agent’s email is ready",
+    "zh-CN": "你的智能体电子邮件已就绪",
+    "reviewedEnglishHash": "85c34512e2a38bc5c12202621ffe560f38719e03cc7508fa5aac9354bd4183f7"
   },
   "Your connected assistants": {
     "en": "Your connected assistants",
@@ -168,6 +178,11 @@
     "en": "Your first message identifies your account",
     "zh-CN": "您的第一条消息用于识别账户",
     "reviewedEnglishHash": "c6aabd33580acde888a588ab6b194f800db818d920435c235a7d141cb8046682"
+  },
+  "Your inbox is ready. Continue to resume the chat.": {
+    "en": "Your inbox is ready. Continue to resume the chat.",
+    "zh-CN": "你的收件箱已就绪，继续以恢复聊天。",
+    "reviewedEnglishHash": "e013a8c9d6cbdae078496d318818b7c0c6113c9ad789311110b724af524725ee"
   },
   "Your input and filters are still here, so you can retry or fall back to the Tasks filter.": {
     "en": "Your input and filters are still here, so you can retry or fall back to the Tasks filter.",
@@ -209,10 +224,20 @@
     "zh-CN": "请将下载的图片直接上传到 Slack 的应用设置中。",
     "reviewedEnglishHash": "19c451a3eeadd9a7e283af24063886b8a3342e987026e3c9b44dafbe75f4f054"
   },
+  "yesterday": {
+    "en": "yesterday",
+    "zh-CN": "昨天",
+    "reviewedEnglishHash": "9523d9fbe79bcf3ee5f9f664a8041fa3cdba4b6b8bb902cb5ec335a5bf1ca769"
+  },
   "yet.": {
     "en": "yet.",
     "zh-CN": "。",
     "reviewedEnglishHash": "f55f49c47f7f846157e0b42ab325e6231df3676d1ae91b4eb34fd6da24e48ba6"
+  },
+  "your assistant": {
+    "en": "your assistant",
+    "zh-CN": "你的助手",
+    "reviewedEnglishHash": "0026b00da59aa756b036e8461137442142fa0754944dca4ce16a90869bcfb3a3"
   },
   "your primary agent, do you want to do this?": {
     "en": "your primary agent, do you want to do this?",

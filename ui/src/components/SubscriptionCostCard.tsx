@@ -20,7 +20,7 @@ export function subscriptionMoney(cents: string, currency: string) {
 export function SubscriptionTokenUsage({ usage }: { usage: SubscriptionUsage }) {
   useTranslation();
   return <span className="font-mono text-xs text-muted-foreground">
-    {formatTokens(usage.inputTokens + usage.cachedInputTokens)} in · {formatTokens(usage.outputTokens)} {translateInstant("out")}{usage.cachedInputTokens > 0 && <span className="block">{formatTokens(usage.cachedInputTokens)} {translateInstant("input cached")}</span>}
+    {translateInstant("subscriptionCost.usageSummary", { input: formatTokens(usage.inputTokens + usage.cachedInputTokens), output: formatTokens(usage.outputTokens) })}{usage.cachedInputTokens > 0 && <span className="block">{formatTokens(usage.cachedInputTokens)} {translateInstant("input cached")}</span>}
   </span>;
 }
 
@@ -45,7 +45,7 @@ function SubscriptionEditor({ account, accounts, companyId, onDone }: {
   const selectClass = "h-9 rounded-md border border-input bg-background px-3 text-sm";
   return <div className="space-y-5">
     <form className="space-y-4" onSubmit={event => { event.preventDefault(); save.mutate(); }}>
-      <div className="space-y-2"><Label htmlFor="subscription-plan">Plan</Label><Input id="subscription-plan" value={plan} onChange={event => setPlan(event.target.value)} required maxLength={100} /></div>
+      <div className="space-y-2"><Label htmlFor="subscription-plan">{translateInstant("subscriptionCost.planLabel")}</Label><Input id="subscription-plan" value={plan} onChange={event => setPlan(event.target.value)} required maxLength={100} /></div>
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2"><Label htmlFor="subscription-price">{translateInstant("Price per billing period")}</Label><Input id="subscription-price" type="number" min="0" step="any" value={amount} placeholder={translateInstant("Unknown")} onChange={event => setAmount(event.target.value)} /></div>
         <div className="space-y-2"><Label htmlFor="subscription-currency">{translateInstant("Currency")}</Label><select id="subscription-currency" className={selectClass} value={currency} onChange={event => setCurrency(event.target.value)}>{SUBSCRIPTION_CURRENCIES.map(code => <option key={code}>{code}</option>)}</select></div>
@@ -54,7 +54,7 @@ function SubscriptionEditor({ account, accounts, companyId, onDone }: {
       </div>
       <p className="text-xs text-muted-foreground">{translateInstant("Enter the full amount for one account or seat. Annual prices are divided by 12. Changes apply from now. Ending tracking here does not cancel your provider subscription.")}</p>
       {save.error && <p role="alert" className="text-sm text-destructive">{translateInstant("Could not save this price. Check the amount, or reopen the account if another person updated it.")}</p>}
-      <div className="flex items-center justify-between"><Button type="button" variant="ghost" disabled={busy} onClick={onDone}>{translateInstant("Cancel")}</Button><Button type="submit" disabled={busy}>{save.isPending ? "Saving…" : "Save price"}</Button></div>
+      <div className="flex items-center justify-between"><Button type="button" variant="ghost" disabled={busy} onClick={onDone}>{translateInstant("Cancel")}</Button><Button type="submit" disabled={busy}>{save.isPending ? translateInstant("Saving…") : translateInstant("Save price")}</Button></div>
     </form>
     {targets.length > 0 && <div className="space-y-2 border-t border-border pt-4">
       <Label htmlFor="subscription-link">{translateInstant("Same subscription as another account?")}</Label>
@@ -79,15 +79,15 @@ export function SubscriptionCostCard({ companyId, report, error, onChanged }: {
     <Card className="block p-4">
       <div className="text-(length:--text-micro) uppercase tracking-(--tracking-eyebrow) text-muted-foreground">{translateInstant("Subscriptions")}</div>
       <div className="mt-2 font-mono text-2xl font-semibold tabular-nums">
-        {known ? report!.monthlyTotals.map(total => <div key={total.currency}>{subscriptionMoney(total.amountCents, total.currency)}<span className="text-sm font-normal">/month</span></div>) : report && report.activeCount === 0 && report.accounts.length > 0 ? "$0.00/month" : "—"}
+        {known ? report!.monthlyTotals.map(total => <div key={total.currency}>{translateInstant("subscriptionCost.monthlyAmount", { amount: subscriptionMoney(total.amountCents, total.currency) })}</div>) : report && report.activeCount === 0 && report.accounts.length > 0 ? translateInstant("subscriptionCost.monthlyAmount", { amount: "$0.00" }) : "—"}
       </div>
       <div className="mt-1 space-y-1 text-xs text-muted-foreground">
         {report ? <>
-          {estimatedCount > 0 && <div><Badge variant="outline" className="font-normal text-muted-foreground">{estimatedCount < report.activeCount - report.unknownPriceCount ? "Partially estimated" : "Estimated"}</Badge></div>}
+          {estimatedCount > 0 && <div><Badge variant="outline" className="font-normal text-muted-foreground">{estimatedCount < report.activeCount - report.unknownPriceCount ? translateInstant("Partially estimated") : translateInstant("Estimated")}</Badge></div>}
           {report.unknownPriceCount > 0 && !!known && <div>{translateInstant("Known monthly subtotal")}</div>}
-          <div>{report.accounts.length === 0 ? "No visible subscriptions" : <>{report.activeCount} {translateInstant("active")}{" "}{report.activeCount === 1 ? "subscription" : "subscriptions"}{report.unknownPriceCount > 0 && ` · ${report.unknownPriceCount} ${report.unknownPriceCount === 1 ? "price" : "prices"} unknown`}</>}</div>
+          <div>{report.accounts.length === 0 ? translateInstant("No visible subscriptions") : <>{translateInstant("subscriptionCost.activeCount", { count: report.activeCount })}{report.unknownPriceCount > 0 && translateInstant("subscriptionCost.unknownPriceCount", { count: report.unknownPriceCount })}</>}</div>
           {report.accounts.length > 0 && <div>{translateInstant("Monthly fees for accounts visible to you")}</div>}
-          {report.unidentifiedAccountCount > 0 && <div>{report.unidentifiedAccountCount} {translateInstant("unconfirmed")}{" "}{report.unidentifiedAccountCount === 1 ? "account identity" : "account identities"}</div>}
+          {report.unidentifiedAccountCount > 0 && <div>{translateInstant("subscriptionCost.unidentifiedAccountCount", { count: report.unidentifiedAccountCount })}</div>}
           <SubscriptionTokenUsage usage={report.subscription} />
         </> : error ? <div>{translateInstant("Subscription data is unavailable.")}</div> : <div>{translateInstant("Loading subscriptions…")}</div>}
         {report && error ? <div>{translateInstant("Showing last loaded subscription data.")}</div> : null}
@@ -96,19 +96,19 @@ export function SubscriptionCostCard({ companyId, report, error, onChanged }: {
     </Card>
     <Dialog open={open} onOpenChange={value => { setOpen(value); if (!value) setEditing(null); }}>
       <DialogContent className="max-h-(--sz-80vh) overflow-y-auto sm:max-w-3xl">
-        <DialogHeader><DialogTitle>{editing ? "Subscription price" : "Subscriptions"}</DialogTitle><DialogDescription>{translateInstant("Current monthly costs for accounts visible to you. Token totals cover company work in the selected period.")}</DialogDescription></DialogHeader>
+        <DialogHeader><DialogTitle>{editing ? translateInstant("Subscription price") : translateInstant("Subscriptions")}</DialogTitle><DialogDescription>{translateInstant("Current monthly costs for accounts visible to you. Token totals cover company work in the selected period.")}</DialogDescription></DialogHeader>
         {editing ? <SubscriptionEditor key={editing.id} companyId={companyId} account={editing} accounts={report?.accounts ?? []} onDone={closeEditor} /> : <div className="space-y-4">
           {report?.accounts.length === 0 && <p className="text-sm text-muted-foreground">{translateInstant("No subscriptions are visible to you yet. Connect an AI account or run an agent with a connected subscription.")}</p>}
           {report?.accounts.map(account => <div key={account.id} className="space-y-2 border-b border-border pb-4 last:border-0">
             <div className="flex flex-wrap items-start justify-between gap-3">
-              <div><div className="font-medium">{account.name}</div><div className="text-xs text-muted-foreground">{account.shared ? "Shared" : account.ownerName ?? (account.ownerUserId ? "Account owner" : "Personal accounts")} · {providerDisplayName(account.provider)} · {account.price.plan}</div></div>
-              <div className="text-right"><div className="font-mono">{account.price.status !== "active" ? account.price.status === "ended" ? "Ended" : "Excluded" : account.price.monthlyCents == null ? "Price unknown" : `${subscriptionMoney(account.price.monthlyCents, account.price.currency)}/month`}</div><div className="text-xs text-muted-foreground">{account.price.source === "catalog" ? "Estimated · before tax" : account.price.source === "user" ? "User supplied" : ""}{account.price.cadence === "year" ? " · annual payment ÷ 12" : ""}</div></div>
+              <div><div className="font-medium">{account.name}</div><div className="text-xs text-muted-foreground">{account.shared ? translateInstant("Shared") : account.ownerName ?? (account.ownerUserId ? translateInstant("Account owner") : translateInstant("Personal accounts"))} · {providerDisplayName(account.provider)} · {account.price.plan}</div></div>
+              <div className="text-right"><div className="font-mono">{account.price.status !== "active" ? account.price.status === "ended" ? translateInstant("Ended") : translateInstant("Excluded") : account.price.monthlyCents == null ? translateInstant("Price unknown") : translateInstant("subscriptionCost.monthlyAmount", { amount: subscriptionMoney(account.price.monthlyCents, account.price.currency) })}</div><div className="text-xs text-muted-foreground">{account.price.source === "catalog" ? translateInstant("Estimated · before tax") : account.price.source === "user" ? translateInstant("User supplied") : ""}{account.price.cadence === "year" ? translateInstant("subscriptionCost.annualPaymentNote") : ""}</div></div>
             </div>
             <SubscriptionTokenUsage usage={account.usage} />
             {Number(account.usage.costCents) > 0 && <div className="text-xs text-muted-foreground">{formatCents(Number(account.usage.costCents))} {translateInstant("recorded usage charges in selected period, separate from the subscription fee.")}</div>}
             {account.agents.length > 0 && <div className="text-xs text-muted-foreground">{translateInstant("Used by")}{" "}{account.agents.map(agent => agent.name).join(", ")}</div>}
             {!account.identityVerified && <p className="text-xs text-muted-foreground">{translateInstant("Account identity is unconfirmed. Link duplicates if these connections use the same subscription.")}</p>}
-            {account.observedAt && <div className="text-xs text-muted-foreground">{translateInstant("Plan checked")}{" "}{formatDateTime(account.observedAt)}{account.refreshStatus === "unavailable" ? " · latest check unavailable" : ""}</div>}
+            {account.observedAt && <div className="text-xs text-muted-foreground">{translateInstant(account.refreshStatus === "unavailable" ? "subscriptionCost.planCheckedUnavailable" : "subscriptionCost.planChecked", { checkedAt: formatDateTime(account.observedAt) })}</div>}
             {account.refreshStatus === "unavailable" && !account.observedAt && <p className="text-xs text-muted-foreground">{translateInstant("The provider did not make plan details available. You can enter the price yourself.")}</p>}
             {account.canEdit && <div><Button variant="outline" size="sm" onClick={() => setEditing(account)}>{translateInstant("Edit price")}</Button></div>}
           </div>)}

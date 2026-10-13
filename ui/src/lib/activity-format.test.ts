@@ -15,9 +15,10 @@ describe("activity formatting", () => {
     expect(formatActivityVerb("issue.updated", { status: "in_review" })).toBe("changed status to in review on");
   });
 
-  it("uses readable verbs for task read-state changes", () => {
-    expect(formatActivityVerb("issue.read_marked")).toBe("read");
+  it("uses translation keys for app-owned task activity verbs", () => {
+    expect(formatActivityVerb("issue.read_marked")).toBe("activity.issueRead");
     expect(formatActivityVerb("issue.read_unmarked")).toBe("marked unread");
+    expect(formatActivityVerb("issue.work_product_created")).toBe("activity.issueWorkProductCreated");
   });
 
   it("formats blocker activity using linked issue identifiers", () => {

@@ -45,10 +45,10 @@ export function ApprovalCard({
   isPending?: boolean;
   pendingAction?: "approve" | "reject" | null;
 }) {
-  useTranslation();
+  const { t } = useTranslation();
   const payload = approval.payload as Record<string, unknown> | null;
   const Icon = typeIcon[approval.type] ?? defaultTypeIcon;
-  const kindLabel = typeLabel[approval.type] ?? approval.type;
+  const kindLabel = t(typeLabel[approval.type] ?? approval.type, { defaultValue: typeLabel[approval.type] ?? approval.type });
   const subject = approvalSubject(payload);
   const showResolutionButtons =
     Boolean(onApprove && onReject) &&
@@ -93,7 +93,9 @@ export function ApprovalCard({
         <div className="shrink-0">
           <div className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-background/80 px-2.5 py-1 text-xs text-muted-foreground">
             {statusIcon(approval.status)}
-            <span className="capitalize">{approval.status.replace(/_/g, " ")}</span>
+            <span>{t(`status.${approval.status.replace(/_([a-z])/g, (_, letter: string) => letter.toUpperCase())}`, {
+              defaultValue: approval.status.replace(/_/g, " "),
+            })}</span>
           </div>
         </div>
       </div>
@@ -123,7 +125,7 @@ export function ApprovalCard({
                   onClick={onApprove}
                   disabled={isPending}
                 >
-                  {pendingAction === "approve" ? "Approving..." : "Approve"}
+                  {pendingAction === "approve" ? t("Approving...") : t("Approve")}
                 </Button>
                 <Button
                   variant="destructive"
@@ -131,7 +133,7 @@ export function ApprovalCard({
                   onClick={onReject}
                   disabled={isPending}
                 >
-                  {pendingAction === "reject" ? "Rejecting..." : "Reject"}
+                  {pendingAction === "reject" ? t("Rejecting...") : t("Reject")}
                 </Button>
               </>
             )}

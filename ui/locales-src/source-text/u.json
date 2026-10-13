@@ -99,6 +99,11 @@
     "zh-CN": "无法更新审批",
     "reviewedEnglishHash": "01dee78ac60d45dc69104f91f4868bdbdec83b14f7d49ad0d3033cc0c66d31fd"
   },
+  "Unable to verify this pairing code.": {
+    "en": "Unable to verify this pairing code.",
+    "zh-CN": "无法验证此配对码。",
+    "reviewedEnglishHash": "2b38d6b0953454e6f32dd09c02f95839ebb1f7fd6754c218e5c85864ffc577d2"
+  },
   "Unanswered question": {
     "en": "Unanswered question",
     "zh-CN": "未回答的问题",
@@ -123,6 +128,11 @@
     "en": "Unauthorized",
     "zh-CN": "未授权",
     "reviewedEnglishHash": "d089c8a9fc28e4e50223eb38c9409e362521be9380a37341304fbac7a4cd9e5f"
+  },
+  "Unavailable connection": {
+    "en": "Unavailable connection",
+    "zh-CN": "不可用的连接",
+    "reviewedEnglishHash": "11f002526d8d4bc3ca5160236ac5f4a45257a49bac54f435aae2ebc98ddbc6fb"
   },
   "Unavailable for this sign-in method.": {
     "en": "Unavailable for this sign-in method.",
@@ -258,6 +268,21 @@
     "en": "Unset ANTHROPIC_API_KEY",
     "zh-CN": "清空 ANTHROPIC_API_KEY",
     "reviewedEnglishHash": "88e3ffad48cb37be3360c88091b57d4b657ace7cc68a81bed1f70622d2136b94"
+  },
+  "Unsupported saved mode — select Agent, Plan, or Ask": {
+    "en": "Unsupported saved mode — select Agent, Plan, or Ask",
+    "zh-CN": "不支持的已保存模式，请选择智能体、计划或提问",
+    "reviewedEnglishHash": "b3849941e7e4442c802fc0096ea84000f5226c1e3d278fff3e57e0c4eef90fb8"
+  },
+  "Unsupported saved mode — select a qualified mode": {
+    "en": "Unsupported saved mode — select a qualified mode",
+    "zh-CN": "不支持的已保存模式，请选择合格模式",
+    "reviewedEnglishHash": "869b215d8c494838534dde7a4a612ef86bdb0bbe1ec50b1ee2397eee1fee6ffb"
+  },
+  "Unsupported saved thinking level": {
+    "en": "Unsupported saved thinking level",
+    "zh-CN": "不支持的已保存思考级别",
+    "reviewedEnglishHash": "b1aabcafa36e15225fb19ebb8c452e8d3b10d7c4ce3e8fd7d4bc2efd77af34da"
   },
   "Unverified": {
     "en": "Unverified",
@@ -434,6 +459,11 @@
     "zh-CN": "默认使用隔离工作区",
     "reviewedEnglishHash": "10a22b32ed9524922a01bdad84f01fe636c0adc31810474315583146a83c459a"
   },
+  "Use Paperclip instead": {
+    "en": "Use Paperclip instead",
+    "zh-CN": "改用 Paperclip",
+    "reviewedEnglishHash": "81631a855b3d55fc2946915ae7e8083829f03b04b117b8232b7b9f2bc7e8789a"
+  },
   "Use a company invite or sign in with an account that already belongs to this org.": {
     "en": "Use a company invite or sign in with an account that already belongs to this org.",
     "zh-CN": "请使用公司邀请链接，或使用已经属于该组织的账号登录。",
@@ -464,10 +494,25 @@
     "zh-CN": "使用智能体默认值",
     "reviewedEnglishHash": "e8be37887c64bd7d5b03ff6694af815797994d1d855286258f0c04830072028a"
   },
+  "Use an existing": {
+    "en": "Use an existing",
+    "zh-CN": "使用现有的",
+    "reviewedEnglishHash": "8137847b65d9d047fed17ed3a526da710c202a210897de958002d75a957de998"
+  },
   "Use an existing app": {
     "en": "Use an existing app",
     "zh-CN": "使用现有应用",
     "reviewedEnglishHash": "bd2fe40d5d27e0b0e30c05e0b55db0a5064e32dd6a00539cdf7aae376d21251a"
+  },
+  "Use an existing connection or connect a new account. Existing access stays unchanged.": {
+    "en": "Use an existing connection or connect a new account. Existing access stays unchanged.",
+    "zh-CN": "使用现有连接或连接新账户。现有访问权限保持不变。",
+    "reviewedEnglishHash": "a6155ab137766526d249db223a5258cbf854f1add5888074f6f27389ba7112c3"
+  },
+  "Use an existing inbox": {
+    "en": "Use an existing inbox",
+    "zh-CN": "使用现有收件箱",
+    "reviewedEnglishHash": "797916bdfe1e206ec2cfe81f0133219db1e3c8fed26300ba84402351d45b757f"
   },
   "Use connection": {
     "en": "Use connection",
@@ -498,6 +543,11 @@
     "en": "Use lowercase letters, numbers, -, or _, and start with a letter or number.",
     "zh-CN": "请使用小写字母、数字、- 或 _，并以字母或数字开头。",
     "reviewedEnglishHash": "f05ffd379077272de983ec9a0d492d326213f11fe118fb2faa19296c91c2f688"
+  },
+  "Use pool": {
+    "en": "Use pool",
+    "zh-CN": "使用连接池",
+    "reviewedEnglishHash": "1c7dec0cf34161ad130008e8aa3acd48896ebba96da833440f66230ba9a6c5ce"
   },
   "Use responsible person&apos;s GitHub": {
     "en": "Use responsible person's GitHub",
@@ -554,6 +604,11 @@
     "zh-CN": "请使用以下指定的门户栏目，并在三个位置使用相同的应用 ID。",
     "reviewedEnglishHash": "8bea85095ea9773ea454599598aa1e8bd77a97482e49432095bf44e07e4c5871"
   },
+  "Use this binding when saved": {
+    "en": "Use this binding when saved",
+    "zh-CN": "保存时使用此绑定",
+    "reviewedEnglishHash": "3a51030edbf8f9da131639661e4fe5dfec1108231be90ae778f778e45ed16aca"
+  },
   "Use this connection as an agent tool": {
     "en": "Use this connection as an agent tool",
     "zh-CN": "将此连接作为智能体工具使用",
@@ -573,6 +628,11 @@
     "en": "Use your current board user",
     "zh-CN": "使用当前董事会用户",
     "reviewedEnglishHash": "65756130d1e8a65041aebbda69f1a4dab5693dc0b6796eaf4c16416019901d92"
+  },
+  "Use your own OAuth app": {
+    "en": "Use your own OAuth app",
+    "zh-CN": "使用你自己的 OAuth 应用",
+    "reviewedEnglishHash": "38784bef8944d5a4e6d0a3876b395585a7bf6e8ccdcd5174da94aef09c98f4f7"
   },
   "Used by": {
     "en": "Used by",
@@ -618,6 +678,11 @@
     "en": "User secrets resolve from the user responsible for the run. Required bindings fail until that user sets their value under Secrets → My secrets.",
     "zh-CN": "用户机密由负责运行的用户解析。所需的绑定将失败，直到该用户在 Secrets → My Secrets 下设置其值。",
     "reviewedEnglishHash": "e903e92b61c8ec07e25983d3b09ee68d9eeb96ae8013b64d71b1071868dde4ba"
+  },
+  "User supplied": {
+    "en": "User supplied",
+    "zh-CN": "用户提供",
+    "reviewedEnglishHash": "b4a10447154a935376f3adb66b0cc3aabfce98942bf1a31759a4e38e1a2ff870"
   },
   "Users": {
     "en": "Users",

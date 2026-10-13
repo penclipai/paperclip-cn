@@ -61,7 +61,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "../components/ui/popove
  * is surfaced.
  */
 export function DecisionQueuePage() {
-  useTranslation();
+  const { i18n } = useTranslation();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { pushToast } = useToastActions();
@@ -155,7 +155,7 @@ export function DecisionQueuePage() {
   const agingItems = useMemo(() => activeItems.filter(attentionIsAging), [activeItems]);
   const listItems = useMemo(() => activeItems.filter((item) => !attentionIsAging(item)), [activeItems]);
 
-  const filterOptions = useMemo(() => buildAttentionFilterOptions(listItems), [listItems]);
+  const filterOptions = useMemo(() => buildAttentionFilterOptions(listItems), [i18n.language, listItems]);
 
   // Filter → sort → group, matching the desk. In the default (ungrouped) view the
   // list groups by arrival ("New today" / translateInstant("Earlier"), plus a "Decide now" shelf
@@ -168,7 +168,7 @@ export function DecisionQueuePage() {
     }
     const sorted = sortAttentionItems(filtered, sortOrder);
     return groupAttentionItems(sorted, groupBy);
-  }, [listItems, filters, sortOrder, groupBy, now]);
+  }, [listItems, filters, sortOrder, groupBy, now, i18n.language]);
 
   const visibleCount = useMemo(() => groups.reduce((sum, group) => sum + group.items.length, 0), [groups]);
 

@@ -17,7 +17,8 @@ describe("Apps agent selector contract", () => {
     expect(appConnect).toContain("<ConnectionSetupFlow");
     expect(connectionSetupFlow).toContain("<AgentMultiSelect");
     expect(permissions).toContain("<AgentMultiSelect");
-    expect(tester).toContain('placeholder="Search agents…"');
+    expect(tester).toContain('placeholder={translateInstant("Search agents…")}');
+    expect(tester).toContain('aria-label={translateInstant("apps.detail.test.agentPicker.searchAria")}');
 
     expect(profiles.match(/<AgentSelect/g)).toHaveLength(2);
     expect(profiles).not.toContain("<Select value={agentId}");

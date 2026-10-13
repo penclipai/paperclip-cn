@@ -129,15 +129,85 @@
     "zh-CN": "从更早的步骤重新运行会影响更多下游条目。",
     "reviewedEnglishHash": "3634ef4e747b2034eb8924f7b620f4676b8a89a1004278f9ec693670c5987b25"
   },
+  "Reach 9,000+ apps from your agents.": {
+    "en": "Reach 9,000+ apps from your agents.",
+    "zh-CN": "让智能体连接 9,000 多款应用。",
+    "reviewedEnglishHash": "56601e4cda6befc81c3a6c8c0fa3328beabf564aed15b902d7f0a09f53065199"
+  },
+  "Reach 9,000+ apps your team already uses.": {
+    "en": "Reach 9,000+ apps your team already uses.",
+    "zh-CN": "连接团队已在使用的 9,000 多款应用。",
+    "reviewedEnglishHash": "6b807be31263606759e6def0d5713a9068c6418eb99488017324ef9e1394e99b"
+  },
   "Read &amp; write": {
     "en": "Read & write",
     "zh-CN": "读取 & 写入",
     "reviewedEnglishHash": "5cf0e8247f391866c742274c4823e1a48a47529e331bafc02c197cbcf54f34da"
   },
+  "Read all of your Paperclip data": {
+    "en": "Read all of your Paperclip data",
+    "zh-CN": "读取你的所有 Paperclip 数据",
+    "reviewedEnglishHash": "78b4e63432889db30bed57d13f8afd2b3cb46cf2808e2cd96076b1d56f7b82ba"
+  },
+  "Read and edit work": {
+    "en": "Read and edit work",
+    "zh-CN": "读取和编辑工作内容",
+    "reviewedEnglishHash": "9f82704f15453c9bc190ba9ea6a4a251060319abb28a315a46a2dad74dc20f8b"
+  },
+  "Read and reply to customer conversations.": {
+    "en": "Read and reply to customer conversations.",
+    "zh-CN": "读取并回复客户对话。",
+    "reviewedEnglishHash": "a2f73c19cf0939a811efc99a72a5aa8b8611ca461e52f28e4ae5c8ba6918e539"
+  },
+  "Read and update documents.": {
+    "en": "Read and update documents.",
+    "zh-CN": "读取并更新文档。",
+    "reviewedEnglishHash": "41312c641969f39ba925f93acae378001d63d9cc49d3e4edc620d1339fbaec91"
+  },
+  "Read and update pages in your workspace.": {
+    "en": "Read and update pages in your workspace.",
+    "zh-CN": "读取并更新工作区中的页面。",
+    "reviewedEnglishHash": "d1d9be43d2d7f54896dae25ff4c136ea8854724a7e25c28bae6618bce3d65352"
+  },
+  "Read and update presentations.": {
+    "en": "Read and update presentations.",
+    "zh-CN": "读取并更新演示文稿。",
+    "reviewedEnglishHash": "f7032fe31f0b883c45158fde7bcfcb998c9bfaa2d235abde8c0d6dbcbe7c4aa5"
+  },
+  "Read and update selected spreadsheets.": {
+    "en": "Read and update selected spreadsheets.",
+    "zh-CN": "读取并更新选定的电子表格。",
+    "reviewedEnglishHash": "8e0318307b343625b98fde78d15a7057b2a89203e1d2d09a32fe83092be8ddea"
+  },
+  "Read code and pull requests, comment on issues.": {
+    "en": "Read code and pull requests, comment on issues.",
+    "zh-CN": "查看代码和拉取请求，并评论议题。",
+    "reviewedEnglishHash": "7152961bb219145783be4a4304b50ebef70ff32872284f4644531548e85a88f9"
+  },
+  "Read conversations and send messages.": {
+    "en": "Read conversations and send messages.",
+    "zh-CN": "读取对话并发送消息。",
+    "reviewedEnglishHash": "2e4ad3503233ccc598fffbefbffd836924ce0881e4f415455ef69a0b099cc58a"
+  },
+  "Read customers, invoices, and payouts.": {
+    "en": "Read customers, invoices, and payouts.",
+    "zh-CN": "读取客户、发票和付款记录。",
+    "reviewedEnglishHash": "b770e4f1ce8e4769271d5237fbd5c22d0d948ee180e4303a21bb0cea47b691f6"
+  },
   "Read document": {
     "en": "Read document",
     "zh-CN": "阅读文档",
     "reviewedEnglishHash": "a6be85ca28653f122f28e460ed63129b5cce51e2e6387050a959e3e314e28960"
+  },
+  "Read files and post comments on frames.": {
+    "en": "Read files and post comments on frames.",
+    "zh-CN": "读取文件并在画板上发表评论。",
+    "reviewedEnglishHash": "56dfd474178be10f186cbf3379b095290a66d528b9e69effc51afe90173ce030"
+  },
+  "Read mail and create drafts for your review.": {
+    "en": "Read mail and create drafts for your review.",
+    "zh-CN": "读取邮件并创建供你审核的草稿。",
+    "reviewedEnglishHash": "5a73ce81751d2256c2f343da11e67dd7e526b0df4ea05283a587bd393fa7bb80"
   },
   "Read only": {
     "en": "Read only",
@@ -148,6 +218,16 @@
     "en": "Read only:",
     "zh-CN": "只读：",
     "reviewedEnglishHash": "23e26f57ea9c6824acba6e83eb89baa5f04d27dd34b5e887e52b2b1456b760a5"
+  },
+  "Read spreadsheets or update the files you choose.": {
+    "en": "Read spreadsheets or update the files you choose.",
+    "zh-CN": "读取电子表格或更新你选择的文件。",
+    "reviewedEnglishHash": "ed15842c8b278fa9b472fd9998a003d5c50c01a4565300997dd22ca41bf11735"
+  },
+  "Read task attachments": {
+    "en": "Read task attachments",
+    "zh-CN": "读取任务附件",
+    "reviewedEnglishHash": "ed35e609b5d6d622f17e9138b1782c1acf8c423052f9a26f9129d611af44d107"
   },
   "Read, search, and act in Slack. Some actions require approval.": {
     "en": "Read, search, and act in Slack. Some actions require approval.",
@@ -163,6 +243,11 @@
     "en": "Readable",
     "zh-CN": "易读",
     "reviewedEnglishHash": "bf56ee2fe3345ce16cfc75dd5b496f2547636928575f93f12136b958602672af"
+  },
+  "Reading from": {
+    "en": "Reading from",
+    "zh-CN": "正在读取",
+    "reviewedEnglishHash": "1f6f918f6e7dfb17761395babd9cec19c9d41a0689ce1c475a85c7435323d7aa"
   },
   "Reading private key file…": {
     "en": "Reading private key file…",
@@ -183,6 +268,11 @@
     "en": "Ready to move to",
     "zh-CN": "已准备好移至",
     "reviewedEnglishHash": "42e78d9812f997b2cf49b70bfdfdf1fbdb4fa5f700d9c512d1501b875eb027dd"
+  },
+  "Ready to use": {
+    "en": "Ready to use",
+    "zh-CN": "可供使用",
+    "reviewedEnglishHash": "996f87b386e1a749cd732144efb70e9ab253be425bfe8c8b79acab98ee1ad5e7"
   },
   "Reappears": {
     "en": "Reappears",
@@ -349,6 +439,11 @@
     "zh-CN": "正在协调...",
     "reviewedEnglishHash": "393dc4a3ec89263ee0d781f92a854916b4ed8ce5b5d7047151c2acbaf6c044ec"
   },
+  "Reconnect": {
+    "en": "Reconnect",
+    "zh-CN": "重新连接",
+    "reviewedEnglishHash": "bf8a9eab9e7e141bfb81f0ca9244a5f68f476ed0b57f03538410417298169d18"
+  },
   "Reconnect account": {
     "en": "Reconnect account",
     "zh-CN": "重新连接账户",
@@ -398,6 +493,16 @@
     "en": "Reconnect view",
     "zh-CN": "重新连接视图",
     "reviewedEnglishHash": "96216c2c26eab196ce4d1ca3b03b85e815acf451fceb5f05732794ac7aae476b"
+  },
+  "Reconnecting…": {
+    "en": "Reconnecting…",
+    "zh-CN": "正在重新连接…",
+    "reviewedEnglishHash": "27b80374e1151af6df7824a358606c77502548bff4d467e4ae2e146801f601ce"
+  },
+  "Record retry and retired outputs as history instead of deleting records.": {
+    "en": "Record retry and retired outputs as history instead of deleting records.",
+    "zh-CN": "将重新尝试和已归档输出记录为历史，而不是删除记录。",
+    "reviewedEnglishHash": "5e47a7cf00edb3beadb11cd58f427ce5df7067de26486f497ac18c81497e4db6"
   },
   "Recorded charges": {
     "en": "Recorded charges",
@@ -483,6 +588,11 @@
     "en": "Refresh repositories",
     "zh-CN": "刷新仓库",
     "reviewedEnglishHash": "31be4d417759782f23b7e9881f9465d7827a575df38a8600614097c3c1f7642e"
+  },
+  "Refresh this source to inspect its complete package contents.": {
+    "en": "Refresh this source to inspect its complete package contents.",
+    "zh-CN": "刷新此来源以查看完整的包内容。",
+    "reviewedEnglishHash": "dae4b823e9f6f5749e1354579cdd3f0fe23da8f6bb290f3cca065f99dde5f993"
   },
   "Refresh workspace files": {
     "en": "Refresh workspace files",
@@ -578,6 +688,11 @@
     "en": "Rejected by",
     "zh-CN": "拒绝者",
     "reviewedEnglishHash": "2ad44c3f166ea8313bacbc595edcedb44fc5c259d92bfea6ff504046e1dfbf2b"
+  },
+  "Rejecting...": {
+    "en": "Rejecting...",
+    "zh-CN": "正在拒绝...",
+    "reviewedEnglishHash": "47f29154e1b7452303bdedfe9fe1a5c1f5c314263de7a0e3a8f60c4b1883b173"
   },
   "Rejecting…": {
     "en": "Rejecting…",
@@ -709,6 +824,11 @@
     "zh-CN": "移除成员",
     "reviewedEnglishHash": "9438e0ba8e6374b3d7ba5bda514d32e9072f9cf91aea628a6445bedeeb7a029d"
   },
+  "Remove the failed attachment to send": {
+    "en": "Remove the failed attachment to send",
+    "zh-CN": "移除上传失败的附件后再发送",
+    "reviewedEnglishHash": "10d2ce8e995a605d2190dc0996c79fdbeb1cee7e9f15cf2921066a00ededdbb3"
+  },
   "Remove this connection?": {
     "en": "Remove this connection?",
     "zh-CN": "移除此连接？",
@@ -723,6 +843,11 @@
     "en": "Remove this skill from the organization library. If any agents still use it, removal will be blocked until it is detached.",
     "zh-CN": "从组织技能库中移除此技能。如果仍有智能体使用它，需先解除关联才能移除。",
     "reviewedEnglishHash": "fb004b1f95eb5726060578664d311b647e7f35ad93e27c877fdaf253178e4267"
+  },
+  "Removed": {
+    "en": "Removed",
+    "zh-CN": "已移除",
+    "reviewedEnglishHash": "4118fb4fed0ecec996876cae9dc97177e50fb5f8702ddd8a26eff63813cfd6aa"
   },
   "Removes": {
     "en": "Removes",
@@ -839,6 +964,11 @@
     "zh-CN": "仓库根目录",
     "reviewedEnglishHash": "1f47baa4383baa038082020de8088e9979ee8f39308257c5c4b163243c8c05f6"
   },
+  "Repo tree path or blob URL to COMPANY.md (e.g. github.com/owner/repo/tree/main/company).": {
+    "en": "Repo tree path or blob URL to COMPANY.md (e.g. github.com/owner/repo/tree/main/company).",
+    "zh-CN": "指向 COMPANY.md 的仓库树路径或 blob URL（例如 github.com/owner/repo/tree/main/company）。",
+    "reviewedEnglishHash": "89e8783f6b8f2d969267c6f2962c008f5be40ee8bd065149f1509e09f1d4e961"
+  },
   "Report only": {
     "en": "Report only",
     "zh-CN": "仅报告",
@@ -884,6 +1014,11 @@
     "zh-CN": "仓库默认值",
     "reviewedEnglishHash": "e88cba3b99d1e596da1ca6ec8d662fba2bdc9211a6856628f2abf6106e037da8"
   },
+  "Repository root": {
+    "en": "Repository root",
+    "zh-CN": "仓库根目录",
+    "reviewedEnglishHash": "f315d7451325390e4ed2d37f07f5a56c5545e0483b62c8a647862352bb06d69e"
+  },
   "Request URL": {
     "en": "Request URL",
     "zh-CN": "请求 URL",
@@ -893,6 +1028,11 @@
     "en": "Request access",
     "zh-CN": "申请访问权限",
     "reviewedEnglishHash": "b06f1662da4a13362baa31f7c123d25e8565df0da5e01c131345ac71c6317915"
+  },
+  "Request cancelled": {
+    "en": "Request cancelled",
+    "zh-CN": "请求已取消",
+    "reviewedEnglishHash": "7108183f1888b7c9ef9ef9d466070c24b12c84918f8e6ac4e58d7009dbf4b789"
   },
   "Request details": {
     "en": "Request details",
@@ -1049,6 +1189,11 @@
     "zh-CN": "恢复默认值",
     "reviewedEnglishHash": "4542d49a520543f9c895e3beedc4ca2988ba4776f6d924350b46744ebc29cdd5"
   },
+  "Reset existing sessions that use an account outside this pool.": {
+    "en": "Reset existing sessions that use an account outside this pool.",
+    "zh-CN": "重置使用此池外账户的现有会话。",
+    "reviewedEnglishHash": "92b304848313b875df8995f7cce9eb4f078562e677c288b6337053469d030ebb"
+  },
   "Reset filters": {
     "en": "Reset filters",
     "zh-CN": "重置筛选",
@@ -1189,6 +1334,11 @@
     "zh-CN": "恢复被此次子树操作取消的任务，让工作继续。",
     "reviewedEnglishHash": "35f78d6bbeda165cd38d2e7d67def3a7c5e811ec2a5a795b40cdacf6e4a45e76"
   },
+  "Restore side panel": {
+    "en": "Restore side panel",
+    "zh-CN": "还原侧边面板",
+    "reviewedEnglishHash": "7013aadda8d463bd59dbd4b34bff7d095334aeb160238c7902f1aec222d285d4"
+  },
   "Restore subtree": {
     "en": "Restore subtree",
     "zh-CN": "恢复子树",
@@ -1304,6 +1454,16 @@
     "zh-CN": "恢复中…",
     "reviewedEnglishHash": "c494e3ca3e3b04a3b0b2e0036c7b6246c92a0e86f822377b0941973c8829ef21"
   },
+  "Retire descendants": {
+    "en": "Retire descendants",
+    "zh-CN": "归档后代项",
+    "reviewedEnglishHash": "ccd7f990336fa6e6dc968937d43c6656b91dfef5e185f9c36d5f9f2c610e51b0"
+  },
+  "Retire direct child items": {
+    "en": "Retire direct child items",
+    "zh-CN": "归档直属子项",
+    "reviewedEnglishHash": "0b573a1d57356ec6c3516bce860cf126cd910d4574c8d0404492b836fb4ad969"
+  },
   "Retried with ANTHROPIC_API_KEY unset in adapter config, but the environment test is still failing.": {
     "en": "Retried with ANTHROPIC_API_KEY unset in adapter config, but the environment test is still failing.",
     "zh-CN": "已在适配器配置中清空 ANTHROPIC_API_KEY 后重试，但环境测试仍然失败。",
@@ -1359,6 +1519,11 @@
     "zh-CN": "重试默认选择",
     "reviewedEnglishHash": "e26adc9f4b667f07e872d1a42e16b4f5347ba77b1a6f42b8c07fa8ec6cc73850"
   },
+  "Retry loading inboxes": {
+    "en": "Retry loading inboxes",
+    "zh-CN": "重试加载收件箱",
+    "reviewedEnglishHash": "b33202c2a4de3ee96c986ada7e424304793a2ffed1fca6f8266c1e1814c2d4ac"
+  },
   "Retry loading primary agent": {
     "en": "Retry loading primary agent",
     "zh-CN": "重试加载主智能体",
@@ -1368,6 +1533,11 @@
     "en": "Retry preview",
     "zh-CN": "重试预览",
     "reviewedEnglishHash": "ceba352728693758d57c715a22131746666ad2acd27f8235f918356817c7465d"
+  },
+  "Retry previous step": {
+    "en": "Retry previous step",
+    "zh-CN": "重试上一步",
+    "reviewedEnglishHash": "5e197f0b51adb7e1acdd7be811b743f87f94f9477b1cd32a2fb1021e08c48372"
   },
   "Retry previous step...": {
     "en": "Retry previous step...",
@@ -1444,6 +1614,16 @@
     "zh-CN": "返回最新版本",
     "reviewedEnglishHash": "f6b3b853ed208532cd0eb8e9dd5444ee1f7e717291e64c6684a123a0252bc055"
   },
+  "Return to your assistant. It will finish connecting automatically.": {
+    "en": "Return to your assistant. It will finish connecting automatically.",
+    "zh-CN": "请返回助手，它会自动完成连接。",
+    "reviewedEnglishHash": "7c9f3f7410b93cc505c3738f99024e9eb984d88244955ac1e01de39571070032"
+  },
+  "Reuse a connection without changing who already has access, or connect a new one.": {
+    "en": "Reuse a connection without changing who already has access, or connect a new one.",
+    "zh-CN": "重复使用连接不会改变已有访问权限，也可以连接新账户。",
+    "reviewedEnglishHash": "3a70163330b085588ad1fb060f527b9ad4a065f3783a6714519eaba809f0680c"
+  },
   "Reuse a worktree": {
     "en": "Reuse a worktree",
     "zh-CN": "重用工作树",
@@ -1498,6 +1678,16 @@
     "en": "Review approval",
     "zh-CN": "审核批准",
     "reviewedEnglishHash": "3e5b6519eab1dfeab2c92ec08689b4ac71c52783da99754b7171962f267d70d1"
+  },
+  "Review calendars and manage events.": {
+    "en": "Review calendars and manage events.",
+    "zh-CN": "查看日历并管理事件。",
+    "reviewedEnglishHash": "768efea40024f3d348466e655e5460bed6bedc4ecdd7cc159980bc663cd4ff2f"
+  },
+  "Review connection setup": {
+    "en": "Review connection setup",
+    "zh-CN": "查看连接设置",
+    "reviewedEnglishHash": "4d138cb1101848215e5f35c7720682fc763ed661364df9af76eae4d2920668a0"
   },
   "Review conversation": {
     "en": "Review conversation",
@@ -1603,6 +1793,11 @@
     "en": "Review schedules and trigger settings before enabling imported routines.",
     "zh-CN": "启用导入例行任务前，请检查计划和触发器设置。",
     "reviewedEnglishHash": "5e8cae0c014339f88f2387300e710e1fe0a7589df4120401434e79d02702b0d0"
+  },
+  "Review security findings and run red-team checks.": {
+    "en": "Review security findings and run red-team checks.",
+    "zh-CN": "查看安全发现并运行红队检查。",
+    "reviewedEnglishHash": "a02f637c46890821185dc20c27e642f03b75eb82ee4c98ad42544fccb99f5065"
   },
   "Review source": {
     "en": "Review source",
@@ -1854,6 +2049,11 @@
     "zh-CN": "例行任务标题",
     "reviewedEnglishHash": "26d0f82a0da1d5efee4075b412d5e99ed6873b18adf56af7d40b8a38f221026e"
   },
+  "Routine updated": {
+    "en": "Routine updated",
+    "zh-CN": "例行任务已更新",
+    "reviewedEnglishHash": "72f4c9a39b8ab1b458ad2779e440ff588e2e799541eb1863dbfd6014bd999a23"
+  },
   "Routines": {
     "en": "Routines",
     "zh-CN": "例行任务",
@@ -1928,6 +2128,11 @@
     "en": "Run costs attributed through project-linked issues.",
     "zh-CN": "查看归属到各项目的运行成本。",
     "reviewedEnglishHash": "214ccdbc2bd82e34c0c0ccf3c2ce6fb2996ee6b993b8fdc492290b1a20ae6dd5"
+  },
+  "Run created": {
+    "en": "Run created",
+    "zh-CN": "运行已创建",
+    "reviewedEnglishHash": "4c211da859d7d65c0723db0bba1ee5378dffffd40a209bb713c1d9a1bf7b79e0"
   },
   "Run ended": {
     "en": "Run ended",
@@ -2029,6 +2234,11 @@
     "zh-CN": "跑步者检查员意见",
     "reviewedEnglishHash": "fb8d8dd6496b9ae0516764d06d89cb88c5d5f5088373eb66b19b82784a0a1d76"
   },
+  "Runner lifecycle": {
+    "en": "Runner lifecycle",
+    "zh-CN": "运行器生命周期",
+    "reviewedEnglishHash": "c1c203e1a2ecc97edb8096f7f45b5ca7842ee5f85cb0660b304f0e746b6b3837"
+  },
   "Running": {
     "en": "Running",
     "zh-CN": "运行中",
@@ -2048,6 +2258,11 @@
     "en": "Running...",
     "zh-CN": "运行中...",
     "reviewedEnglishHash": "4977a7e5bb3675c438962dfb7f407945964386a321b7f3a1b0a7571f7ebb07fb"
+  },
+  "Running…": {
+    "en": "Running…",
+    "zh-CN": "正在运行…",
+    "reviewedEnglishHash": "46c541363b0253b1b7d736ca2ff004b6c8eb816f253c16bf2f154472152fb66d"
   },
   "Runs": {
     "en": "Runs",
@@ -2093,6 +2308,11 @@
     "en": "Runtime name",
     "zh-CN": "运行环境名称",
     "reviewedEnglishHash": "b27655278100bbcfeb430fbe1caeb6ce5bcd4b81f00b71b3645fcfd2915da6b3"
+  },
+  "Runtime requirements": {
+    "en": "Runtime requirements",
+    "zh-CN": "运行时要求",
+    "reviewedEnglishHash": "e543e80b09cb9169f03ce80584feb4926ebd391a7b1fe4fa80458335baa8ca5e"
   },
   "Runtime test": {
     "en": "Runtime test",

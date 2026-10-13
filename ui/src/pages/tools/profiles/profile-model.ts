@@ -31,11 +31,11 @@ export function toolCapability(tool: ToolCatalogEntry): ToolCapability {
   return "read";
 }
 
-export const CAPABILITY_LABEL: Record<ToolCapability, string> = {
-  read: "Read-only",
-  write: "Makes changes",
-  destructive: "Destructive",
-};
+export function capabilityLabel(capability: ToolCapability): string {
+  if (capability === "read") return translateInstant("companySkills.readOnly", { defaultValue: "Read-only" });
+  if (capability === "write") return translateInstant("tools.policies.capability.write.label", { defaultValue: "Makes changes" });
+  return translateInstant("Destructive");
+}
 
 // --- App grouping ----------------------------------------------------------
 
@@ -390,6 +390,22 @@ export const TEMPLATES: TemplateDef[] = [
   { key: "scratch", title: "Start from scratch", description: "An empty profile you build up tool by tool." },
   { key: "copy", title: "Copy an existing profile", description: "Start from a profile you already have." },
 ];
+
+const TEMPLATE_TRANSLATION_KEYS: Record<TemplateKey, { title: string; description: string }> = {
+  read_only: { title: "tools.profiles.templates.readOnly.title", description: "tools.profiles.templates.readOnly.description" },
+  everyday: { title: "tools.profiles.templates.everyday.title", description: "tools.profiles.templates.everyday.description" },
+  full_access: { title: "tools.profiles.templates.fullAccess.title", description: "tools.profiles.templates.fullAccess.description" },
+  scratch: { title: "tools.profiles.templates.scratch.title", description: "tools.profiles.templates.scratch.description" },
+  copy: { title: "tools.profiles.templates.copy.title", description: "tools.profiles.templates.copy.description" },
+};
+
+export function templateCopy(template: TemplateDef): Pick<TemplateDef, "title" | "description"> {
+  const keys = TEMPLATE_TRANSLATION_KEYS[template.key];
+  return {
+    title: translateInstant(keys.title, { defaultValue: template.title }),
+    description: translateInstant(keys.description, { defaultValue: template.description }),
+  };
+}
 
 function capabilityPredicate(key: TemplateKey): (tool: ToolCatalogEntry) => boolean {
   if (key === "read_only") return (t) => toolCapability(t) === "read";

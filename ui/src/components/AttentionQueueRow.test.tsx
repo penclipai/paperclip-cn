@@ -12,6 +12,7 @@ import { issuesApi } from "../api/issues";
 import { ToastViewport } from "./ToastViewport";
 import { ToastProvider } from "../context/ToastContext";
 import { AttentionQueueRow } from "./AttentionQueueRow";
+import i18n from "@/i18n";
 
 vi.mock("@/lib/router", () => ({
   Link: ({ children, to, ...props }: AnchorHTMLAttributes<HTMLAnchorElement> & { to: string }) => (
@@ -537,6 +538,36 @@ describe("AttentionQueueRow", () => {
     expect(buttons.find((button) => button.textContent === "Reject")?.getAttribute("data-variant")).toBe(
       "destructive",
     );
+  });
+
+  it("localizes standard board-approval verbs while preserving their action IDs", async () => {
+    try {
+      await act(async () => {
+        await i18n.changeLanguage("zh-CN");
+      });
+      render(
+        <AttentionQueueRow
+          item={buildItem({
+            decisionVerbs: [
+              { id: "approve", label: "Approve", description: null },
+              { id: "reject", label: "Reject", description: null },
+              { id: "request_revision", label: "Request revision", description: null },
+            ],
+          })}
+          companyId="c1"
+          expanded={false}
+          onToggleExpand={noop}
+          onDismiss={noop}
+        />,
+      );
+
+      const buttons = Array.from(container?.querySelectorAll('[aria-label="决策操作"] button') ?? []);
+      expect(buttons.map((button) => button.textContent)).toEqual(["请求修订", "拒绝", "批准"]);
+    } finally {
+      await act(async () => {
+        await i18n.changeLanguage("en");
+      });
+    }
   });
 
   it("submits a compact approval without expanding the card and confirms it", async () => {

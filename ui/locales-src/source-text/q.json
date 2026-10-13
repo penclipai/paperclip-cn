@@ -4,6 +4,21 @@
     "zh-CN": "\"",
     "reviewedEnglishHash": "8a331fdde7032f33a71e1b2e257d80166e348e00fcb17914f48bdb57a1c63007"
   },
+  "Qualified range is 1–300 seconds.": {
+    "en": "Qualified range is 1–300 seconds.",
+    "zh-CN": "合格范围为 1–300 秒。",
+    "reviewedEnglishHash": "7143e53b1f1533932707b619c82d5c2ddba1123860cf8fdba4eb003780ac1892"
+  },
+  "Qualified range is 1–4096.": {
+    "en": "Qualified range is 1–4096.",
+    "zh-CN": "合格范围为 1–4096。",
+    "reviewedEnglishHash": "13ebb0c480c66bc37a82ee715fce11741ad1bba2f2bbbf30b5875913be4ed9c0"
+  },
+  "Qualified range is 1–8. Invalid values fail closed to 8.": {
+    "en": "Qualified range is 1–8. Invalid values fail closed to 8.",
+    "zh-CN": "合格范围为 1–8。无效值会安全地按 8 处理。",
+    "reviewedEnglishHash": "4770258567bf30fd37793445e2209558ab864e78e722b1b3b2231830ed3b2b54"
+  },
   "Query": {
     "en": "Query",
     "zh-CN": "询问",
@@ -28,6 +43,11 @@
     "en": "Queue",
     "zh-CN": "队列",
     "reviewedEnglishHash": "3b2fe03e368939166bc6e318840b23fcade3ee55d6681b6ef16e7f08c00f23af"
+  },
+  "Queue as new message": {
+    "en": "Queue as new message",
+    "zh-CN": "作为新消息排队",
+    "reviewedEnglishHash": "c4284a6608e93951afd2ea4462bc54adf8ef822b724c509a473e1f0e4a236098"
   },
   "Queue every trigger occurrence, even if the routine is already running.": {
     "en": "Queue every trigger occurrence, even if the routine is already running.",

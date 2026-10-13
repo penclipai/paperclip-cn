@@ -78,7 +78,7 @@ export function ExecutionBlockerNotice({ companyId, issueId, blocker, onRetried,
           {retry.isPending
             ? translateInstant("Starting…")
             : blocker.canContinue
-              ? translateInstant("Continue")
+              ? translateInstant("common.continue")
               : translateInstant("Retry")}
         </Button>
       )}

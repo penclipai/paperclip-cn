@@ -349,6 +349,11 @@
     "zh-CN": "文本域",
     "reviewedEnglishHash": "467065a16a2e9fc802b582315334e2e47a1ce2454f070f61dd0257d25bb0a8b7"
   },
+  "That doesn't look like valid JSON yet — paste the whole snippet, including the outer braces.": {
+    "en": "That doesn't look like valid JSON yet — paste the whole snippet, including the outer braces.",
+    "zh-CN": "这看起来还不是有效的 JSON；请粘贴完整片段，包括最外层大括号。",
+    "reviewedEnglishHash": "6c94d499469541a29cfd92468a6e769b0b2013a07e21ebaf7c3ecd7c7ef6e744"
+  },
   "That key only connects": {
     "en": "That key only connects",
     "zh-CN": "此密钥仅能连接",
@@ -363,6 +368,11 @@
     "en": "The Paperclip CLI can now finish authentication on the requesting machine.",
     "zh-CN": "Paperclip CLI 现在可以在发起请求的计算机上完成身份验证。",
     "reviewedEnglishHash": "c62ea5b24db4f657c96cf014d8b1937f7a0b9781129c97c3d173e4f351a614d9"
+  },
+  "The URL of your Executor organization’s integrations page. Used to open and manage imported accounts.": {
+    "en": "The URL of your Executor organization’s integrations page. Used to open and manage imported accounts.",
+    "zh-CN": "你的 Executor 组织集成页面 URL，用于打开和管理已导入的账户。",
+    "reviewedEnglishHash": "6cd8f7269a4d60af2f85b9874c1a11fefa725013e7752a38dad7aec19983f36e"
   },
   "The absolute directory on disk where the instructions bundle lives. In managed mode this is set by Paperclip CN automatically.": {
     "en": "The absolute directory on disk where the instructions bundle lives. In managed mode this is set by Paperclip CN automatically.",
@@ -584,6 +594,11 @@
     "zh-CN": "提供商拒绝了该连接。请重新连接后再试。",
     "reviewedEnglishHash": "aead469fb416a87dc41bb6a7cde0654bdec46c60b8f6a0607b8a59336dd17368"
   },
+  "The qualified AgentCore profile retains short-term Memory events for exactly 90 days.": {
+    "en": "The qualified AgentCore profile retains short-term Memory events for exactly 90 days.",
+    "zh-CN": "合格的 AgentCore 配置档案会将短期 Memory 事件保留整整 90 天。",
+    "reviewedEnglishHash": "e2f90591ed35710d52ed35bc356087655b5266a23fbbded77420541d773a8dcd"
+  },
   "The reason is sent back to": {
     "en": "The reason is sent back to",
     "zh-CN": "理由将发送回",
@@ -593,6 +608,11 @@
     "en": "The routine is paused. Enable its automatic triggers when you’re ready to use this schedule.",
     "zh-CN": "例行程序暂停。当您准备好使用此计划时，启用其自动触发器。",
     "reviewedEnglishHash": "28f907214665c335a20caac139acf16c56245c4e001c485b3b795c67048e184e"
+  },
+  "The runner verifies this exact level before each session can prompt. Changing it starts a new session.": {
+    "en": "The runner verifies this exact level before each session can prompt. Changing it starts a new session.",
+    "zh-CN": "运行器会在每次会话提示前验证此精确级别。更改它会启动新会话。",
+    "reviewedEnglishHash": "7e91a882da030bf919bd8d2b215b181c0c09663290ad16661ffccc88ad77152c"
   },
   "The saved Claude login is bound to this agent now.": {
     "en": "The saved Claude login is bound to this agent now.",
@@ -608,6 +628,11 @@
     "en": "The saved connection is unavailable. Disable fast responses or choose another connection.",
     "zh-CN": "保存的连接不可用。禁用快速响应或选择其他连接。",
     "reviewedEnglishHash": "e3768aa1a68787790b56a790f82cd2caf5e99cdc28761d7f0be370e1319f3d2d"
+  },
+  "The saved connection no longer exists or is not available to this organization.": {
+    "en": "The saved connection no longer exists or is not available to this organization.",
+    "zh-CN": "保存的连接已不存在，或不再对此组织可用。",
+    "reviewedEnglishHash": "f28172ed745638f67f18da515f6c63be2d22b9539e742fd86ce5121c05ebc542"
   },
   "The secret key is hidden.": {
     "en": "The secret key is hidden.",
@@ -659,10 +684,20 @@
     "zh-CN": "这些字段来自",
     "reviewedEnglishHash": "9928b0cbca84456496ade4c6b0856b9e7d8f4a5e7ae80e4b63db77fb707faaef"
   },
+  "These instructions are turned off for this connection.": {
+    "en": "These instructions are turned off for this connection.",
+    "zh-CN": "此连接已关闭这些说明。",
+    "reviewedEnglishHash": "84bb9b2696bfdba89e2b829a9019825bc10894b7e812e0dc1812fce62914676c"
+  },
   "These permissions apply to all apps available through this Composio connection. Manage app accounts and sign-in in Composio.": {
     "en": "These permissions apply to all apps available through this Composio connection. Manage app accounts and sign-in in Composio.",
     "zh-CN": "这些权限适用于通过此 Composio 连接提供的所有应用。请在 Composio 中管理应用账户和登录。",
     "reviewedEnglishHash": "0c37f15e0c307ab75cd59bf575a4a348dbaab27ceac6d8a8bfb27842359ec69b"
+  },
+  "These referenced paths are not included. If the skill needs them, fix the source or leave this skill unchecked.": {
+    "en": "These referenced paths are not included. If the skill needs them, fix the source or leave this skill unchecked.",
+    "zh-CN": "这些引用路径未包含在内。若技能需要它们，请修复来源，或取消选择此技能。",
+    "reviewedEnglishHash": "10d7870333a3bf2aa83d4d27b1d6d02ab161b2fc9c47a218d33a12e6baf8bbc6"
   },
   "These settings apply to the saved AgentMail account and all inboxes using it.": {
     "en": "These settings apply to the saved AgentMail account and all inboxes using it.",
@@ -709,10 +744,20 @@
     "zh-CN": "此账户没有可用组织。请联系组织所有者将您加入组织，然后从助手端重新连接。",
     "reviewedEnglishHash": "0ee0d54d7600e59bea8b8344e2743c98b449077fd6c21d4ba085874bba895ce6"
   },
+  "This account is not available to you.": {
+    "en": "This account is not available to you.",
+    "zh-CN": "此账户对你不可用。",
+    "reviewedEnglishHash": "407f13fa09d3bd4920b2fd2b5c09807c3537c4ceee8ce5ea82a8d17adaa56ce4"
+  },
   "This account is signed in, but it does not have an active company membership or instance-admin access on this Paperclip instance.": {
     "en": "This account is signed in, but it does not have an active company membership or instance-admin access on this Paperclip instance.",
     "zh-CN": "当前账号已登录，但在这个 Paperclip 实例中没有活跃的公司成员身份，也没有实例管理员权限。",
     "reviewedEnglishHash": "f26e08bd4d4cc13185adb64810ab86b6f14bdf2095735d661c25bf47bc5dd3b5"
+  },
+  "This account will become your default for this provider. Your tasks will use it; other users keep their own default.": {
+    "en": "This account will become your default for this provider. Your tasks will use it; other users keep their own default.",
+    "zh-CN": "此账户将成为你在该提供商中的默认账户。你的任务会使用它；其他用户保留各自的默认账户。",
+    "reviewedEnglishHash": "57a9c208feefd0b4e32e6b0c3d19e37eb2cb302dfddcda960d2640bacb05a0fe"
   },
   "This action cannot be undone.": {
     "en": "This action cannot be undone.",
@@ -794,6 +839,11 @@
     "zh-CN": "不支持此聊天服务提供商。",
     "reviewedEnglishHash": "4998d8ff4ac691790e23d3e80a9c16d04f1cb20115b55f4aba621fb4047bb9bd"
   },
+  "This connection can’t be reconnected": {
+    "en": "This connection can’t be reconnected",
+    "zh-CN": "无法重新连接此连接",
+    "reviewedEnglishHash": "68c04b0d88a02773874f47bc35f97a31f63edf8b95dbb989eebfbf0d6c025c4a"
+  },
   "This connection does not support the current harness and model. Choose a compatible connection before saving.": {
     "en": "This connection does not support the current harness and model. Choose a compatible connection before saving.",
     "zh-CN": "此连接不支持当前运行框架和模型。保存前请选择兼容的连接。",
@@ -844,6 +894,11 @@
     "zh-CN": "此文档在你编辑期间已被修改。你的本地草稿已保留，自动保存已暂停。",
     "reviewedEnglishHash": "fcbbd08cf5e60bedf8d9330df3b503bf2b81f8e2acfbdbd2aedc6316d1fe38d0"
   },
+  "This email address is already in use. Choose a different address.": {
+    "en": "This email address is already in use. Choose a different address.",
+    "zh-CN": "此电子邮件地址已被使用，请选择其他地址。",
+    "reviewedEnglishHash": "d87ab203e3ff33f1c33bfc82e73af363c7e1c162884735f78e8de9eeac62fe45"
+  },
   "This email setup could not be found. Return to Connectors and start a new connection.": {
     "en": "This email setup could not be found. Return to Connectors and start a new connection.",
     "zh-CN": "未找到此邮件设置。请返回“连接器”并发起新的连接。",
@@ -868,6 +923,11 @@
     "en": "This identity link is unavailable",
     "zh-CN": "此身份关联链接不可用",
     "reviewedEnglishHash": "4f759618376d45ceda9580fe4cf6bd7ed4137c42aa6c0250aab92c9aa4506186"
+  },
+  "This inbox is already assigned to an agent.": {
+    "en": "This inbox is already assigned to an agent.",
+    "zh-CN": "此收件箱已分配给一个智能体。",
+    "reviewedEnglishHash": "fe23c3b058d06f75f0077b2fc0e475b3e79389a4ba0a0a50528976efc1b1eeee"
   },
   "This instance requires the Kubernetes sandbox, but no managed Kubernetes environment is available for this organization yet. Configure one before creating agents; execution will not fall back to local.": {
     "en": "This instance requires the Kubernetes sandbox, but no managed Kubernetes environment is available for this organization yet. Configure one before creating agents; execution will not fall back to local.",
@@ -994,10 +1054,20 @@
     "zh-CN": "此提供商未声明其他配置字段。",
     "reviewedEnglishHash": "0aee5daba8485ccee15c3ae39b2b63d34883c6cf2e2e7e410f99aaad6d28cacb"
   },
+  "This provider does not offer a subscription connection.": {
+    "en": "This provider does not offer a subscription connection.",
+    "zh-CN": "此提供商不提供订阅连接。",
+    "reviewedEnglishHash": "0c38d4709916e986b867d8c02cd33bc08d3c246466e3c1a405f3def04d8bcc53"
+  },
   "This provider operation emitted no canonical PRP events.": {
     "en": "This provider operation emitted no canonical PRP events.",
     "zh-CN": "此提供程序操作未发出规范的 PRP 事件。",
     "reviewedEnglishHash": "d4dc7c0de1b08a9cca6e92683eee9de6464edae152b6c5521f298ef7b2b56875"
+  },
+  "This reconnect link does not match the retained connection's provider.": {
+    "en": "This reconnect link does not match the retained connection's provider.",
+    "zh-CN": "此重新连接链接与保留连接的提供商不匹配。",
+    "reviewedEnglishHash": "b4ddbe5687ee08c218c6331e29d4edaa9dc8bfad1f6e8b94c688962914fba7b8"
   },
   "This release supports personal chats, group chats, and standard team channels—not private channels.": {
     "en": "This release supports personal chats, group chats, and standard team channels—not private channels.",
@@ -1024,15 +1094,30 @@
     "zh-CN": "该路由不存在。",
     "reviewedEnglishHash": "80eced636168620f71cf4607d68fae6737cd30bb4c5dabbd911ff7f3c8a76494"
   },
+  "This saved Codex mode cannot start or recover a Paperclip Runner run. Select Automatic (isolated) to remediate it.": {
+    "en": "This saved Codex mode cannot start or recover a Paperclip Runner run. Select Automatic (isolated) to remediate it.",
+    "zh-CN": "此已保存的 Codex 模式无法启动或恢复 Paperclip Runner 运行。请选择“自动（隔离）”进行修复。",
+    "reviewedEnglishHash": "69cd36bd9a61f01671cf96a25b94f4617dad17e29285e756386758668b9c2c5a"
+  },
   "This saved bot has GitHub tools disabled, so it cannot start work or respond.": {
     "en": "This saved bot has GitHub tools disabled, so it cannot start work or respond.",
     "zh-CN": "此已保存的机器人禁用了 GitHub 工具，无法开始工作或回复。",
     "reviewedEnglishHash": "31c25d6e6c872b3dca3b4c1bc073caecb96911c6a50b79decb8c6d905e71d9c4"
   },
+  "This saved draft does not match the requested provider. The connection was not changed.": {
+    "en": "This saved draft does not match the requested provider. The connection was not changed.",
+    "zh-CN": "保存的草稿与请求的提供商不匹配，连接未发生变化。",
+    "reviewedEnglishHash": "18d650d114d8ba63a4e13612a3ad52a753b9a442f77a9540c51ed079c6426f4b"
+  },
   "This scope is paused. New heartbeats will not start until you resolve the budget incident.": {
     "en": "This scope is paused. New heartbeats will not start until you resolve the budget incident.",
     "zh-CN": "当前范围已暂停。在处理完这次预算事件前，新的心跳运行不会启动。",
     "reviewedEnglishHash": "04b4ec4cf32c964ad80156b34dbc71b006c20612b0bbe17cb0d6401b44550a85"
+  },
+  "This setup can’t be resumed": {
+    "en": "This setup can’t be resumed",
+    "zh-CN": "无法继续此设置",
+    "reviewedEnglishHash": "a1cb9ef91a9d92ad48aa50a82c5e489861e367d2e86ad801364df1e776bb931e"
   },
   "This setup requires a Microsoft 365 work or school organization where you can register an Entra app, create an Azure Bot, and upload or install a Teams app. Personal or free Teams accounts at teams.live.com cannot complete this setup. This release supports Microsoft 365 commercial cloud tenants only; GCC, GCC High, DoD, and Microsoft 365 operated by 21Vianet are not supported yet.": {
     "en": "This setup requires a Microsoft 365 work or school organization where you can register an Entra app, create an Azure Bot, and upload or install a Teams app. Personal or free Teams accounts at teams.live.com cannot complete this setup. This release supports Microsoft 365 commercial cloud tenants only; GCC, GCC High, DoD, and Microsoft 365 operated by 21Vianet are not supported yet.",
@@ -1244,10 +1329,35 @@
     "zh-CN": "要阻止合并，请在 GitHub 分支规则中将",
     "reviewedEnglishHash": "c4d246719a1a951a0668ec8f6873209937cd6f97f55ce5fd2634a45f5e531d53"
   },
+  "To:": {
+    "en": "To:",
+    "zh-CN": "收件人：",
+    "reviewedEnglishHash": "2b5fc5c94f64250c5600c58f0adc9e2ff34e333359d77b7649112fbed3554867"
+  },
   "Todo": {
     "en": "Todo",
     "zh-CN": "待办",
     "reviewedEnglishHash": "4ff402d768211082ae1a70ae586a4c7a907c57d66467279a71283219968c04bc"
+  },
+  "Toggle GitHub review bots experimental setting": {
+    "en": "Toggle GitHub review bots experimental setting",
+    "zh-CN": "切换 GitHub 审查机器人实验设置",
+    "reviewedEnglishHash": "438b46eb027f204c8110be1fdb33e4469c63ca40b5335e367a29112766c384b3"
+  },
+  "Toggle OpenAI Dot experimental setting": {
+    "en": "Toggle OpenAI Dot experimental setting",
+    "zh-CN": "切换 OpenAI Dot 实验设置",
+    "reviewedEnglishHash": "3dc061cf05f57d026a41f7968f178dfdb2a1e8b900289377f8741cfc0e6c5cee"
+  },
+  "Toggle Paperclip Runner experimental setting": {
+    "en": "Toggle Paperclip Runner experimental setting",
+    "zh-CN": "切换 Paperclip Runner 实验设置",
+    "reviewedEnglishHash": "ea8847b83050fe5e952e4179e5388bdfc0604b5682cee43e04e82deacaf7e3a0"
+  },
+  "Toggle Paperclip developer mode experimental setting": {
+    "en": "Toggle Paperclip developer mode experimental setting",
+    "zh-CN": "切换 Paperclip 开发者模式实验设置",
+    "reviewedEnglishHash": "8db3738068eeda55c29f5ca5dbcf83c5258f9d4afd8a38349899779025682b32"
   },
   "Toggle Properties Panel": {
     "en": "Toggle Properties Panel",
@@ -1259,10 +1369,35 @@
     "zh-CN": "切换侧边栏",
     "reviewedEnglishHash": "1d4c17db52f714ab60482303089684ad946621f40958d2f8d1154e1515161032"
   },
+  "Toggle Streamlined UI experimental setting": {
+    "en": "Toggle Streamlined UI experimental setting",
+    "zh-CN": "切换精简界面实验设置",
+    "reviewedEnglishHash": "72070db713aa6635d69f56b43b3431888ee739d4fb76c140f63022b19e45cc14"
+  },
+  "Toggle agent chat experimental setting": {
+    "en": "Toggle agent chat experimental setting",
+    "zh-CN": "切换智能体聊天实验设置",
+    "reviewedEnglishHash": "84010c304ffb5058ee9f047c468e060fdc38b643ee3303e8c373d98e7884e0c2"
+  },
+  "Toggle assistant connections experimental setting": {
+    "en": "Toggle assistant connections experimental setting",
+    "zh-CN": "切换助手连接实验设置",
+    "reviewedEnglishHash": "be2124e4a6bd1ab408fa8e186f63e05f82fdaff2dce83f3e991aea4544fcfa6f"
+  },
+  "Toggle chat connectors experimental setting": {
+    "en": "Toggle chat connectors experimental setting",
+    "zh-CN": "切换聊天连接器实验设置",
+    "reviewedEnglishHash": "b2c1ea058edf18fbd64abaa18ff3056d2f580a09fd348f5816a6c61954047d25"
+  },
   "Toggle cloud sync experimental setting": {
     "en": "Toggle cloud sync experimental setting",
     "zh-CN": "切换云同步实验设置",
     "reviewedEnglishHash": "630011fa7522fbd3db038bb625e588c04c67d480e40dc271bfe2738e86e841d3"
+  },
+  "Toggle combined inbox and task list experimental setting": {
+    "en": "Toggle combined inbox and task list experimental setting",
+    "zh-CN": "切换收件箱与任务列表合并实验设置",
+    "reviewedEnglishHash": "2accb361fcffcc6c00addc4ab72f98f43b79bb737a5164461e5917842281deb8"
   },
   "Toggle company membership for this user. New access defaults to an active operator membership.": {
     "en": "Toggle company membership for this user. New access defaults to an active operator membership.",
@@ -1274,15 +1409,35 @@
     "zh-CN": "切换环境实验设置",
     "reviewedEnglishHash": "5ee0b9c14a111f6bb530716fefcda5271bf4bb5feeded0f14cebea6d944a02e3"
   },
+  "Toggle experimental file viewer setting": {
+    "en": "Toggle experimental file viewer setting",
+    "zh-CN": "切换实验性文件查看器设置",
+    "reviewedEnglishHash": "6a567a40d4525e5b4c037005d612de344a5b16a35a0d70b03024a985e851b14f"
+  },
   "Toggle failed": {
     "en": "Toggle failed",
     "zh-CN": "切换失败",
     "reviewedEnglishHash": "607e19c13a17a5743e3055a16b7de6955643f8755a8b89ef6da8ca8d820eb0fd"
   },
+  "Toggle fast responses experimental setting": {
+    "en": "Toggle fast responses experimental setting",
+    "zh-CN": "切换快速响应实验设置",
+    "reviewedEnglishHash": "946b640bbafb2b36d107d03dd88a66c7c0cdcd18a142f9e916c2da90aabd45a2"
+  },
+  "Toggle first task plan proposal experimental setting": {
+    "en": "Toggle first task plan proposal experimental setting",
+    "zh-CN": "切换首个任务计划建议实验设置",
+    "reviewedEnglishHash": "68f4ef72c7965bba629ac66894f6b9723736fb6d51afab789842780879d87671"
+  },
   "Toggle guarded dev-server auto-restart": {
     "en": "Toggle guarded dev-server auto-restart",
     "zh-CN": "切换受保护的开发服务器自动重启",
     "reviewedEnglishHash": "5a4a80aaa19092cc530c2eb63d3376aedb129c44b566bd0e6636b4610e5e8a94"
+  },
+  "Toggle isolated workspaces by default experimental setting": {
+    "en": "Toggle isolated workspaces by default experimental setting",
+    "zh-CN": "切换默认隔离工作区实验设置",
+    "reviewedEnglishHash": "a347810ce07c4aca44a48e0fa5accfb2d5728b3abfa3fa6c210e31224985996a"
   },
   "Toggle isolated workspaces experimental setting": {
     "en": "Toggle isolated workspaces experimental setting",
@@ -1294,6 +1449,11 @@
     "zh-CN": "切换任务图活跃性自动恢复",
     "reviewedEnglishHash": "f31ce2b0e7fcfddde8ce1ea37b4a1c944f4d9fc5bfc5fc85b4e2de3b958cdf2a"
   },
+  "Toggle memory connectors experimental setting": {
+    "en": "Toggle memory connectors experimental setting",
+    "zh-CN": "切换记忆连接器实验设置",
+    "reviewedEnglishHash": "91d291f1937f66022fdff9c673cd6363607625ffe281382444c720b3112bd9a5"
+  },
   "Toggle organization membership for this user. New access defaults to an active operator membership.": {
     "en": "Toggle organization membership for this user. New access defaults to an active operator membership.",
     "zh-CN": "切换此用户的组织成员资格。新增访问权限默认授予有效的操作员成员资格。",
@@ -1303,6 +1463,11 @@
     "en": "Toggle panel",
     "zh-CN": "切换面板",
     "reviewedEnglishHash": "ed98852805c90543a89bc689f6e99b7058821efde6fcd59874bc37e1e6f48d78"
+  },
+  "Toggle side panel": {
+    "en": "Toggle side panel",
+    "zh-CN": "切换侧边面板",
+    "reviewedEnglishHash": "081f0fced829e89abad7f0387c85863af3226ef1406ee6f9eb43dcf4cdd020b6"
   },
   "Toggle sidebar": {
     "en": "Toggle sidebar",
@@ -1333,6 +1498,11 @@
     "en": "Tool failed",
     "zh-CN": "工具执行失败",
     "reviewedEnglishHash": "1c642658b3cfaab2667b77a45602b56867c01205b3c80f6f62a1829c5bc78b6c"
+  },
+  "Tool permissions": {
+    "en": "Tool permissions",
+    "zh-CN": "工具权限",
+    "reviewedEnglishHash": "a7b0060623380e53c968760e6c2de35661146b59eb3245ef3779e63cceddeded"
   },
   "Tools marked": {
     "en": "Tools marked",
@@ -1379,6 +1549,11 @@
     "zh-CN": "跟踪重新运行未启动",
     "reviewedEnglishHash": "efabea93f73a63c79107d0246d25167c4ceecb2934df9cd0051b40179642120b"
   },
+  "Track your brand in AI answers and run content workflows.": {
+    "en": "Track your brand in AI answers and run content workflows.",
+    "zh-CN": "追踪品牌在 AI 回答中的表现，并运行内容工作流。",
+    "reviewedEnglishHash": "017dbdf65a4732e503d0b5682b87836c907c51c4659ce8686fabb51184359187"
+  },
   "Tracking": {
     "en": "Tracking",
     "zh-CN": "追踪",
@@ -1409,10 +1584,25 @@
     "zh-CN": "触发器",
     "reviewedEnglishHash": "8b9c643731c941195b61d1f3de78fda81ac490ee73f420bb7543df59d6a92206"
   },
+  "Trigger removed": {
+    "en": "Trigger removed",
+    "zh-CN": "触发器已移除",
+    "reviewedEnglishHash": "7d0dec121080ac07bc12a4f30ed46eaccc04f1e00c1aa946e66200d8949fc114"
+  },
+  "Trigger restored": {
+    "en": "Trigger restored",
+    "zh-CN": "触发器已恢复",
+    "reviewedEnglishHash": "ebac38f2a3d08795b1e12b7c0047afdc01aba711996536ce433368bf23222033"
+  },
   "Trigger type": {
     "en": "Trigger type",
     "zh-CN": "触发类型",
     "reviewedEnglishHash": "31a9d2bd7aede0d46b792724c1f91cbb7011da87c6314e69c60e72317e5a85c7"
+  },
+  "Trigger updated": {
+    "en": "Trigger updated",
+    "zh-CN": "触发器已更新",
+    "reviewedEnglishHash": "73c266d599d6859240e56957b6f2c5764d7f8eea0018f410f61d8e4d24db433c"
   },
   "Triggers": {
     "en": "Triggers",
@@ -1473,6 +1663,16 @@
     "en": "Try:",
     "zh-CN": "试试：",
     "reviewedEnglishHash": "02895382125f0c0cc9c96f8a74819cf2ea30eb650ce64f30cf7b053621269a30"
+  },
+  "Turn by turn": {
+    "en": "Turn by turn",
+    "zh-CN": "逐轮",
+    "reviewedEnglishHash": "6750a0e30083322ff25b9ad0043ef2049a5ceac416d815dce4beb5cc4ff4ef47"
+  },
+  "Turn by turn suspends after each run. Warm keeps the same provider process available between governed runs.": {
+    "en": "Turn by turn suspends after each run. Warm keeps the same provider process available between governed runs.",
+    "zh-CN": "逐轮模式会在每次运行后暂停。预热模式会在受治理的运行之间保持同一提供商进程可用。",
+    "reviewedEnglishHash": "c5427fa1df5731a119535f09f44da96bf47d9f475d38d3af515d6a3413eee36c"
   },
   "Turn on the actions agents may use. Anything left off stays blocked when you save.": {
     "en": "Turn on the actions agents may use. Anything left off stays blocked when you save.",

@@ -65,7 +65,7 @@ function McpConnectRequest({ id, device = false, agentPairingOnly = false, onEdi
     let current = true;
     void api.post<McpDotPairingPreview>(`${requestPrefix}/${encodeURIComponent(id)}/dot-pairing/preview`, { pairingCode: pairingCode.trim() })
       .then(preview => { if (current) setPairingPreview(preview); })
-      .catch(error => { if (current) setPairingPreviewError(error instanceof Error ? error.message : "Unable to verify this pairing code."); });
+      .catch(error => { if (current) setPairingPreviewError(error instanceof Error ? error.message : translateInstant("Unable to verify this pairing code.")); });
     return () => { current = false; };
   }, [id, device, requestPrefix, data?.agentConnection, pairingCode]);
   const selectedCompanyId = data?.requestedCompanyId ?? (companyId || data?.companies[0]?.id || "");
@@ -74,7 +74,7 @@ function McpConnectRequest({ id, device = false, agentPairingOnly = false, onEdi
     if (!companyId && !data?.requestedCompanyId && data?.companies[0]) setCompanyId(data.companies[0].id);
   }, [companyId, data]);
   const clientName = data?.clientName.trim();
-  const assistantName = clientName && !/^(assistant|mcp client)$/i.test(clientName) ? clientName : "your assistant";
+  const assistantName = clientName && !/^(assistant|mcp client)$/i.test(clientName) ? clientName : translateInstant("your assistant");
   const clientOrigin = data?.clientOrigin || data?.redirectOrigin;
   const company = data?.companies.find((item) => item.id === selectedCompanyId);
   const canApproveWrites = Boolean(!data?.agentConnection && company?.canWrite && writeEnabled);
@@ -88,7 +88,7 @@ function McpConnectRequest({ id, device = false, agentPairingOnly = false, onEdi
     mutationFn: () => api.post<{ redirectUrl: string }>(`${requestPrefix}/${encodeURIComponent(id)}/dot-pairing`, { pairingCode: pairingCode.trim() }),
     onSuccess: ({ redirectUrl }) => { setPairingCode(""); window.location.assign(redirectUrl); },
   });
-  if (deviceResult) return <div className="mx-auto max-w-xl py-10"><Card className="block space-y-4 p-6"><Paperclip className="size-8" /><h1 className="text-xl font-semibold">{deviceResult === "approved" ? "Access approved" : "Connection declined"}</h1><p className="text-sm">{deviceResult === "approved" ? "Return to your assistant. It will finish connecting automatically." : "No access was granted. You can start a new connection from your assistant."}</p><Button variant="outline" asChild><Link to="/">{translateInstant("Back to Paperclip")}</Link></Button></Card></div>;
+  if (deviceResult) return <div className="mx-auto max-w-xl py-10"><Card className="block space-y-4 p-6"><Paperclip className="size-8" /><h1 className="text-xl font-semibold">{deviceResult === "approved" ? translateInstant("Access approved") : translateInstant("Connection declined")}</h1><p className="text-sm">{deviceResult === "approved" ? translateInstant("Return to your assistant. It will finish connecting automatically.") : translateInstant("No access was granted. You can start a new connection from your assistant.")}</p><Button variant="outline" asChild><Link to="/">{translateInstant("Back to Paperclip")}</Link></Button></Card></div>;
   const returnPath = device ? `/mcp-device?user_code=${encodeURIComponent(id)}` : `${agentPairingOnly ? "/dot-connect" : "/mcp-connect"}/${id}`;
   return <div className="mx-auto max-w-xl py-10">
     <Card className="block space-y-4 p-6">
@@ -114,7 +114,7 @@ function McpConnectRequest({ id, device = false, agentPairingOnly = false, onEdi
         </dl>}
         {pairingPreviewError && <p role="alert" className="text-sm text-destructive">{pairingPreviewError}</p>}
         {pairDot.error && <p role="alert" className="text-sm text-destructive">{pairDot.error.message}</p>}
-        <div className="flex justify-end"><Button type="submit" disabled={!pairingPreview || !/^[A-Za-z0-9_-]{32}$/.test(pairingCode.trim()) || pairDot.isPending}>{pairDot.isPending ? "Connecting…" : "Connect Dot with pairing code"}</Button></div>
+        <div className="flex justify-end"><Button type="submit" disabled={!pairingPreview || !/^[A-Za-z0-9_-]{32}$/.test(pairingCode.trim()) || pairDot.isPending}>{pairDot.isPending ? translateInstant("Connecting…") : translateInstant("Connect Dot with pairing code")}</Button></div>
       </form>}
       {data && <>
         {data.requiresSignIn ? <Button asChild><Link to={`/auth?next=${encodeURIComponent(returnPath)}`}>{translateInstant("Sign in / Create account")}</Link></Button> : <>
@@ -133,7 +133,7 @@ function McpConnectRequest({ id, device = false, agentPairingOnly = false, onEdi
             </label>)}
             {!data.companies.length && <p className="text-sm text-muted-foreground">{translateInstant("This account has no available organizations. Ask an organization owner to add you, then reconnect from your assistant.")}</p>}
           </fieldset>}
-          <p className="text-sm">{data.agentConnection ? "Connect Dot as a Paperclip agent. Pair it with an agent after connecting; assigned work uses that agent’s permissions." : "Read all of your Paperclip data"}</p>
+          <p className="text-sm">{data.agentConnection ? translateInstant("Connect Dot as a Paperclip agent. Pair it with an agent after connecting; assigned work uses that agent’s permissions.") : translateInstant("Read all of your Paperclip data")}</p>
           {(data.requestedWrite || data.requestedConfigure) && !data.agentConnection && <label htmlFor="mcp-allow-writes" className="flex items-start gap-3 text-sm leading-6">
             <span className="flex h-6 shrink-0 items-center">
               <Checkbox id="mcp-allow-writes" checked={canApproveWrites} disabled={!company?.canWrite || consent.isPending} onCheckedChange={(checked) => setWriteEnabled(checked === true)} />
@@ -144,7 +144,7 @@ function McpConnectRequest({ id, device = false, agentPairingOnly = false, onEdi
           {consent.error && <p className="text-sm text-destructive">{consent.error.message}</p>}
           <div className="flex items-center justify-between gap-3">
             <Button variant="outline" disabled={consent.isPending} onClick={() => consent.mutate("deny")}>{translateInstant("Cancel")}</Button>
-            <Button className="h-auto min-h-10 min-w-0 shrink whitespace-normal" disabled={!company || (data.agentConnection && !company.canWrite) || consent.isPending} onClick={() => consent.mutate("approve")}>{consent.isPending ? "Connecting…" : data.agentConnection ? "Connect Dot agent" : translateInstant("Connect organization")}</Button>
+            <Button className="h-auto min-h-10 min-w-0 shrink whitespace-normal" disabled={!company || (data.agentConnection && !company.canWrite) || consent.isPending} onClick={() => consent.mutate("approve")}>{consent.isPending ? translateInstant("Connecting…") : data.agentConnection ? translateInstant("Connect Dot agent") : translateInstant("Connect organization")}</Button>
           </div>
         </>}
       </>}
@@ -170,7 +170,7 @@ export function AssistantConnectionsPage() {
     {active?.map((connection) => <Card key={connection.id} className="block space-y-2 p-4">
       <h2 className="font-medium"><Identity name={assistantConnectionDisplayName(connection)} avatarUrl={connection.user?.image} initials={deriveInitials(connection.user?.name ?? "You")} /></h2>
       <p className="text-sm text-muted-foreground">{translateInstant("Organization:")}{" "}{connection.companyName}</p>
-      <p className="text-sm">{connection.scopes.includes("paperclip:agent") ? "Dot agent connection" : connection.scopes.includes("paperclip:write") ? "Read and edit work" : translateInstant("Read only")}</p>
+      <p className="text-sm">{connection.scopes.includes("paperclip:agent") ? translateInstant("Dot agent connection") : connection.scopes.includes("paperclip:write") ? translateInstant("Read and edit work") : translateInstant("Read only")}</p>
       {connection.scopes.includes("paperclip:configure") && <p className="text-sm">{translateInstant("Configure agents, projects and skills")}</p>}
       <Button variant="outline" disabled={revoke.isPending} onClick={() => revoke.mutate(connection.id)}>{translateInstant("Revoke connection")}</Button>
     </Card>)}

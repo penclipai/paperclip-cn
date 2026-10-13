@@ -182,12 +182,12 @@ export const AttentionQueueRow = memo(function AttentionQueueRow({
     <button
       type="button"
       className="inline-flex shrink-0 items-center gap-1 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground focus-visible:ring-ring focus-visible:ring-(length:--rad-3) focus-visible:outline-none"
-      aria-label={expanded ? "Collapse decision" : "Expand decision"}
+      aria-label={translateInstant(expanded ? "attentionQueue.collapseDecision" : "attentionQueue.expandDecision")}
       aria-expanded={expanded}
       onClick={activate}
     >
       {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-      {expanded ? "See less" : "See more"}
+      {translateInstant(expanded ? "attentionQueue.seeLess" : "attentionQueue.seeMore")}
     </button>
   ) : null;
 
@@ -459,6 +459,7 @@ interface CompactAction {
   label: string;
   id: string;
   description: string;
+  variant: "default" | "outline" | "destructive";
 }
 
 /** The compact accept/reject verbs a collapsed row can resolve in place. */
@@ -467,9 +468,25 @@ function collectCompactActions(item: AttentionItem): CompactAction[] {
     .slice(0, 3)
     .flatMap((verb) => {
       const action = compactDecisionAction(item, verb.id);
-      return action ? [{ action, label: verb.label, id: verb.id, description: verb.description ?? "" }] : [];
+      return action ? [{
+        action,
+        label: localizedDecisionVerbLabel(verb),
+        id: verb.id,
+        description: verb.description ?? "",
+        variant: decisionVerbVariant(verb),
+      }] : [];
     })
-    .sort((a, b) => VERB_ORDER[decisionVerbVariant(a)] - VERB_ORDER[decisionVerbVariant(b)]);
+    .sort((a, b) => VERB_ORDER[a.variant] - VERB_ORDER[b.variant]);
+}
+
+function localizedDecisionVerbLabel(verb: AttentionItem["decisionVerbs"][number]): string {
+  const knownLabels: Record<string, { label: string; key: string }> = {
+    approve: { label: "Approve", key: "attentionQueue.actions.approve" },
+    reject: { label: "Reject", key: "attentionQueue.actions.reject" },
+    request_revision: { label: "Request revision", key: "attentionQueue.actions.requestRevision" },
+  };
+  const known = knownLabels[verb.id];
+  return known?.label === verb.label ? translateInstant(known.key) : verb.label;
 }
 
 function CompactDecisionActions({
@@ -536,11 +553,11 @@ function CompactDecisionActions({
 
   return (
     <div className="flex w-full flex-wrap items-center gap-2 @xl:w-auto @xl:justify-end @xl:gap-1" aria-label={translateInstant("attentionQueue.decisionActions")}>
-      {actions.map(({ action, id, label, description }) => (
+      {actions.map(({ action, id, label, variant }) => (
         <Button
           key={id}
           type="button"
-          variant={decisionVerbVariant({ id, label, description })}
+          variant={variant}
           size="xs"
           className={cn(ACTION_BTN, "min-w-0 flex-1 @xl:flex-none")}
           disabled={decision.isPending}
@@ -562,15 +579,15 @@ function CompactDecisionActions({
 }
 
 function decisionLabel(action: CompactDecisionAction): string {
-  if (action === "request_revision") return "sent for revision";
-  if (action === "accept" || action === "approve") return "approved";
-  return "rejected";
+  if (action === "request_revision") return translateInstant("attentionQueue.sentForRevision");
+  if (action === "accept" || action === "approve") return translateInstant("attentionQueue.approved");
+  return translateInstant("attentionQueue.rejected");
 }
 
 function compactDecisionSuccessLabel(sourceKind: AttentionItem["sourceKind"], action: CompactDecisionAction): string {
-  if (sourceKind === "approval") return `Approval ${decisionLabel(action)}`;
-  if (sourceKind === "join_request") return `Join request ${decisionLabel(action)}`;
-  return action === "accept" ? "Confirmation accepted" : "Confirmation declined";
+  if (sourceKind === "approval") return translateInstant("attentionQueue.approvalResult", { result: decisionLabel(action) });
+  if (sourceKind === "join_request") return translateInstant("attentionQueue.joinRequestResult", { result: decisionLabel(action) });
+  return translateInstant(action === "accept" ? "attentionQueue.confirmationAccepted" : "attentionQueue.confirmationDeclined");
 }
 
 function decisionVerbVariant(verb: AttentionItem["decisionVerbs"][number]): "default" | "outline" | "destructive" {
@@ -685,7 +702,7 @@ function SnoozeSubmenu({ onSnooze }: { onSnooze: (snoozedUntil: string) => void 
     <DropdownMenuSub>
       <DropdownMenuSubTrigger>
         <AlarmClock className="h-4 w-4" />
-        Snooze
+        {translateInstant("attentionQueue.snooze")}
       </DropdownMenuSubTrigger>
       <DropdownMenuSubContent>
         {SNOOZE_PRESETS.map((preset) => (
@@ -710,7 +727,7 @@ function SnoozeSubmenu({ onSnooze }: { onSnooze: (snoozedUntil: string) => void 
             className="w-full rounded-sm border border-border bg-background px-2 py-1 text-xs"
           />
           <Button type="button" size="xs" disabled={!customValue} onClick={applyCustom}>
-            Snooze until…
+            {translateInstant("attentionQueue.snooze.until")}
           </Button>
         </div>
       </DropdownMenuSubContent>
@@ -864,13 +881,13 @@ function ApprovalResolver({ item, companyId, toggle }: { item: AttentionItem; co
       <ResolverFooter toggle={toggle}>
         <Button size="sm" variant="outline" onClick={() => revise.mutate()} disabled={pending}>
           {revise.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-          {translateInstant("Request revision")}</Button>
+          {translateInstant("attentionQueue.actions.requestRevision")}</Button>
         <Button size="sm" variant="destructive" onClick={() => reject.mutate()} disabled={pending}>
           {reject.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-          {translateInstant("Reject")}</Button>
+          {translateInstant("attentionQueue.actions.reject")}</Button>
         <Button size="sm" onClick={() => approve.mutate()} disabled={pending}>
           {approve.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-          {translateInstant("Approve")}</Button>
+          {translateInstant("attentionQueue.actions.approve")}</Button>
       </ResolverFooter>
     </>
   );
@@ -897,10 +914,10 @@ function JoinRequestResolver({ item, companyId, toggle }: { item: AttentionItem;
     <ResolverFooter toggle={toggle}>
       <Button size="sm" variant="destructive" onClick={() => reject.mutate()} disabled={pending}>
         {reject.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-        {translateInstant("Reject")}</Button>
+        {translateInstant("attentionQueue.actions.reject")}</Button>
       <Button size="sm" onClick={() => approve.mutate()} disabled={pending}>
         {approve.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-        {translateInstant("Approve")}</Button>
+        {translateInstant("attentionQueue.actions.approve")}</Button>
     </ResolverFooter>
   );
 }

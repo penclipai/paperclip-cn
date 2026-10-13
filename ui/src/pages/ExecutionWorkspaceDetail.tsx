@@ -463,7 +463,7 @@ export function RuntimeProvisionStatusValue({
     return (
       <StatusPill className="border-border text-muted-foreground">
         <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
-        Provisioning…
+        {translateInstant("executionWorkspace.provisionStatusProvisioning")}
       </StatusPill>
     );
   }

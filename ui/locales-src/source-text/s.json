@@ -154,6 +154,11 @@
     "zh-CN": "保存小时数",
     "reviewedEnglishHash": "306dea41a5ee31ff8913dd31ac0e1559d0869f00123f39dc6c613bf2d365ec4a"
   },
+  "Save instructions": {
+    "en": "Save instructions",
+    "zh-CN": "保存说明",
+    "reviewedEnglishHash": "792ce42eac02defaac61a2c93c3a1a82f1ab5258840bd723d96ff9ce0379dcb3"
+  },
   "Save member": {
     "en": "Save member",
     "zh-CN": "保存成员",
@@ -169,10 +174,20 @@
     "zh-CN": "请先保存或取消本地更改，再查看旧版本修订。",
     "reviewedEnglishHash": "3adaa0ba0122d245f81761fcae66b6d2c2eb7b79b5e5a6cf0ad5993424c10248"
   },
+  "Save price": {
+    "en": "Save price",
+    "zh-CN": "保存价格",
+    "reviewedEnglishHash": "3ae1d715e782a93f9e14c35bbb9a228d80cfcd180db8f75c9814b39b45edf1b2"
+  },
   "Save profile": {
     "en": "Save profile",
     "zh-CN": "保存个人资料",
     "reviewedEnglishHash": "0c8209e72ec87d9d0b456224c042220820ef51fc5fc31a716159491806aa443e"
+  },
+  "Save queued message": {
+    "en": "Save queued message",
+    "zh-CN": "保存已排队消息",
+    "reviewedEnglishHash": "3d52a0db1756eee7cc4a009b46b7a72d79fe7b0657f3e60e331a6352e2157498"
   },
   "Save routine": {
     "en": "Save routine",
@@ -233,6 +248,11 @@
     "en": "Saving soon…",
     "zh-CN": "即将保存…",
     "reviewedEnglishHash": "b9673b37a677765e75ed23e8e9b61fa6faff8d7fa13a88436a2dfb7c764a2ae0"
+  },
+  "Saving validates access to the selected connection. Existing sessions keep their account or require an explicit reset before adoption.": {
+    "en": "Saving validates access to the selected connection. Existing sessions keep their account or require an explicit reset before adoption.",
+    "zh-CN": "保存会验证对所选连接的访问权限。现有会话会保留其账户，或需要在采用前明确重置。",
+    "reviewedEnglishHash": "817695f8292e17ef7de9a1ffd12676a4cc9fd3bc886f1fab4726f393cd3910f6"
   },
   "Saving...": {
     "en": "Saving...",
@@ -324,6 +344,11 @@
     "zh-CN": "搜索 GitHub",
     "reviewedEnglishHash": "ff48a92c96b73fa81e9c844e13333d8c3bbaedfbd75b7c1159a7597ad3413e6f"
   },
+  "Search across your Google workspace.": {
+    "en": "Search across your Google workspace.",
+    "zh-CN": "搜索整个 Google 工作区。",
+    "reviewedEnglishHash": "90fe5979015eced2ef3114ccbb94afbeb4b66216b2c12b027685b25d8b7846a0"
+  },
   "Search agents by name or role": {
     "en": "Search agents by name or role",
     "zh-CN": "按姓名或角色搜索智能体",
@@ -333,6 +358,11 @@
     "en": "Search agents...",
     "zh-CN": "搜索智能体...",
     "reviewedEnglishHash": "32f4468b0b6f9410941a7940ea86374fa42a3e6846896c361c465680dca0c7ba"
+  },
+  "Search agents…": {
+    "en": "Search agents…",
+    "zh-CN": "搜索智能体…",
+    "reviewedEnglishHash": "e05cb78e973da37232be8465b57995620a02d3cfa153ffe0c62cfdb6eb253494"
   },
   "Search approvers...": {
     "en": "Search approvers...",
@@ -404,6 +434,11 @@
     "zh-CN": "搜索当前页面或快速搜索",
     "reviewedEnglishHash": "4dac6ee7d1ea34bbebe7f4a63b0c76eab8f4cd3d297be69eccb5b73f53574c3a"
   },
+  "Search discoverable skills": {
+    "en": "Search discoverable skills",
+    "zh-CN": "搜索可发现的技能",
+    "reviewedEnglishHash": "9bf95bbdeeaa777ac61af4bfb54219cf338ae2e50c333f3457fe6680aeb2d2df"
+  },
   "Search exact frame": {
     "en": "Search exact frame",
     "zh-CN": "搜索精确帧",
@@ -423,6 +458,11 @@
     "en": "Search inbox…",
     "zh-CN": "搜索收件箱…",
     "reviewedEnglishHash": "d684b9b792bde6c0ad95c4f621f76fd4d7a5095656d00e15d7d4a4f31e958ce1"
+  },
+  "Search installed skills": {
+    "en": "Search installed skills",
+    "zh-CN": "搜索已安装的技能",
+    "reviewedEnglishHash": "e06f5f8456a053516433e14ec4f0c641c55d83baa3411d49737b7c6274410ad0"
   },
   "Search issues": {
     "en": "Search issues",
@@ -594,6 +634,11 @@
     "zh-CN": "选择器",
     "reviewedEnglishHash": "2a78025de6aae5e7ff88e5a951bb3a78ddd67388913529cf9e2dd9653e62b02d"
   },
+  "Select Cursor's session mode. Permissions and company approval rules still apply.": {
+    "en": "Select Cursor's session mode. Permissions and company approval rules still apply.",
+    "zh-CN": "选择 Cursor 的会话模式。权限和组织审批规则仍然适用。",
+    "reviewedEnglishHash": "3a536c884021b4633b738fe5b0b8c9adeeeb6e7f8cb9cb8076f71ddb7630d690"
+  },
   "Select a company before uploading a profile avatar.": {
     "en": "Select a company before uploading a profile avatar.",
     "zh-CN": "上传个人头像前请先选择一个公司。",
@@ -729,6 +774,11 @@
     "zh-CN": "选择一个相关操作来检查其管道。",
     "reviewedEnglishHash": "d89e132017c24298207a936f87d3d05757dd5794abe7b65ec83dc806c45ee4ad"
   },
+  "Select a file to inspect.": {
+    "en": "Select a file to inspect.",
+    "zh-CN": "请选择要查看的文件。",
+    "reviewedEnglishHash": "a0b86e47403ff91473cf26b782fcd7a8bd3ed97f04391091f34ceafb79858af4"
+  },
   "Select a frame from the chronological trace.": {
     "en": "Select a frame from the chronological trace.",
     "zh-CN": "从时间轨迹中选择一个帧。",
@@ -778,6 +828,11 @@
     "en": "Select an organization to connect an assistant.",
     "zh-CN": "请选择一个组织以连接助手。",
     "reviewedEnglishHash": "8dc99bb0583b6cbfff3f73e2b8136e87f3ab1f58cf55f7010202da1877ee8c38"
+  },
+  "Select an organization to connect apps.": {
+    "en": "Select an organization to connect apps.",
+    "zh-CN": "请选择一个组织以连接应用。",
+    "reviewedEnglishHash": "53e388f16d3400e24918af127f8b7d0db9a99c90b57ed60e1607a185ab2ebe1a"
   },
   "Select an organization to connect chat.": {
     "en": "Select an organization to connect chat.",
@@ -1024,6 +1079,11 @@
     "zh-CN": "选择工作区",
     "reviewedEnglishHash": "d5cd6523532495bf0dfea218f44a67a47cdd96854aec7743e3e9be27118fef44"
   },
+  "Selected by harness": {
+    "en": "Selected by harness",
+    "zh-CN": "由运行框架选择",
+    "reviewedEnglishHash": "9b76df1b8bda67bafa163dab48da247162f617c4697eb2b4887d45231dc484d3"
+  },
   "Selected members": {
     "en": "Selected members",
     "zh-CN": "选定的成员",
@@ -1069,6 +1129,11 @@
     "zh-CN": "发送",
     "reviewedEnglishHash": "f6f4688ff23d50c67053963c251fa0ce64a925cf283537cf066b1f362cb9b778"
   },
+  "Send (⌘+Enter)": {
+    "en": "Send (⌘+Enter)",
+    "zh-CN": "发送（⌘+Enter）",
+    "reviewedEnglishHash": "b5f7acc1f87d8c26ecb3b3d070f7d5433d80c0cb8b4f09342c036c449131a871"
+  },
   "Send /new to start a fresh session and resume this conversation.": {
     "en": "Send /new to start a fresh session and resume this conversation.",
     "zh-CN": "发送 /new 以开始新会话并继续此对话。",
@@ -1093,6 +1158,16 @@
     "en": "Send an event from",
     "zh-CN": "发送事件来自",
     "reviewedEnglishHash": "af0f9889db034fbead9c459355bbe4477b7fe32f5b92eef866129535d8665c20"
+  },
+  "Send and read messages in your channels.": {
+    "en": "Send and read messages in your channels.",
+    "zh-CN": "在你的频道中收发消息。",
+    "reviewedEnglishHash": "ac88b53e12649607c7c11f706edfbb413259c2c760eaea8648389c58b22c2f72"
+  },
+  "Send and read messages in your team's channels.": {
+    "en": "Send and read messages in your team's channels.",
+    "zh-CN": "在团队频道中收发消息。",
+    "reviewedEnglishHash": "c253067685e711419e4f3d659efb911ca4a2ee24b7be757a8439afbb6a4e66ec"
   },
   "Send back": {
     "en": "Send back",
@@ -1168,6 +1243,11 @@
     "en": "Session key",
     "zh-CN": "会话键",
     "reviewedEnglishHash": "2319ec27475054a2fefa35a75f017ad906db6cb99dff1d2d60b293eee5fa5754"
+  },
+  "Session spend ceiling (USD)": {
+    "en": "Session spend ceiling (USD)",
+    "zh-CN": "会话支出上限（美元）",
+    "reviewedEnglishHash": "6903345a55bd3d1a34ee43492d6f8c4f7f21509bcca554c2740c39a924bb9bbb"
   },
   "Session strategy": {
     "en": "Session strategy",
@@ -1284,6 +1364,11 @@
     "zh-CN": "设置已完成。正在引导您创建您的第一个组织...",
     "reviewedEnglishHash": "6e267116ea34ca143f5b0b37637af4d18a0f4bc52433e7eb0bae5725f5d27972"
   },
+  "Setup needs attention": {
+    "en": "Setup needs attention",
+    "zh-CN": "设置需要处理",
+    "reviewedEnglishHash": "39d845bcc1d7d29ae585d823dfe8e45c3a22323855fe34212e0f90b3ca87de55"
+  },
   "Setup prompt": {
     "en": "Setup prompt",
     "zh-CN": "设置提示",
@@ -1319,6 +1404,11 @@
     "zh-CN": "将这些说明分享给您的 Slack 工作区中的其他人员。",
     "reviewedEnglishHash": "8e287a8c9c7dc04e1903b4637199b297089392aabc01479e34e7ad8863b78f97"
   },
+  "Shared": {
+    "en": "Shared",
+    "zh-CN": "共享",
+    "reviewedEnglishHash": "e3c4b39d6d5013477c98cd58236fed455f37aa7017b7168ce1980a449aaf438a"
+  },
   "Shared AI connection identity, account selection, and existing authentication chrome. The full interactive state matrix lives in Storybook under AI Connections / Review. Example controls below do not connect accounts.": {
     "en": "Shared AI connection identity, account selection, and existing authentication chrome. The full interactive state matrix lives in Storybook under AI Connections / Review. Example controls below do not connect accounts.",
     "zh-CN": "共享 AI 连接身份、账户选择和现有身份验证 chrome。完整的交互式状态矩阵位于 Storybook 中的 AI Connections / Review 下。下面的示例控件不连接账户。",
@@ -1343,6 +1433,11 @@
     "en": "Share…",
     "zh-CN": "共享",
     "reviewedEnglishHash": "51fc2d24df51a2c3d2e9edac3232a7652c17eb5b692dae6691f46f8e3ec9dc5c"
+  },
+  "Sharing": {
+    "en": "Sharing",
+    "zh-CN": "共享",
+    "reviewedEnglishHash": "bbedc70e985fe0b6b32c173bf2676cab7d103138c05397f2835d821715b48a89"
   },
   "Sheet": {
     "en": "Sheet",
@@ -1494,6 +1589,11 @@
     "zh-CN": "显示前 250 个条目。",
     "reviewedEnglishHash": "ba9ceb98d16f702ec764da5037394a6eb7535a9ffe06c4776bb55116954c5185"
   },
+  "Showing the first 64 KB. The complete file is imported.": {
+    "en": "Showing the first 64 KB. The complete file is imported.",
+    "zh-CN": "显示前 64 KB，完整文件已导入。",
+    "reviewedEnglishHash": "c2a5bddad63c4769d6f7f317e1bb52093ab7b87f5bd8c00a56ff9c574004cca0"
+  },
   "Showing the first {{size}} KB": {
     "en": "Showing the first {{size}} KB",
     "zh-CN": "正在显示前 {{size}} KB",
@@ -1539,10 +1639,20 @@
     "zh-CN": "侧边栏导航项",
     "reviewedEnglishHash": "51d712dbf5fa37283dab15e6fade738414310985344b937f179b5b926c5bef4f"
   },
+  "Sign in": {
+    "en": "Sign in",
+    "zh-CN": "登录",
+    "reviewedEnglishHash": "bfd402b2f6f3812529b55596136d3a11c51616317e3b1cd999928e2d4eae7d3f"
+  },
   "Sign in / Create account": {
     "en": "Sign in / Create account",
     "zh-CN": "登录 / 创建账号",
     "reviewedEnglishHash": "5d4f5eb117173ca08f73015e55c801cc28dbdacea8a6349890e08213047f38be"
+  },
+  "Sign in again to repair your current default account. Its agent access stays the same.": {
+    "en": "Sign in again to repair your current default account. Its agent access stays the same.",
+    "zh-CN": "重新登录以修复你当前的默认账户，其智能体访问权限保持不变。",
+    "reviewedEnglishHash": "42e7931cf8da8f4777412eef86707dc9bd640be80895e3af774098175eb443f6"
   },
   "Sign in again to restore access.": {
     "en": "Sign in again to restore access.",
@@ -1568,6 +1678,21 @@
     "en": "Sign in to connect an assistant. This requires a Paperclip instance with authenticated user accounts.",
     "zh-CN": "请先登录再连接助手。此功能需要启用用户身份验证的 Paperclip CN 实例。",
     "reviewedEnglishHash": "bcc9bc5c8e7562b3a7ce9d97568c69a91876c099ed00f44866c3e9a9c53ca45f"
+  },
+  "Sign in with Gauge and pick an organization. API keys are optional.": {
+    "en": "Sign in with Gauge and pick an organization. API keys are optional.",
+    "zh-CN": "使用 Gauge 登录并选择组织。API 密钥可选。",
+    "reviewedEnglishHash": "a7f7624a71713d3245feaef25eb2df9ab46a8810be6c7a670d3ce4672a91b025"
+  },
+  "Sign in with Neon. Project pinning and read-only mode are optional.": {
+    "en": "Sign in with Neon. Project pinning and read-only mode are optional.",
+    "zh-CN": "使用 Neon 登录。项目固定和只读模式可选。",
+    "reviewedEnglishHash": "5c9367b203c16499595d90d426007c71c0d9a4cf42df5febdee13574d9a39dc3"
+  },
+  "Sign in with PostHog. Project pinning and access controls are optional.": {
+    "en": "Sign in with PostHog. Project pinning and access controls are optional.",
+    "zh-CN": "使用 PostHog 登录。项目固定和访问控制可选。",
+    "reviewedEnglishHash": "634518072aa2a3f8a30b9ba137184af105826a86f71c0ca63bcdf7691ba5b08c"
   },
   "Sign in with your": {
     "en": "Sign in with your",
@@ -1708,6 +1833,11 @@
     "en": "Skills applied",
     "zh-CN": "已应用技能",
     "reviewedEnglishHash": "dc1826ca60eef3e5f0c85c5c61feb580ff0de9c471dd3574491aaf6870881b7c"
+  },
+  "Skills available to this organization.": {
+    "en": "Skills available to this organization.",
+    "zh-CN": "此组织可用的技能。",
+    "reviewedEnglishHash": "18972454e83562046e8ef73858bb54150a6c3274c33e08a8ed90bb33c4e95869"
   },
   "Skills checked": {
     "en": "Skills checked",
@@ -2248,6 +2378,11 @@
     "en": "Subscription ended",
     "zh-CN": "订阅结束",
     "reviewedEnglishHash": "5048e351a312acb170552a7221b13b666ca16dca6c1e9b2a60acc0f92c82fd66"
+  },
+  "Subscription price": {
+    "en": "Subscription price",
+    "zh-CN": "订阅价格",
+    "reviewedEnglishHash": "c0c1679b46bfcf0503f31c56551d6c30d913214fa94ec9e63b8792efcd2722f6"
   },
   "Subscription quota": {
     "en": "Subscription quota",

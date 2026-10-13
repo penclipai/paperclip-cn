@@ -34,17 +34,25 @@ export function CloudAccessError({
       <RefreshCw className="size-6 text-muted-foreground" aria-hidden="true" />
       <div className="flex flex-col gap-2" role="status">
         <h1 className="text-xl font-semibold">
-          {temporary ? t("Reconnecting to Paperclip") : t("Unable to load Paperclip")}
+          {temporary
+            ? t("cloudAccess.error.reconnectingTitle", { defaultValue: "Reconnecting to Paperclip" })
+            : t("cloudAccess.error.unableToLoadTitle", { defaultValue: "Unable to load Paperclip" })}
         </h1>
         <p className="text-sm text-muted-foreground">
           {temporary
-            ? t("The server may be restarting or your connection was interrupted. We’ll try again every few seconds and reconnect automatically.")
-            : t("We couldn’t check your access to this instance. Try again, or contact your instance administrator if this continues.")}
+            ? t("cloudAccess.error.reconnectingDescription", {
+                defaultValue:
+                  "The server may be restarting or your connection was interrupted. We’ll try again every few seconds and reconnect automatically.",
+              })
+            : t("cloudAccess.error.unableToLoadDescription", {
+                defaultValue:
+                  "We couldn’t check your access to this instance. Try again, or contact your instance administrator if this continues.",
+              })}
         </p>
       </div>
       <div>
         <Button variant="outline" onClick={onRetry} disabled={retrying}>
-          {retrying ? t("Connecting…") : t("Try again")}
+          {retrying ? t("cloudAccess.error.connecting", { defaultValue: "Connecting…" }) : t("Try again")}
         </Button>
       </div>
     </div>
@@ -56,12 +64,19 @@ function NoBoardAccessPage() {
   return (
     <div className="mx-auto max-w-xl py-10">
       <Card className="block p-6">
-        <h1 className="text-xl font-semibold">{t("No organization access")}</h1>
+        <h1 className="text-xl font-semibold">
+          {t("cloudAccess.noBoardAccess.title", { defaultValue: "No organization access" })}
+        </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          {t("This account is signed in, but it does not have an active organization membership or instance-admin access on this Paperclip instance.")}
+          {t("cloudAccess.noBoardAccess.description", {
+            defaultValue:
+              "This account is signed in, but it does not have an active organization membership or instance-admin access on this Paperclip instance.",
+          })}
         </p>
         <p className="mt-2 text-sm text-muted-foreground">
-          {t("Use an organization invite or sign in with an account that already belongs to this org.")}
+          {t("cloudAccess.noBoardAccess.invite", {
+            defaultValue: "Use an organization invite or sign in with an account that already belongs to this org.",
+          })}
         </p>
       </Card>
     </div>

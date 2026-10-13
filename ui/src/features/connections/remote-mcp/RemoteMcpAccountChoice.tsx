@@ -30,26 +30,22 @@ export function RemoteMcpAccountChoice({
       <div>
         <h1 className="text-xl font-bold">
           {upstreamServiceName
-            ? `Connect ${upstreamServiceName} through ${providerName}`
-            : `Connect ${providerName}`}
+            ? translateInstant("connectionUi.accountChoice.connectThrough", { service: upstreamServiceName, provider: providerName })
+            : `${translateInstant("Connect")} ${providerName}`}
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Use an existing connection or connect a new account. Existing access
-          stays unchanged.
+          {translateInstant("Use an existing connection or connect a new account. Existing access stays unchanged.")}
         </p>
       </div>
       {upstreamServiceName && (
         <InlineBanner compact>
-          {providerName} is an external service that handles the connection and
-          requests to {upstreamServiceName}. Reusing this account does not yet
-          verify app access; the agent will check it and guide any additional
-          authorization.
+          {translateInstant("connectionUi.accountChoice.externalProviderNotice", { provider: providerName, service: upstreamServiceName })}
         </InlineBanner>
       )}
       <ConnectionChoiceList
         choices={connections.map((connection) => ({
           ...connection,
-          description: "Provider account available",
+          description: translateInstant("Provider account available"),
         }))}
         pendingId={pendingId}
         onSelect={onSelect}
@@ -66,7 +62,7 @@ export function RemoteMcpAccountChoice({
           onClick={onCancel}
         >{translateInstant("Cancel")}</Button>
         <Button disabled={Boolean(pendingId)} onClick={onConnectNew}>
-          Connect new
+          {translateInstant("Connect new")}
         </Button>
       </div>
     </div>

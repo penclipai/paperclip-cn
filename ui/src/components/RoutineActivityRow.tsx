@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ChevronRight } from "lucide-react";
 import type { ActivityEvent } from "@penclipai/shared";
 import { cn } from "@/lib/utils";
@@ -13,15 +14,28 @@ function formatTime(value: string | Date): string {
   }
 }
 
-function summarizeEvent(event: RoutineActivityEvent): string {
+function summarizeEvent(
+  event: RoutineActivityEvent,
+  t: (key: string, options?: Record<string, unknown>) => string,
+): string {
   const details = event.details;
-  if (event.action === "routine.webhook_test_received") return "Connection working · No run or task created";
-  if (event.action === "routine.webhook_test_rejected") return "Update the key in your app and resend";
-  if (event.action === "routine.webhook_received") return "Authentication passed";
-  if (event.action === "routine.webhook_rejected") return "Check the key in your sending app";
+  if (event.action === "routine.webhook_test_received") return t("routineActivity.webhookTestReceivedSummary");
+  if (event.action === "routine.webhook_test_rejected") return t("routineActivity.webhookTestRejectedSummary");
+  if (event.action === "routine.webhook_received") return t("routineActivity.webhookReceivedSummary");
+  if (event.action === "routine.webhook_rejected") return t("routineActivity.webhookRejectedSummary");
   if (!details) return "";
   if (typeof details.changeSummary === "string") return details.changeSummary;
-  if (event.action === "routine.run_triggered") return `${details.source === "webhook" ? "Webhook" : details.source === "schedule" ? "Schedule" : "Manual"} · ${details.status === "issue_created" ? "Task created" : String(details.status ?? "").replaceAll("_", " ")}`;
+  if (event.action === "routine.run_triggered") {
+    const source = details.source === "webhook"
+      ? t("routineDetail.source.webhook")
+      : details.source === "schedule"
+        ? t("routineDetail.source.schedule")
+        : t("routineDetail.source.manual");
+    const status = details.status === "issue_created"
+      ? t("routineActivity.taskCreated")
+      : String(details.status ?? "").replaceAll("_", " ");
+    return t("routineActivity.runTriggeredSummary", { source, status });
+  }
   return Object.entries(details).filter(([key]) => !/id$/i.test(key)).slice(0, 3)
     .map(([key, value]) => `${key.replace(/([a-z])([A-Z])/g, "$1 $2").replaceAll("_", " ").toLowerCase()}: ${formatDetailValue(value)}`)
     .join(" · ");
@@ -44,19 +58,22 @@ const actionLabels: Record<string, string> = {
   "routine.webhook_test_rejected": "Connection test rejected",
   "routine.webhook_received": "Webhook event received",
   "routine.webhook_rejected": "Webhook authentication failed",
-  "routine.created": "Routine created", "routine.updated": "Routine updated",
-  "routine.trigger_created": "Trigger added", "routine.trigger_updated": "Trigger updated",
+  "routine.created": "routines.createSuccess", "routine.updated": "Routine updated",
+  "routine.trigger_created": "routineDetail.triggerAdded", "routine.trigger_updated": "Trigger updated",
   "routine.trigger_deleted": "Trigger removed", "routine.trigger_removed": "Trigger removed", "routine.trigger_restored": "Trigger restored", "routine.trigger_setup_finished": "Webhook setup finished", "routine.trigger_secret_rotated": "Webhook key replaced",
-  "routine.run_triggered": "Routine started", "routine.run_created": "Run created",
+  "routine.run_triggered": "executionWorkspace.routineStarted", "routine.run_created": "Run created",
 };
-function actionLabel(action: string) {
-  return actionLabels[action] ?? action.replace(/^routine[._]/, "").replaceAll("_", " ").replaceAll(".", " ").replace(/^./, (char) => char.toUpperCase());
+function actionLabel(action: string, t: (key: string) => string) {
+  const labelKey = actionLabels[action];
+  return labelKey ? t(labelKey) : action.replace(/^routine[._]/, "").replaceAll("_", " ").replaceAll(".", " ").replace(/^./, (char) => char.toUpperCase());
 }
 
 /** Activity log row with an expandable JSON payload (§3.7). */
 export function RoutineActivityRow({ event }: { event: RoutineActivityEvent }) {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const hasPayload = event.details != null && Object.keys(event.details).length > 0;
+  const summary = summarizeEvent(event, t);
 
   return (
     <div className="border-b border-border/60 last:border-b-0">
@@ -74,10 +91,10 @@ export function RoutineActivityRow({ event }: { event: RoutineActivityEvent }) {
           {formatTime(event.createdAt)}
         </span>
         <span title={event.action} className="min-w-0 max-w-1/2 shrink-0 truncate font-medium text-foreground">
-          {actionLabel(event.action)}
+          {actionLabel(event.action, t)}
         </span>
-        <span title={summarizeEvent(event)} className="min-w-0 flex-1 truncate text-muted-foreground">
-          {summarizeEvent(event)}
+        <span title={summary} className="min-w-0 flex-1 truncate text-muted-foreground">
+          {summary}
         </span>
         {hasPayload ? (
           <ChevronRight

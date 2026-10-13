@@ -133,7 +133,7 @@ function shapeError(error: unknown): { message: string; status?: number } {
 }
 
 export function Search() {
-  useTranslation();
+  const { t } = useTranslation();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { openNewIssue } = useDialogActions();
@@ -605,7 +605,7 @@ export function Search() {
                 <button
                   key={suggestion.token}
                   type="button"
-                  aria-label={`Insert operator ${suggestion.token}`}
+                  aria-label={t("searchPage.insertOperatorAria", { operator: suggestion.token })}
                   onMouseDown={(event) => event.preventDefault()}
                   onClick={() => {
                     setDraftQuery(applySearchOperatorSuggestion(draftQuery, suggestion.token));
@@ -761,7 +761,7 @@ function SearchTabContent({
   isFetching,
   agentsById,
 }: SearchTabContentProps) {
-  useTranslation();
+  const { t } = useTranslation();
   if (showInitialState) {
     return (
       <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-4 py-10 sm:px-6">
@@ -883,13 +883,11 @@ function SearchTabContent({
       <div className="flex items-center justify-between py-2 text-(length:--text-micro) uppercase tracking-wide text-muted-foreground">
         <span>
           {allMatchTotal > totalResults
-            ? `${totalResults} of ${allMatchTotal} results`
-            : totalResults === 1
-              ? "1 result"
-              : `${totalResults} results`}
-          {` · sorted by ${sortLabel}`}
+            ? t("searchPage.resultsCountLimited", { shown: totalResults, total: allMatchTotal })
+            : t("searchPage.resultsCount", { count: totalResults })}
+          {t("searchPage.sortedBy", { sort: sortLabel })}
           {activeFilterCount > 0
-            ? ` · ${activeFilterCount} ${activeFilterCount === 1 ? "filter" : "filters"} active`
+            ? t("searchPage.activeFiltersCount", { count: activeFilterCount })
             : ""}
         </span>
         {isFetching ? <span aria-live="polite" className="normal-case tracking-normal">{translateInstant("Updating…")}</span> : null}

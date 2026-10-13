@@ -1,0 +1,32 @@
+{
+  "routineActivity.runTriggeredSummary": {
+    "en": "{{source}} · {{status}}",
+    "zh-CN": "{{source}} · {{status}}",
+    "reviewedEnglishHash": "22d393b8fefa0db172f3b334bcfa559a6e2c3434ecb1bfa67543e8bd0ee20e67"
+  },
+  "routineActivity.taskCreated": {
+    "en": "Task created",
+    "zh-CN": "任务已创建",
+    "reviewedEnglishHash": "a3e3e968c40e595189674d8774224cc6fe6611d31d6fa8f5d7084fb5241f84ae"
+  },
+  "routineActivity.webhookReceivedSummary": {
+    "en": "Authentication passed",
+    "zh-CN": "身份验证已通过",
+    "reviewedEnglishHash": "0e41aef6bc7c50fd785788f3d051aa697992a5d05d675bc529bc7a9495ed6074"
+  },
+  "routineActivity.webhookRejectedSummary": {
+    "en": "Check the key in your sending app",
+    "zh-CN": "请检查发送应用中的密钥",
+    "reviewedEnglishHash": "27adf52489cf3d6639ad8193150226e631561aa21da3b54b2e55496db7f9891d"
+  },
+  "routineActivity.webhookTestReceivedSummary": {
+    "en": "Connection working · No run or task created",
+    "zh-CN": "连接正常 · 未创建运行或任务",
+    "reviewedEnglishHash": "eb762a3d43e0dd4feef4585e491772400b00a939d964c2676820aa5999196057"
+  },
+  "routineActivity.webhookTestRejectedSummary": {
+    "en": "Update the key in your app and resend",
+    "zh-CN": "请在应用中更新密钥后重新发送",
+    "reviewedEnglishHash": "a3b5a0e769b3033bf6a2d3c78b2d81f514cac65f65743783b22c1a05124c4d95"
+  }
+}

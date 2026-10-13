@@ -233,8 +233,8 @@ export function BreadcrumbBar({ taskDetailLayout = false }: { taskDetailLayout?:
           size="icon-sm"
           className="ml-5 size-9 shrink-0 text-muted-foreground"
           onClick={toggleTaskPanel}
-          aria-label={taskPanelOpen ? t("Hide properties") : t("Show properties")}
-          title={taskPanelOpen ? t("Hide properties") : t("Show properties")}
+          aria-label={taskPanelOpen ? t("breadcrumb.hideProperties") : t("Show properties")}
+          title={taskPanelOpen ? t("breadcrumb.hideProperties") : t("Show properties")}
         >
           {taskPanelOpen ? <PanelRightClose className="h-4 w-4" /> : <PanelRightOpen className="h-4 w-4" />}
         </Button>

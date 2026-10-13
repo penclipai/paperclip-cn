@@ -1,4 +1,13 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { createInstance } from "i18next";
+import en from "../../public/locales/en/common.json";
+import zh from "../../public/locales/zh-CN/common.json";
+
+const translationState = vi.hoisted(() => ({ translate: (key: string, _options?: Record<string, unknown>) => key }));
+
+vi.mock("@/i18n", () => ({
+  translateInstant: (key: string, options?: Record<string, unknown>) => translationState.translate(key, options),
+}));
 import type { AttentionFeed, AttentionItem, AttentionSourceKind } from "@penclipai/shared";
 import {
   ATTENTION_GROUP_BY_KEY,
@@ -25,6 +34,22 @@ import {
   sortAttentionItems,
   sourceMeta,
 } from "./attention";
+
+const i18n = createInstance();
+
+beforeAll(async () => {
+  await i18n.init({
+    lng: "en",
+    fallbackLng: "en",
+    keySeparator: false,
+    resources: { en: { translation: en }, "zh-CN": { translation: zh } },
+  });
+  translationState.translate = (key, options) => i18n.t(key, options);
+});
+
+beforeEach(async () => {
+  await i18n.changeLanguage("en");
+});
 
 function buildItem(overrides: Partial<AttentionItem> = {}): AttentionItem {
   return {
@@ -583,6 +608,31 @@ describe("buildAttentionFilterOptions", () => {
     expect(options.workspaces.map((w) => w.id)).toEqual(["w1"]);
     expect(options.hasNoProject).toBe(true);
     expect(options.hasNoWorkspace).toBe(true);
+  });
+
+  it("updates source labels after a language switch while preserving filter and group identities", async () => {
+    const previousLanguage = i18n.language;
+    const items = [
+      buildItem({ id: "approval", sourceKind: "approval" }),
+      buildItem({ id: "join", sourceKind: "join_request" }),
+    ];
+
+    try {
+      await i18n.changeLanguage("en");
+      const englishOptions = buildAttentionFilterOptions(items);
+      const englishGroups = groupAttentionItems(items, "type");
+      expect(sourceMeta("approval").label).toBe("Approval");
+
+      await i18n.changeLanguage("zh-CN");
+      const chineseOptions = buildAttentionFilterOptions(items);
+      const chineseGroups = groupAttentionItems(items, "type");
+      expect(sourceMeta("approval").label).toBe("审批");
+      expect([...chineseOptions.sourceKinds].sort()).toEqual([...englishOptions.sourceKinds].sort());
+      expect(chineseGroups.map((group) => group.key).sort()).toEqual(englishGroups.map((group) => group.key).sort());
+      expect(chineseGroups.flatMap((group) => group.items.map((item) => item.id)).sort()).toEqual(["approval", "join"]);
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
   });
 });
 

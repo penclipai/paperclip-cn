@@ -219,6 +219,11 @@
     "zh-CN": "导入公司",
     "reviewedEnglishHash": "e333ee2b08b227b7f5192c427eab2d904b4d301229b0001cc7bed494ec65f3eb"
   },
+  "Import completed": {
+    "en": "Import completed",
+    "zh-CN": "导入已完成",
+    "reviewedEnglishHash": "69135372f0c4f5932599f73cd581a933674e5282c2274c51d3cecf88b80215a5"
+  },
   "Import folder Repository": {
     "en": "Import folder Repository",
     "zh-CN": "导入仓库文件夹",
@@ -238,6 +243,11 @@
     "en": "Import from URL or path",
     "zh-CN": "从 URL 或路径导入",
     "reviewedEnglishHash": "ca5062300ad54d8a46999232e435fd7f45c8bba0dbe03f47f328a9f6dd21befc"
+  },
+  "Import into this organization or create a new one.": {
+    "en": "Import into this organization or create a new one.",
+    "zh-CN": "导入到此组织，或新建一个组织。",
+    "reviewedEnglishHash": "a801114169b946fd7c3f84acebc109be08626679c6d0b99b7f7cc1362b68b0ae"
   },
   "Import organization": {
     "en": "Import organization",
@@ -384,6 +394,11 @@
     "zh-CN": "包含在每个 GitHub 任务中。输入 / 可选择智能体要使用的技能。",
     "reviewedEnglishHash": "5fd094270b6fce2242048424e9c64fb5930f2d4690f22f1102b8ad794bc68d2a"
   },
+  "Included package files": {
+    "en": "Included package files",
+    "zh-CN": "包含的包文件",
+    "reviewedEnglishHash": "a6ae33f32f56ddedd1c14cf3fca36f09863e902d5d5959f79786ee89f6c71f85"
+  },
   "Includes": {
     "en": "Includes",
     "zh-CN": "包括",
@@ -403,6 +418,11 @@
     "en": "Incoming email creates tasks for",
     "zh-CN": "收到邮件后，会为以下智能体创建任务：",
     "reviewedEnglishHash": "03722ca1c518f68951a07ce7dec523c5d5a3e8f585aa47b5c6cc253760e26525"
+  },
+  "Incompatible": {
+    "en": "Incompatible",
+    "zh-CN": "不兼容",
+    "reviewedEnglishHash": "8777e3a9e3ec54a016500ed03f79cdcbebe135d6505cca8fa5dc6c4d6767d72a"
   },
   "Independent of Chat connectors. Turning this off hides setup and management; existing bots keep running. GitHub tool connections stay available.": {
     "en": "Independent of Chat connectors. Turning this off hides setup and management; existing bots keep running. GitHub tool connections stay available.",
@@ -468,6 +488,11 @@
     "en": "Inspect run",
     "zh-CN": "检查运行",
     "reviewedEnglishHash": "2671a485bfeea8203131f87b78ffce9eaae65e0e48f118c2d5e9c8c77ebbac29"
+  },
+  "Inspect services, read logs, and manage deployments.": {
+    "en": "Inspect services, read logs, and manage deployments.",
+    "zh-CN": "检查服务、读取日志并管理部署。",
+    "reviewedEnglishHash": "1c648e95cba3dad11d7a32b09d79f568bc0c93ee1b29cb9dbf9c5d4ba03ea845"
   },
   "Inspect {{name}} input": {
     "en": "Inspect {{name}} input",
@@ -573,6 +598,11 @@
     "en": "Installed in the shared Claude/OpenCode skills home.",
     "zh-CN": "已安装到共享的 Claude/OpenCode 技能目录。",
     "reviewedEnglishHash": "09ebe32049e5331c58c523fead0f501a8ec18267e21e241a75bc50cd730abbd5"
+  },
+  "Installed skills": {
+    "en": "Installed skills",
+    "zh-CN": "已安装的技能",
+    "reviewedEnglishHash": "39cd5c4eaaade8b3052242d9f57115b85a6bd7000431c41227a19bfcceaf2e55"
   },
   "Installed ·": {
     "en": "Installed ·",
@@ -699,6 +729,11 @@
     "zh-CN": "说明文件包仅适用于本地适配器。",
     "reviewedEnglishHash": "ac25d90e4493d1c807840c22b97a69bf7be4061b2190561c827b3bc6a45c4ce4"
   },
+  "Instructions text": {
+    "en": "Instructions text",
+    "zh-CN": "说明文本",
+    "reviewedEnglishHash": "4300daf3dc1d7e031dd20113e856558ffa8e1d5ce6b037127421cb07e3da77f1"
+  },
   "Internal server error": {
     "en": "Internal server error",
     "zh-CN": "服务器内部错误",
@@ -758,6 +793,11 @@
     "en": "Interrupting...",
     "zh-CN": "正在中断...",
     "reviewedEnglishHash": "f60f33ede21dceccda0e76cab49570fb72ffcb00f474c7d8ceb1e2611c247363"
+  },
+  "Invalid": {
+    "en": "Invalid",
+    "zh-CN": "无效",
+    "reviewedEnglishHash": "96c34a0719eb565c268a1626c44313a20de4f83927890933bd9b480849adb76c"
   },
   "Invalid org chain": {
     "en": "Invalid org chain",
@@ -873,6 +913,11 @@
     "en": "Invocation ID",
     "zh-CN": "调用 ID",
     "reviewedEnglishHash": "56d237ee606ca2dd8d5070926b0ff7dc22c8c1ca7f2f0c9381a835f3d227cddb"
+  },
+  "Invocation timeout (seconds)": {
+    "en": "Invocation timeout (seconds)",
+    "zh-CN": "调用超时（秒）",
+    "reviewedEnglishHash": "113606532fb81988b3958127378bc4cfc6d2ae06b8e9aae92bff4bbee9f73444"
   },
   "Invoice": {
     "en": "Invoice",
@@ -1033,6 +1078,11 @@
     "en": "if needed.",
     "zh-CN": "（如有需要）。",
     "reviewedEnglishHash": "80b41565d71ab28e4f6a7f459c7dc87f43ab77b2cf0898d7da5462f3360f4496"
+  },
+  "imported paused": {
+    "en": "imported paused",
+    "zh-CN": "已导入（已暂停）",
+    "reviewedEnglishHash": "d84db03f67700e1adc8e48aaae986f1718303df59627ff5330ef42c6761a1406"
   },
   "in": {
     "en": "in",

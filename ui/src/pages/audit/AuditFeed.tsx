@@ -33,7 +33,7 @@ const ALL = "__all";
 
 /** Action-domain prefixes offered in the filter (server does a prefix match). */
 const ACTION_DOMAINS: { value: string; label: string }[] = [
-  { value: ALL, label: "All actions" },
+  { value: ALL, get label() { return translateInstant("auditFeed.allActions"); } },
   { value: "issue.", label: "Tasks" },
   { value: "agent.", get label() { return translateInstant("Agents"); } },
   { value: "heartbeat.", get label() { return translateInstant("Runs"); } },
@@ -47,7 +47,7 @@ const ACTION_DOMAINS: { value: string; label: string }[] = [
 
 /** Entity types offered in the filter (server does an exact match). */
 const ENTITY_TYPES: { value: string; label: string }[] = [
-  { value: ALL, label: "All entities" },
+  { value: ALL, get label() { return translateInstant("auditFeed.allEntities"); } },
   { value: "issue", get label() { return translateInstant("Task"); } },
   { value: "agent", get label() { return translateInstant("Agent"); } },
   { value: "heartbeat_run", get label() { return translateInstant("Run"); } },
@@ -200,8 +200,9 @@ function AuditRow({
   agentMap: Map<string, Agent>;
   userProfileMap: Map<string, CompanyUserProfile>;
 }) {
-  useTranslation();
-  const verb = formatActivityVerb(record.action, record.details, { agentMap, userProfileMap });
+  const { t } = useTranslation();
+  const rawVerb = formatActivityVerb(record.action, record.details, { agentMap, userProfileMap });
+  const verb = t(rawVerb, { defaultValue: rawVerb });
   const responsible = record.responsibleUserId ? userProfileMap.get(record.responsibleUserId) : null;
   // Suppress the "on behalf of" chip when the human actor *is* the responsible user.
   const showOnBehalf = Boolean(
@@ -506,7 +507,7 @@ export function AuditFeed({
             <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
               {resolvedMode === "agents"
                 ? translateInstant("companyActivity.agentDescription")
-                : "Everything happening in your organization, newest first — people, agents, and the system. Each line is one recorded action."}
+                : translateInstant("Everything happening in your organization, newest first — people, agents, and the system. Each line is one recorded action.")}
             </p>
           </div>
         </div>
@@ -607,7 +608,7 @@ export function AuditFeed({
           </label>
         ) : null}
         <label className="grid gap-1 text-(length:--text-micro) font-medium text-muted-foreground">
-          <span>From</span>
+          <span>{translateInstant("whatNeedsMe.dateRange.from")}</span>
           <Input
             type="date"
             aria-label={translateInstant("auditFeed.fromDate")}

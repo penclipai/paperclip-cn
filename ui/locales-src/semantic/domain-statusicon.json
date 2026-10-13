@@ -63,5 +63,10 @@
     "en": "Blocked · waiting on 1 active sub-task",
     "zh-CN": "已阻塞 · 等待 1 个活跃子任务",
     "reviewedEnglishHash": "5878bbf4332d97a2e720e5f119496a528496332c2615e710adcd39560be4b525"
+  },
+  "statusIcon.changeStatusAria": {
+    "en": "Change status (current: {{status}})",
+    "zh-CN": "更改状态（当前：{{status}}）",
+    "reviewedEnglishHash": "042fa3dbbeaa7a9abbfef6104fe6f75e176c8739e4b9a84667cfa1db169e451f"
   }
 }

@@ -153,12 +153,12 @@ function CopyUrlButton({ url, disabled }: { url: string; disabled?: boolean }) {
 }
 
 function UrlSegment({ entry, compact }: { entry: WorkspaceServiceControlEntry; compact?: boolean }) {
-  useTranslation();
+  const { t } = useTranslation();
   const displayUrl = formatServiceUrl(entry.url) ?? (entry.port ? `:${entry.port}` : null);
   const live = entry.state === "running" && Boolean(entry.url);
 
   if (!displayUrl) {
-    return <span className="font-mono text-xs text-muted-foreground/70">{translateInstant("workspaceServiceControl.noUrl")}</span>;
+    return <span className="font-mono text-xs text-muted-foreground/70">{t("workspaceServiceControl.noUrl")}</span>;
   }
   return (
     <>
@@ -188,10 +188,10 @@ function UrlSegment({ entry, compact }: { entry: WorkspaceServiceControlEntry; c
           size="icon-xs"
           disabled={!live}
           className="text-muted-foreground hover:text-foreground"
-          title={translateInstant("issueOutput.openInNewTab")}
+          title={t("workspaceServiceControl.openInNewTab")}
         >
           {live ? (
-            <a href={entry.url ?? undefined} target="_blank" rel="noreferrer" aria-label={translateInstant("issueOutput.openInNewTab")}>
+            <a href={entry.url ?? undefined} target="_blank" rel="noreferrer" aria-label={t("workspaceServiceControl.openInNewTab")}>
               <ExternalLink className="size-3" />
             </a>
           ) : (
@@ -210,7 +210,7 @@ function ActionSlots({
   entry: Pick<WorkspaceServiceControlEntry, "state" | "canStart">;
   onAction: (action: WorkspaceServiceControlAction) => void;
 }) {
-  useTranslation();
+  const { t } = useTranslation();
   const transitional = isTransitional(entry.state);
   const canStart = entry.canStart ?? true;
 
@@ -293,7 +293,7 @@ function ServiceDetail({
   entry: WorkspaceServiceControlEntry;
   onViewLogs?: () => void;
 }) {
-  useTranslation();
+  const { t } = useTranslation();
   const detail = entry.exposureDetail ?? (entry.state === "failed" ? entry.failureDetail : null);
   if (!detail) return null;
   const exposureFailed = entry.exposureState === "failed" || entry.exposureState === "cleanup_pending";
@@ -308,7 +308,7 @@ function ServiceDetail({
             onClick={onViewLogs}
             className="font-medium text-foreground underline underline-offset-2 hover:text-foreground/80"
           >
-            {translateInstant("workspaceServiceControl.viewLogs")}</button>
+            {t("workspaceServiceControl.viewLogs")}</button>
         </>
       ) : null}
     </div>
@@ -430,7 +430,7 @@ function MultiServiceBar({
   defaultServicesOpen?: boolean;
   className?: string;
 }) {
-  useTranslation();
+  const { t } = useTranslation();
   const [open, setOpen] = useState(defaultServicesOpen ?? false);
   const runningCount = services.filter((entry) => entry.state === "running").length;
   const anyTransitional = services.some((entry) => isTransitional(entry.state));
@@ -462,16 +462,16 @@ function MultiServiceBar({
               <button
                 type="button"
                 className="flex h-full items-center gap-2 rounded-l-lg pr-1 text-xs font-medium text-foreground hover:bg-accent"
-                aria-label={`${runningCount} of ${services.length} services running — show services`}
+                aria-label={t("workspaceServiceControl.runningCountAria", { runningCount, totalCount: services.length })}
               >
                 <StatusIndicator entry={aggregateEntry} />
-                <span className="whitespace-nowrap">{runningCount}/{services.length} {translateInstant("runStatus.running")}</span>
+                <span className="whitespace-nowrap">{t("workspaceServiceControl.runningCount", { runningCount, totalCount: services.length })}</span>
                 <ChevronDown className="size-3 text-muted-foreground" />
               </button>
             </PopoverTrigger>
             <PopoverContent align="end" className="w-96 p-0" onOpenAutoFocus={(event) => event.preventDefault()}>
               <div className="px-4 pb-1 pt-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                {translateInstant("Services ·")}{" "}{services.length}
+                {t("workspaceServiceControl.servicesCount", { count: services.length })}
               </div>
               <div className="divide-y divide-border px-4">
                 {services.map((entry) => (
@@ -479,9 +479,9 @@ function MultiServiceBar({
                 ))}
               </div>
               <div className="flex items-center gap-1 border-t border-border px-4 py-2">
-                <Button variant="ghost" size="xs" onClick={() => onAction("start", null)}>{translateInstant("workspaceServiceControl.startAll")}</Button>
-                <Button variant="ghost" size="xs" onClick={() => onAction("stop", null)}>{translateInstant("workspaceServiceControl.stopAll")}</Button>
-                <Button variant="ghost" size="xs" onClick={() => onAction("restart", null)}>{translateInstant("workspaceServiceControl.restartAll")}</Button>
+                <Button variant="ghost" size="xs" onClick={() => onAction("start", null)}>{t("workspaceServiceControl.startAll")}</Button>
+                <Button variant="ghost" size="xs" onClick={() => onAction("stop", null)}>{t("workspaceServiceControl.stopAll")}</Button>
+                <Button variant="ghost" size="xs" onClick={() => onAction("restart", null)}>{t("workspaceServiceControl.restartAll")}</Button>
                 {onManageServices ? (
                   <Button
                     variant="link"
@@ -489,7 +489,7 @@ function MultiServiceBar({
                     className="ml-auto text-muted-foreground"
                     onClick={onManageServices}
                   >
-                    {translateInstant("workspaceServiceControl.manageServices")}</Button>
+                    {t("workspaceServiceControl.manageServices")}</Button>
                 ) : null}
               </div>
             </PopoverContent>
@@ -502,7 +502,7 @@ function MultiServiceBar({
                 <UrlSegment entry={primary} />
               </>
             ) : (
-              <span className="font-mono text-xs text-muted-foreground/70">{translateInstant("workspaceServiceControl.noUrl")}</span>
+              <span className="font-mono text-xs text-muted-foreground/70">{t("workspaceServiceControl.noUrl")}</span>
             )}
           </div>
           <div className="mx-3 hidden h-5 w-px bg-border sm:block" />

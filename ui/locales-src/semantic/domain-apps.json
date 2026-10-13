@@ -1009,6 +1009,11 @@
     "zh-CN": "{{names}} 等 {{count}} 个",
     "reviewedEnglishHash": "62c152bb12b517f5da08c0a0106f5c6a348fd6c4a47481fde8fed3188c443086"
   },
+  "apps.connections.orSeparator": {
+    "en": " or ",
+    "zh-CN": " 或 ",
+    "reviewedEnglishHash": "e1a3e78cb5c8858631bf81f94369a0be3fd2aebb9e852e66368b381c8feef91f"
+  },
   "apps.connections.reviewArrow": {
     "en": "Review →",
     "zh-CN": "审阅 →",
@@ -2598,6 +2603,11 @@
     "en": "Couldn't update the app",
     "zh-CN": "无法更新应用",
     "reviewedEnglishHash": "b47c0d8cc1afadc27d285ec3d9ed24cd8dbf246a55224d59adc39094f09ca6d8"
+  },
+  "apps.gallery.yourAppKey": {
+    "en": "Your {{appName}} key",
+    "zh-CN": "你的 {{appName}} 密钥",
+    "reviewedEnglishHash": "e462f5a3f3b75d1f396d07f0fb2d5949292e392d663ec4233234223116d840ac"
   },
   "apps.gateways.activity.description": {
     "en": "Every call through this gateway in the last 7 days, with why it was allowed, blocked, or paused.",

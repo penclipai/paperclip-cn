@@ -150,7 +150,7 @@ export function ActionTestDialog({
           <p className="py-6 text-sm text-muted-foreground">{translateInstant("No agents are available to test as.")}</p>
         ) : accessQuery.isError && !accessQuery.data ? (
           <TestLoadError
-            message={`We couldn't load ${selectedAgentBase?.name ?? "this agent"}'s permissions.`}
+            message={translateInstant("connectionUi.actionTest.couldNotLoadPermissions", { agent: selectedAgentBase?.name ?? translateInstant("connectionUi.actionTest.thisAgent") })}
             onRetry={() => { void accessQuery.refetch(); }}
           />
         ) : !selectedAgent ? (
@@ -191,11 +191,11 @@ export function ActionTestDialog({
 
 const DECISION_META: Record<ToolConnectionTestDecision, DecisionMeta> = {
   allowed: {
-    label: "Allowed",
+    get label() { return translateInstant("Allowed"); },
     className: "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
   },
   ask_first: {
-    label: "Ask first",
+    get label() { return translateInstant("Ask first"); },
     className: "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300",
   },
   off: {
@@ -272,7 +272,7 @@ function AgentPicker({
             <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
             <Input
               aria-label={translateInstant("apps.detail.test.agentPicker.searchAria")}
-              placeholder="Search agents…"
+              placeholder={translateInstant("Search agents…")}
               className="h-8 pl-8 text-sm"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
@@ -322,8 +322,8 @@ function AgentPicker({
         <div className="border-t border-border p-3">
           <p className="text-xs font-semibold text-foreground">{translateInstant("apps.detail.test.agentPicker.badges.title")}</p>
           <ul className="mt-1.5 space-y-1 text-xs text-muted-foreground">
-            <li><span className="font-medium text-foreground">Allowed</span>{" "}{translateInstant("— runs immediately when you press Run.")}</li>
-            <li><span className="font-medium text-foreground">Ask first</span>{" "}{translateInstant("— Run is parked in Review for your OK.")}</li>
+            <li><span className="font-medium text-foreground">{translateInstant("Allowed")}</span>{" "}{translateInstant("— runs immediately when you press Run.")}</li>
+            <li><span className="font-medium text-foreground">{translateInstant("Ask first")}</span>{" "}{translateInstant("— Run is parked in Review for your OK.")}</li>
             <li>
               <span className="font-medium text-foreground">{translateInstant("Off")}</span>{" "}{translateInstant("— won't run. Change it in")}{" "}
               <Link className="text-primary hover:underline" to={appTabHref(connectionId, "permissions")}>
@@ -405,9 +405,9 @@ function splitRequiredOptional(schema: JsonSchemaNode): JsonSchemaNode {
 }
 
 const GUT_CHECK: Record<ToolConnectionTestDecision, (app: string, agent: string) => string> = {
-  allowed: (app, agent) => `This runs a real call against ${app} as ${agent}.`,
-  ask_first: () => `Waiting for your OK before this call leaves Paperclip.`,
-  off: (_app, agent) => `No call will be made — this action is off for ${agent}.`,
+  allowed: (app, agent) => translateInstant("connectionUi.actionTest.gutCheck.allowed", { app, agent }),
+  ask_first: () => translateInstant("connectionUi.actionTest.gutCheck.askFirst"),
+  off: (_app, agent) => translateInstant("connectionUi.actionTest.gutCheck.off", { agent }),
 };
 
 function ActionTester({
@@ -597,12 +597,12 @@ function RunningCard({
   onCancel: () => void;
 }) {
   useTranslation();
-  const verb = entry.isReadOnly ? "Reading from" : entry.isWrite ? "Writing to" : "Calling";
+  const verb = entry.isReadOnly ? translateInstant("Reading from") : entry.isWrite ? translateInstant("Writing to") : translateInstant("Calling");
   return (
     <div className="rounded-md border border-border bg-muted/30 p-4">
       <div className="flex items-center gap-2">
         <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-        <span className="text-sm font-medium text-foreground">Running…</span>
+        <span className="text-sm font-medium text-foreground">{translateInstant("Running…")}</span>
       </div>
       <p className="mt-1 text-xs text-muted-foreground">
         {verb} {appName} as {agentName}{translateInstant(".")}</p>
@@ -663,7 +663,7 @@ function ProviderPendingResult({ pending, appName, connectionId, agent }: { pend
     ((resumed.action === "decline" && /request was declined by the user/i.test(resumeError.message)) ||
       (resumed.action === "cancel" && /request was cancelled by the user/i.test(resumeError.message)));
   if (stoppedByUser) return <div role="status" className="space-y-2 rounded-md border border-border bg-muted/40 p-4 text-sm">
-    <p className="font-medium">{resumed.action === "decline" ? translateInstant("issueThreadInteraction.requestDeclined") : "Request cancelled"}</p>
+    <p className="font-medium">{resumed.action === "decline" ? translateInstant("issueThreadInteraction.requestDeclined") : translateInstant("Request cancelled")}</p>
     <p>{resumeError.message}</p>
     <p className="text-muted-foreground">{translateInstant("The original call was not repeated.")}</p>
     {pending.executionId && <p>{translateInstant("Execution:")}{" "}<code className="break-all">{pending.executionId}</code></p>}
@@ -671,7 +671,7 @@ function ProviderPendingResult({ pending, appName, connectionId, agent }: { pend
   if (resumed) return <ResultPanel outcome={resumed.outcome} entry={resumed.entry} appName={appName} connectionId={connectionId} agent={agent} />;
   return (
     <div role="status" className="space-y-3 rounded-md border border-border bg-muted/40 p-4 text-sm">
-      <p className="font-medium">{pending.kind === "approval" ? "Approval needed" : "Authorization needed"} {translateInstant("in")}{" "}{appName}</p>
+      <p className="font-medium">{pending.kind === "approval" ? translateInstant("Approval needed") : translateInstant("Authorization needed")} {translateInstant("in")}{" "}{appName}</p>
       <p className="text-muted-foreground">{translateInstant("Paperclip allowed this call. The provider needs your input before it can continue.")}</p>
       {pending.links.map((link) => {
         const checked = checkOAuthEndpointUrl(link.url);
@@ -684,8 +684,8 @@ function ProviderPendingResult({ pending, appName, connectionId, agent }: { pend
       {pending.expiresAt && <p>{translateInstant("Approval expires")}{" "}{new Date(pending.expiresAt).toLocaleTimeString()}{translateInstant(".")}</p>}
       {pending.resumeTool && agent ? <ProviderResumeControls pending={pending} connectionId={connectionId} agent={agent} onResult={setResumed} /> :
       <p className="text-muted-foreground">{pending.resumeTool
-        ? `After approval, test the ${pending.resumeTool} action with this execution ID. Do not start the original action again.`
-        : "After authorizing, check the provider's result before using Run again. Paperclip will not repeat the call automatically."}</p>}
+        ? translateInstant("connectionUi.actionTest.afterApproval", { action: pending.resumeTool })
+        : translateInstant("After authorizing, check the provider's result before using Run again. Paperclip will not repeat the call automatically.")}</p>}
     </div>
   );
 }

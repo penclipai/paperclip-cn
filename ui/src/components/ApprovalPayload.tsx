@@ -30,8 +30,12 @@ export function approvalSubject(payload?: Record<string, unknown> | null): strin
 }
 
 /** Build a contextual label for an approval, e.g. "Hire Agent: Designer" */
-export function approvalLabel(type: string, payload?: Record<string, unknown> | null): string {
-  const base = typeLabel[type] ?? type;
+export function approvalLabel(
+  type: string,
+  payload?: Record<string, unknown> | null,
+  translate: typeof translateInstant = translateInstant,
+): string {
+  const base = translate(typeLabel[type] ?? type, { defaultValue: typeLabel[type] ?? type });
   const subject = approvalSubject(payload);
   if (subject) {
     return `${base}: ${subject}`;

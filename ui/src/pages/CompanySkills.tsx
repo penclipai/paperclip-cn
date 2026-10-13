@@ -602,12 +602,12 @@ export function skillDetailBreadcrumbs(
 
 type DiscoverySort = "agents" | "stars" | "forks" | "recent" | "alphabetical";
 
-const DISCOVERY_SORT_LABELS: Record<DiscoverySort, string> = {
+const DISCOVERY_SORT_KEYS: Record<DiscoverySort, string> = {
   agents: "Most agents",
   stars: "Most stars",
   forks: "Most forks",
-  get recent() { return translateInstant("Recently updated"); },
-  get alphabetical() { return translateInstant("Alphabetical"); },
+  recent: "Recently updated",
+  alphabetical: "Alphabetical",
 };
 
 const DISCOVERY_SORTS: DiscoverySort[] = ["agents", "stars", "forks", "recent", "alphabetical"];
@@ -907,7 +907,7 @@ function SkillCard({
                 variant="ghost"
                 size="icon-sm"
                 className="-mr-1 -mt-1 opacity-70 group-hover:opacity-100"
-                aria-label={`More actions for ${card.name}`}
+                aria-label={translateInstant("secrets.moreActionsFor", { name: card.name })}
                 onClick={(event) => event.stopPropagation()}
               >
                 <MoreHorizontal className="h-4 w-4" />
@@ -956,8 +956,8 @@ function SkillCard({
             {card.installed
               ? card.agentCount > 0
                 ? `Enabled for ${card.agentCount} ${card.agentCount === 1 ? "agent" : "agents"}`
-                : "Not enabled for any agents"
-              : "Available to install"}
+                : translateInstant("Not enabled for any agents")
+              : translateInstant("Available to install")}
           </span>
           {card.starCount > 0 ? (
             <>
@@ -1141,13 +1141,13 @@ export function DiscoveryGrid({
   /** Category/folder navigation stays available in production, but the Streamlined UI relies on search and scrolling. */
   showBrowseRails?: boolean;
 }) {
-  useTranslation();
+  const { i18n } = useTranslation();
   const installedView = tab === "installed";
-  const viewTitle = installedView ? "Installed skills" : "Discover skills";
+  const viewTitle = translateInstant(installedView ? "Installed skills" : "Discover skills");
   const viewDescription = installedView
-    ? "Skills available to this organization."
-    : "Browse skills from every available source.";
-  const searchLabel = installedView ? "Search installed skills" : "Search discoverable skills";
+    ? translateInstant("Skills available to this organization.")
+    : translateInstant("Browse skills from every available source.");
+  const searchLabel = translateInstant(installedView ? "Search installed skills" : "Search discoverable skills");
   // Source filter (github / skills.sh / local / …) lives in the grid so it
   // narrows whatever the parent already filtered by tab/category/search (PAP-10907 E).
   const [sourceBadgeFilter, setSourceBadgeFilter] = useState<string>("all");
@@ -1163,7 +1163,7 @@ export function DiscoveryGrid({
     }
     return Array.from(facets, ([value, label]) => ({ value, label }))
       .sort((left, right) => left.label.localeCompare(right.label));
-  }, [cards]);
+  }, [cards, i18n.resolvedLanguage]);
   useEffect(() => {
     if (sourceBadgeFilter !== "all" && !availableSources.some((source) => source.value === sourceBadgeFilter)) {
       setSourceBadgeFilter("all");
@@ -1259,7 +1259,7 @@ export function DiscoveryGrid({
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">
                 <span className="text-muted-foreground">{translateInstant("Sort")}</span>
-                <span className="ml-1.5">{DISCOVERY_SORT_LABELS[sort]}</span>
+                <span className="ml-1.5">{translateInstant(DISCOVERY_SORT_KEYS[sort])}</span>
                 <ChevronDown className="ml-1 h-3.5 w-3.5" />
               </Button>
             </DropdownMenuTrigger>
@@ -1267,7 +1267,7 @@ export function DiscoveryGrid({
               <DropdownMenuRadioGroup value={sort} onValueChange={(value) => onSortChange(value as DiscoverySort)}>
                 {DISCOVERY_SORTS.map((option) => (
                   <DropdownMenuRadioItem key={option} value={option}>
-                    {DISCOVERY_SORT_LABELS[option]}
+                    {translateInstant(DISCOVERY_SORT_KEYS[option])}
                   </DropdownMenuRadioItem>
                 ))}
               </DropdownMenuRadioGroup>
@@ -5336,7 +5336,7 @@ export function CompanySkills() {
             >
               <span>
                 <span className="block font-medium">{translateInstant("companySkills.searchGitHub")}</span>
-                <span className="mt-1 block text-muted-foreground">Look for repositories with `SKILL.md`, then paste the repo URL.</span>
+                <span className="mt-1 block text-muted-foreground">{translateInstant("Look for repositories with `SKILL.md`, then paste the repo URL.")}</span>
               </span>
               <ExternalLink className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
             </a>

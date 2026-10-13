@@ -109,6 +109,11 @@
     "zh-CN": "编辑资料",
     "reviewedEnglishHash": "15c4aa13037eaf52733882a470415c0f5a4afa8490b49dc1712b1f96fc3b1de0"
   },
+  "Edit queued message…": {
+    "en": "Edit queued message…",
+    "zh-CN": "编辑已排队消息…",
+    "reviewedEnglishHash": "cc38c6185d8e92bb65dfe0d67d488ac7d1631e887b21faf3c045040945aa071d"
+  },
   "Edit rejected send": {
     "en": "Edit rejected send",
     "zh-CN": "编辑拒绝的发送",
@@ -153,6 +158,11 @@
     "en": "Email domain",
     "zh-CN": "邮箱域名",
     "reviewedEnglishHash": "f865f1ee55b2684025c40200a88d0408eb316f05c0b03804051969ae25265d17"
+  },
+  "Email inbox": {
+    "en": "Email inbox",
+    "zh-CN": "电子邮件收件箱",
+    "reviewedEnglishHash": "f00606184e4ddf1a9337f24f2a96b9f994a17964c96421c87c26ed20c0fd0dc5"
   },
   "Email is managed by your auth session and is read-only here.": {
     "en": "Email is managed by your auth session and is read-only here.",
@@ -274,6 +284,11 @@
     "zh-CN": "启用独立任务签出",
     "reviewedEnglishHash": "6b02ced06b917d5b983bb9e84b9e6102e70d14a25a2961be4970803b9579d80a"
   },
+  "Enable memory connectors in Settings → Experimental to set up this connection.": {
+    "en": "Enable memory connectors in Settings → Experimental to set up this connection.",
+    "zh-CN": "请先在“设置 → 实验性功能”中启用记忆连接器，再设置此连接。",
+    "reviewedEnglishHash": "87224619a70f690ca5f1986782be4178bf29ae6ba044c9d73c8dc4ae7bbd2c09"
+  },
   "Enable only": {
     "en": "Enable only",
     "zh-CN": "仅启用",
@@ -283,6 +298,11 @@
     "en": "Enable parent-child nesting",
     "zh-CN": "开启父子任务嵌套",
     "reviewedEnglishHash": "18cf6dba7656852e8cd0293d7814bac179ce184698bcaa0f94da0d4fc470c1e4"
+  },
+  "Enable search": {
+    "en": "Enable search",
+    "zh-CN": "启用搜索",
+    "reviewedEnglishHash": "3fbfebdf38783813a1a6468d429057c925be87aab5054ee88d63dbd4b413051a"
   },
   "Enable this pool": {
     "en": "Enable this pool",
@@ -314,6 +334,11 @@
     "zh-CN": "通过公司级简单任务分配默认值开启。",
     "reviewedEnglishHash": "46478ceae7830243e26de799e2eb5b8a7f3e7a27ac13d9b6005014d417f68e5c"
   },
+  "Enabled instructions are included when the connection is available for the task. Access can depend on the task’s responsible person and action permissions.": {
+    "en": "Enabled instructions are included when the connection is available for the task. Access can depend on the task’s responsible person and action permissions.",
+    "zh-CN": "当任务可使用此连接时，会包含已启用的说明。访问权限可能取决于任务负责人和操作权限。",
+    "reviewedEnglishHash": "b568b2274617000bbc1233693380cc1ba3d9f00f93a501932a0d8a568f72346d"
+  },
   "Enabled via explicit company permission grant.": {
     "en": "Enabled via explicit company permission grant.",
     "zh-CN": "通过公司权限显式授予。",
@@ -333,6 +358,11 @@
     "en": "End this browser session.",
     "zh-CN": "结束当前浏览器会话。",
     "reviewedEnglishHash": "c1dadf22fd83136eba95c2a5f8bf875f95be6cb60d1ae19dd2c058aab79b2afb"
+  },
+  "Ended": {
+    "en": "Ended",
+    "zh-CN": "已结束",
+    "reviewedEnglishHash": "7cdc804e6996997d599232fbf8ce066a4f6c0696e7b586fc7b3ee499f35d4559"
   },
   "Enter": {
     "en": "Enter",
@@ -354,10 +384,20 @@
     "zh-CN": "输入其他代码",
     "reviewedEnglishHash": "1412ee4d26441994fb6811b91f305667ace200224dfb8f8d52a6d122a064ef3e"
   },
+  "Enter a model ID on the agent": {
+    "en": "Enter a model ID on the agent",
+    "zh-CN": "在智能体上输入模型 ID",
+    "reviewedEnglishHash": "8d82fd5edd7838fa5c7cb35bee076645ee3662fd933b32e268720707b1f06dd3"
+  },
   "Enter a name": {
     "en": "Enter a name",
     "zh-CN": "输入名称",
     "reviewedEnglishHash": "c13b0e0858d5b81b13c6c53c6085f21cb467e1d7f969e42f88d4a5055ce01915"
+  },
+  "Enter a new API key": {
+    "en": "Enter a new API key",
+    "zh-CN": "输入新的 API 密钥",
+    "reviewedEnglishHash": "9b6cc5e19d07dfc8f16327c52bb726fdc2994296781c3a53af0de6cd539f44ca"
   },
   "Enter a valid amount of zero or more.": {
     "en": "Enter a valid amount of zero or more.",
@@ -388,6 +428,11 @@
     "en": "Enter custom model…",
     "zh-CN": "输入自定义模型…",
     "reviewedEnglishHash": "3b64d9d0c0a3e682c33f79770e44593807bc9b6860a5a51165d89d72eb168c99"
+  },
+  "Enter instructions.": {
+    "en": "Enter instructions.",
+    "zh-CN": "请输入说明。",
+    "reviewedEnglishHash": "2594824d19816d978a4899aac66195d3eb544b87ef292222bde8a1842fb72a0e"
   },
   "Enter model ID or alias": {
     "en": "Enter model ID or alias",
@@ -524,6 +569,16 @@
     "zh-CN": "尚未由账单最终确认的预估支出",
     "reviewedEnglishHash": "c26f21d9764a916ea945b122c8573883bd758e74e025b720741411deb11657e9"
   },
+  "Estimated session ceiling (USD)": {
+    "en": "Estimated session ceiling (USD)",
+    "zh-CN": "预计会话上限（美元）",
+    "reviewedEnglishHash": "a90dfcbd749d4191e18aa1f70e511f7e53ed645f5d7ec6eef08ceb809d30094f"
+  },
+  "Estimated · before tax": {
+    "en": "Estimated · before tax",
+    "zh-CN": "估算值 · 税前",
+    "reviewedEnglishHash": "f79d3c1d9c3766f4476a38631a58d5304ef428468caf69d8eda0bb2911e0c17c"
+  },
   "Event": {
     "en": "Event",
     "zh-CN": "事件",
@@ -573,6 +628,11 @@
     "en": "Everyone in the company will be able to read this task, its comments, documents, and run history. Existing private subtasks keep their privacy.",
     "zh-CN": "公司中的每个人都可以阅读此任务、其评论、文档和运行历史记录。现有的私密子任务会保留其隐私。",
     "reviewedEnglishHash": "ce840161027d478daaa46c5120e1b245d857609030c6bd74cacf97e19dfa551c"
+  },
+  "Everything happening in your organization, newest first — people, agents, and the system. Each line is one recorded action.": {
+    "en": "Everything happening in your organization, newest first — people, agents, and the system. Each line is one recorded action.",
+    "zh-CN": "组织中的所有活动，按最新优先排序，包括人员、智能体和系统。每一行都是一条已记录的操作。",
+    "reviewedEnglishHash": "f0f62a18a1f3ed0238608186ccd3d2750d8cfabd5f0a6d995e7c97ea68781e6a"
   },
   "Everything in Admin, plus managing members and permission grants.": {
     "en": "Everything in Admin, plus managing members and permission grants.",
@@ -624,6 +684,11 @@
     "zh-CN": "从该组织中排除",
     "reviewedEnglishHash": "eb7eb0156ec259609014d02ea183e8d957cf9a8e44fa01393b3c54b439dbae9c"
   },
+  "Excluded": {
+    "en": "Excluded",
+    "zh-CN": "已排除",
+    "reviewedEnglishHash": "bef1fd9e5caea8b51aab74a9db1cde99164263ed7d076225d7829faae9737d90"
+  },
   "Executed command": {
     "en": "Executed command",
     "zh-CN": "已执行命令",
@@ -643,6 +708,11 @@
     "en": "Execution",
     "zh-CN": "执行",
     "reviewedEnglishHash": "a45cd4bd0998e5683cdf4839b883fc0c77599eecfa9c7b658b32dbbd499a8039"
+  },
+  "Execution engine": {
+    "en": "Execution engine",
+    "zh-CN": "执行引擎",
+    "reviewedEnglishHash": "da96ed44c9414cb498a8711dfb2d8efcab054c62bdbf3e058438bae1bf58aa48"
   },
   "Execution is paused for this project until the budget is raised or the incident is dismissed.": {
     "en": "Execution is paused for this project until the budget is raised or the incident is dismissed.",
@@ -679,6 +749,11 @@
     "zh-CN": "执行器控制台",
     "reviewedEnglishHash": "f02454562df32b9a30ae44c1c86a530a679ee3f960d7bb4d323fab5b45249114"
   },
+  "Executor console URL": {
+    "en": "Executor console URL",
+    "zh-CN": "Executor 控制台 URL",
+    "reviewedEnglishHash": "cc67188ea0ac891e00ab311427cbae9cb57a38c0fb76583308a6af77a41b487f"
+  },
   "Existing GitHub connection": {
     "en": "Existing GitHub connection",
     "zh-CN": "现有 GitHub 连接",
@@ -708,6 +783,11 @@
     "en": "Exit code {{code}}",
     "zh-CN": "退出码 {{code}}",
     "reviewedEnglishHash": "65448b1c1a8e2ba7051413447699fa5b2ed892062422001426f5c7221b2bc578"
+  },
+  "Expand all": {
+    "en": "Expand all",
+    "zh-CN": "全部展开",
+    "reviewedEnglishHash": "a3e586be3eff5fb9f768c0846035db47ccf0f0e10727b0f14d829ff3a5913324"
   },
   "Expand command details": {
     "en": "Expand command details",
@@ -783,6 +863,11 @@
     "en": "Explain why this subtree control is being applied...",
     "zh-CN": "说明为什么要应用此子树控制...",
     "reviewedEnglishHash": "44f59fecba2909de13af9618d89733d4b7278c48fff6c461b9aad9db4d4b1b66"
+  },
+  "Explore product usage, errors, flags, and experiments.": {
+    "en": "Explore product usage, errors, flags, and experiments.",
+    "zh-CN": "查看产品使用情况、错误、功能开关和实验。",
+    "reviewedEnglishHash": "b42a492358f92b8f627166fa9f2b18c376aa9c732e97bb907fb3af64f6b8d4c7"
   },
   "Export": {
     "en": "Export",
@@ -943,6 +1028,11 @@
     "en": "event",
     "zh-CN": "事件",
     "reviewedEnglishHash": "b8e1f80bd70ae0784c7855a451731b745fddb67749d23f637be9082b75e9575b"
+  },
+  "executable": {
+    "en": "executable",
+    "zh-CN": "可执行",
+    "reviewedEnglishHash": "a29c2123a01df1d0febb9d308a20d8a2fe3d40a91ca8b1294f59f08f9773ebea"
   },
   "expired a thread interaction": {
     "en": "expired a thread interaction",

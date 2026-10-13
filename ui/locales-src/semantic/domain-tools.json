@@ -1144,6 +1144,21 @@
     "zh-CN": "将创建为",
     "reviewedEnglishHash": "51c7868049a5f61806a2997903c788865b660cbbe5f29d0730e5e76a92bee2b8"
   },
+  "tools.connections.honcho.saveWorkspace": {
+    "en": "Save workspace",
+    "zh-CN": "保存工作区",
+    "reviewedEnglishHash": "6a9c1db1f5de7ac9c42c75e040d758f7b6bc8eca2cd312d25b6cc19b98f330d6"
+  },
+  "tools.connections.honcho.workspaceHint": {
+    "en": "Enter a workspace to include Honcho instructions. Existing tools remain available.",
+    "zh-CN": "请输入工作区以包含 Honcho 指令。现有工具仍可继续使用。",
+    "reviewedEnglishHash": "28127e98c5c2ac973c9d77f976237e28ccfc8da9c796486e587bf32df0f166ca"
+  },
+  "tools.connections.honcho.workspaceLabel": {
+    "en": "Honcho workspace",
+    "zh-CN": "Honcho 工作区",
+    "reviewedEnglishHash": "c02a59522c5e858faf92bd08526a2520885484a25f05aa3e200718ca88a9fd1d"
+  },
   "tools.connections.secretRefPrefix": {
     "en": "Free-text secrets are not accepted — pick a vault entry; Paperclip stores only the",
     "zh-CN": "不接受自由文本密钥，请选择密钥库条目；Paperclip 仅存储",
@@ -3424,6 +3439,11 @@
     "zh-CN": "未知应用",
     "reviewedEnglishHash": "8264cc5ca43836732d664de176b19cc7a40ef0b3a754d73563d7bf6bf51d36c8"
   },
+  "tools.profiles.wizard.allAppTools": {
+    "en": "All {{app}} tools",
+    "zh-CN": "{{app}} 的所有工具",
+    "reviewedEnglishHash": "e7ee636cfdcdd200737895bf03eec05724830f1bbf1b3bc9616c55e5a6f9eb1f"
+  },
   "tools.profiles.wizard.allowedCount": {
     "en": "Allows {{allowed}} of {{total}} tools",
     "zh-CN": "允许 {{allowed}} 或 {{total}} 工具",
@@ -3458,6 +3478,11 @@
     "en": "Used in exports and the API. Auto-filled from the name.",
     "zh-CN": "用于导出和API。从名称自动填充。",
     "reviewedEnglishHash": "1245c62835a2ed23ce262041bebcf80396b145c94c40eaf10b2d6d9734b224d0"
+  },
+  "tools.profiles.wizard.includesFutureTools": {
+    "en": "Includes tools {{app}} adds later",
+    "zh-CN": "包含 {{app}} 日后新增的工具",
+    "reviewedEnglishHash": "5ab457ccd70443bcf2ecf6982c2f8bcf1513ecd199dd92631148cabc12ad451a"
   },
   "tools.profiles.wizard.loadingDraft": {
     "en": "Loading draft…",

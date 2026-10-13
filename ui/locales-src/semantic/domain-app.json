@@ -29,6 +29,11 @@
     "zh-CN": "新建公司",
     "reviewedEnglishHash": "cf291af13fcf008ed2683ba66a705734a1b1c0ca2df3b8986b71feb0e381c24f"
   },
+  "app.cloudCreateUnavailable": {
+    "en": "Organizations are created in Paperclip Cloud. This instance can't reach it right now — try again from your Cloud portfolio.",
+    "zh-CN": "组织需要在 Paperclip Cloud 中创建。当前实例无法连接，请到 Cloud 总览页面重试。",
+    "reviewedEnglishHash": "5402099d257d4788ac84e86668d1e7714a8a64af7fbbd717b36e5673e586615d"
+  },
   "app.createFirstCompanyDescription": {
     "en": "Get started by creating a company.",
     "zh-CN": "从创建一家公司开始。",

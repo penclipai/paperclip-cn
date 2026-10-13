@@ -1,4 +1,4 @@
-import { translateInstant } from "@/i18n";
+import { getCurrentLocale, translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
 import { interactionReadinessRefetchInterval } from "@/lib/issue-thread-interactions";
 import { AgentAvatar } from "@/components/AgentAvatar";
@@ -292,29 +292,29 @@ function retryCleanupItems(plan: PipelineAutomationRetryPlan): Array<{
   return [
     {
       id: "retireDirectChildren",
-      label: "Retire direct child items",
-      description: "Hide child outputs from normal pipeline boards and parent rollups.",
+      label: translateInstant("Retire direct child items"),
+      description: translateInstant("Hide child outputs from normal pipeline boards and parent rollups."),
       count: plan.effectCounts.directChildren,
       disabled: plan.effectCounts.directChildren === 0,
     },
     {
       id: "retireDescendants",
-      label: "Retire descendants",
-      description: "Hide downstream output items under those children.",
+      label: translateInstant("Retire descendants"),
+      description: translateInstant("Hide downstream output items under those children."),
       count: plan.effectCounts.descendants,
       disabled: plan.effectCounts.descendants === 0,
     },
     {
       id: "cancelLinkedAutomationIssues",
-      label: "Cancel linked automation tasks",
-      description: "Cancel unfinished automation tasks superseded by the fresh retry.",
+      label: translateInstant("Cancel linked automation tasks"),
+      description: translateInstant("Cancel unfinished automation tasks superseded by the fresh retry."),
       count: plan.effectCounts.linkedAutomationIssues,
       disabled: plan.effectCounts.linkedAutomationIssues === 0,
     },
     {
       id: "keepAuditHistory",
-      label: "Keep audit trail visible in item history",
-      description: "Record retry and retired outputs as history instead of deleting records.",
+      label: translateInstant("Keep audit trail visible in item history"),
+      description: translateInstant("Record retry and retired outputs as history instead of deleting records."),
       required: true,
       disabled: true,
     },
@@ -340,9 +340,12 @@ function retryCleanupFromIds(ids: Set<string>): PipelineAutomationRetryCleanupOp
 function retryPrimaryActionLabel(plan: PipelineAutomationRetryPlan) {
   const retiredOutputCount = plan.effectCounts.directChildren + plan.effectCounts.descendants;
   if (retiredOutputCount > 0 && (plan.defaultCleanup.retireDirectChildren || plan.defaultCleanup.retireDescendants)) {
-    return `Retry and retire ${formatNumber(retiredOutputCount)} ${retiredOutputCount === 1 ? "item" : "items"}`;
+    return translateInstant("pipelines.retryAndRetire", {
+      count: formatNumber(retiredOutputCount),
+      itemLabel: translateInstant(retiredOutputCount === 1 ? "item" : "items"),
+    });
   }
-  return plan.scope === "previous_stage" ? "Retry previous step" : "Re-run this step";
+  return translateInstant(plan.scope === "previous_stage" ? "Retry previous step" : "Re-run this step");
 }
 
 export function Pipelines() {
@@ -422,7 +425,7 @@ function descendantActiveWorkCount(value: { descendantActiveWorkCount?: number |
 }
 
 function formatLiveDownstream(count: number) {
-  return `${formatNumber(count)} live downstream`;
+  return translateInstant("pipelines.liveDownstream", { count: formatNumber(count) });
 }
 
 function pipelineActivityTime(pipeline: PipelineListItem) {
@@ -566,25 +569,25 @@ export function buildPipelineTableRows(
 }
 
 function formatOpenItems(count: number) {
-  return `${formatNumber(count)} open`;
+  return translateInstant("pipelines.openCount", { count: formatNumber(count) });
 }
 
 function formatPipelineActivity(value: string | Date | null) {
-  if (!value) return "No activity";
+  if (!value) return translateInstant("No activity");
   const then = new Date(value).getTime();
-  if (!Number.isFinite(then)) return "No activity";
+  if (!Number.isFinite(then)) return translateInstant("No activity");
   const diffSeconds = Math.max(0, Math.round((Date.now() - then) / 1000));
-  if (diffSeconds < 60) return "just now";
+  if (diffSeconds < 60) return translateInstant("common.justNow");
   const diffMinutes = Math.round(diffSeconds / 60);
-  if (diffMinutes < 60) return `${diffMinutes} min ago`;
+  if (diffMinutes < 60) return translateInstant("pipelines.relativeTime.minutesAgo", { count: diffMinutes });
   const diffHours = Math.round(diffMinutes / 60);
-  if (diffHours < 24) return diffHours === 1 ? "1 hr ago" : `${diffHours} hr ago`;
+  if (diffHours < 24) return translateInstant("pipelines.relativeTime.hoursAgo", { count: diffHours });
   const diffDays = Math.round(diffHours / 24);
-  if (diffDays === 1) return "yesterday";
-  if (diffDays < 7) return `${diffDays} days ago`;
-  if (diffDays < 14) return "last week";
-  if (diffDays < 30) return `${Math.round(diffDays / 7)} weeks ago`;
-  return new Date(value).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  if (diffDays === 1) return translateInstant("yesterday");
+  if (diffDays < 7) return translateInstant("pipelines.relativeTime.daysAgo", { count: diffDays });
+  if (diffDays < 14) return translateInstant("last week");
+  if (diffDays < 30) return translateInstant("pipelines.relativeTime.weeksAgo", { count: Math.round(diffDays / 7) });
+  return new Date(value).toLocaleDateString(getCurrentLocale(), { month: "short", day: "numeric" });
 }
 
 function PipelineStatusChip({ archivedAt }: { archivedAt: Date | string | null }) {
@@ -762,7 +765,7 @@ export function PipelinesIndexTable({
                           <button
                             type="button"
                             className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-sm text-muted-foreground hover:bg-accent/60 hover:text-foreground"
-                            aria-label={row.expanded ? `Collapse ${row.pipeline.name}` : `Expand ${row.pipeline.name}`}
+                            aria-label={translateInstant(row.expanded ? "Collapse {{name}}" : "Expand {{name}}", { name: row.pipeline.name })}
                             onClick={() => togglePipeline(row.pipeline.id)}
                           >
                             {row.expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
@@ -778,7 +781,7 @@ export function PipelinesIndexTable({
                             {row.pipeline.name}
                           </Link>
                           {row.parentPipelineName ? (
-                            <span className="ml-2 text-muted-foreground">under {row.parentPipelineName}</span>
+                            <span className="ml-2 text-muted-foreground">{translateInstant("pipelines.underName", { name: row.parentPipelineName })}</span>
                           ) : row.pipeline.description ? (
                             <span className="ml-2 text-muted-foreground">- {row.pipeline.description}</span>
                           ) : null}
@@ -957,7 +960,7 @@ function PipelinesIndex() {
           <p className="text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">{translateInstant("pipelines.work")}</p>
           <h1 className="text-2xl font-semibold text-foreground">{translateInstant("pipelines.title")}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {formatNumber(pipelines.length)} pipeline{pipelines.length === 1 ? "" : "s"}{translateInstant(". Connected ones are grouped from upstream work into downstream work.")}</p>
+            {translateInstant("pipelines.pipelineCount", { count: pipelines.length, formattedCount: formatNumber(pipelines.length) })}{translateInstant(". Connected ones are grouped from upstream work into downstream work.")}</p>
         </div>
         <Button onClick={() => setNewPipelineOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />

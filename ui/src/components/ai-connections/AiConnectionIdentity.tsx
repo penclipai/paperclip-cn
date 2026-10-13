@@ -1,4 +1,6 @@
 import { Building2, UserRound } from "lucide-react";
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
 import { AppLogo } from "@/pages/apps/AppLogo";
 import {
   AI_PROVIDERS,
@@ -11,6 +13,7 @@ export function AiConnectionIdentity({
 }: {
   connection: AiConnectionSummary;
 }) {
+  useTranslation();
   const provider = AI_PROVIDERS[connection.provider];
   const Icon = connection.ownership === "shared" ? Building2 : UserRound;
   return (
@@ -28,8 +31,8 @@ export function AiConnectionIdentity({
         <span className="flex items-center gap-1 text-xs text-muted-foreground">
           <Icon aria-hidden className="size-3" />
           {connection.ownership === "shared"
-            ? "Company shared"
-            : `Personal · ${connection.ownerName ?? "Account owner"}`}
+            ? translateInstant("Company shared")
+            : `${translateInstant("Personal")} · ${connection.ownerName ?? translateInstant("Account owner")}`}
         </span>
       </div>
     </div>

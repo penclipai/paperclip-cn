@@ -97,7 +97,7 @@ function CredentialSettings({
           <p className="text-sm text-muted-foreground">{translateInstant("No saved profiles.")}</p>
         )}
         {profiles.isLoading && (
-          <p className="text-sm text-muted-foreground">Loading profiles…</p>
+          <p className="text-sm text-muted-foreground">{translateInstant("Loading profiles…")}</p>
         )}
         {profiles.isError && (
           <p role="alert" className="text-sm text-destructive">
@@ -166,7 +166,9 @@ export function BrowserUseSettingsPanel({
           >
             {eligible.map((g, i) => (
               <option key={g.id} value={g.id}>
-                {g.kind === "user" ? translateInstant("Personal") : "Shared"} credential {i + 1}
+                {g.kind === "user"
+                  ? translateInstant("Personal")
+                  : translateInstant("connectionUi.browserUse.sharedCredential", { index: i + 1 })}
               </option>
             ))}
           </select>

@@ -1716,7 +1716,7 @@ export function CompanyImport() {
     return (
       <div className="max-w-6xl space-y-4 px-5 py-5">
         <div>
-          <h2 className="text-base font-semibold">Import completed</h2>
+          <h2 className="text-base font-semibold">{translateInstant("Import completed")}</h2>
           <p className="text-xs text-muted-foreground mt-1">
             {importOutcome.companyName
               ? <>{translateInstant("The import finished and")}{" "}<span className="font-medium text-foreground">{importOutcome.companyName}</span>{" "}{translateInstant("is ready. Its detailed summary is no longer available.")}</>
@@ -1793,7 +1793,7 @@ export function CompanyImport() {
           <div className="rounded-md border border-border">
             <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
               <h3 className="text-sm font-medium">{translateInstant("companyImport.activateImported")}</h3>
-              <span className="text-xs text-muted-foreground">imported paused</span>
+              <span className="text-xs text-muted-foreground">{translateInstant("imported paused")}</span>
             </div>
             <div className="divide-y divide-border">
               {activationItems.map((item) => {
@@ -1957,7 +1957,7 @@ export function CompanyImport() {
         ) : (
           <Field
             label={translateInstant("companyImport.githubUrl")}
-            hint="Repo tree path or blob URL to COMPANY.md (e.g. github.com/owner/repo/tree/main/company)."
+            hint={translateInstant("Repo tree path or blob URL to COMPANY.md (e.g. github.com/owner/repo/tree/main/company).")}
           >
             <input
               className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
@@ -1973,7 +1973,7 @@ export function CompanyImport() {
           </Field>
         )}
 
-        <Field label={translateInstant("companyImport.target")} hint="Import into this organization or create a new one.">
+        <Field label={translateInstant("companyImport.target")} hint={translateInstant("Import into this organization or create a new one.")}>
           <select
             className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
             value={targetMode}
@@ -1993,7 +1993,7 @@ export function CompanyImport() {
         {targetMode === "new" && (
           <Field
             label={translateInstant("New organization name")}
-            hint="Optional override. Leave blank to use the package name."
+            hint={translateInstant("Optional override. Leave blank to use the package name.")}
           >
             <input
               className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
@@ -2010,7 +2010,7 @@ export function CompanyImport() {
 
         <Field
           label={translateInstant("companyImport.collisionStrategy")}
-          hint="Board imports can rename, skip, or replace matching organization content."
+          hint={translateInstant("Board imports can rename, skip, or replace matching organization content.")}
         >
           <select
             className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"

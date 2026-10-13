@@ -384,7 +384,7 @@ function WorkspaceFileTree({
   onHoverFile,
   getDownloadUrl,
 }: WorkspaceFileTreeProps) {
-  useTranslation();
+  const { t } = useTranslation();
   function renderNode(node: WorkspaceFileTreeNode): ReactNode {
     if (node.kind === "folder") {
       const expanded = node.lazy
@@ -421,7 +421,7 @@ function WorkspaceFileTree({
                   style={{ paddingLeft: `${1 + (node.depth + 1) * 0.875}rem` }}
                 >
                   <Loader2 aria-hidden="true" className="h-3.5 w-3.5 animate-spin" />
-                  <span>{translateInstant("Loading folder…")}</span>
+                  <span>{t("workspaceFileBrowser.loadingFolder")}</span>
                 </div>
               ) : null}
               {truncated ? (
@@ -432,7 +432,7 @@ function WorkspaceFileTree({
                   style={{ paddingLeft: `${1 + (node.depth + 1) * 0.875}rem` }}
                 >
                   <span className="h-3.5 w-3.5 shrink-0" />
-                  <span>{translateInstant("workspaceFileBrowser.loadMoreFromFolder")}</span>
+                  <span>{t("workspaceFileBrowser.loadMoreFromFolder")}</span>
                 </button>
               ) : null}
             </>
@@ -457,7 +457,7 @@ function WorkspaceFileTree({
   }
 
   return (
-    <div role="tree" id={listboxId} aria-label={translateInstant("workspaceFileBrowser.workspaceFiles")} className="space-y-0.5 py-1">
+    <div role="tree" id={listboxId} aria-label={t("workspaceFileBrowser.workspaceFiles")} className="space-y-0.5 py-1">
       {nodes.map(renderNode)}
     </div>
   );
@@ -513,7 +513,7 @@ export function WorkspaceFileBrowser({
   active = true,
   className,
 }: WorkspaceFileBrowserProps) {
-  useTranslation();
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { visible: pageVisible } = usePageVisibility();
   const source: BrowserSource =
@@ -840,12 +840,12 @@ export function WorkspaceFileBrowser({
   ]);
 
   const announcement = useMemo(() => {
-    if (listQuery.isFetching) return "Loading workspace files…";
-    if (listQuery.isError) return "Unable to load workspace files.";
+    if (listQuery.isFetching) return t("workspaceFileBrowser.loadingWorkspaceFiles");
+    if (listQuery.isError) return t("workspaceFileBrowser.unableToLoadWorkspaceFiles");
     if (data?.state === "unavailable") return describeUnavailable(data.unavailableReason ?? "").title;
-    if (items.length === 0) return "No matching files.";
-    return `${items.length} item${items.length === 1 ? "" : "s"} found.`;
-  }, [data, items.length, listQuery.isError, listQuery.isFetching]);
+    if (items.length === 0) return t("workspaceFileBrowser.noMatchingFiles");
+    return t("workspaceFileBrowser.itemsFound", { count: items.length });
+  }, [data, items.length, listQuery.isError, listQuery.isFetching, t]);
 
   function openTypedPath() {
     const value = searchInput.trim();
@@ -992,8 +992,8 @@ export function WorkspaceFileBrowser({
     body = (
       <StateMessage
         icon={<FolderOpen aria-hidden="true" className="h-5 w-5 text-muted-foreground" />}
-        title={translateInstant("No organization selected")}
-        body="Choose an organization before browsing another project workspace."
+        title={t("workspaceFileBrowser.chooseCompanyTitle")}
+        body={t("workspaceFileBrowser.chooseCompanyBody")}
       />
     );
   } else if (source === "other" && projectsQuery.isFetching && projectsWithWorkspaces.length === 0) {
@@ -1001,7 +1001,7 @@ export function WorkspaceFileBrowser({
       <StateMessage
         icon={<Loader2 aria-hidden="true" className="h-5 w-5 animate-spin text-muted-foreground" />}
         title={translateInstant("workspaceFileBrowser.loadingProjectWorkspaces")}
-        body="Registered workspaces will appear here."
+        body={t("workspaceFileBrowser.registeredWorkspacesBody")}
       />
     );
   } else if (source === "other" && !canListFiles) {
@@ -1009,7 +1009,7 @@ export function WorkspaceFileBrowser({
       <StateMessage
         icon={<FolderOpen aria-hidden="true" className="h-5 w-5 text-muted-foreground" />}
         title={translateInstant("workspaceFileBrowser.noProjectWorkspaces")}
-        body="No same-organization project has a registered workspace to browse."
+        body={t("workspaceFileBrowser.noProjectWorkspacesBody")}
       />
     );
   } else if (listQuery.isFetching && !data) {
@@ -1104,8 +1104,8 @@ export function WorkspaceFileBrowser({
             value={searchInput}
             onChange={(event) => setSearchInput(event.target.value)}
             onKeyDown={handleSearchKeyDown}
-            placeholder={translateInstant("Search files by name or path…")}
-            aria-label={translateInstant("workspaceFileBrowser.searchAria")}
+            placeholder={t("workspaceFileBrowser.searchPlaceholder")}
+            aria-label={t("workspaceFileBrowser.searchAria")}
             role="combobox"
             aria-expanded={items.length > 0}
             aria-controls={items.length > 0 ? listboxId : undefined}
@@ -1122,8 +1122,8 @@ export function WorkspaceFileBrowser({
           size="icon-sm"
           onClick={() => void listQuery.refetch()}
           disabled={!queriesEnabled || listQuery.isFetching}
-          aria-label={translateInstant("Refresh workspace files")}
-          title={translateInstant("Refresh workspace files")}
+          aria-label={t("workspaceFileBrowser.refresh")}
+          title={t("workspaceFileBrowser.refresh")}
           className="h-8 w-8 shrink-0"
         >
           <RefreshCcw aria-hidden="true" className={cn("h-3.5 w-3.5", listQuery.isFetching && "animate-spin")} />
@@ -1150,9 +1150,9 @@ export function WorkspaceFileBrowser({
               onClick={() => loadMoreFolder(currentFolderKey)}
               className="rounded px-1 py-0.5 text-left hover:bg-accent hover:text-foreground"
             >
-              {translateInstant("workspaceFileBrowser.loadMoreFromFolder")}</button>
+              {t("workspaceFileBrowser.loadMoreFromFolder")}</button>
           ) : (
-            <>{translateInstant("Showing first")}{" "}{items.length} {translateInstant("— refine the search to narrow.")}</>
+            <>{t("workspaceFileBrowser.showingFirstRefine", { count: items.length })}</>
           )}
         </div>
       ) : null}

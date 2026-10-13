@@ -844,7 +844,7 @@ function StarterCards({ onStart }: { onStart: (form: PolicyFormState) => void })
 export function PoliciesTab({ companyId }: { companyId: string }) {
   const qc = useQueryClient();
   const { pushToast } = useToast();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [form, setForm] = useState<PolicyFormState | null>(null);
   const [testOpen, setTestOpen] = useState(false);
   const [confirm, setConfirm] = useState<ConfirmState>(null);
@@ -897,7 +897,7 @@ export function PoliciesTab({ companyId }: { companyId: string }) {
   }), [agents.data, applications.data, connectionList, projects.data]);
   const appGroups = useMemo(
     () => groupCatalogByApp(catalog, maps.application, maps.connection),
-    [catalog, maps.application, maps.connection],
+    [catalog, i18n.language, i18n.resolvedLanguage, maps.application, maps.connection],
   );
   const catalogByToolName = useMemo(
     () => new Map(catalog.map((tool) => [tool.toolName, tool])),

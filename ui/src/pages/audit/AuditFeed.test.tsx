@@ -6,6 +6,7 @@ import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/api/client";
+import i18n from "@/i18n";
 import { AuditFeed } from "./AuditFeed";
 
 const listAgentActionsMock = vi.hoisted(() => vi.fn());
@@ -138,6 +139,41 @@ describe("AuditFeed", () => {
     await flushReact();
     return client;
   }
+
+  it("localizes semantic routine activity verbs while preserving the routine entity", async () => {
+    try {
+      await i18n.changeLanguage("zh-CN");
+      listAgentActionsMock.mockResolvedValue({
+        items: [record({
+          action: "routine.revision_created",
+          entityType: "routine",
+          entityId: "routine-1",
+          entity: { issue: null, comment: null, document: null },
+        })],
+        nextCursor: null,
+        accessTier: "full",
+      });
+
+      await render();
+
+      expect(container.textContent).toContain("创建了例行任务修订版本");
+      expect(container.textContent).toContain("routine");
+    } finally {
+      await i18n.changeLanguage("en");
+    }
+  });
+
+  it("localizes the current activity filters", async () => {
+    try {
+      await i18n.changeLanguage("zh-CN");
+      await render();
+
+      expect(container.textContent).toContain("全部操作");
+      expect(container.textContent).toContain("全部实体");
+    } finally {
+      await i18n.changeLanguage("en");
+    }
+  });
 
   /** Poll until `text` renders, for states that settle behind query retry backoff. */
   async function waitForText(text: string, timeoutMs: number) {

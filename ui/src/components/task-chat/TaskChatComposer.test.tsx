@@ -4,6 +4,7 @@ import { act, StrictMode, useState, type ReactElement } from "react";
 import { flushSync } from "react-dom";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import i18n from "i18next";
 import {
   buildAgentMentionHref,
   buildSkillMentionHref,
@@ -60,11 +61,13 @@ vi.mock("@mdxeditor/editor", async () => {
       onChange,
       readOnly,
       contentEditableClassName,
+      placeholder,
     }: {
       markdown: string;
       onChange?: (value: string) => void;
       readOnly?: boolean;
       contentEditableClassName?: string;
+      placeholder?: string;
     },
     forwardedRef: React.ForwardedRef<MockHandle | null>,
   ) {
@@ -108,6 +111,7 @@ vi.mock("@mdxeditor/editor", async () => {
         ref={editableRef}
         data-testid="mdx-editor"
         data-content-class-name={contentEditableClassName}
+        data-placeholder={placeholder}
         contentEditable={!readOnly}
         suppressContentEditableWarning
         onInput={(e) => {
@@ -207,6 +211,22 @@ afterEach(() => {
 function render(ui: ReactElement) {
   flushSync(() => root!.render(ui));
 }
+
+it("localizes the missing-assignee placeholder and preserves an agent named Unassigned", async () => {
+  const previousLanguage = i18n.language;
+  try {
+    await act(async () => { await i18n.changeLanguage("zh-CN"); });
+    render(<TaskChatComposer onAdd={vi.fn()} workMode="planning" />);
+    expect(editable().getAttribute("data-placeholder")).toContain("与 智能体 制定计划");
+
+    render(<TaskChatComposer onAdd={vi.fn()} workMode="planning"
+      currentAssigneeValue="agent:custom"
+      reassignOptions={[{ id: "agent:custom", label: "Unassigned" }]} />);
+    expect(editable().getAttribute("data-placeholder")).toContain("与 Unassigned 制定计划");
+  } finally {
+    await act(async () => { await i18n.changeLanguage(previousLanguage); });
+  }
+});
 
 async function flushAsync() {
   await act(async () => {

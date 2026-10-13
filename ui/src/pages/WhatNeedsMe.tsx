@@ -87,7 +87,7 @@ function findScrollContainer(element: HTMLElement | null): HTMLElement | null {
 }
 
 export function WhatNeedsMe() {
-  useTranslation();
+  const { i18n } = useTranslation();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -248,7 +248,7 @@ export function WhatNeedsMe() {
     [allItems, pendingRestore],
   );
 
-  const filterOptions = useMemo(() => buildAttentionFilterOptions(deskItems), [deskItems]);
+  const filterOptions = useMemo(() => buildAttentionFilterOptions(deskItems), [deskItems, i18n.language]);
 
   // Filter → sort → group, all client-side so switching re-buckets without a
   // refetch. In the default (ungrouped) view the desk groups by arrival —
@@ -262,7 +262,7 @@ export function WhatNeedsMe() {
     }
     const sorted = sortAttentionItems(filtered, sortOrder);
     return groupAttentionItems(sorted, groupBy);
-  }, [deskItems, filters, sortOrder, groupBy, now]);
+  }, [deskItems, filters, sortOrder, groupBy, now, i18n.language]);
 
   const visibleCount = useMemo(() => groups.reduce((sum, group) => sum + group.items.length, 0), [groups]);
   const keyboardItems = useMemo(

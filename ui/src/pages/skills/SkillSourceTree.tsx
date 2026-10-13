@@ -110,17 +110,17 @@ export function SkillSourceTree({ candidates, selected, excludedFolders, onChang
           disabled={disabled || candidates.length === 0} onChange={() => toggleCheck('')} />
         <span>{selectedCount} {translateInstant("issueCommon.of")}{" "}{candidates.length} {translateInstant("selected")}</span>
       </label>
-      <Button type="button" variant="ghost" size="xs" className="font-normal text-muted-foreground" disabled={disabled || Boolean(search) || allDirs.size === 0} onClick={() => setExpansion(new Map([...allDirs].map(path => [path, allCollapsed])))}>{allCollapsed ? 'Expand all' : 'Collapse all'}</Button>
+      <Button type="button" variant="ghost" size="xs" className="font-normal text-muted-foreground" disabled={disabled || Boolean(search) || allDirs.size === 0} onClick={() => setExpansion(new Map([...allDirs].map(path => [path, allCollapsed])))}>{translateInstant(allCollapsed ? "Expand all" : "Collapse all")}</Button>
     </div>
     <div className="min-h-0 max-h-(--sz-480px) overflow-auto py-1">
       <FileTree layout="explorer" wrapLabels={false}
         nodes={nodes} selectedFile={null} expandedDirs={expanded}
-        visiblePaths={visiblePaths} disabled={disabled} ariaLabel="Discovered skills"
+        visiblePaths={visiblePaths} disabled={disabled} ariaLabel={translateInstant("Discovered skills")}
         empty={{ title: translateInstant("No matching skills found."), description: translateInstant("Try another skill name or path.") }}
         onToggleDir={path => setExpansion(previous => new Map(previous).set(path, !expanded.has(path)))}
         onSelectFile={path => { const file = included.get(path); if (file) onPreview?.(file.skill, file.filePath); }}
         onToggleCheck={toggleCheck}
-        checkboxLabel={node => skillsByPath.has(node.path) ? `Import ${node.path}` : `Import folder ${node.path}`}
+        checkboxLabel={node => skillsByPath.has(node.path) ? translateInstant("skillSourceTree.importFileAria", { path: node.path }) : translateInstant("skillSourceTree.importFolderAria", { path: node.path })}
         getCheckboxState={node => {
           if (included.has(node.path)) return null;
           if (skillsByPath.has(node.path)) return selected.has(node.path) ? 'checked' : 'unchecked';
@@ -140,12 +140,12 @@ export function SkillSourceTree({ candidates, selected, excludedFolders, onChang
         renderNodeExtra={node => {
           const skill = skillsByPath.get(node.path);
           if (!skill) return node.kind === 'file' ? <span className="text-xs text-muted-foreground">{translateInstant("Included")}</span> : null;
-          const label = skill.error ? 'Invalid' : skill.inspection?.references.length ? 'Check references' : skill.note === 'New skill' ? 'New' : skill.note === 'Already imported' ? 'Installed' : skill.note?.startsWith('Removed from source') ? 'Removed' : skill.note;
+          const label = skill.error ? translateInstant("Invalid") : skill.inspection?.references.length ? translateInstant("Check references") : skill.note === 'New skill' ? translateInstant("New") : skill.note === 'Already imported' ? translateInstant("Installed") : skill.note?.startsWith('Removed from source') ? translateInstant("Removed") : skill.note;
           const count = skill.inspection?.files.length ?? skill.fileCount;
           return <>
             {label && <Badge variant="outline" className={skill.error ? 'font-normal text-destructive' : 'hidden font-normal text-muted-foreground sm:inline-flex'} title={skill.error ?? skill.note}>{label}</Badge>}
-            {count !== undefined && <span className="shrink-0 text-xs tabular-nums text-muted-foreground">{count} {count === 1 ? translateInstant("companyImport.file") : 'files'}</span>}
-            {onPreview && <Button type="button" size="icon-xs" variant="ghost" disabled={disabled} aria-label={`Inspect ${skill.name}`} onKeyDown={event => event.stopPropagation()} onClick={event => { event.stopPropagation(); onPreview(skill); }}>{skill.inspection?.references.length ? <AlertTriangle className="size-3.5" /> : <Info className="size-3.5" />}</Button>}
+            {count !== undefined && <span className="shrink-0 text-xs tabular-nums text-muted-foreground">{translateInstant("skillSourceTree.fileCount", { count })}</span>}
+            {onPreview && <Button type="button" size="icon-xs" variant="ghost" disabled={disabled} aria-label={translateInstant("skillSourceTree.inspectFileAria", { name: skill.name })} onKeyDown={event => event.stopPropagation()} onClick={event => { event.stopPropagation(); onPreview(skill); }}>{skill.inspection?.references.length ? <AlertTriangle className="size-3.5" /> : <Info className="size-3.5" />}</Button>}
           </>;
         }}
       />

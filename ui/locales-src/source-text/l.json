@@ -159,6 +159,11 @@
     "zh-CN": "上次：{{value}}",
     "reviewedEnglishHash": "2e52b7b8e3f9b51991f9b7f1e3f4e0640a43d7ff7f423a77b1efdcebc1730ab8"
   },
+  "Latest": {
+    "en": "Latest",
+    "zh-CN": "最新",
+    "reviewedEnglishHash": "8730d3c2022abf1f9665e4ca1da43e4d068843482053675af19176b0f6f51a3e"
+  },
   "Latest Run": {
     "en": "Latest Run",
     "zh-CN": "最近一次运行",
@@ -268,6 +273,16 @@
     "en": "Legacy inline prompt - this deprecated virtual file preserves the old promptTemplate content",
     "zh-CN": "旧版内联提示词 - 这个已弃用的虚拟文件会保留原有的 promptTemplate 内容",
     "reviewedEnglishHash": "d80e23d694f8cfadccb2583762229155b41f6c38bb8df1727e3fe821859d0566"
+  },
+  "Let Dot read and write its assigned workspace and publish files. Requires a local Runner. Commands are available only on Linux with bubblewrap; they cannot read your home directory or use injected credentials.": {
+    "en": "Let Dot read and write its assigned workspace and publish files. Requires a local Runner. Commands are available only on Linux with bubblewrap; they cannot read your home directory or use injected credentials.",
+    "zh-CN": "允许 Dot 读写分配的工作区并发布文件。需要本地运行器。命令仅在使用 bubblewrap 的 Linux 上可用，不能读取你的主目录或使用注入的凭据。",
+    "reviewedEnglishHash": "107ae8815c960d9777471b2afe9f2f54515a8d67de2c6925dbac3053f9c8d47a"
+  },
+  "Let Dot read files attached to its current assigned task. File contents are sent to OpenAI. Does not require workspace command access; off by default.": {
+    "en": "Let Dot read files attached to its current assigned task. File contents are sent to OpenAI. Does not require workspace command access; off by default.",
+    "zh-CN": "允许 Dot 读取当前分配任务的附件。文件内容会发送给 OpenAI。不需要工作区命令访问权限；默认关闭。",
+    "reviewedEnglishHash": "e09cc02ccec3ace9960d2c0ba64f7065977e344ca0cdc52420ab67bc908f36ef"
   },
   "Let agents use": {
     "en": "Let agents use",
@@ -504,6 +519,11 @@
     "zh-CN": "加载预览",
     "reviewedEnglishHash": "a66fb2d83b094c635041b6b1bc0ed16f16fd36ecdef1cfde1018f57a22c3df25"
   },
+  "Loading AI account…": {
+    "en": "Loading AI account…",
+    "zh-CN": "正在加载 AI 账户…",
+    "reviewedEnglishHash": "91a8f47709a5014e0c65c12454ed33004f52d255460263d3f1e85b609dcd257d"
+  },
   "Loading AI connections": {
     "en": "Loading AI connections",
     "zh-CN": "加载AI连接",
@@ -609,6 +629,11 @@
     "zh-CN": "正在加载配置…",
     "reviewedEnglishHash": "bc8fd86dcffdd94e41dbdf3e40312419dcb1a2360395a59b7b015be3c7aa54a5"
   },
+  "Loading connection instructions…": {
+    "en": "Loading connection instructions…",
+    "zh-CN": "正在加载连接说明…",
+    "reviewedEnglishHash": "d96c8a5c96b3d96c56e8effcca0455f9a48b997381f159c24e76b4e6270a9cc4"
+  },
   "Loading connection permissions…": {
     "en": "Loading connection permissions…",
     "zh-CN": "正在加载连接权限...",
@@ -688,6 +713,11 @@
     "en": "Loading earlier comments...",
     "zh-CN": "正在加载更早的评论...",
     "reviewedEnglishHash": "aa9192a11cb5f23dd2f9e3189890e8da2dfbbe1805d234c26f687d7aa8b3bd8d"
+  },
+  "Loading email inbox…": {
+    "en": "Loading email inbox…",
+    "zh-CN": "正在加载电子邮件收件箱…",
+    "reviewedEnglishHash": "cb63b6b0830c9de168c105212d268f049bc582d2b9632890b5f38d1597106e70"
   },
   "Loading email options…": {
     "en": "Loading email options…",
@@ -819,10 +849,20 @@
     "zh-CN": "正在加载插件...",
     "reviewedEnglishHash": "336bfcb060987f9dbb2b0693de7c667084599987d4e0aa01c99dd4a99613f196"
   },
+  "Loading preview…": {
+    "en": "Loading preview…",
+    "zh-CN": "正在加载预览…",
+    "reviewedEnglishHash": "c4cf2b2ccb5d8dec9a0412c84a7c04c739ff0b298eb83d02bd8cabde8663dd7f"
+  },
   "Loading profile...": {
     "en": "Loading profile...",
     "zh-CN": "正在加载个人资料...",
     "reviewedEnglishHash": "4a47f12d23c4a6bffa64c4709bfe53eb827d2572d29c1bd9752b55e37b41e63b"
+  },
+  "Loading profiles…": {
+    "en": "Loading profiles…",
+    "zh-CN": "正在加载配置档案…",
+    "reviewedEnglishHash": "16b0bbfd1d1194f9a0945fd375147f113cf0a53efff54cdfb07642aba2ad1570"
   },
   "Loading proposals…": {
     "en": "Loading proposals…",
@@ -833,6 +873,11 @@
     "en": "Loading repositories…",
     "zh-CN": "正在加载仓库…",
     "reviewedEnglishHash": "460ca92c825aee638846a74cb7ee0ea034a7a35d4ecd9c2e72fbeb2367794a57"
+  },
+  "Loading retained connection setup": {
+    "en": "Loading retained connection setup",
+    "zh-CN": "正在加载保留的连接设置",
+    "reviewedEnglishHash": "1bb3dba617ab2909c49663f8a58d7ae635ebafdd5ea3ece2051e1f7afadca8f6"
   },
   "Loading reviews…": {
     "en": "Loading reviews…",
@@ -863,6 +908,11 @@
     "en": "Loading run pipeline…",
     "zh-CN": "正在加载运行管道...",
     "reviewedEnglishHash": "b2b94be97ab475f26773ad656b92dc6449a1d696dbb30cac49fe1e8eb78cfb53"
+  },
+  "Loading saved connection setup": {
+    "en": "Loading saved connection setup",
+    "zh-CN": "正在加载已保存的连接设置",
+    "reviewedEnglishHash": "ae9f06840229be0e93318904ba8f37f9662d7e25ac9cf2c5174bfd5f480755eb"
   },
   "Loading scheduler heartbeats...": {
     "en": "Loading scheduler heartbeats...",
@@ -1064,6 +1114,26 @@
     "zh-CN": "查找包含 `SKILL.md` 的仓库，然后把仓库 URL 粘贴到这里。",
     "reviewedEnglishHash": "5f8a4c5d93639b4c64fc62ab44edc753f78cca1faf6d0b884bc8c87f4da21d98"
   },
+  "Look for repositories with `SKILL.md`, then paste the repo URL.": {
+    "en": "Look for repositories with `SKILL.md`, then paste the repo URL.",
+    "zh-CN": "查找包含 `SKILL.md` 的仓库，然后粘贴仓库 URL。",
+    "reviewedEnglishHash": "a617408476067b39cc1d2872e7d839bf7bedb018c6d2f17cfab7e35eebd3317d"
+  },
+  "Look up contacts and people in your directory.": {
+    "en": "Look up contacts and people in your directory.",
+    "zh-CN": "在目录中查找联系人和人员。",
+    "reviewedEnglishHash": "13afb5e2478712c8561a74483b75c3e9a40c552e9fe3fe4b2dc8c3e7ea379445"
+  },
+  "Look up contacts and update deal stages.": {
+    "en": "Look up contacts and update deal stages.",
+    "zh-CN": "查找联系人并更新交易阶段。",
+    "reviewedEnglishHash": "cdb9fc561f7b163d593b2f4896dbab6b46c117be819d918b8d25c61233190bac"
+  },
+  "Look up up-to-date docs for your libraries.": {
+    "en": "Look up up-to-date docs for your libraries.",
+    "zh-CN": "查找所用库的最新文档。",
+    "reviewedEnglishHash": "57a730d0781db168c3078aca1f8ebc094e05edbb4056d6f79d32482aa0015b74"
+  },
   "Lookback hours": {
     "en": "Lookback hours",
     "zh-CN": "回溯小时数",
@@ -1093,6 +1163,16 @@
     "en": "Low-trust review agent. It can only act inside its assigned review boundary; task, project, or run policy defines the concrete scope.",
     "zh-CN": "低信任审核智能体。它只能在其分配的审核边界内操作；任务、项目或运行策略定义了具体范围。",
     "reviewedEnglishHash": "d92516ba432f4cbca44759ee32d29ff5743982699e38f2f622b4c79c2d3e5cdd"
+  },
+  "Low-trust review configured": {
+    "en": "Low-trust review configured",
+    "zh-CN": "已配置低信任审查",
+    "reviewedEnglishHash": "71c8f51d9efcd8b21cd49d4c66ee3792a7734c073410ff955927f4e1c296ef87"
+  },
+  "last week": {
+    "en": "last week",
+    "zh-CN": "上周",
+    "reviewedEnglishHash": "a5393742a9cb9285175bb90ea845b0cf50f03e69ff33448f1af87c24bc340ee7"
   },
   "latest": {
     "en": "latest",

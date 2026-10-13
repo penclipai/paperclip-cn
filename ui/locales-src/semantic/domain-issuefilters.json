@@ -4,9 +4,64 @@
     "zh-CN": "外部对象状态",
     "reviewedEnglishHash": "48bc2014d5fb4ce52ba4be6c608b73c59aeb5232c6466f1156f0fb9f917325c7"
   },
+  "issueFilters.externalObjects.anyFailed": {
+    "en": "Any failed",
+    "zh-CN": "任何失败项",
+    "reviewedEnglishHash": "6912e994c9e7dba58ca29bbe1f20a37a0ecf6640f1a8120d5832111e101dd600"
+  },
+  "issueFilters.externalObjects.anyRunning": {
+    "en": "Any running",
+    "zh-CN": "任何运行项",
+    "reviewedEnglishHash": "19da2ead15fd8bb4513959925773e7ae50d81037d2e6d916140cd931430671a0"
+  },
+  "issueFilters.externalObjects.anyWaiting": {
+    "en": "Any waiting",
+    "zh-CN": "任何等待项",
+    "reviewedEnglishHash": "a20be758196fb0ed28e6bcb2dd8bc769717f819d3a85d6be2e3e34ccd6456968"
+  },
+  "issueFilters.externalObjects.authRequired": {
+    "en": "Auth required",
+    "zh-CN": "需要认证",
+    "reviewedEnglishHash": "0005d85116dc47ccae66cbbc7e55e4c72742ce598aca888d3b36c34ed7131318"
+  },
+  "issueFilters.externalObjects.none": {
+    "en": "No external objects",
+    "zh-CN": "无外部对象",
+    "reviewedEnglishHash": "cfe9bbc4c9eb6db3b61543ee48d6f4cffab1f58c437fc550477079b522824435"
+  },
+  "issueFilters.externalObjects.stale": {
+    "en": "Stale",
+    "zh-CN": "已过期",
+    "reviewedEnglishHash": "40c9e59c5e152b0ae9affc84d8461c29b75a7709e4506307eeedf246b526014e"
+  },
+  "issueFilters.externalObjects.unreachable": {
+    "en": "Unreachable",
+    "zh-CN": "不可访问",
+    "reviewedEnglishHash": "abaa46adb4e13ab2e7202ad1480a4182fde02f70e2e8ac27eb8b8dd04dc3c427"
+  },
   "issueFilters.liveRunsOnly": {
     "en": "Live runs only",
     "zh-CN": "仅显示实时运行",
     "reviewedEnglishHash": "596632fc019ac3aeb6166f5ae7e84dcbafca112638bd4d9b203c49b32b8fa528"
+  },
+  "issueFilters.quick.active": {
+    "en": "Active",
+    "zh-CN": "活跃",
+    "reviewedEnglishHash": "92340695899bd2d86223e4a007620e0d6502fc0e08809773634c7e0743764a9c"
+  },
+  "issueFilters.quick.all": {
+    "en": "All",
+    "zh-CN": "全部",
+    "reviewedEnglishHash": "a52ace420f2175d08b1577a1bea5445e36801229c074ef9ed6c55a73401fd9c2"
+  },
+  "issueFilters.quick.backlog": {
+    "en": "Backlog",
+    "zh-CN": "待办",
+    "reviewedEnglishHash": "bf986e9a4f860eb0f3d2def12019dc81c8370e4fdd01940635c2265bae5791d0"
+  },
+  "issueFilters.quick.done": {
+    "en": "Done",
+    "zh-CN": "已完成",
+    "reviewedEnglishHash": "11a6767d5674c7e45f7e00dc525762275b3a48491ad6045427d2609cc496c516"
   }
 }

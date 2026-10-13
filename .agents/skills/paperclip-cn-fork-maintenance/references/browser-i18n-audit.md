@@ -24,6 +24,27 @@ An upstream sync defaults to impact audit unless the user requests every page, d
 
 ## Route Inventory
 
+Before browser review, generate a read-only source inventory:
+
+```sh
+pnpm audit:i18n-visible -- --out .omx/i18n-browser-audit/visible-before.json
+```
+
+The scanner records JSX text, visible attributes, visible conditional/template
+branches and label/title/description configuration. Tests, stories, labs, design
+and performance fixtures are excluded. Implementation-only branches are recorded
+separately as `uncertainCandidates`. Candidate counts are review leads, not a
+translation completeness gate: labels may be translated at their consumer, and
+user-authored or third-party data must stay raw. The scanner's recognition of
+`t`/`translateInstant` is intentionally narrower than the binding-aware key audit.
+Review both inventories and rendered states; do not rewrite every Latin string.
+
+Use `pnpm test:i18n` for scanner/catalog regression checks and
+`pnpm test:e2e:i18n` for the isolated production-board language-switch smoke.
+The latter creates its own temporary instance through the existing E2E config;
+it must not attach to a developer's active database. Its narrow assertions do
+not prove full route or dialog coverage.
+
 Derive the route inventory from `ui/src/App.tsx` at audit time.
 
 Include:

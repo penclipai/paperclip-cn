@@ -1,4 +1,14 @@
 {
+  "searchPage.activeFiltersCount_one": {
+    "en": " · {{count}} filter active",
+    "zh-CN": " · 已启用 {{count}} 个筛选条件",
+    "reviewedEnglishHash": "5f94f1fe8aa088503b8f2d9a6386f682669817baa91e5b639521876b143cc73c"
+  },
+  "searchPage.activeFiltersCount_other": {
+    "en": " · {{count}} filters active",
+    "zh-CN": " · 已启用 {{count}} 个筛选条件",
+    "reviewedEnglishHash": "c78068e47c3e602d8ac092d50eb33f5e254618c39ffda137d797576d816ec753"
+  },
   "searchPage.clearSearch": {
     "en": "Clear search",
     "zh-CN": "清除搜索",
@@ -64,6 +74,11 @@
     "zh-CN": "插入操作符 {{token}}",
     "reviewedEnglishHash": "53cb48caeb92d862d0ff2be35593b416a172f887b0ad28541ce60d5447f4c990"
   },
+  "searchPage.insertOperatorAria": {
+    "en": "Insert operator {{operator}}",
+    "zh-CN": "插入运算符 {{operator}}",
+    "reviewedEnglishHash": "e4c71d9994733ead158b7aa53bb232d2bbf80032ed8ebb168b15ba917e4b519e"
+  },
   "searchPage.loading": {
     "en": "Searching for \"{{query}}\"...",
     "zh-CN": "正在搜索“{{query}}”...",
@@ -103,6 +118,21 @@
     "en": "1 result - sorted by relevance",
     "zh-CN": "1 条结果 - 按相关性排序",
     "reviewedEnglishHash": "927eae2174cea45e881281a56f4886378bfdc2b41bdc298e46b2dfd5ede1f96a"
+  },
+  "searchPage.resultsCountLimited": {
+    "en": "{{shown}} of {{total}} results",
+    "zh-CN": "显示 {{shown}} / {{total}} 条结果",
+    "reviewedEnglishHash": "b386f7d2cbd807566c3250f43bb18355bb1ca8a5159a974b2c3df7e0f5c5e0f6"
+  },
+  "searchPage.resultsCount_one": {
+    "en": "{{count}} result",
+    "zh-CN": "{{count}} 条结果",
+    "reviewedEnglishHash": "be0c64afb19116c40e78ea593f4a731a3cba12361449dee031f96d5207e37507"
+  },
+  "searchPage.resultsCount_other": {
+    "en": "{{count}} results",
+    "zh-CN": "{{count}} 条结果",
+    "reviewedEnglishHash": "b6c504e026b5ce26d311387d0885b0333745e48ae5a4dde038fac2dd23aaf218"
   },
   "searchPage.scope.agents": {
     "en": "Agents",
@@ -153,6 +183,11 @@
     "en": "Search query",
     "zh-CN": "搜索查询",
     "reviewedEnglishHash": "9eef05233ecfc1fbcfe756aa79bd497fa20e58144012561b562b8856040f5100"
+  },
+  "searchPage.sortedBy": {
+    "en": " · sorted by {{sort}}",
+    "zh-CN": " · 按 {{sort}} 排序",
+    "reviewedEnglishHash": "5cac2efee7065da945bc8c78e85a03b17441eaf7500efc70afb31f214c8d16d0"
   },
   "searchPage.subgroup.agents": {
     "en": "Agents",

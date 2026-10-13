@@ -39,36 +39,37 @@ export function stateChipFor(
   kind: IssueWorkProduct["type"],
   status: string | null | undefined,
   reviewState: IssueWorkProduct["reviewState"] | string | null | undefined,
+  t: typeof translateInstant = translateInstant,
 ): StateChip | null {
   if (reviewState === "changes_requested" || status === "changes_requested") {
-    return { label: "Changes requested", tone: "failure" };
+    return { label: t("Changes requested"), tone: "failure" };
   }
   if (reviewState === "needs_board_review" || status === "ready_for_review") {
-    return { label: "Review", tone: "review" };
+    return { label: t("Review"), tone: "review" };
   }
   if (["failed", "unhealthy", "down"].includes(status ?? "")) {
-    return { label: "Failed", tone: "failure" };
+    return { label: t("Failed"), tone: "failure" };
   }
   if (["pending", "opening"].includes(status ?? "")) {
-    return { label: status === "opening" ? "Opening" : "Pending", tone: "progress", dashed: true };
+    return { label: status === "opening" ? t("Opening") : t("Pending"), tone: "progress", dashed: true };
   }
   if (kind === "pull_request" && (status === "active" || status === "open")) {
-    return { label: "Open", tone: "progress" };
+    return { label: t("Open"), tone: "progress" };
   }
   if (kind === "pull_request" && status === "draft") {
-    return { label: "Draft", tone: "review" };
+    return { label: t("Draft"), tone: "review" };
   }
   if (kind === "pull_request" && status === "merged") {
-    return { label: "Merged", tone: "success" };
+    return { label: t("Merged"), tone: "success" };
   }
   if (kind === "pull_request" && status === "closed") {
-    return { label: "Closed", tone: "neutral" };
+    return { label: t("Closed"), tone: "neutral" };
   }
   if (kind === "runtime_service" && status === "active") {
-    return { label: "Running", tone: "progress" };
+    return { label: t("Running"), tone: "progress" };
   }
   if (kind === "runtime_service" && status === "closed") {
-    return { label: "Stopped", tone: "failure" };
+    return { label: t("Stopped"), tone: "failure" };
   }
   return null;
 }
@@ -136,7 +137,7 @@ export interface RichWorkProductCardProps {
 }
 
 export function RichWorkProductCard({ workProduct, href, variant = "card" }: RichWorkProductCardProps) {
-  useTranslation();
+  const { t } = useTranslation();
   const openIssueGallery = useContext(IssueGalleryContext);
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -146,7 +147,7 @@ export function RichWorkProductCard({ workProduct, href, variant = "card" }: Ric
   const isVideo = isVideoLikeOutput(contentType, stringMeta(metadata, "originalFilename") ?? workProduct.title);
   let Icon: LucideIcon = File;
   let meta: Array<string | null> = [];
-  let action = "Open preview";
+  let action = t("Open preview");
 
   switch (workProduct.type) {
     case "pull_request": {
@@ -156,40 +157,40 @@ export function RichWorkProductCard({ workProduct, href, variant = "card" }: Ric
       const base = stringMeta(metadata, "baseRef", "base", "baseBranch");
       const head = stringMeta(metadata, "headRef", "head", "headBranch", "branch");
       meta = [repository, number ? `#${number.replace(/^#/, "")}` : null, base && head ? `${base} ← ${head}` : null, urlLabel(workProduct.url)];
-      action = "Open on GitHub";
+      action = t("Open on GitHub");
       break;
     }
     case "commit":
       Icon = GitCommit;
       meta = [stringMeta(metadata, "shortSha", "sha")?.slice(0, 8) ?? workProduct.externalId?.slice(0, 8) ?? null, stringMeta(metadata, "branch", "branchName"), urlLabel(workProduct.url)];
-      action = "Open on GitHub";
+      action = t("Open on GitHub");
       break;
     case "branch":
       Icon = GitBranch;
-      meta = [href ? "Branch" : "Branch · no remote link", stringMeta(metadata, "repository", "repo", "repositoryName"), stringMeta(metadata, "branch", "branchName") ?? workProduct.externalId, urlLabel(workProduct.url)];
-      action = "Open on GitHub";
+      meta = [href ? t("Branch") : t("Branch · no remote link"), stringMeta(metadata, "repository", "repo", "repositoryName"), stringMeta(metadata, "branch", "branchName") ?? workProduct.externalId, urlLabel(workProduct.url)];
+      action = t("Open on GitHub");
       break;
     case "artifact": {
       Icon = isImage ? Image : isVideo ? Film : File;
       const size = numberMeta(metadata, "byteSize", "size");
-      meta = [isImage ? "Image" : isVideo ? "Video" : stringMeta(metadata, "kind", "fileType") ?? "File", size === null ? null : formatBytes(size)];
-      action = isImage || isVideo ? "Open gallery" : "Download";
+      meta = [isImage ? t("Image") : isVideo ? t("Video") : stringMeta(metadata, "kind", "fileType") ?? t("artifacts.media.file"), size === null ? null : formatBytes(size)];
+      action = isImage || isVideo ? t("Open gallery") : t("Download");
       break;
     }
     case "document":
       Icon = FileText;
       meta = ["Document", stringMeta(metadata, "revision", "revisionNumber") ? `rev ${stringMeta(metadata, "revision", "revisionNumber")}` : null];
-      action = "Open document";
+      action = t("pipelines.openDocument");
       break;
     case "preview_url":
       Icon = Globe;
       meta = [urlLabel(workProduct.url)];
-      action = "Open preview";
+      action = t("Open preview");
       break;
     case "runtime_service":
       Icon = Server;
       meta = [stringMeta(metadata, "service", "serviceName") ?? workProduct.provider, stringMeta(metadata, "port") ? `port ${stringMeta(metadata, "port")}` : null];
-      action = "Open service";
+      action = t("Open service");
       break;
   }
 
@@ -219,6 +220,7 @@ export function RichWorkProductCard({ workProduct, href, variant = "card" }: Ric
         ? null
         : workProduct.status,
       workProduct.reviewState,
+      t,
     );
   const visibleMeta = meta.filter((value): value is string => Boolean(value));
   const changeCounts = [additions === null ? null : `+${additions}`, deletions === null ? null : `−${deletions}`]

@@ -1,4 +1,6 @@
 import { configFieldsForSection } from "../config-sections";
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
 import type { AdapterConfigFieldsProps } from "../types";
 import {
   Field,
@@ -34,9 +36,10 @@ export function ProcessConfigFields({
   eff,
   mark,
 }: AdapterConfigFieldsProps) {
+  useTranslation();
   return configFieldsForSection(section, (
     <>
-      <Field configSection="advanced" label="Command" hint={help.command}>
+      <Field configSection="advanced" label={translateInstant("Command")} hint={help.command}>
         <DraftInput
           value={
             isCreate
@@ -53,7 +56,7 @@ export function ProcessConfigFields({
           placeholder="e.g. node, python"
         />
       </Field>
-      <Field configSection="advanced" label="Args (comma-separated)" hint={help.args}>
+      <Field configSection="advanced" label={translateInstant("agentConfig.args")} hint={help.args}>
         <DraftInput
           value={
             isCreate

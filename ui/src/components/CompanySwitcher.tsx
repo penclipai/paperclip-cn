@@ -1,4 +1,3 @@
-import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
 import { ChevronsUpDown, Plus, RefreshCw, Settings } from "lucide-react";
 import { Link } from "@/lib/router";
@@ -33,7 +32,7 @@ interface CompanySwitcherProps {
 }
 
 export function CompanySwitcher({ open: controlledOpen, onOpenChange }: CompanySwitcherProps = {}) {
-  useTranslation();
+  const { t } = useTranslation();
   const [internalOpen, setInternalOpen] = useState(false);
   const { companies, selectedCompany, setSelectedCompanyId, companyListUnavailable, retryCompanies } =
     useCompany();
@@ -47,20 +46,23 @@ export function CompanySwitcher({ open: controlledOpen, onOpenChange }: CompanyS
         <Button
           variant="ghost"
           className="w-full justify-between px-2 py-1.5 h-auto text-left"
+          aria-label={selectedCompany
+            ? t("sidebar.openOrganizationSwitcherFor", { name: selectedCompany.name })
+            : t("sidebar.openOrganizationSwitcher")}
         >
           <div className="flex items-center gap-2 min-w-0">
             {selectedCompany && (
               <span className={`h-2 w-2 rounded-full shrink-0 ${statusDotColor(selectedCompany.status)}`} />
             )}
             <span className="text-sm font-medium truncate">
-              {selectedCompany?.name ?? "Select organization"}
+              {selectedCompany?.name ?? t("sidebar.selectOrganization")}
             </span>
           </div>
           <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-(--sz-220px)">
-        <DropdownMenuLabel>{translateInstant("Organizations")}</DropdownMenuLabel>
+        <DropdownMenuLabel>{t("Organizations")}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {sidebarCompanies.map((company) => (
           <DropdownMenuItem
@@ -78,7 +80,7 @@ export function CompanySwitcher({ open: controlledOpen, onOpenChange }: CompanyS
           // give the customer the way out, since nothing else in the app does.
           companyListUnavailable ? (
             <>
-              <DropdownMenuItem disabled>{translateInstant("Couldn't load organizations")}</DropdownMenuItem>
+              <DropdownMenuItem disabled>{t("Couldn't load organizations")}</DropdownMenuItem>
               <DropdownMenuItem
                 onSelect={(event) => {
                   // Keep the menu open so the result of the retry is visible.
@@ -87,22 +89,22 @@ export function CompanySwitcher({ open: controlledOpen, onOpenChange }: CompanyS
                 }}
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
-                {translateInstant("Try again")}</DropdownMenuItem>
+                {t("Try again")}</DropdownMenuItem>
             </>
           ) : (
-            <DropdownMenuItem disabled>{translateInstant("sidebar.noOrganizations")}</DropdownMenuItem>
+            <DropdownMenuItem disabled>{t("sidebar.noOrganizations")}</DropdownMenuItem>
           )
         )}
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link to="/company/settings" className="no-underline text-inherit">
             <Settings className="h-4 w-4 mr-2" />
-            {translateInstant("Settings")}</Link>
+            {t("Settings")}</Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link to="/companies" className="no-underline text-inherit">
             <Plus className="h-4 w-4 mr-2" />
-            {translateInstant("Manage Organizations")}</Link>
+            {t("Manage Organizations")}</Link>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

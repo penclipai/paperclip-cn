@@ -1,5 +1,6 @@
 import type { IssueChatLinkedRun } from "./issue-chat-messages";
 import type { TaskChatMarkerItem } from "../components/task-chat/task-chat-model";
+import { translateInstant } from "@/i18n";
 
 function object(value: unknown): Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value)
@@ -20,11 +21,16 @@ export function credentialAccessNotice(
   const responsibleUserId = typeof configuration.responsibleUserId === "string"
     ? configuration.responsibleUserId : run.responsibleUserId;
   return {
-    agentName: run.agentName?.trim() || "This agent",
+    agentName: run.agentName?.trim() || translateInstant("credentialAccess.thisAgent", { defaultValue: "This agent" }),
     credentialName: typeof credential.connectionName === "string" && credential.connectionName.trim()
       ? credential.connectionName : undefined,
+    // `"you"` is a consumer-facing sentinel: TaskChatMarker branches on it
+    // before selecting localized grammar. Do not translate this value here.
     deniedUser: responsibleUserId && responsibleUserId === currentUserId
-      ? "you" : responsibleUserId ? userLabels?.get(responsibleUserId) || "the person this task runs for" : "the person this task runs for",
+      ? "you"
+      : responsibleUserId
+        ? userLabels?.get(responsibleUserId) || translateInstant("credentialAccess.responsiblePerson", { defaultValue: "the person this task runs for" })
+        : translateInstant("credentialAccess.responsiblePerson", { defaultValue: "the person this task runs for" }),
     settingsHref: `/agents/${encodeURIComponent(run.agentId)}/runtime`,
   };
 }

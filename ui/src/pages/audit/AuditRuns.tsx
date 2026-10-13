@@ -213,10 +213,10 @@ export function AuditRuns({ companyId, routineId }: { companyId: string; routine
           <span>{translateInstant("Agent")}</span>
           <Select value={agentId} onValueChange={(value) => updateFilter("agentId", value)}>
             <SelectTrigger className="w-48">
-              <SelectValue placeholder="All agents" />
+              <SelectValue placeholder={translateInstant("auditFeed.allAgents")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={ALL}>All agents</SelectItem>
+              <SelectItem value={ALL}>{translateInstant("auditFeed.allAgents")}</SelectItem>
               {(agents.data ?? []).map((agent) => (
                 <SelectItem key={agent.id} value={agent.id}>
                   {agent.name}

@@ -4,6 +4,11 @@
     "zh-CN": "KMS 密钥 ID",
     "reviewedEnglishHash": "0670e40a630db5192f67bed44f593a748d649968cdad76e19968a3cebc8a0644"
   },
+  "Keep audit trail visible in item history": {
+    "en": "Keep audit trail visible in item history",
+    "zh-CN": "在事项历史中保留可见的审计记录",
+    "reviewedEnglishHash": "586792fb3059a44385b88b761f0106c91004e70efcf034a6a1afc047fc18821e"
+  },
   "Keep browser open": {
     "en": "Keep browser open",
     "zh-CN": "保持浏览器打开",

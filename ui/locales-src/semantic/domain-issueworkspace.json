@@ -44,6 +44,11 @@
     "zh-CN": "当此任务运行时，将创建一个全新的隔离工作区。",
     "reviewedEnglishHash": "cae298ad3bda604c9f27b031b94e2ce353d3fc9d7f369b10a7203962dfb04be6"
   },
+  "issueWorkspace.isolatedWhenRuns": {
+    "en": "A fresh isolated workspace will be created when this task runs.",
+    "zh-CN": "此任务运行时将创建一个新的隔离工作区。",
+    "reviewedEnglishHash": "65c789bfb372290f9bb043ac2688b490ef5c83eeb45726b951636dfe0c8bd313"
+  },
   "issueWorkspace.isolatedWorkspace": {
     "en": "Isolated workspace",
     "zh-CN": "隔离工作区",
@@ -69,6 +74,11 @@
     "zh-CN": "沿用项目默认",
     "reviewedEnglishHash": "e8cb80e5c5cb7d7ab993752ca5a5df422767c827ca28cf19b92111fe136df828"
   },
+  "issueWorkspace.projectDefaultSuffix": {
+    "en": " · project default",
+    "zh-CN": " · 项目默认设置",
+    "reviewedEnglishHash": "38099d6575d8e5f87109d9206fc7c25119951a9597c52bd1e41e20392641e3f9"
+  },
   "issueWorkspace.projectDefaultWhenRuns": {
     "en": "This issue will use the project default workspace configuration when it runs.",
     "zh-CN": "当此任务运行时，将使用项目默认的工作区配置。",
@@ -88,6 +98,11 @@
     "en": "This issue will reuse an existing workspace when it runs.",
     "zh-CN": "当此任务运行时，将复用一个现有工作区。",
     "reviewedEnglishHash": "2ad2b696282983a1a61f07d3544651e3fb244b6d3179f7576675fba29621f0dd"
+  },
+  "issueWorkspace.reusedWorkspaceSuffix": {
+    "en": " · reused workspace",
+    "zh-CN": " · 已复用工作区",
+    "reviewedEnglishHash": "e7b10c072d64bb6e6ad075b4c4cce5c2160a3394eec413c0af903d228f1b5028"
   },
   "issueWorkspace.reusing": {
     "en": "Reusing:",

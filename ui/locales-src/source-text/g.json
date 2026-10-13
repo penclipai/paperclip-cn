@@ -44,6 +44,11 @@
     "zh-CN": "网关未更新",
     "reviewedEnglishHash": "34c6cf19bff6595f2b86deae074e0972c773c020e1da6574f9707e0d96afe9a5"
   },
+  "Gemini CLI": {
+    "en": "Gemini CLI",
+    "zh-CN": "Gemini 命令行工具",
+    "reviewedEnglishHash": "731732835cd76be60beb737ac8a4903b5bbc79388008bfc4ba5191d1edfa7073"
+  },
   "Gemini CLI (local)": {
     "en": "Gemini CLI (local)",
     "zh-CN": "Gemini CLI（本地）",
@@ -244,6 +249,11 @@
     "zh-CN": "为您的智能体提供连接此 Webhook 所需的一切：URL、身份验证密钥和分步说明。",
     "reviewedEnglishHash": "ea90b46a82b362cbcf3befd19ba8fb529b3ee9b3cb2f34882aa7a566dc7c665b"
   },
+  "Give your agents access to this app.": {
+    "en": "Give your agents access to this app.",
+    "zh-CN": "授予智能体访问此应用的权限。",
+    "reviewedEnglishHash": "0060ec68f371fd6c565769743aa924d1861d4677bb0f150da6511c4f8b158b75"
+  },
   "Global": {
     "en": "Global",
     "zh-CN": "全局",
@@ -273,6 +283,16 @@
     "en": "Goals",
     "zh-CN": "目标",
     "reviewedEnglishHash": "116cd3982a9bc435ecd50e5978b68f5f1d542c0ef071fdb598f06a9000dd33cb"
+  },
+  "Grant access": {
+    "en": "Grant access",
+    "zh-CN": "授予访问权限",
+    "reviewedEnglishHash": "8693768c7e085dabc8e54b1614864a24b6ee377aea0c13e27b7476a7c6c222f8"
+  },
+  "Granting access…": {
+    "en": "Granting access…",
+    "zh-CN": "正在授予访问权限…",
+    "reviewedEnglishHash": "376bec913cb15d0727ba952ecec528f19b047d1a20bc13369d127c504417a55f"
   },
   "Grants": {
     "en": "Grants",

@@ -20,6 +20,7 @@ import {
   buildEntries,
   countAllowedTools,
   parseEntries,
+  templateCopy,
   templateSelections,
   TEMPLATES,
   type AdvancedRule,
@@ -41,8 +42,8 @@ function slugifyProfileKey(name: string): string {
 
 const STEP_LABELS: Array<{ step: WizardStep; label: string }> = [
   { step: 1, get label() { return translateInstant("Name"); } },
-  { step: 2, label: "Choose tools" },
-  { step: 3, label: "Assign" },
+  { step: 2, get label() { return translateInstant("Choose tools"); } },
+  { step: 3, get label() { return translateInstant("Assign"); } },
 ];
 
 export function ProfileWizard({
@@ -457,7 +458,9 @@ export function StepName({
       <div className="space-y-2">
         <h3 className="text-sm font-medium text-foreground">{translateInstant("tools.profiles.wizard.startFrom")}</h3>
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-          {TEMPLATES.map((t) => (
+          {TEMPLATES.map((t) => {
+            const copy = templateCopy(t);
+            return (
             <button
               key={t.key}
               type="button"
@@ -469,10 +472,11 @@ export function StepName({
                   : "border-border hover:border-primary/40 hover:bg-accent/40",
               )}
             >
-              <span className="text-sm font-medium text-foreground">{t.title}</span>
-              <span className="text-xs text-muted-foreground">{t.description}</span>
+              <span className="text-sm font-medium text-foreground">{copy.title}</span>
+              <span className="text-xs text-muted-foreground">{copy.description}</span>
             </button>
-          ))}
+            );
+          })}
         </div>
       </div>
 

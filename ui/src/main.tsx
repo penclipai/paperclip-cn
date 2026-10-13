@@ -48,7 +48,7 @@ function CompanyAwareBreadcrumbProvider({ children }: { children: React.ReactNod
 function AppBootstrapFallback() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background text-sm text-muted-foreground" aria-busy="true">
-      {i18n.t("common.loading")}
+      {i18n.t("common.loading", { defaultValue: "" })}
     </div>
   );
 }

@@ -74,6 +74,11 @@
     "zh-CN": "等待转录内容...",
     "reviewedEnglishHash": "8f7d4ad6562d888ca4ac59b2dbfcd59a69bb57c33d24ffac673cdb3082380362"
   },
+  "Waiting for upload to finish": {
+    "en": "Waiting for upload to finish",
+    "zh-CN": "等待上传完成",
+    "reviewedEnglishHash": "71fd6a43957e57db5cb8f33297fe786100b4e40731341ea1c314baff933ed474"
+  },
   "Waiting for workspace": {
     "en": "Waiting for workspace",
     "zh-CN": "正在等待工作区",
@@ -113,6 +118,16 @@
     "en": "Want to test it? Turn it on for",
     "zh-CN": "要测试此操作，请先为以下智能体启用：",
     "reviewedEnglishHash": "b2d4e90b93cd511091bc31dbccdd0648b47f7eddc44d69c25c9939392c410148"
+  },
+  "Warm idle timeout (ms)": {
+    "en": "Warm idle timeout (ms)",
+    "zh-CN": "预热空闲超时（毫秒）",
+    "reviewedEnglishHash": "bb04d4fdb77890b58587d94e3bc1e925af98414fb918de1021e79349ae44c7ab"
+  },
+  "Warm session": {
+    "en": "Warm session",
+    "zh-CN": "预热会话",
+    "reviewedEnglishHash": "49ec8f8b3b6db1b918786aa5cce2ceee70f75ee04b4f87007b58260865371064"
   },
   "Warning": {
     "en": "Warning",
@@ -174,6 +189,21 @@
     "zh-CN": "Webhook 地址",
     "reviewedEnglishHash": "84805a7574a82052bdd5b3b98119cfd838d04036ec4bd3d667a95698e7097ad6"
   },
+  "Webhook authentication failed": {
+    "en": "Webhook authentication failed",
+    "zh-CN": "Webhook 身份验证失败",
+    "reviewedEnglishHash": "912bfefc03f7e85297241e9d640f8eb115ea58d0874a39f030bf672b0ecfe6fb"
+  },
+  "Webhook event received": {
+    "en": "Webhook event received",
+    "zh-CN": "已收到 Webhook 事件",
+    "reviewedEnglishHash": "acc5410066d7742e4022a09e4691717e0145f80ed2cc3f3d46f4815e994b3f13"
+  },
+  "Webhook key replaced": {
+    "en": "Webhook key replaced",
+    "zh-CN": "Webhook 密钥已替换",
+    "reviewedEnglishHash": "404458cbd0c9d1d61453e245a1c1b762b2b20ceea22f8f7619feee3fd2267e4f"
+  },
   "Webhook secret rotated": {
     "en": "Webhook secret rotated",
     "zh-CN": "已轮换 Webhook 密钥",
@@ -183,6 +213,11 @@
     "en": "Webhook setup",
     "zh-CN": "Webhook 设置",
     "reviewedEnglishHash": "25f5e2b7a326705b14c0487b3ece912c0b8996821a991415e4c0b927d279a0da"
+  },
+  "Webhook setup finished": {
+    "en": "Webhook setup finished",
+    "zh-CN": "Webhook 设置已完成",
+    "reviewedEnglishHash": "64a3b5cd3ab152ec8262d164a56d1b4c854bc671d17954304f4f17d94965ba09"
   },
   "Webhook trigger created": {
     "en": "Webhook trigger created",
@@ -303,6 +338,11 @@
     "en": "Who can act:",
     "zh-CN": "谁可以采取行动：",
     "reviewedEnglishHash": "0a595201a6468c5d62c6a70939739031d32a39c5d87066a832aacbe58fa92184"
+  },
+  "Who can use this connection": {
+    "en": "Who can use this connection",
+    "zh-CN": "谁可以使用此连接",
+    "reviewedEnglishHash": "ba7dda12f0732fc77d59732c9f6853ba54df19700dc3ac1f4dd252dd64d7d3fc"
   },
   "Who can use this identity": {
     "en": "Who can use this identity",
@@ -489,6 +529,11 @@
     "zh-CN": "工作区导出修复",
     "reviewedEnglishHash": "3d5f2d271206d95c13b58bdfaf244402d8c344d5b52c7119a5269d76112314fa"
   },
+  "Workspace files and commands": {
+    "en": "Workspace files and commands",
+    "zh-CN": "工作区文件和命令",
+    "reviewedEnglishHash": "75395e7abb76e10abdd553f17b49eb453f75775653513f5357897c4dd366d0f8"
+  },
   "Workspace mode": {
     "en": "Workspace mode",
     "zh-CN": "工作区模式",
@@ -563,6 +608,11 @@
     "en": "Write your answer",
     "zh-CN": "写下你的答案",
     "reviewedEnglishHash": "a2639bd01faffe137686d94aa7de93100bb3567856e2c33fe230c50b2cd59aee"
+  },
+  "Writing to": {
+    "en": "Writing to",
+    "zh-CN": "正在写入",
+    "reviewedEnglishHash": "78c876aec6a25d77ae6c9897ab6316477a020767332420ab3dcade9115430644"
   },
   "Wrong account?": {
     "en": "Wrong account?",

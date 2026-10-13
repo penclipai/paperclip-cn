@@ -3,6 +3,7 @@
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import i18n from "@/i18n";
 import { AuditHub } from "./AuditHub";
 
 const navigateMock = vi.hoisted(() => vi.fn());
@@ -139,6 +140,19 @@ describe("AuditHub", () => {
     expect(labels).toEqual(["Activity", "Runs", "Costs", "Budgets", "Timeline"]);
     expect(container.querySelector<HTMLElement>('[data-testid="audit-timeline"]')?.dataset.embedded)
       .toBe("true");
+  });
+
+  it("localizes the audit section tabs", async () => {
+    try {
+      await i18n.changeLanguage("zh-CN");
+      render("timeline");
+
+      const labels = Array.from(container.querySelectorAll<HTMLElement>('[role="tab"]'))
+        .map((tab) => tab.textContent?.trim());
+      expect(labels).toEqual(["活动", "运行", "成本", "预算", "时间线"]);
+    } finally {
+      await i18n.changeLanguage("en");
+    }
   });
 
   it("renders Costs and Budgets as intentional peer sections", () => {

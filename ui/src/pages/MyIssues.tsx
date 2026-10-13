@@ -21,7 +21,7 @@ export function MyIssues() {
   const { setBreadcrumbs } = useBreadcrumbs();
 
   useEffect(() => {
-    setBreadcrumbs([{ label: t("My Tasks") }]);
+    setBreadcrumbs([{ label: t("myIssues.breadcrumb") }]);
   }, [setBreadcrumbs, t]);
 
   const { data: issues, isLoading, error } = useQuery({
@@ -36,7 +36,7 @@ export function MyIssues() {
         icon={ListTodo}
         message={streamlinedUiEnabled
           ? t("Select an organization to view your tasks.")
-          : t("Select a company to view your tasks.")}
+          : t("myIssues.selectCompanyTasks")}
       />
     );
   }

@@ -66,7 +66,7 @@ function AuthAttempt({
   };
   return (
     <section
-      aria-label={`Connect ${info.name}`}
+      aria-label={`${translateInstant("Connect")} ${info.name}`}
       className="flex flex-col gap-4"
     >
       <div className="flex flex-col gap-1">
@@ -87,7 +87,7 @@ function AuthAttempt({
             <p role="status" className="text-sm text-muted-foreground">
               {state.phase === "unsupported"
                 ? state.message
-                : "This provider does not offer a subscription connection."}
+                : translateInstant("This provider does not offer a subscription connection.")}
             </p>
           ) : (
             <>
@@ -160,7 +160,7 @@ function AuthAttempt({
             {!unsupported &&
               (method === "api_key" ? (
                 <Button disabled={busy || !value.trim()} onClick={submit}>
-                  {busy ? "Connecting…" : "Connect"}
+                  {busy ? translateInstant("Connecting…") : translateInstant("Connect")}
                 </Button>
               ) : state.phase === "waiting" ? (
                 provider === "anthropic" ? (
@@ -173,10 +173,10 @@ function AuthAttempt({
               ) : (
                 <Button disabled={busy} onClick={onStart}>
                   {busy
-                    ? "Preparing sign-in…"
+                    ? translateInstant("Preparing sign-in…")
                     : state.phase === "idle"
-                      ? "Sign in"
-                      : "Try again"}
+                      ? translateInstant("Sign in")
+                      : translateInstant("Try again")}
                 </Button>
               ))}
           </div>

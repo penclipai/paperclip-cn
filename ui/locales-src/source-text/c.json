@@ -164,6 +164,11 @@
     "zh-CN": "回调 URL 需要处理",
     "reviewedEnglishHash": "081c6ae81d291bfc737405032fe4aa1e08e94c307e2b3b0d489dbfdb5a423590"
   },
+  "Calling": {
+    "en": "Calling",
+    "zh-CN": "正在调用",
+    "reviewedEnglishHash": "74028104c2ae1cf9aa83c007a9b94a1eab33100f94768cbef6446846f0939bc0"
+  },
   "Calls through this gateway from the last 30 days. Open a row to inspect its tool, redacted arguments, result, and decision.": {
     "en": "Calls through this gateway from the last 30 days. Open a row to inspect its tool, redacted arguments, result, and decision.",
     "zh-CN": "此网关最近 30 天的调用记录。打开记录可查看工具、已脱敏的参数、结果和决策。",
@@ -189,6 +194,11 @@
     "zh-CN": "可创建新智能体",
     "reviewedEnglishHash": "55d2d6192402d57ab094511d2b44ced0a88f04bdd30a2c2e925178c7bd95090a"
   },
+  "Can make changes": {
+    "en": "Can make changes",
+    "zh-CN": "可进行更改",
+    "reviewedEnglishHash": "0bf247bbb3ae9bf29e857d1823af26e5fbf278df19eee68406ccad9e1028349a"
+  },
   "Can view company work and follow along without operational permissions.": {
     "en": "Can view company work and follow along without operational permissions.",
     "zh-CN": "可查看公司工作内容并跟进进展，但不具备操作权限。",
@@ -213,6 +223,11 @@
     "en": "Cancel failed",
     "zh-CN": "取消失败",
     "reviewedEnglishHash": "785ae808af53eca58f48c81a991c5d41fb752f010b3375d12dd87d624811b85a"
+  },
+  "Cancel linked automation tasks": {
+    "en": "Cancel linked automation tasks",
+    "zh-CN": "取消关联的自动化任务",
+    "reviewedEnglishHash": "936a555019229049f34c0ebb25eef194c45e228499e8c4a312f10c1189bffcff"
   },
   "Cancel monitor": {
     "en": "Cancel monitor",
@@ -248,6 +263,11 @@
     "en": "Cancel subtree...",
     "zh-CN": "取消子树...",
     "reviewedEnglishHash": "fccd5115640dc89cd848555165688a0df86c78c526e85efde2e094f43f9a6c3a"
+  },
+  "Cancel unfinished automation tasks superseded by the fresh retry.": {
+    "en": "Cancel unfinished automation tasks superseded by the fresh retry.",
+    "zh-CN": "取消被这次重新尝试取代的未完成自动化任务。",
+    "reviewedEnglishHash": "f61f7bf04934ce8409eaea0a70ad3c06f408a708758b0a881f9fe7d02b0ba577"
   },
   "Cancel update": {
     "en": "Cancel update",
@@ -384,6 +404,11 @@
     "zh-CN": "分类",
     "reviewedEnglishHash": "292c06f0045a45d044be282b132b7055ae224e18e02b523a451d8ea96fadfd24"
   },
+  "Cc:": {
+    "en": "Cc:",
+    "zh-CN": "抄送：",
+    "reviewedEnglishHash": "321f0b40dde941fc85685950a5c94ad08637b9e4350c67abafb276dd2d1bd5a1"
+  },
   "Censor username in logs": {
     "en": "Censor username in logs",
     "zh-CN": "日志中隐藏用户名",
@@ -398,6 +423,11 @@
     "en": "Change AI connection",
     "zh-CN": "更改AI连接",
     "reviewedEnglishHash": "1dae4a98f6ebca2cda77c82f8d97e5cb2ac42ab59d51f77f808ca0d121d56b7e"
+  },
+  "Change API key": {
+    "en": "Change API key",
+    "zh-CN": "更换 API 密钥",
+    "reviewedEnglishHash": "ee32ac07b68f31c5acff63c526935627a0c51e8ce98b08b2a8e069d435b4f234"
   },
   "Change acknowledged": {
     "en": "Change acknowledged",
@@ -589,6 +619,11 @@
     "zh-CN": "检查前置条件",
     "reviewedEnglishHash": "4124f184582aee960d224a1604599f9c9dbf6be4554b853e56c4ed349f0e88d1"
   },
+  "Check references": {
+    "en": "Check references",
+    "zh-CN": "检查引用",
+    "reviewedEnglishHash": "5d275227c06a8df2fefe8a64770a029d0d791fa1d8298061b79f03c8e2d23d01"
+  },
   "Check setup": {
     "en": "Check setup",
     "zh-CN": "检查设置",
@@ -628,6 +663,11 @@
     "en": "Checking Slack permissions…",
     "zh-CN": "正在检查 Slack 权限…",
     "reviewedEnglishHash": "d85521cb24d0af640342d742e94fdfc0ed448a2a9793d3bdfd66eaff49723171"
+  },
+  "Checking address…": {
+    "en": "Checking address…",
+    "zh-CN": "正在检查地址…",
+    "reviewedEnglishHash": "ca18ac28f272661a2bd6297d4ac2d095537e71c0d5df4f9f2d7c7564dc0ae8bd"
   },
   "Checking assigned issues...": {
     "en": "Checking assigned issues...",
@@ -679,10 +719,20 @@
     "zh-CN": "检查保存的 API 密钥...",
     "reviewedEnglishHash": "b34650f622971baa65c417b8f6bea5a270025d8b0359f28b4043511287f133d0"
   },
+  "Checking saved API key…": {
+    "en": "Checking saved API key…",
+    "zh-CN": "正在检查已保存的 API 密钥…",
+    "reviewedEnglishHash": "1e9c2c2562e69c436db6bea7ef25a71f014381806ffa2832bbbe2607945bab43"
+  },
   "Checking saved Composio accounts…": {
     "en": "Checking saved Composio accounts…",
     "zh-CN": "正在检查已保存的 Composio 账户…",
     "reviewedEnglishHash": "a3d61cc52a9292d8454a508169fb61c3ef23e6a1dc8500fa90661b79355214b3"
+  },
+  "Checking setup…": {
+    "en": "Checking setup…",
+    "zh-CN": "正在检查设置…",
+    "reviewedEnglishHash": "97f16ec0596d0c07a07e9e8b20e607f743533d158ffb73d5debb0fedeef07e96"
   },
   "Checking the runtime and waiting for a model response…": {
     "en": "Checking the runtime and waiting for a model response…",
@@ -709,6 +759,11 @@
     "zh-CN": "检查中…",
     "reviewedEnglishHash": "ec963ffc911b840134fc738b41a8bb0493489c402a4a761efd36c16dea7d984b"
   },
+  "Checks cover Markdown links and explicit relative resource paths. They cannot establish every runtime dependency.": {
+    "en": "Checks cover Markdown links and explicit relative resource paths. They cannot establish every runtime dependency.",
+    "zh-CN": "检查涵盖 Markdown 链接和显式相对资源路径，无法确认所有运行时依赖。",
+    "reviewedEnglishHash": "2bd60761cd9c1888b6a4db760ef64d868a792cb16054255063a8e4fd80b63d91"
+  },
   "Choose .pem file": {
     "en": "Choose .pem file",
     "zh-CN": "选择 .pem 文件",
@@ -723,6 +778,11 @@
     "en": "Choose a client and copy a complete, authenticated configuration.",
     "zh-CN": "选择客户端并复制包含身份验证信息的完整配置。",
     "reviewedEnglishHash": "d4d88fc91f9dd8ccaed04a56c24eb0c8f559a98c7c3f55a397e33079fd6bcaaa"
+  },
+  "Choose a connection": {
+    "en": "Choose a connection",
+    "zh-CN": "选择连接",
+    "reviewedEnglishHash": "5d554ff71ee5e4ffaa430f026a206263e19eb522a2d684496e81d1b848b5af46"
   },
   "Choose a different address": {
     "en": "Choose a different address",
@@ -743,6 +803,11 @@
     "en": "Choose a person or agent…",
     "zh-CN": "选择人员或智能体…",
     "reviewedEnglishHash": "55e7c58e985b8c79dad35a91d0e5428078c16da0e9f3f6ca65ea4771b01cfc4e"
+  },
+  "Choose a provider connection for this agent.": {
+    "en": "Choose a provider connection for this agent.",
+    "zh-CN": "为此智能体选择提供商连接。",
+    "reviewedEnglishHash": "e1594231b271d3f965e050c89752d06fe4566f2c082f5f8575439af6622abd21"
   },
   "Choose a role": {
     "en": "Choose a role",
@@ -874,6 +939,11 @@
     "zh-CN": "选择或输入模型 ID",
     "reviewedEnglishHash": "45732715b2b33c6d0b0edec4e2f749d11f1d55abc0f5b0c52060d1109626fc37"
   },
+  "Choose the agent harness that runs your tasks.": {
+    "en": "Choose the agent harness that runs your tasks.",
+    "zh-CN": "选择用于运行任务的智能体执行框架。",
+    "reviewedEnglishHash": "3dd932d899afcf2aff0615c3e98abf87a2b79597fe3b50e5de06f46d2697b142"
+  },
   "Choose the shared connection Paperclip uses for optional decision features. API usage is charged to this connection.": {
     "en": "Choose the shared connection Paperclip uses for optional decision features. API usage is charged to this connection.",
     "zh-CN": "选择 Paperclip 用于可选决策功能的共享连接。 API 使用量按此连接收费。",
@@ -883,6 +953,11 @@
     "en": "Choose the skills to keep synced. Unchecked skills stay installed.",
     "zh-CN": "选择需要保持同步的技能。未勾选的技能仍会保留安装。",
     "reviewedEnglishHash": "6dfbac1c27905c29f8cdaf0e472ec72510d665d5179c21dbad29d14c5bda902d"
+  },
+  "Choose tools": {
+    "en": "Choose tools",
+    "zh-CN": "选择工具",
+    "reviewedEnglishHash": "4e3af162a20b948f3caf3b8939b144171a9a21afc9fe347093c10bf49a3ea625"
   },
   "Choose where Cursor should execute the remote agent.": {
     "en": "Choose where Cursor should execute the remote agent.",
@@ -963,6 +1038,16 @@
     "en": "Claude (local)",
     "zh-CN": "Claude（本地）",
     "reviewedEnglishHash": "10b741ef713fea0d173ad31679742aa860a5fcd750c8801d0a6c8e9707d9dc0e"
+  },
+  "Claude CLI": {
+    "en": "Claude CLI",
+    "zh-CN": "Claude 命令行工具",
+    "reviewedEnglishHash": "1ea01a214117fe22c19af6c0fa4d99638c6e109fd38f5e505646ad1366e666ab"
+  },
+  "Claude Managed is a stateful beta service and is not eligible for ZDR or HIPAA modes.": {
+    "en": "Claude Managed is a stateful beta service and is not eligible for ZDR or HIPAA modes.",
+    "zh-CN": "Claude Managed 是有状态的测试服务，不适用于 ZDR 或 HIPAA 模式。",
+    "reviewedEnglishHash": "283602f31c67972ee6def817ba2ca2ef48d31b703717081d62a5c2abb275059a"
   },
   "Claude failed while": {
     "en": "Claude failed while",
@@ -1164,10 +1249,20 @@
     "zh-CN": "Codex（本地）",
     "reviewedEnglishHash": "57234dd159546369b85c3bb92639cce10a733b7af94732807ee9d276b0340dd3"
   },
+  "Codex CLI": {
+    "en": "Codex CLI",
+    "zh-CN": "Codex 命令行工具",
+    "reviewedEnglishHash": "ddbfd197b92c3bb5d1ee83abce68818050424ae8a057cf136ac563381a9ab598"
+  },
   "Codex subscription": {
     "en": "Codex subscription",
     "zh-CN": "Codex订阅",
     "reviewedEnglishHash": "3e08a5f512acb061d851d6cefb385e02557cdcc0fbcb98f9849a72c7808cbac2"
+  },
+  "Collapse all": {
+    "en": "Collapse all",
+    "zh-CN": "全部折叠",
+    "reviewedEnglishHash": "25f7b3721119f1ec7fdf7c8c66e779ee9999e2049e569afc3b00a9fbdeece7db"
   },
   "Collapse command details": {
     "en": "Collapse command details",
@@ -1409,6 +1504,11 @@
     "zh-CN": "公司设置",
     "reviewedEnglishHash": "68a8ae2751ffa29c0b10bf568341d0bade18e895e38ab5222f2b3df781df7f0f"
   },
+  "Company shared": {
+    "en": "Company shared",
+    "zh-CN": "公司共享",
+    "reviewedEnglishHash": "47e5dc1617318c52a0531a92dbdbf1dd23f5eb1d64021043f9dedcfcccb8c243"
+  },
   "Company shared ·": {
     "en": "Company shared ·",
     "zh-CN": "公司共享·",
@@ -1418,6 +1518,16 @@
     "en": "Company — visible inside this company",
     "zh-CN": "公司 — 仅在此公司内可见",
     "reviewedEnglishHash": "c0ff67de926fa7d5177e67ba0e5eb31cb9a5eba9769b580282862aea6cfc4100"
+  },
+  "Company-scoped qualified profile ID or key. Harness, Memory, IAM, and context-store identity come from the stored profile.": {
+    "en": "Company-scoped qualified profile ID or key. Harness, Memory, IAM, and context-store identity come from the stored profile.",
+    "zh-CN": "组织范围内的合格配置档案 ID 或密钥。执行框架、Memory、IAM 和上下文存储身份均来自已保存的配置档案。",
+    "reviewedEnglishHash": "7bafdaaa8fb9c618a23623426f7db1b00fb5d2b585f0f567830186f8375a014f"
+  },
+  "Company-scoped qualified profile ID or key. Remote resource identity is loaded from the stored profile, not this agent config.": {
+    "en": "Company-scoped qualified profile ID or key. Remote resource identity is loaded from the stored profile, not this agent config.",
+    "zh-CN": "组织范围内的合格配置档案 ID 或密钥。远程资源身份从已保存的配置档案加载，而非此智能体配置。",
+    "reviewedEnglishHash": "6a7402b8cc0774d9c0e0ec21f5c73b8fba1ae630ea5dc2d68e8796a23c106c0e"
   },
   "Company-wide monthly policy.": {
     "en": "Company-wide monthly policy.",
@@ -1433,6 +1543,16 @@
     "en": "Complete",
     "zh-CN": "已完成",
     "reviewedEnglishHash": "143b270a32602d412babf2724ec0640dda0d5a43485e5a7520b05b53fa94b303"
+  },
+  "Complete sign-in in the provider window, then return here. Paperclip is waiting for confirmation.": {
+    "en": "Complete sign-in in the provider window, then return here. Paperclip is waiting for confirmation.",
+    "zh-CN": "请在提供商窗口中完成登录后返回此处。Paperclip 正在等待确认。",
+    "reviewedEnglishHash": "5b1f7130db4650a0988665710757decfb5b24ce483ff84c36daf96ff0b628c3f"
+  },
+  "Complete this connection’s configuration before agents receive its instructions.": {
+    "en": "Complete this connection’s configuration before agents receive its instructions.",
+    "zh-CN": "请完成此连接的配置，然后智能体才能收到其说明。",
+    "reviewedEnglishHash": "f0e834081534648a835035863a31766c15d716910b83071c7d4322d7e3bf5da1"
   },
   "Complete this real conversation to finish setup.": {
     "en": "Complete this real conversation to finish setup.",
@@ -1458,6 +1578,11 @@
     "en": "Component Coverage",
     "zh-CN": "组件覆盖范围",
     "reviewedEnglishHash": "0ce7e43e9b66e6fc8a97b8fee1a48ae73acbf881cddcd87b0343fe16f33a6022"
+  },
+  "Composer disabled": {
+    "en": "Composer disabled",
+    "zh-CN": "输入框已禁用",
+    "reviewedEnglishHash": "72a59faee394ed54ef01bad23bb42a833b50717d4da709329c263f88930b54dd"
   },
   "Composio account": {
     "en": "Composio account",
@@ -1704,10 +1829,30 @@
     "zh-CN": "连接",
     "reviewedEnglishHash": "1a2303ede07493acc7caaa7c737f3c52bcc9cf04372be19ed1b0af6b9f2c791e"
   },
+  "Connect AgentMail": {
+    "en": "Connect AgentMail",
+    "zh-CN": "连接 AgentMail",
+    "reviewedEnglishHash": "9c65fd4deefb015b5bd706c5f9c817c9e46fce737ce2ec944cdd136da82cdde2"
+  },
   "Connect Codex, Claude, and other assistants to your Paperclip organization. People sign in, select an organization once, and approve access to review work, delegate tasks, and add feedback.": {
     "en": "Connect Codex, Claude, and other assistants to your Paperclip organization. People sign in, select an organization once, and approve access to review work, delegate tasks, and add feedback.",
     "zh-CN": "将 Codex、Claude 和其他助手连接到您的 Paperclip 组织。用户登录后，只需选择一次组织并批准访问权限，即可查看工作、委派任务和添加反馈。",
     "reviewedEnglishHash": "88cd97ffb8ccbac9d1edea0e868b4767c0ef6ea68562f6678bfe05ab1945b5e8"
+  },
+  "Connect Dot agent": {
+    "en": "Connect Dot agent",
+    "zh-CN": "连接 Dot 智能体",
+    "reviewedEnglishHash": "d40eca58bb711f7b02412b1e17c0077a3fb3a7f083416375b82b201809c37511"
+  },
+  "Connect Dot as a Paperclip agent. Pair it with an agent after connecting; assigned work uses that agent’s permissions.": {
+    "en": "Connect Dot as a Paperclip agent. Pair it with an agent after connecting; assigned work uses that agent’s permissions.",
+    "zh-CN": "将 Dot 作为 Paperclip 智能体连接。连接后将其与智能体配对；分配的工作会使用该智能体的权限。",
+    "reviewedEnglishHash": "076bdc267634ec5da40f9b80c1cc2f4e3c23076ccffde186607d06d39fbafb56"
+  },
+  "Connect Dot with pairing code": {
+    "en": "Connect Dot with pairing code",
+    "zh-CN": "使用配对码连接 Dot",
+    "reviewedEnglishHash": "00da9556a75d10dc170e56dd2d58c88fc002fd7139cd37074cbe7943c0a6daba"
   },
   "Connect GitHub": {
     "en": "Connect GitHub",
@@ -1734,6 +1879,11 @@
     "zh-CN": "连接 Mem0、Zep、Supermemory、Cognee 和 Honcho，提供长期记忆与上下文。",
     "reviewedEnglishHash": "e4b849fed91dd17eadbee559febc17e47cb6a5cc55d416c7a4d723abfbd1ca51"
   },
+  "Connect Railway for deployments, logs, and container access.": {
+    "en": "Connect Railway for deployments, logs, and container access.",
+    "zh-CN": "连接 Railway 以管理部署、日志和容器访问。",
+    "reviewedEnglishHash": "7bd2d9057178561576b2a8606fd6982fe561738732d76529b0102dc2cd665d7e"
+  },
   "Connect Slack search": {
     "en": "Connect Slack search",
     "zh-CN": "连接 Slack 搜索",
@@ -1758,6 +1908,11 @@
     "en": "Connect a new account…",
     "zh-CN": "连接新账户…",
     "reviewedEnglishHash": "1e5517fb65e62f3607782bcffe58e928294aa85a7d2325b06464ac5a5c7582cc"
+  },
+  "Connect account": {
+    "en": "Connect account",
+    "zh-CN": "连接账户",
+    "reviewedEnglishHash": "f7d845186faa7ab8c4ab602970dbfda56ca3b19f4617a21bcb833127713965ad"
   },
   "Connect agents to GitHub with their own App identity to review pull requests and respond to issues.": {
     "en": "Connect agents to GitHub with their own App identity to review pull requests and respond to issues.",
@@ -1799,6 +1954,11 @@
     "zh-CN": "连接专用账户",
     "reviewedEnglishHash": "c566d2da342eb866bb0e71c6e2ee5204b1aa301a0d1c4c896cc95095aaedc7e3"
   },
+  "Connect email address": {
+    "en": "Connect email address",
+    "zh-CN": "连接电子邮件地址",
+    "reviewedEnglishHash": "41a136a450c81dc01aa89b8bfede58a42f6ca31019993af7a2e2c26eec96a38f"
+  },
   "Connect iMessage Photon": {
     "en": "Connect iMessage Photon",
     "zh-CN": "连接 iMessage Photon",
@@ -1814,6 +1974,11 @@
     "zh-CN": "连接我的 GitHub",
     "reviewedEnglishHash": "ffb05af05f35efbf71b05f086a50070d95e957b4b2bc0210a5d48ead754708c9"
   },
+  "Connect new": {
+    "en": "Connect new",
+    "zh-CN": "连接新账户",
+    "reviewedEnglishHash": "99ecd0a950e7eabf8fce98cd61abb1ff2d6c2b65d302ea1b0db0cd04baaeb6d8"
+  },
   "Connect organization": {
     "en": "Connect organization",
     "zh-CN": "连接组织",
@@ -1823,6 +1988,11 @@
     "en": "Connect organization identity",
     "zh-CN": "连接组织身份",
     "reviewedEnglishHash": "dfa1d1c849c1efec31885cc38ce5d2813df06694115356a2e887472525128b92"
+  },
+  "Connect with a Superagent API key. Billable and destructive tools stay under action policies.": {
+    "en": "Connect with a Superagent API key. Billable and destructive tools stay under action policies.",
+    "zh-CN": "使用 Superagent API 密钥连接。计费和破坏性工具仍受操作策略约束。",
+    "reviewedEnglishHash": "5b68ca5d13d5c99d9448824332e26d21cdfa4152bf07f582f164b74b4a8ba433"
   },
   "Connect your Dot": {
     "en": "Connect your Dot",
@@ -1869,6 +2039,11 @@
     "zh-CN": "正在连接到浏览器...",
     "reviewedEnglishHash": "7b883983a2d021bfe174b40dbbb911f3e88d4432dfbd72cd2c1e899a69e5ee58"
   },
+  "Connecting…": {
+    "en": "Connecting…",
+    "zh-CN": "正在连接…",
+    "reviewedEnglishHash": "72021eb70e91b4d58254586a8519393a281eb830c165bf1ec42a5057d425bcaf"
+  },
   "Connection": {
     "en": "Connection",
     "zh-CN": "连接",
@@ -1889,6 +2064,11 @@
     "zh-CN": "无法加载连接活动。",
     "reviewedEnglishHash": "65047eb0ce811ca6df590c7d2e2570dcd6d027ec7581c7435bd8e50dd80729eb"
   },
+  "Connection declined": {
+    "en": "Connection declined",
+    "zh-CN": "连接已拒绝",
+    "reviewedEnglishHash": "b17945c0569a4120a338e669a66f076ffc53aa40ea44b74102657160f4112a45"
+  },
   "Connection details": {
     "en": "Connection details",
     "zh-CN": "连接详情",
@@ -1903,6 +2083,11 @@
     "en": "Connection interrupted. Reconnecting automatically…",
     "zh-CN": "连接中断。正在自动重新连接…",
     "reviewedEnglishHash": "725cbac59377b1254c0bf6e72f542948751fd26189f857887d8e51ed1fecc948"
+  },
+  "Connection manager required.": {
+    "en": "Connection manager required.",
+    "zh-CN": "需要连接管理员权限。",
+    "reviewedEnglishHash": "35fdb9ad61a98cd9b9c28e1fd38b6805bcb70410beb50be6a44d2f4abeadbe82"
   },
   "Connection needs attention": {
     "en": "Connection needs attention",
@@ -1944,6 +2129,16 @@
     "zh-CN": "仅连接测试",
     "reviewedEnglishHash": "fd7045f15f977b395a6b8d7701f42d5765599e7db6da409e71a09533431b604c"
   },
+  "Connection test passed": {
+    "en": "Connection test passed",
+    "zh-CN": "连接测试已通过",
+    "reviewedEnglishHash": "97f70ab07d0fef0568ecca37dacc595a0b3357aad4de78c97da352bf5145661d"
+  },
+  "Connection test rejected": {
+    "en": "Connection test rejected",
+    "zh-CN": "连接测试被拒绝",
+    "reviewedEnglishHash": "e726428fc2e35eb6b45683fcfa36ed3a8fd4ae3e096d9d006fe01283daa1a046"
+  },
   "Connection:": {
     "en": "Connection:",
     "zh-CN": "连接：",
@@ -1968,6 +2163,11 @@
     "en": "Console URL",
     "zh-CN": "控制台 URL",
     "reviewedEnglishHash": "2550c53b32a5a01a234acbb914ca89bf9afba315bca9c71e7aa79039f8560d8b"
+  },
+  "Console URL (optional)": {
+    "en": "Console URL (optional)",
+    "zh-CN": "控制台 URL（可选）",
+    "reviewedEnglishHash": "1ead798af3a79459bda8971c0d02534323d5d647ce2e84030dde0264ddc9d5c7"
   },
   "Container": {
     "en": "Container",
@@ -2033,6 +2233,11 @@
     "en": "Continue with an agent",
     "zh-CN": "使用智能体继续操作",
     "reviewedEnglishHash": "f36434645a05a5859aeee819e0f1e540c578123a9540bfe6e2eb17867959618d"
+  },
+  "Continue your setup": {
+    "en": "Continue your setup",
+    "zh-CN": "继续设置",
+    "reviewedEnglishHash": "e4e54fce8dd9cc9749c527d0abe736d1774c65944ba0b65637bcd2095b8fba08"
   },
   "Continue →": {
     "en": "Continue →",
@@ -2349,6 +2554,11 @@
     "zh-CN": "无法将此智能体绑定到登录账户。",
     "reviewedEnglishHash": "5fd3151c594880848654b69a263c0d3000c51cf3f74ebd0d00067f195cc3093c"
   },
+  "Could not check this address.": {
+    "en": "Could not check this address.",
+    "zh-CN": "无法检查此地址。",
+    "reviewedEnglishHash": "9cc6d48cfb45fbe878ac101329e4753a068d12f99720f8d4ff4a66295982bd3c"
+  },
   "Could not check your saved Claude subscription. Try again.": {
     "en": "Could not check your saved Claude subscription. Try again.",
     "zh-CN": "无法检查您保存的克劳德订阅。再试一次。",
@@ -2479,6 +2689,11 @@
     "zh-CN": "无法加载仓库。",
     "reviewedEnglishHash": "8d8aca3f6c063da408a2b3c373a45fd823ee62d9e1bd77942679ab922ef93898"
   },
+  "Could not load saved API keys.": {
+    "en": "Could not load saved API keys.",
+    "zh-CN": "无法加载已保存的 API 密钥。",
+    "reviewedEnglishHash": "ca7e37d8659634c4247b7a1900d36d2371a76231499007604bd67221f5ec1013"
+  },
   "Could not load some connected GitHub accounts. Choose Another organization to enter a name.": {
     "en": "Could not load some connected GitHub accounts. Choose Another organization to enter a name.",
     "zh-CN": "无法加载部分已连接的 GitHub 账户。请选择“其他组织”并输入名称。",
@@ -2514,6 +2729,11 @@
     "zh-CN": "无法加载此连接。请重试以继续编辑草稿。",
     "reviewedEnglishHash": "adedd2fc1c310281a4345169e932234a6d6db8bfbd6cc805176266b4f3dfca49"
   },
+  "Could not load this connection. Your saved access and credentials have not changed.": {
+    "en": "Could not load this connection. Your saved access and credentials have not changed.",
+    "zh-CN": "无法加载此连接。你已保存的访问权限和凭据未发生变化。",
+    "reviewedEnglishHash": "090f249fd745b52b562c42f99763c4a725b2ebf0e0f99c56fe93d03099f992a1"
+  },
   "Could not move the item": {
     "en": "Could not move the item",
     "zh-CN": "无法移动条目",
@@ -2548,6 +2768,11 @@
     "en": "Could not remove the item",
     "zh-CN": "无法移除条目",
     "reviewedEnglishHash": "0ce513f409f62a99ea2f56b81b5eee2ec9a383cdcee22ee2976b9fc1e593044f"
+  },
+  "Could not resolve the sign-in environment.": {
+    "en": "Could not resolve the sign-in environment.",
+    "zh-CN": "无法确定登录环境。",
+    "reviewedEnglishHash": "a9ae93f24a713fdfbdb4dd6e462b1e5f8e9f18fb161b7766da1e8cea06ba202f"
   },
   "Could not resolve the suggestion": {
     "en": "Could not resolve the suggestion",
@@ -2869,6 +3094,16 @@
     "zh-CN": "无法加载助手设置，请稍后重试。",
     "reviewedEnglishHash": "5cb49151ae077a885d04826423eb94077c4e13605848f6dffe13776619417081"
   },
+  "Couldn’t load connection instructions.": {
+    "en": "Couldn’t load connection instructions.",
+    "zh-CN": "无法加载连接说明。",
+    "reviewedEnglishHash": "8b827eb524a0d00d39b7295b617fa8240191b4d6d8a24b1bf9c9618fd1253eca"
+  },
+  "Couldn’t load connection setup": {
+    "en": "Couldn’t load connection setup",
+    "zh-CN": "无法加载连接设置",
+    "reviewedEnglishHash": "a1ed99c5ed036e7ee2bbb53c359996e3833c2315ca4d36441d3ec5aeec29f2d2"
+  },
   "Couldn’t load every connector. Existing accounts are shown where available.": {
     "en": "Couldn’t load every connector. Existing accounts are shown where available.",
     "zh-CN": "未能加载所有连接器。已尽可能显示现有账户。",
@@ -2934,6 +3169,11 @@
     "zh-CN": "无法执行此次搜索",
     "reviewedEnglishHash": "8e9caef82caab22cff3f6ceed5e90590f1c3fe318b3c9fe90d51d233685a2a27"
   },
+  "Couldn’t save instructions. Try again.": {
+    "en": "Couldn’t save instructions. Try again.",
+    "zh-CN": "无法保存说明，请重试。",
+    "reviewedEnglishHash": "9946462928df2458a82ff0d181342063c2115609980fdf6bf4c088d16c918aa9"
+  },
   "Couldn’t start sign-in": {
     "en": "Couldn’t start sign-in",
     "zh-CN": "无法开始登录",
@@ -2944,10 +3184,20 @@
     "zh-CN": "无法更新访问权限",
     "reviewedEnglishHash": "14797075c7b8992ff53fd37f9bf1aa1f5eca7aec24eea907b2074900ba6796f1"
   },
+  "Couldn’t update this access request.": {
+    "en": "Couldn’t update this access request.",
+    "zh-CN": "无法更新此访问请求。",
+    "reviewedEnglishHash": "180397e68412690f5dc180eab6865a003aa481305334895c68bbd911f5b582d9"
+  },
   "Couldn’t use branch": {
     "en": "Couldn’t use branch",
     "zh-CN": "无法使用分支",
     "reviewedEnglishHash": "710df7a1e9f564a352e6d4a1c383ea034f9c61295177e65392cf42248f76ae0c"
+  },
+  "Couldn’t use this connection.": {
+    "en": "Couldn’t use this connection.",
+    "zh-CN": "无法使用此连接。",
+    "reviewedEnglishHash": "d35a704937c1d6353de322c41d2ffe9fa1c459c02561167204109de3d7288c16"
   },
   "Coverage unavailable.": {
     "en": "Coverage unavailable.",
@@ -3019,6 +3269,11 @@
     "zh-CN": "请在",
     "reviewedEnglishHash": "4aaf49fcd2a0de6f63bb3b4c27d1e2fb7d620b4d2ff12fc077fe839d31aa62d2"
   },
+  "Create a new address": {
+    "en": "Create a new address",
+    "zh-CN": "创建新地址",
+    "reviewedEnglishHash": "71311ae115d03a1e503075bc606fe1e56a0ac55b4b687e552f20bf4a7ee0174f"
+  },
   "Create a new prompt": {
     "en": "Create a new prompt",
     "zh-CN": "创建新提示",
@@ -3063,6 +3318,11 @@
     "en": "Create document",
     "zh-CN": "创建文档",
     "reviewedEnglishHash": "ac6e978406f25036d59fb3024f93c05668665361a5236005af4d7aa8b3303f58"
+  },
+  "Create email address": {
+    "en": "Create email address",
+    "zh-CN": "创建电子邮件地址",
+    "reviewedEnglishHash": "4167dbc6e81d05870853cfeaf755753d7ed5c5d7fa53d35f868970975c162f4f"
   },
   "Create human invite links for company access. New invite links are copied to your clipboard when they are generated.": {
     "en": "Create human invite links for company access. New invite links are copied to your clipboard when they are generated.",
@@ -3173,6 +3433,11 @@
     "en": "Create {{label}}",
     "zh-CN": "创建{{label}}",
     "reviewedEnglishHash": "e493e4eb9fa834c482d33c5d59d9cd74ec2b18c1be03e779e56740e37b9e2270"
+  },
+  "Create, update and read tickets.": {
+    "en": "Create, update and read tickets.",
+    "zh-CN": "创建、更新和查看工单。",
+    "reviewedEnglishHash": "b5811e8186e7d8acf2ed9dc51453d620e0cf78b497bd77e6b5a3ce96ed685dfd"
   },
   "Created": {
     "en": "Created",
@@ -3349,10 +3614,20 @@
     "zh-CN": "Cursor 托管",
     "reviewedEnglishHash": "f3a127f22dece1fdd841b91b20049249fdd2c59e587c63cbdce24d4ea2abbc71"
   },
+  "Cursor mode": {
+    "en": "Cursor mode",
+    "zh-CN": "Cursor 模式",
+    "reviewedEnglishHash": "76a61ecaf047692fabbd83818da89a71e9527faf5390395c727688260096d505"
+  },
   "Cursor runtime": {
     "en": "Cursor runtime",
     "zh-CN": "Cursor 运行环境",
     "reviewedEnglishHash": "b7940f55b770465ff8accf03a2b17e13925d8ee0e022958e4c01c75aee8736f7"
+  },
+  "Cursor uses Paperclip questions; per-run cost is unavailable. Pi accepts any provider/model ID. GitHub Copilot awaits qualification.": {
+    "en": "Cursor uses Paperclip questions; per-run cost is unavailable. Pi accepts any provider/model ID. GitHub Copilot awaits qualification.",
+    "zh-CN": "Cursor 使用 Paperclip 提问；单次运行成本不可用。Pi 接受任何提供商或模型 ID。GitHub Copilot 尚待资格认证。",
+    "reviewedEnglishHash": "cab6499e8cad98ffc2853921741ae343e7688de6159314dbfd01d8c23ef330cf"
   },
   "Custom": {
     "en": "Custom",

@@ -219,6 +219,11 @@
     "zh-CN": "关联工作",
     "reviewedEnglishHash": "e5455759ff0eb447fe8958e193a150976018aaf6134c04029f406b576a8d8fa3"
   },
+  "pipelines.liveDownstream": {
+    "en": "{{count}} live downstream",
+    "zh-CN": "{{count}} 个活跃下游项",
+    "reviewedEnglishHash": "6abd6eeb1f4b23a68f33e7be14dad106be95191ea128b8550bebb609f3f9d09d"
+  },
   "pipelines.loadFailed": {
     "en": "Could not load pipelines.",
     "zh-CN": "无法加载管道。",
@@ -329,6 +334,11 @@
     "zh-CN": "打开会话",
     "reviewedEnglishHash": "7047b9af7a4cd0703f857363d089bf8d411f164bf6f9377dda1b7bcfef390e69"
   },
+  "pipelines.openCount": {
+    "en": "{{count}} open",
+    "zh-CN": "{{count}} 个未完成",
+    "reviewedEnglishHash": "a69dade13b868a0a8ef1e722291294ac7ba2a4ff9007f7af1b653027c562b170"
+  },
   "pipelines.openDocument": {
     "en": "Open document",
     "zh-CN": "打开文档",
@@ -399,6 +409,16 @@
     "zh-CN": "管道",
     "reviewedEnglishHash": "37e1c775f452d695697b6e3389169e4109236f420f9ece420af0d5e7bb9b1533"
   },
+  "pipelines.pipelineCount_one": {
+    "en": "{{formattedCount}} pipeline",
+    "zh-CN": "{{formattedCount}} 条流水线",
+    "reviewedEnglishHash": "0a8e55a183297a0566a68a145ac9983b46074bfe81cf8a9e504e9c21d0e9f15c"
+  },
+  "pipelines.pipelineCount_other": {
+    "en": "{{formattedCount}} pipelines",
+    "zh-CN": "{{formattedCount}} 条流水线",
+    "reviewedEnglishHash": "3704abbd64e8347a0a2b935a05a5695ae357c65885445743a88c12471ebd360b"
+  },
   "pipelines.preview": {
     "en": "Preview",
     "zh-CN": "预览",
@@ -414,10 +434,55 @@
     "zh-CN": "原因",
     "reviewedEnglishHash": "f81ab834de5f84918dc040b884267c2b61cb1a52d46442de10e97f35a94d0500"
   },
+  "pipelines.relativeTime.daysAgo_one": {
+    "en": "{{count}} days ago",
+    "zh-CN": "{{count}} 天前",
+    "reviewedEnglishHash": "0d0d0a848ddf761192c49ddfd37a427c4230e2354b957e6998256e9c6ed4389f"
+  },
+  "pipelines.relativeTime.daysAgo_other": {
+    "en": "{{count}} days ago",
+    "zh-CN": "{{count}} 天前",
+    "reviewedEnglishHash": "0d0d0a848ddf761192c49ddfd37a427c4230e2354b957e6998256e9c6ed4389f"
+  },
+  "pipelines.relativeTime.hoursAgo_one": {
+    "en": "{{count}} hr ago",
+    "zh-CN": "{{count}} 小时前",
+    "reviewedEnglishHash": "e9ada747b3e309f6b6d8cb82d3fe7faffb1657f47770cb02fd65b12590fdb17b"
+  },
+  "pipelines.relativeTime.hoursAgo_other": {
+    "en": "{{count}} hr ago",
+    "zh-CN": "{{count}} 小时前",
+    "reviewedEnglishHash": "e9ada747b3e309f6b6d8cb82d3fe7faffb1657f47770cb02fd65b12590fdb17b"
+  },
+  "pipelines.relativeTime.minutesAgo_one": {
+    "en": "{{count}} min ago",
+    "zh-CN": "{{count}} 分钟前",
+    "reviewedEnglishHash": "0af99095bbb8869ba4556eb6479f59e6a6d0b78af4f53c03dd8ea564f1c288ba"
+  },
+  "pipelines.relativeTime.minutesAgo_other": {
+    "en": "{{count}} min ago",
+    "zh-CN": "{{count}} 分钟前",
+    "reviewedEnglishHash": "0af99095bbb8869ba4556eb6479f59e6a6d0b78af4f53c03dd8ea564f1c288ba"
+  },
+  "pipelines.relativeTime.weeksAgo_one": {
+    "en": "{{count}} weeks ago",
+    "zh-CN": "{{count}} 周前",
+    "reviewedEnglishHash": "04fa7282ba91356fced8dd70544dd3083dd7a163cfcdc0af5fb8b82bbdcc11cb"
+  },
+  "pipelines.relativeTime.weeksAgo_other": {
+    "en": "{{count}} weeks ago",
+    "zh-CN": "{{count}} 周前",
+    "reviewedEnglishHash": "04fa7282ba91356fced8dd70544dd3083dd7a163cfcdc0af5fb8b82bbdcc11cb"
+  },
   "pipelines.removeItem": {
     "en": "Remove item",
     "zh-CN": "移除条目",
     "reviewedEnglishHash": "5a89edf2867d98dd75fe7d7fd924ba09743f09012868a7ccc3c17bb4841b4f79"
+  },
+  "pipelines.retryAndRetire": {
+    "en": "Retry and retire {{count}} {{itemLabel}}",
+    "zh-CN": "重新尝试并归档 {{count}} 个{{itemLabel}}",
+    "reviewedEnglishHash": "cb1222db016e1fc380ca880c28a0102d01884fead55754d00f3dacee185b236f"
   },
   "pipelines.review": {
     "en": "Review",
@@ -523,6 +588,11 @@
     "en": "{{formattedCount}} total items",
     "zh-CN": "共 {{formattedCount}} 个条目",
     "reviewedEnglishHash": "5b5dc61290dbe0540489c4326602aa87cd9ac55dfe0601be46f5b5baabf2ad2a"
+  },
+  "pipelines.underName": {
+    "en": "under {{name}}",
+    "zh-CN": "位于 {{name}} 下",
+    "reviewedEnglishHash": "04bce98cf79c03b93f7d75e0a689bd579e16c4c31263295861fdd7bc96d36a78"
   },
   "pipelines.waitingChildItems": {
     "en": "Waiting child items",

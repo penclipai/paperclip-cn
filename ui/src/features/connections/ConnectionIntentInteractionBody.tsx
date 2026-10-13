@@ -307,11 +307,10 @@ export function ConnectionIntentInteractionBody({
           <Clock className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
           <div>
             <p className="font-medium text-foreground">
-              Waiting for {addresseeLabel}
+              {translateInstant("connectionUi.intent.waitingFor", { addressee: addresseeLabel, defaultValue: "Waiting for {{addressee}}" })}
             </p>
             {!accessRequest ? <p className="mt-1 text-sm text-muted-foreground">
-              Only the addressed person can choose an identity or authorize this
-              connection.
+              {translateInstant("Only the addressed person can choose an identity or authorize this connection.")}
             </p> : null}
           </div>
         </div>
@@ -329,22 +328,26 @@ export function ConnectionIntentInteractionBody({
         <div className="flex items-center gap-3">
           <AgentAvatar agent={agentQuery.data ?? { id: interaction.payload.requestingAgentId, name: interaction.payload.requestingAgentName }} size={32} label={interaction.payload.requestingAgentName} />
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium text-foreground">Grant {interaction.payload.requestingAgentName} access to “{accessRequest.connectionName}”?</p>
+            <p className="text-sm font-medium text-foreground">{translateInstant("connectionUi.intent.accessRequest.title", {
+              agent: interaction.payload.requestingAgentName,
+              connection: accessRequest.connectionName,
+              defaultValue: "Grant {{agent}} access to “{{connection}}”?",
+            })}</p>
           </div>
           <AppLogo name={interaction.payload.serviceName} logoUrl={interaction.payload.serviceLogoUrl} darkLogoUrl={interaction.payload.serviceDarkLogoUrl} size={32} />
         </div>
-        <ul aria-label="Tool permissions" className="max-h-48 space-y-2 overflow-y-auto text-xs">
+        <ul aria-label={translateInstant("Tool permissions")} className="max-h-48 space-y-2 overflow-y-auto text-xs">
           {accessRequest.tools.map(tool => <li key={tool.catalogEntryId} className="flex items-start justify-between gap-3">
             <span className="min-w-0 break-all font-mono text-foreground">{tool.toolName}</span>
-            <span className="shrink-0 text-muted-foreground">{tool.permission === "allowed" ? "Allowed" : "Ask first"}</span>
+            <span className="shrink-0 text-muted-foreground">{tool.permission === "allowed" ? translateInstant("Allowed") : translateInstant("Ask first")}</span>
           </li>)}
         </ul>
-        {setupQuery.isError || completeMutation.isError || declineMutation.isError ? <p role="alert" className="text-sm text-destructive">{(completeMutation.error ?? declineMutation.error ?? setupQuery.error)?.message ?? "Couldn’t update this access request."}</p> : null}
-        {setupQuery.data?.canGrantAccess === false ? <p role="status" className="text-sm text-muted-foreground">Connection manager required.</p> : null}
+        {setupQuery.isError || completeMutation.isError || declineMutation.isError ? <p role="alert" className="text-sm text-destructive">{(completeMutation.error ?? declineMutation.error ?? setupQuery.error)?.message ?? translateInstant("Couldn’t update this access request.")}</p> : null}
+        {setupQuery.data?.canGrantAccess === false ? <p role="status" className="text-sm text-muted-foreground">{translateInstant("Connection manager required.")}</p> : null}
         <div className="flex items-center justify-between gap-2">
           <Button size="sm" variant="ghost" disabled={busy} onClick={() => declineMutation.mutate()}>{translateInstant("builtInAgents.configure.notNow")}</Button>
           <Button size="sm" disabled={busy || !setupQuery.data?.canGrantAccess} onClick={() => completeMutation.mutate(accessRequest.connectionId)}>
-            {completeMutation.isPending ? "Granting access…" : "Grant access"}
+            {completeMutation.isPending ? translateInstant("Granting access…") : translateInstant("Grant access")}
           </Button>
         </div>
       </div>

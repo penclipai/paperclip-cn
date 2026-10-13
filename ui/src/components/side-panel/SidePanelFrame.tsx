@@ -110,7 +110,8 @@ export function SidePanelToggleButton({
   shortcut?: string;
   className?: string;
 }) {
-  const label = "Toggle side panel";
+  const { t } = useTranslation();
+  const label = t("Toggle side panel");
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -148,7 +149,7 @@ export function SidePanelWindowControls({
   onToggle: () => void;
   closeControl?: "toggle" | "close";
 }) {
-  useTranslation();
+  const { t } = useTranslation();
   return (
     <>
       <Button
@@ -157,8 +158,8 @@ export function SidePanelWindowControls({
         size="icon-sm"
         className="h-(--side-panel-tab-height) w-(--side-panel-tab-height) text-muted-foreground hover:text-foreground focus-visible:text-foreground"
         onClick={() => onMaximizedChange(!maximized)}
-        aria-label={maximized ? "Restore side panel" : "Maximize side panel"}
-        title={maximized ? "Restore side panel" : "Maximize side panel"}
+        aria-label={maximized ? t("Restore side panel") : t("Maximize side panel")}
+        title={maximized ? t("Restore side panel") : t("Maximize side panel")}
       >
         {maximized ? <Minimize2 aria-hidden /> : <Maximize2 aria-hidden />}
       </Button>

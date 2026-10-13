@@ -1,4 +1,6 @@
 import { configFieldsForSection } from "../config-sections";
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
 import type { AdapterConfigFieldsProps } from "../types";
 import {
   Field,
@@ -23,10 +25,11 @@ export function OpenCodeLocalConfigFields({
   mark,
   hideInstructionsFile,
 }: AdapterConfigFieldsProps) {
+  useTranslation();
   return configFieldsForSection(section, (
     <>
       {!hideInstructionsFile && (
-        <Field label="Agent instructions file" hint={instructionsFileHint}>
+        <Field label={translateInstant("Agent instructions file")} hint={translateInstant(instructionsFileHint)}>
           <div className="flex items-center gap-2">
             <DraftInput
               value={
@@ -52,7 +55,7 @@ export function OpenCodeLocalConfigFields({
         </Field>
       )}
       <ToggleField
-        label="Skip permissions"
+        label={translateInstant("Skip permissions")}
         hint={help.dangerouslySkipPermissions}
         checked={
           isCreate

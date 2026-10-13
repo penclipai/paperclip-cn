@@ -9,6 +9,11 @@
     "zh-CN": "浏览其他项目工作区前，请先选择公司。",
     "reviewedEnglishHash": "e5b767832fcfa824815ca1e64cf9fe66794e6e7800a9f62d5049148970b6dd50"
   },
+  "workspaceFileBrowser.chooseCompanyTitle": {
+    "en": "No company selected",
+    "zh-CN": "未选择公司",
+    "reviewedEnglishHash": "8d7d800978ab828b142ad1de9af6ca3c25570974c35d7e972eaeca28c80edd01"
+  },
   "workspaceFileBrowser.couldNotLoadFiles": {
     "en": "Couldn't load files",
     "zh-CN": "无法加载文件",
@@ -88,6 +93,11 @@
     "en": "No workspace yet",
     "zh-CN": "还没有工作区",
     "reviewedEnglishHash": "133e716aadbe8631797e6f62816321462743926fd2dd8260776cf965f9b4d48d"
+  },
+  "workspaceFileBrowser.refresh": {
+    "en": "Refresh workspace files",
+    "zh-CN": "刷新工作区文件",
+    "reviewedEnglishHash": "fe4d202224b5da8f26a353ae9b74618d0ef8067eb23997f0542ea86426d7dc10"
   },
   "workspaceFileBrowser.registeredWorkspacesBody": {
     "en": "Registered workspaces will appear here.",
