@@ -648,10 +648,8 @@ describe("routine routes", () => {
     expect(mockRoutineService.runRoutine).toHaveBeenCalledWith(routineId, {
       source: "manual",
     }, {
-      actor: {
-        agentId: null,
-        userId: "board-user",
-      },
+      agentId: null,
+      userId: "board-user",
       requestedUiLocale: null,
     });
   });
