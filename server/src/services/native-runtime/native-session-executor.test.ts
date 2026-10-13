@@ -6892,10 +6892,9 @@ describe("native warm session supervision", () => {
         Object.assign(env, { PAPERCLIP_TEST_STDIN: input.stdin });
         args[1] = `printf '%s' "$PAPERCLIP_TEST_STDIN" | (${args[1]})`;
       }
-      if (process.platform === "win32" && args[1]?.includes("node --input-type=module")) {
-        // The fake Linux checkpoint serializes its roots as JSON. Git Bash does
-        // not convert a quoted JSON value before native Node reads it, so bridge
-        // only those virtual sandbox roots at the process boundary.
+      if (process.platform === "win32" && /\bnode\s+(?:--input-type=module\s+)?-e\b/.test(args[1] ?? "")) {
+        // Remote probes and checkpoints pass virtual Linux roots to native
+        // Node. Bridge those roots for both ordinary and module-mode commands.
         const nodePath = shellQuote(toTestPosixPath(process.execPath));
         const bridgePath = shellQuote(toTestPosixPath(remoteNodeBridge));
         args[1] = `node() { "$(cygpath -w ${nodePath})" "$(cygpath -w ${bridgePath})" "$@"; }\n${args[1]}`;
