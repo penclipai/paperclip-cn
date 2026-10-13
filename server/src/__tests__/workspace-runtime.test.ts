@@ -7023,11 +7023,9 @@ describeEmbeddedPostgres("workspace runtime service control persistence", () => 
     const runtimeProvisionCommand = nodeEvalCommandForTest(provisionScript);
     const serverScript = [
       `require("node:fs").writeFileSync(${JSON.stringify(markerPath)}, "spawned");`,
-      "setTimeout(() => {",
-      "  require(\"node:http\")",
-      "    .createServer((_req, res) => { res.end(\"ok\"); })",
-      "    .listen(Number(process.env.PORT), \"127.0.0.1\");",
-      "}, 100);",
+      "require(\"node:http\")",
+      "  .createServer((_req, res) => { res.end(\"ok\"); })",
+      "  .listen(Number(process.env.PORT), \"127.0.0.1\");",
       "setInterval(() => {}, 1000);",
     ].join(" ");
     const command = nodeEvalCommandForTest(serverScript);
@@ -9462,8 +9460,8 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
     const projectId = randomUUID();
     const projectWorkspaceId = randomUUID();
     const executionWorkspaceId = randomUUID();
-    const registryServiceKey = `workspace-runtime-paperclip-dev-live-stopped-${randomUUID()}`;
-    const reuseKey = `project_workspace:${projectWorkspaceId}:paperclip-dev`;
+    const registryServiceKey = `workspace-runtime-web-live-stopped-${randomUUID()}`;
+    const reuseKey = `project_workspace:${projectWorkspaceId}:web`;
     let child: ReturnType<typeof spawn> | null = null;
     let childClose: Promise<void> | null = null;
     let port: number | null = null;
@@ -9563,7 +9561,7 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
         issueId: null,
         scopeType: "project_workspace",
         scopeId: projectWorkspaceId,
-        serviceName: "paperclip-dev",
+        serviceName: "web",
         status: "stopped",
         lifecycle: "shared",
         reuseKey,
@@ -9587,7 +9585,7 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
         version: 1,
         serviceKey: registryServiceKey,
         profileKind: "workspace-runtime",
-        serviceName: "paperclip-dev",
+        serviceName: "web",
         command: "node",
         cwd: workspaceRoot,
         envFingerprint: reuseKey,
