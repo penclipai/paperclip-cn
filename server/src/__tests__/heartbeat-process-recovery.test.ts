@@ -6049,6 +6049,29 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     }
   });
 
+  async function writeFixtureGit(bin: string, script: string) {
+    const gitPath = path.join(bin, "git");
+    if (process.platform !== "win32") {
+      await fs.writeFile(gitPath, `#!${process.execPath}\n${script}\n`, { mode: 0o755 });
+      return { nodeOptions: null };
+    }
+
+    const executablePath = `${gitPath}.exe`;
+    await fs.link(process.execPath, executablePath).catch(() => fs.copyFile(process.execPath, executablePath));
+    const scriptPath = path.join(bin, "git.fixture.cjs");
+    const preloadPath = path.join(bin, "git.preload.cjs");
+    await fs.writeFile(scriptPath, `${script}\n`, "utf8");
+    await fs.writeFile(preloadPath, [
+      'const path = require("node:path");',
+      `if (path.resolve(process.execPath).toLowerCase() === ${JSON.stringify(path.resolve(executablePath).toLowerCase())}) {`,
+      `  require(${JSON.stringify(scriptPath)});`,
+      "  process.exit(process.exitCode ?? 0);",
+      "}",
+      "",
+    ].join("\n"), "utf8");
+    return { nodeOptions: `--require "${preloadPath.replace(/\\/g, "/")}"` };
+  }
+
   it.each([
     { name: "HTTPS authentication", failures: ["auth"], report: false },
     { name: "SSH alias DNS", failures: ["dns"], report: false },
@@ -6073,22 +6096,25 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     await fs.mkdir(bin);
     // A real child process supplies execFile's numeric exit/stderr evidence.
     // Every command is intercepted, so no fixture can reach a remote Git host.
-    await fs.writeFile(path.join(bin, "git"), `#!${process.execPath}\n` +
+    const fakeGit = await writeFixtureGit(bin,
       `const fs = require('node:fs');\n` +
-      `const args = process.argv.slice(2);\n` +
+      `const path = require('node:path');\n` +
+      `const args = process.platform === 'win32' ? ['-c', path.basename(process.argv[1] ?? ''), ...process.argv.slice(2)] : process.argv.slice(2);\n` +
       `fs.appendFileSync(${JSON.stringify(callsPath)}, JSON.stringify(args) + '\\n');\n` +
       `const remotes = ${JSON.stringify(remotes)};\n` +
       `const diagnostics = ${JSON.stringify(diagnostics)};\n` +
       `const index = remotes.indexOf(args.at(-2));\n` +
       `if (!args.includes('clone') || index < 0) { process.stderr.write('Unexpected fixture Git command\\n'); process.exit(2); }\n` +
-      `process.stderr.write(diagnostics[index] + '\\n'); process.exitCode = 128;\n`, { mode: 0o755 });
+      `process.stderr.write(diagnostics[index] + '\\n'); process.exitCode = 128;\n`);
     const heartbeat = heartbeatService(db);
     const previousSettings = await instanceSettingsService(db).getExperimental();
     const previousPath = process.env.PATH;
     const previousHome = process.env.PAPERCLIP_HOME;
+    const previousNodeOptions = process.env.NODE_OPTIONS;
     try {
       process.env.PATH = `${bin}${path.delimiter}${previousPath ?? ""}`;
       process.env.PAPERCLIP_HOME = home;
+      if (fakeGit.nodeOptions) process.env.NODE_OPTIONS = [previousNodeOptions, fakeGit.nodeOptions].filter(Boolean).join(" ");
       await instanceSettingsService(db).updateExperimental({ enableIsolatedWorkspaces: true });
       await db.insert(projects).values({ id: projectId, companyId, name: "Git connection fixture", status: "in_progress" });
       await db.insert(projectWorkspaces).values(workspaceIds.map((id, index) => ({
@@ -6137,10 +6163,16 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       const calls = (await fs.readFile(callsPath, "utf8")).trim().split("\n").map((line) => JSON.parse(line) as string[]);
       expect(calls).toHaveLength(failures.length);
       expect(calls.every((args) => args.includes("clone"))).toBe(true);
+      if (process.platform === "win32") {
+        expect(calls.map((args) => args.slice(0, 2))).toEqual(
+          Array.from({ length: failures.length }, () => ["-c", "core.longpaths=true"]),
+        );
+      }
     } finally {
       await heartbeat.waitForRunExecutionDrain(runId);
       if (previousPath === undefined) delete process.env.PATH; else process.env.PATH = previousPath;
       if (previousHome === undefined) delete process.env.PAPERCLIP_HOME; else process.env.PAPERCLIP_HOME = previousHome;
+      if (previousNodeOptions === undefined) delete process.env.NODE_OPTIONS; else process.env.NODE_OPTIONS = previousNodeOptions;
       await instanceSettingsService(db).updateExperimental({ enableIsolatedWorkspaces: previousSettings.enableIsolatedWorkspaces });
       await fs.rm(home, { recursive: true, force: true });
     }
@@ -6157,6 +6189,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     const repoUrl = "git@clone-alias.example.test:team/additional.git";
     const previousPath = process.env.PATH;
     const previousHome = process.env.PAPERCLIP_HOME;
+    const previousNodeOptions = process.env.NODE_OPTIONS;
     const heartbeat = heartbeatService(db);
     await fs.mkdir(cwd);
     await fs.mkdir(bin);
@@ -6164,9 +6197,10 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     await fs.writeFile(path.join(cwd, "README.md"), "Keep this local repository intact.\n");
     execFileSync("git", ["add", "README.md"], { cwd, stdio: "ignore" });
     execFileSync("git", ["-c", "user.name=Test", "-c", "user.email=test@example.test", "commit", "-m", "Fixture"], { cwd, stdio: "ignore" });
-    await fs.writeFile(path.join(bin, "git"), `#!${process.execPath}\n` +
+    const fakeGit = await writeFixtureGit(bin,
       `const fs = require('node:fs'); const { spawnSync } = require('node:child_process');\n` +
-      `const args = process.argv.slice(2);\n` +
+      `const path = require('node:path');\n` +
+      `const args = process.platform === 'win32' ? ['-c', path.basename(process.argv[1] ?? ''), ...process.argv.slice(2)] : process.argv.slice(2);\n` +
       `if (args.includes('clone')) {\n` +
       `  fs.appendFileSync(${JSON.stringify(cloneCalls)}, JSON.stringify(args) + '\\n');\n` +
       `  if (args.at(-2) !== ${JSON.stringify(repoUrl)}) process.exit(2);\n` +
@@ -6174,10 +6208,11 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       `}\n` +
       `if (args.some(arg => ['fetch', 'pull', 'push', 'ls-remote', 'submodule'].includes(arg))) process.exit(2);\n` +
       `const result = spawnSync('git', args, { stdio: 'inherit', env: { ...process.env, PATH: ${JSON.stringify(previousPath)} } });\n` +
-      `process.exit(result.status ?? 2);\n`, { mode: 0o755 });
+      `process.exit(result.status ?? 2);\n`);
     try {
       process.env.PATH = `${bin}${path.delimiter}${previousPath ?? ""}`;
       process.env.PAPERCLIP_HOME = home;
+      if (fakeGit.nodeOptions) process.env.NODE_OPTIONS = [previousNodeOptions, fakeGit.nodeOptions].filter(Boolean).join(" ");
       await db.insert(projects).values({ id: projectId, companyId, name: "Additional repository fixture", status: "in_progress" });
       await db.insert(projectWorkspaces).values([
         { id: workspaceId, companyId, projectId, name: "Primary", sourceType: "local_path", cwd, isPrimary: true },
@@ -6212,12 +6247,14 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       expect(mockCaptureRunFailure.mock.calls.filter(([event]) => event.runId === runId)).toHaveLength(0);
       const calls = (await fs.readFile(cloneCalls, "utf8")).trim().split("\n").map((line) => JSON.parse(line) as string[]);
       expect(calls).toHaveLength(1);
+      if (process.platform === "win32") expect(calls[0].slice(0, 2)).toEqual(["-c", "core.longpaths=true"]);
       expect(calls[0].at(-2)).toBe(repoUrl);
       expect(await fs.readFile(path.join(cwd, "README.md"), "utf8")).toBe("Keep this local repository intact.\n");
     } finally {
       await heartbeat.waitForRunExecutionDrain(runId);
       if (previousPath === undefined) delete process.env.PATH; else process.env.PATH = previousPath;
       if (previousHome === undefined) delete process.env.PAPERCLIP_HOME; else process.env.PAPERCLIP_HOME = previousHome;
+      if (previousNodeOptions === undefined) delete process.env.NODE_OPTIONS; else process.env.NODE_OPTIONS = previousNodeOptions;
       await fs.rm(home, { recursive: true, force: true });
     }
   });
@@ -8897,6 +8934,11 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       const resultRelease = new Promise<void>((resolve) => {
         releaseResult = resolve;
       });
+      const gracefulStopFile = graceful && process.platform === "win32"
+        ? path.join(os.tmpdir(), `paperclip-owned-stop-${randomUUID()}`)
+        : null;
+      let gracefulChild: ChildProcess | null = null;
+      let gracefulChildClosed: Promise<void> | null = null;
       let observedResult:
         Awaited<ReturnType<typeof actualProcess.execute>> | undefined;
       let reportReady!: () => void;
@@ -8921,6 +8963,11 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
         return observedResult;
       }) as typeof mockAdapterExecute);
       mockTerminateLocalService.mockImplementationOnce(async (...args) => {
+        if (gracefulStopFile) {
+          if (!gracefulChild || !gracefulChildClosed) throw new Error("graceful Windows fixture child was not captured");
+          await fs.writeFile(gracefulStopFile, "stop\n");
+          await gracefulChildClosed;
+        }
         await actualSupervisor.terminateLocalService(...args);
         reportTerminated();
         await terminationRelease;
@@ -8940,7 +8987,11 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
             command: process.execPath,
             args: [
               "-e",
-              `${graceful ? `process.on('${stopSignal}', () => process.exit(0));` : ""} console.log('stop ready'); setInterval(() => {}, 1000)`,
+              `${graceful
+                ? process.platform === "win32"
+                  ? `const fs = require('node:fs'); const stopFile = ${JSON.stringify(gracefulStopFile)}; setInterval(() => { if (fs.existsSync(stopFile)) process.exit(0); }, 10);`
+                  : `process.on('${stopSignal}', () => process.exit(0));`
+                : ""} console.log('stop ready'); setInterval(() => {}, 1000)`,
             ],
             graceSec: 1,
           },
@@ -8952,6 +9003,12 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
         runningProcesses.get(runId),
       );
       expect(running?.child.pid).toBeTruthy();
+      if (gracefulStopFile && running) {
+        gracefulChild = running.child;
+        gracefulChildClosed = new Promise<void>((resolve) => {
+          gracefulChild!.once("close", () => resolve());
+        });
+      }
       await ready;
       const cancellation = heartbeat
         .cancelRun(runId, "Stopped by test operator")
@@ -8969,7 +9026,9 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
         expect(await waitForValue(async () => observedResult)).toMatchObject(
           graceful
             ? { exitCode: 0, signal: null }
-            : { exitCode: null, signal: stopSignal },
+            : process.platform === "win32"
+              ? { exitCode: 1, signal: null }
+              : { exitCode: null, signal: stopSignal },
         );
         // The process utility already removed its child record on close. A new
         // service instance must still join the original cancellation owner.
@@ -9002,6 +9061,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
         [first, second] = await Promise.all([cancellation, duplicate]);
         writeSpy?.mockRestore();
         releaseResult();
+        if (gracefulStopFile) await fs.rm(gracefulStopFile, { force: true });
       }
       if (failure) {
         expect(first.error?.message).toContain(
@@ -9159,8 +9219,9 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
         expect((await heartbeat.cancelRun(runId))?.status).toBe("succeeded");
       } else {
         expect(finished).toMatchObject({
-          exitCode: null,
-          signal: "SIGTERM",
+          ...(process.platform === "win32"
+            ? { exitCode: 1, signal: null }
+            : { exitCode: null, signal: "SIGTERM" }),
           errorCode: "adapter_failed",
         });
       }
