@@ -8069,8 +8069,31 @@ describeEmbeddedPostgres("workspace runtime service control persistence", () => 
     const fixture = await createRuntimeFixture();
     const cleanupRuntimeHome = await createRuntimeHome();
     const workspace = fixture.workspaces[0]!;
+    const port = await findFreePort();
+    const startupGatePath = path.join(workspace.cwd, "starting-upsert-gate");
+    const startupMarkerPath = path.join(workspace.cwd, "starting-upsert-marker.json");
+    const readStartupMarker = async () => {
+      for (let attempt = 0; attempt < 100; attempt += 1) {
+        const marker = await fs.readFile(startupMarkerPath, "utf8")
+          .then((contents) => JSON.parse(contents) as { pid: number; parentPid: number; startMs: number })
+          .catch(() => null);
+        if (marker && Number.isInteger(marker.pid) && marker.pid > 0) return marker;
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      }
+      throw new Error("controlled starting child did not write its ownership marker");
+    };
+    const serviceCommand = nodeEvalCommandForTest([
+      "const fs=require('node:fs');",
+      "const http=require('node:http');",
+      `const gate=${JSON.stringify(startupGatePath)};`,
+      `const marker=${JSON.stringify(startupMarkerPath)};`,
+      "fs.writeFileSync(marker,JSON.stringify({pid:process.pid,parentPid:process.ppid,startMs:Date.now()}));",
+      "const port=Number(process.env.PORT);",
+      "const begin=()=>http.createServer((_req,res)=>res.end('ok')).listen(port,'127.0.0.1');",
+      "const timer=setInterval(()=>{if(fs.existsSync(gate)){clearInterval(timer);begin();}},10);",
+    ].join(""));
     const config = {
-      ...fixedPortRuntimeConfig(await findFreePort()),
+      ...fixedPortRuntimeConfig(port, serviceCommand),
       runtimeProvisionCommand: nodeEvalCommandForTest("process.exit(0)"),
     };
     const registryBefore = await listLocalServiceRegistryRecords({ profileKind: "workspace-runtime" });
@@ -8103,7 +8126,26 @@ describeEmbeddedPostgres("workspace runtime service control persistence", () => 
                       return new Proxy(query as object, {
                         get(queryTarget, queryProperty, queryReceiver) {
                           if (queryProperty === "onConflictDoUpdate") {
-                            return () => Promise.reject(new Error("forced starting upsert rejection"));
+                            return async () => {
+                              const marker = await readStartupMarker();
+                              await fs.writeFile(startupGatePath, "ready");
+                              for (let attempt = 0; attempt < 100; attempt += 1) {
+                                try {
+                                  const response = await fetch(`http://127.0.0.1:${port}`, {
+                                    signal: AbortSignal.timeout(500),
+                                  });
+                                  if (response.ok) break;
+                                } catch {
+                                  // The controlled child has not bound yet.
+                                }
+                                await new Promise((resolve) => setTimeout(resolve, 50));
+                              }
+                              await expect(fetch(`http://127.0.0.1:${port}`, {
+                                signal: AbortSignal.timeout(500),
+                              })).resolves.toMatchObject({ ok: true });
+                              expect(await readLocalServicePortOwner(port)).toBe(marker.pid);
+                              throw new Error("forced starting upsert rejection");
+                            };
                           }
                           return Reflect.get(queryTarget, queryProperty, queryReceiver);
                         },
