@@ -28,12 +28,15 @@
     "custom-electron-titlebar": "^4.4.1"
   },
   "devDependencies": {
-    "@types/node": "^24.6.0",
+    "@types/node": "^24.0.0",
     "electron": "41.1.1",
     "electron-builder": "^26.8.1",
     "esbuild": "^0.27.3",
     "playwright": "^1.58.2",
     "tsx": "^4.21.0",
     "typescript": "^5.7.3"
+  },
+  "engines": {
+    "node": ">=24.11.0"
   }
 }
