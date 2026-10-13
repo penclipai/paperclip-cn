@@ -6099,7 +6099,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     const fakeGit = await writeFixtureGit(bin,
       `const fs = require('node:fs');\n` +
       `const path = require('node:path');\n` +
-      `const args = process.platform === 'win32' ? ['-c', path.basename(process.argv[1] ?? ''), ...process.argv.slice(2)] : process.argv.slice(2);\n` +
+      `const args = process.platform === 'win32' ? [...process.execArgv, path.basename(process.argv[1] ?? ''), ...process.argv.slice(2)] : process.argv.slice(2);\n` +
       `fs.appendFileSync(${JSON.stringify(callsPath)}, JSON.stringify(args) + '\\n');\n` +
       `const remotes = ${JSON.stringify(remotes)};\n` +
       `const diagnostics = ${JSON.stringify(diagnostics)};\n` +
@@ -6200,7 +6200,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     const fakeGit = await writeFixtureGit(bin,
       `const fs = require('node:fs'); const { spawnSync } = require('node:child_process');\n` +
       `const path = require('node:path');\n` +
-      `const args = process.platform === 'win32' ? ['-c', path.basename(process.argv[1] ?? ''), ...process.argv.slice(2)] : process.argv.slice(2);\n` +
+      `const args = process.platform === 'win32' ? [...process.execArgv, path.basename(process.argv[1] ?? ''), ...process.argv.slice(2)] : process.argv.slice(2);\n` +
       `if (args.includes('clone')) {\n` +
       `  fs.appendFileSync(${JSON.stringify(cloneCalls)}, JSON.stringify(args) + '\\n');\n` +
       `  if (args.at(-2) !== ${JSON.stringify(repoUrl)}) process.exit(2);\n` +
