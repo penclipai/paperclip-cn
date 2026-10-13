@@ -404,10 +404,20 @@ export function agentDirectoryWorkingCopyService(db: Db, get: (companyId: string
               : error instanceof Error ? "Error" : "unknown";
         const httpStatus = restoreDiagnostic?.httpStatus
           ?? (error instanceof HttpError && error.status >= 400 && error.status <= 599 ? error.status : undefined);
+        const message = error instanceof Error ? error.message : "";
+        const tarFailureKinds = [
+          ["invalid_archive", /This does not look like a tar archive|Unexpected EOF|Unrecognized archive format/i],
+          ["open_failed", /Cannot open|Cannot chdir|Cannot mkdir/i],
+          ["metadata_failed", /Cannot utime|Cannot change mode|Cannot chown/i],
+          ["permission_denied", /Permission denied|Operation not permitted/i],
+          ["invalid_option", /unrecognized option|illegal option|unknown option/i],
+        ] as const;
         logger.warn({ collectionStage, errorName, errorCode: restoreDiagnostic?.errorCode ?? "unknown",
           ...(httpStatus !== undefined ? { httpStatus } : {}),
+          ...(restoreDiagnostic?.exitCode !== undefined ? { restoreExitCode: restoreDiagnostic.exitCode } : {}),
           ...(restoreDiagnostic?.phase ? { restorePhase: restoreDiagnostic.phase } : {}),
           ...(restoreDiagnostic?.step ? { restoreStep: restoreDiagnostic.step } : {}),
+          tarFailureKinds: tarFailureKinds.filter(([, pattern]) => pattern.test(message)).map(([kind]) => kind),
         }, "Temporary agent-file stopped collection diagnostic");
         const retryable = !(error instanceof HttpError) || error.status >= 500;
         if (retryable && row.attempts < 3) continue;
