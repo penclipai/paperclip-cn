@@ -15,6 +15,7 @@ import {
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { runNodeScript, runPnpm } from "./utils.mjs";
+import { checkCatalog } from "../../../scripts/i18n-catalog.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const packageDir = path.resolve(__dirname, "..");
@@ -347,6 +348,13 @@ function removeIfExists(targetPath) {
   return true;
 }
 
+async function verifyStagedLocaleCatalog() {
+  await checkCatalog({
+    root: repoRoot,
+    artifactRoot: path.resolve(appRuntimeServerDir, "ui-dist", "locales"),
+  });
+}
+
 function pruneRuntimeNodeModules() {
   if (!existsSync(appRuntimeNodeModulesDir)) {
     return;
@@ -500,6 +508,8 @@ cpSync(bundledSkillsDir, appRuntimeSkillsDir, {
   recursive: true,
   force: true,
 });
+
+await verifyStagedLocaleCatalog();
 
 console.log("[desktop-stage] Assembling bundled plugin packages...");
 const bundledPluginPackageJsons = findBundledPluginPackageJsons(bundledPluginsDir);

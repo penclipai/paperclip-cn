@@ -535,6 +535,39 @@ verifying Vite/HMR behavior.
 
 For normal issue work, start with the smallest targeted check that proves the change. Reserve repo-wide typecheck/build/test runs for PR-ready handoff or changes broad enough that narrow checks do not cover the risk.
 
+### Translation catalog maintenance
+
+The production English and zh-CN `common.json` files are generated runtime
+resources. Edit paired entries under `ui/locales-src/` instead, then build and
+check the catalog:
+
+```sh
+pnpm i18n:build
+pnpm check:i18n
+```
+
+`i18n:build` validates sources and writes the sorted UTF-8/LF resources.
+`check:i18n` is read-only; it fails when generated resources are stale or an
+English value has not been explicitly reviewed. After reviewing a changed
+English string, record only that key and rerun the commands:
+
+```sh
+pnpm i18n:review -- --key <exact-key>
+pnpm i18n:build
+pnpm check:i18n
+```
+
+Each entry contains `en`, `zh-CN`, and `reviewedEnglishHash`. Semantic keys are
+owned by `ui/locales-src/semantic/domain-<first-prefix-lowercase>.json`; other
+source-text keys are owned by
+`ui/locales-src/source-text/<first-ascii-letter-lowercase-or-other>.json`.
+Keys have one owner; duplicate definitions and implicit overrides fail. Do not
+hand-edit `ui/public/locales/*/common.json`.
+
+The small upstream `translation` resources are separate from the production
+catalog and retain their own tests. For sync-fork-specific auditing and wording
+rules, see the [CN localization policy](../.agents/skills/paperclip-cn-fork-maintenance/references/ui-localization-policy.md).
+
 #### Embedded Postgres template cache
 
 Suites that call `startEmbeddedPostgresTestDatabase` (from `@penclipai/db`)

@@ -9,7 +9,7 @@ Use this reference for zh-CN architecture, content ownership, terminology, key d
 3. Content ownership
 4. Brand and command boundaries
 5. Terminology
-6. Key design
+6. Key design and catalog maintenance
 7. Implementation workflow
 8. Wording and formatting
 9. Regression and upstream sync
@@ -33,9 +33,11 @@ Current contract:
 - supported locales: `zh-CN` and `en`
 - `DEFAULT_UI_LOCALE`: `zh-CN`
 - `fallbackLng`: `zh-CN`
-- resource files: `ui/public/locales/zh-CN/common.json` and `ui/public/locales/en/common.json`
+- editable catalog source: `ui/locales-src/`
+- generated runtime resources: `ui/public/locales/zh-CN/common.json` and `ui/public/locales/en/common.json`
 - main entrypoints: `ui/src/i18n.ts` and `ui/src/main.tsx`
-- locale JSON is the authority for application-owned visible strings
+- paired source entries are the authority for application-owned visible strings;
+  runtime JSON is generated from them
 - translation resources stay out of component-local TypeScript objects
 
 English is a supported selected language, not the fallback locale.
@@ -183,7 +185,7 @@ Context can refine verbs:
 
 Prefer concise, action-oriented Chinese. Avoid mixed Chinese/English product jargon when the English fragment is application-owned copy.
 
-## Key Design
+## Key Design And Catalog Maintenance
 
 Prefer stable semantic keys for:
 
@@ -197,11 +199,31 @@ Controlled source-text keys are acceptable only for low-reuse leaf copy, high-ch
 
 Maintain these invariants:
 
-- add or update `en` and `zh-CN` together
-- define a key only once in each JSON object
+- add or update `en` and `zh-CN` together in one paired source entry
+- define a key once across all source files; implicit overrides are forbidden
 - use shared enum and formatting helpers instead of component-local maps
 - keep dynamic key prefixes discoverable and covered by tests or explicit audit notes
 - never delete a key from static `unusedKeys` evidence alone
+
+The editable source layout controls file ownership, without changing the flat
+runtime key contract:
+
+- semantic-shaped keys are stored in
+  `ui/locales-src/semantic/domain-<first-prefix-lowercase>.json`
+- controlled source-text keys are stored in
+  `ui/locales-src/source-text/<first-ascii-letter-lowercase-or-other>.json`
+- every value is an object with `en`, `zh-CN`, and `reviewedEnglishHash`
+
+`reviewedEnglishHash` is the SHA-256 hash of the exact English string bytes.
+It must match before generation or read-only checks pass. Changing English
+requires an explicit per-key review; it does not imply that Chinese must change.
+The `i18n:review` command updates only selected review metadata and never
+translates copy. Runtime catalogs are sorted with ordinal comparison, UTF-8,
+LF, and a final newline. Do not manually edit generated `common.json` files.
+
+`scheduleDescription.dayOfMonthOrdinal` is the only placeholder-set exception:
+English uses `ordinal`, zh-CN uses `count`, and callers provide both. All other
+paired strings must expose the same placeholders.
 
 ## Implementation Workflow
 
@@ -209,13 +231,14 @@ For new or changed UI:
 
 1. Classify the content owner.
 2. Reuse an existing key, enum helper, seeded-name helper, or formatter.
-3. Add matching `en` and `zh-CN` keys when needed.
+3. Add or update the paired source entry in its required owner file.
 4. Use `useTranslation()` or the established non-React translation helper.
 5. Keep user data and technical values outside translated templates.
 6. Route dates, times, relative time, numbers, currency, and token counts through locale-aware helpers.
 7. Localize server warnings and event codes through controlled mappings instead of displaying raw application-owned English.
 8. Add focused tests for shared helpers, generated phrases, or reusable components.
-9. Recheck the rendered interaction in the browser.
+9. Run `pnpm i18n:build` and `pnpm check:i18n`, then recheck the rendered
+   interaction in the browser.
 
 English fallback can be used while absorbing upstream changes, but it is migration state. Before PR delivery, review every affected visible surface and fix application-owned high-visibility fallback. Record user data and technical text as intentionally raw.
 
@@ -248,6 +271,8 @@ English fallback can be used while absorbing upstream changes, but it is migrati
 For locale changes, run:
 
 ```sh
+pnpm i18n:build
+pnpm check:i18n
 pnpm exec vitest run ui/src/lib/locale-catalog.test.ts ui/src/i18n/locale-validation.test.ts
 node .agents/skills/paperclip-cn-fork-maintenance/scripts/i18n-key-audit.mjs snapshot --out .omx/i18n-key-audit/current.json
 ```
@@ -259,6 +284,13 @@ Treat snapshot findings correctly:
 - dynamic call warnings require prefix and runtime-source review
 - static unused keys are cleanup candidates, not deletion authority
 
+The audit snapshot schema is v2 and records
+`undefinedStaticTranslationCallFindings` separately. A comparison against a
+retained v1 baseline reports
+`undefinedStaticTranslationCallBaselineUnavailable`; it does not treat the old
+baseline as zero findings. Capture a fresh v2 baseline before the next upstream
+sync, then treat new or regressed undefined static calls as blockers.
+
 Use impact browser audit for ordinary changes and full browser audit only when requested. Record routes, dynamic entities, interactions, findings, and unreachable surfaces as described in [browser-i18n-audit.md](browser-i18n-audit.md).
 
 During upstream sync:
@@ -266,5 +298,11 @@ During upstream sync:
 - accept upstream component and page structure first
 - preserve locale entrypoints, catalogs, language switching, server headers, and error localization as narrow patches
 - capture pre/post key snapshots when the pre-merge stage is still available
+- update `ui/locales-src/`, never generated catalogs, then rebuild and check the
+  generated runtime resources
+- report missing real static keys, changed English values awaiting review, and
+  dynamic-prefix leads; static unused keys and duplicate-English candidates are
+  review leads only
+- explicitly review changed English values before PR delivery
 - inspect every merge-touched visible surface before PR delivery
 - never retain an entire old component solely to preserve translated copy

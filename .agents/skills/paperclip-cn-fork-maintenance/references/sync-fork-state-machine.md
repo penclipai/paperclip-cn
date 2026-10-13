@@ -156,7 +156,9 @@ Before merging:
 
 1. Align the work branch with the fork base branch.
 2. Inspect commits and changed paths in the incoming upstream range.
-3. Capture `.omx/i18n-key-audit/pre-sync.json`.
+3. Run `pnpm check:i18n` and capture a fresh v2
+   `.omx/i18n-key-audit/pre-sync.json`. A retained v1 snapshot cannot baseline
+   undefined static translation calls; comparison reports that gap explicitly.
 4. Classify touched paths against the five fork concerns.
 
 After merging:
@@ -164,9 +166,15 @@ After merging:
 1. Preserve upstream structure during conflict resolution.
 2. Reapply fork changes as narrow patches.
 3. Recheck every merge-touched UI, locale, Windows, Electron, adapter, and rebrand surface.
-4. Capture and compare `.omx/i18n-key-audit/post-sync.json`.
-5. Run findings-first review and fix actionable regressions.
-6. Repeat review and verification when a fix changes the evidence.
+4. Update `ui/locales-src/` for affected production catalog entries, explicitly
+   review changed English values, then run `pnpm i18n:build` and
+   `pnpm check:i18n`. Do not resolve conflicts by editing generated
+   `common.json` files.
+5. Capture and compare `.omx/i18n-key-audit/post-sync.json`; record real
+   missing static calls, unreviewed English, and dynamic-prefix leads.
+6. Run findings-first review and fix actionable regressions. Static unused keys
+   and duplicate-English candidates are not deletion authority.
+7. Repeat review and verification when a fix changes the evidence.
 
 Use this conflict priority:
 

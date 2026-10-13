@@ -12,6 +12,7 @@ import {
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { runNodeScript, runPnpm } from "./utils.mjs";
+import { checkCatalog } from "../../../scripts/i18n-catalog.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const packageDir = path.resolve(__dirname, "..");
@@ -404,7 +405,7 @@ async function resolveEmbeddedPostgresPackageName(targetConfig) {
   return installer.getExpectedPlatformPackageName();
 }
 
-function verifyPackagedRuntime(targetConfig, appLayout, embeddedPostgresPackageName) {
+async function verifyPackagedRuntime(targetConfig, appLayout, embeddedPostgresPackageName) {
   if (!existsSync(appLayout.launcherPath)) {
     throw new Error(`Missing unpacked launcher: ${appLayout.launcherPath}`);
   }
@@ -453,6 +454,11 @@ function verifyPackagedRuntime(targetConfig, appLayout, embeddedPostgresPackageN
   if (!existsSync(packagedRuntimeBundledPluginsDir)) {
     throw new Error(`Missing packaged runtime bundled plugins directory: ${packagedRuntimeBundledPluginsDir}`);
   }
+
+  await checkCatalog({
+    root: repoRoot,
+    artifactRoot: path.resolve(packagedRuntimeServerDir, "ui-dist", "locales"),
+  });
 
   const requiredRuntimePaths = [
     {
@@ -686,7 +692,7 @@ async function run() {
   }
 
   const appLayout = resolvePackagedAppLayout(targetConfig);
-  verifyPackagedRuntime(targetConfig, appLayout, embeddedPostgresPackageName);
+  await verifyPackagedRuntime(targetConfig, appLayout, embeddedPostgresPackageName);
 
   let releaseAssetPaths = [];
   if (!args.dirOnly) {

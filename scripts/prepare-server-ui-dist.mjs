@@ -5,11 +5,21 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 import { resolvePnpmInvocation } from "./pnpm-invocation.mjs";
+import { checkCatalog } from "./i18n-catalog.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..");
 const uiDist = path.join(repoRoot, "ui", "dist");
 const serverUiDist = path.join(repoRoot, "server", "ui-dist");
+
+async function verifyLocaleCatalog(artifactRoot) {
+  await checkCatalog({
+    root: repoRoot,
+    artifactRoot: path.join(artifactRoot, "locales"),
+  });
+}
+
+await checkCatalog({ root: repoRoot });
 
 const reuseUiDist = /^(1|true|yes)$/i.test(process.env.PAPERCLIP_RELEASE_REUSE_UI_DIST ?? "")
   && fs.existsSync(path.join(uiDist, "index.html"));
@@ -40,6 +50,9 @@ if (!fs.existsSync(path.join(uiDist, "index.html"))) {
   process.exit(1);
 }
 
+await verifyLocaleCatalog(uiDist);
+
 fs.rmSync(serverUiDist, { recursive: true, force: true });
 fs.cpSync(uiDist, serverUiDist, { recursive: true, force: true });
+await verifyLocaleCatalog(serverUiDist);
 console.log("  -> Copied ui/dist to server/ui-dist");

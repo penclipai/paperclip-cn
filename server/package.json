@@ -32,10 +32,10 @@
     "skills"
   ],
   "scripts": {
-    "dev": "tsx src/index.ts",
-    "dev:watch": "cross-env PAPERCLIP_MIGRATION_PROMPT=never PAPERCLIP_MIGRATION_AUTO_APPLY=true tsx ./scripts/dev-watch.ts",
-    "prepare:ui-dist": "node ../scripts/prepare-server-ui-dist.mjs",
-    "build": "pnpm run prepare:runner-vendor && node scripts/verify-runner-vendor-dependencies.mjs && tsc && node ../scripts/fs-ops.mjs cp --contents src/onboarding-assets dist/onboarding-assets && node ../scripts/fs-ops.mjs cp --contents src/built-ins dist/built-ins && node ../scripts/fs-ops.mjs cp --contents src/services/scripts dist/services/scripts && node ../scripts/fs-ops.mjs cp --contents ../packages/paperclip-runner/dist dist/vendor/paperclip-runner && node scripts/write-build-stamp.mjs",
+    "dev": "node ../scripts/i18n-catalog.mjs check --root .. && tsx src/index.ts",
+    "dev:watch": "node ../scripts/i18n-catalog.mjs check --root .. && cross-env PAPERCLIP_MIGRATION_PROMPT=never PAPERCLIP_MIGRATION_AUTO_APPLY=true tsx ./scripts/dev-watch.ts",
+    "prepare:ui-dist": "node ../scripts/i18n-catalog.mjs check --root .. && node ../scripts/prepare-server-ui-dist.mjs",
+    "build": "node ../scripts/i18n-catalog.mjs check --root .. && pnpm run prepare:runner-vendor && node scripts/verify-runner-vendor-dependencies.mjs && tsc && node ../scripts/fs-ops.mjs cp --contents src/onboarding-assets dist/onboarding-assets && node ../scripts/fs-ops.mjs cp --contents src/built-ins dist/built-ins && node ../scripts/fs-ops.mjs cp --contents src/services/scripts dist/services/scripts && node ../scripts/fs-ops.mjs cp --contents ../packages/paperclip-runner/dist dist/vendor/paperclip-runner && node scripts/write-build-stamp.mjs",
     "prepack": "pnpm run prepare:ui-dist && pnpm run build",
     "postpack": "node ../scripts/fs-ops.mjs rm ui-dist",
     "clean": "node ../scripts/fs-ops.mjs rm dist",
