@@ -77,16 +77,34 @@ describe("opencode_local environment diagnostics", () => {
     ].join("\n");
 
     try {
-      await fs.writeFile(fakeOpencode, script, "utf8");
-      await fs.chmod(fakeOpencode, 0o755);
+      if (process.platform === "win32") {
+        await fs.writeFile(
+          `${fakeOpencode}.fixture.cjs`,
+          "process.stderr.write('ProviderModelNotFoundError: ProviderModelNotFoundError\\n');\n" +
+            "process.stderr.write('data: { providerID: \"openai\", modelID: \"gpt-5.3-codex\", suggestions: [] }\\n');\n" +
+            "process.exit(1);\n",
+          "utf8",
+        );
+        await fs.writeFile(
+          `${fakeOpencode}.cmd`,
+          `@echo off\r\n"${process.execPath}" "%~dp0opencode.fixture.cjs" %*\r\n`,
+          "utf8",
+        );
+      } else {
+        await fs.writeFile(fakeOpencode, script, "utf8");
+        await fs.chmod(fakeOpencode, 0o755);
+      }
 
       const result = await testEnvironment({
         companyId: "company-1",
         adapterType: "opencode_local",
         config: {
-          command: fakeOpencode,
+          command: process.platform === "win32" ? "opencode" : fakeOpencode,
           cwd,
-          env: { XDG_CONFIG_HOME: path.join(cwd, "config") },
+          env: {
+            XDG_CONFIG_HOME: path.join(cwd, "config"),
+            ...(process.platform === "win32" ? { PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}` } : {}),
+          },
         },
       });
 
