@@ -30,6 +30,7 @@ describe("native workspace finalization recovery", () => {
   let db: ReturnType<typeof createDb>;
   let workspaceRoot: string;
   let priorLogRoot: string | undefined;
+  let workspaceRootSafeToRemove = true;
 
   const companyId = randomUUID();
   const foreignCompanyId = randomUUID();
@@ -150,12 +151,15 @@ describe("native workspace finalization recovery", () => {
   }, 30_000);
 
   afterAll(async () => {
-    await temporary.cleanup();
-    await fs.rm(workspaceRoot, { recursive: true, force: true });
-    if (priorLogRoot === undefined) {
-      delete process.env.WORKSPACE_OPERATION_LOG_BASE_PATH;
-    } else {
-      process.env.WORKSPACE_OPERATION_LOG_BASE_PATH = priorLogRoot;
+    try {
+      await temporary.cleanup();
+      if (workspaceRootSafeToRemove) await fs.rm(workspaceRoot, { recursive: true, force: true });
+    } finally {
+      if (priorLogRoot === undefined) {
+        delete process.env.WORKSPACE_OPERATION_LOG_BASE_PATH;
+      } else {
+        process.env.WORKSPACE_OPERATION_LOG_BASE_PATH = priorLogRoot;
+      }
     }
   });
 
@@ -269,14 +273,27 @@ describe("native workspace finalization recovery", () => {
   it("never steals pending copyback from an orphan child after its controller is killed", async () => {
     const seeded = await seedRun({ executionWorkspaceId: randomUUID(), title: "Orphan copyback child" });
     const output = path.join(workspaceRoot, "orphan-copyback.txt");
-    const childScript = `const fs = require('node:fs'); setInterval(() => fs.appendFileSync(${JSON.stringify(output)}, 'copying\\n'), 25);`;
+    const stopFile = path.join(workspaceRoot, "orphan-copyback.stop");
+    const identityFile = path.join(workspaceRoot, "orphan-copyback.identity.json");
+    const childScript = `const fs = require('node:fs'); fs.writeFileSync(${JSON.stringify(identityFile)}, JSON.stringify({pid:process.pid,parentPid:process.ppid})); setInterval(() => { if (fs.existsSync(${JSON.stringify(stopFile)})) process.exit(0); fs.appendFileSync(${JSON.stringify(output)}, 'copying\\n'); }, 25);`;
     const parentScript = `const {spawn} = require('node:child_process'); const child = spawn(process.execPath, ['-e', ${JSON.stringify(childScript)}], {detached:true, stdio:'ignore'}); console.log(child.pid); child.unref(); setInterval(() => {}, 1000);`;
+    workspaceRootSafeToRemove = false;
     const parent = spawn(process.execPath, ["-e", parentScript], { stdio: ["ignore", "pipe", "ignore"] });
+    const parentClosed = once(parent, "close");
     const [chunk] = await once(parent.stdout!, "data");
     const childPid = Number(String(chunk).trim());
     expect(childPid).toBeGreaterThan(0);
+    let childStartedAt: string | null = null;
     try {
       const startedAt = await readProcessStartedAt(parent.pid!);
+      expect(startedAt).toBeTruthy();
+      let childIdentity: { pid: number; parentPid: number } | null = null;
+      await vi.waitFor(async () => {
+        childIdentity = JSON.parse(await fs.readFile(identityFile, "utf8"));
+        expect(childIdentity).toEqual({ pid: childPid, parentPid: parent.pid });
+      });
+      childStartedAt = await readProcessStartedAt(childPid);
+      expect(childStartedAt).toBeTruthy();
       const exited = once(parent, "close");
       parent.kill("SIGKILL"); await exited;
       process.kill(childPid, 0); // The copyback child outlived the exact controller.
@@ -289,8 +306,32 @@ describe("native workspace finalization recovery", () => {
       const [action] = await db.select().from(issueRecoveryActions).where(eq(issueRecoveryActions.sourceIssueId, seeded.issueId));
       expect(action).toMatchObject({ ownerType: "board", cause: "native_workspace_finalization_owner_unverified", wakePolicy: null });
     } finally {
-      parent.kill("SIGKILL");
-      try { process.kill(-childPid, "SIGKILL"); } catch { /* fixture already exited */ }
+      const cleanupErrors: unknown[] = [];
+      try {
+        if (parent.exitCode === null && parent.signalCode === null) parent.kill("SIGKILL");
+        await parentClosed;
+      } catch (error) {
+        cleanupErrors.push(error);
+      }
+      try {
+        await fs.writeFile(stopFile, "stop\n");
+        if (!childStartedAt) throw new Error("orphan copyback child identity was not captured");
+        await vi.waitFor(async () => {
+          try {
+            process.kill(childPid, 0);
+          } catch (error) {
+            if ((error as NodeJS.ErrnoException).code === "ESRCH") return;
+            throw error;
+          }
+          const observed = await readProcessStartedAt(childPid);
+          expect(observed).toBeTruthy();
+          expect(observed).not.toBe(childStartedAt);
+        }, { timeout: 5_000 });
+        workspaceRootSafeToRemove = cleanupErrors.length === 0;
+      } catch (error) {
+        cleanupErrors.push(error);
+      }
+      if (cleanupErrors.length > 0) throw new AggregateError(cleanupErrors, "orphan copyback fixture cleanup failed");
     }
   });
 
