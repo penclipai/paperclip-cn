@@ -2,6 +2,7 @@ import { execFile, type ExecFileOptions } from "node:child_process";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import { performance } from "node:perf_hooks";
 import { promisify } from "node:util";
 import { afterEach, expect, it } from "vitest";
 import { disposeGitWorkspaceSnapshot, readGitWorkspaceSnapshot, runLocalGit, setExpensiveWorkspaceGitExecutor, type GitWorkspaceSnapshot } from "@penclipai/adapter-utils/git-workspace-sync";
@@ -32,6 +33,24 @@ afterEach(async () => {
   for (const directory of directories.splice(0)) await fs.rm(directory, { recursive: true, force: true });
 }, 60_000);
 
+type PostUploadCommandType = "archive_extract" | "deleted_paths" | "other";
+
+function postUploadCommandType(command: string): PostUploadCommandType {
+  if (command.includes("xargs -0") && command.includes("rm -rf --")) return "deleted_paths";
+  if (command.includes("tar -xf")) return "archive_extract";
+  return "other";
+}
+
+function logPostUploadTiming(input: {
+  stage: "start" | "complete" | "failed";
+  type: PostUploadCommandType;
+  count: number;
+  elapsedMs: number;
+}): void {
+  // Keep timeout diagnostics inspectable without exposing the command, path, or environment.
+  console.info("[workspace-git-streaming] post-upload", JSON.stringify(input));
+}
+
 function localClient(commands: string[]): SandboxManagedRuntimeClient {
   return {
     makeDir: async (dir) => { await fs.mkdir(dir, { recursive: true }); },
@@ -46,9 +65,19 @@ function localClient(commands: string[]): SandboxManagedRuntimeClient {
           await fs.mkdir(path.dirname(mapping.targetPath), { recursive: true });
           await fs.copyFile(mapping.sourcePath, mapping.targetPath);
         }
-        for (const command of operation.postUploadCommands ?? []) {
+        for (const [index, command] of (operation.postUploadCommands ?? []).entries()) {
+          const type = postUploadCommandType(command.command);
+          const count = index + 1;
+          const startedAt = performance.now();
+          logPostUploadTiming({ stage: "start", type, count, elapsedMs: 0 });
           commands.push(command.command);
-          await executeTestPosixShell(command.command, { maxBuffer: 64 * 1024 });
+          try {
+            await executeTestPosixShell(command.command, { maxBuffer: 64 * 1024 });
+            logPostUploadTiming({ stage: "complete", type, count, elapsedMs: performance.now() - startedAt });
+          } catch (error) {
+            logPostUploadTiming({ stage: "failed", type, count, elapsedMs: performance.now() - startedAt });
+            throw error;
+          }
         }
       }
       return { operations: [] };
