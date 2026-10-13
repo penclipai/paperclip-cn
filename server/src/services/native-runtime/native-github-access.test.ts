@@ -128,10 +128,11 @@ async function broker(resolveCredentials = vi.fn(async (binding: ReturnType<type
       await writeFile(pidFile, `${bridgeChild.pid}\n`);
       return { stdout: `${JSON.stringify({ pid: bridgeChild.pid })}\n`, stderr: "", exitCode: 0, signal: null, timedOut: false, pid: null, startedAt };
     }
-    const isOwnedBridgeStop = remote && process.platform === "win32" && bridgeChannel && bridgeControl && stopScript?.includes(`if [ -s '${toPosixFixturePath(bridgeControl.pidFile)}' ]; then`) && stopScript.includes(`rm -f '${toPosixFixturePath(bridgeControl.pidFile)}' '${toPosixFixturePath(bridgeControl.readyFile)}'`);
+    const ownedBridgeControl = bridgeControl;
+    const isOwnedBridgeStop = remote && process.platform === "win32" && bridgeChannel && ownedBridgeControl && stopScript?.includes(`if [ -s '${toPosixFixturePath(ownedBridgeControl.pidFile)}' ]; then`) && stopScript.includes(`rm -f '${toPosixFixturePath(ownedBridgeControl.pidFile)}' '${toPosixFixturePath(ownedBridgeControl.readyFile)}'`);
     if (isOwnedBridgeStop) {
       await stopOwnedBridge();
-      const result = await executePrepared(["-c", `rm -f ${shellQuote(toPosixFixturePath(bridgeControl.pidFile))} ${shellQuote(toPosixFixturePath(bridgeControl.readyFile))}`]);
+      const result = await executePrepared(["-c", `rm -f ${shellQuote(toPosixFixturePath(ownedBridgeControl.pidFile))} ${shellQuote(toPosixFixturePath(ownedBridgeControl.readyFile))}`]);
       return { ...result, exitCode: 0, signal: null, timedOut: false, pid: null, startedAt };
     }
     const result = await executePrepared();
