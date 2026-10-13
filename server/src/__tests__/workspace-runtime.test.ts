@@ -63,10 +63,12 @@ import {
 import {
   findAdoptableLocalService,
   isLocalServiceRegistryCwdCompatible,
+  listLocalServiceRegistryRecords,
   isLocalServiceProcessOwnedBy,
   isLocalServiceProcessInWorkspace,
   readLocalServiceProcessCwd,
   readLocalServicePortOwner,
+  terminateLocalService,
   writeLocalServiceRegistryRecord,
 } from "../services/local-service-supervisor.ts";
 import {
@@ -93,7 +95,7 @@ import {
 } from "./helpers/embedded-postgres.js";
 
 const { listenerProbeUnavailableFixture } = vi.hoisted(() => ({
-  listenerProbeUnavailableFixture: { enabled: false },
+  listenerProbeUnavailableFixture: { enabled: false, failStrict: false },
 }));
 
 vi.mock("node:child_process", async (importOriginal) => {
@@ -111,7 +113,7 @@ vi.mock("node:child_process", async (importOriginal) => {
     ));
     return listenerProbeUnavailableFixture.enabled
       && (command === "netstat" || command === "lsof")
-      && !strictQuery;
+      && (!strictQuery || listenerProbeUnavailableFixture.failStrict);
   };
   const execFile = (...input: unknown[]) => {
       if (shouldFailListenerProbe(input)) {
@@ -318,6 +320,7 @@ async function runBashScriptForTest(scriptPath: string, options: { cwd: string; 
 
 function restoreInitialTestEnvironment() {
   listenerProbeUnavailableFixture.enabled = false;
+  listenerProbeUnavailableFixture.failStrict = false;
   for (const key of testEnvironmentKeys) {
     const value = initialTestEnvironment.get(key);
     if (value === undefined) delete process.env[key];
@@ -4548,7 +4551,15 @@ describe("ensureRuntimeServicesForRun", () => {
             name: "web",
             command:
               input.serviceCommand
-              ?? nodeEvalCommandForTest("setInterval(() => {}, 1000)"),
+              ?? nodeEvalCommandForTest(
+                "require('node:http').createServer((_req,res)=>res.end('ok')).listen(Number(process.env.PORT),'127.0.0.1')",
+              ),
+            port: { type: "auto", envKey: "PORT" },
+            readiness: {
+              type: "http",
+              urlTemplate: "http://127.0.0.1:{{port}}",
+              timeoutSec: 10,
+            },
             lifecycle: "shared",
             reuseScope: "execution_workspace",
             stopPolicy: { type: "manual" },
@@ -7745,7 +7756,7 @@ describeEmbeddedPostgres("workspace runtime service control persistence", () => 
     }
   }, 20_000);
 
-  it("retries a bind race on the next bounded port and persists the selected URL", async () => {
+  it("quarantines an unverified descendant bind race on Windows", async () => {
     const fixture = await createRuntimeFixture();
     const cleanupRuntimeHome = await createRuntimeHome();
     const workspace = fixture.workspaces[0]!;
@@ -7774,40 +7785,109 @@ describeEmbeddedPostgres("workspace runtime service control persistence", () => 
       "setInterval(()=>{},1000);",
     ].join("");
     const command = nodeEvalCommandForTest(raceScript);
+    const config = fixedPortRuntimeConfig(basePort, command);
+    const readBlockerPid = async () => {
+      for (let attempt = 0; attempt < 50; attempt += 1) {
+        const pid = Number.parseInt(await fs.readFile(blockerPidPath, "utf8").catch(() => ""), 10);
+        if (Number.isInteger(pid) && pid > 0) return pid;
+        await new Promise((resolve) => setTimeout(resolve, 25));
+      }
+      throw new Error("bind-race blocker did not report its PID");
+    };
+    let retainedServiceId: string | null = null;
+    let blockerPid: number | null = null;
 
     try {
-      const started = (await startRuntimeServicesForWorkspaceControl({
+      const start = startRuntimeServicesForWorkspaceControl({
         db,
         actor: fixture.actor,
         issue: null,
         workspace: fixture.realizedWorkspace(workspace),
         executionWorkspaceId: workspace.id,
-        config: fixedPortRuntimeConfig(basePort, command),
+        config,
         adapterEnv: {},
-      }))[0]!;
+      });
+      blockerPid = await readBlockerPid();
+      expect(blockerPid).toBeGreaterThan(0);
 
-      expect(await fs.readFile(markerPath, "utf8")).toBe(String(basePort));
-      expect(started.port).toBeGreaterThan(basePort);
-      expect(started.url).toBe(`http://127.0.0.1:${started.port}`);
-      await expect(fetch(started.url!)).resolves.toMatchObject({ ok: true });
-      const persisted = await db
-        .select()
-        .from(workspaceRuntimeServices)
-        .where(eq(workspaceRuntimeServices.executionWorkspaceId, workspace.id))
-        .then((rows) => rows[0] ?? null);
-      expect(persisted).toMatchObject({ port: started.port, url: started.url, status: "running" });
+      if (process.platform === "win32") {
+        await expect(start).rejects.toBeInstanceOf(Error);
+        expect(await readLocalServicePortOwner(basePort)).toBe(blockerPid);
+        const [failed] = await db
+          .select({
+            id: workspaceRuntimeServices.id,
+            status: workspaceRuntimeServices.status,
+            healthStatus: workspaceRuntimeServices.healthStatus,
+            stoppedAt: workspaceRuntimeServices.stoppedAt,
+            providerRef: workspaceRuntimeServices.providerRef,
+          })
+          .from(workspaceRuntimeServices)
+          .where(eq(workspaceRuntimeServices.executionWorkspaceId, workspace.id));
+        expect(failed).toMatchObject({
+          status: "failed",
+          healthStatus: "unhealthy",
+          stoppedAt: null,
+          providerRef: expect.stringMatching(/^\d+$/),
+        });
+        retainedServiceId = failed?.id ?? null;
+        const rawRegistry = await listLocalServiceRegistryRecords({
+          profileKind: "workspace-runtime",
+        });
+        expect(rawRegistry.some((record) => record.runtimeServiceId === retainedServiceId)).toBe(true);
+        await expect(startRuntimeServicesForWorkspaceControl({
+          db,
+          actor: fixture.actor,
+          issue: null,
+          workspace: fixture.realizedWorkspace(workspace),
+          executionWorkspaceId: workspace.id,
+          config,
+          adapterEnv: {},
+        })).rejects.toThrow("workspace_runtime_stop_unverified");
+      } else {
+        const started = (await start)[0]!;
+        expect(await fs.readFile(markerPath, "utf8")).toBe(String(basePort));
+        expect(started.port).toBeGreaterThan(basePort);
+        expect(started.url).toBe(`http://127.0.0.1:${started.port}`);
+        await expect(fetch(started.url!)).resolves.toMatchObject({ ok: true });
+        const persisted = await db
+          .select()
+          .from(workspaceRuntimeServices)
+          .where(eq(workspaceRuntimeServices.executionWorkspaceId, workspace.id))
+          .then((rows) => rows[0] ?? null);
+        expect(persisted).toMatchObject({ port: started.port, url: started.url, status: "running" });
+      }
     } finally {
-      await stopRuntimeServicesForExecutionWorkspace({
-        db,
-        executionWorkspaceId: workspace.id,
-        workspaceCwd: workspace.cwd,
-      }).catch(() => undefined);
-      const blockerPid = Number.parseInt(await fs.readFile(blockerPidPath, "utf8").catch(() => ""), 10);
-      if (Number.isInteger(blockerPid) && blockerPid > 0) {
-        try {
-          process.kill(blockerPid, "SIGTERM");
-        } catch {
-          // The bind-race process already exited.
+      if (process.platform === "win32" && blockerPid) {
+        await terminateLocalService({
+          pid: blockerPid,
+          processGroupId: blockerPid,
+          port: basePort,
+        });
+        await stopRuntimeServicesForExecutionWorkspace({
+          db,
+          executionWorkspaceId: workspace.id,
+          workspaceCwd: workspace.cwd,
+        });
+        expect(retainedServiceId).toEqual(expect.any(String));
+        const [stopped] = await db
+          .select({ status: workspaceRuntimeServices.status })
+          .from(workspaceRuntimeServices)
+          .where(eq(workspaceRuntimeServices.id, retainedServiceId!));
+        expect(stopped?.status).toBe("stopped");
+        const rawRegistry = await listLocalServiceRegistryRecords({ profileKind: "workspace-runtime" });
+        expect(rawRegistry.some((record) => record.runtimeServiceId === retainedServiceId)).toBe(false);
+      } else {
+        await stopRuntimeServicesForExecutionWorkspace({
+          db,
+          executionWorkspaceId: workspace.id,
+          workspaceCwd: workspace.cwd,
+        }).catch(() => undefined);
+        if (blockerPid) {
+          try {
+            process.kill(blockerPid, "SIGTERM");
+          } catch {
+            // The bind-race process already exited.
+          }
         }
       }
       await cleanupRuntimeHome();
@@ -7821,6 +7901,224 @@ describeEmbeddedPostgres("workspace runtime service control persistence", () => 
     const workspace = fixture.workspaces[0]!;
     const basePort = await findFreePort();
     listenerProbeUnavailableFixture.enabled = true;
+    let failedServiceId: string | null = null;
+    // On Windows, make the strict ownership query fail after the listener was
+    // observed. This keeps the startup record durable and unverified.
+    listenerProbeUnavailableFixture.failStrict = process.platform === "win32";
+
+    try {
+      const start = startRuntimeServicesForWorkspaceControl({
+        db,
+        actor: fixture.actor,
+        issue: null,
+        workspace: fixture.realizedWorkspace(workspace),
+        executionWorkspaceId: workspace.id,
+        config: fixedPortRuntimeConfig(basePort),
+        adapterEnv: {},
+      });
+      if (process.platform === "win32") {
+        await expect(start).rejects.toThrow("listener probe unavailable");
+        const [failed] = await db
+          .select({
+            id: workspaceRuntimeServices.id,
+            status: workspaceRuntimeServices.status,
+            healthStatus: workspaceRuntimeServices.healthStatus,
+            stoppedAt: workspaceRuntimeServices.stoppedAt,
+          })
+          .from(workspaceRuntimeServices)
+          .where(eq(workspaceRuntimeServices.executionWorkspaceId, workspace.id));
+        expect(failed).toMatchObject({
+          status: "failed",
+          healthStatus: "unhealthy",
+          stoppedAt: null,
+        });
+        expect(failed?.id).toEqual(expect.any(String));
+        failedServiceId = failed?.id ?? null;
+
+        const rawRegistry = await listLocalServiceRegistryRecords({
+          profileKind: "workspace-runtime",
+        });
+        expect(rawRegistry.some((record) => record.runtimeServiceId === failed?.id)).toBe(true);
+
+        await expect(startRuntimeServicesForWorkspaceControl({
+          db,
+          actor: fixture.actor,
+          issue: null,
+          workspace: fixture.realizedWorkspace(workspace),
+          executionWorkspaceId: workspace.id,
+          config: fixedPortRuntimeConfig(basePort),
+          adapterEnv: {},
+        })).rejects.toThrow("workspace_runtime_stop_unverified");
+      } else {
+        await expect(start).rejects.toMatchObject({
+          status: 409,
+          details: {
+            code: "workspace_runtime_port_allocation_exhausted",
+            port: basePort,
+            attemptedPortCount: WORKSPACE_RUNTIME_PORT_ALLOCATION_ATTEMPTS,
+          },
+        });
+      }
+    } finally {
+      listenerProbeUnavailableFixture.enabled = false;
+      listenerProbeUnavailableFixture.failStrict = false;
+      const stop = stopRuntimeServicesForExecutionWorkspace({
+        db,
+        executionWorkspaceId: workspace.id,
+        workspaceCwd: workspace.cwd,
+      });
+      if (process.platform === "win32") {
+        await stop;
+        expect(failedServiceId).toEqual(expect.any(String));
+        const [stopped] = await db
+          .select({ status: workspaceRuntimeServices.status })
+          .from(workspaceRuntimeServices)
+          .where(eq(workspaceRuntimeServices.id, failedServiceId!));
+        expect(stopped?.status).toBe("stopped");
+        const rawRegistry = await listLocalServiceRegistryRecords({
+          profileKind: "workspace-runtime",
+        });
+        expect(rawRegistry.some((record) => record.runtimeServiceId === failedServiceId)).toBe(false);
+      } else {
+        await stop.catch(() => undefined);
+      }
+      await cleanupRuntimeHome();
+      await fixture.cleanup();
+    }
+  }, 20_000);
+
+  it("fails closed for a persisted unverified local runtime after an in-memory reset", async () => {
+    const fixture = await createRuntimeFixture();
+    const cleanupRuntimeHome = await createRuntimeHome();
+    const workspace = fixture.workspaces[0]!;
+    const port = await findFreePort();
+    const command = nodeEvalCommandForTest("process.exit(0)");
+    const config = {
+      workspaceRuntime: {
+        services: [{
+          name: "quarantined-web",
+          command,
+          lifecycle: "ephemeral",
+          reuseScope: "execution_workspace",
+          port: { type: "fixed", value: port, envKey: "PORT" },
+          readiness: { type: "http", urlTemplate: "http://127.0.0.1:{{port}}", timeoutSec: 1 },
+          stopPolicy: { type: "manual" },
+        }],
+      },
+    };
+    const serviceId = randomUUID();
+    const now = new Date();
+
+    try {
+      await db.insert(workspaceRuntimeServices).values({
+        id: serviceId,
+        companyId: fixture.companyId,
+        projectId: fixture.projectId,
+        projectWorkspaceId: fixture.projectWorkspaceId,
+        executionWorkspaceId: workspace.id,
+        issueId: null,
+        scopeType: "execution_workspace",
+        scopeId: workspace.id,
+        serviceName: "quarantined-web",
+        status: "failed",
+        lifecycle: "ephemeral",
+        reuseKey: null,
+        command,
+        cwd: workspace.cwd,
+        port,
+        url: `http://127.0.0.1:${port}`,
+        provider: "local_process",
+        providerRef: "987654321",
+        ownerAgentId: fixture.agentId,
+        startedByRunId: null,
+        lastUsedAt: now,
+        startedAt: now,
+        stoppedAt: null,
+        stopPolicy: { type: "manual" },
+        healthStatus: "unhealthy",
+      });
+      await resetRuntimeServicesForTests();
+
+      await expect(startRuntimeServicesForWorkspaceControl({
+        db,
+        actor: fixture.actor,
+        issue: null,
+        workspace: fixture.realizedWorkspace(workspace),
+        executionWorkspaceId: workspace.id,
+        config,
+        adapterEnv: {},
+      })).rejects.toThrow(`workspace_runtime_stop_unverified: ${serviceId}`);
+      await expect(stopRuntimeServicesForExecutionWorkspace({
+        db,
+        executionWorkspaceId: workspace.id,
+        workspaceCwd: workspace.cwd,
+      })).rejects.toThrow(`workspace_runtime_stop_unverified: ${serviceId}`);
+
+      const [persisted] = await db
+        .select({ status: workspaceRuntimeServices.status, providerRef: workspaceRuntimeServices.providerRef })
+        .from(workspaceRuntimeServices)
+        .where(eq(workspaceRuntimeServices.id, serviceId));
+      expect(persisted).toEqual({ status: "failed", providerRef: "987654321" });
+    } finally {
+      await cleanupRuntimeHome();
+      await fixture.cleanup();
+    }
+  }, 20_000);
+
+  it("strictly cleans a deferred child when its starting upsert rolls back", async () => {
+    const fixture = await createRuntimeFixture();
+    const cleanupRuntimeHome = await createRuntimeHome();
+    const workspace = fixture.workspaces[0]!;
+    const config = {
+      ...fixedPortRuntimeConfig(await findFreePort()),
+      runtimeProvisionCommand: nodeEvalCommandForTest("process.exit(0)"),
+    };
+    const registryBefore = await listLocalServiceRegistryRecords({ profileKind: "workspace-runtime" });
+    const originalTransaction = db.transaction.bind(db);
+    let rejectStartingUpsert = true;
+    const transactionSpy = vi.spyOn(db, "transaction").mockImplementation(async (callback) => (
+      await originalTransaction(async (tx) => {
+        const failingTx = new Proxy(tx, {
+          get(target, property, receiver) {
+            if (property !== "insert") return Reflect.get(target, property, receiver);
+            const insert = Reflect.get(target, property, receiver) as typeof tx.insert;
+            return (table: Parameters<typeof tx.insert>[0]) => {
+              const builder = insert.call(target, table);
+              return new Proxy(builder, {
+                get(builderTarget, builderProperty, builderReceiver) {
+                  if (builderProperty !== "values") {
+                    return Reflect.get(builderTarget, builderProperty, builderReceiver);
+                  }
+                  const values = Reflect.get(builderTarget, builderProperty, builderReceiver) as (
+                    value: unknown,
+                  ) => unknown;
+                  return (value: { status?: string }) => {
+                    const query = values.call(builderTarget, value);
+                    if (
+                      rejectStartingUpsert
+                      && table === workspaceRuntimeServices
+                      && value.status === "starting"
+                    ) {
+                      rejectStartingUpsert = false;
+                      return new Proxy(query as object, {
+                        get(queryTarget, queryProperty, queryReceiver) {
+                          if (queryProperty === "onConflictDoUpdate") {
+                            return () => Promise.reject(new Error("forced starting upsert rejection"));
+                          }
+                          return Reflect.get(queryTarget, queryProperty, queryReceiver);
+                        },
+                      });
+                    }
+                    return query;
+                  };
+                },
+              });
+            };
+          },
+        });
+        return await callback(failingTx);
+      })
+    ));
 
     try {
       await expect(startRuntimeServicesForWorkspaceControl({
@@ -7829,23 +8127,29 @@ describeEmbeddedPostgres("workspace runtime service control persistence", () => 
         issue: null,
         workspace: fixture.realizedWorkspace(workspace),
         executionWorkspaceId: workspace.id,
-        config: fixedPortRuntimeConfig(basePort),
+        config,
         adapterEnv: {},
-      })).rejects.toMatchObject({
-        status: 409,
-        details: {
-          code: "workspace_runtime_port_allocation_exhausted",
-          port: basePort,
-          attemptedPortCount: WORKSPACE_RUNTIME_PORT_ALLOCATION_ATTEMPTS,
-        },
-      });
+      })).rejects.toThrow("forced starting upsert rejection");
+      const registryAfter = await listLocalServiceRegistryRecords({ profileKind: "workspace-runtime" });
+      expect(registryAfter.map((record) => record.serviceKey)).toEqual(
+        registryBefore.map((record) => record.serviceKey),
+      );
+      await expect(startRuntimeServicesForWorkspaceControl({
+        db,
+        actor: fixture.actor,
+        issue: null,
+        workspace: fixture.realizedWorkspace(workspace),
+        executionWorkspaceId: workspace.id,
+        config,
+        adapterEnv: {},
+      })).resolves.toHaveLength(1);
     } finally {
-      listenerProbeUnavailableFixture.enabled = false;
+      transactionSpy.mockRestore();
       await stopRuntimeServicesForExecutionWorkspace({
         db,
         executionWorkspaceId: workspace.id,
         workspaceCwd: workspace.cwd,
-      }).catch(() => undefined);
+      });
       await cleanupRuntimeHome();
       await fixture.cleanup();
     }

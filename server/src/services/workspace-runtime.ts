@@ -32,7 +32,7 @@ import {
   type WorkspaceRuntimeDesiredState,
   type WorkspaceRuntimeServiceStateMap,
 } from "@penclipai/shared";
-import { and, desc, eq, gte, inArray, isNull, lte, ne, or } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, isNotNull, isNull, lte, ne, or } from "drizzle-orm";
 import { asNumber, asString, parseObject, renderTemplate } from "../adapters/utils.js";
 import { conflict, unprocessable } from "../errors.js";
 import { resolveHomeAwarePath } from "../home-paths.js";
@@ -240,6 +240,10 @@ type ExplicitStopState = "none" | "attempting" | "unverified";
 interface RuntimeServiceRecord extends RuntimeServiceRef {
   db?: Db;
   child: ChildProcess | null;
+  /** Resolves when this spawned child closes its inherited log descriptors. */
+  childClosePromise: Promise<void> | null;
+  /** Readiness owns this record until it finishes or verifies strict cleanup. */
+  deferredReadinessOwned: boolean;
   /** An explicit stop owns its terminal transition until verified. */
   explicitStopState: ExplicitStopState;
   explicitStopPromise: Promise<void> | null;
@@ -263,6 +267,15 @@ type LocalRuntimeServiceStart = {
 
 type PendingRuntimeServiceReadiness = LocalRuntimeServiceStart & {
   service: Record<string, unknown>;
+};
+
+type RuntimeServiceQuarantineScope = {
+  companyId: string;
+  executionWorkspaceId: string | null;
+  projectWorkspaceId: string | null;
+  reuseKey: string | null;
+  scopeType: RuntimeServiceRef["scopeType"];
+  scopeId: string | null;
 };
 
 type StoppedRuntimeServiceReuseCandidate = {
@@ -5362,6 +5375,11 @@ async function waitForAllocatedPortBind(input: {
         throw new Error("service process exited after losing its allocated port");
       }
       const stableOwnerPid = await readLocalServicePortOwner(input.port);
+      if (process.platform === "win32" && !stableOwnerPid) {
+        throw new Error(
+          `workspace_runtime_listener_ownership_unavailable: allocated port ${input.port}`,
+        );
+      }
       const childPid = input.child.pid ?? null;
       if (stableOwnerPid && childPid && await isLocalServiceProcessOwnedBy(stableOwnerPid, childPid)) return;
       throw new RuntimeServicePortBindCollision(input.port);
@@ -6074,6 +6092,8 @@ function createProvisioningRuntimeServiceRecord(
     reused: false,
     db: input.db,
     child: null,
+    childClosePromise: null,
+    deferredReadinessOwned: false,
     explicitStopState: "none",
     explicitStopPromise: null,
     leaseRunIds: new Set(),
@@ -6456,6 +6476,8 @@ async function spawnLocalRuntimeService(input: StartLocalRuntimeServiceInput): P
           reused: true,
           db: input.db,
           child: null,
+          childClosePromise: null,
+          deferredReadinessOwned: false,
           explicitStopState: "none",
           explicitStopPromise: null,
           leaseRunIds: leaseRunId ? new Set([leaseRunId]) : new Set(),
@@ -6545,6 +6567,8 @@ async function spawnLocalRuntimeService(input: StartLocalRuntimeServiceInput): P
     reused: false,
     db: input.db,
     child: null,
+    childClosePromise: null,
+    deferredReadinessOwned: false,
     explicitStopState: "none",
     explicitStopPromise: null,
     leaseRunIds: leaseRunId ? new Set([leaseRunId]) : new Set(),
@@ -6592,10 +6616,15 @@ async function spawnLocalRuntimeService(input: StartLocalRuntimeServiceInput): P
       // on an orphaned socketpair during startup reconciliation.
       stdio: ["ignore", serviceLog.handle.fd, serviceLog.handle.fd],
     });
+    record.child = child;
+    // Subscribe before closing Paperclip's duplicate descriptor. A fast child
+    // may close before an explicit stop otherwise has a close completion signal.
+    record.childClosePromise = new Promise<void>((resolve) => {
+      child.once("close", () => resolve());
+    });
   } finally {
     await serviceLog.handle.close();
   }
-  record.child = child;
   record.providerRef = child.pid ? String(child.pid) : null;
   record.processGroupId = child.pid ?? null;
   const spawnErrorPromise = new Promise<never>((_, reject) => {
@@ -6834,6 +6863,7 @@ async function spawnLocalRuntimeService(input: StartLocalRuntimeServiceInput): P
         processGroupId: child.pid,
         port,
       });
+      await waitForRuntimeServiceChildClose(record, record.id);
     }
     await cleanupRecordExposure(record, { preserveFailure: true });
     record.status = "stopped";
@@ -6965,15 +6995,15 @@ async function startLocalRuntimeService(
           excludedPorts,
           runtimeServiceId: provisioningRecord?.id ?? input.runtimeServiceId,
         });
-        if (runtimeProvisionCommand) {
-          await persistRuntimeServiceRecord(input.db, started.record);
-        }
-        if (provisioningRecord && started.record.id !== provisioningRecord.id && input.db) {
-          await input.db
-            .delete(workspaceRuntimeServices)
-            .where(eq(workspaceRuntimeServices.id, provisioningRecord.id));
-        }
         if (!deferReadiness) {
+          if (runtimeProvisionCommand) {
+            await persistRuntimeServiceRecord(input.db, started.record);
+          }
+          if (provisioningRecord && started.record.id !== provisioningRecord.id && input.db) {
+            await input.db
+              .delete(workspaceRuntimeServices)
+              .where(eq(workspaceRuntimeServices.id, provisioningRecord.id));
+          }
           await started.readiness;
         }
         return started;
@@ -7068,13 +7098,96 @@ function stopUnverifiedError(serviceId: string): Error {
   return new Error(`workspace_runtime_stop_unverified: ${serviceId}`);
 }
 
+function unverifiedRuntimeServiceScopeCondition(input: RuntimeServiceQuarantineScope) {
+  if (input.reuseKey) return eq(workspaceRuntimeServices.reuseKey, input.reuseKey);
+  const scopeIdCondition = input.scopeId === null
+    ? isNull(workspaceRuntimeServices.scopeId)
+    : eq(workspaceRuntimeServices.scopeId, input.scopeId);
+  const executionWorkspaceCondition = input.executionWorkspaceId === null
+    ? isNull(workspaceRuntimeServices.executionWorkspaceId)
+    : eq(workspaceRuntimeServices.executionWorkspaceId, input.executionWorkspaceId);
+  const projectWorkspaceCondition = input.projectWorkspaceId === null
+    ? isNull(workspaceRuntimeServices.projectWorkspaceId)
+    : eq(workspaceRuntimeServices.projectWorkspaceId, input.projectWorkspaceId);
+  return and(
+    eq(workspaceRuntimeServices.scopeType, input.scopeType),
+    scopeIdCondition,
+    executionWorkspaceCondition,
+    projectWorkspaceCondition,
+  );
+}
+
+async function assertNoUnverifiedRuntimeServiceQuarantine(
+  db: Db | undefined,
+  input: RuntimeServiceQuarantineScope,
+) {
+  if (!db) return;
+  const row = await db
+    .select({ id: workspaceRuntimeServices.id })
+    .from(workspaceRuntimeServices)
+    .where(and(
+      eq(workspaceRuntimeServices.companyId, input.companyId),
+      eq(workspaceRuntimeServices.provider, "local_process"),
+      eq(workspaceRuntimeServices.status, "failed"),
+      eq(workspaceRuntimeServices.healthStatus, "unhealthy"),
+      isNull(workspaceRuntimeServices.stoppedAt),
+      isNotNull(workspaceRuntimeServices.providerRef),
+      unverifiedRuntimeServiceScopeCondition(input),
+    ))
+    .limit(1)
+    .then((rows) => rows[0] ?? null);
+  if (row) throw stopUnverifiedError(row.id);
+}
+
+async function assertNoUnverifiedRuntimeServiceQuarantineForWorkspace(input: {
+  db: Db;
+  executionWorkspaceId?: string | null;
+  projectWorkspaceId?: string | null;
+  runtimeServiceId?: string | null;
+}) {
+  const conditions = [
+    eq(workspaceRuntimeServices.provider, "local_process"),
+    eq(workspaceRuntimeServices.status, "failed"),
+    eq(workspaceRuntimeServices.healthStatus, "unhealthy"),
+    isNull(workspaceRuntimeServices.stoppedAt),
+    isNotNull(workspaceRuntimeServices.providerRef),
+  ];
+  if (input.runtimeServiceId) conditions.push(eq(workspaceRuntimeServices.id, input.runtimeServiceId));
+  else if (input.executionWorkspaceId) conditions.push(eq(workspaceRuntimeServices.executionWorkspaceId, input.executionWorkspaceId));
+  else if (input.projectWorkspaceId) conditions.push(eq(workspaceRuntimeServices.projectWorkspaceId, input.projectWorkspaceId));
+  else return;
+  const row = await input.db
+    .select({ id: workspaceRuntimeServices.id })
+    .from(workspaceRuntimeServices)
+    .where(and(...conditions))
+    .limit(1)
+    .then((rows) => rows[0] ?? null);
+  if (row) throw stopUnverifiedError(row.id);
+}
+
+function waitForRuntimeServiceChildClose(record: RuntimeServiceRecord, serviceId: string): Promise<void> {
+  if (!record.childClosePromise) return Promise.resolve();
+  return new Promise<void>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(stopUnverifiedError(serviceId));
+    }, 2_000);
+    void record.childClosePromise.then(
+      () => {
+        clearTimeout(timer);
+        resolve();
+      },
+      (error: unknown) => {
+        clearTimeout(timer);
+        reject(error);
+      },
+    );
+  });
+}
+
 function stopRuntimeService(serviceId: string): Promise<void> {
   const record = runtimeServicesById.get(serviceId);
   if (!record) return Promise.resolve();
-  if (
-    record.explicitStopState === "attempting"
-    && record.explicitStopPromise
-  ) {
+  if (record.explicitStopPromise) {
     return record.explicitStopPromise;
   }
 
@@ -7085,47 +7198,69 @@ function stopRuntimeService(serviceId: string): Promise<void> {
   // Defer the body so the single-flight promise is registered before any
   // asynchronous cleanup can yield to a second explicit stop request.
   const stopPromise = Promise.resolve().then(async () => {
-    await cleanupRecordExposure(captured);
-    if (captured.child?.pid) {
-      await terminateLocalService({
-        pid: captured.child.pid,
-        processGroupId: captured.processGroupId ?? captured.child.pid,
-        port: captured.port,
-      });
-    } else if (captured.providerRef) {
-      const pid = Number.parseInt(captured.providerRef, 10);
-      if (Number.isInteger(pid) && pid > 0) {
+    try {
+      await cleanupRecordExposure(captured);
+      if (captured.child?.pid) {
         await terminateLocalService({
-          pid,
-          processGroupId: captured.processGroupId,
+          pid: captured.child.pid,
+          processGroupId: captured.processGroupId ?? captured.child.pid,
           port: captured.port,
         });
+      } else if (captured.providerRef) {
+        const pid = Number.parseInt(captured.providerRef, 10);
+        if (Number.isInteger(pid) && pid > 0) {
+          await terminateLocalService({
+            pid,
+            processGroupId: captured.processGroupId,
+            port: captured.port,
+          });
+        }
       }
-    }
 
-    if (runtimeServicesById.get(serviceId) !== captured) {
-      throw stopUnverifiedError(serviceId);
-    }
+      await waitForRuntimeServiceChildClose(captured, serviceId);
 
-    captured.status = "stopped";
-    captured.healthStatus = "unknown";
-    captured.lastUsedAt = new Date().toISOString();
-    captured.stoppedAt = new Date().toISOString();
-    await removeLocalServiceRegistryRecord(captured.serviceKey);
-    await persistRuntimeServiceRecord(captured.db, captured);
+      if (runtimeServicesById.get(serviceId) !== captured) {
+        throw stopUnverifiedError(serviceId);
+      }
 
-    if (runtimeServicesById.get(serviceId) !== captured) {
-      throw stopUnverifiedError(serviceId);
-    }
+      captured.status = "stopped";
+      captured.healthStatus = "unknown";
+      captured.lastUsedAt = new Date().toISOString();
+      captured.stoppedAt = new Date().toISOString();
+      await removeLocalServiceRegistryRecord(captured.serviceKey);
+      await persistRuntimeServiceRecord(captured.db, captured);
+      captured.deferredReadinessOwned = false;
 
-    runtimeServicesById.delete(serviceId);
-    if (
-      captured.reuseKey
-      && runtimeServicesByReuseKey.get(captured.reuseKey) === captured.id
-    ) {
-      runtimeServicesByReuseKey.delete(captured.reuseKey);
+      if (runtimeServicesById.get(serviceId) !== captured) {
+        throw stopUnverifiedError(serviceId);
+      }
+
+      runtimeServicesById.delete(serviceId);
+      if (
+        captured.reuseKey
+        && runtimeServicesByReuseKey.get(captured.reuseKey) === captured.id
+      ) {
+        runtimeServicesByReuseKey.delete(captured.reuseKey);
+      }
+      captured.explicitStopState = "none";
+    } catch (error) {
+      if (runtimeServicesById.get(serviceId) === captured) {
+        captured.status = "failed";
+        captured.healthStatus = "unhealthy";
+        captured.lastUsedAt = new Date().toISOString();
+        captured.stoppedAt = null;
+        captured.explicitStopState = "unverified";
+        try {
+          await persistRuntimeServiceRecord(captured.db, captured);
+        } catch (persistError) {
+          throw new AggregateError(
+            [error, persistError],
+            `workspace runtime stop failed and quarantine persistence failed: ${serviceId}`,
+          );
+        }
+      }
+      throw error;
     }
-    captured.explicitStopState = "none";
   });
 
   captured.explicitStopPromise = stopPromise;
@@ -7372,6 +7507,40 @@ async function cleanupPersistedExposureRows(
   }
 }
 
+async function finalizeRuntimeServiceChildExit(
+  db: Db | undefined,
+  record: RuntimeServiceRecord,
+  code: number | null,
+  signal: NodeJS.Signals | null,
+) {
+  const current = runtimeServicesById.get(record.id);
+  if (
+    current !== record
+    || current.explicitStopState !== "none"
+    || current.deferredReadinessOwned
+  ) return;
+
+  clearIdleTimer(current);
+  current.status = code === 0 || signal === "SIGTERM" ? "stopped" : "failed";
+  current.healthStatus = current.status === "failed" ? "unhealthy" : "unknown";
+  current.lastUsedAt = new Date().toISOString();
+  current.stoppedAt = new Date().toISOString();
+  runtimeServicesById.delete(current.id);
+  if (current.reuseKey && runtimeServicesByReuseKey.get(current.reuseKey) === current.id) {
+    runtimeServicesByReuseKey.delete(current.reuseKey);
+  }
+  try {
+    await cleanupRecordExposure(current);
+    await removeLocalServiceRegistryRecord(current.serviceKey);
+    await persistRuntimeServiceRecord(db, current);
+  } catch (err) {
+    const detail = err instanceof Error ? err.message : String(err);
+    console.warn(
+      `[workspace-runtime] runtime service exit cleanup failed for ${current.id}: ${detail}`,
+    );
+  }
+}
+
 function registerRuntimeService(db: Db | undefined, record: RuntimeServiceRecord) {
   record.db = db;
   runtimeServicesById.set(record.id, record);
@@ -7380,38 +7549,9 @@ function registerRuntimeService(db: Db | undefined, record: RuntimeServiceRecord
   }
 
   record.child?.on("exit", (code, signal) => {
-    const current = runtimeServicesById.get(record.id);
-    if (current !== record || current.explicitStopState !== "none") return;
-    clearIdleTimer(current);
-    current.status = code === 0 || signal === "SIGTERM" ? "stopped" : "failed";
-    current.healthStatus = current.status === "failed" ? "unhealthy" : "unknown";
-    current.lastUsedAt = new Date().toISOString();
-    current.stoppedAt = new Date().toISOString();
-    runtimeServicesById.delete(current.id);
-    if (current.reuseKey && runtimeServicesByReuseKey.get(current.reuseKey) === current.id) {
-      runtimeServicesByReuseKey.delete(current.reuseKey);
-    }
-    void (async () => {
-      // The child exited on its own. Record the terminal status as best effort.
-      // The persist can fail when a parent row is already gone: a caller can
-      // delete the project or the company while this service still runs, and the
-      // `project_id` foreign key then rejects the write. Catch every error here,
-      // or the detached persist becomes an unhandled rejection and crashes the
-      // host. This path runs off the child `exit` event, so no caller awaits it.
-      try {
-        await cleanupRecordExposure(current);
-        await removeLocalServiceRegistryRecord(current.serviceKey);
-        await persistRuntimeServiceRecord(db, current);
-      } catch (err) {
-        const detail = err instanceof Error ? err.message : String(err);
-        console.warn(
-          `[workspace-runtime] runtime service exit cleanup failed for ${current.id}: ${detail}`,
-        );
-      }
-    })();
+    void finalizeRuntimeServiceChildExit(db, record, code, signal);
   });
 }
-
 function readRuntimeServiceEntries(config: Record<string, unknown>) {
   return listWorkspaceServiceCommandDefinitions(parseObject(config.workspaceRuntime))
     .map((command) => command.rawConfig);
@@ -7576,6 +7716,14 @@ async function ensureRuntimeServicesForRunInvocation(
         scopeId,
       }).reuseKey;
 
+      await assertNoUnverifiedRuntimeServiceQuarantine(input.db, {
+        companyId: input.agent.companyId,
+        executionWorkspaceId: input.executionWorkspaceId,
+        projectWorkspaceId: input.workspace.workspaceId,
+        reuseKey,
+        scopeType,
+        scopeId,
+      });
       if (reuseKey) {
         const existing = await findHealthyRunningRuntimeService(reuseKey);
         if (existing) {
@@ -7784,6 +7932,7 @@ async function startRuntimeServicesForWorkspaceControlUnlocked(
       record: RuntimeServiceRecord;
     } | null;
     excludedPorts?: ReadonlySet<number>;
+    onDeferredReadinessRecord?: (record: RuntimeServiceRecord) => void;
   },
 ): Promise<WorkspaceControlStartBatch> {
   const refs: RuntimeServiceRef[] = [];
@@ -7810,6 +7959,14 @@ async function startRuntimeServicesForWorkspaceControlUnlocked(
       scopeId,
     }).reuseKey;
 
+    await assertNoUnverifiedRuntimeServiceQuarantine(input.db, {
+      companyId: input.agent.companyId,
+      executionWorkspaceId: input.executionWorkspaceId,
+      projectWorkspaceId: input.workspace.workspaceId,
+      reuseKey,
+      scopeType,
+      scopeId,
+    });
     if (reuseKey) {
       const existing = await findHealthyRunningRuntimeService(reuseKey);
       if (existing && (!requestedRuntimeServiceId || existing.id === requestedRuntimeServiceId)) {
@@ -7865,14 +8022,25 @@ async function startRuntimeServicesForWorkspaceControlUnlocked(
     const started = await startLocalRuntimeService(startInput, {
       deferReadiness: options?.deferReadiness,
     });
+    const ownsDeferredReadiness = Boolean(options?.deferReadiness && !started.record.reused);
+    if (ownsDeferredReadiness) {
+      // Mark and track before registration/persistence so rollback still owns the child.
+      started.record.deferredReadinessOwned = true;
+      started.readiness.catch(() => undefined);
+      options?.onDeferredReadinessRecord?.(started.record);
+    }
     registerRuntimeService(registryDb, started.record);
     await persistRuntimeServiceRecord(persistenceDb, started.record);
+    const preparedRecord = options?.preparedProvisioning?.service === service
+      ? options.preparedProvisioning.record
+      : null;
+    if (options?.deferReadiness && preparedRecord && preparedRecord.id !== started.record.id && persistenceDb) {
+      await persistenceDb
+        .delete(workspaceRuntimeServices)
+        .where(eq(workspaceRuntimeServices.id, preparedRecord.id));
+    }
     refs.push(toRuntimeServiceRef(started.record));
-
-    if (options?.deferReadiness && started.record.status === "starting" && !started.record.reused) {
-      // Attach a rejection handler immediately; the caller awaits the same promise after
-      // the DB transaction commits, but transaction failures may skip that wait path.
-      started.readiness.catch(() => undefined);
+    if (ownsDeferredReadiness) {
       pendingReadiness.push({ ...started, service });
       startedServiceIds.push(started.record.id);
     }
@@ -7930,12 +8098,23 @@ function canRetryDeferredPortBindCollision(
 
 async function discardFailedDeferredRuntimeStart(db: Db, record: RuntimeServiceRecord) {
   clearIdleTimer(record);
+  if (record.status !== "stopped") {
+    record.status = "failed";
+    record.healthStatus = "unhealthy";
+    record.lastUsedAt = new Date().toISOString();
+    record.stoppedAt = null;
+    record.explicitStopState = "unverified";
+    await persistRuntimeServiceRecord(db, record);
+    return;
+  }
+
   if (runtimeServicesById.get(record.id) === record) runtimeServicesById.delete(record.id);
   if (record.reuseKey && runtimeServicesByReuseKey.get(record.reuseKey) === record.id) {
     runtimeServicesByReuseKey.delete(record.reuseKey);
   }
   await removeLocalServiceRegistryRecord(record.serviceKey).catch(() => undefined);
   await persistRuntimeServiceRecord(db, record);
+  record.deferredReadinessOwned = false;
 }
 
 async function startRuntimeServicesForWorkspaceControlInvocation(
@@ -7983,6 +8162,11 @@ async function startRuntimeServicesForWorkspaceControlInvocation(
     pendingReadiness: [],
     startedServiceIds: [],
   };
+  // Survives a transaction rollback after process creation.
+  const deferredReadinessRecordIds = new Set<string>();
+  const trackDeferredReadinessRecord = (record: RuntimeServiceRecord) => {
+    deferredReadinessRecordIds.add(record.id);
+  };
   let preparedProvisioning: {
     service: Record<string, unknown>;
     record: RuntimeServiceRecord;
@@ -8008,6 +8192,14 @@ async function startRuntimeServicesForWorkspaceControlInvocation(
           scopeType,
           scopeId,
         }).reuseKey;
+        await assertNoUnverifiedRuntimeServiceQuarantine(input.db, {
+          companyId: input.actor.companyId,
+          executionWorkspaceId: input.executionWorkspaceId,
+          projectWorkspaceId: input.workspace.workspaceId,
+          reuseKey,
+          scopeType,
+          scopeId,
+        });
         const existing = await findHealthyRunningRuntimeService(reuseKey);
         if (existing) continue;
 
@@ -8056,6 +8248,7 @@ async function startRuntimeServicesForWorkspaceControlInvocation(
           runtimeProvisionKind: runtimeProvision.kind,
           provisionCoordinator,
           preparedProvisioning,
+          onDeferredReadinessRecord: trackDeferredReadinessRecord,
         },
       );
     });
@@ -8071,6 +8264,11 @@ async function startRuntimeServicesForWorkspaceControlInvocation(
         try {
           await pending.readiness;
           await persistRuntimeServiceRecord(input.db, pending.record);
+          pending.record.deferredReadinessOwned = false;
+          const child = pending.record.child;
+          if (child && (child.exitCode !== null || child.signalCode !== null)) {
+            await finalizeRuntimeServiceChildExit(input.db, pending.record, child.exitCode, child.signalCode);
+          }
           break;
         } catch (error) {
           await discardFailedDeferredRuntimeStart(input.db, pending.record);
@@ -8126,6 +8324,7 @@ async function startRuntimeServicesForWorkspaceControlInvocation(
                 allowFixedPortFallback: retryAllowsFixedPortFallback,
                 provisionCoordinator,
                 excludedPorts,
+                onDeferredReadinessRecord: trackDeferredReadinessRecord,
               },
             );
           });
@@ -8148,10 +8347,30 @@ async function startRuntimeServicesForWorkspaceControlInvocation(
       return record ? toRuntimeServiceRef(record, { reused: ref.reused }) : ref;
     });
   } catch (error) {
-    for (const serviceId of startBatch.startedServiceIds) {
-      await stopRuntimeService(serviceId).catch(() => undefined);
+    const cleanupPersistenceErrors: unknown[] = [];
+    for (const serviceId of new Set([
+      ...startBatch.startedServiceIds,
+      ...deferredReadinessRecordIds,
+    ])) {
+      try {
+        await stopRuntimeService(serviceId);
+      } catch (stopError) {
+        // A strict stop can fail after persisting the durable quarantine sentinel.
+        // Only surface failures which also prove that persistence could not complete.
+        if (stopError instanceof AggregateError) cleanupPersistenceErrors.push(stopError);
+      }
     }
-    if (preparedProvisioning && startBatch.startedServiceIds.length === 0) {
+    if (cleanupPersistenceErrors.length > 0) {
+      throw new AggregateError(
+        [error, ...cleanupPersistenceErrors],
+        "workspace runtime start failed and quarantine persistence failed",
+      );
+    }
+    if (
+      preparedProvisioning
+      && startBatch.startedServiceIds.length === 0
+      && deferredReadinessRecordIds.size === 0
+    ) {
       const nowIso = new Date().toISOString();
       preparedProvisioning.record.status = "failed";
       preparedProvisioning.record.healthStatus = "unhealthy";
@@ -8243,8 +8462,12 @@ export async function stopRuntimeServicesForExecutionWorkspace(input: {
   for (const serviceId of matchingServiceIds) {
     await stopRuntimeService(serviceId);
   }
-
   if (input.db) {
+    await assertNoUnverifiedRuntimeServiceQuarantineForWorkspace({
+      db: input.db,
+      executionWorkspaceId: input.executionWorkspaceId,
+      runtimeServiceId: input.runtimeServiceId,
+    });
     if (input.runtimeServiceId) {
       const now = new Date();
       const rows = await input.db
@@ -8290,8 +8513,12 @@ export async function stopRuntimeServicesForProjectWorkspace(input: {
   for (const serviceId of matchingServiceIds) {
     await stopRuntimeService(serviceId);
   }
-
   if (input.db) {
+    await assertNoUnverifiedRuntimeServiceQuarantineForWorkspace({
+      db: input.db,
+      projectWorkspaceId: input.projectWorkspaceId,
+      runtimeServiceId: input.runtimeServiceId,
+    });
     const now = new Date();
     const exposureCondition = input.runtimeServiceId
       ? eq(workspaceRuntimeServices.id, input.runtimeServiceId)
@@ -8736,6 +8963,8 @@ export async function reconcilePersistedRuntimeServicesOnStartup(db: Db) {
           reused: true,
           db,
           child: null,
+          childClosePromise: null,
+          deferredReadinessOwned: false,
           explicitStopState: "none",
           explicitStopPromise: null,
           leaseRunIds: new Set(),
