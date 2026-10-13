@@ -68,6 +68,7 @@ import {
   isLocalServiceProcessInWorkspace,
   readLocalServiceProcessCwd,
   readLocalServicePortOwner,
+  removeLocalServiceRegistryRecord,
   terminateLocalService,
   writeLocalServiceRegistryRecord,
 } from "../services/local-service-supervisor.ts";
@@ -9453,6 +9454,7 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
   });
 
   it("adopts stopped persisted local services when a matching registry process is alive", async () => {
+    const workspaceRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-live-stopped-"));
     const companyId = randomUUID();
     const runtimeServiceId = randomUUID();
     const startedAt = new Date("2026-04-04T17:00:00.000Z");
@@ -9460,104 +9462,217 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
     const projectId = randomUUID();
     const projectWorkspaceId = randomUUID();
     const executionWorkspaceId = randomUUID();
-    const cwd = process.cwd();
+    const registryServiceKey = `workspace-runtime-paperclip-dev-live-stopped-${randomUUID()}`;
     const reuseKey = `project_workspace:${projectWorkspaceId}:paperclip-dev`;
+    let child: ReturnType<typeof spawn> | null = null;
+    let childClose: Promise<void> | null = null;
+    let port: number | null = null;
 
-    await db.insert(companies).values({
-      id: companyId,
-      name: "Paperclip",
-      issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      requireBoardApprovalForNewAgents: false,
-    });
-    await db.insert(projects).values({
-      id: projectId,
-      companyId,
-      name: "Runtime reconcile test",
-      status: "in_progress",
-    });
-    await db.insert(projectWorkspaces).values({
-      id: projectWorkspaceId,
-      companyId,
-      projectId,
-      name: "Primary",
-      sourceType: "local_path",
-      cwd,
-      isPrimary: true,
-    });
-    await db.insert(executionWorkspaces).values({
-      id: executionWorkspaceId,
-      companyId,
-      projectId,
-      projectWorkspaceId,
-      mode: "isolated_workspace",
-      strategyType: "git_worktree",
-      name: "Execution workspace",
-      status: "active",
-      cwd,
-      providerType: "local_fs",
-      providerRef: cwd,
-    });
-    await db.insert(workspaceRuntimeServices).values({
-      id: runtimeServiceId,
-      companyId,
-      projectId,
-      projectWorkspaceId,
-      executionWorkspaceId,
-      issueId: null,
-      scopeType: "project_workspace",
-      scopeId: projectWorkspaceId,
-      serviceName: "paperclip-dev",
-      status: "stopped",
-      lifecycle: "shared",
-      reuseKey,
-      command: "node",
-      cwd,
-      port: null,
-      url: null,
-      provider: "local_process",
-      providerRef: "stale",
-      ownerAgentId: null,
-      startedByRunId: null,
-      lastUsedAt: stoppedAt,
-      startedAt,
-      stoppedAt,
-      stopPolicy: { type: "manual" },
-      healthStatus: "unknown",
-      createdAt: startedAt,
-      updatedAt: stoppedAt,
-    });
-    await writeLocalServiceRegistryRecord({
-      version: 1,
-      serviceKey: "workspace-runtime-paperclip-dev-live-stopped",
-      profileKind: "workspace-runtime",
-      serviceName: "paperclip-dev",
-      command: "node",
-      cwd,
-      envFingerprint: reuseKey,
-      port: null,
-      url: null,
-      pid: process.pid,
-      processGroupId: process.pid,
-      provider: "local_process",
-      runtimeServiceId,
-      reuseKey,
-      startedAt: startedAt.toISOString(),
-      lastSeenAt: stoppedAt.toISOString(),
-      metadata: null,
-    });
+    try {
+      child = spawn(
+        process.execPath,
+        [
+          "-e",
+          "const server=require('node:http').createServer((_req,res)=>res.end('ok'));server.listen(0,'127.0.0.1',()=>process.stdout.write(String(server.address().port)+'\\n'));",
+        ],
+        {
+          cwd: workspaceRoot,
+          detached: process.platform !== "win32",
+          stdio: ["ignore", "pipe", "inherit"],
+        },
+      );
+      child.unref();
+      childClose = new Promise<void>((resolve) => child!.once("close", () => resolve()));
+      port = await new Promise<number>((resolve, reject) => {
+        let output = "";
+        let settled = false;
+        const settle = (callback: () => void) => {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timeout);
+          child!.stdout?.off("data", onData);
+          child!.off("error", onError);
+          child!.off("exit", onExit);
+          callback();
+        };
+        const onData = (chunk: unknown) => {
+          output += String(chunk);
+          const newline = output.indexOf("\n");
+          if (newline < 0) return;
+          const value = Number(output.slice(0, newline).trim());
+          if (Number.isInteger(value) && value > 0 && value <= 65_535) {
+            settle(() => resolve(value));
+          } else {
+            settle(() => reject(new Error(`Live registry fixture reported invalid port: ${output.slice(0, newline)}`)));
+          }
+        };
+        const onError = (error: Error) => settle(() => reject(error));
+        const onExit = (code: number | null) => settle(() => reject(new Error(
+          `Live registry fixture exited before listening: ${code ?? "unknown"}`,
+        )));
+        const timeout = setTimeout(() => settle(() => reject(new Error(
+          "Live registry fixture did not listen within 5000ms",
+        ))), 5_000);
+        child!.stdout?.on("data", onData);
+        child!.once("error", onError);
+        child!.once("exit", onExit);
+      });
+      await expect(fetch(`http://127.0.0.1:${port}`, { signal: AbortSignal.timeout(5_000) }))
+        .resolves.toMatchObject({ ok: true });
 
-    const result = await reconcilePersistedRuntimeServicesOnStartup(db);
+      await db.insert(companies).values({
+        id: companyId,
+        name: "Paperclip",
+        issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
+        requireBoardApprovalForNewAgents: false,
+      });
+      await db.insert(projects).values({
+        id: projectId,
+        companyId,
+        name: "Runtime reconcile test",
+        status: "in_progress",
+      });
+      await db.insert(projectWorkspaces).values({
+        id: projectWorkspaceId,
+        companyId,
+        projectId,
+        name: "Primary",
+        sourceType: "local_path",
+        cwd: workspaceRoot,
+        isPrimary: true,
+      });
+      await db.insert(executionWorkspaces).values({
+        id: executionWorkspaceId,
+        companyId,
+        projectId,
+        projectWorkspaceId,
+        mode: "isolated_workspace",
+        strategyType: "git_worktree",
+        name: "Execution workspace",
+        status: "active",
+        cwd: workspaceRoot,
+        providerType: "local_fs",
+        providerRef: workspaceRoot,
+      });
+      await db.insert(workspaceRuntimeServices).values({
+        id: runtimeServiceId,
+        companyId,
+        projectId,
+        projectWorkspaceId,
+        executionWorkspaceId,
+        issueId: null,
+        scopeType: "project_workspace",
+        scopeId: projectWorkspaceId,
+        serviceName: "paperclip-dev",
+        status: "stopped",
+        lifecycle: "shared",
+        reuseKey,
+        command: "node",
+        cwd: workspaceRoot,
+        port,
+        url: `http://127.0.0.1:${port}`,
+        provider: "local_process",
+        providerRef: "stale",
+        ownerAgentId: null,
+        startedByRunId: null,
+        lastUsedAt: stoppedAt,
+        startedAt,
+        stoppedAt,
+        stopPolicy: { type: "manual" },
+        healthStatus: "unknown",
+        createdAt: startedAt,
+        updatedAt: stoppedAt,
+      });
+      await writeLocalServiceRegistryRecord({
+        version: 1,
+        serviceKey: registryServiceKey,
+        profileKind: "workspace-runtime",
+        serviceName: "paperclip-dev",
+        command: "node",
+        cwd: workspaceRoot,
+        envFingerprint: reuseKey,
+        port,
+        url: `http://127.0.0.1:${port}`,
+        pid: child.pid!,
+        processGroupId: child.pid ?? null,
+        provider: "local_process",
+        runtimeServiceId,
+        reuseKey,
+        startedAt: startedAt.toISOString(),
+        lastSeenAt: stoppedAt.toISOString(),
+        metadata: null,
+      });
 
-    expect(result).toMatchObject({ reconciled: 1, adopted: 1, stopped: 0 });
-    const persisted = await db
-      .select()
-      .from(workspaceRuntimeServices)
-      .where(eq(workspaceRuntimeServices.id, runtimeServiceId))
-      .then((rows) => rows[0] ?? null);
-    expect(persisted?.status).toBe("running");
-    expect(persisted?.healthStatus).toBe("healthy");
-    expect(persisted?.stoppedAt).toBeNull();
-    expect(persisted?.providerRef).toBe(String(process.pid));
+      const result = await reconcilePersistedRuntimeServicesOnStartup(db);
+
+      expect(result).toMatchObject({ reconciled: 1, adopted: 1, stopped: 0 });
+      const persisted = await db
+        .select()
+        .from(workspaceRuntimeServices)
+        .where(eq(workspaceRuntimeServices.id, runtimeServiceId))
+        .then((rows) => rows[0] ?? null);
+      expect(persisted?.status).toBe("running");
+      expect(persisted?.healthStatus).toBe("healthy");
+      expect(persisted?.stoppedAt).toBeNull();
+      expect(persisted?.providerRef).toBe(String(child.pid));
+    } finally {
+      const ownedChild = child?.pid
+        ? { pid: child.pid, processGroupId: child.pid, ...(port ? { port } : {}) }
+        : null;
+      let stopError: unknown = null;
+      try {
+        await stopRuntimeServicesForProjectWorkspace({
+          db,
+          projectWorkspaceId,
+          runtimeServiceId,
+        });
+      } catch (error) {
+        stopError = error;
+      }
+      const waitForChildClose = async (timeoutMs: number) => {
+        if (!childClose) return true;
+        let timeout: ReturnType<typeof setTimeout> | null = null;
+        try {
+          return await Promise.race([
+            childClose.then(() => true),
+            new Promise<false>((resolve) => { timeout = setTimeout(() => resolve(false), timeoutMs); }),
+          ]);
+        } finally {
+          if (timeout) clearTimeout(timeout);
+        }
+      };
+      const cleanupErrors: unknown[] = [];
+      if (!(await waitForChildClose(250)) && ownedChild) {
+        try {
+          await terminateLocalService(ownedChild);
+        } catch (error) {
+          cleanupErrors.push(error);
+        }
+      }
+      if (!(await waitForChildClose(2_000))) {
+        cleanupErrors.push(new Error(
+          `Live registry fixture ${child?.pid ?? "unknown"} did not close after strict stop`,
+        ));
+      }
+      if (cleanupErrors.length === 0) {
+        try {
+          await removeLocalServiceRegistryRecord(registryServiceKey);
+          await resetRuntimeServicesForTests();
+        } catch (error) {
+          cleanupErrors.push(error);
+        }
+      }
+      if (!stopError && cleanupErrors.length === 0) {
+        await fs.rm(workspaceRoot, { recursive: true, force: true });
+      }
+      if (stopError && cleanupErrors.length > 0) {
+        throw new AggregateError([stopError, ...cleanupErrors], "Runtime reconciliation fixture cleanup failed");
+      }
+      if (stopError) throw stopError;
+      if (cleanupErrors.length > 0) {
+        throw new AggregateError(cleanupErrors, "Runtime reconciliation fixture cleanup failed");
+      }
+    }
   });
 
   it("persists controlled execution workspace stops as stopped", async () => {
