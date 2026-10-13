@@ -5,7 +5,6 @@ import { agents, environmentLeases, environments, agentInstructionWorkingCopies 
 import { syncDirectoryToSsh, restoreWorkspaceFromSshExecution } from "@penclipai/adapter-utils/ssh";
 import { prepareAdapterExecutionTargetRuntime, runAdapterExecutionTargetShellCommand, type AdapterExecutionTarget, type PreparedAdapterExecutionTargetRuntime } from "@penclipai/adapter-utils/execution-target";
 import { withDirectoryMergeLock, directorySnapshotSha256, parseDirectorySnapshot, serializeDirectorySnapshot, type DirectoryMergeLockOperation } from "@penclipai/adapter-utils/workspace-restore-merge";
-import { getWorkspaceRestoreDiagnostic } from "@penclipai/adapter-utils/workspace-restore-diagnostics";
 import { AGENT_FILES_CONTRACT, AgentFileLimitError, agentFileStore, agentStorageWarning, inspectAgentDirectory } from "./agent-file-store.js";
 import { agentInstructionsBundleMode, deriveBundleState, resolveManagedInstructionsRoot } from "./agent-instructions.js";
 import { instructionGitExcludeProgram } from "./agent-instruction-files.js";
@@ -229,7 +228,7 @@ export function agentDirectoryWorkingCopyService(db: Db, get: (companyId: string
     }
   }
 
-  async function retrieve(row: Copy, target?: AdapterExecutionTarget | null, onStage?: (stage: "retrieve" | "inspect") => void) {
+  async function retrieve(row: Copy, target?: AdapterExecutionTarget | null) {
     if (row.location !== "local") {
       let runtime = transports.get(key(row));
       if (!runtime) {
@@ -237,10 +236,8 @@ export function agentDirectoryWorkingCopyService(db: Db, get: (companyId: string
         runtime = await transport(row, target, true);
         transports.set(key(row), runtime);
       }
-      onStage?.("retrieve");
       await runtime.restoreWorkspace();
     }
-    onStage?.("inspect");
     return inspectAgentDirectory(row.localRoot);
   }
   async function hasChanges(row: Copy, target?: AdapterExecutionTarget | null) {
@@ -381,44 +378,20 @@ export function agentDirectoryWorkingCopyService(db: Db, get: (companyId: string
     let inspected: Awaited<ReturnType<typeof retrieve>> | undefined;
     for (;;) {
       row = await patch(row, { attempts: row.attempts + 1 });
-      let collectionStage: "retrieve" | "inspect" | "store_apply" = "retrieve";
       try {
-        inspected ??= await retrieve(row, target, stage => { collectionStage = stage; });
+        inspected ??= await retrieve(row, target);
         const { snapshot } = inspected;
         const candidateHash = directorySnapshotSha256(snapshot);
         let storageWarning = inspected.storageWarning;
         if (candidateHash === row.baseHash) {
           row = await patch(row, { state: "unchanged", errorCode: null, errorMessage: null, nextAttemptAt: null });
         } else {
-          collectionStage = "store_apply";
           ({ storageWarning } = await store.apply({ companyId: row.companyId, agentId: row.agentId, sourceDir: row.localRoot, baseline: baseline(row) }, actor(row)));
           row = await patch(row, { state: "saved", candidateHash, errorCode: null, errorMessage: null, nextAttemptAt: null });
         }
         row = await patch(row, { receipt: { ...row.receipt, storageWarning } });
         break;
       } catch (error) {
-        const restoreDiagnostic = getWorkspaceRestoreDiagnostic(error);
-        const errorName = error instanceof AgentFileLimitError ? "AgentFileLimitError"
-          : error instanceof HttpError ? "HttpError"
-            : error instanceof TypeError ? "TypeError"
-              : error instanceof Error ? "Error" : "unknown";
-        const httpStatus = restoreDiagnostic?.httpStatus
-          ?? (error instanceof HttpError && error.status >= 400 && error.status <= 599 ? error.status : undefined);
-        const message = error instanceof Error ? error.message : "";
-        const tarFailureKinds = [
-          ["invalid_archive", /This does not look like a tar archive|Unexpected EOF|Unrecognized archive format/i],
-          ["open_failed", /Cannot open|Cannot chdir|Cannot mkdir/i],
-          ["metadata_failed", /Cannot utime|Cannot change mode|Cannot chown/i],
-          ["permission_denied", /Permission denied|Operation not permitted/i],
-          ["invalid_option", /unrecognized option|illegal option|unknown option/i],
-        ] as const;
-        logger.warn({ collectionStage, errorName, errorCode: restoreDiagnostic?.errorCode ?? "unknown",
-          ...(httpStatus !== undefined ? { httpStatus } : {}),
-          ...(restoreDiagnostic?.exitCode !== undefined ? { restoreExitCode: restoreDiagnostic.exitCode } : {}),
-          ...(restoreDiagnostic?.phase ? { restorePhase: restoreDiagnostic.phase } : {}),
-          ...(restoreDiagnostic?.step ? { restoreStep: restoreDiagnostic.step } : {}),
-          tarFailureKinds: tarFailureKinds.filter(([, pattern]) => pattern.test(message)).map(([kind]) => kind),
-        }, "Temporary agent-file stopped collection diagnostic");
         const retryable = !(error instanceof HttpError) || error.status >= 500;
         if (retryable && row.attempts < 3) continue;
         row = await patch(row, { state: "unavailable", nextAttemptAt: null,

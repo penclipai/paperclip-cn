@@ -6837,7 +6837,6 @@ describe("native warm session supervision", () => {
     const { execFile } = await import("node:child_process");
     const executeCommand = promisify(execFile);
     const { startEmbeddedPostgresTestDatabase } = await import("../../__tests__/helpers/embedded-postgres.js");
-    const checkpointModule = await import("../agent-file-checkpoints.js");
     const { agentInstructionWorkingCopyService } = await import("../agent-instruction-working-copies.js");
     const { buildNativeRuntimeContext } = await import("./runtime-context.js");
     const { prepareNativeHeartbeatRun } = await import("./prepare-native-run.js");
@@ -6876,20 +6875,9 @@ describe("native warm session supervision", () => {
     ].join("\n"));
     let currentLease = "", failCleanup = false, failProbe = false, closed = false;
     const commands: Array<{ leaseId: string; command: string }> = [];
-    const runnerCommandKinds = new Set<string>();
     const commandRunner = (leaseId: string): import("@penclipai/adapter-utils/command-managed-runtime").CommandManagedRuntimeRunner => ({ execute: async input => {
       expect(leaseId).toBe(currentLease); // The replaced collector must never execute.
       commands.push({ leaseId, command: `${input.command} ${(input.args ?? []).join(" ")}` });
-      const script = (input.args?.[0] === "-c" || input.args?.[0] === "-lc") ? input.args[1] ?? "" : "";
-      const runnerCommandKind = input.command === "node" ? "direct_node"
-        : /\bnode\s+(?:--input-type=module\s+)?-e\b/.test(script) ? "shell_node"
-        : script.includes("workspace-download.tar") && script.includes("tar -cf") ? "restore_archive_create"
-        : script.includes("workspace-download.tar") && script.includes("wc -c") ? "restore_archive_size"
-        : script.includes("workspace-download.tar") && script.includes("dd if=") ? "restore_archive_chunk"
-        : script.includes("base64 -d") ? "transfer_base64"
-        : input.command === "rm" ? "direct_rm"
-        : "shell_other";
-      if (ending === "collect") runnerCommandKinds.add(runnerCommandKind);
       if (failProbe) {
         failProbe = false;
         expect(commands.at(-1)!.command).toContain("Agent directory probe deadline");
@@ -6939,30 +6927,16 @@ describe("native warm session supervision", () => {
             : arg),
         env,
       });
-      try {
-        const result = await executeCommand(shell.command, shell.args, {
-          // `cwd` is consumed by the native Node child-process launcher, while
-          // shell arguments are consumed by Git Bash. Keep the former in host
-          // form and translate only the latter.
-          cwd: input.cwd === remoteCwd ? hostRemoteCwd : input.cwd,
-          env: shell.env,
-          timeout: input.timeoutMs,
-          maxBuffer: 32 * 1024 * 1024,
-        });
-        return { exitCode: 0, signal: null, timedOut: false, ...result, pid: null, startedAt: new Date().toISOString() };
-      } catch (error) {
-        if (ending === "collect") {
-          const detail = error as { code?: unknown; name?: unknown; stderr?: unknown };
-          const stderr = typeof detail.stderr === "string" ? detail.stderr : "";
-          console.info("warm-collect-runner-error-diagnostic", JSON.stringify({
-            commandKind: runnerCommandKind,
-            name: typeof detail.name === "string" ? detail.name : null,
-            code: typeof detail.code === "string" || typeof detail.code === "number" ? String(detail.code) : null,
-            stderrCodes: [...new Set(stderr.match(/\b(?:AGENT_FILES_[A-Z_]+|E[A-Z_]{3,})\b/g) ?? [])].slice(0, 4),
-          }));
-        }
-        throw error;
-      }
+      const result = await executeCommand(shell.command, shell.args, {
+        // `cwd` is consumed by the native Node child-process launcher, while
+        // shell arguments are consumed by Git Bash. Keep the former in host
+        // form and translate only the latter.
+        cwd: input.cwd === remoteCwd ? hostRemoteCwd : input.cwd,
+        env: shell.env,
+        timeout: input.timeoutMs,
+        maxBuffer: 32 * 1024 * 1024,
+      });
+      return { exitCode: 0, signal: null, timedOut: false, ...result, pid: null, startedAt: new Date().toISOString() };
     } });
     let copies = agentInstructionWorkingCopyService(db);
     const agent = { id: agentId, companyId, name: "Warm remote", adapterConfig: {
@@ -6975,33 +6949,6 @@ describe("native warm session supervision", () => {
         turnId: "warm-turn", normalizedSessionId: environmentId, providerSessionId: environmentId,
         driverKind: "test", driverVersion: "1", nativeEventCount: 1, highestContiguousSourceSeq: 1, usage: null };
     });
-    let restoreCheckpointSpy: (() => void) | null = null;
-    let checkpointSpyCalls: (() => number) | null = null;
-    if (ending === "collect") {
-      const originalCapture = checkpointModule.captureAgentFileCheckpoint;
-      const checkpointSpy = vi.spyOn(checkpointModule, "captureAgentFileCheckpoint").mockImplementation(async input => {
-        try { return await originalCapture(input); }
-        catch (error) {
-          const detail = error as { code?: unknown; name?: unknown; message?: unknown; stack?: unknown };
-          const message = typeof detail.message === "string" ? detail.message : "";
-          const frame = typeof detail.stack === "string"
-            ? detail.stack.match(/(?:agent-file-checkpoints|agent-directory-working-copies|sandbox-managed-runtime|command-managed-runtime)\.(?:ts|mjs):\d+/)?.[0] ?? null
-            : null;
-          console.info("warm-collect-checkpoint-capture-diagnostic", JSON.stringify({
-            name: typeof detail.name === "string" ? detail.name : null,
-            code: typeof detail.code === "string" || typeof detail.code === "number" ? String(detail.code) : null,
-            messageCodes: [...new Set(message.match(/\b(?:AGENT_FILES_[A-Z_]+|E[A-Z_]{3,})\b/g) ?? [])].slice(0, 4),
-            checkpointFailed: message.includes("Agent file checkpoint failed"),
-            payloadMismatch: message.includes("payload mismatch"),
-            invalidManifest: /Invalid agent file checkpoint(?: manifest)?/.test(message),
-            frame,
-          }));
-          throw error;
-        }
-      });
-      restoreCheckpointSpy = () => checkpointSpy.mockRestore();
-      checkpointSpyCalls = () => checkpointSpy.mock.calls.length;
-    }
     let bodyFailure: unknown;
     try {
       await db.insert(tables.companies).values({ id: companyId, name: "Warm tests", issuePrefix: "WARM" });
@@ -7180,41 +7127,11 @@ describe("native warm session supervision", () => {
         expect(commands).toHaveLength(before);
         return;
       }
-      if (ending === "collect") {
-        const beforeCollection = (await copies.get(companyId, prior!.binding.runId))!;
-        console.info("warm-collect-before-diagnostic", JSON.stringify({
-          state: beforeCollection.state,
-          errorCode: beforeCollection.errorCode,
-          receipt: beforeCollection.receipt ? {
-            isAgentDirectory: beforeCollection.receipt.schema === AGENT_FILES_CONTRACT,
-            warm: beforeCollection.receipt.warm === true,
-            hasBaseline: beforeCollection.receipt.baseline !== undefined,
-            hasCheckpointManifest: beforeCollection.receipt.checkpointManifest !== undefined,
-            hasMaterializationIdentity: typeof beforeCollection.receipt.materializationIdentity === "string",
-          } : null,
-        }));
-      }
       failCleanup = true;
       await closeWarmNativeSessionsForEnvironment({ environmentId, reason: "test retirement" });
       expect(session.close).toHaveBeenCalledOnce();
-      const saved = (await copies.get(companyId, prior!.binding.runId))!;
-      if (ending === "collect") {
-        console.info("warm-collect-diagnostic", JSON.stringify({
-          state: saved.state,
-          errorCode: saved.errorCode,
-          checkpointSpyCalls: checkpointSpyCalls?.() ?? null,
-          runnerCommandKinds: [...runnerCommandKinds].sort(),
-          receipt: saved.receipt ? {
-            checkpointState: saved.receipt.checkpointState ?? null,
-            cleanupPending: saved.receipt.cleanupPending ?? null,
-            hasBaseline: saved.receipt.baseline !== undefined,
-            hasCheckpointManifest: saved.receipt.checkpointManifest !== undefined,
-            hasMaterializationIdentity: typeof saved.receipt.materializationIdentity === "string",
-            warm: saved.receipt.warm === true,
-          } : null,
-        }));
-      }
       expect(await readFile(join(canonical, "late-memory.txt"), "utf8")).toBe("Latest owner's remote bytes");
+      const saved = (await copies.get(companyId, prior!.binding.runId))!;
       expect(saved).toMatchObject({ state: "saved", receipt: { cleanupPending: true, materializationRunId, cleanup: { leaseId: currentLease } } });
       const cleanup = vi.fn(async input => {
         expect(input.lease.id).toBe(currentLease);
@@ -7230,7 +7147,6 @@ describe("native warm session supervision", () => {
     } catch (error) { bodyFailure = error; throw error; }
     finally {
       const cleanupFailures: unknown[] = [];
-      restoreCheckpointSpy?.();
       try { await closeWarmNativeSessionsForEnvironment({ environmentId, reason: "test cleanup" }); } catch (error) { cleanupFailures.push(error); }
       try { await database.cleanup(); } catch (error) { cleanupFailures.push(error); }
       if (previousHome === undefined) delete process.env.PAPERCLIP_HOME; else process.env.PAPERCLIP_HOME = previousHome;
