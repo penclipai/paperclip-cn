@@ -119,8 +119,9 @@ function validateEntry(key, value, file, requireReviewed) {
 }
 
 function serialized(dictionary) {
-  const sorted = Object.fromEntries(Object.keys(dictionary).sort(compareOrdinal).map((key) => [key, dictionary[key]]));
-  return `${JSON.stringify(sorted, null, 2)}\n`;
+  const keys = Object.keys(dictionary).sort(compareOrdinal);
+  if (keys.length === 0) return "{}\n";
+  return `{\n${keys.map((key) => `  ${JSON.stringify(key)}: ${JSON.stringify(dictionary[key], null, 2).replace(/\n/g, "\n  ")}`).join(",\n")}\n}\n`;
 }
 
 export async function readCatalog({ root, requireReviewed = true }) {

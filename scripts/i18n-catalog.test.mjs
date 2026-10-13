@@ -71,6 +71,22 @@ test("builds sorted common catalogs and check is read-only", async (t) => {
   assert.match(readFileSync(output, "utf8"), /WRONG/);
   await buildCatalog({ root });
   await checkCatalog({ root });
+  const runtimeLocales = "packages/desktop-electron/release/win-unpacked/resources/app-runtime/server/ui-dist/locales";
+  for (const locale of ["en", "zh-CN"]) write(root, `${runtimeLocales}/${locale}/common.json`, readFileSync(join(root, `ui/public/locales/${locale}/common.json`), "utf8"));
+  await checkCatalog({ root, artifactRoot: runtimeLocales });
+  write(root, `${runtimeLocales}/en/common.json`, "{}\n");
+  await assert.rejects(checkCatalog({ root, artifactRoot: runtimeLocales }), /out of date/);
+});
+
+test("serializes numeric-looking keys in ordinal order for artifacts and reviewed source", async (t) => {
+  const root = fixture({ "10": entry("Ten", "十", null), "2": entry("Two", "二") });
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  await reviewKeys({ root, keys: ["10"] });
+  const source = readFileSync(join(root, sourceRelativePathForKey("10")), "utf8");
+  assert.ok(source.indexOf('"10"') < source.indexOf('"2"'));
+  await buildCatalog({ root });
+  const artifact = readFileSync(join(root, "ui/public/locales/en/common.json"), "utf8");
+  assert.ok(artifact.indexOf('"10"') < artifact.indexOf('"2"'));
 });
 
 test("reviews only requested keys while checks still require all entries", async (t) => {

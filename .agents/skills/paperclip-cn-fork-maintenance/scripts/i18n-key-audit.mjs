@@ -332,10 +332,11 @@ function usageContext(node, classifyCall) {
 }
 
 function bindingNames(name, names = []) {
+  if (!name) return names;
   if (is.isIdentifier(name)) names.push(name.text);
   if (is.isObjectBindingPattern(name) || is.isArrayBindingPattern(name)) {
     for (const element of name.elements) {
-      if (is.isBindingElement(element)) bindingNames(element.name, names);
+      if (element && is.isBindingElement(element)) bindingNames(element.name, names);
     }
   }
   return names;
@@ -368,8 +369,54 @@ function knownI18nModule(moduleName, sourceFile) {
   return undefined;
 }
 
+function scopeDeclaresName(scope, name) {
+  if (scope.parameters?.some((parameter) => bindingNames(parameter.name).includes(name))) return true;
+  let found = false;
+  function visit(node, isRoot = false) {
+    if (found) return;
+    if (is.isFunctionDeclaration(node) && node.name?.text === name) {
+      found = true;
+      return;
+    }
+    if (is.isVariableDeclaration(node) && bindingNames(node.name).includes(name)) {
+      found = true;
+      return;
+    }
+    if (is.isImportDeclaration(node) && node.importClause) {
+      const clause = node.importClause;
+      if (clause.name?.text === name) {
+        found = true;
+        return;
+      }
+      const named = clause.namedBindings;
+      if (named && is.isNamedImports(named) && named.elements.some((element) => element.name.text === name)) {
+        found = true;
+        return;
+      }
+    }
+    if (!isRoot && (is.isBlock(node) || node.parameters)) return;
+    node.forEachChild((child) => visit(child));
+  }
+  visit(scope, true);
+  return found;
+}
+
+function isLexicallyBound(node, name, sourceFile) {
+  for (let current = node.parent; current; current = current.parent) {
+    if (current === sourceFile || is.isBlock(current) || current.parameters) {
+      if (scopeDeclaresName(current, name)) return true;
+    }
+    if (current === sourceFile) break;
+  }
+  return false;
+}
+
 function namespaceSelection(expression, sourceFile) {
   if (!expression) return undefined;
+  if (is.isIdentifier(expression) && expression.text === "undefined" && !isLexicallyBound(expression, "undefined", sourceFile)) {
+    return { catalog: "common" };
+  }
+  if (expression.kind === SyntaxKind.NullKeyword) return { catalog: "common" };
   const namespace = literalValue(expression);
   if (namespace === "common" || namespace === "translation") return { catalog: namespace };
   return { unresolvedNamespace: expression?.getText(sourceFile).slice(0, 160) ?? "unknown" };
@@ -383,6 +430,14 @@ function namespaceFromOptions(expression, sourceFile) {
     return namespaceSelection(property.initializer, sourceFile);
   }
   return undefined;
+}
+
+function hasCountOption(call, keyIndex, sourceFile) {
+  const options = call.arguments[keyIndex + 1];
+  if (!options || !is.isObjectLiteralExpression(options)) return false;
+  return options.properties.some((property) =>
+    (is.isPropertyAssignment(property) || is.isShorthandPropertyAssignment(property)) && property.name.getText(sourceFile) === "count",
+  );
 }
 
 function collectTranslationBindings(sourceFile) {
@@ -591,7 +646,8 @@ function scanSourceFile(repoRoot, absoluteFile, sourceFile, catalogs) {
       } else if (translation && keyArg && literalValue(keyArg) !== undefined) {
         const key = literalValue(keyArg);
         const catalog = catalogs[translation.catalog];
-        if (key && !catalog?.keySet.has(key) && !catalog?.variantBaseMap.has(key)) {
+        const hasRuntimeVariant = hasCountOption(node, translation.keyIndex, sourceFile) && catalog?.variantBaseMap.has(key);
+        if (key && !catalog?.keySet.has(key) && !hasRuntimeVariant) {
           undefinedStaticTranslationCallFindings.push({
             ...locationFor(keyArg),
             catalog: translation.catalog,

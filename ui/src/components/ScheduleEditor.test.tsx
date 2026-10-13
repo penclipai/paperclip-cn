@@ -4,11 +4,13 @@ import { useState } from "react";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import i18n from "../i18n";
 import {
   ScheduleEditor,
   buildCron,
   getScheduleCronValidation,
   parseCronToPreset,
+  describeSchedule,
 } from "./ScheduleEditor";
 
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -46,6 +48,22 @@ function act(callback: () => void) {
 }
 
 describe("ScheduleEditor cron helpers", () => {
+  it("formats monthly ordinals with the approved parameters in both languages", async () => {
+    const previousLanguage = i18n.language;
+    try {
+      await i18n.changeLanguage("en");
+      expect(describeSchedule("0 10 21 * *")).toContain("on the 21st of the month");
+      await i18n.changeLanguage("zh-CN");
+      const chinese = describeSchedule("0 10 21 * *");
+      expect(chinese).toContain("每月 21 日");
+      expect(chinese).not.toContain("21st");
+      expect(chinese).not.toContain("{{");
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
+    expect(i18n.language).toBe(previousLanguage);
+  });
+
   it("classifies unknown valid 5-field cron expressions as custom", () => {
     expect(parseCronToPreset("0 8-18/2 * * 1-5").preset).toBe("custom");
     expect(getScheduleCronValidation("0 8-18/2 * * 1-5").valid).toBe(true);

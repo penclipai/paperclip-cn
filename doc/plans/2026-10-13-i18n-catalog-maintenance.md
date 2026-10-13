@@ -56,3 +56,39 @@ and the `tar.t` negative case. Verify current locale/server tests, merge harness
 typecheck, tests, build, and Windows package resources. Record natural skips and
 independent environment failures explicitly. The existing PR's npm bootstrap
 blocker, package publication, merging, and release are outside this change.
+
+## Implementation verification (2026-10-13)
+
+- Migrated 15,059 paired entries into 260 source files. Both generated catalog
+  mappings have zero added, removed, or changed values against the captured
+  pre-migration catalogs. Generation is idempotent, and checked-out catalog
+  bytes retain LF even with Git's Windows `core.autocrlf=true` setting.
+- All 26 catalog/audit/artifact tests passed. Focused coverage includes review
+  invalidation, duplicate and invalid entries,
+  numeric key ordering, prototype-like keys, stale copied/packaged resources,
+  translation aliases and lexical masks, default and unknown namespaces, and
+  the approved English/Chinese monthly ordinal contract.
+- Localization regressions, repository typecheck/build, upstream merge harness,
+  token gates, and module boundary checks passed. Windows directory packaging
+  passed at `f62c0f381538d0adf011ba7a51f6a6897f66d138`; subsequent changes concern
+  catalog serialization, auditing, and regression coverage. They preserve the
+  generated resources and runtime implementations. The package stamp continues
+  to identify that actual build, rather than being relabeled as a later commit.
+- The full `pnpm test:run` attempt failed in three existing server test files:
+  `agent-commentary-skills.test.ts` (three skill-identifier assertions),
+  `agent-directory-working-copies.test.ts` (one recovery assertion), and
+  `agent-instruction-working-copies.test.ts` (one recovery assertion).
+  A focused single-worker rerun reproduced all five failures. These tests and
+  their relevant service/adapter sources are unchanged from the task base
+  `99382b2f880f14581e46687c7a24fc11921dab5c`. The full suite stopped at that group;
+  a clean full-suite result is not claimed.
+- Audit schema v2 records 18 existing undefined static calls as visible baseline
+  findings, with zero duplicate keys or parity gaps. A v1 comparison explicitly
+  reports the absent undefined-call
+  metadata; a fresh v2 baseline is required for the next upstream sync.
+- Local receipts, baseline catalogs, mapping hashes, audit snapshots, and logs
+  are retained under `.omx/i18n-maintenance/`. Source, copied UI, staged runtime,
+  and actual Windows package locale trees are checked independently. The
+  workspace dependency shadow encountered after packaging was preserved and its
+  junction repaired; source, staged, and packaged SDK import probes passed
+  without dependency manifest or lockfile changes.

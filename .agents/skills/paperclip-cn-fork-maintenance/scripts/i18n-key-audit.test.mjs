@@ -156,6 +156,56 @@ test("snapshot treats i18next plural variants as used through the base key", asy
   );
 });
 
+test("snapshot does not treat dotted plural-looking keys as i18next runtime variants", async () => {
+  await withFixture(
+    baseFiles({
+      en: {
+        "whatNeedsMe.decisionCount.one": "{{count}} decision",
+        "whatNeedsMe.decisionCount.other": "{{count}} decisions",
+      },
+      zh: {
+        "whatNeedsMe.decisionCount.one": "{{count}} 条决策",
+        "whatNeedsMe.decisionCount.other": "{{count}} 条决策",
+      },
+      source: `
+        import { useTranslation } from "react-i18next";
+        export function DecisionCount() {
+          const { t } = useTranslation();
+          return t("whatNeedsMe.decisionCount", { count: 2 });
+        }
+      `,
+    }),
+    async (root) => {
+      const snapshot = await buildSnapshot({ root });
+      assert.deepEqual(snapshot.undefinedStaticTranslationCallFindings.map((finding) => finding.key), ["whatNeedsMe.decisionCount"]);
+      assert.equal(snapshot.keys["whatNeedsMe.decisionCount.one"].usageCount, 0);
+      assert.equal(snapshot.keys["whatNeedsMe.decisionCount.other"].usageCount, 0);
+    },
+  );
+});
+
+test("snapshot requires a count option before accepting underscore plural variants", async () => {
+  await withFixture(
+    baseFiles({
+      en: { "items_one": "One item", "items_other": "Many items" },
+      zh: { "items_one": "一项", "items_other": "多项" },
+      source: `
+        import { useTranslation } from "react-i18next";
+        export function ItemCount() {
+          const { t } = useTranslation();
+          return [t("items"), t("items", { count: 2 })];
+        }
+      `,
+    }),
+    async (root) => {
+      const snapshot = await buildSnapshot({ root });
+      assert.deepEqual(snapshot.undefinedStaticTranslationCallFindings.map((finding) => finding.key), ["items"]);
+      assert.equal(snapshot.keys.items_one.usageCount, 2);
+      assert.equal(snapshot.keys.items_other.usageCount, 2);
+    },
+  );
+});
+
 test("snapshot classifies imported translation bindings, aliases, and rejects unrelated or shadowed t calls", async () => {
   await withFixture(
     baseFiles({
@@ -249,13 +299,24 @@ test("snapshot honors explicit common and translation namespace selectors withou
           import { useTranslation } from "react-i18next";
           export function App(namespace: string) {
             const { t: translationT } = useTranslation("translation");
+            const { t: defaultT } = useTranslation(undefined, { useSuspense: false });
             const { t: dynamicT } = useTranslation(namespace);
             return [
               translationT("app.noCompanies.title"),
+              defaultT("common.ok"),
               i18n.t("app.noCompanies.title", { ns: "translation" }),
               i18n.t("app.unknown", { ns: namespace }),
               dynamicT("app.dynamic"),
             ];
+          }
+          export function ParameterShadow(undefined: string) {
+            const { t } = useTranslation(undefined);
+            return t("app.parameter-shadow");
+          }
+          export function LaterDeclaration() {
+            const { t } = useTranslation(undefined);
+            const undefined = "translation";
+            return t("app.later-shadow");
           }
         `,
       }),
@@ -265,8 +326,8 @@ test("snapshot honors explicit common and translation namespace selectors withou
     async (root) => {
       const snapshot = await buildSnapshot({ root });
       assert.equal(snapshot.undefinedStaticTranslationCallFindings.length, 0);
-      assert.equal(snapshot.unresolvedTranslationCallWarnings.length, 2);
-      assert.deepEqual(snapshot.unresolvedTranslationCallWarnings.map((warning) => warning.namespace), ["namespace", "namespace"]);
+      assert.equal(snapshot.unresolvedTranslationCallWarnings.length, 4);
+      assert.deepEqual(snapshot.unresolvedTranslationCallWarnings.map((warning) => warning.namespace), ["namespace", "namespace", "undefined", "undefined"]);
     },
   );
 });
@@ -296,6 +357,27 @@ test("snapshot resolves only known relative i18n modules and honors nested local
       const snapshot = await buildSnapshot({ root });
       assert.equal(snapshot.undefinedStaticTranslationCallFindings.length, 0);
       assert.equal(snapshot.dynamicTranslationCallWarnings.length, 0);
+    },
+  );
+});
+
+test("snapshot tolerates omitted array binding elements while collecting lexical masks", async () => {
+  await withFixture(
+    baseFiles({
+      en: { "common.ok": "OK" },
+      zh: { "common.ok": "确定" },
+      source: `
+        import { translateInstant } from "@/i18n";
+        export function App() {
+          const [, , ignored] = ["a", "b", "c"];
+          return translateInstant("common.ok") + ignored;
+        }
+      `,
+    }),
+    async (root) => {
+      const snapshot = await buildSnapshot({ root });
+      assert.equal(snapshot.keys["common.ok"].usageCount, 1);
+      assert.equal(snapshot.undefinedStaticTranslationCallFindings.length, 0);
     },
   );
 });
