@@ -7166,12 +7166,13 @@ async function assertNoUnverifiedRuntimeServiceQuarantineForWorkspace(input: {
 }
 
 function waitForRuntimeServiceChildClose(record: RuntimeServiceRecord, serviceId: string): Promise<void> {
-  if (!record.childClosePromise) return Promise.resolve();
+  const childClosePromise = record.childClosePromise;
+  if (!childClosePromise) return Promise.resolve();
   return new Promise<void>((resolve, reject) => {
     const timer = setTimeout(() => {
       reject(stopUnverifiedError(serviceId));
     }, 2_000);
-    void record.childClosePromise.then(
+    void childClosePromise.then(
       () => {
         clearTimeout(timer);
         resolve();
@@ -7718,7 +7719,7 @@ async function ensureRuntimeServicesForRunInvocation(
 
       await assertNoUnverifiedRuntimeServiceQuarantine(input.db, {
         companyId: input.agent.companyId,
-        executionWorkspaceId: input.executionWorkspaceId,
+        executionWorkspaceId: input.executionWorkspaceId ?? null,
         projectWorkspaceId: input.workspace.workspaceId,
         reuseKey,
         scopeType,
@@ -7960,8 +7961,8 @@ async function startRuntimeServicesForWorkspaceControlUnlocked(
     }).reuseKey;
 
     await assertNoUnverifiedRuntimeServiceQuarantine(input.db, {
-      companyId: input.agent.companyId,
-      executionWorkspaceId: input.executionWorkspaceId,
+      companyId: input.actor.companyId,
+      executionWorkspaceId: input.executionWorkspaceId ?? null,
       projectWorkspaceId: input.workspace.workspaceId,
       reuseKey,
       scopeType,
@@ -8194,7 +8195,7 @@ async function startRuntimeServicesForWorkspaceControlInvocation(
         }).reuseKey;
         await assertNoUnverifiedRuntimeServiceQuarantine(input.db, {
           companyId: input.actor.companyId,
-          executionWorkspaceId: input.executionWorkspaceId,
+          executionWorkspaceId: input.executionWorkspaceId ?? null,
           projectWorkspaceId: input.workspace.workspaceId,
           reuseKey,
           scopeType,
