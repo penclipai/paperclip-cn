@@ -1,5 +1,5 @@
 import { afterEach, expect, it, vi } from "vitest";
-import { spawn, execFile } from "node:child_process";
+import { spawn, execFile, type ChildProcess } from "node:child_process";
 import { mkdtemp, mkdir, readFile, rm, writeFile, access } from "node:fs/promises";
 import { promisify } from "node:util";
 import type { CommandManagedRuntimeRunner } from "@penclipai/adapter-utils/command-managed-runtime";
@@ -11,7 +11,13 @@ import { createNativeGitHubAccess, type NativeGitHubAccess } from "./native-gith
 const scope = { companyId: "company-a", agentId: "agent-a", issueId: "task-a" };
 const run = (runId: string) => ({ ...scope, runId });
 const cleanups: (() => Promise<unknown>)[] = [];
-afterEach(async () => { for (const cleanup of cleanups.splice(0).reverse()) await cleanup(); });
+afterEach(async () => {
+  const errors: unknown[] = [];
+  for (const cleanup of cleanups.splice(0).reverse()) {
+    try { await cleanup(); } catch (error) { errors.push(error); }
+  }
+  if (errors.length > 0) throw new AggregateError(errors, "native GitHub fixture cleanup failed");
+});
 
 function shellQuote(value: string) {
   return `'${value.replace(/'/g, `"'"'`)}'`;
@@ -24,15 +30,35 @@ function toPosixFixturePath(value: string) {
     .replaceAll("\\", "/");
 }
 
+function toHostFixturePath(value: string) {
+  if (process.platform !== "win32") return value;
+  return value.replace(/^\/([A-Za-z])\//, (_match, drive: string) => `${drive.toUpperCase()}:\\`).replaceAll("/", "\\");
+}
+
 async function broker(resolveCredentials = vi.fn(async (binding: ReturnType<typeof run>) => ({
   status: "available", env: { GH_TOKEN: `fixture-${binding.runId}` },
 })), remote = false, bridgeUnavailable = false, onLog?: (stream: "stdout" | "stderr", chunk: string) => Promise<void>) {
   const root = await mkdtemp(path.join(tmpdir(), "native-github-reuse-"));
-  cleanups.push(() => rm(root, { recursive: true, force: true }));
   const bin = path.join(root, "real-bin");
   const remoteRoot = toPosixFixturePath(root);
   const remoteBin = toPosixFixturePath(bin);
   const nodeBin = toPosixFixturePath(path.dirname(process.execPath));
+  let bridgeChild: ChildProcess | null = null;
+  let bridgeClose: Promise<void> | null = null;
+  let bridgeSpawnError: Error | null = null;
+  let bridgeControl: { entrypoint: string; pidFile: string; readyFile: string } | null = null;
+  const stopOwnedBridge = async () => {
+    if (!bridgeChild || !bridgeClose) return;
+    if (bridgeChild.exitCode === null && bridgeChild.signalCode === null && !bridgeChild.kill()) {
+      throw new Error("fixture bridge child could not be stopped");
+    }
+    await bridgeClose;
+    if (bridgeSpawnError) throw bridgeSpawnError;
+  };
+  cleanups.push(async () => {
+    await stopOwnedBridge();
+    await rm(root, { recursive: true, force: true });
+  });
   await mkdir(bin);
   const ghSource = "process.stdout.write(process.env.GH_TOKEN || 'anonymous');\n";
   if (process.platform === "win32") {
@@ -56,12 +82,59 @@ async function broker(resolveCredentials = vi.fn(async (binding: ReturnType<type
       typeof value === "string" && process.platform === "win32" ? value.replace(root, remoteRoot).replaceAll("\\", "/") : value,
     ]));
     const prepared = prepareTestPosixShell({ command, args, env: { ...process.env, ...remoteEnv, PATH: remote ? fixturePath : remoteEnv.PATH } });
-    const child = promisify(execFile)(prepared.command, prepared.args, {
-      cwd: input.cwd ?? root, env: prepared.env, timeout: 15_000, maxBuffer: 4 * 1024 * 1024,
-    });
-    child.child.stdin?.on("error", () => undefined);
-    child.child.stdin?.end(input.stdin ?? "");
-    const result = await child;
+    const executePrepared = async (preparedArgs = prepared.args) => {
+      const child = promisify(execFile)(prepared.command, preparedArgs, {
+        cwd: input.cwd ?? root, env: prepared.env, timeout: 15_000, maxBuffer: 4 * 1024 * 1024,
+      });
+      child.child.stdin?.on("error", () => undefined);
+      child.child.stdin?.end(input.stdin ?? "");
+      return await child;
+    };
+    const script = args?.find(argument => argument.includes("paperclip-bridge-server.mjs"));
+    const stopScript = prepared.args.find(argument => argument.includes('kill "$pid"'));
+    const bridgeChannel = input.env?.PAPERCLIP_SANDBOX_EXEC_CHANNEL === "bridge";
+    const startMatch = script?.match(/nohup 'node' '([^']*\/paperclip-bridge-server\.mjs)'[\s\S]*\npid=\$!/);
+    const resetMatch = script?.match(/rm -f '([^']*\/ready\.json)' '([^']*\/server\.pid)'/);
+    if (remote && process.platform === "win32" && bridgeChannel && startMatch && resetMatch && !bridgeChild) {
+      const preparedArgs = prepared.args.map(argument => argument.includes("paperclip-bridge-server.mjs")
+        ? argument.replace(/^.*paperclip-bridge-server\.mjs.*$/m, ":").replace(/^pid=\$!$/m, "pid=0")
+        : argument);
+      const entrypoint = toHostFixturePath(startMatch[1]!);
+      const readyFile = toHostFixturePath(resetMatch[1]!);
+      const pidFile = toHostFixturePath(resetMatch[2]!);
+      const queueDir = path.dirname(readyFile);
+      const isWithinRoot = (candidate: string) => {
+        const relative = path.relative(root, candidate);
+        return relative.length > 0 && relative !== ".." && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative);
+      };
+      if (!isWithinRoot(entrypoint) || !isWithinRoot(readyFile) || !isWithinRoot(pidFile) ||
+          path.dirname(pidFile) !== queueDir || path.dirname(queueDir) !== path.dirname(path.dirname(entrypoint))) {
+        throw new Error("fixture bridge control paths escaped their generated runtime");
+      }
+      await executePrepared(preparedArgs);
+      bridgeControl = { entrypoint, readyFile, pidFile };
+      const nativeEnv = Object.fromEntries(Object.entries(input.env ?? {}).map(([key, value]) => [
+        key, typeof value === "string" ? value.replaceAll(remoteRoot, root) : value,
+      ]));
+      bridgeChild = spawn(process.execPath, [entrypoint], { cwd: root, env: { ...process.env, ...nativeEnv }, stdio: "ignore", windowsHide: true });
+      bridgeClose = new Promise<void>(resolve => {
+        bridgeChild!.once("close", () => resolve());
+        bridgeChild!.once("error", error => { bridgeSpawnError ??= error; });
+      });
+      await new Promise<void>((resolve, reject) => {
+        bridgeChild!.once("spawn", resolve);
+        bridgeChild!.once("error", reject);
+      });
+      await writeFile(pidFile, `${bridgeChild.pid}\n`);
+      return { stdout: `${JSON.stringify({ pid: bridgeChild.pid })}\n`, stderr: "", exitCode: 0, signal: null, timedOut: false, pid: null, startedAt };
+    }
+    const isOwnedBridgeStop = remote && process.platform === "win32" && bridgeChannel && bridgeControl && stopScript?.includes(`if [ -s '${toPosixFixturePath(bridgeControl.pidFile)}' ]; then`) && stopScript.includes(`rm -f '${toPosixFixturePath(bridgeControl.pidFile)}' '${toPosixFixturePath(bridgeControl.readyFile)}'`);
+    if (isOwnedBridgeStop) {
+      await stopOwnedBridge();
+      const result = await executePrepared(["-c", `rm -f ${shellQuote(toPosixFixturePath(bridgeControl.pidFile))} ${shellQuote(toPosixFixturePath(bridgeControl.readyFile))}`]);
+      return { ...result, exitCode: 0, signal: null, timedOut: false, pid: null, startedAt };
+    }
+    const result = await executePrepared();
     return { ...result, exitCode: 0, signal: null, timedOut: false, pid: null, startedAt };
   };
   const target = remote ? { kind: "remote" as const, transport: "sandbox" as const, providerKey: "test",
@@ -100,8 +173,14 @@ it.each([false, true])("keeps one live parent and its original launcher environm
     });
   `], { env: { ...process.env, ...b.parentEnv, PAPERCLIP_API_KEY: "stale-api-key",
     PAPERCLIP_FIXTURE_LAUNCHER: path.join(b.env.PAPERCLIP_GITHUB_LAUNCHER_DIR, "gh") }, stdio: ["pipe", "pipe", "pipe"] });
-  cleanups.push(async () => { const exited = new Promise<void>(resolve => parent.once("exit", () => resolve())); parent.kill(); await exited; });
+  const parentClose = new Promise<void>(resolve => parent.once("close", () => resolve()));
   const lines = createInterface({ input: parent.stdout });
+  cleanups.push(async () => {
+    parent.stdin.end();
+    if (parent.exitCode === null && parent.signalCode === null && !parent.kill()) throw new Error("fixture parent could not be stopped");
+    await parentClose;
+    lines.close();
+  });
   const operation = () => new Promise<{ pid: number; value: string; error?: string; stderr: string }>(resolve => {
     lines.once("line", line => resolve(JSON.parse(line))); parent.stdin.write("run\n");
   });
