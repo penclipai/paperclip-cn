@@ -10,7 +10,7 @@ export async function createTaskFromPromptThroughUi(input: {
   await page.goto(`/${encodeURIComponent(input.issuePrefix)}/issues`, { waitUntil: "domcontentloaded" });
   await page.getByRole("button", { name: "New Task", exact: true }).first().click();
   const dialog = page.getByRole("dialog").filter({ has: page.getByRole("heading", { name: "New task", exact: true }) });
-  await dialog.getByRole("textbox", { name: "editable markdown", exact: true }).fill(input.prompt);
+  await dialog.getByRole("textbox", { name: "Editable markdown", exact: true }).fill(input.prompt);
   const assignee = dialog.getByRole("button", { name: "Select assignee", exact: true });
   await assignee.click();
   await page.getByRole("searchbox", { name: "Search assignees", exact: true }).fill(input.agentName);

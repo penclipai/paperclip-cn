@@ -56,9 +56,8 @@ describe("embedded Postgres native runtime", () => {
   it("uses portable locale selection and preserves the child environment", () => {
     const source = fs.readFileSync(require.resolve("embedded-postgres"), "utf8");
 
-    expect(source).toContain("platform() === 'win32'");
-    expect(source).toContain("return 'C';");
-    expect(source).toContain("LC_MESSAGES: locale");
-    expect(source).toContain("process.env");
+    expect(source).toContain("const LC_MESSAGES_LOCALE = 'C';");
+    expect(source).toContain("LC_MESSAGES: LC_MESSAGES_LOCALE");
+    expect(source).toContain("globalThis.process.env");
   });
 });

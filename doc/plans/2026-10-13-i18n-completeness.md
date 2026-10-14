@@ -152,3 +152,28 @@ release-enabled names do not exist on npm. Preserve the mandatory gate. First
 publication needs the maintainer flow in `doc/PUBLISHING.md`; this repair does
 not publish packages or change release enrollment. Refresh all remote checks
 against the pushed repair commit before reporting its final CI state.
+
+At repair commit `0802fec630`, remote typecheck/release-registry, build, canary
+dry-run, Runner verification, and the previously failing native cleanup cases
+passed. A further repair pass addressed the remaining fixture contracts:
+
+- Match exact current editor/status accessible names, disambiguate the header
+  status control, and keep full English/Chinese placeholder matches. Dedicated
+  ports verified board/NUX (12), planning fixtures (2), Slack (1), AgentMail (2)
+  and the full signoff spec (5).
+- Correct the newly added AgentMail key link's English article and review only
+  that semantic entry. This key was absent from the 15,059-key baseline; no
+  original baseline mapping changed. Catalog/tool tests and token gates passed.
+- Load mocked document-route dependencies during suite setup. Two fresh runs
+  passed all six requests without counting cold module transformation as request
+  time or invoking real external-object persistence through a mock database.
+- Use an ordinary live-service fixture port outside the canonical managed
+  exposure range. An ephemeral port in that range correctly triggers reservation
+  recovery instead of adoption; the fixture now bounds retries and emits
+  readiness only after a non-reserved listener is live.
+- Align the DB native-runtime test with the selected patched PostgreSQL version's
+  C message locale and preserved child environment. The runtime test passed.
+
+The earlier signoff log contained a best-effort continuation-summary deadlock.
+Independent signoff runs instead reproduced the stale selector and then passed
+after its correction. No server lock-order change was made on that evidence.

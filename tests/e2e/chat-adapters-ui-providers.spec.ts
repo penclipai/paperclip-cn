@@ -731,7 +731,7 @@ test.describe.serial("native chat adapter UI", () => {
         new RegExp(`/${seed.prefix}/issues/issue-${provider.provider}$`),
       );
       mock.conversationState = "waiting";
-      await expect(page.getByText("waiting", { exact: true })).toBeVisible({
+      await expect(page.getByText("Waiting", { exact: true })).toBeVisible({
         timeout: 8_000,
       });
 

@@ -79,6 +79,8 @@ import {
 } from "../services/workspace-realization.ts";
 import {
   deriveViteHmrPort,
+  RUNTIME_EXPOSURE_APP_PORT_MAX,
+  RUNTIME_EXPOSURE_APP_PORT_MIN,
   type Environment,
   type EnvironmentLease,
 } from "@penclipai/shared";
@@ -9471,7 +9473,36 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
         process.execPath,
         [
           "-e",
-          "const server=require('node:http').createServer((_req,res)=>res.end('ok'));server.listen(0,'127.0.0.1',()=>process.stdout.write(String(server.address().port)+'\\n'));",
+          `
+            const http = require('node:http');
+            const [min, max] = process.argv.slice(1).map(Number);
+            let attempts = 0;
+            const fail = (error) => {
+              process.stderr.write(String(error) + '\\n');
+              process.exit(1);
+            };
+            const listen = () => {
+              const server = http.createServer((_req, res) => res.end('ok'));
+              server.once('error', fail);
+              server.listen(0, '127.0.0.1', () => {
+                const port = server.address().port;
+                // Exposure-range listeners intentionally trigger reservation
+                // drift recovery, rather than ordinary service adoption.
+                if (port >= min && port <= max) {
+                  server.close((error) => {
+                    if (error) return fail(error);
+                    if (++attempts >= 100) return fail(new Error('Could not allocate a live registry fixture port outside the runtime exposure range'));
+                    listen();
+                  });
+                  return;
+                }
+                process.stdout.write(String(port) + '\\n');
+              });
+            };
+            listen();
+          `,
+          String(RUNTIME_EXPOSURE_APP_PORT_MIN),
+          String(RUNTIME_EXPOSURE_APP_PORT_MAX),
         ],
         {
           cwd: workspaceRoot,

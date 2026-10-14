@@ -8212,7 +8212,7 @@
   "connectionUi.adoption.responsibleUserDefault": "Responsible user’s default. For you: {{connection}}. Other users use their own default.",
   "connectionUi.adoption.thisPool": "this pool",
   "connectionUi.adoption.usePool": "Use {{pool}}?",
-  "connectionUi.apiKey.getForProvider": "Get a {{provider}} API key ↗",
+  "connectionUi.apiKey.getForProvider": "Get an {{provider}} API key ↗",
   "connectionUi.apiKey.pasteForProvider": "Paste your {{provider}} API key",
   "connectionUi.browserUse.sharedCredential": "Shared credential {{index}}",
   "connectionUi.catalog.aggregator.accountsManaged": "Accounts managed in {{providers}}.",

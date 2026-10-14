@@ -546,9 +546,11 @@ async function createIssueWithPolicy(ctx: TestContext, title: string, stages?: u
 }
 
 async function expectIssueStatusVisible(page: Page) {
-  await expect(
-    page.getByRole("button", { name: localized.inReviewStatusButton }),
-  ).toBeVisible({ timeout: 10_000 });
+  const statusControl = page
+    .locator('button[data-slot="popover-trigger"]')
+    .filter({ hasText: localized.inReviewStatus });
+  await expect(statusControl).toHaveCount(1, { timeout: 10_000 });
+  await expect(statusControl).toHaveAttribute("aria-label", localized.inReviewStatusButton);
 }
 
 test.describe("Signoff execution policy", () => {

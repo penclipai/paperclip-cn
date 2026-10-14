@@ -65,7 +65,7 @@ async function setup(page: Page, request: APIRequestContext, classic: boolean) {
     ? page.getByTestId("issue-chat-composer")
     : page.locator(".paperclip-task-chat-composer");
   const editor = composer.getByRole("textbox", {
-    name: "editable markdown",
+    name: "Editable markdown",
     exact: true,
   });
   const send = classic

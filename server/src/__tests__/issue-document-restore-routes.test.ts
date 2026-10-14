@@ -1,6 +1,6 @@
 import express from "express";
 import request from "supertest";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 const issueId = "11111111-1111-4111-8111-111111111111";
 const companyId = "22222222-2222-4222-8222-222222222222";
@@ -44,6 +44,9 @@ const mockInstanceSettingsService = vi.hoisted(() => ({
 }));
 const mockRoutineService = vi.hoisted(() => ({
   syncRunStatusForIssue: vi.fn(async () => undefined),
+}));
+const mockExternalObjectsService = vi.hoisted(() => ({
+  syncDocumentSafely: vi.fn(async () => undefined),
 }));
 const mockIssueThreadInteractionService = vi.hoisted(() => ({
   expirePendingInteractionsForTerminalIssue: vi.fn(async () => []),
@@ -92,6 +95,10 @@ function registerModuleMocks() {
   vi.doMock("../services/documents.js", () => ({
     documentAnnotationService: () => ({ remapOpenThreadsForDocument: async () => [] }),
     documentService: () => mockDocumentsService,
+  }));
+
+  vi.doMock("../services/external-objects.js", () => ({
+    externalObjectService: () => mockExternalObjectsService,
   }));
 
   vi.doMock("../services/heartbeat.js", () => ({
@@ -171,6 +178,9 @@ function createRunContextDb(contextSnapshot: Record<string, unknown>) {
   };
 }
 
+let issueRoutes: typeof import("../routes/issues.js").issueRoutes;
+let errorHandler: typeof import("../middleware/index.js").errorHandler;
+
 async function createApp(
   actor: Express.Request["actor"] = {
     type: "board",
@@ -181,10 +191,6 @@ async function createApp(
   },
   db: unknown = {},
 ) {
-  const [{ issueRoutes }, { errorHandler }] = await Promise.all([
-    vi.importActual<typeof import("../routes/issues.js")>("../routes/issues.js"),
-    vi.importActual<typeof import("../middleware/index.js")>("../middleware/index.js"),
-  ]);
   const app = express();
   app.use(express.json());
   app.use((req, _res, next) => {
@@ -197,21 +203,15 @@ async function createApp(
 }
 
 describe("issue document revision routes", () => {
-  beforeEach(() => {
-    vi.resetModules();
-    vi.doUnmock("../services/access.js");
-    vi.doUnmock("../services/activity-log.js");
-    vi.doUnmock("../services/agents.js");
-    vi.doUnmock("../services/documents.js");
-    vi.doUnmock("../services/heartbeat.js");
-    vi.doUnmock("../services/routines.js");
-    vi.doUnmock("../services/index.js");
-    vi.doUnmock("../services/instance-settings.js");
-    vi.doUnmock("../services/issues.js");
-    vi.doUnmock("../routes/issues.js");
-    vi.doUnmock("../routes/authz.js");
-    vi.doUnmock("../middleware/index.js");
+  beforeAll(async () => {
     registerModuleMocks();
+    [{ issueRoutes }, { errorHandler }] = await Promise.all([
+      vi.importActual<typeof import("../routes/issues.js")>("../routes/issues.js"),
+      vi.importActual<typeof import("../middleware/index.js")>("../middleware/index.js"),
+    ]);
+  });
+
+  beforeEach(() => {
     vi.clearAllMocks();
     mockAccessService.decide.mockResolvedValue({
       allowed: true,

@@ -60,9 +60,9 @@
     "reviewedEnglishHash": "10025d711edb0ecfa9e39a0f1fe473085f2afdad3b3b7e4890c7a52c0ec58427"
   },
   "connectionUi.apiKey.getForProvider": {
-    "en": "Get a {{provider}} API key ↗",
+    "en": "Get an {{provider}} API key ↗",
     "zh-CN": "获取 {{provider}} API 密钥 ↗",
-    "reviewedEnglishHash": "8588d3c8afffb063dddf86f0e8f2f686b4c85684c737ed23dcc4918f82dbbd9d"
+    "reviewedEnglishHash": "207423fdb6fa66736ab3827ddac592d81d38f625bb9b341e20dd13938aa9a876"
   },
   "connectionUi.apiKey.pasteForProvider": {
     "en": "Paste your {{provider}} API key",

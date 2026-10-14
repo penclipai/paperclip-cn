@@ -96,7 +96,7 @@ test.describe("NUX Phase 4 visual QA", () => {
     // Composer renders once a company is selected. (Regression guard for the
     // Rules-of-Hooks crash that previously blanked this page — see PAP-50.)
     await expect(
-      page.getByPlaceholder("Ask anything about your organization..."),
+      page.getByPlaceholder(/^(Ask anything about your organization\.\.\.|询问有关组织的任何问题…)$/),
     ).toBeVisible({ timeout: 20_000 });
     await page.waitForTimeout(2_000); // let welcome bubble + suggestion chips stage in
     await page.screenshot({ path: shot("06-board-chat.png") });
