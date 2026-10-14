@@ -30,7 +30,7 @@ for (const classic of [false, true]) {
         title: "Review the paused composer", status: "backlog", assigneeAgentId: agent.id,
       } }));
       await page.goto(`/${company.issuePrefix}/issues/${task.identifier}`);
-      const editor = (classic ? page.getByTestId("issue-chat-composer") : page).getByRole("textbox", { name: "editable markdown" });
+      const editor = (classic ? page.getByTestId("issue-chat-composer") : page).getByRole("textbox", { name: "Editable markdown" });
       await editor.fill("Keep this draft until I resume.");
       await page.getByRole("button", { name: "More task actions", exact: true }).click();
       await page.getByRole("button", { name: "Pause work", exact: true }).click();

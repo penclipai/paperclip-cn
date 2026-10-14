@@ -32,7 +32,7 @@ async function createTask(page: Page, prefix: string, agentName: string, title: 
   await page.goto(`/${prefix}/issues`);
   await page.getByRole("navigation").getByRole("button", { name: "New Task", exact: true }).click();
   await page.getByPlaceholder("Task title").fill(title);
-  await page.getByRole("dialog").getByRole("textbox", { name: "editable markdown", exact: true }).fill(prompt);
+  await page.getByRole("dialog").getByRole("textbox", { name: "Editable markdown", exact: true }).fill(prompt);
   await page.getByRole("button", { name: "Assignee", exact: true }).click();
   await page.getByPlaceholder("Search assignees...").fill(agentName);
   await page.getByRole("button", { name: agentName, exact: true }).click();

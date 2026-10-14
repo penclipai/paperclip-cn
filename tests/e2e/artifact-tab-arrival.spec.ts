@@ -21,7 +21,7 @@ for (const mobile of [false, true]) {
     await page.addInitScript(() => localStorage.setItem("paperclip:panel-visible", "false"));
     await page.goto(`/${company.issuePrefix}/issues/${issue.identifier}?from=inbox&fromHref=%2Finbox%2Fmine`);
     await expect(page.getByRole("heading", { name: issue.title, exact: true })).toBeVisible();
-    const editor = page.getByTestId("task-chat-composer-input").getByRole("textbox", { name: "editable markdown" });
+    const editor = page.getByTestId("task-chat-composer-input").getByRole("textbox", { name: "Editable markdown" });
     await editor.fill("Keep my draft and focus");
     const updated = page.waitForResponse(async (response) => {
       if (response.request().method() !== "GET" || !/\/api\/issues\/[^/]+$/.test(new URL(response.url()).pathname)) return false;

@@ -121,7 +121,7 @@ test("new-task assignee, model, and project sheets scroll by touch and retain th
   }));
   await page.goto(`/${company.issuePrefix}/dashboard`);
   await page.getByRole("navigation", { name: "Mobile navigation" }).getByRole("button", { name: "New Task", exact: true }).tap();
-  const draft = page.getByRole("textbox", { name: "editable markdown" });
+  const draft = page.getByRole("textbox", { name: "Editable markdown" });
   await draft.fill("Keep this touch selection draft");
   const assigneeTrigger = page.getByRole("button", { name: "Select assignee", exact: true });
   const modelTrigger = page.getByRole("button", { name: "Select model and effort", exact: true });
@@ -221,7 +221,7 @@ test.describe("desktop picker scrolling", () => {
     }));
     await page.goto(`/${company.issuePrefix}/dashboard`);
     await page.getByRole("button", { name: "New Task", exact: true }).click();
-    const draft = page.getByRole("textbox", { name: "editable markdown" });
+    const draft = page.getByRole("textbox", { name: "Editable markdown" });
     await draft.fill("Keep this mouse wheel selection draft");
 
     const wheelToBottom = async (list: Locator) => {

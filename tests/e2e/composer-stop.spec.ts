@@ -269,7 +269,7 @@ for (const adapter of ["process", "paperclip_runner"] as const) {
       await page.goto(`/${company.issuePrefix}/issues/${parent.identifier}`);
       const stop = page.getByRole("button", { name: "Stop", exact: true });
       await expect(stop).toBeVisible({ timeout: 30_000 });
-      const editor = page.getByRole("textbox", { name: "editable markdown" });
+      const editor = page.getByRole("textbox", { name: "Editable markdown" });
       await editor.fill("Please check mobile too.");
       await expect(stop).toHaveCount(0);
       await page.getByRole("button", { name: "Send", exact: true }).click();

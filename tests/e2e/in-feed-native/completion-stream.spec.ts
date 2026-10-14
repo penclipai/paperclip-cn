@@ -81,7 +81,7 @@ test('a completion tool does not cut off a delayed final answer', async ({ page 
     await expect.poll(async () => (await api(`/companies/${company.id}/heartbeat-runs`))[0]?.status, { timeout: 60_000 }).toBe('succeeded');
     await expect(page.getByText('STREAM-42: The launch has two stages.', { exact: false }).first()).toBeVisible();
     await expect(page.getByRole('link', { name: 'https://example.invalid/launch/STREAM-42', exact: true }).first()).toBeVisible();
-    await expect(page.getByRole('textbox', { name: 'editable markdown', exact: true })).toBeEditable();
+    await expect(page.getByRole('textbox', { name: 'Editable markdown', exact: true })).toBeEditable();
     await page.reload();
     await expect(page.getByText('STREAM-42: The launch has two stages.', { exact: false }).first()).toBeVisible();
     const runs = await api(`/companies/${company.id}/heartbeat-runs`);

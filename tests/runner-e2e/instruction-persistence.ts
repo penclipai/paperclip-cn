@@ -156,7 +156,7 @@ export async function runInstructionPersistenceFlow(input: {
   await page.goto(instructionsUrl);
   await page.getByText("AGENTS.md", { exact: true }).first().click();
   await page.getByRole("group", { name: "Instruction file view" }).getByRole("button", { name: "edit", exact: true }).click();
-  const entryEditor = page.getByRole("textbox", { name: "editable markdown" });
+  const entryEditor = page.getByRole("textbox", { name: "Editable markdown" });
   await entryEditor.click();
   await entryEditor.press("ControlOrMeta+End");
   await entryEditor.press("Enter");

@@ -97,7 +97,7 @@ for (const action of ["task_retry", "thread_retry", "inbox_retry", "message", "q
       } else if (action === "automatic_message") {
         // No Retry, duplicate message, or status change: the saved input runs.
       } else if (action === "message") {
-        await page.getByRole("textbox", { name: "editable markdown" }).fill("Please continue the pending follow-up.");
+        await page.getByRole("textbox", { name: "Editable markdown" }).fill("Please continue the pending follow-up.");
         await page.getByRole("button", { name: "Send", exact: true }).click();
       } else if (action === "inbox_retry") {
         // Navigation can cancel the mutation before its request is sent.

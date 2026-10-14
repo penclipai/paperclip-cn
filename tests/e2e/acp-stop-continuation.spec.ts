@@ -35,7 +35,7 @@ for (const { unfinishedWrite, stopResponse } of [{ unfinishedWrite: false, stopR
       const [active] = await json(await request.get(`/api/issues/${issue.id}/live-runs`));
       expect(active).toBeTruthy();
       await page.goto(`/${company.issuePrefix}/issues/${issue.identifier}`);
-      const editor = page.getByRole("textbox", { name: "editable markdown" });
+      const editor = page.getByRole("textbox", { name: "Editable markdown" });
       await editor.fill("List my recent Drive files.");
       await page.getByRole("button", { name: "Send", exact: true }).click();
       await expect.poll(async () => JSON.stringify(await json(await request.get(`/api/issues/${issue.id}/queued-comments`))))

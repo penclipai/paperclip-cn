@@ -64,7 +64,7 @@ export async function createTaskThroughUi(input: {
   const titleInput = dialog.getByRole("textbox", { name: "Task title", exact: true });
   if (await titleInput.isVisible()) await titleInput.fill(input.title);
   else if (input.requireExplicitTitle) throw new Error("This title-preservation case requires a visible explicit title input");
-  await fillTaskPrompt(dialog.getByRole("textbox", { name: "editable markdown", exact: true }), input.prompt);
+  await fillTaskPrompt(dialog.getByRole("textbox", { name: "Editable markdown", exact: true }), input.prompt);
   if (input.workMode !== "standard") {
     await dialog.getByRole("button", { name: "Add to composer", exact: true }).click();
     await input.page.getByTestId(input.workMode === "planning" ? "composer-add-plan" : "composer-add-ask").click();

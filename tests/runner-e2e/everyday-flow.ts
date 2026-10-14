@@ -1142,7 +1142,7 @@ export async function runEverydayFlow(input: Input) {
         // Studio's skill selector identifies the resource. Headings inside the
         // authored document can differ from its canonical skill name.
         await expect(page.getByRole("combobox").filter({ hasText: "release-readiness-checklist" })).toBeVisible();
-        const editor = page.getByRole("textbox", { name: "editable markdown", exact: true });
+        const editor = page.getByRole("textbox", { name: "Editable markdown", exact: true });
         await editor.click();
         await editor.press("ControlOrMeta+End");
         await editor.press("Enter");

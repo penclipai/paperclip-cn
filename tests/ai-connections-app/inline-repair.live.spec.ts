@@ -55,7 +55,7 @@ test("repair the selected AI account inside the task and continue without anothe
     proof = comments.map((comment: {body: string}) => comment.body.match(/QA-IN-CARD-REPAIR-\d+: 1147/)?.[0]).filter(Boolean).at(-1);
     expect(proof).toBeTruthy();
   } else {
-  await page.getByRole("textbox", { name: "editable markdown" }).fill(`Inline repair acceptance: calculate 31 * 37. Post exactly ${proof}, then mark Done. This first attempt should block on my revoked default; I will reconnect it inside this task. Do not change configuration, create subtasks, or modify files.`);
+  await page.getByRole("textbox", { name: "Editable markdown" }).fill(`Inline repair acceptance: calculate 31 * 37. Post exactly ${proof}, then mark Done. This first attempt should block on my revoked default; I will reconnect it inside this task. Do not change configuration, create subtasks, or modify files.`);
   await page.getByRole("button", { name: "Send", exact: true }).click();
   }
   const fix = page.getByRole("button", { name: "Fix connection", exact: true });
