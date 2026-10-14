@@ -24,9 +24,9 @@
 // the read/write endpoints.
 
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import path, { join, resolve } from "node:path";
 import { createInterface } from "node:readline/promises";
 import { setTimeout as delay } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
@@ -145,7 +145,7 @@ export function buildPlaceholderFiles(packageName) {
     "release ships from CI. It intentionally contains no functionality.",
     "",
     "Real versions are published by the release workflow of",
-    "[paperclipai/paperclip](https://github.com/penclipai/paperclip-cn).",
+    "[penclipai/paperclip-cn](https://github.com/penclipai/paperclip-cn).",
     "",
   ].join("\n");
 
@@ -157,8 +157,56 @@ export function buildPlaceholderFiles(packageName) {
   };
 }
 
-function runNpm(args, options = {}) {
-  const result = spawnSync("npm", args, {
+function getEnvValue(env, name) {
+  if (env[name] !== undefined) return env[name];
+  const normalizedName = name.toLowerCase();
+  const matchingName = Object.keys(env).find((key) => key.toLowerCase() === normalizedName);
+  return matchingName ? env[matchingName] : undefined;
+}
+
+export function resolveNpmInvocation({
+  env = process.env,
+  platform = process.platform,
+  execPath = process.execPath,
+  exists = existsSync,
+} = {}) {
+  if (platform !== "win32") return { command: "npm", argsPrefix: [] };
+
+  const pathApi = path.win32;
+  const candidates = [];
+  const addCandidate = (candidate) => {
+    if (candidate && !candidates.includes(candidate)) candidates.push(candidate);
+  };
+  // Prefer the CLI bundled with the active Node runtime. npm_execpath may
+  // describe a parent shell rather than the runtime that launched this helper.
+  addCandidate(pathApi.join(pathApi.dirname(execPath), "node_modules", "npm", "bin", "npm-cli.js"));
+  const npmExecPath = getEnvValue(env, "npm_execpath")?.trim();
+  if (npmExecPath && pathApi.basename(npmExecPath).toLowerCase() === "npm-cli.js") {
+    addCandidate(npmExecPath);
+  }
+
+  const pathEntries = (getEnvValue(env, "PATH") ?? "")
+    .split(";")
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+  for (const entry of pathEntries) {
+    addCandidate(pathApi.join(entry, "node_modules", "npm", "bin", "npm-cli.js"));
+  }
+
+  const npmCli = candidates.find(exists);
+  if (npmCli) return { command: execPath, argsPrefix: [npmCli] };
+
+  throw new Error(
+    "npm executable not found. Install Node.js/npm or set npm_execpath to npm-cli.js before running this helper.",
+  );
+}
+
+export function runNpm(args, options = {}, {
+  spawn = spawnSync,
+  resolveInvocation = resolveNpmInvocation,
+} = {}) {
+  const invocation = resolveInvocation({ env: options.env ?? process.env });
+  const result = spawn(invocation.command, [...invocation.argsPrefix, ...args], {
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],
     ...options,
@@ -198,11 +246,15 @@ export function ensureNpmAuth() {
   throw new Error("npm whoami failed");
 }
 
-export function inspectNpmPackage(packageName) {
+export function inspectNpmPackage(packageName, {
+  spawn = spawnSync,
+  resolveInvocation = resolveNpmInvocation,
+} = {}) {
   // Deliberately quiet: for a fresh bootstrap the expected outcome is E404
   // ("the name is free"), and npm's error dump for that reads like a failure.
   // Output is only surfaced when the query fails for an unexpected reason.
-  const result = spawnSync("npm", ["view", packageName, "version", "--json"], {
+  const invocation = resolveInvocation();
+  const result = spawn(invocation.command, [...invocation.argsPrefix, "view", packageName, "version", "--json"], {
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],
   });
@@ -322,7 +374,7 @@ function printManualDeprecateFallback(packageName, deprecationNote) {
   );
 }
 
-function printNextSteps(packageName) {
+export function printNextSteps(packageName) {
   process.stdout.write(
     [
       "",
@@ -331,7 +383,7 @@ function printNextSteps(packageName) {
       "2. Go to Settings -> Trusted publishing",
       "3. Add repository penclipai/paperclip-cn",
       "4. Set workflow filename to release.yml",
-      "5. Optionally enable Settings -> Publishing access -> Require two-factor authentication and disallow tokens",
+      "5. Keep token publishing enabled and confirm the npm-canary and npm-stable environment tokens can publish this package",
       `6. Only then flip the package to "publishFromCi": true in scripts/release-package-manifest.json`,
       "",
     ].join("\n"),

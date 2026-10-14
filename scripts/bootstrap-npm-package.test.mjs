@@ -4,8 +4,12 @@ import test from "node:test";
 import {
   PLACEHOLDER_VERSION,
   buildPlaceholderFiles,
+  inspectNpmPackage,
   parseArgs,
+  printNextSteps,
   promptOtp,
+  resolveNpmInvocation,
+  runNpm,
   validatePackageName,
   waitForPackageVisible,
 } from "./bootstrap-npm-package.mjs";
@@ -72,6 +76,110 @@ test("buildPlaceholderFiles README explains the placeholder", () => {
   const files = buildPlaceholderFiles("@penclipai/adapter-kimi-local");
   assert.match(files["README.md"], /placeholder publish/);
   assert.match(files["README.md"], /release-bootstrap CI gate/);
+  assert.match(files["README.md"], /penclipai\/paperclip-cn/);
+});
+
+test("resolveNpmInvocation prefers the npm CLI beside the Windows Node executable", () => {
+  const nodeDir = "C:\\Program Files\\nodejs";
+  const npmCli = "C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js";
+  const shellNpmCli = "C:\\shell\\npm-cli.js";
+
+  assert.deepEqual(resolveNpmInvocation({
+    platform: "win32",
+    execPath: `${nodeDir}\\node.exe`,
+    env: { Path: nodeDir, npm_execpath: shellNpmCli },
+    exists: (candidate) => candidate === npmCli || candidate === shellNpmCli,
+  }), {
+    command: `${nodeDir}\\node.exe`,
+    argsPrefix: [npmCli],
+  });
+});
+
+test("resolveNpmInvocation fails clearly when Windows has no npm CLI", () => {
+  assert.throws(
+    () => resolveNpmInvocation({
+      platform: "win32",
+      execPath: "C:\\Program Files\\nodejs\\node.exe",
+      env: { Path: "C:\\empty" },
+      exists: () => false,
+    }),
+    /npm executable not found/,
+  );
+});
+
+test("runNpm preserves publish arguments, cwd, and environment through the Windows npm CLI", () => {
+  const invocation = {
+    command: "C:\\Program Files\\nodejs\\node.exe",
+    argsPrefix: ["C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js"],
+  };
+  const env = { PATH: "C:\\Program Files\\nodejs", npm_config_otp: "test-only" };
+  let call;
+
+  const result = runNpm(
+    ["deprecate", "@penclipai/example@0.0.0", "placeholder note with spaces"],
+    { cwd: "C:\\staging directory", env },
+    {
+      resolveInvocation: () => invocation,
+      spawn: (command, args, options) => {
+        call = { command, args, options };
+        return { status: 0, stdout: "", stderr: "" };
+      },
+    },
+  );
+
+  assert.equal(result.status, 0);
+  assert.deepEqual(call.command, invocation.command);
+  assert.deepEqual(call.args, [...invocation.argsPrefix, "deprecate", "@penclipai/example@0.0.0", "placeholder note with spaces"]);
+  assert.equal(call.options.cwd, "C:\\staging directory");
+  assert.equal(call.options.env, env);
+  assert.equal(call.options.env.npm_config_otp, "test-only");
+  assert.doesNotMatch(call.args.join("\u0000"), /test-only/);
+});
+
+test("resolveNpmInvocation keeps the Linux npm command", () => {
+  assert.deepEqual(resolveNpmInvocation({ platform: "linux" }), {
+    command: "npm",
+    argsPrefix: [],
+  });
+});
+
+test("inspectNpmPackage uses the resolved npm CLI and keeps expected E404 quiet", () => {
+  const invocation = {
+    command: "C:\\Program Files\\nodejs\\node.exe",
+    argsPrefix: ["C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js"],
+  };
+  let call;
+
+  const state = inspectNpmPackage("@penclipai/new-package", {
+    resolveInvocation: () => invocation,
+    spawn: (command, args, options) => {
+      call = { command, args, options };
+      return { status: 1, stdout: "", stderr: "npm error code E404" };
+    },
+  });
+
+  assert.deepEqual(state, { exists: false });
+  assert.deepEqual(call.command, invocation.command);
+  assert.deepEqual(call.args, [...invocation.argsPrefix, "view", "@penclipai/new-package", "version", "--json"]);
+  assert.deepEqual(call.options.stdio, ["ignore", "pipe", "pipe"]);
+});
+
+test("printNextSteps keeps CI token publishing enabled", () => {
+  let output = "";
+  const write = process.stdout.write;
+  process.stdout.write = (chunk) => {
+    output += chunk;
+    return true;
+  };
+  try {
+    printNextSteps("@penclipai/new-package");
+  } finally {
+    process.stdout.write = write;
+  }
+
+  assert.match(output, /Keep token publishing enabled/);
+  assert.match(output, /npm-canary and npm-stable environment tokens/);
+  assert.doesNotMatch(output, /disallow tokens/);
 });
 
 test("promptOtp re-prompts until a non-empty code is entered", async () => {
