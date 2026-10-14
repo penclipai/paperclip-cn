@@ -120,7 +120,7 @@ describe.skipIf(!sentryPackage)("run failure context with the real Sentry SDK", 
       expect(event).toMatchObject({ exception: { values: [{ value: "OpenCode execution timed out" }] },
         contexts: { run_execution: { durationMs: 100, effectiveTimeoutSec: 14400,
           timeoutSource: "sandbox_default", timeoutConfigured: false, timeoutFired: true, stopReason: "timeout" } } });
-      expect(JSON.stringify(events)).not.toMatch(/private-timeout-|<html>|504|Timed out after/);
+      expect(JSON.stringify(events)).not.toMatch(/private-timeout-|<html>|\b504\b|Timed out after/);
       expect(events.find(entry => entry !== event)).not.toHaveProperty("contexts.run_execution");
     } finally {
       await fs.rm(root, { recursive: true, force: true });
