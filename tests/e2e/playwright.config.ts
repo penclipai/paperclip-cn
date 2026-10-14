@@ -17,6 +17,21 @@ const PAPERCLIP_DECISION_SIGNING_SECRET =
 const PAPERCLIP_TOOL_ACTION_SIGNING_SECRET =
   process.env.PAPERCLIP_TOOL_ACTION_SIGNING_SECRET ?? "playwright-e2e-tool-action-signing-secret";
 const PLAYWRIGHT_CHANNEL = process.env.PAPERCLIP_PLAYWRIGHT_CHANNEL;
+// Most long-lived E2E journeys assert English accessible names that predate the
+// CN fork's zh-CN product default. Keep that legacy contract deterministic in
+// the disposable browser context; locale-specific specs set their intended
+// language explicitly before loading the app.
+const LEGACY_E2E_STORAGE_STATE = path.join(PAPERCLIP_HOME, "legacy-en-locale.json");
+fs.writeFileSync(
+  LEGACY_E2E_STORAGE_STATE,
+  JSON.stringify({
+    cookies: [],
+    origins: [{
+      origin: BASE_URL,
+      localStorage: [{ name: "paperclip.locale", value: "en" }],
+    }],
+  }),
+);
 
 process.env.PAPERCLIP_HOME = PAPERCLIP_HOME;
 process.env.PAPERCLIP_CONFIG = PAPERCLIP_CONFIG;
@@ -46,6 +61,7 @@ export default defineConfig({
   workers: 1,
   use: {
     baseURL: BASE_URL,
+    storageState: LEGACY_E2E_STORAGE_STATE,
     headless: true,
     screenshot: "only-on-failure",
     trace: "on-first-retry",

@@ -305,6 +305,13 @@ describe("registered run instruction copies", () => {
     await db.update(agentInstructionWorkingCopies).set({ nextAttemptAt: new Date(0) })
       .where(eq(agentInstructionWorkingCopies.runId, copy.runId));
     await copies.recoverStopped();
+    if (process.platform === "win32") {
+      // A historical direct-PID receipt cannot establish process-tree
+      // retirement on Windows. The internal owner must explicitly collect.
+      expect((await copies.list(companyId, agentId, board()))[0]).toMatchObject({ state: "pending_collection", content: null });
+      expect((await revisions.readCurrent(target(), board()))?.content).toBe(initial);
+      await copies.collectStopped({ companyId, runId: copy.runId });
+    }
     expect((await revisions.readCurrent(target(), board()))?.content).toBe("edit before controller restart");
   });
 

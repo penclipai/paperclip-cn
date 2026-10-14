@@ -129,7 +129,7 @@ describe("managed install store", () => {
   });
 
   it("uses the pinned Node for child tools even with an older node first on the service PATH", () => {
-    const entrypoint = path.join(paths.currentPath, "node_modules", "paperclipai", "dist", "index.js");
+    const entrypoint = path.join(paths.currentPath, "node_modules", "penclip", "dist", "index.js");
     fs.mkdirSync(path.dirname(entrypoint), { recursive: true });
     fs.writeFileSync(entrypoint, `console.log(require("node:child_process").execFileSync("node", ["-p", "process.execPath"], {encoding: "utf8"}).trim())`);
     const oldBin = path.join(root, "old-bin");

@@ -3127,8 +3127,6 @@ describe.skipIf(process.platform === "win32")("retained native cleanup activatio
     const preservedHomeFiles = [
       "sessions/rollout-exact-thread.jsonl",
       "state_5.sqlite",
-      "state_5.sqlite-wal",
-      "state_5.sqlite-shm",
       "traces/provider.log",
       "auth.json",
       "config.toml",
@@ -3761,6 +3759,11 @@ describe.skipIf(process.platform === "win32")("retained native cleanup activatio
           join(quarantine, "codex-home/config.toml"),
           "MUST-NOT-COPY",
         );
+        // The cleanup flow starts with a closed, durable provider home.
+        // Closing SQLite checkpoints and may remove its transient WAL/SHM
+        // sidecars, so capture the exact bytes only after that lifecycle step.
+        providerHomeDatabase?.close();
+        providerHomeDatabase = undefined;
         preservedHomeBytes = await Promise.all(
           preservedHomeFiles.map((file) =>
             readFile(join(quarantine, "codex-home", file)),

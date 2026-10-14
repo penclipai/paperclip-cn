@@ -31,8 +31,9 @@ describe("isolated Codex startup trust", () => {
           "inline-projects": `projects = {${root} = {label = "unchanged"}}\n`,
         }[kind]!;
         const managed = '# BEGIN PAPERCLIP MANAGED MCP\n[mcp_servers.fixture]\nurl = "https://example.invalid/old"\n# END PAPERCLIP MANAGED MCP\n';
+        const unrelated = 'created_at = 2026-09-09T15:35:18Z\nlabels = ["preserve", "array"]\n';
         const misleading = 'text = """\n[projects.fake]\ntrust_level = "untrusted"\n"""\n';
-        const original = (kind === "inline-projects" ? project + misleading : misleading + project) + managed;
+        const original = unrelated + (kind === "inline-projects" ? project + misleading : misleading + project) + managed;
         writeFileSync(join(home, "config.toml"), original);
         const expected = parse(original);
         expected.projects ??= {};
@@ -41,6 +42,7 @@ describe("isolated Codex startup trust", () => {
         trustCodexStartupRoot(home, cwd);
         const updated = readFileSync(join(home, "config.toml"), "utf8");
         expect(parse(updated)).toEqual(expected);
+        expect(updated).toContain(unrelated);
         expect(updated).toContain(managed);
         expect(updated).toContain(misleading);
         trustCodexStartupRoot(home, cwd);

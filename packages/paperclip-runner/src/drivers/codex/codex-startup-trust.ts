@@ -106,10 +106,12 @@ export function trustCodexStartupRoot(codexHome: string, cwd: string): void {
     project instanceof Date
   )
     throw new Error("codex_startup_trust_invalid_project");
-  config.projects = {
-    ...projects,
-    [root]: { ...project, trust_level: "trusted" },
-  };
+  // smol-toml parses TOML tables as null-prototype objects. Retain that
+  // representation when building the expected parsed config so strict
+  // candidate validation compares only the requested trust change.
+  config.projects = Object.assign(Object.create(null), projects, {
+    [root]: Object.assign(Object.create(null), project, { trust_level: "trusted" }),
+  });
   const updated = editTrust(source, root, config);
   if (updated === source) return;
   const temporary = resolve(codexHome, `config.toml.${randomUUID()}.tmp`);

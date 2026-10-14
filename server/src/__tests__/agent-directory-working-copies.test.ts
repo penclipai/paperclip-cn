@@ -233,6 +233,16 @@ describe("persistent agent directories", () => {
         // Make the deferred maintenance retry due after the new owner stop proof.
         await db.update(agentInstructionWorkingCopies).set({ nextAttemptAt: null }).where(eq(agentInstructionWorkingCopies.runId, secondId));
         await copies.recoverStopped();
+        if (process.platform === "win32") {
+          // A Windows direct-PID receipt cannot prove the process tree stopped.
+          // Restart recovery must leave these bytes pending until the owning
+          // collector explicitly confirms retirement.
+          expect(await copies.get(companyId, secondId)).toMatchObject({
+            state: "pending_collection", processStoppedAt: null,
+          });
+          expect(await fs.readFile(path.join(first.localRoot, "unsaved-memory.txt"), "utf8")).toBe("Keep failed retirement edits");
+          await copies.collectStopped({ companyId, runId: secondId });
+        }
       }
       expect(await copies.get(companyId, secondId)).toMatchObject({ state: "saved", receipt: { cleanupPending: false } });
       expect(await fs.readFile(path.join(root, "unsaved-memory.txt"), "utf8")).toBe("Keep failed retirement edits");

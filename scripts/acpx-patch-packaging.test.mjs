@@ -14,7 +14,7 @@ import {
 } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { delimiter, dirname, join } from "node:path";
+import { delimiter, join } from "node:path";
 import test from "node:test";
 import { createRequire } from "node:module";
 import { runInNewContext } from "node:vm";
@@ -116,9 +116,26 @@ const serverPackage = JSON.parse(
 const dbPackage = JSON.parse(
   await readFile(new URL("../packages/db/package.json", import.meta.url), "utf8"),
 );
+const cliPackage = JSON.parse(
+  await readFile(new URL("../cli/package.json", import.meta.url), "utf8"),
+);
 const releaseScript = await readFile(new URL("./release.sh", import.meta.url), "utf8");
 const releaseLib = await readFile(new URL("./release-lib.sh", import.meta.url), "utf8");
 const buildNpmScript = await readFile(new URL("./build-npm.sh", import.meta.url), "utf8");
+
+function packWithNpm(cwd) {
+  const args = ["pack", "--ignore-scripts", "--offline", "--json"];
+  const options = {
+    cwd,
+    encoding: "utf8",
+    timeout: 30_000,
+    env: { ...process.env, HOME: cwd, npm_config_cache: join(cwd, "cache"), npm_config_update_notifier: "false" },
+  };
+  if (process.platform === "win32") {
+    return JSON.parse(execFileSync(process.env.ComSpec?.trim() || "cmd.exe", ["/d", "/s", "/c", `npm.cmd ${args.join(" ")}`], options));
+  }
+  return JSON.parse(execFileSync("npm", args, options));
+}
 
 const acpxRuntimePatch = await readFile(
   new URL("../patches/acpx@0.13.1.patch", import.meta.url),
@@ -249,11 +266,7 @@ test("Linux-produced Claude bundles retain the SDK and install native packages f
   assert.equal(readFileSync(join(bridge, "package.json"), "utf8"), bridgeBefore);
   assert.deepEqual(stageBundledProviderOptionalDependencies(directory, staged, profiles), staged);
   writeFileSync(join(directory, "package.json"), JSON.stringify(staged));
-  const npmCli = join(dirname(process.execPath), "node_modules", "npm", "bin", "npm-cli.js");
-  const packs = JSON.parse(execFileSync(process.execPath, [npmCli, "pack", "--ignore-scripts", "--offline", "--json"], {
-    cwd: directory, encoding: "utf8", timeout: 30_000,
-    env: { ...process.env, HOME: directory, npm_config_cache: join(directory, "cache"), npm_config_update_notifier: "false" },
-  }));
+  const packs = packWithNpm(directory);
   const paths = packs[0].files.map(file => file.path);
   assert.ok(paths.some(path => path.endsWith("@anthropic-ai/claude-agent-sdk/sdk.mjs")));
   assert.equal(paths.some(path => /@anthropic-ai\/claude-agent-sdk-(?:linux|darwin|win32)-/.test(path)), false);
@@ -310,11 +323,7 @@ test("Codex bundles retain pinned JavaScript and delegate official consumer plat
   assert.equal(readFileSync(join(runtime, "bin/codex.js"), "utf8"), "// official JavaScript fixture, never executed\n");
   assert.deepEqual(stageBundledProviderOptionalDependencies(directory, staged, profiles), staged);
   writeFileSync(join(directory, "package.json"), JSON.stringify(staged));
-  const npmCli = join(dirname(process.execPath), "node_modules", "npm", "bin", "npm-cli.js");
-  const packs = JSON.parse(execFileSync(process.execPath, [npmCli, "pack", "--ignore-scripts", "--offline", "--json"], {
-    cwd: directory, encoding: "utf8", timeout: 30_000,
-    env: { ...process.env, HOME: directory, npm_config_cache: join(directory, "cache"), npm_config_update_notifier: "false" },
-  }));
+  const packs = packWithNpm(directory);
   const paths = packs[0].files.map(file => file.path);
   assert.ok(paths.some(path => path.endsWith("@openai/codex/bin/codex.js")), "The actual npm tarball retains its pinned JS runtime");
   assert.equal(paths.some(path => /@openai\/codex-(?:linux|darwin|win32)-|@openai\/codex\/vendor\//.test(path)), false,
@@ -434,7 +443,19 @@ test("published packages preserve the patched embedded-postgres runtime", () => 
     rootPackage.pnpm.patchedDependencies["embedded-postgres@18.1.0-beta.16"],
     "patches/embedded-postgres@18.1.0-beta.16.patch",
   );
+  for (const pkg of [cliPackage, dbPackage, serverPackage]) {
+    assert.equal(
+      pkg.dependencies["embedded-postgres"],
+      "^18.1.0-beta.16",
+      `${pkg.name} must install the version covered by the repository patch`,
+    );
+  }
   assert.deepEqual(dbPackage.bundleDependencies, ["embedded-postgres"]);
+  assert.deepEqual(
+    createBundledInstallManifest(materializePublishManifest(dbPackage), dbPackage.bundleDependencies).dependencies,
+    { "embedded-postgres": "^18.1.0-beta.16" },
+    "the clean bundled-db install manifest must select the patched version",
+  );
   assert.equal(bundledCliNpmDependencies.has("embedded-postgres"), true);
   assert.equal(cliEsbuildConfig.external.includes("embedded-postgres"), false);
 });

@@ -539,7 +539,15 @@ describe("codex execute", () => {
       expect(result.errorMessage).toBeNull();
 
       const capture = JSON.parse(await fs.readFile(capturePath, "utf8")) as CapturePayload;
-      expect(capture.codexHome?.replace(/\//g, "\\")).toBe(path.join(remoteWorkspace, ".paperclip-runtime", "codex", "home"));
+      const posixPath = (value: string) => value.replace(/\\/g, "/");
+      expect(posixPath(capture.codexHome ?? "")).toBe(
+        path.posix.join(
+          posixPath(remoteWorkspace),
+          ".paperclip-runtime",
+          "codex",
+          "home",
+        ),
+      );
       expect(capture.paperclipApiUrl).toMatch(/^http:\/\/127\.0\.0\.1:\d+$/);
       expect(capture.paperclipApiKey).not.toBe("run-jwt-token");
       expect(capture.paperclipApiBridgeMode).toBe("queue_v1");

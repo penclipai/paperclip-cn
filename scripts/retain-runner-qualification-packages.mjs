@@ -5,7 +5,18 @@ import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { basename, join, resolve } from 'node:path';
+import { basename, dirname, join, resolve } from 'node:path';
+
+function resolveNpmInvocation() {
+  if (process.platform !== 'win32') return { command: 'npm', argsPrefix: [] };
+
+  const npmCli = [
+    join(dirname(process.execPath), 'node_modules', 'npm', 'bin', 'npm-cli.js'),
+    join(dirname(process.execPath), '..', 'lib', 'node_modules', 'npm', 'bin', 'npm-cli.js'),
+  ].find(existsSync);
+  assert.ok(npmCli, 'the active Node runtime must include the npm CLI');
+  return { command: process.execPath, argsPrefix: [npmCli] };
+}
 
 export function retainRunnerQualificationPackages({ repo, output, sourceRevision, releaseVersion, publicArchives, env = process.env }) {
   assert.match(sourceRevision, /^[a-f0-9]{40}$/);
@@ -28,7 +39,8 @@ export function retainRunnerQualificationPackages({ repo, output, sourceRevision
   };
   const pack = (directory, name, ignoreScripts) => {
     const previous = new Set(readdirSync(staging));
-    execFileSync('npm', ['pack', ...(ignoreScripts ? ['--ignore-scripts'] : []), '--pack-destination', staging], {
+    const npm = resolveNpmInvocation();
+    execFileSync(npm.command, [...npm.argsPrefix, 'pack', ...(ignoreScripts ? ['--ignore-scripts'] : []), '--pack-destination', staging], {
       cwd: directory, env: { ...env, npm_config_cache: join(staging, 'npm-cache'), npm_config_ignore_scripts: String(ignoreScripts) }, maxBuffer: 32 * 1024 * 1024,
     });
     const files = readdirSync(staging).filter(file => file.endsWith('.tgz') && !previous.has(file));
@@ -46,6 +58,7 @@ export function retainRunnerQualificationPackages({ repo, output, sourceRevision
     const pluginManifest = JSON.parse(readFileSync(join(repo, pluginRelative, 'package.json')));
     writeFileSync(join(plugin, 'package.json'), JSON.stringify({ ...pluginManifest, version: releaseVersion }));
     mkdirSync(join(staging, 'scripts'));
+    cpSync(join(repo, 'scripts/fs-ops.mjs'), join(staging, 'scripts/fs-ops.mjs'));
     cpSync(join(repo, 'scripts/generate-plugin-package-json.mjs'), join(staging, 'scripts/generate-plugin-package-json.mjs'));
     mkdirSync(join(staging, 'packages/plugins/sdk'), { recursive: true });
     const sdk = JSON.parse(readFileSync(join(repo, 'packages/plugins/sdk/package.json')));

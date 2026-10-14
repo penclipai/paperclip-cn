@@ -757,10 +757,16 @@ describeEmbeddedPostgres("companySkillService.list", () => {
       entry.path,
       createHash("sha256").update(entry.content).digest("hex"),
     ]));
-    expect(championHashes).toMatchObject({
-      "SKILL.md": "807189a496f61f041554f0d3c87805523f00b7cf5a75963f12b0e491aa636cdb",
-      "references/cases.md": "969844cb51feb5edd9f697f91e8c3f9158b2d02c4a1161baf8e95eb3134b6fd0",
-      "references/workflows.md": "124b56596d5185587ac2c72cdce92e7c61381745ed9109a1aa96bb7d2da77403",
+    // Freeze the logical text independently of Git's LF/CRLF checkout policy.
+    // Keep the raw hashes above for the byte-for-byte materialization check.
+    const canonicalChampionHashes = Object.fromEntries(champion.fileInventory.map((entry) => [
+      entry.path,
+      createHash("sha256").update(entry.content.replace(/\r\n/g, "\n")).digest("hex"),
+    ]));
+    expect(canonicalChampionHashes).toMatchObject({
+      "SKILL.md": "53ab290489684cbf116fdd1406a95f6b6f53c9c36358b1bf8bfeae481e253575",
+      "references/cases.md": "3b821f59064a7761091020a14819a8d787131f24029748563d6c0e1be7e6eaec",
+      "references/workflows.md": "69747bd6e05f7e3673d1e67b07ff295df1869c05e1fd029804d5fa9177db92cd",
     });
     expect(championHashes).not.toHaveProperty("EDITS.md");
 

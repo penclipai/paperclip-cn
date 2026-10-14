@@ -97,9 +97,9 @@ test('a pack that exits without producing exactly one tarball is a failure', asy
     if (name === 'package-0') { writeFileSync(join(destination, 'a.tgz'), ''); writeFileSync(join(destination, 'b.tgz'), ''); }
   `);
   const entries = entriesFor(root, ['@penclipai/server', '@penclipai/db']);
-  await assert.rejects(packStagedPackages(entries, { logDir: root, concurrency: 1, command }), /@paperclipai\/server pack produced 2 tarballs/);
+  await assert.rejects(packStagedPackages(entries, { logDir: root, concurrency: 1, command }), /@penclipai\/server pack produced 2 tarballs/);
   assert.deepEqual(readdirSync(root).filter(name => name.startsWith('pack-') && !name.endsWith('.log')), ['pack-0'], 'the second pack never started');
-  await assert.rejects(packStagedPackages([entries[1]], { logDir: root, concurrency: 1, command }), /@paperclipai\/db pack produced 0 tarballs/);
+  await assert.rejects(packStagedPackages([entries[1]], { logDir: root, concurrency: 1, command }), /@penclipai\/db pack produced 0 tarballs/);
 }));
 
 test('no entries resolve at once', async () => withScratch(async root => {

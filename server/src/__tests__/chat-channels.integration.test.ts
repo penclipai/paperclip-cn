@@ -4575,7 +4575,9 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         changes: { body: { from: "No mention" } },
       };
       await f.service.handleWebhook(f.endpoint.publicId, "github", signedGitHubWebhookRequest({ event, delivery: randomUUID(), payload, webhookSecret: f.webhookSecret }));
-      await expect.poll(async () => (await db.select().from(chatConversations).where(eq(chatConversations.endpointId, f.endpoint.id))).length).toBe(1);
+      // Webhook acknowledgement precedes asynchronous admission, as in the
+      // signed mention cases above. Wait for that transaction to complete.
+      await expect.poll(async () => (await db.select().from(chatConversations).where(eq(chatConversations.endpointId, f.endpoint.id))).length, { timeout: 10_000 }).toBe(1);
       const deliveries = await db.select().from(chatDeliveries).where(eq(chatDeliveries.endpointId, f.endpoint.id));
       expect(deliveries).toEqual(expect.arrayContaining([
         expect.objectContaining({ eventKind: "message_updated" }),

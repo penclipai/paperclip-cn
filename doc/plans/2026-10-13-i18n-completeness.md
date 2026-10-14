@@ -111,3 +111,44 @@ technical identifiers, persisted values, and existing product behavior.
   canonical junction restored, with no manifest/lockfile/version changes.
   The package contains 446 top-level package roots, 9 bundled skills and 15
   bundled plugins; directory packaging is verification, not a published release.
+
+## Follow-up CI repair (2026-10-14)
+
+The later request authorizes pushing the selected branch and repairing GitHub
+checks. The localization commits were pushed to fork PR #164 at `a73bab344`.
+The first fresh CI run exposed additional Linux and fixture contract failures.
+
+- Align DB's embedded PostgreSQL manifest and lock importer with the existing
+  patched `18.1.0-beta.16` used by the server and CLI. A real isolated npm install
+  and frozen-lockfile install verified that version; no new dependency was added.
+- Preserve null prototypes when constructing expected Codex TOML tables.
+  Candidate validation keeps strict equality and preserves unrelated dates,
+  arrays, comments and configuration. Startup tests passed 9/9.
+- Include `fs-ops.mjs` in retained qualification staging, and invoke the Windows
+  npm CLI through Node. Retained-package tests passed on Windows and Linux.
+- Correct stale CN namespace assertions and platform-specific npm, CLI, sandbox
+  and repository-root fixtures. Keep frozen logical skill hashes independent of
+  checkout line endings while retaining raw byte materialization assertions.
+- Give asynchronous GitHub mention admission the existing bounded 10-second
+  transaction wait. Both exact lifecycle cases passed.
+- Keep Windows historical stop events non-authoritative in working-copy tests.
+  Explicit owner collection verifies durable save and cleanup after rejection.
+- Close fixture SQLite before capturing durable provider-home evidence; WAL/SHM
+  files removed by fixture checkpointing are not handed to reconciliation.
+  Native-session whole-file verification passed 612 tests with 70 Windows skips;
+  the Linux-only provider-home case requires Linux CI evidence.
+- Pin legacy English E2E journeys in disposable browser storage. The language
+  switcher runs an explicit Chinese journey and preserves the chosen language
+  after reload. A Windows recovery fixture uses `agentArgv`. Relevant browser
+  specs passed 10 tests; debug logging and fixed sleeps were removed.
+- Fresh repo typecheck and build passed. The complete release-registry command's
+  19 Node test files passed 185 tests on official Linux Node 24.18.1 in WSL.
+  Its archive SHA-256 was verified against Node's published checksum list.
+  Local evidence remains under `.omx/ci-repair-20261014/` and
+  `.omx/i18n-maintenance/verification/`.
+
+The npm bootstrap policy remains a separate registry-state blocker: nine
+release-enabled names do not exist on npm. Preserve the mandatory gate. First
+publication needs the maintainer flow in `doc/PUBLISHING.md`; this repair does
+not publish packages or change release enrollment. Refresh all remote checks
+against the pushed repair commit before reporting its final CI state.

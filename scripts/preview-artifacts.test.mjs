@@ -131,7 +131,7 @@ test("a visibility timeout identifies the missing package after both were submit
           : json({}, 404);
       },
       sleep: async () => {},
-    }), /not yet visible: @paperclipai\/shared\./);
+    }), /not yet visible: @penclipai\/shared\./);
     assert.deepEqual(submitted, ["shared", "db"]);
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });

@@ -3,7 +3,7 @@ import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import test from 'node:test';
 import { retainRunnerQualificationPackages } from '../retain-runner-qualification-packages.mjs';
 
@@ -21,6 +21,7 @@ test('retention preserves public archives and runs the normal plugin prepack wit
     const pluginManifest = json('packages/plugins/sandbox-providers/daytona/package.json', originalPlugin);
     put('packages/plugins/sandbox-providers/daytona/dist/index.js', 'export const retained = true;\n');
     json('packages/plugins/sdk/package.json', { name: '@penclipai/plugin-sdk', version: '0.3.1' });
+    put('scripts/fs-ops.mjs', readFileSync(new URL('../fs-ops.mjs', import.meta.url)));
     put('scripts/generate-plugin-package-json.mjs', readFileSync(new URL('../generate-plugin-package-json.mjs', import.meta.url)));
     json('packages/paperclip-runner/package.json', { name: '@penclipai/paperclip-runner', version: '0.0.0', private: true, files: ['dist'] });
     put('packages/paperclip-runner/dist/cli/eval-session.js', 'export const evaluation = true;\n');
@@ -29,10 +30,10 @@ test('retention preserves public archives and runs the normal plugin prepack wit
     const result = retainRunnerQualificationPackages({ repo: root, output, sourceRevision, releaseVersion, publicArchives });
     assert.equal(result.archives.length, 5);
     for (const archive of result.archives) assert.equal(createHash('sha256').update(readFileSync(join(output, archive.file))).digest('hex'), archive.sha256);
-    for (const archive of publicArchives) assert.deepEqual(readFileSync(join(output, archive.file.split('/').at(-1))), readFileSync(archive.file));
+    for (const archive of publicArchives) assert.deepEqual(readFileSync(join(output, basename(archive.file))), readFileSync(archive.file));
     const plugin = result.archives.find(a => a.name === '@penclipai/plugin-daytona');
     const packedManifest = JSON.parse(execFileSync('tar', ['-xOf', join(output, plugin.file), 'package/package.json']));
-    assert.equal(packedManifest.dependencies['@penclipai/plugin-sdk'], releaseVersion);
+    assert.equal(packedManifest.dependencies['@penclipai/plugin-sdk'], `npm:@penclipai/plugin-sdk@${releaseVersion}`);
     assert.equal(packedManifest.exports['.'].import, './dist/index.js');
     assert.equal(execFileSync('tar', ['-xOf', join(output, plugin.file), 'package/dist/index.js'], { encoding: 'utf8' }), 'export const retained = true;\n');
     assert.deepEqual(JSON.parse(readFileSync(pluginManifest)), originalPlugin);

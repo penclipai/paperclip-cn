@@ -19,8 +19,8 @@ async function createSkillDir(root: string, name: string) {
 }
 
 describe("claude local skill sync", () => {
-  const paperclipKey = "paperclipai/paperclip/paperclip";
-  const createAgentKey = "paperclipai/paperclip/paperclip-create-agent";
+  const paperclipKey = "penclipai/paperclip-cn/paperclip";
+  const createAgentKey = "penclipai/paperclip-cn/paperclip-create-agent";
   const cleanupDirs = new Set<string>();
 
   afterEach(async () => {
@@ -38,7 +38,7 @@ describe("claude local skill sync", () => {
 
     expect(snapshot.mode).toBe("ephemeral");
     expect(snapshot.supported).toBe(true);
-    expect(snapshot.desiredSkills).toEqual([paperclipKey, "paperclipai/paperclip/complain", "paperclipai/paperclip/suggestion-box"]);
+    expect(snapshot.desiredSkills).toEqual([paperclipKey, "penclipai/paperclip-cn/complain", "penclipai/paperclip-cn/suggestion-box"]);
     expect(snapshot.entries.find((entry) => entry.key === paperclipKey)?.state).toBe("configured");
     expect(snapshot.entries.find((entry) => entry.key === createAgentKey)?.state).toBe("available");
   });

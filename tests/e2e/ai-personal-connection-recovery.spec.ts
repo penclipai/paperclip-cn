@@ -24,7 +24,10 @@ test("a ready agent with a missing personal key offers Claude setup in chat and 
     await json(await request.patch(`/api/agents/${agent.id}`, { data: {
       adapterType: "claude_local",
       adapterConfig: { engine: "acp", cwd: root, stateDir: path.join(root, "state"),
-        agentCommand: `${JSON.stringify(process.execPath)} ${JSON.stringify(path.resolve("scripts/mcp-fixtures/servers/acp-stop-agent.mjs"))}`,
+        // ACPX intentionally rejects shell command strings on Windows. Use the
+        // structured launch form so this recovery journey exercises the same
+        // fixture on every supported platform.
+        agentArgv: [process.execPath, path.resolve("scripts/mcp-fixtures/servers/acp-stop-agent.mjs")],
         env: { ANTHROPIC_API_KEY: { type: "user_secret_ref", key: definition.key, version: "latest", required: true },
           PAPERCLIP_STOP_FIXTURE_ROOT: root } },
     } }));

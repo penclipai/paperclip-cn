@@ -8,6 +8,9 @@ import {
 
 test.use({
   locale: "zh-CN",
+  // This spec starts a Chinese journey independently of the shared English
+  // state and verifies that language choices survive reloads.
+  storageState: { cookies: [], origins: [] },
   viewport: { width: 1440, height: 1080 },
 });
 

@@ -11,7 +11,7 @@ import { stageCodexHomeForSync } from "../../../packages/adapters/codex-local/sr
 
 describe("default feedback skill delivery", () => {
   const cleanup: string[] = [];
-  const keys = ["paperclip", "complain", "suggestion-box"].map(name => `paperclipai/paperclip/${name}`);
+  const keys = ["paperclip", "complain", "suggestion-box"].map(name => `penclipai/paperclip-cn/${name}`);
   afterEach(async () => {
     vi.unstubAllEnvs();
     await Promise.all(cleanup.splice(0).map(root => rm(root, { recursive: true, force: true })));
