@@ -33,7 +33,7 @@ package-manager inputs, and verify with a frozen install.
 ## Trusted PR Workflow
 
 The CN PR caller pins
-`penclipai/paperclip-cn/.github/workflows/pr-trusted.yml@849cb762e82d87ba65f5747f6f0d91b4c0f0438e`.
+`penclipai/paperclip-cn/.github/workflows/pr-trusted.yml@7f3ba7f8a85e598e02f2240eefc10cc7951f5a61`.
 The AWS runner group `paperclip-public-pr` must allow that exact reference.
 The identity and shard tests compare the trusted workflow at that commit with
 `git show`; later working-tree edits cannot change the pinned workflow.
