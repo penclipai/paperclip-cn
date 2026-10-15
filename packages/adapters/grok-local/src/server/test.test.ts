@@ -5,6 +5,8 @@ const ensureCommandMock = vi.hoisted(() => vi.fn(async () => {}));
 const runProcessMock = vi.hoisted(() => vi.fn());
 const prepareRuntimeMock = vi.hoisted(() => vi.fn());
 const stageGrokHomeMock = vi.hoisted(() => vi.fn(async () => "/tmp/staged-grok-home"));
+const resolveManagedGrokHomeMock = vi.hoisted(() => vi.fn(() => "/managed/company-1/grok-home"));
+const grokHomeHasUsableAuthMock = vi.hoisted(() => vi.fn(async () => false));
 
 vi.mock("@penclipai/adapter-utils/execution-target", () => ({
   describeAdapterExecutionTarget: () => "local",
@@ -16,7 +18,11 @@ vi.mock("@penclipai/adapter-utils/execution-target", () => ({
   runAdapterExecutionTargetProcess: runProcessMock,
 }));
 
-vi.mock("./grok-home.js", () => ({ stageGrokHomeForSync: stageGrokHomeMock }));
+vi.mock("./grok-home.js", () => ({
+  stageGrokHomeForSync: stageGrokHomeMock,
+  resolveManagedGrokHomeDir: resolveManagedGrokHomeMock,
+  grokHomeHasUsableAuth: grokHomeHasUsableAuthMock,
+}));
 vi.mock("./grok-auth-copyback.js", () => ({ copyBackGrokAuth: vi.fn(async () => {}) }));
 
 import { existsSync } from "node:fs";
@@ -46,7 +52,14 @@ describe("grok_local testEnvironment", () => {
     ensureCommandMock.mockClear();
     runProcessMock.mockReset();
     prepareRuntimeMock.mockReset();
+    prepareRuntimeMock.mockResolvedValue({
+      assetDirs: { home: "/sandbox/assets/home" },
+      restoreWorkspace: async () => {},
+    });
     stageGrokHomeMock.mockClear();
+    resolveManagedGrokHomeMock.mockClear();
+    grokHomeHasUsableAuthMock.mockReset();
+    grokHomeHasUsableAuthMock.mockResolvedValue(false);
   });
 
   it("reports a healthy authenticated host with a working hello probe", async () => {
@@ -289,6 +302,109 @@ describe("grok_local testEnvironment", () => {
     // The staged home dir the runtime uploaded is what the probe must use.
     expect(runProcessMock.mock.calls[0]?.[4]).toMatchObject({ env: expect.objectContaining({ GROK_HOME: "/sandbox/assets/home" }) });
     expect(result.status).toBe("pass");
+  });
+
+  it("uses a usable company subscription home for both local probes", async () => {
+    grokHomeHasUsableAuthMock.mockResolvedValue(true);
+    runProcessMock
+      .mockResolvedValueOnce({ exitCode: 0, signal: null, timedOut: false, stdout: "You are logged in with grok.com.\n\nDefault model: grok-4\n\nAvailable models:\n  * grok-4", stderr: "" })
+      .mockResolvedValueOnce({ exitCode: 0, signal: null, timedOut: false, stdout: `${JSON.stringify({ type: "text", data: "hello" })}\n${JSON.stringify({ type: "end", stopReason: "EndTurn", sessionId: "s", requestId: "r" })}`, stderr: "" });
+
+    await testEnvironment({
+      companyId: "company-1",
+      adapterType: "grok_local",
+      config: { command: "grok", cwd: "/tmp/project" },
+    });
+
+    expect(resolveManagedGrokHomeMock).toHaveBeenCalledWith(process.env, "company-1");
+    expect(grokHomeHasUsableAuthMock).toHaveBeenCalledWith("/managed/company-1/grok-home");
+    expect(runProcessMock.mock.calls[0]?.[4].env.GROK_HOME).toBe("/managed/company-1/grok-home");
+    expect(runProcessMock.mock.calls[1]?.[4].env.GROK_HOME).toBe("/managed/company-1/grok-home");
+  });
+
+  it("preserves the host-login fallback when company subscription auth is missing", async () => {
+    runProcessMock
+      .mockResolvedValueOnce({ exitCode: 0, signal: null, timedOut: false, stdout: "You are logged in with grok.com.\n\nDefault model: grok-4\n\nAvailable models:\n  * grok-4", stderr: "" })
+      .mockResolvedValueOnce({ exitCode: 0, signal: null, timedOut: false, stdout: `${JSON.stringify({ type: "text", data: "hello" })}\n${JSON.stringify({ type: "end", stopReason: "EndTurn", sessionId: "s", requestId: "r" })}`, stderr: "" });
+
+    await testEnvironment({
+      companyId: "company-1",
+      adapterType: "grok_local",
+      config: { command: "grok", cwd: "/tmp/project" },
+    });
+
+    expect(runProcessMock.mock.calls[0]?.[4].env.GROK_HOME).toBeUndefined();
+    expect(runProcessMock.mock.calls[1]?.[4].env.GROK_HOME).toBeUndefined();
+    expect(stageGrokHomeMock).not.toHaveBeenCalled();
+  });
+
+  it("does not pin or stage a home for configured or inherited API-key diagnostics", async () => {
+    const previousApiKey = process.env.XAI_API_KEY;
+    try {
+      process.env.XAI_API_KEY = "inherited-test-key";
+      for (const configEnv of [{ XAI_API_KEY: "configured-test-key" }, {}]) {
+        runProcessMock.mockReset()
+          .mockResolvedValueOnce({ exitCode: 0, signal: null, timedOut: false, stdout: "You are logged in with grok.com.\n\nDefault model: grok-4\n\nAvailable models:\n  * grok-4", stderr: "" })
+          .mockResolvedValueOnce({ exitCode: 0, signal: null, timedOut: false, stdout: `${JSON.stringify({ type: "text", data: "hello" })}\n${JSON.stringify({ type: "end", stopReason: "EndTurn", sessionId: "s", requestId: "r" })}`, stderr: "" });
+
+        await testEnvironment({
+          companyId: "company-1",
+          adapterType: "grok_local",
+          config: { command: "grok", cwd: "/tmp/project", env: configEnv },
+        });
+
+        expect(runProcessMock.mock.calls[0]?.[4].env.GROK_HOME).toBeUndefined();
+      }
+      expect(grokHomeHasUsableAuthMock).not.toHaveBeenCalled();
+      expect(stageGrokHomeMock).not.toHaveBeenCalled();
+    } finally {
+      if (previousApiKey === undefined) delete process.env.XAI_API_KEY;
+      else process.env.XAI_API_KEY = previousApiKey;
+    }
+  });
+
+  it("treats an explicit empty API key as a subscription override", async () => {
+    const previousApiKey = process.env.XAI_API_KEY;
+    try {
+      process.env.XAI_API_KEY = "inherited-test-key";
+      grokHomeHasUsableAuthMock.mockResolvedValue(true);
+      runProcessMock
+        .mockResolvedValueOnce({ exitCode: 0, signal: null, timedOut: false, stdout: "You are logged in with grok.com.\n\nDefault model: grok-4\n\nAvailable models:\n  * grok-4", stderr: "" })
+        .mockResolvedValueOnce({ exitCode: 0, signal: null, timedOut: false, stdout: `${JSON.stringify({ type: "text", data: "hello" })}\n${JSON.stringify({ type: "end", stopReason: "EndTurn", sessionId: "s", requestId: "r" })}`, stderr: "" });
+
+      await testEnvironment({
+        companyId: "company-1",
+        adapterType: "grok_local",
+        config: { command: "grok", cwd: "/tmp/project", env: { XAI_API_KEY: "" } },
+      });
+
+      expect(runProcessMock.mock.calls[0]?.[4].env.GROK_HOME).toBe("/managed/company-1/grok-home");
+    } finally {
+      if (previousApiKey === undefined) delete process.env.XAI_API_KEY;
+      else process.env.XAI_API_KEY = previousApiKey;
+    }
+  });
+
+  it("stages an unmanaged remote subscription home through the runtime", async () => {
+    grokHomeHasUsableAuthMock.mockResolvedValue(true);
+    prepareRuntimeMock.mockResolvedValue({
+      assetDirs: { home: "/sandbox/assets/home" },
+      restoreWorkspace: async () => {},
+    });
+    runProcessMock
+      .mockResolvedValueOnce({ exitCode: 0, signal: null, timedOut: false, stdout: "You are logged in with grok.com.\n\nDefault model: grok-4\n\nAvailable models:\n  * grok-4", stderr: "" })
+      .mockResolvedValueOnce({ exitCode: 0, signal: null, timedOut: false, stdout: `${JSON.stringify({ type: "text", data: "hello" })}\n${JSON.stringify({ type: "end", stopReason: "EndTurn", sessionId: "s", requestId: "r" })}`, stderr: "" });
+
+    await testEnvironment({
+      companyId: "company-1",
+      adapterType: "grok_local",
+      config: { command: "grok", cwd: "/sandbox/workspace" },
+      executionTarget: { kind: "remote", transport: "sandbox" } as never,
+    });
+
+    expect(stageGrokHomeMock).toHaveBeenCalledWith("/managed/company-1/grok-home", expect.any(Object));
+    expect(prepareRuntimeMock).toHaveBeenCalledOnce();
+    expect(runProcessMock.mock.calls[0]?.[4].env.GROK_HOME).toBe("/sandbox/assets/home");
   });
 
   it("reports a failed runtime preparation as a check instead of crashing", async () => {

@@ -21,7 +21,11 @@ import {
 import { mkdtemp, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { stageGrokHomeForSync } from "./grok-home.js";
+import {
+  grokHomeHasUsableAuth,
+  resolveManagedGrokHomeDir,
+  stageGrokHomeForSync,
+} from "./grok-home.js";
 import { copyBackGrokAuth } from "./grok-auth-copyback.js";
 import { DEFAULT_GROK_LOCAL_MODEL } from "../index.js";
 import { parseGrokJsonl } from "./parse.js";
@@ -63,6 +67,11 @@ function normalizeEnv(input: unknown): Record<string, string> {
     if (typeof value === "string") env[key] = value;
   }
   return env;
+}
+
+function hasNonEmptyEnvValue(env: Record<string, string | undefined>, key: string): boolean {
+  const raw = env[key];
+  return typeof raw === "string" && raw.trim().length > 0;
 }
 
 const GROK_AUTH_REQUIRED_RE =
@@ -151,14 +160,29 @@ export async function testEnvironment(
   }
 
   const env = normalizeEnv(config.env);
+  const hostGrokHome = config.managedAiConnection
+    ? asString(env.GROK_HOME, "")
+    : resolveManagedGrokHomeDir(process.env, ctx.companyId);
+  // Match execute.ts: an explicit empty config value clears an inherited API
+  // key, which selects the company subscription credential instead.
+  const isGrokSubscriptionMode = !hasNonEmptyEnvValue(
+    config.managedAiConnection ? env : { ...process.env, ...env },
+    "XAI_API_KEY",
+  );
+  if (isGrokSubscriptionMode) {
+    const pinManagedHome =
+      targetIsRemote ||
+      Boolean(config.managedAiConnection) ||
+      (hostGrokHome.length > 0 && await grokHomeHasUsableAuth(hostGrokHome));
+    if (pinManagedHome) env.GROK_HOME = hostGrokHome;
+  }
   let stagedHome: string | undefined;
   let runtimeWorkspaceLocalDir: string | undefined;
   let restore: (() => Promise<void>) | undefined;
   try {
-    if (config.managedAiConnection && targetIsRemote) {
+    if (isGrokSubscriptionMode && targetIsRemote) {
       try {
-        const hostHome = env.GROK_HOME;
-        stagedHome = await stageGrokHomeForSync(hostHome, { runId });
+        stagedHome = await stageGrokHomeForSync(hostGrokHome, { runId });
         // `cwd` is the remote target path here, never a host directory, so the
         // runtime gets an empty host workspace to stage from and the remote
         // path separately — the same split codex-local and opencode-local
@@ -176,7 +200,7 @@ export async function testEnvironment(
           assets: [{ key: "home", localDir: stagedHome, followSymlinks: true,
             restore: async ({ assetDir, readFile }) => { await copyBackGrokAuth({
               readSandboxAuth: () => readFile(path.posix.join(assetDir, "auth.json")),
-              hostHomeDir: hostHome, log: () => {},
+              hostHomeDir: hostGrokHome, log: () => {},
             }); },
           }],
         });
