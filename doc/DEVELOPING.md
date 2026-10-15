@@ -2288,6 +2288,22 @@ starting the app or calling a provider. The Node tests cover interrupted turns,
 tool replies, and the fixture's completion contract. These tests are separate
 from Vitest and Playwright discovery.
 
+### Desktop deployment isolation
+
+`prepare-stage.mjs` copies the server's required workspace packages into
+`.stage/deploy-workspace` before it runs pnpm's production deployment. The copy
+includes workspace development references needed for pnpm resolution, but the
+final runtime still uses `deploy --prod`. Local agent state, dependencies,
+Rust targets, caches, and test reports do not enter the copy. Package ignore
+files remain available so pnpm can apply the package's normal publish rules.
+
+Keep the hoisted deploy and its temporary patch allowance inside that copy.
+Running pnpm 9's hoisted deploy against the live workspace can replace AI SDK
+dependency junctions with incomplete physical directories. An isolated linker
+is not a substitute for this boundary: its dependency links can be expanded by
+the NSIS archive and change the installed path lengths. After packaging, check
+the source dependency junctions and imports as well as the packaged runtime.
+
 ### Windows desktop installer extraction
 
 The NSIS installer keeps the default 7z archive. The bundled runtime has more

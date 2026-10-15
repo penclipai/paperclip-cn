@@ -15,6 +15,7 @@ import {
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { runNodeScript, runPnpm } from "./utils.mjs";
+import { createDetachedDeployWorkspace } from "./detached-deploy-workspace.mjs";
 import { checkCatalog } from "../../../scripts/i18n-catalog.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -22,6 +23,7 @@ const packageDir = path.resolve(__dirname, "..");
 const repoRoot = path.resolve(packageDir, "../..");
 const stageRootDir = path.resolve(packageDir, ".stage");
 const serverDeployDir = path.resolve(stageRootDir, "server-deploy");
+const detachedDeployWorkspaceDir = path.resolve(stageRootDir, "deploy-workspace");
 const serverDeployNodeModulesDir = path.resolve(serverDeployDir, "node_modules");
 const appRuntimeDir = path.resolve(stageRootDir, "app-runtime");
 const appRuntimeServerDir = path.resolve(appRuntimeDir, "server");
@@ -74,8 +76,8 @@ function writeJson(filePath, value) {
   renameSync(tempPath, filePath);
 }
 
-function withPnpm9DeployPatchAllowance(callback) {
-  const rootPackageJsonPath = path.resolve(repoRoot, "package.json");
+function withPnpm9DeployPatchAllowance(workspaceRoot, callback) {
+  const rootPackageJsonPath = path.resolve(workspaceRoot, "package.json");
   const originalContents = readFileSync(rootPackageJsonPath, "utf8");
   const rootPackageJson = JSON.parse(originalContents);
 
@@ -442,22 +444,28 @@ console.log("[desktop-stage] Creating staged packaged runtime...");
 rmSync(stageRootDir, { recursive: true, force: true });
 mkdirSync(stageRootDir, { recursive: true });
 
+const detachedDeployClosure = createDetachedDeployWorkspace({
+  repoRoot,
+  workspaceRoot: detachedDeployWorkspaceDir,
+});
+console.log(`[desktop-stage] Created detached deploy workspace with ${detachedDeployClosure.length} workspace packages.`);
+
 // pnpm 9's hoisted deploy copies bundled dependencies such as the patched
 // acpx package, but does not count them as applied patches. Scope the legacy
 // allowance to this deploy so normal workspace installs remain strict.
-withPnpm9DeployPatchAllowance(() =>
+withPnpm9DeployPatchAllowance(detachedDeployWorkspaceDir, () =>
   runPnpm(
     [
       "--config.node-linker=hoisted",
       "--dir",
-      repoRoot,
+      detachedDeployWorkspaceDir,
       "--filter",
       "@penclipai/server",
       "deploy",
       "--prod",
       serverDeployDir,
     ],
-    { cwd: repoRoot },
+    { cwd: detachedDeployWorkspaceDir },
   ),
 );
 
