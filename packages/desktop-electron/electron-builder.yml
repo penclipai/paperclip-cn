@@ -65,6 +65,7 @@ linux:
         - x64
 
 nsis:
+  include: assets/installer.nsh
   oneClick: false
   perMachine: false
   allowToChangeInstallationDirectory: true

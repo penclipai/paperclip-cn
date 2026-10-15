@@ -16,6 +16,7 @@
     "build:release": "node scripts/build.mjs --profile release",
     "typecheck": "tsc --noEmit",
     "test:run": "vitest run --config vitest.config.ts",
+    "test:nsis-temp": "node scripts/test-nsis-temp.mjs",
     "prepare:stage": "node scripts/prepare-stage.mjs",
     "audit:size": "node scripts/desktop-size-audit.mjs",
     "pack": "node scripts/dist.mjs --dir-only",

@@ -2294,14 +2294,37 @@ The NSIS installer keeps the default 7z archive. The bundled runtime has more
 than 65,535 archive entries; its ZIP alternative is ZIP64, which the current
 NSIS ZIP plugin rejects with `Error opening ZIP file`.
 
-Use a short temporary directory on the intended drive when installing or
-upgrading. Both 7z extraction and the old-version uninstall step add directories
-under `%TEMP%`, so deeply nested plugin dependencies can exceed Windows path
-limits even when the final installation path fits. For example, from PowerShell
-set `$env:TEMP` and `$env:TMP` to a dedicated short D: directory before launching
-the installer. This only changes the environment of that process and its
-children; do not move the user's global temporary directory or use C: as a
-workaround. Keep the installation directory short as well.
+The installer automatically handles long inherited temporary paths with
+`packages/desktop-electron/assets/installer.nsh`. Before electron-builder's
+mutex and UAC initialization, it creates an exclusive random short directory on
+the inherited TEMP drive and restarts the same installer with TEMP/TMP pointing
+there. The directory requires a local fixed drive with persistent Windows ACLs;
+its protected, inheritable permissions allow only its owner, administrators and
+SYSTEM. Extraction and the old-version uninstaller share the short environment.
+Before the installed application starts, the installer restores the original
+TEMP/TMP. The waiting parent forwards the child's exit code and removes only
+the directory it created. No global environment settings change.
+
+Keep the final installation path short as well. Network/removable temporary
+drives, unwritable drive roots, and inherited TEMP paths over 200 characters
+require a manually selected short local directory: the parent still needs to
+load NSIS's System plugin before restarting. These cases fail before payload
+installation with exit code 1603. From PowerShell, set `$env:TEMP` and `$env:TMP`
+to a dedicated short directory on the intended drive before launching the
+installer. Do not move temporary data from D: to C: as a workaround. Independent
+uninstallers retain electron-builder's default behavior; this hook covers new
+installations and the old-version uninstaller invoked during an upgrade.
+
+Run the small Windows NSIS regression probe before a full packaging run:
+
+```powershell
+pnpm --filter @penclipai/desktop-electron test:nsis-temp --makensis <cached-makensis.exe> --work-dir D:\desktop-nsis-qa
+```
+
+The probe compiles and executes the real hook, checks deep staging paths,
+preserves `/D` arguments containing spaces, and verifies exit-code propagation,
+TEMP/TMP restoration, cleanup, and the build-time uninstaller bypass. It keeps
+its evidence under the explicit work directory.
 
 Windows uses `normal` compression; record the actual installer size in the
 desktop size audit when comparing releases.
