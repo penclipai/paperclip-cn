@@ -348,6 +348,121 @@ jobs:
       - name: Validate dependency resolution
         run: pnpm install --resolution-only --ignore-scripts --no-frozen-lockfile
 
+  nsis_temp_regression:
+    name: Windows NSIS TEMP regression
+    needs: [gate]
+    # Run independently of the stacked-PR full-CI decision. This small probe
+    # exercises a shipped installer hook and has no release credentials.
+    if: ${{ always() && needs.gate.result == 'success' }}
+    runs-on: windows-latest
+    timeout-minutes: 15
+    env:
+      # GitHub-hosted Windows runners provide D:. Keep the tool cache, probe
+      # inputs, user profile and evidence together there so the regression
+      # reproduces the fork's D-drive packaging contract.
+      PAPERCLIP_NSIS_WORK_DIR: D:\paperclip-nsis-${{ github.run_id }}-${{ github.run_attempt }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Prepare D-drive NSIS test environment
+        shell: pwsh
+        run: |
+          $root = $env:PAPERCLIP_NSIS_WORK_DIR
+          if (-not (Test-Path -LiteralPath 'D:\')) {
+            throw 'windows-latest did not provide the required D: drive for the NSIS TEMP regression.'
+          }
+
+          @(
+            $root,
+            "$root\tmp",
+            "$root\profile",
+            "$root\local-app-data",
+            "$root\app-data",
+            "$root\npm-cache",
+            "$root\pnpm-store",
+            "$root\electron-cache",
+            "$root\electron-builder-cache",
+            "$root\evidence"
+          ) | ForEach-Object {
+            New-Item -ItemType Directory -Force -Path $_ | Out-Null
+          }
+
+          @(
+            "TEMP=$root\tmp",
+            "TMP=$root\tmp",
+            "TMPDIR=$root\tmp",
+            "HOME=$root\profile",
+            "USERPROFILE=$root\profile",
+            "LOCALAPPDATA=$root\local-app-data",
+            "APPDATA=$root\app-data",
+            "npm_config_cache=$root\npm-cache",
+            "ELECTRON_CACHE=$root\electron-cache",
+            "ELECTRON_BUILDER_CACHE=$root\electron-builder-cache"
+          ) | Add-Content -LiteralPath $env:GITHUB_ENV
+
+      - name: Setup Node.js for pnpm bootstrap
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+        env:
+          NPM_CONFIG_AUDIT: "false"
+          NPM_CONFIG_FUND: "false"
+          NPM_CONFIG_UPDATE_NOTIFIER: "false"
+        with:
+          version: 9.15.4
+          run_install: false
+
+      - name: Install desktop packaging dependencies
+        shell: pwsh
+        run: |
+          $store = "$env:PAPERCLIP_NSIS_WORK_DIR\pnpm-store"
+          pnpm install --filter @penclipai/desktop-electron --frozen-lockfile --ignore-scripts --store-dir $store
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host '::notice title=Lockfile::checked-in lockfile is stale for this merge tree; resolving it inline'
+            pnpm install --filter @penclipai/desktop-electron --resolution-only --ignore-scripts --no-frozen-lockfile --store-dir $store
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            pnpm install --filter @penclipai/desktop-electron --frozen-lockfile --ignore-scripts --store-dir $store
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
+
+      - name: Resolve electron-builder's pinned NSIS compiler
+        shell: pwsh
+        run: |
+          $resolution = Join-Path $env:PAPERCLIP_NSIS_WORK_DIR 'makensis.json'
+          node -e 'const fs = require("node:fs"); const path = require("node:path"); const electronBuilder = require.resolve("electron-builder", { paths: ["packages/desktop-electron"] }); const windowsToolset = require(require.resolve("app-builder-lib/out/toolsets/windows.js", { paths: [path.dirname(electronBuilder)] })); windowsToolset.getMakeNsisPath().then(({ path: makensis }) => fs.writeFileSync(process.argv[1], JSON.stringify({ makensis }), "utf8")).catch((error) => { console.error(error); process.exitCode = 1; });' $resolution
+
+          $makensis = (Get-Content -Raw -LiteralPath $resolution | ConvertFrom-Json).makensis
+          if (-not $makensis -or -not (Test-Path -LiteralPath $makensis -PathType Leaf)) {
+            throw "electron-builder did not resolve makensis: $makensis"
+          }
+          & $makensis /VERSION | Set-Content -LiteralPath (Join-Path $env:PAPERCLIP_NSIS_WORK_DIR 'makensis-version.txt')
+          "PAPERCLIP_MAKENSIS=$makensis" | Add-Content -LiteralPath $env:GITHUB_ENV
+
+      - name: Run NSIS TEMP regression probe
+        shell: pwsh
+        run: |
+          pnpm --filter @penclipai/desktop-electron run test:nsis-temp -- --makensis "$env:PAPERCLIP_MAKENSIS" --work-dir "$env:PAPERCLIP_NSIS_WORK_DIR\evidence"
+
+      - name: Upload NSIS TEMP evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: nsis-temp-regression-${{ github.run_id }}-${{ github.run_attempt }}
+          if-no-files-found: warn
+          path: |
+            ${{ env.PAPERCLIP_NSIS_WORK_DIR }}\evidence
+            ${{ env.PAPERCLIP_NSIS_WORK_DIR }}\makensis.json
+            ${{ env.PAPERCLIP_NSIS_WORK_DIR }}\makensis-version.txt
+          retention-days: 14
+
   typecheck_release_registry:
     name: Typecheck + Release Registry
     needs: [gate]
