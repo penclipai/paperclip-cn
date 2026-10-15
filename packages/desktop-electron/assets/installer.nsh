@@ -169,8 +169,18 @@ FunctionEnd
   ; before electron-builder's StartApp so the application never inherits a
   ; directory that the waiting parent will remove.
   ${If} $PaperclipTempRoot != ""
-    System::Call 'kernel32::SetEnvironmentVariableW(w "TEMP", w "$PaperclipOriginalTemp")'
-    System::Call 'kernel32::SetEnvironmentVariableW(w "TMP", w "$PaperclipOriginalTmp")'
+    ; Treat empty or absent inherited values as absent. Use a null pointer to
+    ; remove them instead of introducing an empty variable in the child.
+    ${If} $PaperclipOriginalTemp == ""
+      System::Call 'kernel32::SetEnvironmentVariableW(w "TEMP", p 0)'
+    ${Else}
+      System::Call 'kernel32::SetEnvironmentVariableW(w "TEMP", w "$PaperclipOriginalTemp")'
+    ${EndIf}
+    ${If} $PaperclipOriginalTmp == ""
+      System::Call 'kernel32::SetEnvironmentVariableW(w "TMP", p 0)'
+    ${Else}
+      System::Call 'kernel32::SetEnvironmentVariableW(w "TMP", w "$PaperclipOriginalTmp")'
+    ${EndIf}
     System::Call 'kernel32::SetEnvironmentVariableW(w "PAPERCLIP_NSIS_TEMP_ROOT", p 0)'
     System::Call 'kernel32::SetEnvironmentVariableW(w "PAPERCLIP_NSIS_ORIGINAL_TEMP", p 0)'
     System::Call 'kernel32::SetEnvironmentVariableW(w "PAPERCLIP_NSIS_ORIGINAL_TMP", p 0)'

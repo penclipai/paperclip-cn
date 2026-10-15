@@ -2320,6 +2320,8 @@ SYSTEM. Extraction and the old-version uninstaller share the short environment.
 Before the installed application starts, the installer restores the original
 TEMP/TMP. The waiting parent forwards the child's exit code and removes only
 the directory it created. No global environment settings change.
+Empty original values are restored as missing variables, rather than empty
+strings. Separate nonempty TEMP and TMP values are restored independently.
 
 Keep the final installation path short as well. Network/removable temporary
 drives, unwritable drive roots, and inherited TEMP paths over 200 characters
@@ -2330,6 +2332,11 @@ to a dedicated short directory on the intended drive before launching the
 installer. Do not move temporary data from D: to C: as a workaround. Independent
 uninstallers retain electron-builder's default behavior; this hook covers new
 installations and the old-version uninstaller invoked during an upgrade.
+In a controlled environment that must keep temporary files on one drive, run
+all-users installation from an elevated shell with explicit TEMP/TMP values.
+The stock UAC plug-in does not explicitly transfer the calling process's
+environment to its elevated instance. Passing the per-user checks does not
+prove the ordinary installer's UAC handoff respects that drive constraint.
 
 Run the small Windows NSIS regression probe before a full packaging run:
 
@@ -2340,7 +2347,14 @@ pnpm --filter @penclipai/desktop-electron test:nsis-temp --makensis <cached-make
 The probe compiles and executes the real hook, checks deep staging paths,
 preserves `/D` arguments containing spaces, and verifies exit-code propagation,
 TEMP/TMP restoration, cleanup, and the build-time uninstaller bypass. It keeps
-its evidence under the explicit work directory.
+its evidence under the explicit work directory. The default suite also tests
+14/200-character paths, the 201-character failure boundary, missing TMP, and
+empty TEMP with a native Windows path preflight. A controlled short child tests
+restoration when both original values are empty. Full startup combinations
+that lack a safe same-drive preflight are listed in `summary.skipped`; they are
+not counted as passed. The Windows PR job runs this same default suite and
+uploads its evidence. It does not replace full-payload installation, data
+retention, or interactive UAC checks.
 
 Windows uses `normal` compression; record the actual installer size in the
 desktop size audit when comparing releases.

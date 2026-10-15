@@ -11,4 +11,4 @@ permissions:
 jobs:
   ci:
     # Use an immutable fork commit for the reviewed CI definition.
-    uses: penclipai/paperclip-cn/.github/workflows/pr-trusted.yml@849cb762e82d87ba65f5747f6f0d91b4c0f0438e
+    uses: penclipai/paperclip-cn/.github/workflows/pr-trusted.yml@7f3ba7f8a85e598e02f2240eefc10cc7951f5a61
