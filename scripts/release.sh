@@ -311,14 +311,14 @@ fi
 VERIFY_ATTEMPTS="${NPM_PUBLISH_VERIFY_ATTEMPTS:-12}"
 VERIFY_DELAY_SECONDS="${NPM_PUBLISH_VERIFY_DELAY_SECONDS:-5}"
 
-release_info ""
-if [ "$dry_run" = true ]; then
-  release_info "==> Step 5/7: Previewing publish payloads (--dry-run)..."
-  # Previews are independent per package (each works in its own temp dir and
-  # never touches npm), so run them concurrently in batches. Serial previews
-  # took ~78s of every PR Canary Dry Run job (run 35036001734, 2026-09-15).
-  # The real publish path below stays strictly serial.
-  preview_logs_dir="$(mktemp -d "${TMPDIR:-/tmp}/paperclip-release-previews.XXXXXX")"
+preview_publish_payloads() {
+  local package_info="$1"
+  local preview_logs_dir preview_batch_size preview_failed pkg_dir pkg_name pkg_version preview_log publish_tool publish_dir command_log
+  local -a preview_pids preview_dirs preview_logs
+  # Most previews can share a batch. Hermes prepack reads workspace manifests
+  # while plugin previews temporarily rewrite their own manifests, so Hermes is
+  # deliberately isolated on both sides of its batch boundary.
+  preview_logs_dir="$(mktemp -d "${TMPDIR:-/tmp}/paperclip-release-previews.XXXXXX")" || return 1
   preview_batch_size=8
   preview_pids=()
   preview_dirs=()
@@ -326,8 +326,7 @@ if [ "$dry_run" = true ]; then
   preview_failed=false
 
   wait_for_preview_batch() {
-    # Guard the expansion: "${preview_pids[@]}" on an empty array trips
-    # `set -u` under bash < 4.4 (the macOS system bash).
+    local pid
     if [ "${#preview_pids[@]}" -eq 0 ]; then
       return 0
     fi
@@ -339,33 +338,50 @@ if [ "$dry_run" = true ]; then
     preview_pids=()
   }
 
-  while IFS=$'\t' read -r pkg_dir _pkg_name _pkg_version; do
+  while IFS=$'\t' read -r pkg_dir pkg_name pkg_version; do
     [ -z "$pkg_dir" ] && continue
+    if [ "$pkg_dir" = "packages/adapters/hermes" ]; then
+      wait_for_preview_batch
+    fi
     preview_log="$preview_logs_dir/$(printf '%03d' "${#preview_logs[@]}")-${pkg_dir//\//_}.log"
     preview_dirs+=("$pkg_dir")
     preview_logs+=("$preview_log")
     (
       set -euo pipefail
-      cd "$REPO_ROOT/$pkg_dir"
-      publish_tool="$(package_publish_tool)"
+      cd "$REPO_ROOT/$pkg_dir" || exit 1
+      publish_tool="$(package_publish_tool)" || exit 1
+      command_log="$(mktemp "${TMPDIR:-/tmp}/paperclip-release-preview-command.XXXXXX")" || exit 1
       if [ "$publish_tool" = "npm" ]; then
-        publish_dir="$(mktemp -d "${TMPDIR:-/tmp}/paperclip-release-package.XXXXXX")"
-        node "$REPO_ROOT/scripts/prepare-bundled-package.mjs" "$REPO_ROOT/$pkg_dir" "$publish_dir"
-        cd "$publish_dir"
-        run_bundled_npm_pack pack --pack-destination "$publish_dir" 2>&1 | tail -3
+        publish_dir="$(mktemp -d "${TMPDIR:-/tmp}/paperclip-release-package.XXXXXX")" || exit 1
+        if node "$REPO_ROOT/scripts/prepare-bundled-package.mjs" "$REPO_ROOT/$pkg_dir" "$publish_dir" >"$command_log" 2>&1 &&
+          cd "$publish_dir" &&
+          run_bundled_npm_pack pack --pack-destination "$publish_dir" >>"$command_log" 2>&1; then
+          tail -3 "$command_log"
+        else
+          cat "$command_log"
+          exit 1
+        fi
         rm -rf "$publish_dir"
       else
-        pnpm publish --dry-run --no-git-checks --tag "$DIST_TAG" 2>&1 | tail -3
+        if pnpm publish --dry-run --no-git-checks --tag "$DIST_TAG" >"$command_log" 2>&1; then
+          tail -3 "$command_log"
+        else
+          cat "$command_log"
+          exit 1
+        fi
       fi
+      rm -f "$command_log"
     ) > "$preview_log" 2>&1 &
     preview_pids+=($!)
-    if [ "$(( ${#preview_pids[@]} % preview_batch_size ))" -eq 0 ]; then
+    if [ "$pkg_dir" = "packages/adapters/hermes" ]; then
+      wait_for_preview_batch
+    elif [ "$(( ${#preview_pids[@]} % preview_batch_size ))" -eq 0 ]; then
       wait_for_preview_batch
     fi
-  done <<< "$VERSIONED_PACKAGE_INFO"
+  done <<< "$package_info"
   wait_for_preview_batch
 
-  preview_index=0
+  local preview_index=0
   for pkg_dir in "${preview_dirs[@]}"; do
     release_info "  --- $pkg_dir ---"
     cat "${preview_logs[$preview_index]}"
@@ -373,6 +389,14 @@ if [ "$dry_run" = true ]; then
   done
   rm -rf "$preview_logs_dir"
   if [ "$preview_failed" = true ]; then
+    return 1
+  fi
+}
+
+release_info ""
+if [ "$dry_run" = true ]; then
+  release_info "==> Step 5/7: Previewing publish payloads (--dry-run)..."
+  if ! preview_publish_payloads "$VERSIONED_PACKAGE_INFO"; then
     release_fail "one or more publish payload previews failed; see the package output above"
   fi
   release_info "  [dry-run] Would create git tag $tag_name on $CURRENT_SHA"

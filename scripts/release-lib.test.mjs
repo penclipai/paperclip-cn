@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -17,10 +17,19 @@ function shellQuote(value) {
   return `'${value.replace(/'/g, `'\\''`)}'`;
 }
 
+function toGitBashPath(value) {
+  const normalized = value.replace(/\\/g, "/");
+  const driveMatch = normalized.match(/^([A-Za-z]):\/(.*)$/);
+  return driveMatch ? `/${driveMatch[1].toLowerCase()}/${driveMatch[2]}` : normalized;
+}
+
 const bashToolPath = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin";
 const repoRoot = toBashPath(fileURLToPath(new URL("..", import.meta.url)).replace(/[\\/]$/, ""));
 const releaseWorkflow = readFileSync(new URL("../.github/workflows/release.yml", import.meta.url), "utf8")
   .replace(/\r\n/g, "\n");
+const releaseScript = readFileSync(new URL("./release.sh", import.meta.url), "utf8").replace(/\r\n/g, "\n");
+const previewFunction = releaseScript.match(/preview_publish_payloads\(\) \{[\s\S]*?\n\}\n\nrelease_info ""/)?.[0]
+  ?.replace(/\n\nrelease_info ""$/, "");
 
 function workflowVerifyBudget() {
   return {
@@ -425,4 +434,149 @@ test("every publish job budgets for build time and four delayed packages", () =>
     const timeoutMinutes = Number(body.match(/^    timeout-minutes: (\d+)$/m)?.[1]);
     assert.ok(timeoutMinutes * 60 > requiredSeconds, `${job} must leave time beyond build and polling`);
   }
+});
+
+test("dry-run preview isolates Hermes while retaining safe package parallelism and preserves complete failure output", { skip: process.platform === "win32" && !existsSync("C:\\Program Files\\Git\\bin\\bash.exe") }, () => {
+  assert.ok(previewFunction, "release.sh must expose the preview batch function for the behavior fixture");
+  const fixtureDir = mkdtempSync(join(tmpdir(), "paperclip-release-preview-"));
+  const binDir = join(fixtureDir, "bin");
+  const stateDir = join(fixtureDir, "state");
+  const tempDir = join(fixtureDir, "tmp");
+  for (const dir of [binDir, stateDir, tempDir]) mkdirSync(dir);
+  for (const dir of ["packages/one", "packages/two", "packages/adapters/hermes", "packages/three", "packages/fail", "packages/bundled", "packages/prepare-fail", "packages/tool-fail"]) mkdirSync(join(fixtureDir, dir), { recursive: true });
+  const calls = join(stateDir, "calls.log");
+  writeFileSync(calls, "");
+  writeExecutable(join(binDir, "pnpm"), `#!/usr/bin/env bash
+set -euo pipefail
+pkg="$(basename "$PWD")"
+printf '%s\n' "$pkg" >> "$FAKE_CALLS"
+touch "$FAKE_STATE/pnpm-called-$pkg"
+wait_for_file() {
+  local target="$1" deadline=$((SECONDS + 10))
+  while [ ! -f "$target" ]; do
+    if [ "$SECONDS" -ge "$deadline" ]; then echo "BARRIER_TIMEOUT:$pkg"; exit 90; fi
+    sleep 0.02
+  done
+}
+if [ "$pkg" = "hermes" ]; then
+  if [ "$FAKE_PHASE" = "unsafe" ]; then
+    wait_for_file "$FAKE_STATE/ready-one"
+    wait_for_file "$FAKE_STATE/ready-two"
+    if compgen -G "$FAKE_STATE/active-one" > /dev/null && compgen -G "$FAKE_STATE/active-two" > /dev/null; then
+      echo "HERMES_OVERLAPPED"
+      touch "$FAKE_STATE/release-ordinary"
+      exit 91
+    fi
+    echo "HERMES_BARRIER_BROKEN"
+    exit 93
+  fi
+  if compgen -G "$FAKE_STATE/active-*" > /dev/null; then echo "HERMES_OVERLAPPED"; exit 91; fi
+else
+  touch "$FAKE_STATE/active-$pkg"
+  trap 'rm -f "$FAKE_STATE/active-$pkg"' EXIT
+  if [ "$pkg" = "one" ] || [ "$pkg" = "two" ]; then
+    touch "$FAKE_STATE/ready-$pkg"
+    if [ "$FAKE_PHASE" = "unsafe" ]; then
+      wait_for_file "$FAKE_STATE/release-ordinary"
+    else
+      other=two; [ "$pkg" = "two" ] && other=one
+      wait_for_file "$FAKE_STATE/ready-$other"
+      touch "$FAKE_STATE/others-overlapped"
+    fi
+  fi
+fi
+if [ "$pkg" = "fail" ]; then
+  printf 'FAIL-FIRST-LINE\\nFAIL-SECOND-LINE\\nFAIL-THIRD-LINE\\nFAIL-FOURTH-LINE\\nFAIL-FIFTH-LINE\\n'
+  exit 47
+fi
+printf '%s line-1\\n%s line-2\\n%s line-3\\n%s line-4\\n%s line-5\\n' "$pkg" "$pkg" "$pkg" "$pkg" "$pkg"
+`);
+  writeExecutable(join(binDir, "node"), `#!/usr/bin/env bash
+set -euo pipefail
+case "$2" in
+  */packages/prepare-fail)
+    printf 'PREP-FIRST-LINE\\nPREP-SECOND-LINE\\nPREP-THIRD-LINE\\nPREP-FOURTH-LINE\\nPREP-FIFTH-LINE\\n'
+    exit 49
+    ;;
+esac
+mkdir -p "\${!#}"
+`);
+  const bash = process.platform === "win32" ? "C:\\Program Files\\Git\\bin\\bash.exe" : "bash";
+  const bashFixture = process.platform === "win32" ? toGitBashPath(fixtureDir) : fixtureDir;
+  const bashBin = process.platform === "win32" ? toGitBashPath(binDir) : binDir;
+  const bashState = process.platform === "win32" ? toGitBashPath(stateDir) : stateDir;
+  const bashTemp = process.platform === "win32" ? toGitBashPath(tempDir) : tempDir;
+  const bashCalls = process.platform === "win32" ? toGitBashPath(calls) : calls;
+  const packageInfo = "packages/one\tone\t1\npackages/two\ttwo\t1\npackages/adapters/hermes\thermes\t1\npackages/three\tthree\t1";
+  const script = `set -euo pipefail
+export REPO_ROOT=${shellQuote(bashFixture)} DIST_TAG=canary TMPDIR=${shellQuote(bashTemp)} PATH=${shellQuote(`${bashBin}:${bashToolPath}`)} FAKE_STATE=${shellQuote(bashState)} FAKE_CALLS=${shellQuote(bashCalls)}
+release_info() { printf '%s\\n' "$*"; }
+package_publish_tool() { case "$PWD" in */tool-fail) return 17 ;; */bundled|*/prepare-fail) printf 'npm\\n' ;; *) printf 'pnpm\\n' ;; esac; }
+run_bundled_npm_pack() { touch "$FAKE_STATE/bundle-pack-called"; printf 'BUNDLE-FIRST-LINE\\nBUNDLE-SECOND-LINE\\nBUNDLE-THIRD-LINE\\nBUNDLE-FOURTH-LINE\\nBUNDLE-FIFTH-LINE\\n'; return 48; }
+${previewFunction}
+unsafe_preview() {
+  local package_info="$1" pkg_dir _pkg_name _pkg_version failed=0
+  local -a pids=()
+  while IFS=$'\t' read -r pkg_dir _pkg_name _pkg_version; do
+    (
+      cd "$REPO_ROOT/$pkg_dir"
+      pnpm publish --dry-run --no-git-checks --tag "$DIST_TAG"
+    ) &
+    pids+=($!)
+  done <<< "$package_info"
+  for pid in "\${pids[@]}"; do wait "$pid" || failed=1; done
+  return "$failed"
+}
+set +e
+export FAKE_PHASE=unsafe
+unsafe_preview ${shellQuote(packageInfo)}
+unsafe_status=$?
+set -e
+printf 'UNSAFE_STATUS=%s\\n' "$unsafe_status"
+rm -f "$FAKE_STATE"/active-* "$FAKE_STATE"/ready-* "$FAKE_STATE/release-ordinary" "$FAKE_STATE/others-overlapped"
+export FAKE_PHASE=safe
+preview_publish_payloads ${shellQuote(packageInfo)}
+if preview_publish_payloads ${shellQuote("packages/missing\tmissing\t1")}; then missing_status=0; else missing_status=$?; fi
+if preview_publish_payloads ${shellQuote("packages/tool-fail\ttool-fail\t1")}; then tool_status=0; else tool_status=$?; fi
+set +e
+preview_publish_payloads ${shellQuote("packages/fail\tfail\t1")}
+failure_status=$?
+preview_publish_payloads ${shellQuote("packages/bundled\tbundled\t1")}
+bundle_failure_status=$?
+rm -f "$FAKE_STATE/bundle-pack-called"
+preview_publish_payloads ${shellQuote("packages/prepare-fail\tprepare-fail\t1")}
+prepare_failure_status=$?
+set -e
+printf 'FAILURE_STATUS=%s\\n' "$failure_status"
+printf 'BUNDLE_FAILURE_STATUS=%s\\n' "$bundle_failure_status"
+printf 'PREPARE_FAILURE_STATUS=%s\\n' "$prepare_failure_status"
+printf 'MISSING_STATUS=%s\\n' "$missing_status"
+printf 'TOOL_STATUS=%s\\n' "$tool_status"
+`;
+  let output = "";
+  try {
+    output = execFileSync(bash, ["-lc", script], { encoding: "utf8", cwd: fixtureDir, env: { ...process.env } });
+  } catch (error) {
+    output = `${error.stdout ?? ""}${error.stderr ?? ""}`;
+    assert.fail(output);
+  }
+  assert.ok(existsSync(join(stateDir, "others-overlapped")), output);
+  assert.match(output, /HERMES_OVERLAPPED/);
+  assert.match(output, /UNSAFE_STATUS=1/);
+  const safeOutput = output.split("UNSAFE_STATUS=1")[1] ?? "";
+  assert.doesNotMatch(safeOutput, /HERMES_OVERLAPPED|PACKAGE_OVERLAPPED_HERMES/);
+  assert.match(output, /hermes line-3\nhermes line-4\nhermes line-5/);
+  assert.doesNotMatch(output, /hermes line-1/);
+  assert.match(output, /FAIL-FIRST-LINE[\s\S]*FAIL-FIFTH-LINE/);
+  assert.match(output, /FAILURE_STATUS=1/);
+  assert.match(output, /BUNDLE-FIRST-LINE[\s\S]*BUNDLE-FIFTH-LINE/);
+  assert.match(output, /BUNDLE_FAILURE_STATUS=1/);
+  assert.match(output, /PREP-FIRST-LINE[\s\S]*PREP-FIFTH-LINE/);
+  assert.match(output, /PREPARE_FAILURE_STATUS=1/);
+  assert.match(output, /MISSING_STATUS=1/);
+  assert.match(output, /TOOL_STATUS=1/);
+  assert.equal(existsSync(join(stateDir, "bundle-pack-called")), false, "failed package preparation must not run npm pack");
+  assert.equal(existsSync(join(stateDir, "pnpm-called-tool-fail")), false, "failed tool resolution must not run pnpm");
+  assert.doesNotMatch(readFileSync(calls, "utf8"), /^missing$/m, "failed directory change must not run pnpm");
+  assert.doesNotMatch(readFileSync(calls, "utf8"), /npm/);
 });

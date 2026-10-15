@@ -65,3 +65,17 @@
 - 已明确请求并完成独立 AI 遥测隐私审查；没有剩余可证实的高/中风险隐私缺陷。它不代表
   人工或 Greptile 评审。PR 仍保持 draft，Greptile 5/5 门禁尚无证据。签名只完成就绪性研究，
   未购买证书、创建云资源、存入密钥、确定正式版本或发布 stable。
+- 后续常规构建暴露另一条链接污染路径：workspace preflight 递归发现桌面 `.stage` 中的
+  重复包，并把源码 workspace 链接改指向 staging，导致构建失败和开发服务停止。现已停止
+  在包根继续递归，只按 `pnpm-workspace.yaml` 的 packages block 和排除项识别包；使用
+  Node 内置 glob，排除规则优先。回归先红后绿，server typecheck 通过；独立核对与 pnpm
+  实际成员集合一致。标准 preflight 自动恢复源码链接，开发实例经 `pnpm dev:stop` / `pnpm dev`
+  恢复，健康检查、首页 HTTP 200 和原公司数据可见性通过，未重置原数据库。
+- `10671024` 的 Canary 曾失败；隔离副本复现 Hermes prepack 读取清单时与并发插件预览写入
+  清单竞争。发布预览现为 Hermes 前后排空批次，其他包保持并发；失败保留完整命令输出，
+  所有前置步骤显式传播失败。回归使用有界文件屏障，并覆盖条件调用时目录/工具解析失败、
+  prepare 失败不得继续 pack，未实际发布 npm 包。Bash/Node 语法和定向回归通过。
+- `b41814c0` 的真实 CI 已全部终结：53 项成功、4 项定义内跳过，无失败；包括 Windows NSIS
+  探针与 Canary Dry Run。该结果早于上述 preflight/预览修复，推送后仍需核查新提交的 CI。
+- 当前 UAC 请求仍待系统确认，不能替换它引用的安装器。D 盘剩余约 4 GiB，低于完整桌面
+  构建的 8 GiB 预检要求；此前拒绝的递归清理不绕过。重新打包与安装版 Grok 端到端仍待完成。
