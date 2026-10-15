@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { execFileSync } from "node:child_process";
 import { afterEach, describe, expect, it } from "vitest";
 import { createDetachedDeployWorkspace, resolveDeployWorkspaceClosure } from "../../scripts/detached-deploy-workspace.mjs";
 
@@ -18,6 +19,19 @@ function writeJson(root: string, relative: string, value: unknown) {
 afterEach(() => roots.splice(0).forEach((root) => fs.rmSync(root, { recursive: true, force: true })));
 
 describe("detached desktop deploy workspace", () => {
+  it("keeps root lifecycle scripts runnable inside the detached workspace", () => {
+    const source = fixtureRoot();
+    const detached = path.join(fixtureRoot(), "workspace");
+    writeJson(source, "package.json", { name: "root", scripts: { postinstall: "node scripts/postinstall.mjs" } });
+    writeJson(source, "server/package.json", { name: "@penclipai/server" });
+    fs.mkdirSync(path.join(source, "scripts"));
+    fs.writeFileSync(path.join(source, "scripts", "postinstall.mjs"), 'import fs from "node:fs"; fs.writeFileSync("postinstall-result", "detached");\n');
+    createDetachedDeployWorkspace({ repoRoot: source, workspaceRoot: detached });
+    execFileSync(process.execPath, [path.join(detached, "scripts", "postinstall.mjs")], { cwd: detached, stdio: "pipe" });
+    expect(fs.readFileSync(path.join(detached, "postinstall-result"), "utf8")).toBe("detached");
+    expect(fs.existsSync(path.join(source, "postinstall-result"))).toBe(false);
+  });
+
   it("copies the required workspace closure without local dependencies or agent state", () => {
     const source = fixtureRoot();
     const detached = path.join(fixtureRoot(), "workspace");

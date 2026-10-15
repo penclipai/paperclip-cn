@@ -2291,7 +2291,8 @@ from Vitest and Playwright discovery.
 ### Desktop deployment isolation
 
 `prepare-stage.mjs` copies the server's required workspace packages into
-`.stage/deploy-workspace` before it runs pnpm's production deployment. The copy
+`.stage/deploy-workspace` before it runs pnpm's production deployment. Root
+lifecycle scripts and patch inputs are copied with the manifests. The copy
 includes workspace development references needed for pnpm resolution, but the
 final runtime still uses `deploy --prod`. Local agent state, dependencies,
 Rust targets, caches, and test reports do not enter the copy. Package ignore

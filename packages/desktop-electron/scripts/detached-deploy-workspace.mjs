@@ -122,8 +122,12 @@ export function createDetachedDeployWorkspace({ repoRoot, workspaceRoot, entryPa
       cpSync(source, path.resolve(resolvedWorkspaceRoot, file), { force: true });
     }
   }
-  const patches = path.resolve(repoRoot, "patches");
-  if (existsSync(patches)) copyPackageDirectory(patches, path.resolve(resolvedWorkspaceRoot, "patches"));
+  // pnpm also runs the root's lifecycle hooks during deploy. Keep their local
+  // imports and patch inputs in the copy, so hooks cannot fall back to source.
+  for (const directory of ["scripts", "patches"]) {
+    const source = path.resolve(repoRoot, directory);
+    if (existsSync(source)) copyPackageDirectory(source, path.resolve(resolvedWorkspaceRoot, directory));
+  }
 
   const closure = resolveDeployWorkspaceClosure(repoRoot, entryPackageName);
   for (const { relativeDirectory } of closure) {
