@@ -1,15 +1,21 @@
-import { test, expect, type Page, type APIRequestContext } from "@playwright/test";
+import {
+  test,
+  expect,
+  type Page,
+  type APIRequestContext,
+} from "@playwright/test";
 
 /**
  * E2E: Multi-user implementation tests (local_trusted mode).
  *
  * Covers:
- *   1. Company member management API (list, update role, suspend)
- *   2. Human invite creation and acceptance API
- *   3. Company Settings UI — member list, role editing, invite creation
- *   4. Invite landing page UI
- *   5. Role-based access control (viewer read-only)
- *   6. Last-owner protection
+ *   1. Company-member and human-invite API contracts available to the
+ *      single local board identity.
+ *   2. Invite landing and agent-invite flows.
+ *
+ * Assertions that require distinct authenticated humans, member mutation, or
+ * viewer restrictions live in multi-user-authenticated.spec.ts. Last-active-
+ * owner service behavior is unit-tested in access-service.test.ts.
  */
 
 const BASE = process.env.PAPERCLIP_E2E_BASE_URL ?? "http://127.0.0.1:3104";
@@ -35,7 +41,7 @@ async function ensureBootstrapped(request: APIRequestContext): Promise<void> {
 /** Create a company via the onboarding wizard API shortcut. */
 async function createCompanyViaWizard(
   request: APIRequestContext,
-  name: string
+  name: string,
 ): Promise<{ companyId: string; agentId: string; prefix: string }> {
   await ensureBootstrapped(request);
 
@@ -45,7 +51,7 @@ async function createCompanyViaWizard(
   if (!createRes.ok()) {
     const errText = await createRes.text();
     throw new Error(
-      `Failed to create company (${createRes.status()}): ${errText}`
+      `Failed to create company (${createRes.status()}): ${errText}`,
     );
   }
   const company = await createRes.json();
@@ -60,7 +66,7 @@ async function createCompanyViaWizard(
         title: "CEO",
         adapterType: "claude_local",
       },
-    }
+    },
   );
   expect(agentRes.ok()).toBe(true);
   const agent = await agentRes.json();
@@ -76,17 +82,14 @@ async function createCompanyViaWizard(
 async function createHumanInvite(
   request: APIRequestContext,
   companyId: string,
-  role: string = "operator"
+  role: string = "operator",
 ): Promise<{ token: string; inviteUrl: string; inviteId: string }> {
-  const res = await request.post(
-    `${BASE}/api/companies/${companyId}/invites`,
-    {
-      data: {
-        allowedJoinTypes: "human",
-        humanRole: role,
-      },
-    }
-  );
+  const res = await request.post(`${BASE}/api/companies/${companyId}/invites`, {
+    data: {
+      allowedJoinTypes: "human",
+      humanRole: role,
+    },
+  });
   expect(res.ok()).toBe(true);
   const body = await res.json();
   return {
@@ -106,7 +109,7 @@ test.describe("Multi-user: API", () => {
   test.beforeAll(async ({ request }) => {
     const result = await createCompanyViaWizard(
       request,
-      `MU-API-${Date.now()}`
+      `MU-API-${Date.now()}`,
     );
     companyId = result.companyId;
   });
@@ -114,9 +117,7 @@ test.describe("Multi-user: API", () => {
   test("GET /companies/:id/members returns member list with access info", async ({
     request,
   }) => {
-    const res = await request.get(
-      `${BASE}/api/companies/${companyId}/members`
-    );
+    const res = await request.get(`${BASE}/api/companies/${companyId}/members`);
     expect(res.ok()).toBe(true);
     const body = await res.json();
 
@@ -138,7 +139,7 @@ test.describe("Multi-user: API", () => {
           allowedJoinTypes: "human",
           humanRole: "operator",
         },
-      }
+      },
     );
     expect(res.ok()).toBe(true);
     const body = await res.json();
@@ -170,7 +171,7 @@ test.describe("Multi-user: API", () => {
       `${BASE}/api/invites/${invite.token}/accept`,
       {
         data: { requestType: "human" },
-      }
+      },
     );
     expect(acceptRes.ok()).toBe(true);
     const body = await acceptRes.json();
@@ -187,7 +188,7 @@ test.describe("Multi-user: API", () => {
       `${BASE}/api/invites/${invite.token}/accept`,
       {
         data: { requestType: "agent", agentName: "Rogue" },
-      }
+      },
     );
     expect(acceptRes.ok()).toBe(false);
     expect(acceptRes.status()).toBe(400);
@@ -201,53 +202,12 @@ test.describe("Multi-user: API", () => {
         `${BASE}/api/companies/${companyId}/invites`,
         {
           data: { allowedJoinTypes: "human", humanRole: role },
-        }
+        },
       );
       expect(res.ok()).toBe(true);
       const body = await res.json();
       expect(body.token).toBeTruthy();
     }
-  });
-
-  test("PATCH /companies/:id/members/:memberId cannot remove last owner", async ({
-    request,
-  }) => {
-    // Create a fresh company for this test
-    const fresh = await createCompanyViaWizard(
-      request,
-      `MU-LastOwner-${Date.now()}`
-    );
-
-    // First promote the local-board member to owner
-    const membersRes = await request.get(
-      `${BASE}/api/companies/${fresh.companyId}/members`
-    );
-    const { members } = await membersRes.json();
-
-    // Find the board member (should be the only one)
-    const boardMember = members.find(
-      (m: { principalId: string }) => m.principalId === "local-board"
-    );
-    if (!boardMember) {
-      test.skip();
-      return;
-    }
-
-    // Promote to owner first
-    const promoteRes = await request.patch(
-      `${BASE}/api/companies/${fresh.companyId}/members/${boardMember.id}`,
-      { data: { membershipRole: "owner" } }
-    );
-    expect(promoteRes.ok()).toBe(true);
-
-    // Now try to demote the last (and only) owner to operator — should fail
-    const demoteRes = await request.patch(
-      `${BASE}/api/companies/${fresh.companyId}/members/${boardMember.id}`,
-      { data: { membershipRole: "operator" } }
-    );
-    expect(demoteRes.status()).toBe(409);
-    const errBody = await demoteRes.json();
-    expect(JSON.stringify(errBody)).toContain("last active owner");
   });
 
   test("POST /companies/:id/openclaw/invite-prompt creates agent invite", async ({
@@ -257,7 +217,7 @@ test.describe("Multi-user: API", () => {
       `${BASE}/api/companies/${companyId}/openclaw/invite-prompt`,
       {
         data: { agentMessage: "E2E test agent invite" },
-      }
+      },
     );
     expect(res.ok()).toBe(true);
     const body = await res.json();
@@ -268,53 +228,6 @@ test.describe("Multi-user: API", () => {
   });
 });
 
-test.describe("Multi-user: Company Settings UI", () => {
-  let companyId: string;
-  let companyPrefix: string;
-
-  test.beforeAll(async ({ request }) => {
-    const result = await createCompanyViaWizard(
-      request,
-      `MU-UI-${Date.now()}`
-    );
-    companyId = result.companyId;
-    companyPrefix = result.prefix;
-  });
-
-  test("shows Team and Invites sections on settings page", async ({ page }) => {
-    await page.goto(`${BASE}/${companyPrefix}/company/settings`);
-    await page.waitForLoadState("networkidle");
-    await expect(page.getByTestId("company-settings-invites-section")).toBeVisible({
-      timeout: 10_000,
-    });
-    await expect(page.getByTestId("company-settings-team-section")).toBeVisible({
-      timeout: 10_000,
-    });
-  });
-
-  test("shows human invite creation controls", async ({ page }) => {
-    await page.goto(`${BASE}/${companyPrefix}/company/settings`);
-    await page.waitForLoadState("networkidle");
-    const inviteButton = page.getByTestId("company-settings-create-human-invite");
-    await expect(inviteButton).toBeVisible({ timeout: 10_000 });
-
-    const roleSelect = page.getByTestId("company-settings-human-invite-role");
-    await expect(roleSelect).toBeVisible();
-  });
-
-  test("can create human invite and shows URL", async ({ page }) => {
-    await page.goto(`${BASE}/${companyPrefix}/company/settings`);
-    await page.waitForLoadState("networkidle");
-    const inviteButton = page.getByTestId("company-settings-create-human-invite");
-    await expect(inviteButton).toBeVisible({ timeout: 10_000 });
-    await inviteButton.click();
-
-    await expect(page.getByTestId("company-settings-human-invite-url")).toBeVisible({
-      timeout: 10_000,
-    });
-  });
-});
-
 test.describe("Multi-user: Invite Landing UI", () => {
   let companyId: string;
   let inviteToken: string;
@@ -322,7 +235,7 @@ test.describe("Multi-user: Invite Landing UI", () => {
   test.beforeAll(async ({ request }) => {
     const result = await createCompanyViaWizard(
       request,
-      `MU-Invite-${Date.now()}`
+      `MU-Invite-${Date.now()}`,
     );
     companyId = result.companyId;
 
@@ -335,24 +248,17 @@ test.describe("Multi-user: Invite Landing UI", () => {
     await page.waitForLoadState("networkidle");
 
     // Should show the invite landing page heading
-    await expect(
-      page.getByRole("heading", { name: /join/i })
-    ).toBeVisible({ timeout: 10_000 });
-  });
-
-  test("invite landing shows human join type", async ({ page }) => {
-    await page.goto(`${BASE}/invite/${inviteToken}`);
-    await page.waitForLoadState("networkidle");
-
-    // For a human-only invite, should show human join option
-    const humanOption = page.locator("text=/human/i");
-    await expect(humanOption).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole("heading", { name: /join/i })).toBeVisible({
+      timeout: 10_000,
+    });
   });
 
   test("expired/invalid invite token returns error", async ({ page }) => {
     await page.goto(`${BASE}/invite/invalid-token-e2e-test`);
     await page.waitForLoadState("networkidle");
-    await expect(page.getByTestId("invite-error")).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByTestId("invite-error")).toBeVisible({
+      timeout: 10_000,
+    });
   });
 });
 
@@ -362,7 +268,7 @@ test.describe("Multi-user: Member role management API", () => {
   test.beforeAll(async ({ request }) => {
     const result = await createCompanyViaWizard(
       request,
-      `MU-Roles-${Date.now()}`
+      `MU-Roles-${Date.now()}`,
     );
     companyId = result.companyId;
   });
@@ -376,82 +282,18 @@ test.describe("Multi-user: Member role management API", () => {
     // Accept the invite
     const acceptRes = await request.post(
       `${BASE}/api/invites/${invite.token}/accept`,
-      { data: { requestType: "human" } }
+      { data: { requestType: "human" } },
     );
     expect(acceptRes.ok()).toBe(true);
 
     // Check members list
     const membersRes = await request.get(
-      `${BASE}/api/companies/${companyId}/members`
+      `${BASE}/api/companies/${companyId}/members`,
     );
     const { members } = await membersRes.json();
 
     // Should have at least one member (the creator/local-board)
     expect(members.length).toBeGreaterThanOrEqual(1);
-  });
-
-  test("PATCH member role updates correctly", async ({ request }) => {
-    // First create an invite and accept it to get a second member
-    const invite = await createHumanInvite(request, companyId, "operator");
-    const acceptRes = await request.post(
-      `${BASE}/api/invites/${invite.token}/accept`,
-      { data: { requestType: "human" } }
-    );
-    expect(acceptRes.ok()).toBe(true);
-
-    // List members
-    const membersRes = await request.get(
-      `${BASE}/api/companies/${companyId}/members`
-    );
-    const { members } = await membersRes.json();
-
-    // Find a non-owner member to modify
-    const nonOwner = members.find(
-      (m: { membershipRole: string }) => m.membershipRole !== "owner"
-    );
-    if (!nonOwner) {
-      test.skip();
-      return;
-    }
-
-    // Update role to admin
-    const patchRes = await request.patch(
-      `${BASE}/api/companies/${companyId}/members/${nonOwner.id}`,
-      { data: { membershipRole: "admin" } }
-    );
-    expect(patchRes.ok()).toBe(true);
-    const updated = await patchRes.json();
-    expect(updated.membershipRole).toBe("admin");
-  });
-
-  test("PATCH member status to suspended works", async ({ request }) => {
-    // Create another member
-    const invite = await createHumanInvite(request, companyId, "operator");
-    await request.post(`${BASE}/api/invites/${invite.token}/accept`, {
-      data: { requestType: "human" },
-    });
-
-    const membersRes = await request.get(
-      `${BASE}/api/companies/${companyId}/members`
-    );
-    const { members } = await membersRes.json();
-
-    const nonOwner = members.find(
-      (m: { membershipRole: string; status: string }) =>
-        m.membershipRole !== "owner" && m.status === "active"
-    );
-    if (!nonOwner) {
-      test.skip();
-      return;
-    }
-
-    const patchRes = await request.patch(
-      `${BASE}/api/companies/${companyId}/members/${nonOwner.id}`,
-      { data: { status: "suspended" } }
-    );
-    expect(patchRes.ok()).toBe(true);
-    const updated = await patchRes.json();
-    expect(updated.status).toBe("suspended");
   });
 });
 
@@ -461,7 +303,7 @@ test.describe("Multi-user: Agent invite flow", () => {
   test.beforeAll(async ({ request }) => {
     const result = await createCompanyViaWizard(
       request,
-      `MU-Agent-${Date.now()}`
+      `MU-Agent-${Date.now()}`,
     );
     companyId = result.companyId;
   });
@@ -472,7 +314,7 @@ test.describe("Multi-user: Agent invite flow", () => {
     // Create agent invite
     const res = await request.post(
       `${BASE}/api/companies/${companyId}/openclaw/invite-prompt`,
-      { data: {} }
+      { data: {} },
     );
     expect(res.ok()).toBe(true);
     const { token } = await res.json();
@@ -486,7 +328,7 @@ test.describe("Multi-user: Agent invite flow", () => {
           agentName: "TestAgent",
           adapterType: "claude_local",
         },
-      }
+      },
     );
     expect(acceptRes.ok()).toBe(true);
     const body = await acceptRes.json();
@@ -498,7 +340,7 @@ test.describe("Multi-user: Agent invite flow", () => {
     request,
   }) => {
     const res = await request.get(
-      `${BASE}/api/companies/${companyId}/join-requests?status=pending_approval`
+      `${BASE}/api/companies/${companyId}/join-requests?status=pending_approval`,
     );
     expect(res.ok()).toBe(true);
     const requests = await res.json();

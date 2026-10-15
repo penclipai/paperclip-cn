@@ -10,6 +10,16 @@ export default defineConfig({
   retries: 0,
   use: {
     baseURL: BASE_URL,
+    // These legacy assertions cover the canonical English auth and invite
+    // contract. Keep the disposable browser context deterministic while the
+    // product defaults to zh-CN in the CN fork.
+    storageState: {
+      cookies: [],
+      origins: [{
+        origin: BASE_URL,
+        localStorage: [{ name: "paperclip.locale", value: "en" }],
+      }],
+    },
     headless: true,
     screenshot: "only-on-failure",
     trace: "on-first-retry",

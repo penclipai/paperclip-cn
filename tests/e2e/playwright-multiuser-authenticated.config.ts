@@ -13,6 +13,15 @@ export default defineConfig({
   retries: 0,
   use: {
     baseURL: BASE_URL,
+    // The authenticated journey asserts stable English auth copy. Isolate its
+    // browser locale from the CN product default without touching user data.
+    storageState: {
+      cookies: [],
+      origins: [{
+        origin: BASE_URL,
+        localStorage: [{ name: "paperclip.locale", value: "en" }],
+      }],
+    },
     headless: true,
     screenshot: "only-on-failure",
     trace: "on-first-retry",

@@ -213,6 +213,10 @@ async function startSmokeLabServices(request: APIRequestContext, companyId: stri
   await json(await request.post(`/api/companies/${companyId}/smoke-lab/services/start`));
 }
 
+async function stopSmokeLabServices(request: APIRequestContext, companyId: string) {
+  await json(await request.post(`/api/companies/${companyId}/smoke-lab/services/stop`));
+}
+
 async function installFixtures(request: APIRequestContext, companyId: string): Promise<FixtureInstall> {
   return await json<FixtureInstall>(await request.post(`/api/companies/${companyId}/smoke-lab/install-fixtures`));
 }
@@ -451,6 +455,7 @@ export const defineSmokeLabSuite = (label: string, scenarios: SmokeLabScenario[]
         partial: isPartialRun,
         failed,
       }).catch(() => undefined);
+      await stopSmokeLabServices(request, seed.companyId).catch(() => undefined);
     }
 
     const completed = await json<{

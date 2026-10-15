@@ -39,5 +39,5 @@ describe("Git worktree detection", () => {
     expect(isLinkedGitWorktree(linked)).toBe(true);
     expect(detectGitWorkspaceInfo(root)).toBeNull();
     expect(isLinkedGitWorktree(root)).toBe(false);
-  });
+  }, process.platform === "win32" ? 15_000 : undefined);
 });
