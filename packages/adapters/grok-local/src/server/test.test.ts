@@ -7,6 +7,7 @@ const prepareRuntimeMock = vi.hoisted(() => vi.fn());
 const stageGrokHomeMock = vi.hoisted(() => vi.fn(async () => "/tmp/staged-grok-home"));
 const resolveManagedGrokHomeMock = vi.hoisted(() => vi.fn(() => "/managed/company-1/grok-home"));
 const grokHomeHasUsableAuthMock = vi.hoisted(() => vi.fn(async () => false));
+const copyBackGrokAuthMock = vi.hoisted(() => vi.fn(async () => {}));
 
 vi.mock("@penclipai/adapter-utils/execution-target", () => ({
   describeAdapterExecutionTarget: () => "local",
@@ -23,7 +24,7 @@ vi.mock("./grok-home.js", () => ({
   resolveManagedGrokHomeDir: resolveManagedGrokHomeMock,
   grokHomeHasUsableAuth: grokHomeHasUsableAuthMock,
 }));
-vi.mock("./grok-auth-copyback.js", () => ({ copyBackGrokAuth: vi.fn(async () => {}) }));
+vi.mock("./grok-auth-copyback.js", () => ({ copyBackGrokAuth: copyBackGrokAuthMock }));
 
 import { existsSync } from "node:fs";
 import { parseGrokModelsOutput, testEnvironment } from "./test.js";
@@ -60,6 +61,8 @@ describe("grok_local testEnvironment", () => {
     resolveManagedGrokHomeMock.mockClear();
     grokHomeHasUsableAuthMock.mockReset();
     grokHomeHasUsableAuthMock.mockResolvedValue(false);
+    copyBackGrokAuthMock.mockReset();
+    copyBackGrokAuthMock.mockResolvedValue(undefined);
   });
 
   it("reports a healthy authenticated host with a working hello probe", async () => {
@@ -405,6 +408,43 @@ describe("grok_local testEnvironment", () => {
     expect(stageGrokHomeMock).toHaveBeenCalledWith("/managed/company-1/grok-home", expect.any(Object));
     expect(prepareRuntimeMock).toHaveBeenCalledOnce();
     expect(runProcessMock.mock.calls[0]?.[4].env.GROK_HOME).toBe("/sandbox/assets/home");
+  });
+
+  it("reports copy-back failures without rejecting the completed remote diagnostic", async () => {
+    let runtimeWorkspaceLocalDir = "";
+    copyBackGrokAuthMock.mockRejectedValueOnce(new Error("fixture credential detail"));
+    prepareRuntimeMock.mockImplementationOnce(async (input: {
+      workspaceLocalDir: string;
+      assets: Array<{ restore: (input: { assetDir: string; readFile: (path: string) => Promise<Buffer> }) => Promise<void> }>;
+    }) => {
+      runtimeWorkspaceLocalDir = input.workspaceLocalDir;
+      return {
+        assetDirs: { home: "/sandbox/assets/home" },
+        restoreWorkspace: async () => input.assets[0]!.restore({
+          assetDir: "/sandbox/assets/home",
+          readFile: async () => Buffer.from("fixture", "utf8"),
+        }),
+      };
+    });
+    runProcessMock
+      .mockResolvedValueOnce({ exitCode: 0, signal: null, timedOut: false, stdout: "You are logged in with grok.com.\n\nDefault model: grok-4\n\nAvailable models:\n  * grok-4", stderr: "" })
+      .mockResolvedValueOnce({ exitCode: 0, signal: null, timedOut: false, stdout: `${JSON.stringify({ type: "text", data: "hello" })}\n${JSON.stringify({ type: "end", stopReason: "EndTurn", sessionId: "s", requestId: "r" })}`, stderr: "" });
+
+    const result = await testEnvironment({
+      companyId: "company-1",
+      adapterType: "grok_local",
+      config: { command: "grok", cwd: "/sandbox/workspace" },
+      executionTarget: { kind: "remote", transport: "sandbox" } as never,
+    });
+
+    expect(result.status).toBe("warn");
+    expect(result.checks).toContainEqual(expect.objectContaining({
+      code: "grok_auth_copyback_failed",
+      level: "warn",
+    }));
+    expect(JSON.stringify(result.checks)).not.toContain("fixture credential detail");
+    expect(copyBackGrokAuthMock).toHaveBeenCalledOnce();
+    expect(existsSync(runtimeWorkspaceLocalDir)).toBe(false);
   });
 
   it("reports a failed runtime preparation as a check instead of crashing", async () => {

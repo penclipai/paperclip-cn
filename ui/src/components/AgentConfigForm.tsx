@@ -7,6 +7,7 @@ import { aiConnectionBindingSchema, aiRuntimeConnectionBindingSchema } from "@pe
 import { testAgentSetup } from "@/lib/test-agent-setup";
 import { setupEfforts } from "../lib/agent-setup-fields";
 import { RuntimeTestCard } from "./RuntimeTestCard";
+import { translateAdapterDiagnosticMessage } from "@/lib/adapter-diagnostic-message";
 import { useState, useEffect, useRef, useMemo, useCallback, Children, isValidElement, type ReactNode } from "react";
 import type { AdapterConfigSection } from "../adapters/types";
 import { useConfigSchema } from "../adapters/schema-config-fields";
@@ -3638,7 +3639,7 @@ export function AdapterEnvironmentResult({ result }: { result: AdapterEnvironmen
               {check.level}
             </span>
             <span className="mx-1 opacity-60">·</span>
-            <span>{check.message}</span>
+            <span>{translateAdapterDiagnosticMessage(check.code, check.message)}</span>
             {check.detail && <span className="block opacity-75 break-all">({check.detail})</span>}
             {check.hint && <span className="block opacity-90 break-words">{translateInstant("Hint:")}{" "}{check.hint}</span>}
           </div>

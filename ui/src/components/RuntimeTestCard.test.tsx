@@ -155,3 +155,43 @@ it("shows the installation repair directly on a missing runtime test", async () 
     });
   }
 });
+
+it("translates known adapter diagnostics while preserving unknown diagnostic text", async () => {
+  const container = document.createElement("div");
+  document.body.appendChild(container);
+  const root = createRoot(container);
+  const knownMessage = "Grok authentication refresh could not be saved locally.";
+  const pluginMessage = "Plugin-maintained diagnostic";
+
+  try {
+    await act(async () => {
+      await i18n.changeLanguage("zh-CN");
+      root.render(
+        <RuntimeTestCard
+          state="warn"
+          onTest={vi.fn()}
+          result={{
+            adapterType: "grok_local",
+            status: "warn",
+            testedAt: "2026-10-16T00:00:00Z",
+            checks: [
+              { code: "grok_auth_copyback_failed", level: "warn", message: knownMessage },
+              { code: "plugin_diagnostic", level: "warn", message: pluginMessage },
+              { code: "constructor", level: "warn", message: "Unknown technical diagnostic" },
+            ],
+          }}
+        />,
+      );
+    });
+
+    expect(container.textContent).toContain("Grok 认证刷新结果无法保存到本地。");
+    expect(container.textContent).not.toContain(knownMessage);
+    expect(container.textContent).toContain(pluginMessage);
+    expect(container.textContent).toContain("Unknown technical diagnostic");
+  } finally {
+    await act(async () => {
+      root.unmount();
+      await i18n.changeLanguage("en");
+    });
+  }
+});

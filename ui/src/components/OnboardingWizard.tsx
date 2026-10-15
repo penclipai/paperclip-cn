@@ -1,4 +1,5 @@
 import { translateInstant } from "@/i18n";
+import { translateAdapterDiagnosticMessage } from "@/lib/adapter-diagnostic-message";
 import { useTranslation } from "react-i18next";
 import { healthApi } from "@/api/health";
 import { LocalProviderLoginInstructions } from "./AdapterLoginChrome";
@@ -3179,7 +3180,7 @@ function AdapterEnvironmentResult({
               {check.level}
             </span>
             <span className="mx-1 opacity-60">·</span>
-            <span>{check.message}</span>
+            <span>{translateAdapterDiagnosticMessage(check.code, check.message)}</span>
             {check.detail && (
               <span className="block opacity-75 break-all">
                 ({check.detail})

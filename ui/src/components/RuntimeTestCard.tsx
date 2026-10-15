@@ -10,6 +10,7 @@ import {
 import type { AdapterEnvironmentTestResult } from "@penclipai/shared";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { translateAdapterDiagnosticMessage } from "@/lib/adapter-diagnostic-message";
 export type TestState = "idle" | "running" | "pass" | "fail";
 
 const copy = {
@@ -155,7 +156,9 @@ export function RuntimeTestCard({
                   />
                 )}
                 <div className="min-w-0 space-y-1">
-                  <p className="break-words text-foreground">{check.message}</p>
+                  <p className="break-words text-foreground">
+                    {translateAdapterDiagnosticMessage(check.code, check.message)}
+                  </p>
                   {check.detail && (
                     <p className="break-all text-muted-foreground">
                       {check.detail}

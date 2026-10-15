@@ -5361,6 +5361,7 @@
   "activityFormat.userLabel": "用户 {{id}}",
   "activityFormat.you": "你",
   "adapter result JSON": "适配器结果 JSON",
+  "adapter.diagnostic.grokAuthCopybackFailed": "Grok 认证刷新结果无法保存到本地。",
   "adapter.kimi.instructionsFile.hint": "定义该智能体行为的 Markdown 文件绝对路径（如 AGENTS.md）；运行时会添加到 Kimi 提示词前。",
   "adapter.kimi.instructionsFile.label": "智能体指令文件",
   "adapter?": "适配器吗？",

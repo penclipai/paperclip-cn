@@ -5361,6 +5361,7 @@
   "activityFormat.userLabel": "user {{id}}",
   "activityFormat.you": "You",
   "adapter result JSON": "adapter result JSON",
+  "adapter.diagnostic.grokAuthCopybackFailed": "Grok authentication refresh could not be saved locally.",
   "adapter.kimi.instructionsFile.hint": "Absolute path to a markdown file (e.g. AGENTS.md) that defines this agent's behavior. Prepended to the Kimi prompt at runtime.",
   "adapter.kimi.instructionsFile.label": "Agent instructions file",
   "adapter?": "adapter?",

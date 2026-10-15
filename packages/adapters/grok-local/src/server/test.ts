@@ -197,11 +197,25 @@ export async function testEnvironment(
           workspaceRemoteDir: cwd,
           // The probe workspace is a throwaway temp dir; never wait on copy-back retries.
           workspaceRestoreRetryDelaysMs: [],
-          assets: [{ key: "home", localDir: stagedHome, followSymlinks: true,
-            restore: async ({ assetDir, readFile }) => { await copyBackGrokAuth({
-              readSandboxAuth: () => readFile(path.posix.join(assetDir, "auth.json")),
-              hostHomeDir: hostGrokHome, log: () => {},
-            }); },
+          assets: [{
+            key: "home",
+            localDir: stagedHome,
+            followSymlinks: true,
+            restore: async ({ assetDir, readFile }) => {
+              try {
+                await copyBackGrokAuth({
+                  readSandboxAuth: () => readFile(path.posix.join(assetDir, "auth.json")),
+                  hostHomeDir: hostGrokHome,
+                  log: () => {},
+                });
+              } catch {
+                checks.push({
+                  code: "grok_auth_copyback_failed",
+                  level: "warn",
+                  message: "Grok authentication refresh could not be saved locally.",
+                });
+              }
+            },
           }],
         });
         env.GROK_HOME = prepared.assetDirs.home;
@@ -411,12 +425,6 @@ export async function testEnvironment(
     }
   }
 
-  return {
-    adapterType: "grok_local",
-    status: summarizeStatus(checks),
-    checks,
-    testedAt: new Date().toISOString(),
-  };
   } finally {
     try { await restore?.(); } finally {
       // Both temporary directories are removed even when one removal fails,
@@ -429,4 +437,11 @@ export async function testEnvironment(
       ]);
     }
   }
+
+  return {
+    adapterType: "grok_local",
+    status: summarizeStatus(checks),
+    checks,
+    testedAt: new Date().toISOString(),
+  };
 }

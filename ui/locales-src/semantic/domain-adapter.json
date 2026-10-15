@@ -1,4 +1,9 @@
 {
+  "adapter.diagnostic.grokAuthCopybackFailed": {
+    "en": "Grok authentication refresh could not be saved locally.",
+    "zh-CN": "Grok 认证刷新结果无法保存到本地。",
+    "reviewedEnglishHash": "8c728e0b09aad6ee24ded86f18250ed2db6f9db9a72d362d66311a55323247d8"
+  },
   "adapter.kimi.instructionsFile.hint": {
     "en": "Absolute path to a markdown file (e.g. AGENTS.md) that defines this agent's behavior. Prepended to the Kimi prompt at runtime.",
     "zh-CN": "定义该智能体行为的 Markdown 文件绝对路径（如 AGENTS.md）；运行时会添加到 Kimi 提示词前。",
