@@ -108,8 +108,14 @@ function createLocalSandboxRunner() {
         throw new Error("Sandbox fixture did not discover its preinstalled Cursor CLI");
       }
       const prepared = prepareTestPosixShell(input);
-      const command = process.platform === "win32" && prepared.command.startsWith("/tmp/")
-        ? path.join(os.tmpdir(), prepared.command.slice("/tmp/".length))
+      // Discovery runs in Git Bash and returns its POSIX drive path. The
+      // fake remote executor spawns on Windows, so restore the physical path
+      // before the existing shebang adapter selects Node.
+      const command = process.platform === "win32"
+        ? prepared.command.startsWith("/tmp/")
+          ? path.join(os.tmpdir(), prepared.command.slice("/tmp/".length))
+          : prepared.command.replace(/^\/([a-z])\/(.+)$/i, (_match, drive: string, rest: string) =>
+            path.win32.join(`${drive}:\\`, rest))
         : prepared.command;
       return await runChildProcess(`cursor-sandbox-execute-${counter}`, command, prepared.args, {
         // The real POSIX sandbox accepts `/` as a working directory. The
@@ -406,9 +412,9 @@ describe("cursor execute", () => {
         prompt: string;
         path: string;
       };
-      expect(capture.command).toBe(cursorAgentPath);
+      expect(await fs.realpath(capture.command)).toBe(await fs.realpath(cursorAgentPath));
       const expectedRemoteCursorBin = process.platform === "win32"
-        ? `/tmp/${path.basename(root)}/home/.local/bin`
+        ? homeDir.replace(/^([A-Za-z]):[\\/]/, (_match, drive: string) => `/${drive.toLowerCase()}/`).replace(/\\/g, "/") + "/.local/bin"
         : path.join(homeDir, ".local", "bin");
       expect(capture.path.split(":")[0]).toBe(expectedRemoteCursorBin);
       expect(capture.prompt).toContain("Follow the paperclip heartbeat.");

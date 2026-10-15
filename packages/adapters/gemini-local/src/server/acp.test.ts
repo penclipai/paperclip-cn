@@ -496,7 +496,7 @@ describe("gemini_local ACP lane", () => {
     await expect(fs.readFile(path.join(remoteCwd, "hello.txt"), "utf8")).resolves.toBe("hi");
     expect(runtime.ensureInputs[0]?.cwd).toBe(remoteCwd);
     expect(runtime.ensureInputs[0]?.cwd).not.toBe(localCwd);
-  });
+  }, 60_000);
 
   it("seeds the managed Gemini home into the sandbox, repoints HOME, and keeps the key file-only", async () => {
     const root = await makeTempRoot("paperclip-gemini-acp-home-seed-");
@@ -581,7 +581,7 @@ describe("gemini_local ACP lane", () => {
     expect(meta[0]?.env?.GEMINI_API_KEY).not.toBe(SECRET_KEY);
     // C4 — no XDG_* variable introduced for credential discovery.
     expect(Object.keys(meta[0]?.env ?? {}).filter((key) => key.startsWith("XDG_"))).toEqual([]);
-  });
+  }, 60_000);
 
   it("test_gemini_acp_seam_registers_workspace_sync_back", async () => {
     const root = await makeTempRoot("paperclip-gemini-acp-syncback-");
@@ -645,7 +645,7 @@ describe("gemini_local ACP lane", () => {
     // The teardown fired `restoreWorkspace`, so the sandbox-authored file is now
     // in the host worktree.
     await expect(fs.readFile(path.join(localCwd, "from-sandbox.txt"), "utf8")).resolves.toBe("synced");
-  });
+  }, 60_000);
 
   it("passes the Gemini-specific teardown messages to the shared workspace-restore-teardown factory", async () => {
     // Wiring test only: `createWorkspaceRestoreTeardown` owns the
@@ -697,7 +697,7 @@ describe("gemini_local ACP lane", () => {
         failurePrefix: "[paperclip] Gemini ACP teardown workspace restore failed",
       }),
     );
-  });
+  }, 60_000);
 
   it("does not persist an api-key auth selector from a host-only credential", async () => {
     const root = await makeTempRoot("paperclip-gemini-acp-hostkey-");

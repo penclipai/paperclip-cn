@@ -93,6 +93,11 @@ const originalPaperclipInstanceId = process.env.PAPERCLIP_INSTANCE_ID;
 const originalCodexHome = process.env.CODEX_HOME;
 const originalOpenAiApiKey = process.env.OPENAI_API_KEY;
 
+// These runner-backed sandbox cases create, archive, and restore a real
+// workspace. Windows process and filesystem startup regularly exceeds the
+// default Vitest budget even though the same operations complete correctly.
+const remoteSandboxTestTimeoutMs = process.platform === "win32" ? 60_000 : 15_000;
+
 // Older/newer ISO timestamps for the copy-back monotonic (strictly-newer)
 // decision predicate, plus a subscription-shaped auth.json fixture matching the
 // predicate's parseAuth contract (tokens.account_id + token material +
@@ -144,7 +149,11 @@ afterEach(async () => {
   else process.env.CODEX_HOME = originalCodexHome;
   if (originalOpenAiApiKey === undefined) delete process.env.OPENAI_API_KEY;
   else process.env.OPENAI_API_KEY = originalOpenAiApiKey;
-  await Promise.all(tempRoots.splice(0).map((root) => fs.rm(root, { recursive: true, force: true })));
+  await Promise.all(
+    tempRoots.splice(0).map((root) =>
+      fs.rm(root, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 }),
+    ),
+  );
 });
 
 class FakeRuntime {
@@ -917,7 +926,7 @@ describe("codex_local ACP lane", () => {
     await expect(fs.readFile(path.join(remoteCwd, "hello.txt"), "utf8")).resolves.toBe("hi");
     expect(runtimes[0]?.ensureInputs[0]?.cwd).toBe(remoteCwd);
     expect(runtimes[0]?.ensureInputs[0]?.cwd).not.toBe(localCwd);
-  });
+  }, remoteSandboxTestTimeoutMs);
 
   it("seeds the managed Codex home into the sandbox and repoints CODEX_HOME to the in-sandbox path", async () => {
     const root = await makeTempRoot("paperclip-codex-acp-home-seed-");
@@ -985,7 +994,7 @@ describe("codex_local ACP lane", () => {
     );
     // C4 — no XDG_* variable is introduced for in-sandbox credential discovery.
     expect(Object.keys(meta[0]?.env ?? {}).filter((key) => key.startsWith("XDG_"))).toEqual([]);
-  });
+  }, remoteSandboxTestTimeoutMs);
 
   it("copies a strictly-newer sandbox Codex auth back to the shared host on teardown", async () => {
     const root = await makeTempRoot("paperclip-codex-acp-copyback-newer-");
@@ -1159,7 +1168,7 @@ describe("codex_local ACP lane", () => {
     const hostAuth = JSON.parse(await fs.readFile(path.join(sharedHostHome, "auth.json"), "utf8"));
     expect(hostAuth.last_refresh).toBe(NEWER_REFRESH);
     expect(hostAuth.tokens.refresh_token).toBe("ref-host-newer");
-  });
+  }, remoteSandboxTestTimeoutMs);
 
   it("keeps the host staged Codex home after a clean teardown so a compatible resume can reuse it", async () => {
     // Session-re-staging guardrail: the per-run copy-back (`teardown`) must NOT
@@ -1238,7 +1247,7 @@ describe("codex_local ACP lane", () => {
     // No `disposeStaged` fires while the entry stays warm, so remove the
     // intentionally-persisted staged temp ourselves to avoid leaking it.
     await Promise.all(stagedDirs.map((dir) => fs.rm(dir, { recursive: true, force: true })));
-  });
+  }, remoteSandboxTestTimeoutMs);
 
   it("removes the host staged Codex home when a failed turn drops the staged runtime", async () => {
     // The complementary guardrail: when the staged runtime IS dropped (here, a
@@ -1311,7 +1320,7 @@ describe("codex_local ACP lane", () => {
     const hostAuth = JSON.parse(await fs.readFile(path.join(sharedHostHome, "auth.json"), "utf8"));
     expect(hostAuth.last_refresh).toBe(NEWER_REFRESH);
     expect(hostAuth.tokens.refresh_token).toBe("ref-sandbox-newer");
-  });
+  }, remoteSandboxTestTimeoutMs);
 
   it("passes the Codex-specific teardown messages to the shared workspace-restore-teardown factory", async () => {
     // Wiring test only: `createWorkspaceRestoreTeardown` owns the
@@ -1364,7 +1373,7 @@ describe("codex_local ACP lane", () => {
         failurePrefix: "[paperclip] Codex ACP teardown restore/copy-back failed",
       }),
     );
-  });
+  }, remoteSandboxTestTimeoutMs);
 
   it("reports unavailable ACP for a runner-less sandbox even when the ACP command is set", async () => {
     setNodeVersion("v24.11.0");

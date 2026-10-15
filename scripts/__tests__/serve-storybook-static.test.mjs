@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
 
-const script = new URL("../serve-storybook-static.mjs", import.meta.url).pathname;
+const script = fileURLToPath(new URL("../serve-storybook-static.mjs", import.meta.url));
 
 test("--port followed by another flag is not parsed as the port value", () => {
   const result = spawnSync(process.execPath, [script, "--port", "--unused-flag"], {

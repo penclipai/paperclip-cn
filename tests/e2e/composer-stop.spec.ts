@@ -334,7 +334,7 @@ for (const adapter of ["process", "paperclip_runner"] as const) {
       ).toBeNull();
       expect((await json(await request.get(`/api/heartbeat-runs/${childRun.id}`))).status).toBe("running");
       await expect(editor).toBeVisible();
-      await expect(page.getByText("Subtree is paused.", { exact: true })).toHaveCount(0);
+      await expect(page.getByRole("region", { name: "Subtree is paused." })).toHaveCount(0);
       // Pausing future work is a separate, explicit subtree action.
       await menu(page, "Pause subtree");
       await expect(page.getByRole("dialog")).toHaveCount(0);
@@ -354,9 +354,7 @@ for (const adapter of ["process", "paperclip_runner"] as const) {
         (await json(await request.get(`/api/heartbeat-runs/${otherRun.id}`)))
           .status,
       ).toBe("running");
-      await expect(
-        page.getByText("Subtree is paused.", { exact: true }),
-      ).toBeVisible();
+      await expect(page.getByRole("region", { name: "Subtree is paused." })).toBeVisible();
       await expect(
         page.getByRole("button", { name: "Dismiss notification" }),
       ).toHaveCount(0);
@@ -366,9 +364,7 @@ for (const adapter of ["process", "paperclip_runner"] as const) {
         ).toHaveClass(/text-muted-foreground/);
       }
       await page.reload();
-      await expect(
-        page.getByText("Subtree is paused.", { exact: true }),
-      ).toBeVisible();
+      await expect(page.getByRole("region", { name: "Subtree is paused." })).toBeVisible();
       // Cross the isolated server's ten-second scheduler interval repeatedly.
       for (let i = 0; i < 3; i++) {
         await new Promise((resolve) => setTimeout(resolve, 10_000));
@@ -379,6 +375,9 @@ for (const adapter of ["process", "paperclip_runner"] as const) {
           await json(await request.get(`/api/issues/${child.id}/live-runs`)),
         ).toEqual([]);
       }
+      const nativeStartsBeforeResume = adapter === "paperclip_runner"
+        ? (await readFile(process.env.PAPERCLIP_STOP_CODEX_LOG!, "utf8")).split("turn/start").length - 1
+        : 0;
       await menu(page, "Resume subtree");
       await page.getByRole("dialog").getByRole("checkbox").check();
       await page
@@ -396,22 +395,35 @@ for (const adapter of ["process", "paperclip_runner"] as const) {
       }
       // A verified stopped native runner can honor the explicitly selected
       // Wake agents option without another manual reconciliation step.
-      const resumedParentRun = await running(request, parent.id, adapter);
       const resumedChildRun = await running(request, child.id, adapter);
-      expect(resumedParentRun.id).not.toBe(parentRun.id);
-      expect(resumedChildRun.id).not.toBe(childRun.id);
       if (adapter === "paperclip_runner") {
+        // Queue admission may leave the parent in progress when a dependency
+        // blocks it, while status arbitration may project the same condition
+        // as blocked. The derived active-child reason is the stable contract.
+        const resumedParent = await json(
+          await request.get(`/api/issues/${parent.id}`),
+        );
+        expect(["in_progress", "blocked"]).toContain(resumedParent.status);
+        expect(resumedParent).toMatchObject({
+          blockerAttention: {
+            reason: "active_child",
+            sampleBlockerIdentifier: child.identifier,
+          },
+        });
+        expect(await json(await request.get(`/api/issues/${parent.id}/live-runs`))).toEqual([]);
+        expect(resumedChildRun.runtimeMode).toBe("native");
         await expect.poll(async () => {
           const calls = await readFile(process.env.PAPERCLIP_STOP_CODEX_LOG!, "utf8");
           return calls.split("turn/start").length - 1;
-        }, { timeout: 30_000 }).toBeGreaterThanOrEqual(5);
+        }, { timeout: 30_000 }).toBe(nativeStartsBeforeResume + 1);
+      }
+      expect(resumedChildRun.id).not.toBe(childRun.id);
+      if (adapter === "paperclip_runner") {
         await page.screenshot({ path: testInfo.outputPath("native-resumed.png"), fullPage: true });
       }
       await menu(page, "Pause subtree");
       await expect(page.getByRole("dialog")).toHaveCount(0);
-      await expect(
-        page.getByText("Subtree is paused.", { exact: true }),
-      ).toBeVisible();
+      await expect(page.getByRole("region", { name: "Subtree is paused." })).toBeVisible();
       await menu(page, "Cancel subtree...");
       const dialog = page.getByRole("dialog");
       await expect(

@@ -28,6 +28,11 @@ type PrepareCursorSandboxCommandResult = {
   preferredCommandPath: string | null;
 };
 
+// These controlled fixtures spawn a POSIX shell and a child Node process.
+// Windows startup can exceed Vitest's default while POSIX keeps its original
+// narrow timeout.
+const sandboxChildProcessTestTimeoutMs = process.platform === "win32" ? 15_000 : 5_000;
+
 const {
   setPrepareCursorSandboxCommand,
 } = vi.hoisted(() => {
@@ -291,7 +296,7 @@ process.stdin.on("end", () => { console.error(process.env.FIXTURE_TRACE ?? ""); 
       else process.env.HOME = previousHome;
       await fs.rm(root, { recursive: true, force: true });
     }
-  });
+  }, sandboxChildProcessTestTimeoutMs);
 
   it("reruns sandbox command resolution after managed runtime setup and keeps the original sandbox home", async () => {
     setPrepareCursorSandboxCommand.mockReset();
@@ -451,7 +456,7 @@ exit 97
       else process.env.HOME = previousHome;
       await fs.rm(rootDir, { recursive: true, force: true });
     }
-  });
+  }, sandboxChildProcessTestTimeoutMs);
 
   it("rebuilds the full assignment after an unknown-session resume", async () => {
     setPrepareCursorSandboxCommand.mockReset();

@@ -91,6 +91,11 @@ const originalEnv: Record<string, string | undefined> = {
   CLAUDE_CONFIG_DIR: process.env.CLAUDE_CONFIG_DIR,
 };
 
+// These runner-backed sandbox cases create, archive, and restore a real
+// workspace. Windows process and filesystem startup regularly exceeds the
+// default Vitest budget even though the same operations complete correctly.
+const remoteSandboxTestTimeoutMs = process.platform === "win32" ? 60_000 : 15_000;
+
 function setNodeVersion(version: string): void {
   Object.defineProperty(process, "version", {
     configurable: true,
@@ -665,7 +670,7 @@ describe("claude_local ACP lane", () => {
     await expect(
       fs.readFile(path.join(inSandboxSkillRoot, "review", "SKILL.md"), "utf8"),
     ).resolves.toContain("review skill");
-  });
+  }, remoteSandboxTestTimeoutMs);
 
   it("stages no skills asset for a remote ACP run with no selected skill", async () => {
     vi.mocked(prepareAdapterExecutionTargetRuntime).mockClear();
@@ -718,7 +723,7 @@ describe("claude_local ACP lane", () => {
     const stageArgs = vi.mocked(prepareAdapterExecutionTargetRuntime).mock.calls[0]![0];
     expect((stageArgs.assets ?? []).some((asset) => asset.key === "skills")).toBe(false);
     expect(String(runtimes[0]?.startInputs[0]?.text ?? "")).not.toContain("Skill root:");
-  });
+  }, remoteSandboxTestTimeoutMs);
 
   it("stages the skill bundle inside the sandbox but never syncs it back into the host workspace", async () => {
     // The staged skill bundle lives under `.paperclip-runtime/claude/skills`,
@@ -784,7 +789,7 @@ describe("claude_local ACP lane", () => {
     await expect(fs.readFile(path.join(localCwd, "hello.txt"), "utf8")).resolves.toBe("hi");
     // ...but not the staged runtime directory the skill bundle staged into.
     await expect(fs.access(path.join(localCwd, ".paperclip-runtime"))).rejects.toThrow();
-  });
+  }, remoteSandboxTestTimeoutMs);
 
   it("passes the exact configured Fable 5.1 ID through ANTHROPIC_MODEL on the ACP lane", async () => {
     const root = await makeTempRoot("paperclip-claude-acp-fable51-");
@@ -858,7 +863,7 @@ describe("claude_local ACP lane", () => {
     await expect(fs.readFile(path.join(remoteCwd, "hello.txt"), "utf8")).resolves.toBe("hi");
     expect(runtimes[0]?.ensureInputs[0]?.cwd).toBe(remoteCwd);
     expect(runtimes[0]?.ensureInputs[0]?.cwd).not.toBe(localCwd);
-  });
+  }, remoteSandboxTestTimeoutMs);
 
   it("seeds the managed Claude config into the sandbox and repoints CLAUDE_CONFIG_DIR to the in-sandbox path", async () => {
     const root = await makeTempRoot("paperclip-claude-acp-home-seed-");
@@ -924,7 +929,7 @@ describe("claude_local ACP lane", () => {
     );
     // C4 — no XDG_* variable is introduced for in-sandbox credential discovery.
     expect(Object.keys(meta[0]?.env ?? {}).filter((key) => key.startsWith("XDG_"))).toEqual([]);
-  });
+  }, remoteSandboxTestTimeoutMs);
 
   it("test_claude_acp_seam_registers_workspace_sync_back", async () => {
     const root = await makeTempRoot("paperclip-claude-acp-syncback-");
@@ -997,7 +1002,7 @@ describe("claude_local ACP lane", () => {
     // The teardown fired `restoreWorkspace`, so the sandbox-authored file is now
     // in the host worktree.
     await expect(fs.readFile(path.join(localCwd, "from-sandbox.txt"), "utf8")).resolves.toBe("synced");
-  });
+  }, remoteSandboxTestTimeoutMs);
 
   it("test_claude_acp_teardown_restore_failure_sanitizes_the_run_log", async () => {
     // Security regression for a workspace-restore write failure: the run log
@@ -1092,7 +1097,7 @@ describe("claude_local ACP lane", () => {
     } finally {
       await fs.chmod(localCwd, 0o700).catch(() => undefined);
     }
-  });
+  }, remoteSandboxTestTimeoutMs);
 
   it("remaps a workspace-relative explicit CLAUDE_CONFIG_DIR onto the in-sandbox workspace path", async () => {
     const root = await makeTempRoot("paperclip-claude-acp-explicit-inworkspace-");
@@ -1158,7 +1163,7 @@ describe("claude_local ACP lane", () => {
     expect(logs.join("")).toContain(
       `Remapped operator CLAUDE_CONFIG_DIR from host path ${operatorConfigDir}`,
     );
-  });
+  }, remoteSandboxTestTimeoutMs);
 
   it("ignores a host-only explicit CLAUDE_CONFIG_DIR that cannot reach the sandbox and seeds the managed config instead", async () => {
     const root = await makeTempRoot("paperclip-claude-acp-explicit-hostonly-");
@@ -1233,7 +1238,7 @@ describe("claude_local ACP lane", () => {
     expect(logs.join("")).toContain(
       `operator-provided CLAUDE_CONFIG_DIR=${operatorConfigDir} is outside the staged workspace`,
     );
-  });
+  }, remoteSandboxTestTimeoutMs);
 
   it("reports unavailable ACP for a runner-less sandbox even when the ACP command is set", async () => {
     setNodeVersion("v24.11.0");

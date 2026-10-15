@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 import { defineConfig } from "@playwright/test";
 import base from "./playwright.config";
 
@@ -20,12 +21,6 @@ if (fixture) {
       "PAPERCLIP_STOP_FAKE_CODEX must name the built fake-codex-app-server binary",
     );
   fs.mkdirSync(path.join(fixtureDir, "codex-home"));
-  const quote = (value: string) => `'${value.replaceAll("'", "'\\''")}'`;
-  fs.writeFileSync(
-    path.join(fixtureDir, "codex"),
-    `#!/bin/sh\nexec ${quote(fixture)} --state-file ${quote(fixtureDir)}/state-$$.json --hold-turn --call-log ${quote(logPath)} "$@"\n`,
-    { mode: 0o755 },
-  );
 }
 const server = base.webServer as Exclude<typeof base.webServer, unknown[]>;
 export default defineConfig({
@@ -41,10 +36,23 @@ export default defineConfig({
       ...(fixture ? {
         // Provider selection prefers the installed dependency over PATH.
         // Scope this override and its empty credential home to the test server.
-        PAPERCLIP_STOP_CODEX_COMMAND: path.join(fixtureDir, "codex"),
+        // Runnerd invokes the command through Windows CreateProcess, which
+        // cannot execute the POSIX shell wrapper used by the Unix fixture.
+        // Point it at the checked deterministic PE binary and let the
+        // test-only loader supply its protocol flags.
+        PAPERCLIP_STOP_CODEX_COMMAND: fixture,
+        PAPERCLIP_STOP_CODEX_ARGS: JSON.stringify([
+          // Runnerd creates a distinct isolated CODEX_HOME per native
+          // session. Keeping fake state there preserves the fixture's
+          // per-process behavior that the former shell wrapper got from $$.
+          "--state-file-in-codex-home",
+          "--hold-turn",
+          "--call-log",
+          logPath,
+        ]),
         CODEX_HOME: path.join(fixtureDir, "codex-home"),
         OPENAI_API_KEY: "composer-stop-fixture-key",
-        NODE_OPTIONS: `${server?.env?.NODE_OPTIONS ?? ""} --import=${path.resolve(import.meta.dirname, "fixtures/composer-stop-codex-loader.mjs")}`,
+        NODE_OPTIONS: `${server?.env?.NODE_OPTIONS ?? ""} --import=${pathToFileURL(path.resolve(import.meta.dirname, "fixtures/composer-stop-codex-loader.mjs")).href}`,
       } : {}),
     },
   },

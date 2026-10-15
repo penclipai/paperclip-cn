@@ -63,11 +63,11 @@ export function codexExecutableReadOnlyRoots(source: NodeJS.ProcessEnv, command 
         ?? createRequire(manifestPath).resolve(`${platformPackage}/package.json`);
       const packageRoot = realpathSync(dirname(platformManifest));
       const vendor = realpathSync(resolve(packageRoot, "vendor"));
-      if (vendor.startsWith(`${packageRoot}/`)) add(vendor);
+      if (codexPathInside(packageRoot, vendor)) add(vendor);
     } else {
       const packageRoot = realpathSync(dirname(manifestPath));
       const vendor = realpathSync(resolve(packageRoot, "vendor"));
-      if (vendor.startsWith(`${packageRoot}/`)) add(vendor);
+      if (codexPathInside(packageRoot, vendor)) add(vendor);
     }
   } catch { /* Standalone executable installations need no npm resources. */ }
   return [...roots];

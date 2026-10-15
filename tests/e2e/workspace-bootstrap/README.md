@@ -16,7 +16,9 @@ The launcher creates an isolated test-drive, installs the Git shim, and sets a
 10-second snapshot deadline after test-drive clears inherited configuration.
 Production's longer snapshot deadline would outlast the injected failure.
 
-Set `BOOTSTRAP_REAL_GIT` to the absolute Git executable if it is not
+On Windows, the launcher finds `git.exe` on the original `PATH` before it adds
+the test shim. You can set `BOOTSTRAP_REAL_GIT` to an existing absolute Git
+executable to override that choice. On POSIX, set it if Git is not at
 `/usr/bin/git`. Do not point this fixture at a normal development or production
 instance. The seeder checks the loopback host, trusted-local mode, and company
 name. It does not create tasks; each test creates its task through the UI.

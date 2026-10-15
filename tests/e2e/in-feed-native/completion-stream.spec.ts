@@ -1,7 +1,23 @@
 import { expect, test } from '@playwright/test';
 import { execFileSync, spawn, type ChildProcess } from 'node:child_process';
-import { writeFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import { mkdtemp, writeFile } from 'node:fs/promises';
+import os from 'node:os';
+import { join, resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
+
+// This dedicated suite predates the CN fork's zh-CN default and asserts its
+// English accessibility contract. Set the locale before the app first loads,
+// just as the default E2E configuration's storage state does.
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('paperclip.locale', 'en'));
+});
+
+function testDriveBaseUrl(logs: string): string | undefined {
+  const plainLogs = logs.replace(/\u001b\[[0-?]*[ -\/]*[@-~]/g, '');
+  const ready = plainLogs.match(/Paperclip is ready at (http:\/\/127\.0\.0\.1:\d+)/)?.[1]
+    ?? plainLogs.match(/Server listener bound on 127\.0\.0\.1:(\d+)/)?.[1];
+  return ready?.startsWith('http') ? ready : ready ? `http://127.0.0.1:${ready}` : undefined;
+}
 
 async function stopTestDrive(child: ChildProcess | undefined): Promise<void> {
   if (!child?.pid) return;
@@ -20,6 +36,24 @@ async function stopTestDrive(child: ChildProcess | undefined): Promise<void> {
     });
   };
   if (child.exitCode !== null || child.signalCode !== null) return;
+  if (process.platform === 'win32') {
+    if (child.connected) {
+      const exited = waitForExit(15_000);
+      try { child.send({ type: 'paperclip-e2e-shutdown' }); }
+      catch { /* fall through to the owned tree fallback */ }
+      if (await exited) return;
+    }
+    try {
+      execFileSync('taskkill', ['/PID', String(child.pid), '/T', '/F'], { stdio: 'ignore', windowsHide: true });
+    } catch (error) {
+      try { process.kill(child.pid, 0); }
+      catch (probeError) {
+        if ((probeError as NodeJS.ErrnoException).code === 'ESRCH') return;
+      }
+      throw error;
+    }
+    return;
+  }
   const stopped = waitForExit(15_000);
   signal('SIGTERM');
   if (await stopped) return;
@@ -34,27 +68,45 @@ test('a completion tool does not cut off a delayed final answer', async ({ page 
   let child: ChildProcess | undefined;
   let logs = '';
   try {
+    const dataDir = await mkdtemp(join(os.tmpdir(), 'paperclip-in-feed-completion-'));
+    const fixtureEntry = resolve(root, 'tests/e2e/fixtures/in-feed-codex.mjs');
+    const fixtureLoader = resolve(root, 'tests/e2e/fixtures/in-feed-codex-loader.mjs');
+    const shutdownHelper = resolve(root, 'tests/e2e/fixtures/native-test-drive-shutdown.mjs');
     const env = { ...process.env, STREAM_FIXTURE_KEY: 'not-a-real-model-key', NODE_ENV: 'test',
-      PATH: `${root}/tests/e2e/fixtures/completion-stream-bin:${process.env.PATH}` };
+      IN_FEED_CODEX_ENTRY: fixtureEntry,
+      IN_FEED_CODEX_MODE: 'completion',
+      NODE_OPTIONS: `${process.env.NODE_OPTIONS ?? ''} --import=${pathToFileURL(fixtureLoader).href} --import=${pathToFileURL(shutdownHelper).href}` };
     delete env.DATABASE_URL;
     delete env.DATABASE_MIGRATION_URL;
-    child = spawn(process.execPath, ['cli/node_modules/tsx/dist/cli.mjs', 'cli/src/index.ts', 'test-drive',
-      '--harness', 'codex', '--api-key-env', 'STREAM_FIXTURE_KEY', '--company-name', 'Stream completion', '--no-browser'],
-    { cwd: root, env, detached: true, stdio: ['ignore', 'pipe', 'pipe'] });
+    env.IN_FEED_FIXTURE_KEY = env.STREAM_FIXTURE_KEY;
+    env.IN_FEED_TEST_DRIVE_SHUTDOWN = '1';
+    child = spawn(process.execPath, ['cli/node_modules/tsx/dist/cli.mjs', 'tests/e2e/in-feed-native/launch.ts',
+      'Stream completion', dataDir],
+    { cwd: root, env, detached: true, stdio: ['ignore', 'pipe', 'pipe', 'ipc'] });
     child.stdout!.on('data', (chunk) => { logs += chunk.toString(); });
     child.stderr!.on('data', (chunk) => { logs += chunk.toString(); });
-    await expect.poll(() => logs.match(/Paperclip is ready at (http:\/\/127\.0\.0\.1:\d+)/)?.[1], { timeout: 100_000 }).toBeTruthy();
-    const base = logs.match(/Paperclip is ready at (http:\/\/127\.0\.0\.1:\d+)/)![1]!;
-    const api = async (path: string) => {
-      const response = await page.request.get(`${base}/api${path}`);
+    await expect.poll(() => testDriveBaseUrl(logs), { timeout: process.platform === 'win32' ? 180_000 : 100_000 }).toBeTruthy();
+    const base = testDriveBaseUrl(logs)!;
+    const api = async (path: string, method = 'GET', data?: unknown) => {
+      const response = await page.request.fetch(`${base}/api${path}`, { method, data });
       expect(response.ok(), await response.text()).toBeTruthy();
       return response.json();
     };
-    const health = await api('/health');
-    expect(health).toMatchObject({ status: 'ok', deploymentMode: 'local_trusted', bootstrapStatus: 'ready',
-      serverInfo: { git: { branchName: execFileSync('git', ['branch', '--show-current'], { cwd: root, encoding: 'utf8' }).trim() } } });
+    const expectedHealth = { status: 'ok', deploymentMode: 'local_trusted', bootstrapStatus: 'ready',
+      serverInfo: { git: { branchName: execFileSync('git', ['branch', '--show-current'], { cwd: root, encoding: 'utf8' }).trim() } } };
+    let health: Record<string, unknown> | undefined;
+    await expect.poll(async () => {
+      const response = await page.request.get(`${base}/api/health`);
+      if (!response.ok()) return undefined;
+      health = await response.json();
+      return health;
+    }, { timeout: process.platform === 'win32' ? 180_000 : 100_000 }).toMatchObject(expectedHealth);
     const [company] = await api('/companies');
-    const [agent] = await api(`/companies/${company.id}/agents`);
+    await expect.poll(async () => (await api(`/companies/${company.id}/agents`)).find((candidate: { name: string }) => candidate.name === 'CEO'), { timeout: 30_000 }).toBeTruthy();
+    const agents = await api(`/companies/${company.id}/agents`);
+    expect(agents).toHaveLength(1);
+    const [agent] = agents;
+    expect(agent).toMatchObject({ name: 'CEO', adapterType: 'codex_local' });
     expect(await api(`/companies/${company.id}/issues`)).toEqual([]);
     expect(await api(`/companies/${company.id}/heartbeat-runs`)).toEqual([]);
     const prefix = `/${company.issuePrefix}`;
@@ -69,12 +121,20 @@ test('a completion tool does not cut off a delayed final answer', async ({ page 
     await page.getByRole('button', { name: /Paperclip Runner/ }).click();
     await page.getByRole('button', { name: 'Save changes', exact: true }).click();
     await expect.poll(async () => (await api(`/agents/${agent.id}`)).adapterType).toBe('paperclip_runner');
+    // Native runtime skill sealing is intentionally unavailable on Windows.
+    // Test-drive can seed default desired skills, so clear only this disposable
+    // agent through its supported API before starting the native run.
+    const skillSnapshotBefore = await api(`/agents/${agent.id}/skills?companyId=${company.id}`);
+    const skillSync = await api(`/agents/${agent.id}/skills/sync?companyId=${company.id}`, 'POST', { desiredSkills: [], mode: 'replace' });
+    const skillSnapshotAfter = await api(`/agents/${agent.id}/skills?companyId=${company.id}`);
+    expect(skillSnapshotAfter.desiredSkills).toEqual([]);
     await page.getByRole('link', { name: 'Tasks', exact: true }).click();
     await page.getByRole('button', { name: 'New Task', exact: true }).last().click();
-    await page.getByPlaceholder('Task title').fill('Summarize the launch decisions and include the source link');
-    await page.getByRole('button', { name: 'Assignee', exact: true }).click();
-    await page.getByRole('button', { name: 'CEO', exact: true }).click();
-    await page.getByRole('button', { name: 'Create Task', exact: true }).click();
+    await page.getByRole('textbox', { name: 'Editable markdown' }).fill('Summarize the launch decisions and include the source link');
+    await page.getByRole('button', { name: 'Select assignee', exact: true }).click();
+    await page.getByRole('option').filter({ hasText: agent.name }).click();
+    await expect(page.getByRole('searchbox', { name: 'Search assignees', includeHidden: true })).toHaveCount(0);
+    await page.getByRole('button', { name: 'Create task', exact: true }).click();
     await expect.poll(async () => (await api(`/companies/${company.id}/issues`)).length).toBe(1);
     const [issue] = await api(`/companies/${company.id}/issues`);
     await page.goto(`${base}${prefix}/issues/${issue.identifier}`);
@@ -95,7 +155,8 @@ test('a completion tool does not cut off a delayed final answer', async ({ page 
     await page.screenshot({ path: info.outputPath('delayed-final-answer.png'), fullPage: true });
     await writeFile(info.outputPath('evidence.json'), JSON.stringify({ base, health, companyId: company.id, issueId: issue.id,
       runId: run.id, dependency: 'deterministic Codex app-server fixture', delayMs: 31000,
-      dataDir: logs.match(/Data directory: ([^\n\r]+)/)?.[1], presentation: run.resultJson.presentationDecision }, null, 2));
+      dataDir: logs.match(/Data directory: ([^\n\r]+)/)?.[1], presentation: run.resultJson.presentationDecision,
+      skills: { before: skillSnapshotBefore.desiredSkills, sync: skillSync.desiredSkills, after: skillSnapshotAfter.desiredSkills } }, null, 2));
   } finally {
     try { await stopTestDrive(child); }
     finally { await writeFile(info.outputPath('test-drive.log'), logs); }

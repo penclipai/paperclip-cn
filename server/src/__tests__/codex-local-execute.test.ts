@@ -679,7 +679,7 @@ describe("codex execute", () => {
       else process.env.HOME = previousHome;
       await fs.rm(root, { recursive: true, force: true });
     }
-  });
+  }, process.platform === "win32" ? 60_000 : undefined);
 
   it("keeps real assignment markdown and current wake events single-owned at the CLI boundary", async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-context-owner-"));

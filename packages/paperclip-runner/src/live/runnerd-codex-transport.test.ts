@@ -21,7 +21,7 @@ import { execFileSync, spawn } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { createServer } from "node:http";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { basename, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { describe, expect, it, vi } from "vitest";
@@ -394,8 +394,15 @@ it("publishes spawned runner ownership before waiting for provider startup", asy
   });
   const opening = bundle.transport.request("thread/start", { cwd: tmpdir(), dynamicTools: codexSemanticToolSpecs() });
   try {
-    await vi.waitFor(() => expect(onSpawn).toHaveBeenCalledOnce());
-    expect(onSpawn).toHaveBeenCalledWith({ pid: expect.any(Number), processGroupId: expect.any(Number), startedAt: expect.any(String) });
+    await vi.waitFor(() => expect(onSpawn).toHaveBeenCalledOnce(), {
+      timeout: 5_000,
+    });
+    expect(onSpawn).toHaveBeenCalledWith({
+      pid: expect.any(Number),
+      processGroupId:
+        process.platform === "win32" ? null : expect.any(Number),
+      startedAt: expect.any(String),
+    });
     expect(bundle.transport.processInfo?.().pid).toBeGreaterThan(0);
     expect(activate).not.toHaveBeenCalled();
     releaseOwnership();
@@ -876,6 +883,10 @@ it.each(["after_budget", "within_budget", "interrupted_within_budget", "persiste
     let core!: DurablePrpControlPlane;
     let entered!: () => void;
     let release!: () => void;
+    let resolveSemanticResultQueued!: () => void;
+    const semanticResultQueued = new Promise<void>((resolve) => {
+      resolveSemanticResultQueued = resolve;
+    });
     const handlerEntered = new Promise<void>((resolveEntered) => {
       entered = resolveEntered;
     });
@@ -949,6 +960,13 @@ it.each(["after_budget", "within_budget", "interrupted_within_budget", "persiste
             throw new Error("synthetic result journal refused persistence");
           return queue(type, ...args);
         });
+      } else {
+        const queue = core.queueCommand.bind(core);
+        vi.spyOn(core, "queueCommand").mockImplementation((type, ...args) => {
+          const command = queue(type, ...args);
+          if (type === "semantic_tool.result") resolveSemanticResultQueued();
+          return command;
+        });
       }
       if (mode === "interrupted_within_budget") {
         await bundle.transport.request("turn/interrupt", { reason: "test-stop-during-server-write" });
@@ -987,33 +1005,36 @@ it.each(["after_budget", "within_budget", "interrupted_within_budget", "persiste
           ),
         ).toEqual([]);
       } else {
-        await vi.waitFor(async () => {
-          const control = JSON.parse(
-            await readFile(
-              join(stateDirectory, "control-plane", "control-plane-state.json"),
-              "utf8",
-            ),
-          );
-          const late = control.commands.filter(
-            (command: { type: string }) =>
-              command.type === "semantic_tool.result",
-          );
-          expect(late).toHaveLength(1);
-          expect(late[0].payload.correlation.runId).toBe(
-            control.identity.runId,
-          );
-          expect(late[0].status).toBe(
-            settles ? "completed" : "pending",
-          );
-          if (settles) {
-            const results = control.committedEvents.filter(
-              (event: { eventType: string }) =>
-                event.eventType === "semantic_tool.result",
+        await Promise.race([
+          semanticResultQueued,
+          new Promise<never>((_, reject) => {
+            const timer = setTimeout(
+              () => reject(new Error("late semantic result was not durably queued")),
+              5_000,
             );
-            expect(results).toHaveLength(1);
-            expect(results[0].envelope.runId).toBe(control.identity.runId);
-          }
-        });
+            timer.unref();
+          }),
+        ]);
+        const control = JSON.parse(
+          await readFile(
+            join(stateDirectory, "control-plane", "control-plane-state.json"),
+            "utf8",
+          ),
+        );
+        const late = control.commands.filter(
+          (command: { type: string }) => command.type === "semantic_tool.result",
+        );
+        expect(late).toHaveLength(1);
+        expect(late[0].payload.correlation.runId).toBe(control.identity.runId);
+        expect(late[0].status).toBe(settles ? "completed" : "pending");
+        if (settles) {
+          const results = control.committedEvents.filter(
+            (event: { eventType: string }) =>
+              event.eventType === "semantic_tool.result",
+          );
+          expect(results).toHaveLength(1);
+          expect(results[0].envelope.runId).toBe(control.identity.runId);
+        }
       }
       if (settles) {
         expect(closeFailure).toBeNull();
@@ -1614,8 +1635,8 @@ it("derives the ACPX package authority only from the verified dist/cli layout", 
       "/provider-pack/dist/cli/acpx-runtime-sidecar.cjs",
     ),
   ).toEqual({
-    root: "/provider-pack",
-    manifest: "/provider-pack/package.json",
+    root: resolve("/provider-pack"),
+    manifest: resolve("/provider-pack/package.json"),
   });
   expect(() =>
     runnerdLaunchProfileInternals.acpxProviderPackageAuthority(
@@ -1628,8 +1649,8 @@ it("uses the public server npm package as the authority for vendored sidecars", 
   expect(runnerdLaunchProfileInternals.acpxProviderPackageAuthority(
     "/clean/node_modules/@penclipai/server/dist/vendor/paperclip-runner/cli/acpx-runtime-sidecar.cjs",
   )).toEqual({
-    root: "/clean/node_modules/@penclipai/server",
-    manifest: "/clean/node_modules/@penclipai/server/package.json",
+    root: resolve("/clean/node_modules/@penclipai/server"),
+    manifest: resolve("/clean/node_modules/@penclipai/server/package.json"),
   });
 });
 
@@ -1742,7 +1763,7 @@ it("adds Codex-style turn updates only when collaboration instructions are enabl
 
 it("resolves the ordinary ~/.codex credential home when CODEX_HOME is unset", () => {
   expect(resolveSourceCodexHome({ HOME: "/Users/tester" })).toBe(
-    "/Users/tester/.codex",
+    resolve("/Users/tester/.codex"),
   );
   expect(
     resolveSourceCodexHome({
@@ -2036,10 +2057,10 @@ it.each([
       PAPERCLIP_RUN_ID: "run-1",
       PAPERCLIP_NORMALIZED_SESSION_ID: "session-1",
       PAPERCLIP_NATIVE_RUNTIME_CONTEXT_PATH: "/isolated/runtime-context.json",
-      PAPERCLIP_ACPX_BUILTIN_ROOT: "/verified/provider-pack/dist/providers",
-      PAPERCLIP_ACPX_PROVIDER_PACKAGE_ROOT: "/verified/provider-pack",
+      PAPERCLIP_ACPX_BUILTIN_ROOT: resolve("/verified/provider-pack/dist/providers"),
+      PAPERCLIP_ACPX_PROVIDER_PACKAGE_ROOT: resolve("/verified/provider-pack"),
       PAPERCLIP_ACPX_PROVIDER_PACKAGE_MANIFEST:
-        "/verified/provider-pack/package.json",
+        resolve("/verified/provider-pack/package.json"),
     });
     for (const key of allowed)
       expect(environment[key]).toBe(credentialEnvironment[key]);
@@ -2115,7 +2136,7 @@ it("allows trusted package-manager runtime roots without exposing HOME paths", (
   expect(
     trustedRuntimeReadOnlyRoots({
       HOME: "/Users/tester",
-      PATH: "/Users/tester/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin",
+      PATH: ["/Users/tester/bin", "/opt/homebrew/bin", "/usr/local/bin", "/usr/bin", "/bin"].join(process.platform === "win32" ? ";" : ":"),
     }),
   ).toEqual(["/opt/homebrew", "/usr/local"]);
 });
@@ -2134,12 +2155,111 @@ it("denies the isolated Codex home without denying a remote execution workspace"
   const serialized = args.join("\n");
 
   expect(serialized).toContain(
-    '"/workspaces/task/.paperclip-runtime/paperclip-runner/sessions/session/filesystem/codex-home"="none"',
+    `${JSON.stringify(resolve("/workspaces/task/.paperclip-runtime/paperclip-runner/sessions/session/filesystem/codex-home"))}="none"`,
   );
-  expect(serialized).not.toContain('"/workspaces/task"="none"');
-  expect(serialized).not.toContain('"/workspaces/task/.codex"="none"');
+  expect(serialized).not.toContain(`${JSON.stringify(resolve("/workspaces/task"))}="none"`);
+  expect(serialized).not.toContain(`${JSON.stringify(resolve("/workspaces/task/.codex"))}="none"`);
   expect(serialized).toContain('\":workspace_roots\"={\".\"=\"write\"}');
 });
+
+it("uses Node only for a Windows JavaScript Codex wrapper", () => {
+  const launch = runnerdLaunchProfileInternals.codexRunnerLaunchProfile;
+  expect(
+    launch({
+      codexCommand: "C:\\qualified\\codex-wrapper.mjs",
+      appServerArgs: ["app-server"],
+      providerNodeCommand: "C:\\runtime\\node.exe",
+      platform: "win32",
+    }),
+  ).toEqual({
+    command: "C:\\runtime\\node.exe",
+    args: ["C:\\qualified\\codex-wrapper.mjs", "app-server"],
+  });
+  expect(
+    launch({
+      codexCommand: "C:\\qualified\\codex.exe",
+      appServerArgs: ["app-server"],
+      providerNodeCommand: "C:\\runtime\\node.exe",
+      platform: "win32",
+    }),
+  ).toEqual({
+    command: "C:\\qualified\\codex.exe",
+    args: ["app-server"],
+  });
+  expect(
+    launch({
+      codexCommand: "/qualified/codex-wrapper.cjs",
+      appServerArgs: ["app-server"],
+      providerNodeCommand: "/runtime/node",
+      platform: "linux",
+    }),
+  ).toEqual({
+    command: "/qualified/codex-wrapper.cjs",
+    args: ["app-server"],
+  });
+});
+
+it.runIf(process.platform === "win32")(
+  "persists the Windows Node-wrapper launch profile before runner startup",
+  async () => {
+    const root = await mkdtemp(join(tmpdir(), "paperclip-codex-node-wrapper-"));
+    const wrapper = join(root, "codex-wrapper.mjs");
+    const runnerBinary = join(root, "runnerd");
+    await Promise.all([
+      writeFile(wrapper, "export {};\n", { mode: 0o700 }),
+      writeFile(runnerBinary, "unexecuted fixture artifact", { mode: 0o700 }),
+    ]);
+    let template: Record<string, unknown> | null = null;
+    const launch = vi.fn(() => {
+      throw new Error("A provider process must not start in this fixture");
+    });
+    const { transport } = createCapabilityRunnerdCodexTransport({
+      provider: "codex",
+      runnerBinary,
+      stateDirectory: root,
+      sourceCodexHome: "",
+      codexCommand: wrapper,
+      providerNodeCommand: process.execPath,
+      environment: { PATH: "/missing-ambient-codex" },
+      controlPlaneRegistration: async (authority) => {
+        template = structuredClone(authority.store.state.runAttachTemplate!);
+        throw new Error("fixture_stop_before_runner_launch");
+      },
+      runnerProcessLauncher: launch,
+    });
+    try {
+      await expect(
+        transport.request("thread/start", {
+          cwd: root,
+          model: "gpt-6.1-sol",
+          dynamicTools: [],
+        }),
+      ).rejects.toThrow("fixture_stop_before_runner_launch");
+      const provider =
+        template?.provider &&
+        typeof template.provider === "object" &&
+        !Array.isArray(template.provider)
+          ? (template.provider as Record<string, unknown>)
+          : {};
+      expect(provider.command).toBe(process.execPath);
+      expect(provider.args).toEqual(
+        expect.arrayContaining([wrapper]),
+      );
+      expect(template?.runtimeLaunchArgs).toEqual(provider.args);
+      expect(provider.args).toContain(wrapper);
+      expect(
+        (provider.args as string[]).some((arg) =>
+          arg.includes(JSON.stringify(wrapper) + '="read"'),
+        ),
+      ).toBe(true);
+      expect(launch).not.toHaveBeenCalled();
+    } finally {
+      await transport.close();
+      await rm(root, { recursive: true, force: true });
+    }
+  },
+  15_000,
+);
 
 it.each(["installed", "explicit"] as const)("records the selected %s Codex command before launch", async (selection) => {
   const root = await mkdtemp(join(tmpdir(), "paperclip-codex-command-selection-"));
@@ -2200,6 +2320,63 @@ it("rejects remote Codex without a guest executable before resolving controller 
   }
 });
 
+it.runIf(process.platform === "win32")(
+  "requires a guest Node executable for a remote JavaScript Codex wrapper",
+  async () => {
+    const root = await mkdtemp(join(tmpdir(), "paperclip-runner-remote-codex-wrapper-"));
+    const runnerBinary = join(root, "runnerd");
+    await writeFile(runnerBinary, "unexecuted fixture artifact", { mode: 0o700 });
+    const options = (stateDirectory: string) => ({
+      provider: "codex" as const,
+      runnerBinary,
+      stateDirectory,
+      sourceCodexHome: "",
+      runnerFilesystemRoot: "/workspaces/task/.paperclip-runtime/session",
+      codexCommand: "/workspaces/task/.paperclip-runtime/session/bin/codex.mjs",
+    });
+    try {
+      const missing = createCapabilityRunnerdCodexTransport(options(join(root, "missing")));
+      await expect(
+        missing.transport.request("thread/start", { cwd: "/workspaces/task", model: "gpt-6.1-sol", dynamicTools: [] }),
+      ).rejects.toThrow("remote Codex JavaScript wrapper omitted its provider-pack Node executable");
+      await missing.transport.close();
+
+      const controller = createCapabilityRunnerdCodexTransport({
+        ...options(join(root, "controller")),
+        providerNodeCommand: process.execPath,
+      });
+      await expect(
+        controller.transport.request("thread/start", { cwd: "/workspaces/task", model: "gpt-6.1-sol", dynamicTools: [] }),
+      ).rejects.toThrow("provider Node path belongs to the controller host");
+      await controller.transport.close();
+
+      let template: Record<string, unknown> | null = null;
+      const guest = createCapabilityRunnerdCodexTransport({
+        ...options(join(root, "guest")),
+        providerNodeCommand: "/workspaces/task/.paperclip-runtime/session/bin/node",
+        controlPlaneRegistration: async (authority) => {
+          template = structuredClone(authority.store.state.runAttachTemplate!);
+          throw new Error("fixture_stop_before_remote_runner_launch");
+        },
+      });
+      await expect(
+        guest.transport.request("thread/start", { cwd: "/workspaces/task", model: "gpt-6.1-sol", dynamicTools: [] }),
+      ).rejects.toThrow("fixture_stop_before_remote_runner_launch");
+      const provider = template?.provider as Record<string, unknown>;
+      expect(provider.command).toBe(
+        "/workspaces/task/.paperclip-runtime/session/bin/node",
+      );
+      expect((provider.args as string[])[0]).toBe(
+        "/workspaces/task/.paperclip-runtime/session/bin/codex.mjs",
+      );
+      await guest.transport.close();
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  },
+  15_000,
+);
+
 it.each(["missing", "changed"] as const)("reuses the recorded Codex command when dependency discovery is %s during resume", async (discovery) => {
   const root = await mkdtemp(join(tmpdir(), "paperclip-codex-recorded-command-"));
   const command = join(root, "recorded-codex");
@@ -2250,6 +2427,259 @@ it.each(["missing", "changed"] as const)("reuses the recorded Codex command when
     await rm(root, { recursive: true, force: true });
   }
 });
+
+it.runIf(process.platform === "win32")(
+  "keeps the Windows wrapper prefix on a rotated run attachment",
+  async () => {
+    const root = await mkdtemp(join(tmpdir(), "paperclip-codex-wrapper-attach-"));
+    const wrapper = join(root, "recorded-codex.mjs");
+    const runnerBinary = join(root, "runnerd");
+    await Promise.all([
+      writeFile(wrapper, "export {};\n", { mode: 0o700 }),
+      writeFile(runnerBinary, "unexecuted fixture artifact", { mode: 0o700 }),
+    ]);
+    const priorIdentity = {
+      runnerInstanceId: "runner-wrapper",
+      environmentLeaseId: "lease-wrapper",
+      normalizedSessionId: "session-wrapper",
+      runId: "run-prior",
+      turnId: "turn-prior",
+      itemId: "item-prior",
+    };
+    const nextIdentity = {
+      ...priorIdentity,
+      runId: "run-next",
+      turnId: "turn-next",
+      itemId: "item-next",
+    };
+    const core = new DurablePrpControlPlane({
+      stateDirectory: join(root, "control-plane"),
+      identity: priorIdentity,
+      expectedRunnerVersion: "fixture",
+      expectedRunnerDigest:
+        "sha256:" + createHash("sha256").update(await readFile(runnerBinary)).digest("hex"),
+    });
+    core.persistRunAttachTemplate({
+      provider: {
+        kind: "codex",
+        provider: "codex",
+        command: process.execPath,
+        args: [wrapper, "app-server"],
+        model: "gpt-6.1-sol",
+      },
+      workspace: { cwd: root },
+    });
+    await core.stop();
+    await mkdir(join(root, "runner"), { mode: 0o700 });
+    await writeFile(
+      join(root, "runner", "runner-state.json"),
+      JSON.stringify({
+        schema: "paperclip.runner.durable.state.v1",
+        ...priorIdentity,
+        lifecycle: "suspended",
+      }),
+      { mode: 0o600 },
+    );
+    let template: Record<string, unknown> | null = null;
+    const launch = vi.fn(() => {
+      throw new Error("A provider process must not start in this fixture");
+    });
+    const { transport } = createCapabilityRunnerdCodexTransport({
+      provider: "codex",
+      runnerBinary,
+      stateDirectory: root,
+      sourceCodexHome: "",
+      prpIdentity: nextIdentity,
+      providerNodeCommand: process.execPath,
+      environment: { PATH: "/missing-ambient-codex" },
+      controlPlaneRegistration: async (authority) => {
+        template = structuredClone(
+          authority.store.state.commands.find(
+            (command) => command.type === "run.attach",
+          )?.payload ?? null,
+        );
+        throw new Error("fixture_stop_before_resumed_runner_launch");
+      },
+      runnerProcessLauncher: launch,
+    });
+    try {
+      await expect(transport.request("thread/read", { threadId: "provider-prior" }))
+        .rejects.toThrow("fixture_stop_before_resumed_runner_launch");
+      const provider =
+        template?.provider &&
+        typeof template.provider === "object" &&
+        !Array.isArray(template.provider)
+          ? (template.provider as Record<string, unknown>)
+          : {};
+      expect(provider.command).toBe(process.execPath);
+      expect((provider.args as string[])[0]).toBe(wrapper);
+      expect(template?.runtimeLaunchArgs).toEqual(provider.args);
+      expect(
+        (template?.runtimeLaunchArgs as string[]).some((arg) =>
+          arg.includes(JSON.stringify(wrapper) + '="read"'),
+        ),
+      ).toBe(true);
+      expect(launch).not.toHaveBeenCalled();
+    } finally {
+      await transport.close();
+      await rm(root, { recursive: true, force: true });
+    }
+  },
+);
+
+it.runIf(process.platform === "win32")(
+  "rejects a pre-Node Windows JavaScript wrapper checkpoint before attachment",
+  async () => {
+    const root = await mkdtemp(join(tmpdir(), "paperclip-codex-legacy-wrapper-"));
+    const wrapper = join(root, "legacy-codex.mjs");
+    const runnerBinary = join(root, "runnerd");
+    await Promise.all([
+      writeFile(wrapper, "export {};\n", { mode: 0o700 }),
+      writeFile(runnerBinary, "unexecuted fixture artifact", { mode: 0o700 }),
+    ]);
+    const priorIdentity = {
+      runnerInstanceId: "runner-legacy-wrapper",
+      environmentLeaseId: "lease-legacy-wrapper",
+      normalizedSessionId: "session-legacy-wrapper",
+      runId: "run-prior",
+      turnId: "turn-prior",
+      itemId: "item-prior",
+    };
+    const nextIdentity = {
+      ...priorIdentity,
+      runId: "run-next",
+      turnId: "turn-next",
+      itemId: "item-next",
+    };
+    const core = new DurablePrpControlPlane({
+      stateDirectory: join(root, "control-plane"),
+      identity: priorIdentity,
+      expectedRunnerVersion: "fixture",
+      expectedRunnerDigest:
+        "sha256:" + createHash("sha256").update(await readFile(runnerBinary)).digest("hex"),
+    });
+    core.persistRunAttachTemplate({
+      provider: {
+        kind: "codex",
+        provider: "codex",
+        command: wrapper,
+        args: ["app-server"],
+        model: "gpt-6.1-sol",
+      },
+      workspace: { cwd: root },
+    });
+    await core.stop();
+    await mkdir(join(root, "runner"), { mode: 0o700 });
+    await writeFile(
+      join(root, "runner", "runner-state.json"),
+      JSON.stringify({
+        schema: "paperclip.runner.durable.state.v1",
+        ...priorIdentity,
+        lifecycle: "suspended",
+      }),
+      { mode: 0o600 },
+    );
+    const launch = vi.fn(() => {
+      throw new Error("A provider process must not start in this fixture");
+    });
+    const { transport } = createCapabilityRunnerdCodexTransport({
+      provider: "codex",
+      runnerBinary,
+      stateDirectory: root,
+      sourceCodexHome: "",
+      prpIdentity: nextIdentity,
+      providerNodeCommand: process.execPath,
+      environment: { PATH: "/missing-ambient-codex" },
+      runnerProcessLauncher: launch,
+    });
+    try {
+      await expect(transport.request("thread/read", { threadId: "provider-prior" }))
+        .rejects.toThrow(
+          "native_runner_windows_js_wrapper_checkpoint_requires_new_session",
+        );
+      expect(launch).not.toHaveBeenCalled();
+    } finally {
+      await transport.close();
+      await rm(root, { recursive: true, force: true });
+    }
+  },
+);
+
+it.runIf(process.platform === "win32")
+  .each([
+    ["without wrapper arguments", []],
+    ["with a non-JavaScript wrapper argument", ["C:\\qualified\\not-a-codex-wrapper.exe"]],
+  ])(
+  "rejects a Windows Node-wrapper checkpoint %s before attachment",
+  async (_caseName, args) => {
+      const root = await mkdtemp(join(tmpdir(), "paperclip-codex-invalid-wrapper-"));
+      const runnerBinary = join(root, "runnerd");
+      await writeFile(runnerBinary, "unexecuted fixture artifact", { mode: 0o700 });
+      const priorIdentity = {
+        runnerInstanceId: "runner-invalid-wrapper",
+        environmentLeaseId: "lease-invalid-wrapper",
+        normalizedSessionId: "session-invalid-wrapper",
+        runId: "run-prior",
+        turnId: "turn-prior",
+        itemId: "item-prior",
+      };
+      const nextIdentity = {
+        ...priorIdentity,
+        runId: "run-next",
+        turnId: "turn-next",
+        itemId: "item-next",
+      };
+      const core = new DurablePrpControlPlane({
+        stateDirectory: join(root, "control-plane"),
+        identity: priorIdentity,
+        expectedRunnerVersion: "fixture",
+        expectedRunnerDigest:
+          "sha256:" + createHash("sha256").update(await readFile(runnerBinary)).digest("hex"),
+      });
+      core.persistRunAttachTemplate({
+        provider: {
+          kind: "codex",
+          provider: "codex",
+          command: process.execPath,
+          args,
+          model: "gpt-6.1-sol",
+        },
+        workspace: { cwd: root },
+      });
+      await core.stop();
+      await mkdir(join(root, "runner"), { mode: 0o700 });
+      await writeFile(
+        join(root, "runner", "runner-state.json"),
+        JSON.stringify({
+          schema: "paperclip.runner.durable.state.v1",
+          ...priorIdentity,
+          lifecycle: "suspended",
+        }),
+        { mode: 0o600 },
+      );
+      const launch = vi.fn(() => {
+        throw new Error("A provider process must not start in this fixture");
+      });
+      const { transport } = createCapabilityRunnerdCodexTransport({
+        provider: "codex",
+        runnerBinary,
+        stateDirectory: root,
+        sourceCodexHome: "",
+        prpIdentity: nextIdentity,
+        providerNodeCommand: process.execPath,
+        environment: { PATH: "/missing-ambient-codex" },
+        runnerProcessLauncher: launch,
+      });
+      try {
+        await expect(transport.request("thread/read", { threadId: "provider-prior" }))
+          .rejects.toThrow("native_runner_windows_js_wrapper_profile_invalid");
+        expect(launch).not.toHaveBeenCalled();
+      } finally {
+        await transport.close();
+        await rm(root, { recursive: true, force: true });
+      }
+  },
+);
 
 it("rejects remote OpenCode before spawn when provider-pack paths are absent", async () => {
   const root = await mkdtemp(join(tmpdir(), "paperclip-runner-remote-pack-"));
@@ -2720,7 +3150,7 @@ it("recovers provider readiness from an already-committed journal without replay
 
 const fakeCodex = resolve(
   import.meta.dirname,
-  "../../runner/target/debug/fake-codex-app-server",
+  `../../runner/target/debug/fake-codex-app-server${process.platform === "win32" ? ".exe" : ""}`,
 );
 
 function fakeCodexArgs(stateDirectory: string, ...args: string[]): string[] {
@@ -3956,10 +4386,7 @@ it("does not retry a real memoized transport close whose suspension proof is una
   }));
   const bundle = createCapabilityRunnerdCodexTransport({
     runnerBinary: defaultCapabilityRunnerdBinary(),
-    codexCommand: resolve(
-      import.meta.dirname,
-      "../../runner/target/debug/fake-codex-app-server",
-    ),
+    codexCommand: fakeCodex,
     codexArgs: ["--state-file", join(stateDirectory, "fake-codex-state.json")],
     stateDirectory,
     closeGraceMs: 400,
@@ -5111,13 +5538,12 @@ it.each([
             .waitForProcess(handle, 250)
             .catch(() => undefined);
           await within("exact warm fixture runner exit", handle.completion);
-          if (handle.processGroupId && !dead(-handle.processGroupId))
+          if (process.platform !== "win32" && handle.processGroupId && !dead(-handle.processGroupId))
             process.kill(-handle.processGroupId, "SIGKILL");
           await vi.waitFor(() => {
             expect(handle.child.pid && dead(handle.child.pid)).toBe(true);
-            expect(handle.processGroupId && dead(-handle.processGroupId)).toBe(
-              true,
-            );
+            if (process.platform === "win32") expect(handle.processGroupId).toBeNull();
+            else expect(handle.processGroupId && dead(-handle.processGroupId)).toBe(true);
           });
         }
         if (providerPid && !dead(-providerPid))
@@ -5344,13 +5770,12 @@ it.each([false, true])(
             .waitForProcess(handle, 250)
             .catch(() => undefined);
           await within("exact result-loss runner exit", handle.completion);
-          if (handle.processGroupId && !dead(-handle.processGroupId))
+          if (process.platform !== "win32" && handle.processGroupId && !dead(-handle.processGroupId))
             process.kill(-handle.processGroupId, "SIGKILL");
           await vi.waitFor(() => {
             expect(handle.child.pid && dead(handle.child.pid)).toBe(true);
-            expect(handle.processGroupId && dead(-handle.processGroupId)).toBe(
-              true,
-            );
+            if (process.platform === "win32") expect(handle.processGroupId).toBeNull();
+            else expect(handle.processGroupId && dead(-handle.processGroupId)).toBe(true);
           });
         }
         if (providerPid && !dead(-providerPid))
@@ -6086,8 +6511,9 @@ it.each([
           authorizationFault &&
           failedAuthorizationStage === "before_bootstrap"
         ) {
-          await vi.waitFor(() =>
-            expect(releaseHeldAuthorization).toBeTypeOf("function"),
+          await vi.waitFor(
+            () => expect(releaseHeldAuthorization).toBeTypeOf("function"),
+            { timeout: 5_000 },
           );
           const queuedBefore = cores[1]!.store.state.commands.map(
             (command) => command.commandId,
@@ -6193,8 +6619,9 @@ it.each([
         const firstRead = within(resumed.transport.request("thread/read", {}));
         void firstRead.catch(() => undefined);
         if (ordinaryFollowup === "callback_async_failure") {
-          await vi.waitFor(() =>
-            expect(rejectHeldCompletion).toBeTypeOf("function"),
+          await vi.waitFor(
+            () => expect(rejectHeldCompletion).toBeTypeOf("function"),
+            { timeout: 5_000 },
           );
           try {
             expect(recoveryFenceActive).toBe(true);
@@ -6337,13 +6764,12 @@ it.each([
             .waitForProcess(handle, 250)
             .catch(() => undefined);
           await within(handle.completion);
-          if (handle.processGroupId && !dead(-handle.processGroupId))
+          if (process.platform !== "win32" && handle.processGroupId && !dead(-handle.processGroupId))
             process.kill(-handle.processGroupId, "SIGKILL");
           await vi.waitFor(() => {
             expect(handle.child.pid && dead(handle.child.pid)).toBe(true);
-            expect(handle.processGroupId && dead(-handle.processGroupId)).toBe(
-              true,
-            );
+            if (process.platform === "win32") expect(handle.processGroupId).toBeNull();
+            else expect(handle.processGroupId && dead(-handle.processGroupId)).toBe(true);
           });
         }
         for (const pid of providerPids) {
@@ -6486,9 +6912,12 @@ it("rotates PRP authority in place for a warm cross-run attachment", async () =>
 
 it("reopens Pi after a completed turn within its cold admission budget during warm attachment", async () => {
   const root = await mkdtemp(join(tmpdir(), "runnerd-pi-warm-admission-"));
-  const providerNode = process.platform === "linux" ? join(root, "node") : process.execPath;
+  const providerNode = join(
+    root,
+    process.platform === "win32" ? "node.exe" : "node",
+  );
+  await cp(process.execPath, providerNode, { dereference: true });
   if (process.platform === "linux") {
-    await cp(process.execPath, providerNode, { dereference: true });
     await chmod(providerNode, 0o500);
     expect((await stat(providerNode)).mode & 0o777).toBe(0o500);
   }
@@ -6515,6 +6944,17 @@ it("reopens Pi after a completed turn within its cold admission budget during wa
   let failure: unknown;
   try {
     await bundle.transport.request("initialize", {});
+    if (process.platform === "win32") {
+      await expect(
+        bundle.transport.request("thread/start", {
+          cwd: root,
+          model: "openrouter/deepseek/deepseek-v4-flash-0731",
+          dynamicTools: codexSemanticToolSpecs(),
+          completionContract: { revision: "warm-pi-contract", criterionIds: [] },
+        }),
+      ).rejects.toThrow("verified process snapshots are supported only on Linux and macOS");
+      return;
+    }
     await bundle.transport.request("thread/start", {
       cwd: root, model: "openrouter/deepseek/deepseek-v4-flash-0731",
       dynamicTools: codexSemanticToolSpecs(),
@@ -7087,6 +7527,26 @@ it("cold-restores a suspended provider session under its durable run binding", a
     contentItems: [],
   }));
   let firstProviderThread: { id: string; sessionId: string } | null = null;
+  if (process.platform === "win32") {
+    try {
+      await expect(
+        first.transport.request("thread/start", {
+          cwd: tmpdir(),
+          dynamicTools: [...dynamicTools, ...codexSemanticToolSpecs()],
+          completionContract: {
+            revision: "contract-first",
+            criterionIds: ["criterion-first"],
+          },
+        }),
+      ).rejects.toThrow(
+        "native_runtime_context_unsupported: immutable assigned skills cannot be sealed on win32",
+      );
+    } finally {
+      await first.transport.close();
+      await rm(stateDirectory, { recursive: true, force: true });
+    }
+    return;
+  }
   try {
     const started = await first.transport.request("thread/start", {
       cwd: tmpdir(),
@@ -7880,16 +8340,29 @@ it.each(["claude", "codex"] as const)("keeps the explicitly assigned gateway in 
 });
 
 it("resolves explicit skills to the remote provider home and rejects unassigned paths", () => {
-  const context = assignedRuntimeContext("/controller/bundle", "/controller/instructions");
-  const skill = { type: "skill", name: "assigned", path: "/controller/bundle/SKILL.md" };
-  expect(resolveRunnerdCodexSkillInputs([skill], context, "/runner/codex-home")).toEqual([
-    { type: "skill", name: "assigned", path: "/runner/codex-home/skills/assigned/SKILL.md" },
+  const controllerBundle = resolve("/controller/bundle");
+  const codexHome = resolve("/runner/codex-home");
+  const context = assignedRuntimeContext(
+    controllerBundle,
+    resolve("/controller/instructions"),
+  );
+  const skill = {
+    type: "skill",
+    name: "assigned",
+    path: resolve(controllerBundle, "SKILL.md"),
+  };
+  expect(resolveRunnerdCodexSkillInputs([skill], context, codexHome)).toEqual([
+    {
+      type: "skill",
+      name: "assigned",
+      path: resolve(codexHome, "skills", "assigned", "SKILL.md"),
+    },
   ]);
-  expect(resolveRunnerdCodexSkillInputs([], context, "/runner/codex-home")).toEqual([]);
-  for (const inputs of [[{ ...skill, path: "/arbitrary/SKILL.md" }], [{ ...skill, name: "other" }], [skill, skill]]) {
-    expect(() => resolveRunnerdCodexSkillInputs(inputs, context, "/runner/codex-home")).toThrow("unique assigned runtime skill");
+  expect(resolveRunnerdCodexSkillInputs([], context, codexHome)).toEqual([]);
+  for (const inputs of [[{ ...skill, path: resolve("/arbitrary/SKILL.md") }], [{ ...skill, name: "other" }], [skill, skill]]) {
+    expect(() => resolveRunnerdCodexSkillInputs(inputs, context, codexHome)).toThrow("unique assigned runtime skill");
   }
-  expect(() => resolveRunnerdCodexSkillInputs([skill], null, "/runner/codex-home")).toThrow("assigned runtime skill");
+  expect(() => resolveRunnerdCodexSkillInputs([skill], null, codexHome)).toThrow("assigned runtime skill");
 });
 
 
@@ -7979,7 +8452,11 @@ it.each([true, false])("preserves prepared OpenCode cleanup errors (primary fail
 it.each([
   { model: "openrouter/deepseek/deepseek-v4-flash-0731", supportsReasoning: true },
   { model: "anthropic/claude-sonnet-4", supportsReasoning: false },
-])("preserves prepared input and completion feedback through runnerd and the real OpenCode proxy boundary ($model)", async ({ model, supportsReasoning }) => {
+])(
+  process.platform === "win32"
+    ? "rejects a remote OpenCode prepared fixture at the native Windows cwd boundary ($model)"
+    : "preserves prepared input and completion feedback through runnerd and the real OpenCode proxy boundary ($model)",
+  async ({ model, supportsReasoning }) => {
   const root = await mkdtemp(join(tmpdir(), "runnerd-prepared-opencode-"));
   // GitHub-hosted Linux toolcache Node can be group-writable, unlike the AWS
   // fleet. Qualify an owned copy with strict permissions, never chmod the host
@@ -7990,16 +8467,21 @@ it.each([
     await cp(process.execPath, providerNode, { dereference: true });
     await chmod(providerNode, 0o500);
   }
-  // The qualified launch boundary unlinks its executable after exec. Use a
-  // native wrapper, like the real OpenCode binary; a shebang script would need
-  // to reopen the now-unlinked path in its interpreter.
-  const executable = join(root, "fake-opencode");
+  // The Windows fixture reaches the native runner's remote-cwd gate before
+  // provider spawn. Reuse the verified native fixture there so the gate is
+  // tested without requiring a host compiler. Unix retains the real OpenCode
+  // native wrapper because qualified launch unlinks its executable after exec.
+  const executable = process.platform === "win32"
+    ? fakeCodex
+    : join(root, "fake-opencode");
   const fixture = resolve("test/fixtures/fake-opencode-server.mjs");
-  execFileSync("cc", ["-x", "c", "-o", executable, "-"], {
-    input: `#include <unistd.h>\n#include <stdlib.h>\nint main(int argc, char **argv) { char **args = calloc(argc + 2, sizeof(char *)); args[0] = ${JSON.stringify(providerNode)}; args[1] = ${JSON.stringify(fixture)}; for (int i = 1; i < argc; i++) args[i + 1] = argv[i]; execv(args[0], args); return 127; }`,
-  });
+  if (process.platform !== "win32") {
+    execFileSync("cc", ["-x", "c", "-o", executable, "-"], {
+      input: `#include <unistd.h>\n#include <stdlib.h>\nint main(int argc, char **argv) { char **args = calloc(argc + 2, sizeof(char *)); args[0] = ${JSON.stringify(providerNode)}; args[1] = ${JSON.stringify(fixture)}; for (int i = 1; i < argc; i++) args[i + 1] = argv[i]; execv(args[0], args); return 127; }`,
+    });
+  }
   // CI may use umask 0002; qualified executables cannot be group-writable.
-  await chmod(executable, 0o755);
+  if (process.platform !== "win32") await chmod(executable, 0o755);
   // Use the production bundler without depending on (or mutating) shared dist
   // artifacts. The Vitest CI lane builds Rust but does not build TypeScript.
   const proxy = join(root, "opencode-app-server-proxy.cjs");
@@ -8029,6 +8511,9 @@ it.each([
     objective: "Preserve the prepared task.", contractRevision: "prepared-v1",
     criteria: [{ id: "objective", requirement: "Keep this request unchanged." }],
   });
+  const workingDirectory = process.platform === "win32"
+    ? `/workspaces/${basename(root)}`
+    : root;
   let completionCalls = 0;
   const feedback = "Include [Saved document](/PAP/issues/PAP-1#document-plan) in your final response.";
   const driver = new CodexAppServerDriver({
@@ -8037,7 +8522,7 @@ it.each([
     model,
     transportFactory: () => bundle.transport,
     workingDirectoryAuthority: "remote_runner",
-    environment: { PAPERCLIP_WORKSPACE_CWD: root },
+    environment: { PAPERCLIP_WORKSPACE_CWD: workingDirectory },
     completionFeedback: async () => {
       completionCalls += 1;
       if (completionCalls === 1) throw new Error("Keep the task's required document link in the final response.");
@@ -8050,9 +8535,24 @@ it.each([
     task: { prompt: "Keep this completion-feedback request unchanged." },
     completionContract: { revision: "prepared-v1", criteria: task.completionContract.criteria },
   });
+  if (process.platform === "win32") {
+    try {
+      await expect(
+        driver.openSession({
+          runId: "prepared-opencode",
+          normalizedSessionId: "prepared-opencode",
+          workingDirectory,
+        }),
+      ).rejects.toThrow("Codex cwd must be an existing absolute directory");
+    } finally {
+      await bundle.transport.close().catch(() => undefined);
+      await rm(root, { recursive: true, force: true });
+    }
+    return;
+  }
   await withPreparedOpenCodeCleanup({
     run: async () => {
-      session = await driver.openSession({ runId: "prepared-opencode", normalizedSessionId: "prepared-opencode", workingDirectory: root });
+      session = await driver.openSession({ runId: "prepared-opencode", normalizedSessionId: "prepared-opencode", workingDirectory });
       expect(bundle.transport.supportsTurnReasoning?.()).toBe(supportsReasoning);
       const firstTurn = { message: { role: "user" as const, text: prepared } };
       if (!supportsReasoning) {
@@ -8089,7 +8589,9 @@ it.each([
     removeRoot: () => rm(root, { recursive: true, force: true }),
     evidence: () => bundle.evidence(),
   });
-}, 30_000);
+  },
+  30_000,
+);
 
 
 it.each([

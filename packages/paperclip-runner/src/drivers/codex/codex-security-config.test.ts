@@ -1,6 +1,7 @@
 import { createRequire } from "node:module";
 import { execFileSync } from "node:child_process";
-import { dirname, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 import { resolvePinnedCodexCommand } from "./codex-command.js";
 import { evalProviderTransportOptions } from "../../cli/eval-provider-runtime.js";
 import { describe, expect, it } from "vitest";
@@ -13,11 +14,22 @@ import {
   createSkilllessCodexThreadConfig,
 } from "./codex-security-config.js";
 
+function resolvedFilesystemRule(path: string, access: "none" | "read" | "write"): string {
+  return `${JSON.stringify(resolve(path))}="${access}"`;
+}
+
+function filesystemRule(path: string, access: "none" | "read" | "write"): string {
+  return `${JSON.stringify(path)}="${access}"`;
+}
+
 describe("Codex security configuration", () => {
   it("uses the same actual pinned executable for native defaults and direct evals without a global Codex PATH", () => {
     const command = resolvePinnedCodexCommand();
     expect(evalProviderTransportOptions("codex").codexCommand).toBe(command);
-    expect(execFileSync(command, ["--version"], { env: { PATH: dirname(process.execPath) },
+    const commandLine = process.platform === "win32"
+      ? [process.execPath, [command, "--version"]] as const
+      : [command, ["--version"]] as const;
+    expect(execFileSync(commandLine[0], commandLine[1], { env: { PATH: dirname(process.execPath) },
       encoding: "utf8", timeout: 30_000, maxBuffer: 16 * 1024 }).trim()).toBe("codex-cli 0.160.0");
   });
 
@@ -25,15 +37,22 @@ describe("Codex security configuration", () => {
     // Vitest adds its dependency directories to global module lookup paths.
     // Use the existing Node/tsx boundary so an absent fixture dependency cannot
     // be supplied by the test runner's installed bridge instead.
+    const codexCommandModule = pathToFileURL(
+      resolve(import.meta.dirname, "codex-command.ts"),
+    ).href;
+    const codexSecurityConfigModule = pathToFileURL(
+      resolve(import.meta.dirname, "codex-security-config.ts"),
+    ).href;
     const source = `
       import assert from "node:assert/strict";
       import { execFileSync } from "node:child_process";
       import { createRequire } from "node:module";
+      import { pathToFileURL } from "node:url";
       import { chmodSync, mkdirSync, mkdtempSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
       import { tmpdir } from "node:os";
-      import { delimiter, dirname, isAbsolute, join } from "node:path";
-      import { resolveCodexCommand, resolvePinnedCodexCommand } from ${JSON.stringify(new URL("./codex-command.ts", import.meta.url).href)};
-      import { codexExecutableReadOnlyRoots, createIsolatedCodexAppServerArgs } from ${JSON.stringify(new URL("./codex-security-config.ts", import.meta.url).href)};
+      import { delimiter, dirname, isAbsolute, join, resolve } from "node:path";
+      import { resolveCodexCommand, resolvePinnedCodexCommand } from ${JSON.stringify(codexCommandModule)};
+      import { codexExecutableReadOnlyRoots, createIsolatedCodexAppServerArgs } from ${JSON.stringify(codexSecurityConfigModule)};
       const root = realpathSync(mkdtempSync(join(tmpdir(), "paperclip-pinned-codex-test-")));
       const pathOnlyRoot = realpathSync(mkdtempSync(join(tmpdir(), "paperclip-path-codex-test-")));
       const pathDirectory = join(pathOnlyRoot, "bin");
@@ -48,17 +67,22 @@ describe("Codex security configuration", () => {
       const platform = join(root, "node_modules", platformName), vendor = join(platform, "vendor");
       const metadata = { name: "@openai/codex", version: "0.160.0", bin: { codex: "bin/codex.js" },
         optionalDependencies: { [platformName]: "npm:@openai/codex@0.160.0-" + process.platform + "-" + process.arch } };
+      const runJavaScriptCommand = (command, args, options) => execFileSync(
+        process.platform === "win32" ? process.execPath : command,
+        process.platform === "win32" ? [command, ...args] : args,
+        options,
+      );
       try {
         mkdirSync(pathDirectory);
         writeFileSync(pathCommand, "#!" + process.execPath + "\\nif (process.argv.slice(2).join(' ') !== '--version') process.exit(9); console.log('codex-cli 0.141.0');\\n", { mode: 0o755 });
         const pathOnlyIssuer = join(pathOnlyRoot, "standalone-command.js");
         assert.equal(resolveCodexCommand(pathOnlyIssuer, commandEnvironment), pathCommand, "Only absent dependency graphs use the selected PATH command");
-        assert.equal(execFileSync(resolveCodexCommand(pathOnlyIssuer, commandEnvironment), ["--version"], {
+        assert.equal(runJavaScriptCommand(resolveCodexCommand(pathOnlyIssuer, commandEnvironment), ["--version"], {
           env: commandEnvironment, encoding: "utf8", timeout: 5_000 }).trim(), "codex-cli 0.141.0");
         const relativeCommand = resolveCodexCommand(pathOnlyIssuer, { PATH: "./bin" }, pathOnlyRoot);
         assert.equal(relativeCommand, pathCommand, "Relative PATH entries use the provider working directory");
         assert.ok(isAbsolute(relativeCommand), "Provider launch receives an absolute executable");
-        assert.equal(execFileSync(relativeCommand, ["--version"], {
+        assert.equal(runJavaScriptCommand(relativeCommand, ["--version"], {
           cwd: root, env: { PATH: "/missing-codex-command" }, encoding: "utf8", timeout: 5_000 }).trim(), "codex-cli 0.141.0");
         const cwdCommand = join(pathOnlyRoot, "codex");
         writeFileSync(cwdCommand, "#!" + process.execPath + "\\n", { mode: 0o755 });
@@ -116,7 +140,7 @@ describe("Codex security configuration", () => {
         const roots = codexExecutableReadOnlyRoots({ PATH: "/missing-codex-command" }, executable);
         assert.ok(roots.includes(vendor), "The npm-hoisted native vendor directory remains readable");
         assert.ok(!roots.includes(platform) && !roots.includes(root), "Hoisting must not expose npm ancestry");
-        assert.equal(execFileSync(resolveCodexCommand(issuer, commandEnvironment), ["--version"], { env: { PATH: "/missing-codex-command" },
+        assert.equal(runJavaScriptCommand(resolveCodexCommand(issuer, commandEnvironment), ["--version"], { env: { PATH: "/missing-codex-command" },
           encoding: "utf8", timeout: 5_000 }).trim(), "codex-cli 0.160.0");
 
         for (const bin of ["../../escaped-codex", "/usr/bin/codex", {}, ""]) {
@@ -133,7 +157,12 @@ describe("Codex security configuration", () => {
         assert.throws(() => resolveCodexCommand(issuer, commandEnvironment), /runtime unavailable/);
         writeFileSync(join(codex, "package.json"), JSON.stringify(metadata));
         chmodSync(executable, 0o600);
-        assert.throws(() => resolveCodexCommand(issuer, commandEnvironment), /runtime unavailable/);
+        if (process.platform === "win32") {
+          assert.equal(resolveCodexCommand(issuer, commandEnvironment), executable,
+            "Windows executable eligibility is not represented by POSIX mode bits");
+        } else {
+          assert.throws(() => resolveCodexCommand(issuer, commandEnvironment), /runtime unavailable/);
+        }
         rmSync(executable);
         writeFileSync(join(root, "external-codex"), "external executable", { mode: 0o755 });
         symlinkSync(join(root, "external-codex"), executable);
@@ -143,14 +172,14 @@ describe("Codex security configuration", () => {
         rmSync(codex, { recursive: true });
         // Use the existing fresh-process boundary: Node caches earlier module
         // paths, whereas a genuinely absent installed graph must use PATH.
-        const resolverModule = ${JSON.stringify(new URL("./codex-command.ts", import.meta.url).href)};
+        const resolverModule = ${JSON.stringify(codexCommandModule)};
         const freshAbsence = [
           'import assert from "node:assert/strict";',
           'import { resolveCodexCommand } from ' + JSON.stringify(resolverModule) + ';',
           'assert.equal(resolveCodexCommand(' + JSON.stringify(issuer) + ',' + JSON.stringify(commandEnvironment) + '),' + JSON.stringify(pathCommand) + ');',
           'assert.throws(() => resolveCodexCommand(' + JSON.stringify(issuer) + ', { PATH: "/missing-codex-command" }), /runtime unavailable.*No installed Codex dependency or executable on PATH/);',
         ].join("\\n");
-        execFileSync(process.execPath, ['--no-global-search-paths', '--import', createRequire(resolverModule).resolve('tsx'),
+        execFileSync(process.execPath, ['--no-global-search-paths', '--import', pathToFileURL(createRequire(resolverModule).resolve('tsx')).href,
           '--input-type=module', '--eval', freshAbsence], { env: commandEnvironment, encoding: 'utf8', timeout: 5_000 });
 
         // npm installs the host alias declared by the published server while
@@ -175,7 +204,7 @@ describe("Codex security configuration", () => {
         assert.ok(normalizedRoots().includes(vendor), "The normalized published wrapper must retain its selected native sandbox resources");
         const sandbox = createIsolatedCodexAppServerArgs({ HOME: "/private-provider-home" }, normalizedRoots()).join("\\n");
         assert.ok(sandbox.includes(JSON.stringify(vendor) + '=\"read\"'), "Native sandbox resources must reach the actual read-only permission configuration");
-        assert.ok(sandbox.includes('\"/private-provider-home\"=\"none\"'), "The provider home remains denied");
+        assert.ok(sandbox.includes(JSON.stringify(resolve("/private-provider-home")) + '="none"'), "The provider home remains denied");
         for (const ancestor of [platform, dirname(platform), join(root, "node_modules"), server, root]) {
           assert.ok(!normalizedRoots().includes(ancestor), "Platform discovery must not grant enclosing npm or server roots");
         }
@@ -238,7 +267,7 @@ describe("Codex security configuration", () => {
       process.stdout.write("PINNED_CODEX_ISOLATION_VERIFIED");
     `;
     expect(execFileSync(process.execPath, [
-      "--no-global-search-paths", "--import", createRequire(import.meta.url).resolve("tsx"),
+      "--no-global-search-paths", "--import", pathToFileURL(createRequire(import.meta.url).resolve("tsx")).href,
       "--input-type=module", "--eval", source,
     ], { env: { ...process.env, NODE_PATH: "", NODE_OPTIONS: "" }, encoding: "utf8", timeout: 10_000,
       maxBuffer: 32 * 1024 })).toBe("PINNED_CODEX_ISOLATION_VERIFIED");
@@ -246,19 +275,19 @@ describe("Codex security configuration", () => {
 
   it("allows only the registered private instruction directory while keeping shared context read-only", () => {
     const args = createIsolatedCodexAppServerArgs({ HOME: "/host/home" }, ["/runtime/immutable-context"], "/runtime/instruction-edits/run-1").join("\n");
-    expect(args).toContain('"/runtime/instruction-edits/run-1"="write"');
-    expect(args).toContain('"/runtime/immutable-context"="read"');
-    expect(args).not.toContain('"/runtime"="write"');
-    expect(args).toContain('"/host/home"="none"');
+    expect(args).toContain(resolvedFilesystemRule("/runtime/instruction-edits/run-1", "write"));
+    expect(args).toContain(resolvedFilesystemRule("/runtime/immutable-context", "read"));
+    expect(args).not.toContain(resolvedFilesystemRule("/runtime", "write"));
+    expect(args).toContain(resolvedFilesystemRule("/host/home", "none"));
     expect(createIsolatedCodexAppServerArgs({ PAPERCLIP_INSTRUCTION_ROOT: "/host/home" }).join("\n"))
-      .not.toContain('"/host/home"="write"');
+      .not.toContain(resolvedFilesystemRule("/host/home", "write"));
   });
 
   it("exposes AGENT_HOME only when it matches the controller-registered writable directory", () => {
     const root = "/agent-files/run-1";
     const registered = createIsolatedCodexAppServerArgs({ AGENT_HOME: root, HOME: "/provider" }, [], root).join("\n");
     expect(registered).toContain('AGENT_HOME="/agent-files/run-1"');
-    expect(registered).toContain('"/provider"="none"');
+    expect(registered).toContain(resolvedFilesystemRule("/provider", "none"));
     expect(createIsolatedCodexAppServerArgs({ AGENT_HOME: "/arbitrary" }, [], root).join("\n")).not.toContain("AGENT_HOME");
     expect(createIsolatedCodexAppServerArgs({ AGENT_HOME: root }).join("\n")).not.toContain("AGENT_HOME");
   });
@@ -271,17 +300,17 @@ describe("Codex security configuration", () => {
     expect(roots).toContain(vendor);
     expect(roots).toContain(process.execPath);
     expect(roots).not.toContain(dirname(manifest));
-    expect(roots).not.toContain("/private-provider-home");
+    expect(roots).not.toContain(resolve("/private-provider-home"));
     const args = createIsolatedCodexAppServerArgs({ HOME: "/private-provider-home" }, roots).join("\n");
     expect(args).toContain(`${JSON.stringify(vendor)}="read"`);
-    expect(args).toContain('"/private-provider-home"="none"');
+    expect(args).toContain(resolvedFilesystemRule("/private-provider-home", "none"));
   });
 
   it("preserves target DNS symlink resources without opening all of /run", () => {
     const source = { PAPERCLIP_RUNNER_NETWORK_ACCESS: "enabled", PAPERCLIP_RUNNER_NETWORK_ROOTS: '["/run/systemd/resolve/stub-resolv.conf","/etc/ssl/certs"]' };
     const args = createIsolatedCodexAppServerArgs(source).join("\n");
-    expect(args).toContain('"/run/systemd/resolve/stub-resolv.conf"="read"');
-    expect(args).not.toContain('"/run"="read"');
+    expect(args).toContain(resolvedFilesystemRule("/run/systemd/resolve/stub-resolv.conf", "read"));
+    expect(args).not.toContain(resolvedFilesystemRule("/run", "read"));
     expect(codexNetworkReadOnlyRoots({ ...source, PAPERCLIP_RUNNER_NETWORK_ACCESS: "disabled" })).toEqual([]);
   });
 
@@ -315,14 +344,14 @@ describe("Codex security configuration", () => {
     expect(args).not.toContain("DATABASE_URL");
     expect(args).not.toContain("PAPERCLIP_API_KEY");
     expect(args).toContain('HOME="/legacy"');
-    expect(args).toContain('"/legacy/.gitconfig"="read"');
-    expect(args).toContain('"/legacy/.ssh"="read"');
-    expect(args).toContain('"/agent/socket"="read"');
-    expect(args).toContain('"/repo/.git"="write"');
-    expect(args).toContain('"/repo/.git"="read"');
-    expect(args).toContain('"/provider"="none"');
-    expect(args).not.toContain('"/legacy"="read"');
-    expect(args.match(/"\/legacy\/.config\/gh"="read"/g)).toHaveLength(2);
+    expect(args).toContain(filesystemRule(join("/legacy", ".gitconfig"), "read"));
+    expect(args).toContain(filesystemRule(join("/legacy", ".ssh"), "read"));
+    expect(args).toContain(resolvedFilesystemRule("/agent/socket", "read"));
+    expect(args).toContain(resolvedFilesystemRule("/repo/.git", "write"));
+    expect(args).toContain(resolvedFilesystemRule("/repo/.git", "read"));
+    expect(args).toContain(resolvedFilesystemRule("/provider", "none"));
+    expect(args).not.toContain(filesystemRule("/legacy", "read"));
+    expect(args.split(filesystemRule(join("/legacy", ".config/gh"), "read")).length - 1).toBe(2);
   });
 
   it("disables host extensions and makes collaboration instructions explicit", () => {
@@ -355,11 +384,11 @@ describe("Codex security configuration", () => {
     expect(serialized).toContain('":root"="none"');
     expect(serialized).toContain('":minimal"="read"');
     expect(serialized).toContain('":tmpdir"="none"');
-    expect(serialized).toContain('"/host/home"="none"');
-    expect(serialized).toContain('"/host/codex"="none"');
-    expect(serialized).toContain('"/isolated/codex-home/skills"="read"');
-    expect(serialized).not.toContain('"/isolated/codex-home"="read"');
-    expect(serialized).toContain('"/runner/context"="read"');
+    expect(serialized).toContain(resolvedFilesystemRule("/host/home", "none"));
+    expect(serialized).toContain(resolvedFilesystemRule("/host/codex", "none"));
+    expect(serialized).toContain(resolvedFilesystemRule("/isolated/codex-home/skills", "read"));
+    expect(serialized).not.toContain(resolvedFilesystemRule("/isolated/codex-home", "read"));
+    expect(serialized).toContain(resolvedFilesystemRule("/runner/context", "read"));
     expect(serialized).toContain('":workspace_roots"={"."="write"}');
     expect(serialized).toContain('":workspace_roots"={"."="read"}');
     expect(serialized).toContain("network.enabled=true");
@@ -409,9 +438,9 @@ describe("Codex security configuration", () => {
       PAPERCLIP_API_KEY: "forbidden-agent-token",
       GH_CONFIG_DIR: "/runtime/run-B/gh-config",
     }).join("\n");
-    expect(serialized).toContain('"/isolated/provider"="none"');
-    expect(serialized).toContain('"/runtime/run-B"="read"');
-    expect(serialized).toContain('"/runtime/run-B/gh-config"="write"');
+    expect(serialized).toContain(resolvedFilesystemRule("/isolated/provider", "none"));
+    expect(serialized).toContain(resolvedFilesystemRule("/runtime/run-B", "read"));
+    expect(serialized).toContain(resolvedFilesystemRule("/runtime/run-B/gh-config", "write"));
     expect(serialized).toContain('HOME="/runtime/run-B"');
     expect(serialized).toContain('ZDOTDIR="/runtime/run-B"');
     expect(serialized).toContain('BASH_ENV="/runtime/run-B/.bashrc"');

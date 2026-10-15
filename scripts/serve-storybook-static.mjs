@@ -7,7 +7,7 @@ import { tmpdir } from "node:os";
 import { createServer } from "node:http";
 import { createReadStream, existsSync, statSync } from "node:fs";
 import { extname, join, normalize, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const root = resolve(
   fileURLToPath(new URL(".", import.meta.url)),
@@ -57,7 +57,7 @@ const MIME = {
 };
 
 const serverRequire = createRequire(new URL("../server/package.json", import.meta.url));
-const { register } = await import(serverRequire.resolve("tsx/esm/api"));
+const { register } = await import(pathToFileURL(serverRequire.resolve("tsx/esm/api")).href);
 register();
 const express = serverRequire("express");
 const { agentAvatarRoutes } = await import("../server/src/routes/agent-avatars.ts");

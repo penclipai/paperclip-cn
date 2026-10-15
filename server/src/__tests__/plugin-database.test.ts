@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { mkdtemp, rm, mkdir, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 import { and, eq, sql } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import {
@@ -25,7 +26,7 @@ import {
   validatePluginRuntimeExecute,
   validatePluginRuntimeQuery,
 } from "../services/plugin-database.js";
-import { buildPluginWorkerEnv, pluginLoader } from "../services/plugin-loader.js";
+import { buildPluginWorkerEnv, pluginLoader, REPO_ROOT } from "../services/plugin-loader.js";
 
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
 const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : describe.skip;
@@ -743,6 +744,7 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
     expect(workerManager.startWorker).toHaveBeenCalledWith(
       pluginId,
       expect.objectContaining({
+        execArgv: ["--import", pathToFileURL(path.join(REPO_ROOT, "cli/node_modules/tsx/dist/loader.mjs")).href],
         databaseNamespace: namespace,
         env: {
           PAPERCLIP_DEPLOYMENT_MODE: "authenticated",

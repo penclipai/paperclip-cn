@@ -1,5 +1,6 @@
 import { createRequire } from "node:module";
 import { createHash } from "node:crypto";
+import { pathToFileURL } from "node:url";
 
 /** Render avatar presets with the API worker in dev and package them in builds. */
 export function storybookAgentAvatarAssets() {
@@ -10,7 +11,7 @@ export function storybookAgentAvatarAssets() {
       const images = new Map();
       const renderer = () => rendererPromise ??= (async () => {
         const serverRequire = createRequire(new URL("../server/package.json", import.meta.url));
-        const { tsImport } = await import(serverRequire.resolve("tsx/esm/api"));
+        const { tsImport } = await import(pathToFileURL(serverRequire.resolve("tsx/esm/api")).href);
         const { createAgentAvatarPool } = await tsImport("../server/src/services/agent-avatar-pool.ts", import.meta.url);
         const { AGENT_PALETTE_IDS, AGENT_AVATAR_SIZES, CHARACTER_STATES, appearanceForPalette } =
           await tsImport("../packages/shared/src/agent-appearance.ts", import.meta.url);
@@ -51,7 +52,7 @@ export function storybookAgentAvatarAssets() {
     },
     async generateBundle() {
       const serverRequire = createRequire(new URL("../server/package.json", import.meta.url));
-      const { tsImport } = await import(serverRequire.resolve("tsx/esm/api"));
+      const { tsImport } = await import(pathToFileURL(serverRequire.resolve("tsx/esm/api")).href);
       const { createAgentAvatarPool } = await tsImport("../server/src/services/agent-avatar-pool.ts", import.meta.url);
       const { AGENT_PALETTE_IDS, AGENT_AVATAR_SIZES, CHARACTER_STATES, appearanceForPalette } =
         await tsImport("../packages/shared/src/agent-appearance.ts", import.meta.url);

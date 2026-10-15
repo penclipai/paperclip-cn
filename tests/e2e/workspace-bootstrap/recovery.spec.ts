@@ -8,6 +8,13 @@ import { seedWorkspaceBootstrap } from "./seed.mjs";
 const base = process.env.WORKSPACE_BOOTSTRAP_TEST_URL;
 test.skip(!base, "Launch the disposable workspace-bootstrap test-drive; see README.md");
 
+// This opt-in suite asserts the legacy English accessibility contract. The
+// CN fork defaults fresh browsers to zh-CN, so match the main E2E config
+// before its first navigation.
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem("paperclip.locale", "en"));
+});
+
 for (const persistent of [false, true]) {
   test(persistent ? "exhausts the shared retry budget with an actionable stop" : "recovers and completes through the task UI without manual Retry", async ({ page }, info) => {
     const fixture = await seedWorkspaceBootstrap(base!, persistent);

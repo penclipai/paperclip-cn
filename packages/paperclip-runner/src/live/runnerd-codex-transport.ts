@@ -26,7 +26,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { basename, dirname, resolve } from "node:path";
+import { basename, dirname, isAbsolute, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import type {
@@ -3487,6 +3487,71 @@ export function createRunnerdCodexAppServerArgs(input: {
   );
 }
 
+type CodexRunnerLaunchProfile = {
+  command: string;
+  args: string[];
+};
+
+/**
+ * runnerd executes the provider command directly. Windows cannot directly
+ * execute the JavaScript wrapper that the qualified Codex package exposes, so
+ * use the already-qualified Node executable while retaining the wrapper as its
+ * first argument. The wrapper itself remains the security-policy subject.
+ */
+function codexRunnerLaunchProfile(input: {
+  codexCommand: string;
+  appServerArgs: readonly string[];
+  providerNodeCommand: string;
+  platform?: NodeJS.Platform;
+}): CodexRunnerLaunchProfile {
+  const args = [...input.appServerArgs];
+  if (
+    (input.platform ?? process.platform) === "win32" &&
+    /\.(?:c|m)?js$/i.test(input.codexCommand)
+  ) {
+    return {
+      command: input.providerNodeCommand,
+      args: [input.codexCommand, ...args],
+    };
+  }
+  return { command: input.codexCommand, args };
+}
+
+/** Recover the qualified wrapper rather than treating Node as the Codex binary. */
+function isWindowsJavaScriptCodexWrapper(
+  command: string,
+  platform: NodeJS.Platform = process.platform,
+): boolean {
+  return platform === "win32" && /\.(?:c|m)?js$/i.test(command);
+}
+
+function codexWrapperCommandFromProvider(
+  provider: Record<string, unknown>,
+  providerNodeCommand: string,
+  platform: NodeJS.Platform = process.platform,
+): string | undefined {
+  const command = typeof provider.command === "string" ? provider.command : undefined;
+  if (!command) return undefined;
+  if (platform !== "win32") return command;
+  if (command === providerNodeCommand) {
+    const wrapper = Array.isArray(provider.args) ? provider.args[0] : undefined;
+    if (
+      typeof wrapper !== "string" ||
+      !isAbsolute(wrapper) ||
+      !isWindowsJavaScriptCodexWrapper(wrapper, platform)
+    ) {
+      throw new Error("native_runner_windows_js_wrapper_profile_invalid");
+    }
+    return wrapper;
+  }
+  if (isWindowsJavaScriptCodexWrapper(command, platform)) {
+    throw new Error(
+      "native_runner_windows_js_wrapper_checkpoint_requires_new_session",
+    );
+  }
+  return command;
+}
+
 export function unwrapToolResponse(response: Record<string, unknown>, preserveEnvelope = false): {
   readonly __paperclipSemanticToolOutcome: true;
   readonly result: unknown;
@@ -4790,6 +4855,10 @@ class DurablePrpCodexTransport implements CodexAppServerTransport {
     const effectiveCodexCommand = provider === "codex"
       ? this.options.codexCommand ?? resolveCodexCommand(undefined, this.options.environment, String(params.cwd ?? tmpdir()))
       : undefined;
+    const remoteCodexNodeWrapper =
+      provider === "codex" &&
+      this.options.runnerFilesystemRoot !== undefined &&
+      isWindowsJavaScriptCodexWrapper(effectiveCodexCommand!);
     const opencodeExecutable =
       provider === "opencode"
         ? resolveRunnerOpenCodeExecutable(this.options)
@@ -4813,16 +4882,26 @@ class DurablePrpCodexTransport implements CodexAppServerTransport {
         : undefined;
     if (
       this.options.runnerFilesystemRoot &&
-      (provider === "opencode" || provider === "acpx")
+      (provider === "opencode" || provider === "acpx" || remoteCodexNodeWrapper)
     ) {
       const providerPaths = [
         ["provider Node", providerNodeCommand],
         ...(provider === "opencode"
           ? [["OpenCode proxy", opencodeProxyPath], ["OpenCode executable", opencodeExecutable!]] as const
-          : [["ACPX sidecar", acpxSidecarPath]] as const),
+          : provider === "acpx"
+            ? [["ACPX sidecar", acpxSidecarPath]] as const
+            : []),
       ] as const;
+      if (!this.options.providerNodeCommand) {
+        throw new Error(
+          remoteCodexNodeWrapper
+            ? "runner_remote_provider_artifact_incompatible: remote Codex JavaScript wrapper omitted its provider-pack Node executable"
+            : "runner_remote_provider_artifact_incompatible: remote JS provider omitted its provider-pack Node executable",
+        );
+      }
       for (const [label, candidate] of providerPaths) {
         if (
+          candidate === process.execPath ||
           candidate.startsWith("/Users/") ||
           /^[A-Za-z]:\\\\Users\\\\/.test(candidate)
         ) {
@@ -4830,11 +4909,6 @@ class DurablePrpCodexTransport implements CodexAppServerTransport {
             `runner_remote_provider_artifact_incompatible: ${label} path belongs to the controller host`,
           );
         }
-      }
-      if (!this.options.providerNodeCommand) {
-        throw new Error(
-          "runner_remote_provider_artifact_incompatible: remote JS provider omitted its provider-pack Node executable",
-        );
       }
       if (provider === "opencode" && !this.options.opencodeProxyPath) {
         throw new Error(
@@ -4867,6 +4941,35 @@ class DurablePrpCodexTransport implements CodexAppServerTransport {
             runtimeContext.instructions.bundle.rootPath,
           )
         : unboundBaseInstructions;
+    const runnerCodexLaunchProfile = provider === "codex"
+      ? codexRunnerLaunchProfile({
+          codexCommand: effectiveCodexCommand!,
+          appServerArgs:
+            this.options.codexArgs ??
+            createRunnerdCodexAppServerArgs({
+              environment: this.options.environment,
+              codexHome,
+              // Keep the qualified wrapper here: its package closure remains
+              // part of the provider's read-only filesystem policy.
+              codexCommand: effectiveCodexCommand,
+              instructionWorkingCopyRoot:
+                runtimeContext?.instructions.workingCopy?.rootPath,
+              readOnlyRoots: [
+                ...trustedRuntimeReadOnlyRoots(this.options.environment),
+                ...(runtimeContext
+                  ? [
+                      resolve(codexHome, "skills"),
+                      runtimeContext.instructions.bundle.rootPath,
+                      ...runtimeContext.skills.map(
+                        (skill) => skill.bundle.rootPath,
+                      ),
+                    ]
+                  : []),
+              ],
+            }),
+          providerNodeCommand,
+        })
+      : undefined;
     const acpxProfile =
       provider === "acpx"
         ? resolveQualifiedAcpxProfile(acpxAgent!, requestedModel)
@@ -4994,31 +5097,11 @@ class DurablePrpCodexTransport implements CodexAppServerTransport {
                   command:
                     provider === "opencode"
                       ? providerNodeCommand
-                      : effectiveCodexCommand!,
+                      : runnerCodexLaunchProfile!.command,
                   args:
                     provider === "opencode"
                       ? [opencodeProxyPath]
-                      : (this.options.codexArgs ??
-                        createRunnerdCodexAppServerArgs({
-                          environment: this.options.environment,
-                          codexHome,
-                          codexCommand: effectiveCodexCommand,
-                          instructionWorkingCopyRoot: runtimeContext?.instructions.workingCopy?.rootPath,
-                          readOnlyRoots: [
-                            ...trustedRuntimeReadOnlyRoots(
-                              this.options.environment,
-                            ),
-                            ...(runtimeContext
-                              ? [
-                                  resolve(codexHome, "skills"),
-                                  runtimeContext.instructions.bundle.rootPath,
-                                  ...runtimeContext.skills.map(
-                                    (skill) => skill.bundle.rootPath,
-                                  ),
-                                ]
-                              : []),
-                          ],
-                        })),
+                      : runnerCodexLaunchProfile!.args,
                   cwd: String(params.cwd ?? tmpdir()),
                   model: typeof params.model === "string" ? params.model : null,
                   approvalPolicy:
@@ -5051,6 +5134,9 @@ class DurablePrpCodexTransport implements CodexAppServerTransport {
                     : {}),
                   runtimeContext,
                 },
+      ...(provider === "codex"
+        ? { runtimeLaunchArgs: runnerCodexLaunchProfile!.args }
+        : {}),
     };
     // Preserve the first generation's provider attachment seed independently
     // of bounded command history. The in-memory copy serves a live warm
@@ -5488,14 +5574,26 @@ class DurablePrpCodexTransport implements CodexAppServerTransport {
       if (provider === "codex") {
         // These controller-owned, token-free paths belong to the new run.
         // Keep the durable provider profile and thread identity unchanged.
-        const recordedCommand = record(runAttachTemplate.provider).command;
-        runAttachTemplate.runtimeLaunchArgs =
-          this.options.codexArgs ??
-          createRunnerdCodexAppServerArgs({
+        const recordedProvider = record(runAttachTemplate.provider);
+        const recordedCodexCommand = codexWrapperCommandFromProvider(
+          recordedProvider,
+          providerNodeCommand,
+        );
+        if (!recordedCodexCommand) {
+          throw new Error("native_runner_authority_rotation_seed_unavailable");
+        }
+        const runnerCodexLaunchProfile = codexRunnerLaunchProfile({
+          codexCommand: recordedCodexCommand,
+          appServerArgs:
+            this.options.codexArgs ??
+            createRunnerdCodexAppServerArgs({
             environment: this.options.environment,
             codexHome,
-            codexCommand: typeof recordedCommand === "string" ? recordedCommand : this.options.codexCommand,
-            instructionWorkingCopyRoot: runtimeContext?.instructions.workingCopy?.rootPath,
+            // The persisted provider command is Node for a Windows wrapper.
+            // Continue deriving policy from the wrapper stored in its args.
+            codexCommand: recordedCodexCommand,
+            instructionWorkingCopyRoot:
+              runtimeContext?.instructions.workingCopy?.rootPath,
             readOnlyRoots: [
               ...trustedRuntimeReadOnlyRoots(this.options.environment),
               ...(runtimeContext
@@ -5508,7 +5606,13 @@ class DurablePrpCodexTransport implements CodexAppServerTransport {
                   ]
                 : []),
             ],
-          });
+          }),
+          providerNodeCommand,
+        });
+        recordedProvider.command = runnerCodexLaunchProfile.command;
+        recordedProvider.args = runnerCodexLaunchProfile.args;
+        runAttachTemplate.provider = recordedProvider;
+        runAttachTemplate.runtimeLaunchArgs = runnerCodexLaunchProfile.args;
       }
       this.#runAttachTemplate = structuredClone(runAttachTemplate);
       core.queueCommand("run.attach", runAttachTemplate);
@@ -7114,6 +7218,7 @@ function openedThreadModelProvider(
 
 export const runnerdLaunchProfileInternals = Object.freeze({
   openedThreadModelProvider,
+  codexRunnerLaunchProfile,
   acpxProviderPackageAuthority,
   acpxRunnerLaunchProfile,
   resolveBuildOwnedCliArtifact,
