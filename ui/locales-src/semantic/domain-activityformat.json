@@ -814,10 +814,90 @@
     "zh-CN": "安装了插件",
     "reviewedEnglishHash": "d47f9f86b91e261e8ec487f09407f7e9e3f35bc874a0f45e60a0a1d5aef38afe"
   },
+  "activityFormat.row.plugin.action": {
+    "en": "ran a plugin action",
+    "zh-CN": "执行了插件操作",
+    "reviewedEnglishHash": "7183c2f0455e7c19fcd46dcb4625b4038c3fd2d49d64f1cc08f78022b3394095"
+  },
+  "activityFormat.row.plugin.configUpdated": {
+    "en": "updated plugin configuration",
+    "zh-CN": "更新了插件配置",
+    "reviewedEnglishHash": "2f41397d6fa8944b49148d1f769169205bf3b5e390c86487b988e1c952ba3ca0"
+  },
+  "activityFormat.row.plugin.disabled": {
+    "en": "disabled plugin",
+    "zh-CN": "禁用了插件",
+    "reviewedEnglishHash": "567956b5592e2da302586ec282f080becfc4fae6fa7de51a3c8beccf99107771"
+  },
+  "activityFormat.row.plugin.enabled": {
+    "en": "enabled plugin",
+    "zh-CN": "启用了插件",
+    "reviewedEnglishHash": "5164821ef4a4b2fb8089f5881411f9b05d0f9d002ff0ad123598c198507b6e90"
+  },
   "activityFormat.row.plugin.uninstalled": {
     "en": "uninstalled plugin",
     "zh-CN": "卸载了插件",
     "reviewedEnglishHash": "fa756cb36ac79cd2ee759edf00972c56cd970421c1eb2da70ced7b25e159e070"
+  },
+  "activityFormat.row.plugin.localFolderConfigured": {
+    "en": "configured a plugin local folder",
+    "zh-CN": "配置了插件本地文件夹",
+    "reviewedEnglishHash": "f6481ad9670d6e01716d329cc08d9173ead81583adbd6e5112f6bdfa7572e180"
+  },
+  "activityFormat.row.plugin.managedAgentCreated": {
+    "en": "created managed agent",
+    "zh-CN": "创建了托管智能体",
+    "reviewedEnglishHash": "1a4b29242d5211c455db84f7f501f7bc863e9a20b009cd8b711e8d7e6c26c48e"
+  },
+  "activityFormat.row.plugin.managedAgentPauseReasonBackfilled": {
+    "en": "backfilled managed agent pause reason",
+    "zh-CN": "补充了托管智能体暂停原因",
+    "reviewedEnglishHash": "8ad3c7caa29c43521f0bf49c80e6eb5abc8db42611afea0e786995f75d7cb161"
+  },
+  "activityFormat.row.plugin.managedAgentRelinked": {
+    "en": "relinked managed agent",
+    "zh-CN": "重新关联了托管智能体",
+    "reviewedEnglishHash": "623532d7691612ca90a6641a113999d4bbd0f5aea9b1a58dc91a8eef324f5ff1"
+  },
+  "activityFormat.row.plugin.managedAgentReset": {
+    "en": "reset managed agent",
+    "zh-CN": "重置了托管智能体",
+    "reviewedEnglishHash": "bf7022fe23a556c39d3dcee81d9560be3e16a6b4da31ae0d74c52b5fe629f2e0"
+  },
+  "activityFormat.row.plugin.managedRoutineCreated": {
+    "en": "created managed routine",
+    "zh-CN": "创建了托管例行任务",
+    "reviewedEnglishHash": "d2d06bf261f3ba4589117cff7de6fcdbcce8485bf6b1d2d3c02969571b752473"
+  },
+  "activityFormat.row.plugin.managedRoutineReset": {
+    "en": "reset managed routine",
+    "zh-CN": "重置了托管例行任务",
+    "reviewedEnglishHash": "ac485e3d274894155aad6415e7bc1dd57dadeb0d13169dbc1cba0306f5bd9629"
+  },
+  "activityFormat.row.plugin.managedRoutineRunTriggered": {
+    "en": "started managed routine",
+    "zh-CN": "启动了托管例行任务",
+    "reviewedEnglishHash": "44b73073625a0e67e8a9851ec8091284ebba265f0c9a34a4f526d44252e9ad2f"
+  },
+  "activityFormat.row.plugin.managedRoutineUpdated": {
+    "en": "updated managed routine",
+    "zh-CN": "更新了托管例行任务",
+    "reviewedEnglishHash": "0fe6ecadc852f2cd88b3af01b50d61a687228de03a4ebcf1c122114a8e18abc1"
+  },
+  "activityFormat.row.plugin.managedSkillReconciled": {
+    "en": "reconciled managed skill",
+    "zh-CN": "同步了托管技能",
+    "reviewedEnglishHash": "fe873660ecbdbb8adfb5ab6f145f22ff0a8f30cffb9f2eb26551f5880b4ec39a"
+  },
+  "activityFormat.row.plugin.managedSkillReset": {
+    "en": "reset managed skill",
+    "zh-CN": "重置了托管技能",
+    "reviewedEnglishHash": "ba32b7898d482c1cd17081d1aee18f7c73f0e39307b991feb3cf608a7c347605"
+  },
+  "activityFormat.row.plugin.upgraded": {
+    "en": "upgraded plugin",
+    "zh-CN": "升级了插件",
+    "reviewedEnglishHash": "a6832823509082e87640a2d27a7116a1fbf14b4e76c2f2f4c0cd8bbcdeab811f"
   },
   "activityFormat.row.project.created": {
     "en": "created",

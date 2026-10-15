@@ -100,8 +100,23 @@ const ACTIVITY_ROW_VERBS: Record<string, string> = {
   "routine.revision_created": "activity.routineRevisionCreated",
   "cost.reported": "reported cost for",
   "cost.recorded": "recorded cost for",
+  "plugin.config.updated": "activityFormat.row.plugin.configUpdated",
+  "plugin.disabled": "activityFormat.row.plugin.disabled",
+  "plugin.enabled": "activityFormat.row.plugin.enabled",
   "plugin.installed": "activityFormat.row.plugin.installed",
+  "plugin.local_folder.configured": "activityFormat.row.plugin.localFolderConfigured",
+  "plugin.managed_agent.created": "activityFormat.row.plugin.managedAgentCreated",
+  "plugin.managed_agent.pause_reason_backfilled": "activityFormat.row.plugin.managedAgentPauseReasonBackfilled",
+  "plugin.managed_agent.relinked": "activityFormat.row.plugin.managedAgentRelinked",
+  "plugin.managed_agent.reset": "activityFormat.row.plugin.managedAgentReset",
+  "plugin.managed_routine.created": "activityFormat.row.plugin.managedRoutineCreated",
+  "plugin.managed_routine.reset": "activityFormat.row.plugin.managedRoutineReset",
+  "plugin.managed_routine.run_triggered": "activityFormat.row.plugin.managedRoutineRunTriggered",
+  "plugin.managed_routine.updated": "activityFormat.row.plugin.managedRoutineUpdated",
+  "plugin.managed_skill.reconciled": "activityFormat.row.plugin.managedSkillReconciled",
+  "plugin.managed_skill.reset": "activityFormat.row.plugin.managedSkillReset",
   "plugin.uninstalled": "activityFormat.row.plugin.uninstalled",
+  "plugin.upgraded": "activityFormat.row.plugin.upgraded",
   "provider_trace.capture_requested": "activity.providerTraceCaptureRequested",
   "provider_trace.metadata_listed": "activity.providerTraceMetadataListed",
   "provider_trace.redacted_viewed": "activity.providerTraceRedactedViewed",
@@ -492,7 +507,15 @@ export function formatActivityVerb(
   });
   if (structuredChange) return structuredChange;
 
-  return ACTIVITY_ROW_VERBS[action] ?? action.replace(/[._]/g, " ");
+  const knownVerb = ACTIVITY_ROW_VERBS[action];
+  if (knownVerb) return knownVerb;
+
+  // Plugin-defined events are intentionally open-ended. Keep their raw event
+  // identifier visible in the audit row, but use a host-owned localized verb
+  // instead of turning arbitrary package event names into English prose.
+  if (action.startsWith("plugin.")) return "activityFormat.row.plugin.action";
+
+  return action.replace(/[._]/g, " ");
 }
 
 export function formatIssueActivityAction(

@@ -163,6 +163,37 @@ describe("AuditFeed", () => {
     }
   });
 
+  it("localizes plugin-defined actions while retaining their raw event identifier", async () => {
+    try {
+      await i18n.changeLanguage("zh-CN");
+      listAgentActionsMock.mockResolvedValue({
+        items: [record({
+          action: "plugin.@penclipai/example.sync_completed",
+          actorType: "plugin",
+          actorId: "@penclipai/example",
+          entityType: "company",
+          entityId: "company-1",
+          entity: { issue: null, comment: null, document: null },
+        })],
+        nextCursor: null,
+        accessTier: "full",
+      });
+
+      await render();
+
+      expect(container.textContent).toContain("执行了插件操作");
+      expect(container.textContent).toContain("plugin.@penclipai/example.sync_completed");
+      expect(container.textContent).not.toContain("plugin @penclipai/example sync completed");
+
+      await i18n.changeLanguage("en");
+      await flushReact();
+      expect(container.textContent).toContain("ran a plugin action");
+      expect(container.textContent).toContain("plugin.@penclipai/example.sync_completed");
+    } finally {
+      await i18n.changeLanguage("en");
+    }
+  });
+
   it("localizes the current activity filters", async () => {
     try {
       await i18n.changeLanguage("zh-CN");

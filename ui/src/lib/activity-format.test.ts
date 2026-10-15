@@ -24,6 +24,23 @@ describe("activity formatting", () => {
   it("uses semantic translation keys for plugin activity verbs", () => {
     expect(formatActivityVerb("plugin.installed")).toBe("activityFormat.row.plugin.installed");
     expect(formatActivityVerb("plugin.uninstalled")).toBe("activityFormat.row.plugin.uninstalled");
+    expect(formatActivityVerb("plugin.enabled")).toBe("activityFormat.row.plugin.enabled");
+    expect(formatActivityVerb("plugin.disabled")).toBe("activityFormat.row.plugin.disabled");
+    expect(formatActivityVerb("plugin.upgraded")).toBe("activityFormat.row.plugin.upgraded");
+    expect(formatActivityVerb("plugin.config.updated")).toBe("activityFormat.row.plugin.configUpdated");
+    expect(formatActivityVerb("plugin.local_folder.configured")).toBe("activityFormat.row.plugin.localFolderConfigured");
+    expect(formatActivityVerb("plugin.managed_routine.created")).toBe("activityFormat.row.plugin.managedRoutineCreated");
+    expect(formatActivityVerb("plugin.managed_routine.reset")).toBe("activityFormat.row.plugin.managedRoutineReset");
+    expect(formatActivityVerb("plugin.managed_routine.updated")).toBe("activityFormat.row.plugin.managedRoutineUpdated");
+    expect(formatActivityVerb("plugin.managed_routine.run_triggered")).toBe("activityFormat.row.plugin.managedRoutineRunTriggered");
+    expect(formatActivityVerb("plugin.managed_agent.relinked")).toBe("activityFormat.row.plugin.managedAgentRelinked");
+    expect(formatActivityVerb("plugin.managed_agent.created")).toBe("activityFormat.row.plugin.managedAgentCreated");
+    expect(formatActivityVerb("plugin.managed_agent.pause_reason_backfilled")).toBe("activityFormat.row.plugin.managedAgentPauseReasonBackfilled");
+    expect(formatActivityVerb("plugin.managed_agent.reset")).toBe("activityFormat.row.plugin.managedAgentReset");
+    expect(formatActivityVerb("plugin.managed_skill.reconciled")).toBe("activityFormat.row.plugin.managedSkillReconciled");
+    expect(formatActivityVerb("plugin.managed_skill.reset")).toBe("activityFormat.row.plugin.managedSkillReset");
+    expect(formatActivityVerb("plugin.@penclipai/example.synced")).toBe("activityFormat.row.plugin.action");
+    expect(formatActivityVerb("future.domain_event")).toBe("future domain event");
   });
 
   it("formats blocker activity using linked issue identifiers", () => {
