@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
@@ -48,6 +49,90 @@ function dryRunJson(args, envOverrides = {}) {
   assert.equal(result.status, 0, `expected success for ${args.join(" ")}: ${result.stderr}`);
   return JSON.parse(result.stdout);
 }
+
+function runWithFakeVitest(status, { createInternalLink = false } = {}) {
+  const fixtureRoot = mkdtempSync(path.join(os.tmpdir(), "run-vitest-stable-"));
+  const invocationTempRoot = path.join(fixtureRoot, "invocations");
+  mkdirSync(invocationTempRoot);
+  const marker = `run-vitest-stable-${process.pid}-${Date.now()}`;
+  const fakePnpm = path.join(fixtureRoot, "fake-pnpm.cjs");
+  const capture = path.join(fixtureRoot, "capture.jsonl");
+  const external = path.join(fixtureRoot, "external");
+  mkdirSync(external);
+  const externalMarker = path.join(external, "must-survive");
+  writeFileSync(externalMarker, "outside");
+  writeFileSync(fakePnpm, [
+    'const fs = require("node:fs");',
+    'const path = require("node:path");',
+    'fs.mkdirSync(process.env.PAPERCLIP_HOME, { recursive: true });',
+    'fs.writeFileSync(path.join(process.env.PAPERCLIP_HOME, "fake-vitest-marker"), process.env.PAPERCLIP_TEST_OWNERSHIP_MARKER);',
+    'if (process.env.PAPERCLIP_TEST_LINK === "1") {',
+    '  fs.symlinkSync(process.env.PAPERCLIP_TEST_EXTERNAL, path.join(process.env.PAPERCLIP_HOME, "outside"), process.platform === "win32" ? "junction" : "dir");',
+    '}',
+    'fs.appendFileSync(process.env.PAPERCLIP_TEST_CAPTURE, JSON.stringify({ root: path.dirname(process.env.PAPERCLIP_HOME), home: process.env.PAPERCLIP_HOME, temp: process.env.TEMP, tmp: process.env.TMP, tmpdir: process.env.TMPDIR }) + "\\n");',
+    'process.exit(Number(process.env.PAPERCLIP_TEST_STATUS));',
+  ].join("\n"));
+  const result = spawnSync(process.execPath, [script, "--mode", "general", "--group", "general-workspaces-a"], {
+    cwd: repoRoot,
+    encoding: "utf8",
+    env: workflowEnv({
+      npm_execpath: fakePnpm,
+      PAPERCLIP_TEST_CAPTURE: capture,
+      PAPERCLIP_TEST_EXTERNAL: external,
+      PAPERCLIP_TEST_LINK: createInternalLink ? "1" : "0",
+      PAPERCLIP_TEST_STATUS: String(status),
+      PAPERCLIP_TEST_OWNERSHIP_MARKER: marker,
+      TEMP: invocationTempRoot,
+      TMP: invocationTempRoot,
+      TMPDIR: invocationTempRoot,
+    }),
+  });
+  const calls = readFileSync(capture, "utf8").trim().split("\n").filter(Boolean).map(JSON.parse);
+  return { fixtureRoot, invocationTempRoot, marker, result, calls, externalMarker };
+}
+
+function removeCapturedRoots(fixture) {
+  const expectedParent = realpathSync(process.platform === "win32" ? fixture.invocationTempRoot : "/tmp");
+  for (const call of fixture.calls) {
+    if (!existsSync(call.root)) continue;
+    assert.equal(path.dirname(call.root), expectedParent, "unexpected temporary parent: " + call.root);
+    assert.match(path.basename(call.root), /^pv-/);
+    assert.equal(call.home, path.join(call.root, "h"));
+    assert.equal(readFileSync(path.join(call.home, "fake-vitest-marker"), "utf8"), fixture.marker);
+    rmSync(call.root, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
+  }
+}
+
+test("successful Vitest invocations remove only their own temporary roots", () => {
+  const fixture = runWithFakeVitest(0, { createInternalLink: true });
+  try {
+    assert.equal(fixture.result.status, 0, fixture.result.stderr);
+    assert.ok(fixture.calls.length > 0);
+    for (const call of fixture.calls) {
+      assert.ok(!existsSync(call.root), "successful invocation leaked " + call.root);
+      assert.ok(!existsSync(call.home), "successful invocation leaked " + call.home);
+      assert.ok(!existsSync(call.temp), "successful invocation leaked " + call.temp);
+      assert.equal(call.temp, call.tmp);
+      assert.equal(call.temp, call.tmpdir);
+    }
+    assert.ok(existsSync(fixture.externalMarker), "removing the owned root must unlink, not follow, its child link");
+  } finally {
+    removeCapturedRoots(fixture);
+    rmSync(fixture.fixtureRoot, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
+  }
+});
+
+test("failing Vitest invocations retain their owned temporary root", () => {
+  const fixture = runWithFakeVitest(23);
+  try {
+    assert.equal(fixture.result.status, 23);
+    assert.equal(fixture.calls.length, 1);
+    assert.ok(existsSync(fixture.calls[0].home), "failure diagnostics must remain available");
+  } finally {
+    removeCapturedRoots(fixture);
+    rmSync(fixture.fixtureRoot, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
+  }
+});
 
 const SHARD_COUNT = 12;
 const SERIALIZED_SHARD_COUNT = 9;

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, statSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, rmSync, statSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -498,6 +498,14 @@ function runVitest(args, label, testShard = null) {
   }
   if (result.status !== 0) {
     process.exit(result.status ?? 1);
+  }
+  try {
+    rmSync(testRoot, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
+  } catch (error) {
+    console.warn(
+      "[test:run] Completed Vitest run but could not remove temporary directory "
+      + testRoot + ": " + (error instanceof Error ? error.message : String(error)),
+    );
   }
 }
 
