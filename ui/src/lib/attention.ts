@@ -426,9 +426,9 @@ export const DECIDE_BY_OPTIONS: ReadonlyArray<[DecideByPreset, string]> = [
 /** Human label for any stored `decideBy` value (preset or `YYYY-MM-DD`). */
 export function decideByLabel(decideBy: string | null): string {
   if (!decideBy) return "Not set";
-  if (decideBy === "today") return "Today";
-  if (decideBy === "this_week") return "This week";
-  if (decideBy === "whenever") return "Whenever";
+  if (decideBy === "today") return translateInstant("attentionQueue.decideBy.today");
+  if (decideBy === "this_week") return translateInstant("attentionQueue.decideBy.this_week");
+  if (decideBy === "whenever") return translateInstant("attentionQueue.decideBy.whenever");
   if (/^\d{4}-\d{2}-\d{2}$/.test(decideBy)) {
     const parsed = new Date(`${decideBy}T00:00:00.000Z`);
     return Number.isFinite(parsed.getTime())

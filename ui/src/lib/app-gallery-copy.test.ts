@@ -35,6 +35,20 @@ describe("app gallery copy", () => {
     expect(appCopyFor("custom-private-app", "Custom description from a manifest").tagline).toBe("Custom description from a manifest");
   });
 
+  it("localizes only catalog-owned description templates while preserving provider brands", async () => {
+    expect(appCopyFor("xai", "Connect Grok accounts for your agents.").tagline).toBe("Connect Grok accounts for your agents.");
+    expect(appCopyFor("airtable", "Connect Airtable's provider-hosted MCP server.").tagline).toBe("Connect Airtable's provider-hosted MCP server.");
+
+    await i18n.changeLanguage("zh-CN");
+
+    expect(appCopyFor("xai", "Connect Grok accounts for your agents.").tagline).toBe("为你的智能体连接 Grok 账户。");
+    expect(appCopyFor("airtable", "Connect Airtable's provider-hosted MCP server.").tagline).toBe("连接 Airtable 提供的托管 MCP 服务器。");
+    expect(appCopyFor("fireflies", "Search meeting transcripts, read summaries and action items, and connect meeting-ready routines.").tagline)
+      .toBe("搜索会议记录，阅读摘要和行动项，并连接适合会议的例行任务。");
+    expect(appCopyFor("custom-private-app", "Third-party controlled description").tagline)
+      .toBe("Third-party controlled description");
+  });
+
   it("keeps app names as interpolation data in the localized credential label", async () => {
     await i18n.changeLanguage("zh-CN");
     expect(credentialFieldLabel("GitHub", "Token", 1)).toBe("你的 GitHub 密钥");

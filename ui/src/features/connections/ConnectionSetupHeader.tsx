@@ -42,7 +42,9 @@ export function StepHeader({
           ) : null}
           <div>
             <h1 ref={headingRef} tabIndex={headingRef ? -1 : undefined} className="text-2xl font-bold tracking-tight outline-none">
-              {title ?? (appIdentity ? `Connect ${appIdentity.name}` : translateInstant("apps.connect.link.connectOwnServer"))}
+              {title ?? (appIdentity
+                ? translateInstant("connectionUi.connectApp", { appName: appIdentity.name })
+                : translateInstant("apps.connect.link.connectOwnServer"))}
             </h1>
             {subtitle && <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}
             {unverifiedHost ? <UnverifiedServerBadge host={unverifiedHost} className="mt-2" /> : null}

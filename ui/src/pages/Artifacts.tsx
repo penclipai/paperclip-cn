@@ -279,7 +279,7 @@ export function Artifacts() {
                 type="button"
                 variant="outline"
                 size="icon"
-                aria-label={`Group artifacts (currently ${artifactGroupByLabel(groupBy)})`}
+                aria-label={translateInstant("artifacts.groupAria", { group: artifactGroupByLabel(groupBy) })}
                 title={translateInstant("artifacts.groupTitle")}
                 data-testid="artifact-group-control"
                 data-group-by={groupBy}

@@ -458,6 +458,46 @@ describe("Routines page", () => {
     expect(groups[1]?.items.map((item) => item.title)).toEqual(["Reflection review"]);
   });
 
+  it("rebuilds routine section labels when the UI language changes without remounting", async () => {
+    localStorage.setItem("paperclip:routines-view:company-1", JSON.stringify({ groupBy: "none" }));
+    routinesListMock.mockResolvedValue([
+      createRoutine({ id: "routine-custom", title: "Custom routine" }),
+      createRoutine({
+        id: "routine-built-in",
+        title: "Reflection review",
+        originKind: "built_in_agent_bundle",
+        originId: "reflection-coach:recent-agent-reflection",
+      }),
+    ]);
+    issuesListMock.mockResolvedValue([]);
+
+    const root = createRoot(container);
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    await act(async () => {
+      root.render(
+        <QueryClientProvider client={queryClient}>
+          <Routines />
+        </QueryClientProvider>,
+      );
+      await flush();
+    });
+
+    expect(container.textContent).toContain("Custom routines");
+    expect(container.textContent).toContain("Built-in routines");
+
+    await act(async () => { await i18n.changeLanguage("zh-CN"); });
+
+    expect(container.textContent).toContain("自定义例行任务");
+    expect(container.textContent).toContain("内置例行任务");
+    expect(container.textContent).not.toContain("Custom routines");
+    expect(container.textContent).not.toContain("Built-in routines");
+
+    await act(async () => {
+      root.unmount();
+      await i18n.changeLanguage("en");
+    });
+  });
+
   it("localizes known built-in routine titles without rewriting custom titles", async () => {
     await i18n.changeLanguage("zh-CN");
 

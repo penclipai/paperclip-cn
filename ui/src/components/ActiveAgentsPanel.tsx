@@ -164,8 +164,8 @@ export function ActiveAgentsPanel({
         <div className="mt-3 flex justify-end text-xs text-muted-foreground">
           <Link to="/dashboard/live" className="hover:text-foreground hover:underline">
             {hiddenRunCount > 0
-              ? `${hiddenRunCount} more active/recent run${hiddenRunCount === 1 ? "" : "s"}`
-              : "View all runs"}
+              ? translateInstant("dashboardLive.moreActiveRecentRuns", { count: hiddenRunCount })
+              : translateInstant("dashboardLive.viewAllRuns")}
           </Link>
         </div>
       )}
@@ -192,13 +192,22 @@ export const AgentRunCard = memo(function AgentRunCard({
   issueLoadFailed?: boolean;
   className?: string;
 }) {
-  const statusLabel = runStatusLabels[run.status] ?? run.status.replace(/[_-]/g, " ");
+  useTranslation();
+  const statusFallback = runStatusLabels[run.status] ?? run.status.replace(/[_-]/g, " ");
+  const statusLabel = translateInstant(`dashboardLive.runStatus.${run.status}`, { defaultValue: statusFallback });
   const runUrl = `/agents/${run.agentId}/runs/${run.id}`;
   const timestamp = run.finishedAt
-    ? `Finished ${relativeTime(run.finishedAt)}`
-    : run.startedAt ? `Started ${relativeTime(run.startedAt)}` : `Queued ${relativeTime(run.createdAt)}`;
+    ? translateInstant("dashboardLive.finishedAt", { time: relativeTime(run.finishedAt) })
+    : run.startedAt
+      ? translateInstant("dashboardLive.startedAt", { time: relativeTime(run.startedAt) })
+      : translateInstant("dashboardLive.queuedAt", { time: relativeTime(run.createdAt) });
   const taskStatus = issue?.status === "in_review" && issue.externalConversationState === "waiting" ? "idle" : issue?.status ?? "backlog";
-  const taskTitle = issue?.title ?? (issueLoadFailed ? "Task unavailable" : "Loading task…");
+  const taskStatusKey = taskStatus.replace(/_([a-z])/g, (_match, letter: string) => letter.toUpperCase());
+  const taskStatusFallback = taskStatus.replace(/[_-]/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+  const taskStatusLabel = translateInstant(`status.${taskStatusKey}`, { defaultValue: taskStatusFallback });
+  const taskTitle = issue?.title ?? (issueLoadFailed
+    ? translateInstant("dashboardLive.taskUnavailable")
+    : translateInstant("dashboardLive.loadingTask"));
 
   return (
     <div className={cn(
@@ -213,7 +222,10 @@ export const AgentRunCard = memo(function AgentRunCard({
         <Link
           to={runUrl}
           title={`${run.agentName} — ${statusLabel} · ${timestamp}`}
-          aria-label={`${run.agentName} — ${statusLabel}. View run`}
+          aria-label={translateInstant("dashboardLive.runLinkAria", {
+            agentName: run.agentName,
+            status: statusLabel,
+          })}
           className="flex min-w-0 items-center gap-2 rounded-md text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <AgentIdentity agent={{ id: run.agentId, name: run.agentName, appearance: run.agentAppearance }} size="sm" className="gap-2 font-medium" />
@@ -231,7 +243,7 @@ export const AgentRunCard = memo(function AgentRunCard({
                   status={taskStatus}
                   size="md"
                   className="self-center"
-                  title={issue ? `Task ${taskStatus.replace(/_/g, " ")}` : undefined}
+                  title={issue ? translateInstant("dashboardLive.taskStatus", { status: taskStatusLabel }) : undefined}
                 />
                 <span className="truncate">{taskTitle}</span>
               </span>
@@ -241,7 +253,9 @@ export const AgentRunCard = memo(function AgentRunCard({
         ) : (
           <Link to={runUrl} className="flex items-center gap-1.5 rounded-lg border border-border/60 bg-background/60 px-2.5 py-2 text-sm text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
             <Clock3 className="size-4 shrink-0" aria-hidden />
-            <span className="truncate">{run.invocationSource === "timer" ? "Scheduled heartbeat" : "No linked task"}</span>
+            <span className="truncate">{run.invocationSource === "timer"
+              ? translateInstant("dashboardLive.scheduledHeartbeat")
+              : translateInstant("dashboardLive.noLinkedTask")}</span>
           </Link>
         )}
         <time

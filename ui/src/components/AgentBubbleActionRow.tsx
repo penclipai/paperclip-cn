@@ -51,7 +51,7 @@ export function agentBubbleDateLabel(date: Date | string | undefined): string {
  */
 export function BubbleCopyButton({ copyText }: { copyText: string }) {
   const { copied, failed, copy } = useCopyAction(2000);
-  const label = failed ? "Couldn’t copy message" : "Copy message";
+  const label = failed ? translateInstant("agentBubble.couldNotCopyMessage") : translateInstant("agentBubble.copyMessage");
 
   return (
     <button

@@ -1,4 +1,9 @@
 {
+  "agentDetail.runBreadcrumb": {
+    "en": "Run {{id}}",
+    "zh-CN": "运行 {{id}}",
+    "reviewedEnglishHash": "b9766aac24cead007ee47439382b81df8584a25176224229f5dae49ab49784ee"
+  },
   "agentDetail.actionFailed": {
     "en": "Action failed",
     "zh-CN": "操作失败",
@@ -1103,6 +1108,11 @@
     "en": "succeeded",
     "zh-CN": "成功",
     "reviewedEnglishHash": "5dceaeceb6d8a49d3665594710ace68dfbc1800e2d663d7febb302b4dbee3d27"
+  },
+  "agentDetail.secretsAndVariables": {
+    "en": "Secrets & variables",
+    "zh-CN": "密钥与变量",
+    "reviewedEnglishHash": "bd56b51ec5f5a033d145760b3de0dde3eeab4265d86f9ba08de5a046b1ee7235"
   },
   "agentDetail.worktreeLabel": {
     "en": "Worktree:",

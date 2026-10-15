@@ -254,7 +254,7 @@ export function AgentProviderConnection({
   return (
     <div className="min-w-0 max-w-full">
       <ModelSourceTiles
-        label={advancedConnection ? "Connection type" : "Connect your model provider"}
+        label={advancedConnection ? translateInstant("connectionUi.connectionType") : translateInstant("connectionUi.connectModelProvider")}
         sources={advancedConnection ? [
           { id: "subscription", label: provider, icon: <AdapterMark type={adapterType} />, credentialMode: "subscription" },
           { id: "api", label: provider, icon: <AdapterMark type={adapterType} />, credentialMode: "api" },
@@ -407,7 +407,7 @@ export function AgentProviderConnection({
                   ? "Use your saved Claude subscription for this agent."
                   : canLogin
                     ? "Use the existing provider connection for this environment."
-                    : "This environment does not support browser sign-in. Choose a sign-in environment or connect with an API key."}
+                    : translateInstant("connectionUi.setup.browserSignInUnsupported")}
               </p>
             )}
           </div>
@@ -432,17 +432,17 @@ export function AgentProviderConnection({
         }}
         primaryLabel={
           opened && needsLogin
-            ? loginPhase === "waiting" ? "Waiting for code"
-              : loginPhase === "connecting" ? "Connecting"
-              : `Sign in to ${provider}`
+            ? loginPhase === "waiting" ? translateInstant("connectionUi.waitingForCode")
+              : loginPhase === "connecting" ? translateInstant("connectionUi.connecting")
+              : translateInstant("connectionUi.signInToProvider", { provider })
             : busy
-            ? "Connecting"
+            ? translateInstant("connectionUi.connecting")
             : method === "subscription" &&
                 (storedLogin.data || savedSubscription)
-              ? "Use saved subscription"
+              ? translateInstant("connectionUi.useSavedSubscription")
               : method === "api" && selectedKey
-                ? "Use saved API key"
-                : "Connect"
+                ? translateInstant("connectionUi.useSavedApiKey")
+                : translateInstant("Connect")
         }
         primaryDisabled={
           managedAccount?.disabled ||

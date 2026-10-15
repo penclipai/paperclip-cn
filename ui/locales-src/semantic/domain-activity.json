@@ -29,6 +29,41 @@
     "zh-CN": "创建了工作成果",
     "reviewedEnglishHash": "2625f8dcdcfc622d5157b6acd3c6fae318546baaace1610dc4a0ff8efca3c9c7"
   },
+  "activity.providerTraceCaptureRequested": {
+    "en": "requested a provider trace capture",
+    "zh-CN": "请求采集提供方追踪",
+    "reviewedEnglishHash": "06013eba40ec4cbd46e85c496d01902c9a1627d64321dff35fdb9450b5f8efb9"
+  },
+  "activity.providerTraceDeleted": {
+    "en": "deleted a provider trace",
+    "zh-CN": "删除了提供方追踪",
+    "reviewedEnglishHash": "9ff6374ca0ef45f0ee8c4f0fa632c24b5aceeb33e11e344b16a2eaca70995bdf"
+  },
+  "activity.providerTraceDownloaded": {
+    "en": "downloaded a provider trace",
+    "zh-CN": "下载了提供方追踪",
+    "reviewedEnglishHash": "ef00535fd97bf85d82f853d4d2ad320cb58f008accb475d6f9ada10492fef178"
+  },
+  "activity.providerTraceFrameRevealed": {
+    "en": "revealed a provider trace frame",
+    "zh-CN": "查看了提供方追踪帧",
+    "reviewedEnglishHash": "fbf299a47ed18f062100a9894118ecdd25d4ea5619d117a784cf3f66f46883b1"
+  },
+  "activity.providerTraceMetadataListed": {
+    "en": "listed provider trace metadata",
+    "zh-CN": "查看了提供方追踪元数据",
+    "reviewedEnglishHash": "d4dafaf7e75141905ac570cd7e347edd544cc87c0ce1b8f10b89d426e400912b"
+  },
+  "activity.providerTraceRedactedViewed": {
+    "en": "viewed a redacted provider trace",
+    "zh-CN": "查看了脱敏提供方追踪",
+    "reviewedEnglishHash": "dbd0298f2e1f1dcb51ca0ef8e1255707ccb4c60ea55c6a082e617f4eea9143ab"
+  },
+  "activity.providerTraceWorkspaceDiffsReprojected": {
+    "en": "reprojected provider trace workspace changes",
+    "zh-CN": "重新映射了提供方追踪工作区变更",
+    "reviewedEnglishHash": "35102b18b95458146e76ae87ae84df2ee4febfe1d725024545d80511bb26ceff"
+  },
   "activity.routineCreated": {
     "en": "created a routine",
     "zh-CN": "创建了例行任务",

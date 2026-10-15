@@ -454,7 +454,7 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
           />
         </Tabs>
         <div className="flex items-center gap-2">
-          {!forceListView ? <div className="flex items-center overflow-hidden rounded-md border border-border" role="group" aria-label={translateInstant("Agent view")}>
+          {!forceListView ? <div className="agent-view-toggle flex items-center overflow-hidden rounded-md border border-border" role="group" aria-label={translateInstant("Agent view")}>
               <Button
                 type="button"
                 size="icon-sm"
@@ -487,7 +487,7 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
       </div>
 
       {filtered.length > 0 && (
-        <p className="text-xs text-muted-foreground">{filtered.length} {translateInstant("agent")}{filtered.length !== 1 ? "s" : ""}</p>
+        <p className="text-xs text-muted-foreground">{translateInstant("agents.count", { count: filtered.length })}</p>
       )}
 
       {error && <p className="text-sm text-destructive">{error.message}</p>}

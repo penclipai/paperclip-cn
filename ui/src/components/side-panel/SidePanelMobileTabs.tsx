@@ -92,7 +92,7 @@ export function SidePanelMobileTabs({ tabs, activeTabId, onActiveTabChange, onCl
                     variant="ghost"
                     size="icon"
                     className="size-(--sz-44px) shrink-0"
-                    aria-label={`Close ${tab.label}`}
+                    aria-label={translateInstant("sidePanel.close", { name: tab.label })}
                     disabled={tab.disabled}
                     onClick={() => {
                       // Focus the neighboring selector before removing the

@@ -1,4 +1,3 @@
-import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
 import { cn } from "../../lib/utils";
 
@@ -109,16 +108,26 @@ export function Stepper({
   canJumpToStep?: (target: number) => boolean;
   onJumpToStep?: (target: number) => void;
 }) {
-  useTranslation();
+  const { t } = useTranslation();
   return (
     <div className="mb-11 flex items-center justify-center gap-2">
       {Array.from({ length: total }, (_, index) => index + 1).map((segment) => {
         const jumpable = Boolean(canJumpToStep?.(segment) && onJumpToStep);
+        const label = labels[segment - 1];
+        const ariaLabel = label === "Name your organization"
+          ? t("Organization name")
+          : label === "Create your first agent"
+            ? t("onboarding.createFirstAgent")
+            : label === "Connect a model"
+              ? t("onboarding.connectModel")
+              : label === "Review"
+                ? t("Review")
+                : label ?? t("apps.connect.stepProgress", { current: segment, total });
         return (
           <button
             key={segment}
             type="button"
-            aria-label={labels[segment - 1] ?? `Step ${segment}`}
+            aria-label={ariaLabel}
             aria-current={segment === step ? "step" : undefined}
             disabled={!jumpable}
             onClick={() => jumpable && onJumpToStep?.(segment)}
@@ -137,7 +146,7 @@ export function Stepper({
       })}
       {/* Out of flow, so it neither takes a row nor picks up the gap. */}
       <span className="sr-only">
-        {translateInstant("pipelineSettings.step")}{" "}{step} {translateInstant("issueCommon.of")}{" "}{total}
+        {t("apps.connect.stepProgress", { current: step, total })}
       </span>
     </div>
   );

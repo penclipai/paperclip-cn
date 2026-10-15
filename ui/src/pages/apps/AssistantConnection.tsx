@@ -49,10 +49,10 @@ export function AssistantConnectionCard({ onNavigate }: { onNavigate: (href: str
     <div className="flex flex-wrap items-center gap-3 px-4 py-4">
       <Paperclip className="size-9 shrink-0 p-1 text-foreground" aria-hidden="true" />
       <div className="min-w-0 flex-1">
-        <h2 className="text-sm font-semibold text-foreground">{translateInstant("Assistant Connection (MCP)")}</h2>
+        <h2 className="text-sm font-semibold text-foreground">{translateInstant("apps.assistantConnection.title")}</h2>
         <p className="mt-0.5 text-xs text-muted-foreground">{translateInstant("Use your Paperclip organization from Codex, Claude, OpenCode, or another assistant.")}</p>
       </div>
-      <Button type="button" size="sm" variant="outline" onClick={() => onNavigate(ASSISTANT_CONNECTION_PATH)} aria-label={`${action} Assistant Connection (MCP)`}>{action}</Button>
+      <Button type="button" size="sm" variant="outline" onClick={() => onNavigate(ASSISTANT_CONNECTION_PATH)} aria-label={translateInstant("apps.assistantConnection.action", { action })}>{action}</Button>
     </div>
     {connections.isPending && <p className="border-t border-border px-4 py-3 text-xs text-muted-foreground">{translateInstant("Checking your connection status…")}</p>}
     {connections.isError && <div role="alert" className="flex flex-wrap items-center justify-between gap-3 border-t border-border px-4 py-3">
@@ -102,7 +102,7 @@ export function AssistantConnection({ initialAssistant = "codex" }: { initialAss
     return client.invalidateQueries({ queryKey: connectionsKey });
   } });
   useEffect(() => {
-    setBreadcrumbs([{ label: translateInstant("Connectors"), href: "/apps" }, { label: translateInstant("Assistant Connection (MCP)") }]);
+    setBreadcrumbs([{ label: translateInstant("Connectors"), href: "/apps" }, { label: translateInstant("apps.assistantConnection.title") }]);
     return () => setBreadcrumbs([]);
   }, [setBreadcrumbs]);
   if (!selectedCompanyId || !selectedCompany) return <p className="text-sm text-muted-foreground">{translateInstant("Select an organization to connect an assistant.")}</p>;
@@ -110,7 +110,7 @@ export function AssistantConnection({ initialAssistant = "codex" }: { initialAss
   const invitation = serverUrl ? mcpInvitation(serverUrl, { id: selectedCompanyId, name: selectedCompany.name }) : "";
   return <div className="max-w-3xl space-y-6 pb-8">
     <header className="space-y-4">
-      <div className="flex items-center gap-3"><Paperclip className="size-7 shrink-0" /><h1 className="text-xl font-semibold">{translateInstant("Assistant Connection (MCP)")}</h1></div>
+      <div className="flex items-center gap-3"><Paperclip className="size-7 shrink-0" /><h1 className="text-xl font-semibold">{translateInstant("apps.assistantConnection.title")}</h1></div>
       <div className="flex items-center gap-3">
         <CompanyPatternIcon companyName={selectedCompany.name} logoUrl={selectedCompany.logoUrl} className="size-12 shrink-0 rounded-lg" />
         <div className="space-y-1"><p className="font-medium">{selectedCompany.name}</p><p className="text-sm text-muted-foreground">{translateInstant("Connect your assistant to Paperclip. Review work, create tasks, and follow up using your account’s access to this organization.")}</p></div>

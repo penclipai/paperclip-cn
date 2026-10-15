@@ -21,6 +21,11 @@ describe("activity formatting", () => {
     expect(formatActivityVerb("issue.work_product_created")).toBe("activity.issueWorkProductCreated");
   });
 
+  it("uses semantic translation keys for plugin activity verbs", () => {
+    expect(formatActivityVerb("plugin.installed")).toBe("activityFormat.row.plugin.installed");
+    expect(formatActivityVerb("plugin.uninstalled")).toBe("activityFormat.row.plugin.uninstalled");
+  });
+
   it("formats blocker activity using linked issue identifiers", () => {
     const details = {
       addedBlockedByIssues: [

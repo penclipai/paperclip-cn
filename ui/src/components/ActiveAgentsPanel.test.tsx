@@ -5,6 +5,7 @@ import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ActiveAgentsPanel, AgentRunCard } from "./ActiveAgentsPanel";
+import i18n from "../i18n";
 
 const mockHeartbeatsApi = vi.hoisted(() => ({
   liveRunsForCompany: vi.fn(),
@@ -115,17 +116,19 @@ function createIssue(id: string, identifier: string, title: string) {
 describe("ActiveAgentsPanel", () => {
   let container: HTMLDivElement;
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    await i18n.changeLanguage("en");
     container = document.createElement("div");
     document.body.appendChild(container);
     mockHeartbeatsApi.liveRunsForCompany.mockResolvedValue([1, 2, 3, 4, 5].map(createRun));
     mockIssuesApi.get.mockRejectedValue(new Error("Issue not found"));
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     container.remove();
     document.body.innerHTML = "";
     vi.clearAllMocks();
+    await i18n.changeLanguage("en");
   });
 
   it("links hidden active/recent runs to the full live dashboard", async () => {
@@ -304,10 +307,33 @@ describe("ActiveAgentsPanel", () => {
     ]);
     expect(headers.every((header) => header.querySelector("svg") === null)).toBe(true);
     expect(container.querySelector(".status-chip")).toBeNull();
-    expect(container.querySelectorAll('[aria-label="Task in review"]')).toHaveLength(7);
+    expect(container.querySelectorAll('[aria-label="Task In Review"]')).toHaveLength(7);
     expect(container.querySelectorAll(".motion-safe\\:animate-spin")).toHaveLength(0);
     expect(container.querySelector('a[aria-label="Agent 0 — Running. View run"]')?.getAttribute("href"))
       .toBe("/agents/agent-0/runs/run-0");
+    await act(async () => root.unmount());
+  });
+
+  it("localizes application-owned run copy while preserving the agent name", async () => {
+    const root = createRoot(container);
+    await act(async () => {
+      root.render(<AgentRunCard
+        companyId="company-1"
+        run={{
+          ...createRun(0),
+          agentName: "Chief of staff",
+          status: "succeeded",
+          finishedAt: "2026-04-24T11:00:00.000Z",
+        }}
+      />);
+    });
+
+    await act(async () => { await i18n.changeLanguage("zh-CN"); });
+
+    expect(container.textContent).toContain("未关联任务");
+    expect(container.querySelector('a[aria-label="Chief of staff — 成功。查看运行"]')).not.toBeNull();
+    expect(container.querySelector("time")?.textContent).toContain("完成于");
+
     await act(async () => root.unmount());
   });
 
@@ -319,8 +345,8 @@ describe("ActiveAgentsPanel", () => {
         issue={{ title: "Slack conversation", identifier: "PAP-559", status: "in_review", externalConversationState: "waiting" }} />);
     });
     expect(container.querySelector('[aria-label="Agent 0 — Succeeded. View run"]')).not.toBeNull();
-    expect(container.querySelector('[aria-label="Task idle"]')).not.toBeNull();
-    expect(container.querySelector('[aria-label="Task in review"]')).toBeNull();
+    expect(container.querySelector('[aria-label="Task Idle"]')).not.toBeNull();
+    expect(container.querySelector('[aria-label="Task In Review"]')).toBeNull();
     await act(async () => root.unmount());
   });
 

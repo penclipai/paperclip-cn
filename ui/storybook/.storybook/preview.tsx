@@ -7,7 +7,7 @@ import {
   instanceExperimentalSettingsSchema,
   instanceGeneralSettingsSchema,
   type WorkTimelineResult,
-} from "@paperclipai/shared";
+} from "@penclipai/shared";
 import { MemoryRouter } from "@/lib/router";
 import { ONBOARDING_STORAGE_KEY } from "@/components/OnboardingWizard";
 import { STORYBOOK_COMPANY_ID } from "../fixtures/onboardingDraft";

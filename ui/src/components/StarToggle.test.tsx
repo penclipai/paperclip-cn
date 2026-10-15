@@ -4,6 +4,7 @@ import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { StarToggle } from "./StarToggle";
+import i18n from "../i18n";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
@@ -20,7 +21,8 @@ describe("StarToggle", () => {
   let container: HTMLDivElement;
   let root: ReturnType<typeof createRoot> | null;
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    await i18n.changeLanguage("en");
     container = document.createElement("div");
     document.body.appendChild(container);
     root = null;
@@ -33,6 +35,7 @@ describe("StarToggle", () => {
     container.remove();
     document.body.innerHTML = "";
     vi.clearAllMocks();
+    await i18n.changeLanguage("en");
   });
 
   async function render(node: React.ReactElement) {
@@ -70,6 +73,14 @@ describe("StarToggle", () => {
 
     await act(async () => { btn?.dispatchEvent(new MouseEvent("click", { bubbles: true })); });
     expect(onToggle).toHaveBeenCalledWith(false);
+  });
+
+  it("localizes the action while preserving the resource name", async () => {
+    await render(<StarToggle starred={false} resourceName="Onboarding" onToggle={() => {}} />);
+
+    await i18n.changeLanguage("zh-CN");
+
+    expect(button()?.getAttribute("aria-label")).toBe("收藏 Onboarding");
   });
 
   it("stays quiet (hidden at rest) for a starred sidebar row", async () => {

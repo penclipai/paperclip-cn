@@ -1,4 +1,3 @@
-import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
 import type { CSSProperties, ReactNode } from "react";
 import { Maximize2, Minimize2, PanelRightClose, PanelRightOpen, X } from "lucide-react";
@@ -35,16 +34,18 @@ export function SidePanelFrame({
   open = true,
   maximized = false,
   resizing = false,
-  label = "Side panel",
+  label,
   headerSize = "default",
   className,
   bodyClassName,
   style,
 }: SidePanelFrameProps) {
+  const { t } = useTranslation();
+  const resolvedLabel = label ?? t("sidePanel.label");
   const handleScroll = useScrollbarWhileScrolling();
   return (
     <section
-      aria-label={label}
+      aria-label={resolvedLabel}
       aria-hidden={!open}
       data-presentation={presentation}
       data-open={open ? "true" : "false"}
@@ -170,8 +171,8 @@ export function SidePanelWindowControls({
           size="icon-sm"
           className="h-(--side-panel-tab-height) w-(--side-panel-tab-height) text-muted-foreground hover:text-foreground focus-visible:text-foreground"
           onClick={onToggle}
-          aria-label={translateInstant("Close side panel")}
-          title={translateInstant("Close side panel")}
+          aria-label={t("Close side panel")}
+          title={t("Close side panel")}
         >
           <X aria-hidden />
         </Button>

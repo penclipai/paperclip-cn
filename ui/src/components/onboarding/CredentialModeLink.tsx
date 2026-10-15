@@ -1,4 +1,6 @@
 import { AnimatePresence, motion } from "motion/react";
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
 
 import { cn } from "../../lib/utils";
 import type { CredentialMode } from "./ModelSourceTiles";
@@ -17,9 +19,9 @@ import { LINK_LABEL_FADE_IN, LINK_LABEL_FADE_OUT } from "./onboarding-motion";
  * holds up because they are right above it.
  */
 
-const LINK_LABEL: Record<CredentialMode, string> = {
-  subscription: "Use subscription instead",
-  api: "Use API key instead",
+const LINK_LABEL_KEY: Record<CredentialMode, string> = {
+  subscription: "connectionUi.useSubscriptionInstead",
+  api: "connectionUi.useApiKeyInstead",
 };
 const NATIVE_MODES: CredentialMode[] = ["subscription", "api"];
 
@@ -35,6 +37,7 @@ export function CredentialModeLink({
   mode: CredentialMode;
   onChange: (next: CredentialMode) => void;
 }) {
+  useTranslation();
   return <ModeLink destination={OTHER_MODE[mode]} onClick={() => onChange(OTHER_MODE[mode])} modes={NATIVE_MODES} />;
 }
 
@@ -43,10 +46,11 @@ function ModeLink({ destination, onClick, modes }: {
   onClick: () => void;
   modes: CredentialMode[];
 }) {
+  const label = (mode: CredentialMode) => translateInstant(LINK_LABEL_KEY[mode]);
   return (
     <button
       type="button"
-      aria-label={LINK_LABEL[destination]}
+      aria-label={label(destination)}
       onClick={onClick}
       className={cn(
         // A grid rather than a flow of text, so both labels can occupy one cell
@@ -69,7 +73,7 @@ function ModeLink({ destination, onClick, modes }: {
           aria-hidden
           className="invisible col-start-1 row-start-1 whitespace-nowrap"
         >
-          {LINK_LABEL[sizerMode]}
+          {label(sizerMode)}
         </span>
       ))}
 
@@ -91,7 +95,7 @@ function ModeLink({ destination, onClick, modes }: {
           animate={{ opacity: 1, transition: LINK_LABEL_FADE_IN }}
           exit={{ opacity: 0, transition: LINK_LABEL_FADE_OUT }}
         >
-          {LINK_LABEL[destination]}
+          {label(destination)}
         </motion.span>
       </AnimatePresence>
     </button>

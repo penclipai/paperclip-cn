@@ -47,6 +47,44 @@ export interface AppCopy {
 }
 
 /**
+ * Only these catalog-owned slugs may use the shared description templates.
+ * The gallery also includes dynamic router entries, so matching a sentence
+ * shape alone would overwrite third-party descriptions and lose meaning.
+ */
+const PROVIDER_HOSTED_MCP_SLUGS = new Set([
+  "airtable", "asana", "beehiiv", "bitly", "box", "brex", "candid",
+  "clickhouse", "cloudflare", "cloudinary", "coda", "egnyte", "embat",
+  "hugging-face", "jira", "kernel", "local-falcon", "make", "manufact",
+  "miro", "mixpanel", "netlify", "oreilly", "pagerduty", "planetscale",
+  "postman", "razorpay", "resend", "sanity", "similarweb", "stripe",
+  "supabase", "ticket-tailor", "ticktick", "todoist", "webflow", "wix",
+  "xero", "youcom",
+]);
+
+const PROVIDER_ACCOUNT_SLUGS = new Set(["google", "openai", "openrouter", "xai"]);
+
+const STATIC_DESCRIPTION_KEYS: Record<string, string> = {
+  agentmail: "apps.gallery.appDescription.agentmail",
+  "browser-use-cloud": "apps.gallery.appDescription.browserUseCloud",
+  cognee: "apps.gallery.appDescription.cognee",
+  fireflies: "apps.gallery.appDescription.fireflies",
+  calendly: "apps.gallery.appDescription.calendly",
+  "chat-completions-api": "apps.gallery.appDescription.chatCompletionsApi",
+  composio: "apps.gallery.appDescription.composio",
+  enterpret: "apps.gallery.appDescription.enterpret",
+  exa: "apps.gallery.appDescription.exa",
+  executor: "apps.gallery.appDescription.executor",
+  firecrawl: "apps.gallery.appDescription.firecrawl",
+  "gsc-wizard": "apps.gallery.appDescription.gscWizard",
+  local: "apps.gallery.appDescription.local",
+  "messages-api": "apps.gallery.appDescription.messagesApi",
+  "parallel-search": "apps.gallery.appDescription.parallelSearch",
+  "responses-api": "apps.gallery.appDescription.responsesApi",
+  sentry: "apps.gallery.appDescription.sentry",
+  shopify: "apps.gallery.appDescription.shopify",
+};
+
+/**
  * Curated prosumer copy keyed by gallery key. Taken from the M-series wires
  * (https://happy-grove-jzyc.here.now/). Apps without an entry fall back to a
  * generic, gate-safe line.
@@ -156,12 +194,38 @@ const GENERIC: AppCopy = {
 };
 
 /** Curated application copy is resolved at render time for the selected locale. */
-export function appCopyFor(key: string, fallbackTagline?: string | null): AppCopy {
+export function appCopyFor(
+  key: string,
+  fallbackTagline?: string | null,
+): AppCopy {
   const curated = APP_COPY[key];
   if (curated) return {
     tagline: translateInstant(curated.tagline),
     short: translateInstant(curated.short),
   };
+  const staticDescriptionKey = STATIC_DESCRIPTION_KEYS[key];
+  if (staticDescriptionKey) {
+    const tagline = translateInstant(staticDescriptionKey);
+    return { tagline, short: tagline };
+  }
+  if (PROVIDER_HOSTED_MCP_SLUGS.has(key)) {
+    const providerHosted = fallbackTagline?.match(/^Connect (.+)'s provider-hosted MCP server\.$/);
+    if (providerHosted) {
+      const tagline = translateInstant("apps.gallery.appDescription.providerHostedMcp", {
+        appName: providerHosted[1],
+      });
+      return { tagline, short: tagline };
+    }
+  }
+  if (PROVIDER_ACCOUNT_SLUGS.has(key)) {
+    const accountProvider = fallbackTagline?.match(/^Connect (.+) accounts for your agents\.$/);
+    if (accountProvider) {
+      const tagline = translateInstant("apps.gallery.appDescription.providerAccounts", {
+        appName: accountProvider[1],
+      });
+      return { tagline, short: tagline };
+    }
+  }
   if (fallbackTagline) {
     const cleaned = sanitizeProsumerCopy(fallbackTagline);
     if (cleaned) return { tagline: cleaned, short: cleaned };

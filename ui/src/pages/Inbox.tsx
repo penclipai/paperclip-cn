@@ -296,7 +296,8 @@ function runFailureMessage(run: HeartbeatRun): string {
 }
 
 function approvalStatusLabel(status: Approval["status"]): string {
-  return status.replaceAll("_", " ");
+  const key = status.replace(/_([a-z])/g, (_, letter: string) => letter.toUpperCase());
+  return translateInstant(`status.${key}`, { defaultValue: status.replaceAll("_", " ") });
 }
 
 function readIssueIdFromRun(run: HeartbeatRun): string | null {
@@ -768,6 +769,7 @@ function InboxCollectionToolbar({
   if (streamlined) {
     return (
       <CollectionToolbar
+        className="inbox-collection-toolbar"
         ariaLabel={ariaLabel}
         context={context}
         search={search}
@@ -778,7 +780,7 @@ function InboxCollectionToolbar({
   }
 
   return (
-    <div role="toolbar" aria-label={ariaLabel} className="space-y-2">
+    <div role="toolbar" aria-label={ariaLabel} className="inbox-collection-toolbar space-y-2">
       {search ? <div className="sm:hidden">{search}</div> : null}
       <div className="flex flex-wrap items-center justify-between gap-2">
         {context}
@@ -2425,7 +2427,7 @@ function StreamlinedInbox({
     <div className="space-y-6">
       <InboxCollectionToolbar
         streamlined={streamlinedUiEnabled}
-        ariaLabel={`${surfaceLabel} controls`}
+        ariaLabel={translateInstant("inbox.controls", { surface: surfaceLabel })}
         context={toolbarContext ?? (
           <Tabs value={tab} onValueChange={(value) => navigate(`/inbox/${value}`)}>
             <PageTabBar
@@ -2828,7 +2830,7 @@ function StreamlinedInbox({
                           type="button"
                           data-slot="icon-button"
                           className="inline-flex h-4 w-4 shrink-0 items-center justify-center"
-                          aria-label={isExpanded ? "Collapse sub-tasks" : "Expand sub-tasks"}
+                          aria-label={translateInstant(isExpanded ? "issuesList.collapseSubtasks" : "issuesList.expandSubtasks")}
                           onClick={(event) => {
                             event.preventDefault();
                             event.stopPropagation();

@@ -239,6 +239,11 @@
     "zh-CN": "开始使用",
     "reviewedEnglishHash": "61e8d44ad423a4a0951b21b9d11440a1c23a881fe79335c367f63be251c64800"
   },
+  "onboarding.getStartedEllipsis": {
+    "en": "Let's get started...",
+    "zh-CN": "让我们开始吧...",
+    "reviewedEnglishHash": "6f8efe19d2eedb90ec15c2d83ab3590e39fa1a93dd5545766e39f6bcfe073c6c"
+  },
   "onboarding.giveItAHeartbeat": {
     "en": "Give it a heartbeat",
     "zh-CN": "给它一次心跳",
@@ -398,6 +403,11 @@
     "en": "OpenCode models are still loading. Please wait and try again.",
     "zh-CN": "OpenCode 模型仍在加载中。请稍候重试。",
     "reviewedEnglishHash": "9ea513400c72783981cd332c88e878a026ae37c13b11ddeaa5b3ff6e339e61f9"
+  },
+  "onboarding.organizationNameQuestion": {
+    "en": "What is the name of your organization?",
+    "zh-CN": "你的组织叫什么名字？",
+    "reviewedEnglishHash": "315be75f1b324889a8b687a1a14a81c2825d86e828db19d4dd0f4b13aef65015"
   },
   "onboarding.pickAdapterAndModel": {
     "en": "Pick the adapter and model your lead will run on, then check the environment.",

@@ -324,6 +324,11 @@
     "zh-CN": "保存",
     "reviewedEnglishHash": "1509f561f2416598629b886ad7d3c05a7e221e4e0675c84bbff4ee6d9e03913d"
   },
+  "common.saveRetry": {
+    "en": "Couldn't save — retry",
+    "zh-CN": "保存失败，点击重试",
+    "reviewedEnglishHash": "8de1ca953c32a5d2545a1a34c1375c6292516e7fbd3e742a8d4c9ce81e420658"
+  },
   "common.saveChanges": {
     "en": "Save changes",
     "zh-CN": "保存更改",
@@ -343,6 +348,11 @@
     "en": "Select",
     "zh-CN": "选择",
     "reviewedEnglishHash": "2a78025de6aae5e7ff88e5a951bb3a78ddd67388913529cf9e2dd9653e62b02d"
+  },
+  "common.starName": {
+    "en": "Star {{name}}",
+    "zh-CN": "收藏 {{name}}",
+    "reviewedEnglishHash": "e4c0d137bc37e35d2c6c64a8e0518208e79926508ddf99f3c61fe9988a771b32"
   },
   "common.status": {
     "en": "Status",
@@ -368,6 +378,11 @@
     "en": "Unavailable",
     "zh-CN": "不可用",
     "reviewedEnglishHash": "ca184496974204a0bd3fd4925e0540bc4b0df6fcc232994d29754272b7183812"
+  },
+  "common.unstarName": {
+    "en": "Unstar {{name}}",
+    "zh-CN": "取消收藏 {{name}}",
+    "reviewedEnglishHash": "c0ea7bafdf2bbc5bc35e7fa76e512036cba12873eaa611f49db0b492afa8430e"
   },
   "common.undo": {
     "en": "Undo",

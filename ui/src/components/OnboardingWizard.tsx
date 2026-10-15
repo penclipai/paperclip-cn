@@ -2556,12 +2556,12 @@ function OnboardingWizardInner({
                       title={
                         <motion.span key={step} {...titleSwapMotion} className="inline-block">
                           {step === 1
-                            ? "What is the name of your organization?"
+                            ? translateInstant("onboarding.organizationNameQuestion")
                             : step === 3
-                              ? "Create your first agent"
+                              ? translateInstant("onboarding.createFirstAgent")
                               : step === 4
-                                ? "Connect a model"
-                                : "Let's get started..."}
+                                ? translateInstant("onboarding.connectModel")
+                                : translateInstant("onboarding.getStartedEllipsis")}
                         </motion.span>
                       }
                     />
@@ -2651,7 +2651,7 @@ function OnboardingWizardInner({
                     <Input
                       id="onboarding-agent-name"
                       className="h-(--sz-44px) rounded-lg border-transparent bg-muted shadow-none dark:bg-muted"
-                      placeholder="e.g. Chief of staff"
+                      placeholder={translateInstant("onboarding.chiefOfStaff")}
                       value={agentName}
                       onChange={(e) => setAgentName(e.target.value)}
                       onKeyDown={(e) => {
@@ -3091,20 +3091,20 @@ function OnboardingWizardInner({
                   // prototype's own local flow draws with "Next".
                   primaryLabel={
                     step === 1
-                      ? "Continue"
+                      ? translateInstant("common.continue")
                       : step === 5
-                        ? "Get started"
+                        ? translateInstant("onboarding.getStarted")
                         : step === 4
                           ? connectCta.label
-                          : "Next"
+                          : translateInstant("common.next")
                   }
                   primaryIcon={step === 4 ? connectCta.icon : undefined}
                   loadingLabel={
                     step === 1
-                      ? "Creating..."
+                      ? translateInstant("onboarding.creating")
                       : step === 4
-                        ? "Connecting"
-                        : "Launching..."
+                        ? translateInstant("onboarding.connecting")
+                        : translateInstant("onboarding.launching")
                   }
                   // The browser-code login is finished on this screen, so the
                   // button is genuinely busy for its duration and shows it. The

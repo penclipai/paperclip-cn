@@ -94,7 +94,7 @@ export function AgentContextualSidebar({
               data-slot="contextual-sidebar-section-label"
               className={contextualSidebarStyles.sectionLabel}
             >
-              {section.label}
+              {translateInstant(section.label)}
             </p>
             <div data-slot="contextual-sidebar-group" className={contextualSidebarStyles.group}>
               {section.items
@@ -104,7 +104,7 @@ export function AgentContextualSidebar({
                     <SidebarNavItem
                       key={item.value}
                       to={href}
-                      label={labels?.[item.value] ?? item.label}
+                      label={labels?.[item.value] ?? translateInstant(item.label)}
                       icon={localIcons[item.value]}
                     />
                   );

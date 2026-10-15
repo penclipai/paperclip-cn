@@ -4433,22 +4433,27 @@ export function connectionDefaultSummarySentence(input: {
   preserveAgentAccess?: boolean;
 }): string {
   const identity = input.authKind === "none"
-    ? "No sign-in needed"
+    ? translateInstant("connectionUi.accessSummary.noSignInNeeded")
     : input.grantKind === "user"
-      ? "Connects as you"
+      ? translateInstant("connectionUi.accessSummary.connectsAsYou")
       : input.grantKind === "agent"
-        ? "Connects as a dedicated agent account"
-        : "Connects for everyone in your organization";
+        ? translateInstant("connectionUi.accessSummary.connectsAsDedicatedAgent")
+        : translateInstant("connectionUi.accessSummary.connectsForEveryone");
   const reach = input.preserveAgentAccess
-    ? "agent access stays as it is"
+    ? translateInstant("connectionUi.accessSummary.accessStaysAsIs")
     : input.lockedAgentId
-      ? "available to the agent that asked for it"
+      ? translateInstant("connectionUi.accessSummary.availableToRequestingAgent")
       : input.installChoice === "all"
-        ? "available to all agents"
+        ? translateInstant("connectionUi.accessSummary.availableToAllAgents")
         : input.installCount === 0
-          ? "no agents selected yet"
-          : `available to ${input.installCount} selected ${input.installCount === 1 ? "agent" : "agents"}`;
-  return `${identity}, ${reach}.`;
+          ? translateInstant("connectionUi.accessSummary.noAgentsSelected")
+          : translateInstant(
+            input.installCount === 1
+              ? "connectionUi.accessSummary.availableToSelectedAgent"
+              : "connectionUi.accessSummary.availableToSelectedAgents",
+            { count: input.installCount },
+          );
+  return translateInstant("connectionUi.accessSummary.sentence", { identity, reach });
 }
 
 /**

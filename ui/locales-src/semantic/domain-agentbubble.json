@@ -1,4 +1,9 @@
 {
+  "agentBubble.couldNotCopyMessage": {
+    "en": "Couldn’t copy message",
+    "zh-CN": "无法复制消息",
+    "reviewedEnglishHash": "41fff2fdba95e1a286e9eb3668f02d99ac484525a609813fa7802282e3676962"
+  },
   "agentBubble.copyMessage": {
     "en": "Copy message",
     "zh-CN": "复制消息",

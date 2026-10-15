@@ -1063,12 +1063,12 @@ export function AgentDetail() {
       crumbs.push({ label: agentName, href: agentDetailHref(canonicalAgentRef) });
       if (urlRunId) {
         crumbs.push({ label: translateInstant("Runs"), href: agent?.id ? agentScopedAuditHref(agent.id, "runs") : undefined });
-        crumbs.push({ label: `Run ${urlRunId.slice(0, 8)}` });
+        crumbs.push({ label: translateInstant("agentDetail.runBreadcrumb", { id: urlRunId.slice(0, 8) }) });
       } else {
         const item = AGENT_DETAIL_NAVIGATION
           .flatMap((section) => section.items)
           .find((candidate) => candidate.value === activeView);
-        crumbs.push({ label: item?.label ?? translateInstant("Overview") });
+        crumbs.push({ label: item ? translateInstant(item.label) : translateInstant("Overview") });
       }
     }
     setBreadcrumbs(crumbs);
@@ -1392,7 +1392,7 @@ export function AgentDetail() {
         </div>
       )}
 
-      {activeView !== "run-detail" && activeView !== "channels" && <h2 className="text-xl font-semibold">{activeView === "secrets" ? "Secrets & variables" : AGENT_DETAIL_NAVIGATION.flatMap(section => section.items).find(item => item.value === activeView)?.label}</h2>}
+      {activeView !== "run-detail" && activeView !== "channels" && <h2 className="text-xl font-semibold">{activeView === "secrets" ? translateInstant("agentDetail.secretsAndVariables") : translateInstant(AGENT_DETAIL_NAVIGATION.flatMap(section => section.items).find(item => item.value === activeView)?.label ?? "Overview")}</h2>}
 
       {/* View content */}
       {activeView === "overview" && (
@@ -1863,7 +1863,7 @@ export function AgentOverview({
               to={agentScopedAuditHref(agent.id, section)}
               className="rounded-lg border border-border px-3 py-2 text-sm font-medium capitalize hover:bg-accent"
             >
-              {section}
+              {translateInstant(section.charAt(0).toUpperCase() + section.slice(1))}
             </Link>
           ))}
         </div>

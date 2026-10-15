@@ -1,4 +1,29 @@
 {
+  "attentionQueue.decideBy.this_week": {
+    "en": "This week",
+    "zh-CN": "本周",
+    "reviewedEnglishHash": "8c4eef5ab2532515ef24a662db70f6e5b8063c7f924342b2a463f763f1091634"
+  },
+  "attentionQueue.decideBy.today": {
+    "en": "Today",
+    "zh-CN": "今天",
+    "reviewedEnglishHash": "2b065c7c9ce466e5ebcad757987d5d660ee4c9ea708bc62c43444b53334738ba"
+  },
+  "attentionQueue.decideBy.whenever": {
+    "en": "Whenever",
+    "zh-CN": "任意时间",
+    "reviewedEnglishHash": "4591883cc0562025560f450a27f45b293948fa3f21b70894c47ad0c339414ac8"
+  },
+  "attentionQueue.noLinkedTaskToAskAbout": {
+    "en": "No linked task to ask about",
+    "zh-CN": "没有可咨询的关联任务",
+    "reviewedEnglishHash": "47568dec81d6fefad6eb7385686f93ba9bf8841e4293872f56048eaf1a555642"
+  },
+  "attentionQueue.pickDate": {
+    "en": "Pick date",
+    "zh-CN": "选择日期",
+    "reviewedEnglishHash": "9ad828afb62738885e52eaef79dc5b2d1cd28dd22433597ac4ef13b19323f566"
+  },
   "attentionQueue.actions.accept": {
     "en": "Accept",
     "zh-CN": "接受",

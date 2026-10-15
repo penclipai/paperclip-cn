@@ -28,16 +28,16 @@ const HOUR_MS = 60 * 60 * 1000;
 const DAY_MS = 24 * HOUR_MS;
 
 /** Snooze presets shared with the row menu, resolved at click time. */
-const SNOOZE_PRESETS: ReadonlyArray<{ label: string; resolve: () => string }> = [
-  { label: "1 hour", resolve: () => new Date(Date.now() + HOUR_MS).toISOString() },
-  { label: "4 hours", resolve: () => new Date(Date.now() + 4 * HOUR_MS).toISOString() },
-  { label: "Tomorrow", resolve: () => {
+const SNOOZE_PRESETS: ReadonlyArray<{ labelKey: string; resolve: () => string }> = [
+  { labelKey: "attentionQueue.snoozePresets.oneHour", resolve: () => new Date(Date.now() + HOUR_MS).toISOString() },
+  { labelKey: "attentionQueue.snoozePresets.fourHours", resolve: () => new Date(Date.now() + 4 * HOUR_MS).toISOString() },
+  { labelKey: "attentionQueue.snoozePresets.tomorrowMorning", resolve: () => {
     const d = new Date();
     d.setDate(d.getDate() + 1);
     d.setHours(9, 0, 0, 0);
     return d.toISOString();
   } },
-  { label: "Next week", resolve: () => new Date(Date.now() + 7 * DAY_MS).toISOString() },
+  { labelKey: "attentionQueue.snoozePresets.nextWeek", resolve: () => new Date(Date.now() + 7 * DAY_MS).toISOString() },
 ];
 
 /** Slugify a queue title into a URL-safe kebab key the API will accept. */
@@ -79,7 +79,7 @@ interface DecisionTriageStripProps {
  * expiry chip surfaces the underlying decision's TTL read-only.
  */
 export function DecisionTriageStrip({ item, companyId, agents }: DecisionTriageStripProps) {
-  useTranslation();
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
   const sourceKind = item.sourceKind;
@@ -175,14 +175,14 @@ export function DecisionTriageStrip({ item, companyId, agents }: DecisionTriageS
               disabled={pending}
               onClick={() => setDecideBy.mutate(decideBy === value ? null : value)}
             >
-              {label}
+              {translateInstant(`attentionQueue.decideBy.${value}`)}
             </SegmentButton>
           ))}
           <Popover>
             <PopoverTrigger asChild>
               <SegmentButton active={isDatePreset} disabled={pending}>
                 <CalendarClock className="h-3.5 w-3.5" />
-                {isDatePreset ? decideByLabel(decideBy) : "Pick date"}
+                {isDatePreset ? decideByLabel(decideBy) : translateInstant("attentionQueue.pickDate")}
               </SegmentButton>
             </PopoverTrigger>
             <PopoverContent align="start" className="w-auto p-2">
@@ -249,14 +249,14 @@ export function DecisionTriageStrip({ item, companyId, agents }: DecisionTriageS
             <DropdownMenuTrigger asChild>
               <Button type="button" variant="outline" size="xs" className="h-7 gap-1" disabled={pending}>
                 <AlarmClock className="h-3.5 w-3.5" />
-                Snooze
+                {translateInstant("attentionQueue.snooze")}
                 <ChevronDown className="h-3 w-3" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start">
               {SNOOZE_PRESETS.map((preset) => (
-                <DropdownMenuItem key={preset.label} onClick={() => setSnooze.mutate(preset.resolve())}>
-                  {preset.label}
+                <DropdownMenuItem key={preset.labelKey} onClick={() => setSnooze.mutate(preset.resolve())}>
+                  {t(preset.labelKey)}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
@@ -266,7 +266,7 @@ export function DecisionTriageStrip({ item, companyId, agents }: DecisionTriageS
         <AskAgentPicker
           agents={agents ?? []}
           disabled={routeToAgent.isPending || !relatedIssueId}
-          disabledReason={!relatedIssueId ? "No linked task to ask about" : undefined}
+          disabledReason={!relatedIssueId ? translateInstant("attentionQueue.noLinkedTaskToAskAbout") : undefined}
           onRoute={(agent) => routeToAgent.mutate(agent)}
         />
         {pending && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />}

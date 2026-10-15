@@ -35,61 +35,29 @@ import { EnvironmentVariablesEditor } from "../environment-variables-editor";
 import { useRoutineDetail } from "./context";
 import type { EnvBinding, RoutineDetail as RoutineDetailType } from "@penclipai/shared";
 
-const concurrencyPolicyOptions = [
-  {
-    value: "coalesce_if_active",
-    title: "Coalesce if active",
-    description: "Keep one follow-up run queued while an active run is still working.",
-  },
-  {
-    value: "always_enqueue",
-    title: "Always enqueue",
-    description: "Queue every trigger occurrence, even if several runs stack up.",
-  },
-  {
-    value: "skip_if_active",
-    title: "Skip if active",
-    description: "Drop overlapping trigger occurrences while the routine is already active.",
-  },
-];
-
-const catchUpPolicyOptions = [
-  {
-    value: "skip_missed",
-    title: "Skip missed",
-    description: "Ignore schedule windows that were missed while paused.",
-  },
-  {
-    value: "enqueue_missed_with_cap",
-    title: "Enqueue missed with cap",
-    description: "Catch up missed schedule windows after recovery; sub-hourly schedules are combined into one catch-up run, slower schedules replay each missed window up to a cap.",
-  },
-];
-
 const activityGatePolicyOptions = [
   {
     value: "always",
-    title: "Run on every scheduled tick",
-    description: "Fire on the schedule no matter what — the default behavior.",
+    titleKey: "routineDetail.activityGatePolicy.always.title",
+    descriptionKey: "routineDetail.activityGatePolicy.always.description",
   },
   {
     value: "require_external_activity",
-    title: "Skip when there's been no activity since the last run",
-    description:
-      "On a scheduled tick, only run if something happened since the last run that finished. Lets a watcher-style routine stay asleep while the system is settled instead of burning tokens.",
+    titleKey: "routineDetail.activityGatePolicy.requireExternalActivity.title",
+    descriptionKey: "routineDetail.activityGatePolicy.requireExternalActivity.description",
   },
 ];
 
 const activityGateScopeOptions = [
   {
     value: "company",
-    title: "Organization-wide",
-    description: "Any activity across the organization counts as a reason to run.",
+    titleKey: "routineDetail.activityGateScope.company.title",
+    descriptionKey: "routineDetail.activityGateScope.company.description",
   },
   {
     value: "project",
-    title: "This project",
-    description: "Only activity in the routine's project counts as a reason to run.",
+    titleKey: "routineDetail.activityGateScope.project.title",
+    descriptionKey: "routineDetail.activityGateScope.project.description",
   },
 ];
 
@@ -124,7 +92,6 @@ export function OverviewSection({
     navigateToSection,
   } = ctx;
   const [descriptionAnnotationsOpen, setDescriptionAnnotationsOpen] = useState(defaultDescriptionAnnotationsOpen);
-
   const activeTriggers = routine.triggers.length;
   const nextFire = useMemo(() => {
     const upcoming = routine.triggers
@@ -467,9 +434,48 @@ export function SecretsSection() {
 }
 
 export function DeliverySection() {
-  useTranslation();
+  const { t } = useTranslation();
   const ctx = useRoutineDetail();
   const { editDraft, setEditDraft, routine } = ctx;
+  const translatedActivityGatePolicyOptions = activityGatePolicyOptions.map((option) => ({
+    value: option.value,
+    title: translateInstant(option.titleKey),
+    description: translateInstant(option.descriptionKey),
+  }));
+  const translatedActivityGateScopeOptions = activityGateScopeOptions.map((option) => ({
+    value: option.value,
+    title: translateInstant(option.titleKey),
+    description: translateInstant(option.descriptionKey),
+  }));
+  const concurrencyPolicyOptions = [
+    {
+      value: "coalesce_if_active",
+      title: t("routineDetail.policyTitle.coalesce_if_active"),
+      description: t("routineDetail.policyDescription.coalesce_if_active"),
+    },
+    {
+      value: "always_enqueue",
+      title: t("routineDetail.policyTitle.always_enqueue"),
+      description: t("routineDetail.policyDescription.always_enqueue"),
+    },
+    {
+      value: "skip_if_active",
+      title: t("routineDetail.policyTitle.skip_if_active"),
+      description: t("routineDetail.policyDescription.skip_if_active"),
+    },
+  ];
+  const catchUpPolicyOptions = [
+    {
+      value: "skip_missed",
+      title: t("routineDetail.policyTitle.skip_missed"),
+      description: t("routineDetail.policyDescription.skip_missed"),
+    },
+    {
+      value: "enqueue_missed_with_cap",
+      title: t("routineDetail.policyTitle.enqueue_missed_with_cap"),
+      description: t("routineDetail.policyDescription.enqueue_missed_with_cap"),
+    },
+  ];
 
   // The activity gate only affects schedule ticks (webhook/manual/API fires are
   // themselves activity and always run), so the control is only meaningful for
@@ -484,7 +490,7 @@ export function DeliverySection() {
         <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">
           {translateInstant("routineDetail.concurrency")}</p>
         <RadioCardGroup
-          ariaLabel="Concurrency policy"
+          ariaLabel={translateInstant("routineDetail.concurrencyPolicy")}
           value={editDraft.concurrencyPolicy}
           onValueChange={(concurrencyPolicy) =>
             setEditDraft((current) => ({ ...current, concurrencyPolicy }))
@@ -496,7 +502,7 @@ export function DeliverySection() {
         <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">
           {translateInstant("routineDetail.catchUp")}</p>
         <RadioCardGroup
-          ariaLabel="Catch-up policy"
+          ariaLabel={translateInstant("routineDetail.catchUpPolicy")}
           value={editDraft.catchUpPolicy}
           onValueChange={(catchUpPolicy) =>
             setEditDraft((current) => ({ ...current, catchUpPolicy }))
@@ -508,12 +514,12 @@ export function DeliverySection() {
         <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">
           {translateInstant("agentConfig.advancedRunPolicy")}</p>
         <RadioCardGroup
-          ariaLabel="Advanced run policy"
+          ariaLabel={translateInstant("routineDetail.advancedRunPolicy")}
           value={editDraft.activityGatePolicy}
           onValueChange={(activityGatePolicy) =>
             setEditDraft((current) => ({ ...current, activityGatePolicy }))
           }
-          options={activityGatePolicyOptions}
+          options={translatedActivityGatePolicyOptions}
           disabled={!hasScheduleTrigger}
         />
         {!hasScheduleTrigger ? (
@@ -523,12 +529,12 @@ export function DeliverySection() {
           <div className="space-y-2 rounded-lg border border-border p-3">
             <Label className="text-xs font-medium">{translateInstant("routineEditor.activityScope")}</Label>
             <RadioCardGroup
-              ariaLabel="Activity gate scope"
+              ariaLabel={translateInstant("routineDetail.activityGateScope")}
               value={editDraft.activityGateScope}
               onValueChange={(activityGateScope) =>
                 setEditDraft((current) => ({ ...current, activityGateScope }))
               }
-              options={activityGateScopeOptions}
+              options={translatedActivityGateScopeOptions}
             />
           </div>
         ) : null}

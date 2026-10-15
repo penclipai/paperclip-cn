@@ -1,4 +1,19 @@
 {
+  "companySkills.paperclipBundled": {
+    "en": "Paperclip bundled",
+    "zh-CN": "Paperclip 内置",
+    "reviewedEnglishHash": "a6aad4d9b2784df2b7a702908e0a76faf8523fcd6b134d4a96140ead8d034c1f"
+  },
+  "companySkills.enabledForAgents_one": {
+    "en": "Enabled for {{count}} agent",
+    "zh-CN": "已为 {{count}} 个智能体启用",
+    "reviewedEnglishHash": "7f5d353b780256b861b907c858f61225b8ea64c480dbe2802d4032308dd39c33"
+  },
+  "companySkills.enabledForAgents_other": {
+    "en": "Enabled for {{count}} agents",
+    "zh-CN": "已为 {{count}} 个智能体启用",
+    "reviewedEnglishHash": "ceb4a7fcf9ab26c691bf78a6b8d96bf91571141c57d4c82f7ba7a2573ae51514"
+  },
   "companySkills.about": {
     "en": "About",
     "zh-CN": "关于",

@@ -1,4 +1,48 @@
 {
+  "apps.gallery.appDescription.calendly": { "en": "Review Calendly event types and availability, and use supported scheduling actions.", "zh-CN": "查看 Calendly 事件类型和可用时间，并使用受支持的日程操作。", "reviewedEnglishHash": "5c09dd2e04a93493183832bd4662bc60140ee54921e63adc32c534f37be8f284" },
+  "apps.gallery.appDescription.chatCompletionsApi": { "en": "Connect any compatible harness to a Chat Completions-compatible provider or gateway.", "zh-CN": "将兼容的运行环境连接到兼容 Chat Completions 的服务提供商或网关。", "reviewedEnglishHash": "c3b17023db9e920d74a28621c22adfe879d82ae3af5411db0db4032df33162ea" },
+  "apps.gallery.appDescription.composio": { "en": "Discover and use connected apps through Composio Connect.", "zh-CN": "通过 Composio Connect 发现并使用已连接的应用。", "reviewedEnglishHash": "2743648a040133634bf794e33a493f7b546c2c9ad3b704d1a851649f80d0cbd8" },
+  "apps.gallery.appDescription.enterpret": { "en": "Ask questions about your customer feedback and pull verbatim quotes with citations.", "zh-CN": "针对客户反馈提问，并提取附带引用的原文。", "reviewedEnglishHash": "def64b72392a5dd6250b13d7aa949faf6e6728c3bf772a480b9fa36a2a38adc4" },
+  "apps.gallery.appDescription.exa": { "en": "Search the public web and read source pages with Exa.", "zh-CN": "通过 Exa 搜索公开网络并阅读源页面。", "reviewedEnglishHash": "9c129b89a2fb8adb9cb573198f028be3ead58ae4bbcb5f4a78f9ad63ed625b67" },
+  "apps.gallery.appDescription.executor": { "en": "Use the tools exposed by your Executor MCP connection.", "zh-CN": "使用 Executor MCP 连接公开的工具。", "reviewedEnglishHash": "8fff55a7f2a1f152486a7fe45e1dc27faa1b3c56bfbb7861dfd6cae131ee7484" },
+  "apps.gallery.appDescription.firecrawl": { "en": "Search, scrape, and parse public web pages with Firecrawl.", "zh-CN": "通过 Firecrawl 搜索、抓取并解析公开网页。", "reviewedEnglishHash": "ac5397ba4af482e147f20bc28bf87ad72df892b02f95a71cd7777a83e3b35be4" },
+  "apps.gallery.appDescription.gscWizard": { "en": "Read Google Search Console, Bing Webmaster, and analytics data for connected properties.", "zh-CN": "读取已连接站点的 Google Search Console、Bing Webmaster 和分析数据。", "reviewedEnglishHash": "6907c7926bff769b5a993412a652cab6bb9362c225a392231338a6a195cf296a" },
+  "apps.gallery.appDescription.local": { "en": "Use a local model server in the agent’s execution environment.", "zh-CN": "在智能体执行环境中使用本地模型服务器。", "reviewedEnglishHash": "339cb75f42c6a9312e433a44ee9ccef5976f06ed9c5258812fbb088b0995f820" },
+  "apps.gallery.appDescription.messagesApi": { "en": "Connect any compatible harness to an Anthropic Messages-compatible provider or gateway.", "zh-CN": "将兼容的运行环境连接到兼容 Anthropic Messages 的服务提供商或网关。", "reviewedEnglishHash": "ec682e15ca487c742b6b9bc0b47adda8269739405945f008237b76c743173d81" },
+  "apps.gallery.appDescription.parallelSearch": { "en": "Search the public web and extract source pages with Parallel.", "zh-CN": "通过 Parallel 搜索公开网络并提取源页面。", "reviewedEnglishHash": "f6a1eb46b5664fd10ebed9333f4f58e29a933b5f3330c66cab38cda982c2e016" },
+  "apps.gallery.appDescription.responsesApi": { "en": "Connect any compatible harness to an OpenAI Responses-compatible provider or gateway, including Emissary.", "zh-CN": "将兼容的运行环境连接到兼容 OpenAI Responses 的服务提供商或网关，包括 Emissary。", "reviewedEnglishHash": "9066ee7990c09e0ea711942b48ce48c157f8f3f236d9e555c306a7a8f78fa277" },
+  "apps.gallery.appDescription.sentry": { "en": "Investigate errors, releases, and production issues.", "zh-CN": "排查错误、发布版本和生产问题。", "reviewedEnglishHash": "e0434210914693066f3a718c00cef1500035fe72f97943d359e3df07f08c960d" },
+  "apps.gallery.appDescription.shopify": { "en": "Search a store's products and policies, and manage shopping carts.", "zh-CN": "搜索商店的商品和政策，并管理购物车。", "reviewedEnglishHash": "d08cf278e13bcc1fe581bbd339796f1144dcf66d018ef3a985551d78ffa6ca3d" },
+  "apps.gallery.appDescription.agentmail": {
+    "en": "Give agents email inboxes and handle each conversation as a task.",
+    "zh-CN": "为智能体提供电子邮件收件箱，并将每段对话作为任务处理。",
+    "reviewedEnglishHash": "d29107eb0fb06540314ac652c8c0ad7770b322c027a370b641535e2a5f26060c"
+  },
+  "apps.gallery.appDescription.browserUseCloud": {
+    "en": "Delegate browser tasks and watch them live in Paperclip.",
+    "zh-CN": "委派浏览器任务，并在 Paperclip 中实时查看执行情况。",
+    "reviewedEnglishHash": "0b4c95556a5b046b58452ad57242160a3688619b5f4768f03c1dfa00947d925b"
+  },
+  "apps.gallery.appDescription.cognee": {
+    "en": "Build and recall shared graph memory from documents and conversations.",
+    "zh-CN": "从文档和对话中构建并调用共享图谱记忆。",
+    "reviewedEnglishHash": "1ffe1e8cb81a3be2ae43331f2bc59ac7e21513ac3e5a88dc9f0fd023dd9523b0"
+  },
+  "apps.gallery.appDescription.fireflies": {
+    "en": "Search meeting transcripts, read summaries and action items, and connect meeting-ready routines.",
+    "zh-CN": "搜索会议记录，阅读摘要和行动项，并连接适合会议的例行任务。",
+    "reviewedEnglishHash": "66d4c005b719cb75d67378ad97d2852666f8c3ce2f8543e791e30a692aa9bcfd"
+  },
+  "apps.assistantConnection.action": {
+    "en": "{{action}} Assistant Connection (MCP)",
+    "zh-CN": "{{action}}助手连接（MCP）",
+    "reviewedEnglishHash": "b0d8262df36373eccfbaeff7631d3557c402d5a4c716f0c061e917e016532433"
+  },
+  "apps.assistantConnection.title": {
+    "en": "Assistant Connection (MCP)",
+    "zh-CN": "助手连接（MCP）",
+    "reviewedEnglishHash": "6f168e8d966660e708519401ff0c796c60c58aa10ad7a351b046cdbf2df72b09"
+  },
   "apps.advanced.key": {
     "en": "Key",
     "zh-CN": "键",
@@ -23,6 +67,16 @@
     "en": "Connect an API using a key from your provider.",
     "zh-CN": "使用服务提供商提供的密钥连接 API。",
     "reviewedEnglishHash": "dbf74bbc657fc4d1b134e98b18e18f878e2a7d87b3c2181dbcd1536ddf7c8ee3"
+  },
+  "apps.gallery.appDescription.providerAccounts": {
+    "en": "Connect {{appName}} accounts for your agents.",
+    "zh-CN": "为你的智能体连接 {{appName}} 账户。",
+    "reviewedEnglishHash": "2b71f9e9e028287a2b7d3aa9a04700fa7b6fdcb9f3617fa767546d4607327fc4"
+  },
+  "apps.gallery.appDescription.providerHostedMcp": {
+    "en": "Connect {{appName}}'s provider-hosted MCP server.",
+    "zh-CN": "连接 {{appName}} 提供的托管 MCP 服务器。",
+    "reviewedEnglishHash": "70bd5558bcca0648b0dafdcd9cc18dc7e76b2e11a31b8e8f55da0c5c788a09ca"
   },
   "apps.browse.appDescription.context7": {
     "en": "Look up current documentation for software libraries.",

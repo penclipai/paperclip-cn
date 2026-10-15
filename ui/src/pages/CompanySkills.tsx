@@ -267,25 +267,28 @@ function buildTree(entries: CompanySkillFileInventoryEntry[]) {
 }
 
 function sourceMeta(sourceBadge: CompanySkillSourceBadge, sourceLabel: string | null) {
+  const displaySourceLabel = sourceLabel === "Paperclip bundled"
+    ? translateInstant("companySkills.paperclipBundled")
+    : sourceLabel;
   const normalizedLabel = sourceLabel?.toLowerCase() ?? "";
   const isSkillsShManaged =
     normalizedLabel.includes("skills.sh") || normalizedLabel.includes("vercel-labs/skills");
 
   switch (sourceBadge) {
     case "skills_sh":
-      return { icon: VercelMark, label: sourceLabel ?? "skills.sh", managedLabel: "skills.sh managed" };
+      return { icon: VercelMark, label: displaySourceLabel ?? "skills.sh", managedLabel: "skills.sh managed" };
     case "github":
       return isSkillsShManaged
-        ? { icon: VercelMark, label: sourceLabel ?? "skills.sh", managedLabel: "skills.sh managed" }
-        : { icon: GithubIcon, label: sourceLabel ?? "GitHub", managedLabel: "GitHub managed" };
+        ? { icon: VercelMark, label: displaySourceLabel ?? "skills.sh", managedLabel: "skills.sh managed" }
+        : { icon: GithubIcon, label: displaySourceLabel ?? "GitHub", managedLabel: "GitHub managed" };
     case "url":
-      return { icon: Link2, label: sourceLabel ?? "URL", managedLabel: "URL managed" };
+      return { icon: Link2, label: displaySourceLabel ?? "URL", managedLabel: "URL managed" };
     case "local":
-      return { icon: Folder, label: sourceLabel ?? translateInstant("Folder"), managedLabel: "Folder managed" };
+      return { icon: Folder, label: displaySourceLabel ?? translateInstant("Folder"), managedLabel: "Folder managed" };
     case "paperclip":
-      return { icon: Paperclip, label: sourceLabel ?? "Paperclip", managedLabel: "Paperclip managed" };
+      return { icon: Paperclip, label: displaySourceLabel ?? "Paperclip", managedLabel: "Paperclip managed" };
     default:
-      return { icon: Boxes, label: sourceLabel ?? translateInstant("Catalog"), managedLabel: "Catalog managed" };
+      return { icon: Boxes, label: displaySourceLabel ?? translateInstant("Catalog"), managedLabel: "Catalog managed" };
   }
 }
 
@@ -955,7 +958,7 @@ function SkillCard({
           <span>
             {card.installed
               ? card.agentCount > 0
-                ? `Enabled for ${card.agentCount} ${card.agentCount === 1 ? "agent" : "agents"}`
+                ? translateInstant("companySkills.enabledForAgents", { count: card.agentCount })
                 : translateInstant("Not enabled for any agents")
               : translateInstant("Available to install")}
           </span>

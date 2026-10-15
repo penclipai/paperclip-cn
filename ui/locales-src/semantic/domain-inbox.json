@@ -64,6 +64,11 @@
     "zh-CN": "选择要显示的收件箱列",
     "reviewedEnglishHash": "ad899478db8b91da14ce5b38b9c3765b2c16ce48cc275e155941bf87aa30d804"
   },
+  "inbox.controls": {
+    "en": "{{surface}} controls",
+    "zh-CN": "{{surface}} 控制",
+    "reviewedEnglishHash": "5c11eb149a8376e4d5f3541e2ae3ed88890e8754a74b43a83ab06acbe0e1c8fe"
+  },
   "inbox.disableNesting": {
     "en": "Disable parent-child nesting",
     "zh-CN": "关闭父子任务嵌套",

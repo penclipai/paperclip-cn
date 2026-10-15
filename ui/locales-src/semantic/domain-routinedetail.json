@@ -1,4 +1,14 @@
 {
+  "routineDetail.activityGatePolicy.always.description": { "en": "Fire on the schedule no matter what — the default behavior.", "zh-CN": "无论发生什么都按计划运行，这是默认行为。", "reviewedEnglishHash": "4412186d92b8e1ccba17f5fc8cdfcdec2b5e9a27cde47a97ec02436431b56c1a" },
+  "routineDetail.activityGatePolicy.always.title": { "en": "Run on every scheduled tick", "zh-CN": "在每个计划触发点运行", "reviewedEnglishHash": "6fa83c63bb710032a048acf3b38573fe1092f3fb08dd0fbe7d53800ed0fbdffe" },
+  "routineDetail.activityGatePolicy.requireExternalActivity.description": { "en": "On a scheduled tick, only run if something happened since the last run that finished. Lets a watcher-style routine stay asleep while the system is settled instead of burning tokens.", "zh-CN": "在计划触发时，只有自上次完成的运行以来发生过活动才运行。系统稳定时，监控型例行任务会保持休眠，避免消耗令牌。", "reviewedEnglishHash": "ca39b27cb8ce7d09413eb4bcf523e99ff5be5ba0381aa690edb262c8c28afb52" },
+  "routineDetail.activityGatePolicy.requireExternalActivity.title": { "en": "Skip when there's been no activity since the last run", "zh-CN": "自上次运行后没有活动时跳过", "reviewedEnglishHash": "e3bb529a226a107dd9389de365a58da975f243fcc1ff66f7198926b55494a47f" },
+  "routineDetail.activityGateScope": { "en": "Activity gate scope", "zh-CN": "活动门控范围", "reviewedEnglishHash": "24e9df1af05d4354e6fea31d9e5564a341cdf5b0b73db26a9a4114e093174f3d" },
+  "routineDetail.activityGateScope.company.description": { "en": "Any activity across the organization counts as a reason to run.", "zh-CN": "组织中的任何活动都会成为运行理由。", "reviewedEnglishHash": "a601b680dc4dc9ba7d3573e617bc77cd4981227bb02bcff590a5782cfedc395e" },
+  "routineDetail.activityGateScope.company.title": { "en": "Organization-wide", "zh-CN": "全组织", "reviewedEnglishHash": "4b115f61b9918e76c94a9074a08d80b49e765d89d23d2fa51618922aaffc20b5" },
+  "routineDetail.activityGateScope.project.description": { "en": "Only activity in the routine's project counts as a reason to run.", "zh-CN": "只有该例行任务所属项目中的活动才会成为运行理由。", "reviewedEnglishHash": "bd02213257510e18109043f4b287a545cbb1d5ab1161f606028963ab6a837bb9" },
+  "routineDetail.activityGateScope.project.title": { "en": "This project", "zh-CN": "此项目", "reviewedEnglishHash": "d0f62545074d3f6b200e0dc386d9a1f181e6e3b41c322164340fe3766322f698" },
+  "routineDetail.advancedRunPolicy": { "en": "Advanced run policy", "zh-CN": "高级运行策略", "reviewedEnglishHash": "02eb5cf767493595902ad931c7cae92e1be0a62bf7bcf064a045d9abcd1cb793" },
   "routineDetail.activeTriggerCount": {
     "en": "{{count}} active",
     "zh-CN": "{{count}} 个启用",

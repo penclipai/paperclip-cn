@@ -559,10 +559,7 @@ export function Browse({ renderAccountDetails = (connection) => connection.conne
         key: `gallery:${slug}`,
         slug,
         name: appDefinitionName(entry),
-        description:
-          !chatProviderVisible(slug, chatConnectorsEnabled, githubEnabled) && chatProviderForSlug(slug)
-            ? appCopyFor(slug).tagline
-            : appDefinitionDescription(entry),
+        description: appCopyFor(slug, appDefinitionDescription(entry)).tagline,
         brandKey: slug,
         logoUrl: appDefinitionLogoUrl(entry),
         darkLogoUrl: appDefinitionDarkLogoUrl(entry),
@@ -1235,8 +1232,8 @@ export function ConnectorCard({
           const manage = () => onManageAggregator?.(row.upstreamCatalogApp!, connection.id);
           return <ConnectionAccountRowLayout key={`${connection.id}:${snapshot.toolkit}:${account.id}`} state={state} accountName={name}
             source={<><AppLogo name={providerName} brandKey={provider} size={16} compact /><span>{translateInstant("Managed by")}{" "}{providerName} ·</span><button type="button" className="max-w-full truncate hover:underline" onClick={() => onNavigate(`/apps/${connection.id}/permissions`)}>“{connection.name}”</button></>}
-            onOpen={manage} openLabel={`Manage ${name}`}>
-            <DropdownMenu><DropdownMenuTrigger asChild><Button type="button" variant="ghost" size="icon-sm" aria-label={`Manage ${name} connection`}><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+            onOpen={manage} openLabel={translateInstant("connectionUi.manageAccount", { name })}>
+            <DropdownMenu><DropdownMenuTrigger asChild><Button type="button" variant="ghost" size="icon-sm" aria-label={translateInstant("connectionUi.manageConnection", { name })}><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 {managementUrl ? <DropdownMenuItem asChild><a href={managementUrl} target="_blank" rel="noopener noreferrer">{translateInstant("Open in")}{" "}{providerName}<ExternalLink className="size-4" /></a></DropdownMenuItem>
                   : <DropdownMenuItem disabled title={translateInstant("Set the management URL on this gateway to open its console")}>{translateInstant("Open in")}{" "}{providerName}<ExternalLink className="size-4" /></DropdownMenuItem>}
@@ -1293,7 +1290,7 @@ export function ConnectorCard({
                       type="button"
                       variant="ghost"
                       size="icon-sm"
-                      aria-label={`Manage ${endpoint.assignedAgentName} ${row.name} connection`}
+                      aria-label={translateInstant("connectionUi.manageConnection", { name: `${endpoint.assignedAgentName} ${row.name}` })}
                     >
                       <MoreHorizontal className="h-4 w-4" />
                     </Button>
@@ -1362,7 +1359,7 @@ function ConnectionAccountRow({
 
   return (
     <ConnectionAccountRowLayout state={state} accountName={accountName} owner={owner} details={<>{details}{discovery?.discovery.message || discovery?.sync.status === "error" ? <p className="text-xs text-muted-foreground" role="status">{discovery.discovery.message ?? discovery.sync.error}</p> : null}</>}
-      openLabel={`Open ${accountName} permissions`} onOpen={() => onNavigate(`/apps/${connection.id}/permissions`)}>
+      openLabel={translateInstant("connectionUi.openPermissions", { name: accountName })} onOpen={() => onNavigate(`/apps/${connection.id}/permissions`)}>
         {state.kind === "attention" || state.kind === "draft" ? (
           <Button
             type="button"
@@ -1383,7 +1380,7 @@ function ConnectionAccountRow({
               type="button"
               variant="ghost"
               size="icon-sm"
-              aria-label={`Manage ${accountName} connection`}
+              aria-label={translateInstant("connectionUi.manageConnection", { name: accountName })}
             >
               <MoreHorizontal className="h-4 w-4" />
             </Button>

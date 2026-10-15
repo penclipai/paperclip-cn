@@ -1,5 +1,7 @@
 import { useRef, type ReactNode } from "react";
 import { AnimatePresence, motion } from "motion/react";
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
 
 import { cn } from "../../lib/utils";
 import {
@@ -32,10 +34,10 @@ export type ModelSource = {
   credentialMode?: ModelConnectionMode | null;
 };
 
-const CREDENTIAL_TAG_LABEL: Record<ModelConnectionMode, string> = {
-  subscription: "Subscription",
-  api: "API key",
-  advanced: "Custom Gateway",
+const CREDENTIAL_TAG_KEY: Record<ModelConnectionMode, string> = {
+  subscription: "connectionUi.modelCredential.subscription",
+  api: "connectionUi.modelCredential.apiKey",
+  advanced: "connectionUi.modelCredential.customGateway",
 };
 
 /**
@@ -48,6 +50,7 @@ const CREDENTIAL_TAG_LABEL: Record<ModelConnectionMode, string> = {
  * tile's padding and over the row below.
  */
 export function CredentialTag({ mode }: { mode: ModelConnectionMode }) {
+  useTranslation();
   return (
     <span className="relative flex h-4 w-full items-center justify-center overflow-hidden text-(length:--text-micro) text-muted-foreground">
       <AnimatePresence initial={false} mode="sync">
@@ -58,7 +61,7 @@ export function CredentialTag({ mode }: { mode: ModelConnectionMode }) {
           animate={{ opacity: 1, y: 0, transition: TAG_SWAP_ENTER }}
           exit={{ opacity: 0, y: TAG_SWAP_TRAVEL, transition: TAG_SWAP_EXIT }}
         >
-          {CREDENTIAL_TAG_LABEL[mode]}
+          {translateInstant(CREDENTIAL_TAG_KEY[mode])}
         </motion.span>
       </AnimatePresence>
     </span>

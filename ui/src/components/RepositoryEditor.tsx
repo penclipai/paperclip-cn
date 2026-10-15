@@ -46,7 +46,7 @@ export function RepositoryEditor({ selected, onChange, state = "ready", availabl
     searchText: repo.connections.join(" "), repo,
   }));
   const addClassName = selected.length ? "self-start" : "h-24 w-full flex-col gap-2";
-  const addLabel = selected.length ? "Add another repo" : "Add GitHub repo";
+  const addLabel = translateInstant(selected.length ? "newProject.addAnotherRepo" : "newProject.addGithubRepo");
   return (
     <fieldset disabled={disabled} className="flex min-w-0 flex-col gap-3">
       <div className="flex items-baseline gap-2"><span className="text-sm font-medium">{translateInstant("Source repos")}</span><span className="text-xs text-muted-foreground">{translateInstant("optional")}</span></div>

@@ -4,6 +4,16 @@
     "zh-CN": "+ 目标",
     "reviewedEnglishHash": "cb105d461fc435b9a2ac3e727bce4dc25c8ac332915ee11d1ed2c3929dc400ab"
   },
+  "newProject.addAnotherRepo": {
+    "en": "Add another repo",
+    "zh-CN": "添加其他仓库",
+    "reviewedEnglishHash": "f3306e1cb15e0d2796fb1feb1fe4fbcee54dd4ff0c982d190a0f0f914b3ad199"
+  },
+  "newProject.addGithubRepo": {
+    "en": "Add GitHub repo",
+    "zh-CN": "添加 GitHub 仓库",
+    "reviewedEnglishHash": "9928c7bf05034ef2ce3e7d6d24e6027ae89e135a6804b79a0617a9f4d84c96a8"
+  },
   "newProject.allGoalsSelected": {
     "en": "All goals already selected.",
     "zh-CN": "已选择所有目标。",

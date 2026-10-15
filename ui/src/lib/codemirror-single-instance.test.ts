@@ -118,6 +118,8 @@ describe("codemirror single-instance invariant", () => {
       ).toMatch(new RegExp(`^\\s+"${pkg}":`, "m"));
     });
 
+    // This bounded census traverses the physical pnpm graph. Windows
+    // realpath/directory IO can exceed the default 5s test budget.
     it(`installs exactly one physical copy of ${pkg}`, () => {
       const copies = reachableCopies(pkg);
       expect(
@@ -132,7 +134,7 @@ describe("codemirror single-instance invariant", () => {
           "pnpm.overrides entry in the root package.json instead of " +
           "allowing a second copy.",
       ).toHaveLength(1);
-    });
+    }, process.platform === "win32" ? 30_000 : undefined);
   }
 
   // Exercise the installed editor graph directly. Separate @lezer/common

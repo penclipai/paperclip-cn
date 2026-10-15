@@ -19,10 +19,85 @@
     "zh-CN": "优先显示活跃运行，随后显示最近完成的运行。",
     "reviewedEnglishHash": "e4351c0f7022fd922fe2034a9cf8cce20273465c8eb6587310721c67b59a20ff"
   },
+  "dashboardLive.finishedAt": {
+    "en": "Finished {{time}}",
+    "zh-CN": "完成于 {{time}}",
+    "reviewedEnglishHash": "0d8996408d187151b92eb4923d835c65667354d2defa1f51f2f9a570b0f9cbd2"
+  },
+  "dashboardLive.loadingTask": {
+    "en": "Loading task…",
+    "zh-CN": "正在加载任务…",
+    "reviewedEnglishHash": "d417ed357866b2116803fea368ef0b189a2f5e9bb2c584a0ae35b04ef7152044"
+  },
+  "dashboardLive.moreActiveRecentRuns_one": {
+    "en": "{{count}} more active/recent run",
+    "zh-CN": "另有 {{count}} 个活跃或最近运行",
+    "reviewedEnglishHash": "939e3c109d1062b59d73432cc7330d71d4bd7f691c4352b494bca8d24b4bbb9a"
+  },
+  "dashboardLive.moreActiveRecentRuns_other": {
+    "en": "{{count}} more active/recent runs",
+    "zh-CN": "另有 {{count}} 个活跃或最近运行",
+    "reviewedEnglishHash": "670f53af71a29ade0a19b8a9f6ea2c7e44e80188a74867ddd67a86960e7d4812"
+  },
   "dashboardLive.noActiveRuns": {
     "en": "No active or recent agent runs.",
     "zh-CN": "还没有活跃或最近的智能体运行。",
     "reviewedEnglishHash": "ae4f00afad4e95aecc7e0a04642d4abf10a98c772382c5c2934496b35891127d"
+  },
+  "dashboardLive.noLinkedTask": {
+    "en": "No linked task",
+    "zh-CN": "未关联任务",
+    "reviewedEnglishHash": "65d7a19e773930b62746068fe4d157a3df1bea0369331b1c44efd51ef5a3b153"
+  },
+  "dashboardLive.queuedAt": {
+    "en": "Queued {{time}}",
+    "zh-CN": "排队于 {{time}}",
+    "reviewedEnglishHash": "dd3de49c1ee8ad887f565f6f6938b8eea246546435f0734cbfc53c208c6f5d9f"
+  },
+  "dashboardLive.runLinkAria": {
+    "en": "{{agentName}} — {{status}}. View run",
+    "zh-CN": "{{agentName}} — {{status}}。查看运行",
+    "reviewedEnglishHash": "d48c2f819f512870bbdd8a94e3361bfe1badbdfebdd7d8ea5db0881eca3ba56c"
+  },
+  "dashboardLive.runStatus.cancelled": {
+    "en": "Cancelled",
+    "zh-CN": "已取消",
+    "reviewedEnglishHash": "d353a99eb4556847ceeb3c306ac886cf6b4fa13043eb1864b9aeb0607fd5f2cc"
+  },
+  "dashboardLive.runStatus.failed": {
+    "en": "Failed",
+    "zh-CN": "失败",
+    "reviewedEnglishHash": "031a8f0f659df890dfd53c92e45295b0f14c997185bae46e168831e403b273f7"
+  },
+  "dashboardLive.runStatus.interrupted": {
+    "en": "Interrupted",
+    "zh-CN": "已中断",
+    "reviewedEnglishHash": "132d124d6bb3d811116f98aa03bc474f5783517d4c82635c031745912e62e1c8"
+  },
+  "dashboardLive.runStatus.queued": {
+    "en": "Queued",
+    "zh-CN": "已排队",
+    "reviewedEnglishHash": "661ff40a07e037bbd5f7d4ec97a4df1503096ca910e7c9e2d7a4e9abd4e4e1a0"
+  },
+  "dashboardLive.runStatus.running": {
+    "en": "Running",
+    "zh-CN": "运行中",
+    "reviewedEnglishHash": "f4ccae29e1bb0c20a124570a1b43f4347ea94bba9f84ffdfddd9c7445b126128"
+  },
+  "dashboardLive.runStatus.succeeded": {
+    "en": "Succeeded",
+    "zh-CN": "成功",
+    "reviewedEnglishHash": "6d9a6f97a5fdaf3b90a0cf02e0b43d8b7ec1d05c0e4718e02ddd1c5b450e5b39"
+  },
+  "dashboardLive.runStatus.timed_out": {
+    "en": "Timed out",
+    "zh-CN": "已超时",
+    "reviewedEnglishHash": "9718cc761cfd5810041ef007ae258fa1308b8487d0f30c5f36a442f8fe5f76c5"
+  },
+  "dashboardLive.scheduledHeartbeat": {
+    "en": "Scheduled heartbeat",
+    "zh-CN": "定时心跳",
+    "reviewedEnglishHash": "9994a695e146f820d71c864309da762f1478fd07c9b79b235e69755bd3a75284"
   },
   "dashboardLive.selectCompanyEmpty": {
     "en": "Select a company to view live runs.",
@@ -34,9 +109,29 @@
     "zh-CN": "最多显示 {{count}} 条",
     "reviewedEnglishHash": "d30e1333268efed8a6f86cdae8be740a3eed4d9fb446d566b755a85803707c98"
   },
+  "dashboardLive.startedAt": {
+    "en": "Started {{time}}",
+    "zh-CN": "开始于 {{time}}",
+    "reviewedEnglishHash": "2b5386c62e630800f957e3191120519f05a65ac341eb7bc37357f033d26c546b"
+  },
+  "dashboardLive.taskStatus": {
+    "en": "Task {{status}}",
+    "zh-CN": "任务：{{status}}",
+    "reviewedEnglishHash": "e526ff52f4e4661bfe5eb0f238488db937b37c4f52b54a6d88861921efdaffc8"
+  },
+  "dashboardLive.taskUnavailable": {
+    "en": "Task unavailable",
+    "zh-CN": "任务不可用",
+    "reviewedEnglishHash": "8e7e15761d565d0eeb54691fff6ddb84808d5a64cf4e3d123fcef82369ef5886"
+  },
   "dashboardLive.title": {
     "en": "Live agent runs",
     "zh-CN": "实时智能体运行",
     "reviewedEnglishHash": "6663a17b699c35a575b08f8893c501a0182fea388561a92f6a875cbfa55c3d88"
+  },
+  "dashboardLive.viewAllRuns": {
+    "en": "View all runs",
+    "zh-CN": "查看所有运行",
+    "reviewedEnglishHash": "346de5a03a7af536b0e37f255333cd185b52e4db3b0a4df05cf7c5916e23268c"
   }
 }

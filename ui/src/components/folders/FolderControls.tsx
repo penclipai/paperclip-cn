@@ -392,7 +392,7 @@ export function AllUnfiledBanner({
     <div className="mb-3 flex flex-wrap items-center gap-2 rounded-md border border-border bg-muted/40 px-3 py-2 text-sm">
       <FolderIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
       <span className="min-w-0 flex-1 text-muted-foreground">
-        {translateInstant("Group these")}{" "}{itemLabelPlural} {translateInstant("into folders to keep things tidy.")}</span>
+        {translateInstant("folders.groupSuggestion", { items: itemLabelPlural })}</span>
       <Button size="sm" variant="outline" onClick={onCreateFolder}>
         {translateInstant("folders.createFirst")}</Button>
       <Button size="icon-sm" variant="ghost" aria-label={translateInstant("folders.dismissSuggestion")} onClick={dismiss}>

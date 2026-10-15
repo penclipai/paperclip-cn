@@ -73,14 +73,14 @@ import {
 
 const concurrencyPolicies = ["coalesce_if_active", "always_enqueue", "skip_if_active"];
 const catchUpPolicies = ["skip_missed", "enqueue_missed_with_cap"];
-const concurrencyPolicyDescriptions: Record<string, string> = {
-  coalesce_if_active: "If a run is already active, keep just one follow-up run queued.",
-  always_enqueue: "Queue every trigger occurrence, even if the routine is already running.",
-  skip_if_active: "Drop new trigger occurrences while a run is still active.",
+const concurrencyPolicyDescriptionKeys: Record<string, string> = {
+  coalesce_if_active: "routines.policyDescription.coalesceIfActive",
+  always_enqueue: "routines.policyDescription.alwaysEnqueue",
+  skip_if_active: "routines.policyDescription.skipIfActive",
 };
-const catchUpPolicyDescriptions: Record<string, string> = {
-  skip_missed: "Ignore windows that were missed while the scheduler or routine was paused.",
-  enqueue_missed_with_cap: "Catch up missed schedule windows after recovery; sub-hourly schedules are combined into one catch-up run, slower schedules replay each missed window up to a cap.",
+const catchUpPolicyDescriptionKeys: Record<string, string> = {
+  skip_missed: "routines.policyDescription.skipMissed",
+  enqueue_missed_with_cap: "routineDetail.policyDescription.enqueue_missed_with_cap",
 };
 
 const builtInRoutineTitleKeys: Record<string, string> = {
@@ -201,8 +201,8 @@ export function buildRoutineGroups(
         const positionCompare = leftPosition - rightPosition;
         if (positionCompare !== 0) return positionCompare;
 
-        const labelCompare = (leftFolder?.name ?? "Unknown folder").localeCompare(
-          rightFolder?.name ?? "Unknown folder",
+        const labelCompare = (leftFolder?.name ?? translateInstant("routines.unknownFolder")).localeCompare(
+          rightFolder?.name ?? translateInstant("routines.unknownFolder"),
           undefined,
           { sensitivity: "base" },
         );
@@ -210,7 +210,9 @@ export function buildRoutineGroups(
       })
       .map((key) => ({
         key,
-        label: key === "__unfiled" ? "Unfiled" : (folderById.get(key)?.name ?? "Unknown folder"),
+        label: key === "__unfiled"
+          ? translateInstant("folders.unfiled")
+          : (folderById.get(key)?.name ?? translateInstant("routines.unknownFolder")),
         items: groups[key]!,
       }));
   }
@@ -219,13 +221,13 @@ export function buildRoutineGroups(
     const groups = groupBy(routines, (routine) => routine.projectId ?? "__no_project");
     return Object.keys(groups)
       .sort((left, right) => {
-        const leftLabel = left === "__no_project" ? translateInstant("No project") : (projectById.get(left)?.name ?? translateInstant("Unknown project"));
-        const rightLabel = right === "__no_project" ? translateInstant("No project") : (projectById.get(right)?.name ?? translateInstant("Unknown project"));
+        const leftLabel = left === "__no_project" ? translateInstant("routines.noProject") : (projectById.get(left)?.name ?? translateInstant("routines.unknownProject"));
+        const rightLabel = right === "__no_project" ? translateInstant("routines.noProject") : (projectById.get(right)?.name ?? translateInstant("routines.unknownProject"));
         return leftLabel.localeCompare(rightLabel);
       })
       .map((key) => ({
         key,
-        label: key === "__no_project" ? translateInstant("No project") : (projectById.get(key)?.name ?? translateInstant("Unknown project")),
+        label: key === "__no_project" ? translateInstant("routines.noProject") : (projectById.get(key)?.name ?? translateInstant("routines.unknownProject")),
         items: groups[key]!,
       }));
   }
@@ -233,13 +235,13 @@ export function buildRoutineGroups(
   const groups = groupBy(routines, (routine) => routine.assigneeAgentId ?? "__unassigned");
   return Object.keys(groups)
     .sort((left, right) => {
-      const leftLabel = left === "__unassigned" ? translateInstant("Unassigned") : (agentById.get(left)?.name ?? translateInstant("Unknown agent"));
-      const rightLabel = right === "__unassigned" ? translateInstant("Unassigned") : (agentById.get(right)?.name ?? translateInstant("Unknown agent"));
+      const leftLabel = left === "__unassigned" ? translateInstant("routines.unassigned") : (agentById.get(left)?.name ?? translateInstant("routines.unknownAssignee"));
+      const rightLabel = right === "__unassigned" ? translateInstant("routines.unassigned") : (agentById.get(right)?.name ?? translateInstant("routines.unknownAssignee"));
       return leftLabel.localeCompare(rightLabel);
     })
     .map((key) => ({
       key,
-      label: key === "__unassigned" ? translateInstant("Unassigned") : (agentById.get(key)?.name ?? translateInstant("Unknown agent")),
+      label: key === "__unassigned" ? translateInstant("routines.unassigned") : (agentById.get(key)?.name ?? translateInstant("routines.unknownAssignee")),
       items: groups[key]!,
     }));
 }
@@ -261,7 +263,7 @@ export function buildRoutineSections(
     .filter((group) => group.items.length > 0)
     .map((group) => (
       builtInRoutines.length > 0 && groupByValue === "none" && group.key === "__all"
-        ? { ...group, label: "Custom routines" }
+        ? { ...group, label: translateInstant("routines.customRoutines") }
         : group
     ));
 
@@ -271,7 +273,7 @@ export function buildRoutineSections(
     ...customGroups,
     {
       key: builtInRoutineGroupKey,
-      label: "Built-in routines",
+      label: translateInstant("routines.builtInRoutines"),
       items: builtInRoutines,
     },
   ];
@@ -327,7 +329,8 @@ function RoutineSectionHeader({
 }
 
 export function Routines() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const locale = i18n.resolvedLanguage ?? i18n.language;
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const queryClient = useQueryClient();
@@ -382,7 +385,7 @@ export function Routines() {
 
   useEffect(() => {
     setBreadcrumbs([{ label: translateInstant("Routines") }]);
-  }, [setBreadcrumbs]);
+  }, [locale, setBreadcrumbs]);
 
   useEffect(() => {
     setRoutineViewState(getRoutineViewState(routineViewStateKey));
@@ -668,7 +671,7 @@ export function Routines() {
   );
   const recentRunsIssueLinkState = useMemo(
     () => createIssueDetailLocationState(translateInstant("Recent Runs"), "/routines?tab=runs", "issues"),
-    [],
+    [locale],
   );
   const updateIssue = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) => issuesApi.update(id, data),
@@ -717,7 +720,7 @@ export function Routines() {
   );
   const routineSections = useMemo(
     () => buildRoutineSections(sortedRoutines, routineViewState.groupBy, projectById, agentById, folderById),
-    [agentById, folderById, projectById, routineViewState.groupBy, sortedRoutines],
+    [agentById, folderById, locale, projectById, routineViewState.groupBy, sortedRoutines],
   );
   const currentAssignee = draft.assigneeAgentId ? agentById.get(draft.assigneeAgentId) ?? null : null;
   const currentProject = draft.projectId ? projectById.get(draft.projectId) ?? null : null;
@@ -1210,11 +1213,13 @@ export function Routines() {
                         </SelectTrigger>
                         <SelectContent>
                           {concurrencyPolicies.map((value) => (
-                            <SelectItem key={value} value={value}>{value.replaceAll("_", " ")}</SelectItem>
+                            <SelectItem key={value} value={value}>{translateInstant(`routineDetail.policy.${value}`)}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
-                      <p className="text-xs text-muted-foreground">{concurrencyPolicyDescriptions[draft.concurrencyPolicy]}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {translateInstant(concurrencyPolicyDescriptionKeys[draft.concurrencyPolicy])}
+                      </p>
                     </div>
                     <div className="space-y-2">
                       <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">{translateInstant("routineHistory.field.catchUp")}</p>
@@ -1227,11 +1232,13 @@ export function Routines() {
                         </SelectTrigger>
                         <SelectContent>
                           {catchUpPolicies.map((value) => (
-                            <SelectItem key={value} value={value}>{value.replaceAll("_", " ")}</SelectItem>
+                            <SelectItem key={value} value={value}>{translateInstant(`routineDetail.policy.${value}`)}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
-                      <p className="text-xs text-muted-foreground">{catchUpPolicyDescriptions[draft.catchUpPolicy]}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {translateInstant(catchUpPolicyDescriptionKeys[draft.catchUpPolicy])}
+                      </p>
                     </div>
                   </div>
                 </CollapsibleContent>
@@ -1304,7 +1311,7 @@ export function Routines() {
           {routineViewState.groupBy === "folder" && !hasRoutineFolders && !foldersLoading && visibleRoutines.length > 0 ? (
             <AllUnfiledBanner
               storageKey={`paperclip:routines-folder-nudge:${selectedCompanyId ?? "none"}`}
-              itemLabelPlural="routines"
+              itemLabelPlural={translateInstant("folders.routines")}
               onCreateFolder={() => openCreateFolder()}
             />
           ) : null}

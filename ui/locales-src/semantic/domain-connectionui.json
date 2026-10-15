@@ -1,4 +1,49 @@
 {
+  "connectionUi.connectionType": {
+    "en": "Connection type",
+    "zh-CN": "连接类型",
+    "reviewedEnglishHash": "a2cfeb2898b25bd562091fcf6c9bd4654c7e37a90f53e652655363d885e77fea"
+  },
+  "connectionUi.connecting": {
+    "en": "Connecting",
+    "zh-CN": "正在连接",
+    "reviewedEnglishHash": "d403c686f6a1048014bdd230f59963271b0123ea48245754fc9f264b962a2182"
+  },
+  "connectionUi.manageAccount": {
+    "en": "Manage {{name}}",
+    "zh-CN": "管理 {{name}}",
+    "reviewedEnglishHash": "57c2fff4f9358f78629686a7393a4651e8a3c28f6de5fe54c33f4afd4ca3cbe3"
+  },
+  "connectionUi.manageConnection": {
+    "en": "Manage {{name}} connection",
+    "zh-CN": "管理 {{name}} 连接",
+    "reviewedEnglishHash": "e2aa01437b329a0cc639371499984d8b6acb053077ae5fad83a79b18d250128d"
+  },
+  "connectionUi.openPermissions": {
+    "en": "Open {{name}} permissions",
+    "zh-CN": "打开 {{name}} 的权限",
+    "reviewedEnglishHash": "b20a70834df732985cb32f9bbebd157d08b29b81421a4f4811597a8ca2b09ead"
+  },
+  "connectionUi.signInToProvider": {
+    "en": "Sign in to {{provider}}",
+    "zh-CN": "登录 {{provider}}",
+    "reviewedEnglishHash": "b47688800f56bdaef54b307a8c353d613a5779a7330cfefc691a8a5707591c89"
+  },
+  "connectionUi.useSavedApiKey": {
+    "en": "Use saved API key",
+    "zh-CN": "使用已保存的 API 密钥",
+    "reviewedEnglishHash": "b2c9e5ba133d74fcea99ddea7fe4bfa01db0e67a7218560252df35a1225eaad4"
+  },
+  "connectionUi.useSavedSubscription": {
+    "en": "Use saved subscription",
+    "zh-CN": "使用已保存的订阅",
+    "reviewedEnglishHash": "5adae315ee3e678f3cb1e16ea32209bef1f42c0f87ac85e854433da87e336125"
+  },
+  "connectionUi.waitingForCode": {
+    "en": "Waiting for code",
+    "zh-CN": "正在等待验证码",
+    "reviewedEnglishHash": "f22b705c3b7ce68f30f6056bbefc696c593a34a6b942e21f42c5b3d580f06018"
+  },
   "connectionUi.accountChoice.connectThrough": {
     "en": "Connect {{service}} through {{provider}}",
     "zh-CN": "通过 {{provider}} 连接 {{service}}",
@@ -8,6 +53,61 @@
     "en": "{{provider}} is an external service that handles the connection and requests to {{service}}. Reusing this account does not yet verify app access; the agent will check it and guide any additional authorization.",
     "zh-CN": "{{provider}} 是处理与 {{service}} 连接和请求的外部服务。重复使用此账户尚不会验证应用访问权限；智能体会进行检查并指导完成其他授权。",
     "reviewedEnglishHash": "e097efe1d610ee2c65ffa74451f9d5253316396a3ac5e8815b250121db10d3ee"
+  },
+  "connectionUi.accessSummary.accessStaysAsIs": {
+    "en": "agent access stays as it is",
+    "zh-CN": "智能体访问权限保持不变",
+    "reviewedEnglishHash": "0a725f11886fee5aff51106460da7d8d5a1fd61f213a1b7a29b9a89326240659"
+  },
+  "connectionUi.accessSummary.availableToAllAgents": {
+    "en": "available to all agents",
+    "zh-CN": "所有智能体均可使用",
+    "reviewedEnglishHash": "62d053ecb1016d6d155c7bd4cf352a2a03587d0be5384e59c81a1bd477514bf6"
+  },
+  "connectionUi.accessSummary.availableToRequestingAgent": {
+    "en": "available to the agent that asked for it",
+    "zh-CN": "提出请求的智能体可使用",
+    "reviewedEnglishHash": "8be3285220b28356c78038f60f56c52d624f8568b910185203000ac22e4e5cdc"
+  },
+  "connectionUi.accessSummary.availableToSelectedAgent": {
+    "en": "available to {{count}} selected agent",
+    "zh-CN": "{{count}} 个所选智能体可使用",
+    "reviewedEnglishHash": "443dfbb6095bea076d276a6afcffc8d6a7a7fb66d029a8cbaca248a50741682d"
+  },
+  "connectionUi.accessSummary.availableToSelectedAgents": {
+    "en": "available to {{count}} selected agents",
+    "zh-CN": "{{count}} 个所选智能体可使用",
+    "reviewedEnglishHash": "5cda1a184c851190ddf540efaf61de12886455eced020d74dd0998ecaa46113f"
+  },
+  "connectionUi.accessSummary.connectsAsDedicatedAgent": {
+    "en": "Connects as a dedicated agent account",
+    "zh-CN": "将作为专属智能体账户连接",
+    "reviewedEnglishHash": "b57c020a5adab1879688b128fdbd2bdb2e266d5763311637d35d9434764c231b"
+  },
+  "connectionUi.accessSummary.connectsAsYou": {
+    "en": "Connects as you",
+    "zh-CN": "将以你的身份连接",
+    "reviewedEnglishHash": "43f617fe40fe0b5363566bcb0fcbc94d9090dc61ba095dba38d9dd83c8492f9b"
+  },
+  "connectionUi.accessSummary.connectsForEveryone": {
+    "en": "Connects for everyone in your organization",
+    "zh-CN": "将为组织中的所有人连接",
+    "reviewedEnglishHash": "b20d65ca6d49b0f33c532371f9f8664f92054dcf511876b5bac5a7b38ccb2cf6"
+  },
+  "connectionUi.accessSummary.noAgentsSelected": {
+    "en": "no agents selected yet",
+    "zh-CN": "尚未选择智能体",
+    "reviewedEnglishHash": "961be93139c98f7c28bb92d72ec1048116185f60468e3d737999cd2f25c5f748"
+  },
+  "connectionUi.accessSummary.noSignInNeeded": {
+    "en": "No sign-in needed",
+    "zh-CN": "无需登录",
+    "reviewedEnglishHash": "572ca3ee73f4c215ccccd45230697273334be8d8f886ffcb224a5f490614aa17"
+  },
+  "connectionUi.accessSummary.sentence": {
+    "en": "{{identity}}, {{reach}}.",
+    "zh-CN": "{{identity}}，{{reach}}。",
+    "reviewedEnglishHash": "4bc36ae523cef816682276da9d3907f1a8e61d6cbb1b4bcd0c084acb53f4c8bf"
   },
   "connectionUi.actionTest.afterApproval": {
     "en": "After approval, test the {{action}} action with this execution ID. Do not start the original action again.",
@@ -63,6 +163,31 @@
     "en": "Get an {{provider}} API key ↗",
     "zh-CN": "获取 {{provider}} API 密钥 ↗",
     "reviewedEnglishHash": "207423fdb6fa66736ab3827ddac592d81d38f625bb9b341e20dd13938aa9a876"
+  },
+  "connectionUi.connectApp": {
+    "en": "Connect {{appName}}",
+    "zh-CN": "连接 {{appName}}",
+    "reviewedEnglishHash": "5b75a73d0098420776bef11ea5d9603141b31fb83711b95f527f00c63180f17a"
+  },
+  "connectionUi.connectModelProvider": {
+    "en": "Connect your model provider",
+    "zh-CN": "连接你的模型服务商",
+    "reviewedEnglishHash": "763f7fb688ff5e4fd4f65dcd75d44ea865160ecbf799cc233b7ab60670824e73"
+  },
+  "connectionUi.modelCredential.apiKey": {
+    "en": "API key",
+    "zh-CN": "API 密钥",
+    "reviewedEnglishHash": "16f0ee47f993d6270c9059450473eea493ca8ae037f8877782ae2bc176f24d18"
+  },
+  "connectionUi.modelCredential.customGateway": {
+    "en": "Custom Gateway",
+    "zh-CN": "自定义网关",
+    "reviewedEnglishHash": "f6c84d731c77c70ae2cec9c7902546938c6c6d33ae093ce2a4d6fc01844e8bdb"
+  },
+  "connectionUi.modelCredential.subscription": {
+    "en": "Subscription",
+    "zh-CN": "订阅",
+    "reviewedEnglishHash": "4999c6c6c7badf456f5b0053b09a2076bdb2391a09ab10c9064a680f8f9a0b30"
   },
   "connectionUi.apiKey.pasteForProvider": {
     "en": "Paste your {{provider}} API key",
@@ -193,6 +318,21 @@
     "en": "{{provider}} needs its own OAuth app",
     "zh-CN": "{{provider}} 需要使用自己的 OAuth 应用",
     "reviewedEnglishHash": "c28c82d249ba9f6b2a36d621ae3aa17f279603f533b8070177fd1d2146ce88cd"
+  },
+  "connectionUi.setup.browserSignInUnsupported": {
+    "en": "This environment does not support browser sign-in. Choose a sign-in environment or connect with an API key.",
+    "zh-CN": "此环境不支持浏览器登录。请选择登录环境或改用 API 密钥连接。",
+    "reviewedEnglishHash": "b62e1e2f4b59769e2e544c4ef4f0067e95f5eb04d14d9b39764a99e85343c5ef"
+  },
+  "connectionUi.useApiKeyInstead": {
+    "en": "Use API key instead",
+    "zh-CN": "改用 API 密钥",
+    "reviewedEnglishHash": "91c16a846a6357b805819bb3d089447a6153fce2d872a1ea6e705a4b9433953c"
+  },
+  "connectionUi.useSubscriptionInstead": {
+    "en": "Use subscription instead",
+    "zh-CN": "改用订阅",
+    "reviewedEnglishHash": "03050a116e6e9bfad3361350b72b40d9387173e3af52dcedca7f912667c8e52a"
   },
   "connectionUi.setup.signInUnavailable": {
     "en": "{{provider}} sign-in is unavailable",
