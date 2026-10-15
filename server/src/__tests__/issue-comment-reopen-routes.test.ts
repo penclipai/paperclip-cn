@@ -219,6 +219,11 @@ vi.mock("../services/cross-issue-influence-limit.js", () => ({
   crossIssueInfluenceRunContextError: mockCrossIssueInfluenceRunContextError,
 }));
 
+const [{ issueRoutes }, { errorHandler }] = await Promise.all([
+  import("../routes/issues.js"),
+  import("../middleware/index.js"),
+]);
+
 function createApp() {
   const app = express();
   app.use(express.json());
@@ -229,10 +234,6 @@ async function installActor(
   app: express.Express,
   actor?: Record<string, unknown>,
 ) {
-  const [{ issueRoutes }, { errorHandler }] = await Promise.all([
-    import("../routes/issues.js"),
-    import("../middleware/index.js"),
-  ]);
   app.use((req, _res, next) => {
     (req as any).actor = actor ?? {
       type: "board",

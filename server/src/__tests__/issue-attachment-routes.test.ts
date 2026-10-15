@@ -3,6 +3,7 @@ import type { IncomingMessage } from "node:http";
 import express from "express";
 import request from "supertest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { HttpError } from "../errors.js";
 import type { StorageService } from "../storage/types.js";
 
 const mockIssueService = vi.hoisted(() => ({
@@ -113,6 +114,13 @@ function registerRouteMocks() {
   }));
 }
 
+registerRouteMocks();
+
+const [{ errorHandler }, { issueRoutes }] = await Promise.all([
+  vi.importActual<typeof import("../middleware/index.js")>("../middleware/index.js"),
+  vi.importActual<typeof import("../routes/issues.js")>("../routes/issues.js"),
+]);
+
 type TestStorageService = StorageService & {
   __calls: {
     putFile?: {
@@ -155,10 +163,6 @@ function createStorageService(body = Buffer.from("test")): TestStorageService {
 }
 
 async function createApp(storage: StorageService, options?: { companyIds?: string[]; source?: string }) {
-  const [{ errorHandler }, { issueRoutes }] = await Promise.all([
-    vi.importActual<typeof import("../middleware/index.js")>("../middleware/index.js"),
-    vi.importActual<typeof import("../routes/issues.js")>("../routes/issues.js"),
-  ]);
   const app = express();
   app.use(express.json());
   app.use((req, _res, next) => {
@@ -294,9 +298,6 @@ describe("issue attachment routes", () => {
 
   it("removes a newly stored object when attachment registration is rejected", async () => {
     const storage = createStorageService();
-    const { HttpError } = await vi.importActual<
-      typeof import("../errors.js")
-    >("../errors.js");
     mockIssueService.createAttachment.mockRejectedValue(
       new HttpError(422, "Attachment selection limit reached", {
         code: "chat_attachment_selection_limit_exceeded",
