@@ -765,6 +765,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
     ]));
     expect(canonicalChampionHashes).toMatchObject({
       "SKILL.md": "53ab290489684cbf116fdd1406a95f6b6f53c9c36358b1bf8bfeae481e253575",
+      // Frozen releases retain upstream literals; the current catalog uses the fork namespace.
       "references/company-skills.md": "b6f921df316423444cfc11691fa34beef6581a63c549e0e08342958a20bf0c00",
       "references/cases.md": "3b821f59064a7761091020a14819a8d787131f24029748563d6c0e1be7e6eaec",
       "references/workflows.md": "69747bd6e05f7e3673d1e67b07ff295df1869c05e1fd029804d5fa9177db92cd",
