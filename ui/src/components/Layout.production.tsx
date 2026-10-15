@@ -599,7 +599,7 @@ export function Layout() {
           // working.
           isMobile
             ? "min-h-dvh overflow-x-clip"
-            : "flex h-dvh flex-col overflow-clip",
+            : "flex h-(--paperclip-available-height) flex-col overflow-clip",
         )}
       >
         <a

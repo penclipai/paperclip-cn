@@ -37,6 +37,8 @@ dmg:
   format: UDBZ
 
 win:
+  # Keep Windows packaging bounded; the size audit records the installer cost.
+  compression: normal
   icon: assets/icon.png
   target:
     - target: nsis

@@ -1578,6 +1578,14 @@ hold. A generic retry cannot resolve this incident. The runner's
 `get_task_context` includes up to 100 existing direct child tasks and a truncation
 flag so resumed agents can reuse delegated work and inspect completed results.
 
+Local Codex crash replacement requires authenticated proof that the previous
+runner and its process group stopped, plus a complete interrupted-turn inventory.
+The current Windows controller does not record an owned Job Object/process-tree
+stop receipt, so it preserves the task without automatically replaying the failed
+run. A dead direct PID or a retained snapshot is insufficient. Windows E2E tests
+verify that refusal; the strict replacement journey requires a supported host.
+See [execution semantics](execution-semantics.md#provider-continuity-and-bounded-finalization).
+
 For native Codex runs, Paperclip passes the resolved execution workspace as
 `PAPERCLIP_WORKSPACE_CWD` and uses it as the provider containment boundary. A
 workspace below the host `HOME` is valid, including the default projectless
@@ -2274,3 +2282,31 @@ Chromium. The test starts its own loopback Vite server and mocks API responses;
 it needs no running Paperclip instance or provider credentials. The same spec lives
 in the default `test:e2e` discovery tree, so the existing Chrome CI shards run it
 on pull requests.
+
+Run `pnpm test:e2e:fixtures` to check the in-feed Codex protocol fixtures without
+starting the app or calling a provider. The Node tests cover interrupted turns,
+tool replies, and the fixture's completion contract. These tests are separate
+from Vitest and Playwright discovery.
+
+### Windows desktop installer extraction
+
+The NSIS installer keeps the default 7z archive. The bundled runtime has more
+than 65,535 archive entries; its ZIP alternative is ZIP64, which the current
+NSIS ZIP plugin rejects with `Error opening ZIP file`.
+
+Use a short temporary directory on the intended drive when installing or
+upgrading. Both 7z extraction and the old-version uninstall step add directories
+under `%TEMP%`, so deeply nested plugin dependencies can exceed Windows path
+limits even when the final installation path fits. For example, from PowerShell
+set `$env:TEMP` and `$env:TMP` to a dedicated short D: directory before launching
+the installer. This only changes the environment of that process and its
+children; do not move the user's global temporary directory or use C: as a
+workaround. Keep the installation directory short as well.
+
+Windows uses `normal` compression; record the actual installer size in the
+desktop size audit when comparing releases.
+
+After changing installer packaging, run `pnpm desktop:dist:win`, install the
+resulting NSIS executable, and compare every installed runtime file with
+`release/win-unpacked` before testing the installed application. An installer exit
+code of zero alone does not prove that all bundled dependencies were extracted.
