@@ -1,3 +1,5 @@
+import childProcess from "node:child_process";
+import { EventEmitter } from "node:events";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -159,6 +161,31 @@ describe("hot-restart path compatibility", () => {
       },
     })).rejects.toThrow("ps unavailable");
   });
+
+  it.each(["child", "stdin", "stdout", "stderr"] as const)(
+    "rejects process start probes when execFile %s emits a pipe error",
+    async (source) => {
+      const pipeError = Object.assign(new Error("socket read ENOTCONN"), {
+        code: "ENOTCONN",
+      });
+      const child = Object.assign(new EventEmitter(), {
+        stdin: new EventEmitter(),
+        stdout: new EventEmitter(),
+        stderr: new EventEmitter(),
+      });
+      const stub = vi.spyOn(childProcess, "execFile").mockImplementation((() => {
+        queueMicrotask(() => (source === "child" ? child : child[source]).emit("error", pipeError));
+        return child as childProcess.ChildProcess;
+      }) as unknown as typeof childProcess.execFile);
+
+      try {
+        await expect(readProcessStartedAt(792, { platform: "darwin" })).rejects.toBe(pipeError);
+        expect(stub).toHaveBeenCalledOnce();
+      } finally {
+        stub.mockRestore();
+      }
+    },
+  );
 
   it("distinguishes recycled PIDs and rejects unknown live claim classification", () => {
     const intent = {

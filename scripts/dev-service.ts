@@ -1,11 +1,8 @@
 #!/usr/bin/env -S node --import tsx
-import { execFile } from "node:child_process";
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
-import { promisify } from "node:util";
 import {
-  forceKillLocalServiceProcessTree,
   isPidAlive,
   listLocalServiceRegistryRecords,
   removeLocalServiceRegistryRecord,
@@ -14,7 +11,6 @@ import {
 import { getDevServiceControlFilePath, repoRoot } from "./dev-service-profile.ts";
 import { applyDevRunnerOptions } from "./dev-runner-options.ts";
 
-const execFileAsync = promisify(execFile);
 type DevServiceRecord = Awaited<ReturnType<typeof listLocalServiceRegistryRecords>>[number];
 
 function toDisplayLines(records: DevServiceRecord[]) {
@@ -86,35 +82,6 @@ async function isDevServiceHealthy(port: number | null) {
   }
 }
 
-async function findListeningPid(port: number | null) {
-  if (!port || port <= 0) return null;
-
-  try {
-    const { stdout } = await execFileAsync("netstat", ["-ano", "-p", "tcp"], {
-      windowsHide: true,
-    });
-
-    const match = stdout
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .find((line) => {
-        const parts = line.split(/\s+/);
-        return (
-          parts.length >= 5 &&
-          /^tcp$/i.test(parts[0]) &&
-          parts[1]?.endsWith(`:${port}`) &&
-          /^listening$/i.test(parts[3])
-        );
-      });
-
-    if (!match) return null;
-    const pid = Number.parseInt(match.split(/\s+/).at(-1) ?? "", 10);
-    return Number.isInteger(pid) && pid > 0 ? pid : null;
-  } catch {
-    return null;
-  }
-}
-
 async function stopRecordGracefullyOnWindows(record: DevServiceRecord) {
   const controlFilePath = getDevServiceControlFilePath(record.serviceKey);
   const childPid = getRecordChildPid(record);
@@ -140,16 +107,10 @@ async function stopRecordGracefullyOnWindows(record: DevServiceRecord) {
   }
 
   rmSync(controlFilePath, { force: true });
-  if (childPid && isPidAlive(childPid)) {
-    await forceKillLocalServiceProcessTree({ pid: childPid, processGroupId: null });
-  }
-  if (isPidAlive(record.pid)) {
-    await forceKillLocalServiceProcessTree(record);
-  }
-  const listeningPid = await findListeningPid(record.port);
-  if (listeningPid && isPidAlive(listeningPid)) {
-    await forceKillLocalServiceProcessTree({ pid: listeningPid, processGroupId: null });
-  }
+  // The supervisor owns Windows termination: it retires only this registered
+  // process tree and verifies the registered listener is gone. It must not
+  // infer ownership from a later port lookup and kill an unrelated process.
+  await terminateLocalService(record);
 }
 
 if (command === "list") {

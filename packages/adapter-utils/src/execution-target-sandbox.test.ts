@@ -233,7 +233,10 @@ describe("sandbox adapter execution targets", () => {
       const timeout = setTimeout(() => {
         child.kill("SIGKILL");
         reject(new Error("Timed out waiting for process session proxy."));
-      }, 5000);
+      // A remote target may be allowed up to ten seconds.  On Windows the
+      // proxy itself is a Node child process, so it needs the same bound rather
+      // than timing out halfway through a valid target operation.
+      }, process.platform === "win32" ? 10_000 : 5_000);
       child.on("error", (error) => {
         clearTimeout(timeout);
         reject(error);

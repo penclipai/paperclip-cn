@@ -26,6 +26,10 @@ const fixtureShellCommand = (command: string) =>
   process.platform === "win32" && command === "sh"
     ? "C:\\Program Files\\Git\\bin\\bash.exe"
     : command;
+// These two integration fixtures perform multiple real Git Bash/tar transfer
+// round trips on Windows; ordinary in-process unit cases retain Vitest's
+// default budget.
+const realTransportIntegrationTimeoutMs = process.platform === "win32" ? 60_000 : undefined;
 
 describe("persistent agent directories", () => {
   let database: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
@@ -956,7 +960,7 @@ describe("persistent agent directories", () => {
     await expect(fs.stat(path.join(physicalPath(second.executionRoot), "task-only.txt"))).rejects.toMatchObject({ code: "ENOENT" });
     await copies.collectStopped({ companyId, runId: second.runId, target: executionTarget });
     await copies.release(companyId, second.runId);
-  });
+  }, realTransportIntegrationTimeoutMs);
 
   it("checkpoints and reuses the remote directory through the real transport without copying unchanged bytes", async () => {
     const remoteCwd = "/fixture/warm-remote-task";
@@ -1020,7 +1024,7 @@ describe("persistent agent directories", () => {
     expect(await fs.stat(physicalPath(copy.executionRoot))).toBeTruthy();
     expect((await copies.collectStopped({ companyId, runId: copy.runId, target: executionTarget }))?.receipt).toMatchObject({ cleanupPending: false });
     await expect(fs.stat(physicalPath(copy.executionRoot))).rejects.toMatchObject({ code: "ENOENT" });
-  });
+  }, realTransportIntegrationTimeoutMs);
 
   it("stages SSH agent files at the registered root without a nested task workspace", async () => {
     const remoteCwd = path.join(home, "ssh-task");

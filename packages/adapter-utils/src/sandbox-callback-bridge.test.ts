@@ -994,7 +994,10 @@ describe("sandbox callback bridge", () => {
       },
     });
 
-    for (let attempt = 0; attempt < 50 && seenRequestIds.length === 0; attempt += 1) {
+    // The command-managed worker starts through Git Bash on Windows. Wait for
+    // the real handler boundary, rather than treating a fixed 250ms scheduling
+    // window as evidence about the response-finalization race below.
+    for (let attempt = 0; attempt < 600 && seenRequestIds.length === 0; attempt += 1) {
       await new Promise((resolve) => setTimeout(resolve, 5));
     }
 
@@ -1002,10 +1005,16 @@ describe("sandbox callback bridge", () => {
     await worker.stop({ drainTimeoutMs: 10 });
 
     const response = await responsePromise;
-    expect(response.status).toBe(503);
-    await expect(response.json()).resolves.toEqual({
-      error: "Bridge worker stopped before request could be handled.",
-    });
+    // The real command-managed queue may take longer than the requested drain
+    // to list the pending file. In that case the already-completing read wins
+    // normally with 200; otherwise the drain owns the request and returns 503.
+    // The deterministic fence test below proves the latter ordering.
+    expect([200, 503]).toContain(response.status);
+    if (response.status === 503) {
+      await expect(response.json()).resolves.toEqual({
+        error: "Bridge worker stopped before request could be handled.",
+      });
+    }
 
     await new Promise((resolve) => setTimeout(resolve, 300));
 
@@ -1015,6 +1024,115 @@ describe("sandbox callback bridge", () => {
         entries.filter((entry) => entry.endsWith(".tmp") || entry.includes(".paperclip-write.lock")),
       ),
     ).resolves.toEqual([]);
+  });
+
+  it("does not send a retryable drain response for a mutation already owned by its handler", async () => {
+    const queueDir = "/virtual-bridge/stop-mutation";
+    const directories = sandboxCallbackBridgeDirectories(queueDir);
+    const requestFile = "mutation.json";
+    const requestPath = path.posix.join(directories.requestsDir, requestFile);
+    const responsePath = path.posix.join(directories.responsesDir, requestFile);
+    const requestBodies = new Map([[requestPath, bridgeRequestJson("mutation", "POST")]]);
+    const responseWrites: Array<{ path: string; status: number }> = [];
+    let completeHandler: (() => void) | null = null;
+    let handlerCalls = 0;
+
+    const client: SandboxCallbackBridgeQueueClient = {
+      makeDir: async () => {},
+      makeDirs: async () => {},
+      listJsonFiles: async (dir) => dir === directories.requestsDir
+        ? [...requestBodies.keys()].map((entry) => path.posix.basename(entry)) : [],
+      readTextFile: async (remotePath) => requestBodies.get(remotePath) ?? "",
+      writeTextFile: async () => {},
+      writeResponseFile: async (remotePath, body) => {
+        responseWrites.push({ path: remotePath, status: JSON.parse(body.trim()).status });
+        return { wrote: true };
+      },
+      rename: async () => {},
+      remove: async (remotePath) => { requestBodies.delete(remotePath); },
+    };
+
+    const worker = await startSandboxCallbackBridgeWorker({
+      client,
+      queueDir,
+      pollIntervalMs: 1,
+      authorizeRequest: async () => null,
+      handleRequest: async () => {
+        handlerCalls += 1;
+        await new Promise<void>((resolve) => { completeHandler = resolve; });
+        return { status: 200, body: "committed" };
+      },
+    });
+
+    const deadline = Date.now() + 3_000;
+    while (completeHandler === null && Date.now() < deadline) {
+      await new Promise((resolve) => setTimeout(resolve, 5));
+    }
+    expect(completeHandler).not.toBeNull();
+
+    await worker.stop({ drainTimeoutMs: 10 });
+    // A stopped bridge may not invite a retry while this POST can still commit.
+    expect(responseWrites).toEqual([]);
+
+    const finishMutation = completeHandler as (() => void) | null;
+    finishMutation?.();
+    const completedDeadline = Date.now() + 3_000;
+    while (responseWrites.length === 0 && Date.now() < completedDeadline) {
+      await new Promise((resolve) => setTimeout(resolve, 5));
+    }
+    expect(handlerCalls).toBe(1);
+    expect(responseWrites).toEqual([{ path: responsePath, status: 200 }]);
+  });
+
+  it("fences a stopped safe read before its late handler can recreate a response", async () => {
+    const queueDir = "/virtual-bridge/stop-read";
+    const directories = sandboxCallbackBridgeDirectories(queueDir);
+    const requestFile = "read.json";
+    const requestPath = path.posix.join(directories.requestsDir, requestFile);
+    const responsePath = path.posix.join(directories.responsesDir, requestFile);
+    const requestBodies = new Map([[requestPath, bridgeRequestJson("read")]]);
+    const responseWrites: Array<{ path: string; status: number }> = [];
+    let completeHandler: (() => void) | null = null;
+
+    const client: SandboxCallbackBridgeQueueClient = {
+      makeDir: async () => {},
+      makeDirs: async () => {},
+      listJsonFiles: async (dir) => dir === directories.requestsDir
+        ? [...requestBodies.keys()].map((entry) => path.posix.basename(entry)) : [],
+      readTextFile: async (remotePath) => requestBodies.get(remotePath) ?? "",
+      writeTextFile: async () => {},
+      writeResponseFile: async (remotePath, body) => {
+        responseWrites.push({ path: remotePath, status: JSON.parse(body.trim()).status });
+        return { wrote: true };
+      },
+      rename: async () => {},
+      remove: async (remotePath) => { requestBodies.delete(remotePath); },
+    };
+
+    const worker = await startSandboxCallbackBridgeWorker({
+      client,
+      queueDir,
+      pollIntervalMs: 1,
+      authorizeRequest: async () => null,
+      handleRequest: async () => {
+        await new Promise<void>((resolve) => { completeHandler = resolve; });
+        return { status: 200, body: "late read" };
+      },
+    });
+
+    const deadline = Date.now() + 3_000;
+    while (completeHandler === null && Date.now() < deadline) {
+      await new Promise((resolve) => setTimeout(resolve, 5));
+    }
+    expect(completeHandler).not.toBeNull();
+
+    await worker.stop({ drainTimeoutMs: 10 });
+    expect(responseWrites).toEqual([{ path: responsePath, status: 503 }]);
+
+    const finishRead = completeHandler as (() => void) | null;
+    finishRead?.();
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(responseWrites).toEqual([{ path: responsePath, status: 503 }]);
   });
 
   it("rejects non-JSON request bodies and full queues at the bridge server", async () => {
@@ -1881,10 +1999,10 @@ describe("sandbox callback bridge", () => {
     return { runtimeSpan, workerErrors };
   }
 
-  function bridgeRequestJson(id: string): string {
+  function bridgeRequestJson(id: string, method = "GET"): string {
     return `${JSON.stringify({
       id,
-      method: "GET",
+      method,
       path: "/api/agents/me",
       query: "",
       headers: {},

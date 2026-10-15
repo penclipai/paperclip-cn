@@ -91,11 +91,17 @@ export async function reconcileSafeNativeReplacements(
         );
       // Teardown is still in progress. The next sweep rechecks its durable outcome.
       if (leases.some((lease) => lease.releasedAt === null)) continue;
-      const stoppedSession = coordinator.failureCode !== "native_provider_terminal_failed"
+      const requiresStoppedSession = coordinator.failureCode !== "native_provider_terminal_failed";
+      const notificationTransportFailed = coordinator.failureCode === "native_provider_terminal_failed" &&
+        coordinator.failureDetail?.originalFailureCode === "notification_transport_failed";
+      // Notification loss preserves the original provider failure. Its label
+      // cannot authorize replay, but an exact stopped-turn proof can establish
+      // the same containment as a transport failure discovered during close.
+      const stoppedSession = requiresStoppedSession || notificationTransportFailed
         ? await options.verifyStoppedSession?.(run) ?? null : null;
       // A transport label alone is not evidence. Keep inspecting these candidates
       // as process cleanup and the final transcript become durable.
-      if (coordinator.failureCode !== "native_provider_terminal_failed" && !stoppedSession) continue;
+      if (requiresStoppedSession && !stoppedSession) continue;
       const invocations = await db
         .select()
         .from(toolInvocations)

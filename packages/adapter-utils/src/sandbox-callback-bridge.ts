@@ -970,6 +970,10 @@ export async function startSandboxCallbackBridgeWorker(input: {
     claim: "unclaimed" | "handler" | "abandon";
     controller: AbortController;
     finalized: boolean;
+    // Populated only after the envelope has been parsed. A drain may cancel a
+    // completed-safe read and deliver its 503, but it must never do that for a
+    // mutation whose host operation has already started.
+    safeRead?: boolean;
     backstopTimer?: ReturnType<typeof setTimeout>;
   };
   const inFlightRequestGuards = new Map<string, RequestFinalizeGuard>();
@@ -1118,6 +1122,7 @@ export async function startSandboxCallbackBridgeWorker(input: {
         });
         return;
       }
+      guard.safeRead = ["GET", "HEAD", "OPTIONS", "TRACE"].includes(normalizeMethod(request.method));
 
       // Keep only the actual request allocation reserved while forwarding;
       // an abandoned small request must not retain a maximum-sized reservation.
@@ -1325,9 +1330,10 @@ export async function startSandboxCallbackBridgeWorker(input: {
   // request so a later handler claim bails, then write the 503. When the handler
   // already started, skip the 503; the recovery cannot cancel an in-flight host
   // operation, and a 503 there would make the caller retry and apply the mutation
-  // twice. The stop drain passes `false` (the default): a request the loop
-  // already picked up keeps its normal completion, so a late handler result still
-  // wins over the drain 503, exactly like the earlier stop behavior.
+  // twice. During a normal stop drain, a parsed safe read can be abandoned and
+  // receives the terminal 503. A handler-owned mutation instead remains the
+  // sole writer: a retryable 503 could make the caller repeat work that may
+  // already have committed.
   const failPendingRequests = async (
     message: string,
     options: { abandonInFlight?: boolean } = {},
@@ -1361,6 +1367,13 @@ export async function startSandboxCallbackBridgeWorker(input: {
     ).catch(() => [] as string[]);
     for (const fileName of fileNames) {
       const guard = inFlightRequestGuards.get(fileName);
+      if (!options.abandonInFlight && guard?.claim === "handler" && guard.safeRead) {
+        // A GET/HEAD/OPTIONS/TRACE handler is safe to cancel at a normal stop.
+        // Claim the finalize fence before writing the 503, so a late result
+        // cannot recreate a response file after the bridge caller received it.
+        guard.claim = "abandon";
+        guard.controller.abort(new Error(message));
+      }
       if (guard && guard.claim === "handler" && (options.abandonInFlight || guard.controller.signal.aborted)) {
         // The handler already started this request's host operation, or it already
         // finalized the request. The timeout and watchdog cannot cancel a host
@@ -1368,11 +1381,14 @@ export async function startSandboxCallbackBridgeWorker(input: {
         // while the original mutation still completes, so the mutation applies
         // twice. Leave the request for the handler to finalize, or for the 504
         // backstop to finalize when the handler never settles. The recovery path
-        // reaches this skip through `abandonInFlight`. The stop drain reaches it
-        // only when the recovery path already aborted the handler, so a request
-        // whose 504 backstop write failed and kept its file never gets a competing
-        // 503 on stop. A normal in-flight handler at a graceful stop is not
-        // aborted, so it still gets the stop drain 503.
+        // reaches this skip through `abandonInFlight`. A stop drain also skips
+        // a mutation already owned by its handler; a request whose 504 backstop
+        // write failed and kept its file never gets a competing 503 on stop.
+        continue;
+      }
+      if (!options.abandonInFlight && guard?.claim === "handler") {
+        // The handler has begun a mutation. Keep its completion path intact:
+        // writing a retryable drain 503 here could cause a second mutation.
         continue;
       }
       if (options.abandonInFlight && guard) {

@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import fs from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { EventEmitter } from "node:events";
 import { createRequire } from "node:module";
 import childProcess, { execFileSync } from "node:child_process";
 import { pathToFileURL } from "node:url";
@@ -206,6 +207,17 @@ describe("stable live agent directory observation", () => {
     }) as typeof childProcess.execFile);
     await expect(observeLocalAgentDirectory(root)).rejects.toThrow();
     expect(stub).toHaveBeenCalledOnce();
+  });
+  it.each(["stdin", "stdout", "stderr"] as const)("rejects a local-child %s pipe error without an unhandled event", async stream => {
+    const child = Object.assign(new EventEmitter(), {
+      stdin: new EventEmitter(), stdout: new EventEmitter(), stderr: new EventEmitter(),
+    }) as unknown as childProcess.ChildProcess;
+    vi.spyOn(childProcess, "execFile").mockImplementation((() => child) as typeof childProcess.execFile);
+
+    const observation = observeLocalAgentDirectory(root);
+    const error = Object.assign(new Error("read ENOTCONN"), { code: "ENOTCONN", syscall: "read" });
+    expect(() => child[stream]!.emit("error", error)).not.toThrow();
+    await expect(observation).rejects.toBe(error);
   });
   it.each(["edit", "add", "remove", "mode"])("detects a legitimate %s", change => {
     const before = probeAgentDirectory(root);

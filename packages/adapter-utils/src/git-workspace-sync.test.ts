@@ -64,12 +64,14 @@ describe("git workspace sync", () => {
   afterEach(async () => {
     setExpensiveWorkspaceGitExecutor(null);
     for (const snapshot of snapshots.splice(0)) await disposeGitWorkspaceSnapshot(snapshot);
-    while (cleanupDirs.length > 0) {
-      const dir = cleanupDirs.pop();
-      if (!dir) continue;
+    // Detach this test's roots before starting the potentially slow Windows
+    // deletion. If the hook hits its budget, a later test must not have its
+    // freshly-created root removed by this still-running cleanup loop.
+    const dirs = cleanupDirs.splice(0);
+    for (const dir of dirs.reverse()) {
       await rm(dir, { recursive: true, force: true }).catch(() => undefined);
     }
-  }, 30_000); // The output-limit fixture removes 40,000 files on teardown.
+  }, process.platform === "win32" ? 60_000 : 30_000); // The output-limit fixture removes 40,000 files on teardown.
 
   it("delegates every host-side full-tree enumeration to the registered scheduler", async () => {
     const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-git-scheduler-hook-"));

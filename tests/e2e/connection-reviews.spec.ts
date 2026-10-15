@@ -49,6 +49,7 @@ async function createAgent(
 
 function reviewAgentScript(connectionId: string, query: string) {
   return `
+async function main() {
 const base = process.env.PAPERCLIP_API_URL + "/api";
 
 const headers = { authorization: "Bearer " + process.env.PAPERCLIP_API_KEY, "content-type": "application/json", "x-paperclip-run-id": process.env.PAPERCLIP_RUN_ID };
@@ -66,14 +67,14 @@ const describePages = (raw) => {
 const issueId = process.env.PAPERCLIP_TASK_ID ?? (await api("/heartbeat-runs/" + process.env.PAPERCLIP_RUN_ID)).contextSnapshot.issueId;
 const interactions = await api("/issues/" + issueId + "/interactions");
 const review = interactions.find(i => i.payload?.toolAction);
-if (review?.status === "pending") { console.log("Still waiting for the existing review; no retry."); process.exit(0); }
+if (review?.status === "pending") { console.log("Still waiting for the existing review; no retry."); return; }
 if (review && review.status !== "pending") {
   const result = review.result?.toolAction;
   const message = review.status === "rejected" ? "Review declined. No pages were read." : result?.status === "failed" ? "Read failed: " + result.errorMessage : ["expired", "cancelled"].includes(review.status) ? "The review expired or was cancelled. No pages were read." : describePages(result?.resultSummary);
   await api("/issues/" + issueId + "/comments", "POST", { body: message });
   await api("/issues/" + issueId, "PATCH", { status: "done" });
   console.log(message);
-  process.exit(0);
+  return;
 }
 const session = await api("/tool-gateway/sessions", "POST", { runId: process.env.PAPERCLIP_RUN_ID, ttlMs: 60000 });
 const gatewayHeaders = { "x-paperclip-tool-gateway-token": session.token, "content-type": "application/json" };
@@ -86,10 +87,13 @@ if (!call.ok) {
   if (result.reasonCode !== "approval_required" && result.code !== "approval_required" && !JSON.stringify(result).includes("approval_required")) throw new Error(JSON.stringify(result));
   await api("/issues/" + issueId, "PATCH", { status: "in_review" });
   console.log("Waiting for human review. No retry.");
-  process.exit(0);
+  return;
 }
 await api("/issues/" + issueId + "/comments", "POST", { body: describePages(result.result) });
 await api("/issues/" + issueId, "PATCH", { status: "done" });
+}
+
+await main();
 `;
 }
 

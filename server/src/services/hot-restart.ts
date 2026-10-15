@@ -1,4 +1,4 @@
-import { execFile } from "node:child_process";
+import childProcess from "node:child_process";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { readLinuxProcessStartedAt, type LinuxProcessStartOptions } from "../vendor/paperclip-runner/index.js";
@@ -158,7 +158,18 @@ function isProcessAlive(pid: number) {
 
 function runProcessCommand(command: string, args: string[]) {
   return new Promise<string>((resolve, reject) => {
-    execFile(
+    let settled = false;
+    const rejectOnce = (error: Error) => {
+      if (settled) return;
+      settled = true;
+      reject(error);
+    };
+    const resolveOnce = (stdout: string) => {
+      if (settled) return;
+      settled = true;
+      resolve(stdout);
+    };
+    const child = childProcess.execFile(
       command,
       args,
       {
@@ -167,10 +178,14 @@ function runProcessCommand(command: string, args: string[]) {
         windowsHide: true,
       },
       (error, stdout) => {
-        if (error) reject(error);
-        else resolve(stdout);
+        if (error) rejectOnce(error);
+        else resolveOnce(stdout);
       },
     );
+    child.once("error", rejectOnce);
+    child.stdin?.once("error", rejectOnce);
+    child.stdout?.once("error", rejectOnce);
+    child.stderr?.once("error", rejectOnce);
   });
 }
 

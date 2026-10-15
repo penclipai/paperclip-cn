@@ -34,7 +34,9 @@ import {
   documents,
   documentRevisions,
   issues,
+  completionContracts,
   nativeRunFinalizations,
+  nativeRunResults,
 } from "@penclipai/db";
 import {
   getEmbeddedPostgresTestSupport,
@@ -135,6 +137,21 @@ const support = externalDatabaseUrl
         failureDetail: { originalFailureCode: "fixture_checkpoint_unusable" },
       });
       return { companyId, agentId, issueId, runId };
+    }
+    async function markTransportTerminal(
+      source: Awaited<ReturnType<typeof seed>>,
+      originalFailureCode = "notification_transport_failed",
+    ) {
+      await db
+        .update(nativeRunFinalizations)
+        .set({ failureDetail: { originalFailureCode } })
+        .where(eq(nativeRunFinalizations.runId, source.runId));
+    }
+    async function linkedSuccessors(runId: string) {
+      return db
+        .select()
+        .from(heartbeatRuns)
+        .where(eq(heartbeatRuns.retryOfRunId, runId));
     }
     it.each(["verified", "unproven", "unknown_action"] as const)(
       "preserves saved work and a queued request at a controlled recovery boundary (%s)",
@@ -530,6 +547,116 @@ const support = externalDatabaseUrl
       expect(coordinator?.failureDetail?.replacementDenied).toBe(
         "provider_failure_meaning_unverified",
       );
+    });
+    it("replaces only a verified notification transport terminal once and stores its stopped-turn proof", async () => {
+      const source = await seed();
+      await markTransportTerminal(source);
+      const evidence = {
+        schema: "paperclip.stopped_text_turn.v1",
+        runId: source.runId,
+        providerSessionId: "provider-session",
+        providerTurnId: "provider-turn",
+      };
+      const retire = vi.fn(() => true);
+      const verifyStoppedSession = vi.fn(async () => ({ evidence, retire }));
+
+      await reconcileSafeNativeReplacements(db, new Date(), { verifyStoppedSession });
+      await reconcileSafeNativeReplacements(db, new Date(), { verifyStoppedSession });
+
+      expect(verifyStoppedSession).toHaveBeenCalledOnce();
+      expect(retire).toHaveBeenCalledOnce();
+      const successors = await linkedSuccessors(source.runId);
+      expect(successors).toHaveLength(1);
+      expect(successors[0]).toMatchObject({
+        retryOfRunId: source.runId,
+        scheduledRetryReason: "native_safe_replacement",
+        contextSnapshot: {
+          recoveryIncidentRootRunId: source.runId,
+          forceFreshSession: true,
+        },
+      });
+      expect(
+        await db
+          .select()
+          .from(heartbeatRunEvents)
+          .where(
+            and(
+              eq(heartbeatRunEvents.runId, source.runId),
+              eq(heartbeatRunEvents.eventType, "native.stopped_text_turn_verified"),
+            ),
+          ),
+      ).toMatchObject([{ payload: evidence }]);
+      const [finalization] = await db
+        .select()
+        .from(nativeRunFinalizations)
+        .where(eq(nativeRunFinalizations.runId, source.runId));
+      expect(finalization!.failureDetail).toMatchObject({
+        stoppedTextTurn: evidence,
+        successorRunId: successors[0]!.id,
+      });
+      expect(await linkedSuccessors(source.runId)).toHaveLength(1);
+    });
+    it("keeps a notification transport terminal operator-owned when stopped-turn proof is absent", async () => {
+      const source = await seed();
+      await markTransportTerminal(source);
+      const verifyStoppedSession = vi.fn(async () => null);
+      await reconcileSafeNativeReplacements(db, new Date(), { verifyStoppedSession });
+      expect(verifyStoppedSession).toHaveBeenCalledOnce();
+      expect(await linkedSuccessors(source.runId)).toHaveLength(0);
+      const [finalization] = await db.select().from(nativeRunFinalizations).where(eq(nativeRunFinalizations.runId, source.runId));
+      expect(finalization!.failureDetail?.replacementDenied).toBe("provider_failure_meaning_unverified");
+    });
+    it("rolls back a changed stopped-turn proof without recording an event or successor", async () => {
+      const source = await seed();
+      await markTransportTerminal(source);
+      const retire = vi.fn(() => false);
+      const verifyStoppedSession = vi.fn(async () => ({
+        evidence: { schema: "paperclip.stopped_text_turn.v1", runId: source.runId },
+        retire,
+      }));
+      await reconcileSafeNativeReplacements(db, new Date(), { verifyStoppedSession });
+      expect(verifyStoppedSession).toHaveBeenCalledOnce();
+      expect(retire).toHaveBeenCalledOnce();
+      expect(await linkedSuccessors(source.runId)).toHaveLength(0);
+      expect(await db.select().from(heartbeatRunEvents).where(and(eq(heartbeatRunEvents.runId, source.runId), eq(heartbeatRunEvents.eventType, "native.stopped_text_turn_verified")))).toHaveLength(0);
+      const [finalization] = await db.select().from(nativeRunFinalizations).where(eq(nativeRunFinalizations.runId, source.runId));
+      expect(finalization!.failureDetail).not.toHaveProperty("successorRunId");
+      expect(finalization!.failureDetail).not.toHaveProperty("stoppedTextTurn");
+    });
+    it("does not verify unrelated provider terminals", async () => {
+      const source = await seed();
+      await markTransportTerminal(source, "provider_turn_failed");
+      const verifyStoppedSession = vi.fn(async () => {
+        throw new Error("must not verify unrelated provider terminal");
+      });
+      await reconcileSafeNativeReplacements(db, new Date(), { verifyStoppedSession });
+      expect(verifyStoppedSession).not.toHaveBeenCalled();
+      expect(await linkedSuccessors(source.runId)).toHaveLength(0);
+    });
+    it("does not scan a terminal that already has a schema-valid accepted result", async () => {
+      const source = await seed();
+      await markTransportTerminal(source);
+      const contractId = randomUUID();
+      const resultId = randomUUID();
+      await db.insert(completionContracts).values({
+        id: contractId, companyId: source.companyId, issueId: source.issueId,
+        revision: 1, schemaVersion: "paperclip.completion_contract.v1", policyVersion: "test",
+        risk: "low", completionAuthority: "agent", incompleteCriteriaPolicy: "reject",
+        contractJson: {}, canonicalSha256: `contract-${contractId}`,
+        createdByActorType: "system", createdByActorId: "test",
+      });
+      await db.update(heartbeatRuns).set({ completionContractId: contractId }).where(eq(heartbeatRuns.id, source.runId));
+      await db.insert(nativeRunResults).values({
+        id: resultId, companyId: source.companyId, issueId: source.issueId, runId: source.runId,
+        completionContractId: contractId, serverFingerprint: `result-${resultId}`,
+        schemaStatus: "accepted", resultJson: {}, canonicalSha256: `result-${resultId}`,
+      });
+      await db.update(nativeRunFinalizations).set({ resultId }).where(eq(nativeRunFinalizations.runId, source.runId));
+      const verifyStoppedSession = vi.fn(async () => { throw new Error("must not verify accepted result"); });
+      const result = await reconcileSafeNativeReplacements(db, new Date(), { verifyStoppedSession });
+      expect(result).toMatchObject({ scanned: 0, scheduled: 0 });
+      expect(verifyStoppedSession).not.toHaveBeenCalled();
+      expect(await linkedSuccessors(source.runId)).toHaveLength(0);
     });
     it.each(["done", "cancelled", "review"])("does not reuse consumed wake authority after a later %s transition", async transition => {
       const source = await seed();

@@ -63,6 +63,11 @@ const originalTestGitEnvironment = Object.fromEntries(
   Object.keys(testGitEnvironment).map((key) => [key, process.env[key]]),
 ) as Record<keyof typeof testGitEnvironment, string | undefined>;
 
+// These tests drive actual Git and POSIX-shell transport across multiple
+// worktrees. Windows process startup and archive I/O need a larger budget.
+// Undefined preserves Vitest's existing default on every other platform.
+const windowsTransportTestTimeoutMs = process.platform === "win32" ? 60_000 : undefined;
+
 // Sum the file sizes under a directory, recursively. Test-only: it stands in
 // for a real provider's own byte count on a `kind: "directory"` mapping, so a
 // fake `syncIn`/`syncOut` can report a real, non-zero `bytesTransferred`.
@@ -463,7 +468,7 @@ describe("sandbox managed runtime", () => {
       }
       expect(await readFile(path.join(local, relative, ".claude/skills/demo/SKILL.md"), "utf8")).toBe("updated skill\n");
     }
-  }, 30_000);
+  }, windowsTransportTestTimeoutMs ?? 30_000);
 
   afterEach(async () => {
     while (cleanupDirs.length > 0) {
@@ -948,7 +953,7 @@ describe("sandbox managed runtime", () => {
     expect(await readFile(path.join(host, "local-only.txt"), "utf8")).toBe("local file\n");
     expect(await readFile(path.join(host, "output.txt"), "utf8")).toBe("sandbox output\n");
     expect(await git(host, ["diff", "--cached", "--name-only"])).toBe("");
-  });
+  }, windowsTransportTestTimeoutMs);
 
   it("restores a sandbox reset to an ancestor with the matching clean working tree", async () => {
     const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-sandbox-reset-"));
@@ -982,7 +987,7 @@ describe("sandbox managed runtime", () => {
     expect(await git(host, ["symbolic-ref", "--short", "HEAD"])).toBe("work");
     expect(await readFile(path.join(host, "tracked.txt"), "utf8")).toBe("original\n");
     expect(await git(host, ["status", "--porcelain"])).toBe("");
-  });
+  }, windowsTransportTestTimeoutMs);
 
   it("syncs git-backed workspaces through a shallow standalone clone and keeps .git out of archives", async () => {
     const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-sandbox-git-"));
@@ -1147,7 +1152,7 @@ describe("sandbox managed runtime", () => {
       status.phase === "export" &&
       /^Exporting git history from environment: 100% \(\d+\.\d\/\d+\.\d MB\)$/.test(status.message)
     ))).toBe(true);
-  });
+  }, windowsTransportTestTimeoutMs);
 
   it("removes more than one bounded batch of deleted literal paths through the native sync seam", async () => {
     const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-sandbox-delete-batches-"));
@@ -1193,7 +1198,7 @@ describe("sandbox managed runtime", () => {
     for (const relativePath of deletedPaths) {
       await expect(readFile(path.join(remoteWorkspaceDir, relativePath), "utf8")).rejects.toMatchObject({ code: "ENOENT" });
     }
-  });
+  }, windowsTransportTestTimeoutMs);
 
   const unsortedDeletedPathFixtures = process.platform === "win32"
     ? [["a Windows-safe space, Unicode, and quote name", "two unusual 雪's.txt"]] as const
@@ -1442,7 +1447,7 @@ describe("sandbox managed runtime", () => {
     expect(await git(localWorkspaceDir, ["diff", "--name-status", "HEAD", "--"])).toBe("");
     expect(await git(localWorkspaceDir, ["diff", "--cached", "--name-status", "HEAD", "--"])).toBe("");
     expect(missingStatusReads).toHaveLength(1);
-  });
+  }, windowsTransportTestTimeoutMs);
 
   it("does not fail clean restore checks when local working tree changes survive", async () => {
     const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-sandbox-preserved-local-"));
@@ -4847,7 +4852,7 @@ describe("sandbox git-bundle export transport", () => {
       expect(diagnostics).toHaveLength(1);
       expect(diagnostics[0]).not.toContain("private-restore-");
     } finally { vi.restoreAllMocks(); }
-  });
+  }, windowsTransportTestTimeoutMs);
 
   it.each([
     ["a dropped transfer", Object.assign(new Error("transfer reset"), { code: "ECONNRESET" })],
@@ -4874,7 +4879,7 @@ describe("sandbox git-bundle export transport", () => {
       expect(await git(localWorkspaceDir, ["log", "-1", "--pretty=%s"])).toBe("sandbox update");
       await expect(readFile(path.join(localWorkspaceDir, "remote-only.txt"), "utf8")).resolves.toBe("from sandbox\n");
     } finally { vi.restoreAllMocks(); }
-  });
+  }, windowsTransportTestTimeoutMs);
 
   it("gives up after three copy-back attempts", async () => {
     const { localWorkspaceDir, remoteWorkspaceDir } = await setupGitBackedWorkspace("paperclip-restore-retry-limit-");
@@ -4894,7 +4899,7 @@ describe("sandbox git-bundle export transport", () => {
     };
     await expect(prepared.restoreWorkspace()).rejects.toBe(failure);
     expect(directoryTransfers).toBe(3);
-  });
+  }, windowsTransportTestTimeoutMs);
 
   it.each([
     ["an unsafe archive", Object.assign(new Error("unsafe"), { code: "WORKSPACE_RESTORE_UNSAFE_ARCHIVE" }), "directory_merge"],
@@ -5062,7 +5067,7 @@ describe("sandbox git-bundle export transport", () => {
     // The full bundle was self-contained: the host repository now holds the
     // sandbox head commit.
     await expect(git(localWorkspaceDir, ["cat-file", "-e", `${sandboxHead}^{commit}`])).resolves.toBe("");
-  });
+  }, windowsTransportTestTimeoutMs);
 
   it("reports the real transferred bytes for the native git-history export and workspace restore", async () => {
     const capture: TransportCapture = { syncOutOperations: [], readFilePaths: [] };

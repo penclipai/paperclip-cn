@@ -54,7 +54,9 @@ import {
 // The remote-sandbox characterization tests execute real staging commands.
 // Git Bash process startup on Windows regularly exceeds Vitest's short default
 // while the same assertions remain bounded by each operation's own timeout.
-if (process.platform === "win32") vi.setConfig({ testTimeout: 15_000 });
+// These are integration-shaped staging cases: a single run can perform several
+// real Git/Bash round trips before reaching the assertion.
+if (process.platform === "win32") vi.setConfig({ testTimeout: 60_000 });
 
 const tempRoots: string[] = [];
 let defaultGeminiTestHome: string | undefined;
