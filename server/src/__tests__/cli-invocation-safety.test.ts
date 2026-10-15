@@ -336,6 +336,7 @@ const SKIP_DIRS = new Set([
   ".next",
   "coverage",
   ".paperclip",
+  ".stage",
   "tmp",
 ]);
 

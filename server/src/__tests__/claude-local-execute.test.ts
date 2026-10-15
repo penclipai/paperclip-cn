@@ -912,6 +912,7 @@ describe("claude execute", () => {
     const claudeRoot = path.join(root, ".claude");
     const previousHome = process.env.HOME;
     const previousPath = process.env.PATH;
+    const previousClaudeConfigDir = process.env.CLAUDE_CONFIG_DIR;
 
     await fs.mkdir(localWorkspace, { recursive: true });
     await fs.mkdir(remoteWorkspace, { recursive: true });
@@ -922,6 +923,10 @@ describe("claude execute", () => {
 
     process.env.HOME = root;
     process.env.PATH = `${binDir}${path.delimiter}${process.env.PATH ?? ""}`;
+    // Windows resolves os.homedir() from the user profile rather than HOME.
+    // Set the CLI config location explicitly so this fixture never reads a
+    // real user configuration while staging the sandbox bridge.
+    process.env.CLAUDE_CONFIG_DIR = claudeRoot;
 
     try {
       const result = await execute({
@@ -987,6 +992,8 @@ describe("claude execute", () => {
       else process.env.HOME = previousHome;
       if (previousPath === undefined) delete process.env.PATH;
       else process.env.PATH = previousPath;
+      if (previousClaudeConfigDir === undefined) delete process.env.CLAUDE_CONFIG_DIR;
+      else process.env.CLAUDE_CONFIG_DIR = previousClaudeConfigDir;
       await fs.rm(root, { recursive: true, force: true });
     }
   }, process.platform === "win32" ? 60_000 : 10_000);
