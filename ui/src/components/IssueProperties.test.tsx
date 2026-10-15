@@ -17,6 +17,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getLastProjectId } from "../lib/recent-projects";
 import { IssueProperties } from "./IssueProperties";
 import { queryKeys } from "../lib/queryKeys";
+import i18n from "@/i18n";
 
 const mockAgentsApi = vi.hoisted(() => ({
   list: vi.fn(),
@@ -857,6 +858,74 @@ describe("IssueProperties", () => {
     expect(container.textContent).toContain("Triage");
 
     act(() => root.unmount());
+  });
+
+  it("updates section and monitor labels when the language changes", async () => {
+    const NOW = new Date(2026, 6, 17, 13, 56, 0, 0);
+    const at = (minutesFromNow: number) => new Date(NOW.getTime() + minutesFromNow * 60_000).toISOString();
+    const dateNowSpy = vi.spyOn(Date, "now").mockReturnValue(NOW.getTime());
+    const root = renderProperties(container, {
+      issue: createIssue({ executionPolicy: createExecutionPolicy() }),
+      childIssues: [],
+      onUpdate: vi.fn(),
+      inline: true,
+    });
+    await flush();
+    expect(container.textContent).toContain("Work");
+    expect(container.querySelector('[data-testid="monitor-row-trigger"]')?.textContent).toContain("None");
+
+    await act(async () => { await i18n.changeLanguage("zh-CN"); });
+    expect(container.textContent).toContain("工作");
+    expect(container.querySelector('[data-testid="monitor-row-trigger"]')?.textContent).toContain("暂无");
+
+    const renderMonitor = (monitor: NonNullable<IssueExecutionState["monitor"]>, monitorAttemptCount = monitor.attemptCount) => {
+      act(() => {
+        root.render(
+          <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+            <IssueProperties
+              issue={createIssue({
+                executionPolicy: createExecutionPolicy({ monitor: {
+                  nextCheckAt: monitor.nextCheckAt!,
+                  notes: monitor.notes,
+                  scheduledBy: monitor.scheduledBy!,
+                } }),
+                executionState: createExecutionState({ monitor }),
+                monitorAttemptCount,
+              })}
+              childIssues={[]}
+              onUpdate={vi.fn()}
+              inline
+            />
+          </QueryClientProvider>,
+        );
+      });
+    };
+    const scheduledMonitor = {
+      status: "scheduled" as const,
+      nextCheckAt: at(30),
+      lastTriggeredAt: null,
+      attemptCount: 3,
+      notes: null,
+      scheduledBy: "board" as const,
+      clearedAt: null,
+      clearReason: null,
+    };
+    renderMonitor(scheduledMonitor);
+    await flush();
+    expect(container.querySelector('[data-testid="monitor-row-trigger"]')?.textContent).toContain("第 3 次尝试");
+
+    renderMonitor({ ...scheduledMonitor, nextCheckAt: at(-18), attemptCount: 0 });
+    await flush();
+    expect(container.querySelector('[data-testid="monitor-row-trigger"]')?.textContent).toContain("将在下次轮询时触发");
+
+    renderMonitor({ ...scheduledMonitor, nextCheckAt: at(0), attemptCount: 0 });
+    await flush();
+    expect(container.querySelector('[data-testid="monitor-row-trigger"]')?.textContent).toContain("即将检查…");
+    await act(async () => { await i18n.changeLanguage("en"); });
+    expect(container.textContent).toContain("Work");
+    expect(container.querySelector('[data-testid="monitor-row-trigger"]')?.textContent).toContain("checking momentarily…");
+    act(() => root.unmount());
+    dateNowSpy.mockRestore();
   });
 
   it("restores master's plain Properties pane header when Streamlined UI is off", async () => {

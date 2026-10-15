@@ -104,6 +104,11 @@
     "zh-CN": "持续 {{duration}}",
     "reviewedEnglishHash": "f25e2940477b1892a44a0b586a17ec646284dd5bb9e6342c95a12ca149b7b925"
   },
+  "taskChat.continuedAfterSteering": {
+    "en": "Continued after steering ·",
+    "zh-CN": "引导后继续 ·",
+    "reviewedEnglishHash": "d964b95eda2602c2a68fb7b80293eefb83b4cb4a326388fdac8839f7d2d04760"
+  },
   "taskChat.live.calledTools_one": {
     "en": "called {{count}} tool",
     "zh-CN": "调用了 {{count}} 个工具",

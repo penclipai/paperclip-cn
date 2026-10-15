@@ -249,7 +249,7 @@ export function IssueProperties({
   documentDeepLink,
   sidePanelContentOnly = false,
 }: IssuePropertiesProps) {
-  useTranslation();
+  const { t } = useTranslation();
   const policyResult = useExecutionPolicy(issue.executionPolicy);
   const policyAvailable = policyResult.success;
   const executionPolicy = policyResult.success ? policyResult.data : null;
@@ -1318,16 +1318,23 @@ export function IssueProperties({
   const monitorPrimary = monitorNextCheckAt
     ? formatMonitorEtaLabel(monitorNextCheckAt, monitorNow)
     : monitorState?.status === "cleared"
-      ? "Cleared"
-      : "None";
+      ? t("issueProperties.monitorCleared")
+      : t("common.none");
   const monitorSecondary = monitorNextCheckAt
     ? monitorIsDueNow
-      ? "checking momentarily…"
-      : `${formatMonitorAbsolute(monitorNextCheckAt, {}, monitorNow)}${monitorIsOverdue ? " · fires on next tick" : monitorAttemptCount > 0 ? ` · Attempt ${monitorAttemptCount}` : ""}`
+      ? t("issueProperties.checkingMomentarily")
+      : [
+          formatMonitorAbsolute(monitorNextCheckAt, {}, monitorNow),
+          monitorIsOverdue
+            ? t("issueProperties.firesOnNextTick")
+            : monitorAttemptCount > 0
+              ? t("issueProperties.attemptCount", { count: monitorAttemptCount })
+              : null,
+        ].filter(Boolean).join(" · ")
     : monitorState?.status === "cleared"
       ? [
-          monitorLastTriggeredAt ? `last checked ${timeAgo(monitorLastTriggeredAt)}` : null,
-          monitorAttemptCount > 0 ? `after attempt ${monitorAttemptCount}` : null,
+          monitorLastTriggeredAt ? t("issueProperties.lastChecked", { time: timeAgo(monitorLastTriggeredAt) }) : null,
+          monitorAttemptCount > 0 ? t("issueProperties.afterAttempt", { count: monitorAttemptCount }) : null,
         ].filter(Boolean).join(" · ")
       : null;
   const monitorTrigger = (
@@ -2333,7 +2340,7 @@ export function IssueProperties({
   const propertiesBody = (
     <div className={cn(streamlinedPropertiesEnabled && "task-detail-properties pl-4")}>
       <PropertySection
-        title={streamlinedPropertiesEnabled ? "Work" : "Triage"}
+        title={streamlinedPropertiesEnabled ? t("sidebar.work") : t("issueProperties.triage")}
         first
         streamlined={streamlinedPropertiesEnabled}
       >

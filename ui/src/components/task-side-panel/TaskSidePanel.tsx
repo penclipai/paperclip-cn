@@ -18,6 +18,7 @@ import {
   isArtifactReviewDocumentKey,
   type Issue,
   type IssueDocument,
+  type TaskBrowser,
 } from "@penclipai/shared";
 import {
   Globe,
@@ -56,6 +57,15 @@ import {
   type SidePanelTabItem,
   type SidePanelTabRecord,
 } from "@/components/side-panel";
+
+const BROWSER_STATUS_TRANSLATION_KEYS: Record<TaskBrowser["status"], string> = {
+  starting: "taskSidePanel.browserStatus.starting",
+  running: "taskSidePanel.browserStatus.running",
+  idle: "taskSidePanel.browserStatus.idle",
+  stopping: "taskSidePanel.browserStatus.stopping",
+  closed: "taskSidePanel.browserStatus.closed",
+  failed: "taskSidePanel.browserStatus.failed",
+};
 import { Button } from "@/components/ui/button";
 import {
   FILE_VIEWER_NAVIGATE_OPTIONS,
@@ -271,7 +281,7 @@ export function TaskSidePanel({
   openSkillName,
   onSkillOpened,
 }: TaskSidePanelProps) {
-  useTranslation();
+  const { i18n } = useTranslation();
   const handleScroll = useScrollbarWhileScrolling();
   // Agent Chat: agent chats swap the conversation issue's own panels for
   // agent-scoped ones — the agent's tasks lead, and Artifacts lists the
@@ -288,7 +298,7 @@ export function TaskSidePanel({
     readTaskSidePanelState(accountScope, issue.companyId, issue.id, fileTabsEnabled),
   );
   const taskCount = tasksTab?.count ?? childIssues.length;
-  const taskLabel = tasksTab ? "Tasks" : "Subtasks";
+  const taskLabel = tasksTab ? translateInstant("sidebar.issues") : translateInstant("Subtasks");
   const initialSubtasksAvailableRef = useRef(showRelatedTasks && (taskCount > 0 || tasksTab?.hasError === true));
   const subtasksDismissedRef = useRef(
     restoredRef.current?.userInteracted === true
@@ -567,17 +577,17 @@ export function TaskSidePanel({
   const visualTabs = useMemo<SidePanelTabItem[]>(() => controller.tabs.map((tab) => {
     const document = tab.payload.kind === "issue-document" ? documentByKey.get(tab.payload.documentKey) : null;
     const browserIndex = browsersQuery.data?.findIndex((browser) => tab.payload.kind === "browser" && (browser.id === tab.payload.browserId || browser.sessionId === tab.payload.browserId)) ?? -1;
-    const browserLabel = browserIndex >= 0 && (browsersQuery.data?.length ?? 0) > 1 ? `Browser ${browserIndex + 1}` : null;
+    const browserLabel = browserIndex >= 0 && (browsersQuery.data?.length ?? 0) > 1 ? `${translateInstant("taskSidePanel.browser")} ${browserIndex + 1}` : null;
     return {
       id: tab.id,
       type: tab.type,
-      label: browserLabel ?? (tab.payload.kind === "subtasks" && tasksTab ? "Tasks" : document ? documentDisplayTitle(document) : tab.label),
+      label: browserLabel ?? (tab.payload.kind === "subtasks" && tasksTab ? translateInstant("sidebar.issues") : document ? documentDisplayTitle(document) : tab.label),
       ariaLabel: tab.payload.kind === "subtasks" ? taskLabel : tab.ariaLabel,
       closable: true,
       contentMode: tab.contentMode,
       icon: tabIcon(tab),
     };
-  }), [controller.tabs, documentByKey, taskCount, taskLabel, tasksTab, browsersQuery.data]);
+  }), [controller.tabs, documentByKey, i18n.language, taskCount, taskLabel, tasksTab, browsersQuery.data]);
 
   const launcherSections = useMemo<SidePanelLauncherSection[]>(() => {
     const primary: SidePanelLauncherItem[] = conversationAgentId ? [
@@ -586,11 +596,11 @@ export function TaskSidePanel({
       { id: "properties", label: translateInstant("Properties"), icon: <SlidersHorizontal />, alreadyOpen: controller.tabs.some((tab) => tab.id === "properties") },
     ] : [
       { id: "properties", label: translateInstant("Properties"), icon: <SlidersHorizontal />, alreadyOpen: controller.tabs.some((tab) => tab.id === "properties") },
-      ...(subtasksAvailable ? [{ id: "subtasks", label: taskLabel, description: tasksTab?.hasError ? "Could not load all tasks" : `${taskCount} total`, icon: <ListTree />, alreadyOpen: controller.tabs.some((tab) => tab.id === "subtasks") }] : []),
+      ...(subtasksAvailable ? [{ id: "subtasks", label: taskLabel, description: tasksTab?.hasError ? translateInstant("Could not load all tasks.") : translateInstant("taskSidePanel.total", { count: taskCount }), icon: <ListTree />, alreadyOpen: controller.tabs.some((tab) => tab.id === "subtasks") }] : []),
       { id: "artifacts", label: translateInstant("Artifacts"), icon: <Box />, alreadyOpen: controller.tabs.some((tab) => tab.id === "artifacts") },
     ];
     for (const [index, browser] of (browsersQuery.data ?? []).entries()) {
-      primary.push({ id: `browser:${browser.id}`, label: (browsersQuery.data?.length ?? 0) > 1 ? `Browser ${index + 1}` : "Browser", description: browser.status, icon: <Globe />, alreadyOpen: controller.tabs.some(tab => tab.id === `browser:${browser.id}`) });
+      primary.push({ id: `browser:${browser.id}`, label: (browsersQuery.data?.length ?? 0) > 1 ? `${translateInstant("taskSidePanel.browser")} ${index + 1}` : translateInstant("taskSidePanel.browser"), description: translateInstant(BROWSER_STATUS_TRANSLATION_KEYS[browser.status]), icon: <Globe />, alreadyOpen: controller.tabs.some(tab => tab.id === `browser:${browser.id}`) });
     }
     if (fileTabsEnabled) {
       primary.push({ id: "files", label: translateInstant("Files"), icon: <FolderOpen />, shortcut: "G F", alreadyOpen: controller.tabs.some((tab) => tab.id === "files") });
@@ -639,7 +649,7 @@ export function TaskSidePanel({
       });
     }
     return sections;
-  }, [browsersQuery.data, conversationAgentId, taskCount, taskLabel, tasksTab?.hasError, controller.tabs, documents, fileTabsEnabled, planDocument, recentFilesQuery.data, recentFilesQuery.isError, recentFilesQuery.isLoading, subtasksAvailable]);
+  }, [browsersQuery.data, conversationAgentId, taskCount, taskLabel, tasksTab?.hasError, controller.tabs, documents, fileTabsEnabled, i18n.language, planDocument, recentFilesQuery.data, recentFilesQuery.isError, recentFilesQuery.isLoading, subtasksAvailable]);
 
   function selectLauncherItem(item: SidePanelLauncherItem) {
     markInteracted();

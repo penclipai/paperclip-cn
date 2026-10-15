@@ -1,0 +1,42 @@
+{
+  "taskSidePanel.browser": {
+    "en": "Browser",
+    "zh-CN": "浏览器",
+    "reviewedEnglishHash": "d31de1a5c5c8ba2a210a167cf0d0dc2425c57ea7525f4b73a4b7ab934af79dfc"
+  },
+  "taskSidePanel.browserStatus.closed": {
+    "en": "Closed",
+    "zh-CN": "已关闭",
+    "reviewedEnglishHash": "c21ead0614e7e1b70edb3759e1d19ca1e12e6036980d10bfb73052fb1a018efa"
+  },
+  "taskSidePanel.browserStatus.failed": {
+    "en": "Failed",
+    "zh-CN": "失败",
+    "reviewedEnglishHash": "031a8f0f659df890dfd53c92e45295b0f14c997185bae46e168831e403b273f7"
+  },
+  "taskSidePanel.browserStatus.idle": {
+    "en": "Idle",
+    "zh-CN": "空闲",
+    "reviewedEnglishHash": "ab0171ca0494d441cb6fe96e2efbe1c2a129f1d87cd6c17f03613cfd111149dd"
+  },
+  "taskSidePanel.browserStatus.running": {
+    "en": "Running",
+    "zh-CN": "运行中",
+    "reviewedEnglishHash": "f4ccae29e1bb0c20a124570a1b43f4347ea94bba9f84ffdfddd9c7445b126128"
+  },
+  "taskSidePanel.browserStatus.starting": {
+    "en": "Starting",
+    "zh-CN": "正在启动",
+    "reviewedEnglishHash": "aeed4d26bb5f0c312bc8a9ee9ce362899252110089263414690ae7b5d6625427"
+  },
+  "taskSidePanel.browserStatus.stopping": {
+    "en": "Stopping",
+    "zh-CN": "正在关闭",
+    "reviewedEnglishHash": "a71ee1d4ac5c2b7a820bdc4c3ac45e38885f52b41b4bfd3f5cd1328ce600f940"
+  },
+  "taskSidePanel.total": {
+    "en": "{{count}} total",
+    "zh-CN": "共 {{count}} 项",
+    "reviewedEnglishHash": "1b8c82587c1d15308d709280945baff3e91f19a359e0ff68af52fd076e1afa4c"
+  }
+}

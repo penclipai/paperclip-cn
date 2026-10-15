@@ -14,6 +14,7 @@ import {
   writeTaskSidePanelState,
 } from "@/lib/task-side-panel-state";
 import { TaskSidePanel } from "./TaskSidePanel";
+import i18n from "@/i18n";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -297,6 +298,71 @@ describe("TaskSidePanel", () => {
     expect(container.querySelector('[role="tab"][aria-selected="true"]')?.getAttribute("data-side-panel-tab-target")).toBe("artifacts");
     expect(container.textContent).toContain("Agent artifacts agent-1");
     expect(container.textContent).not.toContain("Artifacts content");
+  });
+
+  it("refreshes translated launcher labels when the language changes", async () => {
+    const browserId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+    browserFixture.data = [{ id: browserId, sessionId: browserId, issueId: "task-1", status: "running", runStatus: "running", progress: null, error: null, costCents: 0, idleDeadline: null, expiresAt: null, createdAt: new Date().toISOString() }];
+    i18n.addResourceBundle("en", "common", {
+      "taskSidePanel.browser": "Browser",
+      "taskSidePanel.browserStatus.running": "Running",
+      "taskSidePanel.total": "{{count}} total",
+    }, true, true);
+    i18n.addResourceBundle("zh-CN", "common", {
+      "taskSidePanel.browser": "浏览器",
+      "taskSidePanel.browserStatus.running": "运行中",
+      "taskSidePanel.total": "共 {{count}} 项",
+    }, true, true);
+    await render(panel({
+      streamlinedTabs: true,
+      showSubtasksTab: true,
+      tasksTab: { count: 0, hasError: true, content: <div /> },
+    }));
+    await act(async () => container.querySelector<HTMLButtonElement>('button[aria-label="Open a new tab"]')?.click());
+    expect(document.body.textContent).toContain("Properties");
+    expect(document.body.textContent).toContain("Artifacts");
+    expect(document.body.textContent).toContain("Tasks");
+    expect(document.body.textContent).toContain("Could not load all tasks.");
+    expect(document.body.textContent).toContain("Browser");
+    expect(document.body.textContent).toContain("Running");
+
+    await act(async () => { await i18n.changeLanguage("zh-CN"); });
+    expect(document.body.textContent).toContain("属性");
+    expect(document.body.textContent).toContain("产物");
+    expect(document.body.textContent).toContain("任务");
+    expect(document.body.textContent).toContain("无法加载所有任务。");
+    expect(document.body.textContent).toContain("浏览器");
+    expect(document.body.textContent).toContain("运行中");
+
+    await act(async () => { await i18n.changeLanguage("en"); });
+    expect(document.body.textContent).toContain("Properties");
+    expect(document.body.textContent).toContain("Artifacts");
+    expect(document.body.textContent).toContain("Tasks");
+    expect(document.body.textContent).toContain("Could not load all tasks.");
+    expect(document.body.textContent).toContain("Browser");
+    expect(document.body.textContent).toContain("Running");
+
+    act(() => root.unmount());
+    queryClient.clear();
+    window.localStorage.clear();
+    writeTaskSidePanelState("user-1", "company-1", "task-1", {
+      state: { tabs: [taskPanelPropertiesTab()], activeTabId: "properties" },
+      launcherOpen: true,
+      userInteracted: false,
+      autoPlanHandled: false,
+      updatedAt: Date.now(),
+    });
+    root = createRoot(container);
+    queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    await render(panel({
+      streamlinedTabs: true,
+      showSubtasksTab: true,
+      tasksTab: { count: 2, content: <div /> },
+    }));
+    expect(document.body.textContent).toContain("2 total");
+    await act(async () => { await i18n.changeLanguage("zh-CN"); });
+    expect(document.body.textContent).toContain("共 2 项");
+    await act(async () => { await i18n.changeLanguage("en"); });
   });
 
   it("keeps a chat on the conversation's own Artifacts while Agent Chat is off", async () => {

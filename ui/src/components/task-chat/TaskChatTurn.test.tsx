@@ -8,6 +8,7 @@ import { TaskChatTurn, turnSummaryText } from "./TaskChatTurn";
 import { buildTurnSummary } from "./transcript-adapter";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { MemoryRouter } from "@/lib/router";
+import i18n from "@/i18n";
 import type { TranscriptEntry } from "@/adapters";
 import type {
   TaskChatStatusItem,
@@ -235,7 +236,24 @@ describe("TaskChatTurn", () => {
     );
   });
 
-  it("labels a later segment as a continuation of the steered run", () => {
+  it("updates activity and turn status labels when the language changes", async () => {
+    renderTurn({ ...SETTLED, historical: true });
+    expect(summaryBtn()?.textContent).toContain("Activity");
+
+    await act(async () => { await i18n.changeLanguage("zh-CN"); });
+    expect(summaryBtn()?.textContent).toContain("活动");
+
+    renderTurn(SETTLED);
+    expect(summaryBtn()?.textContent).toContain("已处理");
+
+    renderTurn({ ...SETTLED, summary: { ...SETTLED.summary, failed: true } });
+    expect(summaryBtn()?.textContent).toContain("已停止");
+    await act(async () => { await i18n.changeLanguage("en"); });
+  });
+
+  it("labels a later segment as a continuation of the steered run in each language", async () => {
+    i18n.addResourceBundle("en", "common", { "taskChat.continuedAfterSteering": "Continued after steering ·" }, true, true);
+    i18n.addResourceBundle("zh-CN", "common", { "taskChat.continuedAfterSteering": "引导后继续 ·" }, true, true);
     renderTurn({
       ...SETTLED,
       standaloneHeader: true,
@@ -243,6 +261,12 @@ describe("TaskChatTurn", () => {
       agentName: "Codex",
     });
 
+    expect(summaryBtn()?.textContent).toContain(
+      "Continued after steering · Worked for 38s",
+    );
+    await act(async () => { await i18n.changeLanguage("zh-CN"); });
+    expect(summaryBtn()?.textContent).toContain("引导后继续 · 已处理 持续 38s");
+    await act(async () => { await i18n.changeLanguage("en"); });
     expect(summaryBtn()?.textContent).toContain(
       "Continued after steering · Worked for 38s",
     );

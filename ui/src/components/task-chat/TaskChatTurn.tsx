@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { useStreamlinedTaskChatPresentation } from "./presentation-mode";
 import { Check, ChevronRight, X } from "lucide-react";
@@ -75,6 +76,7 @@ export function TaskChatTurn({
   timestampPrefix,
   leading,
 }: TaskChatTurnProps) {
+  const { t } = useTranslation();
   const streamlined = useStreamlinedTaskChatPresentation();
   const parentRow = !item.settled && item.liveStatus != null;
   // The new Paperclip Runner task surface owns one durable chronological
@@ -100,12 +102,12 @@ export function TaskChatTurn({
             />
           ) : null}
           {!item.historical ? <span className="min-w-0 truncate">
-            {item.continuedAfterSteering ? "Continued after steering · " : ""}
+            {item.continuedAfterSteering ? <>{t("taskChat.continuedAfterSteering")}{" "}</> : null}
             {item.summary.durationLabel
-              ? `${item.summary.failed ? "Stopped" : "Worked"} for ${item.summary.durationLabel}`
+              ? `${item.summary.failed ? t("taskChat.stopped") : t("issueChat.worked")} ${t("taskChat.forDuration", { duration: item.summary.durationLabel })}`
               : item.summary.failed
-                ? "Stopped"
-                : "Worked"}
+                ? t("taskChat.stopped")
+                : t("issueChat.worked")}
           </span> : null}
         </div> : null}
         {item.items.length > 0 ? (
@@ -206,11 +208,11 @@ export function TaskChatTurn({
         <SummaryIcon className="h-3.5 w-3.5 shrink-0" />
       ) : null}
       <span>
-        {item.historical ? "Activity" : item.standaloneHeader && item.summary.durationLabel
-          ? `${item.summary.failed ? "Stopped" : "Worked"} for ${item.summary.durationLabel}`
+        {item.historical ? t("sidebar.activity") : item.standaloneHeader && item.summary.durationLabel
+          ? `${item.summary.failed ? t("taskChat.stopped") : t("issueChat.worked")} ${t("taskChat.forDuration", { duration: item.summary.durationLabel })}`
           : item.summary.failed
-            ? "Stopped"
-            : "Worked"}
+            ? t("taskChat.stopped")
+            : t("issueChat.worked")}
       </span>
       {!item.standaloneHeader && turnSummaryMetrics(item.summary) ? (
         // Time/tools/tokens is demoted, not deleted (PAP-502): it stays in the
