@@ -4171,7 +4171,7 @@ describe("AppsConnect — guided generic MCP flow (PAP-17087)", () => {
     expect(container.textContent).toContain("mcp.example.test is ready.");
     expect(container.textContent).toContain("Organization identity");
     expect(container.textContent).toContain("Any agent");
-    expect(container.textContent).toContain("3 actions on");
+    expect(container.textContent).toContain("Enabled actions: 3");
     expect(container.textContent).not.toContain("List things");
     expect(container.querySelectorAll('[role="switch"]')).toHaveLength(0);
   });
