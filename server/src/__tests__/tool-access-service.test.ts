@@ -875,22 +875,21 @@ describeEmbeddedPostgres("tool access service", () => {
     await tempDb?.cleanup();
   });
 
-  async function waitForBlockedMembershipUpdate() {
-    for (let attempt = 0; attempt < 80; attempt += 1) {
-      const [waiting] = await db.execute<{ waiting: boolean }>(sql`
-        SELECT EXISTS (
-          SELECT 1
-          FROM pg_stat_activity
-          WHERE state = 'active'
-            AND wait_event_type = 'Lock'
-            AND query ILIKE '%company_memberships%'
-            AND query ILIKE '%for update%'
-        ) AS waiting
-      `);
-      if (waiting?.waiting) return true;
-      await new Promise((resolve) => setTimeout(resolve, 25));
-    }
-    return false;
+  async function expectBlockedBy(lockHolderPid: number) {
+    await vi.waitFor(
+      async () => {
+        const [row] = (await db.execute(sql`
+          SELECT EXISTS (
+            SELECT 1
+            FROM pg_stat_activity
+            WHERE datname = current_database()
+              AND ${lockHolderPid} = ANY(pg_blocking_pids(pid))
+          ) AS blocked
+        `)) as unknown as Array<{ blocked: boolean }>;
+        expect(row?.blocked).toBe(true);
+      },
+      { timeout: 2_000, interval: 25 },
+    );
   }
 
   it("mints generic exchange connection tokens through the agent route and stores only hashes", async () => {
@@ -1036,6 +1035,7 @@ describeEmbeddedPostgres("tool access service", () => {
     const membershipIsLocked = new Promise<void>((resolve) => {
       membershipLocked = resolve;
     });
+    let revocationBackendPid!: number;
     let revocation: Promise<void> | null = null;
 
     try {
@@ -1051,6 +1051,10 @@ describeEmbeddedPostgres("tool access service", () => {
             ),
           )
           .for("update");
+        const [backend] = (await tx.execute(
+          sql`select pg_backend_pid() as pid`,
+        )) as unknown as Array<{ pid: number }>;
+        revocationBackendPid = backend!.pid;
         membershipLocked();
         await revocationMayCommit;
         await tx
@@ -1079,7 +1083,7 @@ describeEmbeddedPostgres("tool access service", () => {
           (error: unknown) => ({ value: null, error }),
         );
 
-      expect(await waitForBlockedMembershipUpdate()).toBe(true);
+      await expectBlockedBy(revocationBackendPid);
       expect(fetchMock).not.toHaveBeenCalled();
       releaseRevocation();
       await revocation;
@@ -1644,83 +1648,123 @@ describeEmbeddedPostgres("tool access service", () => {
     const membershipIsLocked = new Promise<void>((resolve) => {
       membershipLocked = resolve;
     });
+    let removal: Promise<void> | undefined;
+    let creation:
+      | Promise<{
+          value: unknown;
+          error: unknown;
+        }>
+      | undefined;
 
-    const removal = removalDb.transaction(async (tx) => {
-      await tx.execute(sql`
-        SELECT "id"
-        FROM "company_memberships"
-        WHERE "company_id" = ${company.id}
-          AND "principal_type" = 'user'
-          AND "principal_id" = 'alice'
-        FOR UPDATE
-      `);
-      await tx.execute(sql`
-        UPDATE "connection_grants"
-        SET "status" = 'revoked', "revoked_at" = now(), "updated_at" = now()
-        WHERE "id" = ${grant.id}
-      `);
-      await tx.execute(sql`
-        DELETE FROM "connection_grant_delegations"
-        WHERE "company_id" = ${company.id} AND "grant_id" = ${grant.id}
-      `);
-      membershipLocked();
-      await removalMayCommit;
-      await tx.execute(sql`
-        UPDATE "company_memberships"
-        SET "status" = 'suspended', "updated_at" = now()
-        WHERE "company_id" = ${company.id}
-          AND "principal_type" = 'user'
-          AND "principal_id" = 'alice'
-      `);
-    });
-
-    await membershipIsLocked;
-    let creationSettled = false;
-    const creation = service
-      .createConnectionGrantDelegation(
-        connection.id,
-        grant.id,
-        agent.id,
-        "alice",
-      )
-      .then(
-        (value) => ({ value, error: null }),
-        (error: unknown) => ({ value: null, error }),
-      )
-      .finally(() => {
-        creationSettled = true;
+    let primaryFailure: unknown;
+    let hasPrimaryFailure = false;
+    try {
+      removal = removalDb.transaction(async (tx) => {
+        await tx.execute(sql`
+          SELECT "id"
+          FROM "company_memberships"
+          WHERE "company_id" = ${company.id}
+            AND "principal_type" = 'user'
+            AND "principal_id" = 'alice'
+          FOR UPDATE
+        `);
+        await tx.execute(sql`
+          UPDATE "connection_grants"
+          SET "status" = 'revoked', "revoked_at" = now(), "updated_at" = now()
+          WHERE "id" = ${grant.id}
+        `);
+        await tx.execute(sql`
+          DELETE FROM "connection_grant_delegations"
+          WHERE "company_id" = ${company.id} AND "grant_id" = ${grant.id}
+        `);
+        membershipLocked();
+        await removalMayCommit;
+        await tx.execute(sql`
+          UPDATE "company_memberships"
+          SET "status" = 'suspended', "updated_at" = now()
+          WHERE "company_id" = ${company.id}
+            AND "principal_type" = 'user'
+            AND "principal_id" = 'alice'
+        `);
       });
-    await new Promise((resolve) => setTimeout(resolve, 50));
-    expect(creationSettled).toBe(false);
-    releaseRemoval();
-    await removal;
-    const creationResult = await creation;
-    expect(creationResult.error).toEqual(
-      expect.objectContaining({
-        message:
-          "Only an active company member can delegate their personal grant",
-      }),
-    );
 
-    await db
-      .update(companyMemberships)
-      .set({ status: "active" })
-      .where(
-        and(
-          eq(companyMemberships.companyId, company.id),
-          eq(companyMemberships.principalId, "alice"),
-        ),
+      await membershipIsLocked;
+      let creationSettled = false;
+      creation = service
+        .createConnectionGrantDelegation(
+          connection.id,
+          grant.id,
+          agent.id,
+          "alice",
+        )
+        .then(
+          (value) => ({ value, error: null }),
+          (error: unknown) => ({ value: null, error }),
+        )
+        .finally(() => {
+          creationSettled = true;
+        });
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      expect(creationSettled).toBe(false);
+      releaseRemoval();
+      await removal;
+      const creationResult = await creation;
+      expect(creationResult.error).toEqual(
+        expect.objectContaining({
+          message:
+            "Only an active company member can delegate their personal grant",
+        }),
       );
-    await db
-      .update(connectionGrants)
-      .set({ status: "active", revokedAt: null })
-      .where(eq(connectionGrants.id, grant.id));
-    expect(
+
       await db
-        .select()
-        .from(connectionGrantDelegations)
-        .where(eq(connectionGrantDelegations.grantId, grant.id)),
-    ).toHaveLength(0);
+        .update(companyMemberships)
+        .set({ status: "active" })
+        .where(
+          and(
+            eq(companyMemberships.companyId, company.id),
+            eq(companyMemberships.principalId, "alice"),
+          ),
+        );
+      await db
+        .update(connectionGrants)
+        .set({ status: "active", revokedAt: null })
+        .where(eq(connectionGrants.id, grant.id));
+      expect(
+        await db
+          .select()
+          .from(connectionGrantDelegations)
+          .where(eq(connectionGrantDelegations.grantId, grant.id)),
+      ).toHaveLength(0);
+    } catch (error) {
+      hasPrimaryFailure = true;
+      primaryFailure = error;
+      throw error;
+    } finally {
+      releaseRemoval();
+      const clientsClosed = Promise.all([
+        serviceDb.$client.end({ timeout: 0 }),
+        removalDb.$client.end({ timeout: 0 }),
+      ]);
+      const operationsSettled = Promise.allSettled([
+        ...(removal ? [removal] : []),
+        ...(creation ? [creation] : []),
+      ]);
+      try {
+        await vi.waitFor(() => Promise.all([clientsClosed, operationsSettled]), {
+          timeout: 2_000,
+          interval: 25,
+        });
+      } catch (cleanupError) {
+        if (hasPrimaryFailure) {
+          throw new AggregateError(
+            [primaryFailure, cleanupError],
+            "Test and cleanup both failed",
+            { cause: primaryFailure },
+          );
+        }
+        throw cleanupError;
+      }
+    }
   });
 
   it("uses the responsible user's personal grant for autonomous token minting", async () => {
@@ -1941,109 +1985,153 @@ describeEmbeddedPostgres("tool access service", () => {
       const membershipIsLocked = new Promise<void>((resolve) => {
         membershipLocked = resolve;
       });
+      let firstReplacement: Promise<void> | undefined;
+      let cleanup: Promise<void> | undefined;
+      let replacement:
+        | Promise<{
+            value: unknown;
+            error: unknown;
+          }>
+        | undefined;
 
-      const firstReplacement = firstReplacementDb.transaction(async (tx) => {
-        const service = createTestToolAccessService(
-          tx as unknown as ReturnType<typeof createDb>,
-        );
-        await service.replaceConnectionGrantMembers(connection.id, grant.id, [
-          "departing-user",
-        ]);
-        firstReplacementStaged();
-        await firstReplacementMayCommit;
-      });
-      await firstReplacementIsStaged;
-
-      const cleanup = cleanupDb.transaction(async (tx) => {
-        await tx
-          .select({ id: companyMemberships.id })
-          .from(companyMemberships)
-          .where(eq(companyMemberships.id, departingMembership.id))
-          .for("update");
-        membershipLocked();
-        await cleanupMayFinish;
-
-        const access = accessService(
-          tx as unknown as ReturnType<typeof createDb>,
-        );
-        if (cleanupKind === "suspend") {
-          await access.updateMemberAndPermissions(
-            company.id,
-            departingMembership.id,
-            { status: "suspended", grants: [] },
-            "owner",
+      let primaryFailure: unknown;
+      let hasPrimaryFailure = false;
+      try {
+        firstReplacement = firstReplacementDb.transaction(async (tx) => {
+          const service = createTestToolAccessService(
+            tx as unknown as ReturnType<typeof createDb>,
           );
-        } else if (cleanupKind === "archive") {
-          await access.archiveMember(company.id, departingMembership.id);
-        } else {
-          await access.setUserCompanyAccess("departing-user", []);
-        }
-      });
-
-      // The first replacement still owns the departing member lock, so this
-      // gives cleanup time to queue for that lock before the empty replacement
-      // queues for the grant lock.
-      await new Promise((resolve) => setTimeout(resolve, 50));
-      let replacementSettled = false;
-      const replacement = replacementService
-        .replaceConnectionGrantMembers(connection.id, grant.id, [])
-        .then(
-          (value) => ({ value, error: null }),
-          (error: unknown) => ({ value: null, error }),
-        )
-        .finally(() => {
-          replacementSettled = true;
+          await service.replaceConnectionGrantMembers(connection.id, grant.id, [
+            "departing-user",
+          ]);
+          firstReplacementStaged();
+          await firstReplacementMayCommit;
         });
-      await new Promise((resolve) => setTimeout(resolve, 50));
-      expect(replacementSettled).toBe(false);
+        await firstReplacementIsStaged;
 
-      releaseFirstReplacement();
-      await firstReplacement;
-      await membershipIsLocked;
-      expect(replacementSettled).toBe(false);
-      releaseCleanup();
-      await cleanup;
-      const replacementResult = await replacement;
-      expect(replacementResult.value).toBeNull();
-      expect(replacementResult.error).toEqual(
-        expect.objectContaining({
-          message:
-            "Replace inactive audience members before widening access to the whole company",
-          status: 409,
-          details: {
-            code: "audience_widening_blocked",
-            inactiveUserIds: ["departing-user"],
-          },
-        }),
-      );
-      expect(
-        await db
-          .select()
-          .from(connectionGrantMembers)
-          .where(eq(connectionGrantMembers.grantId, grant.id)),
-      ).toEqual([
-        expect.objectContaining({
-          subjectType: "user",
-          subjectId: "departing-user",
-        }),
-      ]);
+        cleanup = cleanupDb.transaction(async (tx) => {
+          await tx
+            .select({ id: companyMemberships.id })
+            .from(companyMemberships)
+            .where(eq(companyMemberships.id, departingMembership.id))
+            .for("update");
+          membershipLocked();
+          await cleanupMayFinish;
 
-      const fetchMock = vi
-        .spyOn(globalThis, "fetch")
-        .mockResolvedValue(
-          mcpHttpResponse({ token: "unexpected-company-wide-token" }),
+          const access = accessService(
+            tx as unknown as ReturnType<typeof createDb>,
+          );
+          if (cleanupKind === "suspend") {
+            await access.updateMemberAndPermissions(
+              company.id,
+              departingMembership.id,
+              { status: "suspended", grants: [] },
+              "owner",
+            );
+          } else if (cleanupKind === "archive") {
+            await access.archiveMember(company.id, departingMembership.id);
+          } else {
+            await access.setUserCompanyAccess("departing-user", []);
+          }
+        });
+
+        // The first replacement still owns the departing member lock, so this
+        // gives cleanup time to queue for that lock before the empty replacement
+        // queues for the grant lock.
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        let replacementSettled = false;
+        replacement = replacementService
+          .replaceConnectionGrantMembers(connection.id, grant.id, [])
+          .then(
+            (value) => ({ value, error: null }),
+            (error: unknown) => ({ value: null, error }),
+          )
+          .finally(() => {
+            replacementSettled = true;
+          });
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        expect(replacementSettled).toBe(false);
+
+        releaseFirstReplacement();
+        await firstReplacement;
+        await membershipIsLocked;
+        expect(replacementSettled).toBe(false);
+        releaseCleanup();
+        await cleanup;
+        const replacementResult = await replacement;
+        expect(replacementResult.value).toBeNull();
+        expect(replacementResult.error).toEqual(
+          expect.objectContaining({
+            message:
+              "Replace inactive audience members before widening access to the whole company",
+            status: 409,
+            details: {
+              code: "audience_widening_blocked",
+              inactiveUserIds: ["departing-user"],
+            },
+          }),
         );
-      const denied = await request(
-        createRouteApp(db, agentJwtActor(company.id, agent.id, run.id)),
-      )
-        .post(`/api/agents/me/connections/${connection.id}/token`)
-        .send({});
-      expect(denied.status).toBe(403);
-      expect(denied.body).toMatchObject({
-        code: "grant_audience_denied",
-        grantId: grant.id,
-      });
-      expect(fetchMock).not.toHaveBeenCalled();
+        expect(
+          await db
+            .select()
+            .from(connectionGrantMembers)
+            .where(eq(connectionGrantMembers.grantId, grant.id)),
+        ).toEqual([
+          expect.objectContaining({
+            subjectType: "user",
+            subjectId: "departing-user",
+          }),
+        ]);
+
+        const fetchMock = vi
+          .spyOn(globalThis, "fetch")
+          .mockResolvedValue(
+            mcpHttpResponse({ token: "unexpected-company-wide-token" }),
+          );
+        const denied = await request(
+          createRouteApp(db, agentJwtActor(company.id, agent.id, run.id)),
+        )
+          .post(`/api/agents/me/connections/${connection.id}/token`)
+          .send({});
+        expect(denied.status).toBe(403);
+        expect(denied.body).toMatchObject({
+          code: "grant_audience_denied",
+          grantId: grant.id,
+        });
+        expect(fetchMock).not.toHaveBeenCalled();
+      } catch (error) {
+        hasPrimaryFailure = true;
+        primaryFailure = error;
+        throw error;
+      } finally {
+        releaseFirstReplacement();
+        releaseCleanup();
+        const clientsClosed = Promise.all([
+          firstReplacementDb.$client.end({ timeout: 0 }),
+          replacementDb.$client.end({ timeout: 0 }),
+          cleanupDb.$client.end({ timeout: 0 }),
+        ]);
+        const operationsSettled = Promise.allSettled([
+          ...(firstReplacement ? [firstReplacement] : []),
+          ...(cleanup ? [cleanup] : []),
+          ...(replacement ? [replacement] : []),
+        ]);
+        try {
+          await vi.waitFor(
+            () => Promise.all([clientsClosed, operationsSettled]),
+            { timeout: 2_000, interval: 25 },
+          );
+        } catch (cleanupError) {
+          if (hasPrimaryFailure) {
+            throw new AggregateError(
+              [primaryFailure, cleanupError],
+              "Test and cleanup both failed",
+              { cause: primaryFailure },
+            );
+          }
+          throw cleanupError;
+        }
+      }
     },
   );
 
@@ -9189,6 +9277,7 @@ describeEmbeddedPostgres("tool access service", () => {
     const membershipIsLocked = new Promise<void>((resolve) => {
       membershipLocked = resolve;
     });
+    let removalBackendPid!: number;
     let removal: Promise<void> | null = null;
     mockToolsList([]);
 
@@ -9236,6 +9325,10 @@ describeEmbeddedPostgres("tool access service", () => {
             ),
           )
           .for("update");
+        const [backend] = (await tx.execute(
+          sql`select pg_backend_pid() as pid`,
+        )) as unknown as Array<{ pid: number }>;
+        removalBackendPid = backend!.pid;
         membershipLocked();
         await removalMayCommit;
         await tx
@@ -9265,7 +9358,7 @@ describeEmbeddedPostgres("tool access service", () => {
           (error: unknown) => ({ value: null, error }),
         );
 
-      expect(await waitForBlockedMembershipUpdate()).toBe(true);
+      await expectBlockedBy(removalBackendPid);
       releaseRemoval();
       await removal;
       const outcome = await completion;
