@@ -35,6 +35,8 @@ import {
   type ConnectionSetupFlowProps,
 } from "./ConnectionSetupFlow";
 
+class AgentAiConnectionChangedError extends Error {}
+
 export interface ConnectionIntentInteractionBodyProps {
   interaction: ConnectionIntentInteraction;
   currentUserId?: string | null;
@@ -212,7 +214,7 @@ export function ConnectionIntentInteractionBody({
           const agent = await agentsApi.get(interaction.payload.requestingAgentId, interaction.companyId);
           const current = agent.runtimeConfig.aiConnection;
           if (!current || current.mode === "responsible_user" || current.mode === "router" || current.connectionId !== previous.id || current.grantId !== previous.grantId) {
-            throw new Error("The agent’s AI connection changed. Reload the task and try again.");
+            throw new AgentAiConnectionChangedError();
           }
           if (result.generation !== setupGeneration.current) return;
           await agentsApi.update(agent.id, {
@@ -246,26 +248,42 @@ export function ConnectionIntentInteractionBody({
     interaction.status === "accepted"
       ? {
           icon: CheckCircle2,
-          title: accessRequest ? `${serviceName} access granted` : interaction.payload.upstreamService ? "External provider connected" : `${serviceName} connected`,
-          body: accessRequest ? null : interaction.payload.upstreamService ? `${interaction.payload.requestingAgentName} can now verify and authorize ${interaction.payload.upstreamService.name} through this provider. The app is not yet verified.` : isAi ? "This agent can now use the connection." : `${interaction.payload.requestingAgentName} can use this connection on the continuation run.`,
+          title: accessRequest
+            ? translateInstant("connectionUi.intent.status.accessGranted", { service: serviceName, defaultValue: "{{service}} access granted" })
+            : interaction.payload.upstreamService
+              ? translateInstant("connectionUi.intent.status.externalProviderConnected", { defaultValue: "External provider connected" })
+              : translateInstant("connectionUi.intent.status.connectionConnected", { service: serviceName, defaultValue: "{{service}} connected" }),
+          body: accessRequest ? null : interaction.payload.upstreamService
+            ? translateInstant("connectionUi.intent.status.externalProviderConnectedDescription", {
+              agent: interaction.payload.requestingAgentName,
+              service: interaction.payload.upstreamService.name,
+              defaultValue: "{{agent}} can now verify and authorize {{service}} through this provider. The app is not yet verified.",
+            })
+            : isAi
+              ? translateInstant("connectionUi.intent.status.aiConnectionReady", { defaultValue: "This agent can now use the connection." })
+              : translateInstant("connectionUi.intent.status.connectionReadyForContinuation", { agent: interaction.payload.requestingAgentName, defaultValue: "{{agent}} can use this connection on the continuation run." }),
         }
       : interaction.status === "rejected"
         ? {
             icon: XCircle,
-            title: accessRequest ? "Access declined" : "Connection declined",
-            body: accessRequest ? null : isAi ? "The task still needs a working AI connection before it can run." : `${interaction.payload.requestingAgentName} was notified and can continue without it.`,
+            title: accessRequest
+              ? translateInstant("connectionUi.intent.status.accessDeclined", { defaultValue: "Access declined" })
+              : translateInstant("connectionUi.intent.status.connectionDeclined", { defaultValue: "Connection declined" }),
+            body: accessRequest ? null : isAi
+              ? translateInstant("connectionUi.intent.status.aiConnectionRequiredForTask", { defaultValue: "The task still needs a working AI connection before it can run." })
+              : translateInstant("connectionUi.intent.status.connectionDeclinedContinuation", { agent: interaction.payload.requestingAgentName, defaultValue: "{{agent}} was notified and can continue without it." }),
           }
         : interaction.status === "expired"
           ? {
               icon: Clock,
               title:
                 resultOutcome === "superseded"
-                  ? "Request superseded"
-                  : "Connection request expired",
+                  ? translateInstant("connectionUi.intent.status.requestSuperseded", { defaultValue: "Request superseded" })
+                  : translateInstant("connectionUi.intent.status.connectionRequestExpired", { defaultValue: "Connection request expired" }),
               body:
                 resultOutcome === "superseded"
-                  ? "This request was replaced. Use the latest connection card instead."
-                  : "This request is no longer active.",
+                  ? translateInstant("connectionUi.intent.status.requestSupersededDescription", { defaultValue: "This request was replaced. Use the latest connection card instead." })
+                  : translateInstant("connectionUi.intent.status.requestNoLongerActive", { defaultValue: "This request is no longer active." }),
             }
           : null;
   const StatusIcon = status?.icon;
@@ -361,18 +379,17 @@ export function ConnectionIntentInteractionBody({
     : null;
   const setupContent = setupQuery.isLoading ? (
                 <div className="flex min-h-48 items-center justify-center gap-2 text-sm text-muted-foreground">
-                  <Loader2 className="h-4 w-4 animate-spin" /> Loading
-                  connection options…
+                  <Loader2 className="h-4 w-4 animate-spin" /> {translateInstant("connectionUi.intent.loadingOptions", { defaultValue: "Loading connection options…" })}
                 </div>
               ) : setupQuery.isError ? (
                 <div className="py-8 text-center">
                   <p className="font-medium text-foreground">
-                    Couldn’t load connection setup
+                    {translateInstant("connectionUi.intent.loadSetupFailed", { defaultValue: "Couldn’t load connection setup" })}
                   </p>
                   <p className="mt-1 text-sm text-muted-foreground">
                     {setupQuery.error instanceof Error
                       ? setupQuery.error.message
-                      : "Try again."}
+                      : translateInstant("connectionUi.intent.tryAgainSentence", { defaultValue: "Try again." })}
                   </p>
                   <Button
                     className="mt-4"
@@ -389,17 +406,24 @@ export function ConnectionIntentInteractionBody({
   const inlineContent = setupQuery.isLoading || setupQuery.isError ? setupContent
     : readyForAdoption ? <div className="space-y-3">
         <p className="text-sm">
-          Use your {aiProviderName} connection for {interaction.payload.requestingAgentName}? This replaces the agent’s existing authentication
-          with each responsible person’s own account. The model stays the same.
+          {translateInstant("connectionUi.intent.useConnectionForAgent", {
+            provider: aiProviderName,
+            agent: interaction.payload.requestingAgentName,
+            defaultValue: "Use your {{provider}} connection for {{agent}}? This replaces the agent’s existing authentication with each responsible person’s own account. The model stays the same.",
+          })}
         </p>
         <Button disabled={adoptMutation.isPending} onClick={() => adoptMutation.mutate(readyForAdoption)}>
-          {adoptMutation.isPending ? "Checking connection…" : "Use connection and continue"}
+          {adoptMutation.isPending
+            ? translateInstant("connectionUi.intent.checkingConnection", { defaultValue: "Checking connection…" })
+            : translateInstant("connectionUi.intent.useConnectionAndContinue", { defaultValue: "Use connection and continue" })}
         </Button>
       </div>
     : selectedReady ? <div className="space-y-3">
         <p className="text-sm">{repair.connection.name}{" "}{translateInstant("apps.connect.ready")}</p>
         <Button disabled={completeMutation.isPending} onClick={() => completeMutation.mutate(repair.connection.id)}>
-          {completeMutation.isPending ? "Continuing…" : "Continue task"}
+          {completeMutation.isPending
+            ? translateInstant("connectionUi.intent.continuing", { defaultValue: "Continuing…" })
+            : translateInstant("connectionUi.intent.continueTask", { defaultValue: "Continue task" })}
         </Button>
       </div>
     : repair ? repair.canReconnect ? repair.connection.routing ? <AiProviderSetup
@@ -423,11 +447,15 @@ export function ConnectionIntentInteractionBody({
         onComplete={(result) => selectAiAccountMutation.mutate({ ...result, generation })}
         onCancel={() => { closeSetup(); returnFocusToCard(); }}
       /> : <p role="status" className="text-sm text-muted-foreground">
-        {repair.connection.ownership === "personal" ? `${repair.connection.ownerName ?? "The account owner"} must reconnect ${repair.connection.name}.` : `The account owner must reconnect ${repair.connection.name}.`}
-        {" "}You can continue here once it is restored.
+        {translateInstant("connectionUi.intent.reconnectOwner", {
+          owner: repair.connection.ownership === "personal" ? repair.connection.ownerName ?? translateInstant("connectionUi.intent.accountOwner", { defaultValue: "The account owner" }) : translateInstant("connectionUi.intent.accountOwner", { defaultValue: "The account owner" }),
+          connection: repair.connection.name,
+          defaultValue: "{{owner}} must reconnect {{connection}}.",
+        })}
+        {" "}{translateInstant("connectionUi.intent.continueWhenRestored", { defaultValue: "You can continue here once it is restored." })}
       </p>
     : aiConnection && aiConnection.mode !== "responsible_user"
-      ? <p role="status" className="text-sm text-muted-foreground">The selected account is no longer available to you. Ask its owner to restore access, or choose an available AI connection in the agent’s settings.</p>
+      ? <p role="status" className="text-sm text-muted-foreground">{translateInstant("connectionUi.intent.selectedAccountUnavailable", { defaultValue: "The selected account is no longer available to you. Ask its owner to restore access, or choose an available AI connection in the agent’s settings." })}</p>
       : aiConnection ? <AiConnectionCredentialStep
           companyId={interaction.companyId}
           provider={aiConnection.provider}
@@ -440,6 +468,16 @@ export function ConnectionIntentInteractionBody({
           onComplete={(result) => selectAiAccountMutation.mutate({ ...result, generation })}
           onCancel={() => { closeSetup(); returnFocusToCard(); }}
         /> : setupContent;
+  const actionError = completeMutation.error ??
+    selectAiAccountMutation.error ??
+    adoptMutation.error ??
+    declineMutation.error ??
+    phaseMutation.error;
+  const actionErrorMessage = actionError instanceof AgentAiConnectionChangedError
+    ? translateInstant("connectionUi.intent.agentAiConnectionChanged", { defaultValue: "The agent’s AI connection changed. Reload the task and try again." })
+    : actionError instanceof Error
+      ? actionError.message
+      : translateInstant("connectionUi.intent.connectionRequestUpdateFailed", { defaultValue: "Couldn’t update this connection request." });
 
   return (
     <div
@@ -458,17 +496,23 @@ export function ConnectionIntentInteractionBody({
           />
           <div>
             <p className="font-medium text-foreground">
-              {readyForAdoption ? `Use your ${aiProviderName} account` : needsOwnAiConnection ? `Connect your ${aiProviderName} account` : isAi ? `${aiProviderName} authentication required` : `${interaction.payload.requestingAgentName} needs ${interaction.payload.serviceName}`}
+              {readyForAdoption
+                ? translateInstant("connectionUi.intent.useYourProviderAccount", { provider: aiProviderName, defaultValue: "Use your {{provider}} account" })
+                : needsOwnAiConnection
+                  ? translateInstant("connectionUi.intent.connectYourProviderAccount", { provider: aiProviderName, defaultValue: "Connect your {{provider}} account" })
+                  : isAi
+                    ? translateInstant("connectionUi.intent.providerAuthenticationRequired", { provider: aiProviderName, defaultValue: "{{provider}} authentication required" })
+                    : translateInstant("connectionUi.intent.agentNeedsService", { agent: interaction.payload.requestingAgentName, service: interaction.payload.serviceName, defaultValue: "{{agent}} needs {{service}}" })}
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
               {readyForAdoption
-                ? `Your account is connected. Use it for ${interaction.payload.requestingAgentName} to resume this task.`
+                ? translateInstant("connectionUi.intent.adoptionReadyDescription", { agent: interaction.payload.requestingAgentName, defaultValue: "Your account is connected. Use it for {{agent}} to resume this task." })
                 : needsOwnAiConnection
-                ? `${interaction.payload.requestingAgentName} needs your own AI connection. Connect here and the task will resume automatically.`
+                ? translateInstant("connectionUi.intent.ownAiConnectionDescription", { agent: interaction.payload.requestingAgentName, defaultValue: "{{agent}} needs your own AI connection. Connect here and the task will resume automatically." })
                 : interaction.payload.purpose === "ai"
-                ? "This task can’t run until the agent has a valid AI connection. Connect here and the task will resume automatically."
-                : isEmail ? "Connect AgentMail to create an email address for this agent."
-                : "Connect your identity or reuse an eligible connection. Access is added only for this agent."}
+                ? translateInstant("connectionUi.intent.taskAiConnectionDescription", { defaultValue: "This task can’t run until the agent has a valid AI connection. Connect here and the task will resume automatically." })
+                : isEmail ? translateInstant("connectionUi.intent.agentMailDescription", { defaultValue: "Connect AgentMail to create an email address for this agent." })
+                : translateInstant("connectionUi.intent.identityConnectionDescription", { defaultValue: "Connect your identity or reuse an eligible connection. Access is added only for this agent." })}
             </p>
           </div>
         </div>
@@ -476,8 +520,7 @@ export function ConnectionIntentInteractionBody({
         {needsRetry ? (
           <p className="mt-4 flex items-center gap-2 text-sm text-destructive">
             <RotateCcw className="h-4 w-4" />
-            Authorization didn’t finish. Your previous choices are safe; try
-            again.
+            {translateInstant("connectionUi.intent.authorizationRetryNotice", { defaultValue: "Authorization didn’t finish. Your previous choices are safe; try again." })}
           </p>
         ) : null}
 
@@ -501,7 +544,11 @@ export function ConnectionIntentInteractionBody({
             onClick={() => declineMutation.mutate()}
           >{translateInstant("builtInAgents.configure.notNow")}</Button>}
           {isAi ? <Button type="button" disabled={completeMutation.isPending || adoptMutation.isPending || selectAiAccountMutation.isPending} onClick={() => open ? closeSetup() : setOpen(true)}>
-            <Plug className="h-4 w-4" />{open ? "Close setup" : readyForAdoption ? translateInstant("Continue setup") : needsOwnAiConnection ? `Connect ${aiProviderName}` : "Fix connection"}
+            <Plug className="h-4 w-4" />{open
+              ? translateInstant("connectionUi.intent.closeSetup", { defaultValue: "Close setup" })
+              : readyForAdoption ? translateInstant("Continue setup")
+                : needsOwnAiConnection ? translateInstant("connectionUi.connectApp", { appName: aiProviderName, defaultValue: "Connect {{appName}}" })
+                  : translateInstant("connectionUi.intent.fixConnection", { defaultValue: "Fix connection" })}
           </Button> : <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button type="button">
@@ -514,7 +561,7 @@ export function ConnectionIntentInteractionBody({
                   ? translateInstant("Continue setup")
                   : needsRetry
                     ? translateInstant("Try again")
-                    : setupQuery.data?.existingConnections.length ? "Connect / Use existing" : translateInstant("Connect")}
+                    : setupQuery.data?.existingConnections.length ? translateInstant("connectionUi.intent.connectOrUseExisting", { defaultValue: "Connect / Use existing" }) : translateInstant("Connect")}
               </Button>
             </DialogTrigger>
             <DialogContent
@@ -529,7 +576,7 @@ export function ConnectionIntentInteractionBody({
                 <DialogTitle>{translateInstant("Connect")}{" "}{interaction.payload.serviceName}
                 </DialogTitle>
                 <DialogDescription>
-                  Complete connection setup without leaving this task.
+                  {translateInstant("connectionUi.intent.setupDialogDescription", { defaultValue: "Complete connection setup without leaving this task." })}
                 </DialogDescription>
               </DialogHeader>
               {setupContent}
@@ -544,24 +591,12 @@ export function ConnectionIntentInteractionBody({
         declineMutation.isError ||
         phaseMutation.isError ? (
           <p className="mt-3 text-sm text-destructive" role="alert">
-            {(completeMutation.error ??
-              selectAiAccountMutation.error ??
-              adoptMutation.error ??
-              declineMutation.error ??
-              phaseMutation.error) instanceof Error
-              ? (
-                  completeMutation.error ??
-                  selectAiAccountMutation.error ??
-                  adoptMutation.error ??
-                  declineMutation.error ??
-                  phaseMutation.error
-                )?.message
-              : "Couldn’t update this connection request."}
+            {actionErrorMessage}
           </p>
         ) : null}
         {selectAiAccountMutation.isError && selectAiAccountMutation.variables?.generation === generation && (
           <Button className="mt-3" onClick={() => selectAiAccountMutation.mutate(selectAiAccountMutation.variables!)}>
-            Retry using this connection
+            {translateInstant("connectionUi.intent.retryUsingConnection", { defaultValue: "Retry using this connection" })}
           </Button>
         )}
       </div>

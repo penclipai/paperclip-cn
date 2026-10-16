@@ -94,6 +94,26 @@
     "zh-CN": "请求修改时要求填写备注",
     "reviewedEnglishHash": "c2d3b51cc9e8cdb981536bcef0e0ca9e50342211f325114a6bf55d8f26b83435"
   },
+  "pipelineSettings.automationVariableFieldCopied": {
+    "en": "Field copied from the current item data.",
+    "zh-CN": "从当前条目数据复制的字段。",
+    "reviewedEnglishHash": "ac44d98a55985f1f676a9f10fc21dd8016ab998ebad713713b44cd0615f5825d"
+  },
+  "pipelineSettings.automationVariableGroupFields": {
+    "en": "Item fields",
+    "zh-CN": "条目字段",
+    "reviewedEnglishHash": "1ed6e81a66e85d386008d057faa7176adf0e39dce5a9d758c9a3f9bc541c8469"
+  },
+  "pipelineSettings.automationVariableGroupItem": {
+    "en": "Current item",
+    "zh-CN": "当前条目",
+    "reviewedEnglishHash": "542a69376d9062244a62d515ba118380d1b04b10acb3145c679876576c15f2a5"
+  },
+  "pipelineSettings.automationVariableGroupPipeline": {
+    "en": "Pipeline and stage",
+    "zh-CN": "管道和阶段",
+    "reviewedEnglishHash": "a1da6a95b9cb44a0fe352e2fb2719da318e5ae9ebbc473a0952e56c757156c8e"
+  },
   "pipelineSettings.availableOnChildren": {
     "en": "Already available on child items",
     "zh-CN": "已在子项上可用",
@@ -209,10 +229,20 @@
     "zh-CN": "执行工作区",
     "reviewedEnglishHash": "d31c92b6bb53c871049f335506f5e1f410c271061bbc79655d7101fb4749cdfe"
   },
+  "pipelineSettings.executionWorkspaceCreated": {
+    "en": "A new workspace will be created",
+    "zh-CN": "将创建新的工作区",
+    "reviewedEnglishHash": "1ca031645e6c954687b3a19f81c596f4909eee344425686c82baf8bbb01ed273"
+  },
   "pipelineSettings.executionWorkspaceMode": {
     "en": "Execution workspace mode",
     "zh-CN": "执行工作区模式",
     "reviewedEnglishHash": "3b50be31ba44c42fbfe6e730437b9b9fd05f78322a79549159091cfd6bd1072a"
+  },
+  "pipelineSettings.executionWorkspaceProjectDefault": {
+    "en": "Project default workspace",
+    "zh-CN": "项目默认工作区",
+    "reviewedEnglishHash": "5c8cc632bb2203e1c18e1b90e54c104c461c32069396f3bfc03bead43c251a8a"
   },
   "pipelineSettings.existingExecutionWorkspace": {
     "en": "Existing execution workspace",
@@ -483,6 +513,36 @@
     "en": "The stage every new piece starts in",
     "zh-CN": "每个新片段开始所在的阶段",
     "reviewedEnglishHash": "af7d55036cfd2bea528180c828b421236a2ea79d185eed446cae7d2a68fc84f9"
+  },
+  "pipelineSettings.stageKindCancelledDescription": {
+    "en": "The dead end. Items that reach here are dropped or rejected.",
+    "zh-CN": "终止阶段。进入这里的条目会被放弃或拒绝。",
+    "reviewedEnglishHash": "2dcda6845a0bea1dbf204314520b66aab2f3411d77ef685651d1215d554fd43b"
+  },
+  "pipelineSettings.stageKindDoneDescription": {
+    "en": "The final step. Items that reach here are finished.",
+    "zh-CN": "最终阶段。进入这里的条目已完成。",
+    "reviewedEnglishHash": "f11b3150ddc614c54a8806bdf7638805876cc6ecdb45fd636ab08662f4deec50"
+  },
+  "pipelineSettings.stageKindReviewDescription": {
+    "en": "Someone has to approve before items leave. Use this when a person or an agent has to say yes or no.",
+    "zh-CN": "条目离开前需要审批。适用于人员或智能体需要作出同意或拒绝决定的场景。",
+    "reviewedEnglishHash": "279e0914f4a996167b56d908139c2c672cc3b15a11f35d5b7901bd1d2de82a9d"
+  },
+  "pipelineSettings.stageKindWorkingDescription": {
+    "en": "Items wait here while work happens. An agent or a person moves them forward.",
+    "zh-CN": "条目会在此等待处理，由智能体或人员将其推进。",
+    "reviewedEnglishHash": "5217c39b56679956f9bea427182942b81f5df16ee64490f90e5f41b8b85df9e7"
+  },
+  "pipelineSettings.stageNavGroupOperate": {
+    "en": "Operate",
+    "zh-CN": "操作",
+    "reviewedEnglishHash": "58c3939c4ce986c8214c952908728775a4e2bc3ef188b6aaea9620dbd805658e"
+  },
+  "pipelineSettings.stageNavGroupStage": {
+    "en": "Stage",
+    "zh-CN": "阶段",
+    "reviewedEnglishHash": "de838855e4a6e04ea2f284b246a07a1126e7fcd151be9449e112006ad7db5c50"
   },
   "pipelineSettings.stageSaved": {
     "en": "Stage saved",

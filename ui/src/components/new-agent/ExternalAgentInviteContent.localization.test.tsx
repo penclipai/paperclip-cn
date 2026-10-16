@@ -69,4 +69,33 @@ describe("ExternalAgentInviteContent localization", () => {
 
     root.unmount();
   });
+
+  it("localizes the waiting Dot setup button when its prompt is unavailable", async () => {
+    const root = createRoot(container);
+    const content = () => <Dialog open><ExternalAgentInviteContent
+      preset="dot"
+      prompt=""
+      companyName="Acme"
+      connection={{ phase: "waiting" }}
+      onSelect={() => {}}
+      onBack={() => {}}
+      onClose={() => {}}
+      onCopied={() => {}}
+      onRetry={() => {}}
+      onNewPrompt={() => {}}
+    /></Dialog>;
+
+    await act(async () => { root.render(content()); });
+    const waitingButton = [...container.querySelectorAll("button")].find((button) => button.textContent === "等待中…");
+    expect(waitingButton).toBeDefined();
+    expect(waitingButton?.disabled).toBe(true);
+    expect(container.textContent).not.toContain("newAgent.dotWaiting");
+
+    language.value = "en";
+    await act(async () => { root.render(content()); });
+    expect(container.textContent).toContain("Waiting…");
+    expect(container.textContent).not.toContain("newAgent.dotWaiting");
+
+    root.unmount();
+  });
 });

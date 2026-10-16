@@ -284,6 +284,11 @@
     "zh-CN": "正在等待你的 Dot。更新会自动显示在这里。",
     "reviewedEnglishHash": "f4d8732ff5a556f27e8724869416579da8753331027f2b6a5a15697f148e391d"
   },
+  "newAgent.dotWaiting": {
+    "en": "Waiting…",
+    "zh-CN": "等待中…",
+    "reviewedEnglishHash": "612ffc5ce9d47467c4e089f2e7c29dce87509c5d3fc44f07e92c269c2c72c119"
+  },
   "newAgent.externalAgentExamples": {
     "en": "(OpenClaw, Hermes, or any agent that can call the invite API.)",
     "zh-CN": "（OpenClaw、Hermes，或任何能够调用邀请 API 的智能体。）",

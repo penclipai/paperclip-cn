@@ -74,11 +74,11 @@ function orderProjectWorkspaceTabItems(items: OrderedProjectWorkspaceTabItem[]) 
     .map(({ item }) => item);
 }
 
-const SOURCE_TYPE_OPTIONS: Array<{ value: ProjectWorkspaceSourceType; label: string; description: string }> = [
-  { value: "local_path", label: "Local git checkout", description: "A local path Paperclip can use directly." },
-  { value: "non_git_path", label: "Local non-git path", description: "A local folder without git semantics." },
-  { value: "git_repo", label: "Remote git repo", description: "A repo URL with optional refs and local checkout." },
-  { value: "remote_managed", label: "Remote-managed workspace", description: "A hosted workspace tracked by external reference." },
+const SOURCE_TYPE_OPTIONS: Array<{ value: ProjectWorkspaceSourceType; labelKey: string; descriptionKey: string }> = [
+  { value: "local_path", labelKey: "projectWorkspace.sourceType.localGit", descriptionKey: "projectWorkspace.sourceType.localGitDesc" },
+  { value: "non_git_path", labelKey: "projectWorkspace.sourceType.nonGit", descriptionKey: "projectWorkspace.sourceType.nonGitDesc" },
+  { value: "git_repo", labelKey: "projectWorkspace.sourceType.gitRepo", descriptionKey: "projectWorkspace.sourceType.gitRepoDesc" },
+  { value: "remote_managed", labelKey: "projectWorkspace.sourceType.remoteManaged", descriptionKey: "projectWorkspace.sourceType.remoteManagedDesc" },
 ];
 
 const VISIBILITY_OPTIONS: Array<{ value: ProjectWorkspaceVisibility; label: string }> = [
@@ -427,7 +427,7 @@ export function ProjectWorkspaceDetail() {
     updateWorkspace.mutate(patch);
   };
 
-  const sourceTypeDescription = SOURCE_TYPE_OPTIONS.find((option) => option.value === form.sourceType)?.description ?? null;
+  const sourceTypeDescriptionKey = SOURCE_TYPE_OPTIONS.find((option) => option.value === form.sourceType)?.descriptionKey;
   const handleTabChange = (tab: ProjectWorkspaceTab) => {
     const workspacePath = projectWorkspaceUrl(project, routeWorkspaceId);
     if (isProjectWorkspacePluginTab(tab)) {
@@ -516,7 +516,7 @@ export function ProjectWorkspaceDetail() {
             </div>
 
             <div className="mt-4 grid gap-4">
-              <Field label={translateInstant("projectWorkspace.sourceType")} hint={sourceTypeDescription ?? undefined}>
+              <Field label={translateInstant("projectWorkspace.sourceType")} hint={sourceTypeDescriptionKey ? translateInstant(sourceTypeDescriptionKey) : undefined}>
                 <select
                   className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none"
                   value={form.sourceType}
@@ -525,7 +525,7 @@ export function ProjectWorkspaceDetail() {
                   }
                 >
                   {SOURCE_TYPE_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
+                    <option key={option.value} value={option.value}>{translateInstant(option.labelKey)}</option>
                   ))}
                 </select>
               </Field>

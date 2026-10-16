@@ -199,7 +199,7 @@ export function AgentTasksPanel({
                     }
                   }}
                 >
-                  <span>{label}</span>
+                  <span>{translateInstant(label)}</span>
                   {sortField === field ? (
                     <span className="text-xs text-muted-foreground">{sortDir === "asc" ? "↑" : "↓"}</span>
                   ) : null}
@@ -219,8 +219,8 @@ export function AgentTasksPanel({
       ) : visible.length === 0 ? (
         <PanelMessage>
           {capped
-            ? `No tasks match these filters among the ${AGENT_TASK_LIMIT} most recently updated.`
-            : "No tasks match these filters."}
+            ? translateInstant("agentTasks.noMatchFiltersCapped", { count: AGENT_TASK_LIMIT })
+            : translateInstant("agentTasks.noMatchFilters")}
         </PanelMessage>
       ) : (
         <div className="flex flex-col gap-2">

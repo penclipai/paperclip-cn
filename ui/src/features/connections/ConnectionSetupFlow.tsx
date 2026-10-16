@@ -181,14 +181,39 @@ function githubRecoveryUrl(value: string | null): string | null {
   }
 }
 
-function oauthCallbackErrorMessage(outcome: string | null, code: string | null): string {
+type LocalizedOAuthError = {
+  key: string;
+  defaultValue: string;
+};
+
+type OAuthError = LocalizedOAuthError | string;
+
+function localizedOAuthError(key: string, defaultValue: string): LocalizedOAuthError {
+  return { key, defaultValue };
+}
+
+function oauthCallbackErrorDescriptor(outcome: string | null, code: string | null): LocalizedOAuthError {
   if (outcome === "denied") {
-    return "Authorization was cancelled or declined. Your saved connection was not changed.";
+    return {
+      key: "connectionUi.setup.oauthCancelled",
+      defaultValue: "Authorization was cancelled or declined. Your saved connection was not changed.",
+    };
   }
   if (code === "github_installation_required") {
-    return "GitHub access is required. Install Paperclip and grant at least one repository, then try again.";
+    return {
+      key: "connectionUi.setup.githubInstallationRequired",
+      defaultValue: "GitHub access is required. Install Paperclip and grant at least one repository, then try again.",
+    };
   }
-  return "Authorization did not complete. Your saved connection is still here, so you can try again.";
+  return {
+    key: "connectionUi.setup.oauthIncomplete",
+    defaultValue: "Authorization did not complete. Your saved connection is still here, so you can try again.",
+  };
+}
+
+function renderOAuthError(error: OAuthError | null): string | null {
+  if (!error || typeof error === "string") return error;
+  return translateInstant(error.key, { defaultValue: error.defaultValue });
 }
 
 const ROUTE_STAGE_BY_STEP: Partial<Record<Step, string>> = {
@@ -343,7 +368,6 @@ type AppAccessSelection = "all_agents" | { agentIds: string[] };
 // PAP-659: identity and agent reach are no longer a step. They are resolved to
 // a default, stated in one line above the primary action, and changed either in
 // the Advanced disclosure on this screen or on the Permissions tab afterwards.
-const STEP_LABELS = ["Pick app", "Add your key"];
 const STEP_INDEX: Record<Exclude<Step, "success">, number> = {
   gallery: 0,
   key: 1,
@@ -351,12 +375,21 @@ const STEP_INDEX: Record<Exclude<Step, "success">, number> = {
 const SELECTED_APP_STEP_INDEX: Record<Exclude<Step, "gallery" | "success">, number> = {
   key: 0,
 };
-const ZAPIER_STEP_LABELS = ["Add MCP URL"];
+
+function genericStepLabels(): string[] {
+  return [
+    translateInstant("connectionUi.setup.steps.pickApp", { defaultValue: "Pick app" }),
+    translateInstant("connectionUi.setup.steps.addYourKey", { defaultValue: "Add your key" }),
+  ];
+}
+
+function oauthSignInStepLabels(): string[] {
+  return [translateInstant("connectionUi.setup.steps.signIn", { defaultValue: "Sign in" })];
+}
 // Waiting for browser sign-in happens *inside* the flow's last step, so the
 // waiting screen reuses the step model of the flow that opened it. It must not
 // append a trailing step the flow never lands on: a stepper that grows from one
 // dot to two the moment you press Connect reads as a step you missed.
-const OAUTH_SIGN_IN_STEP_LABELS = ["Sign in"];
 
 /**
  * Which identity a fresh connection should default to (PAP-17835).
@@ -749,9 +782,9 @@ function StandardConnectionSetupFlow({
   const [oauthPhase, setOAuthPhase] = useState<OAuthConnectPhase>(
     resumingAfterOAuthFailure ? "error" : "entry",
   );
-  const [oauthError, setOAuthError] = useState<string | null>(() => {
+  const [oauthError, setOAuthError] = useState<OAuthError | null>(() => {
     if (!resumingAfterOAuthFailure) return null;
-    return oauthCallbackErrorMessage(oauthCallbackOutcome, oauthCallbackCode);
+    return oauthCallbackErrorDescriptor(oauthCallbackOutcome, oauthCallbackCode);
   });
   /** Host of the page the operator is about to be sent to, shown while redirecting. */
   const [authorizationHost, setAuthorizationHost] = useState<string | null>(null);
@@ -774,7 +807,7 @@ function StandardConnectionSetupFlow({
     existingConnections.length > 0 && Boolean(onUseExisting),
   );
   const [existingConnectionPendingId, setExistingConnectionPendingId] = useState<string | null>(null);
-  const [existingConnectionError, setExistingConnectionError] = useState<string | null>(null);
+  const [existingConnectionError, setExistingConnectionError] = useState<OAuthError | null>(null);
   const [unavailableReconnectId, setUnavailableReconnectId] = useState<string | null>(null);
 
   const reserveOAuthPopup = useCallback(() => {
@@ -795,7 +828,7 @@ function StandardConnectionSetupFlow({
     const popup = oauthPopupRef.current;
     if (!popup || popup.closed) {
       setOAuthPhase("error");
-      setOAuthError("Paperclip couldn’t open the sign-in window. Open sign-in in a new tab to continue.");
+      setOAuthError(localizedOAuthError("connectionUi.setup.oauth.signInWindowUnavailable", "Paperclip couldn’t open the sign-in window. Open sign-in in a new tab to continue."));
       onPhaseChange?.("needs_retry");
       return;
     }
@@ -817,7 +850,7 @@ function StandardConnectionSetupFlow({
     const timer = window.setInterval(() => {
       if (!oauthPopupRef.current?.closed) return;
       setOAuthPhase("error");
-      setOAuthError("The sign-in window closed. If authorization did not finish, try again.");
+      setOAuthError(localizedOAuthError("connectionUi.setup.oauth.signInWindowClosed", "The sign-in window closed. If authorization did not finish, try again."));
       setAuthorizationFallbackUrl(null);
       onPhaseChange?.("needs_retry");
     }, 1_000);
@@ -835,7 +868,10 @@ function StandardConnectionSetupFlow({
       if (target.kind === "reauthentication") {
         const destination = host === "dialog" ? oauthPopupRef.current : window;
         if (!destination || destination.closed || !start.handoff) {
-          throw new Error("Paperclip couldn’t preserve this sign-in while refreshing your account.");
+          setOAuthPhase("error");
+          setOAuthError(localizedOAuthError("connectionUi.setup.oauth.preserveSignInFailed", "Paperclip couldn’t preserve this sign-in while refreshing your account."));
+          onPhaseChange?.("needs_retry");
+          return;
         }
         savePendingCloudHandoff(start.handoff.session, destination.sessionStorage);
         setOAuthPhase("starting");
@@ -847,7 +883,7 @@ function StandardConnectionSetupFlow({
     } catch (error) {
       if (controller.signal.aborted) return;
       setOAuthPhase("error");
-      setOAuthError(error instanceof Error ? error.message : "Paperclip couldn’t start secure sign-in. Try again.");
+      setOAuthError(error instanceof Error ? error.message : localizedOAuthError("connectionUi.setup.oauth.startSignInFailed", "Paperclip couldn’t start secure sign-in. Try again."));
       onPhaseChange?.("needs_retry");
     } finally {
       if (oauthHandoffAbortRef.current === controller) oauthHandoffAbortRef.current = null;
@@ -868,13 +904,13 @@ function StandardConnectionSetupFlow({
       }
       if (outcome === "declined") {
         setOAuthPhase("error");
-        setOAuthError("Authorization was cancelled. You can try again.");
+        setOAuthError(localizedOAuthError("connectionUi.setup.oauth.authorizationCancelled", "Authorization was cancelled. You can try again."));
         onPhaseChange?.("needs_retry");
         return;
       }
       if (outcome !== "failed") return;
       setOAuthPhase("error");
-      setOAuthError("Authorization did not complete. Try again when you’re ready.");
+      setOAuthError(localizedOAuthError("connectionUi.setup.oauth.authorizationIncomplete", "Authorization did not complete. Try again when you’re ready."));
     };
     window.addEventListener("message", receiveOAuthOutcome);
     return () => window.removeEventListener("message", receiveOAuthOutcome);
@@ -893,7 +929,7 @@ function StandardConnectionSetupFlow({
       if (!popup || popup.closed) {
         setDialogOAuthConnectionId(null);
         setOAuthPhase("error");
-        setOAuthError("The sign-in window closed. Try again to finish connecting GitHub.");
+        setOAuthError(localizedOAuthError("connectionUi.setup.oauth.githubSignInWindowClosed", "The sign-in window closed. Try again to finish connecting GitHub."));
         return;
       }
       let returned: URL;
@@ -902,7 +938,7 @@ function StandardConnectionSetupFlow({
       if (returned.searchParams.has("oauth")) {
         setDialogOAuthConnectionId(null);
         setOAuthPhase("error");
-        setOAuthError("Authorization did not complete. Finish setup in the sign-in window or try again.");
+        setOAuthError(localizedOAuthError("connectionUi.setup.oauth.finishInSignInWindow", "Authorization did not complete. Finish setup in the sign-in window or try again."));
         return;
       }
       if (returned.searchParams.get("success") !== "1") return;
@@ -918,7 +954,7 @@ function StandardConnectionSetupFlow({
         if (!cancelled) {
           setDialogOAuthConnectionId(null);
           setOAuthPhase("error");
-          setOAuthError("Could not confirm the connection. Try again.");
+          setOAuthError(localizedOAuthError("connectionUi.setup.oauth.confirmConnectionFailed", "Could not confirm the connection. Try again."));
         }
       } finally { checking = false; }
     }, 1000);
@@ -1077,7 +1113,7 @@ function StandardConnectionSetupFlow({
       && !entryAdvertisesManagedConnector
     ),
   });
-  const [connectorEnrollmentError, setConnectorEnrollmentError] = useState<string | null>(null);
+  const [connectorEnrollmentError, setConnectorEnrollmentError] = useState<OAuthError | null>(null);
   const closeEnrollmentPopup = useCallback(() => {
     oauthPopupRef.current?.close();
     oauthPopupRef.current = null;
@@ -1105,7 +1141,7 @@ function StandardConnectionSetupFlow({
         popup.location.assign(target.url);
         popup.focus();
       } else {
-        setConnectorEnrollmentError("Open authorization in a new tab to continue.");
+        setConnectorEnrollmentError(localizedOAuthError("connectionUi.setup.enrollment.openAuthorizationInNewTab", "Open authorization in a new tab to continue."));
       }
       return;
     }
@@ -1134,7 +1170,7 @@ function StandardConnectionSetupFlow({
     onSuccess: (status) => {
       if (!status.verificationUrl) {
         closeEnrollmentPopup();
-        setConnectorEnrollmentError("Paperclip Cloud did not return an enrollment link. Try again.");
+        setConnectorEnrollmentError(localizedOAuthError("connectionUi.setup.enrollment.missingEnrollmentLink", "Paperclip Cloud did not return an enrollment link. Try again."));
         return;
       }
       openConnectorEnrollment(status.verificationUrl);
@@ -1142,7 +1178,7 @@ function StandardConnectionSetupFlow({
     onError: (error) => {
       closeEnrollmentPopup();
       setConnectorEnrollmentError(
-        error instanceof Error ? error.message : "Paperclip couldn’t reach Paperclip Cloud. Try again.",
+        error instanceof Error ? error.message : localizedOAuthError("connectionUi.setup.enrollment.cloudUnavailable", "Paperclip couldn’t reach Paperclip Cloud. Try again."),
       );
     },
   });
@@ -1322,10 +1358,10 @@ function StandardConnectionSetupFlow({
       onPhaseChange?.("needs_retry");
       setOAuthError(
         details?.code === "invalid_grant"
-          ? "Your authorization expired or was revoked. Reconnect to continue."
+          ? localizedOAuthError("connectionUi.setup.oauth.authorizationExpired", "Your authorization expired or was revoked. Reconnect to continue.")
           : error instanceof Error
             ? error.message
-            : "Paperclip couldn’t start secure sign-in. Try again.",
+            : localizedOAuthError("connectionUi.setup.oauth.startSignInFailed", "Paperclip couldn’t start secure sign-in. Try again."),
       );
     },
   });
@@ -1498,10 +1534,10 @@ function StandardConnectionSetupFlow({
         onPhaseChange?.("needs_retry");
         setOAuthError(
           details?.code === "invalid_grant"
-            ? "Your authorization expired or was revoked. Reconnect to continue."
+            ? localizedOAuthError("connectionUi.setup.oauth.authorizationExpired", "Your authorization expired or was revoked. Reconnect to continue.")
             : error instanceof Error
               ? error.message
-              : "Paperclip couldn’t start secure sign-in. Try again.",
+              : localizedOAuthError("connectionUi.setup.oauth.startSignInFailed", "Paperclip couldn’t start secure sign-in. Try again."),
         );
         return;
       }
@@ -1523,7 +1559,7 @@ function StandardConnectionSetupFlow({
       }
       pushToast({
         title: translateInstant("apps.connect.connectError"),
-        body: error instanceof Error ? error.message : "Please check your key and try again.",
+        body: error instanceof Error ? error.message : translateInstant("connectionUi.setup.checkKeyAndRetry", { defaultValue: "Please check your key and try again." }),
         tone: "error",
       });
     },
@@ -1689,7 +1725,7 @@ function StandardConnectionSetupFlow({
     if (automaticOAuth && directOAuthRetryingRef.current) return;
     if (automaticOAuth && (applicationsQuery.isError || connectionsQuery.isError)) {
       setOAuthPhase("error");
-      setOAuthError("Paperclip couldn’t check for an existing connection. Try again.");
+      setOAuthError(localizedOAuthError("connectionUi.setup.oauth.checkExistingConnectionFailed", "Paperclip couldn’t check for an existing connection. Try again."));
       setStep("key");
       return;
     }
@@ -1793,7 +1829,7 @@ function StandardConnectionSetupFlow({
     // intentionally blank.
     if (oauthCallbackOutcome === "failed" || oauthCallbackOutcome === "denied") {
       setOAuthPhase("error");
-      setOAuthError(oauthCallbackErrorMessage(oauthCallbackOutcome, oauthCallbackCode));
+      setOAuthError(oauthCallbackErrorDescriptor(oauthCallbackOutcome, oauthCallbackCode));
     } else {
       setOAuthPhase("entry");
       setOAuthError(null);
@@ -1853,7 +1889,7 @@ function StandardConnectionSetupFlow({
       setAppStep("key");
       pushToast({
         title: translateInstant("apps.connect.finishError"),
-        body: error instanceof Error ? error.message : "Please try again.",
+        body: error instanceof Error ? error.message : translateInstant("connectionUi.setup.tryAgain", { defaultValue: "Please try again." }),
         tone: "error",
       });
     },
@@ -2019,13 +2055,13 @@ function StandardConnectionSetupFlow({
             setExistingConnectionError(null);
             try { await onUseExisting(id); }
             catch (error) {
-              setExistingConnectionError(error instanceof Error ? error.message : translateInstant("Couldn’t use this connection."));
+              setExistingConnectionError(error instanceof Error ? error.message : localizedOAuthError("connectionUi.setup.useExistingConnectionFailed", "Couldn’t use this connection."));
               setExistingConnectionPendingId(null);
             }
           }}
         />
         {existingConnectionError ? (
-          <InlineBanner tone="danger" className="mt-4">{existingConnectionError}</InlineBanner>
+          <InlineBanner tone="danger" className="mt-4">{renderOAuthError(existingConnectionError)}</InlineBanner>
         ) : null}
         <div className="mt-5 flex flex-wrap gap-2">
           <Button type="button" variant="outline" onClick={() => setShowConnectionChoice(false)}>
@@ -2166,7 +2202,7 @@ function StandardConnectionSetupFlow({
         entry={automaticOAuthEntry}
         resuming={Boolean(resumeConnectionId)}
         phase={oauthPhase}
-        error={oauthError}
+        error={renderOAuthError(oauthError)}
         recoveryActions={oauthCallbackCode === "github_installation_required" ? {
           installationUrl: githubInstallationUrl,
           managementUrl: githubManagementUrl,
@@ -2223,7 +2259,7 @@ function StandardConnectionSetupFlow({
             ]);
             if (applicationsResult.isError || connectionsResult.isError) {
               setOAuthPhase("error");
-              setOAuthError("Paperclip couldn’t check for an existing connection. Try again.");
+              setOAuthError(localizedOAuthError("connectionUi.setup.oauth.checkExistingConnectionFailed", "Paperclip couldn’t check for an existing connection. Try again."));
               return;
             }
             const refreshedResumeConnection = resumeConnectionId
@@ -2284,9 +2320,9 @@ function StandardConnectionSetupFlow({
         }}
         // A pasted endpoint walks the generic three-step wizard, so keep that
         // model rather than dropping to the curated two-step one.
-        steps={{ labels: STEP_LABELS, activeIndex: STEP_INDEX.key }}
+        steps={{ labels: genericStepLabels(), activeIndex: STEP_INDEX.key }}
         phase={oauthPhase}
-        error={oauthError}
+        error={renderOAuthError(oauthError)}
         authorizationHost={authorizationHost}
         authorizationUrl={authorizationFallbackUrl}
         defaults={connectionDefaults}
@@ -2347,19 +2383,21 @@ function StandardConnectionSetupFlow({
   /></> : undefined) : undefined;
   // One screen per connector (PAP-659): a selected app has a single step, so
   // its stepper collapses to nothing rather than showing one lonely dot.
-  const stepLabels = reconnectConnection?.connectionPurpose === "ai" ? ["Reconnect account"] : credentialStep !== undefined
-    ? ["Connect account"]
+  const stepLabels = reconnectConnection?.connectionPurpose === "ai"
+    ? [translateInstant("connectionUi.setup.steps.reconnectAccount", { defaultValue: "Reconnect account" })]
+    : credentialStep !== undefined
+    ? [translateInstant("connectionUi.setup.steps.connectAccount", { defaultValue: "Connect account" })]
     : zapierSource
-    ? ZAPIER_STEP_LABELS
+    ? [translateInstant("connectionUi.setup.steps.addMcpUrl", { defaultValue: "Add MCP URL" })]
     : entry && setupCredentialSourceMethods.length > 1
-      ? ["Choose connection"]
+      ? [translateInstant("connectionUi.setup.steps.chooseConnection", { defaultValue: "Choose connection" })]
     : entry && setupCredentialSourceMethods[0]?.auth === "oauth"
-      ? ["Sign in"]
+      ? oauthSignInStepLabels()
     : isGoogleSheetsRobotMethod(entry, connectionMethodKey)
-      ? ["Share sheet"]
+      ? [translateInstant("connectionUi.setup.steps.shareSheet", { defaultValue: "Share sheet" })]
       : entry
-        ? ["Add your key"]
-      : STEP_LABELS;
+        ? [translateInstant("connectionUi.setup.steps.addYourKey", { defaultValue: "Add your key" })]
+      : genericStepLabels();
   const stepIndex = reconnectConnection?.connectionPurpose === "ai" ? 0 : (zapierSource || entry) && step !== "gallery" && step !== "success"
     ? SELECTED_APP_STEP_INDEX[step]
     : step === "success"
@@ -2374,11 +2412,11 @@ function StandardConnectionSetupFlow({
             subtitle={
               step === "gallery"
                 ? vercelConnectMode
-                  ? "Choose a reviewed app to connect through Vercel."
-                  : "Pick the app you want your agents to use."
+                  ? translateInstant("connectionUi.setup.galleryVercelDescription", { defaultValue: "Choose a reviewed app to connect through Vercel." })
+                  : translateInstant("connectionUi.setup.galleryDescription", { defaultValue: "Pick the app you want your agents to use." })
                 : stepLabels.length <= 1
                   ? undefined
-                  : `Step ${stepIndex + 1} of ${stepLabels.length}`
+                  : translateInstant("connectionUi.setup.stepProgress", { current: stepIndex + 1, total: stepLabels.length, defaultValue: "Step {{current}} of {{total}}" })
             }
             step={step}
             activeIndex={stepIndex}
@@ -2470,7 +2508,7 @@ function StandardConnectionSetupFlow({
 
             {connectorEnrollmentQuery.isError || connectorEnrollmentError ? (
               <InlineBanner tone="danger" className="mt-4">
-                {connectorEnrollmentError ?? "Paperclip couldn’t check Cloud registration. Try again."}
+                {renderOAuthError(connectorEnrollmentError) ?? translateInstant("connectionUi.setup.enrollment.checkRegistrationFailed", { defaultValue: "Paperclip couldn’t check Cloud registration. Try again." })}
               </InlineBanner>
             ) : null}
 
@@ -2509,7 +2547,7 @@ function StandardConnectionSetupFlow({
         <KeyStep
           settingsValid={additionalSettingsValid && instructionsValid}
           entry={entry}
-          error={connectMutation.isError ? (connectMutation.error instanceof Error ? connectMutation.error.message : "Please check your key and try again.") : null}
+          error={connectMutation.isError ? (connectMutation.error instanceof Error ? connectMutation.error.message : translateInstant("connectionUi.setup.checkKeyAndRetry", { defaultValue: "Please check your key and try again." })) : null}
           values={credentials}
           onChange={setCredentials}
           oauthClientId={curatedOAuthClientId}
@@ -2702,7 +2740,7 @@ export function OAuthConnectStateScreen({
   recoveryActions,
   authorizationHost,
   authorizationUrl,
-  steps = { labels: OAUTH_SIGN_IN_STEP_LABELS, activeIndex: 0 },
+  steps,
   guidance,
   defaults,
   onRetry,
@@ -2745,41 +2783,42 @@ export function OAuthConnectStateScreen({
   onCancel: () => void;
 }) {
   useTranslation();
-  const serverName = entry?.name ?? identity?.name ?? "this server";
+  const resolvedSteps = steps ?? { labels: oauthSignInStepLabels(), activeIndex: 0 };
+  const serverName = entry?.name ?? identity?.name ?? translateInstant("connectionUi.setup.oauth.thisServer", { defaultValue: "this server" });
   const unverifiedHost = entry ? null : identity?.unverifiedHost ?? null;
   const status = phase === "entry"
     ? {
         title: resuming
-          ? `Finish connecting ${serverName}`
-          : `Connect ${serverName} to Paperclip`,
+          ? translateInstant("connectionUi.setup.oauth.finishConnecting", { server: serverName, defaultValue: "Finish connecting {{server}}" })
+          : translateInstant("connectionUi.setup.oauth.connectToPaperclip", { server: serverName, defaultValue: "Connect {{server}} to Paperclip" }),
         body: resuming
-          ? `Your connection is saved. Continue in ${serverName} to approve access; its identity and agent access will stay the same.`
-          : `Paperclip will open ${serverName} so you can choose a workspace and approve access.`,
+          ? translateInstant("connectionUi.setup.oauth.savedConnectionDescription", { server: serverName, defaultValue: "Your connection is saved. Continue in {{server}} to approve access; its identity and agent access will stay the same." })
+          : translateInstant("connectionUi.setup.oauth.openProviderDescription", { server: serverName, defaultValue: "Paperclip will open {{server}} so you can choose a workspace and approve access." }),
       }
     : phase === "starting"
       ? {
-          title: "Preparing secure sign-in",
-          body: `Paperclip is creating a secure ${serverName} connection.`,
+          title: translateInstant("connectionUi.setup.oauth.preparingSecureSignIn", { defaultValue: "Preparing secure sign-in" }),
+          body: translateInstant("connectionUi.setup.oauth.creatingConnection", { server: serverName, defaultValue: "Paperclip is creating a secure {{server}} connection." }),
         }
       : phase === "redirecting"
         ? {
-            title: `Opening ${serverName}`,
+            title: translateInstant("connectionUi.setup.oauth.openingProvider", { server: serverName, defaultValue: "Opening {{server}}" }),
             body: authorizationHost
-              ? `Continue at ${authorizationHost} to choose a workspace and approve access. Only approve access if you recognize that address.`
-              : `Continue in ${serverName} to choose a workspace and approve access.`,
+              ? translateInstant("connectionUi.setup.oauth.continueAtHost", { host: authorizationHost, defaultValue: "Continue at {{host}} to choose a workspace and approve access. Only approve access if you recognize that address." })
+              : translateInstant("connectionUi.setup.oauth.continueInProvider", { server: serverName, defaultValue: "Continue in {{server}} to choose a workspace and approve access." }),
           }
         : {
-            title: `${serverName} couldn’t connect`,
-            body: error ?? "Paperclip couldn’t start secure sign-in. Try again.",
+            title: translateInstant("connectionUi.setup.oauth.providerCouldNotConnect", { server: serverName, defaultValue: "{{server}} couldn’t connect" }),
+            body: error ?? translateInstant("connectionUi.setup.oauth.startSignInFailed", { defaultValue: "Paperclip couldn’t start secure sign-in. Try again." }),
           };
 
   return (
     <div className="max-w-5xl">
       <StepHeader
-        subtitle="Secure MCP sign-in"
+        subtitle={translateInstant("connectionUi.setup.oauth.secureMcpSignIn", { defaultValue: "Secure MCP sign-in" })}
         step="key"
-        activeIndex={steps.activeIndex}
-        labels={steps.labels}
+        activeIndex={resolvedSteps.activeIndex}
+        labels={resolvedSteps.labels}
         appIdentity={entry ? { name: entry.name, logoUrl: entry.branding.logoUrl, darkLogoUrl: entry.branding.darkLogoUrl } : undefined}
         unverifiedHost={unverifiedHost}
         onCancel={onCancel}
@@ -2829,16 +2868,20 @@ export function OAuthConnectStateScreen({
           {phase === "error" || phase === "entry" ? (
             <Button type="button" onClick={onRetry} disabled={!settingsValid}>
               {phase === "entry"
-                ? resuming ? `Finish with ${serverName}` : `Continue to ${serverName}`
+                ? resuming
+                  ? translateInstant("connectionUi.setup.oauth.finishWithProvider", { server: serverName, defaultValue: "Finish with {{server}}" })
+                  : translateInstant("connectionUi.setup.oauth.continueToProvider", { server: serverName, defaultValue: "Continue to {{server}}" })
                 : translateInstant("Try again")}
               {phase === "entry" ? <ArrowUpRight className="h-4 w-4" aria-hidden="true" /> : null}
             </Button>
           ) : (
             <Button type="button" disabled>
-              {phase === "redirecting" ? `Opening ${serverName}…` : "Preparing…"}
+              {phase === "redirecting"
+                ? translateInstant("connectionUi.setup.oauth.openingProviderProgress", { server: serverName, defaultValue: "Opening {{server}}…" })
+                : translateInstant("connectionUi.setup.oauth.preparing", { defaultValue: "Preparing…" })}
             </Button>
           )}
-          {authorizationUrl ? <Button variant="outline" asChild><a href={authorizationUrl} target="_blank" rel="noopener noreferrer" onClick={onOpenAuthorization}>Open sign-in in a new tab</a></Button> : null}
+          {authorizationUrl ? <Button variant="outline" asChild><a href={authorizationUrl} target="_blank" rel="noopener noreferrer" onClick={onOpenAuthorization}>{translateInstant("connectionUi.setup.oauth.openSignInInNewTab", { defaultValue: "Open sign-in in a new tab" })}</a></Button> : null}
           <Button type="button" variant="ghost" onClick={onBack}>{translateInstant("Back")}</Button>
         </div>
       </div>

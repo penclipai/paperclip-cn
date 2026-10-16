@@ -22,7 +22,7 @@ function parseDollarInput(value: string) {
 }
 
 function windowLabel(windowKind: BudgetPolicySummary["windowKind"]) {
-  return windowKind === "lifetime" ? "Lifetime budget" : "Monthly UTC budget";
+  return windowKind === "lifetime" ? translateInstant("Lifetime budget") : translateInstant("Monthly UTC budget");
 }
 
 function statusTone(status: BudgetPolicySummary["status"]) {
@@ -97,16 +97,20 @@ export function BudgetPolicyCard({
         <div className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-muted-foreground">{translateInstant("Observed")}</div>
         <div className="mt-2 text-xl font-semibold tabular-nums">{formatCents(summary.observedAmount)}</div>
         <div className="mt-1 text-xs text-muted-foreground">
-          {summary.amount > 0 ? `${summary.utilizationPercent}% of limit` : "No cap configured"}
+          {summary.amount > 0
+            ? translateInstant("{{percent}}% of limit", { percent: summary.utilizationPercent })
+            : translateInstant("No cap configured")}
         </div>
       </div>
       <div>
         <div className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-muted-foreground">{translateInstant("Budget")}</div>
         <div className="mt-2 text-xl font-semibold tabular-nums">
-          {summary.amount > 0 ? formatCents(summary.amount) : "Disabled"}
+          {summary.amount > 0 ? formatCents(summary.amount) : translateInstant("Disabled")}
         </div>
         <div className="mt-1 text-xs text-muted-foreground">
-          {translateInstant("Soft alert at")}{" "}{summary.warnPercent}%{summary.paused && summary.pauseReason ? ` · ${summary.pauseReason} pause` : ""}
+          {summary.paused && summary.pauseReason
+            ? translateInstant("Soft alert at {{percent}}% · {{reason}} pause", { percent: summary.warnPercent, reason: summary.pauseReason })
+            : translateInstant("Soft alert at {{percent}}%", { percent: summary.warnPercent })}
         </div>
       </div>
     </div>
@@ -116,16 +120,20 @@ export function BudgetPolicyCard({
         <div className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-muted-foreground">{translateInstant("Observed")}</div>
         <div className="mt-2 text-xl font-semibold tabular-nums">{formatCents(summary.observedAmount)}</div>
         <div className="mt-1 text-xs text-muted-foreground">
-          {summary.amount > 0 ? `${summary.utilizationPercent}% of limit` : "No cap configured"}
+          {summary.amount > 0
+            ? translateInstant("{{percent}}% of limit", { percent: summary.utilizationPercent })
+            : translateInstant("No cap configured")}
         </div>
       </div>
       <div className="rounded-xl border border-border/70 bg-black/[0.18] px-4 py-3">
         <div className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-muted-foreground">{translateInstant("Budget")}</div>
         <div className="mt-2 text-xl font-semibold tabular-nums">
-          {summary.amount > 0 ? formatCents(summary.amount) : "Disabled"}
+          {summary.amount > 0 ? formatCents(summary.amount) : translateInstant("Disabled")}
         </div>
         <div className="mt-1 text-xs text-muted-foreground">
-          {translateInstant("Soft alert at")}{" "}{summary.warnPercent}%{summary.paused && summary.pauseReason ? ` · ${summary.pauseReason} pause` : ""}
+          {summary.paused && summary.pauseReason
+            ? translateInstant("Soft alert at {{percent}}% · {{reason}} pause", { percent: summary.warnPercent, reason: summary.pauseReason })
+            : translateInstant("Soft alert at {{percent}}%", { percent: summary.warnPercent })}
         </div>
       </div>
     </div>
@@ -139,7 +147,7 @@ export function BudgetPolicyCard({
       )}
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <span>{translateInstant("Remaining")}</span>
-        <span>{summary.amount > 0 ? formatCents(summary.remainingAmount) : "Unlimited"}</span>
+        <span>{summary.amount > 0 ? formatCents(summary.remainingAmount) : translateInstant("Unlimited")}</span>
       </div>
       <div className={cn("h-2 overflow-hidden rounded-full", isPlain ? "bg-border/70" : "bg-muted/70")}>
         <div
@@ -147,7 +155,7 @@ export function BudgetPolicyCard({
           aria-valuenow={Math.round(progress)}
           aria-valuemin={0}
           aria-valuemax={100}
-          aria-label={`Budget utilization: ${Math.round(progress)}% used`}
+          aria-label={translateInstant("budgetPolicy.utilizationLabel", { percent: Math.round(progress) })}
           className={cn(
             "h-full rounded-full transition-(--tp-width-background-color) duration-200",
             summary.status === "hard_stop"
@@ -167,8 +175,8 @@ export function BudgetPolicyCard({
       <PauseCircle className="mt-0.5 h-4 w-4 shrink-0" />
       <div>
         {summary.scopeType === "project"
-          ? "Execution is paused for this project until the budget block is resolved."
-          : "Heartbeats are paused for this scope until the budget block is resolved."}
+          ? translateInstant("budgetPolicy.projectPaused")
+          : translateInstant("budgetPolicy.scopePaused")}
       </div>
     </div>
   ) : null;
@@ -192,7 +200,7 @@ export function BudgetPolicyCard({
         }}
         disabled={!canSave || isSaving || parsedDraft === null}
       >
-        {isSaving ? "Saving..." : summary.amount > 0 ? "Update budget" : "Set budget"}
+        {isSaving ? translateInstant("Saving...") : summary.amount > 0 ? translateInstant("Update budget") : translateInstant("Set budget")}
       </Button>
     </div>
   ) : null;
@@ -219,7 +227,7 @@ export function BudgetPolicyCard({
             )}
           >
             <StatusIcon className="h-3.5 w-3.5" />
-            {summary.paused ? "Paused" : summary.status === "warning" ? "Warning" : summary.status === "hard_stop" ? "Hard stop" : "Healthy"}
+            {summary.paused ? translateInstant("Paused") : summary.status === "warning" ? translateInstant("Warning") : summary.status === "hard_stop" ? translateInstant("Hard stop") : translateInstant("Healthy")}
           </div>
         </div>
 
@@ -248,7 +256,7 @@ export function BudgetPolicyCard({
           </div>
           <div className={cn("inline-flex items-center gap-2 rounded-full border px-3 py-1 text-(length:--text-micro) uppercase tracking-(--tracking-caps)", statusTone(summary.status))}>
             <StatusIcon className="h-3.5 w-3.5" />
-            {summary.paused ? "Paused" : summary.status === "warning" ? "Warning" : summary.status === "hard_stop" ? "Hard stop" : "Healthy"}
+            {summary.paused ? translateInstant("Paused") : summary.status === "warning" ? translateInstant("Warning") : summary.status === "hard_stop" ? translateInstant("Hard stop") : translateInstant("Healthy")}
           </div>
         </div>
       </CardHeader>

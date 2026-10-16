@@ -24,14 +24,14 @@ const DASHBOARD_MAX_CHUNKS_PER_RUN = 40;
 const EMPTY_TRANSCRIPT: TranscriptEntry[] = [];
 const EMPTY_RUNS: LiveRunForIssue[] = [];
 
-const runStatusLabels: Record<string, string> = {
-  running: "Running",
-  queued: "Queued",
-  succeeded: "Succeeded",
-  failed: "Failed",
-  timed_out: "Timed out",
-  cancelled: "Cancelled",
-  interrupted: "Interrupted",
+const runStatusTranslationKeys: Record<string, string> = {
+  running: "dashboardLive.runStatus.running",
+  queued: "dashboardLive.runStatus.queued",
+  succeeded: "dashboardLive.runStatus.succeeded",
+  failed: "dashboardLive.runStatus.failed",
+  timed_out: "dashboardLive.runStatus.timed_out",
+  cancelled: "dashboardLive.runStatus.cancelled",
+  interrupted: "dashboardLive.runStatus.interrupted",
 };
 
 interface ActiveAgentsPanelProps {
@@ -193,8 +193,10 @@ export const AgentRunCard = memo(function AgentRunCard({
   className?: string;
 }) {
   useTranslation();
-  const statusFallback = runStatusLabels[run.status] ?? run.status.replace(/[_-]/g, " ");
-  const statusLabel = translateInstant(`dashboardLive.runStatus.${run.status}`, { defaultValue: statusFallback });
+  const statusKey = runStatusTranslationKeys[run.status];
+  const statusLabel = statusKey
+    ? translateInstant(statusKey)
+    : run.status.replace(/[_-]/g, " ");
   const runUrl = `/agents/${run.agentId}/runs/${run.id}`;
   const timestamp = run.finishedAt
     ? translateInstant("dashboardLive.finishedAt", { time: relativeTime(run.finishedAt) })

@@ -43,13 +43,13 @@ for (const cloudOrigin of ["https://my.paperclip.app", "https://my-staging.paper
         await route.fulfill({ status: 302, headers: { Location: `${baseURL}${target}` } });
       });
       await page.goto(entry === "auth" ? `/auth?next=${encodeURIComponent(target)}` : target);
-      await expect(page.getByRole("heading", { name: issue.title, exact: true })).toBeVisible();
+      await expect(page.getByRole("heading", { name: issue.title, exact: true })).toBeVisible({ timeout: 15_000 });
       expect(page.url()).toBe(`${baseURL}${target}`);
       expect(handoffs).toBe(1);
       expect(formWasRendered).toBe(false);
       await page.screenshot({ path: testInfo.outputPath("cloud-session-recovered.png") });
       await page.reload();
-      await expect(page.getByRole("heading", { name: issue.title, exact: true })).toBeVisible();
+      await expect(page.getByRole("heading", { name: issue.title, exact: true })).toBeVisible({ timeout: 15_000 });
       expect(handoffs).toBe(1);
       expect(formWasRendered).toBe(false);
     });

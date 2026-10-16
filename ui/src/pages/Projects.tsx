@@ -31,11 +31,11 @@ import { Card } from "@/components/ui/card";
 type ProjectSortField = "name" | "updated" | "created" | "targetDate";
 type ProjectSortDir = "asc" | "desc";
 
-const PROJECT_SORT_OPTIONS: Array<{ field: ProjectSortField; label: string }> = [
-  { field: "name", get label() { return translateInstant("Name"); } },
-  { field: "updated", get label() { return translateInstant("Updated"); } },
-  { field: "created", get label() { return translateInstant("Created"); } },
-  { field: "targetDate", label: "Target date" },
+const PROJECT_SORT_OPTIONS: Array<{ field: ProjectSortField; labelKey: string }> = [
+  { field: "name", labelKey: "Name" },
+  { field: "updated", labelKey: "Updated" },
+  { field: "created", labelKey: "Created" },
+  { field: "targetDate", labelKey: "newProject.targetDatePlaceholder" },
 ];
 
 function compareProjectNames(left: Project, right: Project) {
@@ -120,7 +120,7 @@ export function Projects() {
 
     return groups;
   }, [membershipsQuery.data, sortedProjects]);
-  const sortLabel = PROJECT_SORT_OPTIONS.find((option) => option.field === sortField)?.label ?? translateInstant("Name");
+  const sortLabel = translateInstant(PROJECT_SORT_OPTIONS.find((option) => option.field === sortField)?.labelKey ?? "Name");
 
   if (!selectedCompanyId) {
     return <EmptyState icon={Hexagon} message={translateInstant("Select an organization to view projects.")} />;
@@ -160,7 +160,7 @@ export function Projects() {
                     setSortDir(option.field === "name" || option.field === "targetDate" ? "asc" : "desc");
                   }}
                 >
-                  <span>{option.label}</span>
+                  <span>{translateInstant(option.labelKey)}</span>
                   {sortField === option.field ? (
                     <span className="flex items-center gap-1 text-xs text-muted-foreground">
                       <Check className="h-3 w-3" />

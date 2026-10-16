@@ -165,32 +165,32 @@ type StageConfig = {
 type EditorRoutineVariable = RoutineVariable & { source?: "manual" };
 
 const STAGE_NAV_GROUPS: Array<{
-  label: string;
-  items: Array<{ id: StageSectionKey; label: string; icon: typeof Circle }>;
+  labelKey: string;
+  items: Array<{ id: StageSectionKey; labelKey: string; icon: typeof Circle }>;
 }> = [
   {
-    label: "Stage",
+    labelKey: "pipelineSettings.stageNavGroupStage",
     items: [
-      { id: "instructions", get label() { return translateInstant("Automation"); }, icon: LayoutGrid },
-      { id: "advanced", get label() { return translateInstant("Advanced"); }, icon: SlidersHorizontal },
-      { id: "secrets", get label() { return translateInstant("Secrets"); }, icon: KeyRound },
+      { id: "instructions", labelKey: "Automation", icon: LayoutGrid },
+      { id: "advanced", labelKey: "Advanced", icon: SlidersHorizontal },
+      { id: "secrets", labelKey: "Secrets", icon: KeyRound },
     ],
   },
   {
-    label: "Operate",
+    labelKey: "pipelineSettings.stageNavGroupOperate",
     items: [
-      { id: "activity", get label() { return translateInstant("Activity"); }, icon: ActivityIcon },
-      { id: "history", get label() { return translateInstant("History"); }, icon: HistoryIcon },
+      { id: "activity", labelKey: "Activity", icon: ActivityIcon },
+      { id: "history", labelKey: "History", icon: HistoryIcon },
     ],
   },
 ];
 
 const STAGE_SECTION_TITLES: Record<StageSectionKey, string> = {
-  get instructions() { return translateInstant("Automation"); },
-  get secrets() { return translateInstant("Secrets"); },
-  get activity() { return translateInstant("Activity"); },
-  get history() { return translateInstant("History"); },
-  get advanced() { return translateInstant("Advanced"); },
+  instructions: "Automation",
+  secrets: "Secrets",
+  activity: "Activity",
+  history: "History",
+  advanced: "Advanced",
 };
 
 function parseStageSectionKey(value: string | null): StageSectionKey | null {
@@ -218,32 +218,32 @@ export function resolvePipelineSettingsFallbackStageId(
 
 const STAGE_KIND_OPTIONS: Array<{
   value: EditableStageKind;
-  label: string;
-  description: string;
+  labelKey: string;
+  descriptionKey: string;
   icon: typeof Circle;
 }> = [
   {
     value: "working",
-    get label() { return translateInstant("Working"); },
-    description: "Items wait here while work happens. An agent or a person moves them forward.",
+    labelKey: "Working",
+    descriptionKey: "pipelineSettings.stageKindWorkingDescription",
     icon: Hammer,
   },
   {
     value: "review",
-    get label() { return translateInstant("Review"); },
-    description: "Someone has to approve before items leave. Use this when a person or an agent has to say yes or no.",
+    labelKey: "Review",
+    descriptionKey: "pipelineSettings.stageKindReviewDescription",
     icon: BadgeCheck,
   },
   {
     value: "done",
-    get label() { return translateInstant("Done"); },
-    description: "The final step. Items that reach here are finished.",
+    labelKey: "Done",
+    descriptionKey: "pipelineSettings.stageKindDoneDescription",
     icon: CircleCheck,
   },
   {
     value: "cancelled",
-    get label() { return translateInstant("Cancelled"); },
-    description: "The dead end. Items that reach here are dropped or rejected.",
+    labelKey: "Cancelled",
+    descriptionKey: "pipelineSettings.stageKindCancelledDescription",
     icon: Ban,
   },
 ];
@@ -313,9 +313,9 @@ function stageConfig(stage: PipelineStage | null | undefined): StageConfig {
 }
 
 const STAGE_EXECUTION_WORKSPACE_OPTIONS = [
-  { value: "shared_workspace", label: "Project default" },
-  { value: "isolated_workspace", label: "New isolated workspace" },
-  { value: "reuse_existing", label: "Reuse existing workspace" },
+  { value: "shared_workspace", labelKey: "issueWorkspace.projectDefault" },
+  { value: "isolated_workspace", labelKey: "issueWorkspace.newIsolatedWorkspace" },
+  { value: "reuse_existing", labelKey: "issueWorkspace.reuseExistingWorkspace" },
 ] as const;
 
 function nullableString(value: unknown) {
@@ -1050,17 +1050,17 @@ function buildAutomationVariableGroups(input: {
     fieldVariables.push({
       key,
       label: key.replace(/[_-]+/g, " ").replace(/([a-z0-9])([A-Z])/g, "$1 $2"),
-      description: `Field copied from the current item data.`,
+      description: translateInstant("pipelineSettings.automationVariableFieldCopied"),
       example: value,
       exampleSource,
     });
   }
   const groups: AutomationVariableGroup[] = [
-    { id: "pipeline", label: "Pipeline and stage", variables: pipelineVariables },
-    { id: "item", label: "Current item", variables: itemVariables },
+    { id: "pipeline", label: translateInstant("pipelineSettings.automationVariableGroupPipeline"), variables: pipelineVariables },
+    { id: "item", label: translateInstant("pipelineSettings.automationVariableGroupItem"), variables: itemVariables },
   ];
   if (fieldVariables.length > 0) {
-    groups.push({ id: "fields", label: "Item fields", variables: fieldVariables });
+    groups.push({ id: "fields", label: translateInstant("pipelineSettings.automationVariableGroupFields"), variables: fieldVariables });
   }
   return groups;
 }
@@ -1191,9 +1191,9 @@ function StageSubSidebar({
           className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
         >
           {groups.map((group) => (
-            <optgroup key={group.label} label={group.label}>
+            <optgroup key={group.labelKey} label={translateInstant(group.labelKey)}>
               {group.items.map((item) => (
-                <option key={item.id} value={item.id}>{item.label}</option>
+                <option key={item.id} value={item.id}>{translateInstant(item.labelKey)}</option>
               ))}
             </optgroup>
           ))}
@@ -1204,9 +1204,9 @@ function StageSubSidebar({
         className="sticky top-14 hidden max-h-(--sz-calc-39) w-52 shrink-0 flex-col gap-4 self-start overflow-y-auto border-r border-border bg-sidebar/30 px-3 py-4 md:flex"
       >
         {groups.map((group) => (
-          <div key={group.label} className="flex flex-col gap-0.5">
+          <div key={group.labelKey} className="flex flex-col gap-0.5">
             <p className="px-3 py-2 text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground/80">
-              {group.label}
+              {translateInstant(group.labelKey)}
             </p>
             {group.items.map((item) => {
               const Icon = item.icon;
@@ -1225,7 +1225,7 @@ function StageSubSidebar({
                   )}
                 >
                   <Icon className="h-3.5 w-3.5 shrink-0" />
-                  <span className="truncate">{item.label}</span>
+                  <span className="truncate">{translateInstant(item.labelKey)}</span>
                 </button>
               );
             })}
@@ -1277,7 +1277,8 @@ function StageEventsList({
 }
 
 export function PipelineSettings() {
-  useTranslation();
+  const { i18n } = useTranslation();
+  const locale = i18n.resolvedLanguage ?? i18n.language;
   const { pipelineId } = useParams<{ pipelineId: string }>();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
@@ -1449,7 +1450,7 @@ export function PipelineSettings() {
     () => pipeline && selectedStage
       ? buildAutomationVariableGroups({ pipeline, stage: selectedStage, sampleRow: sampleCaseRow })
       : [],
-    [pipeline, sampleCaseRow, selectedStage],
+    [locale, pipeline, sampleCaseRow, selectedStage],
   );
   const automationVariableKeys = useMemo(
     () => flattenAutomationVariableKeys(automationVariableGroups),
@@ -2712,7 +2713,7 @@ export function PipelineSettings() {
                 <div className="min-w-0 flex-1 md:px-8">
                   <div className="mb-4 flex items-center justify-between gap-3">
                     <h2 className="text-lg font-semibold text-foreground">
-                      {STAGE_SECTION_TITLES[activeStageSection]}
+                      {translateInstant(STAGE_SECTION_TITLES[activeStageSection])}
                     </h2>
                     {activeStageSection === "instructions" ? (
                       <div className="flex items-center gap-2">
@@ -2769,7 +2770,7 @@ export function PipelineSettings() {
                                 >
                                   <span className="flex min-w-0 items-center gap-2">
                                     <SelectedStageKindIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
-                                    <span className="truncate">{selectedStageKindOption.label}</span>
+                                    <span className="truncate">{translateInstant(selectedStageKindOption.labelKey)}</span>
                                   </span>
                                   <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
                                 </Button>
@@ -2786,9 +2787,9 @@ export function PipelineSettings() {
                                       >
                                         <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                                         <span className="min-w-0">
-                                          <span className="block font-medium text-foreground">{option.label}</span>
+                                          <span className="block font-medium text-foreground">{translateInstant(option.labelKey)}</span>
                                           <span className="mt-0.5 block text-xs leading-5 text-muted-foreground">
-                                            {option.description}
+                                            {translateInstant(option.descriptionKey)}
                                           </span>
                                         </span>
                                       </DropdownMenuRadioItem>
@@ -2798,7 +2799,7 @@ export function PipelineSettings() {
                               </DropdownMenuContent>
                             </DropdownMenu>
                             <p className="text-sm leading-6 text-muted-foreground">
-                              {selectedStageKindOption.description}
+                              {translateInstant(selectedStageKindOption.descriptionKey)}
                             </p>
                           </div>
                         </FieldRow>
@@ -3007,7 +3008,7 @@ export function PipelineSettings() {
                                   >
                                     {STAGE_EXECUTION_WORKSPACE_OPTIONS.map((option) => (
                                       <option key={option.value} value={option.value}>
-                                        {option.label}
+                                        {translateInstant(option.labelKey)}
                                       </option>
                                     ))}
                                   </select>
@@ -3028,8 +3029,8 @@ export function PipelineSettings() {
                                   ) : (
                                     <div className="flex h-10 items-center rounded-md border border-dashed border-border px-3 text-sm text-muted-foreground">
                                       {stageExecutionWorkspacePreference === "isolated_workspace"
-                                        ? "A new workspace will be created"
-                                        : "Project default workspace"}
+                                        ? translateInstant("pipelineSettings.executionWorkspaceCreated")
+                                        : translateInstant("pipelineSettings.executionWorkspaceProjectDefault")}
                                     </div>
                                   )}
                                 </div>

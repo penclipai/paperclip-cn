@@ -1,0 +1,12 @@
+{
+  "agentTasks.noMatchFilters": {
+    "en": "No tasks match these filters.",
+    "zh-CN": "没有任务符合这些筛选条件。",
+    "reviewedEnglishHash": "2772176304ce83b9189b0342ed612533b7eebb59363468d33898bb6e81196f1c"
+  },
+  "agentTasks.noMatchFiltersCapped": {
+    "en": "No tasks match these filters among the {{count}} most recently updated.",
+    "zh-CN": "最近更新的 {{count}} 个任务中，没有符合这些筛选条件的任务。",
+    "reviewedEnglishHash": "97ae35083b63815d6b74b321871564a517066932e1c52df6294e91ecbfbf636d"
+  }
+}

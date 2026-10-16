@@ -1,0 +1,17 @@
+{
+  "accountQuota.credentialsUnavailable": {
+    "en": "Connect or reconnect a subscription in AI connections to view its quota.",
+    "zh-CN": "请在 AI 连接中连接或重新连接订阅，以查看其配额。",
+    "reviewedEnglishHash": "820f9250808189e4cb36ac873d891bbdf15f27bd4dd0a6b4d6d45fb03ca152be"
+  },
+  "accountQuota.subscriptionAccount": {
+    "en": "Subscription account",
+    "zh-CN": "订阅账户",
+    "reviewedEnglishHash": "b9e6c30478ae665b44f533dc295eb9119581966647e293687bcfe809a55ec955"
+  },
+  "accountQuota.usageNotReported": {
+    "en": "Usage not reported",
+    "zh-CN": "未报告使用情况",
+    "reviewedEnglishHash": "714f55134af8bd6d9f3d2896a574c3978b084b549af7cb5dabc893d67bdf0c0d"
+  }
+}
