@@ -32,6 +32,7 @@ import {
   undeliveredLegacyUserCommentIds,
 } from "../explicit-native-continuation.js";
 import { isCancelledNativeStartup } from "../cancelled-native-startup.js";
+import { hasSettledCancelledLegacyStartupReceipt } from "../cancelled-legacy-startup.js";
 import {
   executionBlockerPredicate,
   getExecutionBlocker,
@@ -942,6 +943,9 @@ export function createHeartbeatRunControl(db: Db, dependencies: HeartbeatRunCont
             ${JSON.stringify({ cancellation })}::jsonb ||
             jsonb_build_object('startupCancellation', jsonb_build_object(
               'requestedAt', ${new Date().toISOString()}::text,
+              'beforeRuntimeSelection', ${heartbeatRuns.runtimeMode} = 'legacy'
+                and ${heartbeatRuns.runtimeModeResolvedAt} is null
+                and ${heartbeatRuns.executionStage} = 'preparing',
               'beforeNativeSelection', ${heartbeatRuns.runtimeMode} = 'legacy'
                 and ${heartbeatRuns.runtimeModeResolvedAt} is null
                 and ${heartbeatRuns.executionStage} = 'preparing'
@@ -1067,10 +1071,11 @@ export function createHeartbeatRunControl(db: Db, dependencies: HeartbeatRunCont
             }, control);
             const stopped = await getRun(run.id);
             if (stopped && isHeartbeatRunTerminalStatus(stopped.status)) {
-              if (
-                parseObject(stopped.resultJson?.executionCancellation).state !==
-                "acknowledged"
-              ) {
+              const providerCancellationAcknowledged =
+                parseObject(stopped.resultJson?.executionCancellation).state ===
+                "acknowledged";
+              if (!providerCancellationAcknowledged &&
+                  !hasSettledCancelledLegacyStartupReceipt(stopped)) {
                 throw conflict(
                   "Execution ended, but provider termination could not be verified. Inspect the stopped run before continuing.",
                 );

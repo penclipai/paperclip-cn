@@ -407,6 +407,37 @@ describeEmbeddedPostgres("run-dispatch postgres adapter", () => {
     expect((await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, runId)))[0]?.status).toBe("failed");
   });
 
+  it("rejects a cancelled legacy handoff before invoking its provider", async () => {
+    const { companyId, agentId } = await seedCompanyAndAgent();
+    const runId = await seedRun({ companyId, agentId, status: "running" });
+    await db.update(heartbeatRuns).set({
+      resultJson: { startupCancellation: { beforeRuntimeSelection: true } },
+    }).where(eq(heartbeatRuns.id, runId));
+    const dispatch = vi.fn(async () => "started");
+
+    expect(await createPostgresRunDispatchAdapter(db).dispatchCurrentRunIfCurrent({
+      companyId, runId, expectedStatus: "running", now: new Date(), dispatch,
+    })).toEqual({ dispatched: false });
+    expect(dispatch).not.toHaveBeenCalled();
+  });
+
+  it("starts a legacy handoff under the row lock without awaiting its provider promise", async () => {
+    const { companyId, agentId } = await seedCompanyAndAgent();
+    const runId = await seedRun({ companyId, agentId, status: "running" });
+    let release!: () => void;
+    const pending = new Promise<string>((resolve) => { release = () => resolve("settled"); });
+    const dispatch = vi.fn(() => pending);
+
+    const gate = await createPostgresRunDispatchAdapter(db).dispatchCurrentRunIfCurrent({
+      companyId, runId, expectedStatus: "running", now: new Date(), dispatch,
+    });
+    expect(gate.dispatched).toBe(true);
+    expect(dispatch).toHaveBeenCalledOnce();
+    await db.update(heartbeatRuns).set({ executionStage: "dispatching" }).where(eq(heartbeatRuns.id, runId));
+    release();
+    if (gate.dispatched) expect(await gate.resultPromise).toBe("settled");
+  });
+
   it("initiates dispatch before admission locks can be released to a competing owner", async () => {
     const { companyId, agentId } = await seedCompanyAndAgent();
     const issueId = randomUUID();

@@ -11,6 +11,7 @@ import { buildNativeRuntimeContext } from "../native-runtime/runtime-context.js"
 import { nativeRuntimeContextFixture } from "../native-runtime/runtime-context.test-fixture.js";
 import { prepareNativeWorkspaceSync } from "../native-runtime/native-workspace-sync.js";
 import { resolveHeartbeatNativeRuntimeMode } from "../native-runtime/runtime-mode.js";
+import { legacyControllerBootId } from "../legacy-controller-lease.js";
 import { canonicalNativeRuntimeContextDigest } from "../../vendor/paperclip-runner/index.js";
 import { selectHeartbeatRuntime, type HeartbeatRuntimeSelectionInput } from "./runtime-selection.js";
 
@@ -53,7 +54,8 @@ describe.skipIf(!support.supported)("heartbeat runtime selection boundary", () =
     const [company] = await db.insert(companies).values({ name: "Runtime selection", issuePrefix: "SEL" }).returning();
     const [agent] = await db.insert(agents).values({ companyId: company.id, name: "Selecting agent", status: "running", adapterType, adapterConfig: { provider: "codex", model: "gpt-5.6-luna" } }).returning();
     const [issue] = await db.insert(issues).values({ companyId: company.id, title: "Complete this task", description: "Preserve the requested work", assigneeAgentId: agent.id }).returning();
-    const [run] = await db.insert(heartbeatRuns).values({ companyId: company.id, agentId: agent.id, issueId: issue.id, scopeKind: "issue", status: "running" }).returning();
+    const [run] = await db.insert(heartbeatRuns).values({ companyId: company.id, agentId: agent.id, issueId: issue.id, scopeKind: "issue", status: "running",
+      controllerBootId: legacyControllerBootId, controllerLeaseExpiresAt: new Date(Date.now() + 60_000), executionStage: "preparing" }).returning();
     const now = new Date();
     const input: HeartbeatRuntimeSelectionInput = {
       run, agent,
@@ -225,5 +227,29 @@ describe.skipIf(!support.supported)("heartbeat runtime selection boundary", () =
     expect(await coordinators(run.id)).toHaveLength(0);
     expect(input.stopControllerLease).not.toHaveBeenCalled();
     expect(buildNativeRuntimeContext).not.toHaveBeenCalled();
+  });
+
+  it("selects a legacy runtime with a current controller and null result JSON", async () => {
+    const { input, run } = await fixture("process");
+    expect((await read(run.id)).resultJson).toBeNull();
+    expect(await selectHeartbeatRuntime(db, input)).toMatchObject({ selected: true });
+    expect(await read(run.id)).toMatchObject({
+      runtimeMode: "legacy",
+      runtimeModeResolvedAt: expect.any(Date),
+    });
+  });
+
+  it.each([
+    ["startup cancellation", { resultJson: { startupCancellation: { beforeRuntimeSelection: true } } }, false],
+    ["cancellation request", { resultJson: { cancellation: { reason: "pause" } } }, false],
+    ["lost controller", { controllerBootId: randomUUID() }, true],
+    ["expired controller lease", { controllerLeaseExpiresAt: new Date(0) }, true],
+  ])("does not select legacy runtime after %s wins the final CAS", async (_label, change, ownershipLost) => {
+    const { input, run } = await fixture("process");
+    await db.update(heartbeatRuns).set(change).where(eq(heartbeatRuns.id, run.id));
+    expect(await selectHeartbeatRuntime(db, input)).toEqual({ selected: false });
+    expect((await read(run.id)).runtimeModeResolvedAt).toBeNull();
+    expect(buildNativeRuntimeContext).not.toHaveBeenCalled();
+    expect(input.onNativeOwnershipHeld).toHaveBeenCalledTimes(ownershipLost ? 1 : 0);
   });
 });

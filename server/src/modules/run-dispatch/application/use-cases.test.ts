@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   createCancelStaleQueuedRun,
+  createDispatchCurrentRunIfCurrent,
   createDispatchResolvedInteractionIfCurrent,
   createEvaluateScheduledRetryGate,
   createPromoteDueScheduledRetries,
@@ -46,9 +47,26 @@ function fakeWriter(overrides: Partial<RunDispatchWriter> = {}): RunDispatchWrit
       dispatchCalls.push(input);
       return { dispatched: true, resultPromise: input.dispatch(() => {}) };
     },
+    async dispatchCurrentRunIfCurrent(input) {
+      dispatchCalls.push(input);
+      return { dispatched: true, resultPromise: input.dispatch(() => {}) };
+    },
     ...overrides,
   };
 }
+
+describe("createDispatchCurrentRunIfCurrent", () => {
+  it("delegates the final handoff with a concrete clock", async () => {
+    const writer = fakeWriter();
+    const dispatch = vi.fn(async () => "started");
+    const outcome = await createDispatchCurrentRunIfCurrent({ writer })({
+      runId: "run-1", companyId: "company-1", expectedStatus: "running", dispatch,
+    });
+    expect(outcome).toMatchObject({ dispatched: true });
+    expect(writer.dispatchCalls).toHaveLength(1);
+    expect(writer.dispatchCalls[0]).toMatchObject({ runId: "run-1", companyId: "company-1", expectedStatus: "running", dispatch, now: expect.any(Date) });
+  });
+});
 
 describe("createEvaluateScheduledRetryGate", () => {
   it("maps identifiers and a default clock onto the semantic reader operation", async () => {

@@ -45,9 +45,18 @@ export type DispatchResolvedInteractionInput<T> = CancelStaleQueuedRunInput & {
   dispatch: (markDispatchStarted: () => void) => Promise<T>;
 };
 
+/** The final provider handoff fence for an already-admitted heartbeat run. */
+export type DispatchCurrentRunInput<T> = CancelStaleQueuedRunInput & {
+  dispatch: (markDispatchStarted: () => void) => Promise<T>;
+};
+
 export type DispatchResolvedInteractionOutcome<T> =
   | { dispatched: true; resultPromise: Promise<T> }
   | { dispatched: false; cancellation: CancelStaleQueuedRunOutcome };
+
+export type DispatchCurrentRunOutcome<T> =
+  | { dispatched: true; resultPromise: Promise<T> }
+  | { dispatched: false };
 
 /** Semantic database operations; persistence rows and transaction handles stay inside the adapter. */
 export interface RunDispatchWriter {
@@ -56,4 +65,7 @@ export interface RunDispatchWriter {
   dispatchResolvedInteractionIfCurrent<T>(
     input: DispatchResolvedInteractionInput<T>,
   ): Promise<DispatchResolvedInteractionOutcome<T>>;
+  dispatchCurrentRunIfCurrent<T>(
+    input: DispatchCurrentRunInput<T>,
+  ): Promise<DispatchCurrentRunOutcome<T>>;
 }

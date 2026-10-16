@@ -3243,7 +3243,16 @@ export function heartbeatService(
           (!isResolvedInteractionContinuationWakeContext(context) &&
             !["native_safe_replacement", "native_provider_overloaded"].includes(run.scheduledRetryReason ?? ""))
         ) {
-          return { dispatched: true, resultPromise: dispatch(() => {}) };
+          const gate = await runDispatch.dispatchCurrentRunIfCurrent({
+            runId: run.id,
+            companyId: run.companyId,
+            expectedStatus: "running",
+            // The gate invokes `dispatch` while it holds the run row, but does
+            // not await the adapter promise. Stop either wins before this
+            // handoff or observes the adapter ownership created by it.
+            dispatch,
+          });
+          return gate.dispatched ? gate : { dispatched: false };
         }
         await options.beforeResolvedInteractionContinuationDispatchCheck?.({
           runId: run.id,
@@ -4730,6 +4739,35 @@ export function heartbeatService(
           latestRun = await settleInterruptedNativeBootstrap(db, { run: latestRun,
             providerDispatchStarted: legacyAdapterEntered || nativeDispatchStarted || nativeOwnershipHeld,
           }) ?? latestRun;
+        }
+        if (latestRun?.status === "cancelled" && latestRun.runtimeMode === "legacy" &&
+            !legacyAdapterEntered && !nativeDispatchStarted && !nativeOwnershipHeld) {
+          // This executor still owns the legacy controller and has completed
+          // every host cleanup without entering the adapter. Preserve a
+          // restart-safe, provider-never-started receipt without replacing
+          // workspace-restore or other nested execution evidence. This is
+          // deliberately not a provider-cancellation acknowledgement: no
+          // provider session was entered on this path.
+          const preparationSettledAt = new Date().toISOString();
+          await db.update(heartbeatRuns).set({
+            resultJson: sql`jsonb_set(
+              coalesce(${heartbeatRuns.resultJson}, '{}'::jsonb),
+              '{executionRecovery}',
+              coalesce(${heartbeatRuns.resultJson}->'executionRecovery', '{}'::jsonb) ||
+                ${JSON.stringify({ kind: "bootstrap", providerWorkStarted: false, preparationSettledAt })}::jsonb,
+              true
+            )`,
+          }).where(and(
+            eq(heartbeatRuns.id, run.id),
+            eq(heartbeatRuns.companyId, run.companyId),
+            eq(heartbeatRuns.runtimeMode, "legacy"),
+            eq(heartbeatRuns.status, "cancelled"),
+            eq(heartbeatRuns.controllerBootId, legacyControllerBootId),
+            sql`coalesce(${heartbeatRuns.resultJson}->'executionRecovery'->>'providerWorkStarted', 'false') <> 'true'`,
+            sql`coalesce(${heartbeatRuns.resultJson}->'executionRecovery'->>'kind', 'bootstrap') = 'bootstrap'`,
+            sql`not (coalesce(${heartbeatRuns.resultJson}, '{}'::jsonb) ? 'workspaceRestoreFailure')`,
+            sql`not (coalesce(${heartbeatRuns.resultJson}, '{}'::jsonb) ? 'workspaceRestoreRecovery')`,
+          ));
         }
         if (latestRun?.status === "cancelled" && !nativeDispatchStarted && !nativeOwnershipHeld &&
             (latestRun.runtimeMode === "native" ||

@@ -13,7 +13,11 @@ import {
 } from "../legacy-controller-lease.js";
 import { remoteTerminationReceipt } from "../remote-execution-termination.js";
 import { runUsedConversationAdapter } from "../conversation-continuation.js";
-import { legacyExecutionNeedsReconciliationWithEvidence, terminalizeLegacyExecution } from "../legacy-execution-recovery.js";
+import {
+  legacyExecutionNeedsReconciliationWithEvidence,
+  settleHistoricalCancelledGrokStartup,
+  terminalizeLegacyExecution,
+} from "../legacy-execution-recovery.js";
 import { randomUUID } from "node:crypto";
 import {
   and,
@@ -21,6 +25,7 @@ import {
   eq,
   gt,
   inArray,
+  isNotNull,
   isNull,
   lte,
   ne,
@@ -387,6 +392,7 @@ export function createHeartbeatRecovery(db: Db, dependencies: HeartbeatRecoveryD
     scheduleInteractionContinuationInfrastructureRetryIfEligible,
     startNextQueuedRunForAgent,
   } = dependencies;
+  let historicalCancelledGrokCursor: { finishedAt: Date; id: string } | null = null;
 
   async function enqueueProcessLossRetry(
     run: typeof heartbeatRuns.$inferSelect,
@@ -1943,6 +1949,65 @@ export function createHeartbeatRecovery(db: Db, dependencies: HeartbeatRecoveryD
         "failed to dispatch persisted native status wake intents before orphan reaping",
       );
     });
+
+    // Old Grok runs can have been cancelled after the immutable adapter claim
+    // but before the host persisted its normal no-provider receipt. Re-check a
+    // bounded set under a row lock; the helper accepts only Grok's documented
+    // onMeta-before-spawn ordering and never launches replacement work.
+    const historicalGrokCandidateWhere = (after: typeof historicalCancelledGrokCursor) =>
+      and(
+        eq(heartbeatRuns.runtimeMode, "legacy"),
+        eq(heartbeatRuns.status, "cancelled"),
+        inArray(heartbeatRuns.errorCode, ["agent_paused", "operator_interrupted"]),
+        isNull(heartbeatRuns.runtimeModeResolvedAt),
+        eq(heartbeatRuns.executionStage, "preparing"),
+        isNotNull(heartbeatRuns.finishedAt),
+        isNotNull(heartbeatRuns.controllerBootId),
+        lte(heartbeatRuns.controllerLeaseExpiresAt, now),
+        isNull(heartbeatRuns.processPid),
+        isNull(heartbeatRuns.processGroupId),
+        isNull(heartbeatRuns.processStartedAt),
+        isNull(heartbeatRuns.nativeIssueId),
+        isNull(heartbeatRuns.nativeSessionId),
+        sql`${heartbeatRuns.runnerProfileJson}->'adapterDispatch'->>'adapterType' = 'grok_local'`,
+        sql`${heartbeatRuns.resultJson}->'startupCancellation'->>'requestedAt' is not null`,
+        after
+          ? or(
+              gt(heartbeatRuns.finishedAt, after.finishedAt),
+              and(eq(heartbeatRuns.finishedAt, after.finishedAt), gt(heartbeatRuns.id, after.id)),
+            )
+          : undefined,
+      );
+    let cancelledLegacyStartupCandidates = await db
+      .select()
+      .from(heartbeatRuns)
+      .where(historicalGrokCandidateWhere(historicalCancelledGrokCursor))
+      .orderBy(asc(heartbeatRuns.finishedAt), asc(heartbeatRuns.id))
+      .limit(20);
+    if (!cancelledLegacyStartupCandidates.length && historicalCancelledGrokCursor) {
+      historicalCancelledGrokCursor = null;
+      cancelledLegacyStartupCandidates = await db
+        .select()
+        .from(heartbeatRuns)
+        .where(historicalGrokCandidateWhere(null))
+        .orderBy(asc(heartbeatRuns.finishedAt), asc(heartbeatRuns.id))
+        .limit(20);
+    }
+    const lastHistoricalGrokCandidate = cancelledLegacyStartupCandidates.at(-1);
+    if (lastHistoricalGrokCandidate?.finishedAt) {
+      historicalCancelledGrokCursor = {
+        finishedAt: lastHistoricalGrokCandidate.finishedAt,
+        id: lastHistoricalGrokCandidate.id,
+      };
+    }
+    for (const candidate of cancelledLegacyStartupCandidates) {
+      await settleHistoricalCancelledGrokStartup(db, candidate).catch((error) => {
+        logger.warn(
+          { err: error, runId: candidate.id },
+          "failed to settle historical cancelled Grok startup",
+        );
+      });
+    }
 
     // A retryable native run can retain process identifiers from the failed
     // attempt. Inspect them before the recovery claim: a live identifier is

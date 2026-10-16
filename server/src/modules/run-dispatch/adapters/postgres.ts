@@ -53,6 +53,8 @@ import {
 } from "../domain/wake-context.js";
 import type {
   CancelStaleQueuedRunInput,
+  DispatchCurrentRunInput,
+  DispatchCurrentRunOutcome,
   DispatchResolvedInteractionInput,
   DispatchResolvedInteractionOutcome,
   DueRetryRun,
@@ -1178,10 +1180,43 @@ export function createPostgresRunDispatchAdapter(
 
   }
 
+  async function dispatchCurrentRunIfCurrent<T>(
+    input: DispatchCurrentRunInput<T>,
+  ): Promise<DispatchCurrentRunOutcome<T>> {
+    const dispatchLockedRun = async (_tx: Db, run: HeartbeatRun) => {
+      if (
+        run.status !== input.expectedStatus ||
+        run.resultJson?.cancellation ||
+        run.resultJson?.startupCancellation
+      ) {
+        return { dispatched: false as const };
+      }
+
+      // Start the provider callback synchronously while this row remains
+      // locked, but never await its promise. A Stop that arrives after this
+      // boundary observes the adapter ownership it must terminate.
+      const resultPromise = input.dispatch(() => {});
+      void resultPromise.catch(() => {});
+      return { dispatched: true as const, resultPromise };
+    };
+
+    return withIssueThenRunLocks(
+      input,
+      () => {
+        throw new RunDispatchApplicationError(
+          "run_not_found",
+          `run-dispatch: run ${input.runId} disappeared before provider dispatch`,
+        );
+      },
+      dispatchLockedRun,
+    );
+  }
+
   return {
     evaluateScheduledRetryGate,
     listDueRetries,
     cancelStaleQueuedRun,
+    dispatchCurrentRunIfCurrent,
     dispatchResolvedInteractionIfCurrent,
     promoteOrCancelDueRetry,
   };

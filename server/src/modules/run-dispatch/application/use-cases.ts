@@ -69,3 +69,16 @@ export function createDispatchResolvedInteractionIfCurrent(deps: { writer: RunDi
     now: input.now ?? new Date(),
   });
 }
+
+export function createDispatchCurrentRunIfCurrent(deps: { writer: RunDispatchWriter }) {
+  return <T>(input: {
+    runId: string;
+    companyId: string;
+    expectedStatus: "queued" | "running";
+    dispatch: (markDispatchStarted: () => void) => Promise<T>;
+    now?: Date;
+  }) => deps.writer.dispatchCurrentRunIfCurrent({
+    ...input,
+    now: input.now ?? new Date(),
+  });
+}

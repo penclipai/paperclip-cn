@@ -6,7 +6,7 @@ import {
 import { dotRunnerBroker } from "../dot-runner-broker.js";
 import { isAgentDirectoryCopy } from "../agent-directory-working-copies.js";
 import { isConversation } from "../agent-conversations.js";
-import { renewLegacyControllerLease } from "../legacy-controller-lease.js";
+import { legacyControllerBootId, renewLegacyControllerLease } from "../legacy-controller-lease.js";
 import type { prepareManagedAiRuntime } from "../ai-connection-runtime.js";
 import {
   getNativeReviewAssignment,
@@ -16,7 +16,7 @@ import { buildNativeReviewRequest } from "../native-runtime/native-review-prompt
 import type { buildExecutionContinuation } from "../execution-continuation.js";
 import type { agentInstructionWorkingCopyService } from "../agent-instruction-working-copies.js";
 import { createHash, randomUUID } from "node:crypto";
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, eq, gt, inArray, sql } from "drizzle-orm";
 import type { Db } from "@penclipai/db";
 import { CHAT_PROVIDERS } from "@penclipai/shared";
 import {
@@ -1029,14 +1029,14 @@ export async function selectHeartbeatRuntime(db: Db, input: HeartbeatRuntimeSele
       providerResourceDispositionForRun = "keep_running";
       onProviderResourceDisposition(providerResourceDispositionForRun);
     }
-    await db
+    const [legacySelected] = await db
       .update(heartbeatRuns)
       .set({
         runtimeMode: "legacy",
         runtimeModeResolverVersion:
           nativeRuntimeResolution.resolverVersion,
         runtimeModeReason: nativeRuntimeResolution.reason,
-        runtimeModeResolvedAt: run.runtimeModeResolvedAt ?? new Date(),
+        runtimeModeResolvedAt: sql`coalesce(${heartbeatRuns.runtimeModeResolvedAt}, clock_timestamp())`,
         // Preserve server-owned admission and dispatch evidence on this
         // row; never copy another run's execution profile.
         runnerProfileJson: sql`(case when ${heartbeatRuns.runnerProfileJson} ? ${CHAT_CONTROL_RECOVERY_ADMISSION_KEY}
@@ -1047,7 +1047,48 @@ export async function selectHeartbeatRuntime(db: Db, input: HeartbeatRuntimeSele
                 else '{}'::jsonb end) || ${JSON.stringify(providerTraceRequested ? { providerTrace: { mode: "raw", traceId: providerTraceCapture?.metadata.id ?? null, maxBytes: PROVIDER_TRACE_MAX_BYTES } } : {})}::jsonb`,
         updatedAt: new Date(),
       })
-      .where(eq(heartbeatRuns.id, run.id));
+      // Legacy selection is the last durable boundary before provider handoff.
+      // A cancellation or another controller that wins this CAS must leave the
+      // adapter untouched; the caller will settle its own preparation instead.
+      .where(and(
+        eq(heartbeatRuns.id, run.id),
+        eq(heartbeatRuns.companyId, run.companyId),
+        eq(heartbeatRuns.runtimeMode, "legacy"),
+        eq(heartbeatRuns.status, "running"),
+        eq(heartbeatRuns.controllerBootId, legacyControllerBootId),
+        gt(heartbeatRuns.controllerLeaseExpiresAt, sql`clock_timestamp()`),
+        sql`not (coalesce(${heartbeatRuns.resultJson}, '{}'::jsonb) ? 'startupCancellation')`,
+        sql`not (coalesce(${heartbeatRuns.resultJson}, '{}'::jsonb) ? 'cancellation')`,
+      ))
+      .returning({ id: heartbeatRuns.id });
+    if (!legacySelected) {
+      // The legacy CAS can lose to cancellation while this executor remains
+      // responsible for preparation cleanup, or to a replacement controller
+      // that must retain the run and its lease. Only the latter hands teardown
+      // back to the reaper; otherwise the outer finally would terminalize and
+      // release resources acquired by the replacement controller.
+      const [latestRun] = await db
+        .select({
+          runtimeMode: heartbeatRuns.runtimeMode,
+          controllerBootId: heartbeatRuns.controllerBootId,
+          controllerLeaseCurrent: sql<boolean>`${heartbeatRuns.controllerLeaseExpiresAt} > clock_timestamp()`,
+        })
+        .from(heartbeatRuns)
+        .where(
+          and(
+            eq(heartbeatRuns.id, run.id),
+            eq(heartbeatRuns.companyId, run.companyId),
+          ),
+        )
+        .limit(1);
+      const ownershipLost =
+        !latestRun ||
+        latestRun.runtimeMode !== "legacy" ||
+        latestRun.controllerBootId !== legacyControllerBootId ||
+        latestRun.controllerLeaseCurrent !== true;
+      if (ownershipLost) onNativeOwnershipHeld();
+      return { selected: false };
+    }
   }
   return { selected: true, nativeExecution, nativeRunnerInstanceId, getNativeFreshSessionHandoff, nativeWorkspaceSync };
 }

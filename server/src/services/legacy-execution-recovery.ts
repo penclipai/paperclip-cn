@@ -13,6 +13,7 @@ import { executionFailureRetryCount } from "./execution-recovery-attempt.js";
 import { logActivity } from "./activity-log.js";
 import { isSupersededConversationRun } from "./agent-conversations.js";
 import { issueService } from "./issues.js";
+import { isHistoricalCancelledGrokStartup } from "./cancelled-legacy-startup.js";
 
 type Run = typeof heartbeatRuns.$inferSelect;
 export const LEGACY_RECOVERY_CAUSE = "legacy_execution_requires_reconciliation";
@@ -306,6 +307,128 @@ export async function settleInterruptedNativeBootstrap(
       action: "issue.recovery_action_resolved", entityType: "issue", entityId: task.id, agentId: run.agentId, runId: run.id,
       details: { reason: "native_bootstrap_stopped_before_provider", recoveryActionIds: resolved.map(r => r.id) },
     });
+    return settled;
+  });
+}
+
+/**
+ * Retire an automatic reconciliation hold only after the strict historical
+ * Grok proof establishes that the cancelled legacy startup never dispatched a
+ * provider. This is a receipt repair, never a retry, wake, successor, or task
+ * status transition.
+ */
+export async function settleHistoricalCancelledGrokStartup(
+  db: Db,
+  candidate: Run,
+): Promise<Run | null> {
+  return db.transaction(async (tx) => {
+    await tx.execute(
+      sql`select set_config('statement_timeout', '15000', true), set_config('lock_timeout', '1000', true)`,
+    );
+    const [run] = await tx
+      .select()
+      .from(heartbeatRuns)
+      .where(and(eq(heartbeatRuns.id, candidate.id), eq(heartbeatRuns.companyId, candidate.companyId)))
+      .for("update");
+    if (!run || !(await isHistoricalCancelledGrokStartup(tx as unknown as Db, run))) return null;
+    const issueId = run.nativeIssueId ?? run.issueId ?? run.contextSnapshot?.issueId;
+    if (typeof issueId !== "string") return null;
+
+    const holds = await tx
+      .select()
+      .from(issueRecoveryActions)
+      .where(and(
+        eq(issueRecoveryActions.companyId, run.companyId),
+        eq(issueRecoveryActions.sourceIssueId, issueId),
+        eq(issueRecoveryActions.ownerType, "board"),
+        eq(issueRecoveryActions.cause, LEGACY_RECOVERY_CAUSE),
+        eq(issueRecoveryActions.fingerprint, `legacy-execution:${run.id}`),
+        sql`${issueRecoveryActions.evidence}->>'runId' = ${run.id}`,
+        sql`not (${issueRecoveryActions.evidence} ? 'executionReconciliation')`,
+        or(
+          inArray(issueRecoveryActions.status, ["active", "escalated"]),
+          and(
+            eq(issueRecoveryActions.status, "resolved"),
+            eq(issueRecoveryActions.outcome, "blocked"),
+            sql`${issueRecoveryActions.evidence}->'automaticRecovery'->>'policy' = 'preserve_without_replay_v1'`,
+            sql`${issueRecoveryActions.evidence}->'automaticRecovery'->>'replay' = 'blocked'`,
+          ),
+        ),
+      ))
+      .for("update");
+    // Recovery actions preserve required-file evidence even when a later
+    // result writer omitted it from the run. A no-provider receipt cannot
+    // discharge that independent workspace obligation.
+    if (holds.some((hold) => hold.evidence?.workspaceRestoreRecovery != null ||
+        hasWorkspaceRestoreFailure(hold.evidence) ||
+        hasRequiredWorkspaceRecovery(hold.evidence))) return null;
+    const now = new Date();
+    const resultJson = {
+      ...run.resultJson,
+      executionRecovery: {
+        kind: "bootstrap",
+        providerWorkStarted: false,
+        preparationSettledAt: now.toISOString(),
+      },
+    };
+    // Preserve all existing workspace and retry-budget gates. A historical
+    // receipt may only close the false-positive hold when the normal legacy
+    // classifier agrees that no other reconciliation obligation remains.
+    if (await legacyExecutionNeedsReconciliationWithEvidence(tx as unknown as Db, {
+      ...run,
+      resultJson,
+      executionStage: "settled",
+    })) return null;
+    const [settled] = await tx
+      .update(heartbeatRuns)
+      .set({
+        resultJson,
+        executionStage: "settled",
+        updatedAt: now,
+      })
+      .where(and(
+        eq(heartbeatRuns.id, run.id),
+        eq(heartbeatRuns.companyId, run.companyId),
+        eq(heartbeatRuns.status, "cancelled"),
+        eq(heartbeatRuns.executionStage, "preparing"),
+        isNull(heartbeatRuns.runtimeModeResolvedAt),
+        eq(heartbeatRuns.controllerBootId, run.controllerBootId!),
+        eq(heartbeatRuns.controllerLeaseExpiresAt, run.controllerLeaseExpiresAt!),
+      ))
+      .returning();
+    if (!settled) return null;
+    const resolved = holds.length
+      ? await tx
+          .update(issueRecoveryActions)
+          .set({
+            status: "resolved",
+            outcome: "false_positive",
+            resolutionNote:
+              "Historical Grok startup was cancelled before provider dispatch.",
+            resolvedAt: now,
+            updatedAt: now,
+            evidence: sql`jsonb_set(${issueRecoveryActions.evidence}, '{automaticRecovery,replay}', '"cancelled_before_dispatch"'::jsonb, false) ||
+              ${JSON.stringify({ historicalGrokStartupSettledAt: now.toISOString() })}::jsonb`,
+          })
+          .where(inArray(issueRecoveryActions.id, holds.map((hold) => hold.id)))
+          .returning({ id: issueRecoveryActions.id })
+      : [];
+    if (resolved.length) {
+      await logActivity(tx as unknown as Db, {
+        companyId: run.companyId,
+        actorType: "system",
+        actorId: "system",
+        action: "issue.recovery_action_resolved",
+        entityType: "issue",
+        entityId: issueId,
+        agentId: run.agentId,
+        runId: run.id,
+        details: {
+          reason: "historical_grok_startup_cancelled_before_provider",
+          recoveryActionIds: resolved.map((row) => row.id),
+        },
+      });
+    }
     return settled;
   });
 }

@@ -140,6 +140,30 @@ describe.skipIf(!support.supported)("heartbeat runtime execution boundary", () =
     expectCleanup(input);
   });
 
+  it("waits for the host invocation metadata callback before legacy provider work", async () => {
+    const { input, adapter } = await fixture();
+    let releaseMetadata!: () => void;
+    const metadataPersisted = new Promise<void>((resolve) => { releaseMetadata = resolve; });
+    const order: string[] = [];
+    input.output.onAdapterMeta = vi.fn(async () => {
+      order.push("metadata");
+      await metadataPersisted;
+      order.push("metadata-persisted");
+    });
+    adapter.execute.mockImplementationOnce(async context => {
+      await context.onMeta?.({ adapterType: "grok_local", command: "grok" });
+      order.push("provider-work");
+      return { exitCode: 0, signal: null, timedOut: false };
+    });
+
+    const execution = executeHeartbeatRuntime(db, input);
+    await vi.waitFor(() => expect(input.output.onAdapterMeta).toHaveBeenCalledOnce());
+    expect(order).toEqual(["metadata"]);
+    releaseMetadata();
+    await expect(execution).resolves.toMatchObject({ dispatched: true });
+    expect(order).toEqual(["metadata", "metadata-persisted", "provider-work"]);
+  });
+
   it("preserves Stop metadata and marks no-work accounting without manufacturing a receipt", async () => {
     const { input, adapter, run } = await fixture();
     await db.update(heartbeatRuns).set({ status: "cancelled", resultJson: { stoppedByUser: true } }).where(eq(heartbeatRuns.id, run.id));

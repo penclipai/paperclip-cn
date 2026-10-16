@@ -180,6 +180,31 @@ describe.skipIf(!support.supported)("heartbeat run-control database wiring", () 
     return run;
   }
 
+  it("marks an unselected legacy preparation as cancelled before runtime selection", async () => {
+    const { company, agent } = await fixture();
+    const [run] = await db.insert(heartbeatRuns).values({
+      companyId: company.id,
+      agentId: agent.id,
+      status: "running",
+      runtimeMode: "legacy",
+      runtimeModeResolvedAt: null,
+      executionStage: "preparing",
+      runnerProfileJson: { adapterDispatch: { adapterType: "grok_local" } },
+    }).returning();
+
+    await createHeartbeatRunControl(db, callbacks(db)).cancelRunInternal(run.id, "Pause");
+
+    expect((await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, run.id)))[0]).toMatchObject({
+      status: "cancelled",
+      resultJson: {
+        startupCancellation: {
+          beforeRuntimeSelection: true,
+          beforeNativeSelection: false,
+        },
+      },
+    });
+  });
+
   it("reports a missing run without entering cancellation", async () => {
     const deps = callbacks(db);
     await expect(createHeartbeatRunControl(db, deps).cancelRunInternal(randomUUID())).rejects.toThrow("Heartbeat run not found");

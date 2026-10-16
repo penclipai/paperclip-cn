@@ -218,6 +218,30 @@ describe("grok_local execute", () => {
     expect(args[args.indexOf("--reasoning-effort") + 1]).toBe("xhigh");
   });
 
+  it("waits for durable invocation metadata before spawning Grok", async () => {
+    const root = await makeTempRoot();
+    let releaseMeta!: () => void;
+    const metadataPersisted = new Promise<void>((resolve) => { releaseMeta = resolve; });
+    const order: string[] = [];
+    const ctx = await makeCtx("metadata-before-spawn", root);
+    ctx.onMeta = vi.fn(async () => {
+      order.push("meta");
+      await metadataPersisted;
+      order.push("metadata-persisted");
+    });
+    runProcessMock.mockImplementation(async () => {
+      order.push("spawn");
+      return makeSuccessfulRunResult();
+    });
+
+    const result = execute(ctx);
+    await vi.waitFor(() => expect(ctx.onMeta).toHaveBeenCalledOnce());
+    expect(runProcessMock).not.toHaveBeenCalled();
+    releaseMeta();
+    await expect(result).resolves.toMatchObject({ exitCode: 0 });
+    expect(order).toEqual(["meta", "metadata-persisted", "spawn"]);
+  });
+
   beforeEach(() => {
     mocks.state.isRemote = false;
     mocks.state.prepareRuntimeResult = null;

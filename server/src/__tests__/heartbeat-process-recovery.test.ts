@@ -22,6 +22,7 @@ import { recordLegacyWorkspaceRestoreFailure, terminalizeLegacyExecution } from 
 import { issueService } from "../services/issues.js";
 import { getExecutionBlocker } from "../services/execution-blocker.js";
 import { adapterExecutionControls, createAdapterExecutionControl } from "../services/adapter-execution-control.js";
+import { agentExecutionsHaveStopped } from "../services/agent-execution-stop.js";
 import { execFileSync, spawn, type ChildProcess } from "node:child_process";
 import fs from "node:fs/promises";
 import os from "node:os";
@@ -3303,6 +3304,119 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     expect(retries).toHaveLength(0);
   });
 
+  it("repairs only a strictly-proven historical Grok startup cancellation", async () => {
+    const { companyId, agentId, runId, issueId, wakeupRequestId } =
+      await seedRunFixture({ adapterType: "grok_local" });
+    const controllerBootId = randomUUID();
+    await db
+      .update(heartbeatRuns)
+      .set({
+        status: "cancelled",
+        errorCode: "agent_paused",
+        finishedAt: new Date("2026-03-19T00:00:01.000Z"),
+        runtimeMode: "legacy",
+        runtimeModeResolvedAt: null,
+        executionStage: "preparing",
+        controllerBootId,
+        controllerLeaseExpiresAt: new Date("2026-03-19T00:00:00.000Z"),
+        sessionIdBefore: "previous-grok-session",
+        logStore: "local_file",
+        logRef: "host-preparation.ndjson",
+        usageJson: { ledgerScope: { companyId } },
+        runnerProfileJson: { adapterDispatch: { adapterType: "grok_local" } },
+        resultJson: {
+          stopReason: "agent_paused",
+          cancellation: { reason: "agent_paused" },
+          startupCancellation: {
+            requestedAt: "2026-03-19T00:00:00.000Z",
+            beforeNativeSelection: false,
+          },
+        },
+      })
+      .where(eq(heartbeatRuns.id, runId));
+    await db.insert(issueRecoveryActions).values({
+      companyId,
+      sourceIssueId: issueId,
+      kind: "active_run_watchdog",
+      status: "resolved",
+      outcome: "blocked",
+      ownerType: "board",
+      returnOwnerAgentId: agentId,
+      cause: "legacy_execution_requires_reconciliation",
+      fingerprint: `legacy-execution:${runId}`,
+      evidence: { runId, automaticRecovery: { policy: "preserve_without_replay_v1", replay: "blocked" } },
+      nextAction: "Inspect the stopped provider before continuing.",
+      maxAttempts: 3,
+    });
+
+    const heartbeat = heartbeatService(db);
+    // The normal fixture records adapter.invoke. That durable dispatch trace
+    // must defeat the compatibility path even though the terminal row is old.
+    expect(await heartbeat.reapOrphanedRuns()).toEqual({ reaped: 0, runIds: [] });
+    expect(await heartbeat.getRun(runId)).toMatchObject({
+      executionStage: "preparing",
+    });
+    expect((await heartbeat.getRun(runId))?.resultJson?.executionRecovery).toBeUndefined();
+    expect(
+      await db
+        .select({ status: issueRecoveryActions.status })
+        .from(issueRecoveryActions)
+        .where(eq(issueRecoveryActions.sourceIssueId, issueId)),
+    ).toEqual([{ status: "resolved" }]);
+
+    await db
+      .delete(heartbeatRunEvents)
+      .where(and(eq(heartbeatRunEvents.companyId, companyId), eq(heartbeatRunEvents.runId, runId)));
+    await db.insert(heartbeatRunEvents).values({ companyId, agentId, runId,
+      seq: 1, eventType: "lifecycle", payload: { status: "running" } });
+    const actionEvidence = { runId, automaticRecovery: { policy: "preserve_without_replay_v1", replay: "blocked" } };
+    await db.update(issueRecoveryActions).set({ evidence: {
+      ...actionEvidence,
+      workspaceRestoreFailure: "restore_unsafe_archive",
+      workspaceRestoreRecovery: { schema: "paperclip.workspace-restore-recovery.v1" },
+    } }).where(eq(issueRecoveryActions.sourceIssueId, issueId));
+    expect(await heartbeat.reapOrphanedRuns()).toEqual({ reaped: 0, runIds: [] });
+    expect((await heartbeat.getRun(runId))?.executionStage).toBe("preparing");
+    expect((await db.select().from(issueRecoveryActions)
+      .where(eq(issueRecoveryActions.sourceIssueId, issueId)))[0]?.outcome).toBe("blocked");
+    await db.update(issueRecoveryActions).set({ evidence: actionEvidence })
+      .where(eq(issueRecoveryActions.sourceIssueId, issueId));
+    expect(await heartbeat.reapOrphanedRuns()).toEqual({ reaped: 0, runIds: [] });
+
+    expect(await heartbeat.getRun(runId)).toMatchObject({
+      status: "cancelled",
+      executionStage: "settled",
+      resultJson: {
+        executionRecovery: { kind: "bootstrap", providerWorkStarted: false },
+      },
+    });
+    expect(
+      await db
+        .select({ status: issueRecoveryActions.status, outcome: issueRecoveryActions.outcome })
+        .from(issueRecoveryActions)
+        .where(eq(issueRecoveryActions.sourceIssueId, issueId)),
+    ).toEqual([{ status: "resolved", outcome: "false_positive" }]);
+    expect(
+      await db
+        .select({ id: heartbeatRuns.id })
+        .from(heartbeatRuns)
+        .where(eq(heartbeatRuns.agentId, agentId)),
+    ).toHaveLength(1);
+    expect(
+      await db
+        .select({ status: agentWakeupRequests.status })
+        .from(agentWakeupRequests)
+        .where(eq(agentWakeupRequests.id, wakeupRequestId)),
+    ).toEqual([{ status: "claimed" }]);
+    expect(await agentExecutionsHaveStopped(db, [agentId])).toBe(true);
+    const repaired = await heartbeat.getRun(runId);
+    expect(repaired?.resultJson?.executionCancellation).toBeUndefined();
+    const [action] = await db.select().from(issueRecoveryActions)
+      .where(eq(issueRecoveryActions.sourceIssueId, issueId));
+    expect(action?.evidence?.automaticRecovery).toMatchObject({ replay: "cancelled_before_dispatch" });
+    expect((await db.select().from(issues).where(eq(issues.id, issueId)))[0]?.status).toBe("in_progress");
+  });
+
   async function withTempPaperclipHome<T>(
     fn: (home: string) => Promise<T>,
   ): Promise<T> {
@@ -3365,6 +3479,72 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       const [task] = await db.select().from(issues).where(eq(issues.id, issueId));
       expect(task.executionRunId).toBeNull();
     });
+  });
+
+  it("preserves a replacement legacy controller and its lease when selection loses ownership", async () => {
+    const { companyId, runId } = await seedQueuedIssueRunFixture();
+    const replacementControllerBootId = randomUUID();
+    const runtime = environmentRuntimeService(db);
+    const releaseRunLeases = vi.spyOn(runtime, "releaseRunLeases");
+    const originalAcquireRunLease = runtime.acquireRunLease.bind(runtime);
+    let acquiredForRun = false;
+    const acquireRunLease = vi.spyOn(runtime, "acquireRunLease").mockImplementation(async input => {
+      const acquired = await originalAcquireRunLease(input);
+      if (input.heartbeatRunId === runId) acquiredForRun = true;
+      return acquired;
+    });
+    const originalUpdate = db.update.bind(db);
+    const update = vi.spyOn(db, "update").mockImplementation(((table: typeof heartbeatRuns) => {
+      const builder = originalUpdate(table);
+      const originalSet = builder.set.bind(builder);
+      builder.set = ((values: Record<string, unknown>) => {
+        if (
+          table === heartbeatRuns &&
+          acquiredForRun &&
+          values.controllerBootId === undefined &&
+          values.controllerLeaseExpiresAt !== undefined
+        ) {
+          // The post-acquisition ownership renewal has succeeded, but another
+          // controller wins immediately before runtime selection reads its CAS.
+          return originalSet({
+            ...values,
+            controllerBootId: replacementControllerBootId,
+            controllerLeaseExpiresAt: new Date(Date.now() + 60_000),
+          });
+        }
+        return originalSet(values);
+      }) as typeof builder.set;
+      return builder;
+    }) as typeof db.update);
+    const heartbeat = heartbeatService(db, { environmentRuntime: runtime });
+    try {
+      await heartbeat.resumeQueuedRuns();
+      await heartbeat.drainActiveRunExecutions();
+
+      expect(acquireRunLease).toHaveBeenCalled();
+      expect(await heartbeat.getRun(runId)).toMatchObject({
+        status: "running",
+        controllerBootId: replacementControllerBootId,
+        controllerLeaseExpiresAt: expect.any(Date),
+      });
+      expect(
+        await db
+          .select({ status: environmentLeases.status })
+          .from(environmentLeases)
+          .where(
+            and(
+              eq(environmentLeases.companyId, companyId),
+              eq(environmentLeases.heartbeatRunId, runId),
+            ),
+          ),
+      ).toEqual([{ status: "active" }]);
+      expect(releaseRunLeases).not.toHaveBeenCalled();
+      expect(mockAdapterExecute).not.toHaveBeenCalled();
+    } finally {
+      update.mockRestore();
+      acquireRunLease.mockRestore();
+      releaseRunLeases.mockRestore();
+    }
   });
 
   it("does not dispatch when cancellation wins after native selection", async () => {

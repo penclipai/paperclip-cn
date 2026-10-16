@@ -2,6 +2,7 @@ import type { Db } from "@penclipai/db";
 import { createPostgresRunDispatchAdapter } from "./adapters/postgres.js";
 import {
   createCancelStaleQueuedRun,
+  createDispatchCurrentRunIfCurrent,
   createDispatchResolvedInteractionIfCurrent,
   createEvaluateScheduledRetryGate,
   createPromoteDueScheduledRetries,
@@ -74,6 +75,9 @@ export function createRunDispatch(db: Db, deps: RunDispatchDeps = {}) {
       writer: adapter,
     }),
     dispatchResolvedInteractionIfCurrent: createDispatchResolvedInteractionIfCurrent({
+      writer: adapter,
+    }),
+    dispatchCurrentRunIfCurrent: createDispatchCurrentRunIfCurrent({
       writer: adapter,
     }),
   };
