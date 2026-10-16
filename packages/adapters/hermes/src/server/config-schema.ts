@@ -19,6 +19,21 @@ function providerLabel(provider: string): string {
 
 export function getConfigSchema(): AdapterConfigSchema {
   return {
+    onboarding: {
+      provider: {
+        configKey: "provider",
+        envKeys: {
+          openrouter: "OPENROUTER_API_KEY",
+          anthropic: "ANTHROPIC_API_KEY",
+          "openai-codex": "OPENAI_API_KEY",
+          zai: "ZAI_API_KEY",
+          "kimi-coding": "KIMI_API_KEY",
+          minimax: "MINIMAX_API_KEY",
+        },
+      },
+      loginHint:
+        "Use a provider API key, or the existing Hermes provider configuration on the selected environment's host.",
+    },
     fields: [
       {
         key: "provider",

@@ -287,6 +287,7 @@ export function AdapterManager() {
       adaptersApi.install(params),
     onSuccess: (result) => {
       invalidate();
+      invalidateConfigSchemaCache(result.type);
       setInstallDialogOpen(false);
       setInstallPackage("");
       setInstallVersion("");
@@ -304,8 +305,9 @@ export function AdapterManager() {
 
   const removeMutation = useMutation({
     mutationFn: (type: string) => adaptersApi.remove(type),
-    onSuccess: () => {
+    onSuccess: (result) => {
       invalidate();
+      invalidateConfigSchemaCache(result.type);
       pushToast({ title: translateInstant("Adapter removed"), tone: "success" });
     },
     onError: (err: Error) => {
@@ -316,8 +318,9 @@ export function AdapterManager() {
   const toggleMutation = useMutation({
     mutationFn: ({ type, disabled }: { type: string; disabled: boolean }) =>
       adaptersApi.setDisabled(type, disabled),
-    onSuccess: () => {
+    onSuccess: (result) => {
       invalidate();
+      invalidateConfigSchemaCache(result.type);
     },
     onError: (err: Error) => {
       pushToast({ title: translateInstant("Toggle failed"), body: err.message, tone: "error" });
@@ -327,8 +330,9 @@ export function AdapterManager() {
   const overrideMutation = useMutation({
     mutationFn: ({ type, paused }: { type: string; paused: boolean }) =>
       adaptersApi.setOverridePaused(type, paused),
-    onSuccess: () => {
+    onSuccess: (result) => {
       invalidate();
+      invalidateConfigSchemaCache(result.type);
     },
     onError: (err: Error) => {
       pushToast({ title: translateInstant("Override toggle failed"), body: err.message, tone: "error" });

@@ -10,7 +10,6 @@ import {
   SETUP_CREDENTIAL_KEYS,
   SETUP_LOGIN_HINTS,
   setupEfforts,
-  setupProviderKeys,
 } from "@/lib/agent-setup-fields";
 import { testAgentSetup } from "@/lib/test-agent-setup";
 import { useCloudInstance } from "@/hooks/useCloudInstance";
@@ -36,6 +35,7 @@ import { useDialogActions } from "@/context/DialogContext";
 import { queryKeys } from "@/lib/queryKeys";
 import { cn, agentUrl } from "@/lib/utils";
 import { getUIAdapter } from "@/adapters";
+import { useConfigSchemaState } from "@/adapters/schema-config-fields";
 import { getAdapterDisplay } from "@/adapters/adapter-display-registry";
 import {
   resolveAdapterTestEnvironmentId,
@@ -116,6 +116,29 @@ function Setup({
   const appearanceDraft = useAgentAppearanceDraft(`${companyId}:new-agent`);
   const isRunner = adapterType === "paperclip_runner";
   const isDot = isRunner && runnerProvider === "openai_dot";
+  const adapters = useQuery({
+    queryKey: queryKeys.adapters.all,
+    queryFn: adaptersApi.list,
+  });
+  const selectedAdapter = adapters.data?.find((adapter) => adapter.type === adapterType);
+  const externalSchemaEnabled =
+    selectedAdapter?.source === "external" &&
+    selectedAdapter.loaded &&
+    !selectedAdapter.disabled;
+  const { schema: configSchema, loading: configSchemaLoading } = useConfigSchemaState(
+    adapterType,
+    externalSchemaEnabled,
+  );
+  const onboarding = configSchema?.onboarding;
+  const setupCredential = onboarding?.credential;
+  const setupProvider = onboarding?.provider;
+  const setupEndpoint = onboarding?.endpoint;
+  const setupProviderField = setupProvider
+    ? configSchema?.fields.find((field) => field.key === setupProvider.configKey)
+    : undefined;
+  const setupEndpointField = setupEndpoint
+    ? configSchema?.fields.find((field) => field.key === setupEndpoint.configKey)
+    : undefined;
   const brandType = isDot ? "openai_dot" : isRunner
     ? runnerProvider === "grok"
       ? "grok_local"
@@ -131,13 +154,13 @@ function Setup({
       : null;
   const multiProvider =
     brandType === "opencode_local" || brandType === "pi_local";
-  const providerKeys = setupProviderKeys(brandType);
-  const chooseProvider = multiProvider || brandType === "hermes_local";
+  const providerKeys = setupProvider?.envKeys ?? PROVIDER_ENV_KEYS;
+  const chooseProvider = multiProvider || Boolean(setupProvider);
   const hasCredentialField =
-    chooseProvider || Boolean(SETUP_CREDENTIAL_KEYS[adapterType]);
-  const showModel = !isDot && !["cursor_cloud", "hermes_gateway"].includes(adapterType);
+    chooseProvider || Boolean(SETUP_CREDENTIAL_KEYS[adapterType] ?? setupCredential?.secretKey);
+  const showModel = !isDot && adapterType !== "cursor_cloud" && !onboarding?.model?.hidden;
   const [allowUnmeteredProvider, setAllowUnmeteredProvider] = useState(false);
-  const [gatewayUrl, setGatewayUrl] = useState("");
+  const [endpoint, setEndpoint] = useState("");
   const [kimiModel, setKimiModel] = useState("");
   const [kimiBaseUrl, setKimiBaseUrl] = useState("");
   const [kimiProtocol, setKimiProtocol] = useState("kimi");
@@ -200,10 +223,6 @@ function Setup({
     resetTest();
     setScreen("connect");
   };
-  const adapters = useQuery({
-    queryKey: queryKeys.adapters.all,
-    queryFn: adaptersApi.list,
-  });
   const agents = useQuery({
     queryKey: queryKeys.agents.list(companyId),
     queryFn: () => agentsApi.list(companyId),
@@ -282,8 +301,11 @@ function Setup({
   const canLogin =
     environment?.driver === "sandbox" &&
     caps.data?.sandboxProviders?.[sandboxProvider]?.supportsLoginPty === true;
+  const selectedProvider = providerKeys[provider]
+    ? provider
+    : (Object.keys(providerKeys)[0] ?? provider);
   const envKey =
-    SETUP_CREDENTIAL_KEYS[adapterType] ?? providerKeys[provider] ?? "API_KEY";
+    SETUP_CREDENTIAL_KEYS[adapterType] ?? setupCredential?.secretKey ?? providerKeys[selectedProvider] ?? "API_KEY";
   const savedKey = userSecrets.data?.find(
     (entry) => entry.definition.key === envKey && entry.secret,
   );
@@ -324,8 +346,10 @@ function Setup({
         !adapter.disabled &&
         !getAdapterDisplay(adapterType).comingSoon,
     );
+  const setupSchemaReady = !externalSchemaEnabled || !configSchemaLoading;
   const ready = Boolean(
     available &&
+    setupSchemaReady &&
     !environmentError &&
     !envs.isPending &&
     !settings.isPending &&
@@ -373,7 +397,7 @@ function Setup({
         ...(model ? { model } : {}),
       });
     if (!aiBinding && !nextConnection?.aiConnection && hasCredentialField && binding) {
-      if (adapterType === "hermes_gateway") config.apiKey = binding;
+      if (setupCredential) config[setupCredential.configKey] = binding;
       else
         config.env = { ...((config.env as object) ?? {}), [envKey]: binding };
     }
@@ -382,7 +406,12 @@ function Setup({
         repoUrl: repository.trim(),
         ...(branch.trim() ? { repoStartingRef: branch.trim() } : {}),
       });
-    if (adapterType === "hermes_gateway") config.apiBaseUrl = gatewayUrl.trim();
+    // Keep an existing adapter CLI/login configuration authoritative until this
+    // setup supplies a provider credential for the selected provider.
+    if (setupProvider && (apiKey.trim() || binding))
+      config[setupProvider.configKey] = selectedProvider;
+    if (setupEndpoint && endpoint.trim())
+      config[setupEndpoint.configKey] = endpoint.trim();
     if (usingKimiApi) {
       // --model overrides Kimi's environment-defined model. Let KIMI_MODEL_NAME win.
       delete config.model;
@@ -409,7 +438,7 @@ function Setup({
     )
       throw new Error("Enter a GitHub repository URL.");
     if (
-      ["cursor_cloud", "hermes_gateway"].includes(adapterType) &&
+      (adapterType === "cursor_cloud" || setupCredential?.required === true) &&
       !apiKey.trim() &&
       !selectedBinding
     )
@@ -418,12 +447,12 @@ function Setup({
           ? "Enter a Cursor API key."
           : `Enter ${envKey} or select an organization secret.`,
       );
-    if (adapterType === "hermes_gateway") {
+    if (setupEndpoint && (setupEndpoint.required || endpoint.trim())) {
       try {
-        const url = new URL(gatewayUrl.trim());
+        const url = new URL(endpoint.trim());
         if (!["https:", "http:"].includes(url.protocol)) throw new Error();
       } catch {
-        throw new Error("Enter the Hermes API base URL.");
+        throw new Error(translateInstant("newAgent.validation.validEndpointUrl"));
       }
     }
     if (usingKimiApi && !kimiModel.trim())
@@ -505,8 +534,8 @@ function Setup({
           : storeOrganizationApiKey;
         const secret = await store(companyId, key, value);
         staged.push(secret);
-        if (adapterType === "hermes_gateway" && key === "API_SERVER_KEY")
-          config.apiKey = secret.binding;
+        if (setupCredential?.secretKey === key)
+          config[setupCredential.configKey] = secret.binding;
         else
           config.env = {
             ...((config.env as object) ?? {}),
@@ -631,8 +660,8 @@ function Setup({
   const environmentLabel =
     adapterType === "cursor_cloud"
       ? "Cursor Cloud"
-      : adapterType === "hermes_gateway"
-        ? "Hermes Gateway"
+      : onboarding?.environment?.hidden
+        ? getAdapterDisplay(adapterType).label
         : confirmationEnvironment
           ? environmentDisplayLabel(confirmationEnvironment)
           : "Local machine";
@@ -922,9 +951,9 @@ function Setup({
                             )}
                           </div>
                         )}
-                        {!aiBinding && SETUP_LOGIN_HINTS[adapterType] && (
+                        {!aiBinding && (onboarding?.loginHint ?? SETUP_LOGIN_HINTS[adapterType]) && (
                           <p className="text-sm text-muted-foreground">
-                            {SETUP_LOGIN_HINTS[adapterType]}
+                            {onboarding?.loginHint ?? SETUP_LOGIN_HINTS[adapterType]}
                           </p>
                         )}
                         {hasCredentialField && !aiBinding && (
@@ -934,7 +963,7 @@ function Setup({
                                 <select
                                   aria-label={translateInstant("API key provider")}
                                   className={controlClass}
-                                  value={provider}
+                                  value={selectedProvider}
                                   onChange={(event) => {
                                     setProvider(event.target.value);
                                     setModel("");
@@ -945,7 +974,7 @@ function Setup({
                                 >
                                   {Object.keys(providerKeys).map((key) => (
                                     <option key={key} value={key}>
-                                      {key === "openrouter"
+                                      {setupProviderField?.options?.find((option) => option.value === key)?.label ?? (key === "openrouter"
                                         ? "OpenRouter"
                                         : key === "openai"
                                           ? "OpenAI"
@@ -956,7 +985,7 @@ function Setup({
                                                 xai: "xAI",
                                                 groq: "Groq",
                                                 opencode: "OpenCode",
-                                              }[key] ?? key)}
+                                              }[key] ?? key))}
                                     </option>
                                   ))}
                                 </select>
@@ -984,10 +1013,7 @@ function Setup({
                                     placeholder={
                                       selectedBinding
                                         ? "Using saved key"
-                                        : [
-                                              "cursor_cloud",
-                                              "hermes_gateway",
-                                            ].includes(adapterType)
+                                        : adapterType === "cursor_cloud" || setupCredential?.required
                                           ? "Required"
                                           : "Optional if already configured"
                                     }
@@ -1039,16 +1065,16 @@ function Setup({
                             </p>
                           </div>
                         )}
-                        {adapterType === "hermes_gateway" && (
-                          <Field label={translateInstant("Hermes API base URL")}>
+                        {setupEndpoint && (
+                          <Field label={setupEndpointField?.label ?? setupEndpoint.configKey} hint={setupEndpointField?.hint}>
                             <Input
-                              aria-label={translateInstant("Hermes API base URL")}
-                              value={gatewayUrl}
+                              aria-label={setupEndpointField?.label ?? setupEndpoint.configKey}
+                              value={endpoint}
                               onChange={(event) => {
-                                setGatewayUrl(event.target.value);
+                                setEndpoint(event.target.value);
                                 resetTest();
                               }}
-                              placeholder="https://hermes.example.com"
+                              placeholder={setupEndpoint.placeholder ?? "https://example.com"}
                             />
                           </Field>
                         )}
@@ -1125,9 +1151,7 @@ function Setup({
                           </div>
                         )}
                       </section>
-                      {!["cursor_cloud", "hermes_gateway"].includes(
-                        adapterType,
-                      ) && (
+                      {adapterType !== "cursor_cloud" && !onboarding?.environment?.hidden && (
                         <section className="space-y-5">
                           <h3 className="text-sm font-semibold">{translateInstant("Environment")}</h3>
                           <select

@@ -212,6 +212,7 @@ function ComboboxField({
 const schemaCache = new Map<string, AdapterConfigSchema | null>();
 const schemaFetchInflight = new Map<string, Promise<AdapterConfigSchema | null>>();
 const failedSchemaTypes = new Set<string>();
+const schemaGenerations = new Map<string, number>();
 
 async function fetchConfigSchema(adapterType: string): Promise<AdapterConfigSchema | null> {
   const cached = schemaCache.get(adapterType);
@@ -221,53 +222,101 @@ async function fetchConfigSchema(adapterType: string): Promise<AdapterConfigSche
   const inflight = schemaFetchInflight.get(adapterType);
   if (inflight) return inflight;
 
+  const generation = schemaGenerations.get(adapterType) ?? 0;
   const promise = (async () => {
     try {
       const res = await fetch(`/api/adapters/${encodeURIComponent(adapterType)}/config-schema`);
+      if ((schemaGenerations.get(adapterType) ?? 0) !== generation)
+        return fetchConfigSchema(adapterType);
       if (!res.ok) {
         failedSchemaTypes.add(adapterType);
         return null;
       }
       const schema = (await res.json()) as AdapterConfigSchema;
+      if ((schemaGenerations.get(adapterType) ?? 0) !== generation)
+        return fetchConfigSchema(adapterType);
       schemaCache.set(adapterType, schema);
       return schema;
     } catch {
+      if ((schemaGenerations.get(adapterType) ?? 0) !== generation)
+        return fetchConfigSchema(adapterType);
       failedSchemaTypes.add(adapterType);
       return null;
-    } finally {
-      schemaFetchInflight.delete(adapterType);
     }
   })();
 
   schemaFetchInflight.set(adapterType, promise);
+  void promise.finally(() => {
+    if (schemaFetchInflight.get(adapterType) === promise)
+      schemaFetchInflight.delete(adapterType);
+  });
   return promise;
 }
 
 export function invalidateConfigSchemaCache(adapterType: string): void {
   schemaCache.delete(adapterType);
   failedSchemaTypes.delete(adapterType);
+  schemaFetchInflight.delete(adapterType);
+  schemaGenerations.set(adapterType, (schemaGenerations.get(adapterType) ?? 0) + 1);
 }
 
 // ---------------------------------------------------------------------------
 // Hook
 // ---------------------------------------------------------------------------
 
-export function useConfigSchema(adapterType: string): AdapterConfigSchema | null {
-  const [loaded, setLoaded] = useState<{ adapterType: string; schema: AdapterConfigSchema | null }>(
-    () => ({ adapterType, schema: schemaCache.get(adapterType) ?? null }),
-  );
+function cachedSchemaState(adapterType: string, enabled: boolean): {
+  schema: AdapterConfigSchema | null;
+  loading: boolean;
+} {
+  if (!enabled) return { schema: null, loading: false };
+  if (schemaCache.has(adapterType))
+    return { schema: schemaCache.get(adapterType) ?? null, loading: false };
+  if (failedSchemaTypes.has(adapterType)) return { schema: null, loading: false };
+  return { schema: null, loading: true };
+}
+
+export function useConfigSchemaState(adapterType: string, enabled = true): {
+  schema: AdapterConfigSchema | null;
+  loading: boolean;
+} {
+  const generation = schemaGenerations.get(adapterType) ?? 0;
+  const [loaded, setLoaded] = useState<{
+    adapterType: string;
+    enabled: boolean;
+    generation: number;
+    schema: AdapterConfigSchema | null;
+    loading: boolean;
+  }>(() => ({
+    adapterType,
+    enabled,
+    generation,
+    ...cachedSchemaState(adapterType, enabled),
+  }));
 
   useEffect(() => {
     let cancelled = false;
-    fetchConfigSchema(adapterType).then((s) => {
-      if (!cancelled) setLoaded({ adapterType, schema: s });
+    const cached = cachedSchemaState(adapterType, enabled);
+    setLoaded({ adapterType, enabled, generation, ...cached });
+    if (!enabled) return () => { cancelled = true; };
+    fetchConfigSchema(adapterType).then((schema) => {
+      if (!cancelled)
+        setLoaded({ adapterType, enabled, generation, schema, loading: false });
     });
     return () => {
       cancelled = true;
     };
-  }, [adapterType]);
+  }, [adapterType, enabled, generation]);
 
-  return loaded.adapterType === adapterType ? loaded.schema : schemaCache.get(adapterType) ?? null;
+  if (
+    loaded.adapterType === adapterType &&
+    loaded.enabled === enabled &&
+    loaded.generation === generation
+  ) return { schema: loaded.schema, loading: loaded.loading };
+  return cachedSchemaState(adapterType, enabled);
+}
+
+export function useConfigSchema(adapterType: string, enabled = true): AdapterConfigSchema | null {
+  return useConfigSchemaState(adapterType, enabled).schema;
 }
 
 // ---------------------------------------------------------------------------

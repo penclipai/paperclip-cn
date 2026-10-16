@@ -448,5 +448,10 @@
     "en": "Agent title",
     "zh-CN": "智能体职称",
     "reviewedEnglishHash": "b63fa84060f1f4749ce22a48436c7eb45eb182032d714c33b68070859b320a32"
+  },
+  "newAgent.validation.validEndpointUrl": {
+    "en": "Enter a valid endpoint URL.",
+    "zh-CN": "请输入有效的端点 URL。",
+    "reviewedEnglishHash": "a55ab9e6e77e10302ac72404415856cb9e2b2ee867c1c0f56794948437c68ab6"
   }
 }

@@ -29,6 +29,14 @@ test("root package export exposes Paperclip external adapter entrypoint", () => 
   });
   expect(typeof adapter.detectModel).toBe("function");
   expect(typeof adapter.getConfigSchema).toBe("function");
+  expect(adapter.getConfigSchema?.()).toMatchObject({
+    onboarding: {
+      provider: {
+        configKey: "provider",
+        envKeys: { openrouter: "OPENROUTER_API_KEY" },
+      },
+    },
+  });
 });
 
 test("root package export keeps explicit local and gateway adapter factories", () => {
@@ -51,6 +59,20 @@ test("gateway subpath export exposes the Hermes Gateway adapter entrypoint", () 
   expect(typeof adapter.sessionCodec?.deserialize).toBe("function");
   expect(adapter.sessionManagement?.nativeContextManagement).toBe("confirmed");
   expect(typeof adapter.getConfigSchema).toBe("function");
+  expect(adapter.getConfigSchema?.()).toMatchObject({
+    onboarding: {
+      credential: {
+        configKey: "apiKey",
+        secretKey: "API_SERVER_KEY",
+        required: true,
+      },
+      endpoint: {
+        configKey: "apiBaseUrl",
+        required: true,
+      },
+      model: { hidden: true },
+    },
+  });
 });
 
 test("Hermes adapter exposes bundled Paperclip task bridge skill", async () => {

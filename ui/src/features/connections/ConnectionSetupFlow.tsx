@@ -756,7 +756,7 @@ function StandardConnectionSetupFlow({
   const [instructionDraft, setInstructionDraft] = useState<{ slug: string; value: ConnectionAgentInstructions } | null>(null);
   const [configValues, setConfigValues] = useState<Record<string, string | boolean>>({});
   const [googleSheetsLinks, setGoogleSheetsLinks] = useState("");
-  const [googleSheetsError, setGoogleSheetsError] = useState<string | null>(null);
+  const [googleSheetsError, setGoogleSheetsError] = useState<OAuthError | null>(null);
   const [connectResult, setConnectResult] = useState<ConnectToolAppResult | null>(null);
   const [enabled, setEnabled] = useState<Record<string, boolean>>({});
   const [access, setAccess] = useState<"all" | "specific">("all");
@@ -2514,9 +2514,9 @@ function StandardConnectionSetupFlow({
 
             {enrollmentAuthorizationUrl ? (
               <p className="mt-4 text-sm text-muted-foreground">
-                Finish authorization in the opened window.{' '}
+                {translateInstant("connectionUi.setup.enrollment.finishAuthorization", { defaultValue: "Finish authorization in the opened window." })}{' '}
                 <a className="underline" href={enrollmentAuthorizationUrl} target="_blank" rel="noopener noreferrer">
-                  Open authorization in a new tab
+                  {translateInstant("connectionUi.setup.enrollment.openAuthorizationLink", { defaultValue: "Open authorization in a new tab" })}
                 </a>
               </p>
             ) : null}
@@ -2538,7 +2538,7 @@ function StandardConnectionSetupFlow({
                 {startConnectorEnrollment.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                 {connectorEnrollmentQuery.data?.status === "pending"
                   ? translateInstant("common.continue")
-                  : "Connect with Paperclip"}
+                  : translateInstant("connectionUi.setup.connectWithPaperclip", { defaultValue: "Connect with Paperclip" })}
               </Button>
             </div>
           </div>
@@ -2599,11 +2599,11 @@ function StandardConnectionSetupFlow({
             if (isGoogleSheetsRobotMethod(entry, connectionMethodKey)) {
               const parsed = parseGoogleSheetIds(googleSheetsLinks);
               if (parsed.invalidCount > 0) {
-                setGoogleSheetsError("That doesn't look like a Google Sheets link.");
+                setGoogleSheetsError(localizedOAuthError("apps.connect.googleSheets.invalidLink", "That doesn't look like a Google Sheets link."));
                 return;
               }
               if (parsed.ids.length === 0) {
-                setGoogleSheetsError("Paste at least one Google Sheets link.");
+                setGoogleSheetsError(localizedOAuthError("apps.connect.googleSheets.missingLink", "Paste at least one Google Sheets link."));
                 return;
               }
             }
@@ -2938,7 +2938,7 @@ function ZapierConnectStep({
         <Button variant="ghost" onClick={onBack} disabled={submitting}>{translateInstant("Back")}</Button>
         <Button onClick={onConnect} disabled={submitting || !isZapierLink}>
           {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {submitting ? "Checking…" : translateInstant("apps.connect.checkLink")}
+          {submitting ? translateInstant("apps.connect.checking") : translateInstant("apps.connect.checkLink")}
         </Button>
       </div>
     </div>
@@ -2982,7 +2982,7 @@ function GalleryStep({
   useEffect(() => {
     if (!linkInputEdited.current) setLinkInput(initialLink);
   }, [initialLink]);
-  const [linkError, setLinkError] = useState<string | null>(null);
+  const [linkError, setLinkError] = useState<LocalizedOAuthError | null>(null);
   const linkSectionRef = useRef<HTMLDivElement>(null);
   const linkInputRef = useRef<HTMLInputElement>(null);
   const linkInputSelectedRef = useRef(false);
@@ -3007,7 +3007,7 @@ function GalleryStep({
   const continueWithLink = () => {
     const next = normalizeAppLink(linkInput);
     if (!next) {
-      setLinkError("Paste a full http or https link.");
+      setLinkError(localizedOAuthError("apps.connect.link.fullUrlError", "Paste a full http or https link."));
       return;
     }
     setLinkError(null);
@@ -3030,15 +3030,15 @@ function GalleryStep({
         <div className="rounded-xl border border-border bg-card p-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <h2 className="text-lg font-bold tracking-tight">Connect through Vercel</h2>
+              <h2 className="text-lg font-bold tracking-tight">{translateInstant("connectionUi.setup.vercel.connectThrough", { defaultValue: "Connect through Vercel" })}</h2>
               <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-                Create and manage the provider connector in Vercel. Paperclip stores its reference and applies agent access, policy, approval, and audit controls here.
+                {translateInstant("connectionUi.setup.vercel.galleryDescription", { defaultValue: "Create and manage the provider connector in Vercel. Paperclip stores its reference and applies agent access, policy, approval, and audit controls here." })}
               </p>
             </div>
             {vercelConnectAvailability ? (
               <Button asChild variant="outline" size="sm" className="shrink-0">
                 <a href={vercelConnectAvailability.manageUrl} target="_blank" rel="noreferrer">
-                  Open Vercel Connect
+                  {translateInstant("connectionUi.setup.vercel.openConnect", { defaultValue: "Open Vercel Connect" })}
                   <ArrowUpRight className="ml-2 h-3.5 w-3.5" />
                 </a>
               </Button>
@@ -3046,7 +3046,7 @@ function GalleryStep({
           </div>
           {vercelConnectAvailability?.available === false ? (
             <InlineBanner tone="danger" compact className="mt-4">
-              {vercelConnectAvailability.reason ?? "Vercel Connect is unavailable on this instance."}
+              {vercelConnectAvailability.reason ?? translateInstant("connectionUi.setup.vercel.unavailable", { defaultValue: "Vercel Connect is unavailable on this instance." })}
             </InlineBanner>
           ) : null}
         </div>
@@ -3097,7 +3097,7 @@ function GalleryStep({
                   <div className="mt-3 text-xs font-semibold text-foreground">
                     {unavailable ? (
                       <span className="text-muted-foreground">
-                        {app.availability?.reason ?? vercelConnectAvailability?.reason ?? "Unavailable on this instance."}
+                        {app.availability?.reason ?? vercelConnectAvailability?.reason ?? translateInstant("connectionUi.setup.unavailableOnInstance", { defaultValue: "Unavailable on this instance." })}
                       </span>
                     ) : oauthBlocked ? (
                       <span className="text-muted-foreground">{translateInstant("common.unavailable")}</span>
@@ -3190,7 +3190,7 @@ function GalleryStep({
             />
             <Button type="button" variant="outline" onClick={continueWithLink}>{translateInstant("common.continue")}</Button>
           </div>
-          {linkError && <div className="text-xs text-destructive">{linkError}</div>}
+          {linkError && <div className="text-xs text-destructive">{renderOAuthError(linkError)}</div>}
         </div>
       </div> : null}
 
@@ -3284,6 +3284,7 @@ function LinkConnectStep({
     oauthClientSecret,
   };
   const canSubmit = canSubmitGenericConnect(draft);
+  const authModeOptions = genericAuthModeOptions();
   // PAP-659 bucket H: the address alone is the whole default path. `needsKey` is
   // now set by the server's probe after a credential challenge, never guessed at
   // up front, so the field appears exactly when it is known to be required.
@@ -3335,7 +3336,7 @@ function LinkConnectStep({
                 className="mt-2 h-11 font-mono"
               />
               <p className="mt-2 text-xs text-muted-foreground">
-                Grant this key read and write access to the resources your agents need. Paperclip cannot increase its permissions.
+                {translateInstant("connectionUi.setup.generic.keyPermissionHint", { defaultValue: "Grant this key read and write access to the resources your agents need. Paperclip cannot increase its permissions." })}
               </p>
             </div>
           </div>
@@ -3343,15 +3344,15 @@ function LinkConnectStep({
 
         <Collapsible open={advancedOpen} onOpenChange={onAdvancedOpenChange}>
           <CollapsibleTrigger className="flex w-full items-center justify-between rounded-lg border border-border bg-background px-3 py-2 text-left text-sm font-medium text-foreground hover:bg-accent/40">
-            Advanced authentication
+            {translateInstant("connectionUi.setup.generic.advancedAuthentication", { defaultValue: "Advanced authentication" })}
             <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", advancedOpen && "rotate-180")} />
           </CollapsibleTrigger>
           <CollapsibleContent className="space-y-5 pt-4">
             <p className="text-xs text-muted-foreground">
-              Only needed when the server's docs are specific about how to authenticate.
+              {translateInstant("connectionUi.setup.generic.advancedAuthenticationHint", { defaultValue: "Only needed when the server's docs are specific about how to authenticate." })}
             </p>
             <div className="flex flex-wrap gap-2">
-              {GENERIC_AUTH_MODE_OPTIONS.map((option) => (
+              {authModeOptions.map((option) => (
                 <SegmentedOption
                   key={option.mode}
                   label={option.label}
@@ -3361,7 +3362,7 @@ function LinkConnectStep({
               ))}
             </div>
             <p className="text-xs text-muted-foreground">
-              {GENERIC_AUTH_MODE_OPTIONS.find((option) => option.mode === authMode)?.hint}
+              {authModeOptions.find((option) => option.mode === authMode)?.hint}
             </p>
 
             {authMode === "custom_headers" ? (
@@ -3381,7 +3382,9 @@ function LinkConnectStep({
                       value={row.value}
                       onChange={(e) => updateHeader(row.id, { value: e.target.value })}
                       placeholder={translateInstant("agentConfig.value")}
-                      aria-label={row.name.trim() ? `Value for ${row.name.trim()}` : "Header value"}
+                      aria-label={row.name.trim()
+                        ? translateInstant("connectionUi.setup.generic.headerValueFor", { name: row.name.trim(), defaultValue: "Value for {{name}}" })
+                        : translateInstant("connectionUi.setup.generic.headerValue", { defaultValue: "Header value" })}
                       className="h-10 font-mono"
                     />
                     <Button
@@ -3400,7 +3403,7 @@ function LinkConnectStep({
                   size="sm"
                   onClick={() => onHeadersChange([...headers, newCustomHeaderRow()])}
                 >
-                  Add another header
+                  {translateInstant("connectionUi.setup.generic.addHeader", { defaultValue: "Add another header" })}
                 </Button>
                 {headerError ? <p className="text-xs text-destructive">{headerError}</p> : null}
               </div>
@@ -3409,8 +3412,7 @@ function LinkConnectStep({
             {authMode === "oauth" ? (
               <div className="space-y-4">
                 <p className="text-xs text-muted-foreground">
-                  Paperclip sets sign-in up on its own whenever the server allows it. Only fill these in when the
-                  server's docs tell you to register Paperclip yourself first.
+                  {translateInstant("connectionUi.setup.generic.oauthClientHint", { defaultValue: "Paperclip sets sign-in up on its own whenever the server allows it. Only fill these in when the server's docs tell you to register Paperclip yourself first." })}
                 </p>
                 <div>
                   <label className="text-sm font-medium text-foreground" htmlFor="generic-mcp-client-id">{translateInstant("Client ID")}</label>
@@ -3425,7 +3427,7 @@ function LinkConnectStep({
                 </div>
                 <div>
                   <label className="text-sm font-medium text-foreground" htmlFor="generic-mcp-client-secret">
-                    Client secret
+                    {translateInstant("connectionUi.setup.oauth.clientSecret", { defaultValue: "Client secret" })}
                   </label>
                   <Input
                     id="generic-mcp-client-secret"
@@ -3449,7 +3451,7 @@ function LinkConnectStep({
         <Button variant="ghost" onClick={onBack} disabled={submitting}>{translateInstant("Back")}</Button>
         <Button onClick={onConnect} disabled={submitting || !canSubmit || Boolean(headerError)}>
           {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {submitting ? "Checking…" : translateInstant("apps.connect.checkLink")}
+          {submitting ? translateInstant("apps.connect.checking") : translateInstant("apps.connect.checkLink")}
         </Button>
       </div>
     </div>
@@ -3462,33 +3464,35 @@ function LinkConnectStep({
  * a client ID metadata document, dynamic registration, or the credentials pasted
  * below — none of which belongs on this screen.
  */
-const GENERIC_AUTH_MODE_OPTIONS: Array<{ mode: GenericMcpAuthMode; label: string; hint: string }> = [
+function genericAuthModeOptions(): Array<{ mode: GenericMcpAuthMode; label: string; hint: string }> {
+  return [
   {
     mode: "auto",
-    label: "Let Paperclip check",
-    hint: "Paperclip asks the server what it needs and walks you through it. Start here.",
+    label: translateInstant("connectionUi.setup.generic.auth.auto.label", { defaultValue: "Let Paperclip check" }),
+    hint: translateInstant("connectionUi.setup.generic.auth.auto.hint", { defaultValue: "Paperclip asks the server what it needs and walks you through it. Start here." }),
   },
   {
     mode: "none",
-    label: "No sign-in needed",
-    hint: "The server is open to anyone with the address.",
+    label: translateInstant("connectionUi.accessSummary.noSignInNeeded"),
+    hint: translateInstant("connectionUi.setup.generic.auth.none.hint", { defaultValue: "The server is open to anyone with the address." }),
   },
   {
     mode: "bearer",
-    label: "Key or token",
-    hint: "Paperclip sends your key as an Authorization header.",
+    label: translateInstant("connectionUi.setup.generic.auth.bearer.label", { defaultValue: "Key or token" }),
+    hint: translateInstant("connectionUi.setup.generic.auth.bearer.hint", { defaultValue: "Paperclip sends your key as an Authorization header." }),
   },
   {
     mode: "custom_headers",
-    label: "Custom headers",
-    hint: "For servers that name their own headers. Values are stored as Paperclip secrets and can\u2019t be read back.",
+    label: translateInstant("connectionUi.setup.generic.auth.headers.label", { defaultValue: "Custom headers" }),
+    hint: translateInstant("connectionUi.setup.generic.auth.headers.hint", { defaultValue: "For servers that name their own headers. Values are stored as Paperclip secrets and can’t be read back." }),
   },
   {
     mode: "oauth",
-    label: "Browser sign-in",
-    hint: "You\u2019ll sign in at the provider. Add a client ID and secret only if the provider requires you to register Paperclip first.",
+    label: translateInstant("connectionUi.setup.generic.auth.oauth.label", { defaultValue: "Browser sign-in" }),
+    hint: translateInstant("connectionUi.setup.generic.auth.oauth.hint", { defaultValue: "You’ll sign in at the provider. Add a client ID and secret only if the provider requires you to register Paperclip first." }),
   },
-];
+  ];
+}
 
 function SegmentedOption({
   label,
@@ -3568,7 +3572,7 @@ function KeyStep({
   configValues: Record<string, string | boolean>;
   onConfigChange: (next: Record<string, string | boolean>) => void;
   googleSheetsLinks: string;
-  googleSheetsError: string | null;
+  googleSheetsError: OAuthError | null;
   onGoogleSheetsLinksChange: (next: string) => void;
   submitting: boolean;
   /**
@@ -3678,9 +3682,9 @@ function KeyStep({
   const hasAlternateMethods = capabilityGroups.length > 1 || capabilityMethods.length > 1;
   const capabilitySelection = capabilityGroups.length > 1 ? (
     <div>
-      <label className="text-sm font-medium text-foreground">What should Paperclip be able to do?</label>
+      <label className="text-sm font-medium text-foreground">{translateInstant("connectionUi.setup.capability.question", { defaultValue: "What should Paperclip be able to do?" })}</label>
       <RadioCardGroup
-        ariaLabel={`Access level for ${entry.name}`}
+        ariaLabel={translateInstant("connectionUi.setup.capability.aria", { app: entry.name, defaultValue: "Access level for {{app}}" })}
         className="mt-2"
         value={capabilityKey}
         onValueChange={(nextKey) => {
@@ -3695,7 +3699,7 @@ function KeyStep({
           description: group.description,
         }))}
       />
-      {!capabilityKey && <p className="mt-2 text-xs text-muted-foreground">Choose an access level to continue.</p>}
+      {!capabilityKey && <p className="mt-2 text-xs text-muted-foreground">{translateInstant("connectionUi.setup.capability.required", { defaultValue: "Choose an access level to continue." })}</p>}
     </div>
   ) : null;
   const managedOAuthMethod = capabilityMethods.find((candidate) =>
@@ -3726,9 +3730,9 @@ function KeyStep({
     // way to pick something else, one disclosure away, rather than a question
     // the screen opens with.
     <div>
-      <label className="text-sm font-medium text-foreground">How do you want to connect?</label>
+      <label className="text-sm font-medium text-foreground">{translateInstant("connectionUi.setup.method.question", { defaultValue: "How do you want to connect?" })}</label>
       <RadioCardGroup
-        ariaLabel={`How to connect ${entry.name}`}
+        ariaLabel={translateInstant("connectionUi.setup.method.aria", { app: entry.name, defaultValue: "How to connect {{app}}" })}
         className="mt-2"
         value={methodKey}
         onValueChange={(nextKey) => {
@@ -3737,10 +3741,12 @@ function KeyStep({
         }}
         options={capabilityMethods.map((candidate) => ({
           value: candidate.key,
-          title: candidate.label ?? (candidate.auth === "oauth" ? `Sign in with ${entry.name}` : "Use an API key"),
+          title: candidate.label ?? (candidate.auth === "oauth"
+            ? translateInstant("connectionUi.setup.method.signInWith", { app: entry.name, defaultValue: "Sign in with {{app}}" })
+            : translateInstant("connectionUi.setup.method.useApiKey", { defaultValue: "Use an API key" })),
         }))}
       />
-      {!method && <p className="mt-2 text-xs text-muted-foreground">Choose a connection method to continue.</p>}
+      {!method && <p className="mt-2 text-xs text-muted-foreground">{translateInstant("connectionUi.setup.method.required", { defaultValue: "Choose a connection method to continue." })}</p>}
     </div>
   ) : null;
   const hasAdvancedSettings = advancedConfigFields.length > 0
@@ -3795,7 +3801,7 @@ function KeyStep({
                 >
                   {robotEmail}
                 </div>
-                <CopyValueButton value={robotEmail} ariaLabel="Copy sharing email" />
+                <CopyValueButton value={robotEmail} ariaLabel={translateInstant("connectionUi.setup.copySharingEmail", { defaultValue: "Copy sharing email" })} />
               </div>
               <p className="mt-2 text-xs text-muted-foreground">{translateInstant("apps.connect.googleSheets.shareInstructions")}</p>
             </div>
@@ -3813,10 +3819,10 @@ function KeyStep({
             />
             <div className="mt-2 text-xs text-muted-foreground">
               {parsed.ids.length > 0
-                ? `${parsed.ids.length} ${parsed.ids.length === 1 ? "sheet" : "sheets"} ready to connect.`
+                ? translateInstant("apps.connect.googleSheets.readyCount", { count: parsed.ids.length })
                 : translateInstant("apps.connect.googleSheets.linkHint")}
             </div>
-            {googleSheetsError && <div className="mt-2 text-xs text-destructive">{googleSheetsError}</div>}
+            {googleSheetsError && <div className="mt-2 text-xs text-destructive">{renderOAuthError(googleSheetsError)}</div>}
           </div>
         </div>
 
@@ -3826,7 +3832,7 @@ function KeyStep({
           <Button variant="ghost" onClick={onBack} disabled={submitting}>{translateInstant("Back")}</Button>
           <Button onClick={onConnect} disabled={submitting || !canConnect}>
             {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {submitting ? "Checking…" : translateInstant("Connect")}
+            {submitting ? translateInstant("apps.connect.checking") : translateInstant("Connect")}
           </Button>
         </div>
       </div>
@@ -3854,7 +3860,7 @@ function KeyStep({
 
       <div className="space-y-6">
         {managedAsana ? (
-          <p className="text-sm text-muted-foreground">Sign in with Asana to choose your workspace and connect it to Paperclip.</p>
+          <p className="text-sm text-muted-foreground">{translateInstant("connectionUi.setup.oauth.asanaDescription", { defaultValue: "Sign in with Asana to choose your workspace and connect it to Paperclip." })}</p>
         ) : null}
         {method?.capabilityProfile && (
           <p className="text-sm text-muted-foreground">
@@ -3864,9 +3870,9 @@ function KeyStep({
         {usingVercel && vercelReview && vercelConnectAvailability ? (
           <div className="space-y-4 rounded-lg border border-border p-4">
             <div>
-              <div className="text-sm font-medium text-foreground">Create or attach the connector in Vercel</div>
+              <div className="text-sm font-medium text-foreground">{translateInstant("connectionUi.setup.oauth.vercelConnectorTitle", { defaultValue: "Create or attach the connector in Vercel" })}</div>
               <p className="mt-1 text-xs text-muted-foreground">
-                Paperclip does not copy Vercel’s setup forms. Finish connector setup there, then paste its UID below.
+                {translateInstant("connectionUi.setup.oauth.vercelConnectorDescription", { defaultValue: "Paperclip does not copy Vercel’s setup forms. Finish connector setup there, then paste its UID below." })}
               </p>
               <a
                 href={vercelConnectAvailability.manageUrl}
@@ -3874,13 +3880,13 @@ function KeyStep({
                 rel="noreferrer"
                 className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-foreground underline underline-offset-2"
               >
-                Open Vercel Connect
+                {translateInstant("connectionUi.setup.vercel.openConnect", { defaultValue: "Open Vercel Connect" })}
                 <ArrowUpRight className="h-3 w-3" />
               </a>
             </div>
             <div>
               <label className="text-sm font-medium text-foreground" htmlFor="vercel-connect-connector">
-                Connector UID or ID
+                {translateInstant("connectionUi.setup.oauth.vercelConnectorId", { defaultValue: "Connector UID or ID" })}
               </label>
               <Input
                 id="vercel-connect-connector"
@@ -3891,7 +3897,7 @@ function KeyStep({
                 className="mt-2 h-11 font-mono"
               />
               <p className="mt-2 text-xs text-muted-foreground">
-                Paperclip validates the connector and stores only its reference and redacted verification metadata.
+                {translateInstant("connectionUi.setup.oauth.vercelConnectorIdHint", { defaultValue: "Paperclip validates the connector and stores only its reference and redacted verification metadata." })}
               </p>
             </div>
           </div>
@@ -3910,7 +3916,7 @@ function KeyStep({
 
 
         {!usingVercel && method?.auth === "oauth" && customerOAuthClientRequired ? (
-          <div id={customOAuthFieldsId} role="region" aria-label="Your OAuth app">
+          <div id={customOAuthFieldsId} role="region" aria-label={translateInstant("Your OAuth app")}>
             <OAuthClientFields
               entry={entry}
               method={method}
@@ -3966,11 +3972,13 @@ function KeyStep({
         <Button onClick={onConnect} disabled={submitting || !settingsValid || !hasMethodSelection || !allFilled || !oauthClientFilled || !vercelConnectorFilled || !configFilled || !configRequirementMet}>
           {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {submitting
-            ? "Checking…"
+            ? translateInstant("apps.connect.checking")
             : usingVercel
-              ? method?.auth === "oauth" ? "Validate and continue" : "Validate and connect"
+              ? method?.auth === "oauth"
+                ? translateInstant("connectionUi.setup.vercel.validateAndContinue", { defaultValue: "Validate and continue" })
+                : translateInstant("connectionUi.setup.vercel.validateAndConnect", { defaultValue: "Validate and connect" })
               : method?.auth === "oauth"
-                ? entry.slug === "github" ? translateInstant("Continue to GitHub") : "Continue to sign in"
+                ? entry.slug === "github" ? translateInstant("Continue to GitHub") : translateInstant("connectionUi.setup.oauth.continueToSignIn", { defaultValue: "Continue to sign in" })
                 : translateInstant("Connect")}
         </Button>
       </div>
@@ -4037,8 +4045,8 @@ function OAuthClientFields({
         */}
         <p className="mt-1 text-xs text-muted-foreground">
           {method.oauthClientSecretRequired ? method.guidanceMd : required
-            ? `${entry.name} does not let Paperclip register itself automatically, so this connector needs an OAuth app you create. Add the callback URL below in ${entry.name}, then paste the client details back here.`
-            : `Register Paperclip's callback URI in ${entry.name}, then enter the customer-owned client details.`}
+            ? translateInstant("connectionUi.setup.oauth.providerMustRegister", { provider: entry.name, defaultValue: "{{provider}} does not let Paperclip register itself automatically, so this connector needs an OAuth app you create. Add the callback URL below in {{provider}}, then paste the client details back here." })
+            : translateInstant("connectionUi.setup.oauth.registerCallback", { provider: entry.name, defaultValue: "Register Paperclip's callback URI in {{provider}}, then enter the customer-owned client details." })}
         </p>
         {method.consoleLinks?.register ? (
           <a
@@ -4046,14 +4054,14 @@ function OAuthClientFields({
             target="_blank"
             rel="noreferrer"
             className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-foreground underline underline-offset-2"
-          >{translateInstant("Open")}{" "}{entry.name} app settings
+          >{translateInstant("Open")}{" "}{entry.name} {translateInstant("connectionUi.setup.oauth.appSettings", { defaultValue: "app settings" })}
             <ArrowUpRight className="h-3 w-3" />
           </a>
         ) : null}
       </div>
       {callbackUrl ? (
         <div>
-          <label className="text-sm font-medium text-foreground">Paperclip callback URL</label>
+          <label className="text-sm font-medium text-foreground">{translateInstant("connectionUi.setup.oauth.callbackUrl", { defaultValue: "Paperclip callback URL" })}</label>
           <div className="mt-2 flex min-w-0 flex-col gap-2 sm:flex-row">
             <div
               title={callbackUrl}
@@ -4061,10 +4069,10 @@ function OAuthClientFields({
             >
               {callbackUrl}
             </div>
-            <CopyValueButton value={callbackUrl} ariaLabel="Copy callback URL" />
+            <CopyValueButton value={callbackUrl} ariaLabel={translateInstant("connectionUi.setup.oauth.copyCallbackUrl", { defaultValue: "Copy callback URL" })} />
           </div>
           <p className="mt-2 text-xs text-muted-foreground">
-            Add this exact URL to {entry.name} before continuing. It must match the authorization request.
+            {translateInstant("connectionUi.setup.oauth.callbackUrlHint", { provider: entry.name, defaultValue: "Add this exact URL to {{provider}} before continuing. It must match the authorization request." })}
           </p>
         </div>
       ) : null}
@@ -4081,7 +4089,7 @@ function OAuthClientFields({
       </div>
       <div>
         <label className="text-sm font-medium text-foreground" htmlFor="curated-oauth-client-secret">
-          Client secret
+          {translateInstant("connectionUi.setup.oauth.clientSecret", { defaultValue: "Client secret" })}
         </label>
         <Input
           id="curated-oauth-client-secret"
@@ -4089,7 +4097,7 @@ function OAuthClientFields({
           value={clientSecret}
           onChange={(event) => onClientSecretChange(event.target.value)}
           autoComplete="off"
-          placeholder={method.oauthClientSecretRequired ? translateInstant("Required") : "Optional for public clients"}
+          placeholder={method.oauthClientSecretRequired ? translateInstant("Required") : translateInstant("connectionUi.setup.oauth.optionalPublicClient", { defaultValue: "Optional for public clients" })}
           className="mt-2 h-11 font-mono"
         />
       </div>
@@ -4257,15 +4265,17 @@ export function AccessStepContent({
   const lockedAgentName = lockedAgentId
     ? allAgents.find((agent) => agent.id === lockedAgentId)?.name ?? "the requesting agent"
     : null;
-  const identityHeading = githubIdentity ? "Connect GitHub as" : "Which humans can use this credential?";
+  const identityHeading = githubIdentity
+    ? translateInstant("connectionUi.setup.identity.connectGitHubAs", { defaultValue: "Connect GitHub as" })
+    : translateInstant("Which humans can use this credential?");
   const agentAccessHeading = grantKind === "agent"
-    ? "Which agent owns this GitHub account?"
+    ? translateInstant("connectionUi.setup.identity.whichAgentOwnsGithub", { defaultValue: "Which agent owns this GitHub account?" })
     : githubIdentity && grantKind === "user"
-      ? "Which agents may use your GitHub when you’re responsible?"
+      ? translateInstant("connectionUi.setup.identity.whichAgentsUseYourGithub", { defaultValue: "Which agents may use your GitHub when you’re responsible?" })
       : githubIdentity
-        ? "Which agents may use the shared GitHub account?"
-        : "Which agents can use this connection?";
-  const agentAccessLabel = githubIdentity ? agentAccessHeading : "Which agents can use this connection?";
+        ? translateInstant("connectionUi.setup.identity.whichAgentsUseSharedGithub", { defaultValue: "Which agents may use the shared GitHub account?" })
+        : translateInstant("Which agents can use this connection?");
+  const agentAccessLabel = githubIdentity ? agentAccessHeading : translateInstant("Which agents can use this connection?");
 
   return (
     <div className={bare ? "" : "mx-auto max-w-2xl"}>
@@ -4293,25 +4303,25 @@ export function AccessStepContent({
                 <div>
                   <div className="text-sm font-medium text-foreground">
                     {allowedGrantKinds[0] === "user"
-                      ? githubIdentity ? "My GitHub account" : translateInstant("Just me")
+                      ? githubIdentity ? translateInstant("connectionUi.setup.identity.myGithubAccount", { defaultValue: "My GitHub account" }) : translateInstant("Just me")
                       : allowedGrantKinds[0] === "agent"
-                        ? "A dedicated account for an agent"
-                        : githubIdentity ? "Shared organization GitHub account (advanced)" : "Any human in the organization"}
+                        ? translateInstant("connectionUi.setup.identity.dedicatedAgentAccount", { defaultValue: "A dedicated account for an agent" })
+                        : githubIdentity ? translateInstant("connectionUi.setup.identity.sharedGithubAccount", { defaultValue: "Shared organization GitHub account (advanced)" }) : translateInstant("connectionUi.setup.identity.anyHuman", { defaultValue: "Any human in the organization" })}
                   </div>
                   {githubIdentity ? (
                     <p className="mt-1 text-xs text-muted-foreground">
                       {allowedGrantKinds[0] === "user"
-                        ? "Agents use it only for runs where you are the responsible person."
+                        ? translateInstant("connectionUi.setup.identity.userGithubDescription", { defaultValue: "Agents use it only for runs where you are the responsible person." })
                         : allowedGrantKinds[0] === "agent"
-                          ? "That agent always uses this account, regardless of who starts the run."
-                          : "Eligible agents use one shared credential, regardless of who starts the run."}
+                          ? translateInstant("connectionUi.setup.identity.dedicatedAgentDescription", { defaultValue: "That agent always uses this account, regardless of who starts the run." })
+                          : translateInstant("connectionUi.setup.identity.sharedGithubDescription", { defaultValue: "Eligible agents use one shared credential, regardless of who starts the run." })}
                     </p>
                   ) : null}
                 </div>
               </div>
             ) : needsIdentityChoice ? (
               <RadioCardGroup
-                ariaLabel={githubIdentity ? identityHeading : "Which humans can use this credential?"}
+                ariaLabel={githubIdentity ? identityHeading : translateInstant("Which humans can use this credential?")}
                 className="mt-4 sm:grid-cols-2"
                 value={grantKind}
                 onValueChange={(next) => {
@@ -4325,35 +4335,35 @@ export function AccessStepContent({
                 options={[
                   {
                     value: "user",
-                    title: githubIdentity ? "My GitHub account" : translateInstant("Just me"),
+                    title: githubIdentity ? translateInstant("connectionUi.setup.identity.myGithubAccount", { defaultValue: "My GitHub account" }) : translateInstant("Just me"),
                     description: githubIdentity
-                      ? "Agents use it only for runs where you are the responsible person."
+                      ? translateInstant("connectionUi.setup.identity.userGithubDescription", { defaultValue: "Agents use it only for runs where you are the responsible person." })
                       : undefined,
                     icon: <UserRound className="h-4 w-4" aria-hidden="true" />,
                   },
                   {
                     value: "agent",
-                    title: "A dedicated account for an agent",
+                    title: translateInstant("connectionUi.setup.identity.dedicatedAgentAccount", { defaultValue: "A dedicated account for an agent" }),
                     description: githubIdentity
-                      ? "That agent always uses this account, regardless of who starts the run."
+                      ? translateInstant("connectionUi.setup.identity.dedicatedAgentDescription", { defaultValue: "That agent always uses this account, regardless of who starts the run." })
                       : undefined,
                     icon: <Bot className="h-4 w-4" aria-hidden="true" />,
                   },
                   {
                     value: "organization",
-                    title: githubIdentity ? "Shared organization GitHub account (advanced)" : "Any human in the organization",
+                    title: githubIdentity ? translateInstant("connectionUi.setup.identity.sharedGithubAccount", { defaultValue: "Shared organization GitHub account (advanced)" }) : translateInstant("connectionUi.setup.identity.anyHuman", { defaultValue: "Any human in the organization" }),
                     description: githubIdentity
-                      ? "Eligible agents use one shared credential, regardless of who starts the run."
+                      ? translateInstant("connectionUi.setup.identity.sharedGithubDescription", { defaultValue: "Eligible agents use one shared credential, regardless of who starts the run." })
                       : undefined,
                     icon: <UsersRound className="h-4 w-4" aria-hidden="true" />,
                     accessibleLabel: canCreateOrganizationGrant
-                      ? githubIdentity ? "Shared organization GitHub account (advanced)" : "Any human in the organization"
-                      : `${githubIdentity ? "Shared organization GitHub account (advanced)" : "Any human in the organization"}. Unavailable: ${capabilities?.organizationGrantReason ??
-                        "Only a connection manager can share this credential with the organization."}`,
+                      ? githubIdentity ? translateInstant("connectionUi.setup.identity.sharedGithubAccount", { defaultValue: "Shared organization GitHub account (advanced)" }) : translateInstant("connectionUi.setup.identity.anyHuman", { defaultValue: "Any human in the organization" })
+                      : `${githubIdentity ? translateInstant("connectionUi.setup.identity.sharedGithubAccount", { defaultValue: "Shared organization GitHub account (advanced)" }) : translateInstant("connectionUi.setup.identity.anyHuman", { defaultValue: "Any human in the organization" })}. ${translateInstant("connectionUi.setup.identity.unavailable", { defaultValue: "Unavailable:" })} ${capabilities?.organizationGrantReason ??
+                        translateInstant("connectionUi.setup.identity.organizationUnavailable", { defaultValue: "Only a connection manager can share this credential with the organization." })}`,
                     tooltip: canCreateOrganizationGrant
                       ? undefined
                       : capabilities?.organizationGrantReason ??
-                        "Only a connection manager can share this credential with the organization.",
+                        translateInstant("connectionUi.setup.identity.organizationUnavailable", { defaultValue: "Only a connection manager can share this credential with the organization." }),
                     disabled: !canCreateOrganizationGrant,
                   },
                 ].filter((option) => allowedGrantKinds.includes(option.value as ConnectionGrantKind))}
@@ -4361,7 +4371,7 @@ export function AccessStepContent({
             ) : (
               // A connection with no credential has no identity to choose, so
               // asking would be a meaningless decision.
-              <p className="mt-4 text-sm text-muted-foreground">No identity required</p>
+              <p className="mt-4 text-sm text-muted-foreground">{translateInstant("connectionUi.setup.identity.noIdentityRequired", { defaultValue: "No identity required" })}</p>
             )}
           </section>
 
@@ -4371,9 +4381,9 @@ export function AccessStepContent({
               <div className="mt-4 flex items-start gap-3 rounded-md border border-border bg-muted/40 p-4">
                 <UsersRound className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
                 <div>
-                  <div className="text-sm font-medium text-foreground">Existing agent access stays the same</div>
+                  <div className="text-sm font-medium text-foreground">{translateInstant("connectionUi.setup.identity.existingAccess", { defaultValue: "Existing agent access stays the same" })}</div>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Reconnecting replaces the credential without changing which agents can use it.
+                    {translateInstant("connectionUi.setup.identity.existingAccessDescription", { defaultValue: "Reconnecting replaces the credential without changing which agents can use it." })}
                   </p>
                 </div>
               </div>
@@ -4384,7 +4394,7 @@ export function AccessStepContent({
               </p>
             ) : (
               grantKind === "agent" ? (
-                <p className="mt-2 text-sm text-muted-foreground">Choose exactly one agent. This identity cannot be shared with other agents.</p>
+                <p className="mt-2 text-sm text-muted-foreground">{translateInstant("connectionUi.setup.identity.chooseOneAgent", { defaultValue: "Choose exactly one agent. This identity cannot be shared with other agents." })}</p>
               ) : <RadioCardGroup
                 ariaLabel={agentAccessLabel}
                 className="mt-4 sm:grid-cols-2"
@@ -4393,11 +4403,11 @@ export function AccessStepContent({
                 options={[
                   {
                     value: "specific",
-                    title: githubIdentity ? "Only agents I choose" : translateInstant("Just agents I pick"),
+                    title: githubIdentity ? translateInstant("connectionUi.setup.identity.onlySelectedAgents", { defaultValue: "Only agents I choose" }) : translateInstant("Just agents I pick"),
                     description: githubIdentity
                       ? grantKind === "user"
-                        ? "Only selected agents may use your GitHub when you’re responsible."
-                        : "Only selected agents may use the shared account."
+                        ? translateInstant("connectionUi.setup.identity.selectedUseYourGithub", { defaultValue: "Only selected agents may use your GitHub when you’re responsible." })
+                        : translateInstant("connectionUi.setup.identity.selectedUseSharedGithub", { defaultValue: "Only selected agents may use the shared account." })
                       : undefined,
                     icon: <Bot className="h-4 w-4" aria-hidden="true" />,
                   },
@@ -4406,18 +4416,18 @@ export function AccessStepContent({
                     title: translateInstant("Any agent"),
                     description: githubIdentity
                       ? grantKind === "user"
-                        ? "Every agent may use your GitHub when you’re responsible."
-                        : "Every agent may use the shared account."
+                        ? translateInstant("connectionUi.setup.identity.allUseYourGithub", { defaultValue: "Every agent may use your GitHub when you’re responsible." })
+                        : translateInstant("connectionUi.setup.identity.allUseSharedGithub", { defaultValue: "Every agent may use the shared account." })
                       : undefined,
                     icon: <BotGroupIcon />,
                     accessibleLabel: canSetCompanyInstall
-                      ? "Any agent"
-                      : `Any agent. Unavailable: ${capabilities?.companyInstallReason ??
-                        "Only someone who can configure this connection can choose this."}`,
+                      ? translateInstant("Any agent")
+                      : `${translateInstant("Any agent")}. ${translateInstant("connectionUi.setup.identity.unavailable", { defaultValue: "Unavailable:" })} ${capabilities?.companyInstallReason ??
+                        translateInstant("connectionUi.setup.identity.anyAgentUnavailable", { defaultValue: "Only someone who can configure this connection can choose this." })}`,
                     tooltip: canSetCompanyInstall
                       ? undefined
                       : capabilities?.companyInstallReason ??
-                        "Only someone who can configure this connection can choose this.",
+                        translateInstant("connectionUi.setup.identity.anyAgentUnavailable", { defaultValue: "Only someone who can configure this connection can choose this." }),
                     disabled: !canSetCompanyInstall,
                   },
                 ]}
@@ -4476,7 +4486,7 @@ export function connectionDefaultSummarySentence(input: {
   preserveAgentAccess?: boolean;
 }): string {
   const identity = input.authKind === "none"
-    ? translateInstant("connectionUi.accessSummary.noSignInNeeded")
+    ? translateInstant("connectionUi.setup.identity.noIdentityRequired", { defaultValue: "No identity required" })
     : input.grantKind === "user"
       ? translateInstant("connectionUi.accessSummary.connectsAsYou")
       : input.grantKind === "agent"
@@ -4585,21 +4595,21 @@ export function accessSummaryLines(input: {
   enabledCount: number;
 }): Array<{ label: string; value: string }> {
   const identity = input.authKind === "none"
-    ? "No identity required"
+    ? translateInstant("connectionUi.setup.identity.noIdentityRequired", { defaultValue: "No identity required" })
     : input.grantKind === "user"
-      ? "Your identity"
+      ? translateInstant("connectionUi.setup.identity.summaryYourIdentity", { defaultValue: "Your identity" })
       : input.grantKind === "agent"
-        ? "Dedicated agent identity"
-      : "Organization identity";
+        ? translateInstant("connectionUi.setup.identity.summaryDedicatedAgent", { defaultValue: "Dedicated agent identity" })
+      : translateInstant("connectionUi.setup.identity.summaryOrganization", { defaultValue: "Organization identity" });
   const availableTo = input.installChoice === "all"
-    ? "Any agent"
-    : `${input.installCount} selected ${input.installCount === 1 ? "agent" : "agents"}`;
+    ? translateInstant("Any agent")
+    : translateInstant("connectionUi.setup.identity.summarySelectedAgents", { count: input.installCount, defaultValue: "Selected agents: {{count}}" });
   return [
-    { label: "Identity", value: identity },
-    { label: "Available to", value: availableTo },
+    { label: translateInstant("Identity"), value: identity },
+    { label: translateInstant("connectionUi.setup.identity.summaryAvailableTo", { defaultValue: "Available to" }), value: availableTo },
     {
-      label: "Actions",
-      value: `${input.enabledCount} ${input.enabledCount === 1 ? "action" : "actions"} on`,
+      label: translateInstant("Actions"),
+      value: translateInstant("connectionUi.setup.identity.summaryActionsOn", { count: input.enabledCount, defaultValue: "Enabled actions: {{count}}" }),
     },
   ];
 }

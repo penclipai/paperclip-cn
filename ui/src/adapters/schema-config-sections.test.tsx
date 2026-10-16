@@ -69,3 +69,31 @@ it("restores cleared defaults after switching back before the intermediate schem
   await act(async () => root?.render(view(firstType)));
   expect(set).toHaveBeenCalledExactlyOnceWith({ adapterSchemaValues: { model: "default-model" } });
 });
+
+it("refreshes a mounted same-type schema after replacement without allowing an older in-flight response to restore it", async () => {
+  vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+  const adapterType = "external-replacement";
+  invalidateConfigSchemaCache(adapterType);
+  let resolveStale!: (value: unknown) => void;
+  const staleResponse = new Promise((resolve) => { resolveStale = resolve; });
+  vi.stubGlobal("fetch", vi.fn()
+    .mockReturnValueOnce(staleResponse)
+    .mockResolvedValueOnce({ ok: true, json: async () => ({ fields: [{ key: "replacement", label: "Replacement setting", type: "text" }] }) }));
+  const props: AdapterConfigFieldsProps = {
+    mode: "create", isCreate: true, adapterType, section: "configuration",
+    values: { ...defaultCreateValues, adapterSchemaValues: {} }, set: vi.fn(),
+    config: {}, eff: (_group, _field, original) => original, mark: vi.fn(), models: [],
+  };
+  const container = document.createElement("div");
+  document.body.append(container);
+  root = createRoot(container);
+  await act(async () => root?.render(<TooltipProvider><SchemaConfigFields {...props} /></TooltipProvider>));
+  invalidateConfigSchemaCache(adapterType);
+  await act(async () => {
+    resolveStale({ ok: true, json: async () => ({ fields: [{ key: "stale", label: "Stale setting", type: "text" }] }) });
+    await Promise.resolve();
+    await Promise.resolve();
+  });
+  expect(container.textContent).toContain("Replacement setting");
+  expect(container.textContent).not.toContain("Stale setting");
+});

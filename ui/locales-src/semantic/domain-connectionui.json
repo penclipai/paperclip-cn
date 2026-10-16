@@ -514,10 +514,35 @@
     "zh-CN": "此环境不支持浏览器登录。请选择登录环境或改用 API 密钥连接。",
     "reviewedEnglishHash": "b62e1e2f4b59769e2e544c4ef4f0067e95f5eb04d14d9b39764a99e85343c5ef"
   },
+  "connectionUi.setup.capability.aria": {
+    "en": "Access level for {{app}}",
+    "zh-CN": "{{app}} 的访问级别",
+    "reviewedEnglishHash": "4d1f9f6dbf23aa57320964516f2a76f2dd6a95b5818b209dd066d2992b2c3e37"
+  },
+  "connectionUi.setup.capability.question": {
+    "en": "What should Paperclip be able to do?",
+    "zh-CN": "希望 Paperclip 能做什么？",
+    "reviewedEnglishHash": "ddb125208fd2a80baaac1b7bffad6e2a99f7fb91231050c21506c9d9aeae9638"
+  },
+  "connectionUi.setup.capability.required": {
+    "en": "Choose an access level to continue.",
+    "zh-CN": "请选择访问级别以继续。",
+    "reviewedEnglishHash": "3d0a914ed893f06c20b6fce34de650c66891c5d3da4930fba111a0d9e1b1a9a1"
+  },
   "connectionUi.setup.checkKeyAndRetry": {
     "en": "Please check your key and try again.",
     "zh-CN": "请检查你的密钥后重试。",
     "reviewedEnglishHash": "65c0f7cc808b67f9816424d5dc97663bfc07682f02af7e8ef2e0cab7567b17a2"
+  },
+  "connectionUi.setup.connectWithPaperclip": {
+    "en": "Connect with Paperclip",
+    "zh-CN": "使用 Paperclip 连接",
+    "reviewedEnglishHash": "eee43f4794729ddea2dba549100e40dedcd6caf661d73326cc448f8d2aaf1f04"
+  },
+  "connectionUi.setup.copySharingEmail": {
+    "en": "Copy sharing email",
+    "zh-CN": "复制共享邮箱",
+    "reviewedEnglishHash": "7c5c2cd976654cc960edc5159abdbd25790f9eda6b539bcabaa4c2f330d42459"
   },
   "connectionUi.setup.enrollment.checkRegistrationFailed": {
     "en": "Paperclip couldn’t check Cloud registration. Try again.",
@@ -529,6 +554,11 @@
     "zh-CN": "Paperclip 无法连接到 Paperclip Cloud。请重试。",
     "reviewedEnglishHash": "b26b6b04f40b80ce47482a717ea33ca5a75077b4ed0a4e22dbeed323db8886d6"
   },
+  "connectionUi.setup.enrollment.finishAuthorization": {
+    "en": "Finish authorization in the opened window.",
+    "zh-CN": "请在已打开的窗口中完成授权。",
+    "reviewedEnglishHash": "3be1a9fe8c5f042da7845c37db52540053f16f7de63e484322a18834dedb9d87"
+  },
   "connectionUi.setup.enrollment.missingEnrollmentLink": {
     "en": "Paperclip Cloud did not return an enrollment link. Try again.",
     "zh-CN": "Paperclip Cloud 未返回注册链接。请重试。",
@@ -538,6 +568,11 @@
     "en": "Open authorization in a new tab to continue.",
     "zh-CN": "请在新标签页中打开授权以继续。",
     "reviewedEnglishHash": "0b1a6c0c73f0d866ce06d729586711895e62dd6e23ff9150c9b136b9ff03cc5a"
+  },
+  "connectionUi.setup.enrollment.openAuthorizationLink": {
+    "en": "Open authorization in a new tab",
+    "zh-CN": "在新标签页中打开授权",
+    "reviewedEnglishHash": "7dfefeb1dd262d1edb15e2449f6d5ced13b71734fa7ebccdb52903abd8d56f06"
   },
   "connectionUi.setup.galleryDescription": {
     "en": "Pick the app you want your agents to use.",
@@ -549,10 +584,270 @@
     "zh-CN": "选择一个经审核的应用以通过 Vercel 连接。",
     "reviewedEnglishHash": "b294c73812f22ce64a22a99de40ddefb57b0c45bc14045f2cb3a65fe0cb402aa"
   },
+  "connectionUi.setup.generic.addHeader": {
+    "en": "Add another header",
+    "zh-CN": "添加另一个请求头",
+    "reviewedEnglishHash": "cd719ea711cca821f59e1826b7db261b80693a57289ae5d9368eccf0b9fb615a"
+  },
+  "connectionUi.setup.generic.advancedAuthentication": {
+    "en": "Advanced authentication",
+    "zh-CN": "高级身份验证",
+    "reviewedEnglishHash": "6083f79d434e1accc69cab988f525ad23d286c7464d72ad4a29809f9900c5f36"
+  },
+  "connectionUi.setup.generic.advancedAuthenticationHint": {
+    "en": "Only needed when the server's docs are specific about how to authenticate.",
+    "zh-CN": "仅当服务器文档明确指定身份验证方式时才需要。",
+    "reviewedEnglishHash": "4586cf0872725a375aa9cde3c83555a8e8e3dc309e7eff4c57b3d5d4ce4a46c5"
+  },
+  "connectionUi.setup.generic.auth.auto.hint": {
+    "en": "Paperclip asks the server what it needs and walks you through it. Start here.",
+    "zh-CN": "Paperclip 会询问服务器所需内容并引导完成，请从这里开始。",
+    "reviewedEnglishHash": "65bc65bf47379a0beb47dff0199121e7a687bb229c0a81262ef3b31f527cf0c7"
+  },
+  "connectionUi.setup.generic.auth.auto.label": {
+    "en": "Let Paperclip check",
+    "zh-CN": "让 Paperclip 检查",
+    "reviewedEnglishHash": "2a4615e865c8f97334f444c43636a2111b3cbc6fa5087706d12ab3d94dfcf7c3"
+  },
+  "connectionUi.setup.generic.auth.bearer.hint": {
+    "en": "Paperclip sends your key as an Authorization header.",
+    "zh-CN": "Paperclip 会将你的密钥作为 Authorization 请求头发送。",
+    "reviewedEnglishHash": "dc08ce3de15c7e7d8c7aed39b6dc492f8c04c8cf0a1fb8716c31b8ad11885534"
+  },
+  "connectionUi.setup.generic.auth.bearer.label": {
+    "en": "Key or token",
+    "zh-CN": "密钥或令牌",
+    "reviewedEnglishHash": "9c4795310ee0ac3e3681236a444612ad2958e46da19137bba184a7b1a84462cc"
+  },
+  "connectionUi.setup.generic.auth.headers.hint": {
+    "en": "For servers that name their own headers. Values are stored as Paperclip secrets and can’t be read back.",
+    "zh-CN": "用于自行定义请求头的服务器。值会作为 Paperclip 密钥保存，之后无法读取。",
+    "reviewedEnglishHash": "634c98a871613ea69ab223efcc0e4c667cd6771eb5aff47efa02db3d8590fb46"
+  },
+  "connectionUi.setup.generic.auth.headers.label": {
+    "en": "Custom headers",
+    "zh-CN": "自定义请求头",
+    "reviewedEnglishHash": "34cb675c369423f66de0434521d0e5c76f3e5f20ad709302654b8f6e2c586395"
+  },
+  "connectionUi.setup.generic.auth.none.hint": {
+    "en": "The server is open to anyone with the address.",
+    "zh-CN": "该服务器向任何拥有地址的人开放。",
+    "reviewedEnglishHash": "10eeafaec0987a1e4fa83572f1da7fd5ce8e3dc524d01e90f257572f674db9a0"
+  },
+  "connectionUi.setup.generic.auth.oauth.hint": {
+    "en": "You’ll sign in at the provider. Add a client ID and secret only if the provider requires you to register Paperclip first.",
+    "zh-CN": "你将在服务商处登录。只有服务商要求先注册 Paperclip 时，才添加客户端 ID 和密钥。",
+    "reviewedEnglishHash": "3ba64037a6018839eaf11e924e03c95aa34a2ae5ac1be01ce017703fc515b669"
+  },
+  "connectionUi.setup.generic.auth.oauth.label": {
+    "en": "Browser sign-in",
+    "zh-CN": "浏览器登录",
+    "reviewedEnglishHash": "5db278ec4eec0987c1ef9ed55e817c498622433d61be782224386d481f9fd11b"
+  },
+  "connectionUi.setup.generic.headerValue": {
+    "en": "Header value",
+    "zh-CN": "请求头值",
+    "reviewedEnglishHash": "f9a9058c0c22e511c58b7ca3f579036d24e2592ef72a0069df0736586ab46d8d"
+  },
+  "connectionUi.setup.generic.headerValueFor": {
+    "en": "Value for {{name}}",
+    "zh-CN": "{{name}} 的值",
+    "reviewedEnglishHash": "eb4297dc624dd515d6f85b7fa21bddf73db4163ec17ea489f7357c015ea3b01a"
+  },
+  "connectionUi.setup.generic.keyPermissionHint": {
+    "en": "Grant this key read and write access to the resources your agents need. Paperclip cannot increase its permissions.",
+    "zh-CN": "请授予此密钥智能体所需资源的读写权限。Paperclip 无法提高其权限。",
+    "reviewedEnglishHash": "b6a571da1e56d8f0be726bbe7c525d6ee704e3fbe608af02ddc3ee54653edc9b"
+  },
+  "connectionUi.setup.generic.oauthClientHint": {
+    "en": "Paperclip sets sign-in up on its own whenever the server allows it. Only fill these in when the server's docs tell you to register Paperclip yourself first.",
+    "zh-CN": "只要服务器允许，Paperclip 会自行设置登录。仅当服务器文档要求你先自行注册 Paperclip 时，才填写这些信息。",
+    "reviewedEnglishHash": "5cd383a2e7ae4daf58b93747d4827a8e2e08658b223f8b95d943a2e1d69e40cd"
+  },
   "connectionUi.setup.githubInstallationRequired": {
     "en": "GitHub access is required. Install Paperclip and grant at least one repository, then try again.",
     "zh-CN": "需要 GitHub 访问权限。请安装 Paperclip 并至少授权一个仓库，然后重试。",
     "reviewedEnglishHash": "3ad3e19df5c4f5749d50aae923aab4f7cbbf7e008fa1c5fe37be480537785842"
+  },
+  "connectionUi.setup.identity.allUseSharedGithub": {
+    "en": "Every agent may use the shared account.",
+    "zh-CN": "每个智能体都可以使用共享账号。",
+    "reviewedEnglishHash": "65d4ba21f72944b3bfa3c341220a56b612916df5afabb11cf4258f3b20d8148e"
+  },
+  "connectionUi.setup.identity.allUseYourGithub": {
+    "en": "Every agent may use your GitHub when you’re responsible.",
+    "zh-CN": "当你负责时，每个智能体都可以使用你的 GitHub。",
+    "reviewedEnglishHash": "9fe0dc0bcefd69c89b56132d1cb5df7c987c1dce2a535da70b3a04c9becd40c6"
+  },
+  "connectionUi.setup.identity.anyAgentUnavailable": {
+    "en": "Only someone who can configure this connection can choose this.",
+    "zh-CN": "只有能配置此连接的人可以选择此项。",
+    "reviewedEnglishHash": "072221df4673870de1a0847026b7e1f053261e9eb5f18e7f65b4871c30386b6c"
+  },
+  "connectionUi.setup.identity.anyHuman": {
+    "en": "Any human in the organization",
+    "zh-CN": "组织内的任何成员",
+    "reviewedEnglishHash": "e6b1c6693f543a72db4a62bb9da8a6639225caada328a86469486cde80a6933e"
+  },
+  "connectionUi.setup.identity.chooseOneAgent": {
+    "en": "Choose exactly one agent. This identity cannot be shared with other agents.",
+    "zh-CN": "请选择恰好一个智能体。此身份不能与其他智能体共享。",
+    "reviewedEnglishHash": "ed7b069795e1ae7c157cd8bf8dd22815de09f24dc775e13077dbb74039f0e2ea"
+  },
+  "connectionUi.setup.identity.connectGitHubAs": {
+    "en": "Connect GitHub as",
+    "zh-CN": "以何种身份连接 GitHub",
+    "reviewedEnglishHash": "172e5b28d280861e19721d435dca3d976a8985a86d7890a088bc37ab0703e533"
+  },
+  "connectionUi.setup.identity.dedicatedAgentAccount": {
+    "en": "A dedicated account for an agent",
+    "zh-CN": "供智能体专用的账号",
+    "reviewedEnglishHash": "b68335829188c8695c4f4e1b386c00adb3948cdc501cedd3b1b615c0e696e2fa"
+  },
+  "connectionUi.setup.identity.dedicatedAgentDescription": {
+    "en": "That agent always uses this account, regardless of who starts the run.",
+    "zh-CN": "无论谁启动运行，该智能体都会使用此账号。",
+    "reviewedEnglishHash": "e70310b44f5524d73d8bf82bc7f22e3e700211315b000a81585b19bb80d37451"
+  },
+  "connectionUi.setup.identity.existingAccess": {
+    "en": "Existing agent access stays the same",
+    "zh-CN": "现有智能体访问权限保持不变",
+    "reviewedEnglishHash": "b525e39e1eee3182f66662f122de230c231451348421589a32de229f1e03f1d3"
+  },
+  "connectionUi.setup.identity.existingAccessDescription": {
+    "en": "Reconnecting replaces the credential without changing which agents can use it.",
+    "zh-CN": "重新连接会替换凭据，而不会更改可使用它的智能体。",
+    "reviewedEnglishHash": "ba90e66aaef6cc33159ba0ae62b9d1f1d99b2cde892f2e45c81484f54e3fc11a"
+  },
+  "connectionUi.setup.identity.myGithubAccount": {
+    "en": "My GitHub account",
+    "zh-CN": "我的 GitHub 账号",
+    "reviewedEnglishHash": "d1f22b9c9cdc0650b76789b64767fcc2ecb2002d1be0e64a7f4e16cd992c23f3"
+  },
+  "connectionUi.setup.identity.noIdentityRequired": {
+    "en": "No identity required",
+    "zh-CN": "无需身份信息",
+    "reviewedEnglishHash": "d50f3993c8f50518650d7e7c0ee158a08e2cac7feea1e6b80841f6d839018ca4"
+  },
+  "connectionUi.setup.identity.onlySelectedAgents": {
+    "en": "Only agents I choose",
+    "zh-CN": "仅我选择的智能体",
+    "reviewedEnglishHash": "4a51b1fe9071b6cfb270d3fdfdbfce317bc662d4f2c4bed7ac78a363a7f65aef"
+  },
+  "connectionUi.setup.identity.organizationUnavailable": {
+    "en": "Only a connection manager can share this credential with the organization.",
+    "zh-CN": "只有连接管理员可以与组织共享此凭据。",
+    "reviewedEnglishHash": "1fef7519c38cc9bc9687ef66b3fff66ef976cf48a0ce132ae0b062658b559290"
+  },
+  "connectionUi.setup.identity.selectedUseSharedGithub": {
+    "en": "Only selected agents may use the shared account.",
+    "zh-CN": "仅选定的智能体可以使用共享账号。",
+    "reviewedEnglishHash": "d02fbe413f40d63adabbb4352d4d733061f29984134033bd3b487abf7b1c660b"
+  },
+  "connectionUi.setup.identity.selectedUseYourGithub": {
+    "en": "Only selected agents may use your GitHub when you’re responsible.",
+    "zh-CN": "当你负责时，仅选定的智能体可以使用你的 GitHub。",
+    "reviewedEnglishHash": "38b4d03b218aee7fb4d48106714512ba4178a96683f2c7fffdf5dafd650add0a"
+  },
+  "connectionUi.setup.identity.sharedGithubAccount": {
+    "en": "Shared organization GitHub account (advanced)",
+    "zh-CN": "共享的组织 GitHub 账号（高级）",
+    "reviewedEnglishHash": "fc8ce4350378d642584716c7ccdc71fc725f1fc15b4d48c09ec97972871d424e"
+  },
+  "connectionUi.setup.identity.sharedGithubDescription": {
+    "en": "Eligible agents use one shared credential, regardless of who starts the run.",
+    "zh-CN": "符合条件的智能体共用一个凭据，无论谁启动运行。",
+    "reviewedEnglishHash": "72580e0b156f4214d67606493c6963035fce2b4c139354e15e5cc8cf81f060a1"
+  },
+  "connectionUi.setup.identity.summaryActionsOn": {
+    "en": "Enabled actions: {{count}}",
+    "zh-CN": "已启用的操作：{{count}}",
+    "reviewedEnglishHash": "525d5c26b64520ecf2a7d9a355eb3c5ffb4d9b12e278d4cc4fa0f094813e3c53"
+  },
+  "connectionUi.setup.identity.summaryAvailableTo": {
+    "en": "Available to",
+    "zh-CN": "可供以下对象使用",
+    "reviewedEnglishHash": "1963260db8cdf1d804fe48ebdbde614e5df3c1633c1de0fde59207c2dbb66db0"
+  },
+  "connectionUi.setup.identity.summaryDedicatedAgent": {
+    "en": "Dedicated agent identity",
+    "zh-CN": "专用智能体身份",
+    "reviewedEnglishHash": "b45e73465fd19ad99561158dab134f037a87ca18d73a88db5119059e49545472"
+  },
+  "connectionUi.setup.identity.summaryOrganization": {
+    "en": "Organization identity",
+    "zh-CN": "组织身份",
+    "reviewedEnglishHash": "4f644c74f1e8ff0e4bfb3ed1a736b050c71ed18dc43811b2eac55adafea39a88"
+  },
+  "connectionUi.setup.identity.summarySelectedAgents": {
+    "en": "Selected agents: {{count}}",
+    "zh-CN": "已选择的智能体：{{count}}",
+    "reviewedEnglishHash": "8c34ecf551eed99a6b86e94a9bdf46c695a5783ac2572373278dcec52c71164e"
+  },
+  "connectionUi.setup.identity.summaryYourIdentity": {
+    "en": "Your identity",
+    "zh-CN": "你的身份",
+    "reviewedEnglishHash": "3b42154652893315f1af573ffa23ce9b7fb59653461d1475f27e47a464b01dc1"
+  },
+  "connectionUi.setup.identity.unavailable": {
+    "en": "Unavailable:",
+    "zh-CN": "不可用：",
+    "reviewedEnglishHash": "730dabebc1a158c2b8090ced5aff08db8f199b0bfaa514fa9bb169ba15127e82"
+  },
+  "connectionUi.setup.identity.userGithubDescription": {
+    "en": "Agents use it only for runs where you are the responsible person.",
+    "zh-CN": "智能体仅会在你作为责任人的运行中使用它。",
+    "reviewedEnglishHash": "e8f48c17ed08f1aeceedc6b7692898fb9ed4f65f6d55d8a876904fd6430b620e"
+  },
+  "connectionUi.setup.identity.whichAgentOwnsGithub": {
+    "en": "Which agent owns this GitHub account?",
+    "zh-CN": "哪个智能体拥有此 GitHub 账号？",
+    "reviewedEnglishHash": "e247e16bbd5bf2b2745083cf7839cd053dc39f68fd38048992d63dd468a19c4c"
+  },
+  "connectionUi.setup.identity.whichAgentsUseSharedGithub": {
+    "en": "Which agents may use the shared GitHub account?",
+    "zh-CN": "哪些智能体可以使用共享的 GitHub 账号？",
+    "reviewedEnglishHash": "d3c2c5b53d118548fd0e57ca7910e97a0d1c237bedb4a2683611d170fdee1766"
+  },
+  "connectionUi.setup.identity.whichAgentsUseYourGithub": {
+    "en": "Which agents may use your GitHub when you’re responsible?",
+    "zh-CN": "当你负责时，哪些智能体可以使用你的 GitHub？",
+    "reviewedEnglishHash": "ee8f64bac19189fa0593ed960d294e84e31f9938aa383a86736c87bd5c0f94c1"
+  },
+  "connectionUi.setup.method.aria": {
+    "en": "How to connect {{app}}",
+    "zh-CN": "如何连接 {{app}}",
+    "reviewedEnglishHash": "424e4a2f30c4fb8203a9746a774a54f321b1c2b735e232aabd0790f6f77c620f"
+  },
+  "connectionUi.setup.method.question": {
+    "en": "How do you want to connect?",
+    "zh-CN": "希望如何连接？",
+    "reviewedEnglishHash": "205070434f86db79fb92b872ec2aee186105753968232d070d1c6d867355c1d9"
+  },
+  "connectionUi.setup.method.required": {
+    "en": "Choose a connection method to continue.",
+    "zh-CN": "请选择连接方式以继续。",
+    "reviewedEnglishHash": "8fe10db8ed5f38426b9dac6526ba97975d5f805a09d3f07f146c9477ee2c1a3d"
+  },
+  "connectionUi.setup.method.signInWith": {
+    "en": "Sign in with {{app}}",
+    "zh-CN": "使用 {{app}} 登录",
+    "reviewedEnglishHash": "8a3fc93d4fd7c0ae197d7d5bef23ae289cc926cbabdfa6f62378b0a78f48e3ce"
+  },
+  "connectionUi.setup.method.useApiKey": {
+    "en": "Use an API key",
+    "zh-CN": "使用 API 密钥",
+    "reviewedEnglishHash": "d0490d0465c688f0d168947e99812774e7852be31538e1cdbc9e567931d3f266"
+  },
+  "connectionUi.setup.oauth.appSettings": {
+    "en": "app settings",
+    "zh-CN": "应用设置",
+    "reviewedEnglishHash": "beb470b89ed85a054f0fc32b5db044be166231ffd4e20c1427f9c1a5a6f60860"
+  },
+  "connectionUi.setup.oauth.asanaDescription": {
+    "en": "Sign in with Asana to choose your workspace and connect it to Paperclip.",
+    "zh-CN": "使用 Asana 登录以选择工作区并连接到 Paperclip。",
+    "reviewedEnglishHash": "ce90e7b0729a9ce85a2d9caf130ee6763e0144bfa209e4ecabdb9102dc0d08cf"
   },
   "connectionUi.setup.oauth.authorizationCancelled": {
     "en": "Authorization was cancelled. You can try again.",
@@ -569,10 +864,25 @@
     "zh-CN": "授权未完成。准备好后请重试。",
     "reviewedEnglishHash": "92f5ecbe8c450f36dc7329ae637cab7b76524c2ae1cf485ae53f821fe1de0717"
   },
+  "connectionUi.setup.oauth.callbackUrl": {
+    "en": "Paperclip callback URL",
+    "zh-CN": "Paperclip 回调 URL",
+    "reviewedEnglishHash": "a3488da065073600d093f65e2013a572123fd730406133bef458484c57ae9f97"
+  },
+  "connectionUi.setup.oauth.callbackUrlHint": {
+    "en": "Add this exact URL to {{provider}} before continuing. It must match the authorization request.",
+    "zh-CN": "继续前，请将此精确 URL 添加到 {{provider}}。它必须与授权请求匹配。",
+    "reviewedEnglishHash": "88c0ac4ab000a9dbdb97986e22d17c623ef9f3c9373ca2f9274a69d56e8e988c"
+  },
   "connectionUi.setup.oauth.checkExistingConnectionFailed": {
     "en": "Paperclip couldn’t check for an existing connection. Try again.",
     "zh-CN": "Paperclip 无法检查现有连接。请重试。",
     "reviewedEnglishHash": "c9fe150812b74bb920af0c2b474d59bd642fc1bd7fd7f1868d48ff770d3779c5"
+  },
+  "connectionUi.setup.oauth.clientSecret": {
+    "en": "Client secret",
+    "zh-CN": "客户端密钥",
+    "reviewedEnglishHash": "4aded5faf15623c5c91eb87d39dbe4366fc73e1affb46dfbfcc1865e7704f157"
   },
   "connectionUi.setup.oauth.confirmConnectionFailed": {
     "en": "Could not confirm the connection. Try again.",
@@ -598,6 +908,16 @@
     "en": "Continue to {{server}}",
     "zh-CN": "继续前往 {{server}}",
     "reviewedEnglishHash": "1e3574b9f6fbdd54c3ff9a099056c519d964396ab2762f6fedfdc7d142609ad7"
+  },
+  "connectionUi.setup.oauth.continueToSignIn": {
+    "en": "Continue to sign in",
+    "zh-CN": "继续登录",
+    "reviewedEnglishHash": "d398cd0a268e4a66d1a8e26b98996445a5e9d45fc2565ba1983ac2bde746e197"
+  },
+  "connectionUi.setup.oauth.copyCallbackUrl": {
+    "en": "Copy callback URL",
+    "zh-CN": "复制回调 URL",
+    "reviewedEnglishHash": "9d985e7b76738099593ee7903574eee7a62044371095ca5582511991f8953828"
   },
   "connectionUi.setup.oauth.creatingConnection": {
     "en": "Paperclip is creating a secure {{server}} connection.",
@@ -644,6 +964,11 @@
     "zh-CN": "正在打开 {{server}}…",
     "reviewedEnglishHash": "32218f8878ee19f13bb15b80651ab888bad9881d06ee86b85cc9105dd686532b"
   },
+  "connectionUi.setup.oauth.optionalPublicClient": {
+    "en": "Optional for public clients",
+    "zh-CN": "公共客户端可选",
+    "reviewedEnglishHash": "444473bacd514ced9c186bd371bbd59bc5dbd0091e9cde7ee807dfda66e6c155"
+  },
   "connectionUi.setup.oauth.preparing": {
     "en": "Preparing…",
     "zh-CN": "正在准备…",
@@ -663,6 +988,16 @@
     "en": "{{server}} couldn’t connect",
     "zh-CN": "无法连接 {{server}}",
     "reviewedEnglishHash": "b3ad44a3418c43853deaa9867b2d73c9ffb7ccd2a1630409d818b93488d1b8f0"
+  },
+  "connectionUi.setup.oauth.providerMustRegister": {
+    "en": "{{provider}} does not let Paperclip register itself automatically, so this connector needs an OAuth app you create. Add the callback URL below in {{provider}}, then paste the client details back here.",
+    "zh-CN": "{{provider}} 不允许 Paperclip 自动注册，因此此连接器需要你创建 OAuth 应用。请在 {{provider}} 中添加下方回调 URL，再将客户端信息粘贴回此处。",
+    "reviewedEnglishHash": "7a972dd4154aed782dfc3e8753bc04128b0599e7f9d77b65c33428ee35c63fad"
+  },
+  "connectionUi.setup.oauth.registerCallback": {
+    "en": "Register Paperclip's callback URI in {{provider}}, then enter the customer-owned client details.",
+    "zh-CN": "请在 {{provider}} 中注册 Paperclip 回调 URI，然后输入客户自有的客户端信息。",
+    "reviewedEnglishHash": "495eb61469bcb42d07d270d967d943bd5ed08eadd1206afa28d25fbe382bd608"
   },
   "connectionUi.setup.oauth.savedConnectionDescription": {
     "en": "Your connection is saved. Continue in {{server}} to approve access; its identity and agent access will stay the same.",
@@ -693,6 +1028,26 @@
     "en": "this server",
     "zh-CN": "此服务器",
     "reviewedEnglishHash": "98bf14a4321304dfedda5b7aa42a29ccee14192f13d1a8a80230409dc291c766"
+  },
+  "connectionUi.setup.oauth.vercelConnectorDescription": {
+    "en": "Paperclip does not copy Vercel’s setup forms. Finish connector setup there, then paste its UID below.",
+    "zh-CN": "Paperclip 不会复制 Vercel 的设置表单。请先在那里完成连接器设置，再在下方粘贴其 UID。",
+    "reviewedEnglishHash": "71d1555a89e32df7a016dd74166b15707f47e60b41503ec635142cc88e308d6e"
+  },
+  "connectionUi.setup.oauth.vercelConnectorId": {
+    "en": "Connector UID or ID",
+    "zh-CN": "连接器 UID 或 ID",
+    "reviewedEnglishHash": "d6b52670929d19d6e6dcf5cdad025aac931660ce1bbac7370ef0c18c40c13a6e"
+  },
+  "connectionUi.setup.oauth.vercelConnectorIdHint": {
+    "en": "Paperclip validates the connector and stores only its reference and redacted verification metadata.",
+    "zh-CN": "Paperclip 会验证连接器，并只保存其引用和已脱敏的验证元数据。",
+    "reviewedEnglishHash": "dcb1d31f08aaa8703bb0aa54d9d9b0a86f34cfaa85835e0d88d26c5daf86b813"
+  },
+  "connectionUi.setup.oauth.vercelConnectorTitle": {
+    "en": "Create or attach the connector in Vercel",
+    "zh-CN": "在 Vercel 中创建或关联连接器",
+    "reviewedEnglishHash": "edd8ec05202b505c3f8adada304c390a467ca433e139e5b499a1ff0f1813d876"
   },
   "connectionUi.setup.oauthCancelled": {
     "en": "Authorization was cancelled or declined. Your saved connection was not changed.",
@@ -769,6 +1124,11 @@
     "zh-CN": "请重试。",
     "reviewedEnglishHash": "eea4fb33efd382834952e3e7ab52f8dc41ccc2c3f5c3f246f0505235e0e962aa"
   },
+  "connectionUi.setup.unavailableOnInstance": {
+    "en": "Unavailable on this instance.",
+    "zh-CN": "此实例中不可用。",
+    "reviewedEnglishHash": "4276fc090b5e2aa475de03756e113c5a5630d340d7bc3f50dd02dd1e9a225a4c"
+  },
   "connectionUi.setup.useExistingConnectionFailed": {
     "en": "Couldn’t use this connection.",
     "zh-CN": "无法使用此连接。",
@@ -778,6 +1138,36 @@
     "en": "Use your own {{provider}} OAuth app",
     "zh-CN": "使用你自己的 {{provider}} OAuth 应用",
     "reviewedEnglishHash": "157c6dd100eee80a43ec11ece0be3b44eddf8fa4b6a882f8ff548a70a36081a4"
+  },
+  "connectionUi.setup.vercel.connectThrough": {
+    "en": "Connect through Vercel",
+    "zh-CN": "通过 Vercel 连接",
+    "reviewedEnglishHash": "70d9459fc12a47ac1fdfa54b712b6c29db45412a283ed3642f8f855621522abb"
+  },
+  "connectionUi.setup.vercel.galleryDescription": {
+    "en": "Create and manage the provider connector in Vercel. Paperclip stores its reference and applies agent access, policy, approval, and audit controls here.",
+    "zh-CN": "请在 Vercel 中创建和管理服务商连接器。Paperclip 会保存其引用，并在此应用智能体访问、策略、审批和审计控制。",
+    "reviewedEnglishHash": "18a6226d709ca9a2f887a4e2572037d59e1a1c65d1bdd3a696c0d3756f7c421a"
+  },
+  "connectionUi.setup.vercel.openConnect": {
+    "en": "Open Vercel Connect",
+    "zh-CN": "打开 Vercel Connect",
+    "reviewedEnglishHash": "781aa333e3fb303b160466c43a16f4f4c0dc3354ea0193e8d6f2cd25c1cf57a9"
+  },
+  "connectionUi.setup.vercel.unavailable": {
+    "en": "Vercel Connect is unavailable on this instance.",
+    "zh-CN": "此实例中 Vercel Connect 不可用。",
+    "reviewedEnglishHash": "e4932f215acd2c0157da6c4c0ce84d8265703dce14d3d3c8030856931b688723"
+  },
+  "connectionUi.setup.vercel.validateAndConnect": {
+    "en": "Validate and connect",
+    "zh-CN": "验证并连接",
+    "reviewedEnglishHash": "d0fe8bf38eed5f5687ea7f38a0d5d969e403fd67f7673472f1c47c9fcd843e3b"
+  },
+  "connectionUi.setup.vercel.validateAndContinue": {
+    "en": "Validate and continue",
+    "zh-CN": "验证并继续",
+    "reviewedEnglishHash": "1c06d7201b70a3a48ddb1ae75347aec5821093ff869963f68743bf874c0e6d35"
   },
   "connectionUi.signInToProvider": {
     "en": "Sign in to {{provider}}",

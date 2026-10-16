@@ -473,8 +473,48 @@ export interface ConfigFieldSchema {
   meta?: Record<string, unknown>;
 }
 
+/**
+ * Optional, declarative fields used by the generic first-run agent setup.
+ *
+ * This remains data-only so external adapters can describe credentials and
+ * endpoints without adding adapter-specific behavior to the host UI.
+ */
+export interface AdapterSetupCredentialSchema {
+  /** Adapter config property which receives the stored secret reference. */
+  configKey: string;
+  /** Environment variable name used for the transient connection test. */
+  secretKey: string;
+  required?: boolean;
+}
+
+export interface AdapterSetupProviderSchema {
+  /** Adapter config property which receives the selected provider. */
+  configKey: string;
+  /** Provider identifier to transient credential environment-variable mapping. */
+  envKeys: Record<string, string>;
+}
+
+export interface AdapterSetupEndpointSchema {
+  /** Adapter config property which receives the endpoint URL. */
+  configKey: string;
+  required?: boolean;
+  placeholder?: string;
+}
+
+export interface AdapterSetupSchema {
+  credential?: AdapterSetupCredentialSchema;
+  provider?: AdapterSetupProviderSchema;
+  /** Adapter-supplied explanatory copy shown beside generic credentials. */
+  loginHint?: string;
+  endpoint?: AdapterSetupEndpointSchema;
+  model?: { hidden?: boolean };
+  environment?: { hidden?: boolean };
+}
+
 export interface AdapterConfigSchema {
   fields: ConfigFieldSchema[];
+  /** Optional metadata for the host's generic new-agent setup flow. */
+  onboarding?: AdapterSetupSchema;
 }
 
 export interface AdapterRuntimeCommandSpec {

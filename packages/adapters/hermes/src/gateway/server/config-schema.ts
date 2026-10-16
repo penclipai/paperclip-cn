@@ -4,6 +4,20 @@ import { INSECURE_REMOTE_HTTP_ESCAPE_HATCH } from "./transport-security.js";
 
 export function getConfigSchema(): AdapterConfigSchema {
   return {
+    onboarding: {
+      credential: {
+        configKey: "apiKey",
+        secretKey: "API_SERVER_KEY",
+        required: true,
+      },
+      endpoint: {
+        configKey: "apiBaseUrl",
+        required: true,
+        placeholder: "https://hermes.example.com",
+      },
+      model: { hidden: true },
+      environment: { hidden: true },
+    },
     fields: [
       {
         key: "apiBaseUrl",

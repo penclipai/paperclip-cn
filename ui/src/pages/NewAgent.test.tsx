@@ -38,6 +38,7 @@ const state = vi.hoisted(() => ({
   adapters: [] as object[],
   navigate: vi.fn(),
   openNewIssue: vi.fn(),
+  resolveDeferredSchema: null as ((response: { ok: boolean; json?: () => Promise<unknown> }) => void) | null,
 }));
 const managedApi = vi.hoisted(() => ({
   list: vi.fn(async () => ({ currentUserId: "user-1", canManageConnections: true, connections: [] })),
@@ -143,6 +144,13 @@ async function render(adapter = "pi_local", runnerProvider = "codex") {
   );
   await settle();
 }
+function addExternalAdapter(type: string) {
+  state.adapters = [
+    ...state.adapters,
+    { type, source: "external", loaded: true, disabled: false },
+  ];
+  cache.setQueryData(queryKeys.adapters.all, state.adapters);
+}
 async function connect(provider: string) {
   await click(provider + "Subscription");
   await click("Connect");
@@ -154,6 +162,59 @@ const pass = {
     { code: "hello_probe_passed", level: "info", message: "Model replied" },
   ],
   testedAt: "2026-09-07T00:00:00Z",
+};
+const hermesSchemas = {
+  hermes_local: {
+    fields: [{ key: "provider", label: "Provider", type: "select" }],
+    onboarding: {
+      provider: {
+        configKey: "provider",
+        envKeys: { openrouter: "OPENROUTER_API_KEY" },
+      },
+      loginHint: "Use a provider API key.",
+    },
+  },
+  hermes_gateway: {
+    fields: [{ key: "apiBaseUrl", label: "API base URL", type: "text", required: true }],
+    onboarding: {
+      credential: { configKey: "apiKey", secretKey: "API_SERVER_KEY", required: true },
+      endpoint: { configKey: "apiBaseUrl", required: true, placeholder: "https://hermes.example.com" },
+      model: { hidden: true },
+      environment: { hidden: true },
+    },
+  },
+  fixture_remote: {
+    fields: [{ key: "serviceUrl", label: "Service URL", type: "text", required: true }],
+    onboarding: {
+      credential: { configKey: "accessToken", secretKey: "FIXTURE_TOKEN", required: true },
+      endpoint: { configKey: "serviceUrl", required: true, placeholder: "https://fixture.example" },
+      model: { hidden: true },
+    },
+  },
+  fixture_cli: {
+    fields: [{
+      key: "selectedRuntime",
+      label: "Runtime",
+      type: "select",
+      options: [{ value: "nebula", label: "Nebula" }],
+    }],
+    onboarding: {
+      provider: {
+        configKey: "selectedRuntime",
+        envKeys: { nebula: "NEBULA_TOKEN" },
+      },
+    },
+  },
+  fixture_delayed: {
+    fields: [],
+    onboarding: { model: { hidden: true } },
+  },
+  fixture_optional_endpoint: {
+    fields: [{ key: "optionalUrl", label: "Optional URL", type: "text" }],
+    onboarding: {
+      endpoint: { configKey: "optionalUrl", required: false },
+    },
+  },
 };
 beforeEach(() => {
   vi.clearAllMocks();
@@ -193,13 +254,34 @@ beforeEach(() => {
   secrets.createUserSecretDefinition.mockResolvedValue({ id: "definition-1" });
   secrets.createMyUserSecret.mockResolvedValue({ id: "secret-1" });
   secrets.removeUserSecretDefinition.mockResolvedValue({ ok: true });
+  state.resolveDeferredSchema = null;
+  vi.stubGlobal("fetch", vi.fn(async (url: string) => {
+    const type = url.match(/\/api\/adapters\/([^/]+)\/config-schema/)?.[1];
+    if (type === "fixture_delayed") {
+      return await new Promise<{ ok: boolean; json?: () => Promise<unknown> }>((resolve) => {
+        state.resolveDeferredSchema = resolve;
+      });
+    }
+    const schema = type ? hermesSchemas[type as keyof typeof hermesSchemas] : undefined;
+    return schema
+      ? { ok: true, json: async () => schema }
+      : { ok: false };
+  }));
 });
 afterEach(async () => {
   await act(async () => root.unmount());
   cache.clear();
   container.remove();
+  vi.unstubAllGlobals();
 });
 describe("New agent setup", () => {
+  it("does not request configuration metadata for a builtin adapter", async () => {
+    await render("grok_local");
+    const schemaRequests = vi.mocked(globalThis.fetch).mock.calls.filter(([url]) =>
+      String(url).includes("/adapters/") && String(url).endsWith("/config-schema"),
+    );
+    expect(schemaRequests).toHaveLength(0);
+  });
   it("creates Dot through its independent choice without CLI or model setup, then routes to pairing", async () => {
     settings.getExperimental.mockResolvedValue({ enableNativeRunner: false, enableOpenAiDot: true, enablePublicMcp: true });
     await render("paperclip_runner", "openai_dot");
@@ -406,11 +488,18 @@ describe("New agent setup", () => {
     ["gemini_local", "GEMINI_API_KEY"],
     ["hermes_local", "OPENROUTER_API_KEY"],
   ])("provides %s credentials to tests and stores only a secret reference", async (adapter, key) => {
+    if (adapter === "hermes_local") {
+      state.adapters = state.adapters.map((entry: any) =>
+        entry.type === adapter ? { ...entry, source: "external" } : entry,
+      );
+    }
     await render(adapter);
     await fill(key, "adapter-test-key");
     await click("Finish setup");
     expect(api.testEnvironment.mock.calls[0][2].testCredentials).toEqual({ [key]: "adapter-test-key" });
     expect(api.hire.mock.calls[0][1].adapterConfig.env[key]).toMatchObject({ type: "secret_ref", secretId: "org-secret-1" });
+    if (adapter === "hermes_local")
+      expect(api.hire.mock.calls[0][1].adapterConfig.provider).toBe("openrouter");
     expect(container.querySelector('[aria-label="Thinking effort"]')).toBeNull();
   });
   it("defines a Kimi API model without overriding it with a CLI model alias", async () => {
@@ -431,9 +520,12 @@ describe("New agent setup", () => {
     });
   });
   it("configures Hermes Gateway URL and its top-level secret reference", async () => {
+    state.adapters = state.adapters.map((adapter: any) =>
+      adapter.type === "hermes_gateway" ? { ...adapter, source: "external" } : adapter,
+    );
     await render("hermes_gateway");
     expect(container.querySelector('[aria-label="Model"]')).toBeNull();
-    await fill("Hermes API base URL", "https://hermes.example.com");
+    await fill("API base URL", "https://hermes.example.com");
     await fill("API_SERVER_KEY", "hermes-test-key");
     await click("Finish setup");
     expect(api.testEnvironment.mock.calls[0][2]).toMatchObject({
@@ -442,6 +534,71 @@ describe("New agent setup", () => {
     });
     expect(api.hire.mock.calls[0][1].adapterConfig.apiKey).toMatchObject({ type: "secret_ref", secretId: "org-secret-1" });
     expect(JSON.stringify(api.hire.mock.calls)).not.toContain("hermes-test-key");
+  });
+  it("maps synthetic external endpoint and credential metadata without persisting plaintext", async () => {
+    addExternalAdapter("fixture_remote");
+    await render("fixture_remote");
+    expect(container.querySelector('[aria-label="Model"]')).toBeNull();
+    await fill("Service URL", "https://fixture.example/api");
+    await fill("FIXTURE_TOKEN", "fixture-secret");
+    await click("Finish setup");
+    expect(api.testEnvironment.mock.calls[0][2]).toMatchObject({
+      adapterConfig: { serviceUrl: "https://fixture.example/api" },
+      testCredentials: { FIXTURE_TOKEN: "fixture-secret" },
+    });
+    const config = api.hire.mock.calls[0][1].adapterConfig;
+    expect(config.serviceUrl).toBe("https://fixture.example/api");
+    expect(config.accessToken).toMatchObject({ type: "secret_ref", secretId: "org-secret-1" });
+    expect(JSON.stringify(config)).not.toContain("fixture-secret");
+  });
+  it("blocks a synthetic external endpoint with an invalid URL before testing or hiring", async () => {
+    addExternalAdapter("fixture_remote");
+    await render("fixture_remote");
+    await fill("Service URL", "not a URL");
+    await fill("FIXTURE_TOKEN", "fixture-secret");
+    await click("Finish setup");
+    expect(api.testEnvironment).not.toHaveBeenCalled();
+    expect(api.hire).not.toHaveBeenCalled();
+    expect(container.textContent).toContain("Enter a valid endpoint URL");
+  });
+  it("omits an optional external endpoint when blank and persists it when supplied", async () => {
+    addExternalAdapter("fixture_optional_endpoint");
+    await render("fixture_optional_endpoint");
+    await click("Run test");
+    expect(api.testEnvironment.mock.calls[0][2].adapterConfig).not.toHaveProperty("optionalUrl");
+    await fill("Optional URL", "https://fixture.example/optional");
+    await click("Run test");
+    expect(api.testEnvironment.mock.calls[1][2].adapterConfig).toMatchObject({
+      optionalUrl: "https://fixture.example/optional",
+    });
+  });
+  it("keeps an existing external CLI provider implicit until a selected provider credential is supplied", async () => {
+    addExternalAdapter("fixture_cli");
+    await render("fixture_cli");
+    await click("Run test");
+    expect(api.testEnvironment.mock.calls[0][2].adapterConfig).not.toHaveProperty("selectedRuntime");
+    await fill("NEBULA_TOKEN", "nebula-secret");
+    await click("Run test");
+    expect(api.testEnvironment.mock.calls[1][2]).toMatchObject({
+      adapterConfig: { selectedRuntime: "nebula" },
+      testCredentials: { NEBULA_TOKEN: "nebula-secret" },
+    });
+  });
+  it("uses the generic fallback after an absent schema and waits for a deferred external schema", async () => {
+    addExternalAdapter("fixture_absent");
+    await render("fixture_absent");
+    expect(container.querySelector('[aria-label="Model"]')).toBeTruthy();
+    addExternalAdapter("fixture_delayed");
+    await render("fixture_delayed");
+    const finish = [...container.querySelectorAll("button")].find((button) => button.textContent?.trim() === "Finish setup");
+    expect(finish).toBeTruthy();
+    expect((finish as HTMLButtonElement).disabled).toBe(true);
+    state.resolveDeferredSchema?.({
+      ok: true,
+      json: async () => hermesSchemas.fixture_delayed,
+    });
+    await settle();
+    expect((finish as HTMLButtonElement).disabled).toBe(false);
   });
   it("uses the shared Grok connection flow and hides ignored Kimi and OpenCode effort controls", async () => {
     await render("grok_local");
