@@ -39,6 +39,11 @@
     "zh-CN": "任务",
     "reviewedEnglishHash": "48dc76dfa23ae03fea1372c5ed6c0e1bd62eaeca7bba6d804eb0afa87972f031"
   },
+  "entityType.plugin": {
+    "en": "Plugin",
+    "zh-CN": "插件",
+    "reviewedEnglishHash": "ab1173eed1d477d9e951c2316a74d1923220e64d1bbaeadf03c88e20576c7450"
+  },
   "entityType.project": {
     "en": "Project",
     "zh-CN": "项目",

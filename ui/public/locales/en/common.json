@@ -8696,6 +8696,7 @@
   "entityType.heartbeatRun": "Heartbeat Run",
   "entityType.invite": "Invite",
   "entityType.issue": "Issue",
+  "entityType.plugin": "Plugin",
   "entityType.project": "Project",
   "entityType.routine": "Routine",
   "entityType.routineRun": "Routine Run",

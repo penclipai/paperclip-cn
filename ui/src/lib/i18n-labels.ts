@@ -53,6 +53,7 @@ const ENTITY_TYPE_TRANSLATION_KEYS: Record<string, string> = {
   heartbeat_run: "entityType.heartbeatRun",
   invite: "entityType.invite",
   issue: "entityType.issue",
+  plugin: "entityType.plugin",
   project: "entityType.project",
   routine: "entityType.routine",
   routine_run: "entityType.routineRun",

@@ -205,6 +205,56 @@ describe("AuditFeed", () => {
     }
   });
 
+  it.each([
+    ["current", AuditFeed],
+    ["production", ProductionAuditFeed],
+  ] as const)("renders localized plugin entity labels in %s rows without changing raw plugin action identifiers", async (_variant, Feed) => {
+    try {
+      await i18n.changeLanguage("zh-CN");
+      const actions = ["plugin.installed", "plugin.enabled", "plugin.disabled"];
+      listAgentActionsMock.mockResolvedValue({
+        items: actions.map((action, index) => record({
+          id: `evt-plugin-${index}`,
+          action,
+          entityType: "plugin",
+          entityId: `plugin-${index}`,
+          actorType: "system",
+          actorId: null,
+          agentId: null,
+          details: { packageName: "@penclipai/example" },
+          entity: { issue: null, comment: null, document: null },
+        })),
+        nextCursor: null,
+        accessTier: "full",
+      });
+
+      await render({}, Feed);
+
+      for (const action of actions) {
+        const row = Array.from(container.querySelectorAll("li")).find(
+          (candidate) => candidate.querySelector("span.font-mono")?.textContent === action,
+        );
+        expect(row, `row for ${action}`).toBeTruthy();
+        const sentence = row!.querySelector("div[class*='gap-x-1.5']");
+        expect(sentence, `sentence for ${action}`).toBeTruthy();
+        expect(sentence!.lastElementChild?.textContent?.trim(), `localized plugin entity label in ${action}`).toBe("插件");
+        expect(row!.querySelector("span.font-mono")?.textContent).toBe(action);
+      }
+
+      await i18n.changeLanguage("en");
+      await flushReact();
+      for (const action of actions) {
+        const row = Array.from(container.querySelectorAll("li")).find(
+          (candidate) => candidate.querySelector("span.font-mono")?.textContent === action,
+        );
+        const sentence = row!.querySelector("div[class*='gap-x-1.5']");
+        expect(sentence!.lastElementChild?.textContent?.trim(), `English plugin entity label in ${action}`).toBe("Plugin");
+      }
+    } finally {
+      await i18n.changeLanguage("en");
+    }
+  });
+
   it("localizes plugin-defined actions while retaining their raw event identifier", async () => {
     try {
       await i18n.changeLanguage("zh-CN");

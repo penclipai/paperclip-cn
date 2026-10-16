@@ -8696,6 +8696,7 @@
   "entityType.heartbeatRun": "心跳运行",
   "entityType.invite": "邀请",
   "entityType.issue": "任务",
+  "entityType.plugin": "插件",
   "entityType.project": "项目",
   "entityType.routine": "例行任务",
   "entityType.routineRun": "例行任务运行",

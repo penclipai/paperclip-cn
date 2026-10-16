@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { TFunction } from "i18next";
-import { translateStatusLabel } from "./i18n-labels";
+import { translateEntityTypeLabel, translateStatusLabel } from "./i18n-labels";
 
 function testTranslator(translations: Record<string, string>): TFunction {
   return ((key: string, options?: { defaultValue?: string }) =>
@@ -20,5 +20,14 @@ describe("translateStatusLabel", () => {
     expect(translateStatusLabel(t, "achieved")).toBe("已达成");
     expect(translateStatusLabel(t, "invalid_org_chain")).toBe("报告链无效");
     expect(translateStatusLabel(t, "suspended")).toBe("已暂停");
+  });
+});
+
+describe("translateEntityTypeLabel", () => {
+  it("localizes the application-owned plugin entity type while preserving unknown technical values", () => {
+    const t = testTranslator({ "entityType.plugin": "插件" });
+
+    expect(translateEntityTypeLabel(t, "plugin")).toBe("插件");
+    expect(translateEntityTypeLabel(t, "plugin:@penclipai/example")).toBe("plugin:@penclipai/example");
   });
 });
