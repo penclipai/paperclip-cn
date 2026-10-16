@@ -7935,9 +7935,9 @@ describeEmbeddedPostgres("workspace runtime service control persistence", () => 
     const workspace = fixture.workspaces[0]!;
     const basePort = await findFreePort();
     listenerProbeUnavailableFixture.enabled = true;
-    // A failed ownership probe is unknown, not a free port. Windows exercises
-    // the bounded strict query; other platforms keep the same fail-closed
-    // contract for their listener lookup.
+    // Windows turns an unavailable strict ownership query into a typed error.
+    // POSIX retains the legacy best-effort lsof contract and rejects the start
+    // once no safe fixed-port candidate can be established.
     listenerProbeUnavailableFixture.failStrict = process.platform === "win32";
 
     try {
@@ -7962,7 +7962,11 @@ describeEmbeddedPostgres("workspace runtime service control persistence", () => 
           expect.objectContaining({ message: "listener probe unavailable", code: 1 }),
         );
       } else {
-        expect(failure).toHaveProperty("message", "listener probe unavailable");
+        expect(failure).toHaveProperty(
+          "message",
+          `No safe runtime service port is available in the bounded allocation range starting at ${basePort}.`,
+        );
+        expect(failure).toMatchObject({ code: "workspace_runtime_port_allocation_exhausted" });
       }
       await expect(db
         .select({ id: workspaceRuntimeServices.id })
