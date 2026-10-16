@@ -2,7 +2,7 @@ import express from "express";
 import request from "supertest";
 import { type SQL } from "drizzle-orm";
 import { PgDialect } from "drizzle-orm/pg-core";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockAgentService = vi.hoisted(() => ({
   getById: vi.fn(),
@@ -154,6 +154,20 @@ function registerModuleMocks() {
   }));
 }
 
+// Vitest tracks factory-mock resolution in one shared call stack. Importing
+// these graphs concurrently can drop the services/index factory mock and
+// accidentally run real DB-backed activity logging against this test stub.
+async function preloadRouteModules() {
+  registerModuleMocks();
+  await vi.importActual<typeof import("../routes/agents.js")>(
+    "../routes/agents.js",
+  );
+  await vi.importActual<typeof import("../middleware/index.js")>(
+    "../middleware/index.js",
+  );
+  vi.resetModules();
+}
+
 async function createApp(
   db: Record<string, unknown> = {},
   actor: Record<string, unknown> = {
@@ -165,9 +179,9 @@ async function createApp(
   },
   options: { chatRunRetries?: typeof mockChatRunRetries } = {},
 ) {
-  // Vitest tracks factory-mock resolution in one shared call stack. Importing
-  // these graphs concurrently can drop the services/index factory mock and
-  // accidentally run real DB-backed activity logging against this test stub.
+  // Keep these imports sequential: Vitest tracks factory-mock resolution in
+  // one shared call stack. The beforeAll preloads their transform graph while
+  // beforeEach retains per-test module isolation.
   const { agentRoutes } = await vi.importActual<
     typeof import("../routes/agents.js")
   >("../routes/agents.js");
@@ -277,6 +291,8 @@ async function requestApp(
 }
 
 describe("agent live run routes", () => {
+  beforeAll(preloadRouteModules, 45_000);
+
   beforeEach(() => {
     vi.resetModules();
     vi.doUnmock("../services/agents.js");

@@ -414,7 +414,7 @@ describe("cursor execute", () => {
       };
       expect(await fs.realpath(capture.command)).toBe(await fs.realpath(cursorAgentPath));
       const expectedRemoteCursorBin = process.platform === "win32"
-        ? homeDir.replace(/^([A-Za-z]):[\\/]/, (_match, drive: string) => `/${drive.toLowerCase()}/`).replace(/\\/g, "/") + "/.local/bin"
+        ? `/tmp/${path.basename(root)}/home/.local/bin`
         : path.join(homeDir, ".local", "bin");
       expect(capture.path.split(":")[0]).toBe(expectedRemoteCursorBin);
       expect(capture.prompt).toContain("Follow the paperclip heartbeat.");
