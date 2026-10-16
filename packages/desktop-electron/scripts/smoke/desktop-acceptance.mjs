@@ -228,7 +228,36 @@ async function waitForPortClosed(port, label, timeoutMs = 20_000) {
   throw new Error(`Timed out waiting for ${label} to stop listening on port ${port}.`);
 }
 
-function readEmbeddedPostgresPort(userDataDir) {
+function isProcessRunning(pid) {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error) {
+    if (error?.code === "ESRCH") {
+      return false;
+    }
+    if (error?.code === "EPERM") {
+      // An inaccessible process cannot prove that this postmaster has exited.
+      return true;
+    }
+    throw error;
+  }
+}
+
+async function waitForProcessExit(pid, label, timeoutMs = 20_000) {
+  const deadline = Date.now() + timeoutMs;
+
+  while (Date.now() < deadline) {
+    if (!isProcessRunning(pid)) {
+      return;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+
+  throw new Error(`Timed out waiting for ${label} process ${pid} to exit.`);
+}
+
+function readEmbeddedPostgresState(userDataDir) {
   const pidFile = path.resolve(
     userDataDir,
     "runtime",
@@ -242,9 +271,14 @@ function readEmbeddedPostgresPort(userDataDir) {
     return null;
   }
 
-  const portLine = fs.readFileSync(pidFile, "utf8").split(/\r?\n/)[3]?.trim();
+  const lines = fs.readFileSync(pidFile, "utf8").split(/\r?\n/);
+  const pid = Number(lines[0]?.trim());
+  const portLine = lines[3]?.trim();
   const port = Number(portLine);
-  return Number.isInteger(port) && port > 0 ? port : null;
+  return {
+    pid: Number.isSafeInteger(pid) && pid > 0 ? pid : null,
+    port: Number.isInteger(port) && port > 0 ? port : null,
+  };
 }
 
 function assertResponseOk(response, body, label) {
@@ -991,18 +1025,29 @@ async function run() {
   let launchedPid = null;
   let serverPort = null;
   let embeddedPostgresPort = null;
+  let embeddedPostgresPid = null;
 
   const launchDesktop = async () => {
     const { _electron } = await import("playwright");
-    electronApp = await _electron.launch(resolveDevLaunchOptions(userDataDir));
+    const launchOptions = resolveDevLaunchOptions(userDataDir);
+    const expectsEmbeddedPostgres = !launchOptions.env.DATABASE_URL?.trim();
+    electronApp = await _electron.launch(launchOptions);
     launchedPid = electronApp.process()?.pid ?? null;
     const page = await electronApp.firstWindow();
     await page.waitForLoadState("domcontentloaded");
     await page.waitForURL(/^http:\/\/127\.0\.0\.1:\d+\/?/, { timeout: 90_000 });
     const origin = new URL(page.url()).origin;
     serverPort = Number(new URL(page.url()).port);
-    embeddedPostgresPort = readEmbeddedPostgresPort(userDataDir);
-    return { page, origin, health: await waitForHealth(origin) };
+    const health = await waitForHealth(origin);
+    const embeddedPostgres = readEmbeddedPostgresState(userDataDir);
+    if (expectsEmbeddedPostgres && (!embeddedPostgres?.pid || !embeddedPostgres.port)) {
+      throw new Error(
+        "Expected embedded PostgreSQL after desktop health became ready, but postmaster.pid did not contain a valid postmaster PID and port.",
+      );
+    }
+    embeddedPostgresPort = embeddedPostgres?.port ?? null;
+    embeddedPostgresPid = embeddedPostgres?.pid ?? null;
+    return { page, origin, health };
   };
 
   const closeDesktop = async () => {
@@ -1011,14 +1056,17 @@ async function run() {
     const pid = launchedPid;
     const controlPlanePort = serverPort;
     const postgresPort = embeddedPostgresPort;
+    const postgresPid = embeddedPostgresPid;
     electronApp = null;
     launchedPid = null;
     serverPort = null;
     embeddedPostgresPort = null;
+    embeddedPostgresPid = null;
     try {
       await app.close();
       if (controlPlanePort) await waitForPortClosed(controlPlanePort, "desktop control plane");
       if (postgresPort) await waitForPortClosed(postgresPort, "embedded PostgreSQL");
+      if (postgresPid) await waitForProcessExit(postgresPid, "embedded PostgreSQL postmaster");
     } finally {
       killProcessTree(pid, { cwd: packageDir });
     }

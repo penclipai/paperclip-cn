@@ -423,18 +423,22 @@ jobs:
           version: 9.15.4
           run_install: false
 
-      - name: Install desktop packaging dependencies
+      - name: Install desktop packaging and test dependencies
         shell: pwsh
         run: |
           $store = "$env:PAPERCLIP_NSIS_WORK_DIR\pnpm-store"
-          pnpm install --filter @penclipai/desktop-electron --frozen-lockfile --ignore-scripts --store-dir $store
+          pnpm install --filter paperclip --filter @penclipai/desktop-electron --frozen-lockfile --ignore-scripts --store-dir $store
           if ($LASTEXITCODE -ne 0) {
             Write-Host '::notice title=Lockfile::checked-in lockfile is stale for this merge tree; resolving it inline'
-            pnpm install --filter @penclipai/desktop-electron --resolution-only --ignore-scripts --no-frozen-lockfile --store-dir $store
+            pnpm install --filter paperclip --filter @penclipai/desktop-electron --resolution-only --ignore-scripts --no-frozen-lockfile --store-dir $store
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-            pnpm install --filter @penclipai/desktop-electron --frozen-lockfile --ignore-scripts --store-dir $store
+            pnpm install --filter paperclip --filter @penclipai/desktop-electron --frozen-lockfile --ignore-scripts --store-dir $store
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           }
+
+      - name: Test desktop worker shutdown
+        shell: pwsh
+        run: pnpm --filter @penclipai/desktop-electron run test:run
 
       - name: Resolve electron-builder's pinned NSIS compiler
         shell: pwsh

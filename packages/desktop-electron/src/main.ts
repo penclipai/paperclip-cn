@@ -1,6 +1,6 @@
 import { execFile, fork, type ChildProcess } from "node:child_process";
+import { randomUUID } from "node:crypto";
 import path from "node:path";
-import { setTimeout as delay } from "node:timers/promises";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 import { app, BrowserWindow, ipcMain, Menu, nativeTheme, shell, type WebContents } from "electron";
@@ -26,6 +26,7 @@ import {
   writeDesktopThemePreference,
 } from "./runtime.js";
 import { createSplashDataUrl, type SplashState } from "./splash.js";
+import { requestWorkerShutdown } from "./worker-shutdown.js";
 
 type WorkerReadyMessage = {
   type: "ready";
@@ -70,8 +71,7 @@ const desktopMode: DesktopMode =
   process.env.PAPERCLIP_DESKTOP_DEV === "true" ? "development" : "packaged";
 const startupTimeoutMs = 60_000;
 const waitingSplashDelayMs = 1_800;
-const workerGracefulShutdownTimeoutMs = 5_000;
-const workerForceKillWaitTimeoutMs = 2_000;
+const workerGracefulShutdownTimeoutMs = 120_000;
 const defaultUserDataDir = app.getPath("userData");
 const configuredUserDataDir = resolveDesktopUserDataDir(defaultUserDataDir);
 const execFileAsync = promisify(execFile);
@@ -139,18 +139,6 @@ async function forceKillProcessTree(pid: number): Promise<void> {
       console.warn("[desktop-main] Failed to force kill worker process tree:", error);
     }
   }
-}
-
-async function waitForChildExit(child: ChildProcess): Promise<void> {
-  if (child.exitCode !== null || child.signalCode !== null) {
-    return;
-  }
-
-  await new Promise<void>((resolve) => {
-    child.once("exit", () => {
-      resolve();
-    });
-  });
 }
 
 function clearStartupTimers(): void {
@@ -408,47 +396,16 @@ async function stopWorkerProcess(): Promise<void> {
   }
 
   const alreadyExited = child.exitCode !== null || child.signalCode !== null;
-  if (!alreadyExited) {
-    try {
-      child.kill("SIGTERM");
-    } catch {
-      // Child may already be gone by the time we attempt shutdown.
-    }
-  }
-
   if (alreadyExited) {
     return;
   }
 
-  const childPid = child.pid ?? null;
-  const exitPromise = waitForChildExit(child);
-
-  if (childPid && Number.isInteger(childPid) && childPid > 0) {
-    const gracefulDeadline = Date.now() + workerGracefulShutdownTimeoutMs;
-    while (Date.now() < gracefulDeadline) {
-      if (!isPidAlive(childPid)) {
-        await exitPromise;
-        return;
-      }
-      await delay(100);
-    }
-
-    if (isPidAlive(childPid)) {
-      await forceKillProcessTree(childPid);
-      const forceKillDeadline = Date.now() + workerForceKillWaitTimeoutMs;
-      while (Date.now() < forceKillDeadline) {
-        if (!isPidAlive(childPid)) {
-          break;
-        }
-        await delay(100);
-      }
-    }
-  }
-
-  await Promise.race([
-    exitPromise,
-    delay(workerForceKillWaitTimeoutMs).then(() => undefined),
-  ]);
+  await requestWorkerShutdown({
+    child,
+    requestId: randomUUID(),
+    timeoutMs: workerGracefulShutdownTimeoutMs,
+    forceKill: forceKillProcessTree,
+  });
 }
 
 function attachWorkerLogging(child: ChildProcess): void {
@@ -499,7 +456,9 @@ async function startWorkerProcess(reason: string): Promise<void> {
         ? "打开时间比平时更久。你可以再试一次；如果还是不行，再查看终端日志。"
         : "Startup is taking longer than usual. Try again once, then check the terminal logs if it still fails.",
     );
-    void stopWorkerProcess();
+    void stopWorkerProcess().catch((error) => {
+      console.error("[desktop-main] Worker shutdown after startup timeout failed:", error);
+    });
   }, startupTimeoutMs);
 
   child.on("message", (message: WorkerMessage) => {
@@ -518,7 +477,9 @@ async function startWorkerProcess(reason: string): Promise<void> {
     if (message?.type === "fatal") {
       clearStartupTimers();
       void showStartupError(message.error);
-      void stopWorkerProcess();
+      void stopWorkerProcess().catch((error) => {
+        console.error("[desktop-main] Worker shutdown after fatal startup error failed:", error);
+      });
     }
   });
 
@@ -556,8 +517,13 @@ function focusExistingWindow(): void {
 
 async function terminateApplication(signal: NodeJS.Signals): Promise<void> {
   appIsQuitting = true;
-  await stopWorkerProcess();
-  app.exit(signal === "SIGINT" ? 130 : 143);
+  try {
+    await stopWorkerProcess();
+    app.exit(signal === "SIGINT" ? 130 : 143);
+  } catch (error) {
+    console.error("[desktop-main] Worker shutdown before process termination failed:", error);
+    app.exit(1);
+  }
 }
 
 if (!app.requestSingleInstanceLock()) {
@@ -572,16 +538,26 @@ if (!app.requestSingleInstanceLock()) {
   });
 
   app.on("before-quit", (event) => {
-    if (shutdownPromise || !workerProcess) {
+    if (shutdownPromise) {
+      event.preventDefault();
+      return;
+    }
+
+    if (!workerProcess) {
       appIsQuitting = true;
       return;
     }
 
     event.preventDefault();
     appIsQuitting = true;
-    shutdownPromise = stopWorkerProcess().finally(() => {
+    shutdownPromise = stopWorkerProcess().then(() => {
       shutdownPromise = null;
       app.quit();
+    }).catch((error) => {
+      shutdownPromise = null;
+      console.error("[desktop-main] Worker shutdown before quit failed:", error);
+      process.exitCode = 1;
+      app.exit(1);
     });
   });
 
