@@ -19,6 +19,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Identity } from "@/components/Identity";
 import { cn, relativeTime } from "@/lib/utils";
+import { translateEntityTypeLabel } from "@/lib/i18n-labels";
 import { queryKeys } from "@/lib/queryKeys";
 import { formatActivityVerb } from "@/lib/activity-format";
 import { buildCompanyUserProfileMap, type CompanyUserProfile } from "@/lib/company-members";
@@ -162,7 +163,7 @@ function AuditActor({
  * that would duplicate the verb.
  */
 function AuditEntityNode({ record }: { record: AuditActionRecord }) {
-  useTranslation();
+  const { t } = useTranslation();
   const { issue, document } = record.entity;
   const issueRef = issue?.identifier ?? issue?.id ?? null;
 
@@ -188,7 +189,7 @@ function AuditEntityNode({ record }: { record: AuditActionRecord }) {
     );
   }
   // Non-linkable entities (company, agent, goal, …) — show a plain descriptor.
-  return <span className="text-muted-foreground">{record.entityType}</span>;
+  return <span className="text-muted-foreground">{translateEntityTypeLabel(t, record.entityType)}</span>;
 }
 
 function AuditRow({

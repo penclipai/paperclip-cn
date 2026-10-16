@@ -163,6 +163,46 @@ describe("AuditFeed", () => {
     }
   });
 
+  it("localizes application-owned entity types while preserving plugin identifiers", async () => {
+    try {
+      await i18n.changeLanguage("zh-CN");
+      listAgentActionsMock.mockResolvedValue({
+        items: [
+          record({ entityType: "agent", entityId: "agent-1", entity: { issue: null, comment: null, document: null } }),
+          record({ id: "evt-2", entityType: "project", entityId: "project-1", entity: { issue: null, comment: null, document: null } }),
+          record({ id: "evt-3", entityType: "user_preference", entityId: "user-1", entity: { issue: null, comment: null, document: null } }),
+          record({
+            id: "evt-4",
+            action: "plugin.@penclipai/example.sync_completed",
+            entityType: "plugin:@penclipai/example",
+            entityId: "plugin-1",
+            entity: { issue: null, comment: null, document: null },
+          }),
+        ],
+        nextCursor: null,
+        accessTier: "full",
+      });
+
+      await render();
+
+      expect(container.textContent).toContain("智能体");
+      expect(container.textContent).toContain("项目");
+      expect(container.textContent).toContain("用户偏好");
+      expect(container.textContent).toContain("plugin.@penclipai/example.sync_completed");
+      expect(container.textContent).toContain("plugin:@penclipai/example");
+
+      await i18n.changeLanguage("en");
+      await flushReact();
+      expect(container.textContent).toContain("Agent");
+      expect(container.textContent).toContain("Project");
+      expect(container.textContent).toContain("User preference");
+      expect(container.textContent).toContain("plugin.@penclipai/example.sync_completed");
+      expect(container.textContent).toContain("plugin:@penclipai/example");
+    } finally {
+      await i18n.changeLanguage("en");
+    }
+  });
+
   it("localizes plugin-defined actions while retaining their raw event identifier", async () => {
     try {
       await i18n.changeLanguage("zh-CN");

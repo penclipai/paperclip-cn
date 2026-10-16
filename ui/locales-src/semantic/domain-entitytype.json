@@ -58,5 +58,10 @@
     "en": "Routine Trigger",
     "zh-CN": "例行任务触发器",
     "reviewedEnglishHash": "b05fdf1fce806c6918088e17d526581cd5115e51b4329e93a7971db5cd7b21f1"
+  },
+  "entityType.userPreference": {
+    "en": "User preference",
+    "zh-CN": "用户偏好",
+    "reviewedEnglishHash": "66fe732d24717bb8c0c6626938246d34f4d612ad3b3776b56b010da7ce95186b"
   }
 }

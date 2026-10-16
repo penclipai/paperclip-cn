@@ -8700,6 +8700,7 @@
   "entityType.routine": "例行任务",
   "entityType.routineRun": "例行任务运行",
   "entityType.routineTrigger": "例行任务触发器",
+  "entityType.userPreference": "用户偏好",
   "entry": "入口",
   "entry only associates the RSC permissions with the same Entra Application ID. Its nonempty resource is an RSC placeholder; you do not need to register an Entra Application ID URI or add delegated Microsoft Graph permissions.": "条目仅将 RSC 权限关联到相同的 Entra 应用 ID。其非空资源值是 RSC 占位符，无需注册 Entra 应用 ID URI，也无需添加委托的 Microsoft Graph 权限。",
   "envVarEditor.addVariable": "添加变量",

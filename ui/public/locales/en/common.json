@@ -8700,6 +8700,7 @@
   "entityType.routine": "Routine",
   "entityType.routineRun": "Routine Run",
   "entityType.routineTrigger": "Routine Trigger",
+  "entityType.userPreference": "User preference",
   "entry": "entry",
   "entry only associates the RSC permissions with the same Entra Application ID. Its nonempty resource is an RSC placeholder; you do not need to register an Entra Application ID URI or add delegated Microsoft Graph permissions.": "entry only associates the RSC permissions with the same Entra Application ID. Its nonempty resource is an RSC placeholder; you do not need to register an Entra Application ID URI or add delegated Microsoft Graph permissions.",
   "envVarEditor.addVariable": "Add variable",
