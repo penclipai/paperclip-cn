@@ -49,6 +49,16 @@
     "zh-CN": "开始使用",
     "reviewedEnglishHash": "983f311018642b0ae60c71253b5735579906d43d260ea926ebe5e815b1c97abb"
   },
+  "dashboard.importedAgentsPaused": {
+    "en": "{{count}} imported agent is paused and will not run.",
+    "zh-CN": "{{count}} 个导入的智能体已暂停，不会运行。",
+    "reviewedEnglishHash": "bb48a679265e4af29a50785cfc4e1aaf582f91a97ea8b2c6a869fdba31be368b"
+  },
+  "dashboard.importedAgentsPaused_other": {
+    "en": "{{count}} imported agents are paused and will not run.",
+    "zh-CN": "{{count}} 个导入的智能体已暂停，不会运行。",
+    "reviewedEnglishHash": "a794f6b5030025afd040238b677f8a196c7f7054d83c6154271b36e2dca12f2e"
+  },
   "dashboard.issuesByPriority": {
     "en": "Issues by Priority",
     "zh-CN": "按优先级统计任务",
@@ -103,6 +113,36 @@
     "en": "Recent Tasks",
     "zh-CN": "最近任务",
     "reviewedEnglishHash": "49a027ddc61602c1b0210420e655bda959fcaa787de22956a94d45811a5de1eb"
+  },
+  "dashboard.resumeAll": {
+    "en": "Resume all",
+    "zh-CN": "全部恢复",
+    "reviewedEnglishHash": "43e673c5503d43df306e75b25239f277084d41260359f601e6dc300c3bbcd97b"
+  },
+  "dashboard.resumeImportedAgentsFailed": {
+    "en": "Could not resume {{count}} imported agent.",
+    "zh-CN": "无法恢复 {{count}} 个导入的智能体。",
+    "reviewedEnglishHash": "1feebc6859bea80ac4eadf9589d574bddae767e21f4c102a9d6c806e875f1c6f"
+  },
+  "dashboard.resumeImportedAgentsFailed_other": {
+    "en": "Could not resume {{count}} imported agents.",
+    "zh-CN": "无法恢复 {{count}} 个导入的智能体。",
+    "reviewedEnglishHash": "ac4d0daf73e550cb5431b9bf212e79c30319ec96cd7a8739418b27d716b37100"
+  },
+  "dashboard.resumeImportedAgentsNone": {
+    "en": "No agents were resumed. Try again after resolving the agents’ setup errors.",
+    "zh-CN": "没有智能体被恢复。解决智能体的设置错误后请重试。",
+    "reviewedEnglishHash": "2ff9f5a6dc397764ae9bbb9e2a14a33c9f94c3cfd50741dfb728ffb7fab0e202"
+  },
+  "dashboard.resumeImportedAgentsPartial": {
+    "en": "{{resumed}} agent resumed. Review the remaining paused agents and try again.",
+    "zh-CN": "已恢复 {{resumed}} 个智能体。请检查其余已暂停的智能体后重试。",
+    "reviewedEnglishHash": "d113b5f030ebefca9324d50bd8f04145b92cc1d6b1ebf4448868f1d5189855a4"
+  },
+  "dashboard.resumeImportedAgentsPartial_other": {
+    "en": "{{resumed}} agents resumed. Review the remaining paused agents and try again.",
+    "zh-CN": "已恢复 {{resumed}} 个智能体。请检查其余已暂停的智能体后重试。",
+    "reviewedEnglishHash": "a54cd2335cd1b389780717975ffb397066d004023fd62fa4a8e41b4b2ca2552d"
   },
   "dashboard.runActivity": {
     "en": "Run Activity",

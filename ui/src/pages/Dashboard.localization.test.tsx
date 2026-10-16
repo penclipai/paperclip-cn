@@ -4,6 +4,7 @@ import { type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { queryKeys } from "../lib/queryKeys";
 import { Dashboard } from "./Dashboard";
 
 const dashboardLanguage = vi.hoisted(() => ({ value: "zh-CN" as "en" | "zh-CN" }));
@@ -18,7 +19,7 @@ const mockDashboardApi = vi.hoisted(() => ({ summary: vi.fn() }));
 const mockActivityApi = vi.hoisted(() => ({ list: vi.fn() }));
 const mockAccessApi = vi.hoisted(() => ({ listUserDirectory: vi.fn() }));
 const mockIssuesApi = vi.hoisted(() => ({ list: vi.fn() }));
-const mockAgentsApi = vi.hoisted(() => ({ list: vi.fn() }));
+const mockAgentsApi = vi.hoisted(() => ({ list: vi.fn(), resume: vi.fn() }));
 const mockProjectsApi = vi.hoisted(() => ({ list: vi.fn() }));
 
 vi.mock("react-i18next", async (importOriginal) => {
@@ -224,6 +225,7 @@ describe("Dashboard localization", () => {
     mockAccessApi.listUserDirectory.mockReset();
     mockIssuesApi.list.mockReset();
     mockAgentsApi.list.mockReset();
+    mockAgentsApi.resume.mockReset();
     mockProjectsApi.list.mockReset();
     container = document.createElement("div");
     document.body.appendChild(container);
@@ -279,6 +281,120 @@ describe("Dashboard localization", () => {
     expect(container.textContent).toContain("待审批");
     expect(container.textContent).toContain("最近任务");
     expect(container.textContent).toContain("还没有任务。");
+
+    root.unmount();
+  });
+
+  it("reports partial imported-agent resume failures in zh-CN while continuing the remaining agents", async () => {
+    companyState.selectedCompanyId = "company-1";
+    companyState.companies = [{ id: "company-1", name: "Acme" }];
+    mockAgentsApi.list.mockResolvedValue([
+      { id: "agent-1", status: "paused", pauseReason: "import" },
+      { id: "agent-2", status: "paused", pauseReason: "import" },
+    ]);
+    mockAgentsApi.resume
+      .mockResolvedValueOnce({ id: "agent-1", status: "idle" })
+      .mockRejectedValueOnce(new Error("agent unavailable"));
+    mockDashboardApi.summary.mockResolvedValue({
+      agents: { active: 0, running: 0, paused: 2, error: 0 },
+      tasks: { inProgress: 0, open: 0, blocked: 0 },
+      costs: { monthSpendCents: 0, monthBudgetCents: null, monthUtilizationPercent: 0 },
+      pendingApprovals: 0,
+      budgets: { activeIncidents: 0, pausedAgents: 0, pausedProjects: 0, pendingApprovals: 0 },
+      runActivity: [],
+    });
+    mockActivityApi.list.mockResolvedValue([]);
+    mockIssuesApi.list.mockResolvedValue([]);
+    mockProjectsApi.list.mockResolvedValue([]);
+    mockAccessApi.listUserDirectory.mockResolvedValue({ users: [] });
+
+    const root = await renderDashboard();
+    const button = container.querySelector<HTMLButtonElement>("[data-testid='dashboard-resume-imported-agents']");
+    expect(button?.textContent).toBe("全部恢复");
+
+    button?.click();
+    await flushReact();
+
+    expect(mockAgentsApi.resume).toHaveBeenNthCalledWith(1, "agent-1", "company-1");
+    expect(mockAgentsApi.resume).toHaveBeenNthCalledWith(2, "agent-2", "company-1");
+    expect(container.textContent).toContain("无法恢复 1 个导入的智能体。");
+    expect(container.textContent).toContain("已恢复 1 个智能体。请检查其余已暂停的智能体后重试。");
+
+    root.unmount();
+  });
+
+  it("reports when no imported agents could be resumed", async () => {
+    companyState.selectedCompanyId = "company-1";
+    companyState.companies = [{ id: "company-1", name: "Acme" }];
+    mockAgentsApi.list.mockResolvedValue([{ id: "agent-1", status: "paused", pauseReason: "import" }]);
+    mockAgentsApi.resume.mockRejectedValueOnce(new Error("agent unavailable"));
+    mockDashboardApi.summary.mockResolvedValue({
+      agents: { active: 0, running: 0, paused: 1, error: 0 },
+      tasks: { inProgress: 0, open: 0, blocked: 0 },
+      costs: { monthSpendCents: 0, monthBudgetCents: null, monthUtilizationPercent: 0 },
+      pendingApprovals: 0,
+      budgets: { activeIncidents: 0, pausedAgents: 0, pausedProjects: 0, pendingApprovals: 0 },
+      runActivity: [],
+    });
+    mockActivityApi.list.mockResolvedValue([]);
+    mockIssuesApi.list.mockResolvedValue([]);
+    mockProjectsApi.list.mockResolvedValue([]);
+    mockAccessApi.listUserDirectory.mockResolvedValue({ users: [] });
+
+    const root = await renderDashboard();
+    container.querySelector<HTMLButtonElement>("[data-testid='dashboard-resume-imported-agents']")?.click();
+    await flushReact();
+
+    expect(mockAgentsApi.resume).toHaveBeenCalledWith("agent-1", "company-1");
+    expect(container.textContent).toContain("无法恢复 1 个导入的智能体。");
+    expect(container.textContent).toContain("没有智能体被恢复。解决智能体的设置错误后请重试。");
+
+    root.unmount();
+  });
+
+  it("keeps an in-flight resume result scoped to the company where it started", async () => {
+    companyState.selectedCompanyId = "company-1";
+    companyState.companies = [{ id: "company-1", name: "Acme" }, { id: "company-2", name: "Globex" }];
+    mockAgentsApi.list.mockImplementation((companyId: string) => Promise.resolve(
+      companyId === "company-1"
+        ? [{ id: "agent-1", status: "paused", pauseReason: "import" }]
+        : [{ id: "agent-2", status: "paused", pauseReason: "import" }],
+    ));
+    let rejectResume!: (error: Error) => void;
+    mockAgentsApi.resume.mockImplementationOnce(() => new Promise((_resolve, reject) => { rejectResume = reject; }));
+    mockDashboardApi.summary.mockResolvedValue({
+      agents: { active: 0, running: 0, paused: 0, error: 0 },
+      tasks: { inProgress: 0, open: 0, blocked: 0 },
+      costs: { monthSpendCents: 0, monthBudgetCents: null, monthUtilizationPercent: 0 },
+      pendingApprovals: 0,
+      budgets: { activeIncidents: 0, pausedAgents: 0, pausedProjects: 0, pendingApprovals: 0 },
+      runActivity: [],
+    });
+    mockActivityApi.list.mockResolvedValue([]);
+    mockIssuesApi.list.mockResolvedValue([]);
+    mockProjectsApi.list.mockResolvedValue([]);
+    mockAccessApi.listUserDirectory.mockResolvedValue({ users: [] });
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const invalidateQueries = vi.spyOn(queryClient, "invalidateQueries");
+    const root = createRoot(container);
+    root.render(<QueryClientProvider client={queryClient}><Dashboard /></QueryClientProvider>);
+    await flushReact();
+
+    container.querySelector<HTMLButtonElement>("[data-testid='dashboard-resume-imported-agents']")?.click();
+    await flushReact();
+    companyState.selectedCompanyId = "company-2";
+    root.render(<QueryClientProvider client={queryClient}><Dashboard /></QueryClientProvider>);
+    await flushReact();
+    rejectResume(new Error("agent unavailable"));
+    await flushReact();
+
+    expect(mockAgentsApi.resume).toHaveBeenCalledWith("agent-1", "company-1");
+    expect(container.textContent).toContain("1 个导入的智能体已暂停，不会运行。");
+    expect(container.textContent).not.toContain("无法恢复 1 个导入的智能体。");
+    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: queryKeys.agents.list("company-1") });
+    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: queryKeys.dashboard("company-1") });
+    expect(invalidateQueries).not.toHaveBeenCalledWith({ queryKey: queryKeys.agents.list("company-2") });
+    expect(invalidateQueries).not.toHaveBeenCalledWith({ queryKey: queryKeys.dashboard("company-2") });
 
     root.unmount();
   });

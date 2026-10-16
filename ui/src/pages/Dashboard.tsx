@@ -53,6 +53,12 @@ export type PausedAgentBanner =
   | { kind: "all-paused" }
   | null;
 
+type ResumeImportedAgentsResult = {
+  companyId: string;
+  resumedCount: number;
+  failedCount: number;
+};
+
 /**
  * Which paused-agents banner the dashboard should show. Import-paused agents
  * get the specific banner with a bulk resume (they were parked by the import
@@ -73,7 +79,7 @@ export function derivePausedAgentBanner(agents: Agent[] | undefined): PausedAgen
 }
 
 export function Dashboard() {
-  useTranslation();
+  const { t } = useTranslation();
   const { selectedCompanyId, companies } = useCompany();
   const { openOnboarding } = useDialogActions();
   const location = useLocation();
@@ -82,6 +88,7 @@ export function Dashboard() {
   const seenActivityIdsRef = useRef<Set<string>>(new Set());
   const hydratedActivityRef = useRef(false);
   const activityAnimationTimersRef = useRef<number[]>([]);
+  const [resumeImportedAgentsResult, setResumeImportedAgentsResult] = useState<ResumeImportedAgentsResult | null>(null);
 
   // `isFetching` is read alongside the data: a cached list is served while its
   // refetch runs, and an empty one from before the first hire must not pass
@@ -93,29 +100,38 @@ export function Dashboard() {
   });
 
   // Bulk resume for agents parked by a company import. Sequential on purpose
-  // (mirrors the import page's activation checklist); a per-agent failure is
-  // tolerated so one bad agent never blocks the rest, and the refetch below
-  // re-renders the banner with whatever remains paused.
+  // (mirrors the import page's activation checklist); failures are collected
+  // so one bad agent never blocks the rest and the customer knows when a
+  // follow-up is needed.
   const queryClient = useQueryClient();
   const resumeImportedAgents = useMutation({
-    mutationFn: async () => {
-      const targets = derivePausedAgentBanner(agents);
-      if (!targets || targets.kind !== "imported") return;
-      for (const agentId of targets.pausedImportedAgentIds) {
+    mutationFn: async ({ companyId, agentIds }: { companyId: string; agentIds: string[] }): Promise<ResumeImportedAgentsResult> => {
+      let resumedCount = 0;
+      let failedCount = 0;
+      for (const agentId of agentIds) {
         try {
-          await agentsApi.resume(agentId, selectedCompanyId ?? undefined);
+          await agentsApi.resume(agentId, companyId);
+          resumedCount += 1;
         } catch {
-          // Leave the agent paused; the banner re-renders with the remainder.
+          failedCount += 1;
         }
       }
+      return { companyId, resumedCount, failedCount };
     },
-    onSettled: async () => {
+    onSuccess: (result) => {
+      setResumeImportedAgentsResult(result);
+    },
+    onSettled: async (_result, _error, variables) => {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.agents.list(selectedCompanyId!) }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.dashboard(selectedCompanyId!) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.agents.list(variables.companyId) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.dashboard(variables.companyId) }),
       ]);
     },
   });
+
+  useEffect(() => {
+    setResumeImportedAgentsResult(null);
+  }, [selectedCompanyId]);
 
   // A company with no agent cannot do anything — no runs, no tasks, nothing
   // to show. The banner below already says so and offers a link; this takes
@@ -322,28 +338,39 @@ export function Dashboard() {
   const pausedBanner = derivePausedAgentBanner(agents);
   const pausedImportedCount =
     pausedBanner?.kind === "imported" ? pausedBanner.pausedImportedAgentIds.length : 0;
+  const hasResumeFailure = resumeImportedAgentsResult?.companyId === selectedCompanyId && resumeImportedAgentsResult.failedCount > 0;
 
   return (
     <div className="space-y-6">
       {error && <p className="text-sm text-destructive">{error.message}</p>}
 
       {pausedBanner?.kind === "imported" ? (
-        <InlineBanner
-          tone="warning"
-          icon={PauseCircle}
-          title={`${pausedImportedCount} imported agent${pausedImportedCount === 1 ? " is" : "s are"} paused and will not run.`}
-          actions={
-            <Button
-              size="sm"
-              onClick={() => resumeImportedAgents.mutate()}
-              disabled={resumeImportedAgents.isPending}
-              data-testid="dashboard-resume-imported-agents"
-            >
-              {resumeImportedAgents.isPending ? translateInstant("Resuming…") : "Resume all"}
-            </Button>
-          }
-        >
-          {translateInstant("Agents from an organization import arrive paused as a safety default. Resume them so assigned tasks can start.")}</InlineBanner>
+        <>
+          <InlineBanner
+            tone="warning"
+            icon={PauseCircle}
+            title={t("dashboard.importedAgentsPaused", { count: pausedImportedCount })}
+            actions={
+              <Button
+                size="sm"
+                onClick={() => {
+                  setResumeImportedAgentsResult(null);
+                  resumeImportedAgents.mutate({ companyId: selectedCompanyId!, agentIds: pausedBanner.pausedImportedAgentIds });
+                }}
+                disabled={resumeImportedAgents.isPending}
+                data-testid="dashboard-resume-imported-agents"
+              >
+                {resumeImportedAgents.isPending ? translateInstant("Resuming…") : t("dashboard.resumeAll")}
+              </Button>
+            }
+          >
+            {translateInstant("Agents from an organization import arrive paused as a safety default. Resume them so assigned tasks can start.")}</InlineBanner>
+          {hasResumeFailure && <InlineBanner tone="danger" title={t("dashboard.resumeImportedAgentsFailed", { count: resumeImportedAgentsResult.failedCount })}>
+            {resumeImportedAgentsResult.resumedCount > 0
+              ? t("dashboard.resumeImportedAgentsPartial", { resumed: resumeImportedAgentsResult.resumedCount })
+              : t("dashboard.resumeImportedAgentsNone")}
+          </InlineBanner>}
+        </>
       ) : pausedBanner?.kind === "all-paused" ? (
         <InlineBanner
           tone="warning"

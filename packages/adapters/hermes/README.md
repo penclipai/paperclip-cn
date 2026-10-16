@@ -4,7 +4,7 @@ A [Paperclip](https://paperclip.ing) adapter package that lets you run [Hermes A
 
 Hermes Agent is a full-featured AI agent by [Nous Research](https://nousresearch.com) with 30+ native tools, persistent memory, session persistence, 80+ skills, MCP support, and multi-provider model access.
 
-This package owns both built-in Hermes adapter types:
+This package provides two external Hermes adapter types:
 
 - `hermes_local` runs the local Hermes CLI as a child process. The package root exports remain compatible with the original local adapter.
 - `hermes_gateway` calls an already-running Hermes API server over HTTP/SSE. Gateway entrypoints live under the `./gateway` export namespace.
@@ -46,9 +46,9 @@ This adapter provides:
 
 ## Installation
 
-This package ships with Paperclip core as the built-in `hermes_local` and
-`hermes_gateway` adapters. No Adapter manager installation is required for
-normal Paperclip use.
+Install this package through Adapter Manager, or register an explicit local
+package path, before using either adapter type. Paperclip core does not bundle
+or register Hermes adapters.
 
 ### Prerequisites
 
@@ -58,12 +58,12 @@ normal Paperclip use.
 
 ## Quick Start
 
-### 1. Optional: override the built-in for adapter development
+### 1. Install the external adapter
 
-For local adapter development, install the package from a local path in Adapter
-manager, or add an entry to `~/.paperclip/adapter-plugins.json` and restart
-Paperclip. The external package can override either built-in Hermes adapter
-while it is enabled:
+Install `@penclipai/hermes-paperclip-adapter` through Adapter Manager. For
+local adapter development, register the checkout as an explicit `localPath` in
+Adapter Manager, or add an entry to `~/.paperclip/adapter-plugins.json` and
+restart Paperclip:
 
 ```json
 [
@@ -76,15 +76,15 @@ while it is enabled:
 ]
 ```
 
-Use `"type": "hermes_gateway"` with the same package when testing a gateway
-override.
+Use `"type": "hermes_gateway"` with the same package to register the gateway
+adapter.
 
 The package root exports `createServerAdapter()` for the local server adapter,
 a declarative config schema for the generic agent form, and `./ui-parser` for
 local run transcript parsing. Gateway entrypoints are exported from `./gateway`,
 `./gateway/server`, `./gateway/ui`, `./gateway/cli`, and `./gateway/ui-parser`.
-Paperclip core imports these same package entrypoints for built-in adapter
-registration.
+Adapter Manager loads these package entrypoints when it registers the external
+package.
 
 ### 2. Create a local Hermes agent in Paperclip
 
@@ -149,8 +149,8 @@ with `POST /v1/runs/{run_id}/stop`.
 `@penclipai/adapter-hermes-gateway` remains as a deprecated compatibility shim
 for one release. It re-exports the gateway entrypoints from
 `@penclipai/hermes-paperclip-adapter/gateway` and preserves the legacy exports
-for existing plugin installs. New installs and built-in Paperclip registrations
-should use `@penclipai/hermes-paperclip-adapter`; the adapter type remains
+for existing plugin installs. New installs should use
+`@penclipai/hermes-paperclip-adapter`; the adapter type remains
 `hermes_gateway`.
 
 ### Runtime API guidance
