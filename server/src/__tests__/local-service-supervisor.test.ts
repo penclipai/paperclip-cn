@@ -32,6 +32,17 @@ const { windowsOwnershipQueryFixture } = vi.hoisted(() => ({
   },
 }));
 
+const { lsofFailureFixture } = vi.hoisted(() => ({
+  lsofFailureFixture: {
+    enabled: false,
+    code: 1 as number | string,
+    stdout: "",
+    stderr: "",
+    killed: false,
+    signal: null as string | null,
+  },
+}));
+
 vi.mock("node:child_process", async (importOriginal) => {
   const actual = await importOriginal<typeof import("node:child_process")>();
   const promisifyCustom = Symbol.for("nodejs.util.promisify.custom");
@@ -63,6 +74,15 @@ vi.mock("node:child_process", async (importOriginal) => {
       } else if (callback) {
         queueMicrotask(() => callback(null, "31337\r\n", ""));
       }
+      return {};
+    }
+    if (lsofFailureFixture.enabled && command === "lsof") {
+      const error = Object.assign(new Error("lsof fixture failure"), {
+        code: lsofFailureFixture.code,
+        killed: lsofFailureFixture.killed,
+        signal: lsofFailureFixture.signal,
+      });
+      if (callback) queueMicrotask(() => callback(error, lsofFailureFixture.stdout, lsofFailureFixture.stderr));
       return {};
     }
     return (actual.execFile as (...args: unknown[]) => unknown)(...input);
@@ -110,7 +130,46 @@ describe("local service supervision", () => {
   afterEach(async () => {
     windowsOwnershipQueryFixture.enabled = false;
     windowsOwnershipQueryFixture.calls = [];
+    lsofFailureFixture.enabled = false;
+    lsofFailureFixture.code = 1;
+    lsofFailureFixture.stdout = "";
+    lsofFailureFixture.stderr = "";
+    lsofFailureFixture.killed = false;
+    lsofFailureFixture.signal = null;
     await resetRuntimeServicesForTests({ terminateProcesses: true });
+  });
+
+  it("keeps POSIX lsof query failures unavailable when ownership proof is required", async () => {
+    const originalPlatform = process.platform;
+    Object.defineProperty(process, "platform", { value: "linux" });
+    lsofFailureFixture.enabled = true;
+
+    try {
+      await expect(readLocalServicePortOwner(45_433, { throwOnError: true }))
+        .rejects.toThrow("lsof fixture failure");
+      await expect(readLocalServicePortOwner(45_434)).resolves.toBeNull();
+
+      lsofFailureFixture.stderr = "lsof: permission denied";
+      await expect(readLocalServicePortOwner(45_435, { throwOnError: true }))
+        .rejects.toThrow("lsof fixture failure");
+
+      lsofFailureFixture.stderr = "";
+      lsofFailureFixture.code = "ENOENT";
+      await expect(readLocalServicePortOwner(45_436, { throwOnError: true }))
+        .rejects.toThrow("lsof fixture failure");
+
+      lsofFailureFixture.code = 1;
+      lsofFailureFixture.killed = true;
+      await expect(readLocalServicePortOwner(45_437, { throwOnError: true }))
+        .rejects.toThrow("lsof fixture failure");
+
+      lsofFailureFixture.killed = false;
+      lsofFailureFixture.signal = "SIGTERM";
+      await expect(readLocalServicePortOwner(45_438, { throwOnError: true }))
+        .rejects.toThrow("lsof fixture failure");
+    } finally {
+      Object.defineProperty(process, "platform", { value: originalPlatform });
+    }
   });
 
   it("reports Windows ownership-query timeouts to callers that require proof", async () => {

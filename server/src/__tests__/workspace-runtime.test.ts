@@ -31,6 +31,7 @@ import {
 } from "../services/execution-workspace-policy.ts";
 import {
   buildWorkspaceRuntimeDesiredStatePatch,
+  allocateRuntimeServicePort,
   cleanupExecutionWorkspaceArtifacts,
   ensurePersistedExecutionWorkspaceAvailable,
   ensureServerWorkspaceLinksCurrent,
@@ -683,6 +684,22 @@ afterEach(async () => {
   // Registry reset does not clear the process-local allocation claims. A
   // failed-start fixture must not reserve another test's ephemeral port.
   resetRuntimeServicePortReservationsForTests();
+});
+
+describe("runtime port owner lookup compatibility", () => {
+  const originalPlatform = process.platform;
+
+  afterEach(() => {
+    Object.defineProperty(process, "platform", { value: originalPlatform });
+  });
+
+  it("keeps POSIX auto-port allocation best-effort when lsof reports no listener", async () => {
+    Object.defineProperty(process, "platform", { value: "linux" });
+    listenerProbeUnavailableFixture.enabled = true;
+    listenerProbeUnavailableFixture.failStrict = false;
+
+    await expect(allocateRuntimeServicePort({ probe: async () => 41_001 })).resolves.toBe(41_001);
+  });
 });
 
 describe("sanitizeRuntimeServiceBaseEnv", () => {

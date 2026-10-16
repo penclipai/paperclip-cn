@@ -343,6 +343,17 @@ class RuntimeServicePortBindCollision extends Error {
   }
 }
 
+/**
+ * Windows needs an ownership proof before it can safely distinguish an absent
+ * listener from an unavailable OS query. POSIX retains the established
+ * best-effort `lsof` contract: an ordinary non-zero lsof result is treated as
+ * no owner unless a caller explicitly requests strict behavior.
+ */
+function windowsStrictOwnershipQueryOptions(timeoutMs?: number) {
+  if (process.platform !== "win32") return undefined;
+  return timeoutMs === undefined ? { throwOnError: true } : { timeoutMs, throwOnError: true };
+}
+
 export type WorkspaceRuntimeExposureDeps = ExposureManagerDeps & {
   resolveHostname: () => Promise<string>;
   isPortAvailable: (port: number) => Promise<boolean>;
@@ -4653,10 +4664,11 @@ async function readBrokerExposureMappings(): Promise<BrokerMappingSnapshot[] | n
 async function readExposureListenerOwners(ports: number[]): Promise<Map<number, ExposureOwnerIdentity | null>> {
   const owners = new Map<number, ExposureOwnerIdentity | null>();
   for (const port of ports) {
-    // An unavailable owner query cannot prove the port is free. Propagate it
-    // so callers retain the reservation rather than treating an unknown owner
-    // as an absent listener.
-    const ownerPid = await readLocalServicePortOwner(port, { throwOnError: true });
+    // On Windows, an unavailable owner query cannot prove the port is free.
+    // Propagate it so callers retain the reservation rather than treating an
+    // unknown owner as an absent listener. POSIX keeps its legacy best-effort
+    // lsof behavior for compatibility with older system versions.
+    const ownerPid = await readLocalServicePortOwner(port, windowsStrictOwnershipQueryOptions());
     if (!ownerPid) continue;
     let identity: ExposureOwnerIdentity | null = null;
     for (const record of runtimeServicesById.values()) {
@@ -5030,7 +5042,7 @@ export async function allocateRuntimeServicePort(overrides?: {
 }): Promise<number> {
   const probe = overrides?.probe ?? probeEphemeralPort;
   const portOwnerLookup = overrides?.portOwnerLookup
-    ?? ((port: number) => readLocalServicePortOwner(port, { throwOnError: true }));
+    ?? ((port: number) => readLocalServicePortOwner(port, windowsStrictOwnershipQueryOptions()));
   let lastCandidate: number | null = null;
   for (let attempt = 0; attempt < PORT_ALLOCATION_ATTEMPTS; attempt += 1) {
     const candidate = await probe();
@@ -5361,14 +5373,13 @@ async function waitForAllocatedPortBind(input: {
   child: ChildProcess;
 }) {
   const deadline = Date.now() + resolveWorkspaceRuntimeReadinessTimeoutSec(input.service) * 1000;
-  // Keep every external ownership query inside the same readiness deadline.
-  // A timeout is indeterminate, never evidence that the port is free or owned
-  // by this child.
+  // Windows ownership queries stay inside the readiness deadline. A timeout is
+  // indeterminate, never evidence that the port is free or owned by this child.
   const ownershipQueryTimeoutMs = () => Math.max(1, Math.min(2_000, deadline - Date.now()));
-  const readOwner = () => readLocalServicePortOwner(input.port, {
-    timeoutMs: ownershipQueryTimeoutMs(),
-    throwOnError: true,
-  });
+  const readOwner = () => readLocalServicePortOwner(
+    input.port,
+    windowsStrictOwnershipQueryOptions(ownershipQueryTimeoutMs()),
+  );
   // A strict ownership-query failure never proves a port is free. Once a
   // listener is independently observed, however, it does prove this child
   // cannot safely claim the allocation. Surface that as a bind collision so
@@ -5396,7 +5407,7 @@ async function waitForAllocatedPortBind(input: {
   const isOwnedByChild = (ownerPid: number, childPid: number) => isLocalServiceProcessOwnedBy(
     ownerPid,
     childPid,
-    { timeoutMs: ownershipQueryTimeoutMs(), throwOnError: true },
+    windowsStrictOwnershipQueryOptions(ownershipQueryTimeoutMs()),
   );
   const isOwnedByChildOrRejectPresentListener = async (ownerPid: number, childPid: number) => {
     try {
@@ -6576,7 +6587,7 @@ async function spawnLocalRuntimeService(input: StartLocalRuntimeServiceInput): P
   // holds 45439, which is exactly the workspace this feature has to upgrade.
   const conflictPort = reservedExposure ? null : port;
   if (conflictPort) {
-    const ownerPid = await readLocalServicePortOwner(conflictPort, { throwOnError: true });
+    const ownerPid = await readLocalServicePortOwner(conflictPort, windowsStrictOwnershipQueryOptions());
     if (ownerPid) {
       if (canAllocateFixedPort || portType === "auto") {
         throw new RuntimeServicePortBindCollision(conflictPort);
@@ -6903,7 +6914,7 @@ async function spawnLocalRuntimeService(input: StartLocalRuntimeServiceInput): P
         // `readLocalServicePortOwner` reads lsof and returns the listener pid, so a
         // non-null pid also proves a present listener. `readListenerBindFacts` reads
         // /proc for the same presence signal and the bound addresses.
-        const ownerPid = await readLocalServicePortOwner(collisionPort, { throwOnError: true });
+        const ownerPid = await readLocalServicePortOwner(collisionPort, windowsStrictOwnershipQueryOptions());
         const bind = await readListenerBindFacts(collisionPort).catch(() => null);
         // Read the owner process group id too. The guest runs as a shell process
         // group leader, so the real dev server usually binds the port from a
