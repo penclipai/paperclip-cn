@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import fs from "node:fs";
+import { createHash } from "node:crypto";
 import os from "node:os";
 import path from "node:path";
 import process from "node:process";
@@ -97,8 +98,8 @@ async function createSmokeUserDataDir(theme) {
   return userDataDir;
 }
 
-function buildLaunchEnv(userDataDir) {
-  const baseEnv = { ...process.env };
+export function buildLaunchEnv(userDataDir, hostEnv = process.env) {
+  const baseEnv = { ...hostEnv };
   for (const key of [
     "PAPERCLIP_CONFIG",
     "PAPERCLIP_CONTEXT",
@@ -106,6 +107,8 @@ function buildLaunchEnv(userDataDir) {
     "PAPERCLIP_WORKTREE_NAME",
     "PAPERCLIP_WORKTREE_COLOR",
     "PAPERCLIP_WORKTREES_DIR",
+    "PAPERCLIP_AGENT_JWT_SECRET",
+    "BETTER_AUTH_SECRET",
   ]) {
     delete baseEnv[key];
   }
@@ -113,12 +116,27 @@ function buildLaunchEnv(userDataDir) {
   const paperclipHome = path.resolve(userDataDir, "runtime");
   return {
     ...baseEnv,
-    PAPERCLIP_DESKTOP_SMOKE_START_DELAY_MS: process.env.PAPERCLIP_DESKTOP_SMOKE_START_DELAY_MS ?? "1800",
+    PAPERCLIP_DESKTOP_SMOKE_START_DELAY_MS: hostEnv.PAPERCLIP_DESKTOP_SMOKE_START_DELAY_MS ?? "1800",
     PAPERCLIP_DESKTOP_USER_DATA_DIR: userDataDir,
     PAPERCLIP_HOME: paperclipHome,
     PAPERCLIP_CONFIG: path.resolve(paperclipHome, "config.json"),
     PAPERCLIP_CONTEXT: path.resolve(paperclipHome, "context.json"),
   };
+}
+
+function desktopInstanceEnvPath(userDataDir) {
+  return path.resolve(userDataDir, "runtime", "instances", "default", ".env");
+}
+
+function readDesktopAgentJwtSecretFingerprint(userDataDir) {
+  const envPath = desktopInstanceEnvPath(userDataDir);
+  const envText = fs.readFileSync(envPath, "utf8");
+  const match = envText.match(/^PAPERCLIP_AGENT_JWT_SECRET\s*=\s*(.+)$/m);
+  const secret = match?.[1]?.trim().replace(/^(?:"([\s\S]*)"|'([\s\S]*)')$/, "$1$2").trim();
+  if (!secret) {
+    throw new Error(`Desktop instance JWT secret is missing or empty at ${envPath}.`);
+  }
+  return createHash("sha256").update(secret).digest("hex");
 }
 
 async function cleanupUserDataDir(userDataDir) {
@@ -969,22 +987,45 @@ async function run() {
   }
 
   const userDataDir = await createSmokeUserDataDir(theme);
-  const launchOptions = resolveDevLaunchOptions(userDataDir);
-  const electronApp = await electron.launch(launchOptions);
-  const launchedProcess = electronApp.process();
-  const launchedPid = launchedProcess?.pid ?? null;
+  let electronApp = null;
+  let launchedPid = null;
   let serverPort = null;
   let embeddedPostgresPort = null;
 
-  try {
+  const launchDesktop = async () => {
+    electronApp = await electron.launch(resolveDevLaunchOptions(userDataDir));
+    launchedPid = electronApp.process()?.pid ?? null;
     const page = await electronApp.firstWindow();
     await page.waitForLoadState("domcontentloaded");
     await page.waitForURL(/^http:\/\/127\.0\.0\.1:\d+\/?/, { timeout: 90_000 });
-
     const origin = new URL(page.url()).origin;
     serverPort = Number(new URL(page.url()).port);
     embeddedPostgresPort = readEmbeddedPostgresPort(userDataDir);
-    const health = await waitForHealth(origin);
+    return { page, origin, health: await waitForHealth(origin) };
+  };
+
+  const closeDesktop = async () => {
+    if (!electronApp) return;
+    const app = electronApp;
+    const pid = launchedPid;
+    const controlPlanePort = serverPort;
+    const postgresPort = embeddedPostgresPort;
+    electronApp = null;
+    launchedPid = null;
+    serverPort = null;
+    embeddedPostgresPort = null;
+    try {
+      await app.close();
+      if (controlPlanePort) await waitForPortClosed(controlPlanePort, "desktop control plane");
+      if (postgresPort) await waitForPortClosed(postgresPort, "embedded PostgreSQL");
+    } finally {
+      killProcessTree(pid, { cwd: packageDir });
+    }
+  };
+
+  try {
+    const { page, origin, health } = await launchDesktop();
+    const initialSecretFingerprint = readDesktopAgentJwtSecretFingerprint(userDataDir);
 
     const company = await createCompany(origin);
     const project = await createProject(origin, company.id);
@@ -1012,11 +1053,27 @@ async function run() {
       fullPage: true,
     });
 
+    await closeDesktop();
+    await launchDesktop();
+    const restartedSecretFingerprint = readDesktopAgentJwtSecretFingerprint(userDataDir);
+    if (restartedSecretFingerprint !== initialSecretFingerprint) {
+      throw new Error("Desktop instance JWT secret changed across restart.");
+    }
+    await fs.promises.writeFile(
+      path.resolve(artifactDir, "desktop-secret-persistence.json"),
+      `${JSON.stringify({
+        initialSecretFingerprint,
+        restartedSecretFingerprint,
+        persisted: true,
+      }, null, 2)}\n`,
+      "utf8",
+    );
+
     console.log(`[desktop-acceptance] Dev acceptance passed (${scope}).`);
     console.log(`[desktop-acceptance] Health: ${JSON.stringify(health)}`);
     console.log(`[desktop-acceptance] Evidence: ${path.resolve(artifactDir, "acceptance-evidence.json")}`);
   } catch (error) {
-    const page = await electronApp.firstWindow().catch(() => null);
+    const page = await electronApp?.firstWindow().catch(() => null);
     if (page) {
       await writeFailureSnapshot(page, artifactDir).catch(() => {});
     }
@@ -1024,17 +1081,10 @@ async function run() {
   } finally {
     let shutdownError = null;
     try {
-      await electronApp.close();
-      if (serverPort) {
-        await waitForPortClosed(serverPort, "desktop control plane");
-      }
-      if (embeddedPostgresPort) {
-        await waitForPortClosed(embeddedPostgresPort, "embedded PostgreSQL");
-      }
+      await closeDesktop();
     } catch (error) {
       shutdownError = error;
     } finally {
-      killProcessTree(launchedPid, { cwd: packageDir });
       await cleanupUserDataDir(userDataDir);
     }
 
@@ -1044,7 +1094,9 @@ async function run() {
   }
 }
 
-void run().catch((error) => {
-  console.error("[desktop-acceptance] Failed:", error);
-  process.exitCode = 1;
-});
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  void run().catch((error) => {
+    console.error("[desktop-acceptance] Failed:", error);
+    process.exitCode = 1;
+  });
+}

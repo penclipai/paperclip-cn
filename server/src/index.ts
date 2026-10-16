@@ -53,6 +53,7 @@ import {
 import detectPort from "detect-port";
 import { createApp } from "./app.js";
 import { loadConfig } from "./config.js";
+import { ensureDesktopAgentJwtSecret } from "./desktop-agent-jwt-secret.js";
 import { logger } from "./middleware/logger.js";
 import { setStartupRecoveryPhase } from "./startup-recovery-state.js";
 import {
@@ -212,6 +213,7 @@ export async function startServer(): Promise<StartedServer> {
 async function startServerWithDatabaseTeardown(
   startupDatabase: StartupDatabaseTeardown,
 ): Promise<StartedServer> {
+  ensureDesktopAgentJwtSecret();
   setStartupRecoveryPhase("starting");
   warnIfUnsupportedNodeVersion(process.versions.node, (message) => logger.warn(message));
 

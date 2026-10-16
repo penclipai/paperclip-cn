@@ -199,3 +199,23 @@
   90 秒子进程至少提前 15 秒退出，且失败前也持久化已观察到的 PID、出生时间和时序。
   新全用户/UAC 请求尚未发起；旧请求已撤回，不得复用。全用户、卸载后数据保留及
   TEMP/TMP 缺失、原生空 TMP 的完整包验收仍未完成，不能标记整体验收通过。
+
+### 全新桌面实例的智能体认证初始化修复
+
+安装版真实 Grok 已创建智能体并启动任务，但首个产物脚本在任何宿主 API 写入前报告
+`Missing PAPERCLIP_API_KEY`。只读取证确认新 profile 没有相邻 `.env`；桌面启动直接 fork
+server worker，不经过 CLI onboarding，普通首次启动同样缺少 agent JWT master secret。
+现有 secrets 加密 key 与 agent JWT 是不同契约，不能互用，也不向验收脚本硬编码 token。
+
+1. 仅在 `PAPERCLIP_DESKTOP_MODE=packaged|development` 时，于数据库和请求监听之前初始化
+   agent JWT secret。使用 server 已有的 dotenv 和 shared/env-file 原子写入能力，不新增依赖。
+2. 保留进程环境和相邻 `.env` 中已有的 Agent JWT / Better Auth secret。全部缺失时生成
+   32 字节随机 secret，保留 `.env` 其他内容写入并同步到当前 server 进程；读写失败即停止启动，
+   不继续派发缺少凭据的运行。非桌面 server 与 CLI 初始化行为保持原样。
+3. 先用行为回归锁定新建、首次 mint、重启复用、已有 secret、非桌面旁路和读写失败边界，
+   再独立审查。桌面 smoke 明确剥离继承的两种 secret，仅记录初始化存在性与重启指纹。
+4. 验收脚本先落失败收据，再做有界截图和退出；只有原生应用退出码为 0、API/PG 均关闭后，
+   才可结束遗留 Playwright 传输。此前挂起的单一验收 harness 已按 PID/出生时间停止；
+   没有把该停止视为真实 Grok 取消成功。
+5. 修复后重新构建完整安装包，并用未手写 secret 的新 profile 重做核心、真实 Grok、产物、
+   取消恢复及生命周期验收。既有 `665f6cff` 安装包只保留其已取得的组件证据，不能宣称包含新修复。
