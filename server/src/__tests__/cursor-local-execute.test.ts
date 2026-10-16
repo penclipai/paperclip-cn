@@ -88,6 +88,18 @@ console.log(JSON.stringify({
   await fs.chmod(commandPath, 0o755);
 }
 
+function fixturePosixPath(value: string): string {
+  const absolute = path.resolve(value);
+  if (process.platform !== "win32") return absolute;
+
+  const driveRoot = path.win32.parse(absolute).root;
+  if (!/^[a-z]:\\$/i.test(driveRoot)) {
+    throw new Error(`Expected a drive-rooted fixture path, received ${absolute}`);
+  }
+  const relative = path.win32.relative(driveRoot, absolute).replaceAll("\\", "/");
+  return `/${driveRoot[0].toLowerCase()}${relative ? `/${relative}` : ""}`;
+}
+
 function createLocalSandboxRunner() {
   let counter = 0;
   return {
@@ -413,9 +425,11 @@ describe("cursor execute", () => {
         path: string;
       };
       expect(await fs.realpath(capture.command)).toBe(await fs.realpath(cursorAgentPath));
-      const expectedRemoteCursorBin = process.platform === "win32"
-        ? `/tmp/${path.basename(root)}/home/.local/bin`
-        : path.join(homeDir, ".local", "bin");
+      // Git Bash exposes this fixture's drive-backed system home as a POSIX path.
+      // The executed agent uses a separate runtime HOME, so assert the PATH that
+      // was prepared from the discovered system home.
+      const expectedRemoteHome = fixturePosixPath(homeDir);
+      const expectedRemoteCursorBin = path.posix.join(expectedRemoteHome, ".local", "bin");
       expect(capture.path.split(":")[0]).toBe(expectedRemoteCursorBin);
       expect(capture.prompt).toContain("Follow the paperclip heartbeat.");
     } finally {
