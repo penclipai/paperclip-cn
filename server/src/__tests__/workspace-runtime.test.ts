@@ -7929,16 +7929,15 @@ describeEmbeddedPostgres("workspace runtime service control persistence", () => 
     }
   }, 20_000);
 
-  it("fails closed when a fixed-port ownership query is unavailable", async () => {
+  it.runIf(process.platform === "win32")("fails closed when a fixed-port ownership query is unavailable on Windows", async () => {
     const fixture = await createRuntimeFixture();
     const cleanupRuntimeHome = await createRuntimeHome();
     const workspace = fixture.workspaces[0]!;
     const basePort = await findFreePort();
     listenerProbeUnavailableFixture.enabled = true;
-    // Windows turns an unavailable strict ownership query into a typed error.
-    // POSIX retains the legacy best-effort lsof contract and rejects the start
-    // once no safe fixed-port candidate can be established.
-    listenerProbeUnavailableFixture.failStrict = process.platform === "win32";
+    // This is a Windows pre-spawn contract: an unavailable strict ownership
+    // query is unknown, never evidence that the fixed port is free.
+    listenerProbeUnavailableFixture.failStrict = true;
 
     try {
       const start = startRuntimeServicesForWorkspaceControl({
@@ -7951,26 +7950,15 @@ describeEmbeddedPostgres("workspace runtime service control persistence", () => 
         adapterEnv: {},
       });
       const failure = await start.then(() => null, (error: unknown) => error);
-      if (process.platform === "win32") {
-        expect(failure).toBeInstanceOf(LocalServiceOwnershipQueryUnavailableError);
-        expect(failure).toHaveProperty(
-          "message",
-          "Windows local service ownership query is unavailable",
-        );
-        expect(failure).toHaveProperty(
-          "cause",
-          expect.objectContaining({ message: "listener probe unavailable", code: 1 }),
-        );
-      } else {
-        expect(failure).toHaveProperty(
-          "message",
-          `No safe runtime service port is available in the bounded allocation range starting at ${basePort}.`,
-        );
-        expect(failure).toMatchObject({
-          status: 409,
-          details: { code: "workspace_runtime_port_allocation_exhausted" },
-        });
-      }
+      expect(failure).toBeInstanceOf(LocalServiceOwnershipQueryUnavailableError);
+      expect(failure).toHaveProperty(
+        "message",
+        "Windows local service ownership query is unavailable",
+      );
+      expect(failure).toHaveProperty(
+        "cause",
+        expect.objectContaining({ message: "listener probe unavailable", code: 1 }),
+      );
       await expect(db
         .select({ id: workspaceRuntimeServices.id })
         .from(workspaceRuntimeServices)
