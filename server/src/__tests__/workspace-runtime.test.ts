@@ -7966,7 +7966,10 @@ describeEmbeddedPostgres("workspace runtime service control persistence", () => 
           "message",
           `No safe runtime service port is available in the bounded allocation range starting at ${basePort}.`,
         );
-        expect(failure).toMatchObject({ code: "workspace_runtime_port_allocation_exhausted" });
+        expect(failure).toMatchObject({
+          status: 409,
+          details: { code: "workspace_runtime_port_allocation_exhausted" },
+        });
       }
       await expect(db
         .select({ id: workspaceRuntimeServices.id })
