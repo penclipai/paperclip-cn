@@ -50,7 +50,10 @@ function dryRunJson(args, envOverrides = {}) {
   return JSON.parse(result.stdout);
 }
 
-function runWithFakeVitest(status, { createInternalLink = false } = {}) {
+function runWithFakeVitest(status, {
+  createInternalLink = false,
+  runnerArgs = ["--mode", "general", "--group", "general-workspaces-a"],
+} = {}) {
   const fixtureRoot = mkdtempSync(path.join(os.tmpdir(), "run-vitest-stable-"));
   const invocationTempRoot = path.join(fixtureRoot, "invocations");
   mkdirSync(invocationTempRoot);
@@ -69,10 +72,10 @@ function runWithFakeVitest(status, { createInternalLink = false } = {}) {
     'if (process.env.PAPERCLIP_TEST_LINK === "1") {',
     '  fs.symlinkSync(process.env.PAPERCLIP_TEST_EXTERNAL, path.join(process.env.PAPERCLIP_HOME, "outside"), process.platform === "win32" ? "junction" : "dir");',
     '}',
-    'fs.appendFileSync(process.env.PAPERCLIP_TEST_CAPTURE, JSON.stringify({ root: path.dirname(process.env.PAPERCLIP_HOME), home: process.env.PAPERCLIP_HOME, temp: process.env.TEMP, tmp: process.env.TMP, tmpdir: process.env.TMPDIR }) + "\\n");',
+    'fs.appendFileSync(process.env.PAPERCLIP_TEST_CAPTURE, JSON.stringify({ root: path.dirname(process.env.PAPERCLIP_HOME), home: process.env.PAPERCLIP_HOME, temp: process.env.TEMP, tmp: process.env.TMP, tmpdir: process.env.TMPDIR, args: process.argv.slice(2) }) + "\\n");',
     'process.exit(Number(process.env.PAPERCLIP_TEST_STATUS));',
   ].join("\n"));
-  const result = spawnSync(process.execPath, [script, "--mode", "general", "--group", "general-workspaces-a"], {
+  const result = spawnSync(process.execPath, [script, ...runnerArgs], {
     cwd: repoRoot,
     encoding: "utf8",
     env: workflowEnv({
@@ -355,6 +358,55 @@ test("the Windows general-server chunks are complete, non-overlapping, and comma
   }
 
   assert.equal(seen.size, plan.generalServerSuiteCount, "Windows chunks must cover every general-server suite exactly once");
+});
+
+test("Windows general-server shard chunks are complete, non-overlapping, and command-bounded", () => {
+  const plan = dryRunJson([
+    "--mode", "general", "--group", "general-server",
+    "--shard-index", "0", "--shard-count", String(SHARD_COUNT),
+  ]);
+  const chunks = plan.windowsGeneralServerCommandChunks;
+  const seen = new Set();
+
+  assert.ok(chunks.length > 0, "a non-empty shard must expose its Windows command chunks");
+  for (const chunk of chunks) {
+    assert.ok(chunk.commandLength <= plan.windowsGeneralServerCommandBudget);
+    for (const file of chunk.files) {
+      assert.ok(!seen.has(file), `suite assigned to more than one Windows shard chunk: ${file}`);
+      seen.add(file);
+    }
+  }
+
+  assert.deepEqual([...seen].sort(), [...plan.selectedGeneralServerSuites].sort());
+});
+
+test("Windows shard execution invokes only command-bounded chunks covering its assigned suites", () => {
+  const runnerArgs = [
+    "--mode", "general", "--group", "general-server",
+    "--shard-index", "0", "--shard-count", String(SHARD_COUNT),
+  ];
+  const fixture = runWithFakeVitest(0, { runnerArgs });
+  try {
+    assert.equal(fixture.result.status, 0, fixture.result.stderr);
+    const plan = dryRunJson(runnerArgs);
+    if (process.platform === "win32") {
+      assert.equal(fixture.calls.length, plan.windowsGeneralServerCommandChunks.length);
+      for (const [index, call] of fixture.calls.entries()) {
+        const invokedFiles = call.args.filter((arg) => arg.startsWith("server/") && arg.endsWith(".test.ts"));
+        assert.deepEqual(invokedFiles, plan.windowsGeneralServerCommandChunks[index].files);
+      }
+    } else {
+      assert.equal(fixture.calls.length, 1, "POSIX keeps the single general-server invocation");
+    }
+
+    const invokedFiles = fixture.calls.flatMap((call) =>
+      call.args.filter((arg) => arg.startsWith("server/") && arg.endsWith(".test.ts")),
+    );
+    assert.deepEqual(invokedFiles.sort(), [...plan.selectedGeneralServerSuites].sort());
+  } finally {
+    removeCapturedRoots(fixture);
+    rmSync(fixture.fixtureRoot, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
+  }
 });
 
 test("the Windows general-server chunk plan is deterministic", () => {

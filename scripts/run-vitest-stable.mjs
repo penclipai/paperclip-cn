@@ -558,6 +558,24 @@ function runGeneralGroup(routeTests, groupName, shardIndex = null, shardCount = 
         return;
       }
 
+      if (process.platform === "win32") {
+        const chunks = buildCommandBudgetChunks(
+          shardFiles,
+          generalServerBaseArgs,
+          windowsGeneralServerCommandBudget,
+        );
+        console.log(
+          `\n[test:run] general-server shard ${shardIndex + 1}/${shardCount} running ${shardFiles.length} suites in ${chunks.length} sequential Windows chunks`,
+        );
+        for (const [index, chunkFiles] of chunks.entries()) {
+          runVitest(
+            [...generalServerBaseArgs, ...chunkFiles],
+            `${groupName} shard ${shardIndex + 1}/${shardCount} Windows chunk ${index + 1}/${chunks.length}`,
+          );
+        }
+        return;
+      }
+
       runVitest(
         [
           "--project",
@@ -702,10 +720,16 @@ if (options.dryRun) {
         windowsGeneralServerCommandBudget,
         windowsGeneralServerCommandChunks:
           options.mode === generalModeName &&
-          generalServerGroups.includes(options.group) &&
-          options.shardCount === null
+          generalServerGroups.includes(options.group)
             ? buildCommandBudgetChunks(
-                generalServerTestFiles.filter((file) => !excludedServerSuites(options.group).includes(file)),
+                options.shardCount === null
+                  ? generalServerTestFiles.filter((file) => !excludedServerSuites(options.group).includes(file))
+                  : selectGeneralServerShard(
+                      generalServerTestFiles.filter((file) => !excludedServerSuites(options.group).includes(file)),
+                      options.shardIndex,
+                      options.shardCount,
+                      generalServerShardDurations,
+                    ),
                 generalServerBaseArgs,
                 windowsGeneralServerCommandBudget,
               ).map((files) => ({
