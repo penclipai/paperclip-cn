@@ -2038,6 +2038,22 @@ export function agentRoutes(
     return trimmed.length > 0 ? trimmed : null;
   }
 
+  function redactAdapterEnvironmentCheckDiagnosticContent(
+    check: AdapterEnvironmentCheck,
+    sensitiveValues: readonly string[],
+  ): AdapterEnvironmentCheck {
+    return {
+      ...check,
+      message: redactSensitiveValueOccurrences(check.message, sensitiveValues) as string,
+      ...(check.detail == null
+        ? {}
+        : { detail: redactSensitiveValueOccurrences(check.detail, sensitiveValues) as string }),
+      ...(check.hint == null
+        ? {}
+        : { hint: redactSensitiveValueOccurrences(check.hint, sensitiveValues) as string }),
+    };
+  }
+
   function asEnvBindingString(value: unknown): string | null {
     const direct = asNonEmptyString(value);
     if (direct) return direct;
@@ -3429,10 +3445,12 @@ export function agentRoutes(
           status,
           checks: prefixChecks.length > 0 ? [...prefixChecks, ...result.checks] : result.checks,
         };
-        res.json(redactSensitiveValueOccurrences(
-          response,
-          collectSensitiveStringValues({ testCredentials: req.body.testCredentials }),
-        ));
+        const sensitiveValues = collectSensitiveStringValues({ testCredentials: req.body.testCredentials });
+        res.json({
+          ...response,
+          checks: response.checks.map((check) =>
+            redactAdapterEnvironmentCheckDiagnosticContent(check, sensitiveValues)),
+        });
       } catch (err) {
         releaseStatus = "failed";
         throw err;

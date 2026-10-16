@@ -490,6 +490,53 @@ describe("agent test-environment route", () => {
     expect(JSON.stringify(res.body)).not.toContain("fixture-probe-secret");
   });
 
+  it("redacts submitted credentials from diagnostic content without changing result metadata", async () => {
+    const { registerServerAdapter } = await import("../adapters/index.js");
+    const shortCredential = "a";
+    const longCredential = "long-probe-token-canary";
+    await unregisterTestAdapter("external_test");
+    registerServerAdapter({
+      ...externalAdapter,
+      getConfigSchema: () => ({
+        fields: [],
+        onboarding: {
+          credential: { configKey: "accessToken", secretKey: "FIXTURE_TOKEN" },
+        },
+      }),
+    });
+    testEnvironmentSpy.mockResolvedValueOnce({
+      adapterType: "external_test",
+      status: "pass",
+      checks: [{
+        code: "pass",
+        level: "info",
+        message: `${shortCredential}|${longCredential}`,
+        detail: `${shortCredential}|${longCredential}`,
+        hint: `${shortCredential}|${longCredential}`,
+      }],
+      testedAt: "2026-10-17T00:00:00.000Z",
+    });
+    const app = await createApp();
+    const res = await request(app)
+      .post("/api/companies/company-1/adapters/external_test/test-environment")
+      .send({ testCredentials: { FIXTURE_TOKEN: shortCredential, OPENAI_API_KEY: longCredential } });
+
+    expect(res.status, JSON.stringify(res.body)).toBe(200);
+    expect(res.body).toMatchObject({
+      adapterType: "external_test",
+      status: "pass",
+      testedAt: "2026-10-17T00:00:00.000Z",
+      checks: [{
+        code: "pass",
+        level: "info",
+        message: "[REDACTED]|[REDACTED]",
+        detail: "[REDACTED]|[REDACTED]",
+        hint: "[REDACTED]|[REDACTED]",
+      }],
+    });
+    expect(JSON.stringify(res.body)).not.toContain(longCredential);
+  });
+
   it("rejects a syntactically valid external credential when the active adapter has not declared it", async () => {
     const app = await createApp();
     const res = await request(app)
