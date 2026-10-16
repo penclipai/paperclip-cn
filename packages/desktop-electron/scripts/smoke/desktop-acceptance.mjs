@@ -8,7 +8,6 @@ import process from "node:process";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import net from "node:net";
-import { _electron as electron } from "playwright";
 import { killProcessTree, runPnpm } from "../utils.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -994,7 +993,8 @@ async function run() {
   let embeddedPostgresPort = null;
 
   const launchDesktop = async () => {
-    electronApp = await electron.launch(resolveDevLaunchOptions(userDataDir));
+    const { _electron } = await import("playwright");
+    electronApp = await _electron.launch(resolveDevLaunchOptions(userDataDir));
     launchedPid = electronApp.process()?.pid ?? null;
     const page = await electronApp.firstWindow();
     await page.waitForLoadState("domcontentloaded");
