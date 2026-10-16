@@ -8,7 +8,6 @@ import { describe, expect, it } from "vitest";
 import { HttpError } from "../errors.js";
 import { HTTP_LOG_REDACT_PATHS } from "../middleware/http-log-redaction.js";
 import { errorHandler } from "../middleware/error-handler.js";
-import { testAdapterEnvironmentSchema } from "@penclipai/shared";
 import { createHttpLogger } from "../middleware/logger.js";
 
 describe("HTTP logger redaction", () => {
@@ -806,11 +805,13 @@ describe("HTTP logger redaction", () => {
         }
         res.status(status).json({ error: "probe failed" });
       });
-      const keys = Object.keys(
-        testAdapterEnvironmentSchema.shape.testCredentials.unwrap().shape,
-      );
       const credentials = Object.fromEntries(
-        [...keys, "UNKNOWN_PROVIDER_KEY"].map((key) => [key, `canary-${key}`]),
+        [
+          "ANTHROPIC_API_KEY", "OPENAI_API_KEY", "OPENROUTER_API_KEY", "GEMINI_API_KEY",
+          "XAI_API_KEY", "GROQ_API_KEY", "OPENCODE_API_KEY", "CURSOR_API_KEY",
+          "KIMI_MODEL_API_KEY", "API_SERVER_KEY", "ZAI_API_KEY", "KIMI_API_KEY",
+          "MINIMAX_API_KEY", "EXTERNAL_TEST_TOKEN",
+        ].map((key) => [key, `canary-${key}`]),
       );
       await request(app)
         .post("/probe")

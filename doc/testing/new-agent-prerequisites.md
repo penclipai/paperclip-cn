@@ -19,7 +19,7 @@ Reviewed against the adapter builders, runtime probes, and provider documentatio
 
 - Cursor Cloud sends `repoUrl` and `repoStartingRef`, matching its SDK adapter. It never sends the old, ignored `repository`/`branch` properties.
 - New runtime keys are stored as distinct organization secrets when setup completes. They do not rotate existing keys. Existing Claude/Codex connection flows retain their user-specific credential behavior.
-- A draft key goes only into the allowlisted `testCredentials` request field during testing. It does not pass through persistence normalization. Hermes Gateway's one-shot key maps to its top-level `apiKey` only after normalization.
+- A draft key goes only into the bounded `testCredentials` request field during testing. The route accepts the legacy provider keys plus a safe own key declared by the current active adapter's onboarding schema (`credential.secretKey` or any `provider.envKeys` value, even when the provider is omitted); it never passes through persistence normalization. A declared credential can map to its schema-owned top-level config property only after normalization.
 - Failed tests and abandoned forms do not create secrets. A failed hire removes the newly created secret; cleanup errors remain visible.
 - Kimi API mode omits `config.model`: passing `--model` would override the model synthesized from `KIMI_MODEL_*` variables.
 - `ui/src/pages/NewAgent.test.tsx` covers field visibility, request payloads, secret reuse/storage, failure cleanup, and Kimi/Hermes mappings. `server/src/__tests__/agent-test-environment-routes.test.ts` verifies transient credential handling and rejects arbitrary environment variables.

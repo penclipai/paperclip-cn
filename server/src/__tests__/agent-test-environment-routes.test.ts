@@ -429,7 +429,16 @@ describe("agent test-environment route", () => {
     const { registerServerAdapter, getServerAdapter, unregisterServerAdapter } = await import("../adapters/index.js");
     const previous = getServerAdapter("hermes_gateway");
     unregisterServerAdapter("hermes_gateway");
-    registerServerAdapter({ ...externalAdapter, type: "hermes_gateway" });
+    registerServerAdapter({
+      ...externalAdapter,
+      type: "hermes_gateway",
+      getConfigSchema: () => ({
+        fields: [],
+        onboarding: {
+          credential: { configKey: "apiKey", secretKey: "API_SERVER_KEY" },
+        },
+      }),
+    });
     try {
       const app = await createApp();
       const res = await request(app)
@@ -443,6 +452,194 @@ describe("agent test-environment route", () => {
       unregisterServerAdapter("hermes_gateway");
       if (previous) registerServerAdapter(previous);
     }
+  });
+
+  it("accepts an external onboarding credential only when its active schema declares the key", async () => {
+    const { registerServerAdapter } = await import("../adapters/index.js");
+    await unregisterTestAdapter("external_test");
+    registerServerAdapter({
+      ...externalAdapter,
+      getConfigSchema: () => ({
+        fields: [],
+        onboarding: {
+          credential: { configKey: "accessToken", secretKey: "FIXTURE_TOKEN" },
+        },
+      }),
+    });
+    testEnvironmentSpy.mockResolvedValueOnce({
+      adapterType: "external_test",
+      status: "fail",
+      checks: [{
+        code: "fixture_credential_rejected",
+        level: "error",
+        message: "Provider rejected fixture-probe-secret",
+        hint: "Replace fixture-probe-secret and retry.",
+      }],
+      testedAt: new Date(0).toISOString(),
+    });
+    const app = await createApp();
+    const res = await request(app)
+      .post("/api/companies/company-1/adapters/external_test/test-environment")
+      .send({ testCredentials: { FIXTURE_TOKEN: "fixture-probe-secret" } });
+    expect(res.status, JSON.stringify(res.body)).toBe(200);
+    expect(mockSecretService.normalizeAdapterConfigForPersistence.mock.calls[0]?.[1]).toEqual({});
+    expect(testEnvironmentSpy.mock.calls[0]?.[0].config).toMatchObject({
+      accessToken: "fixture-probe-secret",
+      env: { FIXTURE_TOKEN: "fixture-probe-secret" },
+    });
+    expect(JSON.stringify(res.body)).not.toContain("fixture-probe-secret");
+  });
+
+  it("rejects a syntactically valid external credential when the active adapter has not declared it", async () => {
+    const app = await createApp();
+    const res = await request(app)
+      .post("/api/companies/company-1/adapters/external_test/test-environment")
+      .send({ testCredentials: { FIXTURE_TOKEN: "probe-only-key" } });
+    expect(res.status).toBe(400);
+    expect(testEnvironmentSpy).not.toHaveBeenCalled();
+  });
+
+  it("allows declared external provider transient keys without requiring a selected provider", async () => {
+    const { registerServerAdapter } = await import("../adapters/index.js");
+    await unregisterTestAdapter("external_test");
+    registerServerAdapter({
+      ...externalAdapter,
+      getConfigSchema: () => ({
+        fields: [],
+        onboarding: {
+          provider: {
+            configKey: "provider",
+            envKeys: { nebula: "NEBULA_TOKEN", aurora: "AURORA_TOKEN" },
+          },
+        },
+      }),
+    });
+    const app = await createApp();
+    const res = await request(app)
+      .post("/api/companies/company-1/adapters/external_test/test-environment")
+      .send({ adapterConfig: { provider: "nebula" }, testCredentials: { NEBULA_TOKEN: "probe-only-key" } });
+    expect(res.status, JSON.stringify(res.body)).toBe(200);
+    expect(testEnvironmentSpy.mock.calls[0]?.[0].config.env).toEqual({ NEBULA_TOKEN: "probe-only-key" });
+
+    const alternateProviderKey = await request(app)
+      .post("/api/companies/company-1/adapters/external_test/test-environment")
+      .send({ adapterConfig: { provider: "nebula" }, testCredentials: { AURORA_TOKEN: "probe-only-key" } });
+    expect(alternateProviderKey.status, JSON.stringify(alternateProviderKey.body)).toBe(200);
+    expect(testEnvironmentSpy.mock.calls[1]?.[0].config.env).toEqual({ AURORA_TOKEN: "probe-only-key" });
+
+    const omittedProvider = await request(app)
+      .post("/api/companies/company-1/adapters/external_test/test-environment")
+      .send({ testCredentials: { AURORA_TOKEN: "probe-only-key" } });
+    expect(omittedProvider.status, JSON.stringify(omittedProvider.body)).toBe(200);
+    expect(testEnvironmentSpy.mock.calls[2]?.[0].config.env).toEqual({ AURORA_TOKEN: "probe-only-key" });
+  });
+
+  it("fails closed when external onboarding metadata is inherited, malformed, or throws", async () => {
+    const { registerServerAdapter } = await import("../adapters/index.js");
+    const cases = [
+      {
+        name: "inherited credential",
+        schema: () => ({
+          fields: [],
+          onboarding: { credential: Object.create({ configKey: "accessToken", secretKey: "FIXTURE_TOKEN" }) },
+        }),
+        credentials: { FIXTURE_TOKEN: "probe-only-key" },
+      },
+      {
+        name: "inherited provider env key",
+        schema: () => ({
+          fields: [],
+          onboarding: { provider: { configKey: "provider", envKeys: Object.create({ nebula: "NEBULA_TOKEN" }) } },
+        }),
+        credentials: { NEBULA_TOKEN: "probe-only-key" },
+      },
+      {
+        name: "unsafe credential config key",
+        schema: () => ({
+          fields: [],
+          onboarding: { credential: { configKey: "__proto__", secretKey: "FIXTURE_TOKEN" } },
+        }),
+        credentials: { FIXTURE_TOKEN: "probe-only-key" },
+      },
+      {
+        name: "malformed credential",
+        schema: () => ({ fields: [], onboarding: { credential: "bad" } }),
+        credentials: { FIXTURE_TOKEN: "probe-only-key" },
+      },
+      {
+        name: "malformed provider env keys",
+        schema: () => ({ fields: [], onboarding: { provider: { configKey: "provider", envKeys: "bad" } } }),
+        credentials: { NEBULA_TOKEN: "probe-only-key" },
+      },
+      {
+        name: "throwing schema",
+        schema: () => { throw new Error("schema echoed probe-only-key"); },
+        credentials: { FIXTURE_TOKEN: "probe-only-key" },
+      },
+    ];
+    for (const entry of cases) {
+      await unregisterTestAdapter("external_test");
+      registerServerAdapter({ ...externalAdapter, getConfigSchema: entry.schema });
+      const app = await createApp();
+      const res = await request(app)
+        .post("/api/companies/company-1/adapters/external_test/test-environment")
+        .send({ testCredentials: entry.credentials });
+      expect(res.status, `${entry.name}: ${JSON.stringify(res.body)}`).toBe(400);
+      expect(JSON.stringify(res.body)).not.toContain("probe-only-key");
+      expect(testEnvironmentSpy).not.toHaveBeenCalled();
+    }
+  });
+
+  it("does not execute own onboarding metadata accessors", async () => {
+    const { registerServerAdapter } = await import("../adapters/index.js");
+    const credential = Object.create(null) as Record<string, unknown>;
+    let getterRead = false;
+    Object.defineProperty(credential, "configKey", { enumerable: true, value: "accessToken" });
+    Object.defineProperty(credential, "secretKey", {
+      enumerable: true,
+      get() {
+        getterRead = true;
+        return "FIXTURE_TOKEN";
+      },
+    });
+    await unregisterTestAdapter("external_test");
+    registerServerAdapter({
+      ...externalAdapter,
+      getConfigSchema: () => ({ fields: [], onboarding: { credential } }),
+    });
+    const app = await createApp();
+    const res = await request(app)
+      .post("/api/companies/company-1/adapters/external_test/test-environment")
+      .send({ testCredentials: { FIXTURE_TOKEN: "probe-only-key" } });
+    expect(res.status, JSON.stringify(res.body)).toBe(400);
+    expect(getterRead).toBe(false);
+    expect(testEnvironmentSpy).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    { key: "NODE_OPTIONS", secretKey: "NODE_OPTIONS" },
+    { key: "PAPERCLIP_API_KEY", secretKey: "PAPERCLIP_API_KEY" },
+    { key: "__proto__", secretKey: "__proto__" },
+    { key: "prototype", secretKey: "prototype" },
+    { key: "constructor", secretKey: "constructor" },
+  ])("rejects unsafe external schema credential key $key", async ({ key, secretKey }) => {
+    const { registerServerAdapter } = await import("../adapters/index.js");
+    await unregisterTestAdapter("external_test");
+    registerServerAdapter({
+      ...externalAdapter,
+      getConfigSchema: () => ({
+        fields: [],
+        onboarding: {
+          credential: { configKey: "accessToken", secretKey },
+        },
+      }),
+    });
+    const app = await createApp();
+    const res = await request(app)
+      .post("/api/companies/company-1/adapters/external_test/test-environment")
+      .send({ testCredentials: { [key]: "probe-only-key" } });
+    expect(res.status).toBe(400);
+    expect(testEnvironmentSpy).not.toHaveBeenCalled();
   });
 
   // The managed-adoption verdict, all three ways. An api_key account is

@@ -94,6 +94,21 @@ describe("isSecretSensitiveHttpRequest", () => {
       ),
     ).toBe(false);
   });
+
+  it("protects adapter environment credential probes, including validation failures", () => {
+    expect(isSecretSensitiveHttpRequest(
+      "POST",
+      "/api/companies/company-1/adapters/external_test/test-environment",
+    )).toBe(true);
+    expect(isSecretSensitiveHttpRequest(
+      "GET",
+      "/api/companies/company-1/adapters/external_test/test-environment",
+    )).toBe(false);
+    expect(isSecretSensitiveHttpRequest(
+      "POST",
+      "/API/COMPANIES/company-1/ADAPTERS/external_test/TEST-ENVIRONMENT",
+    )).toBe(true);
+  });
 });
 
 describe("shouldSilenceHttpSuccessLog", () => {

@@ -255,26 +255,61 @@ export const resetAgentSessionSchema = z.object({
 
 export type ResetAgentSession = z.infer<typeof resetAgentSessionSchema>;
 
+const TEST_CREDENTIAL_ENV_KEY_RE = /^[A-Za-z_][A-Za-z0-9_]*$/;
+const UNSAFE_TEST_CREDENTIAL_ENV_KEYS = new Set([
+  "__proto__",
+  "prototype",
+  "constructor",
+]);
+
+/**
+ * Test credentials are one-shot values. The route that knows the selected
+ * adapter authorizes their names against that adapter's active setup schema;
+ * this shared boundary only limits their wire shape and resource use.
+ */
+const testCredentialsSchema = z
+  .unknown()
+  .superRefine((input, ctx) => {
+    if (typeof input !== "object" || input === null || Array.isArray(input)) return;
+    // z.record normalizes away __proto__ before its post-parse refinements run.
+    // Inspect raw own keys first so a JSON request cannot smuggle a
+    // prototype-mutating name through that normalization.
+    for (const key of Object.keys(input)) {
+      if (UNSAFE_TEST_CREDENTIAL_ENV_KEYS.has(key.toLowerCase())) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "testCredentials contains an unsafe environment variable name",
+          path: [key],
+        });
+      }
+    }
+  })
+  .pipe(z.record(z.string(), z.string().max(16384)))
+  .superRefine((credentials, ctx) => {
+    const keys = Object.keys(credentials);
+    if (keys.length > 32) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "testCredentials may contain at most 32 entries",
+      });
+    }
+    for (const key of keys) {
+      if (key.length > 128 || !TEST_CREDENTIAL_ENV_KEY_RE.test(key)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "testCredentials keys must be valid environment variable names up to 128 characters",
+          path: [key],
+        });
+      }
+    }
+  });
+
 export const testAdapterEnvironmentSchema = z.object({
   aiConnection: aiConnectionBindingSchema.optional(),
   /** Saved agent whose redacted environment entries are restored for this probe. */
   agentId: z.string().guid().optional(),
   /** One-shot provider keys for a probe. Never persist these in agent config. */
-  testCredentials: z.object({
-    ANTHROPIC_API_KEY: z.string().max(16384),
-    OPENAI_API_KEY: z.string().max(16384),
-    OPENROUTER_API_KEY: z.string().max(16384),
-    GEMINI_API_KEY: z.string().max(16384),
-    XAI_API_KEY: z.string().max(16384),
-    GROQ_API_KEY: z.string().max(16384),
-    OPENCODE_API_KEY: z.string().max(16384),
-    CURSOR_API_KEY: z.string().max(16384),
-    KIMI_MODEL_API_KEY: z.string().max(16384),
-    API_SERVER_KEY: z.string().max(16384),
-    ZAI_API_KEY: z.string().max(16384),
-    KIMI_API_KEY: z.string().max(16384),
-    MINIMAX_API_KEY: z.string().max(16384),
-  }).partial().strict().optional(),
+  testCredentials: testCredentialsSchema.optional(),
   adapterConfig: adapterConfigSchema.optional().default({}),
   /**
    * Optional environment to run the adapter test inside. When omitted, the

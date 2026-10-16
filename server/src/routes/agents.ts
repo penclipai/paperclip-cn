@@ -159,6 +159,10 @@ import {
 } from "../redaction.js";
 import { redactCurrentUserValue } from "../log-redaction.js";
 import {
+  collectSensitiveStringValues,
+  redactSensitiveValueOccurrences,
+} from "../middleware/redact-sensitive.js";
+import {
   HarnessRuntimeRequestResolutionError,
   parseHarnessRuntimeRequestResolution,
   type HarnessRuntimeRequestKind,
@@ -2042,6 +2046,116 @@ export function agentRoutes(
     return asNonEmptyString(record.value);
   }
 
+  const LEGACY_TEST_CREDENTIAL_KEYS = new Set([
+    "ANTHROPIC_API_KEY", "OPENAI_API_KEY", "OPENROUTER_API_KEY", "GEMINI_API_KEY",
+    "XAI_API_KEY", "GROQ_API_KEY", "OPENCODE_API_KEY", "CURSOR_API_KEY",
+    "KIMI_MODEL_API_KEY", "API_SERVER_KEY", "ZAI_API_KEY", "KIMI_API_KEY",
+    "MINIMAX_API_KEY",
+  ]);
+  const UNSAFE_TEST_CREDENTIAL_ENV_KEYS = new Set([
+    "__proto__", "prototype", "constructor", "node_options", "path", "pathext", "comspec",
+  ]);
+  const TEST_CREDENTIAL_ENV_KEY_RE = /^[A-Za-z_][A-Za-z0-9_]*$/;
+  const ADAPTER_CONFIG_KEY_RE = /^[A-Za-z][A-Za-z0-9_]*$/;
+
+  function isSafeTestCredentialEnvKey(value: unknown): value is string {
+    return typeof value === "string" &&
+      value.length <= 128 &&
+      TEST_CREDENTIAL_ENV_KEY_RE.test(value) &&
+      !UNSAFE_TEST_CREDENTIAL_ENV_KEYS.has(value.toLowerCase()) &&
+      !isForbiddenConfigEnvKey(value);
+  }
+
+  function isSafeAdapterConfigKey(value: unknown): value is string {
+    return typeof value === "string" &&
+      value.length <= 128 &&
+      ADAPTER_CONFIG_KEY_RE.test(value) &&
+      !UNSAFE_TEST_CREDENTIAL_ENV_KEYS.has(value.toLowerCase());
+  }
+
+  /** Adapter metadata is plugin-provided data: never follow inherited values or accessors. */
+  function asOwnMetadataRecord(value: unknown): Record<string, unknown> | null {
+    if (typeof value !== "object" || value === null || Array.isArray(value)) return null;
+    try {
+      const prototype = Object.getPrototypeOf(value);
+      return prototype === Object.prototype || prototype === null
+        ? value as Record<string, unknown>
+        : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function ownMetadataValue(record: Record<string, unknown> | null, key: string): unknown {
+    if (!record) return undefined;
+    const descriptor = Object.getOwnPropertyDescriptor(record, key);
+    return descriptor && "value" in descriptor ? descriptor.value : undefined;
+  }
+
+  /**
+   * The shared request schema cannot know which adapter the route selected.
+   * Bind non-legacy credential names to the current active adapter's own
+   * declarative setup metadata before merging anything into its transient probe
+   * config. Every safe own provider.envKeys declaration is eligible so a probe
+   * does not require a provider selection.
+   */
+  async function authorizeTestCredentials(
+    adapter: ReturnType<typeof requireServerAdapter>,
+    testCredentials: Record<string, string> | undefined,
+  ): Promise<{ credential?: { secretKey: string; configKey: string } }> {
+    if (!testCredentials) return {};
+    const customKeys = Object.keys(testCredentials).filter((key) => !LEGACY_TEST_CREDENTIAL_KEYS.has(key));
+    if (!adapter.getConfigSchema) {
+      if (customKeys.length > 0) {
+        throw badRequest("Test credentials are not supported by this adapter configuration");
+      }
+      // Legacy built-ins without declarative setup metadata keep their existing
+      // probe behavior. They have no schema-owned top-level credential field to
+      // project into.
+      return {};
+    }
+
+    let schema: unknown;
+    try {
+      schema = await adapter.getConfigSchema();
+    } catch {
+      // Config-schema implementations are external code. Do not reflect an
+      // implementation error here because it can contain submitted secrets.
+      if (customKeys.length === 0) return {};
+      throw badRequest("Test credentials are not supported by this adapter configuration");
+    }
+    const schemaRecord = asOwnMetadataRecord(schema);
+    const onboarding = asOwnMetadataRecord(ownMetadataValue(schemaRecord, "onboarding"));
+    const credential = asOwnMetadataRecord(ownMetadataValue(onboarding, "credential"));
+    const credentialSecretKeyValue = ownMetadataValue(credential, "secretKey");
+    const credentialConfigKeyValue = ownMetadataValue(credential, "configKey");
+    const credentialSecretKey = isSafeTestCredentialEnvKey(credentialSecretKeyValue)
+      ? credentialSecretKeyValue
+      : null;
+    const credentialConfigKey = isSafeAdapterConfigKey(credentialConfigKeyValue)
+      ? credentialConfigKeyValue
+      : null;
+    const provider = asOwnMetadataRecord(ownMetadataValue(onboarding, "provider"));
+    const providerConfigKey = ownMetadataValue(provider, "configKey");
+    const providerEnvKeys = isSafeAdapterConfigKey(providerConfigKey)
+      ? asOwnMetadataRecord(ownMetadataValue(provider, "envKeys"))
+      : null;
+    const allowed = new Set<string>();
+    if (credentialSecretKey && credentialConfigKey) allowed.add(credentialSecretKey);
+    if (providerEnvKeys) {
+      for (const providerName of Object.keys(providerEnvKeys)) {
+        const secretKey = ownMetadataValue(providerEnvKeys, providerName);
+        if (isSafeTestCredentialEnvKey(secretKey)) allowed.add(secretKey);
+      }
+    }
+    if (customKeys.some((key) => !allowed.has(key))) {
+      throw badRequest("Test credentials are not allowed for this adapter configuration");
+    }
+    return credentialSecretKey && credentialConfigKey
+      ? { credential: { secretKey: credentialSecretKey, configKey: credentialConfigKey } }
+      : {};
+  }
+
   function preserveInstructionsBundleConfig(
     existingAdapterConfig: Record<string, unknown>,
     nextAdapterConfig: Record<string, unknown>,
@@ -3092,6 +3206,10 @@ export function agentRoutes(
       const aiBinding = requestedBinding?.mode === "router" ? undefined : requestedBinding;
       if (aiBinding && req.body.testCredentials && Object.keys(req.body.testCredentials).length) throw unprocessable("A managed connection test cannot override its credentials");
       const inputAdapterConfig = aiBinding ? { ...req.body.adapterConfig, env: stripAiAuthBindings(req.body.adapterConfig?.env) } : (req.body?.adapterConfig ?? {}) as Record<string, unknown>;
+      const testCredentialAuthorization = await authorizeTestCredentials(
+        adapter,
+        req.body.testCredentials,
+      );
       const savedAgentId = typeof req.body.agentId === "string" ? req.body.agentId : null;
       const savedAgent = savedAgentId
         ? await getAccessibleResource(req, res, svc.getById(savedAgentId), "Agent not found")
@@ -3278,17 +3396,17 @@ export function agentRoutes(
           return;
         }
 
-        // Probe-only credentials bypass storage, not authorization. The schema
-        // allows only provider key names; they never enter persisted config.
+        // Probe-only credentials bypass storage, but their names have already
+        // been bound to safe own declarations from the current active adapter
+        // schema. Provider selection is not required for declared provider keys.
         if (req.body.testCredentials) {
           effectiveAdapterConfig = {
             ...effectiveAdapterConfig,
             env: { ...parseObject(effectiveAdapterConfig.env), ...req.body.testCredentials },
           };
-          // Hermes authenticates the gateway itself through a top-level field.
-          // Keep its draft key out of persistence normalization, like env keys.
-          if (type === "hermes_gateway" && req.body.testCredentials.API_SERVER_KEY) {
-            effectiveAdapterConfig.apiKey = req.body.testCredentials.API_SERVER_KEY;
+          const credential = testCredentialAuthorization.credential;
+          if (credential && req.body.testCredentials[credential.secretKey]) {
+            effectiveAdapterConfig[credential.configKey] = req.body.testCredentials[credential.secretKey];
           }
         }
         const result = aiBinding ? await withManagedAiProbe(db, { companyId, agentId: req.body.agentId ?? "", responsibleUserId: responsibleUserForAiRequest(req), adapterType: type, binding: aiBinding, config: effectiveAdapterConfig, allowUninstalledPersonal: !req.body.agentId, allowUninstalledShared: !req.body.agentId && await canInstallSharedAiConnectionForNewAgent(db, req, companyId, aiBinding) }, async managed => {
@@ -3306,11 +3424,15 @@ export function agentRoutes(
         // reports fail even when the adapter probe itself passed.
         const status = environmentEnvChecks.some((c) => c.level === "error") ? "fail" : result.status;
         if (status === "fail") releaseStatus = "failed";
-        res.json({
+        const response = {
           ...result,
           status,
           checks: prefixChecks.length > 0 ? [...prefixChecks, ...result.checks] : result.checks,
-        });
+        };
+        res.json(redactSensitiveValueOccurrences(
+          response,
+          collectSensitiveStringValues({ testCredentials: req.body.testCredentials }),
+        ));
       } catch (err) {
         releaseStatus = "failed";
         throw err;
