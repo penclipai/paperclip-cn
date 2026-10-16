@@ -219,3 +219,58 @@ server worker，不经过 CLI onboarding，普通首次启动同样缺少 agent 
    没有把该停止视为真实 Grok 取消成功。
 5. 修复后重新构建完整安装包，并用未手写 secret 的新 profile 重做核心、真实 Grok、产物、
    取消恢复及生命周期验收。既有 `665f6cff` 安装包只保留其已取得的组件证据，不能宣称包含新修复。
+
+## 2026-10-16 `8d107` D 盘验收更新
+
+本节记录截至 05:54Z、在 `D:\CodexDesktop\p1016\windows-acceptance-repair-8d107` 取得的整合前证据。
+新源码的回归不能替代新完整包的安装验收，后续新打包和安装验收也不能回填为 `400e` 的证据。
+
+- 公开 HEAD `8d107b306f60dc776b01ca7c878f25614f6775ba` 的 CI 已结束：53 项成功、4 项定义内跳过、
+  0 项待完成。PR 保持 draft。NSIS 工件为 9 项通过、3 项定义内跳过；它仍只证明 NSIS 探针。
+- 已封存 `400e` 完整候选的安装器 SHA-256 为
+  `9095ba738ed853877dcdffb8cec8c0e056f35e184f7b25b96c49f794dc1ade53`。
+  `full-build-v5` 封存清单与当前用户全新安装树逐项一致，共 82,047 个文件。安装器和主程序为
+  `NotSigned`，`0.0.1` 仅用于验收，不是正式版本、签名候选或 stable 发布。
+- `h400e-cu-upgrade-temp-unset-stable` 的当前用户升级在 TEMP 未设置时退出 0。
+  `h400e-cu-uninstall-tmp-unset` 的当前用户卸载在 TMP 未设置时退出 0；两个 D 盘数据 profile
+  分别为 3,440 和 5,385 个文件，卸载前后哈希不变，开发服务 PID、出生时间和端口不变。
+  一次较早升级与并行 production build 发生，观测 PID 无效；该记录保留，但不计为通过。
+- 当前用户全新安装在 TEMP/TMP 均未设置时退出 0。启动前 `GetTempPathW + 2` 返回可写 D 盘路径；
+  D 盘数据与开发服务身份保持守恒。安装版核心验收完成两次原生退出码 0，且 API 与 PostgreSQL
+  端口均关闭。
+- 安装版 Grok 主 run `45d12c31…` 已验证真实产物、工作成果、下载、UI 与运行日志。
+  第一版取消调用 legacy 路径的原生 ID，得到 409；该结果不计为通过。改为正常 UI legacy `{}`
+  请求后，v2 resumed 验收完整通过。收据为
+  `installed-grok-acceptance-400e/evidence/2026-10-16T04-41-34-435Z`：真实 90 秒子进程
+  PID 19352 的 marker age 为 1,560 ms，启动后 3,112 ms 退出；目标 run `d66fc505` 已取消；
+  pause 状态与 lifecycle 都从 paused 恢复到 idle；恢复 run `4e2b53f6` 成功；最终 pause 后
+  原生退出码为 0，API 与 PostgreSQL 端口关闭。该验收的新增数据、临时目录和证据均在 D 盘。
+- 新 D 盘源码修复的定向证据：redactor 191 项通过；AuditFeed 25 项、labels 1 项及 locale/token
+  检查通过；两个 target attributes 的 LF checkout 固定证明没有语义差异；Windows helper 8 项与
+  workspace 2 项聚焦检查通过。此前完整 workspace 的 6 项失败收据保留；修复 QA 的 pnpm 9
+  Git Bash 路径和过长临时根后，完整文件 189/189 通过。已确认监听存在、但归属查询不可用时，
+  返回带 cause 的绑定冲突；没有监听证据时仍拒绝继续，不接管或终止未知进程。
+  长 readiness 回归仍证明事务在等待前提交，并核对返回端口在既有 32 个候选内且与持久化一致。
+- typed unknown 兼容修复保留数据库、registry 与 reservations 的既有状态，已获独立审查批准。
+  端口暴露完整文件为 28 项通过、3 项定义内跳过；真实 Git streaming 文件 1/1 通过，保持
+  9,000 文件、32 MiB 路径清单和 64 KiB 输出上限不变。三项类型检查（runner TypeScript、server、
+  UI）全部退出 0，源码与固定 pnpm 启动器哈希未变；未借用主工作区构建产物或另编 Rust。
+- Git Bash 的共享 `/tmp` 挂载指向已消失的 D 盘目录，单独设置新子进程 TEMP 无法更新挂载。
+  仅补建它已经指向的空目录 `D:\CodexDesktop\p1016\un-wRIYHi\t\gc-fd6bV7\t` 后，
+  原生 Git Bash 探针退出 0、stderr 为空；没有修改系统配置、C 盘目录、夹具规模或 buffer。
+  此目录保留给仍活跃的 MSYS 会话使用，不代表找回了任何历史数据。
+- 冻结的 `1f9ad` unit general 第 12 批为 3,522 项通过、137 项跳过、0 项失败。第 13 批为
+  764 项通过、7 项跳过、2 项失败；对应的 streaming 与 exposure 文件已在新 D 工作区原样通过。
+  三个 workspace 组均已退出 0，源码未变；串行分片从 05:50:34Z 开始，尚未全部结束。
+  先前 scheduling 的启动钩子超时保留，原样单文件复验 20/20 通过。跨提交的这些分批证据
+  不是一次在最新 HEAD 上执行的新 `pnpm test:run` 全绿结果。
+- 全用户 UAC 可用性已经询问但未获答复，尚未发起新的 UAC 提示；当前用户安装保持可用。
+  TMP 为空的卸载、全用户安装与卸载，以及包含上述新 D 盘源码修复的最终重新打包和安装仍待完成。
+- Greptile 5/5 没有可用 PR review/check 或工具证据，仍是 `CONTRIBUTING.md` 的合并门禁。
+  尚未确定正式版本，未购买证书、配置签名或发布 stable。发布专用 Windows 工作流目前还会直接
+  上传未签名 EXE；正式分发前须补强制签名、发布者主体与时间戳验证及上传前哈希复核。
+  本地未签名验收与正式发布校验是不同门禁，不能互相替代。旧 D 盘 profile 缺失的原因仍未知，
+  不声称旧历史 run 已恢复；C 盘原开发数据库继续保留。此前被拒绝的删除不会重试。
+- 取证时主工作分支为 `8d107`，PR #164 为 open draft 且 GitHub 状态为 clean；私有 `master` 为
+  `047c4d51`。已获取的 `upstream/master` 为 `185483e090`，仅作记录；本轮继续以 2026-10-12
+  目标为准，不追加 2026-10-16 上游同步。
