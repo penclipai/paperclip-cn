@@ -1,6 +1,6 @@
 import express from "express";
 import request from "supertest";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { StorageService } from "../storage/types.js";
 
 const ISSUE_ID = "11111111-1111-4111-8111-111111111111";
@@ -136,11 +136,24 @@ function createStorageService(): StorageService {
   } as unknown as StorageService;
 }
 
+async function preloadRouteModules() {
+  registerRouteMocks();
+  await vi.importActual<typeof import("../routes/issues.js")>(
+    "../routes/issues.js",
+  );
+  await vi.importActual<typeof import("../middleware/index.js")>(
+    "../middleware/index.js",
+  );
+  vi.resetModules();
+}
+
 async function createApp(options?: { companyIds?: string[] }) {
-  const [{ errorHandler }, { issueRoutes }] = await Promise.all([
-    vi.importActual<typeof import("../middleware/index.js")>("../middleware/index.js"),
-    vi.importActual<typeof import("../routes/issues.js")>("../routes/issues.js"),
-  ]);
+  const { issueRoutes } = await vi.importActual<
+    typeof import("../routes/issues.js")
+  >("../routes/issues.js");
+  const { errorHandler } = await vi.importActual<
+    typeof import("../middleware/index.js")
+  >("../middleware/index.js");
   const app = express();
   app.use(express.json());
   app.use((req, _res, next) => {
@@ -210,6 +223,8 @@ function makeDocument(overrides: Record<string, unknown> = {}) {
 }
 
 describe("work product review-document route", () => {
+  beforeAll(preloadRouteModules, 45_000);
+
   beforeEach(() => {
     vi.resetModules();
     vi.clearAllMocks();

@@ -26,6 +26,12 @@ vi.mock("../adapters/index.js", () => ({
 
 const support = await getEmbeddedPostgresTestSupport();
 const suite = support.supported ? describe : describe.skip;
+
+function mapFakeRemoteTempPaths(value: string): string {
+  if (process.platform !== "win32") return value;
+  return value.replaceAll("/tmp/", `${os.tmpdir().replace(/\\/g, "/")}/`);
+}
+
 suite("task project repository provisioning", () => {
   let database: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
   let db: ReturnType<typeof createDb>;
@@ -35,7 +41,10 @@ suite("task project repository provisioning", () => {
     // The managed checkout appends instance, UUID, repository, and clone-suffix
     // components. Keep the Windows fixture prefix short enough for Git's loose
     // object paths while retaining the descriptive POSIX fixture path.
-    root = await mkdtemp(path.join(os.homedir(), process.platform === "win32" ? "pc-r-" : "paperclip-project-repos-"));
+    const rootParent = process.platform === "win32"
+      ? path.parse(os.tmpdir()).root
+      : os.homedir();
+    root = await mkdtemp(path.join(rootParent, process.platform === "win32" ? "pc-r-" : "paperclip-project-repos-"));
     vi.stubEnv("PAPERCLIP_HOME", path.join(root, "home"));
     vi.stubEnv("PAPERCLIP_MULTI_PROJECT_WORKSPACE_SYNC", "false");
     database = await startEmbeddedPostgresTestDatabase("project-repositories");
@@ -92,7 +101,7 @@ suite("task project repository provisioning", () => {
       execute: async (input) => {
         const prepared = prepareTestPosixShell({
           command: input.command,
-          args: input.args,
+          args: input.args?.map(mapFakeRemoteTempPaths),
           env: { ...process.env, ...input.env },
         });
         return {

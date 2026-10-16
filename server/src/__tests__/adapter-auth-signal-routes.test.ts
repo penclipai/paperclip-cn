@@ -1,6 +1,6 @@
 import express from "express";
 import request from "supertest";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 // The cheap host-local authentication-signal route. It reads no sandbox and
 // runs no shell command or model process, so every test drives it through a
@@ -114,6 +114,16 @@ vi.mock("@penclipai/adapter-codex-local/server", async (importOriginal) => {
 
 let currentActor: Record<string, unknown>;
 
+async function preloadRouteModules() {
+  await vi.importActual<typeof import("../routes/agents.js")>(
+    "../routes/agents.js",
+  );
+  await vi.importActual<typeof import("../middleware/index.js")>(
+    "../middleware/index.js",
+  );
+  vi.resetModules();
+}
+
 function boardActor(userId: string, companyIds: string[] = [COMPANY_1, OTHER_COMPANY]): Record<string, unknown> {
   return {
     type: "board",
@@ -125,10 +135,12 @@ function boardActor(userId: string, companyIds: string[] = [COMPANY_1, OTHER_COM
 }
 
 async function createApp() {
-  const [{ agentRoutes }, { errorHandler }] = await Promise.all([
-    vi.importActual<typeof import("../routes/agents.js")>("../routes/agents.js"),
-    vi.importActual<typeof import("../middleware/index.js")>("../middleware/index.js"),
-  ]);
+  const { agentRoutes } = await vi.importActual<
+    typeof import("../routes/agents.js")
+  >("../routes/agents.js");
+  const { errorHandler } = await vi.importActual<
+    typeof import("../middleware/index.js")
+  >("../middleware/index.js");
   const app = express();
   app.use(express.json());
   app.use((req, _res, next) => {
@@ -144,6 +156,8 @@ const authSignalPath = (companyId: string, type: string, environmentId?: string)
   `/api/companies/${companyId}/adapters/${type}/auth-signal${environmentId ? `?environmentId=${environmentId}` : ""}`;
 
 describe("adapter auth-signal route", () => {
+  beforeAll(preloadRouteModules, 45_000);
+
   beforeEach(() => {
     vi.resetModules();
     vi.clearAllMocks();
