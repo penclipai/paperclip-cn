@@ -50,6 +50,203 @@ require_command() {
   fi
 }
 
+json_backend=""
+json_helper=""
+json_helper_native=""
+
+initialize_json_backend() {
+  if command -v jq >/dev/null 2>&1; then
+    json_backend="jq"
+    return
+  fi
+
+  require_command node
+  local script_directory
+  script_directory="$(CDPATH= cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+  json_helper="$script_directory/paperclip-artifact-json.mjs"
+  if [[ ! -f "$json_helper" ]]; then
+    printf 'Missing JSON fallback helper: %s\n' "$json_helper" >&2
+    exit 1
+  fi
+  case "$(uname -s 2>/dev/null || true)" in
+    MINGW*|MSYS*)
+      require_command cygpath
+      json_helper_native="$(cygpath -w -- "$json_helper")"
+      ;;
+    *) json_helper_native="$json_helper" ;;
+  esac
+  json_backend="node"
+}
+
+node_json() {
+  if [[ "$json_backend" != "node" ]]; then
+    printf 'JSON fallback was not initialized.\n' >&2
+    return 1
+  fi
+  case "$(uname -s 2>/dev/null || true)" in
+    MINGW*|MSYS*) MSYS2_ARG_CONV_EXCL='*' node "$json_helper_native" "$@" ;;
+    *) node "$json_helper_native" "$@" ;;
+  esac
+}
+
+node_json_path() {
+  local value="$1"
+  case "$(uname -s 2>/dev/null || true)" in
+    MINGW*|MSYS*) cygpath -w -- "$value" ;;
+    *) printf '%s' "$value" ;;
+  esac
+}
+
+json_response_is_indeterminate() {
+  local response_file="$1"
+  if [[ "$json_backend" == "jq" ]]; then
+    jq -e '.outcome == "indeterminate"' "$response_file" >/dev/null 2>&1
+  else
+    node_json response-is-indeterminate <"$response_file" >/dev/null
+  fi
+}
+
+json_dry_run() {
+  if [[ "$json_backend" == "jq" ]]; then
+    jq -n \
+      --arg file "$1" \
+      --arg issueId "$2" \
+      --arg companyId "$3" \
+      --arg title "$4" \
+      --arg summary "$5" \
+      --arg contentType "$6" \
+      --arg status "$7" \
+      --arg chatComment "$8" \
+      --argjson createWorkProduct "$9" \
+      --argjson isPrimary "${10}" \
+      '{file: $file, issueId: $issueId, companyId: $companyId, title: $title, summary: $summary, contentType: $contentType, status: $status, chatComment: (if $chatComment == "" then null else $chatComment end), createWorkProduct: $createWorkProduct, isPrimary: $isPrimary}'
+  else
+    node_json dry-run "$@"
+  fi
+}
+
+json_find_attachment() {
+  local attachments="$1"
+  local run_id="$2"
+  local sha256="$3"
+  local filename="$4"
+  local type="$5"
+  if [[ "$json_backend" == "jq" ]]; then
+    jq -nc \
+      --argjson attachments "$attachments" \
+      --arg runId "$run_id" \
+      --arg sha256 "$sha256" \
+      --arg originalFilename "$filename" \
+      --arg contentType "$type" \
+      'first(
+        $attachments[]
+        | select(
+            .originatingRunId == $runId
+            and ((.sha256 // "") | ascii_downcase) == ($sha256 | ascii_downcase)
+            and (.originalFilename // "") == $originalFilename
+            and ((.contentType // "") | ascii_downcase) == ($contentType | ascii_downcase)
+          )
+      ) // empty'
+  else
+    printf '%s' "$attachments" | node_json find-attachment "$run_id" "$sha256" "$filename" "$type"
+  fi
+}
+
+json_attachment_value() {
+  local attachment="$1"
+  local field="$2"
+  if [[ "$json_backend" == "jq" ]]; then
+    case "$field" in
+      id) jq -r '.id // empty' <<<"$attachment" ;;
+      content-path) jq -r '.contentPath // empty' <<<"$attachment" ;;
+      download-path) jq -r '.downloadPath // (if .contentPath then (.contentPath + "?download=1") else "" end)' <<<"$attachment" ;;
+      byte-size) jq -r '.byteSize // 0' <<<"$attachment" ;;
+      open-path) jq -r '.openPath // .contentPath // empty' <<<"$attachment" ;;
+      original-filename) jq -r '.originalFilename // empty' <<<"$attachment" ;;
+      *) printf 'Unsupported attachment JSON field: %s\n' "$field" >&2; return 1 ;;
+    esac
+  else
+    printf '%s' "$attachment" | node_json attachment-value "$field"
+  fi
+}
+
+json_work_product_payload() {
+  if [[ "$json_backend" == "jq" ]]; then
+    jq -nc \
+      --arg title "$1" \
+      --arg summary "$2" \
+      --arg status "$3" \
+      --arg runId "$4" \
+      --arg attachmentId "$5" \
+      --arg contentType "$6" \
+      --argjson byteSize "$7" \
+      --arg contentPath "$8" \
+      --arg openPath "$9" \
+      --arg downloadPath "${10}" \
+      --arg originalFilename "${11}" \
+      --argjson isPrimary "${12}" \
+      '{
+        type: "artifact",
+        provider: "paperclip",
+        title: $title,
+        status: $status,
+        reviewState: "none",
+        isPrimary: $isPrimary,
+        healthStatus: "unknown",
+        summary: (if $summary == "" then null else $summary end),
+        createdByRunId: $runId,
+        metadata: {
+          attachmentId: $attachmentId,
+          contentType: $contentType,
+          byteSize: $byteSize,
+          contentPath: $contentPath,
+          openPath: $openPath,
+          downloadPath: $downloadPath,
+          originalFilename: (if $originalFilename == "" then null else $originalFilename end)
+        }
+      }'
+  else
+    node_json work-product "$@"
+  fi
+}
+
+json_chat_comment_payload() {
+  if [[ "$json_backend" == "jq" ]]; then
+    jq -nc --arg body "$1" --arg attachmentId "$2" '{body: $body, attachmentIds: [$attachmentId]}'
+  else
+    node_json chat-comment "$@"
+  fi
+}
+
+json_output_receipt() {
+  local attachment="$1"
+  local work_product="$2"
+  local chat_response="$3"
+  if [[ "$json_backend" == "jq" ]]; then
+    jq -n \
+      --argjson attachment "$attachment" \
+      --argjson workProduct "$work_product" \
+      --argjson chatComment "$chat_response" \
+      '{attachment: $attachment, workProduct: $workProduct, chatComment: $chatComment}'
+    return
+  fi
+
+  local attachment_file work_product_file chat_response_file
+  attachment_file="$(helper_response_file)"
+  work_product_file="$(helper_response_file)"
+  chat_response_file="$(helper_response_file)"
+  printf '%s' "$attachment" >"$attachment_file"
+  printf '%s' "$work_product" >"$work_product_file"
+  printf '%s' "$chat_response" >"$chat_response_file"
+  local output_status=0
+  node_json output-receipt \
+    "$(node_json_path "$attachment_file")" \
+    "$(node_json_path "$work_product_file")" \
+    "$(node_json_path "$chat_response_file")" || output_status=$?
+  rm -f "$attachment_file" "$work_product_file" "$chat_response_file"
+  return "$output_status"
+}
+
 json_bool() {
   if [[ "${1:-0}" == "1" ]]; then
     printf 'true'
@@ -258,7 +455,7 @@ upload_file() {
     printf '\n' >&2
     # The bridge uses a structured 409 outcome after a possibly committed
     # mutation. Keep the marker so the next invocation reconciles by listing.
-    if [[ "$status_code" == "409" ]] && jq -e '.outcome == "indeterminate"' "$response_file" >/dev/null 2>&1; then
+    if [[ "$status_code" == "409" ]] && json_response_is_indeterminate "$response_file" >/dev/null 2>&1; then
       indeterminate=1
     fi
     rm -f "$response_file"
@@ -470,7 +667,7 @@ if [[ -n "$chat_comment" && "$create_work_product" != "1" ]]; then
 fi
 
 require_command curl
-require_command jq
+initialize_json_backend
 
 if [[ -z "$title" ]]; then
   title="$(basename "$file_path")"
@@ -483,18 +680,7 @@ fi
 if [[ "$dry_run" == "1" ]]; then
   create_work_product_json="$(json_bool "$create_work_product")"
   is_primary_json="$(json_bool "$is_primary")"
-  jq -n \
-    --arg file "$file_path" \
-    --arg issueId "$issue_id" \
-    --arg companyId "$company_id" \
-    --arg title "$title" \
-    --arg summary "$summary" \
-    --arg contentType "$content_type" \
-    --arg status "$status" \
-    --arg chatComment "$chat_comment" \
-    --argjson createWorkProduct "$create_work_product_json" \
-    --argjson isPrimary "$is_primary_json" \
-    '{file: $file, issueId: $issueId, companyId: $companyId, title: $title, summary: $summary, contentType: $contentType, status: $status, chatComment: (if $chatComment == "" then null else $chatComment end), createWorkProduct: $createWorkProduct, isPrimary: $isPrimary}'
+  json_dry_run "$file_path" "$issue_id" "$company_id" "$title" "$summary" "$content_type" "$status" "$chat_comment" "$create_work_product_json" "$is_primary_json"
   exit 0
 fi
 
@@ -530,23 +716,7 @@ if [[ -f "$unknown_upload_marker" && "$retry_unknown_upload" != "1" ]]; then
 fi
 for ((lookup_attempt = 1; lookup_attempt <= lookup_attempts; lookup_attempt++)); do
   existing_attachments="$(request_json GET "$api_base/issues/$issue_id/attachments")"
-  attachment="$(
-    jq -nc \
-      --argjson attachments "$existing_attachments" \
-      --arg runId "$PAPERCLIP_RUN_ID" \
-      --arg sha256 "$file_sha256" \
-      --arg originalFilename "$original_filename" \
-      --arg contentType "$content_type" \
-      'first(
-        $attachments[]
-        | select(
-            .originatingRunId == $runId
-            and ((.sha256 // "") | ascii_downcase) == ($sha256 | ascii_downcase)
-            and (.originalFilename // "") == $originalFilename
-            and ((.contentType // "") | ascii_downcase) == ($contentType | ascii_downcase)
-          )
-      ) // empty'
-  )"
+  attachment="$(json_find_attachment "$existing_attachments" "$PAPERCLIP_RUN_ID" "$file_sha256" "$original_filename" "$content_type")"
   if [[ -n "$attachment" ]]; then
     reused_attachment=1
     rm -f "$unknown_upload_marker"
@@ -582,9 +752,9 @@ if [[ -z "$attachment" ]]; then
   fi
 fi
 
-attachment_id="$(jq -r '.id // empty' <<<"$attachment")"
-content_path="$(jq -r '.contentPath // empty' <<<"$attachment")"
-download_path="$(jq -r '.downloadPath // (if .contentPath then (.contentPath + "?download=1") else "" end)' <<<"$attachment")"
+attachment_id="$(json_attachment_value "$attachment" id)"
+content_path="$(json_attachment_value "$attachment" content-path)"
+download_path="$(json_attachment_value "$attachment" download-path)"
 if [[ -z "$attachment_id" || -z "$content_path" || -z "$download_path" ]]; then
   printf 'Upload response did not include attachment path metadata.\n' >&2
   printf '%s\n' "$attachment" >&2
@@ -595,45 +765,11 @@ rm -f "$unknown_upload_marker"
 work_product="null"
 if [[ "$create_work_product" == "1" ]]; then
   is_primary_json="$(json_bool "$is_primary")"
-  byte_size="$(jq -r '.byteSize // 0' <<<"$attachment")"
-  open_path="$(jq -r '.openPath // .contentPath // empty' <<<"$attachment")"
-  original_filename="$(jq -r '.originalFilename // empty' <<<"$attachment")"
+  byte_size="$(json_attachment_value "$attachment" byte-size)"
+  open_path="$(json_attachment_value "$attachment" open-path)"
+  original_filename="$(json_attachment_value "$attachment" original-filename)"
 
-  work_product_payload="$(
-    jq -nc \
-      --arg title "$title" \
-      --arg summary "$summary" \
-      --arg status "$status" \
-      --arg runId "$PAPERCLIP_RUN_ID" \
-      --arg attachmentId "$attachment_id" \
-      --arg contentType "$content_type" \
-      --argjson byteSize "$byte_size" \
-      --arg contentPath "$content_path" \
-      --arg openPath "$open_path" \
-      --arg downloadPath "$download_path" \
-      --arg originalFilename "$original_filename" \
-      --argjson isPrimary "$is_primary_json" \
-      '{
-        type: "artifact",
-        provider: "paperclip",
-        title: $title,
-        status: $status,
-        reviewState: "none",
-        isPrimary: $isPrimary,
-        healthStatus: "unknown",
-        summary: (if $summary == "" then null else $summary end),
-        createdByRunId: $runId,
-        metadata: {
-          attachmentId: $attachmentId,
-          contentType: $contentType,
-          byteSize: $byteSize,
-          contentPath: $contentPath,
-          openPath: $openPath,
-          downloadPath: $downloadPath,
-          originalFilename: (if $originalFilename == "" then null else $originalFilename end)
-        }
-      }'
-  )"
+  work_product_payload="$(json_work_product_payload "$title" "$summary" "$status" "$PAPERCLIP_RUN_ID" "$attachment_id" "$content_type" "$byte_size" "$content_path" "$open_path" "$download_path" "$original_filename" "$is_primary_json")"
 
   work_product="$(
     request_json \
@@ -645,19 +781,14 @@ fi
 
 chat_response="null"
 if [[ -n "$chat_comment" ]]; then
-  chat_comment_payload="$(
-    jq -nc \
-      --arg body "$chat_comment" \
-      --arg attachmentId "$attachment_id" \
-      '{body: $body, attachmentIds: [$attachmentId]}'
-  )"
+  chat_comment_payload="$(json_chat_comment_payload "$chat_comment" "$attachment_id")"
   chat_response="$(
     request_json \
       POST \
       "$api_base/issues/$issue_id/comments" \
       "$chat_comment_payload"
   )"
-  chat_comment_id="$(jq -r '.id // empty' <<<"$chat_response")"
+  chat_comment_id="$(json_attachment_value "$chat_response" id)"
   if [[ -z "$chat_comment_id" ]]; then
     printf 'Chat attachment response did not include a comment id.\n' >&2
     exit 1
@@ -665,15 +796,11 @@ if [[ -n "$chat_comment" ]]; then
 fi
 
 if [[ "$output_format" == "json" ]]; then
-  jq -n \
-    --argjson attachment "$attachment" \
-    --argjson workProduct "$work_product" \
-    --argjson chatComment "$chat_response" \
-    '{attachment: $attachment, workProduct: $workProduct, chatComment: $chatComment}'
+  json_output_receipt "$attachment" "$work_product" "$chat_response"
   exit 0
 fi
 
-work_product_id="$(jq -r '.id // empty' <<<"$work_product")"
+work_product_id="$(json_attachment_value "$work_product" id)"
 
 if [[ "$reused_attachment" == "1" ]]; then
   printf 'Reused matching artifact from this run\n\n'

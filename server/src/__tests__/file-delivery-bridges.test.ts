@@ -17,6 +17,7 @@ import { startRunnerApiTestServer } from "./helpers/runner-api-server.js";
 
 const liveDaytona = process.env.PAPERCLIP_FILE_DELIVERY_DAYTONA === "1";
 const helper = path.resolve(import.meta.dirname, "../../../skills/paperclip/scripts/paperclip-upload-artifact.sh");
+const jsonHelper = path.resolve(import.meta.dirname, "../../../skills/paperclip/scripts/paperclip-artifact-json.mjs");
 // A real PNG and a PDF with binary bytes in its comment exercise UTF-8 corruption.
 const files = [
   { name: "猫 picture.png", type: "image/png", body: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aK1sAAAAASUVORK5CYII=", "base64") },
@@ -58,14 +59,14 @@ describe(`durable file delivery (${liveDaytona ? "Daytona" : "local processes"})
     let closed = false;
     const close = async () => { if (closed) return; closed = true; await live?.close(); };
     cleanup.push(close);
-    const run = async (command: string, args: string[], env: Record<string, string> = {}) => {
-      const result = await runner.execute({ command, args, env, timeoutMs: 90_000 });
+    const run = async (command: string, args: string[], env: Record<string, string> = {}, stdin?: string) => {
+      const result = await runner.execute({ command, args, env, stdin, timeoutMs: 90_000 });
       expect(result.exitCode, result.stderr).toBe(0);
       return result.stdout;
     };
     const write = async (relative: string, body: Buffer) => {
       const destination = path.join(workspace, relative);
-      await run("node", ["-e", "const fs=require('fs');fs.mkdirSync(require('path').dirname(process.argv[1]),{recursive:true});fs.writeFileSync(process.argv[1],Buffer.from(process.argv[2],'base64'))", destination, body.toString("base64")]);
+      await run("node", ["-e", "const fs=require('fs');const chunks=[];process.stdin.on('data',chunk=>chunks.push(chunk));process.stdin.on('end',()=>{fs.mkdirSync(require('path').dirname(process.argv[1]),{recursive:true});fs.writeFileSync(process.argv[1],Buffer.from(Buffer.concat(chunks).toString(),'base64'))})", destination], {}, body.toString("base64"));
       return destination;
     };
     const fetchFromWorkspace = async (url: string, headers: Record<string, string>) => {
@@ -88,6 +89,7 @@ describe(`durable file delivery (${liveDaytona ? "Daytona" : "local processes"})
     const token = createLocalAgentJwt(fixture.agentId, fixture.companyId, "codex_local", fixture.runId)!;
     const remote = await execution(fixture.workspace);
     const installedHelper = await remote.write("paperclip-upload-artifact.sh", await readFile(helper));
+    await remote.write("paperclip-artifact-json.mjs", await readFile(jsonHelper));
     const target: AdapterSandboxExecutionTarget = {
       kind: "remote", transport: "sandbox", providerKey: liveDaytona ? "daytona" : "local-test", remoteCwd: remote.workspace,
       runner: remote.runner, timeoutMs: 30_000,
@@ -109,6 +111,7 @@ describe(`durable file delivery (${liveDaytona ? "Daytona" : "local processes"})
       PAPERCLIP_WORKSPACE_CWD: remote.workspace };
     const headers = { authorization: `Bearer ${bridge!.env.PAPERCLIP_API_KEY}` };
     const receipts: Array<{ attachment: { id: string; contentPath: string; downloadPath: string } }> = [];
+    const receiptBodies = [...files.map(file => file.body)];
     try {
       for (const file of files) {
         const local = await remote.write(file.name, file.body);
@@ -125,13 +128,31 @@ describe(`durable file delivery (${liveDaytona ? "Daytona" : "local processes"})
         expect(Buffer.from(await download.arrayBuffer())).toEqual(file.body);
         receipts.push(receipt);
       }
+      const attachmentOnly = { name: "attachment only.txt", type: "text/plain", body: Buffer.from("attachment-only artifact\n") };
+      const attachmentOnlyPath = await remote.write(attachmentOnly.name, attachmentOnly.body);
+      const attachmentOnlyArgs = [installedHelper, attachmentOnlyPath, "--content-type", attachmentOnly.type, "--title", attachmentOnly.name, "--no-work-product"];
+      const attachmentOnlyReceipt = JSON.parse(await remote.run("bash", [...attachmentOnlyArgs, "--output", "json"], env));
+      expect(attachmentOnlyReceipt.workProduct).toBeNull();
+      expect(attachmentOnlyReceipt.chatComment).toBeNull();
+      const attachmentOnlyMarkdown = await remote.run("bash", attachmentOnlyArgs, env);
+      expect(attachmentOnlyMarkdown).toContain("Reused matching artifact from this run");
+      expect(attachmentOnlyMarkdown).not.toContain("Work product ID");
+      receipts.push(attachmentOnlyReceipt);
+      receiptBodies.push(attachmentOnly.body);
       const foreign = await server.fixture();
       const denied = await remote.fetch(`${bridge!.env.PAPERCLIP_API_URL}/api/issues/${foreign.issueId}/attachments`, headers);
       expect(denied.status).toBe(404);
       const unauthorized = await remote.fetch(`${bridge!.env.PAPERCLIP_API_URL}/api/issues/${fixture.issueId}/attachments`, { authorization: "Bearer wrong-token" });
       expect(unauthorized.status).toBe(401);
-      expect(await server.db.select().from(issueAttachments).where(eq(issueAttachments.issueId, fixture.issueId))).toHaveLength(2);
-      expect(await server.db.select().from(issueWorkProducts).where(eq(issueWorkProducts.issueId, fixture.issueId))).toHaveLength(2);
+      expect(await server.db.select().from(issueAttachments).where(eq(issueAttachments.issueId, fixture.issueId))).toHaveLength(3);
+      const workProducts = await server.db.select().from(issueWorkProducts).where(eq(issueWorkProducts.issueId, fixture.issueId));
+      const helperAttachmentIds = new Set(receipts.slice(0, files.length).map(receipt => receipt.attachment.id));
+      expect(workProducts.filter(product => helperAttachmentIds.has(product.externalId ?? ""))).toHaveLength(2);
+      // The upload API automatically registers one artifact work product for each
+      // agent-run attachment. --no-work-product only skips this helper's explicit
+      // POST and omits it from the receipt; it does not suppress that API invariant.
+      expect(workProducts.filter(product => product.externalId === attachmentOnlyReceipt.attachment.id)).toHaveLength(1);
+      expect(workProducts).toHaveLength(3);
       expect(await server.db.select().from(issueComments).where(eq(issueComments.issueId, fixture.issueId))).toHaveLength(1);
     } finally { await bridge?.stop(); await remote.close(); }
     // The workspace and runner are gone; a fresh request still reads persisted bytes.
@@ -139,7 +160,7 @@ describe(`durable file delivery (${liveDaytona ? "Daytona" : "local processes"})
     for (const [index, receipt] of receipts.entries()) {
       const download = await fetch(server.apiUrl + receipt.attachment.contentPath, { headers: { authorization: `Bearer ${token}` } });
       expect(download.status).toBe(200);
-      expect(Buffer.from(await download.arrayBuffer())).toEqual(files[index].body);
+      expect(Buffer.from(await download.arrayBuffer())).toEqual(receiptBodies[index]);
     }
   }, liveDaytona ? 240_000 : 60_000);
 
