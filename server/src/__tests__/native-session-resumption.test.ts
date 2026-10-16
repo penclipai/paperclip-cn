@@ -11,6 +11,7 @@ import {
   companies,
   completionContracts,
   createDb,
+  EMBEDDED_POSTGRES_TEST_TIMEOUT_MS,
   executionWorkspaces,
   heartbeatRunEvents,
   heartbeatRuns,
@@ -260,7 +261,7 @@ describe("P6-25 pre-result native session recovery", () => {
         leaseExpiresAt: new Date(0),
       })),
     ]);
-  }, 30_000);
+  }, EMBEDDED_POSTGRES_TEST_TIMEOUT_MS);
 
   afterAll(async () => temporary?.cleanup());
 
@@ -952,7 +953,7 @@ describe.each(["unchanged", "newer_active", "stale_idle"] as const)(
           authorUserId: "responsible-user",
           body: "Verify the newest user instruction before completing this task.",
         });
-    }, 30_000);
+    }, EMBEDDED_POSTGRES_TEST_TIMEOUT_MS);
 
     afterAll(async () => {
       if (
@@ -1174,6 +1175,48 @@ describe.each(["unchanged", "newer_active", "stale_idle"] as const)(
         heartbeat.reapOrphanedRuns({ staleThresholdMs: 0 }),
       ).resolves.not.toContain(runId);
       await heartbeat.drainActiveRunExecutions();
+
+      if (process.platform === "win32") {
+        // Windows has no Job Object receipt for this fixture's direct child.
+        // A dead PID alone cannot prove that its descendants stopped, so the
+        // old turn and any newer direction remain safely blocked.
+        expect(backendFactory).not.toHaveBeenCalled();
+        expect(recoverSession).not.toHaveBeenCalled();
+        expect(openSession).not.toHaveBeenCalled();
+        expect(freshStartTurn).not.toHaveBeenCalled();
+        await expect(
+          db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, runId)),
+        ).resolves.toEqual([
+          expect.objectContaining({
+            status: "running",
+            nativePhase: "retryable_failure",
+            processPid: staleProviderProcess.pid,
+            errorCode: "native_execution_ownership_unverified",
+          }),
+        ]);
+        await expect(
+          db
+            .select()
+            .from(nativeRunFinalizations)
+            .where(eq(nativeRunFinalizations.runId, runId)),
+        ).resolves.toEqual([
+          expect.objectContaining({
+            phase: "retryable_failure",
+            leaseOwner: null,
+          }),
+        ]);
+        if (newerRequest) {
+          const [receipt] = await db
+            .select()
+            .from(agentWakeupRequests)
+            .where(eq(agentWakeupRequests.idempotencyKey, newerWakeKey));
+          expect(receipt).toMatchObject({
+            status: "deferred_issue_execution",
+            runId: null,
+          });
+        }
+        return;
+      }
 
       if (newerRequest) {
         await drainHeartbeatRunsToQuiescence(db, heartbeat);
