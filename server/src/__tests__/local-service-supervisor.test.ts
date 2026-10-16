@@ -4,7 +4,7 @@ import fs from "node:fs/promises";
 import net from "node:net";
 import os from "node:os";
 import path from "node:path";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   resetRuntimeServicesForTests,
   resolveShell,
@@ -12,12 +12,81 @@ import {
 } from "../services/workspace-runtime.js";
 import {
   doesLocalServiceCommandLineMatch,
+  findAdoptableLocalService,
+  findLocalServiceRegistryRecordByRuntimeServiceId,
   isLocalServiceCommandLineComparable,
+  isLocalServiceProcessOwnedBy,
+  LocalServiceOwnershipQueryUnavailableError,
   listLocalServiceRegistryRecords,
   readLocalServicePortOwner,
   resolveLocalServiceLogPath,
   terminateLocalService,
+  writeLocalServiceRegistryRecord,
 } from "../services/local-service-supervisor.js";
+
+const { windowsOwnershipQueryFixture } = vi.hoisted(() => ({
+  windowsOwnershipQueryFixture: {
+    enabled: false,
+    port: 45_432,
+    calls: [] as Array<{ command: string; timeout?: number }>,
+  },
+}));
+
+vi.mock("node:child_process", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("node:child_process")>();
+  const promisifyCustom = Symbol.for("nodejs.util.promisify.custom");
+
+  const execFile = (...input: unknown[]) => {
+    const [command, , options] = input;
+    const callback = [...input].reverse().find((value) => typeof value === "function") as
+      | ((error: Error | null, stdout: string, stderr: string) => void)
+      | undefined;
+    const timeout = options && typeof options === "object" && "timeout" in options
+      && typeof options.timeout === "number"
+      ? options.timeout
+      : undefined;
+    if (
+      windowsOwnershipQueryFixture.enabled
+      && typeof command === "string"
+      && (command === "netstat" || command === "powershell.exe")
+    ) {
+      windowsOwnershipQueryFixture.calls.push({ command, timeout });
+      if (timeout !== undefined) {
+        const error = Object.assign(new Error("external ownership query timed out"), {
+          code: "ETIMEDOUT",
+          killed: true,
+        });
+        if (callback) queueMicrotask(() => callback(error, "", ""));
+      } else if (command === "netstat") {
+        const port = windowsOwnershipQueryFixture.port;
+        if (callback) queueMicrotask(() => callback(null, `  TCP    127.0.0.1:${port}     0.0.0.0:0     LISTENING     4242\r\n`, ""));
+      } else if (callback) {
+        queueMicrotask(() => callback(null, "31337\r\n", ""));
+      }
+      return {};
+    }
+    return (actual.execFile as (...args: unknown[]) => unknown)(...input);
+  };
+
+  Object.defineProperty(execFile, promisifyCustom, {
+    value: (...input: unknown[]) => {
+      const promise = new Promise<{ stdout: string; stderr: string }>((resolve, reject) => {
+        const callback = (error: Error | null, stdout: string, stderr: string) => {
+          if (error) {
+            Object.assign(error, { stdout, stderr });
+            reject(error);
+            return;
+          }
+          resolve({ stdout, stderr });
+        };
+        execFile(...input, callback);
+      });
+      return promise;
+    },
+  });
+
+  return { ...actual, execFile };
+});
 
 async function canRunWorkspaceShell() {
   if (process.platform !== "win32") return true;
@@ -39,7 +108,92 @@ async function canRunWorkspaceShell() {
 
 describe("local service supervision", () => {
   afterEach(async () => {
+    windowsOwnershipQueryFixture.enabled = false;
+    windowsOwnershipQueryFixture.calls = [];
     await resetRuntimeServicesForTests({ terminateProcesses: true });
+  });
+
+  it("reports Windows ownership-query timeouts to callers that require proof", async () => {
+    const originalPlatform = process.platform;
+    Object.defineProperty(process, "platform", { value: "win32" });
+    windowsOwnershipQueryFixture.enabled = true;
+
+    try {
+      await expect(readLocalServicePortOwner(
+        windowsOwnershipQueryFixture.port,
+        { throwOnError: true },
+      )).rejects.toBeInstanceOf(LocalServiceOwnershipQueryUnavailableError);
+      await expect(isLocalServiceProcessOwnedBy(
+        4242,
+        31337,
+        { throwOnError: true },
+      )).rejects.toBeInstanceOf(LocalServiceOwnershipQueryUnavailableError);
+      expect(windowsOwnershipQueryFixture.calls).toEqual([
+        { command: "netstat", timeout: 2_000 },
+        { command: "powershell.exe", timeout: 2_000 },
+      ]);
+    } finally {
+      Object.defineProperty(process, "platform", { value: originalPlatform });
+    }
+  });
+
+  it("preserves an unverified Windows registry record instead of treating a timed-out listener query as absent", async () => {
+    const paperclipHome = await fs.mkdtemp(path.join(process.env.TEMP ?? os.tmpdir(), "paperclip-ownership-timeout-"));
+    const previousPaperclipHome = process.env.PAPERCLIP_HOME;
+    const previousInstanceId = process.env.PAPERCLIP_INSTANCE_ID;
+    const originalPlatform = process.platform;
+    const runtimeServiceId = randomUUID();
+    const serviceKey = `ownership-timeout-${randomUUID()}`;
+    process.env.PAPERCLIP_HOME = paperclipHome;
+    process.env.PAPERCLIP_INSTANCE_ID = `ownership-timeout-${randomUUID()}`;
+    Object.defineProperty(process, "platform", { value: "win32" });
+    windowsOwnershipQueryFixture.enabled = true;
+
+    try {
+      await writeLocalServiceRegistryRecord({
+        version: 1,
+        serviceKey,
+        profileKind: "workspace-runtime",
+        serviceName: "fixture",
+        command: "fixture",
+        cwd: process.cwd(),
+        envFingerprint: "",
+        port: windowsOwnershipQueryFixture.port,
+        url: null,
+        pid: 2_147_483_647,
+        processGroupId: null,
+        provider: "local_process",
+        runtimeServiceId,
+        reuseKey: null,
+        startedAt: new Date().toISOString(),
+        lastSeenAt: new Date().toISOString(),
+        metadata: null,
+      });
+
+      await expect(findLocalServiceRegistryRecordByRuntimeServiceId({ runtimeServiceId }))
+        .rejects.toBeInstanceOf(LocalServiceOwnershipQueryUnavailableError);
+      await expect(findAdoptableLocalService({
+        serviceKey,
+        port: windowsOwnershipQueryFixture.port,
+      })).rejects.toBeInstanceOf(LocalServiceOwnershipQueryUnavailableError);
+      await expect(findAdoptableLocalService({
+        serviceKey: `ownership-timeout-new-${randomUUID()}`,
+        port: windowsOwnershipQueryFixture.port,
+      })).rejects.toBeInstanceOf(LocalServiceOwnershipQueryUnavailableError);
+      await expect(listLocalServiceRegistryRecords()).resolves.toHaveLength(1);
+      expect(windowsOwnershipQueryFixture.calls).toEqual([
+        { command: "netstat", timeout: 2_000 },
+        { command: "netstat", timeout: 2_000 },
+        { command: "netstat", timeout: 2_000 },
+      ]);
+    } finally {
+      Object.defineProperty(process, "platform", { value: originalPlatform });
+      if (previousPaperclipHome === undefined) delete process.env.PAPERCLIP_HOME;
+      else process.env.PAPERCLIP_HOME = previousPaperclipHome;
+      if (previousInstanceId === undefined) delete process.env.PAPERCLIP_INSTANCE_ID;
+      else process.env.PAPERCLIP_INSTANCE_ID = previousInstanceId;
+      await fs.rm(paperclipHome, { recursive: true, force: true });
+    }
   });
 
   it("keeps request-logging runtime stdio usable after the supervisor side closes and waits for a Windows service listener to retire", async () => {

@@ -83,17 +83,13 @@ function defaultHomeDirs(userNames: string[]) {
   return uniqueNonEmpty(candidates);
 }
 
-let cachedCurrentUserCandidates: CurrentUserCandidates | null = null;
-
 function getDefaultCurrentUserCandidates(): CurrentUserCandidates {
-  if (cachedCurrentUserCandidates) return cachedCurrentUserCandidates;
   const userNames = defaultUserNames();
-  cachedCurrentUserCandidates = {
+  return {
     userNames,
     homeDirs: defaultHomeDirs(userNames),
     replacement: CURRENT_USER_REDACTION_TOKEN,
   };
-  return cachedCurrentUserCandidates;
 }
 
 function resolveCurrentUserCandidates(opts?: CurrentUserRedactionOptions) {

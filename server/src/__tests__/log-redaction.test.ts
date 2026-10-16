@@ -42,6 +42,31 @@ describe("log redaction", () => {
     );
   });
 
+  it("refreshes default home directories after HOME and USERPROFILE change", () => {
+    const previousHome = process.env.HOME;
+    const previousUserProfile = process.env.USERPROFILE;
+    const prewarmedHome = "D:\\CodexQaTemp\\prewarmed-redaction-home";
+    const changedHome = "D:\\CodexQaTemp\\changed-redaction-home";
+
+    try {
+      process.env.HOME = prewarmedHome;
+      process.env.USERPROFILE = prewarmedHome;
+      redactCurrentUserText(`prewarm ${prewarmedHome}\\first.log`);
+
+      process.env.HOME = changedHome;
+      process.env.USERPROFILE = changedHome;
+      const result = redactCurrentUserText(`read failed at ${changedHome}\\second.log`);
+
+      expect(result).toContain("second.log");
+      expect(result).not.toContain(changedHome);
+    } finally {
+      if (previousHome === undefined) delete process.env.HOME;
+      else process.env.HOME = previousHome;
+      if (previousUserProfile === undefined) delete process.env.USERPROFILE;
+      else process.env.USERPROFILE = previousUserProfile;
+    }
+  });
+
   it("recursively redacts nested event payloads", () => {
     const userName = "paperclipuser";
     const maskedUserName = maskUserNameForLogs(userName);

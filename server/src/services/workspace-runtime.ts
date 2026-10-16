@@ -50,6 +50,8 @@ import {
   createLocalServiceKey,
   findLocalServiceRegistryRecordByRuntimeServiceId,
   findAdoptableLocalService,
+  LocalServiceOwnershipQueryUnavailableError,
+  type LocalServiceRegistryRecord,
   isLocalServiceProcessOwnedBy,
   isLocalServiceProcessInWorkspace,
   openLocalServiceLogFile,
@@ -323,10 +325,16 @@ class RuntimeServicePortBindCollision extends Error {
    */
   readonly exposureReallocatable: boolean;
 
-  constructor(port: number, diagnosis: string | null = null, exposureReallocatable = false) {
+  constructor(
+    port: number,
+    diagnosis: string | null = null,
+    exposureReallocatable = false,
+    cause?: unknown,
+  ) {
     super(
       `Runtime service could not bind allocated port ${port}` +
         (diagnosis ? ` (${diagnosis})` : ""),
+      cause === undefined ? undefined : { cause },
     );
     this.name = "RuntimeServicePortBindCollision";
     this.port = port;
@@ -1052,8 +1060,15 @@ async function refreshRemoteTrackingBaseRefWithDiagnostic(
         // clone failure marker and never changes reporting or ref validation.
         const failure = Object.assign(new Error(), { code: proc.code, stderr: proc.stderr });
         diagnostic.fetchFailureKind = classifyGitCloneFailure(remoteUrl, failure)?.reason ?? "unknown";
-        if (proc.code === 128 && !proc.stdout.trim() &&
-            proc.stderr.trim() === `fatal: couldn't find remote ref refs/heads/${remoteTracking.branch}`) {
+        const missingRemoteRef = `fatal: couldn't find remote ref refs/heads/${remoteTracking.branch}`;
+        const normalizedStderr = proc.stderr.replace(/\r\n/g, "\n").trim();
+        // Git for Windows can prefix this otherwise identical failed fetch with
+        // its Git Bash /tmp warning. Keep the ref and the complete warning
+        // spelling anchored so unrelated stderr remains an unknown failure.
+        if (proc.code === 128 && !proc.stdout.trim() && (
+          normalizedStderr === missingRemoteRef
+          || normalizedStderr === `bash.exe: warning: could not find /tmp, please create!\n${missingRemoteRef}`
+        )) {
           diagnostic.fetchFailureKind = "remote_ref_not_found";
         }
       },
@@ -4638,7 +4653,10 @@ async function readBrokerExposureMappings(): Promise<BrokerMappingSnapshot[] | n
 async function readExposureListenerOwners(ports: number[]): Promise<Map<number, ExposureOwnerIdentity | null>> {
   const owners = new Map<number, ExposureOwnerIdentity | null>();
   for (const port of ports) {
-    const ownerPid = await readLocalServicePortOwner(port).catch(() => null);
+    // An unavailable owner query cannot prove the port is free. Propagate it
+    // so callers retain the reservation rather than treating an unknown owner
+    // as an absent listener.
+    const ownerPid = await readLocalServicePortOwner(port, { throwOnError: true });
     if (!ownerPid) continue;
     let identity: ExposureOwnerIdentity | null = null;
     for (const record of runtimeServicesById.values()) {
@@ -5011,7 +5029,8 @@ export async function allocateRuntimeServicePort(overrides?: {
   portOwnerLookup?: (port: number) => Promise<number | null>;
 }): Promise<number> {
   const probe = overrides?.probe ?? probeEphemeralPort;
-  const portOwnerLookup = overrides?.portOwnerLookup ?? readLocalServicePortOwner;
+  const portOwnerLookup = overrides?.portOwnerLookup
+    ?? ((port: number) => readLocalServicePortOwner(port, { throwOnError: true }));
   let lastCandidate: number | null = null;
   for (let attempt = 0; attempt < PORT_ALLOCATION_ATTEMPTS; attempt += 1) {
     const candidate = await probe();
@@ -5342,15 +5361,70 @@ async function waitForAllocatedPortBind(input: {
   child: ChildProcess;
 }) {
   const deadline = Date.now() + resolveWorkspaceRuntimeReadinessTimeoutSec(input.service) * 1000;
+  // Keep every external ownership query inside the same readiness deadline.
+  // A timeout is indeterminate, never evidence that the port is free or owned
+  // by this child.
+  const ownershipQueryTimeoutMs = () => Math.max(1, Math.min(2_000, deadline - Date.now()));
+  const readOwner = () => readLocalServicePortOwner(input.port, {
+    timeoutMs: ownershipQueryTimeoutMs(),
+    throwOnError: true,
+  });
+  // A strict ownership-query failure never proves a port is free. Once a
+  // listener is independently observed, however, it does prove this child
+  // cannot safely claim the allocation. Surface that as a bind collision so
+  // the caller abandons only its own child and never adopts or terminates the
+  // unverified listener. Without a listener, retain the typed unavailable
+  // error for the caller to fail closed on the unknown state.
+  const readOwnerOrRejectPresentListener = async () => {
+    try {
+      return await readOwner();
+    } catch (error) {
+      if (
+        error instanceof LocalServiceOwnershipQueryUnavailableError
+        && await hasLoopbackPortListener(input.port)
+      ) {
+        throw new RuntimeServicePortBindCollision(
+          input.port,
+          "listener ownership unavailable",
+          false,
+          error,
+        );
+      }
+      throw error;
+    }
+  };
+  const isOwnedByChild = (ownerPid: number, childPid: number) => isLocalServiceProcessOwnedBy(
+    ownerPid,
+    childPid,
+    { timeoutMs: ownershipQueryTimeoutMs(), throwOnError: true },
+  );
+  const isOwnedByChildOrRejectPresentListener = async (ownerPid: number, childPid: number) => {
+    try {
+      return await isOwnedByChild(ownerPid, childPid);
+    } catch (error) {
+      // A resolved owner is independent evidence that a listener exists. An
+      // unavailable ancestry query cannot establish that it belongs to this
+      // child, so reject the allocation without touching that process.
+      if (error instanceof LocalServiceOwnershipQueryUnavailableError) {
+        throw new RuntimeServicePortBindCollision(
+          input.port,
+          "listener ownership unavailable",
+          false,
+          error,
+        );
+      }
+      throw error;
+    }
+  };
   while (Date.now() < deadline) {
     if (input.child.exitCode !== null || input.child.signalCode !== null) {
       throw new Error("service process exited before binding its allocated port");
     }
 
-    const ownerPid = await readLocalServicePortOwner(input.port);
+    const ownerPid = await readOwnerOrRejectPresentListener();
     if (ownerPid) {
       const childPid = input.child.pid ?? null;
-      if (!childPid || !(await isLocalServiceProcessOwnedBy(ownerPid, childPid))) {
+      if (!childPid || !(await isOwnedByChildOrRejectPresentListener(ownerPid, childPid))) {
         throw new RuntimeServicePortBindCollision(input.port);
       }
       // Require the same launched process group to retain ownership across a stability delay.
@@ -5359,8 +5433,8 @@ async function waitForAllocatedPortBind(input: {
       if (input.child.exitCode !== null || input.child.signalCode !== null) {
         throw new Error("service process exited after losing its allocated port");
       }
-      const stableOwnerPid = await readLocalServicePortOwner(input.port);
-      if (!stableOwnerPid || !(await isLocalServiceProcessOwnedBy(stableOwnerPid, childPid))) {
+      const stableOwnerPid = await readOwnerOrRejectPresentListener();
+      if (!stableOwnerPid || !(await isOwnedByChildOrRejectPresentListener(stableOwnerPid, childPid))) {
         throw new RuntimeServicePortBindCollision(input.port);
       }
       return;
@@ -5374,14 +5448,14 @@ async function waitForAllocatedPortBind(input: {
       if (input.child.exitCode !== null || input.child.signalCode !== null) {
         throw new Error("service process exited after losing its allocated port");
       }
-      const stableOwnerPid = await readLocalServicePortOwner(input.port);
+      const stableOwnerPid = await readOwnerOrRejectPresentListener();
       if (process.platform === "win32" && !stableOwnerPid) {
         throw new Error(
           `workspace_runtime_listener_ownership_unavailable: allocated port ${input.port}`,
         );
       }
       const childPid = input.child.pid ?? null;
-      if (stableOwnerPid && childPid && await isLocalServiceProcessOwnedBy(stableOwnerPid, childPid)) return;
+      if (stableOwnerPid && childPid && await isOwnedByChildOrRejectPresentListener(stableOwnerPid, childPid)) return;
       throw new RuntimeServicePortBindCollision(input.port);
     }
     await delay(50);
@@ -6502,7 +6576,7 @@ async function spawnLocalRuntimeService(input: StartLocalRuntimeServiceInput): P
   // holds 45439, which is exactly the workspace this feature has to upgrade.
   const conflictPort = reservedExposure ? null : port;
   if (conflictPort) {
-    const ownerPid = await readLocalServicePortOwner(conflictPort);
+    const ownerPid = await readLocalServicePortOwner(conflictPort, { throwOnError: true });
     if (ownerPid) {
       if (canAllocateFixedPort || portType === "auto") {
         throw new RuntimeServicePortBindCollision(conflictPort);
@@ -6829,7 +6903,7 @@ async function spawnLocalRuntimeService(input: StartLocalRuntimeServiceInput): P
         // `readLocalServicePortOwner` reads lsof and returns the listener pid, so a
         // non-null pid also proves a present listener. `readListenerBindFacts` reads
         // /proc for the same presence signal and the bound addresses.
-        const ownerPid = await readLocalServicePortOwner(collisionPort).catch(() => null);
+        const ownerPid = await readLocalServicePortOwner(collisionPort, { throwOnError: true });
         const bind = await readListenerBindFacts(collisionPort).catch(() => null);
         // Read the owner process group id too. The guest runs as a shell process
         // group leader, so the real dev server usually binds the port from a
@@ -8862,47 +8936,60 @@ export async function reconcilePersistedRuntimeServicesOnStartup(db: Db) {
         executionWorkspaceId: row.executionWorkspaceId ?? null,
       }),
     });
-    let adoptedRecord = await findLocalServiceRegistryRecordByRuntimeServiceId({
-      runtimeServiceId: row.id,
-      profileKind: "workspace-runtime",
-    });
-    if (
-      adoptedRecord
-      && (
-        adoptedRecord.command !== row.command
-        || adoptedRecord.serviceName !== row.serviceName
-        || adoptedRecord.envFingerprint !== (row.reuseKey ?? "")
-        || adoptedRecord.port !== (row.port ?? null)
-        || (row.cwd !== null && path.resolve(adoptedRecord.cwd) !== path.resolve(row.cwd))
-      )
-    ) {
-      await removeLocalServiceRegistryRecord(adoptedRecord.serviceKey);
-      adoptedRecord = null;
-    }
-    if (!adoptedRecord && row.command && row.cwd) {
-      adoptedRecord = await findAdoptableLocalService({
-        serviceKey: createLocalServiceKey({
+    let adoptedRecord: LocalServiceRegistryRecord | null;
+    try {
+      adoptedRecord = await findLocalServiceRegistryRecordByRuntimeServiceId({
+        runtimeServiceId: row.id,
+        profileKind: "workspace-runtime",
+      });
+      if (
+        adoptedRecord
+        && (
+          adoptedRecord.command !== row.command
+          || adoptedRecord.serviceName !== row.serviceName
+          || adoptedRecord.envFingerprint !== (row.reuseKey ?? "")
+          || adoptedRecord.port !== (row.port ?? null)
+          || (row.cwd !== null && path.resolve(adoptedRecord.cwd) !== path.resolve(row.cwd))
+        )
+      ) {
+        await removeLocalServiceRegistryRecord(adoptedRecord.serviceKey);
+        adoptedRecord = null;
+      }
+      if (!adoptedRecord && row.command && row.cwd) {
+        adoptedRecord = await findAdoptableLocalService({
+          serviceKey: createLocalServiceKey({
+            profileKind: "workspace-runtime",
+            serviceName: row.serviceName,
+            cwd: row.cwd,
+            command: row.command,
+            envFingerprint: row.reuseKey ?? "",
+            port: null,
+            scope: {
+              scopeType: row.scopeType as RuntimeServiceRecord["scopeType"],
+              scopeId: row.scopeId ?? null,
+              executionWorkspaceId: row.executionWorkspaceId ?? null,
+              reuseKey: row.reuseKey ?? null,
+            },
+          }),
           profileKind: "workspace-runtime",
           serviceName: row.serviceName,
-          cwd: row.cwd,
           command: row.command,
+          cwd: row.cwd,
           envFingerprint: row.reuseKey ?? "",
-          port: null,
-          scope: {
-            scopeType: row.scopeType as RuntimeServiceRecord["scopeType"],
-            scopeId: row.scopeId ?? null,
-            executionWorkspaceId: row.executionWorkspaceId ?? null,
-            reuseKey: row.reuseKey ?? null,
-          },
-        }),
-        profileKind: "workspace-runtime",
-        serviceName: row.serviceName,
-        command: row.command,
-        cwd: row.cwd,
-        envFingerprint: row.reuseKey ?? "",
-        port: row.port ?? null,
-        url: row.backendUrl ?? row.url ?? null,
-      });
+          port: row.port ?? null,
+          url: row.backendUrl ?? row.url ?? null,
+        });
+      }
+    } catch (error) {
+      // An unavailable Windows ownership query cannot establish that this
+      // record is gone. Keep its durable row, registry entry, and any port
+      // reservation for a later sweep; do not let one unknown row abort the
+      // rest of startup reconciliation.
+      if (error instanceof LocalServiceOwnershipQueryUnavailableError) {
+        reconciled += 1;
+        continue;
+      }
+      throw error;
     }
     if (adoptedRecord) {
       const adoptedUrl = adoptedRecord.url ?? row.backendUrl ?? row.url ?? null;

@@ -61,9 +61,11 @@ import {
   type RealizedExecutionWorkspace,
 } from "../services/workspace-runtime.ts";
 import {
+  createLocalServiceKey,
   findAdoptableLocalService,
   isLocalServiceRegistryCwdCompatible,
   listLocalServiceRegistryRecords,
+  LocalServiceOwnershipQueryUnavailableError,
   isLocalServiceProcessOwnedBy,
   isLocalServiceProcessInWorkspace,
   readLocalServiceProcessCwd,
@@ -98,7 +100,7 @@ import {
 } from "./helpers/embedded-postgres.js";
 
 const { listenerProbeUnavailableFixture } = vi.hoisted(() => ({
-  listenerProbeUnavailableFixture: { enabled: false, failStrict: false },
+  listenerProbeUnavailableFixture: { enabled: false, failStrict: false, code: 1 as string | number },
 }));
 
 vi.mock("node:child_process", async (importOriginal) => {
@@ -123,7 +125,9 @@ vi.mock("node:child_process", async (importOriginal) => {
         const callback = [...input].reverse().find((value) => typeof value === "function") as
           | ((error: Error, stdout: string, stderr: string) => void)
           | undefined;
-        if (callback) queueMicrotask(() => callback(Object.assign(new Error("listener probe unavailable"), { code: 1 }), "", ""));
+        if (callback) queueMicrotask(() => callback(Object.assign(new Error("listener probe unavailable"), {
+          code: listenerProbeUnavailableFixture.code,
+        }), "", ""));
         return {};
       }
       return (actual.execFile as (...args: unknown[]) => unknown)(...input);
@@ -324,6 +328,7 @@ async function runBashScriptForTest(scriptPath: string, options: { cwd: string; 
 function restoreInitialTestEnvironment() {
   listenerProbeUnavailableFixture.enabled = false;
   listenerProbeUnavailableFixture.failStrict = false;
+  listenerProbeUnavailableFixture.code = 1;
   for (const key of testEnvironmentKeys) {
     const value = initialTestEnvironment.get(key);
     if (value === undefined) delete process.env[key];
@@ -1609,12 +1614,16 @@ describe("realizeExecutionWorkspace", () => {
   });
 
   it.each([
-    ["authentication_failed", "fatal: Authentication failed for 'https://fixture.example.invalid/private-repo'\n", 128],
-    ["dns_failure", "fatal: unable to access 'https://fixture.example.invalid/private-repo': Could not resolve host: fixture.example.invalid\n", 128],
-    ["unknown", "fatal: Authentication failed for 'https://fixture.example.invalid/private-repo'\nfatal: unable to create local lock\n", 128],
-    ["unknown", "fatal: Authentication failed for 'https://fixture.example.invalid/private-repo'\n" + "private-output".repeat(700), 128],
-    [undefined, "", 0],
-  ] as const)("records only bounded fetch process evidence (%s)", async (kind, stderr, code) => {
+    ["authentication_failed", "fatal: Authentication failed for 'https://fixture.example.invalid/private-repo'\n", 128, ""],
+    ["dns_failure", "fatal: unable to access 'https://fixture.example.invalid/private-repo': Could not resolve host: fixture.example.invalid\n", 128, ""],
+    ["remote_ref_not_found", "fatal: couldn't find remote ref refs/heads/absent-fixture\n", 128, ""],
+    ["remote_ref_not_found", "bash.exe: warning: could not find /tmp, please create!\nfatal: couldn't find remote ref refs/heads/absent-fixture\n", 128, ""],
+    ["unknown", "bash.exe: warning: could not find /tmp, please create!\nfatal: couldn't find remote ref refs/heads/other-fixture\n", 128, ""],
+    ["unknown", "bash.exe: warning: could not find /tmp, please create!\nfatal: couldn't find remote ref refs/heads/absent-fixture\n", 128, "unexpected stdout"],
+    ["unknown", "fatal: Authentication failed for 'https://fixture.example.invalid/private-repo'\nfatal: unable to create local lock\n", 128, ""],
+    ["unknown", "fatal: Authentication failed for 'https://fixture.example.invalid/private-repo'\n" + "private-output".repeat(700), 128, ""],
+    [undefined, "", 0, ""],
+  ] as const)("records only bounded fetch process evidence (%s)", async (kind, stderr, code, stdout) => {
     const { repoRoot } = await createClonedRepoWithRemote();
     await runGit(repoRoot, ["remote", "set-url", "origin", "https://fixture.example.invalid/private-repo"]);
     const bin = path.join(repoRoot, "fixture-bin"), calls = path.join(repoRoot, "fixture-calls.jsonl");
@@ -1629,6 +1638,7 @@ describe("realizeExecutionWorkspace", () => {
         '  ? [path.basename(process.argv[1] ?? ""), ...process.argv.slice(2)]',
         '  : process.argv.slice(2);',
         `fs.appendFileSync(${JSON.stringify(calls)}, JSON.stringify(args) + "\\n");`,
+        `fs.writeSync(1, ${JSON.stringify(stdout)});`,
         `fs.writeSync(2, ${JSON.stringify(stderr)});`,
         `process.exit(${code});`,
       ].join("\n"),
@@ -7534,6 +7544,7 @@ describeEmbeddedPostgres("workspace runtime service control persistence", () => 
         adapterEnv: {},
       })).rejects.toThrow(/could not bind allocated port/);
       expect(exposeCalls).toBe(0);
+      expect(foreignHmr?.listening).toBe(true);
     } finally {
       if (foreignHmr) {
         await new Promise<void>((resolve) => foreignHmr!.close(() => resolve()));
@@ -7680,21 +7691,26 @@ describeEmbeddedPostgres("workspace runtime service control persistence", () => 
       const started = (await startPromise)[0]!;
       await parentWrite;
 
+      // `findFreePort` releases its probe before the isolated allocator claims
+      // it. A concurrent process can therefore take the preferred port, in
+      // which case isolated-workspace fallback must use the next bounded
+      // candidate rather than racing or holding the parent transaction.
       expect(parentWriteOutcome).toBe("committed");
       expect(started).toMatchObject({
-        port: basePort,
-        url: `http://127.0.0.1:${basePort}`,
         status: "running",
         healthStatus: "healthy",
       });
+      expect(started.port).toBeGreaterThanOrEqual(basePort);
+      expect(started.port).toBeLessThan(basePort + WORKSPACE_RUNTIME_PORT_ALLOCATION_ATTEMPTS);
+      expect(started.url).toBe(`http://127.0.0.1:${started.port}`);
       const persisted = await db
         .select()
         .from(workspaceRuntimeServices)
         .where(eq(workspaceRuntimeServices.executionWorkspaceId, workspace.id))
         .then((rows) => rows[0] ?? null);
       expect(persisted).toMatchObject({
-        port: basePort,
-        url: `http://127.0.0.1:${basePort}`,
+        port: started.port,
+        url: started.url,
         status: "running",
       });
     } finally {
@@ -7896,15 +7912,15 @@ describeEmbeddedPostgres("workspace runtime service control persistence", () => 
     }
   }, 20_000);
 
-  it("does not accept an occupied allocated port when listener ownership is unavailable", async () => {
+  it("fails closed when a fixed-port ownership query is unavailable", async () => {
     const fixture = await createRuntimeFixture();
     const cleanupRuntimeHome = await createRuntimeHome();
     const workspace = fixture.workspaces[0]!;
     const basePort = await findFreePort();
     listenerProbeUnavailableFixture.enabled = true;
-    let failedServiceId: string | null = null;
-    // On Windows, make the strict ownership query fail after the listener was
-    // observed. This keeps the startup record durable and unverified.
+    // A failed ownership probe is unknown, not a free port. Windows exercises
+    // the bounded strict query; other platforms keep the same fail-closed
+    // contract for their listener lookup.
     listenerProbeUnavailableFixture.failStrict = process.platform === "win32";
 
     try {
@@ -7917,49 +7933,29 @@ describeEmbeddedPostgres("workspace runtime service control persistence", () => 
         config: fixedPortRuntimeConfig(basePort),
         adapterEnv: {},
       });
+      const failure = await start.then(() => null, (error: unknown) => error);
       if (process.platform === "win32") {
-        await expect(start).rejects.toThrow("listener probe unavailable");
-        const [failed] = await db
-          .select({
-            id: workspaceRuntimeServices.id,
-            status: workspaceRuntimeServices.status,
-            healthStatus: workspaceRuntimeServices.healthStatus,
-            stoppedAt: workspaceRuntimeServices.stoppedAt,
-          })
-          .from(workspaceRuntimeServices)
-          .where(eq(workspaceRuntimeServices.executionWorkspaceId, workspace.id));
-        expect(failed).toMatchObject({
-          status: "failed",
-          healthStatus: "unhealthy",
-          stoppedAt: null,
-        });
-        expect(failed?.id).toEqual(expect.any(String));
-        failedServiceId = failed?.id ?? null;
-
-        const rawRegistry = await listLocalServiceRegistryRecords({
-          profileKind: "workspace-runtime",
-        });
-        expect(rawRegistry.some((record) => record.runtimeServiceId === failed?.id)).toBe(true);
-
-        await expect(startRuntimeServicesForWorkspaceControl({
-          db,
-          actor: fixture.actor,
-          issue: null,
-          workspace: fixture.realizedWorkspace(workspace),
-          executionWorkspaceId: workspace.id,
-          config: fixedPortRuntimeConfig(basePort),
-          adapterEnv: {},
-        })).rejects.toThrow("workspace_runtime_stop_unverified");
+        expect(failure).toBeInstanceOf(LocalServiceOwnershipQueryUnavailableError);
+        expect(failure).toHaveProperty(
+          "message",
+          "Windows local service ownership query is unavailable",
+        );
+        expect(failure).toHaveProperty(
+          "cause",
+          expect.objectContaining({ message: "listener probe unavailable", code: 1 }),
+        );
       } else {
-        await expect(start).rejects.toMatchObject({
-          status: 409,
-          details: {
-            code: "workspace_runtime_port_allocation_exhausted",
-            port: basePort,
-            attemptedPortCount: WORKSPACE_RUNTIME_PORT_ALLOCATION_ATTEMPTS,
-          },
-        });
+        expect(failure).toHaveProperty("message", "listener probe unavailable");
       }
+      await expect(db
+        .select({ id: workspaceRuntimeServices.id })
+        .from(workspaceRuntimeServices)
+        .where(eq(workspaceRuntimeServices.executionWorkspaceId, workspace.id)),
+      ).resolves.toEqual([]);
+      const rawRegistry = await listLocalServiceRegistryRecords({
+        profileKind: "workspace-runtime",
+      });
+      expect(rawRegistry.some((record) => record.port === basePort)).toBe(false);
     } finally {
       listenerProbeUnavailableFixture.enabled = false;
       listenerProbeUnavailableFixture.failStrict = false;
@@ -7968,21 +7964,119 @@ describeEmbeddedPostgres("workspace runtime service control persistence", () => 
         executionWorkspaceId: workspace.id,
         workspaceCwd: workspace.cwd,
       });
-      if (process.platform === "win32") {
-        await stop;
-        expect(failedServiceId).toEqual(expect.any(String));
-        const [stopped] = await db
-          .select({ status: workspaceRuntimeServices.status })
-          .from(workspaceRuntimeServices)
-          .where(eq(workspaceRuntimeServices.id, failedServiceId!));
-        expect(stopped?.status).toBe("stopped");
-        const rawRegistry = await listLocalServiceRegistryRecords({
-          profileKind: "workspace-runtime",
-        });
-        expect(rawRegistry.some((record) => record.runtimeServiceId === failedServiceId)).toBe(false);
-      } else {
-        await stop.catch(() => undefined);
-      }
+      await stop.catch(() => undefined);
+      await cleanupRuntimeHome();
+      await fixture.cleanup();
+    }
+  }, 20_000);
+
+  it("preserves a running row and stale registry record when Windows ownership times out during reconciliation", async () => {
+    if (process.platform !== "win32") return;
+
+    const fixture = await createRuntimeFixture();
+    const cleanupRuntimeHome = await createRuntimeHome();
+    const workspace = fixture.workspaces[0]!;
+    const runtimeServiceId = randomUUID();
+    const port = await findFreePort();
+    const now = new Date();
+    const reuseKey = `execution_workspace:${workspace.id}:web`;
+    const serviceKey = createLocalServiceKey({
+      profileKind: "workspace-runtime",
+      serviceName: "web",
+      cwd: workspace.cwd,
+      command: "pnpm dev",
+      envFingerprint: reuseKey,
+      port: null,
+      scope: {
+        scopeType: "execution_workspace",
+        scopeId: workspace.id,
+        executionWorkspaceId: workspace.id,
+        reuseKey,
+      },
+    });
+
+    try {
+      await db.insert(workspaceRuntimeServices).values({
+        id: runtimeServiceId,
+        companyId: fixture.companyId,
+        projectId: fixture.projectId,
+        projectWorkspaceId: fixture.projectWorkspaceId,
+        executionWorkspaceId: workspace.id,
+        issueId: null,
+        scopeType: "execution_workspace",
+        scopeId: workspace.id,
+        serviceName: "web",
+        status: "running",
+        lifecycle: "shared",
+        reuseKey,
+        command: "pnpm dev",
+        cwd: workspace.cwd,
+        port,
+        url: `http://127.0.0.1:${port}`,
+        provider: "local_process",
+        providerRef: "999999",
+        ownerAgentId: fixture.agentId,
+        startedByRunId: null,
+        lastUsedAt: now,
+        startedAt: now,
+        stoppedAt: null,
+        stopPolicy: { type: "manual" },
+        healthStatus: "healthy",
+        createdAt: now,
+        updatedAt: now,
+      });
+      // Keep this record outside the runtime-id lookup so reconciliation must
+      // validate the stale pid through findAdoptableLocalService.
+      await writeLocalServiceRegistryRecord({
+        version: 1,
+        serviceKey,
+        profileKind: "workspace-runtime",
+        serviceName: "web",
+        command: "pnpm dev",
+        cwd: workspace.cwd,
+        envFingerprint: reuseKey,
+        port,
+        url: `http://127.0.0.1:${port}`,
+        pid: 999999,
+        processGroupId: 999999,
+        provider: "local_process",
+        runtimeServiceId: null,
+        reuseKey,
+        startedAt: now.toISOString(),
+        lastSeenAt: now.toISOString(),
+        metadata: null,
+      });
+      listenerProbeUnavailableFixture.enabled = true;
+      listenerProbeUnavailableFixture.failStrict = true;
+      listenerProbeUnavailableFixture.code = "ETIMEDOUT";
+
+      const result = await reconcilePersistedRuntimeServicesOnStartup(db);
+
+      expect(result).toMatchObject({ reconciled: 1, adopted: 0, stopped: 0 });
+      const persisted = await db
+        .select()
+        .from(workspaceRuntimeServices)
+        .where(eq(workspaceRuntimeServices.id, runtimeServiceId))
+        .then((rows) => rows[0] ?? null);
+      expect(persisted).toMatchObject({ status: "running", stoppedAt: null });
+      await expect(findAdoptableLocalService({
+        serviceKey,
+        profileKind: "workspace-runtime",
+        serviceName: "web",
+        command: "pnpm dev",
+        cwd: workspace.cwd,
+        envFingerprint: reuseKey,
+        port,
+        url: `http://127.0.0.1:${port}`,
+      })).rejects.toMatchObject({
+        name: "LocalServiceOwnershipQueryUnavailableError",
+      });
+      const registry = await listLocalServiceRegistryRecords({ profileKind: "workspace-runtime" });
+      expect(registry.some((record) => record.serviceKey === serviceKey)).toBe(true);
+    } finally {
+      listenerProbeUnavailableFixture.enabled = false;
+      listenerProbeUnavailableFixture.failStrict = false;
+      listenerProbeUnavailableFixture.code = 1;
       await cleanupRuntimeHome();
       await fixture.cleanup();
     }
@@ -10971,9 +11065,15 @@ describe("runWorkspaceJobForControl", () => {
       expect(failure).toBeInstanceOf(HttpError);
       expect(failure).toMatchObject({
         status: 422,
-        message: 'Workspace job "Recover retained files" failed: Restored patch differs from exact source',
         details: { code: "workspace_job_failed", exitCode: 3 },
       });
+      expect(failure).toHaveProperty(
+        "message",
+        expect.stringContaining(
+          'Workspace job "Recover retained files" failed:',
+        ),
+      );
+      expect((failure as Error).message).toContain("Restored patch differs from exact source");
       expect(operations).toHaveLength(1);
       expect(operations[0]?.result).toMatchObject({ status: "failed", exitCode: 3 });
     } finally {

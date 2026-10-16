@@ -9,6 +9,24 @@ import { resolvePaperclipInstanceRoot } from "../home-paths.js";
 
 const execFileAsync = promisify(execFile);
 
+// Port ownership and ancestry are evidence for adopting or retiring local
+// services. On Windows both require a separate OS query, so leave enough room
+// for normal process-table contention without consuming the five-second
+// readiness window when that evidence is unavailable.
+const WINDOWS_LOCAL_SERVICE_QUERY_TIMEOUT_MS = 2_000;
+
+/**
+ * Windows cannot infer service ownership without querying the OS process and
+ * listener tables. Callers that require that proof use this error to retain
+ * their state instead of treating an unavailable query as an absent listener.
+ */
+export class LocalServiceOwnershipQueryUnavailableError extends Error {
+  constructor(cause: unknown) {
+    super("Windows local service ownership query is unavailable", { cause });
+    this.name = "LocalServiceOwnershipQueryUnavailableError";
+  }
+}
+
 export interface LocalServiceRegistryRecord {
   version: 1;
   serviceKey: string;
@@ -216,7 +234,12 @@ export async function findLocalServiceRegistryRecordByRuntimeServiceId(input: {
 
   let candidate = record;
   if (!isPidAlive(candidate.pid)) {
-    const ownerPid = candidate.port ? await readLocalServicePortOwner(candidate.port) : null;
+    const ownerPid = candidate.port
+      ? await readLocalServicePortOwner(
+        candidate.port,
+        process.platform === "win32" ? { throwOnError: true } : undefined,
+      )
+      : null;
     if (!ownerPid) {
       await removeLocalServiceRegistryRecord(candidate.serviceKey);
       return null;
@@ -417,6 +440,11 @@ export async function findAdoptableLocalService(input: {
   if (!record) return null;
 
   if (!isPidAlive(record.pid)) {
+    if (record.port && process.platform === "win32") {
+      // Do not discard a durable record while the listener table is unknown.
+      // The result itself is not enough to adopt a replacement process.
+      await readLocalServicePortOwner(record.port, { throwOnError: true });
+    }
     await removeLocalServiceRegistryRecord(input.serviceKey);
     return null;
   }
@@ -446,7 +474,11 @@ export async function readLocalServiceProcessGroupId(pid: number) {
   }
 }
 
-export async function isLocalServiceProcessOwnedBy(pid: number, ownerProcessId: number) {
+export async function isLocalServiceProcessOwnedBy(
+  pid: number,
+  ownerProcessId: number,
+  opts?: { timeoutMs?: number; throwOnError?: boolean },
+) {
   if (pid === ownerProcessId) return true;
   if (process.platform !== "win32") {
     return (await readLocalServiceProcessGroupId(pid)) === ownerProcessId;
@@ -470,12 +502,18 @@ export async function isLocalServiceProcessOwnedBy(pid: number, ownerProcessId: 
       "-NonInteractive",
       "-Command",
       script,
-    ]);
+    ], {
+      timeout: opts?.timeoutMs ?? WINDOWS_LOCAL_SERVICE_QUERY_TIMEOUT_MS,
+      windowsHide: true,
+    });
     return stdout
       .split(/\r?\n/)
       .map((line) => Number.parseInt(line.trim(), 10))
       .some((ancestorPid) => ancestorPid === ownerProcessId);
-  } catch {
+  } catch (error) {
+    if (opts?.throwOnError) {
+      throw new LocalServiceOwnershipQueryUnavailableError(error);
+    }
     return false;
   }
 }
@@ -491,7 +529,10 @@ async function adoptLocalServiceFromPortOwner(input: {
   url?: string | null;
 }) {
   if (!input.port) return null;
-  const ownerPid = await readLocalServicePortOwner(input.port);
+  const ownerPid = await readLocalServicePortOwner(
+    input.port,
+    process.platform === "win32" ? { throwOnError: true } : undefined,
+  );
   if (!ownerPid) return null;
 
   if (input.cwd) {
@@ -650,7 +691,7 @@ export async function readLocalServicePortOwner(
   try {
     if (process.platform === "win32") {
       const { stdout } = await execFileAsync("netstat", ["-ano", "-p", "tcp"], {
-        ...(opts?.timeoutMs !== undefined ? { timeout: opts.timeoutMs } : {}),
+        timeout: opts?.timeoutMs ?? WINDOWS_LOCAL_SERVICE_QUERY_TIMEOUT_MS,
         windowsHide: true,
       });
       for (const line of stdout.split(/\r?\n/)) {
@@ -676,7 +717,10 @@ export async function readLocalServicePortOwner(
       .find((value) => Number.isInteger(value) && value > 0);
     return firstPid ?? null;
   } catch (error) {
-    if (opts?.throwOnError) throw error;
+    if (opts?.throwOnError) {
+      if (process.platform === "win32") throw new LocalServiceOwnershipQueryUnavailableError(error);
+      throw error;
+    }
     return null;
   }
 }
@@ -747,9 +791,15 @@ export async function isLocalServiceRegistryCwdCompatible(processCwd: string | n
 
 async function doesLocalServiceRecordMatchCwd(record: LocalServiceRegistryRecord) {
   if (!record.port) return true;
-  const ownerPid = await readLocalServicePortOwner(record.port);
+  const strictWindowsOwnership = process.platform === "win32";
+  const ownerPid = await readLocalServicePortOwner(
+    record.port,
+    strictWindowsOwnership ? { throwOnError: true } : undefined,
+  );
   if (!ownerPid) return false;
-  if (!(await isLocalServiceProcessOwnedBy(ownerPid, record.processGroupId ?? record.pid))) {
+  if (!(await isLocalServiceProcessOwnedBy(ownerPid, record.processGroupId ?? record.pid, {
+    ...(strictWindowsOwnership ? { throwOnError: true } : {}),
+  }))) {
     return false;
   }
   const ownerCwd = await readLocalServiceProcessCwd(ownerPid);
