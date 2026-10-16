@@ -125,7 +125,7 @@ function AuditActor({
     const profile = userProfileMap.get(record.actorId);
     return (
       <Identity
-        name={profile?.label ?? "User"}
+        name={profile?.label ?? translateInstant("User")}
         avatarUrl={profile?.image ?? null}
         size="sm"
         className="font-medium text-foreground"
@@ -136,12 +136,12 @@ function AuditActor({
   // deleted or authorization-filtered agents that are absent from the directory.
   const label =
     record.actorType === "plugin"
-      ? "Plugin"
+      ? translateInstant("Plugin")
       : record.actorType === "agent"
-        ? "Agent"
+        ? translateInstant("Agent")
         : record.actorType === "user"
-          ? "User"
-          : "System";
+          ? translateInstant("User")
+          : translateInstant("System");
   return <Identity name={label} size="sm" className="font-medium text-foreground" />;
 }
 

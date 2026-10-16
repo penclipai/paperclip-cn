@@ -8,6 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/api/client";
 import i18n from "@/i18n";
 import { AuditFeed } from "./AuditFeed";
+import { AuditFeed as ProductionAuditFeed } from "./AuditFeed.production";
 
 const listAgentActionsMock = vi.hoisted(() => vi.fn());
 const exportCsvMock = vi.hoisted(() => vi.fn());
@@ -117,13 +118,14 @@ describe("AuditFeed", () => {
       actionDomain?: string;
       onActionDomainChange?: (actionDomain: string) => void;
     } = {},
+    Feed = AuditFeed,
   ) {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     root = createRoot(container);
     await act(async () => {
       root.render(
         <QueryClientProvider client={client}>
-          <AuditFeed
+          <Feed
             companyId={props.companyId ?? "company-1"}
             lockedAgentId={props.lockedAgentId}
             lockedRunId={props.lockedRunId}
@@ -613,6 +615,44 @@ describe("AuditFeed", () => {
 
     expect(container.textContent).toContain("Agent");
     expect(container.textContent).not.toContain("System");
+  });
+
+  it("localizes production actor fallbacks while preserving readable actor names", async () => {
+    try {
+      await i18n.changeLanguage("zh-CN");
+      listAgentActionsMock.mockResolvedValue({
+        items: [
+          record({ id: "evt-plugin", actorType: "plugin", actorId: "@penclipai/example", agentId: null }),
+          record({ id: "evt-agent", actorId: "filtered-agent", agentId: null }),
+          record({ id: "evt-user", actorType: "user", actorId: "filtered-user", agentId: null }),
+          record({ id: "evt-system", actorType: "system", actorId: null, agentId: null }),
+          record({ id: "evt-readable-agent", actorId: "agent-1", agentId: null }),
+          record({ id: "evt-readable-user", actorType: "user", actorId: "user-1", agentId: null }),
+        ],
+        nextCursor: null,
+        accessTier: "basic",
+      });
+
+      await render({ mode: "all" }, ProductionAuditFeed);
+
+      expect(container.textContent).toContain("插件");
+      expect(container.textContent).toContain("智能体");
+      expect(container.textContent).toContain("用户");
+      expect(container.textContent).toContain("系统");
+      expect(container.textContent).toContain("Fable");
+      expect(container.textContent).toContain("Dotta");
+
+      await i18n.changeLanguage("en");
+      await flushReact();
+      expect(container.textContent).toContain("Plugin");
+      expect(container.textContent).toContain("Agent");
+      expect(container.textContent).toContain("User");
+      expect(container.textContent).toContain("System");
+      expect(container.textContent).toContain("Fable");
+      expect(container.textContent).toContain("Dotta");
+    } finally {
+      await i18n.changeLanguage("en");
+    }
   });
 
   it("hides the mode toggle from a basic all-actors reader", async () => {
