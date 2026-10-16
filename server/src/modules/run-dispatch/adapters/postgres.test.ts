@@ -438,6 +438,36 @@ describeEmbeddedPostgres("run-dispatch postgres adapter", () => {
     if (gate.dispatched) expect(await gate.resultPromise).toBe("settled");
   });
 
+  it("does not reacquire the issue lock for an already-admitted final handoff", async () => {
+    const { companyId, agentId } = await seedCompanyAndAgent();
+    const issueId = randomUUID();
+    await seedIssue({ companyId, issueId, assigneeAgentId: agentId, status: "in_progress" });
+    const runId = await seedRun({ companyId, agentId, status: "running", contextSnapshot: { issueId } });
+    let release!: () => void;
+    let markLocked!: () => void;
+    const held = new Promise<void>((resolve) => { release = resolve; });
+    const locked = new Promise<void>((resolve) => { markLocked = resolve; });
+    const issueLock = db.transaction(async (tx) => {
+      await tx.select({ id: issues.id }).from(issues).where(eq(issues.id, issueId)).for("update");
+      markLocked();
+      await held;
+    });
+    await Promise.race([locked, issueLock]);
+    const dispatch = vi.fn(async () => "started");
+    const gate = createPostgresRunDispatchAdapter(db).dispatchCurrentRunIfCurrent({
+      companyId, runId, expectedStatus: "running", now: new Date(), dispatch,
+    });
+
+    try {
+      await vi.waitFor(() => expect(dispatch).toHaveBeenCalledOnce(), { timeout: 3_000 });
+      expect(await gate).toMatchObject({ dispatched: true });
+    } finally {
+      release();
+      await issueLock;
+      await gate;
+    }
+  });
+
   it("initiates dispatch before admission locks can be released to a competing owner", async () => {
     const { companyId, agentId } = await seedCompanyAndAgent();
     const issueId = randomUUID();

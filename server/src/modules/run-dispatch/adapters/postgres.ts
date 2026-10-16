@@ -1183,7 +1183,7 @@ export function createPostgresRunDispatchAdapter(
   async function dispatchCurrentRunIfCurrent<T>(
     input: DispatchCurrentRunInput<T>,
   ): Promise<DispatchCurrentRunOutcome<T>> {
-    const dispatchLockedRun = async (_tx: Db, run: HeartbeatRun) => {
+    const dispatchLockedRun = async (run: HeartbeatRun) => {
       if (
         run.status !== input.expectedStatus ||
         run.resultJson?.cancellation ||
@@ -1200,16 +1200,27 @@ export function createPostgresRunDispatchAdapter(
       return { dispatched: true as const, resultPromise };
     };
 
-    return withIssueThenRunLocks(
-      input,
-      () => {
+    // This is deliberately only a final run-state/cancellation fence. The
+    // caller has already admitted the work (including any issue-level policy),
+    // so taking the issue lock here would turn a protected native recovery into
+    // a second chat-control admission barrier.
+    return db.transaction(async (tx) => {
+      const run = await tx
+        .select()
+        .from(heartbeatRuns)
+        .where(
+          and(eq(heartbeatRuns.id, input.runId), eq(heartbeatRuns.companyId, input.companyId)),
+        )
+        .for("update")
+        .then((rows) => rows[0] ?? null);
+      if (!run) {
         throw new RunDispatchApplicationError(
           "run_not_found",
           `run-dispatch: run ${input.runId} disappeared before provider dispatch`,
         );
-      },
-      dispatchLockedRun,
-    );
+      }
+      return dispatchLockedRun(run);
+    });
   }
 
   return {
