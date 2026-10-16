@@ -209,6 +209,21 @@
     "zh-CN": "触发了监控",
     "reviewedEnglishHash": "96c68e8b4a9c882b65c64d5536677dd6751bc3fd96639e358b9e976ce161584d"
   },
+  "activityFormat.action.issue.queued_comment_discarded": {
+    "en": "discarded a queued comment",
+    "zh-CN": "丢弃了待发送评论",
+    "reviewedEnglishHash": "4ddb19a87124d8e492e4ccc7ed9126d99f62724b186630d3444be3d75f5f5b42"
+  },
+  "activityFormat.action.issue.queued_comment_edited": {
+    "en": "edited a queued comment",
+    "zh-CN": "编辑了待发送评论",
+    "reviewedEnglishHash": "949cb99215deec5b6dde1e7bbe8bbd39a675a7615bd62c609db9aefdd4f6fcb8"
+  },
+  "activityFormat.action.issue.queued_comments_reordered": {
+    "en": "reordered queued comments",
+    "zh-CN": "调整了待发送评论顺序",
+    "reviewedEnglishHash": "e19f9ce88ee4ef79fb75f5cfc05baef98815d8a6309ad150be6c85dc942230f0"
+  },
   "activityFormat.action.issue.read_marked": {
     "en": "marked the issue as read",
     "zh-CN": "将任务标记为已读",
@@ -754,10 +769,30 @@
     "zh-CN": "触发了监控：",
     "reviewedEnglishHash": "fc870ab0f7f3ac57fc219938888746dbbb7a959c2e8ac991daa066a04559bc5b"
   },
+  "activityFormat.row.issue.queued_comment_discarded": {
+    "en": "discarded a queued comment on",
+    "zh-CN": "丢弃了待发送评论：",
+    "reviewedEnglishHash": "b3f772fd1383264e5dafd86c7a59b9d9f281a9a92bacbb1b514f40fb99111b3e"
+  },
+  "activityFormat.row.issue.queued_comment_edited": {
+    "en": "edited a queued comment on",
+    "zh-CN": "编辑了待发送评论：",
+    "reviewedEnglishHash": "610f376e9c9eeaf3090669993373c4da973565ff7c0d224588fddd111cb8f92b"
+  },
+  "activityFormat.row.issue.queued_comments_reordered": {
+    "en": "reordered queued comments on",
+    "zh-CN": "调整了待发送评论顺序：",
+    "reviewedEnglishHash": "0cb8d462aade3163d50329d7e2d9189f955446ad5db4484896f28ac38471acaf"
+  },
   "activityFormat.row.issue.read_marked": {
     "en": "marked the issue as read",
     "zh-CN": "将任务标记为已读",
     "reviewedEnglishHash": "60b8077dde613c5dda814ecca8df8d8978baeba02cfbecdf36d2dc6018ba53f2"
+  },
+  "activityFormat.row.issue.read_unmarked": {
+    "en": "marked unread",
+    "zh-CN": "标记为未读",
+    "reviewedEnglishHash": "27fd861256fea0f8d328ebd48a333e0ffd6fd411caabd5aa6ce092d374e3ed39"
   },
   "activityFormat.row.issue.recovery_action_escalated": {
     "en": "escalated the recovery action on",

@@ -1,4 +1,5 @@
 import type { Agent } from "@penclipai/shared";
+import { translateInstant } from "@/i18n";
 import type { CompanyUserProfile } from "./company-members";
 import { formatReviewPolicyValue } from "./review-policy";
 
@@ -26,14 +27,14 @@ const ACTIVITY_ROW_VERBS: Record<string, string> = {
   "issue.created": "created",
   "issue.updated": "updated",
   "issue.read_marked": "activity.issueRead",
-  "issue.read_unmarked": "marked unread",
+  "issue.read_unmarked": "activityFormat.row.issue.read_unmarked",
   "issue.checked_out": "checked out",
   "issue.released": "released",
   "issue.comment_added": "commented on",
-  "issue.comment_cancelled": "cancelled a queued comment on",
-  "issue.queued_comment_edited": "edited a queued comment on",
-  "issue.queued_comments_reordered": "reordered queued comments on",
-  "issue.queued_comment_discarded": "discarded a queued comment on",
+  "issue.comment_cancelled": "activityFormat.row.issue.comment_cancelled",
+  "issue.queued_comment_edited": "activityFormat.row.issue.queued_comment_edited",
+  "issue.queued_comments_reordered": "activityFormat.row.issue.queued_comments_reordered",
+  "issue.queued_comment_discarded": "activityFormat.row.issue.queued_comment_discarded",
   "issue.comment_deleted": "deleted a comment on",
   "issue.attachment_added": "attached file to",
   "issue.attachment_removed": "removed attachment from",
@@ -210,6 +211,13 @@ const ISSUE_ACTIVITY_LABELS: Record<string, string> = {
   "issue.thread_interaction_expired": "expired the request",
   "issue.thread_interaction_item_verdicts_submitted": "submitted verdicts on the request",
   "issue.stalled_review_decided": "recorded a review verdict",
+};
+
+const ISSUE_ACTIVITY_TRANSLATION_KEYS: Record<string, string> = {
+  "issue.comment_cancelled": "activityFormat.action.issue.comment_cancelled",
+  "issue.queued_comment_edited": "activityFormat.action.issue.queued_comment_edited",
+  "issue.queued_comments_reordered": "activityFormat.action.issue.queued_comments_reordered",
+  "issue.queued_comment_discarded": "activityFormat.action.issue.queued_comment_discarded",
 };
 
 /**
@@ -573,5 +581,7 @@ export function formatIssueActivityAction(
     return `${ISSUE_ACTIVITY_LABELS[action] ?? action} ${key}${title}`;
   }
 
-  return ISSUE_ACTIVITY_LABELS[action] ?? action.replace(/[._]/g, " ");
+  const translationKey = ISSUE_ACTIVITY_TRANSLATION_KEYS[action];
+  const defaultValue = ISSUE_ACTIVITY_LABELS[action] ?? action.replace(/[._]/g, " ");
+  return translationKey ? translateInstant(translationKey, { defaultValue }) : defaultValue;
 }
