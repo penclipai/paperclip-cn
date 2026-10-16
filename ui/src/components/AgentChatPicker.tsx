@@ -25,8 +25,8 @@ export function AgentChatPicker({ open, onOpenChange, ...props }: AgentChatPicke
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent aria-describedby={undefined} className="gap-0 overflow-hidden p-0 sm:max-w-md">
         <div className="px-4 pt-4 pb-3">
-          <DialogTitle>{translateInstant("Chat with an agent")}</DialogTitle>
-          {props.existingChatAgentIds && <p className="mt-2 text-sm text-muted-foreground">{translateInstant("One conversation per agent. Pick up where you left off.")}</p>}
+          <DialogTitle>{translateInstant("agentChatPicker.title")}</DialogTitle>
+          {props.existingChatAgentIds && <p className="mt-2 text-sm text-muted-foreground">{translateInstant("agentChatPicker.resumeDescription")}</p>}
         </div>
         {/* The dialog unmounts its content on close, so each search starts empty. */}
         <AgentChatPickerResults key={String(open)} {...props} onComplete={() => onOpenChange(false)} />
@@ -56,7 +56,7 @@ function AgentChatPickerResults({ agents, onSelect, onComplete, loading, error, 
       await onSelect(agent, request.signal);
       if (mounted.current) onComplete();
     } catch (error) {
-      setSelectionError(error instanceof Error ? error.message : "Couldn’t open chat. Try again.");
+      setSelectionError(error instanceof Error ? error.message : translateInstant("agentChatPicker.openFailed"));
     } finally {
       setOpeningId(null);
     }
@@ -64,17 +64,17 @@ function AgentChatPickerResults({ agents, onSelect, onComplete, loading, error, 
   return (
     <Command>
       <CommandInput
-        aria-label={translateInstant("Search agents by name or role")}
-        placeholder={translateInstant("Search by name or role…")}
+        aria-label={translateInstant("agentChatPicker.searchAria")}
+        placeholder={translateInstant("agentChatPicker.searchPlaceholder")}
         value={search}
         onValueChange={setSearch}
       />
       {selectionError && <p role="alert" className="px-4 py-3 text-sm text-destructive">{selectionError}</p>}
-      {openingId && <p role="status" className="sr-only">{translateInstant("Opening conversation…")}</p>}
+      {openingId && <p role="status" className="sr-only">{translateInstant("agentChatPicker.opening")}</p>}
       {error ? (
         <div role="alert" className="flex flex-col items-start gap-2 p-4 text-sm">
-          <p>{translateInstant("Couldn’t load agents. Try again.")}</p>
-          {onRetry && <Button variant="outline" size="sm" onClick={onRetry}>{translateInstant("Retry")}</Button>}
+          <p>{translateInstant("agentChatPicker.loadFailed")}</p>
+          {onRetry && <Button variant="outline" size="sm" onClick={onRetry}>{translateInstant("common.retry")}</Button>}
         </div>
       ) : loading ? (
         <p role="status" className="p-4 text-sm text-muted-foreground">{translateInstant("secrets.loadingAgents")}</p>
@@ -82,11 +82,11 @@ function AgentChatPickerResults({ agents, onSelect, onComplete, loading, error, 
         <CommandList>
           <CommandEmpty>
             <div className="flex flex-col items-center gap-2 px-4">
-              <span>{agents.length ? `No agents match “${search}”` : "No agents yet."}</span>
+              <span>{agents.length ? translateInstant("agentChatPicker.noMatches", { query: search }) : translateInstant("agentChatPicker.noAgents")}</span>
               {agents.length ? <>
-                <span className="text-xs text-muted-foreground">{translateInstant("Try another name or role.")}</span>
-                <Button variant="ghost" size="sm" onClick={() => setSearch("")}>{translateInstant("Clear search")}</Button>
-              </> : <span className="text-xs text-muted-foreground">{translateInstant("Create an agent from the Agents page to start chatting.")}</span>}
+                <span className="text-xs text-muted-foreground">{translateInstant("agentChatPicker.tryAnother")}</span>
+                <Button variant="ghost" size="sm" onClick={() => setSearch("")}>{translateInstant("agentChatPicker.clearSearch")}</Button>
+              </> : <span className="text-xs text-muted-foreground">{translateInstant("agentChatPicker.createAgent")}</span>}
             </div>
           </CommandEmpty>
           <CommandGroup>
@@ -104,8 +104,8 @@ function AgentChatPickerResults({ agents, onSelect, onComplete, loading, error, 
                   <span className="truncate font-medium">{agent.name}</span>
                   <span className="truncate text-xs text-muted-foreground">{agent.title ?? agent.role}</span>
                 </span>
-                {existingChatAgentIds && <span className="shrink-0 text-xs text-muted-foreground">{existingChatAgentIds.includes(agent.id) ? "Open chat" : "New chat"}</span>}
-                {agent.status === "paused" && <span className="text-xs text-(--status-agent-paused)">{translateInstant("Paused")}</span>}
+                {existingChatAgentIds && <span className="shrink-0 text-xs text-muted-foreground">{existingChatAgentIds.includes(agent.id) ? translateInstant("agentChatPicker.openChat") : translateInstant("agentChatPicker.newChat")}</span>}
+                {agent.status === "paused" && <span className="text-xs text-(--status-agent-paused)">{translateInstant("agentStatus.paused")}</span>}
                 {agent.status === "terminated" && <span className="text-xs text-muted-foreground">{translateInstant("status.terminated")}</span>}
                 {agent.status === "pending_approval" && <span className="text-xs text-muted-foreground">{translateInstant("issueThreadInteraction.toolAction.status.pending")}</span>}
               </CommandItem>

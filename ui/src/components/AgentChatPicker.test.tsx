@@ -3,6 +3,7 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Agent } from "@penclipai/shared";
+import i18n from "@/i18n";
 import { AgentChatPicker, type AgentChatPickerProps } from "./AgentChatPicker";
 
 const agents = [
@@ -26,9 +27,10 @@ async function search(value: string) {
 }
 const options = () => [...document.querySelectorAll<HTMLElement>("[role=option]")];
 
-beforeEach(() => {
+beforeEach(async () => {
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   vi.stubGlobal("ResizeObserver", class { observe() {} unobserve() {} disconnect() {} });
+  await i18n.changeLanguage("en");
   container = document.createElement("div");
   document.body.append(container);
   root = createRoot(container);
@@ -37,6 +39,7 @@ beforeEach(() => {
 afterEach(async () => {
   await act(async () => root.unmount());
   container.remove();
+  await i18n.changeLanguage("en");
   vi.unstubAllGlobals();
 });
 
@@ -83,6 +86,21 @@ describe("AgentChatPicker", () => {
     expect(props.onSelect).toHaveBeenLastCalledWith(agents[1], expect.any(AbortSignal));
   });
 
+  it("localizes conversation badges when the UI language changes", async () => {
+    await render({ existingChatAgentIds: ["first"] });
+    expect(options()[0].textContent).toContain("Open chat");
+    expect(options()[1].textContent).toContain("New chat");
+    expect(document.querySelector<HTMLInputElement>("[role=combobox]")?.getAttribute("aria-label")).toBe("Search agents by name or role");
+
+    await act(async () => { await i18n.changeLanguage("zh-CN"); });
+
+    expect(options()[0].textContent).toContain("打开聊天");
+    expect(options()[1].textContent).toContain("新建聊天");
+    expect(options()[0].textContent).toContain("Alex");
+    expect(document.querySelector<HTMLInputElement>("[role=combobox]")?.getAttribute("aria-label")).toBe("按名称或角色搜索智能体");
+    expect(document.querySelector<HTMLInputElement>("[role=combobox]")?.getAttribute("placeholder")).toBe("按名称或角色搜索…");
+  });
+
   it("recovers from no results and resets search when reopened", async () => {
     await render();
     await search("accountant");
@@ -96,6 +114,24 @@ describe("AgentChatPicker", () => {
     await render({ open: true });
     expect(document.querySelector<HTMLInputElement>("[role=combobox]")!.value).toBe("");
     expect(options()).toHaveLength(2);
+  });
+
+  it("localizes search no-results and empty-roster states without translating the search query", async () => {
+    await render();
+    await search("accountant");
+    expect(document.body.textContent).toContain("No agents match “accountant”");
+    expect(document.body.textContent).toContain("Try another name or role.");
+    expect(document.body.textContent).toContain("Clear search");
+
+    await act(async () => { await i18n.changeLanguage("zh-CN"); });
+
+    expect(document.body.textContent).toContain("没有匹配“accountant”的智能体");
+    expect(document.body.textContent).toContain("请尝试其他名称或角色。");
+    expect(document.body.textContent).toContain("清除搜索");
+
+    await render({ agents: [] });
+    expect(document.body.textContent).toContain("暂无智能体。");
+    expect(document.body.textContent).toContain("请先在“智能体”页面创建智能体，然后开始聊天。");
   });
 
   it("shows loading, a retryable error, and an empty roster without stale choices", async () => {

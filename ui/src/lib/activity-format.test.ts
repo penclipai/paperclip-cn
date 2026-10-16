@@ -6,10 +6,12 @@ import zhCN from "../../public/locales/zh-CN/common.json";
 
 const translationState = vi.hoisted(() => ({
   translate: (key: string, _options?: Record<string, unknown>) => key,
+  locale: "en" as "en" | "zh-CN",
 }));
 
 vi.mock("@/i18n", () => ({
   translateInstant: (key: string, options?: Record<string, unknown>) => translationState.translate(key, options),
+  getCurrentLocale: () => translationState.locale,
 }));
 
 import { formatActivityVerb, formatIssueActivityAction } from "./activity-format";
@@ -26,6 +28,7 @@ describe("activity formatting", () => {
       lng: "en",
       fallbackLng: "en",
       keySeparator: false,
+      interpolation: { escapeValue: false },
       resources: { en: { translation: en }, "zh-CN": { translation: zhCN } },
     });
     translationState.translate = (key, options) => i18n.t(key, options);
@@ -33,6 +36,7 @@ describe("activity formatting", () => {
 
   beforeEach(async () => {
     await i18n.changeLanguage("en");
+    translationState.locale = "en";
   });
 
   it("labels a Slack settlement as idle while retaining actual review wording", () => {
@@ -120,12 +124,21 @@ describe("activity formatting", () => {
     expect(formatIssueActivityAction("issue.reviewers_updated", details, { agentMap })).toBe("updated reviewers");
   });
 
-  it("formats monitor activity with direct verbs", () => {
-    expect(formatActivityVerb("issue.monitor_scheduled")).toBe("scheduled monitor on");
-    expect(formatActivityVerb("issue.monitor_exhausted")).toBe("exhausted monitor on");
+  it("formats monitor activity through the same translation path as the activity row", async () => {
+    const rows = [
+      ["issue.monitor_scheduled", "scheduled monitor on", "安排了监控："],
+      ["issue.monitor_exhausted", "exhausted monitor on", "已耗尽监控："],
+    ] as const;
+    for (const [action, english] of rows) expect(translationState.translate(formatActivityVerb(action))).toBe(english);
     expect(formatIssueActivityAction("issue.monitor_triggered")).toBe("triggered a monitor");
     expect(formatIssueActivityAction("issue.monitor_cleared")).toBe("cleared a monitor");
     expect(formatIssueActivityAction("issue.monitor_recovery_issue_created")).toBe("created a monitor recovery issue");
+
+    await i18n.changeLanguage("zh-CN");
+    for (const [action, _english, chinese] of rows) expect(translationState.translate(formatActivityVerb(action))).toBe(chinese);
+    expect(formatIssueActivityAction("issue.monitor_triggered")).toBe("触发了监控");
+    expect(formatIssueActivityAction("issue.monitor_cleared")).toBe("清除了监控");
+    expect(formatIssueActivityAction("issue.monitor_recovery_issue_created")).toBe("创建了监控恢复任务");
   });
 
   it("localizes queued-comment audit rows and task history in both supported locales", async () => {
@@ -173,6 +186,160 @@ describe("activity formatting", () => {
     expect(formatIssueActivityAction("issue.queued_comment_edited")).toBe("edited a queued comment");
     expect(formatIssueActivityAction("issue.queued_comments_reordered")).toBe("reordered queued comments");
     expect(formatIssueActivityAction("issue.queued_comment_discarded")).toBe("discarded a queued comment");
+  });
+
+  it("localizes status and priority changes while keeping English history wording stable", async () => {
+    const cases = [
+      [{ status: "in_progress", _previous: { status: "todo" } }, "changed status from todo to in progress on", "changed the status from todo to in progress", "将状态从待办改为进行中：", "将状态从待办改为进行中"],
+      [{ status: "in_review", externalConversationState: "waiting" }, "changed status to idle on", "changed the status to idle", "将状态改为空闲：", "将状态改为空闲"],
+      [{ priority: "high", _previous: { priority: "low" } }, "changed priority from low to high on", "changed the priority from low to high", "将优先级从低改为高：", "将优先级从低改为高"],
+      [{ priority: "medium" }, "changed priority to medium on", "changed the priority to medium", "将优先级改为中：", "将优先级改为中"],
+    ] as const;
+
+    for (const [details, englishRow, englishDetail] of cases) {
+      expect(formatActivityVerb("issue.updated", details)).toBe(englishRow);
+      expect(formatIssueActivityAction("issue.updated", details)).toBe(englishDetail);
+    }
+
+    await i18n.changeLanguage("zh-CN");
+    translationState.locale = "zh-CN";
+    for (const [details, _englishRow, _englishDetail, chineseRow, chineseDetail] of cases) {
+      expect(formatActivityVerb("issue.updated", details)).toBe(chineseRow);
+      expect(formatIssueActivityAction("issue.updated", details)).toBe(chineseDetail);
+    }
+  });
+
+  it("localizes interaction outcomes and stalled-review decisions without changing their English meanings", async () => {
+    const cases = [
+      ["issue.thread_interaction_accepted", { interactionKind: "request_confirmation" }, "approved the request", "批准了请求"],
+      ["issue.thread_interaction_accepted", { interactionKind: "suggest_tasks" }, "accepted the task suggestions", "接受了任务建议"],
+      ["issue.thread_interaction_accepted", { interactionKind: "ask_user_questions" }, "accepted the answers", "接受了回答"],
+      ["issue.thread_interaction_rejected", { interactionKind: "request_confirmation" }, "rejected the request", "拒绝了请求"],
+      ["issue.thread_interaction_rejected", { interactionKind: "suggest_tasks" }, "declined the task suggestions", "拒绝了任务建议"],
+      ["issue.thread_interaction_rejected", { interactionKind: "ask_user_questions" }, "declined the questions", "拒绝了问题"],
+      ["issue.stalled_review_decided", { action: "approve" }, "approved the review", "批准了审核"],
+      ["issue.stalled_review_decided", { action: "request_changes" }, "requested changes on the review", "要求修改审核内容"],
+      ["issue.stalled_review_decided", { action: "send_back" }, "sent the review back to work", "将审核退回继续处理"],
+    ] as const;
+
+    for (const [action, details, english] of cases) {
+      expect(formatIssueActivityAction(action, details)).toBe(english);
+      expect(formatActivityVerb(action, details)).toBe(`${english} on`);
+    }
+
+    await i18n.changeLanguage("zh-CN");
+    translationState.locale = "zh-CN";
+    for (const [action, details, _english, chinese] of cases) {
+      expect(formatIssueActivityAction(action, details)).toBe(chinese);
+      expect(formatActivityVerb(action, details)).toBe(`${chinese}：`);
+    }
+  });
+
+  it("localizes document actions while preserving raw document keys and titles", async () => {
+    const details = { key: "docs/合同.md", title: "中文 title_ASCII-01" };
+    const actions = [
+      ["issue.document_created", "created a document", "创建了文档"],
+      ["issue.document_updated", "updated a document", "更新了文档"],
+      ["issue.document_locked", "locked a document", "锁定了文档"],
+      ["issue.document_unlocked", "unlocked a document", "解锁了文档"],
+      ["issue.document_deleted", "deleted a document", "删除了文档"],
+    ] as const;
+
+    for (const [action, english] of actions) {
+      expect(formatIssueActivityAction(action, details))
+        .toBe(`${english} docs/合同.md (中文 title_ASCII-01)`);
+    }
+
+    await i18n.changeLanguage("zh-CN");
+    translationState.locale = "zh-CN";
+    for (const [action, _english, chinese] of actions) {
+      expect(formatIssueActivityAction(action, details))
+        .toBe(`${chinese} docs/合同.md (中文 title_ASCII-01)`);
+    }
+  });
+
+  it("localizes every accepted-plan decomposition summary while preserving numeric values", async () => {
+    const cases = [
+      [{ status: "completed", childIssueIds: ["a", "b", "c"], newlyCreatedChildIssueIds: ["a", "b"] }, "decomposition completed (created 2 new, reused 1 existing)", "计划拆解已完成（新建 2 项、复用 1 项现有任务）"],
+      [{ status: "in_flight", requestedChildCount: 3 }, "decomposition in flight (3 requested)", "计划拆解进行中（已请求 3 项）"],
+      [{ status: "completed" }, "decomposition completed", "计划拆解已完成"],
+    ] as const;
+
+    for (const [details, english] of cases) {
+      expect(formatIssueActivityAction("issue.accepted_plan_decomposition_updated", details)).toBe(english);
+    }
+    await i18n.changeLanguage("zh-CN");
+    translationState.locale = "zh-CN";
+    for (const [details, _english, chinese] of cases) {
+      expect(formatIssueActivityAction("issue.accepted_plan_decomposition_updated", details)).toBe(chinese);
+    }
+  });
+
+  it("localizes issue updates and preserves raw participant labels and identifiers", async () => {
+    const update = {
+      assigneeAgentId: "missing-agent",
+      reviewPolicy: "human_only",
+      title: "raw title",
+      description: "raw description",
+    };
+    const participant = { addedParticipants: [{ type: "user", userId: "usr-abcdef", agentId: null }], removedParticipants: [] };
+    const blockers = { addedBlockedByIssues: [{ identifier: "PAP-42", title: "raw title" }], removedBlockedByIssues: [] };
+
+    expect(formatIssueActivityAction("issue.updated", update)).toBe("made Agent responsible for the task, changed who can approve to human only, updated the title, updated the description");
+    expect(formatIssueActivityAction("issue.reviewers_updated", participant)).toBe("added reviewer user usr-a");
+    expect(formatActivityVerb("issue.blockers_updated", blockers)).toBe("added blocker PAP-42 to");
+
+    await i18n.changeLanguage("zh-CN");
+    translationState.locale = "zh-CN";
+    expect(formatIssueActivityAction("issue.updated", update)).toBe("将任务负责人设为 智能体、将可审批者改为 仅限人工、已更新标题、已更新描述");
+    expect(formatIssueActivityAction("issue.reviewers_updated", participant)).toBe("添加了复查人 用户 usr-a");
+    expect(formatActivityVerb("issue.blockers_updated", blockers)).toBe("向其添加了阻塞项 PAP-42");
+  });
+
+  it("covers all status values and retains unknown enum fallbacks", async () => {
+    const cases = [
+      ["backlog", "changed status to backlog on", "将状态改为待规划："],
+      ["cancelled", "changed status to cancelled on", "将状态改为已取消："],
+      ["future_status", "changed status to future status on", "将状态改为future status："],
+    ] as const;
+    for (const [status, english] of cases) expect(formatActivityVerb("issue.updated", { status })).toBe(english);
+    await i18n.changeLanguage("zh-CN");
+    translationState.locale = "zh-CN";
+    for (const [status, _english, chinese] of cases) expect(formatActivityVerb("issue.updated", { status })).toBe(chinese);
+  });
+
+  it("localizes monitor and tool-gateway grammar while preserving raw service and tool values", async () => {
+    const serviceName = "svc-prod_v2";
+    const rawTool = "pkg.tool-name_v2";
+    expect(formatIssueActivityAction("issue.monitor_triggered", { serviceName })).toBe("triggered a monitor for svc-prod_v2");
+    const toolCases = [
+      ["tool_gateway.call_completed", { tool: rawTool }, "used pkg.tool-name_v2 on", "使用了 pkg.tool-name_v2："],
+      ["tool_gateway.call_completed", { upstreamToolName: rawTool, source: "test" }, "tested pkg.tool-name_v2 on", "测试了 pkg.tool-name_v2："],
+      ["tool_gateway.call_allowed", { tool: rawTool }, "was allowed to use pkg.tool-name_v2 on", "获准使用 pkg.tool-name_v2："],
+      ["tool_gateway.call_allowed", { tool: rawTool, source: "test" }, "started a test of pkg.tool-name_v2 on", "开始测试 pkg.tool-name_v2："],
+      ["tool_gateway.call_denied", { tool: rawTool }, "was blocked from using pkg.tool-name_v2 on", "被阻止使用 pkg.tool-name_v2："],
+      ["tool_gateway.approval_requested", { tool: rawTool }, "asked to use pkg.tool-name_v2 on", "请求使用 pkg.tool-name_v2："],
+      ["tool_gateway.session_created", {}, "opened an app session for", "打开了应用会话："],
+      ["tool_gateway.session_rejected", {}, "was blocked from opening an app session for", "被阻止打开应用会话："],
+      ["tool_gateway.discovery", {}, "discovered app actions for", "发现了应用操作："],
+    ] as const;
+    for (const [action, details, english] of toolCases) expect(formatActivityVerb(action, details)).toBe(english);
+
+    await i18n.changeLanguage("zh-CN");
+    translationState.locale = "zh-CN";
+    expect(formatIssueActivityAction("issue.monitor_triggered", { serviceName })).toBe("触发了监控（svc-prod_v2）");
+    for (const [action, details, _english, chinese] of toolCases) expect(formatActivityVerb(action, details)).toBe(chinese);
+  });
+
+  it("uses semantic rows for company and tool connection actions", async () => {
+    const rows = [
+      ["company.updated", "updated organization", "更新了组织"],
+      ["tool_app.oauth_failed", "failed to connect credentials for", "未能连接凭据："],
+      ["tool_connection.grant_delegation_revoked", "revoked credential delegation for", "撤销了凭据委派："],
+    ] as const;
+    for (const [action, english] of rows) expect(translationState.translate(formatActivityVerb(action))).toBe(english);
+    await i18n.changeLanguage("zh-CN");
+    for (const [action, _english, chinese] of rows) expect(translationState.translate(formatActivityVerb(action))).toBe(chinese);
   });
 
   // PAP-16506 P4: agents can now resolve an interaction, including a review of
@@ -241,12 +408,18 @@ describe("activity formatting", () => {
       .toBe("changed who can approve to anyone else");
   });
 
-  it("uses plain next-step copy for successful-run handoff activity", () => {
-    expect(formatActivityVerb("issue.successful_run_handoff_required")).toBe("flagged missing next step on");
+  it("uses localized next-step copy for successful-run handoff activity", async () => {
+    expect(translationState.translate(formatActivityVerb("issue.successful_run_handoff_required"))).toBe("flagged missing next step on");
     expect(formatIssueActivityAction("issue.successful_run_handoff_required")).toBe("Run finished without a clear next step");
     expect(formatIssueActivityAction("issue.successful_run_handoff_resolved")).toBe("Next step chosen");
     expect(formatIssueActivityAction("issue.successful_run_handoff_escalated")).toBe(
       "Run finished without a next step - recovery escalated",
     );
+
+    await i18n.changeLanguage("zh-CN");
+    expect(translationState.translate(formatActivityVerb("issue.successful_run_handoff_required"))).toBe("标记了缺失的下一步：");
+    expect(formatIssueActivityAction("issue.successful_run_handoff_required")).toBe("运行结束，但没有明确下一步");
+    expect(formatIssueActivityAction("issue.successful_run_handoff_resolved")).toBe("已选择下一步");
+    expect(formatIssueActivityAction("issue.successful_run_handoff_escalated")).toBe("运行结束，但没有下一步，已升级恢复处理");
   });
 });

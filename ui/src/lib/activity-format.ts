@@ -1,5 +1,5 @@
 import type { Agent } from "@penclipai/shared";
-import { translateInstant } from "@/i18n";
+import { getCurrentLocale, translateInstant } from "@/i18n";
 import type { CompanyUserProfile } from "./company-members";
 import { formatReviewPolicyValue } from "./review-policy";
 
@@ -35,45 +35,45 @@ const ACTIVITY_ROW_VERBS: Record<string, string> = {
   "issue.queued_comment_edited": "activityFormat.row.issue.queued_comment_edited",
   "issue.queued_comments_reordered": "activityFormat.row.issue.queued_comments_reordered",
   "issue.queued_comment_discarded": "activityFormat.row.issue.queued_comment_discarded",
-  "issue.comment_deleted": "deleted a comment on",
+  "issue.comment_deleted": "activityFormat.row.issue.comment_deleted",
   "issue.attachment_added": "attached file to",
   "issue.attachment_removed": "removed attachment from",
   "issue.document_created": "created document for",
   "issue.document_updated": "updated document on",
-  "issue.document_locked": "locked document on",
-  "issue.document_unlocked": "unlocked document on",
+  "issue.document_locked": "activityFormat.row.issue.document_locked",
+  "issue.document_unlocked": "activityFormat.row.issue.document_unlocked",
   "issue.document_deleted": "deleted document from",
   "issue.work_product_created": "activity.issueWorkProductCreated",
-  "issue.monitor_scheduled": "scheduled monitor on",
-  "issue.monitor_triggered": "triggered monitor for",
-  "issue.monitor_cleared": "cleared monitor on",
-  "issue.monitor_skipped": "skipped monitor for",
-  "issue.monitor_exhausted": "exhausted monitor on",
-  "issue.monitor_recovery_wake_queued": "queued monitor recovery for",
-  "issue.monitor_recovery_issue_created": "created monitor recovery for",
-  "issue.monitor_escalated_to_board": "escalated monitor for",
+  "issue.monitor_scheduled": "activityFormat.row.issue.monitor_scheduled",
+  "issue.monitor_triggered": "activityFormat.row.issue.monitor_triggered",
+  "issue.monitor_cleared": "activityFormat.row.issue.monitor_cleared",
+  "issue.monitor_skipped": "activityFormat.row.issue.monitor_skipped",
+  "issue.monitor_exhausted": "activityFormat.row.issue.monitor_exhausted",
+  "issue.monitor_recovery_wake_queued": "activityFormat.row.issue.monitor_recovery_wake_queued",
+  "issue.monitor_recovery_issue_created": "activityFormat.row.issue.monitor_recovery_issue_created",
+  "issue.monitor_escalated_to_board": "activityFormat.row.issue.monitor_escalated_to_board",
   "issue.commented": "commented on",
   "issue.deleted": "deleted",
-  "issue.successful_run_handoff_required": "flagged missing next step on",
-  "issue.successful_run_handoff_resolved": "recorded next step chosen on",
-  "issue.successful_run_handoff_escalated": "escalated missing next step on",
-  "issue.accepted_plan_decomposition_updated": "updated accepted-plan decomposition on",
-  "issue.recovery_action_opened": "opened a recovery action on",
-  "issue.recovery_action_resolved": "resolved the recovery action on",
-  "issue.recovery_action_escalated": "escalated the recovery action on",
+  "issue.successful_run_handoff_required": "activityFormat.row.issue.successful_run_handoff_required",
+  "issue.successful_run_handoff_resolved": "activityFormat.row.issue.successful_run_handoff_resolved",
+  "issue.successful_run_handoff_escalated": "activityFormat.row.issue.successful_run_handoff_escalated",
+  "issue.accepted_plan_decomposition_updated": "activityFormat.row.issue.accepted_plan_decomposition_updated",
+  "issue.recovery_action_opened": "activityFormat.row.issue.recovery_action_opened",
+  "issue.recovery_action_resolved": "activityFormat.row.issue.recovery_action_resolved",
+  "issue.recovery_action_escalated": "activityFormat.row.issue.recovery_action_escalated",
   "agent.created": "created",
   "agent.updated": "updated",
   "agent.paused": "paused",
   "agent.resumed": "resumed",
-  "agent.error_cleared": "cleared error on",
+  "agent.error_cleared": "activityFormat.row.agent.error_cleared",
   "agent.terminated": "terminated",
   "agent.key_created": "created API key for",
   "agent.budget_updated": "updated budget for",
   "agent.runtime_session_reset": "reset session for",
   "heartbeat.invoked": "invoked heartbeat for",
   "heartbeat.cancelled": "cancelled heartbeat for",
-  "heartbeat.output_stale_source_resolved": "system-folded stale run on",
-  "heartbeat.output_stale_recovery_recursion_refused": "refused recovery-on-recovery for",
+  "heartbeat.output_stale_source_resolved": "activityFormat.row.heartbeat.output_stale_source_resolved",
+  "heartbeat.output_stale_recovery_recursion_refused": "activityFormat.row.heartbeat.output_stale_recovery_recursion_refused",
   "approval.created": "requested approval",
   "approval.approved": "approved",
   "approval.rejected": "rejected",
@@ -81,16 +81,16 @@ const ACTIVITY_ROW_VERBS: Record<string, string> = {
   // review of its own work — so these must read as outcomes in the feed instead
   // of falling through to the raw "issue thread interaction accepted" action id.
   // `details.interactionKind` sharpens the wording; see INTERACTION_OUTCOME_LABELS.
-  "issue.thread_interaction_created": "asked for a decision on",
-  "issue.thread_interaction_accepted": "accepted the request on",
-  "issue.thread_interaction_rejected": "rejected the request on",
-  "issue.thread_interaction_answered": "answered the request on",
-  "issue.thread_interaction_withdrawn": "withdrew the request on",
-  "issue.thread_interaction_cancelled": "cancelled the request on",
-  "issue.thread_interaction_skipped": "skipped the request on",
-  "issue.thread_interaction_expired": "expired the request on",
-  "issue.thread_interaction_item_verdicts_submitted": "submitted verdicts on",
-  "issue.stalled_review_decided": "recorded a review verdict on",
+  "issue.thread_interaction_created": "activityFormat.row.issue.thread_interaction_decision_requested",
+  "issue.thread_interaction_accepted": "activityFormat.row.issue.thread_interaction_request_accepted",
+  "issue.thread_interaction_rejected": "activityFormat.row.issue.thread_interaction_rejected",
+  "issue.thread_interaction_answered": "activityFormat.row.issue.thread_interaction_answered",
+  "issue.thread_interaction_withdrawn": "activityFormat.row.issue.thread_interaction_withdrawn",
+  "issue.thread_interaction_cancelled": "activityFormat.row.issue.thread_interaction_cancelled",
+  "issue.thread_interaction_skipped": "activityFormat.row.issue.thread_interaction_skipped",
+  "issue.thread_interaction_expired": "activityFormat.row.issue.thread_interaction_expired",
+  "issue.thread_interaction_item_verdicts_submitted": "activityFormat.row.issue.thread_interaction_item_verdicts_submitted",
+  "issue.stalled_review_decided": "activityFormat.row.issue.stalled_review_decided",
   "project.created": "created",
   "project.updated": "updated",
   "project.deleted": "deleted",
@@ -126,28 +126,28 @@ const ACTIVITY_ROW_VERBS: Record<string, string> = {
   "provider_trace.downloaded": "activity.providerTraceDownloaded",
   "provider_trace.deleted": "activity.providerTraceDeleted",
   "company.created": "created organization",
-  "company.updated": "updated organization",
+  "company.updated": "activityFormat.row.company.updatedOrganization",
   "company.archived": "archived",
-  "company.reactivated": "reactivated",
+  "company.reactivated": "activityFormat.row.company.reactivated",
   "company.budget_updated": "updated budget for",
-  "audit.exported": "exported the agent audit log for",
-  "tool_app.connected": "connected",
-  "tool_app.oauth_connected": "connected credentials for",
-  "tool_app.oauth_failed": "failed to connect credentials for",
-  "tool_app.oauth_access_finalized": "finished credential access for",
-  "tool_app.finished": "finished setup for",
-  "tool_app.reconnected": "reconnected",
+  "audit.exported": "activityFormat.row.audit.exported",
+  "tool_app.connected": "activityFormat.row.tool_app.connected",
+  "tool_app.oauth_connected": "activityFormat.row.tool_app.oauth_connected",
+  "tool_app.oauth_failed": "activityFormat.row.tool_app.oauth_failed",
+  "tool_app.oauth_access_finalized": "activityFormat.row.tool_app.oauth_access_finalized",
+  "tool_app.finished": "activityFormat.row.tool_app.finished",
+  "tool_app.reconnected": "activityFormat.row.tool_app.reconnected",
   "tool_connection.created": "created",
   "tool_connection.updated": "updated",
-  "tool_connection.archived": "removed",
-  "tool_connection.catalog_refresh": "refreshed actions for",
-  "tool_connection.installs_synced": "changed agent installs for",
-  "tool_connection.install_access_extended": "extended agent access for",
-  "tool_connection.grant_audience_replaced": "changed human access for",
-  "tool_connection.grant_added": "added credentials to",
-  "tool_connection.grant_revoked": "revoked credentials from",
-  "tool_connection.grant_delegated": "delegated credentials for",
-  "tool_connection.grant_delegation_revoked": "revoked credential delegation for",
+  "tool_connection.archived": "activityFormat.row.tool_connection.archived",
+  "tool_connection.catalog_refresh": "activityFormat.row.tool_connection.catalog_refresh",
+  "tool_connection.installs_synced": "activityFormat.row.tool_connection.installs_synced",
+  "tool_connection.install_access_extended": "activityFormat.row.tool_connection.install_access_extended",
+  "tool_connection.grant_audience_replaced": "activityFormat.row.tool_connection.grant_audience_replaced",
+  "tool_connection.grant_added": "activityFormat.row.tool_connection.grant_added",
+  "tool_connection.grant_revoked": "activityFormat.row.tool_connection.grant_revoked",
+  "tool_connection.grant_delegated": "activityFormat.row.tool_connection.grant_delegated",
+  "tool_connection.grant_delegation_revoked": "activityFormat.row.tool_connection.grant_delegation_revoked",
 };
 
 const ISSUE_ACTIVITY_LABELS: Record<string, string> = {
@@ -214,10 +214,66 @@ const ISSUE_ACTIVITY_LABELS: Record<string, string> = {
 };
 
 const ISSUE_ACTIVITY_TRANSLATION_KEYS: Record<string, string> = {
+  "issue.created": "activityFormat.action.issue.created",
+  "issue.updated": "activityFormat.action.issue.updated",
+  "issue.checked_out": "activityFormat.action.issue.checked_out",
+  "issue.released": "activityFormat.action.issue.released",
+  "issue.comment_added": "activityFormat.action.issue.comment_added",
   "issue.comment_cancelled": "activityFormat.action.issue.comment_cancelled",
   "issue.queued_comment_edited": "activityFormat.action.issue.queued_comment_edited",
   "issue.queued_comments_reordered": "activityFormat.action.issue.queued_comments_reordered",
   "issue.queued_comment_discarded": "activityFormat.action.issue.queued_comment_discarded",
+  "issue.comment_deleted": "activityFormat.action.issue.comment_deleted",
+  "issue.feedback_vote_saved": "activityFormat.action.issue.feedback_vote_saved",
+  "issue.attachment_added": "activityFormat.action.issue.attachment_added",
+  "issue.attachment_removed": "activityFormat.action.issue.attachment_removed",
+  "issue.document_created": "activityFormat.action.issue.document_created",
+  "issue.document_updated": "activityFormat.action.issue.document_updated",
+  "issue.document_locked": "activityFormat.action.issue.document_locked",
+  "issue.document_unlocked": "activityFormat.action.issue.document_unlocked",
+  "issue.document_deleted": "activityFormat.action.issue.document_deleted",
+  "issue.monitor_scheduled": "activityFormat.action.issue.monitor_scheduled",
+  "issue.monitor_triggered": "activityFormat.action.issue.monitor_triggered",
+  "issue.monitor_cleared": "activityFormat.action.issue.monitor_cleared",
+  "issue.monitor_skipped": "activityFormat.action.issue.monitor_skipped",
+  "issue.monitor_exhausted": "activityFormat.action.issue.monitor_exhausted",
+  "issue.monitor_recovery_wake_queued": "activityFormat.action.issue.monitor_recovery_wake_queued",
+  "issue.monitor_recovery_issue_created": "activityFormat.action.issue.monitor_recovery_issue_created",
+  "issue.monitor_escalated_to_board": "activityFormat.action.issue.monitor_escalated_to_board",
+  "issue.deleted": "activityFormat.action.issue.deleted",
+  "issue.successful_run_handoff_required": "activityFormat.action.issue.successful_run_handoff_required",
+  "issue.successful_run_handoff_resolved": "activityFormat.action.issue.successful_run_handoff_resolved",
+  "issue.successful_run_handoff_escalated": "activityFormat.action.issue.successful_run_handoff_escalated",
+  "issue.cross_issue_influence_cap_rejected": "activityFormat.action.issue.cross_issue_influence_cap_rejected",
+  "issue.cross_issue_influence_observed": "activityFormat.action.issue.cross_issue_influence_observed",
+  "issue.attribution_spoof_rejected": "activityFormat.action.issue.attribution_spoof_rejected",
+  "issue.recovery_action_opened": "activityFormat.action.issue.recovery_action_opened",
+  "issue.recovery_action_resolved": "activityFormat.action.issue.recovery_action_resolved",
+  "issue.recovery_action_escalated": "activityFormat.action.issue.recovery_action_escalated",
+  "issue.accepted_plan_decomposition_updated": "activityFormat.action.issue.accepted_plan_decomposition_updated",
+  "agent.created": "activityFormat.action.agent.created",
+  "agent.updated": "activityFormat.action.agent.updated",
+  "agent.paused": "activityFormat.action.agent.paused",
+  "agent.resumed": "activityFormat.action.agent.resumed",
+  "agent.error_cleared": "activityFormat.action.agent.error_cleared",
+  "agent.terminated": "activityFormat.action.agent.terminated",
+  "heartbeat.invoked": "activityFormat.action.heartbeat.invoked",
+  "heartbeat.cancelled": "activityFormat.action.heartbeat.cancelled",
+  "heartbeat.output_stale_source_resolved": "activityFormat.action.heartbeat.output_stale_source_resolved",
+  "heartbeat.output_stale_recovery_recursion_refused": "activityFormat.action.heartbeat.output_stale_recovery_recursion_refused",
+  "approval.created": "activityFormat.action.approval.created",
+  "approval.approved": "activityFormat.action.approval.approved",
+  "approval.rejected": "activityFormat.action.approval.rejected",
+  "issue.thread_interaction_created": "activityFormat.interaction.askedForDecision",
+  "issue.thread_interaction_accepted": "activityFormat.interaction.acceptedRequest",
+  "issue.thread_interaction_rejected": "activityFormat.interaction.rejectedRequest",
+  "issue.thread_interaction_answered": "activityFormat.interaction.answeredRequest",
+  "issue.thread_interaction_withdrawn": "activityFormat.interaction.withdrewRequest",
+  "issue.thread_interaction_cancelled": "activityFormat.interaction.cancelledRequest",
+  "issue.thread_interaction_skipped": "activityFormat.interaction.skippedRequest",
+  "issue.thread_interaction_expired": "activityFormat.interaction.expiredRequest",
+  "issue.thread_interaction_item_verdicts_submitted": "activityFormat.interaction.submittedVerdicts",
+  "issue.stalled_review_decided": "activityFormat.stalledReview.recordedVerdict",
 };
 
 /**
@@ -225,10 +281,15 @@ const ISSUE_ACTIVITY_TRANSLATION_KEYS: Record<string, string> = {
  * names the verdict ("approved the review") rather than the generic action.
  * Mirrors `StalledReviewDecisionAction` in shared.
  */
-const STALLED_REVIEW_DECISION_LABELS: Record<string, string> = {
-  approve: "approved the review",
-  request_changes: "requested changes on the review",
-  send_back: "sent the review back to work",
+type LocalizedActivityLabel = {
+  key: string;
+  defaultValue: string;
+};
+
+const STALLED_REVIEW_DECISION_LABELS: Record<string, LocalizedActivityLabel> = {
+  approve: { key: "activityFormat.stalledReview.approved", defaultValue: "approved the review" },
+  request_changes: { key: "activityFormat.stalledReview.requestedChanges", defaultValue: "requested changes on the review" },
+  send_back: { key: "activityFormat.stalledReview.sentBack", defaultValue: "sent the review back to work" },
 };
 
 /**
@@ -238,24 +299,46 @@ const STALLED_REVIEW_DECISION_LABELS: Record<string, string> = {
  * keep the neutral "accepted the request" wording from the tables above, which
  * is also the fallback for an event that carries no kind.
  */
-const INTERACTION_ACCEPTED_LABELS: Record<string, string> = {
-  request_confirmation: "approved the request",
-  request_checkbox_confirmation: "approved the request",
-  suggest_tasks: "accepted the task suggestions",
-  ask_user_questions: "accepted the answers",
+const INTERACTION_ACCEPTED_LABELS: Record<string, LocalizedActivityLabel> = {
+  request_confirmation: { key: "activityFormat.interaction.approvedRequest", defaultValue: "approved the request" },
+  request_checkbox_confirmation: { key: "activityFormat.interaction.approvedRequest", defaultValue: "approved the request" },
+  suggest_tasks: { key: "activityFormat.interaction.acceptedTaskSuggestions", defaultValue: "accepted the task suggestions" },
+  ask_user_questions: { key: "activityFormat.interaction.acceptedAnswers", defaultValue: "accepted the answers" },
 };
 
-const INTERACTION_REJECTED_LABELS: Record<string, string> = {
-  request_confirmation: "rejected the request",
-  request_checkbox_confirmation: "rejected the request",
-  suggest_tasks: "declined the task suggestions",
-  ask_user_questions: "declined the questions",
+const INTERACTION_REJECTED_LABELS: Record<string, LocalizedActivityLabel> = {
+  request_confirmation: { key: "activityFormat.interaction.rejectedRequest", defaultValue: "rejected the request" },
+  request_checkbox_confirmation: { key: "activityFormat.interaction.rejectedRequest", defaultValue: "rejected the request" },
+  suggest_tasks: { key: "activityFormat.interaction.declinedTaskSuggestions", defaultValue: "declined the task suggestions" },
+  ask_user_questions: { key: "activityFormat.interaction.declinedQuestions", defaultValue: "declined the questions" },
+};
+
+const STATUS_TRANSLATION_KEYS: Record<string, string> = {
+  backlog: "status.backlog",
+  todo: "status.todo",
+  in_progress: "status.inProgress",
+  in_review: "status.inReview",
+  blocked: "status.blocked",
+  done: "status.done",
+  cancelled: "status.cancelled",
+  idle: "status.idle",
+};
+
+const PRIORITY_TRANSLATION_KEYS: Record<string, string> = {
+  low: "priority.low",
+  medium: "priority.medium",
+  high: "priority.high",
+  critical: "priority.critical",
 };
 
 /**
  * Kind-aware wording for an interaction outcome, or `null` when the tables
  * above already say it well enough.
  */
+function formatLocalizedActivityLabel(label: LocalizedActivityLabel): string {
+  return translateInstant(label.key, { defaultValue: label.defaultValue });
+}
+
 function formatInteractionOutcomeLabel(action: string, details: ActivityDetails): string | null {
   const table = action === "issue.thread_interaction_accepted"
     ? INTERACTION_ACCEPTED_LABELS
@@ -264,7 +347,8 @@ function formatInteractionOutcomeLabel(action: string, details: ActivityDetails)
       : null;
   if (!table) return null;
   const kind = typeof details?.interactionKind === "string" ? details.interactionKind : null;
-  return kind ? table[kind] ?? null : null;
+  const label = kind ? table[kind] : null;
+  return label ? formatLocalizedActivityLabel(label) : null;
 }
 
 function asRecord(value: unknown): Record<string, unknown> | null {
@@ -275,6 +359,45 @@ function asRecord(value: unknown): Record<string, unknown> | null {
 function humanizeValue(value: unknown): string {
   if (typeof value !== "string") return String(value ?? "none");
   return value.replace(/_/g, " ");
+}
+
+function formatEnumValue(value: unknown, translationKeys: Record<string, string>): string {
+  const fallback = humanizeValue(value);
+  if (typeof value !== "string") return fallback;
+  const key = translationKeys[value];
+  if (!key || getCurrentLocale() === "en") return fallback;
+  return translateInstant(key, { defaultValue: fallback });
+}
+
+function formatStatusValue(value: unknown): string {
+  return formatEnumValue(value, STATUS_TRANSLATION_KEYS);
+}
+
+function formatPriorityValue(value: unknown): string {
+  return formatEnumValue(value, PRIORITY_TRANSLATION_KEYS);
+}
+
+function formatActionOn(label: string): string {
+  return translateInstant("activityFormat.actionOn", { action: label, defaultValue: `${label} on` });
+}
+
+function formatIssueActivityLabel(action: string): string | null {
+  const defaultValue = ISSUE_ACTIVITY_LABELS[action];
+  if (!defaultValue) return null;
+  const key = ISSUE_ACTIVITY_TRANSLATION_KEYS[action];
+  return key ? translateInstant(key, { defaultValue }) : defaultValue;
+}
+
+function formatReviewPolicyLabel(value: unknown): string {
+  const fallback = formatReviewPolicyValue(value);
+  const key = typeof value === "string"
+    ? `activityFormat.reviewPolicy.${value}`
+    : "activityFormat.reviewPolicy.anyone";
+  return translateInstant(key, { defaultValue: fallback });
+}
+
+function formatActivityPartList(parts: string[]): string {
+  return parts.join(getCurrentLocale() === "zh-CN" ? "、" : ", ");
 }
 
 function isActivityParticipant(value: unknown): value is ActivityParticipant {
@@ -300,17 +423,17 @@ function readIssueReferences(details: ActivityDetails, key: string): ActivityIss
 }
 
 function formatUserLabel(userId: string | null | undefined, options: ActivityFormatOptions = {}): string {
-  if (!userId || userId === "local-board") return "Board";
-  if (options.currentUserId && userId === options.currentUserId) return "You";
+  if (!userId || userId === "local-board") return translateInstant("activityFormat.board", { defaultValue: "Board" });
+  if (options.currentUserId && userId === options.currentUserId) return translateInstant("activityFormat.you", { defaultValue: "You" });
   const profile = options.userProfileMap?.get(userId);
   if (profile) return profile.label;
-  return `user ${userId.slice(0, 5)}`;
+  return translateInstant("activityFormat.userLabel", { id: userId.slice(0, 5), defaultValue: `user ${userId.slice(0, 5)}` });
 }
 
 function formatParticipantLabel(participant: ActivityParticipant, options: ActivityFormatOptions): string {
   if (participant.type === "agent") {
     const agentId = participant.agentId ?? "";
-    return options.agentMap?.get(agentId)?.name ?? "agent";
+    return options.agentMap?.get(agentId)?.name ?? translateInstant("activityFormat.agent", { defaultValue: "Agent" });
   }
   return formatUserLabel(participant.userId, options);
 }
@@ -319,17 +442,19 @@ function formatIssueReferenceLabel(reference: ActivityIssueReference): string {
   if (reference.identifier) return reference.identifier;
   if (reference.title) return reference.title;
   if (reference.id) return reference.id.slice(0, 8);
-  return "task";
+  return translateInstant("activityFormat.task", { defaultValue: "task" });
 }
 
 function formatChangedEntityLabel(
-  singular: string,
-  plural: string,
+  singularKey: string,
+  pluralKey: string,
   labels: string[],
 ): string {
+  const singular = translateInstant(singularKey, { defaultValue: singularKey.replace("activityFormat.", "") });
+  const plural = translateInstant(pluralKey, { defaultValue: pluralKey.replace("activityFormat.", "") });
   if (labels.length <= 0) return plural;
-  if (labels.length === 1) return `${singular} ${labels[0]}`;
-  return `${labels.length} ${plural}`;
+  if (labels.length === 1) return translateInstant("activityFormat.namedEntity", { entity: singular, label: labels[0], defaultValue: `${singular} ${labels[0]}` });
+  return translateInstant("activityFormat.countedEntity", { count: labels.length, entity: plural, defaultValue: `${labels.length} ${plural}` });
 }
 
 function readNumber(value: unknown): number | null {
@@ -350,13 +475,13 @@ function formatAcceptedPlanDecompositionDetail(details: ActivityDetails): string
   const newlyCreated = readStringArrayLength(details.newlyCreatedChildIssueIds);
   const reused = Math.max(0, totalChildren - newlyCreated);
   const parts: string[] = [];
-  if (newlyCreated > 0) parts.push(`created ${newlyCreated} new`);
-  if (reused > 0) parts.push(`reused ${reused} existing`);
-  if (parts.length === 0 && requested !== null) parts.push(`${requested} requested`);
-  const summary = parts.length > 0 ? parts.join(", ") : null;
-  if (status === "completed" && summary) return `decomposition completed (${summary})`;
-  if (status === "completed") return "decomposition completed";
-  if (status === "in_flight" && summary) return `decomposition in flight (${summary})`;
+  if (newlyCreated > 0) parts.push(translateInstant("activityFormat.decomposition.created", { count: newlyCreated, defaultValue: `created ${newlyCreated} new` }));
+  if (reused > 0) parts.push(translateInstant("activityFormat.decomposition.reused", { count: reused, defaultValue: `reused ${reused} existing` }));
+  if (parts.length === 0 && requested !== null) parts.push(translateInstant("activityFormat.decomposition.requested", { count: requested, defaultValue: `${requested} requested` }));
+  const summary = parts.length > 0 ? formatActivityPartList(parts) : null;
+  if (status === "completed" && summary) return translateInstant("activityFormat.decomposition.completedWithSummary", { summary, defaultValue: `decomposition completed (${summary})` });
+  if (status === "completed") return translateInstant("activityFormat.decomposition.completed", { defaultValue: "decomposition completed" });
+  if (status === "in_flight" && summary) return translateInstant("activityFormat.decomposition.inFlightWithSummary", { summary, defaultValue: `decomposition in flight (${summary})` });
   return summary;
 }
 
@@ -365,16 +490,16 @@ function formatIssueUpdatedVerb(details: ActivityDetails): string | null {
   const previous = asRecord(details._previous) ?? {};
   if (details.status !== undefined) {
     const from = previous.status;
-    const to = humanizeValue(details.status === "in_review" && details.externalConversationState === "waiting" ? "idle" : details.status);
+    const to = formatStatusValue(details.status === "in_review" && details.externalConversationState === "waiting" ? "idle" : details.status);
     return from
-      ? `changed status from ${humanizeValue(from)} to ${to} on`
-      : `changed status to ${to} on`;
+      ? translateInstant("activityFormat.changedStatusFromOn", { from: formatStatusValue(from), to })
+      : translateInstant("activityFormat.changedStatusToOn", { status: to });
   }
   if (details.priority !== undefined) {
     const from = previous.priority;
     return from
-      ? `changed priority from ${humanizeValue(from)} to ${humanizeValue(details.priority)} on`
-      : `changed priority to ${humanizeValue(details.priority)} on`;
+      ? translateInstant("activityFormat.changedPriorityFromOn", { from: formatPriorityValue(from), to: formatPriorityValue(details.priority) })
+      : translateInstant("activityFormat.changedPriorityToOn", { priority: formatPriorityValue(details.priority) });
   }
   return null;
 }
@@ -384,7 +509,7 @@ function formatAssigneeName(details: ActivityDetails, options: ActivityFormatOpt
   const agentId = details.assigneeAgentId;
   const userId = details.assigneeUserId;
   if (typeof agentId === "string" && agentId) {
-    return options.agentMap?.get(agentId)?.name ?? "agent";
+    return options.agentMap?.get(agentId)?.name ?? translateInstant("activityFormat.agent", { defaultValue: "Agent" });
   }
   if (typeof userId === "string" && userId) {
     return formatUserLabel(userId, options);
@@ -399,34 +524,37 @@ function formatIssueUpdatedAction(details: ActivityDetails, options: ActivityFor
 
   if (details.status !== undefined) {
     const from = previous.status;
-    const to = humanizeValue(details.status === "in_review" && details.externalConversationState === "waiting" ? "idle" : details.status);
+    const to = formatStatusValue(details.status === "in_review" && details.externalConversationState === "waiting" ? "idle" : details.status);
     parts.push(
       from
-        ? `changed the status from ${humanizeValue(from)} to ${to}`
-        : `changed the status to ${to}`,
+        ? translateInstant("activityFormat.changedStatusFrom", { from: formatStatusValue(from), to })
+        : translateInstant("activityFormat.changedStatusTo", { status: to }),
     );
   }
   if (details.priority !== undefined) {
     const from = previous.priority;
     parts.push(
       from
-        ? `changed the priority from ${humanizeValue(from)} to ${humanizeValue(details.priority)}`
-        : `changed the priority to ${humanizeValue(details.priority)}`,
+        ? translateInstant("activityFormat.changedPriorityFrom", { from: formatPriorityValue(from), to: formatPriorityValue(details.priority) })
+        : translateInstant("activityFormat.changedPriorityTo", { priority: formatPriorityValue(details.priority) }),
     );
   }
   if (details.assigneeAgentId !== undefined || details.assigneeUserId !== undefined) {
     const assigneeName = formatAssigneeName(details, options);
-    parts.push(assigneeName ? `made ${assigneeName} responsible for the task` : "cleared the responsible");
+    parts.push(assigneeName
+      ? translateInstant("activityFormat.assigneeSet", { assignee: assigneeName, defaultValue: `made ${assigneeName} responsible for the task` })
+      : translateInstant("activityFormat.assigneeCleared", { defaultValue: "cleared the responsible" }));
   }
   if (details.reviewPolicy !== undefined) {
     // `null` is the default ("anyone can approve"), so it must not read as
     // "changed the review policy to none" (PAP-16506).
-    parts.push(`changed who can approve to ${formatReviewPolicyValue(details.reviewPolicy)}`);
+    const policy = formatReviewPolicyLabel(details.reviewPolicy);
+    parts.push(translateInstant("activityFormat.reviewPolicyChanged", { policy, defaultValue: `changed who can approve to ${formatReviewPolicyValue(details.reviewPolicy)}` }));
   }
-  if (details.title !== undefined) parts.push("updated the title");
-  if (details.description !== undefined) parts.push("updated the description");
+  if (details.title !== undefined) parts.push(translateInstant("activityFormat.titleUpdated", { defaultValue: "updated the title" }));
+  if (details.description !== undefined) parts.push(translateInstant("activityFormat.descriptionUpdated", { defaultValue: "updated the description" }));
 
-  return parts.length > 0 ? parts.join(", ") : null;
+  return parts.length > 0 ? formatActivityPartList(parts) : null;
 }
 
 function formatStructuredIssueChange(input: {
@@ -442,30 +570,44 @@ function formatStructuredIssueChange(input: {
     const added = readIssueReferences(details, "addedBlockedByIssues").map(formatIssueReferenceLabel);
     const removed = readIssueReferences(details, "removedBlockedByIssues").map(formatIssueReferenceLabel);
     if (added.length > 0 && removed.length === 0) {
-      const changed = formatChangedEntityLabel("blocker", "blockers", added);
-      return input.forIssueDetail ? `added ${changed}` : `added ${changed} to`;
+      const changed = formatChangedEntityLabel("activityFormat.blocker", "activityFormat.blockers", added);
+      return input.forIssueDetail
+        ? translateInstant("activityFormat.added", { changed, defaultValue: `added ${changed}` })
+        : translateInstant("activityFormat.addedTo", { changed, defaultValue: `added ${changed} to` });
     }
     if (removed.length > 0 && added.length === 0) {
-      const changed = formatChangedEntityLabel("blocker", "blockers", removed);
-      return input.forIssueDetail ? `removed ${changed}` : `removed ${changed} from`;
+      const changed = formatChangedEntityLabel("activityFormat.blocker", "activityFormat.blockers", removed);
+      return input.forIssueDetail
+        ? translateInstant("activityFormat.removed", { changed, defaultValue: `removed ${changed}` })
+        : translateInstant("activityFormat.removedFrom", { changed, defaultValue: `removed ${changed} from` });
     }
-    return input.forIssueDetail ? "updated blockers" : "updated blockers on";
+    const label = translateInstant("activityFormat.blockers", { defaultValue: "blockers" });
+    return input.forIssueDetail
+      ? translateInstant("activityFormat.updatedLabel", { label, defaultValue: `updated ${label}` })
+      : translateInstant("activityFormat.updatedOn", { label, defaultValue: `updated ${label} on` });
   }
 
   if (input.action === "issue.reviewers_updated" || input.action === "issue.approvers_updated") {
     const added = readParticipants(details, "addedParticipants").map((participant) => formatParticipantLabel(participant, input.options));
     const removed = readParticipants(details, "removedParticipants").map((participant) => formatParticipantLabel(participant, input.options));
-    const singular = input.action === "issue.reviewers_updated" ? "reviewer" : "approver";
-    const plural = input.action === "issue.reviewers_updated" ? "reviewers" : "approvers";
+    const singular = input.action === "issue.reviewers_updated" ? "activityFormat.reviewer" : "activityFormat.approver";
+    const plural = input.action === "issue.reviewers_updated" ? "activityFormat.reviewers" : "activityFormat.approvers";
     if (added.length > 0 && removed.length === 0) {
       const changed = formatChangedEntityLabel(singular, plural, added);
-      return input.forIssueDetail ? `added ${changed}` : `added ${changed} to`;
+      return input.forIssueDetail
+        ? translateInstant("activityFormat.added", { changed, defaultValue: `added ${changed}` })
+        : translateInstant("activityFormat.addedTo", { changed, defaultValue: `added ${changed} to` });
     }
     if (removed.length > 0 && added.length === 0) {
       const changed = formatChangedEntityLabel(singular, plural, removed);
-      return input.forIssueDetail ? `removed ${changed}` : `removed ${changed} from`;
+      return input.forIssueDetail
+        ? translateInstant("activityFormat.removed", { changed, defaultValue: `removed ${changed}` })
+        : translateInstant("activityFormat.removedFrom", { changed, defaultValue: `removed ${changed} from` });
     }
-    return input.forIssueDetail ? `updated ${plural}` : `updated ${plural} on`;
+    const label = translateInstant(plural, { defaultValue: plural.replace("activityFormat.", "") });
+    return input.forIssueDetail
+      ? translateInstant("activityFormat.updatedLabel", { label, defaultValue: `updated ${label}` })
+      : translateInstant("activityFormat.updatedOn", { label, defaultValue: `updated ${label} on` });
   }
 
   return null;
@@ -477,20 +619,25 @@ export function formatActivityVerb(
   options: ActivityFormatOptions = {},
 ): string {
   if (action.startsWith("tool_gateway.")) {
-    const rawTool = typeof details?.tool === "string"
+    const tool = typeof details?.tool === "string"
       ? details.tool
       : typeof details?.upstreamToolName === "string"
         ? details.upstreamToolName
-        : "an app action";
-    const tool = rawTool.replace(/[._-]+/g, " ");
+        : translateInstant("activityFormat.toolGateway.appAction", { defaultValue: "an app action" });
     const isTest = details?.source === "test";
-    if (action === "tool_gateway.call_completed") return `${isTest ? "tested" : "used"} ${tool} on`;
-    if (action === "tool_gateway.call_allowed") return `${isTest ? "started a test of" : "was allowed to use"} ${tool} on`;
-    if (action === "tool_gateway.call_denied") return `was blocked from using ${tool} on`;
-    if (action === "tool_gateway.approval_requested") return `asked to use ${tool} on`;
-    if (action === "tool_gateway.session_created") return "opened an app session for";
-    if (action === "tool_gateway.session_rejected") return "was blocked from opening an app session for";
-    if (action === "tool_gateway.discovery") return "discovered app actions for";
+    if (action === "tool_gateway.call_completed") return translateInstant(
+      isTest ? "activityFormat.toolGateway.testedOn" : "activityFormat.toolGateway.usedOn",
+      { tool, defaultValue: `${isTest ? "tested" : "used"} ${tool} on` },
+    );
+    if (action === "tool_gateway.call_allowed") return translateInstant(
+      isTest ? "activityFormat.toolGateway.testStartedOn" : "activityFormat.toolGateway.allowedToUseOn",
+      { tool, defaultValue: `${isTest ? "started a test of" : "was allowed to use"} ${tool} on` },
+    );
+    if (action === "tool_gateway.call_denied") return translateInstant("activityFormat.toolGateway.blockedUsingOn", { tool, defaultValue: `was blocked from using ${tool} on` });
+    if (action === "tool_gateway.approval_requested") return translateInstant("activityFormat.toolGateway.askedToUseOn", { tool, defaultValue: `asked to use ${tool} on` });
+    if (action === "tool_gateway.session_created") return translateInstant("activityFormat.toolGateway.openedSessionFor", { defaultValue: "opened an app session for" });
+    if (action === "tool_gateway.session_rejected") return translateInstant("activityFormat.toolGateway.blockedSessionFor", { defaultValue: "was blocked from opening an app session for" });
+    if (action === "tool_gateway.discovery") return translateInstant("activityFormat.toolGateway.discoveredActionsFor", { defaultValue: "discovered app actions for" });
   }
 
   if (action === "issue.updated") {
@@ -501,11 +648,16 @@ export function formatActivityVerb(
   if (action === "issue.stalled_review_decided") {
     const decision = typeof details?.action === "string" ? details.action : null;
     const label = decision ? STALLED_REVIEW_DECISION_LABELS[decision] : null;
-    if (label) return `${label} on`;
+    if (label) return formatActionOn(formatLocalizedActivityLabel(label));
   }
 
   const outcomeLabel = formatInteractionOutcomeLabel(action, details);
-  if (outcomeLabel) return `${outcomeLabel} on`;
+  if (outcomeLabel) return formatActionOn(outcomeLabel);
+
+  const activityLabel = formatIssueActivityLabel(action);
+  if (activityLabel && (action.startsWith("issue.thread_interaction_") || action === "issue.stalled_review_decided")) {
+    return formatActionOn(activityLabel);
+  }
 
   const structuredChange = formatStructuredIssueChange({
     action,
@@ -552,7 +704,7 @@ export function formatIssueActivityAction(
   if (action === "issue.stalled_review_decided") {
     const decision = typeof details?.action === "string" ? details.action : null;
     const label = decision ? STALLED_REVIEW_DECISION_LABELS[decision] : null;
-    if (label) return label;
+    if (label) return formatLocalizedActivityLabel(label);
   }
 
   const outcomeLabel = formatInteractionOutcomeLabel(action, details);
@@ -562,8 +714,10 @@ export function formatIssueActivityAction(
     const serviceName = typeof details.serviceName === "string" && details.serviceName.trim()
       ? details.serviceName.trim()
       : null;
-    const base = ISSUE_ACTIVITY_LABELS[action] ?? action.replace(/[._]/g, " ");
-    return serviceName ? `${base} for ${serviceName}` : base;
+    const base = formatIssueActivityLabel(action) ?? action.replace(/[._]/g, " ");
+    return serviceName
+      ? translateInstant("activityFormat.monitorForService", { base, serviceName, defaultValue: `${base} for ${serviceName}` })
+      : base;
   }
 
   if (
@@ -578,10 +732,9 @@ export function formatIssueActivityAction(
   ) {
     const key = typeof details.key === "string" ? details.key : "document";
     const title = typeof details.title === "string" && details.title ? ` (${details.title})` : "";
-    return `${ISSUE_ACTIVITY_LABELS[action] ?? action} ${key}${title}`;
+    const actionLabel = formatIssueActivityLabel(action) ?? action;
+    return `${translateInstant("activityFormat.documentAction", { action: actionLabel, key })}${title}`;
   }
 
-  const translationKey = ISSUE_ACTIVITY_TRANSLATION_KEYS[action];
-  const defaultValue = ISSUE_ACTIVITY_LABELS[action] ?? action.replace(/[._]/g, " ");
-  return translationKey ? translateInstant(translationKey, { defaultValue }) : defaultValue;
+  return formatIssueActivityLabel(action) ?? action.replace(/[._]/g, " ");
 }

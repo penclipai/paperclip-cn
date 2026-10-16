@@ -1,0 +1,72 @@
+{
+  "agentChatPicker.clearSearch": {
+    "en": "Clear search",
+    "zh-CN": "清除搜索",
+    "reviewedEnglishHash": "3b7ea51793e9d906afa06afb86252abb48e1125cc96a7f5efabcfd8597ea183a"
+  },
+  "agentChatPicker.createAgent": {
+    "en": "Create an agent from the Agents page to start chatting.",
+    "zh-CN": "请先在“智能体”页面创建智能体，然后开始聊天。",
+    "reviewedEnglishHash": "8f52c09515e8fc3c3f5e17b7051d7bd248da86af0b04f0c668dc7d5c68dcac12"
+  },
+  "agentChatPicker.loadFailed": {
+    "en": "Couldn’t load agents. Try again.",
+    "zh-CN": "无法加载智能体。请重试。",
+    "reviewedEnglishHash": "3ca8c8512207be548c2d2a4cd5d6849764b57600c74dedac0609f55f785ff3f3"
+  },
+  "agentChatPicker.newChat": {
+    "en": "New chat",
+    "zh-CN": "新建聊天",
+    "reviewedEnglishHash": "db18382a249e0206bc28514931d423b77d55dce180c1eb8e4bf35f861c9a50ec"
+  },
+  "agentChatPicker.noAgents": {
+    "en": "No agents yet.",
+    "zh-CN": "暂无智能体。",
+    "reviewedEnglishHash": "8a33b2e7d85a08f87e61308596ea55ca0eb56cc226f99934b49a76f1f9d1e223"
+  },
+  "agentChatPicker.noMatches": {
+    "en": "No agents match “{{query}}”",
+    "zh-CN": "没有匹配“{{query}}”的智能体",
+    "reviewedEnglishHash": "fa5e619c16731afdb6162dc52edeca8d6bbe16726d2c536aec1f22bc9621e61b"
+  },
+  "agentChatPicker.openChat": {
+    "en": "Open chat",
+    "zh-CN": "打开聊天",
+    "reviewedEnglishHash": "0600175af8429c3cd44ab859dcdd3cfa5c763d9b352c7b03520196d4ceb59a88"
+  },
+  "agentChatPicker.openFailed": {
+    "en": "Couldn’t open chat. Try again.",
+    "zh-CN": "无法打开聊天。请重试。",
+    "reviewedEnglishHash": "b3d6fb0472f1cd3c4e755017ded8d5f4c8c68b56ebbd48292254ded571c82200"
+  },
+  "agentChatPicker.opening": {
+    "en": "Opening conversation…",
+    "zh-CN": "正在打开对话…",
+    "reviewedEnglishHash": "12a7ad1d379e91a60b5524e4142ca14345615eb8d10e985b67fe1d537278619e"
+  },
+  "agentChatPicker.resumeDescription": {
+    "en": "One conversation per agent. Pick up where you left off.",
+    "zh-CN": "每个智能体对应一个对话。继续上次未完成的对话。",
+    "reviewedEnglishHash": "2daf9fb3f16c6376d032c2d6bcdcb5bd687101a0c9f85fdcc74a4ce38a352579"
+  },
+  "agentChatPicker.searchAria": {
+    "en": "Search agents by name or role",
+    "zh-CN": "按名称或角色搜索智能体",
+    "reviewedEnglishHash": "e5d13d38a2502fd4e0775b95a1c7076764cba96af609b45a908dda8d87e9775d"
+  },
+  "agentChatPicker.searchPlaceholder": {
+    "en": "Search by name or role…",
+    "zh-CN": "按名称或角色搜索…",
+    "reviewedEnglishHash": "ada757655c29db18ff9912d63cff148d8f987be79835da00a0e370d8c92354e8"
+  },
+  "agentChatPicker.title": {
+    "en": "Chat with an agent",
+    "zh-CN": "与智能体聊天",
+    "reviewedEnglishHash": "73adffe32a9a861c33919042e8df2ce97eb776123d17472a3bf8f4916f214eff"
+  },
+  "agentChatPicker.tryAnother": {
+    "en": "Try another name or role.",
+    "zh-CN": "请尝试其他名称或角色。",
+    "reviewedEnglishHash": "ec1f4d9dde9c1c2c705a809bc1e1a5b1d9b9a4a323c5408f910620c6498f7add"
+  }
+}
