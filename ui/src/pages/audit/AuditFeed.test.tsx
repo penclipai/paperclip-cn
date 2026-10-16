@@ -389,7 +389,7 @@ describe("AuditFeed", () => {
       "company-1",
       expect.objectContaining({ action: "tool_" }),
     );
-    expect(container.textContent).toContain("tested get repository on");
+    expect(container.textContent).toContain("tested get_repository on");
     expect(container.querySelector('a[href="/apps/conn-1/permissions"]')).toBeTruthy();
     expect(container.textContent).toContain("tool_gateway.call_completed");
   });
