@@ -100,7 +100,7 @@ async function createSmokeUserDataDir(theme) {
 
 export function buildLaunchEnv(userDataDir, hostEnv = process.env) {
   const baseEnv = { ...hostEnv };
-  for (const key of [
+  const deniedKeys = new Set([
     "PAPERCLIP_CONFIG",
     "PAPERCLIP_CONTEXT",
     "PAPERCLIP_IN_WORKTREE",
@@ -109,8 +109,9 @@ export function buildLaunchEnv(userDataDir, hostEnv = process.env) {
     "PAPERCLIP_WORKTREES_DIR",
     "PAPERCLIP_AGENT_JWT_SECRET",
     "BETTER_AUTH_SECRET",
-  ]) {
-    delete baseEnv[key];
+  ]);
+  for (const key of Object.keys(baseEnv)) {
+    if (deniedKeys.has(key.toUpperCase())) delete baseEnv[key];
   }
 
   const paperclipHome = path.resolve(userDataDir, "runtime");
