@@ -409,10 +409,19 @@ the coordinated shutdown path stops embedded PostgreSQL afterward.
 
 On Windows, an embedded cluster started by this server stops through the same
 runtime's `pg_ctl stop -m fast -w`. The server first checks the owned child PID
-and canonical data directory against `postmaster.pid`, then waits for both
-`pg_ctl` and the child to exit. A failed stop rejects programmatic shutdown and
-makes signal-driven shutdown exit with code 1 after tracing and error reporting
-flush.
+and canonical data directory against `postmaster.pid`, retains a native handle
+for the verified root process, and then waits for `pg_ctl` and that root to
+exit. The `postmaster.pid` marker is read as UTF-8 so Windows system-code-page
+defaults cannot change ownership verification for non-ASCII data directories.
+Before success it closes only verified direct `postgres --forkchild` children
+created during that root's lifetime. An identity mismatch is never
+terminated; its held handle gets a short, deadline-bounded chance to exit
+naturally, and only a still-live unverified child fails the stop. A failed stop rejects
+programmatic shutdown and makes signal-driven shutdown exit with code 1 after
+tracing and error reporting flush.
+When the owned root has already been proven to exit cleanly, Paperclip detaches
+that stale child reference even if later fork-child closure checks fail, so the
+dependency's exit hook cannot target a reused PID; the shutdown still fails.
 This path does not stop an external database or an embedded cluster reused from
 another server.
 
