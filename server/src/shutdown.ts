@@ -126,11 +126,13 @@ export async function finalizeServerShutdown(input: {
    */
   closeDatabase?: (() => Promise<void>) | null;
   stopEmbeddedPostgres: (() => Promise<void>) | null;
+  failOnEmbeddedPostgresStopError?: boolean;
   shutdownInstrumentation: () => Promise<void>;
   shutdownSentry: () => Promise<void>;
   log: ShutdownLogger;
 }): Promise<void> {
   const { signal } = input;
+  let embeddedPostgresStopError: unknown = null;
 
   // Stop accepting requests and drain the open ones before any service goes
   // away, so a request that is still in flight sees a fully working server.
@@ -180,17 +182,30 @@ export async function finalizeServerShutdown(input: {
     try {
       await input.stopEmbeddedPostgres();
     } catch (err) {
+      embeddedPostgresStopError = err;
       input.log.error({ err }, "Failed to stop embedded PostgreSQL cleanly");
     }
   }
 
-  // Flush buffered OTel spans before the process goes away; without this await
-  // the exporter's final batch is dropped on exit.
-  await input.shutdownInstrumentation();
+  // Flush both sinks even when the owned PostgreSQL stop failed. Preserve the
+  // original flush error for ordinary shutdowns, but let the strict ownership
+  // failure remain the terminal result for the Windows-owned path.
+  let flushError: unknown = null;
+  try {
+    await input.shutdownInstrumentation();
+  } catch (err) {
+    flushError = err;
+  }
+  try {
+    await input.shutdownSentry();
+  } catch (err) {
+    flushError ??= err;
+  }
 
-  // Flush buffered Sentry events before the process goes away; without this
-  // await the last events are dropped on exit.
-  await input.shutdownSentry();
+  if (input.failOnEmbeddedPostgresStopError && embeddedPostgresStopError) {
+    throw embeddedPostgresStopError;
+  }
+  if (flushError) throw flushError;
 }
 
 const COORDINATED_SHUTDOWN_SIGNALS = ["SIGINT", "SIGTERM"] as const;

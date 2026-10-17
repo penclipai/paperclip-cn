@@ -17,6 +17,7 @@ import { sentryReady, shutdownSentry, captureException } from "./sentry.js";
 import { waitForPendingRunFailureReports } from "./services/run-failure-report.js";
 import { verifyStoppedNativeSessionForReplacement } from "./services/native-runtime/native-session-executor.js";
 import { embeddedPostgresOwnerPort } from "./embedded-postgres-owner.js";
+import { stopOwnedEmbeddedPostgresOnWindows } from "./embedded-postgres-stop.js";
 import { deliverExecutionStatuses } from "./services/execution-status-delivery.js";
 import { deliverReconciledExecutions, settleUnrecoverableExecutions } from "./services/execution-recovery-resolution.js";
 import { reconcileSafeNativeReplacements } from "./services/native-runtime/native-safe-replacement.js";
@@ -42,6 +43,7 @@ import {
   applyPendingMigrations,
   createEmbeddedPostgresLogBuffer,
   prepareEmbeddedPostgresNativeRuntime,
+  loadEmbeddedPostgresBinaryPaths,
   reconcilePendingMigrationHistory,
   formatDatabaseBackupResult,
   runDatabaseBackup,
@@ -457,6 +459,9 @@ async function startServerWithDatabaseTeardown(
       );
     }
     await prepareEmbeddedPostgresNativeRuntime();
+    const windowsEmbeddedPostgresPgCtl = process.platform === "win32"
+      ? (await loadEmbeddedPostgresBinaryPaths()).pgCtl
+      : null;
   
     const dataDir = resolve(config.embeddedPostgresDataDir);
     const configuredPort = config.embeddedPostgresPort;
@@ -600,6 +605,17 @@ async function startServerWithDatabaseTeardown(
               throw new Error(`Refusing embedded PostgreSQL recovery because the data directory reports a live process (pid=${runningPostgresPid})`);
             }
             if (existsSync(postmasterPidFile)) rmSync(postmasterPidFile, { force: true });
+          },
+          stopInstance: async (instance) => {
+            if (process.platform !== "win32") {
+              await instance.stop();
+              return;
+            }
+            await stopOwnedEmbeddedPostgresOnWindows({
+              instance,
+              dataDir,
+              pgCtlPath: windowsEmbeddedPostgresPgCtl,
+            });
           },
           onUnexpectedExit: (code, signal) => logger.error(
             { code, signal, recentLogs: logBuffer.getRecentLogs() },
@@ -2052,6 +2068,7 @@ async function startServerWithDatabaseTeardown(
       drainPendingRunFailureReports: waitForPendingRunFailureReports,
       closeDatabase: closeDatabaseClients,
       stopEmbeddedPostgres,
+      failOnEmbeddedPostgresStopError: process.platform === "win32" && stopEmbeddedPostgres !== null,
       shutdownInstrumentation,
       shutdownSentry,
       log: logger,
@@ -2069,12 +2086,14 @@ async function startServerWithDatabaseTeardown(
     if (exitProcess) process.exit(0);
   };
 
-  process.once("SIGINT", () => {
-    void shutdown("SIGINT", true);
-  });
-  process.once("SIGTERM", () => {
-    void shutdown("SIGTERM", true);
-  });
+  const shutdownForSignal = (signal: "SIGINT" | "SIGTERM") => {
+    void shutdown(signal, true).catch((err) => {
+      logger.error({ err, signal }, "Paperclip server shutdown failed");
+      process.exit(1);
+    });
+  };
+  process.once("SIGINT", () => shutdownForSignal("SIGINT"));
+  process.once("SIGTERM", () => shutdownForSignal("SIGTERM"));
 
   return {
     server,

@@ -43,6 +43,62 @@ describe("embedded PostgreSQL supervisor", () => {
     expect(createReplacement).not.toHaveBeenCalled();
   });
 
+  it("uses the supplied stop boundary for normal shutdown", async () => {
+    const initial = createInstance();
+    const stopInstance = vi.fn(async () => undefined);
+    const supervisor = createEmbeddedPostgresSupervisor({
+      initialInstance: initial.instance,
+      createInstance: () => createInstance().instance,
+      stopInstance,
+    });
+    await supervisor.shutdown();
+    expect(stopInstance).toHaveBeenCalledWith(initial.instance);
+    expect(initial.instance.stop).not.toHaveBeenCalled();
+  });
+
+  it("uses the supplied stop boundary when recovery completes after shutdown began", async () => {
+    const initial = createInstance();
+    let releaseStart!: () => void;
+    const start = new Promise<void>((resolve) => { releaseStart = resolve; });
+    const replacement = createInstance();
+    replacement.instance.start = vi.fn(() => start);
+    const stopInstance = vi.fn(async () => undefined);
+    const supervisor = createEmbeddedPostgresSupervisor({
+      initialInstance: initial.instance,
+      createInstance: () => replacement.instance,
+      restartDelaysMs: [0],
+      stopInstance,
+    });
+    initial.process.emit("exit", 1, null);
+    await vi.waitFor(() => expect(replacement.instance.start).toHaveBeenCalledOnce());
+    const shutdown = supervisor.shutdown();
+    releaseStart();
+    await shutdown;
+    expect(stopInstance).toHaveBeenCalledWith(replacement.instance);
+    expect(replacement.instance.stop).not.toHaveBeenCalled();
+  });
+
+  it("propagates a stop-boundary failure when recovery finishes during shutdown", async () => {
+    const initial = createInstance();
+    let releaseStart!: () => void;
+    const start = new Promise<void>((resolve) => { releaseStart = resolve; });
+    const replacement = createInstance();
+    replacement.instance.start = vi.fn(() => start);
+    const stopError = new Error("owned PostgreSQL remained alive");
+    const supervisor = createEmbeddedPostgresSupervisor({
+      initialInstance: initial.instance,
+      createInstance: () => replacement.instance,
+      restartDelaysMs: [0],
+      stopInstance: async () => { throw stopError; },
+    });
+    initial.process.emit("exit", 1, null);
+    await vi.waitFor(() => expect(replacement.instance.start).toHaveBeenCalledOnce());
+    const shutdown = supervisor.shutdown();
+    const rejected = expect(shutdown).rejects.toThrow(stopError);
+    releaseStart();
+    await rejected;
+  });
+
   it("bounds recovery attempts and reports the final failure", async () => {
     const initial = createInstance();
     const failures = [new Error("first"), new Error("second"), new Error("third")];

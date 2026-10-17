@@ -407,6 +407,15 @@ When Paperclip manages embedded PostgreSQL, it suppresses that dependency's eage
 snapshot and any required drain complete while the database is still available;
 the coordinated shutdown path stops embedded PostgreSQL afterward.
 
+On Windows, an embedded cluster started by this server stops through the same
+runtime's `pg_ctl stop -m fast -w`. The server first checks the owned child PID
+and canonical data directory against `postmaster.pid`, then waits for both
+`pg_ctl` and the child to exit. A failed stop rejects programmatic shutdown and
+makes signal-driven shutdown exit with code 1 after tracing and error reporting
+flush.
+This path does not stop an external database or an embedded cluster reused from
+another server.
+
 The request command records the preflight set of running heartbeat IDs and writes
 an instance-scoped marker plus a PID-targeted legacy home-root handoff marker.
 This lets a previous server version capture its snapshot at the old path while

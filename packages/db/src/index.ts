@@ -38,6 +38,7 @@ export {
   ensureLinuxSharedLibraryAliases,
   prepareEmbeddedPostgresNativeRuntime,
 } from "./embedded-postgres-native.js";
+export { loadEmbeddedPostgresBinaryPaths } from "./embedded-postgres-runtime-installer.js";
 export {
   cleanupOrphanedEmbeddedPostgresForkchildren,
   recoverEmbeddedPostgresStart,

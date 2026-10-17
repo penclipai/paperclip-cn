@@ -255,6 +255,49 @@ describe("finalizeServerShutdown", () => {
     expect(shutdownInstrumentation).toHaveBeenCalledOnce();
     expect(log.info).not.toHaveBeenCalled();
   });
+
+  it("flushes instrumentation and Sentry before rejecting a strict embedded PostgreSQL stop failure", async () => {
+    const stopError = new Error("owned PostgreSQL remained alive");
+    const shutdownInstrumentation = vi.fn(async () => undefined);
+    const shutdownSentry = vi.fn(async () => undefined);
+    await expect(finalizeServerShutdown({
+      signal: "SIGTERM",
+      shutdownAppServices: undefined,
+      stopEmbeddedPostgres: async () => { throw stopError; },
+      failOnEmbeddedPostgresStopError: true,
+      shutdownInstrumentation,
+      shutdownSentry,
+      log: stubLogger(),
+    })).rejects.toThrow(stopError);
+    expect(shutdownInstrumentation).toHaveBeenCalledOnce();
+    expect(shutdownSentry).toHaveBeenCalledOnce();
+  });
+
+  it("keeps embedded PostgreSQL stop failures best-effort by default", async () => {
+    await expect(finalizeServerShutdown({
+      signal: "SIGTERM",
+      shutdownAppServices: undefined,
+      stopEmbeddedPostgres: async () => { throw new Error("best effort"); },
+      shutdownInstrumentation: vi.fn(async () => undefined),
+      shutdownSentry: vi.fn(async () => undefined),
+      log: stubLogger(),
+    })).resolves.toBeUndefined();
+  });
+
+  it("still flushes Sentry when instrumentation fails during a strict PostgreSQL stop failure", async () => {
+    const stopError = new Error("owned PostgreSQL remained alive");
+    const shutdownSentry = vi.fn(async () => undefined);
+    await expect(finalizeServerShutdown({
+      signal: "SIGTERM",
+      shutdownAppServices: undefined,
+      stopEmbeddedPostgres: async () => { throw stopError; },
+      failOnEmbeddedPostgresStopError: true,
+      shutdownInstrumentation: async () => { throw new Error("otel flush failed"); },
+      shutdownSentry,
+      log: stubLogger(),
+    })).rejects.toThrow(stopError);
+    expect(shutdownSentry).toHaveBeenCalledOnce();
+  });
 });
 
 describe("closeHttpListenerForShutdown", () => {
