@@ -24,6 +24,27 @@ Note:
 - this matches the repo's current policy where `pnpm-lock.yaml` is refreshed by GitHub automation after manifest changes land on `master`
 - the publish jobs then restore `pnpm-lock.yaml` before running `scripts/release.sh`, so the release script still sees a clean worktree
 
+## PR quality review authentication
+
+The PR review workflow reads and executes only the event's fixed base commit.
+It does not execute PR-head code. Dependency Review and the quality gates stay
+enabled with `contents: read` and `pull-requests: write` permissions.
+
+The workflow selects credentials from a fixed repository name and ID pair:
+
+- `penclipai/paperclip-cn:1192887762` uses the job's temporary `github.token`.
+  Its quality-gate comments belong to `github-actions[bot]`. The CN fork does
+  not need the upstream App's `COMMITPERCLIP_KEY`.
+- `paperclipai/paperclip:1170821064` uses the commitperclip App and its existing
+  private-key secret.
+- Other repository identities fail before running the review.
+
+Comment updates require the selected bot author and the quality-gate signature.
+CN comments also carry the fixed `<!-- commitperclip-quality-gates:v1 -->`
+marker, so another workflow's GitHub Actions comment is not updated by mistake.
+Repeated runs update the matching quality-gate comment instead of adding copies.
+These review credentials are separate from the npm publication credentials below.
+
 ## 1. Merge the Repo Changes First
 
 Before touching GitHub or npm settings, merge the release automation code so the referenced workflow filenames already exist on the default branch.
