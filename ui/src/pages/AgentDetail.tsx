@@ -768,7 +768,7 @@ function WorkspaceOperationsSection({
 }
 
 export function AgentDetail() {
-  useTranslation();
+  const { i18n } = useTranslation();
   const { companyPrefix, agentId, tab: urlTab, runId: urlRunId } = useParams<{
     companyPrefix?: string;
     agentId: string;
@@ -1068,11 +1068,11 @@ export function AgentDetail() {
         const item = AGENT_DETAIL_NAVIGATION
           .flatMap((section) => section.items)
           .find((candidate) => candidate.value === activeView);
-        crumbs.push({ label: item ? translateInstant(item.label) : translateInstant("Overview") });
+        crumbs.push({ label: item ? translateInstant(item.labelKey) : translateInstant("caseDetail.tabs.overview") });
       }
     }
     setBreadcrumbs(crumbs);
-  }, [setBreadcrumbs, agent, routeAgentRef, canonicalAgentRef, activeView, urlRunId]);
+  }, [setBreadcrumbs, agent, routeAgentRef, canonicalAgentRef, activeView, urlRunId, i18n.language]);
 
   useEffect(() => {
     closePanel();
@@ -1392,7 +1392,7 @@ export function AgentDetail() {
         </div>
       )}
 
-      {activeView !== "run-detail" && activeView !== "channels" && <h2 className="text-xl font-semibold">{activeView === "secrets" ? translateInstant("agentDetail.secretsAndVariables") : translateInstant(AGENT_DETAIL_NAVIGATION.flatMap(section => section.items).find(item => item.value === activeView)?.label ?? "Overview")}</h2>}
+      {activeView !== "run-detail" && activeView !== "channels" && <h2 className="text-xl font-semibold">{translateInstant(AGENT_DETAIL_NAVIGATION.flatMap(section => section.items).find(item => item.value === activeView)?.labelKey ?? "caseDetail.tabs.overview")}</h2>}
 
       {/* View content */}
       {activeView === "overview" && (

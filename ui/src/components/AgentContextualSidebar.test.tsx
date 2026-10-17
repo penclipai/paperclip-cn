@@ -6,6 +6,7 @@ import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
 import { AgentContextualSidebar } from "./AgentContextualSidebar";
 import { queryKeys } from "@/lib/queryKeys";
+import i18n from "@/i18n";
 
 vi.mock("@/context/CompanyContext", () => ({
   useCompany: () => ({ selectedCompanyId: "company-1" }),
@@ -65,5 +66,33 @@ describe("AgentContextualSidebar", () => {
     expect(markup).toContain('href="/activity/runs?agentId=agent-1"');
     expect(markup).toContain("Harness / Runtime");
     expect(markup).toContain("Permissions / Trust");
+  });
+
+  it("localizes navigation labels while preserving explicit caller overrides", async () => {
+    await i18n.changeLanguage("zh-CN");
+    try {
+      const queryClient = new QueryClient();
+      const markup = renderToStaticMarkup(
+        <QueryClientProvider client={queryClient}>
+          <MemoryRouter>
+            <AgentContextualSidebar
+              agentRef="agent"
+              agentId="agent-1"
+              agentName="Agent"
+              labels={{ secrets: "Caller override" }}
+            />
+          </MemoryRouter>
+        </QueryClientProvider>,
+      );
+
+      expect(markup).toContain("运行环境");
+      expect(markup).toContain("治理");
+      expect(markup).toContain("执行框架 / 运行环境");
+      expect(markup).toContain("权限 / 信任");
+      expect(markup).toContain("Caller override");
+      queryClient.clear();
+    } finally {
+      await i18n.changeLanguage("en");
+    }
   });
 });

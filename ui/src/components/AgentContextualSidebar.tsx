@@ -53,7 +53,7 @@ export function AgentContextualSidebar({
   agentRef,
   agentId,
   agentName,
-  labels = { secrets: "Secrets & variables" },
+  labels,
 }: {
   agentRef: string;
   agentId?: string;
@@ -86,7 +86,7 @@ export function AgentContextualSidebar({
       >
         {AGENT_DETAIL_NAVIGATION.map((section) => (
           <div
-            key={section.label}
+            key={section.labelKey}
             data-slot="contextual-sidebar-section"
             className={contextualSidebarStyles.section}
           >
@@ -94,7 +94,7 @@ export function AgentContextualSidebar({
               data-slot="contextual-sidebar-section-label"
               className={contextualSidebarStyles.sectionLabel}
             >
-              {translateInstant(section.label)}
+              {translateInstant(section.labelKey)}
             </p>
             <div data-slot="contextual-sidebar-group" className={contextualSidebarStyles.group}>
               {section.items
@@ -104,7 +104,7 @@ export function AgentContextualSidebar({
                     <SidebarNavItem
                       key={item.value}
                       to={href}
-                      label={labels?.[item.value] ?? translateInstant(item.label)}
+                      label={labels?.[item.value] ?? translateInstant(item.labelKey)}
                       icon={localIcons[item.value]}
                     />
                   );

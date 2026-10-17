@@ -174,6 +174,11 @@
     "zh-CN": "（已更改）",
     "reviewedEnglishHash": "5311f2a881bcfed8e64b52819ccece3dc5bd2ae112f8ceb7895641bfcf2551dc"
   },
+  "agentDetail.channels": {
+    "en": "Channels",
+    "zh-CN": "渠道",
+    "reviewedEnglishHash": "4c8906cf76f5740ab8792aef9f0033fe21a92045e90b357816064e9f6860a03e"
+  },
   "agentDetail.cleanupLabel": {
     "en": "Cleanup:",
     "zh-CN": "清理：",
@@ -403,6 +408,16 @@
     "en": "generation is skipped and the",
     "zh-CN": "生成会被跳过，并且",
     "reviewedEnglishHash": "8b2f4962bc46b8ca0a5ba7f993efa0b2a4c0129f08ff5f260a38e11708f350b6"
+  },
+  "agentDetail.governance": {
+    "en": "Governance",
+    "zh-CN": "治理",
+    "reviewedEnglishHash": "86f8a694159b712f78f3b3c032028b92786201c5eec04c1d2cc234464127a429"
+  },
+  "agentDetail.harnessRuntime": {
+    "en": "Harness / Runtime",
+    "zh-CN": "执行框架 / 运行环境",
+    "reviewedEnglishHash": "6711e546a022dbe79b8b40ea44dcd6907a383a0ad022ad708dc314fb4d2e76a1"
   },
   "agentDetail.hideFullLog": {
     "en": "Hide full log",
@@ -694,6 +709,11 @@
     "zh-CN": "权限",
     "reviewedEnglishHash": "abccc78cc93c07931feccfbd0665c003373b48334fd8d4cf5c6d0c714e68f26e"
   },
+  "agentDetail.permissionsTrust": {
+    "en": "Permissions / Trust",
+    "zh-CN": "权限 / 信任",
+    "reviewedEnglishHash": "183c6ae80610fddaddecb8cc0e344c31e331ef0111db4576578919dcb8dd4025"
+  },
   "agentDetail.promptLabel": {
     "en": "Prompt",
     "zh-CN": "提示词",
@@ -778,6 +798,11 @@
     "en": "Run Activity",
     "zh-CN": "运行活动",
     "reviewedEnglishHash": "fe11724808acbe9ce7db7beebf168d0d09fc20d7c004fdc2fdf9f07590fd95d8"
+  },
+  "agentDetail.runtime": {
+    "en": "Runtime",
+    "zh-CN": "运行环境",
+    "reviewedEnglishHash": "1093115897879aa3ad9511a1dc2850929cfb60ba45ec741605f69f5d20203472"
   },
   "agentDetail.runCrumb": {
     "en": "Run {{id}}",

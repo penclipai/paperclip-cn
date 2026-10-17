@@ -709,6 +709,39 @@ describe("TaskSidePanel", () => {
     expect(container.textContent).toContain("Properties content");
   });
 
+  it("localizes persisted default tabs without changing user-authored tab titles", async () => {
+    writeTaskSidePanelState("user-1", "company-1", "task-1", {
+      state: {
+        tabs: [
+          taskPanelPropertiesTab(),
+          taskPanelArtifactsTab(),
+          taskPanelDocumentTab("brief", "用户文档"),
+        ],
+        activeTabId: "properties",
+      },
+      launcherOpen: false,
+      userInteracted: true,
+      autoPlanHandled: true,
+      updatedAt: 1,
+    });
+    fixture.documents = [issueDocument("brief", "用户文档")];
+
+    await act(async () => { await i18n.changeLanguage("zh-CN"); });
+    try {
+      await render(panel());
+      expect(container.querySelector('[data-side-panel-tab-target="properties"]')?.textContent).toContain("属性");
+      expect(container.querySelector('[data-side-panel-tab-target="artifacts"]')?.textContent).toContain("产物");
+      expect(container.querySelector('[data-side-panel-tab-target="document:brief"]')?.textContent).toContain("用户文档");
+
+      await act(async () => { await i18n.changeLanguage("en"); });
+      expect(container.querySelector('[data-side-panel-tab-target="properties"]')?.textContent).toContain("Properties");
+      expect(container.querySelector('[data-side-panel-tab-target="artifacts"]')?.textContent).toContain("Artifacts");
+      expect(container.querySelector('[data-side-panel-tab-target="document:brief"]')?.textContent).toContain("用户文档");
+    } finally {
+      await i18n.changeLanguage("en");
+    }
+  });
+
   it("opens a URL-backed workspace file tab outside file-viewer provider ancestry", async () => {
     routeFixture.location.search = "?file=ui%2Fsrc%2FApp.tsx&line=7&workspace=project";
     window.history.replaceState(null, "", `${routeFixture.location.pathname}${routeFixture.location.search}`);

@@ -16,32 +16,32 @@ export type AgentDetailView =
 export type AgentLocalDetailView = Exclude<AgentDetailView, "run-detail">;
 
 export const AGENT_DETAIL_NAVIGATION: ReadonlyArray<{
-  label: string;
-  items: ReadonlyArray<{ value: AgentLocalDetailView; label: string }>;
+  labelKey: string;
+  items: ReadonlyArray<{ value: AgentLocalDetailView; labelKey: string }>;
 }> = [
   {
-    label: "Agent",
+    labelKey: "entityType.agent",
     items: [
-      { value: "overview", label: "Overview" },
-      { value: "instructions", label: "Instructions" },
-      { value: "skills", label: "Skills" },
+      { value: "overview", labelKey: "caseDetail.tabs.overview" },
+      { value: "instructions", labelKey: "agentDetail.instructions" },
+      { value: "skills", labelKey: "agentDetail.skills" },
     ],
   },
   {
-    label: "Runtime",
+    labelKey: "agentDetail.runtime",
     items: [
-      { value: "runtime", label: "Harness / Runtime" },
-      { value: "secrets", label: "Secrets" },
-      { value: "tools", label: "Tools" },
-      { value: "channels", label: "Channels" },
+      { value: "runtime", labelKey: "agentDetail.harnessRuntime" },
+      { value: "secrets", labelKey: "agentDetail.secretsAndVariables" },
+      { value: "tools", labelKey: "agentDetail.tools" },
+      { value: "channels", labelKey: "agentDetail.channels" },
     ],
   },
   {
-    label: "Governance",
+    labelKey: "agentDetail.governance",
     items: [
-      { value: "permissions", label: "Permissions / Trust" },
-      { value: "api-keys", label: "API Keys" },
-      { value: "revisions", label: "Revisions" },
+      { value: "permissions", labelKey: "agentDetail.permissionsTrust" },
+      { value: "api-keys", labelKey: "agentDetail.apiKeys" },
+      { value: "revisions", labelKey: "caseComponents.revisions.title" },
     ],
   },
 ] as const;

@@ -37,6 +37,7 @@ import {
   type AgentLocalDetailView,
 } from "@/pages/agent-detail-navigation";
 import { getAdapterDisplay } from "@/adapters/adapter-display-registry";
+import { translateInstant } from "@/i18n";
 import { cn } from "@/lib/utils";
 import { RuntimeTestCard } from "../RuntimeTestCard";
 import { type TestOutcome } from "../new-agent-fixtures";
@@ -212,10 +213,10 @@ function SettingsPage({ runtimeContent }: { runtimeContent?: ReactNode }) {
     );
   const title =
     view === "secrets"
-      ? "Secrets & variables"
-      : AGENT_DETAIL_NAVIGATION.flatMap((s) => s.items).find(
+      ? translateInstant("agentDetail.secretsAndVariables")
+      : translateInstant(AGENT_DETAIL_NAVIGATION.flatMap((s) => s.items).find(
           (t) => t.value === view,
-        )?.label;
+        )?.labelKey ?? "caseDetail.tabs.overview");
   const display = getAdapterDisplay(agent.adapterType);
   const Icon = display.icon;
   const callbacks = {

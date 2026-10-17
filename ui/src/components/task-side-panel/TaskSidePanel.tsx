@@ -581,7 +581,15 @@ export function TaskSidePanel({
     return {
       id: tab.id,
       type: tab.type,
-      label: browserLabel ?? (tab.payload.kind === "subtasks" && tasksTab ? translateInstant("sidebar.issues") : document ? documentDisplayTitle(document) : tab.label),
+      label: browserLabel ?? (tab.payload.kind === "properties"
+        ? translateInstant("caseDetail.tabs.properties")
+        : tab.payload.kind === "artifacts"
+          ? translateInstant("artifacts.title")
+          : tab.payload.kind === "subtasks" && tasksTab
+            ? translateInstant("sidebar.issues")
+            : document
+              ? documentDisplayTitle(document)
+              : tab.label),
       ariaLabel: tab.payload.kind === "subtasks" ? taskLabel : tab.ariaLabel,
       closable: true,
       contentMode: tab.contentMode,
