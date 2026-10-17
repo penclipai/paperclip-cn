@@ -1985,6 +1985,7 @@ describeEmbeddedPostgres("tool access service", () => {
       const membershipIsLocked = new Promise<void>((resolve) => {
         membershipLocked = resolve;
       });
+      let firstReplacementBackendPid!: number;
       let firstReplacement: Promise<void> | undefined;
       let cleanup: Promise<void> | undefined;
       let replacement:
@@ -2004,6 +2005,10 @@ describeEmbeddedPostgres("tool access service", () => {
           await service.replaceConnectionGrantMembers(connection.id, grant.id, [
             "departing-user",
           ]);
+          const [backend] = (await tx.execute(
+            sql`select pg_backend_pid() as pid`,
+          )) as unknown as Array<{ pid: number }>;
+          firstReplacementBackendPid = backend!.pid;
           firstReplacementStaged();
           await firstReplacementMayCommit;
         });
@@ -2035,10 +2040,9 @@ describeEmbeddedPostgres("tool access service", () => {
           }
         });
 
-        // The first replacement still owns the departing member lock, so this
-        // gives cleanup time to queue for that lock before the empty replacement
-        // queues for the grant lock.
-        await new Promise((resolve) => setTimeout(resolve, 50));
+        // Prove cleanup is queued behind the staged replacement before letting
+        // the empty replacement contend for the grant and membership locks.
+        await expectBlockedBy(firstReplacementBackendPid);
         let replacementSettled = false;
         replacement = replacementService
           .replaceConnectionGrantMembers(connection.id, grant.id, [])
@@ -2049,8 +2053,6 @@ describeEmbeddedPostgres("tool access service", () => {
           .finally(() => {
             replacementSettled = true;
           });
-        await new Promise((resolve) => setTimeout(resolve, 50));
-        expect(replacementSettled).toBe(false);
 
         releaseFirstReplacement();
         await firstReplacement;
