@@ -24,6 +24,22 @@ const mockGetCurrentBoardAccess = vi.hoisted(() => vi.fn());
 const mockToggleTheme = vi.hoisted(() => vi.fn());
 const mockSetSidebarOpen = vi.hoisted(() => vi.fn());
 const mockNavigateTopLevel = vi.hoisted(() => vi.fn());
+const language = vi.hoisted(() => ({ value: "en" as "en" | "zh-CN" }));
+
+vi.mock("@/i18n", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/i18n")>();
+  return {
+    ...actual,
+    translateInstant: (key: string, options?: Record<string, string | number | boolean | null | undefined>) => {
+      if (language.value !== "zh-CN") return actual.translateInstant(key, options);
+      return ({
+        Board: "董事会",
+        "Signed in": "已登录",
+        "Local workspace board": "本地工作区董事会",
+      } as Record<string, string>)[key] ?? actual.translateInstant(key, options);
+    },
+  };
+});
 
 vi.mock("@/api/auth", () => ({
   authApi: mockAuthApi,
@@ -151,6 +167,7 @@ describe("SidebarAccountMenu", () => {
   afterEach(() => {
     container.remove();
     document.body.innerHTML = "";
+    language.value = "en";
     vi.clearAllMocks();
     vi.unstubAllGlobals();
   });
@@ -271,6 +288,96 @@ describe("SidebarAccountMenu", () => {
       queryClient.clear();
     });
   });
+
+  describe.each([SidebarAccountMenu, ProductionSidebarAccountMenu])(
+    "localized synthetic board name (%#)",
+    (AccountMenu) => {
+      it.each([
+        [
+          "preserves an ordinary user name",
+          {
+            session: { id: "session-1", userId: "user-1" },
+            user: { id: "user-1", name: "Jane Example", email: "jane@example.com", image: null },
+          },
+          "Jane Example",
+          "jane@example.com",
+          false,
+        ],
+        [
+          "preserves a real user's name when it is Board",
+          {
+            session: { id: "session-1", userId: "user-1" },
+            user: { id: "user-1", name: "Board", email: "user@example.com", image: null },
+          },
+          "Board",
+          "user@example.com",
+          false,
+        ],
+        [
+          "localizes the default local board name",
+          {
+            session: { id: "session-1", userId: "local-board" },
+            user: { id: "local-board", name: "Board", email: "", image: null },
+          },
+          "董事会",
+          "本地工作区董事会",
+          false,
+        ],
+        ["localizes a missing session", null, "董事会", "本地工作区董事会", false],
+        [
+          "localizes a blank local board name",
+          {
+            session: { id: "session-1", userId: "local-board" },
+            user: { id: "local-board", name: "   ", email: "", image: null },
+          },
+          "董事会",
+          "本地工作区董事会",
+          false,
+        ],
+        [
+          "preserves a custom local board name",
+          {
+            session: { id: "session-1", userId: "local-board" },
+            user: { id: "local-board", name: "Local Operators", email: "", image: null },
+          },
+          "Local Operators",
+          "本地工作区董事会",
+          false,
+        ],
+        [
+          "localizes the authenticated empty-email fallback",
+          {
+            session: { id: "session-1", userId: "user-1" },
+            user: { id: "user-1", name: "Jane Example", email: "   ", image: null },
+          },
+          "Jane Example",
+          "已登录",
+          true,
+        ],
+      ])("%s", async (_label, session, expectedName, expectedSecondaryLabel, authenticated) => {
+        language.value = "zh-CN";
+        mockAuthApi.getSession.mockResolvedValue(session);
+        const root = createRoot(container);
+        const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+
+        await act(async () => {
+          root.render(
+            <QueryClientProvider client={queryClient}>
+              <TooltipProvider>
+                <AccountMenu deploymentMode={authenticated ? "authenticated" : "local_trusted"} open />
+              </TooltipProvider>
+            </QueryClientProvider>,
+          );
+        });
+        await flushReact();
+
+        expect(container.textContent).toContain(expectedName);
+        expect(document.body.textContent).toContain(expectedSecondaryLabel);
+
+        await act(async () => root.unmount());
+      });
+    },
+  );
 
   it("shares the nav background without separator borders", async () => {
     const root = createRoot(container);

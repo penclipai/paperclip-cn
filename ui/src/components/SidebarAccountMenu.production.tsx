@@ -157,9 +157,14 @@ export function SidebarAccountMenu({
 
   const signOutMutation = useSignOut({ onSignedOut: closeNavigationChrome });
 
-  const displayName = session?.user.name?.trim() || "Board";
+  const rawDisplayName = session?.user.name?.trim();
+  const displayName =
+    !rawDisplayName || (session?.user.id === "local-board" && rawDisplayName === "Board")
+      ? translateInstant("Board")
+      : rawDisplayName;
   const secondaryLabel =
-    session?.user.email?.trim() || (deploymentMode === "authenticated" ? "Signed in" : "Local workspace board");
+    session?.user.email?.trim() ||
+    translateInstant(deploymentMode === "authenticated" ? "Signed in" : "Local workspace board");
   const initials = deriveInitials(displayName);
   const profileHref = userProfilePath(session?.user);
 
