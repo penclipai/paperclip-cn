@@ -90,6 +90,7 @@ let startupTimer: NodeJS.Timeout | null = null;
 let waitingSplashTimer: NodeJS.Timeout | null = null;
 let appIsQuitting = false;
 let shutdownPromise: Promise<void> | null = null;
+let workerStopPromise: Promise<void> | null = null;
 let startupSequence = 0;
 let detachTitlebar: (() => void) | null = null;
 let currentDesktopTheme: DesktopTheme = resolveDesktopTheme(
@@ -383,29 +384,51 @@ async function showStartupError(detail: string): Promise<void> {
   await loadSplashState("error", detail);
 }
 
-async function stopWorkerProcess(): Promise<void> {
+function stopWorkerProcess(): Promise<void> {
+  if (workerStopPromise) {
+    return workerStopPromise;
+  }
+
   const child = workerProcess;
-  if (!child) return;
+  if (!child) return Promise.resolve();
 
-  workerProcess = null;
-  clearStartupTimers();
-  currentAppUrl = null;
+  const stopping = (async () => {
+    workerProcess = null;
+    clearStartupTimers();
+    currentAppUrl = null;
 
-  if (child.pid) {
-    expectedExitPids.add(child.pid);
-  }
+    if (child.pid) {
+      expectedExitPids.add(child.pid);
+    }
 
-  const alreadyExited = child.exitCode !== null || child.signalCode !== null;
-  if (alreadyExited) {
-    return;
-  }
+    const alreadyExited = child.exitCode !== null || child.signalCode !== null;
+    if (alreadyExited) {
+      return;
+    }
 
-  await requestWorkerShutdown({
-    child,
-    requestId: randomUUID(),
-    timeoutMs: workerGracefulShutdownTimeoutMs,
-    forceKill: forceKillProcessTree,
-  });
+    await requestWorkerShutdown({
+      child,
+      requestId: randomUUID(),
+      timeoutMs: workerGracefulShutdownTimeoutMs,
+      forceKill: forceKillProcessTree,
+    });
+  })();
+
+  workerStopPromise = stopping;
+  void stopping.then(
+    () => {
+      if (workerStopPromise === stopping) {
+        workerStopPromise = null;
+      }
+    },
+    () => {
+      if (workerStopPromise === stopping) {
+        workerStopPromise = null;
+      }
+    },
+  );
+
+  return stopping;
 }
 
 function attachWorkerLogging(child: ChildProcess): void {
@@ -421,7 +444,9 @@ function attachWorkerLogging(child: ChildProcess): void {
 async function startWorkerProcess(reason: string): Promise<void> {
   const sequence = ++startupSequence;
   await stopWorkerProcess();
+  if (appIsQuitting) return;
   await loadSplashState("starting");
+  if (appIsQuitting) return;
 
   const env = buildWorkerEnvironment({
     appRoot: desktopAppRoot,
@@ -543,7 +568,7 @@ if (!app.requestSingleInstanceLock()) {
       return;
     }
 
-    if (!workerProcess) {
+    if (!workerProcess && !workerStopPromise) {
       appIsQuitting = true;
       return;
     }
