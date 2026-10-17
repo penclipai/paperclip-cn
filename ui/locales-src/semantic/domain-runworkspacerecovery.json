@@ -1,0 +1,132 @@
+{
+  "runWorkspaceRecovery.baseRefLabel": {
+    "en": "Base ref (live branch)",
+    "zh-CN": "基础引用（当前分支）",
+    "reviewedEnglishHash": "561567c5759985ddf3d04a64e87d45762a886462b7c4448ad8d9e19efc33b61d"
+  },
+  "runWorkspaceRecovery.baseRefLine": {
+    "en": "- Base ref (live branch): `{{ref}}`",
+    "zh-CN": "- 基准引用（当前分支）：`{{ref}}`",
+    "reviewedEnglishHash": "c9a3d3675cf1ce2a92e6256e2358c70cf10d0e775f9b31dd10ef1463b5ff2c8f"
+  },
+  "runWorkspaceRecovery.noAction": {
+    "en": "No recovery action to resolve.",
+    "zh-CN": "没有可解决的恢复操作。",
+    "reviewedEnglishHash": "7a22c6989d59def9e2a3b086a4be8d162d179e2491c7b9757fadcf7eec2a3e61"
+  },
+  "runWorkspaceRecovery.noWorkspaceToReconcile": {
+    "en": "This task has no execution workspace to reconcile.",
+    "zh-CN": "此任务没有可协调的执行工作区。",
+    "reviewedEnglishHash": "7df2a6252dc4096ad1123d898a55f0ea393449b6ec16df83d6906f93b8962619"
+  },
+  "runWorkspaceRecovery.noWorkspaceToRepair": {
+    "en": "This task has no execution workspace to repair.",
+    "zh-CN": "此任务没有可修复的执行工作区。",
+    "reviewedEnglishHash": "562a0ccd4b70be9d92d9d9642dd7d945da7dc84e3e20ae598eb63728fe82d559"
+  },
+  "runWorkspaceRecovery.reconcileFailedBody": {
+    "en": "Unable to reconcile the workspace branch.",
+    "zh-CN": "无法协调工作区分支。",
+    "reviewedEnglishHash": "f5dd81121d3443cba0f27ed1f4a991bd6565210c3609b4b0805084f8c3bb343c"
+  },
+  "runWorkspaceRecovery.reconcileFailedTitle": {
+    "en": "Reconcile failed",
+    "zh-CN": "协调失败",
+    "reviewedEnglishHash": "45e781836d87377cb5ccf0d60eb6748ea778e32063858b85a7f04db2a50dec6c"
+  },
+  "runWorkspaceRecovery.reconciledBody": {
+    "en": "The recorded branch now matches the live branch; the task will resume.",
+    "zh-CN": "记录的分支现在与当前分支一致；任务将恢复。",
+    "reviewedEnglishHash": "82ab4297fa120c501ccd7d401e6d8093ec9ece989d47ada0ac25111cc1fcf753"
+  },
+  "runWorkspaceRecovery.reconciledTitle": {
+    "en": "Workspace branch reconciled",
+    "zh-CN": "工作区分支已协调",
+    "reviewedEnglishHash": "a01d3ef71b57c6fb37f2ccc95617eae564c74578f86ad7641157cb202eec1ad2"
+  },
+  "runWorkspaceRecovery.recordedBranchLabel": {
+    "en": "Recorded branch",
+    "zh-CN": "记录的分支",
+    "reviewedEnglishHash": "790c7d44fedf4b677c9daace7bc3042a51abf3cc19176605bb195df4ba4d92ec"
+  },
+  "runWorkspaceRecovery.recordedBranchLine": {
+    "en": "- Recorded branch: `{{branch}}`",
+    "zh-CN": "- 记录的分支：`{{branch}}`",
+    "reviewedEnglishHash": "efe4b75057887e71e6aa652cacbb97f7d68daa653de39e3e9350eb7b62cfcb21"
+  },
+  "runWorkspaceRecovery.reissueCreatedBody": {
+    "en": "A fresh isolated re-issue was created.",
+    "zh-CN": "已创建新的隔离重发任务。",
+    "reviewedEnglishHash": "f8e1a20e81a862bc33f66f6230557e1442ac328221cb36873f64702ad259815d"
+  },
+  "runWorkspaceRecovery.reissueCreatedTitle": {
+    "en": "Isolated re-issue created",
+    "zh-CN": "隔离重发任务已创建",
+    "reviewedEnglishHash": "6d11286299c7451375698239e18a76742e699acaf31377ab86dc20de8705ea6e"
+  },
+  "runWorkspaceRecovery.reissueCreatedWithId": {
+    "en": "{{identifier}} will run on a fresh isolated workspace.",
+    "zh-CN": "{{identifier}} 将在新的隔离工作区中运行。",
+    "reviewedEnglishHash": "27ee13da463d478f79b03640e511212deea6685f5896f749a0849cefccd8d727"
+  },
+  "runWorkspaceRecovery.reissueDescription": {
+    "en": "Re-issued from {{source}} on an isolated git worktree after a workspace branch divergence.",
+    "zh-CN": "由于工作区分支偏离，已从 {{source}} 重新发起，并使用隔离的 Git 工作树。",
+    "reviewedEnglishHash": "7df7668f8bbd0c90a069543f8f7f2d95dcf655d28c432b5acf615ad58fb8fdf5"
+  },
+  "runWorkspaceRecovery.reissueFailedBody": {
+    "en": "Unable to create an isolated re-issue.",
+    "zh-CN": "无法创建隔离重发任务。",
+    "reviewedEnglishHash": "36df82b6e5ee2e34e7f87d42365518aa8310c5859aac8fe9756a9ec1d3742321"
+  },
+  "runWorkspaceRecovery.reissueFailedTitle": {
+    "en": "Re-issue failed",
+    "zh-CN": "重发任务失败",
+    "reviewedEnglishHash": "d2f4dc96997e51d4cafc461e01a5a1af68043661e2c864803c824ce621639227"
+  },
+  "runWorkspaceRecovery.reissueTitle": {
+    "en": "Re-issue (isolated): {{title}}",
+    "zh-CN": "重新发起（隔离）：{{title}}",
+    "reviewedEnglishHash": "6dfeb45d5842bdfa1c49747095e091a902151d0b9c3ae0dc711d473d3b3efe9a"
+  },
+  "runWorkspaceRecovery.repairFailedTitle": {
+    "en": "Repair failed",
+    "zh-CN": "修复失败",
+    "reviewedEnglishHash": "9445b1425fef90ccc133c90f5fb578fc7b59da657dcc40ac96d549426a485885"
+  },
+  "runWorkspaceRecovery.repairedBody": {
+    "en": "Dirty changes were quarantined onto a rescue branch and the recorded branch restored; the task will resume.",
+    "zh-CN": "未提交更改已隔离到救援分支，并恢复了记录的分支；任务将继续。",
+    "reviewedEnglishHash": "de86ccff0c4f609dbf41905f5e28503404d5f012687f9e7c1c1764d5da5ad5dd"
+  },
+  "runWorkspaceRecovery.repairedTitle": {
+    "en": "Workspace repaired",
+    "zh-CN": "工作区已修复",
+    "reviewedEnglishHash": "22f46fd2c10aa2cb805d5ee9d95f448f182288ee463e7171c3340c148537d9b4"
+  },
+  "runWorkspaceRecovery.resolveFailedBody": {
+    "en": "Unable to resolve recovery action",
+    "zh-CN": "无法解决恢复操作",
+    "reviewedEnglishHash": "98c80218bddf2c9794d86bb369e0624a9552ad2e214ab836b0b1942b20031534"
+  },
+  "runWorkspaceRecovery.resolveFailedTitle": {
+    "en": "Recovery resolution failed",
+    "zh-CN": "解决恢复操作失败",
+    "reviewedEnglishHash": "f9244c725b820bdb30af404aa89be14b2709a6a8b6b46381dde85d5c6f94a49c"
+  },
+  "runWorkspaceRecovery.stalledTask": {
+    "en": "the stalled task",
+    "zh-CN": "停滞任务",
+    "reviewedEnglishHash": "701f1d79cdc054cd8217bd3a60a31e1da7bc1f2043892cfa40dad510f2634fb3"
+  },
+  "runWorkspaceRecovery.taskNotLoaded": {
+    "en": "Task is not loaded yet.",
+    "zh-CN": "任务尚未加载。",
+    "reviewedEnglishHash": "113b9bcd6d8a3937afece98fbe8a78291eacae0f32b75cc3ea37ab4ccfb0e47a"
+  },
+  "runWorkspaceRecovery.title": {
+    "en": "Workspace recovery",
+    "zh-CN": "工作区恢复",
+    "reviewedEnglishHash": "9869a22291109cd406a461e9fce63ec27d0e213550ae6272bad5963c5441ad24"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "resourceMemberships.joinFailed": {
+    "en": "Couldn't join {{name}}.",
+    "zh-CN": "无法加入 {{name}}。",
+    "reviewedEnglishHash": "7e415024545d3a82512edfdebb45de159c50186d988bec7f69a9a662e3379be1"
+  },
+  "resourceMemberships.leaveFailed": {
+    "en": "Couldn't leave {{name}}.",
+    "zh-CN": "无法离开 {{name}}。",
+    "reviewedEnglishHash": "d718b88206ed1c2a3d2610eb50954625f6654e5d690077d21b9ff425ccc9cc2b"
+  },
+  "resourceMemberships.selectCompanyFirst": {
+    "en": "Select a company first.",
+    "zh-CN": "请先选择一家公司。",
+    "reviewedEnglishHash": "6de8f07f0bc62039040e04e845a4ea4849c355f421f2287423e4832b2a0ae3de"
+  }
+}

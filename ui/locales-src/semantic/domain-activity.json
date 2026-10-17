@@ -1,0 +1,77 @@
+{
+  "activity.changedPriorityFromTo": {
+    "en": "Changed priority from {{from}} to {{to}} on",
+    "zh-CN": "将优先级从 {{from}} 改为 {{to}}：",
+    "reviewedEnglishHash": "703fc8d39d04584cb83df3e283138abbe95dd6e21ee87a7e485d554e1f3a5f98"
+  },
+  "activity.changedPriorityTo": {
+    "en": "Changed priority to {{priority}} on",
+    "zh-CN": "将优先级改为 {{priority}}：",
+    "reviewedEnglishHash": "c0df893c7c0e2b8c90d87e4b92b0aa6e98cf0187c8cdc95450fb360dbdcf9f72"
+  },
+  "activity.changedStatusFromTo": {
+    "en": "Changed status from {{from}} to {{to}} on",
+    "zh-CN": "将状态从 {{from}} 改为 {{to}}：",
+    "reviewedEnglishHash": "f33143b8682cef1d4b7052621c72cff7a09e8fe92ed0d78f21cd8a783fa70fa1"
+  },
+  "activity.changedStatusTo": {
+    "en": "Changed status to {{status}} on",
+    "zh-CN": "将状态改为 {{status}}：",
+    "reviewedEnglishHash": "9cf0eaf872bf9aaf726f32866cf43c616e8ea136f5ab0e3153e8d8696bf1360d"
+  },
+  "activity.issueRead": {
+    "en": "read",
+    "zh-CN": "已阅读",
+    "reviewedEnglishHash": "3316348dbadfb7b11c7c2ea235949419e23f9fa898ad2c198f999617912a9925"
+  },
+  "activity.issueWorkProductCreated": {
+    "en": "created a work product",
+    "zh-CN": "创建了工作成果",
+    "reviewedEnglishHash": "2625f8dcdcfc622d5157b6acd3c6fae318546baaace1610dc4a0ff8efca3c9c7"
+  },
+  "activity.providerTraceCaptureRequested": {
+    "en": "requested a provider trace capture",
+    "zh-CN": "请求采集提供方追踪",
+    "reviewedEnglishHash": "06013eba40ec4cbd46e85c496d01902c9a1627d64321dff35fdb9450b5f8efb9"
+  },
+  "activity.providerTraceDeleted": {
+    "en": "deleted a provider trace",
+    "zh-CN": "删除了提供方追踪",
+    "reviewedEnglishHash": "9ff6374ca0ef45f0ee8c4f0fa632c24b5aceeb33e11e344b16a2eaca70995bdf"
+  },
+  "activity.providerTraceDownloaded": {
+    "en": "downloaded a provider trace",
+    "zh-CN": "下载了提供方追踪",
+    "reviewedEnglishHash": "ef00535fd97bf85d82f853d4d2ad320cb58f008accb475d6f9ada10492fef178"
+  },
+  "activity.providerTraceFrameRevealed": {
+    "en": "revealed a provider trace frame",
+    "zh-CN": "查看了提供方追踪帧",
+    "reviewedEnglishHash": "fbf299a47ed18f062100a9894118ecdd25d4ea5619d117a784cf3f66f46883b1"
+  },
+  "activity.providerTraceMetadataListed": {
+    "en": "listed provider trace metadata",
+    "zh-CN": "查看了提供方追踪元数据",
+    "reviewedEnglishHash": "d4dafaf7e75141905ac570cd7e347edd544cc87c0ce1b8f10b89d426e400912b"
+  },
+  "activity.providerTraceRedactedViewed": {
+    "en": "viewed a redacted provider trace",
+    "zh-CN": "查看了脱敏提供方追踪",
+    "reviewedEnglishHash": "dbd0298f2e1f1dcb51ca0ef8e1255707ccb4c60ea55c6a082e617f4eea9143ab"
+  },
+  "activity.providerTraceWorkspaceDiffsReprojected": {
+    "en": "reprojected provider trace workspace changes",
+    "zh-CN": "重新映射了提供方追踪工作区变更",
+    "reviewedEnglishHash": "35102b18b95458146e76ae87ae84df2ee4febfe1d725024545d80511bb26ceff"
+  },
+  "activity.routineCreated": {
+    "en": "created a routine",
+    "zh-CN": "创建了例行任务",
+    "reviewedEnglishHash": "29027fc865792d43119b7343af1f92f149860f88c562d2d70f5e725691794e9c"
+  },
+  "activity.routineRevisionCreated": {
+    "en": "created a routine revision",
+    "zh-CN": "创建了例行任务修订版本",
+    "reviewedEnglishHash": "02dc0444b83e4957b83ebdf36b897a5b8d1751f69aefe637e986c915d5d77897"
+  }
+}

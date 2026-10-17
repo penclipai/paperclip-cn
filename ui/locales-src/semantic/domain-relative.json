@@ -1,0 +1,22 @@
+{
+  "relative.daysAgoShort": {
+    "en": "{{count}}d ago",
+    "zh-CN": "{{count}} 天前",
+    "reviewedEnglishHash": "477879d991b4f84f84011ea85e3e3f55bd1e0f64148a26a0cdb4d59a478d1cde"
+  },
+  "relative.hoursAgoShort": {
+    "en": "{{count}}h ago",
+    "zh-CN": "{{count}} 小时前",
+    "reviewedEnglishHash": "f9fd95fe176ea25b5a5a8741cdd8564ef60faa4da09674c70ba0e82b3f58bb13"
+  },
+  "relative.minutesAgoShort": {
+    "en": "{{count}}m ago",
+    "zh-CN": "{{count}} 分钟前",
+    "reviewedEnglishHash": "96da0d6c543c29bdad16bee63e9c9d4bd4516ac1c9d0296e73b2f24bc8ed74d6"
+  },
+  "relative.secondsAgoShort": {
+    "en": "{{count}}s ago",
+    "zh-CN": "{{count}} 秒前",
+    "reviewedEnglishHash": "af58a71848ca7d18ee27382bca04c7c05138c3a6d7c0e1283c068842b41dd257"
+  }
+}

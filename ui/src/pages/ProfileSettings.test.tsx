@@ -4,6 +4,7 @@ import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { sanitizeAssetNamespace } from "@penclipai/shared";
 import { ProfileSettings } from "./ProfileSettings";
 
 vi.mock("react-i18next", async (importOriginal) => {
@@ -35,6 +36,10 @@ const mockAssetsApi = vi.hoisted(() => ({
 }));
 
 const mockSetBreadcrumbs = vi.hoisted(() => vi.fn());
+const companyState = vi.hoisted(() => ({
+  selectedCompanyId: "company-1",
+  selectedCompany: { id: "company-1", name: "Paperclip", issuePrefix: "PAP" },
+}));
 
 vi.mock("@/api/auth", () => ({
   authApi: mockAuthApi,
@@ -51,10 +56,7 @@ vi.mock("../context/BreadcrumbContext", () => ({
 }));
 
 vi.mock("../context/CompanyContext", () => ({
-  useCompany: () => ({
-    selectedCompanyId: "company-1",
-    selectedCompany: { id: "company-1", name: "Paperclip", issuePrefix: "PAP" },
-  }),
+  useCompany: () => companyState,
 }));
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -93,12 +95,26 @@ describe("ProfileSettings", () => {
       email: "jane@example.com",
       image: input.image,
     }));
+    companyState.selectedCompany.name = "Paperclip";
   });
 
   afterEach(() => {
     container.remove();
     document.body.innerHTML = "";
     vi.clearAllMocks();
+  });
+
+  it("does not render a keyboard shortcuts toggle because shortcuts are always enabled", async () => {
+    const root = createRoot(container);
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    await act(async () => {
+      root.render(<QueryClientProvider client={queryClient}><ProfileSettings /></QueryClientProvider>);
+    });
+    await flushReact();
+    expect(container.textContent).toContain("Jane Example");
+    expect(container.textContent).not.toContain("Keyboard shortcuts");
+    expect(container.querySelector('[aria-label="Toggle keyboard shortcuts"]')).toBeNull();
+    await act(async () => root.unmount());
   });
 
   it("uploads a clicked avatar into Paperclip storage and persists the returned asset path", async () => {
@@ -135,6 +151,78 @@ describe("ProfileSettings", () => {
     await flushReact();
 
     expect(mockAssetsApi.uploadImage).toHaveBeenCalledWith("company-1", file, "profiles/user-1");
+    expect(mockAuthApi.updateProfile).toHaveBeenCalledWith({
+      name: "Jane Example",
+      image: "/api/assets/asset-1/content",
+    });
+
+    await act(async () => {
+      root.unmount();
+    });
+  });
+
+  it("localizes the upload-storage hint while preserving the selected organization name", async () => {
+    companyState.selectedCompany.name = "Northstar Labs";
+    const root = createRoot(container);
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+
+    await act(async () => {
+      root.render(<QueryClientProvider client={queryClient}><ProfileSettings /></QueryClientProvider>);
+    });
+    await flushReact();
+
+    expect(container.textContent).toContain("Stored in Paperclip file storage for Northstar Labs.");
+
+    await act(async () => root.unmount());
+  });
+
+  it("uploads an avatar for a user id that comes from an identity provider", async () => {
+    const userId = "oidc:example|jane.example@example.com";
+    mockAuthApi.getSession.mockResolvedValue({
+      session: { id: "session-1", userId },
+      user: {
+        id: userId,
+        name: "Jane Example",
+        email: "jane@example.com",
+        image: "https://example.com/jane.png",
+      },
+    });
+
+    const root = createRoot(container);
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    await act(async () => {
+      root.render(
+        <QueryClientProvider client={queryClient}>
+          <ProfileSettings />
+        </QueryClientProvider>,
+      );
+    });
+    await flushReact();
+    await flushReact();
+
+    const avatarInput = container.querySelector('input[type="file"]') as HTMLInputElement | null;
+    expect(avatarInput).not.toBeNull();
+
+    const file = new File(["avatar"], "avatar.png", { type: "image/png" });
+    Object.defineProperty(avatarInput, "files", {
+      configurable: true,
+      value: [file],
+    });
+
+    await act(async () => {
+      avatarInput?.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    await flushReact();
+    await flushReact();
+
+    const namespace = `profiles/${userId}`;
+    expect(mockAssetsApi.uploadImage).toHaveBeenCalledWith("company-1", file, namespace);
+    // The namespace goes to the API without a change, so the avatar arrives
+    // under the identity of the user.
+    expect(sanitizeAssetNamespace(namespace)).toBe(namespace);
     expect(mockAuthApi.updateProfile).toHaveBeenCalledWith({
       name: "Jane Example",
       image: "/api/assets/asset-1/content",

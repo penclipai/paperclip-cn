@@ -1,0 +1,27 @@
+{
+  "agentFeedback.helpful": {
+    "en": "Helpful",
+    "zh-CN": "有帮助",
+    "reviewedEnglishHash": "63c432db3ebb9aecdda9286be5cdd301c6a019ef9ab2a1574e6e4aabeb91e354"
+  },
+  "agentFeedback.improvePrompt": {
+    "en": "What could have been better?",
+    "zh-CN": "哪些地方可以做得更好？",
+    "reviewedEnglishHash": "829e701d9a216100eef2e58bee4a2a7d7436d898cddb1d1027f859d4e9fc610d"
+  },
+  "agentFeedback.needsWork": {
+    "en": "Needs work",
+    "zh-CN": "需要改进",
+    "reviewedEnglishHash": "738a3278e945747c2a8478620d9417d6f5df2730c6e1c9dd64d2eef545231933"
+  },
+  "agentFeedback.notePlaceholder": {
+    "en": "Add a short note",
+    "zh-CN": "添加简短备注",
+    "reviewedEnglishHash": "1adb884ad7345cf3544f4ef7bf60c341ab5fc9cc3680e6fc05b3d23a71536afe"
+  },
+  "agentFeedback.saveNote": {
+    "en": "Save note",
+    "zh-CN": "保存备注",
+    "reviewedEnglishHash": "6501e1ced8da0bffc5e2c7e20a42162e80176b31980e7b073fbf9955854fda4a"
+  }
+}

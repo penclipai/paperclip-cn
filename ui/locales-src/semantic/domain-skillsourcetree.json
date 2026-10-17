@@ -1,0 +1,27 @@
+{
+  "skillSourceTree.fileCount_one": {
+    "en": "{{count}} file",
+    "zh-CN": "{{count}} 个文件",
+    "reviewedEnglishHash": "bdb7a751beb311f85d93ffd8c95ef2afc0d2edf229acd490b7a49bbcea605485"
+  },
+  "skillSourceTree.fileCount_other": {
+    "en": "{{count}} files",
+    "zh-CN": "{{count}} 个文件",
+    "reviewedEnglishHash": "95964e2dcccd3ddd080eed1bb4b23699fef06269ff8ef777264692d5fbe78c80"
+  },
+  "skillSourceTree.importFileAria": {
+    "en": "Import {{path}}",
+    "zh-CN": "导入 {{path}}",
+    "reviewedEnglishHash": "bef7b36c34ff56f5d4788a7daed26c748ce43d45f45da3098aa7df60e86918b0"
+  },
+  "skillSourceTree.importFolderAria": {
+    "en": "Import folder {{path}}",
+    "zh-CN": "导入文件夹 {{path}}",
+    "reviewedEnglishHash": "c0389144747bcc525213104c95f8a8651875ef213d1124053799b07febdb7548"
+  },
+  "skillSourceTree.inspectFileAria": {
+    "en": "Inspect {{name}}",
+    "zh-CN": "查看 {{name}}",
+    "reviewedEnglishHash": "e40868007ccbdd4b6d6c847bb9d6591ee6b4b574b55a53cd1956912ece030592"
+  }
+}

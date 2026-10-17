@@ -51,6 +51,13 @@ Project env applies to every issue run in that project. When a project env key
 matches an agent env key, the project value wins before Paperclip injects its
 own `PAPERCLIP_*` runtime variables.
 
+Separately from env bindings, the **server itself** consumes a company secret
+named `GITHUB_TOKEN`, `GH_TOKEN`, or `PAPERCLIP_GITHUB_TOKEN` (by name, no
+binding needed) to authenticate server-side git operations — cloning private
+GitHub repos for repo-only project workspaces and refreshing worktree base
+refs. See
+[Execution workspaces](../guides/board-operator/execution-workspaces-and-runtime-services.md#private-repositories-and-repo-only-project-workspaces).
+
 ## User-Specific Secrets
 
 User-specific secrets let a shared agent or project declare a slot such as
@@ -169,7 +176,7 @@ Secrets are encrypted with a local master key stored at:
 
 This key is auto-created during onboarding. The key never leaves your machine.
 Paperclip best-effort enforces `0600` permissions when it creates or loads the
-key file. `penclip doctor` and the provider health API warn when the file is
+key file. `paperclipai doctor` and the provider health API warn when the file is
 readable by group or other users.
 
 Back up the key file together with database backups. A database backup without
@@ -183,20 +190,20 @@ metadata is not enough to restore named secret versions.
 Onboarding writes default secrets config:
 
 ```sh
-penclip onboard
+pnpm penclip onboard
 ```
 
 Update secrets settings:
 
 ```sh
-penclip configure --section secrets
+pnpm penclip configure --section secrets
 ```
 
 Validate secrets config:
 
 ```sh
-penclip doctor
-penclip secrets doctor --company-id <company-id>
+pnpm penclip doctor
+npx penclip secrets doctor --company-id <company-id>
 ```
 
 ### Environment Overrides
@@ -247,7 +254,7 @@ default provider — no migration is required.
 
 ### Where to configure
 
-Open `Company Settings → Secrets` in the board UI and switch to the
+Open `Organization Settings → Secrets` in the board UI and switch to the
 `Provider vaults` tab. From there you can:
 
 - Create a vault for any supported provider family.
@@ -468,8 +475,8 @@ store.
 If you have existing agents with inline API keys in their config, migrate them to encrypted secret refs:
 
 ```sh
-penclip secrets migrate-inline-env --company-id <company-id>
-penclip secrets migrate-inline-env --company-id <company-id> --apply
+npx penclip secrets migrate-inline-env --company-id <company-id>
+npx penclip secrets migrate-inline-env --company-id <company-id> --apply
 
 # low-level script for direct database maintenance
 pnpm secrets:migrate-inline-env         # dry run
@@ -486,7 +493,7 @@ Company exports include only environment declarations. They do not include
 secret IDs, provider references, encrypted material, or plaintext values.
 
 ```sh
-penclip secrets declarations --company-id <company-id> --kind secret
+npx penclip secrets declarations --company-id <company-id> --kind secret
 ```
 
 Before importing a package into another instance, use those declarations to

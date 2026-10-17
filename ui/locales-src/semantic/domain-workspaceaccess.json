@@ -1,0 +1,42 @@
+{
+  "workspaceAccess.loginHandoff": {
+    "en": "Uses a single-use login handoff — no password needed.",
+    "zh-CN": "使用一次性登录交接，无需密码。",
+    "reviewedEnglishHash": "8df066a182f26c0546833008f8a38ad30c706d93664e539825381945a25ddde7"
+  },
+  "workspaceAccess.snapshotCredentials": {
+    "en": "Signs in with the snapshot-local credentials captured when this clone was made.",
+    "zh-CN": "使用创建此克隆时捕获的快照本地凭据登录。",
+    "reviewedEnglishHash": "96e10c55a7607dd5a5c97c5309b630adfde2a6ec5fd268ae8053b971ebb52dad"
+  },
+  "workspaceAccess.state.degraded": {
+    "en": "Degraded",
+    "zh-CN": "已降级",
+    "reviewedEnglishHash": "a8494c12f2243903aef9b01ba16142e6a4e592304f981d4b6ea5f46d99036cba"
+  },
+  "workspaceAccess.state.failed": {
+    "en": "Failed",
+    "zh-CN": "失败",
+    "reviewedEnglishHash": "031a8f0f659df890dfd53c92e45295b0f14c997185bae46e168831e403b273f7"
+  },
+  "workspaceAccess.state.provisioning": {
+    "en": "Provisioning",
+    "zh-CN": "供应中",
+    "reviewedEnglishHash": "c2b1b8e2e03928e24b07be3e3cbc597577096c8303d9aa621a147ca2456bdad7"
+  },
+  "workspaceAccess.state.ready": {
+    "en": "Ready",
+    "zh-CN": "就绪",
+    "reviewedEnglishHash": "5fa7aac5375c5815787fba3f49559f9b45b14023147ce0652803387974144e5f"
+  },
+  "workspaceAccess.state.repairing": {
+    "en": "Repairing",
+    "zh-CN": "修复中",
+    "reviewedEnglishHash": "e2c5201c1822c05e20c31a03798e6d58e80f4e121e5a69fd8afeba9d594db2c6"
+  },
+  "workspaceAccess.state.validating": {
+    "en": "Validating clone",
+    "zh-CN": "正在验证克隆",
+    "reviewedEnglishHash": "d86d5002d2a97643c69bc7f16624b8ffbd95273939d97ab0a738ac51ba346214"
+  }
+}

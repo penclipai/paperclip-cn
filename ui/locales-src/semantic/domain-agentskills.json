@@ -1,0 +1,232 @@
+{
+  "agentSkills.adapterLabel": {
+    "en": "Adapter:",
+    "zh-CN": "适配器：",
+    "reviewedEnglishHash": "6fada5c76cd6b5534bc02da5e5d85325b6db9c3789d150ed74509a25bc9c7a49"
+  },
+  "agentSkills.allLibrarySkillsEnabled": {
+    "en": "Every library skill is enabled on this agent.",
+    "zh-CN": "公司技能库中的所有技能均已在此智能体上启用。",
+    "reviewedEnglishHash": "ad4ce52ee99503820f387e22831fde9e67a245fadd4cb6d4103b4deaeb7a6148"
+  },
+  "agentSkills.appliedOnNextRun": {
+    "en": "Applied on next run",
+    "zh-CN": "将在下次运行时应用",
+    "reviewedEnglishHash": "64f90de9dc5a3ba3730a72d1187d6d472bf0bc8a2f591b78d9a58ca93dc074c1"
+  },
+  "agentSkills.appliedWhenAgentRuns": {
+    "en": "Applied when the agent runs",
+    "zh-CN": "智能体运行时应用",
+    "reviewedEnglishHash": "7a76e135543a5b329ccf3a36ae55dc4dc3d667580310a0b1a2715fd7e9e2299b"
+  },
+  "agentSkills.availableSection": {
+    "en": "Available from the library",
+    "zh-CN": "技能库中可用",
+    "reviewedEnglishHash": "e90e50ff31d629993cd41d7f21fc1c2fd1330e85f3ed1fd737cfa031aeb55093"
+  },
+  "agentSkills.beta": {
+    "en": "Beta ·",
+    "zh-CN": "Beta ·",
+    "reviewedEnglishHash": "0a55fc9bcb66ec430aa6fc68365da94a4ae6f4d144bd07af37417e006236cec4"
+  },
+  "agentSkills.browseStore": {
+    "en": "Browse skills store",
+    "zh-CN": "浏览技能商店",
+    "reviewedEnglishHash": "0b01a8a31bb47b2eacb26ebafd025acc7ee34cd2034ea9f4857d1c5bab5590b1"
+  },
+  "agentSkills.couldNotSave": {
+    "en": "Couldn't save",
+    "zh-CN": "无法保存",
+    "reviewedEnglishHash": "d89c56c70c54090e90a26f5eade105b6effe82b72ed6fa29b649dd9a0459c472"
+  },
+  "agentSkills.detectedReadOnly": {
+    "en": "Detected on adapter (read-only)",
+    "zh-CN": "适配器检测到（只读）",
+    "reviewedEnglishHash": "d4504c9260892a56fa52c4bcd87a3c4ff366e2b170a321aa188375c9688a19e7"
+  },
+  "agentSkills.emptyLibraryMessage": {
+    "en": "Install skills to the company, then enable them on this agent.",
+    "zh-CN": "先将技能安装到公司，然后在此智能体上启用。",
+    "reviewedEnglishHash": "91718de035d72accb4b0ba1cedaff338c9e8255d4ae661bf2cc18cf5f50509ba"
+  },
+  "agentSkills.emptyLibraryTitle": {
+    "en": "No skills in the company library",
+    "zh-CN": "公司技能库中暂无技能",
+    "reviewedEnglishHash": "e4afe08cca52dd9bc5ede6e0ce3a57e6498940091c2563454309e8c1d43372e2"
+  },
+  "agentSkills.enabledCount": {
+    "en": "{{enabled}} of {{total}} enabled",
+    "zh-CN": "已启用 {{enabled}}/{{total}}",
+    "reviewedEnglishHash": "ac7ef05519e75f4795a3e33ceac4ac3fe6c3a51853b892d5e78e6bdf36ed3ec9"
+  },
+  "agentSkills.enabledSection": {
+    "en": "Enabled on this agent",
+    "zh-CN": "此智能体已启用",
+    "reviewedEnglishHash": "ec0548ebf27ef1c3938261c89a61a4043f2b363548565f117bf1498e563ce280"
+  },
+  "agentSkills.importFirst": {
+    "en": "Import skills into the company library first, then attach them here.",
+    "zh-CN": "请先将技能导入公司技能库，然后在这里挂载。",
+    "reviewedEnglishHash": "f25507e2a419bc01ee145c15c681c7bf5b1a8f459efb454a3afe80d2e596e699"
+  },
+  "agentSkills.importToEnable": {
+    "en": "Import skills into the company library to enable them here.",
+    "zh-CN": "将技能导入公司技能库后，即可在此处启用。",
+    "reviewedEnglishHash": "073df1bcbf8a11c6728dac9febd7e1a6e98cfad9196b846941311d3940d87319"
+  },
+  "agentSkills.installedSkills": {
+    "en": "Installed skills",
+    "zh-CN": "已安装技能",
+    "reviewedEnglishHash": "39cd5c4eaaade8b3052242d9f57115b85a6bd7000431c41227a19bfcceaf2e55"
+  },
+  "agentSkills.keptInWorkspace": {
+    "en": "Kept in the workspace",
+    "zh-CN": "保留在工作区中",
+    "reviewedEnglishHash": "a45133eab53bdeced5c2d57c3849545e0f4d8e971cf54d530650327b99b0dd84"
+  },
+  "agentSkills.location": {
+    "en": "Location: {{location}}",
+    "zh-CN": "位置：{{location}}",
+    "reviewedEnglishHash": "a1860f966f9bb6ea6871d0be36657a462f6429cfc9d3b81aa372e46cb78e354c"
+  },
+  "agentSkills.manageInAdapterDirectly": {
+    "en": "Manage skills in the adapter directly.",
+    "zh-CN": "请直接在适配器中管理技能。",
+    "reviewedEnglishHash": "b4eb894530cf674a60102de1c644d8836fe79c9f23267d0e2b8b0512cfa9ee9e"
+  },
+  "agentSkills.materializationNote": {
+    "en": "Enabled skills are materialized into the stable Paperclip CN-managed prompt bundle on the agent's next run.",
+    "zh-CN": "已启用的技能会在智能体下次运行时写入由 Paperclip CN 管理的稳定提示词包。",
+    "reviewedEnglishHash": "7611b9a577bbfca4d72a67ca47bbe1acf4da5a4deafcfe2a1a9f0c2eb0878c32"
+  },
+  "agentSkills.missingFromLibrary": {
+    "en": "is enabled but missing from the company library.",
+    "zh-CN": "已启用，但公司技能库中缺少该技能。",
+    "reviewedEnglishHash": "f8fdf98b4b0fd1f3460b80c3017b791579b15435df51bc615f9b878cd181e344"
+  },
+  "agentSkills.noAvailableSearchResults": {
+    "en": "No available skills match your search.",
+    "zh-CN": "没有符合搜索条件的可用技能。",
+    "reviewedEnglishHash": "7bef998d766a228dfdd3316b147b3afa3989e771062cbd0f7dbcad4b00f411a1"
+  },
+  "agentSkills.noCompanyLibrarySkills": {
+    "en": "No company-library skills installed on this agent.",
+    "zh-CN": "此智能体尚未安装公司技能库中的技能。",
+    "reviewedEnglishHash": "85042709a20039f2fb58453fbed985ea9e17645805b34814a28b78704f89a6db"
+  },
+  "agentSkills.noDetectedSearchResults": {
+    "en": "No detected skills match your search.",
+    "zh-CN": "没有符合搜索条件的已检测技能。",
+    "reviewedEnglishHash": "cb9b55e289e80d49da3934d389cb78b26922d75a031fc4d4c71ad21af6ec4cdd"
+  },
+  "agentSkills.noEnabledSearchResults": {
+    "en": "No enabled skills match your search.",
+    "zh-CN": "没有符合搜索条件的已启用技能。",
+    "reviewedEnglishHash": "2c5631d3bddd367150aa868a4a548cdd2f36e02c171f931b43e94985cce23b69"
+  },
+  "agentSkills.noEnabledSkills": {
+    "en": "No skills enabled on this agent yet.",
+    "zh-CN": "此智能体尚未启用任何技能。",
+    "reviewedEnglishHash": "de2fcde4b5b650a82e52fc4ad07ad2e7ecf74e2eb848b97909b121f37147451c"
+  },
+  "agentSkills.otherSkills": {
+    "en": "Other skills",
+    "zh-CN": "其他技能",
+    "reviewedEnglishHash": "7160172aa4821c8d9481af37230227b698112fa5264130deae86eeab97ab69ad"
+  },
+  "agentSkills.releaseAria": {
+    "en": "Skill release",
+    "zh-CN": "技能版本",
+    "reviewedEnglishHash": "461c13432a50431400d3e1261ff880b639f6ee615ddc6b524a8ca92f8aa1f8c0"
+  },
+  "agentSkills.requestedMissing": {
+    "en": "Requested skills missing from the company library",
+    "zh-CN": "请求的技能不在公司技能库中",
+    "reviewedEnglishHash": "d14e8d37acee2b7dd243beb8ad45dadfec48c1ce936c27833afa0b87cf9fc215"
+  },
+  "agentSkills.requiredByPaperclip": {
+    "en": "Required by Paperclip",
+    "zh-CN": "Paperclip 必需",
+    "reviewedEnglishHash": "3d725fbe20f315b02a260c888653fb3919fa2614eee3834f218aca39f48d620c"
+  },
+  "agentSkills.saveFailed": {
+    "en": "Couldn’t save",
+    "zh-CN": "无法保存",
+    "reviewedEnglishHash": "a018b7a8a188861c8d3f95f468c6ee78fcf82b9c105f9f00d4eab6659eeeb2fe"
+  },
+  "agentSkills.saving": {
+    "en": "Saving…",
+    "zh-CN": "正在保存...",
+    "reviewedEnglishHash": "23e39291d6135814ed7c936e278974544b0df5fbf0eb0427b6700979b7472a93"
+  },
+  "agentSkills.savingChanges": {
+    "en": "Saving changes...",
+    "zh-CN": "正在保存更改...",
+    "reviewedEnglishHash": "86c6e0d74cc948c0bfa3c286bd9e756a6d1010545d2c5cb12f8c21daee401e5b"
+  },
+  "agentSkills.savingSoon": {
+    "en": "Saving soon...",
+    "zh-CN": "即将保存...",
+    "reviewedEnglishHash": "58ec588428651ed982424bd4d656ede3c9451336b9b152554ae7bbebe92bcfe7"
+  },
+  "agentSkills.searchAriaLabel": {
+    "en": "Search skills",
+    "zh-CN": "搜索技能",
+    "reviewedEnglishHash": "76c02b7eddcaa320d260092a736a954c0dad45c92e8c193acd83a95560cd433f"
+  },
+  "agentSkills.searchPlaceholder": {
+    "en": "Search skills",
+    "zh-CN": "搜索技能",
+    "reviewedEnglishHash": "76c02b7eddcaa320d260092a736a954c0dad45c92e8c193acd83a95560cd433f"
+  },
+  "agentSkills.staleDesiredSkill": {
+    "en": "{{key}} is enabled but missing from the company library.",
+    "zh-CN": "{{key}} 已启用，但公司技能库中已无此技能。",
+    "reviewedEnglishHash": "394467ea2b119c0f47d36f6ca7487afa083369f88934c190e51352854795b97d"
+  },
+  "agentSkills.trackedOnly": {
+    "en": "Tracked only",
+    "zh-CN": "仅跟踪",
+    "reviewedEnglishHash": "a714c282c6d70a085f89cdfd3e0c81176fd0a89cd3ac040f49c96c29aed6d22d"
+  },
+  "agentSkills.unknown": {
+    "en": "Unknown",
+    "zh-CN": "未知",
+    "reviewedEnglishHash": "b764cdc0eab7137467211272fa539f1260d1bf2e71bcf6ff3bdc960f5c16aa14"
+  },
+  "agentSkills.unsupportedAdapter": {
+    "en": "Paperclip cannot manage skills for this adapter yet. Manage them in the adapter directly.",
+    "zh-CN": "Paperclip 暂不能管理此适配器的技能。请直接在适配器中管理。",
+    "reviewedEnglishHash": "50d3ab86096864fdf57c7f4f2239296fd289130b00cdc2814b6d69b917d72688"
+  },
+  "agentSkills.unsupportedCustomAcp": {
+    "en": "Paperclip cannot manage skills for custom ACP commands yet.",
+    "zh-CN": "Paperclip 暂不能管理自定义 ACP 命令的技能。",
+    "reviewedEnglishHash": "3f19494c31bd162263fcf9a25a970b0a26847389a6f17871af5412ca777c6128"
+  },
+  "agentSkills.unsupportedOpenClaw": {
+    "en": "Paperclip cannot manage OpenClaw skills here. Visit your OpenClaw instance to manage this agent's skills.",
+    "zh-CN": "Paperclip 暂不能在此处管理 OpenClaw 技能。请前往你的 OpenClaw 实例管理该智能体的技能。",
+    "reviewedEnglishHash": "49be839d7a6bc45254c97cc8b8e03bae1bfec0dc5309c4f204aee6512b673837"
+  },
+  "agentSkills.updateFailed": {
+    "en": "Failed to update skills",
+    "zh-CN": "更新技能失败",
+    "reviewedEnglishHash": "6de194e3d7008412d7df773d5cf6fee3e69a4967105ead99835f61b41b07ce7a"
+  },
+  "agentSkills.userInstalledUnmanaged": {
+    "en": "({{count}}) User-installed skills, not managed by Paperclip",
+    "zh-CN": "（{{count}}）用户安装的技能，未由 Paperclip 管理",
+    "reviewedEnglishHash": "c836077187d83f7cbb51aa785ee24a0e9162d19275729990e4a9985da638bdf9"
+  },
+  "agentSkills.view": {
+    "en": "View",
+    "zh-CN": "查看",
+    "reviewedEnglishHash": "dcc839a4015c4b7dd9db959a8f757833b8adb92462a751b973386e453c6d58a3"
+  },
+  "agentSkills.viewCompanyLibrary": {
+    "en": "View company skills library",
+    "zh-CN": "查看公司技能库",
+    "reviewedEnglishHash": "e4a15b5d250494aa6c3905972f121ff06a11952473eee4edb021329002c0633b"
+  }
+}

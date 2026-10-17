@@ -1,0 +1,22 @@
+{
+  "workspaces.empty": {
+    "en": "No workspace activity yet.",
+    "zh-CN": "暂无工作区活动。",
+    "reviewedEnglishHash": "f7bf9843700ea80f451d766f2b8018327f85328e4380b1ea1812a2509d1d8f02"
+  },
+  "workspaces.showingCount": {
+    "en": "Showing {{shown}} of {{total}} workspaces.",
+    "zh-CN": "显示 {{shown}} / {{total}} 个工作区。",
+    "reviewedEnglishHash": "446e19d57a504f27da5220eb54fb57f168c3595a771374c7cd7329f333e94dd2"
+  },
+  "workspaces.title": {
+    "en": "Workspaces",
+    "zh-CN": "工作区",
+    "reviewedEnglishHash": "1377264ba3b0a7172621971b49ac3e82e33b64b14328d9275d02807e67ea8460"
+  },
+  "workspaces.workspaceCount": {
+    "en": "{{count}} workspaces",
+    "zh-CN": "{{count}} 个工作区",
+    "reviewedEnglishHash": "a085bc0d6b469dcd9c277d54844758f7f73b59bd1264106f37156e5119e41f91"
+  }
+}

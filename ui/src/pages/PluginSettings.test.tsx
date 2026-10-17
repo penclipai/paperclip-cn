@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
 
 import { act } from "react";
-import type { ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { queryKeys } from "../lib/queryKeys";
 import { PluginSettings } from "./PluginSettings";
 
 const mockPluginsApi = vi.hoisted(() => ({
@@ -18,14 +18,6 @@ const mockPluginsApi = vi.hoisted(() => ({
 }));
 
 const mockSetBreadcrumbs = vi.hoisted(() => vi.fn());
-
-vi.mock("react-i18next", () => ({
-  initReactI18next: { type: "3rdParty", init: () => {} },
-  useTranslation: () => ({
-    t: (key: string, options?: Record<string, unknown>) =>
-      typeof options?.defaultValue === "string" ? options.defaultValue : key,
-  }),
-}));
 
 vi.mock("@/api/plugins", () => ({
   pluginsApi: mockPluginsApi,
@@ -45,7 +37,7 @@ vi.mock("@/context/CompanyContext", () => ({
 }));
 
 vi.mock("@/lib/router", () => ({
-  Link: ({ to, children }: { to: string; children: ReactNode }) => <a href={to}>{children}</a>,
+  Link: ({ to, children }: { to: string; children: React.ReactNode }) => <a href={to}>{children}</a>,
   Navigate: () => null,
   useParams: () => ({ companyPrefix: "PAP", pluginId: "plugin-1" }),
 }));
@@ -59,11 +51,6 @@ vi.mock("@/components/PageTabBar", () => ({
   PageTabBar: () => null,
 }));
 
-vi.mock("@/components/ui/tabs", () => ({
-  Tabs: ({ children }: { children: ReactNode }) => <div>{children}</div>,
-  TabsContent: ({ children }: { children: ReactNode }) => <div>{children}</div>,
-}));
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -72,20 +59,6 @@ async function flushReact() {
     await Promise.resolve();
     await new Promise((resolve) => window.setTimeout(resolve, 0));
   });
-}
-
-async function waitForAssertion(assertion: () => void) {
-  let lastError: unknown;
-  for (let attempt = 0; attempt < 20; attempt += 1) {
-    try {
-      assertion();
-      return;
-    } catch (error) {
-      lastError = error;
-      await flushReact();
-    }
-  }
-  throw lastError;
 }
 
 function basePlugin(overrides: Record<string, unknown> = {}) {
@@ -146,11 +119,18 @@ function folderStatus(overrides: Record<string, unknown> = {}) {
   };
 }
 
-async function renderSettings(container: HTMLDivElement) {
+async function renderSettings(
+  container: HTMLDivElement,
+  experimentalSettings: Record<string, unknown> = {},
+) {
   const root = createRoot(container);
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
+  // The local-folders section is a host-path surface, so it stays hidden until
+  // the managed-sandbox-only policy is known. Seed the policy as off; the tests
+  // below are about folder rendering, not about the gate.
+  queryClient.setQueryData(queryKeys.instance.experimentalSettings, experimentalSettings);
 
   await act(async () => {
     root.render(
@@ -192,10 +172,8 @@ describe("PluginSettings", () => {
   it("routes environment-provider plugins to instance environments when they have no instance config", async () => {
     const root = await renderSettings(container);
 
-    await waitForAssertion(() => {
-      expect(container.textContent).toContain("Configure this plugin from Instance Settings → Environments.");
-      expect(container.textContent).toContain("secret bindings still resolve through the selected company context");
-    });
+    expect(container.textContent).toContain("Configure this plugin from Settings → Environments.");
+    expect(container.textContent).toContain("secret bindings still resolve through the selected organization context");
     const link = container.querySelector('a[href="/company/settings/instance/environments"]');
     expect(link?.textContent).toContain("Open Environments");
 
@@ -208,7 +186,7 @@ describe("PluginSettings", () => {
     const declaration = wikiFolderDeclaration();
     mockPluginsApi.get.mockResolvedValue(basePlugin({
       pluginKey: "paperclipai.plugin-llm-wiki",
-      packageName: "@paperclipai/plugin-llm-wiki",
+      packageName: "@penclipai/plugin-llm-wiki",
       status: "ready",
       manifestJson: {
         displayName: "LLM Wiki",
@@ -234,6 +212,39 @@ describe("PluginSettings", () => {
     expect(container.textContent).toContain("No local folder path is configured.");
     expect(container.textContent).toContain("Missing directories: raw, wiki");
     expect(container.textContent).toContain("Missing files: WIKI.md, index.md");
+
+    await act(async () => {
+      root.unmount();
+    });
+  });
+
+  it("hides local folders when the instance runs agents only in the platform-managed environment", async () => {
+    const declaration = wikiFolderDeclaration();
+    mockPluginsApi.get.mockResolvedValue(basePlugin({
+      pluginKey: "paperclipai.plugin-llm-wiki",
+      packageName: "@penclipai/plugin-llm-wiki",
+      status: "ready",
+      manifestJson: {
+        displayName: "LLM Wiki",
+        version: "0.1.0",
+        description: "Local-file LLM Wiki plugin.",
+        author: "Paperclip",
+        capabilities: ["local.folders"],
+        localFolders: [declaration],
+      },
+    }));
+    mockPluginsApi.listLocalFolders.mockResolvedValue({
+      pluginId: "plugin-1",
+      companyId: "company-1",
+      declarations: [declaration],
+      folders: [folderStatus()],
+    });
+
+    const root = await renderSettings(container, { enableManagedSandboxOnly: true });
+
+    // The platform-managed environment owns the filesystem, so the whole
+    // section disappears rather than showing paths nobody can act on.
+    expect(container.textContent).not.toContain("Local folders");
 
     await act(async () => {
       root.unmount();

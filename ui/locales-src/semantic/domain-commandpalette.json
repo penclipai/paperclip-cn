@@ -1,0 +1,37 @@
+{
+  "commandPalette.noQuickMatchesContinue": {
+    "en": "or keep typing to refine.",
+    "zh-CN": "或继续输入以细化结果。",
+    "reviewedEnglishHash": "6f36c5c92b1c8564811a8090ae5c1077edff177f476a54d3785f5f3bf433e8ec"
+  },
+  "commandPalette.noQuickMatchesPrefix": {
+    "en": "No quick issue matches. Press",
+    "zh-CN": "没有快速匹配的任务。按",
+    "reviewedEnglishHash": "89b3327a0b185086bf09c94a0668a4117a0dff1863520a7f8e3bba4deb70094b"
+  },
+  "commandPalette.noQuickMatchesSuffix": {
+    "en": "to",
+    "zh-CN": "以",
+    "reviewedEnglishHash": "663ea1bfffe5038f3f0cf667f14c4257eff52d77ce7f2a218f72e9286616ea39"
+  },
+  "commandPalette.openFileInIssue": {
+    "en": "Open file in this issue...",
+    "zh-CN": "打开此任务中的文件...",
+    "reviewedEnglishHash": "b9114f6c9bf6031ac7e6686fa4039da1928ea7a00fb4ff482e7e4800aa5ecbfe"
+  },
+  "commandPalette.openFullSearch": {
+    "en": "open full search",
+    "zh-CN": "打开完整搜索",
+    "reviewedEnglishHash": "2a0b5e5ebd907f39c1ed96aa44012de1adb65c40b9d88986d071a864a6f72edb"
+  },
+  "commandPalette.searchAll": {
+    "en": "search all",
+    "zh-CN": "搜索全部",
+    "reviewedEnglishHash": "3dcb3b3b02cfed8487898f086d1a5a8043c53f2555049e6d91c65dc3844b61fe"
+  },
+  "commandPalette.searchAllFor": {
+    "en": "Search all for",
+    "zh-CN": "搜索全部内容：",
+    "reviewedEnglishHash": "957cd9ebbb1091cec1e745e891f72f29920b6ae16dc83f3dec9c4c9c0af7d262"
+  }
+}

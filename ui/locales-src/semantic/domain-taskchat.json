@@ -1,0 +1,167 @@
+{
+  "taskChat.activity.calledTools_one": {
+    "en": "Called {{count}} tool",
+    "zh-CN": "调用了 {{count}} 个工具",
+    "reviewedEnglishHash": "92f42668f87d4c2f706bd47f51ddd37bba7dfd8398588f5f0243d559cfc615f3"
+  },
+  "taskChat.activity.calledTools_other": {
+    "en": "Called {{count}} tools",
+    "zh-CN": "调用了 {{count}} 个工具",
+    "reviewedEnglishHash": "72c035232b777db1efd5a7cc616b8459d8a2f6daa295cbe5440e4e0e210f1f52"
+  },
+  "taskChat.activity.collapseAria": {
+    "en": "Collapse activity: {{summary}}",
+    "zh-CN": "折叠活动：{{summary}}",
+    "reviewedEnglishHash": "ccd2c4f17ce2dd99639ec22b3c52da22a6f16406fe46f9004882a88a6cc5e3f6"
+  },
+  "taskChat.activity.edited_one": {
+    "en": "Edited {{count}} file",
+    "zh-CN": "编辑了 {{count}} 个文件",
+    "reviewedEnglishHash": "1bfc1e276c2677675a23fdfe77af1a61935d035bfa506d7a59ccacabf2a8dfe8"
+  },
+  "taskChat.activity.edited_other": {
+    "en": "Edited {{count}} files",
+    "zh-CN": "编辑了 {{count}} 个文件",
+    "reviewedEnglishHash": "b8a57b820f91331363ddd862b34bb71e2d0e24232cb6cd994853962657b8897f"
+  },
+  "taskChat.activity.expandAria": {
+    "en": "Expand activity: {{summary}}",
+    "zh-CN": "展开活动：{{summary}}",
+    "reviewedEnglishHash": "a7bf1ba88496965e522790cb0a14553cd50594572d2659f2a5b1f1759603e477"
+  },
+  "taskChat.activity.none": {
+    "en": "No tool activity",
+    "zh-CN": "无工具活动",
+    "reviewedEnglishHash": "afb6077d95410862e832065e42f04d5108b4cb0202167a874bd135337669d010"
+  },
+  "taskChat.activity.ranCommands_one": {
+    "en": "Ran {{count}} command",
+    "zh-CN": "运行了 {{count}} 条命令",
+    "reviewedEnglishHash": "0b84ad9e385a995252b3ea9bc317ffae523773217e63b53afdb2bfeb150fafbe"
+  },
+  "taskChat.activity.ranCommands_other": {
+    "en": "Ran {{count}} commands",
+    "zh-CN": "运行了 {{count}} 条命令",
+    "reviewedEnglishHash": "dbe1b07cf5a0f9f991f0dc78c1610bb2e2b9f33e303fc4de9e7c47848c3d6428"
+  },
+  "taskChat.activity.read_one": {
+    "en": "Read {{count}} file",
+    "zh-CN": "读取了 {{count}} 个文件",
+    "reviewedEnglishHash": "25b779edd7dab39dfa3c3fbe7e56f4f0fa655c1e1db4d8b6ff3d7e32e3ca4e11"
+  },
+  "taskChat.activity.read_other": {
+    "en": "Read {{count}} files",
+    "zh-CN": "读取了 {{count}} 个文件",
+    "reviewedEnglishHash": "979752f5e6406d5e211c1b992247aa8aecc3858e519fe3220372106542bb45a2"
+  },
+  "taskChat.activity.searched_one": {
+    "en": "Searched {{count}} time",
+    "zh-CN": "搜索了 {{count}} 次",
+    "reviewedEnglishHash": "090286b956b9273c5aeed5bc2a76b0c34ea5cec4c8bcd77f678dae689724aee4"
+  },
+  "taskChat.activity.searched_other": {
+    "en": "Searched {{count}} times",
+    "zh-CN": "搜索了 {{count}} 次",
+    "reviewedEnglishHash": "c92458d3d3791bfd4eea2ab172ca6822a711869607b46870c32d098bd826ec7e"
+  },
+  "taskChat.activity.separator": {
+    "en": ", ",
+    "zh-CN": "，",
+    "reviewedEnglishHash": "0a07f659461970d8d8dcefe4fff96a1745599810dc7d47391e95c803b7b2072c"
+  },
+  "taskChat.composer.modeDescription.ask": {
+    "en": "Answer questions only, no changes",
+    "zh-CN": "只回答问题，不执行变更",
+    "reviewedEnglishHash": "ce3635f1f7971327d1c98982f42e278d10ef4239be48d01a467e75776011cb5e"
+  },
+  "taskChat.composer.modeDescription.planning": {
+    "en": "Draft a plan before acting",
+    "zh-CN": "先起草计划，再执行操作",
+    "reviewedEnglishHash": "764bc5e19f9062d79d2d4022d558ec2431ce166c6a9f96b9f0d8402049e00b43"
+  },
+  "taskChat.composer.modeDescription.standard": {
+    "en": "Make changes and run work",
+    "zh-CN": "执行变更并推进工作",
+    "reviewedEnglishHash": "c38553aeec41369ae8ec0ae338f28eb74bf76d154b3fb70fda0d339a81fc0de6"
+  },
+  "taskChat.composer.placeholder.ask": {
+    "en": "Ask {{agent}} a question — read-only, nothing runs…",
+    "zh-CN": "向 {{agent}} 提问 — 只读，不会执行操作…",
+    "reviewedEnglishHash": "7de704414341f4188847298f442181105b073c0594a573c24fafda302ac86c64"
+  },
+  "taskChat.composer.placeholder.planning": {
+    "en": "Plan with {{agent}} — shapes the plan document, no code changes…",
+    "zh-CN": "与 {{agent}} 制定计划 — 只完善计划文档，不改代码…",
+    "reviewedEnglishHash": "220cd7b00d57d7e4965f23f0cebfa1caa07eb6747d61f0a7bb8622da89a4ce1a"
+  },
+  "taskChat.composer.placeholder.standard": {
+    "en": "Message {{agent}} — describe what you want done…",
+    "zh-CN": "给 {{agent}} 留言 — 描述你希望完成的工作…",
+    "reviewedEnglishHash": "aeee2e198fa6a13b5073f24c88620a3739e202b6e00943b7faf2db7f690a90cd"
+  },
+  "taskChat.forDuration": {
+    "en": "for {{duration}}",
+    "zh-CN": "持续 {{duration}}",
+    "reviewedEnglishHash": "f25e2940477b1892a44a0b586a17ec646284dd5bb9e6342c95a12ca149b7b925"
+  },
+  "taskChat.continuedAfterSteering": {
+    "en": "Continued after steering ·",
+    "zh-CN": "引导后继续 ·",
+    "reviewedEnglishHash": "d964b95eda2602c2a68fb7b80293eefb83b4cb4a326388fdac8839f7d2d04760"
+  },
+  "taskChat.live.calledTools_one": {
+    "en": "called {{count}} tool",
+    "zh-CN": "调用了 {{count}} 个工具",
+    "reviewedEnglishHash": "9f5873655d1ca88773171704913e51042af7eaf07180cb53e13d72892673286c"
+  },
+  "taskChat.live.calledTools_other": {
+    "en": "called {{count}} tools",
+    "zh-CN": "调用了 {{count}} 个工具",
+    "reviewedEnglishHash": "51a65c6aee7106b92fe583e38213257597e61bb2d5b65e420053079bb56e4e53"
+  },
+  "taskChat.live.ranCommands_one": {
+    "en": "ran {{count}} command",
+    "zh-CN": "运行了 {{count}} 条命令",
+    "reviewedEnglishHash": "b9922e609a9f034d4eba6f1b8ee0cd5d7442f0ce69dd2487770762bdc0ce95e5"
+  },
+  "taskChat.live.ranCommands_other": {
+    "en": "ran {{count}} commands",
+    "zh-CN": "运行了 {{count}} 条命令",
+    "reviewedEnglishHash": "b2900611f4e71543021c2526bf4e1f4df9180a5b585aaeebbe8b545c06960dc4"
+  },
+  "taskChat.planCreated": {
+    "en": "Plan created",
+    "zh-CN": "计划已创建",
+    "reviewedEnglishHash": "14a8bc6240fe73f9e24e111ac7c3722fc3be8150a94fffe0a1cdc8427a4911c9"
+  },
+  "taskChat.planRevisionDetail": {
+    "en": "Revision {{revision}} — see the Plan tab",
+    "zh-CN": "修订 {{revision}} — 请查看“计划”页签",
+    "reviewedEnglishHash": "c488d09ab8594a8cb3e637695c62364183332cb2d072ec640ca4b09e2d95cc5d"
+  },
+  "taskChat.planUpdated": {
+    "en": "Plan updated",
+    "zh-CN": "计划已更新",
+    "reviewedEnglishHash": "670b64743d66cba15de8e393dbd58415c540361f2266f3843e56e920477ee972"
+  },
+  "taskChat.stopped": {
+    "en": "Stopped",
+    "zh-CN": "已停止",
+    "reviewedEnglishHash": "1a4f630ac1b69fd00728fa8a672ded71d0eae8516cb23e78f94529113399b79b"
+  },
+  "taskChat.toolCount_one": {
+    "en": "{{count}} tool",
+    "zh-CN": "{{count}} 个工具",
+    "reviewedEnglishHash": "c2ce825c00366d503abbcf3fa6a8e1089360f4ce8bff74211df8c553f7199683"
+  },
+  "taskChat.toolCount_other": {
+    "en": "{{count}} tools",
+    "zh-CN": "{{count}} 个工具",
+    "reviewedEnglishHash": "f1b9324764c0a9c0633d57b1379cc777c4569958a3d59d097802a471fb08dba3"
+  },
+  "taskChat.working": {
+    "en": "Working",
+    "zh-CN": "正在工作",
+    "reviewedEnglishHash": "a92f0449a9f7235bf69dc2e8ff7070bfae3f00ec8f8f26e5457a9beac53466ac"
+  }
+}

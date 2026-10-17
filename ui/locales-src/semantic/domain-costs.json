@@ -1,0 +1,67 @@
+{
+  "costs.apiUsageLoading": {
+    "en": "API usage is loading",
+    "zh-CN": "正在加载 API 用量",
+    "reviewedEnglishHash": "a50c40fa8bbb5e39aeb33898cd52c4bed5ecd3dba0d516c90a2b8472ed6fb6f0"
+  },
+  "costs.apiUsageUnavailable": {
+    "en": "API usage is unavailable",
+    "zh-CN": "API 用量不可用",
+    "reviewedEnglishHash": "f9b024eda1e507a70c060e4e9575597d83408db4272e42e33c44fee84405acb4"
+  },
+  "costs.budgetSpentThisMonth": {
+    "en": "{{spent}} of {{budget}} this month",
+    "zh-CN": "本月已用 {{spent}} / {{budget}}",
+    "reviewedEnglishHash": "984dedb047baa61fdf93a87df01768e39f65c0b42a837c9fbc9496c8667f63f1"
+  },
+  "costs.financialDataUnavailable": {
+    "en": "Financial data unavailable",
+    "zh-CN": "财务数据不可用",
+    "reviewedEnglishHash": "2d12276741c126d7fed8c70a441a34e66cd2fdeefacf8a4b33e666aad652e240"
+  },
+  "costs.monthlyLimit": {
+    "en": "Monthly limit",
+    "zh-CN": "月度限额",
+    "reviewedEnglishHash": "c52f575884d08440c774db679d754d1dba27ba46c39f26b71598af8ae269ee3c"
+  },
+  "costs.otherBillingUsage": {
+    "en": "Other billing usage: {{tokens}} tokens{{recordedCharges}}, included in the inference ledger.",
+    "zh-CN": "其他计费用量：{{tokens}} 个 Token{{recordedCharges}}，已包含在推理账本中。",
+    "reviewedEnglishHash": "51130e8332c002bab71a3349a257f156e81fcd2a069ffaf7b05526f487d0970a"
+  },
+  "costs.providerApiCostReport": {
+    "en": "Provider API cost reports: {{amount}}. Report totals overlap invoices and run estimates and are shown separately from recorded charges.",
+    "zh-CN": "提供商 API 费用报告：{{amount}}。报告总额与发票和运行估算存在重叠，并与已记录费用分开显示。",
+    "reviewedEnglishHash": "3172bc736d3267e8d95eba94d2b9736471b2eec02edb0be7381851089fa747ec"
+  },
+  "costs.recordedCharges": {
+    "en": " · {{amount}} in recorded charges",
+    "zh-CN": " · 已记录费用 {{amount}}",
+    "reviewedEnglishHash": "0cf2467f3275c62d7cf96b69cf800f24669b1a242f1992cc193dd10bbba5f218"
+  },
+  "costs.subscriptionRecordedUsage": {
+    "en": "Subscription accounts also have {{amount}} in recorded usage charges for this period, separate from monthly fees.",
+    "zh-CN": "订阅账户在此期间还产生了 {{amount}} 的已记录用量费用，该费用不含月度订阅费。",
+    "reviewedEnglishHash": "bf12f5bc2ad28eabfb162aaa278aac8a581bd3dafd9023dffa6031913f94981b"
+  },
+  "costs.subscriptionUsageStale": {
+    "en": "Showing the last loaded API and subscription usage. Updates will resume automatically.",
+    "zh-CN": "正在显示最近一次加载的 API 和订阅用量。更新将自动恢复。",
+    "reviewedEnglishHash": "909e980bba1f175010709902d4daa45671fd20127ab9000e6b2e674317d1d1b1"
+  },
+  "costs.unlimited": {
+    "en": "Open",
+    "zh-CN": "无上限",
+    "reviewedEnglishHash": "ed077f3d8125d60dca1979c7133601bd187d47c73ed9975028f677e49e709942"
+  },
+  "costs.userCostsStale": {
+    "en": "User costs could not be refreshed. Showing the last loaded data.",
+    "zh-CN": "无法刷新用户费用。正在显示最近一次加载的数据。",
+    "reviewedEnglishHash": "711ccd7b363b0a25c3702e778a616dadcea16799e8385cfc0180df2b14f6f47d"
+  },
+  "costs.userCostsUnavailable": {
+    "en": "User costs could not be loaded. Please try again shortly.",
+    "zh-CN": "无法加载用户费用。请稍后重试。",
+    "reviewedEnglishHash": "e049ea4c869bda6537c747e4779f7823e378d4d90d50a50e4361f04b8a1209d9"
+  }
+}

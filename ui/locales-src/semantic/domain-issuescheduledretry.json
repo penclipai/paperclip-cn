@@ -1,0 +1,152 @@
+{
+  "issueScheduledRetry.alreadyPromoted": {
+    "en": "Already promoted",
+    "zh-CN": "已提升",
+    "reviewedEnglishHash": "8a7ece835bf32b77be41b22dcf1f89c4bbc5622eb872a5c362b10f962c2019e9"
+  },
+  "issueScheduledRetry.attempt": {
+    "en": "Attempt {{count}}",
+    "zh-CN": "第 {{count}} 次尝试",
+    "reviewedEnglishHash": "62c046c7db8bcc7738bd6a537c70bfecaf67ed918a40c6d35973131256585ab0"
+  },
+  "issueScheduledRetry.badge.continuationScheduled": {
+    "en": "Continuation scheduled",
+    "zh-CN": "已计划 continuation",
+    "reviewedEnglishHash": "b51d6ab8c06fa08133220503a36a41ec010a333fc7b702c46fd26a4660665f41"
+  },
+  "issueScheduledRetry.badge.retryScheduled": {
+    "en": "Retry scheduled",
+    "zh-CN": "已计划重试",
+    "reviewedEnglishHash": "5b6d7aa6820ca9cd329a749c87738767318bb54e787f0edbcdc9aedba4fade32"
+  },
+  "issueScheduledRetry.couldNotRetryNow": {
+    "en": "Couldn't retry now",
+    "zh-CN": "暂时无法立即重试",
+    "reviewedEnglishHash": "7452a71d0f62b354567997ee092f21a95099aa76050a11827b4006d13a94dddf"
+  },
+  "issueScheduledRetry.dueNow": {
+    "en": "due now",
+    "zh-CN": "现在到期",
+    "reviewedEnglishHash": "cfc76a5656631cff1b56f5fa9151a5f88c78f1f870b1d7c12d4a6f08e32b3e72"
+  },
+  "issueScheduledRetry.helper.alreadyPromotedRunStarting": {
+    "en": "Already promoted - run starting",
+    "zh-CN": "已提升 - 运行即将开始",
+    "reviewedEnglishHash": "9a060f9d9e4ec07a7545d6934d730d09b638a0cd964b1730e0af99f6bd8eda6d"
+  },
+  "issueScheduledRetry.helper.promotedRunStarting": {
+    "en": "Promoted - run starting",
+    "zh-CN": "已提升 - 运行即将开始",
+    "reviewedEnglishHash": "0e06c64e74ebbd5313be2b70320fbe8f576e1083a3495620769a292444e695c1"
+  },
+  "issueScheduledRetry.helper.promotingScheduledRetry": {
+    "en": "Promoting scheduled retry",
+    "zh-CN": "正在提升计划重试",
+    "reviewedEnglishHash": "ff49385cbf514618a1539f6a460c4343609511c391d29894d1f3eb339f89ff65"
+  },
+  "issueScheduledRetry.helper.pullContinuationForward": {
+    "en": "Pulls continuation forward immediately",
+    "zh-CN": "立即提前执行 continuation",
+    "reviewedEnglishHash": "0e8e38b538ba2fe614f1e09173fb033c2212e4a7413702015fe196605109a507"
+  },
+  "issueScheduledRetry.helper.pullRetryForward": {
+    "en": "Pulls retry forward immediately",
+    "zh-CN": "立即提前执行重试",
+    "reviewedEnglishHash": "4730094a66feb8684aef9391f8501df06faa27c3be8a313e7535573a4b7bb325"
+  },
+  "issueScheduledRetry.lastAttemptFailed": {
+    "en": "Last attempt failed: {{error}}. Paperclip will retry automatically.",
+    "zh-CN": "上次尝试失败：{{error}}。Paperclip 会自动重试。",
+    "reviewedEnglishHash": "726005ba788d8abfeb1693613b6da7aa3dceb305c6bcba6af7235c921078fe8b"
+  },
+  "issueScheduledRetry.lastError": {
+    "en": "Last error",
+    "zh-CN": "上次错误",
+    "reviewedEnglishHash": "5488d837f5f65d6f0774b85c0f2bccacbfdd3e94b976c5ed423021da341bdd96"
+  },
+  "issueScheduledRetry.nextAttempt": {
+    "en": "Next attempt",
+    "zh-CN": "下次尝试",
+    "reviewedEnglishHash": "94158821ee38021927e9d463249f7344df9c3b6cf18c8cde89dd1dafcbf6a05d"
+  },
+  "issueScheduledRetry.pendingSchedule": {
+    "en": "pending schedule",
+    "zh-CN": "等待计划",
+    "reviewedEnglishHash": "c457659fcb550075946b754dcdcb69a3dd66e30239f2c96764ce2ba87a868f97"
+  },
+  "issueScheduledRetry.pendingScheduleTitle": {
+    "en": "Pending schedule",
+    "zh-CN": "等待计划",
+    "reviewedEnglishHash": "9db3b9f324b5d823feb266dd051f444935b10a610aef9d52a6a298a32e10b64d"
+  },
+  "issueScheduledRetry.promoted": {
+    "en": "Promoted",
+    "zh-CN": "已提升",
+    "reviewedEnglishHash": "0cf04463c4276a6276986c22155bd4a32ce81e8dd162a657dedfa9afb97a7371"
+  },
+  "issueScheduledRetry.reason": {
+    "en": "Reason",
+    "zh-CN": "原因",
+    "reviewedEnglishHash": "f81ab834de5f84918dc040b884267c2b61cb1a52d46442de10e97f35a94d0500"
+  },
+  "issueScheduledRetry.relativeDueNow": {
+    "en": "{{action}} due now",
+    "zh-CN": "{{action}}现在到期",
+    "reviewedEnglishHash": "75f6ca9da2df4c07d20f9253f8ebdb6a6521eaabadb73520e17e00d45bee315e"
+  },
+  "issueScheduledRetry.relativeWithOffset": {
+    "en": "{{action}} {{offset}}",
+    "zh-CN": "{{action}} {{offset}}",
+    "reviewedEnglishHash": "c59230ebb0a09be8122bb3721b8e59ef321a610e1cf2b5ddb16cb68ad6457e86"
+  },
+  "issueScheduledRetry.replacesRun": {
+    "en": "Replaces run",
+    "zh-CN": "替换运行",
+    "reviewedEnglishHash": "28efd336f8ed5a75cbe49b6bedf5a6403a89e9ae06eee4d12298998686712357"
+  },
+  "issueScheduledRetry.retryNow": {
+    "en": "Retry now",
+    "zh-CN": "立即重试",
+    "reviewedEnglishHash": "5148c3e20576923b589bd801ea84dc376213b82fbf8694f64437b621f1690615"
+  },
+  "issueScheduledRetry.retrying": {
+    "en": "Retrying...",
+    "zh-CN": "正在重试...",
+    "reviewedEnglishHash": "84a657bcf3d968b4e10c205225a62eefddcc2ee18b3fcb6b02a8e0a61a8a08bd"
+  },
+  "issueScheduledRetry.scheduledContinuation": {
+    "en": "Scheduled continuation",
+    "zh-CN": "已计划 continuation",
+    "reviewedEnglishHash": "90d74172f1254f32271eb3b74c838476da58174c1f444237d5665fb2ecf7ce5e"
+  },
+  "issueScheduledRetry.scheduledRetry": {
+    "en": "Scheduled retry",
+    "zh-CN": "已计划重试",
+    "reviewedEnglishHash": "263ed103472a1cb0f9248e6b456d2b04ec6de5e7cf787d6ee1157f87c92acf63"
+  },
+  "issueScheduledRetry.shortAction.continuation": {
+    "en": "Continuation",
+    "zh-CN": "续跑",
+    "reviewedEnglishHash": "29f1f4d5ed75d38c1dacb91563f8310e9d7a1a071056bb37e222b53dbaa78f72"
+  },
+  "issueScheduledRetry.shortAction.retry": {
+    "en": "Retry",
+    "zh-CN": "重试",
+    "reviewedEnglishHash": "942087cc2d41e01304b7195558d093d10c72af8e838c7556d6a02d471ee71852"
+  },
+  "issueScheduledRetry.title": {
+    "en": "{{action}} {{suffix}}",
+    "zh-CN": "{{action}} {{suffix}}",
+    "reviewedEnglishHash": "ce1278cfbabcd96d30e0c6e30e9291bee0790f4204a08803564191aebbd39d66"
+  },
+  "issueScheduledRetry.titleAction.continuation": {
+    "en": "Automatic continuation",
+    "zh-CN": "自动 continuation",
+    "reviewedEnglishHash": "82ce2ec6bb89515ecfa4ef4671db07be121ff59ef65fae9a1ac3b9c9ff5b3793"
+  },
+  "issueScheduledRetry.titleAction.retry": {
+    "en": "Automatic retry",
+    "zh-CN": "自动重试",
+    "reviewedEnglishHash": "2a39daf25019b6ca8f5dc74446a049d87b61a39e132d4920b650c9aece5e3bd2"
+  }
+}

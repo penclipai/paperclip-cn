@@ -94,6 +94,14 @@ git push -u origin <descriptive-name>
 git push origin --delete <old-name>
 ```
 
+### Keep Screenshots Out of the Repo
+
+Screenshots, screen recordings, and other review evidence belong in the PR description or a PR comment, not in the repository. Do **not** commit them (for example under `docs/pr-screenshots/`). Committed review images land on `master` permanently and make every clone bigger, even though nobody needs them after the PR merges.
+
+To show a visual change, drag the image into the PR description or a comment on GitHub, which hosts the file for you. If your tooling cannot upload to GitHub, leave the images out and describe what you checked under **Verification**.
+
+Images that are part of the product documentation itself, such as a screenshot embedded in a guide under `doc/`, are fine to commit.
+
 ### Model Used (Required)
 
 Every PR must include a **Model Used** section specifying which AI model produced or assisted with the change. Include the provider, exact model ID/version, context window size, and any relevant capability details (e.g., reasoning mode, tool use). If no AI was used, write "None — human-authored". This applies to all contributors — human and AI alike.
@@ -104,7 +112,9 @@ All tests must pass before a PR can be merged. Run them locally first and verify
 
 ### Telemetry Changes
 
-If your change adds, removes, or modifies emitted telemetry events, update the [Telemetry Data Contract](packages/shared/src/telemetry/README.md) in the same PR. Keep clients emitting raw dimension values and avoid documenting or relying on private delivery details.
+This repo has three separate data paths: Telemetry, Observability, and the run log. See rule 7 in `AGENTS.md` for the full definitions and the review level each path needs.
+
+If your change adds, removes, or modifies emitted telemetry events, update the [Telemetry Data Contract](packages/shared/src/telemetry/README.md) in the same PR. Keep clients emitting raw dimension values and avoid documenting or relying on private delivery details. If your change adds, removes, or modifies an OpenTelemetry span or span attribute, keep the change inside the closed span-attribute allowlist in `packages/adapter-utils/src/acpx-engine/startup-timing.ts`. If your change adds or modifies a run-log event, update `doc/run-log-events.md` in the same PR.
 
 ### Paperclip Gates Must Pass
 
@@ -156,6 +166,8 @@ Bugs, docs improvements, and small targeted improvements are still the easiest p
 - Be kind in discussions 😄
 
 ## Writing a Good PR message
+
+Write all PR text in Simplified Technical English (ASD-STE100): use short sentences, one instruction per sentence, simple approved vocabulary, and the active voice.
 
 Your PR description must follow the [PR template](.github/PULL_REQUEST_TEMPLATE.md). All sections are required. The "thinking path" at the top explains from the top of the project down to what you fixed. E.g.:
 

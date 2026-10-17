@@ -1,0 +1,237 @@
+{
+  "trustPreset.advancedPermissionsHint": {
+    "en": "Advanced permissions remain editable through the EE permissions extension when installed.",
+    "zh-CN": "安装 EE 权限扩展后，仍可通过它编辑高级权限。",
+    "reviewedEnglishHash": "fb6b4df48db71939def28977338aabee8230754be800455d5e96ece4d8db3cf4"
+  },
+  "trustPreset.boundary.issue": {
+    "en": "Issue",
+    "zh-CN": "任务",
+    "reviewedEnglishHash": "48dc76dfa23ae03fea1372c5ed6c0e1bd62eaeca7bba6d804eb0afa87972f031"
+  },
+  "trustPreset.boundary.project": {
+    "en": "Project",
+    "zh-CN": "项目",
+    "reviewedEnglishHash": "985959785319747668373cc6dee294b11db782b03cdd90a2851fbdc0637c6b7b"
+  },
+  "trustPreset.boundary.rootIssue": {
+    "en": "Root issue",
+    "zh-CN": "根任务",
+    "reviewedEnglishHash": "9cfea50f623a4b5055f5c85cf3b3b4dc1c73f6c2c41599789e5305833e09451a"
+  },
+  "trustPreset.boundaryType": {
+    "en": "Boundary type",
+    "zh-CN": "边界类型",
+    "reviewedEnglishHash": "61a3e610df49785a0cd34e952e61dd890e3b49a10f1517ac94638b281e3dc0d6"
+  },
+  "trustPreset.ceBoundaryHint": {
+    "en": "CE saves one containment boundary at a time. Saved policies include this company id.",
+    "zh-CN": "CE 每次保存一个隔离边界。保存的策略会包含此公司 ID。",
+    "reviewedEnglishHash": "764b2090c529d7d1b201c568d1195582bd2e066f26471d9e79773f6c3806c56e"
+  },
+  "trustPreset.clearBoundary": {
+    "en": "Clear boundary",
+    "zh-CN": "清除边界",
+    "reviewedEnglishHash": "ebcd71191783d8039ccbd2c1f664449760f93e1297c24f3d78b0cb026f0e9499"
+  },
+  "trustPreset.containmentActive": {
+    "en": "Containment active",
+    "zh-CN": "隔离已启用",
+    "reviewedEnglishHash": "116032b7916e7f0b694255e6e4ad0457aad94794db5c155af2d5029ade5f2d98"
+  },
+  "trustPreset.containmentActiveBody": {
+    "en": "This agent can only read and mutate work inside its assigned review boundary. Raw output is quarantined from higher-trust agents until a trusted reviewer promotes it.",
+    "zh-CN": "此智能体只能读取和修改分配的审阅边界内的工作。原始输出会被隔离，直到可信审阅者提升它。",
+    "reviewedEnglishHash": "56237f23ae761c4be2c354934895dbe85c8cb9dcbc8d9dc63a3d1cabc3ac2da2"
+  },
+  "trustPreset.containmentNotConfigured": {
+    "en": "Containment not configured",
+    "zh-CN": "未配置隔离",
+    "reviewedEnglishHash": "b5c07df63b2bfba874cb8f5e18e7b23da1d7ee9f73b08aa740d0b4c0c26ad26d"
+  },
+  "trustPreset.containmentNotConfiguredBody": {
+    "en": "This agent is set to low-trust review, but no project, root issue, or issue scope is set in the core policy. Add a scope before this agent can run without denial.",
+    "zh-CN": "此智能体已设为低信任审阅，但核心策略中没有设置项目、根任务或任务范围。请先添加范围，否则智能体运行会被拒绝。",
+    "reviewedEnglishHash": "271713474e9a1437cf18a03d664995f145df946b693e13fc6b15f373eed1f5d8"
+  },
+  "trustPreset.description.low_trust_review": {
+    "en": "Restrict this agent to one review boundary and quarantine raw output until promoted.",
+    "zh-CN": "将此智能体限制在一个审阅边界内，并在输出被提升前隔离原始输出。",
+    "reviewedEnglishHash": "58a59d0bcc314f73bb08646933cd1f98dac9ad0b383305e0aa54394aa54af956"
+  },
+  "trustPreset.description.standard": {
+    "en": "Standard agents can work across assigned company objects according to their role permissions.",
+    "zh-CN": "标准智能体可按其角色权限处理分配的公司对象。",
+    "reviewedEnglishHash": "6cd2aad25209fc64ef1c4f61b474099c84bc7d5946e8ddaf630c078e1807ea99"
+  },
+  "trustPreset.eePrompt": {
+    "en": "Want to set more than one containment boundary?",
+    "zh-CN": "想设置多个隔离边界？",
+    "reviewedEnglishHash": "4a136265be190b17e75110206a5ed999f395b7dba79e32ea6d901b1409c8b982"
+  },
+  "trustPreset.getPaperclipEe": {
+    "en": "Get Paperclip EE.",
+    "zh-CN": "获取 Paperclip EE。",
+    "reviewedEnglishHash": "601f5e6e4a14fdf99c97d6df6eff555a3bcfa572bbfdd531b4482a4f3db0fe6f"
+  },
+  "trustPreset.managedByEeApi": {
+    "en": "Managed by EE/API",
+    "zh-CN": "由 EE/API 管理",
+    "reviewedEnglishHash": "b028fcfe70c9d31c2fa83236a8bc17aefa85984d56f0f281ffd3a9b48797d1e5"
+  },
+  "trustPreset.managedByEeApiBody": {
+    "en": "This policy has {{summary}} and cannot be edited by the CE single-boundary editor.",
+    "zh-CN": "此策略包含 {{summary}}，无法用 CE 单边界编辑器编辑。",
+    "reviewedEnglishHash": "8eacfacbcb2845cfab0ab35b340abcabcf17ee032790a9036a140ce584815a2c"
+  },
+  "trustPreset.noIssuesAvailable": {
+    "en": "No issues available",
+    "zh-CN": "没有可用任务",
+    "reviewedEnglishHash": "c9e9b143514acb83e09a58114ba5b416e7e640ce9abeebf77c8b1cc8507afc5f"
+  },
+  "trustPreset.noProjectsAvailable": {
+    "en": "No projects available",
+    "zh-CN": "没有可用项目",
+    "reviewedEnglishHash": "c1033b696bda0125e09d462148067bdb8dbca16a332e7c7f12eeca69e91ea0ca"
+  },
+  "trustPreset.option.lowTrustReview": {
+    "en": "Low-trust review",
+    "zh-CN": "低信任审阅",
+    "reviewedEnglishHash": "30699d583989db1417a3919e499288adba00b49ccd555a92a5c416e9f089433c"
+  },
+  "trustPreset.option.standard": {
+    "en": "Standard",
+    "zh-CN": "标准",
+    "reviewedEnglishHash": "ef6691545d2c5523efed00424407cb261aeb0037d165ca5792f7f8bac3381362"
+  },
+  "trustPreset.policy.allowedAgents": {
+    "en": "Allowed agents",
+    "zh-CN": "允许的智能体",
+    "reviewedEnglishHash": "ab33e0e83e7999a4b2343241ead56f73ec09e5e30ebdedad2f1bcc6dc781b69d"
+  },
+  "trustPreset.policy.allowedSecrets": {
+    "en": "Allowed secrets",
+    "zh-CN": "允许的密钥",
+    "reviewedEnglishHash": "29e561fcdaa6afc6f6f375e169c8e9ec47cb7879618bbb28b1f2d45115dd1fc6"
+  },
+  "trustPreset.policy.allowedTools": {
+    "en": "Allowed tools",
+    "zh-CN": "允许的工具",
+    "reviewedEnglishHash": "73f3619da32094de33af0ecbbd62be8a03453ae1caa58d8ef87935f8fa2f443c"
+  },
+  "trustPreset.policy.customAdvancedFieldsPreserved": {
+    "en": "Custom advanced policy fields preserved",
+    "zh-CN": "已保留自定义高级策略字段",
+    "reviewedEnglishHash": "eee5ceae9d931bbbd9ea114d80f218f05d8ca37ef91acda797f46ab9a63c3244"
+  },
+  "trustPreset.policy.eeFields": {
+    "en": "EE fields",
+    "zh-CN": "EE 字段",
+    "reviewedEnglishHash": "5cf54800ffbaf5a39fafea762e941b9e570159b2dc2fe5d1fc0ce6949e4d289d"
+  },
+  "trustPreset.policy.explicitIssues": {
+    "en": "Explicit issues",
+    "zh-CN": "显式任务",
+    "reviewedEnglishHash": "5093b25dd010d10d9cba84b64d8aff57cea5aa9ff9234aadbddf22f970e2d974"
+  },
+  "trustPreset.policy.lowTrustReviewV1": {
+    "en": "Low-trust review v1",
+    "zh-CN": "低信任审阅 v1",
+    "reviewedEnglishHash": "2b3809e84d99d93b84e7a39f35c6c12f47cc7b334c0725b2328a6384364421b7"
+  },
+  "trustPreset.policy.preset": {
+    "en": "Preset",
+    "zh-CN": "预设",
+    "reviewedEnglishHash": "7252e7ce008587e1180459d95c2536df954971d6c51e6ac753518a6fe15da563"
+  },
+  "trustPreset.policy.projects": {
+    "en": "Projects",
+    "zh-CN": "项目",
+    "reviewedEnglishHash": "04e2a9728af7584043c5d58ae29e7cd811883e8dab15fc6287675270669a3ada"
+  },
+  "trustPreset.policy.promotionTarget": {
+    "en": "Promotion target",
+    "zh-CN": "提升目标",
+    "reviewedEnglishHash": "ac1fff6359245095991d6db27820251459fbb6bb35044c17f594acf3eee68078"
+  },
+  "trustPreset.policy.quarantined": {
+    "en": "Quarantined from higher-trust agents",
+    "zh-CN": "与更高信任智能体隔离",
+    "reviewedEnglishHash": "1668be9d0bfd763320da476549eaf08241bd6b8c06d8762bd1f542940f2e60e5"
+  },
+  "trustPreset.policy.rawOutput": {
+    "en": "Raw output",
+    "zh-CN": "原始输出",
+    "reviewedEnglishHash": "f3dbf20a278c48dfb8c680fdbbe0b77caf26972151b8afa27de53823e19ba8bd"
+  },
+  "trustPreset.policy.rootIssue": {
+    "en": "Root issue",
+    "zh-CN": "根任务",
+    "reviewedEnglishHash": "9cfea50f623a4b5055f5c85cf3b3b4dc1c73f6c2c41599789e5305833e09451a"
+  },
+  "trustPreset.presetHint": {
+    "en": "Choose how broadly this agent can read and act on Paperclip work objects.",
+    "zh-CN": "选择此智能体可以多大范围读取和操作 Paperclip 工作对象。",
+    "reviewedEnglishHash": "24bf54bdedffa0fe6cc61386b267ae63e589c2487349430cce8a4be202ac4658"
+  },
+  "trustPreset.presetLabel": {
+    "en": "Trust preset",
+    "zh-CN": "信任预设",
+    "reviewedEnglishHash": "d41e165d4e0265d633ea5e8753d7bd44ca43dca348f5bcfbe7ce6c9b51fe6288"
+  },
+  "trustPreset.selectBoundary": {
+    "en": "Select boundary",
+    "zh-CN": "选择边界",
+    "reviewedEnglishHash": "5009d4136aa5b5192d6bc5eba233fb1f0491491ed03e5d8a30cc4778364beeae"
+  },
+  "trustPreset.title": {
+    "en": "Trust",
+    "zh-CN": "信任",
+    "reviewedEnglishHash": "ade9248e0132b4112c81e94cce392e1068029bac214f23c79d10693e781a16f1"
+  },
+  "trustPreset.unit.agent": {
+    "en": "agent",
+    "zh-CN": "个智能体",
+    "reviewedEnglishHash": "d4f0bc5a29de06b510f9aa428f1eedba926012b591fef7a518e776a7c9bd1824"
+  },
+  "trustPreset.unit.agents": {
+    "en": "agents",
+    "zh-CN": "个智能体",
+    "reviewedEnglishHash": "8c70b25cbbbe8e7935bbc70516181551934ae5e917b40d25c4a72bbbd865f2e4"
+  },
+  "trustPreset.unit.binding": {
+    "en": "binding",
+    "zh-CN": "个绑定",
+    "reviewedEnglishHash": "80f70afeef3caa57646fd20afb95be9c3f2c03d38e091906de31838813dcc22e"
+  },
+  "trustPreset.unit.bindings": {
+    "en": "bindings",
+    "zh-CN": "个绑定",
+    "reviewedEnglishHash": "1f7378b5c19e6bafe2eaeb0c3404de571bac942248db6119b20dfe74d0581b4c"
+  },
+  "trustPreset.unit.issue": {
+    "en": "issue",
+    "zh-CN": "个任务",
+    "reviewedEnglishHash": "4a502846d070e2088b7025abe80629830bf03d7ab5624d5e91f332bc9d049d3f"
+  },
+  "trustPreset.unit.issues": {
+    "en": "issues",
+    "zh-CN": "个任务",
+    "reviewedEnglishHash": "02e3fe5aad80ca85ace4db35008faabe7950c53998160c66c9072b6fd33dec0f"
+  },
+  "trustPreset.unit.project": {
+    "en": "project",
+    "zh-CN": "个项目",
+    "reviewedEnglishHash": "244210e48437b6556980a70249a99369934a352429034cef9d7bd253b3bf2c01"
+  },
+  "trustPreset.unit.projects": {
+    "en": "projects",
+    "zh-CN": "个项目",
+    "reviewedEnglishHash": "2577c0f557b2e4b591e9587374c6330c9c64de8017d5a848a682a135251a6f6f"
+  },
+  "trustPreset.viewPolicy": {
+    "en": "View policy",
+    "zh-CN": "查看策略",
+    "reviewedEnglishHash": "faa39d94c569665fc5c1a260fd69ac87f106ef3130fb73955546dc4196ac50a6"
+  }
+}

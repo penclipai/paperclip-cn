@@ -1,0 +1,262 @@
+{
+  "companyExport.attachmentsRequireTasksOrRoutines": {
+    "en": "Attachments travel with tasks and routines; re-enable one of them to include attachments.",
+    "zh-CN": "附件会随任务和例程一起导出；请重新启用其中之一以包含附件。",
+    "reviewedEnglishHash": "4a6bbae0cfea2cb952d13a66fa6d7b422b4d5c48f170ef2b7c1b15fe31bbc73b"
+  },
+  "companyExport.binaryPreviewUnavailable": {
+    "en": "Binary asset preview is not available for this file type.",
+    "zh-CN": "当前文件类型暂不支持二进制预览。",
+    "reviewedEnglishHash": "0a5cc3efb5c91fe7f186549f21a80321865b3ee19ebde3e4deab9604b219449c"
+  },
+  "companyExport.buildFailedBody": {
+    "en": "Failed to build export package.",
+    "zh-CN": "构建导出包失败。",
+    "reviewedEnglishHash": "aaa09f6c9d759be8a7bcc949b11c1de2ba85ec2b251415ea24aa53b348a2d837"
+  },
+  "companyExport.building": {
+    "en": "Building export...",
+    "zh-CN": "正在构建导出包...",
+    "reviewedEnglishHash": "4d6949b8cea498fc32f2ffd9830a95aea4990b720c5ac56eef19dfd573f501dc"
+  },
+  "companyExport.companyFallback": {
+    "en": "Company",
+    "zh-CN": "公司",
+    "reviewedEnglishHash": "de4743c879734dc38cb3e270ecefcae077c3c2e626f9298115d5a03c8613f89b"
+  },
+  "companyExport.exportButton": {
+    "en": "Export",
+    "zh-CN": "导出",
+    "reviewedEnglishHash": "3664895579f0a7e68c4aa09c91316e20239bc74499010e6423ece40cad7c28f7"
+  },
+  "companyExport.exportButton_one": {
+    "en": "Export {{count}} file",
+    "zh-CN": "导出 {{count}} 个文件",
+    "reviewedEnglishHash": "68593a34d8afce30c39d3177dafd3dcb98bc56cd5065adf14bcd4373871626db"
+  },
+  "companyExport.exportButton_other": {
+    "en": "Export {{count}} files",
+    "zh-CN": "导出 {{count}} 个文件",
+    "reviewedEnglishHash": "0481da67e6e9e798b021a4ee1bbd470c7a7b0a3988a2fc356a02583f43be5a0b"
+  },
+  "companyExport.exportDownloadedBody": {
+    "en": "Company export downloaded.",
+    "zh-CN": "公司导出已下载。",
+    "reviewedEnglishHash": "29ccce6b12af7a34db9058d3beada5c6b4737122c359e21d464fd8a7251e21aa"
+  },
+  "companyExport.exportDownloadedBody_one": {
+    "en": "{{count}} file exported as {{rootPath}}.zip",
+    "zh-CN": "已导出 {{count}} 个文件，压缩包为 {{rootPath}}.zip",
+    "reviewedEnglishHash": "3e29f57ea9474d08628d50940b05186d069cb802af0bbe75b34361b8de570bed"
+  },
+  "companyExport.exportDownloadedBody_other": {
+    "en": "{{count}} files exported as {{rootPath}}.zip",
+    "zh-CN": "已导出 {{count}} 个文件，压缩包为 {{rootPath}}.zip",
+    "reviewedEnglishHash": "5dd9eee15eb56484f975ae9da0f5d3b3975b62fa017a71664da258ef91eb47ab"
+  },
+  "companyExport.exportDownloadedTitle": {
+    "en": "Export downloaded",
+    "zh-CN": "导出已下载",
+    "reviewedEnglishHash": "6bf7c6faa01d9498c3533f14c53cd1e160956ed82a4f3fb8e0418428796ccaa7"
+  },
+  "companyExport.exportFailedBody": {
+    "en": "Failed to load export data.",
+    "zh-CN": "加载导出数据失败。",
+    "reviewedEnglishHash": "f27fbdd31202b71416f755d44316b55a17f01a86bf3e20b49147baeaf3ba8911"
+  },
+  "companyExport.exportFailedTitle": {
+    "en": "Export failed",
+    "zh-CN": "导出失败",
+    "reviewedEnglishHash": "e94d3ee06ecf6aacdf8caf324ce34fef57c55aebc5b39496d42f724fe094cb35"
+  },
+  "companyExport.exportLabel": {
+    "en": "export",
+    "zh-CN": "导出",
+    "reviewedEnglishHash": "d46aee08cc49f6d1eb41800c1d6bab4506c960c700cff0efffe490d7cb1de5e3"
+  },
+  "companyExport.exportProgress": {
+    "en": "Exporting {{selected}} of {{total}} files",
+    "zh-CN": "正在导出 {{selected}}/{{total}} 个文件",
+    "reviewedEnglishHash": "d0a6ef3b07761db5e0de2b6bc523cb822cae3d3c5fad230f1fcce1aad6f843c7"
+  },
+  "companyExport.exportProgressSingle": {
+    "en": "Exporting {{selected}} of {{total}} file",
+    "zh-CN": "正在导出 {{selected}}/{{total}} 个文件",
+    "reviewedEnglishHash": "8b4ca38705cb818714905a35d98bf7c90229b0fa11341aaa2d5c984194dc4410"
+  },
+  "companyExport.exportTitle": {
+    "en": "Export",
+    "zh-CN": "导出",
+    "reviewedEnglishHash": "3664895579f0a7e68c4aa09c91316e20239bc74499010e6423ece40cad7c28f7"
+  },
+  "companyExport.exporting": {
+    "en": "Exporting",
+    "zh-CN": "正在导出",
+    "reviewedEnglishHash": "eb9b51193618c1a172014167484ef491d9e9ba6b222f0e4dd993f1339b7dfec0"
+  },
+  "companyExport.header": {
+    "en": "{{companyName}} export",
+    "zh-CN": "{{companyName}} 导出",
+    "reviewedEnglishHash": "b414f66a3c2073ae5b3111dadb382e0326dcb90be6476a45d3111ebed76b9654"
+  },
+  "companyExport.loadingData": {
+    "en": "Loading export data...",
+    "zh-CN": "正在加载导出数据...",
+    "reviewedEnglishHash": "4eb120cbd53a725b12e65b684799efa4fd419b92197dd178a92832fdd898f69b"
+  },
+  "companyExport.notIncluded": {
+    "en": "Not included in this export",
+    "zh-CN": "未包含在此次导出中",
+    "reviewedEnglishHash": "13b26a142440f46a3f5ec95fbc362e35e26a851ab21135e2a11fbb18f1cd9da0"
+  },
+  "companyExport.orgChartLabel": {
+    "en": "Org Chart",
+    "zh-CN": "组织结构图",
+    "reviewedEnglishHash": "aab3e6c8a0d87c7d815a30f56adb33ad852ba897ad751de1c580d36da7f399c2"
+  },
+  "companyExport.packageFiles": {
+    "en": "Package files",
+    "zh-CN": "包内文件",
+    "reviewedEnglishHash": "0ae7e5128ad41af58ce7768f994f151df1fdf39be2b5c79b68604343035d3a6b"
+  },
+  "companyExport.readme.agent": {
+    "en": "Agent",
+    "zh-CN": "智能体",
+    "reviewedEnglishHash": "11b39c93777e8f1f3983bdba7c72b22fe68cfea20c677e9de53e17cb7dbfb19f"
+  },
+  "companyExport.readme.agentCompanyPackage": {
+    "en": "This is an [Agent Company](https://agentcompanies.io) package from [Paperclip CN](https://penclip.ing).",
+    "zh-CN": "这是一个来自 [Paperclip CN](https://penclip.ing) 的[智能体公司](https://agentcompanies.io)包。",
+    "reviewedEnglishHash": "5283e9a4230f1a2b4809cdca5e1db95c2c64d579c5292ef1f108050114b20d1f"
+  },
+  "companyExport.readme.agents": {
+    "en": "Agents",
+    "zh-CN": "智能体",
+    "reviewedEnglishHash": "279b44d2ab4b40c0fc132f8f3051293544cca91de9c8aa14f2cd29adb132b0ee"
+  },
+  "companyExport.readme.content": {
+    "en": "Content",
+    "zh-CN": "内容",
+    "reviewedEnglishHash": "47bd29075f8b8019f0beec6d86beda7c9bf67aaf05053dcbe0b3bcb63968517f"
+  },
+  "companyExport.readme.count": {
+    "en": "Count",
+    "zh-CN": "数量",
+    "reviewedEnglishHash": "37bac4952becf21ac5838d3c9ba82811bc421c857571e89634dcbe346681d54c"
+  },
+  "companyExport.readme.exportedOn": {
+    "en": "Exported from [Paperclip CN](https://penclip.ing) on {{date}}",
+    "zh-CN": "导出自 [Paperclip CN](https://penclip.ing)，日期：{{date}}",
+    "reviewedEnglishHash": "9099eb94d5e19cc8cae4e4bbd022eecc995b00244d0fec1df788ce89fa839f26"
+  },
+  "companyExport.readme.gettingStarted": {
+    "en": "Getting Started",
+    "zh-CN": "开始使用",
+    "reviewedEnglishHash": "d00eca1bae6742803906ab42a831e8b5396d15b6573ea13c139ec31631208ec1"
+  },
+  "companyExport.readme.moreInfo": {
+    "en": "See [Paperclip CN](https://penclip.ing) for more information.",
+    "zh-CN": "更多信息请见 [Paperclip CN](https://penclip.ing)。",
+    "reviewedEnglishHash": "054e1cf5ab4de2829572d84f0f20fd48e22e34e36cc02656770b02040da443ab"
+  },
+  "companyExport.readme.projects": {
+    "en": "Projects",
+    "zh-CN": "项目",
+    "reviewedEnglishHash": "04e2a9728af7584043c5d58ae29e7cd811883e8dab15fc6287675270669a3ada"
+  },
+  "companyExport.readme.reportsTo": {
+    "en": "Reports To",
+    "zh-CN": "汇报给",
+    "reviewedEnglishHash": "8b48a53f35fc7b383e76257bf143b2317040a6e22642bafafe1eda3e51a33ee5"
+  },
+  "companyExport.readme.role": {
+    "en": "Role",
+    "zh-CN": "角色",
+    "reviewedEnglishHash": "14736a2eb9f4159f4b6b86f192c3c222243fd9659aadf2ecc0139e3d72bed85c"
+  },
+  "companyExport.readme.whatsInside": {
+    "en": "What's Inside",
+    "zh-CN": "包含内容",
+    "reviewedEnglishHash": "2cc73fa7f61aafca82f41a77f1bbe3cfae893ec3072d878f6f036a21621b7d66"
+  },
+  "companyExport.searchFiles": {
+    "en": "Search files...",
+    "zh-CN": "搜索文件...",
+    "reviewedEnglishHash": "04470fc07c2635f485f5280524aceb79e16b47565a93df896e02d49df622e0da"
+  },
+  "companyExport.selectCompany": {
+    "en": "Select a company to export.",
+    "zh-CN": "请选择要导出的公司。",
+    "reviewedEnglishHash": "2c775ebaedfed659aa1bf7ebc978a2ba78387076dff52ed419094e834e452eed"
+  },
+  "companyExport.selectPreview": {
+    "en": "Select a file to preview its contents.",
+    "zh-CN": "选择一个文件来预览内容。",
+    "reviewedEnglishHash": "e7aff2e8e1c53e449a6ff5a19bf03f9582a59b51ea0786ea4c43e3c6de323b19"
+  },
+  "companyExport.selectedCount": {
+    "en": "{{count}} selected",
+    "zh-CN": "已选择 {{count}} 项",
+    "reviewedEnglishHash": "c7f761b38b197daa6b822be7397d8e2701c3dbb12b79b4a90eb1c37969bed5a6"
+  },
+  "companyExport.selectedCount_one": {
+    "en": "{{selected}} / {{total}} file selected",
+    "zh-CN": "已选择 {{selected}} / {{total}} 个文件",
+    "reviewedEnglishHash": "a32f79df890466d6fd8f24ffaa6e7be09dead0d0427eee5ac1011cc8683e9580"
+  },
+  "companyExport.selectedCount_other": {
+    "en": "{{selected}} / {{total}} files selected",
+    "zh-CN": "已选择 {{selected}} / {{total}} 个文件",
+    "reviewedEnglishHash": "1746f4a1fec07a41cd7e7d5481cdd82a4480bab9ac9bbd0708c1b3edfb25b77f"
+  },
+  "companyExport.selectionSummary": {
+    "en": "Exporting {{selected}} of {{total}} files{{sizeSuffix}}",
+    "zh-CN": "正在导出 {{selected}} / {{total}} 个文件{{sizeSuffix}}",
+    "reviewedEnglishHash": "fd77ae26b3befa9b77db5e80ed9eec5d74485c67f13e26cc95e660b557518437"
+  },
+  "companyExport.showMoreIssues": {
+    "en": "Show more issues ({{visible}} of {{total}})",
+    "zh-CN": "显示更多任务（{{visible}} / {{total}}）",
+    "reviewedEnglishHash": "96aa3c1e4fc727bc1e59e89e363f04270c7a502209c520dbdadee5ebe623a925"
+  },
+  "companyExport.showMoreTasks": {
+    "en": "Show more tasks (",
+    "zh-CN": "显示更多任务（",
+    "reviewedEnglishHash": "142284a6df3d7aec01ff6032b673f4202a62c504caaa33cf56ab0673de3ae9cf"
+  },
+  "companyExport.showMoreTasksSummary": {
+    "en": "Show more tasks ({{visible}} of {{total}})",
+    "zh-CN": "显示更多任务（{{visible}} / {{total}}）",
+    "reviewedEnglishHash": "51e3fe51422627f0361685639b71a1a4c58369f8234006e9dd50f16070624d74"
+  },
+  "companyExport.warning": {
+    "en": "warning",
+    "zh-CN": "警告",
+    "reviewedEnglishHash": "4bd9354bb652233497a0f42647464b81b83a83654fcf1511263a5d0120d74c91"
+  },
+  "companyExport.warningCount": {
+    "en": "{{count}} warnings",
+    "zh-CN": "{{count}} 条警告",
+    "reviewedEnglishHash": "758c5e80a56a296001666ef1ffb1528472dab7eb29f3ae1e4d7bf32ab6c63182"
+  },
+  "companyExport.warningCountSingle": {
+    "en": "{{count}} warning",
+    "zh-CN": "{{count}} 条警告",
+    "reviewedEnglishHash": "b935948934c38f27e21b2736df8572bfe65a1d5c6d7d7aeb69ae31b36ef05e12"
+  },
+  "companyExport.warningCount_one": {
+    "en": "{{count}} warning",
+    "zh-CN": "{{count}} 条警告",
+    "reviewedEnglishHash": "b935948934c38f27e21b2736df8572bfe65a1d5c6d7d7aeb69ae31b36ef05e12"
+  },
+  "companyExport.warningCount_other": {
+    "en": "{{count}} warnings",
+    "zh-CN": "{{count}} 条警告",
+    "reviewedEnglishHash": "758c5e80a56a296001666ef1ffb1528472dab7eb29f3ae1e4d7bf32ab6c63182"
+  },
+  "companyExport.whatToInclude": {
+    "en": "What to include",
+    "zh-CN": "要包含的内容",
+    "reviewedEnglishHash": "e53ffc0de7afac8c8fde6aece123e15646a5b5d67427648e536e648b0b568096"
+  }
+}

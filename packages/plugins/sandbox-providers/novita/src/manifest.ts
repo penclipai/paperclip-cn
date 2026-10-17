@@ -1,4 +1,4 @@
-import type { PaperclipPluginManifestV1 } from "@paperclipai/plugin-sdk";
+import type { PaperclipPluginManifestV1 } from "@penclipai/plugin-sdk";
 
 const PLUGIN_ID = "paperclip.novita-sandbox-provider";
 const PLUGIN_VERSION = "0.1.0";

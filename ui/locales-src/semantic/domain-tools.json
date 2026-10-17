@@ -1,0 +1,4512 @@
+{
+  "tools.advanced.adminOnlyDescription": {
+    "en": "This area lets administrators wire up tools that aren't in the gallery. Ask an administrator if you need a new app connected, or head back to",
+    "zh-CN": "该区域允许管理员连接库中没有的工具。询问管理员您是否需要连接新应用，或返回",
+    "reviewedEnglishHash": "105a0b486a5a7420e836ca45c348c50e0801b5dd607e7854d36ae044fa638eac"
+  },
+  "tools.advanced.adminOnlyTitle": {
+    "en": "Advanced setup is for administrators",
+    "zh-CN": "高级设置供管理员使用",
+    "reviewedEnglishHash": "c527fe5cc22039e5de1b077b9bbac308f4dbd49fa0a530a99ae8bf7018cc8d7d"
+  },
+  "tools.advanced.badge": {
+    "en": "Advanced",
+    "zh-CN": "高级设置",
+    "reviewedEnglishHash": "9f088dbebd6c3c70a5ddbc2c943b11e4ca9acea5757b0b4f2b32479f0dbb747e"
+  },
+  "tools.advanced.connectInGallery": {
+    "en": "connect it there instead",
+    "zh-CN": "将其连接到那里",
+    "reviewedEnglishHash": "106ac84a01c8c957cfd84f479f4a88a2dcce44789558e6b0d14dd43db79d4151"
+  },
+  "tools.advanced.description": {
+    "en": "For tools that aren't in the gallery. You'll need details from the tool's documentation. Most people never need this — if the app you want is in the gallery,",
+    "zh-CN": "对于不在库中的工具。您需要该工具文档中的详细信息。大多数人永远不需要这个——如果你想要的应用在图库中，",
+    "reviewedEnglishHash": "70dbef37443085c79a837059f3a7c61cb829ad246ff24b4c3a8bd17126b18c22"
+  },
+  "tools.advanced.loading": {
+    "en": "Loading…",
+    "zh-CN": "正在加载…",
+    "reviewedEnglishHash": "ba3bbbe10d8bef66441c88536ce7b8e724e2829b59a3da658654f4961cd61ae5"
+  },
+  "tools.advanced.lookingForDeveloperTools": {
+    "en": "Looking for the developer surface?",
+    "zh-CN": "正在寻找开发者界面？",
+    "reviewedEnglishHash": "21a1fceee7ad0037f68aab7b87b317531feba2bbfe40b1dc0cb1704df64aca15"
+  },
+  "tools.advanced.openDeveloperTools": {
+    "en": "Open developer tools",
+    "zh-CN": "打开开发者工具",
+    "reviewedEnglishHash": "04c15814e33fdd647da9b90e4e3b83065a65714ed324cfc33412822328871014"
+  },
+  "tools.advanced.selectCompany": {
+    "en": "Select a company to open advanced setup.",
+    "zh-CN": "选择一家公司以打开高级设置。",
+    "reviewedEnglishHash": "c56e3e876593aaa664e900cb50d1dc55deea458c8342615568b1549d2cda68fa"
+  },
+  "tools.advanced.title": {
+    "en": "Advanced setup",
+    "zh-CN": "高级设置",
+    "reviewedEnglishHash": "c7de0706c17753d4d014f320243c359290228271b8b7adc92a2fe8bd2320a04a"
+  },
+  "tools.advanced.yourApps": {
+    "en": "your apps",
+    "zh-CN": "你的应用",
+    "reviewedEnglishHash": "d37a3ccae651b136de96abf3ca801cb5c896d810a04d547dca989e33ea317991"
+  },
+  "tools.agent.accessProfiles": {
+    "en": "Access profiles",
+    "zh-CN": "访问配置",
+    "reviewedEnglishHash": "2471292ff715cc6a574a3694d9d445a034e0ad81c7d15784d108ed5cfd16fe58"
+  },
+  "tools.agent.activePolicies": {
+    "en": "Active policies",
+    "zh-CN": "生效中的规则",
+    "reviewedEnglishHash": "5361fe56d75d8d44504df1f29b79a676f0298254d9885154a2cf1af48dc0afb3"
+  },
+  "tools.agent.allowedTools": {
+    "en": "Allowed tools",
+    "zh-CN": "允许使用的工具",
+    "reviewedEnglishHash": "73f3619da32094de33af0ecbbd62be8a03453ae1caa58d8ef87935f8fa2f443c"
+  },
+  "tools.agent.blockedToolsDescription": {
+    "en": "Tools the agent could name but Paperclip would block:",
+    "zh-CN": "智能体可以命名但 Paperclip 会阻止的工具：",
+    "reviewedEnglishHash": "97708267221953f0fd12cd46c8d75578dec86db67e24889224aad7b1d211d953"
+  },
+  "tools.agent.checkAccess": {
+    "en": "Check access",
+    "zh-CN": "检查访问权限",
+    "reviewedEnglishHash": "abb9a172a69bbc435ce883aa0cbc96120c8830e05ddf7018f5ce32f3cf6b8c74"
+  },
+  "tools.agent.checkingTools": {
+    "en": "Checking tools…",
+    "zh-CN": "检查工具...",
+    "reviewedEnglishHash": "87c6ff9afacd45702a6c1e7b28ca5f4cc9249bb8b23c10081cac37d4e64967ba"
+  },
+  "tools.agent.columns.capability": {
+    "en": "Capability",
+    "zh-CN": "能力",
+    "reviewedEnglishHash": "5faf58a69db59058fbc0871ab221aafa5b026f81b13c71a40039bb1459171958"
+  },
+  "tools.agent.columns.risk": {
+    "en": "Risk",
+    "zh-CN": "风险",
+    "reviewedEnglishHash": "0711a8d636e4c068ae59fa80c03ad68e7bd9fe473c1f9248fd2cf3716e3fb715"
+  },
+  "tools.agent.columns.source": {
+    "en": "Source",
+    "zh-CN": "来源",
+    "reviewedEnglishHash": "0e570ca6fabe24f94e52c1833f3ffd25567022beb826fa16891f3322051bc221"
+  },
+  "tools.agent.columns.tool": {
+    "en": "Tool",
+    "zh-CN": "工具",
+    "reviewedEnglishHash": "2e53bdcd0740867b597599e733c04a994f55fb17c89a61595183a001742e5705"
+  },
+  "tools.agent.companyDefault": {
+    "en": "Company default",
+    "zh-CN": "公司默认",
+    "reviewedEnglishHash": "a906ce99232e33c3f9c2837ca80125922ac212f9ee31d1401da8ca79cbc3ba2b"
+  },
+  "tools.agent.effectiveAccess": {
+    "en": "Effective access",
+    "zh-CN": "有效访问权限",
+    "reviewedEnglishHash": "46d8c205fa6a51f0d398195929f4d346c8ebeedb6082e72dcdceff09df697bc4"
+  },
+  "tools.agent.effectiveAccessDescription": {
+    "en": "This is exactly the tool set Paperclip will accept for {{agent}}. Profile and policy edits are reflected within ~5 seconds. The agent's prompt can narrow this list but cannot expand it — everything else is blocked by default.",
+    "zh-CN": "这正是 Paperclip 将接受 {{agent}} 的工具集。访问配置和策略编辑会在大约 5 秒内反映出来。智能体的提示可以缩小此列表，但不能扩展它——默认情况下，其他所有内容都会被阻止。",
+    "reviewedEnglishHash": "0a38ff4100d8378f66b7beb60162ea8368e636fc0aec2fca85e4d6e18d1e7417"
+  },
+  "tools.agent.everyKnownToolAllowed": {
+    "en": "Every known tool this agent could name is allowed.",
+    "zh-CN": "该智能体可以命名的所有已知工具都是允许的。",
+    "reviewedEnglishHash": "81d2070cf46122543b678e764224ab3166f312c5c94c0869327bff23d4f383a6"
+  },
+  "tools.agent.installAccessExplanation": {
+    "en": "Has access means the app is permitted. Installed means its tools are added to this agent's runtime context.",
+    "zh-CN": "具有访问权限意味着该应用已被允许。已安装意味着其工具已添加到该智能体的运行时上下文中。",
+    "reviewedEnglishHash": "59c905c19aa25bf24212befc5e55950c121e333e35cf3f446cfd79eec807120b"
+  },
+  "tools.agent.installAppAria": {
+    "en": "Install {{app}} on {{agent}}",
+    "zh-CN": "在 {{agent}} 上安装 {{app}}",
+    "reviewedEnglishHash": "cc03d2d0254383ce8fbd8447066066948571a8903580acc1e88f37ebe5e8e2d5"
+  },
+  "tools.agent.installed": {
+    "en": "Installed",
+    "zh-CN": "已安装",
+    "reviewedEnglishHash": "f8b32f4e92bd84ce1fcd177bec17d43093de3ee8303bb40c1b9ea521ed6a70f6"
+  },
+  "tools.agent.installedApps": {
+    "en": "Installed apps",
+    "zh-CN": "已安装的应用",
+    "reviewedEnglishHash": "df76d7f1e93cc2be64cf99d10637ea9c875301a00ac9b91dab2638b2a656cd32"
+  },
+  "tools.agent.installedAppsDescription": {
+    "en": "Installed apps load tools into {{agent}}'s context on every run. Permitted-only apps do not add context cost.",
+    "zh-CN": "已安装的应用在每次运行时都会将工具加载到 {{agent}} 的上下文中。仅允许的应用不会增加上下文成本。",
+    "reviewedEnglishHash": "0b6ad06a02912f7a70cf850c32836f49630277864230c14cf104b85dda96b046"
+  },
+  "tools.agent.installedForAll": {
+    "en": "Installed for all",
+    "zh-CN": "已为所有人安装",
+    "reviewedEnglishHash": "763535aaab47edf028fa228d91a26327c6ffdcdf3ea54623f0d508b9163ae87b"
+  },
+  "tools.agent.installedForEveryAgentDescription": {
+    "en": "Installed from the app page for every agent. Remove the all-agents install there.",
+    "zh-CN": "从每个智能体的应用页面安装。删除那里安装的所有智能体。",
+    "reviewedEnglishHash": "7b88d855b156404a76c22b5258e092c9bc9417292eb03218aa11c65c3fd05ec6"
+  },
+  "tools.agent.installedHint": {
+    "en": "Has access — tick to load its tools into this agent's context.",
+    "zh-CN": "有权访问 — 勾选可将其工具加载到该智能体的上下文中。",
+    "reviewedEnglishHash": "58d3dd85a3b2d48e93f9070e7e0e03ee2ef997c9575bdb165fd7dd9d42b40936"
+  },
+  "tools.agent.loadedIntoContext": {
+    "en": "Loaded into this agent's runtime context.",
+    "zh-CN": "加载到该智能体的运行时上下文中。",
+    "reviewedEnglishHash": "dc9c15c1443f2669dc7575c8010c44d2d12134930498e7a9b9285b136cb0d9d8"
+  },
+  "tools.agent.loadingPolicies": {
+    "en": "Loading policies…",
+    "zh-CN": "正在加载规则...",
+    "reviewedEnglishHash": "4b856670f2d7bce997fb838a012479a8badd298ee4d01b735c87acf1197db192"
+  },
+  "tools.agent.moreTools": {
+    "en": "+{{count}} more",
+    "zh-CN": "+{{count}} 个",
+    "reviewedEnglishHash": "48380badf7a45c74d3fac6b89d19d777585cb9052d135d1ec482b932bc99e98a"
+  },
+  "tools.agent.noActivePolicies": {
+    "en": "No enabled policy currently mutates this agent's allow list.",
+    "zh-CN": "当前没有启用的策略会改变此智能体的允许列表。",
+    "reviewedEnglishHash": "854cf0ca64f5e255796fb114083129f91e54df617de2ae2fe950904f2965dedf"
+  },
+  "tools.agent.noActiveProfile": {
+    "en": "No active profile applies to this agent, so it has no allowed tools.",
+    "zh-CN": "没有活动访问配置适用于该智能体，因此它没有允许的工具。",
+    "reviewedEnglishHash": "50b16433b496046d3dbe41ff9e9ed7a04eefdad9926f7aedd65df27e90f737b4"
+  },
+  "tools.agent.noAllowedTools": {
+    "en": "No tools are allowed for this agent. Bind a tool profile to grant access.",
+    "zh-CN": "该智能体不允许使用任何工具。绑定工具访问配置以授予访问权限。",
+    "reviewedEnglishHash": "cad3bcb38951e95c54821921070c2211780f02ddd8295a2cd84dcb4d5bc7cdf7"
+  },
+  "tools.agent.noPermittedApps": {
+    "en": "No permitted apps yet. Bind an access profile to make apps available here.",
+    "zh-CN": "尚无允许的应用。绑定访问配置以使应用在此处可用。",
+    "reviewedEnglishHash": "a42e3e0dd4894652e4ae1e706023e97a4e71554a74aea1d37d90a2113e4a251c"
+  },
+  "tools.agent.notPermitted": {
+    "en": "Not permitted",
+    "zh-CN": "不允许",
+    "reviewedEnglishHash": "8ec5f4b7a4d4dbad3df4847cde093de8be7dd993f52041ef4f8da5566d05b551"
+  },
+  "tools.agent.openPermissions": {
+    "en": "Open permissions",
+    "zh-CN": "开放权限",
+    "reviewedEnglishHash": "2fbb36e15bd17db5d8204d54c592c7151351b5f8622f7593220909e83b65d2b2"
+  },
+  "tools.agent.permittedNotInstalled": {
+    "en": "Permitted but not installed — tools will not appear in runs.",
+    "zh-CN": "允许但未安装 - 工具不会出现在运行中。",
+    "reviewedEnglishHash": "6e05920b46f44b56a043828e0ff579fcbff8587e70b20b87585e0965ecf7c11f"
+  },
+  "tools.agent.permittedOnly": {
+    "en": "Permitted only",
+    "zh-CN": "仅允许",
+    "reviewedEnglishHash": "b66efe0f88122b49057b49ff30fddedb6e50dd29886c12df821564b0ca487950"
+  },
+  "tools.agent.policyEffects.allow": {
+    "en": "allow",
+    "zh-CN": "允许",
+    "reviewedEnglishHash": "410083735735a10e658a19edd1704e606c9dd112e225825b63fafeded766c8b9"
+  },
+  "tools.agent.policyEffects.block": {
+    "en": "block",
+    "zh-CN": "块",
+    "reviewedEnglishHash": "496aca80e4d8f29fb8e8cd816c3afb48d3f103970b3a2ee1600c08ca67326dee"
+  },
+  "tools.agent.policyEffects.deny": {
+    "en": "deny",
+    "zh-CN": "否认",
+    "reviewedEnglishHash": "3026a0ca485e5831657ba0120fa8dd66b3425427bfb0a2be0db743e2305cc7c5"
+  },
+  "tools.agent.policyEffects.rateLimit": {
+    "en": "rate limit",
+    "zh-CN": "速率限制",
+    "reviewedEnglishHash": "a0f3a11be6415e8fef0df56a607fea311c02f0d2733456e4fa4bafeb0388ad85"
+  },
+  "tools.agent.policyEffects.redact": {
+    "en": "redact",
+    "zh-CN": "编辑",
+    "reviewedEnglishHash": "18f1255e3f7344a3ba6b47c30c585c48baf1b1d0ace3872b38658de130772f6e"
+  },
+  "tools.agent.policyEffects.requireApproval": {
+    "en": "require approval",
+    "zh-CN": "需要批准",
+    "reviewedEnglishHash": "ba46f298f18b1d3a89a1937a78ad660d91347195d8214b972f6fd77fbd74c393"
+  },
+  "tools.agent.policyTitle": {
+    "en": "Policy #{{order}}: {{name}}",
+    "zh-CN": "规则#{{order}}：{{name}}",
+    "reviewedEnglishHash": "627018f2c40685ee8c7be5e33927f6dc4a151843163cccce79652642a52d3c7c"
+  },
+  "tools.agent.resolvingEffectiveAccess": {
+    "en": "Resolving effective access…",
+    "zh-CN": "解决有效访问权限...",
+    "reviewedEnglishHash": "84e7e40cc934098a2f8a3070bf7d69955c57b209d1899e83596e51db9290882d"
+  },
+  "tools.agent.toolCount": {
+    "en": "{{count}} tool",
+    "zh-CN": "{{count}} 个工具",
+    "reviewedEnglishHash": "c2ce825c00366d503abbcf3fa6a8e1089360f4ce8bff74211df8c553f7199683"
+  },
+  "tools.agent.unavailableTools": {
+    "en": "Unavailable tools",
+    "zh-CN": "不可用的工具",
+    "reviewedEnglishHash": "d13855c69bc5ffe4cdf7b5e8547f448d9a3eda8b5f3ef97a4c3f2d36996e77b0"
+  },
+  "tools.agent.whyTheseTools": {
+    "en": "Why these tools?",
+    "zh-CN": "为什么使用这些工具？",
+    "reviewedEnglishHash": "1c9d4652b457ff2274ca54f8ccbe97066412d7db5df81730a7e7f289b0a007d4"
+  },
+  "tools.audit.description": {
+    "en": "What your agents actually did with your apps, newest first. Each line is one decision — allowed, blocked, asked first, waiting, or failed.",
+    "zh-CN": "您的智能体实际上对您的应用做了什么，最新的优先。每一行都是一个决定——允许、阻止、先询问、等待或失败。",
+    "reviewedEnglishHash": "c7a12a9c26f81c5dec08ebe5700b277428e8ff89ceff4f6b6fe778ff43807a99"
+  },
+  "tools.audit.details": {
+    "en": "Details",
+    "zh-CN": "详情",
+    "reviewedEnglishHash": "45989de49fb7f66dfe17a8fc26f3a02c7abcd74f7e8e6cf9f39fa0e3775780df"
+  },
+  "tools.audit.details.actionName": {
+    "en": "Action name",
+    "zh-CN": "操作名称",
+    "reviewedEnglishHash": "323a3fff0124756175f0cef5720eda49cfb408bcac66f63c13fec8d0bbff4504"
+  },
+  "tools.audit.details.actorType": {
+    "en": "Actor type",
+    "zh-CN": "操作者类型",
+    "reviewedEnglishHash": "6d003d9d9a934965c07221b7d0f07fae86cce27ab9d27d2b3d267817ace91a52"
+  },
+  "tools.audit.details.bytes": {
+    "en": "{{count}} bytes",
+    "zh-CN": "{{count}} 字节",
+    "reviewedEnglishHash": "ba563362c55908521466511f040ef569c59c821c3d50c34c5624e297fd2cbcac"
+  },
+  "tools.audit.details.contentType": {
+    "en": "Content type",
+    "zh-CN": "内容类型",
+    "reviewedEnglishHash": "6f51cb0403204b193fae377ec5c3bcb55437b58fd99006e7554951f2874395e2"
+  },
+  "tools.audit.details.deliveredMcpServers": {
+    "en": "Delivered MCP servers",
+    "zh-CN": "已交付 MCP 服务器",
+    "reviewedEnglishHash": "e8f93a3ea5e8fb3c0937d8c500cc191e56b0fc618342ca4fc4574f7d38967445"
+  },
+  "tools.audit.details.dispatched": {
+    "en": "Dispatched",
+    "zh-CN": "已派遣",
+    "reviewedEnglishHash": "a43dccadeb619e3ef8cfb07a3c239904319c59c29ea2ed9fc29a2d3f7ecad2db"
+  },
+  "tools.audit.details.httpRequest": {
+    "en": "HTTP request",
+    "zh-CN": "HTTP 请求",
+    "reviewedEnglishHash": "f1ee1152c8b29ea2347b8de6b78871a878da0061b869c5301b1b37f927a6f2db"
+  },
+  "tools.audit.details.httpStatus": {
+    "en": "HTTP status",
+    "zh-CN": "HTTP 状态",
+    "reviewedEnglishHash": "0f7cf91f242cdf7abb04bb4710c174d56643d01bc39acc3e4334c716d06b660b"
+  },
+  "tools.audit.details.mcpMethod": {
+    "en": "MCP method",
+    "zh-CN": "MCP 方法",
+    "reviewedEnglishHash": "e810a950faf752c6f5c41de7e07c273060ac548a573982004cab5b9e5b33ad33"
+  },
+  "tools.audit.details.parametersRedacted": {
+    "en": "Parameters (redacted)",
+    "zh-CN": "参数（已脱敏）",
+    "reviewedEnglishHash": "7aa473afa7c5f4554945010804f759b8b16bd4b348966c7130bf44fdb5228963"
+  },
+  "tools.audit.details.reasonCode": {
+    "en": "Reason code",
+    "zh-CN": "原因代码",
+    "reviewedEnglishHash": "9e13ec9ee6a95a3816cefe5178d22e9d5b30ae831210c127f81003bbe66b4106"
+  },
+  "tools.audit.details.requestId": {
+    "en": "Request ID",
+    "zh-CN": "请求ID",
+    "reviewedEnglishHash": "d561f528baf777c761ef9912d960cfd627e22085452ded40590b25178ae36524"
+  },
+  "tools.audit.details.responseSize": {
+    "en": "Response size",
+    "zh-CN": "响应大小",
+    "reviewedEnglishHash": "3bbd79b42b54c2b1f6a1be5ce7d13c5c66f6c9ef5694db428dfd56187864630d"
+  },
+  "tools.audit.details.runId": {
+    "en": "Run ID",
+    "zh-CN": "运行ID",
+    "reviewedEnglishHash": "26d3e7aaace43436a02ba4526ef6df39522cd9053220ea66519a05bdb614e5f4"
+  },
+  "tools.audit.details.transport": {
+    "en": "Transport",
+    "zh-CN": "传输方式",
+    "reviewedEnglishHash": "aaead4abf5d0fd5ecc08d1dcb7effadfc4b65034aa0f3f80edb8bb3932411637"
+  },
+  "tools.audit.details.upstreamId": {
+    "en": "Upstream ID",
+    "zh-CN": "上游ID",
+    "reviewedEnglishHash": "56ca20b2823d9585911f179e658dac798f0823be31086398ce8f0084dc7e7d14"
+  },
+  "tools.audit.emptyDescription": {
+    "en": "As soon as your agents start using connected apps, what they do shows up here.",
+    "zh-CN": "一旦您的智能体开始使用连接的应用，他们所做的事情就会显示在这里。",
+    "reviewedEnglishHash": "3d3eaa1988ecbaece07b924e1ae68a1760fa3b3c0698bbf963737b032b13ae5f"
+  },
+  "tools.audit.emptyTitle": {
+    "en": "Nothing here yet",
+    "zh-CN": "这里还什么都没有",
+    "reviewedEnglishHash": "49abaf804ab38c1da030e3396f6f8aa27442a44af3c10055065b817996be33ec"
+  },
+  "tools.audit.eventUsed": {
+    "en": "{{agent}} used {{action}}",
+    "zh-CN": "{{agent}} 使用了 {{action}}",
+    "reviewedEnglishHash": "ae32107b4fc1105fff33345b129462dbd56494c701ae614d626c92b72b663efe"
+  },
+  "tools.audit.eventUsedInApp": {
+    "en": "{{agent}} used {{action}} in {{app}}",
+    "zh-CN": "{{agent}} 在 {{app}} 中使用了 {{action}}",
+    "reviewedEnglishHash": "92c89f3593cce984e141c961276f698778c8abf586046421dde2207c6d504483"
+  },
+  "tools.audit.filters.agent": {
+    "en": "Agent",
+    "zh-CN": "智能体",
+    "reviewedEnglishHash": "11b39c93777e8f1f3983bdba7c72b22fe68cfea20c677e9de53e17cb7dbfb19f"
+  },
+  "tools.audit.filters.allAgents": {
+    "en": "All agents",
+    "zh-CN": "所有智能体",
+    "reviewedEnglishHash": "54c32d3e2cfa1cc879f746643e6b41360541692fc0a163f3793595510398e6f5"
+  },
+  "tools.audit.filters.allApps": {
+    "en": "All apps",
+    "zh-CN": "所有应用",
+    "reviewedEnglishHash": "01bed311e7d0c963a5f8afe3dd3c99c8140d887d92c602b94b9309fa51b32723"
+  },
+  "tools.audit.filters.allOutcomes": {
+    "en": "All outcomes",
+    "zh-CN": "所有结果",
+    "reviewedEnglishHash": "1d7f920d0db49837e58ca014310e3ca1471ababdca673f87d1db57e1fdc08f01"
+  },
+  "tools.audit.filters.app": {
+    "en": "App",
+    "zh-CN": "应用",
+    "reviewedEnglishHash": "0d04bfeb7d64b71c74fc925cca93d683154e8cc7e6e5838faced498e34c9984d"
+  },
+  "tools.audit.filters.clear": {
+    "en": "Clear filters",
+    "zh-CN": "清除过滤器",
+    "reviewedEnglishHash": "7179ea0035fca783ec62b7185659b68c75f2a7c12b909306a57183dc9b3fa44b"
+  },
+  "tools.audit.filters.last24Hours": {
+    "en": "Last 24 hours",
+    "zh-CN": "过去 24 小时",
+    "reviewedEnglishHash": "5c37cf8f018b4ac5c8f0ae78adca85f4184f901bb8b4d28327f87d7350357a57"
+  },
+  "tools.audit.filters.last30Days": {
+    "en": "Last 30 days",
+    "zh-CN": "过去 30 天",
+    "reviewedEnglishHash": "f8f03fb441b8b4ae1abf7d0f8dd534ae0244cd4b842d2c08e5d3530dcab04eed"
+  },
+  "tools.audit.filters.last7Days": {
+    "en": "Last 7 days",
+    "zh-CN": "过去 7 天",
+    "reviewedEnglishHash": "0603deca4fcb660f1c06a02621423721bd48084970ecf2b2de0e326dc783d191"
+  },
+  "tools.audit.filters.lastHour": {
+    "en": "Last 1 hour",
+    "zh-CN": "最后 1 小时",
+    "reviewedEnglishHash": "3e88e2410dc4c4126e5b1bdde04c07a8bcda5ea1c5b0db2ab4c85c435823095f"
+  },
+  "tools.audit.filters.search": {
+    "en": "Search activity…",
+    "zh-CN": "搜索活动...",
+    "reviewedEnglishHash": "6f14857bfd04fabe9fad316eb53a325dbadfc79aa68f71bab64fe0150d49b6ab"
+  },
+  "tools.audit.hideEventDetails": {
+    "en": "Hide activity details for {{agent}}",
+    "zh-CN": "隐藏 {{agent}} 的活动详细信息",
+    "reviewedEnglishHash": "b9c9170a04e1599cd7d7165208a803a62384d12d5aa92a1bf23304efca938ee1"
+  },
+  "tools.audit.immutabilityNotice": {
+    "en": "Recorded by Paperclip — entries can't be edited. Sensitive values are never stored.",
+    "zh-CN": "由 Paperclip 录制 — 条目无法编辑。敏感值永远不会被存储。",
+    "reviewedEnglishHash": "f95bb996afcd3e03e5ccaf34e6b2d8faa73d9f03a1ec9b290bb5800bc0277258"
+  },
+  "tools.audit.loadMore": {
+    "en": "Load more",
+    "zh-CN": "加载更多",
+    "reviewedEnglishHash": "ac8991ef01019cf55a2426194a05959e0cb886333f1a332ff4f442320d165400"
+  },
+  "tools.audit.noMatchingActivity": {
+    "en": "No activity matches these filters",
+    "zh-CN": "没有活动与这些过滤器匹配",
+    "reviewedEnglishHash": "2acc5c1033c90d214bfd65e1a9a6138c8512b0f4f3fa067adb8dbfd59fdc458f"
+  },
+  "tools.audit.notInstalled": {
+    "en": "Not installed",
+    "zh-CN": "未安装",
+    "reviewedEnglishHash": "d177cdc09a4ea3f377e5b336e9ff52184be0dc032f29af2e5d346bc7390340a6"
+  },
+  "tools.audit.outcomes.allowed": {
+    "en": "Allowed",
+    "zh-CN": "允许",
+    "reviewedEnglishHash": "1bb201d188352e9b4633f85e4fb8a31ea93fd14dec702443fd3e2713d657fd2d"
+  },
+  "tools.audit.outcomes.askedFirst": {
+    "en": "Asked first",
+    "zh-CN": "先询问",
+    "reviewedEnglishHash": "db928628a30ccd18f8156b46a9a7818e36c18b37e45847f0e1db607c9d44847e"
+  },
+  "tools.audit.outcomes.blocked": {
+    "en": "Blocked",
+    "zh-CN": "被阻止",
+    "reviewedEnglishHash": "18f2a0947f9d6523991b29b450307f22773f57d65f7efb98d48a167df04d6b1d"
+  },
+  "tools.audit.outcomes.failed": {
+    "en": "Failed",
+    "zh-CN": "失败",
+    "reviewedEnglishHash": "031a8f0f659df890dfd53c92e45295b0f14c997185bae46e168831e403b273f7"
+  },
+  "tools.audit.outcomes.recorded": {
+    "en": "Recorded",
+    "zh-CN": "已录制",
+    "reviewedEnglishHash": "c7175fa7a0db0d3ca4b26d27675d2e4e0776634ce5ffa35c88daa749b57d6846"
+  },
+  "tools.audit.outcomes.waiting": {
+    "en": "Waiting",
+    "zh-CN": "等待",
+    "reviewedEnglishHash": "6e293a8c009e001103199768f7bcbea1729c59f9fc1ef2748958757f47ab99ed"
+  },
+  "tools.audit.reasons.allowed": {
+    "en": "Allowed by your rules.",
+    "zh-CN": "您的规则允许。",
+    "reviewedEnglishHash": "116e041f5f74c935cf1daff765cfe4e5d011e9aee8573339acea831e478fee89"
+  },
+  "tools.audit.reasons.askedFirst": {
+    "en": "Held for someone to approve before it could run.",
+    "zh-CN": "在运行之前需要等待某人批准。",
+    "reviewedEnglishHash": "ba632cd062b3f2035e53c82a47d4603523c0a46082decd2d4fd16929379326b5"
+  },
+  "tools.audit.reasons.blocked": {
+    "en": "Blocked by a rule.",
+    "zh-CN": "被规则阻止。",
+    "reviewedEnglishHash": "cbdfc9adf944f83c22b095181f5d18c95f009ec5d59e8d51fb5d83818c15281a"
+  },
+  "tools.audit.reasons.failed": {
+    "en": "The app was allowed to run it, but returned an error.",
+    "zh-CN": "该应用被允许运行它，但返回了一个错误。",
+    "reviewedEnglishHash": "defbfa7492eaaede317ae42f315261fd4077f9ad0b8b013f21949d3ff2fcf790"
+  },
+  "tools.audit.reasons.notInstalled": {
+    "en": "Permitted connections were not installed, so their tools were not added to this run.",
+    "zh-CN": "未安装允许的连接，因此他们的工具未添加到此运行中。",
+    "reviewedEnglishHash": "412f0127a19acef97e3b0966970bd9cd2cc62cbfdb122654fe7f83e737828d9e"
+  },
+  "tools.audit.reasons.rateLimited": {
+    "en": "Blocked because it ran too many times in a short window.",
+    "zh-CN": "被阻止是因为它在短时间内运行了太多次。",
+    "reviewedEnglishHash": "9bc5b0ea5df1550a84da0fb0cbd683aa36808b4f490f6cec0eb92c303f2fcd5f"
+  },
+  "tools.audit.reasons.recorded": {
+    "en": "Recorded by Paperclip.",
+    "zh-CN": "由Paperclip录制。",
+    "reviewedEnglishHash": "987d2ccee528e0ddcfc7a6bcb098bcd84389e7f179f56d244b13efac126f7bce"
+  },
+  "tools.audit.reasons.secretBlocked": {
+    "en": "Blocked to keep a sensitive value from leaving.",
+    "zh-CN": "阻止以防止敏感值离开。",
+    "reviewedEnglishHash": "42ba4de54be99b0b589a4289a88a44c4d005194a6b1ee1e83bbebd76a59b74b1"
+  },
+  "tools.audit.reasons.waiting": {
+    "en": "Waiting — the app it needs wasn't ready yet.",
+    "zh-CN": "等待——它需要的应用还没有准备好。",
+    "reviewedEnglishHash": "62ab986b82849e2eb1386296a3d7f5a4522394580ddbad0aa6d8bcda6de3cf83"
+  },
+  "tools.audit.runtimeDeliveryDiagnostic": {
+    "en": "{{agent}}'s run received 0 MCP servers — {{count}} permitted connection not installed",
+    "zh-CN": "{{agent}} 的运行收到 0 个 MCP 服务器 — {{count}} 允许的连接未安装",
+    "reviewedEnglishHash": "893afe2e494a13611e398a302acab4ad2ab257903871bbed882250435f8561c6"
+  },
+  "tools.audit.showEventDetails": {
+    "en": "Show activity details for {{agent}}",
+    "zh-CN": "显示 {{agent}} 的活动详细信息",
+    "reviewedEnglishHash": "53333f2bd565ff80b31ae2924ab06674d6e27bd03728b2ba360d9e8532edcd01"
+  },
+  "tools.audit.title": {
+    "en": "Activity",
+    "zh-CN": "活动",
+    "reviewedEnglishHash": "38da1505ca8373288489495101b14f24ac95078f520ad64df18272aa6054f750"
+  },
+  "tools.audit.tryDifferentFilters": {
+    "en": "Try a wider time window or different filters.",
+    "zh-CN": "尝试更宽的时间范围或不同的过滤器。",
+    "reviewedEnglishHash": "4e97d386c47afe3a9d04d1c1b177c06167ed1d3edec4f220628aca5b4b907f09"
+  },
+  "tools.audit.unknownAction": {
+    "en": "an action",
+    "zh-CN": "一个操作",
+    "reviewedEnglishHash": "a1d98dfadc18e0c7409ec2d2a883f967de1e139e066c8758a35183d9346f1a25"
+  },
+  "tools.audit.unknownAgent": {
+    "en": "An agent",
+    "zh-CN": "智能体",
+    "reviewedEnglishHash": "ea6a03636c62be3ae0671ef47fe39ce34318f24540c7c9bb958c3a253a2a8f32"
+  },
+  "tools.audit.unnamedConnection": {
+    "en": "Unnamed connection",
+    "zh-CN": "未命名连接",
+    "reviewedEnglishHash": "bd132e467b6b1a8d9cca7e499505531bfb4d0b5fec41561ce8215f32b03c1e48"
+  },
+  "tools.audit.viewRun": {
+    "en": "View run",
+    "zh-CN": "查看运行情况",
+    "reviewedEnglishHash": "aaf7fccc7d1315f23f35073f1d89aa8357c5d0cdb9b00a03ee2a4291e976b9ac"
+  },
+  "tools.audit.viewTask": {
+    "en": "View task",
+    "zh-CN": "查看任务",
+    "reviewedEnglishHash": "01444a2b442a7b78a02322d766595c25b6cc5b135f7ff8462bd2484fd863e487"
+  },
+  "tools.breadcrumbs.apps": {
+    "en": "Apps",
+    "zh-CN": "应用",
+    "reviewedEnglishHash": "89dd748442c194857825848e1500abbbc5f52fb067ad27fb05dc9fb23eebba3b"
+  },
+  "tools.breadcrumbs.company": {
+    "en": "Company",
+    "zh-CN": "公司",
+    "reviewedEnglishHash": "de4743c879734dc38cb3e270ecefcae077c3c2e626f9298115d5a03c8613f89b"
+  },
+  "tools.common.action": {
+    "en": "Action",
+    "zh-CN": "操作",
+    "reviewedEnglishHash": "64cff1319d2fd2cbb7a1e84ccecf22c1cc07b24435cdb522f8c0aa525d6002a6"
+  },
+  "tools.common.actions": {
+    "en": "Actions",
+    "zh-CN": "操作",
+    "reviewedEnglishHash": "ff8059dc6752afdd30d275932b1d5031a2ec854b387a8c57ecc6689915293a43"
+  },
+  "tools.common.add": {
+    "en": "Add",
+    "zh-CN": "添加",
+    "reviewedEnglishHash": "9fd728c66c9a256b121472dabf32a34317aed01d8427d70ec830289cf23a7cc8"
+  },
+  "tools.common.advanced": {
+    "en": "Advanced",
+    "zh-CN": "高级设置",
+    "reviewedEnglishHash": "9f088dbebd6c3c70a5ddbc2c943b11e4ca9acea5757b0b4f2b32479f0dbb747e"
+  },
+  "tools.common.agent": {
+    "en": "Agent",
+    "zh-CN": "智能体",
+    "reviewedEnglishHash": "11b39c93777e8f1f3983bdba7c72b22fe68cfea20c677e9de53e17cb7dbfb19f"
+  },
+  "tools.common.allow": {
+    "en": "Allow",
+    "zh-CN": "允许",
+    "reviewedEnglishHash": "e213c161d5cefa520c8dd4155c9569076d9a40406111465136a6f1b207045761"
+  },
+  "tools.common.app": {
+    "en": "App",
+    "zh-CN": "应用",
+    "reviewedEnglishHash": "0d04bfeb7d64b71c74fc925cca93d683154e8cc7e6e5838faced498e34c9984d"
+  },
+  "tools.common.archive": {
+    "en": "Archive",
+    "zh-CN": "存档",
+    "reviewedEnglishHash": "66f4804ee23ddc092d1bae43cb88186aa541187fff7c1cc8a4aa17e59a9f4123"
+  },
+  "tools.common.assign": {
+    "en": "Assign",
+    "zh-CN": "分配",
+    "reviewedEnglishHash": "8ece895c9b32c6436d34b0384ae9f8555c8abccd31541f722f27e45e72a85bff"
+  },
+  "tools.common.back": {
+    "en": "Back",
+    "zh-CN": "返回",
+    "reviewedEnglishHash": "76900f1bfd16c8d4dd3d25e6f46638d7165aee23883ccea6bfe071c514421769"
+  },
+  "tools.common.block": {
+    "en": "Block",
+    "zh-CN": "阻止",
+    "reviewedEnglishHash": "211d0bb8cf4f5b5202c2a9b7996e483898644aa24714b1e10edd80a54ba4b560"
+  },
+  "tools.common.cancel": {
+    "en": "Cancel",
+    "zh-CN": "取消",
+    "reviewedEnglishHash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+  },
+  "tools.common.capabilities": {
+    "en": "Capabilities",
+    "zh-CN": "能力",
+    "reviewedEnglishHash": "9460f16ac9b5171e7f3d3f2336ec66b547231be8996ea9a0ad25079f84641be4"
+  },
+  "tools.common.clearSearch": {
+    "en": "Clear search",
+    "zh-CN": "清除搜索",
+    "reviewedEnglishHash": "3b7ea51793e9d906afa06afb86252abb48e1125cc96a7f5efabcfd8597ea183a"
+  },
+  "tools.common.clipboardUnavailable": {
+    "en": "Clipboard access is unavailable.",
+    "zh-CN": "剪贴板访问不可用。",
+    "reviewedEnglishHash": "0899c211b77f93b01d7f705107c2a8fdaf7abcf96e7c995884b4cab415099cf2"
+  },
+  "tools.common.close": {
+    "en": "Close",
+    "zh-CN": "关闭",
+    "reviewedEnglishHash": "7d9eb7acb13e24625c404401d8e88b2350e32162455885f18276cf802f7701ed"
+  },
+  "tools.common.company": {
+    "en": "Company",
+    "zh-CN": "公司",
+    "reviewedEnglishHash": "de4743c879734dc38cb3e270ecefcae077c3c2e626f9298115d5a03c8613f89b"
+  },
+  "tools.common.confirm": {
+    "en": "Confirm",
+    "zh-CN": "确认",
+    "reviewedEnglishHash": "eebdd24a77d9ad32222660c07777163bf5f6732df2b172351f3f8d5783e4f529"
+  },
+  "tools.common.continue": {
+    "en": "Continue",
+    "zh-CN": "继续",
+    "reviewedEnglishHash": "31fbef162594de01bab0cd525c51f74de7bcb15063029fa1a54b2cf5944c80d8"
+  },
+  "tools.common.copiedToClipboard": {
+    "en": "Copied to clipboard",
+    "zh-CN": "已复制到剪贴板",
+    "reviewedEnglishHash": "d37078fe6a1faa15fc48c293dd1d4c37698eb0cfafae8ca1c456b0cc4600db11"
+  },
+  "tools.common.copy": {
+    "en": "Copy",
+    "zh-CN": "复制",
+    "reviewedEnglishHash": "e21f935f11d7e966dbbae78da9daa378fe8142a14e7c0cd7434183005faa6c5c"
+  },
+  "tools.common.copyFailed": {
+    "en": "Copy failed",
+    "zh-CN": "复制失败",
+    "reviewedEnglishHash": "5b50e7a693fee952b9ed0e7c240bf4cba69b1dbf02af718145b297e4110591f3"
+  },
+  "tools.common.couldNotSave": {
+    "en": "Could not save",
+    "zh-CN": "无法保存",
+    "reviewedEnglishHash": "16efcd21d74fc1d209855cf3bc9a19da1839f4d3f720689586dffbd128477f25"
+  },
+  "tools.common.create": {
+    "en": "Create",
+    "zh-CN": "创建",
+    "reviewedEnglishHash": "4759498ac2a719c619e2c8cf8ee60af2d2407425e95d308eb208425b2a6d427a"
+  },
+  "tools.common.creating": {
+    "en": "Creating...",
+    "zh-CN": "正在创建...",
+    "reviewedEnglishHash": "def70944c9bb9c3b77129e6fc48cfcd043031a86ae747060a3e97985d254c4f2"
+  },
+  "tools.common.delete": {
+    "en": "Delete",
+    "zh-CN": "删除",
+    "reviewedEnglishHash": "e2d0a54968ead24efc0dffa6ac78fc606dceec34a0f586177a74a54cc2272cf8"
+  },
+  "tools.common.description": {
+    "en": "Description",
+    "zh-CN": "描述",
+    "reviewedEnglishHash": "526e0087cc3f254d9f86f6c7d8e23d954c4dfda2b312efc29194ae8a860106ba"
+  },
+  "tools.common.details": {
+    "en": "Details",
+    "zh-CN": "详情",
+    "reviewedEnglishHash": "45989de49fb7f66dfe17a8fc26f3a02c7abcd74f7e8e6cf9f39fa0e3775780df"
+  },
+  "tools.common.dismiss": {
+    "en": "Dismiss",
+    "zh-CN": "解雇",
+    "reviewedEnglishHash": "48845bff334a50a59aaecf499f28a7a24c3b4b891b8b18a9f1169ad8e8a6b261"
+  },
+  "tools.common.duplicate": {
+    "en": "Duplicate",
+    "zh-CN": "复制",
+    "reviewedEnglishHash": "02cdaabfca805d6ab75d81043998bdc733451b9ea48958ebf8098022d102ba2e"
+  },
+  "tools.common.edit": {
+    "en": "Edit",
+    "zh-CN": "编辑",
+    "reviewedEnglishHash": "464c4ffd019e1e9691dcf0537c797353ef2b1c1d4833d3d463e5b74ae4547344"
+  },
+  "tools.common.experimental": {
+    "en": "Experimental",
+    "zh-CN": "实验性",
+    "reviewedEnglishHash": "3dc9f569422dcfdadcb2c33f3eb2ee6fcebc8ba679bd63e690f9ddd0ff7c24be"
+  },
+  "tools.common.identifier": {
+    "en": "Identifier",
+    "zh-CN": "标识符",
+    "reviewedEnglishHash": "9b10587f84a2c3749305f3421c8f2838ed88b0ab1e44326ff9eeb48083373144"
+  },
+  "tools.common.issueId": {
+    "en": "Issue ID",
+    "zh-CN": "任务 ID",
+    "reviewedEnglishHash": "63e467f44aec1661266a0199c609d91466bf521bf207a0bc6933795df0ae7e76"
+  },
+  "tools.common.loading": {
+    "en": "Loading…",
+    "zh-CN": "正在加载…",
+    "reviewedEnglishHash": "ba3bbbe10d8bef66441c88536ce7b8e724e2829b59a3da658654f4961cd61ae5"
+  },
+  "tools.common.name": {
+    "en": "Name",
+    "zh-CN": "名称",
+    "reviewedEnglishHash": "dcd1d5223f73b3a965c07e3ff5dbee3eedcfedb806686a05b9b3868a2c3d6d50"
+  },
+  "tools.common.no": {
+    "en": "No",
+    "zh-CN": "否",
+    "reviewedEnglishHash": "1ea442a134b2a184bd5d40104401f2a37fbc09ccf3f4bc9da161c6099be3691d"
+  },
+  "tools.common.none": {
+    "en": "None",
+    "zh-CN": "无",
+    "reviewedEnglishHash": "dc937b59892604f5a86ac96936cd7ff09e25f18ae6b758e8014a24c7fa039e91"
+  },
+  "tools.common.on": {
+    "en": "On",
+    "zh-CN": "开启",
+    "reviewedEnglishHash": "130011756125313c72f2cab730db4347e2841526d236a89cb25f38789fa49229"
+  },
+  "tools.common.priority": {
+    "en": "Priority",
+    "zh-CN": "优先级",
+    "reviewedEnglishHash": "d60dbba079223254d4c49c230a515bc107a997e69f811365da2387f8557b9cec"
+  },
+  "tools.common.project": {
+    "en": "Project",
+    "zh-CN": "项目",
+    "reviewedEnglishHash": "985959785319747668373cc6dee294b11db782b03cdd90a2851fbdc0637c6b7b"
+  },
+  "tools.common.projects": {
+    "en": "Projects",
+    "zh-CN": "项目",
+    "reviewedEnglishHash": "04e2a9728af7584043c5d58ae29e7cd811883e8dab15fc6287675270669a3ada"
+  },
+  "tools.common.recommended": {
+    "en": "Recommended",
+    "zh-CN": "推荐",
+    "reviewedEnglishHash": "d70604e8430461372849bbd123d85771e11423870a507e8fa4650a7e9a5a50ef"
+  },
+  "tools.common.reconnect": {
+    "en": "Reconnect",
+    "zh-CN": "重新连接",
+    "reviewedEnglishHash": "bf8a9eab9e7e141bfb81f0ca9244a5f68f476ed0b57f03538410417298169d18"
+  },
+  "tools.common.remove": {
+    "en": "Remove",
+    "zh-CN": "删除",
+    "reviewedEnglishHash": "c3812fc4acb861d5182fc2b8155f327f736fbe5e5eb86a7bd7afcb6dc5497282"
+  },
+  "tools.common.reset": {
+    "en": "Reset",
+    "zh-CN": "重置",
+    "reviewedEnglishHash": "daee7606b339f3c339076fe2c9f372a3ff40c8ee896005d829c7481b64ca5303"
+  },
+  "tools.common.restart": {
+    "en": "Restart",
+    "zh-CN": "重启",
+    "reviewedEnglishHash": "6b983a81e5e8099e4e23a368e72636e31f029f2e691e5be714106b8cf59d70a7"
+  },
+  "tools.common.restore": {
+    "en": "Restore",
+    "zh-CN": "恢复",
+    "reviewedEnglishHash": "a76e13b9839270eb73ed11417f7d8acca55df0ad52065799361631d0fff74f27"
+  },
+  "tools.common.resume": {
+    "en": "Resume",
+    "zh-CN": "简历",
+    "reviewedEnglishHash": "d640c7421da066618a39daf4266da5f61f66a9b1afcd626481b831a17064965d"
+  },
+  "tools.common.review": {
+    "en": "Review",
+    "zh-CN": "评论",
+    "reviewedEnglishHash": "aff0766a5290e117b8433c351bae7b7b23bed682b2369bd822d88a647cc58512"
+  },
+  "tools.common.risky": {
+    "en": "(risky)",
+    "zh-CN": "（有风险）",
+    "reviewedEnglishHash": "9f4875c487ebcf62f0883ff3c1450246a1dbf7a3a7b7be27d8c2b7f722e4daec"
+  },
+  "tools.common.routine": {
+    "en": "Routine",
+    "zh-CN": "例行任务",
+    "reviewedEnglishHash": "0b5baf309897ec7e2def5db089f1f4ec5b15d5912296577d655d00ca0fc40b59"
+  },
+  "tools.common.routines": {
+    "en": "Routines",
+    "zh-CN": "例行任务",
+    "reviewedEnglishHash": "61b7bb44e2b47b7c0ccaccff4872fdcf3e298345d0f003ea4bf54e8c84e2a889"
+  },
+  "tools.common.save": {
+    "en": "Save",
+    "zh-CN": "保存",
+    "reviewedEnglishHash": "1509f561f2416598629b886ad7d3c05a7e221e4e0675c84bbff4ee6d9e03913d"
+  },
+  "tools.common.saved": {
+    "en": "Saved",
+    "zh-CN": "已保存",
+    "reviewedEnglishHash": "b5c120b316c237a0deab3140267aebedba61947d3ae268d708a53d5be119e9fb"
+  },
+  "tools.common.saving": {
+    "en": "Saving...",
+    "zh-CN": "正在保存...",
+    "reviewedEnglishHash": "dc85af8f2b1d0d6756547cd5f79557466e25e682b882f68d277bd7f125851321"
+  },
+  "tools.common.source": {
+    "en": "Source",
+    "zh-CN": "来源",
+    "reviewedEnglishHash": "0e570ca6fabe24f94e52c1833f3ffd25567022beb826fa16891f3322051bc221"
+  },
+  "tools.common.status": {
+    "en": "Status",
+    "zh-CN": "状态",
+    "reviewedEnglishHash": "920e413c7d411b61ef3e8c63b1cb6ad058d5f95f8b481dbafe60248387d8c355"
+  },
+  "tools.common.stop": {
+    "en": "Stop",
+    "zh-CN": "停止",
+    "reviewedEnglishHash": "cae7d57bc067a514b8e34c9589631a95c7dc051638ddd2a190773269279a99df"
+  },
+  "tools.common.tool": {
+    "en": "Tool",
+    "zh-CN": "工具",
+    "reviewedEnglishHash": "2e53bdcd0740867b597599e733c04a994f55fb17c89a61595183a001742e5705"
+  },
+  "tools.common.toolLower": {
+    "en": "tool",
+    "zh-CN": "工具",
+    "reviewedEnglishHash": "7c9bbe5ec9b3fb774e8fa0f54247e93c34ddf8e5d16fe3073420de0ae81a262d"
+  },
+  "tools.common.turnOff": {
+    "en": "Turn off",
+    "zh-CN": "关闭",
+    "reviewedEnglishHash": "06f0e210b27d4d6215fba1ac31899dd4e95c6281888e2f107cfd19ed1dfda23f"
+  },
+  "tools.common.unsavedChanges": {
+    "en": "Unsaved changes",
+    "zh-CN": "未保存的更改",
+    "reviewedEnglishHash": "a710c2b90913b5375ca6ac865341e49dd6daa42f6d95182e6ed1a7b1b650ff4c"
+  },
+  "tools.common.updated": {
+    "en": "updated",
+    "zh-CN": "已更新",
+    "reviewedEnglishHash": "27eb5e51506c911f6fc4bb345c0d9db6f60415fceab7c18e1e9b862637415777"
+  },
+  "tools.common.yes": {
+    "en": "Yes",
+    "zh-CN": "是",
+    "reviewedEnglishHash": "85a39ab345d672ff8ca9b9c6876f3adcacf45ee7c1e2dbd2408fd338bd55e07e"
+  },
+  "tools.connections.add.activate": {
+    "en": "Activate",
+    "zh-CN": "激活",
+    "reviewedEnglishHash": "24433c70eba5b15368fe2e1dda94fe3d61db2357aa144363b9ab487e60235ab2"
+  },
+  "tools.connections.add.activating": {
+    "en": "Activating…",
+    "zh-CN": "激活…",
+    "reviewedEnglishHash": "230f6d1b67f9fd86b074476d081882fd4926a62fed67c1ea3fd2f120fc3f411c"
+  },
+  "tools.connections.add.application": {
+    "en": "Application",
+    "zh-CN": "应用",
+    "reviewedEnglishHash": "e7ad522ea327e5ba95534ef8355038ef7f7b86328c7cf9175886f60464c40d28"
+  },
+  "tools.connections.add.applicationNamePlaceholder": {
+    "en": "e.g. GitHub Triage",
+    "zh-CN": "例如GitHub 分类",
+    "reviewedEnglishHash": "5623b90e786811f564213cf9d0608d01be48a65a25c88c2f3fa40087b8218df3"
+  },
+  "tools.connections.add.applicationTypeHint": {
+    "en": "Application type is inferred from the transport you choose next.",
+    "zh-CN": "应用类型是根据您接下来选择的传输方式推断的。",
+    "reviewedEnglishHash": "6434b70a11e11665eac8513d0598d0e0dd52626acca7a8e6e423ed7985026482"
+  },
+  "tools.connections.add.applicationWillBeCreated": {
+    "en": "{{application}} will be created as {{type}}.",
+    "zh-CN": "{{application}} 将创建为 {{type}}。",
+    "reviewedEnglishHash": "ccc85c987e2960dcf329573641a88f6da8fa8ce607c6c04e8064a55e4b210a7e"
+  },
+  "tools.connections.add.commandTemplate": {
+    "en": "Command template",
+    "zh-CN": "命令模板",
+    "reviewedEnglishHash": "289540022decef5a2cb04264ecb277249e0052e0871ee609996af7146b55b9ce"
+  },
+  "tools.connections.add.commandTemplateHint": {
+    "en": "Only board-approved command templates can run. Arbitrary commands are never accepted.",
+    "zh-CN": "只有看板批准的命令模板才能运行。绝不会接受任意命令。",
+    "reviewedEnglishHash": "fdddaf69c79eb4a2d40613b1e86c77f9eb92e106a1d9e0ac189bc7180e2fff7b"
+  },
+  "tools.connections.add.connectionName": {
+    "en": "Connection name",
+    "zh-CN": "连接名称",
+    "reviewedEnglishHash": "686d4d5d8ecd1a794780995589b9ff883f601e3b208c45979ac509ce7d7bcdd1"
+  },
+  "tools.connections.add.connectionNamePlaceholder": {
+    "en": "e.g. Production GitHub",
+    "zh-CN": "例如生产 GitHub",
+    "reviewedEnglishHash": "2190465589ef6d7b1b4eea7a8d4f29ba76bfa752bfe0e985da4a79cadc27c7a2"
+  },
+  "tools.connections.add.createAndProbe": {
+    "en": "Create & probe",
+    "zh-CN": "创建和探测",
+    "reviewedEnglishHash": "b9ce8f601b388bcee7b1e9c0f43743aa09dd13aa280fb386a441b5ebb01aa2ed"
+  },
+  "tools.connections.add.createNewApplication": {
+    "en": "Create new application",
+    "zh-CN": "创建新应用",
+    "reviewedEnglishHash": "db7ee51718bd6ffe85a4030b633ed666b82f558881b178be27552fc8f25e8e81"
+  },
+  "tools.connections.add.creatingDraft": {
+    "en": "Creating draft…",
+    "zh-CN": "正在创建草稿...",
+    "reviewedEnglishHash": "015a9221fa83a9748b84dd97b39882d91d124a0e261fbaba9807dcbbcc62434a"
+  },
+  "tools.connections.add.credentialReferences": {
+    "en": "Credential references",
+    "zh-CN": "凭据引用",
+    "reviewedEnglishHash": "24072f3e211e8c74e7530c00c58b705ea788b491fe8cd69aa0aced69e9e1375b"
+  },
+  "tools.connections.add.description": {
+    "en": "Choose an existing application or create one as part of the same connection flow. Credentials stay as vault references and the connection is probed before activation.",
+    "zh-CN": "选择现有应用或创建一个应用作为同一连接流的一部分。凭证保留为保管库引用，并且在激活之前会探测连接。",
+    "reviewedEnglishHash": "ee54f7f95505eeda408abbd03da7d7bd1d24404a31e53fcf81bc2fb779aece96"
+  },
+  "tools.connections.add.endpointUrl": {
+    "en": "Endpoint URL",
+    "zh-CN": "端点 URL",
+    "reviewedEnglishHash": "2578179d177903e11cb62888319a525cb0885cbdc0a4773df4c0c7f01456518d"
+  },
+  "tools.connections.add.existingApplication": {
+    "en": "Existing application",
+    "zh-CN": "现有应用",
+    "reviewedEnglishHash": "f34fddb355f3f85e942d0ce32074a3118c55a19409aeb1bffa9ab2c3dfa12e2d"
+  },
+  "tools.connections.add.headerNameAria": {
+    "en": "Header name",
+    "zh-CN": "标头名称",
+    "reviewedEnglishHash": "c1dcc8fb31f6ee89a78f94a93a21999c2ae6cfeec2d8a9bb5c86d2b0bddbdd6b"
+  },
+  "tools.connections.add.headerPlaceholder": {
+    "en": "Header",
+    "zh-CN": "标头",
+    "reviewedEnglishHash": "ba5caa4285a84d88129280d2c3f6d796b4e2da069981e845bdaa55d9e6cfe7b5"
+  },
+  "tools.connections.add.latencyValue": {
+    "en": "{{value}}ms",
+    "zh-CN": "{{value}}毫秒",
+    "reviewedEnglishHash": "379b823c6ddb57424d1c5282ee8db55adc0f169a7e6142ad5fc462eb27ba280a"
+  },
+  "tools.connections.add.newApplicationName": {
+    "en": "New application name",
+    "zh-CN": "新应用名称",
+    "reviewedEnglishHash": "ec8e246abec8a61f1b853f1474e0ab470c26caad939a491e6215e512d14ecf04"
+  },
+  "tools.connections.add.probeLatency": {
+    "en": "probe latency",
+    "zh-CN": "探测延迟",
+    "reviewedEnglishHash": "8906bb37ed7116c53c710356567a1f71abffb52b474cb5bfee081705dd43fd89"
+  },
+  "tools.connections.add.probeLatencyHint": {
+    "en": "Probe latency is a single round-trip sample. Aggregate p95 latency across traffic is tracked on the Runtime tab once the connection is live.",
+    "zh-CN": "探测延迟是单次往返样本。连接上线后，将在“运行时”选项卡上跟踪流量中的聚合 p95 延迟。",
+    "reviewedEnglishHash": "f6b173bf877f9a4277bff93c7dd56189892a81d1d914d8c501a54f908cf15cdd"
+  },
+  "tools.connections.add.probeResult": {
+    "en": "Probe result",
+    "zh-CN": "探测结果",
+    "reviewedEnglishHash": "68fe6fecdaa531b96ffa8d1007bc70effe51a58c028fb19c28d3445905a1f1ea"
+  },
+  "tools.connections.add.probing": {
+    "en": "Probing…",
+    "zh-CN": "探测……",
+    "reviewedEnglishHash": "dc65606730ce16879bcad6cf0e841a96d2cda3e701550d8fbe60b987c8a3e948"
+  },
+  "tools.connections.add.probingConnection": {
+    "en": "Probing connection…",
+    "zh-CN": "探测连接...",
+    "reviewedEnglishHash": "83e7324911e55c0fca1f145dbc9874a61e15020ec3cddd216a0397d60996e347"
+  },
+  "tools.connections.add.quarantined": {
+    "en": "quarantined",
+    "zh-CN": "被隔离",
+    "reviewedEnglishHash": "c3ecfc91e8f0cc7c80cef37cd178a881c5533028dda66796df5129cea98d5bbc"
+  },
+  "tools.connections.add.removeCredentialAria": {
+    "en": "Remove credential reference for {{secret}}",
+    "zh-CN": "删除 {{secret}} 的凭据引用",
+    "reviewedEnglishHash": "f2e2d36f31550e56864c94b16d309fd8fe416b7cf41569daace15bdd9522aecf"
+  },
+  "tools.connections.add.reprobe": {
+    "en": "Re-probe",
+    "zh-CN": "重新探测",
+    "reviewedEnglishHash": "50f72e66b72f6a90e964f035dcc4dce1858175b135e1924db12276f584778109"
+  },
+  "tools.connections.add.selectApplication": {
+    "en": "Select an application",
+    "zh-CN": "选择一个应用",
+    "reviewedEnglishHash": "0633c481c5e2c932f5f578b41038ea11deb8a6ce270208001ea6abb316e70c1a"
+  },
+  "tools.connections.add.selectTemplate": {
+    "en": "Select an approved template",
+    "zh-CN": "选择批准的模板",
+    "reviewedEnglishHash": "0923c8808869ee312d79f0f49afbdb8ebb51d28c26f58f21a4f8771f5625e9a2"
+  },
+  "tools.connections.add.selectVaultSecret": {
+    "en": "Select a vault secret",
+    "zh-CN": "选择保管库机密",
+    "reviewedEnglishHash": "4dbed3fda22dd471345b601dcd417747232b0101218b3d50c3e4098e88cc01fe"
+  },
+  "tools.connections.add.steps.application": {
+    "en": "1 Application",
+    "zh-CN": "1 申请",
+    "reviewedEnglishHash": "5400c38240f4606f8f882de903201820f7f8a48bb3ee80d4c4a476945aef9c76"
+  },
+  "tools.connections.add.steps.connection": {
+    "en": "2 Connection",
+    "zh-CN": "2 连接",
+    "reviewedEnglishHash": "cd9681f07aeff838b3ebf0765c03556cf7a8dc7e1b4e880c9521ac64c40eebeb"
+  },
+  "tools.connections.add.title": {
+    "en": "Add application",
+    "zh-CN": "添加应用",
+    "reviewedEnglishHash": "78a2823b0c41dbca24f94d27c02775c115d01a00a3fef7d620f7fb069803021d"
+  },
+  "tools.connections.add.toolsDiscovered": {
+    "en": "tools discovered",
+    "zh-CN": "发现的工具",
+    "reviewedEnglishHash": "575eb830e4ab60422d41153164c238950e802f7be1083cd1ab9df8ce7e5b98fd"
+  },
+  "tools.connections.add.transport": {
+    "en": "Transport",
+    "zh-CN": "传输方式",
+    "reviewedEnglishHash": "aaead4abf5d0fd5ecc08d1dcb7effadfc4b65034aa0f3f80edb8bb3932411637"
+  },
+  "tools.connections.add.transportLocalStdio": {
+    "en": "Local stdio (approved template)",
+    "zh-CN": "本地 stdio（批准的模板）",
+    "reviewedEnglishHash": "a40e9e7b43006efc508e71f86587bdc191bd4b4c77524a6cf1250fec9898815a"
+  },
+  "tools.connections.add.transportRemoteHttp": {
+    "en": "Remote HTTP (no local process)",
+    "zh-CN": "远程 HTTP（无本地进程）",
+    "reviewedEnglishHash": "737db5bb5f804c8ef645682bf871d2c7dbd26d79d8d63ef264a02309cdf05e26"
+  },
+  "tools.connections.add.useExistingApplication": {
+    "en": "Use existing application",
+    "zh-CN": "使用现有应用",
+    "reviewedEnglishHash": "9d8a298c991038bc3a9cae55cc4552af92387ca1ba14b92f9f451e2f2449f536"
+  },
+  "tools.connections.add.vaultReferenceHint": {
+    "en": "Free-text secrets are not accepted — pick a vault entry; Paperclip stores only the vault:// reference and resolves it at gateway use time.",
+    "zh-CN": "不接受自由文本机密 — 选择一个保管库条目； Paperclip 仅存储 vault:// 引用并在网关使用时解析它。",
+    "reviewedEnglishHash": "6235d8e68e0b96ccb86ad4380ed6cc48786d95159e1ebe1e1a830f61177b5572"
+  },
+  "tools.connections.catalog.empty": {
+    "en": "No tools discovered yet. Use “Refresh catalog” to discover tools from this connection.",
+    "zh-CN": "尚未发现任何工具。使用“刷新目录”可从此连接发现工具。",
+    "reviewedEnglishHash": "1d6cbd4b41cd924c8cec09ef67807366c3f324e63199cd6b507736182ec366d6"
+  },
+  "tools.connections.catalog.title": {
+    "en": "Tool catalog — {{connection}}",
+    "zh-CN": "工具目录 — {{connection}}",
+    "reviewedEnglishHash": "477228c1cdde57a0ef71ff0e4e4fa88f2ce0f9358bc783d65b79838f606ae5a4"
+  },
+  "tools.connections.catalogPrefix": {
+    "en": "Tool catalog —",
+    "zh-CN": "工具目录 -",
+    "reviewedEnglishHash": "101c3602d92db82ba5cbfd288b2bc5b13ecc878b6931ca5612bc3f74272e99d8"
+  },
+  "tools.connections.createdAs": {
+    "en": "will be created as",
+    "zh-CN": "将创建为",
+    "reviewedEnglishHash": "51c7868049a5f61806a2997903c788865b660cbbe5f29d0730e5e76a92bee2b8"
+  },
+  "tools.connections.honcho.saveWorkspace": {
+    "en": "Save workspace",
+    "zh-CN": "保存工作区",
+    "reviewedEnglishHash": "6a9c1db1f5de7ac9c42c75e040d758f7b6bc8eca2cd312d25b6cc19b98f330d6"
+  },
+  "tools.connections.honcho.workspaceHint": {
+    "en": "Enter a workspace to include Honcho instructions. Existing tools remain available.",
+    "zh-CN": "请输入工作区以包含 Honcho 指令。现有工具仍可继续使用。",
+    "reviewedEnglishHash": "28127e98c5c2ac973c9d77f976237e28ccfc8da9c796486e587bf32df0f166ca"
+  },
+  "tools.connections.honcho.workspaceLabel": {
+    "en": "Honcho workspace",
+    "zh-CN": "Honcho 工作区",
+    "reviewedEnglishHash": "c02a59522c5e858faf92bd08526a2520885484a25f05aa3e200718ca88a9fd1d"
+  },
+  "tools.connections.secretRefPrefix": {
+    "en": "Free-text secrets are not accepted — pick a vault entry; Paperclip stores only the",
+    "zh-CN": "不接受自由文本密钥，请选择密钥库条目；Paperclip 仅存储",
+    "reviewedEnglishHash": "b0ea47b7cf49e3616ffffe8ca30cab7cf3e5a3063dfa9fd89254390a4143992c"
+  },
+  "tools.connections.secretRefSuffix": {
+    "en": "reference and resolves it at gateway use time.",
+    "zh-CN": "引用，并在网关使用时解析。",
+    "reviewedEnglishHash": "b5638f73678428583af9cebe2dd26d3987dc57cc203c09c13677700d6d204760"
+  },
+  "tools.connections.toast.activated": {
+    "en": "Connection activated",
+    "zh-CN": "连接已激活",
+    "reviewedEnglishHash": "7513bee59957726eabb7e2da0ea2b9c0df764513ea28d014890d35e3ad17cfae"
+  },
+  "tools.connections.toast.activationFailed": {
+    "en": "Activation failed",
+    "zh-CN": "激活失败",
+    "reviewedEnglishHash": "7b08548e07c9f333060b9a55916453a341b973ab548d3fcdfbff2dd0fdc2803a"
+  },
+  "tools.connections.toast.createFailed": {
+    "en": "Could not create connection",
+    "zh-CN": "无法创建连接",
+    "reviewedEnglishHash": "34e01dc15d2e6d7bdfc31cef9693c9b06343402cb85a866941458a96a1f3910f"
+  },
+  "tools.connections.toast.probeFailed": {
+    "en": "Probe failed",
+    "zh-CN": "探测失败",
+    "reviewedEnglishHash": "450e4a86d32cc99604a33165c0f71dbd9b3d353a82ef73b931667da22c925abc"
+  },
+  "tools.developer.description": {
+    "en": "Apps is the simple way to connect tools. This Developer area is for wiring your own servers, tokens, and rules by hand — most teams never need it.",
+    "zh-CN": "应用是连接工具的简单方式。该开发人员区域用于手动连接您自己的服务器、令牌和规则——大多数团队从不需要它。",
+    "reviewedEnglishHash": "1a350f5f0eba6af5f4df9d2ade14e084392a3507f89e58c2762f181b76578465"
+  },
+  "tools.developer.title": {
+    "en": "Developer tools",
+    "zh-CN": "开发者工具",
+    "reviewedEnglishHash": "96f0c06bbcb724cde5c748ad31fc5dd8beac095da2961268e060d7df87adb456"
+  },
+  "tools.gateways.allowedTools": {
+    "en": "Allowed tools",
+    "zh-CN": "允许使用的工具",
+    "reviewedEnglishHash": "73f3619da32094de33af0ecbbd62be8a03453ae1caa58d8ef87935f8fa2f443c"
+  },
+  "tools.gateways.allowedViaProfile": {
+    "en": "{{tools}} via {{profile}}",
+    "zh-CN": "{{tools}} 通过 {{profile}}",
+    "reviewedEnglishHash": "7a645c7fb8378a84b12abb48fbdad612ec197faf71882977277ae74fa3623515"
+  },
+  "tools.gateways.copy.bearerTokenLabel": {
+    "en": "Gateway bearer token",
+    "zh-CN": "网关承载令牌",
+    "reviewedEnglishHash": "1ea1df0ada9ac6051782f7f55b5e885d1106dd00f06610ae06bf62fb8dbed417"
+  },
+  "tools.gateways.copy.endpoint": {
+    "en": "Copy endpoint",
+    "zh-CN": "复制端点",
+    "reviewedEnglishHash": "ae2b823a012b56e992cacda63b688d64cd5db89ba2dfa1c09bf45724a404beb8"
+  },
+  "tools.gateways.copy.endpointLabel": {
+    "en": "Gateway endpoint",
+    "zh-CN": "网关端点",
+    "reviewedEnglishHash": "4b34e0573397046382f48f49f13f5b2524745cad60c5b0aeb2ac7b68cd098350"
+  },
+  "tools.gateways.copy.token": {
+    "en": "Copy token",
+    "zh-CN": "复制令牌",
+    "reviewedEnglishHash": "d35b4ef7c618415a60fcda6b86da99202cf4a087104868db2470f0ea98aa5921"
+  },
+  "tools.gateways.create": {
+    "en": "Create gateway",
+    "zh-CN": "创建网关",
+    "reviewedEnglishHash": "f1d4a6bb0e67734dba079e92c28c1918e0ec02bf2472c7b9243dbe3e4840af4a"
+  },
+  "tools.gateways.description": {
+    "en": "Stable endpoints for external clients that use the same profiles, rules, and audit trail as agent tool access.",
+    "zh-CN": "使用与智能体工具访问相同的访问配置、规则和审计记录的外部客户端的稳定端点。",
+    "reviewedEnglishHash": "d79cfff71f22faef9557f07db4201ea971b173f53232229ac5ce5dce2b8fda42"
+  },
+  "tools.gateways.empty": {
+    "en": "No named gateways yet. Create one here, then issue a token for the client that will connect to it.",
+    "zh-CN": "还没有命名网关。在此创建一个，然后为将连接到它的客户端发出一个令牌。",
+    "reviewedEnglishHash": "77cd75426c816a3f70626e4a81f18241496a6328ef7f35be287cb969946ee391"
+  },
+  "tools.gateways.form.accessProfile": {
+    "en": "Access profile",
+    "zh-CN": "访问配置",
+    "reviewedEnglishHash": "0ffe9da7f6bb4e622e6f5a10e33773291eb3408d5bf1e6cabd90aceb4fb8113d"
+  },
+  "tools.gateways.form.chooseProfile": {
+    "en": "Choose a profile",
+    "zh-CN": "选择访问配置",
+    "reviewedEnglishHash": "416c3478ef2c73f01684c3ac79489129500a4291cb463a8938f41072fb3bd716"
+  },
+  "tools.gateways.form.creating": {
+    "en": "Creating...",
+    "zh-CN": "正在创建...",
+    "reviewedEnglishHash": "def70944c9bb9c3b77129e6fc48cfcd043031a86ae747060a3e97985d254c4f2"
+  },
+  "tools.gateways.form.descriptionPlaceholder": {
+    "en": "Who this endpoint is for and when it should be rotated.",
+    "zh-CN": "该端点适用于谁以及何时应轮换。",
+    "reviewedEnglishHash": "1f1384e32cfac3762620cbed83d5b0463e433f1732e3126a1f9726233b24b738"
+  },
+  "tools.gateways.form.loadingProfiles": {
+    "en": "Loading profiles...",
+    "zh-CN": "正在加载访问配置...",
+    "reviewedEnglishHash": "12a7541833720199c6b28510e1976757d9f485f2bc028d0784347be1286de12f"
+  },
+  "tools.gateways.form.name": {
+    "en": "Gateway name",
+    "zh-CN": "网关名称",
+    "reviewedEnglishHash": "51b04389b8f92f397403f53139f701fb28048bd7a2077869c38fea622092ad7f"
+  },
+  "tools.gateways.form.namePlaceholder": {
+    "en": "Engineering laptops",
+    "zh-CN": "工程笔记本电脑",
+    "reviewedEnglishHash": "2256176586787dfea534293cb68eb46edbceb401e02c9f612d750554f5a53a74"
+  },
+  "tools.gateways.form.profileRequired": {
+    "en": "Create an access profile before adding a gateway.",
+    "zh-CN": "添加网关之前创建访问配置。",
+    "reviewedEnglishHash": "f6cca9f9f08bd2d26579513faeb88e979e0480e1c85213ecd91a35b253f717ce"
+  },
+  "tools.gateways.lastActivity": {
+    "en": "Last activity",
+    "zh-CN": "上次活动",
+    "reviewedEnglishHash": "06475633ed3e14cfefd643b9c86d1330966e94edebcf3a10862fecd369a3e5da"
+  },
+  "tools.gateways.loading": {
+    "en": "Loading gateways...",
+    "zh-CN": "正在加载网关...",
+    "reviewedEnglishHash": "ed4b4d36ecff4cac93cc35c82425b62bd1bedace9f21a5ab41fefb045a634ce9"
+  },
+  "tools.gateways.neverUsed": {
+    "en": "Never used",
+    "zh-CN": "从未使用",
+    "reviewedEnglishHash": "24d3236c3ac4cecf9a91911fed21ad3e7ee5df19ab6180dfccbc3ce0e2d3b63a"
+  },
+  "tools.gateways.noToolsAllowed": {
+    "en": "No tools allowed",
+    "zh-CN": "不允许使用任何工具",
+    "reviewedEnglishHash": "e8e116ae120d11025699b96e7da76a2a36fbee960cabf2eca85735de96c6aadb"
+  },
+  "tools.gateways.oneToolAllowed": {
+    "en": "1 tool allowed",
+    "zh-CN": "允许使用 1 个工具",
+    "reviewedEnglishHash": "6e13978455cca1a54b2ecddde699fc9b6e99821f0915157ccf46340666fabeb0"
+  },
+  "tools.gateways.owner.agent": {
+    "en": "Agent {{id}}",
+    "zh-CN": "智能体{{id}}",
+    "reviewedEnglishHash": "ca9119c4b65db13c05508daa99e3f30621c5afa91e29af8878219eacdaed9688"
+  },
+  "tools.gateways.owner.board": {
+    "en": "Board",
+    "zh-CN": "看板",
+    "reviewedEnglishHash": "4816cbfd74aa8297b9c9cdaae89e2f0d2ced6041e952dfcd114e01b4c82e9c6d"
+  },
+  "tools.gateways.owner.boardUser": {
+    "en": "Board user {{id}}",
+    "zh-CN": "看板用户 {{id}}",
+    "reviewedEnglishHash": "f4ae6919ae9f81fe5b5180c794edc277e65bf4470983c6e6951383af795db911"
+  },
+  "tools.gateways.owner.label": {
+    "en": "Owner",
+    "zh-CN": "业主",
+    "reviewedEnglishHash": "4b1b8aa3608a26da451ae0630d75b60ab1bc2dd229c41a80838fc7993e835c46"
+  },
+  "tools.gateways.profileId": {
+    "en": "Profile {{id}}",
+    "zh-CN": "访问配置 {{id}}",
+    "reviewedEnglishHash": "4b5e158c3a33b0e127e166a13ef1545372f66fc7245136c2c27676d64b5352e7"
+  },
+  "tools.gateways.profileUnavailable": {
+    "en": "Profile unavailable",
+    "zh-CN": "访问配置不可用",
+    "reviewedEnglishHash": "158e5a22a48cd4b0a73a0a9d2b7ff48c2570497958e8885d7b0e32dd3f8639e0"
+  },
+  "tools.gateways.scope.agent": {
+    "en": "Agent {{name}}",
+    "zh-CN": "智能体{{name}}",
+    "reviewedEnglishHash": "429ae643af3dd2d2827bd52868dd0215d56e413164f54d584decc76f1f9a6574"
+  },
+  "tools.gateways.scope.company": {
+    "en": "Company",
+    "zh-CN": "公司",
+    "reviewedEnglishHash": "de4743c879734dc38cb3e270ecefcae077c3c2e626f9298115d5a03c8613f89b"
+  },
+  "tools.gateways.scope.issue": {
+    "en": "Issue {{id}}",
+    "zh-CN": "问题 {{id}}",
+    "reviewedEnglishHash": "52253f682b267594472f4f4c48dfdf6bc529a86216ea96228cfaf34906b79ea1"
+  },
+  "tools.gateways.scope.label": {
+    "en": "Scope",
+    "zh-CN": "适用范围",
+    "reviewedEnglishHash": "b073f6c68ef8721107fd9815b19b2c35ec111d526b75c2123d1111ba64424000"
+  },
+  "tools.gateways.scope.project": {
+    "en": "Project {{name}}",
+    "zh-CN": "项目 {{name}}",
+    "reviewedEnglishHash": "03dcc40208ff4ff037d74b73e31533e77b61f1a087569d8ecbdeaa8a15f7d280"
+  },
+  "tools.gateways.snippets.copyLabel": {
+    "en": "{{label}} snippet",
+    "zh-CN": "{{label}} 片段",
+    "reviewedEnglishHash": "abed6d9a11ec867ad23c0280ae30527e2874ced122809c6547daf7a9729c6507"
+  },
+  "tools.gateways.snippets.empty": {
+    "en": "No snippets available.",
+    "zh-CN": "没有可用的片段。",
+    "reviewedEnglishHash": "6e34ccc58952bd4a73db7ce6318354fc8c999c40861ccb02e8fcb91d48c58841"
+  },
+  "tools.gateways.snippets.title": {
+    "en": "Client snippets",
+    "zh-CN": "客户片段",
+    "reviewedEnglishHash": "e79437e88b5f57098082e5a740996eba6a3811038fea03f1003c01845600328c"
+  },
+  "tools.gateways.title": {
+    "en": "Named MCP gateways",
+    "zh-CN": "名为 MCP 网关",
+    "reviewedEnglishHash": "62ac58f59016b487e6ab1c90aeede1a20cd73212bcf8f1a1ed274f8e817d4ddb"
+  },
+  "tools.gateways.toast.createFailed": {
+    "en": "Gateway was not created",
+    "zh-CN": "网关未创建",
+    "reviewedEnglishHash": "449e74ea73b90fd612a12e1b7253b3c49e2826037868dadb3bf90bd8b50d448d"
+  },
+  "tools.gateways.toast.created": {
+    "en": "Gateway created",
+    "zh-CN": "网关已创建",
+    "reviewedEnglishHash": "bf088b7fd83252e118fc752bc4604a09e43faf10cb36b14beb769ab66aced03c"
+  },
+  "tools.gateways.toast.pickProfile": {
+    "en": "Pick a profile",
+    "zh-CN": "选择访问配置",
+    "reviewedEnglishHash": "e705084c80cf57585c0f4e402701642aae1c7be08c39aa3f57b7ced0b8940334"
+  },
+  "tools.gateways.toast.pickProfileBody": {
+    "en": "A gateway needs an access profile before it can be created.",
+    "zh-CN": "网关在创建之前需要一个访问配置。",
+    "reviewedEnglishHash": "5f1de4873caaad5b954a3b7df20a3455514ea830bf7f0c992896267232500f75"
+  },
+  "tools.gateways.toast.pickTokenActions": {
+    "en": "Pick token actions",
+    "zh-CN": "选择令牌操作",
+    "reviewedEnglishHash": "7f05413be1131bb2bdf5b437d8fe4e67fbc769912beb4fa8f24462a1c9bf55eb"
+  },
+  "tools.gateways.toast.pickTokenActionsBody": {
+    "en": "Gateway tokens need at least one allowed MCP action.",
+    "zh-CN": "网关令牌至少需要一项允许的 MCP 操作。",
+    "reviewedEnglishHash": "1b30a64439d60c66953020fe6d057815f41d44635d82e2922b0d5c285f06004d"
+  },
+  "tools.gateways.toast.tokenIssueFailed": {
+    "en": "Token was not issued",
+    "zh-CN": "令牌未发行",
+    "reviewedEnglishHash": "2f956f6dd26efe359370d3ce90c389904865a74a2e4ce2daf90d04583396fa74"
+  },
+  "tools.gateways.toast.tokenIssued": {
+    "en": "Token issued",
+    "zh-CN": "代币发行",
+    "reviewedEnglishHash": "819e5d266a5b8cca1d745567ed12b95cc95385c5d4cf0a81cc78a8640d89ef90"
+  },
+  "tools.gateways.toast.tokenIssuedBody": {
+    "en": "{{name}} was created. Copy it now; it will not be shown again.",
+    "zh-CN": "{{name}} 已创建。立即复制；它不会再次显示。",
+    "reviewedEnglishHash": "f6326aee68bd57d82c29ca60c15599df01880fcc1912c4fb9813ca2860152b3b"
+  },
+  "tools.gateways.toast.tokenRevokeFailed": {
+    "en": "Token was not revoked",
+    "zh-CN": "令牌未被撤销",
+    "reviewedEnglishHash": "bae52f7107dde1dcd2f308e49ce051c3f83a95813313b50dc6c04ba2cfd79ca9"
+  },
+  "tools.gateways.toast.tokenRevoked": {
+    "en": "Token revoked",
+    "zh-CN": "令牌已撤销",
+    "reviewedEnglishHash": "cd7e9dbe5eec7bd9d06af91b56700d9cc610c5b9b004f01882cdb6b00e04842f"
+  },
+  "tools.gateways.token.clientLabel": {
+    "en": "Client label",
+    "zh-CN": "客户标签",
+    "reviewedEnglishHash": "e6612028642e375673b7a79c563bccd82c0e62ab65f1f4c0e9cced300c38691a"
+  },
+  "tools.gateways.token.clientLabelPlaceholder": {
+    "en": "Cursor on work laptop",
+    "zh-CN": "Cursor 在工作笔记本电脑上",
+    "reviewedEnglishHash": "ceeb2f9e072b2a2663fe978fb87b2eac380b8c01f7cf0b5ed19540dd5c69b14f"
+  },
+  "tools.gateways.token.expires": {
+    "en": "expires",
+    "zh-CN": "过期",
+    "reviewedEnglishHash": "ab8a2845f16cb2ffb5b694dd6786fcc51f00b855881712215f57066c8e050cfe"
+  },
+  "tools.gateways.token.issue": {
+    "en": "Issue token",
+    "zh-CN": "发行代币",
+    "reviewedEnglishHash": "3f03f9be7b13c89bd92160a1caabd7cbd3d97cc6ed32fcdda352a741b815b425"
+  },
+  "tools.gateways.token.issuing": {
+    "en": "Issuing...",
+    "zh-CN": "发行...",
+    "reviewedEnglishHash": "88cfef9c371bbb93af112d806c5700ae5e1c19c931a814d116fbb6624874f46d"
+  },
+  "tools.gateways.token.name": {
+    "en": "Token name",
+    "zh-CN": "代币名称",
+    "reviewedEnglishHash": "2e4186244bbd6ea2b97c61c04ea09e2f0d4ad0341dfaf0b950cb83192c7f42ac"
+  },
+  "tools.gateways.token.namePlaceholder": {
+    "en": "Dotta's MacBook",
+    "zh-CN": "Dotta 的 MacBook",
+    "reviewedEnglishHash": "a2d8cd4f020ffb1810bf0cd732991e89c6cc41bb00a539a9ebc3a73c1b307242"
+  },
+  "tools.gateways.token.newFor": {
+    "en": "New token for {{name}}",
+    "zh-CN": "{{name}} 的新令牌",
+    "reviewedEnglishHash": "de792a9ed6c96aa337fe2332f2d100e19da5b7878d80c7feb2a1f0c971c781fa"
+  },
+  "tools.gateways.token.noExpiry": {
+    "en": "no expiry",
+    "zh-CN": "没有期限",
+    "reviewedEnglishHash": "dd848d4323a22313fd82e98da6444e3176062f0f1aac9872c20bb9a42f513018"
+  },
+  "tools.gateways.token.none": {
+    "en": "No tokens issued.",
+    "zh-CN": "没有发行代币。",
+    "reviewedEnglishHash": "96bebe094787511f1d9efd84d1c0f556996a657e66531d8dc6f5e748b5067f6b"
+  },
+  "tools.gateways.token.ownerNote": {
+    "en": "Owner note",
+    "zh-CN": "业主须知",
+    "reviewedEnglishHash": "863302c01fbafb2eeb7e509fc2063688b07b8be669ec72ae1535ca2868bb092e"
+  },
+  "tools.gateways.token.ownerNotePlaceholder": {
+    "en": "Who owns this token and why it exists",
+    "zh-CN": "谁拥有这个代币以及它存在的原因",
+    "reviewedEnglishHash": "d28e03a01a78e6da0f2e703e526010a33de5c7f5b660b4a33c62dca3ff84a2a5"
+  },
+  "tools.gateways.token.revoke": {
+    "en": "Revoke",
+    "zh-CN": "撤销",
+    "reviewedEnglishHash": "87e6d00bbf53ec5ae251de23ace84d5cf01c69deae04cfff08a5fe353a9853bb"
+  },
+  "tools.gateways.token.revokeAria": {
+    "en": "Revoke {{name}}",
+    "zh-CN": "撤销 {{name}}",
+    "reviewedEnglishHash": "f716fc028c6fd9294881e49115a14b94bb46ed0f430f3c366153c52413f7c028"
+  },
+  "tools.gateways.token.revokeConfirm": {
+    "en": "Revoke this token now?",
+    "zh-CN": "现在撤销这个令牌吗？",
+    "reviewedEnglishHash": "3f7a72255a4e51dc34049e72d50c24ba5687c6f5ba60184c931a2da2f7c909f6"
+  },
+  "tools.gateways.token.revoked": {
+    "en": "revoked",
+    "zh-CN": "撤销",
+    "reviewedEnglishHash": "4bb47f186df233e48b09d241ee4defb821add0c35ac8311469fe1522c6813dd5"
+  },
+  "tools.gateways.tokens": {
+    "en": "Tokens",
+    "zh-CN": "代币",
+    "reviewedEnglishHash": "a039dfb9628b53ddaebcfe8ef0793e3fdf19867601295f00d192acef59050869"
+  },
+  "tools.gateways.toolsAllowed": {
+    "en": "{{count}} tools allowed",
+    "zh-CN": "允许使用 {{count}} 工具",
+    "reviewedEnglishHash": "77770810bcbc840b3c4f4e82058c3f3a2925ac27b0ea9bac3b183995f6dc4377"
+  },
+  "tools.pasteConfig.activateCount": {
+    "en": "Activate {{enabled}} of {{total}}",
+    "zh-CN": "激活 {{total}} 的 {{enabled}}",
+    "reviewedEnglishHash": "96733fb00d254d296a925a0ce356ddb1d82e9f6dbc7fe636ec495417e8037725"
+  },
+  "tools.pasteConfig.activeForAll": {
+    "en": "{{app}} is active for all agents.",
+    "zh-CN": "{{app}} 对所有智能体均有效。",
+    "reviewedEnglishHash": "2ec6408273c2362035e93d2dc47fb123aeb818bbbfbfad8241108e8f55b226fe"
+  },
+  "tools.pasteConfig.askFirstWhenEnabled": {
+    "en": "Ask first when enabled",
+    "zh-CN": "启用后先询问",
+    "reviewedEnglishHash": "68872ed6746ed4f2b9d6c9c4817d290709f95b10bb5b0a075370faede56d1e8d"
+  },
+  "tools.pasteConfig.browseConnections": {
+    "en": "Browse planned app connections",
+    "zh-CN": "浏览计划的应用连接",
+    "reviewedEnglishHash": "342995c7321f37e4e3556554ffc2b17deb3de8b76ceca35577c13cd32f278a8c"
+  },
+  "tools.pasteConfig.canMakeChanges": {
+    "en": "Can make changes",
+    "zh-CN": "可以做出改变",
+    "reviewedEnglishHash": "0bf247bbb3ae9bf29e857d1823af26e5fbf278df19eee68406ccad9e1028349a"
+  },
+  "tools.pasteConfig.checkActions": {
+    "en": "Check actions",
+    "zh-CN": "检查操作",
+    "reviewedEnglishHash": "de6a6a7da30d411228cf8c1d6292b66b8edd13694998006cadc94db7cfb2a124"
+  },
+  "tools.pasteConfig.checkConfig": {
+    "en": "Check config",
+    "zh-CN": "检查配置",
+    "reviewedEnglishHash": "9f23db38a8356b0c570d763ac4bf9f46f45a44a071bc1ef62f46fae54b808fc1"
+  },
+  "tools.pasteConfig.checkHint": {
+    "en": "We'll read it and show what we found before anything is saved.",
+    "zh-CN": "在保存任何内容之前，我们将阅读它并显示我们发现的内容。",
+    "reviewedEnglishHash": "e36240cda6e7b72c08c9261e3f9a9f729084a4c919bd1fd013fd8624b175be74"
+  },
+  "tools.pasteConfig.checking": {
+    "en": "Checking…",
+    "zh-CN": "正在检查...",
+    "reviewedEnglishHash": "ec963ffc911b840134fc738b41a8bb0493489c402a4a761efd36c16dea7d984b"
+  },
+  "tools.pasteConfig.connectsOverWeb": {
+    "en": "Connects over the web",
+    "zh-CN": "通过网络连接",
+    "reviewedEnglishHash": "f1b4d1df5c2bac1aec7532ac28a34d978ad5622316d16a4a89095e29d52b1e30"
+  },
+  "tools.pasteConfig.description": {
+    "en": "Paste the MCP config snippet from the tool's README and we'll turn it into a friendly setup.",
+    "zh-CN": "粘贴该工具自述文件中的 MCP 配置片段，我们会将其转换为友好的设置。",
+    "reviewedEnglishHash": "1f218ff8738ba467248c1e0ffb13b6ed82fdecf7517c41ff6d5fb343de67af37"
+  },
+  "tools.pasteConfig.empty": {
+    "en": "We couldn't find an app in that config. Double-check you pasted the whole snippet.",
+    "zh-CN": "我们在该配置中找不到应用。仔细检查您是否粘贴了整个片段。",
+    "reviewedEnglishHash": "e68580b6a601034b61aa46f7eaa058c320320cdad22fdb6776503e6ab7b7ef43"
+  },
+  "tools.pasteConfig.importedApp": {
+    "en": "Imported app",
+    "zh-CN": "导入的应用",
+    "reviewedEnglishHash": "65b768e3ce93a9e969eeb99b3a58495eeea49cb10076540f9378980fd6a6607b"
+  },
+  "tools.pasteConfig.instead": {
+    "en": "instead.",
+    "zh-CN": "相反。",
+    "reviewedEnglishHash": "90b5d13011f6a86532541bbf1ec3c2c9f09d654e267e4e889db77b09b8bbb990"
+  },
+  "tools.pasteConfig.invalidJson": {
+    "en": "That doesn't look like valid JSON yet — paste the whole snippet, including the outer braces.",
+    "zh-CN": "这看起来还不像有效的 JSON — 粘贴整个片段，包括外部大括号。",
+    "reviewedEnglishHash": "6c94d499469541a29cfd92468a6e769b0b2013a07e21ebaf7c3ecd7c7ef6e744"
+  },
+  "tools.pasteConfig.justUrl": {
+    "en": "Just a URL?",
+    "zh-CN": "只是一个URL？",
+    "reviewedEnglishHash": "88de1fa703fec2cb3ab503a9ea6347bbdc96922d1577640cac400e237a44feb0"
+  },
+  "tools.pasteConfig.key": {
+    "en": "Key",
+    "zh-CN": "键",
+    "reviewedEnglishHash": "99a52df3ff3d499488e2fa28150c4106a2cb5e928891a830a9aa3922b2d32160"
+  },
+  "tools.pasteConfig.keysDraftOnly": {
+    "en": "Keys from this config stay draft-only until an admin maps them to an approved template.",
+    "zh-CN": "此配置中的密钥仅保留草稿状态，直到管理员将它们映射到批准的模板。",
+    "reviewedEnglishHash": "c7c73829da15b2e7e15495ea8c2d1ff5b371d3e0a4773eb3c956333d08c890bd"
+  },
+  "tools.pasteConfig.localDraftHint": {
+    "en": "We humanized the field names from the config. These run-in-your-workspace tools stay as drafts until an admin maps them to an approved template.",
+    "zh-CN": "我们将配置中的字段名称人性化。这些在工作区中运行的工具将保留为草稿，直到管理员将它们映射到批准的模板。",
+    "reviewedEnglishHash": "af267d34bb6957c395307803cd074e5558e767096d09ef73be3576b3db1c33fc"
+  },
+  "tools.pasteConfig.noKeys": {
+    "en": "No keys needed for this one.",
+    "zh-CN": "这个不需要密钥。",
+    "reviewedEnglishHash": "0f5035a9b499fa2cdfdcc3f5f94f2fb47beb20f2e361105e99a74138d5188956"
+  },
+  "tools.pasteConfig.pasteHint": {
+    "en": "Paste an MCP config — the snippet a README tells you to copy.",
+    "zh-CN": "粘贴 MCP 配置 - 自述文件告诉您复制的片段。",
+    "reviewedEnglishHash": "59ed50f2e858bccbfefde64730a37a2a21540426c55e5bc449133e60aab6040f"
+  },
+  "tools.pasteConfig.readOnly": {
+    "en": "Read-only",
+    "zh-CN": "只读",
+    "reviewedEnglishHash": "72bb90897ab1eadc924fa1358773c5949372c1f06d8dd53d730bbfa3b0c5b695"
+  },
+  "tools.pasteConfig.remoteCheckHint": {
+    "en": "Checking a remote app creates a draft connection, stores any header replacements as Paperclip secrets, and runs health/catalog discovery before activation.",
+    "zh-CN": "检查远程应用会创建草稿连接，将任何标头替换存储为 Paperclip 机密，并在激活之前运行运行状况/目录发现。",
+    "reviewedEnglishHash": "00667e3e76c69d28b258281b6f0bca134b8b09d6094d41cdb1bef73c2b9dc714"
+  },
+  "tools.pasteConfig.remoteOnly": {
+    "en": "Only remote HTTP drafts can be checked and activated from pasted config.",
+    "zh-CN": "只能从粘贴的配置中检查和激活远程 HTTP 草稿。",
+    "reviewedEnglishHash": "d983b9eba9d27a5d0298dab33a77b16c8af6ec7378b49c91264f745fe04c518a"
+  },
+  "tools.pasteConfig.replacementPlaceholder": {
+    "en": "Paste replacement value",
+    "zh-CN": "粘贴替换值",
+    "reviewedEnglishHash": "297ff20dad01b89c612fab383790cbb1e2c828087af3e21d17d0415eba02c56e"
+  },
+  "tools.pasteConfig.reviewActions": {
+    "en": "Review actions for {{app}}",
+    "zh-CN": "查看 {{app}} 的操作",
+    "reviewedEnglishHash": "aab270d92c07012795dbe741ff72daf43cd0a6e67748108d76efbeb7869d713a"
+  },
+  "tools.pasteConfig.reviewHint": {
+    "en": "Health and catalog checks passed. Read-only actions start on; actions that can change data start off.",
+    "zh-CN": "健康状况和目录检查已通过。只读操作开始于；可以更改数据的操作开始。",
+    "reviewedEnglishHash": "82585d488e23b8528633d59b4a72133e81260b117138f2bd836e5ce6b6ae0a7c"
+  },
+  "tools.pasteConfig.runsInWorkspace": {
+    "en": "Runs in your workspace",
+    "zh-CN": "在您的工作区中运行",
+    "reviewedEnglishHash": "188afb2ad3b250b8f8073016d6b362fd12377ad0d079a53a4ec3edf63f747234"
+  },
+  "tools.pasteConfig.summaryNoKeys": {
+    "en": "{{where}} · no keys needed",
+    "zh-CN": "{{where}} · 无需密钥",
+    "reviewedEnglishHash": "da33a456c12e04445e999857d8b0c53dd9cf3403f9030d07834aa30f9e0a44ff"
+  },
+  "tools.pasteConfig.turnAllOff": {
+    "en": "Turn all off",
+    "zh-CN": "全部关闭",
+    "reviewedEnglishHash": "59d74fd7dc6c7617ee458f55b408841fe6f9205ef0fbeab8178643b15f40d17f"
+  },
+  "tools.pasteConfig.turnAllOn": {
+    "en": "Turn all on",
+    "zh-CN": "全部打开",
+    "reviewedEnglishHash": "08f6d3f555b7c1f509d50816135b003c4bdcc4ef86c9e2289831e999960b8944"
+  },
+  "tools.policies.anyConnection": {
+    "en": "Any connection",
+    "zh-CN": "任意连接",
+    "reviewedEnglishHash": "c59f16e9d3dccb4a2d4c5f5883706d427944f87fc2afb85f10d63f7b0c44f495"
+  },
+  "tools.policies.approvals.description": {
+    "en": "When you approve an Ask-first request, Paperclip can remember the decision.",
+    "zh-CN": "当您批准“先询问”请求时，Paperclip 可以记住该决定。",
+    "reviewedEnglishHash": "d767aede22ed2baa5cf20f4bc1e57170baea0f4fb14c8faaa7c7573e7afa3879"
+  },
+  "tools.policies.approvals.empty": {
+    "en": "No remembered approvals yet.",
+    "zh-CN": "尚未记住批准。",
+    "reviewedEnglishHash": "662b41d15e644a83f9bd3988f60cfc5d6ff3f2c238e1887ba64d1fe4794d1110"
+  },
+  "tools.policies.approvals.forget": {
+    "en": "Forget",
+    "zh-CN": "忘记",
+    "reviewedEnglishHash": "a6bd489d955044992dd33f0f18fee68c83842c20eb0f6f50cb96f07b7d6dd8dd"
+  },
+  "tools.policies.approvals.remembered": {
+    "en": "Remembered",
+    "zh-CN": "记住了",
+    "reviewedEnglishHash": "a913983316ada7af9d13ea3590615911c1bba6453759f6ee6e56d214d97e976f"
+  },
+  "tools.policies.approvals.title": {
+    "en": "Remembered approvals",
+    "zh-CN": "记住批准",
+    "reviewedEnglishHash": "d13f730f0b345075fc314e8baf2b3c9b5ac217d389be92e720e76274fcc69597"
+  },
+  "tools.policies.back": {
+    "en": "Back to rules",
+    "zh-CN": "返回规则",
+    "reviewedEnglishHash": "a075611df76bedbdf85da5ce305dc39c342b50b72b946a8e864a98a3f04f78a7"
+  },
+  "tools.policies.capability.destructive.label": {
+    "en": "Destructive",
+    "zh-CN": "破坏性",
+    "reviewedEnglishHash": "c3e58a73609d109404e7ff8f80e7e82d6f8fd347fd1b1945fc469b5c4899697e"
+  },
+  "tools.policies.capability.destructive.sentence": {
+    "en": "destructive actions",
+    "zh-CN": "破坏性行为",
+    "reviewedEnglishHash": "793e69ee2be00fa7cc6c30b549e8d94951474cff17fd62e1c096599235e150b6"
+  },
+  "tools.policies.capability.other": {
+    "en": "{{value}} actions",
+    "zh-CN": "{{value}} 操作",
+    "reviewedEnglishHash": "f1ff2fcf8062c8185e6690d6cad55d67ec2c8a441f3f45113db4becfadfc6b40"
+  },
+  "tools.policies.capability.read.label": {
+    "en": "Read-only",
+    "zh-CN": "只读",
+    "reviewedEnglishHash": "72bb90897ab1eadc924fa1358773c5949372c1f06d8dd53d730bbfa3b0c5b695"
+  },
+  "tools.policies.capability.read.sentence": {
+    "en": "read-only actions",
+    "zh-CN": "只读操作",
+    "reviewedEnglishHash": "fe454421e88e7c472d6a31fbe6a49785ba3b46932c6fb51806ee057ea1c0b93b"
+  },
+  "tools.policies.capability.write.label": {
+    "en": "Makes changes",
+    "zh-CN": "可进行更改",
+    "reviewedEnglishHash": "f85b6093348f6dca526636783b7f368a996f7684d52f910dd8a0e3e91572fe55"
+  },
+  "tools.policies.capability.write.sentence": {
+    "en": "actions that make changes",
+    "zh-CN": "做出改变的操作",
+    "reviewedEnglishHash": "8b8b3b4b6008e5081f269028b6bdace0ef90aff236a20898a9b5cf4d7cdf6542"
+  },
+  "tools.policies.chooseAgent": {
+    "en": "Choose agent",
+    "zh-CN": "选择智能体",
+    "reviewedEnglishHash": "f7c0bf69c3cf5ad96dcff84a311b440458661dded507e27dca44eeaae064a3f0"
+  },
+  "tools.policies.chooseApp": {
+    "en": "Choose app",
+    "zh-CN": "选择应用",
+    "reviewedEnglishHash": "442fb01b99816a851c7b735a4a92b4d99218c2916c69cc3fd64af88c2649199b"
+  },
+  "tools.policies.chooseCapability": {
+    "en": "Choose capability",
+    "zh-CN": "选择能力",
+    "reviewedEnglishHash": "0b04d46a877d7578c425eaccd7fef2fb0753902a95dafcc91c1e1fdaad93ba29"
+  },
+  "tools.policies.chooseProject": {
+    "en": "Choose project",
+    "zh-CN": "选择项目",
+    "reviewedEnglishHash": "e7b1ec5407e2b5827d462416327c3004dad6b9da0119d5f2aa8347a36ab46ebe"
+  },
+  "tools.policies.confirm.deleteBody": {
+    "en": "This rule matched {{count}} times in the last 24 hours. Deleting it may change what agents can do.",
+    "zh-CN": "此规则在过去 24 小时内匹配了 {{count}} 次。删除后可能会改变智能体可执行的操作。",
+    "reviewedEnglishHash": "d78861514c7c99effad2672bf8e296d3c2108cb40a5dae350bdfa80d95c4d0fd"
+  },
+  "tools.policies.confirm.deleteTitle": {
+    "en": "Delete rule?",
+    "zh-CN": "删除规则？",
+    "reviewedEnglishHash": "369c63a86c6bbd07306910149a562c51c43c550d2583893715e90dd31b1573e6"
+  },
+  "tools.policies.confirm.forgetBody": {
+    "en": "Paperclip will ask again the next time this action needs approval.",
+    "zh-CN": "Paperclip 下次此操作需要批准时将再次询问。",
+    "reviewedEnglishHash": "d981b1b244c29e120e882bae1f96d6b095f753f9c96ce052930448244757fcfa"
+  },
+  "tools.policies.confirm.forgetTitle": {
+    "en": "Forget remembered approval?",
+    "zh-CN": "忘记记得批准？",
+    "reviewedEnglishHash": "8a6550e19c7db189c87d8dc2601a9ccaa9c93ffde487fa9181ca8e29b29cf841"
+  },
+  "tools.policies.description": {
+    "en": "Rules are checked top to bottom — the first one that matches decides.",
+    "zh-CN": "规则从上到下检查——第一个匹配的规则决定。",
+    "reviewedEnglishHash": "b165aefa2005e94adfb73ab9a184d046e514e991c9fefebbcd8107b21f8d22c9"
+  },
+  "tools.policies.editRule": {
+    "en": "Edit rule",
+    "zh-CN": "编辑规则",
+    "reviewedEnglishHash": "29d23cbfd942981573986395ec02b651711a76413aa0a945428b0921587b65b9"
+  },
+  "tools.policies.empty.description": {
+    "en": "Start with a template or create a rule from scratch.",
+    "zh-CN": "从模板开始或从头开始创建规则。",
+    "reviewedEnglishHash": "d7036b9b4575e8c4935e711f89eb035cb3329985ab4327d7eea1f965b3d9b4b1"
+  },
+  "tools.policies.empty.title": {
+    "en": "No rules yet",
+    "zh-CN": "还没有规则",
+    "reviewedEnglishHash": "d29cf782366d138c1caa5421be061a9bd8a9d6607c3a6b8ca9f0d5ea986e5db8"
+  },
+  "tools.policies.newRule": {
+    "en": "New rule",
+    "zh-CN": "新规则",
+    "reviewedEnglishHash": "99cd24efe9831454061e38f29bb3786c8f58e03a9b4d31b9995ecc0117fd4260"
+  },
+  "tools.policies.noActions": {
+    "en": "No app actions discovered yet.",
+    "zh-CN": "尚未发现应用操作。",
+    "reviewedEnglishHash": "45dfe8d9dd2b9dad14c31f40d178e7a65f3ffc57eb996269b7f464e1420fc125"
+  },
+  "tools.policies.onHint": {
+    "en": "Turn this off to keep the rule saved without matching.",
+    "zh-CN": "关闭此选项可以保存规则而不进行匹配。",
+    "reviewedEnglishHash": "6c5574f89bc3c7134fb5ab36141c6481e72929e7f8f3da8edb651690ba8524f3"
+  },
+  "tools.policies.outcome.allow": {
+    "en": "Allow",
+    "zh-CN": "允许",
+    "reviewedEnglishHash": "e213c161d5cefa520c8dd4155c9569076d9a40406111465136a6f1b207045761"
+  },
+  "tools.policies.outcome.askFirst": {
+    "en": "Ask first",
+    "zh-CN": "先询问",
+    "reviewedEnglishHash": "4a9e8cf39abb59f1792cd4332a1dbc88491ebb708b83d6f6190ff6216afe7985"
+  },
+  "tools.policies.outcome.block": {
+    "en": "Block",
+    "zh-CN": "阻止",
+    "reviewedEnglishHash": "211d0bb8cf4f5b5202c2a9b7996e483898644aa24714b1e10edd80a54ba4b560"
+  },
+  "tools.policies.outcome.limit": {
+    "en": "Limit",
+    "zh-CN": "限制",
+    "reviewedEnglishHash": "674b0ed54bf7667356c19baaf2ec56d4432d485bf0ebc6d687ad6e50e9611880"
+  },
+  "tools.policies.outcome.limitTo": {
+    "en": "Limit to {{limit}}/{{window}}",
+    "zh-CN": "限制为 {{limit}}/{{window}}",
+    "reviewedEnglishHash": "141f3335f07d73760bb43e432d70803b50fcc26f22cb5f71e4efcb01e4e66754"
+  },
+  "tools.policies.outcome.unsupportedCustom": {
+    "en": "Unsupported: custom check",
+    "zh-CN": "不支持：自定义检查",
+    "reviewedEnglishHash": "42ee1349ad3ae03c8c49833959bd2b6c4714a831de3d399afc43344fb39d57eb"
+  },
+  "tools.policies.outcome.unsupportedRedact": {
+    "en": "Unsupported: redact",
+    "zh-CN": "不支持：编辑",
+    "reviewedEnglishHash": "2206b2d7f494a34c5e2891cb01f2a85e3add287ed09918201228eb7428a7c10a"
+  },
+  "tools.policies.rateLimit.per": {
+    "en": "Per",
+    "zh-CN": "佩尔",
+    "reviewedEnglishHash": "89ac4dc9eddfe4bbf87d7294d4fbf4565e22c58a2efa989d3b92ed9c2abbc5f7"
+  },
+  "tools.policies.rateLimit.times": {
+    "en": "Times",
+    "zh-CN": "时代",
+    "reviewedEnglishHash": "0c0fd31c67d414997f9e4ea6442d2491fc2c75ae9e46ce21287a526b5059a63d"
+  },
+  "tools.policies.rawConnection": {
+    "en": "Raw connection",
+    "zh-CN": "原始连接",
+    "reviewedEnglishHash": "6c6f092837982c75ee786d2cdf0bc1a020e0c9acbc0d96048848c3b345ff9f08"
+  },
+  "tools.policies.rowActions": {
+    "en": "Rule actions",
+    "zh-CN": "规则操作",
+    "reviewedEnglishHash": "278655c4ba035157331c923acc6d4a6e37979d99b1b2bb78fae5c438cc5104f8"
+  },
+  "tools.policies.ruleName": {
+    "en": "Rule name",
+    "zh-CN": "规则名称",
+    "reviewedEnglishHash": "7c9de4e8e989511f39c9c515352856dbfe290c6de0e123d12cc60972e8fa8bf3"
+  },
+  "tools.policies.saveRule": {
+    "en": "Save rule",
+    "zh-CN": "保存规则",
+    "reviewedEnglishHash": "4e62c225adb2e2aa4188ac5eefd952073a4bff60333db4ffb6eb282c531da091"
+  },
+  "tools.policies.selectedOfTotal": {
+    "en": "{{selected}} of {{total}}",
+    "zh-CN": "{{total}} 的 {{selected}}",
+    "reviewedEnglishHash": "3b8c82ccbb0d3b11e5b55d610641d9750c695afc01c55239ca3619292dcc72e1"
+  },
+  "tools.policies.sentence.actorType": {
+    "en": "{{type}}s",
+    "zh-CN": "{{type}}s",
+    "reviewedEnglishHash": "7752a7d751c35ae16504ea980c024e88bece22337a2ba2a99a2fc6f823bd0a0d"
+  },
+  "tools.policies.sentence.agentCount": {
+    "en": "{{count}} agents",
+    "zh-CN": "{{count}} 智能体",
+    "reviewedEnglishHash": "977a7422900b40a5ade4526c98653a1b04619b8ff81240ead3699dea1b7df70e"
+  },
+  "tools.policies.sentence.agentsInProject": {
+    "en": "agents in {{project}}",
+    "zh-CN": "{{project}} 中的智能体",
+    "reviewedEnglishHash": "eee2e74432d36e491e39790795c444a53946112e04918833fb638c1d7be3561d"
+  },
+  "tools.policies.sentence.agentsInProjectCount": {
+    "en": "agents in {{count}} projects",
+    "zh-CN": "{{count}} 项目中的智能体",
+    "reviewedEnglishHash": "8ec23c0d94eefd561f428894ebcbd23e84b61f0e4be0a68376721964c65f2a41"
+  },
+  "tools.policies.sentence.anyAgent": {
+    "en": "any agent",
+    "zh-CN": "任何智能体",
+    "reviewedEnglishHash": "42b4cecb19ef5606838b137ac5f3a5ccb1b436736ca4097ed29e20f5a7883de4"
+  },
+  "tools.policies.sentence.anything": {
+    "en": "anything",
+    "zh-CN": "任何东西",
+    "reviewedEnglishHash": "ee0874170b7f6f32b8c2ac9573c428d35b575270a66b757c2c0185d2bd09718d"
+  },
+  "tools.policies.sentence.appCount": {
+    "en": "{{count}} apps",
+    "zh-CN": "{{count}} 应用",
+    "reviewedEnglishHash": "81d6b019f34b611544798444c6fd7306452cd1180bc797cb86d0b1bdb2b7932a"
+  },
+  "tools.policies.sentence.oneAction": {
+    "en": "one action",
+    "zh-CN": "一个操作",
+    "reviewedEnglishHash": "e9ae19312bea4997b75c2b666190f0bdfa749f69991e8c31506e444ac5e13214"
+  },
+  "tools.policies.sentence.oneAgent": {
+    "en": "one agent",
+    "zh-CN": "一名智能体",
+    "reviewedEnglishHash": "308c50dc41e075179350ed6b592995c56291cbdc46573bc6e9336538f1b0eb57"
+  },
+  "tools.policies.sentence.oneApp": {
+    "en": "one app",
+    "zh-CN": "一个应用",
+    "reviewedEnglishHash": "267a26323e96910f389c93693383b804d3e0418775309a9bd59a3896ab86daa5"
+  },
+  "tools.policies.sentence.oneProject": {
+    "en": "one project",
+    "zh-CN": "一个项目",
+    "reviewedEnglishHash": "1e4c7687cd8b1a8fe654296d02a95bcdfed49229e335e1af70330d54fc75d897"
+  },
+  "tools.policies.sentence.plain": {
+    "en": "When {{who}} uses {{uses}} → {{outcome}}",
+    "zh-CN": "当{{who}}使用{{uses}}→{{outcome}}时",
+    "reviewedEnglishHash": "16ede55ba648479875b1166a122d12a0208a07f6ce941c3cd74d5ab43844ecf1"
+  },
+  "tools.policies.sentence.rich": {
+    "en": "When <who>{{who}}</who> uses <uses>{{uses}}</uses> → <outcome>{{outcome}}</outcome>",
+    "zh-CN": "当 <who>{{who}}</who> 使用 <uses>{{uses}}</uses> 时 → <outcome>{{outcome}}</outcome>",
+    "reviewedEnglishHash": "6fecbeac4189e634cfb816c198c21b82e65074de1c888c16e09fd4564825da95"
+  },
+  "tools.policies.sentence.specificActionCount": {
+    "en": "{{count}} specific actions",
+    "zh-CN": "{{count}}具体操作",
+    "reviewedEnglishHash": "3655983c42adba6ed371828a9ec706260e0ace21b10af9ea8e6cce0850acf083"
+  },
+  "tools.policies.simulator.check": {
+    "en": "Check rule",
+    "zh-CN": "检查规则",
+    "reviewedEnglishHash": "0481480a1840d46798eae4b8a5415ce7e1b7f7eb5e7b9259fd18ec5877134a48"
+  },
+  "tools.policies.simulator.checking": {
+    "en": "Checking...",
+    "zh-CN": "正在检查...",
+    "reviewedEnglishHash": "2e5f79bb94a8c40b3a103600323d7faee672abfb51f3c38679aab02fd4075a8d"
+  },
+  "tools.policies.simulator.description": {
+    "en": "Pick an agent and an action to see what Paperclip would do.",
+    "zh-CN": "选择一个智能体和一个操作，看看 Paperclip 会做什么。",
+    "reviewedEnglishHash": "00310e576d043aad7b6c44ce812eb242271434b3fef8cdd6b564b0be9c1b8b8b"
+  },
+  "tools.policies.simulator.effectiveProfiles": {
+    "en": "effective profiles:",
+    "zh-CN": "有效的访问配置：",
+    "reviewedEnglishHash": "eb440d5874401eb402e6cfcb3c6df4ddeed8d189fc3e9967f8ea84876af8156c"
+  },
+  "tools.policies.simulator.matchedRuleIds": {
+    "en": "matched rule ids:",
+    "zh-CN": "匹配的规则 ID：",
+    "reviewedEnglishHash": "5f349c84f60aee712dc33b749deecbc8f7f020799e56e3b554d79277684218a5"
+  },
+  "tools.policies.simulator.reason": {
+    "en": "reason:",
+    "zh-CN": "原因：",
+    "reviewedEnglishHash": "b0100aaf27c7b010b41b9f94e844a02de95482685d5191e0513fdcd835afd5c3"
+  },
+  "tools.policies.simulator.ruleNumber": {
+    "en": "rule {{number}}",
+    "zh-CN": "规则 {{number}}",
+    "reviewedEnglishHash": "f09b2af21fe8726d6405ce9bf98887461dd863404d6453cebc1175f390a8eb37"
+  },
+  "tools.policies.simulator.selectAgent": {
+    "en": "Select an agent",
+    "zh-CN": "选择智能体",
+    "reviewedEnglishHash": "7d4cf06874635248d725bcf641438f58529d029c16d9c2a88cdb5aee88142b1d"
+  },
+  "tools.policies.simulator.verdict": {
+    "en": "{{outcome}} - {{source}}",
+    "zh-CN": "{{outcome}} - {{source}}",
+    "reviewedEnglishHash": "746104225410a339d3d00052de02becd8d0273a2d4f36b997b52f73d0c8c39e5"
+  },
+  "tools.policies.starters.askFirst": {
+    "en": "Ask first before selected actions",
+    "zh-CN": "在选择操作之前先询问",
+    "reviewedEnglishHash": "f610cb46b61765823a748961b1e1d62cdc7c935ccf64f420f0e7b5a12fe2e6e5"
+  },
+  "tools.policies.starters.blockDestructive": {
+    "en": "Block destructive actions everywhere",
+    "zh-CN": "到处阻止破坏性行为",
+    "reviewedEnglishHash": "f3f3bf80b7e8cc4c876c8869598935802fb90e64e8d42cb1c98466fc262e0356"
+  },
+  "tools.policies.starters.limitNoisy": {
+    "en": "Limit a noisy action",
+    "zh-CN": "限制喧闹的操作",
+    "reviewedEnglishHash": "407bb2dab4b1724ccb70f14c990c15cc12d0c6d32ed90c82efe56b81cb3ffaf1"
+  },
+  "tools.policies.starters.scratch": {
+    "en": "Start from scratch",
+    "zh-CN": "从头开始",
+    "reviewedEnglishHash": "a4822ffed15b5e7d8a2f431357780e8c3e683a68b8b8d3896b605ce4540b1655"
+  },
+  "tools.policies.table.last24Hours": {
+    "en": "Last 24h",
+    "zh-CN": "最近 24 小时",
+    "reviewedEnglishHash": "3033b37ea23466d2462bf62af2599d64e8fc6b845e231dc511a2d04d1f9514cf"
+  },
+  "tools.policies.table.outcome": {
+    "en": "Outcome",
+    "zh-CN": "结果",
+    "reviewedEnglishHash": "4e80abb5b14656d4eed8fd93705fd4c774d7653b05162763770bd23f1755db1a"
+  },
+  "tools.policies.table.rule": {
+    "en": "Rule",
+    "zh-CN": "规则",
+    "reviewedEnglishHash": "62845f31a2fe00be3ebaaeb93f5b27af82ab81dfcbaa1871c76f596cd98cf3c9"
+  },
+  "tools.policies.testRule": {
+    "en": "Test a rule",
+    "zh-CN": "测试规则",
+    "reviewedEnglishHash": "a9f8b0f3d196782a1a72e1fb0f891f9572ea34f1f09d6d87b11c2e7b060e9ae3"
+  },
+  "tools.policies.then": {
+    "en": "Then",
+    "zh-CN": "然后",
+    "reviewedEnglishHash": "0597f441dcca7c9bb0a79da4d94d03c523c031a3384009afff47ac1fd1a72b95"
+  },
+  "tools.policies.title": {
+    "en": "Rules",
+    "zh-CN": "规则",
+    "reviewedEnglishHash": "4228aeb07c410ffc9d15b458bf7c2bf8d9dfa7af632f2c339e69f8cb54654da3"
+  },
+  "tools.policies.toast.approvalForgotten": {
+    "en": "Remembered approval forgotten",
+    "zh-CN": "记得批准忘记了",
+    "reviewedEnglishHash": "0fae12568d48049403013d40c889c81e5912e54e5a3bc3cd463c54b604993ea7"
+  },
+  "tools.policies.toast.created": {
+    "en": "Rule created",
+    "zh-CN": "规则已创建",
+    "reviewedEnglishHash": "1d0e14f16a2e5249796747e8faca9323a1854378a564ca707e999922c126e1a4"
+  },
+  "tools.policies.toast.deleteFailed": {
+    "en": "Delete failed",
+    "zh-CN": "删除失败",
+    "reviewedEnglishHash": "8727e2ba364c2c46192df0e1d0318d0cc82b0c1e6f7465e012ac59430254e170"
+  },
+  "tools.policies.toast.deleted": {
+    "en": "Rule deleted",
+    "zh-CN": "规则已删除",
+    "reviewedEnglishHash": "92e561e3d2e132cc0817c75612cf2ff6472af30d47d58a220d33b17e03b5110d"
+  },
+  "tools.policies.toast.duplicateFailed": {
+    "en": "Duplicate failed",
+    "zh-CN": "复制失败",
+    "reviewedEnglishHash": "9e3b1adc7a0f130a8beaf3f0ac57827efa7e97b018ae55efda96e44a0acc1e46"
+  },
+  "tools.policies.toast.duplicated": {
+    "en": "Rule duplicated",
+    "zh-CN": "规则重复",
+    "reviewedEnglishHash": "a45d60161f771f0e85c4e31df0d37f36d8278ebba70cf146b2ea0a97c1ec9fc2"
+  },
+  "tools.policies.toast.duplicatedBody": {
+    "en": "The copy is off until you turn it on.",
+    "zh-CN": "在您将其打开之前，副本将处于关闭状态。",
+    "reviewedEnglishHash": "9280d32e4ce407aa8079ee1ef8c6f49a0fa53237d79a595f56de5385d41b98ac"
+  },
+  "tools.policies.toast.forgetFailed": {
+    "en": "Forget failed",
+    "zh-CN": "忘记失败",
+    "reviewedEnglishHash": "da7772e9f5df28fa071b469e79ee21efb545c991f6ef1d9ad8c9dfbb056a4acf"
+  },
+  "tools.policies.toast.invalid": {
+    "en": "Invalid rule",
+    "zh-CN": "规则无效",
+    "reviewedEnglishHash": "a59df71c8b15fddcc2cb1189d93502a58d4f5b6409335e63ced3fb2f2139d597"
+  },
+  "tools.policies.toast.reorderFailed": {
+    "en": "Could not reorder rules",
+    "zh-CN": "无法重新排序规则",
+    "reviewedEnglishHash": "dccdc345a44ab0b646a4918e1c4904c8aae74769a1dfac1bc51db468247a2c3a"
+  },
+  "tools.policies.toast.reordered": {
+    "en": "Rules reordered",
+    "zh-CN": "规则重新排序",
+    "reviewedEnglishHash": "c1289be7df691ab34206bb5e292a55c3f913e0aa77f724c92c6b77c3c82a01e2"
+  },
+  "tools.policies.toast.saveFailed": {
+    "en": "Could not save rule",
+    "zh-CN": "无法保存规则",
+    "reviewedEnglishHash": "cdd1a05147ed2bec5bad54c6164debf879d7022814e5debba310a875abe6c427"
+  },
+  "tools.policies.toast.testFailed": {
+    "en": "Rule test failed",
+    "zh-CN": "规则测试失败",
+    "reviewedEnglishHash": "5151002644f38c087be2bb0af1ec5847fb52a1de26a07a70b6ce1d3b01c56833"
+  },
+  "tools.policies.toast.updated": {
+    "en": "Rule updated",
+    "zh-CN": "规则已更新",
+    "reviewedEnglishHash": "cb3de6df114c5ab0060f0094266de23c108ad8d32b48b5a194d9bfe09e48de81"
+  },
+  "tools.policies.uses": {
+    "en": "Uses",
+    "zh-CN": "用途",
+    "reviewedEnglishHash": "9e6151acb057025d16cbccee815e728994335db9c3c980e9489194be2f7937c2"
+  },
+  "tools.policies.usesOptions.actions": {
+    "en": "Specific actions",
+    "zh-CN": "具体操作",
+    "reviewedEnglishHash": "9cdc7709fe26172d41dca60f5e4500a93289e187571821e20bfe5601cac3cdf2"
+  },
+  "tools.policies.usesOptions.anything": {
+    "en": "Anything",
+    "zh-CN": "任何东西",
+    "reviewedEnglishHash": "dcabc6765c4b22e2c7b4fba7656cfa85274d9654e55e1d35a5dea93ade7ce4be"
+  },
+  "tools.policies.usesOptions.app": {
+    "en": "A specific app",
+    "zh-CN": "特定应用",
+    "reviewedEnglishHash": "09b8932401e165fdc8d7bac128b3180c349c54da5d593ae9dd1764da054ddeb5"
+  },
+  "tools.policies.usesOptions.capability": {
+    "en": "Actions by capability",
+    "zh-CN": "按能力采取的操作",
+    "reviewedEnglishHash": "f4b11ada891adadb7ab96e667ca4f72093292dc349242399eae916a4d14a0ea4"
+  },
+  "tools.policies.validation.limit": {
+    "en": "Limit must be a positive integer",
+    "zh-CN": "限制必须是正整数",
+    "reviewedEnglishHash": "328862dbc79449e779780b1c6c431c984b92ef6cea7260fda12228680a680110"
+  },
+  "tools.policies.validation.priority": {
+    "en": "Priority must be an integer from 0 to 10000",
+    "zh-CN": "优先级必须是 0 到 10000 之间的整数",
+    "reviewedEnglishHash": "923d575c7d6dc76f140aa53995c9df4984ce0cc3e46b3a6d15485fb40534e0ba"
+  },
+  "tools.policies.validation.window": {
+    "en": "Window must be a positive number of seconds",
+    "zh-CN": "窗口必须是正数秒",
+    "reviewedEnglishHash": "91728cd8e89e2b64f89457ad62b4b39c7ac0590289462f1fe9ed8acaf36b99fc"
+  },
+  "tools.policies.when": {
+    "en": "When",
+    "zh-CN": "当",
+    "reviewedEnglishHash": "cf9c7aa24a26aac4f0ec4b6395cbfdcc055677c3dac87bd6af898bccd66d4e17"
+  },
+  "tools.policies.whenOptions.agent": {
+    "en": "Specific agent",
+    "zh-CN": "具体智能体",
+    "reviewedEnglishHash": "55f28247fed757ba72255c7e5351df3a2910ef17e34393bb0396b64a23c8643a"
+  },
+  "tools.policies.whenOptions.everyone": {
+    "en": "Everyone",
+    "zh-CN": "大家",
+    "reviewedEnglishHash": "da2e5dc515b188dcac1afa88c93f859834ad57dfd921581172c9a74ab190e9f1"
+  },
+  "tools.policies.whenOptions.project": {
+    "en": "Agents in a project",
+    "zh-CN": "项目中的智能体",
+    "reviewedEnglishHash": "377657438553d91a6bf2ba42357c01be9c319d6879f800dd83ea5566b4f154b5"
+  },
+  "tools.policies.window.day": {
+    "en": "day",
+    "zh-CN": "日",
+    "reviewedEnglishHash": "944c27e5b97ab7793e4b6e9ff29384890ece0c7c04d2e2bf81c5f763469cc66b"
+  },
+  "tools.policies.window.dayTitle": {
+    "en": "Day",
+    "zh-CN": "日",
+    "reviewedEnglishHash": "8f2364e11b8be3ff008f32b3dedb54e659362429bcc9e3eb6acb6070de4ffbff"
+  },
+  "tools.policies.window.hour": {
+    "en": "hour",
+    "zh-CN": "小时",
+    "reviewedEnglishHash": "9ac0add475dd38e6ab3a3fb5ab4579c886eb654f57764210a352fd62e9dd9706"
+  },
+  "tools.policies.window.hourTitle": {
+    "en": "Hour",
+    "zh-CN": "小时",
+    "reviewedEnglishHash": "f0063b808736318d3f5038c3a6c3b6349183cc678ed93d2e7963248ae7ed7318"
+  },
+  "tools.policies.window.minute": {
+    "en": "minute",
+    "zh-CN": "分钟",
+    "reviewedEnglishHash": "28cdd20eaf134a05f18369414cb2df5e36c6a4e4f551b8c9cff8548029c41d6c"
+  },
+  "tools.policies.window.minuteTitle": {
+    "en": "Minute",
+    "zh-CN": "分钟",
+    "reviewedEnglishHash": "4b78665bec78390a0feb7a1ec09c92f21b0322772778cc5ad025be97d9554ce8"
+  },
+  "tools.profiles.actions.archive.body": {
+    "en": "This profile stops applying to {{count}} agent(s). You can restore it later.",
+    "zh-CN": "此访问配置停止应用于 {{count}} 智能体。您可以稍后恢复它。",
+    "reviewedEnglishHash": "338fc8664d268ad64829835628d35bdfefa05dc7243f3b70b97e880388906585"
+  },
+  "tools.profiles.actions.archive.confirm": {
+    "en": "Archive",
+    "zh-CN": "存档",
+    "reviewedEnglishHash": "66f4804ee23ddc092d1bae43cb88186aa541187fff7c1cc8a4aa17e59a9f4123"
+  },
+  "tools.profiles.actions.archive.title": {
+    "en": "Archive profile",
+    "zh-CN": "访问配置资料",
+    "reviewedEnglishHash": "2962d868f4ace180234796be98606bc98f3f2e3dca7bc07b694e7ddc077dbbb2"
+  },
+  "tools.profiles.actions.delete.body": {
+    "en": "This permanently deletes the profile and removes {{count}} assignment(s).",
+    "zh-CN": "这将永久删除访问配置并删除 {{count}} 分配。",
+    "reviewedEnglishHash": "36735d4ec6982ed3489c9d20e50ff9d38c999bb10a0f657c57c6f0525f9d2a1b"
+  },
+  "tools.profiles.actions.delete.chooseDefaultFirst": {
+    "en": "Choose another access profile and make it the company default first.",
+    "zh-CN": "首先选择另一个访问配置并将其设为公司默认值。",
+    "reviewedEnglishHash": "75874a135c00d3cd8c079d8eb4fcf801e191c2d8e9528d7e042fa5b4f9eb9d4b"
+  },
+  "tools.profiles.actions.delete.confirm": {
+    "en": "Delete",
+    "zh-CN": "删除",
+    "reviewedEnglishHash": "e2d0a54968ead24efc0dffa6ac78fc606dceec34a0f586177a74a54cc2272cf8"
+  },
+  "tools.profiles.actions.delete.defaultBlocked": {
+    "en": "This profile is the company default. Reassign the company default to another profile before deleting it.",
+    "zh-CN": "此访问配置是公司默认配置。在删除之前，将公司默认值重新分配给另一个访问配置。",
+    "reviewedEnglishHash": "2f375b926adcb434ae7520dc87d3f4152552f7cae6036238e54d87f369415a20"
+  },
+  "tools.profiles.actions.delete.title": {
+    "en": "Delete profile",
+    "zh-CN": "删除访问配置",
+    "reviewedEnglishHash": "47311af432a79c40900020a1e43c1c80045bc9295fb0258c5bb4a181e55b149a"
+  },
+  "tools.profiles.actions.restore.body": {
+    "en": "This profile will be active again and can be assigned to agents.",
+    "zh-CN": "该访问配置将再次激活并可以分配给智能体。",
+    "reviewedEnglishHash": "945f98b43fdb5fbea714f2c09583345648696df797aaa5d3acc432d6ffc5e880"
+  },
+  "tools.profiles.actions.restore.confirm": {
+    "en": "Restore",
+    "zh-CN": "恢复",
+    "reviewedEnglishHash": "a76e13b9839270eb73ed11417f7d8acca55df0ad52065799361631d0fff74f27"
+  },
+  "tools.profiles.actions.restore.title": {
+    "en": "Restore profile",
+    "zh-CN": "恢复访问配置",
+    "reviewedEnglishHash": "ec01a812bd883b04d5da12e048a5b224873457e25b8352104eafc484d456dbc4"
+  },
+  "tools.profiles.adminGate.description": {
+    "en": "Access profiles decide which tools your agents can use. Ask an administrator to set these up, or head back to",
+    "zh-CN": "访问配置决定您的智能体可以使用哪些工具。请管理员进行设置，或返回",
+    "reviewedEnglishHash": "6cca0de4b28c036dee26680c88aadeada6044a2cc28c4af7a9e241e9f145400d"
+  },
+  "tools.profiles.adminGate.title": {
+    "en": "Access profiles are for administrators",
+    "zh-CN": "访问配置供管理员使用",
+    "reviewedEnglishHash": "2d3e8ef26804a1728c871b3f4abc594cb098037d12e1c49bc64700ca9bac7a1e"
+  },
+  "tools.profiles.adminGate.yourApps": {
+    "en": "your apps",
+    "zh-CN": "你的应用",
+    "reviewedEnglishHash": "d37a3ccae651b136de96abf3ca801cb5c896d810a04d547dca989e33ea317991"
+  },
+  "tools.profiles.allowList.addedAutomatically": {
+    "en": "added automatically",
+    "zh-CN": "自动添加",
+    "reviewedEnglishHash": "070ba3824515fb2c90ec87a7ae31c803ba5a56ac86f525237e9e39398cf95a7d"
+  },
+  "tools.profiles.allowList.capabilities": {
+    "en": "Capabilities",
+    "zh-CN": "能力",
+    "reviewedEnglishHash": "9460f16ac9b5171e7f3d3f2336ec66b547231be8996ea9a0ad25079f84641be4"
+  },
+  "tools.profiles.allowList.defaultCount": {
+    "en": " · {{count}} via default",
+    "zh-CN": "· 默认为 {{count}}",
+    "reviewedEnglishHash": "44f610f2faf08f921f9f0272be4def8e785a881afd4f88b9a790b8b8c325d5ba"
+  },
+  "tools.profiles.allowList.disconnected": {
+    "en": "{{app}} is disconnected",
+    "zh-CN": "{{app}} 已断开连接",
+    "reviewedEnglishHash": "e23b4652863286aa75b0a5a706b1bde54e816980d3e9db0981891008e57be2ff"
+  },
+  "tools.profiles.allowList.empty": {
+    "en": "This profile allows 0 tools. Agents with only this profile will not be able to use app tools.",
+    "zh-CN": "此访问配置允许 0 个工具。仅分配此配置的智能体将无法使用应用工具。",
+    "reviewedEnglishHash": "2977644d0dea06a7171229ea29762ee9973dd96493455784dda1107c1eb34bd0"
+  },
+  "tools.profiles.allowList.explicitCount": {
+    "en": " · {{count}} explicit",
+    "zh-CN": "· {{count}} 明确",
+    "reviewedEnglishHash": "4fe5de0ec5948358a2b9584af53cb20f631cd993b4227e364d7606eb79609c4a"
+  },
+  "tools.profiles.allowList.patternCount": {
+    "en": " · {{count}} via pattern",
+    "zh-CN": "· {{count}} 通过模式",
+    "reviewedEnglishHash": "cc9cc2e32099bf5d47fac2dc43a2891bcef3491ec5bc6d64d9a4732d61498a49"
+  },
+  "tools.profiles.allowList.patternWarning": {
+    "en": "Tools marked pattern were pulled in by a wildcard, application, connection, or risk selector rather than named explicitly — review them when the catalog changes.",
+    "zh-CN": "标记模式的工具是通过通配符、应用、连接或风险选择器引入的，而不是明确命名的 - 当目录更改时检查它们。",
+    "reviewedEnglishHash": "035c9ab684985fdd91f01aa8a88cbc7548ac85227bf21e41b5ecb4fabd204118"
+  },
+  "tools.profiles.allowList.resolving": {
+    "en": "Resolving allowed tools…",
+    "zh-CN": "解决允许的工具...",
+    "reviewedEnglishHash": "19c7849df8c1233ee9fa84de688c2eafeb3ab35dde8c2c0fbb1ec6716b220dba"
+  },
+  "tools.profiles.allowList.risk": {
+    "en": "Risk",
+    "zh-CN": "风险",
+    "reviewedEnglishHash": "0711a8d636e4c068ae59fa80c03ad68e7bd9fe473c1f9248fd2cf3716e3fb715"
+  },
+  "tools.profiles.allowList.showing": {
+    "en": "Showing 80 of {{count}} allowed tools.",
+    "zh-CN": "显示 80 个 {{count}} 允许的工具。",
+    "reviewedEnglishHash": "90e95235efb10078113adb58cd649f89640735e0aae028317869fb4390bdfb48"
+  },
+  "tools.profiles.allowList.source": {
+    "en": "Source",
+    "zh-CN": "来源",
+    "reviewedEnglishHash": "0e570ca6fabe24f94e52c1833f3ffd25567022beb826fa16891f3322051bc221"
+  },
+  "tools.profiles.allowList.title": {
+    "en": "Allow list",
+    "zh-CN": "允许列表",
+    "reviewedEnglishHash": "f1eb6f7f3511fc8865854d167e5ba7e133f95713e035a59f1a6cb3597f750927"
+  },
+  "tools.profiles.allowList.toolCount": {
+    "en": "{{count}} tools",
+    "zh-CN": "{{count}} 工具",
+    "reviewedEnglishHash": "f1b9324764c0a9c0633d57b1379cc777c4569958a3d59d097802a471fb08dba3"
+  },
+  "tools.profiles.allowList.total": {
+    "en": "Allows {{allowed}} of {{total}} known tools.",
+    "zh-CN": "允许 {{allowed}} 或 {{total}} 已知工具。",
+    "reviewedEnglishHash": "d3ec52180692b5d43d9381d676cb68e45d2fde16be211b52ff60eed5a67f110b"
+  },
+  "tools.profiles.assign.alreadyHas": {
+    "en": "already has: {{profiles}}",
+    "zh-CN": "已经有：{{profiles}}",
+    "reviewedEnglishHash": "2fe1e0d57ffd5540f9f73313d7a0b82f49d03ef61b2ab458dc272061bf8c6ac5"
+  },
+  "tools.profiles.assign.companyDefault": {
+    "en": "company default",
+    "zh-CN": "公司默认",
+    "reviewedEnglishHash": "08ec907ebecdbb721c749fa11e9ab448972927fe46c6e1af9881c1d69a81c86d"
+  },
+  "tools.profiles.assign.defaultDescription": {
+    "en": "Every agent without its own profile uses this one.",
+    "zh-CN": "每个没有自己的访问配置的智能体都会使用此访问配置。",
+    "reviewedEnglishHash": "0713a111a896b03d368a1c2f04437ae2f9c9ba78c50f3215de76bb4d467b6f8a"
+  },
+  "tools.profiles.assign.makeDefault": {
+    "en": "Make this the company default",
+    "zh-CN": "将此设置为公司默认值",
+    "reviewedEnglishHash": "8d4dfcd466dee789f9ad0ea1cee33ab8acc8a00921b2ff86f85585c5381a895a"
+  },
+  "tools.profiles.assign.moreTargets": {
+    "en": "More targets",
+    "zh-CN": "更多目标",
+    "reviewedEnglishHash": "ce9b6d8427c831ebc2609e09a857b79856cfa2ecd9c3dabdd6003cffe2ec9b31"
+  },
+  "tools.profiles.assign.moreTargetsHelp": {
+    "en": "Assign this profile to a whole project or a scheduled routine instead of (or as well as) individual agents.",
+    "zh-CN": "将此访问配置分配给整个项目或计划的例程，而不是（或以及）单个智能体。",
+    "reviewedEnglishHash": "9bc8b6bb61a6be78b681b3eb0bea9ff2f8d1405475112c8a4328568b765d72e9"
+  },
+  "tools.profiles.assign.noProfiles": {
+    "en": "no profiles yet",
+    "zh-CN": "还没有访问配置",
+    "reviewedEnglishHash": "09bc1def993b0c9c60f4352df7396917728ce2bac16dbdbe07b802bbee73e66f"
+  },
+  "tools.profiles.assign.overlapHelp": {
+    "en": "If an agent has several profiles, it can use anything any of them allows.",
+    "zh-CN": "如果智能体有多个访问配置，则它可以使用其中任何一个访问配置允许的任何内容。",
+    "reviewedEnglishHash": "b6dd4131bbc87526386a6b78198ec7eda6c31c2aaceef4fe8b7dcffd7b08ab86"
+  },
+  "tools.profiles.assign.replaces": {
+    "en": "Replaces “{{name}}”.",
+    "zh-CN": "替换“{{name}}”。",
+    "reviewedEnglishHash": "8b630237635162565e29428627ebd72499dae92d5ccb4f71adfb09c1c848c4f1"
+  },
+  "tools.profiles.assign.toAgents": {
+    "en": "Assign to agents",
+    "zh-CN": "分配给智能体",
+    "reviewedEnglishHash": "06d88b5bcc65d1bc5306460ac9290c9cf0a2a168b14ddde45d062baf832f3cbe"
+  },
+  "tools.profiles.assignments.emptyDescription": {
+    "en": "Assign this profile before it changes access.",
+    "zh-CN": "在更改访问权限之前分配此访问配置。",
+    "reviewedEnglishHash": "2836f7e1cb39f24e9669901a7f3314da114c8c0b9f0351ed1ad1fa7181c91d21"
+  },
+  "tools.profiles.assignments.scoped": {
+    "en": "Scoped assignment",
+    "zh-CN": "范围分配",
+    "reviewedEnglishHash": "9e2aa70b144caf96700357af31a35991c6b047a4eb0fb902c436c345e037e23c"
+  },
+  "tools.profiles.assignments.unknownAgent": {
+    "en": "Unknown agent",
+    "zh-CN": "未知智能体",
+    "reviewedEnglishHash": "342b4ab21e2eb31aa0d820359715d027c0e1cde4599ac21394c0e4009bd8aed0"
+  },
+  "tools.profiles.assignments.unknownProject": {
+    "en": "Unknown project",
+    "zh-CN": "未知项目",
+    "reviewedEnglishHash": "ed51cfeff0d96984b5a5fd0be3bb17df29251b7b41b720a5d11964e1d336ac7f"
+  },
+  "tools.profiles.assignments.unknownRoutine": {
+    "en": "Unknown routine",
+    "zh-CN": "未知的套路",
+    "reviewedEnglishHash": "8ad488aadc512b97899be2949a322c3975610900bcbc4ddfcf722608f96c8c1d"
+  },
+  "tools.profiles.capability.destructive": {
+    "en": "Destructive",
+    "zh-CN": "破坏性",
+    "reviewedEnglishHash": "c3e58a73609d109404e7ff8f80e7e82d6f8fd347fd1b1945fc469b5c4899697e"
+  },
+  "tools.profiles.capability.read": {
+    "en": "Read-only",
+    "zh-CN": "只读",
+    "reviewedEnglishHash": "72bb90897ab1eadc924fa1358773c5949372c1f06d8dd53d730bbfa3b0c5b695"
+  },
+  "tools.profiles.capability.write": {
+    "en": "Makes changes",
+    "zh-CN": "可进行更改",
+    "reviewedEnglishHash": "f85b6093348f6dca526636783b7f368a996f7684d52f910dd8a0e3e91572fe55"
+  },
+  "tools.profiles.checkAgentAccess": {
+    "en": "Check an agent's access",
+    "zh-CN": "检查智能体的访问权限",
+    "reviewedEnglishHash": "cfb8ca1e58be63cf70a57878e653922bc57b1035168332e217eda36867a1ca4e"
+  },
+  "tools.profiles.checkAgentAccessDescription": {
+    "en": "See exactly which tools an agent can use right now, and which profile allows each one.",
+    "zh-CN": "准确查看智能体现在可以使用哪些工具，以及每个访问配置允许使用哪些工具。",
+    "reviewedEnglishHash": "014cb041e856081f03ffe0db2d27c08652a52ae89431bd08f1b45586781e3dbf"
+  },
+  "tools.profiles.description": {
+    "en": "Decide which tools your agents can use. Build a profile once, then assign it to the agents that need it.",
+    "zh-CN": "决定您的智能体可以使用哪些工具。构建一次访问配置，然后将其分配给需要它的智能体。",
+    "reviewedEnglishHash": "6d00444ece2406d06e378669bc22047a383d380447b5436ec8ead7a7bcc610fb"
+  },
+  "tools.profiles.detail.archivedNotice": {
+    "en": "This profile is archived. It does not apply to agents until it is restored.",
+    "zh-CN": "此访问配置已存档。在恢复之前它不适用于智能体。",
+    "reviewedEnglishHash": "dc808ddaaa400224e7ceab85d4c8ac08afb5882db3b3793f465a18d5745e5ff4"
+  },
+  "tools.profiles.detail.assignBeforeActive": {
+    "en": "Assign it to agents before it changes their access.",
+    "zh-CN": "在更改智能体的访问权限之前将其分配给智能体。",
+    "reviewedEnglishHash": "ac3e7b4e2ed54a0e6cb1aa0da56d151be90d37b8a745ec171cb0eda8053ec25f"
+  },
+  "tools.profiles.detail.assignmentsActive": {
+    "en": "Assignments are active now.",
+    "zh-CN": "任务现已激活。",
+    "reviewedEnglishHash": "ae99b4e13b8ff06cbbd7dbb6bea97334f63c659dc2483c0413f09fe20baa7954"
+  },
+  "tools.profiles.detail.back": {
+    "en": "Back to profiles",
+    "zh-CN": "返回访问配置",
+    "reviewedEnglishHash": "657ca8453f1099bd5bac76c7e910db4d03827c2d62e72085edfd1ab8a68115ed"
+  },
+  "tools.profiles.detail.breadcrumb": {
+    "en": "Profile detail",
+    "zh-CN": "访问配置详情",
+    "reviewedEnglishHash": "584ea58b60d4b69b5ccce8d50e62a7e5644f04319c72ed8a32e4209bfb66ca98"
+  },
+  "tools.profiles.detail.checkAgentAccess": {
+    "en": "Check what an agent can actually do",
+    "zh-CN": "检查智能体实际上可以做什么",
+    "reviewedEnglishHash": "587f7c0ed01254b60c2e5308022e7e8cee2cca3b0dd184fc3550d647fdf009f0"
+  },
+  "tools.profiles.detail.default": {
+    "en": "Default",
+    "zh-CN": "默认",
+    "reviewedEnglishHash": "21b111cbfe6e8fca2d181c43f53ad548b22e38aca955b9824706a504b0a07a2d"
+  },
+  "tools.profiles.detail.defaultAction": {
+    "en": "default {{action}}",
+    "zh-CN": "默认 {{action}}",
+    "reviewedEnglishHash": "8ea1d351cc573d093416c0bd0949bf079c65707ea58584b6a5931eeb869d5c9a"
+  },
+  "tools.profiles.detail.deleteEntryAria": {
+    "en": "Delete {{type}} entry",
+    "zh-CN": "删除 {{type}} 条目",
+    "reviewedEnglishHash": "bc347a2576cd5c807a5c1a1b10ec7521ccbfd1d5d405739279e0338d94e18e2a"
+  },
+  "tools.profiles.detail.editTools": {
+    "en": "Edit tools",
+    "zh-CN": "编辑工具",
+    "reviewedEnglishHash": "4979423210e341f5870ad442629415e1349a15729a8d4a59aad93184fccf2e38"
+  },
+  "tools.profiles.detail.effectiveScope": {
+    "en": "Effective scope",
+    "zh-CN": "有效范围",
+    "reviewedEnglishHash": "55ac5f6ef38669391686e3bf9f45fb9f3e1b9d72b855b781cb1ee234db8abddc"
+  },
+  "tools.profiles.detail.entry": {
+    "en": "Entry",
+    "zh-CN": "参赛作品",
+    "reviewedEnglishHash": "2649e082d9a2ba377ac918877028c3f1885e2e9ab926b216943aaf06064b92a1"
+  },
+  "tools.profiles.detail.futureTools": {
+    "en": "New tools that appear later",
+    "zh-CN": "稍后出现的新工具",
+    "reviewedEnglishHash": "ffe663688191163e2102e9c8ce4e066277ef9316d491c33d8d8dc5e3a7fedd47"
+  },
+  "tools.profiles.detail.includeExclude": {
+    "en": "{{include}} include / {{exclude}} exclude",
+    "zh-CN": "{{include}} 包括 / {{exclude}} 排除",
+    "reviewedEnglishHash": "57f0673e5dc898c368ab98124bb7e319412901b9c78280b4867ca3acca649e2a"
+  },
+  "tools.profiles.detail.loading": {
+    "en": "Loading profile...",
+    "zh-CN": "正在加载访问配置...",
+    "reviewedEnglishHash": "4a47f12d23c4a6bffa64c4709bfe53eb827d2572d29c1bd9752b55e37b41e63b"
+  },
+  "tools.profiles.detail.noDescription": {
+    "en": "No description yet.",
+    "zh-CN": "还没有描述。",
+    "reviewedEnglishHash": "6d962a3d4e519cf72bfcadd4d89652ce0754e802d90d578044749e3e511be6b7"
+  },
+  "tools.profiles.detail.noSelectors": {
+    "en": "No selectors.",
+    "zh-CN": "没有选择器。",
+    "reviewedEnglishHash": "b68ffa758fe7e4159da46db9e3576037869c0717827c642de5f15536259b91c9"
+  },
+  "tools.profiles.detail.noTargets": {
+    "en": "No targets bound.",
+    "zh-CN": "没有目标绑定。",
+    "reviewedEnglishHash": "0fc5bce7d935cfb71e7e2e6b205ec34253b4dfb325fc9ede83c43c8eab35d070"
+  },
+  "tools.profiles.detail.notFound": {
+    "en": "Profile not found",
+    "zh-CN": "找不到访问配置",
+    "reviewedEnglishHash": "999930725d06131459c68279cb1c7c7903b032a05f43fe6ccdf975b09c773330"
+  },
+  "tools.profiles.detail.notFoundDescription": {
+    "en": "This access profile may have been deleted.",
+    "zh-CN": "此访问配置可能已被删除。",
+    "reviewedEnglishHash": "865486063ec6caf240006f5178595ab4d0ae24c23a23ceb96b91f39b34b4a201"
+  },
+  "tools.profiles.detail.removeBindingAria": {
+    "en": "Remove {{type}} binding",
+    "zh-CN": "删除 {{type}} 绑定",
+    "reviewedEnglishHash": "596cab080e3a6a073d611ea9bdef3b1a14b96c935c165aa2ed22e547d2c87684"
+  },
+  "tools.profiles.detail.saved": {
+    "en": "Profile saved",
+    "zh-CN": "访问配置已保存",
+    "reviewedEnglishHash": "ea278dbc0644d8bd0422b0f55d890f5ab48f716ca07ed7b19971662a845ae090"
+  },
+  "tools.profiles.detail.selectCompanyAndProfile": {
+    "en": "Select a company and profile.",
+    "zh-CN": "选择公司和简介。",
+    "reviewedEnglishHash": "91bc2a3bb1bb407268fdda8023f82e93eedf232bee432a04120ae2451fb988e9"
+  },
+  "tools.profiles.detail.selectors": {
+    "en": "Selectors",
+    "zh-CN": "选择器",
+    "reviewedEnglishHash": "d27e6f722c90c3d024ad204c7103c09589879d76231fabe93b77543d36f27ad9"
+  },
+  "tools.profiles.detail.targets": {
+    "en": "Targets",
+    "zh-CN": "目标",
+    "reviewedEnglishHash": "27445f6ab61d9a5cea1584df4a98277b77e1d091fb67c143d4d40116468dcdec"
+  },
+  "tools.profiles.detail.toolsAllowed": {
+    "en": "{{count}} tools allowed",
+    "zh-CN": "允许使用 {{count}} 工具",
+    "reviewedEnglishHash": "77770810bcbc840b3c4f4e82058c3f3a2925ac27b0ea9bac3b183995f6dc4377"
+  },
+  "tools.profiles.detail.updated": {
+    "en": "Updated",
+    "zh-CN": "已更新",
+    "reviewedEnglishHash": "3a5ecca188c0579c00ee24cf3cab21bd02c15a06f7a70cc8e0a8ff2381dcbbfd"
+  },
+  "tools.profiles.detail.whatItAllows": {
+    "en": "What it allows",
+    "zh-CN": "它允许什么",
+    "reviewedEnglishHash": "ce76de744006e1131b2ab8632e5824cdd579450b42088ede455c9e14f9804846"
+  },
+  "tools.profiles.detail.whoHasIt": {
+    "en": "Who has it",
+    "zh-CN": "谁有它",
+    "reviewedEnglishHash": "e38b55521c27f23f3cb239ba9534b44d95e8fbcc1fe3b28434a3de5377c068c1"
+  },
+  "tools.profiles.dialog.addEntry": {
+    "en": "Add entry",
+    "zh-CN": "添加条目",
+    "reviewedEnglishHash": "dd3db6ac0dfbcfbbd765e37b31fe35b432604bf99761aeb7d717ca3aeae56392"
+  },
+  "tools.profiles.dialog.allowUnlessExcluded": {
+    "en": "Allow unless excluded",
+    "zh-CN": "允许，除非排除",
+    "reviewedEnglishHash": "58d05d139b9ba40177aca0131060d7be9c2187be2633a7356deb4ad93925f695"
+  },
+  "tools.profiles.dialog.bind": {
+    "en": "Bind",
+    "zh-CN": "绑定",
+    "reviewedEnglishHash": "56b9b63d2831804be5c23a83d6d2e4e19c3124f546890b0628e839c9806c0e00"
+  },
+  "tools.profiles.dialog.bindProfile": {
+    "en": "Bind profile",
+    "zh-CN": "绑定访问配置",
+    "reviewedEnglishHash": "65d75b8ac70cea8482463cb5e93e841d71ae92a1ee1ea6389e4b881ddf3d0de1"
+  },
+  "tools.profiles.dialog.copyAssignments": {
+    "en": "Also copy assignments?",
+    "zh-CN": "还抄作业？",
+    "reviewedEnglishHash": "7bcfff8cd3cfcf226af7ea3f9b03f29c8bc9b381ab05f9af5004cf815610f772"
+  },
+  "tools.profiles.dialog.copyName": {
+    "en": "{{name}} copy",
+    "zh-CN": "{{name}} 复制",
+    "reviewedEnglishHash": "6305eb6721a4044505137484d97b1c7772ac20a3cac03279e8adc4c70f8e401d"
+  },
+  "tools.profiles.dialog.copyNameParenthetical": {
+    "en": "{{name}} (copy)",
+    "zh-CN": "{{name}}（副本）",
+    "reviewedEnglishHash": "0596322a2732d96d70a3ef636cf17672b046f8194d4014a1876e4cccf2d56c5b"
+  },
+  "tools.profiles.dialog.defaultAction": {
+    "en": "Default action",
+    "zh-CN": "默认操作",
+    "reviewedEnglishHash": "e02292552b559dd79665980d6cf7a841c825160a805cc790268f5a1961b7165a"
+  },
+  "tools.profiles.dialog.denyUnlessIncluded": {
+    "en": "Deny unless included",
+    "zh-CN": "拒绝，除非包含在内",
+    "reviewedEnglishHash": "ad1d4da87a93f08ba19687926c2515d69726a4e4e533ea29fa8039f62579b686"
+  },
+  "tools.profiles.dialog.descriptionPlaceholder": {
+    "en": "Optional context for reviewers.",
+    "zh-CN": "供审阅者选择的上下文。",
+    "reviewedEnglishHash": "490a34adf82fb196e1334a7c8db9df266be14dadd60016117d9629dd1427c59f"
+  },
+  "tools.profiles.dialog.duplicateDescription": {
+    "en": "The copy starts unassigned unless you choose to copy assignments too.",
+    "zh-CN": "除非您也选择复制作业，否则副本开始时未分配。",
+    "reviewedEnglishHash": "7a781e2099430d0623469e5ba5a7c620bea8e2b9bd80d95ce7554fce42903998"
+  },
+  "tools.profiles.dialog.duplicateName": {
+    "en": "Another profile already uses this name.",
+    "zh-CN": "另一个访问配置已使用此名称。",
+    "reviewedEnglishHash": "023eb0b139c7814507691473b85ee83f47b7a591024136dcdf2b5ba88f20818b"
+  },
+  "tools.profiles.dialog.duplicateTitle": {
+    "en": "Duplicate profile",
+    "zh-CN": "重复的访问配置",
+    "reviewedEnglishHash": "6ef6a470ec1869497ccb78b185180acaf4b722c76fda6faa59cc9a635308e267"
+  },
+  "tools.profiles.dialog.editDescription": {
+    "en": "Update the profile name and description.",
+    "zh-CN": "更新访问配置名称和描述。",
+    "reviewedEnglishHash": "44e3c158dc8179d0271c5340297ec4b04f57f3661ed1e0305f17c0ace1d568f2"
+  },
+  "tools.profiles.dialog.editTitle": {
+    "en": "Edit profile",
+    "zh-CN": "编辑访问配置",
+    "reviewedEnglishHash": "15c4aa13037eaf52733882a470415c0f5a4afa8490b49dc1712b1f96fc3b1de0"
+  },
+  "tools.profiles.dialog.legacyDescription": {
+    "en": "Profile rules are enforced by the tool gateway policy service.",
+    "zh-CN": "访问配置规则由工具网关策略服务强制执行。",
+    "reviewedEnglishHash": "1ade40e3d4130ac55f9cc39ca1497088a2e5ed00cacf9f0d29ba553bb5c58bea"
+  },
+  "tools.profiles.dialog.namePlaceholder": {
+    "en": "Engineering write tools",
+    "zh-CN": "工程编写工具",
+    "reviewedEnglishHash": "0d0246f8ae5f51784578c5664b95a5962c589867e64369a910f1e5a511be1d34"
+  },
+  "tools.profiles.dialog.targetType": {
+    "en": "Target type",
+    "zh-CN": "目标类型",
+    "reviewedEnglishHash": "8a1c2fd5939df211d85e66d765331e03580e984e7e215ad0d48208049e6ea704"
+  },
+  "tools.profiles.effect.exclude": {
+    "en": "Exclude",
+    "zh-CN": "排除",
+    "reviewedEnglishHash": "5b76f62e1ba0401f8f18752e4bfd03c076de0a21eefcf26422725ffa28f6b4cd"
+  },
+  "tools.profiles.effect.include": {
+    "en": "Include",
+    "zh-CN": "包括",
+    "reviewedEnglishHash": "7285576bdacf86fe37274d3d0d399c29b4be2959005f60ac0729615d8fca9186"
+  },
+  "tools.profiles.effect.label": {
+    "en": "Effect",
+    "zh-CN": "效果",
+    "reviewedEnglishHash": "2252d5cf93767a43ecc53f07c8e49d76be0126e021c0397af8d51927e9c5e2e4"
+  },
+  "tools.profiles.effective.canUse": {
+    "en": "Can use",
+    "zh-CN": "可以使用",
+    "reviewedEnglishHash": "a0dea0bfdb5e80cd5788a5102556b1e8e098e35c3df4f863ef04a164848d301c"
+  },
+  "tools.profiles.effective.checking": {
+    "en": "Checking access...",
+    "zh-CN": "正在检查访问...",
+    "reviewedEnglishHash": "705975faaaf54eb488a3950f0f2cf4c34cefc19cd9541d0bdbbfb084993c31a6"
+  },
+  "tools.profiles.effective.companyDefault": {
+    "en": "Company default",
+    "zh-CN": "公司默认",
+    "reviewedEnglishHash": "a906ce99232e33c3f9c2837ca80125922ac212f9ee31d1401da8ca79cbc3ba2b"
+  },
+  "tools.profiles.effective.noProfile": {
+    "en": "No active profile applies to this agent.",
+    "zh-CN": "没有有效的访问配置适用于该智能体。",
+    "reviewedEnglishHash": "e3affc179327f043f42cf6c2f418cae18e300b3072b85dba91b0c0e916032ba6"
+  },
+  "tools.profiles.effective.noTools": {
+    "en": "This agent cannot use any app tools right now.",
+    "zh-CN": "该智能体目前无法使用任何应用工具。",
+    "reviewedEnglishHash": "6ece50d6515dde9efa309de1f5489839dc623a36aeaa208b9c0b5b39de5d18bb"
+  },
+  "tools.profiles.effective.pickAgent": {
+    "en": "Pick an agent to see what it can use right now.",
+    "zh-CN": "选择一个智能体看看它现在可以使用什么。",
+    "reviewedEnglishHash": "720bc8f43675dd509b79aad434e5712786d8f2558bf132dab1253def36b9144e"
+  },
+  "tools.profiles.effective.toolCount": {
+    "en": "{{count}} tools",
+    "zh-CN": "{{count}} 工具",
+    "reviewedEnglishHash": "f1b9324764c0a9c0633d57b1379cc777c4569958a3d59d097802a471fb08dba3"
+  },
+  "tools.profiles.empty.description": {
+    "en": "Pick a starting point. You can fine-tune exactly which tools it allows in the next step.",
+    "zh-CN": "选择一个起点。您可以在下一步中精确调整它允许使用哪些工具。",
+    "reviewedEnglishHash": "e07fd8dcf09a15da70f637020bae2e5844d2e37f77f7c429e04165f3b86675f6"
+  },
+  "tools.profiles.empty.title": {
+    "en": "Create your first access profile",
+    "zh-CN": "创建您的第一个访问配置",
+    "reviewedEnglishHash": "1234b07d967c3ce37877d4da4f0622305be774b0597fd9f9e09449112d1f8b2e"
+  },
+  "tools.profiles.emptyArchived": {
+    "en": "No archived profiles.",
+    "zh-CN": "没有存档的访问配置。",
+    "reviewedEnglishHash": "392d100c3db058ca1ab86b83b2815f879dcc14cad83eaa3341023476af1c93a8"
+  },
+  "tools.profiles.emptyLegacy.description": {
+    "en": "Create a profile to group tool selectors, then bind it to the company or a specific agent.",
+    "zh-CN": "创建访问配置以对工具选择器进行分组，然后将其绑定到公司或特定智能体。",
+    "reviewedEnglishHash": "ea8fcb985d7c24d52f87fc6c68bee01725bfd0a89f020516a717c3f04a12cee6"
+  },
+  "tools.profiles.emptyLegacy.title": {
+    "en": "No access profiles yet",
+    "zh-CN": "尚无访问配置",
+    "reviewedEnglishHash": "cc24f5fff2491af983a1b84cad9b3103f4876123670067e68632fc8d09101c6b"
+  },
+  "tools.profiles.futureTools.allowedBody": {
+    "en": "New tools from selected apps become available right away.",
+    "zh-CN": "选定应用中的新工具立即可用。",
+    "reviewedEnglishHash": "4def56ec5a017774d782b03022fd117efac4bf95f49410a9e84ed786c2a291fb"
+  },
+  "tools.profiles.futureTools.allowedHint": {
+    "en": "Any tool an app adds later becomes usable right away.",
+    "zh-CN": "应用稍后添加的任何工具都可以立即使用。",
+    "reviewedEnglishHash": "3655ea7791f6ac19960cb8c33532acd79fa80ecbb8bf4afb248dd482fb2479dc"
+  },
+  "tools.profiles.futureTools.allowedTitle": {
+    "en": "Allowed automatically",
+    "zh-CN": "自动允许",
+    "reviewedEnglishHash": "7fed1ac8c9e94fae44da1464dcce196da0633fa1f18d9920aec904c87c27f216"
+  },
+  "tools.profiles.futureTools.blockedBody": {
+    "en": "New tools do not become available automatically.",
+    "zh-CN": "新工具不会自动变得可用。",
+    "reviewedEnglishHash": "d7c34bbddd4fb89bb76270767459c2392085bcaeabbb8ecdc5c8840e98c2c9fd"
+  },
+  "tools.profiles.futureTools.blockedTitle": {
+    "en": "Stay blocked until reviewed",
+    "zh-CN": "在审核之前保持封锁状态",
+    "reviewedEnglishHash": "816eabb240a484b3458be6c57b8f4642e38bf4bfca8e878b7d04cac1ab9d770b"
+  },
+  "tools.profiles.futureTools.reviewHint": {
+    "en": "New tools an app adds later won't be usable until you review them.",
+    "zh-CN": "应用稍后添加的新工具在您查看之前将无法使用。",
+    "reviewedEnglishHash": "2751e3ac7df3e6fc93aa84aac9e0dddcb346d7760ff8f72aca554148633136df"
+  },
+  "tools.profiles.futureTools.reviewLabel": {
+    "en": "Stay blocked until someone allows them",
+    "zh-CN": "保持封锁状态，直到有人允许为止",
+    "reviewedEnglishHash": "dbc2aaef3f3456b336d91b6ec9b557883b0eff370b1c4e909fcc60a53143bef2"
+  },
+  "tools.profiles.legacyDescription": {
+    "en": "Reusable bundles of allowed applications, connections, and tools, assignable to agents, projects, routines, or issues.",
+    "zh-CN": "可重复使用的允许应用、连接和工具包，可分配给智能体、项目、例程或问题。",
+    "reviewedEnglishHash": "0a513750e0ff2027004447fc11cf766ff5c1b573dfa390c2b701081e66e7d5ca"
+  },
+  "tools.profiles.loading": {
+    "en": "Loading profiles…",
+    "zh-CN": "正在加载访问配置...",
+    "reviewedEnglishHash": "16b0bbfd1d1194f9a0945fd375147f113cf0a53efff54cdfb07642aba2ad1570"
+  },
+  "tools.profiles.model.unnamedTools": {
+    "en": "Tools",
+    "zh-CN": "工具",
+    "reviewedEnglishHash": "ea93d6a262ecb87a9fa4d09edbd7654c046597936a8e235fc3949eb01775ff99"
+  },
+  "tools.profiles.newProfile": {
+    "en": "New profile",
+    "zh-CN": "新的访问配置",
+    "reviewedEnglishHash": "fcf4f3f4d5f73ef8c88f1fef1b3c84d981652fd220517176bb3f7d8832b7347f"
+  },
+  "tools.profiles.removeAssignment.body": {
+    "en": "Remove this profile from {{name}}.",
+    "zh-CN": "从 {{name}} 中删除此访问配置。",
+    "reviewedEnglishHash": "b8c15303a3eb175498bd66980d919fd6e41b44690a926849718b76dbeb312ffa"
+  },
+  "tools.profiles.removeAssignment.companyDefault": {
+    "en": "Removing the company default changes access for every agent that relies on it.",
+    "zh-CN": "删除公司默认设置会更改依赖它的每个智能体的访问权限。",
+    "reviewedEnglishHash": "e716302e28ebaef5398c5775fc5120bcecbbcbc622010537fdb2a6a6fdd6fae6"
+  },
+  "tools.profiles.removeAssignment.title": {
+    "en": "Remove assignment",
+    "zh-CN": "删除分配",
+    "reviewedEnglishHash": "9d309b999b3f4097cf2f19f8860073581f17d4452b60587e0a09569247874e74"
+  },
+  "tools.profiles.review.added": {
+    "en": "added",
+    "zh-CN": "添加了",
+    "reviewedEnglishHash": "279b8a60f444fa8b6275687ce7e44363d97f72f88e4a3285baf0d9ed812e4061"
+  },
+  "tools.profiles.review.anApp": {
+    "en": "An app",
+    "zh-CN": "一个应用",
+    "reviewedEnglishHash": "094f9581aca0eda599e0fbda74f715d6b052ce4e5b14cf268d155ece65b1557e"
+  },
+  "tools.profiles.review.appTool": {
+    "en": "App tool",
+    "zh-CN": "应用工具",
+    "reviewedEnglishHash": "94f7dde1f88f72a15b81b916447c436bf93e810334d82567c8c17c2c73432096"
+  },
+  "tools.profiles.review.banner": {
+    "en": "{{app}} added {{count}} new tool(s) since your last review",
+    "zh-CN": "自您上次审核以来，{{app}} 添加了 {{count}} 个新工具",
+    "reviewedEnglishHash": "25030ae88cc3abe39ed86004ab038126b4f55bdbf00fbb16bc3e5af7e56288c6"
+  },
+  "tools.profiles.review.bannerDescription": {
+    "en": "Choose which ones this profile should allow.",
+    "zh-CN": "选择此访问配置应允许的内容。",
+    "reviewedEnglishHash": "0ceff7b6f82c85ac1c6f805bfa31390dbf508e8332e752a48ae8e98da4d6f0ff"
+  },
+  "tools.profiles.review.bannerLoading": {
+    "en": "New tools need review",
+    "zh-CN": "新工具需要审查",
+    "reviewedEnglishHash": "c656c4a623714fa57fe4709f8a8b96832faa0bc92a72daa06d1d31e3d7d306ee"
+  },
+  "tools.profiles.review.description": {
+    "en": "Allow the tools this profile should use. Keep the rest blocked.",
+    "zh-CN": "允许此访问配置应使用的工具。其余的保持封锁。",
+    "reviewedEnglishHash": "7d8cb98b832b622e1007caf5a19c8a7efff2cfd451732d621c4b4ea45933b384"
+  },
+  "tools.profiles.review.empty": {
+    "en": "There are no new tools waiting for review.",
+    "zh-CN": "没有新工具等待审核。",
+    "reviewedEnglishHash": "035709628565e3f6204869c7cf4bc919b9212b97a8770988f932966aeeb3daa9"
+  },
+  "tools.profiles.review.keepBlocked": {
+    "en": "Keep blocked",
+    "zh-CN": "保持封锁",
+    "reviewedEnglishHash": "bbc5730917af318ce63a56d75ec6c8dcd944fc38c54c87fe8b67b2ea331fd745"
+  },
+  "tools.profiles.review.loading": {
+    "en": "Loading new tools...",
+    "zh-CN": "正在加载新工具...",
+    "reviewedEnglishHash": "f78da714306408d59f1b859b09d291941ca2dfda803e58dff6c171f6d1ac5166"
+  },
+  "tools.profiles.review.moreApps": {
+    "en": "{{first}} and {{count}} more apps",
+    "zh-CN": "{{first}} 和 {{count}} 更多应用",
+    "reviewedEnglishHash": "a84270f61f733e6d382d63e46f02d5a7631e8b42b5d64b5e66cf55229e4b4e01"
+  },
+  "tools.profiles.review.submit": {
+    "en": "Submit review",
+    "zh-CN": "提交评论",
+    "reviewedEnglishHash": "cb81e6b1cd1a3f987768b411fc0316c7b0de1865817af3f198927e733632762f"
+  },
+  "tools.profiles.review.title": {
+    "en": "Review new tools",
+    "zh-CN": "回顾新工具",
+    "reviewedEnglishHash": "013d66744e334ae46481e9012322435d9de2f6335e87536e07b328ec32e2df21"
+  },
+  "tools.profiles.review.twoApps": {
+    "en": "{{first}} and {{second}}",
+    "zh-CN": "{{first}} 和 {{second}}",
+    "reviewedEnglishHash": "9484f622cc39610d78236ef25122e9eae0f9854051a7b649c91822f3d98fd029"
+  },
+  "tools.profiles.rowActions": {
+    "en": "Profile actions",
+    "zh-CN": "访问配置操作",
+    "reviewedEnglishHash": "f29b9c8f1c7debdd08f1f247b53a75c651b9e2238cf235e74f92cc0842a6de90"
+  },
+  "tools.profiles.rules.add": {
+    "en": "Add rule",
+    "zh-CN": "添加规则",
+    "reviewedEnglishHash": "a27cff51a2e03e61e1d38d457614f71234feae9f59208fac2d398ff7613874c9"
+  },
+  "tools.profiles.rules.description": {
+    "en": "Match tools by a name pattern, a risk level, or a specific tool ID. These run on top of the choices above.",
+    "zh-CN": "按名称模式、风险级别或特定工具 ID 匹配工具。这些运行在上面的选择之上。",
+    "reviewedEnglishHash": "97f1963e2c1ca04cdfad6a949a835e5ee99803dd7f0cb78e9a5c7062604164b8"
+  },
+  "tools.profiles.rules.patternPlaceholder": {
+    "en": "e.g. gmail.send*",
+    "zh-CN": "例如gmail.发送*",
+    "reviewedEnglishHash": "497b3e836ebc3da84a1eee43eb390458f32dbddb1071b82c81285cd873d8a52b"
+  },
+  "tools.profiles.rules.removeAria": {
+    "en": "Remove rule",
+    "zh-CN": "删除规则",
+    "reviewedEnglishHash": "3fab7379af907d888479ee329e0b7ba80b879977208b72be281f38d7cfaca735"
+  },
+  "tools.profiles.rules.riskLevel": {
+    "en": "Risk level",
+    "zh-CN": "风险等级",
+    "reviewedEnglishHash": "d4419ea33b84fa50cf3ae95f51b0245092298115c8a2de6ecea67d00d5e80a41"
+  },
+  "tools.profiles.rules.summaryPattern": {
+    "en": "{{verb}} tools matching {{value}}",
+    "zh-CN": "{{verb}} 匹配 {{value}} 的工具",
+    "reviewedEnglishHash": "ac7268322bbdd046dd979f87ab55623b95d76a8dec6f1f2634c9a18ba2429f6c"
+  },
+  "tools.profiles.rules.summaryRisk": {
+    "en": "{{verb}} {{risk}} tools",
+    "zh-CN": "{{verb}} {{risk}} 工具",
+    "reviewedEnglishHash": "6a48cef001b20032be5996e96aea9d8c76b0ceb1bbc22753c559de18ff11094c"
+  },
+  "tools.profiles.rules.summaryTool": {
+    "en": "{{verb}} tool {{value}}",
+    "zh-CN": "{{verb}}工具 {{value}}",
+    "reviewedEnglishHash": "c7c8c597520bbfd887a9e97549c14695cb804f4bb28a68c672cc4920b5053155"
+  },
+  "tools.profiles.rules.title": {
+    "en": "Advanced rules",
+    "zh-CN": "高级规则",
+    "reviewedEnglishHash": "8f58d324c8c86ae8aaf7ca26e6c0f832f89b23bb7a2039373675435a3733f974"
+  },
+  "tools.profiles.rules.toolId": {
+    "en": "By tool ID",
+    "zh-CN": "按工具ID",
+    "reviewedEnglishHash": "9c7511c18d99a3bc7630d6fee90d08c0bdd5e0ae86447c5c56f576a79384da0e"
+  },
+  "tools.profiles.rules.toolIdPlaceholder": {
+    "en": "tool ID",
+    "zh-CN": "工具ID",
+    "reviewedEnglishHash": "5e1e780f9aa72d380c9160d407ed8dbc7f99bcdb5d6e130fb7eb54210c7ab859"
+  },
+  "tools.profiles.rules.toolNamePattern": {
+    "en": "Tool name pattern",
+    "zh-CN": "工具名称模式",
+    "reviewedEnglishHash": "df0ac12b59cca44e435dc320acdc517c68f5bcee44d65a031ea4b071b0393d37"
+  },
+  "tools.profiles.selectAgent": {
+    "en": "Select an agent",
+    "zh-CN": "选择智能体",
+    "reviewedEnglishHash": "7d4cf06874635248d725bcf641438f58529d029c16d9c2a88cdb5aee88142b1d"
+  },
+  "tools.profiles.selectApplication": {
+    "en": "Select an application",
+    "zh-CN": "选择一个应用",
+    "reviewedEnglishHash": "0633c481c5e2c932f5f578b41038ea11deb8a6ce270208001ea6abb316e70c1a"
+  },
+  "tools.profiles.selectConnection": {
+    "en": "Select a connection",
+    "zh-CN": "选择一个连接",
+    "reviewedEnglishHash": "7c87405a47b9ad7183d6a2032b8bb114acd5f3292755a32df7cea39dcf1d360d"
+  },
+  "tools.profiles.selectProject": {
+    "en": "Select a project",
+    "zh-CN": "选择一个项目",
+    "reviewedEnglishHash": "dd18e6f08d5e0eeab7db63bf7c8572e89a6a75b142059df59c3ea23d2d4df729"
+  },
+  "tools.profiles.selectRoutine": {
+    "en": "Select a routine",
+    "zh-CN": "选择一个例行程序",
+    "reviewedEnglishHash": "29f3689a4ece4637879d0409e1fcc3ce9020cfacf32670c5c1f679459b0a6aca"
+  },
+  "tools.profiles.selection.all": {
+    "en": "All {{app}} tools ({{count}})",
+    "zh-CN": "所有 {{app}} 工具 ({{count}})",
+    "reviewedEnglishHash": "30e598041b4f78bb858fa9a52b1a9850e5b07f5eb95a360465e25fc9809ddd62"
+  },
+  "tools.profiles.selection.allExcept": {
+    "en": "All {{app}} except {{count}}",
+    "zh-CN": "除 {{count}} 之外的所有 {{app}}",
+    "reviewedEnglishHash": "4e8db71387f1c14a69988e30dfc87a5c762f610bb2f732886241b0f6b650a80a"
+  },
+  "tools.profiles.selection.none": {
+    "en": "None selected",
+    "zh-CN": "未选择",
+    "reviewedEnglishHash": "557832355c8534ab1555792090459ce1d448e2334940ea08886ee5aee5d13ea4"
+  },
+  "tools.profiles.selection.some": {
+    "en": "{{selected}} of {{total}} {{app}} tools",
+    "zh-CN": "{{total}} {{app}} 工具的 {{selected}}",
+    "reviewedEnglishHash": "05817cc1b95f78b4a72015eb4ea07fffc3ed65b4bd2a4ee8944ab0034964f21a"
+  },
+  "tools.profiles.selector.application": {
+    "en": "Application",
+    "zh-CN": "应用",
+    "reviewedEnglishHash": "e7ad522ea327e5ba95534ef8355038ef7f7b86328c7cf9175886f60464c40d28"
+  },
+  "tools.profiles.selector.applicationLower": {
+    "en": "application",
+    "zh-CN": "应用",
+    "reviewedEnglishHash": "1fe289205936c3fdb61158223892c7a8bee6ff4dfa085ea1c094ce0294e32114"
+  },
+  "tools.profiles.selector.catalogEntryId": {
+    "en": "Catalog entry ID",
+    "zh-CN": "目录条目 ID",
+    "reviewedEnglishHash": "0927802d4b161f212304d1df3e9150b8d503d7e5102decb9f8d4d3b1aaaa8da5"
+  },
+  "tools.profiles.selector.catalogEntryLower": {
+    "en": "catalog entry",
+    "zh-CN": "目录条目",
+    "reviewedEnglishHash": "14b9a65685c1b34a956aeb8ab4655ded785224e128834f70d9c238968a4f8631"
+  },
+  "tools.profiles.selector.connection": {
+    "en": "Connection",
+    "zh-CN": "连接",
+    "reviewedEnglishHash": "639a40e82b9a96f0cbeed5f006cf5634c8d1b990b3c83753c00a910fc268d2a6"
+  },
+  "tools.profiles.selector.connectionLower": {
+    "en": "connection",
+    "zh-CN": "连接",
+    "reviewedEnglishHash": "b38d9d168c3aedf156f4f249b81adaef4b738790510573f57b502cca0c35f16f"
+  },
+  "tools.profiles.selector.label": {
+    "en": "Selector",
+    "zh-CN": "选择器",
+    "reviewedEnglishHash": "f02a172a35354ca271a641ac241b88829f8bac0c258385138ef874cd427f29f0"
+  },
+  "tools.profiles.selector.riskLevel": {
+    "en": "Risk level",
+    "zh-CN": "风险等级",
+    "reviewedEnglishHash": "d4419ea33b84fa50cf3ae95f51b0245092298115c8a2de6ecea67d00d5e80a41"
+  },
+  "tools.profiles.selector.riskLevelLower": {
+    "en": "risk level",
+    "zh-CN": "风险等级",
+    "reviewedEnglishHash": "7ca39fffa06a6b14b568b057fe847569f0bb2235546930e19970ebed0bf9b9a9"
+  },
+  "tools.profiles.selector.toolName": {
+    "en": "Tool name",
+    "zh-CN": "工具名称",
+    "reviewedEnglishHash": "c506c98fabda7bb07d56985d67d62853339bc905f0b71b93f86ccbc0a0d0d7ee"
+  },
+  "tools.profiles.source.allApp": {
+    "en": "added by rule: all {{app}}",
+    "zh-CN": "按规则添加：全部 {{app}}",
+    "reviewedEnglishHash": "427b3a4d85da86565fff9b9e3eb71685760d891d4250c84c4d9d304ce8d64dfc"
+  },
+  "tools.profiles.source.defaultAllow": {
+    "en": "default allow",
+    "zh-CN": "默认允许",
+    "reviewedEnglishHash": "9e8805af8efb03d6ed851dd8dc3712f7459b22d1163a040cd60e1240191eaa8b"
+  },
+  "tools.profiles.source.direct": {
+    "en": "added directly",
+    "zh-CN": "直接添加",
+    "reviewedEnglishHash": "3fa2db40ebad81ab5413617fd4e11f4a64f00d620ff252b451355d9a6fde1551"
+  },
+  "tools.profiles.source.explicit": {
+    "en": "explicit",
+    "zh-CN": "明确的",
+    "reviewedEnglishHash": "3b283e93debf035e990dfce1f21468476dc57c69313c5574f43ad1a185840277"
+  },
+  "tools.profiles.source.pattern": {
+    "en": "pattern {{pattern}}",
+    "zh-CN": "模式 {{pattern}}",
+    "reviewedEnglishHash": "732609965330fb75cd0918de80ffcf4da00ee277770cb62c822d071b130ebdbb"
+  },
+  "tools.profiles.source.risk": {
+    "en": "added by rule: {{risk}} tools",
+    "zh-CN": "按规则添加：{{risk}} 工具",
+    "reviewedEnglishHash": "010f6ad98973e90cc74d3d7c28742ec386d2298a33b59ab541b0de7710597b81"
+  },
+  "tools.profiles.status.active": {
+    "en": "Active",
+    "zh-CN": "启用",
+    "reviewedEnglishHash": "92340695899bd2d86223e4a007620e0d6502fc0e08809773634c7e0743764a9c"
+  },
+  "tools.profiles.status.archived": {
+    "en": "Archived",
+    "zh-CN": "已归档",
+    "reviewedEnglishHash": "bdb86505f8062d15f152cef71dd4ca89609d5bf8e98771dcd2c9f70d247403da"
+  },
+  "tools.profiles.status.disabled": {
+    "en": "Disabled",
+    "zh-CN": "已停用",
+    "reviewedEnglishHash": "75081b593d15cf6e631971bc6768723f593b88b172477e40ae7d363e4829816d"
+  },
+  "tools.profiles.summary.allExcept": {
+    "en": "All except {{items}}",
+    "zh-CN": "除 {{items}} 之外的所有内容",
+    "reviewedEnglishHash": "88daff85efe9af3fb8307af083e7a0d117b58777baf6f230b2fb03a1af88bc05"
+  },
+  "tools.profiles.summary.allTools": {
+    "en": "All tools",
+    "zh-CN": "所有工具",
+    "reviewedEnglishHash": "81c151f98a190da765d67a020d175d400bfd9e46ed8da05bdaeeb0a9b8eef566"
+  },
+  "tools.profiles.summary.companyDefault": {
+    "en": "Company default",
+    "zh-CN": "公司默认",
+    "reviewedEnglishHash": "a906ce99232e33c3f9c2837ca80125922ac212f9ee31d1401da8ca79cbc3ba2b"
+  },
+  "tools.profiles.summary.notAssigned": {
+    "en": "Not assigned yet",
+    "zh-CN": "尚未分配",
+    "reviewedEnglishHash": "b988b42c2ca0f3c7af7fc94ab70606f6e31e36a6a4a324ab588ed9ad48a5a5f4"
+  },
+  "tools.profiles.table.allows": {
+    "en": "Allows",
+    "zh-CN": "允许",
+    "reviewedEnglishHash": "8b1d52d202522d89fe65fb00e505abab46dc200a88c0be5d468a2a7e6dce9ccf"
+  },
+  "tools.profiles.table.assignedTo": {
+    "en": "Assigned to",
+    "zh-CN": "分配给",
+    "reviewedEnglishHash": "08ee4565a256df6e41fff228b70a59710bdeaf25dcfa4abb206d77d0c9ff2517"
+  },
+  "tools.profiles.table.newTools": {
+    "en": "{{count}} new",
+    "zh-CN": "{{count}} 新",
+    "reviewedEnglishHash": "7e563ede9d0428724e9b5aa5f9c182d7f16a7a59d869c01d06244be2027fa166"
+  },
+  "tools.profiles.table.noAccessEffect": {
+    "en": "does not change access",
+    "zh-CN": "不改变访问权限",
+    "reviewedEnglishHash": "d13a6508bebf06f82393c633c96904bc644e0defcd738444429d5a7ba88be047"
+  },
+  "tools.profiles.table.profile": {
+    "en": "Profile",
+    "zh-CN": "访问配置",
+    "reviewedEnglishHash": "d696a35bdd1883da07a8d6c41bb7a3153381b23aa197629ee273479a6eaa5a9c"
+  },
+  "tools.profiles.templates.copy.description": {
+    "en": "Start from a profile you already have.",
+    "zh-CN": "从您已有的访问配置开始。",
+    "reviewedEnglishHash": "3100ce83a74a5f62eda2ec0a757ce274dc2bd317743a2d47f14f28eac310d382"
+  },
+  "tools.profiles.templates.copy.title": {
+    "en": "Copy an existing profile",
+    "zh-CN": "复制现有访问配置",
+    "reviewedEnglishHash": "5bfbefd7213c1b1b5d7d84967a257852e1d97c5e8459c55d1c358ef27d617199"
+  },
+  "tools.profiles.templates.everyday.description": {
+    "en": "Read and make routine changes — no destructive tools.",
+    "zh-CN": "阅读并进行常规更改——没有破坏性工具。",
+    "reviewedEnglishHash": "06bd9df6ef280f13e27da182423c244a0052233deb03db2c55d1f2b2ed150ff8"
+  },
+  "tools.profiles.templates.everyday.title": {
+    "en": "Everyday work",
+    "zh-CN": "日常工作",
+    "reviewedEnglishHash": "0460cfbf95fc4af50a1b9d6526ed8f305a5dc69a707bf9d0700a78d4ce008cf5"
+  },
+  "tools.profiles.templates.fullAccess.description": {
+    "en": "Everything every connected app offers.",
+    "zh-CN": "每个连接的应用提供的一切。",
+    "reviewedEnglishHash": "057eec2e937c1c93829fef057fb6257f56bb7544a3dc99b26413f706666a39d2"
+  },
+  "tools.profiles.templates.fullAccess.title": {
+    "en": "Full access",
+    "zh-CN": "完全访问权限",
+    "reviewedEnglishHash": "f19611c61ca5f369db615827ee6eab5ece095cc483c9abfd4f8b1a0cc77d7cf3"
+  },
+  "tools.profiles.templates.readOnly.description": {
+    "en": "See and fetch, but never change anything.",
+    "zh-CN": "查看并获取，但永远不要改变任何东西。",
+    "reviewedEnglishHash": "d1bebc224d280d15287743d0af2963a0f00113fb02e9df118f05270cad98e378"
+  },
+  "tools.profiles.templates.readOnly.title": {
+    "en": "Read-only",
+    "zh-CN": "只读",
+    "reviewedEnglishHash": "72bb90897ab1eadc924fa1358773c5949372c1f06d8dd53d730bbfa3b0c5b695"
+  },
+  "tools.profiles.templates.scratch.description": {
+    "en": "An empty profile you build up tool by tool.",
+    "zh-CN": "您通过工具逐个构建的空访问配置。",
+    "reviewedEnglishHash": "5f36b6517f10f17c0d3f43593aa596449aea5011a0cdf297e2b613a91c8eeb70"
+  },
+  "tools.profiles.templates.scratch.title": {
+    "en": "Start from scratch",
+    "zh-CN": "从头开始",
+    "reviewedEnglishHash": "a4822ffed15b5e7d8a2f431357780e8c3e683a68b8b8d3896b605ce4540b1655"
+  },
+  "tools.profiles.title": {
+    "en": "Access profiles",
+    "zh-CN": "访问配置",
+    "reviewedEnglishHash": "2471292ff715cc6a574a3694d9d445a034e0ad81c7d15784d108ed5cfd16fe58"
+  },
+  "tools.profiles.toast.archiveFailed": {
+    "en": "Could not archive",
+    "zh-CN": "无法存档",
+    "reviewedEnglishHash": "06029194134ebf8a8bc79bc38b6f623affb24ab8fb68a8a07eca9345bbd9d1d6"
+  },
+  "tools.profiles.toast.archived": {
+    "en": "Profile archived",
+    "zh-CN": "访问配置已存档",
+    "reviewedEnglishHash": "114157ec2fe455f1c455bba6337739a9a62d952963a5a8510b54f1643eeb47f4"
+  },
+  "tools.profiles.toast.assignmentRemoved": {
+    "en": "Assignment removed",
+    "zh-CN": "作业已删除",
+    "reviewedEnglishHash": "65635b6dfe0a289f09a1239023153002603f6afbe40dba159e2348dad2643a26"
+  },
+  "tools.profiles.toast.bindFailed": {
+    "en": "Could not bind profile",
+    "zh-CN": "无法绑定访问配置",
+    "reviewedEnglishHash": "b20f66d99ed5ec6feb5f269e28c6e95eb2abe79cb9d0fd45ac34509b89ecc92e"
+  },
+  "tools.profiles.toast.bindingRemoveFailed": {
+    "en": "Could not remove binding",
+    "zh-CN": "无法删除绑定",
+    "reviewedEnglishHash": "49e5073fe1127a14f9e7a111d4d86b5b2af8fe02fd86f4418c7b373a668cf480"
+  },
+  "tools.profiles.toast.bindingRemoved": {
+    "en": "Binding removed",
+    "zh-CN": "绑定已移除",
+    "reviewedEnglishHash": "16b79af9a74eda98c6d0d6870ea85dea9911ab49c4c2e70d46a640590645bc63"
+  },
+  "tools.profiles.toast.bindingTargetRequired": {
+    "en": "Binding target required",
+    "zh-CN": "需要绑定目标",
+    "reviewedEnglishHash": "6db17eecb6c8b75fe7cc99779c52a7874ee123366ff696516d2efff50349a5a8"
+  },
+  "tools.profiles.toast.bound": {
+    "en": "Profile bound",
+    "zh-CN": "访问配置装订",
+    "reviewedEnglishHash": "0b1808d5b860717f8c34dde2335316ba877d1634347b4bf12473971f0a43b339"
+  },
+  "tools.profiles.toast.copyUnassigned": {
+    "en": "The copy is not assigned to anyone yet.",
+    "zh-CN": "该副本尚未分配给任何人。",
+    "reviewedEnglishHash": "5f0ff049f7b5285707188c2d0696dbe7ecd53e68ac83d4702352012668691849"
+  },
+  "tools.profiles.toast.createFailed": {
+    "en": "Could not create profile",
+    "zh-CN": "无法创建访问配置",
+    "reviewedEnglishHash": "6156b91254341982f623a6582c05f257c5151fae36c712b6952e5c7c699e291e"
+  },
+  "tools.profiles.toast.created": {
+    "en": "Profile created",
+    "zh-CN": "访问配置已创建",
+    "reviewedEnglishHash": "9bb4a8d57a821b56739501abae40cc45c19f8e6eb5aad827e113b83635f173f2"
+  },
+  "tools.profiles.toast.deleteFailed": {
+    "en": "Could not delete",
+    "zh-CN": "无法删除",
+    "reviewedEnglishHash": "00035f6765ba9a81bdb2b4a36215cba7d8f3a56fcf30d2f88653b0d7ddc1ddce"
+  },
+  "tools.profiles.toast.deleted": {
+    "en": "Profile deleted",
+    "zh-CN": "访问配置已删除",
+    "reviewedEnglishHash": "451546baf05026a98713bb951f9f9732f32aba249aa838065f169dcc73cb861d"
+  },
+  "tools.profiles.toast.draftSaved": {
+    "en": "Draft saved",
+    "zh-CN": "草稿已保存",
+    "reviewedEnglishHash": "5ccb8caacdc5383597f882b5c366969ee1cdd1a32b1d122a42b0280a51f9a5a6"
+  },
+  "tools.profiles.toast.duplicateFailed": {
+    "en": "Could not duplicate",
+    "zh-CN": "无法复制",
+    "reviewedEnglishHash": "552d5a1a94aca9e4851ec1f9cfec320394ba0d6b9014e4629d4fe879601b4bf5"
+  },
+  "tools.profiles.toast.duplicated": {
+    "en": "Profile duplicated",
+    "zh-CN": "访问配置重复",
+    "reviewedEnglishHash": "7a2bc19c5d6c145857d2b02710b6ed11d9572945bb38f65a9d6cb108e6c7904b"
+  },
+  "tools.profiles.toast.entryAddFailed": {
+    "en": "Could not add entry",
+    "zh-CN": "无法添加条目",
+    "reviewedEnglishHash": "5dfe3395a6a579a834d617c109c2a208030c078b6657d24a09f41158d99482c6"
+  },
+  "tools.profiles.toast.entryAdded": {
+    "en": "Entry added",
+    "zh-CN": "已添加条目",
+    "reviewedEnglishHash": "f7c321788ef45b6fdd0a3835c5447f7afd0f0e0c21ff8757a44f71daad8700c6"
+  },
+  "tools.profiles.toast.entryRemoveFailed": {
+    "en": "Could not remove entry",
+    "zh-CN": "无法删除条目",
+    "reviewedEnglishHash": "18b1c00e3bf8af17ec6a592363a957bc641dc2e39a61702df81f334c4d78ca10"
+  },
+  "tools.profiles.toast.entryRemoved": {
+    "en": "Entry removed",
+    "zh-CN": "条目已删除",
+    "reviewedEnglishHash": "05b9420d9acb2bcbca4d77af2fe778c7a01ea38fb65b208337af5e15087e57d9"
+  },
+  "tools.profiles.toast.entryTargetRequired": {
+    "en": "Entry target required",
+    "zh-CN": "需要进入目标",
+    "reviewedEnglishHash": "3ce7de71f986b7c231cb958a513eb66135158a0d1d3a77f66a11f26d755973f7"
+  },
+  "tools.profiles.toast.newToolsReviewed": {
+    "en": "New tools reviewed",
+    "zh-CN": "新工具审查",
+    "reviewedEnglishHash": "c31d721ba5a8115d7aaf4d6b3d5a51c2594de69c7307054ec87b3dfe58a68880"
+  },
+  "tools.profiles.toast.removeAssignmentFailed": {
+    "en": "Could not remove assignment",
+    "zh-CN": "无法删除分配",
+    "reviewedEnglishHash": "37b173e6de9058e2c7e650dd00dd6515e87694644435707b254841a758af272e"
+  },
+  "tools.profiles.toast.restoreFailed": {
+    "en": "Could not restore",
+    "zh-CN": "无法恢复",
+    "reviewedEnglishHash": "fc2b762a8d768abcc985e21505e222fce3a22af710fe88452da6c5eed5cd66a1"
+  },
+  "tools.profiles.toast.restored": {
+    "en": "Profile restored",
+    "zh-CN": "访问配置已恢复",
+    "reviewedEnglishHash": "6e40ed960e4f3a77f8902ccac0cf785c1966daa8341ff4b2ec1ce154a4ff6b32"
+  },
+  "tools.profiles.toast.resumeFromList": {
+    "en": "Pick it back up from the profiles list.",
+    "zh-CN": "从访问配置列表中将其重新拾取。",
+    "reviewedEnglishHash": "a521c63eee7bc0c3de267507694d487336b23229a58cfec8d3cd5b4f1787f32a"
+  },
+  "tools.profiles.toast.reviewFailed": {
+    "en": "Could not submit review",
+    "zh-CN": "无法提交评论",
+    "reviewedEnglishHash": "c3272c490693c3b2dc0803ca79fc26802f59bdc1e2b0e10f77b0beb493bef239"
+  },
+  "tools.profiles.toast.saveFailed": {
+    "en": "Could not save",
+    "zh-CN": "无法保存",
+    "reviewedEnglishHash": "16efcd21d74fc1d209855cf3bc9a19da1839f4d3f720689586dffbd128477f25"
+  },
+  "tools.profiles.toast.saveProfileFailed": {
+    "en": "Could not save profile",
+    "zh-CN": "无法保存访问配置",
+    "reviewedEnglishHash": "bfe28c1f35367f8ad4204d8482127452ed80dd93be8dc1482b7858cf61948879"
+  },
+  "tools.profiles.toast.updateFailed": {
+    "en": "Could not update profile",
+    "zh-CN": "无法更新访问配置",
+    "reviewedEnglishHash": "275119d28a0042c02c3b5094b469f2cbbfe894282c0e95ae4001511afa75f17f"
+  },
+  "tools.profiles.toast.updated": {
+    "en": "Profile updated",
+    "zh-CN": "访问配置已更新",
+    "reviewedEnglishHash": "9c5551e87cb7333f840eb24117e128ca871dbd0ffdcd12a4a5f13f7ee209db6c"
+  },
+  "tools.profiles.tools.allApp": {
+    "en": "All {{app}} tools ({{count}})",
+    "zh-CN": "所有 {{app}} 工具 ({{count}})",
+    "reviewedEnglishHash": "30e598041b4f78bb858fa9a52b1a9850e5b07f5eb95a360465e25fc9809ddd62"
+  },
+  "tools.profiles.tools.allAppAria": {
+    "en": "All {{app}} tools",
+    "zh-CN": "所有 {{app}} 工具",
+    "reviewedEnglishHash": "e7ee636cfdcdd200737895bf03eec05724830f1bbf1b3bc9616c55e5a6f9eb1f"
+  },
+  "tools.profiles.tools.browseConnections": {
+    "en": "Browse app connections",
+    "zh-CN": "浏览应用连接",
+    "reviewedEnglishHash": "a60b4f5ff6abf381e7177079b138d51b2742797e3a0f397684f0e77396296c40"
+  },
+  "tools.profiles.tools.connectionsComing": {
+    "en": "App connections are coming soon",
+    "zh-CN": "应用连接即将推出",
+    "reviewedEnglishHash": "0b9d3ae749adf634ce3c1da1a761b255f83910784590746b6812a8ed65f623b8"
+  },
+  "tools.profiles.tools.connectionsComingDescription": {
+    "en": "Profiles will be available once app connections are ready. Browse the planned integrations in the meantime.",
+    "zh-CN": "一旦应用连接准备就绪，访问配置将可用。同时浏览计划的集成。",
+    "reviewedEnglishHash": "838a081bdd29ff0c12b38f01bc7121102310ca657fc2a8888cc80329d9b9ab76"
+  },
+  "tools.profiles.tools.includesFuture": {
+    "en": "includes tools {{app}} adds later",
+    "zh-CN": "包括稍后添加的工具 {{app}}",
+    "reviewedEnglishHash": "87ed1c75a96dbe95951f6fe660a3b9719054356061345edd115aca055fc77c7a"
+  },
+  "tools.profiles.tools.loading": {
+    "en": "Loading tools…",
+    "zh-CN": "正在加载工具...",
+    "reviewedEnglishHash": "ff20973001c13ece56692c536bfb554627ea3e572f65809d675e9c8848e53f1e"
+  },
+  "tools.profiles.tools.noMatch": {
+    "en": "No tools match “{{query}}”.",
+    "zh-CN": "没有工具匹配“{{query}}”。",
+    "reviewedEnglishHash": "ff8222060537cedb1a8b3cf9695283c1489718ab26d31443e9d0b590c00b3712"
+  },
+  "tools.profiles.tools.searchPlaceholder": {
+    "en": "Search tools…",
+    "zh-CN": "搜索工具...",
+    "reviewedEnglishHash": "e4245bd3a7c406b234f13ca7464f23080a415941e888101ba43f147b9ebfe335"
+  },
+  "tools.profiles.unbound": {
+    "en": "unbound",
+    "zh-CN": "不受约束的",
+    "reviewedEnglishHash": "0e2a58cbed86012305595b865bcee8336c718c4f6658a667354dbb26f5f5662f"
+  },
+  "tools.profiles.unknownApp": {
+    "en": "Unknown app",
+    "zh-CN": "未知应用",
+    "reviewedEnglishHash": "8264cc5ca43836732d664de176b19cc7a40ef0b3a754d73563d7bf6bf51d36c8"
+  },
+  "tools.profiles.wizard.allAppTools": {
+    "en": "All {{app}} tools",
+    "zh-CN": "{{app}} 的所有工具",
+    "reviewedEnglishHash": "e7ee636cfdcdd200737895bf03eec05724830f1bbf1b3bc9616c55e5a6f9eb1f"
+  },
+  "tools.profiles.wizard.allowedCount": {
+    "en": "Allows {{allowed}} of {{total}} tools",
+    "zh-CN": "允许 {{allowed}} 或 {{total}} 工具",
+    "reviewedEnglishHash": "1607d4097f69cbe2bf3ee58ca537d4378c15fb63497268d1d966504076178be0"
+  },
+  "tools.profiles.wizard.assignmentUpdateFailed": {
+    "en": "Could not update assignment {{key}}{{suffix}}",
+    "zh-CN": "无法更新作业 {{key}}{{suffix}}",
+    "reviewedEnglishHash": "336276f61b5865f622330cea03616df799ae2f41484371a5999659c1b1af8a59"
+  },
+  "tools.profiles.wizard.description": {
+    "en": "Choose which tools this profile allows, then assign it to the agents that need them.",
+    "zh-CN": "选择此访问配置允许使用哪些工具，然后将其分配给需要它们的智能体。",
+    "reviewedEnglishHash": "7c7739c8eabed7825aa3ae42f3060f79311b0773953651e1c85f80967ee3f262"
+  },
+  "tools.profiles.wizard.descriptionOptional": {
+    "en": "Description (optional)",
+    "zh-CN": "说明（可选）",
+    "reviewedEnglishHash": "f6cbe2f0c1f8a38b82c62ec548a4eaf0d89b02361c9228dbfc713b822575d825"
+  },
+  "tools.profiles.wizard.descriptionPlaceholder": {
+    "en": "What is this profile for?",
+    "zh-CN": "此访问配置的用途是什么？",
+    "reviewedEnglishHash": "73f94102b872063627868dbfffed88f481def977a7ea89fcc166b898f2361f53"
+  },
+  "tools.profiles.wizard.finishTitle": {
+    "en": "Finish your profile",
+    "zh-CN": "完成您的访问配置",
+    "reviewedEnglishHash": "a29dd2bd940f191aeffc5e2ff9961cef9b1b075828d16a89da5348c9ed0ffcca"
+  },
+  "tools.profiles.wizard.identifierHelp": {
+    "en": "Used in exports and the API. Auto-filled from the name.",
+    "zh-CN": "用于导出和API。从名称自动填充。",
+    "reviewedEnglishHash": "1245c62835a2ed23ce262041bebcf80396b145c94c40eaf10b2d6d9734b224d0"
+  },
+  "tools.profiles.wizard.includesFutureTools": {
+    "en": "Includes tools {{app}} adds later",
+    "zh-CN": "包含 {{app}} 日后新增的工具",
+    "reviewedEnglishHash": "5ab457ccd70443bcf2ecf6982c2f8bcf1513ecd199dd92631148cabc12ad451a"
+  },
+  "tools.profiles.wizard.loadingDraft": {
+    "en": "Loading draft…",
+    "zh-CN": "正在加载草稿...",
+    "reviewedEnglishHash": "5bb36e7e863a3403ef35fc073d6f68f40bfc865f1857d5b11c35708977795c2e"
+  },
+  "tools.profiles.wizard.namePlaceholder": {
+    "en": "e.g. Everyday work",
+    "zh-CN": "例如日常工作",
+    "reviewedEnglishHash": "4bb3354f0e5be37e752b369053c4ee7f3115d9b1c56c6bdb960463a0da613bb1"
+  },
+  "tools.profiles.wizard.newProfile": {
+    "en": "New profile",
+    "zh-CN": "新的访问配置",
+    "reviewedEnglishHash": "fcf4f3f4d5f73ef8c88f1fef1b3c84d981652fd220517176bb3f7d8832b7347f"
+  },
+  "tools.profiles.wizard.noCopySource": {
+    "en": "You don't have another profile to copy yet.",
+    "zh-CN": "您还没有其他访问配置可供复制。",
+    "reviewedEnglishHash": "17721a12e2be74efe640e2ca88936fd2c5a2c8141465a88d1be200fc429c4f74"
+  },
+  "tools.profiles.wizard.noDraft": {
+    "en": "No draft to finish",
+    "zh-CN": "没有草稿需要完成",
+    "reviewedEnglishHash": "1591d8316d67d9ff6c808f75296dbc8e19a6f2bf4e4cf08acb4fdff2acc0c6f3"
+  },
+  "tools.profiles.wizard.resumeDraft": {
+    "en": "Resume draft",
+    "zh-CN": "简历草稿",
+    "reviewedEnglishHash": "13af115d367c2be4673182bae549c2b126590c86b83900aca490ce84b9d8e392"
+  },
+  "tools.profiles.wizard.rollbackFailures": {
+    "en": "; {{count}} rollback operation(s) also failed",
+    "zh-CN": "; {{count}} 回滚操作也失败",
+    "reviewedEnglishHash": "dfb7d6a5d6b19ec909c8dd86591e7f394707af524f0f89109af47632042bf0ce"
+  },
+  "tools.profiles.wizard.saveForLater": {
+    "en": "Save & finish later",
+    "zh-CN": "保存并稍后完成",
+    "reviewedEnglishHash": "f875883047bdadd17dfecbe375f3ce47f9876ed7843fee13f42532179b129a2b"
+  },
+  "tools.profiles.wizard.saveProfile": {
+    "en": "Save profile",
+    "zh-CN": "保存访问配置",
+    "reviewedEnglishHash": "0c8209e72ec87d9d0b456224c042220820ef51fc5fc31a716159491806aa443e"
+  },
+  "tools.profiles.wizard.selectCompany": {
+    "en": "Select a company to create a profile.",
+    "zh-CN": "选择一家公司来创建访问配置。",
+    "reviewedEnglishHash": "908e4e36c7108df0d69f1473b42c36c6087d37d4cc547c10f55e135ed0f71fa3"
+  },
+  "tools.profiles.wizard.startFrom": {
+    "en": "Start from",
+    "zh-CN": "开始于",
+    "reviewedEnglishHash": "eb3f51dc872678efab01012be36753b77eda9164764011c8d2bef5df765fa4eb"
+  },
+  "tools.profiles.wizard.steps.assign": {
+    "en": "Assign",
+    "zh-CN": "分配",
+    "reviewedEnglishHash": "8ece895c9b32c6436d34b0384ae9f8555c8abccd31541f722f27e45e72a85bff"
+  },
+  "tools.profiles.wizard.steps.chooseTools": {
+    "en": "Choose tools",
+    "zh-CN": "选择工具",
+    "reviewedEnglishHash": "4e3af162a20b948f3caf3b8939b144171a9a21afc9fe347093c10bf49a3ea625"
+  },
+  "tools.profiles.wizard.steps.name": {
+    "en": "Name",
+    "zh-CN": "名称",
+    "reviewedEnglishHash": "dcd1d5223f73b3a965c07e3ff5dbee3eedcfedb806686a05b9b3868a2c3d6d50"
+  },
+  "tools.profiles.wizard.title": {
+    "en": "New access profile",
+    "zh-CN": "新的访问配置",
+    "reviewedEnglishHash": "c7e9f564ee5b549926f8494db3062840e839146b5f782302d66430423badb459"
+  },
+  "tools.profiles.wizard.untitled": {
+    "en": "Untitled profile",
+    "zh-CN": "无标题访问配置",
+    "reviewedEnglishHash": "7ee0cfa05ae56ffab2d519332899ddec3216a1bf51f334302e1487658b2a9f1c"
+  },
+  "tools.profiles.wizard.whichProfile": {
+    "en": "Which profile?",
+    "zh-CN": "哪个访问配置？",
+    "reviewedEnglishHash": "2582f48041b19d7f54b5d807b4c4f811fe6a8e29d70f577f2595aa88324758f0"
+  },
+  "tools.runYourOwn.addKey": {
+    "en": "Add a key",
+    "zh-CN": "添加密钥",
+    "reviewedEnglishHash": "2feab16f91f2793839fe8bf6f8d8c4573359c9901209d44b8858aaff7853aeec"
+  },
+  "tools.runYourOwn.added": {
+    "en": "Added",
+    "zh-CN": "已添加",
+    "reviewedEnglishHash": "6b02e0d363a4af1c95eef50364bb0202c8b250aa05a48a69e68fd7787b4b0632"
+  },
+  "tools.runYourOwn.adding": {
+    "en": "Adding…",
+    "zh-CN": "添加...",
+    "reviewedEnglishHash": "c6de6f45c827f464b161b668ae93192ce4e6585c4029d8dd71795cbd7f922719"
+  },
+  "tools.runYourOwn.adminOnly": {
+    "en": "Only administrators see this option.",
+    "zh-CN": "只有管理员才能看到此选项。",
+    "reviewedEnglishHash": "9e7aad854d9938938fd93b19f51b1bcdaf0dc8ade124385011fff061373cf2d4"
+  },
+  "tools.runYourOwn.checkAndContinue": {
+    "en": "Check & continue",
+    "zh-CN": "检查并继续",
+    "reviewedEnglishHash": "d04e069fb29fb14b5c3e290fe6f7c0627bd520a628f4f4fcd1e3a0fe7a1d78f7"
+  },
+  "tools.runYourOwn.command": {
+    "en": "Command",
+    "zh-CN": "命令",
+    "reviewedEnglishHash": "713166971d730f81fcf8b757f2ea239d1a0360d9f74e8f5afe60fba97105879c"
+  },
+  "tools.runYourOwn.commandHelp": {
+    "en": "The command that runs the tool. From the tool's README.",
+    "zh-CN": "运行该工具的命令。来自该工具的自述文件。",
+    "reviewedEnglishHash": "6ee2dcc3c2eba867834ab9a6627e8f073d3b629f70227f3b1e7dd60ada5012ee"
+  },
+  "tools.runYourOwn.description": {
+    "en": "For a tool that runs from a command. Paperclip runs it in your company's own isolated workspace. Administrators only.",
+    "zh-CN": "对于从命令运行的工具。 Paperclip 在您公司自己的隔离工作区中运行它。仅限管理员。",
+    "reviewedEnglishHash": "a5e8341ceb66387bf615fda589fb3805fe511e64bf7886ddfdbdcffd9458e37c"
+  },
+  "tools.runYourOwn.empty": {
+    "en": "You haven't added any of your own tools yet.",
+    "zh-CN": "您还没有添加任何自己的工具。",
+    "reviewedEnglishHash": "905b3bdd86e01f3d7d1259e150ebf8084cf2dc8f996e8304fd6d1230e0bddd50"
+  },
+  "tools.runYourOwn.invalidKey": {
+    "en": "Use letters, numbers and underscores, starting with a letter or underscore (e.g. API_KEY).",
+    "zh-CN": "使用字母、数字和下划线，以字母或下划线开头（例如 API_KEY）。",
+    "reviewedEnglishHash": "16d843eb336ec132f7a9ea98cae897ee28ca5c2f8a7b7d852bd1b1eb60ee7950"
+  },
+  "tools.runYourOwn.isolationNotice": {
+    "en": "This runs in your company's own workspace, isolated from everything else.",
+    "zh-CN": "它在您公司自己的工作空间中运行，与其他一切隔离。",
+    "reviewedEnglishHash": "8380893498ca0a8d2a73f652195071986d214f1d16362fcadbc660fd74e64214"
+  },
+  "tools.runYourOwn.keys": {
+    "en": "Keys",
+    "zh-CN": "密钥",
+    "reviewedEnglishHash": "f0d66a79c138e951c2f840fcd94ea9bdf399f745088a832a9ba49cf07f7125de"
+  },
+  "tools.runYourOwn.keysOptional": {
+    "en": "optional, depends on the tool",
+    "zh-CN": "可选，取决于工具",
+    "reviewedEnglishHash": "143e4b4c1e4a7735f6f7df6cacb921b401b4dec63f65fce6f575ef0c199d6214"
+  },
+  "tools.runYourOwn.name": {
+    "en": "Name",
+    "zh-CN": "名称",
+    "reviewedEnglishHash": "dcd1d5223f73b3a965c07e3ff5dbee3eedcfedb806686a05b9b3868a2c3d6d50"
+  },
+  "tools.runYourOwn.nameHelp": {
+    "en": "What you'll call this tool in your apps list.",
+    "zh-CN": "您在应用列表中对该工具的称呼。",
+    "reviewedEnglishHash": "a4783ca3cdc8bb22965ef12ceab79e457f31c3a2e3f68becc82e48fb71523008"
+  },
+  "tools.runYourOwn.namePlaceholder": {
+    "en": "Acme tools",
+    "zh-CN": "极致工具",
+    "reviewedEnglishHash": "f1b85820774a7a7699a332dd59b56657293dde2a28449917c1fe589477dfce24"
+  },
+  "tools.runYourOwn.none": {
+    "en": "none",
+    "zh-CN": "无",
+    "reviewedEnglishHash": "140bedbf9c3f6d56a9846d2ba7088798683f4da0c248231336e6a05679e4fdfe"
+  },
+  "tools.runYourOwn.off": {
+    "en": "off",
+    "zh-CN": "关闭",
+    "reviewedEnglishHash": "b4dc66dde806261bdda8607d8707aa727d308cd80272381a5583f63899918467"
+  },
+  "tools.runYourOwn.registrationNotice": {
+    "en": "Paperclip will register the command and the keys it needs.",
+    "zh-CN": "Paperclip 将注册命令及其所需的键。",
+    "reviewedEnglishHash": "1f7c384ed2d879e81ce0ed3ed7fa1c96e8214d5b6538630427aa4721940b92a8"
+  },
+  "tools.runYourOwn.removeKey": {
+    "en": "Remove key",
+    "zh-CN": "移除密钥",
+    "reviewedEnglishHash": "81c45fd9b904308ae8d00aa14e8d8be085604cad40871ef27075a0da0a8022ae"
+  },
+  "tools.runYourOwn.requiredKeys": {
+    "en": "Keys it needs",
+    "zh-CN": "需要的密钥",
+    "reviewedEnglishHash": "08f50f1a76da48417b1e3e56c84227b5f8e2405082739c80da3b859f5320c901"
+  },
+  "tools.runYourOwn.toolAdded": {
+    "en": "Tool added",
+    "zh-CN": "添加工具",
+    "reviewedEnglishHash": "d36359aad400c195edc41f785fa771ccc932c7f5717ccf32b2c434b21a5448bf"
+  },
+  "tools.runYourOwn.toolReady": {
+    "en": "\"{{name}}\" is ready to connect.",
+    "zh-CN": "“{{name}}”已准备好连接。",
+    "reviewedEnglishHash": "96c3738b0c3f7701cff5edc4a60ae1fbc672120fe42f5e9cdb004dbf0ddb3ce1"
+  },
+  "tools.runYourOwn.toolTurnedOff": {
+    "en": "Tool turned off",
+    "zh-CN": "工具已关闭",
+    "reviewedEnglishHash": "f31d5845aeebb0b8decdb676bae5f490dd6938c135adbe004d63049c0c8dfea1"
+  },
+  "tools.runYourOwn.turnOff": {
+    "en": "Turn off",
+    "zh-CN": "关闭",
+    "reviewedEnglishHash": "06f0e210b27d4d6215fba1ac31899dd4e95c6281888e2f107cfd19ed1dfda23f"
+  },
+  "tools.runYourOwn.turnOffFailed": {
+    "en": "Couldn't turn it off",
+    "zh-CN": "无法关闭它",
+    "reviewedEnglishHash": "629801c263d5516104c8a384e733dae94f7b9dfa52fc97e4fd43481901e83a06"
+  },
+  "tools.runYourOwn.yourTools": {
+    "en": "Your own tools",
+    "zh-CN": "你自己的工具",
+    "reviewedEnglishHash": "a03f716b63e93943e6aec4542257aab91854d380d2d5754e18113ca29d374977"
+  },
+  "tools.runtime.confirm.restartBody": {
+    "en": "Anything in progress will stop. Agents using {{app}} right now will see a Failed result on their action.",
+    "zh-CN": "任何正在进行的事情都会停止。现在使用 {{app}} 的智能体将看到其操作失败的结果。",
+    "reviewedEnglishHash": "79c11e6dcf66a436b0fe69a69bddc85bd3d992a9e8f165c92fc5a4d95841ecad"
+  },
+  "tools.runtime.confirm.restartHint": {
+    "en": "Restart usually takes 2–3 seconds.",
+    "zh-CN": "重新启动通常需要 2-3 秒。",
+    "reviewedEnglishHash": "06d4e0aaf37cb793bced5c1b9c7c626e883b3d708ea77cb3c7cab0a798d2315f"
+  },
+  "tools.runtime.confirm.restartTitle": {
+    "en": "Restart {{app}}?",
+    "zh-CN": "重新启动{{app}}？",
+    "reviewedEnglishHash": "73d5c2c57b24ef3be63e9d118ee14ea800385327338f7c5c065560a9e63ba1b1"
+  },
+  "tools.runtime.confirm.stopBody": {
+    "en": "{{app}} will stop running. Agents won't be able to use it until it starts again.",
+    "zh-CN": "{{app}} 将停止运行。在重新启动之前，智能体将无法使用它。",
+    "reviewedEnglishHash": "7a0b4b6ccc812ed4f8624cc8ec03beeaf68718d7624799ebbe9bbb4c4d6ba4dc"
+  },
+  "tools.runtime.confirm.stopHint": {
+    "en": "It starts again automatically the next time an agent needs it.",
+    "zh-CN": "下次智能体需要时，它会自动重新启动。",
+    "reviewedEnglishHash": "76cd93eb96c0542fe1911f649e79da74ff5b41d13429aa2f143ab20c61ba1e70"
+  },
+  "tools.runtime.confirm.stopTitle": {
+    "en": "Stop {{app}}?",
+    "zh-CN": "停止{{app}}？",
+    "reviewedEnglishHash": "07b3425bab3a97dfddbdf55c55df99286a79654ea1d9b6b5e25fd310595e0a9e"
+  },
+  "tools.runtime.description": {
+    "en": "How your apps are doing right now.",
+    "zh-CN": "您的应用现在的表现如何。",
+    "reviewedEnglishHash": "fb4cba08a5295e6289fb9383b0a172857d53b6e52914eba787c37befe2f6b94c"
+  },
+  "tools.runtime.details.alert": {
+    "en": "Alert",
+    "zh-CN": "警报",
+    "reviewedEnglishHash": "44a57b22e03d9a661c22ffc5ffea51b3e1e33de24a53609e70f690dea8f70872"
+  },
+  "tools.runtime.details.firstResponder": {
+    "en": "First responder",
+    "zh-CN": "第一响应者",
+    "reviewedEnglishHash": "48c5909ca116349f4adb04e67d142eb2ad4e3c2153c1ba83461d2ccb8d4b9e0c"
+  },
+  "tools.runtime.details.howItRuns": {
+    "en": "How it runs",
+    "zh-CN": "它是如何运行的",
+    "reviewedEnglishHash": "934baec253f2d53d3d9580a5dbc9910fce46eae68a53da55c3e5c93311629c4a"
+  },
+  "tools.runtime.details.observed": {
+    "en": "Observed",
+    "zh-CN": "观察到",
+    "reviewedEnglishHash": "64fa8a14a90feef5d86951352195391dfead1194f932aaed0755021c504e2a15"
+  },
+  "tools.runtime.details.processId": {
+    "en": "Process ID",
+    "zh-CN": "进程号",
+    "reviewedEnglishHash": "125dd7d7f1e3d7868a3340d5e1a5460c7497790a35b1135cf0cac50fb7b40bcb"
+  },
+  "tools.runtime.details.runbook": {
+    "en": "Runbook",
+    "zh-CN": "运行手册",
+    "reviewedEnglishHash": "079b01a58e833ab6efc2ab452d8576ae30a54738b97ac8c13efb9d8eb1d1d4bd"
+  },
+  "tools.runtime.details.scope": {
+    "en": "Scope",
+    "zh-CN": "适用范围",
+    "reviewedEnglishHash": "b073f6c68ef8721107fd9815b19b2c35ec111d526b75c2123d1111ba64424000"
+  },
+  "tools.runtime.details.severity": {
+    "en": "Severity",
+    "zh-CN": "严重性",
+    "reviewedEnglishHash": "5e9f98120dbe568255ee059f39671686982b113d4e917b6d6faf149918c81709"
+  },
+  "tools.runtime.details.slotKey": {
+    "en": "Slot key",
+    "zh-CN": "槽键",
+    "reviewedEnglishHash": "7ea0a1ac345124e543f0c9c9202ba42be0d72360ebf56165a7931ee076238e43"
+  },
+  "tools.runtime.details.started": {
+    "en": "Started",
+    "zh-CN": "开始",
+    "reviewedEnglishHash": "ecbc89cd37a037342e740f9e0e0633a70180a2279b0157c9a823fce729f4bd77"
+  },
+  "tools.runtime.details.threshold": {
+    "en": "Threshold",
+    "zh-CN": "阈值",
+    "reviewedEnglishHash": "0da627ada476c179bb6421d267cb6de8c9f770a2274b5d673d898e33cea29247"
+  },
+  "tools.runtime.details.trustTier": {
+    "en": "Trust tier",
+    "zh-CN": "信任层",
+    "reviewedEnglishHash": "f25e9ac97c1e147355b97f23d32fafc782c4de192e890b6b177b251bdbb75748"
+  },
+  "tools.runtime.empty.description": {
+    "en": "Apps that run on this machine start automatically the first time an agent needs them. Apps that connect over the internet don't use a local process.",
+    "zh-CN": "在此计算机上运行的应用会在智能体第一次需要时自动启动。通过互联网连接的应用不使用本地进程。",
+    "reviewedEnglishHash": "59c1bda717379f9aad74dfd51ed04a2de9afb22673f792bd355686791dcb7f39"
+  },
+  "tools.runtime.empty.title": {
+    "en": "No apps running right now",
+    "zh-CN": "目前没有正在运行的应用",
+    "reviewedEnglishHash": "2567dcf80c666a6960076ee1f2f71ddff1aa130a1243abade4061e2cff4e3fe8"
+  },
+  "tools.runtime.how.local": {
+    "en": "Runs on this machine",
+    "zh-CN": "在本机上运行",
+    "reviewedEnglishHash": "6368d863467d0d78482c3a05fabb214388c382f5026e2ac04b81ee9f83f597f0"
+  },
+  "tools.runtime.how.remote": {
+    "en": "Connects over the internet",
+    "zh-CN": "通过互联网连接",
+    "reviewedEnglishHash": "6e424df82be8fe77be542ecb03ce9ceed489ec134826acc042f11f5ab2b5deb0"
+  },
+  "tools.runtime.lastError": {
+    "en": "Last error: {{error}}",
+    "zh-CN": "最后一个错误：{{error}}",
+    "reviewedEnglishHash": "0384f0e9a0a46580703e694a53871d829062e5d0a8072f5fbfe3a1af8955a82c"
+  },
+  "tools.runtime.lastUsed": {
+    "en": "Last used",
+    "zh-CN": "上次使用",
+    "reviewedEnglishHash": "830ec7f812f9d862250b61add10f9a078de67a3282dd9e94f60d64cec58eefec"
+  },
+  "tools.runtime.latency.milliseconds": {
+    "en": "about {{value}}ms",
+    "zh-CN": "大约 {{value}} 毫秒",
+    "reviewedEnglishHash": "853b6ec08b89226036270233091c42a287414d477713a29057823e56d71ecaba"
+  },
+  "tools.runtime.latency.seconds": {
+    "en": "about {{value}}s",
+    "zh-CN": "大约 {{value}} 秒",
+    "reviewedEnglishHash": "ed44fac956b8fb2643f71e3afd5fc8ab6b0236fcd338ca2b73924d61418d9c8a"
+  },
+  "tools.runtime.live": {
+    "en": "Live",
+    "zh-CN": "直播",
+    "reviewedEnglishHash": "b64ac05f17e64d037db81a98f51e2688216e292ae9748f979f04dfbac49fd7fc"
+  },
+  "tools.runtime.liveHint": {
+    "en": "Updates automatically every 15 seconds.",
+    "zh-CN": "每 15 秒自动更新一次。",
+    "reviewedEnglishHash": "9157b701e065831eaf992a684b1edc0c1f73e2e70c14182d526fcf2ad1329c70"
+  },
+  "tools.runtime.offHint": {
+    "en": "This app is off. It will start again when an agent needs it.",
+    "zh-CN": "这个应用已关闭。当智能体需要时它会重新启动。",
+    "reviewedEnglishHash": "35a58cd337fcfab8e56342fd0cb798543edb71bbdeab95c33e981dbca093aeb0"
+  },
+  "tools.runtime.providerSide": {
+    "en": "Runs on the provider's side",
+    "zh-CN": "在提供商端运行",
+    "reviewedEnglishHash": "806df395796e40922d4717e91d529e331aa21fb116828a242aeaa67777acac97"
+  },
+  "tools.runtime.remoteControlHint": {
+    "en": "Apps that \"connect over the internet\" hide Stop and Restart — those run on the provider's side, so there's no local process to control here.",
+    "zh-CN": "“通过互联网连接”的应用隐藏“停止”和“重新启动”——这些应用在提供商一侧运行，因此这里没有可以控制的本地进程。",
+    "reviewedEnglishHash": "87d34f9c18f91917b13dc2877e934102cc61fc05803290659a260b1fb67dae6c"
+  },
+  "tools.runtime.remoteNoControls": {
+    "en": "This app runs on the provider's side — there's nothing to stop or restart here.",
+    "zh-CN": "该应用在提供商端运行 - 此处无需停止或重新启动。",
+    "reviewedEnglishHash": "2c5eca1ee3805f424ddc2c3cbfec7751b046e23c63faf3484bd74bff21075197"
+  },
+  "tools.runtime.restartApp": {
+    "en": "Restart {{app}}",
+    "zh-CN": "重新启动{{app}}",
+    "reviewedEnglishHash": "00035db5c33d52aff9b0ed6835cf7091f18d2fbb2ca3540cffdd5f60c4101bd2"
+  },
+  "tools.runtime.reviewActivity": {
+    "en": "Review activity",
+    "zh-CN": "回顾活动",
+    "reviewedEnglishHash": "b9eba7e63524b46c6fb4f7b3aea53bca94fc89f0e822bf6f706eb4bf72a9c4c9"
+  },
+  "tools.runtime.reviewApps": {
+    "en": "Review apps",
+    "zh-CN": "审查应用",
+    "reviewedEnglishHash": "c10eca03f48cc515b4350c9a290594688d6a3d503da527eaa30be1fd3495c440"
+  },
+  "tools.runtime.runningApps": {
+    "en": "Running apps",
+    "zh-CN": "运行应用",
+    "reviewedEnglishHash": "63ae692729938b5cf4cf36194cfed8c8d9dacc11c169ad726f39d104d9e9062f"
+  },
+  "tools.runtime.runningAppsHint": {
+    "en": "Click a row to see how the connection is wired up.",
+    "zh-CN": "单击一行可查看连接的接线方式。",
+    "reviewedEnglishHash": "e7e1ac576bb1e838b0f965a945ead2b7cc16fe2e87d4235e3b549bc5f00a338f"
+  },
+  "tools.runtime.scope.agent": {
+    "en": "A single agent",
+    "zh-CN": "单一智能体",
+    "reviewedEnglishHash": "b69a33d856d5e38ec16cde2abf2af31b9864dd96b995f4d9403e88d02c7aef1e"
+  },
+  "tools.runtime.scope.company": {
+    "en": "Whole company",
+    "zh-CN": "全公司",
+    "reviewedEnglishHash": "be9532d244fd8f88c6e34214b6e94c4ebaca7dbb4e3625d5617e66920272c1dc"
+  },
+  "tools.runtime.scope.issue": {
+    "en": "This task",
+    "zh-CN": "这个任务",
+    "reviewedEnglishHash": "4f5b1b5d5083bfeece2ef027f36b037a75d75510fa17f75ab50045bac544f7fe"
+  },
+  "tools.runtime.scope.project": {
+    "en": "This project",
+    "zh-CN": "这个项目",
+    "reviewedEnglishHash": "d0f62545074d3f6b200e0dc386d9a1f181e6e3b41c322164340fe3766322f698"
+  },
+  "tools.runtime.status.attention": {
+    "en": "Needs attention",
+    "zh-CN": "需要处理",
+    "reviewedEnglishHash": "c1ebc7817870e5be78fceae559ba5fcac2b68d5c5498d8080298004f3f79d62d"
+  },
+  "tools.runtime.status.off": {
+    "en": "Off",
+    "zh-CN": "关闭",
+    "reviewedEnglishHash": "ca7981b46ecf2c1787b6d76d81d9fd7fa0ca95842e2fcc2a452869891a9334d1"
+  },
+  "tools.runtime.status.working": {
+    "en": "Working",
+    "zh-CN": "正常",
+    "reviewedEnglishHash": "a92f0449a9f7235bf69dc2e8ff7070bfae3f00ec8f8f26e5457a9beac53466ac"
+  },
+  "tools.runtime.summary.acrossAllApps": {
+    "en": "across all apps",
+    "zh-CN": "跨所有应用",
+    "reviewedEnglishHash": "0fae50e4913c687544aecf5f41d3407882300ed75cf7639502c66d3d9ff43165"
+  },
+  "tools.runtime.summary.acrossYourApps": {
+    "en": "across your apps",
+    "zh-CN": "跨您的应用",
+    "reviewedEnglishHash": "ff69e7099a8105d51484eb8eb2d676e0f3d3fe0058b24cf488c093e6578b4cde"
+  },
+  "tools.runtime.summary.allWorking": {
+    "en": "All working",
+    "zh-CN": "一切正常",
+    "reviewedEnglishHash": "0984ce42fbb89a038fe733cdc018db617abcdee3bab660990246b388e5263137"
+  },
+  "tools.runtime.summary.appsRunning": {
+    "en": "Apps running",
+    "zh-CN": "正在运行的应用",
+    "reviewedEnglishHash": "0fc9db12a22e9837c5c6ab2def73f114db7ace24e224851c95b6c27331cd88ba"
+  },
+  "tools.runtime.summary.errorDetail": {
+    "en": "{{failed}} failed · {{timedOut}} timed out · {{waited}} waited for capacity",
+    "zh-CN": "{{failed}} 失败 · {{timedOut}} 超时 · {{waited}} 等待容量",
+    "reviewedEnglishHash": "e3c99d961d9520d9a897ec1363ce2693badc5ec022b957cdc71842bc940d69ea"
+  },
+  "tools.runtime.summary.errorsLastHour": {
+    "en": "Errors in the last hour",
+    "zh-CN": "过去一小时内的错误",
+    "reviewedEnglishHash": "331e4b6b02876f8f89ef5ea82ed0319662e65cb0a93ea7fb6ba4c685e7b001a6"
+  },
+  "tools.runtime.summary.latencyDetail": {
+    "en": "Slowest 5% (P95): {{latency}} · timeout rate {{rate}}%",
+    "zh-CN": "最慢5%（P95）：{{latency}}·超时率{{rate}}%",
+    "reviewedEnglishHash": "95e5f8a43df5da977ebb0017306798f8e9df02d15f36fc03eb44a1a8ea9a32a2"
+  },
+  "tools.runtime.summary.noCalls": {
+    "en": "No calls in the last hour",
+    "zh-CN": "过去一小时没有来电",
+    "reviewedEnglishHash": "3640345fd179528730d9b0b7009f180d0519a779a3e743f0199404ec00464587"
+  },
+  "tools.runtime.summary.slowerThanUsual": {
+    "en": "slower than usual",
+    "zh-CN": "比平常慢",
+    "reviewedEnglishHash": "ddb335bbf486b395d27e95f5001fe9e6209c7c8f8cb99ee2adff0fde364b706e"
+  },
+  "tools.runtime.summary.startOnDemand": {
+    "en": "Apps start when an agent first needs them",
+    "zh-CN": "应用在智能体首次需要时启动",
+    "reviewedEnglishHash": "cd99b2a2e8dbcb31fd22675ca979d1dc6d2537a9b718f10b7aa0165ed3f145ae"
+  },
+  "tools.runtime.summary.typicalResponseTime": {
+    "en": "Typical response time",
+    "zh-CN": "典型响应时间",
+    "reviewedEnglishHash": "c33595a0d2ccc1bdc385c842ab13e0085094b1ca53ec963d45934fd21c94406a"
+  },
+  "tools.runtime.summary.workingOfTotal": {
+    "en": "{{working}} of {{total}}",
+    "zh-CN": "{{total}} 的 {{working}}",
+    "reviewedEnglishHash": "41a8e69ebd47037bbfa0a254aaa3f57bad499ead33009b087e21b266bf994c40"
+  },
+  "tools.runtime.technicalDetails": {
+    "en": "Technical details",
+    "zh-CN": "技术细节",
+    "reviewedEnglishHash": "890ab358a55d7fcefe7527f675efb96865cf84d1d54e8d52d9692e3b599031e3"
+  },
+  "tools.runtime.title": {
+    "en": "Health",
+    "zh-CN": "运行状态",
+    "reviewedEnglishHash": "55898449eb74fb2e348d13e5a5d84ab019bb87ea92687b50b3d3302eb409b784"
+  },
+  "tools.runtime.toast.restartFailed": {
+    "en": "Restart failed",
+    "zh-CN": "重启失败",
+    "reviewedEnglishHash": "b8864cf013b4755fe6fb2809968b31d2aafb57e01a5248e8f2dc09d6d8740274"
+  },
+  "tools.runtime.toast.restarted": {
+    "en": "App restarted",
+    "zh-CN": "应用已重新启动",
+    "reviewedEnglishHash": "9053407e2e94f34512fa72b296e6e9bef110ef1029fca6d52d92f4b815e4017c"
+  },
+  "tools.runtime.toast.stopFailed": {
+    "en": "Stop failed",
+    "zh-CN": "停止失败",
+    "reviewedEnglishHash": "68349a0c7ddfd25228eeb59f42ec4faf9f7dc020b055e6390bd94177b5e2fd3e"
+  },
+  "tools.runtime.toast.stopped": {
+    "en": "App stopped",
+    "zh-CN": "应用已停止",
+    "reviewedEnglishHash": "f19a6bb09143f1d530fb00a414132b3212d0642faae53a1374272d947778bb7d"
+  },
+  "tools.runtime.trust.local": {
+    "en": "Trusted (runs locally)",
+    "zh-CN": "可信（本地运行）",
+    "reviewedEnglishHash": "f3dbfb9b62982928f22d14ca41e1d2a461ca0d84555518ce85f0638b8fb44eef"
+  },
+  "tools.runtime.trust.providerVerified": {
+    "en": "Provider-verified",
+    "zh-CN": "提供商验证",
+    "reviewedEnglishHash": "cb083dc6a3cb808a380d45617fa2cfa6dd5f4559625a660a6735f191d978d597"
+  },
+  "tools.runtime.trust.quarantined": {
+    "en": "Quarantined",
+    "zh-CN": "已隔离",
+    "reviewedEnglishHash": "bb132e07e0f3fd1357a6baf6d035d3200a5037f0d1f5d72c36e41df451669177"
+  },
+  "tools.shared.capability.destructive": {
+    "en": "destructive",
+    "zh-CN": "破坏性的",
+    "reviewedEnglishHash": "1b933329d22a42d5507d2f9bc8f15e828df76db8c4688bea8d0fa85a692dadbb"
+  },
+  "tools.shared.capability.read": {
+    "en": "Read",
+    "zh-CN": "阅读",
+    "reviewedEnglishHash": "9b9a8d05a7ec353bda84f9c1bb3178c299de3001b5e970508ddc889c487f92ca"
+  },
+  "tools.shared.capability.readOnly": {
+    "en": "read-only",
+    "zh-CN": "只读",
+    "reviewedEnglishHash": "4fed3970dcc0d31dccddbf69ef55b00f32d2ca787f1757894914bc0365ea7aa5"
+  },
+  "tools.shared.capability.write": {
+    "en": "write",
+    "zh-CN": "写",
+    "reviewedEnglishHash": "10fd874b68dad080ed706762c8e163dabb20514bddae38fb159c56f714a3b143"
+  },
+  "tools.shared.error.forbidden": {
+    "en": "You do not have permission to view this. Tools & Access requires board/admin access.",
+    "zh-CN": "您没有权限查看此内容。工具与访问权限需要看板/管理员访问权限。",
+    "reviewedEnglishHash": "172085a4f12fb320741267e5ec96b42252986b9a12918829d6c48a2b824935c1"
+  },
+  "tools.shared.error.generic": {
+    "en": "Something went wrong.",
+    "zh-CN": "出了点问题。",
+    "reviewedEnglishHash": "0c953ab32c603ec40c1462a5d4f699371f737da7d27c48bf980c856cc7597db9"
+  },
+  "tools.shared.error.loadView": {
+    "en": "Could not load this view",
+    "zh-CN": "无法加载此视图",
+    "reviewedEnglishHash": "fa92f9261c042b39cfc551014d78d3f4c5922ff6ba650dfa23519dbab55c117e"
+  },
+  "tools.shared.error.unavailable": {
+    "en": "Tools & Access isn't available on this server yet — try refreshing after the next deployment.",
+    "zh-CN": "工具与访问在此服务器上尚不可用 - 请尝试在下次部署后刷新。",
+    "reviewedEnglishHash": "ae09e4f7ca2701689c3d5319bf1e27b654b9dc62f5a887b73879b7ab47cb3a5d"
+  },
+  "tools.shared.loading": {
+    "en": "Loading…",
+    "zh-CN": "正在加载…",
+    "reviewedEnglishHash": "ba3bbbe10d8bef66441c88536ce7b8e724e2829b59a3da658654f4961cd61ae5"
+  },
+  "tools.shared.retry": {
+    "en": "Retry",
+    "zh-CN": "重试",
+    "reviewedEnglishHash": "942087cc2d41e01304b7195558d093d10c72af8e838c7556d6a02d471ee71852"
+  },
+  "tools.shared.risk.unknown": {
+    "en": "unknown",
+    "zh-CN": "未知",
+    "reviewedEnglishHash": "b23a6a8439c0dde5515893e7c90c1e3233b8616e634470f20dc4928bcf3609bc"
+  },
+  "tools.shared.time.ago": {
+    "en": "{{value}} ago",
+    "zh-CN": "{{value}} 前",
+    "reviewedEnglishHash": "3606acf55093f1940bb2faa7e78905cb011c8347b5e2eb49090708bc7617e76d"
+  },
+  "tools.shared.time.in": {
+    "en": "in {{value}}",
+    "zh-CN": "在 {{value}}",
+    "reviewedEnglishHash": "f8f86ab7a0270f208f67615150a021da34ff8eef9165a4c6b613b4fb0c0a6f85"
+  },
+  "tools.shared.time.justNow": {
+    "en": "just now",
+    "zh-CN": "刚才",
+    "reviewedEnglishHash": "7ddb44d8a533a7535d85cedddf35d7f3414632ad4e10a0d7ca697723e1d97993"
+  },
+  "tools.shared.time.never": {
+    "en": "never",
+    "zh-CN": "从不",
+    "reviewedEnglishHash": "6497e4b3d7bed16979a343a7db4efa6d57725529f5ac3cec45c1f08fabcbdafc"
+  },
+  "tools.shared.trackedIn": {
+    "en": "Tracked in {{identifier}} →",
+    "zh-CN": "追踪于 {{identifier}} →",
+    "reviewedEnglishHash": "0bb35ffb19a5bfae3bdee0a9b37effcb1e43da6e638d4d2d7f0ffb5bda81f904"
+  },
+  "tools.smokeLab.credentials.description": {
+    "en": "Type these into the fake provider's real consent page during a P1 (OAuth) smoke. Fixed fixture values — safe to show.",
+    "zh-CN": "在 P1 (OAuth) 冒烟测试期间将这些内容输入假提供商的真实同意页面。测试夹具值——可以安全展示。",
+    "reviewedEnglishHash": "78c334ce66a40061c1b170ddeda9afa496ab72f1e4c2ffeafddd5bbb90fc9770"
+  },
+  "tools.smokeLab.credentials.email": {
+    "en": "email:",
+    "zh-CN": "电子邮件：",
+    "reviewedEnglishHash": "439961205ae6a0f6211a945811e5164c5fa13e636b2af47b572bc46413ac8605"
+  },
+  "tools.smokeLab.credentials.password": {
+    "en": "password:",
+    "zh-CN": "密码：",
+    "reviewedEnglishHash": "c304787445ce7cab0dfa2fcdacfbb322db86ee1904da1842a843f34f33fb68e2"
+  },
+  "tools.smokeLab.credentials.title": {
+    "en": "Fake OAuth demo credentials",
+    "zh-CN": "伪造的 OAuth 演示凭证",
+    "reviewedEnglishHash": "724bbba6981f3922ec7512bb998b9434afc0f4fba48375dcdba12349054a7ec6"
+  },
+  "tools.smokeLab.description": {
+    "en": "Exercise every integration path (P1–P7) end-to-end against deterministic local fixtures — a fake OAuth provider and loopback MCP servers. Nothing here touches a real vendor or a real credential. Start the services, install the fixture apps, then drive the governed lifecycle from a browser smoke run. New here? Follow the",
+    "zh-CN": "针对确定性本地装置（伪造的 OAuth 提供者和环回 MCP 服务器端到端地练习每个集成路径 (P1–P7)。这里没有任何内容涉及真正的供应商或真正的凭证。启动服务，安装固定应用，然后从浏览器冒烟测试驱动受控生命周期。新来的？遵循",
+    "reviewedEnglishHash": "5e7eecdb4a3779a8c00f416f1f3a72ccabb1b80c067144240e1318b91e6ed3c8"
+  },
+  "tools.smokeLab.disabled.description": {
+    "en": "The Smoke Lab is an experimental developer surface for exercising the integration paths against deterministic local fixtures. Turn on Smoke Lab under Instance settings → Experimental to enable it.",
+    "zh-CN": "Smoke Lab 是一个实验性开发人员界面，用于针对确定性局部装置练习集成路径。在实例设置 → 实验下打开 Smoke Lab 以启用它。",
+    "reviewedEnglishHash": "de2a69bb27a07f62e26ebd1b6cbb0f6bb6e07dfbf054a87d3135f05ea57ea6ef"
+  },
+  "tools.smokeLab.disabled.title": {
+    "en": "Smoke Lab is turned off",
+    "zh-CN": "Smoke Lab 已关闭",
+    "reviewedEnglishHash": "a63d7e06c43f95c232775d181db109ecf8db1d8828e552bbdff4412bc0991276"
+  },
+  "tools.smokeLab.loading": {
+    "en": "Loading Smoke Lab…",
+    "zh-CN": "正在加载 Smoke Lab...",
+    "reviewedEnglishHash": "e0263a20ce4b35a2f8349326a51551d45480dad3762c9728a793f36cc737c409"
+  },
+  "tools.smokeLab.matrix.empty": {
+    "en": "No steps recorded for the selected run yet. Run a browser smoke to populate the matrix.",
+    "zh-CN": "尚未记录所选运行的步骤。运行浏览器冒烟测试来填充矩阵。",
+    "reviewedEnglishHash": "94bd95c0b77942ec06f9fa5bbb543eb2d75fa8f04099572529e490ed73e9fa5c"
+  },
+  "tools.smokeLab.matrix.path": {
+    "en": "Path",
+    "zh-CN": "路径",
+    "reviewedEnglishHash": "62fa5a5b0d3c318835a213e22a4b335c42515443d598741d0413e8c47f9ecf67"
+  },
+  "tools.smokeLab.matrix.title": {
+    "en": "Integration matrix",
+    "zh-CN": "集成矩阵",
+    "reviewedEnglishHash": "d569a4241b363cf39db0f4f97f79fe410048a2471dc9924fac1bf3ea04df4498"
+  },
+  "tools.smokeLab.paths.p1.detail": {
+    "en": "HTTP MCP fixture behind the fake OAuth provider",
+    "zh-CN": "HTTP MCP 虚假 OAuth 提供商背后的测试夹具",
+    "reviewedEnglishHash": "aa7e889483bec9ea7c9fc7cd7d01c33a3996a3f279db22539601d9a358722e72"
+  },
+  "tools.smokeLab.paths.p1.title": {
+    "en": "Remote HTTP · OAuth",
+    "zh-CN": "远程 HTTP · OAuth",
+    "reviewedEnglishHash": "d454eec033fa76d56611f13b1c65fcda466f214e946597f7ea9f588a536e0b4e"
+  },
+  "tools.smokeLab.paths.p2.detail": {
+    "en": "HTTP MCP fixture with a static bearer key",
+    "zh-CN": "HTTP MCP 测试夹具，带有静态承载密钥",
+    "reviewedEnglishHash": "920c345e2ef931b54ec6823aa0772498618d75a5af7f6e0a7f4b2e8b89aad49e"
+  },
+  "tools.smokeLab.paths.p2.title": {
+    "en": "Remote HTTP · API key",
+    "zh-CN": "远程 HTTP · API 键",
+    "reviewedEnglishHash": "8f973a6655333113cb8592c148fce2914fbdb53fffe45ca6a240e0bd72013b9a"
+  },
+  "tools.smokeLab.paths.p3.detail": {
+    "en": "stdio fixture via the runtime supervisor",
+    "zh-CN": "stdio 通过运行时管理器固定",
+    "reviewedEnglishHash": "5fde467fbfc0a9f766a5ff85cf08203598f951ce366b39b5c6942a8decfcef1c"
+  },
+  "tools.smokeLab.paths.p3.title": {
+    "en": "Local stdio (template)",
+    "zh-CN": "本地 stdio（模板）",
+    "reviewedEnglishHash": "6c513ea3158582e1df45d548a206f2a7e1ace6ac7eb09c7e53642db7f61ae1c6"
+  },
+  "tools.smokeLab.paths.p4.detail": {
+    "en": "plugin-provided catalog entry + install flow",
+    "zh-CN": "插件提供的目录条目+安装流程",
+    "reviewedEnglishHash": "0c29bc50a6fc28b4c1b62d5badd358c11cc0122c82725ad1a882ffd566e744a5"
+  },
+  "tools.smokeLab.paths.p4.title": {
+    "en": "Plugin integration",
+    "zh-CN": "插件集成",
+    "reviewedEnglishHash": "d16a5ed6881c107cf98104e7e1ef83208f308df876c33e37114a450d413ddbe5"
+  },
+  "tools.smokeLab.paths.p5.detail": {
+    "en": "prosumer import via Advanced setup",
+    "zh-CN": "通过高级设置导入产消者",
+    "reviewedEnglishHash": "5d868fdd08aef848e42b1f9be886dcf3f000ebef77a6fb50fab5f02d490b7131"
+  },
+  "tools.smokeLab.paths.p5.title": {
+    "en": "Paste-a-config import",
+    "zh-CN": "粘贴配置导入",
+    "reviewedEnglishHash": "6c5d14db7d770205cd0918f33309d149c4cca2e1718310cb3c6df2c68576bd59"
+  },
+  "tools.smokeLab.paths.p6.detail": {
+    "en": "run-scoped connection token, TTL + scope checks",
+    "zh-CN": "运行范围的连接令牌，TTL + 范围检查",
+    "reviewedEnglishHash": "1eb1efd40401efefedc7e2d40716d2cb2bfaf7943f5e8f7d6591f0931598f86c"
+  },
+  "tools.smokeLab.paths.p6.title": {
+    "en": "Token broker / gateway",
+    "zh-CN": "代币经纪人/网关",
+    "reviewedEnglishHash": "956ed61e5747b845c8305138d9fd7e4e78b4a7c6c9d75224b856f92a70de0a9f"
+  },
+  "tools.smokeLab.paths.p7.detail": {
+    "en": "profiles, ask-first rules, quarantine",
+    "zh-CN": "访问配置、先询问规则、隔离",
+    "reviewedEnglishHash": "3958b906a7f1cdf9739ffa0e77721234804810502a1f44c55a130ee73fdb95d7"
+  },
+  "tools.smokeLab.paths.p7.title": {
+    "en": "Governance surfaces",
+    "zh-CN": "治理面",
+    "reviewedEnglishHash": "d4f86297b95cdf0f15464b9e670318d43b903806d82cc18ecc0b0c8eed329c8e"
+  },
+  "tools.smokeLab.runs.duration": {
+    "en": "{{value}}ms",
+    "zh-CN": "{{value}}毫秒",
+    "reviewedEnglishHash": "379b823c6ddb57424d1c5282ee8db55adc0f169a7e6142ad5fc462eb27ba280a"
+  },
+  "tools.smokeLab.runs.empty": {
+    "en": "No runs recorded yet.",
+    "zh-CN": "尚未记录任何跑步记录。",
+    "reviewedEnglishHash": "c13e0702dbf008689f8f8b7c996dba3c3645027b585067c8b781dbda7c2c461e"
+  },
+  "tools.smokeLab.runs.failing": {
+    "en": " · failing: {{paths}}",
+    "zh-CN": "· 失败：{{paths}}",
+    "reviewedEnglishHash": "706b942b023e0c5c58746460f210a70fb888346dfec10649ce447090038e25a9"
+  },
+  "tools.smokeLab.runs.noSteps": {
+    "en": "No steps recorded for this run.",
+    "zh-CN": "没有记录本次运行的步骤。",
+    "reviewedEnglishHash": "3bb9e2770612dda5346e62ce3495d120e44e141e02cc1a55c3362cbc6b02830a"
+  },
+  "tools.smokeLab.runs.noneYet": {
+    "en": "no runs yet",
+    "zh-CN": "还没有运行",
+    "reviewedEnglishHash": "2a48c47f0155af0a485b869d874af2feee726e53c1ce1553c68bcaa9c550d8cf"
+  },
+  "tools.smokeLab.runs.select": {
+    "en": "Select a run to see its steps.",
+    "zh-CN": "选择一个运行以查看其步骤。",
+    "reviewedEnglishHash": "dedf4f449a49832dcb93ba6c372cec017468dec4ff6eee6969dfb0e3ffcb4d61"
+  },
+  "tools.smokeLab.runs.start": {
+    "en": "Run browser smoke now",
+    "zh-CN": "立即运行浏览器冒烟测试",
+    "reviewedEnglishHash": "d0b1943089dc3e5651373e43349afdbdbcbadcdee222a45a70fbae2ef1e0b437"
+  },
+  "tools.smokeLab.runs.timing": {
+    "en": "Started {{started}} · finished {{finished}}",
+    "zh-CN": "已开始 {{started}} · 已完成 {{finished}}",
+    "reviewedEnglishHash": "5c73979822c6e3faca5f2955b91046709af6f614599eb590a77a811329df259c"
+  },
+  "tools.smokeLab.runs.title": {
+    "en": "Runs",
+    "zh-CN": "运行",
+    "reviewedEnglishHash": "848f54e89660cea4357644039ac5d7146f76c8e85df5c04076e08feb7e7547f0"
+  },
+  "tools.smokeLab.runs.viewScreenshot": {
+    "en": "View screenshot",
+    "zh-CN": "查看截图",
+    "reviewedEnglishHash": "acf862e2739fddb86ca689f2a7461040af57e4a752d7c9557d2928fc9f747977"
+  },
+  "tools.smokeLab.services.empty": {
+    "en": "No services reported. Start the fixture services above.",
+    "zh-CN": "没有报告服务。启动上面的装置服务。",
+    "reviewedEnglishHash": "ffd5cd699c1035e3b468c3dc5c73fd6a1606d1d516dcaf731972760a19d9f496"
+  },
+  "tools.smokeLab.services.fakeOauth.detail": {
+    "en": "In-process deterministic OAuth provider with fixed smoke credentials.",
+    "zh-CN": "具有固定冒烟测试凭证的进程内确定性 OAuth 提供程序。",
+    "reviewedEnglishHash": "4124765758d26301ab72e72e69d2980d2a4c1a3302edb963417c9490c5062ceb"
+  },
+  "tools.smokeLab.services.fakeOauth.label": {
+    "en": "Fake OAuth 2.0 provider",
+    "zh-CN": "假的 OAuth 2.0 提供商",
+    "reviewedEnglishHash": "30ae3c3b4b873d29518714a0497d0d2e6ef6b9e5594a8243f2a3b20235baa739"
+  },
+  "tools.smokeLab.services.httpMcp.label": {
+    "en": "HTTP MCP fixture",
+    "zh-CN": "HTTP MCP 测试夹具",
+    "reviewedEnglishHash": "076d5a6f6ff251d9538e3fad9b9e3f6bc5faf6304caf074a53b7a9c362f12243"
+  },
+  "tools.smokeLab.services.installFixtures": {
+    "en": "Install fixture apps",
+    "zh-CN": "安装测试夹具应用",
+    "reviewedEnglishHash": "5aa55b8765b5542476e6d5b23998b2ab7ca012aa0a77bfdba375221c967c82bc"
+  },
+  "tools.smokeLab.services.notRunning": {
+    "en": "not running",
+    "zh-CN": "没有运行",
+    "reviewedEnglishHash": "415ed7340303958fdfb6b017b1ce2a6f41844fb84340161329a305092319521d"
+  },
+  "tools.smokeLab.services.start": {
+    "en": "Start services",
+    "zh-CN": "启动服务",
+    "reviewedEnglishHash": "e325cb9431ba6e02c8ce5f51c618ea042630899b202e4627b3970b4e50b865d3"
+  },
+  "tools.smokeLab.services.title": {
+    "en": "Fixture services",
+    "zh-CN": "测试夹具服务",
+    "reviewedEnglishHash": "e2b94ef58a85cf6161bd598499b4dbeb7e4eef50265511c1384c83356c3ec5f0"
+  },
+  "tools.smokeLab.services.url": {
+    "en": "URL",
+    "zh-CN": "URL",
+    "reviewedEnglishHash": "e7a241debad56609ee660a5d2ef258a1aceb7357ff210ac66d7280b3add02a9a"
+  },
+  "tools.smokeLab.stages.audit": {
+    "en": "Audit evidence",
+    "zh-CN": "审计证据",
+    "reviewedEnglishHash": "74dbcfd2a32d9701caed78479507d3cb956ecc0ad50a22b84c0f5b84b1d83717"
+  },
+  "tools.smokeLab.stages.connect": {
+    "en": "Connect",
+    "zh-CN": "连接",
+    "reviewedEnglishHash": "1a2303ede07493acc7caaa7c737f3c52bcc9cf04372be19ed1b0af6b9f2c791e"
+  },
+  "tools.smokeLab.stages.deny": {
+    "en": "Denied call",
+    "zh-CN": "拒绝来电",
+    "reviewedEnglishHash": "a60746719ea55c3fc23299b3aac1478aea6b442dbc97010242d5d8e8a609f615"
+  },
+  "tools.smokeLab.stages.discover": {
+    "en": "Discover catalog",
+    "zh-CN": "发现目录",
+    "reviewedEnglishHash": "816990c99738b4b855cf1871ac11f76075d040a30d27ed0b9ca8e3474bc99c86"
+  },
+  "tools.smokeLab.stages.quarantine": {
+    "en": "Schema-change quarantine",
+    "zh-CN": "架构更改隔离",
+    "reviewedEnglishHash": "6798160d686196f2e0dd782b3a9695bb15bbcd3bc371cfe4eaed2eff8b380984"
+  },
+  "tools.smokeLab.stages.read": {
+    "en": "Allowed read",
+    "zh-CN": "允许读取",
+    "reviewedEnglishHash": "c4e65f38b6a83ca7e06f016ecab69019d1c9e880b83c6152eb25fc1b1a064d2b"
+  },
+  "tools.smokeLab.stages.revoke": {
+    "en": "Revoke",
+    "zh-CN": "撤销",
+    "reviewedEnglishHash": "87e6d00bbf53ec5ae251de23ace84d5cf01c69deae04cfff08a5fe353a9853bb"
+  },
+  "tools.smokeLab.stages.write": {
+    "en": "Ask-first write",
+    "zh-CN": "先询问先写",
+    "reviewedEnglishHash": "5fe97dc1a470090182a7bca747e22daf01534019b6fc793e1ab26b9b72853265"
+  },
+  "tools.smokeLab.status.fail": {
+    "en": "fail",
+    "zh-CN": "失败",
+    "reviewedEnglishHash": "51280dabfbc880cdc5f92cc2f4f22c8032de5aba401c3268250a11eeb2df1f73"
+  },
+  "tools.smokeLab.status.notRun": {
+    "en": "not run",
+    "zh-CN": "不运行",
+    "reviewedEnglishHash": "b4a984371bc54d7a29fe053304249c9d0283ad7510d4e802d133aadf107950dc"
+  },
+  "tools.smokeLab.status.pass": {
+    "en": "pass",
+    "zh-CN": "通过",
+    "reviewedEnglishHash": "d74ff0ee8da3b9806b18c877dbf29bbde50b5bd8e4dad7a3a725000feb82e8f1"
+  },
+  "tools.smokeLab.status.skipped": {
+    "en": "skipped",
+    "zh-CN": "跳过",
+    "reviewedEnglishHash": "389595a44dc9dce7dee673f243e805244bae603d6a65a536ad493340ec99ced3"
+  },
+  "tools.smokeLab.title": {
+    "en": "Smoke Lab",
+    "zh-CN": "烟雾实验室",
+    "reviewedEnglishHash": "876badbfdc245f318e7954ed1287330ac40ca94860c092d58cd5a90f55280fba"
+  },
+  "tools.smokeLab.toast.fixturesInstalled": {
+    "en": "Fixture apps installed",
+    "zh-CN": "安装的测试夹具应用",
+    "reviewedEnglishHash": "fd0954789d12c83f6489ccab451190bcc5e4f6c958887a8b9c3664011d904112"
+  },
+  "tools.smokeLab.toast.fixturesPresent": {
+    "en": "Fixture apps already present",
+    "zh-CN": "测试夹具应用已经存在",
+    "reviewedEnglishHash": "0e40030d9c6103ba379956e17055194550d24fbd6d60eb1ccf26bdf5dd7eceac"
+  },
+  "tools.smokeLab.toast.installFixturesFailed": {
+    "en": "Couldn't install fixtures",
+    "zh-CN": "无法安装测试夹具",
+    "reviewedEnglishHash": "d2d1735e478c0b0272356794f9f1f21c84e6f5b78bf24d1ef8e11c956ba3a342"
+  },
+  "tools.smokeLab.toast.reset": {
+    "en": "Smoke Lab reset",
+    "zh-CN": "烟雾实验室已重置",
+    "reviewedEnglishHash": "2c78b1f9c49ae7bcd9048fdc6a7de4c247496c70244c6b9f7f1c75f3bca68c02"
+  },
+  "tools.smokeLab.toast.resetFailed": {
+    "en": "Couldn't reset",
+    "zh-CN": "无法重置",
+    "reviewedEnglishHash": "7a78fddef06eeb3d2a4eb41600deaca0a16012de06e6fbed50dbab78eb668590"
+  },
+  "tools.smokeLab.toast.runStarted": {
+    "en": "Smoke run started",
+    "zh-CN": "冒烟测试跑开始了",
+    "reviewedEnglishHash": "6fd2df1a97f6fa08d3268680a872f3b38ccc414278a92ec9c88626018519b9f5"
+  },
+  "tools.smokeLab.toast.runStartedBody": {
+    "en": "The browser runner records each step as it completes.",
+    "zh-CN": "浏览器运行程序会记录完成的每个步骤。",
+    "reviewedEnglishHash": "9c9e23fcedbe8a0a364626b3512c6551d9ef7af541442f2a8b3cbcd9b3d21560"
+  },
+  "tools.smokeLab.toast.servicesStarted": {
+    "en": "Smoke services started",
+    "zh-CN": "冒烟测试服务开始",
+    "reviewedEnglishHash": "725d1544f5f08a98bc22db5c22e16f9178a6f45241282e8d2a279adc63a51e82"
+  },
+  "tools.smokeLab.toast.servicesStopped": {
+    "en": "Smoke services stopped",
+    "zh-CN": "冒烟测试服务已停止",
+    "reviewedEnglishHash": "22c4412453a0384c74566f7a0407e422d5df81967a0c6ffe044fa3d2dcff1a34"
+  },
+  "tools.smokeLab.toast.startRunFailed": {
+    "en": "Couldn't start a run",
+    "zh-CN": "无法开始运行",
+    "reviewedEnglishHash": "8e76bd0a4e59dd5da0b73c2e59fc84cf128c92614750ed65582a607f82f2cc8b"
+  },
+  "tools.smokeLab.toast.startServicesFailed": {
+    "en": "Couldn't start services",
+    "zh-CN": "无法启动服务",
+    "reviewedEnglishHash": "b3bd9d2b5b20f6e97b6ed8df7c4cb4f1cfa37220ae7ca68a76d41c04f158b847"
+  },
+  "tools.smokeLab.toast.stopServicesFailed": {
+    "en": "Couldn't stop services",
+    "zh-CN": "无法停止服务",
+    "reviewedEnglishHash": "42fc061cb203fe86c1ad07976a6c779df91b23a0546f7e5917a9f76025d10ac7"
+  },
+  "tools.smokeLab.tutorial": {
+    "en": "Hands-on tutorial",
+    "zh-CN": "动手教程",
+    "reviewedEnglishHash": "8d0f89b123bbd584152d773d9ab2d68083406502ade7d5dea96c9c0ccda827df"
+  },
+  "tools.smokeLab.tutorialLower": {
+    "en": "hands-on tutorial",
+    "zh-CN": "实践教程",
+    "reviewedEnglishHash": "728428eb66fc286de8593dd2b4ac5c268d16633e37b69f973bb606662c13bc91"
+  },
+  "tools.tabs.activity": {
+    "en": "Activity",
+    "zh-CN": "活动",
+    "reviewedEnglishHash": "38da1505ca8373288489495101b14f24ac95078f520ad64df18272aa6054f750"
+  },
+  "tools.tabs.gateways": {
+    "en": "Gateways",
+    "zh-CN": "网关",
+    "reviewedEnglishHash": "9e4635769f0aaf0d333e7f85b30bae0e16ae96fd3c0ce0efeca2db5ee527219e"
+  },
+  "tools.tabs.health": {
+    "en": "Health",
+    "zh-CN": "运行状态",
+    "reviewedEnglishHash": "55898449eb74fb2e348d13e5a5d84ab019bb87ea92687b50b3d3302eb409b784"
+  },
+  "tools.tabs.pasteConfig": {
+    "en": "Paste a config",
+    "zh-CN": "粘贴一个配置",
+    "reviewedEnglishHash": "27261473ca2777b7f9fa01091259c9a23fa1f274d28aea2af680c3df5dd1ce19"
+  },
+  "tools.tabs.profiles": {
+    "en": "Profiles",
+    "zh-CN": "访问配置",
+    "reviewedEnglishHash": "535e52e4a2616ebec7326877d6e50887ce0005cb8de9d77c05ef31dabe8806d3"
+  },
+  "tools.tabs.rules": {
+    "en": "Rules",
+    "zh-CN": "规则",
+    "reviewedEnglishHash": "4228aeb07c410ffc9d15b458bf7c2bf8d9dfa7af632f2c339e69f8cb54654da3"
+  },
+  "tools.tabs.runYourOwn": {
+    "en": "Run your own",
+    "zh-CN": "运行你自己的",
+    "reviewedEnglishHash": "ad3059b3426c9f5d1443f9d6732b4eaec93220c3c07cf0fb5c61fc1b6049fc0c"
+  },
+  "tools.tabs.smokeLab": {
+    "en": "Smoke Lab",
+    "zh-CN": "烟雾实验室",
+    "reviewedEnglishHash": "876badbfdc245f318e7954ed1287330ac40ca94860c092d58cd5a90f55280fba"
+  }
+}

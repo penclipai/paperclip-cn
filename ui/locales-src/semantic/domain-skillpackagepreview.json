@@ -1,0 +1,27 @@
+{
+  "skillPackagePreview.contentAudit_one": {
+    "en": "Content audit · {{count}} notice",
+    "zh-CN": "内容审计 · {{count}} 条提示",
+    "reviewedEnglishHash": "4e3784bb70bcf1f694dff9c2bb44d410bcef257c9337b2a9817709beceebaccd"
+  },
+  "skillPackagePreview.contentAudit_other": {
+    "en": "Content audit · {{count}} notices",
+    "zh-CN": "内容审计 · {{count}} 条提示",
+    "reviewedEnglishHash": "19dee5a5375d377437787dac9fc1611e91383655a018eb72d1159e28fb043b8c"
+  },
+  "skillPackagePreview.fileSize": {
+    "en": "{{count}} bytes",
+    "zh-CN": "{{count}} 字节",
+    "reviewedEnglishHash": "ba563362c55908521466511f040ef569c59c821c3d50c34c5624e297fd2cbcac"
+  },
+  "skillPackagePreview.referencedIn": {
+    "en": "Referenced in {{path}}",
+    "zh-CN": "引用于 {{path}}",
+    "reviewedEnglishHash": "2c8e70cae915c7ea7f885c7f37ddbaa396804acc604872de31d53708e7accb69"
+  },
+  "skillPackagePreview.sourceSummary": {
+    "en": "{{root}}/ · {{count}} files",
+    "zh-CN": "{{root}}/ · {{count}} 个文件",
+    "reviewedEnglishHash": "32222d7c5bc29cd307facf65a94fce769b056f57e098b69a30184e3cc74db275"
+  }
+}

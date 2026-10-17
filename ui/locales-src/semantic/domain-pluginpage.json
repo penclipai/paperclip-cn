@@ -1,0 +1,17 @@
+{
+  "pluginPage.routeConflictPrefix": {
+    "en": "Multiple plugins declare the route",
+    "zh-CN": "有多个插件声明了这条路由",
+    "reviewedEnglishHash": "9f13099a9830202467e15e6c64975f68f2a4b87fcefc0272be3fd4d5b2574fd5"
+  },
+  "pluginPage.routeConflictSuffix": {
+    "en": "Use the plugin-id route until the conflict is resolved.",
+    "zh-CN": "请暂时改用带插件 ID 的路由，直到冲突被解决。",
+    "reviewedEnglishHash": "f2b5da0bfc87977689c3e40f9ce173b9a696a4581e4976f3ee5b5c9bd2d426d8"
+  },
+  "pluginPage.selectCompany": {
+    "en": "Select a company to view this page.",
+    "zh-CN": "请选择一家公司以查看此页面。",
+    "reviewedEnglishHash": "4750aefb23142e77ba2b91172c8d77091f68ff2df0ede4cd46691f8fa4514ac3"
+  }
+}

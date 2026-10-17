@@ -1,18 +1,18 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
+import { AgentIdentity } from "@/components/AgentIdentity";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@/lib/router";
 import type { Agent, AgentRuntimeState } from "@penclipai/shared";
-import { useTranslation } from "react-i18next";
 import { agentsApi } from "../api/agents";
 import { useCompany } from "../context/CompanyContext";
 import { getAdapterLabel } from "../adapters/adapter-display-registry";
 import { queryKeys } from "../lib/queryKeys";
-import { translateRuntimeErrorMessage } from "../lib/error-i18n";
-import { displaySeededName } from "../lib/seeded-display";
-import { StatusBadge } from "./StatusBadge";
+import { AgentStatusBadge } from "./StatusBadge";
 import { Identity } from "./Identity";
 import { formatDate, agentUrl } from "../lib/utils";
 import { Separator } from "@/components/ui/separator";
-import { translateRoleLabel } from "./agent-config-primitives";
+import { getRoleLabels } from "./agent-config-primitives";
 
 interface AgentPropertiesProps {
   agent: Agent;
@@ -29,7 +29,8 @@ function PropertyRow({ label, children }: { label: string; children: React.React
 }
 
 export function AgentProperties({ agent, runtimeState }: AgentPropertiesProps) {
-  const { t } = useTranslation();
+  useTranslation();
+  const roleLabels = getRoleLabels();
   const { selectedCompanyId } = useCompany();
   const lastErrorIsActive = agent.status === "error";
 
@@ -44,25 +45,25 @@ export function AgentProperties({ agent, runtimeState }: AgentPropertiesProps) {
   return (
     <div className="space-y-4">
       <div className="space-y-1">
-        <PropertyRow label={t("Status", { defaultValue: "Status" })}>
-          <StatusBadge status={agent.status} />
+        <PropertyRow label={translateInstant("Status")}>
+          <AgentStatusBadge status={agent.status} />
         </PropertyRow>
         {lastErrorIsActive && agent.errorReason && (
-          <PropertyRow label={t("Error reason", { defaultValue: "Error reason" })}>
+          <PropertyRow label={translateInstant("Error reason")}>
             <span className="text-xs text-red-600 dark:text-red-400 break-words min-w-0">
               {agent.errorReason}
             </span>
           </PropertyRow>
         )}
-        <PropertyRow label={t("Role", { defaultValue: "Role" })}>
-          <span className="text-sm">{translateRoleLabel(t, agent.role)}</span>
+        <PropertyRow label={translateInstant("Role")}>
+          <span className="text-sm">{roleLabels[agent.role] ?? agent.role}</span>
         </PropertyRow>
         {agent.title && (
-          <PropertyRow label={t("Title", { defaultValue: "Title" })}>
-            <span className="text-sm">{displaySeededName(agent.title)}</span>
+          <PropertyRow label={translateInstant("Title")}>
+            <span className="text-sm">{agent.title}</span>
           </PropertyRow>
         )}
-        <PropertyRow label={t("Adapter", { defaultValue: "Adapter" })}>
+        <PropertyRow label={translateInstant("Adapter")}>
           <span className="text-sm font-mono">{getAdapterLabel(agent.adapterType)}</span>
         </PropertyRow>
       </div>
@@ -71,18 +72,14 @@ export function AgentProperties({ agent, runtimeState }: AgentPropertiesProps) {
 
       <div className="space-y-1">
         {(runtimeState?.sessionDisplayId ?? runtimeState?.sessionId) && (
-          <PropertyRow label={t("Session", { defaultValue: "Session" })}>
+          <PropertyRow label={translateInstant("Session")}>
             <span className="text-xs font-mono">
               {String(runtimeState.sessionDisplayId ?? runtimeState.sessionId).slice(0, 12)}...
             </span>
           </PropertyRow>
         )}
         {runtimeState?.lastError && (
-          <PropertyRow
-            label={lastErrorIsActive
-              ? t("Last error", { defaultValue: "Last error" })
-              : t("Last run error", { defaultValue: "Last run error" })}
-          >
+          <PropertyRow label={lastErrorIsActive ? "Last error" : "Last run error"}>
             <span
               className={
                 lastErrorIsActive
@@ -90,27 +87,27 @@ export function AgentProperties({ agent, runtimeState }: AgentPropertiesProps) {
                   : "text-xs text-muted-foreground break-words min-w-0"
               }
             >
-              {translateRuntimeErrorMessage(t, runtimeState.lastError)}
+              {runtimeState.lastError}
             </span>
           </PropertyRow>
         )}
         {agent.lastHeartbeatAt && (
-          <PropertyRow label={t("Last Heartbeat", { defaultValue: "Last Heartbeat" })}>
+          <PropertyRow label={translateInstant("Last Heartbeat")}>
             <span className="text-sm">{formatDate(agent.lastHeartbeatAt)}</span>
           </PropertyRow>
         )}
         {agent.reportsTo && (
-          <PropertyRow label={t("Reports To", { defaultValue: "Reports To" })}>
+          <PropertyRow label={translateInstant("Reports To")}>
             {reportsToAgent ? (
               <Link to={agentUrl(reportsToAgent)} className="hover:underline">
-                <Identity name={displaySeededName(reportsToAgent.name)} size="sm" />
+                <AgentIdentity agent={reportsToAgent} size="sm" />
               </Link>
             ) : (
               <span className="text-sm font-mono">{agent.reportsTo.slice(0, 8)}</span>
             )}
           </PropertyRow>
         )}
-        <PropertyRow label={t("Created", { defaultValue: "Created" })}>
+        <PropertyRow label={translateInstant("Created")}>
           <span className="text-sm">{formatDate(agent.createdAt)}</span>
         </PropertyRow>
       </div>

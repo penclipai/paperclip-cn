@@ -1,0 +1,27 @@
+{
+  "goalDetail.newSubGoal": {
+    "en": "Sub-goal",
+    "zh-CN": "子目标",
+    "reviewedEnglishHash": "e3352c311e01cb953cffa059e93ac5347a7446492964dbadf3925b0a6262669b"
+  },
+  "goalDetail.noSubGoals": {
+    "en": "No sub-goals.",
+    "zh-CN": "没有子目标。",
+    "reviewedEnglishHash": "87edd3680e316de3351673992f91ccf8e977cf33bf7dd332d8b7b7cbc5c252ce"
+  },
+  "goalDetail.projectsTab": {
+    "en": "Projects ({{count}})",
+    "zh-CN": "项目（{{count}}）",
+    "reviewedEnglishHash": "5b8670d9cebbb931b6797c2ed50420fe4d595a81b563dfd517978892d260f23c"
+  },
+  "goalDetail.showProperties": {
+    "en": "Show properties",
+    "zh-CN": "显示属性",
+    "reviewedEnglishHash": "ae4293fcd74259169c834b58f97bc86c67d3b1ce2c0c827abe1cf5bc564a09da"
+  },
+  "goalDetail.subGoalsTab": {
+    "en": "Sub-goals ({{count}})",
+    "zh-CN": "子目标（{{count}}）",
+    "reviewedEnglishHash": "c662de1eeea2bb0bda100b949e278991db9cfc3210798c4269dced510144dc96"
+  }
+}

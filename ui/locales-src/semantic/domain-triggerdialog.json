@@ -1,0 +1,62 @@
+{
+  "triggerDialog.comingSoonSuffix": {
+    "en": " - COMING SOON",
+    "zh-CN": " - 即将推出",
+    "reviewedEnglishHash": "51b0e4c54548ae29654ada4d0e2b4a5be24e0c6bf95731cbcbacbd0bf039d660"
+  },
+  "triggerDialog.description": {
+    "en": "Configure when and how this routine fires.",
+    "zh-CN": "配置这个例行任务何时以及如何触发。",
+    "reviewedEnglishHash": "ab0b281fc0ffcc40b606d9aeb439fdc178de4856604bd1e90301c59d0720cc1c"
+  },
+  "triggerDialog.editTitle": {
+    "en": "Edit trigger",
+    "zh-CN": "编辑触发器",
+    "reviewedEnglishHash": "e21da162e209f129bc200f8ebbaaf6c679e1d8d27cc2e9307b951088d2122faf"
+  },
+  "triggerDialog.kind.schedule": {
+    "en": "schedule",
+    "zh-CN": "定时",
+    "reviewedEnglishHash": "5f72005e81c4ecbd5aa3588e80e3daf0df068ce0cf5638944508a0165fea609a"
+  },
+  "triggerDialog.kind.webhook": {
+    "en": "webhook",
+    "zh-CN": "Webhook",
+    "reviewedEnglishHash": "9fd09dc33545f9cc19b81ebd0b98c4fd8c66ed1e34de89f4c9a81e6b26dc0d54"
+  },
+  "triggerDialog.kindImmutable": {
+    "en": "Kind can't be changed after creation.",
+    "zh-CN": "创建后不能更改类型。",
+    "reviewedEnglishHash": "42baebbbd6b6ebef19ab3ab4805f9594cc19329fa264584af6967950ed509be0"
+  },
+  "triggerDialog.labelHelp": {
+    "en": "Optional - shown in the trigger list.",
+    "zh-CN": "可选 - 会显示在触发器列表中。",
+    "reviewedEnglishHash": "c32e82bcf7c628fa5a98218765194cc578b0151f58800994c1daa6119fe49173"
+  },
+  "triggerDialog.labelPlaceholder": {
+    "en": "e.g. Morning digest",
+    "zh-CN": "例如：晨间摘要",
+    "reviewedEnglishHash": "8e790396286826baef2d66eb6f24b649e3c6ed809d38dcc95129198b093f44e9"
+  },
+  "triggerDialog.signingMode.bearer": {
+    "en": "Expect a shared bearer token in the Authorization header.",
+    "zh-CN": "期望在 Authorization 请求头中收到共享 bearer token。",
+    "reviewedEnglishHash": "0f9380d258c325acb6ae3d1f859e135837ffbb07e31d3b0c2a02a5546dafddc8"
+  },
+  "triggerDialog.signingMode.githubHmac": {
+    "en": "Accept GitHub-style X-Hub-Signature-256 header (HMAC over raw body, no timestamp).",
+    "zh-CN": "接受 GitHub 风格的 X-Hub-Signature-256 请求头（基于原始请求体的 HMAC，无时间戳）。",
+    "reviewedEnglishHash": "6de8205c6c6f303618f3ba0c2ff3063d4c3a0fd99c7928a4b9637f4e6aef6f9f"
+  },
+  "triggerDialog.signingMode.hmacSha256": {
+    "en": "Expect an HMAC SHA-256 signature over the request using the shared secret.",
+    "zh-CN": "期望使用共享密钥对请求生成 HMAC SHA-256 签名。",
+    "reviewedEnglishHash": "4a089f5ec02f73b03ae147ab3b9deab7bd91c7418c8407080ce36aea3fa78121"
+  },
+  "triggerDialog.signingMode.none": {
+    "en": "No authentication - the webhook URL itself acts as a shared secret.",
+    "zh-CN": "不做认证 - webhook URL 本身就是共享密钥。",
+    "reviewedEnglishHash": "fbe96e2fa2ecab58c267e05cbadd14087d12b8aeb07e5871206a0af9f110dac2"
+  }
+}

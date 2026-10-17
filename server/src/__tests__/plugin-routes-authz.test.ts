@@ -3,7 +3,7 @@ import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import request from "supertest";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockRegistry = vi.hoisted(() => ({
   getById: vi.fn(),
@@ -147,7 +147,7 @@ function readyPlugin() {
   });
 }
 
-describe.sequential("plugin install and upgrade authz", () => {
+describe("plugin install and upgrade authz", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -163,12 +163,12 @@ describe.sequential("plugin install and upgrade authz", () => {
       res.body.map((plugin: { packageName: string; experimental: boolean; hasBuiltEntrypoints: boolean }) => [plugin.packageName, plugin]),
     );
     expect(packageNames).toContain("@penclipai/plugin-workspace-diff");
-    expect(packageNames).toContain("@paperclipai/plugin-llm-wiki");
+    expect(packageNames).toContain("@penclipai/plugin-llm-wiki");
     expect(packageNames).toContain("@penclipai/plugin-modal");
     expect(packageNames).toContain("@penclipai/plugin-authoring-smoke-example");
     expect(packageNames).not.toContain("@penclipai/plugin-sdk");
     expect(byPackageName.get("@penclipai/plugin-workspace-diff")?.experimental).toBe(true);
-    expect(byPackageName.get("@paperclipai/plugin-llm-wiki")?.experimental).toBe(true);
+    expect(byPackageName.get("@penclipai/plugin-llm-wiki")?.experimental).toBe(true);
     expect(byPackageName.get("@penclipai/plugin-modal")?.experimental).toBe(true);
     expect(byPackageName.get("@penclipai/plugin-authoring-smoke-example")?.experimental).toBe(false);
     expect(typeof byPackageName.get("@penclipai/plugin-workspace-diff")?.hasBuiltEntrypoints).toBe("boolean");
@@ -474,7 +474,7 @@ describe.sequential("plugin install and upgrade authz", () => {
   }, 20_000);
 });
 
-describe.sequential("scoped plugin API routes", () => {
+describe("scoped plugin API routes", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -540,7 +540,7 @@ describe.sequential("scoped plugin API routes", () => {
   }, 20_000);
 });
 
-describe.sequential("plugin local folder routes", () => {
+describe("plugin local folder routes", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockRegistry.getCompanySettings.mockResolvedValue(null);
@@ -595,7 +595,7 @@ describe.sequential("plugin local folder routes", () => {
   });
 });
 
-describe.sequential("plugin tool and bridge authz", () => {
+describe("plugin tool and bridge authz", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -1166,4 +1166,56 @@ describe.sequential("plugin tool and bridge authz", () => {
     expect(res.status).toBe(403);
     expect(executeTool).not.toHaveBeenCalled();
   });
+});
+
+describe("operator-hidden plugin management floor", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    process.env.PAPERCLIP_HIDDEN_SETTINGS = "instance.plugins";
+  });
+  afterEach(() => {
+    delete process.env.PAPERCLIP_HIDDEN_SETTINGS;
+  });
+
+  const instanceAdmin = () => boardActor({ isInstanceAdmin: true, userId: "instance-admin" });
+
+  it("floors plugin lifecycle and config writes for instance admins", async () => {
+    const { app, loader } = await createApp(instanceAdmin());
+    readyPlugin();
+
+    const attempts: Array<[string, request.Test]> = [
+      ["install", request(app).post("/api/plugins/install").send({ packageName: "@penclipai/plugin-modal" })],
+      ["uninstall", request(app).delete(`/api/plugins/${pluginId}`)],
+      ["enable", request(app).post(`/api/plugins/${pluginId}/enable`)],
+      ["disable", request(app).post(`/api/plugins/${pluginId}/disable`).send({})],
+      ["upgrade", request(app).post(`/api/plugins/${pluginId}/upgrade`).send({})],
+      ["config", request(app).post(`/api/plugins/${pluginId}/config`).send({ config: {} })],
+      ["config test", request(app).post(`/api/plugins/${pluginId}/config/test`).send({ config: {} })],
+      [
+        "local folder",
+        request(app)
+          .put(`/api/plugins/${pluginId}/companies/${companyA}/local-folders/data`)
+          .send({ path: "/tmp/folder" }),
+      ],
+    ];
+    for (const [name, attempt] of attempts) {
+      const res = await attempt;
+      expect(res.status, `${name}: ${JSON.stringify(res.body)}`).toBe(403);
+      expect(res.body.details, name).toMatchObject({ code: "settings_operator_managed" });
+    }
+    expect(loader.installPlugin).not.toHaveBeenCalled();
+    expect(mockLifecycle.enable).not.toHaveBeenCalled();
+    expect(mockLifecycle.disable).not.toHaveBeenCalled();
+    expect(mockLifecycle.upgrade).not.toHaveBeenCalled();
+    expect(mockLifecycle.unload).not.toHaveBeenCalled();
+    expect(mockRegistry.upsertConfig).not.toHaveBeenCalled();
+  });
+
+  it("keeps plugin reads open while the surface is hidden", async () => {
+    const { app } = await createApp(boardActor());
+
+    const res = await request(app).get("/api/plugins/examples");
+
+    expect(res.status, JSON.stringify(res.body)).toBe(200);
+  }, 20_000);
 });

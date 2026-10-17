@@ -1,0 +1,82 @@
+{
+  "app.addAgent": {
+    "en": "Add Agent",
+    "zh-CN": "添加智能体",
+    "reviewedEnglishHash": "9d4bc87eb4eae82cf2f3d877b50072a7b41bbb98c85548780cd0b3c37ed4b394"
+  },
+  "app.addAnotherAgentDescription": {
+    "en": "Run onboarding again to add an agent and a starter task for this company.",
+    "zh-CN": "再次运行引导流程，为这家公司添加一个智能体和一个起始任务。",
+    "reviewedEnglishHash": "59d0a1fe9a9272bf82b31c2263416c9b4acfe88cbcdbedef36e266a818f47a67"
+  },
+  "app.addAnotherAgentTitle": {
+    "en": "Add another agent to {{companyName}}",
+    "zh-CN": "为 {{companyName}} 再添加一个智能体",
+    "reviewedEnglishHash": "b62fb4bf236418855d8aa7bc249e22b24725f9b286673b65cc20fd4a9d38e4d7"
+  },
+  "app.addAnotherCompanyDescription": {
+    "en": "Run onboarding again to create another company and seed its first agent.",
+    "zh-CN": "再次运行引导流程，创建另一家公司并初始化第一个智能体。",
+    "reviewedEnglishHash": "f287758efb94c2e77f97fb4acaee3ef64d11437919c8025867f90d546507d133"
+  },
+  "app.addAnotherCompanyTitle": {
+    "en": "Create another company",
+    "zh-CN": "再创建一家公司",
+    "reviewedEnglishHash": "4e67c0e9c1f1062509f86cbfccb2384bf25e4cf4bf9f6e3756d92d7328bab4e0"
+  },
+  "app.addCompany": {
+    "en": "Add Company",
+    "zh-CN": "新建公司",
+    "reviewedEnglishHash": "cf291af13fcf008ed2683ba66a705734a1b1c0ca2df3b8986b71feb0e381c24f"
+  },
+  "app.cloudCreateUnavailable": {
+    "en": "Organizations are created in Paperclip Cloud. This instance can't reach it right now — try again from your Cloud portfolio.",
+    "zh-CN": "组织需要在 Paperclip Cloud 中创建。当前实例无法连接，请到 Cloud 总览页面重试。",
+    "reviewedEnglishHash": "5402099d257d4788ac84e86668d1e7714a8a64af7fbbd717b36e5673e586615d"
+  },
+  "app.createFirstCompanyDescription": {
+    "en": "Get started by creating a company.",
+    "zh-CN": "从创建一家公司开始。",
+    "reviewedEnglishHash": "c3786315c7c28487c0721fc311526f6b46b3b21768f6ef10600e40f5b01b876e"
+  },
+  "app.createFirstCompanyTitle": {
+    "en": "Create your first company",
+    "zh-CN": "创建你的第一家公司",
+    "reviewedEnglishHash": "faa534f5decd6c432bf0af7fd9d85ce3147c2e048f2b17b097ff07e378c7cbea"
+  },
+  "app.newCompany": {
+    "en": "New Company",
+    "zh-CN": "新建公司",
+    "reviewedEnglishHash": "1453775df0a7903186b8864cde636c29bc5bbd753c17f77ae474bfd09677a156"
+  },
+  "app.noCompanies.description": {
+    "en": "Get started by creating a company.",
+    "zh-CN": "创建一个公司即可开始使用。",
+    "reviewedEnglishHash": "c3786315c7c28487c0721fc311526f6b46b3b21768f6ef10600e40f5b01b876e"
+  },
+  "app.noCompanies.newCompany": {
+    "en": "New Company",
+    "zh-CN": "新建公司",
+    "reviewedEnglishHash": "1453775df0a7903186b8864cde636c29bc5bbd753c17f77ae474bfd09677a156"
+  },
+  "app.noCompanies.title": {
+    "en": "Create your first company",
+    "zh-CN": "创建你的第一个公司",
+    "reviewedEnglishHash": "faa534f5decd6c432bf0af7fd9d85ce3147c2e048f2b17b097ff07e378c7cbea"
+  },
+  "app.startFirstCompanyDescription": {
+    "en": "Get started by creating a company and your first agent.",
+    "zh-CN": "从创建公司和第一个智能体开始。",
+    "reviewedEnglishHash": "a63b3e021602548e6b8c38e7142b5c51aa738b9ab43721c261a3e12bc4a08e22"
+  },
+  "app.startFirstCompanyTitle": {
+    "en": "Create your first company",
+    "zh-CN": "创建你的第一家公司",
+    "reviewedEnglishHash": "faa534f5decd6c432bf0af7fd9d85ce3147c2e048f2b17b097ff07e378c7cbea"
+  },
+  "app.startOnboarding": {
+    "en": "Start Onboarding",
+    "zh-CN": "开始引导",
+    "reviewedEnglishHash": "2ffae665b3ad7b8f0a3fc069ea02ce8c1db0c7f6052ad009b19dda934b8460f7"
+  }
+}

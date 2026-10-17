@@ -1,0 +1,682 @@
+{
+  "pipelineSettings.addDescription": {
+    "en": "Add a description",
+    "zh-CN": "添加描述",
+    "reviewedEnglishHash": "e707b4522c73a3b0789c915f453b5f9a834d75a2d2d4b7bc8ab88776d257c355"
+  },
+  "pipelineSettings.advanceChildren": {
+    "en": "Advance children",
+    "zh-CN": "推进子条目",
+    "reviewedEnglishHash": "6031ef6893230c7adfe37808c1345c8343c47b5174e5985f6e8f480544df8675"
+  },
+  "pipelineSettings.advanceChildrenDescription": {
+    "en": "When on and every child is done, this step moves the item forward automatically. When off, someone has to move it.",
+    "zh-CN": "开启后，当所有子条目完成时，此阶段会自动推进该条目。关闭后，需要有人手动移动。",
+    "reviewedEnglishHash": "1166019f6382a7bca12f90fc576cae81771e935ed4dcbf0fda11f2bcf6be0a63"
+  },
+  "pipelineSettings.advanceWhenLastChildDone": {
+    "en": "Advance when the last child is done",
+    "zh-CN": "最后一个子条目完成时推进",
+    "reviewedEnglishHash": "168dc8a78d5b9525e9c4464da9fd440cf19601f26bf770a052fd8862c94e970a"
+  },
+  "pipelineSettings.agentJudgmentDescription": {
+    "en": "The mechanics are handled below. Write only the judgment.",
+    "zh-CN": "下面会处理机制部分。这里只写判断标准。",
+    "reviewedEnglishHash": "4eb413ef90044d9a400d14d621e0076a9b1507b71ad7a5041a1f8ce56e024232"
+  },
+  "pipelineSettings.agentRunsStepAutomatically": {
+    "en": "{{agent}} runs this step automatically.",
+    "zh-CN": "{{agent}} 会自动运行此阶段。",
+    "reviewedEnglishHash": "c3e970de6a8b9a485a97c1b8fca089c4209322c61ff47e43638fdb30ec1721b1"
+  },
+  "pipelineSettings.allowedNextSteps": {
+    "en": "Allowed next steps",
+    "zh-CN": "允许的下一步",
+    "reviewedEnglishHash": "729b8a76e40d6201204eeb9a1158a7f2459f469f2d275805b7ff6adbca09caf6"
+  },
+  "pipelineSettings.alwaysAvailable": {
+    "en": "Always available",
+    "zh-CN": "始终可用",
+    "reviewedEnglishHash": "0fda37724cde23458b69e49aacb94f18454b907066e0dcf4fc31ffaf8b7adaaa"
+  },
+  "pipelineSettings.anyHuman": {
+    "en": "Any human",
+    "zh-CN": "任意人工成员",
+    "reviewedEnglishHash": "f4ae473619c71e1b489061fc664c5a00da42121d975c3ff81399fd0d120dee78"
+  },
+  "pipelineSettings.approvedItemsMoveTo": {
+    "en": "Approved items move to",
+    "zh-CN": "批准的条目移动到",
+    "reviewedEnglishHash": "57b85abff96596b6e246138c49a6257c8586e8d743766a857738e965a2ddd476"
+  },
+  "pipelineSettings.approver": {
+    "en": "Approver",
+    "zh-CN": "审批人",
+    "reviewedEnglishHash": "3ebb5648c8bcb2934590555c69356e279c2e677846fd48cb8a6a4fcc8a6b8dc3"
+  },
+  "pipelineSettings.archiveConfirmation": {
+    "en": "Archive confirmation",
+    "zh-CN": "归档确认",
+    "reviewedEnglishHash": "d2326f08fb45d75a355b977358552182fa2390456ff2ee086c63193521e2eb27"
+  },
+  "pipelineSettings.archivePipeline": {
+    "en": "Archive pipeline",
+    "zh-CN": "归档管道",
+    "reviewedEnglishHash": "959e7ceee9e78e8c476c0440ead5d73226ceb694710c386cca5fac0cd3e38cb5"
+  },
+  "pipelineSettings.archivePipelineDescription": {
+    "en": "Archiving hides this pipeline from everyday views. Its stages and items are kept and can be restored later.",
+    "zh-CN": "归档会从日常视图中隐藏此管道。其阶段和条目会保留，并可稍后恢复。",
+    "reviewedEnglishHash": "365905aa559bc1e59d5d69f353f71c1e14a6430bed6a0b830474455fc32c72b2"
+  },
+  "pipelineSettings.archivedDestination": {
+    "en": "This destination pipeline is archived, so its validation fields can't be edited until it's restored.",
+    "zh-CN": "目标 pipeline 已归档，恢复前无法编辑其验证字段。",
+    "reviewedEnglishHash": "df5ba3041e33157936dcec3975234a74b983393c453c5ab1e403a4684b8e4bf3"
+  },
+  "pipelineSettings.archiving": {
+    "en": "Archiving...",
+    "zh-CN": "正在归档...",
+    "reviewedEnglishHash": "6f3407113f0774306d3a84816d877cf68fdd406af7a31dc17e65660ef78db7b4"
+  },
+  "pipelineSettings.asSoonAsPiecesCreated": {
+    "en": "As soon as the pieces are created",
+    "zh-CN": "当片段创建后立即执行",
+    "reviewedEnglishHash": "cc5a44dc96c62ac83a3beb755f9c9f0509d61015619c8834fbd00db3d1541b55"
+  },
+  "pipelineSettings.askNoteDeclining": {
+    "en": "Ask for a note when declining",
+    "zh-CN": "拒绝时要求填写备注",
+    "reviewedEnglishHash": "3c63a1df5c24d3eb966fd4a8f5d626c42cc2c080618d8f5e1d42f69a48f24564"
+  },
+  "pipelineSettings.askNoteRequestingChanges": {
+    "en": "Ask for a note when requesting changes",
+    "zh-CN": "请求修改时要求填写备注",
+    "reviewedEnglishHash": "c2d3b51cc9e8cdb981536bcef0e0ca9e50342211f325114a6bf55d8f26b83435"
+  },
+  "pipelineSettings.automationVariableFieldCopied": {
+    "en": "Field copied from the current item data.",
+    "zh-CN": "从当前条目数据复制的字段。",
+    "reviewedEnglishHash": "ac44d98a55985f1f676a9f10fc21dd8016ab998ebad713713b44cd0615f5825d"
+  },
+  "pipelineSettings.automationVariableGroupFields": {
+    "en": "Item fields",
+    "zh-CN": "条目字段",
+    "reviewedEnglishHash": "1ed6e81a66e85d386008d057faa7176adf0e39dce5a9d758c9a3f9bc541c8469"
+  },
+  "pipelineSettings.automationVariableGroupItem": {
+    "en": "Current item",
+    "zh-CN": "当前条目",
+    "reviewedEnglishHash": "542a69376d9062244a62d515ba118380d1b04b10acb3145c679876576c15f2a5"
+  },
+  "pipelineSettings.automationVariableGroupPipeline": {
+    "en": "Pipeline and stage",
+    "zh-CN": "管道和阶段",
+    "reviewedEnglishHash": "a1da6a95b9cb44a0fe352e2fb2719da318e5ae9ebbc473a0952e56c757156c8e"
+  },
+  "pipelineSettings.availableOnChildren": {
+    "en": "Already available on child items",
+    "zh-CN": "已在子项上可用",
+    "reviewedEnglishHash": "8806b5f6a8d3164e10842af0ec112ebaf0a02291efbf29bbd010b860af3b74df"
+  },
+  "pipelineSettings.backToBoard": {
+    "en": "Back to board",
+    "zh-CN": "返回看板",
+    "reviewedEnglishHash": "b58959bb73c47baeab847b66de170d50fe03d557239216db46bc506850dc0cf2"
+  },
+  "pipelineSettings.blockChildren": {
+    "en": "Block children",
+    "zh-CN": "阻塞子条目",
+    "reviewedEnglishHash": "7f9c1c06acfdbf724f9990c2cff2c2d3e531dd63ba82c14ce3362d12e965b08a"
+  },
+  "pipelineSettings.blockChildrenDescription": {
+    "en": "When on, this step can't move forward while any child item is still open. When off, items can move through even with open children.",
+    "zh-CN": "开启后，只要仍有子条目未关闭，此阶段就不能继续推进。关闭后，即使有未关闭子条目也可以推进。",
+    "reviewedEnglishHash": "a7aef5447803684dcdc6efced99f1c9e7aea88c30d71957c22bed414574aecfe"
+  },
+  "pipelineSettings.blockUntilChildrenDone": {
+    "en": "Block until all child items are done or cancelled",
+    "zh-CN": "阻塞直到所有子条目完成或取消",
+    "reviewedEnglishHash": "ec438bc832c813b052c2ca73bcd24b16c1a28f68aa28603d8baa6e0444c95427"
+  },
+  "pipelineSettings.breakIntoSmallerPieces": {
+    "en": "Break into smaller pieces",
+    "zh-CN": "拆成更小片段",
+    "reviewedEnglishHash": "02bc4068f175f833f4897b687dd600ad4f5ae6fbcc5b696d33441d3707dbcbf3"
+  },
+  "pipelineSettings.breakIntoSmallerPiecesDescription": {
+    "en": "The agent decides what the pieces are. Paperclip creates and tracks them.",
+    "zh-CN": "由智能体决定片段是什么。Paperclip 会创建并跟踪这些片段。",
+    "reviewedEnglishHash": "d8c8e5d1abdd0fbb3b9e4458a7e1d97c1c4677ed78c6efa5e7a957a856b63bef"
+  },
+  "pipelineSettings.breakdownInstructionsPlaceholder": {
+    "en": "Describe the judgment the agent should make - what counts as a piece worth splitting out?",
+    "zh-CN": "描述智能体应做出的判断：什么内容值得拆成独立片段？",
+    "reviewedEnglishHash": "a5311f7b16a8f0846789f2fd1fb4e494b2df779377b776e8190b41e41daabba8"
+  },
+  "pipelineSettings.callEachPieceA": {
+    "en": "Call each piece a",
+    "zh-CN": "将每个片段称为",
+    "reviewedEnglishHash": "bc98a4c10591d62cf7f3ff23e636862ba18d0f20c64211c56daea61f58a58955"
+  },
+  "pipelineSettings.carryOver": {
+    "en": "Carry over",
+    "zh-CN": "带入字段",
+    "reviewedEnglishHash": "585af0c1c28b754bb078c6a7d9e32350c35fda44739439cc5cfd7f7e6a1b5311"
+  },
+  "pipelineSettings.carryOverDescription": {
+    "en": "Values are copied from this item and its ancestors. New eligible fields stay on unless you uncheck them.",
+    "zh-CN": "值会从此条目及其祖先复制。新的合格字段会默认开启，除非你取消勾选。",
+    "reviewedEnglishHash": "184a0537915fa1143d43b203e06cf9868b3f550d6745ad9e27f8b9a28843f111"
+  },
+  "pipelineSettings.childSettingsHiddenForBreakdown": {
+    "en": "Advanced child settings are hidden while Break into smaller pieces is enabled. Configure that workflow in Automation.",
+    "zh-CN": "启用“拆成更小片段”时，高级子条目设置会隐藏。请在自动化中配置该流程。",
+    "reviewedEnglishHash": "c70fad2f0d4aae73984131529fae9217259262a7fe5edb9063edf1a83bff9598"
+  },
+  "pipelineSettings.children": {
+    "en": "Children",
+    "zh-CN": "子条目",
+    "reviewedEnglishHash": "3583a358a585b13b6d6228f12d2baf3ef937fcf50bed4a521b70f95a520bc933"
+  },
+  "pipelineSettings.chooseExistingWorkspace": {
+    "en": "Choose an existing workspace",
+    "zh-CN": "选择现有工作区",
+    "reviewedEnglishHash": "f8f73210599b2f45b60a6cfdf3d5884c8e8c4d37ca4f042ed9b6b972dabfc859"
+  },
+  "pipelineSettings.choosePipeline": {
+    "en": "Choose a pipeline",
+    "zh-CN": "选择管道",
+    "reviewedEnglishHash": "4309efab6830344fd1cc8b89a91da1a6302f931d08f7b2f4f8ffdfcc37c4a8db"
+  },
+  "pipelineSettings.chooseStage": {
+    "en": "Choose a stage",
+    "zh-CN": "选择阶段",
+    "reviewedEnglishHash": "15a9299c0b66ffcb1e0d5e98242f7d0941ff6ac582d2d38c5e3e768ae629b8fe"
+  },
+  "pipelineSettings.chooseWorkspaceBeforeSavingReuse": {
+    "en": "Choose an existing workspace before saving reuse mode.",
+    "zh-CN": "保存复用模式前请选择一个现有工作区。",
+    "reviewedEnglishHash": "76e6ba5a829b0715f46122ceee3d2d4b979d0238974a3e8376f9638c3dbc46c7"
+  },
+  "pipelineSettings.createEachPieceIn": {
+    "en": "Create each piece in",
+    "zh-CN": "在此处创建每个片段",
+    "reviewedEnglishHash": "f762f68bd842783b2ad8e061a90a8bde56e92525debe2307cadf51f476fb39a0"
+  },
+  "pipelineSettings.declinedItemsMoveTo": {
+    "en": "Declined items move to",
+    "zh-CN": "拒绝的条目移动到",
+    "reviewedEnglishHash": "69c5922a7171a13f2c564bd3af340ed55268b3cb60346ceb4e31c99a25c64095"
+  },
+  "pipelineSettings.deleteStage": {
+    "en": "Delete stage",
+    "zh-CN": "删除阶段",
+    "reviewedEnglishHash": "0e8ac3796217528f292b871aff128fbf31765dd97aad56cd7cfc09501559c3ac"
+  },
+  "pipelineSettings.deleteStageDescription": {
+    "en": "Delete {{stage}} from this pipeline. Connected stage transitions are removed.",
+    "zh-CN": "从此管道中删除 {{stage}}。关联的阶段转换会被移除。",
+    "reviewedEnglishHash": "88e53557479e473e7efeeb18d2dfb214f7f5f971a93f4025601d15bdcb1b3b5f"
+  },
+  "pipelineSettings.destinationValidation": {
+    "en": "Destination validation:",
+    "zh-CN": "目标校验：",
+    "reviewedEnglishHash": "9ece96489854846d4c5fb779224da7ef09b742df28a6e813e59073cd9c2fd60b"
+  },
+  "pipelineSettings.executionWorkspace": {
+    "en": "Execution workspace",
+    "zh-CN": "执行工作区",
+    "reviewedEnglishHash": "d31c92b6bb53c871049f335506f5e1f410c271061bbc79655d7101fb4749cdfe"
+  },
+  "pipelineSettings.executionWorkspaceCreated": {
+    "en": "A new workspace will be created",
+    "zh-CN": "将创建新的工作区",
+    "reviewedEnglishHash": "1ca031645e6c954687b3a19f81c596f4909eee344425686c82baf8bbb01ed273"
+  },
+  "pipelineSettings.executionWorkspaceMode": {
+    "en": "Execution workspace mode",
+    "zh-CN": "执行工作区模式",
+    "reviewedEnglishHash": "3b50be31ba44c42fbfe6e730437b9b9fd05f78322a79549159091cfd6bd1072a"
+  },
+  "pipelineSettings.executionWorkspaceProjectDefault": {
+    "en": "Project default workspace",
+    "zh-CN": "项目默认工作区",
+    "reviewedEnglishHash": "5c8cc632bb2203e1c18e1b90e54c104c461c32069396f3bfc03bead43c251a8a"
+  },
+  "pipelineSettings.existingExecutionWorkspace": {
+    "en": "Existing execution workspace",
+    "zh-CN": "现有执行工作区",
+    "reviewedEnglishHash": "5f62874cb3ee2f91da8e8057c40d9acbe170a44935978d9392544a2c6b380181"
+  },
+  "pipelineSettings.existingWorkspace": {
+    "en": "existing workspace",
+    "zh-CN": "现有工作区",
+    "reviewedEnglishHash": "63e42d38c1fc566016eff8f6d9b8976f4aba4276cacd338d4a235df95d2ff0e9"
+  },
+  "pipelineSettings.instructionsPlaceholder": {
+    "en": "Tell the agent exactly what to do when an item enters this step...",
+    "zh-CN": "告诉智能体当条目进入此阶段时要具体做什么...",
+    "reviewedEnglishHash": "8d9c6082126b86d629a8a7666b3bc7b3f87b4b8f0c779d3b57238e86153b1fd8"
+  },
+  "pipelineSettings.issueTitle": {
+    "en": "Issue title",
+    "zh-CN": "任务标题",
+    "reviewedEnglishHash": "baebb0f722db7150e454ecfb2d432205f6331d57837328637d25ac8413f84644"
+  },
+  "pipelineSettings.issueTitleTemplateAria": {
+    "en": "Issue title template",
+    "zh-CN": "任务标题模板",
+    "reviewedEnglishHash": "512f4624c33713f6c931cf5f3a1680fb0a5db8f4acf7dd19ccf27562cdcce769"
+  },
+  "pipelineSettings.issueTitleVariables": {
+    "en": "Issue title variables",
+    "zh-CN": "任务标题变量",
+    "reviewedEnglishHash": "a589b2df6a6734a8d6a1068b5a1c7b5a46423b83a32da5be46eba3093c182198"
+  },
+  "pipelineSettings.itemsNeedingChangesMoveTo": {
+    "en": "Items needing changes move to",
+    "zh-CN": "需要修改的条目移动到",
+    "reviewedEnglishHash": "83f9b690a598580238314deb5c9dee5e01ce25aa123a674bddcb93dc626d6ba0"
+  },
+  "pipelineSettings.moveExistingItemsTo": {
+    "en": "Move existing items to",
+    "zh-CN": "将现有条目移动到",
+    "reviewedEnglishHash": "79267c8582a90bdb48b0580229ebe5639fdc667ca0421869ecd625e15f692e38"
+  },
+  "pipelineSettings.moveTo": {
+    "en": "Move to",
+    "zh-CN": "移动到",
+    "reviewedEnglishHash": "beb8194bc458f28da5348a191b26ad432e63e00487ec18963e9e16ddf27ba52e"
+  },
+  "pipelineSettings.moveToStageWhenChildrenFinish": {
+    "en": "Move to stage when children finish",
+    "zh-CN": "子条目完成时移动到阶段",
+    "reviewedEnglishHash": "ffd452be9223aecfa77d59e57189660efad1d2ead54fbbbea8944efcd98ad0e6"
+  },
+  "pipelineSettings.moveWhenPiecesFinish": {
+    "en": "Move this case when all pieces finish",
+    "zh-CN": "当所有片段完成时移动此条目",
+    "reviewedEnglishHash": "53f2c1bd2ae0e4bd8bfcf1bc07a63cb507d89c3be590bac364182a6c96ee34e8"
+  },
+  "pipelineSettings.newEntriesPaused": {
+    "en": "New entries paused",
+    "zh-CN": "新条目暂停",
+    "reviewedEnglishHash": "e3c983a163edfe59418563c104ab6565e24bedb1dedadfc797c1dfa71b359b82"
+  },
+  "pipelineSettings.noAgentsFound": {
+    "en": "No agents found.",
+    "zh-CN": "未找到智能体。",
+    "reviewedEnglishHash": "61666542b1caa1e26dcc1b3594c7520ea98cc285effe5884ed74684563662205"
+  },
+  "pipelineSettings.noApproversFound": {
+    "en": "No approvers found.",
+    "zh-CN": "未找到审批人。",
+    "reviewedEnglishHash": "f1a7922d68280d262359888601ef7c04beadd381e2d6c3222d8e5bf4f342967e"
+  },
+  "pipelineSettings.noAutomation": {
+    "en": "No automation",
+    "zh-CN": "无自动化",
+    "reviewedEnglishHash": "43b54777f59e9e847b067bcd206c0423fe83e547569852a3515be219e50f93a0"
+  },
+  "pipelineSettings.noAutomationMessage": {
+    "en": "Nothing runs here automatically. Items wait until a person moves them, or you can pick an agent to run this step.",
+    "zh-CN": "这里不会自动运行任何内容。条目会等待人工移动，或者你可以选择一个智能体运行此阶段。",
+    "reviewedEnglishHash": "be5521c058b86c0b6056cb1ebc6edb585cc861fbcea18915d0054a60c2a7c254"
+  },
+  "pipelineSettings.noCarryOverFields": {
+    "en": "This pipeline and its ancestors do not define any fields that can be carried over yet.",
+    "zh-CN": "此管道及其祖先尚未定义任何可带入字段。",
+    "reviewedEnglishHash": "864a46797c1bdc598a1020783ea91ba7b50ed4f73318bd12c09482e8bc60b225"
+  },
+  "pipelineSettings.noProject": {
+    "en": "No project",
+    "zh-CN": "无项目",
+    "reviewedEnglishHash": "f34c2be0d1c5f5622eb03be1f67e13dee2ce3dbb71201d909e76a761c29d8bcb"
+  },
+  "pipelineSettings.noProjectsFound": {
+    "en": "No projects found.",
+    "zh-CN": "未找到项目。",
+    "reviewedEnglishHash": "26e92309ba5b0ca92bb929346ac5a07d11befa945074be4a19dd34fda69020a0"
+  },
+  "pipelineSettings.noSavedWorkspaceDefault": {
+    "en": "This project has no saved workspace default. Paperclip will use the project fallback when automation runs.",
+    "zh-CN": "此项目没有保存默认工作区。自动化运行时，Paperclip 将使用项目回退设置。",
+    "reviewedEnglishHash": "c6e087a56d036f1d66684a7ac9d0026b0b8db8ecc8ba7416e7e3f1775a5f90f0"
+  },
+  "pipelineSettings.noSplitFallback": {
+    "en": "If nothing is worth splitting, this case still moves to {{stage}}.",
+    "zh-CN": "如果没有值得拆分的内容，此条目仍会移动到 {{stage}}。",
+    "reviewedEnglishHash": "c68916ceeafc204bb021c9430fc06374701c72aa390efb395d23bcd4515c6f95"
+  },
+  "pipelineSettings.noStageActivity": {
+    "en": "No stage activity yet.",
+    "zh-CN": "暂无阶段活动。",
+    "reviewedEnglishHash": "32aadf7352a9d9134d008eb3b00e85c1e7c986e5d1b73199eac505d20cff71b6"
+  },
+  "pipelineSettings.onlyStageDeleteNotice": {
+    "en": "This is the only stage. Deletion succeeds only if it has no items.",
+    "zh-CN": "这是唯一阶段。仅当其中没有条目时才能删除成功。",
+    "reviewedEnglishHash": "3230b10547dfc7310a237c3fcc118191e72c83b2b4dbe280d3b22c1e651a69d5"
+  },
+  "pipelineSettings.openPipelineByName": {
+    "en": "Open {{name}} pipeline",
+    "zh-CN": "打开 {{name}} 管道",
+    "reviewedEnglishHash": "3a99c740f04142a6f65449e47a1c79bcb16bbb596305c438a5de8ac04cd414cd"
+  },
+  "pipelineSettings.pickAgent": {
+    "en": "Pick agent",
+    "zh-CN": "选择智能体",
+    "reviewedEnglishHash": "867bb608534c9911649a62909871388db3fc910f4ae6d3cd1df1b7a438ead84a"
+  },
+  "pipelineSettings.pickReviewTargetsBeforeSaving": {
+    "en": "Pick where approved and declined items should go before saving.",
+    "zh-CN": "保存前请选择批准和拒绝的条目应移动到哪里。",
+    "reviewedEnglishHash": "d7bc472049c57f1891d7c5bccaa6cd3d5547736cd276f293ada20a32f67cc898"
+  },
+  "pipelineSettings.piece": {
+    "en": "piece",
+    "zh-CN": "片段",
+    "reviewedEnglishHash": "34235a2c502e3919d3f00af5dabb87cb58aef4566b10631f2a5db94950ebffbd"
+  },
+  "pipelineSettings.pipelineActions": {
+    "en": "Pipeline actions",
+    "zh-CN": "管道操作",
+    "reviewedEnglishHash": "b6de8e3390064d3415eb370daa1584f87913a2ac58d18e7341aac1ddda823e55"
+  },
+  "pipelineSettings.pipelineDescription": {
+    "en": "Pipeline description",
+    "zh-CN": "管道描述",
+    "reviewedEnglishHash": "65e6d866a6314ad7e9b9275d5a7a4b1d0004703edf1a399469b7a647b600327c"
+  },
+  "pipelineSettings.pipelineInWorkspace": {
+    "en": "A pipeline in this workspace",
+    "zh-CN": "此工作区中的管道",
+    "reviewedEnglishHash": "a641cac6d5b6a567bf34716d106cc8e19b60f5d87b8fb8f01180e9798ae4d759"
+  },
+  "pipelineSettings.pipelineName": {
+    "en": "Pipeline name",
+    "zh-CN": "管道名称",
+    "reviewedEnglishHash": "5ba239395eea1fb6eb46d2daa331cea55664f85758a828ece6561a87058ef35d"
+  },
+  "pipelineSettings.pipelineRestored": {
+    "en": "Pipeline restored",
+    "zh-CN": "管道已恢复",
+    "reviewedEnglishHash": "05912fabf542d7d234df32fe365e4610d2ffbc76d8eb5676913e89bdfbe93354"
+  },
+  "pipelineSettings.pipelineUpdated": {
+    "en": "Pipeline updated",
+    "zh-CN": "管道已更新",
+    "reviewedEnglishHash": "d3eb589be44da2f0754fe2b6bbbcaab8015d3b74db689173fd68598b01fb4d55"
+  },
+  "pipelineSettings.progressCopyPrefix": {
+    "en": "Drives copy on this case (e.g. “3 of 5",
+    "zh-CN": "用于生成此 case 的文案（例如“5 项中的 3 项",
+    "reviewedEnglishHash": "e3d8908b437604b71dd87c5001471868b09e3938ff1d2092f6554bf993d7c6d3"
+  },
+  "pipelineSettings.progressCopySuffix": {
+    "en": "finished”)",
+    "zh-CN": "已完成”）",
+    "reviewedEnglishHash": "89269f0ef7515061961e4b7e6af7a20581b1ba7a647f3d01e6da152cead680c8"
+  },
+  "pipelineSettings.project": {
+    "en": "Project",
+    "zh-CN": "项目",
+    "reviewedEnglishHash": "985959785319747668373cc6dee294b11db782b03cdd90a2851fbdc0637c6b7b"
+  },
+  "pipelineSettings.projectContext": {
+    "en": "Project context",
+    "zh-CN": "项目上下文",
+    "reviewedEnglishHash": "121099a0b2b52f3bcc115d5f30834be80c9a8eff15d1f4affbfa857ae6475bc7"
+  },
+  "pipelineSettings.projectFallback": {
+    "en": "Project fallback",
+    "zh-CN": "项目回退",
+    "reviewedEnglishHash": "19bf89ef55e9b2d4bceb7ffdad694b1633be368c775437a75791033abc93c0ce"
+  },
+  "pipelineSettings.projectWorkspace": {
+    "en": "Project workspace",
+    "zh-CN": "项目工作区",
+    "reviewedEnglishHash": "ce016e7f0a41c4f32109216e1e253653946e643adf1114a7e6d08e4323de1a7a"
+  },
+  "pipelineSettings.requiredBy": {
+    "en": "Required by",
+    "zh-CN": "要求方",
+    "reviewedEnglishHash": "9bab66cbaf8330981f36f5db7d0dc110d15805e05a3427407c5545d748b2aab3"
+  },
+  "pipelineSettings.restorePipeline": {
+    "en": "Restore pipeline",
+    "zh-CN": "恢复管道",
+    "reviewedEnglishHash": "689140b153ad2127f086e8a7fdd17a354adabf7c9dac827e9e2f2499ab356670"
+  },
+  "pipelineSettings.reusingWorkspace": {
+    "en": "Reusing {{name}} from {{source}}.",
+    "zh-CN": "正在复用 {{source}} 中的 {{name}}。",
+    "reviewedEnglishHash": "ff0e8a0835e82ab3b3f0689f1ee3eaa35f994aa6ccb3648043ee4eebfc473221"
+  },
+  "pipelineSettings.reviewDestinationFields": {
+    "en": "Review destination fields",
+    "zh-CN": "检查目标字段",
+    "reviewedEnglishHash": "aa31913e5290476f423b8a8fa7d2159d4e8ba730db056b45c403071353f89807"
+  },
+  "pipelineSettings.reviewOutcomes": {
+    "en": "Review outcomes",
+    "zh-CN": "复查结果",
+    "reviewedEnglishHash": "c4a2bb75f402cbda3b1d1058ad6c54279dc2996e9e8b7d60ec8a25736c3d420a"
+  },
+  "pipelineSettings.runsInstructionsThenMoves": {
+    "en": "runs these instructions, then moves the item to the next step.",
+    "zh-CN": "运行这些说明，然后将条目移动到下一阶段。",
+    "reviewedEnglishHash": "8e3a03a24a0cb5900cdb2cce5826fb44279e8150f9305f65aa7b51ad025133f9"
+  },
+  "pipelineSettings.saveStage": {
+    "en": "Save stage",
+    "zh-CN": "保存阶段",
+    "reviewedEnglishHash": "954df125b09799b831359ae71e93d97a1d3c0acdf31cd541011a740cdb94ce81"
+  },
+  "pipelineSettings.savingChanges": {
+    "en": "Saving changes...",
+    "zh-CN": "正在保存更改...",
+    "reviewedEnglishHash": "86c6e0d74cc948c0bfa3c286bd9e756a6d1010545d2c5cb12f8c21daee401e5b"
+  },
+  "pipelineSettings.searchAgents": {
+    "en": "Search agents...",
+    "zh-CN": "搜索智能体...",
+    "reviewedEnglishHash": "32f4468b0b6f9410941a7940ea86374fa42a3e6846896c361c465680dca0c7ba"
+  },
+  "pipelineSettings.searchApprovers": {
+    "en": "Search approvers...",
+    "zh-CN": "搜索审批人...",
+    "reviewedEnglishHash": "14a9f9899a8f96a7a803134d59ba110928b8e96e83dd9355e952685f502cd093"
+  },
+  "pipelineSettings.searchProjects": {
+    "en": "Search projects...",
+    "zh-CN": "搜索项目...",
+    "reviewedEnglishHash": "c59dd5a3c5a2558873e6844ded9c7b9433b65eec9367a6c7e6d4e97aa48fa08e"
+  },
+  "pipelineSettings.selected": {
+    "en": "selected",
+    "zh-CN": "已选择",
+    "reviewedEnglishHash": "d7cbbb688b2e506c022e95cef8c4f629a29b9b36a6e50324e70dff466dbb95af"
+  },
+  "pipelineSettings.stageAdded": {
+    "en": "Stage added",
+    "zh-CN": "阶段已添加",
+    "reviewedEnglishHash": "76d5ac5d095e9c6f39209e712cdd873ea1fe5cd7491859bea4de8ecc90aa4a07"
+  },
+  "pipelineSettings.stageDeleted": {
+    "en": "Stage deleted",
+    "zh-CN": "阶段已删除",
+    "reviewedEnglishHash": "004d66bce347ba7b3106f29525a88255e8a0402494508fb9022a72e5799b8fbd"
+  },
+  "pipelineSettings.stageEveryPieceStartsIn": {
+    "en": "The stage every new piece starts in",
+    "zh-CN": "每个新片段开始所在的阶段",
+    "reviewedEnglishHash": "af7d55036cfd2bea528180c828b421236a2ea79d185eed446cae7d2a68fc84f9"
+  },
+  "pipelineSettings.stageKindCancelledDescription": {
+    "en": "The dead end. Items that reach here are dropped or rejected.",
+    "zh-CN": "终止阶段。进入这里的条目会被放弃或拒绝。",
+    "reviewedEnglishHash": "2dcda6845a0bea1dbf204314520b66aab2f3411d77ef685651d1215d554fd43b"
+  },
+  "pipelineSettings.stageKindDoneDescription": {
+    "en": "The final step. Items that reach here are finished.",
+    "zh-CN": "最终阶段。进入这里的条目已完成。",
+    "reviewedEnglishHash": "f11b3150ddc614c54a8806bdf7638805876cc6ecdb45fd636ab08662f4deec50"
+  },
+  "pipelineSettings.stageKindReviewDescription": {
+    "en": "Someone has to approve before items leave. Use this when a person or an agent has to say yes or no.",
+    "zh-CN": "条目离开前需要审批。适用于人员或智能体需要作出同意或拒绝决定的场景。",
+    "reviewedEnglishHash": "279e0914f4a996167b56d908139c2c672cc3b15a11f35d5b7901bd1d2de82a9d"
+  },
+  "pipelineSettings.stageKindWorkingDescription": {
+    "en": "Items wait here while work happens. An agent or a person moves them forward.",
+    "zh-CN": "条目会在此等待处理，由智能体或人员将其推进。",
+    "reviewedEnglishHash": "5217c39b56679956f9bea427182942b81f5df16ee64490f90e5f41b8b85df9e7"
+  },
+  "pipelineSettings.stageNavGroupOperate": {
+    "en": "Operate",
+    "zh-CN": "操作",
+    "reviewedEnglishHash": "58c3939c4ce986c8214c952908728775a4e2bc3ef188b6aaea9620dbd805658e"
+  },
+  "pipelineSettings.stageNavGroupStage": {
+    "en": "Stage",
+    "zh-CN": "阶段",
+    "reviewedEnglishHash": "de838855e4a6e04ea2f284b246a07a1126e7fcd151be9449e112006ad7db5c50"
+  },
+  "pipelineSettings.stageSaved": {
+    "en": "Stage saved",
+    "zh-CN": "阶段已保存",
+    "reviewedEnglishHash": "9d9084122157e87d9f5cf20c98c8086bffbce1d96c856bb6612563208f3120fd"
+  },
+  "pipelineSettings.stageSecretsSaved": {
+    "en": "Stage secrets saved",
+    "zh-CN": "阶段密钥已保存",
+    "reviewedEnglishHash": "571b21282bec91237d69b72c4e753533bf8b5c7d696078bcc640bcf44c89774e"
+  },
+  "pipelineSettings.stageSection": {
+    "en": "Stage section",
+    "zh-CN": "阶段区域",
+    "reviewedEnglishHash": "b041ad3869a7a1c9bff16d6897b95aa91ff138c26df5a2713916170ce5b2c4c6"
+  },
+  "pipelineSettings.stageSections": {
+    "en": "Stage sections",
+    "zh-CN": "阶段分区",
+    "reviewedEnglishHash": "6c7456b47377c4a8af5b91ddcfed1cc4c84454db771576849f4d37805bcdeb3e"
+  },
+  "pipelineSettings.startingAt": {
+    "en": "starting at",
+    "zh-CN": "开始于",
+    "reviewedEnglishHash": "491013df3b6cce22d4f7783564a0237f5de18437d4fddfdbd87db8026c8d7615"
+  },
+  "pipelineSettings.startingStageForEachPiece": {
+    "en": "Starting stage for each piece",
+    "zh-CN": "每个片段的起始阶段",
+    "reviewedEnglishHash": "2570eccd9e605110e7ab3fcf4369dda9b149e33b9ea2648d56d88f4d6edb4c03"
+  },
+  "pipelineSettings.stayInReview": {
+    "en": "Stay in review",
+    "zh-CN": "留在复查中",
+    "reviewedEnglishHash": "2b3ff8420c5ff1247f12b3b54879de8e7c599eddd9fafc2acb886dedccbb2c3c"
+  },
+  "pipelineSettings.stayOnThisStep": {
+    "en": "Stay on this step",
+    "zh-CN": "留在此阶段",
+    "reviewedEnglishHash": "d9c0a2a629f6452a3944b404d65201c716cb05b51c7ceb61fa4137b507b10ca9"
+  },
+  "pipelineSettings.step": {
+    "en": "Step",
+    "zh-CN": "步骤",
+    "reviewedEnglishHash": "8e6a6cca7aae1d1e781d3ee04849d6b00f7aaf48f7c642f35105e4bf990a8cb4"
+  },
+  "pipelineSettings.stepType": {
+    "en": "Step type",
+    "zh-CN": "步骤类型",
+    "reviewedEnglishHash": "23d0ef5bd7c84ede10942bf644405a5ab39181de82b0fb00e1966243b6968b96"
+  },
+  "pipelineSettings.strictMode": {
+    "en": "Strict mode",
+    "zh-CN": "严格模式",
+    "reviewedEnglishHash": "9f19fe134b71a6d43edf3dac40957d3600fa2b36a95abce4631e4643e3a9c27d"
+  },
+  "pipelineSettings.strictTransitionsOff": {
+    "en": "Items can move to any step. Saved allowed-next-step choices are kept, but they are not enforced.",
+    "zh-CN": "条目可以移动到任意阶段。已保存的允许下一阶段选项会保留，但不会强制执行。",
+    "reviewedEnglishHash": "0a4e207d793102274d8a7fc7f02bcde955a3b86058305dc5b57b191e004cf746"
+  },
+  "pipelineSettings.strictTransitionsOn": {
+    "en": "Items can only move to configured next steps. Operators can force an off-path move by giving a reason.",
+    "zh-CN": "条目只能移动到配置的下一阶段。操作者可以填写原因强制进行路径外移动。",
+    "reviewedEnglishHash": "b2437421c89ad4f954056bed1a3b89387bfdb2cea6ab85701c3b3a026039ba59"
+  },
+  "pipelineSettings.strictlyEnforceTransitions": {
+    "en": "Strictly enforce transitions",
+    "zh-CN": "严格执行转换规则",
+    "reviewedEnglishHash": "4ee5c089ea53dc0b42858b0702de96411748fb11402376100200f1d8cb796117"
+  },
+  "pipelineSettings.thenMoveThisCaseTo": {
+    "en": "Then move this case to",
+    "zh-CN": "然后将此条目移动到",
+    "reviewedEnglishHash": "6eb8ce4423a3f44c98f77dbe6faa954786780854112df070fb3611737cc45a64"
+  },
+  "pipelineSettings.thisStage": {
+    "en": "this stage",
+    "zh-CN": "此阶段",
+    "reviewedEnglishHash": "c24d9e1ed30b3239bcfdc06820ed2175c30a6b31117d2209cb3009b08d22959c"
+  },
+  "pipelineSettings.transitionRulesUpdated": {
+    "en": "Transition rules updated",
+    "zh-CN": "转换规则已更新",
+    "reviewedEnglishHash": "6b35ef568a77ceb69d93f6b51831ed7b4d2aabf995c092bc039f8e284c312fd1"
+  },
+  "pipelineSettings.transitions": {
+    "en": "Transitions",
+    "zh-CN": "转换",
+    "reviewedEnglishHash": "700bb6e86a9b2542ff425b85cec01e75991f69c85ae6b17f55255b1e4917e637"
+  },
+  "pipelineSettings.typePipelineNameToConfirm": {
+    "en": "Type {{name}} to confirm",
+    "zh-CN": "输入 {{name}} 以确认",
+    "reviewedEnglishHash": "b9a6e1982b7d892c961211fccad2123f4c60825f883e583c4830d4eb1bbeeae4"
+  },
+  "pipelineSettings.uniqueNameTitleFields": {
+    "en": "Name and title fields are kept unique for each new {{piece}}.",
+    "zh-CN": "每个新{{piece}}都会保留唯一的名称和标题字段。",
+    "reviewedEnglishHash": "ee8e1a51c0ef61006dd48105eb9c3cf3c2e475a228fed09ea4aec7fc64b29143"
+  },
+  "pipelineSettings.unsavedChanges": {
+    "en": "You have unsaved changes.",
+    "zh-CN": "你有未保存的更改。",
+    "reviewedEnglishHash": "4e0a43240e6e697718531c9e4c7b7f1337c9b29f03fc9a316f3ab0649d2bd091"
+  },
+  "pipelineSettings.validatedBy": {
+    "en": "Validated by",
+    "zh-CN": "验证方",
+    "reviewedEnglishHash": "0156ee46299a995e161e7e011c1621550519de2f5c6f46060d897c2848a6894b"
+  },
+  "pipelineSettings.viewQueue": {
+    "en": "View queue",
+    "zh-CN": "查看队列",
+    "reviewedEnglishHash": "e700ab00bf0cc14fde1869f013b1ed6cc316583a30289e3c088d55fe0b044bea"
+  },
+  "pipelineSettings.wait": {
+    "en": "Wait",
+    "zh-CN": "等待",
+    "reviewedEnglishHash": "26b83994dca8b4b483edc45464ba07a5bde05cb7e6c5c61bb2e66da9d1e15fc7"
+  },
+  "pipelineSettings.waitUntilPiecesFinished": {
+    "en": "Wait until all {{pieces}} are finished, then move it to",
+    "zh-CN": "等待所有 {{pieces}} 完成，然后移动到",
+    "reviewedEnglishHash": "8046f533975c5a7ac988e82fe5015d444fcd687a9ad9ca490156fc55381aafd2"
+  },
+  "pipelineSettings.whatShouldAgentDecide": {
+    "en": "What should the agent decide?",
+    "zh-CN": "智能体应该判断什么？",
+    "reviewedEnglishHash": "249ec530ac8866bddffabec91ef2629b516e811c1efb6165debf1eb8abd2f24a"
+  },
+  "pipelineSettings.whenItemEntersStep": {
+    "en": "When an item enters this step",
+    "zh-CN": "当条目进入此阶段时",
+    "reviewedEnglishHash": "9e82510a12d0ec57978ca8397da47805a83d14bf5fc44bda832a53b6c97a0ea2"
+  }
+}

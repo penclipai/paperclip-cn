@@ -1,0 +1,837 @@
+{
+  "issueDetail.activeSubtreePauseReleased": {
+    "en": "Active subtree pause released.",
+    "zh-CN": "已解除活动子树暂停。",
+    "reviewedEnglishHash": "91f270058aca15473cf2bd85e4ad8c9346a0c448aef65abfedea12596a8785d6"
+  },
+  "issueDetail.activeTaskPauseReleased": {
+    "en": "Active task pause released.",
+    "zh-CN": "已解除活动任务暂停。",
+    "reviewedEnglishHash": "0dd4348e78ff8f4415fd9de43176a623f025fcb94e792d02b40769d9e8417865"
+  },
+  "issueDetail.addDescriptionPlaceholder": {
+    "en": "Add a description...",
+    "zh-CN": "添加描述...",
+    "reviewedEnglishHash": "eed0f05bd942078d68a83ed8fce3f4ded530da32b24092842512234e395acab3"
+  },
+  "issueDetail.applying": {
+    "en": "Applying...",
+    "zh-CN": "正在应用...",
+    "reviewedEnglishHash": "dba1ddefd778ad652f142fd4d77ad1b779de9dbcd36b4fa6fde8c2ab94b9218a"
+  },
+  "issueDetail.archiveFailed": {
+    "en": "Archive failed",
+    "zh-CN": "归档失败",
+    "reviewedEnglishHash": "a0d5f584981a8ba4995047269b58bcbf2315461548cf5a76e52869752144c60e"
+  },
+  "issueDetail.archiveFromInbox": {
+    "en": "Archive from inbox",
+    "zh-CN": "从收件箱归档",
+    "reviewedEnglishHash": "67c88421778ecd8be4c0c9f758798c5e0e88edc6642b4f7c228818ab32c23be6"
+  },
+  "issueDetail.archivedFromInbox": {
+    "en": "Task archived from inbox",
+    "zh-CN": "任务已从收件箱归档",
+    "reviewedEnglishHash": "ca9374d16da7e4088bdebabe1fbaa9b092eae41927bd4cf8451d646ee959a1da"
+  },
+  "issueDetail.attribution.assignee": {
+    "en": "Assignee",
+    "zh-CN": "负责人",
+    "reviewedEnglishHash": "5e20d20e3978dcf8550bd758d863b782ac0d139d51be8034836ed21e35104567"
+  },
+  "issueDetail.attribution.label": {
+    "en": "{{label}}: {{name}}",
+    "zh-CN": "{{label}}：{{name}}",
+    "reviewedEnglishHash": "54378c5a2782899e65cc13fcddf0f6eba97b8d5d7035f10289dcc9d33c089e99"
+  },
+  "issueDetail.attribution.originating": {
+    "en": "Originating",
+    "zh-CN": "发起人",
+    "reviewedEnglishHash": "28d9df90dd1d4d9bf932ec401a0bc42ffc6a9c5696009a8cc64e5f5afd736a6e"
+  },
+  "issueDetail.attribution.taskPeople": {
+    "en": "Task people",
+    "zh-CN": "任务相关人员",
+    "reviewedEnglishHash": "46ac7b2e5fe9a6f80c6043ceab8f517f41a41b9997ba98e77440b280f838c017"
+  },
+  "issueDetail.attribution.via": {
+    "en": "via {{via}}",
+    "zh-CN": "通过 {{via}}",
+    "reviewedEnglishHash": "2f0db642376746cfd8900d8091d72fcd4bc1aec440a4b37907a2de85ff43eb42"
+  },
+  "issueDetail.attribution.viaLabel": {
+    "en": "{{label}}: {{name}} · via {{via}}",
+    "zh-CN": "{{label}}：{{name}} · 通过 {{via}}",
+    "reviewedEnglishHash": "5bfba3641d514d862824148a1a1a6bf081d3700ccb56285735b3f02c621bde2d"
+  },
+  "issueDetail.backToInbox": {
+    "en": "Back to inbox",
+    "zh-CN": "返回收件箱",
+    "reviewedEnglishHash": "97555c45940cc4b1f6aa22c72c975c0471ea5562d934fbb3a60941bb70770efc"
+  },
+  "issueDetail.blockedByParkedWork": {
+    "en": "This task is blocked by parked work.",
+    "zh-CN": "此任务被已搁置的工作阻塞。",
+    "reviewedEnglishHash": "5e410050b9da5d2aadfdb40513d257b4f9193640afc1ce37a576b2f424a834c3"
+  },
+  "issueDetail.blockedByParkedWorkDescription": {
+    "en": "Blocked by parked work — at least one assigned blocker is in backlog and will not wake its assignee.",
+    "zh-CN": "被停放工作阻塞 - 至少一个已分配的阻塞项处于积压状态，不会唤醒其负责人。",
+    "reviewedEnglishHash": "36e80d73a6384440a66b377467730976ac0a47b337c8490a259a098a8ccdf0c9"
+  },
+  "issueDetail.blockedByParkedWorkTitle": {
+    "en": "Blocked by parked work",
+    "zh-CN": "被搁置工作阻塞",
+    "reviewedEnglishHash": "8b239473a30cf86f440d50499e9548d60436d13edaa2a31b21c7cf0ebd952e65"
+  },
+  "issueDetail.cancelIssueCount": {
+    "en": "Cancel {{count}} tasks",
+    "zh-CN": "取消 {{count}} 个任务",
+    "reviewedEnglishHash": "4543ad11c046362f31176a4ec1eb25295ac0c8cd66c9a34b39120d0f171f6b13"
+  },
+  "issueDetail.cancelSubtree": {
+    "en": "Cancel subtree",
+    "zh-CN": "取消子树",
+    "reviewedEnglishHash": "a16ebf3e0f9b0c3e7e88fb5d608b83d6ae944969b89034b49f0c3c46c5c02165"
+  },
+  "issueDetail.cancelSubtreeDescription": {
+    "en": "Cancelling a subtree is destructive. Non-terminal tasks will be marked cancelled, and running or queued work will be interrupted where possible.",
+    "zh-CN": "取消子树属于破坏性操作。未终止的任务会被标记为已取消，并会尽可能中断正在运行或排队的工作。",
+    "reviewedEnglishHash": "e775264ac47f610619888c5214000a4ceb1795927d5090f4e3c1583b3453ef1f"
+  },
+  "issueDetail.cancelSubtreeMenu": {
+    "en": "Cancel subtree...",
+    "zh-CN": "取消子树...",
+    "reviewedEnglishHash": "fccd5115640dc89cd848555165688a0df86c78c526e85efde2e094f43f9a6c3a"
+  },
+  "issueDetail.cancelSubtreeWarning": {
+    "en": "This will cancel non-terminal tasks in the selected subtree and stop queued or running work where possible.",
+    "zh-CN": "这会取消所选子树中尚未终止的任务，并尽可能停止已排队或正在运行的工作。",
+    "reviewedEnglishHash": "08ba2bb47ddd5e8ac4906f6fe7dd8c76f2867a9041c2adfd3c64e75c061ddb57"
+  },
+  "issueDetail.confirmCancelPrefix": {
+    "en": "I understand this will cancel",
+    "zh-CN": "我了解这将取消",
+    "reviewedEnglishHash": "a885da76bffeedc811b23662ee07d993b1ab399daec46c4a79decc46afadc863"
+  },
+  "issueDetail.confirmCancelSubtreeIssues": {
+    "en": "I understand this will cancel {{count}} issues.",
+    "zh-CN": "我了解这会取消 {{count}} 个任务。",
+    "reviewedEnglishHash": "e3b9c188c40318e88ab817d102f2b8c933eb6f2893870892b3d1473db04c5e95"
+  },
+  "issueDetail.confirmCancelSuffix": {
+    "en": "tasks.",
+    "zh-CN": "个任务。",
+    "reviewedEnglishHash": "5d04cc6caab4fbd541f3ffb5fbd80578c7f86279e73ec5d80830f97afb89fa6e"
+  },
+  "issueDetail.copyAsMarkdown": {
+    "en": "Copy as markdown",
+    "zh-CN": "复制为 Markdown",
+    "reviewedEnglishHash": "fec6709d0f0a779bf2f20340b223675e55a6802d3e0461be1aca4c587ea3af51"
+  },
+  "issueDetail.copyIssueAsMarkdown": {
+    "en": "Copy task as markdown",
+    "zh-CN": "将任务复制为 Markdown",
+    "reviewedEnglishHash": "a6e95a422aa766a5d3775d6d6b7b14d1baf10da8317698f48f1124a9a02d5b69"
+  },
+  "issueDetail.costRunCount_one": {
+    "en": " ({{count}} run)",
+    "zh-CN": "（{{count}} 次运行）",
+    "reviewedEnglishHash": "c8c1d8a9a260efa19413e547503a82ee746e9395f4fe91bb853faaad0f96609a"
+  },
+  "issueDetail.costRunCount_other": {
+    "en": " ({{count}} runs)",
+    "zh-CN": "（{{count}} 次运行）",
+    "reviewedEnglishHash": "e5b27da5a9eb388f67f12eec4ddf3be9de3ca0232054120e1702092cb6d4da81"
+  },
+  "issueDetail.costSummary": {
+    "en": "Cost Summary",
+    "zh-CN": "成本概览",
+    "reviewedEnglishHash": "3ae4392d4840974aa1e35e857ef25adac6a8760a61608795452577d2a540cc18"
+  },
+  "issueDetail.costTokenBreakdown": {
+    "en": " (in {{input}}, out {{output}})",
+    "zh-CN": "（输入 {{input}}，输出 {{output}}）",
+    "reviewedEnglishHash": "0f625c7ab49b39521a93eadb8a9269e4a83c3d842bed2fffca41d7a0345085f6"
+  },
+  "issueDetail.costTokenBreakdownCached": {
+    "en": " (in {{input}}, out {{output}}, cached {{cached}})",
+    "zh-CN": "（输入 {{input}}，输出 {{output}}，缓存 {{cached}}）",
+    "reviewedEnglishHash": "d73f5ccb4337350448781fed4d8ffb973745635c9b2544b10239272bd87b4bbf"
+  },
+  "issueDetail.deleteAttachment": {
+    "en": "Delete attachment",
+    "zh-CN": "删除附件",
+    "reviewedEnglishHash": "fb45068b16d6c71feef9537fe83043b75b734781c79ac5aad41bf8c49dadf2c8"
+  },
+  "issueDetail.deleteAttachmentFailed": {
+    "en": "Delete failed",
+    "zh-CN": "删除失败",
+    "reviewedEnglishHash": "8727e2ba364c2c46192df0e1d0318d0cc82b0c1e6f7465e012ac59430254e170"
+  },
+  "issueDetail.descendantsHeld_one": {
+    "en": "{{count}} descendant held",
+    "zh-CN": "{{count}} 个后代已暂停",
+    "reviewedEnglishHash": "e57e8415a12ea6e9f1108269b9f0384412ccf0d3c675187235a21b2cd4466acc"
+  },
+  "issueDetail.descendantsHeld_other": {
+    "en": "{{count}} descendants held",
+    "zh-CN": "{{count}} 个后代已暂停",
+    "reviewedEnglishHash": "19c5e7b6773958af98508d0d804f2bab376b8c2659eed1263b803ce25b8ecfca"
+  },
+  "issueDetail.documentImportFailed": {
+    "en": "Document import failed",
+    "zh-CN": "文档导入失败",
+    "reviewedEnglishHash": "39d8367909850f2eb89586ea9f9489ad58b922b1a0dd57047fe566576f3c9ba1"
+  },
+  "issueDetail.hidden": {
+    "en": "This task is hidden",
+    "zh-CN": "此任务已隐藏",
+    "reviewedEnglishHash": "99c389715b813cb7468ac1c1723f50ad20f190b2d17b5897bddd0d19a17e6f86"
+  },
+  "issueDetail.hideTask": {
+    "en": "Hide this task",
+    "zh-CN": "隐藏此任务",
+    "reviewedEnglishHash": "429dbcbd26baf3662f1cbaff8318b99e3ab7591e008ce4848c751c0e4717b97b"
+  },
+  "issueDetail.hideThisIssue": {
+    "en": "Hide this issue",
+    "zh-CN": "隐藏此任务",
+    "reviewedEnglishHash": "45afbd7b482e97143e7ff8392b34e4a40cc9e6b8601872cad233f5d5fc6d93ce"
+  },
+  "issueDetail.includingSubtasks": {
+    "en": "Including sub-tasks",
+    "zh-CN": "包含子任务",
+    "reviewedEnglishHash": "7a7698025216bc1116cba98ed62ba77cff3657b68c2806232f0f7e5796c74dc3"
+  },
+  "issueDetail.includingSubtasksCost": {
+    "en": "Including subtasks",
+    "zh-CN": "包含子任务",
+    "reviewedEnglishHash": "916f1586f7f690a1827cf612ed37dc0bd95e13581c5976ace11969810c905ba0"
+  },
+  "issueDetail.issueCount": {
+    "en": "{{count}} issues",
+    "zh-CN": "{{count}} 个任务",
+    "reviewedEnglishHash": "30293c03a543ce241c75e76098aaca08f32f48225ccea58ecb56969d87a0e648"
+  },
+  "issueDetail.live": {
+    "en": "Live",
+    "zh-CN": "实时",
+    "reviewedEnglishHash": "b64ac05f17e64d037db81a98f51e2688216e292ae9748f979f04dfbac49fd7fc"
+  },
+  "issueDetail.loadEarlierComments": {
+    "en": "Load earlier comments",
+    "zh-CN": "加载更早的评论",
+    "reviewedEnglishHash": "a41f98dd82a1500e2e2f177702b32023de442e4af541e92fc6cff0cf7e994575"
+  },
+  "issueDetail.loadingEarlierComments": {
+    "en": "Loading earlier comments...",
+    "zh-CN": "正在加载更早的评论…",
+    "reviewedEnglishHash": "aa9192a11cb5f23dd2f9e3189890e8da2dfbbe1805d234c26f687d7aa8b3bd8d"
+  },
+  "issueDetail.moreActions": {
+    "en": "More actions",
+    "zh-CN": "更多操作",
+    "reviewedEnglishHash": "f8d46c2570e70736d62beb6e2e8df321d7cb4842a2b894f2025c47b31871d9f1"
+  },
+  "issueDetail.moreIssueActions": {
+    "en": "More task actions",
+    "zh-CN": "更多任务操作",
+    "reviewedEnglishHash": "4fbf1e4ca386da9cb5257e12e71bc87c9ab97afe01d2d3c9deef8aa37687c2b5"
+  },
+  "issueDetail.newSubIssue": {
+    "en": "New Sub-issue",
+    "zh-CN": "新建子任务",
+    "reviewedEnglishHash": "4b80153e5ad634098fbe30950c46ef5739bec69a4137f6c8eeb0b6d5f492a534"
+  },
+  "issueDetail.newSubtask": {
+    "en": "New Sub-task",
+    "zh-CN": "新建子任务",
+    "reviewedEnglishHash": "2c89e3345cbe3b90e114f74b25faea5324d4ad92ca80c5b9257719e2b03e1f39"
+  },
+  "issueDetail.noAgentsEligibleToWake": {
+    "en": "No assigned agents are eligible to wake from this preview.",
+    "zh-CN": "此预览中没有可唤醒的已分配智能体。",
+    "reviewedEnglishHash": "42becd46460df764494a836b816817bda22434d1d6ca257ce152b8ae531a6b1d"
+  },
+  "issueDetail.noCostDataYet": {
+    "en": "No cost data yet",
+    "zh-CN": "暂无成本数据",
+    "reviewedEnglishHash": "1dd653fe69387e43f97d7b0cb0b0b2bb6cdd320b5d2bf51b3285b8b431b63919"
+  },
+  "issueDetail.noDirectCostData": {
+    "en": "No direct cost data",
+    "zh-CN": "暂无直接成本数据",
+    "reviewedEnglishHash": "fbf86573c80abfb2a8dc5cfcf255a516c671513be7951cc71657735e17d5c01f"
+  },
+  "issueDetail.noProject": {
+    "en": "No project",
+    "zh-CN": "无项目",
+    "reviewedEnglishHash": "f34c2be0d1c5f5622eb03be1f67e13dee2ce3dbb71201d909e76a761c29d8bcb"
+  },
+  "issueDetail.oneTaskHeld": {
+    "en": "1 task held",
+    "zh-CN": "1 个任务已暂停",
+    "reviewedEnglishHash": "2d1ffefa57dfe46bae59de03d15656b6060ee6bbdf0638f5d49487a4ef125a4c"
+  },
+  "issueDetail.openFileInIssue": {
+    "en": "Open file in this issue",
+    "zh-CN": "在任务中打开文件",
+    "reviewedEnglishHash": "9ac0bbc6936cf693531ef492772e7428c7545eba09a534d32462ed530c696891"
+  },
+  "issueDetail.openFileShortcut": {
+    "en": "Open file",
+    "zh-CN": "打开文件",
+    "reviewedEnglishHash": "4190c0c7ec72706424419ed939851e81551f9536f2c96d0f2ce385934cbe1741"
+  },
+  "issueDetail.pauseAndStopWork": {
+    "en": "Pause and stop work",
+    "zh-CN": "暂停并停止工作",
+    "reviewedEnglishHash": "9716d0451777f7fe7a822bfbfa41f79c56c2504119032d5f630243ffb83ae220"
+  },
+  "issueDetail.pauseSubtree": {
+    "en": "Pause subtree",
+    "zh-CN": "暂停子树",
+    "reviewedEnglishHash": "d44920538f70721af6eb217a0d3744a4b067bbc8cfcd0d86b32c902fb94fbd34"
+  },
+  "issueDetail.pauseSubtreeMenu": {
+    "en": "Pause subtree...",
+    "zh-CN": "暂停子树...",
+    "reviewedEnglishHash": "c4df8b8ac40c9edeb065ea334b8c9be1c0ccc2e74639530d852771e23cd5951f"
+  },
+  "issueDetail.pauseWork": {
+    "en": "Pause work",
+    "zh-CN": "暂停工作",
+    "reviewedEnglishHash": "0faaea9a215fb95ead85cb5a70e563fea87c301e8f146db121e124d464a4e8dc"
+  },
+  "issueDetail.pauseWorkMenu": {
+    "en": "Pause work...",
+    "zh-CN": "暂停工作...",
+    "reviewedEnglishHash": "6b93e631e07b9f6a6935547a9741c02ddb7ee8383227d29bedca14665bf02d68"
+  },
+  "issueDetail.paused": {
+    "en": "Paused",
+    "zh-CN": "已暂停",
+    "reviewedEnglishHash": "e159b06187d369a0615f66ce577582b5c983d4ea59b3a62b702049f61753f0bf"
+  },
+  "issueDetail.pausedByAncestor": {
+    "en": "This task is paused by ancestor",
+    "zh-CN": "此任务因上级任务而暂停",
+    "reviewedEnglishHash": "19f3d979420f1cd66796416040308aa58cfa8547342ec72c94d4ecc62ea7630b"
+  },
+  "issueDetail.pausedByAncestorPrefix": {
+    "en": "Paused by",
+    "zh-CN": "由",
+    "reviewedEnglishHash": "9405b157c46e918535ad768017ef565747f4a7bf4ef4ffa18e724071636ac145"
+  },
+  "issueDetail.pausedByAncestorSuffix": {
+    "en": "ancestor",
+    "zh-CN": "上级暂停",
+    "reviewedEnglishHash": "d490151378f5fc99bba9237e594c251414df0b5a70d1297cc3c5f98ad5e0c5ea"
+  },
+  "issueDetail.pausedByBoard": {
+    "en": "Paused by board.",
+    "zh-CN": "由看板暂停",
+    "reviewedEnglishHash": "a5187cc89625d322027ee47ed6dc01e2f1c0a25463a1ce743be3bc0282512258"
+  },
+  "issueDetail.pausedComposerAssignAgent": {
+    "en": "Assign an agent to wake this paused task.",
+    "zh-CN": "分配智能体以唤醒这个已暂停任务。",
+    "reviewedEnglishHash": "2549e646fb35023b5d488c6d7b7bc494c3510106743688a33c210625bf134304"
+  },
+  "issueDetail.pausedComposerWakeAssignee": {
+    "en": "Comment to wake {{name}} while this task is paused.",
+    "zh-CN": "评论即可在暂停期间唤醒 {{name}}。",
+    "reviewedEnglishHash": "96da63d0081abd116256fe17c1cc114d53779b387b0e3970037413b8dcbdeafe"
+  },
+  "issueDetail.pausedFromActiveRunControls": {
+    "en": "Paused from active run controls.",
+    "zh-CN": "已从活动运行控件暂停。",
+    "reviewedEnglishHash": "96934bb6b61b0cdb812da191971eca6cd71cefc487fab6b9f44184eef3480bc2"
+  },
+  "issueDetail.pausing": {
+    "en": "Pausing...",
+    "zh-CN": "正在暂停...",
+    "reviewedEnglishHash": "e7b385f534f8bccdb457a832eeca56917d5df16ea978661b0e8388295edb2107"
+  },
+  "issueDetail.planningModeTitle": {
+    "en": "This issue is in planning mode.",
+    "zh-CN": "此任务处于规划模式。",
+    "reviewedEnglishHash": "c5fe7860d05f0629c866c0e2b6cf477dbd209b1b777e4ec74a4e7639636c7431"
+  },
+  "issueDetail.previewUnavailable": {
+    "en": "Preview unavailable.",
+    "zh-CN": "预览不可用。",
+    "reviewedEnglishHash": "769469b525dc9989dea41cdd5090af83f5886d7c4e5218e3a2d8bdfb9aec027c"
+  },
+  "issueDetail.productivityReview": {
+    "en": "Productivity review",
+    "zh-CN": "生产力复查",
+    "reviewedEnglishHash": "ea7d21e2add2f9969936ce7ec11cb0c07b245812166ac4a7033a85683c94ad7a"
+  },
+  "issueDetail.productivityReviewTitle": {
+    "en": "Productivity review",
+    "zh-CN": "生产力复查",
+    "reviewedEnglishHash": "ea7d21e2add2f9969936ce7ec11cb0c07b245812166ac4a7033a85683c94ad7a"
+  },
+  "issueDetail.reasonOptional": {
+    "en": "Reason (optional)",
+    "zh-CN": "原因（可选）",
+    "reviewedEnglishHash": "0f7d4664a9bcd28a42dc2bf2f0ff04382a0613b887134145bc471e1f0ef34bde"
+  },
+  "issueDetail.restoreIssueCount": {
+    "en": "Restore {{count}} tasks",
+    "zh-CN": "恢复 {{count}} 个任务",
+    "reviewedEnglishHash": "f19f740f25621177d332028b8fa59a114506c1cf6066676f780c5e9d71bf6edf"
+  },
+  "issueDetail.restoreSubtree": {
+    "en": "Restore subtree",
+    "zh-CN": "恢复子树",
+    "reviewedEnglishHash": "d824b6aa69a9be91bd71ca2a72efeb47a0a3c123f44a9ca318d475ae20397e06"
+  },
+  "issueDetail.restoreSubtreeMenu": {
+    "en": "Restore subtree...",
+    "zh-CN": "恢复子树...",
+    "reviewedEnglishHash": "b42c304472894f0233ec66c9da18a665d84c8ea86662848dc886592e7c50b903"
+  },
+  "issueDetail.resumeFromRoot": {
+    "en": ". Resume from the root task to deliver deferred work.",
+    "zh-CN": "。请从根任务恢复，以交付延后的工作。",
+    "reviewedEnglishHash": "2d83c08b77acf12c3b83d5d1804367b83fe40f293219045e3251ca403f3d6679"
+  },
+  "issueDetail.resumeSubtree": {
+    "en": "Resume subtree",
+    "zh-CN": "恢复子树",
+    "reviewedEnglishHash": "b38209885d3237c70ae4228a22dfcd9d4c1ee36a7054e0635afc07a8764ab195"
+  },
+  "issueDetail.resumeWork": {
+    "en": "Resume work",
+    "zh-CN": "恢复工作",
+    "reviewedEnglishHash": "4c474b94554900a6d339cdfb1aaea082bc28f52769d656131aa789db6f5d33c1"
+  },
+  "issueDetail.retryPreview": {
+    "en": "Retry preview",
+    "zh-CN": "重试预览",
+    "reviewedEnglishHash": "ceba352728693758d57c715a22131746666ad2acd27f8235f918356817c7465d"
+  },
+  "issueDetail.routineExecutionTitle": {
+    "en": "Routine execution from routine {{routine}}",
+    "zh-CN": "来自例程 {{routine}} 的执行",
+    "reviewedEnglishHash": "a71ef5882a8ce03b71f7b24bb7090066f8fb6bd1ffb060a7b5077652fb042ae1"
+  },
+  "issueDetail.runStoppedTaskCancelled": {
+    "en": "Run stopped and task cancelled",
+    "zh-CN": "运行已停止，任务已取消",
+    "reviewedEnglishHash": "18448b85874afb4ed0d6808a011f3084c4bb4fdb094db220148a4dc4de085eba"
+  },
+  "issueDetail.runStoppedTaskDone": {
+    "en": "Run stopped and task done",
+    "zh-CN": "运行已停止，任务已完成",
+    "reviewedEnglishHash": "6116129545c3c0a83691d372bd3cd0e8f529a712c35bcd77e0d5c8d9892fcd2f"
+  },
+  "issueDetail.runStoppedTaskUpdateFailed": {
+    "en": "Run was stopped, but updating the task failed. Retry the task status update.",
+    "zh-CN": "运行已停止，但更新任务失败。请重试任务状态更新。",
+    "reviewedEnglishHash": "dd8c5913e5f02ccdf906fe646011da060d96c282d2388493c19577da886c3dc5"
+  },
+  "issueDetail.runStoppedTaskUpdateFailedTitle": {
+    "en": "Run stopped; task update failed",
+    "zh-CN": "运行已停止，但任务更新失败",
+    "reviewedEnglishHash": "5d6ff3151f46292830ee7e7a8026225ea467a737a7985618a52155e68dead889"
+  },
+  "issueDetail.runStoppedTaskUpdateFailedWithError": {
+    "en": "Run was stopped, but updating the task failed: {{error}}",
+    "zh-CN": "运行已停止，但更新任务失败：{{error}}",
+    "reviewedEnglishHash": "7f045c440d081419a16c8385d0dd7035f5e21b6617427917803a4b4e680ee5b1"
+  },
+  "issueDetail.runtime": {
+    "en": "Runtime",
+    "zh-CN": "运行时长",
+    "reviewedEnglishHash": "1093115897879aa3ad9511a1dc2850929cfb60ba45ec741605f69f5d20203472"
+  },
+  "issueDetail.runtimeValue": {
+    "en": "{{value}} runtime",
+    "zh-CN": "{{value}} 运行时间",
+    "reviewedEnglishHash": "e01c9ef66ab0fb47f2227995deb89eda0fe23060742e37907bf18c962117eee4"
+  },
+  "issueDetail.showProperties": {
+    "en": "Show properties",
+    "zh-CN": "显示属性",
+    "reviewedEnglishHash": "ae4293fcd74259169c834b58f97bc86c67d3b1ce2c0c827abe1cf5bc564a09da"
+  },
+  "issueDetail.startedRelative": {
+    "en": "Started {{relative}}",
+    "zh-CN": "{{relative}}开始",
+    "reviewedEnglishHash": "21431ffd5c103eae6ec8196caea53156dc893667adbbc2712b0b4827d1771eaf"
+  },
+  "issueDetail.stopAndCancel": {
+    "en": "Stop and cancel",
+    "zh-CN": "停止并取消",
+    "reviewedEnglishHash": "d1fcb8822c6fd34612e5955ec27b46514484d639fc74615f16d1795a749f30fb"
+  },
+  "issueDetail.stopAndCancelFailed": {
+    "en": "Stop and cancel failed",
+    "zh-CN": "停止运行并取消任务失败",
+    "reviewedEnglishHash": "3b957b736d23571a595375e836721fabab5b3ade160327ff795ac4c9e931b6a9"
+  },
+  "issueDetail.stopAndDone": {
+    "en": "Stop and done",
+    "zh-CN": "停止并标记完成",
+    "reviewedEnglishHash": "787e84f68bb49d4c4885ab2e206fa0bc6a70a79d476324b1ad5d556f840a0a2d"
+  },
+  "issueDetail.stopAndDoneFailed": {
+    "en": "Stop and done failed",
+    "zh-CN": "停止运行并完成任务失败",
+    "reviewedEnglishHash": "2f4e24e9f7ae0d85fb00893bb4eb79541456675cbbb8ed0d41f9580f6a6a0fc2"
+  },
+  "issueDetail.stoppingAndCancelling": {
+    "en": "Stopping and cancelling...",
+    "zh-CN": "正在停止并取消...",
+    "reviewedEnglishHash": "ebb7f6cfc0461effab1987284d986451cc3bbbeaf88895556efdef391d0631e1"
+  },
+  "issueDetail.stoppingAndMarkingDone": {
+    "en": "Stopping and marking done...",
+    "zh-CN": "正在停止并标记完成...",
+    "reviewedEnglishHash": "c5703e269a6ac555c09c12acaa2337c17072b20d752fe8dbc116c8d729171b5f"
+  },
+  "issueDetail.subTasks": {
+    "en": "Sub-tasks",
+    "zh-CN": "子任务",
+    "reviewedEnglishHash": "ede4f8886e7d356e8bf2eee5d30c8b948f91f24b9ce03c1739ca53608e8ec835"
+  },
+  "issueDetail.subtreeControlApplied": {
+    "en": "Subtree control applied.",
+    "zh-CN": "子树控制已应用。",
+    "reviewedEnglishHash": "ea1136f3d4ba7da683030be499831ad1ed432273d959e67bf255980c1cf0bf0d"
+  },
+  "issueDetail.subtreeExecutionHeld": {
+    "en": "Subtree execution held",
+    "zh-CN": "子树执行已暂停",
+    "reviewedEnglishHash": "60c38be176aa84f17b4a98de03c89a7bdd46330dc75ce526476e415d353d36bd"
+  },
+  "issueDetail.subtreeExecutionHeldDescription": {
+    "en": "Root and descendant execution is held until resume. Human comments can still wake assignee agents for triage.",
+    "zh-CN": "根任务及后代任务的执行已暂停，恢复前不会继续。人工评论仍可唤醒负责人智能体进行分诊。",
+    "reviewedEnglishHash": "7c106ede4ee13756d5f0e39a11d64d3dac2f1dbc1751e9bad892bbada6818c61"
+  },
+  "issueDetail.subtreePauseActive": {
+    "en": "Subtree pause is active.",
+    "zh-CN": "子树暂停中",
+    "reviewedEnglishHash": "e9bbdd66d4025b0b6c94851823bf5674fea655c6339873c26f1031f6e9b6dc9e"
+  },
+  "issueDetail.subtreePaused": {
+    "en": "Subtree paused.",
+    "zh-CN": "子树已暂停。",
+    "reviewedEnglishHash": "9771d03b4ac38f66eecffc7241f1c35837aaa0722c32035d06420d649bf50c3b"
+  },
+  "issueDetail.subtreePausedRunsCancelled_one": {
+    "en": "{{count}} subtree run cancelled.",
+    "zh-CN": "已取消 {{count}} 个子树运行。",
+    "reviewedEnglishHash": "fdfcbf9ac738292659bb68c587bc47f90c821ff25d86a26378f8aafc233033ce"
+  },
+  "issueDetail.subtreePausedRunsCancelled_other": {
+    "en": "{{count}} subtree runs cancelled.",
+    "zh-CN": "已取消 {{count}} 个子树运行。",
+    "reviewedEnglishHash": "44aff47fc1fc9e45b248ee5192100ac8b6cdf0885c55b68a86b592ac77664b74"
+  },
+  "issueDetail.subtreeReasonPlaceholder": {
+    "en": "Explain why this subtree control is being applied...",
+    "zh-CN": "说明应用此子树控制的原因...",
+    "reviewedEnglishHash": "44f59fecba2909de13af9618d89733d4b7278c48fff6c461b9aad9db4d4b1b66"
+  },
+  "issueDetail.subtreeResumed": {
+    "en": "Subtree resumed",
+    "zh-CN": "子树已恢复。",
+    "reviewedEnglishHash": "f618e96f63f64e005d04c0cd952cf6746f81b5deaf4e2eafec9b06eff82e9285"
+  },
+  "issueDetail.task": {
+    "en": "task",
+    "zh-CN": "个任务",
+    "reviewedEnglishHash": "0ebb429fa86d481c2630fac53db1c91cffed5d4d41d1021c179444eb67e7ee0b"
+  },
+  "issueDetail.taskArchivedFromInbox": {
+    "en": "Task archived from inbox",
+    "zh-CN": "任务已从收件箱归档",
+    "reviewedEnglishHash": "ca9374d16da7e4088bdebabe1fbaa9b092eae41927bd4cf8451d646ee959a1da"
+  },
+  "issueDetail.taskExecutionHeld": {
+    "en": "Task execution held",
+    "zh-CN": "任务执行已暂停",
+    "reviewedEnglishHash": "1e602fd0f82800bbf2f4b9a724cdb80bd63675167431936e78fbbfbdb7d1894b"
+  },
+  "issueDetail.taskExecutionHeldDescription": {
+    "en": "Task execution is held until resume. Human comments can still wake the assignee for triage.",
+    "zh-CN": "任务执行已暂停，恢复前不会继续。人工评论仍可唤醒负责人进行分诊。",
+    "reviewedEnglishHash": "0ac8da3d5c17b218a74d399b4564da25bbe679f7f7f67492944f57e1a57e35b9"
+  },
+  "issueDetail.taskHeldUntilResume": {
+    "en": "Work paused. This task is held until resume.",
+    "zh-CN": "工作已暂停。恢复前此任务将保持暂停。",
+    "reviewedEnglishHash": "6036334eac516c283190de9b38bd638d74ad0d549f98c52d7776662d58f2bb81"
+  },
+  "issueDetail.taskHidden": {
+    "en": "Task hidden",
+    "zh-CN": "任务已隐藏",
+    "reviewedEnglishHash": "6f2f5126ed07ea20d42c1296afc633b264a9e8edc1ad8843ae547277131d11ec"
+  },
+  "issueDetail.taskPeople": {
+    "en": "Task people",
+    "zh-CN": "任务相关人员",
+    "reviewedEnglishHash": "46ac7b2e5fe9a6f80c6043ceab8f517f41a41b9997ba98e77440b280f838c017"
+  },
+  "issueDetail.taskRestoredToInbox": {
+    "en": "Task restored to inbox",
+    "zh-CN": "任务已恢复到收件箱",
+    "reviewedEnglishHash": "a17ff0d06b96ce9921497bb1abe97bd9172a8c0bb6fa7afa9a3b42bb07aafa94"
+  },
+  "issueDetail.taskUpdateFailed": {
+    "en": "Task update failed",
+    "zh-CN": "任务更新失败",
+    "reviewedEnglishHash": "c182c1dba44b61190f31b672f23f270ad68f7348847ebdd8f637586f5c069e87"
+  },
+  "issueDetail.tasksBreadcrumb": {
+    "en": "Tasks",
+    "zh-CN": "任务",
+    "reviewedEnglishHash": "b3a60e61a5233d0506ac737405a2a45280349683cac68722f18d0b73eb495ef4"
+  },
+  "issueDetail.theAssignee": {
+    "en": "the assignee",
+    "zh-CN": "处理人",
+    "reviewedEnglishHash": "f584ae3a02bdc5200f51eaccf5cdbc770a9132a970182b79f099cbe1c1e3acee"
+  },
+  "issueDetail.thisTask": {
+    "en": "This task",
+    "zh-CN": "此任务",
+    "reviewedEnglishHash": "4f5b1b5d5083bfeece2ef027f36b037a75d75510fa17f75ab50045bac544f7fe"
+  },
+  "issueDetail.tokens": {
+    "en": "Tokens",
+    "zh-CN": "Token",
+    "reviewedEnglishHash": "a039dfb9628b53ddaebcfe8ef0793e3fdf19867601295f00d192acef59050869"
+  },
+  "issueDetail.tokensValue": {
+    "en": "{{value}} tokens",
+    "zh-CN": "{{value}} 词元",
+    "reviewedEnglishHash": "67bacd403e2307c2f43426553ba7499ef4f501d7ea1b033c64bfd759db99aa1b"
+  },
+  "issueDetail.treeControl.leaf.cancel.help": {
+    "en": "Cancel this task and stop queued or running work where possible.",
+    "zh-CN": "取消此任务，并尽可能停止已排队或正在运行的工作。",
+    "reviewedEnglishHash": "1d21a5eb42be612aefe356a2dc0beb3bc0753cf0d8d2afe48916dcf3449552b1"
+  },
+  "issueDetail.treeControl.leaf.cancel.label": {
+    "en": "Cancel task",
+    "zh-CN": "取消任务",
+    "reviewedEnglishHash": "a1d26b85bf203c6cc58b516c61431eff81bcbb0dcd354fdceca61846673ab6d9"
+  },
+  "issueDetail.treeControl.leaf.pause.help": {
+    "en": "Pause active execution on this task until an explicit resume.",
+    "zh-CN": "暂停此任务上的活动执行，直到明确恢复。",
+    "reviewedEnglishHash": "dc7602229eae4ee3518a1ad9e9411b87dabfbc09494a73fb1e08359742db2990"
+  },
+  "issueDetail.treeControl.leaf.pause.label": {
+    "en": "Pause work",
+    "zh-CN": "暂停工作",
+    "reviewedEnglishHash": "0faaea9a215fb95ead85cb5a70e563fea87c301e8f146db121e124d464a4e8dc"
+  },
+  "issueDetail.treeControl.leaf.restore.help": {
+    "en": "Restore this task if it was cancelled by a tree operation.",
+    "zh-CN": "如果此任务是由树操作取消的，则恢复此任务。",
+    "reviewedEnglishHash": "534bed043dfc398ab26eb7c67262a8ae4df4047ace54270e485449a1a7938a5a"
+  },
+  "issueDetail.treeControl.leaf.restore.label": {
+    "en": "Restore task",
+    "zh-CN": "恢复任务",
+    "reviewedEnglishHash": "745ccd1a6fbee98a1b1107ed3b9cd98d6b6071b818729139f9ef935f7c02d4bd"
+  },
+  "issueDetail.treeControl.leaf.resume.help": {
+    "en": "Release the active pause hold so this task can continue.",
+    "zh-CN": "解除活动暂停锁，让此任务继续。",
+    "reviewedEnglishHash": "aeb53e09b2b94fdf337e84f3d5282a5bfc971fe0e134d8b7ac7d9cd0d6ba47cf"
+  },
+  "issueDetail.treeControl.leaf.resume.label": {
+    "en": "Resume work",
+    "zh-CN": "恢复工作",
+    "reviewedEnglishHash": "4c474b94554900a6d339cdfb1aaea082bc28f52769d656131aa789db6f5d33c1"
+  },
+  "issueDetail.treeControl.subtree.cancel.help": {
+    "en": "Cancel non-terminal tasks in this subtree and stop queued or running work where possible.",
+    "zh-CN": "取消此子树中尚未终止的任务，并尽可能停止已排队或正在运行的工作。",
+    "reviewedEnglishHash": "397c56d6ff7f67b4eb6b423fa387508968d46dcda722dc350c7119d0feb335a4"
+  },
+  "issueDetail.treeControl.subtree.cancel.label": {
+    "en": "Cancel subtree",
+    "zh-CN": "取消子树",
+    "reviewedEnglishHash": "a16ebf3e0f9b0c3e7e88fb5d608b83d6ae944969b89034b49f0c3c46c5c02165"
+  },
+  "issueDetail.treeControl.subtree.pause.help": {
+    "en": "Pause active execution in this task subtree until an explicit resume.",
+    "zh-CN": "暂停此任务子树中的活动执行，直到明确恢复。",
+    "reviewedEnglishHash": "dd72f6207d701461b74219422bfc8bd3e41362255d124eb8d8f6ce51ce59220a"
+  },
+  "issueDetail.treeControl.subtree.pause.label": {
+    "en": "Pause subtree",
+    "zh-CN": "暂停子树",
+    "reviewedEnglishHash": "d44920538f70721af6eb217a0d3744a4b067bbc8cfcd0d86b32c902fb94fbd34"
+  },
+  "issueDetail.treeControl.subtree.restore.help": {
+    "en": "Restore tasks cancelled by this subtree operation so work can resume.",
+    "zh-CN": "恢复由此次子树操作取消的任务，让工作可以继续。",
+    "reviewedEnglishHash": "5707eb14762f057377917b8c118865aee57be6b8513c876fef6524fd3b9f185e"
+  },
+  "issueDetail.treeControl.subtree.restore.label": {
+    "en": "Restore subtree",
+    "zh-CN": "恢复子树",
+    "reviewedEnglishHash": "d824b6aa69a9be91bd71ca2a72efeb47a0a3c123f44a9ca318d475ae20397e06"
+  },
+  "issueDetail.treeControl.subtree.resume.help": {
+    "en": "Release the active subtree pause hold so held work can continue.",
+    "zh-CN": "解除活动子树暂停锁，让被暂停的工作继续。",
+    "reviewedEnglishHash": "6aae303e46acfb3100ff28a5dda47795059bfbdcd1925dd9a1fc1f6833de1ef6"
+  },
+  "issueDetail.treeControl.subtree.resume.label": {
+    "en": "Resume subtree",
+    "zh-CN": "恢复子树",
+    "reviewedEnglishHash": "b38209885d3237c70ae4228a22dfcd9d4c1ee36a7054e0635afc07a8764ab195"
+  },
+  "issueDetail.treeControlApplied": {
+    "en": "{{label}} applied.",
+    "zh-CN": "已应用 {{label}}。",
+    "reviewedEnglishHash": "1407d6b2a24ef14a75c048845c77ea689337a4ba2c59fc8bcfe3d2de0884845f"
+  },
+  "issueDetail.treeControlReasonPlaceholder": {
+    "en": "Optional note for the activity log",
+    "zh-CN": "给活动日志添加可选备注",
+    "reviewedEnglishHash": "b19182b01f0a24dd94cbc6bbd0041bbe7c8433c2db3129708a09b1ae29291b7b"
+  },
+  "issueDetail.treePreviewBoardOnly": {
+    "en": "Only board users can preview subtree controls.",
+    "zh-CN": "只有看板用户可以预览子树控制。",
+    "reviewedEnglishHash": "0ff8e97de5e5c74ef250357b29fa42a663e4f3e7097bfbd0593665423e889b73"
+  },
+  "issueDetail.treePreviewInvalid": {
+    "en": "This subtree action is currently invalid for the selected tasks.",
+    "zh-CN": "当前所选任务无法执行此子树操作。",
+    "reviewedEnglishHash": "218128d4c099816a6a221d908ae0a614c75c545bd10949b44f3c934e6b5a2a72"
+  },
+  "issueDetail.treePreviewLoadFailed": {
+    "en": "Unable to load preview.",
+    "zh-CN": "无法加载预览。",
+    "reviewedEnglishHash": "c55adb9df6293c3f4b44e5277257b6b8a446fc6d4367dfdef33bc51efb57c575"
+  },
+  "issueDetail.treePreviewStale": {
+    "en": "Preview is stale because subtree hold state changed. Retry to refresh.",
+    "zh-CN": "子树暂停状态已变化，预览已过期。请重试刷新。",
+    "reviewedEnglishHash": "13725708bc2a5f95623844b6ecd91923d38c34db467d7eaffa32418ed0f4f3cc"
+  },
+  "issueDetail.unableToArchiveFromInbox": {
+    "en": "Unable to archive this task from the inbox",
+    "zh-CN": "无法从收件箱归档此任务",
+    "reviewedEnglishHash": "86bc2d32925b6a1db2a158112650cf1d6dfc4eea47365d23f1b6bf749a6acd85"
+  },
+  "issueDetail.unableToCopyTaskMarkdown": {
+    "en": "Unable to copy task markdown",
+    "zh-CN": "无法复制任务 Markdown",
+    "reviewedEnglishHash": "57705a28247b644b55744663eba791e953b13e0a9176dbf23c374300dc61ed10"
+  },
+  "issueDetail.unableToRestoreToInbox": {
+    "en": "Unable to restore this task to the inbox",
+    "zh-CN": "无法将任务恢复到收件箱",
+    "reviewedEnglishHash": "1e695f751cda5550d527afdb48125e7b33797cd8e756e13fc414407c10dbac3b"
+  },
+  "issueDetail.unableToSaveSubtaskChanges": {
+    "en": "Unable to save sub-task changes",
+    "zh-CN": "无法保存子任务更改",
+    "reviewedEnglishHash": "dfc9e1406a8afa154c0040bf159e7f85aeefe12615ace4c245cf91736c89e81c"
+  },
+  "issueDetail.unableToSaveTaskChanges": {
+    "en": "Unable to save task changes",
+    "zh-CN": "无法保存任务更改",
+    "reviewedEnglishHash": "b1b8b57fab4c0e3a60efd33f12e5f25ddd1b11c8dedd60e515dd00f1195e0ffb"
+  },
+  "issueDetail.unableToStopRunAndUpdateTask": {
+    "en": "Unable to stop the run and update the task",
+    "zh-CN": "无法停止运行并更新任务",
+    "reviewedEnglishHash": "128fb2b1d977a5823cc62719a97eaffeb9bc323b412a2887f3b400bdc757157d"
+  },
+  "issueDetail.undoFailed": {
+    "en": "Undo failed",
+    "zh-CN": "撤销失败",
+    "reviewedEnglishHash": "c7abe568e9629874020af79539411b9266eb0a60fcab5406b08ae91412f6c211"
+  },
+  "issueDetail.upload": {
+    "en": "Upload",
+    "zh-CN": "上传",
+    "reviewedEnglishHash": "865e89de78d94c747184d6a7e6f5244b453d8062343c07e014ae698cfb0260e8"
+  },
+  "issueDetail.uploading": {
+    "en": "Uploading...",
+    "zh-CN": "正在上传...",
+    "reviewedEnglishHash": "72cb29c90ccd8361ee82d02fabe81a3f01605c7b8fea4c9996fc01d84e3fbb48"
+  },
+  "issueDetail.viewAffected": {
+    "en": "View affected",
+    "zh-CN": "查看受影响项",
+    "reviewedEnglishHash": "f6709b913dc8e6bdd7f9d94082c44900b2972c2edab1dc709203d5dd68b53611"
+  },
+  "issueDetail.viewAffectedCount": {
+    "en": "View affected ({{count}})",
+    "zh-CN": "查看受影响项（{{count}}）",
+    "reviewedEnglishHash": "e0b3842640833dc8ff4c0ed7c47e49c46b20b32b2b14fd98503d780d3afd3125"
+  },
+  "issueDetail.wakeAffectedAgents": {
+    "en": "Wake affected agents ({{count}})",
+    "zh-CN": "唤醒受影响智能体（{{count}}）",
+    "reviewedEnglishHash": "eaaf504d393296a167fd066fd3819b47db3e71f3613f8a433fa46b603a2c7471"
+  },
+  "issueDetail.wakeAgentsAfterOperation": {
+    "en": "Wake assigned agents after this operation completes.",
+    "zh-CN": "操作完成后唤醒已分配的智能体。",
+    "reviewedEnglishHash": "35474e8965bfe8bd3fcc888ffd61b2f23762d60e48154a7e4ee07ae173868dad"
+  },
+  "issueDetail.watchdog": {
+    "en": "Watchdog",
+    "zh-CN": "看护",
+    "reviewedEnglishHash": "da0ccfeab090c58a7936328bc08f32d2aec73c5b8ef92b4b414373dd7c5aea67"
+  },
+  "issueDetail.watchdogGeneratedDescription": {
+    "en": "This task is a generated watchdog task. It verifies whether stopped work in the watched task tree is legitimate.",
+    "zh-CN": "这是系统生成的看护任务，用于验证被看护任务树中已停止的工作是否合理。",
+    "reviewedEnglishHash": "2aeca021e90223c1c94296a730d942ce24260128fe8d96b357085acfad044448"
+  },
+  "issueDetail.watchdogTitle": {
+    "en": "Watchdog",
+    "zh-CN": "看护",
+    "reviewedEnglishHash": "da0ccfeab090c58a7936328bc08f32d2aec73c5b8ef92b4b414373dd7c5aea67"
+  },
+  "issueDetail.workModeDescription": {
+    "en": "This task is in {{mode}}.",
+    "zh-CN": "此任务处于{{mode}}模式。",
+    "reviewedEnglishHash": "794643c1405eb04a6aff411d5d18c8d9de818a3ab9d9b7f2a1fb903dcaecdb80"
+  },
+  "issueDetail.workModeTitle": {
+    "en": "Work mode",
+    "zh-CN": "工作模式",
+    "reviewedEnglishHash": "b4c4aec3bb3a1d1ce3cbe99670655e47a0972466da1c01e97d56bd1d12a72d6d"
+  },
+  "issueDetail.workPaused": {
+    "en": "Work paused.",
+    "zh-CN": "工作已暂停。",
+    "reviewedEnglishHash": "01dff0bf03d3694ab81a3ac7ba9d9f9a41358823a53f3b17ec3f0731891552d3"
+  },
+  "issueDetail.workPausedRunsCancelled_one": {
+    "en": "{{count}} run cancelled.",
+    "zh-CN": "已取消 {{count}} 个运行。",
+    "reviewedEnglishHash": "8771c66d2e7f0f90d06d0f4278691599567e453deef26730b6bc3fab324ece22"
+  },
+  "issueDetail.workPausedRunsCancelled_other": {
+    "en": "{{count}} runs cancelled.",
+    "zh-CN": "已取消 {{count}} 个运行。",
+    "reviewedEnglishHash": "777c978c77b306c9d115a065977c45aebc38f2e7ea3fc2119e22555807706f1c"
+  },
+  "issueDetail.workResumed": {
+    "en": "Work resumed.",
+    "zh-CN": "工作已恢复。",
+    "reviewedEnglishHash": "2d9f9bda605a53e5ffdde890bc65d7b31a28f4121e6cd5c54ee96a04939c7c9c"
+  }
+}

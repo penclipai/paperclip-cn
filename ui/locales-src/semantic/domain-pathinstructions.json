@@ -1,0 +1,182 @@
+{
+  "pathInstructions.choose": {
+    "en": "Choose path",
+    "zh-CN": "选择路径",
+    "reviewedEnglishHash": "a332391d061ab701f3bc9ba2382e4292fd3f3daf2abe505859aee79f72b20b9c"
+  },
+  "pathInstructions.chooseShort": {
+    "en": "Choose",
+    "zh-CN": "选择",
+    "reviewedEnglishHash": "c7f937836f5d82d53bc507752075f87e25009ec11bc9fd4e282f0b645e47af7c"
+  },
+  "pathInstructions.descriptionPrefix": {
+    "en": "Paste the absolute path (for example",
+    "zh-CN": "请把绝对路径（例如",
+    "reviewedEnglishHash": "b64098ade3b78209d8bc87afdc7565313118a668e9be0b4825aedac2ca98154e"
+  },
+  "pathInstructions.descriptionSuffix": {
+    "en": ") into the input field.",
+    "zh-CN": "）粘贴到输入框中。",
+    "reviewedEnglishHash": "fe953a5f572c437c980dbd1226a090553f21e653b9da09f6a026141e45a8b7fb"
+  },
+  "pathInstructions.linux.step1": {
+    "en": "Open a terminal and navigate to the directory with cd.",
+    "zh-CN": "打开终端，用 cd 进入目标目录。",
+    "reviewedEnglishHash": "71d0da9224276528c7affe8ec3430e4518260b51fe418e5e8b6371f98e1bd745"
+  },
+  "pathInstructions.linux.step2": {
+    "en": "Run pwd to print the full path.",
+    "zh-CN": "运行 pwd 输出完整路径。",
+    "reviewedEnglishHash": "f35cd2cec07917a0fe17f549bf3f9b66427ca0305c96cfb1081b29113a8f2cfc"
+  },
+  "pathInstructions.linux.step3": {
+    "en": "Copy the output and paste it here.",
+    "zh-CN": "复制输出结果并粘贴到这里。",
+    "reviewedEnglishHash": "996c48792b45b673d2cfb60e5faa22817e1d123a97e60213d77c5d6e623a8bd5"
+  },
+  "pathInstructions.linux.tip": {
+    "en": "In most file managers, Ctrl+L reveals the full path in the address bar.",
+    "zh-CN": "大多数文件管理器里，按 Ctrl+L 可以直接显示地址栏中的完整路径。",
+    "reviewedEnglishHash": "4a5c2d29974b96277f9d89431300581f46dbeb0154a2ea5219c5d830178dbe17"
+  },
+  "pathInstructions.linuxLabel": {
+    "en": "Linux",
+    "zh-CN": "Linux",
+    "reviewedEnglishHash": "4828e60247c1636f57b7446a314e7f599c12b53d40061cc851a1442004354fed"
+  },
+  "pathInstructions.mac.step1": {
+    "en": "Open Finder and navigate to the folder.",
+    "zh-CN": "打开 Finder，进入目标文件夹。",
+    "reviewedEnglishHash": "66cacfe6907f22ac20c3ccf8a3d15d771f8d6d1bd788e61e0eae20057ee6b9a7"
+  },
+  "pathInstructions.mac.step2": {
+    "en": "Right-click the folder, or Control-click it.",
+    "zh-CN": "右键该文件夹，或按住 Control 键点击。",
+    "reviewedEnglishHash": "3b5ebe651889a645d99bd0315cd5fdbcee4988087319f7c29d50fd1c3fb484c9"
+  },
+  "pathInstructions.mac.step3": {
+    "en": "Hold Option (⌥). The Copy action changes to Copy as Pathname.",
+    "zh-CN": "按住 Option（⌥）键，此时“拷贝”会变成“作为路径名称拷贝”。",
+    "reviewedEnglishHash": "2b9a7cd990a5b00a392ae82481481c115568f4e120f3adfcbb9d4430bff8e66a"
+  },
+  "pathInstructions.mac.step4": {
+    "en": "Click Copy as Pathname, then paste it here.",
+    "zh-CN": "点击“作为路径名称拷贝”，然后粘贴到这里。",
+    "reviewedEnglishHash": "3856272e64a865638966c2cffa4220812c3bae82b71907449b3fd6e6cfd3f352"
+  },
+  "pathInstructions.mac.tip": {
+    "en": "You can also open Terminal, type cd, drag the folder into the terminal window, press Enter, and then run pwd to see the full path.",
+    "zh-CN": "你也可以打开终端，输入 cd，把文件夹拖进终端后回车，再运行 pwd 查看完整路径。",
+    "reviewedEnglishHash": "ed32d84ee66806b228c95232219d6dd946365a2e88702ba7aa28b231231b2874"
+  },
+  "pathInstructions.macLabel": {
+    "en": "macOS",
+    "zh-CN": "macOS",
+    "reviewedEnglishHash": "aed6b7aa2a0511a9bbcaae2a10127a3139fc6494c57769b31b1a694c14483ce7"
+  },
+  "pathInstructions.manual.mac.step1": {
+    "en": "Find the folder in Finder.",
+    "zh-CN": "在 Finder 中找到目标文件夹。",
+    "reviewedEnglishHash": "3aa7d055e671b883b6f194b8561b947bdbc0a49f46fecb3d5637cb47b3a6dd5b"
+  },
+  "pathInstructions.manual.mac.step2": {
+    "en": "Hold Option and right-click the folder.",
+    "zh-CN": "按住 Option 键并右键该文件夹。",
+    "reviewedEnglishHash": "0e13446c02366c845c13f6c27e9e7c9c89535ebc5c9290f84f9c2d8a78e2e924"
+  },
+  "pathInstructions.manual.mac.step3": {
+    "en": "Click \"Copy <folder name> as Pathname\".",
+    "zh-CN": "点击“将 <文件夹名称> 拷贝为路径名称”。",
+    "reviewedEnglishHash": "fe070e7cdd2a64abab41ccc2c1af21c7a9f91ca210711179a2abee3fda1d8476"
+  },
+  "pathInstructions.manual.macHeading": {
+    "en": "macOS (Finder)",
+    "zh-CN": "macOS（Finder）",
+    "reviewedEnglishHash": "ef6013bde788b9565348ba12e081c2a75b3e0000fd95d75350a340e6d304a9ab"
+  },
+  "pathInstructions.manual.pasteStep": {
+    "en": "Paste the result into the path input.",
+    "zh-CN": "把复制结果粘贴到路径输入框中。",
+    "reviewedEnglishHash": "658a102fdcf5f4f5ea52951585172ea9b196253e0237b8e20d5eae4f1f785859"
+  },
+  "pathInstructions.manual.terminal.step1": {
+    "en": "Run",
+    "zh-CN": "运行",
+    "reviewedEnglishHash": "00d60e31a4e6b8344d4201f25a6a7dee770713107f6d097abb01559d32b17f26"
+  },
+  "pathInstructions.manual.terminal.step2": {
+    "en": "Run",
+    "zh-CN": "运行",
+    "reviewedEnglishHash": "00d60e31a4e6b8344d4201f25a6a7dee770713107f6d097abb01559d32b17f26"
+  },
+  "pathInstructions.manual.terminal.step3": {
+    "en": "Copy the output and paste it into the path input.",
+    "zh-CN": "复制输出结果并粘贴到路径输入框中。",
+    "reviewedEnglishHash": "71bb95f3e92a5cfbd836439db6f0e62f98b8b15cb2cf6deaf59ec0e62b5ffea6"
+  },
+  "pathInstructions.manual.terminalHeading": {
+    "en": "Terminal fallback (macOS/Linux)",
+    "zh-CN": "终端备选方案（macOS/Linux）",
+    "reviewedEnglishHash": "e1983af87a3dee9f9db28a3a189f6107e1efd1d7c10ad6d682f01dd8419f316d"
+  },
+  "pathInstructions.manual.windows.step1": {
+    "en": "Find the folder in File Explorer.",
+    "zh-CN": "在文件资源管理器中找到目标文件夹。",
+    "reviewedEnglishHash": "2301a201d352330fed10712283c480f755fadac4576f0106ce770e5ed1359263"
+  },
+  "pathInstructions.manual.windows.step2": {
+    "en": "Hold Shift and right-click the folder.",
+    "zh-CN": "按住 Shift 键并右键该文件夹。",
+    "reviewedEnglishHash": "423a43eb73232565a3da1626c9c9fe9fc6c330f13563c9b910b021b25bae4a19"
+  },
+  "pathInstructions.manual.windows.step3": {
+    "en": "Click \"Copy as path\".",
+    "zh-CN": "点击“复制为路径”。",
+    "reviewedEnglishHash": "9f26034891f6923dfee22057dcf84691c6baeb3a635634e99de65b8e271650ad"
+  },
+  "pathInstructions.manual.windowsHeading": {
+    "en": "Windows (File Explorer)",
+    "zh-CN": "Windows（文件资源管理器）",
+    "reviewedEnglishHash": "4749e06b400ae508acb64aa9b3bdb9652c3751b1973b106ea2bdfa17370aba81"
+  },
+  "pathInstructions.manualDescription": {
+    "en": "Browser security blocks apps from reading full local paths via a file picker. Copy the absolute path and paste it into the input.",
+    "zh-CN": "浏览器安全限制会阻止应用通过文件选择器读取完整本地路径。请复制绝对路径并粘贴到输入框中。",
+    "reviewedEnglishHash": "aa16b49c7f76327d4c1103e80a7e4db8b78cca997fa6af29be425918b341d010"
+  },
+  "pathInstructions.manualTitle": {
+    "en": "Specify path manually",
+    "zh-CN": "手动指定路径",
+    "reviewedEnglishHash": "b1b6afc26151e1272b8b4ededf32bb04e31b149f85d76cba57589162722b6ad6"
+  },
+  "pathInstructions.title": {
+    "en": "How to get a full path",
+    "zh-CN": "如何获取完整路径",
+    "reviewedEnglishHash": "dc9f3a6626d2ece450d6c94a3ee9cbfcf2d7b53f2486dab3a25914861625fb8c"
+  },
+  "pathInstructions.windows.step1": {
+    "en": "Open File Explorer and navigate to the folder.",
+    "zh-CN": "打开文件资源管理器，进入目标文件夹。",
+    "reviewedEnglishHash": "6e98a6b0b0fd76fd5d1ad2bd86eb0a5a36cbf00db6c011f0d0e7a26a081b6384"
+  },
+  "pathInstructions.windows.step2": {
+    "en": "Click the address bar at the top to reveal the full path.",
+    "zh-CN": "点击顶部地址栏，此时会显示完整路径。",
+    "reviewedEnglishHash": "182773d5449d7b05ac01778c9402dcb8dd15189b5d2c2350f3a412e2f14f7fb0"
+  },
+  "pathInstructions.windows.step3": {
+    "en": "Copy the path, then paste it here.",
+    "zh-CN": "复制这个路径，然后粘贴到这里。",
+    "reviewedEnglishHash": "55712693f26755ac08dbf79f33111ee78ac21baed9f09e1b9965e3d170d5828a"
+  },
+  "pathInstructions.windows.tip": {
+    "en": "You can also hold Shift, right-click the folder, and choose Copy as path.",
+    "zh-CN": "也可以按住 Shift 键右键文件夹，再选择“复制为路径”。",
+    "reviewedEnglishHash": "194c4787b754bb5a3d17fc3842a59d3d8329ab7204b841c0865c6dd74ff3d09d"
+  },
+  "pathInstructions.windowsLabel": {
+    "en": "Windows",
+    "zh-CN": "Windows",
+    "reviewedEnglishHash": "d598026a9cbc60505f138ce53ac78088d582100c196d0f70c7e2538d4a8d7e10"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "providerTrace.captured": { "en": "Trace captured", "zh-CN": "已捕获追踪", "reviewedEnglishHash": "c5a0a578f310e32a2f362975662adfbe1fc6a1276536bbaac006271e4d2307d2" },
+  "providerTrace.capturing": { "en": "Raw tracing enabled", "zh-CN": "已启用原始追踪", "reviewedEnglishHash": "812a3547ae58cb90084785a224d2e99e7f08dfb75b10e0a30bb0f14a34b831b2" },
+  "providerTrace.deleted": { "en": "Trace deleted", "zh-CN": "追踪已删除", "reviewedEnglishHash": "ce1e0dd216423bfd20cec273336a7026ef77d698129d28395d17b487af4b645c" },
+  "providerTrace.expired": { "en": "Trace expired", "zh-CN": "追踪已过期", "reviewedEnglishHash": "c208aa1a887c0412158960f86649a983db1bfd17bd0c1b96cc7d70dd3be88b7f" },
+  "providerTrace.incomplete": { "en": "Trace incomplete", "zh-CN": "追踪不完整", "reviewedEnglishHash": "329116c84b54dac50a725139c47b0bc72974948579e11a0ba01c3ceb822c99a3" },
+  "providerTrace.off": { "en": "Trace off", "zh-CN": "追踪已关闭", "reviewedEnglishHash": "56a98a226360891da0981f3db59b393469c72ce27ff350022d723a7d4246642f" },
+  "providerTrace.requested": { "en": "Trace requested", "zh-CN": "已请求追踪", "reviewedEnglishHash": "f1ebbe0e1e0eaf8a36a1366675052d0a556b5b42da77e66121ed28efa1c28654" },
+  "providerTrace.requestedDescription": { "en": "This run requested sensitive provider-frame capture.", "zh-CN": "此运行请求捕获敏感的提供商帧。", "reviewedEnglishHash": "4398e38a3b9effe11ec397d5b674142b383414ed7b2d783309a432c588b1265e" },
+  "providerTrace.summary": { "en": "{{frameCount}} frames · {{byteCount}} bytes · expires {{expiresAt}}", "zh-CN": "{{frameCount}} 帧 · {{byteCount}} 字节 · 到期时间 {{expiresAt}}", "reviewedEnglishHash": "a027776f9e9c86b5886f0af4538899f0531930c9f1a0fb6715ecc2f4da6f1d8f" },
+  "providerTrace.offDescription": { "en": "Raw provider-frame capture was disabled for this run.", "zh-CN": "此运行已禁用原始提供商帧捕获。", "reviewedEnglishHash": "90c06cbcbdc3e19d4b3b9d30527a50c3ddf3916ef776a815d462fddb9f7499ae" },
+  "providerTrace.truncated": { "en": "Trace truncated", "zh-CN": "追踪已截断", "reviewedEnglishHash": "0efe370c05e764f3f31675e14bedb917a16c0a2ea868da852d46fa5d5218b8d3" }
+}

@@ -1,0 +1,72 @@
+{
+  "entityType.agent": {
+    "en": "Agent",
+    "zh-CN": "智能体",
+    "reviewedEnglishHash": "11b39c93777e8f1f3983bdba7c72b22fe68cfea20c677e9de53e17cb7dbfb19f"
+  },
+  "entityType.approval": {
+    "en": "Approval",
+    "zh-CN": "审批",
+    "reviewedEnglishHash": "147fb813a2515718ef6121c61c9636d6ffbcb055bcdb45dbb483af667aa94c8b"
+  },
+  "entityType.company": {
+    "en": "Company",
+    "zh-CN": "公司",
+    "reviewedEnglishHash": "de4743c879734dc38cb3e270ecefcae077c3c2e626f9298115d5a03c8613f89b"
+  },
+  "entityType.cost": {
+    "en": "Cost",
+    "zh-CN": "成本",
+    "reviewedEnglishHash": "204a5eb2cd28bcfdf3be9f8c765948e9e831609e3c57048cdbd6b8a94cf49126"
+  },
+  "entityType.goal": {
+    "en": "Goal",
+    "zh-CN": "目标",
+    "reviewedEnglishHash": "cdbf6975e8a35b0d03558be6822dfae166482c24fb86b0433f60e8167f5c91e4"
+  },
+  "entityType.heartbeatRun": {
+    "en": "Heartbeat Run",
+    "zh-CN": "心跳运行",
+    "reviewedEnglishHash": "9702f09cc77222c1221d2f3c9a695c377377790bb8c236017b7b3a5a96af4b71"
+  },
+  "entityType.invite": {
+    "en": "Invite",
+    "zh-CN": "邀请",
+    "reviewedEnglishHash": "1fd9ae1607aa3d804ef494984ed57aa79b6d3553962c76f6c8f5fa0a4dde04b7"
+  },
+  "entityType.issue": {
+    "en": "Issue",
+    "zh-CN": "任务",
+    "reviewedEnglishHash": "48dc76dfa23ae03fea1372c5ed6c0e1bd62eaeca7bba6d804eb0afa87972f031"
+  },
+  "entityType.plugin": {
+    "en": "Plugin",
+    "zh-CN": "插件",
+    "reviewedEnglishHash": "ab1173eed1d477d9e951c2316a74d1923220e64d1bbaeadf03c88e20576c7450"
+  },
+  "entityType.project": {
+    "en": "Project",
+    "zh-CN": "项目",
+    "reviewedEnglishHash": "985959785319747668373cc6dee294b11db782b03cdd90a2851fbdc0637c6b7b"
+  },
+  "entityType.routine": {
+    "en": "Routine",
+    "zh-CN": "例行任务",
+    "reviewedEnglishHash": "0b5baf309897ec7e2def5db089f1f4ec5b15d5912296577d655d00ca0fc40b59"
+  },
+  "entityType.routineRun": {
+    "en": "Routine Run",
+    "zh-CN": "例行任务运行",
+    "reviewedEnglishHash": "4dc0b8b809c9b7df05f453c5cd48b65ed2a567fae17eaa7321dc43d9b4d931a8"
+  },
+  "entityType.routineTrigger": {
+    "en": "Routine Trigger",
+    "zh-CN": "例行任务触发器",
+    "reviewedEnglishHash": "b05fdf1fce806c6918088e17d526581cd5115e51b4329e93a7971db5cd7b21f1"
+  },
+  "entityType.userPreference": {
+    "en": "User preference",
+    "zh-CN": "用户偏好",
+    "reviewedEnglishHash": "66fe732d24717bb8c0c6626938246d34f4d612ad3b3776b56b010da7ce95186b"
+  }
+}

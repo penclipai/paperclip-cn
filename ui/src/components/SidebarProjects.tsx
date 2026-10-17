@@ -1,8 +1,9 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { NavLink, useLocation } from "@/lib/router";
 import { useQuery } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
-import { FolderOpen, Loader2, LogOut, MoreHorizontal, Plus } from "lucide-react";
+import { FolderOpen, Lock, Loader2, LogOut, MoreHorizontal, Plus } from "lucide-react";
 import {
   DndContext,
   MouseSensor,
@@ -124,7 +125,7 @@ function ProjectItem({
   leaving = false,
   isDragging = false,
 }: ProjectItemProps) {
-  const { t } = useTranslation();
+  useTranslation();
   const routeRef = projectRouteRef(project);
   const { summary: externalObjectsSummary } = useProjectExternalObjectSummary(project.id);
 
@@ -142,16 +143,15 @@ function ProjectItem({
       className={cn(
         "flex min-w-0 flex-1 items-center gap-2.5 mx-2 rounded-lg px-2 py-1.5 pr-8 pointer-coarse:py-1 text-(length:--text-compact) font-medium transition-colors",
         activeProjectRef === routeRef || activeProjectRef === project.id
-          ? "bg-accent text-foreground"
-          : "text-foreground/80 hover:bg-accent/50 hover:text-foreground",
+          ? "bg-sidebar-accent text-sidebar-accent-foreground"
+          : "text-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
       )}
     >
       <ProjectTile color={project.color ?? null} icon={project.icon ?? null} size="xs" />
       <span className={rail ? SIDEBAR_RAIL_HIDDEN_LABEL : "flex-1 truncate"}>{project.name}</span>
+            {!rail && project.visibility === "private" ? <Lock className="size-3.5 shrink-0 text-muted-foreground" aria-label={translateInstant("Private project")} /> : null}
       {!rail ? <ExternalObjectStatusSummary summary={externalObjectsSummary} compact /> : null}
-      {!rail && project.pauseReason === "budget" ? (
-        <BudgetSidebarMarker title={t("Project paused by budget", { defaultValue: "Project paused by budget" })} />
-      ) : null}
+      {!rail && project.pauseReason === "budget" ? <BudgetSidebarMarker title={translateInstant("Project paused by budget")} /> : null}
     </NavLink>
   );
 
@@ -186,10 +186,7 @@ function ProjectItem({
                   ? "opacity-100"
                   : "pointer-events-none opacity-0 group-hover/project:pointer-events-auto group-hover/project:opacity-100 group-focus-within/project:pointer-events-auto group-focus-within/project:opacity-100",
               )}
-              aria-label={t("Open actions for {{name}}", {
-                defaultValue: "Open actions for {{name}}",
-                name: project.name,
-              })}
+              aria-label={`Open actions for ${project.name}`}
             >
               <MoreHorizontal className="h-3.5 w-3.5" />
             </Button>
@@ -203,11 +200,7 @@ function ProjectItem({
               disabled={leaving}
             >
               {leaving ? <Loader2 className="size-4 motion-safe:animate-spin" /> : <LogOut className="size-4" />}
-              <span>
-                {leaving
-                  ? t("Leaving...", { defaultValue: "Leaving..." })
-                  : t("Leave project", { defaultValue: "Leave project" })}
-              </span>
+              <span>{leaving ? "Leaving..." : "Leave project"}</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -264,7 +257,7 @@ function SortableProjectItem(props: ProjectItemProps) {
 }
 
 export function SidebarProjects() {
-  const { t } = useTranslation();
+  useTranslation();
   const [open, setOpen] = useState(true);
   const { selectedCompany, selectedCompanyId } = useCompany();
   const { openNewProject } = useDialogActions();
@@ -303,7 +296,6 @@ export function SidebarProjects() {
 
   const visibleProjects = useMemo(
     () => (projects ?? []).filter((project: Project) => {
-      if (project.archivedAt) return false;
       if (!membershipsQuery.isSuccess) return true;
       return resourceMembershipState(membershipsQuery.data, "project", project.id) !== "left";
     }),
@@ -422,20 +414,20 @@ export function SidebarProjects() {
 
   return (
     <SidebarSection
-      label="Projects"
+      label={translateInstant("Projects")}
       collapsible={{ open, onOpenChange: setOpen }}
       headerAction={{
-        ariaLabel: t("New project", { defaultValue: "New project" }),
+        ariaLabel: "New project",
         icon: Plus,
         onClick: openNewProject,
       }}
       menu={{
-        ariaLabel: t("Projects section actions", { defaultValue: "Projects section actions" }),
+        ariaLabel: "Projects section actions",
         actions: [
-          { type: "item", label: t("Browse projects", { defaultValue: "Browse projects" }), icon: FolderOpen, href: "/projects" },
+          { type: "item", label: translateInstant("Browse projects"), icon: FolderOpen, href: "/projects" },
           { type: "separator" },
         ],
-        radioLabel: t("Project sort", { defaultValue: "Project sort" }),
+        radioLabel: "Project sort",
         radioChoices: PROJECT_SORT_CHOICES,
         radioValue: sortMode,
         onRadioValueChange: persistSortMode,

@@ -1,0 +1,82 @@
+{
+  "sidebarServerInfo.changeCount.staged": {
+    "en": "{{count}} staged",
+    "zh-CN": "{{count}} 个已暂存",
+    "reviewedEnglishHash": "ed4fccce6934c817bff12110f99f49662a7b1e532bb5fe47a9842cd84b01f928"
+  },
+  "sidebarServerInfo.changeCount.unstaged": {
+    "en": "{{count}} unstaged",
+    "zh-CN": "{{count}} 个未暂存",
+    "reviewedEnglishHash": "f64b74342b552a168cdf9db713f72c6ea39609fce2756f7cd36f75fab11110de"
+  },
+  "sidebarServerInfo.changeCount.untracked": {
+    "en": "{{count}} untracked",
+    "zh-CN": "{{count}} 个未跟踪",
+    "reviewedEnglishHash": "8a8322cbdf1d945a8698fb7406ea7494029a1a5c20fe03204c0992fb1104506e"
+  },
+  "sidebarServerInfo.changeSeparator": {
+    "en": ", ",
+    "zh-CN": "，",
+    "reviewedEnglishHash": "0a07f659461970d8d8dcefe4fff96a1745599810dc7d47391e95c803b7b2072c"
+  },
+  "sidebarServerInfo.changeStatusUnavailable": {
+    "en": "Change status unavailable",
+    "zh-CN": "更改状态不可用",
+    "reviewedEnglishHash": "50e3e180cb9978c6b4f6804dfc897b9fb91eb70bba1e67674444d460c22e7e88"
+  },
+  "sidebarServerInfo.checkoutState": {
+    "en": "Checkout state",
+    "zh-CN": "检出状态",
+    "reviewedEnglishHash": "93896287e5a3e87510d5e1736de8d72dded6ef7d275121e1e0a54246e5fc5f08"
+  },
+  "sidebarServerInfo.cleanCheckout": {
+    "en": "Clean checkout",
+    "zh-CN": "检出目录干净",
+    "reviewedEnglishHash": "f208aaf49292683a33a9bd528247093c99b4f4c9e9d1c264b1e77a684c5cf1e5"
+  },
+  "sidebarServerInfo.commitUnavailable": {
+    "en": "Commit unavailable",
+    "zh-CN": "提交信息不可用",
+    "reviewedEnglishHash": "ff6a66094c47fae12d68561f58b094fdf2cf0ccfb6294baefb8929bd3ef3df2e"
+  },
+  "sidebarServerInfo.healthUnavailable": {
+    "en": "Health unavailable",
+    "zh-CN": "健康状态不可用",
+    "reviewedEnglishHash": "ea4edd2b452cbdb8ff8c2d7ec4c3467f30df7c5bd01ffc4484b122b609157268"
+  },
+  "sidebarServerInfo.lastRestarted": {
+    "en": "Last restarted",
+    "zh-CN": "上次重启",
+    "reviewedEnglishHash": "865e87f0f1469ae253a88de9158147b906530464d6709e3908e0f47d05a9f733"
+  },
+  "sidebarServerInfo.loading": {
+    "en": "Loading...",
+    "zh-CN": "正在加载…",
+    "reviewedEnglishHash": "47d2a515ef2f05b87d688656286a61e4f743da4b878684c7654969db17711c40"
+  },
+  "sidebarServerInfo.localChangesPresent": {
+    "en": "Local changes present",
+    "zh-CN": "检测到本地更改",
+    "reviewedEnglishHash": "a2d5803b34a493252c99267d2d6f8e4ae682b311f1045e129f469ccfd244cab6"
+  },
+  "sidebarServerInfo.localChangesPresentWithCounts": {
+    "en": "Local changes present ({{changes}})",
+    "zh-CN": "检测到本地更改（{{changes}}）",
+    "reviewedEnglishHash": "566bc9d3f152718990900b6a35f26e903bcf7aff895adfc4036753ee3b43a862"
+  },
+  "sidebarServerInfo.runningCommit": {
+    "en": "Running commit",
+    "zh-CN": "运行中的提交",
+    "reviewedEnglishHash": "ac45532841c6f612bc2e8b291744d4c24f6683a3f11ad2293ef55d107ffe7f8d"
+  },
+  "sidebarServerInfo.server": {
+    "en": "Server",
+    "zh-CN": "服务器",
+    "reviewedEnglishHash": "aef7de28d52977f1b5cd0fecfdc151717610adf41e0aa33b4d9f7522a43337ef"
+  },
+  "sidebarServerInfo.unavailable": {
+    "en": "Unavailable",
+    "zh-CN": "不可用",
+    "reviewedEnglishHash": "ca184496974204a0bd3fd4925e0540bc4b0df6fcc232994d29754272b7183812"
+  }
+}

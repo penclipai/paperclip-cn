@@ -1,0 +1,107 @@
+{
+  "workspaceServiceControl.allServices": {
+    "en": "All services",
+    "zh-CN": "全部服务",
+    "reviewedEnglishHash": "5b980982fa251af08a82b67a83a2019fd4b3f3e8edd9e666be3f663cebc97f15"
+  },
+  "workspaceServiceControl.copyFailed": {
+    "en": "Copy failed",
+    "zh-CN": "复制失败",
+    "reviewedEnglishHash": "5b50e7a693fee952b9ed0e7c240bf4cba69b1dbf02af718145b297e4110591f3"
+  },
+  "workspaceServiceControl.copyUrl": {
+    "en": "Copy URL",
+    "zh-CN": "复制 URL",
+    "reviewedEnglishHash": "b26d1037f1c2da31a0296d915982f12049f91bfedb998b105ce967b73a796699"
+  },
+  "workspaceServiceControl.manageServices": {
+    "en": "Manage in Services tab →",
+    "zh-CN": "前往服务标签页管理 →",
+    "reviewedEnglishHash": "84d3c11f258cc8d7b696e638edf92014649c5d936445265aabc6aabdc8ea470f"
+  },
+  "workspaceServiceControl.noUrl": {
+    "en": "no url",
+    "zh-CN": "无 URL",
+    "reviewedEnglishHash": "d36257bc62258be5c3dc81d5e77459c86a8d9ecb59e3e1b458d5d911ee2ff224"
+  },
+  "workspaceServiceControl.openInNewTab": {
+    "en": "Open in new tab",
+    "zh-CN": "在新标签页中打开",
+    "reviewedEnglishHash": "e0af5c0bc2457475ab3c6e78ea06374a904469684daf6bffa229ac990b21aca3"
+  },
+  "workspaceServiceControl.restartAll": {
+    "en": "Restart all",
+    "zh-CN": "全部重启",
+    "reviewedEnglishHash": "b232152527c93525c8a12148038c0a5f05940607a9069ddcfa3ae495380c506c"
+  },
+  "workspaceServiceControl.runningCount": {
+    "en": "{{runningCount}}/{{totalCount}} running",
+    "zh-CN": "{{runningCount}}/{{totalCount}} 运行中",
+    "reviewedEnglishHash": "eba399a4fb275e20029354e1804be111448bf0de9cfaa163f01cf7bf71ba268a"
+  },
+  "workspaceServiceControl.runningCountAria": {
+    "en": "{{runningCount}} of {{totalCount}} services running — show services",
+    "zh-CN": "{{totalCount}} 个服务中有 {{runningCount}} 个正在运行，显示服务列表",
+    "reviewedEnglishHash": "89876629e568aeb7298fec36c583b7a38e51a57a0de1bb4d9edad073d5c9d7a1"
+  },
+  "workspaceServiceControl.serviceFailed": {
+    "en": "Service failed",
+    "zh-CN": "服务失败",
+    "reviewedEnglishHash": "c37124e2078d54a70c4c8df15fec9aecb50c7eb144d0589e64be3a10e89de63c"
+  },
+  "workspaceServiceControl.serviceFailedAt": {
+    "en": "Service failed · {{time}}",
+    "zh-CN": "服务失败 · {{time}}",
+    "reviewedEnglishHash": "f0bc8d6e239718ba1adb6f4290eb96dec958804e1057a10e061404a9f2a2cba9"
+  },
+  "workspaceServiceControl.servicesCount": {
+    "en": "Services · {{count}}",
+    "zh-CN": "服务 · {{count}}",
+    "reviewedEnglishHash": "ee467ccbc58c635442c0540ca314491a0dd54596a6dd9f4e193dbdc94f1ded2b"
+  },
+  "workspaceServiceControl.startAll": {
+    "en": "Start all",
+    "zh-CN": "全部启动",
+    "reviewedEnglishHash": "1a7e6299576a8e906105e3f67b4bc59f535887986f2eef500f1efd270b9dd639"
+  },
+  "workspaceServiceControl.startingOnPort": {
+    "en": "starting on :{{port}}…",
+    "zh-CN": "正在端口 :{{port}} 上启动…",
+    "reviewedEnglishHash": "f1f3cad15bd49e62d21185700f65014fa72718ad886829f712200c2566bfc3c7"
+  },
+  "workspaceServiceControl.status.provisioning": {
+    "en": "Provisioning…",
+    "zh-CN": "正在预置…",
+    "reviewedEnglishHash": "62cd0e7db7caf32bac9d185db32bc4e743f6c1bf3c6df98ce011b0001a3200f0"
+  },
+  "workspaceServiceControl.status.restarting": {
+    "en": "Restarting…",
+    "zh-CN": "正在重启…",
+    "reviewedEnglishHash": "75d0f1469d166c8cc906cae019a298ae25df9a5198a099a0f2b54ff2c925d716"
+  },
+  "workspaceServiceControl.status.stopping": {
+    "en": "Stopping…",
+    "zh-CN": "正在停止…",
+    "reviewedEnglishHash": "bbe8574175aba84f29afa398a91f00ad7598ff0b98e3ae1ddc5473d1b8c0b0ee"
+  },
+  "workspaceServiceControl.statusOnPort": {
+    "en": "{{status}} · :{{port}}",
+    "zh-CN": "{{status}} · :{{port}}",
+    "reviewedEnglishHash": "4fe0ea971e08e13628bb67be60b739becb41176c02bd3a704024e53a29b3f815"
+  },
+  "workspaceServiceControl.stopAll": {
+    "en": "Stop all",
+    "zh-CN": "全部停止",
+    "reviewedEnglishHash": "ead4f70a6fdb15b22792d5258c91250077d8f54bbaa4cee39966b21097e7bf4c"
+  },
+  "workspaceServiceControl.urlCopied": {
+    "en": "URL copied",
+    "zh-CN": "已复制 URL",
+    "reviewedEnglishHash": "0017bda4785398554bce6ca491883f232dbb4484f87d443b5e86f408a7e62430"
+  },
+  "workspaceServiceControl.viewLogs": {
+    "en": "View logs",
+    "zh-CN": "查看日志",
+    "reviewedEnglishHash": "9ec41ffd7797fa24b61fd5ce33629033da9efcf352c40e98597b7dd84b054119"
+  }
+}

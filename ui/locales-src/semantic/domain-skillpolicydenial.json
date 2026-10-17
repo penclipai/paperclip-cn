@@ -1,0 +1,112 @@
+{
+  "skillPolicyDenial.actorRestricted.remediation": {
+    "en": "Retry from an account with access to this action.",
+    "zh-CN": "请使用有权执行此操作的账户重试。",
+    "reviewedEnglishHash": "953f8008d9a59b431dd9c8ce87d1f00def3fc33a9e788fde573adaf1854510e4"
+  },
+  "skillPolicyDenial.actorRestricted.title": {
+    "en": "This action isn't available for the current actor.",
+    "zh-CN": "当前操作者无法执行此操作。",
+    "reviewedEnglishHash": "74a77c0925c9212ed5824cb27135b8f2b8e272597f7a845095ffea5ee4e66d35"
+  },
+  "skillPolicyDenial.admin.remediation": {
+    "en": "This requires company administration access. Ask an administrator to make this change.",
+    "zh-CN": "此操作需要公司管理权限。请联系管理员进行更改。",
+    "reviewedEnglishHash": "a7df790afcf00c6062f669015d4b3874227e43f5dc613decc433918aaa5c9a09"
+  },
+  "skillPolicyDenial.admin.title": {
+    "en": "This change needs administration access.",
+    "zh-CN": "此更改需要管理员权限。",
+    "reviewedEnglishHash": "ecff0048bd239b5758b3374a47277a7cebbf8b90a31f8d7b34b1cf70d91af217"
+  },
+  "skillPolicyDenial.authentication.remediation": {
+    "en": "Sign in and try again.",
+    "zh-CN": "请登录后重试。",
+    "reviewedEnglishHash": "e7f923c93f7bf4ab06e81ca887053c6bad9bc5c15da44977c08e8a12ca06af3c"
+  },
+  "skillPolicyDenial.authentication.title": {
+    "en": "Sign in to manage skills.",
+    "zh-CN": "请登录后管理技能。",
+    "reviewedEnglishHash": "9649b89431211cf028fd4b8b9f4d322b6f6c4efcde473b2fece0aff53b33dbce"
+  },
+  "skillPolicyDenial.companyBoundary.remediation": {
+    "en": "Open the skill from the company that owns it.",
+    "zh-CN": "请从拥有该技能的公司中打开它。",
+    "reviewedEnglishHash": "755672371aaaaafe410cf552ca3fe7ba8dc983a65a397856c799fd22ac094790"
+  },
+  "skillPolicyDenial.companyBoundary.title": {
+    "en": "This skill belongs to another company.",
+    "zh-CN": "此技能属于其他公司。",
+    "reviewedEnglishHash": "2108b0da3f1f58c1cc5260bdadba16c650db22c59efaf7f1fd5f4f3e1935b57d"
+  },
+  "skillPolicyDenial.dismiss": {
+    "en": "Dismiss",
+    "zh-CN": "关闭",
+    "reviewedEnglishHash": "48845bff334a50a59aaecf499f28a7a24c3b4b891b8b18a9f1169ad8e8a6b261"
+  },
+  "skillPolicyDenial.platform.remediation": {
+    "en": "Fix the flagged issue and try again.",
+    "zh-CN": "请修复标记的问题后重试。",
+    "reviewedEnglishHash": "361f850b9e5156b0af11b310bb4112b8291e9f14e05971117585421e913d6aa0"
+  },
+  "skillPolicyDenial.platform.title": {
+    "en": "This action is blocked by a platform safety rule.",
+    "zh-CN": "此操作被平台安全规则阻止。",
+    "reviewedEnglishHash": "59465fd0b05b2f9ef9e17ef9884b76a46cae222dab828a594aac2d6638c26f8e"
+  },
+  "skillPolicyDenial.policy.actionTitle": {
+    "en": "{{action}} is restricted by your company policy.",
+    "zh-CN": "公司策略限制了“{{action}}”操作。",
+    "reviewedEnglishHash": "912c67e1f4943c73c434d3d9283411642533013efa026288b717bb1a6c98aaf2"
+  },
+  "skillPolicyDenial.policy.remediation": {
+    "en": "A company administrator can change the skill policy to allow this.",
+    "zh-CN": "公司管理员可以修改技能策略以允许此操作。",
+    "reviewedEnglishHash": "09b9942d49818d7ca5cfcffdd2939f434ce9a05f2268a4511d4693aca8f7832f"
+  },
+  "skillPolicyDenial.policy.title": {
+    "en": "This action is restricted by your company policy.",
+    "zh-CN": "此操作受公司策略限制。",
+    "reviewedEnglishHash": "f060064aa227cbe781076d5e55c59a7039d9bf096daab2ebc9924d1e1221fe8d"
+  },
+  "skillPolicyDenial.secretHandling.remediation": {
+    "en": "Remove the secret value before saving.",
+    "zh-CN": "保存前请移除密钥值。",
+    "reviewedEnglishHash": "3fc09a7ea92dfb5160f5f3f2c100448c862f567d17878ed703469059c75de949"
+  },
+  "skillPolicyDenial.secretHandling.title": {
+    "en": "This skill exposes a secret value.",
+    "zh-CN": "此技能暴露了密钥值。",
+    "reviewedEnglishHash": "d769b84cf8d57bdd676811175130543183fa49c8f7c86664cc860a4e01dda011"
+  },
+  "skillPolicyDenial.sourceValidation.remediation": {
+    "en": "Fix the flagged source and retry.",
+    "zh-CN": "请修复标记的来源后重试。",
+    "reviewedEnglishHash": "8115bba9805c12426b2894f158f6e1eb8d8a9d61e1475be214cf5ab808947613"
+  },
+  "skillPolicyDenial.sourceValidation.title": {
+    "en": "This skill source failed validation.",
+    "zh-CN": "此技能来源未通过验证。",
+    "reviewedEnglishHash": "acbd77f65104e6ea3b4f69f26d63e0d59487fbe4b5c8a54b98a315721d5b985f"
+  },
+  "skillPolicyDenial.unsafeContent.remediation": {
+    "en": "Remove the fetch-and-execute or unsafe pattern before saving.",
+    "zh-CN": "保存前请移除获取后执行或其他不安全模式。",
+    "reviewedEnglishHash": "7c7996bafa261b42ca28ca3039e116dc5ef13fb0705bc767b17bd9492894fda6"
+  },
+  "skillPolicyDenial.unsafeContent.title": {
+    "en": "This skill contains unsafe content.",
+    "zh-CN": "此技能包含不安全内容。",
+    "reviewedEnglishHash": "7a99eff51b172a3369fb82b21dca5ca446db59713e5af99ed5aecd1414e35e4e"
+  },
+  "skillPolicyDenial.workspaceBoundary.remediation": {
+    "en": "Import from a configured Paperclip workspace or the company managed-skill directory.",
+    "zh-CN": "请从已配置的 Paperclip 工作区或公司托管技能目录导入。",
+    "reviewedEnglishHash": "4c11f4d59a915dcc0b60b34edb06ef3779c6a57c21f2d61519328afc084b2f41"
+  },
+  "skillPolicyDenial.workspaceBoundary.title": {
+    "en": "This skill source is outside an allowed workspace.",
+    "zh-CN": "此技能来源不在允许的工作区内。",
+    "reviewedEnglishHash": "8e7f5dc7f231384b33befee2f4e76e00e89529ad194541f84a9178b3f5e70c95"
+  }
+}

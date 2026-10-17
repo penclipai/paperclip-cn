@@ -1,0 +1,4131 @@
+{
+  "apps.gallery.appDescription.calendly": { "en": "Review Calendly event types and availability, and use supported scheduling actions.", "zh-CN": "查看 Calendly 事件类型和可用时间，并使用受支持的日程操作。", "reviewedEnglishHash": "5c09dd2e04a93493183832bd4662bc60140ee54921e63adc32c534f37be8f284" },
+  "apps.gallery.appDescription.chatCompletionsApi": { "en": "Connect any compatible harness to a Chat Completions-compatible provider or gateway.", "zh-CN": "将兼容的运行环境连接到兼容 Chat Completions 的服务提供商或网关。", "reviewedEnglishHash": "c3b17023db9e920d74a28621c22adfe879d82ae3af5411db0db4032df33162ea" },
+  "apps.gallery.appDescription.composio": { "en": "Discover and use connected apps through Composio Connect.", "zh-CN": "通过 Composio Connect 发现并使用已连接的应用。", "reviewedEnglishHash": "2743648a040133634bf794e33a493f7b546c2c9ad3b704d1a851649f80d0cbd8" },
+  "apps.gallery.appDescription.enterpret": { "en": "Ask questions about your customer feedback and pull verbatim quotes with citations.", "zh-CN": "针对客户反馈提问，并提取附带引用的原文。", "reviewedEnglishHash": "def64b72392a5dd6250b13d7aa949faf6e6728c3bf772a480b9fa36a2a38adc4" },
+  "apps.gallery.appDescription.exa": { "en": "Search the public web and read source pages with Exa.", "zh-CN": "通过 Exa 搜索公开网络并阅读源页面。", "reviewedEnglishHash": "9c129b89a2fb8adb9cb573198f028be3ead58ae4bbcb5f4a78f9ad63ed625b67" },
+  "apps.gallery.appDescription.executor": { "en": "Use the tools exposed by your Executor MCP connection.", "zh-CN": "使用 Executor MCP 连接公开的工具。", "reviewedEnglishHash": "8fff55a7f2a1f152486a7fe45e1dc27faa1b3c56bfbb7861dfd6cae131ee7484" },
+  "apps.gallery.appDescription.firecrawl": { "en": "Search, scrape, and parse public web pages with Firecrawl.", "zh-CN": "通过 Firecrawl 搜索、抓取并解析公开网页。", "reviewedEnglishHash": "ac5397ba4af482e147f20bc28bf87ad72df892b02f95a71cd7777a83e3b35be4" },
+  "apps.gallery.appDescription.gscWizard": { "en": "Read Google Search Console, Bing Webmaster, and analytics data for connected properties.", "zh-CN": "读取已连接站点的 Google Search Console、Bing Webmaster 和分析数据。", "reviewedEnglishHash": "6907c7926bff769b5a993412a652cab6bb9362c225a392231338a6a195cf296a" },
+  "apps.gallery.appDescription.local": { "en": "Use a local model server in the agent’s execution environment.", "zh-CN": "在智能体执行环境中使用本地模型服务器。", "reviewedEnglishHash": "339cb75f42c6a9312e433a44ee9ccef5976f06ed9c5258812fbb088b0995f820" },
+  "apps.gallery.appDescription.messagesApi": { "en": "Connect any compatible harness to an Anthropic Messages-compatible provider or gateway.", "zh-CN": "将兼容的运行环境连接到兼容 Anthropic Messages 的服务提供商或网关。", "reviewedEnglishHash": "ec682e15ca487c742b6b9bc0b47adda8269739405945f008237b76c743173d81" },
+  "apps.gallery.appDescription.parallelSearch": { "en": "Search the public web and extract source pages with Parallel.", "zh-CN": "通过 Parallel 搜索公开网络并提取源页面。", "reviewedEnglishHash": "f6a1eb46b5664fd10ebed9333f4f58e29a933b5f3330c66cab38cda982c2e016" },
+  "apps.gallery.appDescription.responsesApi": { "en": "Connect any compatible harness to an OpenAI Responses-compatible provider or gateway, including Emissary.", "zh-CN": "将兼容的运行环境连接到兼容 OpenAI Responses 的服务提供商或网关，包括 Emissary。", "reviewedEnglishHash": "9066ee7990c09e0ea711942b48ce48c157f8f3f236d9e555c306a7a8f78fa277" },
+  "apps.gallery.appDescription.sentry": { "en": "Investigate errors, releases, and production issues.", "zh-CN": "排查错误、发布版本和生产问题。", "reviewedEnglishHash": "e0434210914693066f3a718c00cef1500035fe72f97943d359e3df07f08c960d" },
+  "apps.gallery.appDescription.shopify": { "en": "Search a store's products and policies, and manage shopping carts.", "zh-CN": "搜索商店的商品和政策，并管理购物车。", "reviewedEnglishHash": "d08cf278e13bcc1fe581bbd339796f1144dcf66d018ef3a985551d78ffa6ca3d" },
+  "apps.gallery.appDescription.agentmail": {
+    "en": "Give agents email inboxes and handle each conversation as a task.",
+    "zh-CN": "为智能体提供电子邮件收件箱，并将每段对话作为任务处理。",
+    "reviewedEnglishHash": "d29107eb0fb06540314ac652c8c0ad7770b322c027a370b641535e2a5f26060c"
+  },
+  "apps.gallery.appDescription.browserUseCloud": {
+    "en": "Delegate browser tasks and watch them live in Paperclip.",
+    "zh-CN": "委派浏览器任务，并在 Paperclip 中实时查看执行情况。",
+    "reviewedEnglishHash": "0b4c95556a5b046b58452ad57242160a3688619b5f4768f03c1dfa00947d925b"
+  },
+  "apps.gallery.appDescription.cognee": {
+    "en": "Build and recall shared graph memory from documents and conversations.",
+    "zh-CN": "从文档和对话中构建并调用共享图谱记忆。",
+    "reviewedEnglishHash": "1ffe1e8cb81a3be2ae43331f2bc59ac7e21513ac3e5a88dc9f0fd023dd9523b0"
+  },
+  "apps.gallery.appDescription.fireflies": {
+    "en": "Search meeting transcripts, read summaries and action items, and connect meeting-ready routines.",
+    "zh-CN": "搜索会议记录，阅读摘要和行动项，并连接适合会议的例行任务。",
+    "reviewedEnglishHash": "66d4c005b719cb75d67378ad97d2852666f8c3ce2f8543e791e30a692aa9bcfd"
+  },
+  "apps.assistantConnection.action": {
+    "en": "{{action}} Assistant Connection (MCP)",
+    "zh-CN": "{{action}}助手连接（MCP）",
+    "reviewedEnglishHash": "b0d8262df36373eccfbaeff7631d3557c402d5a4c716f0c061e917e016532433"
+  },
+  "apps.assistantConnection.title": {
+    "en": "Assistant Connection (MCP)",
+    "zh-CN": "助手连接（MCP）",
+    "reviewedEnglishHash": "6f168e8d966660e708519401ff0c796c60c58aa10ad7a351b046cdbf2df72b09"
+  },
+  "apps.advanced.key": {
+    "en": "Key",
+    "zh-CN": "键",
+    "reviewedEnglishHash": "99a52df3ff3d499488e2fa28150c4106a2cb5e928891a830a9aa3922b2d32160"
+  },
+  "apps.advanced.removeAccessPrefix": {
+    "en": "Agents lose access to",
+    "zh-CN": "智能体会立即失去对",
+    "reviewedEnglishHash": "13409430d1ad2118d0e58e6b3c0c8a22c3cfc232c4104040e6fcb0d3200190ee"
+  },
+  "apps.advanced.removeAccessSuffix": {
+    "en": "right away. You can connect it again later.",
+    "zh-CN": "的访问权限。之后可再次连接。",
+    "reviewedEnglishHash": "e80d23cae0ab60259fc3ed4c84c3a8b97e43a2863718e433e74c28bcd387824c"
+  },
+  "apps.browse.appDescription.anthropic": {
+    "en": "Use Anthropic APIs with a restricted key.",
+    "zh-CN": "使用受限密钥访问 Anthropic API。",
+    "reviewedEnglishHash": "e179e50dbf082183e471958fa1300d3c65829cb69069dff18ddd8af5e3e4933d"
+  },
+  "apps.browse.appDescription.apiKeyGeneric": {
+    "en": "Connect an API using a key from your provider.",
+    "zh-CN": "使用服务提供商提供的密钥连接 API。",
+    "reviewedEnglishHash": "dbf74bbc657fc4d1b134e98b18e18f878e2a7d87b3c2181dbcd1536ddf7c8ee3"
+  },
+  "apps.gallery.appDescription.providerAccounts": {
+    "en": "Connect {{appName}} accounts for your agents.",
+    "zh-CN": "为你的智能体连接 {{appName}} 账户。",
+    "reviewedEnglishHash": "2b71f9e9e028287a2b7d3aa9a04700fa7b6fdcb9f3617fa767546d4607327fc4"
+  },
+  "apps.gallery.appDescription.providerHostedMcp": {
+    "en": "Connect {{appName}}'s provider-hosted MCP server.",
+    "zh-CN": "连接 {{appName}} 提供的托管 MCP 服务器。",
+    "reviewedEnglishHash": "70bd5558bcca0648b0dafdcd9cc18dc7e76b2e11a31b8e8f55da0c5c788a09ca"
+  },
+  "apps.browse.appDescription.context7": {
+    "en": "Look up current documentation for software libraries.",
+    "zh-CN": "查询软件库的最新文档。",
+    "reviewedEnglishHash": "e21aab668be81ee53006d00491e95f38019b67efd278a0b9a4bcc97dc16d835e"
+  },
+  "apps.browse.appDescription.github": {
+    "en": "Read code and pull requests, and coordinate repository work.",
+    "zh-CN": "读取代码和拉取请求，并协作处理仓库工作。",
+    "reviewedEnglishHash": "8c1cc8f1f4ffcfe4c0a211d167590ea2c392a360b661c89e4013a64d08898c97"
+  },
+  "apps.browse.appDescription.googleSheets": {
+    "en": "Read and update selected spreadsheets.",
+    "zh-CN": "读取和更新选定的电子表格。",
+    "reviewedEnglishHash": "8e0318307b343625b98fde78d15a7057b2a89203e1d2d09a32fe83092be8ddea"
+  },
+  "apps.browse.appDescription.linear": {
+    "en": "Create, update, and read Linear issues.",
+    "zh-CN": "创建、更新和读取 Linear 任务。",
+    "reviewedEnglishHash": "fbe263aa293a58b326b2e4b2019f311f3055fda9616ede98fe75a173599e5148"
+  },
+  "apps.browse.appDescription.notion": {
+    "en": "Read and update pages in your Notion workspace.",
+    "zh-CN": "读取和更新你的 Notion 工作区页面。",
+    "reviewedEnglishHash": "ad6aa8f7ae3ebc7d760f6fea73c963807f4e3556e097ee54adc19ea1260ced5d"
+  },
+  "apps.browse.appDescription.oauthGeneric": {
+    "en": "Connect a provider using your own OAuth client.",
+    "zh-CN": "使用你自己的 OAuth 客户端连接服务提供商。",
+    "reviewedEnglishHash": "6985b2bdb7004cb44b943ced290b0bee95853250cdcd90e703c073d1b838e2e1"
+  },
+  "apps.browse.appDescription.sentry": {
+    "en": "Investigate errors, releases, and production issues.",
+    "zh-CN": "排查错误、发布版本和生产问题。",
+    "reviewedEnglishHash": "e0434210914693066f3a718c00cef1500035fe72f97943d359e3df07f08c960d"
+  },
+  "apps.browse.appDescription.slack": {
+    "en": "Search channels and coordinate team communication.",
+    "zh-CN": "搜索频道并协作处理团队沟通。",
+    "reviewedEnglishHash": "62fad443fdfbf8ae8afdcc015c21bf1ae54cbecd3372875dd8a4b3e056cdc8c5"
+  },
+  "apps.browse.appDescription.vercel": {
+    "en": "Inspect projects, deployments, and runtime logs.",
+    "zh-CN": "查看项目、部署和运行时日志。",
+    "reviewedEnglishHash": "f51955f1fc23acdb6876dd5b4d30f0024e2deb55e70c402204152c190b5e935b"
+  },
+  "apps.browse.appDescription.zapier": {
+    "en": "Reach thousands of apps through your Zapier account.",
+    "zh-CN": "通过 Zapier 帐户连接数千个应用。",
+    "reviewedEnglishHash": "9f1817642e4f736589de5afb732aae07a0e9756742479f91ec632cf3e64455eb"
+  },
+  "apps.browse.connectOwnTool": {
+    "en": "Connect your own tool",
+    "zh-CN": "连接你自己的工具",
+    "reviewedEnglishHash": "89af50f90908406db144a6c4c943fa40d3e4b4c699b788f2b42729bd7a5986ba"
+  },
+  "apps.browse.connectOwnToolDescription": {
+    "en": "Paste the URL from a custom or self-hosted MCP server and review its actions before enabling it.",
+    "zh-CN": "粘贴自定义或自托管 MCP 服务器的 URL，并在启用前审阅其操作。",
+    "reviewedEnglishHash": "14aea9fa8858335118f0ec3ac8046833b437fa0be171ba8f399d95ee4c4291b1"
+  },
+  "apps.browse.connectedAlready": {
+    "en": "{{count}} connected already",
+    "zh-CN": "已连接 {{count}} 个",
+    "reviewedEnglishHash": "78b5416076ebfcbfbd2509712cb9756922b538fd707976bbc125a42dabdf9988"
+  },
+  "apps.browse.description": {
+    "en": "Connect Zapier or your own MCP server. More integrations are coming soon.",
+    "zh-CN": "连接 Zapier 或你自己的 MCP 服务器。更多集成即将推出。",
+    "reviewedEnglishHash": "69d59e30c7f8be508dc1a374b3e312273ba23db9f9b946f3f9d845e6ecbafeea"
+  },
+  "apps.browse.developerTools": {
+    "en": "Developer tools (advanced)",
+    "zh-CN": "开发者工具（高级）",
+    "reviewedEnglishHash": "f4a052b1366b2ffaca4537762c7827266e2778dae0efbe248499604e1c8038f1"
+  },
+  "apps.browse.noMatches": {
+    "en": "No planned apps match “{{query}}”.",
+    "zh-CN": "没有计划中的应用匹配“{{query}}”。",
+    "reviewedEnglishHash": "124e029f1773781168e7eefd8485a8bd1c0001570011b98bd9489f5c7b111019"
+  },
+  "apps.browse.noPlannedMatches": {
+    "en": "No planned apps match “",
+    "zh-CN": "没有计划中的应用匹配“",
+    "reviewedEnglishHash": "cebbbb9382729b722c35eb7bbefa57a4113c073d45b1ee77ad649ec626b87ece"
+  },
+  "apps.browse.popular": {
+    "en": "Popular",
+    "zh-CN": "热门",
+    "reviewedEnglishHash": "76327dec9ae3a06a8c3c283e6a81d3710ae736021b583875c13e4e8fb2ad83c0"
+  },
+  "apps.browse.previewNotice": {
+    "en": "Zapier connects with the MCP URL it gives you. Other listed integrations are previews.",
+    "zh-CN": "Zapier 会连接它提供的 MCP URL。列表中的其他集成均为预览。",
+    "reviewedEnglishHash": "0ffe5f2eda3c19fb1f7bf965da39f81c0f68ffea72e3eb0a81d81d8ce52ea211"
+  },
+  "apps.browse.results": {
+    "en": "Results ({{count}})",
+    "zh-CN": "结果（{{count}}）",
+    "reviewedEnglishHash": "4d90ae044f640925516841ac8fe8933d2d25b075b1549e9fc53fc3209e9e460a"
+  },
+  "apps.browse.searchAriaLabel": {
+    "en": "Search apps",
+    "zh-CN": "搜索应用",
+    "reviewedEnglishHash": "a10a36fa109818bee2cb638ae0fe9d5a39559fb6ed84053eaa999595ab9d7c75"
+  },
+  "apps.browse.searchPlaceholder": {
+    "en": "Search apps…",
+    "zh-CN": "搜索应用…",
+    "reviewedEnglishHash": "f8fe15b7d9da6fadc8dfdc197160b31a142a6bb24cfcb6a29c517960b89f87b0"
+  },
+  "apps.browse.selectCompany": {
+    "en": "Select a company to browse apps.",
+    "zh-CN": "请选择一个公司以浏览应用。",
+    "reviewedEnglishHash": "00cdeb1593c39824071c2b6dd4dcf955ec64491d1b719a4d70d3f182df9ae9b2"
+  },
+  "apps.common.actions": {
+    "en": "Actions",
+    "zh-CN": "行动",
+    "reviewedEnglishHash": "ff8059dc6752afdd30d275932b1d5031a2ec854b387a8c57ecc6689915293a43"
+  },
+  "apps.common.allAgents": {
+    "en": "All agents",
+    "zh-CN": "所有智能体商",
+    "reviewedEnglishHash": "54c32d3e2cfa1cc879f746643e6b41360541692fc0a163f3793595510398e6f5"
+  },
+  "apps.common.app": {
+    "en": "App",
+    "zh-CN": "应用",
+    "reviewedEnglishHash": "0d04bfeb7d64b71c74fc925cca93d683154e8cc7e6e5838faced498e34c9984d"
+  },
+  "apps.common.apps": {
+    "en": "Apps",
+    "zh-CN": "应用",
+    "reviewedEnglishHash": "89dd748442c194857825848e1500abbbc5f52fb067ad27fb05dc9fb23eebba3b"
+  },
+  "apps.common.back": {
+    "en": "Back",
+    "zh-CN": "返回",
+    "reviewedEnglishHash": "76900f1bfd16c8d4dd3d25e6f46638d7165aee23883ccea6bfe071c514421769"
+  },
+  "apps.common.backToApps": {
+    "en": "Back to apps",
+    "zh-CN": "返回应用",
+    "reviewedEnglishHash": "27ab5ab0768a8715731ab832a6978a3c0b87ea44c3a4fc6b15dcdaea906da895"
+  },
+  "apps.common.cancel": {
+    "en": "Cancel",
+    "zh-CN": "取消",
+    "reviewedEnglishHash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+  },
+  "apps.common.comingSoon": {
+    "en": "Coming soon",
+    "zh-CN": "即将推出",
+    "reviewedEnglishHash": "4f7d64017689437e6d93f5724f3f797054f3935d98a13148025b616b8db8fb2c"
+  },
+  "apps.common.company": {
+    "en": "Company",
+    "zh-CN": "公司简介",
+    "reviewedEnglishHash": "de4743c879734dc38cb3e270ecefcae077c3c2e626f9298115d5a03c8613f89b"
+  },
+  "apps.common.connect": {
+    "en": "Connect",
+    "zh-CN": "连接",
+    "reviewedEnglishHash": "1a2303ede07493acc7caaa7c737f3c52bcc9cf04372be19ed1b0af6b9f2c791e"
+  },
+  "apps.common.connectArrow": {
+    "en": "Connect →",
+    "zh-CN": "连接 →",
+    "reviewedEnglishHash": "b75abfa6defedb2808a789d5c91b411db5f1047425ef20b11b2113d92bea084d"
+  },
+  "apps.common.continue": {
+    "en": "Continue",
+    "zh-CN": "继续",
+    "reviewedEnglishHash": "31fbef162594de01bab0cd525c51f74de7bcb15063029fa1a54b2cf5944c80d8"
+  },
+  "apps.common.copy": {
+    "en": "Copy",
+    "zh-CN": "复制",
+    "reviewedEnglishHash": "e21f935f11d7e966dbbae78da9daa378fe8142a14e7c0cd7434183005faa6c5c"
+  },
+  "apps.common.done": {
+    "en": "Done",
+    "zh-CN": "完成",
+    "reviewedEnglishHash": "11a6767d5674c7e45f7e00dc525762275b3a48491ad6045427d2609cc496c516"
+  },
+  "apps.common.lastUsed": {
+    "en": "Last used",
+    "zh-CN": "上次使用",
+    "reviewedEnglishHash": "830ec7f812f9d862250b61add10f9a078de67a3282dd9e94f60d64cec58eefec"
+  },
+  "apps.common.name": {
+    "en": "Name",
+    "zh-CN": "名称",
+    "reviewedEnglishHash": "dcd1d5223f73b3a965c07e3ff5dbee3eedcfedb806686a05b9b3868a2c3d6d50"
+  },
+  "apps.common.never": {
+    "en": "Never",
+    "zh-CN": "从来没有",
+    "reviewedEnglishHash": "6300ef800bb884295b0b4b35682b75cecd7cc550d202db56d04a0643b8fb873f"
+  },
+  "apps.common.no": {
+    "en": "No",
+    "zh-CN": "否",
+    "reviewedEnglishHash": "1ea442a134b2a184bd5d40104401f2a37fbc09ccf3f4bc9da161c6099be3691d"
+  },
+  "apps.common.notAvailable": {
+    "en": "Not available",
+    "zh-CN": "不可用",
+    "reviewedEnglishHash": "67a926f7008e2b0e7f2b3f7a4b37597834830110be1d51138f425d6f3449bc09"
+  },
+  "apps.common.open": {
+    "en": "Open",
+    "zh-CN": "打开",
+    "reviewedEnglishHash": "ed077f3d8125d60dca1979c7133601bd187d47c73ed9975028f677e49e709942"
+  },
+  "apps.common.recommended": {
+    "en": "Recommended",
+    "zh-CN": "推荐",
+    "reviewedEnglishHash": "d70604e8430461372849bbd123d85771e11423870a507e8fa4650a7e9a5a50ef"
+  },
+  "apps.common.reconnect": {
+    "en": "Reconnect",
+    "zh-CN": "重新连接",
+    "reviewedEnglishHash": "bf8a9eab9e7e141bfb81f0ca9244a5f68f476ed0b57f03538410417298169d18"
+  },
+  "apps.common.status": {
+    "en": "Status",
+    "zh-CN": "状态",
+    "reviewedEnglishHash": "920e413c7d411b61ef3e8c63b1cb6ad058d5f95f8b481dbafe60248387d8c355"
+  },
+  "apps.common.tryAgain": {
+    "en": "Please try again.",
+    "zh-CN": "请再试一次。",
+    "reviewedEnglishHash": "eea4fb33efd382834952e3e7ab52f8dc41ccc2c3f5c3f246f0505235e0e962aa"
+  },
+  "apps.common.yes": {
+    "en": "Yes",
+    "zh-CN": "是的",
+    "reviewedEnglishHash": "85a39ab345d672ff8ca9b9c6876f3adcacf45ee7c1e2dbd2408fd338bd55e07e"
+  },
+  "apps.connect.access.allDescription": {
+    "en": "Anyone you’ve added to Paperclip can use {{appName}} in their tasks. This is what most teams want.",
+    "zh-CN": "你添加到 Paperclip 的任何人都可以在任务中使用 {{appName}}。这也是大多数团队想要的。",
+    "reviewedEnglishHash": "bf6282ce4b114960d110e70052b2ce6e38ca3a5f1b98bcbf31b5b653af0ca232"
+  },
+  "apps.connect.access.continue": {
+    "en": "Continue to install",
+    "zh-CN": "继续安装",
+    "reviewedEnglishHash": "be32ef91d1ad54654dae22bf39588902e05babe82b9a2ddf45e5f12bf8f2a7a0"
+  },
+  "apps.connect.access.description": {
+    "en": "You can change this later from the app’s page.",
+    "zh-CN": "你之后也可以从该应用页面更改。",
+    "reviewedEnglishHash": "9204147a29ceeacabc4a70ff92cd2292f11945e7827b26d048932d34e4c40d41"
+  },
+  "apps.connect.access.specificAgents": {
+    "en": "Only specific agents",
+    "zh-CN": "仅特定智能体",
+    "reviewedEnglishHash": "e6b807d84f9f1a14f7e4a2370ddea1e884e2bee363399bfd76c0571931437e1d"
+  },
+  "apps.connect.access.specificDescription": {
+    "en": "Tick the agents who can use {{appName}}.",
+    "zh-CN": "勾选可以使用 {{appName}} 的智能体。",
+    "reviewedEnglishHash": "64a6cc4336ebba42c6cb15b54d00ae2bd032d17c496fdbc76bc1dee113089760"
+  },
+  "apps.connect.access.title": {
+    "en": "Who can use {{appName}}?",
+    "zh-CN": "谁可以使用 {{appName}}？",
+    "reviewedEnglishHash": "3ede21f09c0fb7fa4ea651d606395e54be413e4de883d594f732a0a71bff767e"
+  },
+  "apps.connect.actions.askFirst": {
+    "en": "Ask first",
+    "zh-CN": "先询问",
+    "reviewedEnglishHash": "4a9e8cf39abb59f1792cd4332a1dbc88491ebb708b83d6f6190ff6216afe7985"
+  },
+  "apps.connect.actions.canMakeChanges": {
+    "en": "Can make changes",
+    "zh-CN": "可更改",
+    "reviewedEnglishHash": "0bf247bbb3ae9bf29e857d1823af26e5fbf278df19eee68406ccad9e1028349a"
+  },
+  "apps.connect.actions.canMakeChangesHint": {
+    "en": "these change something in another app",
+    "zh-CN": "这些会在其他应用中更改内容",
+    "reviewedEnglishHash": "cc33051bb676673230ef9ef641f9d68751656bb2c3ab37123a97f033b800d9b8"
+  },
+  "apps.connect.actions.connected": {
+    "en": "Connected to {{appName}} — it offers {{count}} actions.",
+    "zh-CN": "已连接到 {{appName}}，它提供 {{count}} 个操作。",
+    "reviewedEnglishHash": "42d61d9bb361d265fbc8ceda1064000af45ac3b836f09bf3c6d9e0746945f6c4"
+  },
+  "apps.connect.actions.connected_one": {
+    "en": "Connected to {{appName}} — it offers {{count}} action.",
+    "zh-CN": "已连接到 {{appName}}，它提供 {{count}} 个操作。",
+    "reviewedEnglishHash": "cc1de94007c23108a9fef5967811166046f0ead8509c4e19988677b0c6ae5642"
+  },
+  "apps.connect.actions.connected_other": {
+    "en": "Connected to {{appName}} — it offers {{count}} actions.",
+    "zh-CN": "已连接到 {{appName}}，它提供 {{count}} 个操作。",
+    "reviewedEnglishHash": "42d61d9bb361d265fbc8ceda1064000af45ac3b836f09bf3c6d9e0746945f6c4"
+  },
+  "apps.connect.actions.continueCount": {
+    "en": "Continue with {{count}} actions on",
+    "zh-CN": "继续启用 {{count}} 个操作",
+    "reviewedEnglishHash": "6f9473d7ad4771588b793164f39f0c4692a17daa16ac0a8868020fe206dc51b2"
+  },
+  "apps.connect.actions.continueCount_one": {
+    "en": "Continue with {{count}} action on",
+    "zh-CN": "继续启用 {{count}} 个操作",
+    "reviewedEnglishHash": "af732c7f3e5b87ed6520208b55f372621d2150b346825e6592925ef945c5835e"
+  },
+  "apps.connect.actions.continueCount_other": {
+    "en": "Continue with {{count}} actions on",
+    "zh-CN": "继续启用 {{count}} 个操作",
+    "reviewedEnglishHash": "6f9473d7ad4771588b793164f39f0c4692a17daa16ac0a8868020fe206dc51b2"
+  },
+  "apps.connect.actions.description": {
+    "en": "Read-only actions are on. Anything that can change something starts off — turn on the ones you want.",
+    "zh-CN": "只读操作已开启。任何会更改内容的操作都先关闭 - 把你想要的打开。",
+    "reviewedEnglishHash": "1207957db9e96fa93da2847203a732c6678db5b6da4eab4dc956f8e492d471f9"
+  },
+  "apps.connect.actions.newActionsNotice": {
+    "en": "If {{appName}} adds new actions later, they start off until you review them.",
+    "zh-CN": "如果 {{appName}} 之后新增了操作，它们会先保持关闭，直到你审阅。",
+    "reviewedEnglishHash": "bb406d830163d2924616bf24bbb59eb6811981674870822aedcf7cc0c53aeb7a"
+  },
+  "apps.connect.actions.readOnly": {
+    "en": "Read only",
+    "zh-CN": "只读",
+    "reviewedEnglishHash": "8ac767353080eae75227c457c3e6dc0a438f6d0c2593940355842685e3a548e3"
+  },
+  "apps.connect.actions.readOnlyHint": {
+    "en": "these can look but not change anything",
+    "zh-CN": "这些只能查看，不能更改任何内容",
+    "reviewedEnglishHash": "e0c3e1b097afa7ac5c9cc05caa1d3b124be63a25510a471f4e60c4fa87ea5d35"
+  },
+  "apps.connect.actions.toggleAction": {
+    "en": "Toggle {{action}}",
+    "zh-CN": "切换 {{action}}",
+    "reviewedEnglishHash": "b1c85ef40eb6fd9c35240df0d44272a08d08c14ffd9f1dd54c888936ec524eb7"
+  },
+  "apps.connect.actions.turnAllOff": {
+    "en": "Turn all off",
+    "zh-CN": "全部关闭",
+    "reviewedEnglishHash": "59d74fd7dc6c7617ee458f55b408841fe6f9205ef0fbeab8178643b15f40d17f"
+  },
+  "apps.connect.actions.turnAllOn": {
+    "en": "Turn all on",
+    "zh-CN": "全部开启",
+    "reviewedEnglishHash": "08f6d3f555b7c1f509d50816135b003c4bdcc4ef86c9e2289831e999960b8944"
+  },
+  "apps.connect.anyonePrefix": {
+    "en": "Anyone you’ve added to Paperclip can use",
+    "zh-CN": "你添加到 Paperclip 的任何人都可以在任务中使用",
+    "reviewedEnglishHash": "a4effca0ee8e39b1c0f4afce7f4f78b3a4ef94f7bc5f99d80066576536912e7e"
+  },
+  "apps.connect.anyoneSuffix": {
+    "en": "in their tasks. This is what most teams want.",
+    "zh-CN": "。这是大多数团队的选择。",
+    "reviewedEnglishHash": "e2ec2181356f7dfe34ee9b9137a8bc1174999f732bd975ba659ae57e44a54603"
+  },
+  "apps.connect.appKey": {
+    "en": "App key",
+    "zh-CN": "应用密钥",
+    "reviewedEnglishHash": "e9ba76956424f762db0931b0b2c8a1b4705c7f249fbbe53414552d2ae0014ab6"
+  },
+  "apps.connect.checkKey": {
+    "en": "Please check your key and try again.",
+    "zh-CN": "请检查你的密钥后重试。",
+    "reviewedEnglishHash": "65c0f7cc808b67f9816424d5dc97663bfc07682f02af7e8ef2e0cab7567b17a2"
+  },
+  "apps.connect.checkKeyNotice": {
+    "en": "We’ll check the key before turning anything on.",
+    "zh-CN": "我们会在开启前检查密钥。",
+    "reviewedEnglishHash": "0a81ece9bd94415c63ad3383573373703d417cc58af3fed18ad3ae5e98060aff"
+  },
+  "apps.connect.checkLink": {
+    "en": "Check link",
+    "zh-CN": "检查链接",
+    "reviewedEnglishHash": "d388c753ba5115461482c3808749087935dda1746a7beb64c0fe22854ea3cf71"
+  },
+  "apps.connect.checking": {
+    "en": "Checking…",
+    "zh-CN": "检查中…",
+    "reviewedEnglishHash": "ec963ffc911b840134fc738b41a8bb0493489c402a4a761efd36c16dea7d984b"
+  },
+  "apps.connect.connectError": {
+    "en": "Couldn’t connect",
+    "zh-CN": "无法连接",
+    "reviewedEnglishHash": "be78c21add10a15d5871f6518830088c5976c8cf5780669f22ce0732b946fa4c"
+  },
+  "apps.connect.connectNamedApp": {
+    "en": "Connect {{appName}}",
+    "zh-CN": "连接 {{appName}}",
+    "reviewedEnglishHash": "5b75a73d0098420776bef11ea5d9603141b31fb83711b95f527f00c63180f17a"
+  },
+  "apps.connect.connectZapier": {
+    "en": "Connect Zapier",
+    "zh-CN": "连接 Zapier",
+    "reviewedEnglishHash": "f3322b552ef1bcb8db0b9a0e749fd0cc38cfe2a87eeaada1b211e224fe4c299b"
+  },
+  "apps.connect.connectedTo": {
+    "en": "Connected to",
+    "zh-CN": "已连接到",
+    "reviewedEnglishHash": "34e3fb39105083608ae665c9d25f75a624dd01d0034a575bc767b4284801a4c3"
+  },
+  "apps.connect.continueWith": {
+    "en": "Continue with",
+    "zh-CN": "继续使用",
+    "reviewedEnglishHash": "d2b79489c9e61b642714e366e85aa9204e4699a4394883bd0cb8ade8608b24fd"
+  },
+  "apps.connect.done": {
+    "en": "Done",
+    "zh-CN": "完成",
+    "reviewedEnglishHash": "11a6767d5674c7e45f7e00dc525762275b3a48491ad6045427d2609cc496c516"
+  },
+  "apps.connect.everyRun": {
+    "en": "every run.",
+    "zh-CN": "每次运行。",
+    "reviewedEnglishHash": "ffbbac0d97b60bb47e5c85dba75e3ea41315a39af9517f02bb25d56623173634"
+  },
+  "apps.connect.findCredential": {
+    "en": "Where do I find this?",
+    "zh-CN": "在哪里能找到这个？",
+    "reviewedEnglishHash": "d06ff32b4b2a7559f4d23bf1da93d228503652c870cf70327a5647f4be14fa93"
+  },
+  "apps.connect.finishError": {
+    "en": "Couldn’t finish setup",
+    "zh-CN": "无法完成设置",
+    "reviewedEnglishHash": "a1a16659d6592e4f5f057ffe2606ebcd059b6fbd73051a4d7c570a45d8d4c313"
+  },
+  "apps.connect.gallery.noMatches": {
+    "en": "No apps match “{{query}}”.",
+    "zh-CN": "没有应用匹配“{{query}}”。",
+    "reviewedEnglishHash": "54d38caed55915dc125700cacc8a02b09313ce5bd6f308d8e1840cd938030b3a"
+  },
+  "apps.connect.gallery.notAvailableOnInstance": {
+    "en": "Not available on this instance - ask your admin.",
+    "zh-CN": "此实例上暂不可用 - 请联系管理员。",
+    "reviewedEnglishHash": "9c3409bd9c33d32bcebe6b26b4c67c0033af1f107eaea0597d00fe8d79f5cabd"
+  },
+  "apps.connect.gallery.notConfiguredTitle": {
+    "en": "{{appName}} isn't configured on this instance yet. Ask your Paperclip admin.",
+    "zh-CN": "此实例上还未配置 {{appName}}。请联系你的 Paperclip 管理员。",
+    "reviewedEnglishHash": "3995341acfeb22bc0f595af6c23097dd5194bd75bdc0756105d723e1e95d3d9a"
+  },
+  "apps.connect.gallery.signInComingSoon": {
+    "en": "Sign-in coming soon",
+    "zh-CN": "登录功能即将推出",
+    "reviewedEnglishHash": "529afb27e388e2cc85820d6d38bbbcf9bdf01589c77351b5aadd413eeac72073"
+  },
+  "apps.connect.googleSheets.invalidLink": {
+    "en": "That doesn't look like a Google Sheets link.",
+    "zh-CN": "这看起来不像 Google Sheets 链接。",
+    "reviewedEnglishHash": "42b2bd84855693409ebb869981ceb20e7d287300ac7858f658ca482f80aeb68c"
+  },
+  "apps.connect.googleSheets.linkHint": {
+    "en": "Paste one link per line. Both .../edit and .../edit#gid=... links work.",
+    "zh-CN": "每行粘贴一个链接。.../edit 和 .../edit#gid=... 两种链接都可以。",
+    "reviewedEnglishHash": "8698838c3146b89805eb0e768b1d5b3a40f1704f39d57eb52ef5bc838292c240"
+  },
+  "apps.connect.googleSheets.missingLink": {
+    "en": "Paste at least one Google Sheets link.",
+    "zh-CN": "请至少粘贴一个 Google Sheets 链接。",
+    "reviewedEnglishHash": "8b00cdfba3ee3f593966146120d7f7e1e9a86d0e373e24a87f3d6f6cac2e76c9"
+  },
+  "apps.connect.googleSheets.pasteLinks": {
+    "en": "Paste links to the sheets you shared",
+    "zh-CN": "粘贴你共享的工作表链接",
+    "reviewedEnglishHash": "602d523297e35d82cf0fa045246768700986d84623aeec5529f8725728639731"
+  },
+  "apps.connect.googleSheets.readyCount": {
+    "en": "{{count}} sheets ready to connect.",
+    "zh-CN": "有 {{count}} 个工作表可连接。",
+    "reviewedEnglishHash": "14fac197a7623c7ef7783a4ed55c77f97abb05b65cefebeb90ee4d7b8bffcf0c"
+  },
+  "apps.connect.googleSheets.shareEmail": {
+    "en": "Share each sheet with this email",
+    "zh-CN": "将每个工作表共享给此邮箱",
+    "reviewedEnglishHash": "0fc7de61d01e9b08edc0fd40100e4be239ddc760558beae9160ae7dcb1653abb"
+  },
+  "apps.connect.googleSheets.shareInstructions": {
+    "en": "In Google Sheets, click Share and add this email as an Editor. Then paste the sheet links below.",
+    "zh-CN": "在 Google Sheets 中点击 Share，并将此邮箱添加为编辑者。然后把工作表链接粘贴到下方。",
+    "reviewedEnglishHash": "2bf80013d932fa9ec2688efa132614547f15f56170d6633d099e040dd70dee59"
+  },
+  "apps.connect.googleSheets.title": {
+    "en": "Connect Google Sheets",
+    "zh-CN": "连接 Google Sheets",
+    "reviewedEnglishHash": "cbd1f6a8e7d9342113769d72f76cb896f9be31c7866e081bad1700f8b366b33d"
+  },
+  "apps.connect.googleSheets.unavailable": {
+    "en": "Google Sheets is not available on this instance yet.",
+    "zh-CN": "此实例当前还不支持 Google Sheets。",
+    "reviewedEnglishHash": "89db0f5f9f68935aa5e0d78f31eca29e8404ce106c5f0e824805a5ec95765d7e"
+  },
+  "apps.connect.ifPrefix": {
+    "en": "If",
+    "zh-CN": "如果",
+    "reviewedEnglishHash": "1e3abf61a37e3cad36b11b459b1cc39e76feb6a0c369fe5270957468288dcc5c"
+  },
+  "apps.connect.install.agentCount": {
+    "en": "{{count}} agents",
+    "zh-CN": "{{count}} 个智能体",
+    "reviewedEnglishHash": "977a7422900b40a5ade4526c98653a1b04619b8ff81240ead3699dea1b7df70e"
+  },
+  "apps.connect.install.allWarning": {
+    "en": "Adds context cost to every run of every agent — a deliberate choice. New agents you add later are installed automatically.",
+    "zh-CN": "会为每个智能体的每次运行都增加上下文成本 - 这是有意为之。之后新增的智能体会自动安装。",
+    "reviewedEnglishHash": "f783e1b3b67fa536ea43266410589de8916188a7b3fe82477675c03739d9a19c"
+  },
+  "apps.connect.install.description": {
+    "en": "Access is permission. Install decides whose runs actually carry these tools.",
+    "zh-CN": "权限归权限。安装决定哪些运行真正会把这些工具带入上下文。",
+    "reviewedEnglishHash": "f85e38a11967229dbf598412b40fbf5c5f7f5678dcdf25bcb8a2958fef4f8b7d"
+  },
+  "apps.connect.install.extendNotice": {
+    "en": "Installing on {{agents}} will also grant access. A tool can't be installed on an agent that isn't allowed to use it, so we'll add {{agents}} to who can use it. This is logged.",
+    "zh-CN": "在 {{agents}} 上安装也会授予访问权限。工具不能安装到未被允许使用它的智能体上，所以我们会把 {{agents}} 加入可使用范围。这会被记录。",
+    "reviewedEnglishHash": "76cbcdcb937f2e76af29637e346922b5670b99b93db6be50cff2c244ff9593bf"
+  },
+  "apps.connect.install.finish": {
+    "en": "Finish setup",
+    "zh-CN": "完成设置",
+    "reviewedEnglishHash": "bc01ae77f37cf304f0ba95bda60cb93340d6f73a0a2ce4f7fa3ec417512d071f"
+  },
+  "apps.connect.install.finishing": {
+    "en": "Finishing...",
+    "zh-CN": "正在完成...",
+    "reviewedEnglishHash": "f573454d6ca08cc39eee6eb3b895e69bab0ae71ee5d807dee9a0049c1d895747"
+  },
+  "apps.connect.install.infoNotice": {
+    "en": "Installing adds {{appName}}'s tools to the agent's context on every run — install only where it will actually be used.",
+    "zh-CN": "安装会把 {{appName}} 的工具加入智能体每次运行的上下文中 - 只在真正会用到的地方安装。",
+    "reviewedEnglishHash": "f045dbf8ef42b2e5d0f276cc23d84b621da5f85180ef0071a6789d7ff41c3e15"
+  },
+  "apps.connect.install.notYet": {
+    "en": "Not yet",
+    "zh-CN": "暂不安装",
+    "reviewedEnglishHash": "a9549d7d06368d83960c3a2e8172032a860f86e3e840a467cff021759e0e1ba0"
+  },
+  "apps.connect.install.notYetDescription": {
+    "en": "Keep {{appName}} permitted only. You can install it later from the app or agent page.",
+    "zh-CN": "仅保留 {{appName}} 的使用权限。之后可以在应用或智能体页面安装。",
+    "reviewedEnglishHash": "bbce3a73397752589d5e51bfd2e395271538884fed30cf8bea532df75face695"
+  },
+  "apps.connect.install.specificAgents": {
+    "en": "Specific agents",
+    "zh-CN": "特定智能体",
+    "reviewedEnglishHash": "24343baf0c580b49e3537b2e3cc1f5d198a5d142904028dcef9405c6c9a4db93"
+  },
+  "apps.connect.install.specificDescription": {
+    "en": "Tick the agents that should load {{appName}} every run.",
+    "zh-CN": "勾选每次运行都应加载 {{appName}} 的智能体。",
+    "reviewedEnglishHash": "0b08a75a1eb437fb4654f36ee589cc23a688c1ed30808e1e1d6619645acb7e6b"
+  },
+  "apps.connect.install.title": {
+    "en": "Install {{appName}} tools?",
+    "zh-CN": "要安装 {{appName}} 的工具吗？",
+    "reviewedEnglishHash": "e2f812d38e6fec8ef3fbeba6b44616b784352ecc49a8c04216edb175e99e0dea"
+  },
+  "apps.connect.keep": {
+    "en": "Keep",
+    "zh-CN": "保留",
+    "reviewedEnglishHash": "183f00f483d3844e875d26eac74c676054383aef38ed5a8e4d1505ef21008585"
+  },
+  "apps.connect.keyStored": {
+    "en": "Your key is stored securely.",
+    "zh-CN": "你的密钥已安全存储。",
+    "reviewedEnglishHash": "cce91c616fec25baf70471b9dbc5196dfe48bb202e91ac22fbb0f49858f2b6f8"
+  },
+  "apps.connect.link.checkNotice": {
+    "en": "We’ll check the link before turning anything on.",
+    "zh-CN": "我们会在开启前检查链接。",
+    "reviewedEnglishHash": "d3d33b64ae384dcbcb6d976b63203361478704c5bce861538665026d2eca41f3"
+  },
+  "apps.connect.link.connectOwnServer": {
+    "en": "Connect your own MCP server",
+    "zh-CN": "连接你自己的 MCP 服务器",
+    "reviewedEnglishHash": "abb2409de6f9cc52605c1eeb9c08dfb71ec8a73222992e844ff60068f6dc4595"
+  },
+  "apps.connect.link.description": {
+    "en": "Paste a setup link from an app that is not listed here.",
+    "zh-CN": "粘贴一个此列表中未列出的应用提供的设置链接。",
+    "reviewedEnglishHash": "71f9faf2a96d0571d9045676a9a719161723800dc545a506c26079dc9c382adf"
+  },
+  "apps.connect.link.fullUrlError": {
+    "en": "Paste a full http or https link.",
+    "zh-CN": "请粘贴完整的 http 或 https 链接。",
+    "reviewedEnglishHash": "d53b41cc421c4c47f722d6d2685414425b30d7a36ad60971b7997d1ac3be2579"
+  },
+  "apps.connect.link.keyHint": {
+    "en": "Most apps just work from the link — pick Yes only if the app gave you a key.",
+    "zh-CN": "大多数应用只需链接就能工作 - 只有在应用给了你密钥时才选“是”。",
+    "reviewedEnglishHash": "7164e81d2338b81f44ee500a3ae5d3b194c3e664894dfaa753cb41e43b406bdc"
+  },
+  "apps.connect.link.matchedApp": {
+    "en": "This looks like {{appName}}.",
+    "zh-CN": "这看起来像 {{appName}}。",
+    "reviewedEnglishHash": "6867b1ca4585021948eabbba64db00dcafec191128f1aaeab75f1b057478cf2b"
+  },
+  "apps.connect.link.nameDescription": {
+    "en": "We filled this in from the link. Change it if you’d like.",
+    "zh-CN": "我们已根据链接填入此项。你可以修改它。",
+    "reviewedEnglishHash": "6ec842c4f6b37340859cf0c32284f90426f0198b50fc4287c686ad391d5cd43b"
+  },
+  "apps.connect.link.needsKey": {
+    "en": "Does it need a key?",
+    "zh-CN": "需要密钥吗？",
+    "reviewedEnglishHash": "0c77f2c6ccd886318ebff49f6fdeff558461a42ca91e9a9eb12d473d90403c9d"
+  },
+  "apps.connect.link.ownServerDescription": {
+    "en": "Paste your MCP server’s URL and we’ll walk you through permissions and review.",
+    "zh-CN": "粘贴你的 MCP 服务器 URL，我们会带你完成权限和审阅。",
+    "reviewedEnglishHash": "3a6364826b6482169aa425e46cbad116bdfaebfb5a7a8832e5c73c1d01c7c228"
+  },
+  "apps.connect.link.pasteKey": {
+    "en": "Paste the key this app gave you.",
+    "zh-CN": "粘贴此应用提供给你的密钥。",
+    "reviewedEnglishHash": "779d6949a59e2d9bb70783ee9572b17a9fc7a5a83240118b52f2b2192ed90dc8"
+  },
+  "apps.connect.link.remoteUrlNotice": {
+    "en": "Any remote tool URL works here — including a local MCP server like",
+    "zh-CN": "这里可使用任何远程工具 URL - 包括本地 MCP 服务器，例如",
+    "reviewedEnglishHash": "67d9c94964cd9538d47aa3e8d4da0bf14253fccd67102ac2bda97702a720c7d7"
+  },
+  "apps.connect.link.title": {
+    "en": "Connect with a link",
+    "zh-CN": "通过链接连接",
+    "reviewedEnglishHash": "cb018c13c4a717443987a24200c3f243d61dd9981757749d9d0019028e1e9e65"
+  },
+  "apps.connect.link.useApp": {
+    "en": "Use {{appName}}",
+    "zh-CN": "使用 {{appName}}",
+    "reviewedEnglishHash": "4a7d96d3e1773f5e8bf535e2a8960f02988cf6d2255ba578d335ff94c30644c8"
+  },
+  "apps.connect.looksLike": {
+    "en": "This looks like",
+    "zh-CN": "这看起来像",
+    "reviewedEnglishHash": "e597923670a4fcd1fe5d6a05794ecf2aaf13568e6388cc9cf8536a8096ada7ef"
+  },
+  "apps.connect.moreWays.description": {
+    "en": "For tools that aren’t in the gallery. You’ll need details from the tool’s docs.",
+    "zh-CN": "适用于不在库中的工具。你需要从工具文档获取详细信息。",
+    "reviewedEnglishHash": "9655e77530df1be551900c18c629ffa8527916085028c716289b45c564658d36"
+  },
+  "apps.connect.moreWays.pasteConfig": {
+    "en": "Paste a config",
+    "zh-CN": "粘贴配置",
+    "reviewedEnglishHash": "27261473ca2777b7f9fa01091259c9a23fa1f274d28aea2af680c3df5dd1ce19"
+  },
+  "apps.connect.moreWays.pasteConfigDescription": {
+    "en": "Already have a setup snippet from a README? Paste it and we’ll connect it.",
+    "zh-CN": "已经有 README 里的配置片段？粘贴进来，我们来连接它。",
+    "reviewedEnglishHash": "ff982d2dcf14170829f07516facb7a5115927eadc6842b8ea035a84b14a6077c"
+  },
+  "apps.connect.moreWays.runOwn": {
+    "en": "Run your own",
+    "zh-CN": "自己运行",
+    "reviewedEnglishHash": "ad3059b3426c9f5d1443f9d6732b4eaec93220c3c07cf0fb5c61fc1b6049fc0c"
+  },
+  "apps.connect.moreWays.runOwnDescription": {
+    "en": "Register a command Paperclip runs in your workspace for a tool that isn’t listed.",
+    "zh-CN": "为未列出的工具注册一个 Paperclip 在你的工作区中运行的命令。",
+    "reviewedEnglishHash": "1f42e124d3935aac9a400c50ff9947f43608cc07495bb16d2b16e2b9c216cbdc"
+  },
+  "apps.connect.moreWays.title": {
+    "en": "More ways to connect",
+    "zh-CN": "更多连接方式",
+    "reviewedEnglishHash": "ca57f1e8dc8fe51761abb5b783bc1550f7a03bc8ac1630c69615f7d6ea6bbea6"
+  },
+  "apps.connect.nameDescription": {
+    "en": "We filled this in from the app. Change it to tell connections apart.",
+    "zh-CN": "我们已根据应用填入此项。你可以修改它以区分不同连接。",
+    "reviewedEnglishHash": "1b04261cd545bcba5a33c5d5613cc521fcd87d90f9c6894558037cedd3ef0a94"
+  },
+  "apps.connect.namePlaceholder": {
+    "en": "My app",
+    "zh-CN": "我的应用",
+    "reviewedEnglishHash": "ff8c504595d64bfa2dfdd5c926218bfdefa967e332e6121ea0c1899a567c07fb"
+  },
+  "apps.connect.newActionsOff": {
+    "en": "adds new actions later, they start off until you review them.",
+    "zh-CN": "之后添加新操作，这些操作会保持关闭，直到你完成审核。",
+    "reviewedEnglishHash": "ec1bdb7de5fc90f1d110e7d5b2c60c56b594725ff15b5f8b72c1bb9981fe8f7d"
+  },
+  "apps.connect.noKeyRequired": {
+    "en": "This app doesn’t need a key. Just connect to continue.",
+    "zh-CN": "此应用不需要密钥。直接连接即可继续。",
+    "reviewedEnglishHash": "4fde311135acbf3fdd3008ec2c1b76c65ae1ad27dff1db18856f253d42d1fcd9"
+  },
+  "apps.connect.noMatchesPrefix": {
+    "en": "No apps match “",
+    "zh-CN": "没有应用匹配“",
+    "reviewedEnglishHash": "23a63c9d6c3d4479ecc630d46cb5b9f3f0ae8770b7b067fb10ed820029839690"
+  },
+  "apps.connect.offers": {
+    "en": "— it offers",
+    "zh-CN": "- 它提供",
+    "reviewedEnglishHash": "8742cab9511b4d2ddf6d0a2ebe5a26abd526bd5dc82f1d6bf946c152d973ea88"
+  },
+  "apps.connect.on": {
+    "en": "on",
+    "zh-CN": "开启",
+    "reviewedEnglishHash": "b8d31e852725afb1e26d53bab6095b2bff1749c9275be13ed1c05a56ed31ec09"
+  },
+  "apps.connect.onSeparator": {
+    "en": "on ·",
+    "zh-CN": "开启 ·",
+    "reviewedEnglishHash": "887f151c1d8e73637e960cb739e43f1b455eb0450ba92f3db60874a7e6c90de2"
+  },
+  "apps.connect.permittedOnly": {
+    "en": "permitted only. You can install it later from the app or agent page.",
+    "zh-CN": "仅允许使用。之后可从应用或智能体页面安装。",
+    "reviewedEnglishHash": "e1c86b1478e65ecf9906e0072e9bb81f612c75cd324487213105a05bb1816ed9"
+  },
+  "apps.connect.pickDescription": {
+    "en": "Pick the app you want your agents to use.",
+    "zh-CN": "选择你希望智能体使用的应用。",
+    "reviewedEnglishHash": "2ae9927de17f7b01b703f113fb77d1f96e128cf5e1e3d78074c9e9914d49f998"
+  },
+  "apps.connect.ready": {
+    "en": "is ready.",
+    "zh-CN": "已准备就绪。",
+    "reviewedEnglishHash": "17f55818907390cb61f9f711d4fb1cc85d8e2202cb755b6ab4e88da6eee4ba14"
+  },
+  "apps.connect.replaceKey": {
+    "en": "You can replace it anytime from this app’s page.",
+    "zh-CN": "你可以随时在此应用页面替换它。",
+    "reviewedEnglishHash": "49eff1041f5a60ca826103cc8ea82cfcde34a395adcc4be85b97a9d668892631"
+  },
+  "apps.connect.selectAgents": {
+    "en": "Tick the agents who can use",
+    "zh-CN": "勾选可以使用以下应用的智能体：",
+    "reviewedEnglishHash": "ddf8d7d1cafabd0ad121d80b3a25d23073933d2b95dca4dbe905d1b27d83ccd4"
+  },
+  "apps.connect.selectCompany": {
+    "en": "Select a company to connect apps.",
+    "zh-CN": "请选择一个公司以连接应用。",
+    "reviewedEnglishHash": "bdc823f606237e55641aa12e1794634b23bf4c5e838707893b91971fc398e790"
+  },
+  "apps.connect.selectLoadAgents": {
+    "en": "Tick the agents that should load",
+    "zh-CN": "勾选每次运行都应加载以下应用的智能体：",
+    "reviewedEnglishHash": "fee25d659544c8b5f2eb6e7a34c143c369b6ec48fc65184a229dcb41ed012c05"
+  },
+  "apps.connect.signInComingSoon": {
+    "en": "This app needs you to sign in - coming soon.",
+    "zh-CN": "登录功能即将推出",
+    "reviewedEnglishHash": "e09600248169e7a5c611f313bbff9df71c33d9df3e4d123bfc95ba5185bc49e5"
+  },
+  "apps.connect.signInRequired": {
+    "en": "Sign-in required",
+    "zh-CN": "需要登录",
+    "reviewedEnglishHash": "288685d3684c345acfa964d4483a2598a3ccf7486f11d09d82bc49793eab0952"
+  },
+  "apps.connect.stepProgress": {
+    "en": "Step {{current}} of {{total}}",
+    "zh-CN": "第 {{current}} 步，共 {{total}} 步",
+    "reviewedEnglishHash": "8326f20fd658758d9533723a02ce35b9631e25e8546e807b4687f4c39a550781"
+  },
+  "apps.connect.success.allAccess": {
+    "en": "All agents can use it",
+    "zh-CN": "所有智能体都可以使用",
+    "reviewedEnglishHash": "3bffff1a7ca25195057cce2e5ff12e7436c7c5c6ef14589a96bbab2588d77101"
+  },
+  "apps.connect.success.installLater": {
+    "en": "Agents can use it after you install it on their Tools tab.",
+    "zh-CN": "在工具页安装后，智能体就能使用它。",
+    "reviewedEnglishHash": "038fe59d390a5cc42528da82908a910e2fc06a92eb1b8c905e999a50559c9656"
+  },
+  "apps.connect.success.installedAll": {
+    "en": "Installed on all agents",
+    "zh-CN": "已安装到所有智能体",
+    "reviewedEnglishHash": "364ca05540121bad92afe3ab29cb03f9881f7c1d0f3d37ce76ab0b669d752686"
+  },
+  "apps.connect.success.installedCount": {
+    "en": "{{count}} agents installed",
+    "zh-CN": "已安装到 {{count}} 个智能体",
+    "reviewedEnglishHash": "2e4e3001087af18745252d8e0dad4eae94c6064a2e4c4fed3fd7faa76ac26c85"
+  },
+  "apps.connect.success.loadNextRun": {
+    "en": "Installed agents will load it on their next run.",
+    "zh-CN": "已安装的智能体会在下次运行时加载它。",
+    "reviewedEnglishHash": "a052ac7cbf0b08310775b9e681a0f4f4ca97fdca477cfa1e21144b5a544777b4"
+  },
+  "apps.connect.success.permittedOnly": {
+    "en": "Permitted only",
+    "zh-CN": "仅允许使用",
+    "reviewedEnglishHash": "b66efe0f88122b49057b49ff30fddedb6e50dd29886c12df821564b0ca487950"
+  },
+  "apps.connect.success.ready": {
+    "en": "{{appName}} is ready.",
+    "zh-CN": "{{appName}} 已就绪。",
+    "reviewedEnglishHash": "d29a05d85165c1f32a14ef892ef90ce7bac2c3698113317d800a810d712bea26"
+  },
+  "apps.connect.success.specificAccess": {
+    "en": "Specific agents can use it",
+    "zh-CN": "仅特定智能体可使用",
+    "reviewedEnglishHash": "a43f690b59d0e82a3fa5356ef8df7a30aaee8dc4db952914a22e3ddf5d94d5f6"
+  },
+  "apps.connect.success.summary": {
+    "en": "{{count}} actions on · {{access}} · {{install}}",
+    "zh-CN": "已启用 {{count}} 个操作 · {{access}} · {{install}}",
+    "reviewedEnglishHash": "88580db57b06b6e53651ab417b7f98bd85022f3f95e2607d9ccf28f1c5b24755"
+  },
+  "apps.connect.thisApp": {
+    "en": "this app",
+    "zh-CN": "此应用",
+    "reviewedEnglishHash": "d2c823cf6649d9cf0ade2e16cc34d1692c76641f03a5214ca084df612f84089e"
+  },
+  "apps.connect.title": {
+    "en": "Connect an app",
+    "zh-CN": "连接应用",
+    "reviewedEnglishHash": "bf6c07f870758424fe8edf65f2537b2f00fa3ef9727cc1a8d68ccb2222fd9212"
+  },
+  "apps.connect.toolsQuestion": {
+    "en": "tools?",
+    "zh-CN": "个工具？",
+    "reviewedEnglishHash": "4613b1a25b026b6dbd0e42e0b8f044623ec86d04a6734a21e8d071c75a0b1585"
+  },
+  "apps.connect.whoCanUse": {
+    "en": "Who can use",
+    "zh-CN": "谁可以使用",
+    "reviewedEnglishHash": "8fef4aa1423fe06a2f812ff9985439010c59b75c2a59b6f7703d47f91fd58a4a"
+  },
+  "apps.connect.yes": {
+    "en": "Yes",
+    "zh-CN": "是",
+    "reviewedEnglishHash": "85a39ab345d672ff8ca9b9c6876f3adcacf45ee7c1e2dbd2408fd338bd55e07e"
+  },
+  "apps.connect.zapierDescription": {
+    "en": "Paste the complete MCP URL Zapier gives you, including its token.",
+    "zh-CN": "粘贴 Zapier 提供的完整 MCP URL，包括它的令牌。",
+    "reviewedEnglishHash": "17df3d77b3d6e1f34fafaa1bea6fa1bdec8ba5d977400f7bfbe59539011d2f0e"
+  },
+  "apps.connect.zapierInvalidUrl": {
+    "en": "Paste a valid Zapier URL to continue.",
+    "zh-CN": "请粘贴有效的 Zapier URL 以继续。",
+    "reviewedEnglishHash": "2ebd72767d8baec63a6136e520676032df70d8434888ca90e89b64c604e7a335"
+  },
+  "apps.connect.zapierTokenNotice": {
+    "en": "The token is part of the URL. Paperclip stores it securely and checks the connection before enabling actions.",
+    "zh-CN": "令牌包含在 URL 中。Paperclip 会安全保存它，并在启用操作前检查连接。",
+    "reviewedEnglishHash": "3c346488c699473fe1af2a4b547c10061feaffdbf5034794e2ebc723ca8b428f"
+  },
+  "apps.connect.zapierUrl": {
+    "en": "Zapier MCP URL",
+    "zh-CN": "Zapier MCP URL",
+    "reviewedEnglishHash": "fc88a55abf7e809402c447147ecc1c07ea5f8e1a319c89014e5f3ee6051b6740"
+  },
+  "apps.connections.accessNotice": {
+    "en": "Apps you connect become available to every agent unless you change “Who can use it”.",
+    "zh-CN": "除非你更改“谁可以使用它”，否则你连接的应用会对所有智能体可用。",
+    "reviewedEnglishHash": "b1c276b4f721040b6deaae99f44ae566271b228e4d359459da6539b6c8220320"
+  },
+  "apps.connections.actionsOn": {
+    "en": "{{count}} on",
+    "zh-CN": "{{count}} 个已启用",
+    "reviewedEnglishHash": "1e987a0a636f59cc135c2ede6c98367eb20115973cf5c10da9295c163b3aa28e"
+  },
+  "apps.connections.andSeparator": {
+    "en": " and ",
+    "zh-CN": "和",
+    "reviewedEnglishHash": "e3ee915a8e8c7aa02d2fced443314522b20824abd2535d5959c41dc8ab8a09e4"
+  },
+  "apps.connections.attentionCount": {
+    "en": "{{count}} apps need attention",
+    "zh-CN": "{{count}} 个应用需要处理",
+    "reviewedEnglishHash": "c8920467216c642ce2f1a293c5e0ce96d4ae813b2fc934883c6b35fb7a0d13c3"
+  },
+  "apps.connections.attentionCount_one": {
+    "en": "{{count}} app needs attention",
+    "zh-CN": "{{count}} 个应用需要处理",
+    "reviewedEnglishHash": "6729533af8dcb2b879b5b446932d7ba281ce9cc2cabd2661c80ddb80e053e71e"
+  },
+  "apps.connections.attentionCount_other": {
+    "en": "{{count}} apps need attention",
+    "zh-CN": "{{count}} 个应用需要处理",
+    "reviewedEnglishHash": "c8920467216c642ce2f1a293c5e0ce96d4ae813b2fc934883c6b35fb7a0d13c3"
+  },
+  "apps.connections.browseApps": {
+    "en": "Browse apps",
+    "zh-CN": "浏览应用",
+    "reviewedEnglishHash": "cc28cdd0d000cd4ad7d4b7365923ba64e3601bfec1011df4b0157c00fb253208"
+  },
+  "apps.connections.deleteAction": {
+    "en": "Delete connection",
+    "zh-CN": "删除连接",
+    "reviewedEnglishHash": "e960651babb1d7478b4be3995517dfe400a637964866472e175a9b71983776b1"
+  },
+  "apps.connections.deleteAria": {
+    "en": "Delete {{appName}} connection",
+    "zh-CN": "删除 {{appName}} 连接",
+    "reviewedEnglishHash": "583e375f4a2cc171dac234481a1918a1d321f850bd20ba6ff71d455ebe443456"
+  },
+  "apps.connections.deleteDialogFinal": {
+    "en": "Agents will lose access immediately. You can connect it again later.",
+    "zh-CN": "智能体将立即失去访问权限。你可以稍后重新连接。",
+    "reviewedEnglishHash": "80e6fc31d2008211abfcf84169d84448483f373ddfacb886487615a2a998f8ef"
+  },
+  "apps.connections.deleteDialogRemaining": {
+    "en": "This connection will be removed. Agents can still use {{appName}} through {{count}} other active connection.",
+    "zh-CN": "此连接将被删除。智能体仍可通过 {{count}} 个其他有效连接使用 {{appName}}。",
+    "reviewedEnglishHash": "9915e5923aac549dc4b0d5b186f251b839f350a9484195a847b77d116708a93e"
+  },
+  "apps.connections.deleteDialogRemaining_one": {
+    "en": "This connection will be removed. Agents can still use {{appName}} through {{count}} other active connection.",
+    "zh-CN": "此连接将被删除。智能体仍可通过 {{count}} 个其他有效连接使用 {{appName}}。",
+    "reviewedEnglishHash": "9915e5923aac549dc4b0d5b186f251b839f350a9484195a847b77d116708a93e"
+  },
+  "apps.connections.deleteDialogRemaining_other": {
+    "en": "This connection will be removed. Agents can still use {{appName}} through {{count}} other active connections.",
+    "zh-CN": "此连接将被删除。智能体仍可通过 {{count}} 个其他有效连接使用 {{appName}}。",
+    "reviewedEnglishHash": "3bb5fd667808127c30253fb0e47a1cd49f7f3549121b9802e1d3f96fd248c79d"
+  },
+  "apps.connections.deleteDialogTitle": {
+    "en": "Delete {{appName}} connection?",
+    "zh-CN": "删除 {{appName}} 连接？",
+    "reviewedEnglishHash": "c9b2864a8778e183fc8bed52a03f51ef1491a4682def189f4a9062941c364cbe"
+  },
+  "apps.connections.deleting": {
+    "en": "Deleting...",
+    "zh-CN": "正在删除...",
+    "reviewedEnglishHash": "685ecb984ac29ce868b226a6599304fa3a6635a640749836ea12d1da8eb8689c"
+  },
+  "apps.connections.description": {
+    "en": "The tools you’ve connected, and whether they’re working.",
+    "zh-CN": "你已连接的工具，以及它们是否正常工作。",
+    "reviewedEnglishHash": "86c96136650cf3116c29e2befa16f1da80316c4a97e3a3561ccc018a5735db79"
+  },
+  "apps.connections.emptyDescription": {
+    "en": "Add one from Apps to give your agents the tools they need.",
+    "zh-CN": "从 Apps 中添加一个，让你的智能体拥有所需工具。",
+    "reviewedEnglishHash": "55688209e46b80bd01cb90babb397a59537fa9418d30d5dbd97339b1c2663826"
+  },
+  "apps.connections.emptyTitle": {
+    "en": "No connections yet.",
+    "zh-CN": "还没有连接",
+    "reviewedEnglishHash": "643013cde6f1dbcd8de55dd0c02694505eeab8faf7ec8c227b9a03ca19a67f8e"
+  },
+  "apps.connections.filters.all": {
+    "en": "All ({{count}})",
+    "zh-CN": "全部（{{count}}）",
+    "reviewedEnglishHash": "4d8ce1a588a3f4914a892793ff761e0670a1cbe6bab2a2c30650e009181ac291"
+  },
+  "apps.connections.filters.attention": {
+    "en": "Needs attention ({{count}})",
+    "zh-CN": "需关注（{{count}}）",
+    "reviewedEnglishHash": "eba6ce3ae4f385d24b08561057228b19f44a30126ae802f43af587c465b2cc08"
+  },
+  "apps.connections.fixArrow": {
+    "en": "Fix →",
+    "zh-CN": "修复 →",
+    "reviewedEnglishHash": "9049952f0b0af5f1c7346a854c78b3ff4f4be56adb5296ff7199e4eabfadd32a"
+  },
+  "apps.connections.hints.connect": {
+    "en": "Connect it so agents can use it.",
+    "zh-CN": "连接后即可让智能体使用它。",
+    "reviewedEnglishHash": "1b1eda62d947ffb7c76cfd046429fd614ef07e93c6be9680f44072dd9d04bda9"
+  },
+  "apps.connections.hints.paused": {
+    "en": "Paused — agents can’t use it right now.",
+    "zh-CN": "已暂停 - 智能体现在无法使用它。",
+    "reviewedEnglishHash": "dade03b26d3bb2bc8c315058f821413fd732f8b515d2989261a952db84d28a4c"
+  },
+  "apps.connections.hints.reconnect": {
+    "en": "The key stopped working — reconnect to fix.",
+    "zh-CN": "密钥失效了 - 重新连接即可修复。",
+    "reviewedEnglishHash": "012b6f588000cb327654f94a0fe60c35c042d41d5b3c575b0fa6235fca0fa7ce"
+  },
+  "apps.connections.hints.reconnectRequired": {
+    "en": "Reconnect required — sign in again to restore access.",
+    "zh-CN": "需要重新连接，请再次登录以恢复访问。",
+    "reviewedEnglishHash": "50f21863c6ae2104dc19d68bdaaf56d7483eab3f2026b320cb30576426fd69e9"
+  },
+  "apps.connections.nameList": {
+    "en": "{{names}}",
+    "zh-CN": "{{names}}",
+    "reviewedEnglishHash": "ada8e6df87ed180fe803218d88310ef01fb7fa55f461ae6e721308e41d6a60c6"
+  },
+  "apps.connections.nameListMore": {
+    "en": "{{names}} and {{count}} more",
+    "zh-CN": "{{names}} 等 {{count}} 个",
+    "reviewedEnglishHash": "62c152bb12b517f5da08c0a0106f5c6a348fd6c4a47481fde8fed3188c443086"
+  },
+  "apps.connections.orSeparator": {
+    "en": " or ",
+    "zh-CN": " 或 ",
+    "reviewedEnglishHash": "e1a3e78cb5c8858631bf81f94369a0be3fd2aebb9e852e66368b381c8feef91f"
+  },
+  "apps.connections.reviewArrow": {
+    "en": "Review →",
+    "zh-CN": "审阅 →",
+    "reviewedEnglishHash": "ab7681eab1638a81d327d977abf409807ed5851e2b96b3c78b3b41b33fc63ee5"
+  },
+  "apps.connections.reviewCount": {
+    "en": "{{count}} actions are waiting for your OK",
+    "zh-CN": "{{count}} 个操作正在等待你的批准",
+    "reviewedEnglishHash": "6c1870e522ea811e728630251089c8b4d7e703847749d3b1f8d8667df4c421c1"
+  },
+  "apps.connections.reviewDescription": {
+    "en": "Your agents paused to check with you before making a change.",
+    "zh-CN": "你的智能体在更改前停下来向你确认。",
+    "reviewedEnglishHash": "c81a8bf451c4e8f9404b77eabc6348e179da4e60bb4da18c8d6c91f748daf549"
+  },
+  "apps.connections.selectCompany": {
+    "en": "Select a company to manage apps.",
+    "zh-CN": "请选择一个公司来管理应用。",
+    "reviewedEnglishHash": "ddff6fdb2d072b58451ddaef71adcc66dd6b917164533a46d3ce1c878cd283c7"
+  },
+  "apps.connections.thisApp": {
+    "en": "this app",
+    "zh-CN": "此应用",
+    "reviewedEnglishHash": "d2c823cf6649d9cf0ade2e16cc34d1692c76641f03a5214ca084df612f84089e"
+  },
+  "apps.connections.toast.deleteFailedTitle": {
+    "en": "Couldn't delete the connection",
+    "zh-CN": "无法删除连接",
+    "reviewedEnglishHash": "1ef396039a6f63d7ecfc67f3a7e19be4b6f0f1601561ddc2124d930eb7d5e2ec"
+  },
+  "apps.connections.toast.deletedRemaining": {
+    "en": "{{appName}} still has {{count}} active connection available to agents.",
+    "zh-CN": "{{appName}} 仍有 {{count}} 个有效连接可供智能体使用。",
+    "reviewedEnglishHash": "9d8d5e2cd30704ab57a2039d14d93e89cf4980b33266bad13d108c82e8a4157c"
+  },
+  "apps.connections.toast.deletedRemaining_one": {
+    "en": "{{appName}} still has {{count}} active connection available to agents.",
+    "zh-CN": "{{appName}} 仍有 {{count}} 个有效连接可供智能体使用。",
+    "reviewedEnglishHash": "9d8d5e2cd30704ab57a2039d14d93e89cf4980b33266bad13d108c82e8a4157c"
+  },
+  "apps.connections.toast.deletedRemaining_other": {
+    "en": "{{appName}} still has {{count}} active connections available to agents.",
+    "zh-CN": "{{appName}} 仍有 {{count}} 个有效连接可供智能体使用。",
+    "reviewedEnglishHash": "05fbbaecb31eb9ac280081b978f4dca05bbbd13b1415c9d6c4ab520ad2c3eb86"
+  },
+  "apps.connections.toast.deletedTitle": {
+    "en": "Connection deleted",
+    "zh-CN": "连接已删除",
+    "reviewedEnglishHash": "d0294a63a52c330eba6ae3589af4a410c185211f0584e692505951f1b097b6ba"
+  },
+  "apps.connections.toast.deletedUnavailable": {
+    "en": "{{appName}} is no longer available to agents. You can connect it again later.",
+    "zh-CN": "智能体已无法使用 {{appName}}。你可以稍后重新连接。",
+    "reviewedEnglishHash": "28616dc0863baef3a5fc21957e432e7446be5437982e212a29f7e382d6a79878"
+  },
+  "apps.detail.activity.actor.anAgent": {
+    "en": "An agent",
+    "zh-CN": "智能体",
+    "reviewedEnglishHash": "ea6a03636c62be3ae0671ef47fe39ce34318f24540c7c9bb958c3a253a2a8f32"
+  },
+  "apps.detail.activity.actor.anAgentLower": {
+    "en": "an agent",
+    "zh-CN": "智能体",
+    "reviewedEnglishHash": "647936ec3e40783d8d86fad9d2d8acfac4613dee5c3eb516ef433fed532f8d86"
+  },
+  "apps.detail.activity.actor.board": {
+    "en": "Board",
+    "zh-CN": "董事会",
+    "reviewedEnglishHash": "4816cbfd74aa8297b9c9cdaae89e2f0d2ced6041e952dfcd114e01b4c82e9c6d"
+  },
+  "apps.detail.activity.actor.someone": {
+    "en": "Someone",
+    "zh-CN": "有人",
+    "reviewedEnglishHash": "864c855e3d64399dc06fa30ebb75526c2c2e73db7216b16a3d4cf03e8a52ec3b"
+  },
+  "apps.detail.activity.allowlist.added": {
+    "en": "{{who}} added {{count}} {{noun}} to the allowlist",
+    "zh-CN": "{{who}} 将 {{count}} {{noun}} 添加到白名单",
+    "reviewedEnglishHash": "440bab6c3e9471ddf9c061cf7affd65036af0bdcc39c2ed5d59a81222355bbf4"
+  },
+  "apps.detail.activity.allowlist.removed": {
+    "en": "{{who}} removed {{count}} {{noun}} from the allowlist",
+    "zh-CN": "{{who}} 从白名单中删除了 {{count}} {{noun}}",
+    "reviewedEnglishHash": "d9b04be8c6e2bb0a6c418249fd375afd9121375b604fd88ed3da1df584567cbb"
+  },
+  "apps.detail.activity.allowlist.sheet": {
+    "en": "sheet",
+    "zh-CN": "片材",
+    "reviewedEnglishHash": "78af7bdb5626eb0a046772b3edda705ca9e60ba7af0960eea89f7fa201d685a8"
+  },
+  "apps.detail.activity.allowlist.sheets": {
+    "en": "sheets",
+    "zh-CN": "床单",
+    "reviewedEnglishHash": "01c01800d6990c0c31fe6e858dbc3a9ce03d1482a1956932aea7492f8cab7bb0"
+  },
+  "apps.detail.activity.allowlist.updated": {
+    "en": "{{who}} updated the allowlist",
+    "zh-CN": "{{who}} 更新了允许名单",
+    "reviewedEnglishHash": "d1a75e11c7c519077b1889aba05409f90945c44bf7fe0a6b66d0a2c00ba6e69a"
+  },
+  "apps.detail.activity.allowlist.updatedCounts": {
+    "en": "{{who}} updated the allowlist (added {{added}}, removed {{removed}})",
+    "zh-CN": "{{who}} 更新了允许列表（添加了 {{added}}，删除了 {{removed}}）",
+    "reviewedEnglishHash": "90075bd4b21898bc9038ca0869c70e93e1f6cbcdb88b7eea693d95be13befdea"
+  },
+  "apps.detail.activity.empty": {
+    "en": "No activity yet.",
+    "zh-CN": "还没有活动。",
+    "reviewedEnglishHash": "a288d2d0a21eed3c166d051806b178bc88cbd4a5390fd7c7aa6725826c237c98"
+  },
+  "apps.detail.activity.event.anAction": {
+    "en": "an action",
+    "zh-CN": "一个操作",
+    "reviewedEnglishHash": "a1d98dfadc18e0c7409ec2d2a883f967de1e139e066c8758a35183d9346f1a25"
+  },
+  "apps.detail.activity.event.approvalRequested": {
+    "en": "{{who}} asked before running {{action}}",
+    "zh-CN": "{{who}} 在运行 {{action}} 之前询问",
+    "reviewedEnglishHash": "dc8ccb4840304533f2c73985ec706d8d71a9bdd8b629caf21aef5e018eada458"
+  },
+  "apps.detail.activity.event.approvalResolved.approved": {
+    "en": "{{resolver}} approved {{action}}",
+    "zh-CN": "{{resolver}} 批准 {{action}}",
+    "reviewedEnglishHash": "11e9fc50d60d30dc94dec48c9772872485326ae879bbe28e109b0a9c5ac584fc"
+  },
+  "apps.detail.activity.event.approvalResolved.rejected": {
+    "en": "{{resolver}} said no to {{action}}",
+    "zh-CN": "{{resolver}} 对 {{action}} 说不",
+    "reviewedEnglishHash": "2b8d968060303f5dbcd7bae0702dfb7d229acb595f3c4a343dd6dc59bb58eb2c"
+  },
+  "apps.detail.activity.event.approvalResolved.reviewed": {
+    "en": "{{resolver}} reviewed {{action}}",
+    "zh-CN": "{{resolver}} 已审核 {{action}}",
+    "reviewedEnglishHash": "01d7834f0b349c6eff93511014cf74b33555f328f813f837ba460e5cbc30e851"
+  },
+  "apps.detail.activity.event.callCompleted": {
+    "en": "{{who}} used {{action}}",
+    "zh-CN": "{{who}} 使用了 {{action}}",
+    "reviewedEnglishHash": "72d1b734e5f52c72781f61e590da0e158d460065e1283a1c60228229adce28ba"
+  },
+  "apps.detail.activity.event.callCompletedIncomplete": {
+    "en": "{{who}} ran {{action}}, but it didn't finish",
+    "zh-CN": "{{who}} 运行 {{action}}，但没有完成",
+    "reviewedEnglishHash": "89ce56cc74e680d43cf78c40babfa5562bc723f4472754079bd387cd72dfb810"
+  },
+  "apps.detail.activity.event.callDenied": {
+    "en": "Blocked {{action}} - it isn't turned on",
+    "zh-CN": "阻止 {{action}} - 未打开",
+    "reviewedEnglishHash": "9d96d81ac46964adc2c7268191420573ee88a20000f9eb7d06545ec6b2dfbe0f"
+  },
+  "apps.detail.activity.event.callDeniedTest": {
+    "en": "{{who}} - {{action}} is turned off",
+    "zh-CN": "{{who}} - {{action}} 已关闭",
+    "reviewedEnglishHash": "8d15c2abab47465a9a3f9978e94324c057d11e4f620742cec8a7610b7bf75b6c"
+  },
+  "apps.detail.activity.event.callFailed": {
+    "en": "{{action}} didn't work for {{who}}",
+    "zh-CN": "{{action}} 不适用于 {{who}}",
+    "reviewedEnglishHash": "cfcdb057da0a11f1ec38ae0363dd31184d48317e434e606e93c7c3490b262668"
+  },
+  "apps.detail.activity.event.default": {
+    "en": "{{who}} used {{action}}",
+    "zh-CN": "{{who}} 使用了 {{action}}",
+    "reviewedEnglishHash": "72d1b734e5f52c72781f61e590da0e158d460065e1283a1c60228229adce28ba"
+  },
+  "apps.detail.activity.event.testedAs": {
+    "en": "{{runner}} tested as {{agentName}}",
+    "zh-CN": "{{runner}} 测试为 {{agentName}}",
+    "reviewedEnglishHash": "bb2e9e8ab4cd064af0a2774d05fbdf9a90ebe407e431f0696b990b8cb3c98c46"
+  },
+  "apps.detail.activity.lifecycle.actionsQuarantined": {
+    "en": "{{count}} new actions need review",
+    "zh-CN": "{{count}} 新行动需要审查",
+    "reviewedEnglishHash": "08f7a0f4bdf4a640c4cee119e0373a6156b9ac3139b77fcc62e1d36d18706ea1"
+  },
+  "apps.detail.activity.lifecycle.connected": {
+    "en": "{{who}} connected {{appName}}",
+    "zh-CN": "{{who}} 连接 {{appName}}",
+    "reviewedEnglishHash": "29909b8e6e7d74447a45ee78941d306c57e3d6623a51aca68a232d84cda685af"
+  },
+  "apps.detail.activity.lifecycle.disconnected": {
+    "en": "{{who}} disconnected {{appName}}",
+    "zh-CN": "{{who}} 已断开 {{appName}}",
+    "reviewedEnglishHash": "29d9815e70927b7e94d3073e602bf586e755cdb687522c826431f050ffa83b5c"
+  },
+  "apps.detail.activity.lifecycle.paused": {
+    "en": "{{who}} paused this app",
+    "zh-CN": "{{who}} 暂停了此应用",
+    "reviewedEnglishHash": "08e8255554c1075d4c2bd2859837ed4178ccc0a70b614b6a16becd176894e728"
+  },
+  "apps.detail.activity.lifecycle.reconnected": {
+    "en": "{{who}} reconnected {{appName}}",
+    "zh-CN": "{{who}} 重新连接 {{appName}}",
+    "reviewedEnglishHash": "e23c8ea96f521643212a358026537a9930d0bf9cb269b8d939ee4f901ca7fec8"
+  },
+  "apps.detail.activity.lifecycle.resumed": {
+    "en": "{{who}} resumed this app",
+    "zh-CN": "{{who}} 恢复了此应用",
+    "reviewedEnglishHash": "ce10e15fbcd3a9f12ab05ff2da76a42ebd03830801fcad2f9b40e240e854fd40"
+  },
+  "apps.detail.activity.lifecycle.updated": {
+    "en": "{{who}} updated this app",
+    "zh-CN": "{{who}} 更新了此应用",
+    "reviewedEnglishHash": "3fd952c4e65718f6ad36edcf5e47ab53de9b191041bfa5055f8f2dbcf7272b78"
+  },
+  "apps.detail.activity.link.reviewInSetup": {
+    "en": "Review in Setup",
+    "zh-CN": "在设置中查看",
+    "reviewedEnglishHash": "2e72554a60fb7ef472da4ff1f0903b65aa37b74b32ba51e2e0b5c6abf40a317e"
+  },
+  "apps.detail.activity.link.viewInSetup": {
+    "en": "View in Setup",
+    "zh-CN": "在设置中查看",
+    "reviewedEnglishHash": "c2eb0b55c34a068f5147dcf05954a8c95ba8ee7ec841559b140c8da8865ed61f"
+  },
+  "apps.detail.activity.title": {
+    "en": "Recent activity",
+    "zh-CN": "最近的活动",
+    "reviewedEnglishHash": "6cb44b56336af70b050861cb4617a0d729c872fe8206e1104c26edad0b79cb7a"
+  },
+  "apps.detail.activity.whileWorkingOn": {
+    "en": "while working on",
+    "zh-CN": "在工作时",
+    "reviewedEnglishHash": "74d62b6c83ab757926b27ed0ca45d526bd947e4d6adc2e299fc92008167340b1"
+  },
+  "apps.detail.advanced.danger.confirmRemove": {
+    "en": "Yes, remove it",
+    "zh-CN": "是的，删除它",
+    "reviewedEnglishHash": "1ca1346fc4f58436c7fc0626c4e6f4be6e54f2ef0748199a2d2ce0928eaa2c08"
+  },
+  "apps.detail.advanced.danger.removeButton": {
+    "en": "Remove app",
+    "zh-CN": "删除应用",
+    "reviewedEnglishHash": "2ce428741dc4fbd9b726f739c89752a4897f083b1fca7112f4c50192087c12a7"
+  },
+  "apps.detail.advanced.danger.removeDescription": {
+    "en": "Agents lose access to {{appName}} right away. You can connect it again later.",
+    "zh-CN": "特工立即失去对 {{appName}} 的访问权限。您可以稍后再次连接。",
+    "reviewedEnglishHash": "fb06886afdbf7c30c8be63a0867cbb2df5ae3b33d8db79b838217f024ab82752"
+  },
+  "apps.detail.advanced.danger.removeTitle": {
+    "en": "Remove this app",
+    "zh-CN": "删除这个应用",
+    "reviewedEnglishHash": "83be3901aaf06a045b73da30ee337b8df5b527b84fecd7550dd14a4f710784e5"
+  },
+  "apps.detail.advanced.danger.title": {
+    "en": "Danger zone",
+    "zh-CN": "危险区域",
+    "reviewedEnglishHash": "fd8b8dae44216610d490dc8bf3470a2576c62b7a2bbe1b9234508df4832159f8"
+  },
+  "apps.detail.advanced.key.description": {
+    "en": "Your key is stored securely. Replace it if it stopped working or you rotated it.",
+    "zh-CN": "您的密钥已安全存储。如果它停止工作或您旋转了它，请更换它。",
+    "reviewedEnglishHash": "1ed62df1413f650295f749dcf3820c5b505865b8ba00b45d586df424b2cf1267"
+  },
+  "apps.detail.advanced.key.replace": {
+    "en": "Replace key",
+    "zh-CN": "更换钥匙",
+    "reviewedEnglishHash": "548dca59aca6ba0f15b29f2420e804245da35b09b8d53add2b2a61e7609b3bec"
+  },
+  "apps.detail.advanced.key.title": {
+    "en": "Key",
+    "zh-CN": "钥匙",
+    "reviewedEnglishHash": "99a52df3ff3d499488e2fa28150c4106a2cb5e928891a830a9aa3922b2d32160"
+  },
+  "apps.detail.advanced.reconnect.checking": {
+    "en": "Checking...",
+    "zh-CN": "正在检查...",
+    "reviewedEnglishHash": "2e5f79bb94a8c40b3a103600323d7faee672abfb51f3c38679aab02fd4075a8d"
+  },
+  "apps.detail.advanced.reconnect.error.body": {
+    "en": "Check the key and try again.",
+    "zh-CN": "检查密钥并重试。",
+    "reviewedEnglishHash": "7e751a81bfdcce672928acb05d46a1e1985c07aff6cdac3d22355b57e5930269"
+  },
+  "apps.detail.advanced.reconnect.error.title": {
+    "en": "That key didn't work",
+    "zh-CN": "那把钥匙不起作用",
+    "reviewedEnglishHash": "5bf9a8b27f980ee4b7287f9869518f941728485d08ec4b47687a004757836334"
+  },
+  "apps.detail.advanced.reconnect.fieldPlaceholder": {
+    "en": "****************",
+    "zh-CN": "**************",
+    "reviewedEnglishHash": "bdf8be323fd9f282d96cedeee3272c898e72a22591236b8223944fc2ddeba605"
+  },
+  "apps.detail.advanced.reconnect.help": {
+    "en": "Where do I find this?",
+    "zh-CN": "我在哪里可以找到这个？",
+    "reviewedEnglishHash": "d06ff32b4b2a7559f4d23bf1da93d228503652c870cf70327a5647f4be14fa93"
+  },
+  "apps.detail.advanced.reconnect.placeholder": {
+    "en": "Paste your new key",
+    "zh-CN": "粘贴您的新密钥",
+    "reviewedEnglishHash": "0dbd3b63d1b73c08c91193f1f557fb314b33f89132f38c880e70ce6f65495d85"
+  },
+  "apps.detail.advanced.reconnect.stillFailing.body": {
+    "en": "That key didn't check out. Try another.",
+    "zh-CN": "那把钥匙没有检查出来。尝试另一个。",
+    "reviewedEnglishHash": "1fb0c9a965190532746583174799819db4e5ff26947ee1aa02d25223fc2d4a88"
+  },
+  "apps.detail.advanced.reconnect.stillFailing.title": {
+    "en": "Still not working",
+    "zh-CN": "仍然不工作",
+    "reviewedEnglishHash": "46d820c55ac73740296f18278fb48753e978c1e403ba8fec9183f608ad2b4942"
+  },
+  "apps.detail.advanced.reconnect.submit": {
+    "en": "Check & reconnect",
+    "zh-CN": "检查并重新连接",
+    "reviewedEnglishHash": "776e8c8fdef75961d698c35aa4f4ff37bdef753aac7845f6f20f65e5ddc37712"
+  },
+  "apps.detail.advanced.reconnect.success.body": {
+    "en": "{{appName}} is back online.",
+    "zh-CN": "{{appName}} 重新上线。",
+    "reviewedEnglishHash": "233b4007f2378c2c76551390856de6ee50f639f39f3af6a2e6c629f73a1ca234"
+  },
+  "apps.detail.advanced.reconnect.success.title": {
+    "en": "Reconnected",
+    "zh-CN": "重新连接",
+    "reviewedEnglishHash": "20a447dbc60511a6987ae27f1c206ab67d849972faf33dcdc1c873f03d42ba19"
+  },
+  "apps.detail.advanced.reconnectCard.description": {
+    "en": "The key stopped working. Paste a new one to get it back online.",
+    "zh-CN": "钥匙停止工作了。粘贴一个新的以使其重新联机。",
+    "reviewedEnglishHash": "912825a71b2da6548bda49e2a8a5bad357ea452e541e4705b57ce4adcdb5745c"
+  },
+  "apps.detail.advanced.reconnectCard.oauthDescription": {
+    "en": "Authorization expired or was revoked. Sign in again to restore access.",
+    "zh-CN": "授权已过期或被撤销。请重新登录以恢复访问权限。",
+    "reviewedEnglishHash": "52f87146b585008af5fa8b84a2cf25e48cf716fca0379cbb37c532ffcbfe7258"
+  },
+  "apps.detail.advanced.reconnectCard.oauthTitle": {
+    "en": "Reconnect required",
+    "zh-CN": "需要重新连接",
+    "reviewedEnglishHash": "06b42a9189e10d33a1dd719e211da3233d67bcb9381ead8cfdefe5ba0198d7f4"
+  },
+  "apps.detail.advanced.reconnectCard.title": {
+    "en": "This app needs reconnecting",
+    "zh-CN": "此应用需要重新连接",
+    "reviewedEnglishHash": "a05cc2f85c9bf756a2fa8173e09b14cc7a984a36154f07648cde4e3d7be35f67"
+  },
+  "apps.detail.advanced.technical.address": {
+    "en": "Address",
+    "zh-CN": "地址",
+    "reviewedEnglishHash": "56ef8f20955f256423d328f65b62106005252551db25d660031887e421cb4684"
+  },
+  "apps.detail.advanced.technical.connectionType": {
+    "en": "Connection type",
+    "zh-CN": "连接类型",
+    "reviewedEnglishHash": "a2cfeb2898b25bd562091fcf6c9bd4654c7e37a90f53e652655363d885e77fea"
+  },
+  "apps.detail.advanced.technical.localCommand": {
+    "en": "Local command",
+    "zh-CN": "本地命令",
+    "reviewedEnglishHash": "9b08984b3b3f6bf9799161050bd71963d94e260f236ecb11ac7f793807607802"
+  },
+  "apps.detail.advanced.technical.notSet": {
+    "en": "Not set",
+    "zh-CN": "未设置",
+    "reviewedEnglishHash": "4895f73177ab5d67c30c183a49d2477e014a2ef69b65150762d17e877f4f5b95"
+  },
+  "apps.detail.advanced.technical.title": {
+    "en": "Technical details",
+    "zh-CN": "技术细节",
+    "reviewedEnglishHash": "890ab358a55d7fcefe7527f675efb96865cf84d1d54e8d52d9692e3b599031e3"
+  },
+  "apps.detail.advanced.technical.transport.localCommand": {
+    "en": "Local command",
+    "zh-CN": "本地命令",
+    "reviewedEnglishHash": "9b08984b3b3f6bf9799161050bd71963d94e260f236ecb11ac7f793807607802"
+  },
+  "apps.detail.advanced.technical.transport.remoteHttp": {
+    "en": "Remote HTTP",
+    "zh-CN": "远程HTTP",
+    "reviewedEnglishHash": "3dd421f74afaf4f7b86a11d0f13286294bedf3c50f749c7b1c49e779353e3c82"
+  },
+  "apps.detail.advanced.technical.transport.unknown": {
+    "en": "Unknown",
+    "zh-CN": "未知",
+    "reviewedEnglishHash": "b764cdc0eab7137467211272fa539f1260d1bf2e71bcf6ff3bdc960f5c16aa14"
+  },
+  "apps.detail.available": {
+    "en": "available",
+    "zh-CN": "可用",
+    "reviewedEnglishHash": "ddd9818abacfde7afed60c93129175401439367a77e69ea93e0ddb3bb38e0bd9"
+  },
+  "apps.detail.breadcrumb.apps": {
+    "en": "Apps",
+    "zh-CN": "应用",
+    "reviewedEnglishHash": "89dd748442c194857825848e1500abbbc5f52fb067ad27fb05dc9fb23eebba3b"
+  },
+  "apps.detail.breadcrumb.company": {
+    "en": "Company",
+    "zh-CN": "公司简介",
+    "reviewedEnglishHash": "de4743c879734dc38cb3e270ecefcae077c3c2e626f9298115d5a03c8613f89b"
+  },
+  "apps.detail.common.app": {
+    "en": "App",
+    "zh-CN": "应用",
+    "reviewedEnglishHash": "0d04bfeb7d64b71c74fc925cca93d683154e8cc7e6e5838faced498e34c9984d"
+  },
+  "apps.detail.common.cancel": {
+    "en": "Cancel",
+    "zh-CN": "取消",
+    "reviewedEnglishHash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+  },
+  "apps.detail.common.change": {
+    "en": "Change",
+    "zh-CN": "改变",
+    "reviewedEnglishHash": "c0bf75bd78bf9572596720d596bd5a20a5b9145cde0fe50dec1e783cb184d69b"
+  },
+  "apps.detail.common.remove": {
+    "en": "Remove",
+    "zh-CN": "删除",
+    "reviewedEnglishHash": "c3812fc4acb861d5182fc2b8155f327f736fbe5e5eb86a7bd7afcb6dc5497282"
+  },
+  "apps.detail.common.save": {
+    "en": "Save",
+    "zh-CN": "保存",
+    "reviewedEnglishHash": "1509f561f2416598629b886ad7d3c05a7e221e4e0675c84bbff4ee6d9e03913d"
+  },
+  "apps.detail.common.saveChoices": {
+    "en": "Save choices",
+    "zh-CN": "保存选择",
+    "reviewedEnglishHash": "035882f1a56b9d49db7b655f6afdab79b0a1b6909f901db9be109eeede87eaed"
+  },
+  "apps.detail.common.saving": {
+    "en": "Saving...",
+    "zh-CN": "正在保存...",
+    "reviewedEnglishHash": "dc85af8f2b1d0d6756547cd5f79557466e25e682b882f68d277bd7f125851321"
+  },
+  "apps.detail.common.savingEllipsis": {
+    "en": "Saving…",
+    "zh-CN": "正在保存...",
+    "reviewedEnglishHash": "23e39291d6135814ed7c936e278974544b0df5fbf0eb0427b6700979b7472a93"
+  },
+  "apps.detail.common.tryAgain": {
+    "en": "Please try again.",
+    "zh-CN": "请再试一次。",
+    "reviewedEnglishHash": "eea4fb33efd382834952e3e7ab52f8dc41ccc2c3f5c3f246f0505235e0e962aa"
+  },
+  "apps.detail.empty.backToApps": {
+    "en": "Back to apps",
+    "zh-CN": "返回应用",
+    "reviewedEnglishHash": "27ab5ab0768a8715731ab832a6978a3c0b87ea44c3a4fc6b15dcdaea906da895"
+  },
+  "apps.detail.empty.notFound": {
+    "en": "We couldn't find that app.",
+    "zh-CN": "我们找不到那个应用。",
+    "reviewedEnglishHash": "3dffbbcc9c521f53b478855b712708e9abb22ad44f60bab6926b3ff467f15257"
+  },
+  "apps.detail.empty.selectCompany": {
+    "en": "Select a company to manage apps.",
+    "zh-CN": "选择一家公司来管理应用。",
+    "reviewedEnglishHash": "ddff6fdb2d072b58451ddaef71adcc66dd6b917164533a46d3ce1c878cd283c7"
+  },
+  "apps.detail.errors.refresh.title": {
+    "en": "Couldn't refresh actions",
+    "zh-CN": "无法刷新操作",
+    "reviewedEnglishHash": "17b3912d617e6305b4076ea2e2b516bc20412428c50eb9bce5099b251af3a5e4"
+  },
+  "apps.detail.errors.remove.title": {
+    "en": "Couldn't remove the app",
+    "zh-CN": "无法删除应用",
+    "reviewedEnglishHash": "2e4042242871946f71d96c2a12241e241e61b741669704b5015b26a3c6737d20"
+  },
+  "apps.detail.errors.rename.title": {
+    "en": "Couldn't rename the app",
+    "zh-CN": "无法重命名应用",
+    "reviewedEnglishHash": "dba458bc04cbff33955ca46aa1056332dca472e6f37edec11c2e95d92e2e04d1"
+  },
+  "apps.detail.errors.save.title": {
+    "en": "Couldn't save that",
+    "zh-CN": "无法保存",
+    "reviewedEnglishHash": "4ee3e155463fcb96770b1cf3c6cb88853011d121dba9d56f4bd3edf0a38e59ce"
+  },
+  "apps.detail.errors.saveInstalls.title": {
+    "en": "Couldn't save installs",
+    "zh-CN": "无法保存安装设置",
+    "reviewedEnglishHash": "1381784c72017318a5997599677eb3a7f6206dfa21a25478987b9b32f3321a69"
+  },
+  "apps.detail.errors.update.title": {
+    "en": "Couldn't update the app",
+    "zh-CN": "无法更新应用",
+    "reviewedEnglishHash": "b47c0d8cc1afadc27d285ec3d9ed24cd8dbf246a55224d59adc39094f09ca6d8"
+  },
+  "apps.detail.header.actionCount": {
+    "en": "{{count}} actions available",
+    "zh-CN": "{{count}} 可用操作",
+    "reviewedEnglishHash": "cf25465e7195d1bae5298b4c9537ee4b5bcdee759fdcecd1f840b1bd62f28cd5"
+  },
+  "apps.detail.header.renameButtonAria": {
+    "en": "Rename app",
+    "zh-CN": "重命名应用",
+    "reviewedEnglishHash": "5689214eba318e26740e60422e2aeec47f9802c026bddf41606d3ed89ce9fddf"
+  },
+  "apps.detail.header.renameInputAria": {
+    "en": "App name",
+    "zh-CN": "应用名称",
+    "reviewedEnglishHash": "e6ad3996853741642aec277734b3272746af047860dca5732ee317d5af809424"
+  },
+  "apps.detail.lifecycleToast.paused.body": {
+    "en": "{{appName}} is paused for agents.",
+    "zh-CN": "{{appName}} 已对智能体暂停。",
+    "reviewedEnglishHash": "d779422d50ae7b23d289fd97e670c98a86172289a38126067b811b98ef48cc92"
+  },
+  "apps.detail.lifecycleToast.paused.title": {
+    "en": "App paused",
+    "zh-CN": "应用已暂停",
+    "reviewedEnglishHash": "7c335c083da5d1e9bdeeb6c9f744d503b0dd5bfec426372ad29579554749f029"
+  },
+  "apps.detail.lifecycleToast.resumed.body": {
+    "en": "{{appName}} is available to agents again.",
+    "zh-CN": "{{appName}} 已可供智能体再次使用。",
+    "reviewedEnglishHash": "085643a09cac04ecb4cc77241aa5209246ba8c414c4243d084a2deff64edcf25"
+  },
+  "apps.detail.lifecycleToast.resumed.title": {
+    "en": "App resumed",
+    "zh-CN": "应用已恢复",
+    "reviewedEnglishHash": "a7be054c5b4f4e5a44d51e05d213eb7315e4c9ba351ff0d0f3e6b59996af34da"
+  },
+  "apps.detail.oauth.openingSignIn": {
+    "en": "Opening sign-in…",
+    "zh-CN": "正在打开登录页面…",
+    "reviewedEnglishHash": "530dc05dadaf4fafff97a41ab5cdd566485005cfd2093d61a16299a676fef7ac"
+  },
+  "apps.detail.oauth.startError.title": {
+    "en": "Couldn't start sign-in",
+    "zh-CN": "无法启动登录",
+    "reviewedEnglishHash": "3f9bac4a050951dc8e98210e42e04e559168dfc96f2977f4f55bc2547a900f99"
+  },
+  "apps.detail.permissions.access.option.all.description": {
+    "en": "Anyone you've added to Paperclip.",
+    "zh-CN": "您添加到 Paperclip 的任何人。",
+    "reviewedEnglishHash": "a42f0f68802e2217fcb190c6079dfcaa6e0efb7d24e9db46c6ba548c7f10b1f2"
+  },
+  "apps.detail.permissions.access.option.all.title": {
+    "en": "All agents",
+    "zh-CN": "所有智能体商",
+    "reviewedEnglishHash": "54c32d3e2cfa1cc879f746643e6b41360541692fc0a163f3793595510398e6f5"
+  },
+  "apps.detail.permissions.access.option.specific.description": {
+    "en": "Pick who can use it.",
+    "zh-CN": "选择谁可以使用它。",
+    "reviewedEnglishHash": "d24e499eb7ba9612ff90711b3caa86137c048bd57e227aaa832abe0d7d252102"
+  },
+  "apps.detail.permissions.access.option.specific.title": {
+    "en": "Only specific agents",
+    "zh-CN": "仅限特定智能体",
+    "reviewedEnglishHash": "e6b807d84f9f1a14f7e4a2370ddea1e884e2bee363399bfd76c0571931437e1d"
+  },
+  "apps.detail.permissions.access.summary.all": {
+    "en": "Every agent can use it",
+    "zh-CN": "每个智能体都可以使用它",
+    "reviewedEnglishHash": "a16b314e97ba6857560b5f7c64e9bc3fb799debf09d6cd7d9184aa2e5bda000a"
+  },
+  "apps.detail.permissions.access.summary.specific": {
+    "en": "{{count}} agents can use it",
+    "zh-CN": "{{count}}智能体可以使用它",
+    "reviewedEnglishHash": "d566965738098618a31442af3dfb829d943d9b4b105da6fe0d67d37947fde807"
+  },
+  "apps.detail.permissions.access.title": {
+    "en": "Who can use it",
+    "zh-CN": "谁可以使用它",
+    "reviewedEnglishHash": "82d9af69e1a186560ff295dadb6c549e8261d3bb37b231b3f3c691b13f758ec9"
+  },
+  "apps.detail.permissions.actions.description": {
+    "en": "Choose what agents can do and what needs a human first.",
+    "zh-CN": "首先选择智能体可以做什么以及什么需要人工。",
+    "reviewedEnglishHash": "02a8023e494f1570249f57ee18343bd015f02bbea3dd63007930ee5bef90f586"
+  },
+  "apps.detail.permissions.actions.group.canChange.hint": {
+    "en": "Can change something in another app.",
+    "zh-CN": "可以更改另一个应用中的某些内容。",
+    "reviewedEnglishHash": "e4bb7a3b29e9ec47b11049eb6757ad2b2b0db9d65fff0d35c5e45c5e13cbb41a"
+  },
+  "apps.detail.permissions.actions.group.canChange.title": {
+    "en": "Can make changes",
+    "zh-CN": "可以做出改变",
+    "reviewedEnglishHash": "0bf247bbb3ae9bf29e857d1823af26e5fbf278df19eee68406ccad9e1028349a"
+  },
+  "apps.detail.permissions.actions.group.readOnly.hint": {
+    "en": "Can look up context without changing anything.",
+    "zh-CN": "可以在不改变任何内容的情况下查找上下文。",
+    "reviewedEnglishHash": "85bb95227bb7847768e398ac7b2b27bd2ad65383e438286d0f56c46e39d6a80b"
+  },
+  "apps.detail.permissions.actions.group.readOnly.title": {
+    "en": "Read only",
+    "zh-CN": "只读",
+    "reviewedEnglishHash": "8ac767353080eae75227c457c3e6dc0a438f6d0c2593940355842685e3a548e3"
+  },
+  "apps.detail.permissions.actions.refresh": {
+    "en": "Refresh actions",
+    "zh-CN": "刷新操作",
+    "reviewedEnglishHash": "ee8e81d5c16a4258fa46b8d087f194484afbf6d9d940853953e440512d4c7102"
+  },
+  "apps.detail.permissions.actions.select.allowed": {
+    "en": "Allowed",
+    "zh-CN": "允许",
+    "reviewedEnglishHash": "1bb201d188352e9b4633f85e4fb8a31ea93fd14dec702443fd3e2713d657fd2d"
+  },
+  "apps.detail.permissions.actions.select.aria": {
+    "en": "{{actionName}} permission",
+    "zh-CN": "{{actionName}} 许可",
+    "reviewedEnglishHash": "3ad115e6ba48cd2eb641228b45373a9a2251dfc4eeda7c342a9e4a1055c66203"
+  },
+  "apps.detail.permissions.actions.select.askFirst": {
+    "en": "Ask a human first",
+    "zh-CN": "先问人",
+    "reviewedEnglishHash": "5c0f7979e71bb99779eb5fd3d65f72a6ae6b56b5e60c75e262b35869e6f19d90"
+  },
+  "apps.detail.permissions.actions.select.off": {
+    "en": "Off",
+    "zh-CN": "关闭",
+    "reviewedEnglishHash": "ca7981b46ecf2c1787b6d76d81d9fd7fa0ca95842e2fcc2a452869891a9334d1"
+  },
+  "apps.detail.permissions.actions.title": {
+    "en": "Action permissions",
+    "zh-CN": "操作权限",
+    "reviewedEnglishHash": "9afc91206d68f9d58ef2131971b5f1fd48d41a50ea877be2d4fb62e26fed527f"
+  },
+  "apps.detail.permissions.installed.autoExtend.manyAgents": {
+    "en": "{{count}} agents",
+    "zh-CN": "{{count}} 智能体",
+    "reviewedEnglishHash": "977a7422900b40a5ade4526c98653a1b04619b8ff81240ead3699dea1b7df70e"
+  },
+  "apps.detail.permissions.installed.autoExtend.notice": {
+    "en": "Installing on {{targetLabel}} will also grant access. A tool can't be installed on an agent that isn't allowed to use it, so we'll add {{targetLabel}} to who can use it. This is logged.",
+    "zh-CN": "在 {{targetLabel}} 上安装也将授予访问权限。工具无法安装在不允许使用它的智能体上，因此我们将 {{targetLabel}} 添加到可以使用它的人员。这是已记录的。",
+    "reviewedEnglishHash": "2ad9e24cae08822d710557f33073de8b4ce73fd7cf46343aa5c18399df4c1014"
+  },
+  "apps.detail.permissions.installed.autoExtend.oneAgent": {
+    "en": "1 agent",
+    "zh-CN": "1 名智能体",
+    "reviewedEnglishHash": "868279c53f3a7e35a30604d8beafa99cc1093cae569d6f194c751eb8a79efd0d"
+  },
+  "apps.detail.permissions.installed.autoExtend.review": {
+    "en": "Review the {{count}} access changes",
+    "zh-CN": "查看 {{count}} 访问权限更改",
+    "reviewedEnglishHash": "58f6167d76dccf323440cd707c7a87bc43e7913cc4e60d537e09e1f061fcc53b"
+  },
+  "apps.detail.permissions.installed.badge.all": {
+    "en": "Installed on all agents",
+    "zh-CN": "安装在所有智能体上",
+    "reviewedEnglishHash": "364ca05540121bad92afe3ab29cb03f9881f7c1d0f3d37ce76ab0b669d752686"
+  },
+  "apps.detail.permissions.installed.badge.count": {
+    "en": "{{count}} installed",
+    "zh-CN": "{{count}} 已安装",
+    "reviewedEnglishHash": "4f106055e36cf90773d57343263bda4a1c7ac762ff15104c3469eeb200ed53ab"
+  },
+  "apps.detail.permissions.installed.badge.none": {
+    "en": "Permitted only — not installed on any agent",
+    "zh-CN": "仅允许 — 未安装在任何智能体上",
+    "reviewedEnglishHash": "6281efae0f3e162c9578e95646e83a1c4286a2c74749bec90c415250b79229f3"
+  },
+  "apps.detail.permissions.installed.description": {
+    "en": "Whose harness carries {{appName}}'s tools on every run.",
+    "zh-CN": "每次跑步时，他的安全带都会携带 {{appName}} 的工具。",
+    "reviewedEnglishHash": "cfdb639a3221aa1b7b8d51872971ea33836e20b4d7a28c3ecdf389001237fe88"
+  },
+  "apps.detail.permissions.installed.installAll.aria": {
+    "en": "Install on all agents",
+    "zh-CN": "在所有智能体上安装",
+    "reviewedEnglishHash": "c312a36d6b73bd118a57963c06883668b55df19254f5d49e78d09729b20c3cb7"
+  },
+  "apps.detail.permissions.installed.installAll.description": {
+    "en": "Adds context cost to every run of every agent — a deliberate choice. New agents you add later are installed automatically.",
+    "zh-CN": "为每个智能体的每次运行增加上下文成本——这是一个深思熟虑的选择。您稍后添加的新智能体将自动安装。",
+    "reviewedEnglishHash": "f783e1b3b67fa536ea43266410589de8916188a7b3fe82477675c03739d9a19c"
+  },
+  "apps.detail.permissions.installed.installAll.title": {
+    "en": "Install on all agents",
+    "zh-CN": "在所有智能体上安装",
+    "reviewedEnglishHash": "c312a36d6b73bd118a57963c06883668b55df19254f5d49e78d09729b20c3cb7"
+  },
+  "apps.detail.permissions.installed.notice": {
+    "en": "Installing adds {{appName}}'s tools to the agent's context on every run — install only where it will actually be used.",
+    "zh-CN": "每次运行时安装都会将 {{appName}} 的工具添加到智能体上下文中 — 仅在实际使用的地方安装。",
+    "reviewedEnglishHash": "f045dbf8ef42b2e5d0f276cc23d84b621da5f85180ef0071a6789d7ff41c3e15"
+  },
+  "apps.detail.permissions.installed.select.count": {
+    "en": "{{count}} agents installed",
+    "zh-CN": "{{count}} 智能体已安装",
+    "reviewedEnglishHash": "2e4e3001087af18745252d8e0dad4eae94c6064a2e4c4fed3fd7faa76ac26c85"
+  },
+  "apps.detail.permissions.installed.select.hasAccess": {
+    "en": "has access",
+    "zh-CN": "有访问权限",
+    "reviewedEnglishHash": "8c132db070ca9c1fa6e80db54bf11a01dd240aeac3b492f5eb6cc3a19825ca7c"
+  },
+  "apps.detail.permissions.installed.select.noAccess": {
+    "en": "no access yet",
+    "zh-CN": "还没有访问权限",
+    "reviewedEnglishHash": "f30b67e5d60203cedc228c205d8c7fe8b37c27a4ac8a84ba856edeea010256ed"
+  },
+  "apps.detail.permissions.installed.select.placeholder": {
+    "en": "Choose agents to install on",
+    "zh-CN": "选择要安装的智能体",
+    "reviewedEnglishHash": "b5888e20a9352f3be66dc8c8d093d608b5d465e3de17b7f1de59a89685ac7d55"
+  },
+  "apps.detail.permissions.installed.select.willGrantAccess": {
+    "en": "will grant access",
+    "zh-CN": "将授予访问权限",
+    "reviewedEnglishHash": "1d2e8943831205831889641029f29c8ba26144ad27691315767b000ef7da6f27"
+  },
+  "apps.detail.permissions.installed.title": {
+    "en": "Installed on agents",
+    "zh-CN": "安装在智能体上",
+    "reviewedEnglishHash": "365f016552aef58a748283a446ce52bdfdaa357010b477c0d820d38169bc132c"
+  },
+  "apps.detail.refreshToast.quarantined": {
+    "en": "{{count}} new actions need your OK.",
+    "zh-CN": "{{count}} 个新操作等待你的确认。",
+    "reviewedEnglishHash": "4949c23fd5e0c52923abce5bf82d77a1a49f556f3c88772d53ee88ef0d55e3b0"
+  },
+  "apps.detail.refreshToast.title": {
+    "en": "Found {{count}} actions",
+    "zh-CN": "发现 {{count}} 个操作",
+    "reviewedEnglishHash": "99ea260f222f7d8b812f1d3c98655a13112acc276eb2b5ff4b8c73126b80061b"
+  },
+  "apps.detail.removedToast.body": {
+    "en": "{{appName}} no longer has access. You can connect it again any time.",
+    "zh-CN": "{{appName}} 已无法访问，你可以随时再次连接。",
+    "reviewedEnglishHash": "f0192b595fbee43eeb260b3ee751677e2e8a08e1b2266f558caacc495ccc92ba"
+  },
+  "apps.detail.removedToast.title": {
+    "en": "App removed",
+    "zh-CN": "应用已删除",
+    "reviewedEnglishHash": "5fb1ac8f44bf85308f79f06e1685ce6eca3672994164975fe6358c546df9ea25"
+  },
+  "apps.detail.review.heading": {
+    "en": "Waiting for your OK",
+    "zh-CN": "等待你的OK",
+    "reviewedEnglishHash": "2c9582b95b21f615944c7b54897aba42817c15071f24602d4f6f4e0dcd8dace4"
+  },
+  "apps.detail.setup.googleSheets.addSheet": {
+    "en": "Add sheet",
+    "zh-CN": "添加表",
+    "reviewedEnglishHash": "e05a0e967b4ce3d799eeb81aac6a53875c9308d8f92065c23be0c9d7543f6d43"
+  },
+  "apps.detail.setup.googleSheets.description": {
+    "en": "Agents can only use the sheets listed here.",
+    "zh-CN": "智能体商只能使用此处列出的表格。",
+    "reviewedEnglishHash": "17ba1daf3a11cf474f0886a6e4ad788d5042ffa381c1573c82336741e5949912"
+  },
+  "apps.detail.setup.googleSheets.empty": {
+    "en": "No sheets are connected yet.",
+    "zh-CN": "尚未连接任何工作表。",
+    "reviewedEnglishHash": "ee54c8d9967185a1930bd1ce51e9b3c659943678f96cced188c773423e51c48a"
+  },
+  "apps.detail.setup.googleSheets.error.invalidLink": {
+    "en": "That doesn't look like a Google Sheets link.",
+    "zh-CN": "这看起来不像 Google 表格链接。",
+    "reviewedEnglishHash": "42b2bd84855693409ebb869981ceb20e7d287300ac7858f658ca482f80aeb68c"
+  },
+  "apps.detail.setup.googleSheets.error.missingLink": {
+    "en": "Paste a Google Sheets link.",
+    "zh-CN": "粘贴 Google 表格链接。",
+    "reviewedEnglishHash": "3140b10e6c6b782755563dbeb4955b48497a5166c80c29f48a1fb7fd42d99f71"
+  },
+  "apps.detail.setup.googleSheets.openSheet": {
+    "en": "Open sheet",
+    "zh-CN": "打开表",
+    "reviewedEnglishHash": "f2df2497ff599b79ef4c33ff6aaffff2a76e723910861ec109045abefedb7356"
+  },
+  "apps.detail.setup.googleSheets.placeholder": {
+    "en": "https://docs.google.com/spreadsheets/d/...",
+    "zh-CN": "https://docs.google.com/spreadsheets/d/...",
+    "reviewedEnglishHash": "f5a20f9064e9e0cdc65938685ea11e80c4815d41cfd5d64075f1e2b2d44eebec"
+  },
+  "apps.detail.setup.googleSheets.removeDisabledTitle": {
+    "en": "Add another sheet before removing this one.",
+    "zh-CN": "在移除这张纸之前添加另一张纸。",
+    "reviewedEnglishHash": "a9ae307c4c0d302267b9453cf6c66b84550698f933c17846731be3380a282c0f"
+  },
+  "apps.detail.setup.googleSheets.title": {
+    "en": "Sheets agents can use",
+    "zh-CN": "床单智能体商可以使用",
+    "reviewedEnglishHash": "38b73bee3388770118130f0cfcec6e184db7c626060bc6a5ec84b873dba908e7"
+  },
+  "apps.detail.setup.lifecycle.enabledDescription": {
+    "en": "Pause it to stop every agent from using its actions.",
+    "zh-CN": "暂停它以阻止每个智能体使用其操作。",
+    "reviewedEnglishHash": "38ef223fdc1dce3ba4805c75f0e2ddf720411538e86356cb4aabc4395e2faacb"
+  },
+  "apps.detail.setup.lifecycle.enabledTitle": {
+    "en": "Agents can use this app",
+    "zh-CN": "智能体商可以使用此应用",
+    "reviewedEnglishHash": "346766f2a04b43a78effd90e1cfc9b5d4b241e1e8b731400235cf7dcfb022df8"
+  },
+  "apps.detail.setup.lifecycle.pauseAria": {
+    "en": "Pause this app",
+    "zh-CN": "暂停此应用",
+    "reviewedEnglishHash": "6fd33e068eb60c9c805599ebcadbf33ebf2252ae46b40d6d03bc3a1c7d4fb502"
+  },
+  "apps.detail.setup.lifecycle.pausedDescription": {
+    "en": "Resume it when agents should be able to use its actions again.",
+    "zh-CN": "当智能体应该能够再次使用其操作时恢复它。",
+    "reviewedEnglishHash": "5ba7e44be367b104257c54bee60c4bbb07df3f0b6af0b08e09ec1711567aeb59"
+  },
+  "apps.detail.setup.lifecycle.pausedTitle": {
+    "en": "This app is paused",
+    "zh-CN": "该应用已暂停",
+    "reviewedEnglishHash": "c155efb21755f67816e4d2f2b345f45b90821160f894f526307b816bb0013370"
+  },
+  "apps.detail.setup.lifecycle.resumeAria": {
+    "en": "Resume this app",
+    "zh-CN": "恢复此应用",
+    "reviewedEnglishHash": "d2c0278d29fba73d1a009f5515fb28ad22152bb1b2a7b75af21a981a35f4a04d"
+  },
+  "apps.detail.setup.oauth.connectButton": {
+    "en": "Connect with {{providerName}}",
+    "zh-CN": "与 {{providerName}} 连接",
+    "reviewedEnglishHash": "6e81eae76fb6033a64a6d5fa247599af2b4de1df38f07a7ee3d6b2dacf130ae6"
+  },
+  "apps.detail.setup.oauth.connectDescription": {
+    "en": "Open the provider's consent page to finish connecting {{appName}}.",
+    "zh-CN": "打开提供商的同意页面以完成连接 {{appName}}。",
+    "reviewedEnglishHash": "4e14482c919b54cb29c70b2d3001e9eacecca41fe872b326fbde77b1b856fd01"
+  },
+  "apps.detail.setup.oauth.connectTitle": {
+    "en": "Connect with {{providerName}}",
+    "zh-CN": "与 {{providerName}} 连接",
+    "reviewedEnglishHash": "6e81eae76fb6033a64a6d5fa247599af2b4de1df38f07a7ee3d6b2dacf130ae6"
+  },
+  "apps.detail.setup.oauth.connectedDescription": {
+    "en": "Your workspace authorization is active. Reconnect any time to replace it.",
+    "zh-CN": "你的工作区授权当前有效，可随时重新连接以替换它。",
+    "reviewedEnglishHash": "0292579eddbfafa60510eb1dc3b4c26123a3c0b535727071b7eb70953d0fd1e8"
+  },
+  "apps.detail.setup.oauth.connectedTitle": {
+    "en": "Connected with {{providerName}}",
+    "zh-CN": "与 {{providerName}} 连接",
+    "reviewedEnglishHash": "b4933b3bf5db2403c1b5a130fa1e134838d8c098a8f256c39f6cd8e33e3dc39f"
+  },
+  "apps.detail.setup.oauth.reconnect": {
+    "en": "Reconnect",
+    "zh-CN": "重新连接",
+    "reviewedEnglishHash": "bf8a9eab9e7e141bfb81f0ca9244a5f68f476ed0b57f03538410417298169d18"
+  },
+  "apps.detail.setup.quarantine.description": {
+    "en": "This app added actions since you set it up. They stay off until you turn them on.",
+    "zh-CN": "自您设置以来，此应用添加了操作。它们会保持关闭状态，直到您将其打开。",
+    "reviewedEnglishHash": "61ff2898d1e132b425022edb1fd176705e785881e0bc7a70c5ef54ed885247ef"
+  },
+  "apps.detail.setup.quarantine.hide": {
+    "en": "Hide",
+    "zh-CN": "隐藏",
+    "reviewedEnglishHash": "ac20a57bfde0bbc40bfe70895eb1cfacc944aaff06ca784053623c569b3e1b3d"
+  },
+  "apps.detail.setup.quarantine.review": {
+    "en": "Review",
+    "zh-CN": "评论",
+    "reviewedEnglishHash": "aff0766a5290e117b8433c351bae7b7b23bed682b2369bd822d88a647cc58512"
+  },
+  "apps.detail.setup.quarantine.title": {
+    "en": "Review {{count}} new actions",
+    "zh-CN": "审查 {{count}} 个新操作",
+    "reviewedEnglishHash": "b382b807d8d4ada8d84699bd73283e71daa5ab6510fe0f99a092971c14f9290d"
+  },
+  "apps.detail.setup.quarantine.title_one": {
+    "en": "Review {{count}} new action",
+    "zh-CN": "审查 {{count}} 个新操作",
+    "reviewedEnglishHash": "b61ed74c0c26c3068c879f370e26007e3835ef79d899721f9a1d39d7efbc5aca"
+  },
+  "apps.detail.setup.quarantine.title_other": {
+    "en": "Review {{count}} new actions",
+    "zh-CN": "审查 {{count}} 个新操作",
+    "reviewedEnglishHash": "b382b807d8d4ada8d84699bd73283e71daa5ab6510fe0f99a092971c14f9290d"
+  },
+  "apps.detail.setup.quarantine.turnOn": {
+    "en": "Turn on",
+    "zh-CN": "打开",
+    "reviewedEnglishHash": "5a1f096a0d8d767454ccb576f4fad61a5f204e942257554bdeb95b1ef7206409"
+  },
+  "apps.detail.setup.quarantine.turnOnAll": {
+    "en": "Turn on all",
+    "zh-CN": "全部开启",
+    "reviewedEnglishHash": "f4999c26f6b143ac34c9372ec9b5417e45b3684b121aad2244e297ce36d3298c"
+  },
+  "apps.detail.status.connected": {
+    "en": "Connected",
+    "zh-CN": "已连接",
+    "reviewedEnglishHash": "22965568d22a14ee17af055d2870b50afcfe9fd94a83eec3196e266932297bb2"
+  },
+  "apps.detail.status.needsAttention": {
+    "en": "Needs attention",
+    "zh-CN": "需要注意",
+    "reviewedEnglishHash": "c1ebc7817870e5be78fceae559ba5fcac2b68d5c5498d8080298004f3f79d62d"
+  },
+  "apps.detail.status.paused": {
+    "en": "Paused",
+    "zh-CN": "已暂停",
+    "reviewedEnglishHash": "e159b06187d369a0615f66ce577582b5c983d4ea59b3a62b702049f61753f0bf"
+  },
+  "apps.detail.tab.activity": {
+    "en": "Activity",
+    "zh-CN": "活动",
+    "reviewedEnglishHash": "38da1505ca8373288489495101b14f24ac95078f520ad64df18272aa6054f750"
+  },
+  "apps.detail.tab.advanced": {
+    "en": "Advanced",
+    "zh-CN": "高级",
+    "reviewedEnglishHash": "9f088dbebd6c3c70a5ddbc2c943b11e4ca9acea5757b0b4f2b32479f0dbb747e"
+  },
+  "apps.detail.tab.permissions": {
+    "en": "Permissions",
+    "zh-CN": "权限",
+    "reviewedEnglishHash": "abccc78cc93c07931feccfbd0665c003373b48334fd8d4cf5c6d0c714e68f26e"
+  },
+  "apps.detail.tab.review": {
+    "en": "Review",
+    "zh-CN": "评论",
+    "reviewedEnglishHash": "aff0766a5290e117b8433c351bae7b7b23bed682b2369bd822d88a647cc58512"
+  },
+  "apps.detail.tab.setup": {
+    "en": "Setup",
+    "zh-CN": "设置",
+    "reviewedEnglishHash": "7013af4c42fe43802a9e8b0affc4f521fcd126160569969fb2ec09e1b7c422b1"
+  },
+  "apps.detail.tab.test": {
+    "en": "Test",
+    "zh-CN": "测试",
+    "reviewedEnglishHash": "532eaabd9574880dbf76b9b8cc00832c20a6ec113d682299550d7a6e0f345e25"
+  },
+  "apps.detail.test.access.allowedFor": {
+    "en": "Allowed for",
+    "zh-CN": "允许用于",
+    "reviewedEnglishHash": "b1d20f770e9e86e9dc29d7b3ebf25c100c550fd81bf3831b778d46430bb97be0"
+  },
+  "apps.detail.test.access.askFirstFor": {
+    "en": "Ask first for",
+    "zh-CN": "先询问",
+    "reviewedEnglishHash": "d8f62bd1989887f60b899a0c34e0dbe4d31f0cae329bb780829685f79eda4d6a"
+  },
+  "apps.detail.test.access.offFor": {
+    "en": "Off for",
+    "zh-CN": "关闭时间为",
+    "reviewedEnglishHash": "a0b8d25186a432ef17085a022a0aab4684d36dad7ec250f58422f95c653cf9a9"
+  },
+  "apps.detail.test.agentPicker.aria": {
+    "en": "Choose which agent to test as",
+    "zh-CN": "选择要测试的智能体",
+    "reviewedEnglishHash": "2072e751dcf212bcbf25a7029df223b4f199c5cbf633f9d38bf0e96c546ebe51"
+  },
+  "apps.detail.test.agentPicker.badges.allowed": {
+    "en": "runs immediately when you press Run.",
+    "zh-CN": "当您按“运行”时立即运行。",
+    "reviewedEnglishHash": "9993899a7707c39e2ca133e63d02f305399a934c91ed147959a0fadd95094b51"
+  },
+  "apps.detail.test.agentPicker.badges.askFirst": {
+    "en": "Run is parked in Review for your OK.",
+    "zh-CN": "运行已停在“查看”中，以便您确定。",
+    "reviewedEnglishHash": "0d389f8ade0e751a1502d03b4839c640524a9ae55f4d52c54ad8b2ee5bb612e6"
+  },
+  "apps.detail.test.agentPicker.badges.note": {
+    "en": "Badges reflect this agent's current settings, not yours. Swap agents to see how an action would behave for each.",
+    "zh-CN": "徽章反映了该智能体的当前设置，而不是您的设置。交换智能体以查看每个操作的行为方式。",
+    "reviewedEnglishHash": "ff41d981dca5e17fa90b659d3aa798707d8847df5d5b99c6d6d45298cff3d048"
+  },
+  "apps.detail.test.agentPicker.badges.offPrefix": {
+    "en": "won't run. Change it in",
+    "zh-CN": "不会运行。将其更改为",
+    "reviewedEnglishHash": "20b44df694ad71e6e1e12f05c7497350496a2b6f1e3886e94032586c2643f672"
+  },
+  "apps.detail.test.agentPicker.badges.title": {
+    "en": "What the badges mean",
+    "zh-CN": "徽章的含义是什么",
+    "reviewedEnglishHash": "acd5ccb3fcbbfda48b0fad37323da17c5a3005f70065ae1cf52c6dc81168a0f1"
+  },
+  "apps.detail.test.agentPicker.footer.availableAgents": {
+    "en": "Only agents you can assign tasks to are listed.",
+    "zh-CN": "仅列出您可以向其分配任务的智能体。",
+    "reviewedEnglishHash": "b4ee96c69eb6d35d053f469abd236ef1b54d83695c734651f35980709e0abcb3"
+  },
+  "apps.detail.test.agentPicker.footer.preview": {
+    "en": "Pick one to preview what they'd see in {{appName}}.",
+    "zh-CN": "选择一个来预览他们会在 {{appName}} 中看到的内容。",
+    "reviewedEnglishHash": "5c90607b242e1069919db6803f66c34cf57a73adfc14de2463d5870407d2621c"
+  },
+  "apps.detail.test.agentPicker.noAccess": {
+    "en": "No access — not allowed for any action",
+    "zh-CN": "无访问权限 — 不允许执行任何操作",
+    "reviewedEnglishHash": "244d5d6b59c0ada5229cbb3e511f9aee659d8f69c58a2ca5c12c1ad742bca60d"
+  },
+  "apps.detail.test.agentPicker.noMatches": {
+    "en": "No agents match.",
+    "zh-CN": "没有匹配的智能体。",
+    "reviewedEnglishHash": "8927413ab41d88ad83a0bc0db532f9fc0cd70cddf0f7161bc12d973967d2a257"
+  },
+  "apps.detail.test.agentPicker.searchAria": {
+    "en": "Search agents",
+    "zh-CN": "搜寻智能体",
+    "reviewedEnglishHash": "212fd04a1d202b4f0258c0c8b959ed0cfd3871b322197fe58122f9f153ac7eab"
+  },
+  "apps.detail.test.agentPicker.searchPlaceholder": {
+    "en": "Search agents…",
+    "zh-CN": "搜寻智能体...",
+    "reviewedEnglishHash": "e05cb78e973da37232be8465b57995620a02d3cfa153ffe0c62cfdb6eb253494"
+  },
+  "apps.detail.test.agentPicker.summary": {
+    "en": "Allowed {{allowedCount}} · Ask first {{askFirstCount}} · Off {{offCount}}",
+    "zh-CN": "允许 {{allowedCount}} · 先询问 {{askFirstCount}} · 禁止 {{offCount}}",
+    "reviewedEnglishHash": "1898d556386c98dbefecff13fe48900957269c7acc52b117279e702ce597a5a9"
+  },
+  "apps.detail.test.askFirst.cancelRequest": {
+    "en": "Cancel this request",
+    "zh-CN": "取消此请求",
+    "reviewedEnglishHash": "5a0551a43cb3afc414c874b1e021ed769d4cef3de5d7cce42e6311cccc33c8bc"
+  },
+  "apps.detail.test.askFirst.cancelling": {
+    "en": "Cancelling…",
+    "zh-CN": "取消…",
+    "reviewedEnglishHash": "91b104db05da1b2d48c57a5aa60128f660e6572f89835ec858f6eb25b8f4af0f"
+  },
+  "apps.detail.test.askFirst.description": {
+    "en": "{{agentName}} needs your approval before this runs.",
+    "zh-CN": "{{agentName}} 需要您的批准才能运行。",
+    "reviewedEnglishHash": "f9ea17c6119757d7575495758547e51695ec5b234156d083dbcacca114e3b5ad"
+  },
+  "apps.detail.test.askFirst.field.action": {
+    "en": "Action",
+    "zh-CN": "行动",
+    "reviewedEnglishHash": "64cff1319d2fd2cbb7a1e84ccecf22c1cc07b24435cdb522f8c0aa525d6002a6"
+  },
+  "apps.detail.test.askFirst.field.status": {
+    "en": "Status",
+    "zh-CN": "状态",
+    "reviewedEnglishHash": "920e413c7d411b61ef3e8c63b1cb6ad058d5f95f8b481dbafe60248387d8c355"
+  },
+  "apps.detail.test.askFirst.field.where": {
+    "en": "Where",
+    "zh-CN": "哪里",
+    "reviewedEnglishHash": "1daaa38f33cd860e9710c74ef1ebbb00af9f348ad0e991b94bba044a61ece936"
+  },
+  "apps.detail.test.askFirst.openReview": {
+    "en": "Open Review tab",
+    "zh-CN": "打开“审阅”选项卡",
+    "reviewedEnglishHash": "711039fd7eab17e854cf7f7f59955d42aa35dbfebd7dba0332ec9e646425d10b"
+  },
+  "apps.detail.test.askFirst.reviewPrefix": {
+    "en": "Approve it in the",
+    "zh-CN": "批准它在",
+    "reviewedEnglishHash": "08d0bddbc1f0bcec56b7311e4da50f7c6cd5e940bbbf1cdf200f7370e4f13a12"
+  },
+  "apps.detail.test.askFirst.reviewSuffix": {
+    "en": "to finish the test. You can also cancel the request.",
+    "zh-CN": "完成测试。您也可以取消该请求。",
+    "reviewedEnglishHash": "f71ae5a8b980c807d0b97e86a2b4144fea4e3a6108102c7cbdeda0f3f9ba37ee"
+  },
+  "apps.detail.test.askFirst.status.cancelled": {
+    "en": "Cancelled",
+    "zh-CN": "取消",
+    "reviewedEnglishHash": "d353a99eb4556847ceeb3c306ac886cf6b4fa13043eb1864b9aeb0607fd5f2cc"
+  },
+  "apps.detail.test.askFirst.status.denied": {
+    "en": "Denied — see Review for why",
+    "zh-CN": "被拒绝 - 请参阅评论了解原因",
+    "reviewedEnglishHash": "1d4dee36993be9c4a0c5269ace0cd971a72b6390326b9ebb2d4f2cbe4717dd65"
+  },
+  "apps.detail.test.askFirst.status.expired": {
+    "en": "Expired — send it again",
+    "zh-CN": "已过期-重新发送",
+    "reviewedEnglishHash": "284e6519da3213242c33f42627ba2c49f67ab3f61d8c06d330d9fe21fa46fa1a"
+  },
+  "apps.detail.test.askFirst.status.running": {
+    "en": "Approved · running",
+    "zh-CN": "已批准·运行",
+    "reviewedEnglishHash": "5efaff522a4164cca7ccdedbb14c8395006a49b0dacc2f0dfa94f5d62c8ad34b"
+  },
+  "apps.detail.test.askFirst.status.waiting": {
+    "en": "Waiting · {{time}}",
+    "zh-CN": "等待·{{time}}",
+    "reviewedEnglishHash": "4bae90998f0d8c723428f3aafdbbb48f6775a172c60e1c62a21fb0be03e10813"
+  },
+  "apps.detail.test.askFirst.title": {
+    "en": "Sent for your OK.",
+    "zh-CN": "已发送给您 OK。",
+    "reviewedEnglishHash": "0e6726130676e1d92b0de2b96eee59440ba7b8bf7d03da8ccf1b2f902f1adf9d"
+  },
+  "apps.detail.test.decision.allowed": {
+    "en": "Allowed",
+    "zh-CN": "允许",
+    "reviewedEnglishHash": "1bb201d188352e9b4633f85e4fb8a31ea93fd14dec702443fd3e2713d657fd2d"
+  },
+  "apps.detail.test.decision.askFirst": {
+    "en": "Ask first",
+    "zh-CN": "先问",
+    "reviewedEnglishHash": "4a9e8cf39abb59f1792cd4332a1dbc88491ebb708b83d6f6190ff6216afe7985"
+  },
+  "apps.detail.test.decision.off": {
+    "en": "Off",
+    "zh-CN": "关闭",
+    "reviewedEnglishHash": "ca7981b46ecf2c1787b6d76d81d9fd7fa0ca95842e2fcc2a452869891a9334d1"
+  },
+  "apps.detail.test.empty.goToSetup": {
+    "en": "Go to Setup",
+    "zh-CN": "转到设置",
+    "reviewedEnglishHash": "3fda90d1dda953a42e73ab552947b6c23fdfb8dd0090e332b3e8195ef10ed352"
+  },
+  "apps.detail.test.empty.noActionsDescription": {
+    "en": "Once {{appName}} is connected, the actions it offers will show up here so you can try them out.",
+    "zh-CN": "连接 {{appName}} 后，它提供的操作将显示在此处，以便您可以尝试。",
+    "reviewedEnglishHash": "92b5ae9418b61f82ce8a4d7b6f66e4ab0cfd06c91226948efa038c939fbcbeb1"
+  },
+  "apps.detail.test.empty.noActionsTitle": {
+    "en": "Nothing to test yet",
+    "zh-CN": "还没有什么可以测试的",
+    "reviewedEnglishHash": "e54d49d635832014acd03f5fd49fde1e68978b2a7b0bbb6bc37a4c7b239f9c16"
+  },
+  "apps.detail.test.empty.noAgentsDescriptionPrefix": {
+    "en": "Only agents you can assign tasks to can preview {{appName}}. Give an agent access in",
+    "zh-CN": "只有您可以分配任务的客服人员才能预览 {{appName}}。授予智能体访问权限",
+    "reviewedEnglishHash": "943b005ed471f020e258073cdf340143a7eeda6a9ba4637d811c6bd0fd0d2015"
+  },
+  "apps.detail.test.empty.noAgentsDescriptionSuffix": {
+    "en": "to test it here.",
+    "zh-CN": "在这里进行测试。",
+    "reviewedEnglishHash": "465ca3a7c0a9be1fee460fb9fcbf15a41f2a025bdde56eaf3a8c010d360c41e4"
+  },
+  "apps.detail.test.empty.noAgentsTitle": {
+    "en": "No agents to test as",
+    "zh-CN": "没有可测试的智能体",
+    "reviewedEnglishHash": "41e70431a67c82e4d1084ab587daed96413c1ae401fe89632ef35f9d35ef242c"
+  },
+  "apps.detail.test.error.activityPrefix": {
+    "en": "Also visible in the",
+    "zh-CN": "也可见于",
+    "reviewedEnglishHash": "caab8e41e20b4520b9d6befc543877e8931190514463c34b12e360e491ea877f"
+  },
+  "apps.detail.test.error.adjustInput": {
+    "en": "Adjust the input above and try again.",
+    "zh-CN": "调整上面的输入并重试。",
+    "reviewedEnglishHash": "ea1603a1404c1631830673c9a15261cbd4a2ab297f2838418c9869e0ad8037f6"
+  },
+  "apps.detail.test.error.code": {
+    "en": "code: {{reasonCode}}",
+    "zh-CN": "代码：{{reasonCode}}",
+    "reviewedEnglishHash": "a6c7ec33929112cab31746013b66d67f5ac2671776cee9c0647fbdf9d0a23872"
+  },
+  "apps.detail.test.error.meta": {
+    "en": "Tried as {{agentName}} · {{duration}} · {{time}}",
+    "zh-CN": "尝试为 {{agentName}} · {{duration}} · {{time}}",
+    "reviewedEnglishHash": "1c90c70ca1442b8427e934d1d281763c6a9335ccdc99ce75252ae58d3e61f946"
+  },
+  "apps.detail.test.error.title": {
+    "en": "It didn't work.",
+    "zh-CN": "它不起作用。",
+    "reviewedEnglishHash": "24edd2c737d6785c2c11b5ce93c6f57f5cc961f7087820f5e0ac30e6ac67c114"
+  },
+  "apps.detail.test.error.whatAppSaid": {
+    "en": "What {{appName}} said",
+    "zh-CN": "{{appName}} 说了什么",
+    "reviewedEnglishHash": "7db843b15c29e54265f483696c17dd9b40306a104c0b6dc594a243bd66cff41d"
+  },
+  "apps.detail.test.error.whatToTry": {
+    "en": "What to try",
+    "zh-CN": "尝试什么",
+    "reviewedEnglishHash": "86fe6080ab0b93faeb5108be6ae7aa922189245a40ea87e4216f09303fc4faf4"
+  },
+  "apps.detail.test.errorHint.generic": {
+    "en": "Check the inputs above and try again.",
+    "zh-CN": "检查上面的输入并重试。",
+    "reviewedEnglishHash": "da1b05d2e53d30a0682e52644419b302bb516d3fa6d7569eb5f629cc491d1838"
+  },
+  "apps.detail.test.errorHint.invalid.format": {
+    "en": "Check the field formats above — a value may be the wrong type or shape.",
+    "zh-CN": "检查上面的字段格式 - 值可能是错误的类型或形状。",
+    "reviewedEnglishHash": "bdc831c92c4f4e5bdac2d6d7953f143c6dce67fa6749a55c006949e8f31fedc0"
+  },
+  "apps.detail.test.errorHint.invalid.moreOptions": {
+    "en": "Open “More options” to confirm any advanced fields are filled in correctly.",
+    "zh-CN": "打开“更多选项”以确认所有高级字段均已正确填写。",
+    "reviewedEnglishHash": "2e25eb68048b4174ce9528119cf8f27d71e9c3aee49fb9cd44b6c3023cfce77d"
+  },
+  "apps.detail.test.errorHint.notFound.access": {
+    "en": "Make sure this agent has access to that resource in the connected account.",
+    "zh-CN": "确保该智能体有权访问连接帐户中的该资源。",
+    "reviewedEnglishHash": "3f67ebc5ef6528a67777cc7be3cd22efc04af8ddf2dad7030ab375d0ec98980a"
+  },
+  "apps.detail.test.errorHint.notFound.doubleCheck": {
+    "en": "Double-check the ID or name you entered — pick it from a dropdown if one is offered.",
+    "zh-CN": "仔细检查您输入的 ID 或姓名 - 从下拉列表中选择（如果有）。",
+    "reviewedEnglishHash": "ff725b80cc10185e76abaea9b46eaeb29860b6b30599b1e9f35a70d6597a4266"
+  },
+  "apps.detail.test.errorHint.permission.account": {
+    "en": "The connected account may not have permission for this action.",
+    "zh-CN": "连接的帐户可能没有执行此操作的权限。",
+    "reviewedEnglishHash": "b41f09126e8b6f53a61d04558085deab4932d00f5c7c4ad5ee5559a7344468af"
+  },
+  "apps.detail.test.errorHint.permission.reconnect": {
+    "en": "Reconnect the app from Setup if its access was recently changed.",
+    "zh-CN": "如果最近更改了应用的访问权限，请从“设置”中重新连接该应用。",
+    "reviewedEnglishHash": "93ae61c6d4e75fe419cee06ca59ae4b2c49d75044fe7bf80d014a2160f0c7049"
+  },
+  "apps.detail.test.errorHint.rateLimit": {
+    "en": "The app is rate-limiting calls right now — wait a moment and run it again.",
+    "zh-CN": "该应用现在正在限制调用速率 - 稍等片刻，然后再次运行它。",
+    "reviewedEnglishHash": "24aece6256cafe4fe6eaadc61b9a6a21e9b5d5e03af85aebcadb8da614cc444b"
+  },
+  "apps.detail.test.filter.all": {
+    "en": "All {{count}}",
+    "zh-CN": "全部{{count}}",
+    "reviewedEnglishHash": "2fdce7481839da658273fc2cc0f4e177ab5fba8648ac13bf5740de86a1201f14"
+  },
+  "apps.detail.test.filter.read": {
+    "en": "Read {{count}}",
+    "zh-CN": "阅读{{count}}",
+    "reviewedEnglishHash": "57c13ed37240a513b212523cd1260f7fbc275e6b81f20eae559b15aec340538e"
+  },
+  "apps.detail.test.filter.write": {
+    "en": "Write {{count}}",
+    "zh-CN": "写{{count}}",
+    "reviewedEnglishHash": "e552246f2e93e039a7a6b51adcb3b277e5a5b20a082071e2107c058b682469ff"
+  },
+  "apps.detail.test.form.moreOptions": {
+    "en": "More options",
+    "zh-CN": "更多选择",
+    "reviewedEnglishHash": "bc79cdffbaa8df096f0ea0dbdf03575b6d4fa3f90f783d3795d01aa9a7a1c926"
+  },
+  "apps.detail.test.form.noInputs": {
+    "en": "This action takes no inputs.",
+    "zh-CN": "此操作不需要任何输入。",
+    "reviewedEnglishHash": "53b634e4b73c10d4ab423d002568131f52ec8ffd44d0b5bc3b7a42fe1a53ac19"
+  },
+  "apps.detail.test.group.new": {
+    "en": "New ({{count}})",
+    "zh-CN": "新 ({{count}})",
+    "reviewedEnglishHash": "676b2fbaceb25d66d05a706ec3ccc72a5c03a27c3596eb4cbccfc41eb3a32e84"
+  },
+  "apps.detail.test.group.newDescription": {
+    "en": "New actions wait, switched off, until you turn them on.",
+    "zh-CN": "新的操作会等待、关闭，直到您将其打开。",
+    "reviewedEnglishHash": "d4c14fd365656d04ebc31dacc2f30ec1be62137739a962f79a38f309e07df0fe"
+  },
+  "apps.detail.test.group.read": {
+    "en": "Read ({{count}})",
+    "zh-CN": "阅读 ({{count}})",
+    "reviewedEnglishHash": "2a00e11764d8ccb6c36abdb9cfd5b0021baa545c1d5cdfcf0654b1320cac1d5f"
+  },
+  "apps.detail.test.group.write": {
+    "en": "Write ({{count}})",
+    "zh-CN": "写（{{count}}）",
+    "reviewedEnglishHash": "2f341a7c3dbb34af569c90d54e71e365fa6b9353e6a5ab219a3c144b32cdc9f1"
+  },
+  "apps.detail.test.gutCheck.allowed": {
+    "en": "This runs a real call against {{appName}} as {{agentName}}.",
+    "zh-CN": "这会对 {{appName}} 作为 {{agentName}} 进行真正的调用。",
+    "reviewedEnglishHash": "2d52d76021d2b511e2bbdb7e4a21ce69ea213e0f598881cbea7c51b1ccdf8b5e"
+  },
+  "apps.detail.test.gutCheck.askFirst": {
+    "en": "Waiting for your OK before this call leaves Paperclip.",
+    "zh-CN": "在该呼叫离开 Paperclip 之前等待您确定。",
+    "reviewedEnglishHash": "e8f3443a7051ed9cf87321ba226ffc508b1702bbdbbbf978fc5b35f3f90f5649"
+  },
+  "apps.detail.test.gutCheck.off": {
+    "en": "No call will be made — this action is off for {{agentName}}.",
+    "zh-CN": "不会进行任何调用 — 此操作已针对 {{agentName}} 关闭。",
+    "reviewedEnglishHash": "764982530d84082517ef4ea70a9c4c0242f834796d9eeaf5902529b8f38652a0"
+  },
+  "apps.detail.test.header.description": {
+    "en": "Runs real actions in {{appName}}, exactly as this agent would.",
+    "zh-CN": "在 {{appName}} 中运行实际操作，就像此智能体一样。",
+    "reviewedEnglishHash": "96e57328f7ba65887e339fcae7965ada9b48a3c5734ea779edcf75e6ce107a52"
+  },
+  "apps.detail.test.header.testAs": {
+    "en": "Test as",
+    "zh-CN": "测试为",
+    "reviewedEnglishHash": "ed93f2b30882b798de52857b946c4a25bcdc65611642e60c113cfcb3f618a8c5"
+  },
+  "apps.detail.test.header.testingAs": {
+    "en": "Testing as",
+    "zh-CN": "测试为",
+    "reviewedEnglishHash": "8b3ec850767133ea2e2662a83feb8100130b3edfe08d0bf203d4f268f46f362e"
+  },
+  "apps.detail.test.off.description": {
+    "en": "It won't run here, and it won't run from a task either.",
+    "zh-CN": "它不会在这里运行，也不会从任务中运行。",
+    "reviewedEnglishHash": "9b8d2fd994bd56734af48d24104ef4e1310a96b95ee462b9181d33d6dc647015"
+  },
+  "apps.detail.test.off.lastChanged": {
+    "en": "Last changed · {{time}}",
+    "zh-CN": "最后更改·{{time}}",
+    "reviewedEnglishHash": "6944ec7b236f267902dbfc47476acc9e43a933c9c21ca640c85e7eb49ef62939"
+  },
+  "apps.detail.test.off.lastChangedBy": {
+    "en": "Last changed by {{actorName}} · {{time}}",
+    "zh-CN": "最后由 {{actorName}} 更改 · {{time}}",
+    "reviewedEnglishHash": "f651867bb645c707977955a5b6b80a9f43294c585eab1b42ab7261d5b506388c"
+  },
+  "apps.detail.test.off.noCall": {
+    "en": "No call will be made — this action is off for {{agentName}}.",
+    "zh-CN": "不会进行任何调用 — 此操作已针对 {{agentName}} 关闭。",
+    "reviewedEnglishHash": "764982530d84082517ef4ea70a9c4c0242f834796d9eeaf5902529b8f38652a0"
+  },
+  "apps.detail.test.off.openPermissions": {
+    "en": "Open Permissions →",
+    "zh-CN": "开放权限 →",
+    "reviewedEnglishHash": "1ac1cf8c7cd71aa63bdf91c057922956a1a80e2c9f51052b6ad2918bab7934f8"
+  },
+  "apps.detail.test.off.permissionsPrefix": {
+    "en": "Want to test it? Turn it on for {{agentName}} in",
+    "zh-CN": "想测试一下吗？在 {{agentName}} 中将其打开",
+    "reviewedEnglishHash": "70b6fa55db5e5a0f432169bfac3f565b2301abfbc952b91fb2763b7418d66ab3"
+  },
+  "apps.detail.test.off.permissionsSuffix": {
+    "en": "— set it to Allowed or Ask first.",
+    "zh-CN": "— 将其设置为“允许”或“首先询问”。",
+    "reviewedEnglishHash": "611031345ad4396d9f9e5d375a0720d21485583ed506ba63871ed60c7378577c"
+  },
+  "apps.detail.test.off.sidebar.otherAgents": {
+    "en": "Other agents using {{appName}}:",
+    "zh-CN": "使用 {{appName}} 的其他智能体：",
+    "reviewedEnglishHash": "8bc4e3392d10c25988aa65378fa7aae477499ac9f37cbc6555d9be96e49f4fd0"
+  },
+  "apps.detail.test.off.sidebar.title": {
+    "en": "Why this is off",
+    "zh-CN": "为什么这个功能关闭了",
+    "reviewedEnglishHash": "d9e4665369cac9a2d9ce61fa172ee758786d861660e8f0f1e42ed3591e4f0cbd"
+  },
+  "apps.detail.test.off.sidebar.tryDifferentAgent": {
+    "en": "Try as a different agent:",
+    "zh-CN": "尝试使用不同的智能体：",
+    "reviewedEnglishHash": "d143ee44c17b1d9a4b8162f0e1531144162853856c9ec82743c98c5048c39ed3"
+  },
+  "apps.detail.test.off.title": {
+    "en": "{{actionTitle}} is off for {{agentName}}.",
+    "zh-CN": "{{actionTitle}} 已因 {{agentName}} 关闭。",
+    "reviewedEnglishHash": "9d93cbc57be8d85d997b880b9d33377fff0aaf5bd2c32a1f22fc44b6e7664e40"
+  },
+  "apps.detail.test.off.why.agentOff": {
+    "en": "{{agentName}}'s access profile sets this action to Off.",
+    "zh-CN": "{{agentName}} 的访问配置将此操作设置为“关闭”。",
+    "reviewedEnglishHash": "83ac2874314cab0d374780f89a4bda746b20c86a8e96f2e28e128cd8e55e9ed3"
+  },
+  "apps.detail.test.off.why.allOff": {
+    "en": "An admin set it to Off for all agents using this app.",
+    "zh-CN": "管理员对使用此应用的所有智能体将其设置为“关闭”。",
+    "reviewedEnglishHash": "60dce49f4362cc2cebb3eaa19d77afc7ebd4ccf2815a3793d801e8d6b0f222cf"
+  },
+  "apps.detail.test.off.why.quarantined": {
+    "en": "This action is new and hasn't been turned on yet.",
+    "zh-CN": "此操作是新操作，尚未启用。",
+    "reviewedEnglishHash": "6ce411873a2fc135dee5ecb33d0fe1c890b8163ffaaf145b6eb7edab5f27111d"
+  },
+  "apps.detail.test.result.activityPrefix": {
+    "en": "This call is in the",
+    "zh-CN": "此调用位于",
+    "reviewedEnglishHash": "882a49e7ccfa105c818b5b6634c66140f83dae13358350e5bed4ff4481e410c1"
+  },
+  "apps.detail.test.result.activityTab": {
+    "en": "tab",
+    "zh-CN": "选项卡",
+    "reviewedEnglishHash": "7508386a20565f5cbc526eee8b3c9f39edeecd576ee90cb3dbb5ce5ac3fe9566"
+  },
+  "apps.detail.test.result.emptyCell": {
+    "en": "—",
+    "zh-CN": "—",
+    "reviewedEnglishHash": "bda050585a00f0f6cb502350559d75532ae3b244c9498b996e7c5df2d98dfc8d"
+  },
+  "apps.detail.test.result.hideRaw": {
+    "en": "Hide raw response",
+    "zh-CN": "隐藏原始响应",
+    "reviewedEnglishHash": "914909c499333e5e33a507bfff336de545e228cecd4c38831e9996be504f2f49"
+  },
+  "apps.detail.test.result.lastRun": {
+    "en": "Last run finished in {{duration}}.",
+    "zh-CN": "上次运行于 {{duration}} 完成。",
+    "reviewedEnglishHash": "43db4cfab80adcc40288c6b0d6d3f020da80af3ce043b7886217f28e1725c3ba"
+  },
+  "apps.detail.test.result.meta.ranAs": {
+    "en": "Ran as {{agentName}} · {{duration}} · {{time}}",
+    "zh-CN": "运行为 {{agentName}} · {{duration}} · {{time}}",
+    "reviewedEnglishHash": "aa4046bbde646337bbecd746d449187b17beb7ea5b00a0c5c0417ac4a4d89b76"
+  },
+  "apps.detail.test.result.moreRows": {
+    "en": "… {{count}} more rows",
+    "zh-CN": "… {{count}} 更多行",
+    "reviewedEnglishHash": "5d6084adf12d5f80f8deb8e78af6ab9e90d6882a7195722f12f957ce311879b5"
+  },
+  "apps.detail.test.result.off": {
+    "en": "This action is off and won't run.",
+    "zh-CN": "此操作已关闭并且不会运行。",
+    "reviewedEnglishHash": "78cf41dbb43dbfd119d99e902891a3fc0e335f9ca156eff07bc66a77be292414"
+  },
+  "apps.detail.test.result.preview": {
+    "en": "Preview",
+    "zh-CN": "预览",
+    "reviewedEnglishHash": "324b134f57c70c729ae3dc4d298bb451656717d70523e942c1ce667b8024ea07"
+  },
+  "apps.detail.test.result.showRaw": {
+    "en": "Show raw response",
+    "zh-CN": "显示原始响应",
+    "reviewedEnglishHash": "f63a30b5dc690a909c9bad0124c6bf869339533d5e8c117809642ae6c618aff6"
+  },
+  "apps.detail.test.result.success.empty": {
+    "en": "Worked. No data to show.",
+    "zh-CN": "工作了。没有数据可显示。",
+    "reviewedEnglishHash": "88dee76e8c324921e12b1c1f651ee9ce60bb439c1af36abc89d6ab888cfff43e"
+  },
+  "apps.detail.test.result.success.generic": {
+    "en": "Worked. {{appName}} sent back the result.",
+    "zh-CN": "工作了。 {{appName}} 发回结果。",
+    "reviewedEnglishHash": "f1a5c621c47c5732cb459bcb53d60f4f4c428841feaa794da5766588d862253e"
+  },
+  "apps.detail.test.result.success.rows": {
+    "en": "Worked. {{count}} rows came back.",
+    "zh-CN": "工作了。 {{count}} 行返回。",
+    "reviewedEnglishHash": "5f37b1e8482aac99e9865a5917387d623ab2acce152dbe59a6a6eeead0046be2"
+  },
+  "apps.detail.test.result.success.write": {
+    "en": "Worked. Row {{verb}}.",
+    "zh-CN": "工作了。行{{verb}}。",
+    "reviewedEnglishHash": "489d159662b568c5b48527a76a28b5cb843c67bf2605f759025abe95a05bd805"
+  },
+  "apps.detail.test.result.toolError": {
+    "en": "The app returned an error result.",
+    "zh-CN": "应用返回错误结果。",
+    "reviewedEnglishHash": "92bcfd522957f9b61d4fdac1832a90f587997ce9e3bc68b581549f771600c34e"
+  },
+  "apps.detail.test.run.error": {
+    "en": "Couldn't reach {{agentName}}. {{message}}",
+    "zh-CN": "无法到达 {{agentName}}。 {{message}}",
+    "reviewedEnglishHash": "c111deadfbe2542f73d908a1d6aa3ba9edfe3489e3ebf1fa77cddb20b05f18b4"
+  },
+  "apps.detail.test.run.reset": {
+    "en": "Reset",
+    "zh-CN": "重置",
+    "reviewedEnglishHash": "daee7606b339f3c339076fe2c9f372a3ff40c8ee896005d829c7481b64ca5303"
+  },
+  "apps.detail.test.run.run": {
+    "en": "Run",
+    "zh-CN": "运行",
+    "reviewedEnglishHash": "00d60e31a4e6b8344d4201f25a6a7dee770713107f6d097abb01559d32b17f26"
+  },
+  "apps.detail.test.run.runAgain": {
+    "en": "Run again",
+    "zh-CN": "再次运行",
+    "reviewedEnglishHash": "3e310b75051c78a3986cdb124bfd0722625576cd46ac5daedaa7501ad075fecd"
+  },
+  "apps.detail.test.run.running": {
+    "en": "Running…",
+    "zh-CN": "正在运行...",
+    "reviewedEnglishHash": "46c541363b0253b1b7d736ca2ff004b6c8eb816f253c16bf2f154472152fb66d"
+  },
+  "apps.detail.test.running.calling": {
+    "en": "Calling",
+    "zh-CN": "呼唤",
+    "reviewedEnglishHash": "74028104c2ae1cf9aa83c007a9b94a1eab33100f94768cbef6446846f0939bc0"
+  },
+  "apps.detail.test.running.description": {
+    "en": "{{verb}} {{appName}} as {{agentName}}.",
+    "zh-CN": "{{verb}} {{appName}} 为 {{agentName}}。",
+    "reviewedEnglishHash": "b435863b13152acc1d5a2048c91653d961dab74ee50765376b4ad676754bede3"
+  },
+  "apps.detail.test.running.elapsed": {
+    "en": "Started {{elapsed}} ago · Press cancel to stop",
+    "zh-CN": "{{elapsed}} 前开始 · 按取消停止",
+    "reviewedEnglishHash": "b132258a6f2e2702ddc9551ac2181ce7def6f1254d0182bce5fe9bb8a5c166c7"
+  },
+  "apps.detail.test.running.readingFrom": {
+    "en": "Reading from",
+    "zh-CN": "读自",
+    "reviewedEnglishHash": "1f6f918f6e7dfb17761395babd9cec19c9d41a0689ce1c475a85c7435323d7aa"
+  },
+  "apps.detail.test.running.title": {
+    "en": "Running…",
+    "zh-CN": "正在运行...",
+    "reviewedEnglishHash": "46c541363b0253b1b7d736ca2ff004b6c8eb816f253c16bf2f154472152fb66d"
+  },
+  "apps.detail.test.running.writingTo": {
+    "en": "Writing to",
+    "zh-CN": "写信给",
+    "reviewedEnglishHash": "78c876aec6a25d77ae6c9897ab6316477a020767332420ab3dcade9115430644"
+  },
+  "apps.detail.test.search.aria": {
+    "en": "Find an action",
+    "zh-CN": "寻找行动",
+    "reviewedEnglishHash": "efd383494381e7de773c4e711d46d6d8a9e19fd1b277a8837a4446e69de71e75"
+  },
+  "apps.detail.test.search.matches": {
+    "en": "{{count}} matches · sorted A–Z",
+    "zh-CN": "{{count}} 匹配 · A–Z 排序",
+    "reviewedEnglishHash": "2b9f1dc0e96a709ee94ec9f358313dfb01bd9ab05f4dd1631e8b2f99e9195c2d"
+  },
+  "apps.detail.test.search.noMatches": {
+    "en": "No actions match “{{query}}”. Clear the search to see them all.",
+    "zh-CN": "没有与“{{query}}”匹配的操作。清除搜索即可查看全部内容。",
+    "reviewedEnglishHash": "52c151c82e2c3279cba2e7d1a4c558a86d245bb67050dc3fbaf9b4a60e45ac46"
+  },
+  "apps.detail.test.search.placeholder": {
+    "en": "Find an action…",
+    "zh-CN": "寻找一个操作...",
+    "reviewedEnglishHash": "f0eba3ca1e970fff08fb8a56778f4e16320cafd01532956d3a49bbb4075adcea"
+  },
+  "apps.detail.test.summaryCount": {
+    "en": "{{label}} {{count}}",
+    "zh-CN": "{{label}} {{count}}",
+    "reviewedEnglishHash": "a22c414ef63b0a6ad44901ff13951b7cae289518f1661ed98ec884b6c8d38943"
+  },
+  "apps.detail.test.summaryCount.one": {
+    "en": "{{label}} {{count}} action",
+    "zh-CN": "{{label}} {{count}} 项操作",
+    "reviewedEnglishHash": "5b3f783802f5307e3c51bb198aaa1b978e17dc4189a2e419035d12bbf40ecf08"
+  },
+  "apps.detail.test.summaryCount.other": {
+    "en": "{{label}} {{count}}",
+    "zh-CN": "{{label}} {{count}}",
+    "reviewedEnglishHash": "a22c414ef63b0a6ad44901ff13951b7cae289518f1661ed98ec884b6c8d38943"
+  },
+  "apps.detail.toast.installSaveError.title": {
+    "en": "Couldn't save installs",
+    "zh-CN": "无法保存安装",
+    "reviewedEnglishHash": "1381784c72017318a5997599677eb3a7f6206dfa21a25478987b9b32f3321a69"
+  },
+  "apps.detail.toast.pauseSuccess.body": {
+    "en": "{{appName}} is paused for agents.",
+    "zh-CN": "{{appName}} 对智能体已暂停。",
+    "reviewedEnglishHash": "d779422d50ae7b23d289fd97e670c98a86172289a38126067b811b98ef48cc92"
+  },
+  "apps.detail.toast.pauseSuccess.title": {
+    "en": "App paused",
+    "zh-CN": "应用已暂停",
+    "reviewedEnglishHash": "7c335c083da5d1e9bdeeb6c9f744d503b0dd5bfec426372ad29579554749f029"
+  },
+  "apps.detail.toast.refreshError.title": {
+    "en": "Couldn't refresh actions",
+    "zh-CN": "无法刷新操作",
+    "reviewedEnglishHash": "17b3912d617e6305b4076ea2e2b516bc20412428c50eb9bce5099b251af3a5e4"
+  },
+  "apps.detail.toast.refreshSuccess.body": {
+    "en": "{{count}} new actions need your OK.",
+    "zh-CN": "{{count}} 新行动需要您的同意。",
+    "reviewedEnglishHash": "4949c23fd5e0c52923abce5bf82d77a1a49f556f3c88772d53ee88ef0d55e3b0"
+  },
+  "apps.detail.toast.refreshSuccess.title": {
+    "en": "Found {{count}} actions",
+    "zh-CN": "找到 {{count}} 操作",
+    "reviewedEnglishHash": "99ea260f222f7d8b812f1d3c98655a13112acc276eb2b5ff4b8c73126b80061b"
+  },
+  "apps.detail.toast.removeError.title": {
+    "en": "Couldn't remove the app",
+    "zh-CN": "无法删除该应用",
+    "reviewedEnglishHash": "2e4042242871946f71d96c2a12241e241e61b741669704b5015b26a3c6737d20"
+  },
+  "apps.detail.toast.removeSuccess.body": {
+    "en": "{{appName}} no longer has access. You can connect it again any time.",
+    "zh-CN": "{{appName}} 不再具有访问权限。您可以随时重新连接。",
+    "reviewedEnglishHash": "f0192b595fbee43eeb260b3ee751677e2e8a08e1b2266f558caacc495ccc92ba"
+  },
+  "apps.detail.toast.removeSuccess.title": {
+    "en": "App removed",
+    "zh-CN": "应用已删除",
+    "reviewedEnglishHash": "5fb1ac8f44bf85308f79f06e1685ce6eca3672994164975fe6358c546df9ea25"
+  },
+  "apps.detail.toast.renameError.title": {
+    "en": "Couldn't rename the app",
+    "zh-CN": "无法重命名应用",
+    "reviewedEnglishHash": "dba458bc04cbff33955ca46aa1056332dca472e6f37edec11c2e95d92e2e04d1"
+  },
+  "apps.detail.toast.resumeSuccess.body": {
+    "en": "{{appName}} is available to agents again.",
+    "zh-CN": "{{appName}} 再次可供智能体使用。",
+    "reviewedEnglishHash": "085643a09cac04ecb4cc77241aa5209246ba8c414c4243d084a2deff64edcf25"
+  },
+  "apps.detail.toast.resumeSuccess.title": {
+    "en": "App resumed",
+    "zh-CN": "应用已恢复",
+    "reviewedEnglishHash": "a7be054c5b4f4e5a44d51e05d213eb7315e4c9ba351ff0d0f3e6b59996af34da"
+  },
+  "apps.detail.toast.saveError.title": {
+    "en": "Couldn't save that",
+    "zh-CN": "无法保存",
+    "reviewedEnglishHash": "4ee3e155463fcb96770b1cf3c6cb88853011d121dba9d56f4bd3edf0a38e59ce"
+  },
+  "apps.detail.toast.signInError.title": {
+    "en": "Couldn't start sign-in",
+    "zh-CN": "无法开始登录",
+    "reviewedEnglishHash": "3f9bac4a050951dc8e98210e42e04e559168dfc96f2977f4f55bc2547a900f99"
+  },
+  "apps.detail.toast.tryAgain": {
+    "en": "Please try again.",
+    "zh-CN": "请再试一次。",
+    "reviewedEnglishHash": "eea4fb33efd382834952e3e7ab52f8dc41ccc2c3f5c3f246f0505235e0e962aa"
+  },
+  "apps.detail.toast.updateError.title": {
+    "en": "Couldn't update the app",
+    "zh-CN": "无法更新应用",
+    "reviewedEnglishHash": "b47c0d8cc1afadc27d285ec3d9ed24cd8dbf246a55224d59adc39094f09ca6d8"
+  },
+  "apps.gallery.yourAppKey": {
+    "en": "Your {{appName}} key",
+    "zh-CN": "你的 {{appName}} 密钥",
+    "reviewedEnglishHash": "e462f5a3f3b75d1f396d07f0fb2d5949292e392d663ec4233234223116d840ac"
+  },
+  "apps.gateways.activity.description": {
+    "en": "Every call through this gateway in the last 7 days, with why it was allowed, blocked, or paused.",
+    "zh-CN": "过去 7 天内通过此网关的每个呼叫，以及允许、阻止或暂停的原因。",
+    "reviewedEnglishHash": "13ea66d85e292498532110a07210331046f4b7cb182f1828283c169902a724ed"
+  },
+  "apps.gateways.activity.empty": {
+    "en": "No calls have gone through this gateway yet.",
+    "zh-CN": "尚未有任何呼叫经过此网关。",
+    "reviewedEnglishHash": "a4511ecdcb0edf86280f9e3776e6e1438544ae54dff5a2fcdb7cdab262ab5b4f"
+  },
+  "apps.gateways.activity.fallbackActor": {
+    "en": "Client",
+    "zh-CN": "客户",
+    "reviewedEnglishHash": "0c77fe09ab336a3e57cc2b6804a9bac65e19a27782b5a9c815d585e894c3b7f2"
+  },
+  "apps.gateways.activity.fallbackApp": {
+    "en": "app",
+    "zh-CN": "应用",
+    "reviewedEnglishHash": "a172cedcae47474b615c54d510a5d84a8dea3032e958587430b413538be3f333"
+  },
+  "apps.gateways.activity.fallbackTool": {
+    "en": "tool",
+    "zh-CN": "工具",
+    "reviewedEnglishHash": "7c9bbe5ec9b3fb774e8fa0f54247e93c34ddf8e5d16fe3073420de0ae81a262d"
+  },
+  "apps.gateways.activity.outcome.allowed": {
+    "en": "Allowed",
+    "zh-CN": "允许",
+    "reviewedEnglishHash": "1bb201d188352e9b4633f85e4fb8a31ea93fd14dec702443fd3e2713d657fd2d"
+  },
+  "apps.gateways.activity.outcome.askedFirst": {
+    "en": "Ask first",
+    "zh-CN": "先问",
+    "reviewedEnglishHash": "4a9e8cf39abb59f1792cd4332a1dbc88491ebb708b83d6f6190ff6216afe7985"
+  },
+  "apps.gateways.activity.outcome.blocked": {
+    "en": "Blocked",
+    "zh-CN": "被阻止",
+    "reviewedEnglishHash": "18f2a0947f9d6523991b29b450307f22773f57d65f7efb98d48a167df04d6b1d"
+  },
+  "apps.gateways.activity.outcome.failed": {
+    "en": "Failed",
+    "zh-CN": "失败",
+    "reviewedEnglishHash": "031a8f0f659df890dfd53c92e45295b0f14c997185bae46e168831e403b273f7"
+  },
+  "apps.gateways.activity.outcome.unknown": {
+    "en": "—",
+    "zh-CN": "—",
+    "reviewedEnglishHash": "bda050585a00f0f6cb502350559d75532ae3b244c9498b996e7c5df2d98dfc8d"
+  },
+  "apps.gateways.activity.outcome.waiting": {
+    "en": "Waiting",
+    "zh-CN": "等待",
+    "reviewedEnglishHash": "6e293a8c009e001103199768f7bcbea1729c59f9fc1ef2748958757f47ab99ed"
+  },
+  "apps.gateways.advanced.archive": {
+    "en": "Archive gateway",
+    "zh-CN": "存档网关",
+    "reviewedEnglishHash": "62da42a3ae2609cdd4acca2bac980d860eed61593e037d822365613b0c56c2ab"
+  },
+  "apps.gateways.advanced.archiving": {
+    "en": "Archiving…",
+    "zh-CN": "归档...",
+    "reviewedEnglishHash": "af9e1c99f1935d3d96e657af2f1694c11773e1270b6fcfcb7765adb72b21cec6"
+  },
+  "apps.gateways.advanced.authenticationLabel": {
+    "en": "Authentication",
+    "zh-CN": "认证",
+    "reviewedEnglishHash": "66880d2d8216260d201917a72eb245440ef18ba9b54c070ee39aa4c343ae126f"
+  },
+  "apps.gateways.advanced.cancel": {
+    "en": "Cancel",
+    "zh-CN": "取消",
+    "reviewedEnglishHash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+  },
+  "apps.gateways.advanced.clipboardUnavailable": {
+    "en": "Clipboard access is unavailable.",
+    "zh-CN": "剪贴板访问不可用。",
+    "reviewedEnglishHash": "0899c211b77f93b01d7f705107c2a8fdaf7abcf96e7c995884b4cab415099cf2"
+  },
+  "apps.gateways.advanced.confirmAriaLabel": {
+    "en": "Type the gateway name to confirm archive",
+    "zh-CN": "输入网关名称以确认存档",
+    "reviewedEnglishHash": "7add56c9ba3e3a9314fab6e4ed16f8f6d46c39931f4e1c696c61aa5c28e45328"
+  },
+  "apps.gateways.advanced.copy": {
+    "en": "Copy",
+    "zh-CN": "复制",
+    "reviewedEnglishHash": "e21f935f11d7e966dbbae78da9daa378fe8142a14e7c0cd7434183005faa6c5c"
+  },
+  "apps.gateways.advanced.copyJson": {
+    "en": "Copy JSON",
+    "zh-CN": "复制 JSON",
+    "reviewedEnglishHash": "7708c6e2ae9c0a351ae84e99beed050cccee8951008e18ca687ae92188d49750"
+  },
+  "apps.gateways.advanced.dangerBody": {
+    "en": "Archiving takes the gateway offline for every client. Existing tokens stop working. Type the gateway name to confirm.",
+    "zh-CN": "存档会使每个客户端的网关脱机。现有的代币停止工作。输入网关名称进行确认。",
+    "reviewedEnglishHash": "7297cf457fe367e6f2fd16a172beeb0c60825f1a7b2bdb58ccc218d6edc4be87"
+  },
+  "apps.gateways.advanced.dangerTitle": {
+    "en": "Danger zone",
+    "zh-CN": "危险区域",
+    "reviewedEnglishHash": "fd8b8dae44216610d490dc8bf3470a2576c62b7a2bbe1b9234508df4832159f8"
+  },
+  "apps.gateways.advanced.endpointUrl": {
+    "en": "Endpoint URL",
+    "zh-CN": "端点 URL",
+    "reviewedEnglishHash": "2578179d177903e11cb62888319a525cb0885cbdc0a4773df4c0c7f01456518d"
+  },
+  "apps.gateways.advanced.gatewayConfigJson": {
+    "en": "Gateway config JSON",
+    "zh-CN": "网关配置 JSON",
+    "reviewedEnglishHash": "7dc544cce7ae55d548ee264ac647b92832bd0e65c0ca6b5d5ebca7f4d1d29493"
+  },
+  "apps.gateways.advanced.protocolVersionLabel": {
+    "en": "Protocol version",
+    "zh-CN": "协议版本",
+    "reviewedEnglishHash": "cdd7356ea3acbf2fadd591ae4605d5e7655f65368f793f827f87826f605f66d6"
+  },
+  "apps.gateways.advanced.publicIdLabel": {
+    "en": "Public ID",
+    "zh-CN": "公共ID",
+    "reviewedEnglishHash": "3705b64fd5cc026ae9aa14096754f7cabbb6ddb6bba4e2ca4ccca4faee05c3cb"
+  },
+  "apps.gateways.advanced.rawConfigTitle": {
+    "en": "Raw configuration",
+    "zh-CN": "原始配置",
+    "reviewedEnglishHash": "493d4f2717d68c3998bbf3f23ce387923d974608207888ff4aeb60708182cd6b"
+  },
+  "apps.gateways.advanced.toast.archiveFailedTitle": {
+    "en": "Couldn't archive the gateway",
+    "zh-CN": "无法存档网关",
+    "reviewedEnglishHash": "ab9a7739f34eaec4839cebad3774c02c208a2ab0c9216fdcbfd87a0674b16c12"
+  },
+  "apps.gateways.advanced.toast.archivedBody": {
+    "en": "{{name}} is no longer reachable.",
+    "zh-CN": "{{name}} 不再可达。",
+    "reviewedEnglishHash": "e15d8c4425e19c7bd32b0573c0da3e859c8970fc499cec920757f0896bab2ea4"
+  },
+  "apps.gateways.advanced.toast.archivedTitle": {
+    "en": "Gateway archived",
+    "zh-CN": "网关已存档",
+    "reviewedEnglishHash": "b6b73fd72ea2013198e93bccd5fc3a356ad6ed4efa00c94891c1f8a5fca6ae7f"
+  },
+  "apps.gateways.advanced.toast.copiedTitle": {
+    "en": "Copied",
+    "zh-CN": "已复制",
+    "reviewedEnglishHash": "8d525e5f158b9afe05f3122af363ac67763bdc4e1395b46597b320c289766ce3"
+  },
+  "apps.gateways.advanced.toast.copyFailedTitle": {
+    "en": "Copy failed",
+    "zh-CN": "复制失败",
+    "reviewedEnglishHash": "5b50e7a693fee952b9ed0e7c240bf4cba69b1dbf02af718145b297e4110591f3"
+  },
+  "apps.gateways.advanced.transportLabel": {
+    "en": "Transport",
+    "zh-CN": "交通",
+    "reviewedEnglishHash": "aaead4abf5d0fd5ecc08d1dcb7effadfc4b65034aa0f3f80edb8bb3932411637"
+  },
+  "apps.gateways.advanced.transportTitle": {
+    "en": "Transport",
+    "zh-CN": "交通",
+    "reviewedEnglishHash": "aaead4abf5d0fd5ecc08d1dcb7effadfc4b65034aa0f3f80edb8bb3932411637"
+  },
+  "apps.gateways.appsTools.descriptionPrefix": {
+    "en": "These apps go through this gateway. The bound profile",
+    "zh-CN": "这些应用通过此网关。绑定的配置",
+    "reviewedEnglishHash": "2029abf60aaf4e35bbd6259e99355c1b46ddd8710e54fb2a4b38a022d82ea8bd"
+  },
+  "apps.gateways.appsTools.descriptionWithProfile": {
+    "en": "decides which tools are allowed — {{tools}}. Change the profile under Advanced.",
+    "zh-CN": "决定允许使用哪些工具 - {{tools}}。更改“高级”下的配置。",
+    "reviewedEnglishHash": "22b9aaff510f97c3d4e79da250c190c143cb5d9c6aa23b2eb2b2b60a483c961a"
+  },
+  "apps.gateways.appsTools.descriptionWithoutProfile": {
+    "en": "decides which tools are allowed. Change the profile under Advanced.",
+    "zh-CN": "决定允许使用哪些工具。更改“高级”下的配置。",
+    "reviewedEnglishHash": "de658f454690ffb1f1390b43a3aeb58e0cc35689430c9cead92ce49feac910f3"
+  },
+  "apps.gateways.appsTools.empty": {
+    "en": "No apps are assigned to this gateway’s profile yet.",
+    "zh-CN": "尚未将任何应用分配给此网关的配置。",
+    "reviewedEnglishHash": "20c29913125f64cfc3e931a78379dbb1e913a860fe391b5d96c500e52462f8cd"
+  },
+  "apps.gateways.appsTools.open": {
+    "en": "Open →",
+    "zh-CN": "打开 →",
+    "reviewedEnglishHash": "1d2902ca81b6d2db8f1406f23b6555d0594f857b5f15a68a8c1bfe332af4995d"
+  },
+  "apps.gateways.appsTools.table.app": {
+    "en": "App",
+    "zh-CN": "应用",
+    "reviewedEnglishHash": "0d04bfeb7d64b71c74fc925cca93d683154e8cc7e6e5838faced498e34c9984d"
+  },
+  "apps.gateways.appsTools.table.status": {
+    "en": "Status",
+    "zh-CN": "状态",
+    "reviewedEnglishHash": "920e413c7d411b61ef3e8c63b1cb6ad058d5f95f8b481dbafe60248387d8c355"
+  },
+  "apps.gateways.appsTools.table.tools": {
+    "en": "Tools",
+    "zh-CN": "工具",
+    "reviewedEnglishHash": "ea93d6a262ecb87a9fa4d09edbd7654c046597936a8e235fc3949eb01775ff99"
+  },
+  "apps.gateways.appsTools.toolCount": {
+    "en": "{{count}} tools",
+    "zh-CN": "{{count}} 工具",
+    "reviewedEnglishHash": "f1b9324764c0a9c0633d57b1379cc777c4569958a3d59d097802a471fb08dba3"
+  },
+  "apps.gateways.breadcrumb.apps": {
+    "en": "Apps",
+    "zh-CN": "应用",
+    "reviewedEnglishHash": "89dd748442c194857825848e1500abbbc5f52fb067ad27fb05dc9fb23eebba3b"
+  },
+  "apps.gateways.breadcrumb.company": {
+    "en": "Company",
+    "zh-CN": "公司简介",
+    "reviewedEnglishHash": "de4743c879734dc38cb3e270ecefcae077c3c2e626f9298115d5a03c8613f89b"
+  },
+  "apps.gateways.breadcrumb.gateways": {
+    "en": "Gateways",
+    "zh-CN": "网关",
+    "reviewedEnglishHash": "9e4635769f0aaf0d333e7f85b30bae0e16ae96fd3c0ce0efeca2db5ee527219e"
+  },
+  "apps.gateways.common.healthy": {
+    "en": "Healthy",
+    "zh-CN": "健康",
+    "reviewedEnglishHash": "7f1e323b6272c6209a590fe8684bc64142a226cc9f73783bc027befede0ea0ee"
+  },
+  "apps.gateways.common.needsAttention": {
+    "en": "Needs attention",
+    "zh-CN": "需要注意",
+    "reviewedEnglishHash": "c1ebc7817870e5be78fceae559ba5fcac2b68d5c5498d8080298004f3f79d62d"
+  },
+  "apps.gateways.common.noToolsAllowed": {
+    "en": "No tools allowed",
+    "zh-CN": "不允许使用任何工具",
+    "reviewedEnglishHash": "e8e116ae120d11025699b96e7da76a2a36fbee960cabf2eca85735de96c6aadb"
+  },
+  "apps.gateways.common.profileUnavailable": {
+    "en": "Profile unavailable",
+    "zh-CN": "访问配置不可用",
+    "reviewedEnglishHash": "158e5a22a48cd4b0a73a0a9d2b7ff48c2570497958e8885d7b0e32dd3f8639e0"
+  },
+  "apps.gateways.common.signInExpired": {
+    "en": "Sign-in expired — reconnect to restore access.",
+    "zh-CN": "登录已过期 — 重新连接以恢复访问权限。",
+    "reviewedEnglishHash": "c9a586ce53263f5e9feaa68d38590c8a73eec0fee179b48103c666c750b5a71d"
+  },
+  "apps.gateways.common.toolsCount": {
+    "en": "{{count}} tools",
+    "zh-CN": "{{count}} 工具",
+    "reviewedEnglishHash": "f1b9324764c0a9c0633d57b1379cc777c4569958a3d59d097802a471fb08dba3"
+  },
+  "apps.gateways.connectClient.accessToken": {
+    "en": "Access token",
+    "zh-CN": "访问令牌",
+    "reviewedEnglishHash": "9a911b08feb9d2928240dda42c6efa8794ab3457f8b59a7cfb5187e817f948e3"
+  },
+  "apps.gateways.connectClient.clientConfig": {
+    "en": "{{client}} config",
+    "zh-CN": "{{client}} 配置",
+    "reviewedEnglishHash": "2c43c191a21c9662371bf31235f8667643f257bf4dcd35220e0a3ed51c1cc84b"
+  },
+  "apps.gateways.connectClient.clientsAriaLabel": {
+    "en": "Clients",
+    "zh-CN": "客户",
+    "reviewedEnglishHash": "65a7256542c30138e6f979959b13707ef238bbf5aaf8472dde584c05b0c07529"
+  },
+  "apps.gateways.connectClient.clipboardUnavailable": {
+    "en": "Clipboard access is unavailable.",
+    "zh-CN": "剪贴板访问不可用。",
+    "reviewedEnglishHash": "0899c211b77f93b01d7f705107c2a8fdaf7abcf96e7c995884b4cab415099cf2"
+  },
+  "apps.gateways.connectClient.copy": {
+    "en": "Copy",
+    "zh-CN": "复制",
+    "reviewedEnglishHash": "e21f935f11d7e966dbbae78da9daa378fe8142a14e7c0cd7434183005faa6c5c"
+  },
+  "apps.gateways.connectClient.description": {
+    "en": "Pick how you’ll point your client at this gateway.",
+    "zh-CN": "选择如何将客户引导至此网关。",
+    "reviewedEnglishHash": "563255768ceae2bbaead06fbda1ce31b78b2962233fbdd22915fd098fd320175"
+  },
+  "apps.gateways.connectClient.done": {
+    "en": "Done",
+    "zh-CN": "完成",
+    "reviewedEnglishHash": "11a6767d5674c7e45f7e00dc525762275b3a48491ad6045427d2609cc496c516"
+  },
+  "apps.gateways.connectClient.endpointHelpPrefix": {
+    "en": "Authenticate with",
+    "zh-CN": "进行身份验证",
+    "reviewedEnglishHash": "15fd5b5eacec4bd7ffec34346e1ffab5006338827af422c57721b5e61454bd70"
+  },
+  "apps.gateways.connectClient.endpointHelpSuffix": {
+    "en": "over streamable HTTP.",
+    "zh-CN": "通过可流传输的 HTTP。",
+    "reviewedEnglishHash": "a111763cd3097e992da24aecb62b50e0a27d6a36407b4d77b4385af099cb0fa6"
+  },
+  "apps.gateways.connectClient.endpointUrl": {
+    "en": "Endpoint URL",
+    "zh-CN": "端点 URL",
+    "reviewedEnglishHash": "2578179d177903e11cb62888319a525cb0885cbdc0a4773df4c0c7f01456518d"
+  },
+  "apps.gateways.connectClient.noSnippets": {
+    "en": "No client snippets available for this gateway.",
+    "zh-CN": "没有可用于此网关的客户端片段。",
+    "reviewedEnglishHash": "b7752029f5db551bb8d395e58a9296bb07c1641946eb570263dcf6d73442f7e8"
+  },
+  "apps.gateways.connectClient.notes.claudeCode": {
+    "en": "Use the equivalent remote HTTP MCP add command for your installed version.",
+    "zh-CN": "请根据已安装版本使用对应的远程 HTTP MCP 添加命令。",
+    "reviewedEnglishHash": "d293dbba0bcd3cac35aa9d627b53578536b0e73d71f1094dd688ad19fadb8bd7"
+  },
+  "apps.gateways.connectClient.notes.claudeDesktop": {
+    "en": "Recent Claude Desktop builds support remote HTTP MCP servers.",
+    "zh-CN": "较新的 Claude Desktop 版本支持远程 HTTP MCP 服务器。",
+    "reviewedEnglishHash": "29e76e4f4a5a4f06a8029fb03fdf653a3f7594c867aabbc2baa418af0d61a282"
+  },
+  "apps.gateways.connectClient.notes.cursor": {
+    "en": "Use the full Paperclip origin before the endpoint path.",
+    "zh-CN": "请在端点路径前加上完整的 Paperclip 源地址。",
+    "reviewedEnglishHash": "b636105427a46ae330872b40ac63be56651d514796602b0228222a2cd0d8bde9"
+  },
+  "apps.gateways.connectClient.notes.opencode": {
+    "en": "Use the full Paperclip origin before the endpoint path.",
+    "zh-CN": "请在端点路径前加上完整的 Paperclip 源地址。",
+    "reviewedEnglishHash": "b636105427a46ae330872b40ac63be56651d514796602b0228222a2cd0d8bde9"
+  },
+  "apps.gateways.connectClient.notes.vscode": {
+    "en": "Place this under your MCP extension or editor MCP settings.",
+    "zh-CN": "请将此配置放入 MCP 扩展或编辑器的 MCP 设置中。",
+    "reviewedEnglishHash": "04759b3be20eb05adecf1f8f4ed103bc9c81a0311c78fd0831262915bc5b3f14"
+  },
+  "apps.gateways.connectClient.rawUrlTab": {
+    "en": "Raw URL",
+    "zh-CN": "原始网址",
+    "reviewedEnglishHash": "79300f3f02172a3db1db96aa62cc99224973147f895c4d6549c78f41f7d9dd0f"
+  },
+  "apps.gateways.connectClient.show": {
+    "en": "Show",
+    "zh-CN": "显示",
+    "reviewedEnglishHash": "0df6f1cad36c49da768a6efdcc2c4be102f5729f7381cb53e4ff8061d17eaeb6"
+  },
+  "apps.gateways.connectClient.title": {
+    "en": "Connect a client",
+    "zh-CN": "连接客户端",
+    "reviewedEnglishHash": "c0f29617123803e28a6190249bbf572f96bcdffa33b799f90015c2897a51d44a"
+  },
+  "apps.gateways.connectClient.toast.copiedTitle": {
+    "en": "Copied",
+    "zh-CN": "已复制",
+    "reviewedEnglishHash": "8d525e5f158b9afe05f3122af363ac67763bdc4e1395b46597b320c289766ce3"
+  },
+  "apps.gateways.connectClient.toast.copyFailedTitle": {
+    "en": "Copy failed",
+    "zh-CN": "复制失败",
+    "reviewedEnglishHash": "5b50e7a693fee952b9ed0e7c240bf4cba69b1dbf02af718145b297e4110591f3"
+  },
+  "apps.gateways.connectClient.tokenHelp.afterBearer": {
+    "en": "You won’t see a token’s full value again after it’s created.",
+    "zh-CN": "创建令牌后，您将不会再次看到其完整价值。",
+    "reviewedEnglishHash": "6ea1c9d4e28acc496feb25e68ddd30c95b8491f270311d9153b7f78a1becf56f"
+  },
+  "apps.gateways.connectClient.tokenHelp.afterTab": {
+    "en": "tab, then paste it where the snippet shows",
+    "zh-CN": "选项卡，然后将其粘贴到代码片段显示的位置",
+    "reviewedEnglishHash": "d0657fef2008ac613626f795345c759f6f0acb17f8eb92d3cbee01ab0b0d7f34"
+  },
+  "apps.gateways.connectClient.tokenHelp.beforeTab": {
+    "en": "Mint a token on the",
+    "zh-CN": "铸造一个代币",
+    "reviewedEnglishHash": "0ddd8be0f671fa272a6600d53904eb403152bf8704dc851270d53ab8538967cd"
+  },
+  "apps.gateways.connectClient.tokenTitle": {
+    "en": "Token",
+    "zh-CN": "代币",
+    "reviewedEnglishHash": "d2089be672953d1136faa84079af1b6f3967fed8932dabffba3032d30e3c0618"
+  },
+  "apps.gateways.connectClient.tokenWarning": {
+    "en": "Treat this like a password. Anyone with the token can call exactly the tools this gateway allows. If it leaks, revoke it — the client goes silent immediately.",
+    "zh-CN": "将其视为密码。拥有令牌的任何人都可以准确调用该网关允许的工具。如果泄露，就撤销它——客户立即保持沉默。",
+    "reviewedEnglishHash": "c5f5b9cabd8349f28cb5125067c954cf069cf5e481729b5b27b1a47ff6bd664b"
+  },
+  "apps.gateways.connectClient.tokensTab": {
+    "en": "Tokens",
+    "zh-CN": "代币",
+    "reviewedEnglishHash": "a039dfb9628b53ddaebcfe8ef0793e3fdf19867601295f00d192acef59050869"
+  },
+  "apps.gateways.detail.backLink": {
+    "en": "Apps · Gateways",
+    "zh-CN": "应用 · 网关",
+    "reviewedEnglishHash": "c16cf2e7054e10e51d5bc591c527f557257b591222f525274cba07a0ecbce5bb"
+  },
+  "apps.gateways.detail.backToGateways": {
+    "en": "Back to gateways",
+    "zh-CN": "返回网关",
+    "reviewedEnglishHash": "3bfa4b093638f5669e6776d9e4a5a5446f5a8d8b918ccb7fd5420209aa8856f5"
+  },
+  "apps.gateways.detail.notFound": {
+    "en": "We couldn’t find that gateway.",
+    "zh-CN": "我们找不到那个网关。",
+    "reviewedEnglishHash": "247482e85ba16a7717a8a4629fb98e94b6397addbf10a06f9b1936a698942249"
+  },
+  "apps.gateways.detail.selectCompany": {
+    "en": "Select a company to manage gateways.",
+    "zh-CN": "选择一家公司来管理网关。",
+    "reviewedEnglishHash": "6b8ef14ae7e53eb1dfcc0a67d2d4b6eee0aa9b599b1df113fcd9b9aa3480df43"
+  },
+  "apps.gateways.detail.showSnippet": {
+    "en": "Show snippet",
+    "zh-CN": "显示片段",
+    "reviewedEnglishHash": "83a499718a8c29457870b352b1bdec96d46dc02651259a497de1cb4bcc7d9188"
+  },
+  "apps.gateways.detail.tabsAriaLabel": {
+    "en": "Gateway tabs",
+    "zh-CN": "网关选项卡",
+    "reviewedEnglishHash": "f4560e4f65e2e90a2876922d721a3b8f6b82065c254ad2122fc6d5ab59a52998"
+  },
+  "apps.gateways.detail.toast.gatewayOffBody": {
+    "en": "{{name}} is off — every client goes silent.",
+    "zh-CN": "{{name}} 关闭了——每个客户都沉默了。",
+    "reviewedEnglishHash": "6fa9eab2c32e34675f73ccf9c8c4cccf1b6fd124d9f555575510139987a9fae4"
+  },
+  "apps.gateways.detail.toast.gatewayOffTitle": {
+    "en": "Gateway off",
+    "zh-CN": "网关关闭",
+    "reviewedEnglishHash": "9300c604498889974a7600d1e670e60a3886fe629d967918b1e9309470fe3f94"
+  },
+  "apps.gateways.detail.toast.gatewayOnBody": {
+    "en": "{{name}} is exposing its tools again.",
+    "zh-CN": "{{name}} 再次暴露其工具。",
+    "reviewedEnglishHash": "0d73826d2eb774f6270993dc5c0ba3d52c1b4c9fe344a4f29e7bf7a9a8c1c197"
+  },
+  "apps.gateways.detail.toast.gatewayOnTitle": {
+    "en": "Gateway on",
+    "zh-CN": "网关开启",
+    "reviewedEnglishHash": "238ef12e1e94988b561ebd82ce5b45f924df40f70c2773a957c971ae52860645"
+  },
+  "apps.gateways.detail.toast.updateFailedTitle": {
+    "en": "Couldn't update the gateway",
+    "zh-CN": "无法更新网关",
+    "reviewedEnglishHash": "539a9ea1acfe7839f0bb6e2458f393ba72039285dbe920f46e996d46d2adc61a"
+  },
+  "apps.gateways.list.appsSummary": {
+    "en": "{{count}} apps",
+    "zh-CN": "{{count}} 应用",
+    "reviewedEnglishHash": "81d6b019f34b611544798444c6fd7306452cd1180bc797cb86d0b1bdb2b7932a"
+  },
+  "apps.gateways.list.description": {
+    "en": "A gateway is one safe MCP endpoint that exposes only the apps you assign. Hand it to a client like Cursor or Claude Desktop.",
+    "zh-CN": "网关是一种安全的 MCP 端点，仅公开您分配的应用。将其交给 Cursor 或 Claude Desktop 等客户端。",
+    "reviewedEnglishHash": "9f0042a3aaa8ac309926b368da224347429ab475d850d3a2569cd69ee9a38d78"
+  },
+  "apps.gateways.list.empty.body": {
+    "en": "Group your connected apps into one safe endpoint you can hand to a client, then revoke it in one move.",
+    "zh-CN": "将连接的应用分组到一个安全端点中，您可以将其交给客户端，然后一次性撤销它。",
+    "reviewedEnglishHash": "17f06094e590af598c452d65e0b963cbf3eba8152312947956b2a65d23901646"
+  },
+  "apps.gateways.list.empty.cta": {
+    "en": "New gateway",
+    "zh-CN": "新网关",
+    "reviewedEnglishHash": "9dff4bab33a8fa47021562a6f0ce33f5ade0b5281be2aa8662de3ecddb3e63d3"
+  },
+  "apps.gateways.list.empty.title": {
+    "en": "No gateways yet",
+    "zh-CN": "还没有网关",
+    "reviewedEnglishHash": "b7cc13ba88b564559f78ce89c09649e0b6b6e456c924098acaf94ad3d72713f5"
+  },
+  "apps.gateways.list.emptySearch": {
+    "en": "No gateways match “{{query}}”.",
+    "zh-CN": "没有网关匹配“{{query}}”。",
+    "reviewedEnglishHash": "c095203c030ebe72aa614eda968d23f19e5e6b2bd577522c140b09c487c7ae2b"
+  },
+  "apps.gateways.list.mobile.apps": {
+    "en": "Apps",
+    "zh-CN": "应用",
+    "reviewedEnglishHash": "89dd748442c194857825848e1500abbbc5f52fb067ad27fb05dc9fb23eebba3b"
+  },
+  "apps.gateways.list.mobile.lastUsed": {
+    "en": "Last used",
+    "zh-CN": "上次使用",
+    "reviewedEnglishHash": "830ec7f812f9d862250b61add10f9a078de67a3282dd9e94f60d64cec58eefec"
+  },
+  "apps.gateways.list.mobile.scope": {
+    "en": "Scope",
+    "zh-CN": "适用范围",
+    "reviewedEnglishHash": "b073f6c68ef8721107fd9815b19b2c35ec111d526b75c2123d1111ba64424000"
+  },
+  "apps.gateways.list.mobile.tokens": {
+    "en": "Tokens",
+    "zh-CN": "代币",
+    "reviewedEnglishHash": "a039dfb9628b53ddaebcfe8ef0793e3fdf19867601295f00d192acef59050869"
+  },
+  "apps.gateways.list.newGateway": {
+    "en": "New gateway",
+    "zh-CN": "新网关",
+    "reviewedEnglishHash": "9dff4bab33a8fa47021562a6f0ce33f5ade0b5281be2aa8662de3ecddb3e63d3"
+  },
+  "apps.gateways.list.searchAriaLabel": {
+    "en": "Search gateways",
+    "zh-CN": "搜索网关",
+    "reviewedEnglishHash": "774e93aa11fcfe2511b5c9367b1d5c1a74a59e5ac921bbda629f5495913af19d"
+  },
+  "apps.gateways.list.searchPlaceholder": {
+    "en": "Search by name, app, or owner",
+    "zh-CN": "按名称、应用或所有者搜索",
+    "reviewedEnglishHash": "aa94f2364c8f78d2553eddb51e864a6b52032f91e64de86bdb26cb025e2539c7"
+  },
+  "apps.gateways.list.selectCompany": {
+    "en": "Select a company to manage gateways.",
+    "zh-CN": "选择一家公司来管理网关。",
+    "reviewedEnglishHash": "6b8ef14ae7e53eb1dfcc0a67d2d4b6eee0aa9b599b1df113fcd9b9aa3480df43"
+  },
+  "apps.gateways.list.table.apps": {
+    "en": "Apps",
+    "zh-CN": "应用",
+    "reviewedEnglishHash": "89dd748442c194857825848e1500abbbc5f52fb067ad27fb05dc9fb23eebba3b"
+  },
+  "apps.gateways.list.table.gateway": {
+    "en": "Gateway",
+    "zh-CN": "网关",
+    "reviewedEnglishHash": "41ed52921661c7f0d68d92511589cc9d7aaeab2b5db49fb27f0be336cbfdb7df"
+  },
+  "apps.gateways.list.table.lastUsed": {
+    "en": "Last used",
+    "zh-CN": "上次使用",
+    "reviewedEnglishHash": "830ec7f812f9d862250b61add10f9a078de67a3282dd9e94f60d64cec58eefec"
+  },
+  "apps.gateways.list.table.on": {
+    "en": "On",
+    "zh-CN": "开",
+    "reviewedEnglishHash": "130011756125313c72f2cab730db4347e2841526d236a89cb25f38789fa49229"
+  },
+  "apps.gateways.list.table.scope": {
+    "en": "Scope",
+    "zh-CN": "适用范围",
+    "reviewedEnglishHash": "b073f6c68ef8721107fd9815b19b2c35ec111d526b75c2123d1111ba64424000"
+  },
+  "apps.gateways.list.table.tokens": {
+    "en": "Tokens",
+    "zh-CN": "代币",
+    "reviewedEnglishHash": "a039dfb9628b53ddaebcfe8ef0793e3fdf19867601295f00d192acef59050869"
+  },
+  "apps.gateways.list.title": {
+    "en": "Apps",
+    "zh-CN": "应用",
+    "reviewedEnglishHash": "89dd748442c194857825848e1500abbbc5f52fb067ad27fb05dc9fb23eebba3b"
+  },
+  "apps.gateways.list.toast.gatewayOffBody": {
+    "en": "{{name}} is off — every client goes silent.",
+    "zh-CN": "{{name}} 关闭了——每个客户都沉默了。",
+    "reviewedEnglishHash": "6fa9eab2c32e34675f73ccf9c8c4cccf1b6fd124d9f555575510139987a9fae4"
+  },
+  "apps.gateways.list.toast.gatewayOffTitle": {
+    "en": "Gateway off",
+    "zh-CN": "网关关闭",
+    "reviewedEnglishHash": "9300c604498889974a7600d1e670e60a3886fe629d967918b1e9309470fe3f94"
+  },
+  "apps.gateways.list.toast.gatewayOnBody": {
+    "en": "{{name}} is exposing its tools again.",
+    "zh-CN": "{{name}} 再次暴露其工具。",
+    "reviewedEnglishHash": "0d73826d2eb774f6270993dc5c0ba3d52c1b4c9fe344a4f29e7bf7a9a8c1c197"
+  },
+  "apps.gateways.list.toast.gatewayOnTitle": {
+    "en": "Gateway on",
+    "zh-CN": "网关开启",
+    "reviewedEnglishHash": "238ef12e1e94988b561ebd82ce5b45f924df40f70c2773a957c971ae52860645"
+  },
+  "apps.gateways.list.toast.updateFailedTitle": {
+    "en": "Couldn't update the gateway",
+    "zh-CN": "无法更新网关",
+    "reviewedEnglishHash": "539a9ea1acfe7839f0bb6e2458f393ba72039285dbe920f46e996d46d2adc61a"
+  },
+  "apps.gateways.list.toggleAriaLabel": {
+    "en": "Turn {{name}} {{state}}",
+    "zh-CN": "转动 {{name}} {{state}}",
+    "reviewedEnglishHash": "e97aa068d96f5750188080a71fed5638c2fe44976431540850eb032ccd2187a8"
+  },
+  "apps.gateways.list.toggleOffState": {
+    "en": "off",
+    "zh-CN": "关闭",
+    "reviewedEnglishHash": "b4dc66dde806261bdda8607d8707aa727d308cd80272381a5583f63899918467"
+  },
+  "apps.gateways.list.toggleOnState": {
+    "en": "on",
+    "zh-CN": "上",
+    "reviewedEnglishHash": "b8d31e852725afb1e26d53bab6095b2bff1749c9275be13ed1c05a56ed31ec09"
+  },
+  "apps.gateways.list.tokensSummary": {
+    "en": "{{active}} active",
+    "zh-CN": "{{active}} 活跃",
+    "reviewedEnglishHash": "3ee92e0d26b45609fc5c0f04cfccb7fc50ffcb0744f7541b7073685f65c78a99"
+  },
+  "apps.gateways.list.tokensSummaryWithExpiring": {
+    "en": "{{active}} active · {{expiring}} expiring",
+    "zh-CN": "{{active}} 有效 · {{expiring}} 即将到期",
+    "reviewedEnglishHash": "e179e76ac9b747ded7afe8d9fa3125b60cfa3e5c862289149cb16b8d6a931ac8"
+  },
+  "apps.gateways.list.whyBody": {
+    "en": "You pick which apps go through it, who can use it, and how. Revoke the token, the whole gateway goes silent — no app-by-app cleanup.",
+    "zh-CN": "您可以选择哪些应用可以使用它、谁可以使用它以及如何使用它。撤销令牌，整个网关就会变得安静——没有逐个应用的清理。",
+    "reviewedEnglishHash": "7c2598f1a63a4daba8b6ef945fa3ff62ed80b298b6f387b59736ee6ca61cb013"
+  },
+  "apps.gateways.list.whyTitle": {
+    "en": "Why a gateway?",
+    "zh-CN": "为什么要有网关？",
+    "reviewedEnglishHash": "3918f1693a1e3dce18cc6c01e303e543c5de5d269c86150cf66a7c5cdf49e539"
+  },
+  "apps.gateways.newGateway.cancel": {
+    "en": "Cancel",
+    "zh-CN": "取消",
+    "reviewedEnglishHash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+  },
+  "apps.gateways.newGateway.chooseProfile": {
+    "en": "Choose a profile",
+    "zh-CN": "选择访问配置",
+    "reviewedEnglishHash": "416c3478ef2c73f01684c3ac79489129500a4291cb463a8938f41072fb3bd716"
+  },
+  "apps.gateways.newGateway.create": {
+    "en": "Create gateway",
+    "zh-CN": "创建网关",
+    "reviewedEnglishHash": "f1d4a6bb0e67734dba079e92c28c1918e0ec02bf2472c7b9243dbe3e4840af4a"
+  },
+  "apps.gateways.newGateway.creating": {
+    "en": "Creating…",
+    "zh-CN": "创造……",
+    "reviewedEnglishHash": "c79ed9492e3c17199ab50694e07f5525cc6d598a02531528b0eb5ed933cd5466"
+  },
+  "apps.gateways.newGateway.description": {
+    "en": "One safe MCP endpoint that exposes only the apps in its access profile. Hand it to a client like Cursor or Claude Desktop.",
+    "zh-CN": "一种安全的 MCP 端点，仅公开其访问配置中的应用。将其交给 Cursor 或 Claude Desktop 等客户端。",
+    "reviewedEnglishHash": "ae7344ca9921ad33591c2b26a05507c60d7aa764dddf90907213b3d69b8f5e57"
+  },
+  "apps.gateways.newGateway.descriptionLabel": {
+    "en": "Description (optional)",
+    "zh-CN": "说明（可选）",
+    "reviewedEnglishHash": "f6cbe2f0c1f8a38b82c62ec548a4eaf0d89b02361c9228dbfc713b822575d825"
+  },
+  "apps.gateways.newGateway.descriptionPlaceholder": {
+    "en": "Who this endpoint is for and when it should be rotated.",
+    "zh-CN": "该端点适用于谁以及何时应轮换。",
+    "reviewedEnglishHash": "1f1384e32cfac3762620cbed83d5b0463e433f1732e3126a1f9726233b24b738"
+  },
+  "apps.gateways.newGateway.loadingProfiles": {
+    "en": "Loading profiles…",
+    "zh-CN": "正在加载配置...",
+    "reviewedEnglishHash": "16b0bbfd1d1194f9a0945fd375147f113cf0a53efff54cdfb07642aba2ad1570"
+  },
+  "apps.gateways.newGateway.nameLabel": {
+    "en": "Name",
+    "zh-CN": "名称",
+    "reviewedEnglishHash": "dcd1d5223f73b3a965c07e3ff5dbee3eedcfedb806686a05b9b3868a2c3d6d50"
+  },
+  "apps.gateways.newGateway.namePlaceholder": {
+    "en": "CTO agents",
+    "zh-CN": "CTO智能体商",
+    "reviewedEnglishHash": "244581983ef454f95b04935716d3d03b2aacee68fb552ab95ff4229d91a6f55d"
+  },
+  "apps.gateways.newGateway.noProfiles": {
+    "en": "Create an access profile under Advanced before adding a gateway.",
+    "zh-CN": "添加网关之前，在“高级”下创建访问配置。",
+    "reviewedEnglishHash": "fc0145280c4aa4f1d93c1db60262452302b06494f77fdc282f65a3c324122277"
+  },
+  "apps.gateways.newGateway.profileHelp": {
+    "en": "The profile decides which tools this gateway allows. You can change it later.",
+    "zh-CN": "配置决定该网关允许使用哪些工具。您可以稍后更改。",
+    "reviewedEnglishHash": "846e00817404a603820a54108dd4872fb22f4a7d8515fa2b9fa773821c00ec1b"
+  },
+  "apps.gateways.newGateway.profileLabel": {
+    "en": "Access profile",
+    "zh-CN": "访问资料",
+    "reviewedEnglishHash": "0ffe9da7f6bb4e622e6f5a10e33773291eb3408d5bf1e6cabd90aceb4fb8113d"
+  },
+  "apps.gateways.newGateway.title": {
+    "en": "New gateway",
+    "zh-CN": "新网关",
+    "reviewedEnglishHash": "9dff4bab33a8fa47021562a6f0ce33f5ade0b5281be2aa8662de3ecddb3e63d3"
+  },
+  "apps.gateways.newGateway.toast.createFailedTitle": {
+    "en": "Gateway was not created",
+    "zh-CN": "网关未创建",
+    "reviewedEnglishHash": "449e74ea73b90fd612a12e1b7253b3c49e2826037868dadb3bf90bd8b50d448d"
+  },
+  "apps.gateways.newGateway.toast.createdTitle": {
+    "en": "Gateway created",
+    "zh-CN": "网关已创建",
+    "reviewedEnglishHash": "bf088b7fd83252e118fc752bc4604a09e43faf10cb36b14beb769ab66aced03c"
+  },
+  "apps.gateways.overview.activeTokenCount": {
+    "en": "{{count}} active tokens",
+    "zh-CN": "{{count}} 活跃代币",
+    "reviewedEnglishHash": "a610fcfaf3da69c1f272616fbb837a8f925417767aacfa3a1401863c060385e3"
+  },
+  "apps.gateways.overview.appsCount": {
+    "en": "{{count}} apps",
+    "zh-CN": "{{count}} 应用",
+    "reviewedEnglishHash": "81d6b019f34b611544798444c6fd7306452cd1180bc797cb86d0b1bdb2b7932a"
+  },
+  "apps.gateways.overview.appsEmpty": {
+    "en": "This gateway’s profile doesn’t include any apps yet.",
+    "zh-CN": "该网关的配置尚不包含任何应用。",
+    "reviewedEnglishHash": "de912bf377c1b86d2fe8fd9cf11a5ba15be10e4b6c5f2a7f585754d95219b5f3"
+  },
+  "apps.gateways.overview.appsInGatewayTitle": {
+    "en": "Apps in this gateway",
+    "zh-CN": "此网关中的应用",
+    "reviewedEnglishHash": "f79f93650e91b185299ce714635513db444e2e6f9fa9430d62d15b13cbbb2555"
+  },
+  "apps.gateways.overview.appsStat": {
+    "en": "Apps",
+    "zh-CN": "应用",
+    "reviewedEnglishHash": "89dd748442c194857825848e1500abbbc5f52fb067ad27fb05dc9fb23eebba3b"
+  },
+  "apps.gateways.overview.clientConfig": {
+    "en": "Client config",
+    "zh-CN": "客户端配置",
+    "reviewedEnglishHash": "3633cfff738e6e7a109028e060c836127b02a9313744fb175652f7983e72e76a"
+  },
+  "apps.gateways.overview.clientConnectTitle": {
+    "en": "How clients connect",
+    "zh-CN": "客户端如何连接",
+    "reviewedEnglishHash": "0b9f00af0f2ab0b46b4c9fe512e05a80fc6327667847b7b134854a5c8b04931b"
+  },
+  "apps.gateways.overview.clipboardUnavailable": {
+    "en": "Clipboard access is unavailable.",
+    "zh-CN": "剪贴板访问不可用。",
+    "reviewedEnglishHash": "0899c211b77f93b01d7f705107c2a8fdaf7abcf96e7c995884b4cab415099cf2"
+  },
+  "apps.gateways.overview.copy": {
+    "en": "Copy",
+    "zh-CN": "复制",
+    "reviewedEnglishHash": "e21f935f11d7e966dbbae78da9daa378fe8142a14e7c0cd7434183005faa6c5c"
+  },
+  "apps.gateways.overview.gatewayOff": {
+    "en": "Off",
+    "zh-CN": "关闭",
+    "reviewedEnglishHash": "ca7981b46ecf2c1787b6d76d81d9fd7fa0ca95842e2fcc2a452869891a9334d1"
+  },
+  "apps.gateways.overview.gatewayOn": {
+    "en": "On",
+    "zh-CN": "开",
+    "reviewedEnglishHash": "130011756125313c72f2cab730db4347e2841526d236a89cb25f38789fa49229"
+  },
+  "apps.gateways.overview.healthGood": {
+    "en": "All green",
+    "zh-CN": "全绿色",
+    "reviewedEnglishHash": "f7836fc939dae4efbe9dce99c5057d28b1603a3a88fb50d0b787ecf02b1c8b1a"
+  },
+  "apps.gateways.overview.healthNeedsAttention": {
+    "en": "{{count}} need attention",
+    "zh-CN": "{{count}}需要注意",
+    "reviewedEnglishHash": "0357fc38461b8b64e2db7677f5a22fb4d4238c35709649124694a50624c41b1b"
+  },
+  "apps.gateways.overview.healthStat": {
+    "en": "Health",
+    "zh-CN": "健康",
+    "reviewedEnglishHash": "55898449eb74fb2e348d13e5a5d84ab019bb87ea92687b50b3d3302eb409b784"
+  },
+  "apps.gateways.overview.profileChip": {
+    "en": "Profile",
+    "zh-CN": "公司简介",
+    "reviewedEnglishHash": "d696a35bdd1883da07a8d6c41bb7a3153381b23aa197629ee273479a6eaa5a9c"
+  },
+  "apps.gateways.overview.scopeChip": {
+    "en": "Scope",
+    "zh-CN": "适用范围",
+    "reviewedEnglishHash": "b073f6c68ef8721107fd9815b19b2c35ec111d526b75c2123d1111ba64424000"
+  },
+  "apps.gateways.overview.toast.copiedTitle": {
+    "en": "Copied",
+    "zh-CN": "已复制",
+    "reviewedEnglishHash": "8d525e5f158b9afe05f3122af363ac67763bdc4e1395b46597b320c289766ce3"
+  },
+  "apps.gateways.overview.toast.copyFailedTitle": {
+    "en": "Copy failed",
+    "zh-CN": "复制失败",
+    "reviewedEnglishHash": "5b50e7a693fee952b9ed0e7c240bf4cba69b1dbf02af718145b297e4110591f3"
+  },
+  "apps.gateways.overview.toggleAriaLabel": {
+    "en": "Toggle gateway",
+    "zh-CN": "切换网关",
+    "reviewedEnglishHash": "10748b999fbf84ff44200540331256883916a75caf176e03e7e77220e572c13c"
+  },
+  "apps.gateways.overview.toggleHelp": {
+    "en": "Toggle the whole gateway off here.",
+    "zh-CN": "在这里关闭整个网关。",
+    "reviewedEnglishHash": "a27be6847d5dc2a632b63b1d16038785443062afb1a3572af4b82ea9a6fa7b20"
+  },
+  "apps.gateways.overview.tokensStat": {
+    "en": "Tokens",
+    "zh-CN": "代币",
+    "reviewedEnglishHash": "a039dfb9628b53ddaebcfe8ef0793e3fdf19867601295f00d192acef59050869"
+  },
+  "apps.gateways.overview.tokensSummary": {
+    "en": "{{active}} active",
+    "zh-CN": "{{active}} 活跃",
+    "reviewedEnglishHash": "3ee92e0d26b45609fc5c0f04cfccb7fc50ffcb0744f7541b7073685f65c78a99"
+  },
+  "apps.gateways.overview.tokensSummaryWithExpiring": {
+    "en": "{{active}} active · {{expiring}} expiring",
+    "zh-CN": "{{active}} 有效 · {{expiring}} 即将到期",
+    "reviewedEnglishHash": "e179e76ac9b747ded7afe8d9fa3125b60cfa3e5c862289149cb16b8d6a931ac8"
+  },
+  "apps.gateways.overview.toolCount": {
+    "en": "{{count}} tools",
+    "zh-CN": "{{count}} 工具",
+    "reviewedEnglishHash": "f1b9324764c0a9c0633d57b1379cc777c4569958a3d59d097802a471fb08dba3"
+  },
+  "apps.gateways.overview.unavailable": {
+    "en": "Unavailable",
+    "zh-CN": "不可用",
+    "reviewedEnglishHash": "ca184496974204a0bd3fd4925e0540bc4b0df6fcc232994d29754272b7183812"
+  },
+  "apps.gateways.overview.whoCanUseItBody": {
+    "en": "Anyone holding an active token below, restricted by the rules in the bound profile.",
+    "zh-CN": "任何持有以下活跃代币的人，均受绑定配置中的规则限制。",
+    "reviewedEnglishHash": "bd0cff72ee94276c2cb7e77db3af08959e4a204a229be169af8119ac84eace34"
+  },
+  "apps.gateways.overview.whoCanUseItTitle": {
+    "en": "Who can use it",
+    "zh-CN": "谁可以使用它",
+    "reviewedEnglishHash": "82d9af69e1a186560ff295dadb6c549e8261d3bb37b231b3f3c691b13f758ec9"
+  },
+  "apps.gateways.scope.agent": {
+    "en": "Agent",
+    "zh-CN": "智能体",
+    "reviewedEnglishHash": "11b39c93777e8f1f3983bdba7c72b22fe68cfea20c677e9de53e17cb7dbfb19f"
+  },
+  "apps.gateways.scope.company": {
+    "en": "Company",
+    "zh-CN": "公司简介",
+    "reviewedEnglishHash": "de4743c879734dc38cb3e270ecefcae077c3c2e626f9298115d5a03c8613f89b"
+  },
+  "apps.gateways.scope.project": {
+    "en": "Project",
+    "zh-CN": "项目",
+    "reviewedEnglishHash": "985959785319747668373cc6dee294b11db782b03cdd90a2851fbdc0637c6b7b"
+  },
+  "apps.gateways.subNav.ariaLabel": {
+    "en": "Apps sections",
+    "zh-CN": "应用部分",
+    "reviewedEnglishHash": "5d5500cec8f8f9d99e3b47a4ac8bbaf702e4bd4adad368209a8b23e50385736e"
+  },
+  "apps.gateways.tokens.accessToken": {
+    "en": "Access token",
+    "zh-CN": "访问令牌",
+    "reviewedEnglishHash": "9a911b08feb9d2928240dda42c6efa8794ab3457f8b59a7cfb5187e817f948e3"
+  },
+  "apps.gateways.tokens.activityNote": {
+    "en": "Every mint, reveal, and revoke is recorded in Activity.",
+    "zh-CN": "每次铸造、揭示和撤销都记录在“活动”中。",
+    "reviewedEnglishHash": "39f0ab53c9ce8d67f2aac5d75e12a0b62f2b295212af6c17cdaf4a96c3bf3a0b"
+  },
+  "apps.gateways.tokens.cancel": {
+    "en": "Cancel",
+    "zh-CN": "取消",
+    "reviewedEnglishHash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+  },
+  "apps.gateways.tokens.clipboardUnavailable": {
+    "en": "Clipboard access is unavailable.",
+    "zh-CN": "剪贴板访问不可用。",
+    "reviewedEnglishHash": "0899c211b77f93b01d7f705107c2a8fdaf7abcf96e7c995884b4cab415099cf2"
+  },
+  "apps.gateways.tokens.confirmRevokeAriaLabel": {
+    "en": "Type the token name to confirm",
+    "zh-CN": "输入令牌名称进行确认",
+    "reviewedEnglishHash": "108c2424af42b259529687fe028dc25332590c62828f012acc4ee594438d71b5"
+  },
+  "apps.gateways.tokens.confirmRevokeBodyPrefix": {
+    "en": "Any client using",
+    "zh-CN": "任何客户使用",
+    "reviewedEnglishHash": "4b320bd0226b1f9e9fc32bf9bbeb060b9a4120c2c3038365642813296178f8c7"
+  },
+  "apps.gateways.tokens.confirmRevokeBodySuffix": {
+    "en": "goes silent immediately. This can’t be undone. Type the token name to confirm.",
+    "zh-CN": "立即陷入沉默。此操作无法撤消。输入令牌名称进行确认。",
+    "reviewedEnglishHash": "5bd993ccc92291a4a22db41712a421738cc32d55dc34784205e7c87e06301872"
+  },
+  "apps.gateways.tokens.confirmRevokeTitle": {
+    "en": "Revoke this token?",
+    "zh-CN": "撤销这个令牌？",
+    "reviewedEnglishHash": "33271bd27f08cee2467599536e25c9d4ecfd1fee65f521db39a36a935eada9e5"
+  },
+  "apps.gateways.tokens.copy": {
+    "en": "Copy",
+    "zh-CN": "复制",
+    "reviewedEnglishHash": "e21f935f11d7e966dbbae78da9daa378fe8142a14e7c0cd7434183005faa6c5c"
+  },
+  "apps.gateways.tokens.description": {
+    "en": "Each token is a separate way in. Revoke any one without breaking the others.",
+    "zh-CN": "每个令牌都有一个单独的进入方式。撤销任何一个令牌都不会破坏其他令牌。",
+    "reviewedEnglishHash": "a087997862c9bed85e62e095dd5c7f1f8244fbcae100ebdd935adb6d4e3cd5bd"
+  },
+  "apps.gateways.tokens.dismiss": {
+    "en": "Dismiss",
+    "zh-CN": "解雇",
+    "reviewedEnglishHash": "48845bff334a50a59aaecf499f28a7a24c3b4b891b8b18a9f1169ad8e8a6b261"
+  },
+  "apps.gateways.tokens.dismissNewTokenAriaLabel": {
+    "en": "Dismiss new token",
+    "zh-CN": "取消新令牌",
+    "reviewedEnglishHash": "53b2c778311f295f1fd6e2e1ab62a7785c7edfdda9f45f887781fdcbc1c0aed4"
+  },
+  "apps.gateways.tokens.empty": {
+    "en": "No tokens yet. Mint one for the client that will connect to this gateway.",
+    "zh-CN": "还没有代币。为将连接到此网关的客户端创建一个。",
+    "reviewedEnglishHash": "005571b26fbdc02b4bbe597e6e00d49cc2e3ceddf00c84d9ec1485e5c983fa49"
+  },
+  "apps.gateways.tokens.expiresLabel": {
+    "en": "Expires",
+    "zh-CN": "过期",
+    "reviewedEnglishHash": "f6725f3af08a06a2804bf70e4493e6c78dd37ef533eebf9b419fc48b520ec753"
+  },
+  "apps.gateways.tokens.mintToken": {
+    "en": "Mint token",
+    "zh-CN": "铸币代币",
+    "reviewedEnglishHash": "4f4003ab953979d1ee60a0a0f2a3a654ae524778d83ff24c17e6643f6eb0da9f"
+  },
+  "apps.gateways.tokens.minting": {
+    "en": "Minting…",
+    "zh-CN": "铸币…",
+    "reviewedEnglishHash": "460daa70428246f57c841cf3ddfefe9e8260b23f63a3e0be9a05888e76818a9f"
+  },
+  "apps.gateways.tokens.mobile.created": {
+    "en": "Created",
+    "zh-CN": "已创建",
+    "reviewedEnglishHash": "d70b9e24bca26b409b9458ceca6c9e5c2b5c3171c37ff050c6f6a0d7a4420d2a"
+  },
+  "apps.gateways.tokens.mobile.expires": {
+    "en": "Expires",
+    "zh-CN": "过期",
+    "reviewedEnglishHash": "f6725f3af08a06a2804bf70e4493e6c78dd37ef533eebf9b419fc48b520ec753"
+  },
+  "apps.gateways.tokens.mobile.lastUsed": {
+    "en": "Last used",
+    "zh-CN": "上次使用",
+    "reviewedEnglishHash": "830ec7f812f9d862250b61add10f9a078de67a3282dd9e94f60d64cec58eefec"
+  },
+  "apps.gateways.tokens.mobile.owner": {
+    "en": "Owner",
+    "zh-CN": "业主",
+    "reviewedEnglishHash": "4b1b8aa3608a26da451ae0630d75b60ab1bc2dd229c41a80838fc7993e835c46"
+  },
+  "apps.gateways.tokens.nameLabel": {
+    "en": "Name",
+    "zh-CN": "名称",
+    "reviewedEnglishHash": "dcd1d5223f73b3a965c07e3ff5dbee3eedcfedb806686a05b9b3868a2c3d6d50"
+  },
+  "apps.gateways.tokens.namePlaceholder": {
+    "en": "cto-cursor",
+    "zh-CN": "cto-光标",
+    "reviewedEnglishHash": "eb5b4ad39755b787d84430dba21d93d2b758b63d40c9c40fc5c57eaee75158a6"
+  },
+  "apps.gateways.tokens.newTokenBody": {
+    "en": "You won’t see the full value again. Store it in your client’s config or your secret manager.",
+    "zh-CN": "您将不会再看到完整的价值。将其存储在您客户的配置或秘密管理器中。",
+    "reviewedEnglishHash": "131025b59e55da534d8ac6b1e2e0ab32043fd64133105a3a040bc72f671cb8e0"
+  },
+  "apps.gateways.tokens.newTokenTitle": {
+    "en": "New token — copy now",
+    "zh-CN": "新令牌 — 立即复制",
+    "reviewedEnglishHash": "041568feda07f583aa692feb7aebaf314248b28714896a0aee42499326a666f3"
+  },
+  "apps.gateways.tokens.noExpiry": {
+    "en": "no expiry",
+    "zh-CN": "没有期限",
+    "reviewedEnglishHash": "dd848d4323a22313fd82e98da6444e3176062f0f1aac9872c20bb9a42f513018"
+  },
+  "apps.gateways.tokens.noteLabel": {
+    "en": "Note (why it exists)",
+    "zh-CN": "注意（为什么存在）",
+    "reviewedEnglishHash": "9066ccdec1de467b5505a79f11ec418e10c8584f12f98e6a8f9aaf106a33f006"
+  },
+  "apps.gateways.tokens.notePlaceholder": {
+    "en": "Dotta’s MacBook",
+    "zh-CN": "多塔的 MacBook",
+    "reviewedEnglishHash": "a34d239a12dc3ac258521300fe96b7c6e66c89d0e30741b9c621a87c29186d50"
+  },
+  "apps.gateways.tokens.ownerClientLabel": {
+    "en": "Owner / client",
+    "zh-CN": "业主/客户",
+    "reviewedEnglishHash": "c95ddc2f17163a992f6ccacfb48a00dd1001dc817a8f42389f9d3542d4dc404d"
+  },
+  "apps.gateways.tokens.ownerClientPlaceholder": {
+    "en": "Cursor on work laptop",
+    "zh-CN": "工作笔记本电脑上的光标",
+    "reviewedEnglishHash": "ceeb2f9e072b2a2663fe978fb87b2eac380b8c01f7cf0b5ed19540dd5c69b14f"
+  },
+  "apps.gateways.tokens.revoke": {
+    "en": "Revoke",
+    "zh-CN": "撤销",
+    "reviewedEnglishHash": "87e6d00bbf53ec5ae251de23ace84d5cf01c69deae04cfff08a5fe353a9853bb"
+  },
+  "apps.gateways.tokens.revokeToken": {
+    "en": "Revoke token",
+    "zh-CN": "撤销令牌",
+    "reviewedEnglishHash": "14683b379324a82a144d6672fa5ca7f93c5397a7182af916be2d14dca69594f7"
+  },
+  "apps.gateways.tokens.revoking": {
+    "en": "Revoking…",
+    "zh-CN": "撤销…",
+    "reviewedEnglishHash": "1a36f21b3cfe66426a9487274ee84569f10288376a120f9d08cfd2f79090def9"
+  },
+  "apps.gateways.tokens.show": {
+    "en": "Show",
+    "zh-CN": "显示",
+    "reviewedEnglishHash": "0df6f1cad36c49da768a6efdcc2c4be102f5729f7381cb53e4ff8061d17eaeb6"
+  },
+  "apps.gateways.tokens.status.active": {
+    "en": "Active",
+    "zh-CN": "活跃",
+    "reviewedEnglishHash": "92340695899bd2d86223e4a007620e0d6502fc0e08809773634c7e0743764a9c"
+  },
+  "apps.gateways.tokens.status.expired": {
+    "en": "Expired",
+    "zh-CN": "已过期",
+    "reviewedEnglishHash": "424a2551d356754c882d04ac16c63e6b50b80b159549d23231001f629455756e"
+  },
+  "apps.gateways.tokens.status.expiring": {
+    "en": "Expiring",
+    "zh-CN": "即将到期",
+    "reviewedEnglishHash": "ff44a401445c99df44771a1745513fdddec7d0a8baa503117bdacba5e13592e3"
+  },
+  "apps.gateways.tokens.status.revoked": {
+    "en": "Revoked",
+    "zh-CN": "已撤销",
+    "reviewedEnglishHash": "f6f738d043929f59fe41b1a5b414b33ea28ca9a6ddc74e682bdb7167b5a6ac6e"
+  },
+  "apps.gateways.tokens.table.created": {
+    "en": "Created",
+    "zh-CN": "已创建",
+    "reviewedEnglishHash": "d70b9e24bca26b409b9458ceca6c9e5c2b5c3171c37ff050c6f6a0d7a4420d2a"
+  },
+  "apps.gateways.tokens.table.expires": {
+    "en": "Expires",
+    "zh-CN": "过期",
+    "reviewedEnglishHash": "f6725f3af08a06a2804bf70e4493e6c78dd37ef533eebf9b419fc48b520ec753"
+  },
+  "apps.gateways.tokens.table.lastUsed": {
+    "en": "Last used",
+    "zh-CN": "上次使用",
+    "reviewedEnglishHash": "830ec7f812f9d862250b61add10f9a078de67a3282dd9e94f60d64cec58eefec"
+  },
+  "apps.gateways.tokens.table.owner": {
+    "en": "Owner",
+    "zh-CN": "业主",
+    "reviewedEnglishHash": "4b1b8aa3608a26da451ae0630d75b60ab1bc2dd229c41a80838fc7993e835c46"
+  },
+  "apps.gateways.tokens.table.status": {
+    "en": "Status",
+    "zh-CN": "状态",
+    "reviewedEnglishHash": "920e413c7d411b61ef3e8c63b1cb6ad058d5f95f8b481dbafe60248387d8c355"
+  },
+  "apps.gateways.tokens.table.token": {
+    "en": "Token",
+    "zh-CN": "代币",
+    "reviewedEnglishHash": "d2089be672953d1136faa84079af1b6f3967fed8932dabffba3032d30e3c0618"
+  },
+  "apps.gateways.tokens.toast.copiedTitle": {
+    "en": "Copied",
+    "zh-CN": "已复制",
+    "reviewedEnglishHash": "8d525e5f158b9afe05f3122af363ac67763bdc4e1395b46597b320c289766ce3"
+  },
+  "apps.gateways.tokens.toast.copyFailedTitle": {
+    "en": "Copy failed",
+    "zh-CN": "复制失败",
+    "reviewedEnglishHash": "5b50e7a693fee952b9ed0e7c240bf4cba69b1dbf02af718145b297e4110591f3"
+  },
+  "apps.gateways.tokens.toast.mintFailedTitle": {
+    "en": "Token was not minted",
+    "zh-CN": "令牌未铸造",
+    "reviewedEnglishHash": "49ccc38d5a697f5dc49e35c625b4f9f543c9794eecb36c90be84b341293c742d"
+  },
+  "apps.gateways.tokens.toast.mintedBody": {
+    "en": "Copy it now — you won’t see the full value again.",
+    "zh-CN": "现在复制它 - 您将不会再看到完整的值。",
+    "reviewedEnglishHash": "fe90da4c60b0ecea5195a58308ce734eea2f40dc2a7c326dbfa84c4cf893b173"
+  },
+  "apps.gateways.tokens.toast.mintedTitle": {
+    "en": "Token minted",
+    "zh-CN": "代币铸造",
+    "reviewedEnglishHash": "7917fb3110c8b663638f002016644ee0c14a5322f0a203997d794e2ee4000c3a"
+  },
+  "apps.gateways.tokens.toast.revokeFailedTitle": {
+    "en": "Token was not revoked",
+    "zh-CN": "令牌未被撤销",
+    "reviewedEnglishHash": "bae52f7107dde1dcd2f308e49ce051c3f83a95813313b50dc6c04ba2cfd79ca9"
+  },
+  "apps.gateways.tokens.toast.revokedBody": {
+    "en": "{{name}} can no longer connect.",
+    "zh-CN": "{{name}} 无法再连接。",
+    "reviewedEnglishHash": "09d063b604dcc7ec75eea7f61cc6b0b320415a45d9d07d34d5df33cdb7aadcc6"
+  },
+  "apps.gateways.tokens.toast.revokedTitle": {
+    "en": "Token revoked",
+    "zh-CN": "令牌已撤销",
+    "reviewedEnglishHash": "cd7e9dbe5eec7bd9d06af91b56700d9cc610c5b9b004f01882cdb6b00e04842f"
+  },
+  "apps.notConnected.address": {
+    "en": "Address",
+    "zh-CN": "地址",
+    "reviewedEnglishHash": "56ef8f20955f256423d328f65b62106005252551db25d660031887e421cb4684"
+  },
+  "apps.notConnected.alreadyConnected": {
+    "en": "Already connected to {{appName}}",
+    "zh-CN": "已连接 {{appName}}",
+    "reviewedEnglishHash": "213ab13e0908fd6a7972b8b5c489865d5aaa395eeac4ae4f627b76d86f23d884"
+  },
+  "apps.notConnected.connect": {
+    "en": "Connect",
+    "zh-CN": "连接",
+    "reviewedEnglishHash": "1a2303ede07493acc7caaa7c737f3c52bcc9cf04372be19ed1b0af6b9f2c791e"
+  },
+  "apps.notConnected.connectAnother": {
+    "en": "Connect another",
+    "zh-CN": "连接其他账户",
+    "reviewedEnglishHash": "ac6c44eb9999a8090dea4ef357c5d62124aa2f4fc1ef02a18117c951020adc4d"
+  },
+  "apps.notConnected.connectAnotherDescription": {
+    "en": "Add another {{appName}} account without changing the connections above.",
+    "zh-CN": "添加另一个 {{appName}} 账户，不影响上方现有连接。",
+    "reviewedEnglishHash": "d31fdb7f27e62c7ad0c573dcbf17460a0d4bcb5757907a3ef34aa628712152f4"
+  },
+  "apps.notConnected.connectDescription": {
+    "en": "Agents can't use it until it's connected.",
+    "zh-CN": "在连接之前，智能体无法使用它。",
+    "reviewedEnglishHash": "e392f9b485c028fccab5d0e0b814b7bcc5a14e7b28ffc746363bfbc8ffb8b484"
+  },
+  "apps.notConnected.connectTitle": {
+    "en": "Connect this app",
+    "zh-CN": "连接此应用",
+    "reviewedEnglishHash": "3a75937fae685d122c988bfb286ab9ed434363198a754809a1a114d977b0d832"
+  },
+  "apps.notConnected.connectionCount_one": {
+    "en": "{{count}} connected",
+    "zh-CN": "已连接 {{count}} 个",
+    "reviewedEnglishHash": "2b8b9e543b7708aff805a845ae47e64eb741b7a01bbb52f6c8f5c41333e4224e"
+  },
+  "apps.notConnected.connectionCount_other": {
+    "en": "{{count}} connected",
+    "zh-CN": "已连接 {{count}} 个",
+    "reviewedEnglishHash": "2b8b9e543b7708aff805a845ae47e64eb741b7a01bbb52f6c8f5c41333e4224e"
+  },
+  "apps.notConnected.connectionType": {
+    "en": "Connection type",
+    "zh-CN": "连接类型",
+    "reviewedEnglishHash": "a2cfeb2898b25bd562091fcf6c9bd4654c7e37a90f53e652655363d885e77fea"
+  },
+  "apps.notConnected.detailsAfterConnect": {
+    "en": "Technical details will appear here after this app is connected.",
+    "zh-CN": "连接此应用后，技术详细信息将显示在此处。",
+    "reviewedEnglishHash": "3cde461b731edecd816a0332cd15d356dd8fb701659605db47025e5bcef8e288"
+  },
+  "apps.notConnected.edit": {
+    "en": "Edit →",
+    "zh-CN": "编辑 →",
+    "reviewedEnglishHash": "97ccfbe470e46f5c06717040c4e89aaffede5666b6fab5488fde897f29594c67"
+  },
+  "apps.notConnected.hostedAt": {
+    "en": "Hosted at {{address}}",
+    "zh-CN": "托管于 {{address}}",
+    "reviewedEnglishHash": "657ca07e83a831262498bfc004d97c46480f11d925fade73e6b3694ddb13e168"
+  },
+  "apps.notConnected.lastError": {
+    "en": "Last error:",
+    "zh-CN": "最后一个错误：",
+    "reviewedEnglishHash": "af73af0200229dfd46b1b39f294c40f8b4059ee75f002cfb4421f4e9244cf5bf"
+  },
+  "apps.notConnected.lastUsed": {
+    "en": "Last used",
+    "zh-CN": "上次使用",
+    "reviewedEnglishHash": "830ec7f812f9d862250b61add10f9a078de67a3282dd9e94f60d64cec58eefec"
+  },
+  "apps.notConnected.lastUsedAt": {
+    "en": "Last used {{time}}",
+    "zh-CN": "上次使用 {{time}}",
+    "reviewedEnglishHash": "5e8c1aa8e79c13dc90e167fda0114559f0c82ba1fc12c7f24ba4f2bdbe17d486"
+  },
+  "apps.notConnected.manageConnections": {
+    "en": "Open a connection to edit it, or add another account.",
+    "zh-CN": "打开一个连接进行编辑，或添加另一个账户。",
+    "reviewedEnglishHash": "14c9530160ea03c205e10d7e29703555697251c9ba1e52ae3d3d322131704987"
+  },
+  "apps.notConnected.never": {
+    "en": "Never",
+    "zh-CN": "从未使用",
+    "reviewedEnglishHash": "6300ef800bb884295b0b4b35682b75cecd7cc550d202db56d04a0643b8fb873f"
+  },
+  "apps.notConnected.noPreviousDetails": {
+    "en": "No previous connection details",
+    "zh-CN": "没有以前的连接详细信息",
+    "reviewedEnglishHash": "b95e8e9526305f914df03968e97ca0684250af5e617065ef3e4e7f1daa0201e4"
+  },
+  "apps.notConnected.notConnected": {
+    "en": "Not connected",
+    "zh-CN": "未连接",
+    "reviewedEnglishHash": "0303e182467081801f8b614862519a3b174c0ae84ff08b70e7d126080c3f4b95"
+  },
+  "apps.notConnected.notFound": {
+    "en": "This app doesn’t exist anymore.",
+    "zh-CN": "这个应用已经不存在了。",
+    "reviewedEnglishHash": "f86e299e4c788bb287189dcaf35d16d11486938869ffca55ae2ee4a3bc65f190"
+  },
+  "apps.notConnected.notUsedYet": {
+    "en": "Not used yet",
+    "zh-CN": "尚未使用",
+    "reviewedEnglishHash": "9de87487a30ed4ae3486ebb8ba82862c3b4c948465a8f8c20ae271bbfe3a42b7"
+  },
+  "apps.notConnected.permissionsDescription": {
+    "en": "Reconnect this app to edit who can use it and which actions need a human first.",
+    "zh-CN": "重新连接此应用以编辑谁可以使用它以及哪些操作首先需要人工操作。",
+    "reviewedEnglishHash": "3ffd9025cf705d49049bc7149799c1691a9839f85074488573c00849202d761e"
+  },
+  "apps.notConnected.permissionsPaused": {
+    "en": "Permissions paused",
+    "zh-CN": "权限已暂停",
+    "reviewedEnglishHash": "931046d27a8f729ab38b2bc3d6512f1e726edf1c662061a8ab7363f5b56287b2"
+  },
+  "apps.notConnected.permissionsReadOnly": {
+    "en": "Previous setup is retained for reconnect, but access controls stay read-only until the app is online.",
+    "zh-CN": "先前的设置将保留以供重新连接，但访问控制在应用上线之前保持只读状态。",
+    "reviewedEnglishHash": "9d8b6537a29f944cc6a93dd3c4336fac770f045591224a06deff7715695bcb2e"
+  },
+  "apps.notConnected.previousSetup": {
+    "en": "Previous setup",
+    "zh-CN": "之前的设置",
+    "reviewedEnglishHash": "52e77aa0dc3d8567c21b3a761265f0de91872caec476933feab8a6d1a6f90019"
+  },
+  "apps.notConnected.reconnect": {
+    "en": "Reconnect",
+    "zh-CN": "重新连接",
+    "reviewedEnglishHash": "bf8a9eab9e7e141bfb81f0ca9244a5f68f476ed0b57f03538410417298169d18"
+  },
+  "apps.notConnected.reconnectDescription": {
+    "en": "We kept the previous setup. Add a working key to bring it back online.",
+    "zh-CN": "我们保留了之前的设置。添加工作密钥以使其恢复在线状态。",
+    "reviewedEnglishHash": "7b66da17a48d77981b0d006b4f997f37aa3322573e5a405893a0d0eaf502a7df"
+  },
+  "apps.notConnected.reconnectTitle": {
+    "en": "Reconnect this app",
+    "zh-CN": "重新连接此应用",
+    "reviewedEnglishHash": "22120a6bf86e902d04f39f7fef17fa9da9e7eba3168ef7efdf8a8b4129e2295c"
+  },
+  "apps.notConnected.removeError.title": {
+    "en": "Couldn’t remove the app",
+    "zh-CN": "无法删除该应用",
+    "reviewedEnglishHash": "b86ff30424b8394d96bf078435bbff64404a6c37decb38aab9ed6601db26842a"
+  },
+  "apps.notConnected.removedToast.body": {
+    "en": "{{appName}} no longer shows in your apps. You can connect it again any time.",
+    "zh-CN": "{{appName}} 不再显示在您的应用中。您可以随时重新连接。",
+    "reviewedEnglishHash": "7b5d54ed1ce003d2e922f4276bcf819af9c01ac608d60ee70a18dfd0b0488605"
+  },
+  "apps.notConnected.removedToast.title": {
+    "en": "App removed",
+    "zh-CN": "应用已删除",
+    "reviewedEnglishHash": "5fb1ac8f44bf85308f79f06e1685ce6eca3672994164975fe6358c546df9ea25"
+  },
+  "apps.notConnected.reviewAfterConnect": {
+    "en": "Review requests will appear here after this app is connected.",
+    "zh-CN": "连接此应用后，审核请求将出现在此处。",
+    "reviewedEnglishHash": "3d605b08a1d5b59ecfdb74ec5be8d1d79a506adb1c7cfa3a53c0836fa7306e27"
+  },
+  "apps.notConnected.selectCompany": {
+    "en": "Select a company to manage apps.",
+    "zh-CN": "选择一家公司来管理应用。",
+    "reviewedEnglishHash": "ddff6fdb2d072b58451ddaef71adcc66dd6b917164533a46d3ce1c878cd283c7"
+  },
+  "apps.notConnected.status.connected": {
+    "en": "Connected",
+    "zh-CN": "已连接",
+    "reviewedEnglishHash": "22965568d22a14ee17af055d2870b50afcfe9fd94a83eec3196e266932297bb2"
+  },
+  "apps.notConnected.status.needsAttention": {
+    "en": "Needs attention",
+    "zh-CN": "需要处理",
+    "reviewedEnglishHash": "c1ebc7817870e5be78fceae559ba5fcac2b68d5c5498d8080298004f3f79d62d"
+  },
+  "apps.notConnected.status.paused": {
+    "en": "Paused",
+    "zh-CN": "已暂停",
+    "reviewedEnglishHash": "e159b06187d369a0615f66ce577582b5c983d4ea59b3a62b702049f61753f0bf"
+  },
+  "apps.notConnected.testBody": {
+    "en": "Testing becomes available after this app is connected again.",
+    "zh-CN": "再次连接此应用后即可进行测试。",
+    "reviewedEnglishHash": "e9d1a2f746e7c6efaf5019476ee82392a2b64e4ee9074fc45a3a3577960cd829"
+  },
+  "apps.notConnected.testTitle": {
+    "en": "Reconnect to test this app.",
+    "zh-CN": "重新连接以测试此应用。",
+    "reviewedEnglishHash": "84531abfd7b86ff4bac8e10f7d511425be3a8f132d00f1c84cdbe97ea7d046bc"
+  },
+  "apps.review.actionExplanation": {
+    "en": "An agent wants to run this action. It can change something, so we’re checking with you first.",
+    "zh-CN": "智能体想运行这个操作。它会更改内容，所以我们先向你确认。",
+    "reviewedEnglishHash": "7dff89b5019b6e8233b46da503a633dd1e54f35eeab14780525b55c63ec15fb9"
+  },
+  "apps.review.allowOnce": {
+    "en": "Allow once",
+    "zh-CN": "允许一次",
+    "reviewedEnglishHash": "168511d24d9ee03122b3200f929be11eaaedad45cb0ecb20a95f549b3e3f4d0f"
+  },
+  "apps.review.allowedOnce": {
+    "en": "Allowed once",
+    "zh-CN": "仅允许一次",
+    "reviewedEnglishHash": "c9b7022361744c24049bbcf48872753fa5de737dc62361e390ca0ba940bbea00"
+  },
+  "apps.review.allowedOnceBody": {
+    "en": "{{action}} can run this time.",
+    "zh-CN": "{{action}} 这一次可以运行。",
+    "reviewedEnglishHash": "6f81860edc9988bf25e5fbf9e124d5512ad60393f844ec55310bea62f16308de"
+  },
+  "apps.review.alwaysAllow": {
+    "en": "Always allow",
+    "zh-CN": "始终允许",
+    "reviewedEnglishHash": "977618bd8bc7eef4d3bada0cf1a791d8362cd5fd8680e9673566abab2e76dded"
+  },
+  "apps.review.alwaysAllowed": {
+    "en": "Always allowed",
+    "zh-CN": "始终允许",
+    "reviewedEnglishHash": "94387772bc12e3d7a51d8cbe503f9fdea7e74fee165d521fb8bae0803ad22087"
+  },
+  "apps.review.alwaysAllowedBody": {
+    "en": "{{action}} won’t ask again.",
+    "zh-CN": "{{action}} 之后不再询问。",
+    "reviewedEnglishHash": "8ad978afb44801080b26da0ad5c441420ebce018407bbba05a2f5648d97b3fe3"
+  },
+  "apps.review.askedAt": {
+    "en": "asked {{time}}",
+    "zh-CN": "于 {{time}} 发起",
+    "reviewedEnglishHash": "9d74310a592f8a9a69b74af1a512c7ea7789d7be460c10ab6d17c0c70ffbfc84"
+  },
+  "apps.review.decline": {
+    "en": "Decline",
+    "zh-CN": "拒绝",
+    "reviewedEnglishHash": "a2d285b352873457207a34a015267524bb4613c3e8c961c8998da4e08e0d5745"
+  },
+  "apps.review.declined": {
+    "en": "Declined",
+    "zh-CN": "已拒绝",
+    "reviewedEnglishHash": "dce083a2c47ffdc44982315487afb6e121e96cef2df6dc1ec11bac7ab5052142"
+  },
+  "apps.review.declinedBody": {
+    "en": "{{action}} won’t run.",
+    "zh-CN": "{{action}} 不会运行。",
+    "reviewedEnglishHash": "ccd2dd4507410483eec77330a9b2f1e7c3c915e03a0c4f67d24a74ecd50b3845"
+  },
+  "apps.review.description": {
+    "en": "Actions your agents want to run that need your OK first. Approve, always-allow, or decline.",
+    "zh-CN": "智能体想运行的操作，需要你先批准。你可以选择批准、始终允许或拒绝。",
+    "reviewedEnglishHash": "0337302930af42c20e76e1a3a4db10df9e11c1fc9e6a3d6c5079369eb8c564ba"
+  },
+  "apps.review.empty": {
+    "en": "Nothing is waiting for your OK right now.",
+    "zh-CN": "目前没有任何待你批准的事项。",
+    "reviewedEnglishHash": "635a902962e2e0e741a21936c4f70bf7ea53759799d1aaaa6b289bbe2921793a"
+  },
+  "apps.review.inApp": {
+    "en": "in {{appName}}",
+    "zh-CN": "在 {{appName}} 中",
+    "reviewedEnglishHash": "629fb80b4fa15eaba67e23353226bb040743fc0ef163290107f0fd4b90ef2225"
+  },
+  "apps.review.saveError": {
+    "en": "Couldn’t save that",
+    "zh-CN": "无法保存",
+    "reviewedEnglishHash": "a735a23cbb70b76202d674348147a08321bfa86c5605b399bf1dedbb9d17ac90"
+  },
+  "apps.review.selectCompany": {
+    "en": "Select a company to review approvals.",
+    "zh-CN": "请选择一个公司来查看审批请求。",
+    "reviewedEnglishHash": "0a065f2a965e2100caddc7af15716cd98760cc047dfa4cc1634324833e77f44c"
+  },
+  "apps.review.thisAction": {
+    "en": "This action",
+    "zh-CN": "此操作",
+    "reviewedEnglishHash": "0df9a15574c48ec4fd867af30d2afcc9eb236e834f3e928896749d32c78a8fdf"
+  },
+  "apps.review.waitingForApproval": {
+    "en": "Waiting for your OK",
+    "zh-CN": "等待你的批准",
+    "reviewedEnglishHash": "2c9582b95b21f615944c7b54897aba42817c15071f24602d4f6f4e0dcd8dace4"
+  },
+  "apps.setup.id": {
+    "en": "ID:",
+    "zh-CN": "ID：",
+    "reviewedEnglishHash": "3ea36adcd1e02c949cbeb946eb4a12b10ae4c0b31ffc9f29ebb2e9f62d5b0e0c"
+  },
+  "apps.setup.newCount": {
+    "en": "new",
+    "zh-CN": "项新增",
+    "reviewedEnglishHash": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437"
+  },
+  "apps.setup.toReview": {
+    "en": "to review",
+    "zh-CN": "项待审核",
+    "reviewedEnglishHash": "07024d0685c57fd566f43bef5592efb19b97551db1e031ed806cbc2eb307edd0"
+  },
+  "apps.sidebar.allApps": {
+    "en": "All apps",
+    "zh-CN": "全部应用",
+    "reviewedEnglishHash": "01bed311e7d0c963a5f8afe3dd3c99c8140d887d92c602b94b9309fa51b32723"
+  },
+  "apps.sidebar.browse": {
+    "en": "Browse",
+    "zh-CN": "浏览",
+    "reviewedEnglishHash": "3227aa9666253f7a736509074fb83bc4d47b19582faaa0233f228746de29217a"
+  },
+  "apps.sidebar.connections": {
+    "en": "Connections",
+    "zh-CN": "连接",
+    "reviewedEnglishHash": "dc273117482b4429ada500ecd2e0c75532454194892cb901ca64cc7df369fdf6"
+  },
+  "apps.sidebar.developer": {
+    "en": "Developer",
+    "zh-CN": "开发者",
+    "reviewedEnglishHash": "3fb7b39416f1d067268747fc214494d759d2609f863ace1a8a76705618d5c80b"
+  },
+  "apps.sidebar.developerDescription": {
+    "en": "Advanced setup for developers. Most teams never open this.",
+    "zh-CN": "面向开发者的高级设置。大多数团队都不会用到。",
+    "reviewedEnglishHash": "c01c9805526801b488654fbba402ccb92ac50d4cba22774b27f74048038bdfcd"
+  },
+  "apps.sidebar.needingReview": {
+    "en": "needing review",
+    "zh-CN": "需审阅",
+    "reviewedEnglishHash": "9f71070c1a5a8ffecff51392ac796ba44f23b9b226e72ff72c71634552440b5d"
+  },
+  "apps.sidebar.review": {
+    "en": "Review",
+    "zh-CN": "审阅",
+    "reviewedEnglishHash": "aff0766a5290e117b8433c351bae7b7b23bed682b2369bd822d88a647cc58512"
+  },
+  "apps.sidebar.waitingForApproval": {
+    "en": "waiting for your OK",
+    "zh-CN": "待批准",
+    "reviewedEnglishHash": "ee8bba46e5333c77840b9fbb8e3e5f1232d7f60a1b0a285e2f844895d05cf63b"
+  },
+  "apps.smokeLab.lastRun": {
+    "en": "Last run {{time}}",
+    "zh-CN": "上次运行 {{time}}",
+    "reviewedEnglishHash": "7f4e18b4587d2afda0b830c256c7e56da117154b0e9437bb72e556a84a6b7c30"
+  },
+  "apps.smokeLab.runFromTab": {
+    "en": "Run one from the Smoke Lab tab",
+    "zh-CN": "请在 Smoke Lab 选项卡中运行一个。",
+    "reviewedEnglishHash": "0de15b47cc03021e953144de874a4c64f9a77828e35526548c26a48a0dac17dd"
+  },
+  "apps.smokeLab.title": {
+    "en": "Integration smoke",
+    "zh-CN": "集成冒烟测试",
+    "reviewedEnglishHash": "287f380234204487aa0c7f9e506553d040d19846c3c76a6434a1f5e18cecc23e"
+  },
+  "apps.status.notConnected": {
+    "en": "Not connected",
+    "zh-CN": "未连接",
+    "reviewedEnglishHash": "0303e182467081801f8b614862519a3b174c0ae84ff08b70e7d126080c3f4b95"
+  },
+  "apps.testAction.appFeedback": {
+    "en": "What {{app}} said",
+    "zh-CN": "来自 {{app}} 的反馈",
+    "reviewedEnglishHash": "efaea25dff342e1118788964c5a44e7ae44136d630dbb1c788e717e7b4cafdd5"
+  }
+}

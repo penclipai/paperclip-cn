@@ -1,3 +1,4 @@
+import { schemaFieldSection } from "./config-sections";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -211,6 +212,7 @@ function ComboboxField({
 const schemaCache = new Map<string, AdapterConfigSchema | null>();
 const schemaFetchInflight = new Map<string, Promise<AdapterConfigSchema | null>>();
 const failedSchemaTypes = new Set<string>();
+const schemaGenerations = new Map<string, number>();
 
 async function fetchConfigSchema(adapterType: string): Promise<AdapterConfigSchema | null> {
   const cached = schemaCache.get(adapterType);
@@ -220,53 +222,101 @@ async function fetchConfigSchema(adapterType: string): Promise<AdapterConfigSche
   const inflight = schemaFetchInflight.get(adapterType);
   if (inflight) return inflight;
 
+  const generation = schemaGenerations.get(adapterType) ?? 0;
   const promise = (async () => {
     try {
       const res = await fetch(`/api/adapters/${encodeURIComponent(adapterType)}/config-schema`);
+      if ((schemaGenerations.get(adapterType) ?? 0) !== generation)
+        return fetchConfigSchema(adapterType);
       if (!res.ok) {
         failedSchemaTypes.add(adapterType);
         return null;
       }
       const schema = (await res.json()) as AdapterConfigSchema;
+      if ((schemaGenerations.get(adapterType) ?? 0) !== generation)
+        return fetchConfigSchema(adapterType);
       schemaCache.set(adapterType, schema);
       return schema;
     } catch {
+      if ((schemaGenerations.get(adapterType) ?? 0) !== generation)
+        return fetchConfigSchema(adapterType);
       failedSchemaTypes.add(adapterType);
       return null;
-    } finally {
-      schemaFetchInflight.delete(adapterType);
     }
   })();
 
   schemaFetchInflight.set(adapterType, promise);
+  void promise.finally(() => {
+    if (schemaFetchInflight.get(adapterType) === promise)
+      schemaFetchInflight.delete(adapterType);
+  });
   return promise;
 }
 
 export function invalidateConfigSchemaCache(adapterType: string): void {
   schemaCache.delete(adapterType);
   failedSchemaTypes.delete(adapterType);
+  schemaFetchInflight.delete(adapterType);
+  schemaGenerations.set(adapterType, (schemaGenerations.get(adapterType) ?? 0) + 1);
 }
 
 // ---------------------------------------------------------------------------
 // Hook
 // ---------------------------------------------------------------------------
 
-function useConfigSchema(adapterType: string): AdapterConfigSchema | null {
-  const [schema, setSchema] = useState<AdapterConfigSchema | null>(
-    schemaCache.get(adapterType) ?? null,
-  );
+function cachedSchemaState(adapterType: string, enabled: boolean): {
+  schema: AdapterConfigSchema | null;
+  loading: boolean;
+} {
+  if (!enabled) return { schema: null, loading: false };
+  if (schemaCache.has(adapterType))
+    return { schema: schemaCache.get(adapterType) ?? null, loading: false };
+  if (failedSchemaTypes.has(adapterType)) return { schema: null, loading: false };
+  return { schema: null, loading: true };
+}
+
+export function useConfigSchemaState(adapterType: string, enabled = true): {
+  schema: AdapterConfigSchema | null;
+  loading: boolean;
+} {
+  const generation = schemaGenerations.get(adapterType) ?? 0;
+  const [loaded, setLoaded] = useState<{
+    adapterType: string;
+    enabled: boolean;
+    generation: number;
+    schema: AdapterConfigSchema | null;
+    loading: boolean;
+  }>(() => ({
+    adapterType,
+    enabled,
+    generation,
+    ...cachedSchemaState(adapterType, enabled),
+  }));
 
   useEffect(() => {
     let cancelled = false;
-    fetchConfigSchema(adapterType).then((s) => {
-      if (!cancelled) setSchema(s);
+    const cached = cachedSchemaState(adapterType, enabled);
+    setLoaded({ adapterType, enabled, generation, ...cached });
+    if (!enabled) return () => { cancelled = true; };
+    fetchConfigSchema(adapterType).then((schema) => {
+      if (!cancelled)
+        setLoaded({ adapterType, enabled, generation, schema, loading: false });
     });
     return () => {
       cancelled = true;
     };
-  }, [adapterType]);
+  }, [adapterType, enabled, generation]);
 
-  return schema;
+  if (
+    loaded.adapterType === adapterType &&
+    loaded.enabled === enabled &&
+    loaded.generation === generation
+  ) return { schema: loaded.schema, loading: loaded.loading };
+  return cachedSchemaState(adapterType, enabled);
+}
+
+export function useConfigSchema(adapterType: string, enabled = true): AdapterConfigSchema | null {
+  return useConfigSchemaState(adapterType, enabled).schema;
 }
 
 // ---------------------------------------------------------------------------
@@ -325,6 +375,8 @@ export function fieldMatchesVisibleWhen(
 // ---------------------------------------------------------------------------
 
 export function SchemaConfigFields({
+  section,
+  hideModel,
   adapterType,
   isCreate,
   values,
@@ -362,9 +414,15 @@ export function SchemaConfigFields({
     [t],
   );
 
-  const [defaultsApplied, setDefaultsApplied] = useState(false);
+  const defaultsApplied = useRef({ adapterType, applied: false });
   useEffect(() => {
-    if (!schema || !isCreate || defaultsApplied) return;
+    // Reset on the selection change even while the next schema is loading.
+    // A -> B -> A must initialize A again after the form clears its values.
+    if (defaultsApplied.current.adapterType !== adapterType) {
+      defaultsApplied.current = { adapterType, applied: false };
+    }
+    if (!schema || !isCreate || defaultsApplied.current.applied || (section && section !== "configuration")) return;
+    defaultsApplied.current.applied = true;
     const defaults: Record<string, unknown> = {};
     for (const field of schema.fields) {
       const def = getDefaultValue(field);
@@ -374,11 +432,10 @@ export function SchemaConfigFields({
     }
     if (Object.keys(defaults).length > 0) {
       set?.({
-        adapterSchemaValues: { ...values?.adapterSchemaValues, ...defaults },
+        adapterSchemaValues: { ...defaults, ...values?.adapterSchemaValues },
       });
     }
-    setDefaultsApplied(true);
-  }, [schema, isCreate, defaultsApplied, set, values?.adapterSchemaValues]);
+  }, [schema, adapterType, isCreate, set, values?.adapterSchemaValues, section]);
 
   if (!schema || schema.fields.length === 0) return null;
 
@@ -434,6 +491,9 @@ export function SchemaConfigFields({
   return (
     <>
       {schema.fields
+        .filter((field) => !hideModel || field.key !== "model")
+        .filter((field) => !section || schemaFieldSection(field.key) === section)
+        .filter((field) => !(field.type === "select" && /permissionMode/i.test(field.key) && (field.options?.length ?? 0) <= 1))
         .filter((field) => fieldMatchesVisibleWhen(field, readValue, schema))
         .map((field) => {
           switch (field.type) {

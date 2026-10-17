@@ -1,0 +1,72 @@
+{
+  "productivityReview.badgeAria": {
+    "en": "Under review - productivity review {{identifier}} ({{label}})",
+    "zh-CN": "审查中 - 效率审查 {{identifier}}（{{label}}）",
+    "reviewedEnglishHash": "a54faf4fd2c582ae624e8063d268481eb7be73835062037b9ac9fcb4f6337975"
+  },
+  "productivityReview.currentIssueTitle": {
+    "en": "This task is a productivity review.",
+    "zh-CN": "这是一个效率审查任务。",
+    "reviewedEnglishHash": "444ce5483174334bde18b8c7a0ba9d53585ee4c2220f7edd24ab6f63cd2eefde"
+  },
+  "productivityReview.label": {
+    "en": "Productivity review",
+    "zh-CN": "效率审查",
+    "reviewedEnglishHash": "ea7d21e2add2f9969936ce7ec11cb0c07b245812166ac4a7033a85683c94ad7a"
+  },
+  "productivityReview.noCommentStreakLabel": {
+    "en": "No-comment streak:",
+    "zh-CN": "连续无评论：",
+    "reviewedEnglishHash": "68d482cba86fc3a759d13cfeb110c532080d46ff7faf1b295a13bd34a28a0ed3"
+  },
+  "productivityReview.openTitle": {
+    "en": "Productivity review open",
+    "zh-CN": "效率审查已开启",
+    "reviewedEnglishHash": "bb97ffdc2dc1ae684bc5436b9354fe1c26a91a17a4be4a6bdca2404a079a6d6d"
+  },
+  "productivityReview.reviewLabel": {
+    "en": "Review:",
+    "zh-CN": "审查任务：",
+    "reviewedEnglishHash": "d686a57db549ccd983b2cd5b97de5adbc3d9663644e121f05824aa67ebe85b3a"
+  },
+  "productivityReview.rowTitle": {
+    "en": "Productivity review: {{label}}",
+    "zh-CN": "效率审查：{{label}}",
+    "reviewedEnglishHash": "e90aa0825eecd29bdc3aaa9bf7cdce468306f76a8be8e1375ef570af867f6813"
+  },
+  "productivityReview.runCount": {
+    "en": "{{count}} runs",
+    "zh-CN": "{{count}} 次运行",
+    "reviewedEnglishHash": "8b3ce3003800f93b313030b8d36119a6d6649d37d4cbf2eeafdaf270f5d6dc3e"
+  },
+  "productivityReview.status.open": {
+    "en": "Open",
+    "zh-CN": "待处理",
+    "reviewedEnglishHash": "ed077f3d8125d60dca1979c7133601bd187d47c73ed9975028f677e49e709942"
+  },
+  "productivityReview.trigger.highChurn": {
+    "en": "High churn",
+    "zh-CN": "高频变更",
+    "reviewedEnglishHash": "9c18046f0732526b6aee39a316d9d9ade18abb3f9019aec1be19a4321f3974ac"
+  },
+  "productivityReview.trigger.longActiveDuration": {
+    "en": "Long active duration",
+    "zh-CN": "长时间活跃",
+    "reviewedEnglishHash": "1d8f1890edbf7d9e3c7e3ec6801818ab6353a4a56ded536658debd8e335d5e45"
+  },
+  "productivityReview.trigger.noCommentStreak": {
+    "en": "No-comment streak",
+    "zh-CN": "连续无评论",
+    "reviewedEnglishHash": "f52f1cdd5b452b631f5501c4967557c1d1c2cc147eff26feb8b55e0371c51889"
+  },
+  "productivityReview.triggerLabel": {
+    "en": "Trigger:",
+    "zh-CN": "触发原因：",
+    "reviewedEnglishHash": "ad478f8e5337193f4646d7aa936c02676db164027977476df0540121e98cd1d5"
+  },
+  "productivityReview.underReview": {
+    "en": "Under review",
+    "zh-CN": "审查中",
+    "reviewedEnglishHash": "9e8a3b648cf757885af77a7982ed6201e59ba5f76e8ff062f79a38b2ff4a9ecd"
+  }
+}

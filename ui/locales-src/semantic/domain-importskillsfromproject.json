@@ -1,0 +1,342 @@
+{
+  "importSkillsFromProject.back": {
+    "en": "Back",
+    "zh-CN": "返回",
+    "reviewedEnglishHash": "76900f1bfd16c8d4dd3d25e6f46638d7165aee23883ccea6bfe071c514421769"
+  },
+  "importSkillsFromProject.cancel": {
+    "en": "Cancel",
+    "zh-CN": "取消",
+    "reviewedEnglishHash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+  },
+  "importSkillsFromProject.closeAria": {
+    "en": "Close import dialog",
+    "zh-CN": "关闭导入对话框",
+    "reviewedEnglishHash": "0dbadc41afe7ec1a5793a7e9c56e0b2e0e5733ac402e3aa10518da22f1335881"
+  },
+  "importSkillsFromProject.description": {
+    "en": "Pick a project, scan its workspaces for skills, and import them as references.",
+    "zh-CN": "选择一个项目，扫描其工作区中的技能，并将其作为引用导入。",
+    "reviewedEnglishHash": "ca4ed80b1ad6078f3da36670ae423e5c3cf1499a6acc97ecf2863b48cfaa11c6"
+  },
+  "importSkillsFromProject.deselectAll": {
+    "en": "Deselect all",
+    "zh-CN": "取消全选",
+    "reviewedEnglishHash": "967549497036d51303efbdc904bb5e5654551058d0854be757b36280abd3ec8b"
+  },
+  "importSkillsFromProject.done": {
+    "en": "Done",
+    "zh-CN": "完成",
+    "reviewedEnglishHash": "11a6767d5674c7e45f7e00dc525762275b3a48491ad6045427d2609cc496c516"
+  },
+  "importSkillsFromProject.filesStayInProject": {
+    "en": "Files stay in the project — Studio edits save directly to them.",
+    "zh-CN": "文件保留在项目中；在技能工作室中的编辑会直接保存到这些文件。",
+    "reviewedEnglishHash": "43a69b6356598fae197fd656076d405398419478f2daecc5c37b13e7febe6dcb"
+  },
+  "importSkillsFromProject.filterProjects": {
+    "en": "Filter projects",
+    "zh-CN": "筛选项目",
+    "reviewedEnglishHash": "8fd82c567aa71d52b23e758ff77cc74434cec4188ffa74f48798d416867abfd5"
+  },
+  "importSkillsFromProject.importAs": {
+    "en": "Import as",
+    "zh-CN": "导入为",
+    "reviewedEnglishHash": "ab3fa4e6af9d1f40c606f6b4012120e905d8bd12d1cf2a26aab99acfff8c7659"
+  },
+  "importSkillsFromProject.importFromPath": {
+    "en": "Import from path or URL",
+    "zh-CN": "从路径或 URL 导入",
+    "reviewedEnglishHash": "abed2dfba3bf7b4bc899839f4a06d661dd2f84e682921427c9f095bbf02f84ce"
+  },
+  "importSkillsFromProject.importSelected_one": {
+    "en": "Import {{count}} skill",
+    "zh-CN": "导入 {{count}} 个技能",
+    "reviewedEnglishHash": "515a7d93c05b7a58d03e8f8d4696a86ed7e98d6e89ba145eddb3ccb6e7a6ffc0"
+  },
+  "importSkillsFromProject.importSelected_other": {
+    "en": "Import {{count}} skills",
+    "zh-CN": "导入 {{count}} 个技能",
+    "reviewedEnglishHash": "9fccbc87855b79cb7bb13277942f4ce216f2dd8e8861190444981b403b5e083c"
+  },
+  "importSkillsFromProject.importing": {
+    "en": "Importing…",
+    "zh-CN": "正在导入…",
+    "reviewedEnglishHash": "c01c4324f1fa14fc76957936626e11a5150c24e748dbd08cc46848dfcbe37d00"
+  },
+  "importSkillsFromProject.invalidSlug": {
+    "en": "Use a lowercase URL-safe slug.",
+    "zh-CN": "请使用小写、适用于 URL 的 slug。",
+    "reviewedEnglishHash": "dd6a3d5232c96560c2017d6568b4a4b53fed52cb7f21abaf3ced2ee286a36f2b"
+  },
+  "importSkillsFromProject.loadingProjects": {
+    "en": "Loading projects…",
+    "zh-CN": "正在加载项目…",
+    "reviewedEnglishHash": "6970a1ced73ddb58732934a09089533c17324ce2fb033d6d3d52cbc2748eb152"
+  },
+  "importSkillsFromProject.moreFolders": {
+    "en": "+{{count}} more",
+    "zh-CN": "另外 {{count}} 个",
+    "reviewedEnglishHash": "48380badf7a45c74d3fac6b89d19d777585cb9052d135d1ec482b932bc99e98a"
+  },
+  "importSkillsFromProject.noFilesCopied": {
+    "en": "No files were copied.",
+    "zh-CN": "未复制任何文件。",
+    "reviewedEnglishHash": "7f32af54e7becb64d458d4d90ee2a5dcc8eeef3f831960cdadf2e3ac5ce0a8bb"
+  },
+  "importSkillsFromProject.noMatchingProjects": {
+    "en": "No projects match \"{{filter}}\".",
+    "zh-CN": "没有与“{{filter}}”匹配的项目。",
+    "reviewedEnglishHash": "f259df93d32ec926e929213cb444c241e16a558170ba02b1a88ae2e183d6e495"
+  },
+  "importSkillsFromProject.noMatchingSkills": {
+    "en": "No skills match “{{filter}}”.",
+    "zh-CN": "没有与“{{filter}}”匹配的技能。",
+    "reviewedEnglishHash": "010803c359b0c6ee9aac4d31a6ee8def50fa7db0706015b7c07515ceee9fa44b"
+  },
+  "importSkillsFromProject.noProjectSelected": {
+    "en": "No project selected.",
+    "zh-CN": "未选择项目。",
+    "reviewedEnglishHash": "7f2f1a5898870eef2c0bfa69dd42ece4728e7eea3e2eb90dcc991a2cd697e001"
+  },
+  "importSkillsFromProject.noProjects": {
+    "en": "This company has no projects yet.",
+    "zh-CN": "此公司暂无项目。",
+    "reviewedEnglishHash": "b574ac18b1a1289e14811b0153094e6cb40d3bbb22779c6bed42d67b6e5b082b"
+  },
+  "importSkillsFromProject.noSkillsFound": {
+    "en": "No skills found",
+    "zh-CN": "未找到技能",
+    "reviewedEnglishHash": "52777c2d5f9c50aea1b61516b2fda2b9c65dab68285161925d6ae2a863976e34"
+  },
+  "importSkillsFromProject.noSkillsFoundPrefix": {
+    "en": "None of the well-known skill folders in this project's workspaces contain a",
+    "zh-CN": "此项目各工作区的约定技能目录中均不包含",
+    "reviewedEnglishHash": "7fbdcbc0a1b85aa8c6c6bb54a292b9f7f30bcafe2bcf6d525b73f09e5eaaf17f"
+  },
+  "importSkillsFromProject.noSkillsFoundSearchSummary": {
+    "en": "We searched {{folders}} and {{count}} other agent-harness folders.",
+    "zh-CN": "已搜索 {{folders}} 以及另外 {{count}} 个智能体工具链目录。",
+    "reviewedEnglishHash": "626b095cafea408dcf45760ee48b9133fe20847bf2112c1b8ca8c43861bc24ee"
+  },
+  "importSkillsFromProject.nonStandardFoldersPrefix": {
+    "en": "For skills in non-standard folders, use",
+    "zh-CN": "对于非标准目录中的技能，请使用",
+    "reviewedEnglishHash": "9632a1c8f0dafd3d0548d8368780c77e6ae98139fe1afa78bf855c920f873faa"
+  },
+  "importSkillsFromProject.open": {
+    "en": "Open",
+    "zh-CN": "打开",
+    "reviewedEnglishHash": "ed077f3d8125d60dca1979c7133601bd187d47c73ed9975028f677e49e709942"
+  },
+  "importSkillsFromProject.otherWorkspaces": {
+    "en": "Other Workspaces",
+    "zh-CN": "其他工作区",
+    "reviewedEnglishHash": "1f41d204e6e52207f02252eccd09a22339bad080cc4b9e229f453aa3752c070d"
+  },
+  "importSkillsFromProject.permissionDeniedBody": {
+    "en": "Your account doesn't have permission to add skills to this company. Ask an owner to grant the skills permission, then try again.",
+    "zh-CN": "你的账户没有向此公司添加技能的权限。请联系所有者授予技能权限，然后重试。",
+    "reviewedEnglishHash": "8fb1df2e362af89a6cacbb7d27c2d16ea2e80d03b3c714e8a8aa3cf800751797"
+  },
+  "importSkillsFromProject.permissionDeniedTitle": {
+    "en": "You can't import skills here",
+    "zh-CN": "你无法在此导入技能",
+    "reviewedEnglishHash": "85c13086c92c66fcfcba443f483f78fa09a47e1f466f72115a551bf935b3be0a"
+  },
+  "importSkillsFromProject.projectFallback": {
+    "en": "the project",
+    "zh-CN": "该项目",
+    "reviewedEnglishHash": "059df477b2cb17de69fe3c613c4a8c0fafde2f3678015a9d05041253a5de3c5e"
+  },
+  "importSkillsFromProject.projectFallbackShort": {
+    "en": "project",
+    "zh-CN": "项目",
+    "reviewedEnglishHash": "244210e48437b6556980a70249a99369934a352429034cef9d7bd253b3bf2c01"
+  },
+  "importSkillsFromProject.referenceExplanation": {
+    "en": "These skills reference the files in the project workspace — editing them in Skill Studio saves directly back to those files.",
+    "zh-CN": "这些技能引用项目工作区中的文件；在技能工作室中编辑时会直接保存回这些文件。",
+    "reviewedEnglishHash": "d3ea34725773bef556edcc93022b6b5af4203dc5bc6f39563b8ffb7bf9713ed5"
+  },
+  "importSkillsFromProject.remoteOnlyProject": {
+    "en": "Remote-only project — no locally scannable workspaces to import from.",
+    "zh-CN": "仅远程项目 - 没有可在本地扫描并导入的工作区。",
+    "reviewedEnglishHash": "d2cc84ce0ba5cbcb903a47a8c8a05b14bfe393b6bcca582d4da278e581374f58"
+  },
+  "importSkillsFromProject.renameSkillAria": {
+    "en": "Rename {{name}}",
+    "zh-CN": "重命名 {{name}}",
+    "reviewedEnglishHash": "4862f2751eb06fd31ff36ea19f6b498f791cd3d712b6bfa50efba379f9f65af8"
+  },
+  "importSkillsFromProject.requestFailed": {
+    "en": "Request failed: {{status}}",
+    "zh-CN": "请求失败：{{status}}",
+    "reviewedEnglishHash": "7a7ccdba9ab0a79a9ab4cc0c0a6ba8f04aee434e45e7802a109d0ffba6d9caf5"
+  },
+  "importSkillsFromProject.result.imported": {
+    "en": "{{count}} imported",
+    "zh-CN": "已导入 {{count}} 个",
+    "reviewedEnglishHash": "948ad06bd098e02d1a94ee05632024da86cff6e7345d1131676ab9061479eeb6"
+  },
+  "importSkillsFromProject.result.importedHeader": {
+    "en": "Imported · {{count}}",
+    "zh-CN": "已导入 · {{count}}",
+    "reviewedEnglishHash": "c12af6e44f8ad8350fc5f941bbd1b53461068a0f002a8dbd40819917a1ee7633"
+  },
+  "importSkillsFromProject.result.skipped": {
+    "en": "{{count}} skipped",
+    "zh-CN": "已跳过 {{count}} 个",
+    "reviewedEnglishHash": "dd5b4713afc4f2ff9ab2c4e7bbf30efc05f841eb0731f3051abdd4aa38db7390"
+  },
+  "importSkillsFromProject.result.skippedHeader": {
+    "en": "Skipped · {{count}}",
+    "zh-CN": "已跳过 · {{count}}",
+    "reviewedEnglishHash": "870ef62cc3ed18259f57cc1ebb432b1021863c189143583546fbd813f71f5deb"
+  },
+  "importSkillsFromProject.result.updated": {
+    "en": "{{count}} updated",
+    "zh-CN": "已更新 {{count}} 个",
+    "reviewedEnglishHash": "e120226816b43467a4bd29431743a48cac09fdd5ec7cae1f572a64b2bdbbf06f"
+  },
+  "importSkillsFromProject.result.warningsHeader": {
+    "en": "Warnings · {{count}}",
+    "zh-CN": "警告 · {{count}}",
+    "reviewedEnglishHash": "b35731ae7769fa9f740b7146ffb7f9570eccdfec0bec3e7c6f9084e85d11edaa"
+  },
+  "importSkillsFromProject.scanFailed": {
+    "en": "Scan failed",
+    "zh-CN": "扫描失败",
+    "reviewedEnglishHash": "4a490e4bdcc95463a12f2996b9b8e7f9cc73fa5386be39990a4fa07eb9403305"
+  },
+  "importSkillsFromProject.scannableCount": {
+    "en": "{{count}} scannable",
+    "zh-CN": "{{count}} 个可扫描",
+    "reviewedEnglishHash": "eb71a8970b037b733948f9b9de37c59659c599142080107aed715b5432140061"
+  },
+  "importSkillsFromProject.scanningDescription": {
+    "en": "Looking in well-known skill folders across each workspace.",
+    "zh-CN": "正在检查各工作区中约定的技能目录。",
+    "reviewedEnglishHash": "d15a3bde00aebcb712ff97fbd9598214fdd0be7c514a75061bed6abe439d6165"
+  },
+  "importSkillsFromProject.scanningProject": {
+    "en": "Scanning {{project}} for skills…",
+    "zh-CN": "正在扫描 {{project}} 中的技能…",
+    "reviewedEnglishHash": "7679b67f1dcfada610dc389c1a1299e6e4c68b88adf5d0f0ba3b3bed43208226"
+  },
+  "importSkillsFromProject.searchSkills": {
+    "en": "Search discovered skills…",
+    "zh-CN": "搜索已发现的技能…",
+    "reviewedEnglishHash": "f2e858d5bfed81104a77ee783151b52be82433c0cd19307d8d3dfad62dd0fc92"
+  },
+  "importSkillsFromProject.searchSkillsAria": {
+    "en": "Search discovered skills",
+    "zh-CN": "搜索已发现的技能",
+    "reviewedEnglishHash": "5777aeadd74cac19007ad9b6f5496197ed41c56b35355858d7caad3d500516fd"
+  },
+  "importSkillsFromProject.selectAll": {
+    "en": "Select all",
+    "zh-CN": "全选",
+    "reviewedEnglishHash": "1fc9a387654d410febd202b81bddbe62d38368260b69b9f73ee6630164536bdf"
+  },
+  "importSkillsFromProject.selectSkillAria": {
+    "en": "Select {{name}}",
+    "zh-CN": "选择 {{name}}",
+    "reviewedEnglishHash": "04d3c4b2571894ecd22cd7101bf513f57c7342f47a991fcac689fb94bc61393f"
+  },
+  "importSkillsFromProject.status.conflict": {
+    "en": "Conflict",
+    "zh-CN": "冲突",
+    "reviewedEnglishHash": "014659ab9d98c8fea5fed2a5a3bc3c41d6478904a9184c65a57769c439940d14"
+  },
+  "importSkillsFromProject.status.imported": {
+    "en": "Imported",
+    "zh-CN": "已导入",
+    "reviewedEnglishHash": "321f179c80ba93ea58db0c591591c517d2e86d83420855aeb271dcef81614616"
+  },
+  "importSkillsFromProject.status.new": {
+    "en": "New",
+    "zh-CN": "新增",
+    "reviewedEnglishHash": "18fdd549b2ed367ac0c74cbec1214644728515b30edbcb78e7d322757a7c8359"
+  },
+  "importSkillsFromProject.status.skipped": {
+    "en": "Skipped",
+    "zh-CN": "已跳过",
+    "reviewedEnglishHash": "12698ce1ea5cd4ab13ff4b7e6b1239908c41a4b2dfa0c2661cfb53fc2aa71bd0"
+  },
+  "importSkillsFromProject.title": {
+    "en": "Import skills from project",
+    "zh-CN": "从项目导入技能",
+    "reviewedEnglishHash": "364c89b0f1b44de1f2463c4bd18770a2c102527c9b9681a131e59ea7286d3b54"
+  },
+  "importSkillsFromProject.toast.failedTitle": {
+    "en": "Import failed",
+    "zh-CN": "导入失败",
+    "reviewedEnglishHash": "0a26f41abd00f95e7009b406e82083295f837ac1bc76e2acc1f7d66b3539c18e"
+  },
+  "importSkillsFromProject.toast.importedBody_one": {
+    "en": "{{count}} skill imported as a reference from {{project}}.",
+    "zh-CN": "已从 {{project}} 导入 {{count}} 个技能引用。",
+    "reviewedEnglishHash": "1fd9352b5ec9665fe2f38a83b8ae7375bf7d17fd960551445714ad47b0bcaa32"
+  },
+  "importSkillsFromProject.toast.importedBody_other": {
+    "en": "{{count}} skills imported as references from {{project}}.",
+    "zh-CN": "已从 {{project}} 导入 {{count}} 个技能引用。",
+    "reviewedEnglishHash": "3e2622f04fe1f627b22fdc32dd79660dde08c895a5c1fcba8bd18d96814072df"
+  },
+  "importSkillsFromProject.toast.importedTitle": {
+    "en": "Skills imported",
+    "zh-CN": "技能已导入",
+    "reviewedEnglishHash": "9894287afa0ffe795501d5f4c1e4f36cc525487b66e011c31a24fef473970468"
+  },
+  "importSkillsFromProject.toast.nothingImportedBody": {
+    "en": "No skills were imported.",
+    "zh-CN": "未导入任何技能。",
+    "reviewedEnglishHash": "95e167a3e83ccd9d042e045c00e98a2194df35869ab090b30f727c2a8569b21e"
+  },
+  "importSkillsFromProject.toast.nothingImportedTitle": {
+    "en": "Nothing imported",
+    "zh-CN": "未导入任何技能",
+    "reviewedEnglishHash": "dfdcdf9f27c0f2e656ea23d1d31ce99cb3ed5ac630cc01b7218298608a199b66"
+  },
+  "importSkillsFromProject.tryAgain": {
+    "en": "Try again",
+    "zh-CN": "重试",
+    "reviewedEnglishHash": "d8b8392e2c542950ca64867168e4ef87d4ad606882d5898f826b51c6d553988f"
+  },
+  "importSkillsFromProject.unexpectedError": {
+    "en": "Unexpected error",
+    "zh-CN": "意外错误",
+    "reviewedEnglishHash": "d24c41ae530aa23cf3859982199700454c99b66747770438e0f76f449b5fb3bd"
+  },
+  "importSkillsFromProject.workspaceCount_one": {
+    "en": "{{count}} workspace",
+    "zh-CN": "{{count}} 个工作区",
+    "reviewedEnglishHash": "833d65c49704a55c647d9984791d69d88adc0547fecb24df4000662f84414584"
+  },
+  "importSkillsFromProject.workspaceCount_other": {
+    "en": "{{count}} workspaces",
+    "zh-CN": "{{count}} 个工作区",
+    "reviewedEnglishHash": "a085bc0d6b469dcd9c277d54844758f7f73b59bd1264106f37156e5119e41f91"
+  },
+  "importSkillsFromProject.workspaceKind.folder": {
+    "en": "folder",
+    "zh-CN": "文件夹",
+    "reviewedEnglishHash": "034a0062488256f14c8b14d025ec3988b148938f7f9db94ca0ac73f4b3614d8a"
+  },
+  "importSkillsFromProject.workspaceKind.git": {
+    "en": "git",
+    "zh-CN": "Git",
+    "reviewedEnglishHash": "9a881b9b9f23849475296a8cd768ea1965bc3152df7118e60c145975af6aa58a"
+  },
+  "importSkillsFromProject.workspaceKind.local": {
+    "en": "local",
+    "zh-CN": "本地",
+    "reviewedEnglishHash": "25bf8e1a2393f1108d37029b3df5593236c755742ec93465bbafa9b290bddcf6"
+  },
+  "importSkillsFromProject.workspaceKind.remote": {
+    "en": "remote",
+    "zh-CN": "远程",
+    "reviewedEnglishHash": "b71199ebd070b36beab7317920c2c2f1d777df8d05e5527d8458fda57cb17a7a"
+  }
+}

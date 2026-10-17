@@ -1,6 +1,8 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
+import { AgentAvatar } from "@/components/AgentAvatar";
 import { useState } from "react";
 import type { Agent } from "@penclipai/shared";
-import { useTranslation } from "react-i18next";
 import {
   Popover,
   PopoverContent,
@@ -8,9 +10,7 @@ import {
 } from "@/components/ui/popover";
 import { User } from "lucide-react";
 import { cn } from "../lib/utils";
-import { translateRoleLabel } from "./agent-config-primitives";
-import { AgentIcon } from "./AgentIconPicker";
-import { displaySeededName } from "../lib/seeded-display";
+import { getRoleLabels } from "./agent-config-primitives";
 
 export function ReportsToPicker({
   agents,
@@ -18,8 +18,8 @@ export function ReportsToPicker({
   onChange,
   disabled = false,
   excludeAgentIds = [],
-  disabledEmptyLabel,
-  chooseLabel,
+  disabledEmptyLabel = "Reports to: N/A (CEO)",
+  chooseLabel = "Reports to...",
 }: {
   agents: Agent[];
   value: string | null;
@@ -29,7 +29,8 @@ export function ReportsToPicker({
   disabledEmptyLabel?: string;
   chooseLabel?: string;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
+  const roleLabels = getRoleLabels();
   const [open, setOpen] = useState(false);
   const exclude = new Set(excludeAgentIds);
   const rows = agents.filter(
@@ -38,17 +39,6 @@ export function ReportsToPicker({
   const current = value ? agents.find((a) => a.id === value) : null;
   const terminatedManager = current?.status === "terminated";
   const unknownManager = Boolean(value && !current);
-  const resolvedDisabledEmptyLabel =
-    disabledEmptyLabel ??
-    t("Reports to: N/A (CEO)", {
-      defaultValue: "Reports to: N/A (CEO)",
-    });
-  const resolvedChooseLabel =
-    chooseLabel ??
-    t("Reports to...", {
-      defaultValue: "Reports to...",
-    });
-  const currentName = current ? displaySeededName(current.name) : null;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -65,37 +55,25 @@ export function ReportsToPicker({
           {unknownManager ? (
             <>
               <User className="h-3 w-3 shrink-0 text-muted-foreground" />
-              <span className="min-w-0 truncate text-muted-foreground">
-                {t("Unknown manager (stale ID)", {
-                  defaultValue: "Unknown manager (stale ID)",
-                })}
-              </span>
+              <span className="min-w-0 truncate text-muted-foreground">{translateInstant("Unknown manager (stale ID)")}</span>
             </>
           ) : current ? (
             <>
-              <AgentIcon icon={current.icon} className="h-3 w-3 shrink-0 text-muted-foreground" />
+              <AgentAvatar agent={current} size={16} className="h-3 w-3 shrink-0 text-muted-foreground"/>
               <span
                 className={cn(
                   "min-w-0 truncate",
                   terminatedManager && "text-amber-900 dark:text-amber-200",
                 )}
               >
-                {terminatedManager
-                  ? t("Reports to {{name}} (terminated)", {
-                      defaultValue: "Reports to {{name}} (terminated)",
-                      name: currentName,
-                    })
-                  : t("Reports to {{name}}", {
-                      defaultValue: "Reports to {{name}}",
-                      name: currentName,
-                    })}
+                {`Reports to ${current.name}${terminatedManager ? " (terminated)" : ""}`}
               </span>
             </>
           ) : (
             <>
               <User className="h-3 w-3 shrink-0 text-muted-foreground" />
               <span className="min-w-0 truncate">
-                {disabled ? resolvedDisabledEmptyLabel : resolvedChooseLabel}
+                {disabled ? disabledEmptyLabel : chooseLabel}
               </span>
             </>
           )}
@@ -113,28 +91,17 @@ export function ReportsToPicker({
             setOpen(false);
           }}
         >
-          {t("No manager", {
-            defaultValue: "No manager",
-          })}
-        </button>
+          {translateInstant("No manager")}</button>
         {terminatedManager && (
           <div className="flex min-w-0 items-center gap-2 overflow-hidden px-2 py-1.5 text-xs text-muted-foreground border-b border-border mb-0.5">
-            <AgentIcon icon={current.icon} className="shrink-0 h-3 w-3" />
+            <AgentAvatar agent={current} size={16} className="shrink-0 h-3 w-3"/>
             <span className="min-w-0 truncate">
-              {t("Current: {{name}} (terminated)", {
-                defaultValue: "Current: {{name}} (terminated)",
-                name: currentName,
-              })}
-            </span>
+              {translateInstant("issueWorkspace.current")}{" "}{current.name} {translateInstant("(terminated)")}</span>
           </div>
         )}
         {unknownManager && (
           <div className="px-2 py-1.5 text-xs text-muted-foreground border-b border-border mb-0.5">
-            {t("Saved manager is missing from this company. Choose a new manager or clear.", {
-              defaultValue:
-                "Saved manager is missing from this company. Choose a new manager or clear.",
-            })}
-          </div>
+            {translateInstant("Saved manager is missing from this organization. Choose a new manager or clear.")}</div>
         )}
         {rows.map((a) => (
           <button
@@ -149,9 +116,9 @@ export function ReportsToPicker({
               setOpen(false);
             }}
           >
-            <AgentIcon icon={a.icon} className="shrink-0 h-3 w-3 text-muted-foreground" />
-            <span className="min-w-0 truncate">{displaySeededName(a.name)}</span>
-            <span className="text-muted-foreground ml-auto shrink-0">{translateRoleLabel(t, a.role)}</span>
+            <AgentAvatar agent={a} size={16} className="shrink-0 h-3 w-3 text-muted-foreground"/>
+            <span className="min-w-0 truncate">{a.name}</span>
+            <span className="text-muted-foreground ml-auto shrink-0">{roleLabels[a.role] ?? a.role}</span>
           </button>
         ))}
       </PopoverContent>

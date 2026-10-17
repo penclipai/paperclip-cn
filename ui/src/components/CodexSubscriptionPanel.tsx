@@ -1,3 +1,6 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
+import { quotaUnavailableMessage } from "@/lib/quota-refresh";
 import type { QuotaWindow } from "@penclipai/shared";
 import { cn, quotaSourceDisplayName } from "@/lib/utils";
 
@@ -57,6 +60,7 @@ export function CodexSubscriptionPanel({
   source = null,
   error = null,
 }: CodexSubscriptionPanelProps) {
+  useTranslation();
   const ordered = orderedWindows(windows);
   const accountWindows = ordered.filter((window) => !isModelSpecific(window.label));
   const modelWindows = ordered.filter((window) => isModelSpecific(window.label));
@@ -66,11 +70,9 @@ export function CodexSubscriptionPanel({
       <div className="flex items-start justify-between gap-3 border-b border-border pb-3">
         <div className="min-w-0">
           <div className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">
-            Codex subscription
-          </div>
+            {translateInstant("Codex subscription")}</div>
           <div className="mt-1 text-sm text-muted-foreground">
-            Live Codex quota windows.
-          </div>
+            {translateInstant("Quota from the Codex subscription connected to this server.")}</div>
         </div>
         {source ? (
           <span className="shrink-0 border border-border px-2.5 py-1 text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
@@ -80,16 +82,15 @@ export function CodexSubscriptionPanel({
       </div>
 
       {error ? (
-        <div className="mt-4 border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-          {error}
+        <div role="status" className="mt-4 text-sm text-muted-foreground">
+          {quotaUnavailableMessage(windows.length > 0)}
         </div>
       ) : null}
 
       <div className="mt-4 space-y-5">
         <div className="space-y-3">
           <div className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">
-            Account windows
-          </div>
+            {translateInstant("Account windows")}</div>
           <div className="space-y-3">
             {accountWindows.map((window) => (
               <QuotaWindowRow key={window.label} window={window} />
@@ -100,8 +101,7 @@ export function CodexSubscriptionPanel({
         {modelWindows.length > 0 ? (
           <div className="space-y-3">
             <div className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">
-              Model windows
-            </div>
+              {translateInstant("Model windows")}</div>
             <div className="space-y-3">
               {modelWindows.map((window) => (
                 <QuotaWindowRow key={window.label} window={window} />
@@ -115,6 +115,7 @@ export function CodexSubscriptionPanel({
 }
 
 function QuotaWindowRow({ window }: { window: QuotaWindow }) {
+  useTranslation();
   const detail = detailText(window);
   if (window.usedPercent == null) {
     return (
@@ -142,8 +143,7 @@ function QuotaWindowRow({ window }: { window: QuotaWindow }) {
           ) : null}
         </div>
         <div className="shrink-0 text-sm font-semibold tabular-nums text-foreground">
-          {window.usedPercent}% used
-        </div>
+          {window.usedPercent}{translateInstant("% used")}</div>
       </div>
 
       <div className="mt-3 h-2 overflow-hidden bg-muted">

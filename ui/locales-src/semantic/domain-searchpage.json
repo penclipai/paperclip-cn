@@ -1,0 +1,257 @@
+{
+  "searchPage.activeFiltersCount_one": {
+    "en": " · {{count}} filter active",
+    "zh-CN": " · 已启用 {{count}} 个筛选条件",
+    "reviewedEnglishHash": "5f94f1fe8aa088503b8f2d9a6386f682669817baa91e5b639521876b143cc73c"
+  },
+  "searchPage.activeFiltersCount_other": {
+    "en": " · {{count}} filters active",
+    "zh-CN": " · 已启用 {{count}} 个筛选条件",
+    "reviewedEnglishHash": "c78068e47c3e602d8ac092d50eb33f5e254618c39ffda137d797576d816ec753"
+  },
+  "searchPage.clearSearch": {
+    "en": "Clear search",
+    "zh-CN": "清除搜索",
+    "reviewedEnglishHash": "3b7ea51793e9d906afa06afb86252abb48e1125cc96a7f5efabcfd8597ea183a"
+  },
+  "searchPage.createIssueFromQuery": {
+    "en": "Create issue from this query",
+    "zh-CN": "用该搜索创建任务",
+    "reviewedEnglishHash": "23fdabf422f105aa17f645fa3d90ec2542cdb6b7dcb93724b119f2412b533483"
+  },
+  "searchPage.emptyTip.fewerTokens": {
+    "en": "Try fewer tokens or a single distinctive term.",
+    "zh-CN": "尝试减少关键词，或使用一个更有辨识度的词。",
+    "reviewedEnglishHash": "2fc7f119e3c1d0593f62f7bbf4bcd89c878827de0b9c4617bd6f991fa817712b"
+  },
+  "searchPage.emptyTip.identifierPrefix": {
+    "en": "Use an identifier shortcut like",
+    "zh-CN": "也可以使用任务编号捷径，例如",
+    "reviewedEnglishHash": "b16a2c7a15e8e55a29cb4543e3aa9cba1e1dc893b4cd0c413dfd52fc3deb4f55"
+  },
+  "searchPage.emptyTip.quotes": {
+    "en": "Wrap multi-word phrases in quotes.",
+    "zh-CN": "多词短语可以用引号包起来。",
+    "reviewedEnglishHash": "bc38db20b3e5248179915521070d332778cc6ec1aa403968fb803ece7921f993"
+  },
+  "searchPage.errorRecovery": {
+    "en": "Your input and filters are still here, so you can retry or fall back to the Issues filter.",
+    "zh-CN": "你的输入和筛选条件仍在，可以重试，或回到任务筛选视图。",
+    "reviewedEnglishHash": "7aab169ce125b59185f7dfd4503d19cb5fac87e00844fb5d8c60392619c9a66a"
+  },
+  "searchPage.errorRequestFailed": {
+    "en": "The request failed.",
+    "zh-CN": "请求失败。",
+    "reviewedEnglishHash": "db4fb44737e74f1b28063a214e51272910f952e756f58a86e81b618b68fba903"
+  },
+  "searchPage.errorServerStatus": {
+    "en": "The server returned {{status}}.",
+    "zh-CN": "服务器返回状态码 {{status}}。",
+    "reviewedEnglishHash": "69e1c71803b772f991c7f66384f2b013a2562cbb0a452640651ddd926374b3d2"
+  },
+  "searchPage.errorStatus": {
+    "en": "The server returned {{status}}.",
+    "zh-CN": "服务端返回 {{status}}。",
+    "reviewedEnglishHash": "69e1c71803b772f991c7f66384f2b013a2562cbb0a452640651ddd926374b3d2"
+  },
+  "searchPage.errorTitle": {
+    "en": "Couldn't run that search",
+    "zh-CN": "无法执行这次搜索",
+    "reviewedEnglishHash": "34d21c40669d6f444dff963482d301091a500b6d1aed8e34ae4f7c4b5a043b47"
+  },
+  "searchPage.initialDescription": {
+    "en": "Issues, comments, plan documents, agents, projects - same surface, ranked by relevance.",
+    "zh-CN": "任务、评论、计划文档、智能体、项目集中在同一个入口，并按相关性排序。",
+    "reviewedEnglishHash": "3ecc2b1280b9120a43954ab621315a5138cd67f047d93d33b62243c64a78d25d"
+  },
+  "searchPage.initialTitle": {
+    "en": "Type to search company memory.",
+    "zh-CN": "输入内容以搜索公司记忆。",
+    "reviewedEnglishHash": "728369d327639e00a18d11b2012d2c6c7ffd39f3ffbe48e8ba982d93572abb67"
+  },
+  "searchPage.insertOperator": {
+    "en": "Insert operator {{token}}",
+    "zh-CN": "插入操作符 {{token}}",
+    "reviewedEnglishHash": "53cb48caeb92d862d0ff2be35593b416a172f887b0ad28541ce60d5447f4c990"
+  },
+  "searchPage.insertOperatorAria": {
+    "en": "Insert operator {{operator}}",
+    "zh-CN": "插入运算符 {{operator}}",
+    "reviewedEnglishHash": "e4c71d9994733ead158b7aa53bb232d2bbf80032ed8ebb168b15ba917e4b519e"
+  },
+  "searchPage.loading": {
+    "en": "Searching for \"{{query}}\"...",
+    "zh-CN": "正在搜索“{{query}}”...",
+    "reviewedEnglishHash": "1a8e6b57f0c693391afeb9f0850841b52e79ce861444ccf17153c2c10f1f88ba"
+  },
+  "searchPage.noResultsDescription": {
+    "en": "We couldn't find a match in {{scope}}. Try widening the scope or rephrasing your query.",
+    "zh-CN": "在{{scope}}中没有找到匹配项。可以扩大范围或换一种搜索词。",
+    "reviewedEnglishHash": "48dab88575746d8eb1ec64a1e768aa0ac6d5f90f96ee04a92f2423b296bbe20c"
+  },
+  "searchPage.noResultsTitle": {
+    "en": "No results for \"{{query}}\"",
+    "zh-CN": "未找到“{{query}}”的结果",
+    "reviewedEnglishHash": "68bf0f9fe73f55377b7f89a8ff242456e7d9e41cbb58947c453fdaae83e3c970"
+  },
+  "searchPage.openIssuesFilter": {
+    "en": "Open Issues filter view",
+    "zh-CN": "打开任务筛选视图",
+    "reviewedEnglishHash": "a9d8c9796e8eecd97ca6037fc8b28f8a264b0a6b86800f4af25e0f103a1fd662"
+  },
+  "searchPage.placeholder": {
+    "en": "Search issues, comments, documents, agents, projects...",
+    "zh-CN": "搜索任务、评论、文档、智能体、项目...",
+    "reviewedEnglishHash": "9dc9790547353c574ca0d1b3e0a7f846c2287f1352bc3c42348dd7fe41c44331"
+  },
+  "searchPage.recentSearches": {
+    "en": "Recent searches",
+    "zh-CN": "最近搜索",
+    "reviewedEnglishHash": "228c84b5a56e6bce954154c458c9c043d7b797a6b8f065db20ecb6448689f2f9"
+  },
+  "searchPage.resultSummaryMany": {
+    "en": "{{count}} results - sorted by relevance",
+    "zh-CN": "{{count}} 条结果 - 按相关性排序",
+    "reviewedEnglishHash": "2aeb20182e6ff17aaad6405ed73ae3a4dc3b2c0400bf4bca63dfbc31fc8ef354"
+  },
+  "searchPage.resultSummaryOne": {
+    "en": "1 result - sorted by relevance",
+    "zh-CN": "1 条结果 - 按相关性排序",
+    "reviewedEnglishHash": "927eae2174cea45e881281a56f4886378bfdc2b41bdc298e46b2dfd5ede1f96a"
+  },
+  "searchPage.resultsCountLimited": {
+    "en": "{{shown}} of {{total}} results",
+    "zh-CN": "显示 {{shown}} / {{total}} 条结果",
+    "reviewedEnglishHash": "b386f7d2cbd807566c3250f43bb18355bb1ca8a5159a974b2c3df7e0f5c5e0f6"
+  },
+  "searchPage.resultsCount_one": {
+    "en": "{{count}} result",
+    "zh-CN": "{{count}} 条结果",
+    "reviewedEnglishHash": "be0c64afb19116c40e78ea593f4a731a3cba12361449dee031f96d5207e37507"
+  },
+  "searchPage.resultsCount_other": {
+    "en": "{{count}} results",
+    "zh-CN": "{{count}} 条结果",
+    "reviewedEnglishHash": "b6c504e026b5ce26d311387d0885b0333745e48ae5a4dde038fac2dd23aaf218"
+  },
+  "searchPage.scope.agents": {
+    "en": "Agents",
+    "zh-CN": "智能体",
+    "reviewedEnglishHash": "279b44d2ab4b40c0fc132f8f3051293544cca91de9c8aa14f2cd29adb132b0ee"
+  },
+  "searchPage.scope.all": {
+    "en": "All",
+    "zh-CN": "全部",
+    "reviewedEnglishHash": "a52ace420f2175d08b1577a1bea5445e36801229c074ef9ed6c55a73401fd9c2"
+  },
+  "searchPage.scope.allScopes": {
+    "en": "All scopes",
+    "zh-CN": "全部范围",
+    "reviewedEnglishHash": "93c84327ecf9c2aa467861bb1b2f090e7a487be5b7ce341ce6eb2939dc135750"
+  },
+  "searchPage.scope.artifacts": {
+    "en": "Artifacts",
+    "zh-CN": "产物",
+    "reviewedEnglishHash": "314ae71b8c8dc9c952f0ffc58e35e6d9a41b5cf4756471c7cab0c9476cd5d20b"
+  },
+  "searchPage.scope.comments": {
+    "en": "Comments",
+    "zh-CN": "评论",
+    "reviewedEnglishHash": "355f79f29d7d3c2df917ad07f7441e3ce4b0ac48892b778076dbdca401851712"
+  },
+  "searchPage.scope.documents": {
+    "en": "Documents",
+    "zh-CN": "文档",
+    "reviewedEnglishHash": "b4e929d8bcfe04189801a8ed61496d177d9e30d1b2826f4c9c4d00b3e705fa8b"
+  },
+  "searchPage.scope.issues": {
+    "en": "Issues",
+    "zh-CN": "任务",
+    "reviewedEnglishHash": "666067dd376e5d4553b8fd554f855855819ad213ae825022d2a32dfa28431115"
+  },
+  "searchPage.scope.projects": {
+    "en": "Projects",
+    "zh-CN": "项目",
+    "reviewedEnglishHash": "04e2a9728af7584043c5d58ae29e7cd811883e8dab15fc6287675270669a3ada"
+  },
+  "searchPage.searchAllScopes": {
+    "en": "Search all scopes",
+    "zh-CN": "搜索全部范围",
+    "reviewedEnglishHash": "5bcc0794472210ea4aa97a9512c753b327d093e7ea445b22394509f0a683b789"
+  },
+  "searchPage.searchAria": {
+    "en": "Search query",
+    "zh-CN": "搜索查询",
+    "reviewedEnglishHash": "9eef05233ecfc1fbcfe756aa79bd497fa20e58144012561b562b8856040f5100"
+  },
+  "searchPage.sortedBy": {
+    "en": " · sorted by {{sort}}",
+    "zh-CN": " · 按 {{sort}} 排序",
+    "reviewedEnglishHash": "5cac2efee7065da945bc8c78e85a03b17441eaf7500efc70afb31f214c8d16d0"
+  },
+  "searchPage.subgroup.agents": {
+    "en": "Agents",
+    "zh-CN": "智能体",
+    "reviewedEnglishHash": "279b44d2ab4b40c0fc132f8f3051293544cca91de9c8aa14f2cd29adb132b0ee"
+  },
+  "searchPage.subgroup.artifacts": {
+    "en": "Artifacts",
+    "zh-CN": "产物",
+    "reviewedEnglishHash": "314ae71b8c8dc9c952f0ffc58e35e6d9a41b5cf4756471c7cab0c9476cd5d20b"
+  },
+  "searchPage.subgroup.comments": {
+    "en": "Comments",
+    "zh-CN": "评论",
+    "reviewedEnglishHash": "355f79f29d7d3c2df917ad07f7441e3ce4b0ac48892b778076dbdca401851712"
+  },
+  "searchPage.subgroup.documents": {
+    "en": "Documents",
+    "zh-CN": "文档",
+    "reviewedEnglishHash": "b4e929d8bcfe04189801a8ed61496d177d9e30d1b2826f4c9c4d00b3e705fa8b"
+  },
+  "searchPage.subgroup.issues": {
+    "en": "Issues",
+    "zh-CN": "任务",
+    "reviewedEnglishHash": "666067dd376e5d4553b8fd554f855855819ad213ae825022d2a32dfa28431115"
+  },
+  "searchPage.subgroup.projects": {
+    "en": "Projects",
+    "zh-CN": "项目",
+    "reviewedEnglishHash": "04e2a9728af7584043c5d58ae29e7cd811883e8dab15fc6287675270669a3ada"
+  },
+  "searchPage.tip.commandPalette": {
+    "en": "reopens the command palette pre-seeded with your current query.",
+    "zh-CN": "会重新打开命令面板，并预填当前搜索内容。",
+    "reviewedEnglishHash": "e90feb65a31f2c5337392693640dbd9def2228fe269b8f402a270becd6bf11ae"
+  },
+  "searchPage.tip.identifierBodyPrefix": {
+    "en": "type",
+    "zh-CN": "输入",
+    "reviewedEnglishHash": "1303c06b0b014d0ce7b988ab173a13f31227d417058ff4bbe6f8c222b4ad913c"
+  },
+  "searchPage.tip.identifierBodySuffix": {
+    "en": "to jump straight to an issue.",
+    "zh-CN": "即可直接跳转到任务。",
+    "reviewedEnglishHash": "6d02b64716f2a5f73f5d1bd0fb77a09167dc9f3e5d5f49cd3de0b88a23f84fe0"
+  },
+  "searchPage.tip.identifierLabel": {
+    "en": "Identifier lookup:",
+    "zh-CN": "编号查找：",
+    "reviewedEnglishHash": "492ca8934fe835bf169051e022e7b1cd96f07b64a337699f5a7ae4c14b1db7a5"
+  },
+  "searchPage.tip.quotedBody": {
+    "en": "wrap a phrase in quotes to match the exact sequence.",
+    "zh-CN": "用引号包住短语即可匹配完整连续文本。",
+    "reviewedEnglishHash": "69ad312e680d8efbde7b1306fb69ac21169f0a03168510a3f78cc551cb3f112d"
+  },
+  "searchPage.tip.quotedLabel": {
+    "en": "Quoted phrases:",
+    "zh-CN": "精确短语：",
+    "reviewedEnglishHash": "9efd02faeb841a85e2df679cf2d668c8095e914a1afd147b7fe03dafe3749505"
+  },
+  "searchPage.updating": {
+    "en": "Updating...",
+    "zh-CN": "更新中...",
+    "reviewedEnglishHash": "0a4e0b71b7f3583747a2885b292087c9c6f78873bdd7b3b84cb70c1d0a9a7bc4"
+  }
+}

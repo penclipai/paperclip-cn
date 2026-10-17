@@ -1,0 +1,72 @@
+{
+  "userProfile.actions": {
+    "en": "Actions",
+    "zh-CN": "操作",
+    "reviewedEnglishHash": "ff8059dc6752afdd30d275932b1d5031a2ec854b387a8c57ecc6689915293a43"
+  },
+  "userProfile.allTimeTokens": {
+    "en": "All-time tokens",
+    "zh-CN": "全部词元",
+    "reviewedEnglishHash": "da0e808b9adae1273afeaab5bfcfed530ad84fd0a3388573c367c11306738522"
+  },
+  "userProfile.chartPointTitle": {
+    "en": "{{date}}: {{tokens}} tokens, {{completed}} completed",
+    "zh-CN": "{{date}}：{{tokens}} 个词元，完成 {{completed}} 个",
+    "reviewedEnglishHash": "caaf42e89e37098c364bebaf158bf00329b9e7932d8bedd69fc5a0787a589130"
+  },
+  "userProfile.comments": {
+    "en": "Comments",
+    "zh-CN": "评论",
+    "reviewedEnglishHash": "355f79f29d7d3c2df917ad07f7441e3ce4b0ac48892b778076dbdca401851712"
+  },
+  "userProfile.commentsCount": {
+    "en": "{{count}} comments",
+    "zh-CN": "{{count}} 条评论",
+    "reviewedEnglishHash": "3313c3ed57add98d84a952640940903b6720d20da0cb0c134cf697c1eba32bf7"
+  },
+  "userProfile.completed": {
+    "en": "Completed",
+    "zh-CN": "已完成",
+    "reviewedEnglishHash": "22a970d2e5b1cc233e462be7c7b64e135a275bb09d83d87683bf4236c43113a1"
+  },
+  "userProfile.completionRate": {
+    "en": "{{rate}} rate",
+    "zh-CN": "{{rate}} 完成率",
+    "reviewedEnglishHash": "6e78371b088bb40e7c94fc9aa8157a1f1fc6bbaffbf5a43773d3765d0303b500"
+  },
+  "userProfile.completions": {
+    "en": "completions",
+    "zh-CN": "完成数",
+    "reviewedEnglishHash": "fba30f84bc379ee689828d8d345a77659b84c8f27f1f23f5a56428544e8f5b0b"
+  },
+  "userProfile.createdCount": {
+    "en": "{{count}} created",
+    "zh-CN": "已创建 {{count}} 个",
+    "reviewedEnglishHash": "5b3d5086c642286315f0a93a0c57605301135ed8f89238d7bf56428e27099ae2"
+  },
+  "userProfile.openAssigned": {
+    "en": "Open assigned",
+    "zh-CN": "打开的已分配项",
+    "reviewedEnglishHash": "224314b3dfe198ea2a24c5900a9edd1e121b5c0d05f4ced9522f8d3ea98e8341"
+  },
+  "userProfile.sevenDayActions": {
+    "en": "7-day actions",
+    "zh-CN": "7 天操作数",
+    "reviewedEnglishHash": "8d44eb672d9357b43d3ea6a1fbdf15895faec679161c7e2141eaff5ac271c7b9"
+  },
+  "userProfile.spentAmount": {
+    "en": "{{amount}} spent",
+    "zh-CN": "已花费 {{amount}}",
+    "reviewedEnglishHash": "4c23cff8c6ef4a04a314baad154a96a7e9cae2fa46c80b2b9733d79497597529"
+  },
+  "userProfile.tokensPerDay": {
+    "en": "tokens / day",
+    "zh-CN": "每日词元",
+    "reviewedEnglishHash": "73998292a9594e8d6648413e756359c6359f07837fbd3e053dabeade5f8ad439"
+  },
+  "userProfile.touched": {
+    "en": "Touched",
+    "zh-CN": "已触达",
+    "reviewedEnglishHash": "7f672050a6cbefc3ff5759cffdf3fe659d64f0d0fea621772db52b6991d065bc"
+  }
+}

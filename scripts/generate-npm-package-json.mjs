@@ -13,8 +13,10 @@
  */
 
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { bundledCliNpmDependencies } from "./cli-bundled-npm-dependencies.mjs";
 import {
   SERVER_PACKAGE_NAME,
   WORKSPACE_SCOPE,
@@ -57,6 +59,7 @@ for (const pkgPath of workspacePaths) {
 
   for (const [name, version] of Object.entries(deps)) {
     if (name.startsWith(WORKSPACE_SCOPE) && !externalWorkspacePackages.has(name)) continue;
+    if (bundledCliNpmDependencies.has(name)) continue;
     // For external workspace packages, read their version directly
     if (externalWorkspacePackages.has(name)) {
       const pkgDirMap = { [SERVER_PACKAGE_NAME]: "server" };
@@ -73,6 +76,15 @@ for (const pkgPath of workspacePaths) {
   for (const [name, version] of Object.entries(optDeps)) {
     allOptionalDeps[name] = version;
   }
+}
+
+if (bundledCliNpmDependencies.has("embedded-postgres")) {
+  const requireFromDb = createRequire(resolve(repoRoot, "packages/db/package.json"));
+  const embeddedPostgresRoot = dirname(requireFromDb.resolve("embedded-postgres"));
+  const embeddedPostgresPackage = JSON.parse(
+    readFileSync(resolve(embeddedPostgresRoot, "..", "package.json"), "utf8"),
+  );
+  Object.assign(allOptionalDeps, embeddedPostgresPackage.optionalDependencies ?? {});
 }
 
 // Sort alphabetically
@@ -100,7 +112,7 @@ const publishPkg = {
   homepage: cliPkg.homepage,
   bugs: cliPkg.bugs,
   files: cliPkg.files,
-  engines: { node: ">=20" },
+  engines: { node: ">=24.11.0" },
   dependencies: sortedDeps,
 };
 
@@ -109,7 +121,11 @@ if (Object.keys(sortedOptDeps).length > 0) {
 }
 
 const output = JSON.stringify(publishPkg, null, 2) + "\n";
-const outPath = resolve(repoRoot, "cli/package.json");
+const [outputFlag, outputPath, ...extraArgs] = process.argv.slice(2);
+if (extraArgs.length || (outputFlag !== undefined && (outputFlag !== "--output" || !outputPath))) {
+  throw new Error("Usage: generate-npm-package-json.mjs [--output <manifest-path>]");
+}
+const outPath = outputPath ? resolve(outputPath) : resolve(repoRoot, "cli/package.json");
 writeFileSync(outPath, output);
 
 console.log(`  ✓  Generated publishable package.json (${Object.keys(sortedDeps).length} deps)`);

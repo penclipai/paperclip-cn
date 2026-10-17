@@ -1,0 +1,1202 @@
+{
+  "connectionUi.accessSummary.accessStaysAsIs": {
+    "en": "agent access stays as it is",
+    "zh-CN": "智能体访问权限保持不变",
+    "reviewedEnglishHash": "0a725f11886fee5aff51106460da7d8d5a1fd61f213a1b7a29b9a89326240659"
+  },
+  "connectionUi.accessSummary.availableToAllAgents": {
+    "en": "available to all agents",
+    "zh-CN": "所有智能体均可使用",
+    "reviewedEnglishHash": "62d053ecb1016d6d155c7bd4cf352a2a03587d0be5384e59c81a1bd477514bf6"
+  },
+  "connectionUi.accessSummary.availableToRequestingAgent": {
+    "en": "available to the agent that asked for it",
+    "zh-CN": "提出请求的智能体可使用",
+    "reviewedEnglishHash": "8be3285220b28356c78038f60f56c52d624f8568b910185203000ac22e4e5cdc"
+  },
+  "connectionUi.accessSummary.availableToSelectedAgent": {
+    "en": "available to {{count}} selected agent",
+    "zh-CN": "{{count}} 个所选智能体可使用",
+    "reviewedEnglishHash": "443dfbb6095bea076d276a6afcffc8d6a7a7fb66d029a8cbaca248a50741682d"
+  },
+  "connectionUi.accessSummary.availableToSelectedAgents": {
+    "en": "available to {{count}} selected agents",
+    "zh-CN": "{{count}} 个所选智能体可使用",
+    "reviewedEnglishHash": "5cda1a184c851190ddf540efaf61de12886455eced020d74dd0998ecaa46113f"
+  },
+  "connectionUi.accessSummary.connectsAsDedicatedAgent": {
+    "en": "Connects as a dedicated agent account",
+    "zh-CN": "将作为专属智能体账户连接",
+    "reviewedEnglishHash": "b57c020a5adab1879688b128fdbd2bdb2e266d5763311637d35d9434764c231b"
+  },
+  "connectionUi.accessSummary.connectsAsYou": {
+    "en": "Connects as you",
+    "zh-CN": "将以你的身份连接",
+    "reviewedEnglishHash": "43f617fe40fe0b5363566bcb0fcbc94d9090dc61ba095dba38d9dd83c8492f9b"
+  },
+  "connectionUi.accessSummary.connectsForEveryone": {
+    "en": "Connects for everyone in your organization",
+    "zh-CN": "将为组织中的所有人连接",
+    "reviewedEnglishHash": "b20d65ca6d49b0f33c532371f9f8664f92054dcf511876b5bac5a7b38ccb2cf6"
+  },
+  "connectionUi.accessSummary.noAgentsSelected": {
+    "en": "no agents selected yet",
+    "zh-CN": "尚未选择智能体",
+    "reviewedEnglishHash": "961be93139c98f7c28bb92d72ec1048116185f60468e3d737999cd2f25c5f748"
+  },
+  "connectionUi.accessSummary.noSignInNeeded": {
+    "en": "No sign-in needed",
+    "zh-CN": "无需登录",
+    "reviewedEnglishHash": "572ca3ee73f4c215ccccd45230697273334be8d8f886ffcb224a5f490614aa17"
+  },
+  "connectionUi.accessSummary.sentence": {
+    "en": "{{identity}}, {{reach}}.",
+    "zh-CN": "{{identity}}，{{reach}}。",
+    "reviewedEnglishHash": "4bc36ae523cef816682276da9d3907f1a8e61d6cbb1b4bcd0c084acb53f4c8bf"
+  },
+  "connectionUi.accountChoice.connectThrough": {
+    "en": "Connect {{service}} through {{provider}}",
+    "zh-CN": "通过 {{provider}} 连接 {{service}}",
+    "reviewedEnglishHash": "99667d09361e9772546702e3c12c66ff23ec2a07ecd37c91fd50834b050a6949"
+  },
+  "connectionUi.accountChoice.externalProviderNotice": {
+    "en": "{{provider}} is an external service that handles the connection and requests to {{service}}. Reusing this account does not yet verify app access; the agent will check it and guide any additional authorization.",
+    "zh-CN": "{{provider}} 是处理与 {{service}} 连接和请求的外部服务。重复使用此账户尚不会验证应用访问权限；智能体会进行检查并指导完成其他授权。",
+    "reviewedEnglishHash": "e097efe1d610ee2c65ffa74451f9d5253316396a3ac5e8815b250121db10d3ee"
+  },
+  "connectionUi.actionTest.afterApproval": {
+    "en": "After approval, test the {{action}} action with this execution ID. Do not start the original action again.",
+    "zh-CN": "批准后，请使用此执行 ID 测试 {{action}} 操作。不要再次发起原始操作。",
+    "reviewedEnglishHash": "733c5fcf8e1d7233942c2ca943a1656bb42186af049fea060b21728d8fc81d8c"
+  },
+  "connectionUi.actionTest.couldNotLoadPermissions": {
+    "en": "We couldn't load {{agent}}'s permissions.",
+    "zh-CN": "无法加载 {{agent}} 的权限。",
+    "reviewedEnglishHash": "9a9a1b6e8007e9b3aea727f9050ca72d218a92b9e8a6a1e6da9a4ee57b08e8fc"
+  },
+  "connectionUi.actionTest.gutCheck.allowed": {
+    "en": "This runs a real call against {{app}} as {{agent}}.",
+    "zh-CN": "将以 {{agent}} 身份对 {{app}} 发起真实调用。",
+    "reviewedEnglishHash": "d52b557a18a8adf04fe8480260338acc7ec104b1ae550a4cb9aa5fb49072edd3"
+  },
+  "connectionUi.actionTest.gutCheck.askFirst": {
+    "en": "Waiting for your OK before this call leaves Paperclip.",
+    "zh-CN": "此调用离开 Paperclip 前会等待你的批准。",
+    "reviewedEnglishHash": "e8f3443a7051ed9cf87321ba226ffc508b1702bbdbbbf978fc5b35f3f90f5649"
+  },
+  "connectionUi.actionTest.gutCheck.off": {
+    "en": "No call will be made — this action is off for {{agent}}.",
+    "zh-CN": "不会发起调用：已为 {{agent}} 关闭此操作。",
+    "reviewedEnglishHash": "07c6432ca41323b9d3d202b85531cd6191b6c9ae6244054686f6d4453d160d39"
+  },
+  "connectionUi.actionTest.thisAgent": {
+    "en": "this agent",
+    "zh-CN": "此智能体",
+    "reviewedEnglishHash": "b2dcc8dd0d6ccfc1e30eec97aee96fc9c980c96bda5d63b2fbeb244c5c82b33c"
+  },
+  "connectionUi.adoption.adoptForAgent": {
+    "en": "Adopt Connections for {{agent}}",
+    "zh-CN": "为 {{agent}} 采用连接配置",
+    "reviewedEnglishHash": "2f5df1ae47d823019af7e16d3987103deb9629a49292d10a356e4a5c539ef876"
+  },
+  "connectionUi.adoption.responsibleUserDefault": {
+    "en": "Responsible user’s default. For you: {{connection}}. Other users use their own default.",
+    "zh-CN": "负责人默认账户。你使用：{{connection}}。其他用户使用各自的默认账户。",
+    "reviewedEnglishHash": "83b3949e90528f9e44e578ba7672307d18cf238212b267fc3832d6b3f2a61cb8"
+  },
+  "connectionUi.adoption.thisPool": {
+    "en": "this pool",
+    "zh-CN": "此连接池",
+    "reviewedEnglishHash": "776c94dbbd0b174885b5320a1dc8a719a75485906b8aa8992ed50694b28393b1"
+  },
+  "connectionUi.adoption.usePool": {
+    "en": "Use {{pool}}?",
+    "zh-CN": "使用 {{pool}} 吗？",
+    "reviewedEnglishHash": "10025d711edb0ecfa9e39a0f1fe473085f2afdad3b3b7e4890c7a52c0ec58427"
+  },
+  "connectionUi.apiKey.getForProvider": {
+    "en": "Get an {{provider}} API key ↗",
+    "zh-CN": "获取 {{provider}} API 密钥 ↗",
+    "reviewedEnglishHash": "207423fdb6fa66736ab3827ddac592d81d38f625bb9b341e20dd13938aa9a876"
+  },
+  "connectionUi.apiKey.pasteForProvider": {
+    "en": "Paste your {{provider}} API key",
+    "zh-CN": "粘贴你的 {{provider}} API 密钥",
+    "reviewedEnglishHash": "21d72e752aa6e7dd952e920b7e6cead3a354c9877bff9b61448b24f05e24c878"
+  },
+  "connectionUi.browserUse.sharedCredential": {
+    "en": "Shared credential {{index}}",
+    "zh-CN": "共享凭据 {{index}}",
+    "reviewedEnglishHash": "517e2d0b7ce7f0b833e5ea6d867ff36aee3f56f613a5480a69c7de0d288e603f"
+  },
+  "connectionUi.catalog.aggregator.accountsManaged": {
+    "en": "Accounts managed in {{providers}}.",
+    "zh-CN": "账户由 {{providers}} 管理。",
+    "reviewedEnglishHash": "fc20006549a13c233ed6f802b598b09ffdda7bd8cdf3e78864fb60b36df6f7be"
+  },
+  "connectionUi.catalog.aggregator.connectAria": {
+    "en": "Connect {{app}} through {{provider}}, a third-party service",
+    "zh-CN": "通过第三方服务 {{provider}} 连接 {{app}}",
+    "reviewedEnglishHash": "848ba3c916f4efb7b648f5095727878981ce37a03e26edd05d9fb0df02996d61"
+  },
+  "connectionUi.catalog.aggregator.manageAria": {
+    "en": "Manage {{app}} through {{provider}}, a third-party service",
+    "zh-CN": "通过第三方服务 {{provider}} 管理 {{app}}",
+    "reviewedEnglishHash": "6b70dcead26a84f4cb3f82a139e1b44c0f88daca3ac6c9f68618f74555a77d00"
+  },
+  "connectionUi.catalog.chatWithAgentsThrough": {
+    "en": "Chat with agents through {{provider}}.",
+    "zh-CN": "通过 {{provider}} 与智能体聊天。",
+    "reviewedEnglishHash": "ea0f24b15307433f9c609bcc3d6d346074c5bb92709f4467a575cea81e87a10b"
+  },
+  "connectionUi.catalog.connectThroughProviders": {
+    "en": "Connect through {{providers}}.",
+    "zh-CN": "通过 {{providers}} 连接。",
+    "reviewedEnglishHash": "46bc02c8d677618c136a4ed27cbc1be9c558cc5fed25fece6a261cee44cfae03"
+  },
+  "connectionUi.catalog.pagination.page": {
+    "en": "Page {{current}} of {{total}}",
+    "zh-CN": "第 {{current}} 页，共 {{total}} 页",
+    "reviewedEnglishHash": "14929fd8d88d9d770287649814c25526120e2e0435b6586ea47d22f3410795fb"
+  },
+  "connectionUi.catalog.pagination.range": {
+    "en": "{{start}}–{{end}} of {{total}} connectors",
+    "zh-CN": "第 {{start}}–{{end}} 项，共 {{total}} 个连接器",
+    "reviewedEnglishHash": "7ae22c334d698f210f611d70b411ea4123ee0a84cb97d0e544f438609de4670f"
+  },
+  "connectionUi.connectApp": {
+    "en": "Connect {{appName}}",
+    "zh-CN": "连接 {{appName}}",
+    "reviewedEnglishHash": "5b75a73d0098420776bef11ea5d9603141b31fb83711b95f527f00c63180f17a"
+  },
+  "connectionUi.connectModelProvider": {
+    "en": "Connect your model provider",
+    "zh-CN": "连接你的模型服务商",
+    "reviewedEnglishHash": "763f7fb688ff5e4fd4f65dcd75d44ea865160ecbf799cc233b7ab60670824e73"
+  },
+  "connectionUi.connecting": {
+    "en": "Connecting",
+    "zh-CN": "正在连接",
+    "reviewedEnglishHash": "d403c686f6a1048014bdd230f59963271b0123ea48245754fc9f264b962a2182"
+  },
+  "connectionUi.connectionType": {
+    "en": "Connection type",
+    "zh-CN": "连接类型",
+    "reviewedEnglishHash": "a2cfeb2898b25bd562091fcf6c9bd4654c7e37a90f53e652655363d885e77fea"
+  },
+  "connectionUi.instructions.tellAgentsToUse": {
+    "en": "Tell agents to use {{provider}}",
+    "zh-CN": "让智能体使用 {{provider}}",
+    "reviewedEnglishHash": "4ba16d6dd036d6689fe3816fe68047fd85bcfa3b244e68b6504c8fc54f4d1b77"
+  },
+  "connectionUi.intent.accessRequest.title": {
+    "en": "Grant {{agent}} access to “{{connection}}”?",
+    "zh-CN": "要授予 {{agent}} 对“{{connection}}”的访问权限吗？",
+    "reviewedEnglishHash": "9ce26e6eb7e8d80c361cdb2b7dee7b27daedd702225582b5bd49380e18a65c69"
+  },
+  "connectionUi.intent.accountOwner": {
+    "en": "The account owner",
+    "zh-CN": "账户所有者",
+    "reviewedEnglishHash": "1e0ebe2fbe59f923f9f994f4e651578bc028198fbd7aaa1ca582174fb7ab5729"
+  },
+  "connectionUi.intent.adoptionReadyDescription": {
+    "en": "Your account is connected. Use it for {{agent}} to resume this task.",
+    "zh-CN": "你的账户已连接。请将其用于 {{agent}} 以恢复此任务。",
+    "reviewedEnglishHash": "9cf5134fa189bfd02d7f8ae368fe57d16bb940933787da31fef7aff38e8160e6"
+  },
+  "connectionUi.intent.agentAiConnectionChanged": {
+    "en": "The agent’s AI connection changed. Reload the task and try again.",
+    "zh-CN": "该智能体的 AI 连接已更改。请重新加载任务后重试。",
+    "reviewedEnglishHash": "8afd217d5eec83b7b1863a365f3535b2e799dc9b56d2c44f7db4ae740d68ee80"
+  },
+  "connectionUi.intent.agentMailDescription": {
+    "en": "Connect AgentMail to create an email address for this agent.",
+    "zh-CN": "连接 AgentMail，为此智能体创建电子邮件地址。",
+    "reviewedEnglishHash": "a69d5536ed658753ee5d00ab31058d334fc1471d47792e68c0eae3a56342f9a1"
+  },
+  "connectionUi.intent.agentNeedsService": {
+    "en": "{{agent}} needs {{service}}",
+    "zh-CN": "{{agent}} 需要 {{service}}",
+    "reviewedEnglishHash": "1e6133a180a0787fab83ad1b86b469eb4d867a9e0cf778704d8f60f605200cfd"
+  },
+  "connectionUi.intent.authorizationRetryNotice": {
+    "en": "Authorization didn’t finish. Your previous choices are safe; try again.",
+    "zh-CN": "授权未完成。此前选择已安全保存，请重试。",
+    "reviewedEnglishHash": "acbb9df75303d36429d4d6e437121b2da51def4da6958ec34ddf0c3db9360587"
+  },
+  "connectionUi.intent.checkingConnection": {
+    "en": "Checking connection…",
+    "zh-CN": "正在检查连接…",
+    "reviewedEnglishHash": "de9fc337d5990009be1c125e18597a9879d253a71b97bd48e67a474a4d8665a6"
+  },
+  "connectionUi.intent.closeSetup": {
+    "en": "Close setup",
+    "zh-CN": "关闭设置",
+    "reviewedEnglishHash": "ef0e47fa2625d2b3fdac9a1a84ad4b164f3ebea98d52b1c0e3f39d7785fa048a"
+  },
+  "connectionUi.intent.connectOrUseExisting": {
+    "en": "Connect / Use existing",
+    "zh-CN": "连接或使用现有连接",
+    "reviewedEnglishHash": "77cbdecd494050db367d928649865140571c7cda3afe7ef43dc5830df7662c03"
+  },
+  "connectionUi.intent.connectYourProviderAccount": {
+    "en": "Connect your {{provider}} account",
+    "zh-CN": "连接你的 {{provider}} 账户",
+    "reviewedEnglishHash": "7d720b39856033bc7101471842adc4a1ea2b21cacd9af5ffe15ab4e0ac8f9870"
+  },
+  "connectionUi.intent.connectionRequestUpdateFailed": {
+    "en": "Couldn’t update this connection request.",
+    "zh-CN": "无法更新此连接请求。",
+    "reviewedEnglishHash": "1a99d1bb21231288cc84ce5c9e4089d34db16c749d66e118761b548c845c0d82"
+  },
+  "connectionUi.intent.continueTask": {
+    "en": "Continue task",
+    "zh-CN": "继续任务",
+    "reviewedEnglishHash": "17255aacd2c6b7b2120edb7126918c07b94da89a55425e9e415ec2e50bb1f5e3"
+  },
+  "connectionUi.intent.continueWhenRestored": {
+    "en": "You can continue here once it is restored.",
+    "zh-CN": "恢复后可在此继续。",
+    "reviewedEnglishHash": "0eacf5ca30cdf5ba12da48afb0cc994b5ba51e2e586654e1a0392f575d5ea49b"
+  },
+  "connectionUi.intent.continuing": {
+    "en": "Continuing…",
+    "zh-CN": "正在继续…",
+    "reviewedEnglishHash": "207f6cb5d263471a1c6ec0b0f9e24bf17730b7299db5c7bb13abcff7dfdd34ca"
+  },
+  "connectionUi.intent.fixConnection": {
+    "en": "Fix connection",
+    "zh-CN": "修复连接",
+    "reviewedEnglishHash": "5855b3ac2fcc1b3e77ca9781cb5ed8513f05990f63b1371f4146f34d22a5a49e"
+  },
+  "connectionUi.intent.identityConnectionDescription": {
+    "en": "Connect your identity or reuse an eligible connection. Access is added only for this agent.",
+    "zh-CN": "连接你的身份，或重复使用符合条件的连接。访问权限仅授予此智能体。",
+    "reviewedEnglishHash": "ce8bf3478e346562e102b64ef088764f52ae31129d10cece68bd2141067a5230"
+  },
+  "connectionUi.intent.loadSetupFailed": {
+    "en": "Couldn’t load connection setup",
+    "zh-CN": "无法加载连接设置",
+    "reviewedEnglishHash": "a1ed99c5ed036e7ee2bbb53c359996e3833c2315ca4d36441d3ec5aeec29f2d2"
+  },
+  "connectionUi.intent.loadingOptions": {
+    "en": "Loading connection options…",
+    "zh-CN": "正在加载连接选项…",
+    "reviewedEnglishHash": "f7bb47b5a89641b0c37ea6ce43d9dac309e3d112ebeebc77047573b70124cca4"
+  },
+  "connectionUi.intent.ownAiConnectionDescription": {
+    "en": "{{agent}} needs your own AI connection. Connect here and the task will resume automatically.",
+    "zh-CN": "{{agent}} 需要你的 AI 连接。在此连接后，任务将自动恢复。",
+    "reviewedEnglishHash": "745f0a1a696cde4d5d2dfad5cff79ea9311e5081978123b5f3ef5ccde04a0cd7"
+  },
+  "connectionUi.intent.providerAuthenticationRequired": {
+    "en": "{{provider}} authentication required",
+    "zh-CN": "需要 {{provider}} 身份验证",
+    "reviewedEnglishHash": "f72f7bc0bc3953d55436fa9cd9c83e689f169f6788aa48827f694ea0178345c5"
+  },
+  "connectionUi.intent.reconnectOwner": {
+    "en": "{{owner}} must reconnect {{connection}}.",
+    "zh-CN": "{{owner}} 必须重新连接 {{connection}}。",
+    "reviewedEnglishHash": "e7f235d66f5273f6a085bb0396193980fbc20571326979b2b19d5d352953b6bf"
+  },
+  "connectionUi.intent.retryUsingConnection": {
+    "en": "Retry using this connection",
+    "zh-CN": "使用此连接重试",
+    "reviewedEnglishHash": "3aebb45e4d0574acebad2a02c6b50ed7de718ea7ec295ea02b6409740cf98f34"
+  },
+  "connectionUi.intent.selectedAccountUnavailable": {
+    "en": "The selected account is no longer available to you. Ask its owner to restore access, or choose an available AI connection in the agent’s settings.",
+    "zh-CN": "所选账户已不再对你可用。请其所有者恢复访问权限，或在智能体设置中选择可用的 AI 连接。",
+    "reviewedEnglishHash": "fbec3492385289f4961550492eb4f44d2184221f4d411850029518bd2364d407"
+  },
+  "connectionUi.intent.setupDialogDescription": {
+    "en": "Complete connection setup without leaving this task.",
+    "zh-CN": "无需离开此任务即可完成连接设置。",
+    "reviewedEnglishHash": "759ccded9f4fde4a749c36cff212e257a73b19d3c80013814bcd03f55174d71d"
+  },
+  "connectionUi.intent.status.accessDeclined": {
+    "en": "Access declined",
+    "zh-CN": "已拒绝访问权限",
+    "reviewedEnglishHash": "044e4ada97bc4579a59a38e633c0b61e184243d7c4fb1f33944832f55a8f8ae8"
+  },
+  "connectionUi.intent.status.accessGranted": {
+    "en": "{{service}} access granted",
+    "zh-CN": "已授予 {{service}} 访问权限",
+    "reviewedEnglishHash": "2bd7db8a6ccf9583aace8a732d1b5f3722939fde8e0bf242393992bfa3ea38e6"
+  },
+  "connectionUi.intent.status.aiConnectionReady": {
+    "en": "This agent can now use the connection.",
+    "zh-CN": "该智能体现在可以使用此连接。",
+    "reviewedEnglishHash": "4e9842cade84bcdf79f8b4a6e1e0599f496ac843c9b892324007587d1d3fc62e"
+  },
+  "connectionUi.intent.status.aiConnectionRequiredForTask": {
+    "en": "The task still needs a working AI connection before it can run.",
+    "zh-CN": "任务仍需可用的 AI 连接才能运行。",
+    "reviewedEnglishHash": "8c8b8b6c97e5b812afd091aac02b9e340790556147cd37241319f8b7836a9e85"
+  },
+  "connectionUi.intent.status.connectionConnected": {
+    "en": "{{service}} connected",
+    "zh-CN": "{{service}} 已连接",
+    "reviewedEnglishHash": "e34c630abedb56497e1f36f4ce4e6bdbd243774d698d5249e6cb00fc6a701e0c"
+  },
+  "connectionUi.intent.status.connectionDeclined": {
+    "en": "Connection declined",
+    "zh-CN": "已拒绝连接",
+    "reviewedEnglishHash": "b17945c0569a4120a338e669a66f076ffc53aa40ea44b74102657160f4112a45"
+  },
+  "connectionUi.intent.status.connectionDeclinedContinuation": {
+    "en": "{{agent}} was notified and can continue without it.",
+    "zh-CN": "{{agent}} 已收到通知，可在没有此连接的情况下继续。",
+    "reviewedEnglishHash": "379664a508189384215b957925e2b90635f352d97c5618ce77d4623de0acb3a0"
+  },
+  "connectionUi.intent.status.connectionReadyForContinuation": {
+    "en": "{{agent}} can use this connection on the continuation run.",
+    "zh-CN": "{{agent}} 可在后续运行中使用此连接。",
+    "reviewedEnglishHash": "4dc21bfa3422f6a57c6d0cc91312c1f5ff7912d16ff82ca3596a8b0e55a178e2"
+  },
+  "connectionUi.intent.status.connectionRequestExpired": {
+    "en": "Connection request expired",
+    "zh-CN": "连接请求已过期",
+    "reviewedEnglishHash": "cc0c7bc0c45266d58700fb6abb0ace3514f113d10fa6c0e2817e01b8efe3d3a5"
+  },
+  "connectionUi.intent.status.externalProviderConnected": {
+    "en": "External provider connected",
+    "zh-CN": "外部服务商已连接",
+    "reviewedEnglishHash": "ec0ff29da2f1116772fcd957618544c43179b74a1fd8f79774dc972f0fa877d6"
+  },
+  "connectionUi.intent.status.externalProviderConnectedDescription": {
+    "en": "{{agent}} can now verify and authorize {{service}} through this provider. The app is not yet verified.",
+    "zh-CN": "{{agent}} 现在可通过此服务商验证并授权 {{service}}。该应用尚未验证。",
+    "reviewedEnglishHash": "b7083993d6ac6032e7ab7386158e71397ae625075a6155fe440ec49f7c578bf5"
+  },
+  "connectionUi.intent.status.requestNoLongerActive": {
+    "en": "This request is no longer active.",
+    "zh-CN": "此请求已不再有效。",
+    "reviewedEnglishHash": "98de0998408c22f6a3170d727592441b83b31d9c8001b5cdad3ad3fdeaa21ebf"
+  },
+  "connectionUi.intent.status.requestSuperseded": {
+    "en": "Request superseded",
+    "zh-CN": "请求已被替代",
+    "reviewedEnglishHash": "1f6759390efaca39dec00188b55b8393d86ea8d97e9f2978b37d45e7b700c8b2"
+  },
+  "connectionUi.intent.status.requestSupersededDescription": {
+    "en": "This request was replaced. Use the latest connection card instead.",
+    "zh-CN": "此请求已被替换。请改用最新的连接卡片。",
+    "reviewedEnglishHash": "a8df9732fa3b44486f3e502d072158d9cbc2b5c2225ab996c85ef2f845d695ec"
+  },
+  "connectionUi.intent.taskAiConnectionDescription": {
+    "en": "This task can’t run until the agent has a valid AI connection. Connect here and the task will resume automatically.",
+    "zh-CN": "该任务需为智能体配置有效的 AI 连接才能运行。在此连接后，任务将自动恢复。",
+    "reviewedEnglishHash": "fe44fc1013d12c9cca9e2d98d0adccbc127c7d39a66e55f29ac4b16081c35d42"
+  },
+  "connectionUi.intent.tryAgainSentence": {
+    "en": "Try again.",
+    "zh-CN": "请重试。",
+    "reviewedEnglishHash": "a0c2cc1374d949943e01a455a7bde5e07ad03af2106124340d4ce4d3da9bded9"
+  },
+  "connectionUi.intent.useConnectionAndContinue": {
+    "en": "Use connection and continue",
+    "zh-CN": "使用连接并继续",
+    "reviewedEnglishHash": "26036a5d762bb6f0c8a1db9a57f5f30e75131c4cbc8acb8bf67988442c2b6ba4"
+  },
+  "connectionUi.intent.useConnectionForAgent": {
+    "en": "Use your {{provider}} connection for {{agent}}? This replaces the agent’s existing authentication with each responsible person’s own account. The model stays the same.",
+    "zh-CN": "要将你的 {{provider}} 连接用于 {{agent}} 吗？这会用每位负责人的账户替换该智能体现有的身份验证，模型保持不变。",
+    "reviewedEnglishHash": "c6c17c07aa553ee2a50e6df47d2f7c35778ae7e25676accdb525df84c15e68d2"
+  },
+  "connectionUi.intent.useYourProviderAccount": {
+    "en": "Use your {{provider}} account",
+    "zh-CN": "使用你的 {{provider}} 账户",
+    "reviewedEnglishHash": "d23473fe0aafe77e1dbd995105bb1ce09f429255e6e31155ae8aebf371eab0a6"
+  },
+  "connectionUi.intent.waitingFor": {
+    "en": "Waiting for {{addressee}}",
+    "zh-CN": "正在等待 {{addressee}}",
+    "reviewedEnglishHash": "8dde72096314df7a4ba8fb4c1d6b6ef9d446a33242e73bff0f7f5db8f6583aca"
+  },
+  "connectionUi.manageAccount": {
+    "en": "Manage {{name}}",
+    "zh-CN": "管理 {{name}}",
+    "reviewedEnglishHash": "57c2fff4f9358f78629686a7393a4651e8a3c28f6de5fe54c33f4afd4ca3cbe3"
+  },
+  "connectionUi.manageConnection": {
+    "en": "Manage {{name}} connection",
+    "zh-CN": "管理 {{name}} 连接",
+    "reviewedEnglishHash": "e2aa01437b329a0cc639371499984d8b6acb053077ae5fad83a79b18d250128d"
+  },
+  "connectionUi.modelCredential.apiKey": {
+    "en": "API key",
+    "zh-CN": "API 密钥",
+    "reviewedEnglishHash": "16f0ee47f993d6270c9059450473eea493ca8ae037f8877782ae2bc176f24d18"
+  },
+  "connectionUi.modelCredential.customGateway": {
+    "en": "Custom Gateway",
+    "zh-CN": "自定义网关",
+    "reviewedEnglishHash": "f6c84d731c77c70ae2cec9c7902546938c6c6d33ae093ce2a4d6fc01844e8bdb"
+  },
+  "connectionUi.modelCredential.subscription": {
+    "en": "Subscription",
+    "zh-CN": "订阅",
+    "reviewedEnglishHash": "4999c6c6c7badf456f5b0053b09a2076bdb2391a09ab10c9064a680f8f9a0b30"
+  },
+  "connectionUi.openPermissions": {
+    "en": "Open {{name}} permissions",
+    "zh-CN": "打开 {{name}} 的权限",
+    "reviewedEnglishHash": "b20a70834df732985cb32f9bbebd157d08b29b81421a4f4811597a8ca2b09ead"
+  },
+  "connectionUi.pasteConfig.foundApps_one": {
+    "en": "We found {{count}} app in that config",
+    "zh-CN": "在该配置中找到 {{count}} 个应用",
+    "reviewedEnglishHash": "0b786bf587c3fbe9acd892d5e4f40bfca03be0e10d52e70565eb5e78414610f1"
+  },
+  "connectionUi.pasteConfig.foundApps_other": {
+    "en": "We found {{count}} apps in that config",
+    "zh-CN": "在该配置中找到 {{count}} 个应用",
+    "reviewedEnglishHash": "746d19036e7066cd80be6f17ec2681400e88020282b376312664c74341b3a9b1"
+  },
+  "connectionUi.remoteMcp.connectThrough": {
+    "en": "Connect {{service}} through {{provider}}",
+    "zh-CN": "通过 {{provider}} 连接 {{service}}",
+    "reviewedEnglishHash": "99667d09361e9772546702e3c12c66ff23ec2a07ecd37c91fd50834b050a6949"
+  },
+  "connectionUi.remoteMcp.connectedActionsAvailable_one": {
+    "en": "Connected{{identity}} · {{count}} action available",
+    "zh-CN": "已连接{{identity}} · 可用操作 {{count}} 个",
+    "reviewedEnglishHash": "0146823899557f7ec74a11caf68bf96f31bd5f2157e6d86aa2dc4397a49885c9"
+  },
+  "connectionUi.remoteMcp.connectedActionsAvailable_other": {
+    "en": "Connected{{identity}} · {{count}} actions available",
+    "zh-CN": "已连接{{identity}} · 可用操作 {{count}} 个",
+    "reviewedEnglishHash": "f01bb2d172d78028cc4bc1ec39f1f77e7d298047ca18d990ca6fb2310d9f4f9a"
+  },
+  "connectionUi.remoteMcp.finishSigningIn": {
+    "en": "Finish signing in to {{provider}}",
+    "zh-CN": "完成 {{provider}} 登录",
+    "reviewedEnglishHash": "74b51eb6bdadce6ea204e052e95bd3207f4ac774bb575ade12651eea50674c58"
+  },
+  "connectionUi.remoteMcp.helpWith": {
+    "en": "Help with {{label}}",
+    "zh-CN": "查看 {{label}} 的帮助",
+    "reviewedEnglishHash": "a74f7ae82a469aad0df2629fd9865f5f9b32293b6af3d9c57e4888b4287dec39"
+  },
+  "connectionUi.remoteMcp.manageConnection": {
+    "en": "Manage this {{provider}} connection.",
+    "zh-CN": "管理此 {{provider}} 连接。",
+    "reviewedEnglishHash": "27e22de1787068311cd52f3cc5e38da38c4aa32e271b891779fb39a441034de9"
+  },
+  "connectionUi.remoteMcp.openSetupGuide": {
+    "en": "Open {{provider}} setup guide",
+    "zh-CN": "打开 {{provider}} 设置指南",
+    "reviewedEnglishHash": "edfb4dbd7bb5a45670d37a7d91e26846b6082182c00167ba4f0aac9ffaae8485"
+  },
+  "connectionUi.remoteMcp.providerHandlesService": {
+    "en": "{{provider}} handles the connection and requests to {{service}}.",
+    "zh-CN": "{{provider}} 负责连接和向 {{service}} 发出的请求。",
+    "reviewedEnglishHash": "14a4cd309e1b6d5c3fa52d0afc852c88d08513cb0f6d551a92b95feecedbdbf9"
+  },
+  "connectionUi.remoteMcp.reconnect": {
+    "en": "Reconnect {{provider}}",
+    "zh-CN": "重新连接 {{provider}}",
+    "reviewedEnglishHash": "12dfdc917e99b86dbb9eb4dea5b17b85eba4780d8c573fefb5409e0afbef2d2e"
+  },
+  "connectionUi.remoteMcp.setupReadyToResume": {
+    "en": "Your {{provider}} setup is ready to resume.",
+    "zh-CN": "你的 {{provider}} 设置已可继续。",
+    "reviewedEnglishHash": "9eb98e9788377c42d789e096198d12d41365c4a9a8832edbb52e85f10f55ad62"
+  },
+  "connectionUi.remoteMcp.useOnYourBehalf": {
+    "en": "Paperclip will use {{provider}} on your behalf.",
+    "zh-CN": "Paperclip 将代表你使用 {{provider}}。",
+    "reviewedEnglishHash": "79c2fe19ae8ec755a24b0fe093d6014749a4e273caf81c74a12f38bdb09e4b9f"
+  },
+  "connectionUi.setup.browserSignInUnsupported": {
+    "en": "This environment does not support browser sign-in. Choose a sign-in environment or connect with an API key.",
+    "zh-CN": "此环境不支持浏览器登录。请选择登录环境或改用 API 密钥连接。",
+    "reviewedEnglishHash": "b62e1e2f4b59769e2e544c4ef4f0067e95f5eb04d14d9b39764a99e85343c5ef"
+  },
+  "connectionUi.setup.capability.aria": {
+    "en": "Access level for {{app}}",
+    "zh-CN": "{{app}} 的访问级别",
+    "reviewedEnglishHash": "4d1f9f6dbf23aa57320964516f2a76f2dd6a95b5818b209dd066d2992b2c3e37"
+  },
+  "connectionUi.setup.capability.question": {
+    "en": "What should Paperclip be able to do?",
+    "zh-CN": "希望 Paperclip 能做什么？",
+    "reviewedEnglishHash": "ddb125208fd2a80baaac1b7bffad6e2a99f7fb91231050c21506c9d9aeae9638"
+  },
+  "connectionUi.setup.capability.required": {
+    "en": "Choose an access level to continue.",
+    "zh-CN": "请选择访问级别以继续。",
+    "reviewedEnglishHash": "3d0a914ed893f06c20b6fce34de650c66891c5d3da4930fba111a0d9e1b1a9a1"
+  },
+  "connectionUi.setup.checkKeyAndRetry": {
+    "en": "Please check your key and try again.",
+    "zh-CN": "请检查你的密钥后重试。",
+    "reviewedEnglishHash": "65c0f7cc808b67f9816424d5dc97663bfc07682f02af7e8ef2e0cab7567b17a2"
+  },
+  "connectionUi.setup.connectWithPaperclip": {
+    "en": "Connect with Paperclip",
+    "zh-CN": "使用 Paperclip 连接",
+    "reviewedEnglishHash": "eee43f4794729ddea2dba549100e40dedcd6caf661d73326cc448f8d2aaf1f04"
+  },
+  "connectionUi.setup.copySharingEmail": {
+    "en": "Copy sharing email",
+    "zh-CN": "复制共享邮箱",
+    "reviewedEnglishHash": "7c5c2cd976654cc960edc5159abdbd25790f9eda6b539bcabaa4c2f330d42459"
+  },
+  "connectionUi.setup.enrollment.checkRegistrationFailed": {
+    "en": "Paperclip couldn’t check Cloud registration. Try again.",
+    "zh-CN": "Paperclip 无法检查 Cloud 注册状态。请重试。",
+    "reviewedEnglishHash": "51b709530603d4769f9dc7ead194a2106e7b512f7bfc4cf324a8a2b9c7386d52"
+  },
+  "connectionUi.setup.enrollment.cloudUnavailable": {
+    "en": "Paperclip couldn’t reach Paperclip Cloud. Try again.",
+    "zh-CN": "Paperclip 无法连接到 Paperclip Cloud。请重试。",
+    "reviewedEnglishHash": "b26b6b04f40b80ce47482a717ea33ca5a75077b4ed0a4e22dbeed323db8886d6"
+  },
+  "connectionUi.setup.enrollment.finishAuthorization": {
+    "en": "Finish authorization in the opened window.",
+    "zh-CN": "请在已打开的窗口中完成授权。",
+    "reviewedEnglishHash": "3be1a9fe8c5f042da7845c37db52540053f16f7de63e484322a18834dedb9d87"
+  },
+  "connectionUi.setup.enrollment.missingEnrollmentLink": {
+    "en": "Paperclip Cloud did not return an enrollment link. Try again.",
+    "zh-CN": "Paperclip Cloud 未返回注册链接。请重试。",
+    "reviewedEnglishHash": "1277bce79d958a19ccf9df0127eb54f015e42c8acf92e3d568ac6b091a6ff9a5"
+  },
+  "connectionUi.setup.enrollment.openAuthorizationInNewTab": {
+    "en": "Open authorization in a new tab to continue.",
+    "zh-CN": "请在新标签页中打开授权以继续。",
+    "reviewedEnglishHash": "0b1a6c0c73f0d866ce06d729586711895e62dd6e23ff9150c9b136b9ff03cc5a"
+  },
+  "connectionUi.setup.enrollment.openAuthorizationLink": {
+    "en": "Open authorization in a new tab",
+    "zh-CN": "在新标签页中打开授权",
+    "reviewedEnglishHash": "7dfefeb1dd262d1edb15e2449f6d5ced13b71734fa7ebccdb52903abd8d56f06"
+  },
+  "connectionUi.setup.galleryDescription": {
+    "en": "Pick the app you want your agents to use.",
+    "zh-CN": "选择希望智能体使用的应用。",
+    "reviewedEnglishHash": "2ae9927de17f7b01b703f113fb77d1f96e128cf5e1e3d78074c9e9914d49f998"
+  },
+  "connectionUi.setup.galleryVercelDescription": {
+    "en": "Choose a reviewed app to connect through Vercel.",
+    "zh-CN": "选择一个经审核的应用以通过 Vercel 连接。",
+    "reviewedEnglishHash": "b294c73812f22ce64a22a99de40ddefb57b0c45bc14045f2cb3a65fe0cb402aa"
+  },
+  "connectionUi.setup.generic.addHeader": {
+    "en": "Add another header",
+    "zh-CN": "添加另一个请求头",
+    "reviewedEnglishHash": "cd719ea711cca821f59e1826b7db261b80693a57289ae5d9368eccf0b9fb615a"
+  },
+  "connectionUi.setup.generic.advancedAuthentication": {
+    "en": "Advanced authentication",
+    "zh-CN": "高级身份验证",
+    "reviewedEnglishHash": "6083f79d434e1accc69cab988f525ad23d286c7464d72ad4a29809f9900c5f36"
+  },
+  "connectionUi.setup.generic.advancedAuthenticationHint": {
+    "en": "Only needed when the server's docs are specific about how to authenticate.",
+    "zh-CN": "仅当服务器文档明确指定身份验证方式时才需要。",
+    "reviewedEnglishHash": "4586cf0872725a375aa9cde3c83555a8e8e3dc309e7eff4c57b3d5d4ce4a46c5"
+  },
+  "connectionUi.setup.generic.auth.auto.hint": {
+    "en": "Paperclip asks the server what it needs and walks you through it. Start here.",
+    "zh-CN": "Paperclip 会询问服务器所需内容并引导完成，请从这里开始。",
+    "reviewedEnglishHash": "65bc65bf47379a0beb47dff0199121e7a687bb229c0a81262ef3b31f527cf0c7"
+  },
+  "connectionUi.setup.generic.auth.auto.label": {
+    "en": "Let Paperclip check",
+    "zh-CN": "让 Paperclip 检查",
+    "reviewedEnglishHash": "2a4615e865c8f97334f444c43636a2111b3cbc6fa5087706d12ab3d94dfcf7c3"
+  },
+  "connectionUi.setup.generic.auth.bearer.hint": {
+    "en": "Paperclip sends your key as an Authorization header.",
+    "zh-CN": "Paperclip 会将你的密钥作为 Authorization 请求头发送。",
+    "reviewedEnglishHash": "dc08ce3de15c7e7d8c7aed39b6dc492f8c04c8cf0a1fb8716c31b8ad11885534"
+  },
+  "connectionUi.setup.generic.auth.bearer.label": {
+    "en": "Key or token",
+    "zh-CN": "密钥或令牌",
+    "reviewedEnglishHash": "9c4795310ee0ac3e3681236a444612ad2958e46da19137bba184a7b1a84462cc"
+  },
+  "connectionUi.setup.generic.auth.headers.hint": {
+    "en": "For servers that name their own headers. Values are stored as Paperclip secrets and can’t be read back.",
+    "zh-CN": "用于自行定义请求头的服务器。值会作为 Paperclip 密钥保存，之后无法读取。",
+    "reviewedEnglishHash": "634c98a871613ea69ab223efcc0e4c667cd6771eb5aff47efa02db3d8590fb46"
+  },
+  "connectionUi.setup.generic.auth.headers.label": {
+    "en": "Custom headers",
+    "zh-CN": "自定义请求头",
+    "reviewedEnglishHash": "34cb675c369423f66de0434521d0e5c76f3e5f20ad709302654b8f6e2c586395"
+  },
+  "connectionUi.setup.generic.auth.none.hint": {
+    "en": "The server is open to anyone with the address.",
+    "zh-CN": "该服务器向任何拥有地址的人开放。",
+    "reviewedEnglishHash": "10eeafaec0987a1e4fa83572f1da7fd5ce8e3dc524d01e90f257572f674db9a0"
+  },
+  "connectionUi.setup.generic.auth.oauth.hint": {
+    "en": "You’ll sign in at the provider. Add a client ID and secret only if the provider requires you to register Paperclip first.",
+    "zh-CN": "你将在服务商处登录。只有服务商要求先注册 Paperclip 时，才添加客户端 ID 和密钥。",
+    "reviewedEnglishHash": "3ba64037a6018839eaf11e924e03c95aa34a2ae5ac1be01ce017703fc515b669"
+  },
+  "connectionUi.setup.generic.auth.oauth.label": {
+    "en": "Browser sign-in",
+    "zh-CN": "浏览器登录",
+    "reviewedEnglishHash": "5db278ec4eec0987c1ef9ed55e817c498622433d61be782224386d481f9fd11b"
+  },
+  "connectionUi.setup.generic.headerValue": {
+    "en": "Header value",
+    "zh-CN": "请求头值",
+    "reviewedEnglishHash": "f9a9058c0c22e511c58b7ca3f579036d24e2592ef72a0069df0736586ab46d8d"
+  },
+  "connectionUi.setup.generic.headerValueFor": {
+    "en": "Value for {{name}}",
+    "zh-CN": "{{name}} 的值",
+    "reviewedEnglishHash": "eb4297dc624dd515d6f85b7fa21bddf73db4163ec17ea489f7357c015ea3b01a"
+  },
+  "connectionUi.setup.generic.keyPermissionHint": {
+    "en": "Grant this key read and write access to the resources your agents need. Paperclip cannot increase its permissions.",
+    "zh-CN": "请授予此密钥智能体所需资源的读写权限。Paperclip 无法提高其权限。",
+    "reviewedEnglishHash": "b6a571da1e56d8f0be726bbe7c525d6ee704e3fbe608af02ddc3ee54653edc9b"
+  },
+  "connectionUi.setup.generic.oauthClientHint": {
+    "en": "Paperclip sets sign-in up on its own whenever the server allows it. Only fill these in when the server's docs tell you to register Paperclip yourself first.",
+    "zh-CN": "只要服务器允许，Paperclip 会自行设置登录。仅当服务器文档要求你先自行注册 Paperclip 时，才填写这些信息。",
+    "reviewedEnglishHash": "5cd383a2e7ae4daf58b93747d4827a8e2e08658b223f8b95d943a2e1d69e40cd"
+  },
+  "connectionUi.setup.githubInstallationRequired": {
+    "en": "GitHub access is required. Install Paperclip and grant at least one repository, then try again.",
+    "zh-CN": "需要 GitHub 访问权限。请安装 Paperclip 并至少授权一个仓库，然后重试。",
+    "reviewedEnglishHash": "3ad3e19df5c4f5749d50aae923aab4f7cbbf7e008fa1c5fe37be480537785842"
+  },
+  "connectionUi.setup.identity.allUseSharedGithub": {
+    "en": "Every agent may use the shared account.",
+    "zh-CN": "每个智能体都可以使用共享账号。",
+    "reviewedEnglishHash": "65d4ba21f72944b3bfa3c341220a56b612916df5afabb11cf4258f3b20d8148e"
+  },
+  "connectionUi.setup.identity.allUseYourGithub": {
+    "en": "Every agent may use your GitHub when you’re responsible.",
+    "zh-CN": "当你负责时，每个智能体都可以使用你的 GitHub。",
+    "reviewedEnglishHash": "9fe0dc0bcefd69c89b56132d1cb5df7c987c1dce2a535da70b3a04c9becd40c6"
+  },
+  "connectionUi.setup.identity.anyAgentUnavailable": {
+    "en": "Only someone who can configure this connection can choose this.",
+    "zh-CN": "只有能配置此连接的人可以选择此项。",
+    "reviewedEnglishHash": "072221df4673870de1a0847026b7e1f053261e9eb5f18e7f65b4871c30386b6c"
+  },
+  "connectionUi.setup.identity.anyHuman": {
+    "en": "Any human in the organization",
+    "zh-CN": "组织内的任何成员",
+    "reviewedEnglishHash": "e6b1c6693f543a72db4a62bb9da8a6639225caada328a86469486cde80a6933e"
+  },
+  "connectionUi.setup.identity.chooseOneAgent": {
+    "en": "Choose exactly one agent. This identity cannot be shared with other agents.",
+    "zh-CN": "请选择恰好一个智能体。此身份不能与其他智能体共享。",
+    "reviewedEnglishHash": "ed7b069795e1ae7c157cd8bf8dd22815de09f24dc775e13077dbb74039f0e2ea"
+  },
+  "connectionUi.setup.identity.connectGitHubAs": {
+    "en": "Connect GitHub as",
+    "zh-CN": "以何种身份连接 GitHub",
+    "reviewedEnglishHash": "172e5b28d280861e19721d435dca3d976a8985a86d7890a088bc37ab0703e533"
+  },
+  "connectionUi.setup.identity.dedicatedAgentAccount": {
+    "en": "A dedicated account for an agent",
+    "zh-CN": "供智能体专用的账号",
+    "reviewedEnglishHash": "b68335829188c8695c4f4e1b386c00adb3948cdc501cedd3b1b615c0e696e2fa"
+  },
+  "connectionUi.setup.identity.dedicatedAgentDescription": {
+    "en": "That agent always uses this account, regardless of who starts the run.",
+    "zh-CN": "无论谁启动运行，该智能体都会使用此账号。",
+    "reviewedEnglishHash": "e70310b44f5524d73d8bf82bc7f22e3e700211315b000a81585b19bb80d37451"
+  },
+  "connectionUi.setup.identity.existingAccess": {
+    "en": "Existing agent access stays the same",
+    "zh-CN": "现有智能体访问权限保持不变",
+    "reviewedEnglishHash": "b525e39e1eee3182f66662f122de230c231451348421589a32de229f1e03f1d3"
+  },
+  "connectionUi.setup.identity.existingAccessDescription": {
+    "en": "Reconnecting replaces the credential without changing which agents can use it.",
+    "zh-CN": "重新连接会替换凭据，而不会更改可使用它的智能体。",
+    "reviewedEnglishHash": "ba90e66aaef6cc33159ba0ae62b9d1f1d99b2cde892f2e45c81484f54e3fc11a"
+  },
+  "connectionUi.setup.identity.myGithubAccount": {
+    "en": "My GitHub account",
+    "zh-CN": "我的 GitHub 账号",
+    "reviewedEnglishHash": "d1f22b9c9cdc0650b76789b64767fcc2ecb2002d1be0e64a7f4e16cd992c23f3"
+  },
+  "connectionUi.setup.identity.noIdentityRequired": {
+    "en": "No identity required",
+    "zh-CN": "无需身份信息",
+    "reviewedEnglishHash": "d50f3993c8f50518650d7e7c0ee158a08e2cac7feea1e6b80841f6d839018ca4"
+  },
+  "connectionUi.setup.identity.onlySelectedAgents": {
+    "en": "Only agents I choose",
+    "zh-CN": "仅我选择的智能体",
+    "reviewedEnglishHash": "4a51b1fe9071b6cfb270d3fdfdbfce317bc662d4f2c4bed7ac78a363a7f65aef"
+  },
+  "connectionUi.setup.identity.organizationUnavailable": {
+    "en": "Only a connection manager can share this credential with the organization.",
+    "zh-CN": "只有连接管理员可以与组织共享此凭据。",
+    "reviewedEnglishHash": "1fef7519c38cc9bc9687ef66b3fff66ef976cf48a0ce132ae0b062658b559290"
+  },
+  "connectionUi.setup.identity.selectedUseSharedGithub": {
+    "en": "Only selected agents may use the shared account.",
+    "zh-CN": "仅选定的智能体可以使用共享账号。",
+    "reviewedEnglishHash": "d02fbe413f40d63adabbb4352d4d733061f29984134033bd3b487abf7b1c660b"
+  },
+  "connectionUi.setup.identity.selectedUseYourGithub": {
+    "en": "Only selected agents may use your GitHub when you’re responsible.",
+    "zh-CN": "当你负责时，仅选定的智能体可以使用你的 GitHub。",
+    "reviewedEnglishHash": "38b4d03b218aee7fb4d48106714512ba4178a96683f2c7fffdf5dafd650add0a"
+  },
+  "connectionUi.setup.identity.sharedGithubAccount": {
+    "en": "Shared organization GitHub account (advanced)",
+    "zh-CN": "共享的组织 GitHub 账号（高级）",
+    "reviewedEnglishHash": "fc8ce4350378d642584716c7ccdc71fc725f1fc15b4d48c09ec97972871d424e"
+  },
+  "connectionUi.setup.identity.sharedGithubDescription": {
+    "en": "Eligible agents use one shared credential, regardless of who starts the run.",
+    "zh-CN": "符合条件的智能体共用一个凭据，无论谁启动运行。",
+    "reviewedEnglishHash": "72580e0b156f4214d67606493c6963035fce2b4c139354e15e5cc8cf81f060a1"
+  },
+  "connectionUi.setup.identity.summaryActionsOn": {
+    "en": "Enabled actions: {{count}}",
+    "zh-CN": "已启用的操作：{{count}}",
+    "reviewedEnglishHash": "525d5c26b64520ecf2a7d9a355eb3c5ffb4d9b12e278d4cc4fa0f094813e3c53"
+  },
+  "connectionUi.setup.identity.summaryAvailableTo": {
+    "en": "Available to",
+    "zh-CN": "可供以下对象使用",
+    "reviewedEnglishHash": "1963260db8cdf1d804fe48ebdbde614e5df3c1633c1de0fde59207c2dbb66db0"
+  },
+  "connectionUi.setup.identity.summaryDedicatedAgent": {
+    "en": "Dedicated agent identity",
+    "zh-CN": "专用智能体身份",
+    "reviewedEnglishHash": "b45e73465fd19ad99561158dab134f037a87ca18d73a88db5119059e49545472"
+  },
+  "connectionUi.setup.identity.summaryOrganization": {
+    "en": "Organization identity",
+    "zh-CN": "组织身份",
+    "reviewedEnglishHash": "4f644c74f1e8ff0e4bfb3ed1a736b050c71ed18dc43811b2eac55adafea39a88"
+  },
+  "connectionUi.setup.identity.summarySelectedAgents": {
+    "en": "Selected agents: {{count}}",
+    "zh-CN": "已选择的智能体：{{count}}",
+    "reviewedEnglishHash": "8c34ecf551eed99a6b86e94a9bdf46c695a5783ac2572373278dcec52c71164e"
+  },
+  "connectionUi.setup.identity.summaryYourIdentity": {
+    "en": "Your identity",
+    "zh-CN": "你的身份",
+    "reviewedEnglishHash": "3b42154652893315f1af573ffa23ce9b7fb59653461d1475f27e47a464b01dc1"
+  },
+  "connectionUi.setup.identity.unavailable": {
+    "en": "Unavailable:",
+    "zh-CN": "不可用：",
+    "reviewedEnglishHash": "730dabebc1a158c2b8090ced5aff08db8f199b0bfaa514fa9bb169ba15127e82"
+  },
+  "connectionUi.setup.identity.userGithubDescription": {
+    "en": "Agents use it only for runs where you are the responsible person.",
+    "zh-CN": "智能体仅会在你作为责任人的运行中使用它。",
+    "reviewedEnglishHash": "e8f48c17ed08f1aeceedc6b7692898fb9ed4f65f6d55d8a876904fd6430b620e"
+  },
+  "connectionUi.setup.identity.whichAgentOwnsGithub": {
+    "en": "Which agent owns this GitHub account?",
+    "zh-CN": "哪个智能体拥有此 GitHub 账号？",
+    "reviewedEnglishHash": "e247e16bbd5bf2b2745083cf7839cd053dc39f68fd38048992d63dd468a19c4c"
+  },
+  "connectionUi.setup.identity.whichAgentsUseSharedGithub": {
+    "en": "Which agents may use the shared GitHub account?",
+    "zh-CN": "哪些智能体可以使用共享的 GitHub 账号？",
+    "reviewedEnglishHash": "d3c2c5b53d118548fd0e57ca7910e97a0d1c237bedb4a2683611d170fdee1766"
+  },
+  "connectionUi.setup.identity.whichAgentsUseYourGithub": {
+    "en": "Which agents may use your GitHub when you’re responsible?",
+    "zh-CN": "当你负责时，哪些智能体可以使用你的 GitHub？",
+    "reviewedEnglishHash": "ee8f64bac19189fa0593ed960d294e84e31f9938aa383a86736c87bd5c0f94c1"
+  },
+  "connectionUi.setup.method.aria": {
+    "en": "How to connect {{app}}",
+    "zh-CN": "如何连接 {{app}}",
+    "reviewedEnglishHash": "424e4a2f30c4fb8203a9746a774a54f321b1c2b735e232aabd0790f6f77c620f"
+  },
+  "connectionUi.setup.method.question": {
+    "en": "How do you want to connect?",
+    "zh-CN": "希望如何连接？",
+    "reviewedEnglishHash": "205070434f86db79fb92b872ec2aee186105753968232d070d1c6d867355c1d9"
+  },
+  "connectionUi.setup.method.required": {
+    "en": "Choose a connection method to continue.",
+    "zh-CN": "请选择连接方式以继续。",
+    "reviewedEnglishHash": "8fe10db8ed5f38426b9dac6526ba97975d5f805a09d3f07f146c9477ee2c1a3d"
+  },
+  "connectionUi.setup.method.signInWith": {
+    "en": "Sign in with {{app}}",
+    "zh-CN": "使用 {{app}} 登录",
+    "reviewedEnglishHash": "8a3fc93d4fd7c0ae197d7d5bef23ae289cc926cbabdfa6f62378b0a78f48e3ce"
+  },
+  "connectionUi.setup.method.useApiKey": {
+    "en": "Use an API key",
+    "zh-CN": "使用 API 密钥",
+    "reviewedEnglishHash": "d0490d0465c688f0d168947e99812774e7852be31538e1cdbc9e567931d3f266"
+  },
+  "connectionUi.setup.oauth.appSettings": {
+    "en": "app settings",
+    "zh-CN": "应用设置",
+    "reviewedEnglishHash": "beb470b89ed85a054f0fc32b5db044be166231ffd4e20c1427f9c1a5a6f60860"
+  },
+  "connectionUi.setup.oauth.asanaDescription": {
+    "en": "Sign in with Asana to choose your workspace and connect it to Paperclip.",
+    "zh-CN": "使用 Asana 登录以选择工作区并连接到 Paperclip。",
+    "reviewedEnglishHash": "ce90e7b0729a9ce85a2d9caf130ee6763e0144bfa209e4ecabdb9102dc0d08cf"
+  },
+  "connectionUi.setup.oauth.authorizationCancelled": {
+    "en": "Authorization was cancelled. You can try again.",
+    "zh-CN": "授权已取消。你可以重试。",
+    "reviewedEnglishHash": "55b3bdda7d2ce528653c62315ff1df75252af4270e89b895b7566dffc362f13f"
+  },
+  "connectionUi.setup.oauth.authorizationExpired": {
+    "en": "Your authorization expired or was revoked. Reconnect to continue.",
+    "zh-CN": "你的授权已过期或被撤销。请重新连接以继续。",
+    "reviewedEnglishHash": "1f86228b06730053c28ccd9c62169c3c42ded1f857a0f2f9632a557b29de7c66"
+  },
+  "connectionUi.setup.oauth.authorizationIncomplete": {
+    "en": "Authorization did not complete. Try again when you’re ready.",
+    "zh-CN": "授权未完成。准备好后请重试。",
+    "reviewedEnglishHash": "92f5ecbe8c450f36dc7329ae637cab7b76524c2ae1cf485ae53f821fe1de0717"
+  },
+  "connectionUi.setup.oauth.callbackUrl": {
+    "en": "Paperclip callback URL",
+    "zh-CN": "Paperclip 回调 URL",
+    "reviewedEnglishHash": "a3488da065073600d093f65e2013a572123fd730406133bef458484c57ae9f97"
+  },
+  "connectionUi.setup.oauth.callbackUrlHint": {
+    "en": "Add this exact URL to {{provider}} before continuing. It must match the authorization request.",
+    "zh-CN": "继续前，请将此精确 URL 添加到 {{provider}}。它必须与授权请求匹配。",
+    "reviewedEnglishHash": "88c0ac4ab000a9dbdb97986e22d17c623ef9f3c9373ca2f9274a69d56e8e988c"
+  },
+  "connectionUi.setup.oauth.checkExistingConnectionFailed": {
+    "en": "Paperclip couldn’t check for an existing connection. Try again.",
+    "zh-CN": "Paperclip 无法检查现有连接。请重试。",
+    "reviewedEnglishHash": "c9fe150812b74bb920af0c2b474d59bd642fc1bd7fd7f1868d48ff770d3779c5"
+  },
+  "connectionUi.setup.oauth.clientSecret": {
+    "en": "Client secret",
+    "zh-CN": "客户端密钥",
+    "reviewedEnglishHash": "4aded5faf15623c5c91eb87d39dbe4366fc73e1affb46dfbfcc1865e7704f157"
+  },
+  "connectionUi.setup.oauth.confirmConnectionFailed": {
+    "en": "Could not confirm the connection. Try again.",
+    "zh-CN": "无法确认连接。请重试。",
+    "reviewedEnglishHash": "da34114e674e1be1ef92b2962f90f29be85e5adc9ebc14880f179737d5b2b8ce"
+  },
+  "connectionUi.setup.oauth.connectToPaperclip": {
+    "en": "Connect {{server}} to Paperclip",
+    "zh-CN": "将 {{server}} 连接到 Paperclip",
+    "reviewedEnglishHash": "5c40a632e9ef5b3bcbf47072ccc71634727a0e4069285e08bcfcfc67c3bc179b"
+  },
+  "connectionUi.setup.oauth.continueAtHost": {
+    "en": "Continue at {{host}} to choose a workspace and approve access. Only approve access if you recognize that address.",
+    "zh-CN": "请在 {{host}} 继续选择工作区并批准访问。仅当你确认该地址可信时才批准访问。",
+    "reviewedEnglishHash": "b60f16533ba05cfbce54503e7f8932259c023d6265d28c4b010fbae34bf7712d"
+  },
+  "connectionUi.setup.oauth.continueInProvider": {
+    "en": "Continue in {{server}} to choose a workspace and approve access.",
+    "zh-CN": "请在 {{server}} 中继续选择工作区并批准访问。",
+    "reviewedEnglishHash": "92ba72a559c89a174e7767d294333b85ff4fc0c01bb397ee040caa109ba5bab1"
+  },
+  "connectionUi.setup.oauth.continueToProvider": {
+    "en": "Continue to {{server}}",
+    "zh-CN": "继续前往 {{server}}",
+    "reviewedEnglishHash": "1e3574b9f6fbdd54c3ff9a099056c519d964396ab2762f6fedfdc7d142609ad7"
+  },
+  "connectionUi.setup.oauth.continueToSignIn": {
+    "en": "Continue to sign in",
+    "zh-CN": "继续登录",
+    "reviewedEnglishHash": "d398cd0a268e4a66d1a8e26b98996445a5e9d45fc2565ba1983ac2bde746e197"
+  },
+  "connectionUi.setup.oauth.copyCallbackUrl": {
+    "en": "Copy callback URL",
+    "zh-CN": "复制回调 URL",
+    "reviewedEnglishHash": "9d985e7b76738099593ee7903574eee7a62044371095ca5582511991f8953828"
+  },
+  "connectionUi.setup.oauth.creatingConnection": {
+    "en": "Paperclip is creating a secure {{server}} connection.",
+    "zh-CN": "Paperclip 正在创建安全的 {{server}} 连接。",
+    "reviewedEnglishHash": "bc25beac26d070ff02a89a9ca5c374b0c007302eb0e5df7e254f8e960c1490ba"
+  },
+  "connectionUi.setup.oauth.finishConnecting": {
+    "en": "Finish connecting {{server}}",
+    "zh-CN": "完成连接 {{server}}",
+    "reviewedEnglishHash": "e66d92f7ddefcc5c5437f1c5f323d514f795604a82e9423a2a3acf696f8d9c37"
+  },
+  "connectionUi.setup.oauth.finishInSignInWindow": {
+    "en": "Authorization did not complete. Finish setup in the sign-in window or try again.",
+    "zh-CN": "授权未完成。请在登录窗口中完成设置，或重试。",
+    "reviewedEnglishHash": "380570213240006f8bbf72d13d11cfef7231a2a1d3a7780fc3328ebcb6dab8f6"
+  },
+  "connectionUi.setup.oauth.finishWithProvider": {
+    "en": "Finish with {{server}}",
+    "zh-CN": "通过 {{server}} 完成",
+    "reviewedEnglishHash": "da48459c0be2b9d0949ef33212f5ada941e60a0b73e73f45f6cf44d035d37910"
+  },
+  "connectionUi.setup.oauth.githubSignInWindowClosed": {
+    "en": "The sign-in window closed. Try again to finish connecting GitHub.",
+    "zh-CN": "登录窗口已关闭。请重试以完成 GitHub 连接。",
+    "reviewedEnglishHash": "e793329c95f039d35763869cf3e7255649536594fd1f191a48d3a63519e40672"
+  },
+  "connectionUi.setup.oauth.openProviderDescription": {
+    "en": "Paperclip will open {{server}} so you can choose a workspace and approve access.",
+    "zh-CN": "Paperclip 将打开 {{server}}，以便你选择工作区并批准访问。",
+    "reviewedEnglishHash": "9835f3221ac8cc54fa860002558267cc2078916bfddee7b304aff7d321787410"
+  },
+  "connectionUi.setup.oauth.openSignInInNewTab": {
+    "en": "Open sign-in in a new tab",
+    "zh-CN": "在新标签页中打开登录",
+    "reviewedEnglishHash": "8748a4a207ef67dfb792dc9b8f3c26ee38ee7c95c429e21dc9b833c5a6f40ab0"
+  },
+  "connectionUi.setup.oauth.openingProvider": {
+    "en": "Opening {{server}}",
+    "zh-CN": "正在打开 {{server}}",
+    "reviewedEnglishHash": "8621e1e6bd13b7360360028a12dea08dd73694333bf3a183052f1f3e4dc11a6f"
+  },
+  "connectionUi.setup.oauth.openingProviderProgress": {
+    "en": "Opening {{server}}…",
+    "zh-CN": "正在打开 {{server}}…",
+    "reviewedEnglishHash": "32218f8878ee19f13bb15b80651ab888bad9881d06ee86b85cc9105dd686532b"
+  },
+  "connectionUi.setup.oauth.optionalPublicClient": {
+    "en": "Optional for public clients",
+    "zh-CN": "公共客户端可选",
+    "reviewedEnglishHash": "444473bacd514ced9c186bd371bbd59bc5dbd0091e9cde7ee807dfda66e6c155"
+  },
+  "connectionUi.setup.oauth.preparing": {
+    "en": "Preparing…",
+    "zh-CN": "正在准备…",
+    "reviewedEnglishHash": "5d1fa38bcf0d88ca03d187718fd6cf8ad128f288f66d402d331476a85774d08d"
+  },
+  "connectionUi.setup.oauth.preparingSecureSignIn": {
+    "en": "Preparing secure sign-in",
+    "zh-CN": "正在准备安全登录",
+    "reviewedEnglishHash": "5909bba0d947d06245e180ee11111897088c351ac3b2c65da69a4d4fd76c9cc2"
+  },
+  "connectionUi.setup.oauth.preserveSignInFailed": {
+    "en": "Paperclip couldn’t preserve this sign-in while refreshing your account.",
+    "zh-CN": "Paperclip 在刷新你的账户时无法保留此次登录。",
+    "reviewedEnglishHash": "f28dc9ec4756953ab32d38aa806eb5c03c12c637c8fe899bc9391250e319b43a"
+  },
+  "connectionUi.setup.oauth.providerCouldNotConnect": {
+    "en": "{{server}} couldn’t connect",
+    "zh-CN": "无法连接 {{server}}",
+    "reviewedEnglishHash": "b3ad44a3418c43853deaa9867b2d73c9ffb7ccd2a1630409d818b93488d1b8f0"
+  },
+  "connectionUi.setup.oauth.providerMustRegister": {
+    "en": "{{provider}} does not let Paperclip register itself automatically, so this connector needs an OAuth app you create. Add the callback URL below in {{provider}}, then paste the client details back here.",
+    "zh-CN": "{{provider}} 不允许 Paperclip 自动注册，因此此连接器需要你创建 OAuth 应用。请在 {{provider}} 中添加下方回调 URL，再将客户端信息粘贴回此处。",
+    "reviewedEnglishHash": "7a972dd4154aed782dfc3e8753bc04128b0599e7f9d77b65c33428ee35c63fad"
+  },
+  "connectionUi.setup.oauth.registerCallback": {
+    "en": "Register Paperclip's callback URI in {{provider}}, then enter the customer-owned client details.",
+    "zh-CN": "请在 {{provider}} 中注册 Paperclip 回调 URI，然后输入客户自有的客户端信息。",
+    "reviewedEnglishHash": "495eb61469bcb42d07d270d967d943bd5ed08eadd1206afa28d25fbe382bd608"
+  },
+  "connectionUi.setup.oauth.savedConnectionDescription": {
+    "en": "Your connection is saved. Continue in {{server}} to approve access; its identity and agent access will stay the same.",
+    "zh-CN": "连接已保存。请在 {{server}} 中继续批准访问；其身份和智能体访问权限将保持不变。",
+    "reviewedEnglishHash": "9ce751a6beb67300782babdc3211bde38d12514ec056f1c42045ddbe8fd5e26e"
+  },
+  "connectionUi.setup.oauth.secureMcpSignIn": {
+    "en": "Secure MCP sign-in",
+    "zh-CN": "安全 MCP 登录",
+    "reviewedEnglishHash": "34371ed8e6b24b09e8e40c3bcd834eac8b9145147e46ef94fb3ee879a156e320"
+  },
+  "connectionUi.setup.oauth.signInWindowClosed": {
+    "en": "The sign-in window closed. If authorization did not finish, try again.",
+    "zh-CN": "登录窗口已关闭。若授权尚未完成，请重试。",
+    "reviewedEnglishHash": "03eca28dc725679cabd582178420c3d0d600d1f3ff61f9730f117853c0df9fd6"
+  },
+  "connectionUi.setup.oauth.signInWindowUnavailable": {
+    "en": "Paperclip couldn’t open the sign-in window. Open sign-in in a new tab to continue.",
+    "zh-CN": "Paperclip 无法打开登录窗口。请在新标签页中打开登录以继续。",
+    "reviewedEnglishHash": "b45b111ebc8e84167320de0afbbe4084e2b62e8b085cbeed7a2554b6392c8b68"
+  },
+  "connectionUi.setup.oauth.startSignInFailed": {
+    "en": "Paperclip couldn’t start secure sign-in. Try again.",
+    "zh-CN": "Paperclip 无法启动安全登录。请重试。",
+    "reviewedEnglishHash": "47928280e972183773175d0e22526e2af4c335982d8b3d9d5dcbfb9adbd6c4ab"
+  },
+  "connectionUi.setup.oauth.thisServer": {
+    "en": "this server",
+    "zh-CN": "此服务器",
+    "reviewedEnglishHash": "98bf14a4321304dfedda5b7aa42a29ccee14192f13d1a8a80230409dc291c766"
+  },
+  "connectionUi.setup.oauth.vercelConnectorDescription": {
+    "en": "Paperclip does not copy Vercel’s setup forms. Finish connector setup there, then paste its UID below.",
+    "zh-CN": "Paperclip 不会复制 Vercel 的设置表单。请先在那里完成连接器设置，再在下方粘贴其 UID。",
+    "reviewedEnglishHash": "71d1555a89e32df7a016dd74166b15707f47e60b41503ec635142cc88e308d6e"
+  },
+  "connectionUi.setup.oauth.vercelConnectorId": {
+    "en": "Connector UID or ID",
+    "zh-CN": "连接器 UID 或 ID",
+    "reviewedEnglishHash": "d6b52670929d19d6e6dcf5cdad025aac931660ce1bbac7370ef0c18c40c13a6e"
+  },
+  "connectionUi.setup.oauth.vercelConnectorIdHint": {
+    "en": "Paperclip validates the connector and stores only its reference and redacted verification metadata.",
+    "zh-CN": "Paperclip 会验证连接器，并只保存其引用和已脱敏的验证元数据。",
+    "reviewedEnglishHash": "dcb1d31f08aaa8703bb0aa54d9d9b0a86f34cfaa85835e0d88d26c5daf86b813"
+  },
+  "connectionUi.setup.oauth.vercelConnectorTitle": {
+    "en": "Create or attach the connector in Vercel",
+    "zh-CN": "在 Vercel 中创建或关联连接器",
+    "reviewedEnglishHash": "edd8ec05202b505c3f8adada304c390a467ca433e139e5b499a1ff0f1813d876"
+  },
+  "connectionUi.setup.oauthCancelled": {
+    "en": "Authorization was cancelled or declined. Your saved connection was not changed.",
+    "zh-CN": "授权已取消或被拒绝。已保存的连接未被更改。",
+    "reviewedEnglishHash": "65b751da07e33d9a12062afccb20988d619e1e4efc9608e0ebdc68aa12526f6c"
+  },
+  "connectionUi.setup.oauthIncomplete": {
+    "en": "Authorization did not complete. Your saved connection is still here, so you can try again.",
+    "zh-CN": "授权未完成。已保存的连接仍在此处，你可以重试。",
+    "reviewedEnglishHash": "675b3b117cddfd821b46a6df48b54871da1df35809c16ce83ebebc71dcae5209"
+  },
+  "connectionUi.setup.providerNeedsOwnOAuthApp": {
+    "en": "{{provider}} needs its own OAuth app",
+    "zh-CN": "{{provider}} 需要使用自己的 OAuth 应用",
+    "reviewedEnglishHash": "c28c82d249ba9f6b2a36d621ae3aa17f279603f533b8070177fd1d2146ce88cd"
+  },
+  "connectionUi.setup.signInUnavailable": {
+    "en": "{{provider}} sign-in is unavailable",
+    "zh-CN": "{{provider}} 登录不可用",
+    "reviewedEnglishHash": "dfe4645e6346caae3ebcd29b7511190d331dfe70687a8f74f0032d1e8a89a301"
+  },
+  "connectionUi.setup.signInUnavailableDescription": {
+    "en": "This instance is connected to Paperclip, but {{provider}} sign-in is not currently available. Try again shortly or contact your instance administrator.",
+    "zh-CN": "此实例已连接到 Paperclip，但目前无法登录 {{provider}}。请稍后重试或联系实例管理员。",
+    "reviewedEnglishHash": "f5ec195221230fb50d5c61f7250a6e28cfe24b659b31e0e5914492fcc49aad36"
+  },
+  "connectionUi.setup.stepProgress": {
+    "en": "Step {{current}} of {{total}}",
+    "zh-CN": "第 {{current}} 步，共 {{total}} 步",
+    "reviewedEnglishHash": "8326f20fd658758d9533723a02ce35b9631e25e8546e807b4687f4c39a550781"
+  },
+  "connectionUi.setup.steps.addMcpUrl": {
+    "en": "Add MCP URL",
+    "zh-CN": "添加 MCP URL",
+    "reviewedEnglishHash": "0a0ea6dcbdddbf695ad51faf91138a5675add32c17729d0a81a51b315e86b5c2"
+  },
+  "connectionUi.setup.steps.addYourKey": {
+    "en": "Add your key",
+    "zh-CN": "添加你的密钥",
+    "reviewedEnglishHash": "9e16f672c6401694afb0ebf6447f4c60d88007d205dffd8c957b312da52df2a0"
+  },
+  "connectionUi.setup.steps.chooseConnection": {
+    "en": "Choose connection",
+    "zh-CN": "选择连接",
+    "reviewedEnglishHash": "e9bd8aedc06c97c84266164acb8b7123347b197d14bbe887dda0b758c0e81c1a"
+  },
+  "connectionUi.setup.steps.connectAccount": {
+    "en": "Connect account",
+    "zh-CN": "连接账户",
+    "reviewedEnglishHash": "f7d845186faa7ab8c4ab602970dbfda56ca3b19f4617a21bcb833127713965ad"
+  },
+  "connectionUi.setup.steps.pickApp": {
+    "en": "Pick app",
+    "zh-CN": "选择应用",
+    "reviewedEnglishHash": "79b37c64062fe31bb2435c4fcebfbc7da800fc583e9a30e1968fa1c4c0c08314"
+  },
+  "connectionUi.setup.steps.reconnectAccount": {
+    "en": "Reconnect account",
+    "zh-CN": "重新连接账户",
+    "reviewedEnglishHash": "8e44ffb1e3130dce694bb5b5327ed6b04a91192fe4eacc40fd5c3a56da7577e7"
+  },
+  "connectionUi.setup.steps.shareSheet": {
+    "en": "Share sheet",
+    "zh-CN": "共享表格",
+    "reviewedEnglishHash": "fee83c8e6886b6cb5e58653eafb7ed0092d8a316a0e10ca115ce8c224740e8d7"
+  },
+  "connectionUi.setup.steps.signIn": {
+    "en": "Sign in",
+    "zh-CN": "登录",
+    "reviewedEnglishHash": "bfd402b2f6f3812529b55596136d3a11c51616317e3b1cd999928e2d4eae7d3f"
+  },
+  "connectionUi.setup.tryAgain": {
+    "en": "Please try again.",
+    "zh-CN": "请重试。",
+    "reviewedEnglishHash": "eea4fb33efd382834952e3e7ab52f8dc41ccc2c3f5c3f246f0505235e0e962aa"
+  },
+  "connectionUi.setup.unavailableOnInstance": {
+    "en": "Unavailable on this instance.",
+    "zh-CN": "此实例中不可用。",
+    "reviewedEnglishHash": "4276fc090b5e2aa475de03756e113c5a5630d340d7bc3f50dd02dd1e9a225a4c"
+  },
+  "connectionUi.setup.useExistingConnectionFailed": {
+    "en": "Couldn’t use this connection.",
+    "zh-CN": "无法使用此连接。",
+    "reviewedEnglishHash": "d35a704937c1d6353de322c41d2ffe9fa1c459c02561167204109de3d7288c16"
+  },
+  "connectionUi.setup.useOwnOAuthApp": {
+    "en": "Use your own {{provider}} OAuth app",
+    "zh-CN": "使用你自己的 {{provider}} OAuth 应用",
+    "reviewedEnglishHash": "157c6dd100eee80a43ec11ece0be3b44eddf8fa4b6a882f8ff548a70a36081a4"
+  },
+  "connectionUi.setup.vercel.connectThrough": {
+    "en": "Connect through Vercel",
+    "zh-CN": "通过 Vercel 连接",
+    "reviewedEnglishHash": "70d9459fc12a47ac1fdfa54b712b6c29db45412a283ed3642f8f855621522abb"
+  },
+  "connectionUi.setup.vercel.galleryDescription": {
+    "en": "Create and manage the provider connector in Vercel. Paperclip stores its reference and applies agent access, policy, approval, and audit controls here.",
+    "zh-CN": "请在 Vercel 中创建和管理服务商连接器。Paperclip 会保存其引用，并在此应用智能体访问、策略、审批和审计控制。",
+    "reviewedEnglishHash": "18a6226d709ca9a2f887a4e2572037d59e1a1c65d1bdd3a696c0d3756f7c421a"
+  },
+  "connectionUi.setup.vercel.openConnect": {
+    "en": "Open Vercel Connect",
+    "zh-CN": "打开 Vercel Connect",
+    "reviewedEnglishHash": "781aa333e3fb303b160466c43a16f4f4c0dc3354ea0193e8d6f2cd25c1cf57a9"
+  },
+  "connectionUi.setup.vercel.unavailable": {
+    "en": "Vercel Connect is unavailable on this instance.",
+    "zh-CN": "此实例中 Vercel Connect 不可用。",
+    "reviewedEnglishHash": "e4932f215acd2c0157da6c4c0ce84d8265703dce14d3d3c8030856931b688723"
+  },
+  "connectionUi.setup.vercel.validateAndConnect": {
+    "en": "Validate and connect",
+    "zh-CN": "验证并连接",
+    "reviewedEnglishHash": "d0fe8bf38eed5f5687ea7f38a0d5d969e403fd67f7673472f1c47c9fcd843e3b"
+  },
+  "connectionUi.setup.vercel.validateAndContinue": {
+    "en": "Validate and continue",
+    "zh-CN": "验证并继续",
+    "reviewedEnglishHash": "1c06d7201b70a3a48ddb1ae75347aec5821093ff869963f68743bf874c0e6d35"
+  },
+  "connectionUi.signInToProvider": {
+    "en": "Sign in to {{provider}}",
+    "zh-CN": "登录 {{provider}}",
+    "reviewedEnglishHash": "b47688800f56bdaef54b307a8c353d613a5779a7330cfefc691a8a5707591c89"
+  },
+  "connectionUi.useApiKeyInstead": {
+    "en": "Use API key instead",
+    "zh-CN": "改用 API 密钥",
+    "reviewedEnglishHash": "91c16a846a6357b805819bb3d089447a6153fce2d872a1ea6e705a4b9433953c"
+  },
+  "connectionUi.useSavedApiKey": {
+    "en": "Use saved API key",
+    "zh-CN": "使用已保存的 API 密钥",
+    "reviewedEnglishHash": "b2c9e5ba133d74fcea99ddea7fe4bfa01db0e67a7218560252df35a1225eaad4"
+  },
+  "connectionUi.useSavedSubscription": {
+    "en": "Use saved subscription",
+    "zh-CN": "使用已保存的订阅",
+    "reviewedEnglishHash": "5adae315ee3e678f3cb1e16ea32209bef1f42c0f87ac85e854433da87e336125"
+  },
+  "connectionUi.useSubscriptionInstead": {
+    "en": "Use subscription instead",
+    "zh-CN": "改用订阅",
+    "reviewedEnglishHash": "03050a116e6e9bfad3361350b72b40d9387173e3af52dcedca7f912667c8e52a"
+  },
+  "connectionUi.waitingForCode": {
+    "en": "Waiting for code",
+    "zh-CN": "正在等待验证码",
+    "reviewedEnglishHash": "f22b705c3b7ce68f30f6056bbefc696c593a34a6b942e21f42c5b3d580f06018"
+  }
+}

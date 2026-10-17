@@ -1,0 +1,57 @@
+{
+  "workspaceService.copy.action": {
+    "en": "Copy URL",
+    "zh-CN": "复制 URL",
+    "reviewedEnglishHash": "b26d1037f1c2da31a0296d915982f12049f91bfedb998b105ce967b73a796699"
+  },
+  "workspaceService.copy.copied": {
+    "en": "URL copied",
+    "zh-CN": "URL 已复制",
+    "reviewedEnglishHash": "0017bda4785398554bce6ca491883f232dbb4484f87d443b5e86f408a7e62430"
+  },
+  "workspaceService.copy.failed": {
+    "en": "Copy failed",
+    "zh-CN": "复制失败",
+    "reviewedEnglishHash": "5b50e7a693fee952b9ed0e7c240bf4cba69b1dbf02af718145b297e4110591f3"
+  },
+  "workspaceService.status.failed": {
+    "en": "Failed",
+    "zh-CN": "失败",
+    "reviewedEnglishHash": "031a8f0f659df890dfd53c92e45295b0f14c997185bae46e168831e403b273f7"
+  },
+  "workspaceService.status.provisioning": {
+    "en": "Provisioning…",
+    "zh-CN": "供应中…",
+    "reviewedEnglishHash": "62cd0e7db7caf32bac9d185db32bc4e743f6c1bf3c6df98ce011b0001a3200f0"
+  },
+  "workspaceService.status.restarting": {
+    "en": "Restarting…",
+    "zh-CN": "重启中…",
+    "reviewedEnglishHash": "75d0f1469d166c8cc906cae019a298ae25df9a5198a099a0f2b54ff2c925d716"
+  },
+  "workspaceService.status.running": {
+    "en": "Running",
+    "zh-CN": "运行中",
+    "reviewedEnglishHash": "f4ccae29e1bb0c20a124570a1b43f4347ea94bba9f84ffdfddd9c7445b126128"
+  },
+  "workspaceService.status.starting": {
+    "en": "Starting…",
+    "zh-CN": "启动中…",
+    "reviewedEnglishHash": "bbe5fc3b9ef39f994c259eaf233d625a500b5219784c82f73b50808d4f79d5dc"
+  },
+  "workspaceService.status.stopped": {
+    "en": "Stopped",
+    "zh-CN": "已停止",
+    "reviewedEnglishHash": "1a4f630ac1b69fd00728fa8a672ded71d0eae8516cb23e78f94529113399b79b"
+  },
+  "workspaceService.status.stopping": {
+    "en": "Stopping…",
+    "zh-CN": "停止中…",
+    "reviewedEnglishHash": "bbe8574175aba84f29afa398a91f00ad7598ff0b98e3ae1ddc5473d1b8c0b0ee"
+  },
+  "workspaceService.status.unhealthy": {
+    "en": "Unhealthy",
+    "zh-CN": "不健康",
+    "reviewedEnglishHash": "317b1fbc1e13beebd420d71c7f2833fbd7a4115036af2fb912d24bebc06999eb"
+  }
+}

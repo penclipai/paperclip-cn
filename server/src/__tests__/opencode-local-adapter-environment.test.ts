@@ -20,16 +20,20 @@ describe("opencode_local environment diagnostics", () => {
       config: {
         command: process.execPath,
         cwd,
+        env: { XDG_CONFIG_HOME: path.join(cwd, "config") },
       },
     });
 
     expect(result.checks.some((check) => check.code === "opencode_cwd_invalid")).toBe(true);
     expect(result.checks.some((check) => check.level === "error")).toBe(true);
     expect(result.status).toBe("fail");
-  }, 45_000);
+  });
 
   it("treats an empty OPENAI_API_KEY override as missing", async () => {
     const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-opencode-env-empty-key-"));
+    // This case tests environment precedence, not model-discovery retry delays.
+    const fakeOpencode = path.join(cwd, "opencode");
+    await fs.writeFile(fakeOpencode, "#!/bin/sh\necho openai/test-model\n", { mode: 0o755 });
     const originalOpenAiKey = process.env.OPENAI_API_KEY;
     process.env.OPENAI_API_KEY = "sk-host-value";
 
@@ -38,10 +42,11 @@ describe("opencode_local environment diagnostics", () => {
         companyId: "company-1",
         adapterType: "opencode_local",
         config: {
-          command: process.execPath,
+          command: fakeOpencode,
           cwd,
           env: {
             OPENAI_API_KEY: "",
+            XDG_CONFIG_HOME: path.join(cwd, "config"),
           },
         },
       });
@@ -57,30 +62,49 @@ describe("opencode_local environment diagnostics", () => {
       }
       await fs.rm(cwd, { recursive: true, force: true });
     }
-  }, 45_000);
+  }, 10_000);
 
   it("classifies ProviderModelNotFoundError probe output as model-unavailable warning", async () => {
     const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-opencode-env-probe-cwd-"));
     const binDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-opencode-env-probe-bin-"));
     const fakeOpencode = path.join(binDir, "opencode");
     const script = [
-      "#!/usr/bin/env node",
-      "process.stderr.write('ProviderModelNotFoundError: ProviderModelNotFoundError\\n');",
-      "process.stderr.write('data: { providerID: \"openai\", modelID: \"gpt-5.3-codex\", suggestions: [] }\\n');",
-      "process.exit(1);",
+      "#!/bin/sh",
+      "echo 'ProviderModelNotFoundError: ProviderModelNotFoundError' 1>&2",
+      "echo 'data: { providerID: \"openai\", modelID: \"gpt-5.3-codex\", suggestions: [] }' 1>&2",
+      "exit 1",
       "",
     ].join("\n");
 
     try {
-      await fs.writeFile(fakeOpencode, script, "utf8");
-      await fs.chmod(fakeOpencode, 0o755);
+      if (process.platform === "win32") {
+        await fs.writeFile(
+          `${fakeOpencode}.fixture.cjs`,
+          "process.stderr.write('ProviderModelNotFoundError: ProviderModelNotFoundError\\n');\n" +
+            "process.stderr.write('data: { providerID: \"openai\", modelID: \"gpt-5.3-codex\", suggestions: [] }\\n');\n" +
+            "process.exit(1);\n",
+          "utf8",
+        );
+        await fs.writeFile(
+          `${fakeOpencode}.cmd`,
+          `@echo off\r\n"${process.execPath}" "%~dp0opencode.fixture.cjs" %*\r\n`,
+          "utf8",
+        );
+      } else {
+        await fs.writeFile(fakeOpencode, script, "utf8");
+        await fs.chmod(fakeOpencode, 0o755);
+      }
 
       const result = await testEnvironment({
         companyId: "company-1",
         adapterType: "opencode_local",
         config: {
-          command: fakeOpencode,
+          command: process.platform === "win32" ? "opencode" : fakeOpencode,
           cwd,
+          env: {
+            XDG_CONFIG_HOME: path.join(cwd, "config"),
+            ...(process.platform === "win32" ? { PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}` } : {}),
+          },
         },
       });
 
@@ -92,5 +116,5 @@ describe("opencode_local environment diagnostics", () => {
       await fs.rm(cwd, { recursive: true, force: true });
       await fs.rm(binDir, { recursive: true, force: true });
     }
-  }, 45_000);
+  }, 10_000);
 });

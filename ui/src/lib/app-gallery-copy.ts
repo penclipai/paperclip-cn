@@ -1,3 +1,5 @@
+import { translateInstant } from "@/i18n";
+
 /**
  * Prosumer copy for the Apps surface (PAP-10856).
  *
@@ -45,6 +47,44 @@ export interface AppCopy {
 }
 
 /**
+ * Only these catalog-owned slugs may use the shared description templates.
+ * The gallery also includes dynamic router entries, so matching a sentence
+ * shape alone would overwrite third-party descriptions and lose meaning.
+ */
+const PROVIDER_HOSTED_MCP_SLUGS = new Set([
+  "airtable", "asana", "beehiiv", "bitly", "box", "brex", "candid",
+  "clickhouse", "cloudflare", "cloudinary", "coda", "egnyte", "embat",
+  "hugging-face", "jira", "kernel", "local-falcon", "make", "manufact",
+  "miro", "mixpanel", "netlify", "oreilly", "pagerduty", "planetscale",
+  "postman", "razorpay", "resend", "sanity", "similarweb", "stripe",
+  "supabase", "ticket-tailor", "ticktick", "todoist", "webflow", "wix",
+  "xero", "youcom",
+]);
+
+const PROVIDER_ACCOUNT_SLUGS = new Set(["google", "openai", "openrouter", "xai"]);
+
+const STATIC_DESCRIPTION_KEYS: Record<string, string> = {
+  agentmail: "apps.gallery.appDescription.agentmail",
+  "browser-use-cloud": "apps.gallery.appDescription.browserUseCloud",
+  cognee: "apps.gallery.appDescription.cognee",
+  fireflies: "apps.gallery.appDescription.fireflies",
+  calendly: "apps.gallery.appDescription.calendly",
+  "chat-completions-api": "apps.gallery.appDescription.chatCompletionsApi",
+  composio: "apps.gallery.appDescription.composio",
+  enterpret: "apps.gallery.appDescription.enterpret",
+  exa: "apps.gallery.appDescription.exa",
+  executor: "apps.gallery.appDescription.executor",
+  firecrawl: "apps.gallery.appDescription.firecrawl",
+  "gsc-wizard": "apps.gallery.appDescription.gscWizard",
+  local: "apps.gallery.appDescription.local",
+  "messages-api": "apps.gallery.appDescription.messagesApi",
+  "parallel-search": "apps.gallery.appDescription.parallelSearch",
+  "responses-api": "apps.gallery.appDescription.responsesApi",
+  sentry: "apps.gallery.appDescription.sentry",
+  shopify: "apps.gallery.appDescription.shopify",
+};
+
+/**
  * Curated prosumer copy keyed by gallery key. Taken from the M-series wires
  * (https://happy-grove-jzyc.here.now/). Apps without an entry fall back to a
  * generic, gate-safe line.
@@ -66,17 +106,65 @@ const APP_COPY: Record<string, AppCopy> = {
     tagline: "Read and update pages in your workspace.",
     short: "Read and update pages in your workspace.",
   },
+  railway: {
+    tagline: "Inspect services, read logs, and manage deployments.",
+    short: "Connect Railway for deployments, logs, and container access.",
+  },
+  posthog: {
+    tagline: "Explore product usage, errors, flags, and experiments.",
+    short: "Sign in with PostHog. Project pinning and access controls are optional.",
+  },
+  gauge: {
+    tagline: "Track your brand in AI answers and run content workflows.",
+    short: "Sign in with Gauge and pick an organization. API keys are optional.",
+  },
+  neon: {
+    tagline: "Manage Postgres projects, branches, and queries.",
+    short: "Sign in with Neon. Project pinning and read-only mode are optional.",
+  },
+  superagent: {
+    tagline: "Review security findings and run red-team checks.",
+    short: "Connect with a Superagent API key. Billable and destructive tools stay under action policies.",
+  },
   linear: {
     tagline: "Create, update and read tickets.",
     short: "Create, update and read tickets.",
   },
   "google-sheets": {
     tagline: "Read and update selected spreadsheets.",
-    short: "Share each sheet with the robot email, then paste the links.",
+    short: "Read spreadsheets or update the files you choose.",
   },
   gmail: {
-    tagline: "Read mail and send drafts for your review.",
-    short: "Read mail and send drafts for your review.",
+    tagline: "Read mail and create drafts for your review.",
+    short: "Read mail and create drafts for your review.",
+  },
+  "google-drive": {
+    tagline: "Find, read, and create files in Drive.",
+    short: "Find, read, and create files in Drive.",
+  },
+  "google-docs": {
+    tagline: "Read and update documents.",
+    short: "Read and update documents.",
+  },
+  "google-slides": {
+    tagline: "Read and update presentations.",
+    short: "Read and update presentations.",
+  },
+  "google-calendar": {
+    tagline: "Review calendars and manage events.",
+    short: "Review calendars and manage events.",
+  },
+  "google-chat": {
+    tagline: "Read conversations and send messages.",
+    short: "Read conversations and send messages.",
+  },
+  "google-people": {
+    tagline: "Look up contacts and people in your directory.",
+    short: "Look up contacts and people in your directory.",
+  },
+  "google-workspace-search": {
+    tagline: "Search across your Google workspace.",
+    short: "Search across your Google workspace.",
   },
   hubspot: {
     tagline: "Look up contacts and update deal stages.",
@@ -105,15 +193,47 @@ const GENERIC: AppCopy = {
   short: "Give your agents access to this app.",
 };
 
-/** Curated, gate-safe copy for a gallery app. */
-export function appCopyFor(key: string, fallbackTagline?: string | null): AppCopy {
+/** Curated application copy is resolved at render time for the selected locale. */
+export function appCopyFor(
+  key: string,
+  fallbackTagline?: string | null,
+): AppCopy {
   const curated = APP_COPY[key];
-  if (curated) return curated;
+  if (curated) return {
+    tagline: translateInstant(curated.tagline),
+    short: translateInstant(curated.short),
+  };
+  const staticDescriptionKey = STATIC_DESCRIPTION_KEYS[key];
+  if (staticDescriptionKey) {
+    const tagline = translateInstant(staticDescriptionKey);
+    return { tagline, short: tagline };
+  }
+  if (PROVIDER_HOSTED_MCP_SLUGS.has(key)) {
+    const providerHosted = fallbackTagline?.match(/^Connect (.+)'s provider-hosted MCP server\.$/);
+    if (providerHosted) {
+      const tagline = translateInstant("apps.gallery.appDescription.providerHostedMcp", {
+        appName: providerHosted[1],
+      });
+      return { tagline, short: tagline };
+    }
+  }
+  if (PROVIDER_ACCOUNT_SLUGS.has(key)) {
+    const accountProvider = fallbackTagline?.match(/^Connect (.+) accounts for your agents\.$/);
+    if (accountProvider) {
+      const tagline = translateInstant("apps.gallery.appDescription.providerAccounts", {
+        appName: accountProvider[1],
+      });
+      return { tagline, short: tagline };
+    }
+  }
   if (fallbackTagline) {
     const cleaned = sanitizeProsumerCopy(fallbackTagline);
     if (cleaned) return { tagline: cleaned, short: cleaned };
   }
-  return GENERIC;
+  return {
+    tagline: translateInstant(GENERIC.tagline),
+    short: translateInstant(GENERIC.short),
+  };
 }
 
 /**
@@ -127,7 +247,7 @@ export function credentialFieldLabel(
   rawLabel: string,
   fieldCount: number,
 ): string {
-  if (fieldCount <= 1) return `Your ${appName} key`;
+  if (fieldCount <= 1) return translateInstant("apps.gallery.yourAppKey", { appName });
   const cleaned = sanitizeProsumerCopy(rawLabel);
-  return cleaned || `Your ${appName} key`;
+  return cleaned || translateInstant("apps.gallery.yourAppKey", { appName });
 }

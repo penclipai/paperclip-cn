@@ -75,6 +75,10 @@ vi.mock("../services/index.js", () => ({
   workProductService: () => ({}),
 }));
 
+vi.mock("../services/fast-responses.js", () => ({
+  enqueueFastResponse: vi.fn(async () => undefined),
+}));
+
 function createApp() {
   const app = express();
   app.use(express.json());
@@ -88,7 +92,13 @@ function createApp() {
     };
     next();
   });
-  app.use("/api", issueRoutes({} as any, {} as any));
+  app.use(
+    "/api",
+    issueRoutes(
+      { transaction: async (callback: (tx: unknown) => unknown) => callback({}) } as any,
+      {} as any,
+    ),
+  );
   app.use(errorHandler);
   return app;
 }

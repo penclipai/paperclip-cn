@@ -1,0 +1,7 @@
+{
+  "agentFiles.downloadAtCapacity": {
+    "en": "Agent file downloads are temporarily at capacity. Retry shortly.",
+    "zh-CN": "智能体文件下载已达到容量上限，请稍后重试。",
+    "reviewedEnglishHash": "13d0a5cda5b211bb41953bb148574bca676dd264ecce5f796641e72eb75ef97c"
+  }
+}

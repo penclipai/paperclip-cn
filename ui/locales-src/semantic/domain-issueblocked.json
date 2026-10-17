@@ -1,0 +1,202 @@
+{
+  "issueBlocked.assignee": {
+    "en": "the assignee",
+    "zh-CN": "负责人",
+    "reviewedEnglishHash": "f584ae3a02bdc5200f51eaccf5cdbc770a9132a970182b79f099cbe1c1e3acee"
+  },
+  "issueBlocked.blockedByMany": {
+    "en": "Work on this task is blocked by {{blockerLabel}} until they are complete. Comments still wake the assignee for questions or triage.",
+    "zh-CN": "此任务被{{blockerLabel}}阻塞，直到它们完成为止。评论仍会唤醒负责人以处理问题或分诊。",
+    "reviewedEnglishHash": "42a91f6a4049cd81d0fba45e964b17c68b5628850dd31bc6d301eb124c686fde"
+  },
+  "issueBlocked.blockedByOne": {
+    "en": "Work on this task is blocked by {{blockerLabel}} until it is complete. Comments still wake the assignee for questions or triage.",
+    "zh-CN": "此任务被{{blockerLabel}}阻塞，直到它完成为止。评论仍会唤醒负责人以处理问题或分诊。",
+    "reviewedEnglishHash": "969a3a34d53528e3a0b91a7171d640682b3859fdee277be24c97a98df5f3f1c0"
+  },
+  "issueBlocked.blockedNoLinks": {
+    "en": "Work on this task is blocked until it is moved back to todo. Comments still wake the assignee for questions or triage.",
+    "zh-CN": "此任务处于阻塞状态，直到它被移回待办。评论仍会唤醒负责人以处理问题或分诊。",
+    "reviewedEnglishHash": "e231766b7aed553001a3ddb210c7274e63982e37681e35d9680cb7702428afd9"
+  },
+  "issueBlocked.correctiveWakeQueued": {
+    "en": "Corrective wake queued for {{agentName}}",
+    "zh-CN": "已为 {{agentName}} 排队纠偏唤醒",
+    "reviewedEnglishHash": "825f84cf68de2226ee0c9b9f68eee211e240ebf803d79afb76ac6dc0bad177f1"
+  },
+  "issueBlocked.detectedProgress": {
+    "en": "Detected progress: {{summary}}",
+    "zh-CN": "检测到进展：{{summary}}",
+    "reviewedEnglishHash": "417843a45d167a5aace3a0f05c8e0eafbb3769b3fd284f325db8781541a1767b"
+  },
+  "issueBlocked.linkedIssue": {
+    "en": "the linked task",
+    "zh-CN": "关联任务",
+    "reviewedEnglishHash": "bd75976ea871694df4d47950f03438b11816fd908aced24603252addb5bc2503"
+  },
+  "issueBlocked.linkedIssues": {
+    "en": "the linked tasks",
+    "zh-CN": "关联任务",
+    "reviewedEnglishHash": "a90141d6e5847e6e6e2f9e484b9edd08000e365bef5ad0a5e4f1b395d7a5f66b"
+  },
+  "issueBlocked.otherBlockers_one": {
+    "en": " and {{count}} other task",
+    "zh-CN": "，另有 {{count}} 个任务",
+    "reviewedEnglishHash": "7502428feeea690d88481c766c23b47e557fcabff7b912d5a7a98544fb623abc"
+  },
+  "issueBlocked.otherBlockers_other": {
+    "en": " and {{count}} other tasks",
+    "zh-CN": "，另有 {{count}} 个任务",
+    "reviewedEnglishHash": "33d1111df8119abbcd910d9d2a9df91faf6d24c4898071ae63791014d70fa9f5"
+  },
+  "issueBlocked.parkedWork": {
+    "en": "Blocked by parked work",
+    "zh-CN": "被搁置的任务阻塞",
+    "reviewedEnglishHash": "8b239473a30cf86f440d50499e9548d60436d13edaa2a31b21c7cf0ebd952e65"
+  },
+  "issueBlocked.parkedWorkTitle": {
+    "en": "Blocked by parked work - at least one assigned blocker is in backlog and will not wake its assignee.",
+    "zh-CN": "被搁置的任务阻塞 - 至少一个已分配的阻塞任务仍在待规划状态，不会唤醒负责人。",
+    "reviewedEnglishHash": "96fdad439f211bf001205932883ebda578a1663fc347a31a2738e98415ee6816"
+  },
+  "issueBlocked.recoveryIndicatorTitle": {
+    "en": "{{label}} - open the source issue to act.",
+    "zh-CN": "{{label}} - 打开来源任务进行处理。",
+    "reviewedEnglishHash": "7a7259237db675c232d8dd545039123a7f56b9fd24bf210b39b278a58779035c"
+  },
+  "issueBlocked.reopenSuppressedMany": {
+    "en": "A message won’t move this back to todo yet — it stays blocked by {{blockerLabel}} until they are done, then it reopens automatically. Comments still wake {{responsibleName}} for questions or triage in the meantime.",
+    "zh-CN": "消息暂时不会将此任务移回待办；它仍被{{blockerLabel}}阻塞，全部完成后会自动重新打开。在此期间，评论仍会唤醒{{responsibleName}}处理问题或分诊。",
+    "reviewedEnglishHash": "5cdacae2126ed569e7ba468d75c1c55804370e49e342b4adfea74b15aab93d15"
+  },
+  "issueBlocked.reopenSuppressedOne": {
+    "en": "A message won’t move this back to todo yet — it stays blocked by {{blockerLabel}} until it is done, then it reopens automatically. Comments still wake {{responsibleName}} for questions or triage in the meantime.",
+    "zh-CN": "消息暂时不会将此任务移回待办；它仍被{{blockerLabel}}阻塞，完成后会自动重新打开。在此期间，评论仍会唤醒{{responsibleName}}处理问题或分诊。",
+    "reviewedEnglishHash": "908ee848135ab6759d696e23e326646d8f78705fab26c45fb7e49447094644ee"
+  },
+  "issueBlocked.responsibleAgent": {
+    "en": "the responsible agent",
+    "zh-CN": "负责的智能体",
+    "reviewedEnglishHash": "7740fb47a77633145e46cf70d52ebf8fe64250c558b19b7859f49c6613a05d23"
+  },
+  "issueBlocked.retryNowDescription": {
+    "en": "Corrective wake {{scheduleLabel}}. Retry now starts the same recovery path immediately.",
+    "zh-CN": "纠偏唤醒{{scheduleLabel}}。立即重试会马上启动同一条恢复路径。",
+    "reviewedEnglishHash": "f2bb01c290672642135e3810b4fd0c908c831a6c734a7ac4d2f5e3a52a96a4a8"
+  },
+  "issueBlocked.runShort": {
+    "en": "run {{id}}",
+    "zh-CN": "运行 {{id}}",
+    "reviewedEnglishHash": "ac3a7d54b2250a4ebbb4c9ad27504d0f91ac99f24dfc717427de96e729cce004"
+  },
+  "issueBlocked.stalledInReview": {
+    "en": "Stalled in review",
+    "zh-CN": "评审中停滞",
+    "reviewedEnglishHash": "0fc03143b2897da2fad9f533fecf012523c414d424f3372e066e8da2bbad4891"
+  },
+  "issueBlocked.stalledMany": {
+    "en": "Work on this task is blocked by {{blockerLabel}}, but the chain is stalled in review without a clear next step. Resolve the stalled reviews below or remove them as blockers.",
+    "zh-CN": "此任务被{{blockerLabel}}阻塞，但阻塞链在评审中停滞，且没有明确下一步。请处理下方停滞的评审，或移除它们的阻塞关系。",
+    "reviewedEnglishHash": "01a098b14ca0e522bdbff967e7caeebd10ea553f806bceba47c7b12f6ca87915"
+  },
+  "issueBlocked.stalledOne": {
+    "en": "Work on this task is blocked by {{blockerLabel}}, but the chain is stalled in review without a clear next step. Resolve the stalled review below or remove it as a blocker.",
+    "zh-CN": "此任务被{{blockerLabel}}阻塞，但阻塞链在评审中停滞，且没有明确下一步。请处理下方停滞的评审，或移除它的阻塞关系。",
+    "reviewedEnglishHash": "d8e3b0d646ea1c4aa31723d3de87155d7242da4cf098be10293b5fbdc79a7a5f"
+  },
+  "issueBlocked.stillBlockedBy": {
+    "en": "Still blocked by",
+    "zh-CN": "仍被以下任务阻塞：",
+    "reviewedEnglishHash": "4f3b07f8a6611b2d1ec5a040834c47fa8cedfaa21fc965c71a4681687cf34bbe"
+  },
+  "issueBlocked.success.action.blocked": {
+    "en": "Mark it blocked with a blocker owner.",
+    "zh-CN": "将它标记为阻塞，并指定阻塞负责人。",
+    "reviewedEnglishHash": "686797b9e6453658b206dbcd0cd8e702bfa3bae4a28528450139fe07ecf37429"
+  },
+  "issueBlocked.success.action.delegate": {
+    "en": "Delegate follow-up work or queue a continuation.",
+    "zh-CN": "委派后续工作，或排队一个 continuation。",
+    "reviewedEnglishHash": "19ff3fa43da042e371432e68a3e1fd9b3a4286d7e4006db4571d7a0d6bb73a09"
+  },
+  "issueBlocked.success.action.done": {
+    "en": "Mark it done or cancelled.",
+    "zh-CN": "将它标记为完成或取消。",
+    "reviewedEnglishHash": "5cbd64668dd7813e9c684954ac91b4c06776f965b60113f8040565f2a1833220"
+  },
+  "issueBlocked.success.action.review": {
+    "en": "Send it for review or ask for input.",
+    "zh-CN": "送去评审，或请求输入。",
+    "reviewedEnglishHash": "fa883fca0815f5db102e3e25d4160f38a88c53b1f4ed210bfe6f6c7b19551267"
+  },
+  "issueBlocked.success.bodyPrefix": {
+    "en": "A run finished successfully, but this issue is still open in",
+    "zh-CN": "一次运行已成功结束，但此任务仍停留在",
+    "reviewedEnglishHash": "f44a2527b01206957d777d78b1513817e9136f66ffac35680894de5284172c59"
+  },
+  "issueBlocked.success.bodySuffix": {
+    "en": "with no clear owner for the next action.",
+    "zh-CN": "且没有明确的下一步负责人。",
+    "reviewedEnglishHash": "c01b6957ff4ca1913867d3cae694df3d9d49223b9b7622e59f9dba964ecd6982"
+  },
+  "issueBlocked.success.title": {
+    "en": "This issue still needs a next step.",
+    "zh-CN": "此任务仍需要一个下一步。",
+    "reviewedEnglishHash": "73278987857655d8f6cfdc8ed237efac1ef3456dd32ef7f3a44f8e4f2632671a"
+  },
+  "issueBlocked.ultimatelyWaitingOn": {
+    "en": "Ultimately waiting on",
+    "zh-CN": "最终等待",
+    "reviewedEnglishHash": "ae937d06267065775438f8264ac44cdcdb1dc72420d5375a0fcf43a80045e5fc"
+  },
+  "issueBlocked.waiting.currentTask": {
+    "en": "This task - resumes automatically when the chain is done",
+    "zh-CN": "此任务 - 任务链完成后自动恢复",
+    "reviewedEnglishHash": "3bb5ba2762bc15a1d83ec0721799d411252b32613e8f3ecfc3170abf6bc66918"
+  },
+  "issueBlocked.waiting.description_one": {
+    "en": "Queued behind {{count}} task being worked in order. This task resumes automatically when the chain is done. Comments still wake the responsible agent.",
+    "zh-CN": "排在 {{count}} 个按顺序处理的任务之后。任务链完成后，此任务会自动恢复。评论仍会唤醒负责的智能体。",
+    "reviewedEnglishHash": "9c451e8c814650b852643b9dff1f3de35412624460a0bdf439ab00fca11eaf1e"
+  },
+  "issueBlocked.waiting.description_other": {
+    "en": "Queued behind {{count}} tasks being worked in order. This task resumes automatically when the chain is done. Comments still wake the responsible agent.",
+    "zh-CN": "排在 {{count}} 个按顺序处理的任务之后。任务链完成后，此任务会自动恢复。评论仍会唤醒负责的智能体。",
+    "reviewedEnglishHash": "ca9af8e21e3bf1ede390fe3ad406310b3b11fc3fa34d6f4bdbe90218d468ade7"
+  },
+  "issueBlocked.waiting.nowRunning": {
+    "en": "Now running",
+    "zh-CN": "正在运行",
+    "reviewedEnglishHash": "44cdf35701cdac026f9b24306b9b9ad70bb9c45413aba514cec6fa79fd6f54c6"
+  },
+  "issueBlocked.waiting.progress": {
+    "en": "{{done}} of {{total}} done",
+    "zh-CN": "已完成 {{done}} / {{total}}",
+    "reviewedEnglishHash": "177542accac96be664f6560a80961a9f1535d6d68454b24ed5c33f85013d2875"
+  },
+  "issueBlocked.waiting.progressAria": {
+    "en": "Blocker chain progress",
+    "zh-CN": "阻塞任务链进度",
+    "reviewedEnglishHash": "e381a27e6c0716226caf87cd123ef758ed5730a7d9d2e817cb757ce36fe651b2"
+  },
+  "issueBlocked.waiting.running": {
+    "en": "running",
+    "zh-CN": "运行中",
+    "reviewedEnglishHash": "c071cf5f5ed6f884cc70155b6f05f755fd46a302d05e4261b7e92ce878bbfed8"
+  },
+  "issueBlocked.waiting.runningSuffix": {
+    "en": " · {{count}} running",
+    "zh-CN": " · {{count}} 个运行中",
+    "reviewedEnglishHash": "a976a06b312a3525de619c91e029086b37fcafb8297f3c3704efd912ddc33355"
+  },
+  "issueBlocked.waiting.statusTitle": {
+    "en": "{{status}} status",
+    "zh-CN": "{{status}}状态",
+    "reviewedEnglishHash": "4a24fbcbecf87f37d31f4198e2fe1a7df098a018e637c871a0366a7ce54b6a15"
+  },
+  "issueBlocked.waiting.title": {
+    "en": "Waiting on live work",
+    "zh-CN": "正在等待进行中的工作",
+    "reviewedEnglishHash": "54a2de10c50a1e9295c0ce463e84ecf2366cd6d4770f57d75d27d979dcdad5d3"
+  }
+}

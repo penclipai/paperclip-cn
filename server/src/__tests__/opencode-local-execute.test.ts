@@ -42,6 +42,13 @@ console.log(JSON.stringify({
 `;
   await fs.writeFile(commandPath, script, "utf8");
   await fs.chmod(commandPath, 0o755);
+  if (process.platform === "win32") {
+    await fs.writeFile(
+      `${commandPath}.cmd`,
+      `@echo off\r\n"${process.execPath}" "%~dp0${path.basename(commandPath)}" %*\r\n`,
+      "utf8",
+    );
+  }
 }
 
 type CapturePayload = {
@@ -83,7 +90,7 @@ describe("opencode execute", () => {
           taskKey: null,
         },
         config: {
-          command: commandPath,
+          command: process.platform === "win32" ? `${commandPath}.cmd` : commandPath,
           cwd: workspace,
           model: "openai/gpt-5.3-codex",
           env: {
@@ -107,7 +114,9 @@ describe("opencode execute", () => {
       expect(result.errorMessage).toBeNull();
 
       const capture = JSON.parse(await fs.readFile(capturePath, "utf8")) as CapturePayload;
-      expect(capture.argv).toEqual(["run", "--format", "json", "--model", "openai/gpt-5.3-codex"]);
+      expect(capture.argv).toEqual([
+        "run", "--format", "json", "--model", "openai/gpt-5.3-codex", "--dir", workspace,
+      ]);
       expect(capture.paperclipEnvKeys).toEqual(
         expect.arrayContaining([
           "PAPERCLIP_AGENT_ID",
@@ -120,18 +129,16 @@ describe("opencode execute", () => {
       expect(capture.prompt).toContain("Session handoff note.");
       expect(capture.prompt).toContain("Runtime note:\n- Use zh-CN.");
       expect(capture.prompt).toContain("Follow the paperclip heartbeat.");
-      expect(capture.prompt.indexOf("Session handoff note.")).toBeLessThan(
-        capture.prompt.indexOf("Runtime note:\n- Use zh-CN."),
-      );
       expect(capture.prompt.indexOf("Runtime note:\n- Use zh-CN.")).toBeLessThan(
+        capture.prompt.indexOf("Session handoff note."),
+      );
+      expect(capture.prompt.indexOf("Session handoff note.")).toBeLessThan(
         capture.prompt.indexOf("Follow the paperclip heartbeat."),
       );
-      expect(invocationPrompt.indexOf("Session handoff note.")).toBeLessThan(
-        invocationPrompt.indexOf("Runtime note:\n- Use zh-CN."),
+      expect(invocationPrompt.indexOf("Runtime note:\n- Use zh-CN.")).toBeLessThan(
+        invocationPrompt.indexOf("Session handoff note."),
       );
-      expect(promptMetrics.sessionHandoffChars).toBe(
-        "Session handoff note.\n\nRuntime note:\n- Use zh-CN.".length,
-      );
+      expect(promptMetrics.sessionHandoffChars).toBe("Session handoff note.".length);
     } finally {
       resetOpenCodeModelsCacheForTests();
       if (previousHome === undefined) {

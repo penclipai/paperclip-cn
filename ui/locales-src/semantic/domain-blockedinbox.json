@@ -1,0 +1,122 @@
+{
+  "blockedInbox.emptyBody": {
+    "en": "Issues that need a decision, recovery, or external action will appear here.",
+    "zh-CN": "需要决策、恢复或外部操作的任务会显示在这里。",
+    "reviewedEnglishHash": "9ef03fa2dc39665f6f59d238fe72f69aac80b12231e4344d34f7cd3f4ec8d6bb"
+  },
+  "blockedInbox.emptyTitle": {
+    "en": "No work is stopped.",
+    "zh-CN": "当前没有停滞工作。",
+    "reviewedEnglishHash": "6d4397f7dcd7c4aad9362858d9444f373d0806c5190a1108e89daafb80d41919"
+  },
+  "blockedInbox.errorBody": {
+    "en": "Other Inbox tabs still work. {{message}}",
+    "zh-CN": "其他收件箱标签页仍可使用。{{message}}",
+    "reviewedEnglishHash": "08e98c4e4206fd4f0bf4862d0fbd0ce3dcc3f6684eb5aa0c7d79313f90d4ecc1"
+  },
+  "blockedInbox.errorTitle": {
+    "en": "Couldn't load the Blocked tab.",
+    "zh-CN": "无法加载已阻塞标签页。",
+    "reviewedEnglishHash": "a61e4428eceeaed42922153e2f8d80db7fcf7740ac02b050834c3aab8354c96f"
+  },
+  "blockedInbox.noSearchResults": {
+    "en": "No stopped items match your search.",
+    "zh-CN": "没有匹配当前搜索的停滞项。",
+    "reviewedEnglishHash": "c4f2407daa768046199419304441aa638753e151af04dbeb643971069266c1ee"
+  },
+  "blockedInbox.reasonAria": {
+    "en": "Reason: {{reason}}, severity {{severity}}",
+    "zh-CN": "原因：{{reason}}，严重程度 {{severity}}",
+    "reviewedEnglishHash": "3ce9a20f77cd45b4ab8ddff2071cfd775cc89701234f4344900236dde3e32e30"
+  },
+  "blockedInbox.reasonVariant.external_wait": {
+    "en": "External wait",
+    "zh-CN": "等待外部",
+    "reviewedEnglishHash": "102f4ce0ea301c14477069cebcee390d72d773e824413e56004b7a440487378c"
+  },
+  "blockedInbox.reasonVariant.needs_attention": {
+    "en": "Needs attention",
+    "zh-CN": "需要处理",
+    "reviewedEnglishHash": "c1ebc7817870e5be78fceae559ba5fcac2b68d5c5498d8080298004f3f79d62d"
+  },
+  "blockedInbox.reasonVariant.needs_decision": {
+    "en": "Needs decision",
+    "zh-CN": "需要决策",
+    "reviewedEnglishHash": "a955b640d843f3d9d84e375f95203aaf3a0bb9a9c7ed3f02332f023d093fb64e"
+  },
+  "blockedInbox.reasonVariant.owner_paused": {
+    "en": "Owner paused",
+    "zh-CN": "负责人已暂停",
+    "reviewedEnglishHash": "ae7c74c7a9d6b9fe38f9519fd81c09a50dca787ceb2887621e6dba4a61beba7b"
+  },
+  "blockedInbox.reasonVariant.recovery_required": {
+    "en": "Recovery required",
+    "zh-CN": "需要恢复",
+    "reviewedEnglishHash": "4f22267327b8e375b6af609cf1243ea1305be3ea3f864ad5e1e6c3e6f15d775f"
+  },
+  "blockedInbox.reasonVariant.stalled": {
+    "en": "Blocked chain stalled",
+    "zh-CN": "阻塞链停滞",
+    "reviewedEnglishHash": "51b7a915cfe19dcbd40bec5ccec3dd8e931dee02e96c114db558d7a00fc591ab"
+  },
+  "blockedInbox.severity.critical": {
+    "en": "critical",
+    "zh-CN": "严重",
+    "reviewedEnglishHash": "bfba7033571d606f3c2ff0415b3a26ddbfbf1f1884e5c391333a5470efbfe4a3"
+  },
+  "blockedInbox.severity.high": {
+    "en": "high",
+    "zh-CN": "高",
+    "reviewedEnglishHash": "6ef7c9b15ecdd69083724b84cfdc2100351963488b51b4ea2fcbddf493fbec94"
+  },
+  "blockedInbox.severity.low": {
+    "en": "low",
+    "zh-CN": "低",
+    "reviewedEnglishHash": "6c1ff09db3a73dc4a854f695d20d174a848d55f2d743bab2ee1f8fc75be454f3"
+  },
+  "blockedInbox.severity.medium": {
+    "en": "medium",
+    "zh-CN": "中",
+    "reviewedEnglishHash": "c082456a7766e23a18db084cd34b6ff510baef506548b897cc80e9b7d3e121c8"
+  },
+  "blockedInbox.stoppedAge.days": {
+    "en": "stopped {{count}}d",
+    "zh-CN": "已停滞 {{count}} 天",
+    "reviewedEnglishHash": "da659bb0f2174df6107b6301937cf465345350ff723d1e186781ed1f03f1a8a7"
+  },
+  "blockedInbox.stoppedAge.hours": {
+    "en": "stopped {{count}}h",
+    "zh-CN": "已停滞 {{count}} 小时",
+    "reviewedEnglishHash": "6091bb79d09f6d4538ed66f68d2a7cc5ebfeefeb563f8560b91db37303c7d24d"
+  },
+  "blockedInbox.stoppedAge.justNow": {
+    "en": "stopped just now",
+    "zh-CN": "刚刚停滞",
+    "reviewedEnglishHash": "7d6d4f0bd456b846199c4f3f46e80bbf3113d437a86e6e2957e44e764bad29a6"
+  },
+  "blockedInbox.stoppedAge.minutes": {
+    "en": "stopped {{count}}m",
+    "zh-CN": "已停滞 {{count}} 分钟",
+    "reviewedEnglishHash": "a7a2e32ed0c25479a1225330406884fed8de00189fb550d1a1197a7a276d01f1"
+  },
+  "blockedInbox.stoppedAge.months": {
+    "en": "stopped {{count}}mo",
+    "zh-CN": "已停滞 {{count}} 个月",
+    "reviewedEnglishHash": "fe95f858fd3b14bed5183320a89e919be510487314b4909406b4b35894371ab2"
+  },
+  "blockedInbox.stoppedAge.stopped": {
+    "en": "stopped",
+    "zh-CN": "已停滞",
+    "reviewedEnglishHash": "8322e87d24582952e5c996da182de0eca66dd2bf58fba5ec56a325c656f21b38"
+  },
+  "blockedInbox.stoppedAge.weeks": {
+    "en": "stopped {{count}}w",
+    "zh-CN": "已停滞 {{count}} 周",
+    "reviewedEnglishHash": "7907fd6b06fbafd78ae03fa358f2921e6d38d2337d2cb0dfb9e6c231d6593dfd"
+  },
+  "blockedInbox.trying": {
+    "en": "Trying...",
+    "zh-CN": "正在重试...",
+    "reviewedEnglishHash": "fde011544a959813249646a27b3a36b16e6ff65065583d6c45ce2a7e6cba6a58"
+  }
+}

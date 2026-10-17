@@ -1,27 +1,41 @@
 import { useState } from "react";
-import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 import type { IssueBlockerAttention } from "@penclipai/shared";
 import { cn } from "../lib/utils";
-import { translateStatusLabel } from "../lib/i18n-labels";
 import { StatusGlyph, type StatusGlyphSize } from "./StatusGlyph";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 
 const allStatuses = ["backlog", "todo", "in_progress", "in_review", "done", "cancelled", "blocked"];
 
+function statusLabel(status: string): string {
+  return status.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function statusKey(status: string): string {
+  return status.replace(/_([a-z])/g, (_, letter: string) => letter.toUpperCase());
+}
+
 interface StatusIconProps {
   status: string;
+  externalConversationState?: "active" | "waiting" | null;
   blockerAttention?: IssueBlockerAttention | null;
   onChange?: (status: string) => void;
   className?: string;
+  /** Optional layout wrapper around the glyph. Does not change glyph dimensions. */
+  glyphContainerClassName?: string;
   showLabel?: boolean;
   /** Glyph size (PAP-243a). Default `md` (16px); lists/detail/mentions use `lg` (20px). */
   size?: StatusGlyphSize;
 }
 
-function blockedAttentionLabel(t: TFunction, blockerAttention: IssueBlockerAttention | null | undefined) {
-  if (!blockerAttention || blockerAttention.state === "none") return translateStatusLabel(t, "blocked");
+function blockedAttentionLabel(
+  t: (key: string, options?: Record<string, unknown>) => string,
+  blockerAttention: IssueBlockerAttention | null | undefined,
+) {
+  if (!blockerAttention || blockerAttention.state === "none") {
+    return t("status.blocked", { defaultValue: "Blocked" });
+  }
 
   if (blockerAttention.reason === "active_child") {
     const count = blockerAttention.coveredBlockerCount;
@@ -83,7 +97,7 @@ function blockedAttentionLabel(t: TFunction, blockerAttention: IssueBlockerAtten
 
   if (blockerAttention.reason === "attention_required") {
     const count = blockerAttention.attentionBlockerCount || blockerAttention.unresolvedBlockerCount;
-    const attention = count === 1
+    const attentionCopy = count === 1
       ? t("statusIcon.blocked.oneBlockerNeedsAttention", { defaultValue: "1 blocker needs attention" })
       : t("statusIcon.blocked.blockersNeedAttention", {
         count,
@@ -92,18 +106,18 @@ function blockedAttentionLabel(t: TFunction, blockerAttention: IssueBlockerAtten
     const coveredCount = blockerAttention.coveredBlockerCount;
     if (coveredCount > 0) {
       return t("statusIcon.blocked.attentionAndCovered", {
-        attention,
+        attention: attentionCopy,
         coveredCount,
         defaultValue: "Blocked · {{attention}}; {{coveredCount}} covered by active work",
       });
     }
     return t("statusIcon.blocked.attention", {
-      attention,
+      attention: attentionCopy,
       defaultValue: "Blocked · {{attention}}",
     });
   }
 
-  return translateStatusLabel(t, "blocked");
+  return t("status.blocked", { defaultValue: "Blocked" });
 }
 
 /**
@@ -118,15 +132,17 @@ function blockedAttentionLabel(t: TFunction, blockerAttention: IssueBlockerAtten
  * glyph — the blocked shape recoloured blue — while the full blocked reason
  * still rides on the accessible label.
  */
-export function StatusIcon({ status, blockerAttention, onChange, className, showLabel, size = "md" }: StatusIconProps) {
+export function StatusIcon({ status, externalConversationState, blockerAttention, onChange, className, glyphContainerClassName, showLabel, size = "md" }: StatusIconProps) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
+  const displayStatus = status === "in_review" && externalConversationState === "waiting" ? "idle" : status;
   const isCoveredBlocked = status === "blocked" && blockerAttention?.state === "covered";
-  const label = translateStatusLabel(t, status);
-  const ariaLabel = status === "blocked" ? blockedAttentionLabel(t, blockerAttention) : label;
-  const glyphStatus = isCoveredBlocked ? "in_queue" : status;
+  const ariaLabel = status === "blocked"
+    ? blockedAttentionLabel(t, blockerAttention)
+    : t(`status.${statusKey(displayStatus)}`, { defaultValue: statusLabel(displayStatus) });
+  const glyphStatus = isCoveredBlocked ? "in_queue" : displayStatus;
 
-  const glyph = (
+  const glyphIcon = (
     <StatusGlyph
       status={glyphStatus}
       size={size}
@@ -134,12 +150,17 @@ export function StatusIcon({ status, blockerAttention, onChange, className, show
       title={ariaLabel}
     />
   );
+  const glyph = glyphContainerClassName ? (
+    <span className={glyphContainerClassName} data-status-glyph-container="true">
+      {glyphIcon}
+    </span>
+  ) : glyphIcon;
 
   if (!onChange) {
     return showLabel ? (
       <span className="inline-flex items-center gap-1.5">
         {glyph}
-        <span className="text-sm">{label}</span>
+        <span className="text-sm">{ariaLabel}</span>
       </span>
     ) : (
       glyph
@@ -147,12 +168,29 @@ export function StatusIcon({ status, blockerAttention, onChange, className, show
   }
 
   const trigger = showLabel ? (
-    <button className="inline-flex min-h-5 items-center gap-1.5 cursor-pointer hover:bg-accent/50 rounded px-1 -mx-1 py-0.5 transition-colors">
+    <button
+      type="button"
+      aria-label={t("statusIcon.changeStatusAria", {
+        status: ariaLabel,
+        defaultValue: "Change status (current: {{status}})",
+      })}
+      className="inline-flex min-h-5 items-center gap-1.5 cursor-pointer hover:bg-accent/50 rounded px-1 -mx-1 py-0.5 transition-colors"
+    >
       {glyph}
-      <span className="text-sm">{label}</span>
+      <span className="text-sm">{ariaLabel}</span>
     </button>
   ) : (
-    glyph
+    <button
+      type="button"
+      data-slot="icon-button"
+      aria-label={t("statusIcon.changeStatusAria", {
+        status: ariaLabel,
+        defaultValue: "Change status (current: {{status}})",
+      })}
+      className="inline-flex cursor-pointer items-center justify-center rounded-sm focus-visible:outline-none focus-visible:ring-(length:--rad-3) focus-visible:ring-ring"
+    >
+      {glyph}
+    </button>
   );
 
   return (
@@ -171,7 +209,7 @@ export function StatusIcon({ status, blockerAttention, onChange, className, show
             }}
           >
             <StatusIcon status={s} size="lg" />
-            {translateStatusLabel(t, s)}
+            {t(`status.${statusKey(s)}`, { defaultValue: statusLabel(s) })}
           </Button>
         ))}
       </PopoverContent>

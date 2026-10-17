@@ -1,0 +1,82 @@
+{
+  "devRestart.autoRestartOn": {
+    "en": "Auto-Restart On",
+    "zh-CN": "自动重启已开启",
+    "reviewedEnglishHash": "0bf77a450a4627db88defe31a8acb1203a70f2abbcb03c9f7a6fb9d6dca8549d"
+  },
+  "devRestart.autoWhenIdle": {
+    "en": "Auto-restart will trigger when the instance is idle",
+    "zh-CN": "实例空闲后会自动重启",
+    "reviewedEnglishHash": "f49f9acf61f92a22652cdf60442611a078a281e921cc1225a6f3a4e91ef55512"
+  },
+  "devRestart.changed": {
+    "en": "Changed",
+    "zh-CN": "已变更",
+    "reviewedEnglishHash": "2a6141e43be0c2125e3b5d9f74b4ff1261a0b320ff927c83d4d9b1b65585bad7"
+  },
+  "devRestart.confirm": {
+    "en": "Restart Paperclip now?",
+    "zh-CN": "现在重启 Paperclip？",
+    "reviewedEnglishHash": "6fd743cc0850a1e1758f9cac4c62c1580146577b125379f4893714983bb913be"
+  },
+  "devRestart.confirmWithRuns": {
+    "en": "Restart Paperclip now? This may interrupt {{activeRunLabel}}.",
+    "zh-CN": "现在重启 Paperclip？这可能会中断 {{activeRunLabel}}。",
+    "reviewedEnglishHash": "14fc13dedd0bce7d19ffd80ba5b85fb470e2b8ab872fff195975cc93983e41e4"
+  },
+  "devRestart.now": {
+    "en": "Restart now",
+    "zh-CN": "立即重启",
+    "reviewedEnglishHash": "09af1002abafb2dadfd2a9e61d7b0493c2a1da0e4859645116db0d462d175b08"
+  },
+  "devRestart.pendingMigrations": {
+    "en": "Pending migrations",
+    "zh-CN": "待执行迁移",
+    "reviewedEnglishHash": "4c87839f1792961420904114bc145a538267d63cf08a8a535994f42feba008f1"
+  },
+  "devRestart.reason.backendAndMigrations": {
+    "en": "backend files changed and migrations are pending",
+    "zh-CN": "后端文件已变更，并且有待执行的迁移",
+    "reviewedEnglishHash": "d06a3c074c79ee797a40c2a15fd13bdb26194a377e8678202d979d2d7dab77ab"
+  },
+  "devRestart.reason.backendChanged": {
+    "en": "backend files changed since this server booted",
+    "zh-CN": "此服务启动后后端文件发生了变更",
+    "reviewedEnglishHash": "8895af8ffc8b92e5271735a2baeb2793f49cbeabd00af45e164e079ca282eee6"
+  },
+  "devRestart.reason.pendingMigrations": {
+    "en": "pending migrations need a fresh boot",
+    "zh-CN": "待执行的迁移需要重新启动",
+    "reviewedEnglishHash": "1714f36d104d1baf235810ee4cd1c90bc35a46d6895a18ca3f9379e8ccffe845"
+  },
+  "devRestart.requestFailed": {
+    "en": "Failed to request restart",
+    "zh-CN": "请求重启失败",
+    "reviewedEnglishHash": "807a9e71db1814fdf37fdca75d45887d246b42c20130b6c1183cf2980f71a05a"
+  },
+  "devRestart.requested": {
+    "en": "Restart requested",
+    "zh-CN": "已请求重启",
+    "reviewedEnglishHash": "8427d283aad931a19dea96abc441f1723821b8d72f732faa7565f328d2eff519"
+  },
+  "devRestart.required": {
+    "en": "Restart Required",
+    "zh-CN": "需要重启",
+    "reviewedEnglishHash": "5e0716dcc27fa9012ba1c0891f37ec1ee91e68a5665a519984461ffca8a751eb"
+  },
+  "devRestart.restartCommandPrefix": {
+    "en": "Restart",
+    "zh-CN": "请在当前工作可安全中断后重启",
+    "reviewedEnglishHash": "6b983a81e5e8099e4e23a368e72636e31f029f2e691e5be714106b8cf59d70a7"
+  },
+  "devRestart.restartCommandSuffix": {
+    "en": "after the active work is safe to interrupt",
+    "zh-CN": "",
+    "reviewedEnglishHash": "f24111249641fa42aaf837628e3c7123cb6212780a7e13bad509bfdd560b9184"
+  },
+  "devRestart.waitingForRuns": {
+    "en": "Waiting for {{activeRunLabel}} to finish",
+    "zh-CN": "正在等待 {{activeRunLabel}} 完成",
+    "reviewedEnglishHash": "f16e83093aa42ec5e6eddbc7125ddf7d67fe29feecb870ed6d2ca840e176ebaa"
+  }
+}

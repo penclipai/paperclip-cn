@@ -794,6 +794,12 @@ type PluginLauncherOutletProps = {
   className?: string;
   itemClassName?: string;
   errorClassName?: string;
+  /**
+   * `hidden` suppresses the inline error and keeps rendering the last loaded
+   * launchers, so ambient chrome (the sidebar) stays quiet while the server is
+   * unreachable.
+   */
+  errorBehavior?: "inline" | "hidden";
 };
 
 export function PluginLauncherOutlet({
@@ -803,6 +809,7 @@ export function PluginLauncherOutlet({
   className,
   itemClassName,
   errorClassName,
+  errorBehavior = "inline",
 }: PluginLauncherOutletProps) {
   const { t } = useTranslation();
   const { activateLauncher } = usePluginLauncherRuntime();
@@ -813,7 +820,7 @@ export function PluginLauncherOutlet({
     enabled: !!context.companyId,
   });
 
-  if (errorMessage) {
+  if (errorMessage && errorBehavior === "inline") {
     return (
       <div className={cn("rounded-md border border-destructive/30 bg-destructive/5 px-2 py-1 text-xs text-destructive", errorClassName)}>
         {t("pluginUi.launchersUnavailable", {

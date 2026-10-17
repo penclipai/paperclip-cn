@@ -1,5 +1,6 @@
 import type { ActivityEvent } from "@penclipai/shared";
 import { Plus, Minus } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { IssueReferencePill } from "./IssueReferencePill";
 import { translateInstant } from "../i18n";
 
@@ -52,6 +53,7 @@ function Section({
 }
 
 export function IssueReferenceActivitySummary({ event }: { event: Pick<ActivityEvent, "details"> }) {
+  useTranslation();
   const added = readIssueReferences(event.details, "addedReferencedIssues");
   const removed = readIssueReferences(event.details, "removedReferencedIssues");
   if (added.length === 0 && removed.length === 0) return null;

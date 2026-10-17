@@ -1,0 +1,147 @@
+{
+  "KMS key id": {
+    "en": "KMS key id",
+    "zh-CN": "KMS 密钥 ID",
+    "reviewedEnglishHash": "0670e40a630db5192f67bed44f593a748d649968cdad76e19968a3cebc8a0644"
+  },
+  "Keep audit trail visible in item history": {
+    "en": "Keep audit trail visible in item history",
+    "zh-CN": "在事项历史中保留可见的审计记录",
+    "reviewedEnglishHash": "586792fb3059a44385b88b761f0106c91004e70efcf034a6a1afc047fc18821e"
+  },
+  "Keep browser open": {
+    "en": "Keep browser open",
+    "zh-CN": "保持浏览器打开",
+    "reviewedEnglishHash": "5a76dedb51fa62e7edc3a6df293a0aaa52f4e6a78ba2247cc085cd77777abd94"
+  },
+  "Keep browsing": {
+    "en": "Keep browsing",
+    "zh-CN": "继续浏览",
+    "reviewedEnglishHash": "a1ecf4928d2eab08562ce4d99f6963f7ff2191e1d15d6ab2abdb07292d8c8808"
+  },
+  "Keep it open for up to 10 more minutes.": {
+    "en": "Keep it open for up to 10 more minutes.",
+    "zh-CN": "将其保持打开状态最多 10 分钟。",
+    "reviewedEnglishHash": "7132816712433dd285387065572795d0de3d3d193f0605acd26c8a08811d9637"
+  },
+  "Keep monitor": {
+    "en": "Keep monitor",
+    "zh-CN": "保留监视器",
+    "reviewedEnglishHash": "a498617d740334fe5df2b6c306e8fa824947230413b2e75ea71bce49c76bcca4"
+  },
+  "Keep my draft": {
+    "en": "Keep my draft",
+    "zh-CN": "保留我的草稿",
+    "reviewedEnglishHash": "cdb80bb94da38a42f06987347870066abf11197c7194267c4ad4cce953ab32df"
+  },
+  "Keep paused": {
+    "en": "Keep paused",
+    "zh-CN": "保持暂停",
+    "reviewedEnglishHash": "686b908d5611e2977042ca8bf3e55323e8b58ac19c9e3f4779d5d1595416c03d"
+  },
+  "Keep policy controls secondary to the work definition.": {
+    "en": "Keep policy controls secondary to the work definition.",
+    "zh-CN": "让策略控制项保持在工作定义之后。",
+    "reviewedEnglishHash": "264481cebdc6ae5082e3042d54da4b00a7696c21bccc96cdbaab2cbc694ef15a"
+  },
+  "Keep private": {
+    "en": "Keep private",
+    "zh-CN": "保持私密",
+    "reviewedEnglishHash": "3c24c8b9006c8d19be998bb80e3535838d25d9d8d3c1c416e4efd5c411fbfa85"
+  },
+  "Keep sidebar expanded": {
+    "en": "Keep sidebar expanded",
+    "zh-CN": "保持侧边栏展开",
+    "reviewedEnglishHash": "843ed4bd01e3ee5f7b7b3eeba31f752172c60f5509be5a541ff3ba728c9d1b67"
+  },
+  "Keep this browser open for up to": {
+    "en": "Keep this browser open for up to",
+    "zh-CN": "保持此浏览器打开长达",
+    "reviewedEnglishHash": "fe13fadd6cd3e24a914f2c84a7cd9388ed80fd4931132f1e9f960e1c381ba5b4"
+  },
+  "Keep this page open to see the test result.": {
+    "en": "Keep this page open to see the test result.",
+    "zh-CN": "保持此页面打开以查看测试结果。",
+    "reviewedEnglishHash": "f5c741548eae2a53e2244622632d42527b924317e0fe0c6846649ab581f8eaa7"
+  },
+  "Keep unresolved": {
+    "en": "Keep unresolved",
+    "zh-CN": "保持未解决状态",
+    "reviewedEnglishHash": "0de1079d12fd052ccdd9b8da10978207be087ad9fbd868e3fd656edf2db4b18b"
+  },
+  "Key": {
+    "en": "Key",
+    "zh-CN": "键",
+    "reviewedEnglishHash": "99a52df3ff3d499488e2fa28150c4106a2cb5e928891a830a9aa3922b2d32160"
+  },
+  "Key name (e.g. production)": {
+    "en": "Key name (e.g. production)",
+    "zh-CN": "密钥名称（例如 production）",
+    "reviewedEnglishHash": "72bae87bbd883eaf1d60dfee100a342b73edb4c4d49c3c63a5dff43331e0b3a2"
+  },
+  "Keyboard Shortcuts": {
+    "en": "Keyboard Shortcuts",
+    "zh-CN": "键盘快捷键",
+    "reviewedEnglishHash": "59cdaa26dd9dcd4cbcded97a7b91029b396bcfdbfd927356facbeb163283a3df"
+  },
+  "Keyboard shortcuts": {
+    "en": "Keyboard shortcuts",
+    "zh-CN": "快捷键",
+    "reviewedEnglishHash": "e9bef0b0f3c25e6eaf3a754817a8b4f62e1c8473cb2be3e190975926dbf72d6f"
+  },
+  "Kimi API base URL": {
+    "en": "Kimi API base URL",
+    "zh-CN": "Kimi API 基本 URL",
+    "reviewedEnglishHash": "b46e77c4df79ef575d300305062d7b96ce59dbb48124d3c239c01d3ca8937a95"
+  },
+  "Kimi API model name": {
+    "en": "Kimi API model name",
+    "zh-CN": "Kimi API 模型名称",
+    "reviewedEnglishHash": "d880c2be9c0434c9ecbd5b59f4e5c763026eeeb8561f799c7dd47ecad41594af"
+  },
+  "Kimi API protocol": {
+    "en": "Kimi API protocol",
+    "zh-CN": "Kimi API协议",
+    "reviewedEnglishHash": "2fd46541e58944c0780a6cf1d7c7895535666e00f5242f772560db3556164164"
+  },
+  "Kind": {
+    "en": "Kind",
+    "zh-CN": "类型",
+    "reviewedEnglishHash": "f5387f9bb6ed70315a77fdcb9335facc27a9bf241f35955bd2755c55e0c016c7"
+  },
+  "Known hosts": {
+    "en": "Known hosts",
+    "zh-CN": "已知主机",
+    "reviewedEnglishHash": "45d7c9da91c51a7b2c5ae91f158759de80973754c38c6694794d460376517ce3"
+  },
+  "Known monthly subtotal": {
+    "en": "Known monthly subtotal",
+    "zh-CN": "已知每月小计",
+    "reviewedEnglishHash": "2920eb5cab30187c580953567a7ed81e60217bf54428fda4d790b51eb430861b"
+  },
+  "kimi-for-coding": {
+    "en": "kimi-for-coding",
+    "zh-CN": "kimi-for-coding",
+    "reviewedEnglishHash": "a856fb3d089962f7cbcda3aaa7aab61efc1593c9816c3a16f587518d4756409c"
+  },
+  "kind": {
+    "en": "kind",
+    "zh-CN": "味",
+    "reviewedEnglishHash": "0b27c158feb36ab18a10ff687909ec730ece6280581dd407e2672359be7725dd"
+  },
+  "known tools.": {
+    "en": "known tools.",
+    "zh-CN": "个已知工具。",
+    "reviewedEnglishHash": "f6ff652431a93303efe8e3cd15e1da7c437a4708f408881e21e4c93cf633edb9"
+  },
+  "{{key}} payload": {
+    "en": "{{key}} payload",
+    "zh-CN": "{{key}} 载荷",
+    "reviewedEnglishHash": "2350716b393c56b1b3d3c796ae731af74aa70f3d2afede1bc567639b22b0b86e"
+  },
+  "· Kubernetes sandbox": {
+    "en": "· Kubernetes sandbox",
+    "zh-CN": "· Kubernetes沙盒",
+    "reviewedEnglishHash": "061adf0f3f884b31ebe1a6fa5d7e321e4842b365abda80224b69aadbcf2ae588"
+  }
+}

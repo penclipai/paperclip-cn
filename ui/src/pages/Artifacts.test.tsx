@@ -256,6 +256,22 @@ describe("Artifacts page", () => {
     });
   });
 
+  it("uses localized empty-state copy for artifact stacks and filtered artifacts", async () => {
+    artifactsApiMock.list.mockResolvedValue({ artifacts: [], groups: [], nextCursor: null });
+
+    const { root } = renderArtifacts(container);
+    await waitForAssertion(() => {
+      expect(container.textContent).toContain("No artifact stacks yet.");
+    });
+    flushSync(() => root.unmount());
+
+    const filtered = renderArtifacts(container, ["/artifacts?groupBy=none&kind=image"]);
+    await waitForAssertion(() => {
+      expect(container.textContent).toContain("No artifacts of this type yet.");
+    });
+    flushSync(() => filtered.root.unmount());
+  });
+
   it("fetches the next artifact page when the sentinel intersects", async () => {
     artifactsApiMock.list
       .mockResolvedValueOnce({

@@ -1,3 +1,5 @@
+import { createProviderStoppedBoundary } from "@penclipai/adapter-utils/provider-stopped-boundary";
+import { createUsageCheckpointLog } from "@penclipai/adapter-utils/usage-checkpoint";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -15,6 +17,8 @@ import {
   ensureAdapterExecutionTargetCommandResolvable,
   ensureAdapterExecutionTargetRuntimeCommandInstalled,
   prepareAdapterExecutionTargetRuntime,
+  adapterExecutionTargetDuplexObservabilityRecorder,
+  adapterExecutionTargetEnablesSandboxDuplexBridge,
   readAdapterExecutionTarget,
   readAdapterExecutionTargetHomeDir,
   resolveAdapterExecutionTargetTimeoutSec,
@@ -29,38 +33,34 @@ import {
   asStringArray,
   parseObject,
   buildPaperclipEnv,
+  buildRuntimeToolsEnv,
   buildInvocationEnvForLogs,
   ensureAbsoluteDirectory,
   ensurePaperclipSkillSymlink,
   ensurePathInEnv,
   refreshPaperclipWorkspaceEnvForExecution,
+  isPaperclipSkillSourceMissing,
   readPaperclipRuntimeSkillEntries,
   readPaperclipIssueWorkModeFromContext,
-  resolvePaperclipDesiredSkillNames,
+  resolveLegacyPaperclipDesiredSkillNames,
   removeMaintainerOnlySkillSymlinks,
   renderTemplate,
-  renderPaperclipWakePrompt,
+  hydrateFreshSessionHandoff,
+  selectPaperclipPromptSections,
+  selectInitialCommunicationGuidance,
   isPaperclipRecoveryWakePayload,
-  stringifyPaperclipWakePayload,
   DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE,
+  DEFAULT_PAPERCLIP_CONVERSATION_PROMPT_TEMPLATE,
   joinPromptSections,
 } from "@penclipai/adapter-utils/server-utils";
 import { DEFAULT_CURSOR_LOCAL_MODEL, SANDBOX_INSTALL_COMMAND } from "../index.js";
-import { parseCursorJsonl, isCursorUnknownSessionError } from "./parse.js";
+import { firstCursorDiagnosticLine, parseCursorJsonl, createCursorJsonlParser, isCursorUnknownSessionError } from "./parse.js";
 import { prepareCursorSandboxCommand } from "./remote-command.js";
 import { normalizeCursorStreamLine } from "../shared/stream.js";
 import { hasCursorTrustBypassArg } from "../shared/trust.js";
+import { resolveCursorSkillsHome } from "./skills.js";
 
 const __moduleDir = path.dirname(fileURLToPath(import.meta.url));
-
-function firstNonEmptyLine(text: string): string {
-  return (
-    text
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .find(Boolean) ?? ""
-  );
-}
 
 function hasNonEmptyEnvValue(env: Record<string, string>, key: string): boolean {
   const raw = env[key];
@@ -114,28 +114,16 @@ function renderPaperclipEnvNote(env: Record<string, string>): string {
   ].join("\n");
 }
 
-function resolveRuntimeHome(configEnv: Record<string, unknown> = {}): string {
-  const configuredHome = asString(configEnv.HOME, "").trim();
-  const processHome =
-    typeof process.env.HOME === "string" && process.env.HOME.trim().length > 0
-      ? process.env.HOME.trim()
-      : "";
-  return path.resolve(configuredHome || processHome || os.homedir());
-}
-
-function cursorSkillsHome(configEnv: Record<string, unknown> = {}): string {
-  return path.join(resolveRuntimeHome(configEnv), ".cursor", "skills");
-}
-
 async function buildCursorSkillsDir(config: Record<string, unknown>): Promise<string> {
   const tmp = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-cursor-skills-"));
   const target = path.join(tmp, "skills");
   await fs.mkdir(target, { recursive: true });
   const availableEntries = await readPaperclipRuntimeSkillEntries(config, __moduleDir);
-  const desiredNames = new Set(resolvePaperclipDesiredSkillNames(config, availableEntries));
+  const desiredNames = new Set(resolveLegacyPaperclipDesiredSkillNames(config, availableEntries));
   for (const entry of availableEntries) {
     if (!desiredNames.has(entry.key)) continue;
-    await ensurePaperclipSkillSymlink(entry.source, path.join(target, entry.runtimeName));
+    if (isPaperclipSkillSourceMissing(entry)) continue;
+    await fs.symlink(entry.source, path.join(target, entry.runtimeName));
   }
   return target;
 }
@@ -163,7 +151,7 @@ export async function ensureCursorSkillsInjected(
       : await readPaperclipRuntimeSkillEntries({}, __moduleDir));
   if (skillsEntries.length === 0) return;
 
-  const skillsHome = options.skillsHome ?? cursorSkillsHome();
+  const skillsHome = options.skillsHome ?? resolveCursorSkillsHome({});
   try {
     await fs.mkdir(skillsHome, { recursive: true });
   } catch (err) {
@@ -183,10 +171,11 @@ export async function ensureCursorSkillsInjected(
       `[paperclip] Removed maintainer-only Cursor skill "${skillName}" from ${skillsHome}\n`,
     );
   }
+  const linkSkill = options.linkSkill ?? ((source: string, target: string) => fs.symlink(source, target));
   for (const entry of skillsEntries) {
     const target = path.join(skillsHome, entry.runtimeName);
     try {
-      const result = await ensurePaperclipSkillSymlink(entry.source, target, options.linkSkill);
+      const result = await ensurePaperclipSkillSymlink(entry.source, target, linkSkill);
       if (result === "skipped") continue;
 
       await onLog(
@@ -203,6 +192,7 @@ export async function ensureCursorSkillsInjected(
 }
 
 export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExecutionResult> {
+  const providerStop = createProviderStoppedBoundary(ctx.onProviderStopped);
   const { runId, agent, runtime, config, context, onLog, onMeta, onSpawn, authToken } = ctx;
   const executionTarget = readAdapterExecutionTarget({
     executionTarget: ctx.executionTarget,
@@ -212,7 +202,9 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
 
   const promptTemplate = asString(
     config.promptTemplate,
-    DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE,
+    context.conversationMode === true
+      ? DEFAULT_PAPERCLIP_CONVERSATION_PROMPT_TEMPLATE
+      : DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE,
   );
   let command = asString(config.command, "agent");
   const model = asString(config.model, DEFAULT_CURSOR_LOCAL_MODEL).trim();
@@ -236,19 +228,22 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const cwd = effectiveWorkspaceCwd || configuredCwd || process.cwd();
   let effectiveExecutionCwd = adapterExecutionTargetRemoteCwd(executionTarget, cwd);
   await ensureAbsoluteDirectory(cwd, { createIfMissing: true });
-  const envConfig = parseObject(config.env);
   const cursorSkillEntries = await readPaperclipRuntimeSkillEntries(config, __moduleDir);
-  const desiredCursorSkillNames = resolvePaperclipDesiredSkillNames(config, cursorSkillEntries);
+  const desiredCursorSkillNames = resolveLegacyPaperclipDesiredSkillNames(config, cursorSkillEntries);
   if (!executionTargetIsRemote) {
     await ensureCursorSkillsInjected(onLog, {
-      skillsEntries: cursorSkillEntries.filter((entry) => desiredCursorSkillNames.includes(entry.key)),
-      skillsHome: cursorSkillsHome(envConfig),
+      skillsEntries: cursorSkillEntries.filter(
+        (entry) => desiredCursorSkillNames.includes(entry.key) && !isPaperclipSkillSourceMissing(entry),
+      ),
+      skillsHome: resolveCursorSkillsHome(config),
     });
   }
 
-  const hasExplicitApiKey =
-    typeof envConfig.PAPERCLIP_API_KEY === "string" && envConfig.PAPERCLIP_API_KEY.trim().length > 0;
-  let env: Record<string, string> = { ...buildPaperclipEnv(agent) };
+  const envConfig = parseObject(config.env);
+  let env: Record<string, string> = {
+    ...buildPaperclipEnv(agent, ctx.agentIdentity),
+    ...buildRuntimeToolsEnv(ctx.runtimeTools),
+  };
   env.PAPERCLIP_RUN_ID = runId;
   const wakeTaskId =
     (typeof context.taskId === "string" && context.taskId.trim().length > 0 && context.taskId.trim()) ||
@@ -273,7 +268,6 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const linkedIssueIds = Array.isArray(context.issueIds)
     ? context.issueIds.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
     : [];
-  const wakePayloadJson = stringifyPaperclipWakePayload(context.paperclipWake);
   const issueWorkMode = readPaperclipIssueWorkModeFromContext(context);
   if (wakeTaskId) {
     env.PAPERCLIP_TASK_ID = wakeTaskId;
@@ -296,9 +290,6 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   if (linkedIssueIds.length > 0) {
     env.PAPERCLIP_LINKED_ISSUE_IDS = linkedIssueIds.join(",");
   }
-  if (wakePayloadJson) {
-    env.PAPERCLIP_WAKE_PAYLOAD_JSON = wakePayloadJson;
-  }
   refreshPaperclipWorkspaceEnvForExecution({
     env,
     envConfig,
@@ -312,7 +303,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     executionTargetIsRemote,
     executionCwd: effectiveExecutionCwd,
   });
-  if (!hasExplicitApiKey && authToken) {
+  if (authToken) {
     env.PAPERCLIP_API_KEY = authToken;
   }
   const timeoutSec = resolveAdapterExecutionTargetTimeoutSec(
@@ -467,6 +458,8 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     paperclipBridge = await startAdapterExecutionTargetPaperclipBridge({
       runId,
       target: runtimeExecutionTarget,
+      enableSandboxDuplexBridge: adapterExecutionTargetEnablesSandboxDuplexBridge(runtimeExecutionTarget),
+      duplexObservabilityRecorder: adapterExecutionTargetDuplexObservabilityRecorder(runtimeExecutionTarget),
       runtimeRootDir: remoteRuntimeRootDir,
       adapterKey: "cursor",
       timeoutSec,
@@ -563,35 +556,44 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     run: { id: runId, source: "on_demand" },
     context,
   };
-  const renderedBootstrapPrompt =
-    !sessionId && bootstrapPromptTemplate.trim().length > 0
-      ? renderTemplate(bootstrapPromptTemplate, templateData).trim()
-      : "";
-  const wakePrompt = renderPaperclipWakePrompt(context.paperclipWake, { resumedSession: Boolean(sessionId) });
-  const shouldUseResumeDeltaPrompt = Boolean(sessionId) && wakePrompt.length > 0;
-  const renderedPrompt = shouldUseResumeDeltaPrompt || isPaperclipRecoveryWakePayload(context.paperclipWake)
-    ? ""
-    : renderTemplate(promptTemplate, templateData);
-  const sessionHandoffNote = asString(context.paperclipSessionHandoffMarkdown, "").trim();
-  const paperclipEnvNote = renderPaperclipEnvNote(env);
-  const localizationPromptNote = asString(context.paperclipLocalizationPromptMarkdown, "").trim();
-  const prompt = joinPromptSections([
-    instructionsPrefix,
-    localizationPromptNote,
-    renderedBootstrapPrompt,
-    wakePrompt,
-    sessionHandoffNote,
-    paperclipEnvNote,
-    renderedPrompt,
-  ]);
-  const promptMetrics = {
-    promptChars: prompt.length,
-    instructionsChars,
-    bootstrapPromptChars: renderedBootstrapPrompt.length,
-    wakePromptChars: wakePrompt.length,
-    sessionHandoffChars: sessionHandoffNote.length,
-    runtimeNoteChars: paperclipEnvNote.length + localizationPromptNote.length,
-    heartbeatPromptChars: renderedPrompt.length,
+  const buildPrompt = (resumedSession: boolean) => {
+    const renderedBootstrapPrompt =
+      !resumedSession && bootstrapPromptTemplate.trim().length > 0
+        ? renderTemplate(bootstrapPromptTemplate, templateData).trim()
+        : "";
+    const { taskContextNote, localizationPromptNote, wakePrompt } = selectPaperclipPromptSections(context, {
+      resumedSession,
+      includeCommunicationGuidance: false,
+    });
+    const shouldUseResumeDeltaPrompt = resumedSession && wakePrompt.length > 0;
+    const renderedPrompt = shouldUseResumeDeltaPrompt || isPaperclipRecoveryWakePayload(context.paperclipWake)
+      ? ""
+      : renderTemplate(promptTemplate, templateData);
+    const sessionHandoffNote = asString(context.paperclipSessionHandoffMarkdown, "").trim();
+    const paperclipEnvNote = renderPaperclipEnvNote(env);
+    const basePrompt = joinPromptSections([
+      instructionsPrefix,
+      renderedBootstrapPrompt,
+      localizationPromptNote,
+      wakePrompt,
+      taskContextNote,
+      sessionHandoffNote,
+      paperclipEnvNote,
+      renderedPrompt,
+    ]);
+    return {
+      basePrompt,
+      promptMetrics: {
+        promptChars: basePrompt.length,
+        instructionsChars,
+        bootstrapPromptChars: renderedBootstrapPrompt.length,
+        wakePromptChars: wakePrompt.length,
+        taskContextChars: taskContextNote.length,
+        sessionHandoffChars: sessionHandoffNote.length,
+        runtimeNoteChars: paperclipEnvNote.length,
+        heartbeatPromptChars: renderedPrompt.length,
+      },
+    };
   };
 
   const buildArgs = (resumeSessionId: string | null) => {
@@ -605,6 +607,12 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   };
 
   const runAttempt = async (resumeSessionId: string | null) => {
+    await hydrateFreshSessionHandoff(ctx, { resumedSession: Boolean(resumeSessionId) });
+    const { basePrompt, promptMetrics } = buildPrompt(Boolean(resumeSessionId));
+    const prompt = joinPromptSections([
+      selectInitialCommunicationGuidance(context, { resumedSession: Boolean(resumeSessionId) }),
+      basePrompt,
+    ]);
     const args = buildArgs(resumeSessionId);
     if (onMeta) {
       await onMeta({
@@ -615,16 +623,30 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         commandArgs: args,
         env: loggedEnv,
         prompt,
-        promptMetrics,
+        promptMetrics: { ...promptMetrics, promptChars: prompt.length },
         context,
       });
     }
 
+    const consumeAccounting = createCursorJsonlParser();
+    const accountingLog = createUsageCheckpointLog(onLog, ctx.onUsage, stdout => {
+      const parsed = consumeAccounting(stdout);
+      const provider = resolveProviderFromModel(model);
+      const hasCompleteAccounting = parsed.usageComplete || parsed.costUsd != null;
+      return {
+        usage: parsed.usageReported ? parsed.usage : undefined,
+        costUsd: parsed.costUsd,
+        costStatus: hasCompleteAccounting ? undefined : "unpriced",
+        usageBasis: "per_run", provider,
+        biller: resolveCursorBiller(effectiveEnv, billingType, provider), billingType, model,
+        complete: parsed.sawResult && hasCompleteAccounting,
+      };
+    });
     let stdoutLineBuffer = "";
     const emitNormalizedStdoutLine = async (rawLine: string) => {
       const normalized = normalizeCursorStreamLine(rawLine);
       if (!normalized.line) return;
-      await onLog(normalized.stream ?? "stdout", `${normalized.line}\n`);
+      await accountingLog(normalized.stream ?? "stdout", `${normalized.line}\n`);
     };
     const flushStdoutChunk = async (chunk: string, finalize = false) => {
       const combined = `${stdoutLineBuffer}${chunk}`;
@@ -645,6 +667,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     };
 
     const proc = await runAdapterExecutionTargetProcess(runId, runtimeExecutionTarget, command, args, {
+      onProcessStopped: providerStop.beginInvocation(),
       cwd,
       env,
       timeoutSec,
@@ -660,8 +683,10 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         await flushStdoutChunk(chunk);
       },
       runLogTail: paperclipBridge?.runLogTail,
+      settleRunDisposition: paperclipBridge?.settleRunDisposition,
     });
     await flushStdoutChunk("", true);
+    await accountingLog.flush();
 
     return {
       proc,
@@ -679,16 +704,30 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         timedOut: boolean;
         stdout: string;
         stderr: string;
+        errorCode?: string | null;
       };
       parsed: ReturnType<typeof parseCursorJsonl>;
     },
     clearSessionOnMissingSession = false,
   ): AdapterExecutionResult => {
+    const hasCompleteAccounting = attempt.parsed.usageComplete || attempt.parsed.costUsd != null;
+    const usageComplete = hasCompleteAccounting && (attempt.parsed.sawResult || (attempt.parsed.sawLegacyStep
+      && attempt.proc.exitCode === 0 && !attempt.proc.signal && !attempt.proc.timedOut
+      && !attempt.parsed.errorMessage));
     if (attempt.proc.timedOut) {
       return {
         exitCode: attempt.proc.exitCode,
         signal: attempt.proc.signal,
         timedOut: true,
+        usageComplete,
+        usage: attempt.parsed.usageReported ? attempt.parsed.usage : undefined,
+        usageBasis: "per_run",
+        provider: providerFromModel,
+        biller: resolveCursorBiller(effectiveEnv, billingType, providerFromModel),
+        model,
+        billingType,
+        costUsd: attempt.parsed.costUsd,
+        costStatus: hasCompleteAccounting ? undefined : "unpriced",
         errorMessage: `Timed out after ${timeoutSec}s`,
         clearSession: clearSessionOnMissingSession,
       };
@@ -710,7 +749,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         } as Record<string, unknown>)
       : null;
     const parsedError = typeof attempt.parsed.errorMessage === "string" ? attempt.parsed.errorMessage.trim() : "";
-    const stderrLine = firstNonEmptyLine(attempt.proc.stderr);
+    const stderrLine = firstCursorDiagnosticLine(attempt.proc.stderr);
     const fallbackErrorMessage =
       parsedError ||
       stderrLine ||
@@ -720,11 +759,17 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       exitCode: attempt.proc.exitCode,
       signal: attempt.proc.signal,
       timedOut: false,
+      usageComplete,
+      usageBasis: "per_run",
       errorMessage:
         (attempt.proc.exitCode ?? 0) === 0
           ? null
           : fallbackErrorMessage,
-      usage: attempt.parsed.usage,
+      // Forward the transport-level error code from the run-disposition seam. A
+      // lost duplex control channel surfaces the typed `duplex_channel_lost`
+      // code; every other result carries no code here.
+      errorCode: attempt.proc.errorCode ?? null,
+      usage: attempt.parsed.usageReported ? attempt.parsed.usage : undefined,
       sessionId: resolvedSessionId,
       sessionParams: resolvedSessionParams,
       sessionDisplayId: resolvedSessionId,
@@ -733,6 +778,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       model,
       billingType,
       costUsd: attempt.parsed.costUsd,
+      costStatus: hasCompleteAccounting ? undefined : "unpriced",
       resultJson: {
         stdout: attempt.proc.stdout,
         stderr: attempt.proc.stderr,
@@ -759,18 +805,22 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     }
     return toResult(initial);
   } finally {
-    if (paperclipBridge) {
-      await paperclipBridge.stop();
-    }
-    if (restoreRemoteWorkspace) {
-      await onLog(
-        "stdout",
-        `[paperclip] Restoring workspace changes from ${describeAdapterExecutionTarget(executionTarget)}.\n`,
-      );
-      await restoreRemoteWorkspace();
-    }
-    if (localSkillsDir) {
-      await fs.rm(localSkillsDir, { recursive: true, force: true }).catch(() => undefined);
+    try {
+      await providerStop.collectBeforeRestore();
+    } finally {
+      if (paperclipBridge) {
+        await paperclipBridge.stop();
+      }
+      if (restoreRemoteWorkspace) {
+        await onLog(
+          "stdout",
+          `[paperclip] Restoring workspace changes from ${describeAdapterExecutionTarget(executionTarget)}.\n`,
+        );
+        await restoreRemoteWorkspace();
+      }
+      if (localSkillsDir) {
+        await fs.rm(localSkillsDir, { recursive: true, force: true }).catch(() => undefined);
+      }
     }
   }
 }

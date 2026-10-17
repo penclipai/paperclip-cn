@@ -4,6 +4,7 @@ import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { StarToggle } from "./StarToggle";
+import i18n from "../i18n";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
@@ -20,7 +21,8 @@ describe("StarToggle", () => {
   let container: HTMLDivElement;
   let root: ReturnType<typeof createRoot> | null;
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    await i18n.changeLanguage("en");
     container = document.createElement("div");
     document.body.appendChild(container);
     root = null;
@@ -33,6 +35,7 @@ describe("StarToggle", () => {
     container.remove();
     document.body.innerHTML = "";
     vi.clearAllMocks();
+    await i18n.changeLanguage("en");
   });
 
   async function render(node: React.ReactElement) {
@@ -72,6 +75,14 @@ describe("StarToggle", () => {
     expect(onToggle).toHaveBeenCalledWith(false);
   });
 
+  it("localizes the action while preserving the resource name", async () => {
+    await render(<StarToggle starred={false} resourceName="Onboarding" onToggle={() => {}} />);
+
+    await i18n.changeLanguage("zh-CN");
+
+    expect(button()?.getAttribute("aria-label")).toBe("收藏 Onboarding");
+  });
+
   it("stays quiet (hidden at rest) for a starred sidebar row", async () => {
     await render(
       <StarToggle starred quiet resourceName="Alpha" onToggle={() => {}} revealClassName="reveal-me" />,
@@ -92,15 +103,30 @@ describe("StarToggle", () => {
     expect(onToggle).not.toHaveBeenCalled();
   });
 
-  it("surfaces a retry affordance on error for the button variant", async () => {
+  it("surfaces an icon-only retry affordance on error for the detail variant", async () => {
     await render(<StarToggle starred size="button" error resourceName="Alpha" onToggle={() => {}} />);
     const btn = button();
-    expect(btn?.textContent).toContain("Retry star");
+    expect(btn?.textContent).toBe("");
+    expect(btn?.getAttribute("data-variant")).toBe("ghost");
     expect(btn?.getAttribute("title")).toBe("Couldn't save — retry");
   });
 
-  it("renders the labelled Star/Starred button variant", async () => {
+  it("renders the unstarred detail variant as an unfilled icon without an outline", async () => {
+    await render(<StarToggle starred={false} size="button" resourceName="Alpha" onToggle={() => {}} />);
+    const btn = button();
+    expect(btn?.textContent).toBe("");
+    expect(btn?.getAttribute("data-variant")).toBe("ghost");
+    expect(btn?.getAttribute("aria-label")).toBe("Star Alpha");
+    expect(btn?.querySelector("svg")?.getAttribute("class")).not.toContain("fill-amber-500");
+  });
+
+  it("renders the detail variant as a filled, icon-only star without an outline", async () => {
     await render(<StarToggle starred size="button" resourceName="Alpha" onToggle={() => {}} />);
-    expect(button()?.textContent).toContain("Starred");
+    const btn = button();
+    expect(btn?.textContent).toBe("");
+    expect(btn?.getAttribute("data-variant")).toBe("ghost");
+    expect(btn?.getAttribute("data-size")).toBe("icon-sm");
+    expect(btn?.getAttribute("aria-label")).toBe("Unstar Alpha");
+    expect(btn?.querySelector("svg")?.getAttribute("class")).toContain("fill-amber-500");
   });
 });

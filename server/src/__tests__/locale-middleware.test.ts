@@ -58,7 +58,7 @@ describe("localeMiddleware", () => {
       .send('{"broken":');
 
     expect(res.status).toBe(400);
-    expect(res.body).toEqual({ error: "参数校验失败" });
+    expect(res.body).toEqual({ error: "无效的 JSON 请求体" });
     expect(res.headers["content-language"]).toBe("zh-CN");
   });
 });

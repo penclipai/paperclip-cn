@@ -10,14 +10,13 @@ import {
   Bot,
   Code,
   Gem,
+  Moon,
   MousePointer2,
   Sparkles,
   Terminal,
   Cpu,
 } from "lucide-react";
-import { CodeBuddyLogoIcon } from "@/components/CodeBuddyLogoIcon";
 import { OpenCodeLogoIcon } from "@/components/OpenCodeLogoIcon";
-import { QwenLogoIcon } from "@/components/QwenLogoIcon";
 import { translateInstant } from "../i18n";
 
 // ---------------------------------------------------------------------------
@@ -82,10 +81,11 @@ const adapterDisplayMap: Record<string, AdapterDisplayInfo> = {
     icon: Code,
     recommended: true,
   },
-  codebuddy_local: {
-    label: "CodeBuddy",
-    description: "Local CodeBuddy agent",
-    icon: CodeBuddyLogoIcon,
+  paperclip_runner: {
+    label: "Paperclip Runner",
+    description: "Experimental Rust runner with a Codex provider",
+    icon: Cpu,
+    experimental: true,
   },
   gemini_local: {
     label: "Gemini CLI",
@@ -97,6 +97,11 @@ const adapterDisplayMap: Record<string, AdapterDisplayInfo> = {
     description: "Grok Build harness",
     icon: Bot,
   },
+  kimi_local: {
+    label: "Kimi Code",
+    description: "Kimi Code CLI harness",
+    icon: Moon,
+  },
   opencode_local: {
     label: "OpenCode",
     description: "OpenCode multi-provider harness",
@@ -107,15 +112,17 @@ const adapterDisplayMap: Record<string, AdapterDisplayInfo> = {
     description: "Pi harness",
     icon: Terminal,
   },
-  qwen_local: {
-    label: "Qwen",
-    description: "Local Qwen agent",
-    icon: QwenLogoIcon,
-  },
   cursor: {
     label: "Cursor",
     description: "Cursor CLI harness",
     icon: MousePointer2,
+  },
+  // Display-only choice: persisted as paperclip_runner with provider openai_dot.
+  openai_dot: {
+    label: "OpenAI Dot",
+    description: "Your Dot in ChatGPT",
+    icon: Bot,
+    experimental: true,
   },
   cursor_cloud: {
     label: "Cursor Cloud",
@@ -180,12 +187,7 @@ export function getAdapterLabels(): Record<string, string> {
 export function getAdapterDisplay(type: string): AdapterDisplayInfo {
   const known = adapterDisplayMap[type];
   if (known) {
-    return {
-      ...known,
-      label: translateInstant(known.label),
-      description: translateInstant(known.description),
-      disabledLabel: known.disabledLabel ? translateInstant(known.disabledLabel) : undefined,
-    };
+    return { ...known, label: translateInstant(known.label), description: translateInstant(known.description), disabledLabel: known.disabledLabel ? translateInstant(known.disabledLabel) : undefined };
   }
 
   const suffix = getTypeSuffix(type);

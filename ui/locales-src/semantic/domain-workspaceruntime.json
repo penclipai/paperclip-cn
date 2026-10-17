@@ -1,0 +1,152 @@
+{
+  "workspaceRuntime.action.restart": {
+    "en": "Restart",
+    "zh-CN": "重启",
+    "reviewedEnglishHash": "6b983a81e5e8099e4e23a368e72636e31f029f2e691e5be714106b8cf59d70a7"
+  },
+  "workspaceRuntime.action.run": {
+    "en": "Run",
+    "zh-CN": "运行",
+    "reviewedEnglishHash": "00d60e31a4e6b8344d4201f25a6a7dee770713107f6d097abb01559d32b17f26"
+  },
+  "workspaceRuntime.action.start": {
+    "en": "Start",
+    "zh-CN": "启动",
+    "reviewedEnglishHash": "e4bb9f1ece9af9264a3b9e3913bbdb2cf497457167b14ced5f85688bfde74644"
+  },
+  "workspaceRuntime.action.stop": {
+    "en": "Stop",
+    "zh-CN": "停止",
+    "reviewedEnglishHash": "cae7d57bc067a514b8e34c9589631a95c7dc051638ddd2a190773269279a99df"
+  },
+  "workspaceRuntime.disabled.missingCommand": {
+    "en": "This job is missing a command.",
+    "zh-CN": "这个任务缺少可执行命令。",
+    "reviewedEnglishHash": "9b13b6187d31f681d4286397cfaf0baf2317d03d6f5fcc223ac9af698ff04610"
+  },
+  "workspaceRuntime.disabled.untrackedService": {
+    "en": "This runtime service no longer matches a configured workspace command.",
+    "zh-CN": "这个运行中的服务已经不再匹配当前的工作区命令配置。",
+    "reviewedEnglishHash": "5e2439745196f9e1b99d3c70029f3a8ca70866ec9632e889d42fd099cf0220d9"
+  },
+  "workspaceRuntime.header": {
+    "en": "Workspace commands",
+    "zh-CN": "工作区命令",
+    "reviewedEnglishHash": "6cc6282c5ab30392bd8bc3039a1b84f1612b8ef3a6c2a5b3955f30a78f2279e6"
+  },
+  "workspaceRuntime.health.healthy": {
+    "en": "healthy",
+    "zh-CN": "健康",
+    "reviewedEnglishHash": "87695fdac81728b9d7f2d4a1335c2632bb5e6ba1bed21d2dff0254fba31c7d5b"
+  },
+  "workspaceRuntime.health.unhealthy": {
+    "en": "unhealthy",
+    "zh-CN": "异常",
+    "reviewedEnglishHash": "85826072c3d4c3a4be8b8e4f205e19547d3f6fce81173d14779812a69b978ae2"
+  },
+  "workspaceRuntime.health.unknown": {
+    "en": "unknown",
+    "zh-CN": "未知",
+    "reviewedEnglishHash": "b23a6a8439c0dde5515893e7c90c1e3233b8616e634470f20dc4928bcf3609bc"
+  },
+  "workspaceRuntime.independentControl": {
+    "en": "Each command can be controlled independently.",
+    "zh-CN": "每个命令都可以独立控制。",
+    "reviewedEnglishHash": "9a0e7981ef1d3b3e4d1f64cc2eccc5633ec6e63138a27200d9fbad8135d673b4"
+  },
+  "workspaceRuntime.jobsAvailable": {
+    "en": "{{count}} jobs available to run on demand.",
+    "zh-CN": "有 {{count}} 个任务可按需运行。",
+    "reviewedEnglishHash": "0eef5458419681e82af0bdc594d15eff7f658aaf7d8c8ec83147669c2a5d92b9"
+  },
+  "workspaceRuntime.kind.job": {
+    "en": "job",
+    "zh-CN": "任务",
+    "reviewedEnglishHash": "5e8c9902207afaeb7120430c585a445f21e92932081d64bc99f80e4925bcb002"
+  },
+  "workspaceRuntime.kind.service": {
+    "en": "service",
+    "zh-CN": "服务",
+    "reviewedEnglishHash": "9df6b026a8c6c26e3c3acd2370a16e93fffdc0015ff5bd879218788025db0280"
+  },
+  "workspaceRuntime.lifecycle.ephemeral": {
+    "en": "ephemeral",
+    "zh-CN": "临时",
+    "reviewedEnglishHash": "8341425cafede9d24b0599aefdfdeff1c1526ed75b07217eb99bf8c0b7498b81"
+  },
+  "workspaceRuntime.lifecycle.shared": {
+    "en": "shared",
+    "zh-CN": "共享",
+    "reviewedEnglishHash": "a4d26868017c0ccffe2efe50944ef4211834660cca834c6e9f86dec6a88246fa"
+  },
+  "workspaceRuntime.noServicesRunning": {
+    "en": "No services running",
+    "zh-CN": "当前没有运行中的服务",
+    "reviewedEnglishHash": "03916b31f1d7d4b5fb329005342b3004e6a812c1ec031e4865a0503f0d65cbb1"
+  },
+  "workspaceRuntime.port": {
+    "en": "Port {{port}}",
+    "zh-CN": "端口 {{port}}",
+    "reviewedEnglishHash": "369502f03a9a1eaab1156720f3c417156fb644d98beff41eb8c6a7311ba5f457"
+  },
+  "workspaceRuntime.section.jobs": {
+    "en": "Jobs",
+    "zh-CN": "任务",
+    "reviewedEnglishHash": "2f17a0f8d518e491c5a0c490b2c1991828dd87d173994ba40996e1da59d4e368"
+  },
+  "workspaceRuntime.section.jobsDesc": {
+    "en": "One-shot commands that run now and exit when they finish.",
+    "zh-CN": "立即运行并在完成后退出的一次性命令。",
+    "reviewedEnglishHash": "9b358ae2380d7f6e5344f0a177c0b3fe720ec4ddaca677311711cfb76f22caef"
+  },
+  "workspaceRuntime.section.services": {
+    "en": "Services",
+    "zh-CN": "服务",
+    "reviewedEnglishHash": "604dce445e326d952308addc99bd3d0e3ffb0ed9a455e4aa0190641fc5facccc"
+  },
+  "workspaceRuntime.section.servicesDesc": {
+    "en": "Long-running commands that Paperclip can supervise for this workspace.",
+    "zh-CN": "Paperclip 可以为这个工作区持续监管的长驻命令。",
+    "reviewedEnglishHash": "ed1be5cc288bf44e5c9ed7d2c57d21398dd04fb4594c798fe3574c0f7b854e75"
+  },
+  "workspaceRuntime.section.untracked": {
+    "en": "Untracked services",
+    "zh-CN": "未跟踪的服务",
+    "reviewedEnglishHash": "87bd9a2e2d135bf7cdae92a0c9c5c487c1ed18a44a788e204a7174987a9ad620"
+  },
+  "workspaceRuntime.section.untrackedDesc": {
+    "en": "Running services that no longer match the current workspace command config.",
+    "zh-CN": "仍在运行、但已经不再匹配当前工作区命令配置的服务。",
+    "reviewedEnglishHash": "b3169d3dc6d79df677c0957f073d19adb6e884aa6b82fdd55551a2a1abe249ee"
+  },
+  "workspaceRuntime.servicesRunning": {
+    "en": "{{count}} services running",
+    "zh-CN": "有 {{count}} 个服务正在运行",
+    "reviewedEnglishHash": "378d8cf161b92551ff7455c2f1564c4558d5efa129486e6ca09ed60ba6ddebb2"
+  },
+  "workspaceRuntime.status.failed": {
+    "en": "failed",
+    "zh-CN": "失败",
+    "reviewedEnglishHash": "5d28a90f4498a81461efbaf6f628a19d9778390bb5c81a393dd936181cc3d826"
+  },
+  "workspaceRuntime.status.runOnce": {
+    "en": "run once",
+    "zh-CN": "运行一次",
+    "reviewedEnglishHash": "c0abd2d3b43ac112748c7fefb944b354c2011d84a0054355a14b6a801b8c0159"
+  },
+  "workspaceRuntime.status.running": {
+    "en": "running",
+    "zh-CN": "运行中",
+    "reviewedEnglishHash": "c071cf5f5ed6f884cc70155b6f05f755fd46a302d05e4261b7e92ce878bbfed8"
+  },
+  "workspaceRuntime.status.starting": {
+    "en": "starting",
+    "zh-CN": "正在启动",
+    "reviewedEnglishHash": "59dbf36d9930a99bfc1e13a10518cd5cf42d29ef9b21993c424b4146a81aa30e"
+  },
+  "workspaceRuntime.status.stopped": {
+    "en": "stopped",
+    "zh-CN": "已停止",
+    "reviewedEnglishHash": "8322e87d24582952e5c996da182de0eca66dd2bf58fba5ec56a325c656f21b38"
+  }
+}

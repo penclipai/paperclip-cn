@@ -159,6 +159,49 @@ English characters are review leads, not proof of a missing translation. Classif
 
 Follow [ui-localization-policy.md](references/ui-localization-policy.md) for command wording. Normalize by audience instead of mechanically replacing every command form.
 
+### Catalog maintenance
+
+`ui/locales-src/` is the editable authority for the production `common`
+catalog. The checked-in files at `ui/public/locales/en/common.json` and
+`ui/public/locales/zh-CN/common.json` are generated runtime artifacts: do not
+hand-edit them.
+
+Each source entry contains exactly `en`, `zh-CN`, and
+`reviewedEnglishHash`. Semantic keys belong in
+`semantic/domain-<first-prefix-lowercase>.json`; controlled source-text keys
+belong in `source-text/<first-ascii-letter-lowercase-or-other>.json`. A key has
+one source-file owner. Duplicate definitions and implicit overrides are errors.
+
+Use this sequence for a locale edit:
+
+```sh
+pnpm i18n:build
+pnpm check:i18n
+```
+
+`i18n:build` validates the editable sources and writes sorted UTF-8/LF runtime
+catalogs. `check:i18n` is read-only; it rejects out-of-date generated catalogs
+and English entries whose exact-string SHA-256 hash has not been explicitly
+reviewed. After reviewing a changed English value, acknowledge only the intended
+key:
+
+```sh
+pnpm i18n:review -- --key <exact-key>
+pnpm i18n:build
+pnpm check:i18n
+```
+
+The review command changes review metadata only. It does not translate text or
+approve a different key. A Chinese value may remain unchanged after a confirmed
+English change, but the explicit review is still required. Preserve the sole
+placeholder-set exception, `scheduleDescription.dayOfMonthOrdinal`: English
+uses `ordinal`, zh-CN uses `count`, and its caller supplies both. All other
+paired values must expose the same placeholders.
+
+The small upstream `translation` resources and their tests are separate from
+the production common catalog. Do not merge their ownership, keys, or runtime
+loading behavior into this workflow.
+
 ### Static i18n key audit
 
 Use the skill-local script for upstream syncs, locale catalog changes, and suspected key regressions:
@@ -171,14 +214,26 @@ node .agents/skills/paperclip-cn-fork-maintenance/scripts/i18n-key-audit.mjs com
 
 Snapshot files under `.omx/i18n-key-audit/` are local evidence and must not be committed.
 
+The audit snapshot schema is v2. It records
+`undefinedStaticTranslationCallFindings` separately from locale-key findings.
+When comparing a retained v1 baseline, the comparison reports
+`undefinedStaticTranslationCallBaselineUnavailable` instead of inventing legacy
+zero findings. Capture a fresh v2 pre-sync snapshot before the next sync to
+make new or regressed undefined static calls comparable.
+
 Treat these compare failures as blockers until reviewed:
 
 - removed keys
 - new locale parity gaps
 - duplicate keys in the same object
 - likely zh-CN English fallback regressions
+- new or regressed undefined static translation calls
+- newly changed English entries without explicit review
 
-Treat static `unusedKeys` and dynamic translation-call warnings as review leads, not deletion or failure oracles. Remove a key only after exact repository search, dynamic-prefix review, runtime-source review, and synchronized `en` and `zh-CN` edits.
+Treat static `unusedKeys`, duplicate-English candidates, and dynamic
+translation-call warnings as review leads, not deletion or failure oracles.
+Remove a key only after exact repository search, dynamic-prefix review,
+runtime-source review, and synchronized `en` and `zh-CN` edits.
 
 ### Browser i18n audit
 

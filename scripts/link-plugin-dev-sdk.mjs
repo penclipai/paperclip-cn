@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-// Dev-only: link the in-repo @paperclipai/plugin-sdk into plugin packages that
+// Dev-only: link the in-repo @penclipai/plugin-sdk into plugin packages that
 // are excluded from the pnpm workspace (see pnpm-workspace.yaml). Workspace
 // members get their SDK link from pnpm automatically; excluded packages do not.
 //
@@ -16,7 +16,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, "..");
 const sdkDir = join(repoRoot, "packages", "plugins", "sdk");
 
-// Plugin packages excluded from the workspace that still need @paperclipai/plugin-sdk
+// Plugin packages excluded from the workspace that still need @penclipai/plugin-sdk
 // linked in for local dev. Keep in sync with pnpm-workspace.yaml exclusions.
 function excludedPluginDirs() {
   return [
@@ -44,7 +44,7 @@ export function linkExcludedPlugins() {
 // single package after a fresh install.
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const { linked, skipped } = linkExcludedPlugins();
-  console.log(`  ✓ Linked @paperclipai/plugin-sdk into ${linked} excluded plugin(s) (skipped ${skipped})`);
+  console.log(`  ✓ Linked @penclipai/plugin-sdk into ${linked} excluded plugin(s) (skipped ${skipped})`);
 }
 
 // Recursively collect package directories (those containing a package.json)
@@ -69,7 +69,7 @@ export function readPluginsUnder(parentDir) {
 }
 
 export function linkSdkInto(packageDir) {
-  const scopeDir = join(packageDir, "node_modules", "@paperclipai");
+  const scopeDir = join(packageDir, "node_modules", "@penclipai");
   const linkTarget = join(scopeDir, "plugin-sdk");
   const relativeSdkDir = relative(scopeDir, sdkDir);
 
@@ -78,13 +78,13 @@ export function linkSdkInto(packageDir) {
   try {
     const stat = lstatSync(linkTarget);
     if (stat.isSymbolicLink()) {
-      if (readlinkSync(linkTarget) === relativeSdkDir) {
+      if (resolve(scopeDir, readlinkSync(linkTarget)) === sdkDir) {
         // Already linked to the in-repo SDK; nothing to do.
         return false;
       }
       rmSync(linkTarget, { force: true });
     } else {
-      // A real install has already populated @paperclipai/plugin-sdk (e.g. the
+      // A real install has already populated @penclipai/plugin-sdk (e.g. the
       // plugin host did `npm install` of the published tarball). Leave it.
       return false;
     }
@@ -93,6 +93,6 @@ export function linkSdkInto(packageDir) {
     if (error?.code !== "ENOENT") throw error;
   }
 
-  symlinkSync(relativeSdkDir, linkTarget, "dir");
+  symlinkSync(process.platform === "win32" ? sdkDir : relativeSdkDir, linkTarget, process.platform === "win32" ? "junction" : "dir");
   return true;
 }

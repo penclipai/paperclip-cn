@@ -126,7 +126,7 @@ export function GoalProperties({ goal, onUpdate }: GoalPropertiesProps) {
           )}
         </PropertyRow>
 
-        <PropertyRow label={t("Level", { defaultValue: "Level" })}>
+        <PropertyRow label={t("goalProperties.level")}>
           {onUpdate ? (
             <PickerButton
               current={goal.level}

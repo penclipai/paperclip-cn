@@ -1,0 +1,137 @@
+{
+  "boardChat.assistant": {
+    "en": "Assistant",
+    "zh-CN": "助手",
+    "reviewedEnglishHash": "391e405152779acc6b0f9429f3a4e27baf2af0deab2c37ba792311efa767d676"
+  },
+  "boardChat.assistantUnavailable": {
+    "en": "The board assistant is unavailable right now. Please try again in a moment.",
+    "zh-CN": "董事会助手暂时不可用。请稍后再试。",
+    "reviewedEnglishHash": "d5abcb971da255ae33db6b73eecfc67f44f14810da9d1c5a46f349d1a5a0046a"
+  },
+  "boardChat.chatHistory": {
+    "en": "chat history",
+    "zh-CN": "聊天历史",
+    "reviewedEnglishHash": "964ab895fadbf3f2ba78a916d9076ca306dcc629085f968bfdc41b2178a99ca6"
+  },
+  "boardChat.conferenceRoom": {
+    "en": "Conference Room",
+    "zh-CN": "会议室",
+    "reviewedEnglishHash": "fb9623fb6b5b8becc81eda6a131febbb8b9b4bbc26489146b3ea4f108e994edd"
+  },
+  "boardChat.connecting": {
+    "en": "Connecting...",
+    "zh-CN": "正在连接...",
+    "reviewedEnglishHash": "5f04ae9ed6a865bb382c66ef4bd4e57df4ce19d4142b8c87ac40d65ae54d278f"
+  },
+  "boardChat.jumpToLatestMessages": {
+    "en": "Jump to latest messages",
+    "zh-CN": "跳到最新消息",
+    "reviewedEnglishHash": "ef32661fdda07887161236d495044e5335558295c5137db0e825c3e643eb9cf7"
+  },
+  "boardChat.newChat": {
+    "en": "new chat",
+    "zh-CN": "新聊天",
+    "reviewedEnglishHash": "11836096bd42524c37d6c6e4e7949430c27a8e3c8d18f10eb2c32fd86fb0626e"
+  },
+  "boardChat.openAgentFeed": {
+    "en": "Open agent feed",
+    "zh-CN": "打开智能体动态",
+    "reviewedEnglishHash": "26615aa3c7bbcf01dab66474e6427ac156ec94484b9abef7e03b2fc0f7be25df"
+  },
+  "boardChat.placeholder": {
+    "en": "Ask anything about your company...",
+    "zh-CN": "询问任何关于你公司的问题...",
+    "reviewedEnglishHash": "a8b44dfbec902112d2078769f9230a53172aa955b83f1f15b40c926d55eeb357"
+  },
+  "boardChat.quick.companyBrief": {
+    "en": "Draft a Company Brief",
+    "zh-CN": "起草公司简报",
+    "reviewedEnglishHash": "8db1001277a517a9816b35b60da42a5089396ceff5d8538db167e75aeb5d7227"
+  },
+  "boardChat.quick.companyBriefPrompt": {
+    "en": "Draft a one-page Company Brief for {{companyName}} - include our mission, team roster, and first priorities.",
+    "zh-CN": "为 {{companyName}} 起草一页公司简报，包含使命、团队成员和首要事项。",
+    "reviewedEnglishHash": "a72a3f4c310c22068ad9c99f88f28471eeaeb68462c0459aed40b0e54c42ec7f"
+  },
+  "boardChat.quick.firstThirtyDays": {
+    "en": "Outline our first 30 days",
+    "zh-CN": "梳理前 30 天",
+    "reviewedEnglishHash": "a2f66ddc9b9a476682e3ea0a855062b4179b48eea63f0a046c3b2e071e86d5c5"
+  },
+  "boardChat.quick.firstThirtyDaysPrompt": {
+    "en": "Outline our first 30 days. Break it into weekly priorities with who owns what.",
+    "zh-CN": "梳理我们的前 30 天计划。按周拆解优先事项，并说明每项由谁负责。",
+    "reviewedEnglishHash": "9018ff4198a79d4056e2554d36ac36d497a78350a976ed5ba4668f6884c301f9"
+  },
+  "boardChat.quick.hiringPlan": {
+    "en": "Create a hiring plan",
+    "zh-CN": "制定招聘计划",
+    "reviewedEnglishHash": "4178933161be50ea57464a71d559e72d81d5896e8771cfc29997f296031675a0"
+  },
+  "boardChat.quick.hiringPlanPrompt": {
+    "en": "Create a hiring plan for {{companyName}}. List the next roles to hire, in priority order, with a short rationale for each.",
+    "zh-CN": "为 {{companyName}} 制定招聘计划。按优先级列出接下来要招聘的岗位，并为每个岗位写一句简短理由。",
+    "reviewedEnglishHash": "4423321397502946439cfd3893df57a83e8b70c87f14a2a93347b2ba79732ee2"
+  },
+  "boardChat.quick.introPitch": {
+    "en": "Write an intro pitch",
+    "zh-CN": "撰写介绍话术",
+    "reviewedEnglishHash": "10326cca10cada9ef7386eb11acc9bf755e7447e5369f2c503ae02e40d53f626"
+  },
+  "boardChat.quick.introPitchPrompt": {
+    "en": "Write a short intro pitch for {{companyName}} that I could reuse for investors, customers, or recruits.",
+    "zh-CN": "为 {{companyName}} 写一段简短介绍话术，可复用于投资人、客户或招聘对象。",
+    "reviewedEnglishHash": "0baa6a7f32da15224b33a06f0c7a7255a8cfbadc4b5333d02e41fe06ffbd6980"
+  },
+  "boardChat.resizePanes": {
+    "en": "Resize board chat and agent feed",
+    "zh-CN": "调整董事会聊天和智能体动态宽度",
+    "reviewedEnglishHash": "97e74cbcc89afa826bef3e01d116fd77985d59a5a031c05f904c82862d314763"
+  },
+  "boardChat.selectCompanyDescription": {
+    "en": "Select a company to start chatting with your board concierge.",
+    "zh-CN": "选择一家公司，开始和董事会助手对话。",
+    "reviewedEnglishHash": "c17b17bf110b9e5de97cc19809accf8f56ea56046865d37a5deafd074c49ad84"
+  },
+  "boardChat.sendMessage": {
+    "en": "Send message",
+    "zh-CN": "发送消息",
+    "reviewedEnglishHash": "93a26b1eaff99b3a84dd80366660991d15703a96514497afd997c12c43000ed7"
+  },
+  "boardChat.streamError": {
+    "en": "The board assistant couldn't respond. Please try again.",
+    "zh-CN": "董事会助手无法回应。请重试。",
+    "reviewedEnglishHash": "c97d759c7b0a8720258a0be4cff476c4cf4b343d1ed7b4ab279357e868d420b5"
+  },
+  "boardChat.streamUnavailable": {
+    "en": "Board chat stream not available",
+    "zh-CN": "董事会聊天流不可用",
+    "reviewedEnglishHash": "b159853353d163e974dc4c815c4ea7a982081b9bd44b554a5e95ef198d78d9e0"
+  },
+  "boardChat.thinking": {
+    "en": "Thinking...",
+    "zh-CN": "正在思考...",
+    "reviewedEnglishHash": "b4739a4f08650db25283a2b1d91cded5b7003353eab212a467bb2b03c0495963"
+  },
+  "boardChat.typing": {
+    "en": "typing",
+    "zh-CN": "正在输入",
+    "reviewedEnglishHash": "f8fd8e84e5d029290a7de562095cd9d86a6e7fdfec86d76e007ceefb676c5b0a"
+  },
+  "boardChat.welcomeBody": {
+    "en": "Welcome to **{{companyName}}**! I'm {{ceoName}}, your team lead. I've read through what you shared in the wizard{{missionLine}}\n\nHere are a few things I can help you put on paper right now. Pick one below and I'll draft it for you using everything you told us.",
+    "zh-CN": "欢迎来到 **{{companyName}}**！我是 {{ceoName}}，你的团队负责人。我已经读过你在向导中提供的信息{{missionLine}}\n\n下面这些内容我可以立刻帮你整理成文档。选择一项，我会基于你提供的全部信息起草。",
+    "reviewedEnglishHash": "0d10b46389a574b254943a5376e0ccbd797addb96f28a05f9bf6f587332091ce"
+  },
+  "boardChat.welcomeMissionLine": {
+    "en": " - your mission is \"{{mission}}\".",
+    "zh-CN": " - 你的使命是“{{mission}}”。",
+    "reviewedEnglishHash": "dbc5a4ea61952a4eac7ff55c463008522fd3d9782e5272bb13e9e54eeeb3ad8f"
+  },
+  "boardChat.yourCompany": {
+    "en": "Your company",
+    "zh-CN": "你的公司",
+    "reviewedEnglishHash": "39e3782f7462c8839b42038405b60b65f9acc04b6e6ead9df25039ed16841d3e"
+  }
+}

@@ -1,0 +1,172 @@
+{
+  "summarySlotCard.actions.generate": {
+    "en": "Generate summary",
+    "zh-CN": "生成摘要",
+    "reviewedEnglishHash": "ab35d87baddf51da658c66bcf765c4675f1c9af5faba069c82cf90325ce6d701"
+  },
+  "summarySlotCard.actions.generating": {
+    "en": "Generating...",
+    "zh-CN": "正在生成...",
+    "reviewedEnglishHash": "49286f33b674a0a6ae415811c6602fb5b12a3e6e2205130bd026d7ca163ccc40"
+  },
+  "summarySlotCard.actions.refresh": {
+    "en": "Refresh",
+    "zh-CN": "刷新",
+    "reviewedEnglishHash": "0e91610117029a62a478b7fa7df0b8598bebe3ab1e192d4b1882e310719c9671"
+  },
+  "summarySlotCard.actions.retry": {
+    "en": "Retry",
+    "zh-CN": "重试",
+    "reviewedEnglishHash": "942087cc2d41e01304b7195558d093d10c72af8e838c7556d6a02d471ee71852"
+  },
+  "summarySlotCard.actions.retrying": {
+    "en": "Retrying...",
+    "zh-CN": "正在重试...",
+    "reviewedEnglishHash": "84a657bcf3d968b4e10c205225a62eefddcc2ee18b3fcb6b02a8e0a61a8a08bd"
+  },
+  "summarySlotCard.empty.description": {
+    "en": "Generate a concise status snapshot for this surface.",
+    "zh-CN": "为此页面生成简明的状态摘要。",
+    "reviewedEnglishHash": "7923cb4195b7d0516b5225af04aedefc038490751ccb4f50f3825793d493d6c5"
+  },
+  "summarySlotCard.empty.title": {
+    "en": "No summary yet",
+    "zh-CN": "暂无摘要",
+    "reviewedEnglishHash": "f098ecd6800609b367933ff0b06569b4e9f9d3354c88cd371917541df93a4aa0"
+  },
+  "summarySlotCard.errors.generationFailedTitle": {
+    "en": "Summary generation failed",
+    "zh-CN": "摘要生成失败",
+    "reviewedEnglishHash": "3b09cc4b84687b568160682b61665a03e6ce459515cadbdb99cb83b50c104f61"
+  },
+  "summarySlotCard.errors.generationFallback": {
+    "en": "The generation task ended before writing a summary.",
+    "zh-CN": "生成任务在写入摘要前已结束。",
+    "reviewedEnglishHash": "1fa12fb6d2eec1a7997e4f39cd15c7c155c7337c507fbb1e9baf0e607d0f105e"
+  },
+  "summarySlotCard.errors.loadFailedTitle": {
+    "en": "Summary could not be loaded",
+    "zh-CN": "无法加载摘要",
+    "reviewedEnglishHash": "29af9845b641ff414748bf00bdc556e4a3befbc315180959e04c82e17904618b"
+  },
+  "summarySlotCard.errors.loadFallback": {
+    "en": "Try loading the summary again.",
+    "zh-CN": "请重新加载摘要。",
+    "reviewedEnglishHash": "fc4b5e223d907598b66cb6353b2c405677f82565540fa81bf853999d2e2d3067"
+  },
+  "summarySlotCard.errors.requestFailedTitle": {
+    "en": "Summary request failed",
+    "zh-CN": "摘要请求失败",
+    "reviewedEnglishHash": "0fdb9c43dc4b7c6b9f50d67ee26d3c74ad40ba8f45e4ece3e37177b155fb51c3"
+  },
+  "summarySlotCard.errors.startFailed": {
+    "en": "Summary generation could not be started.",
+    "zh-CN": "无法启动摘要生成。",
+    "reviewedEnglishHash": "b2428ba37b38e0c6fad1c5240ddb4b5e3381476f84da6b61722ef5258de004d4"
+  },
+  "summarySlotCard.generation.title": {
+    "en": "Generating summary",
+    "zh-CN": "正在生成摘要",
+    "reviewedEnglishHash": "d60065d5fc7da759cdc18c00d0ee3c497ac1476ae2e3e23b9dcf63423c361419"
+  },
+  "summarySlotCard.generation.workingInIssue": {
+    "en": "Summarizer is working in <issueLink>{{issue}}</issueLink>.",
+    "zh-CN": "摘要智能体正在任务 <issueLink>{{issue}}</issueLink> 中工作。",
+    "reviewedEnglishHash": "4309ce11e4cce24861a91518dde71e177da9982188f9e5337ef973033412f431"
+  },
+  "summarySlotCard.generation.workingWithTool": {
+    "en": "Working with {{toolName}}",
+    "zh-CN": "正在使用 {{toolName}}",
+    "reviewedEnglishHash": "3f0e5f018e2d9034d3cf100ff356449c362d9ce85646741347a227d5f52aa180"
+  },
+  "summarySlotCard.paused.description": {
+    "en": "Existing summaries remain readable, but new summaries will not be generated until the agent resumes.",
+    "zh-CN": "现有摘要仍可阅读，但在智能体恢复前不会生成新摘要。",
+    "reviewedEnglishHash": "819e45c3e79e7349b641e0a036e69ccfa26a96b5e05668e1d30a844b16ae07ec"
+  },
+  "summarySlotCard.paused.resume": {
+    "en": "Resume agent",
+    "zh-CN": "恢复智能体",
+    "reviewedEnglishHash": "0bb60c4501919e6a059a30cee4d98e670c05dcf1c9845a2aeef3abe6617809d4"
+  },
+  "summarySlotCard.paused.resuming": {
+    "en": "Resuming...",
+    "zh-CN": "正在恢复...",
+    "reviewedEnglishHash": "4414358c3ee74a8880323060e49a74381c2dd343a50c1074de4effff61ffdc74"
+  },
+  "summarySlotCard.paused.title": {
+    "en": "Summarizer is paused",
+    "zh-CN": "摘要智能体已暂停",
+    "reviewedEnglishHash": "f20b36c30cb8425ddcd8cf4d58e8daa96ca54370ae4799e2fd7436124a8be5a3"
+  },
+  "summarySlotCard.revision.count": {
+    "en": "{{count}} revisions",
+    "zh-CN": "{{count}} 个修订版本",
+    "reviewedEnglishHash": "5995dc36908034f6c356544d45eea6e5c8e7ed7db9c468725ffe80d0dd6570d0"
+  },
+  "summarySlotCard.revision.latest": {
+    "en": "Latest",
+    "zh-CN": "最新版本",
+    "reviewedEnglishHash": "8730d3c2022abf1f9665e4ca1da43e4d068843482053675af19176b0f6f51a3e"
+  },
+  "summarySlotCard.revision.latestOption": {
+    "en": "Latest (Rev {{number}}) - {{timestamp}}",
+    "zh-CN": "最新版本（修订 {{number}}）- {{timestamp}}",
+    "reviewedEnglishHash": "2abf90dab28db4b8a3a327ab635a972c4aa7d0cea0c09c9ea6b9fa0b7265c861"
+  },
+  "summarySlotCard.revision.option": {
+    "en": "{{revision}} - {{timestamp}}",
+    "zh-CN": "{{revision}} - {{timestamp}}",
+    "reviewedEnglishHash": "d12aa47ea6940b3e686c56516ea58595100f6aee455b22cce9438edd23a87df2"
+  },
+  "summarySlotCard.revision.selectAria": {
+    "en": "Select summary revision",
+    "zh-CN": "选择摘要修订版本",
+    "reviewedEnglishHash": "e9e258ba6e6839cbd8fcc53b15bc7077f5aef8d22c4da05f8deae41e75bf53d2"
+  },
+  "summarySlotCard.revision.short": {
+    "en": "Rev {{number}}",
+    "zh-CN": "修订 {{number}}",
+    "reviewedEnglishHash": "0e722d87b0591ee50db5c45c4858c25b51005ae96689bb262543083d43652cac"
+  },
+  "summarySlotCard.setup.action": {
+    "en": "Set up Summarizer",
+    "zh-CN": "设置摘要智能体",
+    "reviewedEnglishHash": "3d691da883e352fcc18863bd0312042f54ad5f891edd725b5c309843f1b1e0c3"
+  },
+  "summarySlotCard.setup.description": {
+    "en": "Summaries are generated by Paperclip's built-in Summarizer agent. Configure its adapter and model before requesting this summary.",
+    "zh-CN": "摘要由 Paperclip 内置摘要智能体生成。请求摘要前，请先配置其适配器和模型。",
+    "reviewedEnglishHash": "df756a3d98b39da0b413136699a0dd6b95a9fd6edf77104024d5bfa4baf1d92b"
+  },
+  "summarySlotCard.setup.pendingApproval": {
+    "en": "Summarizer setup is pending approval",
+    "zh-CN": "摘要智能体设置正在等待审批",
+    "reviewedEnglishHash": "5b2d45d42308177fb486d3bc1e33a41f5455e711641765213cacdc64be62fff3"
+  },
+  "summarySlotCard.setup.title": {
+    "en": "Set up the Summarizer",
+    "zh-CN": "设置摘要智能体",
+    "reviewedEnglishHash": "9606ead962a5fc3ba56c6ae8b8604f9912e9e7bcd9bad311c332973a88fea4d5"
+  },
+  "summarySlotCard.status.generating": {
+    "en": "Generating",
+    "zh-CN": "正在生成",
+    "reviewedEnglishHash": "3607d4f487c6bde66fbc466461b13c0a5f3030dc347c70b974fa7f92a8f57c8a"
+  },
+  "summarySlotCard.status.historicalRevision": {
+    "en": "Historical revision",
+    "zh-CN": "历史修订版本",
+    "reviewedEnglishHash": "d7c7ad26a64ac4ce0f8b27a5d0cda2f91700d384c8fc97313645db19ddf02a98"
+  },
+  "summarySlotCard.status.latestRevision": {
+    "en": "Latest revision",
+    "zh-CN": "最新修订版本",
+    "reviewedEnglishHash": "305ad7b9ced749045bd39f7b9a1181fde0082ef5c44be3c56b0c99cf29d8f6ca"
+  },
+  "summarySlotCard.updated": {
+    "en": "Updated {{time}}",
+    "zh-CN": "更新于 {{time}}",
+    "reviewedEnglishHash": "6379f4b4efb9b0a5342283ad3b0d99edf9df796e29d5791b24e14999ac127e78"
+  }
+}

@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { promises as fs } from "node:fs";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import {
   agentWakeupRequests,
   agents,
@@ -21,6 +21,7 @@ import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
 } from "./helpers/embedded-postgres.js";
+import { truncateTablesWithDeadlockRetry } from "./helpers/truncate-with-deadlock-retry.js";
 
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
 const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : describe.skip;
@@ -53,6 +54,7 @@ describeEmbeddedPostgres("heartbeat runtime locale service integration", () => {
   let paperclipHome: string | null = null;
   const rawAdapterContexts: Record<string, unknown>[] = [];
   const finalAdapterContexts: Record<string, unknown>[] = [];
+  const runIdsToDrain = new Set<string>();
 
   beforeAll(async () => {
     tempDb = await startEmbeddedPostgresTestDatabase("heartbeat-runtime-locale-");
@@ -82,9 +84,11 @@ describeEmbeddedPostgres("heartbeat runtime locale service integration", () => {
   }, 20_000);
 
   afterEach(async () => {
+    await Promise.all([...runIdsToDrain].map(runId => heartbeatService(db).waitForRunExecutionDrain(runId)));
+    runIdsToDrain.clear();
     rawAdapterContexts.length = 0;
     finalAdapterContexts.length = 0;
-    await db.execute(sql.raw(`
+    await truncateTablesWithDeadlockRetry(db, `
       TRUNCATE TABLE
         "activity_log",
         "heartbeat_run_events",
@@ -96,7 +100,7 @@ describeEmbeddedPostgres("heartbeat runtime locale service integration", () => {
         "user",
         "instance_settings"
       RESTART IDENTITY CASCADE
-    `));
+    `);
   });
 
   afterAll(async () => {
@@ -162,6 +166,7 @@ describeEmbeddedPostgres("heartbeat runtime locale service integration", () => {
     });
 
     expect(run).not.toBeNull();
+    runIdsToDrain.add(run!.id);
     const finished = await waitForRunToFinish(heartbeat, run!.id);
     expect(finished?.status).toBe("succeeded");
     expect(finished?.contextSnapshot).toMatchObject({ runtimeUiLocale: "en" });
@@ -185,6 +190,7 @@ describeEmbeddedPostgres("heartbeat runtime locale service integration", () => {
     });
 
     expect(run).not.toBeNull();
+    runIdsToDrain.add(run!.id);
     const finished = await waitForRunToFinish(heartbeat, run!.id);
     expect(finished?.status).toBe("succeeded");
     expect(finished?.contextSnapshot).toMatchObject({ runtimeUiLocale: "en" });

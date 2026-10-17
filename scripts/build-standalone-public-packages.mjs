@@ -36,7 +36,7 @@ function resolvePnpmInvocation(args) {
   return { command: "pnpm", args };
 }
 
-function parseWorkspaceEntries(workspaceText) {
+export function parseWorkspaceEntries(workspaceText) {
   // Keep this aligned with the repo's block-sequence `packages:` format in
   // pnpm-workspace.yaml. If that file moves to a more complex YAML shape,
   // switch this parser to a real YAML parser instead of line matching.
@@ -80,7 +80,7 @@ function globToRegExp(pattern) {
   return new RegExp(`^${regex}$`);
 }
 
-function isWorkspacePackage(pkgDir, workspaceEntries) {
+export function isWorkspacePackage(pkgDir, workspaceEntries) {
   let included = false;
 
   for (const entry of workspaceEntries) {
@@ -168,7 +168,7 @@ async function prepareAndBuildPackage(pkg) {
 
     // The fresh install above wipes node_modules and no longer fires a
     // per-plugin postinstall (removed for supply-chain safety), so link the
-    // in-repo @paperclipai/plugin-sdk that the build's tsc resolves against.
+    // in-repo @penclipai/plugin-sdk that the build's tsc resolves against.
     linkSdkInto(pkgDir);
 
     if (pkgJson.scripts?.build) {

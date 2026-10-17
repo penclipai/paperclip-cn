@@ -1,4 +1,4 @@
-# @penclipai/plugin-hello-world-example
+# @paperclipai/plugin-hello-world-example
 
 First-party reference plugin showing the smallest possible UI extension.
 
@@ -26,7 +26,7 @@ From the repo root, build the plugin and install it by local path:
 
 ```bash
 pnpm --filter @penclipai/plugin-hello-world-example build
-pnpm penclip plugin install ./packages/plugins/examples/plugin-hello-world-example
+npx penclip plugin install ./packages/plugins/examples/plugin-hello-world-example
 ```
 
 **Local development notes:**
@@ -34,5 +34,5 @@ pnpm penclip plugin install ./packages/plugins/examples/plugin-hello-world-examp
 - **Build first.** The host resolves the worker from the manifest `entrypoints.worker` (e.g. `./dist/worker.js`). Run `pnpm build` in the plugin directory before installing so the worker file exists.
 - **Dev-only install path.** This local-path install flow assumes a source checkout with this example package present on disk. For deployed installs, publish an npm package instead of relying on the monorepo example path.
 - **Reinstall after pulling.** If you installed a plugin by local path before the server stored `package_path`, the plugin may show status **error** (worker not found). Uninstall and install again so the server persists the path and can activate the plugin:
-  `pnpm penclip plugin uninstall paperclip.hello-world-example --force` then
-  `pnpm penclip plugin install ./packages/plugins/examples/plugin-hello-world-example`.
+  `npx penclip plugin uninstall paperclip.hello-world-example --force` then
+  `npx penclip plugin install ./packages/plugins/examples/plugin-hello-world-example`.

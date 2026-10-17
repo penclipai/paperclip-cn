@@ -826,7 +826,7 @@ function handlePipelineError(error: unknown): never {
     if (stage !== undefined) parts.push(`currentStage=${formatStageForError(stage)}`);
     console.error(pc.red(parts.join(" ")));
     if (error.status === 409) {
-      console.error(pc.yellow("Recovery: re-read the case with `paperclipai pipelines case get <case-id> --json`, then retry with the current version/stage."));
+      console.error(pc.yellow("Recovery: re-read the case with `penclip pipelines case get <case-id> --json`, then retry with the current version/stage."));
     }
     if (error.details !== undefined && !code) console.error(pc.dim(`details=${JSON.stringify(error.details)}`));
     process.exit(1);

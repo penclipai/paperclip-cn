@@ -1,0 +1,72 @@
+{
+  "agentMultiSelect.allowAgentAria": {
+    "en": "Allow {{name}}",
+    "zh-CN": "允许 {{name}}",
+    "reviewedEnglishHash": "8de2ba16b55b6f920766f0ccb0a9d116c58ecd0fcec020557fd357ba0666136f"
+  },
+  "agentMultiSelect.cancel": {
+    "en": "Cancel",
+    "zh-CN": "取消",
+    "reviewedEnglishHash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+  },
+  "agentMultiSelect.done": {
+    "en": "Done",
+    "zh-CN": "完成",
+    "reviewedEnglishHash": "11a6767d5674c7e45f7e00dc525762275b3a48491ad6045427d2609cc496c516"
+  },
+  "agentMultiSelect.empty": {
+    "en": "No agents yet.",
+    "zh-CN": "暂无智能体。",
+    "reviewedEnglishHash": "8a33b2e7d85a08f87e61308596ea55ca0eb56cc226f99934b49a76f1f9d1e223"
+  },
+  "agentMultiSelect.filterPlaceholder": {
+    "en": "Filter agents",
+    "zh-CN": "筛选智能体",
+    "reviewedEnglishHash": "2b2a8e180c4201f3f44724248ef46e2b1e36cb048fb5a4a8e77981751c918c1d"
+  },
+  "agentMultiSelect.moreSelected": {
+    "en": "and {{count}} more",
+    "zh-CN": "以及另外 {{count}} 个",
+    "reviewedEnglishHash": "25a067fd69ff7625b9eccc01a36d750435cc76099ee291969ae0f01c569b0ab3"
+  },
+  "agentMultiSelect.noMatches": {
+    "en": "No matches.",
+    "zh-CN": "没有匹配项。",
+    "reviewedEnglishHash": "d6572bd2e77380cece5ea9e23f3dcb01e208b8e872f46b4bb0a9f06e38b7a148"
+  },
+  "agentMultiSelect.noneSelected": {
+    "en": "No agents selected",
+    "zh-CN": "未选择智能体",
+    "reviewedEnglishHash": "ab4f76e910c498aa71f5af28837aad150449b5435c159fd1db0e47570aab5f2d"
+  },
+  "agentMultiSelect.save": {
+    "en": "Save",
+    "zh-CN": "保存",
+    "reviewedEnglishHash": "1509f561f2416598629b886ad7d3c05a7e221e4e0675c84bbff4ee6d9e03913d"
+  },
+  "agentMultiSelect.saving": {
+    "en": "Saving…",
+    "zh-CN": "正在保存…",
+    "reviewedEnglishHash": "23e39291d6135814ed7c936e278974544b0df5fbf0eb0427b6700979b7472a93"
+  },
+  "agentMultiSelect.selectAgents": {
+    "en": "Select agents",
+    "zh-CN": "选择智能体",
+    "reviewedEnglishHash": "9c2f5e9fd3f263f46910861080aed311ebc54f8d5657a8d07d906238d7b7e6fa"
+  },
+  "agentMultiSelect.selectedCount_one": {
+    "en": "{{count}} agent selected",
+    "zh-CN": "已选择 {{count}} 个智能体",
+    "reviewedEnglishHash": "2367236e778cb45a2260b9da463100cad9484031e8b03072d484ccb98f29d139"
+  },
+  "agentMultiSelect.selectedCount_other": {
+    "en": "{{count}} agents selected",
+    "zh-CN": "已选择 {{count}} 个智能体",
+    "reviewedEnglishHash": "c9492cfd3567f66e7e9b1a8ab3acb8e543beafd9b3440e52eb73a20f85a5beff"
+  },
+  "agentMultiSelect.selectionCount": {
+    "en": "{{count}} selected",
+    "zh-CN": "已选择 {{count}} 个",
+    "reviewedEnglishHash": "c7f761b38b197daa6b822be7397d8e2701c3dbb12b79b4a90eb1c37969bed5a6"
+  }
+}

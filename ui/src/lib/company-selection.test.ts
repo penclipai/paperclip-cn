@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
-  resolveAutoSelectedCompanyId,
-  shouldClearSelectedCompanyId,
+  resolveArchivedCompanyBounce,
+  resolveCompanyArchiveDeparture,
   shouldSyncCompanySelectionFromRoute,
 } from "./company-selection";
 
@@ -37,81 +37,104 @@ describe("shouldSyncCompanySelectionFromRoute", () => {
   });
 });
 
-describe("resolveAutoSelectedCompanyId", () => {
-  it("keeps a pending selected company while the companies query is refreshing", () => {
+describe("resolveArchivedCompanyBounce", () => {
+  const archived = { id: "old", name: "Old Co", issuePrefix: "OLD", status: "archived" };
+  const active = { id: "pap", name: "Paperclip", issuePrefix: "PAP", status: "active" };
+  const other = { id: "ret", name: "Retail", issuePrefix: "RET", status: "active" };
+
+  it("bounces a cold arrival on an archived company's URL to the active selection", () => {
     expect(
-      resolveAutoSelectedCompanyId({
-        companies: [
-          { id: "archived-1", status: "archived" },
-          { id: "archived-2", status: "archived" },
-        ],
-        selectedCompanyId: "new-company",
-        storedCompanyId: "new-company",
-        isFetching: true,
+      resolveArchivedCompanyBounce({
+        matchedCompany: archived,
+        selectedCompanyId: "pap",
+        companies: [archived, active, other],
+      }),
+    ).toEqual(active);
+  });
+
+  it("bounces to the first active company when nothing is selected", () => {
+    expect(
+      resolveArchivedCompanyBounce({
+        matchedCompany: archived,
+        selectedCompanyId: null,
+        companies: [archived, other],
+      }),
+    ).toEqual(other);
+  });
+
+  it("does not bounce a deliberate visit where the archived company is already selected", () => {
+    expect(
+      resolveArchivedCompanyBounce({
+        matchedCompany: archived,
+        selectedCompanyId: "old",
+        companies: [archived, active],
       }),
     ).toBeNull();
   });
 
-  it("falls back once refresh settles and the selected company is still missing", () => {
+  it("does not bounce active companies or when every company is archived", () => {
     expect(
-      resolveAutoSelectedCompanyId({
-        companies: [
-          { id: "archived-1", status: "archived" },
-          { id: "archived-2", status: "archived" },
-        ],
-        selectedCompanyId: "missing-company",
-        storedCompanyId: "missing-company",
-        isFetching: false,
+      resolveArchivedCompanyBounce({
+        matchedCompany: active,
+        selectedCompanyId: null,
+        companies: [archived, active],
       }),
-    ).toBe("archived-1");
-  });
-
-  it("does not replace a valid active selection", () => {
+    ).toBeNull();
     expect(
-      resolveAutoSelectedCompanyId({
-        companies: [
-          { id: "archived-1", status: "archived" },
-          { id: "active-1", status: "active" },
-        ],
-        selectedCompanyId: "active-1",
-        storedCompanyId: "active-1",
-        isFetching: false,
+      resolveArchivedCompanyBounce({
+        matchedCompany: archived,
+        selectedCompanyId: null,
+        companies: [archived],
       }),
     ).toBeNull();
   });
 });
 
-describe("shouldClearSelectedCompanyId", () => {
-  it("clears a remembered selection after the company list settles empty", () => {
+describe("resolveCompanyArchiveDeparture", () => {
+  const justArchived = { id: "old", name: "Old Co", issuePrefix: "OLD", status: "archived" };
+  const active = { id: "pap", name: "Paperclip", issuePrefix: "PAP", status: "active" };
+  const alsoArchived = { id: "ret", name: "Retail", issuePrefix: "RET", status: "archived" };
+  const portfolioUrl = "https://my.paperclip.app/orgs?manage=1";
+
+  it("switches to another active company when one exists, even on cloud", () => {
     expect(
-      shouldClearSelectedCompanyId({
-        companies: [],
-        selectedCompanyId: "missing-company",
-        storedCompanyId: "missing-company",
-        isFetching: false,
+      resolveCompanyArchiveDeparture({
+        archivedCompanyId: "old",
+        companies: [justArchived, alsoArchived, active],
+        cloudPortfolioUrl: portfolioUrl,
       }),
-    ).toBe(true);
+    ).toEqual({ kind: "company", company: active });
   });
 
-  it("keeps a remembered selection while the company list is still loading", () => {
+  it("never departs into the company that was just archived, whatever its cached status", () => {
+    // The caller's company list is pre-invalidation, so the archived
+    // company can still read "active" there.
     expect(
-      shouldClearSelectedCompanyId({
-        companies: [],
-        selectedCompanyId: "missing-company",
-        storedCompanyId: "missing-company",
-        isFetching: true,
+      resolveCompanyArchiveDeparture({
+        archivedCompanyId: "old",
+        companies: [{ ...justArchived, status: "active" }],
+        cloudPortfolioUrl: null,
       }),
-    ).toBe(false);
+    ).toEqual({ kind: "companies_list" });
   });
 
-  it("does not clear when there is nothing remembered", () => {
+  it("leaves for the Cloud portfolio when no active company remains", () => {
     expect(
-      shouldClearSelectedCompanyId({
-        companies: [],
-        selectedCompanyId: null,
-        storedCompanyId: null,
-        isFetching: false,
+      resolveCompanyArchiveDeparture({
+        archivedCompanyId: "old",
+        companies: [justArchived, alsoArchived],
+        cloudPortfolioUrl: portfolioUrl,
       }),
-    ).toBe(false);
+    ).toEqual({ kind: "cloud_portfolio", url: portfolioUrl });
+  });
+
+  it("falls back to the companies list on self-hosted instances", () => {
+    expect(
+      resolveCompanyArchiveDeparture({
+        archivedCompanyId: "old",
+        companies: [justArchived],
+        cloudPortfolioUrl: null,
+      }),
+    ).toEqual({ kind: "companies_list" });
   });
 });

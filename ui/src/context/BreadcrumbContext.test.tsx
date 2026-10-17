@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 
-import { act } from "react";
+import { act, useEffect } from "react";
 import { createRoot } from "react-dom/client";
+import i18n, { translateInstant } from "../i18n";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { BreadcrumbProvider, buildDocumentTitle, useBreadcrumbs } from "./BreadcrumbContext";
 
@@ -59,6 +60,50 @@ describe("BreadcrumbContext", () => {
     expect(renderCounts).toHaveLength(2);
   });
 
+  it("rerenders consumers when only the crumb identifier changes", () => {
+    const renderCounts: number[] = [];
+    let updateBreadcrumbs:
+      | ((crumbs: Array<{ label: string; href?: string; identifier?: string }>) => void)
+      | null = null;
+
+    function TestConsumer() {
+      const { breadcrumbs, setBreadcrumbs } = useBreadcrumbs();
+      renderCounts.push(breadcrumbs.length);
+      updateBreadcrumbs = setBreadcrumbs;
+      return null;
+    }
+
+    act(() => {
+      root.render(
+        <BreadcrumbProvider>
+          <TestConsumer />
+        </BreadcrumbProvider>,
+      );
+    });
+
+    expect(renderCounts).toHaveLength(1);
+
+    act(() => {
+      updateBreadcrumbs?.([{ label: "First task prompt", identifier: "PAP-1204" }]);
+    });
+
+    expect(renderCounts).toHaveLength(2);
+
+    // Same everything but a new identifier must produce a fresh render.
+    act(() => {
+      updateBreadcrumbs?.([{ label: "First task prompt", identifier: "PAP-1205" }]);
+    });
+
+    expect(renderCounts).toHaveLength(3);
+
+    // Identical identifier is a no-op.
+    act(() => {
+      updateBreadcrumbs?.([{ label: "First task prompt", identifier: "PAP-1205" }]);
+    });
+
+    expect(renderCounts).toHaveLength(3);
+  });
+
   it("builds page titles with the selected company name before Paperclip", () => {
     expect(buildDocumentTitle([{ label: "Inbox" }], "Anachronist Wiki")).toBe(
       "Inbox • Anachronist Wiki • Paperclip CN",
@@ -74,5 +119,37 @@ describe("BreadcrumbContext", () => {
   it("omits blank company names from page titles", () => {
     expect(buildDocumentTitle([{ label: "Inbox" }], "  ")).toBe("Inbox • Paperclip CN");
     expect(buildDocumentTitle([], null)).toBe("Paperclip CN");
+  });
+
+  it("recomputes translated breadcrumb titles on a locale change without changing user labels", async () => {
+    function DashboardBreadcrumb() {
+      const { setBreadcrumbs } = useBreadcrumbs();
+
+      useEffect(() => {
+        setBreadcrumbs([
+          { label: translateInstant("Dashboard") },
+          { label: "Northstar Labs" },
+        ]);
+      }, [setBreadcrumbs]);
+
+      return null;
+    }
+
+    await act(async () => {
+      await i18n.changeLanguage("zh-CN");
+      root.render(
+        <BreadcrumbProvider companyName="Northstar Labs">
+          <DashboardBreadcrumb />
+        </BreadcrumbProvider>,
+      );
+    });
+
+    expect(document.title).toBe("Northstar Labs • 仪表盘 • Northstar Labs • Paperclip CN");
+
+    await act(async () => {
+      await i18n.changeLanguage("en");
+    });
+
+    expect(document.title).toBe("Northstar Labs • Dashboard • Northstar Labs • Paperclip CN");
   });
 });

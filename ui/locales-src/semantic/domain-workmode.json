@@ -1,0 +1,47 @@
+{
+  "workMode.ask": {
+    "en": "Ask mode",
+    "zh-CN": "询问模式",
+    "reviewedEnglishHash": "ae649982d52fdae78960ce55e5262d333a201cd8a8851127e735419c24e90844"
+  },
+  "workMode.auto": {
+    "en": "Auto mode",
+    "zh-CN": "自动模式",
+    "reviewedEnglishHash": "9ba1e1b64aa5543e130bc137d3b87c129a4e50c297ea1f5793708b9324cbfaf2"
+  },
+  "workMode.pending.ask": {
+    "en": "Ask mode for this submission. Click to change. The responsible will answer in this thread; no implementation work.",
+    "zh-CN": "本次提交使用询问模式。点击可更改。负责人将在此线程答复，不会执行实现工作。",
+    "reviewedEnglishHash": "d618c6f6c58cd827c46ad7e449d923f2cc898486c02b554677cf0a69de4181af"
+  },
+  "workMode.pending.auto": {
+    "en": "Auto mode for this submission. Click to change.",
+    "zh-CN": "本次提交使用自动模式。点击可更改。",
+    "reviewedEnglishHash": "53dcfdafd49e48de5ca249bcdade63613c9d941bba8fb949c8492d582f2ec17d"
+  },
+  "workMode.pending.plan": {
+    "en": "Plan mode is on for this submission. Click to change.",
+    "zh-CN": "本次提交已启用规划模式。点击可更改。",
+    "reviewedEnglishHash": "b139911c0f258801d90a9a3155d815a82d5ff0de9bea3a6f6bbf5cfda4552032"
+  },
+  "workMode.plan": {
+    "en": "Plan mode",
+    "zh-CN": "规划模式",
+    "reviewedEnglishHash": "3ca7d842d1209b4d550ba48787a7fe44f97c9a60c5e329178afd9e6359b7087c"
+  },
+  "workMode.title.ask": {
+    "en": "Ask mode for this submission. Click to change. The responsible will answer in this thread; no implementation work.",
+    "zh-CN": "本次提交使用提问模式。点击可更改。负责人会在此线程中回答，不会执行实现工作。",
+    "reviewedEnglishHash": "d618c6f6c58cd827c46ad7e449d923f2cc898486c02b554677cf0a69de4181af"
+  },
+  "workMode.title.planning": {
+    "en": "Plan mode is on for this submission. Click to change.",
+    "zh-CN": "本次提交已开启规划模式。点击可更改。",
+    "reviewedEnglishHash": "b139911c0f258801d90a9a3155d815a82d5ff0de9bea3a6f6bbf5cfda4552032"
+  },
+  "workMode.title.standard": {
+    "en": "Agent mode for this submission. Click to change.",
+    "zh-CN": "本次提交使用智能体模式。点击可更改。",
+    "reviewedEnglishHash": "7eb9a281dc7fb2afcac0711ee03f8bf3184e8945828631eddfb8c0a72a9ff8c9"
+  }
+}

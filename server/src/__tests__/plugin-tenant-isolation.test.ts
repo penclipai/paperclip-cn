@@ -71,7 +71,7 @@ describeEmbeddedPostgres("plugin tenant isolation (company_id FK)", () => {
     await db.insert(plugins).values({
       id: pluginId,
       pluginKey: "paperclip.tenant-isolation-test",
-      packageName: "@paperclipai/plugin-tenant-isolation-test",
+      packageName: "@penclipai/plugin-tenant-isolation-test",
       version: "0.0.1",
       apiVersion: 1,
       categories: ["automation"],

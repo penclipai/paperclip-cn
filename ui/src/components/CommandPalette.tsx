@@ -1,7 +1,10 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
+import { AgentIdentity } from "@/components/AgentIdentity";
+import { useCombinedInboxTasksEnabled } from "@/hooks/useCombinedInboxTasksEnabled";
 import { useState, useEffect, useMemo } from "react";
 import { useLocation, useNavigate } from "@/lib/router";
 import { useQuery } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
 import { useCompany } from "../context/CompanyContext";
 import { useDialogActions } from "../context/DialogContext";
 import { useSidebar } from "../context/SidebarContext";
@@ -11,7 +14,6 @@ import { agentsApi } from "../api/agents";
 import { projectsApi } from "../api/projects";
 import { instanceSettingsApi } from "../api/instanceSettings";
 import { queryKeys } from "../lib/queryKeys";
-import { displaySeededName } from "../lib/seeded-display";
 import {
   CommandDialog,
   CommandEmpty,
@@ -90,7 +92,7 @@ function scoreProjectMatch(name: string, description: string, q: string): number
 }
 
 export function CommandPalette() {
-  const { t } = useTranslation(undefined, { useSuspense: false });
+  useTranslation();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const navigate = useNavigate();
@@ -105,6 +107,7 @@ export function CommandPalette() {
     queryFn: () => instanceSettingsApi.getExperimental(),
     retry: false,
   });
+  const { enabled: combinedInboxTasksEnabled } = useCombinedInboxTasksEnabled();
   const fileViewerEnabled = experimentalSettings?.enableExperimentalFileViewer === true;
 
   useEffect(() => {
@@ -135,7 +138,7 @@ export function CommandPalette() {
     enabled: !!selectedCompanyId && open,
   });
   const projects = useMemo(
-    () => allProjects.filter((p) => !p.archivedAt),
+    () => allProjects,
     [allProjects],
   );
 
@@ -184,8 +187,7 @@ export function CommandPalette() {
 
   const agentName = (id: string | null) => {
     if (!id) return null;
-    const agent = agents.find((a) => a.id === id);
-    return agent ? displaySeededName(agent.name) : null;
+    return agents.find((a) => a.id === id)?.name ?? null;
   };
 
   const visibleIssues = useMemo(
@@ -226,9 +228,7 @@ export function CommandPalette() {
         if (v && isMobile) setSidebarOpen(false);
       }}>
       <CommandInput
-        placeholder={t("Search issues, agents, projects...", {
-          defaultValue: "Search issues, agents, projects...",
-        })}
+        placeholder={translateInstant("Search tasks, agents, projects...")}
         value={query}
         onValueChange={setQuery}
         onKeyDown={(event) => {
@@ -247,27 +247,16 @@ export function CommandPalette() {
         <CommandEmpty>
           {showSearchAll ? (
             <span>
-              {t("commandPalette.noQuickMatchesPrefix", {
-                defaultValue: "No quick issue matches. Press",
-              })}{" "}
+              {translateInstant("No quick task matches. Press")}{" "}
               <kbd className="rounded border border-border bg-muted px-1 py-0.5 text-(length:--text-nano)">↵</kbd>{" "}
-              {t("commandPalette.noQuickMatchesSuffix", {
-                defaultValue: "to",
-              })}{" "}
-              <span className="font-medium">
-                {t("commandPalette.searchAll", { defaultValue: "search all" })}
-              </span>{" "}
-              {t("commandPalette.noQuickMatchesContinue", {
-                defaultValue: "or keep typing to refine.",
-              })}
-            </span>
+              {translateInstant("commandPalette.noQuickMatchesSuffix")}{" "}<span className="font-medium">{translateInstant("commandPalette.searchAll")}</span> {translateInstant("commandPalette.noQuickMatchesContinue")}</span>
           ) : (
-            t("No results found.", { defaultValue: "No results found." })
+            "No results found."
           )}
         </CommandEmpty>
 
         {showSearchAll ? (
-          <CommandGroup heading={t("Search", { defaultValue: "Search" })}>
+          <CommandGroup heading={translateInstant("Search")}>
             <CommandItem
               value={`${SEARCH_ALL_VALUE} ${searchQuery}`}
               onSelect={goFullSearch}
@@ -276,13 +265,10 @@ export function CommandPalette() {
             >
               <Search className="mr-2 h-4 w-4" />
               <span className="flex-1 truncate">
-                {t("commandPalette.searchAllFor", { defaultValue: "Search all for" })}{" "}
-                <span className="font-semibold">&ldquo;{searchQuery}&rdquo;</span>
+                {translateInstant("commandPalette.searchAllFor")}{" "}<span className="font-semibold">&ldquo;{searchQuery}&rdquo;</span>
               </span>
               <span className="ml-auto inline-flex items-center gap-1 text-xs text-muted-foreground">
-                <span>
-                  {t("commandPalette.openFullSearch", { defaultValue: "open full search" })}
-                </span>
+                <span>{translateInstant("commandPalette.openFullSearch")}</span>
                 <kbd className="rounded border border-border bg-background px-1 py-0.5 text-(length:--text-nano)">↵</kbd>
               </span>
             </CommandItem>
@@ -291,7 +277,7 @@ export function CommandPalette() {
 
         {showSearchAll ? <CommandSeparator /> : null}
 
-        <CommandGroup heading="Quick filters">
+        <CommandGroup heading={translateInstant("Quick filters")}>
           {SEARCH_OPERATOR_QUICK_FILTERS.map((chip) => (
             <CommandItem
               key={chip}
@@ -309,7 +295,7 @@ export function CommandPalette() {
 
         {showPromotedProjects && (
           <>
-            <CommandGroup heading={t("Projects", { defaultValue: "Projects" })}>
+            <CommandGroup heading={translateInstant("Projects")}>
               {matchedProjects.map((project) => (
                 <CommandItem
                   key={project.id}
@@ -331,7 +317,7 @@ export function CommandPalette() {
           </>
         )}
 
-        <CommandGroup heading={t("Actions", { defaultValue: "Actions" })}>
+        <CommandGroup heading={translateInstant("Actions")}>
           <CommandItem
             onSelect={() => {
               setOpen(false);
@@ -339,8 +325,7 @@ export function CommandPalette() {
             }}
           >
             <SquarePen className="mr-2 h-4 w-4" />
-            {t("Create new issue", { defaultValue: "Create new issue" })}
-            <span className="ml-auto text-xs text-muted-foreground">C</span>
+            {translateInstant("Create new issue")}<span className="ml-auto text-xs text-muted-foreground">C</span>
           </CommandItem>
           {onIssueDetail && fileViewerEnabled && (
             <CommandItem
@@ -350,8 +335,7 @@ export function CommandPalette() {
               }}
             >
               <FileCode2 className="mr-2 h-4 w-4" />
-              Open file in this issue...
-              <span className="ml-auto text-xs text-muted-foreground">g f</span>
+              {translateInstant("commandPalette.openFileInIssue")}<span className="ml-auto text-xs text-muted-foreground">g f</span>
             </CommandItem>
           )}
           <CommandItem
@@ -361,55 +345,46 @@ export function CommandPalette() {
             }}
           >
             <Plus className="mr-2 h-4 w-4" />
-            {t("Create new agent", { defaultValue: "Create new agent" })}
-          </CommandItem>
+            {translateInstant("Create new agent")}</CommandItem>
           <CommandItem onSelect={() => go("/projects")}>
             <Plus className="mr-2 h-4 w-4" />
-            {t("Create new project", { defaultValue: "Create new project" })}
-          </CommandItem>
+            {translateInstant("Create new project")}</CommandItem>
         </CommandGroup>
 
         <CommandSeparator />
 
-        <CommandGroup heading={t("Pages", { defaultValue: "Pages" })}>
+        <CommandGroup heading={translateInstant("Pages")}>
           <CommandItem onSelect={() => go("/dashboard")}>
             <LayoutDashboard className="mr-2 h-4 w-4" />
-            {t("Dashboard", { defaultValue: "Dashboard" })}
-          </CommandItem>
-          <CommandItem onSelect={() => go("/inbox")}>
+            {translateInstant("Dashboard")}</CommandItem>
+          <CommandItem onSelect={() => go(combinedInboxTasksEnabled ? "/issues?view=mine" : "/inbox")}>
             <Inbox className="mr-2 h-4 w-4" />
-            {t("Inbox", { defaultValue: "Inbox" })}
+            {combinedInboxTasksEnabled ? "My work" : "Inbox"}
           </CommandItem>
           <CommandItem onSelect={() => go("/issues")}>
             <CircleDot className="mr-2 h-4 w-4" />
-            {t("Issues", { defaultValue: "Issues" })}
-          </CommandItem>
+            {translateInstant("sidebar.issues")}</CommandItem>
           <CommandItem onSelect={() => go("/projects")}>
             <Hexagon className="mr-2 h-4 w-4" />
-            {t("Projects", { defaultValue: "Projects" })}
-          </CommandItem>
+            {translateInstant("Projects")}</CommandItem>
           <CommandItem onSelect={() => go("/goals")}>
             <Target className="mr-2 h-4 w-4" />
-            {t("Goals", { defaultValue: "Goals" })}
-          </CommandItem>
+            {translateInstant("Goals")}</CommandItem>
           <CommandItem onSelect={() => go("/agents")}>
             <Bot className="mr-2 h-4 w-4" />
-            {t("Agents", { defaultValue: "Agents" })}
-          </CommandItem>
+            {translateInstant("Agents")}</CommandItem>
           <CommandItem onSelect={() => go("/costs")}>
             <DollarSign className="mr-2 h-4 w-4" />
-            {t("Costs", { defaultValue: "Costs" })}
-          </CommandItem>
+            {translateInstant("Costs")}</CommandItem>
           <CommandItem onSelect={() => go("/activity")}>
             <History className="mr-2 h-4 w-4" />
-            {t("Activity", { defaultValue: "Activity" })}
-          </CommandItem>
+            {translateInstant("Activity")}</CommandItem>
         </CommandGroup>
 
         {visibleIssues.length > 0 && (
           <>
             <CommandSeparator />
-            <CommandGroup heading={t("sidebar.issues", { defaultValue: "Tasks" })}>
+            <CommandGroup heading={translateInstant("sidebar.issues")}>
               {visibleIssues.slice(0, taskLimit).map((issue) => (
                 <CommandItem
                   key={issue.id}
@@ -427,7 +402,7 @@ export function CommandPalette() {
                   <span className="flex-1 truncate">{issue.title}</span>
                   {issue.assigneeAgentId && (() => {
                     const name = agentName(issue.assigneeAgentId);
-                    return name ? <Identity name={name} size="sm" className="ml-2 hidden sm:inline-flex" /> : null;
+                    return name ? <AgentIdentity agent={agents?.find((agent) => agent.id === issue.assigneeAgentId) ?? { id: issue.assigneeAgentId, name }} size="sm" className="ml-2 hidden sm:inline-flex" /> : null;
                   })()}
                 </CommandItem>
               ))}
@@ -438,11 +413,11 @@ export function CommandPalette() {
         {agents.length > 0 && (
           <>
             <CommandSeparator />
-            <CommandGroup heading={t("Agents", { defaultValue: "Agents" })}>
+            <CommandGroup heading={translateInstant("Agents")}>
               {agents.slice(0, 10).map((agent) => (
                 <CommandItem key={agent.id} onSelect={() => go(agentUrl(agent))}>
                   <Bot className="mr-2 h-4 w-4" />
-                  {displaySeededName(agent.name)}
+                  {agent.name}
                   <span className="text-xs text-muted-foreground ml-2">{agent.role}</span>
                 </CommandItem>
               ))}
@@ -453,11 +428,11 @@ export function CommandPalette() {
         {projects.length > 0 && !showSearchAll && (
           <>
             <CommandSeparator />
-            <CommandGroup heading={t("Projects", { defaultValue: "Projects" })}>
+            <CommandGroup heading={translateInstant("Projects")}>
               {projects.slice(0, 10).map((project) => (
                 <CommandItem key={project.id} onSelect={() => go(projectUrl(project))}>
                   <Hexagon className="mr-2 h-4 w-4" />
-                  {displaySeededName(project.name)}
+                  {project.name}
                 </CommandItem>
               ))}
             </CommandGroup>

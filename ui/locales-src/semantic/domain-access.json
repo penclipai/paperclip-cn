@@ -1,0 +1,27 @@
+{
+  "access.inviteRoles.operatorAccess": {
+    "en": "Full editing and audit access. Cannot approve join requests or manage member permissions.",
+    "zh-CN": "拥有完整的编辑和审计权限，无法审批加入申请或管理成员权限。",
+    "reviewedEnglishHash": "92466f464fa9643d9b546391995e029449e4cc0cbb52a264dcfd98e87fb97cfa"
+  },
+  "access.inviteRoles.operatorDescription": {
+    "en": "Can edit organization work and invite people.",
+    "zh-CN": "可编辑组织工作并邀请成员。",
+    "reviewedEnglishHash": "ae45d4c0935f02171ff14ee8efc13057d882159c65466f19ce5d46995c299be8"
+  },
+  "access.inviteRoles.ownerDescription": {
+    "en": "Full organization access, including membership management.",
+    "zh-CN": "拥有组织的全部权限，包括成员管理。",
+    "reviewedEnglishHash": "050eacd9817fac0705602598022629d79786e14e47db0d547ee1ccae533abd4e"
+  },
+  "access.inviteRoles.viewerAccess": {
+    "en": "View-only organization membership.",
+    "zh-CN": "仅可查看组织内容。",
+    "reviewedEnglishHash": "f5ae52ac73578bc8160dd12258d6461c55783da4f85daa302c57ade60a551c03"
+  },
+  "access.inviteRoles.viewerDescription": {
+    "en": "Can view organization work and follow along.",
+    "zh-CN": "可查看组织工作并了解进展。",
+    "reviewedEnglishHash": "c0074ebb95a9e2a04a3c1082a3328fe93e727fed91866e4694ea3ddba1ab583c"
+  }
+}

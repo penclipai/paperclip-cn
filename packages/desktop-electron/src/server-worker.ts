@@ -1,5 +1,11 @@
 import fs from "node:fs";
 import { pathToFileURL } from "node:url";
+import {
+  createWorkerShutdownController,
+  isWorkerShutdownRequest,
+  type WorkerShutdownComplete,
+  type WorkerShutdownFailed,
+} from "./worker-shutdown.js";
 
 type ReadyMessage = {
   type: "ready";
@@ -13,10 +19,13 @@ type FatalMessage = {
   error: string;
 };
 
-const shutdownFallbackTimeoutMs = 7_000;
+type StartedServer = {
+  apiUrl: string;
+  shutdown: (signal: NodeJS.Signals) => Promise<void> | void;
+};
 
-let bootstrapped = false;
-let shutdownRequested = false;
+const shutdownFallbackTimeoutMs = 115_000;
+
 let shutdownFallbackTimer: NodeJS.Timeout | null = null;
 
 function reportFatal(error: string): void {
@@ -54,9 +63,9 @@ async function maybeDelayStartupForSmoke(): Promise<void> {
   });
 }
 
-async function loadServerModule(entryPath: string): Promise<() => Promise<{ apiUrl: string }>> {
+async function loadServerModule(entryPath: string): Promise<() => Promise<StartedServer>> {
   const mod = (await import(pathToFileURL(entryPath).href)) as {
-    startServer?: () => Promise<{ apiUrl: string }>;
+    startServer?: () => Promise<StartedServer>;
   };
 
   if (typeof mod.startServer !== "function") {
@@ -72,6 +81,22 @@ function sendMessage(message: ReadyMessage | FatalMessage): void {
   }
 }
 
+async function sendShutdownMessage(message: WorkerShutdownComplete | WorkerShutdownFailed): Promise<void> {
+  if (typeof process.send !== "function") {
+    throw new Error("Desktop parent IPC is unavailable.");
+  }
+
+  await new Promise<void>((resolve, reject) => {
+    process.send?.(message, (error) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+      resolve();
+    });
+  });
+}
+
 function clearShutdownFallbackTimer(): void {
   if (shutdownFallbackTimer) {
     clearTimeout(shutdownFallbackTimer);
@@ -80,42 +105,36 @@ function clearShutdownFallbackTimer(): void {
 }
 
 function requestShutdownFromDisconnect(): void {
-  if (shutdownRequested) {
-    return;
-  }
-
-  shutdownRequested = true;
-  if (!bootstrapped) {
-    process.exit(0);
-    return;
-  }
-
   shutdownFallbackTimer = setTimeout(() => {
-    process.exit(0);
+    console.error("[desktop-worker] Parent disconnected before orderly shutdown completed.");
+    process.exit(1);
   }, shutdownFallbackTimeoutMs);
 
-  try {
-    process.kill(process.pid, "SIGTERM");
-  } catch {
-    process.exit(0);
-  }
+  void shutdownController.requestShutdown().finally(clearShutdownFallbackTimer);
 }
 
-async function bootstrap(): Promise<void> {
+async function bootstrap(): Promise<StartedServer> {
   applyDesktopEnvironment();
   await maybeDelayStartupForSmoke();
   const entryPath = resolveServerEntrypoint();
   const startServer = await loadServerModule(entryPath);
-  const started = await startServer();
-  bootstrapped = true;
-
-  sendMessage({
-    type: "ready",
-    payload: {
-      apiUrl: started.apiUrl,
-    },
-  });
+  return startServer();
 }
+
+const startupPromise = bootstrap();
+const shutdownController = createWorkerShutdownController({
+  startup: startupPromise,
+  send: sendShutdownMessage,
+  exit: (code) => process.exit(code),
+  formatError: (error) => error instanceof Error ? error.stack ?? error.message : String(error),
+});
+
+process.on("message", (message: unknown) => {
+  if (!isWorkerShutdownRequest(message)) {
+    return;
+  }
+  void shutdownController.requestShutdown(message.requestId);
+});
 
 process.once("disconnect", () => {
   requestShutdownFromDisconnect();
@@ -134,6 +153,18 @@ process.on("unhandledRejection", (reason) => {
   reportFatal(message);
 });
 
-void bootstrap().catch((error) => {
-  reportFatal(error.stack ?? error.message);
+void startupPromise.then((started) => {
+  if (shutdownController.isShutdownRequested()) {
+    return;
+  }
+  sendMessage({
+    type: "ready",
+    payload: {
+      apiUrl: started.apiUrl,
+    },
+  });
+}).catch((error) => {
+  if (!shutdownController.isShutdownRequested()) {
+    reportFatal(error.stack ?? error.message);
+  }
 });

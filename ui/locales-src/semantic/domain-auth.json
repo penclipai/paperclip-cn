@@ -1,0 +1,87 @@
+{
+  "auth.authenticationFailed": {
+    "en": "Authentication failed",
+    "zh-CN": "认证失败",
+    "reviewedEnglishHash": "93821eb7ce8c659285207dd34f7e29a79088e218a1d7bb373b54fbeddbbef6fd"
+  },
+  "auth.createOne": {
+    "en": "Create one",
+    "zh-CN": "创建一个",
+    "reviewedEnglishHash": "b6ab95ea074921f69ca0d07c48cca688ca5406a08c82f4953b5131eb18c379e4"
+  },
+  "auth.email": {
+    "en": "Email",
+    "zh-CN": "邮箱",
+    "reviewedEnglishHash": "969ccbd3cf6300ecd5c880459d81ae9027df7517563184a1b8b15282db230621"
+  },
+  "auth.failedToLoadSession": {
+    "en": "Failed to load session ({{status}})",
+    "zh-CN": "加载会话失败（{{status}}）",
+    "reviewedEnglishHash": "baf53bbc0f6564d479ebf1d499dd15feff0719d7ff367eb6e1e63d81302bbb15"
+  },
+  "auth.haveAccount": {
+    "en": "Already have an account?",
+    "zh-CN": "已经有账号了？",
+    "reviewedEnglishHash": "e77fea936d3e011848f62b927213d94d95a71bdca16e3d7490bcbd65e16824f0"
+  },
+  "auth.name": {
+    "en": "Name",
+    "zh-CN": "姓名",
+    "reviewedEnglishHash": "dcd1d5223f73b3a965c07e3ff5dbee3eedcfedb806686a05b9b3868a2c3d6d50"
+  },
+  "auth.needAccount": {
+    "en": "Need an account?",
+    "zh-CN": "还没有账号？",
+    "reviewedEnglishHash": "d24daaf3d934a54cfd7cf715db41feb9c37730458353393f2d6938d61d9b1b31"
+  },
+  "auth.password": {
+    "en": "Password",
+    "zh-CN": "密码",
+    "reviewedEnglishHash": "e7cf3ef4f17c3999a94f2c6f612e8a888e5b1026878e4e19398b23bd38ec221a"
+  },
+  "auth.requestFailed": {
+    "en": "Request failed ({{status}})",
+    "zh-CN": "请求失败（{{status}}）",
+    "reviewedEnglishHash": "2d17914c47b4706cff4ad20f981be0206e881c9d2bcc6f7167abc398d4045ae4"
+  },
+  "auth.requiredFields": {
+    "en": "Please fill in all required fields.",
+    "zh-CN": "请填写所有必填项。",
+    "reviewedEnglishHash": "d1641a4df419e4ac32181f7c1d4e5aaa3a7c2dac48dfb47eb803da66b109d867"
+  },
+  "auth.signInLink": {
+    "en": "Sign in",
+    "zh-CN": "登录",
+    "reviewedEnglishHash": "bfd402b2f6f3812529b55596136d3a11c51616317e3b1cd999928e2d4eae7d3f"
+  },
+  "auth.submit.signIn": {
+    "en": "Sign In",
+    "zh-CN": "登录",
+    "reviewedEnglishHash": "bcc0bcc9140b0c97a6440ce56966a07a05e85bddd509ddc5e2ab98755f319af1"
+  },
+  "auth.submit.signUp": {
+    "en": "Create Account",
+    "zh-CN": "创建账号",
+    "reviewedEnglishHash": "0dffe234b44793b6158e663740fc9cf1b45738bce4be453244c96e056e6207c3"
+  },
+  "auth.subtitle.signIn": {
+    "en": "Use your email and password to access this instance.",
+    "zh-CN": "使用邮箱和密码访问当前实例。",
+    "reviewedEnglishHash": "7665f3a50e4d2ed08a1023eec63c15634fac4a51103d9ce0d9a260863c8aec50"
+  },
+  "auth.subtitle.signUp": {
+    "en": "Create an account for this instance. Email confirmation is not required in v1.",
+    "zh-CN": "为当前实例创建账号。V1 版本不需要邮箱确认。",
+    "reviewedEnglishHash": "fa7492f54fc52dc05476aea460afaf0ca305c2e3ccc677453e0ba3aebf496d97"
+  },
+  "auth.title.signIn": {
+    "en": "Sign in to Paperclip CN",
+    "zh-CN": "登录 Paperclip CN",
+    "reviewedEnglishHash": "88f71f042990e645bd47bfd9286c8c0b5785be3b1341765c9903c5c2d442daf3"
+  },
+  "auth.title.signUp": {
+    "en": "Create your Paperclip CN account",
+    "zh-CN": "创建你的 Paperclip CN 账号",
+    "reviewedEnglishHash": "6a838dac515b38d285a7e86a021fbf1c797bf638812af35eeef17c5152ee0e76"
+  }
+}

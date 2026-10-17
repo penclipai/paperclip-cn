@@ -1,0 +1,342 @@
+{
+  "). GitHub sends": {
+    "en": "). GitHub sends",
+    "zh-CN": ")。GitHub 会自动发送",
+    "reviewedEnglishHash": "c85ce75b2982b46609419d0c59c292250868c227817d1b79c2e60378b074b4d7"
+  },
+  "GH_TOKEN": {
+    "en": "GH_TOKEN",
+    "zh-CN": "GH_TOKEN",
+    "reviewedEnglishHash": "4fe0c99a7403f3a57b69fd0c40ef280fb0ca6664bc042d642d6cd45b057f00e7"
+  },
+  "Gateway URL": {
+    "en": "Gateway URL",
+    "zh-CN": "网关 URL",
+    "reviewedEnglishHash": "3d06950825de7452bc87464f967ef6f37a33d9b32cbae2f4a1bf9b56431c8795"
+  },
+  "Gateway URL copied": {
+    "en": "Gateway URL copied",
+    "zh-CN": "网关 URL 已复制",
+    "reviewedEnglishHash": "f0e942a625d967809513725b7f0231ca84d7e818c9add32205ca16ee2a7cd77d"
+  },
+  "Gateway auth token": {
+    "en": "Gateway auth token",
+    "zh-CN": "网关认证令牌",
+    "reviewedEnglishHash": "a31b5be38953f12039664d286c15d5cb69f1ae8481ebc0ce6a3f147e3e9afa6a"
+  },
+  "Gateway auth token (x-openclaw-token)": {
+    "en": "Gateway auth token (x-openclaw-token)",
+    "zh-CN": "网关认证令牌（x-openclaw-token）",
+    "reviewedEnglishHash": "e284262ffdd2892a3f65a1a143474b1395dbdd7b124e69dbfc85e1a274bd1ecc"
+  },
+  "Gateway shared password": {
+    "en": "Gateway shared password",
+    "zh-CN": "网关共享密码",
+    "reviewedEnglishHash": "6a063dc23bfc875719135e55b9fda963ff424053e8de5ccf8a88f8ba042230cb"
+  },
+  "Gateway updated": {
+    "en": "Gateway updated",
+    "zh-CN": "网关已更新",
+    "reviewedEnglishHash": "b848205734d7ac38be46a5011ea62ffe5888e8fe7c9bdca5d34d8597c6ea0bc7"
+  },
+  "Gateway was not updated": {
+    "en": "Gateway was not updated",
+    "zh-CN": "网关未更新",
+    "reviewedEnglishHash": "34c6cf19bff6595f2b86deae074e0972c773c020e1da6574f9707e0d96afe9a5"
+  },
+  "Gemini CLI": {
+    "en": "Gemini CLI",
+    "zh-CN": "Gemini 命令行工具",
+    "reviewedEnglishHash": "731732835cd76be60beb737ac8a4903b5bbc79388008bfc4ba5191d1edfa7073"
+  },
+  "Gemini CLI (local)": {
+    "en": "Gemini CLI (local)",
+    "zh-CN": "Gemini CLI（本地）",
+    "reviewedEnglishHash": "e739eced1acfbeee1e60b897fec62a1b4c04d3338c7a7607fcb11fba3ff681ae"
+  },
+  "General": {
+    "en": "General",
+    "zh-CN": "常规",
+    "reviewedEnglishHash": "c910d474dcd724bff83ddedeb06bf1eceaf9fb3af7c76bb282be057f36e6dffa"
+  },
+  "Generate OpenClaw Invite Prompt": {
+    "en": "Generate OpenClaw Invite Prompt",
+    "zh-CN": "生成 OpenClaw 邀请提示词",
+    "reviewedEnglishHash": "dd95e5f32eaf7c57831b1d152b177f14453e3b105c56f6bb12ecaed6cc2c670c"
+  },
+  "Generate SSH key pair": {
+    "en": "Generate SSH key pair",
+    "zh-CN": "生成 SSH 密钥对",
+    "reviewedEnglishHash": "9ee96d897993c8cc9f80cd21b0b2f3612e1125607131ec25b4e009031966c920"
+  },
+  "Generate Token": {
+    "en": "Generate Token",
+    "zh-CN": "生成令牌",
+    "reviewedEnglishHash": "6886f3daef2a0fea926311129224cfec3a462414683abae6276c1a7de17d9d13"
+  },
+  "Generate a human invite link and choose the default access it should request.": {
+    "en": "Generate a human invite link and choose the default access it should request.",
+    "zh-CN": "生成人类邀请链接，并选择它默认请求的访问权限。",
+    "reviewedEnglishHash": "dd31c56fa8afb73913be8bc1c479383de5a665e5803df252a52c6e03b3775bd6"
+  },
+  "Generate an OpenClaw agent invite snippet.": {
+    "en": "Generate an OpenClaw agent invite snippet.",
+    "zh-CN": "生成 OpenClaw 智能体邀请片段。",
+    "reviewedEnglishHash": "ab1e0f3f9a2f5200dc8cbeea2cb9b086ccf3946875e41558dbaea2d2d9c06267"
+  },
+  "Generate new key": {
+    "en": "Generate new key",
+    "zh-CN": "生成新密钥",
+    "reviewedEnglishHash": "3a14b7bb1a2dde298adc4e521fc4690a00ba66948f4e9ecb663063a4540896c4"
+  },
+  "Generated from your app name, bot name, and slash command. Edit those fields to update the manifest.": {
+    "en": "Generated from your app name, bot name, and slash command. Edit those fields to update the manifest.",
+    "zh-CN": "根据应用名称、机器人名称和斜杠命令生成。编辑这些字段即可更新清单。",
+    "reviewedEnglishHash": "1feb775e5af3863abb00dddccd4dc93b7c0dc935d861dfd451674257915d0969"
+  },
+  "Generated webhook secret": {
+    "en": "Generated webhook secret",
+    "zh-CN": "生成的 Webhook 密钥",
+    "reviewedEnglishHash": "90e15bc010e364c9439004bd35d4a389564ea435281ce5974ce6cbb327a05648"
+  },
+  "Generating...": {
+    "en": "Generating...",
+    "zh-CN": "生成中...",
+    "reviewedEnglishHash": "49286f33b674a0a6ae415811c6602fb5b12a3e6e2205130bd026d7ca163ccc40"
+  },
+  "Get a config with an agent": {
+    "en": "Get a config with an agent",
+    "zh-CN": "通过智能体获取配置",
+    "reviewedEnglishHash": "6e59e011c106500f3b19b762bf14594a13d480623ffb496c04df0b391d977bb8"
+  },
+  "Get a new link": {
+    "en": "Get a new link",
+    "zh-CN": "获取新链接",
+    "reviewedEnglishHash": "a402dfe4818e462c802b88e03d7dead20d64a6381ae24d820cd1afc214e53f76"
+  },
+  "Get help creating an MCP config": {
+    "en": "Get help creating an MCP config",
+    "zh-CN": "获取创建 MCP 配置的帮助",
+    "reviewedEnglishHash": "2b39abc0e46ce58c0466e92633c45c43149787112acb76216a6de1af82a567e3"
+  },
+  "Get started": {
+    "en": "Get started",
+    "zh-CN": "开始使用",
+    "reviewedEnglishHash": "61e8d44ad423a4a0951b21b9d11440a1c23a881fe79335c367f63be251c64800"
+  },
+  "Get your App configuration access token": {
+    "en": "Get your App configuration access token",
+    "zh-CN": "获取您的应用配置访问令牌",
+    "reviewedEnglishHash": "242f66351049300d121faa3fccf7857c767babd7c7ec7ed6fea37693553a3c22"
+  },
+  "Ghost": {
+    "en": "Ghost",
+    "zh-CN": "幽灵",
+    "reviewedEnglishHash": "df1bc4984a055e10b2863eb03abf11701cb63a1e2371dc398889e8291812fb80"
+  },
+  "Git repository URL Cursor should open for this agent.": {
+    "en": "Git repository URL Cursor should open for this agent.",
+    "zh-CN": "Cursor 为该智能体打开的 Git 仓库 URL。",
+    "reviewedEnglishHash": "4815636e899aa977eea8a796b2ace755ed824be5e24d47f8068c814cbe93b9c9"
+  },
+  "GitHub": {
+    "en": "GitHub",
+    "zh-CN": "GitHub",
+    "reviewedEnglishHash": "f911e414cf6bdfc595532ab166b5ba0f63d73c021452fcdacbda363dda6ad8fb"
+  },
+  "GitHub App name and logo": {
+    "en": "GitHub App name and logo",
+    "zh-CN": "GitHub App 名称和标志",
+    "reviewedEnglishHash": "b8dc68ca64f1b21b8eb2313d390b08374dacb5b2e77b7fba5025fcf79a0bfee6"
+  },
+  "GitHub Code Review Bot": {
+    "en": "GitHub Code Review Bot",
+    "zh-CN": "GitHub 代码审查机器人",
+    "reviewedEnglishHash": "12a656b70cc4ba0cdeb3971a314899e063e73713e05a49766fd134c2202703f4"
+  },
+  "GitHub access refreshed": {
+    "en": "GitHub access refreshed",
+    "zh-CN": "GitHub 访问权限已刷新",
+    "reviewedEnglishHash": "477eae62754bc27faa20e5493516b04572f0028385736acb5c688db9cf6550b6"
+  },
+  "GitHub account": {
+    "en": "GitHub account",
+    "zh-CN": "GitHub 账户",
+    "reviewedEnglishHash": "d686f873a56689703a346d35332890e6fd3f1c40d96328e3ac3d5a7bf3308f16"
+  },
+  "GitHub account needs linking.": {
+    "en": "GitHub account needs linking.",
+    "zh-CN": "需要关联 GitHub 账户。",
+    "reviewedEnglishHash": "441afdc610d4198f5e826924bcc8ef06f678932de54bdb7f6e88d3c68c72018f"
+  },
+  "GitHub account:": {
+    "en": "GitHub account:",
+    "zh-CN": "GitHub 账户：",
+    "reviewedEnglishHash": "b43e749b65f3fcf787d47694a560c2874d82127012c540c00465cdb8e41e8164"
+  },
+  "GitHub comment": {
+    "en": "GitHub comment",
+    "zh-CN": "GitHub 评论",
+    "reviewedEnglishHash": "d119f0c5993d2249b391bf7c1259b76646f5ad2d5909f6fb44b57a562169d064"
+  },
+  "GitHub comments and pull requests can contain malicious instructions. We recommend a low-trust agent with a scoped work boundary and an isolated sandbox runtime.": {
+    "en": "GitHub comments and pull requests can contain malicious instructions. We recommend a low-trust agent with a scoped work boundary and an isolated sandbox runtime.",
+    "zh-CN": "GitHub评论和拉取请求可能包含恶意指令。我们建议使用具有范围工作边界和隔离沙盒运行时的低信任智能体。",
+    "reviewedEnglishHash": "e21696adbfdbeeee65ef7ffaab864832ebe2ef429ed8e805c91a18db78ce2b2f"
+  },
+  "GitHub connected": {
+    "en": "GitHub connected",
+    "zh-CN": "GitHub 已连接",
+    "reviewedEnglishHash": "f69b1053398f54f0be32d6a072cd3022547faf35d7fc00d26759ac0d39e0b7d7"
+  },
+  "GitHub identity": {
+    "en": "GitHub identity",
+    "zh-CN": "GitHub 身份",
+    "reviewedEnglishHash": "c043831d870fa5a0c29f8da335412baffb346f6bcb7b431149d6abd066e390d1"
+  },
+  "GitHub identity history": {
+    "en": "GitHub identity history",
+    "zh-CN": "GitHub 身份历史",
+    "reviewedEnglishHash": "2d754cf1f6df93d619a4d9cfd81a3b3cc596d4fd178c19acd38b4cfe908fd313"
+  },
+  "GitHub organization name": {
+    "en": "GitHub organization name",
+    "zh-CN": "GitHub 组织名称",
+    "reviewedEnglishHash": "60a453bceca783ccc7a6baaee235b282fde3c10a92f539b17367943557f84247"
+  },
+  "GitHub repository": {
+    "en": "GitHub repository",
+    "zh-CN": "GitHub 仓库",
+    "reviewedEnglishHash": "505554929de39d807f1f83422c398024fcbced980c9c15f0133ccabc2a65ee83"
+  },
+  "GitHub review bots": {
+    "en": "GitHub review bots",
+    "zh-CN": "GitHub 审查机器人",
+    "reviewedEnglishHash": "ee95879f308c072f21c3980ad2e8a293b1ecdeb7db364638cb1ccd25f5345c71"
+  },
+  "GitHub username": {
+    "en": "GitHub username",
+    "zh-CN": "GitHub 用户名",
+    "reviewedEnglishHash": "64477e38cfb55c5f600c035b75f5b16ea7526d21422eda500aa21b80b747f846"
+  },
+  "Give agents email inboxes and handle each conversation as a task.": {
+    "en": "Give agents email inboxes and handle each conversation as a task.",
+    "zh-CN": "为智能体提供电子邮箱，并将每段邮件对话作为任务处理。",
+    "reviewedEnglishHash": "d29107eb0fb06540314ac652c8c0ad7770b322c027a370b641535e2a5f26060c"
+  },
+  "Give an agent an email address": {
+    "en": "Give an agent an email address",
+    "zh-CN": "为智能体配置邮箱地址",
+    "reviewedEnglishHash": "1597b60b580d91d838318ef111b60ce8c74aca998d7f082106f36c20bb94577a"
+  },
+  "Give it something to do": {
+    "en": "Give it something to do",
+    "zh-CN": "给它一项任务",
+    "reviewedEnglishHash": "a36bf609ede03c1195ef60002152966227b797b2db08fc36520928b0e39926d3"
+  },
+  "Give this MCP gateway configuration to your tool. It does not give it access to Paperclip or skills; it only gateways calls between the client and the tools exposed here.": {
+    "en": "Give this MCP gateway configuration to your tool. It does not give it access to Paperclip or skills; it only gateways calls between the client and the tools exposed here.",
+    "zh-CN": "将此 MCP 网关配置提供给您的工具。此配置不会授予访问 Paperclip 或技能的权限，仅在客户端与此处开放的工具之间转发调用。",
+    "reviewedEnglishHash": "e635f34bd13ca89cb64df00b93478d76ecb4570496504d3d8d400bfcdb717127"
+  },
+  "Give your agent a small task to start with - a bug fix, a research question, writing a script.": {
+    "en": "Give your agent a small task to start with - a bug fix, a research question, writing a script.",
+    "zh-CN": "先给你的智能体一项小任务开始，比如修复缺陷、做调研或写个脚本。",
+    "reviewedEnglishHash": "4d36eb2437b8be601a16e3c91c9f4b34c8866c71d66ee233f9282a9d2c14ba9c"
+  },
+  "Give your agent everything it needs to connect this webhook: the URL, authentication key, and step-by-step instructions.": {
+    "en": "Give your agent everything it needs to connect this webhook: the URL, authentication key, and step-by-step instructions.",
+    "zh-CN": "为您的智能体提供连接此 Webhook 所需的一切：URL、身份验证密钥和分步说明。",
+    "reviewedEnglishHash": "ea90b46a82b362cbcf3befd19ba8fb529b3ee9b3cb2f34882aa7a566dc7c665b"
+  },
+  "Give your agents access to this app.": {
+    "en": "Give your agents access to this app.",
+    "zh-CN": "授予智能体访问此应用的权限。",
+    "reviewedEnglishHash": "0060ec68f371fd6c565769743aa924d1861d4677bb0f150da6511c4f8b158b75"
+  },
+  "Global": {
+    "en": "Global",
+    "zh-CN": "全局",
+    "reviewedEnglishHash": "a258b30f88c30650e73073d5bdde5cfcc6987100ae62d37789e5c46a0d85b7c6"
+  },
+  "Go home": {
+    "en": "Go home",
+    "zh-CN": "返回首页",
+    "reviewedEnglishHash": "a0aac9145249f1675ee0380260d152d217a7abe140e85aad3871ec30da1c319b"
+  },
+  "Go to inbox": {
+    "en": "Go to inbox",
+    "zh-CN": "前往收件箱",
+    "reviewedEnglishHash": "cde5bedaa1cc432c0260858ee6567b5be9000bc4bf60e9b23870ff55ff1c7577"
+  },
+  "Goal": {
+    "en": "Goal",
+    "zh-CN": "目标",
+    "reviewedEnglishHash": "cdbf6975e8a35b0d03558be6822dfae166482c24fb86b0433f60e8167f5c91e4"
+  },
+  "Goal objective": {
+    "en": "Goal objective",
+    "zh-CN": "目标内容",
+    "reviewedEnglishHash": "ecdbc68513d5b987876995994d6cf862a33b3b0a65836194206e9fcc2741558e"
+  },
+  "Goals": {
+    "en": "Goals",
+    "zh-CN": "目标",
+    "reviewedEnglishHash": "116cd3982a9bc435ecd50e5978b68f5f1d542c0ef071fdb598f06a9000dd33cb"
+  },
+  "Grant access": {
+    "en": "Grant access",
+    "zh-CN": "授予访问权限",
+    "reviewedEnglishHash": "8693768c7e085dabc8e54b1614864a24b6ee377aea0c13e27b7476a7c6c222f8"
+  },
+  "Granting access…": {
+    "en": "Granting access…",
+    "zh-CN": "正在授予访问权限…",
+    "reviewedEnglishHash": "376bec913cb15d0727ba952ecec528f19b047d1a20bc13369d127c504417a55f"
+  },
+  "Grants": {
+    "en": "Grants",
+    "zh-CN": "授权",
+    "reviewedEnglishHash": "b3e1c95a4be3eee494bd46fd81a663eb9ce4a37be2b00242c9f4cb6082fba1bc"
+  },
+  "Grok Build (ACPX)": {
+    "en": "Grok Build (ACPX)",
+    "zh-CN": "Grok 构建 (ACPX)",
+    "reviewedEnglishHash": "1760fae9b914ad62e8e50d3501d392ed7a8e0a8a76b2abfae0ab47cbd641f450"
+  },
+  "Group": {
+    "en": "Group",
+    "zh-CN": "分组",
+    "reviewedEnglishHash": "34ca0e76608842ff3e7d924a455a396a82f471052c15e3f2ed7f090ac702e5c1"
+  },
+  "Group chat": {
+    "en": "Group chat",
+    "zh-CN": "群聊",
+    "reviewedEnglishHash": "28c7d3f8b75de76f887dfddddf60086b646b2efdb00e4a1d559ccec95712a336"
+  },
+  "Group these": {
+    "en": "Group these",
+    "zh-CN": "将这些分组",
+    "reviewedEnglishHash": "7d34725e68fe02180d8e88897711cff07b922a01684d21d10d1ae01742333927"
+  },
+  "Grouped List (Issues pattern)": {
+    "en": "Grouped List (Issues pattern)",
+    "zh-CN": "分组列表（任务模式）",
+    "reviewedEnglishHash": "b43e0a874c2e129c1a8b3b6cb329fd3ef79aca6a748c9828c9ef8c19c27fe00a"
+  },
+  "Guest access": {
+    "en": "Guest access",
+    "zh-CN": "访客访问权限",
+    "reviewedEnglishHash": "a962299cc4a91909abcb3e6a518b52241ea5f2f03a30877b661e2d3ab230ccae"
+  },
+  "get api key": {
+    "en": "get api key",
+    "zh-CN": "获取 API 密钥",
+    "reviewedEnglishHash": "b2384483ca1f23771d1fda670ea12c7b8c9872c6449170865a98e7511f1f9e75"
+  },
+  "governed tool call": {
+    "en": "governed tool call",
+    "zh-CN": "受管工具调用",
+    "reviewedEnglishHash": "acfba296b5fa212051d0a41db76c4acdc74fbf2b129b9005681a42b60375b586"
+  }
+}

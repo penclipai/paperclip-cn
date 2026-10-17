@@ -75,12 +75,16 @@ function resolveAvailableHeightExpression(titlebarHeight: number): string {
 
 function applyDesktopLayoutVariables(titlebarHeight: number): void {
   const normalizedHeight = Math.max(0, Math.round(titlebarHeight));
-  document.documentElement.style.setProperty("--paperclip-desktop-titlebar-height", `${normalizedHeight}px`);
-  document.documentElement.style.setProperty(
+  desktopShellBridge.titlebarHeight = normalizedHeight;
+
+  const root = document.documentElement;
+  if (!root) return;
+
+  root.style.setProperty("--paperclip-desktop-titlebar-height", `${normalizedHeight}px`);
+  root.style.setProperty(
     "--paperclip-available-height",
     resolveAvailableHeightExpression(normalizedHeight),
   );
-  desktopShellBridge.titlebarHeight = normalizedHeight;
 }
 
 type NavigationState = {

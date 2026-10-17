@@ -6,6 +6,7 @@ import { printCursorStreamEvent } from "@penclipai/adapter-cursor-local/cli";
 import { printCursorCloudEvent } from "@penclipai/adapter-cursor-cloud/cli";
 import { printGeminiStreamEvent } from "@penclipai/adapter-gemini-local/cli";
 import { printGrokStreamEvent } from "@penclipai/adapter-grok-local/cli";
+import { printKimiStreamEvent } from "@penclipai/adapter-kimi-local/cli";
 import { printOpenCodeStreamEvent } from "@penclipai/adapter-opencode-local/cli";
 import { printPiStreamEvent } from "@penclipai/adapter-pi-local/cli";
 import { printQwenStreamEvent } from "@penclipai/adapter-qwen-local/cli";
@@ -63,6 +64,13 @@ const grokLocalCLIAdapter: CLIAdapterModule = {
   formatStdoutEvent: printGrokStreamEvent,
 };
 
+const kimiLocalCLIAdapter: CLIAdapterModule = {
+  type: "kimi_local",
+  formatStdoutEvent: printKimiStreamEvent,
+};
+
+
+
 const openclawGatewayCLIAdapter: CLIAdapterModule = {
   type: "openclaw_gateway",
   formatStdoutEvent: printOpenClawGatewayStreamEvent,
@@ -71,8 +79,8 @@ const openclawGatewayCLIAdapter: CLIAdapterModule = {
 const adaptersByType = new Map<string, CLIAdapterModule>(
   [
     claudeLocalCLIAdapter,
-    codexLocalCLIAdapter,
     codeBuddyLocalCLIAdapter,
+    codexLocalCLIAdapter,
     openCodeLocalCLIAdapter,
     piLocalCLIAdapter,
     qwenLocalCLIAdapter,
@@ -80,6 +88,7 @@ const adaptersByType = new Map<string, CLIAdapterModule>(
     cursorCloudCLIAdapter,
     geminiLocalCLIAdapter,
     grokLocalCLIAdapter,
+    kimiLocalCLIAdapter,
     openclawGatewayCLIAdapter,
     processCLIAdapter,
     httpCLIAdapter,

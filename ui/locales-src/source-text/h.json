@@ -1,0 +1,327 @@
+{
+  "Hard stop": {
+    "en": "Hard stop",
+    "zh-CN": "额度封顶",
+    "reviewedEnglishHash": "989158fc3a30aae8bbac909859894c2bfb95554e8087f7c70eb82daf2d3cece8"
+  },
+  "Hard-stop spend limits for agents and projects. Provider subscription quota stays separate and appears under Providers.": {
+    "en": "Hard-stop spend limits for agents and projects. Provider subscription quota stays separate and appears under Providers.",
+    "zh-CN": "用于管理智能体和项目的硬性预算上限。服务商订阅配额会单独显示在“服务商”页签中。",
+    "reviewedEnglishHash": "666a3a619c81b1059c1cf039d61a9f781b7521aab19842aadfd6c8bd47146a16"
+  },
+  "Harness": {
+    "en": "Harness",
+    "zh-CN": "执行框架",
+    "reviewedEnglishHash": "e3b5b45953d79a150092df37922ee6261a81040f5fb3c084fa00efffe8b98589"
+  },
+  "Harness / Runtime": {
+    "en": "Harness / Runtime",
+    "zh-CN": "执行框架 / 运行环境",
+    "reviewedEnglishHash": "6711e546a022dbe79b8b40ea44dcd6907a383a0ad022ad708dc314fb4d2e76a1"
+  },
+  "Have an agent review pull requests and respond to GitHub mentions.": {
+    "en": "Have an agent review pull requests and respond to GitHub mentions.",
+    "zh-CN": "让智能体审核拉取请求，并响应 GitHub 中的提及。",
+    "reviewedEnglishHash": "d0bfaf2426b6694ecfa836c66025e803da67a9f8fbee5a0a2fa3c51ec4f58258"
+  },
+  "Headers JSON": {
+    "en": "Headers JSON",
+    "zh-CN": "请求头 JSON",
+    "reviewedEnglishHash": "2899a831dbe0b032fc84d26400c3ea0c0d4833feafa45e9aa275e94629e45c2f"
+  },
+  "Health Status": {
+    "en": "Health Status",
+    "zh-CN": "健康状态",
+    "reviewedEnglishHash": "97b7a73d47fd543e041d9b9f24a6d9b44ba7918405b985bf472f04f53fb88ac5"
+  },
+  "Health and catalog checks passed. Every discovered action starts allowed; you can narrow access after activation.": {
+    "en": "Health and catalog checks passed. Every discovered action starts allowed; you can narrow access after activation.",
+    "zh-CN": "健康检查和目录检查已通过。发现的所有操作默认允许，您可以在激活后缩小访问范围。",
+    "reviewedEnglishHash": "cd29bd5489d6786fb9a09cb4b6737a73d1e64a5daf226ab0f1908c766cdc8bfe"
+  },
+  "Health checks run once the plugin is ready.": {
+    "en": "Health checks run once the plugin is ready.",
+    "zh-CN": "插件进入就绪状态后才会运行健康检查。",
+    "reviewedEnglishHash": "01c9f78719894ecbdcaaa31ff214c8ddd6c2d171c075bdd9fce8a5ce0567bfcb"
+  },
+  "Healthy": {
+    "en": "Healthy",
+    "zh-CN": "正常",
+    "reviewedEnglishHash": "7f1e323b6272c6209a590fe8684bc64142a226cc9f73783bc027befede0ea0ee"
+  },
+  "Heartbeat run #{{index}}: completed successfully": {
+    "en": "Heartbeat run #{{index}}: completed successfully",
+    "zh-CN": "心跳运行 #{{index}}：已成功完成",
+    "reviewedEnglishHash": "6c773287296e07719625ccb565a5b0ab63dde45368674f61fb01257a09d60867"
+  },
+  "Heartbeats": {
+    "en": "Heartbeats",
+    "zh-CN": "心跳",
+    "reviewedEnglishHash": "bc51f5398666756213a4504bcdbcae1a1380b30e9b1d4af768cb5e1600c0371f"
+  },
+  "Heartbeats are paused for this scope until the budget is raised or the incident is dismissed.": {
+    "en": "Heartbeats are paused for this scope until the budget is raised or the incident is dismissed.",
+    "zh-CN": "当前范围的心跳已暂停，只有提高预算或解除事件后才会继续运行。",
+    "reviewedEnglishHash": "12f7b38d66e0535e88c6c34aa3e40faf537ba70f871009f9ea7cb1c033dbea8a"
+  },
+  "Helpful": {
+    "en": "Helpful",
+    "zh-CN": "有帮助",
+    "reviewedEnglishHash": "63c432db3ebb9aecdda9286be5cdd301c6a019ef9ab2a1574e6e4aabeb91e354"
+  },
+  "Hermes API base URL": {
+    "en": "Hermes API base URL",
+    "zh-CN": "Hermes API 基本 URL",
+    "reviewedEnglishHash": "ccec8cd458fb93f698a60592ebeb84397027a44b2a8fe703365700edad0e27cb"
+  },
+  "Hermes Agent": {
+    "en": "Hermes Agent",
+    "zh-CN": "Hermes 智能体",
+    "reviewedEnglishHash": "873e989a3680a01d5cd1ffee571ccd6c093b5f1aa4480071f86f2ff7e029fe64"
+  },
+  "Hermes requires an explicit model in provider/model format.": {
+    "en": "Hermes requires an explicit model in provider/model format.",
+    "zh-CN": "Hermes 需要显式填写 provider/model 格式的模型。",
+    "reviewedEnglishHash": "be76cc20cad90c235bd9a90a07cfa7d3ab35db20a3289e1d8e1ca989c8f74ada"
+  },
+  "Hi! Thanks for bringing me on to lead": {
+    "en": "Hi! Thanks for bringing me on to lead",
+    "zh-CN": "嗨！感谢您带领我",
+    "reviewedEnglishHash": "619a01f01d06c806b73296786ea4f8318b90959f3abf14c4988e7bc1b4ca0ea8"
+  },
+  "Hidden": {
+    "en": "Hidden",
+    "zh-CN": "隐",
+    "reviewedEnglishHash": "7e6fefff0f0aeb6ca93086d3855d0406bdd0ee53b56771f8c794cf07af6598b7"
+  },
+  "Hidden findings still count in the assessment.": {
+    "en": "Hidden findings still count in the assessment.",
+    "zh-CN": "隐藏的审查发现仍会计入评估。",
+    "reviewedEnglishHash": "9ae76c58a3a2592a33cd453b4ce41db61a8da9c7cad460303bd06ac4cd590a04"
+  },
+  "Hidden from menus": {
+    "en": "Hidden from menus",
+    "zh-CN": "已从菜单中隐藏",
+    "reviewedEnglishHash": "d4553ce92c67bf97d75b09604ac5666edbda8b104dcd878769a20fb43fb505a8"
+  },
+  "Hide": {
+    "en": "Hide",
+    "zh-CN": "隐藏",
+    "reviewedEnglishHash": "ac20a57bfde0bbc40bfe70895eb1cfacc944aaff06ca784053623c569b3e1b3d"
+  },
+  "Hide child outputs from normal pipeline boards and parent rollups.": {
+    "en": "Hide child outputs from normal pipeline boards and parent rollups.",
+    "zh-CN": "在常规流水线看板和父项汇总中隐藏子项输出。",
+    "reviewedEnglishHash": "95d4de8b45a4781dc6645fa4b0bab2570fadde8da91de051237741db63b1a539"
+  },
+  "Hide details": {
+    "en": "Hide details",
+    "zh-CN": "隐藏详情",
+    "reviewedEnglishHash": "c9722a7a962a84359c87e56fe578f36a2bc75e66eee3ebce15963229fa12667d"
+  },
+  "Hide downstream output items under those children.": {
+    "en": "Hide downstream output items under those children.",
+    "zh-CN": "隐藏这些子项下游的输出项。",
+    "reviewedEnglishHash": "a32e8ce3400b5155ee12d5cd1f2141fc7c49a1b9579aa1d04bd045e93eba73da"
+  },
+  "Hide from agent menus": {
+    "en": "Hide from agent menus",
+    "zh-CN": "从智能体菜单中隐藏",
+    "reviewedEnglishHash": "cb0d9756823896d1440fb6d4fc0eb719d72ec51876e3c673ea2a91fa2bbecf55"
+  },
+  "Hide full log": {
+    "en": "Hide full log",
+    "zh-CN": "隐藏完整日志",
+    "reviewedEnglishHash": "747af741b4013f1fdfff99732e26e606d3684b2fcdde8092e71c047f8f6174e1"
+  },
+  "Hide key": {
+    "en": "Hide key",
+    "zh-CN": "隐藏键",
+    "reviewedEnglishHash": "0614b215f176965250914592e6a61f3cb4e74ebf73521afdb48789ff8925e788"
+  },
+  "Hide remote": {
+    "en": "Hide remote",
+    "zh-CN": "隐藏远端版本",
+    "reviewedEnglishHash": "59fc5d72e3041cc08d2c7b06573951d10854409c7d50b33683a40e12e6993a12"
+  },
+  "Hide routine runs": {
+    "en": "Hide routine runs",
+    "zh-CN": "隐藏例行运行",
+    "reviewedEnglishHash": "d4a9dd19a5871e9f3b04fe7759719175557b33bbcee0ddb8f39b67ec6a4fb25f"
+  },
+  "Hide the local environment and run all agents in the platform-managed environment.": {
+    "en": "Hide the local environment and run all agents in the platform-managed environment.",
+    "zh-CN": "隐藏本地环境，让所有智能体在平台托管环境中运行。",
+    "reviewedEnglishHash": "98d7dfb49bec6cd42e44043a58365457c7c08bbb3e30e9ddbe7d8fe9a308e5fb"
+  },
+  "Hide the username segment in home-directory paths and similar operator-visible log output. Standalone username mentions outside of paths are not yet masked in the live transcript view. This is off by default.": {
+    "en": "Hide the username segment in home-directory paths and similar operator-visible log output. Standalone username mentions outside of paths are not yet masked in the live transcript view. This is off by default.",
+    "zh-CN": "隐藏主目录路径等操作者可见日志输出中的用户名片段。路径之外单独出现的用户名目前在实时转录视图中仍不会被遮蔽。此选项默认关闭。",
+    "reviewedEnglishHash": "0597db96e8814d230eee1773b973d8cfd691b57858e56f9acbd7fe7512f0d33e"
+  },
+  "Hide this Issue": {
+    "en": "Hide this Issue",
+    "zh-CN": "隐藏此任务",
+    "reviewedEnglishHash": "76f08d4a38e49692a3e3c5b92403ba65988a1cfe623c6cc2af15b3520b18934a"
+  },
+  "Hide this issue": {
+    "en": "Hide this issue",
+    "zh-CN": "隐藏此任务",
+    "reviewedEnglishHash": "45afbd7b482e97143e7ff8392b34e4a40cc9e6b8601872cad233f5d5fc6d93ce"
+  },
+  "High": {
+    "en": "High",
+    "zh-CN": "高",
+    "reviewedEnglishHash": "c4ebc6d4a5832cd9415f906ad03661110c705a72381c8b8b145761d02e2dd23a"
+  },
+  "High priority": {
+    "en": "High priority",
+    "zh-CN": "高优先级",
+    "reviewedEnglishHash": "b699a8c8e2c86c22d40ed1d5028c3a2b6453530a9605f71081615629c01fb444"
+  },
+  "Hint": {
+    "en": "Hint",
+    "zh-CN": "提示",
+    "reviewedEnglishHash": "a7b4cf9f7e429771071ef073b93bbfff8d271b9429dd9bb77581128a3e68e0ae"
+  },
+  "Hint:": {
+    "en": "Hint:",
+    "zh-CN": "提示：",
+    "reviewedEnglishHash": "8da8c6a2f11a9bffdbb342210b4f3f96058b38c3ee30c6509dafa372eff4b0aa"
+  },
+  "Hire Agent": {
+    "en": "Hire Agent",
+    "zh-CN": "雇佣智能体",
+    "reviewedEnglishHash": "ffa670b6411e9eb5add87bd33f753fc3a176bbe0d8bb37cb118ab51db0769480"
+  },
+  "Hiring": {
+    "en": "Hiring",
+    "zh-CN": "招募",
+    "reviewedEnglishHash": "4e414af41b7d487688fa9ac9ba41ddc3f259331dc408e43dadce5a16a2572a84"
+  },
+  "Hiring plan detected": {
+    "en": "Hiring plan detected",
+    "zh-CN": "检测到招聘计划",
+    "reviewedEnglishHash": "889b96084791692e6d97d65d321544170fa378adbc94b191acb0e77649fcd82d"
+  },
+  "History": {
+    "en": "History",
+    "zh-CN": "历史",
+    "reviewedEnglishHash": "0e769600933790607b2a13b33ddfade0fa17810eb62c3b28ee23e59516516491"
+  },
+  "Hold": {
+    "en": "Hold",
+    "zh-CN": "抓住",
+    "reviewedEnglishHash": "8e685d5409b3a543b1cadcc35b095d64847867539c12b21a36d55991ca0cdce1"
+  },
+  "Home": {
+    "en": "Home",
+    "zh-CN": "首页",
+    "reviewedEnglishHash": "3a78695388b38b5cceefaf6796b0137877514593543b91af2752d5a17e3d736c"
+  },
+  "Horizontal": {
+    "en": "Horizontal",
+    "zh-CN": "水平",
+    "reviewedEnglishHash": "0abba441f16eff90782e7a820fd5abb05a1749cca37bff515e4cc968238a2d26"
+  },
+  "Hover me": {
+    "en": "Hover me",
+    "zh-CN": "悬停查看",
+    "reviewedEnglishHash": "1d8fb154c6f5adfd2e7da62b42d909efb9a450d361feee60e33496ae2e45fdf6"
+  },
+  "How it Works": {
+    "en": "How it Works",
+    "zh-CN": "工作原理",
+    "reviewedEnglishHash": "3a6dd514061baa6b1e2ad740ecbf2f56d2427165c8856f52d1488a98fb77fe6e"
+  },
+  "How to upload in Slack": {
+    "en": "How to upload in Slack",
+    "zh-CN": "如何上传到 Slack",
+    "reviewedEnglishHash": "68a7030b41af82d63ba4b186367904a39865f0725bf99aa585318353380db250"
+  },
+  "Human": {
+    "en": "Human",
+    "zh-CN": "人工",
+    "reviewedEnglishHash": "9ffa865f2bc6e850157bb454ef3e00fa789e3f8cc631552941a99ba3fcddde51"
+  },
+  "Human join request": {
+    "en": "Human join request",
+    "zh-CN": "人工加入请求",
+    "reviewedEnglishHash": "2a0199c3fa7d359b80ada82e13efc9ef38bdd5417bfdac5a72c74d99513dd827"
+  },
+  "Human or agent": {
+    "en": "Human or agent",
+    "zh-CN": "人类成员或智能体",
+    "reviewedEnglishHash": "a9d069a5635aa7339c1c6c8683cfccd4b836831d1842948936614eda897a77f8"
+  },
+  "Human or agent · {{role}}": {
+    "en": "Human or agent · {{role}}",
+    "zh-CN": "人类成员或智能体 · {{role}}",
+    "reviewedEnglishHash": "1545ed7f4287dd5f61b9a38e928642a721b683c44195bf822de17966ea28dd78"
+  },
+  "Humans": {
+    "en": "Humans",
+    "zh-CN": "人类成员",
+    "reviewedEnglishHash": "b370fddfc712a78b684f9ef5b615cc7f5004356b5d1efda045a1546344726809"
+  },
+  "Humans I pick": {
+    "en": "Humans I pick",
+    "zh-CN": "我选择的人类成员",
+    "reviewedEnglishHash": "733eda8b07dab64b6623fc3c5cc30455b654b7d43cb16f9e0a43cc9e78d32ebd"
+  },
+  "hard stop": {
+    "en": "hard stop",
+    "zh-CN": "硬停",
+    "reviewedEnglishHash": "4bef884e39cfec24473249df9b0146494ba738ed110f33d47fc85aaf540ba970"
+  },
+  "has no branch named": {
+    "en": "has no branch named",
+    "zh-CN": "没有名为的分支",
+    "reviewedEnglishHash": "30ce22a6d8c4d269b2b08e6b7d265a2fdd2970ea6b18deb2cc7f02fff742700e"
+  },
+  "has prepared a hiring plan": {
+    "en": "has prepared a hiring plan",
+    "zh-CN": "已经制定了招聘计划",
+    "reviewedEnglishHash": "db1f8d83b78e3e4de0a8ef132a8574c750a1d1dc24cc2c6c9590a5322345cb02"
+  },
+  "hasn’t started.": {
+    "en": "hasn’t started.",
+    "zh-CN": "还没有开始。",
+    "reviewedEnglishHash": "8cf6813160cb52bf7657806578cabb9d406d2715ebc353c001dbc5be2c7480a1"
+  },
+  "have access to that credential.": {
+    "en": "have access to that credential.",
+    "zh-CN": "有权访问该凭证。",
+    "reviewedEnglishHash": "8efcfada57f5ea94026bec0808a85e63e1af3db59d09a3a771039e6882f86c74"
+  },
+  "header is required. Existing token secrets cannot be retrieved again, so only tokens issued in this page session can fill a snippet.": {
+    "en": "header is required. Existing token secrets cannot be retrieved again, so only tokens issued in this page session can fill a snippet.",
+    "zh-CN": "请求头。已有令牌的密钥无法再次获取，因此只能使用本次页面会话中签发的令牌填充配置片段。",
+    "reviewedEnglishHash": "218be08a9e46ddddeb8604f6416164f2364ccb44feca6d961276f7a19e04dc29"
+  },
+  "header.": {
+    "en": "header.",
+    "zh-CN": "页头访问。",
+    "reviewedEnglishHash": "cfa998dd0cc2b38d8bd9b1be3f89e10a94605c23c75e73abaec5ec87e44fef73"
+  },
+  "hidden follow-up": {
+    "en": "hidden follow-up",
+    "zh-CN": "隐藏的后续",
+    "reviewedEnglishHash": "248b58254b40315709d49e75fb81e174311c81b7eae35851094abc7e9fcc6146"
+  },
+  "high, medium, low": {
+    "en": "high, medium, low",
+    "zh-CN": "高、中、低",
+    "reviewedEnglishHash": "04d2e278bffe58ffd77d112460904180b834525d1485d8228e6e282e9f2a6418"
+  },
+  "hit an error state.": {
+    "en": "hit an error state.",
+    "zh-CN": "进入了错误状态。",
+    "reviewedEnglishHash": "0c0727585161da1403f957a87215cf2e66ea48d4034e1d57a7fe3d451c034605"
+  },
+  "{{hours}}h {{minutes}}m": {
+    "en": "{{hours}}h {{minutes}}m",
+    "zh-CN": "{{hours}} 小时 {{minutes}} 分",
+    "reviewedEnglishHash": "f35242f6ebba66f2865026f3e8a8115aaa8d569767aa7d06a277403ab92d8720"
+  }
+}

@@ -1,8 +1,9 @@
+import { translateInstant } from "@/i18n";
 import { useCallback, useMemo } from "react";
 import { NavLink, useLocation } from "@/lib/router";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, LogOut, MoreHorizontal, Star } from "lucide-react";
+import { Lock, Loader2, LogOut, MoreHorizontal, Star } from "lucide-react";
 import { useCompany } from "../context/CompanyContext";
 import { useSidebar } from "../context/SidebarContext";
 import { projectsApi } from "../api/projects";
@@ -65,7 +66,7 @@ export function SidebarStarredProjects() {
     const byId = new Map((projects ?? []).map((project: Project) => [project.id, project]));
     return Array.from(starredIds)
       .map((id) => byId.get(id))
-      .filter((project): project is Project => !!project && !project.archivedAt)
+      .filter((project): project is Project => !!project)
       .sort((left, right) =>
         left.name.localeCompare(right.name, undefined, { sensitivity: "base" }),
       );
@@ -126,12 +127,13 @@ export function SidebarStarredProjects() {
               "flex min-w-0 flex-1 items-center gap-2.5 mx-2 rounded-lg px-2 py-1.5 pointer-coarse:py-1 pr-8 text-(length:--text-compact) font-medium transition-colors",
               !rail && "pl-6",
               isActive
-                ? "bg-accent text-foreground"
-                : "text-foreground/80 hover:bg-accent/50 hover:text-foreground",
+                ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                : "text-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
             )}
           >
             <ProjectTile color={project.color ?? null} icon={project.icon ?? null} size="xs" />
             <span className={rail ? SIDEBAR_RAIL_HIDDEN_LABEL : "flex-1 truncate"}>{project.name}</span>
+            {!rail && project.visibility === "private" ? <Lock className="size-3.5 shrink-0 text-muted-foreground" aria-label={translateInstant("Private project")} /> : null}
             {!rail && project.pauseReason === "budget" ? (
               <BudgetSidebarMarker title={t("Project paused by budget")} />
             ) : null}

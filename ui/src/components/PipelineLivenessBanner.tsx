@@ -1,3 +1,5 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
 import { AlertTriangle, ExternalLink, Loader2, Lock, RefreshCw } from "lucide-react";
 import type { PipelineCaseLiveness } from "@penclipai/shared";
 import { Button } from "@/components/ui/button";
@@ -84,6 +86,7 @@ export function PipelineLivenessBanner({
   retryPending?: boolean;
   retryError?: string | null;
 }) {
+  useTranslation();
   const view = derivePipelineLivenessBanner(liveness);
   if (!view) return null;
 
@@ -115,12 +118,11 @@ export function PipelineLivenessBanner({
           <p className="text-sm opacity-85">{view.body}</p>
           {view.permissionKey ? (
             <p className="text-sm opacity-85">
-              Required permission:{" "}
+              {translateInstant("Required permission:")}{" "}
               <code className="rounded-sm bg-black/10 px-1 py-0.5 text-xs font-medium dark:bg-white/10">
                 {view.permissionKey}
               </code>{" "}
-              on the target pipeline.
-            </p>
+              {translateInstant("on the target pipeline.")}</p>
           ) : null}
           {view.blockerLink || view.automationLink ? (
             <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">

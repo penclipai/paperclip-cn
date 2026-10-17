@@ -1,0 +1,317 @@
+{
+  "systemGenerated.duration.days": {
+    "en": "{{count}}d",
+    "zh-CN": "{{count}} 天",
+    "reviewedEnglishHash": "6022a29d9150706ce79105072b55c0a125007cf8a60d6020adce12f9562f8b86"
+  },
+  "systemGenerated.duration.hours": {
+    "en": "{{count}}h",
+    "zh-CN": "{{count}} 小时",
+    "reviewedEnglishHash": "0419aebec122e5210870a0d354e3ea9b5510821dfe20094e3d7802e99a6ca0d3"
+  },
+  "systemGenerated.duration.minutes": {
+    "en": "{{count}}m",
+    "zh-CN": "{{count}} 分钟",
+    "reviewedEnglishHash": "dfa02f1827e7eeb4de0376512e651595dda607acbfe39dc892e9d397805bb604"
+  },
+  "systemGenerated.duration.seconds": {
+    "en": "{{count}}s",
+    "zh-CN": "{{count}} 秒",
+    "reviewedEnglishHash": "a60619294b3ae4e8cf139a47fd09a0cb7ecb0fcf7e750501068cc15d92ae5802"
+  },
+  "systemGenerated.heading.decisionChecklist": {
+    "en": "Decision Checklist",
+    "zh-CN": "决策清单",
+    "reviewedEnglishHash": "b32fa196138e0b1e53bcc62cc4c4794c733f0ba55ffe640485beac19e807d9bf"
+  },
+  "systemGenerated.heading.lastOutputExcerpt": {
+    "en": "Last Output Excerpt",
+    "zh-CN": "最后输出片段",
+    "reviewedEnglishHash": "1009ed52c6fa25fd37c6a138347fd50927fe5003f47f035f46387cf67468ae4a"
+  },
+  "systemGenerated.heading.recentRunEvents": {
+    "en": "Recent Run Events",
+    "zh-CN": "最近运行事件",
+    "reviewedEnglishHash": "79b5e25a8ea8896312604aec370d1d27c2b6980d4775cacbcba412a5073ed882"
+  },
+  "systemGenerated.heading.relatedWork": {
+    "en": "Related Work",
+    "zh-CN": "相关工作",
+    "reviewedEnglishHash": "963a0e1c03f3f3c6abbde3990d3fff7586e71e6615cb6074fac201e1ebe1ff0c"
+  },
+  "systemGenerated.heading.run": {
+    "en": "Run",
+    "zh-CN": "运行",
+    "reviewedEnglishHash": "00d60e31a4e6b8344d4201f25a6a7dee770713107f6d097abb01559d32b17f26"
+  },
+  "systemGenerated.label.agent": {
+    "en": "Agent",
+    "zh-CN": "智能体",
+    "reviewedEnglishHash": "11b39c93777e8f1f3983bdba7c72b22fe68cfea20c677e9de53e17cb7dbfb19f"
+  },
+  "systemGenerated.label.evaluationIssue": {
+    "en": "Evaluation issue",
+    "zh-CN": "评估任务",
+    "reviewedEnglishHash": "72ebe2b31d54db512c7fc1575e06868eeb9550b9493e3d2794278cd8d5e61630"
+  },
+  "systemGenerated.label.invocation": {
+    "en": "Invocation",
+    "zh-CN": "调用",
+    "reviewedEnglishHash": "05adee5dad7136295d772e75f9aa41b53ac6fc403e2503a9991214096105b287"
+  },
+  "systemGenerated.label.lastOutputAt": {
+    "en": "Last output at",
+    "zh-CN": "最后输出时间",
+    "reviewedEnglishHash": "f3a7c72f422b4d9c17453fabdccf07b7cf8ec62c83527e6063da70b41e0c18f9"
+  },
+  "systemGenerated.label.lastOutputSequence": {
+    "en": "Last output sequence",
+    "zh-CN": "最后输出序号",
+    "reviewedEnglishHash": "258eea0e668d342ffb3e4533b104b05fb36fac9515e9bd043d5ca691c32d2bba"
+  },
+  "systemGenerated.label.processMetadata": {
+    "en": "Process metadata",
+    "zh-CN": "进程元数据",
+    "reviewedEnglishHash": "eb529542cfe9b5b06b7daccc9a26c7a4a2c9e68147fff78445d6df053a14ebd4"
+  },
+  "systemGenerated.label.processStartedAt": {
+    "en": "Process started at",
+    "zh-CN": "进程开始时间",
+    "reviewedEnglishHash": "863df3a6a50aa220ffa212e8c9f6d9536d378fdfd08d52ae825dbff61576b513"
+  },
+  "systemGenerated.label.run": {
+    "en": "Run",
+    "zh-CN": "运行",
+    "reviewedEnglishHash": "00d60e31a4e6b8344d4201f25a6a7dee770713107f6d097abb01559d32b17f26"
+  },
+  "systemGenerated.label.silentFor": {
+    "en": "Silent for",
+    "zh-CN": "静默时长",
+    "reviewedEnglishHash": "2268839a84503c12013940aeb4deb3b9bc0ff01f10190fa8297519a9437a26d2"
+  },
+  "systemGenerated.label.sourceIssue": {
+    "en": "Source issue",
+    "zh-CN": "来源任务",
+    "reviewedEnglishHash": "bc23e41adf441fff279bdae6aaf833d1cb12d3b07d6af1228ad63020823a4c5c"
+  },
+  "systemGenerated.label.startedAt": {
+    "en": "Started at",
+    "zh-CN": "开始时间",
+    "reviewedEnglishHash": "fe752875d3ba01a1e05e3d447cd4739e76411995165ce9cec96cd1caf3baa294"
+  },
+  "systemGenerated.label.thresholds": {
+    "en": "Thresholds",
+    "zh-CN": "阈值",
+    "reviewedEnglishHash": "fe43448c3110f9a916f443cc4edbaeece316f3db978ed3d6e8c4d1dc06a5e78b"
+  },
+  "systemGenerated.outputSilence.blocksSourceIssue": {
+    "en": "This blocks the source issue on the explicit review task without cancelling the active process.",
+    "zh-CN": "这会通过明确的复查任务阻塞来源任务，但不会取消仍在活动的进程。",
+    "reviewedEnglishHash": "df96b4cc87000c45a520427425ef1bf2b5b805044e4b8c2555bfa1921cc8ac2b"
+  },
+  "systemGenerated.outputSilence.criticalThresholdCrossed": {
+    "en": "Critical output silence threshold crossed.",
+    "zh-CN": "已超过关键输出静默阈值。",
+    "reviewedEnglishHash": "ab885d27fe0dcdabad5f3b4112f38e1f8d8ecb211bbcefd80324e258525104e4"
+  },
+  "systemGenerated.outputSilence.detectedCriticalActiveHeartbeatRun": {
+    "en": "Paperclip detected critical output silence on an active heartbeat run.",
+    "zh-CN": "Paperclip 检测到一个活动心跳运行出现关键输出静默。",
+    "reviewedEnglishHash": "52ff0a5529c03bfdd207a5417a73605711cb405b31b175aa49b16a929f66e4ae"
+  },
+  "systemGenerated.outputSilence.detectedOnActiveRun": {
+    "en": "Paperclip detected critical output silence on this issue's active run.",
+    "zh-CN": "Paperclip 检测到此任务的活动运行已达到关键输出静默。",
+    "reviewedEnglishHash": "6ab489148ec46fecbd2146dd710c2a557a1935b5358ece5f48d9e700ee21c1ff"
+  },
+  "systemGenerated.outputSilence.detectedSuspiciousActiveHeartbeatRun": {
+    "en": "Paperclip detected suspicious output silence on an active heartbeat run.",
+    "zh-CN": "Paperclip 检测到一个活动心跳运行出现可疑输出静默。",
+    "reviewedEnglishHash": "bcdc9e799de9c8f35acc4a396f6a2221a15496ad3499b8b6873ffecfe3559d52"
+  },
+  "systemGenerated.runEvent.adapterInvocation": {
+    "en": "adapter invocation",
+    "zh-CN": "适配器调用",
+    "reviewedEnglishHash": "6571079b20f9af6c073527352d38257853f74abfa36a97ceb648147e91fa929a"
+  },
+  "systemGenerated.runEvent.boundedRetryExhausted": {
+    "en": "Bounded retry exhausted after {{attempts}} scheduled attempts; no further automatic retry will be queued",
+    "zh-CN": "有界重试已耗尽：已进行 {{attempts}} 次定时尝试，不会再排队自动重试",
+    "reviewedEnglishHash": "64d806f89a7c7dbd18df29831b771e92491a7dc54e480648c35560240961445a"
+  },
+  "systemGenerated.runEvent.cancelledDependenciesBlocked": {
+    "en": "Cancelled because issue dependencies are still blocked; Paperclip will wake the assignee when blockers resolve",
+    "zh-CN": "已取消：任务依赖仍被阻塞；阻塞解除后 Paperclip 会唤醒负责人",
+    "reviewedEnglishHash": "f2a9bc7975d50d02a3af4ddccbedcaf042c405fb2ad9a82af1a895c6c437b838"
+  },
+  "systemGenerated.runEvent.cancelledTargetIssueMissing": {
+    "en": "Cancelled because the target issue no longer exists",
+    "zh-CN": "已取消：目标任务已不存在",
+    "reviewedEnglishHash": "0de0d17bb36660d802f9ad8497f0d3ee1e044b9d9bd21a595ebfe43e942c5f40"
+  },
+  "systemGenerated.runEvent.cancelledTerminalStatusBeforeStart": {
+    "en": "Cancelled because issue reached terminal status ({{status}}) before the queued run could start",
+    "zh-CN": "已取消：任务已在排队运行开始前进入终态（{{status}}）",
+    "reviewedEnglishHash": "11768035c5d8b686693c4f9baae12aef9cd5dac83ae414b650bc2fa8bda48d51"
+  },
+  "systemGenerated.runEvent.detachedProcessActivityCleared": {
+    "en": "Detached child process reported activity; cleared detached warning",
+    "zh-CN": "分离的子进程报告了活动，已清除分离警告",
+    "reviewedEnglishHash": "0539afe6ff7e3f179c70009c2ed7f71582f2fe811ec1c35364ac21eeae8003af"
+  },
+  "systemGenerated.runEvent.maxTurnContinuationPolicyDisabled": {
+    "en": "Max-turn continuation suppressed because the policy is disabled",
+    "zh-CN": "由于策略已禁用，已抑制最大轮次续执行",
+    "reviewedEnglishHash": "52e0976f5795521a96b8d1de402c70a2c762d20c24d4cc033d479bb53aa82bb3"
+  },
+  "systemGenerated.runEvent.maxTurnSuppressedIssueNotInProgress": {
+    "en": "Scheduled max-turn continuation suppressed because issue is no longer in_progress (current status: {{status}})",
+    "zh-CN": "已抑制最大轮次续执行：任务已不在进行中（当前状态：{{status}}）",
+    "reviewedEnglishHash": "bff86dfe4130c49848b0fd6d78eec183d3c346c9eba3fc4eb283e91483918f18"
+  },
+  "systemGenerated.runEvent.missingCommentDeferredWakeExists": {
+    "en": "Run ended without an issue comment; a deferred comment wake already exists for this issue",
+    "zh-CN": "运行结束但没有任务评论；此任务已有延迟评论唤醒",
+    "reviewedEnglishHash": "ac5b0a66d87be129a3415b06ffb329143f9428845486b54dddc6d66f882a6ec2"
+  },
+  "systemGenerated.runEvent.missingCommentQueuedFollowUp": {
+    "en": "Run ended without an issue comment; queued one follow-up wake to require a comment",
+    "zh-CN": "运行结束但没有任务评论；已排队一次后续唤醒以要求评论",
+    "reviewedEnglishHash": "6704d80c72f1e42eee76bf75a637c7e6b05217bfcb46f1e2522c6f6a8c0718fb"
+  },
+  "systemGenerated.runEvent.missingCommentRetryExhausted": {
+    "en": "Run ended without an issue comment after one retry; no further comment wake will be queued",
+    "zh-CN": "运行结束但没有任务评论；已重试一次，不会再排队评论唤醒",
+    "reviewedEnglishHash": "0ad1a9c9f0da5cfb20d0ad4bde0253be6ad8aaca296071c6bfde28e7e80261ea"
+  },
+  "systemGenerated.runEvent.missingCommentRetrySuppressedAgentNotInvokable": {
+    "en": "Missing-comment retry suppressed because the agent is not invokable",
+    "zh-CN": "已抑制缺失评论重试：智能体当前不可调用",
+    "reviewedEnglishHash": "0e8327776e4ad5c51d21e4958327d789f5131625e5c4ecd7bd199d3e82819c97"
+  },
+  "systemGenerated.runEvent.noLiveScheduledRetry": {
+    "en": "No live scheduled retry exists for this issue",
+    "zh-CN": "当前任务没有活动的定时重试",
+    "reviewedEnglishHash": "e8c743fa1e3eab3eb358543d42c9a70005681cee53d6ad4568c5c458727590f2"
+  },
+  "systemGenerated.runEvent.processLossRetrySuppressedAgentNotInvokable": {
+    "en": "Process-loss retry suppressed because the agent is not invokable",
+    "zh-CN": "已抑制进程丢失重试：智能体当前不可调用",
+    "reviewedEnglishHash": "67ddfaa3420442fe979ead2759a8f3792d6deb022da2d6509ba2e5ef01c9d5e4"
+  },
+  "systemGenerated.runEvent.queuedRetryAfterOrphanedProcess": {
+    "en": "Queued automatic retry after orphaned child process was confirmed dead",
+    "zh-CN": "已确认孤立子进程结束，已排队自动重试",
+    "reviewedEnglishHash": "5526c4a99bc06220153191cba27df4d32dfa03e46d3ab98522646060e396c659"
+  },
+  "systemGenerated.runEvent.retrySuppressedAgentMissing": {
+    "en": "Scheduled retry suppressed because the agent no longer exists",
+    "zh-CN": "已抑制定时重试：智能体已不存在",
+    "reviewedEnglishHash": "c2094e36aa38d0cf879a67dbc44d558668c435e1cec7ec0f8d4a0460f06855fb"
+  },
+  "systemGenerated.runEvent.retrySuppressedAgentNotInvokable": {
+    "en": "Scheduled retry suppressed because the agent is not invokable",
+    "zh-CN": "已抑制定时重试：智能体当前不可调用",
+    "reviewedEnglishHash": "0fa60cfe8e75c1f09d673da82d73e60fefe1b648551507b3f494c12233f0b473"
+  },
+  "systemGenerated.runEvent.retrySuppressedDependenciesBlocked": {
+    "en": "Scheduled retry suppressed because issue dependencies are still blocked",
+    "zh-CN": "已抑制定时重试：任务依赖仍被阻塞",
+    "reviewedEnglishHash": "f3d4b07507f99dd725027723dc42d57ae5d843f7acd7c72ec6b76975f9c4b943"
+  },
+  "systemGenerated.runEvent.retrySuppressedIssueMissing": {
+    "en": "Scheduled retry suppressed because the target issue no longer exists",
+    "zh-CN": "已抑制定时重试：目标任务已不存在",
+    "reviewedEnglishHash": "dcc87dd460fe2d4aa36014521fc42e78e2e6339c66a9d3aa12efc1385ec289ad"
+  },
+  "systemGenerated.runEvent.retrySuppressedOwnershipChanged": {
+    "en": "Scheduled retry suppressed because issue ownership changed",
+    "zh-CN": "已抑制定时重试：任务负责人已变更",
+    "reviewedEnglishHash": "68058474aaa3fa0f6963253642f195bd99c353326dc2e785fbacb303bbc5cd80"
+  },
+  "systemGenerated.runEvent.retrySuppressedPauseHold": {
+    "en": "Scheduled retry suppressed because the issue is held by an active subtree pause hold",
+    "zh-CN": "已抑制定时重试：任务被活动子树暂停锁阻止",
+    "reviewedEnglishHash": "d16a1a887ffc531378dca0514ad118f4f24c663f972152d38de545f14653f164"
+  },
+  "systemGenerated.runEvent.retrySuppressedReviewParticipant": {
+    "en": "Scheduled retry suppressed because the issue is waiting on another review participant",
+    "zh-CN": "已抑制定时重试：任务正在等待其他审核参与者",
+    "reviewedEnglishHash": "04aa0b67c2a741ab96bcb3ccdb6cfdc8481a9e4743ba2fd38d8d10378bb751a4"
+  },
+  "systemGenerated.runEvent.retrySuppressedTerminalStatus": {
+    "en": "Scheduled retry suppressed because issue reached terminal status ({{status}})",
+    "zh-CN": "已抑制定时重试：任务已进入终态（{{status}}）",
+    "reviewedEnglishHash": "3950e5affaa4e921aa9179ecdbc64679093e86435586d7a12c2e497eed359428"
+  },
+  "systemGenerated.runEvent.reusedMaxTurnContinuation": {
+    "en": "Reused existing max-turn continuation {{attempt}}/{{maxAttempts}}",
+    "zh-CN": "已复用现有最大轮次续执行 {{attempt}}/{{maxAttempts}}",
+    "reviewedEnglishHash": "cf061917a18f003bcbb294547c8550c6b828a2cd1026a4b2179923a4f09087fd"
+  },
+  "systemGenerated.runEvent.runCancelled": {
+    "en": "run cancelled",
+    "zh-CN": "运行已取消",
+    "reviewedEnglishHash": "7d97f4fbd4c926a5974ce12baf2e13697d137d56163ebe47c4c06aef4eb636b4"
+  },
+  "systemGenerated.runEvent.runFailed": {
+    "en": "run failed",
+    "zh-CN": "运行失败",
+    "reviewedEnglishHash": "732e21ff6335f21fa953787bfc885fef1e6f166466e12f5d0247a5962f25f7f2"
+  },
+  "systemGenerated.runEvent.runStarted": {
+    "en": "run started",
+    "zh-CN": "运行已开始",
+    "reviewedEnglishHash": "65c402b0ca2fd15b820390de3c6844c18a5c967143de85dc7572b1c68419f2cb"
+  },
+  "systemGenerated.runEvent.runSucceeded": {
+    "en": "run succeeded",
+    "zh-CN": "运行成功",
+    "reviewedEnglishHash": "617a940a034998e60928710b573c3268526cf16712e887af2f9df2c038f14316"
+  },
+  "systemGenerated.runEvent.runTimedOut": {
+    "en": "run timed_out",
+    "zh-CN": "运行超时",
+    "reviewedEnglishHash": "32e394b81bd26488677081ce44a50f930481c6fbceb0a25837976f0d2d33b927"
+  },
+  "systemGenerated.runEvent.scheduledBoundedRetry": {
+    "en": "Scheduled bounded retry {{attempt}}/{{maxAttempts}} for {{dueAt}}",
+    "zh-CN": "已定时有界重试 {{attempt}}/{{maxAttempts}}，时间：{{dueAt}}",
+    "reviewedEnglishHash": "c573f62d71430195440bf8bc34298c835dee29c5e653cb00e200f007d447db69"
+  },
+  "systemGenerated.runEvent.scheduledRetryAlreadyPromoted": {
+    "en": "Scheduled retry was already promoted",
+    "zh-CN": "定时重试已被提升",
+    "reviewedEnglishHash": "675b0a418892cb52b49c15ee49ee53ea6789b5aadaaec83c8b9f05c66a2578e8"
+  },
+  "systemGenerated.runEvent.scheduledRetryPromoted": {
+    "en": "Scheduled retry became due and was promoted to the queued run pool",
+    "zh-CN": "定时重试已到期，已提升到排队运行池",
+    "reviewedEnglishHash": "01aed7ad9432cd5bc7fe57de6dddbef9768aeb56431c545e913743ecb0f0a0b8"
+  },
+  "systemGenerated.runEvent.scheduledRetryPromotedManual": {
+    "en": "Scheduled retry was promoted to the queued run pool",
+    "zh-CN": "定时重试已提升到排队运行池",
+    "reviewedEnglishHash": "5a2b6819e0b7cf45be36cffbb18ee0a3df6d1f55bb851401455e19968c03eae7"
+  },
+  "systemGenerated.runEvent.scheduledRetryRequestedNow": {
+    "en": "Scheduled retry was requested to run now",
+    "zh-CN": "已请求立即运行定时重试",
+    "reviewedEnglishHash": "ac722dbc6ddc7dc5af62859236262dc26702f26806118bd7f1d22ead70a52eed"
+  },
+  "systemGenerated.runEvent.sourceResolvedWatchdogFoldFinalized": {
+    "en": "Source-resolved watchdog fold finalized stale active run",
+    "zh-CN": "来源解析看护折叠已结束陈旧的活动运行",
+    "reviewedEnglishHash": "6959d9323fd07b31f5fcbb2cf11c48dc35dfa2713c16d7a50a47610e40f7479a"
+  },
+  "systemGenerated.runEvent.stream.system": {
+    "en": "system",
+    "zh-CN": "系统",
+    "reviewedEnglishHash": "bbc5e661e106c6dcd8dc6dd186454c2fcba3c710fb4d8e71a60c93eaf077f073"
+  },
+  "systemGenerated.value.noneRecorded": {
+    "en": "none recorded",
+    "zh-CN": "未记录",
+    "reviewedEnglishHash": "394fa9cde5a7b133bf4cb610553503980b19e609b2d0d0a19c5d708e769419ea"
+  }
+}

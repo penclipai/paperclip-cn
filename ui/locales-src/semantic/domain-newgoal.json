@@ -1,0 +1,52 @@
+{
+  "newGoal.createGoal": {
+    "en": "Create goal",
+    "zh-CN": "创建目标",
+    "reviewedEnglishHash": "9f58bb981d441eefd0ffd18b4f19dbd27951a9160e4f929255101e1bf730de7a"
+  },
+  "newGoal.createSubGoal": {
+    "en": "Create sub-goal",
+    "zh-CN": "创建子目标",
+    "reviewedEnglishHash": "f6444df95f47ef9b4d89e8ecf82e22d3bc411f52e6fedb4ccdcaf29202757450"
+  },
+  "newGoal.creating": {
+    "en": "Creating…",
+    "zh-CN": "创建中…",
+    "reviewedEnglishHash": "c79ed9492e3c17199ab50694e07f5525cc6d598a02531528b0eb5ed933cd5466"
+  },
+  "newGoal.descriptionPlaceholder": {
+    "en": "Add description...",
+    "zh-CN": "添加描述...",
+    "reviewedEnglishHash": "94123522b73f30f2554019fa8f6ac2c98b92aa95335bbf807f69fe3edf34548f"
+  },
+  "newGoal.dialogDescription": {
+    "en": "Create a goal with status, level, and parent goal details.",
+    "zh-CN": "创建目标，并设置状态、层级和父目标。",
+    "reviewedEnglishHash": "fbcdb9e8b663b1d2f415d49572c3aaf67eeb9830f12fd3dff26630b9b972bee9"
+  },
+  "newGoal.goalTitlePlaceholder": {
+    "en": "Goal title",
+    "zh-CN": "目标标题",
+    "reviewedEnglishHash": "adb0cfb01ae1d9f7ecc8efc99dd3f992a260d94dbd399e639277eacf554188da"
+  },
+  "newGoal.noParent": {
+    "en": "No parent",
+    "zh-CN": "无父目标",
+    "reviewedEnglishHash": "bfc4337cf757ddadfcc22f46cb1227e72cc9c911b9fc98f5788a0855e4a84139"
+  },
+  "newGoal.parentGoal": {
+    "en": "Parent goal",
+    "zh-CN": "父目标",
+    "reviewedEnglishHash": "9ff9195cb53c4ab607010a9ff361b6e3a6d4d7c9297c67b33454a804c3e69979"
+  },
+  "newGoal.subGoalTitle": {
+    "en": "New sub-goal",
+    "zh-CN": "新建子目标",
+    "reviewedEnglishHash": "691ebb169b2e218915f30b9078ba8adba5788dc122304f53b7939c8b0242c743"
+  },
+  "newGoal.title": {
+    "en": "New goal",
+    "zh-CN": "新建目标",
+    "reviewedEnglishHash": "f326ad6eff87f784dadec4258d5f43c32dca56c785c1a0b2d5e3aaa980f217b0"
+  }
+}

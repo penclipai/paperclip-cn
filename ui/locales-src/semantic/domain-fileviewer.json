@@ -1,0 +1,247 @@
+{
+  "fileViewer.backToFiles": {
+    "en": "Back to files",
+    "zh-CN": "返回文件",
+    "reviewedEnglishHash": "f911e3dbe7ed1720c8ea1d231d43dd218a452761257838ab580e13137ea80e4e"
+  },
+  "fileViewer.browseDescription": {
+    "en": "Browse files from the task workspace.",
+    "zh-CN": "浏览任务工作区中的文件。",
+    "reviewedEnglishHash": "b801f2adce68b73951487fe512c9122afbd47e6762b050bef517d5d272769727"
+  },
+  "fileViewer.browseWorkspace": {
+    "en": "Browse workspace",
+    "zh-CN": "浏览工作区",
+    "reviewedEnglishHash": "c9f08da439b345d6c8dd58a4582f81406a9db7ad147b8d5d18cde5d7dd227afc"
+  },
+  "fileViewer.cantPreviewBody": {
+    "en": "The viewer was unable to load this file.",
+    "zh-CN": "无法在浏览器中预览此文件。",
+    "reviewedEnglishHash": "8782ce81973a486679db68e3c726e943484539d73686a6b181fff184ad7dc545"
+  },
+  "fileViewer.cantPreviewTitle": {
+    "en": "Can't preview this file",
+    "zh-CN": "无法预览文件",
+    "reviewedEnglishHash": "31b952ec7214d9de0babcb6d972504a183d682e0de547148fcc567fb39d17ba8"
+  },
+  "fileViewer.close": {
+    "en": "Close file viewer",
+    "zh-CN": "关闭文件查看器",
+    "reviewedEnglishHash": "ca47c733c6d0598c5add2ff93b7fff161769f21f772c3f84497fb9c14a2ecc96"
+  },
+  "fileViewer.copiedContents": {
+    "en": "Copied contents",
+    "zh-CN": "内容已复制",
+    "reviewedEnglishHash": "6604ead1f5fb526577fe6e7e3daecadd2d827e213f9a1a80138faadda200e42e"
+  },
+  "fileViewer.copiedFileContents": {
+    "en": "Copied file contents",
+    "zh-CN": "文件内容已复制",
+    "reviewedEnglishHash": "b4dbbc32c9e0f03df7c7ef27fdb5683536a696c03d3265f392b773a36e323c69"
+  },
+  "fileViewer.copiedFileData": {
+    "en": "Copied file data",
+    "zh-CN": "文件数据已复制",
+    "reviewedEnglishHash": "62c309f452790d7c5d673d75edce6a6368003ef89fc21eddb811cf314d891f6b"
+  },
+  "fileViewer.copiedFileViewLink": {
+    "en": "Copied file view link",
+    "zh-CN": "文件查看链接已复制",
+    "reviewedEnglishHash": "b2acd5751d8a96973b188e8a8d655f212d4ffa78c26881d7bb35d23fa68a5ca1"
+  },
+  "fileViewer.copiedLink": {
+    "en": "Copied link",
+    "zh-CN": "链接已复制",
+    "reviewedEnglishHash": "933540542c9dcebf9cbfeee6207898d7629460f25b1721a30ab693e3828c3020"
+  },
+  "fileViewer.copyFailed": {
+    "en": "Copy failed",
+    "zh-CN": "复制失败",
+    "reviewedEnglishHash": "5b50e7a693fee952b9ed0e7c240bf4cba69b1dbf02af718145b297e4110591f3"
+  },
+  "fileViewer.copyFileContents": {
+    "en": "Copy file contents",
+    "zh-CN": "复制文件内容",
+    "reviewedEnglishHash": "b3278e5f53cc34b040e4cfc5bed420f0e7dca7baf66ced6a2146bc22422d9152"
+  },
+  "fileViewer.copyFileViewLink": {
+    "en": "Copy link to this file view",
+    "zh-CN": "复制文件查看链接",
+    "reviewedEnglishHash": "ed399e88a77e9916d52eec040890225c01a7290b03e074bc61d096ac0afeb5a8"
+  },
+  "fileViewer.copyLink": {
+    "en": "Copy link",
+    "zh-CN": "复制链接",
+    "reviewedEnglishHash": "dbf362d4f210c780513a9258278d4d07abe8a224f84ba7ad775d819039342e77"
+  },
+  "fileViewer.downloadFile": {
+    "en": "Download file",
+    "zh-CN": "下载文件",
+    "reviewedEnglishHash": "9de4149fb9716cfc2d9f757708f261e93698c5bef33d41a0c5b927decc88e169"
+  },
+  "fileViewer.fileContentsUnavailable": {
+    "en": "File contents are unavailable.",
+    "zh-CN": "文件内容不可用。",
+    "reviewedEnglishHash": "4928aca39c5f4fd396aec24e175a80af8a098d7420a943ff86244e3ab2bb5804"
+  },
+  "fileViewer.fileLoadedSummary": {
+    "en": "{{name}} · {{size}} · {{updated}}",
+    "zh-CN": "{{name}} · {{size}} · {{updated}}",
+    "reviewedEnglishHash": "14fea76ba89620db834fa96446285c8f324149316ea2fcb0b786dccde7fcd91a"
+  },
+  "fileViewer.fileNotFoundBody": {
+    "en": "The file could not be found in this workspace.",
+    "zh-CN": "无法在此工作区中找到该文件。",
+    "reviewedEnglishHash": "9ed52319111975a9aef38fd5509a2e4038f8cf961ff380a7f57d51649eaade10"
+  },
+  "fileViewer.fileNotFoundTitle": {
+    "en": "File not found",
+    "zh-CN": "未找到文件",
+    "reviewedEnglishHash": "3521021a2e875fbc52ae82e2a3fea5024d507bbc919f504ca8521292c3fe14d3"
+  },
+  "fileViewer.fileTooLargeBody": {
+    "en": "This file exceeds the supported preview size.",
+    "zh-CN": "此文件过大，无法在此预览。",
+    "reviewedEnglishHash": "9cd98d65f242685cdbe5acbe74f98fce0c2780d8636a889254cc52da103ffe2f"
+  },
+  "fileViewer.fileTooLargeTitle": {
+    "en": "File too large",
+    "zh-CN": "文件过大",
+    "reviewedEnglishHash": "8a2819cae2134b88aeb280b200ea613f49194c582c69db325cc737d5280c3f8f"
+  },
+  "fileViewer.imagePreviewUnavailable": {
+    "en": "Image preview unavailable.",
+    "zh-CN": "图片预览不可用。",
+    "reviewedEnglishHash": "8896d0b7ef84093f75e7bda39cf54ae5f55844c322e309112ddbd99adc86e395"
+  },
+  "fileViewer.loadingFileDetails": {
+    "en": "Loading file details",
+    "zh-CN": "正在加载文件详情",
+    "reviewedEnglishHash": "768d734af4794369d5d70d3b7bd676a6b54487f1be2d2bfb0bd11353b21f134f"
+  },
+  "fileViewer.loadingPreview": {
+    "en": "Loading preview",
+    "zh-CN": "正在加载预览",
+    "reviewedEnglishHash": "8f624e45d6bf688d8571dbfebf0f2510da7db6733e9194ecb51830b0ba1c85f7"
+  },
+  "fileViewer.loadingPreviewEllipsis": {
+    "en": "Loading preview...",
+    "zh-CN": "正在加载预览...",
+    "reviewedEnglishHash": "c02130fa90ee3e859ddcaefd4d5efd7da6d585e8b217e87242608d758f0b366d"
+  },
+  "fileViewer.markdownPreviewMode": {
+    "en": "Markdown preview mode",
+    "zh-CN": "Markdown 预览模式",
+    "reviewedEnglishHash": "7d6f9f68445c8539cd26d9b7809a4c915a7b284b5a07b9c84e5a2bbfc728d3d9"
+  },
+  "fileViewer.noWorkspaceBody": {
+    "en": "This task does not have a workspace to browse.",
+    "zh-CN": "此任务没有可浏览的工作区。",
+    "reviewedEnglishHash": "eb11d2af3beb2d6f490cb7bb5858b405eadb033a2b0ed456044d67fd28401088"
+  },
+  "fileViewer.noWorkspaceTitle": {
+    "en": "No workspace",
+    "zh-CN": "没有工作区",
+    "reviewedEnglishHash": "fce263d326818c6258e1db247a3b5b9e2c828c2259589915440bb7cf9a67e65a"
+  },
+  "fileViewer.pathOutsideWorkspaceBody": {
+    "en": "This path is outside the task workspace.",
+    "zh-CN": "此路径位于任务工作区之外。",
+    "reviewedEnglishHash": "6916f20d2c2c7f60f587e1a83f871751b8f48defa06f8863996d579e90d4cef7"
+  },
+  "fileViewer.pathOutsideWorkspaceTitle": {
+    "en": "Path outside workspace",
+    "zh-CN": "路径超出工作区",
+    "reviewedEnglishHash": "52dfc7b5c7911d0ffd86c8f05f00375ef6607bcb35fb51baad26e3c8ae0409be"
+  },
+  "fileViewer.previewUnsupportedBody": {
+    "en": "This file does not have a text, image, or video preview available.",
+    "zh-CN": "此文件类型不支持预览。",
+    "reviewedEnglishHash": "d35939449ba047d1605076371c90f45d354894df956b2d5abb58563eeeeb7967"
+  },
+  "fileViewer.previewUnsupportedTitle": {
+    "en": "Preview unsupported",
+    "zh-CN": "不支持预览",
+    "reviewedEnglishHash": "62fe94836f437499f1f0284f6cb2c34f030cdaca62b0504f7ea7e4062ec05cbf"
+  },
+  "fileViewer.rawMarkdown": {
+    "en": "Raw markdown",
+    "zh-CN": "原始 Markdown",
+    "reviewedEnglishHash": "10d6d92638f4753ce0b9b5a294b9562154eaa02439acfff2acbfd0fb718b43c4"
+  },
+  "fileViewer.remotePreviewComingSoonBody": {
+    "en": "Remote file preview is not available yet.",
+    "zh-CN": "远程文件预览尚不可用。",
+    "reviewedEnglishHash": "376e21d99c3d698c7e2768222f79b7576297c84bdfd9d9381576315374a0686a"
+  },
+  "fileViewer.remotePreviewComingSoonTitle": {
+    "en": "Remote preview coming soon",
+    "zh-CN": "远程预览即将推出",
+    "reviewedEnglishHash": "b97946c1a9911cafdd2486cf5e8efb92809bc004b979df7994ce0e603ce9910f"
+  },
+  "fileViewer.remotePreviewUnsupportedBody": {
+    "en": "Remote preview is not supported for this file.",
+    "zh-CN": "此文件不支持远程预览。",
+    "reviewedEnglishHash": "ada4d010584471e87d36531c29b9c2779f6e7f5d7d8d7f2959fa560753a6ef45"
+  },
+  "fileViewer.remotePreviewUnsupportedTitle": {
+    "en": "Remote preview unsupported",
+    "zh-CN": "不支持远程预览",
+    "reviewedEnglishHash": "782a0cb0e78f4c4ebb537c3f837c001a90024d448bac12d93c57344c73cc482d"
+  },
+  "fileViewer.renderedMarkdown": {
+    "en": "Rendered markdown",
+    "zh-CN": "渲染后的 Markdown",
+    "reviewedEnglishHash": "ec6328acc553cfae8e6f186772235b86d9a7000f52f8fdeb9b0823d84da499a7"
+  },
+  "fileViewer.resizeFileTree": {
+    "en": "Resize file tree",
+    "zh-CN": "调整文件树宽度",
+    "reviewedEnglishHash": "8c62ea073f353cd65041a6c1f4a7ccbcb7f785b5808c473f475eb7fe285ea8e8"
+  },
+  "fileViewer.showRawMarkdown": {
+    "en": "Show raw Markdown",
+    "zh-CN": "显示原始 Markdown",
+    "reviewedEnglishHash": "399bc52a75485dab4dde501ad81d52e482fb18a598e6e99dcbb6bcaa8f1d2988"
+  },
+  "fileViewer.showRenderedMarkdown": {
+    "en": "Show rendered Markdown",
+    "zh-CN": "显示渲染后的 Markdown",
+    "reviewedEnglishHash": "a2755a357860567ab6d5baa03309213a07a618a1daf785b397e8aefaaa2c75c2"
+  },
+  "fileViewer.tryProjectWorkspace": {
+    "en": "Try the project workspace",
+    "zh-CN": "尝试项目工作区",
+    "reviewedEnglishHash": "ffcb34adb44d93e8ef41e35d7d717e2b74f5594403a13c51d3733ce785312fc7"
+  },
+  "fileViewer.videoPreviewAria": {
+    "en": "Video preview",
+    "zh-CN": "视频预览",
+    "reviewedEnglishHash": "fc63d3e097f799a8190692d4c2e51a2b1d25cf9c84800a9b69c19a9d5ceb20ef"
+  },
+  "fileViewer.videoPreviewUnavailable": {
+    "en": "Video preview unavailable.",
+    "zh-CN": "视频预览不可用。",
+    "reviewedEnglishHash": "876c6aa06b97db841d9688712e1aac23c057eab01120384c9ca4642ea8aaa648"
+  },
+  "fileViewer.viewerBlockedBody": {
+    "en": "The file viewer is blocked for this workspace.",
+    "zh-CN": "此工作区阻止使用文件查看器。",
+    "reviewedEnglishHash": "1618a4f4825f4d9bf4f7d5a8b4b72bdbb681bed83a54409e32bf8e0f24dbcb23"
+  },
+  "fileViewer.viewerBlockedTitle": {
+    "en": "Viewer blocked",
+    "zh-CN": "查看器已阻止",
+    "reviewedEnglishHash": "e1a5c48bb32ebf4208bf1693ffd1568475c0f941c9068f4605f5585eef2ea03a"
+  },
+  "fileViewer.workspaceCleanedUpBody": {
+    "en": "The workspace has been cleaned up.",
+    "zh-CN": "工作区已清理。",
+    "reviewedEnglishHash": "5e63fea7c015bc153f37277798711498a35e6883b4467d82b80cc82c798cd2af"
+  },
+  "fileViewer.workspaceUnavailableTitle": {
+    "en": "Workspace unavailable",
+    "zh-CN": "工作区不可用",
+    "reviewedEnglishHash": "f29d3f31dc6e215a84d55322e5d23fc43997a76f0e1ed4e774a2b96e50eb7328"
+  }
+}

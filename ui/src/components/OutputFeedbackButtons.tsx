@@ -1,6 +1,7 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 import type { FeedbackDataSharingPreference, FeedbackVoteValue } from "@penclipai/shared";
-import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -31,7 +32,7 @@ export function OutputFeedbackButtons({
   rightSlot?: React.ReactNode;
   inline?: boolean;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   const [pendingVote, setPendingVote] = useState<{
     vote: FeedbackVoteValue;
     reason?: string;
@@ -126,8 +127,7 @@ export function OutputFeedbackButtons({
           onClick={() => handleVote("up")}
         >
           <ThumbsUp className="mr-1.5 h-3.5 w-3.5" />
-          {t("outputFeedback.helpful")}
-        </Button>
+          {translateInstant("Helpful")}</Button>
         <Button
           type="button"
           size="sm"
@@ -137,17 +137,17 @@ export function OutputFeedbackButtons({
           onClick={() => handleVote("down")}
         >
           <ThumbsDown className="mr-1.5 h-3.5 w-3.5" />
-          {t("outputFeedback.needsWork")}
+          {translateInstant("issueFeedback.needsWork")}
         </Button>
         {rightSlot ? <div className="ml-auto">{rightSlot}</div> : null}
       </div>
       {collectingDownvoteReason ? (
         <div className="mt-2 rounded-md border border-border/60 bg-accent/20 p-3">
-          <div className="mb-2 text-sm font-medium">{t("outputFeedback.downvotePromptTitle")}</div>
+          <div className="mb-2 text-sm font-medium">{translateInstant("issueFeedback.reasonPrompt")}</div>
           <Textarea
             value={downvoteReason}
             onChange={(event) => setDownvoteReason(event.target.value)}
-            placeholder={t("outputFeedback.downvotePromptPlaceholder")}
+            placeholder={translateInstant("issueFeedback.reasonPlaceholder")}
             className="min-h-20 resize-y bg-background"
             disabled={disabled || isSaving}
           />
@@ -163,8 +163,7 @@ export function OutputFeedbackButtons({
                 setDownvoteAllowSharing(undefined);
               }}
             >
-              {t("outputFeedback.dismiss")}
-            </Button>
+              {translateInstant("Dismiss")}</Button>
             <Button
               type="button"
               size="sm"
@@ -176,7 +175,7 @@ export function OutputFeedbackButtons({
                 });
               }}
             >
-              {isSaving ? t("outputFeedback.saving") : t("outputFeedback.saveNote")}
+              {isSaving ? "Saving..." : "Save note"}
             </Button>
           </div>
         </div>
@@ -193,16 +192,20 @@ export function OutputFeedbackButtons({
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t("outputFeedback.promptTitle")}</DialogTitle>
+            <DialogTitle>{translateInstant("issueFeedback.sharingPreferenceTitle")}</DialogTitle>
             <DialogDescription>
-              {t("outputFeedback.promptDescription")}
+              {translateInstant("issueFeedback.sharingPreferenceDescription")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 text-sm text-muted-foreground">
-            <p>{t("outputFeedback.localOnlyNotice")}</p>
-            <p>{t("outputFeedback.alwaysAllowExplanation")}</p>
-            <p>{t("outputFeedback.dontAllowExplanation")}</p>
-            <p>{t("outputFeedback.changeLaterHint")}</p>
+            <p>
+              {translateInstant("issueFeedback.localVoteNote")}</p>
+            <p>
+              {translateInstant("issueFeedback.allowSharingPrefix")}{" "}<span className="font-medium text-foreground">{translateInstant("issueFeedback.alwaysAllow")}</span> {translateInstant("issueFeedback.allowSharingMiddle")}{" "}
+              <span className="font-medium text-foreground">{translateInstant("issueFeedback.dontAllow")}</span> {translateInstant("issueFeedback.allowSharingSuffix")}
+            </p>
+            <p>
+              {translateInstant("You can change this later in Settings &gt; General.")}</p>
             {termsUrl ? (
               <a
                 href={termsUrl}
@@ -210,8 +213,7 @@ export function OutputFeedbackButtons({
                 rel="noreferrer"
                 className="inline-flex text-sm text-foreground underline underline-offset-4"
               >
-                {t("outputFeedback.readTerms")}
-              </a>
+                {translateInstant("instanceGeneralSettings.feedbackSharingTerms")}</a>
             ) : null}
           </div>
           <DialogFooter>
@@ -231,7 +233,7 @@ export function OutputFeedbackButtons({
                 );
               }}
             >
-              {isSaving ? t("outputFeedback.saving") : t("outputFeedback.dontAllow")}
+              {isSaving ? "Saving..." : "Don't allow"}
             </Button>
             <Button
               type="button"
@@ -251,7 +253,7 @@ export function OutputFeedbackButtons({
                 );
               }}
             >
-              {isSaving ? t("outputFeedback.saving") : t("outputFeedback.alwaysAllow")}
+              {isSaving ? "Saving..." : "Always allow"}
             </Button>
           </DialogFooter>
         </DialogContent>

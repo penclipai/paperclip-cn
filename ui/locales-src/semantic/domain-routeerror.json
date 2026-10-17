@@ -1,0 +1,22 @@
+{
+  "routeError.description": {
+    "en": "Something went wrong while rendering this page. You can go back and try again, or reload.",
+    "zh-CN": "渲染此页面时出了问题。你可以返回后重试，或重新加载。",
+    "reviewedEnglishHash": "46d793bc79aa7c852d0eb120e1b8e59f918aa1c3d1b7c2798ddb28009727debb"
+  },
+  "routeError.goBack": {
+    "en": "Go back",
+    "zh-CN": "返回",
+    "reviewedEnglishHash": "6aadac2f2b7a6b8e3e01909529190a0c2910592cfb85f5d65901b37c820236fa"
+  },
+  "routeError.reloadPage": {
+    "en": "Reload page",
+    "zh-CN": "重新加载页面",
+    "reviewedEnglishHash": "437d0d63bfbd97326878414b17d443b5cf971bb426262793732682a828c0a442"
+  },
+  "routeError.title": {
+    "en": "This page hit an error",
+    "zh-CN": "此页面遇到错误",
+    "reviewedEnglishHash": "58443b4f44733d36aa6bf7507c7cfdd79e1877bdcd08c6645b0bf54447350cbf"
+  }
+}

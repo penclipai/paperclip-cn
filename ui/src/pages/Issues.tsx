@@ -1,6 +1,8 @@
-import { useEffect, useMemo, useCallback, useRef, useState } from "react";
+import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
-import { useLocation, useSearchParams } from "@/lib/router";
+import { useEffect, useMemo, useCallback, useRef, useState } from "react";
+import type { ReactNode } from "react";
+import { useLocation, useNavigate, useSearchParams } from "@/lib/router";
 import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { issuesApi } from "../api/issues";
 import { agentsApi } from "../api/agents";
@@ -14,11 +16,36 @@ import { queryKeys } from "../lib/queryKeys";
 import { createIssueDetailLocationState } from "../lib/issueDetailBreadcrumb";
 import { EmptyState } from "../components/EmptyState";
 import { IssuesList } from "../components/IssuesList";
-import { CircleDot } from "lucide-react";
+import { TaskViewsMenu } from "../components/TaskViewsMenu";
+import { Button } from "@/components/ui/button";
+import { CircleDot, Plus } from "lucide-react";
 import type { Issue } from "@penclipai/shared";
+import { useStreamlinedUiEnabled } from "../hooks/useStreamlinedUiEnabled";
+import { useCombinedInboxTasksEnabled } from "../hooks/useCombinedInboxTasksEnabled";
+import { useDialogActions } from "../context/DialogContext";
+import { useInboxBadge } from "../hooks/useInboxBadge";
+import { Inbox } from "./Inbox";
+import {
+  ORGANIZATION_SCOPED_PARAMS,
+  TASK_VIEW_PARAM,
+  loadLastTaskView,
+  normalizeTaskViewKey,
+  resolveInitialTaskView,
+  saveLastTaskView,
+  taskView,
+  type TaskViewKey,
+} from "../lib/task-views";
 
 const WORKSPACE_FILTER_ISSUE_LIMIT = 1000;
 const ISSUES_PAGE_SIZE = 100;
+export const ISSUES_ROW_PRESENTATION = "task" as const;
+export const ISSUES_TOOLBAR_PRESENTATION = "collection" as const;
+
+export function resolveIssuesPresentation(streamlinedUiEnabled: boolean) {
+  return streamlinedUiEnabled
+    ? { rowPresentation: ISSUES_ROW_PRESENTATION, toolbarPresentation: ISSUES_TOOLBAR_PRESENTATION }
+    : { rowPresentation: "legacy" as const, toolbarPresentation: "legacy" as const };
+}
 
 export function getNextIssuesPageOffset(
   loadedPageSize: number,
@@ -57,15 +84,96 @@ export function buildIssuesSearchUrl(currentHref: string, search: string): strin
   return `${url.pathname}${url.search}${url.hash}`;
 }
 
+/**
+ * Tasks — the single task surface after PAP-670 merged Inbox into it.
+ *
+ * This component only resolves `?view=` to a view and hands off: My-work views
+ * render the inbox list, organization views render the task collection. Both
+ * get the same Views control in their toolbar, so the switch reads as one page.
+ */
 export function Issues() {
-  const { t } = useTranslation();
+  const { enabled: streamlinedUiEnabled } = useStreamlinedUiEnabled();
+  const { enabled: combinedInboxTasksEnabled } = useCombinedInboxTasksEnabled();
+  // The merged surface is Combined Inbox + Task List only. With the flag off, and always in
+  // the legacy shell, Tasks is the plain task list and Inbox keeps its pages.
+  return streamlinedUiEnabled && combinedInboxTasksEnabled ? <StreamlinedTasks /> : <OrganizationIssues />;
+}
+
+function StreamlinedTasks() {
+  useTranslation();
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { selectedCompanyId } = useCompany();
+  const { openNewIssue } = useDialogActions();
+  const inboxBadge = useInboxBadge(selectedCompanyId);
+
+  const requestedView = searchParams.get(TASK_VIEW_PARAM);
+  const hasOrganizationScopedParam = ORGANIZATION_SCOPED_PARAMS.some(
+    (param) => (searchParams.get(param) ?? "").length > 0,
+  );
+  // Read the stored view once per mount so a later write can't yank the view
+  // out from under the user mid-session.
+  const [lastUsedView] = useState<TaskViewKey>(() => loadLastTaskView());
+  const view = resolveInitialTaskView(requestedView, hasOrganizationScopedParam, lastUsedView);
+  const definition = taskView(view);
+
+  // Make the resolved view addressable without dropping the params that
+  // brought the user here — and correct a requested view that was overridden
+  // (an inbox view carrying an organization filter opens All tasks).
+  useEffect(() => {
+    if (normalizeTaskViewKey(requestedView) === view) return;
+    setSearchParams((current) => {
+      const next = new URLSearchParams(current);
+      next.set(TASK_VIEW_PARAM, view);
+      return next;
+    }, { replace: true });
+  }, [requestedView, view, setSearchParams]);
+
+  const selectView = useCallback((next: TaskViewKey) => {
+    saveLastTaskView(next);
+    // A view switch starts clean: the previous view's search and filters are
+    // its own, not the new view's.
+    navigate(`/issues?${TASK_VIEW_PARAM}=${next}`);
+  }, [navigate]);
+
+  const viewsMenu = (
+    <TaskViewsMenu value={view} onChange={selectView} badgeCount={inboxBadge.inbox} />
+  );
+
+  if (definition.surface === "inbox") {
+    return (
+      <Inbox
+        tab={definition.inboxTab}
+        surfaceLabel="Tasks"
+        toolbarContext={(
+          <div className="flex min-w-0 items-center gap-2">
+            {viewsMenu}
+            <Button size="sm" variant="outline" aria-label={translateInstant("sidebar.newTask")} onClick={() => openNewIssue()}>
+              <Plus className="h-4 w-4 sm:mr-1" />
+              <span className="hidden sm:inline">{translateInstant("sidebar.newTask")}</span>
+            </Button>
+          </div>
+        )}
+      />
+    );
+  }
+
+  return <OrganizationIssues toolbarContext={viewsMenu} initialStatuses={definition.statuses} />;
+}
+
+function OrganizationIssues({
+  toolbarContext,
+  initialStatuses,
+}: { toolbarContext?: ReactNode; initialStatuses?: string[] } = {}) {
+  useTranslation();
+  const { enabled: streamlinedUiEnabled } = useStreamlinedUiEnabled();
+  const issuesPresentation = resolveIssuesPresentation(streamlinedUiEnabled);
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const fetchNextPageInFlightRef = useRef(false);
-  const issuesLabel = t("Issues", { defaultValue: "Issues" });
 
   const urlSearch = searchParams.get("q") ?? "";
   const [searchOverride, setSearchOverride] = useState<{ search: string; locationSearch: string } | null>(null);
@@ -95,8 +203,8 @@ export function Issues() {
   });
 
   const { data: projects } = useQuery({
-    queryKey: queryKeys.projects.list(selectedCompanyId!),
-    queryFn: () => projectsApi.list(selectedCompanyId!),
+    queryKey: queryKeys.projects.list(selectedCompanyId!, { includeArchived: true }),
+    queryFn: () => projectsApi.list(selectedCompanyId!, { includeArchived: true }),
     enabled: !!selectedCompanyId,
   });
 
@@ -106,7 +214,7 @@ export function Issues() {
     resourceKey: "live-runs",
     queryKey: liveRunsQueryKey,
     enabled: !!selectedCompanyId,
-    // Event-sourced via LiveUpdatesProvider (paperclipai/paperclip#9627); no interval poll needed.
+    // Event-sourced via LiveUpdatesProvider (GitHub issue 9627); no interval poll needed.
     refetchInterval: false,
     leaderOnly: true,
   });
@@ -118,21 +226,19 @@ export function Issues() {
   });
   usePublishSharedQueryData(sharedLiveRuns, liveRuns, liveRunsUpdatedAt);
 
-  const liveIssueIds = useMemo(() => collectLiveIssueIds(liveRuns), [liveRuns]);
-
   const issueLinkState = useMemo(
     () =>
       createIssueDetailLocationState(
-        issuesLabel,
+        "Tasks",
         `${location.pathname}${location.search}${location.hash}`,
         "issues",
       ),
-    [issuesLabel, location.pathname, location.search, location.hash],
+    [location.pathname, location.search, location.hash],
   );
 
   useEffect(() => {
-    setBreadcrumbs([{ label: issuesLabel }]);
-  }, [issuesLabel, setBreadcrumbs]);
+    setBreadcrumbs([{ label: translateInstant("sidebar.issues") }]);
+  }, [setBreadcrumbs]);
 
   const issuePageSize = workspaceIdFilter ? WORKSPACE_FILTER_ISSUE_LIMIT : ISSUES_PAGE_SIZE;
 
@@ -172,6 +278,7 @@ export function Issues() {
   });
 
   const issues = useMemo(() => mergeIssuePagesStable(issuePages?.pages ?? []) as Issue[], [issuePages]);
+  const liveIssueIds = useMemo(() => collectLiveIssueIds(liveRuns, issues), [issues, liveRuns]);
   const hasMoreServerIssues = syncedSearch.trim().length === 0
     && hasNextPage === true;
   const loadMoreServerIssues = useCallback(() => {
@@ -191,7 +298,14 @@ export function Issues() {
   });
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={CircleDot} message={t("Select a company to view issues.")} />;
+    return (
+      <EmptyState
+        icon={CircleDot}
+        message={streamlinedUiEnabled
+          ? "Select an organization to view tasks."
+          : "Select a company to view tasks."}
+      />
+    );
   }
 
   return (
@@ -204,9 +318,13 @@ export function Issues() {
       projects={projects}
       liveIssueIds={liveIssueIds}
       viewStateKey="paperclip:issues-view"
+      rowPresentation={issuesPresentation.rowPresentation}
+      toolbarPresentation={issuesPresentation.toolbarPresentation}
       issueLinkState={issueLinkState}
       initialAssignees={searchParams.get("assignee") ? [searchParams.get("assignee")!] : undefined}
       initialWorkspaces={initialWorkspaces.length > 0 ? initialWorkspaces : undefined}
+      initialStatuses={initialStatuses}
+      toolbarContext={toolbarContext}
       initialSearch={syncedSearch}
       onSearchChange={handleSearchChange}
       enableRoutineVisibilityFilter

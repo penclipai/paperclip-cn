@@ -1,0 +1,502 @@
+{
+  "routineHistory.bootstrapOnly": {
+    "en": "Revision 1 is the only history this routine has. Saving an edit creates the first additional revision.",
+    "zh-CN": "修订 1 是这个例行任务当前唯一的历史记录。保存编辑后会创建第一个额外修订。",
+    "reviewedEnglishHash": "44654bed6b6b555076b369c034d31ce33463225a1ccb7bba7f8f9577ff32519e"
+  },
+  "routineHistory.changeSummaryOptional": {
+    "en": "Change summary (optional)",
+    "zh-CN": "变更摘要（可选）",
+    "reviewedEnglishHash": "704fc4c00d56e01be5807aafcaea42d7f82347b47b53642062e50c30b43654bd"
+  },
+  "routineHistory.changeSummaryPlaceholder": {
+    "en": "Why are you restoring? Visible in history.",
+    "zh-CN": "为什么要恢复？这会显示在历史记录中。",
+    "reviewedEnglishHash": "9093cbf22a7bcad73721b185e21024ab6a4a49bbf0b4fe74f87e859021b13954"
+  },
+  "routineHistory.compareTitle": {
+    "en": "Compare routine revisions",
+    "zh-CN": "对比例行任务修订",
+    "reviewedEnglishHash": "53caf5e97797bd1e9eeacbb24191d471a06c0d2fa2c997807159ad3fb617df62"
+  },
+  "routineHistory.compareWithCurrent": {
+    "en": "Compare with current",
+    "zh-CN": "与当前版本对比",
+    "reviewedEnglishHash": "095f9ab764ce8b6ad991caebbc0f87f06e6b50d05c7e273826306887e9039d80"
+  },
+  "routineHistory.contentColumn": {
+    "en": "Content",
+    "zh-CN": "内容",
+    "reviewedEnglishHash": "47bd29075f8b8019f0beec6d86beda7c9bf67aaf05053dcbe0b3bcb63968517f"
+  },
+  "routineHistory.description": {
+    "en": "Description",
+    "zh-CN": "说明",
+    "reviewedEnglishHash": "526e0087cc3f254d9f86f6c7d8e23d954c4dfda2b312efc29194ae8a860106ba"
+  },
+  "routineHistory.descriptionDiff": {
+    "en": "Description diff",
+    "zh-CN": "说明差异",
+    "reviewedEnglishHash": "0ec05d9619fd1593111fc1b642595fba10682cfa8333e20ec2e77cf0be8f02e5"
+  },
+  "routineHistory.descriptionsIdentical": {
+    "en": "Descriptions are identical.",
+    "zh-CN": "说明内容相同。",
+    "reviewedEnglishHash": "5982a8d28870ce3c5b3ddd069e10a2f2aa9b8ed2d7d4f45b461fb6efd698e074"
+  },
+  "routineHistory.differsFromCurrent": {
+    "en": "differs from current",
+    "zh-CN": "与当前不同",
+    "reviewedEnglishHash": "6f73b4b9666fc910b0e66557eec6cb973f998b8375f8880259f5035748978abd"
+  },
+  "routineHistory.disabled": {
+    "en": "disabled",
+    "zh-CN": "已禁用",
+    "reviewedEnglishHash": "17eb3c0168d0d7b21ede5481150f17233427d89833ec121b4dbc4fb96cfab71e"
+  },
+  "routineHistory.enabled": {
+    "en": "enabled",
+    "zh-CN": "已启用",
+    "reviewedEnglishHash": "fb9cf75606b4070dd6a9705810906bba28d0e2ea74ff301b999a91dbb68c7d98"
+  },
+  "routineHistory.env.addedField": {
+    "en": "Env added ({{key}})",
+    "zh-CN": "已添加环境变量（{{key}}）",
+    "reviewedEnglishHash": "39a8754b9c1ee956b1e92ee8c6ad494f8488f3d6d74028d3139f526b7f7d1c19"
+  },
+  "routineHistory.env.bindingKindField": {
+    "en": "Env {{key}} binding kind",
+    "zh-CN": "环境变量 {{key}} 绑定类型",
+    "reviewedEnglishHash": "3bb3cda71c6ae1ef6dbdc228e4a93cfde425351c0799172d303e20a23b168de8"
+  },
+  "routineHistory.env.diffAdded": {
+    "en": "{{count}} keys added",
+    "zh-CN": "新增 {{count}} 个键",
+    "reviewedEnglishHash": "0a1f369502056cc3a923a55d785770e6c6b0998793cfa22c2bd38708b8205ccf"
+  },
+  "routineHistory.env.diffAddedOne": {
+    "en": "{{count}} key added",
+    "zh-CN": "新增 {{count}} 个键",
+    "reviewedEnglishHash": "300b0a22ebdf7eaf826af7435d42dbf3320de4b440e01ef31414a30c35b364c3"
+  },
+  "routineHistory.env.diffChanged": {
+    "en": "{{count}} keys changed",
+    "zh-CN": "变更 {{count}} 个键",
+    "reviewedEnglishHash": "5e1c94d19c2c4f7f6af91fe47f3829f9ed382e20ed18d46c2b35851e618789c7"
+  },
+  "routineHistory.env.diffChangedOne": {
+    "en": "{{count}} key changed",
+    "zh-CN": "变更 {{count}} 个键",
+    "reviewedEnglishHash": "43eab885cdc34f3264f20224bebf78c245449a62654a6631ef8ae3b82d94424b"
+  },
+  "routineHistory.env.diffRemoved": {
+    "en": "{{count}} keys removed",
+    "zh-CN": "移除 {{count}} 个键",
+    "reviewedEnglishHash": "946a3b1706f89afac4044d86d98706b6e700de395dcfb343ca31c850bb332098"
+  },
+  "routineHistory.env.diffRemovedOne": {
+    "en": "{{count}} key removed",
+    "zh-CN": "移除 {{count}} 个键",
+    "reviewedEnglishHash": "aa6e44526d3d4b6bb70bd4dba0206a15cd31a44597065e8f870e6f01f58696eb"
+  },
+  "routineHistory.env.latest": {
+    "en": "latest",
+    "zh-CN": "最新",
+    "reviewedEnglishHash": "5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8"
+  },
+  "routineHistory.env.missingSecret": {
+    "en": "<missing-secret>",
+    "zh-CN": "<缺失密钥>",
+    "reviewedEnglishHash": "5a9ab282581281fe59fb46c6d803e271e469cdb39ca0c8312103e02eea3fc2ea"
+  },
+  "routineHistory.env.plainChanged": {
+    "en": "plain (changed)",
+    "zh-CN": "明文（已变更）",
+    "reviewedEnglishHash": "63c9e0ce5b0d0f4f597d5484250141664715a8bfdf4ba103167c2514ec6ec1ac"
+  },
+  "routineHistory.env.plainSet": {
+    "en": "plain (set)",
+    "zh-CN": "明文（已设置）",
+    "reviewedEnglishHash": "713958e3fd173a41bc6cc1f08faa6ebf72214866172077849870ec83be180978"
+  },
+  "routineHistory.env.removedField": {
+    "en": "Env removed ({{key}})",
+    "zh-CN": "已移除环境变量（{{key}}）",
+    "reviewedEnglishHash": "b89cf795a6da8a2e5bb7f382c0d5a25d2fb08b778b6b46ab1cb691a440c098a1"
+  },
+  "routineHistory.env.secretField": {
+    "en": "Env {{key}} secret",
+    "zh-CN": "环境变量 {{key}} 密钥",
+    "reviewedEnglishHash": "7c645ff837757672068204e86d33785dc67ec802abff2f6101ac71a2b6ce8dfa"
+  },
+  "routineHistory.env.secretRefValue": {
+    "en": "secret_ref -> {{secret}}",
+    "zh-CN": "密钥引用 -> {{secret}}",
+    "reviewedEnglishHash": "cdfec7ac16a16133c6fe60f7fe8ce242bb6842872502f2e60deb3e9fe6f50eb1"
+  },
+  "routineHistory.env.summaryKey": {
+    "en": "{{count}} key",
+    "zh-CN": "{{count}} 个键",
+    "reviewedEnglishHash": "46c6b43c80bbe2ec4aa83cab598a1b3dfffa6351261d2a4b5ce0451fb6430642"
+  },
+  "routineHistory.env.summaryKeyWithOneSecret": {
+    "en": "{{count}} key ({{secretCount}} secret ref)",
+    "zh-CN": "{{count}} 个键（{{secretCount}} 个密钥引用）",
+    "reviewedEnglishHash": "aef49f8c665165835803f68d655759bfe7cda84293b6d61d0990eb88a7d10efd"
+  },
+  "routineHistory.env.summaryKeys": {
+    "en": "{{count}} keys",
+    "zh-CN": "{{count}} 个键",
+    "reviewedEnglishHash": "c772a3dede6148241016ffa45a0370bb9667e06f1792518ee4fe75acc1a2be01"
+  },
+  "routineHistory.env.summaryKeysWithOneSecret": {
+    "en": "{{count}} keys ({{secretCount}} secret ref)",
+    "zh-CN": "{{count}} 个键（{{secretCount}} 个密钥引用）",
+    "reviewedEnglishHash": "f5d4d04d2d5af1f690e678890e528720a28286a2f367d7b17eaaad4dacf93063"
+  },
+  "routineHistory.env.summaryKeysWithSecrets": {
+    "en": "{{count}} keys ({{secretCount}} secret refs)",
+    "zh-CN": "{{count}} 个键（{{secretCount}} 个密钥引用）",
+    "reviewedEnglishHash": "21d7503d60241d9c97df22ca9ca9ba8723d70918c1eb03d145ac92d17d280dff"
+  },
+  "routineHistory.env.valueField": {
+    "en": "Env {{key}} value",
+    "zh-CN": "环境变量 {{key}} 值",
+    "reviewedEnglishHash": "aaa7234029d67848c25931189d3713068c45651ea6b74691fd40f824fc63a2d8"
+  },
+  "routineHistory.env.versionField": {
+    "en": "Env {{key}} version",
+    "zh-CN": "环境变量 {{key}} 版本",
+    "reviewedEnglishHash": "95e9b6281f4ecc4143c16dbc07f6e9ab51631ea87864862615a7d0d9529462f9"
+  },
+  "routineHistory.field.catchUp": {
+    "en": "Catch-up",
+    "zh-CN": "补跑策略",
+    "reviewedEnglishHash": "1c2d0f8e6b923cd0a11a66153c02e876c1909705e2040bc56728a741f375316f"
+  },
+  "routineHistory.field.concurrency": {
+    "en": "Concurrency",
+    "zh-CN": "并发策略",
+    "reviewedEnglishHash": "8708492f3ef5c138d635939ee1a71b0a17d25f56920c64ea44122ef2c966be73"
+  },
+  "routineHistory.field.defaultAgent": {
+    "en": "Default agent",
+    "zh-CN": "默认智能体",
+    "reviewedEnglishHash": "94da52ecd6c5c3b77b89b8427f4bcaf11a40ddf68f5b00171977349fb2e6abc9"
+  },
+  "routineHistory.field.env": {
+    "en": "Env",
+    "zh-CN": "环境变量",
+    "reviewedEnglishHash": "494d9aa0c06844324346a03866c58b4a61326837fff8b6088ea87d9af14961aa"
+  },
+  "routineHistory.field.priority": {
+    "en": "Priority",
+    "zh-CN": "优先级",
+    "reviewedEnglishHash": "d60dbba079223254d4c49c230a515bc107a997e69f811365da2387f8557b9cec"
+  },
+  "routineHistory.field.project": {
+    "en": "Project",
+    "zh-CN": "项目",
+    "reviewedEnglishHash": "985959785319747668373cc6dee294b11db782b03cdd90a2851fbdc0637c6b7b"
+  },
+  "routineHistory.field.status": {
+    "en": "Status",
+    "zh-CN": "状态",
+    "reviewedEnglishHash": "920e413c7d411b61ef3e8c63b1cb6ad058d5f95f8b481dbafe60248387d8c355"
+  },
+  "routineHistory.field.title": {
+    "en": "Title",
+    "zh-CN": "标题",
+    "reviewedEnglishHash": "7e8cd2056da73a7fefb6cd91f4e5d199d08d9058c517b9a2476b1b520324d674"
+  },
+  "routineHistory.field.variables": {
+    "en": "Variables",
+    "zh-CN": "变量",
+    "reviewedEnglishHash": "02db55bac5e3f7ceb98fdea15d7dfcfd40efcc41b777d10c2a8483b571f332bd"
+  },
+  "routineHistory.fieldChanges": {
+    "en": "Field changes",
+    "zh-CN": "字段变更",
+    "reviewedEnglishHash": "ecfa72a243c1822d019ac5c530760f9242206263101872f4e608b53f2e6a4f6d"
+  },
+  "routineHistory.fieldColumn": {
+    "en": "Field",
+    "zh-CN": "字段",
+    "reviewedEnglishHash": "f45fc1dfdc96db2761a434542f105c04d1e15cf96f410656460051efd33ea5b6"
+  },
+  "routineHistory.historicalPreviewDescription": {
+    "en": "Restoring this revision creates a new revision {{revision}} with the same content. History stays append-only.",
+    "zh-CN": "恢复这个修订会创建内容相同的新修订 {{revision}}。历史会继续追加保留。",
+    "reviewedEnglishHash": "1edacfe77d76fa7e0de05884940b1312595f8b7e3880646221fe3a7b2279715f"
+  },
+  "routineHistory.listMany": {
+    "en": "{{prefix}}, and {{last}}",
+    "zh-CN": "{{prefix}}，以及 {{last}}",
+    "reviewedEnglishHash": "13f0995c454fbc2c42a46bc3f4ad7ea4cf1d740d61e0b382a1702d696ba96042"
+  },
+  "routineHistory.listTwo": {
+    "en": "{{first}} and {{second}}",
+    "zh-CN": "{{first}} 和 {{second}}",
+    "reviewedEnglishHash": "9484f622cc39610d78236ef25122e9eae0f9854051a7b649c91822f3d98fd029"
+  },
+  "routineHistory.loadErrorTitle": {
+    "en": "Could not load revisions",
+    "zh-CN": "无法加载修订",
+    "reviewedEnglishHash": "d92d345b9d4261a9f6a499bde81727e57d654feec791b7786f3ae4f9df58b792"
+  },
+  "routineHistory.loadErrorUnknown": {
+    "en": "Unknown error loading revisions.",
+    "zh-CN": "加载修订时发生未知错误。",
+    "reviewedEnglishHash": "943246311f92fc91c61c7c5cd33ef1c05fdf3fc0df0755b4268adad8cba97c07"
+  },
+  "routineHistory.new": {
+    "en": "New",
+    "zh-CN": "新",
+    "reviewedEnglishHash": "18fdd549b2ed367ac0c74cbec1214644728515b30edbcb78e7d322757a7c8359"
+  },
+  "routineHistory.newValueColumn": {
+    "en": "New value",
+    "zh-CN": "新值",
+    "reviewedEnglishHash": "7ca9b97db8e5fed63d6e75e1c970c3e29c514436d5b9390d94f8a907bca92b12"
+  },
+  "routineHistory.noDescription": {
+    "en": "No description",
+    "zh-CN": "没有说明",
+    "reviewedEnglishHash": "bcd8cc53f40e3d4eb34694e37dfb1e220f1f1d3bdbaa9c8e7d7f43639b95318e"
+  },
+  "routineHistory.noDescriptionEitherRevision": {
+    "en": "No description on either revision.",
+    "zh-CN": "两个修订都没有说明。",
+    "reviewedEnglishHash": "010f554facc9c4d749dc435e4fe59b90f76a609151b493f449ebf905ee00b30e"
+  },
+  "routineHistory.noEditsYet": {
+    "en": "No edits yet",
+    "zh-CN": "还没有编辑",
+    "reviewedEnglishHash": "961468d7848536d361936a41b5d6c326f844f70c64bbf62107e3dda4f34135e5"
+  },
+  "routineHistory.noFieldChanges": {
+    "en": "No structural field changes.",
+    "zh-CN": "没有结构化字段变更。",
+    "reviewedEnglishHash": "d9af89b8c7ac96437cb0f9bf0290acd762f97bb5c61c4825f9e2c6ec904c0319"
+  },
+  "routineHistory.noTriggersInRevision": {
+    "en": "No triggers in this revision.",
+    "zh-CN": "此修订中没有触发器。",
+    "reviewedEnglishHash": "30a4fef6bcdfdd637d8ac913fe6ffe2cd3e5d949b504f841bcce15d4f54b2b38"
+  },
+  "routineHistory.none": {
+    "en": "(none)",
+    "zh-CN": "（无）",
+    "reviewedEnglishHash": "552e423045fcbd949252397b4bee754f0b8f99b1bbbe41edc9b25dbfc81b146a"
+  },
+  "routineHistory.old": {
+    "en": "Old",
+    "zh-CN": "旧",
+    "reviewedEnglishHash": "bca97160f4e1211fe659338d0a9705a7dff8aa3ea2e1be1cc1958100a33962c2"
+  },
+  "routineHistory.oldValueColumn": {
+    "en": "Old value",
+    "zh-CN": "旧值",
+    "reviewedEnglishHash": "a7c253b4a311085f212c00ccc0d6302af7def502ddafd237ed05463c6ad55740"
+  },
+  "routineHistory.restoreAsNewRevision": {
+    "en": "Restore as new revision",
+    "zh-CN": "恢复为新修订",
+    "reviewedEnglishHash": "b5a5664049a6b9a92d26b350c300ab46980b3b2bbb74e1f5527609a10cee05bb"
+  },
+  "routineHistory.restoreAsRevision": {
+    "en": "Restore as revision {{revision}}",
+    "zh-CN": "恢复为修订 {{revision}}",
+    "reviewedEnglishHash": "cd5ba1e03fe4d5aad25971224d81ceb3989176f8cb05dd0b34b41df002e401d0"
+  },
+  "routineHistory.restoreDescription": {
+    "en": "This creates a new revision {{newRevision}} with the same content as revision {{targetRevision}}. Revisions {{targetRevision}}–{{currentRevision}} stay in history and are not modified.",
+    "zh-CN": "这会创建新的修订 {{newRevision}}，内容与修订 {{targetRevision}} 相同。修订 {{targetRevision}}–{{currentRevision}} 会保留在历史中，不会被修改。",
+    "reviewedEnglishHash": "fce256f7f447cd8fa19a2c2edc0c618b94118a72642a40c19a2c3cb0554ef112"
+  },
+  "routineHistory.restoreEnvNote": {
+    "en": "Routine secrets will revert: {{summary}}.",
+    "zh-CN": "例行任务密钥会恢复：{{summary}}。",
+    "reviewedEnglishHash": "c8cb893ca8e40cdc64c8f71e7ca5281b57cc44f54b175a1158084d719a36d4ac"
+  },
+  "routineHistory.restoreFieldsNote": {
+    "en": "Routine field values, variables, and schedule cron will revert.",
+    "zh-CN": "例行任务字段值、变量和计划 cron 会恢复。",
+    "reviewedEnglishHash": "4e1b2bb68b568617bc078be8cea85fff1c899ab1c29a155165271e0106de84fd"
+  },
+  "routineHistory.restoreHistoryNote": {
+    "en": "Previous run history is preserved.",
+    "zh-CN": "之前的运行历史会保留。",
+    "reviewedEnglishHash": "37857ccf715a3a9420f2edfe79b78b0216c5e21418e6de240c244291fde0f5fa"
+  },
+  "routineHistory.restoreRevAsNew": {
+    "en": "Restore rev {{revision}} as new revision",
+    "zh-CN": "将修订 {{revision}} 恢复为新修订",
+    "reviewedEnglishHash": "10cf3f9df635c33545ce6e2c78ba1b296a97033532a75584fe365af1f1913e43"
+  },
+  "routineHistory.restoreThisRevision": {
+    "en": "Restore this revision",
+    "zh-CN": "恢复这个修订",
+    "reviewedEnglishHash": "e0a9d24c3b5e5fb650c6a56b904a72e8861681227558d66ec53d2d3b1bf83cb2"
+  },
+  "routineHistory.restoreTitle": {
+    "en": "Restore revision {{revision}}?",
+    "zh-CN": "恢复修订 {{revision}}？",
+    "reviewedEnglishHash": "6e3323051367ceb347b74c04f9a1c37632124b4c5560aee33dc8c40666bea40a"
+  },
+  "routineHistory.restoreWebhookNote": {
+    "en": "The webhook trigger {{label}} will be recreated with a new URL and secret. Paperclip will show the secret once after restore — copy it before closing.",
+    "zh-CN": "Webhook 触发器 {{label}} 会使用新的 URL 和密钥重新创建。Paperclip 会在恢复后只显示一次密钥，请在关闭前复制。",
+    "reviewedEnglishHash": "6a87fa27ff92c61d15029114a92c1dbc018538bc912198e720eeaf6759643237"
+  },
+  "routineHistory.restoredBadge": {
+    "en": "Restored",
+    "zh-CN": "已恢复",
+    "reviewedEnglishHash": "5d561a1e3f1707d65de64ec5e49c6134aa1bccd58949ffb4d7d1ffc98fd3e65a"
+  },
+  "routineHistory.restoring": {
+    "en": "Restoring…",
+    "zh-CN": "恢复中…",
+    "reviewedEnglishHash": "5a4918e0201c877c92430c346267ddf24b93853b918784cccc2190f7a4472144"
+  },
+  "routineHistory.returnToCurrent": {
+    "en": "Return to current",
+    "zh-CN": "返回当前版本",
+    "reviewedEnglishHash": "2e6cf99a5c67ba7103531984f876a63eea942e72bf931c17c1541c41170754d7"
+  },
+  "routineHistory.revisionOption": {
+    "en": "rev {{revision}} - {{time}}",
+    "zh-CN": "修订 {{revision}} - {{time}}",
+    "reviewedEnglishHash": "6e56bccf4db3f0d9632b767ef31a9cfad107944448db77149ed3e1bc18aa621a"
+  },
+  "routineHistory.revisionShort": {
+    "en": "rev {{revision}}",
+    "zh-CN": "修订 {{revision}}",
+    "reviewedEnglishHash": "c27a0e827f465d24a69fd097d82ec4cc7d90ccb9e49550126664b7c3eff1fce3"
+  },
+  "routineHistory.revisions": {
+    "en": "Revisions",
+    "zh-CN": "修订",
+    "reviewedEnglishHash": "da80b1d5740caaef137b3e5185cd47db4398bcba72abeb6fdf79930aa01991f5"
+  },
+  "routineHistory.saveAndContinue": {
+    "en": "Save and continue",
+    "zh-CN": "保存并继续",
+    "reviewedEnglishHash": "6880daf172a2e6c51f2de1720698f696b73bac86b4b73f3c281f63d1113dc869"
+  },
+  "routineHistory.savedBy": {
+    "en": "Saved {{time}} by {{actor}}",
+    "zh-CN": "{{actor}} 于 {{time}} 保存",
+    "reviewedEnglishHash": "a02ef8c1de98399e832d83e6f4cb5d5760566a21a548fe034717039228f4d6e6"
+  },
+  "routineHistory.showOlder": {
+    "en": "Show {{count}} older...",
+    "zh-CN": "显示较早的 {{count}} 项...",
+    "reviewedEnglishHash": "cd01d67521f4f74ed2cae25aaf3f673ca71ec445cb25d24ddbb0bfe34adad258"
+  },
+  "routineHistory.structuredFields": {
+    "en": "Structured fields",
+    "zh-CN": "结构化字段",
+    "reviewedEnglishHash": "9ad6fd5800a95daff374ff333bfeddb33ee0ab3045f710e9f01a37851d42e29e"
+  },
+  "routineHistory.theRoutine": {
+    "en": "the routine",
+    "zh-CN": "此例行任务",
+    "reviewedEnglishHash": "af1ec2a82d9fa2122d8c3926d6f84c4eb46b1c452000eb7f98217f14674dfe7d"
+  },
+  "routineHistory.toast.restoreFailedBody": {
+    "en": "Paperclip could not restore the revision.",
+    "zh-CN": "Paperclip 无法恢复这个修订。",
+    "reviewedEnglishHash": "a4aa014d3d681dc24238a75b625d999bbcb861c54c9e1aa288344bea0f31ef78"
+  },
+  "routineHistory.toast.restoreFailedTitle": {
+    "en": "Failed to restore revision",
+    "zh-CN": "恢复修订失败",
+    "reviewedEnglishHash": "2dcf4f54fb056d5dd4394864292400a0a0229018368098fc8e3eb5b2af748b2a"
+  },
+  "routineHistory.toast.restored": {
+    "en": "Trigger enabled state was restored from the snapshot.",
+    "zh-CN": "触发器启用状态已从快照恢复。",
+    "reviewedEnglishHash": "ea048b29917be832d7c1725e8a86071483ea549a6c065b4b64501ff429b29a33"
+  },
+  "routineHistory.toast.restoredTitle": {
+    "en": "Restored revision {{restoredFrom}} as revision {{revision}}",
+    "zh-CN": "已将修订 {{restoredFrom}} 恢复为修订 {{revision}}",
+    "reviewedEnglishHash": "a052f34928597e8ab3c8a5e947565f476c67f3d65ff4aa99d5e3bbc5f74c7c8b"
+  },
+  "routineHistory.toast.restoredWithSecrets": {
+    "en": "Trigger enabled state was restored from the snapshot. New webhook secrets are available in the banner above.",
+    "zh-CN": "触发器启用状态已从快照恢复。新的 webhook 密钥可在上方横幅中查看。",
+    "reviewedEnglishHash": "16c9cd7bac59edc571e3d61457d81543bf70ee1c1ad6624443ef83043a998f73"
+  },
+  "routineHistory.totalRevisions": {
+    "en": "{{count}} total",
+    "zh-CN": "共 {{count}} 个",
+    "reviewedEnglishHash": "1b8c82587c1d15308d709280945baff3e91f19a359e0ff68af52fd076e1afa4c"
+  },
+  "routineHistory.triggerAdded": {
+    "en": "Trigger added ({{label}})",
+    "zh-CN": "已添加触发器（{{label}}）",
+    "reviewedEnglishHash": "78deb82b9417d129a05822a75d5799b906fdbaecaaae708c1b03e5ecf5a2d9e3"
+  },
+  "routineHistory.triggerApi": {
+    "en": "API",
+    "zh-CN": "API",
+    "reviewedEnglishHash": "c8e5998f6a3955c21d858936fe05c69621724d7f825c6e17793002a0fa798bf9"
+  },
+  "routineHistory.triggerField": {
+    "en": "Trigger {{label}}",
+    "zh-CN": "触发器 {{label}}",
+    "reviewedEnglishHash": "0b82842c61f61da38b183d6a07f4bc2bdeb7e5c88bd07506ae94281d49c6a466"
+  },
+  "routineHistory.triggerRemoved": {
+    "en": "Trigger removed ({{label}})",
+    "zh-CN": "已移除触发器（{{label}}）",
+    "reviewedEnglishHash": "fab143e496915ea76fba54cdccb01cdeb3335d0fb47626694091d39de7aea6e7"
+  },
+  "routineHistory.triggerReplayWindow": {
+    "en": "replay {{seconds}}s",
+    "zh-CN": "重放 {{seconds}} 秒",
+    "reviewedEnglishHash": "0053f554cf1a1ecb3ff6c14109a08ffd2d9e9b2f84a9175fa1e611addad49bf0"
+  },
+  "routineHistory.triggersCount": {
+    "en": "Triggers ({{count}})",
+    "zh-CN": "触发器（{{count}}）",
+    "reviewedEnglishHash": "2e95bd4aeacd5643569127e20b85c96b451fab82856ba3bd65cb7dfd8cc47fb4"
+  },
+  "routineHistory.unassigned": {
+    "en": "Unassigned",
+    "zh-CN": "未分配",
+    "reviewedEnglishHash": "14d33bd014e6b4e7c3590a8a12e1ec4951d777593d6d6aef9ebe5faac9c8dac0"
+  },
+  "routineHistory.unsavedRoutineDescription": {
+    "en": "You changed {{fields}} but haven't saved yet. Save or discard before previewing or restoring an older revision.",
+    "zh-CN": "你已更改 {{fields}}，但还没有保存。请先保存或放弃更改，再预览或恢复较旧修订。",
+    "reviewedEnglishHash": "f7287ef2afa2961246597926c0843bd9e3e324de5b4bd323d0f43ee649c162ae"
+  },
+  "routineHistory.unsavedRoutineEdits": {
+    "en": "Unsaved routine edits",
+    "zh-CN": "未保存的例行任务编辑",
+    "reviewedEnglishHash": "16e483983d72a5c2edaa7e38e6bea01695015aa5701e775b38f16925d133585b"
+  },
+  "routineHistory.variableDefault": {
+    "en": "default: {{value}}",
+    "zh-CN": "默认值：{{value}}",
+    "reviewedEnglishHash": "c5663c17d6dff8008159dc3e417112d506627b20f5ec2e123694ed02709d9b28"
+  },
+  "routineHistory.variablesCount": {
+    "en": "Variables ({{count}})",
+    "zh-CN": "变量（{{count}}）",
+    "reviewedEnglishHash": "4688acc115c289b3c6622cd6735f4f1ef48820b0cf27032245cdd719ce8c60d0"
+  },
+  "routineHistory.viewingRevisionReadOnly": {
+    "en": "Viewing revision {{revision}} (read-only)",
+    "zh-CN": "正在查看修订 {{revision}}（只读）",
+    "reviewedEnglishHash": "64bc8617e34679fc2c013a60d78e64e3b06b4c5948c287dab4d4b9c94ac6cbc1"
+  },
+  "routineHistory.webhookSecretsNote": {
+    "en": "Webhook secrets are not stored in revisions. If a restored webhook trigger needs re-creation, Paperclip mints fresh secret material at restore time.",
+    "zh-CN": "Webhook 密钥不会存储在修订中。如果恢复后的 webhook 触发器需要重新创建，Paperclip 会在恢复时生成新的密钥材料。",
+    "reviewedEnglishHash": "a2c8439f07cd92328b98d0e8548f9a046e38cf7cf9d14b5aca87e1b3e99f1f15"
+  }
+}

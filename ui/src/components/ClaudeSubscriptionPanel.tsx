@@ -1,3 +1,6 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
+import { quotaUnavailableMessage } from "@/lib/quota-refresh";
 import type { QuotaWindow } from "@penclipai/shared";
 import { cn, quotaSourceDisplayName } from "@/lib/utils";
 
@@ -56,6 +59,7 @@ export function ClaudeSubscriptionPanel({
   source = null,
   error = null,
 }: ClaudeSubscriptionPanelProps) {
+  useTranslation();
   const ordered = orderedWindows(windows);
 
   return (
@@ -63,11 +67,9 @@ export function ClaudeSubscriptionPanel({
       <div className="flex items-start justify-between gap-3 border-b border-border pb-3">
         <div className="min-w-0">
           <div className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">
-            Anthropic subscription
-          </div>
+            {translateInstant("Anthropic subscription")}</div>
           <div className="mt-1 text-sm text-muted-foreground">
-            Live Claude quota windows.
-          </div>
+            {translateInstant("Quota from the Claude subscription connected to this server.")}</div>
         </div>
         {source ? (
           <span className="shrink-0 border border-border px-2.5 py-1 text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
@@ -77,8 +79,8 @@ export function ClaudeSubscriptionPanel({
       </div>
 
       {error ? (
-        <div className="mt-4 border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-          {error}
+        <div role="status" className="mt-4 text-sm text-muted-foreground">
+          {quotaUnavailableMessage(windows.length > 0)}
         </div>
       ) : null}
 
@@ -120,8 +122,7 @@ export function ClaudeSubscriptionPanel({
                 </div>
                 {window.usedPercent != null ? (
                   <div className="shrink-0 text-sm font-semibold tabular-nums text-foreground">
-                    {window.usedPercent}% used
-                  </div>
+                    {window.usedPercent}{translateInstant("% used")}</div>
                 ) : null}
               </div>
 

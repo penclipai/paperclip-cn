@@ -1,0 +1,37 @@
+{
+  "taskChatComposer.defaultAgentName": {
+    "en": "the agent",
+    "zh-CN": "智能体",
+    "reviewedEnglishHash": "c770ef7d03b6965625b626eb0871705a566d6a89a39bb670f0cccffbac97270d"
+  },
+  "taskChatComposer.placeholder.ask": {
+    "en": "Ask {{agentName}} a question — read-only, nothing runs…",
+    "zh-CN": "向 {{agentName}} 提问 — 只读，不会执行任何操作…",
+    "reviewedEnglishHash": "8bcfb21b5dc28e62db93692aa1944935a33e7435e2af3fd95533112427139fb3"
+  },
+  "taskChatComposer.placeholder.message": {
+    "en": "Message {{agentName}} — describe what you want done…",
+    "zh-CN": "给 {{agentName}} 发消息 — 描述你希望完成的事项…",
+    "reviewedEnglishHash": "5c7952c358b52fd9e02ae2cef2679ba41040cbd496666bb1f95392c444b31b7c"
+  },
+  "taskChatComposer.placeholder.mobileAsk": {
+    "en": "Ask {{agentName}}…",
+    "zh-CN": "向 {{agentName}} 提问…",
+    "reviewedEnglishHash": "46735b7895fa8ddaf7150575dfd19442584d95b5177d03aec2918b0cb441c695"
+  },
+  "taskChatComposer.placeholder.mobileMessage": {
+    "en": "Message {{agentName}}…",
+    "zh-CN": "给 {{agentName}} 发消息…",
+    "reviewedEnglishHash": "bbaae8a1b18752f3650ccb26c03c15b5895450ccd7c0be16dfa3682e5b7f7ac1"
+  },
+  "taskChatComposer.placeholder.mobilePlanning": {
+    "en": "Plan with {{agentName}}…",
+    "zh-CN": "与 {{agentName}} 制定计划…",
+    "reviewedEnglishHash": "b2b61fd40ec56fcfaebffcc165a6a0b758260660469e513cd14aed608f10a9d2"
+  },
+  "taskChatComposer.placeholder.planning": {
+    "en": "Plan with {{agentName}} — shapes the plan doc, no code changes…",
+    "zh-CN": "与 {{agentName}} 制定计划 — 仅完善计划文档，不改动代码…",
+    "reviewedEnglishHash": "1cd15c30feb1998af348ce7eb537cc3ad9f734ff55ca312e0ca7f223761acb8b"
+  }
+}

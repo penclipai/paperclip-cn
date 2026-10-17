@@ -5,8 +5,9 @@ import path from "node:path";
 import type { ChildProcess } from "node:child_process";
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 
-const { mockSpawn } = vi.hoisted(() => ({
+const { mockSpawn, mockResolveCommandForLogs } = vi.hoisted(() => ({
   mockSpawn: vi.fn(),
+  mockResolveCommandForLogs: vi.fn(),
 }));
 
 vi.mock("node:child_process", async (importOriginal) => {
@@ -17,7 +18,16 @@ vi.mock("node:child_process", async (importOriginal) => {
   };
 });
 
-import { fetchCodexQuota, getQuotaWindows } from "./quota.js";
+vi.mock("@penclipai/adapter-utils/server-utils", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@penclipai/adapter-utils/server-utils")>();
+  return {
+    ...actual,
+    resolveCommandForLogs: (...args: Parameters<typeof actual.resolveCommandForLogs>) =>
+      mockResolveCommandForLogs(...args),
+  };
+});
+
+import { fetchCodexQuota, fetchCodexRpcQuota, getQuotaWindows } from "./quota.js";
 
 function createChildThatErrorsOnMicrotask(err: Error): ChildProcess {
   const child = new EventEmitter() as ChildProcess;
@@ -27,7 +37,7 @@ function createChildThatErrorsOnMicrotask(err: Error): ChildProcess {
   Object.assign(child, {
     stdout: stream,
     stderr: Object.assign(new EventEmitter(), { setEncoding: () => {} }),
-    stdin: { write: vi.fn(), end: vi.fn() },
+    stdin: Object.assign(new EventEmitter(), { write: vi.fn(), end: vi.fn() }),
     kill: vi.fn(),
   });
   queueMicrotask(() => {
@@ -36,12 +46,39 @@ function createChildThatErrorsOnMicrotask(err: Error): ChildProcess {
   return child;
 }
 
+type RpcRequest = { id?: number; method: string };
+
+function createRpcChild(response?: (request: RpcRequest) => unknown) {
+  const child = new EventEmitter() as ChildProcess;
+  const stdout = Object.assign(new EventEmitter(), { setEncoding: () => {} });
+  const stderr = Object.assign(new EventEmitter(), { setEncoding: () => {} });
+  const stdin = Object.assign(new EventEmitter(), {
+    write: vi.fn((line: string) => {
+      const request = JSON.parse(line) as RpcRequest;
+      if (request.id == null) return;
+      const message = response ? response(request) : { id: request.id, result: {} };
+      if (message !== undefined) {
+        queueMicrotask(() => stdout.emit("data", JSON.stringify(message) + "\n"));
+      }
+    }),
+    end: vi.fn(),
+  });
+  const kill = vi.fn((_signal?: string | number) => {
+    queueMicrotask(() => child.emit("close", 0));
+    return true;
+  });
+  Object.assign(child, { pid: 12345, stdout, stderr, stdin, kill });
+  return { child, stdout, stderr, stdin, kill };
+}
+
 describe("CodexRpcClient spawn failures", () => {
   let previousCodexHome: string | undefined;
   let isolatedCodexHome: string | undefined;
 
   beforeEach(() => {
     mockSpawn.mockReset();
+    mockResolveCommandForLogs.mockReset();
+    mockResolveCommandForLogs.mockResolvedValue("codex");
     // After the RPC path fails, getQuotaWindows() calls readCodexToken() which
     // reads $CODEX_HOME/auth.json (default ~/.codex). Point CODEX_HOME at an
     // empty temp directory so we never hit real host auth or the WHAM network.
@@ -50,7 +87,12 @@ describe("CodexRpcClient spawn failures", () => {
     process.env.CODEX_HOME = isolatedCodexHome;
   });
 
+  async function waitForRpcSpawn(): Promise<void> {
+    await vi.waitFor(() => expect(mockSpawn).toHaveBeenCalledOnce());
+  }
+
   afterEach(() => {
+    vi.useRealTimers();
     vi.unstubAllGlobals();
     if (isolatedCodexHome) {
       try {
@@ -64,6 +106,172 @@ describe("CodexRpcClient spawn failures", () => {
       delete process.env.CODEX_HOME;
     } else {
       process.env.CODEX_HOME = previousCodexHome;
+    }
+  });
+
+  it("reads account quota with a supported approval policy and never starts a model turn", async () => {
+    const { child, stdin, kill } = createRpcChild((request) => {
+      const result = request.method === "account/rateLimits/read"
+        ? { rateLimits: { primary: { usedPercent: 37, windowDurationMins: 300 } } }
+        : {};
+      return { id: request.id, result };
+    });
+    mockSpawn.mockImplementation((_command, args: string[]) => {
+      if (args.includes("untrusted")) return createChildThatErrorsOnMicrotask(new Error("invalid approval policy"));
+      return child;
+    });
+
+    const result = await fetchCodexRpcQuota();
+    expect(result.windows).toEqual([expect.objectContaining({ usedPercent: 37 })]);
+    const [command, args, spawnOptions] = mockSpawn.mock.calls[0] ?? [];
+    // On Windows the trusted command resolver returns codex.CMD; elsewhere it
+    // returns the bare command. Both must receive the same read-only RPC args.
+    expect(path.basename(String(command)).toLowerCase()).toMatch(/^codex(?:\.cmd)?$/);
+    expect(args).toEqual(["-s", "read-only", "-a", "on-request", "app-server"]);
+    expect(spawnOptions).toEqual(expect.any(Object));
+    expect(stdin.write.mock.calls.map(([line]) => JSON.parse(line).method)).toEqual([
+      "initialize", "initialized", "account/rateLimits/read", "account/read",
+    ]);
+    expect(stdin.end).toHaveBeenCalledOnce();
+    expect(kill).toHaveBeenCalledWith("SIGTERM");
+    expect(kill).not.toHaveBeenCalledWith("SIGKILL");
+  });
+
+  it("rejects RPC error envelopes and preserves their authentication classification", async () => {
+    const { child, kill } = createRpcChild((request) => request.method === "account/rateLimits/read"
+      ? { id: request.id, error: { code: -32000, message: "OAuth failed: refresh token has expired" } }
+      : { id: request.id, result: {} });
+    mockSpawn.mockReturnValue(child);
+
+    const result = await getQuotaWindows();
+
+    expect(result).toMatchObject({ ok: false, source: "codex-rpc", errorFamily: "refresh_token_expired", windows: [] });
+    expect(kill).toHaveBeenCalledWith("SIGTERM");
+  });
+
+  it.each([null, [], "invalid", 17, undefined])("rejects an invalid result envelope (%s)", async (result) => {
+    const { child } = createRpcChild((request) => ({ id: request.id, result }));
+    mockSpawn.mockReturnValue(child);
+    await expect(fetchCodexRpcQuota()).rejects.toThrow("invalid quota response");
+  });
+
+  it("tolerates non-object lines and parses fragmented, out-of-order replies", async () => {
+    const probe = createRpcChild();
+    mockSpawn.mockReturnValue(probe.child);
+    probe.stdin.write.mockImplementation((line) => {
+      const request = JSON.parse(line) as RpcRequest;
+      if (request.method === "initialize") {
+        queueMicrotask(() => probe.stdout.emit("data", 'null\n[]\nnot-json\n{"id":1,"result":{}}\n'));
+      } else if (request.method === "account/read") {
+        queueMicrotask(() => {
+          probe.stdout.emit("data", '{"id":3,"result":{"account":{"email":"test@example.com"}}}\n{"id":2,');
+          probe.stdout.emit("data", '"result":{"rateLimits":{"primary":{"usedPercent":37}}}}\n');
+        });
+      }
+    });
+    const result = await fetchCodexRpcQuota();
+    expect(result.email).toBe("test@example.com");
+    expect(result.windows[0].usedPercent).toBe(37);
+  });
+
+  it.each([false, true])("bounds stdout buffering with and without a completed frame (newline: %s)", async (newline) => {
+    const probe = createRpcChild(() => undefined);
+    mockSpawn.mockReturnValue(probe.child);
+    const result = fetchCodexRpcQuota();
+    await waitForRpcSpawn();
+    probe.stdout.emit("data", "x".repeat(64 * 1024));
+    probe.stdout.emit("data", "x" + (newline ? "\n" : ""));
+    await expect(result).rejects.toThrow("response exceeded the quota probe limit");
+    expect(probe.kill).toHaveBeenCalledWith("SIGTERM");
+  });
+
+  it("bounds stderr diagnostics when the process exits", async () => {
+    const probe = createRpcChild(() => undefined);
+    mockSpawn.mockReturnValue(probe.child);
+    const result = fetchCodexRpcQuota().catch((error: Error) => error);
+    await waitForRpcSpawn();
+    probe.stderr.emit("data", "x".repeat(128 * 1024));
+    probe.stderr.emit("data", " end of diagnostic");
+    probe.child.emit("exit", 1);
+    const error = await result as Error;
+    expect(error.message.length).toBeLessThanOrEqual(4_000);
+    expect(error.message).toMatch(/end of diagnostic$/);
+  });
+
+  it("handles a broken stdin without an uncaught stream error", async () => {
+    const probe = createRpcChild(() => undefined);
+    mockSpawn.mockReturnValue(probe.child);
+    const result = fetchCodexRpcQuota();
+    await waitForRpcSpawn();
+    probe.stdin.emit("error", new Error("write EPIPE"));
+    await expect(result).rejects.toThrow("write EPIPE");
+    expect(probe.kill).toHaveBeenCalledWith("SIGTERM");
+  });
+
+  it("clears other pending requests when a probe times out and kills a child that ignores SIGTERM", async () => {
+    vi.useFakeTimers();
+    const probe = createRpcChild((request) => request.method === "initialize"
+      ? { id: request.id, result: {} }
+      : undefined);
+    probe.kill.mockImplementation((signal) => {
+      if (signal === "SIGKILL") queueMicrotask(() => probe.child.emit("close", null));
+      return true;
+    });
+    mockSpawn.mockReturnValue(probe.child);
+    const result = fetchCodexRpcQuota();
+    await vi.advanceTimersByTimeAsync(0);
+    const rejected = expect(result).rejects.toThrow("timed out on account/rateLimits/read");
+    await vi.advanceTimersByTimeAsync(6_000);
+    expect(probe.stdin.end).toHaveBeenCalledOnce();
+    expect(probe.kill.mock.calls).toEqual([["SIGTERM"]]);
+    await vi.advanceTimersByTimeAsync(250);
+    await rejected;
+    expect(probe.kill.mock.calls).toEqual([["SIGTERM"], ["SIGKILL"]]);
+    expect(vi.getTimerCount()).toBe(0);
+    expect(probe.child.listenerCount("close")).toBe(1);
+  });
+
+  it("bounds shutdown even if a killed child never emits close", async () => {
+    vi.useFakeTimers();
+    const probe = createRpcChild();
+    probe.kill.mockImplementation(() => true);
+    mockSpawn.mockReturnValue(probe.child);
+    const result = fetchCodexRpcQuota();
+    await vi.advanceTimersByTimeAsync(0);
+    await vi.advanceTimersByTimeAsync(500);
+    await expect(result).resolves.toMatchObject({ windows: [] });
+    expect(probe.kill.mock.calls).toEqual([["SIGTERM"], ["SIGKILL"]]);
+    expect(vi.getTimerCount()).toBe(0);
+    expect(probe.child.listenerCount("close")).toBe(1);
+  });
+
+  it("reaps a real subprocess that ignores SIGTERM", async () => {
+    const { spawn: spawnReal } = await vi.importActual<typeof import("node:child_process")>("node:child_process");
+    const child = spawnReal(process.execPath, ["--input-type=commonjs", "-e", `
+      process.on("SIGTERM", () => {});
+      setInterval(() => {}, 60_000);
+      require("node:readline").createInterface({ input: process.stdin }).on("line", (line) => {
+        const request = JSON.parse(line);
+        if (request.id == null) return;
+        const result = request.method === "account/rateLimits/read"
+          ? { rateLimits: { primary: { usedPercent: 37 } } }
+          : {};
+        process.stdout.write(JSON.stringify({ id: request.id, result }) + "\\n");
+      });
+    `], { stdio: ["pipe", "pipe", "pipe"] });
+    mockSpawn.mockReturnValue(child);
+    try {
+      const result = await fetchCodexRpcQuota();
+      expect(result.windows[0].usedPercent).toBe(37);
+      // Windows implements SIGTERM as immediate termination, so the child
+      // cannot ignore it and the escalation is unnecessary. In either case,
+      // prove the probe reaped the process and closed every stream.
+      expect(child.signalCode).toBe(process.platform === "win32" ? "SIGTERM" : "SIGKILL");
+      expect(child.stdin.destroyed).toBe(true);
+      expect(child.stdout.destroyed).toBe(true);
+      expect(child.stderr.destroyed).toBe(true);
+    } finally {
+      if (child.exitCode === null && child.signalCode === null) child.kill("SIGKILL");
     }
   });
 
@@ -110,7 +318,7 @@ describe("CodexRpcClient spawn failures", () => {
     expect(result.windows).toEqual([
       expect.objectContaining({
         label: "5h limit",
-        usedPercent: 50,
+        usedPercent: 0.5,
         resetsAt: "2024-03-22T12:38:31.000Z",
       }),
     ]);

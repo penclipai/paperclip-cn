@@ -1,8 +1,9 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
 import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { Link, useParams, useNavigate, useLocation, Navigate } from "@/lib/router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
-import { PROJECT_COLORS, isUuidLike, type BudgetPolicySummary } from "@penclipai/shared";
+import { PROJECT_COLORS, PROJECT_ICON_NAMES, isUuidLike, type BudgetPolicySummary } from "@penclipai/shared";
 import { budgetsApi } from "../api/budgets";
 import { executionWorkspacesApi } from "../api/execution-workspaces";
 import { instanceSettingsApi } from "../api/instanceSettings";
@@ -29,10 +30,9 @@ import { SummarySlotCard } from "../components/SummarySlotCard";
 import { MembershipAction } from "../components/MembershipAction";
 import { StarToggle } from "../components/StarToggle";
 import { buildProjectWorkspaceSummaries } from "../lib/project-workspaces-tab";
-import { displaySeededName } from "../lib/seeded-display";
-import { PROJECT_ICONS, PROJECT_ICON_NAMES } from "../lib/project-icons";
-import { projectRouteRef } from "../lib/utils";
 import { collectLiveIssueIds } from "../lib/liveIssueIds";
+import { projectRouteRef } from "../lib/utils";
+import { PROJECT_ICONS } from "../lib/project-icons";
 import { usePublishSharedQueryData, useSharedPollingQuery } from "../hooks/useSharedPolling";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,7 +50,7 @@ import {
 
 /* ── Top-level tab types ── */
 
-type ProjectBaseTab = "overview" | "list" | "plugin-operations" | "workspaces" | "configuration" | "budget";
+type ProjectBaseTab = "list" | "plugin-operations" | "workspaces" | "configuration" | "budget";
 type ProjectPluginTab = `plugin:${string}`;
 type ProjectTab = ProjectBaseTab | ProjectPluginTab;
 
@@ -63,56 +63,13 @@ function resolveProjectTab(pathname: string, projectId: string): ProjectTab | nu
   const projectsIdx = segments.indexOf("projects");
   if (projectsIdx === -1 || segments[projectsIdx + 1] !== projectId) return null;
   const tab = segments[projectsIdx + 2];
-  if (tab === "overview") return "overview";
+  if (tab === "overview") return "configuration";
   if (tab === "configuration") return "configuration";
   if (tab === "budget") return "budget";
   if (tab === "issues") return "list";
   if (tab === "plugin-operations") return "plugin-operations";
   if (tab === "workspaces") return "workspaces";
   return null;
-}
-
-/* ── Overview tab content ── */
-
-function OverviewContent({
-  project,
-  onUpdate,
-  imageUploadHandler,
-}: {
-  project: { description: string | null; status: string; targetDate: string | null };
-  onUpdate: (data: Record<string, unknown>) => void;
-  imageUploadHandler?: (file: File) => Promise<string>;
-}) {
-  const { t } = useTranslation();
-  return (
-    <div className="space-y-6">
-      <InlineEditor
-        value={project.description ?? ""}
-        onSave={(description) => onUpdate({ description })}
-        nullable
-        as="p"
-        className="text-sm text-muted-foreground"
-        placeholder={t("Add a description...", { defaultValue: "Add a description..." })}
-        multiline
-        imageUploadHandler={imageUploadHandler}
-      />
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-        <div>
-          <span className="text-muted-foreground">{t("Status", { defaultValue: "Status" })}</span>
-          <div className="mt-1">
-            <StatusBadge status={project.status} />
-          </div>
-        </div>
-        {project.targetDate && (
-          <div>
-            <span className="text-muted-foreground">{t("Target Date", { defaultValue: "Target Date" })}</span>
-            <p>{project.targetDate}</p>
-          </div>
-        )}
-      </div>
-    </div>
-  );
 }
 
 /* ── Combined icon + color picker popover (PAP-72 / PAP-68 part 4) ── */
@@ -130,9 +87,9 @@ function ProjectTilePicker({
   onSelectIcon: (icon: string) => void;
   onSelectColor: (color: string | null) => void;
 }) {
+  useTranslation();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const { t } = useTranslation();
 
   const filteredIcons = useMemo(() => {
     const entries = PROJECT_ICON_NAMES.map((name) => [name, PROJECT_ICONS[name]] as const);
@@ -155,17 +112,16 @@ function ProjectTilePicker({
         <button
           type="button"
           className="shrink-0 rounded-lg cursor-pointer hover:ring-2 hover:ring-foreground/20 transition-(--tp-box-shadow)"
-          aria-label={t("projectDetail.changeIconAndColor", { defaultValue: "Change project icon and color" })}
+          aria-label={translateInstant("projectDetail.changeIconAndColor")}
         >
           <ProjectTile color={color} icon={icon} size="md" />
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-72 p-3" align="start">
-        <p className="text-xs font-medium text-muted-foreground mb-2">
-          {t("projectDetail.icon", { defaultValue: "Icon" })}
-        </p>
+        {/* Icon search + grid */}
+        <p className="text-xs font-medium text-muted-foreground mb-2">{translateInstant("Icon")}</p>
         <Input
-          placeholder={t("projectDetail.searchIconsPlaceholder", { defaultValue: "Search icons..." })}
+          placeholder={translateInstant("agentIconPicker.searchPlaceholder")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="mb-2 h-8 text-sm"
@@ -187,16 +143,13 @@ function ProjectTilePicker({
             </button>
           ))}
           {filteredIcons.length === 0 && (
-            <p className="col-span-7 text-xs text-muted-foreground text-center py-2">
-              {t("projectDetail.noIconsMatch", { defaultValue: "No icons match" })}
-            </p>
+            <p className="col-span-7 text-xs text-muted-foreground text-center py-2">{translateInstant("agentIconPicker.noIconsMatch")}</p>
           )}
         </div>
 
+        {/* Color swatches */}
         <div className="mt-3 border-t border-border pt-3">
-          <p className="text-xs font-medium text-muted-foreground mb-2">
-            {t("projectDetail.color", { defaultValue: "Color" })}
-          </p>
+          <p className="text-xs font-medium text-muted-foreground mb-2">{translateInstant("projectDetail.color")}</p>
           <div className="grid grid-cols-5 gap-1.5">
             {/* Neutral / reset-to-gray option */}
             <button
@@ -207,8 +160,8 @@ function ProjectTilePicker({
                   ? "ring-2 ring-foreground ring-offset-1 ring-offset-background rounded-md"
                   : ""
               }`}
-              aria-label={t("projectDetail.resetToNeutralGray", { defaultValue: "Reset to neutral gray" })}
-              title={t("projectDetail.neutralDefault", { defaultValue: "Neutral (default)" })}
+              aria-label={translateInstant("projectDetail.resetToNeutralGray")}
+              title={translateInstant("projectDetail.neutralDefault")}
             >
               <ProjectTile color={null} size="sm" />
             </button>
@@ -223,10 +176,7 @@ function ProjectTilePicker({
                     : "hover:ring-2 hover:ring-foreground/30"
                 }`}
                 style={{ backgroundColor: swatch }}
-                aria-label={t("Select color {{color}}", {
-                  color: swatch,
-                  defaultValue: `Select color ${swatch}`,
-                })}
+                aria-label={`Select color ${swatch}`}
               />
             ))}
           </div>
@@ -253,7 +203,7 @@ function ProjectIssuesList({ projectId, companyId }: { projectId: string; compan
     resourceKey: "live-runs",
     queryKey: liveRunsQueryKey,
     enabled: !!companyId,
-    // Event-sourced via LiveUpdatesProvider (paperclipai/paperclip#9627); no interval poll needed.
+    // Event-sourced via LiveUpdatesProvider (issue 9627); no interval poll needed.
     refetchInterval: false,
     leaderOnly: true,
   });
@@ -270,13 +220,12 @@ function ProjectIssuesList({ projectId, companyId }: { projectId: string; compan
     enabled: !!companyId,
   });
 
-  const liveIssueIds = useMemo(() => collectLiveIssueIds(liveRuns), [liveRuns]);
-
   const { data: issues, isLoading, error } = useQuery({
     queryKey: queryKeys.issues.listByProject(companyId, projectId),
     queryFn: () => issuesApi.list(companyId, { projectId }),
     enabled: !!companyId,
   });
+  const liveIssueIds = useMemo(() => collectLiveIssueIds(liveRuns, issues), [issues, liveRuns]);
 
   const updateIssue = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) =>
@@ -330,7 +279,7 @@ function ProjectPluginOperationsList({
     resourceKey: "live-runs",
     queryKey: liveRunsQueryKey,
     enabled: !!companyId,
-    // Event-sourced via LiveUpdatesProvider (paperclipai/paperclip#9627); no interval poll needed.
+    // Event-sourced via LiveUpdatesProvider (issue 9627); no interval poll needed.
     refetchInterval: false,
     leaderOnly: true,
   });
@@ -341,13 +290,12 @@ function ProjectPluginOperationsList({
     refetchInterval: sharedLiveRuns.refetchInterval,
   });
   usePublishSharedQueryData(sharedLiveRuns, liveRuns, liveRunsUpdatedAt);
-  const liveIssueIds = useMemo(() => collectLiveIssueIds(liveRuns), [liveRuns]);
-
   const { data: issues, isLoading, error } = useQuery({
     queryKey: queryKeys.issues.listPluginOperationsByProject(companyId, projectId, originKindPrefix),
     queryFn: () => issuesApi.list(companyId, { projectId, originKindPrefix }),
     enabled: !!companyId && !!projectId,
   });
+  const liveIssueIds = useMemo(() => collectLiveIssueIds(liveRuns, issues), [issues, liveRuns]);
 
   const updateIssue = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) =>
@@ -377,7 +325,7 @@ function ProjectPluginOperationsList({
 /* ── Main project page ── */
 
 export function ProjectDetail() {
-  const { t } = useTranslation();
+  useTranslation();
   const { companyPrefix, projectId, filter } = useParams<{
     companyPrefix?: string;
     projectId: string;
@@ -413,6 +361,13 @@ export function ProjectDetail() {
     queryKey: [...queryKeys.projects.detail(routeProjectRef), lookupCompanyId ?? null],
     queryFn: () => projectsApi.get(routeProjectRef, lookupCompanyId),
     enabled: canFetchProject,
+    // Canonicalizing the same project's URL must not unmount its edit form
+    // while the alias query loads. Never carry data into another company or project.
+    placeholderData: (previous) => previous &&
+      previous.companyId === lookupCompanyId &&
+      (previous.id === routeProjectRef || projectRouteRef(previous) === routeProjectRef)
+      ? previous
+      : undefined,
   });
   const canonicalProjectRef = project ? projectRouteRef(project) : routeProjectRef;
   const projectLookupRef = project?.id ?? routeProjectRef;
@@ -444,6 +399,10 @@ export function ProjectDetail() {
     [pluginDetailSlots],
   );
   const activePluginTab = pluginTabItems.find((item) => item.value === activeTab) ?? null;
+  // The slots query is disabled until the project's company resolves, and a
+  // disabled query reports isLoading=false — so "not loading" alone cannot
+  // distinguish "contribution unavailable" from "not asked yet" on cold loads.
+  const pluginTabDecisionLoaded = Boolean(resolvedCompanyId) && !pluginDetailSlotsLoading;
   const isolatedWorkspacesEnabled = experimentalSettingsQuery.data?.enableIsolatedWorkspaces === true;
   const workspaceTabProjectId = project?.id ?? null;
   const { data: workspaceTabIssues = [], isLoading: isWorkspaceTabIssuesLoading, error: workspaceTabIssuesError } = useQuery({
@@ -487,14 +446,17 @@ export function ProjectDetail() {
     queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(routeProjectRef) });
     queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(projectLookupRef) });
     if (resolvedCompanyId) {
-      queryClient.invalidateQueries({ queryKey: queryKeys.projects.list(resolvedCompanyId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects.all(resolvedCompanyId) });
     }
   };
 
   const updateProject = useMutation({
     mutationFn: (data: Record<string, unknown>) =>
       projectsApi.update(projectLookupRef, data, resolvedCompanyId ?? lookupCompanyId),
-    onSuccess: invalidateProject,
+    onSuccess: (_project, data) => {
+      invalidateProject();
+      if (data.visibility !== undefined) queryClient.invalidateQueries({ queryKey: ["issues"] });
+    },
   });
 
   const archiveProject = useMutation({
@@ -506,32 +468,17 @@ export function ProjectDetail() {
       ),
     onSuccess: (updatedProject, archived) => {
       invalidateProject();
-      const name = updatedProject?.name ?? project?.name ?? t("Project", { defaultValue: "Project" });
-      const displayName = displaySeededName(name);
+      const name = updatedProject?.name ?? project?.name ?? "Project";
       if (archived) {
-        pushToast({
-          title: t("\"{{name}}\" has been archived", {
-            name: displayName,
-            defaultValue: `"${displayName}" has been archived`,
-          }),
-          tone: "success",
-        });
+        pushToast({ title: `"${name}" has been archived`, tone: "success" });
         navigate("/dashboard");
       } else {
-        pushToast({
-          title: t("\"{{name}}\" has been unarchived", {
-            name: displayName,
-            defaultValue: `"${displayName}" has been unarchived`,
-          }),
-          tone: "success",
-        });
+        pushToast({ title: `"${name}" has been unarchived`, tone: "success" });
       }
     },
     onError: (_, archived) => {
       pushToast({
-        title: archived
-          ? t("Failed to archive project", { defaultValue: "Failed to archive project" })
-          : t("Failed to unarchive project", { defaultValue: "Failed to unarchive project" }),
+        title: archived ? translateInstant("Failed to archive project") : translateInstant("Failed to unarchive project"),
         tone: "error",
       });
     },
@@ -539,7 +486,7 @@ export function ProjectDetail() {
 
   const uploadImage = useMutation({
     mutationFn: async (file: File) => {
-      if (!resolvedCompanyId) throw new Error(t("No company selected", { defaultValue: "No company selected" }));
+      if (!resolvedCompanyId) throw new Error("No organization selected");
       return assetsApi.uploadImage(resolvedCompanyId, file, `projects/${projectLookupRef || "draft"}`);
     },
   });
@@ -554,20 +501,16 @@ export function ProjectDetail() {
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: t("Projects", { defaultValue: "Projects" }), href: "/projects" },
-      { label: project ? displaySeededName(project.name) : routeProjectRef ?? t("Project", { defaultValue: "Project" }) },
+      { label: translateInstant("Projects"), href: "/projects" },
+      { label: project?.name ?? routeProjectRef ?? translateInstant("Project") },
     ]);
-  }, [setBreadcrumbs, project, routeProjectRef, t]);
+  }, [setBreadcrumbs, project, routeProjectRef]);
 
   useEffect(() => {
     if (!project) return;
-    if (routeProjectRef === canonicalProjectRef) return;
+    if (routeProjectRef === canonicalProjectRef && !location.pathname.endsWith("/overview")) return;
     if (isProjectPluginTab(activeTab)) {
       navigate(`/projects/${canonicalProjectRef}?tab=${encodeURIComponent(activeTab)}`, { replace: true });
-      return;
-    }
-    if (activeTab === "overview") {
-      navigate(`/projects/${canonicalProjectRef}/overview`, { replace: true });
       return;
     }
     if (activeTab === "configuration") {
@@ -595,7 +538,7 @@ export function ProjectDetail() {
       return;
     }
     navigate(`/projects/${canonicalProjectRef}`, { replace: true });
-  }, [project, routeProjectRef, canonicalProjectRef, activeTab, filter, navigate]);
+  }, [project, routeProjectRef, canonicalProjectRef, activeTab, filter, navigate, location.pathname]);
 
   useEffect(() => {
     closePanel();
@@ -644,6 +587,7 @@ export function ProjectDetail() {
     try {
       await projectsApi.update(projectLookupRef, data, resolvedCompanyId ?? lookupCompanyId);
       invalidateProject();
+      if (data.visibility !== undefined) queryClient.invalidateQueries({ queryKey: ["issues"] });
       if (fieldSaveRequestIds.current[field] !== requestId) return;
       setFieldState(field, "saved");
       scheduleFieldReset(field, 1800);
@@ -653,7 +597,7 @@ export function ProjectDetail() {
       scheduleFieldReset(field, 3000);
       throw error;
     }
-  }, [invalidateProject, lookupCompanyId, projectLookupRef, resolvedCompanyId, scheduleFieldReset, setFieldState]);
+  }, [invalidateProject, lookupCompanyId, projectLookupRef, queryClient, resolvedCompanyId, scheduleFieldReset, setFieldState]);
 
   const projectBudgetSummary = useMemo(() => {
     const matched = budgetOverview?.policies.find(
@@ -665,10 +609,12 @@ export function ProjectDetail() {
       companyId: resolvedCompanyId ?? "",
       scopeType: "project",
       scopeId: project?.id ?? routeProjectRef,
-      scopeName: project?.name ?? t("Project", { defaultValue: "Project" }),
+      scopeName: project?.name ?? "Project",
       metric: "billed_cents",
       windowKind: "lifetime",
       amount: 0,
+      unpricedEventCount: 0, pendingRunCount: 0,
+      unpricedUsagePolicy: "block",
       observedAmount: 0,
       remainingAmount: 0,
       utilizationPercent: 0,
@@ -682,7 +628,7 @@ export function ProjectDetail() {
       windowStart: new Date(),
       windowEnd: new Date(),
     } satisfies BudgetPolicySummary;
-  }, [budgetOverview?.policies, project, resolvedCompanyId, routeProjectRef, t]);
+  }, [budgetOverview?.policies, project, resolvedCompanyId, routeProjectRef]);
 
   const budgetMutation = useMutation({
     mutationFn: (amount: number) =>
@@ -697,12 +643,15 @@ export function ProjectDetail() {
       queryClient.invalidateQueries({ queryKey: queryKeys.budgets.overview(resolvedCompanyId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(routeProjectRef) });
       queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(projectLookupRef) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.projects.list(resolvedCompanyId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.projects.all(resolvedCompanyId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.dashboard(resolvedCompanyId) });
     },
   });
 
-  if (pluginTabFromSearch && !pluginDetailSlotsLoading && !activePluginTab) {
+  if (pluginTabFromSearch && !activePluginTab && !error) {
+    if (!pluginTabDecisionLoaded) {
+      return <PageSkeleton variant="detail" />;
+    }
     return <Navigate to={`/projects/${canonicalProjectRef}/issues`} replace />;
   }
 
@@ -717,7 +666,7 @@ export function ProjectDetail() {
       try { cachedTab = localStorage.getItem(`paperclip:project-tab:${project.id}`); } catch {}
     }
     if (cachedTab === "overview") {
-      return <Navigate to={`/projects/${canonicalProjectRef}/overview`} replace />;
+      return <Navigate to={`/projects/${canonicalProjectRef}/configuration`} replace />;
     }
     if (cachedTab === "configuration") {
       return <Navigate to={`/projects/${canonicalProjectRef}/configuration`} replace />;
@@ -762,9 +711,7 @@ export function ProjectDetail() {
       navigate(`/projects/${canonicalProjectRef}?tab=${encodeURIComponent(tab)}`);
       return;
     }
-    if (tab === "overview") {
-      navigate(`/projects/${canonicalProjectRef}/overview`);
-    } else if (tab === "workspaces") {
+    if (tab === "workspaces") {
       navigate(`/projects/${canonicalProjectRef}/workspaces`);
     } else if (tab === "budget") {
       navigate(`/projects/${canonicalProjectRef}/budget`);
@@ -782,8 +729,7 @@ export function ProjectDetail() {
       {showLeftProjectNotice ? (
         <div className="flex items-center gap-3 border border-yellow-300/35 bg-yellow-300/10 px-3 py-2 text-sm text-yellow-900 dark:text-yellow-100">
           <p className="min-w-0 flex-1">
-            You left this project. It no longer appears in your sidebar.
-          </p>
+            {translateInstant("projectDetail.leftProject")}</p>
           <MembershipAction
             compact
             state="left"
@@ -805,8 +751,8 @@ export function ProjectDetail() {
           />
           <button
             type="button"
-            className="h-6 w-6 shrink-0 text-yellow-100/70 hover:text-yellow-100"
-            aria-label={t("projectDetail.dismissMembershipNotice", { defaultValue: "Dismiss project membership notice" })}
+            className="h-6 w-6 shrink-0 text-yellow-900/70 hover:text-yellow-900 dark:text-yellow-100/70 dark:hover:text-yellow-100"
+            aria-label={translateInstant("projectDetail.dismissMembershipNotice")}
             onClick={() => setDismissedLeftProjectIds((current) => new Set(current).add(project.id))}
           >
             ×
@@ -832,16 +778,12 @@ export function ProjectDetail() {
           {project.pauseReason === "budget" ? (
             <div className="inline-flex items-center gap-2 rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1 text-(length:--text-micro) font-medium uppercase tracking-(--tracking-caps) text-red-800 dark:text-red-200">
               <span className="h-2 w-2 rounded-full bg-red-400" />
-              {t("Paused by budget hard stop", { defaultValue: "Paused by budget hard stop" })}
-            </div>
+              {translateInstant("Paused by budget hard stop")}</div>
           ) : null}
           {project.managedByPlugin ? (
             <div className="inline-flex items-center gap-2 rounded-full border border-border bg-muted px-3 py-1 text-(length:--text-micro) font-medium text-muted-foreground">
               <span className="h-2 w-2 rounded-full" style={{ backgroundColor: project.color ?? "var(--project-seed)" }} />
-              {t("Managed by {{name}}", {
-                defaultValue: "Managed by {{name}}",
-                name: project.managedByPlugin.pluginDisplayName,
-              })}
+              {translateInstant("Managed by")}{" "}{project.managedByPlugin.pluginDisplayName}
             </div>
           ) : null}
         </div>
@@ -865,8 +807,8 @@ export function ProjectDetail() {
         companyId={resolvedCompanyId}
         scopeKind="project"
         scopeId={project.id}
-        title="Project summary"
-        description="Summarizer keeps the latest project status, next step, and operator-needed items here."
+        title={translateInstant("projectDetail.summaryTitle")}
+        description={translateInstant("projectDetail.summaryDescription")}
       />
 
       <PluginSlotOutlet
@@ -903,12 +845,12 @@ export function ProjectDetail() {
       <Tabs value={activeTab ?? "list"} onValueChange={(value) => handleTabChange(value as ProjectTab)}>
         <PageTabBar
           items={[
-            { value: "list", label: t("Issues", { defaultValue: "Issues" }) },
-            { value: "overview", label: t("Overview", { defaultValue: "Overview" }) },
-            ...(project.managedByPlugin ? [{ value: "plugin-operations", label: t("Plugin operations", { defaultValue: "Plugin operations" }) }] : []),
-            ...(showWorkspacesTab ? [{ value: "workspaces", label: t("Workspaces", { defaultValue: "Workspaces" }) }] : []),
-            { value: "configuration", label: t("Configuration", { defaultValue: "Configuration" }) },
-            { value: "budget", label: t("Budget", { defaultValue: "Budget" }) },
+            { value: "list", label: translateInstant("sidebar.issues") },
+
+            ...(project.managedByPlugin ? [{ value: "plugin-operations", label: translateInstant("Plugin operations") }] : []),
+            ...(showWorkspacesTab ? [{ value: "workspaces", label: translateInstant("Workspaces") }] : []),
+            { value: "configuration", label: translateInstant("Configuration") },
+            { value: "budget", label: translateInstant("Budget") },
             ...pluginTabItems.map((item) => ({
               value: item.value,
               label: item.label,
@@ -920,16 +862,7 @@ export function ProjectDetail() {
         />
       </Tabs>
 
-      {activeTab === "overview" && (
-        <OverviewContent
-          project={project}
-          onUpdate={(data) => updateProject.mutate(data)}
-          imageUploadHandler={async (file) => {
-            const asset = await uploadImage.mutateAsync(file);
-            return asset.contentPath;
-          }}
-        />
-      )}
+
 
       {activeTab === "list" && project?.id && resolvedCompanyId && (
         <ProjectIssuesList projectId={project.id} companyId={resolvedCompanyId} />
@@ -956,9 +889,7 @@ export function ProjectDetail() {
             />
           )
         ) : (
-          <p className="text-sm text-muted-foreground">
-            {t("Loading workspaces...", { defaultValue: "Loading workspaces..." })}
-          </p>
+          <p className="text-sm text-muted-foreground">{translateInstant("Loading workspaces...")}</p>
         )
       ) : null}
 

@@ -1,0 +1,262 @@
+{
+  "caseComponents.activity.actors.agent": {
+    "en": "Agent",
+    "zh-CN": "智能体",
+    "reviewedEnglishHash": "11b39c93777e8f1f3983bdba7c72b22fe68cfea20c677e9de53e17cb7dbfb19f"
+  },
+  "caseComponents.activity.actors.system": {
+    "en": "System",
+    "zh-CN": "系统",
+    "reviewedEnglishHash": "6725e7bbcd28f3a8a586fa34bf191fd72dde8b61756932cd3237c17a6f196f1a"
+  },
+  "caseComponents.activity.actors.user": {
+    "en": "User",
+    "zh-CN": "用户",
+    "reviewedEnglishHash": "b512d97e7cbf97c273e4db073bbb547aa65a84589227f8f3d9e4a72b9372a24d"
+  },
+  "caseComponents.activity.allActivity": {
+    "en": "All activity",
+    "zh-CN": "全部活动",
+    "reviewedEnglishHash": "29ebb2ef2da630f1485c14455185d10ffc3f57dbafb30821eb0ff8227038b749"
+  },
+  "caseComponents.activity.events.attachmentAdded": {
+    "en": "attachment added",
+    "zh-CN": "已添加附件",
+    "reviewedEnglishHash": "64bd191c5db308cfd9f49edc4bd6919501dec1409f95be3402f033b02f4f6d7c"
+  },
+  "caseComponents.activity.events.childLinked": {
+    "en": "child linked",
+    "zh-CN": "已关联子案例",
+    "reviewedEnglishHash": "d8ca41397b3ba2ceb725a69e51d9c2b6f80c2437d95369a98b550d67b6732c71"
+  },
+  "caseComponents.activity.events.created": {
+    "en": "created",
+    "zh-CN": "已创建",
+    "reviewedEnglishHash": "406effb1e9c59672c66a598c2b21e331b23b16c54024e96d6df3e7c173549791"
+  },
+  "caseComponents.activity.events.documentRevised": {
+    "en": "document revised",
+    "zh-CN": "文档已修订",
+    "reviewedEnglishHash": "7e78fe0d42235e2eb430c956519e619df22b834b08277122cba4f3ae8fe39684"
+  },
+  "caseComponents.activity.events.fieldsChanged": {
+    "en": "fields changed",
+    "zh-CN": "字段已更改",
+    "reviewedEnglishHash": "5cfc274cf0d6af769bb0b6a0c4534606ccc60cf67943e32808b21a36a770f5ed"
+  },
+  "caseComponents.activity.events.issueLinked": {
+    "en": "issue linked",
+    "zh-CN": "已关联任务",
+    "reviewedEnglishHash": "980487980be377603a28a9ad906bd41f32b1439a04636381f61ea9b8a02cc219"
+  },
+  "caseComponents.activity.events.issueUnlinked": {
+    "en": "issue unlinked",
+    "zh-CN": "已取消关联任务",
+    "reviewedEnglishHash": "db36dfb9e12f4a5a36b63979e1791bd60180bdf3abfd8ec330c2973278051b1c"
+  },
+  "caseComponents.activity.events.labelAdded": {
+    "en": "label added",
+    "zh-CN": "已添加标签",
+    "reviewedEnglishHash": "dac84f6b4d1fbf361701b82179a42aceccbe3e724e16cbfdf71fb812ebd0196d"
+  },
+  "caseComponents.activity.events.labelRemoved": {
+    "en": "label removed",
+    "zh-CN": "已移除标签",
+    "reviewedEnglishHash": "0b5f4ff01c0de6b0a9e95ab13ff73ee739983e5cc3fe4e408594fa0ef07380a1"
+  },
+  "caseComponents.activity.events.statusChanged": {
+    "en": "status changed",
+    "zh-CN": "状态已更改",
+    "reviewedEnglishHash": "52af55ba13d6155fb84d81ddb3c42b9b29d3c291c1e55f47e18b72c69c953966"
+  },
+  "caseComponents.activity.events.updated": {
+    "en": "updated",
+    "zh-CN": "已更新",
+    "reviewedEnglishHash": "27eb5e51506c911f6fc4bb345c0d9db6f60415fceab7c18e1e9b862637415777"
+  },
+  "caseComponents.activity.eventsSummary": {
+    "en": "{{filtered}} of {{total}} events",
+    "zh-CN": "{{filtered}} / {{total}} 个事件",
+    "reviewedEnglishHash": "265adc2cf4ffe0d7269352c8186e797bca607009ae7531f5757569c5b3a025b1"
+  },
+  "caseComponents.activity.filterCount": {
+    "en": "{{count}} filters",
+    "zh-CN": "{{count}} 个筛选条件",
+    "reviewedEnglishHash": "244ee60eb7491a379bc59e7dc17773216e6dfaeba81c9714dc79f20496058da9"
+  },
+  "caseComponents.activity.filterLabel": {
+    "en": "Activity filter",
+    "zh-CN": "活动筛选",
+    "reviewedEnglishHash": "0472750d0c2345ae989202704d70fb90b79669546c8741d2c07362a53853fe4b"
+  },
+  "caseComponents.activity.noActivity": {
+    "en": "No activity yet.",
+    "zh-CN": "暂无活动。",
+    "reviewedEnglishHash": "a288d2d0a21eed3c166d051806b178bc88cbd4a5390fd7c7aa6725826c237c98"
+  },
+  "caseComponents.activity.noMatchingEvents": {
+    "en": "No events match this filter.",
+    "zh-CN": "没有符合此筛选条件的事件。",
+    "reviewedEnglishHash": "f5044d66598740274910a500423c18ec1542bebf1ed31d7096cecbb25a75d786"
+  },
+  "caseComponents.activity.relations.issue": {
+    "en": "issue",
+    "zh-CN": "任务",
+    "reviewedEnglishHash": "4a502846d070e2088b7025abe80629830bf03d7ab5624d5e91f332bc9d049d3f"
+  },
+  "caseComponents.activity.relations.via": {
+    "en": "via",
+    "zh-CN": "通过",
+    "reviewedEnglishHash": "4d327af41f96c23c6b13c8c80e1591babd241b29e61fb64f1c0ea480f3d666bc"
+  },
+  "caseComponents.attachments.empty": {
+    "en": "No attachments.",
+    "zh-CN": "暂无附件。",
+    "reviewedEnglishHash": "eef2d99883bd3ab0fe680a857838b6bc267a53761ac53af0ba78132887227568"
+  },
+  "caseComponents.attachments.unnamed": {
+    "en": "attachment",
+    "zh-CN": "附件",
+    "reviewedEnglishHash": "602a5e69c3021bdbd3d25156a02d2cbb467605b8203248eea6af3fb42168d663"
+  },
+  "caseComponents.children.caseId": {
+    "en": "case ID",
+    "zh-CN": "案例 ID",
+    "reviewedEnglishHash": "9c869d6f7ed1f0c6b91577c7a543347987678e72884229572a478e4ca961bd92"
+  },
+  "caseComponents.children.empty": {
+    "en": "No child cases.",
+    "zh-CN": "暂无子案例。",
+    "reviewedEnglishHash": "6317c59f9a827e22a4ad4f01fa7e862a28945a6faf1b8b6bd73aa367e4906324"
+  },
+  "caseComponents.children.showMore": {
+    "en": "Show {{count}} more",
+    "zh-CN": "再显示 {{count}} 个",
+    "reviewedEnglishHash": "d94a0e3b18cc208ec8b9217a2ecc28facd39ab3f54aa3a9092b5418209124314"
+  },
+  "caseComponents.fields.copied": {
+    "en": "Copied",
+    "zh-CN": "已复制",
+    "reviewedEnglishHash": "8d525e5f158b9afe05f3122af363ac67763bdc4e1395b46597b320c289766ce3"
+  },
+  "caseComponents.fields.description": {
+    "en": "from the skill's schema — rendered generically",
+    "zh-CN": "来自技能的字段定义，并以通用方式呈现",
+    "reviewedEnglishHash": "cb31f7f295e563cad1177617f13fc933b4582cb93b5eeeebc2ab04da2a8393f3"
+  },
+  "caseComponents.fields.empty": {
+    "en": "No fields set",
+    "zh-CN": "尚未设置字段",
+    "reviewedEnglishHash": "602596ab840b24b7751983a15a7334a8f0e736cb97eafcd4d0e662134d5679a0"
+  },
+  "caseComponents.fields.title": {
+    "en": "Fields",
+    "zh-CN": "字段",
+    "reviewedEnglishHash": "616f48c1db195b6f23031e5064d19920ab9f1c394100bbad51800d1020f7702d"
+  },
+  "caseComponents.fields.trueValue": {
+    "en": "true",
+    "zh-CN": "是",
+    "reviewedEnglishHash": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
+  },
+  "caseComponents.revisions.actors.board": {
+    "en": "board",
+    "zh-CN": "董事会",
+    "reviewedEnglishHash": "859169b38185780daa5497983ff20d2994390058d8a71f2847ac7846f970971e"
+  },
+  "caseComponents.revisions.actors.system": {
+    "en": "System",
+    "zh-CN": "系统",
+    "reviewedEnglishHash": "6725e7bbcd28f3a8a586fa34bf191fd72dde8b61756932cd3237c17a6f196f1a"
+  },
+  "caseComponents.revisions.actors.systemLower": {
+    "en": "system",
+    "zh-CN": "系统",
+    "reviewedEnglishHash": "bbc5e661e106c6dcd8dc6dd186454c2fcba3c710fb4d8e71a60c93eaf077f073"
+  },
+  "caseComponents.revisions.actors.user": {
+    "en": "User",
+    "zh-CN": "用户",
+    "reviewedEnglishHash": "b512d97e7cbf97c273e4db073bbb547aa65a84589227f8f3d9e4a72b9372a24d"
+  },
+  "caseComponents.revisions.content": {
+    "en": "Content",
+    "zh-CN": "内容",
+    "reviewedEnglishHash": "47bd29075f8b8019f0beec6d86beda7c9bf67aaf05053dcbe0b3bcb63968517f"
+  },
+  "caseComponents.revisions.diffTitle": {
+    "en": "Diff",
+    "zh-CN": "差异",
+    "reviewedEnglishHash": "7ecf46284588f3fa7e31a578ac1658008c3850edce919d21858a3ee6d2e03fdc"
+  },
+  "caseComponents.revisions.empty": {
+    "en": "No revisions yet.",
+    "zh-CN": "暂无修订记录。",
+    "reviewedEnglishHash": "db4f9639355981b284d6f67bff85c0e8b329d337132a2291e1b1c4dd5b8f2b9f"
+  },
+  "caseComponents.revisions.latest": {
+    "en": "latest",
+    "zh-CN": "最新",
+    "reviewedEnglishHash": "5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8"
+  },
+  "caseComponents.revisions.loadError": {
+    "en": "Could not load revisions.",
+    "zh-CN": "无法加载修订记录。",
+    "reviewedEnglishHash": "95456453a0af1a25ef46ed564f6f3a3dc44ae0debd68cbc5aee22c21a9e147de"
+  },
+  "caseComponents.revisions.loading": {
+    "en": "Loading revisions…",
+    "zh-CN": "正在加载修订记录…",
+    "reviewedEnglishHash": "c5c85196599295f1283db4992623a83d66da538fc84f38fdc6958f5343ac1490"
+  },
+  "caseComponents.revisions.new": {
+    "en": "New",
+    "zh-CN": "新版",
+    "reviewedEnglishHash": "18fdd549b2ed367ac0c74cbec1214644728515b30edbcb78e7d322757a7c8359"
+  },
+  "caseComponents.revisions.noBody": {
+    "en": "This revision has no body.",
+    "zh-CN": "此修订版本没有正文。",
+    "reviewedEnglishHash": "73e89038a2a8666acba18e7f9753ac7036964dd3ee910bea84a6e8388bfd2b3f"
+  },
+  "caseComponents.revisions.old": {
+    "en": "Old",
+    "zh-CN": "旧版",
+    "reviewedEnglishHash": "bca97160f4e1211fe659338d0a9705a7dff8aa3ea2e1be1cc1958100a33962c2"
+  },
+  "caseComponents.revisions.revisionNumber": {
+    "en": "rev {{number}}",
+    "zh-CN": "修订 {{number}}",
+    "reviewedEnglishHash": "ac56ae756ce5a2a4735d20d536451536f687727eea0c130ccab0c39e46f1f035"
+  },
+  "caseComponents.revisions.sameRevision": {
+    "en": "Both sides are the same revision.",
+    "zh-CN": "两侧选择的是同一修订版本。",
+    "reviewedEnglishHash": "5c3e0d3775b294a351f85d572c38193c67d1fe86183a7cccfa97fe67d450402a"
+  },
+  "caseComponents.revisions.selectRevision": {
+    "en": "Select revision",
+    "zh-CN": "选择修订版本",
+    "reviewedEnglishHash": "4c84315133f7f48d4533a79b568f4081fc2c3e8723e9c5f60c6921c3d0f5f4c6"
+  },
+  "caseComponents.revisions.selectTwo": {
+    "en": "Select two revisions to compare.",
+    "zh-CN": "请选择两个修订版本进行比较。",
+    "reviewedEnglishHash": "e64fab56b5c2d8b0630b61265ff29744c8cd21ec61b1430f350154d2b1f48573"
+  },
+  "caseComponents.revisions.selectorLabel": {
+    "en": "rev {{number}} - {{time}} - {{actor}}",
+    "zh-CN": "修订 {{number}} - {{time}} - {{actor}}",
+    "reviewedEnglishHash": "cf06dd0129b7201370e0aa13cafa7fdf756ab1c075499f78fb9e68d8b7f75861"
+  },
+  "caseComponents.revisions.title": {
+    "en": "Revisions",
+    "zh-CN": "修订记录",
+    "reviewedEnglishHash": "da80b1d5740caaef137b3e5185cd47db4398bcba72abeb6fdf79930aa01991f5"
+  },
+  "caseComponents.revisions.via": {
+    "en": "via",
+    "zh-CN": "通过",
+    "reviewedEnglishHash": "4d327af41f96c23c6b13c8c80e1591babd241b29e61fb64f1c0ea480f3d666bc"
+  }
+}

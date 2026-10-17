@@ -1,3 +1,4 @@
+import { translateInstant } from "@/i18n";
 import { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, Navigate } from "@/lib/router";
@@ -126,8 +127,8 @@ export function Workspaces() {
       <SummarySlotCard
         companyId={selectedCompanyId}
         scopeKind="workspaces_overview"
-        title="Workspace summary"
-        description="Summarizer tracks workspace activity, live services, and follow-up needs across projects."
+        title={translateInstant("executionWorkspace.summaryTitle")}
+        description={translateInstant("Summarizer tracks workspace activity, live services, and follow-up needs across projects.")}
       />
 
       {groups.length === 0 ? (

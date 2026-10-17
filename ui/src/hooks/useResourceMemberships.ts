@@ -1,5 +1,4 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
 import type {
   ResourceMembershipResourceType,
   ResourceMembershipState,
@@ -10,7 +9,7 @@ import { useToastActions } from "../context/ToastContext";
 import { queryKeys } from "../lib/queryKeys";
 
 type MutationVariables = {
-  resourceType: ResourceMembershipResourceType;
+  resourceType: JoinableResourceType;
   resourceId: string;
   resourceName: string;
   /** Join / leave transition. Omit to only change the starred flag. */
@@ -19,19 +18,23 @@ type MutationVariables = {
   starred?: boolean;
 };
 
+type JoinableResourceType = Exclude<ResourceMembershipResourceType, "document">;
+
 function emptyMemberships(): ResourceMemberships {
   return {
     projectMemberships: {},
     agentMemberships: {},
     starredProjectIds: [],
     starredAgentIds: [],
+    starredDocumentIds: [],
     projectStarredAt: {},
     agentStarredAt: {},
+    documentStarredAt: {},
     updatedAt: null,
   };
 }
 
-function starKeys(resourceType: ResourceMembershipResourceType) {
+function starKeys(resourceType: JoinableResourceType) {
   return resourceType === "project"
     ? { ids: "starredProjectIds", at: "projectStarredAt", state: "projectMemberships" }
     : { ids: "starredAgentIds", at: "agentStarredAt", state: "agentMemberships" };
@@ -46,7 +49,7 @@ function starKeys(resourceType: ResourceMembershipResourceType) {
  */
 function applyMembershipChange(
   current: ResourceMemberships | undefined,
-  resourceType: ResourceMembershipResourceType,
+  resourceType: JoinableResourceType,
   resourceId: string,
   change: { state?: ResourceMembershipState; starred?: boolean },
 ): ResourceMemberships {
@@ -97,7 +100,7 @@ function applyMembershipChange(
 
 export function resourceMembershipState(
   memberships: ResourceMemberships | undefined,
-  resourceType: ResourceMembershipResourceType,
+  resourceType: JoinableResourceType,
   resourceId: string,
 ): ResourceMembershipState {
   const state = resourceType === "project"
@@ -114,7 +117,9 @@ export function isStarred(
 ): boolean {
   const ids = resourceType === "project"
     ? memberships?.starredProjectIds
-    : memberships?.starredAgentIds;
+    : resourceType === "agent"
+      ? memberships?.starredAgentIds
+      : memberships?.starredDocumentIds;
   return Array.isArray(ids) && ids.includes(resourceId);
 }
 
@@ -125,7 +130,9 @@ export function starredResourceIds(
 ): string[] {
   const ids = resourceType === "project"
     ? memberships?.starredProjectIds
-    : memberships?.starredAgentIds;
+    : resourceType === "agent"
+      ? memberships?.starredAgentIds
+      : memberships?.starredDocumentIds;
   return Array.isArray(ids) ? ids : [];
 }
 
@@ -140,14 +147,11 @@ export function useResourceMemberships(companyId: string | null | undefined) {
 export function useResourceMembershipMutation(companyId: string | null | undefined) {
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
-  const { t } = useTranslation();
   const queryKey = queryKeys.resourceMemberships.mine(companyId ?? "__none__");
 
   return useMutation({
     mutationFn: (variables: MutationVariables) => {
-      if (!companyId) {
-        throw new Error(t("resourceMemberships.selectCompanyFirst", { defaultValue: "Select a company first." }));
-      }
+      if (!companyId) throw new Error("Select an organization first.");
       const body = { state: variables.state, starred: variables.starred };
       return variables.resourceType === "project"
         ? resourceMembershipsApi.updateProject(companyId, variables.resourceId, body)
@@ -169,11 +173,12 @@ export function useResourceMembershipMutation(companyId: string | null | undefin
       if (context?.previous) {
         queryClient.setQueryData(queryKey, context.previous);
       }
+      const verb = variables.starred !== undefined
+        ? variables.starred ? "star" : "unstar"
+        : variables.state === "left" ? "leave" : "join";
       pushToast({
-        title: variables.state === "left"
-          ? t("resourceMemberships.leaveFailed", { name: variables.resourceName, defaultValue: "Couldn't leave {{name}}." })
-          : t("resourceMemberships.joinFailed", { name: variables.resourceName, defaultValue: "Couldn't join {{name}}." }),
-        body: error instanceof Error ? error.message : t("common.tryAgain", { defaultValue: "Try again" }),
+        title: `Couldn't ${verb} ${variables.resourceName}.`,
+        body: error instanceof Error ? error.message : "Try again.",
         tone: "error",
       });
     },
@@ -188,6 +193,7 @@ export function useResourceMembershipMutation(companyId: string | null | undefin
       );
     },
     onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["primary-agent", companyId] });
       queryClient.invalidateQueries({ queryKey });
     },
   });

@@ -411,7 +411,7 @@ function ConflictBanner({
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" size="sm" onClick={onDiscard}>
-            {t("Discard changes", { defaultValue: "Discard changes" })}
+            {t("routineDetail.discardChanges")}
           </Button>
           <Button size="sm" onClick={onSave}>
             {t("routineHistory.saveAndContinue", { defaultValue: "Save and continue" })}

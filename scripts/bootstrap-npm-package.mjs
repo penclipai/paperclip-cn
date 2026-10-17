@@ -1,192 +1,214 @@
 #!/usr/bin/env node
 
+// One-time npm bootstrap for a brand-new release package. Publishes a minimal
+// placeholder at version 0.0.0 — never the package's real build output — so:
+//
+// - the PR CI gate (scripts/check-release-package-bootstrap.mjs) passes, since
+//   it only requires the name to resolve on the registry
+// - trusted publishing can be configured on npmjs.com (the package page must
+//   exist before a trusted publisher rule can be added)
+// - real package content only ever reaches npm from CI, after the PR that adds
+//   the package has been reviewed and merged
+//
+// The first real calver release supersedes the placeholder, and a stable
+// release moves `latest` off it. The placeholder needs no local build and no
+// workspace state, so it can run from any checkout (including master, before
+// the package's PR merges).
+//
+// npm one-time passwords are single-use and time-limited, so the helper
+// prompts for them interactively (publish and deprecate each need their own
+// code) and hands them to npm through its environment (npm_config_otp) —
+// codes never appear on a command line, in shell history, or in a process
+// listing. It also waits for the registry to show the package before
+// deprecating — a first publish can take a few minutes to become visible on
+// the read/write endpoints.
+
 import { spawnSync } from "node:child_process";
-import { cpSync, existsSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
+import path, { join, resolve } from "node:path";
+import { createInterface } from "node:readline/promises";
+import { setTimeout as delay } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
-import { dirname, join, resolve, delimiter } from "node:path";
 
-import { buildReleasePackagePlan } from "./release-package-map.mjs";
+export const PLACEHOLDER_VERSION = "0.0.0";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const repoRoot = resolve(__dirname, "..");
+const SCOPE_RE = /^@penclipai\/[a-z0-9][a-z0-9._-]*$/;
 
-function normalizePath(filePath) {
-  return filePath.replace(/\\/g, "/").replace(/^\.\//, "");
-}
+const REGISTRY_POLL_INTERVAL_MS = 15_000;
+const REGISTRY_POLL_ATTEMPTS = 40; // ~10 minutes
+// Require back-to-back sightings: the write endpoint used by `npm deprecate`
+// can trail the read endpoint, so one extra interval is cheap insurance.
+const REGISTRY_POLL_CONSECUTIVE = 2;
+
+const OTP_ATTEMPTS = 3;
 
 function usage() {
   process.stderr.write(
     [
       "Usage:",
-      "  node scripts/bootstrap-npm-package.mjs <package-name-or-dir> [--publish --otp <code>] [--skip-build]",
+      "  node scripts/bootstrap-npm-package.mjs <package-name> [--publish]",
+      "",
+      "Publishes an empty placeholder at version 0.0.0 that reserves <package-name> on npm",
+      "so the release-bootstrap CI gate passes and trusted publishing can be configured.",
+      "Real package content is only ever published by CI. Without --publish this is a dry run.",
+      "",
+      "With --publish the helper prompts for npm one-time passwords interactively",
+      "(publish and deprecate each need their own code) and hands them to npm via its",
+      "environment, so codes never appear on a command line.",
       "",
       "Examples:",
-      "  node scripts/bootstrap-npm-package.mjs @paperclipai/plugin-workspace-diff",
-      "  node scripts/bootstrap-npm-package.mjs packages/plugins/plugin-workspace-diff --publish",
+      "  node scripts/bootstrap-npm-package.mjs @penclipai/new-package",
+      "  node scripts/bootstrap-npm-package.mjs @penclipai/new-package --publish",
       "",
     ].join("\n"),
   );
 }
 
-function resolveNpmInvocation() {
-  if (process.platform !== "win32") {
-    return {
-      command: "npm",
-      argsPrefix: [],
-    };
-  }
-
-  for (const entry of (process.env.PATH ?? "").split(delimiter).filter(Boolean)) {
-    const npmCliPath = join(entry, "node_modules", "npm", "bin", "npm-cli.js");
-    if (existsSync(npmCliPath)) {
-      return {
-        command: process.execPath,
-        argsPrefix: [npmCliPath],
-      };
-    }
-  }
-
-  return {
-    command: "npm",
-    argsPrefix: [],
-  };
-}
-
-function resolvePnpmInvocation() {
-  const npmExecPath = process.env.npm_execpath ?? "";
-  if (npmExecPath && /pnpm/i.test(npmExecPath) && existsSync(npmExecPath)) {
-    return {
-      command: process.execPath,
-      argsPrefix: [npmExecPath],
-    };
-  }
-
-  if (process.platform !== "win32") {
-    return {
-      command: "pnpm",
-      argsPrefix: [],
-    };
-  }
-
-  for (const entry of (process.env.PATH ?? "").split(delimiter).filter(Boolean)) {
-    const candidateDirs = [
-      join(entry, "node_modules", "pnpm"),
-    ];
-    const toolsPnpmDir = join(entry, ".tools", "pnpm");
-    if (existsSync(toolsPnpmDir)) {
-      for (const versionDir of readdirSync(toolsPnpmDir, { withFileTypes: true })) {
-        if (versionDir.isDirectory()) {
-          candidateDirs.push(join(toolsPnpmDir, versionDir.name, "node_modules", "pnpm"));
-        }
-      }
-    }
-    for (const candidateDir of candidateDirs) {
-      const pnpmCliPath = join(candidateDir, "bin", "pnpm.cjs");
-      if (existsSync(pnpmCliPath)) {
-        return {
-          command: process.execPath,
-          argsPrefix: [pnpmCliPath],
-        };
-      }
-    }
-  }
-
-  return {
-    command: "pnpm",
-    argsPrefix: [],
-  };
-}
-
-function runNpm(args, options = {}) {
-  const npmInvocation = resolveNpmInvocation();
-  return runCommand(npmInvocation.command, [...npmInvocation.argsPrefix, ...args], options);
-}
-
-function npmPublishOptions(options = {}) {
-  const token = process.env.NODE_AUTH_TOKEN || process.env.NPM_TOKEN;
-  if (!token || process.env.NPM_CONFIG_USERCONFIG) {
-    return { options, cleanup: () => {} };
-  }
-
-  const configDir = mkdtempSync(join(tmpdir(), "paperclip-npmrc-"));
-  const userConfig = join(configDir, ".npmrc");
-  writeFileSync(
-    userConfig,
-    [
-      "registry=https://registry.npmjs.org/",
-      `//registry.npmjs.org/:_authToken=${token}`,
-    ].join("\n"),
-  );
-
-  return {
-    options: {
-      ...options,
-      env: {
-        ...process.env,
-        ...(options.env ?? {}),
-        NPM_CONFIG_USERCONFIG: userConfig,
-      },
-    },
-    cleanup: () => rmSync(configDir, { recursive: true, force: true }),
-  };
-}
-
-function parseArgs(argv) {
+export function parseArgs(argv) {
   const flags = new Set();
-  let selector = null;
-  let otp = null;
+  let packageName = null;
 
-  for (let index = 0; index < argv.length; index += 1) {
-    const arg = argv[index];
+  for (const arg of argv) {
     if (arg === "--") {
       continue;
     }
 
-    if (arg === "--publish" || arg === "--skip-build") {
+    if (arg === "--publish") {
       flags.add(arg);
       continue;
     }
 
-    if (arg === "--otp") {
-      const value = argv[index + 1];
-      if (!value || value.startsWith("--")) {
-        throw new Error("expected a one-time password after --otp");
-      }
-      otp = value;
-      index += 1;
-      continue;
-    }
-
     if (arg === "--help" || arg === "-h") {
-      return { help: true, selector: null, publish: false, skipBuild: false, otp: null };
+      return { help: true, packageName: null, publish: false };
     }
 
     if (arg.startsWith("--")) {
       throw new Error(`unknown option: ${arg}`);
     }
 
-    if (selector) {
-      throw new Error("expected exactly one package selector");
+    if (packageName) {
+      throw new Error("expected exactly one package name");
     }
 
-    selector = arg;
+    packageName = arg;
   }
 
   return {
     help: false,
-    selector,
+    packageName,
     publish: flags.has("--publish"),
-    skipBuild: flags.has("--skip-build"),
-    otp,
   };
 }
 
-function runCommand(command, args, options = {}) {
-  const result = spawnSync(command, args, {
-    cwd: repoRoot,
+export function validatePackageName(packageName) {
+  if (!SCOPE_RE.test(packageName)) {
+    throw new Error(
+      `refusing to publish a placeholder for ${JSON.stringify(packageName)}: ` +
+        "the name must be a lowercase package inside the @penclipai scope " +
+        "(this guard prevents accidental publishes to names we do not own).",
+    );
+  }
+}
+
+export function buildPlaceholderFiles(packageName) {
+  const deprecationNote =
+    `${packageName}@${PLACEHOLDER_VERSION} is a placeholder that reserves the package name ` +
+    "for Paperclip's release pipeline. It contains no functionality; the first real release " +
+    "supersedes it. See https://github.com/penclipai/paperclip-cn";
+
+  const packageJson = {
+    name: packageName,
+    version: PLACEHOLDER_VERSION,
+    description:
+      "Placeholder publish reserving this name for Paperclip's release pipeline. Do not install this version.",
+    license: "MIT",
+    main: "index.js",
+    files: ["index.js"],
+    repository: {
+      type: "git",
+      url: "git+https://github.com/penclipai/paperclip-cn.git",
+    },
+    homepage: "https://github.com/penclipai/paperclip-cn",
+    publishConfig: {
+      access: "public",
+    },
+  };
+
+  const indexJs = `throw new Error(${JSON.stringify(deprecationNote)});\n`;
+
+  const readme = [
+    `# ${packageName}`,
+    "",
+    `Version ${PLACEHOLDER_VERSION} is a **placeholder publish**. It reserves this package name so`,
+    "Paperclip's release-bootstrap CI gate can pass before the package's first real",
+    "release ships from CI. It intentionally contains no functionality.",
+    "",
+    "Real versions are published by the release workflow of",
+    "[penclipai/paperclip-cn](https://github.com/penclipai/paperclip-cn).",
+    "",
+  ].join("\n");
+
+  return {
+    "package.json": `${JSON.stringify(packageJson, null, 2)}\n`,
+    "index.js": indexJs,
+    "README.md": readme,
+    deprecationNote,
+  };
+}
+
+function getEnvValue(env, name) {
+  if (env[name] !== undefined) return env[name];
+  const normalizedName = name.toLowerCase();
+  const matchingName = Object.keys(env).find((key) => key.toLowerCase() === normalizedName);
+  return matchingName ? env[matchingName] : undefined;
+}
+
+export function resolveNpmInvocation({
+  env = process.env,
+  platform = process.platform,
+  execPath = process.execPath,
+  exists = existsSync,
+} = {}) {
+  if (platform !== "win32") return { command: "npm", argsPrefix: [] };
+
+  const pathApi = path.win32;
+  const candidates = [];
+  const addCandidate = (candidate) => {
+    if (candidate && !candidates.includes(candidate)) candidates.push(candidate);
+  };
+  // Prefer the CLI bundled with the active Node runtime. npm_execpath may
+  // describe a parent shell rather than the runtime that launched this helper.
+  addCandidate(pathApi.join(pathApi.dirname(execPath), "node_modules", "npm", "bin", "npm-cli.js"));
+  const npmExecPath = getEnvValue(env, "npm_execpath")?.trim();
+  if (npmExecPath && pathApi.basename(npmExecPath).toLowerCase() === "npm-cli.js") {
+    addCandidate(npmExecPath);
+  }
+
+  const pathEntries = (getEnvValue(env, "PATH") ?? "")
+    .split(";")
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+  for (const entry of pathEntries) {
+    addCandidate(pathApi.join(entry, "node_modules", "npm", "bin", "npm-cli.js"));
+  }
+
+  const npmCli = candidates.find(exists);
+  if (npmCli) return { command: execPath, argsPrefix: [npmCli] };
+
+  throw new Error(
+    "npm executable not found. Install Node.js/npm or set npm_execpath to npm-cli.js before running this helper.",
+  );
+}
+
+export function runNpm(args, options = {}, {
+  spawn = spawnSync,
+  resolveInvocation = resolveNpmInvocation,
+} = {}) {
+  const invocation = resolveInvocation({ env: options.env ?? process.env });
+  const result = spawn(invocation.command, [...invocation.argsPrefix, ...args], {
     encoding: "utf8",
-    stdio: ["inherit", "pipe", "pipe"],
+    stdio: ["ignore", "pipe", "pipe"],
     ...options,
   });
 
@@ -194,45 +216,22 @@ function runCommand(command, args, options = {}) {
     throw result.error;
   }
 
+  const stdout = result.stdout ?? "";
+  const stderr = result.stderr ?? "";
+  if (stdout) process.stdout.write(stdout);
+  if (stderr) process.stderr.write(stderr);
+
   return result;
 }
 
-function runChecked(command, args, options = {}) {
-  const result = runCommand(command, args, options);
-  const stdout = result.stdout ?? "";
-  const stderr = result.stderr ?? "";
-
-  if (stdout) process.stdout.write(stdout);
-  if (stderr) process.stderr.write(stderr);
-
-  if (result.status !== 0) {
-    throw new Error(`${command} ${args.join(" ")} failed with status ${result.status ?? "unknown"}`);
-  }
-}
-
-function formatCommand(command, args) {
-  return `${command} ${args.join(" ")}`;
-}
-
-function ensureNpmAuth() {
-  const auth = npmPublishOptions();
-  let result;
-  try {
-    result = runNpm(["whoami"], auth.options);
-  } finally {
-    auth.cleanup();
-  }
-  const stdout = result.stdout ?? "";
-  const stderr = result.stderr ?? "";
-
-  if (stdout) process.stdout.write(stdout);
-  if (stderr) process.stderr.write(stderr);
+export function ensureNpmAuth() {
+  const result = runNpm(["whoami"]);
 
   if (result.status === 0) {
     return;
   }
 
-  const output = `${stdout}\n${stderr}`.trim();
+  const output = `${result.stdout ?? ""}\n${result.stderr ?? ""}`.trim();
   if (/\bE401\b|401 Unauthorized/i.test(output)) {
     throw new Error(
       [
@@ -247,8 +246,22 @@ function ensureNpmAuth() {
   throw new Error("npm whoami failed");
 }
 
-function inspectNpmPackage(packageName) {
-  const result = runNpm(["view", packageName, "version", "--json"]);
+export function inspectNpmPackage(packageName, {
+  spawn = spawnSync,
+  resolveInvocation = resolveNpmInvocation,
+} = {}) {
+  // Deliberately quiet: for a fresh bootstrap the expected outcome is E404
+  // ("the name is free"), and npm's error dump for that reads like a failure.
+  // Output is only surfaced when the query fails for an unexpected reason.
+  const invocation = resolveInvocation();
+  const result = spawn(invocation.command, [...invocation.argsPrefix, "view", packageName, "version", "--json"], {
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+
+  if (result.error) {
+    throw result.error;
+  }
 
   if (result.status === 0) {
     const version = JSON.parse((result.stdout ?? "").trim());
@@ -260,263 +273,228 @@ function inspectNpmPackage(packageName) {
     return { exists: false };
   }
 
-  process.stderr.write(output ? `${output}\n` : "");
+  if (output) process.stderr.write(`${output}\n`);
   throw new Error(`failed to query npm for ${packageName}`);
 }
 
-function isWorkspaceDependency(name, value) {
-  return name.startsWith("@penclipai/") && typeof value === "string" && value.startsWith("workspace:");
-}
-
-const compatibilityAliasTargets = new Map([
-  ["@paperclipai/plugin-sdk", "@penclipai/plugin-sdk"],
-  ["@penclipai/shared", "@penclipai/shared"],
-]);
-
-function isLocalCompatibilityDependency(name, value) {
-  return compatibilityAliasTargets.has(name) &&
-    typeof value === "string" &&
-    (value.startsWith("link:") || value.startsWith("workspace:"));
-}
-
-function resolvePublishedDependencyVersion(name) {
-  const npmState = inspectNpmPackage(name);
-  if (!npmState.exists) {
-    throw new Error(`${name} is a workspace dependency but is not published on npm yet`);
+export async function promptOtp(rl, purpose) {
+  for (;;) {
+    const answer = (await rl.question(`Enter the npm one-time password to ${purpose}: `)).trim();
+    if (answer) return answer;
+    process.stdout.write("A one-time password is required.\n");
   }
-
-  return npmState.version;
 }
 
-function resolvePublishDependencies(deps = {}, resolveDependencyVersion = resolvePublishedDependencyVersion) {
-  const next = {};
-  for (const [name, value] of Object.entries(deps)) {
-    const aliasTarget = compatibilityAliasTargets.get(name);
-    if (aliasTarget && isLocalCompatibilityDependency(name, value)) {
-      next[name] = `npm:${aliasTarget}@${resolveDependencyVersion(aliasTarget)}`;
+export async function waitForPackageVisible(
+  packageName,
+  {
+    attempts = REGISTRY_POLL_ATTEMPTS,
+    intervalMs = REGISTRY_POLL_INTERVAL_MS,
+    consecutive = REGISTRY_POLL_CONSECUTIVE,
+    inspect = inspectNpmPackage,
+    sleep = delay,
+  } = {},
+) {
+  let seen = 0;
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    if (attempt > 0) await sleep(intervalMs);
+
+    let state = null;
+    try {
+      state = inspect(packageName);
+    } catch {
+      state = null; // transient registry error: keep polling
+    }
+
+    if (state?.exists) {
+      seen += 1;
+      if (seen >= consecutive) return true;
+    } else {
+      seen = 0;
+    }
+  }
+  return false;
+}
+
+async function publishPlaceholder(packageName, stageDir, rl) {
+  for (let attempt = 1; attempt <= OTP_ATTEMPTS; attempt += 1) {
+    const otp = await promptOtp(rl, `publish ${packageName}@${PLACEHOLDER_VERSION}`);
+    // Hand the code to npm through its environment (npm_config_otp), not argv,
+    // so it never appears in a process listing.
+    const result = runNpm(["publish", "--access", "public"], {
+      cwd: stageDir,
+      env: { ...process.env, npm_config_otp: otp },
+    });
+    if (result.status === 0) return;
+
+    const output = `${result.stdout ?? ""}\n${result.stderr ?? ""}`.trim();
+    if (/\bEOTP\b|one-time password/i.test(output) && attempt < OTP_ATTEMPTS) {
+      process.stdout.write("The code was rejected or expired. Try a fresh one.\n");
       continue;
     }
-
-    next[name] = isWorkspaceDependency(name, value) ? resolveDependencyVersion(name) : value;
+    throw new Error(`npm publish failed with status ${result.status ?? "unknown"}`);
   }
-  return Object.keys(next).length > 0 ? next : undefined;
+  throw new Error("npm publish failed: too many rejected one-time passwords");
 }
 
-function normalizeRepository(repository) {
-  if (!repository || typeof repository !== "object" || Array.isArray(repository)) {
-    return repository;
-  }
+async function deprecatePlaceholder(packageName, deprecationNote, rl) {
+  const spec = `${packageName}@${PLACEHOLDER_VERSION}`;
+  for (let attempt = 1; attempt <= OTP_ATTEMPTS; attempt += 1) {
+    const otp = await promptOtp(rl, `deprecate ${spec}`);
+    const result = runNpm(["deprecate", spec, deprecationNote], {
+      env: { ...process.env, npm_config_otp: otp },
+    });
+    if (result.status === 0) return true;
 
-  const next = { ...repository };
-  if (typeof next.url === "string" && /^https:\/\/github\.com\/.+[^.]$/.test(next.url)) {
-    next.url = `git+${next.url}.git`;
-  }
-  return next;
-}
-
-function buildPublishPackageJson(pkg, options = {}) {
-  const resolveDependencyVersion = options.resolveDependencyVersion ?? resolvePublishedDependencyVersion;
-  const publishConfig = pkg.pkg.publishConfig ?? {};
-  const packageJson = {
-    ...pkg.pkg,
-    repository: normalizeRepository(pkg.pkg.repository),
-    exports: publishConfig.exports ?? pkg.pkg.exports,
-    main: publishConfig.main ?? pkg.pkg.main,
-    types: publishConfig.types ?? pkg.pkg.types,
-    bin: publishConfig.bin ?? pkg.pkg.bin,
-    dependencies: resolvePublishDependencies(pkg.pkg.dependencies, resolveDependencyVersion),
-    optionalDependencies: resolvePublishDependencies(pkg.pkg.optionalDependencies, resolveDependencyVersion),
-    peerDependencies: resolvePublishDependencies(pkg.pkg.peerDependencies, resolveDependencyVersion),
-    publishConfig: {
-      access: publishConfig.access ?? "public",
-    },
-  };
-
-  delete packageJson.devDependencies;
-  delete packageJson.scripts;
-  delete packageJson.clean;
-  delete packageJson.typecheck;
-
-  return Object.fromEntries(Object.entries(packageJson).filter(([, value]) => value !== undefined));
-}
-
-function preparePublishStaging(pkg) {
-  const sourceDir = join(repoRoot, pkg.dir);
-  const packageJson = buildPublishPackageJson(pkg);
-  const stagingDir = mkdtempSync(join(tmpdir(), "paperclip-bootstrap-publish-"));
-  const files = Array.isArray(packageJson.files) ? packageJson.files : [];
-
-  for (const file of files) {
-    const sourcePath = join(sourceDir, file);
-    if (existsSync(sourcePath)) {
-      cpSync(sourcePath, join(stagingDir, file), { recursive: true });
+    const output = `${result.stdout ?? ""}\n${result.stderr ?? ""}`.trim();
+    if (/\bEOTP\b|one-time password/i.test(output)) {
+      process.stdout.write("The code was rejected or expired. Try a fresh one.\n");
+      continue;
     }
+    if (/\bE404\b|404 Not Found/i.test(output)) {
+      process.stdout.write(
+        "The registry's write endpoint has not caught up yet; waiting 30s before retrying...\n",
+      );
+      await delay(30_000);
+      continue;
+    }
+    break;
   }
-
-  writeFileSync(join(stagingDir, "package.json"), `${JSON.stringify(packageJson, null, 2)}\n`);
-  return stagingDir;
+  return false;
 }
 
-function buildPackageForBootstrap(pkg, options = {}) {
-  if (typeof pkg.pkg?.scripts?.build !== "string") {
-    return false;
-  }
-
-  process.stdout.write(`Building ${pkg.name}...\n`);
-  const resolvePnpm = options.resolvePnpmInvocation ?? resolvePnpmInvocation;
-  const runBuild = options.runChecked ?? runChecked;
-  const pnpmInvocation = resolvePnpm();
-  runBuild(pnpmInvocation.command, [...pnpmInvocation.argsPrefix, "-C", pkg.dir, "run", "build"]);
-  return true;
-}
-
-function resolveTargetPackage(selector, packages = buildReleasePackagePlan()) {
-  const normalizedSelector = normalizePath(selector);
-  const matches = packages.filter(
-    (pkg) => pkg.name === selector || normalizePath(pkg.dir) === normalizedSelector,
-  );
-
-  if (matches.length === 1) {
-    return matches[0];
-  }
-
-  if (matches.length > 1) {
-    throw new Error(`package selector is ambiguous: ${selector}`);
-  }
-
-  throw new Error(
-    `unknown package selector: ${selector}\nKnown packages:\n- ${packages.map((pkg) => `${pkg.name} (${pkg.dir})`).join("\n- ")}`,
-  );
-}
-
-function printNextSteps(pkg) {
+function printManualDeprecateFallback(packageName, deprecationNote) {
   process.stdout.write(
     [
       "",
-      "Publish succeeded. Next:",
-      `1. Open https://www.npmjs.com/package/${pkg.name}`,
-      "2. Go to Settings -> Trusted publishing",
-      "3. Add repository penclipai/paperclip-cn",
-      "4. Set workflow filename to release.yml",
-      "5. Optionally enable Settings -> Publishing access -> Require two-factor authentication and disallow tokens",
+      "The placeholder could not be deprecated automatically. Once `npm view` resolves the package, run:",
+      `npm deprecate ${packageName}@${PLACEHOLDER_VERSION} ${JSON.stringify(deprecationNote)} --otp <code>`,
       "",
     ].join("\n"),
   );
 }
 
-function publishPackage(pkg, stagingDir, otp) {
-  const publishArgs = ["publish", "--access", "public"];
-  if (otp) {
-    publishArgs.push("--otp", otp);
-  }
-
-  const publish = npmPublishOptions({ cwd: stagingDir });
-  let result;
-  try {
-    result = runNpm(publishArgs, publish.options);
-  } finally {
-    publish.cleanup();
-  }
-  const stdout = result.stdout ?? "";
-  const stderr = result.stderr ?? "";
-  const output = `${stdout}\n${stderr}`.trim();
-
-  if (stdout) process.stdout.write(stdout);
-  if (stderr) process.stderr.write(stderr);
-
-  if (result.status === 0) {
-    return;
-  }
-
-  if (/\bEOTP\b|one-time password/i.test(output)) {
-    throw new Error(
-      [
-        "npm publish reached the publish-time 2FA check.",
-        "Complete the browser auth URL printed by npm and rerun the helper, or rerun with `--otp <code>` if your npm account uses authenticator-app codes.",
-      ].join(" "),
-    );
-  }
-
-  throw new Error(`${formatCommand("pnpm", publishArgs)} failed with status ${result.status ?? "unknown"}`);
+export function printNextSteps(packageName) {
+  process.stdout.write(
+    [
+      "",
+      "Next:",
+      `1. Open https://www.npmjs.com/package/${packageName}`,
+      "2. Go to Settings -> Trusted publishing",
+      "3. Add repository penclipai/paperclip-cn",
+      "4. Set workflow filename to release.yml",
+      "5. Keep token publishing enabled and confirm the npm-canary and npm-stable environment tokens can publish this package",
+      `6. Only then flip the package to "publishFromCi": true in scripts/release-package-manifest.json`,
+      "",
+    ].join("\n"),
+  );
 }
 
-function main(argv) {
-  const { help, selector, publish, skipBuild, otp } = parseArgs(argv);
+async function stageAndPublish(packageName, { publish }) {
+  const files = buildPlaceholderFiles(packageName);
+  const stageDir = mkdtempSync(join(tmpdir(), "paperclip-npm-placeholder-"));
 
-  if (help) {
-    usage();
-    return;
-  }
-
-  if (!selector) {
-    usage();
-    throw new Error("missing package selector");
-  }
-
-  const pkg = resolveTargetPackage(selector);
-  process.stdout.write(`Selected ${pkg.name} (${pkg.dir})\n`);
-
-  const npmState = inspectNpmPackage(pkg.name);
-  if (npmState.exists) {
-    throw new Error(`${pkg.name} already exists on npm at version ${npmState.version}; bootstrap is only for first publish`);
-  }
-
-  process.stdout.write(`${pkg.name} is not on npm yet; continuing with bootstrap flow.\n`);
-
-  if (publish) {
-    process.stdout.write("Checking npm auth with npm whoami...\n");
-    ensureNpmAuth();
-  }
-
-  if (!skipBuild) {
-    buildPackageForBootstrap(pkg);
-  }
-
-  const stagingDir = preparePublishStaging(pkg);
-
-  process.stdout.write(`Previewing publish payload for ${pkg.name}...\n`);
-  const npmInvocation = resolveNpmInvocation();
   try {
-    runChecked(npmInvocation.command, [...npmInvocation.argsPrefix, "pack", "--dry-run"], { cwd: stagingDir });
+    for (const fileName of ["package.json", "index.js", "README.md"]) {
+      writeFileSync(join(stageDir, fileName), files[fileName]);
+    }
+
+    process.stdout.write(`Staged placeholder for ${packageName} in ${stageDir}\n`);
+    process.stdout.write(`Previewing publish payload (npm publish --dry-run)...\n`);
+    const dryRun = runNpm(["publish", "--dry-run", "--access", "public"], { cwd: stageDir });
+    if (dryRun.status !== 0) {
+      throw new Error(`npm publish --dry-run failed with status ${dryRun.status ?? "unknown"}`);
+    }
 
     if (!publish) {
       process.stdout.write(
         [
           "",
-          "Dry run complete. To perform the first publish from an authenticated maintainer machine, run:",
-          `node scripts/bootstrap-npm-package.mjs ${pkg.name} --publish --otp <code>`,
+          "Dry run complete. To publish the placeholder from an authenticated maintainer machine, run:",
+          `node scripts/bootstrap-npm-package.mjs ${packageName} --publish`,
           "",
         ].join("\n"),
       );
       return;
     }
 
-    process.stdout.write(`Publishing ${pkg.name}...\n`);
-    publishPackage(pkg, stagingDir, otp);
-    printNextSteps(pkg);
+    const rl = createInterface({ input: process.stdin, output: process.stdout });
+    try {
+      await publishPlaceholder(packageName, stageDir, rl);
+      process.stdout.write(`Placeholder ${packageName}@${PLACEHOLDER_VERSION} published.\n`);
+
+      process.stdout.write(
+        "Waiting for the registry to show the package before deprecating (a first publish can take a few minutes)...\n",
+      );
+      const visible = await waitForPackageVisible(packageName);
+
+      let deprecated = false;
+      if (visible) {
+        deprecated = await deprecatePlaceholder(packageName, files.deprecationNote, rl);
+      } else {
+        process.stdout.write("Timed out waiting for the registry to show the package.\n");
+      }
+
+      if (deprecated) {
+        process.stdout.write(`Deprecated ${packageName}@${PLACEHOLDER_VERSION}.\n`);
+      } else {
+        printManualDeprecateFallback(packageName, files.deprecationNote);
+      }
+
+      printNextSteps(packageName);
+    } finally {
+      rl.close();
+    }
   } finally {
-    rmSync(stagingDir, { recursive: true, force: true });
+    rmSync(stageDir, { recursive: true, force: true });
   }
+}
+
+async function main(argv) {
+  const { help, packageName, publish } = parseArgs(argv);
+
+  if (help) {
+    usage();
+    return;
+  }
+
+  if (!packageName) {
+    usage();
+    throw new Error("missing package name");
+  }
+
+  validatePackageName(packageName);
+
+  if (publish && !process.stdin.isTTY) {
+    throw new Error(
+      "--publish needs an interactive terminal: the helper prompts for npm one-time passwords instead of taking them as arguments.",
+    );
+  }
+
+  const npmState = inspectNpmPackage(packageName);
+  if (npmState.exists) {
+    throw new Error(
+      `${packageName} already exists on npm at version ${npmState.version}; the bootstrap flow is only for names that have never been published`,
+    );
+  }
+
+  process.stdout.write(`${packageName} is not on npm yet; continuing with placeholder bootstrap.\n`);
+
+  if (publish) {
+    process.stdout.write("Checking npm auth with npm whoami...\n");
+    ensureNpmAuth();
+  }
+
+  await stageAndPublish(packageName, { publish });
 }
 
 const isDirectRun = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 
 if (isDirectRun) {
   try {
-    main(process.argv.slice(2));
+    await main(process.argv.slice(2));
   } catch (error) {
     process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
     process.exit(1);
   }
 }
-
-export {
-  buildPackageForBootstrap,
-  buildPublishPackageJson,
-  ensureNpmAuth,
-  inspectNpmPackage,
-  parseArgs,
-  publishPackage,
-  preparePublishStaging,
-  resolveTargetPackage,
-};

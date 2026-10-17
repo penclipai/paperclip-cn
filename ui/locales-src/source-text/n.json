@@ -1,0 +1,1642 @@
+{
+  "\"{{name}}\" has been archived": {
+    "en": "\"{{name}}\" has been archived",
+    "zh-CN": "“{{name}}”已归档",
+    "reviewedEnglishHash": "8fa164a6adf4f70129a2af858dd3def2cd040a5ea26952e57444251e617e4552"
+  },
+  "\"{{name}}\" has been unarchived": {
+    "en": "\"{{name}}\" has been unarchived",
+    "zh-CN": "“{{name}}”已取消归档",
+    "reviewedEnglishHash": "4e6e368e892bf7a67cd6edee76125ff7ab7e38dcc977f19c4ff8acaccfd1273c"
+  },
+  ", NOT an app or bot token. The Signing Secret has no token prefix.": {
+    "en": ", NOT an app or bot token. The Signing Secret has no token prefix.",
+    "zh-CN": "，而非应用或机器人令牌。签名密钥不含令牌前缀。",
+    "reviewedEnglishHash": "1c2ae0821df5b2990af9913bb53c008249871690cdf61b0e7fd728fed59e6042"
+  },
+  ", not its Secret ID.": {
+    "en": ", not its Secret ID.",
+    "zh-CN": "，请勿复制密钥 ID。",
+    "reviewedEnglishHash": "98bac72b5d69b13a1fdaecd9de88e17037009702f1dc2015df94808e4da1d559"
+  },
+  "1. Name": {
+    "en": "1. Name",
+    "zh-CN": "1. 姓名",
+    "reviewedEnglishHash": "6dce9cbb76b5bf6ce23f789f876c719c3025e631ab1ffd33ad9a88a5c5bddac9"
+  },
+  "NPM Package": {
+    "en": "NPM Package",
+    "zh-CN": "NPM 包",
+    "reviewedEnglishHash": "d7ab8add04fa3ee3275b46ac15fafabe0a108f0b987283357907472f88dfc94e"
+  },
+  "Name": {
+    "en": "Name",
+    "zh-CN": "名称",
+    "reviewedEnglishHash": "dcd1d5223f73b3a965c07e3ff5dbee3eedcfedb806686a05b9b3868a2c3d6d50"
+  },
+  "Name and title fields are kept unique for each new": {
+    "en": "Name and title fields are kept unique for each new",
+    "zh-CN": "名称和标题字段保持唯一，适用于每个新建的",
+    "reviewedEnglishHash": "17ea3976b906cc19673ecf128640d90efe670bc9d012e1a2766a22454e251b79"
+  },
+  "Name your company": {
+    "en": "Name your company",
+    "zh-CN": "为你的公司命名",
+    "reviewedEnglishHash": "c2a6abf9648a9f775ec8ca7041d86371e4e4f2323788f121e3908a342377b3e0"
+  },
+  "Named machine": {
+    "en": "Named machine",
+    "zh-CN": "指定机器",
+    "reviewedEnglishHash": "5b81e88aeeb6a81efcc27e19da12840383e783b1175c6f685cd61c126e171b97"
+  },
+  "Native method": {
+    "en": "Native method",
+    "zh-CN": "原生方法",
+    "reviewedEnglishHash": "604030e94e27614201aeda4ca34d764931575def53858e9b844e5d46a1cfc1f4"
+  },
+  "Navigation Patterns": {
+    "en": "Navigation Patterns",
+    "zh-CN": "导航模式",
+    "reviewedEnglishHash": "423846c4e3edbcaadbcd98cec856e4040c08b32052a8376943017d0031e34f19"
+  },
+  "Needs action": {
+    "en": "Needs action",
+    "zh-CN": "待处理",
+    "reviewedEnglishHash": "e382d466c25613b68d82a7438e14c7615d0785cb283d0c051c0a486b4628abea"
+  },
+  "Needs attention": {
+    "en": "Needs attention",
+    "zh-CN": "需要处理",
+    "reviewedEnglishHash": "c1ebc7817870e5be78fceae559ba5fcac2b68d5c5498d8080298004f3f79d62d"
+  },
+  "Needs attention (": {
+    "en": "Needs attention (",
+    "zh-CN": "需要处理（",
+    "reviewedEnglishHash": "41b551ee391c0be39f6ae66bca20b6ddbd5dc73086b54aeb3fd301e5879acc3a"
+  },
+  "Needs next step": {
+    "en": "Needs next step",
+    "zh-CN": "需要下一步",
+    "reviewedEnglishHash": "e45a2c0f61e00966ee04515bc7f1c3b726c576ec5ae8a884e106fc1db867f524"
+  },
+  "Needs sign-in": {
+    "en": "Needs sign-in",
+    "zh-CN": "需要登录",
+    "reviewedEnglishHash": "1077f6b6e64aad02b8aff62ff5b14d29882a9896f639eb05124087e6b0a92571"
+  },
+  "Needs your attention (": {
+    "en": "Needs your attention (",
+    "zh-CN": "需要您处理 (",
+    "reviewedEnglishHash": "affa800ddfa80a0e94184ebc5ca54f9534448ed655a03cb78c61c02856eefc58"
+  },
+  "Net": {
+    "en": "Net",
+    "zh-CN": "净支出",
+    "reviewedEnglishHash": "660fb2c41d028988b2093656a80d3ae99bc67cd0d5acca5c6063793819b15881"
+  },
+  "Never": {
+    "en": "Never",
+    "zh-CN": "从未",
+    "reviewedEnglishHash": "6300ef800bb884295b0b4b35682b75cecd7cc550d202db56d04a0643b8fb873f"
+  },
+  "New": {
+    "en": "New",
+    "zh-CN": "新建",
+    "reviewedEnglishHash": "18fdd549b2ed367ac0c74cbec1214644728515b30edbcb78e7d322757a7c8359"
+  },
+  "New API key": {
+    "en": "New API key",
+    "zh-CN": "新 API 密钥",
+    "reviewedEnglishHash": "e520a082286bb152ae03d1f3d08628a171a953f70eade05263e7196905702feb"
+  },
+  "New Agent": {
+    "en": "New Agent",
+    "zh-CN": "新建智能体",
+    "reviewedEnglishHash": "c548aab130f7e7dd138b8ca5183d3e06a336666a8a140dcdd1a10bb138ebe249"
+  },
+  "New Company": {
+    "en": "New Company",
+    "zh-CN": "新建公司",
+    "reviewedEnglishHash": "1453775df0a7903186b8864cde636c29bc5bbd753c17f77ae474bfd09677a156"
+  },
+  "New Goal": {
+    "en": "New Goal",
+    "zh-CN": "新建目标",
+    "reviewedEnglishHash": "9d2b5d21bae06295bdb6dbb8a854ad29af1cb0878676f161cb5be9a3352ca407"
+  },
+  "New Issue": {
+    "en": "New Issue",
+    "zh-CN": "新建任务",
+    "reviewedEnglishHash": "03a81df699d65e2226fd086919125b96784c86c651b3a0a3a3e5e4819a1f3295"
+  },
+  "New Issue (outside inputs)": {
+    "en": "New Issue (outside inputs)",
+    "zh-CN": "新建任务（输入框外）",
+    "reviewedEnglishHash": "d0470ef273a3bf523ac27f60d39893dd291e7cecc35bc575ff51493761f84963"
+  },
+  "New Organization": {
+    "en": "New Organization",
+    "zh-CN": "新建组织",
+    "reviewedEnglishHash": "4876e6473616e2a6aaa02e5961ba1adb2e825016adca3009f5ee6bf09f2dc761"
+  },
+  "New agent": {
+    "en": "New agent",
+    "zh-CN": "新建智能体",
+    "reviewedEnglishHash": "98a23e6db3431d1631515c48b1c61a7603c716328a46b2d5e70c5214dc8929a6"
+  },
+  "New agent hires stay pending until approved by board.": {
+    "en": "New agent hires stay pending until approved by board.",
+    "zh-CN": "新智能体入职会保持待批准，直到董事会批准。",
+    "reviewedEnglishHash": "67728aa69055ee8393fc142b092a47d340e2d52f73b7f0fe138a3692ea9f649c"
+  },
+  "New agent progress": {
+    "en": "New agent progress",
+    "zh-CN": "新智能体进展",
+    "reviewedEnglishHash": "260193aa8a064dab18177f9cb12257f196a9f08d570c6ed4efd8201410a33e25"
+  },
+  "New app": {
+    "en": "New app",
+    "zh-CN": "新建应用",
+    "reviewedEnglishHash": "747f1473fa17780836134deef18e25c1bdee4b30a3cbf0edca8a340f6bbf6c7d"
+  },
+  "New budget": {
+    "en": "New budget",
+    "zh-CN": "新预算",
+    "reviewedEnglishHash": "9b23b0d1f9dd2c7e80bc132f1346c099a6cfe88873470ce787dff337998cd7c8"
+  },
+  "New budget (USD)": {
+    "en": "New budget (USD)",
+    "zh-CN": "预算（美元）",
+    "reviewedEnglishHash": "99dd3774b5bec80b1986e8db731a78989027e1dcd2d08fb8e8cad301c0f4cab5"
+  },
+  "New client secret": {
+    "en": "New client secret",
+    "zh-CN": "新建客户端密钥",
+    "reviewedEnglishHash": "02aac1d82e3ac55097291a650806176e01f55af3a744232f525f00871b1ffd7e"
+  },
+  "New document": {
+    "en": "New document",
+    "zh-CN": "新建文档",
+    "reviewedEnglishHash": "1b26844054631e28dfa22ad9be21f455586054f6336616dc1d1abe38c002e0a6"
+  },
+  "New file in this bundle": {
+    "en": "New file in this bundle",
+    "zh-CN": "此说明文件包中的新文件",
+    "reviewedEnglishHash": "3eb813e1c60f3c6e4657bd800a016de3c83f94126380c95f2efd72521ad50694"
+  },
+  "New folder inside…": {
+    "en": "New folder inside…",
+    "zh-CN": "里面新建文件夹...",
+    "reviewedEnglishHash": "3409c55afd702c691cbc71483300b6e39eaac48c5998dd0381ae02e306e08180"
+  },
+  "New issue": {
+    "en": "New issue",
+    "zh-CN": "新建任务",
+    "reviewedEnglishHash": "3484d10f0197b9c2a7de3c5d292f943296bb935fd67616e8ad60dcd8153c3b6c"
+  },
+  "New issues": {
+    "en": "New issues",
+    "zh-CN": "新任务",
+    "reviewedEnglishHash": "a6a0e0210e0553b67ef5f0d2178501ac37130f4b55be0d82c7624ecc1ad5b2af"
+  },
+  "New keys are saved as organization secrets when you finish setup.": {
+    "en": "New keys are saved as organization secrets when you finish setup.",
+    "zh-CN": "完成设置后，新密钥将保存为组织机密。",
+    "reviewedEnglishHash": "ff961302d9271c92e09eb5e9073e2d164d6fe82e4f5a157ba722238e067bf36b"
+  },
+  "New label": {
+    "en": "New label",
+    "zh-CN": "新建标签",
+    "reviewedEnglishHash": "2bda0a8b27535eb5698025f9aca20117abc2d15f42fb3762b509ff65ba193d1d"
+  },
+  "New organization name": {
+    "en": "New organization name",
+    "zh-CN": "新组织名称",
+    "reviewedEnglishHash": "958cb49e8efa5eb27921052645f558f7440a0a613b95d4d9c50a5811a6368421"
+  },
+  "New primary agent": {
+    "en": "New primary agent",
+    "zh-CN": "新主智能体",
+    "reviewedEnglishHash": "9a49332060d0aa58addee9d9576a1f36acb60c66a05ee38e76f8521e16b9ca6a"
+  },
+  "New project": {
+    "en": "New project",
+    "zh-CN": "新建项目",
+    "reviewedEnglishHash": "a41eb2bf7245d3bcca0c66f7b9a2c8b30a6cf975fc4bed8297811b2777956280"
+  },
+  "New queue name…": {
+    "en": "New queue name…",
+    "zh-CN": "新队列名称…",
+    "reviewedEnglishHash": "6d6839d80dd044f7c13a15bf604fb4428127e60e3227ba7014ccfb1176d3529e"
+  },
+  "New queue…": {
+    "en": "New queue…",
+    "zh-CN": "新建队列",
+    "reviewedEnglishHash": "627d34e0cd4b21b53083a9bd0102500f347820684ddc5f2b7e74ef978eb6e4c5"
+  },
+  "New registration": {
+    "en": "New registration",
+    "zh-CN": "新注册",
+    "reviewedEnglishHash": "5c35cd89e8c7dab9ce5cc4b985d3602e0b8a332d10a6d396dd0e60dedec97973"
+  },
+  "New routine": {
+    "en": "New routine",
+    "zh-CN": "新建例行任务",
+    "reviewedEnglishHash": "d5e520f554b1000e47dd32930855b555ba9fac79d86ca76a7d7542ebfcdaf398"
+  },
+  "New runs using this account will be blocked. Existing runs may retain credentials already issued to them. No other account will be selected automatically.": {
+    "en": "New runs using this account will be blocked. Existing runs may retain credentials already issued to them. No other account will be selected automatically.",
+    "zh-CN": "使用此账户的新运行将被阻止。现有运行可能会保留已颁发给他们的凭据。不会自动选择其他账户。",
+    "reviewedEnglishHash": "103d4019f362a97aac0aa5deee08b48877da8b3926b50feecc731b85725e5f35"
+  },
+  "New runs will not start until the agent is resumed.": {
+    "en": "New runs will not start until the agent is resumed.",
+    "zh-CN": "在智能体恢复之前，新的运行将不会开始。",
+    "reviewedEnglishHash": "0315b0dbb1e25e76392c08dc4c5cc5023f1f0efbec285e538d2c69e3f3c0ff15"
+  },
+  "New secret here": {
+    "en": "New secret here",
+    "zh-CN": "在此新建密钥",
+    "reviewedEnglishHash": "9681c8fedd53f83f29d6427a113e79e166998542d13399549d3778fab7581e1f"
+  },
+  "New tasks default to isolated checkout": {
+    "en": "New tasks default to isolated checkout",
+    "zh-CN": "新任务默认使用独立检出",
+    "reviewedEnglishHash": "e2b6f92c622c934dedb433d87f3977e7fdf8b67431d87db5f33ffb015579d264"
+  },
+  "New tasks rotate. Existing tasks keep their account.": {
+    "en": "New tasks rotate. Existing tasks keep their account.",
+    "zh-CN": "新任务会轮换分配；现有任务保留其账户。",
+    "reviewedEnglishHash": "e293f245a127bc42d361efe74838a65e8eab293aadeed51d620e02e3c4a0b1c7"
+  },
+  "New today": {
+    "en": "New today",
+    "zh-CN": "今日新增",
+    "reviewedEnglishHash": "51a7540f41dcb94773ed93e8ba728135eeecc7dd25055f4292cb826ec985c7ab"
+  },
+  "New token for": {
+    "en": "New token for",
+    "zh-CN": "为以下网关签发新令牌：",
+    "reviewedEnglishHash": "e049eb94f38907062e9fb10e02faccf9f94ac640c55d8c7ace5e62eb6ce6dcaf"
+  },
+  "New tools an app adds later won't be usable until you review them.": {
+    "en": "New tools an app adds later won't be usable until you review them.",
+    "zh-CN": "应用日后新增的工具需经你审核后才能使用。",
+    "reviewedEnglishHash": "2751e3ac7df3e6fc93aa84aac9e0dddcb346d7760ff8f72aca554148633136df"
+  },
+  "New top-level folder…": {
+    "en": "New top-level folder…",
+    "zh-CN": "新的顶级文件夹...",
+    "reviewedEnglishHash": "93d8f8e980e06cf172782af8d892d0fd8ec0d95ecc902485989a93023b4ac7fe"
+  },
+  "New webhook URL": {
+    "en": "New webhook URL",
+    "zh-CN": "新的网络钩子 URL",
+    "reviewedEnglishHash": "48f3ada274f26d787c9feabc7c0a6c2c05e64b624f79ba7e82c907b53eefef5d"
+  },
+  "New webhook secret": {
+    "en": "New webhook secret",
+    "zh-CN": "新的 webhook 秘密",
+    "reviewedEnglishHash": "2c422ebf28420ddc12b24ecca68ec60487714cfd1bcebcdd528446ede1a5981d"
+  },
+  "New {{label}}": {
+    "en": "New {{label}}",
+    "zh-CN": "新建{{label}}",
+    "reviewedEnglishHash": "5d95787c231becd9b8176cf0f8d7fabf6de1c0806a40e08fd1d0d504441ad4a2"
+  },
+  "Next": {
+    "en": "Next",
+    "zh-CN": "下一步",
+    "reviewedEnglishHash": "1ff57a29d7c9d11bdf61c1b80f2b289b44c1ea844824d4b94a0d52b6ba5fc858"
+  },
+  "Next action:": {
+    "en": "Next action:",
+    "zh-CN": "下一个行动",
+    "reviewedEnglishHash": "6ec76c2215534811e4781974c05c518dca74ae7efe614d806478d4e359debcda"
+  },
+  "Next in this review queue:": {
+    "en": "Next in this review queue:",
+    "zh-CN": "此审核队列中的下一项：",
+    "reviewedEnglishHash": "1f6fb156c888ca83ac7f27a7a91df9908f9328ee78cb787b7d1fcf19d7976539"
+  },
+  "Next item": {
+    "en": "Next item",
+    "zh-CN": "下一项",
+    "reviewedEnglishHash": "1e47d4f7a1a3c54586e8ace5d3b11582282784f5d9e5f6faaff951fc411e8ce2"
+  },
+  "Next question": {
+    "en": "Next question",
+    "zh-CN": "下一个问题",
+    "reviewedEnglishHash": "f7a9d7437e96463835a47a3a8332a40fa38870f56ff117c1cc0a041958c95beb"
+  },
+  "Next token page": {
+    "en": "Next token page",
+    "zh-CN": "下一页令牌",
+    "reviewedEnglishHash": "e41e004cc2e103d64e00d29c15a3eccf4930eb2d47e857e06c0990dfa8259e4b"
+  },
+  "Next: {{value}}": {
+    "en": "Next: {{value}}",
+    "zh-CN": "下次：{{value}}",
+    "reviewedEnglishHash": "4a7da4b10a001c0a3539ab41d7f04616dc20020b7d4ec74a5345a02aff51d3ac"
+  },
+  "Nice": {
+    "en": "Nice",
+    "zh-CN": "易读",
+    "reviewedEnglishHash": "fdc96ffbf256523aec8846ae56321053c7ab751c99eb766e6bb4a7d362a4f060"
+  },
+  "No": {
+    "en": "No",
+    "zh-CN": "否",
+    "reviewedEnglishHash": "1ea442a134b2a184bd5d40104401f2a37fbc09ccf3f4bc9da161c6099be3691d"
+  },
+  "No GitHub operation recorded": {
+    "en": "No GitHub operation recorded",
+    "zh-CN": "尚无 GitHub 操作记录",
+    "reviewedEnglishHash": "5e5bfca34dd368f864b2e277c1d9408d99311a3842dcb12a3e31b8e9c41bf249"
+  },
+  "No OpenCode models discovered. Run ": {
+    "en": "No OpenCode models discovered. Run ",
+    "zh-CN": "未发现 OpenCode 模型。请运行 ",
+    "reviewedEnglishHash": "ce48f1d9023ada60769eb3371d124a450396d6a7194a1da21fa960d17fac0372"
+  },
+  "No OpenCode models discovered. Run `opencode models` and authenticate providers.": {
+    "en": "No OpenCode models discovered. Run `opencode models` and authenticate providers.",
+    "zh-CN": "未发现 OpenCode 模型。请运行 `opencode models` 并完成提供方认证。",
+    "reviewedEnglishHash": "3d6f6f6c821cdf8ccfa13fc637f7b2cf7afc4cd9bcc4083f9a60bd46267687d5"
+  },
+  "No OpenCode models discovered. Run opencode models and authenticate providers.": {
+    "en": "No OpenCode models discovered. Run opencode models and authenticate providers.",
+    "zh-CN": "未发现 OpenCode 模型。请运行 opencode models 并完成服务商认证。",
+    "reviewedEnglishHash": "7553cf8675608b2eda641c6be47a31d335f0356985b52ddd053067c1c932aa29"
+  },
+  "No Parent": {
+    "en": "No Parent",
+    "zh-CN": "无父任务",
+    "reviewedEnglishHash": "a52c86a2d7e743f3862b5142803e4d29a08f3e05b01ba87146475177d8e4499b"
+  },
+  "No Project": {
+    "en": "No Project",
+    "zh-CN": "无项目",
+    "reviewedEnglishHash": "ca4558db950fc896570809c7749ef59e89d377b759d55c044c542b8baf8a0df8"
+  },
+  "No Workspace": {
+    "en": "No Workspace",
+    "zh-CN": "无工作区",
+    "reviewedEnglishHash": "27dbe837e46c1c3626214c202b56dcfdc7bd861498baba2964b086db7e7cdea6"
+  },
+  "No access events recorded yet. Each runtime resolution writes a redacted entry here.": {
+    "en": "No access events recorded yet. Each runtime resolution writes a redacted entry here.",
+    "zh-CN": "尚无访问事件记录。每次运行时解析都会在此写入一条经过脱敏的记录。",
+    "reviewedEnglishHash": "1c5156d13dd8345f88c228b8a064645cad9d6cf2942e1bf084cbdcfaa56905dc"
+  },
+  "No access was granted. You can start a new connection from your assistant.": {
+    "en": "No access was granted. You can start a new connection from your assistant.",
+    "zh-CN": "未授予访问权限。你可以在助手中发起新的连接。",
+    "reviewedEnglishHash": "70f5a1191331446fc7f56adb6ad61ffde2a1925c0a300b1638e4fde1345333fa"
+  },
+  "No accessible repositories.": {
+    "en": "No accessible repositories.",
+    "zh-CN": "没有可访问的仓库。",
+    "reviewedEnglishHash": "ecffe2f56a1a9016db61377a457eabe4de1fad3a3528f2d5ab67170d4d73f1e9"
+  },
+  "No actions match “": {
+    "en": "No actions match “",
+    "zh-CN": "没有操作匹配“",
+    "reviewedEnglishHash": "e67480ba5201448d3d969db0788093a821c5440801bd7b10dde48e4920ae977d"
+  },
+  "No active API keys.": {
+    "en": "No active API keys.",
+    "zh-CN": "暂无可用的 API 密钥。",
+    "reviewedEnglishHash": "de64e83d5cc4043e305c1b31fccfd549ac764072f38fe34439c634e595750c9d"
+  },
+  "No active agents are available.": {
+    "en": "No active agents are available.",
+    "zh-CN": "没有可用的活跃智能体。",
+    "reviewedEnglishHash": "972bd5aefeb8d14a05842ee206a440608686507342b347325c5ab160a7954321"
+  },
+  "No active pause holds were found in this subtree.": {
+    "en": "No active pause holds were found in this subtree.",
+    "zh-CN": "此子树中未找到活跃暂停。",
+    "reviewedEnglishHash": "4073b7560c5d917c43ab4be1c6b904303d03e5a587edfa4e5f616ff223fe4c00"
+  },
+  "No active subtree pause hold is available to resume.": {
+    "en": "No active subtree pause hold is available to resume.",
+    "zh-CN": "没有可恢复的活跃子树暂停。",
+    "reviewedEnglishHash": "4b035f398c24a9973733be68113ffffb732867ab40dbfcc0534104b2e9bf3db1"
+  },
+  "No activity": {
+    "en": "No activity",
+    "zh-CN": "暂无活动",
+    "reviewedEnglishHash": "0cf9505f9f97c8359cc143ba3e88bedaba3a4ae92c2794ffd1b097270732ed18"
+  },
+  "No activity yet.": {
+    "en": "No activity yet.",
+    "zh-CN": "还没有活动。",
+    "reviewedEnglishHash": "a288d2d0a21eed3c166d051806b178bc88cbd4a5390fd7c7aa6725826c237c98"
+  },
+  "No additional details.": {
+    "en": "No additional details.",
+    "zh-CN": "没有更多详情。",
+    "reviewedEnglishHash": "dfe09e30656262b0905025952e57c8fdc657ab92518cd622d290fbc12e3680ed"
+  },
+  "No agent reference": {
+    "en": "No agent reference",
+    "zh-CN": "缺少智能体引用",
+    "reviewedEnglishHash": "91182c2c60991ff434a244f725505a8c68adbd853b6cf33f01e59f7614e0cf8b"
+  },
+  "No agents are available to test as.": {
+    "en": "No agents are available to test as.",
+    "zh-CN": "没有可供模拟身份进行测试的智能体。",
+    "reviewedEnglishHash": "3d77dc6dc0b902b265026fd04bdd8c1dec84953ab3aa097609795afc0c3b28cb"
+  },
+  "No agents are using this skill yet. Use “Add to agent” to attach it.": {
+    "en": "No agents are using this skill yet. Use “Add to agent” to attach it.",
+    "zh-CN": "目前还没有智能体使用此技能。点击“添加到智能体”即可关联。",
+    "reviewedEnglishHash": "6c429b7f68424de8d639b98d633e2efb44fbd012f76194bc109928fbe69e2e53"
+  },
+  "No agents attached": {
+    "en": "No agents attached",
+    "zh-CN": "未关联智能体",
+    "reviewedEnglishHash": "c7e39989df90e087a4d4d2e41824330f005e5bb229e933455f43d35fa038c6bd"
+  },
+  "No agents attached yet.": {
+    "en": "No agents attached yet.",
+    "zh-CN": "尚未关联任何智能体。",
+    "reviewedEnglishHash": "f1f6db9a1d6b09dd0e96726779658780a3566f69709664b3de7e56c247ed5af7"
+  },
+  "No agents available.": {
+    "en": "No agents available.",
+    "zh-CN": "没有可用智能体。",
+    "reviewedEnglishHash": "c4763d2fa13e7a97493bd46103aced7d9ab0cd444a57dfb7d0c7958aecd0912b"
+  },
+  "No agents can use this connection.": {
+    "en": "No agents can use this connection.",
+    "zh-CN": "没有智能体可以使用此连接。",
+    "reviewedEnglishHash": "de5ab3d99cf0f4801f532a7992bd225eb88411973a42cf0c2e015cc6ef401f41"
+  },
+  "No agents found.": {
+    "en": "No agents found.",
+    "zh-CN": "未找到智能体。",
+    "reviewedEnglishHash": "61666542b1caa1e26dcc1b3594c7520ea98cc285effe5884ed74684563662205"
+  },
+  "No agents in this organization support skills yet.": {
+    "en": "No agents in this organization support skills yet.",
+    "zh-CN": "此组织中尚无支持技能的智能体。",
+    "reviewedEnglishHash": "fabcd320554821ddc9d2612e7236eb46595b76ff160486aaced1aeebfdb7e7f0"
+  },
+  "No agents match the selected filter.": {
+    "en": "No agents match the selected filter.",
+    "zh-CN": "没有智能体符合当前筛选条件。",
+    "reviewedEnglishHash": "33d0895a6886ba10d981966cc1067aae66f519c3ddff61691141fde81f430bd3"
+  },
+  "No agents set up yet. Add an agent to get started.": {
+    "en": "No agents set up yet. Add an agent to get started.",
+    "zh-CN": "尚未设置智能体。添加一个智能体即可开始。",
+    "reviewedEnglishHash": "968ddbeea2e6f0a47cb80b58c673e68f6905a42922dd3cbc85da9a21f250e3f2"
+  },
+  "No answerable questions were provided.": {
+    "en": "No answerable questions were provided.",
+    "zh-CN": "没有提供可回答的问题。",
+    "reviewedEnglishHash": "f088561afe97f5dc6cc2c7d7300dd38ee4f088108af2d6b287a10e1b3c9104a1"
+  },
+  "No approvals yet.": {
+    "en": "No approvals yet.",
+    "zh-CN": "当前还没有审批。",
+    "reviewedEnglishHash": "0e967ef975fe865ef16174b40b612bce3b555ebc43b7544c762b3aba2942fe10"
+  },
+  "No approvers": {
+    "en": "No approvers",
+    "zh-CN": "无审批人",
+    "reviewedEnglishHash": "8f5c6e836858ffb8691a3636a57cf6fa2b4a75a09ffe649fd3098d89b5b4b79b"
+  },
+  "No approvers found.": {
+    "en": "No approvers found.",
+    "zh-CN": "未找到审批人。",
+    "reviewedEnglishHash": "f1a7922d68280d262359888601ef7c04beadd381e2d6c3222d8e5bf4f342967e"
+  },
+  "No assessment has been submitted yet.": {
+    "en": "No assessment has been submitted yet.",
+    "zh-CN": "尚未提交评估。",
+    "reviewedEnglishHash": "8d5fdd017b547491b915505efddf941ecd768e902e060ef4786238e7dfdc81a0"
+  },
+  "No assigned agents are eligible to wake from this preview.": {
+    "en": "No assigned agents are eligible to wake from this preview.",
+    "zh-CN": "此预览中没有符合唤醒条件的已分配智能体。",
+    "reviewedEnglishHash": "42becd46460df764494a836b816817bda22434d1d6ca257ce152b8ae531a6b1d"
+  },
+  "No assignee": {
+    "en": "No assignee",
+    "zh-CN": "无负责人",
+    "reviewedEnglishHash": "d64d8cecf4ebff54afe8a87fed86f1dd654047995cd310132fc461f4355fdf9c"
+  },
+  "No assignees found.": {
+    "en": "No assignees found.",
+    "zh-CN": "未找到可分配对象。",
+    "reviewedEnglishHash": "0c8e659070b4df17be7a53891dac05736b74f7284e2a23f0af5ec1e530f087c1"
+  },
+  "No assistant connections.": {
+    "en": "No assistant connections.",
+    "zh-CN": "没有助手连接。",
+    "reviewedEnglishHash": "333dda0091b2ef7e7bb45e70b3877a9eb1c4aae0cf4995adef3482294bb6ca71"
+  },
+  "No assistants connected to": {
+    "en": "No assistants connected to",
+    "zh-CN": "尚无助手连接到",
+    "reviewedEnglishHash": "65ea244367867bc0c78fc370bcaa05b94da091621f165fdf7536b874eca8d804"
+  },
+  "No authentication": {
+    "en": "No authentication",
+    "zh-CN": "没有认证",
+    "reviewedEnglishHash": "cf205c33359a82fcbac1dff901d9022413fa5b9c21745ba387e09454c65c9737"
+  },
+  "No billable events in this period.": {
+    "en": "No billable events in this period.",
+    "zh-CN": "当前时段还没有计费记录。",
+    "reviewedEnglishHash": "408a4cc5b3653299e41abcd588100bf9878d2426b61aff5d8e22191f23790ce4"
+  },
+  "No blockers": {
+    "en": "No blockers",
+    "zh-CN": "无阻塞项",
+    "reviewedEnglishHash": "c93d3fab38519182c306f0c84753323d7e45ce35f582468e8e864ab234b17e6c"
+  },
+  "No budget policies yet. Set agent and project budgets from their detail pages, or use the existing company monthly budget control.": {
+    "en": "No budget policies yet. Set agent and project budgets from their detail pages, or use the existing company monthly budget control.",
+    "zh-CN": "还没有设置预算策略。你可以在智能体或项目详情页里配置预算，也可以直接使用现有的公司月度预算控制。",
+    "reviewedEnglishHash": "a7a5788ed35a6d324431b207fdf1797f0224c041d50a3eccc235a14fd7cacbfc"
+  },
+  "No budget policies yet. Set agent and project budgets from their detail pages, or use the existing organization monthly budget control.": {
+    "en": "No budget policies yet. Set agent and project budgets from their detail pages, or use the existing organization monthly budget control.",
+    "zh-CN": "尚无预算策略。您可以在智能体和项目的详情页设置预算，也可以使用现有的组织月度预算控制。",
+    "reviewedEnglishHash": "64167086cbffc6caa739189324fd221654f447764fc57cc1347d0a1c180ff5ca"
+  },
+  "No built-in adapters found.": {
+    "en": "No built-in adapters found.",
+    "zh-CN": "未找到内建适配器。",
+    "reviewedEnglishHash": "5d52feaeee500a5b8973a9203df30cfd7bab4dc031415daa28e8d3b0be7094b3"
+  },
+  "No built-in grants.": {
+    "en": "No built-in grants.",
+    "zh-CN": "没有内置权限。",
+    "reviewedEnglishHash": "81b755bf8aba7c3baba8d08d58e5d2b91c710f1792487d92d3d4d514fe32bd53"
+  },
+  "No bundled example plugins were found in this checkout.": {
+    "en": "No bundled example plugins were found in this checkout.",
+    "zh-CN": "当前代码检出中未发现内置示例插件。",
+    "reviewedEnglishHash": "aed42d2516e5ba885ec1b6b9df5c9d4338d5a7789eebfce94a8d4ef1e2d5a237"
+  },
+  "No bundled plugins were found in this checkout.": {
+    "en": "No bundled plugins were found in this checkout.",
+    "zh-CN": "当前检出中未找到内置插件。",
+    "reviewedEnglishHash": "c6230ee90e286690b2d9cc3255a8b76de6e0f5b890daeb7880be86180fac8e46"
+  },
+  "No call will be made — this action is off for": {
+    "en": "No call will be made — this action is off for",
+    "zh-CN": "不会发起调用 — 此操作已对以下智能体关闭：",
+    "reviewedEnglishHash": "72140032b29fed21d51486187051e550c1f1b172ae949ef757c8f2e3056ed831"
+  },
+  "No cap configured": {
+    "en": "No cap configured",
+    "zh-CN": "未设置上限",
+    "reviewedEnglishHash": "6310b264a55dedc06f0c0a91822ca2a16235ede8ab1a8a3272ae1c4ccb124eba"
+  },
+  "No capability summary has been added.": {
+    "en": "No capability summary has been added.",
+    "zh-CN": "尚未添加能力概述。",
+    "reviewedEnglishHash": "ca65ad7bd710488fbf9d1534f11bbc8809730c7b617066bc6677e3054416eb15"
+  },
+  "No catalog match.": {
+    "en": "No catalog match.",
+    "zh-CN": "没有目录匹配。",
+    "reviewedEnglishHash": "5c8486127ed471c1142d28318c0cdcc09fa312aac3c0263bca25b355fe2684ce"
+  },
+  "No changed-file details were reported.": {
+    "en": "No changed-file details were reported.",
+    "zh-CN": "没有报告更改的文件详细信息。",
+    "reviewedEnglishHash": "ab8948ff38f05f00454adba7adfaedb7c0e828b78e8dc338364cc0fb72406798"
+  },
+  "No channels connected": {
+    "en": "No channels connected",
+    "zh-CN": "没有连接通道",
+    "reviewedEnglishHash": "ce30a0411e96165e6cb1202ba62b97b1e864eb726b3d04f6813f3fd91de0fa31"
+  },
+  "No comments or runs yet.": {
+    "en": "No comments or runs yet.",
+    "zh-CN": "还没有评论或运行。",
+    "reviewedEnglishHash": "6fe9da47a07c8a9b00cb7510beba2d202d51842e54a8d640b715f03a3160fc55"
+  },
+  "No companies": {
+    "en": "No companies",
+    "zh-CN": "没有公司",
+    "reviewedEnglishHash": "4562e319e462b36d45bfa31c2362bff17f9a66faedf3b9cb0035d6209992c688"
+  },
+  "No company access": {
+    "en": "No company access",
+    "zh-CN": "没有公司访问权限",
+    "reviewedEnglishHash": "8bbfa075395db25e8efe865389d930ee1837bf921a33949b078f229fbc94db64"
+  },
+  "No company matches prefix \"{{prefix}}\".": {
+    "en": "No company matches prefix \"{{prefix}}\".",
+    "zh-CN": "没有公司前缀匹配“{{prefix}}”。",
+    "reviewedEnglishHash": "ed2ac64de48da2dfe62628a4b2ebe42bf3df005fbccc904eff5d0b3474a4d3f6"
+  },
+  "No company matches the requested prefix.": {
+    "en": "No company matches the requested prefix.",
+    "zh-CN": "没有公司与请求的前缀匹配。",
+    "reviewedEnglishHash": "46a2d0d31e5e891f8f5dc2f39e377405da7bb7da6103c6746c2c15044f68f0d8"
+  },
+  "No company selected": {
+    "en": "No company selected",
+    "zh-CN": "尚未选择公司",
+    "reviewedEnglishHash": "8d7d800978ab828b142ad1de9af6ca3c25570974c35d7e972eaeca28c80edd01"
+  },
+  "No company selected. Select a company from the switcher above.": {
+    "en": "No company selected. Select a company from the switcher above.",
+    "zh-CN": "未选择公司。请从上方切换器选择公司。",
+    "reviewedEnglishHash": "26afbd8c4e591013148c3eee17b332c99036da480c14fbf61f21806de579c27f"
+  },
+  "No configuration revisions yet.": {
+    "en": "No configuration revisions yet.",
+    "zh-CN": "暂无配置版本记录。",
+    "reviewedEnglishHash": "47fc563753980d6943278c0539717b21745281930b5e9f0c566a2bd18203105e"
+  },
+  "No connected": {
+    "en": "No connected",
+    "zh-CN": "没有已连接的",
+    "reviewedEnglishHash": "cb5960de04ba58ee8e6f14134e0c734feae18414a55fa8f3a77a7e6b0b0b807a"
+  },
+  "No connection activity yet.": {
+    "en": "No connection activity yet.",
+    "zh-CN": "暂无连接活动。",
+    "reviewedEnglishHash": "3ba50fcde806959de8f26a2c6ddbbb2a4c77f7a9a6facfd5eac987d3910e1507"
+  },
+  "No connectors match “": {
+    "en": "No connectors match “",
+    "zh-CN": "没有连接器匹配“",
+    "reviewedEnglishHash": "faad7a56176d180a6a69219e937adbd7962e5836ace89c474602bb3ec3a1a50b"
+  },
+  "No conversations yet": {
+    "en": "No conversations yet",
+    "zh-CN": "暂无对话",
+    "reviewedEnglishHash": "0d60084f056eb4cf8aa892833c1c3189fbed19043f6893c2b70af5fcdbb9a4ee"
+  },
+  "No copyable tokens.": {
+    "en": "No copyable tokens.",
+    "zh-CN": "没有可复制的令牌。",
+    "reviewedEnglishHash": "fe96bdc5faf6219fdbce085744c63e18807afee7b5ac1ffdf92827be3c360878"
+  },
+  "No cost data yet.": {
+    "en": "No cost data yet.",
+    "zh-CN": "暂无成本数据。",
+    "reviewedEnglishHash": "b13184a88b1483ae7b4465568a203444e93b3dcf43c22ea8ba475858c328a013"
+  },
+  "No cost events in this period.": {
+    "en": "No cost events in this period.",
+    "zh-CN": "当前时段还没有成本记录。",
+    "reviewedEnglishHash": "5eeb31929690cbcfdca004fc391272d1a26b793cbc1052debdff47b47b7c0240"
+  },
+  "No cost events yet.": {
+    "en": "No cost events yet.",
+    "zh-CN": "还没有成本记录。",
+    "reviewedEnglishHash": "219b9c37feb3fa523f33854cb965c1c0bbb2497428a1e4aa1cc0255d5aa65066"
+  },
+  "No creators match.": {
+    "en": "No creators match.",
+    "zh-CN": "没有匹配的创建者。",
+    "reviewedEnglishHash": "e23e5a42b557290466dab07894cfbca2734eed6368de13488262648b5c87d64b"
+  },
+  "No default agent": {
+    "en": "No default agent",
+    "zh-CN": "无默认智能体",
+    "reviewedEnglishHash": "178492b7649622fdf50955c17e9d340dc72b5500156ac595ee8f531cea2cbe52"
+  },
+  "No default agent. Automatic triggers remain paused.": {
+    "en": "No default agent. Automatic triggers remain paused.",
+    "zh-CN": "无默认智能体。自动触发器保持暂停状态。",
+    "reviewedEnglishHash": "d047f6c7a3af88d33728bc1212297d5d3abbdcb753e5d2600c83a33e26c5e298"
+  },
+  "No description provided.": {
+    "en": "No description provided.",
+    "zh-CN": "未提供说明。",
+    "reviewedEnglishHash": "2527a18acbadb69ede74ddab676d4dd8dbc7198d4abde9267f0db4e1ec466512"
+  },
+  "No destinations yet.": {
+    "en": "No destinations yet.",
+    "zh-CN": "暂无目标位置。",
+    "reviewedEnglishHash": "42dc9cdb96e374fb7a8858dd7a6ff1aa5da653a942eb3ba170aea69b4f25a68f"
+  },
+  "No direct cost data.": {
+    "en": "No direct cost data.",
+    "zh-CN": "暂无直接成本数据。",
+    "reviewedEnglishHash": "5a04bc3854361ac0c978af221c86d2cdc2aba4c0408ab653d2619398b2af705c"
+  },
+  "No direct user actions recorded yet.": {
+    "en": "No direct user actions recorded yet.",
+    "zh-CN": "还没有记录到直接用户操作。",
+    "reviewedEnglishHash": "5e86c175f15abf6fd1a9ac9a0fa47f9c81284c55f19f16e7bdb92fbc465e3f6c"
+  },
+  "No email": {
+    "en": "No email",
+    "zh-CN": "无邮箱",
+    "reviewedEnglishHash": "2f44d9d0a44fa838c98f7bebee2f941ac0106993092acb92ec6b910dd6bf7592"
+  },
+  "No email available": {
+    "en": "No email available",
+    "zh-CN": "无可用邮箱",
+    "reviewedEnglishHash": "5b623554d3deff3225e8f98c5379953f8e28552a93efc62a3ba9aa7a5cefa7e7"
+  },
+  "No enabled legacy adapter": {
+    "en": "No enabled legacy adapter",
+    "zh-CN": "没有已启用的旧版适配器",
+    "reviewedEnglishHash": "2554ae255b67228c7801b1c6f6b7f91c3d65a9724e1fdfdf6bf8f614b164c038"
+  },
+  "No error summary available.": {
+    "en": "No error summary available.",
+    "zh-CN": "没有可用的错误摘要。",
+    "reviewedEnglishHash": "1acf66ff9eb7deba6f5bfa2b8b697d7a98292f43e9919a23ced4a6d5855f5856"
+  },
+  "No expiry": {
+    "en": "No expiry",
+    "zh-CN": "永不过期",
+    "reviewedEnglishHash": "fe06351db8da70412dd4d5a51545d68503554eb9d1bf074aff5009a027e8f2b4"
+  },
+  "No explicit grants": {
+    "en": "No explicit grants",
+    "zh-CN": "没有显式授权",
+    "reviewedEnglishHash": "0fd2f9f1c5fe5704eba375c5afdedd1bcfb43cd7ee8fc60229090167742a316c"
+  },
+  "No export preview is loaded.": {
+    "en": "No export preview is loaded.",
+    "zh-CN": "尚未加载导出预览。",
+    "reviewedEnglishHash": "6f4fa18ce580c172519d9fc39f42555bdcaa2f86b77de20592fdb6664a1bb956"
+  },
+  "No external adapters installed": {
+    "en": "No external adapters installed",
+    "zh-CN": "还没有安装外部适配器",
+    "reviewedEnglishHash": "4f42a491c2cfb1d2a44cd530e6aee371d1d89e4083971e4f3fb38ac296abe608"
+  },
+  "No field-level mapping was recorded at this stage.": {
+    "en": "No field-level mapping was recorded at this stage.",
+    "zh-CN": "此阶段没有记录字段级映射。",
+    "reviewedEnglishHash": "6121eca53cdb9f46e40096fe861e6cce57be0b42ab4ba7f8821ddb3339e93843"
+  },
+  "No fields match.": {
+    "en": "No fields match.",
+    "zh-CN": "没有字段匹配。",
+    "reviewedEnglishHash": "663bc184d89c1d588d36713180be0c6bb2b468af074b21ca09118f5fa87846e5"
+  },
+  "No finance events in this period.": {
+    "en": "No finance events in this period.",
+    "zh-CN": "当前时段还没有账务事件。",
+    "reviewedEnglishHash": "66810e6a0789e6f93f66e48033a29e2d5d81551b4b5909d2d6a60ed11b07ae86"
+  },
+  "No finance events yet.": {
+    "en": "No finance events yet.",
+    "zh-CN": "还没有账务事件。",
+    "reviewedEnglishHash": "40a93ddf87ee173295719d317876ebd8a7a974ed28812ac9295b809b88e860e5"
+  },
+  "No finance events yet. Add account-level charges once biller invoices or credits land.": {
+    "en": "No finance events yet. Add account-level charges once biller invoices or credits land.",
+    "zh-CN": "还没有账务事件。待结算方账单或额度返还入账后，这里会自动显示。",
+    "reviewedEnglishHash": "f10b41dac20c00d9dd0ebba2554c52d1eef2156d6690a52db01f3ef4ca74525f"
+  },
+  "No financial events in this period.": {
+    "en": "No financial events in this period.",
+    "zh-CN": "当前时段还没有账务事件。",
+    "reviewedEnglishHash": "0f21a366ae3e63eee7cf2ae90e040ff607a1e2eb2ab0977b0c89be88be79289e"
+  },
+  "No gateways match “": {
+    "en": "No gateways match “",
+    "zh-CN": "没有网关匹配“",
+    "reviewedEnglishHash": "8dbfb6c1a596848adbbf4dc3f057cf79bd622c0b6ff38018598329aa59651a0e"
+  },
+  "No goals yet.": {
+    "en": "No goals yet.",
+    "zh-CN": "还没有目标。",
+    "reviewedEnglishHash": "347e65f2a598caac06f7cc7d66e907b64f2e81f4c513a976958de80b2c2f2bf6"
+  },
+  "No goals.": {
+    "en": "No goals.",
+    "zh-CN": "暂无目标。",
+    "reviewedEnglishHash": "e7745c051242ecae3047101722a25100a3941ce80907ae4e0dafd2dc875f68d6"
+  },
+  "No inbox items match these filters.": {
+    "en": "No inbox items match these filters.",
+    "zh-CN": "没有符合这些筛选条件的收件箱项目。",
+    "reviewedEnglishHash": "6215f5f864700f2299ce414e7b3f40e26555e1248ac900288409de9337c81506"
+  },
+  "No inbox items match your search.": {
+    "en": "No inbox items match your search.",
+    "zh-CN": "没有收件箱项目匹配当前搜索。",
+    "reviewedEnglishHash": "035ac018f0edb5cba8bf99ef771d668fb3861611150162077803fb01a24cc9ef"
+  },
+  "No inline patch was recorded for this file.": {
+    "en": "No inline patch was recorded for this file.",
+    "zh-CN": "没有为此文件记录内联补丁。",
+    "reviewedEnglishHash": "009e7b89c24676613c2c99cb736b9fbc8f7380c01baa7b33b505f824111b2f5d"
+  },
+  "No instance admin exists yet. A bootstrap invite is already active. Check your Paperclip startup logs for the first admin invite URL, or run this command to rotate it:": {
+    "en": "No instance admin exists yet. A bootstrap invite is already active. Check your Paperclip startup logs for the first admin invite URL, or run this command to rotate it:",
+    "zh-CN": "当前还没有实例管理员。系统里已经有一个 bootstrap 邀请处于激活状态。请查看 Paperclip 启动日志中的首个管理员邀请链接，或运行下面的命令重新生成：",
+    "reviewedEnglishHash": "86ebb1c68b1ba4b25a418d864354fd1f65539ba308628f173395bde0eb260116"
+  },
+  "No instance admin exists yet. Run this command in your Paperclip environment to generate the first admin invite URL:": {
+    "en": "No instance admin exists yet. Run this command in your Paperclip environment to generate the first admin invite URL:",
+    "zh-CN": "当前还没有实例管理员。请在你的 Paperclip 环境中运行下面的命令来生成首个管理员邀请链接：",
+    "reviewedEnglishHash": "08163ef3e34e481e05c4ee598e4455e6c1f7bfeb7e5a4a6cddcef817fea8b76e"
+  },
+  "No interpretation records were persisted.": {
+    "en": "No interpretation records were persisted.",
+    "zh-CN": "没有保留解释记录。",
+    "reviewedEnglishHash": "8c605a40350841ed8435bd1462ffe56f859e434bf2992bcaa317131f68e3c6aa"
+  },
+  "No interpretation stage was recorded for this frame.": {
+    "en": "No interpretation stage was recorded for this frame.",
+    "zh-CN": "没有记录该帧的解释阶段。",
+    "reviewedEnglishHash": "6c2197d8a9149fa28837189d12a98ac9a09cebf443fb5a1d0f808bca858e6ceb"
+  },
+  "No invites have been created for this company yet.": {
+    "en": "No invites have been created for this company yet.",
+    "zh-CN": "这个公司还没有创建过邀请。",
+    "reviewedEnglishHash": "9f971ca86de46a8c6133cf87a4ec2ddc9548b6f395fe1f7bae7f4ff925a13251"
+  },
+  "No invites have been created for this organization yet.": {
+    "en": "No invites have been created for this organization yet.",
+    "zh-CN": "尚未为此组织创建任何邀请。",
+    "reviewedEnglishHash": "c20447f4073b9b59ba85870173b60c9d96c5486a1e38538b10a715102a6a4479"
+  },
+  "No issue-linked token usage yet.": {
+    "en": "No issue-linked token usage yet.",
+    "zh-CN": "还没有任务关联词元用量。",
+    "reviewedEnglishHash": "e106075a8a100042c0a6f1cd739943d26ac0875610b1a53f6acb3b0a964b2fc3"
+  },
+  "No issues": {
+    "en": "No issues",
+    "zh-CN": "还没有任务",
+    "reviewedEnglishHash": "eb8c56e2be8a7d167d8d7ac5f92683150776b4bc392269a9e47aa11b22499aa5"
+  },
+  "No issues in this subtree match the requested control action.": {
+    "en": "No issues in this subtree match the requested control action.",
+    "zh-CN": "此子树中没有匹配当前控制操作的任务。",
+    "reviewedEnglishHash": "357cacbfe3bfd9fa5fecc1a6527be20770a1902715c6e5ddd2508a5018c47c38"
+  },
+  "No issues match the current filters or search.": {
+    "en": "No issues match the current filters or search.",
+    "zh-CN": "没有任务匹配当前筛选或搜索条件。",
+    "reviewedEnglishHash": "1947ff1bfb42d402f4ce599d84a1f9e5a4b9f58bd730479c4225c3efe787efca"
+  },
+  "No items to show. Create your first one to get started.": {
+    "en": "No items to show. Create your first one to get started.",
+    "zh-CN": "当前没有可显示的内容。创建第一项即可开始。",
+    "reviewedEnglishHash": "93e06ed50fa472a5af754913d393fff5fda022576109f7d736f797efee13bb28"
+  },
+  "No job runs recorded yet.": {
+    "en": "No job runs recorded yet.",
+    "zh-CN": "还没有任务运行记录。",
+    "reviewedEnglishHash": "5347ffe1e913b280304180fb5c1730370db1d80544aa01ef278c2541276e3a32"
+  },
+  "No join requests match the current filters.": {
+    "en": "No join requests match the current filters.",
+    "zh-CN": "当前筛选条件下没有匹配的加入请求。",
+    "reviewedEnglishHash": "bf9e13fbd9e55b1ecf1ce388c5e6b917e9642580cbe3235f663797128b9b3812"
+  },
+  "No labels": {
+    "en": "No labels",
+    "zh-CN": "无标签",
+    "reviewedEnglishHash": "3ffc3b71db2ef9fb1a11f6a5775a00328611453e44c1973813abbbbe57543de0"
+  },
+  "No learnings yet.": {
+    "en": "No learnings yet.",
+    "zh-CN": "尚无经验总结。",
+    "reviewedEnglishHash": "77c3ad5580299c4c862ab657683f475ef70f9076083246ee92a28ad79a31c014"
+  },
+  "No link was provided for this work product.": {
+    "en": "No link was provided for this work product.",
+    "zh-CN": "没有为此工作产品提供链接。",
+    "reviewedEnglishHash": "e844829726a4e894c149ba67936ec730458a07537f1e593c096c06babbff80f1"
+  },
+  "No linked accounts yet. Invite someone to connect.": {
+    "en": "No linked accounts yet. Invite someone to connect.",
+    "zh-CN": "暂无已关联的账户。请邀请他人连接。",
+    "reviewedEnglishHash": "922a59d4a3bc153ac22fadfe9e53e20b1b5928843dc2a2ad81c23580ce4029f3"
+  },
+  "No linked projects.": {
+    "en": "No linked projects.",
+    "zh-CN": "暂无关联项目。",
+    "reviewedEnglishHash": "ad16a257929d4a35a8e79acc1a31feffaf04e73212f976341946ac74a305b55e"
+  },
+  "No log events.": {
+    "en": "No log events.",
+    "zh-CN": "暂无日志事件。",
+    "reviewedEnglishHash": "d1e81320705024e97d9de7cb4f81429793cff209ac035d813e0552baaefc1961"
+  },
+  "No managed environment is available. Configure an environment before continuing.": {
+    "en": "No managed environment is available. Configure an environment before continuing.",
+    "zh-CN": "没有可用的托管环境。在继续之前配置环境。",
+    "reviewedEnglishHash": "3dcfbcb90a7bf12139594c8f04459dc6557027bee4368213ba2d6c1699b79e05"
+  },
+  "No managed routines.": {
+    "en": "No managed routines.",
+    "zh-CN": "暂无托管例行任务。",
+    "reviewedEnglishHash": "0a429d06766f011c3adf79b20b9c8689e5b13b567de85baab3179754ea95065e"
+  },
+  "No manager": {
+    "en": "No manager",
+    "zh-CN": "无上级",
+    "reviewedEnglishHash": "6a4ee4d7c34ebada753cb9bcda5c623dc948073959c69cc4c2427b7c939f45b4"
+  },
+  "No matches.": {
+    "en": "No matches.",
+    "zh-CN": "无匹配项。",
+    "reviewedEnglishHash": "d6572bd2e77380cece5ea9e23f3dcb01e208b8e872f46b4bb0a9f06e38b7a148"
+  },
+  "No matching repositories.": {
+    "en": "No matching repositories.",
+    "zh-CN": "没有匹配的仓库。",
+    "reviewedEnglishHash": "767a0076f7d41cb4d9932b60043bc4b8a45a9d651ffc3fdf126ab5fcd499cd39"
+  },
+  "No matching skills found.": {
+    "en": "No matching skills found.",
+    "zh-CN": "未找到匹配的技能。",
+    "reviewedEnglishHash": "aef8b74f894a32dc73c62593fbe306c4cbee4e139c893121446859d57fcb416d"
+  },
+  "No matching workspaces.": {
+    "en": "No matching workspaces.",
+    "zh-CN": "没有匹配的工作区。",
+    "reviewedEnglishHash": "76be0ffe594be86ee1df37d9bd4951f96a93a820a185faff1fdd153c85e9dc54"
+  },
+  "No matching worktrees.": {
+    "en": "No matching worktrees.",
+    "zh-CN": "没有匹配的工作树。",
+    "reviewedEnglishHash": "220f59569a5b7d318a0d1cf5df00772c57cf05637cdf828f311ab0ee2f37186e"
+  },
+  "No members linked yet. Link an account to get started.": {
+    "en": "No members linked yet. Link an account to get started.",
+    "zh-CN": "尚无关联成员。关联账户即可开始。",
+    "reviewedEnglishHash": "27d26710b6a7f0b1a0917e9925b3783567449472333f1389da1ea1c6c59a109c"
+  },
+  "No message content.": {
+    "en": "No message content.",
+    "zh-CN": "没有消息内容。",
+    "reviewedEnglishHash": "d810b883c6c03ca8791fda36a813a1858168b3b446bdb7068aecba0b367e5b0f"
+  },
+  "No models discovered.": {
+    "en": "No models discovered.",
+    "zh-CN": "未发现可用模型。",
+    "reviewedEnglishHash": "636179326ac4335547be83cdf68b07158cd234fd1e9641e6e96e5764c36c7b25"
+  },
+  "No monthly cap configured": {
+    "en": "No monthly cap configured",
+    "zh-CN": "未设置月度上限",
+    "reviewedEnglishHash": "0f009e797a3a7027279a726705e9ef768c182282fcad3e5929184d1f1976f1f8"
+  },
+  "No more company members to add": {
+    "en": "No more company members to add",
+    "zh-CN": "没有更多要添加的公司成员",
+    "reviewedEnglishHash": "45d47fb9c23f5b2979358e82deb63fbf9f0ffca21287005eb039535ac764b9e3"
+  },
+  "No new inbox items.": {
+    "en": "No new inbox items.",
+    "zh-CN": "没有新的收件箱项目。",
+    "reviewedEnglishHash": "d2b837d7882a7850443fa8079ab4c8f1019605fd83f601f255341353a2a9b173"
+  },
+  "No non-default workspace activity yet.": {
+    "en": "No non-default workspace activity yet.",
+    "zh-CN": "还没有非默认工作区活动。",
+    "reviewedEnglishHash": "ee79d00cbbbb4c019ba9c18dc30c37c4e9353a9a2b91b730b09363657537f2b0"
+  },
+  "No one left to add.": {
+    "en": "No one left to add.",
+    "zh-CN": "没有人可以添加。",
+    "reviewedEnglishHash": "bd86c9ae220732baedd6ed7a81743ca8cbbe5c770bda309d22c4084323863762"
+  },
+  "No operations match these filters.": {
+    "en": "No operations match these filters.",
+    "zh-CN": "没有操作与这些过滤器匹配。",
+    "reviewedEnglishHash": "bded3d63e92e21bd45b6673d661cf11c9a19782cbd2e8346f9e222a7e8e02780"
+  },
+  "No organization folders yet.": {
+    "en": "No organization folders yet.",
+    "zh-CN": "还没有组织文件夹。",
+    "reviewedEnglishHash": "2f476526a23441a52897a62d25ed668c13df9b0062c76930901988aa2b7df101"
+  },
+  "No organization matches prefix \"{{prefix}}\".": {
+    "en": "No organization matches prefix \"{{prefix}}\".",
+    "zh-CN": "没有组织与前缀“{{prefix}}”匹配。",
+    "reviewedEnglishHash": "450781e9b4eb28ad370b8e0694ac2e36d3b85c3eb623b76c96b252e1ad789557"
+  },
+  "No organization selected": {
+    "en": "No organization selected",
+    "zh-CN": "未选择组织",
+    "reviewedEnglishHash": "278cd1778d29b11db9f9286e3753bd90dc93da882e37139770fe1b6b48669ee6"
+  },
+  "No organization selected. Select an organization from the switcher above.": {
+    "en": "No organization selected. Select an organization from the switcher above.",
+    "zh-CN": "尚未选择组织。请从上方切换器中选择一个组织。",
+    "reviewedEnglishHash": "9133af154f20a9d05a24ea19e77a3e6041d679de329f8233f7b5b9ca14b5f93b"
+  },
+  "No organizational hierarchy defined.": {
+    "en": "No organizational hierarchy defined.",
+    "zh-CN": "尚未定义组织层级。",
+    "reviewedEnglishHash": "7ac9886550455b61e5715dbb513623e8e5198136d41a3e9f4f2665de6d9a91bb"
+  },
+  "No other queues yet.": {
+    "en": "No other queues yet.",
+    "zh-CN": "还没有其他队列。",
+    "reviewedEnglishHash": "7b01ab545f3d8196ccad4d429e2dac9ca8db029d60f53341a69f3b9987d285e7"
+  },
+  "No other task mentions this task.": {
+    "en": "No other task mentions this task.",
+    "zh-CN": "没有其他任务提及此任务。",
+    "reviewedEnglishHash": "5ddc410be7b329483669a02a94a43a9b87747dd7bb2f5d969c6b3b8b8c5a6bec"
+  },
+  "No pending approvals.": {
+    "en": "No pending approvals.",
+    "zh-CN": "当前没有待处理审批。",
+    "reviewedEnglishHash": "bac0662a619b4f21efb1ee8804c56d79c7ef0eef3b72196fe13853e34f63cc47"
+  },
+  "No pending cloud upstream connection was found. Start the connection again.": {
+    "en": "No pending cloud upstream connection was found. Start the connection again.",
+    "zh-CN": "未找到待处理的云端上游连接。请重新开始连接。",
+    "reviewedEnglishHash": "71926a48e2ddfc87f7b567576392245cf14f0b913a50e3e4c06ac372818b5e1d"
+  },
+  "No pending proposals": {
+    "en": "No pending proposals",
+    "zh-CN": "没有待处理提案",
+    "reviewedEnglishHash": "1722fa3087d995f7d31c5c65a7c040091bc811986fb89344c3edbdf825be5683"
+  },
+  "No persisted log lines.": {
+    "en": "No persisted log lines.",
+    "zh-CN": "没有持久化日志。",
+    "reviewedEnglishHash": "9b93ec6bdfb3c22c89e84fde94caf6ba989434b48725f67fb52b91194f9419fe"
+  },
+  "No persisted transcript for this run.": {
+    "en": "No persisted transcript for this run.",
+    "zh-CN": "此运行没有持久化转录。",
+    "reviewedEnglishHash": "e8b062b8f52b09bad13ad938e5283d23db499b4d10bcdc00b198638a05824f84"
+  },
+  "No pipeline selected.": {
+    "en": "No pipeline selected.",
+    "zh-CN": "未选择流水线。",
+    "reviewedEnglishHash": "bfb332e7bf9eb411b71efc861d3e00fb6863a52c41a28cc6a545ef128c31e43f"
+  },
+  "No plugins installed": {
+    "en": "No plugins installed",
+    "zh-CN": "尚未安装插件",
+    "reviewedEnglishHash": "1411b824310b9a07a42dc044fed36eec28ce618e973f614e74689b43bb46db73"
+  },
+  "No presentation surface was emitted for this operation.": {
+    "en": "No presentation surface was emitted for this operation.",
+    "zh-CN": "此操作未生成任何呈现界面。",
+    "reviewedEnglishHash": "74b2ae9d198d7b58d61426ad5b98c5c9f0e55e4e11976dc56855ec1b67f9a375"
+  },
+  "No preview available": {
+    "en": "No preview available",
+    "zh-CN": "没有可用的预览",
+    "reviewedEnglishHash": "e5c083cf41ff647232cc95938faea7ef2002918700d9183e5a7acd78adb04d53"
+  },
+  "No preview details yet.": {
+    "en": "No preview details yet.",
+    "zh-CN": "尚无预览详情。",
+    "reviewedEnglishHash": "0954042fa76fd08ccc5bdedec55df44d113122d15be23b2747a68613b4bc320a"
+  },
+  "No project": {
+    "en": "No project",
+    "zh-CN": "无项目",
+    "reviewedEnglishHash": "f34c2be0d1c5f5622eb03be1f67e13dee2ce3dbb71201d909e76a761c29d8bcb"
+  },
+  "No project-attributed run costs yet.": {
+    "en": "No project-attributed run costs yet.",
+    "zh-CN": "还没有归属到项目的运行成本。",
+    "reviewedEnglishHash": "856de837b71098edb545db26a11f552b2c10d0222e54ec3da272f0431da24143"
+  },
+  "No projects found.": {
+    "en": "No projects found.",
+    "zh-CN": "未找到项目。",
+    "reviewedEnglishHash": "26e92309ba5b0ca92bb929346ac5a07d11befa945074be4a19dd34fda69020a0"
+  },
+  "No projects yet.": {
+    "en": "No projects yet.",
+    "zh-CN": "还没有项目。",
+    "reviewedEnglishHash": "e2cb995c13fcddcb7891923ee8016081a4a5f6a0bebc4bd899ebc1e8fa36293e"
+  },
+  "No provider usage attributed yet.": {
+    "en": "No provider usage attributed yet.",
+    "zh-CN": "还没有归因到提供方的使用量。",
+    "reviewedEnglishHash": "69048d87de898b243a2221a637aad744c9314ec5e70d39397812ad457dddf1a1"
+  },
+  "No quick task matches. Press": {
+    "en": "No quick task matches. Press",
+    "zh-CN": "没有快速任务匹配。按",
+    "reviewedEnglishHash": "cd86343ff1f71d420ca51282d870e5a0fa6188fe332eb3e5b0469b353be884ec"
+  },
+  "No raw frames were captured for this run.": {
+    "en": "No raw frames were captured for this run.",
+    "zh-CN": "这次运行没有捕获原始帧。",
+    "reviewedEnglishHash": "a953ddb59c9fec416d70e144a21c2f7323733382b8adb7c9eb1b4c3412aa6896"
+  },
+  "No reason provided.": {
+    "en": "No reason provided.",
+    "zh-CN": "未提供原因。",
+    "reviewedEnglishHash": "a63c933ad7a29d412f6f2c4fc71adb1c3e2327599bb3fa3554bf371b674bcea6"
+  },
+  "No recent agent runs.": {
+    "en": "No recent agent runs.",
+    "zh-CN": "最近还没有智能体运行记录。",
+    "reviewedEnglishHash": "45e7a9c5ea14d96da86457bfd655b3004c27b7301acb34e3287327b764b39248"
+  },
+  "No recent inbox items.": {
+    "en": "No recent inbox items.",
+    "zh-CN": "最近没有收件箱项目。",
+    "reviewedEnglishHash": "7a612a8906f17e31005e24e1dc12503ca745409940ebb738dd72b65a5e13fd32"
+  },
+  "No recent issues.": {
+    "en": "No recent issues.",
+    "zh-CN": "最近没有任务。",
+    "reviewedEnglishHash": "cdcc402eb597eb4f92cc06fd2db6b451c455280d8d6cf71ba0322c1e51458fc5"
+  },
+  "No recovery tasks would be created right now. Auto-recovery can still run for future liveness incidents in this window.": {
+    "en": "No recovery tasks would be created right now. Auto-recovery can still run for future liveness incidents in this window.",
+    "zh-CN": "当前不会创建恢复任务。自动恢复仍可处理此窗口内未来的活跃性事件。",
+    "reviewedEnglishHash": "e6d48745a85ce4f7fad664355d4162b55be69c69de4c06d8abd03672f77a41bc"
+  },
+  "No repositories added yet. Import your skills to make them available in": {
+    "en": "No repositories added yet. Import your skills to make them available in",
+    "zh-CN": "尚未添加仓库。导入技能后，即可在以下位置使用：",
+    "reviewedEnglishHash": "e712bf6bacf0af56e9a2ffb2adcd13a7b905b09d21c3927813b21b9b0a737a23"
+  },
+  "No responsible —": {
+    "en": "No responsible —",
+    "zh-CN": "不负任何责任——",
+    "reviewedEnglishHash": "e364c2d1efaa0a8e4f06a76e546e894a849cc2560f9390574a0e9db87de04ae4"
+  },
+  "No results for &ldquo;": {
+    "en": "No results for “",
+    "zh-CN": "未找到以下内容的结果：“",
+    "reviewedEnglishHash": "63a389a426dcd6d5445853028bb028f09f0aa2247ed0b92b21db2356388e31b4"
+  },
+  "No results found.": {
+    "en": "No results found.",
+    "zh-CN": "未找到结果。",
+    "reviewedEnglishHash": "7ecdbfee6d1ce28548f6ca630810986ab070a0ff5a284374daeca97da83676cf"
+  },
+  "No review items were provided.": {
+    "en": "No review items were provided.",
+    "zh-CN": "没有提供审查项目。",
+    "reviewedEnglishHash": "c94dec815e83aab20d28b5cfb3dc27d32d8307a331a06336c46304581c46b26f"
+  },
+  "No reviewers": {
+    "en": "No reviewers",
+    "zh-CN": "无审阅人",
+    "reviewedEnglishHash": "21aea118bfc1f08e83c7f2622db3a3c66c5048b1c0564a4fdf5d435ed8c085ae"
+  },
+  "No reviewers found.": {
+    "en": "No reviewers found.",
+    "zh-CN": "未找到审阅人。",
+    "reviewedEnglishHash": "712cb821ccdd12e1ecf649830cc92aebf96f5db636c0328ea874de735e8668f0"
+  },
+  "No reviews yet": {
+    "en": "No reviews yet",
+    "zh-CN": "尚无审查",
+    "reviewedEnglishHash": "8b670b7eead75fa0a5799a68a147f8440d6de04b540cffc0df8c63e67c2c483d"
+  },
+  "No revisions yet": {
+    "en": "No revisions yet",
+    "zh-CN": "还没有修订记录",
+    "reviewedEnglishHash": "c02f268b0b8894ba107f1e2b5f0869b717cb0b39258ff2fda593596a337b2e99"
+  },
+  "No role is selected, so this member has no implicit grants right now.": {
+    "en": "No role is selected, so this member has no implicit grants right now.",
+    "zh-CN": "当前未选择角色，因此这个成员目前没有任何隐式权限。",
+    "reviewedEnglishHash": "8858c31116e7567310cee3a2e208cfff413e18e6999ddc7935f7b6b2930d14b9"
+  },
+  "No routine activity yet.": {
+    "en": "No routine activity yet.",
+    "zh-CN": "尚无例行任务活动。",
+    "reviewedEnglishHash": "251aa5805e2f62b0c7dec05720a7e2ea905acf92db72285d88caddcdd5b8bcb7"
+  },
+  "No routine runs yet.": {
+    "en": "No routine runs yet.",
+    "zh-CN": "尚无例行任务运行。",
+    "reviewedEnglishHash": "6af68ecae1f6786a777f60e0cab12199b58e6cfadd8ca0bd19ba6bb42648a695"
+  },
+  "No routines yet. Use Create routine to define the first recurring workflow.": {
+    "en": "No routines yet. Use Create routine to define the first recurring workflow.",
+    "zh-CN": "还没有例行任务。点击“创建例行任务”来定义第一个重复工作流。",
+    "reviewedEnglishHash": "93de15259eed341f50d6d20afbfc31907b4b20d37e9907148e0ba96c403e7d37"
+  },
+  "No rows": {
+    "en": "No rows",
+    "zh-CN": "没有行",
+    "reviewedEnglishHash": "1a715b4b93b3c9c012b93f29d54151963dd5d1ba040092de81755912893b46ae"
+  },
+  "No run output captured.": {
+    "en": "No run output captured.",
+    "zh-CN": "没有捕获到运行输出。",
+    "reviewedEnglishHash": "8f98f86f8e16cde020a1628bbecce844aca175738b9cefeeffb7d84f0488847b"
+  },
+  "No run output yet.": {
+    "en": "No run output yet.",
+    "zh-CN": "还没有运行输出。",
+    "reviewedEnglishHash": "2a4bb3c8e80c7061eb17f8590623a10df8c2a9a0d6da44c57795d4b3ee779b80"
+  },
+  "No runs": {
+    "en": "No runs",
+    "zh-CN": "暂无运行",
+    "reviewedEnglishHash": "26735edf00f9443f857865ab444bc18e7c4c00f3ca82797eff12076f6c406002"
+  },
+  "No runs yet": {
+    "en": "No runs yet",
+    "zh-CN": "还没有运行记录",
+    "reviewedEnglishHash": "306b45db20163464c2774564e0d61aaabdcf961067fcddb3a14cbc29e65fd0f7"
+  },
+  "No runs yet.": {
+    "en": "No runs yet.",
+    "zh-CN": "暂无运行记录。",
+    "reviewedEnglishHash": "72a85758b69c1d33a7a08eeca633ef45383a116840fbeee8167dfda13fedd0d7"
+  },
+  "No runs yet. Run the routine now or wait for its schedule.": {
+    "en": "No runs yet. Run the routine now or wait for its schedule.",
+    "zh-CN": "还没有运行。立即运行例程或等待其时间表。",
+    "reviewedEnglishHash": "1d0eb00e615cb5871f06b23e2cd19103272a21510b7b3a7f6706d81fecbdac2d"
+  },
+  "No saved profiles.": {
+    "en": "No saved profiles.",
+    "zh-CN": "没有已保存的浏览器配置。",
+    "reviewedEnglishHash": "700c6320e5df6561efd4f782c6c6919bd02cd79b52b67eedb611fb5652be5967"
+  },
+  "No schedule": {
+    "en": "No schedule",
+    "zh-CN": "未设置计划",
+    "reviewedEnglishHash": "449040774024e73d51ea81ed45a379d693e9533eacab48d5638e6b9fdcbd6651"
+  },
+  "No scheduler heartbeats match the current criteria.": {
+    "en": "No scheduler heartbeats match the current criteria.",
+    "zh-CN": "没有符合当前条件的调度器心跳。",
+    "reviewedEnglishHash": "3c8741cd20aedab5221aa86b8bfbeca650cec1abb1f8aa827f9cb4eab6c84086"
+  },
+  "No secrets in this folder yet.": {
+    "en": "No secrets in this folder yet.",
+    "zh-CN": "此文件夹中尚无密钥。",
+    "reviewedEnglishHash": "7de74d93ae6cb56745be054112fa981bc43428e4350f5af50355bb55b4f8d7d4"
+  },
+  "No secrets yet. Create a shared organization secret or one that each user supplies.": {
+    "en": "No secrets yet. Create a shared organization secret or one that each user supplies.",
+    "zh-CN": "尚无密钥。创建组织共享密钥，或创建由每位用户各自提供值的密钥。",
+    "reviewedEnglishHash": "3aa902692d817f500b7da0e5db31059d94021368dabef803174ef1ce3fc75e65"
+  },
+  "No session": {
+    "en": "No session",
+    "zh-CN": "暂无会话",
+    "reviewedEnglishHash": "64f06c9698cd0e17a303ad674d436c04ca60f5d0b358989e7369bb7ce5556b88"
+  },
+  "No skills enabled.": {
+    "en": "No skills enabled.",
+    "zh-CN": "尚未启用任何技能。",
+    "reviewedEnglishHash": "927c400e5c7f291668ab87d5cddb3d4018a0dfa0879992de3b35ab019d15550a"
+  },
+  "No skills in the organization library": {
+    "en": "No skills in the organization library",
+    "zh-CN": "组织技能库中没有技能",
+    "reviewedEnglishHash": "fe9778c7f1312d7a87005796ae104532be92f87bcdb1fa83a72924067c0d4ca7"
+  },
+  "No skills match “": {
+    "en": "No skills match “",
+    "zh-CN": "没有技能匹配“",
+    "reviewedEnglishHash": "1a1d05d7d636e9907e07877d74153ba0d09c6720d3b92c73693b2ed65b033e15"
+  },
+  "No special permissions requested.": {
+    "en": "No special permissions requested.",
+    "zh-CN": "未请求特殊权限。",
+    "reviewedEnglishHash": "120a2d885e3a16fce0a59e63eb17636304bf03237a8d333ac27203161ac45ef6"
+  },
+  "No stages configured.": {
+    "en": "No stages configured.",
+    "zh-CN": "尚未配置阶段。",
+    "reviewedEnglishHash": "856373288617f18c09ccbcf88b8ee00cf9aad963bf70544ada623316cb60fd7b"
+  },
+  "No stored error message.": {
+    "en": "No stored error message.",
+    "zh-CN": "没有存储的错误信息。",
+    "reviewedEnglishHash": "424cc47be9a9535f7d576469eff609e420e429bfe7fa9032da130f99610f29cc"
+  },
+  "No sub-goals.": {
+    "en": "No sub-goals.",
+    "zh-CN": "暂无子目标。",
+    "reviewedEnglishHash": "87edd3680e316de3351673992f91ccf8e977cf33bf7dd332d8b7b7cbc5c252ce"
+  },
+  "No sub-issues.": {
+    "en": "No sub-issues.",
+    "zh-CN": "暂无子任务。",
+    "reviewedEnglishHash": "38ff7e532071ffa6767dbc2a45fd2dfd17c2d2120c2ef56327e7033194f654b8"
+  },
+  "No subscriptions are visible to you yet. Connect an AI account or run an agent with a connected subscription.": {
+    "en": "No subscriptions are visible to you yet. Connect an AI account or run an agent with a connected subscription.",
+    "zh-CN": "您还看不到任何订阅。连接 AI 账户或使用连接的订阅运行智能体。",
+    "reviewedEnglishHash": "c0ee05c77f4edd30a6d4e2d812fb2492b1969d5b6c4bd3f97105b8fb6856d672"
+  },
+  "No subtasks yet.": {
+    "en": "No subtasks yet.",
+    "zh-CN": "还没有子任务。",
+    "reviewedEnglishHash": "17d17d5bca7d27e78866fa923e503cfb4a423e2c83f9889a6c322bc41aa8ca3d"
+  },
+  "No target conflicts detected for this preview.": {
+    "en": "No target conflicts detected for this preview.",
+    "zh-CN": "此预览未检测到目标冲突。",
+    "reviewedEnglishHash": "2e0c9e0173e575e1234d1c1e91885895d347dea999378b5bd865aa7a04dae105"
+  },
+  "No tasks assigned to you.": {
+    "en": "No tasks assigned to you.",
+    "zh-CN": "没有分配给你的任务。",
+    "reviewedEnglishHash": "1a9677b0bfa04c73fab0b6d6ce53860b572434027c2a24d5736deae67d3a1f7a"
+  },
+  "No tasks created": {
+    "en": "No tasks created",
+    "zh-CN": "没有创建任务",
+    "reviewedEnglishHash": "d64524ab96397d3e30a0df680f250f2ed2be446f3ef7270302b78848ca496489"
+  },
+  "No timeline entries yet.": {
+    "en": "No timeline entries yet.",
+    "zh-CN": "时间线里还没有内容。",
+    "reviewedEnglishHash": "a3f327b5ce04a13c857ed30c8a4e605ec60f82e2d41fecfe730af782834b4811"
+  },
+  "No tokens have been issued for this gateway.": {
+    "en": "No tokens have been issued for this gateway.",
+    "zh-CN": "尚未为此网关签发令牌。",
+    "reviewedEnglishHash": "6713f6e65dc647b87a854758c40702d023f4eb4deca52b7db7e7a78d6dda22b9"
+  },
+  "No tools match “": {
+    "en": "No tools match “",
+    "zh-CN": "没有工具匹配“",
+    "reviewedEnglishHash": "4c96c2da776e521a2ed2299e58dfda9a2fefbffcd0a2a4ae0a91bd210208b48e"
+  },
+  "No touched tasks yet.": {
+    "en": "No touched tasks yet.",
+    "zh-CN": "还没有涉及的任务。",
+    "reviewedEnglishHash": "1daa0a353d5e317980ed148187acc5e23afb3414174fd8045455924891662c85"
+  },
+  "No transcript captured.": {
+    "en": "No transcript captured.",
+    "zh-CN": "未捕获到运行转录。",
+    "reviewedEnglishHash": "ab15f8e693d0ae755c9b88a20a3b9b8eeed237807d2adc28c1902ff287009681"
+  },
+  "No transcript yet.": {
+    "en": "No transcript yet.",
+    "zh-CN": "还没有转录记录。",
+    "reviewedEnglishHash": "f0fb9e67b44e8c4ea15b5c76dd9a3362f9ad6d87f77fc6bca8f2e89a499984f5"
+  },
+  "No triggers configured yet.": {
+    "en": "No triggers configured yet.",
+    "zh-CN": "尚未配置触发器。",
+    "reviewedEnglishHash": "a0354e1c1590b4143c2298610fc2d3fdfa54f6a6796b5b09ab72756a554fe36c"
+  },
+  "No user memberships found for this company yet.": {
+    "en": "No user memberships found for this company yet.",
+    "zh-CN": "这个公司目前还没有任何用户成员资格。",
+    "reviewedEnglishHash": "2aca3a5334c93d30c5c00f656397678d0196dc5e2664bd905d9c34240cd82a84"
+  },
+  "No user memberships found for this organization yet.": {
+    "en": "No user memberships found for this organization yet.",
+    "zh-CN": "此组织尚无用户成员。",
+    "reviewedEnglishHash": "1a5d8214d85704d87e8ae07efa8bda47eb0f3b172a728647025ad629e8a5ffd1"
+  },
+  "No user secrets are defined for this organization yet. An admin defines which credentials each member supplies.": {
+    "en": "No user secrets are defined for this organization yet. An admin defines which credentials each member supplies.",
+    "zh-CN": "此组织尚未定义用户密钥。管理员会指定各成员需要提供的凭据。",
+    "reviewedEnglishHash": "9fc4b58dc0e61561207cc98efb9ba208295dc7b7000d9b3a0cc0327ed6da7c7b"
+  },
+  "No user selected": {
+    "en": "No user selected",
+    "zh-CN": "尚未选择用户",
+    "reviewedEnglishHash": "29f2cd983e2d499a24015967abeb6a90154d2bc0a50c8cc82fadadf81dd646ef"
+  },
+  "No user-attributed costs yet.": {
+    "en": "No user-attributed costs yet.",
+    "zh-CN": "还没有用户归属的成本。",
+    "reviewedEnglishHash": "b40cebee3cef4199dd2e94a85eae832db70d1bec5627bd8bdb2efa1d8cc8a0b3"
+  },
+  "No verdicts submitted": {
+    "en": "No verdicts submitted",
+    "zh-CN": "尚未提交评定",
+    "reviewedEnglishHash": "1968a9825689417a628cbf717f91ab135c1c1786e76d40ade8a8d26d0433f7c0"
+  },
+  "No visible subscriptions": {
+    "en": "No visible subscriptions",
+    "zh-CN": "没有可见的订阅",
+    "reviewedEnglishHash": "d31142aa935343b6e493219d481ef41a65f4b219dbfeeef62ed32e99da6878c6"
+  },
+  "No webhook deliveries recorded yet.": {
+    "en": "No webhook deliveries recorded yet.",
+    "zh-CN": "还没有 Webhook 投递记录。",
+    "reviewedEnglishHash": "68d025a28177d8ac1e486c5966c01d73142f13518356d74320c13dfb3fcb4e55"
+  },
+  "No worker process registered.": {
+    "en": "No worker process registered.",
+    "zh-CN": "未注册工作进程。",
+    "reviewedEnglishHash": "0682451667d631f7773f6da495be0e00ed9fc4b3bd9334d42f8e2f0b704535d2"
+  },
+  "No workspace activity yet.": {
+    "en": "No workspace activity yet.",
+    "zh-CN": "还没有工作区活动。",
+    "reviewedEnglishHash": "f7bf9843700ea80f451d766f2b8018327f85328e4380b1ea1812a2509d1d8f02"
+  },
+  "No workspace available": {
+    "en": "No workspace available",
+    "zh-CN": "没有可用的工作区",
+    "reviewedEnglishHash": "8621cdb8240db314885ef1ab8d2610d9ef96fd48ca6c4f6db758ff09609b10bd"
+  },
+  "No workspaces": {
+    "en": "No workspaces",
+    "zh-CN": "暂无工作区",
+    "reviewedEnglishHash": "3e9f82e1f5908b3fc907a4b1fc364f8b5589eb29d8e5ae35a3dfaf1b62b8aaf3"
+  },
+  "No {{name}} input": {
+    "en": "No {{name}} input",
+    "zh-CN": "{{name}} 没有输入",
+    "reviewedEnglishHash": "23ab41c0af7cb42bacbf13c3642f917b91d93d83573e783ca3b368c789a563d3"
+  },
+  "None": {
+    "en": "None",
+    "zh-CN": "无",
+    "reviewedEnglishHash": "dc937b59892604f5a86ac96936cd7ff09e25f18ae6b758e8014a24c7fa039e91"
+  },
+  "None declared.": {
+    "en": "None declared.",
+    "zh-CN": "未声明。",
+    "reviewedEnglishHash": "e45097a8afbf8ea6ee0bc3ec7c61d5171ac33199d105b45e29ff2fef9e954bb4"
+  },
+  "Normalized caveats and ignored requests": {
+    "en": "Normalized caveats and ignored requests",
+    "zh-CN": "规范化的警告和被忽略的请求",
+    "reviewedEnglishHash": "1c5d7bb95ea04df70db5a5c6a1c4684b14df733e6181054af0b4917e628ea721"
+  },
+  "Not Found": {
+    "en": "Not Found",
+    "zh-CN": "未找到",
+    "reviewedEnglishHash": "0019dfc4b32d63c1392aa264aed2253c1e0c2fb09216f8e2cc269bbfb8bb49b5"
+  },
+  "Not checked yet": {
+    "en": "Not checked yet",
+    "zh-CN": "尚未检查",
+    "reviewedEnglishHash": "881d23f6ba57497b40797690f315aa3fbc386dcd01d989609597ba82961c9c0e"
+  },
+  "Not connected": {
+    "en": "Not connected",
+    "zh-CN": "未连接",
+    "reviewedEnglishHash": "0303e182467081801f8b614862519a3b174c0ae84ff08b70e7d126080c3f4b95"
+  },
+  "Not created yet": {
+    "en": "Not created yet",
+    "zh-CN": "尚未创建",
+    "reviewedEnglishHash": "d9e2063638e7b4c35e2664ffd9cb1c906f68b3b671deb410ee16ee3d3d510454"
+  },
+  "Not default": {
+    "en": "Not default",
+    "zh-CN": "非默认",
+    "reviewedEnglishHash": "e87b5ee5169239888bd907e04848c558a5623ac7a7aabdf5728cba4da6d9c8b7"
+  },
+  "Not enabled for any agents": {
+    "en": "Not enabled for any agents",
+    "zh-CN": "未为任何智能体启用",
+    "reviewedEnglishHash": "700c55372195de57002c813979ab8a4f1f826ea5f79bcdc64396afffb5b1bb45"
+  },
+  "Not found": {
+    "en": "Not found",
+    "zh-CN": "未找到",
+    "reviewedEnglishHash": "e3ebaa16dd9d9b9fc107c42183fb6cf9d22927e1af03dbbdfa0ccc38e4e4ac31"
+  },
+  "Not inspected": {
+    "en": "Not inspected",
+    "zh-CN": "未检查",
+    "reviewedEnglishHash": "4b96e273901f4b38ef2a4bcedf6ee01432167ab002f0eaecfd6ce9cf92958e27"
+  },
+  "Not installed": {
+    "en": "Not installed",
+    "zh-CN": "未安装",
+    "reviewedEnglishHash": "d177cdc09a4ea3f377e5b336e9ff52184be0dc032f29af2e5d346bc7390340a6"
+  },
+  "Not ready": {
+    "en": "Not ready",
+    "zh-CN": "未就绪",
+    "reviewedEnglishHash": "330010f40240ecd83defa493b21a57b0504ddea6d30810be14e06debba8ad55b"
+  },
+  "Not requested": {
+    "en": "Not requested",
+    "zh-CN": "未请求",
+    "reviewedEnglishHash": "2bb186b55caf8791978bf5137df84ff6bf7e8110db38db6c85c1485679e8e679"
+  },
+  "Not scheduled": {
+    "en": "Not scheduled",
+    "zh-CN": "未计划",
+    "reviewedEnglishHash": "b3e24789bf8dc89bfbf7652e09b94488310916306db5db24ac24bf19c87e8768"
+  },
+  "Not verified": {
+    "en": "Not verified",
+    "zh-CN": "未验证",
+    "reviewedEnglishHash": "15133907259330dac7e0fb305768c8350396d821da7718205e12654c8cf10e96"
+  },
+  "Note": {
+    "en": "Note",
+    "zh-CN": "备注",
+    "reviewedEnglishHash": "d8da2c49df39d91df7ecd199b92da7bf264f026242ccc69b08daeadfe587c45b"
+  },
+  "Nothing live to pause — no agent run is in flight or queued. This records a hold so new work won't start until you resume.": {
+    "en": "Nothing live to pause — no agent run is in flight or queued. This records a hold so new work won't start until you resume.",
+    "zh-CN": "没有任何活动可以暂停 - 没有智能体运行正在运行或排队。这会记录暂停，以便在您恢复之前不会开始新的工作。",
+    "reviewedEnglishHash": "322ccbc8f66e9ca7aa650d61b2585a2c16e3f10df6f44a72a16b4da2e4251311"
+  },
+  "Nothing needs you right now.": {
+    "en": "Nothing needs you right now.",
+    "zh-CN": "当前没有需要您处理的事项。",
+    "reviewedEnglishHash": "d61ed3c5af68fab3f559558f05dd36f9797a08ea078400291a47b0a8e342933a"
+  },
+  "Nothing was worth splitting — this case moved straight ahead without creating any": {
+    "en": "Nothing was worth splitting — this case moved straight ahead without creating any",
+    "zh-CN": "没有需要拆分的内容，此案例直接进入后续流程，未创建任何",
+    "reviewedEnglishHash": "037c4b0899c2aea31881a84fa15f67f79556203dcb8990ae8bb1d51a7368e7be"
+  },
+  "Now you need to find two secrets. They are in two different screens on Slack.": {
+    "en": "Now you need to find two secrets. They are in two different screens on Slack.",
+    "zh-CN": "接下来需要找到两个密钥，分别位于 Slack 的两个不同页面中。",
+    "reviewedEnglishHash": "6aa5da6045aa048fd4f823fa1cb055a949984a7237d2b03750fc93e4b6a59d8b"
+  },
+  "name": {
+    "en": "name",
+    "zh-CN": "名称",
+    "reviewedEnglishHash": "82a3537ff0dbce7eec35d69edc3a189ee6f17d82f353a553f9aa96cb0be3ce89"
+  },
+  "narrows every request of that kind and can never widen one. Tool-approval confirmations always stay": {
+    "en": "narrows every request of that kind and can never widen one. Tool-approval confirmations always stay",
+    "zh-CN": "缩小每一个这样的要求，永远不能扩大一个。工具批准确认始终保留",
+    "reviewedEnglishHash": "e2c82b374e1298c9c8d8df4a92b46775440369b8dc096ea5f336a6ccff54ba03"
+  },
+  "needs your approval before this runs.": {
+    "en": "needs your approval before this runs.",
+    "zh-CN": "需要您的批准才能执行。",
+    "reviewedEnglishHash": "d66b3952542f2f727ca656878962103aea96b21d3a142c505ad3fd08b9aa2c27"
+  },
+  "net": {
+    "en": "net",
+    "zh-CN": "净支出",
+    "reviewedEnglishHash": "a08a0fcbdeafd3c1b3a4b495b9a9c9d96850f08946b52bc0622347d3b6e73b78"
+  },
+  "never": {
+    "en": "never",
+    "zh-CN": "从未",
+    "reviewedEnglishHash": "6497e4b3d7bed16979a343a7db4efa6d57725529f5ac3cec45c1f08fabcbdafc"
+  },
+  "no tracked changes": {
+    "en": "no tracked changes",
+    "zh-CN": "无变更记录",
+    "reviewedEnglishHash": "83a4a77e733a7cbf555ff29bc0430bda94467b2a1896973bfb2b828956782954"
+  },
+  "not installed": {
+    "en": "not installed",
+    "zh-CN": "未安装",
+    "reviewedEnglishHash": "e9363f76e1145505f670e682d00a8497f163aa9aa81034d513260edf155923c9"
+  },
+  "not shown": {
+    "en": "not shown",
+    "zh-CN": "未显示",
+    "reviewedEnglishHash": "0bedd95628dd9d158dbf1ad2603e825f10ed9f66849e9f19382d209565a8ac1a"
+  },
+  "npm Package Name": {
+    "en": "npm Package Name",
+    "zh-CN": "npm 包名",
+    "reviewedEnglishHash": "f207940a3b4fcf3d17005c55959ec9fb3bc8212aa85185aa76f2bb73bbb5e649"
+  },
+  "npm package": {
+    "en": "npm package",
+    "zh-CN": "npm 包",
+    "reviewedEnglishHash": "d6ee71088dbcb46092983ef26473682c5cd30bca7f0ffd1948ca1d09006edea5"
+  },
+  "npm packages will be cleaned up from disk.": {
+    "en": "npm packages will be cleaned up from disk.",
+    "zh-CN": "磁盘上的 npm 包也会一并清理。",
+    "reviewedEnglishHash": "d21135b5f75699ec8b7972379110ee7588df5b622d041be63f281e4555de9651"
+  },
+  "null": {
+    "en": "null",
+    "zh-CN": "null",
+    "reviewedEnglishHash": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b"
+  },
+  "{{name}} hit an error state.": {
+    "en": "{{name}} hit an error state.",
+    "zh-CN": "{{name}} 进入错误状态。",
+    "reviewedEnglishHash": "e63a1f255cea97cb9db83f2acda4895d1e6377a50b44d1c38da32ecd95083063"
+  },
+  "{{name}} sandbox provider": {
+    "en": "{{name}} sandbox provider",
+    "zh-CN": "{{name}} 沙盒提供方",
+    "reviewedEnglishHash": "089efeddfb0d63eb759bb76b5a06742db872c21a04e374e7f8cd4ce25c3a6bb5"
+  },
+  "{{name}} sandbox provider · {{summary}}": {
+    "en": "{{name}} sandbox provider · {{summary}}",
+    "zh-CN": "{{name}} 沙盒提供方 · {{summary}}",
+    "reviewedEnglishHash": "7982253a7b41029e435bd88c73732083023d0fef809c1593d7a305f1379eccea"
+  },
+  "· No PR link provided": {
+    "en": "· No PR link provided",
+    "zh-CN": "· 未提供 PR 链接",
+    "reviewedEnglishHash": "b03bdbee1691f464a59bbc0a13de0bce41fc5c18b932e7cb2397634b883173bf"
+  }
+}

@@ -1,7 +1,7 @@
+import { useTranslation } from "react-i18next";
+import { translateInstant } from "@/i18n";
 import { useEffect, useMemo, useState } from "react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import type { TFunction } from "i18next";
-import { useTranslation } from "react-i18next";
 import { ChevronDown, ChevronRight, ScrollText } from "lucide-react";
 import { Link } from "@/lib/router";
 import { Input } from "@/components/ui/input";
@@ -24,40 +24,37 @@ import {
   type ToolGatewayActivityEvent,
 } from "@/api/tools";
 import { agentsApi } from "@/api/agents";
+import { AgentSelect } from "@/components/AgentMultiSelect";
 import { ToolsPageHeader, LoadingState, ErrorState, RelativeTime } from "./shared";
-import { advancedTabHref } from "./tool-tabs";
 
 const PAGE_SIZE = 50;
 const ALL = "__all";
 
 /** Outcome chip vocabulary (spec §4C / §5): Allowed · Blocked · Asked first · Failed · Waiting. */
-const OUTCOME_META: Record<ToolAuditOutcome, { key: string; defaultValue: string; status: string }> = {
-  allowed: { key: "tools.audit.outcomes.allowed", defaultValue: "Allowed", status: "allowed" },
-  blocked: { key: "tools.audit.outcomes.blocked", defaultValue: "Blocked", status: "denied" },
-  asked_first: {
-    key: "tools.audit.outcomes.askedFirst",
-    defaultValue: "Asked first",
-    status: "require-approval",
-  },
-  waiting: { key: "tools.audit.outcomes.waiting", defaultValue: "Waiting", status: "deferred" },
-  failed: { key: "tools.audit.outcomes.failed", defaultValue: "Failed", status: "failed" },
-  unknown: { key: "tools.audit.outcomes.recorded", defaultValue: "Recorded", status: "unchecked" },
+const OUTCOME_META: Record<ToolAuditOutcome, { label: string; status: string }> = {
+  allowed: { label: "Allowed", status: "allowed" },
+  blocked: { get label() { return translateInstant("Blocked"); }, status: "denied" },
+  asked_first: { label: "Asked first", status: "require-approval" },
+  waiting: { label: "Waiting", status: "deferred" },
+  failed: { get label() { return translateInstant("Failed"); }, status: "failed" },
+  unknown: { label: "Recorded", status: "unchecked" },
 };
 
-const OUTCOME_FILTERS: { value: string; key: string; defaultValue: string }[] = [
-  { value: ALL, key: "tools.audit.filters.allOutcomes", defaultValue: "All outcomes" },
-  { value: "allowed", key: "tools.audit.outcomes.allowed", defaultValue: "Allowed" },
-  { value: "blocked", key: "tools.audit.outcomes.blocked", defaultValue: "Blocked" },
-  { value: "asked_first", key: "tools.audit.outcomes.askedFirst", defaultValue: "Asked first" },
-  { value: "waiting", key: "tools.audit.outcomes.waiting", defaultValue: "Waiting" },
-  { value: "failed", key: "tools.audit.outcomes.failed", defaultValue: "Failed" },
+const OUTCOME_FILTERS: { value: string; label: string }[] = [
+  { value: ALL, label: "All outcomes" },
+  { value: "allowed", label: "Allowed" },
+  { value: "blocked", get label() { return translateInstant("Blocked"); } },
+  { value: "asked_first", label: "Asked first" },
+  { value: "waiting", label: "Waiting" },
+  { value: "failed", get label() { return translateInstant("Failed"); } },
 ];
 
-const WINDOW_FILTERS: { value: ToolAuditWindow; key: string; defaultValue: string }[] = [
-  { value: "1h", key: "tools.audit.filters.lastHour", defaultValue: "Last 1 hour" },
-  { value: "24h", key: "tools.audit.filters.last24Hours", defaultValue: "Last 24 hours" },
-  { value: "7d", key: "tools.audit.filters.last7Days", defaultValue: "Last 7 days" },
-  { value: "30d", key: "tools.audit.filters.last30Days", defaultValue: "Last 30 days" },
+const WINDOW_FILTERS: { value: ToolAuditWindow; label: string }[] = [
+  { value: "all", get label() { return translateInstant("All time"); } },
+  { value: "1h", label: "Last 1 hour" },
+  { value: "24h", label: "Last 24 hours" },
+  { value: "7d", label: "Last 7 days" },
+  { value: "30d", label: "Last 30 days" },
 ];
 
 function detailString(details: Record<string, unknown> | null, key: string): string | undefined {
@@ -92,43 +89,57 @@ function formattedArguments(details: Record<string, unknown> | null): string | u
   }
 }
 
+function lifecycleSummary(event: ToolGatewayActivityEvent): string | null {
+  if (!event.lifecycleType) return null;
+  const who = event.actorDisplayName ?? event.agentDisplayName ?? "Someone";
+  const app = event.appDisplayName ?? event.connectionDisplayName ?? "this app";
+  const count = detailNumber(event.details, "count") ?? 0;
+  const added = detailNumber(event.details, "added") ?? 0;
+  const removed = detailNumber(event.details, "removed") ?? 0;
+  switch (event.lifecycleType) {
+    case "app_connected":
+      return `${who} connected ${app}`;
+    case "app_paused":
+      return `${who} paused ${app}`;
+    case "app_resumed":
+      return `${who} resumed ${app}`;
+    case "reconnected":
+      return `${who} reconnected ${app}`;
+    case "disconnected":
+      return `${who} disconnected ${app}`;
+    case "allowlist_changed":
+      if (added > 0 && removed === 0) return `${who} added ${added} allowed ${added === 1 ? "item" : "items"} in ${app}`;
+      if (removed > 0 && added === 0) return `${who} removed ${removed} allowed ${removed === 1 ? "item" : "items"} in ${app}`;
+      return `${who} updated the allowlist for ${app}`;
+    case "actions_quarantined":
+      return `${count} new ${count === 1 ? "action needs" : "actions need"} review in ${app}`;
+    default:
+      return `${who} updated ${app}`;
+  }
+}
+
 /** Plain-words "why" for the row expander, keyed off the reason code. */
-function plainReason(event: ToolGatewayActivityEvent, t: TFunction): string {
+function plainReason(event: ToolGatewayActivityEvent): string {
+  if (event.lifecycleType) return "This connection change was recorded in the app's activity history.";
   const code = detailString(event.details, "reasonCode");
   if (code === "permitted_connections_not_installed") {
-    return t("tools.audit.reasons.notInstalled", {
-      defaultValue: "Permitted connections were not installed, so their tools were not added to this run.",
-    });
+    return "Permitted connections were not installed, so their tools were not added to this run.";
   }
   switch (event.normalizedOutcome) {
     case "allowed":
-      return t("tools.audit.reasons.allowed", { defaultValue: "Allowed by your rules." });
+      return "Allowed by your rules.";
     case "blocked":
-      if (code === "rate_limited") {
-        return t("tools.audit.reasons.rateLimited", {
-          defaultValue: "Blocked because it ran too many times in a short window.",
-        });
-      }
-      if (code?.includes("secret")) {
-        return t("tools.audit.reasons.secretBlocked", {
-          defaultValue: "Blocked to keep a sensitive value from leaving.",
-        });
-      }
-      return t("tools.audit.reasons.blocked", { defaultValue: "Blocked by a rule." });
+      if (code === "rate_limited") return "Blocked because it ran too many times in a short window.";
+      if (code?.includes("secret")) return "Blocked to keep a sensitive value from leaving.";
+      return "Blocked by a rule.";
     case "asked_first":
-      return t("tools.audit.reasons.askedFirst", {
-        defaultValue: "Held for someone to approve before it could run.",
-      });
+      return "Held for someone to approve before it could run.";
     case "waiting":
-      return t("tools.audit.reasons.waiting", {
-        defaultValue: "Waiting — the app it needs wasn't ready yet.",
-      });
+      return "Waiting — the app it needs wasn't ready yet.";
     case "failed":
-      return t("tools.audit.reasons.failed", {
-        defaultValue: "The app was allowed to run it, but returned an error.",
-      });
+      return "The app was allowed to run it, but returned an error.";
     default:
-      return t("tools.audit.reasons.recorded", { defaultValue: "Recorded by Paperclip." });
+      return "Recorded by Paperclip.";
   }
 }
 
@@ -143,9 +154,8 @@ function DetailFact({ label, value, mono }: { label: string; value: string; mono
 }
 
 function OutcomeChip({ outcome }: { outcome: ToolAuditOutcome }) {
-  const { t } = useTranslation();
   const meta = OUTCOME_META[outcome] ?? OUTCOME_META.unknown;
-  return <StatusBadge status={meta.status} label={t(meta.key, { defaultValue: meta.defaultValue })} />;
+  return <StatusBadge status={meta.status} label={meta.label} />;
 }
 
 function ActivityRow({
@@ -155,13 +165,14 @@ function ActivityRow({
   event: ToolGatewayActivityEvent;
   ruleNamesById: Map<string, string>;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   const [open, setOpen] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
 
-  const who = event.agentDisplayName ?? t("tools.audit.unknownAgent", { defaultValue: "An agent" });
-  const action = event.toolDisplayName ?? t("tools.audit.unknownAction", { defaultValue: "an action" });
+  const who = event.agentDisplayName ?? "An agent";
+  const action = event.toolDisplayName ?? "an action";
   const app = event.appDisplayName ?? event.connectionDisplayName ?? event.applicationDisplayName ?? null;
+  const lifecycle = lifecycleSummary(event);
   const rawTool = detailString(event.details, "tool") ?? detailString(event.details, "toolName");
 
   const issueId = detailString(event.details, "issueId");
@@ -190,23 +201,12 @@ function ActivityRow({
       .filter((connection): connection is Record<string, unknown> => connection !== null)
     : [];
   const isRuntimeMcpDeliveryDiagnostic = reasonCode === "permitted_connections_not_installed";
-  const diagnosticCount = permittedNotInstalledCount ?? permittedNotInstalledConnections.length;
 
   return (
     <li className="text-sm">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        aria-label={open
-          ? t("tools.audit.hideEventDetails", {
-              defaultValue: "Hide activity details for {{agent}}",
-              agent: who,
-            })
-          : t("tools.audit.showEventDetails", {
-              defaultValue: "Show activity details for {{agent}}",
-              agent: who,
-            })}
         className="flex w-full items-start gap-2.5 px-4 py-3 text-left hover:bg-accent/50"
       >
         {open ? (
@@ -215,36 +215,27 @@ function ActivityRow({
           <ChevronRight className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
         )}
         <span className="min-w-0 flex-1">
-          {isRuntimeMcpDeliveryDiagnostic ? (
+          {lifecycle ? (
+            <span className="block text-foreground">{lifecycle}</span>
+          ) : isRuntimeMcpDeliveryDiagnostic ? (
             <span className="block text-foreground">
-              {t("tools.audit.runtimeDeliveryDiagnostic", {
-                defaultValue:
-                  "{{agent}}'s run received 0 MCP servers — {{count}} permitted connection not installed",
-                defaultValue_other:
-                  "{{agent}}'s run received 0 MCP servers — {{count}} permitted connections not installed",
-                agent: who,
-                count: diagnosticCount,
-              })}
-            </span>
+              <span className="font-medium">{who}</span>{translateInstant("'s run received 0 MCP servers —")}{" "}
+              <span className="font-medium">{permittedNotInstalledCount ?? permittedNotInstalledConnections.length}</span>{" "}
+              permitted {(permittedNotInstalledCount ?? permittedNotInstalledConnections.length) === 1 ? translateInstant("tools.profiles.selector.connectionLower") : "connections"} {translateInstant("not installed")}</span>
           ) : (
             <span className="block text-foreground">
-              {app
-                ? t("tools.audit.eventUsedInApp", {
-                    defaultValue: "{{agent}} used {{action}} in {{app}}",
-                    agent: who,
-                    action,
-                    app,
-                  })
-                : t("tools.audit.eventUsed", {
-                    defaultValue: "{{agent}} used {{action}}",
-                    agent: who,
-                    action,
-                  })}
+              <span className="font-medium">{who}</span> used <span className="font-medium">{action}</span>
+              {app ? (
+                <>
+                  {" "}
+                  {translateInstant("in")}{" "}<span className="font-medium">{app}</span>
+                </>
+              ) : null}
             </span>
           )}
         </span>
         <span className="flex shrink-0 items-center gap-2 whitespace-nowrap">
-          <OutcomeChip outcome={event.normalizedOutcome} />
+          {event.lifecycleType ? null : <OutcomeChip outcome={event.normalizedOutcome} />}
           <span className="text-xs text-muted-foreground">
             · <RelativeTime value={event.createdAt} />
           </span>
@@ -254,13 +245,11 @@ function ActivityRow({
       {open ? (
         <div className="space-y-3 border-t border-border bg-muted/30 px-4 py-3 pl-10 text-sm">
           <p className="text-foreground">
-            {plainReason(event, t)}
+            {plainReason(event)}
             {matchedRuleName ? (
               <>
                 {" "}
-                <Link to={advancedTabHref("policies")} className="text-primary hover:underline">
-                  {matchedRuleName}
-                </Link>
+                <span className="font-medium">{matchedRuleName}</span>
               </>
             ) : null}
           </p>
@@ -268,13 +257,11 @@ function ActivityRow({
           <div className="flex flex-wrap gap-3 text-xs">
             {issueId ? (
               <Link to={`/issues/${issueId}`} className="text-primary hover:underline">
-                {t("tools.audit.viewTask", { defaultValue: "View task" })}
-              </Link>
+                {translateInstant("tools.audit.viewTask")}</Link>
             ) : null}
             {runId && agentId ? (
               <Link to={`/agents/${agentId}/runs/${runId}`} className="text-primary hover:underline">
-                {t("tools.audit.viewRun", { defaultValue: "View run" })}
-              </Link>
+                {translateInstant("tools.audit.viewRun")}</Link>
             ) : null}
           </div>
 
@@ -282,69 +269,34 @@ function ActivityRow({
             <button
               type="button"
               onClick={() => setDetailsOpen((v) => !v)}
-              aria-expanded={detailsOpen}
               className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground"
             >
               {detailsOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
-              {t("tools.audit.details", { defaultValue: "Details" })}
-            </button>
+              {translateInstant("tools.audit.details")}</button>
             {detailsOpen ? (
               <div className="mt-2 space-y-1.5 text-xs">
-                {rawTool ? (
-                  <DetailFact label={t("tools.audit.details.actionName", { defaultValue: "Action name" })} value={rawTool} mono />
-                ) : null}
-                <DetailFact label={t("tools.audit.details.reasonCode", { defaultValue: "Reason code" })} value={reasonCode} mono />
-                <DetailFact label={t("tools.audit.details.actorType", { defaultValue: "Actor type" })} value={event.actorType ?? "—"} />
-                {runId ? <DetailFact label={t("tools.audit.details.runId", { defaultValue: "Run ID" })} value={runId} mono /> : null}
-                {transport ? <DetailFact label={t("tools.audit.details.transport", { defaultValue: "Transport" })} value={transport} mono /> : null}
-                {requestMethod && endpoint ? (
-                  <DetailFact
-                    label={t("tools.audit.details.httpRequest", { defaultValue: "HTTP request" })}
-                    value={`${requestMethod} ${endpoint}`}
-                    mono
-                  />
-                ) : null}
-                {mcpMethod ? <DetailFact label={t("tools.audit.details.mcpMethod", { defaultValue: "MCP method" })} value={mcpMethod} mono /> : null}
-                {requestId ? <DetailFact label={t("tools.audit.details.requestId", { defaultValue: "Request ID" })} value={requestId} mono /> : null}
-                {request ? (
-                  <DetailFact
-                    label={t("tools.audit.details.dispatched", { defaultValue: "Dispatched" })}
-                    value={request.dispatched === true
-                      ? t("tools.common.yes", { defaultValue: "Yes" })
-                      : t("tools.common.no", { defaultValue: "No" })}
-                  />
-                ) : null}
-                {httpStatus !== undefined ? <DetailFact label={t("tools.audit.details.httpStatus", { defaultValue: "HTTP status" })} value={String(httpStatus)} mono /> : null}
-                {contentType ? <DetailFact label={t("tools.audit.details.contentType", { defaultValue: "Content type" })} value={contentType} mono /> : null}
-                {responseBytes !== undefined ? (
-                  <DetailFact
-                    label={t("tools.audit.details.responseSize", { defaultValue: "Response size" })}
-                    value={t("tools.audit.details.bytes", {
-                      defaultValue: "{{count}} bytes",
-                      count: responseBytes,
-                    })}
-                  />
-                ) : null}
-                {upstreamRequestId ? <DetailFact label={t("tools.audit.details.upstreamId", { defaultValue: "Upstream ID" })} value={upstreamRequestId} mono /> : null}
+                {rawTool ? <DetailFact label={translateInstant("tools.audit.details.actionName")} value={rawTool} mono /> : null}
+                <DetailFact label={translateInstant("tools.audit.details.reasonCode")} value={reasonCode} mono />
+                <DetailFact label={translateInstant("tools.audit.details.actorType")} value={event.actorType ?? "—"} />
+                {runId ? <DetailFact label={translateInstant("tools.audit.details.runId")} value={runId} mono /> : null}
+                {transport ? <DetailFact label={translateInstant("tools.audit.details.transport")} value={transport} mono /> : null}
+                {requestMethod && endpoint ? <DetailFact label={translateInstant("tools.audit.details.httpRequest")} value={`${requestMethod} ${endpoint}`} mono /> : null}
+                {mcpMethod ? <DetailFact label={translateInstant("tools.audit.details.mcpMethod")} value={mcpMethod} mono /> : null}
+                {requestId ? <DetailFact label={translateInstant("tools.audit.details.requestId")} value={requestId} mono /> : null}
+                {request ? <DetailFact label={translateInstant("tools.audit.details.dispatched")} value={request.dispatched === true ? translateInstant("Yes") : "No"} /> : null}
+                {httpStatus !== undefined ? <DetailFact label={translateInstant("tools.audit.details.httpStatus")} value={String(httpStatus)} mono /> : null}
+                {contentType ? <DetailFact label={translateInstant("tools.audit.details.contentType")} value={contentType} mono /> : null}
+                {responseBytes !== undefined ? <DetailFact label={translateInstant("tools.audit.details.responseSize")} value={`${responseBytes} bytes`} /> : null}
+                {upstreamRequestId ? <DetailFact label={translateInstant("tools.audit.details.upstreamId")} value={upstreamRequestId} mono /> : null}
                 {isRuntimeMcpDeliveryDiagnostic ? (
                   <>
-                    <DetailFact
-                      label={t("tools.audit.details.deliveredMcpServers", {
-                        defaultValue: "Delivered MCP servers",
-                      })}
-                      value="0"
-                      mono
-                    />
+                    <DetailFact label={translateInstant("tools.audit.details.deliveredMcpServers")} value="0" mono />
                     {permittedNotInstalledConnections.map((connection) => {
                       const connectionId = detailString(connection, "id");
-                      const connectionName = detailString(connection, "name") ?? t("tools.audit.unnamedConnection", {
-                        defaultValue: "Unnamed connection",
-                      });
+                      const connectionName = detailString(connection, "name") ?? "Unnamed connection";
                       return connectionId ? (
                         <div key={connectionId} className="flex gap-2">
-                          <span className="shrink-0 text-muted-foreground">
-                            {t("tools.audit.notInstalled", { defaultValue: "Not installed" })}
-                          </span>
+                          <span className="shrink-0 text-muted-foreground">{translateInstant("tools.audit.notInstalled")}</span>
                           <Link to={`/apps/${connectionId}/permissions`} className="font-medium text-primary hover:underline">
                             {connectionName}
                           </Link>
@@ -355,11 +307,7 @@ function ActivityRow({
                 ) : null}
                 {argumentsText ? (
                   <div className="space-y-1">
-                    <span className="text-muted-foreground">
-                      {t("tools.audit.details.parametersRedacted", {
-                        defaultValue: "Parameters (redacted)",
-                      })}
-                    </span>
+                    <span className="text-muted-foreground">{translateInstant("tools.audit.details.parametersRedacted")}</span>
                     <pre className="whitespace-pre-wrap break-words rounded-md border border-border bg-background p-3 font-mono text-xs text-foreground">
                       {argumentsText}
                     </pre>
@@ -375,11 +323,11 @@ function ActivityRow({
 }
 
 export function AuditTab({ companyId }: { companyId: string }) {
-  const { t } = useTranslation();
+  useTranslation();
   const [app, setApp] = useState<string>(ALL);
   const [agent, setAgent] = useState<string>(ALL);
   const [outcome, setOutcome] = useState<string>(ALL);
-  const [windowKey, setWindowKey] = useState<ToolAuditWindow>("24h");
+  const [windowKey, setWindowKey] = useState<ToolAuditWindow>("all");
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
 
@@ -415,7 +363,7 @@ export function AuditTab({ companyId }: { companyId: string }) {
     search: search || undefined,
   };
   const hasActiveFilters =
-    app !== ALL || agent !== ALL || outcome !== ALL || windowKey !== "24h" || search.length > 0;
+    app !== ALL || agent !== ALL || outcome !== ALL || windowKey !== "all" || search.length > 0;
 
   const activity = useInfiniteQuery({
     queryKey: queryKeys.tools.activity(companyId, {
@@ -440,7 +388,7 @@ export function AuditTab({ companyId }: { companyId: string }) {
     setApp(ALL);
     setAgent(ALL);
     setOutcome(ALL);
-    setWindowKey("24h");
+    setWindowKey("all");
     setSearchInput("");
     setSearch("");
   };
@@ -448,22 +396,17 @@ export function AuditTab({ companyId }: { companyId: string }) {
   return (
     <div className="space-y-4">
       <ToolsPageHeader
-        title={t("tools.audit.title", { defaultValue: "Activity" })}
-        description={t("tools.audit.description", {
-          defaultValue:
-            "What your agents actually did with your apps, newest first. Each line is one decision — allowed, blocked, asked first, waiting, or failed.",
-        })}
+        title={translateInstant("Activity")}
+        description={translateInstant("tools.audit.description")}
       />
 
       <div className="flex flex-wrap items-center gap-2">
         <Select value={app} onValueChange={setApp}>
           <SelectTrigger className="w-40">
-            <SelectValue placeholder={t("tools.audit.filters.app", { defaultValue: "App" })} />
+            <SelectValue placeholder={translateInstant("tools.audit.filters.app")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={ALL}>
-              {t("tools.audit.filters.allApps", { defaultValue: "All apps" })}
-            </SelectItem>
+            <SelectItem value={ALL}>{translateInstant("tools.audit.filters.allApps")}</SelectItem>
             {(apps.data?.applications ?? []).map((a) => (
               <SelectItem key={a.id} value={a.id}>
                 {a.name}
@@ -471,21 +414,12 @@ export function AuditTab({ companyId }: { companyId: string }) {
             ))}
           </SelectContent>
         </Select>
-        <Select value={agent} onValueChange={setAgent}>
-          <SelectTrigger className="w-40">
-            <SelectValue placeholder={t("tools.audit.filters.agent", { defaultValue: "Agent" })} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={ALL}>
-              {t("tools.audit.filters.allAgents", { defaultValue: "All agents" })}
-            </SelectItem>
-            {(agents.data ?? []).map((a) => (
-              <SelectItem key={a.id} value={a.id}>
-                {a.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <AgentSelect
+          agents={[{ id: ALL, name: "All agents" }, ...(agents.data ?? [])]}
+          value={agent}
+          onChange={setAgent}
+          triggerClassName="w-40"
+        />
         <Select value={outcome} onValueChange={setOutcome}>
           <SelectTrigger className="w-40">
             <SelectValue />
@@ -493,7 +427,7 @@ export function AuditTab({ companyId }: { companyId: string }) {
           <SelectContent>
             {OUTCOME_FILTERS.map((o) => (
               <SelectItem key={o.value} value={o.value}>
-                {t(o.key, { defaultValue: o.defaultValue })}
+                {o.label}
               </SelectItem>
             ))}
           </SelectContent>
@@ -505,26 +439,25 @@ export function AuditTab({ companyId }: { companyId: string }) {
           <SelectContent>
             {WINDOW_FILTERS.map((o) => (
               <SelectItem key={o.value} value={o.value}>
-                {t(o.key, { defaultValue: o.defaultValue })}
+                {o.label}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
         <Input
-          placeholder={t("tools.audit.filters.search", { defaultValue: "Search activity…" })}
+          placeholder={translateInstant("tools.audit.filters.search")}
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
           className="max-w-xs"
         />
         {hasActiveFilters ? (
           <Button variant="ghost" size="sm" onClick={clearFilters}>
-            {t("tools.audit.filters.clear", { defaultValue: "Clear filters" })}
-          </Button>
+            {translateInstant("tools.audit.filters.clear")}</Button>
         ) : null}
       </div>
 
       {activity.isLoading ? (
-        <LoadingState label={t("tools.common.loading", { defaultValue: "Loading…" })} />
+        <LoadingState />
       ) : activity.error ? (
         <ErrorState error={activity.error} onRetry={() => activity.refetch()} />
       ) : events.length === 0 ? (
@@ -533,20 +466,12 @@ export function AuditTab({ companyId }: { companyId: string }) {
             <CardContent className="flex flex-col items-center gap-3 py-14 text-center">
               <ScrollText className="h-10 w-10 text-muted-foreground/40" />
               <div>
-                <p className="text-sm font-medium text-foreground">
-                  {t("tools.audit.noMatchingActivity", {
-                    defaultValue: "No activity matches these filters",
-                  })}
-                </p>
+                <p className="text-sm font-medium text-foreground">{translateInstant("tools.audit.noMatchingActivity")}</p>
                 <p className="mt-1 max-w-md text-sm text-muted-foreground">
-                  {t("tools.audit.tryDifferentFilters", {
-                    defaultValue: "Try a wider time window or different filters.",
-                  })}
-                </p>
+                  {translateInstant("tools.audit.tryDifferentFilters")}</p>
               </div>
               <Button variant="outline" size="sm" onClick={clearFilters}>
-                {t("tools.audit.filters.clear", { defaultValue: "Clear filters" })}
-              </Button>
+                {translateInstant("tools.audit.filters.clear")}</Button>
             </CardContent>
           </Card>
         ) : (
@@ -554,15 +479,9 @@ export function AuditTab({ companyId }: { companyId: string }) {
             <CardContent className="flex flex-col items-center gap-3 py-14 text-center">
               <ScrollText className="h-10 w-10 text-muted-foreground/40" />
               <div>
-                <p className="text-sm font-medium text-foreground">
-                  {t("tools.audit.emptyTitle", { defaultValue: "Nothing here yet" })}
-                </p>
+                <p className="text-sm font-medium text-foreground">{translateInstant("tools.audit.emptyTitle")}</p>
                 <p className="mt-1 max-w-md text-sm text-muted-foreground">
-                  {t("tools.audit.emptyDescription", {
-                    defaultValue:
-                      "As soon as your agents start using connected apps, what they do shows up here.",
-                  })}
-                </p>
+                  {translateInstant("tools.audit.emptyDescription")}</p>
               </div>
             </CardContent>
           </Card>
@@ -587,18 +506,10 @@ export function AuditTab({ companyId }: { companyId: string }) {
             onClick={() => activity.fetchNextPage()}
             disabled={activity.isFetchingNextPage}
           >
-            {activity.isFetchingNextPage
-              ? t("tools.common.loading", { defaultValue: "Loading…" })
-              : t("tools.audit.loadMore", { defaultValue: "Load more" })}
+            {activity.isFetchingNextPage ? translateInstant("tools.common.loading") : translateInstant("tools.audit.loadMore")}
           </Button>
         </div>
       ) : null}
-
-      <p className="text-xs text-muted-foreground">
-        {t("tools.audit.immutabilityNotice", {
-          defaultValue: "Recorded by Paperclip — entries can't be edited. Sensitive values are never stored.",
-        })}
-      </p>
     </div>
   );
 }

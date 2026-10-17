@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 import { defineConfig } from "@playwright/test";
 
 // Use a dedicated port so e2e tests always start their own server in local_trusted mode,
@@ -11,50 +12,38 @@ const PAPERCLIP_HOME = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-e2e-home
 const PAPERCLIP_INSTANCE_ID = "playwright-e2e";
 const PAPERCLIP_CONFIG = path.join(PAPERCLIP_HOME, "instances", PAPERCLIP_INSTANCE_ID, "config.json");
 const PAPERCLIP_AGENT_JWT_SECRET = process.env.PAPERCLIP_AGENT_JWT_SECRET ?? "playwright-e2e-agent-jwt-secret";
-const PLAYWRIGHT_CHANNEL = process.env.PAPERCLIP_PLAYWRIGHT_CHANNEL?.trim();
-
-function bootstrapE2EInstanceConfig(): void {
-  const instanceRoot = path.join(PAPERCLIP_HOME, "instances", PAPERCLIP_INSTANCE_ID);
-  fs.mkdirSync(instanceRoot, { recursive: true });
-  const dataRoot = path.join(instanceRoot, "data");
-  fs.writeFileSync(
-    PAPERCLIP_CONFIG,
-    `${JSON.stringify({
-      $meta: { version: 1, updatedAt: "2026-01-01T00:00:00.000Z", source: "onboard" },
-      database: {
-        mode: "embedded-postgres",
-        embeddedPostgresDataDir: path.join(instanceRoot, "db"),
-        backup: {
-          enabled: false,
-          intervalMinutes: 60,
-          retentionDays: 7,
-          dir: path.join(dataRoot, "backups"),
-        },
-      },
-      logging: { mode: "file", logDir: path.join(instanceRoot, "logs") },
-      server: { deploymentMode: "local_trusted", host: "127.0.0.1", port: PORT },
-      auth: { baseUrlMode: "auto" },
-      storage: {
-        provider: "local_disk",
-        localDisk: { baseDir: path.join(dataRoot, "storage") },
-      },
-      secrets: {
-        provider: "local_encrypted",
-        strictMode: false,
-        localEncrypted: { keyFilePath: path.join(instanceRoot, "secrets", "master.key") },
-      },
-    }, null, 2)}\n`,
-    "utf8",
-  );
-}
-
-bootstrapE2EInstanceConfig();
+const PAPERCLIP_DECISION_SIGNING_SECRET =
+  process.env.PAPERCLIP_DECISION_SIGNING_SECRET ?? "playwright-e2e-decision-signing-secret";
 const PAPERCLIP_TOOL_ACTION_SIGNING_SECRET =
   process.env.PAPERCLIP_TOOL_ACTION_SIGNING_SECRET ?? "playwright-e2e-tool-action-signing-secret";
+const PLAYWRIGHT_CHANNEL = process.env.PAPERCLIP_PLAYWRIGHT_CHANNEL;
+// Most long-lived E2E journeys assert English accessible names that predate the
+// CN fork's zh-CN product default. Keep that legacy contract deterministic in
+// the disposable browser context; locale-specific specs set their intended
+// language explicitly before loading the app.
+const LEGACY_E2E_STORAGE_STATE = path.join(PAPERCLIP_HOME, "legacy-en-locale.json");
+fs.writeFileSync(
+  LEGACY_E2E_STORAGE_STATE,
+  JSON.stringify({
+    cookies: [],
+    origins: [{
+      origin: BASE_URL,
+      localStorage: [{ name: "paperclip.locale", value: "en" }],
+    }],
+  }),
+);
 
 process.env.PAPERCLIP_HOME = PAPERCLIP_HOME;
 process.env.PAPERCLIP_CONFIG = PAPERCLIP_CONFIG;
+// Worker processes reload this config; retain the main process's server path
+// for specs that seed historical database state in the throwaway instance.
+process.env.PAPERCLIP_E2E_SERVER_CONFIG ??= PAPERCLIP_CONFIG;
+// Specs that mint agent JWTs in-process (via createLocalAgentJwt) must derive
+// the same per-instance signing key as the webServer, or verification fails
+// with a 401 instead of authenticating as the agent.
+process.env.PAPERCLIP_INSTANCE_ID = PAPERCLIP_INSTANCE_ID;
 process.env.PAPERCLIP_AGENT_JWT_SECRET = PAPERCLIP_AGENT_JWT_SECRET;
+process.env.PAPERCLIP_DECISION_SIGNING_SECRET = PAPERCLIP_DECISION_SIGNING_SECRET;
 process.env.PAPERCLIP_TOOL_ACTION_SIGNING_SECRET = PAPERCLIP_TOOL_ACTION_SIGNING_SECRET;
 
 export default defineConfig({
@@ -62,7 +51,7 @@ export default defineConfig({
   testMatch: "**/*.spec.ts",
   // These suites target dedicated multi-user configurations/ports and are
   // intentionally not part of the default local_trusted e2e run.
-  testIgnore: ["multi-user.spec.ts", "multi-user-authenticated.spec.ts"],
+  testIgnore: ["in-feed-native/**", "multi-user.spec.ts", "multi-user-authenticated.spec.ts"],
   timeout: 60_000,
   retries: 0,
   // All specs share one throwaway server, and several toggle instance-level
@@ -72,6 +61,7 @@ export default defineConfig({
   workers: 1,
   use: {
     baseURL: BASE_URL,
+    storageState: LEGACY_E2E_STORAGE_STATE,
     headless: true,
     screenshot: "only-on-failure",
     trace: "on-first-retry",
@@ -85,10 +75,16 @@ export default defineConfig({
       },
     },
   ],
-  // The webServer directive starts `penclip run` before tests.
-  // Expects `pnpm penclip` to be runnable from repo root.
+  // The webServer directive bootstraps a throwaway instance and then starts it.
+  // `onboard --yes --run` works in a non-interactive temp PAPERCLIP_HOME.
   webServer: {
-    command: `pnpm penclip run`,
+    cwd: path.resolve(import.meta.dirname, "../.."),
+    // Exercise the shipped UI. Source-checkout onboarding otherwise enables
+    // Vite middleware: every reload traverses thousands of modules, including
+    // service-worker-intercepted requests, before React can even start.
+    // Build the server's first-choice static directory so a prior package build
+    // cannot shadow the UI under test with stale server/ui-dist assets.
+    command: "pnpm --filter @penclipai/ui build --outDir ../server/ui-dist --emptyOutDir && node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts onboard --yes --run",
     url: `${BASE_URL}/api/health`,
     // Always boot a dedicated throwaway instance for e2e so browser tests
     // never attach to the developer's active Paperclip home/server.
@@ -99,12 +95,16 @@ export default defineConfig({
     env: {
       ...process.env,
       NODE_ENV: "test",
+      PAPERCLIP_UI_DEV_MIDDLEWARE: "false",
+      NODE_OPTIONS: `${process.env.NODE_OPTIONS ?? ""} --import=${pathToFileURL(path.resolve(import.meta.dirname, "fixtures/agent-chat-github.mjs")).href} --import=${pathToFileURL(path.resolve(import.meta.dirname, "fixtures/ai-connection-provider.mjs")).href}`,
       PORT: String(PORT),
+      PAPERCLIP_OPEN_ON_LISTEN: "false",
+      PAPERCLIP_API_URL: BASE_URL,
       PAPERCLIP_HOME,
       PAPERCLIP_INSTANCE_ID,
       PAPERCLIP_CONFIG,
       PAPERCLIP_AGENT_JWT_SECRET,
-      PAPERCLIP_INSTANCE_ID,
+      PAPERCLIP_DECISION_SIGNING_SECRET,
       PAPERCLIP_TOOL_ACTION_SIGNING_SECRET,
       PAPERCLIP_BIND: "loopback",
       PAPERCLIP_DEPLOYMENT_MODE: "local_trusted",

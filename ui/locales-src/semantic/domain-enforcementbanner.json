@@ -1,0 +1,22 @@
+{
+  "enforcementBanner.defaultMessage": {
+    "en": "Tool access is enforced server-side by the tool gateway. These screens configure and observe that enforcement — they do not replace it. Agents see and call only the tools their profiles and policies allow; everything else is denied by default.",
+    "zh-CN": "工具访问由工具网关在服务端强制执行。这些页面只用于配置和观察执行情况，并不能替代实际的访问控制。智能体只能看到并调用其访问配置和策略允许的工具；其他工具默认全部拒绝。",
+    "reviewedEnglishHash": "eb68447cf2185c915babcbb8f432db84fe7e48bf6fc0846e45ca3b15cb170b29"
+  },
+  "enforcementBanner.recentDenials_one": {
+    "en": "{{count}} governed tool call was denied or failed in the last hour. Access is enforced server-side by the tool gateway — review what was blocked and why in the audit log.",
+    "zh-CN": "过去一小时内有 {{count}} 次受管控的工具调用被拒绝或失败。工具网关会在服务端强制执行访问控制；请在审计日志中查看被阻止的内容和原因。",
+    "reviewedEnglishHash": "7ac311b051853d2848b1ad173971428da81c2be13217377b12bb938083a0faa3"
+  },
+  "enforcementBanner.recentDenials_other": {
+    "en": "{{count}} governed tool calls were denied or failed in the last hour. Access is enforced server-side by the tool gateway — review what was blocked and why in the audit log.",
+    "zh-CN": "过去一小时内有 {{count}} 次受管控的工具调用被拒绝或失败。工具网关会在服务端强制执行访问控制；请在审计日志中查看被阻止的内容和原因。",
+    "reviewedEnglishHash": "46d327eb757717f7e4831d0a4863f10f3dd188e30f089635575d5a239446b989"
+  },
+  "enforcementBanner.viewAudit": {
+    "en": "View audit →",
+    "zh-CN": "查看审计 →",
+    "reviewedEnglishHash": "acd8a94f8cc498e0561d6fd3a3a23f8f834b39e258bc2b008f2c09da7e508b46"
+  }
+}

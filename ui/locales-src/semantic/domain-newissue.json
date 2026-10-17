@@ -1,0 +1,502 @@
+{
+  "newIssue.addReviewerApproverOrWatchdog": {
+    "en": "Add reviewer, approver, or watchdog",
+    "zh-CN": "添加审阅人、审批人或看护",
+    "reviewedEnglishHash": "c5ad773525b135ad76d5f74886e657bb18991b941e255769fc50dc2f2aa8eca5"
+  },
+  "newIssue.addReviewerOrApprover": {
+    "en": "Add reviewer or approver",
+    "zh-CN": "添加审阅人或审批人",
+    "reviewedEnglishHash": "8988f18ab8220c49a9e334f94a2832033056b62773dbc14736f3d8e5282cbc01"
+  },
+  "newIssue.approver": {
+    "en": "Approver",
+    "zh-CN": "批准人",
+    "reviewedEnglishHash": "3ebb5648c8bcb2934590555c69356e279c2e677846fd48cb8a6a4fcc8a6b8dc3"
+  },
+  "newIssue.assignedBacklogNote.afterBacklog": {
+    "en": "only to deliberately park this. The assignee will not be woken until status moves to",
+    "zh-CN": "。负责人不会被唤醒，直到状态改为",
+    "reviewedEnglishHash": "cdd53561e82b25882b418d89c081b8ee026a909755d43d781deace84ee444953"
+  },
+  "newIssue.assignedBacklogNote.beforeBacklog": {
+    "en": "Assigning implies executable intent - leave status as",
+    "zh-CN": "分配负责人表示准备执行，仅在确实要搁置时才将状态保留为",
+    "reviewedEnglishHash": "9fc3338d948fe3b606b889c54b64e0c3935b152a1f146a4689af79d6f357afde"
+  },
+  "newIssue.assignedBacklogNote.or": {
+    "en": "or",
+    "zh-CN": "或",
+    "reviewedEnglishHash": "7175517a370b5cd2e664e3fd29c4ea9db5ce17058eb9772fe090a5485e49dad6"
+  },
+  "newIssue.assignee": {
+    "en": "Assignee",
+    "zh-CN": "负责人",
+    "reviewedEnglishHash": "5e20d20e3978dcf8550bd758d863b782ac0d139d51be8034836ed21e35104567"
+  },
+  "newIssue.assigneeOptions.agent": {
+    "en": "Agent options",
+    "zh-CN": "智能体选项",
+    "reviewedEnglishHash": "31eb33af137560ac397189f236b37fa720ae523ed684b31c97bd0118911c6b2b"
+  },
+  "newIssue.assigneeOptions.claude_local": {
+    "en": "Claude options",
+    "zh-CN": "Claude 选项",
+    "reviewedEnglishHash": "73fe8e888f9e52c028956b03e4d06c0b67d9072cb3bbbf42d599d85a19e6748b"
+  },
+  "newIssue.assigneeOptions.codex_local": {
+    "en": "Codex options",
+    "zh-CN": "Codex 选项",
+    "reviewedEnglishHash": "31d56d5b7b8a59acf879fa0a76f024a38a78edb0fd6fcb6f268122558920e7f3"
+  },
+  "newIssue.assigneeOptions.opencode_local": {
+    "en": "OpenCode options",
+    "zh-CN": "OpenCode 选项",
+    "reviewedEnglishHash": "4a902fc0ee76b97a4b605c96eb33f0c58cf0c035898cf71cd7bd577ad8e76138"
+  },
+  "newIssue.attachments": {
+    "en": "Attachments",
+    "zh-CN": "附件",
+    "reviewedEnglishHash": "634de114775082f002bb5cfdba0a28e768be807c798159c549e7bc930525b476"
+  },
+  "newIssue.chooseExistingWorkspace": {
+    "en": "Choose an existing workspace",
+    "zh-CN": "选择现有工作区",
+    "reviewedEnglishHash": "f8f73210599b2f45b60a6cfdf3d5884c8e8c4d37ca4f042ed9b6b972dabfc859"
+  },
+  "newIssue.createFailed": {
+    "en": "Failed to create issue. Try again.",
+    "zh-CN": "创建任务失败，请重试。",
+    "reviewedEnglishHash": "22bc022814cd216660e0d4741d18aeebce677b948f5de9b182db4fc3bbd49d98"
+  },
+  "newIssue.createIssue": {
+    "en": "Create Issue",
+    "zh-CN": "创建任务",
+    "reviewedEnglishHash": "1ceb8b71b5cccfc0918732eee61533f934c7ed1142e3f5f236172cda6dfd65f0"
+  },
+  "newIssue.createSubIssue": {
+    "en": "Create Sub-Task",
+    "zh-CN": "创建子任务",
+    "reviewedEnglishHash": "71cc5bc3af553ee6086fabf7841caeff732931d123c2082b6f0cbc04154100ee"
+  },
+  "newIssue.createTask": {
+    "en": "Create Task",
+    "zh-CN": "创建任务",
+    "reviewedEnglishHash": "5a9133cebfab753158e869331c7b1bac58020ede2b8499ada93711bd4954e8d6"
+  },
+  "newIssue.creating": {
+    "en": "Creating...",
+    "zh-CN": "创建中...",
+    "reviewedEnglishHash": "def70944c9bb9c3b77129e6fc48cfcd043031a86ae747060a3e97985d254c4f2"
+  },
+  "newIssue.creatingIssue": {
+    "en": "Creating issue...",
+    "zh-CN": "正在创建任务...",
+    "reviewedEnglishHash": "0a4a807ad24970164e8e73efd8f87ad212ded16f081159eaf07f6aea2d71944a"
+  },
+  "newIssue.defaultModel": {
+    "en": "Default model",
+    "zh-CN": "默认模型",
+    "reviewedEnglishHash": "3840d9d29421c46ceb5d40081c30a489a8e8d8d3f65108bd923251fc5b9ed731"
+  },
+  "newIssue.descriptionPlaceholder": {
+    "en": "Add description...",
+    "zh-CN": "添加描述...",
+    "reviewedEnglishHash": "94123522b73f30f2554019fa8f6ac2c98b92aa95335bbf807f69fe3edf34548f"
+  },
+  "newIssue.discardDraft": {
+    "en": "Discard draft",
+    "zh-CN": "丢弃草稿",
+    "reviewedEnglishHash": "cb30147eec19a75829e93b86d1cc01a88fa43a68ecce2bbd2aef06dcfe7b70ea"
+  },
+  "newIssue.documents": {
+    "en": "Documents",
+    "zh-CN": "文档",
+    "reviewedEnglishHash": "b4e929d8bcfe04189801a8ed61496d177d9e30d1b2826f4c9c4d00b3e705fa8b"
+  },
+  "newIssue.dueDate": {
+    "en": "Due date",
+    "zh-CN": "截止日期",
+    "reviewedEnglishHash": "e1cb6d30fa3f17ee1e50b2bcf1967374467748ba3b8acd64be2df8a70c2ddc46"
+  },
+  "newIssue.enableChrome": {
+    "en": "Enable Chrome (--chrome)",
+    "zh-CN": "启用 Chrome（--chrome）",
+    "reviewedEnglishHash": "df1c9d6705885e6d112d3720c2aeef1833c0ca86c536dceb1945f7dca181746c"
+  },
+  "newIssue.executionWorkspace.parentWarning": {
+    "en": "Warning: this sub-issue will no longer use the parent task workspace{{suffix}}.",
+    "zh-CN": "警告：此子任务将不再使用父任务工作区{{suffix}}。",
+    "reviewedEnglishHash": "7c289efd69f808cb66bd5e2ac16aaedd55793ca79758355ac0280012c240fb45"
+  },
+  "newIssue.executionWorkspaceHelp": {
+    "en": "Control whether this issue runs in the shared workspace, a new isolated workspace, or an existing one.",
+    "zh-CN": "控制这个任务是在共享工作区、新建隔离工作区，还是复用现有工作区中运行。",
+    "reviewedEnglishHash": "f3e39c5ecd059771f18767dff0a5e7308118f4a65dc84758f7239ac8d905f50b"
+  },
+  "newIssue.executionWorkspaceMode.isolated_workspace": {
+    "en": "New isolated workspace",
+    "zh-CN": "新建隔离工作区",
+    "reviewedEnglishHash": "0c67029f9e1abe735ac27650f8571b05c0ee4fa68c69a256f1110aaa22cabbc9"
+  },
+  "newIssue.executionWorkspaceMode.reuse_existing": {
+    "en": "Reuse existing workspace",
+    "zh-CN": "复用现有工作区",
+    "reviewedEnglishHash": "c84ba2b63629f77ddd5c954fe73568893e2b62e6bd6813d4b7389f0cedf67fc0"
+  },
+  "newIssue.executionWorkspaceMode.shared_workspace": {
+    "en": "Project default",
+    "zh-CN": "沿用项目默认设置",
+    "reviewedEnglishHash": "e8cb80e5c5cb7d7ab993752ca5a5df422767c827ca28cf19b92111fe136df828"
+  },
+  "newIssue.executionWorkspaceTitle": {
+    "en": "Execution workspace",
+    "zh-CN": "执行工作区",
+    "reviewedEnglishHash": "d31c92b6bb53c871049f335506f5e1f410c271061bbc79655d7101fb4749cdfe"
+  },
+  "newIssue.existingExecutionWorkspace": {
+    "en": "existing execution workspace",
+    "zh-CN": "现有执行工作区",
+    "reviewedEnglishHash": "1f71381512f553df9c92ec9a2378b397dde0812855e74de05de3c4152152e51b"
+  },
+  "newIssue.forLabel": {
+    "en": "For",
+    "zh-CN": "交给",
+    "reviewedEnglishHash": "ca15ebc05a3c5c1348753b209c4452c54022dbe565d9943b11c795e3af9eb0b0"
+  },
+  "newIssue.inLabel": {
+    "en": "in",
+    "zh-CN": "归属",
+    "reviewedEnglishHash": "582967534d0f909d196b97f9e6921342777aea87b46fa52df165389db1fb8ccf"
+  },
+  "newIssue.instructions": {
+    "en": "Instructions",
+    "zh-CN": "说明",
+    "reviewedEnglishHash": "934652dce41d62d3c9ff34b2c5e44e3addaedc67d6137328a9fe75a63c51dbac"
+  },
+  "newIssue.lowTrustAssigneeNote": {
+    "en": "Low-trust review agent. It can only act inside its assigned review boundary; issue, project, or run policy defines the concrete scope.",
+    "zh-CN": "低信任评审智能体。它只能在分配的评审边界内行动；任务、项目或运行策略会定义具体范围。",
+    "reviewedEnglishHash": "cd5a6a3ad1c86a276ab3adc1765184521c870ff41f5d8051f4b98865044aa05a"
+  },
+  "newIssue.lowTrustReviewAgent": {
+    "en": "Low-trust review agent",
+    "zh-CN": "低信任审阅智能体",
+    "reviewedEnglishHash": "613df6053a613efd5351767c2e42bddcf9495d16107ec0ab7edac7fa98ae87ac"
+  },
+  "newIssue.modelLane.adapterDefaultPrefix": {
+    "en": "· adapter default",
+    "zh-CN": "· 适配器默认模型",
+    "reviewedEnglishHash": "71115be2c7e31773847618910969947f7a0fd360d0e3d6a75163eb9ac9f2e37e"
+  },
+  "newIssue.modelLane.cheap": {
+    "en": "Cheap",
+    "zh-CN": "低成本",
+    "reviewedEnglishHash": "b26ea04f9a1ec267e2e52bde863940c161d8c2734e1bd07331fb0e3098b2442d"
+  },
+  "newIssue.modelLane.cheapSendsPrefix": {
+    "en": "Sends",
+    "zh-CN": "发送",
+    "reviewedEnglishHash": "3b0d0d305aa1a104d5f94bd27dcfd77ec5fd81200cf33cc0dc79e69bd7c727e2"
+  },
+  "newIssue.modelLane.custom": {
+    "en": "Custom",
+    "zh-CN": "自定义",
+    "reviewedEnglishHash": "494ca78f7374e46fb2de9ad9f2dbd4aaae89b50b2ca044177a1566a59e06627e"
+  },
+  "newIssue.modelLane.customDescription": {
+    "en": "Override the model and effort for this issue only.",
+    "zh-CN": "仅为这个任务覆盖模型和思考强度。",
+    "reviewedEnglishHash": "a98ad1a2469fdd17411776be71751a5bc0023f6cc142a6b0c22fdaae6792f6d8"
+  },
+  "newIssue.modelLane.fallsBackToPrimary": {
+    "en": "· falls back to the primary model if no cheap profile is configured",
+    "zh-CN": "· 未配置低成本档位时回退到主模型",
+    "reviewedEnglishHash": "92360eef3dd3398ee4265d907c6057e9fbdc2ded51712f4bc3c889fcaf102908"
+  },
+  "newIssue.modelLane.override": {
+    "en": "Override",
+    "zh-CN": "覆盖",
+    "reviewedEnglishHash": "43bc0f5fc035108f88cb7436ade1a103b0c710ba82c733cb5835a2b89dc4568f"
+  },
+  "newIssue.modelLane.primary": {
+    "en": "Primary",
+    "zh-CN": "主模型",
+    "reviewedEnglishHash": "efe10c80ec8a9f38624cbb47103010a8cf32488a503e4b4bfe4f92307a9cefa7"
+  },
+  "newIssue.modelLane.primaryDescription": {
+    "en": "Runs on the agent's primary model.",
+    "zh-CN": "使用智能体的主模型运行。",
+    "reviewedEnglishHash": "ba89c30c198f4dac828ae447d16978c18ab21d53d381973435ff1ae597a372c4"
+  },
+  "newIssue.modelLane.title": {
+    "en": "Model lane",
+    "zh-CN": "模型档位",
+    "reviewedEnglishHash": "7cd1d36fde63b95ae3debbb6200f10bda503af39669ea2c23a0be3843f901747"
+  },
+  "newIssue.modelLane.usesCheapProfile": {
+    "en": "· uses the agent's configured cheap profile",
+    "zh-CN": "· 使用智能体已配置的低成本档位",
+    "reviewedEnglishHash": "623ec59d1918034dba4113b23176cd70f628961604aafc4add4288b1a02bedcb"
+  },
+  "newIssue.newTaskTitle": {
+    "en": "New task",
+    "zh-CN": "新建任务",
+    "reviewedEnglishHash": "3e992276b2298a1fb8035727de54620ff01bbcfc451133124145633b2c8f8475"
+  },
+  "newIssue.noAgentsFound": {
+    "en": "No agents found.",
+    "zh-CN": "未找到智能体。",
+    "reviewedEnglishHash": "61666542b1caa1e26dcc1b3594c7520ea98cc285effe5884ed74684563662205"
+  },
+  "newIssue.noApprover": {
+    "en": "No approver",
+    "zh-CN": "无批准人",
+    "reviewedEnglishHash": "31322c37bc66685b88babd9641db8bdc9e6819275edcdea00338841a864ceb53"
+  },
+  "newIssue.noApproversFound": {
+    "en": "No approvers found.",
+    "zh-CN": "未找到批准人。",
+    "reviewedEnglishHash": "f1a7922d68280d262359888601ef7c04beadd381e2d6c3222d8e5bf4f342967e"
+  },
+  "newIssue.noAssignee": {
+    "en": "No assignee",
+    "zh-CN": "无负责人",
+    "reviewedEnglishHash": "d64d8cecf4ebff54afe8a87fed86f1dd654047995cd310132fc461f4355fdf9c"
+  },
+  "newIssue.noAssigneesFound": {
+    "en": "No assignees found.",
+    "zh-CN": "未找到负责人。",
+    "reviewedEnglishHash": "0c8e659070b4df17be7a53891dac05736b74f7284e2a23f0af5ec1e530f087c1"
+  },
+  "newIssue.noModelsFound": {
+    "en": "No models found.",
+    "zh-CN": "未找到模型。",
+    "reviewedEnglishHash": "339e5fcda064be02cf3fc3c4e63e48bf0526dd7208f758c51a27c9ab0a2a9cc3"
+  },
+  "newIssue.noProject": {
+    "en": "No project",
+    "zh-CN": "无项目",
+    "reviewedEnglishHash": "f34c2be0d1c5f5622eb03be1f67e13dee2ce3dbb71201d909e76a761c29d8bcb"
+  },
+  "newIssue.noProjectsFound": {
+    "en": "No projects found.",
+    "zh-CN": "未找到项目。",
+    "reviewedEnglishHash": "26e92309ba5b0ca92bb929346ac5a07d11befa945074be4a19dd34fda69020a0"
+  },
+  "newIssue.noReviewer": {
+    "en": "No reviewer",
+    "zh-CN": "无复查人",
+    "reviewedEnglishHash": "ab68c6a815924431a4f0b1d9ebdf0bc1be4f10e1e5ade49c0cb637ecebd649b5"
+  },
+  "newIssue.noReviewersFound": {
+    "en": "No reviewers found.",
+    "zh-CN": "未找到复查人。",
+    "reviewedEnglishHash": "712cb821ccdd12e1ecf649830cc92aebf96f5db636c0328ea874de735e8668f0"
+  },
+  "newIssue.optional": {
+    "en": "optional",
+    "zh-CN": "可选",
+    "reviewedEnglishHash": "ec91fdd9256cb75ae611249b50cb7eb16533f0fa91b86239ec1d439a1ea033b8"
+  },
+  "newIssue.priority": {
+    "en": "Priority",
+    "zh-CN": "优先级",
+    "reviewedEnglishHash": "d60dbba079223254d4c49c230a515bc107a997e69f811365da2387f8557b9cec"
+  },
+  "newIssue.project": {
+    "en": "Project",
+    "zh-CN": "项目",
+    "reviewedEnglishHash": "985959785319747668373cc6dee294b11db782b03cdd90a2851fbdc0637c6b7b"
+  },
+  "newIssue.removeAttachment": {
+    "en": "Remove attachment",
+    "zh-CN": "移除附件",
+    "reviewedEnglishHash": "595b066a8838734a2b17efe5b7860be04047105d705203219d0b4c3cccd13c57"
+  },
+  "newIssue.removeDocument": {
+    "en": "Remove document",
+    "zh-CN": "移除文档",
+    "reviewedEnglishHash": "e17eb479943674a95bc9d5ed3a91559dff28cfd0255340f5a144eb301a35fccd"
+  },
+  "newIssue.reusingExecutionWorkspace": {
+    "en": "Reusing {{name}} from {{source}}.",
+    "zh-CN": "将复用 {{name}}，来源：{{source}}。",
+    "reviewedEnglishHash": "ff0e8a0835e82ab3b3f0689f1ee3eaa35f994aa6ccb3648043ee4eebfc473221"
+  },
+  "newIssue.reviewer": {
+    "en": "Reviewer",
+    "zh-CN": "复查人",
+    "reviewedEnglishHash": "d29f46772c4aaacbbc35c3da380dcc9dfa2df19fa3992bdf6e725a2e09abd53b"
+  },
+  "newIssue.searchAgents": {
+    "en": "Search agents...",
+    "zh-CN": "搜索智能体...",
+    "reviewedEnglishHash": "32f4468b0b6f9410941a7940ea86374fa42a3e6846896c361c465680dca0c7ba"
+  },
+  "newIssue.searchApprovers": {
+    "en": "Search approvers...",
+    "zh-CN": "搜索批准人...",
+    "reviewedEnglishHash": "14a9f9899a8f96a7a803134d59ba110928b8e96e83dd9355e952685f502cd093"
+  },
+  "newIssue.searchAssignees": {
+    "en": "Search assignees...",
+    "zh-CN": "搜索负责人...",
+    "reviewedEnglishHash": "ad7ec86de2987b2b0c3e3bd218dcf5dbe43f5e93d308d3239bdf26268644904d"
+  },
+  "newIssue.searchModels": {
+    "en": "Search models...",
+    "zh-CN": "搜索模型...",
+    "reviewedEnglishHash": "37b90680b8421a458410f14ed834f835438dd5853dccb35e327c582cb7116dce"
+  },
+  "newIssue.searchProjects": {
+    "en": "Search projects...",
+    "zh-CN": "搜索项目...",
+    "reviewedEnglishHash": "c59dd5a3c5a2558873e6844ded9c7b9433b65eec9367a6c7e6d4e97aa48fa08e"
+  },
+  "newIssue.searchReviewers": {
+    "en": "Search reviewers...",
+    "zh-CN": "搜索复查人...",
+    "reviewedEnglishHash": "1cd864330ccf4fae2e655d9fceb679cc337c2ab9529d03b23200c13727286e21"
+  },
+  "newIssue.startDate": {
+    "en": "Start date",
+    "zh-CN": "开始日期",
+    "reviewedEnglishHash": "8169693101a4536c24e384595cce97fa4740c7529114bead65525f5532699597"
+  },
+  "newIssue.statusDescriptions.backlog": {
+    "en": "Parked - assignee will not be woken",
+    "zh-CN": "已搁置 - 不会唤醒负责人",
+    "reviewedEnglishHash": "0a17f3a3110157554600463ec84f4337a51ce0edf4d968a5d90eca57d5eb834f"
+  },
+  "newIssue.statusDescriptions.todo": {
+    "en": "Executable - assignee will be woken",
+    "zh-CN": "可执行 - 会唤醒负责人",
+    "reviewedEnglishHash": "ffa5f59488c8ba6dd2b925e51be546431eb38a0760b5f99e32edf73d055b5276"
+  },
+  "newIssue.subIssueOf": {
+    "en": "Sub-task of",
+    "zh-CN": "隶属于子任务",
+    "reviewedEnglishHash": "e05746403d004aed23a9e283f508333b904c90bb7be948717436f1ccec39ff3b"
+  },
+  "newIssue.subIssueTitle": {
+    "en": "New sub-task",
+    "zh-CN": "新建子任务",
+    "reviewedEnglishHash": "158c2daec9a72df34e9f802c2d5c2bca387e23ff24967b571262bbc1c19ccf86"
+  },
+  "newIssue.thinkingEffort.default": {
+    "en": "Default",
+    "zh-CN": "默认",
+    "reviewedEnglishHash": "21b111cbfe6e8fca2d181c43f53ad548b22e38aca955b9824706a504b0a07a2d"
+  },
+  "newIssue.thinkingEffort.high": {
+    "en": "High",
+    "zh-CN": "高",
+    "reviewedEnglishHash": "c4ebc6d4a5832cd9415f906ad03661110c705a72381c8b8b145761d02e2dd23a"
+  },
+  "newIssue.thinkingEffort.low": {
+    "en": "Low",
+    "zh-CN": "低",
+    "reviewedEnglishHash": "f793de205ead5ac302c4a1627829dea41f176b1068b993a32373fc869918374b"
+  },
+  "newIssue.thinkingEffort.max": {
+    "en": "Max",
+    "zh-CN": "最高",
+    "reviewedEnglishHash": "a1a5936d3b0f8a69fd62c91ed9990d3bd414c5e78c603e2837c65c9f46a93eb8"
+  },
+  "newIssue.thinkingEffort.medium": {
+    "en": "Medium",
+    "zh-CN": "中",
+    "reviewedEnglishHash": "8e588cd187741f1cd76f5fab77b7208782a8c21d764ce7d7a4cf3ac4e0968873"
+  },
+  "newIssue.thinkingEffort.minimal": {
+    "en": "Minimal",
+    "zh-CN": "最小",
+    "reviewedEnglishHash": "057b5de48d7b90f123ec28d7e15f65d99b508d6b7cc2958c39472070f0f0f6bb"
+  },
+  "newIssue.thinkingEffort.xhigh": {
+    "en": "X-High",
+    "zh-CN": "超高",
+    "reviewedEnglishHash": "393d3e4bf2eea43ad08fcd583922c7db6a04ff13ba49467ac637a843510be575"
+  },
+  "newIssue.thinkingEffortTitle": {
+    "en": "Thinking effort",
+    "zh-CN": "思考强度",
+    "reviewedEnglishHash": "264c28cbf01ce9fa107dab0803dda90e796217e8a6ee6e3fa063f354f003f90d"
+  },
+  "newIssue.title": {
+    "en": "New issue",
+    "zh-CN": "新建任务",
+    "reviewedEnglishHash": "3484d10f0197b9c2a7de3c5d292f943296bb935fd67616e8ad60dcd8153c3b6c"
+  },
+  "newIssue.titlePlaceholder": {
+    "en": "Task title",
+    "zh-CN": "任务标题",
+    "reviewedEnglishHash": "11622e0f259d5924d3eec7e572ceca513163c3b1596305291f046221daab10ee"
+  },
+  "newIssue.upload": {
+    "en": "Upload",
+    "zh-CN": "上传",
+    "reviewedEnglishHash": "865e89de78d94c747184d6a7e6f5244b453d8062343c07e014ae698cfb0260e8"
+  },
+  "newIssue.uploadWarnings.body_one": {
+    "en": "1 staged file could not be added.",
+    "zh-CN": "有 1 个暂存文件未能添加。",
+    "reviewedEnglishHash": "c02e9fad9cf88c3a94d93e6c32365e2247e93b9431f300d750238d8c93715668"
+  },
+  "newIssue.uploadWarnings.body_other": {
+    "en": "{{count}} staged files could not be added.",
+    "zh-CN": "有 {{count}} 个暂存文件未能添加。",
+    "reviewedEnglishHash": "47489978858ec1db4db782f14f23336eb5748730cdd3986dc6e6848a01c5ce25"
+  },
+  "newIssue.uploadWarnings.openIssue": {
+    "en": "Open {{issueRef}}",
+    "zh-CN": "打开 {{issueRef}}",
+    "reviewedEnglishHash": "45083a7e38174d632f0de720ed8f8c3ab3901ffd864bc744e2e612482e372705"
+  },
+  "newIssue.uploadWarnings.title": {
+    "en": "Created {{issueRef}} with upload warnings",
+    "zh-CN": "已创建 {{issueRef}}，但上传时有警告",
+    "reviewedEnglishHash": "7a52c8f339737b2e9370843bf328c28340d8a8d7f4e27c09c6edcd3f7ec6482b"
+  },
+  "newIssue.workMode.conferenceRoom.ask": {
+    "en": "Ask mode",
+    "zh-CN": "提问模式",
+    "reviewedEnglishHash": "ae649982d52fdae78960ce55e5262d333a201cd8a8851127e735419c24e90844"
+  },
+  "newIssue.workMode.conferenceRoom.planning": {
+    "en": "Plan mode",
+    "zh-CN": "规划模式",
+    "reviewedEnglishHash": "3ca7d842d1209b4d550ba48787a7fe44f97c9a60c5e329178afd9e6359b7087c"
+  },
+  "newIssue.workMode.conferenceRoom.standard": {
+    "en": "Agent mode",
+    "zh-CN": "智能体模式",
+    "reviewedEnglishHash": "7cb0154423f4e208531c0ab32537384bffd7b92ace440743085f715a3a9042b7"
+  },
+  "newIssue.workMode.planning": {
+    "en": "Planning",
+    "zh-CN": "规划",
+    "reviewedEnglishHash": "21cc305095786cd35cdd0e43b4ab2d5b032f95b8e692ab97dcfda3bae2c12d24"
+  },
+  "newIssue.workMode.short.ask": {
+    "en": "Ask",
+    "zh-CN": "提问",
+    "reviewedEnglishHash": "b8c209cdead61a095ec097b7a13c4fc9264c04b3e3bd0fca42ec8dbaeebeeafe"
+  },
+  "newIssue.workMode.short.planning": {
+    "en": "Plan",
+    "zh-CN": "规划",
+    "reviewedEnglishHash": "fa8ed0bdabdd6bcb1c0746f1d3e15212f7f3439d74339fbaaf16c60c0a80fb8e"
+  },
+  "newIssue.workMode.short.standard": {
+    "en": "Agent",
+    "zh-CN": "智能体",
+    "reviewedEnglishHash": "11b39c93777e8f1f3983bdba7c72b22fe68cfea20c677e9de53e17cb7dbfb19f"
+  },
+  "newIssue.workMode.standard": {
+    "en": "Standard",
+    "zh-CN": "标准",
+    "reviewedEnglishHash": "ef6691545d2c5523efed00424407cb261aeb0037d165ca5792f7f8bac3381362"
+  }
+}

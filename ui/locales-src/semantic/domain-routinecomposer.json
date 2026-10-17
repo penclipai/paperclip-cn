@@ -1,0 +1,12 @@
+{
+  "routineComposer.forAssignee": {
+    "en": "For",
+    "zh-CN": "由",
+    "reviewedEnglishHash": "ca15ebc05a3c5c1348753b209c4452c54022dbe565d9943b11c795e3af9eb0b0"
+  },
+  "routineComposer.inProject": {
+    "en": "in",
+    "zh-CN": "在",
+    "reviewedEnglishHash": "582967534d0f909d196b97f9e6921342777aea87b46fa52df165389db1fb8ccf"
+  }
+}

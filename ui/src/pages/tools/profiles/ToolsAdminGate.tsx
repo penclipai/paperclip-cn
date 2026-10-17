@@ -1,6 +1,7 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
 import type { ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
 import { ShieldAlert } from "lucide-react";
 import { Link } from "@/lib/router";
 import { accessApi } from "@/api/access";
@@ -9,12 +10,12 @@ import { useCompany } from "@/context/CompanyContext";
 
 /**
  * Best-effort admin gate for the access-profiles surface, mirroring
- * `AdvancedToolsRoute` (PAP-10862, plan D8). Instance admins and company
- * owners/admins pass; the server stays authoritative. Shared so the profiles
- * index and the create wizard guard identically.
+ * `AdvancedToolsRoute` (PAP-10862, plan D8). Local boards, instance admins,
+ * and active company owners/admins/operators pass; the server stays
+ * authoritative. Shared so the profiles index and create wizard guard identically.
  */
 export function ToolsAdminGate({ children }: { children: ReactNode }) {
-  const { t } = useTranslation();
+  useTranslation();
   const { selectedCompanyId } = useCompany();
   const boardAccess = useQuery({
     queryKey: queryKeys.access.currentBoardAccess,
@@ -23,31 +24,32 @@ export function ToolsAdminGate({ children }: { children: ReactNode }) {
   });
 
   if (boardAccess.isLoading) {
-    return <div className="mx-auto max-w-xl py-10 text-sm text-muted-foreground">{t("tools.shared.loading", { defaultValue: "Loading…" })}</div>;
+    return <div className="mx-auto max-w-xl py-10 text-sm text-muted-foreground">{translateInstant("tools.shared.loading")}</div>;
   }
 
   const data = boardAccess.data;
-  const membership = data?.memberships?.find((m) => m.companyId === selectedCompanyId);
-  const isAdmin =
+  const membership = data?.memberships?.find((m) => m.companyId === selectedCompanyId && m.status === "active");
+  const canManageTools =
+    data?.source === "local_implicit" ||
     Boolean(data?.isInstanceAdmin) ||
     membership?.membershipRole === "owner" ||
-    membership?.membershipRole === "admin";
+    membership?.membershipRole === "admin" ||
+    membership?.membershipRole === "operator" ||
+    membership?.membershipRole === "member";
 
-  if (!isAdmin) {
+  if (!canManageTools) {
     return (
       <div className="mx-auto max-w-xl py-10">
         <div className="flex flex-col gap-3 rounded-lg border border-border bg-card p-6">
           <div className="flex items-center gap-2 text-foreground">
             <ShieldAlert className="h-5 w-5 text-muted-foreground" />
-            <h1 className="text-lg font-semibold">{t("tools.profiles.adminGate.title", { defaultValue: "Access profiles are for administrators" })}</h1>
+            <h1 className="text-lg font-semibold">{translateInstant("Access profiles require editing access")}</h1>
           </div>
           <p className="text-sm text-muted-foreground">
-            {t("tools.profiles.adminGate.description", { defaultValue: "Access profiles decide which tools your agents can use. Ask an administrator to set these up, or head back to" })}{" "}
+            {translateInstant("Access profiles decide which tools your agents can use. Ask a company editor to set these up, or head back to")}{" "}
             <Link to="/apps" className="font-medium text-primary hover:underline">
-              {t("tools.profiles.adminGate.yourApps", { defaultValue: "your apps" })}
-            </Link>
-            .
-          </p>
+              {translateInstant("tools.profiles.adminGate.yourApps")}</Link>
+            {translateInstant(".")}</p>
         </div>
       </div>
     );

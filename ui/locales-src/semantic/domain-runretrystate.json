@@ -1,0 +1,82 @@
+{
+  "runRetryState.automaticRetriesExhausted": {
+    "en": "Automatic retries exhausted",
+    "zh-CN": "自动重试已耗尽",
+    "reviewedEnglishHash": "7ae9dbd5a2f31c62cec02b08cfd648a98d154a9a66c06ca731dcfbd6b7221ec6"
+  },
+  "runRetryState.continuationExhausted": {
+    "en": "Continuation exhausted",
+    "zh-CN": "Continuation 已耗尽",
+    "reviewedEnglishHash": "f6423f8a55a0e3bdf09b2dd49369bc5f10e66d9fa046b95b39c167d740029e96"
+  },
+  "runRetryState.continuedRun": {
+    "en": "Continued run",
+    "zh-CN": "已继续运行",
+    "reviewedEnglishHash": "2cc367d6198e00850e19f37b047724e6e2f053c9b7fe64075334f64ad0a75254"
+  },
+  "runRetryState.manualInterventionRequired": {
+    "en": "{{reason}} Manual intervention required.",
+    "zh-CN": "{{reason}} 需要人工介入。",
+    "reviewedEnglishHash": "5942900eb7a9f084f05ccccfbdcc389b62d7d62806c0f686948787dedd226895"
+  },
+  "runRetryState.nextContinuationAt": {
+    "en": "Next continuation {{date}}",
+    "zh-CN": "下次 continuation {{date}}",
+    "reviewedEnglishHash": "a92e78a46671b22e26c32dd6b16d72d5602cec7311e8f47872c42f388a3bac7f"
+  },
+  "runRetryState.nextContinuationPending": {
+    "en": "Next continuation pending schedule",
+    "zh-CN": "下次 continuation 等待计划",
+    "reviewedEnglishHash": "7c29cb61202b6ed6773a742dada954f1046c7b8d17016f2925f0d2fa311a58fd"
+  },
+  "runRetryState.nextRetryAt": {
+    "en": "Next retry {{date}}",
+    "zh-CN": "下次重试 {{date}}",
+    "reviewedEnglishHash": "625778a9266b97442d8c88c2b3e46ced5174a2e61007aed229ef3178a7f8fbdd"
+  },
+  "runRetryState.nextRetryPending": {
+    "en": "Next retry pending schedule",
+    "zh-CN": "下次重试等待计划",
+    "reviewedEnglishHash": "633fc9ec4f9a19be94a9854f60f9a3f5dabc6e6480d94b61eb0a020ef3b152a0"
+  },
+  "runRetryState.reason.assignmentRecovery": {
+    "en": "Assignment recovery",
+    "zh-CN": "分配恢复",
+    "reviewedEnglishHash": "752368eb509879687e9a5fcedbc35a098980139823962549ce7bb326f7508d2a"
+  },
+  "runRetryState.reason.issueContinuationNeeded": {
+    "en": "Continuation needed",
+    "zh-CN": "需要 continuation",
+    "reviewedEnglishHash": "1ce15e046a01251cbf09c6fc243c6e4a29d9a236deecff44f229aafab594b201"
+  },
+  "runRetryState.reason.maxTurnsContinuation": {
+    "en": "Max-turn continuation",
+    "zh-CN": "最大轮次 continuation",
+    "reviewedEnglishHash": "89ed52f09aa4f83cd068b0ef510dbf4e4082dcffcde05d6eb2692f10d06c33f9"
+  },
+  "runRetryState.reason.missingIssueComment": {
+    "en": "Missing issue comment",
+    "zh-CN": "缺少任务评论",
+    "reviewedEnglishHash": "e8254cf7c7a4a6b02e5fc7f0919fb070be3e302a5c9ecd80ea5e0085b95ce326"
+  },
+  "runRetryState.reason.processLost": {
+    "en": "Process lost",
+    "zh-CN": "进程丢失",
+    "reviewedEnglishHash": "670e8b322d3c89d42a4b2a8bc529ad2193568bfe6aca56f00332a3a6493866f5"
+  },
+  "runRetryState.reason.transientFailure": {
+    "en": "Transient failure",
+    "zh-CN": "暂时性失败",
+    "reviewedEnglishHash": "cd410c0281d30bd6a2e8f8ca1c5c8cb65f731c8bb030a78e4aefb7d2b6bb7429"
+  },
+  "runRetryState.retriedRun": {
+    "en": "Retried run",
+    "zh-CN": "已重试运行",
+    "reviewedEnglishHash": "a372c71bd954ea3b632c20a03efb6f79988d9cff0419ab4a41466ddb40634778"
+  },
+  "runRetryState.retryExhausted": {
+    "en": "Retry exhausted",
+    "zh-CN": "重试已耗尽",
+    "reviewedEnglishHash": "7dd6020901005fd72e97cc152096525645e564deccdd3302e565a684ca8581a5"
+  }
+}

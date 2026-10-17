@@ -43,6 +43,7 @@ function replaceLastPathSegment(pathValue: string, replacement: string) {
 export function maskUserNameForLogs(value: string, fallback = CURRENT_USER_REDACTION_TOKEN) {
   const trimmed = value.trim();
   if (!trimmed) return fallback;
+  if (Array.from(trimmed).length <= 1) return fallback;
   return `${trimmed[0]}${"*".repeat(Math.max(1, Array.from(trimmed).length - 1))}`;
 }
 
@@ -83,17 +84,13 @@ function defaultHomeDirs(userNames: string[]) {
   return uniqueNonEmpty(candidates);
 }
 
-let cachedCurrentUserCandidates: CurrentUserCandidates | null = null;
-
 function getDefaultCurrentUserCandidates(): CurrentUserCandidates {
-  if (cachedCurrentUserCandidates) return cachedCurrentUserCandidates;
   const userNames = defaultUserNames();
-  cachedCurrentUserCandidates = {
+  return {
     userNames,
     homeDirs: defaultHomeDirs(userNames),
     replacement: CURRENT_USER_REDACTION_TOKEN,
   };
-  return cachedCurrentUserCandidates;
 }
 
 function resolveCurrentUserCandidates(opts?: CurrentUserRedactionOptions) {

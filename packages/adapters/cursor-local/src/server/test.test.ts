@@ -123,6 +123,28 @@ function createSandboxRunner(options: { homeDir: string; installCommandPath: str
 }
 
 describe("cursor testEnvironment", () => {
+  it("shows the probe failure after an informational retrieval trace notice", async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-cursor-probe-diagnostic-"));
+    const command = path.join(root, "agent");
+    await fs.writeFile(command, `#!/usr/bin/env node
+if (process.argv.includes("--version")) { console.log("Cursor Agent 1.2.3"); process.exit(0); }
+console.error("cursor-retrieval: tracing to '/tmp/fixture.log'");
+console.error("Provider connection failed");
+process.exit(7);
+`, { mode: 0o755 });
+    try {
+      const result = await testEnvironment({
+        companyId: "company-1", adapterType: "cursor",
+        config: { command, cwd: root, env: { PATH: `${root}${path.delimiter}${process.env.PATH ?? ""}`, CURSOR_API_KEY: "fixture-cursor-key" } },
+      });
+      expect(result.checks).toEqual(expect.arrayContaining([
+        expect.objectContaining({ code: "cursor_hello_probe_failed", detail: "Provider connection failed" }),
+      ]));
+    } finally {
+      await fs.rm(root, { recursive: true, force: true });
+    }
+  });
+
   it("re-resolves the installed agent under ~/.cursor/bin and verifies --version before the hello probe", async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-cursor-envtest-"));
     const homeDir = path.join(root, "home");

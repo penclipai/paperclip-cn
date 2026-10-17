@@ -1,38 +1,43 @@
-import type { ReactNode } from "react";
+import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
+import type { ReactNode } from "react";
+import { ChevronDown } from "lucide-react";
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSidebar } from "../context/SidebarContext";
 
 export interface PageTabItem {
   value: string;
   label: ReactNode;
-  mobileLabel?: string;
 }
 
 interface PageTabBarProps {
-  items: PageTabItem[];
+  items: readonly PageTabItem[];
   value?: string;
   onValueChange?: (value: string) => void;
   align?: "center" | "start";
 }
 
 export function PageTabBar({ items, value, onValueChange, align = "center" }: PageTabBarProps) {
+  useTranslation();
   const { isMobile } = useSidebar();
-  const { t } = useTranslation(undefined, { useSuspense: false });
 
   if (isMobile && value !== undefined && onValueChange) {
     return (
-      <select
-        value={value}
-        onChange={(e) => onValueChange(e.target.value)}
-        className="h-9 rounded-md border border-border bg-background px-2 py-1 text-base focus:outline-none focus:ring-1 focus:ring-ring"
-      >
-        {items.map((item) => (
-          <option key={item.value} value={item.value}>
-            {item.mobileLabel ?? (typeof item.label === "string" ? t(item.label, { defaultValue: item.label }) : item.value)}
-          </option>
-        ))}
-      </select>
+      <div className="relative inline-flex">
+        <select
+          value={value}
+          onChange={(e) => onValueChange(e.target.value)}
+          className="h-9 appearance-none rounded-md border border-border bg-background pl-3 pr-9 py-1 text-base focus:outline-none focus:ring-1 focus:ring-ring"
+          aria-label={translateInstant("pageTabBar.aria")}
+        >
+          {items.map((item) => (
+            <option key={item.value} value={item.value}>
+              {typeof item.label === "string" ? item.label : item.value}
+            </option>
+          ))}
+        </select>
+        <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+      </div>
     );
   }
 
@@ -40,7 +45,7 @@ export function PageTabBar({ items, value, onValueChange, align = "center" }: Pa
     <TabsList variant="line" className={align === "start" ? "justify-start" : undefined}>
       {items.map((item) => (
         <TabsTrigger key={item.value} value={item.value}>
-          {typeof item.label === "string" ? t(item.label, { defaultValue: item.label }) : item.label}
+          {item.label}
         </TabsTrigger>
       ))}
     </TabsList>

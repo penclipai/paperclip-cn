@@ -1,0 +1,32 @@
+{
+  "pluginExamples.authoringSmoke.description": {
+    "en": "Smoke-test example plugin used to validate the plugin host and authoring flow.",
+    "zh-CN": "用于验证插件宿主与开发流程的冒烟示例插件。",
+    "reviewedEnglishHash": "34f84419ea93788f1ae6f4645aeed8aa644d44fd0355ca93ca9c44b82171e572"
+  },
+  "pluginExamples.fileBrowser.description": {
+    "en": "Example plugin that adds a Files link under each project in the sidebar, a file browser and editor tab on the project detail page, and quick-open actions for referenced files in comments.",
+    "zh-CN": "示例插件，会在每个项目的侧栏添加“文件”入口，并在项目详情页提供文件浏览与编辑标签页，还支持从评论中的文件链接快速打开引用文件。",
+    "reviewedEnglishHash": "df0707f40fff192d603477d672273c9f74081eff754719c052d8307d828814a4"
+  },
+  "pluginExamples.helloWorld.description": {
+    "en": "Reference UI plugin that adds a simple Hello World widget to the Paperclip CN dashboard.",
+    "zh-CN": "参考界面插件，会在 Paperclip CN 仪表盘中添加一个简单的“你好世界”小组件。",
+    "reviewedEnglishHash": "608d2ef17c6c5b5df9b843b559e800882c3e7fed85f1bfa56ca59f72c4d902a9"
+  },
+  "pluginExamples.kitchenSink.description": {
+    "en": "Reference plugin that demonstrates the current Paperclip CN plugin API surface, UI surfaces, bridge actions, events, jobs, webhooks, tools, local workspace access, and runtime diagnostics in one place.",
+    "zh-CN": "参考插件，在一个示例中集中演示当前 Paperclip CN 插件 API、界面挂载点、桥接动作、事件、任务、Webhook、工具、本地工作区访问和运行诊断能力。",
+    "reviewedEnglishHash": "f325dd3357d53bb5f0ab2ce7dd45a2461ef2eff05dbd2e6150e202e67159b397"
+  },
+  "pluginExamples.workspaceDiff.description": {
+    "en": "First-party workspace changes plugin that adds a local Git diff-powered Changes tab to workspace details.",
+    "zh-CN": "第一方工作区变更插件，会在工作区详情中添加由本地 Git diff 驱动的“变更”标签页。",
+    "reviewedEnglishHash": "37966e805a79893f50b3a13f800081b57594cd929accbff1fb1f1230f1cb5928"
+  },
+  "pluginExamples.workspaceDiff.tabs.changes": {
+    "en": "Changes",
+    "zh-CN": "变更",
+    "reviewedEnglishHash": "bbd4b6a86bc65b6ac8e79e97afc61499158edb40f7bb404c70637b46d80a7ad2"
+  }
+}

@@ -1,0 +1,457 @@
+{
+  "newAgent.advancedAgentConfiguration": {
+    "en": "Advanced agent configuration",
+    "zh-CN": "高级智能体配置",
+    "reviewedEnglishHash": "ad035bd3308d84dc526843e1336cc3d9261590a9a4c6c71bb2d621a790615ac6"
+  },
+  "newAgent.advancedDescription": {
+    "en": "Choose your adapter type for advanced setup.",
+    "zh-CN": "选择一个适配器类型，继续高级配置。",
+    "reviewedEnglishHash": "ab31c345a402ad56bd0a9293787f2e51b17fa5851a2b6f73c1e7fcd714b53e7a"
+  },
+  "newAgent.advancedLink": {
+    "en": "I want advanced configuration myself",
+    "zh-CN": "我想自己进行高级配置",
+    "reviewedEnglishHash": "c26baad592e280b24f17a23b9936d051ee6f44e03b43243a28c8416ecf81cb43"
+  },
+  "newAgent.agentInviteApprovalHint": {
+    "en": "Agent invites create a join request first. A company admin still approves the request before the agent can claim its API key.",
+    "zh-CN": "智能体邀请会先创建加入请求。公司管理员批准后，智能体才能领取自己的 Paperclip API key。",
+    "reviewedEnglishHash": "f7c6d59d8e741d25a8ce3ca4b4bcae309b97f302eb2fbcfe8088fcaee9a09f84"
+  },
+  "newAgent.agentInviteCreated": {
+    "en": "Agent invite created",
+    "zh-CN": "已创建智能体邀请",
+    "reviewedEnglishHash": "ce830d8faeb2d6c9c2caed137cc510be85f636aa98306ccdbb462f27d0f4eeb2"
+  },
+  "newAgent.agentOnboardingPrompt": {
+    "en": "Agent onboarding prompt",
+    "zh-CN": "智能体入职提示",
+    "reviewedEnglishHash": "e2f7c7dd4a12fde8d19fcb47ce4f5f12360ab9d113e16ee8a23b99c3ff08f8a7"
+  },
+  "newAgent.askCeo": {
+    "en": "Ask the CEO to create a new agent",
+    "zh-CN": "让 CEO 创建一个新智能体",
+    "reviewedEnglishHash": "57dffcc47a0eb506ff363c7a4ae860859118dac21685d776d352c11f9c2c9de4"
+  },
+  "newAgent.back": {
+    "en": "Back",
+    "zh-CN": "返回",
+    "reviewedEnglishHash": "76900f1bfd16c8d4dd3d25e6f46638d7165aee23883ccea6bfe071c514421769"
+  },
+  "newAgent.choiceIntro": {
+    "en": "Ask a leader to propose the hire, configure a runtime yourself, or send an onboarding prompt to an external agent.",
+    "zh-CN": "可以让负责人提出招聘建议，也可以自己配置运行时，或向外部智能体发送入职提示。",
+    "reviewedEnglishHash": "7e840f33fb0db82e8569743cff24462f451bcd45f13d86db2dbdcd29de748ccf"
+  },
+  "newAgent.companySkillsEmpty": {
+    "en": "No optional company skills installed yet.",
+    "zh-CN": "当前还没有安装可选的公司技能。",
+    "reviewedEnglishHash": "95be11725923be8c7750d5cc40649a83fa3f9e7ff5aed66ff433321c40c6ff66"
+  },
+  "newAgent.companySkillsHint": {
+    "en": "Optional skills from the company library. Built-in Paperclip CN runtime skills are added automatically.",
+    "zh-CN": "可选添加公司技能库中的技能。Paperclip CN 内置运行时技能会自动加入。",
+    "reviewedEnglishHash": "ec4b059f9f49ec3c55e3d3e15457b185ce799e52e90ec96e0f870c92cc881af9"
+  },
+  "newAgent.companySkillsTitle": {
+    "en": "Company skills",
+    "zh-CN": "公司技能",
+    "reviewedEnglishHash": "1cc698b5f2367aab4f058539425904c14fb595ffb37d080d4a57f347daff2c6a"
+  },
+  "newAgent.configureRuntimeManually": {
+    "en": "Configure a runtime manually",
+    "zh-CN": "手动配置运行时",
+    "reviewedEnglishHash": "3910e33e702fab294eac7b4642b07e29d49e343a32039b96b514cddd01a62652"
+  },
+  "newAgent.copiedPrompt": {
+    "en": "Copied prompt",
+    "zh-CN": "已复制提示",
+    "reviewedEnglishHash": "15284f989c03bfa80385de95b5bc87b150cc8e349573514058257e60df0fc546"
+  },
+  "newAgent.copyInvitationPrompt": {
+    "en": "Copy invitation prompt",
+    "zh-CN": "复制邀请提示",
+    "reviewedEnglishHash": "f745c56581a66f7ea568f161d52053f3c12054158b8560d50b10e1ba41fe2d38"
+  },
+  "newAgent.copyPrompt": {
+    "en": "Copy prompt",
+    "zh-CN": "复制提示",
+    "reviewedEnglishHash": "ffc64b8bb8c4532dd3df46f541a61e131d0a0ce5c9993db071afec0bfc272e5e"
+  },
+  "newAgent.copyPromptManuallyAbove": {
+    "en": "Copy the agent onboarding prompt manually from the field above.",
+    "zh-CN": "请从上方字段手动复制智能体入职提示。",
+    "reviewedEnglishHash": "75dc9d9a80f3f0de6b0d9c63f45e2d3e4ff9740e380f253ad86fde6fa5cc8f59"
+  },
+  "newAgent.copyPromptManuallyBelow": {
+    "en": "Copy the agent onboarding prompt manually from the field below.",
+    "zh-CN": "请从下方字段手动复制智能体入职提示。",
+    "reviewedEnglishHash": "23425da5820611ce67ed3dbac0e85abf194fcbb489507e249f11ceab3acbae52"
+  },
+  "newAgent.copySetupPrompt": {
+    "en": "Copy setup prompt",
+    "zh-CN": "复制设置提示",
+    "reviewedEnglishHash": "9a5d81ccb428b2fa004e1cb9a1431e25e5bfa291c632116a5fb0d7eee6f1dfce"
+  },
+  "newAgent.createAgent": {
+    "en": "Create agent",
+    "zh-CN": "创建智能体",
+    "reviewedEnglishHash": "14de4863d7d4e8317b7323bc7a012600fe03f72d3bda743b28d049898ab208a2"
+  },
+  "newAgent.creatingAgent": {
+    "en": "Creating agent...",
+    "zh-CN": "正在创建智能体...",
+    "reviewedEnglishHash": "3b9ff09bd8673a1281de70a09709c836a83599b6708959dd6b9a42b16eaee7c8"
+  },
+  "newAgent.defaultIssueDescription": {
+    "en": "(type in what kind of agent you want here)",
+    "zh-CN": "（在这里输入你想要的智能体类型）",
+    "reviewedEnglishHash": "f19fefa554c23ce82ec5add6e04605121681e5d2d6e70ce53116c190d51282ae"
+  },
+  "newAgent.defaultIssueTitle": {
+    "en": "Create a new agent",
+    "zh-CN": "创建一个新的智能体",
+    "reviewedEnglishHash": "fe7aef650ea194e1dd325007fe0ec2fc22b293a0b32c0d3bffacb116247b427d"
+  },
+  "newAgent.dotAgentUnavailableDescription": {
+    "en": "Your Dot is connected. This agent must be available in Paperclip before it can receive assignments.",
+    "zh-CN": "你的 Dot 已连接。该智能体必须在 Paperclip 中可用，才能接收任务分配。",
+    "reviewedEnglishHash": "f43d4b7282ffab798b7244ce7a9236e09dea5d491566502d4962b1e807197ecd"
+  },
+  "newAgent.dotCheckComplete": {
+    "en": ": complete",
+    "zh-CN": "：已完成",
+    "reviewedEnglishHash": "1fdd2a3e0615a017503d86585b707421f970891d583d3df126afdb931c408eae"
+  },
+  "newAgent.dotCheckConnectedDescription": {
+    "en": "Your Dot has connected to this agent.",
+    "zh-CN": "你的 Dot 已连接到此智能体。",
+    "reviewedEnglishHash": "2f62cfe470bf72f4a93711ef9b13eac12448991c89615564e4ae5f3a04b76cf0"
+  },
+  "newAgent.dotCheckConnectedTitle": {
+    "en": "Connected to Paperclip",
+    "zh-CN": "已连接到 Paperclip",
+    "reviewedEnglishHash": "9bead607f6effa17794b1fc3a5c2dab3f8b8ea7a24600ae6416a570b2bd9e80a"
+  },
+  "newAgent.dotCheckInProgress": {
+    "en": ": in progress",
+    "zh-CN": "：进行中",
+    "reviewedEnglishHash": "490c5d40186c6e323cbfc1d82bdcbc9d02c2d12408f82232666ce25ff1d4edae"
+  },
+  "newAgent.dotCheckNeedsAttention": {
+    "en": ": needs attention",
+    "zh-CN": "：需要处理",
+    "reviewedEnglishHash": "1b7268b694579eb708179433735967f5724f0ac67651475db771b74814b04520"
+  },
+  "newAgent.dotCheckTestDescription": {
+    "en": "Your Dot received our test and replied to Paperclip.",
+    "zh-CN": "你的 Dot 已收到测试事件并回复 Paperclip。",
+    "reviewedEnglishHash": "56479cf93ae8a574e60d7f199749663327597d82bcb223cd5a99682042bb871c"
+  },
+  "newAgent.dotCheckTestTitle": {
+    "en": "Test event confirmed",
+    "zh-CN": "已确认测试事件",
+    "reviewedEnglishHash": "ea80720e34eaf6f29374869dda892cdc2cd2155cb1b61f4f82e9b87fdc2bba3a"
+  },
+  "newAgent.dotCheckUpdatesDescription": {
+    "en": "Your Dot is subscribed to new assignments and messages.",
+    "zh-CN": "你的 Dot 已订阅新的任务分配和消息。",
+    "reviewedEnglishHash": "c3ce7d9405b0cbc32a30d3ca488184ee0b9e9baa07df1fc6f115fa5a97f1918b"
+  },
+  "newAgent.dotCheckUpdatesTitle": {
+    "en": "Task updates enabled",
+    "zh-CN": "已启用任务更新",
+    "reviewedEnglishHash": "8c846354156c52a73946c98cfd29d08344243dcce78db16c13ec022dd293c2e6"
+  },
+  "newAgent.dotCheckWaiting": {
+    "en": ": waiting",
+    "zh-CN": "：等待中",
+    "reviewedEnglishHash": "1c9b478097648c499578c1889e039cb88132082966860f8499926520a4ed3fdb"
+  },
+  "newAgent.dotConnectTitle": {
+    "en": "Connect your Dot",
+    "zh-CN": "连接你的 Dot",
+    "reviewedEnglishHash": "767ddfb33ac2cde24e1078527fc1b38f11471f3e27cf03749334928af9754e83"
+  },
+  "newAgent.dotConnectedTitle": {
+    "en": "Your Dot is connected",
+    "zh-CN": "你的 Dot 已连接",
+    "reviewedEnglishHash": "fb43dfd6e86aee17891198a1b5e3cfdd0f46e23f3e87ee17c22e544a653088a5"
+  },
+  "newAgent.dotConnectingDescription": {
+    "en": "Your Dot has connected. We’re checking that task updates can travel both ways.",
+    "zh-CN": "你的 Dot 已连接。我们正在检查任务更新能否双向传递。",
+    "reviewedEnglishHash": "c3420609adf279b0bada0b5b6bbdc888be04972c65db141e8e3f4f3dc0e6c7d8"
+  },
+  "newAgent.dotConnectionChecks": {
+    "en": "Dot connection checks",
+    "zh-CN": "Dot 连接检查",
+    "reviewedEnglishHash": "0c8a99e80eed8f3fc03b5887cf41b76e9329baeadb3074e6a0e35f3872b1a580"
+  },
+  "newAgent.dotFinishingDescription": {
+    "en": "Your Dot has connected and confirmed task updates. Paperclip is preparing it for assignments.",
+    "zh-CN": "你的 Dot 已连接并确认任务更新。Paperclip 正在为它准备任务分配。",
+    "reviewedEnglishHash": "71c04a6b6ae2624aed564f76f2d6c5e6ded7969d839471e9d321967181e0432e"
+  },
+  "newAgent.dotProgressAgentUnavailable": {
+    "en": "Agent unavailable",
+    "zh-CN": "智能体不可用",
+    "reviewedEnglishHash": "d6bf283bee98b1e7921c6c93031591bc094f7bac2bd798ae8a0692040986b4f4"
+  },
+  "newAgent.dotProgressConfirming": {
+    "en": "Confirming connection…",
+    "zh-CN": "正在确认连接…",
+    "reviewedEnglishHash": "4984b6f091dd1a8f2c0c68151474f1b0941369b2b29389d5f0603daf9f3ae8c8"
+  },
+  "newAgent.dotProgressConnecting": {
+    "en": "Connecting…",
+    "zh-CN": "连接中…",
+    "reviewedEnglishHash": "72021eb70e91b4d58254586a8519393a281eb830c165bf1ec42a5057d425bcaf"
+  },
+  "newAgent.dotProgressFinishing": {
+    "en": "Finishing setup…",
+    "zh-CN": "正在完成设置…",
+    "reviewedEnglishHash": "6e06d26442b0e405e59734db37e966ff6a641790196ce31cfe63eaa91eab136d"
+  },
+  "newAgent.dotProgressNeedsAttention": {
+    "en": "Needs attention",
+    "zh-CN": "需要处理",
+    "reviewedEnglishHash": "c1ebc7817870e5be78fceae559ba5fcac2b68d5c5498d8080298004f3f79d62d"
+  },
+  "newAgent.dotProgressUpdatesPaused": {
+    "en": "Updates paused",
+    "zh-CN": "更新已暂停",
+    "reviewedEnglishHash": "fee1ce1889f2b9d549d0e502498b16bdeb080d7b492858182cccb1bbf5f9b7c3"
+  },
+  "newAgent.dotPromptDescription": {
+    "en": "Copy the setup prompt and send it to your Dot in ChatGPT. Your Dot will connect itself; we’ll watch for it here.",
+    "zh-CN": "复制设置提示并发送给 ChatGPT 中的 Dot。你的 Dot 会自行连接；我们会在此等待它出现。",
+    "reviewedEnglishHash": "1a2636dd3a80ca85dfdf91d62a921a2cad33179c74d0408ae4021d0c89a2e272"
+  },
+  "newAgent.dotReadyDescription": {
+    "en": "Your Dot can now receive assignments and work with {{companyName}}.",
+    "zh-CN": "你的 Dot 现在可以接收任务分配并与 {{companyName}} 协作。",
+    "reviewedEnglishHash": "7d206733f5816483e5ea862c857d91ca341e523210605a6fe1d588534b46b39b"
+  },
+  "newAgent.dotSetupPromptDescription": {
+    "en": "Send this whole prompt to your Dot in ChatGPT.",
+    "zh-CN": "将整段提示发送给 ChatGPT 中的 Dot。",
+    "reviewedEnglishHash": "35a46b44f374371db473c531c04e3dcb0030f65e3482f50cb7a2fc8bdbeba5b0"
+  },
+  "newAgent.dotStatusAgentUnavailable": {
+    "en": "Connection checks passed, but this agent cannot receive tasks. Resolve the agent’s setup blocker in Paperclip.",
+    "zh-CN": "连接检查已通过，但此智能体无法接收任务。请在 Paperclip 中解决其设置阻塞问题。",
+    "reviewedEnglishHash": "b7943a4afdf7396a7e062a424046d6d8465e48790781522362cd0c43bd759709"
+  },
+  "newAgent.dotStatusConnected": {
+    "en": "Your Dot connected. Waiting for it to enable task updates.",
+    "zh-CN": "你的 Dot 已连接。正在等待它启用任务更新。",
+    "reviewedEnglishHash": "468c40a47d620dbf675c21c5468976399c3adea413baf5164d62c7b1d9dae2b2"
+  },
+  "newAgent.dotStatusEventTimeout": {
+    "en": "Your Dot connected, but hasn’t confirmed the test event. Ask it to check Paperclip, then retry.",
+    "zh-CN": "你的 Dot 已连接，但尚未确认测试事件。请让它检查 Paperclip 后重试。",
+    "reviewedEnglishHash": "fe6f905ccbcb86095fcd67222a9e11587271b23a86874f27f3462efa692508a1"
+  },
+  "newAgent.dotStatusFinishing": {
+    "en": "Your Dot confirmed the test event. Paperclip is finishing agent setup.",
+    "zh-CN": "你的 Dot 已确认测试事件。Paperclip 正在完成智能体设置。",
+    "reviewedEnglishHash": "c8ad7564f0de58cb8dc1c7d76877b53a011b73162de30ef6f7c4093020829c87"
+  },
+  "newAgent.dotStatusOffline": {
+    "en": "Connection updates paused. Reconnect to check the latest status.",
+    "zh-CN": "连接更新已暂停。重新连接以检查最新状态。",
+    "reviewedEnglishHash": "0ac862488767311e16038a0687627941fd5d3fe6fbffe7c93694e2a11aecc51d"
+  },
+  "newAgent.dotStatusPromptUnavailable": {
+    "en": "This setup prompt was replaced in another window. Create a fresh prompt to continue.",
+    "zh-CN": "此设置提示已在另一个窗口中被替换。请创建新的提示以继续。",
+    "reviewedEnglishHash": "9e442cc45bdea8c9df97a5a3030546f84c083331a1d7cc2fdd8a20aebc2a14bc"
+  },
+  "newAgent.dotStatusReady": {
+    "en": "Your Dot is ready for tasks. Messages can travel both ways.",
+    "zh-CN": "你的 Dot 已可处理任务。消息可以双向传递。",
+    "reviewedEnglishHash": "9c2bdcca9627ebb391779e56812b6bb0c4eb88ecd73a490859a31e46652fb0c1"
+  },
+  "newAgent.dotStatusTesting": {
+    "en": "Waiting for your Dot to confirm a test event. No task will be created.",
+    "zh-CN": "正在等待你的 Dot 确认测试事件。不会创建任务。",
+    "reviewedEnglishHash": "0987dfc96914db784d77aa3108394fa94d12f4519abb11edbe81dcb83f7c9b17"
+  },
+  "newAgent.dotStatusWaiting": {
+    "en": "Watching for your Dot. Updates will appear here automatically.",
+    "zh-CN": "正在等待你的 Dot。更新会自动显示在这里。",
+    "reviewedEnglishHash": "f4d8732ff5a556f27e8724869416579da8753331027f2b6a5a15697f148e391d"
+  },
+  "newAgent.dotWaiting": {
+    "en": "Waiting…",
+    "zh-CN": "等待中…",
+    "reviewedEnglishHash": "612ffc5ce9d47467c4e089f2e7c29dce87509c5d3fc44f07e92c269c2c72c119"
+  },
+  "newAgent.externalAgentExamples": {
+    "en": "(OpenClaw, Hermes, or any agent that can call the invite API.)",
+    "zh-CN": "（OpenClaw、Hermes，或任何能够调用邀请 API 的智能体。）",
+    "reviewedEnglishHash": "96fa031271b169579f734522385d93ea874c079bf96a85634a0c127a01e0aee1"
+  },
+  "newAgent.externalInvitationBody": {
+    "en": "The invitation includes everything your agent needs to join {{companyName}}. You can review its request before granting access.",
+    "zh-CN": "邀请中包含你的智能体加入 {{companyName}} 所需的全部信息。你可以在授予访问权限前查看其请求。",
+    "reviewedEnglishHash": "e86f19efb971afb218f792b5561d3315d90c4474d71e7c87839018baa5cb2b44"
+  },
+  "newAgent.externalInviteDescription": {
+    "en": "Bring an agent you already use into {{companyName}}.",
+    "zh-CN": "将你已经在使用的智能体加入 {{companyName}}。",
+    "reviewedEnglishHash": "0e6e122f03ea6fac81b04542023850a447a368177487c1d1442a65ba13400e35"
+  },
+  "newAgent.externalPreparing": {
+    "en": "Preparing…",
+    "zh-CN": "准备中…",
+    "reviewedEnglishHash": "5d1fa38bcf0d88ca03d187718fd6cf8ad128f288f66d402d331476a85774d08d"
+  },
+  "newAgent.externalPresetDotDescription": {
+    "en": "Your Dot in ChatGPT",
+    "zh-CN": "你在 ChatGPT 中的 Dot",
+    "reviewedEnglishHash": "f37d30dc40d1f272f44050371d43220d1fb5b36576bfbd29f033795625627a93"
+  },
+  "newAgent.externalPresetHermesDescription": {
+    "en": "An existing Hermes agent",
+    "zh-CN": "已有的 Hermes 智能体",
+    "reviewedEnglishHash": "45e1aa6503b67d7955a1aff38801c1b454a5e42e266036728a816fa601687b13"
+  },
+  "newAgent.externalPresetOther": {
+    "en": "Other",
+    "zh-CN": "其他",
+    "reviewedEnglishHash": "f97e9da0e3b879f0a9df979ae260a5f7e1371edb127c1862d4f861981166cdc1"
+  },
+  "newAgent.externalPresetOtherDescription": {
+    "en": "Any agent that can connect to Paperclip",
+    "zh-CN": "任何可以连接到 Paperclip 的智能体",
+    "reviewedEnglishHash": "86fd8dd36045a10423146c65d2d893cb8103db5fda28eec3b5d27d361023a457"
+  },
+  "newAgent.externalPromptDescription": {
+    "en": "Copy the invitation prompt and send it to your agent. Approve its join request in Paperclip when it’s ready.",
+    "zh-CN": "复制邀请提示并发送给你的智能体。准备就绪后，在 Paperclip 中批准其加入请求。",
+    "reviewedEnglishHash": "312240faa017ed1a627680d93280a73513b52fac5db56a8544bfc0f39b14507e"
+  },
+  "newAgent.externalSetupPromptDescription": {
+    "en": "Send this whole prompt to your agent.",
+    "zh-CN": "将整段提示发送给你的智能体。",
+    "reviewedEnglishHash": "9932ca25cfe410fe874d13a4737a1dc1063e015f87b87544e7ed6f680537f33f"
+  },
+  "newAgent.failedToCreateAgent": {
+    "en": "Failed to create agent.",
+    "zh-CN": "创建智能体失败。",
+    "reviewedEnglishHash": "f9aeb12e3817205e5197cca9a09acdfdd584728cdb19427fbf676f2eec693890"
+  },
+  "newAgent.failedToCreateAgentInvite": {
+    "en": "Failed to create agent invite",
+    "zh-CN": "创建智能体邀请失败",
+    "reviewedEnglishHash": "90f61a1ff2c4d7adf7842cdc6684198217eb4c1bf632dbacf6b0372d7903c40e"
+  },
+  "newAgent.firstAgentCeoNote": {
+    "en": "This will be the CEO",
+    "zh-CN": "这将成为 CEO",
+    "reviewedEnglishHash": "f00215f59f6032e18da82a78922ff42427a0ef30f60c9a60de56a80099f93fc4"
+  },
+  "newAgent.generateOnboardingPrompt": {
+    "en": "Generate onboarding prompt",
+    "zh-CN": "生成入职提示",
+    "reviewedEnglishHash": "8248025e2413bf22a45ce369e42bd228497c4945d18a3c6eb3ae764fdd845bde"
+  },
+  "newAgent.generating": {
+    "en": "Generating…",
+    "zh-CN": "生成中…",
+    "reviewedEnglishHash": "d20a4476a0a85978547a5781e7e575e8358f102137bf253706db20ee0fe6061c"
+  },
+  "newAgent.inviteAgent": {
+    "en": "Invite your agent",
+    "zh-CN": "邀请你的智能体",
+    "reviewedEnglishHash": "ed92323744524a87fc3780a993490f8a3f1ddf3d9ed971984200ea6734569525"
+  },
+  "newAgent.inviteExternalAgent": {
+    "en": "Invite an external agent",
+    "zh-CN": "邀请外部智能体",
+    "reviewedEnglishHash": "0c21d4548b1504b50a73d208c8c15c34b4dd760236b645798fb6317d1224d5cd"
+  },
+  "newAgent.inviteHermesAgent": {
+    "en": "Invite your Hermes agent",
+    "zh-CN": "邀请你的 Hermes 智能体",
+    "reviewedEnglishHash": "ac9065918d57199616a4055f5ea4a1212e6dd62cc246df42baa0721020377644"
+  },
+  "newAgent.invitePromptDescription": {
+    "en": "Generate a one-time onboarding prompt that any compatible agent can use to request access, wait for approval, and claim its Paperclip API key.",
+    "zh-CN": "生成一次性入职提示，让任何兼容智能体都可以请求访问、等待审批并领取自己的 Paperclip API key。",
+    "reviewedEnglishHash": "149019202854cab141f41bb8d207bc900b798511997332331c4dbbb6199426d7"
+  },
+  "newAgent.openCodeModelRequired": {
+    "en": "OpenCode agents require a model before they can be tested.",
+    "zh-CN": "OpenCode 智能体需要先选择模型才能测试。",
+    "reviewedEnglishHash": "32cf20edd3b2e38260a9a330258658eb046a2fd84f96c8070946ec31148defee"
+  },
+  "newAgent.optionalAgentMessage": {
+    "en": "Optional message for the agent",
+    "zh-CN": "给智能体的可选消息",
+    "reviewedEnglishHash": "28ffcc307de3aa6c518ab4f199cba801a75c84c2d6b8cdb5d3a1a58d3348bb96"
+  },
+  "newAgent.optionalAgentMessagePlaceholder": {
+    "en": "Add onboarding context, expected role, or first instructions.",
+    "zh-CN": "添加入职上下文、预期角色或初始指令。",
+    "reviewedEnglishHash": "a9d680448cb5db903ae1a6e9632bb63fac9578c54cf518b21f8d1f9e634330ae"
+  },
+  "newAgent.promptReady": {
+    "en": "Agent onboarding prompt ready below.",
+    "zh-CN": "智能体入职提示已在下方生成。",
+    "reviewedEnglishHash": "eedce03c941a86ded9bfccef49dd11214924610558f5b1df1c0d773223120751"
+  },
+  "newAgent.promptReadyCopied": {
+    "en": "Agent onboarding prompt ready below and copied to clipboard.",
+    "zh-CN": "智能体入职提示已在下方生成，并已复制到剪贴板。",
+    "reviewedEnglishHash": "0f57c40d9d5e21b6fef8fe350786238bb457cc589201e9ef734b953ace43197c"
+  },
+  "newAgent.recommendation": {
+    "en": "We recommend letting your CEO handle agent setup. They know the org structure and can configure reporting, permissions, and adapters.",
+    "zh-CN": "建议让你的 CEO 来处理智能体创建。他更了解组织结构，也能顺手配置汇报关系、权限和适配器。",
+    "reviewedEnglishHash": "bdca66c006f051ee8c61dd30c3536d1651409fa28a01de12933a3bdc990948fd"
+  },
+  "newAgent.recommended": {
+    "en": "Recommended",
+    "zh-CN": "推荐",
+    "reviewedEnglishHash": "d70604e8430461372849bbd123d85771e11423870a507e8fa4650a7e9a5a50ef"
+  },
+  "newAgent.runtimeChoiceHint": {
+    "en": "Choose the runtime Paperclip should start or resume directly.",
+    "zh-CN": "选择 Paperclip 应直接启动或恢复的运行时。",
+    "reviewedEnglishHash": "126a19106967be053a3b599ee87c86dfef37d974325bbe4d6da186b38f40a9d8"
+  },
+  "newAgent.sendPromptHint": {
+    "en": "Send this prompt to the external agent that should join this company.",
+    "zh-CN": "把这段提示发送给要加入此公司的外部智能体。",
+    "reviewedEnglishHash": "a99cc54d61476d5aa8adec279baa789a20121f578ec6318530cc886a14a85010"
+  },
+  "newAgent.testAgent": {
+    "en": "Test agent",
+    "zh-CN": "测试智能体",
+    "reviewedEnglishHash": "44b088ce6496547e16c3b22582468e7b1473a488a6fcfedf57ce73b9f95fab27"
+  },
+  "newAgent.testingAgent": {
+    "en": "Testing agent...",
+    "zh-CN": "正在测试智能体...",
+    "reviewedEnglishHash": "e74541a273bd36ab39249382e588bbe80c008ef92b1cca34cb11971275c08397"
+  },
+  "newAgent.title": {
+    "en": "Add a new agent",
+    "zh-CN": "添加智能体",
+    "reviewedEnglishHash": "6e0f890e6c8355b971e8fb180e008ebe2feaa020383cbe406302372c5adb3e41"
+  },
+  "newAgent.titlePlaceholder": {
+    "en": "Agent title",
+    "zh-CN": "智能体职称",
+    "reviewedEnglishHash": "b63fa84060f1f4749ce22a48436c7eb45eb182032d714c33b68070859b320a32"
+  },
+  "newAgent.validation.validEndpointUrl": {
+    "en": "Enter a valid endpoint URL.",
+    "zh-CN": "请输入有效的端点 URL。",
+    "reviewedEnglishHash": "a55ab9e6e77e10302ac72404415856cb9e2b2ee867c1c0f56794948437c68ab6"
+  }
+}

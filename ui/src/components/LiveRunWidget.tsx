@@ -1,12 +1,13 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
+import { AgentIdentity } from "@/components/AgentIdentity";
 import { useMemo, useState } from "react";
 import { Link } from "@/lib/router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
 import { useVisibilityRefetchInterval } from "@/lib/polling";
 import { heartbeatsApi, type LiveRunForIssue } from "../api/heartbeats";
 import { queryKeys } from "../lib/queryKeys";
 import { formatDateTime } from "../lib/utils";
-import { displaySeededName } from "../lib/seeded-display";
 import { ExternalLink, Square } from "lucide-react";
 import { Identity } from "./Identity";
 import { RunChatSurface } from "./RunChatSurface";
@@ -28,7 +29,7 @@ function isRunActive(status: string): boolean {
 }
 
 export function LiveRunWidget({ issueId, companyId }: LiveRunWidgetProps) {
-  const { t } = useTranslation();
+  useTranslation();
   const queryClient = useQueryClient();
   const [cancellingRunIds, setCancellingRunIds] = useState(new Set<string>());
 
@@ -97,14 +98,12 @@ export function LiveRunWidget({ issueId, companyId }: LiveRunWidgetProps) {
   if (runs.length === 0) return null;
 
   return (
-    <div className="overflow-hidden rounded-xl border border-cyan-500/25 bg-background/80 shadow-[0_18px_50px_rgba(6,182,212,0.08)]">
-      <div className="border-b border-border/60 bg-cyan-500/[0.04] px-4 py-3">
-        <div className="text-xs font-semibold uppercase tracking-(--tracking-caps) text-cyan-700 dark:text-cyan-300">
-          {t("Live Runs")}
-        </div>
+    <div className="overflow-hidden rounded-xl border border-blue-500/25 bg-background/80 shadow-(--shadow-extract-11)">
+      <div className="border-b border-border/60 bg-blue-500/[0.04] px-4 py-3">
+        <div className="text-xs font-semibold uppercase tracking-(--tracking-caps) text-blue-700 dark:text-blue-300">
+          {translateInstant("Live Runs")}</div>
         <div className="mt-1 text-xs text-muted-foreground">
-          {t("Streamed with the same transcript UI used on the full run detail page.")}
-        </div>
+          {translateInstant("Uses the shared chat-style run surface from task activity.")}</div>
       </div>
 
       <div className="divide-y divide-border/60">
@@ -116,7 +115,7 @@ export function LiveRunWidget({ issueId, companyId }: LiveRunWidgetProps) {
               <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0">
                   <Link to={`/agents/${run.agentId}`} className="inline-flex hover:underline">
-                    <Identity name={displaySeededName(run.agentName)} size="sm" />
+                    <AgentIdentity agent={{ id: run.agentId, name: run.agentName, appearance: run.agentAppearance }} size="sm" />
                   </Link>
                   <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                     <Link
@@ -138,15 +137,14 @@ export function LiveRunWidget({ issueId, companyId }: LiveRunWidgetProps) {
                       className="inline-flex items-center gap-1 rounded-full border border-red-500/20 bg-red-500/[0.06] px-2.5 py-1 text-(length:--text-micro) font-medium text-red-700 transition-colors hover:bg-red-500/[0.12] dark:text-red-300 disabled:opacity-50"
                     >
                       <Square className="h-2.5 w-2.5" fill="currentColor" />
-                      {cancellingRunIds.has(run.id) ? t("Stopping…") : t("Stop")}
+                      {cancellingRunIds.has(run.id) ? "Stopping…" : "Stop"}
                     </button>
                   )}
                   <Link
                     to={`/agents/${run.agentId}/runs/${run.id}`}
                     className="inline-flex items-center gap-1 rounded-full border border-border/70 bg-background/70 px-2.5 py-1 text-(length:--text-micro) font-medium text-blue-700 transition-colors hover:border-blue-500/30 hover:text-blue-600 dark:text-blue-300"
                   >
-                    {t("Open run")}
-                    <ExternalLink className="h-3 w-3" />
+                    {translateInstant("Open run")}<ExternalLink className="h-3 w-3" />
                   </Link>
                 </div>
               </div>

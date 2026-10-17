@@ -7,8 +7,7 @@ import { asString, parseObject } from "@penclipai/adapter-utils/server-utils";
 import { randomUUID } from "node:crypto";
 import { WebSocket } from "ws";
 
-const MIN_PROTOCOL_VERSION = 3;
-const MAX_PROTOCOL_VERSION = 4;
+const PROTOCOL_VERSION = 4;
 
 function summarizeStatus(checks: AdapterEnvironmentCheck[]): AdapterEnvironmentTestResult["status"] {
   if (checks.some((check) => check.level === "error")) return "fail";
@@ -161,21 +160,14 @@ async function probeGateway(input: {
             id: connectId,
             method: "connect",
             params: {
-              minProtocol: MIN_PROTOCOL_VERSION,
-              maxProtocol: MAX_PROTOCOL_VERSION,
+              minProtocol: PROTOCOL_VERSION,
+              maxProtocol: PROTOCOL_VERSION,
               client: {
                 id: "gateway-client",
                 version: "paperclip-probe",
                 platform: process.platform,
                 mode: "probe",
               },
-              caps: ["agent", "agent.wait"],
-              commands: ["agent", "agent.wait"],
-              permissions: {
-                scopes: true,
-              },
-              locale: "en-US",
-              userAgent: `Paperclip OpenClaw Gateway Adapter/paperclip-probe (${process.platform})`,
               role: input.role,
               scopes: input.scopes,
               ...(input.authToken

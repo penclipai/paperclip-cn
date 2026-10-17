@@ -1,0 +1,82 @@
+{
+  "Join": {
+    "en": "Join",
+    "zh-CN": "加入",
+    "reviewedEnglishHash": "fd30fe681b4b2d9e55f851cb34641f907401aa43e9d80f5b1e14ce714ef00497"
+  },
+  "Join Request Queue": {
+    "en": "Join Request Queue",
+    "zh-CN": "加入请求队列",
+    "reviewedEnglishHash": "a51c104b51cc312358a32e93ff8e8e74c9e3c47b694fb85ae44a0406f009cb2f"
+  },
+  "Join Requests": {
+    "en": "Join Requests",
+    "zh-CN": "加入请求",
+    "reviewedEnglishHash": "26fe033758d637479edee7810964d8a095b954fd74bc0a93689828086b62a45a"
+  },
+  "Join request": {
+    "en": "Join request",
+    "zh-CN": "加入请求",
+    "reviewedEnglishHash": "d7d9cd19632538b7ce6d66bce2e347dc37cb601512314a67efebae3d22476b50"
+  },
+  "Join request approved": {
+    "en": "Join request approved",
+    "zh-CN": "加入请求已批准",
+    "reviewedEnglishHash": "d1a4dcc6d8643181cdb57fbb819bde6933ef5b2a7ea3538b410f1304e54e78a4"
+  },
+  "Join request rejected": {
+    "en": "Join request rejected",
+    "zh-CN": "加入请求已拒绝",
+    "reviewedEnglishHash": "c8110f2795ab618234c4f702da8a1806376286310de3f5eb75bd05e45455551e"
+  },
+  "Join requests": {
+    "en": "Join requests",
+    "zh-CN": "加入请求",
+    "reviewedEnglishHash": "a1321fc27dc597a57ccbc6dc1e94fdf27668528d297d22c30dc7e15c5431d7bd"
+  },
+  "Join {{name}}": {
+    "en": "Join {{name}}",
+    "zh-CN": "加入 {{name}}",
+    "reviewedEnglishHash": "02226b7af64f973dff20b4acfec51d0e67f94fcac97e3d448cc05478cf57b3b4"
+  },
+  "Joining...": {
+    "en": "Joining...",
+    "zh-CN": "加入中...",
+    "reviewedEnglishHash": "7c56c61fe58db6aca94f0767cdc013bb9cf6586d7cb357c445d5842abada8554"
+  },
+  "Jump back to the last settings page you opened.": {
+    "en": "Jump back to the last settings page you opened.",
+    "zh-CN": "跳回你上次打开的设置页面。",
+    "reviewedEnglishHash": "c59129161aef50961bd8a1c9167c77c81b5fe524dcd78f3b0150c12ccd8c0eb3"
+  },
+  "Jump to latest": {
+    "en": "Jump to latest",
+    "zh-CN": "跳到最新消息",
+    "reviewedEnglishHash": "867524581f012f0ba381fd98a720aa569ffd1b70f320307943072a253a2a3b6a"
+  },
+  "Jump to live": {
+    "en": "Jump to live",
+    "zh-CN": "跳转到实时位置",
+    "reviewedEnglishHash": "ce39c3a6bdb971c25cd078b1fd319af581eead81e5d42e3b84cac7013a620433"
+  },
+  "Just agents I pick": {
+    "en": "Just agents I pick",
+    "zh-CN": "只是我挑选的智能体",
+    "reviewedEnglishHash": "d2b7ad835c7f34ea40a806a7bd1bb45105c39093ca9758a27480e15f0675cb13"
+  },
+  "Just me": {
+    "en": "Just me",
+    "zh-CN": "仅限我自己",
+    "reviewedEnglishHash": "3a4b4df869c76a24361c80762c22cff078f382dbf16f54975415de1bb4ed1d82"
+  },
+  "joined": {
+    "en": "joined",
+    "zh-CN": "关注了",
+    "reviewedEnglishHash": "6b963cc1c2d7d3a4efdc2aac4ae38a8ecbc4535ae84b6dc1440d4abadcd97956"
+  },
+  "joined {{date}}": {
+    "en": "joined {{date}}",
+    "zh-CN": "加入于 {{date}}",
+    "reviewedEnglishHash": "a9a0893fc8abeeea069291a33719c7a6a2f92df22692aa981a5d3321fd8b2eb0"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "sidePanel.close": {
+    "en": "Close {{name}}",
+    "zh-CN": "关闭 {{name}}",
+    "reviewedEnglishHash": "07f8ffa2e068b88dddc562ffe95a2ce8db6f68e098c734c53ee9e5ddfd66e908"
+  },
+  "sidePanel.closeTab": {
+    "en": "Close {{name}} tab",
+    "zh-CN": "关闭 {{name}} 标签页",
+    "reviewedEnglishHash": "dcdd2d9c132a50ad36ed5c9cfd037d24361daf047c147bd9531847ba65f8a7a2"
+  },
+  "sidePanel.label": {
+    "en": "Side panel",
+    "zh-CN": "侧边面板",
+    "reviewedEnglishHash": "c28cdd98645b370f1a327d22a201b3620530d6550c2b7dc94f5ca92307aa2b2f"
+  }
+}

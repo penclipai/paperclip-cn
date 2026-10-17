@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -171,6 +171,7 @@ function createServerEnv(
   env.PORT = String(port);
   env.SERVE_UI = "false";
   env.PAPERCLIP_DB_BACKUP_ENABLED = "false";
+  env.PAPERCLIP_DECISION_SIGNING_SECRET = "company-import-export-decision-signing-secret";
   env.HEARTBEAT_SCHEDULER_ENABLED = "false";
   env.PAPERCLIP_MIGRATION_AUTO_APPLY = "true";
   env.PAPERCLIP_UI_DEV_MIDDLEWARE = "false";
@@ -204,9 +205,26 @@ function collectTextFiles(root: string, current: string, files: Record<string, s
   }
 }
 
-async function stopServerProcess(child: ServerProcess | null) {
+async function terminateWindowsProcessTree(pid: number): Promise<void> {
+  await execFileAsync("taskkill", ["/PID", String(pid), "/T", "/F"], { windowsHide: true });
+}
+
+async function stopServerProcess(
+  child: ServerProcess | null,
+  terminateTree: (pid: number) => Promise<void> = terminateWindowsProcessTree,
+) {
   if (!child || child.exitCode !== null) return;
-  child.kill("SIGTERM");
+  if (process.platform === "win32" && child.pid) {
+    // `cmd /c pnpm` leaves pnpm/tsx descendants alive when only the shell
+    // receives SIGTERM. Limit taskkill to this test's recorded root PID.
+    try {
+      await terminateTree(child.pid);
+    } catch {
+      child.kill("SIGKILL");
+    }
+  } else {
+    child.kill("SIGTERM");
+  }
   await new Promise<void>((resolve) => {
     let settled = false;
     const finish = () => {
@@ -223,6 +241,32 @@ async function stopServerProcess(child: ServerProcess | null) {
     setTimeout(finish, 8_000);
   });
 }
+
+describe("company import/export server cleanup", () => {
+  it("terminates only the recorded Windows server process tree", async () => {
+    const terminateTree = vi.fn(async () => undefined);
+    const kill = vi.fn();
+    const child = {
+      pid: 4321,
+      exitCode: null,
+      kill,
+      once: vi.fn((_event: string, listener: () => void) => {
+        listener();
+        return child;
+      }),
+    } as unknown as ServerProcess;
+
+    await stopServerProcess(child, terminateTree);
+
+    if (process.platform === "win32") {
+      expect(terminateTree).toHaveBeenCalledWith(4321);
+      expect(kill).not.toHaveBeenCalled();
+    } else {
+      expect(terminateTree).not.toHaveBeenCalled();
+      expect(kill).toHaveBeenCalledWith("SIGTERM");
+    }
+  });
+});
 
 async function bestEffortCleanup(cleanup: Promise<unknown> | undefined, timeoutMs: number) {
   if (!cleanup) return;

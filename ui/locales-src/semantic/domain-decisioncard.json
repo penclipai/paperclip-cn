@@ -1,0 +1,97 @@
+{
+  "decisionCard.blockedStale": {
+    "en": "Blocked · stale",
+    "zh-CN": "已阻塞 · 已过期",
+    "reviewedEnglishHash": "eee222481970f807daeaabbdcb0a54cb4c85e3347969d25889c75d2f20eb340e"
+  },
+  "decisionCard.cancelTreeDescription": {
+    "en": "This issue and every sub-issue beneath it will be cancelled.",
+    "zh-CN": "此任务及其下的所有子任务都将被取消。",
+    "reviewedEnglishHash": "683863bcf5f9fa145b9921699fb7f51fdc44af71779b5add184e97014672c88d"
+  },
+  "decisionCard.cancelTreeTitle": {
+    "en": "This cancels an entire issue tree",
+    "zh-CN": "这将取消整个任务树",
+    "reviewedEnglishHash": "96c6f9ea7e0c833e758fc3cc36b12fe3b99e963039377decd01367eb0ab84c9f"
+  },
+  "decisionCard.changedSinceProposed": {
+    "en": "changed since this was proposed",
+    "zh-CN": "自提议后已更改",
+    "reviewedEnglishHash": "0ab996c3910033f308ab7a2bfc7b070e6873913586e8961ef4c5aaee182b6faf"
+  },
+  "decisionCard.confirmIdentifierAria": {
+    "en": "Type the issue identifier to confirm",
+    "zh-CN": "输入任务标识符以确认",
+    "reviewedEnglishHash": "f3deefa7ccf424aa59cfb4845317adbc8d85899d66aa3cb94c39c00dd5e97298"
+  },
+  "decisionCard.destructive": {
+    "en": "Destructive",
+    "zh-CN": "破坏性操作",
+    "reviewedEnglishHash": "c3e58a73609d109404e7ff8f80e7e82d6f8fd347fd1b1945fc469b5c4899697e"
+  },
+  "decisionCard.dismissNoEffects": {
+    "en": "Dismiss — no effects",
+    "zh-CN": "忽略 - 不执行任何操作",
+    "reviewedEnglishHash": "e04bd6c4a23033a49fe7fcb7dc150938769817104628b731bd6793fa79f373c2"
+  },
+  "decisionCard.dismissed": {
+    "en": "Dismissed — no effects were run.",
+    "zh-CN": "已忽略 - 未执行任何操作。",
+    "reviewedEnglishHash": "7a9d63ee826b3c2e0e4ed33ed97e4a32003a82aee217f54327d97d24fced6980"
+  },
+  "decisionCard.notNow": {
+    "en": "Not now?",
+    "zh-CN": "暂不处理？",
+    "reviewedEnglishHash": "1fd1803640025747309c9807ca1854a4e337fbf721983170ab3a0f609e5cb69e"
+  },
+  "decisionCard.partialEffects": {
+    "en": "Some effects may already have been applied. Review the results before asking the proposer to re-propose.",
+    "zh-CN": "部分操作可能已经执行。请先检查结果，再要求提议者重新提交。",
+    "reviewedEnglishHash": "cd7735ed6f1b033c84094b2426291dd172e7ae856b3a184b6ebf716e446cde76"
+  },
+  "decisionCard.proposedBy": {
+    "en": "Proposed by",
+    "zh-CN": "提议者",
+    "reviewedEnglishHash": "3b48f0b6ae209df2bb5c2104dca6967172bb6a3cb73cbffa173a7ff5bc7b1dc4"
+  },
+  "decisionCard.toConfirm": {
+    "en": "to confirm.",
+    "zh-CN": "以确认。",
+    "reviewedEnglishHash": "a44014d573312c3146b148eb0716263b43d9a38db59822cf797290cf56634021"
+  },
+  "decisionCard.typeToConfirm": {
+    "en": "Type",
+    "zh-CN": "输入",
+    "reviewedEnglishHash": "baaddf70fb5d432b8bd948ef91d6f910124a6d138edae4d5f000c4610ddc8eae"
+  },
+  "decisionCard.unchangedOptionsDisabled": {
+    "en": "Options that require an unchanged target are disabled below.",
+    "zh-CN": "下方需要目标保持不变的选项已禁用。",
+    "reviewedEnglishHash": "d48689f3cb1cd05330551df720b3082c23b6d586c459556de2ef9038791dc939"
+  },
+  "decisionCard.viewRun": {
+    "en": "view run",
+    "zh-CN": "查看运行",
+    "reviewedEnglishHash": "252314e6c8869768796c3442050eccadf22fb9456bd1f810bda50a4af38b87a8"
+  },
+  "decisionCard.whileRunning": {
+    "en": "while running",
+    "zh-CN": "运行于",
+    "reviewedEnglishHash": "59c39d72e6cad2613479fa0383526440f7a3f781489ff86949bd3fdeb9641de0"
+  },
+  "decisionCard.willBeCancelled": {
+    "en": "will be cancelled:",
+    "zh-CN": "将被取消：",
+    "reviewedEnglishHash": "f707853fb37809abd1f614a701476d07654eaec73de09e0b9d38bd299a4bb899"
+  },
+  "decisionCard.windowClosed": {
+    "en": "The decision window closed",
+    "zh-CN": "决策窗口已关闭",
+    "reviewedEnglishHash": "6131db8e1e7bec28a19103c27cc201612ac9649b8a508665f73535d47d448c11"
+  },
+  "decisionCard.withdrawn": {
+    "en": "This decision was withdrawn by the proposer before a response.",
+    "zh-CN": "提议者已在收到回应前撤回此决策。",
+    "reviewedEnglishHash": "a5bdb32aa31a1b87a125d1acb50b19cc21cbb0278479709313e2bb022506a298"
+  }
+}

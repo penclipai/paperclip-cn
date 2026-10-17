@@ -1,0 +1,32 @@
+{
+  "frontDoor.addAgentsDescription": {
+    "en": "Invite or hire agents to start assigning work.",
+    "zh-CN": "邀请或雇佣智能体来开始分配工作。",
+    "reviewedEnglishHash": "4d25d827b5bf7a85f8e202f0d0040bd7a93ad16bd58b42f87faff8be449b56fc"
+  },
+  "frontDoor.addAgentsTitle": {
+    "en": "Add agents",
+    "zh-CN": "添加智能体",
+    "reviewedEnglishHash": "b66ec4b22709e6e4f23e8bb82e691f5e6b8fce1f3d6a69b3097a987d2b5d887e"
+  },
+  "frontDoor.buildTeamDescription": {
+    "en": "Create the roles your company needs.",
+    "zh-CN": "创建公司需要的角色。",
+    "reviewedEnglishHash": "3eba5113b64fa4a0d18e597283358b42231c8cfa919211049c8ab36560478cc2"
+  },
+  "frontDoor.buildTeamTitle": {
+    "en": "Build your team",
+    "zh-CN": "组建团队",
+    "reviewedEnglishHash": "96f907562c869905e9b454d68cbecb1d763fc78123b23a7f2ba18fc577a69e79"
+  },
+  "frontDoor.getStartedQuestion": {
+    "en": "What would you like to do first?",
+    "zh-CN": "你想先做什么？",
+    "reviewedEnglishHash": "36936dccd10f32d724b5b77c48567b4dbe0fb49aea08aaed6aca56954ddd911e"
+  },
+  "frontDoor.welcome": {
+    "en": "Welcome to Paperclip CN",
+    "zh-CN": "欢迎使用 Paperclip CN",
+    "reviewedEnglishHash": "8ab8db3cb97449f785909b29015df5d1a68994b10ac0bc452505c3681bf0045a"
+  }
+}

@@ -1,3 +1,4 @@
+import { translateInstant } from "@/i18n";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ChevronDown, ChevronRight, HelpCircle } from "lucide-react";
@@ -203,7 +204,7 @@ export function RoutineVariablesEditor({
                                 : null,
                           })));
                         }}
-                        placeholder="high, medium, low"
+                        placeholder={translateInstant("high, medium, low")}
                       />
                     </div>
                     <div className="space-y-1.5">

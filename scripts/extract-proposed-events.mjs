@@ -1,8 +1,10 @@
 #!/usr/bin/env node
-import { readFileSync } from "node:fs";
 import { isAbsolute, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
-import ts from "typescript";
+import { SyntaxKind, getLeadingCommentRanges } from "typescript/unstable/ast";
+import * as is from "typescript/unstable/ast/is";
+
+import { withTypeScriptSourceFiles } from "./typescript-ast-session.mjs";
 
 export const PROPOSED_TELEMETRY_SCHEMA_VERSION = "proposed-telemetry-extractor.v2";
 
@@ -14,11 +16,11 @@ export function assertRepoRelativePath(value) {
   if (typeof value !== "string" || value.length === 0) {
     throw new Error("provenance.file must be a non-empty repo-relative path");
   }
-  if (value.startsWith("/") || isAbsolute(value)) {
-    throw new Error(`provenance.file must be repo-relative: ${value}`);
-  }
   if (/^[A-Za-z]:/.test(value)) {
     throw new Error(`provenance.file must not use a drive-letter path: ${value}`);
+  }
+  if (value.startsWith("/") || isAbsolute(value)) {
+    throw new Error(`provenance.file must be repo-relative: ${value}`);
   }
   if (value.includes("\\")) {
     throw new Error(`provenance.file must use forward slashes: ${value}`);
@@ -71,9 +73,10 @@ export function extractProposedEvents(options = {}) {
   const repoRoot = resolve(options.repoRoot ?? process.cwd());
   const eventsFile = resolve(repoRoot, options.eventsFile ?? DEFAULT_EVENTS_FILE);
   const provenanceFile = toRepoRelativePath(repoRoot, eventsFile);
-  const sourceText = readFileSync(eventsFile, "utf8");
-  const sourceFile = ts.createSourceFile(eventsFile, sourceText, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
-  const proposals = new Map();
+  return withTypeScriptSourceFiles([eventsFile], (sourceFileFor) => {
+    const sourceFile = sourceFileFor(eventsFile);
+    const sourceText = sourceFile.text;
+    const proposals = new Map();
 
   function recordProposal(wrapper, wrapperName, eventNameNode, directive) {
     const name = eventNameNode.text;
@@ -114,32 +117,32 @@ export function extractProposedEvents(options = {}) {
     if (!wrapper.body) return;
 
     function visit(node) {
-      if (ts.isCallExpression(node) && isIdentifierTrackCall(node)) {
+      if (is.isCallExpression(node) && isIdentifierTrackCall(node)) {
         const eventNameNode = node.arguments[0];
-        if (eventNameNode && ts.isStringLiteral(eventNameNode)) {
+        if (eventNameNode && is.isStringLiteral(eventNameNode)) {
           const directive = findDirectiveForNode(sourceText, eventNameNode);
           if (directive) recordProposal(wrapper, wrapperName, eventNameNode, directive);
         }
       }
-      ts.forEachChild(node, visit);
+      node.forEachChild(visit);
     }
 
     visit(wrapper.body);
   }
 
   function visit(node) {
-    if (ts.isFunctionDeclaration(node)) {
+    if (is.isFunctionDeclaration(node)) {
       visitWrapper(node);
-    } else if (ts.isVariableDeclaration(node)) {
+    } else if (is.isVariableDeclaration(node)) {
       visitVariableWrapper(node);
     }
-    ts.forEachChild(node, visit);
+    node.forEachChild(visit);
   }
 
   function visitVariableWrapper(node) {
-    if (!ts.isIdentifier(node.name)) return;
+    if (!is.isIdentifier(node.name)) return;
     const initializer = node.initializer;
-    if (!initializer || (!ts.isArrowFunction(initializer) && !ts.isFunctionExpression(initializer))) return;
+    if (!initializer || (!is.isArrowFunction(initializer) && !is.isFunctionExpression(initializer))) return;
     visitWrapper(initializer, node.name.text);
   }
 
@@ -152,6 +155,7 @@ export function extractProposedEvents(options = {}) {
       .map(formatProposal)
       .sort((a, b) => a.name.localeCompare(b.name)),
   };
+  });
 }
 
 function buildSource(options) {
@@ -167,14 +171,14 @@ function buildSource(options) {
 function isIdentifierTrackCall(node) {
   const callee = node.expression;
   return (
-    ts.isPropertyAccessExpression(callee) &&
+    is.isPropertyAccessExpression(callee) &&
     callee.name.text === "track" &&
-    ts.isIdentifier(callee.expression)
+    is.isIdentifier(callee.expression)
   );
 }
 
 function findDirectiveForNode(sourceText, node) {
-  const ranges = ts.getLeadingCommentRanges(sourceText, node.getFullStart()) ?? [];
+  const ranges = getLeadingCommentRanges(sourceText, node.getFullStart()) ?? [];
   for (const range of ranges) {
     const directive = parseProposedTelemetryDirective(sourceText.slice(range.pos, range.end));
     if (directive) return directive;
@@ -195,14 +199,14 @@ function normalizeComment(commentText) {
 
 function extractWrapperDimensions(wrapper, sourceFile, wrapperName = wrapper.name?.text ?? "<anonymous>") {
   const dimsParam = wrapper.parameters.find(
-    (parameter) => ts.isIdentifier(parameter.name) && parameter.name.text === "dims",
+    (parameter) => is.isIdentifier(parameter.name) && parameter.name.text === "dims",
   );
   if (!dimsParam) return [];
   if (!dimsParam.type) {
     throw new Error(`wrapper ${wrapperName} has an untyped dims parameter`);
   }
   const typeNode = unwrapTypeNode(dimsParam.type);
-  if (!ts.isTypeLiteralNode(typeNode)) {
+  if (!is.isTypeLiteralNode(typeNode)) {
     throw new Error(`wrapper ${wrapperName} dims parameter must be a type literal`);
   }
 
@@ -210,7 +214,7 @@ function extractWrapperDimensions(wrapper, sourceFile, wrapperName = wrapper.nam
 }
 
 function extractDimension(member, sourceFile) {
-  if (!ts.isPropertySignature(member) || !member.type) {
+  if (!is.isPropertySignatureDeclaration(member) || !member.type) {
     throw new Error("dims parameter type may contain only typed property signatures");
   }
   const name = propertyNameText(member.name);
@@ -222,7 +226,7 @@ function extractDimension(member, sourceFile) {
 }
 
 function propertyNameText(name) {
-  if (ts.isIdentifier(name) || ts.isStringLiteral(name) || ts.isNumericLiteral(name)) {
+  if (is.isIdentifier(name) || is.isStringLiteral(name) || is.isNumericLiteral(name)) {
     return name.text;
   }
   throw new Error("dimension names must be literal identifiers or string literals");
@@ -231,30 +235,30 @@ function propertyNameText(name) {
 function classifyTypeNode(typeNode, sourceFile) {
   const node = unwrapTypeNode(typeNode);
 
-  if (node.kind === ts.SyntaxKind.StringKeyword) return "string";
-  if (node.kind === ts.SyntaxKind.NumberKeyword) return "number";
-  if (node.kind === ts.SyntaxKind.BooleanKeyword) return "boolean";
+  if (node.kind === SyntaxKind.StringKeyword) return "string";
+  if (node.kind === SyntaxKind.NumberKeyword) return "number";
+  if (node.kind === SyntaxKind.BooleanKeyword) return "boolean";
 
-  if (ts.isLiteralTypeNode(node)) {
+  if (is.isLiteralTypeNode(node)) {
     const literal = node.literal;
-    if (ts.isStringLiteral(literal) || literal.kind === ts.SyntaxKind.NoSubstitutionTemplateLiteral) return "string";
-    if (ts.isNumericLiteral(literal)) return "number";
-    if (literal.kind === ts.SyntaxKind.TrueKeyword || literal.kind === ts.SyntaxKind.FalseKeyword) return "boolean";
+    if (is.isStringLiteral(literal) || literal.kind === SyntaxKind.NoSubstitutionTemplateLiteral) return "string";
+    if (is.isNumericLiteral(literal)) return "number";
+    if (literal.kind === SyntaxKind.TrueKeyword || literal.kind === SyntaxKind.FalseKeyword) return "boolean";
   }
 
-  if (ts.isTypeReferenceNode(node) && ts.isIdentifier(node.typeName) && node.typeName.text === "RawDimension") {
+  if (is.isTypeReferenceNode(node) && is.isIdentifier(node.typeName) && node.typeName.text === "RawDimension") {
     const inner = node.typeArguments?.[0];
     if (!inner) throw new Error(`RawDimension is missing a type argument at ${node.getText(sourceFile)}`);
     return classifyTypeNode(inner, sourceFile);
   }
 
-  if (ts.isUnionTypeNode(node)) {
+  if (is.isUnionTypeNode(node)) {
     const primitiveTypes = new Set();
     for (const member of node.types) {
       const unwrapped = unwrapTypeNode(member);
-      if (unwrapped.kind === ts.SyntaxKind.UndefinedKeyword) continue;
-      if (unwrapped.kind === ts.SyntaxKind.NullKeyword) continue;
-      if (ts.isLiteralTypeNode(unwrapped) && unwrapped.literal.kind === ts.SyntaxKind.NullKeyword) continue;
+      if (unwrapped.kind === SyntaxKind.UndefinedKeyword) continue;
+      if (unwrapped.kind === SyntaxKind.NullKeyword) continue;
+      if (is.isLiteralTypeNode(unwrapped) && unwrapped.literal.kind === SyntaxKind.NullKeyword) continue;
       primitiveTypes.add(classifyTypeNode(unwrapped, sourceFile));
     }
     if (primitiveTypes.size !== 1) {
@@ -268,7 +272,7 @@ function classifyTypeNode(typeNode, sourceFile) {
 
 function unwrapTypeNode(typeNode) {
   let node = typeNode;
-  while (ts.isParenthesizedTypeNode(node)) {
+  while (is.isParenthesizedTypeNode(node)) {
     node = node.type;
   }
   return node;

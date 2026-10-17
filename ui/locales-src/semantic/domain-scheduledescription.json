@@ -1,0 +1,112 @@
+{
+  "scheduleDescription.atTime": {
+    "en": "at {{time}}",
+    "zh-CN": "在 {{time}}",
+    "reviewedEnglishHash": "df8eeaa237400bfd3d65b0062a8acbc2cacf656800bf70e02fb13237643b3820"
+  },
+  "scheduleDescription.atTimes": {
+    "en": "at {{times}}",
+    "zh-CN": "在 {{times}}",
+    "reviewedEnglishHash": "376e43bddd8c11a8a651797b4eb21622ae4435ddb4c21de141c48f873aa71df1"
+  },
+  "scheduleDescription.dayOfMonthOrdinal": {
+    "en": "{{ordinal}}",
+    "zh-CN": "{{count}}",
+    "reviewedEnglishHash": "d40f402f99b44b80f1d52cf6d3368e233e5f0b329ec96f09d516167a52084acc"
+  },
+  "scheduleDescription.dayPart.everyDay": {
+    "en": "every day",
+    "zh-CN": "每天",
+    "reviewedEnglishHash": "ed28f6cae0fa83a36aec9ce49eabd7feb487960cfff9df8b7595c10622c8e975"
+  },
+  "scheduleDescription.dayPart.selectedDays": {
+    "en": "selected days",
+    "zh-CN": "所选日期",
+    "reviewedEnglishHash": "c036dab2f40d4df9a01d8c97a14489ccb1ea9263cd14ecc43491f68659dd32ac"
+  },
+  "scheduleDescription.dayPart.weekdays": {
+    "en": "weekdays",
+    "zh-CN": "工作日",
+    "reviewedEnglishHash": "c41d3f39558688dec65319af7b656bf77d12b27569f996944a2333b613ff9ced"
+  },
+  "scheduleDescription.defaultDaily": {
+    "en": "Every day at 10:00",
+    "zh-CN": "每天 10:00",
+    "reviewedEnglishHash": "cd3e3d32567e29119c4d4336a023b34ff3257a8d6a771f1f2d32264ee891f67b"
+  },
+  "scheduleDescription.everyDay": {
+    "en": "every day",
+    "zh-CN": "每天",
+    "reviewedEnglishHash": "ed28f6cae0fa83a36aec9ce49eabd7feb487960cfff9df8b7595c10622c8e975"
+  },
+  "scheduleDescription.everyHourAtMinute": {
+    "en": "Every hour at :{{minute}}",
+    "zh-CN": "每小时第 {{minute}} 分钟",
+    "reviewedEnglishHash": "fca1df429a671ba98477be11ee46bd5fa582744517e29226d3b007fa9f8b8f9c"
+  },
+  "scheduleDescription.everyMinute": {
+    "en": "Every minute",
+    "zh-CN": "每分钟",
+    "reviewedEnglishHash": "3c14fb8a28813883d919fca5e56e69c8c40503174ad75ff25bef9f6ff15217b2"
+  },
+  "scheduleDescription.everyNHoursAtMinute": {
+    "en": "Every {{count}} hours at :{{minute}}",
+    "zh-CN": "每 {{count}} 小时的第 {{minute}} 分钟",
+    "reviewedEnglishHash": "07ae40103db41eec45b502314d188e7b4b91eac67df63008f9acacf4a3e8ef8c"
+  },
+  "scheduleDescription.everyNHoursAtMinuteWeekdays": {
+    "en": "Every {{count}} hours at :{{minute}}, weekdays",
+    "zh-CN": "工作日每 {{count}} 小时的第 {{minute}} 分钟",
+    "reviewedEnglishHash": "40ebe2b33ed4b17e7469d0dfe3901832ed8e5623e636db85fd6bbda0b8ede1cc"
+  },
+  "scheduleDescription.everyNMinutes": {
+    "en": "Every {{count}} minutes",
+    "zh-CN": "每 {{count}} 分钟",
+    "reviewedEnglishHash": "2442f631bfd7a71146550efda387f4a5ff9d84323ab76cbfa44dd1a7f098f0fe"
+  },
+  "scheduleDescription.everyNMinutesBetween": {
+    "en": "Every {{count}} minutes between {{start}} and {{end}}, {{dayPart}}",
+    "zh-CN": "{{dayPart}} {{start}} 到 {{end}} 之间每 {{count}} 分钟",
+    "reviewedEnglishHash": "0d30ea625e32150176585b8422377c9d7a7f6aa0211d9d457b654f9d274fc2c3"
+  },
+  "scheduleDescription.everyNMinutesWeekdays": {
+    "en": "Every {{count}} minutes, weekdays",
+    "zh-CN": "工作日每 {{count}} 分钟",
+    "reviewedEnglishHash": "eaa6c7028656c2b11ffb4af99c1894623e9536138e73bf046aaa09a78e322b56"
+  },
+  "scheduleDescription.everyNamedDay": {
+    "en": "every {{day}}",
+    "zh-CN": "每周{{day}}",
+    "reviewedEnglishHash": "c51d27e4c8b8d6f73fcb0ccd84f09529d67f633c8d01870f5e8cd0d26947dd45"
+  },
+  "scheduleDescription.everySelectedDays": {
+    "en": "every {{days}}",
+    "zh-CN": "每周{{days}}",
+    "reviewedEnglishHash": "aa9a43e0f37720d912386c82321ccbdb33e44d92060ea950e29baa64755bd3ef"
+  },
+  "scheduleDescription.everyWeekday": {
+    "en": "every weekday",
+    "zh-CN": "每个工作日",
+    "reviewedEnglishHash": "72cdd73e7f9ff065f7ee62940add25dffa42d5650deac55e937edf6a84fbc34a"
+  },
+  "scheduleDescription.everyWeekend": {
+    "en": "every weekend",
+    "zh-CN": "每个周末",
+    "reviewedEnglishHash": "167108b67e5bc9b6083ad202342a117615160a43be0f4bd59d99b4004cc8221a"
+  },
+  "scheduleDescription.onDayOfMonth": {
+    "en": "on the {{day}} of the month",
+    "zh-CN": "每月 {{day}} 日",
+    "reviewedEnglishHash": "83366b21a1286a7a4a133ab16c110542ba90405df09ba4624daac8cec68cb72a"
+  },
+  "scheduleDescription.onDaysOfMonth": {
+    "en": "on the {{days}} of the month",
+    "zh-CN": "每月 {{days}} 日",
+    "reviewedEnglishHash": "c38838225eca65b4d28a187f574b7c6a02fb940b8becb7da8553c9d1436b188d"
+  },
+  "scheduleDescription.timesPerDay": {
+    "en": "{{count}} times per day",
+    "zh-CN": "每天 {{count}} 次",
+    "reviewedEnglishHash": "64ddfac93d4e24770e406191f7a28b7966f8e427f052b6f643e591001a478b7c"
+  }
+}

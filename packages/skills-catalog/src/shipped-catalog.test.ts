@@ -9,6 +9,7 @@ const EXPECTED_BUNDLED_KEYS = [
   "paperclipai/bundled/docs/doc-maintenance",
   "paperclipai/bundled/paperclip-operations/issue-triage",
   "paperclipai/bundled/paperclip-operations/reflection-coach",
+  "paperclipai/bundled/paperclip-operations/status-card-query",
   "paperclipai/bundled/paperclip-operations/summarize-status",
   "paperclipai/bundled/paperclip-operations/task-planning",
   "paperclipai/bundled/product/paperclip-capsules",
@@ -20,9 +21,11 @@ const EXPECTED_BUNDLED_KEYS = [
 const EXPECTED_OPTIONAL_KEYS = [
   "paperclipai/optional/browser/agent-browser",
   "paperclipai/optional/content/release-announcement",
+  "paperclipai/optional/content/simplified-english",
   "paperclipai/optional/finance/ramp",
   "paperclipai/optional/product/design-critique",
   "paperclipai/optional/research/last30days",
+  "paperclipai/optional/software-development/prepare-mcp-integration",
 ];
 
 const MAX_FRONTMATTER_DESCRIPTION_LENGTH = 300;
@@ -80,15 +83,12 @@ describe("shipped skills catalog", () => {
 
     expect(skill).toContain("Post the first status update immediately, before doing anything else.");
     expect(skill).toContain('STATUS: considering "Fix login redirect loop"…');
-    expect(skill).toContain("STATUS: reading the current slot revision…");
     expect(skill).toContain("<<<SUMMARY-DRAFT>>>");
     expect(skill).toContain("<<<END-SUMMARY-DRAFT>>>");
-    expect(skill).toContain("Assistant prose streams token-by-token to the UI; tool-call arguments do not");
-    expect(skill).toContain("UI gracefully falls back to its spinner");
-    expect(skill).toContain("**Review:**");
-    expect(skill).toContain("approve on a skim");
-    expect(skill).toContain("**Recent work:**");
-    expect(skill).toContain("Not a changelog");
+    expect(skill).toContain("tool-call arguments don't stream; assistant text does");
+    expect(skill).toContain("falls back to its spinner");
+    expect(skill).toContain("Open with what the reader needs to do.");
+    expect(skill).toContain("1–3 specific, concrete, actionable items");
   });
 
   it("keeps repo and catalog skill descriptions within the prompt budget cap", () => {
@@ -108,6 +108,18 @@ describe("shipped skills catalog", () => {
     }
 
     expect(violations).toEqual([]);
+  });
+
+  it("audits tracked bundled and optional catalog skill frontmatter", () => {
+    expect(TRACKED_SKILL_FILES).toContain(
+      path.join(
+        REPO_ROOT,
+        "packages/skills-catalog/catalog/bundled/paperclip-operations/summarize-status/SKILL.md",
+      ),
+    );
+    expect(TRACKED_SKILL_FILES).toContain(
+      path.join(REPO_ROOT, "packages/skills-catalog/catalog/optional/finance/ramp/SKILL.md"),
+    );
   });
 
   it("ships the expected bundled and optional skill set", () => {

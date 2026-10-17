@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
 import fs from "node:fs";
+import { createHash } from "node:crypto";
 import os from "node:os";
 import path from "node:path";
 import process from "node:process";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import net from "node:net";
-import { _electron as electron } from "playwright";
 import { killProcessTree, runPnpm } from "../utils.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -97,28 +97,46 @@ async function createSmokeUserDataDir(theme) {
   return userDataDir;
 }
 
-function buildLaunchEnv(userDataDir) {
-  const baseEnv = { ...process.env };
-  for (const key of [
+export function buildLaunchEnv(userDataDir, hostEnv = process.env) {
+  const baseEnv = { ...hostEnv };
+  const deniedKeys = new Set([
     "PAPERCLIP_CONFIG",
     "PAPERCLIP_CONTEXT",
     "PAPERCLIP_IN_WORKTREE",
     "PAPERCLIP_WORKTREE_NAME",
     "PAPERCLIP_WORKTREE_COLOR",
     "PAPERCLIP_WORKTREES_DIR",
-  ]) {
-    delete baseEnv[key];
+    "PAPERCLIP_AGENT_JWT_SECRET",
+    "BETTER_AUTH_SECRET",
+  ]);
+  for (const key of Object.keys(baseEnv)) {
+    if (deniedKeys.has(key.toUpperCase())) delete baseEnv[key];
   }
 
   const paperclipHome = path.resolve(userDataDir, "runtime");
   return {
     ...baseEnv,
-    PAPERCLIP_DESKTOP_SMOKE_START_DELAY_MS: process.env.PAPERCLIP_DESKTOP_SMOKE_START_DELAY_MS ?? "1800",
+    PAPERCLIP_DESKTOP_SMOKE_START_DELAY_MS: hostEnv.PAPERCLIP_DESKTOP_SMOKE_START_DELAY_MS ?? "1800",
     PAPERCLIP_DESKTOP_USER_DATA_DIR: userDataDir,
     PAPERCLIP_HOME: paperclipHome,
     PAPERCLIP_CONFIG: path.resolve(paperclipHome, "config.json"),
     PAPERCLIP_CONTEXT: path.resolve(paperclipHome, "context.json"),
   };
+}
+
+function desktopInstanceEnvPath(userDataDir) {
+  return path.resolve(userDataDir, "runtime", "instances", "default", ".env");
+}
+
+function readDesktopAgentJwtSecretFingerprint(userDataDir) {
+  const envPath = desktopInstanceEnvPath(userDataDir);
+  const envText = fs.readFileSync(envPath, "utf8");
+  const match = envText.match(/^PAPERCLIP_AGENT_JWT_SECRET\s*=\s*(.+)$/m);
+  const secret = match?.[1]?.trim().replace(/^(?:"([\s\S]*)"|'([\s\S]*)')$/, "$1$2").trim();
+  if (!secret) {
+    throw new Error(`Desktop instance JWT secret is missing or empty at ${envPath}.`);
+  }
+  return createHash("sha256").update(secret).digest("hex");
 }
 
 async function cleanupUserDataDir(userDataDir) {
@@ -210,7 +228,36 @@ async function waitForPortClosed(port, label, timeoutMs = 20_000) {
   throw new Error(`Timed out waiting for ${label} to stop listening on port ${port}.`);
 }
 
-function readEmbeddedPostgresPort(userDataDir) {
+function isProcessRunning(pid) {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error) {
+    if (error?.code === "ESRCH") {
+      return false;
+    }
+    if (error?.code === "EPERM") {
+      // An inaccessible process cannot prove that this postmaster has exited.
+      return true;
+    }
+    throw error;
+  }
+}
+
+async function waitForProcessExit(pid, label, timeoutMs = 20_000) {
+  const deadline = Date.now() + timeoutMs;
+
+  while (Date.now() < deadline) {
+    if (!isProcessRunning(pid)) {
+      return;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+
+  throw new Error(`Timed out waiting for ${label} process ${pid} to exit.`);
+}
+
+function readEmbeddedPostgresState(userDataDir) {
   const pidFile = path.resolve(
     userDataDir,
     "runtime",
@@ -224,9 +271,14 @@ function readEmbeddedPostgresPort(userDataDir) {
     return null;
   }
 
-  const portLine = fs.readFileSync(pidFile, "utf8").split(/\r?\n/)[3]?.trim();
+  const lines = fs.readFileSync(pidFile, "utf8").split(/\r?\n/);
+  const pid = Number(lines[0]?.trim());
+  const portLine = lines[3]?.trim();
   const port = Number(portLine);
-  return Number.isInteger(port) && port > 0 ? port : null;
+  return {
+    pid: Number.isSafeInteger(pid) && pid > 0 ? pid : null,
+    port: Number.isInteger(port) && port > 0 ? port : null,
+  };
 }
 
 function assertResponseOk(response, body, label) {
@@ -969,22 +1021,60 @@ async function run() {
   }
 
   const userDataDir = await createSmokeUserDataDir(theme);
-  const launchOptions = resolveDevLaunchOptions(userDataDir);
-  const electronApp = await electron.launch(launchOptions);
-  const launchedProcess = electronApp.process();
-  const launchedPid = launchedProcess?.pid ?? null;
+  let electronApp = null;
+  let launchedPid = null;
   let serverPort = null;
   let embeddedPostgresPort = null;
+  let embeddedPostgresPid = null;
 
-  try {
+  const launchDesktop = async () => {
+    const { _electron } = await import("playwright");
+    const launchOptions = resolveDevLaunchOptions(userDataDir);
+    const expectsEmbeddedPostgres = !launchOptions.env.DATABASE_URL?.trim();
+    electronApp = await _electron.launch(launchOptions);
+    launchedPid = electronApp.process()?.pid ?? null;
     const page = await electronApp.firstWindow();
     await page.waitForLoadState("domcontentloaded");
     await page.waitForURL(/^http:\/\/127\.0\.0\.1:\d+\/?/, { timeout: 90_000 });
-
     const origin = new URL(page.url()).origin;
     serverPort = Number(new URL(page.url()).port);
-    embeddedPostgresPort = readEmbeddedPostgresPort(userDataDir);
     const health = await waitForHealth(origin);
+    const embeddedPostgres = readEmbeddedPostgresState(userDataDir);
+    if (expectsEmbeddedPostgres && (!embeddedPostgres?.pid || !embeddedPostgres.port)) {
+      throw new Error(
+        "Expected embedded PostgreSQL after desktop health became ready, but postmaster.pid did not contain a valid postmaster PID and port.",
+      );
+    }
+    embeddedPostgresPort = embeddedPostgres?.port ?? null;
+    embeddedPostgresPid = embeddedPostgres?.pid ?? null;
+    return { page, origin, health };
+  };
+
+  const closeDesktop = async () => {
+    if (!electronApp) return;
+    const app = electronApp;
+    const pid = launchedPid;
+    const controlPlanePort = serverPort;
+    const postgresPort = embeddedPostgresPort;
+    const postgresPid = embeddedPostgresPid;
+    electronApp = null;
+    launchedPid = null;
+    serverPort = null;
+    embeddedPostgresPort = null;
+    embeddedPostgresPid = null;
+    try {
+      await app.close();
+      if (controlPlanePort) await waitForPortClosed(controlPlanePort, "desktop control plane");
+      if (postgresPort) await waitForPortClosed(postgresPort, "embedded PostgreSQL");
+      if (postgresPid) await waitForProcessExit(postgresPid, "embedded PostgreSQL postmaster");
+    } finally {
+      killProcessTree(pid, { cwd: packageDir });
+    }
+  };
+
+  try {
+    const { page, origin, health } = await launchDesktop();
+    const initialSecretFingerprint = readDesktopAgentJwtSecretFingerprint(userDataDir);
 
     const company = await createCompany(origin);
     const project = await createProject(origin, company.id);
@@ -1012,11 +1102,27 @@ async function run() {
       fullPage: true,
     });
 
+    await closeDesktop();
+    await launchDesktop();
+    const restartedSecretFingerprint = readDesktopAgentJwtSecretFingerprint(userDataDir);
+    if (restartedSecretFingerprint !== initialSecretFingerprint) {
+      throw new Error("Desktop instance JWT secret changed across restart.");
+    }
+    await fs.promises.writeFile(
+      path.resolve(artifactDir, "desktop-secret-persistence.json"),
+      `${JSON.stringify({
+        initialSecretFingerprint,
+        restartedSecretFingerprint,
+        persisted: true,
+      }, null, 2)}\n`,
+      "utf8",
+    );
+
     console.log(`[desktop-acceptance] Dev acceptance passed (${scope}).`);
     console.log(`[desktop-acceptance] Health: ${JSON.stringify(health)}`);
     console.log(`[desktop-acceptance] Evidence: ${path.resolve(artifactDir, "acceptance-evidence.json")}`);
   } catch (error) {
-    const page = await electronApp.firstWindow().catch(() => null);
+    const page = await electronApp?.firstWindow().catch(() => null);
     if (page) {
       await writeFailureSnapshot(page, artifactDir).catch(() => {});
     }
@@ -1024,17 +1130,10 @@ async function run() {
   } finally {
     let shutdownError = null;
     try {
-      await electronApp.close();
-      if (serverPort) {
-        await waitForPortClosed(serverPort, "desktop control plane");
-      }
-      if (embeddedPostgresPort) {
-        await waitForPortClosed(embeddedPostgresPort, "embedded PostgreSQL");
-      }
+      await closeDesktop();
     } catch (error) {
       shutdownError = error;
     } finally {
-      killProcessTree(launchedPid, { cwd: packageDir });
       await cleanupUserDataDir(userDataDir);
     }
 
@@ -1044,7 +1143,9 @@ async function run() {
   }
 }
 
-void run().catch((error) => {
-  console.error("[desktop-acceptance] Failed:", error);
-  process.exitCode = 1;
-});
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  void run().catch((error) => {
+    console.error("[desktop-acceptance] Failed:", error);
+    process.exitCode = 1;
+  });
+}

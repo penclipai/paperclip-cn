@@ -1,0 +1,92 @@
+{
+  "issuePlanDecomposition.childIssueCreated": {
+    "en": "{{created}} of {{requested}} child task created",
+    "zh-CN": "已创建 {{created}} / {{requested}} 个子任务",
+    "reviewedEnglishHash": "05980d99ad877e6bd849c0889e7c3298b8f57139e0addd4f3d5bd82df04de4d1"
+  },
+  "issuePlanDecomposition.childIssuesCreated": {
+    "en": "{{created}} of {{requested}} child tasks created",
+    "zh-CN": "已创建 {{created}} / {{requested}} 个子任务",
+    "reviewedEnglishHash": "f400c81ed0e5949a952115a058604084f3accb87d4fe8c1d7c0bfd6812916191"
+  },
+  "issuePlanDecomposition.completed": {
+    "en": "Completed",
+    "zh-CN": "已完成",
+    "reviewedEnglishHash": "22a970d2e5b1cc233e462be7c7b64e135a275bb09d83d87683bf4236c43113a1"
+  },
+  "issuePlanDecomposition.completedAt": {
+    "en": "Completed {{time}}",
+    "zh-CN": "完成于{{time}}",
+    "reviewedEnglishHash": "bb3f40998fc0a348d716f2dc9b21796235aa2051391e30f6ffed4056dac38f5c"
+  },
+  "issuePlanDecomposition.fallbackAgent": {
+    "en": "agent",
+    "zh-CN": "智能体",
+    "reviewedEnglishHash": "d4f0bc5a29de06b510f9aa428f1eedba926012b591fef7a518e776a7c9bd1824"
+  },
+  "issuePlanDecomposition.idempotentClaim": {
+    "en": "Idempotent claim",
+    "zh-CN": "幂等声明",
+    "reviewedEnglishHash": "33d4ffdad20c0b00682eee0517dac22e9c5df9fac034f8962951886d4fbbc00f"
+  },
+  "issuePlanDecomposition.idempotentClaimTooltip": {
+    "en": "Repeat attempts with this fingerprint reuse this record instead of creating new children",
+    "zh-CN": "具有此指纹的重复尝试会复用此记录，而不会创建新的子问题",
+    "reviewedEnglishHash": "0c407f0aaf6203b291dc105b0db09110b4de32f50e215b3be8bd70193a76ec81"
+  },
+  "issuePlanDecomposition.inFlight": {
+    "en": "In flight",
+    "zh-CN": "进行中",
+    "reviewedEnglishHash": "b65abbf5920b271cb230ba08dd8e099afff4e5429f63773640aacd084f40cbc3"
+  },
+  "issuePlanDecomposition.owner": {
+    "en": "Owner: {{owner}}",
+    "zh-CN": "负责人：{{owner}}",
+    "reviewedEnglishHash": "e4fd0f1fc0664d96dc3a92129ce3f6269f05084ea70ccc08929fe6ac9f3a75ff"
+  },
+  "issuePlanDecomposition.planDocument": {
+    "en": "Plan document",
+    "zh-CN": "计划文档",
+    "reviewedEnglishHash": "f0f6f3502007e534ca85dc5cfda7530c31964cfc526600572c3c20c7ead1e1e9"
+  },
+  "issuePlanDecomposition.planRevision": {
+    "en": "Plan {{revision}}",
+    "zh-CN": "计划 {{revision}}",
+    "reviewedEnglishHash": "9e1df856981dacdf276eb06cf7c32cbbdaaa0cafd0d81ed7f11c12045419e8d5"
+  },
+  "issuePlanDecomposition.revisionCount": {
+    "en": "{{count}} accepted plan revision",
+    "zh-CN": "{{count}} 个已接受的计划修订",
+    "reviewedEnglishHash": "6fd628c2b5492aa86846d0a694f1785bfd1e8f5107d65483718f7650ff0861e4"
+  },
+  "issuePlanDecomposition.revisionCount_plural": {
+    "en": "{{count}} accepted plan revisions",
+    "zh-CN": "{{count}} 个已接受的计划修订",
+    "reviewedEnglishHash": "72c236f9a52b24cb9950839003ca7e11db0c2fab89d315a5aea658c2f5eb9527"
+  },
+  "issuePlanDecomposition.revisionId": {
+    "en": "revision {{revisionId}}",
+    "zh-CN": "修订 {{revisionId}}",
+    "reviewedEnglishHash": "b8a836a2702c1d15d992243d39993bcd99fb4836697cc03dd609f342ab13b238"
+  },
+  "issuePlanDecomposition.revisionNumber": {
+    "en": "revision {{revision}}",
+    "zh-CN": "修订 {{revision}}",
+    "reviewedEnglishHash": "8a70c308675b409bdc3088873f0eab43b519259e0f68a844681dfead06d0c584"
+  },
+  "issuePlanDecomposition.started": {
+    "en": "Started {{time}}",
+    "zh-CN": "开始于{{time}}",
+    "reviewedEnglishHash": "2b5386c62e630800f957e3191120519f05a65ac341eb7bc37357f033d26c546b"
+  },
+  "issuePlanDecomposition.title": {
+    "en": "Plan decomposition",
+    "zh-CN": "计划拆解",
+    "reviewedEnglishHash": "b574bd1cca1997679a8922b93a7ca4d9604fd4aaa33ebb4c1cc8cebe76f89e1d"
+  },
+  "issuePlanDecomposition.updated": {
+    "en": "Updated {{time}}",
+    "zh-CN": "更新于{{time}}",
+    "reviewedEnglishHash": "6379f4b4efb9b0a5342283ad3b0d99edf9df796e29d5791b24e14999ac127e78"
+  }
+}

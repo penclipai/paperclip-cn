@@ -1,0 +1,27 @@
+{
+  "pluginUi.extensionsUnavailable": {
+    "en": "Plugin extensions unavailable: {{message}}",
+    "zh-CN": "插件扩展不可用：{{message}}",
+    "reviewedEnglishHash": "3248d1d4bece19a6d0a4383ff989a7741edba62a705d8902c594f6cc5e0bb01a"
+  },
+  "pluginUi.launcherFailedToRender": {
+    "en": "failed to render",
+    "zh-CN": "渲染失败",
+    "reviewedEnglishHash": "4ecf3b3eb951b8efc5eee00e2f3fc5b84fe65e5736978256ef71f6c085c1f93a"
+  },
+  "pluginUi.launcherTargetUnavailable": {
+    "en": "{{pluginName}}: could not resolve launcher target \"{{target}}\".",
+    "zh-CN": "{{pluginName}}：无法解析启动器目标“{{target}}”。",
+    "reviewedEnglishHash": "b3703d91667d9150ae6484f8c1f460ca7690a406831e163f4e81fc4dc4e40733"
+  },
+  "pluginUi.launchersUnavailable": {
+    "en": "Plugin launchers unavailable: {{message}}",
+    "zh-CN": "插件启动器不可用：{{message}}",
+    "reviewedEnglishHash": "27a0275809d03a47b02cd814b03cc90e889c27f127598743261091e6349daa96"
+  },
+  "pluginUi.slotFailedToRender": {
+    "en": "failed to render",
+    "zh-CN": "渲染失败",
+    "reviewedEnglishHash": "4ecf3b3eb951b8efc5eee00e2f3fc5b84fe65e5736978256ef71f6c085c1f93a"
+  }
+}

@@ -5,6 +5,7 @@ import type { ExecutionWorkspace, Project } from "@penclipai/shared";
 import { act, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { queryKeys } from "../lib/queryKeys";
 import { ExecutionWorkspaceDetail } from "./ExecutionWorkspaceDetail";
 
 (globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -47,6 +48,14 @@ vi.mock("react-i18next", async (importOriginal) => {
   const actual = await importOriginal<typeof import("react-i18next")>();
   const translations: Record<string, string> = {
     "projectWorkspace.pluginTabUnavailable": "Workspace plugin tab is not available.",
+    "executionWorkspace.backToIssues": "Back to tasks",
+    "executionWorkspace.tabs.issues": "Tasks",
+    "executionWorkspace.tabs.services": "Services",
+    "executionWorkspace.tabs.configuration": "Configuration",
+    "executionWorkspace.tabs.runtimeLogs": "Runtime logs",
+    "executionWorkspace.tabs.routines": "Routines",
+    "executionWorkspace.summaryTitle": "Workspace summary",
+    "executionWorkspace.summaryDescription": "Summarizer keeps the latest workspace status, next step, and operator-needed items here.",
   };
   return {
     ...actual,
@@ -269,8 +278,9 @@ describe("ExecutionWorkspaceDetail plugin slots", () => {
     mockRouteLocation.search = "";
   });
 
-  async function render() {
+  async function render(hiddenSettings: string[] = []) {
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    queryClient.setQueryData(queryKeys.health, { hiddenSettings });
     await act(async () => {
       root = createRoot(container);
       root.render(
@@ -283,6 +293,19 @@ describe("ExecutionWorkspaceDetail plugin slots", () => {
       await flush();
     });
   }
+
+  it("redirects a hidden configuration deep link to the workspace", async () => {
+    mockRouteLocation.pathname = "/execution-workspaces/workspace-1/configuration";
+    await render(["workspaces.isolation"]);
+    expect(container.querySelector('[data-testid="navigate"]')?.textContent).toBe("/execution-workspaces/workspace-1/issues");
+    expect(container.textContent).not.toContain("Workspace settings");
+  });
+
+  it("hides configuration while keeping workspace access", async () => {
+    await render(["workspaces.isolation"]);
+    expect(container.textContent).not.toContain("Configuration");
+    expect(container.textContent).toContain("Services");
+  });
 
   it("scopes the plugin detail-tab discovery to execution_workspace and the workspace's company", async () => {
     await render();
@@ -317,15 +340,15 @@ describe("ExecutionWorkspaceDetail plugin slots", () => {
     });
   });
 
-  it("shows the linked project workspace summary above tasks", async () => {
+  it("shows a summary scoped to the execution workspace above tasks", async () => {
     mockExecutionWorkspacesApi.get.mockResolvedValue(workspace({ projectWorkspaceId: "project-workspace-1" }));
 
     await render();
 
     expect(mockSummarySlotCard).toHaveBeenCalledWith(expect.objectContaining({
       companyId: "company-1",
-      scopeKind: "project_workspace",
-      scopeId: "project-workspace-1",
+      scopeKind: "execution_workspace",
+      scopeId: "workspace-1",
       title: "Workspace summary",
     }));
     const summary = container.querySelector('[data-testid="summary-slot-card"]');
@@ -336,11 +359,23 @@ describe("ExecutionWorkspaceDetail plugin slots", () => {
     expect(summary.compareDocumentPosition(issues) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
   });
 
-  it("does not show a project workspace summary for standalone execution workspaces", async () => {
+  it("shows an isolated summary for standalone execution workspaces", async () => {
     await render();
 
-    expect(mockSummarySlotCard).not.toHaveBeenCalled();
-    expect(container.querySelector('[data-testid="summary-slot-card"]')).toBeNull();
+    expect(mockSummarySlotCard).toHaveBeenCalledWith(expect.objectContaining({
+      companyId: "company-1",
+      scopeKind: "execution_workspace",
+      scopeId: "workspace-1",
+    }));
+    expect(container.querySelector('[data-testid="summary-slot-card"]')).not.toBeNull();
+  });
+
+  it("does not show a workspace access status card", async () => {
+    await render();
+
+    expect(container.querySelector('[data-testid="workspace-access-card"]')).toBeNull();
+    expect(container.textContent).not.toContain("Workspace is not running");
+    expect(container.textContent).not.toContain("Open workspace");
   });
 
   it("does not mount plugin slots scoped to other entity types", async () => {
@@ -360,7 +395,7 @@ describe("ExecutionWorkspaceDetail plugin slots", () => {
 
     await waitForAssertion(() => {
       expect(container.textContent).toContain("Workspace plugin tab is not available.");
-      expect(container.querySelector('a[href="/execution-workspaces/workspace-1/issues"]')?.textContent).toBe("Back to issues");
+      expect(container.querySelector('a[href="/execution-workspaces/workspace-1/issues"]')?.textContent).toBe("Back to tasks");
       expect(container.textContent).not.toContain("Workspace routines");
       expect(container.querySelector('[data-testid="plugin-slot-mount"]')).toBeNull();
     });
@@ -377,7 +412,7 @@ describe("ExecutionWorkspaceDetail plugin slots", () => {
 
     const tabLabels = Array.from(container.querySelectorAll("[data-tab-value]")).map((tab) => tab.textContent);
     expect(tabLabels).toEqual([
-      "Issues",
+      "Tasks",
       "Services",
       "Changes",
       "Configuration",

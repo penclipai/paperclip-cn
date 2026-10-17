@@ -1,3 +1,4 @@
+import { translateInstant } from "@/i18n";
 import {
   COMPANY_SEARCH_UPDATED_WITHIN_OPTIONS,
   ISSUE_PRIORITIES,
@@ -40,13 +41,13 @@ export interface SearchOperatorSuggestion {
 export const SEARCH_OPERATOR_QUICK_FILTERS = ["assignee:me", "is:open", "updated:>7d"] as const;
 
 export const SEARCH_OPERATOR_SUGGESTIONS: SearchOperatorSuggestion[] = [
-  { token: "status:todo", label: "Open todo tasks", description: "Filter by task status" },
-  { token: "status:blocked", label: "Blocked tasks", description: "Find blocked work" },
-  { token: "assignee:me", label: "Assigned to me", description: "Use your current board user" },
-  { token: "project:\"Paperclip App\"", label: "Project name", description: "Quote multi-word project names" },
-  { token: "label:bug", label: "Label", description: "Filter by issue label" },
-  { token: "priority:high", label: "High priority", description: "Filter by priority" },
-  { token: "updated:>7d", label: "Recently updated", description: "Updated in the last 7 days" },
+  { token: "status:todo", get label() { return translateInstant("Open todo tasks"); }, get description() { return translateInstant("Filter by task status"); } },
+  { token: "status:blocked", get label() { return translateInstant("Blocked tasks"); }, get description() { return translateInstant("Find blocked work"); } },
+  { token: "assignee:me", get label() { return translateInstant("Assigned to me"); }, get description() { return translateInstant("Use your current board user"); } },
+  { token: "project:\"Paperclip App\"", get label() { return translateInstant("Project name"); }, get description() { return translateInstant("Quote multi-word project names"); } },
+  { token: "label:bug", get label() { return translateInstant("Label"); }, get description() { return translateInstant("Filter by issue label"); } },
+  { token: "priority:high", get label() { return translateInstant("High priority"); }, get description() { return translateInstant("Filter by priority"); } },
+  { token: "updated:>7d", get label() { return translateInstant("Recently updated"); }, get description() { return translateInstant("Updated in the last 7 days"); } },
 ];
 
 export interface SearchQueryParserContext {

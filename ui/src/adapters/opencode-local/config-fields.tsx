@@ -1,5 +1,7 @@
-import type { AdapterConfigFieldsProps } from "../types";
+import { configFieldsForSection } from "../config-sections";
+import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
+import type { AdapterConfigFieldsProps } from "../types";
 import {
   Field,
   ToggleField,
@@ -14,6 +16,7 @@ const instructionsFileHint =
   "Absolute path to a markdown file (e.g. AGENTS.md) that defines this agent's behavior. Injected into the system prompt at runtime.";
 
 export function OpenCodeLocalConfigFields({
+  section,
   isCreate,
   values,
   set,
@@ -22,17 +25,11 @@ export function OpenCodeLocalConfigFields({
   mark,
   hideInstructionsFile,
 }: AdapterConfigFieldsProps) {
-  const { t } = useTranslation();
-
-  return (
+  useTranslation();
+  return configFieldsForSection(section, (
     <>
       {!hideInstructionsFile && (
-        <Field
-          label={t("agentConfig.instructionsFileLabel")}
-          hint={t("agentConfig.instructionsFileHint", {
-            defaultValue: instructionsFileHint,
-          })}
-        >
+        <Field label={translateInstant("Agent instructions file")} hint={translateInstant(instructionsFileHint)}>
           <div className="flex items-center gap-2">
             <DraftInput
               value={
@@ -51,14 +48,14 @@ export function OpenCodeLocalConfigFields({
               }
               immediate
               className={inputClass}
-              placeholder={t("agentConfig.instructionsFilePlaceholder")}
+              placeholder="/absolute/path/to/AGENTS.md"
             />
             <ChoosePathButton />
           </div>
         </Field>
       )}
       <ToggleField
-        label={t("Skip permissions", { defaultValue: "Skip permissions" })}
+        label={translateInstant("Skip permissions")}
         hint={help.dangerouslySkipPermissions}
         checked={
           isCreate
@@ -76,5 +73,5 @@ export function OpenCodeLocalConfigFields({
         }
       />
     </>
-  );
+  ));
 }

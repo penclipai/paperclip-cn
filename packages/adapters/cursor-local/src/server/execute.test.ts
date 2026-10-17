@@ -1,60 +1,13 @@
-import { existsSync } from "node:fs";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import type { AdapterExecutionTarget } from "@penclipai/adapter-utils/execution-target";
 import { runChildProcess } from "@penclipai/adapter-utils/server-utils";
+import { prepareTestPosixShell } from "@penclipai/adapter-utils/test-fixtures/posix-shell";
 import { SANDBOX_INSTALL_COMMAND } from "../index.js";
 import { execute } from "./execute.js";
-
-function resolveTestPosixShellCommand(command: "bash" | "sh") {
-  if (process.platform !== "win32") return command === "bash" ? "/bin/bash" : "/bin/sh";
-  const candidates = command === "bash"
-    ? ["C:\\Program Files\\Git\\bin\\bash.exe", "C:\\Program Files\\Git\\usr\\bin\\bash.exe"]
-    : ["C:\\Program Files\\Git\\usr\\bin\\sh.exe", "C:\\Program Files\\Git\\bin\\bash.exe"];
-  return candidates.find((candidate) => existsSync(candidate)) ?? command;
-}
-
-function toGitShellPath(value: string) {
-  if (process.platform !== "win32") return value;
-  return value.replace(/^([A-Za-z]):\\/, (_match, drive: string) => `/${drive.toLowerCase()}/`).replace(/\\/g, "/");
-}
-
-function fromGitShellPath(value: string) {
-  if (process.platform !== "win32") return value;
-  return value.replace(/^\/([a-zA-Z])\//, (_match, drive: string) => `${drive.toUpperCase()}:\\`).replace(/\//g, "\\");
-}
-
-function rewriteWindowsPathsForGitShell(script: string) {
-  if (process.platform !== "win32") return script;
-  return script.replace(/([A-Za-z]):\\([^'"\s]*)/g, (_match, drive: string, rest: string) =>
-    `/${drive.toLowerCase()}/${rest.replace(/\\/g, "/")}`,
-  );
-}
-
-function prepareTestCommandForRunChildProcess(command: string, args: string[]) {
-  if (command === "bash" || command === "sh") {
-    const nextArgs = [...args];
-    if ((nextArgs[0] === "-lc" || nextArgs[0] === "-c") && typeof nextArgs[1] === "string") {
-      nextArgs[1] = rewriteWindowsPathsForGitShell(nextArgs[1]);
-    }
-    return {
-      command: resolveTestPosixShellCommand(command),
-      args: nextArgs,
-    };
-  }
-
-  const localCommand = fromGitShellPath(command);
-  if (process.platform === "win32" && /(?:^|[\\/])(?:agent|cursor-agent)$/.test(localCommand)) {
-    return {
-      command: resolveTestPosixShellCommand("bash"),
-      args: [localCommand, ...args],
-    };
-  }
-
-  return { command: localCommand, args };
-}
+import { createPromptContextFixture } from "@penclipai/adapter-utils/test-fixtures/prompt-context";
 
 type PrepareCursorSandboxCommandInput = {
   runId: string;
@@ -74,6 +27,11 @@ type PrepareCursorSandboxCommandResult = {
   addedPathEntry: string | null;
   preferredCommandPath: string | null;
 };
+
+// These controlled fixtures spawn a POSIX shell and a child Node process.
+// Windows startup can exceed Vitest's default while POSIX keeps its original
+// narrow timeout.
+const sandboxChildProcessTestTimeoutMs = process.platform === "win32" ? 15_000 : 5_000;
 
 const {
   setPrepareCursorSandboxCommand,
@@ -105,13 +63,18 @@ vi.mock("./remote-command.js", async () => {
 });
 
 function buildFakeAgentScript(captureDir: string): string {
-  return `#!/bin/sh
-cat > ${JSON.stringify(path.join(captureDir, "prompt.txt"))}
-printf '%s' "$0" > ${JSON.stringify(path.join(captureDir, "command.txt"))}
-printf '%s' "$PATH" > ${JSON.stringify(path.join(captureDir, "path.txt"))}
-printf '%s\\n' '{"type":"system","subtype":"init","session_id":"cursor-session-fresh-1","model":"auto"}'
-printf '%s\\n' '{"type":"assistant","message":{"content":[{"type":"output_text","text":"hello"}]}}'
-printf '%s\\n' '{"type":"result","subtype":"success","session_id":"cursor-session-fresh-1","result":"ok"}'
+  return `#!/usr/bin/env node
+const fs = require("node:fs");
+const toHostPath = (value) => process.platform === "win32" ? value.replace(/^\\/([a-zA-Z])\\//, (_match, drive) => drive.toUpperCase() + ":\\\\").replace(/\\//g, "\\\\") : value;
+const captureDir = toHostPath(${JSON.stringify(captureDir)});
+process.stdin.pipe(fs.createWriteStream(require("node:path").join(captureDir, "prompt.txt")));
+process.stdin.on("end", () => {
+  fs.writeFileSync(require("node:path").join(captureDir, "command.txt"), process.argv[1]);
+  fs.writeFileSync(require("node:path").join(captureDir, "path.txt"), process.env.PATH ?? "");
+  console.log(JSON.stringify({ type: "system", subtype: "init", session_id: "cursor-session-fresh-1", model: "auto" }));
+  console.log(JSON.stringify({ type: "assistant", message: { content: [{ type: "output_text", text: "hello" }] } }));
+  console.log(JSON.stringify({ type: "result", subtype: "success", session_id: "cursor-session-fresh-1", result: "ok" }));
+});
 `;
 }
 
@@ -141,7 +104,7 @@ function createFreshLeaseSandboxRunner(options: {
     "/bin",
     "/usr/sbin",
     "/sbin",
-  ].join(":");
+  ].join(path.delimiter);
 
   return {
     installCommands,
@@ -156,28 +119,27 @@ function createFreshLeaseSandboxRunner(options: {
       onSpawn?: (meta: { pid: number; startedAt: string }) => Promise<void>;
     }) => {
       counter += 1;
-      const rawArgs = [...(input.args ?? [])];
-      const preparedCommand = prepareTestCommandForRunChildProcess(input.command, rawArgs);
-      const args = preparedCommand.args;
+      const args = [...(input.args ?? [])];
       if (args[1] === SANDBOX_INSTALL_COMMAND) {
         installCommands.push(args[1]);
         args[1] = buildInstallSimulationCommand(options.installCommandPath, options.captureDir);
-        if ((input.command === "bash" || input.command === "sh") && args[0] === "-lc") {
-          args[1] = rewriteWindowsPathsForGitShell(args[1]);
-        }
       }
 
       const inheritedPath = input.env?.PATH ?? systemPath;
-      const pathWithLocalBin = `${toGitShellPath(path.join(options.homeDir, ".local", "bin"))}:${inheritedPath}`;
+      const pathWithLocalBin = `${path.join(options.homeDir, ".local", "bin")}${path.delimiter}${inheritedPath}`;
       const env = {
         ...(input.env ?? {}),
-        HOME: input.env?.HOME ?? toGitShellPath(options.homeDir),
+        HOME: input.env?.HOME ?? options.homeDir,
         PATH: pathWithLocalBin,
       };
 
-      return await runChildProcess(`cursor-fresh-lease-${counter}`, preparedCommand.command, args, {
-        cwd: fromGitShellPath(input.cwd ?? process.cwd()),
-        env,
+      const command = input.command.endsWith("/.local/bin/agent")
+        ? options.installCommandPath
+        : input.command;
+      const shell = prepareTestPosixShell({ command, args, env });
+      return await runChildProcess(`cursor-fresh-lease-${counter}`, shell.command, shell.args, {
+        cwd: input.cwd ?? process.cwd(),
+        env: shell.env,
         stdin: input.stdin,
         timeoutSec: Math.max(1, Math.ceil((input.timeoutMs ?? 30_000) / 1000)),
         graceSec: 5,
@@ -191,6 +153,70 @@ function createFreshLeaseSandboxRunner(options: {
 }
 
 describe("cursor execute", () => {
+  it.each([0, 7])("settles legacy step usage only after a clean process exit (%s)", async (exitCode) => {
+    setPrepareCursorSandboxCommand.mockReset();
+    setPrepareCursorSandboxCommand.mockImplementation(async (input) => ({
+      command: input.command, env: input.env, remoteSystemHomeDir: null,
+      addedPathEntry: null, preferredCommandPath: null,
+    }));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-cursor-legacy-"));
+    const command = path.join(root, "agent");
+    await fs.writeFile(command, `#!/usr/bin/env node
+process.stdin.resume();
+process.stdin.on("end", () => { console.log(JSON.stringify({ type: "step_finish", part: { tokens: { input: 20, output: 5 }, cost: 0.01 } })); process.exit(${exitCode}); });
+`, { mode: 0o755 });
+    const onUsage = vi.fn();
+    try {
+      const result = await execute({
+        runId: "run-legacy", agent: { id: "agent-1", companyId: "company-1", name: "Cursor", adapterType: "cursor", adapterConfig: {} },
+        runtime: { sessionId: null, sessionParams: null, sessionDisplayId: null, taskKey: null },
+        config: { command, cwd: root }, context: createPromptContextFixture(),
+        authToken: "fixture-run-token", onLog: async () => {}, onUsage,
+      });
+      expect(result.usage).toMatchObject({ inputTokens: 20, outputTokens: 5 });
+      expect(result.costUsd).toBe(0.01);
+      expect(result.usageComplete).toBe(exitCode === 0);
+      expect(onUsage).toHaveBeenCalledWith(expect.objectContaining({ complete: false, costUsd: 0.01 }));
+    } finally {
+      await fs.rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it.each([
+    { detail: "Authentication failed", structured: "", expected: "Authentication failed" },
+    { detail: "", structured: "", expected: "Cursor exited with code 7" },
+    { detail: "stderr fallback", structured: '{"type":"error","message":"Structured failure"}', expected: "Structured failure" },
+  ])("keeps the actual failure after a retrieval trace announcement: $expected", async ({ detail, structured, expected }) => {
+    setPrepareCursorSandboxCommand.mockReset();
+    setPrepareCursorSandboxCommand.mockImplementation(async (input) => ({
+      command: input.command, env: input.env, remoteSystemHomeDir: null,
+      addedPathEntry: null, preferredCommandPath: null,
+    }));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-cursor-diagnostic-"));
+    const command = path.join(root, "agent");
+    const trace = "cursor-retrieval: tracing to '/tmp/fixture-cursor-retrieval.log'";
+    // Values are fixed test fixtures, passed through env rather than shell code.
+    await fs.writeFile(command, `#!/usr/bin/env node
+process.stdin.resume();
+process.stdin.on("end", () => { console.error(process.env.FIXTURE_TRACE ?? ""); console.error(process.env.FIXTURE_DETAIL ?? ""); console.log(process.env.FIXTURE_STRUCTURED ?? ""); process.exit(7); });
+`, { mode: 0o755 });
+    try {
+      const result = await execute({
+        runId: "run-diagnostic-1",
+        agent: { id: "agent-1", companyId: "company-1", name: "Cursor", adapterType: "cursor", adapterConfig: {} },
+        runtime: { sessionId: null, sessionParams: null, sessionDisplayId: null, taskKey: null },
+        config: { command, cwd: root, env: { FIXTURE_TRACE: trace, FIXTURE_DETAIL: detail, FIXTURE_STRUCTURED: structured } },
+        context: createPromptContextFixture(), authToken: "fixture-run-token", onLog: async () => {},
+      });
+      expect(result.exitCode).toBe(7);
+      expect(result.errorMessage).toBe(expected);
+      expect(result.resultJson?.stderr).toContain(trace);
+      expect(result.resultJson?.stderr).toContain(detail);
+    } finally {
+      await fs.rm(root, { recursive: true, force: true });
+    }
+  });
+
   it("installs the default agent command on a fresh sandbox lease before execution", async () => {
     setPrepareCursorSandboxCommand.mockReset();
     setPrepareCursorSandboxCommand.mockImplementation(async (input) => {
@@ -201,11 +227,11 @@ describe("cursor execute", () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-cursor-fresh-lease-"));
     const homeDir = path.join(root, "home");
     const workspace = path.join(root, "workspace");
-    const remoteWorkspace = toGitShellPath(path.join(root, "remote-workspace"));
+    const remoteWorkspace = path.join(root, "remote-workspace");
     const captureDir = path.join(root, "capture");
     const agentPath = path.join(homeDir, ".local", "bin", "agent");
     await fs.mkdir(workspace, { recursive: true });
-    await fs.mkdir(fromGitShellPath(remoteWorkspace), { recursive: true });
+    await fs.mkdir(remoteWorkspace, { recursive: true });
 
     const runner = createFreshLeaseSandboxRunner({
       homeDir,
@@ -217,6 +243,10 @@ describe("cursor execute", () => {
     process.env.HOME = homeDir;
 
     try {
+      const promptContext = {
+        ...createPromptContextFixture(),
+        paperclipLocalizationPromptMarkdown: "## Language\n\nReply in Chinese.",
+      };
       const result = await execute({
         runId: "run-fresh-lease-1",
         agent: {
@@ -244,7 +274,7 @@ describe("cursor execute", () => {
           cwd: workspace,
           promptTemplate: "Follow the paperclip heartbeat.",
         },
-        context: {},
+        context: promptContext,
         authToken: "run-jwt-token",
         onLog: async () => {},
       });
@@ -257,14 +287,16 @@ describe("cursor execute", () => {
       const runtimePath = await fs.readFile(path.join(captureDir, "path.txt"), "utf8");
       const prompt = await fs.readFile(path.join(captureDir, "prompt.txt"), "utf8");
       expect(command).toBe(agentPath);
-      expect(runtimePath).toContain(toGitShellPath(path.join(homeDir, ".local", "bin")));
+      expect(runtimePath.split(path.delimiter)).toContain(path.join(homeDir, ".local", "bin"));
       expect(prompt).toContain("Follow the paperclip heartbeat.");
+      expect(prompt).toContain("## Owned assignment");
+      expect(prompt).toContain("## Language\n\nReply in Chinese.");
     } finally {
       if (previousHome === undefined) delete process.env.HOME;
       else process.env.HOME = previousHome;
       await fs.rm(root, { recursive: true, force: true });
     }
-  }, 30_000);
+  }, sandboxChildProcessTestTimeoutMs);
 
   it("reruns sandbox command resolution after managed runtime setup and keeps the original sandbox home", async () => {
     setPrepareCursorSandboxCommand.mockReset();
@@ -276,14 +308,19 @@ describe("cursor execute", () => {
     const remoteWorkspace = path.join(rootDir, "remote-workspace");
     const systemHomeDir = path.join(rootDir, "system-home");
     const managedCaptureDir = path.join(rootDir, "managed-capture");
+    const fixtureBinDir = path.join(rootDir, "fixture-bin");
+    const networkAttemptPath = path.join(rootDir, "network-attempted");
+    await fs.mkdir(fixtureBinDir, { recursive: true });
+    // A regression in installer interception must fail locally, not download
+    // and execute the real CLI or depend on an external server's latency.
+    await fs.writeFile(path.join(fixtureBinDir, "curl"), `#!/bin/sh
+: > "$FIXTURE_CURL_ATTEMPT_PATH"
+exit 97
+`, { mode: 0o755 });
     await fs.mkdir(managedCaptureDir, { recursive: true });
     await fs.mkdir(workspaceDir, { recursive: true });
     await fs.mkdir(remoteWorkspace, { recursive: true });
-    const preferredAgentScript = `#!/bin/sh
-printf '%s\\n' '{"type":"system","subtype":"init","session_id":"cursor-session-fresh-1","model":"auto"}'
-printf '%s\\n' '{"type":"assistant","message":{"content":[{"type":"output_text","text":"hello"}]}}'
-printf '%s\\n' '{"type":"result","subtype":"success","session_id":"cursor-session-fresh-1","result":"ok"}'
-`;
+    const preferredAgentScript = buildFakeAgentScript(managedCaptureDir);
 
     setPrepareCursorSandboxCommand.mockImplementation(async (input) => {
       const call = prepareInputs.length;
@@ -303,7 +340,7 @@ printf '%s\\n' '{"type":"result","subtype":"success","session_id":"cursor-sessio
       finalPreparedCommand = preferredCommandPath;
       const runtimeEnv = {
         ...input.env,
-        PATH: `${path.join(systemHomeDir, ".local", "bin")}${path.delimiter}${input.env.PATH}`,
+        PATH: `${path.join(systemHomeDir, ".local", "bin")}${path.delimiter}${input.env.PATH ?? process.env.PATH ?? "/usr/bin:/bin"}`,
       };
       await fs.mkdir(path.dirname(preferredCommandPath), { recursive: true });
       await fs.writeFile(preferredCommandPath, preferredAgentScript);
@@ -321,26 +358,38 @@ printf '%s\\n' '{"type":"result","subtype":"success","session_id":"cursor-sessio
 
     const runnerState = {
       commands: [] as string[],
+      installCommands: [] as string[],
     };
+    // The managed-runtime restore path probes the generated archive with
+    // `wc -c` before reading bounded `dd | base64` chunks. Keep this fixture's
+    // shell seam faithful to that protocol instead of returning empty stdout
+    // for every shell command.
     const runner = {
-      execute: async (input: { command: string; args?: string[]; env?: Record<string, string> }) => {
+      execute: async (input: { command: string; args?: string[]; env?: Record<string, string>; stdin?: string }) => {
         runnerState.commands.push(input.command);
-        if (input.command === "sh") {
-          return {
-            exitCode: 0,
-          signal: null,
-          timedOut: false,
-          stdout: "",
-          stderr: "",
-          pid: 555,
-          startedAt: new Date().toISOString(),
-        };
+        const args = [...(input.args ?? [])];
+        if (args[1] === SANDBOX_INSTALL_COMMAND) {
+          runnerState.installCommands.push(args[1]);
+          args[1] = buildInstallSimulationCommand(
+            path.join(systemHomeDir, ".local", "bin", "agent"),
+            managedCaptureDir,
+          );
         }
-
-        const preparedCommand = prepareTestCommandForRunChildProcess(input.command, input.args ?? []);
-        return runChildProcess(`cursor-fresh-lease-${runnerState.commands.length}`, preparedCommand.command, preparedCommand.args, {
+        // Exercise actual bounded file reads during managed-home restoration;
+        // reporting empty success for every shell command hides missing bytes.
+        const shell = prepareTestPosixShell({
+          command: input.command,
+          args,
+          env: {
+            ...input.env,
+            PATH: `${fixtureBinDir}:${input.env?.PATH ?? ""}:/usr/bin:/bin`,
+            FIXTURE_CURL_ATTEMPT_PATH: networkAttemptPath,
+          },
+        });
+        return runChildProcess(`cursor-fresh-lease-${runnerState.commands.length}`, shell.command, shell.args, {
           cwd: remoteWorkspace,
-          env: input.env ?? {},
+          env: shell.env,
+          stdin: input.stdin,
           timeoutSec: 30,
           graceSec: 5,
           onLog: async () => {},
@@ -392,7 +441,11 @@ printf '%s\\n' '{"type":"result","subtype":"success","session_id":"cursor-sessio
       });
 
       expect(result.exitCode).toBe(0);
+      await expect(fs.stat(networkAttemptPath)).rejects.toMatchObject({ code: "ENOENT" });
+      expect(runnerState.installCommands).toEqual([SANDBOX_INSTALL_COMMAND]);
       expect(prepareInputs).toHaveLength(2);
+      expect(prepareInputs[1].env.HOME).toBeTruthy();
+      expect(prepareInputs[1].env.HOME).not.toBe(systemHomeDir);
       expect(finalPreparedCommand).not.toBeNull();
       expect(finalPreparedCommand).toMatch(/\.local[\\/](bin|sbin)[\\/]agent$/);
       const resolvedCommand = runMeta.find(Boolean)?.command as string | undefined;
@@ -402,6 +455,58 @@ printf '%s\\n' '{"type":"result","subtype":"success","session_id":"cursor-sessio
       if (previousHome === undefined) delete process.env.HOME;
       else process.env.HOME = previousHome;
       await fs.rm(rootDir, { recursive: true, force: true });
+    }
+  }, sandboxChildProcessTestTimeoutMs);
+
+  it("rebuilds the full assignment after an unknown-session resume", async () => {
+    setPrepareCursorSandboxCommand.mockReset();
+    setPrepareCursorSandboxCommand.mockImplementation(async (input) => ({
+      command: input.command,
+      env: input.env,
+      remoteSystemHomeDir: null,
+      addedPathEntry: null,
+      preferredCommandPath: null,
+    }));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-cursor-resume-"));
+    const workspace = path.join(root, "workspace");
+    const commandPath = path.join(root, "agent");
+    const capturePath = path.join(root, "prompts.txt");
+    await fs.mkdir(workspace, { recursive: true });
+    await fs.writeFile(commandPath, `#!/usr/bin/env node
+const fs = require("node:fs");
+const countFile = ${JSON.stringify(path.join(root, "count"))};
+const capturePath = ${JSON.stringify(capturePath)};
+const count = Number(fs.existsSync(countFile) ? fs.readFileSync(countFile, "utf8") : "0") + 1;
+fs.writeFileSync(countFile, String(count));
+let prompt = "";
+process.stdin.setEncoding("utf8");
+process.stdin.on("data", (chunk) => { prompt += chunk; });
+process.stdin.on("end", () => {
+  fs.appendFileSync(capturePath, "\\n--- prompt " + count + " ---\\n" + prompt);
+  if (count === 1) { console.log(JSON.stringify({ type: "error", message: "Unknown session" })); process.exit(1); }
+  console.log(JSON.stringify({ type: "system", subtype: "init", session_id: "cursor-session-fresh-2", model: "auto" }));
+  console.log(JSON.stringify({ type: "result", subtype: "success", session_id: "cursor-session-fresh-2", result: "ok" }));
+});
+`);
+    await fs.chmod(commandPath, 0o755);
+
+    try {
+      const result = await execute({
+        runId: "run-cursor-resume-fallback",
+        agent: { id: "agent-1", companyId: "company-1", name: "Cursor Coder", adapterType: "cursor", adapterConfig: {} },
+        runtime: { sessionId: "cursor-session-old", sessionParams: null, sessionDisplayId: null, taskKey: null },
+        config: { command: commandPath, cwd: workspace, promptTemplate: "Follow the paperclip heartbeat." },
+        context: createPromptContextFixture(),
+        authToken: "run-jwt-token",
+        onLog: async () => {},
+      });
+
+      expect(result.exitCode).toBe(0);
+      const prompts = await fs.readFile(capturePath, "utf8");
+      expect(prompts).toContain("## Compact assignment");
+      expect(prompts).toContain("## Owned assignment");
+    } finally {
+      await fs.rm(root, { recursive: true, force: true });
     }
   });
 });

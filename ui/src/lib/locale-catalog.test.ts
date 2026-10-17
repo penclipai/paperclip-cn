@@ -2,8 +2,10 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { checkCatalog } from "../../../scripts/i18n-catalog.mjs";
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
+const repoRoot = path.resolve(currentDir, "../../..");
 const localeFiles = [
   path.resolve(currentDir, "../../public/locales/en/common.json"),
   path.resolve(currentDir, "../../public/locales/zh-CN/common.json"),
@@ -36,6 +38,10 @@ function readLocaleMessages(locale: "en" | "zh-CN"): Record<string, string> {
 }
 
 describe("locale catalogs", () => {
+  it("matches the generated catalogs to their reviewed editable sources", async () => {
+    await expect(checkCatalog({ root: repoRoot })).resolves.toBeDefined();
+  });
+
   for (const localeFile of localeFiles) {
     it(`keeps ${path.basename(path.dirname(localeFile))} free of duplicate keys`, () => {
       const text = readFileSync(localeFile, "utf8");
@@ -65,6 +71,37 @@ describe("locale catalogs", () => {
     expect(zh["issueRecoveryAction.headline.stranded_assigned_issue"]).toContain("已重试");
     expect(zh["issueRecoveryAction.headline.stranded_assigned_issue"]).not.toBe(
       en["issueRecoveryAction.headline.stranded_assigned_issue"],
+    );
+  });
+
+  it("keeps company settings and portability copy localized in zh-CN", () => {
+    const en = readLocaleMessages("en");
+    const zh = readLocaleMessages("zh-CN");
+    const requiredKeys = [
+      "companySettings.noCompanySelectedBody",
+      "companySettings.interactionGovernance",
+      "companySettings.governance.option.companyDefault",
+      "companySettings.mibUnit",
+      "companyImport.completedTitle",
+      "companyImport.summaryLine",
+      "companyImport.skillImportResults",
+      "companyImport.activationPartialFailureTitle",
+      "companyImport.requestDidNotComplete",
+      "companyExport.selectionSummary",
+      "companyExport.attachmentsRequireTasksOrRoutines",
+      "companyExport.showMoreTasksSummary",
+    ];
+
+    for (const key of requiredKeys) {
+      expect(en[key], `missing en key ${key}`).toBeTruthy();
+      expect(zh[key], `missing zh-CN key ${key}`).toBeTruthy();
+    }
+
+    expect(zh["companySettings.interactionGovernance"]).not.toBe(
+      en["companySettings.interactionGovernance"],
+    );
+    expect(zh["companyImport.completedTitle"]).not.toBe(
+      en["companyImport.completedTitle"],
     );
   });
 });

@@ -1,0 +1,72 @@
+{
+  "statusIcon.blocked.attention": {
+    "en": "Blocked · {{attention}}",
+    "zh-CN": "已阻塞 · {{attention}}",
+    "reviewedEnglishHash": "338a1ca59395db69465924362d83babfad0ec6a8c931048e37ad3d27cd057e97"
+  },
+  "statusIcon.blocked.attentionAndCovered": {
+    "en": "Blocked · {{attention}}; {{coveredCount}} covered by active work",
+    "zh-CN": "已阻塞 · {{attention}}；{{coveredCount}} 个已有活跃工作覆盖",
+    "reviewedEnglishHash": "baac719d134b742d702b1713963cbb51b12d29cc9ed4a8adfffdf6c66c53c1a4"
+  },
+  "statusIcon.blocked.blockersNeedAttention": {
+    "en": "{{count}} blockers need attention",
+    "zh-CN": "{{count}} 个阻塞项需要处理",
+    "reviewedEnglishHash": "2907c246432212a7964686b66e4540dc4d27889cdb4fc0a2131c0265c843dc33"
+  },
+  "statusIcon.blocked.coveredByActiveDependencies": {
+    "en": "Blocked · covered by {{count}} active dependencies",
+    "zh-CN": "已阻塞 · {{count}} 个活跃依赖已覆盖",
+    "reviewedEnglishHash": "47d988ed1dfc2c1bd696cb57594836c49291627b44263cfdc28f6fb1ec0224d7"
+  },
+  "statusIcon.blocked.coveredByActiveDependencyNamed": {
+    "en": "Blocked · covered by active dependency {{identifier}}",
+    "zh-CN": "已阻塞 · 活跃依赖 {{identifier}} 已覆盖",
+    "reviewedEnglishHash": "758ca1de4027c9f75cfc9144a39428c3f0c71a4e462d513caf907d969be1305f"
+  },
+  "statusIcon.blocked.coveredByOneActiveDependency": {
+    "en": "Blocked · covered by 1 active dependency",
+    "zh-CN": "已阻塞 · 1 个活跃依赖已覆盖",
+    "reviewedEnglishHash": "319c949ca19629c0f4641a560949c4b6ad46b80f2d96f4085c20291c36c1fa15"
+  },
+  "statusIcon.blocked.oneBlockerNeedsAttention": {
+    "en": "1 blocker needs attention",
+    "zh-CN": "1 个阻塞项需要处理",
+    "reviewedEnglishHash": "ecac158e5791fc9b78c03e1bf0bfdc80990306b0aef69757f783b7bdec1deb28"
+  },
+  "statusIcon.blocked.oneReviewStalled": {
+    "en": "Blocked · review stalled with no clear next step",
+    "zh-CN": "已阻塞 · 评审停滞且没有明确下一步",
+    "reviewedEnglishHash": "4978f3d52ca0f890ad6c500ca02c327b5caf26066e17de1f93cf5e597a604f9b"
+  },
+  "statusIcon.blocked.reviewStalledOn": {
+    "en": "Blocked · review stalled on {{identifier}}",
+    "zh-CN": "已阻塞 · {{identifier}} 的评审已停滞",
+    "reviewedEnglishHash": "3c6b89f8e69de87da2c665fbc6339e93311e4336b86629290d476547e9ff0d56"
+  },
+  "statusIcon.blocked.reviewsStalled": {
+    "en": "Blocked · {{count}} reviews stalled with no clear next step",
+    "zh-CN": "已阻塞 · {{count}} 个评审停滞且没有明确下一步",
+    "reviewedEnglishHash": "75e839c806c29d7bcfd805e4b902849b60cafc3635251995fafb14a90fff8f91"
+  },
+  "statusIcon.blocked.waitingOnActiveSubIssueNamed": {
+    "en": "Blocked · waiting on active sub-task {{identifier}}",
+    "zh-CN": "已阻塞 · 等待活跃子任务 {{identifier}}",
+    "reviewedEnglishHash": "30e420ca29b64248c80ffd93ce4ec8ce91074de909d5662371ae2363d87dec39"
+  },
+  "statusIcon.blocked.waitingOnActiveSubIssues": {
+    "en": "Blocked · waiting on {{count}} active sub-tasks",
+    "zh-CN": "已阻塞 · 等待 {{count}} 个活跃子任务",
+    "reviewedEnglishHash": "ddd4c450bd716512c96161d4892fc5910500ce15ea21f5d4e122a383dcfa167a"
+  },
+  "statusIcon.blocked.waitingOnOneActiveSubIssue": {
+    "en": "Blocked · waiting on 1 active sub-task",
+    "zh-CN": "已阻塞 · 等待 1 个活跃子任务",
+    "reviewedEnglishHash": "5878bbf4332d97a2e720e5f119496a528496332c2615e710adcd39560be4b525"
+  },
+  "statusIcon.changeStatusAria": {
+    "en": "Change status (current: {{status}})",
+    "zh-CN": "更改状态（当前：{{status}}）",
+    "reviewedEnglishHash": "042fa3dbbeaa7a9abbfef6104fe6f75e176c8739e4b9a84667cfa1db169e451f"
+  }
+}

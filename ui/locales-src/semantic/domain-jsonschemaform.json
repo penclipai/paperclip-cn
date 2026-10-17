@@ -1,0 +1,157 @@
+{
+  "jsonSchemaForm.add": {
+    "en": "Add",
+    "zh-CN": "添加",
+    "reviewedEnglishHash": "9fd728c66c9a256b121472dabf32a34317aed01d8427d70ec830289cf23a7cc8"
+  },
+  "jsonSchemaForm.addItem": {
+    "en": "Add item",
+    "zh-CN": "添加项目",
+    "reviewedEnglishHash": "d1a0b329a72b8f16ab138cee622d18ab7ead8b870b0202439d2699cb5348711c"
+  },
+  "jsonSchemaForm.advancedOptions": {
+    "en": "Advanced options",
+    "zh-CN": "高级选项",
+    "reviewedEnglishHash": "9443ff69463ef46b44b157857314868717154d30db2cac7ba70fc75b0225785c"
+  },
+  "jsonSchemaForm.error.exclusiveMaximum": {
+    "en": "Must be less than {{count}}",
+    "zh-CN": "必须小于 {{count}}",
+    "reviewedEnglishHash": "c61cf08287af745e9e6193dc237df9f14ff633b825f8ab5e7676fa58914ccee1"
+  },
+  "jsonSchemaForm.error.exclusiveMinimum": {
+    "en": "Must be greater than {{count}}",
+    "zh-CN": "必须大于 {{count}}",
+    "reviewedEnglishHash": "da0eca2568618cdde848dd186049c24b2c23c017c23b1d65798ae6fa733fee58"
+  },
+  "jsonSchemaForm.error.integer": {
+    "en": "Must be a whole number",
+    "zh-CN": "必须是整数",
+    "reviewedEnglishHash": "f5bf7f32f0337a5a3af30d5f55c1a07d2dc8a07d58afed1a7ec668798910abde"
+  },
+  "jsonSchemaForm.error.invalidSecretReference": {
+    "en": "Invalid secret reference",
+    "zh-CN": "密钥引用无效",
+    "reviewedEnglishHash": "2d32b47d784b79e2ca09efec5f7dc7dfd36a96c4a79c8ad14a094cfb39a48eba"
+  },
+  "jsonSchemaForm.error.maxItems": {
+    "en": "Must have at most {{count}} items",
+    "zh-CN": "最多 {{count}} 项",
+    "reviewedEnglishHash": "525430e22b499a47da71a05b06145498789b641ac2dd2bf3afb4cd638c318286"
+  },
+  "jsonSchemaForm.error.maxLength": {
+    "en": "Must be at most {{count}} characters",
+    "zh-CN": "最多 {{count}} 个字符",
+    "reviewedEnglishHash": "3c0668294e7233dc516e1b8a754fa9ca5ce1b0e586a30b629c67a5da0b2c58bf"
+  },
+  "jsonSchemaForm.error.maximum": {
+    "en": "Must be at most {{count}}",
+    "zh-CN": "必须不大于 {{count}}",
+    "reviewedEnglishHash": "c700eeaa24dde506bd40021b20cc79c303754271ff066b661470c9ade4d39d0f"
+  },
+  "jsonSchemaForm.error.minItems": {
+    "en": "Must have at least {{count}} items",
+    "zh-CN": "至少 {{count}} 项",
+    "reviewedEnglishHash": "9f18cd62f5469aceadc2161cab323e450b9792c7d1483612327cf69c8634fa91"
+  },
+  "jsonSchemaForm.error.minLength": {
+    "en": "Must be at least {{count}} characters",
+    "zh-CN": "至少 {{count}} 个字符",
+    "reviewedEnglishHash": "88f4d565c45a94894839fe870ce8a7be73ffac5e5d5a9da96b4faf2177b37e89"
+  },
+  "jsonSchemaForm.error.minimum": {
+    "en": "Must be at least {{count}}",
+    "zh-CN": "必须不小于 {{count}}",
+    "reviewedEnglishHash": "e16631bef6f2afa6951bbefe141d669039d184905a5316b7c9e81dac4c454f79"
+  },
+  "jsonSchemaForm.error.multipleOf": {
+    "en": "Must be a multiple of {{count}}",
+    "zh-CN": "必须是 {{count}} 的倍数",
+    "reviewedEnglishHash": "21995bae7b4ce9e3624421bef953730335373ceaf0ee652a0bdaccd3e51c1ffe"
+  },
+  "jsonSchemaForm.error.pattern": {
+    "en": "Must match pattern: {{pattern}}",
+    "zh-CN": "必须匹配模式：{{pattern}}",
+    "reviewedEnglishHash": "72536e3d5d5cffbe3c3bb767182138ba1518a0c5ce2dbb5d674e8cc9bf681824"
+  },
+  "jsonSchemaForm.error.required": {
+    "en": "This field is required",
+    "zh-CN": "此字段必填",
+    "reviewedEnglishHash": "6876f12ea673f6b1e07fadbe778bd5fa77e3e6014e23cc34d56d5579d071b5d9"
+  },
+  "jsonSchemaForm.error.validNumber": {
+    "en": "Must be a valid number",
+    "zh-CN": "必须是有效数字",
+    "reviewedEnglishHash": "654353d5a85351a651cabf15d7954747c4278a7d68cb7dca62777d2ccb11a730"
+  },
+  "jsonSchemaForm.hideRawValueInput": {
+    "en": "Hide raw value input",
+    "zh-CN": "隐藏原始值输入框",
+    "reviewedEnglishHash": "7886a2cd020cf63fef6f164531023926eb552dc6c666e8ebc52762e28ae45468"
+  },
+  "jsonSchemaForm.hideSecret": {
+    "en": "Hide secret",
+    "zh-CN": "隐藏密钥",
+    "reviewedEnglishHash": "3e674e084ecdd5b285e7847332225b3ed2b9a80dd8f7188c82e73d2effb49282"
+  },
+  "jsonSchemaForm.itemLabel": {
+    "en": "Item {{count}}",
+    "zh-CN": "第 {{count}} 项",
+    "reviewedEnglishHash": "2ff2ae37d8d3d20f55000a5e733af77635918b36b4966f8cbb61792c029a1b54"
+  },
+  "jsonSchemaForm.noActiveSecretsHint": {
+    "en": "No active secrets yet. Create one or paste a raw value below.",
+    "zh-CN": "还没有可用密钥。请先创建密钥，或在下方粘贴原始值。",
+    "reviewedEnglishHash": "196de58c0da3a49c21378d255120f9368202f959b838cb4bebd5bb0936f14159"
+  },
+  "jsonSchemaForm.noConfigurationOptions": {
+    "en": "No configuration options available.",
+    "zh-CN": "没有可配置选项。",
+    "reviewedEnglishHash": "7027931a1cee29e24732f5eb187cebc015518b71f3196d455d139a854174c500"
+  },
+  "jsonSchemaForm.noItems": {
+    "en": "No items added yet.",
+    "zh-CN": "还没有添加项目。",
+    "reviewedEnglishHash": "48dcdce6280584cc7bb08cedfde0133afad58745485456e22aa57edc60f1c152"
+  },
+  "jsonSchemaForm.none": {
+    "en": "None",
+    "zh-CN": "无",
+    "reviewedEnglishHash": "dc937b59892604f5a86ac96936cd7ff09e25f18ae6b758e8014a24c7fa039e91"
+  },
+  "jsonSchemaForm.pasteRawValue": {
+    "en": "Or paste a raw value",
+    "zh-CN": "或粘贴原始值",
+    "reviewedEnglishHash": "e04884c8a6f708f82bde749136ff6ebb347c96e8031d9dac5f931d2b981c87b3"
+  },
+  "jsonSchemaForm.removeItem": {
+    "en": "Remove item",
+    "zh-CN": "移除项目",
+    "reviewedEnglishHash": "5a89edf2867d98dd75fe7d7fd924ba09743f09012868a7ccc3c17bb4841b4f79"
+  },
+  "jsonSchemaForm.secretDescription": {
+    "en": "This secret is stored securely via the Paperclip secret provider.",
+    "zh-CN": "此密钥会通过 Paperclip CN 密钥提供方安全存储。",
+    "reviewedEnglishHash": "850abb39a4129dd92ffc6fb88673b9b7371b10d0e4e80d79199c95e79c710b69"
+  },
+  "jsonSchemaForm.secretHiddenSummary": {
+    "en": "Sensitive - {{count}} characters hidden. Click the eye to reveal.",
+    "zh-CN": "敏感内容 - 已隐藏 {{count}} 个字符。点击眼睛图标显示。",
+    "reviewedEnglishHash": "48a5ff758da70ee9f0d91ccf37d64dc5701a8b86075ea2f667f27f57f51b7d47"
+  },
+  "jsonSchemaForm.selectExistingSecret": {
+    "en": "Select an existing secret",
+    "zh-CN": "选择已有密钥",
+    "reviewedEnglishHash": "485e486633d524847d920a5a574fb8c2394bd620bdc2628c0014b8b554af336d"
+  },
+  "jsonSchemaForm.selectOption": {
+    "en": "Select an option",
+    "zh-CN": "选择一个选项",
+    "reviewedEnglishHash": "fb1cbc38fb4060f4a648fbe213f1910915d66229d9f2b7753b7e68be1a17689f"
+  },
+  "jsonSchemaForm.showSecret": {
+    "en": "Show secret",
+    "zh-CN": "显示密钥",
+    "reviewedEnglishHash": "c18cc13351a1246a65d673604e672bcd62a44ba9e66025d9aa278d1792eb62b0"
+  }
+}

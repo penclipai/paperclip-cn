@@ -36,7 +36,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@clack/prompts": "^0.11.0",
+    "@clack/prompts": "^1.7.0",
     "@penclipai/adapter-claude-local": "workspace:*",
     "@penclipai/adapter-codebuddy-local": "workspace:*",
     "@penclipai/adapter-codex-local": "workspace:*",
@@ -44,6 +44,7 @@
     "@penclipai/adapter-cursor-local": "workspace:*",
     "@penclipai/adapter-gemini-local": "workspace:*",
     "@penclipai/adapter-grok-local": "workspace:*",
+    "@penclipai/adapter-kimi-local": "workspace:*",
     "@penclipai/adapter-opencode-local": "workspace:*",
     "@penclipai/adapter-pi-local": "workspace:*",
     "@penclipai/adapter-qwen-local": "workspace:*",
@@ -52,18 +53,18 @@
     "@penclipai/db": "workspace:*",
     "@penclipai/server": "workspace:*",
     "@penclipai/shared": "workspace:*",
-    "commander": "^13.1.0",
-    "dotenv": "^17.4.2",
     "drizzle-orm": "0.45.2",
-    "embedded-postgres": "^18.3.0-beta.17",
-    "postgres": "^3.4.9",
-    "picocolors": "^1.1.1",
-    "ws": "^8.19.0",
-    "zod": "^3.24.2"
+    "dotenv": "^17.4.2",
+    "commander": "^15.0.0",
+    "embedded-postgres": "^18.1.0-beta.16",
+    "picocolors": "^1.1.1"
   },
   "devDependencies": {
-    "@types/node": "^22.19.21",
-    "tsx": "^4.23.1",
-    "typescript": "^5.7.3"
+    "@types/node": "^24.0.0",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  },
+  "engines": {
+    "node": ">=24.11.0"
   }
 }

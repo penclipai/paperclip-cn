@@ -6,6 +6,8 @@ import { createRoot, type Root } from "react-dom/client";
 import type { HeartbeatRun } from "@penclipai/shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { RunActivityChart, SuccessRateChart } from "./ActivityCharts";
+import i18n from "../i18n";
+import { act } from "react";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
@@ -38,6 +40,7 @@ function createRun(overrides: Partial<HeartbeatRun> = {}): HeartbeatRun {
     id: "run-1",
     companyId: "company-1",
     agentId: "agent-1",
+    issueId: null,
     responsibleUserId: null,
     invocationSource: "on_demand",
     triggerDetail: "manual",
@@ -82,10 +85,20 @@ function createRun(overrides: Partial<HeartbeatRun> = {}): HeartbeatRun {
     createdAt: new Date("2026-04-20T11:58:00.000Z"),
     updatedAt: new Date("2026-04-20T11:59:00.000Z"),
     ...overrides,
+    scopeKind: overrides.scopeKind ?? "company",
   };
 }
 
 describe("ActivityCharts", () => {
+  it("updates empty chart copy when the UI language changes without new props", async () => {
+    render(<RunActivityChart activity={undefined} />);
+    expect(container.textContent).toContain("No runs yet");
+    await act(async () => { await i18n.changeLanguage("zh-CN"); });
+    expect(container.textContent).toContain(i18n.t("No runs yet"));
+    expect(container.textContent).not.toContain("No runs yet");
+    await act(async () => { await i18n.changeLanguage("en"); });
+    expect(container.textContent).toContain("No runs yet");
+  });
   it("renders empty run charts when dashboard aggregate data is temporarily missing", () => {
     render(<RunActivityChart activity={undefined} />);
     expect(container.textContent).toContain("No runs yet");

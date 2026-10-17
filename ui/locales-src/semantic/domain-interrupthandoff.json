@@ -1,0 +1,167 @@
+{
+  "interruptHandoff.assignedAgent": {
+    "en": "the assigned agent",
+    "zh-CN": "已分配的智能体",
+    "reviewedEnglishHash": "52c658622936fee1fb7ccb323c9b882a6f5722e1d53d705514d441971a765c9a"
+  },
+  "interruptHandoff.didYouMeanPrefix": {
+    "en": "Did you mean",
+    "zh-CN": "你是想提及",
+    "reviewedEnglishHash": "68fe721765d87b102372f55b4a437724f79b67cc852fb2379d23023b3c5ef9f2"
+  },
+  "interruptHandoff.dismissSuggestion": {
+    "en": "Dismiss suggestion",
+    "zh-CN": "关闭建议",
+    "reviewedEnglishHash": "ae5e3911d51a7d4dc0f5a3462d13f08708386e34fd95cb3a383e69f2811feca5"
+  },
+  "interruptHandoff.handOffTo": {
+    "en": "Hand off to",
+    "zh-CN": "移交给",
+    "reviewedEnglishHash": "7bcbd89d7d5d6f8671f882e9b6b81b7e6180b6b978a80e774aceb7722043d03e"
+  },
+  "interruptHandoff.insertMention": {
+    "en": "Insert mention",
+    "zh-CN": "插入提及",
+    "reviewedEnglishHash": "3fa5e7ca2d5187a173c39a16b5dcc3b5fe970c5fd2525d71186e060358dc475d"
+  },
+  "interruptHandoff.insertMentionForAgent": {
+    "en": "Insert mention for {{agentName}} into your comment",
+    "zh-CN": "将 {{agentName}} 的提及插入评论",
+    "reviewedEnglishHash": "87c78a03dce01b44b5646e5152fbc03e98775c74ce66e2208cdb022f1284d531"
+  },
+  "interruptHandoff.noAgentWillBeNotified": {
+    "en": "- no agent will be notified",
+    "zh-CN": "- 不会通知智能体",
+    "reviewedEnglishHash": "9b9fd1f76578fa912bb313b6d35f292cac0094c1cec1487ea750119f0a16b37b"
+  },
+  "interruptHandoff.noTasksAffected": {
+    "en": "No tasks are affected.",
+    "zh-CN": "没有任务会受影响。",
+    "reviewedEnglishHash": "9f04a13faf9fce18b5caf7137a994647efb3c73d3f6c45c664498d8a52524581"
+  },
+  "interruptHandoff.nothingLiveToPause": {
+    "en": "Nothing live to pause - no agent run is in flight or queued. This records a hold so new work won't start until you resume.",
+    "zh-CN": "没有正在运行的内容可暂停 - 当前没有运行中或排队中的智能体运行。系统会记录暂停保持，直到你恢复后才会启动新工作。",
+    "reviewedEnglishHash": "44c2481435556182e8b7dc5e720f6c1f05144fa3695a8b1bb9c6e74012a991e8"
+  },
+  "interruptHandoff.notify": {
+    "en": "Notify",
+    "zh-CN": "通知",
+    "reviewedEnglishHash": "f4e2b7734cb9eb5a9637e20154677da36116ec60697dd06f270f050e7b27dd89"
+  },
+  "interruptHandoff.pauseBucket.agent_owned.detail": {
+    "en": "assigned to an agent; no run is live",
+    "zh-CN": "已分配给智能体；当前没有运行",
+    "reviewedEnglishHash": "1c903ddd469e846d7624c8033ec99f7092d4aae288792f4acf3e3643048384a3"
+  },
+  "interruptHandoff.pauseBucket.agent_owned.label": {
+    "en": "Agent-owned",
+    "zh-CN": "智能体负责",
+    "reviewedEnglishHash": "fd665ed628a8bff898f968f4312e67ab6f74e9d527686bdf839d5cdf28f6207d"
+  },
+  "interruptHandoff.pauseBucket.human_owned.detail": {
+    "en": "owned by a board user; pausing won't notify them",
+    "zh-CN": "由看板用户负责；暂停不会通知他们",
+    "reviewedEnglishHash": "f24080e359a03c85b8a545df6b46f8dae29ed6ea374cd71bba65a44ebd081dd5"
+  },
+  "interruptHandoff.pauseBucket.human_owned.label": {
+    "en": "Human-owned",
+    "zh-CN": "用户负责",
+    "reviewedEnglishHash": "30a68d083775c06810d9bd144d1b869200520daea62d11038f355f0866086529"
+  },
+  "interruptHandoff.pauseBucket.live_runs.detail": {
+    "en": "interrupted now, re-queued when you resume",
+    "zh-CN": "现在中断，恢复后重新排队",
+    "reviewedEnglishHash": "93383534723f67f692a670a6dbcc185683ca9dfb522dc1fb896c75320c2fc01b"
+  },
+  "interruptHandoff.pauseBucket.live_runs.label": {
+    "en": "Live agent runs",
+    "zh-CN": "实时智能体运行",
+    "reviewedEnglishHash": "6663a17b699c35a575b08f8893c501a0182fea388561a92f6a875cbfa55c3d88"
+  },
+  "interruptHandoff.pauseBucket.queued_wakes.detail": {
+    "en": "held - they won't start until you resume",
+    "zh-CN": "已保持 - 恢复前不会启动",
+    "reviewedEnglishHash": "f37c3056af825b3ecde4cd5a6c2b2e54ed047686111e278fec25af55fea7a3cc"
+  },
+  "interruptHandoff.pauseBucket.queued_wakes.label": {
+    "en": "Queued wakes",
+    "zh-CN": "排队唤醒",
+    "reviewedEnglishHash": "0edfd24603a6df70126b4b41cae0fca764bdc0ba18d58bdc68b2dfcc19c06d3a"
+  },
+  "interruptHandoff.pauseBucket.static.detail": {
+    "en": "no assignee; nothing was going to run",
+    "zh-CN": "没有分配对象；本来就不会运行",
+    "reviewedEnglishHash": "20bdc4ce95f77b0dcf1d1e6b9bd9e48ba02a0a823680539b6b56a885adfacaa9"
+  },
+  "interruptHandoff.pauseBucket.static.label": {
+    "en": "Static",
+    "zh-CN": "静态",
+    "reviewedEnglishHash": "1d2c73dc01f2359b03a9ff2a2cf7e7b4069dfdb66d78dc791173d38471ebee47"
+  },
+  "interruptHandoff.plainTextWillNotNotify": {
+    "en": "Plain text won't notify or assign an agent.",
+    "zh-CN": "普通文本不会通知或分配智能体。",
+    "reviewedEnglishHash": "784e0eefad72174ae8526f2e7ea0d27ac45214a8765d9f2ff158e2fc9c5bcddb"
+  },
+  "interruptHandoff.previewClearAssignee": {
+    "en": "Clear assignee - no agent will be notified",
+    "zh-CN": "清除分配对象 - 不会通知智能体",
+    "reviewedEnglishHash": "84d8274f53c69d761d5d787ec38c00ce945121719d22dc754e7161836a457818"
+  },
+  "interruptHandoff.previewInterruptHandOff": {
+    "en": "Interrupt current run, hand off to",
+    "zh-CN": "中断当前运行，并移交给",
+    "reviewedEnglishHash": "de6d94554ecf789a249053cba648661f3cb7784e4bf20520934db6d5ae3d0849"
+  },
+  "interruptHandoff.previewPlainTextOnly": {
+    "en": "No agent will be notified. Use @ to mention an agent.",
+    "zh-CN": "不会通知智能体。请使用 @ 提及智能体。",
+    "reviewedEnglishHash": "e6f4490ce9ac9da598067392e37e71eacebddb59948f1dcd683c3c4e5bd559b9"
+  },
+  "interruptHandoff.statusInterrupted": {
+    "en": "interrupted",
+    "zh-CN": "已中断",
+    "reviewedEnglishHash": "d512d96ea31ab0b9bb9b66da70c4d675f7db657518f4b6c0cc6d5823e6da5509"
+  },
+  "interruptHandoff.statusInterruptedByBoardComment": {
+    "en": "interrupted by board comment",
+    "zh-CN": "由看板评论中断",
+    "reviewedEnglishHash": "3b709143036e86df5c72bc0e12a4b6ee0981f9da064051a00a5f240e1dc249c7"
+  },
+  "interruptHandoff.theMentionedAgent": {
+    "en": "the mentioned agent",
+    "zh-CN": "被提及的智能体",
+    "reviewedEnglishHash": "678f2089b7b4af4af81a62ee07a80dfeb6d0202467a8fa11d1195be706436dec"
+  },
+  "interruptHandoff.wake": {
+    "en": "Wake",
+    "zh-CN": "唤醒",
+    "reviewedEnglishHash": "33a7e908344d7d3901a5fcfc60a6d528bf077050c78a1432da3f6422070aa01b"
+  },
+  "interruptHandoff.wakeNotCreatedUnassigned": {
+    "en": "not created - no agent selected. Mention @agent or pick an assignee to dispatch.",
+    "zh-CN": "未创建 - 未选择智能体。请提及 @智能体 或选择分配对象来派发。",
+    "reviewedEnglishHash": "529af7dbe6182c3abb5995cb3b3fd4a804fe46ce71213e33add01f0e33894fe9"
+  },
+  "interruptHandoff.wakeNotCreatedUser": {
+    "en": "not created - this is a handoff to a board user",
+    "zh-CN": "未创建 - 这是移交给看板用户",
+    "reviewedEnglishHash": "5478fb58058771d7c484e4a94c5c4773a0867609ee1f2ca10bcafdf7a8a41cd9"
+  },
+  "interruptHandoff.wakeQueuedForAgent": {
+    "en": "queued for {{agentName}}",
+    "zh-CN": "已为 {{agentName}} 排队",
+    "reviewedEnglishHash": "0100e6e12086c6f462d42fa4d20108590e3867c36a47324e5ee958bd7a30d15e"
+  },
+  "interruptHandoff.wakeQueuedForAgentWithInterruptedRun": {
+    "en": "queued for {{agentName}} (interrupted run attached)",
+    "zh-CN": "已为 {{agentName}} 排队（已附加被中断的运行）",
+    "reviewedEnglishHash": "48d46178aa3e3124948ffb16262b4257343b76635d064245470fb7011a0d61f0"
+  },
+  "interruptHandoff.whatThisAffects": {
+    "en": "What this affects",
+    "zh-CN": "影响范围",
+    "reviewedEnglishHash": "b06916c5112dce50cc80cd39f90643bc88ff81e286966285f105c90cb005c9f4"
+  }
+}

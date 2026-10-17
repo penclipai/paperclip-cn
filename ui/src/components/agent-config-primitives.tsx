@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
+import { useState, useRef, useEffect, useCallback } from "react";
 import {
   Tooltip,
   TooltipTrigger,
@@ -18,7 +19,6 @@ import { Button } from "@/components/ui/button";
 import { HelpCircle, ChevronDown, ChevronRight } from "lucide-react";
 import { cn } from "../lib/utils";
 import { AGENT_ROLE_LABELS } from "@penclipai/shared";
-import { getAdapterLabel } from "../adapters/adapter-display-registry";
 
 /* ---- Help text for (?) tooltips ---- */
 export const help: Record<string, string> = {
@@ -27,7 +27,7 @@ export const help: Record<string, string> = {
   role: "Organizational role. Determines position and capabilities.",
   reportsTo: "The agent this one reports to in the org hierarchy.",
   capabilities: "Describes what this agent can do. Shown in the org chart and used for task routing.",
-  adapterType: "How this agent runs: local CLI (Claude/Codex/CodeBuddy/Qwen/OpenCode), OpenClaw Gateway, spawned process, or generic HTTP webhook.",
+  adapterType: "How this agent runs: local CLI (Claude/Codex/OpenCode), OpenClaw Gateway, spawned process, or generic HTTP webhook.",
   cwd: "Deprecated legacy working directory fallback for local adapters. Existing agents may still carry this value, but new configurations should use project workspaces instead.",
   promptTemplate: "Sent on every heartbeat. Keep this small and dynamic. Use it for current-task framing, not large static instructions. Supports {{ agent.id }}, {{ agent.name }}, {{ agent.role }} and other template variables.",
   model: "Override the default model used by the adapter.",
@@ -36,7 +36,7 @@ export const help: Record<string, string> = {
   dangerouslySkipPermissions: "Run unattended by auto-approving adapter permission prompts when supported.",
   dangerouslyBypassSandbox: "Run Codex without sandbox restrictions. Required for filesystem/network access.",
   search: "Enable Codex web search capability during runs.",
-  fastMode: "Enable Codex Fast mode. This burns credits/tokens much faster and is supported on GPT-5.6, GPT-5.5, GPT-5.4, and manual Codex model IDs.",
+  fastMode: "Enable Codex Fast mode. This burns credits/tokens much faster and is supported on GPT-6, GPT-5.6, GPT-5.5, GPT-5.4, and manual Codex model IDs.",
   workspaceStrategy: "How Paperclip should realize an execution workspace for this agent. Keep project_primary for normal cwd execution, or use git_worktree for issue-scoped isolated checkouts.",
   workspaceBaseRef: "Base git ref used when creating a worktree branch. Leave blank to use the resolved workspace ref or HEAD.",
   workspaceBranchTemplate: "Template for naming derived branches. Supports {{issue.identifier}}, {{issue.title}}, {{agent.name}}, {{project.id}}, {{workspace.repoRef}}, and {{slug}}.",
@@ -44,10 +44,12 @@ export const help: Record<string, string> = {
   runtimeServicesJson: "Optional workspace runtime service definitions. Use this for shared app servers, workers, or other long-lived companion processes attached to the workspace.",
   maxTurnsPerRun: "Maximum number of agentic turns (tool calls) per heartbeat run.",
   command: "The command to execute (e.g. node, python).",
-  localCommand: "Override the path to the CLI command you want the adapter to call (e.g. /usr/local/bin/claude, codebuddy, codex, opencode).",
+  localCommand: "Override the path to the CLI command you want the adapter to call (e.g. /usr/local/bin/claude, codex, opencode).",
   args: "Command-line arguments, comma-separated.",
   extraArgs: "Extra CLI arguments for local adapters, comma-separated.",
   envVars: "Environment variables injected into the adapter process. Use plain values or secret references.",
+  secretAccess:
+    "Secrets this agent can reach. Env-var bindings are injected at run start; API-access bindings are fetched on demand via the run-bound agent API and never written to the environment.",
   bootstrapPrompt: "Only sent when Paperclip starts a fresh session. Use this for stable setup guidance that should not be repeated on every heartbeat.",
   payloadTemplateJson: "Optional JSON merged into remote adapter request payloads before Paperclip adds its standard wake and workspace fields.",
   webhookUrl: "The URL that receives POST requests when the agent is invoked.",
@@ -64,20 +66,22 @@ export const help: Record<string, string> = {
   budgetMonthlyCents: "Monthly spending limit in cents. 0 means no limit.",
 };
 
-export const adapterLabels = new Proxy<Record<string, string>>({} as Record<string, string>, {
-  get(_target, property) {
-    return typeof property === "string" ? getAdapterLabel(property) : undefined;
-  },
-});
+import { getAdapterLabels as getAdapterLabelsForLocale } from "../adapters/adapter-display-registry";
+
+export function getAdapterLabels(): Record<string, string> {
+  return getAdapterLabelsForLocale();
+}
 
 export const roleLabels = AGENT_ROLE_LABELS as Record<string, string>;
 
-export function translateRoleLabel(
-  t: (key: string, options?: { defaultValue?: string }) => string,
-  role: string,
-) {
-  const label = roleLabels[role] ?? role;
-  return t(`agentRole.${role}`, { defaultValue: label });
+/** User-facing role names refresh with the active locale; raw role IDs stay unchanged. */
+export function getRoleLabels(): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(AGENT_ROLE_LABELS).map(([role, label]) => [
+      role,
+      translateInstant(`agentRole.${role}`, { defaultValue: label }),
+    ]),
+  );
 }
 
 /* ---- Primitive components ---- */
@@ -97,7 +101,7 @@ export function HintIcon({ text }: { text: string }) {
   );
 }
 
-export function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+export function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode; configSection?: import("../adapters/types").AdapterConfigSection }) {
   return (
     <div>
       <div className="flex items-center gap-1.5 mb-1">
@@ -133,6 +137,7 @@ export function ToggleField({
           canonical ToggleSwitch (status-green on-state), DESIGN.md principle 1. */}
       <ToggleSwitch
         data-testid={toggleTestId}
+        aria-label={label}
         checked={checked}
         onCheckedChange={onChange}
       />
@@ -210,6 +215,8 @@ export function CollapsibleSection({
   return (
     <div className={cn(bordered && "border-t border-border")}>
       <button
+        type="button"
+        aria-expanded={open}
         className="flex items-center gap-2 w-full px-4 py-2 text-xs font-medium text-muted-foreground hover:bg-accent/30 transition-colors"
         onClick={onToggle}
       >
@@ -389,7 +396,7 @@ export function DraftNumberInput({
  * type the path due to browser security limitations.
  */
 export function ChoosePathButton() {
-  const { t } = useTranslation();
+  useTranslation();
   const [open, setOpen] = useState(false);
   return (
     <>
@@ -398,56 +405,51 @@ export function ChoosePathButton() {
         className="inline-flex items-center rounded-md border border-border px-2 py-0.5 text-xs text-muted-foreground hover:bg-accent/50 transition-colors shrink-0"
         onClick={() => setOpen(true)}
       >
-        {t("pathInstructions.chooseShort", { defaultValue: "Choose" })}
-      </button>
+        {translateInstant("pathInstructions.chooseShort")}</button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t("pathInstructions.manualTitle", { defaultValue: "Specify path manually" })}</DialogTitle>
+            <DialogTitle>{translateInstant("pathInstructions.manualTitle")}</DialogTitle>
             <DialogDescription>
-              {t("pathInstructions.manualDescription", {
-                defaultValue: "Browser security blocks apps from reading full local paths via a file picker. Copy the absolute path and paste it into the input.",
-              })}
-            </DialogDescription>
+              {translateInstant("pathInstructions.manualDescription")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 text-sm">
             <section className="space-y-1.5">
-              <p className="font-medium">{t("pathInstructions.manual.macHeading", { defaultValue: "macOS (Finder)" })}</p>
+              <p className="font-medium">{translateInstant("pathInstructions.manual.macHeading")}</p>
               <ol className="list-decimal space-y-1 pl-5 text-muted-foreground">
-                <li>{t("pathInstructions.manual.mac.step1", { defaultValue: "Find the folder in Finder." })}</li>
-                <li>{t("pathInstructions.manual.mac.step2", { defaultValue: "Hold Option and right-click the folder." })}</li>
-                <li>{t("pathInstructions.manual.mac.step3", { defaultValue: "Click \"Copy <folder name> as Pathname\"." })}</li>
-                <li>{t("pathInstructions.manual.pasteStep", { defaultValue: "Paste the result into the path input." })}</li>
+                <li>{translateInstant("pathInstructions.manual.mac.step1")}</li>
+                <li>{translateInstant("Hold")}{" "}<kbd>{translateInstant("Option")}</kbd> {translateInstant("and right-click the folder.")}</li>
+                <li>{translateInstant("Click \"Copy &lt;folder name&gt; as Pathname\".")}</li>
+                <li>{translateInstant("pathInstructions.manual.pasteStep")}</li>
               </ol>
               <p className="rounded-md bg-muted px-2 py-1 font-mono text-xs">
                 /Users/yourname/Documents/project
               </p>
             </section>
             <section className="space-y-1.5">
-              <p className="font-medium">{t("pathInstructions.manual.windowsHeading", { defaultValue: "Windows (File Explorer)" })}</p>
+              <p className="font-medium">{translateInstant("pathInstructions.manual.windowsHeading")}</p>
               <ol className="list-decimal space-y-1 pl-5 text-muted-foreground">
-                <li>{t("pathInstructions.manual.windows.step1", { defaultValue: "Find the folder in File Explorer." })}</li>
-                <li>{t("pathInstructions.manual.windows.step2", { defaultValue: "Hold Shift and right-click the folder." })}</li>
-                <li>{t("pathInstructions.manual.windows.step3", { defaultValue: "Click \"Copy as path\"." })}</li>
-                <li>{t("pathInstructions.manual.pasteStep", { defaultValue: "Paste the result into the path input." })}</li>
+                <li>{translateInstant("pathInstructions.manual.windows.step1")}</li>
+                <li>{translateInstant("Hold")}{" "}<kbd>{translateInstant("Shift")}</kbd> {translateInstant("and right-click the folder.")}</li>
+                <li>{translateInstant("pathInstructions.manual.windows.step3")}</li>
+                <li>{translateInstant("pathInstructions.manual.pasteStep")}</li>
               </ol>
               <p className="rounded-md bg-muted px-2 py-1 font-mono text-xs">
                 C:\Users\yourname\Documents\project
               </p>
             </section>
             <section className="space-y-1.5">
-              <p className="font-medium">{t("pathInstructions.manual.terminalHeading", { defaultValue: "Terminal fallback (macOS/Linux)" })}</p>
+              <p className="font-medium">{translateInstant("pathInstructions.manual.terminalHeading")}</p>
               <ol className="list-decimal space-y-1 pl-5 text-muted-foreground">
-                <li>{t("pathInstructions.manual.terminal.step1", { defaultValue: "Run" })} <code>cd /path/to/folder</code>.</li>
-                <li>{t("pathInstructions.manual.terminal.step2", { defaultValue: "Run" })} <code>pwd</code>.</li>
-                <li>{t("pathInstructions.manual.terminal.step3", { defaultValue: "Copy the output and paste it into the path input." })}</li>
+                <li>{translateInstant("Run")}{" "}<code>cd /path/to/folder</code>{translateInstant(".")}</li>
+                <li>{translateInstant("Run")}{" "}<code>pwd</code>{translateInstant(".")}</li>
+                <li>{translateInstant("pathInstructions.manual.terminal.step3")}</li>
               </ol>
             </section>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>
-              {t("OK", { defaultValue: "OK" })}
-            </Button>
+              {translateInstant("OK")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

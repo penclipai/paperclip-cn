@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { flushSync } from "react-dom";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import i18n from "@/i18n";
 import { SidebarServerInfo } from "./SidebarServerInfo";
 
 const mockHealthApi = vi.hoisted(() => ({
@@ -224,6 +225,45 @@ describe("SidebarServerInfo", () => {
 
     expect(container.textContent).toContain("Local changes present (3 staged, 2 unstaged, 1 untracked)");
     expect(container.textContent).not.toContain("server-info.ts");
+  });
+
+  it("updates checkout status copy on a live language switch while preserving the commit subject", async () => {
+    await i18n.changeLanguage("en");
+    mockEnabledSettings(true);
+    mockHealthApi.get.mockResolvedValue({
+      status: "ok",
+      serverInfo: {
+        processStartedAt: "2026-06-26T00:00:00.000Z",
+        git: {
+          available: true,
+          fullSha: "abcdef1234567890abcdef1234567890abcdef12",
+          shortSha: "abcdef1",
+          branchName: "master",
+          subject: "Keep this user commit subject raw",
+          committedAt: "2026-06-25T23:00:00.000Z",
+          localChanges: {
+            available: true,
+            hasLocalChanges: true,
+            stagedFileCount: 0,
+            unstagedFileCount: 103,
+            untrackedFileCount: 15,
+          },
+        },
+      },
+    });
+
+    await render();
+
+    expect(container.textContent).toContain("Local changes present (103 unstaged, 15 untracked)");
+    expect(container.textContent).toContain("Keep this user commit subject raw");
+
+    await i18n.changeLanguage("zh-CN");
+
+    expect(container.textContent).toContain("检测到本地更改（103 个未暂存，15 个未跟踪）");
+    expect(container.textContent).not.toContain("Local changes present");
+    expect(container.textContent).toContain("Keep this user commit subject raw");
+
+    await i18n.changeLanguage("en");
   });
 
   it("refetches fresh health each time the drawer reopens, even within staleTime", async () => {

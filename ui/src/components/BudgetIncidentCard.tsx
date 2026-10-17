@@ -1,7 +1,8 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import type { BudgetIncident } from "@penclipai/shared";
 import { AlertOctagon, ArrowUpRight, PauseCircle } from "lucide-react";
-import { useTranslation } from "react-i18next";
 import { formatCents } from "../lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -37,7 +38,7 @@ export function BudgetIncidentCard({
   onKeepPaused: () => void;
   isMutating?: boolean;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   const [draftAmount, setDraftAmount] = useState(
     centsInputValue(Math.max(incident.amountObserved + 1000, incident.amountLimit)),
   );
@@ -51,19 +52,16 @@ export function BudgetIncidentCard({
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <div className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-red-700/90 dark:text-red-200/80">
-                {incident.scopeType} hard stop
-              </div>
+                {incident.scopeType} {translateInstant("hard stop")}</div>
               <Badge variant={incident.status === "resolved" ? "outline" : "secondary"}>
                 {stateLabel}
               </Badge>
             </div>
-            <CardTitle className="mt-1 text-base text-red-50">{incident.scopeName}</CardTitle>
-            <CardDescription className="mt-1 text-red-100/70">
-              {t("Spend reached {{observed}} against a limit of {{limit}}.", {
-                observed: formatCents(incident.amountObserved),
-                limit: formatCents(incident.amountLimit),
-                defaultValue: `Spend reached ${formatCents(incident.amountObserved)} against a limit of ${formatCents(incident.amountLimit)}.`,
-              })}
+            <CardTitle className="mt-1 text-base text-red-950 dark:text-red-50">{incident.scopeName}</CardTitle>
+            <CardDescription className="mt-1 text-red-900/75 dark:text-red-100/70">
+              {incident.thresholdType === "hard" && incident.amountObserved < incident.amountLimit
+                ? `Accounting is incomplete. Known spend is ${formatCents(incident.amountObserved)}; review pending or unpriced usage in the budget policy.`
+                : `Spending reached ${formatCents(incident.amountObserved)} against a limit of ${formatCents(incident.amountLimit)}.`}
             </CardDescription>
           </div>
           <div className="rounded-full border border-red-400/30 bg-red-500/10 p-2 text-red-600 dark:text-red-200">
@@ -76,24 +74,14 @@ export function BudgetIncidentCard({
           <PauseCircle className="mt-0.5 h-4 w-4 shrink-0" />
           <div>
             {incident.scopeType === "project"
-              ? t(
-                  "Project execution is paused. New work in this project will not start until you resolve the budget incident.",
-                  {
-                    defaultValue:
-                      "Project execution is paused. New work in this project will not start until you resolve the budget incident.",
-                  },
-                )
-              : t("This scope is paused. New heartbeats will not start until you resolve the budget incident.", {
-                  defaultValue:
-                    "This scope is paused. New heartbeats will not start until you resolve the budget incident.",
-                })}
+              ? "Project execution is paused. New work in this project will not start until you resolve the budget incident."
+              : "This scope is paused. New heartbeats will not start until you resolve the budget incident."}
           </div>
         </div>
 
         <div className="rounded-xl border border-border/60 bg-background/60 p-3">
           <label className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-muted-foreground">
-            {t("New budget", { defaultValue: "New budget" })}
-          </label>
+            {translateInstant("New budget (USD)")}</label>
           <div className="mt-2 flex flex-col gap-3 sm:flex-row">
             <Input
               value={draftAmount}
@@ -109,24 +97,18 @@ export function BudgetIncidentCard({
               }}
             >
               <ArrowUpRight className="h-4 w-4" />
-              {isMutating
-                ? t("Applying...", { defaultValue: "Applying..." })
-                : t("Raise budget & resume", { defaultValue: "Raise budget & resume" })}
+              {isMutating ? "Applying..." : "Raise budget & resume"}
             </Button>
           </div>
           {parsed !== null && parsed <= incident.amountObserved ? (
-            <p className="mt-2 text-xs text-red-200/80">
-              {t("The new budget must exceed current observed spend.", {
-                defaultValue: "The new budget must exceed current observed spend.",
-              })}
-            </p>
+            <p className="mt-2 text-xs text-red-700 dark:text-red-200/80">
+              {translateInstant("The new budget must exceed current observed spend.")}</p>
           ) : null}
         </div>
 
         <div className="flex justify-end">
           <Button variant="ghost" className="text-muted-foreground" disabled={isMutating} onClick={onKeepPaused}>
-            {t("Keep paused", { defaultValue: "Keep paused" })}
-          </Button>
+            {translateInstant("Keep paused")}</Button>
         </div>
       </CardContent>
     </Card>

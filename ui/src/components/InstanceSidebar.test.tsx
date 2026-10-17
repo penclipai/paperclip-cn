@@ -141,7 +141,7 @@ describe("InstanceSidebar", () => {
   it("filters out sandbox-provider-only plugins from the sidebar", async () => {
     const sandboxPlugin = makePlugin({
       id: "e2b",
-      packageName: "@paperclipai/plugin-e2b",
+      packageName: "@penclipai/plugin-e2b",
       manifestJson: {
         id: "e2b",
         name: "E2B Sandbox Provider",
@@ -160,7 +160,7 @@ describe("InstanceSidebar", () => {
     });
     const regularPlugin = makePlugin({
       id: "linear",
-      packageName: "@paperclipai/plugin-linear",
+      packageName: "@penclipai/plugin-linear",
       manifestJson: {
         id: "linear",
         name: "Linear",
@@ -222,7 +222,7 @@ describe("InstanceSidebar", () => {
     mockPluginsApi.list.mockResolvedValue([
       makePlugin({
         id: "linear",
-        packageName: "@paperclipai/plugin-linear",
+        packageName: "@penclipai/plugin-linear",
         manifestJson: {
           id: "linear",
           name: "Linear",
@@ -263,7 +263,7 @@ describe("InstanceSidebar", () => {
     mockPluginsApi.list.mockResolvedValue([
       makePlugin({
         id: "e2b",
-        packageName: "@paperclipai/plugin-e2b",
+        packageName: "@penclipai/plugin-e2b",
         manifestJson: {
           id: "e2b",
           name: "E2B",

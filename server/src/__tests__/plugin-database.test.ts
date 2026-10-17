@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { mkdtemp, rm, mkdir, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 import { and, eq, sql } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import {
@@ -25,7 +26,7 @@ import {
   validatePluginRuntimeExecute,
   validatePluginRuntimeQuery,
 } from "../services/plugin-database.js";
-import { buildPluginWorkerEnv, pluginLoader } from "../services/plugin-loader.js";
+import { buildPluginWorkerEnv, pluginLoader, REPO_ROOT } from "../services/plugin-loader.js";
 
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
 const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : describe.skip;
@@ -194,6 +195,134 @@ describe("buildPluginWorkerEnv", () => {
       instanceInfo,
       processEnv: {
         OPENAI_API_KEY: "openai-token",
+      },
+    });
+
+    expect(env).toEqual({
+      PAPERCLIP_DEPLOYMENT_MODE: "authenticated",
+      PAPERCLIP_DEPLOYMENT_EXPOSURE: "public",
+    });
+  });
+
+  it.each([
+    { packagePath: null, packageName: "@penclipai/plugin-createos", driverKey: "createos", allowed: true },
+    { packagePath: "/app/packages/plugins/sandbox-providers/createos", packageName: "@penclipai/plugin-createos", driverKey: "createos", allowed: true },
+    { packagePath: "/home/operator/plugins/fake-createos", packageName: "@penclipai/plugin-createos", driverKey: "createos", allowed: false },
+    { packagePath: null, packageName: "@acme/plugin-createos", driverKey: "createos", allowed: false },
+    { packagePath: null, packageName: "@penclipai/plugin-createos", driverKey: "daytona", allowed: false },
+  ])("confines the CreateOS fallback credential to its trusted worker: $packageName / $packagePath / $driverKey", ({ allowed, driverKey, ...installation }) => {
+    const env = buildPluginWorkerEnv({
+      ...installation,
+      manifest: {
+        capabilities: ["environment.drivers.register"],
+        environmentDrivers: [{ driverKey }],
+      },
+      trustedLocalPluginRoots: ["/app/packages/plugins"],
+      instanceInfo,
+      processEnv: { CREATEOS_API_KEY: "createos-token", DAYTONA_API_KEY: "daytona-token" },
+    });
+    expect(env).toEqual({
+      PAPERCLIP_DEPLOYMENT_MODE: "authenticated",
+      PAPERCLIP_DEPLOYMENT_EXPOSURE: "public",
+      ...(allowed ? { CREATEOS_API_KEY: "createos-token" } : {}),
+    });
+  });
+
+  it("passes a first-party sandbox provider's documented credential env var to its own worker", () => {
+    const env = buildPluginWorkerEnv({
+      manifest: {
+        capabilities: ["environment.drivers.register"],
+        environmentDrivers: [{ driverKey: "daytona" }],
+      },
+      packageName: "@penclipai/plugin-daytona",
+      packagePath: null,
+      instanceInfo,
+      processEnv: {
+        DAYTONA_API_KEY: "daytona-token",
+        NOVITA_API_KEY: "novita-token",
+        E2B_API_KEY: " ",
+      },
+    });
+
+    expect(env).toEqual({
+      PAPERCLIP_DEPLOYMENT_MODE: "authenticated",
+      PAPERCLIP_DEPLOYMENT_EXPOSURE: "public",
+      DAYTONA_API_KEY: "daytona-token",
+    });
+  });
+
+  it("passes the credential to a first-party plugin installed from the bundled catalog", () => {
+    const env = buildPluginWorkerEnv({
+      manifest: {
+        capabilities: ["environment.drivers.register"],
+        environmentDrivers: [{ driverKey: "daytona" }],
+      },
+      packageName: "@penclipai/plugin-daytona",
+      packagePath: "/app/packages/plugins/sandbox-providers/daytona",
+      trustedLocalPluginRoots: ["/app/packages/plugins"],
+      instanceInfo,
+      processEnv: {
+        DAYTONA_API_KEY: "daytona-token",
+      },
+    });
+
+    expect(env).toEqual({
+      PAPERCLIP_DEPLOYMENT_MODE: "authenticated",
+      PAPERCLIP_DEPLOYMENT_EXPOSURE: "public",
+      DAYTONA_API_KEY: "daytona-token",
+    });
+  });
+
+  it("does not pass the credential to a local plugin that self-declares the first-party name", () => {
+    const env = buildPluginWorkerEnv({
+      manifest: {
+        capabilities: ["environment.drivers.register"],
+        environmentDrivers: [{ driverKey: "daytona" }],
+      },
+      packageName: "@penclipai/plugin-daytona",
+      packagePath: "/home/operator/.paperclip/plugins/fake-daytona",
+      trustedLocalPluginRoots: ["/app/packages/plugins"],
+      instanceInfo,
+      processEnv: {
+        DAYTONA_API_KEY: "daytona-token",
+      },
+    });
+
+    expect(env).toEqual({
+      PAPERCLIP_DEPLOYMENT_MODE: "authenticated",
+      PAPERCLIP_DEPLOYMENT_EXPOSURE: "public",
+    });
+  });
+
+  it("does not pass a credential to a third-party plugin that claims a first-party driver key", () => {
+    const env = buildPluginWorkerEnv({
+      manifest: {
+        capabilities: ["environment.drivers.register"],
+        environmentDrivers: [{ driverKey: "daytona" }],
+      },
+      packageName: "@acme/plugin-fake-daytona",
+      instanceInfo,
+      processEnv: {
+        DAYTONA_API_KEY: "daytona-token",
+      },
+    });
+
+    expect(env).toEqual({
+      PAPERCLIP_DEPLOYMENT_MODE: "authenticated",
+      PAPERCLIP_DEPLOYMENT_EXPOSURE: "public",
+    });
+  });
+
+  it("does not pass a credential when the first-party package omits its expected driver key", () => {
+    const env = buildPluginWorkerEnv({
+      manifest: {
+        capabilities: ["environment.drivers.register"],
+        environmentDrivers: [{ driverKey: "kubernetes" }],
+      },
+      packageName: "@penclipai/plugin-daytona",
+      instanceInfo,
+      processEnv: {
+        DAYTONA_API_KEY: "daytona-token",
       },
     });
 
@@ -615,6 +744,7 @@ describeEmbeddedPostgres("plugin database namespaces", () => {
     expect(workerManager.startWorker).toHaveBeenCalledWith(
       pluginId,
       expect.objectContaining({
+        execArgv: ["--import", pathToFileURL(path.join(REPO_ROOT, "cli/node_modules/tsx/dist/loader.mjs")).href],
         databaseNamespace: namespace,
         env: {
           PAPERCLIP_DEPLOYMENT_MODE: "authenticated",

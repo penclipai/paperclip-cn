@@ -38,7 +38,7 @@ vi.mock("../services/live-events.js", () => ({
 }));
 
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
-const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe.sequential : describe.skip;
+const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : describe.skip;
 
 if (!embeddedPostgresSupport.supported) {
   console.warn(
@@ -61,7 +61,7 @@ async function createBundledPluginFixture(
   options: { rootDir?: string; buildDistImmediately?: boolean } = {},
 ): Promise<FixturePlugin> {
   const slug = `plugin-autobuild-${nameSuffix}-${randomUUID().slice(0, 8)}`;
-  const packageName = `@paperclipai/${slug}`;
+  const packageName = `@penclipai/${slug}`;
   const pluginKey = `paperclip.${slug.replace(/^plugin-/, "").replace(/-/g, "_")}`;
   const packageRoot = path.join(options.rootDir ?? repoPluginRoot, slug);
   const distDir = path.join(packageRoot, "dist");
@@ -184,7 +184,7 @@ describe("ensureLocalPluginBuilt", () => {
     await ensureLocalPluginBuilt(
       packageRoot,
       {
-        name: "@paperclipai/plugin-outside",
+        name: "@penclipai/plugin-outside",
         paperclipPlugin: {
           manifest: "./dist/manifest.js",
           worker: "./dist/worker.js",
@@ -213,13 +213,19 @@ describe("ensureLocalPluginBuilt", () => {
     expect(execStub).not.toHaveBeenCalled();
   });
 
-  it("bootstraps standalone bundled plugins before building them", async () => {
+  it.each([
+    undefined,
+    "allowBuilds:\n  protobufjs: false\n",
+    "packages:\n  - ../untrusted\ndangerouslyAllowAllBuilds: true\n",
+  ])("bootstraps standalone plugins without trusting workspace policy: %s", async (localPolicy) => {
     const fixture = await createBundledPluginFixture("standalone", { rootDir: standaloneRepoPluginRoot });
     cleanupPaths.add(fixture.packageRoot);
 
+    if (localPolicy) await writeFile(path.join(fixture.packageRoot, "pnpm-workspace.yaml"), localPolicy);
+    const installArgs = ["install", "--ignore-workspace", ...(localPolicy ? ["--ignore-scripts"] : []), "--no-lockfile"];
     const execStub = vi.fn(async (_file: string, args: readonly string[]) => {
-      if (args.join(" ") === "install --ignore-workspace --no-lockfile") {
-        await mkdir(path.join(fixture.packageRoot, "node_modules", "@paperclipai", "plugin-sdk"), { recursive: true });
+      if (args.join(" ") === installArgs.join(" ")) {
+        await mkdir(path.join(fixture.packageRoot, "node_modules", "@penclipai", "plugin-sdk"), { recursive: true });
       }
       if (args.join(" ") === "build") {
         await mkdir(path.join(fixture.distDir, "ui"), { recursive: true });
@@ -239,7 +245,7 @@ describe("ensureLocalPluginBuilt", () => {
     expect(execStub).toHaveBeenNthCalledWith(
       1,
       "pnpm",
-      ["install", "--ignore-workspace", "--no-lockfile"],
+      installArgs,
       { cwd: fixture.packageRoot, timeout: 120_000 },
     );
     expect(execStub).toHaveBeenNthCalledWith(
@@ -258,7 +264,7 @@ describe("ensureLocalPluginBuilt", () => {
     cleanupPaths.add(fixture.packageRoot);
 
     const execStub = vi.fn(async () => {
-      await mkdir(path.join(fixture.packageRoot, "node_modules", "@paperclipai", "plugin-sdk"), { recursive: true });
+      await mkdir(path.join(fixture.packageRoot, "node_modules", "@penclipai", "plugin-sdk"), { recursive: true });
       return { stdout: "", stderr: "" };
     });
     await ensureLocalPluginBuilt(
@@ -312,7 +318,7 @@ describeEmbeddedPostgres("plugin install auto-build route", () => {
       .post("/api/plugins/install")
       .send({ packageName: fixture.packageRoot, isLocalPath: true });
 
-    expect(res.status).toBe(200);
+    expect(res.status, res.body.error).toBe(200);
     expect(res.body.packageName).toBe(fixture.packageName);
     expect(res.body.pluginKey).toBe(fixture.pluginKey);
     expect(existsSync(path.join(fixture.distDir, "manifest.js"))).toBe(true);
@@ -333,13 +339,13 @@ describeEmbeddedPostgres("plugin install auto-build route", () => {
       .post("/api/plugins/install")
       .send({ packageName: fixture.packageRoot, isLocalPath: true });
 
-    expect(res.status).toBe(200);
+    expect(res.status, res.body.error).toBe(200);
     expect(res.body.packageName).toBe(fixture.packageName);
     expect(res.body.pluginKey).toBe(fixture.pluginKey);
     expect(existsSync(path.join(fixture.distDir, "manifest.js"))).toBe(true);
     expect(existsSync(path.join(fixture.distDir, "worker.js"))).toBe(true);
     expect(existsSync(path.join(fixture.distDir, "ui", "index.js"))).toBe(true);
-    expect(existsSync(path.join(fixture.packageRoot, "node_modules", "@paperclipai", "plugin-sdk"))).toBe(true);
+    expect(existsSync(path.join(fixture.packageRoot, "node_modules", "@penclipai", "plugin-sdk"))).toBe(true);
     expect(mockLifecycle.load).toHaveBeenCalledTimes(1);
   }, 60_000);
 
@@ -352,16 +358,16 @@ describeEmbeddedPostgres("plugin install auto-build route", () => {
     const app = await createInstallApp(db);
 
     expect(existsSync(path.join(fixture.distDir, "manifest.js"))).toBe(true);
-    expect(existsSync(path.join(fixture.packageRoot, "node_modules", "@paperclipai", "plugin-sdk"))).toBe(false);
+    expect(existsSync(path.join(fixture.packageRoot, "node_modules", "@penclipai", "plugin-sdk"))).toBe(false);
 
     const res = await request(app)
       .post("/api/plugins/install")
       .send({ packageName: fixture.packageRoot, isLocalPath: true });
 
-    expect(res.status).toBe(200);
+    expect(res.status, res.body.error).toBe(200);
     expect(res.body.packageName).toBe(fixture.packageName);
     expect(res.body.pluginKey).toBe(fixture.pluginKey);
-    expect(existsSync(path.join(fixture.packageRoot, "node_modules", "@paperclipai", "plugin-sdk"))).toBe(true);
+    expect(existsSync(path.join(fixture.packageRoot, "node_modules", "@penclipai", "plugin-sdk"))).toBe(true);
     expect(mockLifecycle.load).toHaveBeenCalledTimes(1);
   }, 60_000);
 

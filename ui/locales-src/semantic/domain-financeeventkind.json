@@ -1,0 +1,72 @@
+{
+  "financeEventKind.byokFee": {
+    "en": "BYOK fee",
+    "zh-CN": "BYOK 费用",
+    "reviewedEnglishHash": "3ac5686349673b768175404d6068578f04bdca14294d8e89d3ed2e4563c524b2"
+  },
+  "financeEventKind.creditExpiry": {
+    "en": "Credit expiry",
+    "zh-CN": "额度过期",
+    "reviewedEnglishHash": "6e8839b9cfa4c9e49348e181ab0426e43b47c045ffc3987c7e2752832df3d4a1"
+  },
+  "financeEventKind.creditPurchase": {
+    "en": "Credit purchase",
+    "zh-CN": "额度购买",
+    "reviewedEnglishHash": "38e5ad2a4683595a1288ee20dc05597540c694444ffe0c2a6a18415f0e625bbd"
+  },
+  "financeEventKind.creditRefund": {
+    "en": "Credit refund",
+    "zh-CN": "额度退款",
+    "reviewedEnglishHash": "4751f0a2081588353c42aa423b3e7feab0f125e992d60258a3727e167e2ad6c8"
+  },
+  "financeEventKind.customModelImport": {
+    "en": "Custom model import",
+    "zh-CN": "自定义模型导入",
+    "reviewedEnglishHash": "85ceeabe0e22515d9346ab57668e751c75ed05421b3856ea80c3af83cd733bd3"
+  },
+  "financeEventKind.customModelStorage": {
+    "en": "Custom model storage",
+    "zh-CN": "自定义模型存储",
+    "reviewedEnglishHash": "ad4f3ee573566c3fdf6742d3aaf3f79c893c3f5f2620e8d096b53eb6d837925e"
+  },
+  "financeEventKind.gatewayOverhead": {
+    "en": "Gateway overhead",
+    "zh-CN": "网关开销",
+    "reviewedEnglishHash": "e2b36452e7a5760f0647977ffb832abaf4abd952293f5fef04092edf95a08c36"
+  },
+  "financeEventKind.inferenceCharge": {
+    "en": "Inference charge",
+    "zh-CN": "推理费用",
+    "reviewedEnglishHash": "59dfa8aed53f1db3dcd0c8890afe1bbad2bb1cf11aade901c765ab637e3b53b7"
+  },
+  "financeEventKind.logStorage": {
+    "en": "Log storage",
+    "zh-CN": "日志存储",
+    "reviewedEnglishHash": "fbb63ebf5cbbfc78bede9ad6aedd2ba4c3d8845ff3b07a91cc59f2ced9f1d52c"
+  },
+  "financeEventKind.logpush": {
+    "en": "Logpush",
+    "zh-CN": "日志推送",
+    "reviewedEnglishHash": "77121961581df4277343b2eced99d73a9df27e75bd67dcff0d2517d36bcd9380"
+  },
+  "financeEventKind.manualAdjustment": {
+    "en": "Manual adjustment",
+    "zh-CN": "手动调整",
+    "reviewedEnglishHash": "ff42c4359aba9cb90ed52abd7388372860c7860cf394bb31b92c68f2a4c433ba"
+  },
+  "financeEventKind.platformFee": {
+    "en": "Platform fee",
+    "zh-CN": "平台费用",
+    "reviewedEnglishHash": "483538e6058acea72be2ebd335bacfc2945908227bf660673254cc86c1059d93"
+  },
+  "financeEventKind.provisionedCapacity": {
+    "en": "Provisioned capacity",
+    "zh-CN": "预留容量",
+    "reviewedEnglishHash": "7b3c2de97da0689f480950ad536b42aef28caa4083237d059b60b91524d7a35a"
+  },
+  "financeEventKind.training": {
+    "en": "Training",
+    "zh-CN": "训练",
+    "reviewedEnglishHash": "36a798e3f39239ccdec697ee348d2ce0a7b8d2d9087940496e2ca5d0853399f2"
+  }
+}

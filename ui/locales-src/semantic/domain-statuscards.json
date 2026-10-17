@@ -1,0 +1,362 @@
+{
+  "statusCards.archived.lastSummary": {
+    "en": "· last summary",
+    "zh-CN": "· 上次摘要",
+    "reviewedEnglishHash": "35a21f1d2a23a342606a436711766c6fcaad08c77775eefdb625f4509ed46e00"
+  },
+  "statusCards.common.experimental": {
+    "en": "Experimental",
+    "zh-CN": "实验性",
+    "reviewedEnglishHash": "3dc9f569422dcfdadcb2c33f3eb2ee6fcebc8ba679bd63e690f9ddd0ff7c24be"
+  },
+  "statusCards.common.headsUp": {
+    "en": "Heads up",
+    "zh-CN": "提示",
+    "reviewedEnglishHash": "dc1f657d6c09a8b9565a5a69f0d0960f4a3651af14e8d2c73f486d7e8f69d531"
+  },
+  "statusCards.common.queryDebug": {
+    "en": "Query debug",
+    "zh-CN": "查询调试",
+    "reviewedEnglishHash": "58f8683ddefe9fd53b5e15e0034db80939b6619bfef9050317122197690577f5"
+  },
+  "statusCards.common.today": {
+    "en": "Today:",
+    "zh-CN": "今日：",
+    "reviewedEnglishHash": "0a0e3e74b3cc133f733f1ba93b9f8f4266a1bb35b0e116f7386a15dbbf6aacf5"
+  },
+  "statusCards.common.view": {
+    "en": "View",
+    "zh-CN": "查看",
+    "reviewedEnglishHash": "dcc839a4015c4b7dd9db959a8f757833b8adb92462a751b973386e453c6d58a3"
+  },
+  "statusCards.common.working": {
+    "en": "Working on it",
+    "zh-CN": "正在处理",
+    "reviewedEnglishHash": "d55b6d1bbd56f5bfe03ec5ada5709ee9e06661755c40c233642416875be1b0e5"
+  },
+  "statusCards.create.agentHint": {
+    "en": "Runs this card's setup and updates. Leave on the default unless another agent should own it.",
+    "zh-CN": "该智能体负责此卡片的设置与更新。除非需要其他智能体负责，否则请保留默认设置。",
+    "reviewedEnglishHash": "d23a2d8b4bcd94e9656a2e51346468216f7984a625735fc61427cd6f03d38c29"
+  },
+  "statusCards.create.description": {
+    "en": "One message sets up the whole card: say what you want to watch and what each update should tell you. The agent builds the query from it and writes every update against it.",
+    "zh-CN": "用一条消息设置整张卡片：说明要关注什么，以及每次更新应提供哪些信息。智能体会据此生成查询并撰写后续更新。",
+    "reviewedEnglishHash": "7ce8e93dff6eca3b72df08a906a2009a7be2298e9f7a6e3fd98365c71f0640bc"
+  },
+  "statusCards.create.failed": {
+    "en": "Create failed",
+    "zh-CN": "创建失败",
+    "reviewedEnglishHash": "3e05ffcf023b367b3896ba191cbd0cd23fe17d70e1cad31c823e6fe56824358a"
+  },
+  "statusCards.create.newCard": {
+    "en": "New card",
+    "zh-CN": "新建卡片",
+    "reviewedEnglishHash": "8d3efc397417cfd071497259a49b6ff561c7116f5bcae8e188d881561997e8b9"
+  },
+  "statusCards.create.promptLabel": {
+    "en": "What do you want to keep an eye on?",
+    "zh-CN": "想关注什么？",
+    "reviewedEnglishHash": "2abdde3da6ca1ec2b75b544885334237a50a6e56830886ba07545fefeb875316"
+  },
+  "statusCards.create.promptPlaceholder": {
+    "en": "Keep an eye on the ID and Cloud projects. Tell me whether the service is live, and if not, the exact three actions needed to get it to production.",
+    "zh-CN": "持续关注 ID 和 Cloud 项目。告诉我服务是否在线；如果不在线，给出推进到生产环境所需的三个确切操作。",
+    "reviewedEnglishHash": "1cadc7b8c3faed111167708195698b6fe0060681cd144e3db0de1d9537c4b68c"
+  },
+  "statusCards.create.submit": {
+    "en": "Create card",
+    "zh-CN": "创建卡片",
+    "reviewedEnglishHash": "939a6a1b0d2737421e148060122691d21274364854c746612a91a12b118628bb"
+  },
+  "statusCards.detail.autoNamed": {
+    "en": "Auto-named from the query",
+    "zh-CN": "根据查询自动命名",
+    "reviewedEnglishHash": "9165924dad195966fcc0022449a3ae55f36770893577d625fcc41b9de0825d67"
+  },
+  "statusCards.detail.cardName": {
+    "en": "Card name",
+    "zh-CN": "卡片名称",
+    "reviewedEnglishHash": "e260ce2668950ee5a635d96c5a744331773034af44454f2f1a7d6cccbc1f08bd"
+  },
+  "statusCards.detail.latest": {
+    "en": "· latest",
+    "zh-CN": "· 最新",
+    "reviewedEnglishHash": "bf769efde76fe4746bcccb1eb16d44febc73581df0c511a34c34c12285a17f40"
+  },
+  "statusCards.detail.loadingHistory": {
+    "en": "Loading history…",
+    "zh-CN": "正在加载历史记录...",
+    "reviewedEnglishHash": "a960c435c77f666c2d317d72ca89f6985c8c32abe0e484c9095c2f835439a27d"
+  },
+  "statusCards.detail.matchedIssuesError": {
+    "en": "Could not load matched issues",
+    "zh-CN": "无法加载匹配的任务",
+    "reviewedEnglishHash": "9ab2d3318d994a9cee0105df4efc7a4d532254e6116e9b0047222c033b161650"
+  },
+  "statusCards.detail.matchingIssues": {
+    "en": "Matching issues…",
+    "zh-CN": "正在匹配任务...",
+    "reviewedEnglishHash": "70cd0c47b737b9b695e95caa89fea770383b4e5ff6df1f1c923cc1b4e0df9900"
+  },
+  "statusCards.detail.mentionedLatest": {
+    "en": "Mentioned in the latest update",
+    "zh-CN": "在最新更新中提及",
+    "reviewedEnglishHash": "af6b8ee2be6bf872c5ab065faae613dd948df26de2a913040fba8ddb7e25ebe3"
+  },
+  "statusCards.detail.noChangeSummary": {
+    "en": "No change summary was recorded for this revision.",
+    "zh-CN": "此修订版没有记录变更摘要。",
+    "reviewedEnglishHash": "8be76f660b5315a7af79b71d37a7cbde8b1f60b15d9ba3bb1bc80e1f22a35ed9"
+  },
+  "statusCards.detail.noMatches": {
+    "en": "The compiled query matches no issues right now.",
+    "zh-CN": "当前生成的查询没有匹配任何任务。",
+    "reviewedEnglishHash": "6bf003b65a23912d37642a80892cc01ea0b2c501562085ede4dbb22e95226f25"
+  },
+  "statusCards.detail.noSummaryDuringSetup": {
+    "en": "No summary yet — the first one is generated automatically once this card finishes setting up.",
+    "zh-CN": "暂无摘要，卡片完成设置后会自动生成第一份摘要。",
+    "reviewedEnglishHash": "ec44e68ae5c28430a97c3fa3ced72e0e1daddc62dfed9b5b4c36efe0c08b0d1c"
+  },
+  "statusCards.detail.noUpdates": {
+    "en": "No updates recorded yet.",
+    "zh-CN": "尚未记录更新。",
+    "reviewedEnglishHash": "f0a917b114336ce792c032f14624d7504eb30d1e9e5d2749b961983ae94d7251"
+  },
+  "statusCards.detail.promptHint": {
+    "en": "This one message drives the whole card: the agent compiles the watch query from it and follows it as the instructions for every update. Editing it rebuilds the card.",
+    "zh-CN": "这条消息驱动整张卡片：智能体会据此生成关注查询，并将其作为每次更新的说明。编辑后会重新构建卡片。",
+    "reviewedEnglishHash": "08fec083302100e7bae6cd879c45099066f6cc6a22877115663c32e3f59fbe96"
+  },
+  "statusCards.detail.promptLabel": {
+    "en": "What this card watches & reports",
+    "zh-CN": "此卡片关注和报告的内容",
+    "reviewedEnglishHash": "1e934501d807f9921701e3b6fcf48e0f81f918a901003df7d037c89b9ccf4121"
+  },
+  "statusCards.detail.revision": {
+    "en": "Revision",
+    "zh-CN": "修订版",
+    "reviewedEnglishHash": "2e516d68f42f3e351f273a6127f89f4d323a606a3656e34e52b14b746ed27404"
+  },
+  "statusCards.detail.revisionShort": {
+    "en": "Rev",
+    "zh-CN": "修订",
+    "reviewedEnglishHash": "1fc5fdcf12723108e9786faf5fbf11a3c843eab3b1c86c49ebf0b76f2a71c8d5"
+  },
+  "statusCards.detail.settingUp": {
+    "en": "This card is still setting up — the issues it watches appear here once it's ready.",
+    "zh-CN": "此卡片仍在设置中，准备就绪后会在此显示它关注的任务。",
+    "reviewedEnglishHash": "40fedd14b62097e9601edced1ca2f2fc6b70be419df9769db20c6194c7b7a452"
+  },
+  "statusCards.detail.summaryUnavailable": {
+    "en": "The full summary text for this revision is unavailable — showing its change summary. The integrated changes below are the live ledger for this revision.",
+    "zh-CN": "此修订版的完整摘要不可用，当前显示其变更摘要。下方整合的变更是此修订版的实时记录。",
+    "reviewedEnglishHash": "3a956e3a8a06b439c68b590a8a18b92bd7a45fa1aa08120703b8ef9c75807869"
+  },
+  "statusCards.detail.viewSetupTask": {
+    "en": "View setup task",
+    "zh-CN": "查看设置任务",
+    "reviewedEnglishHash": "6b5859989f3fdb4dc8e540fef008db289c5107f63c4a0ec5d8e364e3697fff40"
+  },
+  "statusCards.detail.watchedIssues": {
+    "en": "Watched issues",
+    "zh-CN": "关注的任务",
+    "reviewedEnglishHash": "df63da53661a1b059a3fb0471a88c71180c42dedff76934150438f778f1613d0"
+  },
+  "statusCards.list.empty": {
+    "en": "No status cards yet",
+    "zh-CN": "暂无状态卡片",
+    "reviewedEnglishHash": "9604f34dde154d3dd9742f8f7a380dc3699149226b30026bc79dcad6075ffa4f"
+  },
+  "statusCards.list.loadError": {
+    "en": "Could not load status cards",
+    "zh-CN": "无法加载状态卡片",
+    "reviewedEnglishHash": "202da107a1359448cb4fcbc9eb3e87fcef8bc9462d42a5cb570ea0ca5a143f55"
+  },
+  "statusCards.list.loading": {
+    "en": "Loading cards…",
+    "zh-CN": "正在加载卡片...",
+    "reviewedEnglishHash": "af565e572cae6bd27fb5c008d3b11322aff6626a298cdefd452336513f396b01"
+  },
+  "statusCards.settings.activeHoursEndAria": {
+    "en": "Active hours end",
+    "zh-CN": "活跃时段结束时间",
+    "reviewedEnglishHash": "584b2ca37015651b9dbd7dd2f25f0c42336835945df21076ec5ab4ef140d8e05"
+  },
+  "statusCards.settings.activeHoursOnly": {
+    "en": "Only auto-update during active hours",
+    "zh-CN": "仅在活跃时段自动更新",
+    "reviewedEnglishHash": "642a62ded61e3a988244bcd34b3507ffb8ede3b784adc1aceded848623459b48"
+  },
+  "statusCards.settings.activeHoursStartAria": {
+    "en": "Active hours start",
+    "zh-CN": "活跃时段开始时间",
+    "reviewedEnglishHash": "375442a2a44560068b47a68e28e96ffc4d2bcefc6279913d91ec98ac4da1b115"
+  },
+  "statusCards.settings.advanced": {
+    "en": "Advanced",
+    "zh-CN": "高级",
+    "reviewedEnglishHash": "9f088dbebd6c3c70a5ddbc2c943b11e4ca9acea5757b0b4f2b32479f0dbb747e"
+  },
+  "statusCards.settings.afterLastChange": {
+    "en": "after the last change · max",
+    "zh-CN": "最后一次更改后 · 每小时最多",
+    "reviewedEnglishHash": "3abcc93818c9e3cc8d4ef6afec41d44301cc5df12973f63bfb4e2e0e1d34c076"
+  },
+  "statusCards.settings.checkEvery": {
+    "en": "Check every",
+    "zh-CN": "每隔",
+    "reviewedEnglishHash": "a0b9aa23865d3a8fe35f3d99d406fd10907f701b9dc16bbfe61224d5034f57f5"
+  },
+  "statusCards.settings.checkIntervalAria": {
+    "en": "Check interval",
+    "zh-CN": "检查间隔",
+    "reviewedEnglishHash": "9a5266be56b34cf26484e7c7b1c7a51c50d0f0397157b9f9c0467d06ac260e5d"
+  },
+  "statusCards.settings.costHint": {
+    "en": "Rough estimate from typical update sizes; actual cost is tracked per update.",
+    "zh-CN": "根据典型更新大小粗略估算；实际成本会按每次更新记录。",
+    "reviewedEnglishHash": "3901b76026164ea4916a067079015b4a6129a223252f30ceb2f66c25b7b87736"
+  },
+  "statusCards.settings.countAsChange": {
+    "en": "Count as a change",
+    "zh-CN": "计为更改",
+    "reviewedEnglishHash": "00f2f2c2432b2302d65e30bc927298d6aaff80991ba7f97e0badaff523988474"
+  },
+  "statusCards.settings.dailyTokenCap": {
+    "en": "Daily token cap",
+    "zh-CN": "每日 token 上限",
+    "reviewedEnglishHash": "1f33285142352d342667ed7a03dc86ef7da3835c1b9d276a933535b9f8c1859a"
+  },
+  "statusCards.settings.debounceAria": {
+    "en": "Debounce",
+    "zh-CN": "防抖时长",
+    "reviewedEnglishHash": "539c9cb8300d84c5d75dacc1106251cc66d21072fec5b2d601db2c4adc110fcc"
+  },
+  "statusCards.settings.estimatedCost": {
+    "en": "Estimated cost",
+    "zh-CN": "预估成本",
+    "reviewedEnglishHash": "9ccba222f889a6c0704fbed21b7ee216d48300396dd9df9517d40a39927b1fa1"
+  },
+  "statusCards.settings.guardrails": {
+    "en": "Guardrails",
+    "zh-CN": "防护规则",
+    "reviewedEnglishHash": "443f975eefe8312d4b2983eb743dae714ceaf1cc56c7f636add46da3aaabf5f4"
+  },
+  "statusCards.settings.limitActiveHoursAria": {
+    "en": "Limit to active hours",
+    "zh-CN": "限制在活跃时段",
+    "reviewedEnglishHash": "044dd078d26b39fdd0dea63eb364c025f5a9b1130775f5eac4413e998bd92601"
+  },
+  "statusCards.settings.manual": {
+    "en": "Manual only — updates when I press refresh",
+    "zh-CN": "仅手动 - 按下刷新时更新",
+    "reviewedEnglishHash": "8fa9137a839d384b7ac797bd8b4bf2348e2fe6605e734aef4ce13f472ec1d372"
+  },
+  "statusCards.settings.maxUpdatesAria": {
+    "en": "Max updates per hour",
+    "zh-CN": "每小时最大更新次数",
+    "reviewedEnglishHash": "97ebccec8651c9f27ba6b3dac80011d206ee9e6689cecbc27d7570a8c67d6cd4"
+  },
+  "statusCards.settings.noCap": {
+    "en": "no cap",
+    "zh-CN": "不设上限",
+    "reviewedEnglishHash": "0e4084b4cf48eb86a7c18f14fb681e32d409269e267d08d3178221eed5c500a5"
+  },
+  "statusCards.settings.onChange": {
+    "en": "As soon as something changes (debounced)",
+    "zh-CN": "发生变化后尽快更新（防抖）",
+    "reviewedEnglishHash": "17e0acba57bf79cb09b601ee8e7b9ed74420d0384cef10a7b1b477f173722bad"
+  },
+  "statusCards.settings.policy": {
+    "en": "Auto-update policy",
+    "zh-CN": "自动更新策略",
+    "reviewedEnglishHash": "103a9ff7dc463b7f79975e45e5ebeb658a2d803c3d4a9876f4a0eb3930473460"
+  },
+  "statusCards.settings.scheduled": {
+    "en": "On a schedule, only if something changed",
+    "zh-CN": "按计划检查，仅在发生变化时更新",
+    "reviewedEnglishHash": "6bf6009fd3745e4c5fe3ba7c36e2fb1120a4e180a14b32b9c4c9ed1cbf93121f"
+  },
+  "statusCards.settings.timezone": {
+    "en": "Timezone",
+    "zh-CN": "时区",
+    "reviewedEnglishHash": "4ceca1d52cede44de32f74ad326272e339cece20244a6ff39f131d3331fb5c67"
+  },
+  "statusCards.settings.timezoneAria": {
+    "en": "Active hours timezone",
+    "zh-CN": "活跃时段时区",
+    "reviewedEnglishHash": "0e86ace913c9d50044e16e739a2a228f953871c26ed6e1a034b65adde69d0cab"
+  },
+  "statusCards.settings.updatesPerHour": {
+    "en": "updates/hour",
+    "zh-CN": "次更新/小时",
+    "reviewedEnglishHash": "1451372923371cfdadaffd31223b43c34210944d477ffe56c5f32169b2be7a40"
+  },
+  "statusCards.summarizer.default": {
+    "en": "Summarizer (default)",
+    "zh-CN": "汇总智能体（默认）",
+    "reviewedEnglishHash": "8302e6afb406e7eefac2cdd36ccd12fa6938120dbe3a3a4d318a1540825bf7a1"
+  },
+  "statusCards.tile.actionsAria": {
+    "en": "Card actions",
+    "zh-CN": "卡片操作",
+    "reviewedEnglishHash": "a125822514d6945c16eb2786f20adecdddd6d0467e9b590393d868658d76b2a0"
+  },
+  "statusCards.tile.archive": {
+    "en": "Archive",
+    "zh-CN": "归档",
+    "reviewedEnglishHash": "66f4804ee23ddc092d1bae43cb88186aa541187fff7c1cc8a4aa17e59a9f4123"
+  },
+  "statusCards.tile.edit": {
+    "en": "Edit interest & settings",
+    "zh-CN": "编辑关注内容和设置",
+    "reviewedEnglishHash": "42ec2cecf81160eddb53b5349b3225b0691aac4b83e2ac1dbda0c6c7aec0127e"
+  },
+  "statusCards.tile.lastGoodSummary": {
+    "en": "Showing last good summary:",
+    "zh-CN": "显示最近一次成功的摘要：",
+    "reviewedEnglishHash": "357efcc7694cc23549caf9349a3a2c4c28b7a895f37a60e5d99f4134e5d3eac9"
+  },
+  "statusCards.tile.lastUpdateFailed": {
+    "en": "Last update failed",
+    "zh-CN": "上次更新失败",
+    "reviewedEnglishHash": "c0ab4c40fe0b3fc8f271aa52ab6e892d1ac397c007bad954508b81df4f114793"
+  },
+  "statusCards.tile.noSummary": {
+    "en": "No summary yet.",
+    "zh-CN": "暂无摘要。",
+    "reviewedEnglishHash": "95909797cda126da06bb59d1b72174dcf91480e088b960f4c127e80f6a92f9df"
+  },
+  "statusCards.tile.openDetail": {
+    "en": "Open detail",
+    "zh-CN": "打开详情",
+    "reviewedEnglishHash": "4ab8e7a5acc7597339914606baa362d0067b4e2ea3b9553a8bf743b78453e803"
+  },
+  "statusCards.tile.refreshAria": {
+    "en": "Refresh card",
+    "zh-CN": "刷新卡片",
+    "reviewedEnglishHash": "3cc87f178448786fdd42edce1f8cbd4b91a5f4debd384848298a08f6b22ff70c"
+  },
+  "statusCards.tile.refreshNow": {
+    "en": "Refresh now",
+    "zh-CN": "立即刷新",
+    "reviewedEnglishHash": "1486770684670d9522448c4570f0cf4cd20503865e2f579d152f8e6b62c64c92"
+  },
+  "statusCards.tile.setupHint": {
+    "en": "You can add instructions and pick an update policy while this runs.",
+    "zh-CN": "运行期间可以添加说明并选择更新策略。",
+    "reviewedEnglishHash": "b6b15463d775900ba9ca9b611c1984b8fed377eff619903425b4bbe48bcdf9cc"
+  },
+  "statusCards.tile.sinceLastUpdate": {
+    "en": "since last update",
+    "zh-CN": "自上次更新以来",
+    "reviewedEnglishHash": "d33b06f902fdff7b16d90ead38d3161fb6f262ee7fa1e8234f4d92ed23bfeca1"
+  },
+  "statusCards.tile.viewUpdateTask": {
+    "en": "View update task",
+    "zh-CN": "查看更新任务",
+    "reviewedEnglishHash": "f1745b8e36e05231944c4c8fa004aa9e8f0d6cf226118aeb547b55536e689c2a"
+  }
+}

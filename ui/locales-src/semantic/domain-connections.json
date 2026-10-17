@@ -1,0 +1,12 @@
+{
+  "connections.instructions.resetDefault": {
+    "en": "Reset to default",
+    "zh-CN": "重置为默认值",
+    "reviewedEnglishHash": "bc5b45ae7b60692ade0bb26ebe5b6830f150d97134153e3c3091882eb72e7c25"
+  },
+  "connections.setup.retainedUnavailable": {
+    "en": "The retained connection no longer exists or is not available to this organization.",
+    "zh-CN": "保留的连接已不存在，或当前组织无法使用它。",
+    "reviewedEnglishHash": "7adf54f96880049382b94541b49d46da5847e155cd0ba156a2fea59645e964c4"
+  }
+}

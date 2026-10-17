@@ -1,0 +1,17 @@
+{
+  "schemaConfig.comboboxPlaceholder": {
+    "en": "Type or select...",
+    "zh-CN": "输入或选择...",
+    "reviewedEnglishHash": "ff5f5f7ab7f9c7662d061836f545e280f4919381117370badb5ca356b5ffc553"
+  },
+  "schemaConfig.selectPlaceholder": {
+    "en": "Select...",
+    "zh-CN": "选择...",
+    "reviewedEnglishHash": "1339bddc2b289b6fd255300304588914b269d18aef7b704c17ed277a8baadee7"
+  },
+  "schemaConfig.useCustomValue": {
+    "en": "Use \"{{value}}\" as custom value (press Enter)",
+    "zh-CN": "使用“{{value}}”作为自定义值（按 Enter）",
+    "reviewedEnglishHash": "be39d37e86a7a2d3816d45721aa869276bf2061f024e2364475e4d6d8c4bf98a"
+  }
+}

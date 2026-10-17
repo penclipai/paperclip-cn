@@ -1,0 +1,57 @@
+{
+  "projectDetail.changeIconAndColor": {
+    "en": "Change project icon and color",
+    "zh-CN": "更改项目图标和颜色",
+    "reviewedEnglishHash": "c84c79faedf492297a84e273763262408b53e90e4c41dba1caf0918fd1401901"
+  },
+  "projectDetail.color": {
+    "en": "Color",
+    "zh-CN": "颜色",
+    "reviewedEnglishHash": "6b73191a0a4b67420e61d51c9f207c35277eaf18fbbf5beb52a320a23fe09653"
+  },
+  "projectDetail.dismissMembershipNotice": {
+    "en": "Dismiss project membership notice",
+    "zh-CN": "关闭项目成员提示",
+    "reviewedEnglishHash": "8aa3b27e2396253e4db6f2d6e548247d4612ccb2ed60a567938fb3194ff66112"
+  },
+  "projectDetail.icon": {
+    "en": "Icon",
+    "zh-CN": "图标",
+    "reviewedEnglishHash": "a35abcd6dac9a2e5c1d7d6a58b9bcd2e7b00cad33a8aa63b75766f1ba6ce207b"
+  },
+  "projectDetail.leftProject": {
+    "en": "You left this project. It no longer appears in your sidebar.",
+    "zh-CN": "你已离开此项目，它将不再显示在侧边栏中。",
+    "reviewedEnglishHash": "46edf33d056bcb79f5cd50057c5d23229b16bd76ab97055ee29540678ead7636"
+  },
+  "projectDetail.neutralDefault": {
+    "en": "Neutral (default)",
+    "zh-CN": "中性（默认）",
+    "reviewedEnglishHash": "be8c000445c13297168bec6036f43744c2621e9d7709589cde9d1c7b3f513419"
+  },
+  "projectDetail.noIconsMatch": {
+    "en": "No icons match",
+    "zh-CN": "没有匹配的图标",
+    "reviewedEnglishHash": "838e82679d03ebe6063232a4d183657db484a1b0fcee1b6649d6898f8370c02c"
+  },
+  "projectDetail.resetToNeutralGray": {
+    "en": "Reset to neutral gray",
+    "zh-CN": "重置为中性灰",
+    "reviewedEnglishHash": "e84dcf574b66184ac59e2b04899f8afd780a9fee4e1377864fbdb0f22fc227bb"
+  },
+  "projectDetail.searchIconsPlaceholder": {
+    "en": "Search icons...",
+    "zh-CN": "搜索图标...",
+    "reviewedEnglishHash": "d47dbbe19a63e486ec061c26e9f3b69f24a98569bb52bc184060f8879e6806c4"
+  },
+  "projectDetail.summaryDescription": {
+    "en": "Summarizer keeps the latest project status, next step, and operator-needed items here.",
+    "zh-CN": "汇总智能体会在此维护最新项目状态、下一步和需要操作员处理的事项。",
+    "reviewedEnglishHash": "6420c7957e8e839679f19e3ce34f3c6621ab58e151112755d7f0182c3dbe2d3d"
+  },
+  "projectDetail.summaryTitle": {
+    "en": "Project summary",
+    "zh-CN": "项目摘要",
+    "reviewedEnglishHash": "34c863b318b5fff4854be4f978a4afda481db44152c20504d99e1de84b948d59"
+  }
+}

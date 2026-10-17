@@ -1,0 +1,997 @@
+{
+  "agentConfig.acpNonInteractivePermissions": {
+    "en": "ACP non-interactive permissions",
+    "zh-CN": "ACP 非交互权限",
+    "reviewedEnglishHash": "775568b9ccf2a0975792514d23cafd81582c487e51a27e50a3d647050e0f9a46"
+  },
+  "agentConfig.acpNonInteractivePermissionsHint": {
+    "en": "Fallback if the ACP agent asks for input outside an interactive session.",
+    "zh-CN": "当 ACP 智能体在非交互会话之外请求输入时使用的回退策略。",
+    "reviewedEnglishHash": "17fa0b5190ae800852033b0224e9b59a8dcac6df8acd81e9b5bd9e9bbd192a97"
+  },
+  "agentConfig.acpServerCommand": {
+    "en": "ACP server command",
+    "zh-CN": "ACP 服务命令",
+    "reviewedEnglishHash": "3a0d4f5f95706435104b7f89adfaeea9561460b808a3627bfbd2649d3330b6da"
+  },
+  "agentConfig.acpServerCommandHint": {
+    "en": "Optional override for the {{provider}} ACP server command. Defaults to {{defaultCommand}}.",
+    "zh-CN": "可选覆盖 {{provider}} ACP 服务命令。默认使用 {{defaultCommand}}。",
+    "reviewedEnglishHash": "4d6170c20dc4154282436fdbea4410a2393ea0a1754bd1a7c7314cb2a43e2ccb"
+  },
+  "agentConfig.acpSessionMode": {
+    "en": "ACP session mode",
+    "zh-CN": "ACP 会话模式",
+    "reviewedEnglishHash": "6b7415b4b77c69fc11b9f443445ddf213ebc954b7f2930e7c5cbd149ea3912da"
+  },
+  "agentConfig.acpSessionModeHint": {
+    "en": "Persistent keeps ACP session state between runs. One-shot starts fresh each run.",
+    "zh-CN": "持久模式会在运行之间保留 ACP 会话状态；单次模式每次运行都重新开始。",
+    "reviewedEnglishHash": "2f4fdb5f420f3e8a6555c087aaf5d48728e63ba3e52be3a5143a392cb030bd4c"
+  },
+  "agentConfig.acpStateDirectory": {
+    "en": "ACP state directory",
+    "zh-CN": "ACP 状态目录",
+    "reviewedEnglishHash": "519b9622e450f6329686726cbc7ad93cb93cf7ab0938943f550fed93c03c6cee"
+  },
+  "agentConfig.acpStateDirectoryHint": {
+    "en": "Optional ACP session state directory. Defaults to Paperclip CN-managed company/agent scoped storage.",
+    "zh-CN": "可选的 ACP 会话状态目录。默认使用 Paperclip CN 管理的公司/智能体范围存储。",
+    "reviewedEnglishHash": "7c5f357a7b85d9a2b94345bf973cd7cdfa2fbceb88317e33f58464c056189a17"
+  },
+  "agentConfig.acpWarmProcessIdleMs": {
+    "en": "ACP warm process idle ms",
+    "zh-CN": "ACP 热进程空闲毫秒数",
+    "reviewedEnglishHash": "4d464a532c7fafdbbcafa809f51716a6a91726f26cf173344726755e5ef2ef83"
+  },
+  "agentConfig.acpWarmProcessIdleMsHint": {
+    "en": "Defaults to 0, which closes the ACP process after each run while retaining persistent session state.",
+    "zh-CN": "默认为 0，即每次运行后关闭 ACP 进程，同时保留持久会话状态。",
+    "reviewedEnglishHash": "01653b2fd423ba51d6e086ec6a8c1f638560ea417b109fbb5f126b7882825725"
+  },
+  "agentConfig.adapter": {
+    "en": "Adapter",
+    "zh-CN": "适配器",
+    "reviewedEnglishHash": "0252b84901033771a99fae063abde949b7f3298a78fa86238eb880ebe95b666c"
+  },
+  "agentConfig.adapterDefaultModel": {
+    "en": "Adapter default · {{model}}",
+    "zh-CN": "适配器默认 · {{model}}",
+    "reviewedEnglishHash": "64a1750667a4d55d5d986b2417985aa34791530b61976d5e4a5d30b52f366d97"
+  },
+  "agentConfig.adapterType": {
+    "en": "Adapter type",
+    "zh-CN": "适配器类型",
+    "reviewedEnglishHash": "03298f6641cee814d73463df62a98fb37838540b7084bacbc2f9d51cce0bb4b4"
+  },
+  "agentConfig.advancedRunPolicy": {
+    "en": "Advanced run policy",
+    "zh-CN": "高级运行策略",
+    "reviewedEnglishHash": "02eb5cf767493595902ad931c7cae92e1be0a62bf7bcf064a045d9abcd1cb793"
+  },
+  "agentConfig.agentName": {
+    "en": "Agent name",
+    "zh-CN": "智能体名称",
+    "reviewedEnglishHash": "1cfb21871a035769dbfdfd53e759e840c44ef8723bcb71e4d721fecfb20de3de"
+  },
+  "agentConfig.args": {
+    "en": "Args (comma-separated)",
+    "zh-CN": "参数（逗号分隔）",
+    "reviewedEnglishHash": "2515de2e5e19a9db2d09cd5dc48639b5aa1731a377bfe866168d7a7f172b217e"
+  },
+  "agentConfig.argsPlaceholder": {
+    "en": "e.g. script.js, --flag",
+    "zh-CN": "例如：script.js, --flag",
+    "reviewedEnglishHash": "577a1413911d8482838619d74aef6620261f75d1d1acc122a0478ab0ee1df461"
+  },
+  "agentConfig.ask": {
+    "en": "Ask",
+    "zh-CN": "询问",
+    "reviewedEnglishHash": "b8c209cdead61a095ec097b7a13c4fc9264c04b3e3bd0fca42ec8dbaeebeeafe"
+  },
+  "agentConfig.authenticationUrl": {
+    "en": "Authentication URL",
+    "zh-CN": "认证网址",
+    "reviewedEnglishHash": "407f12358db8e3444fad180066607afb4233a0890551b98e99cd32f75d4017b4"
+  },
+  "agentConfig.auto": {
+    "en": "Auto",
+    "zh-CN": "自动",
+    "reviewedEnglishHash": "0286249762f7c94349cdc0ba3bb2255baf9a80036e2193ead1d77696f888582f"
+  },
+  "agentConfig.autoAcpPreferred": {
+    "en": "Auto (ACP preferred)",
+    "zh-CN": "自动（优先使用 ACP）",
+    "reviewedEnglishHash": "60cfa53e1b99b2a3ee5ddfc59d5cb4fe1ce800192278319de7f96972a0828ce8"
+  },
+  "agentConfig.bootstrapPromptLegacy": {
+    "en": "Bootstrap prompt (legacy)",
+    "zh-CN": "引导提示词（旧版）",
+    "reviewedEnglishHash": "6017093e6a552b64cf52d49efcc068ed501c721d43e839e62e84c85e241320ec"
+  },
+  "agentConfig.bootstrapPromptLegacyWarning": {
+    "en": "Bootstrap prompt is legacy and will be removed in a future release. Consider moving this content into the agent's prompt template or instructions file instead.",
+    "zh-CN": "引导提示词属于旧能力，后续版本将移除。建议把这部分内容迁移到智能体提示词模板或说明文件里。",
+    "reviewedEnglishHash": "973a49c50cb0775505d07b441a1f265c47a69af4ad2cf8b3047f3e72c278c515"
+  },
+  "agentConfig.bootstrapPromptPlaceholder": {
+    "en": "Optional initial setup prompt for the first run",
+    "zh-CN": "用于首次运行的可选初始化提示词",
+    "reviewedEnglishHash": "81ef2a863d2f1ff2c16e15121003bc7ac94e906962fd2ce30413cf4879371aa6"
+  },
+  "agentConfig.bypassSandbox": {
+    "en": "Bypass sandbox",
+    "zh-CN": "绕过沙箱",
+    "reviewedEnglishHash": "9af1dd7047986872c830ea2358d49e15b17406b4290903f573e4c16a0c8636a9"
+  },
+  "agentConfig.cancel": {
+    "en": "Cancel",
+    "zh-CN": "取消",
+    "reviewedEnglishHash": "19766ed6ccb2f4a32778eed80d1928d2c87a18d7c275ccb163ec6709d3eb2e27"
+  },
+  "agentConfig.capabilities": {
+    "en": "Capabilities",
+    "zh-CN": "能力",
+    "reviewedEnglishHash": "9460f16ac9b5171e7f3d3f2336ec66b547231be8996ea9a0ad25079f84641be4"
+  },
+  "agentConfig.capabilitiesPlaceholder": {
+    "en": "Describe what this agent can do...",
+    "zh-CN": "描述这个智能体能做什么...",
+    "reviewedEnglishHash": "ab2e61bb30f1eb5ba9e17946c7d43847de57716228b6987b642b2e57b546b309"
+  },
+  "agentConfig.cheapModel": {
+    "en": "Cheap model",
+    "zh-CN": "低成本模型",
+    "reviewedEnglishHash": "f2a72ce9a5a911b3f8315b511c5c4e5726eb8bf649d37b4f7e665a0ff850691d"
+  },
+  "agentConfig.cheapModelHint": {
+    "en": "Used when a run requests the cheap profile (e.g. routine summaries). The primary model stays unchanged.",
+    "zh-CN": "当运行请求低成本档位时使用（例如例行摘要）。主模型保持不变。",
+    "reviewedEnglishHash": "0f441cb73e113d8e3a1c4c62f9d90f98695b0b7e7ad785e7a92d0eec989f03e3"
+  },
+  "agentConfig.chooseManager": {
+    "en": "Choose manager…",
+    "zh-CN": "选择上级…",
+    "reviewedEnglishHash": "ead1aa7967109b9ab22c5cf44e800f56d3d493fd674789bade2353857fb0cd46"
+  },
+  "agentConfig.code": {
+    "en": "Code",
+    "zh-CN": "代码",
+    "reviewedEnglishHash": "340f463033e0fd5ddeabb922df4d4f1b5747494d0f5ed9894f13b6e13ca831f5"
+  },
+  "agentConfig.codexInstructionsFileHint": {
+    "en": "Absolute path to a markdown file (for example `AGENTS.md`) that defines this agent's behavior. Injected into the system prompt at runtime. Codex may still auto-apply repo-scoped `AGENTS.md` files from the workspace.",
+    "zh-CN": "指向 Markdown 文件（例如 `AGENTS.md`）的绝对路径，用来定义该智能体的行为。运行时会注入到 system prompt 中。Codex 仍可能自动应用工作区内按仓库作用域生效的 `AGENTS.md` 文件。",
+    "reviewedEnglishHash": "6a6b7194c087fb966af804f9600a338bfcd586b69fbe6a5ce27d5a51fa85781a"
+  },
+  "agentConfig.codexMinimalSearchWarning": {
+    "en": "Codex may reject `minimal` thinking when search is enabled.",
+    "zh-CN": "启用搜索后，Codex 可能会拒绝 `minimal` 思考强度。",
+    "reviewedEnglishHash": "e000a4c9116c3a8ac639eeb2810cbdb2ca30c33a3511ed08f3054230fcad16f7"
+  },
+  "agentConfig.comingSoon": {
+    "en": "Coming soon",
+    "zh-CN": "即将支持",
+    "reviewedEnglishHash": "4f7d64017689437e6d93f5724f3f797054f3935d98a13148025b616b8db8fb2c"
+  },
+  "agentConfig.command": {
+    "en": "Command",
+    "zh-CN": "命令",
+    "reviewedEnglishHash": "713166971d730f81fcf8b757f2ea239d1a0360d9f74e8f5afe60fba97105879c"
+  },
+  "agentConfig.commandPlaceholder": {
+    "en": "e.g. node, python",
+    "zh-CN": "例如：node, python",
+    "reviewedEnglishHash": "546f689829e8be55df57abea9b5a69a54681337203b9866bed478f1e37166e2a"
+  },
+  "agentConfig.companyDefaultLocal": {
+    "en": "Company default (Local)",
+    "zh-CN": "公司默认（本地）",
+    "reviewedEnglishHash": "4c311df29a67b9edfda95a0cbbbb92350c03fec99c6cea71c7a148847797a898"
+  },
+  "agentConfig.configBadge": {
+    "en": "config",
+    "zh-CN": "配置",
+    "reviewedEnglishHash": "b79606fb3afea5bd1609ed40b622142f1c98125abcfe89a76a661b0e8e343910"
+  },
+  "agentConfig.continuationAttempts": {
+    "en": "Continuation attempts",
+    "zh-CN": "续跑次数",
+    "reviewedEnglishHash": "521a9cb20830e53a167e0cc84e66af96fce891e7a79d2e8a5920d52dfae35494"
+  },
+  "agentConfig.continuationDelaySec": {
+    "en": "Continuation delay (sec)",
+    "zh-CN": "续跑延迟（秒）",
+    "reviewedEnglishHash": "0d665277efadc341afc879c1e66faa05302f3ba3a66ba273a8eed90f78d20c51"
+  },
+  "agentConfig.continueAfterMaxTurnStop": {
+    "en": "Continue after max-turn stop",
+    "zh-CN": "遇到 max-turn 停止后继续",
+    "reviewedEnglishHash": "b16081c0b4ded71cabb56e6cb9f05cffe32629a251aa2ab7e8f1d09c3dcf41f6"
+  },
+  "agentConfig.cooldownSec": {
+    "en": "Cooldown (sec)",
+    "zh-CN": "冷却时间（秒）",
+    "reviewedEnglishHash": "ea609aed9471889386b6637bbd04478dc800cc715a1531e9b43dbcf8a426b1e3"
+  },
+  "agentConfig.copyCode": {
+    "en": "Copy code",
+    "zh-CN": "复制代码",
+    "reviewedEnglishHash": "49a0053f3b0d5045a4ef3edfe5c39be60a7ea272cc22b7c33d646624346ccd4d"
+  },
+  "agentConfig.copyUrl": {
+    "en": "Copy URL",
+    "zh-CN": "复制网址",
+    "reviewedEnglishHash": "b26d1037f1c2da31a0296d915982f12049f91bfedb998b105ce967b73a796699"
+  },
+  "agentConfig.couldNotCancelLogin": {
+    "en": "Could not cancel the login.",
+    "zh-CN": "无法取消登录。",
+    "reviewedEnglishHash": "dbdd8dfc421221470230357002f4bfcb17338af7741cc7eb332e07d3ff1f004c"
+  },
+  "agentConfig.couldNotStartLogin": {
+    "en": "Could not start the login.",
+    "zh-CN": "无法开始登录。",
+    "reviewedEnglishHash": "632695246612f269459ed9e729deeedf10492e791cb963887253c6d2a0c7c576"
+  },
+  "agentConfig.createSecretFromCurrentPlainValue": {
+    "en": "Create secret from current plain value",
+    "zh-CN": "根据当前明文创建密钥",
+    "reviewedEnglishHash": "0ddb8791d9952aaa62b86f8ff96e8bdc396a2c2644ce05d03c85f19b760a4b3e"
+  },
+  "agentConfig.currentBadge": {
+    "en": "current",
+    "zh-CN": "当前",
+    "reviewedEnglishHash": "97b0560280ed60a5a1eaa1bc45492543c8a986ad5a25b468c427eb83c3e88191"
+  },
+  "agentConfig.cursorInstructionsFileHint": {
+    "en": "Absolute path to a markdown file (for example `AGENTS.md`) that defines this agent's behavior. Injected into the prompt at runtime.",
+    "zh-CN": "指向 Markdown 文件（例如 `AGENTS.md`）的绝对路径，用来定义该智能体的行为。运行时会注入到提示词中。",
+    "reviewedEnglishHash": "bd028241c3545f165d68d1cb5373baace3b65322a66a66bdb3a23b76c71b0441"
+  },
+  "agentConfig.default": {
+    "en": "Default",
+    "zh-CN": "默认",
+    "reviewedEnglishHash": "21b111cbfe6e8fca2d181c43f53ad548b22e38aca955b9824706a504b0a07a2d"
+  },
+  "agentConfig.defaultEnvironment": {
+    "en": "Default environment",
+    "zh-CN": "默认环境",
+    "reviewedEnglishHash": "4929026b6fc93bf8cb23f47af5f34032f5ff4d558c765c01af9e70c3113e865c"
+  },
+  "agentConfig.defaultEnvironmentHint": {
+    "en": "Agent-level default execution target. Project and issue settings can still override this.",
+    "zh-CN": "智能体级默认执行目标。项目和任务设置仍可覆盖。",
+    "reviewedEnglishHash": "2fb933dc5b70b80083b212f068f8d3c1241e4304993c88bccab447475439873b"
+  },
+  "agentConfig.deny": {
+    "en": "Deny",
+    "zh-CN": "拒绝",
+    "reviewedEnglishHash": "05a2d7332eb9d8bf164487c743a2e93c21b16bb2061a93e3ee2ceb508eadb753"
+  },
+  "agentConfig.detectFromConfig": {
+    "en": "Detect from config",
+    "zh-CN": "从配置中检测",
+    "reviewedEnglishHash": "8f7023001a22353956ff8e91627380e5456ec88a471d5f8842fef7bf6c685476"
+  },
+  "agentConfig.detectFromHermesConfig": {
+    "en": "Detect from Hermes config",
+    "zh-CN": "从 Hermes 配置中检测",
+    "reviewedEnglishHash": "2e442fcba99868dfbcfa1be8c5e2c56a02182da518144bd876d928c8ace58b52"
+  },
+  "agentConfig.detectModel": {
+    "en": "Detect model",
+    "zh-CN": "检测模型",
+    "reviewedEnglishHash": "d9d5546d066e811771dbb33a1d329a52ebb986b947dfecc1dd3387f9d5ae7966"
+  },
+  "agentConfig.detectedBadge": {
+    "en": "detected",
+    "zh-CN": "已检测",
+    "reviewedEnglishHash": "b96da48a63e7d238d22803d6477619c126aba149d6a8056798b1ae967f8b2dcb"
+  },
+  "agentConfig.detectingModel": {
+    "en": "Detecting...",
+    "zh-CN": "检测中...",
+    "reviewedEnglishHash": "5ac197f8103a9ea9627b36671ee28e15da18bbc21e7a6002c311ccee97a18e12"
+  },
+  "agentConfig.enableSearch": {
+    "en": "Enable search",
+    "zh-CN": "启用搜索",
+    "reviewedEnglishHash": "3fbfebdf38783813a1a6468d429057c925be87aab5054ee88d63dbd4b413051a"
+  },
+  "agentConfig.envKeyPlaceholder": {
+    "en": "KEY",
+    "zh-CN": "KEY",
+    "reviewedEnglishHash": "5ca24005b740717ba4f3f6bc48a230700e68c2a4b11ecedb96f169f4efaf1f21"
+  },
+  "agentConfig.envVarEditorHelp": {
+    "en": "Set KEY to the env var name the process expects, for example GH_TOKEN. Choose Secret to resolve a stored value at run start. PAPERCLIP_* variables are injected automatically.",
+    "zh-CN": "KEY 填写进程需要的环境变量名，例如 GH_TOKEN。选择密钥后会在运行开始时解析已保存的值。PAPERCLIP_* 变量会自动注入。",
+    "reviewedEnglishHash": "b1e77eb26698666f463dc090047d5a2702915a2e414af9da6ed1fc39710d5cec"
+  },
+  "agentConfig.environment": {
+    "en": "Environment",
+    "zh-CN": "环境",
+    "reviewedEnglishHash": "9e471951a1b4106e54be128a21112b02914fe98cc79b2c92b49ee80c5464487c"
+  },
+  "agentConfig.environmentOverride": {
+    "en": "Environment override",
+    "zh-CN": "环境覆盖",
+    "reviewedEnglishHash": "557f46090c16bcb3a01225546e30b86e78bc48d2815639f3d462d7a6331a308b"
+  },
+  "agentConfig.environmentOverrideHint": {
+    "en": "Leave this unset to inherit the instance default. Agent-specific overrides only appear when there is a real alternative.",
+    "zh-CN": "留空则继承实例默认值。只有存在真实可选项时，才会显示智能体专属覆盖。",
+    "reviewedEnglishHash": "8861974eee11e0c7d910d75813ca9cdba4aff238188c3d2265b7829f499b92dc"
+  },
+  "agentConfig.environmentTestFailed": {
+    "en": "Environment test failed",
+    "zh-CN": "环境检测失败",
+    "reviewedEnglishHash": "2a2e34303328cb800d288c62c539f81e37d25cdbaed4a8a7f0bfbf57e56162a2"
+  },
+  "agentConfig.environmentVariables": {
+    "en": "Environment variables",
+    "zh-CN": "环境变量",
+    "reviewedEnglishHash": "aac7246f5e97142c3f257b7d8b84976f10c29e1b89804bb9d3eb7c43cc03cb8e"
+  },
+  "agentConfig.execution": {
+    "en": "Execution",
+    "zh-CN": "执行",
+    "reviewedEnglishHash": "a45cd4bd0998e5683cdf4839b883fc0c77599eecfa9c7b658b32dbbd499a8039"
+  },
+  "agentConfig.executionEngine": {
+    "en": "Execution engine",
+    "zh-CN": "执行引擎",
+    "reviewedEnglishHash": "da96ed44c9414cb498a8711dfb2d8efcab054c62bdbf3e058438bae1bf58aa48"
+  },
+  "agentConfig.executionEngineHint": {
+    "en": "Auto uses ACP when prerequisites pass and falls back to {{cli}} with diagnostics.",
+    "zh-CN": "满足前置条件时自动使用 ACP，否则回退到 {{cli}} 并保留诊断信息。",
+    "reviewedEnglishHash": "9cf56cef68f78ebac223995f32c699b608527c16e7e7c0b8de48a7ec638e059c"
+  },
+  "agentConfig.extraArgs": {
+    "en": "Extra args",
+    "zh-CN": "额外参数",
+    "reviewedEnglishHash": "7b7d63386ce913d495253166c15e162ee89cc4b80221117560e6f2a202004b4b"
+  },
+  "agentConfig.extraArgsPlaceholder": {
+    "en": "Comma-separated, e.g. --verbose, --search",
+    "zh-CN": "用逗号分隔，例如 --verbose, --search",
+    "reviewedEnglishHash": "c657706901ee65ebad2331c68aaf41d85b6e16cf3a5799a4c3148f531468d7dc"
+  },
+  "agentConfig.fail": {
+    "en": "Fail",
+    "zh-CN": "失败",
+    "reviewedEnglishHash": "09230b3dbc35635f04595dc627c267a62174ba6435078ab5083dce4252c999a1"
+  },
+  "agentConfig.failed": {
+    "en": "Failed",
+    "zh-CN": "失败",
+    "reviewedEnglishHash": "031a8f0f659df890dfd53c92e45295b0f14c997185bae46e168831e403b273f7"
+  },
+  "agentConfig.failedToCreateSecret": {
+    "en": "Failed to create secret",
+    "zh-CN": "创建密钥失败",
+    "reviewedEnglishHash": "c91d73b6f4ca6380b4b7939583f1458e3b9ea8e04ae7d50f732510d39be83a23"
+  },
+  "agentConfig.failedToLoadAdapterModels": {
+    "en": "Failed to load adapter models.",
+    "zh-CN": "加载适配器模型失败。",
+    "reviewedEnglishHash": "54638131e3399c1d7c41a6d75337808374ce5f905ee5cfd9749ac5a93de78447"
+  },
+  "agentConfig.failedToRefreshAdapterModels": {
+    "en": "Failed to refresh adapter models.",
+    "zh-CN": "刷新适配器模型失败。",
+    "reviewedEnglishHash": "daabc710404731bf49f5380eae991635dc6bc0c43b5aaeae6e1ed2df503662e6"
+  },
+  "agentConfig.fastMode": {
+    "en": "Fast mode",
+    "zh-CN": "极速模式",
+    "reviewedEnglishHash": "1b7f9ecb7cd6a212557188989a5bd6807c566415b08b331f56284041aafb2daa"
+  },
+  "agentConfig.fastModeManualWarning": {
+    "en": "Fast mode will be passed through for this manual model. If Codex rejects it, turn the toggle off.",
+    "zh-CN": "极速模式会透传给这个手动模型。如果 Codex 拒绝该参数，请关闭这个开关。",
+    "reviewedEnglishHash": "4a317b81f6a6a4ca15829babd696876e0ac2109888c2d2ab6ee65688caa0994c"
+  },
+  "agentConfig.fastModeUnsupportedWarning": {
+    "en": "Fast mode currently only works on {{models}} or manual model IDs. Paperclip CN will ignore this toggle until the model is switched.",
+    "zh-CN": "极速模式当前仅支持 {{models}} 或手动模型 ID。在切换到受支持模型之前，Paperclip CN 会忽略这个开关。",
+    "reviewedEnglishHash": "6ad2d57b54238de7df6e14739693ee254d942965affadd7470374c0aba165829"
+  },
+  "agentConfig.fastModeWarning": {
+    "en": "Fast mode consumes credits/tokens much faster than standard Codex runs.",
+    "zh-CN": "极速模式比标准 Codex 运行消耗更多 credits/词元。",
+    "reviewedEnglishHash": "e22cfbeff23571633136a3c55d0f32ac9e9bbaa6f4acba16b346856c3f180fdf"
+  },
+  "agentConfig.forcedKubernetesEnvironmentHint": {
+    "en": "This instance runs all agents in the Kubernetes sandbox. Local execution is disabled.",
+    "zh-CN": "此实例会在 Kubernetes 沙箱中运行所有智能体。本地执行已禁用。",
+    "reviewedEnglishHash": "336e70dfd720006656ff06d2ddac3566653212bff6084b7b4a86829e87608ce4"
+  },
+  "agentConfig.geminiInstructionsFileHint": {
+    "en": "Absolute path to a markdown file (for example `AGENTS.md`) that defines this agent's behavior. Prepended to the Gemini prompt at runtime.",
+    "zh-CN": "指向 Markdown 文件（例如 `AGENTS.md`）的绝对路径，用来定义该智能体的行为。运行时会前置到 Gemini 提示词中。",
+    "reviewedEnglishHash": "0543f383c464a887902879f8e8aab702178f09a8d9d95eb1119f090496a496ff"
+  },
+  "agentConfig.graceSec": {
+    "en": "Grace period (sec)",
+    "zh-CN": "宽限时间（秒）",
+    "reviewedEnglishHash": "09df859cabcd6d981022bfce6d45a04281b5c822b5fd9c2a555740d8484ac450"
+  },
+  "agentConfig.grokInstructionsFileHint": {
+    "en": "Absolute path to a markdown file (for example `AGENTS.md`) that defines this agent's behavior. Paperclip stages it into the Grok workspace as `Agents.md` when possible.",
+    "zh-CN": "指向 Markdown 文件（例如 `AGENTS.md`）的绝对路径，用来定义该智能体的行为。可行时，Paperclip 会将其作为 `Agents.md` 暂存到 Grok 工作区。",
+    "reviewedEnglishHash": "11bf9e0147b9d616d418087a7932fe95af2b4071da3dbeeec46bdc0ce0d1801a"
+  },
+  "agentConfig.heartbeatOnInterval": {
+    "en": "Heartbeat on interval",
+    "zh-CN": "按间隔触发心跳",
+    "reviewedEnglishHash": "b6da5e83c1983eff038be8727f0f16d5e4d8bf3361fd9f94199dc95d91046e5c"
+  },
+  "agentConfig.help.adapterType": {
+    "en": "How this agent runs: local CLI (Claude/Codex/CodeBuddy/Qwen/OpenCode), OpenClaw Gateway, spawned process, or generic HTTP webhook.",
+    "zh-CN": "此智能体的运行方式：本地 CLI（Claude/Codex/CodeBuddy/Qwen/OpenCode）、OpenClaw Gateway、派生进程或通用 HTTP webhook。",
+    "reviewedEnglishHash": "137bcb59817b0e6bda8ebfc5b3191a182314f8529e8f69f45e9c31e8d3e79f4c"
+  },
+  "agentConfig.help.bootstrapPrompt": {
+    "en": "Only sent when Paperclip starts a fresh session. Use this for stable setup guidance that should not be repeated on every heartbeat.",
+    "zh-CN": "仅在 Paperclip 启动新会话时发送。适合放稳定的初始化说明，不应在每次心跳重复发送。",
+    "reviewedEnglishHash": "30828fb4bfebcc39196ef773219575cc29fcfb0d4745d21965d343960a9c3dd8"
+  },
+  "agentConfig.help.capabilities": {
+    "en": "Describes what this agent can do. Shown in the org chart and used for task routing.",
+    "zh-CN": "描述这个智能体能做什么。会显示在组织架构图中，并用于任务路由。",
+    "reviewedEnglishHash": "eae8c70d35f43e2f0d979f78959f4b47ffa017a99555262be2e760b1795e17ad"
+  },
+  "agentConfig.help.cooldownSec": {
+    "en": "Minimum seconds between consecutive heartbeat runs.",
+    "zh-CN": "两次连续心跳运行之间的最小间隔秒数。",
+    "reviewedEnglishHash": "200ac57fb741a31b03b800f1980a118b394f0576c0fab1c52bdb9742d0f23742"
+  },
+  "agentConfig.help.cwd": {
+    "en": "Deprecated legacy working directory fallback for local adapters. Existing agents may still carry this value, but new configurations should use project workspaces instead.",
+    "zh-CN": "本地适配器的旧版工作目录回退设置，已弃用。现有智能体可能仍带有此值，新配置应改用项目工作区。",
+    "reviewedEnglishHash": "fceb82f854d3d8ab11c97bcec06b0b26c5c9c1050aab7553591054db49b481f7"
+  },
+  "agentConfig.help.envVars": {
+    "en": "Environment variables injected into the adapter process. Use plain values or secret references.",
+    "zh-CN": "注入适配器进程的环境变量。可以使用明文值或密钥引用。",
+    "reviewedEnglishHash": "22a4fe99d6475a3636a2577440e6de07b77114e7236c5150a8ef1c0c9e712d50"
+  },
+  "agentConfig.help.extraArgs": {
+    "en": "Extra CLI arguments for local adapters, comma-separated.",
+    "zh-CN": "传给本地适配器的额外 CLI 参数，用逗号分隔。",
+    "reviewedEnglishHash": "2ead66f745bf3dfb202432ca1cb2e0a7625f349e1524b6e4ebc7c6d25fad9371"
+  },
+  "agentConfig.help.graceSec": {
+    "en": "Seconds to wait after sending interrupt before force-killing the process.",
+    "zh-CN": "发送中断信号后，等待多少秒再强制结束进程。",
+    "reviewedEnglishHash": "96d542cafeb814a9aa0a68da0fd313c503d8cdc0b389ea65482eb467fc11661d"
+  },
+  "agentConfig.help.heartbeatInterval": {
+    "en": "Run this agent automatically on a timer. Useful for periodic tasks like checking for new work.",
+    "zh-CN": "按定时器自动运行此智能体。适合定期检查新工作等场景。",
+    "reviewedEnglishHash": "e5b621123c362e0a624080721d63e51baacc4c422cf6fcad33869a2729db4a2e"
+  },
+  "agentConfig.help.intervalSec": {
+    "en": "Seconds between automatic heartbeat invocations.",
+    "zh-CN": "两次自动心跳调用之间的秒数。",
+    "reviewedEnglishHash": "8b90a2ea7f7396c36345877725cede08b12cf502bc699b4c9bdc42a267327cf0"
+  },
+  "agentConfig.help.localCommand": {
+    "en": "Override the path to the CLI command you want the adapter to call (e.g. /usr/local/bin/claude, codebuddy, codex, opencode).",
+    "zh-CN": "覆盖适配器要调用的 CLI 命令路径（例如 /usr/local/bin/claude、codebuddy、codex、opencode）。",
+    "reviewedEnglishHash": "11140caece664475d72cff6369913d117275dd90ba55ebe36c3e6e8543175e3a"
+  },
+  "agentConfig.help.maxConcurrentRuns": {
+    "en": "Maximum number of heartbeat runs that can execute simultaneously for this agent.",
+    "zh-CN": "该智能体可同时执行的最大心跳运行数。",
+    "reviewedEnglishHash": "51059422d9dfc6e7341ef0320bc6832f57bbdf6c10e677b49b6996b7cfdc0188"
+  },
+  "agentConfig.help.maxTurnContinuationDelaySec": {
+    "en": "Seconds to wait before starting each max-turn continuation.",
+    "zh-CN": "每次 max-turn 续跑开始前等待的秒数。",
+    "reviewedEnglishHash": "460c36927fdd94fdab8ecbdf70b581a81f9e4dd765a59f6dc6d1fc79a2394851"
+  },
+  "agentConfig.help.maxTurnContinuationEnabled": {
+    "en": "Automatically queue bounded continuation runs when an adapter stops because its per-run turn cap was exhausted.",
+    "zh-CN": "当适配器因为单次运行的 turn 上限而停止时，自动排入有限次数的续跑。",
+    "reviewedEnglishHash": "02cafc2182a19afb379b1cd5eded729faeb823db9247c8631c4af95dfec3dac8"
+  },
+  "agentConfig.help.maxTurnContinuationMaxAttempts": {
+    "en": "Maximum automatic continuations after one max-turn stop. This is separate from max turns per run.",
+    "zh-CN": "一次 max-turn 停止后最多自动续跑多少次。这个值独立于每次运行的最大 turn 数。",
+    "reviewedEnglishHash": "190d072ed313ac0fa8e4a858f78597285f741cdd4739dcce94c0159d526c1a8b"
+  },
+  "agentConfig.help.model": {
+    "en": "Override the default model used by the adapter.",
+    "zh-CN": "覆盖适配器使用的默认模型。",
+    "reviewedEnglishHash": "da7e1501b87aff89a8ead52f74fcf56c450d1cfaeb9341c7133fce907e3e3aea"
+  },
+  "agentConfig.help.name": {
+    "en": "Display name for this agent.",
+    "zh-CN": "此智能体的显示名称。",
+    "reviewedEnglishHash": "6bbe791c319d0e906d949934b3dec3804029537338c839705a527d743f0f26c5"
+  },
+  "agentConfig.help.promptTemplate": {
+    "en": "Sent on every heartbeat. Keep this small and dynamic. Use it for current-task framing, not large static instructions. Supports agent.id, agent.name, agent.role, and other template variables.",
+    "zh-CN": "每次心跳都会发送。保持短小、动态，用于当前任务框架，不要放大量静态说明。支持 agent.id、agent.name、agent.role 等模板变量。",
+    "reviewedEnglishHash": "2266fc96dafebebc191022db8d8544aa47dbe917cd30ea193b851f11153c1b79"
+  },
+  "agentConfig.help.reportsTo": {
+    "en": "The agent this one reports to in the org hierarchy.",
+    "zh-CN": "该智能体在组织层级中汇报给谁。",
+    "reviewedEnglishHash": "0e5a93fe2edd5b8bed9af3e45a767c592b14481e276ba2ba412eae1075edbfa4"
+  },
+  "agentConfig.help.thinkingEffort": {
+    "en": "Control model reasoning depth. Supported values vary by adapter/model.",
+    "zh-CN": "控制模型推理深度。支持的取值会因适配器和模型而异。",
+    "reviewedEnglishHash": "ead6045bf04e5b2ab3fd584acb4bf8aa813b79c7e933a01402c3beca385af28c"
+  },
+  "agentConfig.help.timeoutSec": {
+    "en": "Maximum seconds a run can take before being terminated. 0 means no timeout.",
+    "zh-CN": "一次运行最多可执行多少秒，超时后会被终止。0 表示不限制。",
+    "reviewedEnglishHash": "878afd0698a416fe40064037436dd54e877e786b61bc3187ea11375f53585de7"
+  },
+  "agentConfig.help.title": {
+    "en": "Job title shown in the org chart.",
+    "zh-CN": "组织架构图中显示的职位头衔。",
+    "reviewedEnglishHash": "22769e9762fd29a471a3f05be83d70067653f5119eca0e5e0b823083cc610d67"
+  },
+  "agentConfig.help.wakeOnDemand": {
+    "en": "Allow this agent to be woken by assignments, API calls, UI actions, or automated systems.",
+    "zh-CN": "允许此智能体被任务分配、API 调用、UI 操作或自动化系统唤醒。",
+    "reviewedEnglishHash": "5d7951c2fd6e67f94545bf9311d5f92a73e762da32dab696755824da47a12d95"
+  },
+  "agentConfig.high": {
+    "en": "High",
+    "zh-CN": "高",
+    "reviewedEnglishHash": "c4ebc6d4a5832cd9415f906ad03661110c705a72381c8b8b145761d02e2dd23a"
+  },
+  "agentConfig.hint": {
+    "en": "Hint",
+    "zh-CN": "提示",
+    "reviewedEnglishHash": "a7b4cf9f7e429771071ef073b93bbfff8d271b9429dd9bb77581128a3e68e0ae"
+  },
+  "agentConfig.identity": {
+    "en": "Identity",
+    "zh-CN": "身份信息",
+    "reviewedEnglishHash": "999f23fcd7bec7075e54bb5dea0d9c548bfe7261f95b911ed8e23d2f4188724f"
+  },
+  "agentConfig.inheritInstanceDefault": {
+    "en": "Inherit instance default ({{name}})",
+    "zh-CN": "继承实例默认（{{name}}）",
+    "reviewedEnglishHash": "0a02eb62233519a68091b83ee3d4898d351896e9ea5e3bb22e82e4a6a6bcfe38"
+  },
+  "agentConfig.inheritingInstanceDefault": {
+    "en": "Inheriting the instance default: {{name}}.",
+    "zh-CN": "正在继承实例默认值：{{name}}。",
+    "reviewedEnglishHash": "fb2a992b4bfe6515d4b41c26e7856d804acabf9083609b76ec2608afa28f088e"
+  },
+  "agentConfig.instructionsFileHint": {
+    "en": "Absolute path to a markdown file (for example `AGENTS.md`) that defines this agent's behavior. Injected into the system prompt at runtime.",
+    "zh-CN": "指向 Markdown 文件（例如 `AGENTS.md`）的绝对路径，用来定义该智能体的行为。运行时会注入到 system prompt 中。",
+    "reviewedEnglishHash": "b5d3bc4fe26907e3a108cc59aee8d2a4c46af7124708960e916df36a4707dc8d"
+  },
+  "agentConfig.instructionsFileLabel": {
+    "en": "Agent instructions file",
+    "zh-CN": "智能体说明文件",
+    "reviewedEnglishHash": "ce46e7f310ea3f645b0a845b158cdbe9ba9ce12fdfdc3233b378fb54543f14c4"
+  },
+  "agentConfig.instructionsFilePlaceholder": {
+    "en": "/absolute/path/to/AGENTS.md",
+    "zh-CN": "/absolute/path/to/AGENTS.md",
+    "reviewedEnglishHash": "194b903b6155582c5c6033b4d56e1d87656619c6d640983fa07b07f9bd928d5b"
+  },
+  "agentConfig.kubernetesSandbox": {
+    "en": "Kubernetes sandbox",
+    "zh-CN": "Kubernetes 沙箱",
+    "reviewedEnglishHash": "97ff93c7c3380debb7cd765e29b032f6316a03562dc16ca6728f78a3657473a2"
+  },
+  "agentConfig.liveOpenCodeDiscoveryLocalOnly": {
+    "en": "Live OpenCode model discovery only runs for Local environments. Using the curated list and manual entry for {{environmentName}}.",
+    "zh-CN": "实时 OpenCode 模型发现仅在本地环境中运行。当前将为 {{environmentName}} 使用内置列表和手动输入。",
+    "reviewedEnglishHash": "29cf424009dff35b195f34ad3c7357b88ab83106d73c39c0d70596779d813437"
+  },
+  "agentConfig.logIn": {
+    "en": "Log in",
+    "zh-CN": "登录",
+    "reviewedEnglishHash": "c189840cf7e2d6f6fdeefde1ac59dfdf50bb75642eb569b4e38a5614d6f12ac2"
+  },
+  "agentConfig.loginAuthenticated": {
+    "en": "Authenticated. The sandbox has credentials now.",
+    "zh-CN": "认证成功。沙箱现在已具备凭据。",
+    "reviewedEnglishHash": "d59c2e41f82efe26b2e766a334885568634db9b1ad115951f44162afa7b66f73"
+  },
+  "agentConfig.loginCancelled": {
+    "en": "Login cancelled",
+    "zh-CN": "登录已取消",
+    "reviewedEnglishHash": "fcb9c05eed9f4515e1f3e86387097d96b00e71456432319e60b126060d9b03d5"
+  },
+  "agentConfig.loginFailed": {
+    "en": "Login failed",
+    "zh-CN": "登录失败",
+    "reviewedEnglishHash": "5a96e8452f1ed4778fcc1290f07612dba52266cfabe61c930c690867a8adb429"
+  },
+  "agentConfig.loginTimedOut": {
+    "en": "Login timed out",
+    "zh-CN": "登录超时",
+    "reviewedEnglishHash": "bf33d297a6ba6516e15f679348706563db0b5dba973a6cfd03a5490ad121ebdf"
+  },
+  "agentConfig.low": {
+    "en": "Low",
+    "zh-CN": "低",
+    "reviewedEnglishHash": "f793de205ead5ac302c4a1627829dea41f176b1068b993a32373fc869918374b"
+  },
+  "agentConfig.max": {
+    "en": "Max",
+    "zh-CN": "最高",
+    "reviewedEnglishHash": "a1a5936d3b0f8a69fd62c91ed9990d3bd414c5e78c603e2837c65c9f46a93eb8"
+  },
+  "agentConfig.maxConcurrentRuns": {
+    "en": "Max concurrent runs",
+    "zh-CN": "最大并发运行数",
+    "reviewedEnglishHash": "3234893f415e405cced6e6ccf0a4ee306d6ebfc7896007f5469cb48b2b8aca21"
+  },
+  "agentConfig.medium": {
+    "en": "Medium",
+    "zh-CN": "中",
+    "reviewedEnglishHash": "8e588cd187741f1cd76f5fab77b7208782a8c21d764ce7d7a4cf3ac4e0968873"
+  },
+  "agentConfig.minimal": {
+    "en": "Minimal",
+    "zh-CN": "最低",
+    "reviewedEnglishHash": "057b5de48d7b90f123ec28d7e15f65d99b508d6b7cc2958c39472070f0f0f6bb"
+  },
+  "agentConfig.missingForcedKubernetesEnvironment": {
+    "en": "This instance requires the Kubernetes sandbox, but no managed Kubernetes environment is available for this company yet. Configure one before creating agents; execution will not fall back to local.",
+    "zh-CN": "此实例要求使用 Kubernetes 沙箱，但这个公司还没有可用的托管 Kubernetes 环境。请先配置一个环境再创建智能体；执行不会回退到本地。",
+    "reviewedEnglishHash": "551f33d9f4dccd3ed0ec499ec890c8b0fd2e87d14b0b478829f9df022210d1f3"
+  },
+  "agentConfig.missingSecretOption": {
+    "en": "Missing ({{id}}...)",
+    "zh-CN": "缺失（{{id}}...）",
+    "reviewedEnglishHash": "9dc80551905128a0266b87de750743d7e5f925ed339838f05f21848b272af2c3"
+  },
+  "agentConfig.model": {
+    "en": "Model",
+    "zh-CN": "模型",
+    "reviewedEnglishHash": "5e2c614c23f02239bc03c6c04fcb681950f9e72bf8fdff6be79c79841cbb10c0"
+  },
+  "agentConfig.modelsGroupLabel": {
+    "en": "Models",
+    "zh-CN": "模型",
+    "reviewedEnglishHash": "d17d2d78d76e6a6cd13048de225e107ac73de4aa5f8914e58a0cfaa9698c373e"
+  },
+  "agentConfig.name": {
+    "en": "Name",
+    "zh-CN": "名称",
+    "reviewedEnglishHash": "dcd1d5223f73b3a965c07e3ff5dbee3eedcfedb806686a05b9b3868a2c3d6d50"
+  },
+  "agentConfig.noAdapterDefaultChooseCheapModel": {
+    "en": "No adapter default — choose a cheaper model",
+    "zh-CN": "没有适配器默认值，请选择更便宜的模型",
+    "reviewedEnglishHash": "03fad66be8681c56b5dae9f0c29a330c7bdbdb485b979639aed98db0de904d7c"
+  },
+  "agentConfig.noCheapModelSelectedNoAdapterDefault": {
+    "en": "No cheap model selected and the adapter has no default. Cheap-lane runs will continue on the primary model with a fallback note.",
+    "zh-CN": "尚未选择低成本模型，且适配器没有默认值。低成本通道运行会继续使用主模型，并附带回退说明。",
+    "reviewedEnglishHash": "3df6f13f1f2005aa1f79b39b856bfbea4c2d37df2b0d613c836a981172cac9ba"
+  },
+  "agentConfig.noDetectedModelSelectManually": {
+    "en": "No model detected. Select or enter one manually.",
+    "zh-CN": "未检测到模型。请选择或手动输入一个模型。",
+    "reviewedEnglishHash": "0b634e8ec40aaf8baf4f2e8805374698f327f5a7eea93b0221a75f03d7f35b60"
+  },
+  "agentConfig.noExplicitCheapModelFallback": {
+    "en": "No explicit cheap model selected — runtime falls back to {{model}}.",
+    "zh-CN": "尚未显式选择低成本模型，运行时会回退到 {{model}}。",
+    "reviewedEnglishHash": "323c642d03c292ff2516b3cac3c4ff2b282d2aa2072fad5f4535112023770b03"
+  },
+  "agentConfig.noHermesModelsDetected": {
+    "en": "No Hermes model detected yet. Configure Hermes or enter a provider/model manually.",
+    "zh-CN": "尚未检测到 Hermes 模型。请先配置 Hermes，或手动输入 provider/model。",
+    "reviewedEnglishHash": "c7cef54a0b22660aa5720ce1e88c4c5a7b626c8b97a2188b032cc7c7b4594bf8"
+  },
+  "agentConfig.noModelDetectedEnterManually": {
+    "en": "No model detected yet. Enter a provider/model manually.",
+    "zh-CN": "尚未检测到模型。请手动输入 provider/model。",
+    "reviewedEnglishHash": "f71129338255affaa9dec3c856b7a2ffd77057cddb8689be93f3d2ee65590646"
+  },
+  "agentConfig.noModelsFound": {
+    "en": "No models found.",
+    "zh-CN": "没有找到匹配的模型。",
+    "reviewedEnglishHash": "339e5fcda064be02cf3fc3c4e63e48bf0526dd7208f758c51a27c9ab0a2a9cc3"
+  },
+  "agentConfig.oneShot": {
+    "en": "One-shot",
+    "zh-CN": "单次",
+    "reviewedEnglishHash": "4c6e65c60f5bd2e3f08215b97d2ffbe21ea9142b027194a8500c9bd84f1bdf7a"
+  },
+  "agentConfig.openAuthenticationPage": {
+    "en": "Open the authentication page and enter the code.",
+    "zh-CN": "打开认证页面并输入代码。",
+    "reviewedEnglishHash": "9b1086cb80aa8d154c2386a9ce06921bb33c01d4f63f9bf8aa4fd4bd491c19e4"
+  },
+  "agentConfig.otherGroupLabel": {
+    "en": "Other",
+    "zh-CN": "其他",
+    "reviewedEnglishHash": "f97e9da0e3b879f0a9df979ae260a5f7e1371edb127c1862d4f861981166cdc1"
+  },
+  "agentConfig.overridingInstanceDefault": {
+    "en": "Overriding the instance default with {{name}}.",
+    "zh-CN": "正在用 {{name}} 覆盖实例默认值。",
+    "reviewedEnglishHash": "371d58c0a0c6e74fe351c39039fffcaa6dab2cb2b4c743517819b37aa588af9a"
+  },
+  "agentConfig.paperclipEnvVarsInjectedAutomatically": {
+    "en": "`PAPERCLIP_*` variables are injected automatically at runtime.",
+    "zh-CN": "`PAPERCLIP_*` 变量会在运行时自动注入。",
+    "reviewedEnglishHash": "bc1b5457fa1e1794b70db032f123763938385f2372584b2ac1bce67824edee09"
+  },
+  "agentConfig.passed": {
+    "en": "Passed",
+    "zh-CN": "通过",
+    "reviewedEnglishHash": "436fe71bb9561f0596161c4d50c7b23327b4189acaf63dc89f4f9205b67a7528"
+  },
+  "agentConfig.payloadTemplateJson": {
+    "en": "Payload template JSON",
+    "zh-CN": "载荷模板 JSON",
+    "reviewedEnglishHash": "ab819866b5c3beb96e1debcab02481595b2ff4573b4847960588694108971db1"
+  },
+  "agentConfig.permissionsAndConfiguration": {
+    "en": "Permissions & Configuration",
+    "zh-CN": "权限与配置",
+    "reviewedEnglishHash": "7695b1c6d09e2765c4cf5963f6d82d93211b69dfe7fb86fa3c6811ede26a9eda"
+  },
+  "agentConfig.persistent": {
+    "en": "Persistent",
+    "zh-CN": "持久",
+    "reviewedEnglishHash": "f067b731a9eb7fda659d8a6f16dcfd2233516f5f87281c196925d26d4b65f9eb"
+  },
+  "agentConfig.plain": {
+    "en": "Plain",
+    "zh-CN": "明文",
+    "reviewedEnglishHash": "8b854ade2cd01bdca1aa982f6ecff0086f70e3d2140d7fae2786a2e4150eeb4c"
+  },
+  "agentConfig.plan": {
+    "en": "Plan",
+    "zh-CN": "规划",
+    "reviewedEnglishHash": "fa8ed0bdabdd6bcb1c0746f1d3e15212f7f3439d74339fbaaf16c60c0a80fb8e"
+  },
+  "agentConfig.preparingLogin": {
+    "en": "Preparing the login…",
+    "zh-CN": "正在准备登录…",
+    "reviewedEnglishHash": "94453d2b20d76a8b2f51fc0f5654d7dfc0410183b4da3446c2a2f233e30884b8"
+  },
+  "agentConfig.promptTemplate": {
+    "en": "Prompt template",
+    "zh-CN": "提示词模板",
+    "reviewedEnglishHash": "abae9cbc1b5924c94c2b54430551d697e551221bfa198a0a122eb892c8853bae"
+  },
+  "agentConfig.promptTemplateCreateWarning": {
+    "en": "After saving, this prompt template is replayed on every heartbeat. Keep it concise and stable so context does not keep ballooning.",
+    "zh-CN": "保存后，这段提示词模板会在每次心跳时重放。请保持简洁稳定，避免不断堆叠上下文。",
+    "reviewedEnglishHash": "0c4f109e649718fb1af2ae02d568bb50394fef05bd7681d41f93fd32a48d7f17"
+  },
+  "agentConfig.promptTemplatePlaceholder": {
+    "en": "You are agent {{ agent.name }}. Your role is {{ agent.role }}...",
+    "zh-CN": "你是智能体 {{ agent.name }}。你的职责是 {{ agent.role }}...",
+    "reviewedEnglishHash": "d325109b166d92e92705bbfd861310a716cf190a41236d789505e02cecfac8c0"
+  },
+  "agentConfig.promptTemplateWarning": {
+    "en": "Prompt template is replayed on every heartbeat. Keep it concise and stable so context does not keep ballooning.",
+    "zh-CN": "提示词模板会在每次心跳时重放。请保持简洁稳定，避免不断堆叠上下文。",
+    "reviewedEnglishHash": "7bf73cf7c64c90cc45467647bd1826d320f172e4e0c83b8f6002279e6d40d7f2"
+  },
+  "agentConfig.redetectFromConfig": {
+    "en": "Re-detect from config",
+    "zh-CN": "重新从配置中检测",
+    "reviewedEnglishHash": "90c73096a9c99b3ea73a20c52b4ecb2b600d97441311ff276b84a9a682d92ebe"
+  },
+  "agentConfig.refreshModels": {
+    "en": "Refresh models",
+    "zh-CN": "刷新模型",
+    "reviewedEnglishHash": "04903063b2fd6a4261de57dc929f603c7f0217852c560f83b78671f5c2cca363"
+  },
+  "agentConfig.refreshingModels": {
+    "en": "Refreshing...",
+    "zh-CN": "刷新中...",
+    "reviewedEnglishHash": "69d2daed978a7b059e49be881bdd0b0eb66bdf9b2fb215611afed0dc26b51f7b"
+  },
+  "agentConfig.reportsTo": {
+    "en": "Reports to",
+    "zh-CN": "汇报对象",
+    "reviewedEnglishHash": "2b488c09391b5a54cb283a166cfb24d789ceaa0005285711bfda88ff87764b6f"
+  },
+  "agentConfig.runHeartbeatEvery": {
+    "en": "Run heartbeat every",
+    "zh-CN": "每隔",
+    "reviewedEnglishHash": "2ebc331ee9efa4b91c4a730350023326d516100de110cae90d8a602cb1a994a2"
+  },
+  "agentConfig.runPolicy": {
+    "en": "Run policy",
+    "zh-CN": "运行策略",
+    "reviewedEnglishHash": "a8ff03979599f0fb03e6932498ee724398f7697b66b08284297633483d024e89"
+  },
+  "agentConfig.runtimeServicesJson": {
+    "en": "Runtime services JSON",
+    "zh-CN": "运行时服务 JSON",
+    "reviewedEnglishHash": "b915f4a01a7576d12c1f9eafbfec495412ddb69299488ea1f56589afeebed41d"
+  },
+  "agentConfig.seal": {
+    "en": "Seal",
+    "zh-CN": "转为密钥",
+    "reviewedEnglishHash": "50ed6511896524fba31c0fba1da4cacb320526fde3e585380ab14750f912ecff"
+  },
+  "agentConfig.searchModels": {
+    "en": "Search models...",
+    "zh-CN": "搜索模型...",
+    "reviewedEnglishHash": "37b90680b8421a458410f14ed834f835438dd5853dccb35e327c582cb7116dce"
+  },
+  "agentConfig.searchModelsCreateHint": {
+    "en": "Search models... (type to create)",
+    "zh-CN": "搜索模型...（输入后可直接创建）",
+    "reviewedEnglishHash": "e7eb0b73abb5d4a85d373eddf18321de05a01b7137c1ac2c9e13c87e315604d6"
+  },
+  "agentConfig.seconds": {
+    "en": "sec",
+    "zh-CN": "秒",
+    "reviewedEnglishHash": "add93534eeb463800fe0ed0946048d33636dd2a014fab92e8a37f77ce98c740b"
+  },
+  "agentConfig.secret": {
+    "en": "Secret",
+    "zh-CN": "密钥",
+    "reviewedEnglishHash": "7e32a729b1226ed1270f282a8c63054d09b26bc9ec53ea69771ce38158dfade8"
+  },
+  "agentConfig.secretAccess": {
+    "en": "Secret access",
+    "zh-CN": "密钥访问",
+    "reviewedEnglishHash": "1a28ac1036029a83a75d911077af6f178db3968ad8b15690462ca006fd2bff64"
+  },
+  "agentConfig.secretBindingsNeedAttention": {
+    "en": "{{count}} secret binding(s) need attention:",
+    "zh-CN": "{{count}} 个密钥绑定需要处理：",
+    "reviewedEnglishHash": "5593a2356986033fd4bc327c164a2c4c96518d60f4e45cb0c0701b4b1ef43f0b"
+  },
+  "agentConfig.secretBindingsRemapHint": {
+    "en": "Runs will fail until you remap or re-enable.",
+    "zh-CN": "重新映射或重新启用前，运行会失败。",
+    "reviewedEnglishHash": "d974fd268415afb94386791d321eb765f306d4265b061890222eeefd08b482a6"
+  },
+  "agentConfig.secretNamePrompt": {
+    "en": "Secret name",
+    "zh-CN": "密钥名称",
+    "reviewedEnglishHash": "5cdf573b8913b247a7474c95761848abcdd4f2abeb12a6e286977b9af958418c"
+  },
+  "agentConfig.secretVersion": {
+    "en": "Version",
+    "zh-CN": "版本",
+    "reviewedEnglishHash": "dd167905de0defcaf72de673ee44c07431770d129ccffab286bd2edfdaf62396"
+  },
+  "agentConfig.selectCompanyToCreateSecrets": {
+    "en": "Select a company before creating secrets.",
+    "zh-CN": "请先选择公司，再创建密钥。",
+    "reviewedEnglishHash": "60e84ab6871570fb9db514452f40d0a0f0f764c6e2b3d3c3e65c8b77a5470ae3"
+  },
+  "agentConfig.selectCompanyToDetectModel": {
+    "en": "Select a company before detecting the model.",
+    "zh-CN": "请先选择公司，再检测模型。",
+    "reviewedEnglishHash": "15f1f848399c163d9a4cd52babdc4464a74c10ad5ef589d2ea119543230d1907"
+  },
+  "agentConfig.selectCompanyToTestEnvironment": {
+    "en": "Select a company before testing the adapter environment.",
+    "zh-CN": "请先选择公司，再检测适配器环境。",
+    "reviewedEnglishHash": "939248199ff610ea60a5f9ed470c5a0366bab88d70a3afd7e9f231aaa32084b5"
+  },
+  "agentConfig.selectCompanyToUploadImages": {
+    "en": "Select a company before uploading images.",
+    "zh-CN": "请先选择公司，再上传图片。",
+    "reviewedEnglishHash": "d26f5fe46cde23f78a56608395c9fe5ba579ec00604405ef602bbe5fb3b5f598"
+  },
+  "agentConfig.selectModel": {
+    "en": "Select model",
+    "zh-CN": "请选择模型",
+    "reviewedEnglishHash": "1d446005add35afa9f52b93a5cf63e0a6743a8338b14239b142ad16cdae8d0ef"
+  },
+  "agentConfig.selectModelRequired": {
+    "en": "Select model (required)",
+    "zh-CN": "请选择模型（必填）",
+    "reviewedEnglishHash": "62d45d1d404833f6921c85604615941707a8752abfe7dcd171c0329b608ecb06"
+  },
+  "agentConfig.selectSecret": {
+    "en": "Select secret...",
+    "zh-CN": "选择密钥...",
+    "reviewedEnglishHash": "0752976704ce29441504d0594d48ee9d815a5912351ee45699b8eb891577dfb3"
+  },
+  "agentConfig.signInToSandbox": {
+    "en": "Sign in to the sandbox",
+    "zh-CN": "登录沙箱",
+    "reviewedEnglishHash": "f52aa9d1f60cdedf10da502aa32032b396338d2f86a98d055ce9d7f64beb2b37"
+  },
+  "agentConfig.storeValueAsSecret": {
+    "en": "Store value as secret and replace with reference",
+    "zh-CN": "将当前值存为密钥并替换为引用",
+    "reviewedEnglishHash": "7225d85dcf63d6e9c603e254d659fe6d9d0a9a8d9d5e35cf4b0f8fce3a8cdd56"
+  },
+  "agentConfig.testEnvironment": {
+    "en": "Test environment",
+    "zh-CN": "检测环境",
+    "reviewedEnglishHash": "44ecebbc45af9357141a0a1dbb8da74c8a80dda5f5ed717837f3e6b23314aa87"
+  },
+  "agentConfig.testingAction": {
+    "en": "{{label}}...",
+    "zh-CN": "{{label}}...",
+    "reviewedEnglishHash": "f283e29cc991b4e200df3a0af4aebf3532b575afe3ba9568f45519fab85665a5"
+  },
+  "agentConfig.testingEnvironment": {
+    "en": "Testing...",
+    "zh-CN": "检测中...",
+    "reviewedEnglishHash": "6c02a28421f8ad91e91756cb731bb47993bf529101135966b80128548a16d5b1"
+  },
+  "agentConfig.thinkingEffort": {
+    "en": "Thinking effort",
+    "zh-CN": "思考强度",
+    "reviewedEnglishHash": "264c28cbf01ce9fa107dab0803dda90e796217e8a6ee6e3fa063f354f003f90d"
+  },
+  "agentConfig.timeoutSec": {
+    "en": "Timeout (sec)",
+    "zh-CN": "超时时间（秒）",
+    "reviewedEnglishHash": "5ac8f7c285b61af14512a024689b645490e4f47ba62d5da9845ecdf0af1e353f"
+  },
+  "agentConfig.title": {
+    "en": "Title",
+    "zh-CN": "头衔",
+    "reviewedEnglishHash": "7e8cd2056da73a7fefb6cd91f4e5d199d08d9058c517b9a2476b1b520324d674"
+  },
+  "agentConfig.titlePlaceholder": {
+    "en": "e.g. VP of Engineering",
+    "zh-CN": "例如：工程副总裁",
+    "reviewedEnglishHash": "3d7748a741b38583017cf7ebeff260fafcb3a3f2474f25c73f01cd3eca42a405"
+  },
+  "agentConfig.unsavedChanges": {
+    "en": "Unsaved changes",
+    "zh-CN": "有未保存的更改",
+    "reviewedEnglishHash": "a710c2b90913b5375ca6ac865341e49dd6daa42f6d95182e6ed1a7b1b650ff4c"
+  },
+  "agentConfig.useManualModel": {
+    "en": "Use manual model",
+    "zh-CN": "使用手动模型",
+    "reviewedEnglishHash": "3490ecaa5493312263adf3968b30d2032fd6c61943d89f7184fce38665b94161"
+  },
+  "agentConfig.value": {
+    "en": "Value",
+    "zh-CN": "值",
+    "reviewedEnglishHash": "8e37953d23daca5ff01b8282c33f4e0a2152f1d1885f94c06418617e3ee1d24e"
+  },
+  "agentConfig.wakeOnDemand": {
+    "en": "Wake on demand",
+    "zh-CN": "按需唤醒",
+    "reviewedEnglishHash": "a7a5aea9b4fee5924141a4f5a325fc8e213fdd096c03e7b8765930c13e3ac405"
+  },
+  "agentConfig.warnings": {
+    "en": "Warnings",
+    "zh-CN": "警告",
+    "reviewedEnglishHash": "0e04cd10f9afd7e546e176b34b56a243d8c741198aa0bfee27d7661a370dc043"
+  },
+  "agentConfig.webhookUrl": {
+    "en": "Webhook URL",
+    "zh-CN": "Webhook 地址",
+    "reviewedEnglishHash": "84805a7574a82052bdd5b3b98119cfd838d04036ec4bd3d667a95698e7097ad6"
+  },
+  "agentConfig.workingDirectoryDeprecated": {
+    "en": "Working directory (legacy)",
+    "zh-CN": "工作目录（旧版字段）",
+    "reviewedEnglishHash": "77eb143bd7b5bb22ff53bed316ea8156cf5ef51f4e331e61e105ec2c47106f18"
+  },
+  "agentConfig.workingDirectoryPlaceholder": {
+    "en": "/absolute/path/to/workspace",
+    "zh-CN": "/absolute/path/to/workspace",
+    "reviewedEnglishHash": "f8bdc2305f39d599cc8f63295a706d4b983d20d448928c2e41f6006af74c80df"
+  },
+  "agentConfig.xhigh": {
+    "en": "X-High",
+    "zh-CN": "超高",
+    "reviewedEnglishHash": "393d3e4bf2eea43ad08fcd583922c7db6a04ff13ba49467ac637a843510be575"
+  }
+}

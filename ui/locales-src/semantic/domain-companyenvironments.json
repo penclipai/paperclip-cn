@@ -1,0 +1,22 @@
+{
+  "companyEnvironments.captureInProgress": {
+    "en": "Capture is in progress. If this state remains after a refresh or interrupted request, cancel it to return to the active template controls.",
+    "zh-CN": "正在捕获。如果刷新或请求中断后仍保持此状态，请取消以返回当前模板控件。",
+    "reviewedEnglishHash": "ad3474e111b2213899296142fb4ca9904d5eb566062c55f80ca32f15574da9c7"
+  },
+  "companyEnvironments.imageStale": {
+    "en": "Not in use — the environment configuration changed since this image was captured. Runs fall back to the base configuration until you capture a new image.",
+    "zh-CN": "未使用 - 捕获此镜像后环境配置已更改。在捕获新镜像前，运行会回退到基础配置。",
+    "reviewedEnglishHash": "383f0396ad207d54082732dd8d5bd8035c29c5dcbbbc4d00bdb5250bc2840196"
+  },
+  "companyEnvironments.sshFallback": {
+    "en": "SSH command fallback",
+    "zh-CN": "SSH 命令回退",
+    "reviewedEnglishHash": "9f1db9e00858c762d8e237fd2a21eb505bc67e5f31c43e38ba367fdbad2c8c3c"
+  },
+  "companyEnvironments.streamLogs": {
+    "en": "Stream run logs",
+    "zh-CN": "流式传输运行日志",
+    "reviewedEnglishHash": "95161f1e983d932768011b4b042a2864f9c15bd3e1db1212be10b995c3c62e16"
+  }
+}

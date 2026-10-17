@@ -1,0 +1,267 @@
+{
+  "timeline.breadcrumb": {
+    "en": "Timeline",
+    "zh-CN": "时间线",
+    "reviewedEnglishHash": "9dcff98e275f0cb911f1523ef5c629c0aabe9e3b642a6b71ac7d2569e9717121"
+  },
+  "timeline.chooseDateRange": {
+    "en": "Choose a start and end date.",
+    "zh-CN": "请选择开始日期和结束日期。",
+    "reviewedEnglishHash": "f288de7423ea3bc815c27e41b5d0cf3c98bdb4a9c41cc82b76d40f1ef05010a6"
+  },
+  "timeline.connector.dashed": {
+    "en": "Dashed handoff: retry or changes requested",
+    "zh-CN": "虚线交接：重试或请求更改",
+    "reviewedEnglishHash": "0de310eac8ec4d555fac21429f33a82fd0a332bc1ef6e0a5a49156269c211cab"
+  },
+  "timeline.connector.solid": {
+    "en": "Solid handoff: delegation or assignment",
+    "zh-CN": "实线交接：委派或分配",
+    "reviewedEnglishHash": "67f4d228a3942516d32e9cc0c988ae0cc7a2f9456036f32ff89fa5842384fe2d"
+  },
+  "timeline.endDate": {
+    "en": "Timeline end date",
+    "zh-CN": "时间线结束日期",
+    "reviewedEnglishHash": "0f612621007ec6cd740138e3d9e5424ddc95cccc309d72792705b673d3281349"
+  },
+  "timeline.invalidDateRange": {
+    "en": "Start date must be before end date.",
+    "zh-CN": "开始日期必须早于结束日期。",
+    "reviewedEnglishHash": "cf85d565e29a69cbd979725bd3711dc614d7c8060a0639c4938b5a54135be91d"
+  },
+  "timeline.kickedOffBy": {
+    "en": "Kicked off by: {{name}}",
+    "zh-CN": "发起人：{{name}}",
+    "reviewedEnglishHash": "278896b9bdebdfddafe75cfbefc1b314434fc79897c2498a119b995265014908"
+  },
+  "timeline.legend.automation": {
+    "en": "Automation",
+    "zh-CN": "自动触发",
+    "reviewedEnglishHash": "d909750b1bbb71a39b6330ba8f81f4f8f6e889ed96d7ab366e74857909750c64"
+  },
+  "timeline.legend.cancelled": {
+    "en": "Cancelled",
+    "zh-CN": "已取消",
+    "reviewedEnglishHash": "d353a99eb4556847ceeb3c306ac886cf6b4fa13043eb1864b9aeb0607fd5f2cc"
+  },
+  "timeline.legend.delegated": {
+    "en": "Delegated",
+    "zh-CN": "已委派",
+    "reviewedEnglishHash": "dd341e5d100e662afaece640599296ad65ca98617a03774b4546857ddb52c268"
+  },
+  "timeline.legend.now": {
+    "en": "Now",
+    "zh-CN": "现在",
+    "reviewedEnglishHash": "fe18013d93d22f4f2a70344d30c00fe62d2ef29189ae5d25ccbda81fbd9c92b0"
+  },
+  "timeline.loadFailed": {
+    "en": "Couldn't load the timeline. The aggregation endpoint may be unavailable.",
+    "zh-CN": "无法加载时间线，聚合接口可能暂不可用。",
+    "reviewedEnglishHash": "fa69220aaf9db6d6cc6e140e1ac4fb23e41c96a06eb0019eb92e0a38e14891ad"
+  },
+  "timeline.noActivity": {
+    "en": "No activity in this window.",
+    "zh-CN": "此时间范围内没有活动。",
+    "reviewedEnglishHash": "885e0c5769e98ba8508e49d168b273fd3b315dff684602dc069786aec7bd22a0"
+  },
+  "timeline.range": {
+    "en": "Range",
+    "zh-CN": "时间范围",
+    "reviewedEnglishHash": "5de74a81b192304c10bf7b8cf50e863a19e8ae4c38a4d5c5116359db0deed29f"
+  },
+  "timeline.range.sevenDays": {
+    "en": "7 days",
+    "zh-CN": "7 天",
+    "reviewedEnglishHash": "7f920bb639c9307589b65e5f639391d65dcb86b0611ac47f58f7c769215326ee"
+  },
+  "timeline.range.thirtyDays": {
+    "en": "30 days",
+    "zh-CN": "30 天",
+    "reviewedEnglishHash": "ffd7280513ce285e6d9dc8d0b7078c4f39c8fe0e69b0d0a87d8af2965e445d7a"
+  },
+  "timeline.range.today": {
+    "en": "Today",
+    "zh-CN": "今天",
+    "reviewedEnglishHash": "2b065c7c9ce466e5ebcad757987d5d660ee4c9ea708bc62c43444b53334738ba"
+  },
+  "timeline.resetZoom": {
+    "en": "Reset zoom",
+    "zh-CN": "重置缩放",
+    "reviewedEnglishHash": "91a661b24f1bc2bf723557e11c049600681ce2c73fd5a1962281ba44e293a5fe"
+  },
+  "timeline.resizeLeft": {
+    "en": "Drag left edge to resize visible range",
+    "zh-CN": "拖动左边缘调整可见范围",
+    "reviewedEnglishHash": "daede2443ddaff2eeb4140158221d321ebe0eb8360a4dea164d86db5811a7732"
+  },
+  "timeline.resizeRight": {
+    "en": "Drag right edge to resize visible range",
+    "zh-CN": "拖动右边缘调整可见范围",
+    "reviewedEnglishHash": "9e18abbaccd3be2deb5d05f4b49eb74752dd6d6fb1e79e2edd9a1eededea0bc0"
+  },
+  "timeline.retrySuffix": {
+    "en": " · retry",
+    "zh-CN": " · 重试",
+    "reviewedEnglishHash": "4cb8ce878f70e4d9226f04f8906efbd6d5710fb33ebebc69289bffc3cde9d4cd"
+  },
+  "timeline.run": {
+    "en": "Run",
+    "zh-CN": "运行",
+    "reviewedEnglishHash": "00d60e31a4e6b8344d4201f25a6a7dee770713107f6d097abb01559d32b17f26"
+  },
+  "timeline.runCount": {
+    "en": "{{count}} runs",
+    "zh-CN": "{{count}} 次运行",
+    "reviewedEnglishHash": "8b3ce3003800f93b313030b8d36119a6d6649d37d4cbf2eeafdaf270f5d6dc3e"
+  },
+  "timeline.runCount_one": {
+    "en": "{{count}} run",
+    "zh-CN": "{{count}} 次运行",
+    "reviewedEnglishHash": "d0e4b16000f73ccbbf97863bb97f4a7b43c8c88a746f954063c808ba3143a498"
+  },
+  "timeline.runCount_other": {
+    "en": "{{count}} runs",
+    "zh-CN": "{{count}} 次运行",
+    "reviewedEnglishHash": "8b3ce3003800f93b313030b8d36119a6d6649d37d4cbf2eeafdaf270f5d6dc3e"
+  },
+  "timeline.selectCompany": {
+    "en": "Select a company to view its work timeline.",
+    "zh-CN": "请选择公司以查看其工作时间线。",
+    "reviewedEnglishHash": "6cddfa72a27aa33b3be03be2a7a47e4079477036d89f13b5a203dd1baeaf98e9"
+  },
+  "timeline.startDate": {
+    "en": "Timeline start date",
+    "zh-CN": "时间线开始日期",
+    "reviewedEnglishHash": "881e6415c6458c0af69b7a6bae0b4661ece84763c358b5987265c1ba53b99733"
+  },
+  "timeline.stats.agents": {
+    "en": "Agents",
+    "zh-CN": "智能体数",
+    "reviewedEnglishHash": "279b44d2ab4b40c0fc132f8f3051293544cca91de9c8aa14f2cd29adb132b0ee"
+  },
+  "timeline.stats.notTracked": {
+    "en": "Not tracked",
+    "zh-CN": "未统计",
+    "reviewedEnglishHash": "4367a6002fa787deaf6598bcd97e8eacc4caf00dff4f98f0c7d5fbdc211b7a1a"
+  },
+  "timeline.stats.runTime": {
+    "en": "Run time",
+    "zh-CN": "运行时长",
+    "reviewedEnglishHash": "40349abbfc605159cae177889e11e504ffafd46fb66bfc34cf845d661e0a68ed"
+  },
+  "timeline.stats.runs": {
+    "en": "Runs",
+    "zh-CN": "运行数",
+    "reviewedEnglishHash": "848f54e89660cea4357644039ac5d7146f76c8e85df5c04076e08feb7e7547f0"
+  },
+  "timeline.stats.tokensUsed": {
+    "en": "Tokens used",
+    "zh-CN": "词元用量",
+    "reviewedEnglishHash": "d2252f5a23d70f43c04945c45e59c0803321e955c14c2676a49deb27d930f134"
+  },
+  "timeline.title": {
+    "en": "Work Timeline",
+    "zh-CN": "工作时间线",
+    "reviewedEnglishHash": "38973f05292895bd9763975b9608513f8025b6567f135f8442fdb8bf43dc26fe"
+  },
+  "timeline.to": {
+    "en": "to",
+    "zh-CN": "至",
+    "reviewedEnglishHash": "663ea1bfffe5038f3f0cf667f14c4257eff52d77ce7f2a218f72e9286616ea39"
+  },
+  "timeline.visible.days": {
+    "en": "{{count}} days visible",
+    "zh-CN": "当前显示 {{count}} 天",
+    "reviewedEnglishHash": "f72c4086d2c82971a01a0f6c60777cbec405117e09f3f492debf581aba1ec522"
+  },
+  "timeline.visible.daysHours": {
+    "en": "{{days}}d {{hours}}h visible",
+    "zh-CN": "当前显示 {{days}} 天 {{hours}} 小时",
+    "reviewedEnglishHash": "39d9785ab0180c6ca2780ce7d4b5794bcfa23bf2f5833a981fb7cad8a24d6106"
+  },
+  "timeline.visible.days_one": {
+    "en": "{{count}} day visible",
+    "zh-CN": "当前显示 {{count}} 天",
+    "reviewedEnglishHash": "bcbddef33ae51cfb738b309ec79097b840af21669aec9e77fb4286c608532d07"
+  },
+  "timeline.visible.days_other": {
+    "en": "{{count}} days visible",
+    "zh-CN": "当前显示 {{count}} 天",
+    "reviewedEnglishHash": "f72c4086d2c82971a01a0f6c60777cbec405117e09f3f492debf581aba1ec522"
+  },
+  "timeline.visible.hours": {
+    "en": "{{count}} hours visible",
+    "zh-CN": "当前显示 {{count}} 小时",
+    "reviewedEnglishHash": "543e6440581f69ba72d3d9063d298d7dc95cd4d8003cdd86a98794ac66cba57f"
+  },
+  "timeline.visible.hoursMinutes": {
+    "en": "{{hours}}h {{minutes}}m visible",
+    "zh-CN": "当前显示 {{hours}} 小时 {{minutes}} 分钟",
+    "reviewedEnglishHash": "b83c8378482383fa8e66ff3b8b653635a8e7e0c44554bc10ab780ecd3eeb5a73"
+  },
+  "timeline.visible.hours_one": {
+    "en": "{{count}} hour visible",
+    "zh-CN": "当前显示 {{count}} 小时",
+    "reviewedEnglishHash": "774ee4a0b7f4b0a689e8c473b1cc1dc43edf4bb2e36fc7e7fe526d0b7df4be4f"
+  },
+  "timeline.visible.hours_other": {
+    "en": "{{count}} hours visible",
+    "zh-CN": "当前显示 {{count}} 小时",
+    "reviewedEnglishHash": "543e6440581f69ba72d3d9063d298d7dc95cd4d8003cdd86a98794ac66cba57f"
+  },
+  "timeline.visible.minutes": {
+    "en": "{{count}} minutes visible",
+    "zh-CN": "当前显示 {{count}} 分钟",
+    "reviewedEnglishHash": "71b94c5c414639768f8cb834220c51bbdacd149f784efc3b6c15ad01cf525a8f"
+  },
+  "timeline.visible.minutes_one": {
+    "en": "{{count}} minute visible",
+    "zh-CN": "当前显示 {{count}} 分钟",
+    "reviewedEnglishHash": "ab9af2678938276201bbace039932a51c151e29a36eb8999a1e7154d5531dd23"
+  },
+  "timeline.visible.minutes_other": {
+    "en": "{{count}} minutes visible",
+    "zh-CN": "当前显示 {{count}} 分钟",
+    "reviewedEnglishHash": "71b94c5c414639768f8cb834220c51bbdacd149f784efc3b6c15ad01cf525a8f"
+  },
+  "timeline.visible.weeks": {
+    "en": "{{count}} weeks visible",
+    "zh-CN": "当前显示 {{count}} 周",
+    "reviewedEnglishHash": "4f3584e5a8e6e0056d9e302e39dbd0380302bc7c23a25325da8fa987ab3b7d68"
+  },
+  "timeline.visible.weeks_one": {
+    "en": "{{count}} week visible",
+    "zh-CN": "当前显示 {{count}} 周",
+    "reviewedEnglishHash": "0fa2fb061e6afc848e952db0e6981e28454f9818b023f1f021986758102f8350"
+  },
+  "timeline.visible.weeks_other": {
+    "en": "{{count}} weeks visible",
+    "zh-CN": "当前显示 {{count}} 周",
+    "reviewedEnglishHash": "4f3584e5a8e6e0056d9e302e39dbd0380302bc7c23a25325da8fa987ab3b7d68"
+  },
+  "timeline.windowCapped": {
+    "en": " · window capped",
+    "zh-CN": " · 时间窗口已截断",
+    "reviewedEnglishHash": "2c5990d371ee61327ab1d4990144372820d8590c5d43866f9323af4232333697"
+  },
+  "timeline.windowRange": {
+    "en": "{{from}} to {{to}}",
+    "zh-CN": "{{from}} 至 {{to}}",
+    "reviewedEnglishHash": "0470017c51dcd54d4fe12e32c619160bc2b1a4c3a94abe41709bca568aefd190"
+  },
+  "timeline.zoomControls": {
+    "en": "Timeline zoom controls",
+    "zh-CN": "时间线缩放控件",
+    "reviewedEnglishHash": "4c7cc9e98c01f78b9b77a71ec625a4d38e47887e36e347bd66fbd2714c920af9"
+  },
+  "timeline.zoomIn": {
+    "en": "Zoom in",
+    "zh-CN": "放大",
+    "reviewedEnglishHash": "0e47f09a748fa1321dbaee5c8983f8e8f2880b1212956fb4f21ae9d60b88a8b2"
+  },
+  "timeline.zoomOut": {
+    "en": "Zoom out",
+    "zh-CN": "缩小",
+    "reviewedEnglishHash": "bc7b631a689b45ca5c51923515d31eb3597b2d9b129d88d0dbee066ee5c35453"
+  }
+}

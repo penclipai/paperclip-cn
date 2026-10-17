@@ -1,6 +1,6 @@
+import { useTranslation } from "react-i18next";
 import { Flag } from "lucide-react";
 import type { Agent } from "@penclipai/shared";
-import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 
 interface IssueAssignedBacklogNoticeProps {
@@ -18,11 +18,12 @@ export function IssueAssignedBacklogNotice({
   onResume,
   resuming,
 }: IssueAssignedBacklogNoticeProps) {
-  const { t } = useTranslation(undefined, { useSuspense: false });
+  const { t } = useTranslation();
   if (issueStatus !== "backlog") return null;
   if (!assigneeAgent && !assigneeUserId) return null;
 
-  const assigneeLabel = assigneeAgent?.name ?? t("issueAssignedBacklogNotice.assignee", { defaultValue: "the responsible" });
+  const assigneeLabel =
+    assigneeAgent?.name ?? t("issueAssignedBacklogNotice.assignee");
 
   return (
     <div
@@ -34,21 +35,14 @@ export function IssueAssignedBacklogNotice({
         <Flag className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-300" />
         <div className="min-w-0 flex-1 space-y-1.5">
           <p className="leading-5">
-            <span className="font-medium">{t("issueAssignedBacklogNotice.parked", { defaultValue: "Parked" })}</span>
-            {" - "}
-            <span className="font-medium">{assigneeLabel}</span>{" "}
-            {t("issueAssignedBacklogNotice.bodyAfterAssignee", {
-              defaultValue: "will not be woken until status changes to",
-            })}{" "}
-            <code className="rounded bg-amber-100 px-1 py-0.5 text-xs dark:bg-amber-400/15">todo</code>{" "}
-            {t("issueAssignedBacklogNotice.or", { defaultValue: "or" })}{" "}
-            <code className="rounded bg-amber-100 px-1 py-0.5 text-xs dark:bg-amber-400/15">in_progress</code>.
+            <span className="font-medium">
+              {t("issueAssignedBacklogNotice.parked")}
+            </span>{" "}
+            — {t("issueAssignedBacklogNotice.body", { assignee: assigneeLabel })}
           </p>
           {assigneeAgent ? (
             <p className="text-xs leading-5 text-amber-800 dark:text-amber-200">
-              {t("issueAssignedBacklogNotice.commentsStillWake", {
-                defaultValue: "Comments still wake the responsible for questions or triage. Leave this parked only if the work is intentionally on hold.",
-              })}
+              {t("issueAssignedBacklogNotice.comments")}
             </p>
           ) : null}
           {onResume ? (
@@ -62,8 +56,8 @@ export function IssueAssignedBacklogNotice({
                 data-testid="issue-assigned-backlog-resume"
               >
                 {resuming
-                  ? t("issueAssignedBacklogNotice.resuming", { defaultValue: "Resuming..." })
-                  : t("issueAssignedBacklogNotice.resumeNow", { defaultValue: "Resume now" })}
+                  ? t("issueAssignedBacklogNotice.resuming")
+                  : t("issueAssignedBacklogNotice.resumeNow")}
               </Button>
             </div>
           ) : null}

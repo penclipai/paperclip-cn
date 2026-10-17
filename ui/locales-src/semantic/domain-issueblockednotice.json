@@ -1,0 +1,102 @@
+{
+  "issueBlockedNotice.askAssignee": {
+    "en": "Paperclip will ask the assignee to choose the next step",
+    "zh-CN": "Paperclip 将要求负责人选择下一步",
+    "reviewedEnglishHash": "9d4ce989b1eeb0fb1f50b28566f1719fde8656b57eff870e2820df739cba5533"
+  },
+  "issueBlockedNotice.asked": {
+    "en": "Asked",
+    "zh-CN": "已要求",
+    "reviewedEnglishHash": "821c038b7a771ead0558b3113faeef905440e63c94858860a5032c4f96f9e119"
+  },
+  "issueBlockedNotice.blockedBy": {
+    "en": "Work on this task is blocked by",
+    "zh-CN": "此任务被以下内容阻塞：",
+    "reviewedEnglishHash": "14b7a503163bcbaba2f981455070356a9b0394c42dfb048365bb4fa617308268"
+  },
+  "issueBlockedNotice.chooseNextStep": {
+    "en": "to choose the next step",
+    "zh-CN": "选择下一步",
+    "reviewedEnglishHash": "ebd73cac6a7ed78000cdb85bb15eb9f9f70ae519b38638b5eb1fb90d66402a6a"
+  },
+  "issueBlockedNotice.completeHint": {
+    "en": "complete. Comments still notify the assignee for questions or triage.",
+    "zh-CN": "完成。评论仍会通知负责人，以便提问或分诊。",
+    "reviewedEnglishHash": "518a9957b00f30b164349da4760117d319b2dfd21a9e3c08f339a0e722ffc2e2"
+  },
+  "issueBlockedNotice.currentTask": {
+    "en": "This task — resumes automatically when the chain is done",
+    "zh-CN": "此任务 - 任务链完成后自动恢复",
+    "reviewedEnglishHash": "30e6fd94f5e0f3e2f1c28c66f9071657b44258312bf13520c40a43f78ee6ec7c"
+  },
+  "issueBlockedNotice.detectedProgress": {
+    "en": "Detected progress:",
+    "zh-CN": "检测到进展：",
+    "reviewedEnglishHash": "28a0185a56c83e1f2d92ca52d96eb8b799cd0e781ce86199e4e85c1787c6a764"
+  },
+  "issueBlockedNotice.doneThenReopen": {
+    "en": "done, then it reopens automatically. Comments still notify",
+    "zh-CN": "完成，之后任务会自动重新打开。评论仍会通知",
+    "reviewedEnglishHash": "acd5a0c7ee2a339455418b27bcc5d2be597420e42647b2a66cae9fa0bca2383f"
+  },
+  "issueBlockedNotice.messageWontRestart": {
+    "en": "A message won’t restart this task yet — it stays blocked by",
+    "zh-CN": "发送消息暂时不会重启此任务，它仍被以下内容阻塞：",
+    "reviewedEnglishHash": "b5584421332e26e5c3499ae7c2fff0959af1dc90374e03a0e5323bc1c066a7d8"
+  },
+  "issueBlockedNotice.moveToTodo": {
+    "en": "Work on this task is blocked until someone moves it back to To do. Comments still notify the assignee for questions or triage.",
+    "zh-CN": "此任务将保持阻塞，直到有人将其移回“待办”。评论仍会通知负责人，以便提问或分诊。",
+    "reviewedEnglishHash": "6d2d0cb4c0e42d0393dfa3d48c8bc57512a38e91c9da2217bcfe5995d7d94003"
+  },
+  "issueBlockedNotice.needsNextStep": {
+    "en": "This task still needs a next step.",
+    "zh-CN": "此任务仍需要明确下一步。",
+    "reviewedEnglishHash": "1ada26e38e3346fbfa595c9fd99a507d6cebbab9b843ea92037dc801b2293f8a"
+  },
+  "issueBlockedNotice.questionsMeanwhile": {
+    "en": "for questions or triage in the meantime.",
+    "zh-CN": "，以便在此期间提问或分诊。",
+    "reviewedEnglishHash": "0890504a26bf0b65ba7ab3a88d24352e31a5d6d64114ef12ba0f541a5a2f9bbb"
+  },
+  "issueBlockedNotice.queueHint": {
+    "en": "being worked in order. This task resumes automatically when the chain is done. Comments still notify the assignee.",
+    "zh-CN": "，将按顺序处理。任务链完成后，此任务会自动恢复；评论仍会通知负责人。",
+    "reviewedEnglishHash": "7fc7ae24b1288ad1abc721087acea08baf468d263689c98421f124fb90699483"
+  },
+  "issueBlockedNotice.queuedBehind": {
+    "en": "Queued behind",
+    "zh-CN": "排在以下任务之后：",
+    "reviewedEnglishHash": "07eacf1b0996e0a73b20f93ba93cb816f2f56190ff2070d09bdeb8fd64d203ac"
+  },
+  "issueBlockedNotice.recordBlocker": {
+    "en": "Record what is blocking it and who owns that blocker.",
+    "zh-CN": "请记录阻塞原因及该阻塞项的负责人。",
+    "reviewedEnglishHash": "6b236d4dc709ad66996704ddff52bd1b21025485072bcec322ff54115637b768"
+  },
+  "issueBlockedNotice.retryFollowUp": {
+    "en": ". Retry now starts that follow-up immediately.",
+    "zh-CN": "。立即重试会马上启动该后续流程。",
+    "reviewedEnglishHash": "06bc7747ccc7bfef249fb26f4dfb95010546334a0704ea8ab1c24ebeb70ec318"
+  },
+  "issueBlockedNotice.stalledReview": {
+    "en": ", but the chain is stalled in review without a clear next step. Resolve the stalled review below or remove it as a blocker.",
+    "zh-CN": "，但任务链停在评审阶段且没有明确下一步。请处理下方停滞的评审，或将其从阻塞项中移除。",
+    "reviewedEnglishHash": "9a237d94b5e19bd3e40e29aabc4943cc752414ebd2fa08dc963314589ef54405"
+  },
+  "issueBlockedNotice.stalledReviews": {
+    "en": ", but the chain is stalled in review without a clear next step. Resolve the stalled reviews below or remove them as blockers.",
+    "zh-CN": "，但任务链停在评审阶段且没有明确下一步。请处理下方停滞的评审，或将其从阻塞项中移除。",
+    "reviewedEnglishHash": "0e9574da21e7f3d0b772c4568f0eff9776cf2c3ffc6456ecab554db7ab78d842"
+  },
+  "issueBlockedNotice.successStillOpen": {
+    "en": "A run finished successfully, but the task is still open. Paperclip needs someone to choose what happens next.",
+    "zh-CN": "一次运行已成功完成，但任务仍处于打开状态。Paperclip 需要有人决定下一步。",
+    "reviewedEnglishHash": "51ed818976f9c0ce6e950d8f45f6f0447b53fa1c711e45fe84f3695c693dece7"
+  },
+  "issueBlockedNotice.until": {
+    "en": "until",
+    "zh-CN": "，直到",
+    "reviewedEnglishHash": "2e3200de84b9cada83900111ef25b8bfa9cbf45e145c9ceb3b87330b32eff188"
+  }
+}

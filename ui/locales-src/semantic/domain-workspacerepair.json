@@ -1,0 +1,7 @@
+{
+  "workspaceRepair.phaseStatus": {
+    "en": "Workspace repair {{phase}}: {{status}}.",
+    "zh-CN": "工作区修复 {{phase}}：{{status}}。",
+    "reviewedEnglishHash": "d97a8ee5a73b85d8869a25b7023e1569734cef85af02566a11b81dc8c7214804"
+  }
+}

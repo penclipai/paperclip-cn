@@ -1,0 +1,32 @@
+{
+  "agents.count": {
+    "en": "{{count}} agents",
+    "zh-CN": "{{count}} 个智能体",
+    "reviewedEnglishHash": "977a7422900b40a5ade4526c98653a1b04619b8ff81240ead3699dea1b7df70e"
+  },
+  "agents.count_one": {
+    "en": "{{count}} agent",
+    "zh-CN": "{{count}} 个智能体",
+    "reviewedEnglishHash": "fbddbb9eca4b3148dfd4a959da033c74fd47246f4f6cdd2a17be7fba5ddf5645"
+  },
+  "agents.count_other": {
+    "en": "{{count}} agents",
+    "zh-CN": "{{count}} 个智能体",
+    "reviewedEnglishHash": "977a7422900b40a5ade4526c98653a1b04619b8ff81240ead3699dea1b7df70e"
+  },
+  "agents.invalidReportingChain": {
+    "en": "Invalid reporting chain",
+    "zh-CN": "汇报链无效",
+    "reviewedEnglishHash": "bf9c6d9dc8a902fc2e58f3e4ca9c5c63b48f9fb5fd1fcbe7a2bddd592f85af1b"
+  },
+  "agents.noStatusMatches": {
+    "en": "No agents match the selected status.",
+    "zh-CN": "没有智能体符合当前状态筛选。",
+    "reviewedEnglishHash": "8b96d18f0736141992add9e70d7d59c0a038f78280a77cef13e5c1cf4b122b37"
+  },
+  "agents.orgChartView": {
+    "en": "Org chart view",
+    "zh-CN": "组织图视图",
+    "reviewedEnglishHash": "a33c82404434fb9d0cf1f51e65ce733cb0452899d70a081962647c32b247a1b4"
+  }
+}

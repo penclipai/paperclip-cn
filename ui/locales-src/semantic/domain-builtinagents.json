@@ -1,0 +1,207 @@
+{
+  "builtInAgents.badge.label": {
+    "en": "Built-in",
+    "zh-CN": "内置",
+    "reviewedEnglishHash": "1f43948106d1d47fef7b0afa5c60be05f7334dc4fe43a0b77d8716ef6ec22611"
+  },
+  "builtInAgents.badge.tooltip": {
+    "en": "Ships with Paperclip CN",
+    "zh-CN": "随 Paperclip CN 提供",
+    "reviewedEnglishHash": "95530557383184fea5d5f8923bcd7a9839a6ab32e7dedaed194ce654a6ede210"
+  },
+  "builtInAgents.configure.adapterType": {
+    "en": "Adapter type",
+    "zh-CN": "适配器类型",
+    "reviewedEnglishHash": "03298f6641cee814d73463df62a98fb37838540b7084bacbc2f9d51cce0bb4b4"
+  },
+  "builtInAgents.configure.additionalFieldsRequired": {
+    "en": "This adapter needs command or endpoint fields before it can run. Provision the built-in row now, then finish those fields from the full agent configuration.",
+    "zh-CN": "此适配器需要填写命令或端点字段才能运行。请先创建内置智能体条目，再前往完整智能体配置中填写这些字段。",
+    "reviewedEnglishHash": "a9f99369f0203e29d5e725f968f1fb016c48669c191d91d7f0a0b3dc0549e971"
+  },
+  "builtInAgents.configure.configureAndEnable": {
+    "en": "Configure & enable {{name}}",
+    "zh-CN": "配置并启用 {{name}}",
+    "reviewedEnglishHash": "68a57085e1bc179cd9b001f24c23604169623bc99d1f090fac1c43946a238041"
+  },
+  "builtInAgents.configure.configuring": {
+    "en": "Configuring…",
+    "zh-CN": "正在配置…",
+    "reviewedEnglishHash": "b66afe5b6cff33dc82794fa1aaba5d071b520feb857c72f8851fe13f0489bb9a"
+  },
+  "builtInAgents.configure.failed": {
+    "en": "Failed to configure the built-in agent.",
+    "zh-CN": "配置内置智能体失败。",
+    "reviewedEnglishHash": "bfb415817168341e41ead87fd873a7e593e37396604916805711b57bced057b1"
+  },
+  "builtInAgents.configure.modelUnavailable": {
+    "en": "Model \"{{model}}\" is not available for {{adapterType}}. Choose a known model.",
+    "zh-CN": "模型“{{model}}”不适用于 {{adapterType}}。请选择可用模型。",
+    "reviewedEnglishHash": "6c40154db81024d1c0b2f7e3e64f2563f8a87136e73fdcefa1dd05ad0d10b8f7"
+  },
+  "builtInAgents.configure.monthlyBudget": {
+    "en": "Monthly budget (optional)",
+    "zh-CN": "每月预算（可选）",
+    "reviewedEnglishHash": "4e4490135805f013b268b2893b884129cf6793b6bd5c728a62d0bf5b2d8cdbc1"
+  },
+  "builtInAgents.configure.monthlyBudgetHint": {
+    "en": "Leave blank for no cap.",
+    "zh-CN": "留空表示不设上限。",
+    "reviewedEnglishHash": "819c7fa8019f3a3685c7ca5555d17cd0bbf7f81fdf5abccd0302d8ef75af5f45"
+  },
+  "builtInAgents.configure.notNow": {
+    "en": "Not now",
+    "zh-CN": "暂不设置",
+    "reviewedEnglishHash": "a0e63d7c7125d29af84d6919af5550529be77c327324940c98c4b2cb13a99c8c"
+  },
+  "builtInAgents.configure.perMonth": {
+    "en": "/ month",
+    "zh-CN": "/ 月",
+    "reviewedEnglishHash": "57cbd84fd6e0495ff7434200ffcb28c51613af470fc493d9717d019f4708425e"
+  },
+  "builtInAgents.configure.provision": {
+    "en": "Provision {{name}}",
+    "zh-CN": "创建 {{name}}",
+    "reviewedEnglishHash": "185285356b746c8d43f41c0e2262d8114827376457106731478a21f2da1948f2"
+  },
+  "builtInAgents.configure.rosterNotice": {
+    "en": "Creates {{name}} in your roster with a Built-in badge. Companies that require hire approval will queue this for the board.",
+    "zh-CN": "将在智能体名单中创建 {{name}}，并标记为“内置”。需要招聘审批的公司会将此操作提交董事会审批。",
+    "reviewedEnglishHash": "beada2384f402e6078d90423029cb1364df12d2b37f47bb6f36bff10c7b963f9"
+  },
+  "builtInAgents.configure.title": {
+    "en": "Set up the {{name}}",
+    "zh-CN": "设置 {{name}}",
+    "reviewedEnglishHash": "d83f499a46219f8c293237d066601bbf55143968b9d3b03ee80d00d5aec393ac"
+  },
+  "builtInAgents.definitions.briefs.displayName": {
+    "en": "Briefs Agent",
+    "zh-CN": "简报智能体",
+    "reviewedEnglishHash": "00eec9146d51c06090f20bfc9642f33fc10fcd5dc671963b3b805d3087e69650"
+  },
+  "builtInAgents.definitions.briefs.shortPurpose": {
+    "en": "Prepares concise operational briefs for the board and agent company.",
+    "zh-CN": "为董事会和智能体公司准备简明的运营简报。",
+    "reviewedEnglishHash": "d6841b81b5f533fd813cab6aeb4adbe7987503b740d3cf36381862c4612912cc"
+  },
+  "builtInAgents.definitions.learning.displayName": {
+    "en": "Learning Agent",
+    "zh-CN": "学习智能体",
+    "reviewedEnglishHash": "7792a96940fbfff5181bed88a9530bfa96c0fa17eafeeaeca6e5ae91dfedf08c"
+  },
+  "builtInAgents.definitions.learning.shortPurpose": {
+    "en": "Maintains reusable company learning from completed work and recurring patterns.",
+    "zh-CN": "维护从已完成工作和反复出现的模式中提炼出的可复用公司知识。",
+    "reviewedEnglishHash": "6f2049b22c242a67dd18af3a26579dad633baa5188c4ae8cdcf212c868c31a8b"
+  },
+  "builtInAgents.definitions.reflectionCoach.displayName": {
+    "en": "Reflection Coach",
+    "zh-CN": "复盘教练",
+    "reviewedEnglishHash": "8bcd4b8236bf047bd33b6e683736ece9b3e6f97f6d68520bf8642c1c2b35ede6"
+  },
+  "builtInAgents.definitions.reflectionCoach.shortPurpose": {
+    "en": "Runs evidence-backed reflection loops on recent agent work, proposes small instruction and skill improvements, and requests approval before changes are applied.",
+    "zh-CN": "对近期智能体工作开展基于证据的复盘，提出小幅指令和技能改进，并在应用更改前请求审批。",
+    "reviewedEnglishHash": "cc53b6b3d54d095f6a05e3be84587a3cf9617622b9411a2d87b3de8d691f7b70"
+  },
+  "builtInAgents.features.briefs": {
+    "en": "Briefs",
+    "zh-CN": "简报",
+    "reviewedEnglishHash": "997b201dacec1e25963b5c7104bafa0744fc0808573b739d35f2ecec160d98e8"
+  },
+  "builtInAgents.features.learning": {
+    "en": "Learning",
+    "zh-CN": "学习",
+    "reviewedEnglishHash": "8b45bb20e0775c30641210abeddb520ac385ae05e90bd6cbdcd8304a39f04623"
+  },
+  "builtInAgents.features.reflection": {
+    "en": "Reflection",
+    "zh-CN": "复盘",
+    "reviewedEnglishHash": "7538c2135b030e4e91c01e4952055324c62e0182b94d2d0bf0c272f7f55e2373"
+  },
+  "builtInAgents.gate.pausedMessage": {
+    "en": "Its built-in agent was paused, so new {{feature}} content isn't being generated.",
+    "zh-CN": "其内置智能体已暂停，因此不会生成新的{{feature}}内容。",
+    "reviewedEnglishHash": "5615c9694f449ef8183c55ed68de5c66b47034a868b1e6c4588b4573e9bd4bb4"
+  },
+  "builtInAgents.gate.pausedMessageWithTime": {
+    "en": "Its built-in agent was paused {{pausedAt}}, so new {{feature}} content isn't being generated.",
+    "zh-CN": "其内置智能体已于 {{pausedAt}} 暂停，因此不会生成新的{{feature}}内容。",
+    "reviewedEnglishHash": "859aa4f7ae7b1dd3da842c1f9e1d6b914e398e5e511988ddf4fd0adca39a9b7b"
+  },
+  "builtInAgents.gate.pausedTitle": {
+    "en": "{{feature}} is paused.",
+    "zh-CN": "{{feature}}已暂停。",
+    "reviewedEnglishHash": "5cbd9c3cee846c5362b1933675881a081a7c0c50b88e48f6cec69ddb044a9c32"
+  },
+  "builtInAgents.gate.pendingApprovalMessage": {
+    "en": "{{feature}} will be available after the board approves this built-in agent hire.",
+    "zh-CN": "董事会批准招聘此内置智能体后，即可使用{{feature}}。",
+    "reviewedEnglishHash": "33b72752b5b0772f309874cc3c0126752cc99590f892a6164aecf90b72bbb92b"
+  },
+  "builtInAgents.gate.pendingApprovalTitle": {
+    "en": "{{name}} is pending approval",
+    "zh-CN": "{{name}}正在等待审批",
+    "reviewedEnglishHash": "e2ff15c3b3b8dd393e708fd1f11909ea91352949161272eb86c116ae7b32b5b9"
+  },
+  "builtInAgents.gate.resumeAgent": {
+    "en": "Resume agent",
+    "zh-CN": "恢复智能体",
+    "reviewedEnglishHash": "0bb60c4501919e6a059a30cee4d98e670c05dcf1c9845a2aeef3abe6617809d4"
+  },
+  "builtInAgents.gate.resuming": {
+    "en": "Resuming…",
+    "zh-CN": "正在恢复…",
+    "reviewedEnglishHash": "c494e3ca3e3b04a3b0b2e0036c7b6246c92a0e86f822377b0941973c8829ef21"
+  },
+  "builtInAgents.gate.setupAction": {
+    "en": "Set up {{name}}",
+    "zh-CN": "设置 {{name}}",
+    "reviewedEnglishHash": "dd1468b4f9155b180c17d398591a8b860d6c9b5718f6a7ed6fc4541f0788af20"
+  },
+  "builtInAgents.gate.setupMessage": {
+    "en": "{{feature}} is generated by a built-in agent. Configure its model to enable the feature.",
+    "zh-CN": "{{feature}}由内置智能体生成。配置其模型后即可启用此功能。",
+    "reviewedEnglishHash": "ca3e3b37ee5c21996f33c77a8f500843502360c30e7564028b2916d05d84963b"
+  },
+  "builtInAgents.gate.setupTitle": {
+    "en": "Set up the {{name}}",
+    "zh-CN": "设置 {{name}}",
+    "reviewedEnglishHash": "d83f499a46219f8c293237d066601bbf55143968b9d3b03ee80d00d5aec393ac"
+  },
+  "builtInAgents.gate.viewAgent": {
+    "en": "View agent",
+    "zh-CN": "查看智能体",
+    "reviewedEnglishHash": "7ce7832e35e85d35b2c72cac68cc729c52799016aaa965f9c89fe3520c48e1ee"
+  },
+  "builtInAgents.lifecycle.approvalCompact": {
+    "en": "Approval",
+    "zh-CN": "待审批",
+    "reviewedEnglishHash": "147fb813a2515718ef6121c61c9636d6ffbcb055bcdb45dbb483af667aa94c8b"
+  },
+  "builtInAgents.lifecycle.needsSetup": {
+    "en": "Needs setup",
+    "zh-CN": "需要设置",
+    "reviewedEnglishHash": "b6df2441064f141677e6dabf15a7c0c5b4344771ffbad603f1d0dee659c81817"
+  },
+  "builtInAgents.lifecycle.needsSetupTooltip": {
+    "en": "Needs adapter/model setup before the feature can run",
+    "zh-CN": "需要先配置适配器和模型，功能才能运行",
+    "reviewedEnglishHash": "7a0680a66d1a412aad70733e5f7444dafc468cc7fcc435b181a64f4191b04bf9"
+  },
+  "builtInAgents.lifecycle.pendingApproval": {
+    "en": "Pending approval",
+    "zh-CN": "等待审批",
+    "reviewedEnglishHash": "bb33a7f41817b38d13854b7f47501050851951e77bba690419fc75be5cd5a372"
+  },
+  "builtInAgents.lifecycle.pendingApprovalTooltip": {
+    "en": "Waiting on board hire approval before the feature can run",
+    "zh-CN": "正在等待董事会批准招聘，批准后功能才能运行",
+    "reviewedEnglishHash": "b6383320de2bac86c0e0c0d782c66f6c439d6571dcbe07c5e8625dfbdf09ecd8"
+  },
+  "builtInAgents.lifecycle.setupCompact": {
+    "en": "Setup",
+    "zh-CN": "待设置",
+    "reviewedEnglishHash": "7013af4c42fe43802a9e8b0affc4f521fcd126160569969fb2ec09e1b7c422b1"
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "activityFeed.empty.default": {
+    "en": "Activity from your agents will appear here.",
+    "zh-CN": "智能体活动会显示在这里。",
+    "reviewedEnglishHash": "1e0c6807d975003c5d401e4674bdab42946d5673cc1ce39a055076267b2a1518"
+  },
+  "activityFeed.filterBy": {
+    "en": "Filter by",
+    "zh-CN": "筛选",
+    "reviewedEnglishHash": "d00f52454412f75aa75c339978114a91584dfc58c73e585e0d5c49b550f5ce80"
+  },
+  "activityFeed.groupByTask": {
+    "en": "Group by task",
+    "zh-CN": "按任务分组",
+    "reviewedEnglishHash": "c9da37717b6ee29d54ee8ac191c77fe2c27d2b6dbdca064eb9dbe6cfed0f0b97"
+  },
+  "activityFeed.madeUpdatesTo": {
+    "en": "made {{count}} updates to",
+    "zh-CN": "对其进行了 {{count}} 次更新：",
+    "reviewedEnglishHash": "10b72f52072675e0258f67bccb6762d67f785b83ae4d91aa6a43334bfeb3a52d"
+  },
+  "activityFeed.otherActivity": {
+    "en": "Other activity",
+    "zh-CN": "其他活动",
+    "reviewedEnglishHash": "a5af69edbe2fbac76a9106be3f40f79bbb55886ce4d505bb2ac2e61707abf3fe"
+  },
+  "activityFeed.showAllActivity": {
+    "en": "Show all activity",
+    "zh-CN": "显示全部活动",
+    "reviewedEnglishHash": "376edbb277397010a807998e2f8ffb9f73d3c9aa7ba00021627b914f8a60439c"
+  },
+  "activityFeed.showFlat": {
+    "en": "Show flat",
+    "zh-CN": "平铺显示",
+    "reviewedEnglishHash": "de6f6c1a7a7675b9e7fc73dd55f17f8a00fd91c72d295302ed08f0526cb362ae"
+  },
+  "activityFeed.subtitle": {
+    "en": "Live activity from your agents",
+    "zh-CN": "来自智能体的实时活动",
+    "reviewedEnglishHash": "3525e6b143fe582071e369b4c74b55dc7e34ce1ba4b9206de71c50fcfd421d89"
+  },
+  "activityFeed.title": {
+    "en": "Agent Feed",
+    "zh-CN": "智能体动态",
+    "reviewedEnglishHash": "24cf429412785b754df6c205d2f5913ae18221d09a24e2ede6fe44c1384499e0"
+  }
+}

@@ -365,7 +365,7 @@ export function scaffoldPluginProject(options: ScaffoldPluginOptions): string {
     useWorkspaceSdk || usePublishedPackages
       ? null
       : packCompatibilityPackage(localSdkPath, outputDir, {
-          aliasName: "@paperclipai/plugin-sdk",
+          aliasName: "@penclipai/plugin-sdk",
           dependencyRewrites: {
             "@penclipai/shared": {
               name: "@penclipai/shared",
@@ -426,11 +426,11 @@ export function scaffoldPluginProject(options: ScaffoldPluginOptions): string {
         }
       : {}),
     devDependencies: {
-      "@paperclipai/plugin-sdk": sdkDependency,
+      "@penclipai/plugin-sdk": sdkDependency,
       "@penclipai/shared": sharedDependency,
       "@rollup/plugin-node-resolve": "^16.0.1",
       "@rollup/plugin-typescript": "^12.1.2",
-      "@types/node": "^24.6.0",
+      "@types/node": "^24.0.0",
       "@types/react": "^19.0.8",
       esbuild: "^0.27.3",
       rollup: "^4.38.0",
@@ -469,7 +469,7 @@ export function scaffoldPluginProject(options: ScaffoldPluginOptions): string {
   writeFile(
     path.join(outputDir, "esbuild.config.mjs"),
     `import esbuild from "esbuild";
-import { createPluginBundlerPresets } from "@paperclipai/plugin-sdk/bundlers";
+import { createPluginBundlerPresets } from "@penclipai/plugin-sdk/bundlers";
 
 const presets = createPluginBundlerPresets({ uiEntry: "src/ui/index.tsx" });
 const watch = process.argv.includes("--watch");
@@ -492,7 +492,7 @@ if (watch) {
     path.join(outputDir, "rollup.config.mjs"),
     `import { nodeResolve } from "@rollup/plugin-node-resolve";
 import typescript from "@rollup/plugin-typescript";
-import { createPluginBundlerPresets } from "@paperclipai/plugin-sdk/bundlers";
+import { createPluginBundlerPresets } from "@penclipai/plugin-sdk/bundlers";
 
 const presets = createPluginBundlerPresets({ uiEntry: "src/ui/index.tsx" });
 
@@ -537,7 +537,7 @@ export default defineConfig({
   if (template === "environment") {
     writeFile(
       path.join(outputDir, "src", "manifest.ts"),
-      `import type { PaperclipPluginManifestV1 } from "@paperclipai/plugin-sdk";
+      `import type { PaperclipPluginManifestV1 } from "@penclipai/plugin-sdk";
 
 const manifest: PaperclipPluginManifestV1 = {
   id: ${quote(manifestId)},
@@ -581,7 +581,7 @@ export default manifest;
 
     writeFile(
       path.join(outputDir, "src", "worker.ts"),
-      `import { definePlugin, runWorker } from "@paperclipai/plugin-sdk";
+      `import { definePlugin, runWorker } from "@penclipai/plugin-sdk";
 import type {
   PluginEnvironmentValidateConfigParams,
   PluginEnvironmentProbeParams,
@@ -591,7 +591,7 @@ import type {
   PluginEnvironmentDestroyLeaseParams,
   PluginEnvironmentRealizeWorkspaceParams,
   PluginEnvironmentExecuteParams,
-} from "@paperclipai/plugin-sdk";
+} from "@penclipai/plugin-sdk";
 
 const plugin = definePlugin({
   async setup(ctx) {
@@ -661,7 +661,7 @@ runWorker(plugin, import.meta.url);
 
     writeFile(
       path.join(outputDir, "src", "ui", "index.tsx"),
-      `import { usePluginData, type PluginWidgetProps } from "@paperclipai/plugin-sdk/ui";
+      `import { usePluginData, type PluginWidgetProps } from "@penclipai/plugin-sdk/ui";
 
 type HealthData = {
   status: "ok" | "degraded" | "error";
@@ -693,7 +693,7 @@ import {
   createFakeEnvironmentDriver,
   assertEnvironmentEventOrder,
   assertLeaseLifecycle,
-} from "@paperclipai/plugin-sdk/testing";
+} from "@penclipai/plugin-sdk/testing";
 import manifest from "../src/manifest.js";
 import plugin from "../src/worker.js";
 
@@ -764,7 +764,7 @@ describe("environment plugin scaffold", () => {
   } else {
     writeFile(
       path.join(outputDir, "src", "manifest.ts"),
-      `import type { PaperclipPluginManifestV1 } from "@paperclipai/plugin-sdk";
+      `import type { PaperclipPluginManifestV1 } from "@penclipai/plugin-sdk";
 
 const manifest: PaperclipPluginManifestV1 = {
   id: ${quote(manifestId)},
@@ -802,7 +802,7 @@ export default manifest;
 
     writeFile(
       path.join(outputDir, "src", "worker.ts"),
-      `import { definePlugin, runWorker } from "@paperclipai/plugin-sdk";
+      `import { definePlugin, runWorker } from "@penclipai/plugin-sdk";
 
 const plugin = definePlugin({
   async setup(ctx) {
@@ -834,7 +834,7 @@ runWorker(plugin, import.meta.url);
 
     writeFile(
       path.join(outputDir, "src", "ui", "index.tsx"),
-      `import { usePluginAction, usePluginData, type PluginWidgetProps } from "@paperclipai/plugin-sdk/ui";
+      `import { usePluginAction, usePluginData, type PluginWidgetProps } from "@penclipai/plugin-sdk/ui";
 
 type HealthData = {
   status: "ok" | "degraded" | "error";
@@ -863,7 +863,7 @@ export function DashboardWidget(_props: PluginWidgetProps) {
     writeFile(
       path.join(outputDir, "tests", "plugin.spec.ts"),
       `import { describe, expect, it } from "vitest";
-import { createTestHarness } from "@paperclipai/plugin-sdk/testing";
+import { createTestHarness } from "@penclipai/plugin-sdk/testing";
 import manifest from "../src/manifest.js";
 import plugin from "../src/worker.js";
 
@@ -907,10 +907,10 @@ pnpm test
 \`\`\`
 
 ${useWorkspaceSdk
-  ? `This scaffold keeps compatibility imports from \`@paperclipai/plugin-sdk*\` while resolving them to the workspace packages published as \`@penclipai/*\`.\n\n`
+  ? `This scaffold keeps compatibility imports from \`@penclipai/plugin-sdk*\` while resolving them to the workspace packages published as \`@penclipai/*\`.\n\n`
   : usePublishedPackages
-    ? `This scaffold keeps compatibility imports from \`@paperclipai/plugin-sdk*\` while installing the published packages from \`@penclipai/*\` via npm alias dependencies pinned from your local Paperclip checkout at:\n\n\`${toPosixPath(localSdkPath)}\`\n\n`
-    : `This scaffold snapshots compatibility packages for \`@paperclipai/plugin-sdk\` and \`@penclipai/shared\` from your local Paperclip checkout at:\n\n\`${toPosixPath(localSdkPath)}\`\n\nThe packed tarballs live in \`.paperclip-sdk/\` so the generated plugin can install immediately without waiting for npm publish.\n\n`}
+    ? `This scaffold keeps compatibility imports from \`@penclipai/plugin-sdk*\` while installing the published packages from \`@penclipai/*\` via npm alias dependencies pinned from your local Paperclip checkout at:\n\n\`${toPosixPath(localSdkPath)}\`\n\n`
+    : `This scaffold snapshots compatibility packages for \`@penclipai/plugin-sdk\` and \`@penclipai/shared\` from your local Paperclip checkout at:\n\n\`${toPosixPath(localSdkPath)}\`\n\nThe packed tarballs live in \`.paperclip-sdk/\` so the generated plugin can install immediately without waiting for npm publish.\n\n`}
 
 \`pnpm dev\` rebuilds the worker, manifest, and UI bundles into \`dist/\`.
 When this package is installed from a local path, Paperclip watches that rebuilt
@@ -925,7 +925,7 @@ penclip plugin install ${shellQuote(toPosixPath(outputDir))}
 
 ## Build Options
 
-- \`pnpm build\` uses esbuild presets from \`@paperclipai/plugin-sdk/bundlers\`.
+- \`pnpm build\` uses esbuild presets from \`@penclipai/plugin-sdk/bundlers\`.
 - \`pnpm build:rollup\` uses rollup presets from the same SDK.
 `,
   );

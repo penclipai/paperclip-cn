@@ -1,0 +1,12 @@
+{
+  "language.en": {
+    "en": "English",
+    "zh-CN": "English",
+    "reviewedEnglishHash": "ba118bf7fc9c1aedc1edb28a0aa86e0b43b681f222af6616e13c43be87815b06"
+  },
+  "language.zh-CN": {
+    "en": "简体中文",
+    "zh-CN": "简体中文",
+    "reviewedEnglishHash": "9937e365aaf3a0854053a3179584ad9cd82e1164ea8535b50c1e6ae7102b373c"
+  }
+}

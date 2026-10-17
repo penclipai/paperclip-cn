@@ -1,0 +1,592 @@
+{
+  "executionWorkspace.advancedRuntimeJson": {
+    "en": "Advanced runtime JSON",
+    "zh-CN": "高级运行时 JSON",
+    "reviewedEnglishHash": "8dfbbbbc159186df9ba381ad976cb79eff6eb1c380cd1d081038924bf47e9907"
+  },
+  "executionWorkspace.advancedRuntimeJsonDescription": {
+    "en": "Override the inherited workspace command model only when this execution workspace truly needs different service or job behavior.",
+    "zh-CN": "仅当此执行工作区确实需要不同的服务或作业行为时，才覆盖继承的工作区命令模型。",
+    "reviewedEnglishHash": "be49f076bb7527d2b8f418d1107456f6062ff5e45f528c44714c7abe8800ae8e"
+  },
+  "executionWorkspace.backToIssues": {
+    "en": "Back to issues",
+    "zh-CN": "返回任务",
+    "reviewedEnglishHash": "2c2d5d08719e089bd5451254e93d369ceaea82b560e5c8cc47c3cc6540b810d1"
+  },
+  "executionWorkspace.baseRef": {
+    "en": "Base ref",
+    "zh-CN": "基础引用",
+    "reviewedEnglishHash": "9c6c10f9d4c60b5349abb6d5f9e09faf1dcb0be57a2aac85c5363ce8b350d35e"
+  },
+  "executionWorkspace.branch": {
+    "en": "Branch",
+    "zh-CN": "分支",
+    "reviewedEnglishHash": "52656e8104eef3fddd3d4546903fa0de93c0625abf47b3dd8130f7705d6a513e"
+  },
+  "executionWorkspace.branchName": {
+    "en": "Branch name",
+    "zh-CN": "分支名称",
+    "reviewedEnglishHash": "06f6bb7108ffdb5caf844b4538b5ec8f44cc1b3bc6b577624d32fc57eff9fe3f"
+  },
+  "executionWorkspace.branchNameHint": {
+    "en": "Useful for isolated worktrees",
+    "zh-CN": "适用于隔离工作树",
+    "reviewedEnglishHash": "8837c71905c763035922a5906614c993e9cfad40c8ab4d54c7c6e403aeca25fe"
+  },
+  "executionWorkspace.buildUpdateFailed": {
+    "en": "Failed to build workspace update.",
+    "zh-CN": "构建工作区更新失败。",
+    "reviewedEnglishHash": "80114f4792f74c52d0f5712e333ece03b0d61b6b67c3ead6fcc827fe722baaa3"
+  },
+  "executionWorkspace.chooseAgentWhenRunning": {
+    "en": "Choose agent when running",
+    "zh-CN": "运行时选择智能体",
+    "reviewedEnglishHash": "792eed80aaba44922519a77331c3117f1e4f3623689803bd100873128c6d3836"
+  },
+  "executionWorkspace.cleanupCommand": {
+    "en": "Cleanup command",
+    "zh-CN": "清理命令",
+    "reviewedEnglishHash": "062a91a9fb17b4b465bab8b4744296effd079216f520e7596aaa3396a3a9d87e"
+  },
+  "executionWorkspace.cleanupCommandHint": {
+    "en": "Workspace-specific cleanup before teardown",
+    "zh-CN": "拆除前执行的工作区专属清理",
+    "reviewedEnglishHash": "e97c4a8d1abfa3b81d53b6267a2d63b0c4ac31bcbd0cf90a6979d74e0a242143"
+  },
+  "executionWorkspace.closeWorkspace": {
+    "en": "Close workspace",
+    "zh-CN": "关闭工作区",
+    "reviewedEnglishHash": "e5086f0455d55b206da77974bb935991057fcb784b1748ec85214a7f8375935b"
+  },
+  "executionWorkspace.commandsDisabledHint": {
+    "en": "Execution workspaces need a working directory before local commands can run, and services also need runtime config.",
+    "zh-CN": "执行工作区需要先设置工作目录，本地命令才能运行；服务还需要运行时配置。",
+    "reviewedEnglishHash": "d64aaf74c6e6876322174f40005fc9e11d13e60340c5150ca59a687792404c7a"
+  },
+  "executionWorkspace.concreteLocation": {
+    "en": "Concrete location",
+    "zh-CN": "具体位置",
+    "reviewedEnglishHash": "3b8a155f6d68a3247757abaa21758058f1d8f220a752ea3a859743d06c98ed2c"
+  },
+  "executionWorkspace.concreteLocationDescription": {
+    "en": "Paths and refs",
+    "zh-CN": "路径和引用",
+    "reviewedEnglishHash": "4dbe941bc9d2be735e9e60b681b6743bfb1cccca5cb17b80943e1e50273c36d4"
+  },
+  "executionWorkspace.controlCommandsFailed": {
+    "en": "Failed to control workspace commands.",
+    "zh-CN": "控制工作区命令失败。",
+    "reviewedEnglishHash": "2f75add6dd0a2c01b444f71261df7452f26869a2447bd97fee132f1a6dc0d7fa"
+  },
+  "executionWorkspace.defaultAgentSet": {
+    "en": "Default agent set",
+    "zh-CN": "已设置默认智能体",
+    "reviewedEnglishHash": "7b88c363e7672f871fbc45ca091b52700f4b36c28e916a83512c99e9fc9021b0"
+  },
+  "executionWorkspace.derivedFrom": {
+    "en": "Derived from",
+    "zh-CN": "派生自",
+    "reviewedEnglishHash": "fc15099d188bc145d23d6bd58666fd7d0f03483748770f931e6055a28c3fdbbf"
+  },
+  "executionWorkspace.fixedPort": {
+    "en": "Fixed port",
+    "zh-CN": "固定端口",
+    "reviewedEnglishHash": "9b46ad0ca9557e854bf2212f2b3242c05a8689b0f7e37333c4ba65292db6ae33"
+  },
+  "executionWorkspace.inheritRuntimeConfig": {
+    "en": "Inherit project workspace runtime config",
+    "zh-CN": "继承项目工作区运行时配置",
+    "reviewedEnglishHash": "c90daa769f81a2691a939b0ece16c24bdad22b9855eb1762e8c1bec6f2a43b38"
+  },
+  "executionWorkspace.invalidFixedPort": {
+    "en": "{{name}} has an invalid fixed port.",
+    "zh-CN": "{{name}} 的固定端口无效。",
+    "reviewedEnglishHash": "7dc46859b4f266857fd6eec55d09d582729c7322e1acb943d5a45ee6a71fd59c"
+  },
+  "executionWorkspace.invalidJson": {
+    "en": "Invalid JSON.",
+    "zh-CN": "无效的 JSON。",
+    "reviewedEnglishHash": "70fddef4dd5b4129423e68bbd47152b98540ea691f0512178b747ae3da80bb74"
+  },
+  "executionWorkspace.jobCompleted": {
+    "en": "Workspace job completed.",
+    "zh-CN": "工作区作业已完成。",
+    "reviewedEnglishHash": "7761344999d37dbcf4e18c799ce33c85d574eff8b06b8a88c5ea9a7c6bb44b0b"
+  },
+  "executionWorkspace.lastRun": {
+    "en": "Last run {{time}}",
+    "zh-CN": "上次运行 {{time}}",
+    "reviewedEnglishHash": "7f4e18b4587d2afda0b830c256c7e56da117154b0e9437bb72e556a84a6b7c30"
+  },
+  "executionWorkspace.lastUsed": {
+    "en": "Last used",
+    "zh-CN": "上次使用",
+    "reviewedEnglishHash": "830ec7f812f9d862250b61add10f9a078de67a3282dd9e94f60d64cec58eefec"
+  },
+  "executionWorkspace.lifecycleCommands": {
+    "en": "Lifecycle commands",
+    "zh-CN": "生命周期命令",
+    "reviewedEnglishHash": "9ccf41b6a18b5ff19203313eeb5229938680a86eb676de60b8487392bd1a9d70"
+  },
+  "executionWorkspace.loadOperationsFailed": {
+    "en": "Failed to load workspace operations.",
+    "zh-CN": "加载工作区操作失败。",
+    "reviewedEnglishHash": "e2d5cd4fe96da57057aaf3475a6d0c824339d4ddc92b933d65feb9a960bd8d9d"
+  },
+  "executionWorkspace.loadRoutinesFailed": {
+    "en": "Failed to load routines.",
+    "zh-CN": "加载例程失败。",
+    "reviewedEnglishHash": "fff3c4968690f7f2c95f8c82b8ec268335725b2681e790ed6151dc0337865e7a"
+  },
+  "executionWorkspace.loadWorkspaceFailed": {
+    "en": "Failed to load workspace",
+    "zh-CN": "加载工作区失败",
+    "reviewedEnglishHash": "a34df4c39207b559a84339f303a2b7fd1b1a40c06e4449264f906bd30f6ef4dc"
+  },
+  "executionWorkspace.loadingOperations": {
+    "en": "Loading workspace operations...",
+    "zh-CN": "正在加载工作区操作...",
+    "reviewedEnglishHash": "352c2b6943c809be3f4aba2b188612b9eedc947324f24e8e83d973478a3ed5b1"
+  },
+  "executionWorkspace.loadingPlugin": {
+    "en": "Loading workspace plugin...",
+    "zh-CN": "正在加载工作区插件...",
+    "reviewedEnglishHash": "dc194cb61576c9ebe221ba649ab18d561e98af8245a7206da109836db6fc5ccb"
+  },
+  "executionWorkspace.loadingRoutines": {
+    "en": "Loading routines...",
+    "zh-CN": "正在加载例程...",
+    "reviewedEnglishHash": "e351124d680fa27fe07bb5a14b498f658c17aa98f5eb0cf14444cf91baab23c7"
+  },
+  "executionWorkspace.loadingWorkspace": {
+    "en": "Loading workspace...",
+    "zh-CN": "正在加载工作区...",
+    "reviewedEnglishHash": "6fce2f5fb07b87b89aff6c4d997134574c8cbb0d58394083e226cd9929f4e94d"
+  },
+  "executionWorkspace.mode.agent_default": {
+    "en": "Agent default",
+    "zh-CN": "智能体默认",
+    "reviewedEnglishHash": "90340504c623ec22c4e31f08fa0003726c20337b889dd44cf4fe622553273acb"
+  },
+  "executionWorkspace.mode.inherit": {
+    "en": "Inherit",
+    "zh-CN": "继承",
+    "reviewedEnglishHash": "3f72f0385768d2842d8d4a9205a4d704cffe7ef1820ded371b6b31f032142025"
+  },
+  "executionWorkspace.noCommandConfig": {
+    "en": "No workspace command config is defined for this execution workspace yet.",
+    "zh-CN": "此执行工作区尚未定义工作区命令配置。",
+    "reviewedEnglishHash": "0a490efdd985772e0194b0f39ec3291856f81e63a4f1b1ab297a3baeb37439f1"
+  },
+  "executionWorkspace.noJobsConfigured": {
+    "en": "No one-shot jobs are configured for this execution workspace yet.",
+    "zh-CN": "此执行工作区尚未配置一次性作业。",
+    "reviewedEnglishHash": "2b3666ea0b42dba7053d2bf5d437dc9c5320d47a08a5fd24dd9ceeecf6074896"
+  },
+  "executionWorkspace.noOperations": {
+    "en": "No workspace operations have been recorded yet.",
+    "zh-CN": "尚未记录任何工作区操作。",
+    "reviewedEnglishHash": "b321fca6c566463c999fefc02aaedb2587b08b9974b94d564069e9970feab035"
+  },
+  "executionWorkspace.noServicesStarted": {
+    "en": "No services have been started for this execution workspace yet.",
+    "zh-CN": "此执行工作区尚未启动任何服务。",
+    "reviewedEnglishHash": "cc35344e8fa8ed0466c6fe76cf24808b6b290ea9a8e640b334abd85aa86a63b7"
+  },
+  "executionWorkspace.noUnsavedChanges": {
+    "en": "No unsaved changes.",
+    "zh-CN": "没有未保存的更改。",
+    "reviewedEnglishHash": "75d79f0a2f2e48fbba92ef49c0f7cf14383dad935c9a344279b7d2dd50487e66"
+  },
+  "executionWorkspace.noWorkspaceRoutines": {
+    "en": "No routines use workspace-specific variables yet.",
+    "zh-CN": "还没有例程使用工作区专属变量。",
+    "reviewedEnglishHash": "fbd8935e8518f6ba4786f00dae71cb3a3452bbbab05f71c04483ea193eea846e"
+  },
+  "executionWorkspace.notScheduled": {
+    "en": "Not scheduled",
+    "zh-CN": "未计划",
+    "reviewedEnglishHash": "b3e24789bf8dc89bfbf7652e09b94488310916306db5db24ac24bf19c87e8768"
+  },
+  "executionWorkspace.opened": {
+    "en": "Opened",
+    "zh-CN": "打开时间",
+    "reviewedEnglishHash": "b19fb8d1b395b333251f40be2909ca37a0b0a007b3c4c4b34b726be71f715daa"
+  },
+  "executionWorkspace.operationPhase.configFreshness": {
+    "en": "Config freshness",
+    "zh-CN": "配置时效性",
+    "reviewedEnglishHash": "bf4c3a58d65ae6ec9e8af2ed37610ae7f11ddb09b91d65c320caab85e2212b80"
+  },
+  "executionWorkspace.operationPhase.finalize": {
+    "en": "Finalize",
+    "zh-CN": "收尾",
+    "reviewedEnglishHash": "bcc55d805d23a518e5cce819ea93f6a1296c558f365f9551676f8e67f83b5e99"
+  },
+  "executionWorkspace.operationPhase.provision": {
+    "en": "Provision",
+    "zh-CN": "置备",
+    "reviewedEnglishHash": "41112adcd22c7aa168c005094848158ea2fe248992b8f6b09ebeea66e0d40b60"
+  },
+  "executionWorkspace.operationPhase.runtimeProvision": {
+    "en": "Runtime provision",
+    "zh-CN": "运行时置备",
+    "reviewedEnglishHash": "7f8e2d852ad3dd8268558e0528f5fe340f3a5088c0936ee304325162861ccc68"
+  },
+  "executionWorkspace.operationPhase.teardown": {
+    "en": "Teardown",
+    "zh-CN": "拆除",
+    "reviewedEnglishHash": "3a013079020e15d38c4d05992712b9dd7d25348425c88814ff12f536ec4d0c96"
+  },
+  "executionWorkspace.operationPhase.worktreeCleanup": {
+    "en": "Worktree cleanup",
+    "zh-CN": "清理工作树",
+    "reviewedEnglishHash": "2a0930d8050cf484aa2bd1be8a8dd3041c016dfe2862aef2565f72a41c76f141"
+  },
+  "executionWorkspace.operationPhase.worktreePrepare": {
+    "en": "Worktree setup",
+    "zh-CN": "工作树设置",
+    "reviewedEnglishHash": "550db5f21cb4afa0af0ebc30dc709d67c37b0d0ea81326910538972569b4f6f3"
+  },
+  "executionWorkspace.paths": {
+    "en": "Paths",
+    "zh-CN": "路径",
+    "reviewedEnglishHash": "9c7995b5bc817bc83ea1d10a4b8ec26176773b514c3d58c9ede0d5b40d1dcf13"
+  },
+  "executionWorkspace.projectWorkspace": {
+    "en": "Project workspace",
+    "zh-CN": "项目工作区",
+    "reviewedEnglishHash": "ce016e7f0a41c4f32109216e1e253653946e643adf1114a7e6d08e4323de1a7a"
+  },
+  "executionWorkspace.providerPathRef": {
+    "en": "Provider path / ref",
+    "zh-CN": "提供方路径 / 引用",
+    "reviewedEnglishHash": "efa81cfb641780794086d9f8149a9d4a114d72542e8f824749396b0dc093e18e"
+  },
+  "executionWorkspace.providerRef": {
+    "en": "Provider ref",
+    "zh-CN": "提供方引用",
+    "reviewedEnglishHash": "c9a25d09eb036c878742b2d7399de16240ab83d87b96be6f99c4e4ff4a75bd72"
+  },
+  "executionWorkspace.provisionCommand": {
+    "en": "Provision command",
+    "zh-CN": "预配命令",
+    "reviewedEnglishHash": "bfbc86f8f1c03ac240a2d28aeda30dfa029c36c9850010484af8b9a33be2633b"
+  },
+  "executionWorkspace.provisionCommandHint": {
+    "en": "Runs when Paperclip prepares this execution workspace",
+    "zh-CN": "Paperclip 准备此执行工作区时运行",
+    "reviewedEnglishHash": "577ae5a9e3f547b763a71c747b77466095984099a82938a747a12d8c194cf937"
+  },
+  "executionWorkspace.provisionStatusDeferred": {
+    "en": "Deferred",
+    "zh-CN": "延后执行",
+    "reviewedEnglishHash": "1fc4d2e60ca80e29e9ac8f51f41bcb7380978e98d7fc035d4bdfe4ff44a4ed02"
+  },
+  "executionWorkspace.provisionStatusDeferredHint": {
+    "en": "Runs once before the first runtime-service start.",
+    "zh-CN": "首次启动运行时服务前执行一次。",
+    "reviewedEnglishHash": "12f7ac6229ba1145f4be52160d162e6358d3d34859403453c68762409162d078"
+  },
+  "executionWorkspace.provisionStatusEager": {
+    "en": "Eager · provisioned during workspace setup",
+    "zh-CN": "即时 · 工作区设置期间已预配",
+    "reviewedEnglishHash": "c4fccafd518b420008c3f2c4b85eaf38914edfeaf59f6cca77c87aa9601cf457"
+  },
+  "executionWorkspace.provisionStatusFailed": {
+    "en": "Provisioning failed",
+    "zh-CN": "预配失败",
+    "reviewedEnglishHash": "e024309245bcb68a20dd2d8a404c0e3d15dc438b4a5cdda1498f36b3572c8aa9"
+  },
+  "executionWorkspace.provisionStatusFailedAt": {
+    "en": "Provisioning failed · {{time}}",
+    "zh-CN": "预配失败 · {{time}}",
+    "reviewedEnglishHash": "ee50136253bde4b7316fe9a2921a1f6a0ee114987c45515251967904a910eebd"
+  },
+  "executionWorkspace.provisionStatusProvisioned": {
+    "en": "Provisioned",
+    "zh-CN": "已预配",
+    "reviewedEnglishHash": "a73be0437c279d632162d427bbdf185979f63905c42bb90ad57500d908719b5a"
+  },
+  "executionWorkspace.provisionStatusProvisionedAt": {
+    "en": "Provisioned · {{time}}",
+    "zh-CN": "已预配 · {{time}}",
+    "reviewedEnglishHash": "7ff9754563126eda66a038cb0a79b696a199a3e73ce26af0552d78a436bf362f"
+  },
+  "executionWorkspace.provisionStatusProvisioning": {
+    "en": "Provisioning…",
+    "zh-CN": "正在预配…",
+    "reviewedEnglishHash": "62cd0e7db7caf32bac9d185db32bc4e743f6c1bf3c6df98ce011b0001a3200f0"
+  },
+  "executionWorkspace.recentOperations": {
+    "en": "Recent operations",
+    "zh-CN": "最近操作",
+    "reviewedEnglishHash": "da6d32a00f72771cdaa89064479f9f81f44eff4f42d0e8ac6c1a06a746b8a64a"
+  },
+  "executionWorkspace.repoUrl": {
+    "en": "Repo URL",
+    "zh-CN": "仓库 URL",
+    "reviewedEnglishHash": "de5c1d1e3353a3312de8339e07811d6eb466e271e6f2fa3ab0d2a4189b8af72a"
+  },
+  "executionWorkspace.repoUrlInvalid": {
+    "en": "Repo URL must be a valid URL.",
+    "zh-CN": "仓库 URL 必须是有效 URL。",
+    "reviewedEnglishHash": "fe0386d81ada2fbfbebe9663c61d011be2a9cfc56b51b1867e93f8bc58878265"
+  },
+  "executionWorkspace.resetToInherit": {
+    "en": "Reset to inherit",
+    "zh-CN": "重置为继承",
+    "reviewedEnglishHash": "739c287637a11ab5879e350fb32bf54b2a863c8d78e9b558afdf996bc88bbd0d"
+  },
+  "executionWorkspace.retryClose": {
+    "en": "Retry close",
+    "zh-CN": "重试关闭",
+    "reviewedEnglishHash": "46dde379c0e07f375482b2d7f4eae60a5c099ebcf84c7b684dba1aae1289023e"
+  },
+  "executionWorkspace.routineRunFailed": {
+    "en": "Routine run failed",
+    "zh-CN": "例程运行失败",
+    "reviewedEnglishHash": "296c7ca6e9b82b39e4ddc83e5a9ab87dbe6d1f041045a313b739d1e846076425"
+  },
+  "executionWorkspace.routineRunFailedBody": {
+    "en": "Paperclip could not start the routine run.",
+    "zh-CN": "Paperclip 无法启动例程运行。",
+    "reviewedEnglishHash": "5628bbf83ac3d58dba8413ebdf9701bb24bd99dea60a66e54f2a8f00ab257d6e"
+  },
+  "executionWorkspace.routineStarted": {
+    "en": "Routine started",
+    "zh-CN": "例程已启动",
+    "reviewedEnglishHash": "768fcb182941e01c53a32fb6c3322c7f80a79952abc4ac5d8883f4c3a82a13fc"
+  },
+  "executionWorkspace.routineStartedBody": {
+    "en": "Paperclip created a run using this execution workspace.",
+    "zh-CN": "Paperclip 已使用此执行工作区创建一次运行。",
+    "reviewedEnglishHash": "cf288a83f485fcf9ffbb7e150cae9ce3d5c9582e63980e5bef211058db28e64d"
+  },
+  "executionWorkspace.runNow": {
+    "en": "Run now",
+    "zh-CN": "立即运行",
+    "reviewedEnglishHash": "0991397702fabb407256a08adbb643c936aa03a49b9e78a2e62f4303c8a03e4c"
+  },
+  "executionWorkspace.runtimeCleanupLogs": {
+    "en": "Runtime and cleanup logs",
+    "zh-CN": "运行时和清理日志",
+    "reviewedEnglishHash": "83f4522840445c5a81b5d1006de33159cbba8c2943fd516c9faa401a1bb484ab"
+  },
+  "executionWorkspace.runtimeConfig": {
+    "en": "Runtime config",
+    "zh-CN": "运行时配置",
+    "reviewedEnglishHash": "a6d1b95a3ede05ceb8be678fc4e8182a760333c8f883a7f4039942741cbdbf42"
+  },
+  "executionWorkspace.runtimeConfigSource": {
+    "en": "Runtime config source",
+    "zh-CN": "运行时配置来源",
+    "reviewedEnglishHash": "588af7fdc30f08985dd3f0f8939344d32ae5562f0396533c8e28f3cdb93f493e"
+  },
+  "executionWorkspace.runtimeConfigSourceExecution": {
+    "en": "This execution workspace currently overrides the project workspace runtime config.",
+    "zh-CN": "此执行工作区当前覆盖了项目工作区的运行时配置。",
+    "reviewedEnglishHash": "40b231840c3923666bc578c1572406abbbfed8390038e85bc8136a24ad98a1c7"
+  },
+  "executionWorkspace.runtimeConfigSourceNone": {
+    "en": "No runtime config is currently defined on this execution workspace or its project workspace.",
+    "zh-CN": "此执行工作区及其项目工作区当前都未定义运行时配置。",
+    "reviewedEnglishHash": "dfdc2fe10f095398789fbf3c99e113f646325f9a31ff7bc23607cc349dce9d71"
+  },
+  "executionWorkspace.runtimeConfigSourceProject": {
+    "en": "This execution workspace is inheriting the project workspace runtime config.",
+    "zh-CN": "此执行工作区正在继承项目工作区的运行时配置。",
+    "reviewedEnglishHash": "ac9c47e76d942aa655d1843c07235f5c3ef8025e50ea5a10018cff0c9c671711"
+  },
+  "executionWorkspace.runtimeProvisionCommand": {
+    "en": "Runtime provision command",
+    "zh-CN": "运行时预配命令",
+    "reviewedEnglishHash": "e538baaa678ee7520520f64d5938301eb174f42e7ab34b8109f014de5c592207"
+  },
+  "executionWorkspace.runtimeProvisionCommandHint": {
+    "en": "Runs once before the first runtime-service start. Leave empty to keep eager provisioning.",
+    "zh-CN": "首次启动运行时服务前执行一次。留空则保持预配时立即执行。",
+    "reviewedEnglishHash": "46e46d2301182c33e743193ce1d8047212fba6fbbc3d2386daed9df03a861d8a"
+  },
+  "executionWorkspace.runtimeProvisioning": {
+    "en": "Runtime provisioning",
+    "zh-CN": "运行时预配",
+    "reviewedEnglishHash": "09073717c9a9006e0978b307543ce049f5704d39d9177b560de036be4e50f081"
+  },
+  "executionWorkspace.saveFailed": {
+    "en": "Failed to save execution workspace.",
+    "zh-CN": "保存执行工作区失败。",
+    "reviewedEnglishHash": "b40aaea29fd27437fe495b93f120c55addce698832cd741dbf0ec23ee142afd0"
+  },
+  "executionWorkspace.serviceNumber": {
+    "en": "Service {{count}}",
+    "zh-CN": "服务 {{count}}",
+    "reviewedEnglishHash": "9f92382eb78aed60d26959d516d735ad8f0ca878863475716b46f9d0953f9aed"
+  },
+  "executionWorkspace.servicePorts": {
+    "en": "Service ports",
+    "zh-CN": "服务端口",
+    "reviewedEnglishHash": "a7a1311992aafc24d6cf5c55040d96f890364bb99d6aeeca132360a80ae09051"
+  },
+  "executionWorkspace.servicePortsDescription": {
+    "en": "Set a fixed port for a service or leave it blank to use its configured automatic behavior. Editing an inherited service creates an execution-workspace runtime override.",
+    "zh-CN": "可为服务设置固定端口，或留空以使用配置的自动行为。编辑继承的服务会创建执行工作区运行时覆盖。",
+    "reviewedEnglishHash": "a2cf4f34f3ced894be0ffd4fbd4462a780ac10f945415c095d39f41d8677e232"
+  },
+  "executionWorkspace.servicePortsValidation": {
+    "en": "Paperclip checks fixed ports again when a service starts and rejects cross-workspace conflicts.",
+    "zh-CN": "服务启动时，Paperclip 会再次检查固定端口，并拒绝跨工作区冲突。",
+    "reviewedEnglishHash": "082c9a01589ea9bcb99b345751956b8886041269d4d2473189834c91fd3f6e5c"
+  },
+  "executionWorkspace.serviceRestarted": {
+    "en": "Workspace service restarted.",
+    "zh-CN": "工作区服务已重启。",
+    "reviewedEnglishHash": "115d370e1e83bdaec9ea69e8c3e50b04a26ee7efd748e677518f90a49c51fed7"
+  },
+  "executionWorkspace.serviceStarted": {
+    "en": "Workspace service started.",
+    "zh-CN": "工作区服务已启动。",
+    "reviewedEnglishHash": "26704ee775b26961f95f7a832ed5480639d9278bd061ea202f0c296b66f22a70"
+  },
+  "executionWorkspace.serviceStopped": {
+    "en": "Workspace service stopped.",
+    "zh-CN": "工作区服务已停止。",
+    "reviewedEnglishHash": "7989e1841ca567218679023ce47dac02f19b9717d283a22120ec06addcda679c"
+  },
+  "executionWorkspace.sourceControl": {
+    "en": "Source control",
+    "zh-CN": "源代码控制",
+    "reviewedEnglishHash": "9bd7eab786054a3b8c337bd150b65a826635a491ea38136cc8d12c7189692c5d"
+  },
+  "executionWorkspace.sourceIssue": {
+    "en": "Source issue",
+    "zh-CN": "来源任务",
+    "reviewedEnglishHash": "bc23e41adf441fff279bdae6aaf833d1cb12d3b07d6af1228ad63020823a4c5c"
+  },
+  "executionWorkspace.summaryDescription": {
+    "en": "Summarizer keeps the latest workspace status, next step, and operator-needed items here.",
+    "zh-CN": "汇总器会在此保留最新工作区状态、下一步和需要操作员处理的事项。",
+    "reviewedEnglishHash": "d76f8fee196bb581520d90ac1d35fdad1a27a525eed9683f9041a8cd1d63529b"
+  },
+  "executionWorkspace.summaryTitle": {
+    "en": "Workspace summary",
+    "zh-CN": "工作区摘要",
+    "reviewedEnglishHash": "970a90e91e265ab911ebb83ca89584d46e57da5004a4613beff61d4107554385"
+  },
+  "executionWorkspace.tabs.configuration": {
+    "en": "Configuration",
+    "zh-CN": "配置",
+    "reviewedEnglishHash": "b332c3492d5eb10a118eb6d8b0dcd689bc2477ce2ae16b303753b942b54377bc"
+  },
+  "executionWorkspace.tabs.issues": {
+    "en": "Issues",
+    "zh-CN": "任务",
+    "reviewedEnglishHash": "666067dd376e5d4553b8fd554f855855819ad213ae825022d2a32dfa28431115"
+  },
+  "executionWorkspace.tabs.routines": {
+    "en": "Routines",
+    "zh-CN": "例程",
+    "reviewedEnglishHash": "61b7bb44e2b47b7c0ccaccff4872fdcf3e298345d0f003ea4bf54e8c84e2a889"
+  },
+  "executionWorkspace.tabs.runtimeLogs": {
+    "en": "Runtime logs",
+    "zh-CN": "运行时日志",
+    "reviewedEnglishHash": "36d4ba8ec08d5cb4727439f7ec493306d4bf3625e6d9bd0dfd28a2d5b6ff0dda"
+  },
+  "executionWorkspace.tabs.services": {
+    "en": "Services",
+    "zh-CN": "服务",
+    "reviewedEnglishHash": "604dce445e326d952308addc99bd3d0e3ffb0ed9a455e4aa0190641fc5facccc"
+  },
+  "executionWorkspace.teardownCommand": {
+    "en": "Teardown command",
+    "zh-CN": "拆除命令",
+    "reviewedEnglishHash": "b6a156773cbf656fd63b39421949c6f89e1a8f4a6899d6d0a5d6f392724197ce"
+  },
+  "executionWorkspace.teardownCommandHint": {
+    "en": "Runs when the execution workspace is archived or cleaned up",
+    "zh-CN": "执行工作区归档或清理时运行",
+    "reviewedEnglishHash": "58d660f06fe5bd867366efd005a43a02698ba9c183cfb48ed7ea51002f941b1e"
+  },
+  "executionWorkspace.title": {
+    "en": "Execution workspace",
+    "zh-CN": "执行工作区",
+    "reviewedEnglishHash": "d31c92b6bb53c871049f335506f5e1f410c271061bbc79655d7101fb4749cdfe"
+  },
+  "executionWorkspace.viewRuntimeLogs": {
+    "en": "View runtime logs",
+    "zh-CN": "查看运行时日志",
+    "reviewedEnglishHash": "ac37f88299ca560ac762a59f93d96a2aa7b0b7d5a6269b4734cb5992f4d64558"
+  },
+  "executionWorkspace.workingDir": {
+    "en": "Working dir",
+    "zh-CN": "工作目录",
+    "reviewedEnglishHash": "33f4ce8558353a9c6bb50028655820ea91242fe698a1c170abaa6bbe75e3f931"
+  },
+  "executionWorkspace.workingDirectory": {
+    "en": "Working directory",
+    "zh-CN": "工作目录",
+    "reviewedEnglishHash": "865e85c6fbf9d3b2a48080cce70bf7016c6f87b76af90d251408f008cbbcd063"
+  },
+  "executionWorkspace.workspaceCommandsJson": {
+    "en": "Workspace commands JSON",
+    "zh-CN": "工作区命令 JSON",
+    "reviewedEnglishHash": "bd7ac36ac97f1654e1e62f211941a437f9b82e721c26e5e05001437aa62cf659"
+  },
+  "executionWorkspace.workspaceCommandsJsonHint": {
+    "en": "Legacy `services` arrays still work, but `commands` supports both services and jobs.",
+    "zh-CN": "旧版 `services` 数组仍可使用，但 `commands` 同时支持服务和作业。",
+    "reviewedEnglishHash": "208df7bd716558e8678c219b5ff5b6fbc3a80cfe8b0b649e4520add5f73f92b0"
+  },
+  "executionWorkspace.workspaceCommandsJsonObjectError": {
+    "en": "Workspace commands JSON must be a JSON object.",
+    "zh-CN": "工作区命令 JSON 必须是 JSON 对象。",
+    "reviewedEnglishHash": "0274dc2ba3ef4cf40fc6adbb967da6fc96d65350c277da8e979ae01ef82f1f1c"
+  },
+  "executionWorkspace.workspaceContext": {
+    "en": "Workspace context",
+    "zh-CN": "工作区上下文",
+    "reviewedEnglishHash": "dc6fa4f5831f083f664b83b89749a92d4c7c2934910ccfaf0846c0509d467809"
+  },
+  "executionWorkspace.workspaceContextDescription": {
+    "en": "Linked objects and relationships",
+    "zh-CN": "关联对象和关系",
+    "reviewedEnglishHash": "84a181d7117423528abcc41cf759dcdc2da8a835647c6c2938811f670d6e84be"
+  },
+  "executionWorkspace.workspaceId": {
+    "en": "Workspace ID",
+    "zh-CN": "工作区 ID",
+    "reviewedEnglishHash": "889d892993c3e5f02854f567e39a114f149162d9bedfc1f170415ef6235edb31"
+  },
+  "executionWorkspace.workspaceName": {
+    "en": "Workspace name",
+    "zh-CN": "工作区名称",
+    "reviewedEnglishHash": "9619649d8dc1394f89089621a11621651aa271453d81b3af8f7bcc7fa5fe5f1f"
+  },
+  "executionWorkspace.workspaceNamePlaceholder": {
+    "en": "Execution workspace name",
+    "zh-CN": "执行工作区名称",
+    "reviewedEnglishHash": "762ada40b14efd98aa848ff8a541ab5c09bfa3e1349dc8f7ef4c6dea76fec186"
+  },
+  "executionWorkspace.workspaceRoutines": {
+    "en": "Workspace routines",
+    "zh-CN": "工作区例程",
+    "reviewedEnglishHash": "b584814bcd16a7befab74b426d8de2aafc7a88941b4644b7bd11619793439474"
+  },
+  "executionWorkspace.workspaceRoutinesDescription": {
+    "en": "Routines that use workspace-specific variables can be run against this execution workspace.",
+    "zh-CN": "使用工作区专属变量的例程可以针对这个执行工作区运行。",
+    "reviewedEnglishHash": "a720219337f60705de6e13a938d99c03062d464c99fe3d05232af0936cf05e60"
+  },
+  "executionWorkspace.workspaceSettings": {
+    "en": "Workspace settings",
+    "zh-CN": "工作区设置",
+    "reviewedEnglishHash": "5ebc59145b59b496ab62a99bbc948f0b67e6beb787903a1e41c169ec29360d2d"
+  },
+  "executionWorkspace.workspaceSettingsDescription": {
+    "en": "Edit the concrete path, repo, branch, provisioning, teardown, and runtime overrides attached to this execution workspace. Saved changes affect future runs; Paperclip may refresh or replace a reused workspace when config changes.",
+    "zh-CN": "编辑此执行工作区绑定的具体路径、仓库、分支、预配、拆除和运行时覆盖。保存后的更改会影响未来运行；配置变化时，Paperclip 可能刷新或替换复用的工作区。",
+    "reviewedEnglishHash": "3e811d6a8bc7a194577ed7809416b73ba3b2e2272527c57e1178bd9da1b47448"
+  }
+}

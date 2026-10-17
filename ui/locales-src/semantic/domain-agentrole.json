@@ -1,0 +1,62 @@
+{
+  "agentRole.ceo": {
+    "en": "CEO",
+    "zh-CN": "CEO",
+    "reviewedEnglishHash": "57f0df0e3d01f3f2b0aaf23f34e9555027766525ce779fbe5f0b044021d6fd15"
+  },
+  "agentRole.cfo": {
+    "en": "CFO",
+    "zh-CN": "CFO",
+    "reviewedEnglishHash": "524821c6b6c9a17ebe269963e03d19e433690d9895073aad43ccc6b574e2f1a1"
+  },
+  "agentRole.cmo": {
+    "en": "CMO",
+    "zh-CN": "CMO",
+    "reviewedEnglishHash": "d7edf1b99ed08f4b345fb7ebcc3ec90f086114e479cf5d5d582553673300a7ee"
+  },
+  "agentRole.cto": {
+    "en": "CTO",
+    "zh-CN": "CTO",
+    "reviewedEnglishHash": "e7f67dded93a78700d529f3294c3085bae8d30cd0b3290dec82b0e2007a0078f"
+  },
+  "agentRole.designer": {
+    "en": "Designer",
+    "zh-CN": "设计师",
+    "reviewedEnglishHash": "8b6d8e40753ad9f265f07dc095a9b81468ae6c4c074fc6dec539d19d584a7c73"
+  },
+  "agentRole.devops": {
+    "en": "DevOps",
+    "zh-CN": "DevOps",
+    "reviewedEnglishHash": "e491b4631422f56f738556192a267a182d94daaec39ca15e6bb70b2217ee60c6"
+  },
+  "agentRole.engineer": {
+    "en": "Engineer",
+    "zh-CN": "工程师",
+    "reviewedEnglishHash": "d93352a70395db3de0632a6b203cbc58aebb331e74bc417e7d75d4c6e8997434"
+  },
+  "agentRole.general": {
+    "en": "General",
+    "zh-CN": "通用",
+    "reviewedEnglishHash": "c910d474dcd724bff83ddedeb06bf1eceaf9fb3af7c76bb282be057f36e6dffa"
+  },
+  "agentRole.pm": {
+    "en": "PM",
+    "zh-CN": "产品经理",
+    "reviewedEnglishHash": "6b987654a41163849bd70f7354ec7a205cea30d282c0e84be1cfe8a0e3927c78"
+  },
+  "agentRole.qa": {
+    "en": "QA",
+    "zh-CN": "QA",
+    "reviewedEnglishHash": "48947c06d09a212ca1dcfbdf5a63d18dde8c964dbc66eea033a363eee856de21"
+  },
+  "agentRole.researcher": {
+    "en": "Researcher",
+    "zh-CN": "研究员",
+    "reviewedEnglishHash": "918fcd73c354a24535c25b8bcdcc9bbaf752f6c93acd51ca80c69d62fce901db"
+  },
+  "agentRole.security": {
+    "en": "Security",
+    "zh-CN": "安全",
+    "reviewedEnglishHash": "8f6fb4eb7f42c0e245e29e63f5b82cc3ba19852681d1ed9aed291f59cf75ec0e"
+  }
+}

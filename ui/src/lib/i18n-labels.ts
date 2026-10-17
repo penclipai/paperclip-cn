@@ -53,10 +53,12 @@ const ENTITY_TYPE_TRANSLATION_KEYS: Record<string, string> = {
   heartbeat_run: "entityType.heartbeatRun",
   invite: "entityType.invite",
   issue: "entityType.issue",
+  plugin: "entityType.plugin",
   project: "entityType.project",
   routine: "entityType.routine",
   routine_run: "entityType.routineRun",
   routine_trigger: "entityType.routineTrigger",
+  user_preference: "entityType.userPreference",
 };
 
 export function humanizeEnumValue(value: string): string {
@@ -76,7 +78,9 @@ export function translatePriorityLabel(t: TFunction, priority: string): string {
 }
 
 export function translateEntityTypeLabel(t: TFunction, entityType: string): string {
-  return t(ENTITY_TYPE_TRANSLATION_KEYS[entityType] ?? entityType, {
+  const translationKey = ENTITY_TYPE_TRANSLATION_KEYS[entityType];
+  if (!translationKey) return entityType;
+  return t(translationKey, {
     defaultValue: humanizeEnumValue(entityType),
   });
 }

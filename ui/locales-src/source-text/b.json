@@ -1,0 +1,627 @@
+{
+  ", but": {
+    "en": ", but",
+    "zh-CN": "， 但",
+    "reviewedEnglishHash": "65d91ee3411ef220c46bb8695508eb4fd1373bae8ee0cae40263b2b6892b69b9"
+  },
+  "2. Browser code": {
+    "en": "2. Browser code",
+    "zh-CN": "2.浏览器代码",
+    "reviewedEnglishHash": "c536a15cc7bd8744c2175e89d1104895261127872027894467b9bac41d7c1689"
+  },
+  "Back": {
+    "en": "Back",
+    "zh-CN": "返回",
+    "reviewedEnglishHash": "76900f1bfd16c8d4dd3d25e6f46638d7165aee23883ccea6bfe071c514421769"
+  },
+  "Back to Connections": {
+    "en": "Back to Connections",
+    "zh-CN": "返回连接列表",
+    "reviewedEnglishHash": "21759120b1a1782e2e5c4464c859051acb240e3f1e8e10ec6e71468f974d6196"
+  },
+  "Back to Paperclip": {
+    "en": "Back to Paperclip",
+    "zh-CN": "返回 Paperclip",
+    "reviewedEnglishHash": "2ec6bc4661e8c2d275f3fa3fae7f4d3c01b8b4c5ee853bc9766adc3c3934a32b"
+  },
+  "Back to app": {
+    "en": "Back to app",
+    "zh-CN": "回到应用",
+    "reviewedEnglishHash": "a6989680b3528cd399ebaea75e660da6ce8d155d24226532180f90ab37c05e9e"
+  },
+  "Back to approvals": {
+    "en": "Back to approvals",
+    "zh-CN": "返回审批列表",
+    "reviewedEnglishHash": "822a55b5517bfaafcec55acc3691ad142bc51f2e6bad372514ec60149b97a420"
+  },
+  "Back to connectors": {
+    "en": "Back to connectors",
+    "zh-CN": "返回连接器",
+    "reviewedEnglishHash": "4bb96fc6ab818764bfe1aea2969cc6fcf98b0812a1af39ecca1f3706539c3fea"
+  },
+  "Back to inbox": {
+    "en": "Back to inbox",
+    "zh-CN": "返回收件箱",
+    "reviewedEnglishHash": "97555c45940cc4b1f6aa22c72c975c0471ea5562d934fbb3a60941bb70770efc"
+  },
+  "Back to overview": {
+    "en": "Back to overview",
+    "zh-CN": "返回概览",
+    "reviewedEnglishHash": "b202187e08636bb94c55517d4070c2833ced8edad924b72309687601fc1c721f"
+  },
+  "Back to runs": {
+    "en": "Back to runs",
+    "zh-CN": "返回运行列表",
+    "reviewedEnglishHash": "5f3641135a1e889bec7fcf5af8b75f63fa18102e899c3f5bee27d11773273387"
+  },
+  "Back to selection": {
+    "en": "Back to selection",
+    "zh-CN": "返回选择",
+    "reviewedEnglishHash": "3dadc4096c93fa938d7681458949746d40d5103f382e036e8869a345c418259c"
+  },
+  "Back to triggers": {
+    "en": "Back to triggers",
+    "zh-CN": "返回触发器",
+    "reviewedEnglishHash": "4b2775d380ee2c198f0b5a19a6bff5383e70c2d5908ad0da8ee7791d74e7e869"
+  },
+  "Back to workspace options": {
+    "en": "Back to workspace options",
+    "zh-CN": "返回工作区选项",
+    "reviewedEnglishHash": "bc31531ca54332d7e7d7769138a3bc767818b6754cbe1ae14e5bee1be8a535cf"
+  },
+  "Background": {
+    "en": "Background",
+    "zh-CN": "背景",
+    "reviewedEnglishHash": "ea2b8a878841df5955c78edc6cae47446483b86e3f5ccb04e1a8d940cf7e59fd"
+  },
+  "Background features can charge this connection without a responsible person. These requests appear as Paperclip services.": {
+    "en": "Background features can charge this connection without a responsible person. These requests appear as Paperclip services.",
+    "zh-CN": "后台功能可以在没有负责人的情况下对该连接进行充电。这些请求显示为Paperclip CN服务。",
+    "reviewedEnglishHash": "cce8925ebd76ea4a261a876d398639becd02dc6d753645d79388ac0aee16c60a"
+  },
+  "Backlog": {
+    "en": "Backlog",
+    "zh-CN": "待规划",
+    "reviewedEnglishHash": "bf986e9a4f860eb0f3d2def12019dc81c8370e4fdd01940635c2265bae5791d0"
+  },
+  "Badges": {
+    "en": "Badges",
+    "zh-CN": "徽标",
+    "reviewedEnglishHash": "185d8ef0ae5ea9b841831f1b8be33a362d945d835f8d08060ff2635aef883957"
+  },
+  "Base ref": {
+    "en": "Base ref",
+    "zh-CN": "基准引用",
+    "reviewedEnglishHash": "9c6c10f9d4c60b5349abb6d5f9e09faf1dcb0be57a2aac85c5363ce8b350d35e"
+  },
+  "Baseline metrics": {
+    "en": "Baseline metrics",
+    "zh-CN": "基准指标",
+    "reviewedEnglishHash": "1e688699b8fe21a817996516fe98a13bc81079d027f2075bac9b21d99b418b80"
+  },
+  "Basic Information": {
+    "en": "Basic Information",
+    "zh-CN": "基本信息",
+    "reviewedEnglishHash": "d094b334d8099b1ee806d7f61a4c8a7123bffb2036d7b49a85337547f6c6d3a0"
+  },
+  "Bcc:": {
+    "en": "Bcc:",
+    "zh-CN": "暗抄送:",
+    "reviewedEnglishHash": "943269c21b32a7b187cef532428a41dd51b4375fee57a0770f757804fd8541a4"
+  },
+  "Before": {
+    "en": "Before",
+    "zh-CN": "变更前",
+    "reviewedEnglishHash": "9bb725005055412c75a8e8d1fb5a0780595174ac8bbe5a24f768647bd4e4debe"
+  },
+  "Before your first review": {
+    "en": "Before your first review",
+    "zh-CN": "首次审查前",
+    "reviewedEnglishHash": "564abdb67f0b347d79700a3232f9718695e90fe22fa5888f49f699b3e95e491f"
+  },
+  "Beside the prefilled": {
+    "en": "Beside the prefilled",
+    "zh-CN": "针对预填的",
+    "reviewedEnglishHash": "3b8a3f4a85ef70f41bf8b47d51a2b6eaf1f97083c31f2bc4567e1e94b0e3813e"
+  },
+  "Beta": {
+    "en": "Beta",
+    "zh-CN": "测试版",
+    "reviewedEnglishHash": "703390318bd55aef50b7823d2b90a846debff99e6e3d401a24a921b733912a6d"
+  },
+  "Beta ·": {
+    "en": "Beta ·",
+    "zh-CN": "测试版 ·",
+    "reviewedEnglishHash": "0a55fc9bcb66ec430aa6fc68365da94a4ae6f4d144bd07af37417e006236cec4"
+  },
+  "Billed": {
+    "en": "Billed",
+    "zh-CN": "计费",
+    "reviewedEnglishHash": "b3a9f29f68ac9c39617a9375214c25803381bd010ba2ac54b7ff559b05dc1840"
+  },
+  "Billed through {{name}}": {
+    "en": "Billed through {{name}}",
+    "zh-CN": "通过 {{name}} 计费",
+    "reviewedEnglishHash": "adfa49596aef76ce469365907ee67deeafab5d5a0255d536d4367e7943971452"
+  },
+  "Billers": {
+    "en": "Billers",
+    "zh-CN": "结算方",
+    "reviewedEnglishHash": "2ae0e2cd6bd11bb67a1972bb840e3ded975af5223373d1aa3fd4fb7b7f9ac699"
+  },
+  "Billing": {
+    "en": "Billing",
+    "zh-CN": "计费",
+    "reviewedEnglishHash": "3ac8bbca9a74cfbd627307e9d650a132610e64f42f984817a488daf5f2f3d750"
+  },
+  "Billing problem": {
+    "en": "Billing problem",
+    "zh-CN": "计费问题",
+    "reviewedEnglishHash": "3322288e46ad528ad364e24abf4d58dc6f1e4c91ea9f655f07dd91b1269bc662"
+  },
+  "Billing types": {
+    "en": "Billing types",
+    "zh-CN": "计费类型",
+    "reviewedEnglishHash": "2ebd3c26f0d8f847e7531355a6c33b689ca9fa1ca2ebe480ccdc17f236c0cc4c"
+  },
+  "Binary asset · included without changes": {
+    "en": "Binary asset · included without changes",
+    "zh-CN": "二进制资源 · 已原样包含",
+    "reviewedEnglishHash": "17dcc223d82cabd6109b40af0f5b590624a8ca06b3075d2abe59849de410b8bc"
+  },
+  "Binary file; text diff is unavailable.": {
+    "en": "Binary file; text diff is unavailable.",
+    "zh-CN": "二进制文件；文本差异不可用。",
+    "reviewedEnglishHash": "98cd1b4b3a11b42343b2f5d8b8d279e3d9cdd5943a9ba35f26ea272b53f11a79"
+  },
+  "Binding": {
+    "en": "Binding",
+    "zh-CN": "装订",
+    "reviewedEnglishHash": "164c690a353e7b5106d3de3de2d1d1811b7b7c30ab0c4640c15c8a141b226280"
+  },
+  "Binding created · approved by": {
+    "en": "Binding created · approved by",
+    "zh-CN": "绑定已创建·批准人",
+    "reviewedEnglishHash": "debd1faf896d470efa897015918476fdb61287daebec053b1ca44938c4034b48"
+  },
+  "Binding this agent to the signed-in account...": {
+    "en": "Binding this agent to the signed-in account...",
+    "zh-CN": "正在将此智能体绑定到登录账户...",
+    "reviewedEnglishHash": "d23c6cd35a3407c45be87064e806184dfcaf3cfe3b4d3271c6b0cf790739ea08"
+  },
+  "Block new work when usage has no reliable price": {
+    "en": "Block new work when usage has no reliable price",
+    "zh-CN": "当使用没有可靠的价格时阻止新作品",
+    "reviewedEnglishHash": "483602ab76d764c1b7c6b5a98826d9379d3a95840ef3226a39c8b10f572f3a06"
+  },
+  "Blocked": {
+    "en": "Blocked",
+    "zh-CN": "已阻塞",
+    "reviewedEnglishHash": "18f2a0947f9d6523991b29b450307f22773f57d65f7efb98d48a167df04d6b1d"
+  },
+  "Blocked by": {
+    "en": "Blocked by",
+    "zh-CN": "被阻塞于",
+    "reviewedEnglishHash": "36931a940259dfe117f3281b4e81fea12f40554406944f8d0e5bc46a19ef750c"
+  },
+  "Blocked by PAP-001": {
+    "en": "Blocked by PAP-001",
+    "zh-CN": "被 PAP-001 阻塞",
+    "reviewedEnglishHash": "c8d7dcd82d29b320e5748b5d0576b41208f6e4f0512ce164264ad91ed1404075"
+  },
+  "Blocked tasks": {
+    "en": "Blocked tasks",
+    "zh-CN": "阻塞任务",
+    "reviewedEnglishHash": "fb0166222d35406265c43c8b3c2c9df9f948b91421b047dcf4b23d271d31b85d"
+  },
+  "Blocked:": {
+    "en": "Blocked:",
+    "zh-CN": "被阻止：",
+    "reviewedEnglishHash": "3e75b48427eca3ff54493b2e3d9e8dd197323ad3ac6766378bdda39ca7cd970e"
+  },
+  "Blocker type": {
+    "en": "Blocker type",
+    "zh-CN": "阻塞类型",
+    "reviewedEnglishHash": "76522951886cb4a7b4e67b938b39cacf5d8914a60ba71ade56736424b0b5da93"
+  },
+  "Blocking": {
+    "en": "Blocking",
+    "zh-CN": "阻塞中",
+    "reviewedEnglishHash": "f778a33133e5c30bebdb59146c7a82393c92f132e8760f203fcd4fe5c389c305"
+  },
+  "Board": {
+    "en": "Board",
+    "zh-CN": "董事会",
+    "reviewedEnglishHash": "4816cbfd74aa8297b9c9cdaae89e2f0d2ced6041e952dfcd114e01b4c82e9c6d"
+  },
+  "Board Approval": {
+    "en": "Board Approval",
+    "zh-CN": "董事会审批",
+    "reviewedEnglishHash": "ceee9033cc3bade85c0478a54822a7b99b1058c97d8508c414c69d533cf5dcf0"
+  },
+  "Board imports can rename, skip, or replace matching organization content.": {
+    "en": "Board imports can rename, skip, or replace matching organization content.",
+    "zh-CN": "看板导入可以重命名、跳过或替换匹配的组织内容。",
+    "reviewedEnglishHash": "f303b67b55e2d13564d0a6a5b8a7f7ebefb221650cbf4cb4f87aa0155d6dee13"
+  },
+  "Board update": {
+    "en": "Board update",
+    "zh-CN": "董事会更新",
+    "reviewedEnglishHash": "6e1dcf6a784f036c916f67d4cdd142252e138ca64efb10f59af782a48b48873e"
+  },
+  "Board users": {
+    "en": "Board users",
+    "zh-CN": "董事会用户",
+    "reviewedEnglishHash": "bc0c0606939cb8f8005bd81104600f76b8584e0568589d2790048d8d308df928"
+  },
+  "Board view": {
+    "en": "Board view",
+    "zh-CN": "看板视图",
+    "reviewedEnglishHash": "04b1c2e0045dcf479acad9804deaf394e466ccfad10facd6c7165ecf6dfb69da"
+  },
+  "Body text (single-line)": {
+    "en": "Body text (single-line)",
+    "zh-CN": "正文（单行）",
+    "reviewedEnglishHash": "fc872109e5fd64e58bcf57860f853e79ec71c0733c096dbc7f61a7899c1fb8c4"
+  },
+  "Body text example": {
+    "en": "Body text example",
+    "zh-CN": "正文示例",
+    "reviewedEnglishHash": "3ce4512e58569dc937e0907a51ef7b2f8ae1e3874129cd9f5c660d5bf26ec329"
+  },
+  "Bootstrap invite": {
+    "en": "Bootstrap invite",
+    "zh-CN": "初始化邀请",
+    "reviewedEnglishHash": "af37c023d123a26e9c89e50be7bc2a57423ae6d87bce03f15a2a1c027690c8b8"
+  },
+  "Bootstrap prompt is legacy and will be removed in a future release. Consider moving this content into the agent&apos;s prompt template or instructions file instead.": {
+    "en": "Bootstrap prompt is legacy and will be removed in a future release. Consider moving this content into the agent's prompt template or instructions file instead.",
+    "zh-CN": "Bootstrap提示是旧版，将在未来版本中删除。请考虑将此内容移至智能体的提示模板或说明文件中。",
+    "reviewedEnglishHash": "973a49c50cb0775505d07b441a1f265c47a69af4ad2cf8b3047f3e72c278c515"
+  },
+  "Bootstrap status": {
+    "en": "Bootstrap status",
+    "zh-CN": "初始化状态",
+    "reviewedEnglishHash": "7123a7d29c808ee6c253178d35421d40fafa5f110d8a79547fcaf50955ae6a9b"
+  },
+  "Border": {
+    "en": "Border",
+    "zh-CN": "边框",
+    "reviewedEnglishHash": "3b4bdff339e94fdc7a3303268454bc6150cf30113c1065f4e9c797414ab271c8"
+  },
+  "Bot OAuth Token": {
+    "en": "Bot OAuth Token",
+    "zh-CN": "机器人 OAuth 令牌",
+    "reviewedEnglishHash": "9d89851e5da9821e99b97f86173d45f4ff79a697b0ada2d2e18766c9e03875ef"
+  },
+  "Bot User OAuth Token": {
+    "en": "Bot User OAuth Token",
+    "zh-CN": "机器人用户 OAuth 令牌",
+    "reviewedEnglishHash": "d6b64bf5e951012c73a4fcb805e7a97dd1cf81d51dc5187ae8c5190d06019795"
+  },
+  "Both sides are the same version.": {
+    "en": "Both sides are the same version.",
+    "zh-CN": "两边是同一版本。",
+    "reviewedEnglishHash": "c7a36674522c714253361e75678bba27a8cb88030caa813e85f74e64b46ef7d9"
+  },
+  "Bound to": {
+    "en": "Bound to",
+    "zh-CN": "绑定到",
+    "reviewedEnglishHash": "b87d028440260b456095139f5e25979ec8481ed807b8edd59ec97375f90b9c44"
+  },
+  "Branch": {
+    "en": "Branch",
+    "zh-CN": "分支",
+    "reviewedEnglishHash": "52656e8104eef3fddd3d4546903fa0de93c0625abf47b3dd8130f7705d6a513e"
+  },
+  "Branch copied": {
+    "en": "Branch copied",
+    "zh-CN": "已复制分支",
+    "reviewedEnglishHash": "a172c77bd3ee7c22ea0468ea2638a73bd693262671d720be2a534cc36e77cf5c"
+  },
+  "Branch · no remote link": {
+    "en": "Branch · no remote link",
+    "zh-CN": "分支 · 无远程链接",
+    "reviewedEnglishHash": "b39f12c4512e6616ec4a46934b4e11ad6c38fcfec54b0023d735973f2f059468"
+  },
+  "Branches": {
+    "en": "Branches",
+    "zh-CN": "分支",
+    "reviewedEnglishHash": "2eee037c67fbe81b5c419d833bd1dde6f59246b189cb1f54ca80e1d1ecb51dc5"
+  },
+  "Brand color": {
+    "en": "Brand color",
+    "zh-CN": "品牌色",
+    "reviewedEnglishHash": "33de979373189007c0dde8506cabbd0d9540b7edde9c5a86cfab85ce88637240"
+  },
+  "Breadcrumb": {
+    "en": "Breadcrumb",
+    "zh-CN": "面包屑",
+    "reviewedEnglishHash": "2bd873d6c734e63ea80e163a6a643f75bf87a3d24e3164987d176a2e3e5c567e"
+  },
+  "Breaks into": {
+    "en": "Breaks into",
+    "zh-CN": "拆分为",
+    "reviewedEnglishHash": "111e4af2d676b439402a0da1f0e921b316aaeabef14cca9cf49d1a0bfeb1f54f"
+  },
+  "Browse agents": {
+    "en": "Browse agents",
+    "zh-CN": "浏览智能体",
+    "reviewedEnglishHash": "9c6a7d961b50eb41b95f1aea9df210ea11ce08d1fa7cc5d12d8e26b937d4db24"
+  },
+  "Browse all agents": {
+    "en": "Browse all agents",
+    "zh-CN": "浏览所有智能体",
+    "reviewedEnglishHash": "74cf481fa388f4cb18c620c08ee72ca86c3b4736058e54cc0f08407035aa75ae"
+  },
+  "Browse by category": {
+    "en": "Browse by category",
+    "zh-CN": "按分类浏览",
+    "reviewedEnglishHash": "1add935d442b3ce70f65231792ef4d600b030d5c161b5abaab0019276ca541db"
+  },
+  "Browse catalog": {
+    "en": "Browse catalog",
+    "zh-CN": "浏览目录",
+    "reviewedEnglishHash": "4d05dc6da83718c826d81f2b36bddc6f9fa3fab8706e5bdd57a2e35639dcaa59"
+  },
+  "Browse folders": {
+    "en": "Browse folders",
+    "zh-CN": "浏览文件夹",
+    "reviewedEnglishHash": "66279466d3bec8d3a13e816a312b62ac113cbca82d5662888aac2ec474398620"
+  },
+  "Browse project folders": {
+    "en": "Browse project folders",
+    "zh-CN": "浏览项目文件夹",
+    "reviewedEnglishHash": "2bef76acf5d7f8bf1903dff6dcd1c7473b75053fdf5130d1c9793d1b60fe7133"
+  },
+  "Browse projects": {
+    "en": "Browse projects",
+    "zh-CN": "浏览项目",
+    "reviewedEnglishHash": "8eac1d4abf06ff4fcb40a2db7f98e53e59a1dcabef68008d71f4cf8f2e5365e0"
+  },
+  "Browse skills from every available source.": {
+    "en": "Browse skills from every available source.",
+    "zh-CN": "浏览所有可用来源的技能。",
+    "reviewedEnglishHash": "4e2bd63eba57f624b75a0da096610a0f71e7bdc5bb2f9ad1f7623f3d307d4230"
+  },
+  "Browse skills.sh": {
+    "en": "Browse skills.sh",
+    "zh-CN": "浏览 skills.sh",
+    "reviewedEnglishHash": "4c0b17cb946139727cd7cdc47761187e97012b722b9fa2b0909681cdacf47b75"
+  },
+  "Browser Use Cloud": {
+    "en": "Browser Use Cloud",
+    "zh-CN": "Browser Use Cloud",
+    "reviewedEnglishHash": "276bc60ffa6d0749893b9f396f49bcf39070c325765a84d898b89fbe8848030b"
+  },
+  "Browser code": {
+    "en": "Browser code",
+    "zh-CN": "浏览器代码",
+    "reviewedEnglishHash": "72da0a59119d61c33d6e913fcdaee3c150f06f75122b22f5c201baac75deb03b"
+  },
+  "Browser default": {
+    "en": "Browser default",
+    "zh-CN": "浏览器默认",
+    "reviewedEnglishHash": "44f0527601f9e2d8991fe90f31a8fcf07785c33ff67bf5a337714f8fdd6e3def"
+  },
+  "Browser options": {
+    "en": "Browser options",
+    "zh-CN": "浏览器选项",
+    "reviewedEnglishHash": "0017e5fbb9fd59054c23c885bbf0f060a5e0c941484cde19d2a91ad558353207"
+  },
+  "Browser session": {
+    "en": "Browser session",
+    "zh-CN": "浏览器会话",
+    "reviewedEnglishHash": "ccf3756dcb8c0349c69e3dfabc4d35d17f69a07716fc821fdc956afd8cc45604"
+  },
+  "Browser settings": {
+    "en": "Browser settings",
+    "zh-CN": "浏览器设置",
+    "reviewedEnglishHash": "29435093ce3d3b5ae658c0ff29eacf429b13712f8dfb8b4e9cf979c5bbda7e55"
+  },
+  "Browser settings saved.": {
+    "en": "Browser settings saved.",
+    "zh-CN": "浏览器设置已保存。",
+    "reviewedEnglishHash": "6543378b5101ef4b62582ab0c254722cf499b0b523df651a9455219fdf7e1247"
+  },
+  "Browser size": {
+    "en": "Browser size",
+    "zh-CN": "浏览器大小",
+    "reviewedEnglishHash": "ccc196e0e42e50fb962ad18000fc8814b30dcaa8c83cb42d99781097644cc0a3"
+  },
+  "Browsing": {
+    "en": "Browsing",
+    "zh-CN": "浏览",
+    "reviewedEnglishHash": "bd6eb3cf2d0b8f5c719a5a0c6c1dd887c417f64f0496423c11474cb1c747b4ba"
+  },
+  "Budget": {
+    "en": "Budget",
+    "zh-CN": "预算",
+    "reviewedEnglishHash": "1c6225ec7092ad2f4a4acd79f8fc6854aa10653763fb053a6cf2bb2d2a4148ab"
+  },
+  "Budget (USD)": {
+    "en": "Budget (USD)",
+    "zh-CN": "预算（美元）",
+    "reviewedEnglishHash": "e9b19e9155c89d78f29b0c8124035aa2b0b77d35aaca3ffec8c6cdf6ad29dda0"
+  },
+  "Budget Override": {
+    "en": "Budget Override",
+    "zh-CN": "预算特许",
+    "reviewedEnglishHash": "a98813ffd6b72399c15259b47b0f94ac06488eb457afa80bbf9ca545b1489def"
+  },
+  "Budget amount": {
+    "en": "Budget amount",
+    "zh-CN": "预算金额",
+    "reviewedEnglishHash": "8d131c486e46b38020bf9556efd0d8491cb0f789f0709c50e5682c1ae43541ed"
+  },
+  "Budget at": {
+    "en": "Budget at",
+    "zh-CN": "预算为",
+    "reviewedEnglishHash": "42ed7a2d3f40d4e8d07eeea5260892c978b633834f7967bf71d25261c3631293"
+  },
+  "Budget control plane": {
+    "en": "Budget control plane",
+    "zh-CN": "预算管控",
+    "reviewedEnglishHash": "24583d5b9866223750d16ed31bd607f09a3a854bb250ebd1075f08495d4fcd9e"
+  },
+  "Budget data could not be loaded. Please try again shortly.": {
+    "en": "Budget data could not be loaded. Please try again shortly.",
+    "zh-CN": "无法加载预算数据，请稍后重试。",
+    "reviewedEnglishHash": "97c57d09d0b3d88e0b883d28c23f106f30d30171a9d5153aea9bc1e99281e169"
+  },
+  "Budget hard stop": {
+    "en": "Budget hard stop",
+    "zh-CN": "预算封顶",
+    "reviewedEnglishHash": "eb9eb6d3fb3534ff5b14a53b370345888f404ae78e2d7a38039b46cd6baffa24"
+  },
+  "Budget override approvals awaiting board action": {
+    "en": "Budget override approvals awaiting board action",
+    "zh-CN": "等待董事会处理的预算特许审批",
+    "reviewedEnglishHash": "1792320c21fd985f310dcae2f522e65ab0453216ded05a6d394d8e1827542fa7"
+  },
+  "Budget paused": {
+    "en": "Budget paused",
+    "zh-CN": "预算已暂停",
+    "reviewedEnglishHash": "0ee20bcfce984362953aef014bfdcb6415d77dde2581fe168ebd037ff65b2cb2"
+  },
+  "Budget {{amount}}": {
+    "en": "Budget {{amount}}",
+    "zh-CN": "预算 {{amount}}",
+    "reviewedEnglishHash": "e001078a0cfc377a96771200eec18ca87f46904a64ac917d2ae7f9e9e3310bdf"
+  },
+  "Budgets": {
+    "en": "Budgets",
+    "zh-CN": "预算",
+    "reviewedEnglishHash": "a1a06e046b0b9ad36e712f098b0c9b350b7ad9e1f562f72bb24c01dcf6e616e5"
+  },
+  "Build agent heartbeat system": {
+    "en": "Build agent heartbeat system",
+    "zh-CN": "构建智能体心跳系统",
+    "reviewedEnglishHash": "d355e8ac90cba300ad6d193e99f58b15ca5ffb213aa4088a0930a9f4db57449d"
+  },
+  "Building manifest...": {
+    "en": "Building manifest...",
+    "zh-CN": "正在构建清单...",
+    "reviewedEnglishHash": "126b239626ad67a3f745bc075735a5c769a6a18698457da8c08d2d116913c5db"
+  },
+  "Building manifest... {{seconds}}s. Large companies can take up to a minute.": {
+    "en": "Building manifest... {{seconds}}s. Large companies can take up to a minute.",
+    "zh-CN": "正在构建清单... {{seconds}} 秒。大型公司可能需要最多一分钟。",
+    "reviewedEnglishHash": "7df7bc4c1344273ef3e0d0ad73beedf01155db1edef361fb389f2d9d69fe739b"
+  },
+  "Built from": {
+    "en": "Built from",
+    "zh-CN": "构成来源：",
+    "reviewedEnglishHash": "fd224537c5334a31b815410b261364c9e9703994c6cd25360219594cc118052e"
+  },
+  "Built from a real Paperclip development run, then sanitized so no secrets, local paths, or environment details survive into the fixture.": {
+    "en": "Built from a real Paperclip development run, then sanitized so no secrets, local paths, or environment details survive into the fixture.",
+    "zh-CN": "基于一次真实的 Paperclip 开发运行构建，并经过脱敏处理，确保示例中不包含密钥、本地路径或环境细节。",
+    "reviewedEnglishHash": "a53c06078ecd1398fbd43c61d4cb7f87eb0e3ade0c190091578a97965f937f18"
+  },
+  "Built-in": {
+    "en": "Built-in",
+    "zh-CN": "内建",
+    "reviewedEnglishHash": "1f43948106d1d47fef7b0afa5c60be05f7334dc4fe43a0b77d8716ef6ec22611"
+  },
+  "Built-in Adapters": {
+    "en": "Built-in Adapters",
+    "zh-CN": "内建适配器",
+    "reviewedEnglishHash": "4cba737d7b294fb8a6b03b73a49d153f4f1c8a63d88e62cad59c18e4eefbb359"
+  },
+  "Bundled": {
+    "en": "Bundled",
+    "zh-CN": "内置",
+    "reviewedEnglishHash": "79d3a1f108e8d9c37f573ce55f27741845eb61f64c3272f91608f653ee4439e5"
+  },
+  "Bundled ·": {
+    "en": "Bundled ·",
+    "zh-CN": "内置 ·",
+    "reviewedEnglishHash": "736a5b772196aa85cfdf3eea8ae6d53d6c146b00c47e42cd5b18090ac985e535"
+  },
+  "Buttons": {
+    "en": "Buttons",
+    "zh-CN": "按钮",
+    "reviewedEnglishHash": "d452583a74d0e772db89d8f783831098869148222427750bedecc4a1b50380b5"
+  },
+  "By agent": {
+    "en": "By agent",
+    "zh-CN": "按智能体",
+    "reviewedEnglishHash": "0cb8a702286dadafe0b107c51fa3dfe5925a565f5f5064e2a6808d4150069d6d"
+  },
+  "By biller": {
+    "en": "By biller",
+    "zh-CN": "按结算方",
+    "reviewedEnglishHash": "27b8241be4a85eda7fd74d59400a9f3ba11728e3c7f2071ad051333bb73239b2"
+  },
+  "By project": {
+    "en": "By project",
+    "zh-CN": "按项目",
+    "reviewedEnglishHash": "9335958ece132c08e730358fb633c34fcc45d9e30be8adf26e89ab776bc2030f"
+  },
+  "By user": {
+    "en": "By user",
+    "zh-CN": "用户：",
+    "reviewedEnglishHash": "860ab0fed06c73cd878d13ba0cad5f003b2350594acf741ff8379ccf86ac82c0"
+  },
+  "Bypass sandbox": {
+    "en": "Bypass sandbox",
+    "zh-CN": "绕过沙箱",
+    "reviewedEnglishHash": "9af1dd7047986872c830ea2358d49e15b17406b4290903f573e4c16a0c8636a9"
+  },
+  "bash ./scripts/provision-worktree-runtime.sh": {
+    "en": "bash ./scripts/provision-worktree-runtime.sh",
+    "zh-CN": "bash ./scripts/provision-worktree-runtime.sh",
+    "reviewedEnglishHash": "3de78b546fda25814bcabb70a4ab50245376ecf4e7e4cbcf97f5bf391ab11548"
+  },
+  "bash ./scripts/provision-worktree.sh": {
+    "en": "bash ./scripts/provision-worktree.sh",
+    "zh-CN": "bash ./scripts/provision-worktree.sh",
+    "reviewedEnglishHash": "a3f9711286351477d8a463d529210a8689662bd490ab1bc382af50c283f61f95"
+  },
+  "bash ./scripts/teardown-worktree.sh": {
+    "en": "bash ./scripts/teardown-worktree.sh",
+    "zh-CN": "bash ./scripts/teardown-worktree.sh",
+    "reviewedEnglishHash": "7861dfed1ee34be177a5c2951585fdf24aff22d2ea67f9eb4fe7e613f2120756"
+  },
+  "before linking this account.": {
+    "en": "before linking this account.",
+    "zh-CN": "，才能关联此账户。",
+    "reviewedEnglishHash": "8fbf90f9ed2460cc4c3fed479f5a2a9b7cfbe40220decffae7cc027a5e8e0f38"
+  },
+  "biller": {
+    "en": "biller",
+    "zh-CN": "账单开具人",
+    "reviewedEnglishHash": "116d3dda100429ca77030fdc21e8ba95ea25e0c9804ffee1a43045243170d9a6"
+  },
+  "blocker": {
+    "en": "blocker",
+    "zh-CN": "阻塞项",
+    "reviewedEnglishHash": "1a48940a9383be191a715f95a09c7c253b725555cf61f72272482836e8710eef"
+  },
+  "blockers": {
+    "en": "blockers",
+    "zh-CN": "阻塞项",
+    "reviewedEnglishHash": "e7c5f59e850aed54a7822362c8911659724b9cb5beed000ca0c5b2c3ce0e1c2d"
+  },
+  "both mean no default has been chosen yet.": {
+    "en": "both mean no default has been chosen yet.",
+    "zh-CN": "均表示尚未选择默认值。",
+    "reviewedEnglishHash": "ca6ec52b2e4c615b4ca1a3f67d2259ab3564853e8a30211db5843b490ae2e097"
+  },
+  "built-in agent routine reconciled": {
+    "en": "built-in agent routine reconciled",
+    "zh-CN": "已协调内置智能体例行任务",
+    "reviewedEnglishHash": "129b042025fc115d7af0875a127452983aa03c5d436feecabf17c45abdbf7bfa"
+  },
+  "by": {
+    "en": "by",
+    "zh-CN": "由",
+    "reviewedEnglishHash": "a7e2d26e8d15814dd9c6a1bdc90585c8d0a3170dfffeb21fc42986683113041b"
+  },
+  "by {{name}}": {
+    "en": "by {{name}}",
+    "zh-CN": "由 {{name}}",
+    "reviewedEnglishHash": "9f181a726f6dc04a4fda2261569ac6c2445734fd41759a93dafd241c196ce28d"
+  }
+}

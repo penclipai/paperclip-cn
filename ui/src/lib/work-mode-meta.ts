@@ -1,13 +1,12 @@
 import type { IssueWorkMode } from "@penclipai/shared";
 import { ClipboardList, Hammer, MessageCircleQuestion, type LucideIcon } from "lucide-react";
-import { translateInstant } from "../i18n";
+import { translateInstant } from "@/i18n";
 
 export type WorkModeTone = "neutral" | "ask" | "planning";
 
 export interface WorkModeMeta {
   value: IssueWorkMode;
   label: string;
-  shortLabel: string;
   icon: LucideIcon;
   tone: WorkModeTone;
   classes: {
@@ -47,24 +46,21 @@ export function workModeMetaList(): WorkModeMeta[] {
   return [
     {
       value: "standard",
-      label: translateInstant("newIssue.workMode.conferenceRoom.standard", { defaultValue: "Agent mode" }),
-      shortLabel: translateInstant("newIssue.workMode.short.standard", { defaultValue: "Agent" }),
+      label: translateInstant("workMode.auto", { defaultValue: "Auto mode" }),
       icon: Hammer,
       tone: "neutral",
       classes: STANDARD_CLASSES,
     },
     {
       value: "planning",
-      label: translateInstant("newIssue.workMode.conferenceRoom.planning", { defaultValue: "Plan mode" }),
-      shortLabel: translateInstant("newIssue.workMode.short.planning", { defaultValue: "Plan" }),
+      label: translateInstant("workMode.plan", { defaultValue: "Plan mode" }),
       icon: ClipboardList,
       tone: "planning",
       classes: PLANNING_CLASSES,
     },
     {
       value: "ask",
-      label: translateInstant("newIssue.workMode.conferenceRoom.ask", { defaultValue: "Ask mode" }),
-      shortLabel: translateInstant("newIssue.workMode.short.ask", { defaultValue: "Ask" }),
+      label: translateInstant("workMode.ask", { defaultValue: "Ask mode" }),
       icon: MessageCircleQuestion,
       tone: "ask",
       classes: ASK_CLASSES,
@@ -85,12 +81,10 @@ export function nextWorkMode(mode: IssueWorkMode): IssueWorkMode {
 
 export function titleForPendingWorkMode(mode: IssueWorkMode): string {
   if (mode === "ask") {
-    return translateInstant("workMode.title.ask", {
-      defaultValue: "Ask mode for this submission. Click to change. The responsible will answer in this thread; no implementation work.",
-    });
+    return translateInstant("workMode.pending.ask", { defaultValue: "Ask mode for this submission. Click to change. The responsible will answer in this thread; no implementation work." });
   }
   if (mode === "planning") {
-    return translateInstant("workMode.title.planning", { defaultValue: "Plan mode is on for this submission. Click to change." });
+    return translateInstant("workMode.pending.plan", { defaultValue: "Plan mode is on for this submission. Click to change." });
   }
-  return translateInstant("workMode.title.standard", { defaultValue: "Agent mode for this submission. Click to change." });
+  return translateInstant("workMode.pending.auto", { defaultValue: "Auto mode for this submission. Click to change." });
 }

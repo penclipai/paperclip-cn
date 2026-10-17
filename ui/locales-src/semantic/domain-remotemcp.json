@@ -1,0 +1,42 @@
+{
+  "remoteMcp.choiceFailed": {
+    "en": "Could not use this connection.",
+    "zh-CN": "无法使用此连接。",
+    "reviewedEnglishHash": "038f9ed01822b367c0e1ef6e18fd6757411703187b84f60a69e56207981309ad"
+  },
+  "remoteMcp.connectionFailed": {
+    "en": "Could not connect. Please try again.",
+    "zh-CN": "无法连接，请重试。",
+    "reviewedEnglishHash": "e249ad0a231580845eeb6529ef13a8662db044e80d0300a1c7469c3469083180"
+  },
+  "remoteMcp.headersIncomplete": {
+    "en": "Enter both a name and value for each header.",
+    "zh-CN": "请为每个请求头同时填写名称和值。",
+    "reviewedEnglishHash": "6e137871a0e9c3949f4e741afe9d505cf87b51100e848ea30f4d3e17b331905d"
+  },
+  "remoteMcp.invalidManagementUrl": {
+    "en": "Use an HTTPS console URL without credentials.",
+    "zh-CN": "请使用不含凭据的 HTTPS 控制台 URL。",
+    "reviewedEnglishHash": "f9e0199d597aeed84518845b9b15aab3cad05ff153d10ced33b9c13c66260506"
+  },
+  "remoteMcp.loadingSavedAccess": {
+    "en": "Loading saved access…",
+    "zh-CN": "正在加载已保存的访问权限…",
+    "reviewedEnglishHash": "4a770f5aa3a18fc97dee69d59db397bc2b21dec144f5085ad9ab6d828a7f156c"
+  },
+  "remoteMcp.savedAccessFailed": {
+    "en": "Could not load saved access. Retry before changing this connection.",
+    "zh-CN": "无法加载已保存的访问权限。请重试后再更改此连接。",
+    "reviewedEnglishHash": "0062e3f03569aa59a513f678df00d0f1214b67f5c0fdccc5b07fce09c4b229ac"
+  },
+  "remoteMcp.savedCredentials": {
+    "en": "Saved credentials are retained when these fields are left blank. Enter a replacement only to change them.",
+    "zh-CN": "这些字段留空时会保留已保存的凭据。仅在需要更改时输入替换值。",
+    "reviewedEnglishHash": "759176829114984cd17419bcf53c9baefc1f1963a6b4269735bd4fc9062a6faa"
+  },
+  "remoteMcp.signInUnavailable": {
+    "en": "Paperclip couldn’t open sign-in. Use the sign-in link below to continue.",
+    "zh-CN": "Paperclip 无法打开登录窗口。请使用下方登录链接继续。",
+    "reviewedEnglishHash": "6dde0af6c10936fd2b5ecca63ea33ffcc5ecb5ebec146ca589e825d4fe0d5078"
+  }
+}

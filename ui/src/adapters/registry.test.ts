@@ -22,15 +22,11 @@ const externalUIAdapter: UIAdapterModule = {
 describe("ui adapter registry", () => {
   beforeEach(() => {
     unregisterUIAdapter("external_test");
-    unregisterUIAdapter("hermes_local");
-    unregisterUIAdapter("hermes_gateway");
     syncExternalAdapters([]);
   });
 
   afterEach(() => {
     unregisterUIAdapter("external_test");
-    unregisterUIAdapter("hermes_local");
-    unregisterUIAdapter("hermes_gateway");
     syncExternalAdapters([]);
   });
 
@@ -56,20 +52,4 @@ describe("ui adapter registry", () => {
     expect(fallback.ConfigFields).toBe(SchemaConfigFields);
   });
 
-  it("registers external Hermes so agent creation menus can show it after install", () => {
-    unregisterUIAdapter("hermes_local");
-
-    syncExternalAdapters([
-      {
-        type: "hermes_local",
-        label: "Hermes Agent",
-        disabled: false,
-      },
-    ]);
-
-    expect(listUIAdapters().some((adapter) => adapter.type === "hermes_local")).toBe(true);
-    expect(findUIAdapter("hermes_local")).not.toBeNull();
-
-    unregisterUIAdapter("hermes_local");
-  });
 });

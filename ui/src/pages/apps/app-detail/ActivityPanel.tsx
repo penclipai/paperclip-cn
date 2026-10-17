@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+import { translateInstant } from "@/i18n";
 import { useMemo } from "react";
 import {
   humanizeConnectionDisplayName,
@@ -7,13 +9,13 @@ import {
 } from "@penclipai/shared";
 import { Link } from "@/lib/router";
 import { Skeleton } from "@/components/ui/skeleton";
-import { translateInstant } from "@/i18n";
 import { cn } from "@/lib/utils";
 import { timeAgo } from "@/lib/timeAgo";
 import { appTabHref } from "../app-tabs";
 import type { ActivityPanelProps } from "./types";
 
 export function ActivityPanel(props: ActivityPanelProps) {
+  useTranslation();
   return <RecentActivity {...props} />;
 }
 
@@ -24,7 +26,7 @@ type TimelineRow = {
   dotClass: string;
   /** Secondary "while working on PAP-…" issue link, tool-call rows only. */
   issue?: { identifier: string } | null;
-  /** Deep-link rendered after the timestamp ("View in Setup"), lifecycle rows only. */
+  /** Deep-link rendered after the timestamp, lifecycle rows only. */
   link?: { to: string; label: string } | null;
 };
 
@@ -39,6 +41,7 @@ function RecentActivity({
   appName,
   userLabelById,
 }: ActivityPanelProps) {
+  useTranslation();
   const nameById = useMemo(() => new Map(agents.map((a) => [a.id, a.name])), [agents]);
 
   const rows = useMemo<TimelineRow[]>(() => {
@@ -60,13 +63,13 @@ function RecentActivity({
         };
       });
 
-    const setupHref = appTabHref(connectionId, "setup");
+    const permissionsHref = appTabHref(connectionId, "permissions");
     const lifecycleRows: TimelineRow[] = lifecycleEvents.map((event) => ({
       key: `lifecycle:${event.id}`,
       createdAt: event.createdAt,
       primary: humanizeLifecycleEvent(event, appName, nameById.get(event.agentId ?? "") ?? null),
       dotClass: lifecycleDotColor(event),
-      link: { to: setupHref, label: lifecycleLinkLabel(event) },
+      link: { to: permissionsHref, label: lifecycleLinkLabel(event) },
     }));
 
     return [...callRows, ...lifecycleRows].sort(
@@ -75,11 +78,9 @@ function RecentActivity({
   }, [events, lifecycleEvents, issues, actionRequests, nameById, connectionId, appName, userLabelById]);
 
   return (
-    <section className="space-y-2">
+    <section className="space-y-5">
       <div>
-        <h2 className="text-sm font-bold text-foreground">
-          {translateInstant("apps.detail.activity.title", { defaultValue: "Recent activity" })}
-        </h2>
+        <h2 className="text-lg font-semibold text-foreground">{translateInstant("apps.detail.activity.title")}</h2>
       </div>
       {loading ? (
         <div className="space-y-2 py-4">
@@ -87,9 +88,7 @@ function RecentActivity({
           <Skeleton className="h-4 w-2/3" />
         </div>
       ) : rows.length === 0 ? (
-        <p className="py-5 text-sm text-muted-foreground">
-          {translateInstant("apps.detail.activity.empty", { defaultValue: "No activity yet." })}
-        </p>
+        <p className="py-5 text-sm text-muted-foreground">{translateInstant("apps.detail.activity.empty")}</p>
       ) : (
         <ul className="divide-y divide-border">
           {rows.map((row) => (
@@ -100,9 +99,7 @@ function RecentActivity({
                 <span className="block truncate text-xs text-muted-foreground">
                   {row.issue ? (
                     <>
-                      {translateInstant("apps.detail.activity.whileWorkingOn", {
-                        defaultValue: "while working on",
-                      })}{" "}
+                      {translateInstant("apps.detail.activity.whileWorkingOn")}{" "}
                       <Link
                         to={`/issues/${row.issue.identifier}`}
                         className="font-medium text-muted-foreground hover:text-foreground hover:underline"
@@ -158,11 +155,9 @@ export function resolveActorLabel(
   if (actorId) {
     const label = userLabelById?.get(actorId);
     if (label) return label;
-    if (actorId === "local-board") {
-      return translateInstant("apps.detail.activity.actor.board", { defaultValue: "Board" });
-    }
+    if (actorId === "local-board") return translateInstant("Board");
   }
-  return translateInstant("apps.detail.activity.actor.someone", { defaultValue: "Someone" });
+  return "Someone";
 }
 
 export function humanizeEvent(
@@ -175,72 +170,32 @@ export function humanizeEvent(
   // For Test-tab calls, surface "<User> tested as <Agent>" so prosumer test runs are
   // distinguishable from real heartbeat agent activity in the audit trail (PAP-11415).
   const who = testRunnerLabel
-    ? translateInstant("apps.detail.activity.event.testedAs", {
-      defaultValue: "{{runner}} tested as {{agentName}}",
-      runner: testRunnerLabel,
-      agentName: agentName
-        ?? translateInstant("apps.detail.activity.actor.anAgentLower", { defaultValue: "an agent" }),
-    })
-    : agentName ?? translateInstant("apps.detail.activity.actor.anAgent", { defaultValue: "An agent" });
+    ? `${testRunnerLabel} tested as ${agentName ?? "an agent"}`
+    : agentName ?? "An agent";
   // The raw gateway tool name is prefixed (e.g. `mcp.app-gallery-link-…:kv-set`);
   // humanize it to "Kv Set" to match the cross-app Activity view (PAP-11105).
-  const action = event.toolName
-    ? humanizeConnectionDisplayName(event.toolName)
-    : translateInstant("apps.detail.activity.event.anAction", { defaultValue: "an action" });
+  const action = event.toolName ? humanizeConnectionDisplayName(event.toolName) : "an action";
   switch (event.eventType) {
     case "call_completed":
       return {
         primary: event.outcome === "success"
-          ? translateInstant("apps.detail.activity.event.callCompleted", {
-            defaultValue: "{{who}} used {{action}}",
-            who,
-            action,
-          })
-          : translateInstant("apps.detail.activity.event.callCompletedIncomplete", {
-            defaultValue: "{{who}} ran {{action}}, but it didn't finish",
-            who,
-            action,
-          }),
+          ? `${who} used ${action}`
+          : `${who} ran ${action}, but it didn't finish`,
       };
     case "call_failed":
-      return {
-        primary: translateInstant("apps.detail.activity.event.callFailed", {
-          defaultValue: "{{action}} didn't work for {{who}}",
-          action,
-          who: lower(who),
-        }),
-      };
+      return { primary: `${action} didn't work for ${lower(who)}` };
     case "call_denied":
       return {
         primary: testRunnerLabel
-          ? translateInstant("apps.detail.activity.event.callDeniedTest", {
-            defaultValue: "{{who}} - {{action}} is turned off",
-            who,
-            action,
-          })
-          : translateInstant("apps.detail.activity.event.callDenied", {
-            defaultValue: "Blocked {{action}} - it isn't turned on",
-            action,
-          }),
+          ? `${who} - ${action} is turned off`
+          : `Blocked ${action} - it isn't turned on`,
       };
     case "approval_requested":
-      return {
-        primary: translateInstant("apps.detail.activity.event.approvalRequested", {
-          defaultValue: "{{who}} asked before running {{action}}",
-          who,
-          action,
-        }),
-      };
+      return { primary: `${who} asked before running ${action}` };
     case "approval_resolved":
       return { primary: humanizeApprovalResolved(action, actionRequest) };
     default:
-      return {
-        primary: translateInstant("apps.detail.activity.event.default", {
-          defaultValue: "{{who}} used {{action}}",
-          who,
-          action,
-        }),
-      };
+      return { primary: `${who} used ${action}` };
   }
 }
 
@@ -248,27 +203,10 @@ function humanizeApprovalResolved(
   action: string,
   actionRequest?: ActivityPanelProps["actionRequests"][string],
 ): string {
-  const resolver = actionRequest?.resolverDisplayName
-    ?? translateInstant("apps.detail.activity.actor.someone", { defaultValue: "Someone" });
-  if (actionRequest?.status === "approved") {
-    return translateInstant("apps.detail.activity.event.approvalResolved.approved", {
-      defaultValue: "{{resolver}} approved {{action}}",
-      resolver,
-      action,
-    });
-  }
-  if (actionRequest?.status === "rejected") {
-    return translateInstant("apps.detail.activity.event.approvalResolved.rejected", {
-      defaultValue: "{{resolver}} said no to {{action}}",
-      resolver,
-      action,
-    });
-  }
-  return translateInstant("apps.detail.activity.event.approvalResolved.reviewed", {
-    defaultValue: "{{resolver}} reviewed {{action}}",
-    resolver,
-    action,
-  });
+  const resolver = actionRequest?.resolverDisplayName ?? "Someone";
+  if (actionRequest?.status === "approved") return `${resolver} approved ${action}`;
+  if (actionRequest?.status === "rejected") return `${resolver} said no to ${action}`;
+  return `${resolver} reviewed ${action}`;
 }
 
 /** Humanize a connection lifecycle event into a prosumer sentence (PAP-11284). */
@@ -277,52 +215,26 @@ function humanizeLifecycleEvent(
   appName: string,
   agentName: string | null,
 ): string {
-  const who = event.actorDisplayName
-    ?? agentName
-    ?? translateInstant("apps.detail.activity.actor.someone", { defaultValue: "Someone" });
+  const who = event.actorDisplayName ?? agentName ?? "Someone";
   switch (event.type) {
     case "app_connected":
-      return translateInstant("apps.detail.activity.lifecycle.connected", {
-        defaultValue: "{{who}} connected {{appName}}",
-        who,
-        appName,
-      });
+      return `${who} connected ${appName}`;
     case "app_paused":
-      return translateInstant("apps.detail.activity.lifecycle.paused", {
-        defaultValue: "{{who}} paused this app",
-        who,
-      });
+      return `${who} paused this app`;
     case "app_resumed":
-      return translateInstant("apps.detail.activity.lifecycle.resumed", {
-        defaultValue: "{{who}} resumed this app",
-        who,
-      });
+      return `${who} resumed this app`;
     case "reconnected":
-      return translateInstant("apps.detail.activity.lifecycle.reconnected", {
-        defaultValue: "{{who}} reconnected {{appName}}",
-        who,
-        appName,
-      });
+      return `${who} reconnected ${appName}`;
     case "disconnected":
-      return translateInstant("apps.detail.activity.lifecycle.disconnected", {
-        defaultValue: "{{who}} disconnected {{appName}}",
-        who,
-        appName,
-      });
+      return `${who} disconnected ${appName}`;
     case "allowlist_changed":
       return humanizeAllowlistChange(who, event.details);
     case "actions_quarantined": {
       const count = numberFrom(event.details?.count);
-      return translateInstant("apps.detail.activity.lifecycle.actionsQuarantined", {
-        defaultValue: `${count} new ${count === 1 ? "action" : "actions"} need review`,
-        count,
-      });
+      return `${count} new ${count === 1 ? "action" : "actions"} need review`;
     }
     default:
-      return translateInstant("apps.detail.activity.lifecycle.updated", {
-        defaultValue: "{{who}} updated this app",
-        who,
-      });
+      return `${who} updated this app`;
   }
 }
 
@@ -330,43 +242,19 @@ function humanizeAllowlistChange(who: string, details: Record<string, unknown> |
   const added = numberFrom(details?.added);
   const removed = numberFrom(details?.removed);
   if (added > 0 && removed === 0) {
-    return translateInstant("apps.detail.activity.allowlist.added", {
-      defaultValue: "{{who}} added {{count}} {{noun}} to the allowlist",
-      who,
-      count: added,
-      noun: added === 1
-        ? translateInstant("apps.detail.activity.allowlist.sheet", { defaultValue: "sheet" })
-        : translateInstant("apps.detail.activity.allowlist.sheets", { defaultValue: "sheets" }),
-    });
+    return `${who} added ${added} ${added === 1 ? "sheet" : "sheets"} to the allowlist`;
   }
   if (removed > 0 && added === 0) {
-    return translateInstant("apps.detail.activity.allowlist.removed", {
-      defaultValue: "{{who}} removed {{count}} {{noun}} from the allowlist",
-      who,
-      count: removed,
-      noun: removed === 1
-        ? translateInstant("apps.detail.activity.allowlist.sheet", { defaultValue: "sheet" })
-        : translateInstant("apps.detail.activity.allowlist.sheets", { defaultValue: "sheets" }),
-    });
+    return `${who} removed ${removed} ${removed === 1 ? "sheet" : "sheets"} from the allowlist`;
   }
   if (added > 0 && removed > 0) {
-    return translateInstant("apps.detail.activity.allowlist.updatedCounts", {
-      defaultValue: "{{who}} updated the allowlist (added {{added}}, removed {{removed}})",
-      who,
-      added,
-      removed,
-    });
+    return `${who} updated the allowlist (added ${added}, removed ${removed})`;
   }
-  return translateInstant("apps.detail.activity.allowlist.updated", {
-    defaultValue: "{{who}} updated the allowlist",
-    who,
-  });
+  return `${who} updated the allowlist`;
 }
 
 function lifecycleLinkLabel(event: ToolConnectionLifecycleEvent): string {
-  return event.type === "actions_quarantined"
-    ? translateInstant("apps.detail.activity.link.reviewInSetup", { defaultValue: "Review in Setup" })
-    : translateInstant("apps.detail.activity.link.viewInSetup", { defaultValue: "View in Setup" });
+  return event.type === "actions_quarantined" ? "Review permissions" : "View permissions";
 }
 
 function numberFrom(value: unknown): number {
@@ -375,9 +263,7 @@ function numberFrom(value: unknown): number {
 }
 
 function lower(who: string): string {
-  return who === translateInstant("apps.detail.activity.actor.anAgent", { defaultValue: "An agent" })
-    ? translateInstant("apps.detail.activity.actor.anAgentLower", { defaultValue: "an agent" })
-    : who;
+  return who === "An agent" ? "an agent" : who;
 }
 
 function dotColor(event: ToolCallEvent): string {

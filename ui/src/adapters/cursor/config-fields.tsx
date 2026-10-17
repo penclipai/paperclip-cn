@@ -1,5 +1,7 @@
-import type { AdapterConfigFieldsProps } from "../types";
+import { configFieldsForSection } from "../config-sections";
+import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
+import type { AdapterConfigFieldsProps } from "../types";
 import {
   Field,
   DraftInput,
@@ -12,6 +14,7 @@ const instructionsFileHint =
   "Absolute path to a markdown file (e.g. AGENTS.md) that defines this agent's behavior. Injected into the prompt at runtime.";
 
 export function CursorLocalConfigFields({
+  section,
   isCreate,
   values,
   set,
@@ -20,17 +23,10 @@ export function CursorLocalConfigFields({
   mark,
   hideInstructionsFile,
 }: AdapterConfigFieldsProps) {
-  const { t } = useTranslation();
+  useTranslation();
   if (hideInstructionsFile) return null;
-  return (
-    <Field
-      label={t("agentConfig.instructionsFileLabel", {
-        defaultValue: "Agent instructions file",
-      })}
-      hint={t("agentConfig.cursorInstructionsFileHint", {
-        defaultValue: instructionsFileHint,
-      })}
-    >
+  return configFieldsForSection(section, (
+    <Field label={translateInstant("Agent instructions file")} hint={translateInstant(instructionsFileHint)}>
       <div className="flex items-center gap-2">
         <DraftInput
           value={
@@ -49,12 +45,10 @@ export function CursorLocalConfigFields({
           }
           immediate
           className={inputClass}
-          placeholder={t("agentConfig.instructionsFilePlaceholder", {
-            defaultValue: "/absolute/path/to/AGENTS.md",
-          })}
+          placeholder="/absolute/path/to/AGENTS.md"
         />
         <ChoosePathButton />
       </div>
     </Field>
-  );
+  ));
 }

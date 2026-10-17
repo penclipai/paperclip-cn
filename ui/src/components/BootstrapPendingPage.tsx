@@ -1,11 +1,12 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
 import type { ReactNode } from "react";
 import { Loader2, ShieldCheck, Terminal, TriangleAlert } from "lucide-react";
-import { useTranslation } from "react-i18next";
 import { Link } from "@/lib/router";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { BOOTSTRAP_FALLBACK_COMMAND } from "@/bootstrapSetup";
 import type { AuthSession } from "@penclipai/shared";
+import { Card } from "@/components/ui/card";
 
 type BootstrapPendingPageProps = {
   claimAvailable: boolean;
@@ -17,17 +18,17 @@ type BootstrapPendingPageProps = {
 };
 
 function CliFallback({ hasActiveInvite = false }: { hasActiveInvite?: boolean }) {
-  const { t } = useTranslation();
+  useTranslation();
   return (
     <div className="mt-6 border-t border-border pt-5">
       <div className="flex items-center gap-2 text-sm font-medium">
         <Terminal className="size-4 text-muted-foreground" aria-hidden />
-        <span>{t("bootstrapPending.finishFromHost", { defaultValue: "Prefer to finish setup from the host?" })}</span>
+        <span>{translateInstant("bootstrapPending.finishFromHost")}</span>
       </div>
       <p className="mt-2 text-sm text-muted-foreground">
         {hasActiveInvite
-          ? t("bootstrapPending.activeInviteHelp", { defaultValue: "A bootstrap invite is already active. Check your Paperclip startup logs for the first-admin URL, or run this command on the host to rotate it:" })
-          : t("bootstrapPending.commandHelp", { defaultValue: "Run this command on the host that runs Paperclip to print a one-time first-admin invite URL:" })}
+          ? translateInstant("bootstrapPending.activeInviteHelp")
+          : translateInstant("bootstrapPending.commandHelp")}
       </p>
       <pre className="mt-3 overflow-x-auto rounded-md border border-border bg-muted/30 p-3 font-mono text-xs">
 {BOOTSTRAP_FALLBACK_COMMAND}
@@ -48,21 +49,21 @@ function displayIdentity(session: AuthSession) {
   return session.user.email || session.user.name || session.user.id;
 }
 
-function claimErrorCopy(error: BootstrapPendingPageProps["claimError"], t: (key: string, options?: Record<string, unknown>) => string) {
+function claimErrorCopy(error: BootstrapPendingPageProps["claimError"]) {
   if (error?.status === 409) {
     return {
-      title: t("bootstrapPending.claimedTitle", { defaultValue: "Someone else has already claimed this instance." }),
-      body: t("bootstrapPending.claimedBody", { defaultValue: "Refresh to sign in, or ask the existing admin to invite you from Instance settings -> Access." }),
+      title: "Someone else has already claimed this instance.",
+      body: "Refresh to sign in, or ask the existing admin to invite you from Settings -> Access.",
     };
   }
   if (error?.status === 401) {
     return {
-      title: t("bootstrapPending.sessionExpired", { defaultValue: "Your session expired. Sign in again to claim this instance." }),
+      title: "Your session expired. Sign in again to claim this instance.",
       body: "",
     };
   }
   return {
-    title: t("bootstrapPending.serverUnreachable", { defaultValue: "We couldn't reach the server. Try again in a moment." }),
+    title: "We couldn't reach the server. Try again in a moment.",
     body: "",
   };
 }
@@ -75,18 +76,16 @@ export function BootstrapPendingPage({
   claimError,
   onClaim,
 }: BootstrapPendingPageProps) {
-  const { t } = useTranslation();
+  useTranslation();
   if (!claimAvailable) {
     return (
       <StateChrome>
-        <h1 className="text-xl font-semibold">{t("bootstrapPending.waitingTitle", { defaultValue: "This Paperclip is waiting on its first admin" })}</h1>
+        <h1 className="text-xl font-semibold">{translateInstant("bootstrapPending.waitingTitle")}</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          {t("bootstrapPending.inviteOnlyBody", { defaultValue: "This instance runs in invite-only mode. The operator must generate a one-time first-admin invite URL from the host. Once you have the link, open it from this browser to finish setup." })}
-        </p>
+          {translateInstant("bootstrapPending.inviteOnlyBody")}</p>
         <CliFallback hasActiveInvite={hasActiveInvite} />
         <p className="mt-4 text-xs text-muted-foreground">
-          {t("bootstrapPending.publicModeDisabled", { defaultValue: "Browser-based claim is intentionally disabled in public mode so anyone on the network can't promote themselves." })}
-        </p>
+          {translateInstant("bootstrapPending.publicModeDisabled")}</p>
       </StateChrome>
     );
   }
@@ -99,19 +98,18 @@ export function BootstrapPendingPage({
             <ShieldCheck className="size-5" aria-hidden />
           </div>
           <div>
-            <h1 className="text-xl font-semibold">{t("bootstrapPending.adminTitle", { defaultValue: "You're the instance admin" })}</h1>
+            <h1 className="text-xl font-semibold">{translateInstant("bootstrapPending.adminTitle")}</h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              {t("bootstrapPending.setupComplete", { defaultValue: "Setup is complete. Taking you to onboarding to create your first company..." })}
-            </p>
+              {translateInstant("Setup is complete. Taking you to onboarding to create your first organization...")}</p>
           </div>
         </div>
         <div className="mt-5 flex items-center gap-3">
           <Loader2 className="size-4 animate-spin text-muted-foreground" aria-hidden />
-          <span className="text-sm text-muted-foreground">{t("Redirecting...")}</span>
+          <span className="text-sm text-muted-foreground">{translateInstant("Redirecting...")}</span>
         </div>
         <div className="mt-5">
           <Button asChild variant="outline">
-            <a href="/">{t("Continue to dashboard")}</a>
+            <a href="/">{translateInstant("Continue to dashboard")}</a>
           </Button>
         </div>
       </StateChrome>
@@ -121,13 +119,12 @@ export function BootstrapPendingPage({
   if (!session) {
     return (
       <StateChrome>
-        <h1 className="text-xl font-semibold">{t("bootstrapPending.finishTitle", { defaultValue: "Finish setting up this Paperclip" })}</h1>
+        <h1 className="text-xl font-semibold">{translateInstant("bootstrapPending.finishTitle")}</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          {t("bootstrapPending.signInBody", { defaultValue: "No admin has claimed this instance yet. Sign in or create your Paperclip account to become the first admin from this browser." })}
-        </p>
+          {translateInstant("bootstrapPending.signInBody")}</p>
         <div className="mt-5">
           <Button asChild>
-            <Link to="/auth?next=/">{t("Sign in / Create account")}</Link>
+            <Link to="/auth?next=/">{translateInstant("Sign in / Create account")}</Link>
           </Button>
         </div>
         <CliFallback hasActiveInvite={hasActiveInvite} />
@@ -135,30 +132,27 @@ export function BootstrapPendingPage({
     );
   }
 
-  const errorCopy = claimErrorCopy(claimError, t);
+  const errorCopy = claimErrorCopy(claimError);
   const isClaiming = claimState === "claiming";
   return (
     <StateChrome>
-      <h1 className="text-xl font-semibold">{t("bootstrapPending.finishTitle", { defaultValue: "Finish setting up this Paperclip" })}</h1>
+      <h1 className="text-xl font-semibold">{translateInstant("bootstrapPending.finishTitle")}</h1>
       <p className="mt-2 text-sm text-muted-foreground">
-        {t("bootstrapPending.claimBody", { defaultValue: "No admin has claimed this instance yet. Claim it now to become the first admin and start onboarding." })}
-      </p>
+        {translateInstant("bootstrapPending.claimBody")}</p>
       <div className="mt-5 flex flex-wrap items-center gap-3">
         <Button onClick={onClaim} disabled={isClaiming}>
           {isClaiming && <Loader2 className="mr-2 size-4 animate-spin" aria-hidden />}
-          {isClaiming ? t("Claiming...") : t("Claim this instance")}
+          {isClaiming ? "Claiming..." : "Claim this instance"}
         </Button>
         <span className="text-sm text-muted-foreground">
-          {t("Signed in as")} <span className="font-medium text-foreground">{displayIdentity(session)}</span>
+          {translateInstant("Signed in as")}{" "}<span className="font-medium text-foreground">{displayIdentity(session)}</span>
         </span>
       </div>
       <p className="mt-3 text-xs text-muted-foreground">
-        {t("Wrong account?")}{" "}
+        {translateInstant("Wrong account?")}{" "}
         <Link to="/auth?next=/" className="underline underline-offset-2">
-          {t("Switch account")}
-        </Link>
-        .
-      </p>
+          {translateInstant("Switch account")}</Link>
+        {translateInstant(".")}</p>
       {claimError && (
         <div
           role="alert"

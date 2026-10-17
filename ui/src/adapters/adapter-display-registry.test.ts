@@ -1,14 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { translateInstantMock } = vi.hoisted(() => ({
-  translateInstantMock: vi.fn((key: string) => key),
-}));
+const translateInstantMock = vi.hoisted(() => vi.fn());
+vi.mock("../i18n", () => ({ translateInstant: translateInstantMock }));
 
-vi.mock("../i18n", () => ({
-  translateInstant: translateInstantMock,
-}));
-
-import { adapterLabels } from "../components/agent-config-primitives";
 import { getAdapterDisplay, getAdapterLabel, getAdapterLabels } from "./adapter-display-registry";
 
 describe("adapter display registry", () => {
@@ -17,17 +11,16 @@ describe("adapter display registry", () => {
     translateInstantMock.mockImplementation((key: string) => `zh:${key}`);
   });
 
-  it("translates built-in adapter labels without the legacy local qualifier", () => {
+  it("uses user-facing labels without the legacy local qualifier for built-in adapters", () => {
     expect(getAdapterLabel("codex_local")).toBe("zh:Codex");
     expect(getAdapterLabel("claude_local")).toBe("zh:Claude Code");
     expect(getAdapterLabel("acpx_local")).toBe("zh:ACPX (retired)");
     expect(getAdapterLabel("cursor")).toBe("zh:Cursor");
     expect(getAdapterLabel("gemini_local")).toBe("zh:Gemini CLI");
     expect(getAdapterLabel("grok_local")).toBe("zh:Grok Build");
+    expect(getAdapterLabel("kimi_local")).toBe("zh:Kimi Code");
     expect(getAdapterLabel("opencode_local")).toBe("zh:OpenCode");
     expect(getAdapterLabel("pi_local")).toBe("zh:Pi");
-    expect(getAdapterLabel("codebuddy_local")).toBe("zh:CodeBuddy");
-    expect(getAdapterLabel("qwen_local")).toBe("zh:Qwen");
 
     expect(getAdapterLabels()).toMatchObject({
       codex_local: "zh:Codex",
@@ -36,35 +29,25 @@ describe("adapter display registry", () => {
       cursor: "zh:Cursor",
       gemini_local: "zh:Gemini CLI",
       grok_local: "zh:Grok Build",
+      kimi_local: "zh:Kimi Code",
       opencode_local: "zh:OpenCode",
       pi_local: "zh:Pi",
-      codebuddy_local: "zh:CodeBuddy",
-      qwen_local: "zh:Qwen",
-    });
-    expect(getAdapterDisplay("qwen_local")).toMatchObject({
-      label: "zh:Qwen",
-      description: "zh:Local Qwen agent",
     });
   });
 
-  it("keeps external adapter labels generic while translating fallback descriptions", () => {
+  it("drops local suffixes for unknown plugin adapter labels", () => {
     expect(getAdapterLabel("droid_local")).toBe("Droid");
     expect(getAdapterDisplay("droid_local")).toMatchObject({
       label: "Droid",
       description: "zh:External adapter",
     });
+  });
+
+  it("keeps a gateway suffix for unknown plugin adapter labels", () => {
     expect(getAdapterLabel("droid_gateway")).toBe("Droid (gateway)");
     expect(getAdapterDisplay("droid_gateway")).toMatchObject({
       label: "Droid (gateway)",
       description: "zh:External gateway adapter",
     });
-  });
-
-  it("keeps adapterLabels reactive to translation changes", () => {
-    expect(adapterLabels.codex_local).toBe("zh:Codex");
-
-    translateInstantMock.mockImplementation((key: string) => `en:${key}`);
-
-    expect(adapterLabels.codex_local).toBe("en:Codex");
   });
 });

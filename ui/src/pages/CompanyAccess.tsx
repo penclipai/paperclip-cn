@@ -1,15 +1,17 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { TFunction } from "i18next";
-import { useTranslation } from "react-i18next";
 import {
   HUMAN_COMPANY_MEMBERSHIP_ROLE_LABELS,
+  hidesCompanyPage,
   type Agent,
 } from "@penclipai/shared";
-import { Shield, ShieldCheck, Trash2, Users } from "lucide-react";
+import { Shield, ShieldCheck, Trash2, UserPlus } from "lucide-react";
 import { accessApi, type CompanyMember } from "@/api/access";
 import { agentsApi } from "@/api/agents";
 import { ApiError } from "@/api/client";
+import { cloudApi } from "@/api/cloud";
 import { issuesApi } from "@/api/issues";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,22 +23,65 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";
 import { useCompany } from "@/context/CompanyContext";
 import { useToast } from "@/context/ToastContext";
-import { Link, Navigate } from "@/lib/router";
+import { Link, Navigate, useSearchParams } from "@/lib/router";
 import { queryKeys } from "@/lib/queryKeys";
+import { cloudStackInviteUrl } from "@/lib/cloudLinks";
 import { usePluginSlots } from "@/plugins/slots";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { PageTabBar } from "@/components/PageTabBar";
+import { useHiddenSettings } from "@/hooks/useHiddenSettings";
+import { useCloudInstance } from "@/hooks/useCloudInstance";
+import { InvitesSection } from "@/components/access/InvitesSection";
 
 const reassignmentIssueStatuses = "backlog,todo,in_progress,in_review,blocked,failed,timed_out";
 type EditableMemberStatus = "pending" | "active" | "suspended";
 
 export function CompanyAccess() {
-  const { t } = useTranslation();
+  useTranslation();
   const { selectedCompany, selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { pushToast } = useToast();
   const queryClient = useQueryClient();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const cloud = useCloudInstance();
+  const cloudStacksQuery = useQuery({
+    queryKey: queryKeys.cloud.stacks,
+    queryFn: () => cloudApi.listStacks(),
+    enabled: Boolean(cloud && selectedCompanyId),
+    staleTime: 30_000,
+    retry: false,
+  });
+  const currentStack = cloudStacksQuery.data?.stacks.find((stack) => stack.isCurrent);
+  // Company roles can differ from Cloud roles. Only the current stack's
+  // owner/admin may invite, even if another portfolio entry grants ownership.
+  const cloudInviteUrl = cloud && !cloudStacksQuery.isError &&
+    (currentStack?.role === "owner" || currentStack?.role === "admin")
+    ? cloudStackInviteUrl(cloud.cloudBaseUrl, currentStack.stackSlug)
+    : null;
+  // Invites render as a tab of this page; `company.invites` hides just that
+  // tab while `company.members` (the route gate) hides the whole page.
+  const { hidden: hiddenSettings } = useHiddenSettings();
+  const hideInvitesTab = hidesCompanyPage(hiddenSettings, "company.invites");
+  const requestedTab = searchParams.get("tab") === "invites" ? "invites" : "members";
+  const activeTab = hideInvitesTab ? "members" : requestedTab;
+  const handleTabChange = (value: string) => {
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (value === "invites") {
+          next.set("tab", "invites");
+        } else {
+          next.delete("tab");
+        }
+        return next;
+      },
+      { replace: true },
+    );
+  };
   const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
   const [removingMemberId, setRemovingMemberId] = useState<string | null>(null);
   const [reassignmentTarget, setReassignmentTarget] = useState<string>("__unassigned");
@@ -45,11 +90,11 @@ export function CompanyAccess() {
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: selectedCompany?.name ?? t("Company"), href: "/dashboard" },
-      { label: t("Settings"), href: "/company/settings" },
-      { label: t("Members") },
+      { label: selectedCompany?.name ?? translateInstant("Organization"), href: "/dashboard" },
+      { label: translateInstant("Settings"), href: "/company/settings" },
+      { label: translateInstant("Members") },
     ]);
-  }, [selectedCompany?.name, setBreadcrumbs, t]);
+  }, [selectedCompany?.name, setBreadcrumbs]);
 
   const membersQuery = useQuery({
     queryKey: queryKeys.access.companyMembers(selectedCompanyId ?? ""),
@@ -87,14 +132,14 @@ export function CompanyAccess() {
       setEditingMemberId(null);
       await refreshAccessData();
       pushToast({
-        title: t("Member updated"),
+        title: translateInstant("Member updated"),
         tone: "success",
       });
     },
     onError: (error) => {
       pushToast({
-        title: t("Failed to update member"),
-        body: error instanceof Error ? error.message : t("Unknown error"),
+        title: translateInstant("Failed to update member"),
+        body: error instanceof Error ? error.message : translateInstant("Unknown error"),
         tone: "error",
       });
     },
@@ -105,14 +150,14 @@ export function CompanyAccess() {
     onSuccess: async () => {
       await refreshAccessData();
       pushToast({
-        title: t("Join request approved"),
+        title: translateInstant("Join request approved"),
         tone: "success",
       });
     },
     onError: (error) => {
       pushToast({
-        title: t("Failed to approve join request"),
-        body: error instanceof Error ? error.message : t("Unknown error"),
+        title: translateInstant("Failed to approve join request"),
+        body: error instanceof Error ? error.message : translateInstant("Unknown error"),
         tone: "error",
       });
     },
@@ -123,14 +168,14 @@ export function CompanyAccess() {
     onSuccess: async () => {
       await refreshAccessData();
       pushToast({
-        title: t("Join request rejected"),
+        title: translateInstant("Join request rejected"),
         tone: "success",
       });
     },
     onError: (error) => {
       pushToast({
-        title: t("Failed to reject join request"),
-        body: error instanceof Error ? error.message : t("Unknown error"),
+        title: translateInstant("Failed to reject join request"),
+        body: error instanceof Error ? error.message : translateInstant("Unknown error"),
         tone: "error",
       });
     },
@@ -175,18 +220,18 @@ export function CompanyAccess() {
         await queryClient.invalidateQueries({ queryKey: queryKeys.issues.listTouchedByMe(selectedCompanyId) });
       }
       pushToast({
-        title: t("Member removed"),
+        title: translateInstant("Member removed"),
         body:
           result.reassignedIssueCount > 0
-            ? t("{{count}} assigned issues cleaned up.", { count: result.reassignedIssueCount })
+            ? `${result.reassignedIssueCount} assigned task${result.reassignedIssueCount === 1 ? "" : "s"} cleaned up.`
             : undefined,
         tone: "success",
       });
     },
     onError: (error) => {
       pushToast({
-        title: t("Failed to remove member"),
-        body: error instanceof Error ? error.message : t("Unknown error"),
+        title: translateInstant("Failed to remove member"),
+        body: error instanceof Error ? error.message : translateInstant("Unknown error"),
         tone: "error",
       });
     },
@@ -204,20 +249,20 @@ export function CompanyAccess() {
   }, [removingMember]);
 
   if (!selectedCompanyId) {
-    return <div className="text-sm text-muted-foreground">{t("Select a company to manage access.")}</div>;
+    return <div className="text-sm text-muted-foreground">{translateInstant("Select an organization to manage access.")}</div>;
   }
 
   if (membersQuery.isLoading) {
-    return <div className="text-sm text-muted-foreground">{t("Loading company access…")}</div>;
+    return <div className="text-sm text-muted-foreground">{translateInstant("Loading organization access…")}</div>;
   }
 
   if (membersQuery.error) {
     const message =
       membersQuery.error instanceof ApiError && membersQuery.error.status === 403
-        ? t("You do not have permission to manage company members.")
+        ? "You do not have permission to manage organization members."
         : membersQuery.error instanceof Error
           ? membersQuery.error.message
-          : t("Failed to load company members.");
+          : "Failed to load organization members.";
     return <div className="text-sm text-destructive">{message}</div>;
   }
 
@@ -238,46 +283,47 @@ export function CompanyAccess() {
 
   return (
     <div className="max-w-6xl space-y-8">
-      <div className="space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <ShieldCheck className="h-5 w-5 text-muted-foreground" />
-          <h1 className="text-lg font-semibold">{t("Company Members")}</h1>
+          <h1 className="text-lg font-semibold">{translateInstant("Organization Members")}</h1>
         </div>
-        <p className="max-w-3xl text-sm text-muted-foreground">
-          {t("Manage the people who can work in {{name}}. Members can collaborate across the company by default.", { name: selectedCompany?.name })}
-        </p>
-        <div className="rounded-lg border border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
-          {t("Core keeps this page focused on membership, invite approvals, and safe member removal.")}
-        </div>
+        {cloudInviteUrl && (
+          <Button asChild>
+            <a href={cloudInviteUrl}><UserPlus />{translateInstant("Invite people")}</a>
+          </Button>
+        )}
       </div>
 
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="flex flex-col gap-4">
+        {!hideInvitesTab && (
+          <PageTabBar
+            items={[
+              { value: "members", label: translateInstant("Members") },
+              { value: "invites", label: translateInstant("Invites") },
+            ]}
+            align="start"
+            value={activeTab}
+            onValueChange={handleTabChange}
+          />
+        )}
+        <TabsContent value="members" className="space-y-8">
+
       {access && !access.currentUserRole && (
-        <div className="rounded-xl border border-amber-500/40 px-4 py-3 text-sm text-amber-200">
-          {t("This account can manage access here through instance-admin privileges, but it does not currently hold an active company membership.")}
-        </div>
+        <div className="rounded-xl bg-amber-500/10 px-4 py-3 text-sm text-amber-800 dark:text-amber-200">
+          {translateInstant("This account can manage access here through instance-admin privileges, but it does not currently hold an active organization membership.")}</div>
       )}
 
       <section className="space-y-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 text-muted-foreground" />
-            <h2 className="text-base font-semibold">{t("Humans")}</h2>
-          </div>
-          <p className="max-w-3xl text-sm text-muted-foreground">
-            {t("Manage human company memberships and status here.")}
-          </p>
-        </div>
-
         {access?.canApproveJoinRequests && pendingHumanJoinRequests.length > 0 ? (
-          <div className="space-y-3 rounded-xl border border-border px-4 py-4">
+          <div className="space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
-                <h3 className="text-sm font-semibold">{t("Pending human joins")}</h3>
+                <h3 className="text-sm font-semibold">{translateInstant("Pending human joins")}</h3>
                 <p className="text-sm text-muted-foreground">
-                  {t("Review pending join requests before they become active company members.")}
-                </p>
+                  {translateInstant("Review pending join requests before they become active organization members.")}</p>
               </div>
-              <Badge variant="outline">{t("{{count}} pending", { count: pendingHumanJoinRequests.length })}</Badge>
+              <Badge variant="outline">{pendingHumanJoinRequests.length} {translateInstant("runStatus.pending")}</Badge>
             </div>
             <div className="space-y-3">
               {pendingHumanJoinRequests.map((request) => (
@@ -287,27 +333,22 @@ export function CompanyAccess() {
                     request.requesterUser?.name ||
                     request.requestEmailSnapshot ||
                     request.requestingUserId ||
-                    t("Unknown human requester")
+                    translateInstant("Unknown human requester")
                   }
                   subtitle={
                     request.requesterUser?.email ||
                     request.requestEmailSnapshot ||
                     request.requestingUserId ||
-                    t("No email available")
+                    translateInstant("No email available")
                   }
                   context={
                     request.invite
-                      ? t("{{type}} join invite{{suffix}}", {
-                          type: translateJoinType(t, request.invite.allowedJoinTypes),
-                          suffix: request.invite.humanRole
-                            ? ` • ${t("default role {{role}}", { role: translateHumanRole(t, request.invite.humanRole) })}`
-                            : "",
-                        })
-                      : t("Invite metadata unavailable")
+                      ? `${request.invite.allowedJoinTypes} join invite${request.invite.humanRole ? ` • default role ${request.invite.humanRole}` : ""}`
+                      : translateInstant("Invite metadata unavailable")
                   }
-                  detail={t("Submitted {{date}}", { date: new Date(request.createdAt).toLocaleString() })}
-                  approveLabel={t("Approve human")}
-                  rejectLabel={t("Reject human")}
+                  detail={`Submitted ${new Date(request.createdAt).toLocaleString()}`}
+                  approveLabel={translateInstant("Approve human")}
+                  rejectLabel={translateInstant("Reject human")}
                   disabled={joinRequestActionPending}
                   onApprove={() => approveJoinRequestMutation.mutate(request.id)}
                   onReject={() => rejectJoinRequestMutation.mutate(request.id)}
@@ -317,78 +358,93 @@ export function CompanyAccess() {
           </div>
         ) : null}
 
-        <div className="overflow-hidden rounded-xl border border-border">
-          <div className="grid grid-cols-(--gtc-24) gap-3 border-b border-border px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            <div>{t("User account")}</div>
-            <div>{t("Role")}</div>
-            <div>{t("Status")}</div>
-            <div className="text-right">{t("Action")}</div>
-          </div>
-          {members.length === 0 ? (
-            <div className="px-4 py-8 text-sm text-muted-foreground">{t("No user memberships found for this company yet.")}</div>
-          ) : (
-            members.map((member) => {
-              const removalReason = member.removal?.reason ?? null;
-              const canArchive = member.removal?.canArchive ?? true;
-              return (
-                <div
-                  key={member.id}
-                  className="grid grid-cols-(--gtc-24) gap-3 border-b border-border px-4 py-3 last:border-b-0"
-                >
-                  <div className="min-w-0">
-                    <div className="truncate font-medium">{member.user?.name?.trim() || member.user?.email || member.principalId}</div>
-                    <div className="truncate text-xs text-muted-foreground">{member.user?.email || member.principalId}</div>
-                  </div>
-                  <div className="text-sm">
-                    {member.membershipRole
-                      ? translateHumanRole(t, member.membershipRole)
-                      : t("Unset")}
-                  </div>
-                  <div>
-                    <Badge variant={member.status === "active" ? "secondary" : member.status === "suspended" ? "destructive" : "outline"}>
-                      {translateMemberStatus(t, member.status)}
-                    </Badge>
-                  </div>
-                  <div className="space-y-1 text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button size="sm" variant="outline" onClick={() => setEditingMemberId(member.id)}>
-                        {t("Edit")}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setRemovingMemberId(member.id)}
-                        disabled={!canArchive}
-                        title={removalReason ? t(removalReason, { defaultValue: removalReason }) : undefined}
-                      >
-                        <Trash2 className="mr-1 h-3.5 w-3.5" />
-                        {t("Remove")}
-                      </Button>
-                    </div>
-                    {removalReason ? (
-                      <div className="text-xs text-muted-foreground">{t(removalReason, { defaultValue: removalReason })}</div>
-                    ) : null}
-                  </div>
-                </div>
-              );
-            })
-          )}
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-(--sz-44rem) text-left text-sm">
+            <thead>
+              <tr className="border-b border-border text-muted-foreground">
+                <th className="px-3 py-2 font-medium">{translateInstant("Name")}</th>
+                <th className="px-3 py-2 font-medium">{translateInstant("Email")}</th>
+                <th className="px-3 py-2 font-medium">{translateInstant("Role")}</th>
+                <th className="px-3 py-2 font-medium">{translateInstant("Status")}</th>
+                <th className="px-3 py-2 text-right font-medium">{translateInstant("Action")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {members.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-3 py-8 text-muted-foreground">
+                    {translateInstant("No user memberships found for this organization yet.")}</td>
+                </tr>
+              ) : members.map((member) => {
+                const removalReason = member.removal?.reason ?? null;
+                const canArchive = member.removal?.canArchive ?? true;
+                const displayName = memberDisplayName(member);
+                return (
+                  <tr key={member.id} className="border-b border-border last:border-b-0">
+                    <td className="px-3 py-3">
+                      <div className="flex min-w-0 items-center gap-2.5">
+                        <Avatar size="sm">
+                          {member.user?.image ? <AvatarImage src={member.user.image} alt={displayName} /> : null}
+                          <AvatarFallback>{memberInitials(member)}</AvatarFallback>
+                        </Avatar>
+                        <span className="truncate font-medium">{displayName}</span>
+                      </div>
+                    </td>
+                    <td className="px-3 py-3 text-muted-foreground">
+                      {member.user?.email || member.principalId}
+                    </td>
+                    <td className="px-3 py-3">
+                      {member.membershipRole
+                        ? translateInstant(HUMAN_COMPANY_MEMBERSHIP_ROLE_LABELS[member.membershipRole])
+                        : translateInstant("Unset")}
+                    </td>
+                    <td className="px-3 py-3">
+                      <Badge variant={member.status === "active" ? "secondary" : member.status === "suspended" ? "destructive" : "outline"}>
+                        {translateInstant(`status.${member.status}`, {
+                          defaultValue: member.status.replace("_", " "),
+                        })}
+                      </Badge>
+                    </td>
+                    <td className="px-3 py-3 text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button size="sm" variant="outline" onClick={() => setEditingMemberId(member.id)}>
+                          {translateInstant("Edit")}</Button>
+                        <span
+                          className="inline-flex"
+                          title={!canArchive ? removalReason ?? undefined : undefined}
+                        >
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setRemovingMemberId(member.id)}
+                            disabled={!canArchive}
+                            title={!canArchive ? removalReason ?? undefined : undefined}
+                          >
+                            <Trash2 className="mr-1 h-3.5 w-3.5" />
+                            {translateInstant("Remove")}</Button>
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       </section>
 
       <Dialog open={!!editingMember} onOpenChange={(open) => !open && setEditingMemberId(null)}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>{t("Edit member")}</DialogTitle>
+            <DialogTitle>{translateInstant("Edit member")}</DialogTitle>
             <DialogDescription>
-              {t("Update company role and membership status for {{name}}.", { name: memberDisplayName(t, editingMember) })}
-            </DialogDescription>
+              {translateInstant("Update organization role and membership status for")}{" "}{editingMember?.user?.name || editingMember?.user?.email || editingMember?.principalId}{translateInstant(".")}</DialogDescription>
           </DialogHeader>
           {editingMember && (
             <div className="space-y-5">
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="space-y-2 text-sm">
-                  <span className="font-medium">{t("Company role")}</span>
+                  <span className="font-medium">{translateInstant("Organization role")}</span>
                   <select
                     className="w-full rounded-md border border-border bg-background px-3 py-2"
                     value={draftRole ?? ""}
@@ -396,16 +452,16 @@ export function CompanyAccess() {
                       setDraftRole((event.target.value || null) as CompanyMember["membershipRole"])
                     }
                   >
-                    <option value="">{t("Unset")}</option>
+                    <option value="">{translateInstant("Unset")}</option>
                     {Object.entries(HUMAN_COMPANY_MEMBERSHIP_ROLE_LABELS).map(([value, label]) => (
                       <option key={value} value={value}>
-                        {t(label)}
+                        {translateInstant(label)}
                       </option>
                     ))}
                   </select>
                 </label>
                 <label className="space-y-2 text-sm">
-                  <span className="font-medium">{t("Membership status")}</span>
+                  <span className="font-medium">{translateInstant("Membership status")}</span>
                   <select
                     className="w-full rounded-md border border-border bg-background px-3 py-2"
                     value={draftStatus}
@@ -413,9 +469,9 @@ export function CompanyAccess() {
                       setDraftStatus(event.target.value as EditableMemberStatus)
                     }
                   >
-                    <option value="active">{t("Active")}</option>
-                    <option value="pending">{t("Pending")}</option>
-                    <option value="suspended">{t("Suspended")}</option>
+                    <option value="active">{translateInstant("Active")}</option>
+                    <option value="pending">{translateInstant("Pending")}</option>
+                    <option value="suspended">{translateInstant("Suspended")}</option>
                   </select>
                 </label>
               </div>
@@ -423,8 +479,7 @@ export function CompanyAccess() {
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditingMemberId(null)}>
-              {t("Cancel")}
-            </Button>
+              {translateInstant("Cancel")}</Button>
             <Button
               onClick={() => {
                 if (!editingMember) return;
@@ -436,7 +491,7 @@ export function CompanyAccess() {
               }}
               disabled={updateMemberMutation.isPending}
             >
-              {updateMemberMutation.isPending ? t("Saving…") : t("Save member")}
+              {updateMemberMutation.isPending ? translateInstant("Saving…") : translateInstant("Save member")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -445,43 +500,42 @@ export function CompanyAccess() {
       <Dialog open={!!removingMember} onOpenChange={(open) => !open && setRemovingMemberId(null)}>
         <DialogContent className="max-w-xl">
           <DialogHeader>
-            <DialogTitle>{t("Remove member")}</DialogTitle>
+            <DialogTitle>{translateInstant("Remove member")}</DialogTitle>
             <DialogDescription>
-              {t("Archive {{name}} and move active assignments before hiding this user from assignment fields.", { name: memberDisplayName(t, removingMember) })}
-            </DialogDescription>
+              {translateInstant("Archive")}{" "}{memberDisplayName(removingMember)} {translateInstant("and move active assignments before hiding this user from assignment fields.")}</DialogDescription>
           </DialogHeader>
           {removingMember && (
             <div className="space-y-5">
               <div className="rounded-lg border border-border px-3 py-3">
-                <div className="text-sm font-medium">{memberDisplayName(t, removingMember)}</div>
+                <div className="text-sm font-medium">{memberDisplayName(removingMember)}</div>
                 <div className="text-sm text-muted-foreground">{removingMember.user?.email || removingMember.principalId}</div>
                 <div className="mt-2 text-sm text-muted-foreground">
                   {assignedIssuesQuery.isLoading
-                    ? t("Checking assigned issues...")
-                    : t("{{count}} open assigned issues", { count: assignedIssues.length })}
+                    ? "Checking assigned tasks..."
+                    : `${assignedIssues.length} open assigned task${assignedIssues.length === 1 ? "" : "s"}`}
                 </div>
               </div>
 
               {assignedIssues.length > 0 ? (
                 <div className="space-y-2">
-                  <div className="text-sm font-medium">{t("Issue reassignment")}</div>
+                  <div className="text-sm font-medium">{translateInstant("Task reassignment")}</div>
                   <select
                     className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
                     value={reassignmentTarget}
                     onChange={(event) => setReassignmentTarget(event.target.value)}
                   >
-                    <option value="__unassigned">{t("Leave unassigned")}</option>
+                    <option value="__unassigned">{translateInstant("Leave unassigned")}</option>
                     {activeReassignmentUsers.length > 0 ? (
-                      <optgroup label={t("Humans")}>
+                      <optgroup label={translateInstant("Humans")}>
                         {activeReassignmentUsers.map((member) => (
                           <option key={member.id} value={`user:${member.principalId}`}>
-                            {memberDisplayName(t, member)}
+                            {memberDisplayName(member)}
                           </option>
                         ))}
                       </optgroup>
                     ) : null}
                     {activeReassignmentAgents.length > 0 ? (
-                      <optgroup label={t("Agents")}>
+                      <optgroup label={translateInstant("Agents")}>
                         {activeReassignmentAgents.map((agent) => (
                           <option key={agent.id} value={`agent:${agent.id}`}>
                             {agent.name} ({agent.role})
@@ -499,7 +553,7 @@ export function CompanyAccess() {
                     ))}
                     {assignedIssues.length > 6 ? (
                       <div className="px-3 py-2 text-sm text-muted-foreground">
-                        {t("{{count}} more issues", { count: assignedIssues.length - 6 })}
+                        {translateInstant(assignedIssues.length - 6 === 1 ? "companyAccess.moreTask" : "companyAccess.moreTasks", { count: assignedIssues.length - 6 })}
                       </div>
                     ) : null}
                   </div>
@@ -509,8 +563,7 @@ export function CompanyAccess() {
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setRemovingMemberId(null)}>
-              {t("Cancel")}
-            </Button>
+              {translateInstant("Cancel")}</Button>
             <Button
               variant="destructive"
               onClick={() => {
@@ -522,17 +575,24 @@ export function CompanyAccess() {
               }}
               disabled={archiveMemberMutation.isPending || assignedIssuesQuery.isLoading}
             >
-              {archiveMemberMutation.isPending ? t("Removing...") : t("Remove member")}
+              {archiveMemberMutation.isPending ? translateInstant("Removing...") : translateInstant("Remove member")}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+        </TabsContent>
+        {!hideInvitesTab && (
+          <TabsContent value="invites">
+            <InvitesSection />
+          </TabsContent>
+        )}
+      </Tabs>
     </div>
   );
 }
 
 export function CompanyAccessLegacyRoute() {
-  const { t } = useTranslation();
+  useTranslation();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { slots, isLoading, errorMessage } = usePluginSlots({
@@ -543,10 +603,10 @@ export function CompanyAccessLegacyRoute() {
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: t("Settings"), href: "/company/settings" },
-      { label: t("Access") },
+      { label: translateInstant("Settings"), href: "/company/settings" },
+      { label: translateInstant("Access") },
     ]);
-  }, [setBreadcrumbs, t]);
+  }, [setBreadcrumbs]);
 
   const permissionsSlot = slots.find((slot) => slot.routePath === "permissions");
   if (permissionsSlot) {
@@ -554,7 +614,7 @@ export function CompanyAccessLegacyRoute() {
   }
 
   if (isLoading) {
-    return <div className="text-sm text-muted-foreground">{t("Checking for advanced permission extensions...")}</div>;
+    return <div className="text-sm text-muted-foreground">{translateInstant("Checking for advanced permission extensions...")}</div>;
   }
 
   return (
@@ -562,29 +622,27 @@ export function CompanyAccessLegacyRoute() {
       <div className="space-y-3">
         <div className="flex items-center gap-2">
           <Shield className="h-5 w-5 text-muted-foreground" />
-          <h1 className="text-lg font-semibold">{t("Advanced Permissions")}</h1>
+          <h1 className="text-lg font-semibold">{translateInstant("Advanced Permissions")}</h1>
         </div>
         <p className="text-sm text-muted-foreground">
-          {t("Advanced access, scoped assignment, and explicit grant controls are provided by installed company settings extensions.")}
-        </p>
+          {translateInstant("Advanced access, scoped assignment, and explicit grant controls are provided by installed organization settings extensions.")}</p>
       </div>
 
       <div className="space-y-4 rounded-xl border border-border px-5 py-5">
         <div className="space-y-2">
-          <h2 className="text-sm font-semibold">{t("Advanced permissions unavailable")}</h2>
+          <h2 className="text-sm font-semibold">{translateInstant("Advanced permissions unavailable")}</h2>
           <p className="text-sm text-muted-foreground">
-            {t("Core Paperclip keeps enforcing company boundaries and any existing restrictive policy data, but editing advanced permissions requires an installed extension.")}
-          </p>
+            {translateInstant("Core Paperclip keeps enforcing organization boundaries and any existing restrictive policy data, but editing advanced permissions requires an installed extension.")}</p>
           {errorMessage ? (
-            <p className="text-sm text-destructive">{t("Plugin extensions unavailable: {{message}}", { message: errorMessage })}</p>
+            <p className="text-sm text-destructive">{translateInstant("Plugin extensions unavailable:")}{" "}{errorMessage}</p>
           ) : null}
         </div>
         <div className="flex flex-wrap gap-2">
           <Button asChild>
-            <Link to="/company/settings/members">{t("Open Members")}</Link>
+            <Link to="/company/settings/members">{translateInstant("Open Members")}</Link>
           </Button>
           <Button asChild variant="outline">
-            <Link to="/company/settings/invites">{t("Open Invites")}</Link>
+            <Link to="/company/settings/members?tab=invites">{translateInstant("Open Invites")}</Link>
           </Button>
         </div>
       </div>
@@ -592,39 +650,18 @@ export function CompanyAccessLegacyRoute() {
   );
 }
 
-function memberDisplayName(t: TFunction, member: CompanyMember | null) {
-  if (!member) return t("this member");
+function memberDisplayName(member: CompanyMember | null) {
+  if (!member) return translateInstant("this member");
   return member.user?.name?.trim() || member.user?.email || member.principalId;
 }
 
-function translateHumanRole(t: TFunction, role: string) {
-  const labels: Record<string, string> = {
-    owner: t("Owner"),
-    admin: t("Admin"),
-    operator: t("Operator"),
-    viewer: t("Viewer"),
-  };
-  return labels[role] ?? t(role, { defaultValue: role });
-}
-
-function translateJoinType(t: TFunction, type: string) {
-  const labels: Record<string, string> = {
-    human: t("Human"),
-    agent: t("Agent"),
-    both: t("Human or agent"),
-  };
-  return labels[type] ?? t(type, { defaultValue: type });
-}
-
-function translateMemberStatus(t: TFunction, status: CompanyMember["status"]) {
-  const labels: Record<string, string> = {
-    pending: t("Pending"),
-    active: t("Active"),
-    suspended: t("Suspended"),
-    archived: t("Archived"),
-    pending_approval: t("Pending approval"),
-  };
-  return labels[status] ?? t(status.replace("_", " "), { defaultValue: status.replace("_", " ") });
+function memberInitials(member: CompanyMember) {
+  const value = memberDisplayName(member).trim();
+  const parts = value.split(/\s+/).filter(Boolean);
+  if (parts.length > 1) {
+    return `${parts[0]?.[0] ?? ""}${parts.at(-1)?.[0] ?? ""}`.toUpperCase();
+  }
+  return value.slice(0, 2).toUpperCase();
 }
 
 function isAssignableAgent(agent: Agent) {
@@ -659,7 +696,7 @@ function PendingJoinRequestCard({
   onReject: () => void;
 }) {
   return (
-    <div className="rounded-xl border border-border px-4 py-4">
+    <div className="py-3">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-2">
           <div>

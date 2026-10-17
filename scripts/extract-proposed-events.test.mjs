@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
+import { spawnSync } from "node:child_process";
 import test from "node:test";
-import ts from "typescript";
 
 import {
   PROPOSED_TELEMETRY_SCHEMA_VERSION,
@@ -206,20 +206,28 @@ function diagnosticsFor(sourceText) {
   const repoRoot = mkdtempSync(join(tmpdir(), "paperclip-ts2578-"));
   const fileName = join(repoRoot, "fixture.ts");
   writeFileSync(fileName, sourceText);
+  writeFileSync(
+    join(repoRoot, "tsconfig.json"),
+    JSON.stringify({
+      compilerOptions: {
+        strict: true,
+        noEmit: true,
+        skipLibCheck: true,
+        target: "ES2023",
+        module: "NodeNext",
+        moduleResolution: "NodeNext",
+        types: [],
+      },
+      files: ["fixture.ts"],
+    }),
+  );
   try {
-    const program = ts.createProgram([fileName], {
-      strict: true,
-      noEmit: true,
-      skipLibCheck: true,
-      target: ts.ScriptTarget.ES2023,
-      module: ts.ModuleKind.NodeNext,
-      moduleResolution: ts.ModuleResolutionKind.NodeNext,
-      types: [],
+    const result = spawnSync(process.execPath, [resolve("node_modules/typescript/bin/tsc"), "--pretty", "false", "-p", "tsconfig.json"], {
+      cwd: repoRoot,
+      encoding: "utf8",
     });
-    return ts
-      .getPreEmitDiagnostics(program)
-      .filter((diagnostic) => diagnostic.file?.fileName === fileName)
-      .map((diagnostic) => diagnostic.code);
+    assert.equal(result.error, undefined, result.error?.message);
+    return [...`${result.stdout}${result.stderr}`.matchAll(/TS(\d+):/g)].map((match) => Number(match[1]));
   } finally {
     rmSync(repoRoot, { recursive: true, force: true });
   }

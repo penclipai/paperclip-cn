@@ -1,1 +1,10 @@
 *.sh text eol=lf
+*.sql text eol=lf
+.github/workflows/*.yml text eol=lf
+announcements/** text=auto eol=lf
+patches/*.patch text eol=lf whitespace=-space-before-tab
+packages/paperclip-runner/** text=auto eol=lf
+ui/locales-src/**/*.json text eol=lf
+ui/public/locales/*/common.json text eol=lf
+packages/shared/src/cliplab/palette-tokens.ts text eol=lf
+packages/shared/src/cliplab/character.ts text eol=lf

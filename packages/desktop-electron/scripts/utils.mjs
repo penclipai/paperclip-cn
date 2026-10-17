@@ -3,6 +3,7 @@
 import { chmodSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import process from "node:process";
+import { resolvePnpmInvocation } from "../../../scripts/pnpm-invocation.mjs";
 
 export function resolvePnpmCommand() {
   return process.platform === "win32" ? "pnpm.cmd" : "pnpm";
@@ -15,6 +16,7 @@ export function runChecked(command, args, options = {}) {
     shell: options.shell ?? false,
     stdio: options.stdio ?? "inherit",
     windowsHide: true,
+    windowsVerbatimArguments: options.windowsVerbatimArguments ?? false,
   });
 
   if (result.error) {
@@ -36,12 +38,8 @@ export function runNodeScript(scriptPath, args = [], options = {}) {
 }
 
 export function runPnpm(args, options = {}) {
-  if (process.platform === "win32") {
-    runChecked(process.env.comspec ?? "cmd.exe", ["/d", "/s", "/c", resolvePnpmCommand(), ...args], options);
-    return;
-  }
-
-  runChecked(resolvePnpmCommand(), args, options);
+  const invocation = resolvePnpmInvocation(args, { env: options.env ?? process.env });
+  runChecked(invocation.command, invocation.args, { ...options, ...invocation.spawnOptions });
 }
 
 export function killProcessTree(pid, options = {}) {

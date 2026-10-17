@@ -1,7 +1,8 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "@/lib/router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
 import type {
   Agent,
   CatalogTeam,
@@ -23,6 +24,10 @@ import { AGENT_ADAPTER_TYPES } from "@penclipai/shared";
 import { teamCatalogApi } from "../api/teamCatalog";
 import { agentsApi } from "../api/agents";
 import { getAdapterLabel } from "../adapters/adapter-display-registry";
+import {
+  useAdapterRegistryLoaded,
+  useDisabledAdaptersSync,
+} from "../adapters/use-disabled-adapters";
 import { useCompany } from "../context/CompanyContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { useToastActions } from "../context/ToastContext";
@@ -96,7 +101,6 @@ import {
   Folder,
   FolderKanban,
   FolderOpen,
-  Github,
   KeyRound,
   Link2,
   Loader2,
@@ -109,10 +113,36 @@ import {
   XCircle,
   XOctagon,
 } from "lucide-react";
+import { GithubIcon } from "../components/icons/github-icon";
 
 // Matches design §11 breakpoints. Module-level so stories and the page agree.
 const DESKTOP_MIN = 1024;
 const MOBILE_MAX = 767;
+const TEAM_INSTALL_FALLBACK_ADAPTER_TYPE = "claude_local";
+const TEAM_INSTALL_FORBIDDEN_ADAPTER_TYPES = new Set(["process", "http"]);
+
+export function listTeamInstallAdapterTypes(
+  disabledTypes: Set<string>,
+  adapterRegistryLoaded: boolean,
+) {
+  return AGENT_ADAPTER_TYPES.filter(
+    (type) =>
+      !TEAM_INSTALL_FORBIDDEN_ADAPTER_TYPES.has(type) &&
+      !disabledTypes.has(type) &&
+      (type !== "paperclip_runner" || adapterRegistryLoaded),
+  );
+}
+
+export function resolveTeamInstallAdapterType(
+  requestedType: string,
+  selectableAdapterTypes: readonly string[],
+) {
+  if (selectableAdapterTypes.includes(requestedType)) return requestedType;
+  if (selectableAdapterTypes.includes(TEAM_INSTALL_FALLBACK_ADAPTER_TYPE)) {
+    return TEAM_INSTALL_FALLBACK_ADAPTER_TYPE;
+  }
+  return selectableAdapterTypes[0] ?? null;
+}
 
 function useMediaQuery(query: string): boolean {
   const [matches, setMatches] = useState(() =>
@@ -270,7 +300,6 @@ const COMPAT_META: Record<
 };
 
 function CompatChip({ compatibility }: { compatibility: CatalogTeamCompatibility }) {
-  const { t } = useTranslation();
   const meta = COMPAT_META[compatibility];
   return (
     <Badge variant="outline"
@@ -279,13 +308,13 @@ function CompatChip({ compatibility }: { compatibility: CatalogTeamCompatibility
         meta.tone,
       )}
     >
-      {t(`teamCatalog.compat.${compatibility}`, meta.label)}
+      {meta.label}
     </Badge>
   );
 }
 
 function ProvenanceBadge({ team }: { team: CatalogTeam }) {
-  const { t } = useTranslation();
+  useTranslation();
   if (!team.packageName) return null;
   return (
     <Tooltip>
@@ -296,13 +325,13 @@ function ProvenanceBadge({ team }: { team: CatalogTeam }) {
           {team.packageVersion ? `@${team.packageVersion}` : ""}
         </Badge>
       </TooltipTrigger>
-      <TooltipContent>{t("teamCatalog.catalogPackageProvenance")}</TooltipContent>
+      <TooltipContent>{translateInstant("teamCatalog.catalogPackageProvenance")}</TooltipContent>
     </Tooltip>
   );
 }
 
 function RiskBanner({ team }: { team: CatalogTeam }) {
-  const { t } = useTranslation();
+  useTranslation();
   const unsafe = team.sourceRefs.filter(
     (s) => sourceWarningCode(s) !== "ok",
   );
@@ -314,14 +343,14 @@ function RiskBanner({ team }: { team: CatalogTeam }) {
     >
       <div className="flex items-center gap-2 text-sm font-medium">
         <AlertTriangle className="h-4 w-4" />
-        {t("teamCatalog.externalSourceWarning", { count: unsafe.length })}
+        {translateInstant("This team references")}{" "}{unsafe.length} {translateInstant("external source")}{unsafe.length === 1 ? "" : "s"}
       </div>
       <ul className="mt-1.5 space-y-0.5 text-xs">
         {unsafe.map((s) => (
           <li key={`${s.type}:${s.ref}`} className="font-mono">
             {s.ref}{" "}
             <span className="not-italic font-sans opacity-80">
-              ({sourceWarningCode(s) === "unsupported_in_ui" ? t("teamCatalog.unsupportedInBrowserInstall") : t("teamCatalog.unpinned").toLowerCase()})
+              ({sourceWarningCode(s) === "unsupported_in_ui" ? "unsupported in browser install" : "unpinned"})
             </span>
           </li>
         ))}
@@ -333,7 +362,7 @@ function RiskBanner({ team }: { team: CatalogTeam }) {
 function sourceKindIcon(type: CatalogTeamSourceRef["type"]) {
   switch (type) {
     case "github":
-      return Github;
+      return GithubIcon;
     case "url":
       return Link2;
     case "local_path":
@@ -404,7 +433,6 @@ function TeamFileTree({
   onToggleDir: (name: string) => void;
   onSelectFile: (path: string) => void;
 }) {
-  const { t } = useTranslation();
   return (
     <ul className="text-xs">
       {nodes.map((node) => {
@@ -466,7 +494,7 @@ function TeamFileTree({
 // ---------------------------------------------------------------------------
 
 export function TeamHierarchyPreview({ team }: { team: CatalogTeam }) {
-  const { t } = useTranslation();
+  useTranslation();
   const roots = new Set(team.rootAgentSlugs);
   const members = team.agentSlugs.filter((slug) => !roots.has(slug));
   const requiresManager = team.rootAgentSlugs.length > 0;
@@ -483,7 +511,7 @@ export function TeamHierarchyPreview({ team }: { team: CatalogTeam }) {
           >
             <Crown className="h-3.5 w-3.5 text-amber-500" />
             <span className="font-medium">{titleCase(slug)}</span>
-            <span className="text-xs text-muted-foreground">{t("teamCatalog.rootAgent")}</span>
+            <span className="text-xs text-muted-foreground">{translateInstant("teamCatalog.rootAgent")}</span>
           </li>
         ))}
         {members.map((slug) => (
@@ -493,7 +521,7 @@ export function TeamHierarchyPreview({ team }: { team: CatalogTeam }) {
           </li>
         ))}
         {team.agentSlugs.length === 0 && (
-          <li className="px-3 py-2 text-xs text-muted-foreground">{t("teamCatalog.noAgentsInTeam")}</li>
+          <li className="px-3 py-2 text-xs text-muted-foreground">{translateInstant("teamCatalog.noAgentsInTeam")}</li>
         )}
       </ul>
     </div>
@@ -521,7 +549,6 @@ function MetricTile({
   value: number;
   Icon: typeof Users2;
 }) {
-  const { t } = useTranslation();
   return (
     <Card className="block px-3 py-2.5">
       <div className="flex items-center justify-between">
@@ -534,8 +561,8 @@ function MetricTile({
 }
 
 export function RequiredSkillsList({ skills }: { skills: CatalogTeamSkillRequirement[] }) {
-  const { t } = useTranslation();
-  if (skills.length === 0) return <p className="text-sm text-muted-foreground">{t("teamCatalog.noRequiredSkills")}</p>;
+  useTranslation();
+  if (skills.length === 0) return <p className="text-sm text-muted-foreground">{translateInstant("teamCatalog.noRequiredSkills")}</p>;
   return (
     <ul className="space-y-1">
       {skills.map((skill) => (
@@ -550,12 +577,10 @@ export function RequiredSkillsList({ skills }: { skills: CatalogTeamSkillRequire
           </Badge>
           {skill.resolved ? (
             <Badge variant="outline" className="text-(length:--text-nano) text-emerald-600 dark:text-emerald-300 border-emerald-500/30">
-              {t("teamCatalog.resolved")}
-            </Badge>
+              {translateInstant("teamCatalog.resolved")}</Badge>
           ) : (
             <Badge variant="outline" className="text-(length:--text-nano) text-amber-600 dark:text-amber-300 border-amber-500/30">
-              {t("teamCatalog.external")}
-            </Badge>
+              {translateInstant("teamCatalog.external")}</Badge>
           )}
         </li>
       ))}
@@ -564,11 +589,11 @@ export function RequiredSkillsList({ skills }: { skills: CatalogTeamSkillRequire
 }
 
 export function EnvInputsList({ inputs }: { inputs: CatalogTeamEnvInputSummary[] }) {
-  const { t } = useTranslation();
+  useTranslation();
   if (inputs.length === 0) return null;
   return (
     <div className="space-y-1.5">
-      <SectionHeader>{t("teamCatalog.secretsAndEnvInputs")}</SectionHeader>
+      <SectionHeader>{translateInstant("teamCatalog.secretsAndEnvInputs")}</SectionHeader>
       <ul className="space-y-1">
         {inputs.map((input) => (
           <li
@@ -589,7 +614,7 @@ export function EnvInputsList({ inputs }: { inputs: CatalogTeamEnvInputSummary[]
               {input.kind}
             </Badge>
             {input.requirement === "required" && (
-              <Badge variant="outline" className="text-(length:--text-nano)">{t("Required").toLowerCase()}</Badge>
+              <Badge variant="outline" className="text-(length:--text-nano)">{translateInstant("common.required")}</Badge>
             )}
           </li>
         ))}
@@ -605,7 +630,7 @@ function envInputFormKey(input: CatalogTeamEnvInputSummary) {
 }
 
 export function ExternalSourcesList({ sources }: { sources: CatalogTeamSourceRef[] }) {
-  const { t } = useTranslation();
+  useTranslation();
   const external = sources.filter((s) => s.type !== "include");
   const [open, setOpen] = useState(false);
   if (external.length === 0) return null;
@@ -617,7 +642,7 @@ export function ExternalSourcesList({ sources }: { sources: CatalogTeamSourceRef
         className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground"
       >
         {open ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
-        {t("teamCatalog.externalSourcesCount", { count: external.length })}
+        {translateInstant("External sources ·")}{" "}{external.length}
       </button>
       {open && (
         <ul className="divide-y divide-border rounded-md border border-border">
@@ -630,13 +655,13 @@ export function ExternalSourcesList({ sources }: { sources: CatalogTeamSourceRef
                 <span className="font-mono text-xs truncate">{source.ref}</span>
                 <span className="ml-auto text-(length:--text-micro)">
                   {code === "ok" && (
-                    <span className="text-emerald-600 dark:text-emerald-300">{t("teamCatalog.pinned")}</span>
+                    <span className="text-emerald-600 dark:text-emerald-300">{translateInstant("teamCatalog.pinned")}</span>
                   )}
                   {code === "unpinned" && (
-                    <span className="text-amber-600 dark:text-amber-300">{t("teamCatalog.unpinned")}</span>
+                    <span className="text-amber-600 dark:text-amber-300">{translateInstant("teamCatalog.unpinned")}</span>
                   )}
                   {code === "unsupported_in_ui" && (
-                    <span className="text-rose-600 dark:text-rose-300">{t("teamCatalog.unsupportedInBrowserInstall")}</span>
+                    <span className="text-rose-600 dark:text-rose-300">{translateInstant("teamCatalog.unsupportedInBrowserInstall")}</span>
                   )}
                 </span>
               </li>
@@ -665,7 +690,7 @@ export function TeamDetailPane({
   fileContent: string | null;
   installed?: InstalledCatalogTeam | null;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   const [expandedDirs, setExpandedDirs] = useState<Set<string>>(new Set());
   const tree = useMemo(() => buildTree(team.files), [team.files]);
   const invalid = team.compatibility === "invalid";
@@ -696,7 +721,7 @@ export function TeamDetailPane({
       ) : (
         <Download className="h-4 w-4" />
       )}
-      {isInstalled ? t("teamCatalog.reinstallLatest") : t("teamCatalog.installTeam")}
+      {isInstalled ? translateInstant("teamCatalog.reinstallLatest") : translateInstant("teamCatalog.installTeam")}
     </Button>
   );
 
@@ -717,16 +742,14 @@ export function TeamDetailPane({
               <ProvenanceBadge team={team} />
               {isInstalled && !outOfDate && (
                 <Badge variant="secondary" className="gap-1 text-(length:--text-nano)">
-                  <CheckCircle2 className="h-3 w-3" /> {t("teamCatalog.installed")}
-                </Badge>
+                  <CheckCircle2 className="h-3 w-3" /> {translateInstant("teamCatalog.installed")}</Badge>
               )}
               {outOfDate && (
                 <Badge
                   variant="outline"
                   className="gap-1 border-amber-500/40 bg-amber-500/10 text-(length:--text-nano) text-amber-600 dark:text-amber-300"
                 >
-                  <ChevronUp className="h-3 w-3" /> {t("teamCatalog.updateAvailable")}
-                </Badge>
+                  <ChevronUp className="h-3 w-3" /> {translateInstant("teamCatalog.updateAvailable")}</Badge>
               )}
             </div>
           </div>
@@ -735,14 +758,14 @@ export function TeamDetailPane({
               <TooltipTrigger asChild>
                 <span tabIndex={0}>{installButton}</span>
               </TooltipTrigger>
-              <TooltipContent>{t("teamCatalog.invalidPackageManifest")}</TooltipContent>
+              <TooltipContent>{translateInstant("teamCatalog.invalidPackageManifest")}</TooltipContent>
             </Tooltip>
           ) : !canInstall ? (
             <Tooltip>
               <TooltipTrigger asChild>
                 <span tabIndex={0}>{installButton}</span>
               </TooltipTrigger>
-              <TooltipContent>{t("teamCatalog.requiresInstallPermissions")}</TooltipContent>
+              <TooltipContent>{translateInstant("teamCatalog.requiresInstallPermissions")}</TooltipContent>
             </Tooltip>
           ) : (
             installButton
@@ -760,22 +783,22 @@ export function TeamDetailPane({
 
         {/* Summary grid */}
         <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-          <MetricTile label={t("Agents")} value={team.counts.agents} Icon={Users2} />
-          <MetricTile label={t("Projects")} value={team.counts.projects} Icon={FolderKanban} />
-          <MetricTile label={t("Routines")} value={team.counts.routines} Icon={Repeat} />
-          <MetricTile label={t("teamCatalog.requiredSkills")} value={skillCount(team)} Icon={Boxes} />
+          <MetricTile label={translateInstant("Agents")} value={team.counts.agents} Icon={Users2} />
+          <MetricTile label={translateInstant("Projects")} value={team.counts.projects} Icon={FolderKanban} />
+          <MetricTile label={translateInstant("Routines")} value={team.counts.routines} Icon={Repeat} />
+          <MetricTile label={translateInstant("teamCatalog.requiredSkills")} value={skillCount(team)} Icon={Boxes} />
         </div>
 
         {/* Agent hierarchy */}
         <div className="space-y-2">
-          <SectionHeader>{t("teamCatalog.agentHierarchy")}</SectionHeader>
+          <SectionHeader>{translateInstant("teamCatalog.agentHierarchy")}</SectionHeader>
           <TeamHierarchyPreview team={team} />
         </div>
 
         {/* Projects */}
         {team.projectSlugs.length > 0 && (
           <div className="space-y-2">
-            <SectionHeader>{t("Projects")}</SectionHeader>
+            <SectionHeader>{translateInstant("Projects")}</SectionHeader>
             <ul className="space-y-1">
               {team.projectSlugs.map((slug) => (
                 <li key={slug} className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm">
@@ -790,7 +813,7 @@ export function TeamDetailPane({
 
         {/* Required skills */}
         <div className="space-y-2">
-          <SectionHeader>{t("teamCatalog.requiredSkills")}</SectionHeader>
+          <SectionHeader>{translateInstant("teamCatalog.requiredSkills")}</SectionHeader>
           <RequiredSkillsList skills={team.requiredSkills} />
         </div>
 
@@ -802,7 +825,7 @@ export function TeamDetailPane({
 
         {/* File inventory */}
         <div className="space-y-2">
-          <SectionHeader>{t("Files")}</SectionHeader>
+          <SectionHeader>{translateInstant("Files")}</SectionHeader>
           <div className="rounded-md border border-border p-1.5">
             <TeamFileTree
               nodes={tree}
@@ -821,8 +844,7 @@ export function TeamDetailPane({
                   className="text-xs text-muted-foreground hover:text-foreground"
                   onClick={() => onSelectFile(null)}
                 >
-                  {t("common.close")}
-                </button>
+                  {translateInstant("common.close")}</button>
               </div>
               <div className="max-h-96 overflow-auto p-3">
                 {fileContent === null ? (
@@ -853,7 +875,7 @@ const STEP_LABELS: Record<WizardStep, string> = {
   target_manager: "Target manager",
   source_policy: "Source policy",
   skill_plan: "Prerequisite skills",
-  preview: "Preview",
+  get preview() { return translateInstant("Preview"); },
 };
 
 // `simplified` is the onboarding seam (design §6): the newly created company is
@@ -1058,10 +1080,16 @@ function TeamInstallerDialog({
   onClose: () => void;
   onInstalled: () => void;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   const steps = useMemo(() => computeSteps(team), [team]);
   const [stepIndex, setStepIndex] = useState(0);
   const [phase, setPhase] = useState<ApplyPhase>("form");
+  const disabledAdapterTypes = useDisabledAdaptersSync({ enabled: open });
+  const adapterRegistryLoaded = useAdapterRegistryLoaded({ enabled: open });
+  const selectableAdapterTypes = useMemo(
+    () => listTeamInstallAdapterTypes(disabledAdapterTypes, adapterRegistryLoaded),
+    [adapterRegistryLoaded, disabledAdapterTypes],
+  );
 
   // Step 1 — target manager
   const [targetManagerAgentId, setTargetManagerAgentId] = useState<string | null>(null);
@@ -1128,7 +1156,31 @@ function TeamInstallerDialog({
   const buildInstallOptions = () => {
     const overrides: Record<string, CompanyPortabilityAdapterOverride> = {};
     for (const [slug, adapterType] of Object.entries(adapterOverrides)) {
-      if (adapterType) overrides[slug] = { adapterType };
+      if (adapterType) {
+        const resolvedAdapterType = resolveTeamInstallAdapterType(
+          adapterType,
+          selectableAdapterTypes,
+        );
+        if (!resolvedAdapterType) {
+          throw new Error("Enable a legacy adapter before installing this team.");
+        }
+        overrides[slug] = {
+          adapterType: resolvedAdapterType,
+        };
+      }
+    }
+    for (const agent of previewResult?.portabilityPreview.manifest.agents ?? []) {
+      if (overrides[agent.slug]) continue;
+      const adapterType = resolveTeamInstallAdapterType(
+        agent.adapterType,
+        selectableAdapterTypes,
+      );
+      if (!adapterType) {
+        throw new Error("Enable a legacy adapter before installing this team.");
+      }
+      if (adapterType !== agent.adapterType) {
+        overrides[agent.slug] = { adapterType };
+      }
     }
     const enteredSecretValues = Object.fromEntries(
       Object.entries(secretValues).filter(([, value]) => value.trim().length > 0),
@@ -1197,7 +1249,16 @@ function TeamInstallerDialog({
   const missingRequiredSecretInputs = (previewResult?.portabilityPreview.envInputs ?? [])
     .filter((input) => input.requirement === "required" && (secretValues[envInputFormKey(input)] ?? "").trim().length === 0);
   const missingRequiredSecretCount = missingRequiredSecretInputs.length;
-  const installBlocked = hasErrors || missingRequiredSecretCount > 0;
+  const missingEnabledAdapter = Boolean(
+    previewResult?.portabilityPreview.manifest.agents.some(
+      (agent) =>
+        !resolveTeamInstallAdapterType(
+          adapterOverrides[agent.slug] ?? agent.adapterType,
+          selectableAdapterTypes,
+        ),
+    ),
+  );
+  const installBlocked = hasErrors || missingRequiredSecretCount > 0 || missingEnabledAdapter;
   const needsScriptsConfirm = team.trustLevel === "scripts_executables";
 
   function goNext() {
@@ -1221,14 +1282,14 @@ function TeamInstallerDialog({
   const headerTitle = (
     <span className="flex items-center gap-2">
       <Users2 className="h-4 w-4" />
-      {t("teamCatalog.installTeamName", { name: team.name })}
+      {translateInstant("Install")}{" "}{team.name}
     </span>
   );
   const headerDescription =
     phase === "form" ? (
       <span className="flex items-center gap-2">
         <span>
-          {t("teamCatalog.stepProgress", { current: stepIndex + 1, total: totalSteps, step: t(`teamCatalog.step.${currentStep}`, STEP_LABELS[currentStep]) })}
+          {translateInstant("pipelineSettings.step")}{" "}{stepIndex + 1} {translateInstant("issueCommon.of")}{" "}{totalSteps} · {STEP_LABELS[currentStep]}
         </span>
         <span className="flex items-center gap-1" aria-hidden>
           {steps.map((s, i) => (
@@ -1289,6 +1350,7 @@ function TeamInstallerDialog({
                 nameOverrides={nameOverrides}
                 onRename={(slug, name) => setNameOverrides((cur) => ({ ...cur, [slug]: name }))}
                 adapterOverrides={adapterOverrides}
+                selectableAdapterTypes={selectableAdapterTypes}
                 onAdapterChange={(slug, adapterType) => setAdapterOverrides((cur) => ({ ...cur, [slug]: adapterType }))}
                 secretValues={secretValues}
                 visibleSecretKeys={visibleSecretKeys}
@@ -1307,11 +1369,10 @@ function TeamInstallerDialog({
             <div role="alert" className="flex items-start gap-2 rounded-md border border-rose-500/30 bg-rose-500/10 px-3 py-2.5 text-sm text-rose-700 dark:text-rose-300">
               <XCircle className="mt-0.5 h-4 w-4 shrink-0" />
               <div>
-                <p className="font-medium">{t("teamCatalog.installFailed")}</p>
+                <p className="font-medium">{translateInstant("teamCatalog.installFailed")}</p>
                 <p className="mt-0.5 text-xs">{applyError}</p>
                 <p className="mt-1 text-xs opacity-80">
-                  {t("teamCatalog.partialStateNotRolledBack")}
-                </p>
+                  {translateInstant("Partial state is not rolled back. Review the organization activity log before retrying.")}</p>
               </div>
             </div>
           </div>
@@ -1324,42 +1385,45 @@ function TeamInstallerDialog({
       <div className="flex items-center justify-between gap-3">
         <div>
           {stepIndex > 0 ? (
-            <Button variant="ghost" onClick={goBack}>{t("common.back")}</Button>
+            <Button variant="ghost" onClick={goBack}>{translateInstant("common.back")}</Button>
           ) : (
-            <Button variant="ghost" onClick={onClose}>{t("common.cancel")}</Button>
+            <Button variant="ghost" onClick={onClose}>{translateInstant("common.cancel")}</Button>
           )}
         </div>
         <div className="flex items-center gap-3">
           {currentStep === "preview" && hasErrors && (
             <span className="text-xs text-rose-600 dark:text-rose-300">
-              {t("teamCatalog.installBlockedCount", { count: blockedCount })}
+              {translateInstant("Install blocked:")}{" "}{blockedCount} {translateInstant("runStatus.error")}{blockedCount === 1 ? "" : "s"}
             </span>
           )}
           {currentStep === "preview" && !hasErrors && missingRequiredSecretCount > 0 && (
             <span className="text-xs text-rose-600 dark:text-rose-300">
-              {t("teamCatalog.requiredSecretsMissing", { count: missingRequiredSecretCount })}
+              {translateInstant("Required secrets missing:")}{" "}{missingRequiredSecretCount}
             </span>
+          )}
+          {currentStep === "preview" && !hasErrors && missingRequiredSecretCount === 0 && missingEnabledAdapter && (
+            <span className="text-xs text-rose-600 dark:text-rose-300">
+              {translateInstant("Enable a legacy adapter to install this team")}</span>
           )}
           {currentStep === "preview" ? (
             needsScriptsConfirm && confirmScripts ? (
               <Button variant="destructive" onClick={submitInstall} disabled={installBlocked || previewMutation.isPending}>
                 <AlertTriangle className="h-4 w-4" />
-                {t("teamCatalog.confirmInstallWithExecutables")}
-              </Button>
+                {translateInstant("teamCatalog.confirmInstallWithExecutables")}</Button>
             ) : (
               <Button onClick={submitInstall} disabled={installBlocked || previewMutation.isPending || !previewResult}>
                 {needsScriptsConfirm ? <AlertTriangle className="h-4 w-4" /> : <Download className="h-4 w-4" />}
-                {needsScriptsConfirm ? t("teamCatalog.installWithExecutables") : t("teamCatalog.installTeam")}
+                {needsScriptsConfirm ? translateInstant("teamCatalog.installWithExecutables") : translateInstant("teamCatalog.installTeam")}
               </Button>
             )
           ) : (
-            <Button onClick={goNext} disabled={!canContinue(currentStep)}>{t("common.continue")}</Button>
+            <Button onClick={goNext} disabled={!canContinue(currentStep)}>{translateInstant("common.continue")}</Button>
           )}
         </div>
       </div>
     ) : phase === "error" ? (
       <div className="flex justify-end">
-        <Button variant="ghost" onClick={onClose}>{t("common.close")}</Button>
+        <Button variant="ghost" onClick={onClose}>{translateInstant("common.close")}</Button>
       </div>
     ) : null;
 
@@ -1412,18 +1476,17 @@ export function StepTargetManager({
   onToggleFullCompany: (v: boolean) => void;
   canBypassManager: boolean;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   return (
     <div className="space-y-4">
       <div
         className="rounded-md border border-blue-500/30 bg-blue-500/10 px-3 py-2.5 text-sm text-blue-700 dark:text-blue-300"
         id="target-manager-help"
       >
-        {t("teamCatalog.targetManagerHelp")}
-      </div>
+        {translateInstant("This team&apos;s root agents need a manager in your organization. Pick the agent who will become their parent. Internal team hierarchy is preserved.")}</div>
 
       <div className="space-y-1.5">
-        <SectionHeader>{t("teamCatalog.rootAgents")}</SectionHeader>
+        <SectionHeader>{translateInstant("teamCatalog.rootAgents")}</SectionHeader>
         <ul className="rounded-md border border-border">
           {team.rootAgentSlugs.map((slug) => (
             <li key={slug} className="flex items-center gap-2 border-b border-border/60 px-3 py-2 text-sm last:border-b-0">
@@ -1439,11 +1502,11 @@ export function StepTargetManager({
 
       {!fullCompany && (
         <div className="space-y-1.5" aria-describedby="target-manager-help">
-          <SectionHeader>{t("teamCatalog.targetManager")}</SectionHeader>
+          <SectionHeader>{translateInstant("teamCatalog.targetManager")}</SectionHeader>
           <Command className="rounded-md border border-border">
-            <CommandInput placeholder={t("Search agents...")} />
+            <CommandInput placeholder={translateInstant("Search agents…")} />
             <CommandList>
-              <CommandEmpty>{t("No agents found.")}</CommandEmpty>
+              <CommandEmpty>{translateInstant("No agents found.")}</CommandEmpty>
               <CommandGroup>
                 {agents.map((agent) => (
                   <CommandItem
@@ -1472,8 +1535,7 @@ export function StepTargetManager({
             checked={fullCompany}
             onChange={(e) => onToggleFullCompany(e.target.checked)}
           />
-          {t("teamCatalog.fullCompanyPackage")}
-        </label>
+          {translateInstant("Use this team as a full-organization package (no target manager)")}</label>
       )}
     </div>
   );
@@ -1492,14 +1554,13 @@ export function StepSourcePolicy({
   allowLocalPathSources: boolean;
   onChange: (key: "external" | "unpinned" | "localPath", value: boolean) => void;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   const external = team.sourceRefs.filter((s) => s.type !== "include");
   const hasUnsupported = external.some((s) => sourceWarningCode(s) === "unsupported_in_ui");
   return (
     <div className="space-y-4">
       <div role="alert" className="rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2.5 text-sm text-amber-700 dark:text-amber-300">
-        {t("teamCatalog.sourcePolicyHelp", { count: external.length })}
-      </div>
+        {translateInstant("This team references")}{" "}{external.length}{" "}{translateInstant("external source")}{external.length === 1 ? "" : "s"}{translateInstant(". Review each one and decide what to allow before continuing.")}</div>
 
       <ul className="divide-y divide-border rounded-md border border-border">
         {external.map((source) => {
@@ -1511,9 +1572,9 @@ export function StepSourcePolicy({
               <div className="min-w-0">
                 <p className="font-mono text-xs truncate">{source.ref}</p>
                 <p className="text-(length:--text-micro) text-muted-foreground">
-                  {code === "ok" && t("teamCatalog.pinned").toLowerCase()}
-                  {code === "unpinned" && t("teamCatalog.unpinnedReference")}
-                  {code === "unsupported_in_ui" && t("teamCatalog.notInstallableFromBrowser")}
+                  {code === "ok" && "pinned"}
+                  {code === "unpinned" && translateInstant("teamCatalog.unpinnedReference")}
+                  {code === "unsupported_in_ui" && translateInstant("teamCatalog.notInstallableFromBrowser")}
                 </p>
               </div>
               <Badge
@@ -1536,20 +1597,20 @@ export function StepSourcePolicy({
 
       <div className="space-y-2.5 rounded-md border border-border p-3">
         <PolicyToggle
-          label={t("teamCatalog.allowExternalSources")}
-          description={t("teamCatalog.allowExternalSourcesDescription")}
+          label={translateInstant("teamCatalog.allowExternalSources")}
+          description={translateInstant("teamCatalog.allowExternalSourcesDescription")}
           checked={allowExternalSources}
           onChange={(v) => onChange("external", v)}
         />
         <PolicyToggle
-          label={t("teamCatalog.allowUnpinnedOptionalSources")}
-          description={t("teamCatalog.allowUnpinnedOptionalSourcesDescription")}
+          label={translateInstant("teamCatalog.allowUnpinnedOptionalSources")}
+          description={translateInstant("teamCatalog.allowUnpinnedOptionalSourcesDescription")}
           checked={allowUnpinnedOptionalSources}
           onChange={(v) => onChange("unpinned", v)}
         />
         <PolicyToggle
-          label={t("teamCatalog.allowLocalPathSources")}
-          description={t("teamCatalog.allowLocalPathSourcesDescription")}
+          label={translateInstant("teamCatalog.allowLocalPathSources")}
+          description={translateInstant("teamCatalog.allowLocalPathSourcesDescription")}
           checked={allowLocalPathSources}
           onChange={(v) => onChange("localPath", v)}
         />
@@ -1557,8 +1618,7 @@ export function StepSourcePolicy({
 
       {hasUnsupported && !allowLocalPathSources && (
         <p className="text-xs text-rose-600 dark:text-rose-300">
-          {t("teamCatalog.localPathSourcesBlocked")}
-        </p>
+          {translateInstant("This team has local-path sources. Enable &ldquo;Allow local-path sources&rdquo; to continue, or install it from the CLI.")}</p>
       )}
     </div>
   );
@@ -1575,7 +1635,6 @@ function PolicyToggle({
   checked: boolean;
   onChange: (v: boolean) => void;
 }) {
-  const { t } = useTranslation();
   return (
     <div className="flex items-start justify-between gap-3">
       <div>
@@ -1594,7 +1653,7 @@ const SKILL_ACTION_META: Record<
   already_in_package: { label: "Bundled in package", tone: "text-emerald-600 dark:text-emerald-300 border-emerald-500/30" },
   catalog_install_required: { label: "Will install from catalog", tone: "text-blue-600 dark:text-blue-300 border-blue-500/30" },
   external_import_required: { label: "Will import from source", tone: "text-amber-600 dark:text-amber-300 border-amber-500/30" },
-  blocked: { label: "Blocked", tone: "text-rose-600 dark:text-rose-300 border-rose-500/30" },
+  blocked: { get label() { return translateInstant("Blocked"); }, tone: "text-rose-600 dark:text-rose-300 border-rose-500/30" },
 };
 
 export function StepSkillPlan({
@@ -1604,15 +1663,14 @@ export function StepSkillPlan({
   team: CatalogTeam;
   preparations: CatalogTeamSkillPreparation[] | null;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   // Use the live preparations when a preview has run; otherwise fall back to the
   // static required-skill list (read-only — the strict API does not accept a
   // per-skill plan override, design §7 graceful degradation).
   return (
     <div className="space-y-4">
       <div role="alert" className="rounded-md border border-blue-500/30 bg-blue-500/10 px-3 py-2.5 text-sm text-blue-700 dark:text-blue-300">
-        {t("teamCatalog.skillPlanHelp")}
-      </div>
+        {translateInstant("teamCatalog.skillPlanHelp")}</div>
       <ul className="divide-y divide-border rounded-md border border-border">
         {(preparations ?? team.requiredSkills.map(toPreparation)).map((prep) => {
           const meta = SKILL_ACTION_META[prep.action];
@@ -1624,7 +1682,7 @@ export function StepSkillPlan({
                 {prep.reason && <p className="text-(length:--text-micro) text-muted-foreground">{prep.reason}</p>}
               </div>
               <Badge variant="outline" className={cn("ml-auto text-(length:--text-nano)", meta.tone)}>
-                {t(`teamCatalog.skillAction.${prep.action}`, meta.label)}
+                {meta.label}
               </Badge>
             </li>
           );
@@ -1707,6 +1765,7 @@ export function StepPreview({
   nameOverrides,
   onRename,
   adapterOverrides,
+  selectableAdapterTypes,
   onAdapterChange,
   secretValues = {},
   visibleSecretKeys = {},
@@ -1723,6 +1782,7 @@ export function StepPreview({
   nameOverrides: Record<string, string>;
   onRename: (slug: string, name: string) => void;
   adapterOverrides: Record<string, string>;
+  selectableAdapterTypes: readonly string[];
   onAdapterChange: (slug: string, adapterType: string) => void;
   secretValues?: Record<string, string>;
   visibleSecretKeys?: Record<string, boolean>;
@@ -1730,12 +1790,11 @@ export function StepPreview({
   onToggleSecretVisibility?: (key: string) => void;
   onRetry: () => void;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   if (loading && !result) {
     return (
       <div className="flex items-center gap-2 py-12 text-sm text-muted-foreground">
-        <Loader2 className="h-4 w-4 animate-spin" /> {t("teamCatalog.preparingPreview")}
-      </div>
+        <Loader2 className="h-4 w-4 animate-spin" /> {translateInstant("issueProperties.artifacts.preparingPreview")}</div>
     );
   }
   if (error) {
@@ -1746,8 +1805,7 @@ export function StepPreview({
           {error}
         </div>
         <Button variant="outline" onClick={onRetry}>
-          <RotateCcw className="h-4 w-4" /> {t("common.retry")}
-        </Button>
+          <RotateCcw className="h-4 w-4" /> {translateInstant("common.retry")}</Button>
       </div>
     );
   }
@@ -1762,25 +1820,25 @@ export function StepPreview({
     <div className="space-y-4">
       {/* Summary */}
       <div className="space-y-2">
-        <SectionHeader>{t("teamCatalog.summary")}</SectionHeader>
+        <SectionHeader>{translateInstant("teamCatalog.summary")}</SectionHeader>
         <div className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
-          <SummaryCount label={t("Agents")} value={plan.agentPlans.length} />
-          <SummaryCount label={t("Projects")} value={plan.projectPlans.length} />
-          <SummaryCount label={t("teamCatalog.starterTasks")} value={plan.issuePlans.length} />
-          <SummaryCount label={t("teamCatalog.requiredSkills")} value={result.skillPreparations.length} />
+          <SummaryCount label={translateInstant("Agents")} value={plan.agentPlans.length} />
+          <SummaryCount label={translateInstant("Projects")} value={plan.projectPlans.length} />
+          <SummaryCount label={translateInstant("teamCatalog.starterTasks")} value={plan.issuePlans.length} />
+          <SummaryCount label={translateInstant("teamCatalog.requiredSkills")} value={result.skillPreparations.length} />
         </div>
       </div>
 
       {/* Collision strategy */}
       <div className="flex items-center gap-3">
-        <span className="text-sm font-medium">{t("teamCatalog.collisionStrategy")}</span>
+        <span className="text-sm font-medium">{translateInstant("teamCatalog.collisionStrategy")}</span>
         <Select value={collisionStrategy} onValueChange={(v) => onCollisionStrategyChange(v as CompanyPortabilityCollisionStrategy)}>
           <SelectTrigger className="h-8 w-40">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="rename">{t("teamCatalog.renameCollisions")}</SelectItem>
-            <SelectItem value="skip">{t("teamCatalog.skipCollisions")}</SelectItem>
+            <SelectItem value="rename">{translateInstant("teamCatalog.renameCollisions")}</SelectItem>
+            <SelectItem value="skip">{translateInstant("teamCatalog.skipCollisions")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -1788,7 +1846,7 @@ export function StepPreview({
       {/* Errors / warnings */}
       {result.errors.length > 0 && (
         <div role="alert" className="rounded-md border border-rose-500/30 bg-rose-500/10 px-3 py-2.5 text-sm text-rose-700 dark:text-rose-300">
-          <p className="font-medium">{t("teamCatalog.installBlocked")}</p>
+          <p className="font-medium">{translateInstant("teamCatalog.installBlocked")}</p>
           <ul className="mt-1 list-disc space-y-0.5 pl-4 text-xs">
             {result.errors.map((e, i) => <li key={i}>{e}</li>)}
           </ul>
@@ -1851,29 +1909,35 @@ export function StepPreview({
       {manifestAgents.length > 0 && (
         <PreviewSection title={`Adapter selection · ${manifestAgents.length}`}>
           {manifestAgents.map((agent) => {
-            const selected = adapterOverrides[agent.slug] ?? agent.adapterType;
+            const selected = resolveTeamInstallAdapterType(
+              adapterOverrides[agent.slug] ?? agent.adapterType,
+              selectableAdapterTypes,
+            );
             return (
               <li key={agent.slug} className="flex items-center gap-2 px-3 py-2 text-sm">
                 <Cpu className="h-3.5 w-3.5 text-muted-foreground" />
                 <span className="min-w-0 truncate">{agent.name}</span>
                 <span className="font-mono text-(length:--text-micro) text-muted-foreground">{agent.slug}</span>
-                <Select value={selected} onValueChange={(v) => onAdapterChange(agent.slug, v)}>
-                  <SelectTrigger className="ml-auto h-8 w-48">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {AGENT_ADAPTER_TYPES.map((type) => (
-                      <SelectItem key={type} value={type}>{getAdapterLabel(type)}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {selected ? (
+                  <Select value={selected} onValueChange={(v) => onAdapterChange(agent.slug, v)}>
+                    <SelectTrigger className="ml-auto h-8 w-48">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {selectableAdapterTypes.map((type) => (
+                        <SelectItem key={type} value={type}>{getAdapterLabel(type)}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <span className="ml-auto text-xs text-rose-600 dark:text-rose-300">
+                    {translateInstant("No enabled legacy adapter")}</span>
+                )}
               </li>
             );
           })}
           <li className="px-3 py-1.5 text-(length:--text-micro) text-muted-foreground">
-            Each imported agent defaults to its package adapter; override here before install.
-            Deeper per-adapter model config is editable on the agent after install.
-          </li>
+            {translateInstant("Each imported agent defaults to its package adapter; override here before install. Deeper per-adapter model config is editable on the agent after install.")}</li>
         </PreviewSection>
       )}
 
@@ -1891,7 +1955,7 @@ export function StepPreview({
                   <span className="font-mono text-xs uppercase tracking-wide">{input.key}</span>
                   {input.description && <span className="truncate text-xs text-muted-foreground">{input.description}</span>}
                   {input.requirement === "required" && (
-                    <Badge variant="outline" className="text-(length:--text-nano)">required</Badge>
+                    <Badge variant="outline" className="text-(length:--text-nano)">{translateInstant("common.required")}</Badge>
                   )}
                   <Badge
                     variant="outline"
@@ -1905,7 +1969,7 @@ export function StepPreview({
                     type={visible ? "text" : "password"}
                     value={secretValues[formKey] ?? ""}
                     onChange={(event) => onSecretChange(formKey, event.target.value)}
-                    placeholder={input.requirement === "required" ? "Required" : "Optional"}
+                    placeholder={input.requirement === "required" ? translateInstant("Required") : translateInstant("Optional")}
                     aria-label={`${input.key} value`}
                     aria-invalid={missingRequired || undefined}
                     className={cn("h-8 min-w-0", missingRequired && "border-rose-500/60 focus-visible:ring-rose-500/30")}
@@ -1934,10 +1998,8 @@ export function StepPreview({
 
       {/* Provenance */}
       <div className="rounded-md border border-border px-3 py-2.5 text-xs text-muted-foreground">
-        Imported entities are stamped with <code className="font-mono">metadata.paperclip.catalogTeam</code>{" "}
-        ({team.packageName ?? team.key}, content hash <code className="font-mono">{team.contentHash.slice(0, 16)}…</code>),
-        and an activity event is recorded for preview and install.
-      </div>
+        {translateInstant("Imported entities are stamped with")}{" "}<code className="font-mono">metadata.paperclip.catalogTeam</code>{" "}
+        ({team.packageName ?? team.key}{translateInstant(", content hash")}{" "}<code className="font-mono">{team.contentHash.slice(0, 16)}…</code>{translateInstant("), and an activity event is recorded for preview and install.")}</div>
     </div>
   );
 }
@@ -1966,15 +2028,14 @@ function PreviewSection({ title, children }: { title: string; children: React.Re
 // per-step progress mid-flight. Show one honest in-flight row; the resolved
 // per-category checklist is rendered from the real result on the success screen.
 export function ApplyProgress({ team }: { team: CatalogTeam }) {
-  const { t } = useTranslation();
+  useTranslation();
   return (
     <div className="flex items-center gap-3 py-10 text-sm">
       <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
       <div>
-        <p className="font-medium">{t("teamCatalog.installingTeam", { name: team.name })}</p>
+        <p className="font-medium">{translateInstant("Installing")}{" "}{team.name}…</p>
         <p className="text-xs text-muted-foreground">
-          {t("teamCatalog.installingDescription")}
-        </p>
+          {translateInstant("teamCatalog.installingDescription")}</p>
       </div>
     </div>
   );
@@ -1999,7 +2060,7 @@ export function ApplySuccess({
   result: CatalogTeamInstallResult | null;
   onClose: () => void;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   const imp = result?.portabilityImport;
   const agentsCreated = imp?.agents.filter((a) => a.action !== "skipped").length ?? 0;
   const projectsCreated = imp?.projects.filter((p) => p.action !== "skipped").length ?? 0;
@@ -2009,16 +2070,15 @@ export function ApplySuccess({
     <div className="space-y-4 py-2">
       <div className="flex items-center gap-2">
         <CheckCircle2 className="h-6 w-6 text-emerald-500" />
-        <p className="text-base font-semibold">{t("teamCatalog.teamInstalled")}</p>
+        <p className="text-base font-semibold">{translateInstant("teamCatalog.teamInstalled")}</p>
       </div>
       <p className="text-sm text-muted-foreground">
-        {t("teamCatalog.teamInstalledBody", { name: team.name })}
-      </p>
+        {team.name} {translateInstant("was imported into your organization. Imported entities are stamped with catalog provenance.")}</p>
       {result && (
         <ul className="divide-y divide-border/60 rounded-md border border-border px-3">
-          <ResultRow label={t("teamCatalog.agentsImported")} count={agentsCreated} />
-          <ResultRow label={t("teamCatalog.projectsImported")} count={projectsCreated} />
-          <ResultRow label={t("teamCatalog.skillsResolved")} count={skillsResolved} />
+          <ResultRow label={translateInstant("teamCatalog.agentsImported")} count={agentsCreated} />
+          <ResultRow label={translateInstant("teamCatalog.projectsImported")} count={projectsCreated} />
+          <ResultRow label={translateInstant("teamCatalog.skillsResolved")} count={skillsResolved} />
         </ul>
       )}
       {warnings.length > 0 && (
@@ -2029,13 +2089,13 @@ export function ApplySuccess({
         </div>
       )}
       <ul className="space-y-1 text-sm">
-        <li><a className="text-primary hover:underline" href="/agents/all">{t("teamCatalog.viewImportedAgents")} →</a></li>
-        <li><a className="text-primary hover:underline" href="/projects">{t("teamCatalog.viewImportedProjects")} →</a></li>
-        <li><a className="text-primary hover:underline" href="/routines">{t("teamCatalog.viewRoutines")} →</a></li>
-        <li><a className="text-primary hover:underline" href="/activity">{t("teamCatalog.viewActivityLog")} →</a></li>
+        <li><a className="text-primary hover:underline" href="/agents/all">{translateInstant("View imported agents →")}</a></li>
+        <li><a className="text-primary hover:underline" href="/projects">{translateInstant("View imported projects →")}</a></li>
+        <li><a className="text-primary hover:underline" href="/routines">{translateInstant("View routines →")}</a></li>
+        <li><a className="text-primary hover:underline" href="/activity">{translateInstant("View activity log →")}</a></li>
       </ul>
       <div className="flex justify-end">
-        <Button onClick={onClose}>{t("common.done")}</Button>
+        <Button onClick={onClose}>{translateInstant("common.done")}</Button>
       </div>
     </div>
   );
@@ -2056,7 +2116,7 @@ export function TeamRow({
   onSelect: () => void;
   installed?: InstalledCatalogTeam | null;
 }) {
-  const { t } = useTranslation();
+  useTranslation();
   const risk = teamRisk(team);
   const outOfDate = Boolean(installed?.outOfDate);
   return (
@@ -2077,13 +2137,13 @@ export function TeamRow({
           <Tooltip>
             <TooltipTrigger asChild>
               <span
-                aria-label={t("teamCatalog.updateAvailable")}
+                aria-label={translateInstant("teamCatalog.updateAvailable")}
                 className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-300"
               >
                 <ChevronUp className="h-3 w-3" />
               </span>
             </TooltipTrigger>
-            <TooltipContent>{t("teamCatalog.installedTeamOutOfDate")}</TooltipContent>
+            <TooltipContent>{translateInstant("teamCatalog.installedTeamOutOfDate")}</TooltipContent>
           </Tooltip>
         )}
         {risk !== "safe" && (
@@ -2091,7 +2151,7 @@ export function TeamRow({
             <TooltipTrigger asChild>
               <AlertTriangle className={cn("ml-auto h-3.5 w-3.5", risk === "blocked" ? "text-rose-500" : "text-amber-500")} />
             </TooltipTrigger>
-            <TooltipContent>{t("teamCatalog.hasExternalSources")}</TooltipContent>
+            <TooltipContent>{translateInstant("teamCatalog.hasExternalSources")}</TooltipContent>
           </Tooltip>
         )}
       </div>
@@ -2121,6 +2181,7 @@ export function TeamCard({
   selected?: boolean;
   onSelect?: () => void;
 }) {
+  useTranslation();
   return (
     <button
       type="button"
@@ -2142,7 +2203,7 @@ export function TeamCard({
       <div className="space-y-0.5">
         <h3 className="text-sm font-semibold leading-snug">{team.name}</h3>
         <p className="text-xs text-muted-foreground">
-          {team.counts.agents} agent{team.counts.agents === 1 ? "" : "s"} ·{" "}
+          {team.counts.agents} {translateInstant("agent")}{team.counts.agents === 1 ? "" : "s"} ·{" "}
           {team.counts.projects} project{team.counts.projects === 1 ? "" : "s"} ·{" "}
           {team.counts.routines} routine{team.counts.routines === 1 ? "" : "s"}
         </p>
@@ -2184,7 +2245,7 @@ function matchesSearch(team: CatalogTeam, q: string): boolean {
 }
 
 export function TeamCatalog() {
-  const { t } = useTranslation();
+  useTranslation();
   const { "*": routePath } = useParams<{ "*": string }>();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -2218,10 +2279,10 @@ export function TeamCatalog() {
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: "Org Chart", href: "/org" },
-      { label: t("teamCatalog.title"), href: TEAM_CATALOG_ROUTE_ROOT },
+      { label: translateInstant("Org Chart"), href: "/org" },
+      { label: translateInstant("teamCatalog.title"), href: TEAM_CATALOG_ROUTE_ROOT },
     ]);
-  }, [setBreadcrumbs, t]);
+  }, [setBreadcrumbs]);
 
   const catalogQuery = useQuery({
     queryKey: queryKeys.teamCatalog.catalog({ kind: kindFilter === "all" ? undefined : kindFilter }),
@@ -2315,7 +2376,7 @@ export function TeamCatalog() {
   if (!selectedCompanyId) {
     return (
       <div className="p-8">
-        <EmptyState icon={Users2} message={t("teamCatalog.selectCompany")} />
+        <EmptyState icon={Users2} message={translateInstant("Select an organization to browse the team catalog.")} />
       </div>
     );
   }
@@ -2324,13 +2385,13 @@ export function TeamCatalog() {
     <div className="flex h-full flex-col">
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-2 border-b border-border px-5 py-3">
-        <h1 className="text-lg font-semibold">{t("teamCatalog.title")}</h1>
+        <h1 className="text-lg font-semibold">{translateInstant("teamCatalog.title")}</h1>
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={q}
             onChange={(e) => setFilterParam("search", e.target.value)}
-            placeholder={t("teamCatalog.searchTeams")}
+            placeholder={translateInstant("teamCatalog.searchTeams")}
             className="h-8 w-56 pl-8"
           />
         </div>
@@ -2339,16 +2400,16 @@ export function TeamCatalog() {
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm" className="h-8">
               <Filter className="h-3.5 w-3.5" />
-              {kindFilter === "all" ? t("teamCatalog.kind.all") : kindFilter === "bundled" ? t("teamCatalog.kind.bundled") : t("teamCatalog.kind.optional")}
+              {kindFilter === "all" ? translateInstant("teamCatalog.kind.all") : kindFilter === "bundled" ? translateInstant("Bundled") : translateInstant("Optional")}
               <ChevronDown className="h-3.5 w-3.5" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
-            <DropdownMenuLabel>{t("teamCatalog.kind.label")}</DropdownMenuLabel>
+            <DropdownMenuLabel>{translateInstant("teamCatalog.kind.label")}</DropdownMenuLabel>
             <DropdownMenuRadioGroup value={kindFilter} onValueChange={(v) => setFilterParam("kind", v)}>
-              <DropdownMenuRadioItem value="all">{t("teamCatalog.kind.all")}</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="bundled">{t("teamCatalog.kind.bundled")}</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="optional">{t("teamCatalog.kind.optional")}</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="all">{translateInstant("teamCatalog.kind.all")}</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="bundled">{translateInstant("teamCatalog.kind.bundled")}</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="optional">{translateInstant("teamCatalog.kind.optional")}</DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -2357,14 +2418,14 @@ export function TeamCatalog() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="h-8">
-                {categoryFilter ? t("teamCatalog.categorySelected", { category: titleCase(categoryFilter) }) : t("teamCatalog.category.all")}
+                {categoryFilter ? `Category · ${titleCase(categoryFilter)}` : translateInstant("All categories")}
                 <ChevronDown className="h-3.5 w-3.5" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start">
-              <DropdownMenuLabel>{t("teamCatalog.category.label")}</DropdownMenuLabel>
+              <DropdownMenuLabel>{translateInstant("teamCatalog.category.label")}</DropdownMenuLabel>
               <DropdownMenuRadioGroup value={categoryFilter} onValueChange={(v) => setFilterParam("category", v)}>
-                <DropdownMenuRadioItem value="">{t("teamCatalog.category.all")}</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="">{translateInstant("teamCatalog.category.all")}</DropdownMenuRadioItem>
                 {categories.map((cat) => (
                   <DropdownMenuRadioItem key={cat} value={cat}>{titleCase(cat)}</DropdownMenuRadioItem>
                 ))}
@@ -2376,17 +2437,17 @@ export function TeamCatalog() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm" className="h-8">
-              {riskFilter === "any" ? t("teamCatalog.risk.any") : riskFilter === "safe" ? t("teamCatalog.risk.safe") : riskFilter === "has_warnings" ? t("teamCatalog.risk.hasWarnings") : t("teamCatalog.risk.blocked")}
+              {riskFilter === "any" ? translateInstant("teamCatalog.risk.any") : riskFilter === "safe" ? translateInstant("teamCatalog.risk.safe") : riskFilter === "has_warnings" ? translateInstant("teamCatalog.risk.hasWarnings") : translateInstant("Blocked")}
               <ChevronDown className="h-3.5 w-3.5" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
-            <DropdownMenuLabel>{t("teamCatalog.risk.label")}</DropdownMenuLabel>
+            <DropdownMenuLabel>{translateInstant("teamCatalog.risk.label")}</DropdownMenuLabel>
             <DropdownMenuRadioGroup value={riskFilter} onValueChange={(v) => setFilterParam("risk", v)}>
-              <DropdownMenuRadioItem value="any">{t("teamCatalog.risk.any")}</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="safe">{t("teamCatalog.risk.safe")}</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="has_warnings">{t("teamCatalog.risk.hasWarnings")}</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="blocked">{t("teamCatalog.risk.blocked")}</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="any">{translateInstant("teamCatalog.risk.any")}</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="safe">{translateInstant("teamCatalog.risk.safe")}</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="has_warnings">{translateInstant("teamCatalog.risk.hasWarnings")}</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="blocked">{translateInstant("teamCatalog.risk.blocked")}</DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
             {anyFilterActive && (
               <>
@@ -2396,8 +2457,7 @@ export function TeamCatalog() {
                   className="flex w-full items-center gap-1.5 px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground"
                   onClick={() => setSearchParams(new URLSearchParams())}
                 >
-                  <RotateCcw className="h-3 w-3" /> {t("teamCatalog.resetFilters")}
-                </button>
+                  <RotateCcw className="h-3 w-3" /> {translateInstant("teamCatalog.resetFilters")}</button>
               </>
             )}
           </DropdownMenuContent>
@@ -2405,8 +2465,7 @@ export function TeamCatalog() {
 
         {anyFilterActive && (
           <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => setSearchParams(new URLSearchParams())}>
-            {t("teamCatalog.resetFilters")}
-          </Button>
+            {translateInstant("teamCatalog.resetFilters")}</Button>
         )}
       </div>
 
@@ -2427,19 +2486,17 @@ export function TeamCatalog() {
           ) : catalogQuery.isError ? (
             <div className="p-4">
               <div role="alert" className="rounded-md border border-rose-500/30 bg-rose-500/10 px-3 py-2.5 text-sm text-rose-700 dark:text-rose-300">
-                {t("teamCatalog.loadFailed")}
-              </div>
+                {translateInstant("teamCatalog.loadFailed")}</div>
               <Button variant="outline" size="sm" className="mt-3" onClick={() => catalogQuery.refetch()}>
-                <RotateCcw className="h-3.5 w-3.5" /> {t("common.retry")}
-              </Button>
+                <RotateCcw className="h-3.5 w-3.5" /> {translateInstant("common.retry")}</Button>
             </div>
           ) : teams.length === 0 ? (
-            <EmptyState icon={Users2} message={t("teamCatalog.emptyCatalog")} />
+            <EmptyState icon={Users2} message={translateInstant("teamCatalog.emptyCatalog")} />
           ) : filtered.length === 0 ? (
             <EmptyState
               icon={Search}
-              message={t("teamCatalog.noTeamsMatchFilter")}
-              action={t("teamCatalog.resetFilters")}
+              message={translateInstant("teamCatalog.noTeamsMatchFilter")}
+              action={translateInstant("Reset filters")}
               onAction={() => setSearchParams(new URLSearchParams())}
             />
           ) : (
@@ -2447,7 +2504,7 @@ export function TeamCatalog() {
               {grouped.bundled.length > 0 && (
                 <>
                   <div className="px-3 py-2 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
-                    {t("teamCatalog.group.bundled", { count: grouped.bundled.length })}
+                    {translateInstant("Bundled ·")}{" "}{grouped.bundled.length}
                   </div>
                   {grouped.bundled.map((team) => (
                     <TeamRow
@@ -2462,7 +2519,7 @@ export function TeamCatalog() {
               {grouped.optional.length > 0 && (
                 <>
                   <div className="px-3 py-2 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
-                    {t("teamCatalog.group.optional", { count: grouped.optional.length })}
+                    {translateInstant("Optional ·")}{" "}{grouped.optional.length}
                   </div>
                   {grouped.optional.map((team) => (
                     <TeamRow
@@ -2477,7 +2534,7 @@ export function TeamCatalog() {
               {grouped.installed.length > 0 && (
                 <>
                   <div className="px-3 py-2 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
-                    {t("teamCatalog.group.installed", { count: grouped.installed.length })}
+                    {translateInstant("Installed ·")}{" "}{grouped.installed.length}
                   </div>
                   {grouped.installed.map((team) => (
                     <TeamRow
@@ -2508,8 +2565,7 @@ export function TeamCatalog() {
                 onClick={() => navigate(withFilters(TEAM_CATALOG_ROUTE_ROOT))}
                 className="flex items-center gap-1.5 border-b border-border px-4 py-2 text-sm text-muted-foreground hover:text-foreground"
               >
-                <ChevronLeft className="h-4 w-4" /> {t("teamCatalog.backToCatalog")}
-              </button>
+                <ChevronLeft className="h-4 w-4" /> {translateInstant("teamCatalog.backToCatalog")}</button>
             )}
             {selectedTeam ? (
               <TeamDetailPane
@@ -2525,8 +2581,7 @@ export function TeamCatalog() {
               />
             ) : (
               <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
-                {t("teamCatalog.selectTeamDetails")}
-              </div>
+                {translateInstant("teamCatalog.selectTeamDetails")}</div>
             )}
           </div>
         )}
@@ -2540,7 +2595,7 @@ export function TeamCatalog() {
           open={installOpen}
           onClose={() => setInstallOpen(false)}
           onInstalled={() => {
-            pushToast({ tone: "success", title: t("teamCatalog.teamInstalled"), body: t("teamCatalog.teamImportedToast", { name: selectedTeam.name }) });
+            pushToast({ tone: "success", title: translateInstant("teamCatalog.teamInstalled"), body: `${selectedTeam.name} was imported.` });
             // Provenance now lives on the new agents — refresh installed/out-of-date state.
             void queryClient.invalidateQueries({
               queryKey: queryKeys.teamCatalog.installed(selectedCompanyId),

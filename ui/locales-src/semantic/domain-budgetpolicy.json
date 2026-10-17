@@ -1,0 +1,17 @@
+{
+  "budgetPolicy.projectPaused": {
+    "en": "Execution is paused for this project until the budget block is resolved.",
+    "zh-CN": "在预算阻塞问题解决前，此项目的执行已暂停。",
+    "reviewedEnglishHash": "cbc2c7c3a219aaad05ed6dd4bab871c47bfcae388dac57607d022a8cdca6c5e5"
+  },
+  "budgetPolicy.scopePaused": {
+    "en": "Heartbeats are paused for this scope until the budget block is resolved.",
+    "zh-CN": "在预算阻塞问题解决前，此范围的心跳任务已暂停。",
+    "reviewedEnglishHash": "c518d1f0d33c93388b91b17ba58e1439831c1cd717cceb9516709683128ab198"
+  },
+  "budgetPolicy.utilizationLabel": {
+    "en": "Budget utilization: {{percent}}% used",
+    "zh-CN": "预算使用率：已使用 {{percent}}%",
+    "reviewedEnglishHash": "f67a17ea0d38a0081a70a3d91f2b89e474e7c9f11efcd5f3e761dce25c536ffb"
+  }
+}

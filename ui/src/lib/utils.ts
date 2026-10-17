@@ -1,16 +1,9 @@
+import { getCurrentLocale, translateInstant } from "../i18n";
+const DISPLAY_CURRENCY = "USD";
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import {
-  deriveAgentUrlKey,
-  deriveProjectUrlKey,
-  hasNonAsciiContent,
-  normalizeProjectUrlKey,
-} from "@penclipai/shared";
+import { deriveAgentUrlKey, deriveProjectUrlKey, normalizeProjectUrlKey, hasNonAsciiContent } from "@penclipai/shared";
 import type { BillingType, FinanceDirection, FinanceEventKind } from "@penclipai/shared";
-import { getCurrentLocale, translateInstant } from "../i18n";
-
-// Ledger and budget values remain USD-denominated; locale only affects formatting.
-const DISPLAY_CURRENCY = "USD";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -42,35 +35,17 @@ export function asFiniteNumber(value: unknown, fallback: number) {
   return typeof value === "number" && Number.isFinite(value) ? value : fallback;
 }
 
-export function formatCents(cents: number): string {
-  return `$${(cents / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+export function formatCents(cents: number, currency = "USD"): string {
+  // Older finance writes accepted arbitrary three-character codes. Keep those
+  // amounts readable without passing an invalid currency to Intl.
+  if (!/^[a-z]{3}$/i.test(currency)) {
+    return `${currency} ${(cents / 100).toLocaleString(getCurrentLocale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  }
+  return (cents / 100).toLocaleString(getCurrentLocale(), { style: "currency", currency, ...(currency.toUpperCase() === "USD" ? { currencyDisplay: "narrowSymbol" as const } : {}), minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-export function formatUsdAmount(
-  amount: number,
-  options?: Intl.NumberFormatOptions,
-): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: DISPLAY_CURRENCY,
-    ...options,
-  }).format(amount);
-}
-
-export function formatNumber(n: number): string {
-  return new Intl.NumberFormat(getCurrentLocale()).format(n);
-}
-
-export function formatBudgetInputValue(cents: number): string {
-  return (cents / 100).toFixed(2);
-}
-
-export function parseBudgetInputValue(value: string): number | null {
-  const normalized = value.trim();
-  if (normalized.length === 0) return 0;
-  const parsed = Number(normalized);
-  if (!Number.isFinite(parsed) || parsed < 0) return null;
-  return Math.round(parsed * 100);
+export function formatNumber(n: number, options?: Intl.NumberFormatOptions): string {
+  return n.toLocaleString(getCurrentLocale(), options);
 }
 
 /**
@@ -79,39 +54,36 @@ export function parseBudgetInputValue(value: string): number | null {
  */
 export function formatProjectBudget(budget: { amountCents: number; windowKind: string }): string {
   const amount = formatCents(budget.amountCents);
-  return budget.windowKind === "calendar_month_utc" ? `${amount}/mo` : amount;
+  return budget.windowKind === "calendar_month_utc" ? translateInstant("projectBudget.amountPerMonth", { amount }) : amount;
 }
 
 export function formatDate(date: Date | string): string {
-  return new Intl.DateTimeFormat(getCurrentLocale(), {
+  return new Date(date).toLocaleDateString(getCurrentLocale(), {
     month: "short",
     day: "numeric",
     year: "numeric",
-  }).format(new Date(date));
+  });
 }
 
-export function formatDateTime(date: Date | string): string {
-  return new Intl.DateTimeFormat(getCurrentLocale(), {
+export function formatDateTime(
+  date: Date | string,
+  options: { includeSeconds?: boolean; includeYear?: boolean } = {},
+): string {
+  return new Date(date).toLocaleString(getCurrentLocale(), {
     month: "short",
     day: "numeric",
-    year: "numeric",
+    ...(options.includeYear === false ? {} : { year: "numeric" as const }),
     hour: "numeric",
     minute: "2-digit",
-  }).format(new Date(date));
-}
-
-export function formatTime(
-  date: Date | string,
-  options?: Intl.DateTimeFormatOptions,
-): string {
-  return new Intl.DateTimeFormat(getCurrentLocale(), options).format(new Date(date));
+    ...(options.includeSeconds ? { second: "2-digit" as const } : {}),
+  });
 }
 
 export function formatShortDate(date: Date | string): string {
-  return new Intl.DateTimeFormat(getCurrentLocale(), {
+  return new Date(date).toLocaleString(getCurrentLocale(), {
     month: "short",
     day: "numeric",
-  }).format(new Date(date));
+  });
 }
 
 export function relativeTime(date: Date | string): string {
@@ -211,13 +183,42 @@ function coerceBillingType(value: unknown): BillingType | null {
   return null;
 }
 
-function readRunCostUsd(payload: Record<string, unknown> | null): number {
-  if (!payload) return 0;
-  for (const key of ["costUsd", "cost_usd", "total_cost_usd"] as const) {
+function readRunCostUsd(payload: Record<string, unknown> | null): number | null {
+  if (!payload) return null;
+  for (const key of ["cacheAdjustedCostUsd", "costUsdExact", "costUsd", "cost_usd", "total_cost_usd"] as const) {
     const value = payload[key];
-    if (typeof value === "number" && Number.isFinite(value)) return value;
+    if (key === "costUsdExact" && typeof value === "string" && /^\d+(?:\.\d+)?$/.test(value) && Number.isFinite(Number(value))) return Number(value);
+    if (typeof value === "number" && Number.isFinite(value) && value >= 0) return value;
   }
-  return 0;
+  return null;
+}
+
+/** Receipt-backed runs and legacy Claude/Gemini snapshots store uncached input
+ * separately. OpenCode/Pi persist their provider-qualified model IDs and also
+ * separate cache reads. Older Codex input already includes cached tokens.
+ * Unknown legacy formats retain their input-plus-output interpretation. */
+export function visibleRunTokenTotal(usage: Record<string, unknown> | null | undefined): number {
+  const count = (...keys: string[]) => {
+    for (const key of keys) {
+      const value = usage?.[key];
+      if (typeof value === "number" && Number.isFinite(value)) return Math.max(0, value);
+    }
+    return 0;
+  };
+  const input = count("inputTokens", "input_tokens");
+  const output = count("outputTokens", "output_tokens");
+  const cached = count("cachedInputTokens", "cached_input_tokens", "cache_read_input_tokens");
+  const provider = typeof usage?.provider === "string" ? usage.provider : "";
+  const model = typeof usage?.model === "string" ? usage.model : "";
+  // Use the saved model convention, not the agent's current adapter: an agent
+  // can change adapters after a historical run. Codex saves an unqualified ID.
+  const qualifiedModel = provider !== "" && provider !== "unknown"
+    && model.startsWith(`${provider}/`) && model.length > provider.length + 1;
+  const inputExcludesCached = usage?.provider === "anthropic"
+    || usage?.provider === "google"
+    || qualifiedModel
+    || (typeof usage?.accountingReceiptId === "string" && usage.accountingReceiptId.length > 0);
+  return input + output + (inputExcludesCached ? cached : 0);
 }
 
 export function visibleRunCostUsd(
@@ -226,7 +227,7 @@ export function visibleRunCostUsd(
 ): number {
   const billingType = coerceBillingType(usage?.billingType) ?? coerceBillingType(result?.billingType);
   if (billingType === "subscription_included") return 0;
-  return readRunCostUsd(usage) || readRunCostUsd(result);
+  return readRunCostUsd(usage) ?? readRunCostUsd(result) ?? 0;
 }
 
 export function financeEventKindDisplayName(eventKind: FinanceEventKind): string {
@@ -270,12 +271,11 @@ export function agentUrl(agent: { id: string; urlKey?: string | null; name?: str
   return `/agents/${agentRouteRef(agent)}`;
 }
 
-/** Build a project route reference using the short URL key when available. */
+/** Build a project route reference, falling back to UUID when the derived key is ambiguous. */
 export function projectRouteRef(project: { id: string; urlKey?: string | null; name?: string | null }): string {
   const key = project.urlKey ?? deriveProjectUrlKey(project.name, project.id);
-  if (key === normalizeProjectUrlKey(project.name) && hasNonAsciiContent(project.name)) {
-    return project.id;
-  }
+  // Guard for rolling deploys or legacy data where the server returned a bare slug without UUID suffix.
+  if (key === normalizeProjectUrlKey(project.name) && hasNonAsciiContent(project.name)) return project.id;
   return key;
 }
 
@@ -290,4 +290,40 @@ export function projectWorkspaceUrl(
   workspaceId: string,
 ): string {
   return `${projectUrl(project)}/workspaces/${workspaceId}`;
+}
+
+/** Preserve sub-cent inference charges instead of showing a misleading $0.00. */
+export function formatDetailedCents(cents: string | number): string {
+  return (Number(cents) / 100).toLocaleString(getCurrentLocale(), { style: "currency", currency: "USD", currencyDisplay: "narrowSymbol", minimumFractionDigits: 2, maximumFractionDigits: 9 });
+}
+
+export function formatUsdAmount(
+  amount: number,
+  options?: Intl.NumberFormatOptions,
+): string {
+  return new Intl.NumberFormat(getCurrentLocale(), {
+    style: "currency",
+    currency: DISPLAY_CURRENCY,
+    currencyDisplay: "narrowSymbol",
+    ...options,
+  }).format(amount);
+}
+
+export function formatBudgetInputValue(cents: number): string {
+  return (cents / 100).toFixed(2);
+}
+
+export function parseBudgetInputValue(value: string): number | null {
+  const normalized = value.trim();
+  if (normalized.length === 0) return 0;
+  const parsed = Number(normalized);
+  if (!Number.isFinite(parsed) || parsed < 0) return null;
+  return Math.round(parsed * 100);
+}
+
+export function formatTime(
+  date: Date | string,
+  options?: Intl.DateTimeFormatOptions,
+): string {
+  return new Intl.DateTimeFormat(getCurrentLocale(), options).format(new Date(date));
 }

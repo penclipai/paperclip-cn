@@ -1,0 +1,12 @@
+{
+  "aiConnections.localLogin.hostedUnavailable": {
+    "en": "Server-host subscription sign-in is unavailable on this hosted instance. Choose a supported sign-in environment or use an API key.",
+    "zh-CN": "此托管实例不支持服务器端订阅登录。请使用支持的登录环境，或通过 API 密钥连接。",
+    "reviewedEnglishHash": "2003d0f82c2e3b7274b55d683bc307f2efaf557f93e10cc0cb102f238539d637"
+  },
+  "aiConnections.localLogin.windowsUnavailable": {
+    "en": "Server-host subscription sign-in is unavailable on Windows because Paperclip cannot safely read isolated credential files on this platform. Choose a supported sign-in environment or use an API key.",
+    "zh-CN": "Windows 暂不支持服务器端订阅登录，因为 Paperclip CN 无法在此平台上安全读取隔离的凭据文件。请使用支持的登录环境，或通过 API 密钥连接。",
+    "reviewedEnglishHash": "b0d5d8af9159faddeb96759e97578698b1c3d7446c216a0bea238b31cd4914ce"
+  }
+}

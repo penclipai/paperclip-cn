@@ -73,7 +73,10 @@ describe("llm routes", () => {
     expect(res.text).toContain("Leave runtimeConfig.heartbeat.enabled false");
   });
 
-  it("serves static Hermes Gateway configuration docs before the plugin is installed", async () => {
+  it("serves configuration docs supplied by installed external adapters", async () => {
+    mockListServerAdapters.mockReturnValue([
+      { type: "example_external", agentConfigurationDoc: "# External adapter configuration" },
+    ]);
     const app = await createApp({
       type: "board",
       userId: "board-user",
@@ -85,26 +88,22 @@ describe("llm routes", () => {
     const indexRes = await request(app).get("/api/llms/agent-configuration.txt");
     expect(indexRes.status).toBe(200);
     expect(indexRes.text).toContain(
-      "- hermes_gateway: /llms/agent-configuration/hermes_gateway.txt",
+      "- example_external: /llms/agent-configuration/example_external.txt",
     );
 
-    const res = await request(app).get("/api/llms/agent-configuration/hermes_gateway.txt");
+    const res = await request(app).get("/api/llms/agent-configuration/example_external.txt");
 
     expect(res.status).toBe(200);
-    expect(res.text).toContain("Adapter: hermes_gateway");
-    expect(res.text).toContain('adapterType": "hermes_gateway"');
-    expect(res.text).toContain("API_SERVER_ENABLED=true");
-    expect(res.text).toContain("API_SERVER_KEY");
-    expect(res.text).toContain("hermes gateway run --replace --accept-hooks");
-    expect(res.text).toContain("Default Hermes API server port: 8642");
-    expect(res.text).toContain("agentDefaultsPayload.apiBaseUrl");
-    expect(res.text).toContain("agentDefaultsPayload.paperclipApiUrl");
-    expect(res.text).toContain("hermes_local");
-    expect(res.text).toContain("Hermes-originated Paperclip API usage");
-    expect(res.text).toContain("http://127.0.0.1:8642");
-    expect(res.text).toContain("http://192.168.1.25:8642");
-    expect(res.text).toContain("tailnet-name.ts.net:8642");
-    expect(res.text).toContain("http://host.docker.internal:8642");
-    expect(res.text).toContain("https://hermes-gateway.example");
+    expect(res.text).toBe("# External adapter configuration");
+  });
+
+  it("does not advertise or serve uninstalled external adapters", async () => {
+    const app = await createApp({ type: "board", userId: "board-user" });
+    const index = await request(app).get("/api/llms/agent-configuration.txt");
+    expect(index.status).toBe(200);
+    expect(index.text).not.toContain("hermes_gateway");
+    const response = await request(app).get("/api/llms/agent-configuration/hermes_gateway.txt");
+    expect(response.status).toBe(404);
+    expect(response.text).toBe("Unknown adapter type: hermes_gateway");
   });
 });

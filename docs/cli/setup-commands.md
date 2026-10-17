@@ -5,37 +5,35 @@ summary: Onboard, run, doctor, and configure
 
 Instance setup and diagnostics commands.
 
-Examples on this page use the installed `penclip` command. If you are running without installing first, prefix the command with `npx`.
-
-## `penclip run`
+## `paperclipai run`
 
 One-command bootstrap and start:
 
 ```sh
-penclip run
+pnpm penclip run
 ```
 
 Does:
 
 1. Auto-onboards if config is missing
-2. Runs `penclip doctor` with repair enabled
+2. Runs `paperclipai doctor` with repair enabled
 3. Starts the server when checks pass
 
 Choose a specific instance:
 
 ```sh
-penclip run --instance dev
+npx penclip run --instance dev
 ```
 
-## `penclip onboard`
+## `paperclipai onboard`
 
 Interactive first-time setup:
 
 ```sh
-penclip onboard
+pnpm penclip onboard
 ```
 
-If Paperclip is already configured, rerunning `onboard` keeps the existing config in place. Use `penclip configure` to change settings on an existing install.
+If Paperclip is already configured, rerunning `onboard` keeps the existing config in place. Use `paperclipai configure` to change settings on an existing install.
 
 First prompt:
 
@@ -45,24 +43,34 @@ First prompt:
 Start immediately after onboarding:
 
 ```sh
-penclip onboard --run
+pnpm penclip onboard --run
 ```
 
-Non-interactive defaults + immediate start (opens browser on server listen):
+Quickstart defaults + immediate start:
 
 ```sh
-penclip onboard --yes
+pnpm penclip onboard --yes
+```
+
+When onboarding starts Paperclip from an interactive terminal, it opens the
+onboarding page in your browser once. Non-interactive terminals stay silent.
+Suppress browser opening explicitly for headless or automated runs with either
+environment variable:
+
+```sh
+PAPERCLIP_NO_BROWSER=1 pnpm paperclipai onboard --yes
+PAPERCLIP_OPEN_ON_LISTEN=false pnpm paperclipai onboard --yes
 ```
 
 On an existing install, `--yes` now preserves the current config and just starts Paperclip with that setup.
 
-## `penclip doctor`
+## `paperclipai doctor`
 
 Health checks with optional auto-repair:
 
 ```sh
-penclip doctor
-penclip doctor --repair
+pnpm penclip doctor
+pnpm penclip doctor --repair
 ```
 
 Validates:
@@ -74,14 +82,14 @@ Validates:
 - Storage configuration
 - Missing key files
 
-## `penclip configure`
+## `paperclipai configure`
 
 Update configuration sections:
 
 ```sh
-penclip configure --section server
-penclip configure --section secrets
-penclip configure --section storage
+pnpm penclip configure --section server
+pnpm penclip configure --section secrets
+pnpm penclip configure --section storage
 ```
 
 `--section secrets` updates the deployment-level provider used as the fallback
@@ -91,22 +99,22 @@ coming-soon GCP/Vault) live in the board UI under
 `Company Settings → Secrets → Provider vaults` and the
 `/api/companies/{companyId}/secret-provider-configs` API.
 
-## `penclip env`
+## `paperclipai env`
 
 Show resolved environment configuration:
 
 ```sh
-penclip env
+pnpm penclip env
 ```
 
 This now includes bind-oriented deployment settings such as `PAPERCLIP_BIND` and `PAPERCLIP_BIND_HOST` when configured.
 
-## `penclip allowed-hostname`
+## `paperclipai allowed-hostname`
 
 Allow a private hostname for authenticated/private mode:
 
 ```sh
-penclip allowed-hostname my-tailscale-host
+npx penclip allowed-hostname my-tailscale-host
 ```
 
 ## Local Storage Paths
@@ -122,12 +130,12 @@ penclip allowed-hostname my-tailscale-host
 Override with:
 
 ```sh
-PAPERCLIP_HOME=/custom/home PAPERCLIP_INSTANCE_ID=dev penclip run
+PAPERCLIP_HOME=/custom/home PAPERCLIP_INSTANCE_ID=dev pnpm penclip run
 ```
 
 Or pass `--data-dir` directly on any command:
 
 ```sh
-penclip run --data-dir ./tmp/paperclip-dev
-penclip doctor --data-dir ./tmp/paperclip-dev
+npx penclip run --data-dir ./tmp/paperclip-dev
+npx penclip doctor --data-dir ./tmp/paperclip-dev
 ```

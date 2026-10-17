@@ -1,15 +1,18 @@
 /**
- * Adapter types shipped with Paperclip. External plugins must not replace these.
+ * Adapter types shipped with Paperclip. External plugins may temporarily
+ * override these, but the registry retains the built-in fallback.
  */
 export const BUILTIN_ADAPTER_TYPES = new Set([
   "acpx_local",
   "claude_local",
   "codebuddy_local",
   "codex_local",
+  "paperclip_runner",
   "cursor_cloud",
   "cursor",
   "gemini_local",
   "grok_local",
+  "kimi_local",
   "openclaw_gateway",
   "opencode_local",
   "pi_local",

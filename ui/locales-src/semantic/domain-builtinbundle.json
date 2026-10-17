@@ -1,0 +1,172 @@
+{
+  "builtInBundle.adapter": {
+    "en": "Adapter",
+    "zh-CN": "适配器",
+    "reviewedEnglishHash": "0252b84901033771a99fae063abde949b7f3298a78fa86238eb880ebe95b666c"
+  },
+  "builtInBundle.adapterNeedsSetup": {
+    "en": "Pick an adapter this coach can run on.",
+    "zh-CN": "请选择此教练可使用的适配器。",
+    "reviewedEnglishHash": "16924add5e35e263d1599f50abb9f2817f03473b3e4f865a6683e66c13448331"
+  },
+  "builtInBundle.adapterPendingApproval": {
+    "en": "Waiting on board hire approval before this coach can run.",
+    "zh-CN": "此教练需要等待董事会批准雇用后才能运行。",
+    "reviewedEnglishHash": "2b45c99aa16ad56a91edef266c0b77c8701c25d122852a8548d716bca6daa162"
+  },
+  "builtInBundle.disableSchedule": {
+    "en": "Disable schedule",
+    "zh-CN": "停用计划",
+    "reviewedEnglishHash": "514c1707c58b4ed03c20a2bffc59dd6360183d09f335ff58ce754930d5463196"
+  },
+  "builtInBundle.disableScheduleBody": {
+    "en": "Paperclip CN will stop future scheduled Reflection Coach runs. Manual Run once remains available.",
+    "zh-CN": "Paperclip CN 将停止未来的 Reflection Coach 计划运行，但仍可手动运行一次。",
+    "reviewedEnglishHash": "321927792f18f0c8ff6382661a69ed6ee13d679dfe30df96b872cee4cfa868e5"
+  },
+  "builtInBundle.disableScheduleTitle": {
+    "en": "Disable the weekly schedule?",
+    "zh-CN": "停用每周计划？",
+    "reviewedEnglishHash": "dc2e4df7a45fa887546191262e03e75e275850feb266b48fcb72a0ee8c0ec6a0"
+  },
+  "builtInBundle.drift.missing": {
+    "en": "Not materialized yet - recreate it from the shipped default.",
+    "zh-CN": "尚未生成，请根据随附默认值重新创建。",
+    "reviewedEnglishHash": "7b6af247646acbe91bd7c32408c93b394fe90937a6043dfa65e7d87837259c9b"
+  },
+  "builtInBundle.drift.operatorModified": {
+    "en": "You've edited this. Your changes are kept until you reset.",
+    "zh-CN": "你已编辑此资源。重置前会保留这些更改。",
+    "reviewedEnglishHash": "0059115ec8c7248ed6b106ff65cb8f1c9de3522c265b43c44d15385a09ebd9a4"
+  },
+  "builtInBundle.drift.updateAvailable": {
+    "en": "Paperclip CN shipped a newer default.",
+    "zh-CN": "Paperclip CN 已提供更新的默认版本。",
+    "reviewedEnglishHash": "968dbe3d08a7974fa3f9a5f010fc85fbb64b0857efa0b1e8d3345db95af78a09"
+  },
+  "builtInBundle.enableScheduleBody": {
+    "en": "Paperclip CN will allow Reflection Coach to create routine tasks on the weekly schedule. It can spend tokens when those tasks run.",
+    "zh-CN": "Paperclip CN 将允许 Reflection Coach 按每周计划创建例行任务；这些任务运行时可能消耗词元。",
+    "reviewedEnglishHash": "8f060c5d460b2c7d33f19bb4121b8e80f2e93b7a769622f3c70dd041db214983"
+  },
+  "builtInBundle.enableScheduleTitle": {
+    "en": "Enable the weekly schedule?",
+    "zh-CN": "启用每周计划？",
+    "reviewedEnglishHash": "639afd2782aec3c44629c018c0160f593187f3453e9e6059d212d3a7f9f4f240"
+  },
+  "builtInBundle.enableWeekly": {
+    "en": "Enable weekly",
+    "zh-CN": "启用每周计划",
+    "reviewedEnglishHash": "c35f144a9c8f4ce2e43535c30483ce932b6763954ad0cc37f280f8bbcb36876f"
+  },
+  "builtInBundle.instructions": {
+    "en": "Instructions",
+    "zh-CN": "说明",
+    "reviewedEnglishHash": "934652dce41d62d3c9ff34b2c5e44e3addaedc67d6137328a9fe75a63c51dbac"
+  },
+  "builtInBundle.proposal": {
+    "en": "Proposal",
+    "zh-CN": "提案",
+    "reviewedEnglishHash": "5d42766c7ecac46c344f7ed2f8940a0054b00641cb56876ceb30c9eab50159b0"
+  },
+  "builtInBundle.proposalDetail": {
+    "en": "A proposed Reflection Coach update is waiting for review.",
+    "zh-CN": "一项 Reflection Coach 更新提案正在等待审核。",
+    "reviewedEnglishHash": "175caf7ec2fbe2c34475485530b93154e142b490067689ff67c5bb738416f29d"
+  },
+  "builtInBundle.recreate": {
+    "en": "Recreate",
+    "zh-CN": "重新创建",
+    "reviewedEnglishHash": "15efb691cac50d3ebec8b2d5b55a7947a99d553983ebfe2d88e3f486871bf2a3"
+  },
+  "builtInBundle.recreateBody": {
+    "en": "This resource is missing. Paperclip CN will recreate it from the shipped default. Adapter credentials and settings are not touched.",
+    "zh-CN": "此资源缺失。Paperclip CN 将根据随附默认值重新创建，且不会更改适配器凭据和设置。",
+    "reviewedEnglishHash": "ec4fab1651d90d4ecfb6d36202b150f1cba73b0438800dc10eea945ed92a7fdc"
+  },
+  "builtInBundle.recreateTitle": {
+    "en": "Recreate {{label}}?",
+    "zh-CN": "重新创建{{label}}？",
+    "reviewedEnglishHash": "69bf6e59de12f23d56b6937b82cc82097a66910d763148c07e9614ed5a9d336c"
+  },
+  "builtInBundle.resetBody": {
+    "en": "This replaces your edited version with Paperclip CN's current default. Your edits can't be recovered. Adapter credentials and settings are not touched.",
+    "zh-CN": "这会用 Paperclip CN 当前默认版本替换你编辑的版本，且无法恢复这些编辑。适配器凭据和设置不会被更改。",
+    "reviewedEnglishHash": "b9678c2669d152351ab9fcee4dd8f630f8ec5f4c026bd1f94accae97b1259cf3"
+  },
+  "builtInBundle.resetLabel": {
+    "en": "Reset {{label}}",
+    "zh-CN": "重置{{label}}",
+    "reviewedEnglishHash": "4c2a53e943186e2f691097ba7ed0f3dbb50f6e13ab7be39c216945b6a0599b7e"
+  },
+  "builtInBundle.resetTitle": {
+    "en": "Reset {{label}} to the shipped default?",
+    "zh-CN": "将{{label}}重置为随附默认值？",
+    "reviewedEnglishHash": "f1ffbeb78b62dcdec0d08683f0f2c9928a0b12fda6c0e68d4a316bd032ce5d1e"
+  },
+  "builtInBundle.reviewProposal": {
+    "en": "Review proposal",
+    "zh-CN": "审核提案",
+    "reviewedEnglishHash": "fc3188f4404639204a110d0619b51df1432ef815861f7d00794508be6417a57b"
+  },
+  "builtInBundle.routine": {
+    "en": "Routine",
+    "zh-CN": "例行任务",
+    "reviewedEnglishHash": "0b5baf309897ec7e2def5db089f1f4ec5b15d5912296577d655d00ca0fc40b59"
+  },
+  "builtInBundle.routineLower": {
+    "en": "routine",
+    "zh-CN": "例行任务",
+    "reviewedEnglishHash": "fde55b36ec36cbcd2832b6b9f8f59ea0cf6d942c528053ca1171c063069a74cf"
+  },
+  "builtInBundle.runOnce": {
+    "en": "Run once",
+    "zh-CN": "运行一次",
+    "reviewedEnglishHash": "5f041f4be2d3becdcb1363508b415794005ddbcfae08c4d6d5a29d615ea73922"
+  },
+  "builtInBundle.runOnceBody": {
+    "en": "Paperclip CN will create one routine task now. This does not enable the weekly schedule or turn on background work.",
+    "zh-CN": "Paperclip CN 现在会创建一个例行任务，但不会启用每周计划或后台工作。",
+    "reviewedEnglishHash": "a34c9d4fa011c363025efef27dc4e69161ae2d72578aa54d93661eae80888f0d"
+  },
+  "builtInBundle.runOnceTitle": {
+    "en": "Run Reflection Coach once?",
+    "zh-CN": "运行一次 Reflection Coach？",
+    "reviewedEnglishHash": "4cb5c954c165c52c0d09c4cad7c2c689740382553ae4a97b19b0ec3c00199279"
+  },
+  "builtInBundle.scheduleDisabledDetail": {
+    "en": "Nothing runs until you enable the weekly schedule - it costs zero tokens by default.",
+    "zh-CN": "启用每周计划前不会运行任何内容，默认不消耗词元。",
+    "reviewedEnglishHash": "a5c706cab559a58c5ec776fd56f289712328ada9a05148644b9b55b891307744"
+  },
+  "builtInBundle.scheduleEnabledDetail": {
+    "en": "The weekly schedule is enabled and can create background work.",
+    "zh-CN": "每周计划已启用，可以创建后台工作。",
+    "reviewedEnglishHash": "9b70076d5357592e74e79b2e344e09914414c514e09460f27c2aac01e686aaa3"
+  },
+  "builtInBundle.skill": {
+    "en": "Skill",
+    "zh-CN": "技能",
+    "reviewedEnglishHash": "6df1bb18a59ab97df82e307b93fe4f3bbda34d531bcbb79ec573dda23ba64918"
+  },
+  "builtInBundle.status": {
+    "en": "Bundle status",
+    "zh-CN": "资源包状态",
+    "reviewedEnglishHash": "7d35c70373addf7eda71b2b60e9f41279d4809d84147c07d15807c8c934619b8"
+  },
+  "builtInBundle.updateBody": {
+    "en": "You haven't edited this, so Paperclip CN will replace it with the newer shipped version. Nothing you customized is affected, and your adapter credentials and settings are not touched.",
+    "zh-CN": "你尚未编辑此资源，因此 Paperclip CN 会将其替换为更新的随附版本。自定义内容、适配器凭据和设置都不会受到影响。",
+    "reviewedEnglishHash": "719feaeac7d6ab7c617e8fcdbbf4e8782b1d67d223d8f545c56fbda0aaa8d2f3"
+  },
+  "builtInBundle.updateTitle": {
+    "en": "Update {{label}} to the newest default?",
+    "zh-CN": "将{{label}}更新为最新默认值？",
+    "reviewedEnglishHash": "442b9f9346b32231035b350d6a03f87935ae2c8016c44af1d09ece1ffbd02ad4"
+  },
+  "builtInBundle.weeklySchedule": {
+    "en": "Weekly schedule",
+    "zh-CN": "每周计划",
+    "reviewedEnglishHash": "6cbc7c2647d5178c1368df91db7c094e53b7b53bc7a39897d342207b453bf0a4"
+  }
+}

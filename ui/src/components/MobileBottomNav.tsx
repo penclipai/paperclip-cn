@@ -1,11 +1,13 @@
-import { useMemo } from "react";
+import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
+import { useMemo } from "react";
 import { NavLink, useLocation } from "@/lib/router";
 import {
   House,
-  CircleDot,
+  CircleCheck,
   SquarePen,
   Users,
+  MessageCircle,
   Inbox,
 } from "lucide-react";
 import { useCompany } from "../context/CompanyContext";
@@ -13,6 +15,8 @@ import { useDialogActions } from "../context/DialogContext";
 import { SIDEBAR_SCROLL_RESET_STATE } from "../lib/navigation-scroll";
 import { cn } from "../lib/utils";
 import { useInboxBadge } from "../hooks/useInboxBadge";
+import { useAgentChatEnabled } from "@/hooks/useAgentChatEnabled";
+import { useCombinedInboxTasksEnabled } from "@/hooks/useCombinedInboxTasksEnabled";
 import { Badge } from "@/components/ui/badge";
 
 interface MobileBottomNavProps {
@@ -37,38 +41,66 @@ interface MobileNavActionItem {
 type MobileNavItem = MobileNavLinkItem | MobileNavActionItem;
 
 export function MobileBottomNav({ visible }: MobileBottomNavProps) {
-  const { t } = useTranslation();
+  useTranslation();
   const location = useLocation();
   const { selectedCompanyId } = useCompany();
   const { openNewIssue } = useDialogActions();
   const inboxBadge = useInboxBadge(selectedCompanyId);
+  const { enabled: agentChatEnabled } = useAgentChatEnabled();
+  const { enabled: combinedInboxTasksEnabled } = useCombinedInboxTasksEnabled();
 
+  // PAP-670: with both flags off the bar is the original Home · Tasks · + ·
+  // Agents · Inbox. Agent Chat adds Chat in the second slot (Home · Chat · + ·
+  // Tasks · Agents). Combined Inbox + Task List drops Inbox as a destination —
+  // it is a view inside Tasks, so its unread badge rides on Tasks. The grid
+  // tracks the live count, so the bar stays evenly divided in every mix.
   const items = useMemo<MobileNavItem[]>(
-    () => [
-      { type: "link", to: "/dashboard", label: t("Home", { defaultValue: "Home" }), icon: House },
-      { type: "link", to: "/issues", label: t("Issues", { defaultValue: "Issues" }), icon: CircleDot },
-      { type: "action", label: t("Create", { defaultValue: "Create" }), icon: SquarePen, onClick: () => openNewIssue() },
-      { type: "link", to: "/agents/all", label: t("Agents", { defaultValue: "Agents" }), icon: Users },
+    () => !agentChatEnabled && !combinedInboxTasksEnabled ? [
+      { type: "link", to: "/dashboard", label: translateInstant("Home"), icon: House },
+      { type: "link", to: "/issues", label: translateInstant("sidebar.issues"), icon: CircleCheck },
+      { type: "action", label: translateInstant("sidebar.newTask"), icon: SquarePen, onClick: () => openNewIssue() },
+      { type: "link", to: "/agents/all", label: translateInstant("Agents"), icon: Users },
       {
         type: "link",
         to: "/inbox",
-        label: t("Inbox", { defaultValue: "Inbox" }),
+        label: translateInstant("Inbox"),
         icon: Inbox,
         badge: inboxBadge.inbox,
       },
+    ] : [
+      { type: "link", to: "/dashboard", label: translateInstant("Home"), icon: House },
+      ...(agentChatEnabled
+        ? [{ type: "link", to: "/chats", label: translateInstant("Chat"), icon: MessageCircle } as MobileNavItem]
+        : []),
+      { type: "action", label: translateInstant("sidebar.newTask"), icon: SquarePen, onClick: () => openNewIssue() },
+      {
+        type: "link",
+        to: "/issues",
+        label: translateInstant("sidebar.issues"),
+        icon: CircleCheck,
+        badge: combinedInboxTasksEnabled ? inboxBadge.inbox : undefined,
+      },
+      { type: "link", to: "/agents/all", label: translateInstant("Agents"), icon: Users },
+      ...(!combinedInboxTasksEnabled
+        ? [{ type: "link", to: "/inbox", label: translateInstant("Inbox"), icon: Inbox, badge: inboxBadge.inbox } as MobileNavItem]
+        : []),
     ],
-    [openNewIssue, inboxBadge.inbox, t],
+    [openNewIssue, inboxBadge.inbox, agentChatEnabled, combinedInboxTasksEnabled],
   );
 
   return (
     <nav
       className={cn(
-        "fixed bottom-0 left-0 right-0 z-30 border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/85 transition-transform duration-200 ease-out md:hidden pb-(--sz-safe-bottom)",
-        visible ? "translate-y-0" : "translate-y-full",
+        "mobile-bottom-nav fixed bottom-0 left-0 right-0 z-30 bg-muted md:hidden pb-(--sz-safe-bottom)",
       )}
-      aria-label={t("Mobile navigation", { defaultValue: "Mobile navigation" })}
+      data-visible={visible}
+      inert={!visible}
+      aria-label={translateInstant("Mobile navigation")}
     >
-      <div className="grid h-16 grid-cols-5 px-1">
+      <div
+        className="grid h-16 px-1"
+        style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))` }}
+      >
         {items.map((item) => {
           if (item.type === "action") {
             const Icon = item.icon;

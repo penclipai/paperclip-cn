@@ -1,0 +1,37 @@
+{
+  "issueAttachments.browseGallery": {
+    "en": "Browse gallery",
+    "zh-CN": "浏览图库",
+    "reviewedEnglishHash": "882d73584d0edf97db313ae076c5bf1a9a70ac362e7edee8ec9ba48ffb3acc78"
+  },
+  "issueAttachments.browseGalleryAria": {
+    "en": "Browse {{filename}} in gallery",
+    "zh-CN": "在图库中浏览 {{filename}}",
+    "reviewedEnglishHash": "462201f00b0318676202d96c162c55883726cdd78c77c7504a41f26136f67151"
+  },
+  "issueAttachments.deletePrompt": {
+    "en": "Delete this attachment? This cannot be undone.",
+    "zh-CN": "确认删除这个附件吗？此操作无法撤销。",
+    "reviewedEnglishHash": "d3486247da7d20a4a4f5070abce84ad0d1aac4ec018ac8f45529e449d74a2c49"
+  },
+  "issueAttachments.deletePromptShort": {
+    "en": "Delete?",
+    "zh-CN": "删除？",
+    "reviewedEnglishHash": "18b77e44e6898151b7172a74c3c5a4753a684f1e7bedc2cc22de452bd60d1480"
+  },
+  "issueAttachments.loadingPreview": {
+    "en": "Loading preview...",
+    "zh-CN": "正在加载预览...",
+    "reviewedEnglishHash": "c02130fa90ee3e859ddcaefd4d5efd7da6d585e8b217e87242608d758f0b366d"
+  },
+  "issueAttachments.openAria": {
+    "en": "Open {{filename}}",
+    "zh-CN": "打开 {{filename}}",
+    "reviewedEnglishHash": "941531dd6ffd482c9e3ddfa0668e7e60e227e543fc903df7e872e6a161acb6b9"
+  },
+  "issueAttachments.previewLoadFailed": {
+    "en": "Could not load markdown preview.",
+    "zh-CN": "无法加载 Markdown 预览。",
+    "reviewedEnglishHash": "3a3c03fd86a215ea622f372a9ec3b3d515016e3acbfdc9afcb3aae288d873f01"
+  }
+}

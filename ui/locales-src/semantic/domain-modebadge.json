@@ -1,0 +1,17 @@
+{
+  "modeBadge.authenticatedPrivate": {
+    "en": "Authenticated private",
+    "zh-CN": "认证私有",
+    "reviewedEnglishHash": "856a2fe8715c90e19e49cd179866057570eb1415c8901f4df8c1392d772352ee"
+  },
+  "modeBadge.authenticatedPublic": {
+    "en": "Authenticated public",
+    "zh-CN": "认证公开",
+    "reviewedEnglishHash": "4f166782814228e30607f1e9bffaac5aee2edf064d7f1c095e97aff9adec5d83"
+  },
+  "modeBadge.localTrusted": {
+    "en": "Local trusted",
+    "zh-CN": "本地可信",
+    "reviewedEnglishHash": "dd3af0b2b0aeb5992fe52cdd54611f2b9faf6a34fe2558ead951af9893102030"
+  }
+}

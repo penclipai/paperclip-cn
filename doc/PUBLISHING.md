@@ -3,7 +3,6 @@
 Low-level reference for how Paperclip packages are prepared and published to npm.
 
 For the maintainer workflow, use [doc/RELEASING.md](RELEASING.md). This document focuses on packaging internals.
-Do not duplicate the normal `latest` promotion checklist here; keep stable dry-run/live workflow and post-release surface verification in the releasing runbook.
 
 ## Current Release Entry Points
 
@@ -18,7 +17,7 @@ Paperclip no longer uses release branches or Changesets for publishing.
 
 ## Why the CLI needs special packaging
 
-The CLI package, `penclip`, imports code from workspace packages such as:
+The CLI package, `paperclipai`, imports code from workspace packages such as:
 
 - `@penclipai/server`
 - `@penclipai/db`
@@ -42,7 +41,9 @@ This script:
 3. bundles the CLI entrypoint with esbuild into `cli/dist/index.js`
 4. verifies the bundled entrypoint with `node --check`
 5. rewrites `cli/package.json` into a publishable npm manifest and stores the dev copy as `cli/package.dev.json`
-6. copies the repo `README.md` into `cli/README.md` for npm metadata
+6. copies the repo `README.md` into `cli/README.md` for npm metadata, rewriting
+   repository-relative image assets to raw GitHub URLs pinned to the source
+   commit
 
 After the release script exits, the dev manifest and temporary files are restored automatically.
 
@@ -108,7 +109,6 @@ Notes:
 - Publish from `ui/`, not the repo root.
 - `prepack` automatically rewrites `ui/package.json` to the lean publish manifest, and `postpack` restores the dev manifest after the command finishes.
 - If `npm view @penclipai/ui version` already returns the same version that is in [`ui/package.json`](../ui/package.json), do not republish. Bump the version or use the normal repo-wide release flow in [`scripts/release.sh`](../scripts/release.sh).
-- Local release dry-runs and manual publishes now require `RELEASE_REMOTE=<paperclip-cn-remote>` (or `PUBLISH_REMOTE=...`) when your checkout has both upstream and fork remotes.
 
 If the first real publish returns npm `E404`, check npm-side prerequisites before retrying:
 
@@ -117,37 +117,6 @@ If the first real publish returns npm `E404`, check npm-side prerequisites befor
 - The initial publish must include `--access public` for a public scoped package.
 - npm also requires either account 2FA for publishing or a granular token that is allowed to bypass 2FA.
 
-### Manual first publish for `@penclipai/mcp-server`
-
-If you need to publish only the MCP server package once by hand, use:
-
-- `@penclipai/mcp-server`
-
-Recommended flow from the repo root:
-
-```bash
-# optional sanity check: this 404s until the first publish exists
-npm view @penclipai/mcp-server version
-
-# make sure the build output is fresh
-pnpm --filter @penclipai/mcp-server build
-
-# confirm your local npm auth before the real publish
-npm whoami
-
-# safe preview of the exact publish payload
-cd packages/mcp-server
-pnpm publish --dry-run --no-git-checks --access public
-
-# real publish
-pnpm publish --no-git-checks --access public
-```
-
-Notes:
-
-- Publish from `packages/mcp-server/`, not the repo root.
-- If `npm view @penclipai/mcp-server version` already returns the same version that is in [`packages/mcp-server/package.json`](../packages/mcp-server/package.json), do not republish. Bump the version or use the normal repo-wide release flow in [`scripts/release.sh`](../scripts/release.sh).
-- The same npm-side prerequisites apply as above: valid npm auth, permission to publish to the `@penclipai` scope, `--access public`, and the required publish auth/2FA policy.
 ## Version formats
 
 Paperclip uses calendar versions:
@@ -197,15 +166,16 @@ Stable publishes do not create a release commit. Instead:
 - packages are published from the chosen source commit
 - git tag `vYYYY.MDD.P` points at that original commit
 
-## Trusted publishing
+## CI publishing credentials
 
-The intended CI model is npm trusted publishing through GitHub OIDC.
+Paperclip CN uses two credential paths in `.github/workflows/release.yml`.
 
 That means:
 
-- no long-lived `NPM_TOKEN` in repository secrets
-- GitHub Actions obtains short-lived publish credentials
-- trusted publisher rules are configured per workflow file
+- canary and stable publishing use `NPM_TOKEN` from the protected `npm-canary` and `npm-stable` GitHub environments
+- preview, nightly, and beta publishing use npm trusted publishing through GitHub OIDC
+- trusted publisher rules must authorize `penclipai/paperclip-cn` and `release.yml`
+- do not disable token publishing or remove the environment tokens while canary and stable use them
 
 See [doc/RELEASE-AUTOMATION-SETUP.md](RELEASE-AUTOMATION-SETUP.md) for the GitHub/npm setup steps.
 
@@ -217,54 +187,65 @@ CI publishing is controlled by [`scripts/release-package-manifest.json`](../scri
 When you add a new public package:
 
 1. add it to the manifest and decide whether CI should publish it immediately
-2. if CI should publish it, bootstrap the package on npm before merge
+2. if CI should publish it, reserve the name on npm with the placeholder bootstrap before merge
 3. if CI should not publish it yet, keep `"publishFromCi": false`
-4. only enable `"publishFromCi": true` after npm trusted publishing is configured for that package
+4. only enable `"publishFromCi": true` after the CI environment tokens can publish that package and its npm trusted publisher is configured
 
-PR CI now checks changed release-enabled package manifests against npm. That catches a missing first-publish bootstrap before the change reaches `master`.
+PR CI now checks changed release-enabled package manifests against npm. That catches a missing first-publish bootstrap before the change reaches `master`. When a PR needs this bootstrap, commitperclip also posts an informational notice on the PR naming the exact command, so contributors know a maintainer action is pending rather than something they can fix.
 
 ### One-time bootstrap sequence for a new package
 
-The first publish of a brand-new package still needs one human maintainer with npm write access.
-After that, trusted publishing can take over.
+Creating a brand-new package name on npm still needs one human maintainer with npm write access.
+After that, the CI publish jobs use the credential path for the selected channel and publish the package's real content.
+
+The bootstrap intentionally does **not** publish the package's real build output.
+It publishes a tiny placeholder at version `0.0.0` (a manifest, a README, and an
+`index.js` that throws a descriptive error), because:
+
+- real package content should only ever reach npm from CI, after the PR that adds the package has been reviewed and merged
+- the PR CI gate only requires the name to resolve on the registry
+- the trusted publisher rule can only be configured once the package page exists
+- the placeholder needs no local build and no workspace state, so it can be published from any checkout (including `master`, before the new package's PR merges)
 
 Example for a newly added public package from the repo root:
 
 ```bash
-# safe preview
+# safe preview (stages the placeholder and runs npm publish --dry-run)
 pnpm run release:bootstrap-package -- @penclipai/new-package
 
-# one-time first publish from an authenticated maintainer machine
-pnpm run release:bootstrap-package -- @penclipai/new-package --publish --otp 123456
-
-# or use a granular npm token with bypass 2FA enabled
-NPM_TOKEN=... pnpm run release:bootstrap-package -- @penclipai/new-package --publish
+# one-time placeholder publish from an authenticated maintainer machine
+# (prompts for npm one-time passwords; they are never passed as arguments)
+pnpm run release:bootstrap-package -- @penclipai/new-package --publish
 ```
 
 The helper script:
 
+- refuses names outside the `@penclipai/` scope
 - checks that the package does not already exist on npm
-- builds the target package unless `--skip-build` is passed
-- creates a temporary publish payload that promotes `publishConfig` exports and rewrites `workspace:*` dependencies to published npm versions
-- runs `npm pack --dry-run` against that temporary payload
-- only runs the real `npm publish --access public` when `--publish` is provided
+- stages the placeholder in a temporary directory and previews it with `npm publish --dry-run --access public`
+- with `--publish`, prompts for a one-time password and publishes. Codes are entered interactively and handed to npm through its environment (`npm_config_otp`), so they never appear on a command line, in shell history, or in a process listing; a rejected or expired code re-prompts
+- then waits for the registry to show the package (a first publish can take a few minutes to become visible on the read/write endpoints) and prompts for a second code to deprecate the placeholder, so accidental installs warn loudly. If the wait times out or the deprecation fails, it prints the exact `npm deprecate` command to run manually
+
+Until the first stable release supersedes it, the `latest` dist-tag points at the
+deprecated placeholder. Internal consumers are unaffected: release version
+rewrites pin exact calver versions, so nothing inside the release package set
+resolves through `latest`.
 
 For the real `--publish` step, the maintainer machine must already be authenticated to npm.
 If `npm whoami` returns `401`, first run `npm logout --registry=https://registry.npmjs.org/` to clear any stale local auth, then run `npm login` or `npm adduser` locally as an npm org member, and finally rerun the helper.
 That local human auth is fine for the one-time bootstrap publish; we just do not want the same auth model inside CI.
-npm requires either account 2FA for interactive publishing or a granular access token with bypass 2FA enabled.
-Pass `--otp <code>` for account 2FA, or set `NPM_TOKEN`/`NODE_AUTH_TOKEN` to a bypass-2FA token before running `--publish`.
+`--publish` requires an interactive terminal: the helper prompts for the one-time password right before the publish and again before the deprecation, handing each code to npm through its environment (`npm_config_otp`), so codes never appear in command arguments, shell history, or process listings.
 
-After that first publish succeeds:
+After the placeholder publish succeeds:
 
 1. open `https://www.npmjs.com/package/@penclipai/new-package`
 2. go to `Settings` → `Trusted publishing`
 3. add repository `penclipai/paperclip-cn`
 4. set workflow filename to `release.yml`
-5. optionally go to `Settings` → `Publishing access` and enable `Require two-factor authentication and disallow tokens`
-6. keep `publishFromCi: true` in [`scripts/release-package-manifest.json`](../scripts/release-package-manifest.json)
+5. keep token publishing enabled and confirm the `npm-canary` and `npm-stable` environment tokens can publish the package
+6. only then set `"publishFromCi": true` in [`scripts/release-package-manifest.json`](../scripts/release-package-manifest.json)
 
-Once those steps are done, future canary and stable publishes for that package are automated through GitHub OIDC. The manual step is only the first package creation on npm.
+Once those steps are done, future publishes use the channel's CI credential path described above. The manual step only reserves the name on npm; every real version ships from CI.
 
 ## Rollback model
 

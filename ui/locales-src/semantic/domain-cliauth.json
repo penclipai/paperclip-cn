@@ -1,0 +1,127 @@
+{
+  "cliAuth.accessApprovedBody": {
+    "en": "The Paperclip CN CLI can now finish authentication on the requesting machine.",
+    "zh-CN": "Paperclip CN CLI 现在可以在发起请求的机器上完成认证。",
+    "reviewedEnglishHash": "3ab8018fcc5e0a8f778b0f29746c05098ca571e74520f18873eff573ff2f352d"
+  },
+  "cliAuth.accessApprovedTitle": {
+    "en": "CLI access approved",
+    "zh-CN": "CLI 访问已批准",
+    "reviewedEnglishHash": "e272a242b66810aae1dc67ad5ca7d5e236fd03b4a52c1761604071188ba765c6"
+  },
+  "cliAuth.approveBody": {
+    "en": "A local Paperclip CN CLI process is requesting board access to this instance.",
+    "zh-CN": "本地 Paperclip CN CLI 进程正在请求访问当前实例的董事会权限。",
+    "reviewedEnglishHash": "24a36ec922d924a7eb54949b5d00bfcbc6e9a8814f074a62ba9014aa54d440a8"
+  },
+  "cliAuth.approveButton": {
+    "en": "Approve CLI access",
+    "zh-CN": "批准 CLI 访问",
+    "reviewedEnglishHash": "e4749018a2f970fdc6149faeddc54144849d60390e1d0b9871114149d9dd8389"
+  },
+  "cliAuth.approveTitle": {
+    "en": "Approve Paperclip CN CLI access",
+    "zh-CN": "批准 Paperclip CN CLI 访问",
+    "reviewedEnglishHash": "6db9a14143e3dd5354d5eaf2f14b4134db9110f8ae69a7d9bc0625897558369e"
+  },
+  "cliAuth.approving": {
+    "en": "Approving...",
+    "zh-CN": "批准中...",
+    "reviewedEnglishHash": "cee0e61bdf8c8bdad542041d29fc84e32bfcb4180606f71f8754954f1db0ff48"
+  },
+  "cliAuth.board": {
+    "en": "Board",
+    "zh-CN": "董事会",
+    "reviewedEnglishHash": "4816cbfd74aa8297b9c9cdaae89e2f0d2ced6041e952dfcd114e01b4c82e9c6d"
+  },
+  "cliAuth.cancelledTitle": {
+    "en": "CLI auth challenge cancelled",
+    "zh-CN": "CLI 认证请求已取消",
+    "reviewedEnglishHash": "a2f522c6dd8731b4e1c477c0ab4544dad39f2bf4c64ae5451594a8e7b490f61b"
+  },
+  "cliAuth.cancelling": {
+    "en": "Cancelling...",
+    "zh-CN": "取消中...",
+    "reviewedEnglishHash": "7b26131098bb18b289ece1bb10b18d1c97a1c79c4cf0feb3fed272febd54bd84"
+  },
+  "cliAuth.client": {
+    "en": "Client",
+    "zh-CN": "客户端",
+    "reviewedEnglishHash": "0c77fe09ab336a3e57cc2b6804a9bac65e19a27782b5a9c815d585e894c3b7f2"
+  },
+  "cliAuth.command": {
+    "en": "Command",
+    "zh-CN": "命令",
+    "reviewedEnglishHash": "713166971d730f81fcf8b757f2ea239d1a0360d9f74e8f5afe60fba97105879c"
+  },
+  "cliAuth.expiredTitle": {
+    "en": "CLI auth challenge expired",
+    "zh-CN": "CLI 认证请求已过期",
+    "reviewedEnglishHash": "73f61eb5567252d925c4d399a58d339c381ff748ee410f2f0627e9a735fd2ae0"
+  },
+  "cliAuth.instanceAdmin": {
+    "en": "Instance admin",
+    "zh-CN": "实例管理员",
+    "reviewedEnglishHash": "03507f86120fc6e4081f5cb2f2fe75f968873861d476fd8e31cbe5f048128bb7"
+  },
+  "cliAuth.instanceAdminRequired": {
+    "en": "This challenge requires instance-admin access. Sign in with an instance admin account to approve it.",
+    "zh-CN": "该请求需要实例管理员权限。请使用实例管理员账号登录后再批准。",
+    "reviewedEnglishHash": "c18f2ad88f41bfe6fc46a224b36889f0000ad3a100aeb9860b502ce69d061cd0"
+  },
+  "cliAuth.invalidUrl": {
+    "en": "Invalid CLI auth URL.",
+    "zh-CN": "CLI 认证链接无效。",
+    "reviewedEnglishHash": "528646e31551988683865f5abed03760ffe84de28f14c36ed48677da9f7176b6"
+  },
+  "cliAuth.loading": {
+    "en": "Loading CLI auth challenge...",
+    "zh-CN": "正在加载 CLI 认证请求...",
+    "reviewedEnglishHash": "c2b409b8fd4afdce8e0e5661749fb6c63e062f8b8d9e7e138c800cce24590186"
+  },
+  "cliAuth.requestedAccess": {
+    "en": "Requested access",
+    "zh-CN": "申请权限",
+    "reviewedEnglishHash": "823034752058e97bb16917c8d9d60315451ab9d3d2d37fac9214211f87e8712f"
+  },
+  "cliAuth.requestedCompany": {
+    "en": "Requested company",
+    "zh-CN": "申请公司",
+    "reviewedEnglishHash": "d2094d1757934ebbfc13e1caee2598e77cedcbbcd005ccc553d85c1f147186fc"
+  },
+  "cliAuth.retryBody": {
+    "en": "Start the CLI auth flow again from your terminal to generate a new approval request.",
+    "zh-CN": "请回到终端重新发起一次 CLI 认证流程，生成新的批准请求。",
+    "reviewedEnglishHash": "c79509c42d65a402fd1e91b731b93b5eb0d3eb6cf15f799be06a57b46548580f"
+  },
+  "cliAuth.signInButton": {
+    "en": "Sign in / Create account",
+    "zh-CN": "登录 / 创建账号",
+    "reviewedEnglishHash": "5d4f5eb117173ca08f73015e55c801cc28dbdacea8a6349890e08213047f38be"
+  },
+  "cliAuth.signInRequiredBody": {
+    "en": "Sign in or create an account, then return to this page to approve the CLI access request.",
+    "zh-CN": "请先登录或创建账号，然后回到此页面批准 CLI 访问请求。",
+    "reviewedEnglishHash": "da2e72ba2d43d92baf37cdc2e34c578eb50dc7941ee6a9f9edc9c086ec260e07"
+  },
+  "cliAuth.signInRequiredTitle": {
+    "en": "Sign in required",
+    "zh-CN": "需要先登录",
+    "reviewedEnglishHash": "255346f25669fce12875a9610ec696967138d102614a832c6a27468e5ad754a6"
+  },
+  "cliAuth.unavailableBody": {
+    "en": "Challenge is invalid or expired.",
+    "zh-CN": "该认证请求无效或已过期。",
+    "reviewedEnglishHash": "ef7f2fbfba3af9a486a9a52d20420218bc369dd0f4afe910175455443b28f0a9"
+  },
+  "cliAuth.unavailableTitle": {
+    "en": "CLI auth challenge unavailable",
+    "zh-CN": "CLI 认证请求不可用",
+    "reviewedEnglishHash": "0c42ba6c8d9839ff5c12720f10566ad457243eeac65ce2cbe287ad3d2947c76f"
+  },
+  "cliAuth.updateFailed": {
+    "en": "Failed to update CLI auth challenge",
+    "zh-CN": "更新 CLI 认证请求失败",
+    "reviewedEnglishHash": "77e4aece0005efc404430fd0c866937f90e21d07d406314d0f27a6bf53df9bef"
+  }
+}

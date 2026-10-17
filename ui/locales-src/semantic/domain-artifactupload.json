@@ -1,0 +1,67 @@
+{
+  "artifactUpload.addFiles": {
+    "en": "Add files to this task",
+    "zh-CN": "向此任务添加文件",
+    "reviewedEnglishHash": "43c37b57c033c3b77cb5c90ea609fb89f4283b408be3349876fbced400237e5b"
+  },
+  "artifactUpload.added": {
+    "en": "{{filename}} added to this task.",
+    "zh-CN": "已将 {{filename}} 添加到此任务。",
+    "reviewedEnglishHash": "7c2c781125f70afc77fff5c71af9629e8435b75f66fc709de853b4c4c402f311"
+  },
+  "artifactUpload.chooseFiles": {
+    "en": "Choose artifact files",
+    "zh-CN": "选择工件文件",
+    "reviewedEnglishHash": "42c7edf0968dd710d34f6fb8839cb9f96f202997b4f72093de8575aa783cd935"
+  },
+  "artifactUpload.dismiss": {
+    "en": "Dismiss upload: {{filename}}",
+    "zh-CN": "关闭上传：{{filename}}",
+    "reviewedEnglishHash": "33afd0bd7175076ac64e360fd0fdad613869413d76c45d23c91f4b5f1c5a983c"
+  },
+  "artifactUpload.dropOrUseIcon": {
+    "en": "Drop files anywhere in this panel or use the upload icon.",
+    "zh-CN": "将文件拖放到此面板任意位置，或使用上传图标。",
+    "reviewedEnglishHash": "d7a590371d5fa90914008d0d3ba8b6203420c824afd9308b0dbbc3d82bc1790a"
+  },
+  "artifactUpload.dropToAdd": {
+    "en": "Drop files to add them to this task",
+    "zh-CN": "拖放文件以添加到此任务",
+    "reviewedEnglishHash": "5227346919da33714728144c40b7942094dfb25c4adfca9c06c624a28d868a56"
+  },
+  "artifactUpload.emptyArtifacts": {
+    "en": "No artifacts yet. Work products, documents, and agent-produced files will appear here.",
+    "zh-CN": "暂未有工件。工作产物、文档和智能体生成的文件会显示在这里。",
+    "reviewedEnglishHash": "b032412c097b00bd3336dec3bd8489a0bfe64d00b5668a975456317adaae2991"
+  },
+  "artifactUpload.failedRetry": {
+    "en": "Upload failed. Try again.",
+    "zh-CN": "上传失败，请重试。",
+    "reviewedEnglishHash": "d42fb51e78b5781764c5b33079730ad75172fd91b190dce11ec75a91d2cde500"
+  },
+  "artifactUpload.panelLabel": {
+    "en": "Task artifacts",
+    "zh-CN": "任务工件",
+    "reviewedEnglishHash": "e186bee803f50c343bf0a06117154833b91c91e84adb0b3e90846b91fc3432ee"
+  },
+  "artifactUpload.regionLabel": {
+    "en": "Artifact uploads",
+    "zh-CN": "工件上传",
+    "reviewedEnglishHash": "a4ae47d0fa588ba7a455bbbe76ee76d0a81194a1ca1a6da77a881967abf23259"
+  },
+  "artifactUpload.uploadFiles": {
+    "en": "Upload files",
+    "zh-CN": "上传文件",
+    "reviewedEnglishHash": "4118deee6e13aa904fd160495f27866313e67c103c824a5c223b7751465728ab"
+  },
+  "artifactUpload.uploading": {
+    "en": "Uploading…",
+    "zh-CN": "正在上传…",
+    "reviewedEnglishHash": "5ce44dd77dae789f322b4bc032812a77a989e90c31928743f4fbdb26321011c2"
+  },
+  "artifactUpload.uploads": {
+    "en": "Uploads",
+    "zh-CN": "上传",
+    "reviewedEnglishHash": "d084236cbcc7f7f0cf14927ea549cb1afacfa849a8d96408bd5676f5e447994d"
+  }
+}

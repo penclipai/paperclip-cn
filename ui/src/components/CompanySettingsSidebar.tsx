@@ -1,34 +1,37 @@
-import { useQuery } from "@tanstack/react-query";
+import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
+import { useQuery } from "@tanstack/react-query";
 import {
-  ChevronLeft,
-  Clock3,
-  CloudUpload,
+  ArrowLeft,
   Cpu,
+  Download,
   FlaskConical,
   KeyRound,
-  MailPlus,
+  Link2,
   MonitorCog,
   Puzzle,
-  Settings,
   Shield,
   SlidersHorizontal,
+  Upload,
   UserRoundPen,
   Users,
 } from "lucide-react";
 import type { PluginRecord } from "@penclipai/shared";
 import { sidebarBadgesApi } from "@/api/sidebarBadges";
-import { instanceSettingsApi } from "@/api/instanceSettings";
 import { pluginsApi } from "@/api/plugins";
 import { ApiError } from "@/api/client";
-import { Link, NavLink } from "@/lib/router";
+import { NavLink } from "@/lib/router";
 import { INSTANCE_SETTINGS_PATH_PREFIX } from "@/lib/instance-settings";
 import { SIDEBAR_SCROLL_RESET_STATE } from "@/lib/navigation-scroll";
 import { queryKeys } from "@/lib/queryKeys";
 import { useCompany } from "@/context/CompanyContext";
-import { useSidebar } from "@/context/SidebarContext";
+import { useCloudInstance } from "@/hooks/useCloudInstance";
+import { useHiddenSettings } from "@/hooks/useHiddenSettings";
+import { useFastResponsesEnabled } from "@/hooks/useFastResponsesEnabled";
 import { usePluginSlots } from "@/plugins/slots";
 import { SidebarNavItem } from "./SidebarNavItem";
+import { ContextualSidebarFrame } from "./ContextualSidebarFrame";
+import { primarySidebarStyles } from "./primary-sidebar-styles";
 
 /**
  * Sandbox-provider-only plugins (e.g. E2B, exe.dev, Modal) have no per-plugin
@@ -43,9 +46,15 @@ function isSandboxProviderOnly(plugin: PluginRecord): boolean {
 }
 
 export function CompanySettingsSidebar() {
-  const { t } = useTranslation();
-  const { selectedCompany, selectedCompanyId } = useCompany();
-  const { isMobile, setSidebarOpen } = useSidebar();
+  useTranslation();
+  const { selectedCompanyId } = useCompany();
+  const { hidden: hiddenSettings } = useHiddenSettings();
+  const { enabled: fastResponsesEnabled } = useFastResponsesEnabled();
+  const showPage = (pageKey: string) => !hiddenSettings.has(pageKey);
+  const showPlugins = showPage("instance.plugins");
+  // Import is floored server-side on cloud-managed instances (403 cloud_managed), so the
+  // nav entry is hidden rather than dead-ending. Export stays available.
+  const isCloud = Boolean(useCloudInstance());
   const { slots: companySettingsPluginSlots } = usePluginSlots({
     slotTypes: ["companySettingsPage"],
     companyId: selectedCompanyId,
@@ -69,59 +78,54 @@ export function CompanySettingsSidebar() {
     retry: false,
     refetchInterval: 15_000,
   });
-  const { data: experimentalSettings } = useQuery({
-    queryKey: queryKeys.instance.experimentalSettings,
-    queryFn: () => instanceSettingsApi.getExperimental(),
-  });
   const { data: plugins } = useQuery({
     queryKey: queryKeys.plugins.all,
     queryFn: () => pluginsApi.list(),
+    // The listing only feeds the per-plugin subtree below; skip it when the
+    // operator hides the Plugins surface.
+    enabled: showPlugins,
   });
-  const showCloudUpstream = experimentalSettings?.enableCloudSync === true;
   const sidebarPlugins = (plugins ?? []).filter((plugin) => !isSandboxProviderOnly(plugin));
 
   return (
-    <aside className="w-full h-full min-h-0 border-r border-border bg-background flex flex-col">
-      <div className="flex flex-col gap-1 px-3 py-3 shrink-0">
-        <Link
-          to="/dashboard"
-          onClick={() => {
-            if (isMobile) setSidebarOpen(false);
-          }}
-          className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
-        >
-          <ChevronLeft className="h-3.5 w-3.5 shrink-0" />
-          <span className="truncate">{selectedCompany?.name ?? t("Company")}</span>
-        </Link>
-        <div className="flex items-center gap-2 px-2 py-1">
-          <Settings className="h-4 w-4 text-muted-foreground shrink-0" />
-          <span className="flex-1 truncate text-sm font-bold text-foreground">
-            {t("Company Settings")}
-          </span>
+    <ContextualSidebarFrame
+      surface="settings"
+      title={translateInstant("Settings")}
+      showHeader={false}
+      className={primarySidebarStyles.surface}
+    >
+      <div
+        data-slot="settings-sidebar-header"
+        className="flex h-(--sz-60px) shrink-0 items-center px-3"
+      >
+        <div data-slot="settings-back-group" className={`${primarySidebarStyles.group} w-full`}>
+          <SidebarNavItem to="/dashboard" label={translateInstant("Back to app")} icon={ArrowLeft} />
         </div>
       </div>
-
-      <nav className="flex-1 min-h-0 overflow-y-auto scrollbar-auto-hide px-3 py-2">
-        <div className="px-3 pb-1 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
-          {t("Company settings", { defaultValue: "Company settings" })}
-        </div>
-        <div className="flex flex-col gap-0.5">
-          <SidebarNavItem to="/company/settings" label={t("General")} icon={SlidersHorizontal} end />
-          {showCloudUpstream ? (
+      <nav
+        aria-label={translateInstant("Settings")}
+        data-slot="contextual-sidebar-nav"
+        className={primarySidebarStyles.nav}
+      >
+        <div data-slot="contextual-sidebar-group" className={primarySidebarStyles.group}>
+          <SidebarNavItem to="/company/settings" label={translateInstant("General")} icon={SlidersHorizontal} end />
+          {showPage("instance.profile") && (
             <SidebarNavItem
-              to="/company/settings/cloud-upstream"
-              label={t("Cloud upstream")}
-              icon={CloudUpload}
+              to={`${INSTANCE_SETTINGS_PATH_PREFIX}/profile`}
+              label={translateInstant("Profile")}
+              icon={UserRoundPen}
               end
             />
-          ) : null}
-          <SidebarNavItem
-            to="/company/settings/members"
-            label={t("Members")}
-            icon={Users}
-            badge={badges?.joinRequests ?? 0}
-            end
-          />
+          )}
+          {showPage("company.members") && (
+            <SidebarNavItem
+              to="/company/settings/members"
+              label={translateInstant("Members")}
+              icon={Users}
+              badge={badges?.joinRequests ?? 0}
+              end
+            />
+          )}
           {companySettingsPluginSlots
             .filter((slot) => slot.routePath)
             .map((slot) => (
@@ -133,54 +137,49 @@ export function CompanySettingsSidebar() {
                 end
               />
             ))}
-          <SidebarNavItem to="/company/settings/invites" label={t("Invites")} icon={MailPlus} end />
-          <SidebarNavItem to="/company/settings/secrets" label={t("Secrets")} icon={KeyRound} end />
-        </div>
-        <div className="mt-5 px-3 pb-1 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
-          {t("Instance settings", { defaultValue: "Instance settings" })}
-        </div>
-        <div className="flex flex-col gap-0.5">
-          <SidebarNavItem
-            to={`${INSTANCE_SETTINGS_PATH_PREFIX}/profile`}
-            label={t("Profile", { defaultValue: "Profile" })}
-            icon={UserRoundPen}
-            end
-          />
-          <SidebarNavItem
-            to={`${INSTANCE_SETTINGS_PATH_PREFIX}/general`}
-            label={t("General", { defaultValue: "General" })}
-            icon={SlidersHorizontal}
-            end
-          />
-          <SidebarNavItem
-            to={`${INSTANCE_SETTINGS_PATH_PREFIX}/environments`}
-            label={t("Environments", { defaultValue: "Environments" })}
-            icon={MonitorCog}
-            end
-          />
-          <SidebarNavItem
-            to={`${INSTANCE_SETTINGS_PATH_PREFIX}/access`}
-            label={t("Access", { defaultValue: "Access" })}
-            icon={Shield}
-            end
-          />
-          <SidebarNavItem
-            to={`${INSTANCE_SETTINGS_PATH_PREFIX}/heartbeats`}
-            label={t("Heartbeats", { defaultValue: "Heartbeats" })}
-            icon={Clock3}
-            end
-          />
-          <SidebarNavItem
-            to={`${INSTANCE_SETTINGS_PATH_PREFIX}/experimental`}
-            label={t("Experimental", { defaultValue: "Experimental" })}
-            icon={FlaskConical}
-          />
-          <SidebarNavItem
-            to={`${INSTANCE_SETTINGS_PATH_PREFIX}/plugins`}
-            label={t("Plugins", { defaultValue: "Plugins" })}
-            icon={Puzzle}
-          />
-          {sidebarPlugins.length > 0 ? (
+          {showPage("company.secrets") && (
+            <SidebarNavItem to="/company/settings/secrets" label={translateInstant("Secrets")} icon={KeyRound} end />
+          )}
+          {showPage("instance.environments") && (
+            <SidebarNavItem
+              to={`${INSTANCE_SETTINGS_PATH_PREFIX}/environments`}
+              label={translateInstant("Environments")}
+              icon={MonitorCog}
+              end
+            />
+          )}
+          {fastResponsesEnabled && (
+            <SidebarNavItem to="/company/settings/connections" label={translateInstant("apps.sidebar.connections")} icon={Link2} end />
+          )}
+          {showPage("instance.access") && (
+            <SidebarNavItem
+              to={`${INSTANCE_SETTINGS_PATH_PREFIX}/access`}
+              label={translateInstant("Access")}
+              icon={Shield}
+              end
+            />
+          )}
+          {showPage("company.export") && (
+            <SidebarNavItem to="/company/export" label={translateInstant("Export")} icon={Download} />
+          )}
+          {!isCloud && showPage("company.import") && (
+            <SidebarNavItem to="/company/import" label={translateInstant("Import")} icon={Upload} end />
+          )}
+          {showPage("instance.experimental") && (
+            <SidebarNavItem
+              to={`${INSTANCE_SETTINGS_PATH_PREFIX}/experimental`}
+              label={translateInstant("Experimental")}
+              icon={FlaskConical}
+            />
+          )}
+          {showPlugins && (
+            <SidebarNavItem
+              to={`${INSTANCE_SETTINGS_PATH_PREFIX}/plugins`}
+              label={translateInstant("Plugins")}
+              icon={Puzzle}
+            />
+          )}
+          {showPlugins && sidebarPlugins.length > 0 ? (
             <div className="ml-4 mt-1 flex flex-col gap-0.5 border-l border-border/70 pl-3">
               {sidebarPlugins.map((plugin) => (
                 <NavLink
@@ -201,13 +200,15 @@ export function CompanySettingsSidebar() {
               ))}
             </div>
           ) : null}
-          <SidebarNavItem
-            to={`${INSTANCE_SETTINGS_PATH_PREFIX}/adapters`}
-            label={t("Adapters", { defaultValue: "Adapters" })}
-            icon={Cpu}
-          />
+          {showPage("instance.adapters") && (
+            <SidebarNavItem
+              to={`${INSTANCE_SETTINGS_PATH_PREFIX}/adapters`}
+              label={translateInstant("Adapters")}
+              icon={Cpu}
+            />
+          )}
         </div>
       </nav>
-    </aside>
+    </ContextualSidebarFrame>
   );
 }

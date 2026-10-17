@@ -1,0 +1,17 @@
+{
+  "layout.closeSidebar": {
+    "en": "Close sidebar",
+    "zh-CN": "关闭侧边栏",
+    "reviewedEnglishHash": "17e28e2302175d33308a4706042528db0f8605f7ec27b2dff8cc51bc65fa2096"
+  },
+  "layout.languageSwitcherLabel": {
+    "en": "Switch language",
+    "zh-CN": "切换语言",
+    "reviewedEnglishHash": "361335922f0b62e6b0cea50507a3093512eb196d87c1ebd4258122c5468d93eb"
+  },
+  "layout.skipToMainContent": {
+    "en": "Skip to Main Content",
+    "zh-CN": "跳转到主要内容",
+    "reviewedEnglishHash": "435bdbf65cffabae179a1501ad67c1d8c6d7a4494ed1b6ae1b14a0138fa9cce0"
+  }
+}

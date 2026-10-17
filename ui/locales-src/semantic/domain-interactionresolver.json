@@ -1,0 +1,12 @@
+{
+  "interactionResolver.human_only": {
+    "en": "Human only",
+    "zh-CN": "仅人工",
+    "reviewedEnglishHash": "de7c8fff477b3cb88fd9766dfabbf8a4dce99f25d942322201926f3516f6a476"
+  },
+  "interactionResolver.not_creator": {
+    "en": "Anyone except the creator",
+    "zh-CN": "创建者以外的任何人",
+    "reviewedEnglishHash": "93f16c0585d5368d1a781b1b176b77c96e8f8e21e290d8d1c3ead40a28ae236b"
+  }
+}

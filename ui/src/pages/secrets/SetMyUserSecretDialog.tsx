@@ -1,3 +1,4 @@
+import { translateInstant } from "@/i18n";
 import { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { CompanySecret, UserSecretDefinition } from "@penclipai/shared";
@@ -118,8 +119,7 @@ export function SetMyUserSecretDialog({
                   defaultValue:
                     "This value is yours only. It is used when you are the user responsible for a run that needs",
                 })}{" "}
-                <span className="font-mono">{definition.key}</span>.
-              </>
+                <span className="font-mono">{definition.key}</span>{translateInstant(".")}</>
             ) : null}
           </DialogDescription>
         </DialogHeader>

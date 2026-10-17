@@ -1,7 +1,6 @@
 import type { CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 import { cn } from "../lib/utils";
-import { translateStatusLabel } from "../lib/i18n-labels";
 import {
   statusBadge,
   statusBadgeDefault,
@@ -18,6 +17,16 @@ function scStyle(cssVar: string): CSSProperties {
   return { "--sc": `var(${cssVar})` } as CSSProperties;
 }
 
+/** Converts enum values to the camel-cased status catalog key. */
+function statusKey(status: string): string {
+  return status.replace(/_([a-z])/g, (_match, letter: string) => letter.toUpperCase());
+}
+
+/** "in_review" → "In Review" for the English fallback only. */
+function statusFallback(status: string): string {
+  return status.replace(/[_-]/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
 /**
  * Generic status badge for runs / goals / approvals (not task status).
  */
@@ -25,14 +34,15 @@ function scStyle(cssVar: string): CSSProperties {
 // .status-chip color-mix mechanic and do not wrap the Badge primitive.
 export function StatusBadge({ status, label }: { status: string; label?: string }) {
   const { t } = useTranslation();
+  const fallback = statusFallback(status);
   return (
     <span
       className={cn(
         "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap shrink-0",
-        statusBadge[status] ?? statusBadgeDefault,
+        statusBadge[status] ?? statusBadgeDefault
       )}
     >
-      {label ?? translateStatusLabel(t, status)}
+      {label ?? t(`status.${statusKey(status)}`, { defaultValue: fallback })}
     </span>
   );
 }
@@ -45,13 +55,15 @@ export function StatusBadge({ status, label }: { status: string; label?: string 
 export function AgentStatusBadge({ status }: { status: string }) {
   const { t } = useTranslation();
   const cssVar = agentStatusVar[status] ?? agentStatusVarDefault;
-  const labelStatus = status === "active" ? "idle" : status;
+  const label = status === "active" ? "idle" : status;
   return (
     <span
       className="status-chip inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium leading-none whitespace-nowrap shrink-0"
       style={scStyle(cssVar)}
     >
-      {translateStatusLabel(t, labelStatus)}
+      {t(`agentStatus.${statusKey(label)}`, {
+        defaultValue: t(`status.${statusKey(label)}`, { defaultValue: statusFallback(label) }),
+      })}
     </span>
   );
 }
@@ -76,22 +88,25 @@ export function AgentStatusCapsule({ status }: { status: string }) {
 /**
  * Issue/task status chip — bordered chip recoloured from the editable
  * `--status-task-*` base hue via `.status-chip`, carrying the unified
- * {@link StatusGlyph} (one distinct, color-blind-safe shape per status).
- * `cancelled` is struck through.
+ * {@link StatusGlyph} (one distinct, color-blind-safe shape per status), a
+ * sentence-cased label and regular weight. `cancelled` is struck through.
+ * Distinct from the generic {@link StatusBadge} so run/goal/approval badges are
+ * unaffected.
  */
-export function IssueStatusBadge({ status }: { status: string }) {
+export function IssueStatusBadge({ status: taskStatus, externalConversationState }: { status: string; externalConversationState?: "active" | "waiting" | null }) {
   const { t } = useTranslation();
+  const status = taskStatus === "in_review" && externalConversationState === "waiting" ? "idle" : taskStatus;
   const cssVar = taskStatusVar[status] ?? taskStatusVarDefault;
   return (
     <span
       className={cn(
         "status-chip inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-normal leading-none whitespace-nowrap shrink-0",
-        status === "cancelled" && "line-through",
+        status === "cancelled" && "line-through"
       )}
       style={scStyle(cssVar)}
     >
       <StatusGlyph status={status} size="sm" />
-      {translateStatusLabel(t, status)}
+      {t(`status.${statusKey(status)}`, { defaultValue: statusFallback(status) })}
     </span>
   );
 }

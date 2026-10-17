@@ -1,9 +1,11 @@
-import { useState, useEffect } from "react";
+import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
+import { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCompany } from "../context/CompanyContext";
 import { useDialogActions } from "../context/DialogContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
+import { useCloudInstance } from "../hooks/useCloudInstance";
 import { companiesApi } from "../api/companies";
 import { queryKeys } from "../lib/queryKeys";
 import { formatCents, relativeTime } from "../lib/utils";
@@ -29,11 +31,11 @@ import {
   CircleDot,
   DollarSign,
   Calendar,
+  ArchiveRestore,
 } from "lucide-react";
-import { translateStatusLabel } from "../lib/i18n-labels";
 
 export function Companies() {
-  const { t } = useTranslation();
+  useTranslation();
   const {
     companies,
     selectedCompanyId,
@@ -44,6 +46,9 @@ export function Companies() {
   const { openOnboarding } = useDialogActions();
   const { setBreadcrumbs } = useBreadcrumbs();
   const queryClient = useQueryClient();
+  // A cloud stack holds exactly one company; creating another is a 403 floor
+  // server-side, so the wizard entry point is hidden rather than dead-ending.
+  const isCloud = Boolean(useCloudInstance());
 
   const { data: stats } = useQuery({
     queryKey: queryKeys.companies.stats,
@@ -73,9 +78,22 @@ export function Companies() {
     },
   });
 
+  // Unarchiving previously had no UI at all: archiving happens in company
+  // settings, but an archived company disappears from the sidebar switcher,
+  // so its settings page — and with it any way back — was only reachable by
+  // hand-typed URL. This list is the one place that still shows archived
+  // companies, so restoration lives here.
+  const unarchiveMutation = useMutation({
+    mutationFn: (id: string) => companiesApi.update(id, { status: "active" }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.companies.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.companies.stats });
+    },
+  });
+
   useEffect(() => {
-    setBreadcrumbs([{ label: t("Companies", { defaultValue: "Companies" }) }]);
-  }, [setBreadcrumbs, t]);
+    setBreadcrumbs([{ label: translateInstant("Organizations") }]);
+  }, [setBreadcrumbs]);
 
   function startEdit(companyId: string, currentName: string) {
     setEditingId(companyId);
@@ -95,14 +113,15 @@ export function Companies() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-end">
-        <Button size="sm" onClick={() => openOnboarding()}>
-          <Plus className="h-3.5 w-3.5 mr-1.5" />
-          {t("New Company", { defaultValue: "New Company" })}
-        </Button>
+        {isCloud ? null : (
+          <Button size="sm" onClick={() => openOnboarding()}>
+            <Plus className="h-3.5 w-3.5 mr-1.5" />
+            {translateInstant("New Organization")}</Button>
+        )}
       </div>
 
       <div className="h-6">
-        {loading && <p className="text-sm text-muted-foreground">{t("Loading companies...", { defaultValue: "Loading companies..." })}</p>}
+        {loading && <p className="text-sm text-muted-foreground">{translateInstant("sidebar.loadingOrganizations")}</p>}
         {error && <p className="text-sm text-destructive">{error.message}</p>}
       </div>
 
@@ -180,7 +199,7 @@ export function Companies() {
                               : "bg-muted text-muted-foreground"
                         }`}
                       >
-                        {translateStatusLabel(t, company.status)}
+                        {company.status}
                       </Badge>
                       <Button
                         variant="ghost"
@@ -219,16 +238,22 @@ export function Companies() {
                         onClick={() => startEdit(company.id, company.name)}
                       >
                         <Pencil className="h-3.5 w-3.5" />
-                        {t("Rename", { defaultValue: "Rename" })}
-                      </DropdownMenuItem>
+                        {translateInstant("Rename")}</DropdownMenuItem>
+                      {company.status === "archived" && (
+                        <DropdownMenuItem
+                          disabled={unarchiveMutation.isPending}
+                          onClick={() => unarchiveMutation.mutate(company.id)}
+                        >
+                          <ArchiveRestore className="h-3.5 w-3.5" />
+                          {translateInstant("common.unarchive")}</DropdownMenuItem>
+                      )}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         variant="destructive"
                         onClick={() => setConfirmDeleteId(company.id)}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
-                        {t("Delete Company", { defaultValue: "Delete Company" })}
-                      </DropdownMenuItem>
+                        {translateInstant("Delete Organization")}</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
@@ -239,19 +264,13 @@ export function Companies() {
                 <div className="flex items-center gap-1.5">
                   <Users className="h-3.5 w-3.5" />
                   <span>
-                    {t("companies.agentCount", {
-                      count: agentCount,
-                      defaultValue: agentCount === 1 ? "1 agent" : `${agentCount} agents`,
-                    })}
+                    {agentCount} {agentCount === 1 ? translateInstant("agent") : translateInstant("agents")}
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <CircleDot className="h-3.5 w-3.5" />
                   <span>
-                    {t("companies.issueCount", {
-                      count: issueCount,
-                      defaultValue: issueCount === 1 ? "1 issue" : `${issueCount} issues`,
-                    })}
+                    {issueCount} {issueCount === 1 ? translateInstant("issueDetail.task") : "tasks"}
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5 tabular-nums">
@@ -260,15 +279,12 @@ export function Companies() {
                     {formatCents(company.spentMonthlyCents)}
                     {company.budgetMonthlyCents > 0
                       ? <> / {formatCents(company.budgetMonthlyCents)} <span className="text-xs">({budgetPct}%)</span></>
-                      : <span className="text-xs ml-1">{t("Unlimited budget", { defaultValue: "Unlimited budget" })}</span>}
+                      : <span className="text-xs ml-1">{translateInstant("Unlimited budget")}</span>}
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5 ml-auto">
                   <Calendar className="h-3.5 w-3.5" />
-                  <span>{t("Created {{value}}", {
-                    value: relativeTime(company.createdAt),
-                    defaultValue: `Created ${relativeTime(company.createdAt)}`,
-                  })}</span>
+                  <span>{translateInstant("Created")}{" "}{relativeTime(company.createdAt)}</span>
                 </div>
               </div>
 
@@ -279,10 +295,7 @@ export function Companies() {
                   onClick={(e) => e.stopPropagation()}
                 >
                   <p className="text-sm text-destructive font-medium">
-                    {t("Delete this company and all its data? This cannot be undone.", {
-                      defaultValue: "Delete this company and all its data? This cannot be undone.",
-                    })}
-                  </p>
+                    {translateInstant("Delete this organization and all its data? This cannot be undone.")}</p>
                   <div className="flex items-center gap-2 ml-4 shrink-0">
                     <Button
                       variant="ghost"
@@ -290,17 +303,14 @@ export function Companies() {
                       onClick={() => setConfirmDeleteId(null)}
                       disabled={deleteMutation.isPending}
                     >
-                      {t("Cancel", { defaultValue: "Cancel" })}
-                    </Button>
+                      {translateInstant("Cancel")}</Button>
                     <Button
                       variant="destructive"
                       size="sm"
                       onClick={() => deleteMutation.mutate(company.id)}
                       disabled={deleteMutation.isPending}
                     >
-                      {deleteMutation.isPending
-                        ? t("Deleting…", { defaultValue: "Deleting…" })
-                        : t("Delete", { defaultValue: "Delete" })}
+                      {deleteMutation.isPending ? translateInstant("Deleting…") : translateInstant("Delete")}
                     </Button>
                   </div>
                 </div>

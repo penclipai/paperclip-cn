@@ -1,0 +1,237 @@
+{
+  "sidebar.activity": {
+    "en": "Activity",
+    "zh-CN": "活动",
+    "reviewedEnglishHash": "38da1505ca8373288489495101b14f24ac95078f520ad64df18272aa6054f750"
+  },
+  "sidebar.addCompany": {
+    "en": "Add company...",
+    "zh-CN": "添加公司...",
+    "reviewedEnglishHash": "03d16bf3df4f3ed5adeb6a7127bfe13ff48e24ab826137973a410830f55cf0b7"
+  },
+  "sidebar.apps": {
+    "en": "Apps",
+    "zh-CN": "应用",
+    "reviewedEnglishHash": "89dd748442c194857825848e1500abbbc5f52fb067ad27fb05dc9fb23eebba3b"
+  },
+  "sidebar.artifacts": {
+    "en": "Artifacts",
+    "zh-CN": "产物",
+    "reviewedEnglishHash": "314ae71b8c8dc9c952f0ffc58e35e6d9a41b5cf4756471c7cab0c9476cd5d20b"
+  },
+  "sidebar.company": {
+    "en": "Company",
+    "zh-CN": "公司",
+    "reviewedEnglishHash": "de4743c879734dc38cb3e270ecefcae077c3c2e626f9298115d5a03c8613f89b"
+  },
+  "sidebar.companySettings": {
+    "en": "Company settings",
+    "zh-CN": "公司设置",
+    "reviewedEnglishHash": "68a8ae2751ffa29c0b10bf568341d0bade18e895e38ab5222f2b3df781df7f0f"
+  },
+  "sidebar.costs": {
+    "en": "Costs",
+    "zh-CN": "成本",
+    "reviewedEnglishHash": "b88fc5fc4765148eb545962cddf4f19e4ca0380a533c047005f567a77695dcfd"
+  },
+  "sidebar.couldNotLoadOrganizations": {
+    "en": "Could not load organizations",
+    "zh-CN": "无法加载组织",
+    "reviewedEnglishHash": "555dddc29013d3ff7f8e9965844fb98f0772ddd9c2badb95e02f4c854b810965"
+  },
+  "sidebar.createNewCompany": {
+    "en": "Create new company...",
+    "zh-CN": "新建公司…",
+    "reviewedEnglishHash": "eccfc43a262391981cfcad24765a528556c8f0a32466bc9b300bb0334a691610"
+  },
+  "sidebar.createNewOrganization": {
+    "en": "Create new organization...",
+    "zh-CN": "新建组织…",
+    "reviewedEnglishHash": "fa35c2500ac70297dc292a5cecb102b02e5c23960a23a1d55d8c6949e57b6a78"
+  },
+  "sidebar.createNewTeam": {
+    "en": "Create new team...",
+    "zh-CN": "创建新团队...",
+    "reviewedEnglishHash": "819e6165d577f90790e421e7e7a2ffcf6136bc340e031d138753fe3b6d31c8f6"
+  },
+  "sidebar.dashboard": {
+    "en": "Dashboard",
+    "zh-CN": "仪表盘",
+    "reviewedEnglishHash": "67b696468610b879ed7f224dbf6b0861f27e39d20454cb9d7af1ec52d3e5eeaa"
+  },
+  "sidebar.done": {
+    "en": "Done",
+    "zh-CN": "完成",
+    "reviewedEnglishHash": "11a6767d5674c7e45f7e00dc525762275b3a48491ad6045427d2609cc496c516"
+  },
+  "sidebar.edit": {
+    "en": "Edit",
+    "zh-CN": "编辑",
+    "reviewedEnglishHash": "464c4ffd019e1e9691dcf0537c797353ef2b1c1d4833d3d463e5b74ae4547344"
+  },
+  "sidebar.goals": {
+    "en": "Goals",
+    "zh-CN": "目标",
+    "reviewedEnglishHash": "116cd3982a9bc435ecd50e5978b68f5f1d542c0ef071fdb598f06a9000dd33cb"
+  },
+  "sidebar.inbox": {
+    "en": "Inbox",
+    "zh-CN": "收件箱",
+    "reviewedEnglishHash": "94835ea2fcf775cd77cb9c9cee01b5cbd9bc515467aab1215f48a5ade9ca5274"
+  },
+  "sidebar.invitePeople": {
+    "en": "Invite people",
+    "zh-CN": "邀请成员",
+    "reviewedEnglishHash": "27bf0f2d3f3f549002f193566e19b010a40b80c1a5564cf65a80d83f2f2c0462"
+  },
+  "sidebar.invitePeopleToCompany": {
+    "en": "Invite people to {{companyName}}",
+    "zh-CN": "邀请成员加入 {{companyName}}",
+    "reviewedEnglishHash": "e4cf102390c2df7fb38015bda0cc66feaab6cfa7bbdeb786ef998d53be6fc4ce"
+  },
+  "sidebar.issues": {
+    "en": "Tasks",
+    "zh-CN": "任务",
+    "reviewedEnglishHash": "b3a60e61a5233d0506ac737405a2a45280349683cac68722f18d0b73eb495ef4"
+  },
+  "sidebar.loadingOrganizations": {
+    "en": "Loading organizations...",
+    "zh-CN": "正在加载组织…",
+    "reviewedEnglishHash": "a47e333dbd2e36a2610c8763270bdc7be17456261e7f2b24aaad028f541a7ef3"
+  },
+  "sidebar.newIssue": {
+    "en": "New Issue",
+    "zh-CN": "新建任务",
+    "reviewedEnglishHash": "03a81df699d65e2226fd086919125b96784c86c651b3a0a3a3e5e4819a1f3295"
+  },
+  "sidebar.newTask": {
+    "en": "New Task",
+    "zh-CN": "新建任务",
+    "reviewedEnglishHash": "718e58cc20d67514dea0426127fd63722739eaff85a3d93fb0718a1434a4edda"
+  },
+  "sidebar.noCompanies": {
+    "en": "No companies",
+    "zh-CN": "没有公司",
+    "reviewedEnglishHash": "4562e319e462b36d45bfa31c2362bff17f9a66faedf3b9cb0035d6209992c688"
+  },
+  "sidebar.noOrganizations": {
+    "en": "No organizations",
+    "zh-CN": "没有组织",
+    "reviewedEnglishHash": "c256efdc5810ef6b5878397b5d04928eb888dd122fae10ed5a1e3f4034a47a5d"
+  },
+  "sidebar.noWorkspaces": {
+    "en": "No workspaces",
+    "zh-CN": "暂无工作区",
+    "reviewedEnglishHash": "3e9f82e1f5908b3fc907a4b1fc364f8b5589eb29d8e5ae35a3dfaf1b62b8aaf3"
+  },
+  "sidebar.openCompanySwitcher": {
+    "en": "Open company switcher",
+    "zh-CN": "打开公司切换器",
+    "reviewedEnglishHash": "c80d6bfb466a6387361d1d08ef8a6505d58e7cb2d150d23513ff7f96eb2936df"
+  },
+  "sidebar.openCompanySwitcherFor": {
+    "en": "Open {{name}} company switcher",
+    "zh-CN": "打开 {{name}} 的公司切换器",
+    "reviewedEnglishHash": "c6ac4922cd62a3ef6dc8bec09c8a329ad8b6cbaf44491fcab01c21f2855c1a95"
+  },
+  "sidebar.openOrganizationSwitcher": {
+    "en": "Open organization switcher",
+    "zh-CN": "打开组织切换器",
+    "reviewedEnglishHash": "7fe555bc44c55aa10b94f1963112439fc1eb75795469439b67f329bc18c33706"
+  },
+  "sidebar.openOrganizationSwitcherFor": {
+    "en": "Open {{name}} organization switcher",
+    "zh-CN": "打开 {{name}} 的组织切换器",
+    "reviewedEnglishHash": "39059345c0586dda08798ae9ee81aeb4b62eea76a0da6b05900a0540a4b18616"
+  },
+  "sidebar.openSearch": {
+    "en": "Open search",
+    "zh-CN": "打开搜索",
+    "reviewedEnglishHash": "50ce48b9c623c1cdfdd6c4d1b43ff6e8eb8ffd6593f07f1f3dbce21d5d29078c"
+  },
+  "sidebar.org": {
+    "en": "Org",
+    "zh-CN": "组织",
+    "reviewedEnglishHash": "b1ee7e9705a211e05e5433549e07f2b468615cddeb47171754bad183510dc38b"
+  },
+  "sidebar.pipelines": {
+    "en": "Pipelines",
+    "zh-CN": "管道",
+    "reviewedEnglishHash": "d1a8fffeb935847ec893742b24793f3c6c6e04bf3738d778506861427cc8b5b5"
+  },
+  "sidebar.removeFromStarred": {
+    "en": "Remove from starred",
+    "zh-CN": "从收藏中移除",
+    "reviewedEnglishHash": "f1133f6566cd109372c86b8c0be96eef9450cea866109e6d8d1f216fcf81b83b"
+  },
+  "sidebar.resizeSidebar": {
+    "en": "Resize sidebar",
+    "zh-CN": "调整侧边栏宽度",
+    "reviewedEnglishHash": "243854b4d0c709a06e41005bc74a72d6b49463cc2d9ac5bc2967666f6b988c88"
+  },
+  "sidebar.routines": {
+    "en": "Routines",
+    "zh-CN": "例行任务",
+    "reviewedEnglishHash": "61b7bb44e2b47b7c0ccaccff4872fdcf3e298345d0f003ea4bf54e8c84e2a889"
+  },
+  "sidebar.selectCompany": {
+    "en": "Select company",
+    "zh-CN": "选择公司",
+    "reviewedEnglishHash": "97716fab9498854f09f64ab83bd7adb87f6107fc883aecc52b51f63d38fd8c99"
+  },
+  "sidebar.selectOrganization": {
+    "en": "Select organization",
+    "zh-CN": "选择组织",
+    "reviewedEnglishHash": "99e5009d4746e2c4abe8ded3c90276ae2197ecf040cc232fa51434393767a30a"
+  },
+  "sidebar.settings": {
+    "en": "Settings",
+    "zh-CN": "设置",
+    "reviewedEnglishHash": "74a883a037bc227f91891ab654a753d3a99f31ab06ae5b5d2b6e594a692b41f8"
+  },
+  "sidebar.signOut": {
+    "en": "Sign out",
+    "zh-CN": "退出登录",
+    "reviewedEnglishHash": "48f0d3d397d49f135f116d947a805b49f084f637154a8e9913e7233a11dc16a0"
+  },
+  "sidebar.signingOut": {
+    "en": "Signing out...",
+    "zh-CN": "正在退出...",
+    "reviewedEnglishHash": "0436231679a0cb2bf078620ecc6d436efe0e5ae378276cbaf52ebae1712a5b0c"
+  },
+  "sidebar.skills": {
+    "en": "Skills",
+    "zh-CN": "技能",
+    "reviewedEnglishHash": "66d0f523a379b2de6f8d5fba3a817ebc395f7bcaa54cc132ca9dfa665d1e9378"
+  },
+  "sidebar.starredProjects": {
+    "en": "Starred projects",
+    "zh-CN": "收藏项目",
+    "reviewedEnglishHash": "2212799bd8ac83775e2f66a36161cb539558bbf7d1a5919ba472f7b600ad4d6f"
+  },
+  "sidebar.switchCompany": {
+    "en": "Switch company",
+    "zh-CN": "切换公司",
+    "reviewedEnglishHash": "763c3540d6e4918c3655c5e86cff3321a1b202b6e74d1dba75507ef86424b2e4"
+  },
+  "sidebar.switchOrganization": {
+    "en": "Switch organization",
+    "zh-CN": "切换组织",
+    "reviewedEnglishHash": "ffe5e5890218331c9644c1a6c6ca99f3238185efbd1cc17e8055b3ad7741c3b0"
+  },
+  "sidebar.timeline": {
+    "en": "Timeline",
+    "zh-CN": "时间线",
+    "reviewedEnglishHash": "9dcff98e275f0cb911f1523ef5c629c0aabe9e3b642a6b71ac7d2569e9717121"
+  },
+  "sidebar.work": {
+    "en": "Work",
+    "zh-CN": "工作",
+    "reviewedEnglishHash": "104ab9213e28e4ff5ba0b4086457503e8a4656815cfec7bcf2799d76a3db081d"
+  },
+  "sidebar.workspaces": {
+    "en": "Workspaces",
+    "zh-CN": "工作区",
+    "reviewedEnglishHash": "1377264ba3b0a7172621971b49ac3e82e33b64b14328d9275d02807e67ea8460"
+  }
+}

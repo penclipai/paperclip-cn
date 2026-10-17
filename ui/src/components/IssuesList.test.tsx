@@ -6,11 +6,19 @@ import type { AnchorHTMLAttributes, ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { Issue, Project } from "@penclipai/shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { IssuesList } from "./IssuesList";
+import {
+  IssuesList,
+  issueAgeBucket,
+  issueAgeBucketsCrossed,
+  issueAgeSeparatorLabel,
+} from "./IssuesList";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { taskCollectionPreferencesStorageKey } from "../lib/task-collection-preferences";
 
 const translations: Record<string, string> = {
-  "No issues match the current filters or search.": "没有任务匹配当前筛选或搜索条件。",
+  "issuesList.noIssuesMatch": "没有匹配当前筛选或搜索的任务。",
+  "issuesList.searchAria": "Search tasks",
+  "issuesList.searchPlaceholder": "Search tasks...",
   "Showing up to {{count}} matches. Refine the search to narrow further.": "最多显示 {{count}} 条匹配结果。请进一步收窄搜索范围。",
   "Desktop issue rows": "桌面端任务行",
   "issuesList.columns": "列",
@@ -34,19 +42,18 @@ const translations: Record<string, string> = {
   "issuesList.defaultColumnsSummary": "状态、编号、更新时间",
   "Create {{label}}": "创建{{label}}",
   "New {{label}}": "新建{{label}}",
-  "Sub-issue": "子任务",
+  "Task": "任务",
 };
 
 vi.mock("react-i18next", async (importOriginal) => {
   const actual = await importOriginal<typeof import("react-i18next")>();
+  const { translateForTest } = await import("../test-utils/i18n");
   return {
     ...actual,
     initReactI18next: { type: "3rdParty", init: () => {} },
     useTranslation: () => ({
-      t: (key: string, options?: Record<string, unknown>) => {
-        const template = translations[key] ?? (typeof options?.defaultValue === "string" ? options.defaultValue : key);
-        return template.replace(/\{\{(\w+)\}\}/g, (_match, token) => String(options?.[token] ?? ""));
-      },
+      t: (key: string, options?: Record<string, unknown>) =>
+        translateForTest(key, options, "en", translations),
     }),
   };
 });
@@ -65,6 +72,7 @@ const mockIssuesApi = vi.hoisted(() => ({
 }));
 
 const mockKanbanBoard = vi.hoisted(() => vi.fn());
+const mockNavigate = vi.hoisted(() => vi.fn());
 
 const mockAuthApi = vi.hoisted(() => ({
   getSession: vi.fn(),
@@ -98,7 +106,7 @@ vi.mock("../context/DialogContext", () => ({
 }));
 
 vi.mock("@/lib/router", () => ({
-  useNavigate: () => vi.fn(),
+  useNavigate: () => mockNavigate,
   Link: ({
     children,
     to,
@@ -167,6 +175,11 @@ vi.mock("./IssueRow", () => ({
     checklistDependencyChips,
     checklistRowId,
     externalObjectSummary,
+    presentation,
+    leadingControl,
+    treeGuides,
+    showIdentifier,
+    trailingMeta,
   }: {
     issue: Issue;
     desktopMetaLeading?: ReactNode;
@@ -177,20 +190,32 @@ vi.mock("./IssueRow", () => ({
     checklistDependencyChips?: ReactNode;
     checklistRowId?: string;
     externalObjectSummary?: { total: number } | null;
+    presentation?: "legacy" | "task";
+    leadingControl?: ReactNode;
+    treeGuides?: number;
+    showIdentifier?: boolean;
+    trailingMeta?: ReactNode;
   }) => (
     <div
       data-testid="issue-row"
+      data-presentation={presentation}
+      data-tree-guides={treeGuides ?? 0}
+      data-show-identifier={showIdentifier ? "true" : "false"}
+      data-trailing-meta={typeof trailingMeta === "string" ? trailingMeta : undefined}
+      data-has-desktop-trailing={desktopTrailing ? "true" : "false"}
       id={checklistRowId}
       data-step={checklistStepNumber ?? undefined}
       data-current-step={checklistCurrentStep ? "true" : undefined}
       data-title-class={titleClassName ?? undefined}
     >
       <span>{issue.title}</span>
+      {leadingControl}
       {externalObjectSummary ? (
         <span data-testid="external-object-summary">{externalObjectSummary.total}</span>
       ) : null}
       {desktopMetaLeading}
       {desktopTrailing}
+      {trailingMeta}
       {checklistDependencyChips}
     </div>
   ),
@@ -235,6 +260,7 @@ function createIssue(overrides: Partial<Issue> = {}): Issue {
     description: null,
     status: "todo",
     priority: "medium",
+    reviewPolicy: null,
     assigneeAgentId: null,
     assigneeUserId: null,
     responsibleUserId: null,
@@ -360,6 +386,7 @@ describe("IssuesList", () => {
     document.body.appendChild(container);
     dialogState.openNewIssue.mockReset();
     mockKanbanBoard.mockReset();
+    mockNavigate.mockReset();
     mockIssuesApi.list.mockReset();
     mockIssuesApi.listLabels.mockReset();
     mockAuthApi.getSession.mockReset();
@@ -379,6 +406,7 @@ describe("IssuesList", () => {
     mockInstanceSettingsApi.getExperimental.mockResolvedValue({
       enableIsolatedWorkspaces: false,
       enableExternalObjects: false,
+      enableStreamlinedUi: true,
     });
     setDocumentScrollMetrics({ innerHeight: 600, scrollY: 0, scrollHeight: 2400 });
     mockExternalObjectsApi.getIssueSummaries.mockResolvedValue({ summaries: {} });
@@ -388,6 +416,50 @@ describe("IssuesList", () => {
   afterEach(() => {
     vi.useRealTimers();
     container.remove();
+  });
+
+  it("uses the master list and legacy persistence when Streamlined UI is off", async () => {
+    mockInstanceSettingsApi.getExperimental.mockResolvedValue({
+      enableIsolatedWorkspaces: false,
+      enableExternalObjects: false,
+      enableStreamlinedUi: false,
+    });
+    localStorage.setItem(
+      taskCollectionPreferencesStorageKey({
+        companyId: "company-1",
+        collectionKey: "paperclip:test-issues",
+      }),
+      JSON.stringify({
+        version: 1,
+        companyId: "company-1",
+        collectionKey: "paperclip:test-issues",
+        viewState: { viewMode: "board" },
+        columns: [],
+      }),
+    );
+
+    const { root } = renderWithQueryClient(
+      <IssuesList
+        issues={[createIssue({ id: "legacy-issue", title: "Master task row" })]}
+        isLoading={false}
+        agents={[]}
+        projects={[]}
+        viewStateKey="paperclip:test-issues"
+        rowPresentation="task"
+        toolbarPresentation="collection"
+        onUpdateIssue={() => undefined}
+      />,
+      container,
+    );
+
+    await waitForAssertion(() => {
+      const row = container.querySelector("[data-testid='issue-row']");
+      expect(row).not.toBeNull();
+      expect(row?.getAttribute("data-presentation")).toBeNull();
+      expect(container.querySelector("[data-testid='kanban-board']")).toBeNull();
+    });
+
+    act(() => root.unmount());
   });
 
   it("forwards external-object summaries into issue rows", async () => {
@@ -416,6 +488,7 @@ describe("IssuesList", () => {
         agents={[]}
         projects={[]}
         viewStateKey="paperclip:test-issues"
+        rowPresentation="task"
         onUpdateIssue={() => undefined}
       />,
       container,
@@ -431,6 +504,80 @@ describe("IssuesList", () => {
     });
   });
 
+  it("keeps the canonical task-row presentation opt in per collection", async () => {
+    const { root } = renderWithQueryClient(
+      <IssuesList
+        issues={[createIssue()]}
+        agents={[]}
+        projects={[]}
+        viewStateKey="paperclip:test-issues"
+        rowPresentation="task"
+        onUpdateIssue={() => undefined}
+      />,
+      container,
+    );
+
+    await waitForAssertion(() => {
+      const row = container.querySelector("[data-testid='issue-row']");
+      expect(row?.getAttribute("data-presentation")).toBe("task");
+      expect(row?.getAttribute("data-show-identifier")).toBe("true");
+      expect(row?.getAttribute("data-trailing-meta")).toMatch(/\S/);
+      expect(row?.getAttribute("data-trailing-meta")).not.toContain("Updated");
+      expect(row?.getAttribute("data-has-desktop-trailing")).toBe("false");
+      expect(row?.querySelector('[data-slot="task-row-disclosure-spacer"]')).not.toBeNull();
+    });
+
+    act(() => root.unmount());
+  });
+
+  it("reserves a disclosure column after each ancestor guide in canonical task trees", async () => {
+    const parent = createIssue({ id: "parent", identifier: "PAP-1", title: "Parent task" });
+    const child = createIssue({ id: "child", identifier: "PAP-2", parentId: parent.id, title: "Child task" });
+    const { root } = renderWithQueryClient(
+      <IssuesList
+        issues={[parent, child]}
+        agents={[]}
+        projects={[]}
+        viewStateKey="paperclip:test-issues"
+        rowPresentation="task"
+        onUpdateIssue={() => undefined}
+      />,
+      container,
+    );
+
+    await waitForAssertion(() => {
+      const rows = Array.from(container.querySelectorAll('[data-testid="issue-row"]'));
+      const parentRow = rows.find((row) => row.textContent?.includes("Parent task"));
+      const childRow = rows.find((row) => row.textContent?.includes("Child task"));
+      expect(parentRow?.getAttribute("data-tree-guides")).toBe("0");
+      expect(parentRow?.querySelector('button[aria-label="Collapse sub-tasks"]')).not.toBeNull();
+      expect(childRow?.getAttribute("data-tree-guides")).toBe("1");
+      expect(childRow?.querySelector('[data-slot="task-row-disclosure-spacer"]')).not.toBeNull();
+    });
+
+    act(() => root.unmount());
+  });
+
+  it("keeps the shared collection toolbar opt in per surface", async () => {
+    const { root } = renderWithQueryClient(
+      <IssuesList
+        issues={[createIssue()]}
+        agents={[]}
+        projects={[]}
+        viewStateKey="paperclip:test-issues"
+        toolbarPresentation="collection"
+        onUpdateIssue={() => undefined}
+      />,
+      container,
+    );
+
+    await waitForAssertion(() => {
+      expect(container.querySelector("[role='toolbar'][aria-label='Task controls']")).not.toBeNull();
+    });
+
+    act(() => root.unmount());
+  });
+
   it("does not load external-object summaries when the experimental flag is disabled", async () => {
     const { root } = renderWithQueryClient(
       <IssuesList
@@ -438,6 +585,7 @@ describe("IssuesList", () => {
         agents={[]}
         projects={[]}
         viewStateKey="paperclip:test-issues"
+        rowPresentation="task"
         onUpdateIssue={() => undefined}
       />,
       container,
@@ -494,6 +642,7 @@ describe("IssuesList", () => {
         agents={[]}
         projects={[]}
         viewStateKey="paperclip:test-issues"
+        rowPresentation="task"
         onUpdateIssue={() => undefined}
       />,
       container,
@@ -590,7 +739,7 @@ describe("IssuesList", () => {
         projects={[]}
         viewStateKey="paperclip:test-issues"
         baseCreateIssueDefaults={{ parentId: "parent-1", projectId: "project-1" }}
-        createIssueLabel="Sub-issue"
+        createIssueLabel="子任务"
         onUpdateIssue={() => undefined}
       />,
       container,
@@ -598,14 +747,14 @@ describe("IssuesList", () => {
 
     await waitForAssertion(() => {
       const button = Array.from(container.querySelectorAll("button")).find(
-        (candidate) => candidate.textContent?.includes("新建子任务"),
+        (candidate) => candidate.textContent?.includes("New 子任务"),
       );
       expect(button).not.toBeUndefined();
     });
 
     await act(async () => {
       const button = Array.from(container.querySelectorAll("button")).find(
-        (candidate) => candidate.textContent?.includes("新建子任务"),
+        (candidate) => candidate.textContent?.includes("New 子任务"),
       );
       button?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
       await Promise.resolve();
@@ -663,12 +812,12 @@ describe("IssuesList", () => {
     );
 
     await waitForAssertion(() => {
-      const button = container.querySelector<HTMLButtonElement>('button[aria-label="New issue in Feature Branch"]');
+      const button = container.querySelector<HTMLButtonElement>('button[aria-label="New task in Feature Branch"]');
       expect(button).not.toBeNull();
     });
 
     await act(async () => {
-      const button = container.querySelector<HTMLButtonElement>('button[aria-label="New issue in Feature Branch"]');
+      const button = container.querySelector<HTMLButtonElement>('button[aria-label="New task in Feature Branch"]');
       button?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
       await Promise.resolve();
     });
@@ -802,6 +951,55 @@ describe("IssuesList", () => {
       expect(rows.find((row) => row.textContent?.includes("Active blocker"))?.getAttribute("data-current-step")).toBe("true");
       expect(rows.find((row) => row.textContent?.includes("Done first"))?.getAttribute("data-title-class")).toContain("text-muted-foreground");
       expect(container.textContent).toContain("blocked by PAP-3 · step 2");
+    });
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("hides the Priority option from the Sort and Group menus while priority UI is off (PAP-411)", async () => {
+    const { root } = renderWithQueryClient(
+      <IssuesList
+        issues={[createIssue({ id: "issue-1", identifier: "PAP-1", title: "Task one" })]}
+        agents={[]}
+        projects={[]}
+        viewStateKey="paperclip:test-issues"
+        rowPresentation="task"
+        onUpdateIssue={() => undefined}
+      />,
+      container,
+    );
+
+    await waitForAssertion(() => {
+      expect(container.querySelectorAll('[data-testid="issue-row"]').length).toBeGreaterThan(0);
+    });
+
+    const sortButton = Array.from(container.querySelectorAll("button")).find(
+      (button) => button.getAttribute("title") === "Sort",
+    );
+    expect(sortButton).toBeTruthy();
+    act(() => {
+      sortButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+    await waitForAssertion(() => {
+      const labels = Array.from(document.body.querySelectorAll("button")).map((b) => b.textContent ?? "");
+      // Status sort option renders, but the Priority option is gated off (PAP-411).
+      expect(labels.some((text) => text.includes("Status"))).toBe(true);
+      expect(labels.some((text) => text.includes("Priority"))).toBe(false);
+    });
+
+    const groupButton = Array.from(container.querySelectorAll("button")).find(
+      (button) => button.getAttribute("title") === "Group",
+    );
+    expect(groupButton).toBeTruthy();
+    act(() => {
+      groupButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+    await waitForAssertion(() => {
+      const labels = Array.from(document.body.querySelectorAll("button")).map((b) => b.textContent ?? "");
+      expect(labels.some((text) => text.includes("Status"))).toBe(true);
+      expect(labels.some((text) => text.includes("Priority"))).toBe(false);
     });
 
     act(() => {
@@ -1095,7 +1293,7 @@ describe("IssuesList", () => {
       container,
     );
 
-    const input = container.querySelector('input[aria-label="Search issues"]') as HTMLInputElement | null;
+    const input = container.querySelector('input[aria-label="Search tasks"]') as HTMLInputElement | null;
     expect(input).not.toBeNull();
     const valueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
     expect(valueSetter).toBeTypeOf("function");
@@ -1157,7 +1355,7 @@ describe("IssuesList", () => {
     );
 
     await waitForAssertion(() => {
-      expect(container.textContent).toContain("最多显示 200 条匹配结果。请进一步收窄搜索范围。");
+      expect(container.textContent).toContain("Showing up to 200 matches. Refine the search to narrow further.");
     });
 
     act(() => {
@@ -1181,7 +1379,7 @@ describe("IssuesList", () => {
     );
 
     await waitForAssertion(() => {
-      expect(container.textContent).toContain("没有任务匹配当前筛选或搜索条件。");
+      expect(container.textContent).toContain("No tasks match the current filters or search.");
     });
 
     act(() => {
@@ -1392,7 +1590,7 @@ describe("IssuesList", () => {
     );
 
     await waitForAssertion(() => {
-      expect(container.textContent).toContain("Some board columns are showing up to 200 issues. Refine filters or search to reveal the rest.");
+      expect(container.textContent).toContain("Some board columns are showing up to 200 tasks. Refine filters or search to reveal the rest.");
     });
 
     act(() => {
@@ -1422,7 +1620,7 @@ describe("IssuesList", () => {
 
     await waitForAssertion(() => {
       expect(container.querySelectorAll('[data-testid="issue-row"]')).toHaveLength(100);
-      expect(container.textContent).toContain("Rendering 100 of 220 issues");
+      expect(container.textContent).toContain("Rendering 100 of 220 tasks");
     });
 
     act(() => {
@@ -1464,7 +1662,7 @@ describe("IssuesList", () => {
 
     await waitForAssertion(() => {
       expect(container.querySelectorAll('[data-testid="issue-row"]')).toHaveLength(250);
-      expect(container.textContent).toContain("Rendering 250 of 420 issues");
+      expect(container.textContent).toContain("Rendering 250 of 420 tasks");
     });
 
     act(() => {
@@ -1636,7 +1834,7 @@ describe("IssuesList", () => {
 
     await waitForAssertion(() => {
       const columnsButton = Array.from(document.body.querySelectorAll("button")).find(
-        (button) => button.getAttribute("title") === "列",
+        (button) => button.getAttribute("title") === "Columns",
       );
       expect(columnsButton).not.toBeUndefined();
       expect(container.textContent).toContain("PAP-9");
@@ -1669,13 +1867,13 @@ describe("IssuesList", () => {
 
     await waitForAssertion(() => {
       const columnsButton = Array.from(document.body.querySelectorAll("button")).find(
-        (button) => button.getAttribute("title") === "列",
+        (button) => button.getAttribute("title") === "Columns",
       );
       expect(columnsButton).not.toBeUndefined();
     });
 
     const columnsButton = Array.from(document.body.querySelectorAll("button")).find(
-      (button) => button.getAttribute("title") === "列",
+      (button) => button.getAttribute("title") === "Columns",
     );
 
     await act(async () => {
@@ -1684,10 +1882,10 @@ describe("IssuesList", () => {
     });
 
     await waitForAssertion(() => {
-      expect(document.body.textContent).toContain("桌面端任务行");
-      expect(document.body.textContent).toContain("状态");
+      expect(document.body.textContent).toContain("Desktop task rows");
+      expect(document.body.textContent).toContain("Status");
       expect(document.body.textContent).toContain("Task state chip on the left edge.");
-      expect(document.body.textContent).toContain("恢复默认值");
+      expect(document.body.textContent).toContain("Reset defaults");
     });
 
     act(() => {
@@ -1843,6 +2041,56 @@ describe("IssuesList", () => {
     });
   });
 
+  it("ignores a saved workspace filter when the page address has no workspace query", async () => {
+    localStorage.setItem(
+      taskCollectionPreferencesStorageKey({
+        companyId: "company-1",
+        collectionKey: "paperclip:test-issues",
+      }),
+      JSON.stringify({
+        version: 1,
+        companyId: "company-1",
+        collectionKey: "paperclip:test-issues",
+        viewState: {
+          workspaces: ["workspace-alpha"],
+        },
+        columns: ["id"],
+      }),
+    );
+    const alphaIssue = createIssue({
+      id: "issue-alpha",
+      identifier: "PAP-40",
+      title: "Alpha issue",
+      executionWorkspaceId: "workspace-alpha",
+    });
+    const betaIssue = createIssue({
+      id: "issue-beta",
+      identifier: "PAP-41",
+      title: "Beta issue",
+      executionWorkspaceId: "workspace-beta",
+    });
+
+    const { root } = renderWithQueryClient(
+      <IssuesList
+        issues={[alphaIssue, betaIssue]}
+        agents={[]}
+        projects={[]}
+        viewStateKey="paperclip:test-issues"
+        onUpdateIssue={() => undefined}
+      />,
+      container,
+    );
+
+    await waitForAssertion(() => {
+      expect(container.textContent).toContain("Alpha issue");
+      expect(container.textContent).toContain("Beta issue");
+    });
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
   it("applies an initial workspace filter from the issues URL state", async () => {
     const alphaIssue = createIssue({
       id: "issue-alpha",
@@ -1956,13 +2204,13 @@ describe("IssuesList", () => {
     );
 
     await waitForAssertion(() => {
-      const input = container.querySelector('input[aria-label="Search issues"]') as HTMLInputElement | null;
+      const input = container.querySelector('input[aria-label="Search tasks"]') as HTMLInputElement | null;
       expect(input).not.toBeNull();
       input?.focus();
       expect(document.activeElement).toBe(input);
     });
 
-    const input = container.querySelector('input[aria-label="Search issues"]') as HTMLInputElement;
+    const input = container.querySelector('input[aria-label="Search tasks"]') as HTMLInputElement;
     act(() => {
       input.dispatchEvent(new KeyboardEvent("keydown", {
         key: "Enter",
@@ -1992,13 +2240,13 @@ describe("IssuesList", () => {
     );
 
     await waitForAssertion(() => {
-      const input = container.querySelector('input[aria-label="Search issues"]') as HTMLInputElement | null;
+      const input = container.querySelector('input[aria-label="Search tasks"]') as HTMLInputElement | null;
       expect(input).not.toBeNull();
       input?.focus();
       expect(document.activeElement).toBe(input);
     });
 
-    const input = container.querySelector('input[aria-label="Search issues"]') as HTMLInputElement;
+    const input = container.querySelector('input[aria-label="Search tasks"]') as HTMLInputElement;
     act(() => {
       input.dispatchEvent(new KeyboardEvent("keydown", {
         key: "Escape",
@@ -2069,5 +2317,203 @@ describe("IssuesList", () => {
     act(() => {
       root.unmount();
     });
+  });
+
+  it("draws local-calendar separators between date-sorted rows", async () => {
+    const now = new Date();
+    const hourAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12);
+    const threeDaysAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 3, 12);
+    const tenDaysAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 10, 12);
+
+    const { root } = renderWithQueryClient(
+      <IssuesList
+        issues={[
+          createIssue({ id: "issue-recent", identifier: "PAP-1", title: "Just updated", updatedAt: hourAgo }),
+          createIssue({ id: "issue-mid", identifier: "PAP-2", title: "A few days old", updatedAt: threeDaysAgo }),
+          createIssue({ id: "issue-old", identifier: "PAP-3", title: "Over a week old", updatedAt: tenDaysAgo }),
+        ]}
+        agents={[]}
+        projects={[]}
+        viewStateKey="paperclip:test-issues"
+        rowPresentation="task"
+        onUpdateIssue={() => undefined}
+      />,
+      container,
+    );
+
+    await waitForAssertion(() => {
+      const separators = Array.from(container.querySelectorAll("[data-issues-date-separator]"));
+      const labels = separators.map((el) => el.getAttribute("aria-label"));
+      expect(labels).toEqual(["Today", "Earlier"]);
+      expect(separators.every((separator) => (
+        separator.querySelectorAll("[data-date-group-rule]").length === 2
+      ))).toBe(true);
+      expect(separators.every((separator) => (
+        separator.querySelector("[data-date-group-label]")?.classList.contains("text-muted-foreground/70")
+      ))).toBe(true);
+    });
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("can hide date group separators from the persisted Columns option", async () => {
+    const collectionKey = "paperclip:test-issues";
+    localStorage.setItem(
+      taskCollectionPreferencesStorageKey({
+        companyId: "company-1",
+        collectionKey,
+      }),
+      JSON.stringify({
+        version: 1,
+        companyId: "company-1",
+        collectionKey,
+        viewState: { showDateGroupSeparators: false },
+        columns: ["status", "id", "updated"],
+      }),
+    );
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12);
+    const threeDaysAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 3, 12);
+
+    const { root } = renderWithQueryClient(
+      <IssuesList
+        issues={[
+          createIssue({ id: "issue-recent", title: "Just updated", updatedAt: today }),
+          createIssue({ id: "issue-old", title: "Earlier task", updatedAt: threeDaysAgo }),
+        ]}
+        agents={[]}
+        projects={[]}
+        viewStateKey={collectionKey}
+        rowPresentation="task"
+        onUpdateIssue={() => undefined}
+      />,
+      container,
+    );
+
+    await waitForAssertion(() => {
+      expect(container.textContent).toContain("Earlier task");
+      expect(container.querySelector("[data-issues-date-separator]")).toBeNull();
+    });
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("does not synthesize an empty Yesterday group", async () => {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12);
+    const tenDaysAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 10, 12);
+
+    const { root } = renderWithQueryClient(
+      <IssuesList
+        issues={[
+          createIssue({ id: "issue-recent", identifier: "PAP-1", title: "Just updated", updatedAt: today }),
+          createIssue({ id: "issue-old", identifier: "PAP-2", title: "Over a week old", updatedAt: tenDaysAgo }),
+        ]}
+        agents={[]}
+        projects={[]}
+        viewStateKey="paperclip:test-issues"
+        rowPresentation="task"
+        onUpdateIssue={() => undefined}
+      />,
+      container,
+    );
+
+    await waitForAssertion(() => {
+      const labels = Array.from(container.querySelectorAll("[data-issues-date-separator]"))
+        .map((el) => el.getAttribute("aria-label"));
+      expect(labels).toEqual(["Today", "Earlier"]);
+    });
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("places separators around expanded nested rows in visible order", async () => {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12);
+    const threeDaysAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 3, 12);
+    const tenDaysAgo = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 10, 12);
+
+    const { root } = renderWithQueryClient(
+      <IssuesList
+        issues={[
+          createIssue({ id: "issue-parent", identifier: "PAP-1", title: "Recent parent", updatedAt: today }),
+          createIssue({ id: "issue-child", identifier: "PAP-2", parentId: "issue-parent", title: "Older child", updatedAt: threeDaysAgo }),
+          createIssue({ id: "issue-old", identifier: "PAP-3", title: "Old root", updatedAt: tenDaysAgo }),
+        ]}
+        agents={[]}
+        projects={[]}
+        viewStateKey="paperclip:test-issues"
+        rowPresentation="task"
+        onUpdateIssue={() => undefined}
+      />,
+      container,
+    );
+
+    await waitForAssertion(() => {
+      const visibleOrder = Array.from(
+        container.querySelectorAll("[data-testid='issue-row'], [data-issues-date-separator]"),
+      ).map((element) => element.getAttribute("aria-label") ?? element.firstElementChild?.textContent);
+      expect(visibleOrder).toEqual([
+        "Today",
+        "Recent parent",
+        "Earlier",
+        "Older child",
+        "Old root",
+      ]);
+    });
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("emits one Today heading when all rows share today's calendar group", async () => {
+    const now = new Date();
+    const todayMorning = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 9);
+    const todayNoon = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12);
+
+    const { root } = renderWithQueryClient(
+      <IssuesList
+        issues={[
+          createIssue({ id: "issue-a", identifier: "PAP-1", title: "One", updatedAt: todayNoon }),
+          createIssue({ id: "issue-b", identifier: "PAP-2", title: "Two", updatedAt: todayMorning }),
+        ]}
+        agents={[]}
+        projects={[]}
+        viewStateKey="paperclip:test-issues"
+        rowPresentation="task"
+        onUpdateIssue={() => undefined}
+      />,
+      container,
+    );
+
+    await waitForAssertion(() => {
+      expect(container.querySelector("[data-testid='issue-row']")).not.toBeNull();
+    });
+    expect(Array.from(container.querySelectorAll("[data-issues-date-separator]"))
+      .map((element) => element.getAttribute("aria-label"))).toEqual(["Today"]);
+
+    act(() => {
+      root.unmount();
+    });
+  });
+});
+
+describe("legacy issue age separators", () => {
+  const now = new Date("2026-04-10T12:00:00.000Z").getTime();
+
+  it("retains the rolling day and week boundaries used by the legacy list", () => {
+    expect(issueAgeBucket(new Date(now - 60 * 60 * 1000), now)).toBe(0);
+    expect(issueAgeBucket(new Date(now - 3 * 24 * 60 * 60 * 1000), now)).toBe(1);
+    expect(issueAgeBucket(new Date(now - 10 * 24 * 60 * 60 * 1000), now)).toBe(2);
+    expect(issueAgeSeparatorLabel(1)).toBe("Older than a day");
+    expect(issueAgeSeparatorLabel(2)).toBe("Older than a week");
+    expect(issueAgeBucketsCrossed(0, 2)).toEqual([1, 2]);
   });
 });

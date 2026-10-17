@@ -98,7 +98,7 @@ interface PluginCompanyOptions extends PluginJsonOptions {
 function requireCompanyId(ctx: { companyId?: string }): string {
   if (!ctx.companyId) {
     throw new Error(
-      "Company ID is required. Pass --company-id, set PAPERCLIP_COMPANY_ID, or set context profile companyId via `paperclipai context set`.",
+      "Company ID is required. Pass --company-id, set PAPERCLIP_COMPANY_ID, or set context profile companyId via `penclip context set`.",
     );
   }
   return ctx.companyId;

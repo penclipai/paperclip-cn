@@ -1,0 +1,22 @@
+{
+  "propertiesPanel.maximize": {
+    "en": "Maximize panel",
+    "zh-CN": "最大化面板",
+    "reviewedEnglishHash": "922ea5e3ff16dbc36e4f8789c51b355c05b7ffe4f221d80a5543bd13c71e983a"
+  },
+  "propertiesPanel.resize": {
+    "en": "Resize panel",
+    "zh-CN": "调整面板大小",
+    "reviewedEnglishHash": "c9fe271c08aac0c350b899a3beadeff7bd91bb030732c8fede6bf4fe533834a9"
+  },
+  "propertiesPanel.restore": {
+    "en": "Restore panel",
+    "zh-CN": "还原面板",
+    "reviewedEnglishHash": "c3e75fd391bd8b77db9db48c7b1285c399b1c8def7ba95a69758e2e480de9cf2"
+  },
+  "propertiesPanel.title": {
+    "en": "Properties",
+    "zh-CN": "属性",
+    "reviewedEnglishHash": "ae43692b2a310b8ed2443d2b7d2a3e4cf0b6d73115badd72831b3d22381f235f"
+  }
+}

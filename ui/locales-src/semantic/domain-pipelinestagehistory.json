@@ -1,0 +1,57 @@
+{
+  "pipelineStageHistory.description": {
+    "en": "Past versions of these instructions.",
+    "zh-CN": "这些说明的历史版本。",
+    "reviewedEnglishHash": "9661a8c49ab2a2b04dcd0a8d42c15e972a820532dd5229f0b1b865aed6893c45"
+  },
+  "pipelineStageHistory.loadFailed": {
+    "en": "Could not load revisions.",
+    "zh-CN": "无法加载修订。",
+    "reviewedEnglishHash": "95456453a0af1a25ef46ed564f6f3a3dc44ae0debd68cbc5aee22c21a9e147de"
+  },
+  "pipelineStageHistory.noHistory": {
+    "en": "No history yet. Save the instructions to create the first revision.",
+    "zh-CN": "暂无历史。保存说明后会创建第一个修订。",
+    "reviewedEnglishHash": "a948c526c8d65fdb479a65971370ff1bb0af477844e399e6f9581e867ebba6ca"
+  },
+  "pipelineStageHistory.noRevisions": {
+    "en": "No revisions recorded yet.",
+    "zh-CN": "尚未记录修订。",
+    "reviewedEnglishHash": "fbc3c414948758c8eb203c1c6c1fd0561f17c02136f14d634c64eb855b2341fb"
+  },
+  "pipelineStageHistory.restore": {
+    "en": "Restore",
+    "zh-CN": "恢复",
+    "reviewedEnglishHash": "a76e13b9839270eb73ed11417f7d8acca55df0ad52065799361631d0fff74f27"
+  },
+  "pipelineStageHistory.restoreFailed": {
+    "en": "Failed to restore revision",
+    "zh-CN": "恢复修订失败",
+    "reviewedEnglishHash": "2dcf4f54fb056d5dd4394864292400a0a0229018368098fc8e3eb5b2af748b2a"
+  },
+  "pipelineStageHistory.restoreFailedBody": {
+    "en": "Paperclip could not restore the revision.",
+    "zh-CN": "Paperclip 无法恢复该修订。",
+    "reviewedEnglishHash": "a4aa014d3d681dc24238a75b625d999bbcb861c54c9e1aa288344bea0f31ef78"
+  },
+  "pipelineStageHistory.restoredRevision": {
+    "en": "Restored revision {{number}}",
+    "zh-CN": "已恢复修订 {{number}}",
+    "reviewedEnglishHash": "8e79d24d87bc24f217f1fc32153310641f7f5e52a355a1d26e5ad47b80d10846"
+  },
+  "pipelineStageHistory.revision": {
+    "en": "Revision {{number}}",
+    "zh-CN": "修订 {{number}}",
+    "reviewedEnglishHash": "af6ec67636ebfb48f4dcb6e1842089c3514844490f69136635605c02e9420466"
+  },
+  "pipelineStageHistory.savedAsRevision": {
+    "en": "Saved as revision {{number}}.",
+    "zh-CN": "已保存为修订 {{number}}。",
+    "reviewedEnglishHash": "167a3e67977c558eae0f5d1e98e5e007e6fba60403ed3e18162d48672930959b"
+  },
+  "pipelineStageHistory.title": {
+    "en": "History",
+    "zh-CN": "历史",
+    "reviewedEnglishHash": "0e769600933790607b2a13b33ddfade0fa17810eb62c3b28ee23e59516516491"
+  }
+}

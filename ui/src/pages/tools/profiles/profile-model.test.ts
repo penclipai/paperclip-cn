@@ -1,6 +1,7 @@
 // @vitest-environment node
 
 import { describe, expect, it } from "vitest";
+import i18n from "@/i18n";
 import type { ToolCatalogEntry, ToolProfileEntry } from "@penclipai/shared";
 import {
   appCheckState,
@@ -87,6 +88,19 @@ describe("groupCatalogByApp", () => {
     expect(groups).toHaveLength(1);
     expect(groups[0].name).toBe("Gmail");
     expect(groups[0].tools.map((t) => t.id)).toEqual(["g-delete", "g-list", "g-read", "g-send"]);
+  });
+
+  it("uses the active locale for a nameless app group", async () => {
+    const namelessCatalog = [tool({ id: "unknown", toolName: "unknown.read", applicationId: null, connectionId: "missing" })];
+    const previousLanguage = i18n.language;
+    try {
+      await i18n.changeLanguage("zh-CN");
+      expect(groupCatalogByApp(namelessCatalog, new Map(), new Map())[0].name).toBe("工具");
+      await i18n.changeLanguage("en");
+      expect(groupCatalogByApp(namelessCatalog, new Map(), new Map())[0].name).toBe("Tools");
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
   });
 });
 

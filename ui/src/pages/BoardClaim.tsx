@@ -1,7 +1,8 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
 import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams, useSearchParams } from "@/lib/router";
-import { useTranslation } from "react-i18next";
 import { accessApi } from "../api/access";
 import { authApi } from "../api/auth";
 import { queryKeys } from "../lib/queryKeys";
@@ -9,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
 export function BoardClaimPage() {
-  const { t } = useTranslation();
+  useTranslation();
   const queryClient = useQueryClient();
   const params = useParams();
   const [searchParams] = useSearchParams();
@@ -44,20 +45,20 @@ export function BoardClaimPage() {
   });
 
   if (!token || !code) {
-    return <div className="mx-auto max-w-xl py-10 text-sm text-destructive">{t("boardClaim.invalidUrl")}</div>;
+    return <div className="mx-auto max-w-xl py-10 text-sm text-destructive">{translateInstant("boardClaim.invalidUrl")}</div>;
   }
 
   if (statusQuery.isLoading || sessionQuery.isLoading) {
-    return <div className="mx-auto max-w-xl py-10 text-sm text-muted-foreground">{t("boardClaim.loading")}</div>;
+    return <div className="mx-auto max-w-xl py-10 text-sm text-muted-foreground">{translateInstant("boardClaim.loading")}</div>;
   }
 
   if (statusQuery.error) {
     return (
       <div className="mx-auto max-w-xl py-10">
         <Card className="block p-6">
-          <h1 className="text-lg font-semibold">{t("boardClaim.unavailableTitle")}</h1>
+          <h1 className="text-lg font-semibold">{translateInstant("boardClaim.unavailableTitle")}</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            {statusQuery.error instanceof Error ? statusQuery.error.message : t("boardClaim.unavailableBody")}
+            {statusQuery.error instanceof Error ? statusQuery.error.message : translateInstant("boardClaim.unavailableBody")}
           </p>
         </Card>
       </div>
@@ -66,19 +67,18 @@ export function BoardClaimPage() {
 
   const status = statusQuery.data;
   if (!status) {
-    return <div className="mx-auto max-w-xl py-10 text-sm text-destructive">{t("boardClaim.unavailableTitle")}</div>;
+    return <div className="mx-auto max-w-xl py-10 text-sm text-destructive">{translateInstant("Claim challenge unavailable.")}</div>;
   }
 
   if (status.status === "claimed") {
     return (
       <div className="mx-auto max-w-xl py-10">
         <Card className="block p-6">
-          <h1 className="text-lg font-semibold">{t("boardClaim.claimedTitle")}</h1>
+          <h1 className="text-lg font-semibold">{translateInstant("boardClaim.claimedTitle")}</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            {t("boardClaim.claimedBody")}
-          </p>
+            {translateInstant("boardClaim.claimedBody")}</p>
           <Button asChild className="mt-4">
-            <Link to="/">{t("boardClaim.openBoard")}</Link>
+            <Link to="/">{translateInstant("boardClaim.openBoard")}</Link>
           </Button>
         </Card>
       </div>
@@ -89,12 +89,11 @@ export function BoardClaimPage() {
     return (
       <div className="mx-auto max-w-xl py-10">
         <Card className="block p-6">
-          <h1 className="text-lg font-semibold">{t("boardClaim.signInRequired")}</h1>
+          <h1 className="text-lg font-semibold">{translateInstant("boardClaim.signInRequired")}</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            {t("boardClaim.signInRequiredBody")}
-          </p>
+            {translateInstant("boardClaim.signInRequiredBody")}</p>
           <Button asChild className="mt-4">
-            <Link to={`/auth?next=${encodeURIComponent(currentPath)}`}>{t("boardClaim.signInButton")}</Link>
+            <Link to={`/auth?next=${encodeURIComponent(currentPath)}`}>{translateInstant("boardClaim.signInButton")}</Link>
           </Button>
         </Card>
       </div>
@@ -104,14 +103,13 @@ export function BoardClaimPage() {
   return (
     <div className="mx-auto max-w-xl py-10">
       <Card className="block p-6">
-        <h1 className="text-xl font-semibold">{t("boardClaim.claimTitle")}</h1>
+        <h1 className="text-xl font-semibold">{translateInstant("boardClaim.claimTitle")}</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          {t("boardClaim.claimBody")}
-        </p>
+          {translateInstant("This will promote your user to instance admin and migrate organization ownership access from local trusted mode.")}</p>
 
         {claimMutation.error && (
           <p className="mt-3 text-sm text-destructive">
-            {claimMutation.error instanceof Error ? claimMutation.error.message : t("boardClaim.failedToClaim")}
+            {claimMutation.error instanceof Error ? claimMutation.error.message : translateInstant("boardClaim.failedToClaim")}
           </p>
         )}
 
@@ -120,7 +118,7 @@ export function BoardClaimPage() {
           onClick={() => claimMutation.mutate()}
           disabled={claimMutation.isPending}
         >
-          {claimMutation.isPending ? t("boardClaim.claiming") : t("boardClaim.claimButton")}
+          {claimMutation.isPending ? translateInstant("boardClaim.claiming") : translateInstant("boardClaim.claimButton")}
         </Button>
       </Card>
     </div>

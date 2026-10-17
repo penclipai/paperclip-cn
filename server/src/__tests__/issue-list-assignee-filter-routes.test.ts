@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import express from "express";
 import request from "supertest";
 import { eq } from "drizzle-orm";
-import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { activityLog, agents, companies, companyMemberships, createDb, heartbeatRuns, issues, principalPermissionGrants } from "@penclipai/db";
 import {
   getEmbeddedPostgresTestSupport,
@@ -309,6 +309,70 @@ describeEmbeddedPostgres("issue list routes assigneeAgentId filter", () => {
     });
   });
 
+  it("marks an escalated successful-run handoff live while a run targets the issue", async () => {
+    const companyId = randomUUID();
+    const agentId = randomUUID();
+    const issueId = randomUUID();
+    const runId = randomUUID();
+
+    await db.insert(companies).values({
+      id: companyId,
+      name: "Paperclip",
+      issuePrefix: uniqueIssuePrefix(),
+      requireBoardApprovalForNewAgents: false,
+    });
+    await seedCloudTenantMember(companyId);
+    await db.insert(agents).values({
+      id: agentId,
+      companyId,
+      name: "Assignee",
+      role: "engineer",
+      status: "active",
+      adapterType: "codex_local",
+      adapterConfig: {},
+      runtimeConfig: {},
+      permissions: {},
+    });
+    await db.insert(issues).values({
+      id: issueId,
+      companyId,
+      title: "Escalated handoff issue",
+      status: "in_progress",
+      priority: "medium",
+      assigneeAgentId: agentId,
+    });
+    await db.insert(activityLog).values({
+      companyId,
+      actorType: "system",
+      actorId: "system",
+      action: "issue.successful_run_handoff_escalated",
+      entityType: "issue",
+      entityId: issueId,
+      agentId,
+      details: { sourceRunId: randomUUID() },
+    });
+    await db.insert(heartbeatRuns).values({
+      id: runId,
+      companyId,
+      agentId,
+      status: "running",
+      contextSnapshot: { taskId: issueId },
+    });
+
+    const app = createApp(companyId);
+    const res = await request(app)
+      .get(`/api/companies/${companyId}/issues`)
+      .query({ view: "compact", limit: "20" });
+
+    expect(res.status, JSON.stringify(res.body)).toBe(200);
+    expect(res.body[0]?.successfulRunHandoff).toMatchObject({
+      state: "escalated",
+      required: false,
+      hasLiveContinuation: true,
+      liveRunId: runId,
+    });
+  });
+
   it("logs resolved when a valid-path skip closes a stale required handoff", async () => {
     const companyId = randomUUID();
     const agentId = randomUUID();
@@ -570,14 +634,20 @@ describeEmbeddedPostgres("issue list routes assigneeAgentId filter", () => {
     });
 
     const app = createApp(companyId);
-    for (let index = 0; index < ISSUE_LIST_SERVER_CACHE_MAX_ENTRIES + 5; index += 1) {
-      const res = await request(app)
-        .get(`/api/companies/${companyId}/issues`)
-        .query({ view: "compact", limit: "20", q: `cache-key-${index}` });
-      expect(res.status, JSON.stringify(res.body)).toBe(200);
-    }
+    const now = Date.now();
+    const dateNow = vi.spyOn(Date, "now").mockReturnValue(now);
+    try {
+      for (let index = 0; index < ISSUE_LIST_SERVER_CACHE_MAX_ENTRIES + 5; index += 1) {
+        const res = await request(app)
+          .get(`/api/companies/${companyId}/issues`)
+          .query({ view: "compact", limit: "20", q: `cache-key-${index}` });
+        expect(res.status, JSON.stringify(res.body)).toBe(200);
+      }
 
-    expect(__getIssueListResponseCacheSizeForTests()).toBe(ISSUE_LIST_SERVER_CACHE_MAX_ENTRIES);
+      expect(__getIssueListResponseCacheSizeForTests()).toBe(ISSUE_LIST_SERVER_CACHE_MAX_ENTRIES);
+    } finally {
+      dateNow.mockRestore();
+    }
   });
 
   it("logs request_storm_detected for identical in-flight compact issue-list fanout without query values", async () => {

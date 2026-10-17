@@ -1,3 +1,5 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
 import type { ReactNode } from "react";
 import { ResponsibleUserDenialNotice } from "@/components/ResponsibleUserDenialNotice";
 import { cn } from "@/lib/utils";
@@ -48,31 +50,32 @@ function RunLedgerRow({
   onBehalfOf?: string | null;
   denial?: ReactNode;
 }) {
+  useTranslation();
   return (
     <article className="space-y-1.5 rounded-lg border border-border/60 px-3 py-2 text-xs text-muted-foreground">
       <div className="flex flex-wrap items-center gap-1.5">
-        <span className="font-medium text-foreground">Run</span>
+        <span className="font-medium text-foreground">{translateInstant("Run")}</span>
         <span className="min-w-0 max-w-full truncate font-mono text-foreground">a1b2c3d4</span>
         <span>by CodexCoder</span>
         {onBehalfOf ? (
           <span className="min-w-0 max-w-full truncate text-muted-foreground">
-            on behalf of <span className="text-foreground">{onBehalfOf}</span>
+            {translateInstant("issueRunLedger.onBehalfOf")}{" "}<span className="text-foreground">{onBehalfOf}</span>
           </span>
         ) : null}
         <span className="rounded-md border border-border px-1.5 py-0.5 text-(length:--text-micro) capitalize text-muted-foreground">
-          {denial ? "Failed" : "Succeeded"}
+          {denial ? translateInstant("Failed") : translateInstant("Succeeded")}
         </span>
         <span className="ml-auto shrink-0">2m ago</span>
       </div>
       <div className="grid gap-2 text-xs text-muted-foreground sm:grid-cols-3">
         <div className="min-w-0">
-          <span className="text-foreground">Elapsed</span> 1m 4s
+          <span className="text-foreground">{translateInstant("issueRunLedger.elapsed")}</span> 1m 4s
         </div>
         <div className="min-w-0">
-          <span className="text-foreground">Last useful action</span> 2m ago
+          <span className="text-foreground">{translateInstant("issueRunLedger.lastUsefulAction")}</span> 2m ago
         </div>
         <div className="min-w-0">
-          <span className="text-foreground">Stop</span> {denial ? "Denied" : "Completed"}
+          <span className="text-foreground">{translateInstant("Stop")}</span> {denial ? translateInstant("runTranscript.toolDecision.denied") : translateInstant("Completed")}
         </div>
       </div>
       {denial}
@@ -82,12 +85,13 @@ function RunLedgerRow({
 
 /** A faithful copy of the run-detail header identity block (see AgentDetail.tsx RunDetail). */
 function RunDetailHeader({ onBehalfOf, denial }: { onBehalfOf?: string | null; denial?: ReactNode }) {
+  useTranslation();
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2">
         <span className="text-lg font-semibold text-foreground">Run a1b2c3d4</span>
         <span className="rounded-md border border-border px-1.5 py-0.5 text-(length:--text-micro) capitalize text-muted-foreground">
-          {denial ? "failed" : "succeeded"}
+          {denial ? translateInstant("runStatus.failed") : translateInstant("runStatus.succeeded")}
         </span>
       </div>
       <div className="flex flex-wrap items-center gap-1.5 font-mono text-(length:--text-micro) text-muted-foreground">
@@ -98,7 +102,7 @@ function RunDetailHeader({ onBehalfOf, denial }: { onBehalfOf?: string | null; d
       </div>
       {onBehalfOf ? (
         <div className="text-xs text-muted-foreground">
-          On behalf of <span className="text-foreground">{onBehalfOf}</span>
+          {translateInstant("agentDetail.onBehalfOf")}{" "}<span className="text-foreground">{onBehalfOf}</span>
         </div>
       ) : null}
       {denial}
@@ -107,6 +111,7 @@ function RunDetailHeader({ onBehalfOf, denial }: { onBehalfOf?: string | null; d
 }
 
 export function ResponsibleUserDenialUxLab() {
+  useTranslation();
   return (
     <div className="min-h-screen bg-muted/20 p-6">
       <div className="mx-auto max-w-5xl space-y-6">
@@ -203,7 +208,7 @@ export function ResponsibleUserDenialUxLab() {
           title="In-context — denial inside a failed run ledger row"
           description="How the notice reads within a run row on the issue timeline."
         >
-          <BeforeAfter label="Unauthorized">
+          <BeforeAfter label={translateInstant("Unauthorized")}>
             <RunLedgerRow
               onBehalfOf="Ada Lovelace"
               denial={
@@ -214,7 +219,7 @@ export function ResponsibleUserDenialUxLab() {
               }
             />
           </BeforeAfter>
-          <BeforeAfter label="Unavailable">
+          <BeforeAfter label={translateInstant("common.unavailable")}>
             <RunLedgerRow
               onBehalfOf="Grace Hopper"
               denial={

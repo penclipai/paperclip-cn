@@ -1,0 +1,27 @@
+{
+  "myIssues.breadcrumb": {
+    "en": "My Tasks",
+    "zh-CN": "我的任务",
+    "reviewedEnglishHash": "faf87355035004de81e4e01e86b29ad538d93b132bdc5bdd5b256c963d9cad4d"
+  },
+  "myIssues.empty": {
+    "en": "No issues assigned to you.",
+    "zh-CN": "当前没有分配给你的任务。",
+    "reviewedEnglishHash": "a272d9f9704974b992bc49308c2b2060a30e518258668b62f1d4575ae70b89dc"
+  },
+  "myIssues.selectCompany": {
+    "en": "Select a company to view your issues.",
+    "zh-CN": "请选择一家公司以查看你的任务。",
+    "reviewedEnglishHash": "323a8674064231867982f5eeb76dbe8a8c292ee681b55f3e72b9aa7346864ba7"
+  },
+  "myIssues.selectCompanyTasks": {
+    "en": "Select a company to view your tasks.",
+    "zh-CN": "请选择一家公司以查看你的任务。",
+    "reviewedEnglishHash": "f43365f9a8e6a761ecf23db1b58b299e66c37ed0e5d4ec7c790d13f982438c3f"
+  },
+  "myIssues.title": {
+    "en": "My Issues",
+    "zh-CN": "我的任务",
+    "reviewedEnglishHash": "56e0b35d4300c458108e448eca8a6a377ec7c8c1b153886e46f36431ada25e20"
+  }
+}

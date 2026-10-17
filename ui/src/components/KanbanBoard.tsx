@@ -1,3 +1,5 @@
+import { translateInstant } from "@/i18n";
+import { AgentIdentity } from "@/components/AgentIdentity";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "@/lib/router";
@@ -20,6 +22,7 @@ import {
 } from "@dnd-kit/sortable";
 import { StatusIcon } from "./StatusIcon";
 import { PriorityIcon } from "./PriorityIcon";
+import { SHOW_TASK_PRIORITY_UI } from "../lib/ui-flags";
 import { Identity } from "./Identity";
 import type { Issue, IssueStatus } from "@penclipai/shared";
 import { AlertTriangle } from "lucide-react";
@@ -362,17 +365,17 @@ function KanbanCard({
               title={`${subtreeLiveCount} sub-task${subtreeLiveCount === 1 ? "" : "s"} running below`}
             >
               <span className="h-2 w-2 shrink-0 rounded-full border border-muted-foreground/60" aria-hidden="true" />
-              {subtreeLiveCount} live below
-            </Badge>
+              {subtreeLiveCount} {translateInstant("live below")}</Badge>
           )}
         </div>
         <p className={`${compact ? "mb-1.5 text-xs" : "mb-2 text-sm"} leading-snug line-clamp-2`}>{issue.title}</p>
         <div className="flex items-center gap-2 min-w-0">
-          <PriorityIcon priority={issue.priority} />
+          {/* PAP-411: priority UI hidden behind SHOW_TASK_PRIORITY_UI. */}
+          {SHOW_TASK_PRIORITY_UI && <PriorityIcon priority={issue.priority} />}
           {issue.assigneeAgentId && (() => {
             const name = agentName(issue.assigneeAgentId);
             return name ? (
-              <Identity name={name} size="xs" />
+              <AgentIdentity agent={agents?.find((agent) => agent.id === issue.assigneeAgentId) ?? { id: issue.assigneeAgentId, name }} size="xs" />
             ) : (
               <span className="text-xs text-muted-foreground font-mono">
                 {issue.assigneeAgentId.slice(0, 8)}

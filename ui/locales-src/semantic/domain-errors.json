@@ -1,0 +1,97 @@
+{
+  "errors.apiRouteNotFound": {
+    "en": "API route not found",
+    "zh-CN": "未找到 API 路由",
+    "reviewedEnglishHash": "5282bf8ede876944162a41747d6eb64f38b6d2c599cb1452aff09f115ca8ea95"
+  },
+  "errors.browserCodeRequired": {
+    "en": "A valid browser code is required.",
+    "zh-CN": "需要有效的浏览器授权码。",
+    "reviewedEnglishHash": "8d3e8a34148ec354dd37b4baeb8a37762b9487cce01890b677d41c9860e2f443"
+  },
+  "errors.deviceLoginStartInvalid": {
+    "en": "The device login start request is invalid.",
+    "zh-CN": "设备登录启动请求无效。",
+    "reviewedEnglishHash": "2e507bb0d43deec176824e58477fce393c659fec7d0119f93db59a37c8d42d1b"
+  },
+  "errors.executionWorkspaceReopenedCannotArchive": {
+    "en": "Execution workspace was reopened and cannot be archived right now",
+    "zh-CN": "执行工作区已重新打开，暂时无法归档。",
+    "reviewedEnglishHash": "17a798011898853024c7720a260b7447187c6767a55b065143914154b30222bf"
+  },
+  "errors.forbidden": {
+    "en": "Forbidden",
+    "zh-CN": "禁止访问",
+    "reviewedEnglishHash": "78342a0905a72ce44da083dcb5d23b8ea0c16992ba2a82eece97e033d76ba3d3"
+  },
+  "errors.internalServer": {
+    "en": "Internal server error",
+    "zh-CN": "服务器内部错误",
+    "reviewedEnglishHash": "f74d744451ed13502cccccac6c65505d59099b6621cc4debe58575e9442d66e6"
+  },
+  "errors.invalidJsonBody": {
+    "en": "Invalid JSON body",
+    "zh-CN": "无效的 JSON 请求体",
+    "reviewedEnglishHash": "7ea5df57b1c97c5ebd23103bab6dbb8649a32292136692babcff4b0b118fb5b5"
+  },
+  "errors.issueWorkspaceCannotReopen": {
+    "en": "This issue is linked to a closed workspace that cannot be reopened.",
+    "zh-CN": "此任务关联的已关闭工作区无法重新打开。",
+    "reviewedEnglishHash": "55aeb737a8292b31f87d9d45c7425f8f8d55080415b510811b5082fb9fa10ebd"
+  },
+  "errors.issueWorkspaceReopenFailed": {
+    "en": "Could not reopen the workspace for this issue. Please try again.",
+    "zh-CN": "无法重新打开此任务的工作区，请重试。",
+    "reviewedEnglishHash": "efa86aa98d8a020df41e84e36af33c45df6cda8b613bc56239f9955c18fb2230"
+  },
+  "errors.managedSandboxUnavailable": {
+    "en": "This instance runs agents only in its platform-managed sandbox, but no active managed sandbox environment exists. The test did not run.",
+    "zh-CN": "此实例仅在平台托管的沙箱中运行智能体，但当前没有可用的托管沙箱环境，未执行测试。",
+    "reviewedEnglishHash": "46342604037ec7ab6cda8f2960ce39b76f6d140b2dcb334bdf26bcda13ed7b7e"
+  },
+  "errors.managedSandboxUnavailableRemediation": {
+    "en": "Restore the managed sandbox environment, then test again.",
+    "zh-CN": "恢复托管沙箱环境后再试。",
+    "reviewedEnglishHash": "d0388e6545e7dac44ecc6992fe568495d8ed583eef47c018d374dc8a7ceb83b3"
+  },
+  "errors.notFound": {
+    "en": "Not found",
+    "zh-CN": "未找到",
+    "reviewedEnglishHash": "e3ebaa16dd9d9b9fc107c42183fb6cf9d22927e1af03dbbdfa0ccc38e4e4ac31"
+  },
+  "errors.setupTokenLoginUnsupported": {
+    "en": "This adapter does not support a setup-token login.",
+    "zh-CN": "此智能体适配器不支持 setup-token 登录。",
+    "reviewedEnglishHash": "9e9d5dbc834dc97988de3bdee0f443593cd22ffef5552acc5e0878de8cfc4a62"
+  },
+  "errors.unauthorized": {
+    "en": "Unauthorized",
+    "zh-CN": "未授权",
+    "reviewedEnglishHash": "d089c8a9fc28e4e50223eb38c9409e362521be9380a37341304fbac7a4cd9e5f"
+  },
+  "errors.updatedSinceInvalid": {
+    "en": "updatedSince must be a valid ISO 8601 timestamp when provided",
+    "zh-CN": "提供时，updatedSince 必须是有效的 ISO 8601 时间戳。",
+    "reviewedEnglishHash": "4167ed1e9e14640fa0065b128b9da6d9cb1ffc6cfc578023a3c173c72112e44d"
+  },
+  "errors.validation": {
+    "en": "Validation error",
+    "zh-CN": "参数校验失败",
+    "reviewedEnglishHash": "2aa2d0b411dd04b1e0fa093fdbf64e672f34f8e4729a18e1f456d2957b61e60f"
+  },
+  "errors.workspaceRepairSeedManifestMalformed": {
+    "en": "Workspace seed manifest is malformed; repair source identity cannot be trusted.",
+    "zh-CN": "工作区初始化清单格式无效，无法信任修复来源身份。",
+    "reviewedEnglishHash": "63b7ec27302de668de307f0a0ecc3452e0bd42e7c5cdb3825875270f44d5f2d9"
+  },
+  "errors.workspaceRuntimePortAllocationExhausted": {
+    "en": "No safe automatically allocated runtime service port is available.",
+    "zh-CN": "没有可安全自动分配的运行时服务端口。",
+    "reviewedEnglishHash": "5ea08f05d399966d196b6843bd81e1a7aab69984be0366bc7f21bc6d13991334"
+  },
+  "errors.workspaceRuntimePortAllocationRemediation": {
+    "en": "Retry the start or configure a different runtime service port.",
+    "zh-CN": "请重试启动，或配置其他运行时服务端口。",
+    "reviewedEnglishHash": "b988ca5f5fea0e63f400548eecf2edb3f084999e6dda718d29ec85d53198f4a8"
+  }
+}

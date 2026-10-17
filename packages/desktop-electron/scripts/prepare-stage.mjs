@@ -15,12 +15,15 @@ import {
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { runNodeScript, runPnpm } from "./utils.mjs";
+import { createDetachedDeployWorkspace } from "./detached-deploy-workspace.mjs";
+import { checkCatalog } from "../../../scripts/i18n-catalog.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const packageDir = path.resolve(__dirname, "..");
 const repoRoot = path.resolve(packageDir, "../..");
 const stageRootDir = path.resolve(packageDir, ".stage");
 const serverDeployDir = path.resolve(stageRootDir, "server-deploy");
+const detachedDeployWorkspaceDir = path.resolve(stageRootDir, "deploy-workspace");
 const serverDeployNodeModulesDir = path.resolve(serverDeployDir, "node_modules");
 const appRuntimeDir = path.resolve(stageRootDir, "app-runtime");
 const appRuntimeServerDir = path.resolve(appRuntimeDir, "server");
@@ -71,6 +74,36 @@ function writeJson(filePath, value) {
   writeFileSync(tempPath, nextContents);
   rmSync(filePath, { force: true });
   renameSync(tempPath, filePath);
+}
+
+function withPnpm9DeployPatchAllowance(workspaceRoot, callback) {
+  const rootPackageJsonPath = path.resolve(workspaceRoot, "package.json");
+  const originalContents = readFileSync(rootPackageJsonPath, "utf8");
+  const rootPackageJson = JSON.parse(originalContents);
+
+  if (rootPackageJson.pnpm?.allowNonAppliedPatches === true) {
+    return callback();
+  }
+
+  rootPackageJson.pnpm ??= {};
+  rootPackageJson.pnpm.allowNonAppliedPatches = true;
+
+  let restored = false;
+  const restoreRootPackageJson = () => {
+    if (restored) return;
+    writeFileSync(rootPackageJsonPath, originalContents);
+    restored = true;
+  };
+
+  process.once("exit", restoreRootPackageJson);
+  writeJson(rootPackageJsonPath, rootPackageJson);
+
+  try {
+    return callback();
+  } finally {
+    process.off("exit", restoreRootPackageJson);
+    restoreRootPackageJson();
+  }
 }
 
 function isInsideStage(targetPath) {
@@ -265,7 +298,7 @@ function getRuntimeDependencyNames(pkg) {
       : [];
 
   return [...new Set([...dependencies, ...optionalDependencies])].filter((dependencyName) =>
-    dependencyName !== "@paperclipai/plugin-sdk"
+    dependencyName !== "@penclipai/plugin-sdk"
     && dependencyName !== "@penclipai/plugin-sdk"
     && dependencyName !== "@penclipai/shared"
     && dependencyName !== "@penclipai/shared");
@@ -315,6 +348,13 @@ function removeIfExists(targetPath) {
   if (!existsSync(targetPath)) return false;
   rmSync(targetPath, { recursive: true, force: true });
   return true;
+}
+
+async function verifyStagedLocaleCatalog() {
+  await checkCatalog({
+    root: repoRoot,
+    artifactRoot: path.resolve(appRuntimeServerDir, "ui-dist", "locales"),
+  });
 }
 
 function pruneRuntimeNodeModules() {
@@ -375,10 +415,15 @@ for (const packageJsonPath of findBundledPluginPackageJsons(bundledPluginsDir)) 
   if (shouldInstallBundledPluginBeforeBuild(packageRoot)) {
     const relativePackageRoot = bundledPluginRelativeRoot(packageRoot);
     console.log(`[desktop-stage] Installing standalone bundled plugin deps for ${relativePackageRoot}...`);
-    runPnpm(["--dir", packageRoot, "install", "--ignore-workspace", "--no-lockfile"], {
+    // Packaging must acknowledge module recreation without an interactive
+    // console prompt when standalone provider dependencies already exist.
+    runPnpm(["--dir", packageRoot, "install", "--ignore-workspace", "--no-lockfile", "--force"], {
       cwd: packageRoot,
       env: standaloneBundledPluginInstallEnv,
     });
+    // Standalone installs prune the host SDK link along with workspace deps.
+    // Restore the development link before compiling against the host contract.
+    runNodeScript(path.resolve(repoRoot, "scripts/link-plugin-dev-sdk.mjs"), [], { cwd: repoRoot });
   }
   if (pkg.scripts?.build) {
     runPnpm(["--dir", packageRoot, "run", "build"], { cwd: packageRoot });
@@ -399,18 +444,29 @@ console.log("[desktop-stage] Creating staged packaged runtime...");
 rmSync(stageRootDir, { recursive: true, force: true });
 mkdirSync(stageRootDir, { recursive: true });
 
-runPnpm(
-  [
-    "--config.node-linker=hoisted",
-    "--dir",
-    repoRoot,
-    "--filter",
-    "@penclipai/server",
-    "deploy",
-    "--prod",
-    serverDeployDir,
-  ],
-  { cwd: repoRoot },
+const detachedDeployClosure = createDetachedDeployWorkspace({
+  repoRoot,
+  workspaceRoot: detachedDeployWorkspaceDir,
+});
+console.log(`[desktop-stage] Created detached deploy workspace with ${detachedDeployClosure.length} workspace packages.`);
+
+// pnpm 9's hoisted deploy copies bundled dependencies such as the patched
+// acpx package, but does not count them as applied patches. Scope the legacy
+// allowance to this deploy so normal workspace installs remain strict.
+withPnpm9DeployPatchAllowance(detachedDeployWorkspaceDir, () =>
+  runPnpm(
+    [
+      "--config.node-linker=hoisted",
+      "--dir",
+      detachedDeployWorkspaceDir,
+      "--filter",
+      "@penclipai/server",
+      "deploy",
+      "--prod",
+      serverDeployDir,
+    ],
+    { cwd: detachedDeployWorkspaceDir },
+  ),
 );
 
 const hoistedSelfRefServerPath = path.resolve(
@@ -460,6 +516,8 @@ cpSync(bundledSkillsDir, appRuntimeSkillsDir, {
   recursive: true,
   force: true,
 });
+
+await verifyStagedLocaleCatalog();
 
 console.log("[desktop-stage] Assembling bundled plugin packages...");
 const bundledPluginPackageJsons = findBundledPluginPackageJsons(bundledPluginsDir);

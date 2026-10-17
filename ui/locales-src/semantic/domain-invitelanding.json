@@ -1,0 +1,527 @@
+{
+  "inviteLanding.acceptBootstrapInvite": {
+    "en": "Accept bootstrap invite",
+    "zh-CN": "接受引导邀请",
+    "reviewedEnglishHash": "fc68c8fe8484c4529deeeb079a444a5a7bef204e5aa0fa2fbf3d2c93f2d6a75a"
+  },
+  "inviteLanding.acceptCompanyInvite": {
+    "en": "Accept company invite",
+    "zh-CN": "接受公司邀请",
+    "reviewedEnglishHash": "002a607a3cbe4fa0f390f6b7e9fa4468aeee8163cbd68f52efc8b9ead27b0601"
+  },
+  "inviteLanding.acceptInvite": {
+    "en": "Accept invite",
+    "zh-CN": "接受邀请",
+    "reviewedEnglishHash": "5e3f840e27ba77d8c8b53d4a6c65b02313d6e7303057fae894a2f95d86b2c966"
+  },
+  "inviteLanding.acceptInviteFailed": {
+    "en": "Failed to accept invite",
+    "zh-CN": "接受邀请失败",
+    "reviewedEnglishHash": "8cb10c2cbf3af9ca969a5a412dccdb52fcb15e3ccfed2cad15a37de1a45c60dc"
+  },
+  "inviteLanding.accountAlreadyBelongs": {
+    "en": "This account already belongs to the company.",
+    "zh-CN": "这个账号已经属于该公司。",
+    "reviewedEnglishHash": "e53d1febb9bd9e9cba71804b3fff10e6ad63ce0355d951080e29e05ce78b930f"
+  },
+  "inviteLanding.accountBelongsToCompany": {
+    "en": "This account already belongs to {{company}}.",
+    "zh-CN": "此账号已经属于 {{company}}。",
+    "reviewedEnglishHash": "1beb2d37e3997ca92fd4220fcb96d7fb7d834b204fd8466eb2618da958b466f7"
+  },
+  "inviteLanding.accountExistsForEmail": {
+    "en": "An account already exists for {{email}}. Sign in below to continue with this invite.",
+    "zh-CN": "{{email}} 已经有对应账号。请在下方登录后继续处理这个邀请。",
+    "reviewedEnglishHash": "cd0a60c1c10d2702df483c60ce2995d597f4fe560cb354084dac4ed56224cd1a"
+  },
+  "inviteLanding.accountExistsSignIn": {
+    "en": "An account already exists for {{email}}. Sign in below to continue with this invite.",
+    "zh-CN": "{{email}} 已有账号。请在下方登录以继续处理此邀请。",
+    "reviewedEnglishHash": "cd0a60c1c10d2702df483c60ce2995d597f4fe560cb354084dac4ed56224cd1a"
+  },
+  "inviteLanding.accountMayExist": {
+    "en": "An account may already exist for {{email}}. Try signing in instead.",
+    "zh-CN": "{{email}} 可能已经存在账号。请尝试改为登录。",
+    "reviewedEnglishHash": "a245fb5116ff63eef9d5b73a9a2d93f0e94fcf4134c8e1172d2450625f54641e"
+  },
+  "inviteLanding.accountReadyIntro": {
+    "en": "Your account is ready. Review the invite details, then accept it to continue.",
+    "zh-CN": "你的账号已经就绪。请查看邀请详情，然后接受邀请继续。",
+    "reviewedEnglishHash": "08185f115fa7f794f2b42bfd627126c2405019e5a70dcf933c9a831c1dc2dd3a"
+  },
+  "inviteLanding.accountRequiredIntro": {
+    "en": "Create your Paperclip account first. If you already have one, switch to sign in and continue the invite with the same email.",
+    "zh-CN": "请先创建你的 Paperclip 账号。如果你已经有账号，请切换到登录并使用同一个邮箱继续处理邀请。",
+    "reviewedEnglishHash": "9a84bdf60e5cad63b2092899e23d022991f4c7b296ffc6ed6feb2117f77bb3bc"
+  },
+  "inviteLanding.agentApprovalRequest": {
+    "en": "This invite will create an approval request for a new agent in {{company}}.",
+    "zh-CN": "这个邀请会为 {{company}} 中的新智能体创建一条待审批请求。",
+    "reviewedEnglishHash": "d43671a76b0ea465239080547de0fea349da7e78acb8ef36d9b26cda468d499d"
+  },
+  "inviteLanding.agentFormIntro": {
+    "en": "Review the invite details, then submit the agent information below to start the join request.",
+    "zh-CN": "请查看邀请详情，然后在下方提交智能体信息以发起加入请求。",
+    "reviewedEnglishHash": "98fb0b9bb4d8474a91ccc95b42df1e815f0a77afba373c0f12e3bea01d01c6c1"
+  },
+  "inviteLanding.agentJoinRequest": {
+    "en": "Agent join request",
+    "zh-CN": "智能体加入请求",
+    "reviewedEnglishHash": "b6d6c8b81ec7dc3bd2e893524d94621d103b771df9550fa82388f6406ed5c77c"
+  },
+  "inviteLanding.agentReviewIntro": {
+    "en": "Review the invite details, then submit the agent information below to start the join request.",
+    "zh-CN": "请先查看邀请详情，然后在下方提交智能体信息以发起加入请求。",
+    "reviewedEnglishHash": "98fb0b9bb4d8474a91ccc95b42df1e815f0a77afba373c0f12e3bea01d01c6c1"
+  },
+  "inviteLanding.alreadyBelongsToCompany": {
+    "en": "This account already belongs to {{company}}.",
+    "zh-CN": "这个账号已经属于 {{company}}。",
+    "reviewedEnglishHash": "1beb2d37e3997ca92fd4220fcb96d7fb7d834b204fd8466eb2618da958b466f7"
+  },
+  "inviteLanding.alreadyInCompany": {
+    "en": "Already in this company",
+    "zh-CN": "已在此公司中",
+    "reviewedEnglishHash": "27af9698e551fad6e08ea55e761e70a00c5fda45b6d285787e96b958fe100bca"
+  },
+  "inviteLanding.alreadySignedUpHint": {
+    "en": "Already signed up before? Use the existing-account option instead so the invite lands on the right Paperclip user.",
+    "zh-CN": "如果你之前已经注册过，请改用“我已经有账号”，这样邀请会落到正确的 Paperclip 用户上。",
+    "reviewedEnglishHash": "7dca18c04a14dc67187f03f18f3e12ec3c5bdfc97226aa36171c46135e053427"
+  },
+  "inviteLanding.approvalPage": {
+    "en": "Approval page",
+    "zh-CN": "审批页面",
+    "reviewedEnglishHash": "ea630b313366030a439199cf4b0f51772c5da414a486d1e4631c2fd730dee3a5"
+  },
+  "inviteLanding.askApproverVisitPrefix": {
+    "en": "Ask them to visit ",
+    "zh-CN": "请让审批人访问 ",
+    "reviewedEnglishHash": "784bb9f1a77569d41c59b11b4c398fbd9de3911e7e54f1f67407364bd1b71c2b"
+  },
+  "inviteLanding.askApproverVisitSuffix": {
+    "en": " to approve your request.",
+    "zh-CN": " 来批准你的请求。",
+    "reviewedEnglishHash": "34b41308a8e3ffcfa740a5a51ceec88d8059404565d133e87eee9975ec2e2b23"
+  },
+  "inviteLanding.askThemToVisitPrefix": {
+    "en": "Ask them to visit ",
+    "zh-CN": "请让他们访问 ",
+    "reviewedEnglishHash": "784bb9f1a77569d41c59b11b4c398fbd9de3911e7e54f1f67407364bd1b71c2b"
+  },
+  "inviteLanding.askThemToVisitSuffix": {
+    "en": " to approve your request.",
+    "zh-CN": " 来批准你的请求。",
+    "reviewedEnglishHash": "34b41308a8e3ffcfa740a5a51ceec88d8059404565d133e87eee9975ec2e2b23"
+  },
+  "inviteLanding.authFailed": {
+    "en": "Authentication failed",
+    "zh-CN": "认证失败",
+    "reviewedEnglishHash": "93821eb7ce8c659285207dd34f7e29a79088e218a1d7bb373b54fbeddbbef6fd"
+  },
+  "inviteLanding.authenticationFailed": {
+    "en": "Authentication failed",
+    "zh-CN": "认证失败",
+    "reviewedEnglishHash": "93821eb7ce8c659285207dd34f7e29a79088e218a1d7bb373b54fbeddbbef6fd"
+  },
+  "inviteLanding.awaitingApproval": {
+    "en": "Your request is still awaiting approval. {{approver}} must approve your request to join.",
+    "zh-CN": "你的请求仍在等待审批。{{approver}} 必须先批准，你才能加入。",
+    "reviewedEnglishHash": "1a670a5fa3aa6379caa18292aa47b0ea6b6736615e8070b5ddc181b860ee6e0f"
+  },
+  "inviteLanding.awaitingApprovalBody": {
+    "en": "Your request is still awaiting approval. {{approver}} must approve your request to join.",
+    "zh-CN": "你的请求仍在等待审批。{{approver}} 必须批准你的加入请求。",
+    "reviewedEnglishHash": "1a670a5fa3aa6379caa18292aa47b0ea6b6736615e8070b5ddc181b860ee6e0f"
+  },
+  "inviteLanding.bootstrapAcceptBody": {
+    "en": "This will finish setting up Paperclip.",
+    "zh-CN": "这会完成 Paperclip 的初始化设置。",
+    "reviewedEnglishHash": "11d1d884d78bffaf0aadfd8ca573fbf1a722deacf7b34de47b7bc3f127ddd1a5"
+  },
+  "inviteLanding.bootstrapComplete": {
+    "en": "Bootstrap complete",
+    "zh-CN": "初始化完成",
+    "reviewedEnglishHash": "51f233e323518596875e62936862bdf47e48d95b1be7c65432e05fbf16042673"
+  },
+  "inviteLanding.checkingAccess": {
+    "en": "Checking your company access. Try again in a moment.",
+    "zh-CN": "正在检查你的公司访问权限，请稍候。",
+    "reviewedEnglishHash": "158dd940a597335b250f64fb21c083449a60828321f682186816a5eab29d54e0"
+  },
+  "inviteLanding.checkingAccessTryAgain": {
+    "en": "Checking your company access. Try again in a moment.",
+    "zh-CN": "正在检查你的公司访问权限。请稍后重试。",
+    "reviewedEnglishHash": "158dd940a597335b250f64fb21c083449a60828321f682186816a5eab29d54e0"
+  },
+  "inviteLanding.checkingYourAccess": {
+    "en": "Checking your access...",
+    "zh-CN": "正在检查你的访问权限...",
+    "reviewedEnglishHash": "1cc593f956ab5a144ef29721e79835ebfb47577a8b842709adf53b67c7f2e591"
+  },
+  "inviteLanding.claimSecret": {
+    "en": "Claim secret",
+    "zh-CN": "认领密钥",
+    "reviewedEnglishHash": "97a5b1cdc7ff2e49116ff9ad109717abd2ba911db7c8d47f5614b454a1c60e4c"
+  },
+  "inviteLanding.comingSoonParenthetical": {
+    "en": " (Coming soon)",
+    "zh-CN": "（即将推出）",
+    "reviewedEnglishHash": "4b4cc047ae75148df11a097674249d6395ac274dbe29f38cc010e84bf37d29a3"
+  },
+  "inviteLanding.companyAcceptBody": {
+    "en": "This will grant or complete your access to {{company}}.",
+    "zh-CN": "这会授予或完成你对 {{company}} 的访问权限。",
+    "reviewedEnglishHash": "b71266b859f3a2912fd9af55b5224663509994f8f03ffeeca08f2a621a30895e"
+  },
+  "inviteLanding.companyAccess": {
+    "en": "Company access",
+    "zh-CN": "公司访问权限",
+    "reviewedEnglishHash": "64ff4d0731ec19b14556da566a1b44d82c594535d9b7fc567165b1fad683805c"
+  },
+  "inviteLanding.companyAccessLabel": {
+    "en": "Company access",
+    "zh-CN": "公司访问权限",
+    "reviewedEnglishHash": "64ff4d0731ec19b14556da566a1b44d82c594535d9b7fc567165b1fad683805c"
+  },
+  "inviteLanding.companyAdmin": {
+    "en": "A company admin",
+    "zh-CN": "某位公司管理员",
+    "reviewedEnglishHash": "e44180d96e4296f66138bf279702c66fe181bea589acc642683dedccf0b1ab34"
+  },
+  "inviteLanding.companySettingsAccess": {
+    "en": "Company Settings → Access",
+    "zh-CN": "公司设置 → 访问",
+    "reviewedEnglishHash": "641c4519b4e0426d65b05503886fb806b476edb4069e3dfca5c8c39e068adea0"
+  },
+  "inviteLanding.companySettingsMembers": {
+    "en": "Company Settings → Members",
+    "zh-CN": "公司设置 -> 成员",
+    "reviewedEnglishHash": "881a683c4aa8127a5e86df61f76fc1b9a1d6128377adef7529d76b4904f5b381"
+  },
+  "inviteLanding.completingCompanyAccess": {
+    "en": "Completing company access",
+    "zh-CN": "正在完成公司访问权限",
+    "reviewedEnglishHash": "ea14d42f87e6c7f668d89466ff2afe1bc08234327c4e921457044cd74bcc06e9"
+  },
+  "inviteLanding.continue": {
+    "en": "Continue",
+    "zh-CN": "继续",
+    "reviewedEnglishHash": "31fbef162594de01bab0cd525c51f74de7bcb15063029fa1a54b2cf5944c80d8"
+  },
+  "inviteLanding.createAccount": {
+    "en": "Create account",
+    "zh-CN": "创建账号",
+    "reviewedEnglishHash": "798ca2ce18bf2038bc13aaa33ebfe6db7020df5b4bba40f68e21462a9207db3d"
+  },
+  "inviteLanding.createAccountAndContinue": {
+    "en": "Create account and continue",
+    "zh-CN": "创建账号并继续",
+    "reviewedEnglishHash": "b0864af3c2010944e0f231bbbf8012da3432ee3576610124395d07f5bf2c531e"
+  },
+  "inviteLanding.createAccountBody": {
+    "en": "Start with a Paperclip account. After that, you'll come right back here to accept the invite for {{company}}.",
+    "zh-CN": "请先创建一个 Paperclip 账号。之后你会回到这里，继续接受 {{company}} 的邀请。",
+    "reviewedEnglishHash": "1f225c89d6d7e429fb21a7bb7a060c17d35744c0d25870d1ca4c4d1270c69eb9"
+  },
+  "inviteLanding.createAccountIntro": {
+    "en": "Create your Paperclip account first. If you already have one, switch to sign in and continue the invite with the same email.",
+    "zh-CN": "请先创建你的 Paperclip 账号。如果你已经有账号，请切换到登录并使用同一个邮箱继续处理邀请。",
+    "reviewedEnglishHash": "9a84bdf60e5cad63b2092899e23d022991f4c7b296ffc6ed6feb2117f77bb3bc"
+  },
+  "inviteLanding.createYourAccount": {
+    "en": "Create your account",
+    "zh-CN": "创建你的账号",
+    "reviewedEnglishHash": "9e709348f582d44e3d8d788901a58db9ee74b37fb0f317af7daac5a0b4c9f97a"
+  },
+  "inviteLanding.createsApproval": {
+    "en": "This invite will create an approval request for a new agent in",
+    "zh-CN": "此邀请会为以下公司中的新智能体创建审批请求：",
+    "reviewedEnglishHash": "72da1b1fe31e416ad68adee3fab185a14eebd992000cebf9593326a7dd43a28f"
+  },
+  "inviteLanding.existingAccount": {
+    "en": "I already have an account",
+    "zh-CN": "我已经有账号",
+    "reviewedEnglishHash": "869751325dc800ad7b32f03a255a619a1b206659a3ce427d154be877c38a09dd"
+  },
+  "inviteLanding.failedAcceptInvite": {
+    "en": "Failed to accept invite",
+    "zh-CN": "接受邀请失败",
+    "reviewedEnglishHash": "8cb10c2cbf3af9ca969a5a412dccdb52fcb15e3ccfed2cad15a37de1a45c60dc"
+  },
+  "inviteLanding.fillRequired": {
+    "en": "Please fill in all required fields.",
+    "zh-CN": "请填写所有必填字段。",
+    "reviewedEnglishHash": "d1641a4df419e4ac32181f7c1d4e5aaa3a7c2dac48dfb47eb803da66b109d867"
+  },
+  "inviteLanding.finishingSignIn": {
+    "en": "Finishing sign-in...",
+    "zh-CN": "正在完成登录...",
+    "reviewedEnglishHash": "16c16b0dd1d773310556dc725fd16c50e16ffc047990659f0f6dec9bf41c636f"
+  },
+  "inviteLanding.grantingAccess": {
+    "en": "Granting your access to {{company}}.",
+    "zh-CN": "正在授予你对 {{company}} 的访问权限。",
+    "reviewedEnglishHash": "387c6647833ef809c9a9eb17997619d69a4294e704a28d0c5c932ac8d98755c6"
+  },
+  "inviteLanding.haveAccount": {
+    "en": "I already have an account",
+    "zh-CN": "我已经有账号",
+    "reviewedEnglishHash": "869751325dc800ad7b32f03a255a619a1b206659a3ce427d154be877c38a09dd"
+  },
+  "inviteLanding.invalidCredentials": {
+    "en": "That email and password did not match an existing Paperclip account. Check both fields, or create an account first if you are new here.",
+    "zh-CN": "这个邮箱和密码与现有的 Paperclip 账号不匹配。请检查后重试；如果你是新用户，请先创建账号。",
+    "reviewedEnglishHash": "906e006a1eb1997ec56d6d0b6e0dc303fba882d03ff17fd910249ca2c4f6a474"
+  },
+  "inviteLanding.invalidEmailOrPassword": {
+    "en": "That email and password did not match an existing Paperclip account. Check both fields, or create an account first if you are new here.",
+    "zh-CN": "这个邮箱和密码与现有的 Paperclip 账号不匹配。请检查两项；如果你是新用户，请先创建账号。",
+    "reviewedEnglishHash": "906e006a1eb1997ec56d6d0b6e0dc303fba882d03ff17fd910249ca2c4f6a474"
+  },
+  "inviteLanding.invalidInviteToken": {
+    "en": "Invalid invite token.",
+    "zh-CN": "无效的邀请令牌。",
+    "reviewedEnglishHash": "693f63a66da580836b0dd50c1f20c79d63dcb1777648cd2a95abcad3c669904b"
+  },
+  "inviteLanding.invalidToken": {
+    "en": "Invalid invite token.",
+    "zh-CN": "无效的邀请令牌。",
+    "reviewedEnglishHash": "693f63a66da580836b0dd50c1f20c79d63dcb1777648cd2a95abcad3c669904b"
+  },
+  "inviteLanding.inviteAlreadyUsed": {
+    "en": "This invite has already been used.",
+    "zh-CN": "这个邀请已经被使用。",
+    "reviewedEnglishHash": "27a740b21206de77df560a52afdd06694bff058bd71bc7ffe442bdb5ee0a7f72"
+  },
+  "inviteLanding.inviteExpires": {
+    "en": "Invite expires",
+    "zh-CN": "邀请过期时间",
+    "reviewedEnglishHash": "2a91147eb97459bbaf074bd2823557130f972c4ff033725daeaa658f0f7dbf53"
+  },
+  "inviteLanding.inviteNotFound": {
+    "en": "Invite not found",
+    "zh-CN": "未找到邀请",
+    "reviewedEnglishHash": "a2492a22aba28b095807ae106fba7f6a8a48922cbff4756fc5531b2456714b62"
+  },
+  "inviteLanding.inviteUnavailable": {
+    "en": "Invite not available",
+    "zh-CN": "邀请不可用",
+    "reviewedEnglishHash": "87b8d3c003f5155d1a66d847dad50d184ce93a6050935ed45fb4144c3b610a43"
+  },
+  "inviteLanding.inviteUnavailableBody": {
+    "en": "This invite may be expired, revoked, or already used.",
+    "zh-CN": "这个邀请可能已经过期、被撤销，或者已被使用。",
+    "reviewedEnglishHash": "0ef14430024c395a5f2444b3927027b06ecda81887c5606fe5491299e75f55a3"
+  },
+  "inviteLanding.invited": {
+    "en": "You've been invited to join Paperclip",
+    "zh-CN": "你已受邀加入 Paperclip",
+    "reviewedEnglishHash": "4ec1c2d37128b0fb24c62a943519d8bb7f243554d399978ceceae25461abf50c"
+  },
+  "inviteLanding.invitedBy": {
+    "en": "Invited by",
+    "zh-CN": "邀请人",
+    "reviewedEnglishHash": "c7a6f15607da632554734bcbcc9f1ab82da2b651c75ff391e4b7979189b24f1f"
+  },
+  "inviteLanding.invitedEyebrow": {
+    "en": "You've been invited to join Paperclip",
+    "zh-CN": "你已受邀加入 Paperclip",
+    "reviewedEnglishHash": "4ec1c2d37128b0fb24c62a943519d8bb7f243554d399978ceceae25461abf50c"
+  },
+  "inviteLanding.invitedToJoin": {
+    "en": "You've been invited to join Paperclip",
+    "zh-CN": "你已被邀请加入 Paperclip",
+    "reviewedEnglishHash": "4ec1c2d37128b0fb24c62a943519d8bb7f243554d399978ceceae25461abf50c"
+  },
+  "inviteLanding.joinCompany": {
+    "en": "Join {{company}}",
+    "zh-CN": "加入 {{company}}",
+    "reviewedEnglishHash": "e2c8f1969afdc625690f66527ef641849d94d52eaa730ec3f5d96fa24961b7c4"
+  },
+  "inviteLanding.joinRequestRejected": {
+    "en": "This join request was not approved.",
+    "zh-CN": "这个加入请求没有获得批准。",
+    "reviewedEnglishHash": "8e9d16f27b42e6ac1da27f4f67393fab576cbed6bb0e95d77288dace88b317e0"
+  },
+  "inviteLanding.joinedCompany": {
+    "en": "You joined the company",
+    "zh-CN": "你已加入公司",
+    "reviewedEnglishHash": "839affe4358aabee19832a9ca0b2fb5f7ed15b17efdca106eed8022c42b9034a"
+  },
+  "inviteLanding.loadingInvite": {
+    "en": "Loading invite...",
+    "zh-CN": "正在加载邀请...",
+    "reviewedEnglishHash": "49b650f67e0d76832c72fc5d3e3315fd96b29d4f6cdcb731e7ab9c9f89bd4d22"
+  },
+  "inviteLanding.messageFromInviter": {
+    "en": "Message from inviter",
+    "zh-CN": "邀请人留言",
+    "reviewedEnglishHash": "7a1ef6877a4c73a087da93751611fc540c5024a100e6178e0df161048de5af22"
+  },
+  "inviteLanding.mustApprove": {
+    "en": "must approve your request to join.",
+    "zh-CN": "必须批准你的加入申请。",
+    "reviewedEnglishHash": "ece15e11e5974fbbef8c62651e82f46a720b5d91f59319dccc4bf5d60697df3e"
+  },
+  "inviteLanding.noAccountHint": {
+    "en": "No account yet? Switch back to create account so you can accept the invite with a new login.",
+    "zh-CN": "还没有账号？切回创建账号，这样你可以用新的登录接受邀请。",
+    "reviewedEnglishHash": "de9f79965cce5f24aabc651920b828c5684d0daa2eca29eafe61670044ec2901"
+  },
+  "inviteLanding.noAccountYetHint": {
+    "en": "No account yet? Switch back to create account so you can accept the invite with a new login.",
+    "zh-CN": "如果你还没有账号，请切回“创建账号”，这样你可以用一个新的登录来接受邀请。",
+    "reviewedEnglishHash": "de9f79965cce5f24aabc651920b828c5684d0daa2eca29eafe61670044ec2901"
+  },
+  "inviteLanding.onboarding": {
+    "en": "Onboarding",
+    "zh-CN": "入门说明",
+    "reviewedEnglishHash": "a2198f472ce2fbee82a5546090a5dd896b1da3bb678e8963d19eaa03e08ca092"
+  },
+  "inviteLanding.openBoard": {
+    "en": "Open board",
+    "zh-CN": "打开看板",
+    "reviewedEnglishHash": "673ae8242de169d3e0c9ec18b6fe6eadab2510808604ff14192a0f287d39a3f2"
+  },
+  "inviteLanding.openCompany": {
+    "en": "Open company",
+    "zh-CN": "打开公司",
+    "reviewedEnglishHash": "38067e82e08b9fa1c939b979ebf305844913f7f74554a6b6365c7ff6e2ef53fa"
+  },
+  "inviteLanding.openingCompany": {
+    "en": "Opening company...",
+    "zh-CN": "正在打开公司...",
+    "reviewedEnglishHash": "525f791d8929737bd054653d16b52812e03cdf6c8cfc1f9620097f43373c1d0f"
+  },
+  "inviteLanding.paperclipBoard": {
+    "en": "Paperclip board",
+    "zh-CN": "Paperclip 董事会",
+    "reviewedEnglishHash": "b3b4656b56bd52d788aa9457659ef166c11c79ae310e546b0af9dc35e231744e"
+  },
+  "inviteLanding.refreshAfterApproval": {
+    "en": "Refresh this page after you've been approved — you'll be redirected automatically.",
+    "zh-CN": "当你获得批准后，请刷新这个页面，系统会自动为你跳转。",
+    "reviewedEnglishHash": "202163eb35319b8de8feb41444e2599789f7ebe66c6d67cf78edfd63f3b81057"
+  },
+  "inviteLanding.requestToJoin": {
+    "en": "Request to join {{company}}",
+    "zh-CN": "申请加入 {{company}}",
+    "reviewedEnglishHash": "aedfd4ee70bc4fc79689b6e69409b0c6c855abdd4fdf29efe46d940267d11cb3"
+  },
+  "inviteLanding.requestedAccess": {
+    "en": "Requested access",
+    "zh-CN": "申请的访问权限",
+    "reviewedEnglishHash": "823034752058e97bb16917c8d9d60315451ab9d3d2d37fac9214211f87e8712f"
+  },
+  "inviteLanding.requiredFields": {
+    "en": "Please fill in all required fields.",
+    "zh-CN": "请填写所有必填字段。",
+    "reviewedEnglishHash": "d1641a4df419e4ac32181f7c1d4e5aaa3a7c2dac48dfb47eb803da66b109d867"
+  },
+  "inviteLanding.setUpPaperclip": {
+    "en": "Set up Paperclip",
+    "zh-CN": "设置 Paperclip",
+    "reviewedEnglishHash": "dda1351351fc9e9a2ccaf6e00797cbfdaabda4567ae5fd51943361c219cb439a"
+  },
+  "inviteLanding.setupPaperclip": {
+    "en": "Set up Paperclip",
+    "zh-CN": "设置 Paperclip",
+    "reviewedEnglishHash": "dda1351351fc9e9a2ccaf6e00797cbfdaabda4567ae5fd51943361c219cb439a"
+  },
+  "inviteLanding.signInAndContinue": {
+    "en": "Sign in and continue",
+    "zh-CN": "登录并继续",
+    "reviewedEnglishHash": "a3f73fb56ffe4ac377aca07fb4ecbcfead00a15c44d6f93fc9d09404b62e757b"
+  },
+  "inviteLanding.signInBody": {
+    "en": "Use the Paperclip account that already matches this invite. If you do not have one yet, switch back to create account.",
+    "zh-CN": "请使用已经匹配此邀请的 Paperclip 账号。如果你还没有账号，请切回创建账号。",
+    "reviewedEnglishHash": "9e2910576d25b2ab7e75a57abcf7e8e990cb4ca2685e2e1c46e18d0eb3df25e5"
+  },
+  "inviteLanding.signInIntro": {
+    "en": "Use the Paperclip account that already matches this invite. If you do not have one yet, switch back to create account.",
+    "zh-CN": "请使用与这个邀请对应的现有 Paperclip 账号登录。如果你还没有账号，请切回创建账号。",
+    "reviewedEnglishHash": "9e2910576d25b2ab7e75a57abcf7e8e990cb4ca2685e2e1c46e18d0eb3df25e5"
+  },
+  "inviteLanding.signInToContinue": {
+    "en": "Sign in to continue",
+    "zh-CN": "登录以继续",
+    "reviewedEnglishHash": "607a80121c655651dc14cbb057e035943bed91077283e9c6b8d709db1e25ef7f"
+  },
+  "inviteLanding.signUpIntro": {
+    "en": "Start with a Paperclip account. After that, you'll come right back here to accept the invite for {{company}}.",
+    "zh-CN": "请先创建一个 Paperclip 账号。之后你会回到这里，继续接受 {{company}} 的邀请。",
+    "reviewedEnglishHash": "1f225c89d6d7e429fb21a7bb7a060c17d35744c0d25870d1ca4c4d1270c69eb9"
+  },
+  "inviteLanding.signedInAs": {
+    "en": "Signed in as {{account}}.",
+    "zh-CN": "当前登录账号：{{account}}。",
+    "reviewedEnglishHash": "24712372d9dcfeff376b2a3669b594308026a34d636ad72bc133c72ddbdbf7d0"
+  },
+  "inviteLanding.signedInAsPrefix": {
+    "en": "Signed in as ",
+    "zh-CN": "当前登录账号：",
+    "reviewedEnglishHash": "d293f00044ede70fc401a3d73d01678a201c1994159bebb66aa2958b16ca38b5"
+  },
+  "inviteLanding.submitAgentDetails": {
+    "en": "Submit agent details",
+    "zh-CN": "提交智能体信息",
+    "reviewedEnglishHash": "aeeee10bc6c4cdf3768e1d3447b139365447a6009bdfb1223dcc35cfc80aaa71"
+  },
+  "inviteLanding.submitAgentDetailsBody": {
+    "en": "This invite will create an approval request for a new agent in {{company}}.",
+    "zh-CN": "这个邀请会为 {{company}} 中的新智能体创建一条审批请求。",
+    "reviewedEnglishHash": "d43671a76b0ea465239080547de0fea349da7e78acb8ef36d9b26cda468d499d"
+  },
+  "inviteLanding.submitRequest": {
+    "en": "Submit request",
+    "zh-CN": "提交请求",
+    "reviewedEnglishHash": "917e144e4bc3da892c26e48f68adff6709a776043ee44fac85c270bcd08eef0a"
+  },
+  "inviteLanding.submittingForCompany": {
+    "en": "Submitting your join request for {{company}}.",
+    "zh-CN": "正在为 {{company}} 提交你的加入请求。",
+    "reviewedEnglishHash": "900b8cc033b970fda5efdb0a4491ffd694a8b6aa986ae51c2f265940e25b7a81"
+  },
+  "inviteLanding.submittingJoinRequest": {
+    "en": "Submitting join request",
+    "zh-CN": "正在提交加入请求",
+    "reviewedEnglishHash": "a07241cce76ef0112e4196dfdfa601728e4f1a0c2a8bbc70e096b5caf7db2f28"
+  },
+  "inviteLanding.submittingRequest": {
+    "en": "Submitting request...",
+    "zh-CN": "正在提交请求...",
+    "reviewedEnglishHash": "20eef59e4d34bc2fadac26882178b814d7c09cfcd1ef4a68dd3cc5c02b4a55b6"
+  },
+  "inviteLanding.thatEmail": {
+    "en": "that email",
+    "zh-CN": "该邮箱",
+    "reviewedEnglishHash": "48ecd99bad977f4f8c78e05818bc47946ed3b8251d7d9a6e267f2a10ed55fcc2"
+  },
+  "inviteLanding.thisAccount": {
+    "en": "this account",
+    "zh-CN": "当前账号",
+    "reviewedEnglishHash": "2faca96de47e02cfece1c6e47fddd02a8d3c89043897e4db45ee17b4af1dd82e"
+  },
+  "inviteLanding.thisCompany": {
+    "en": "this Paperclip company",
+    "zh-CN": "这个 Paperclip 公司",
+    "reviewedEnglishHash": "b1239fcc7af0fc1b8f42cec9adbaa97bceb2e3d1099a93d11b0c91edab766610"
+  },
+  "inviteLanding.thisWillSetUpPaperclip": {
+    "en": "This will finish setting up Paperclip.",
+    "zh-CN": "这会完成 Paperclip 的初始化设置。",
+    "reviewedEnglishHash": "11d1d884d78bffaf0aadfd8ca573fbf1a722deacf7b34de47b7bc3f127ddd1a5"
+  },
+  "inviteLanding.thisWillSubmitJoinRequest": {
+    "en": "This will submit or complete your join request for {{company}}.",
+    "zh-CN": "这会为 {{company}} 提交或完成你的加入请求。",
+    "reviewedEnglishHash": "35b1c5750b7360c4383678d56037b6d468e5060fa0940f823b4a0cb8279771c2"
+  },
+  "inviteLanding.working": {
+    "en": "Working...",
+    "zh-CN": "处理中...",
+    "reviewedEnglishHash": "b93900bded315d0407c83ebc9631745e17bcdbb7d4932723ee6e24a2b422c151"
+  }
+}

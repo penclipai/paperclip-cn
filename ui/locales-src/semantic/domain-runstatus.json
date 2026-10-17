@@ -1,0 +1,42 @@
+{
+  "runStatus.cancelled": {
+    "en": "cancelled",
+    "zh-CN": "已取消",
+    "reviewedEnglishHash": "8b47045eb7b8ca42aa967f33ee1d014ba89f8d1ac207426b482d34b5c0d90935"
+  },
+  "runStatus.error": {
+    "en": "error",
+    "zh-CN": "错误",
+    "reviewedEnglishHash": "ca00fccfb408989eddc401062c4d1219a6aceb6b9b55412357f1790862e8f178"
+  },
+  "runStatus.failed": {
+    "en": "failed",
+    "zh-CN": "失败",
+    "reviewedEnglishHash": "5d28a90f4498a81461efbaf6f628a19d9778390bb5c81a393dd936181cc3d826"
+  },
+  "runStatus.pending": {
+    "en": "pending",
+    "zh-CN": "待处理",
+    "reviewedEnglishHash": "62a2fed3d6e08c44835fce71f02210b1ddabfb066e39edf1e6c261988f824dd3"
+  },
+  "runStatus.queued": {
+    "en": "queued",
+    "zh-CN": "已排队",
+    "reviewedEnglishHash": "d36be6494248ee06ac18f38ea1119dfe4699fdcfcbbcc30a2e4f1ccbce68dfac"
+  },
+  "runStatus.running": {
+    "en": "running",
+    "zh-CN": "运行中",
+    "reviewedEnglishHash": "c071cf5f5ed6f884cc70155b6f05f755fd46a302d05e4261b7e92ce878bbfed8"
+  },
+  "runStatus.succeeded": {
+    "en": "succeeded",
+    "zh-CN": "成功",
+    "reviewedEnglishHash": "5dceaeceb6d8a49d3665594710ace68dfbc1800e2d663d7febb302b4dbee3d27"
+  },
+  "runStatus.timed_out": {
+    "en": "timed out",
+    "zh-CN": "已超时",
+    "reviewedEnglishHash": "3dcd80f1b15f796ea71ac645184ae5302b91734495fc21892c694d46add5adc0"
+  }
+}

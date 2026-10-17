@@ -1,0 +1,42 @@
+{
+  "cloudAccess.error.connecting": {
+    "en": "Connecting…",
+    "zh-CN": "正在连接…",
+    "reviewedEnglishHash": "72021eb70e91b4d58254586a8519393a281eb830c165bf1ec42a5057d425bcaf"
+  },
+  "cloudAccess.error.reconnectingDescription": {
+    "en": "The server may be restarting or your connection was interrupted. We’ll try again every few seconds and reconnect automatically.",
+    "zh-CN": "服务器可能正在重启，或连接已中断。我们会每隔几秒重试并自动重新连接。",
+    "reviewedEnglishHash": "a0bc2bfcc5c4e7b37db6a4c3a5c0136e9dd26b56da6f73c2038c21359d6b9c10"
+  },
+  "cloudAccess.error.reconnectingTitle": {
+    "en": "Reconnecting to Paperclip",
+    "zh-CN": "正在重新连接 Paperclip",
+    "reviewedEnglishHash": "b11ca004872daeedd657693b88f40f8c780c512098a1c996005183832bf51c0a"
+  },
+  "cloudAccess.error.unableToLoadDescription": {
+    "en": "We couldn’t check your access to this instance. Try again, or contact your instance administrator if this continues.",
+    "zh-CN": "无法验证你对此实例的访问权限。请重试；若问题持续，请联系实例管理员。",
+    "reviewedEnglishHash": "c7f5fa9bd72337d34244fbdc45f4e4c75c1454daf58a802e695d657a2d8825b7"
+  },
+  "cloudAccess.error.unableToLoadTitle": {
+    "en": "Unable to load Paperclip",
+    "zh-CN": "无法加载 Paperclip",
+    "reviewedEnglishHash": "e28227a9a2805a8eed6d876b3769dbaee16019d4867972f33b18b08a010d9c30"
+  },
+  "cloudAccess.noBoardAccess.description": {
+    "en": "This account is signed in, but it does not have an active organization membership or instance-admin access on this Paperclip instance.",
+    "zh-CN": "此账户已登录，但在此 Paperclip 实例中没有有效的组织成员资格或实例管理员权限。",
+    "reviewedEnglishHash": "628f031d5c87d624d820cbfb045f47ee1aae1b6286174bfa82bbdc9baad8b462"
+  },
+  "cloudAccess.noBoardAccess.invite": {
+    "en": "Use an organization invite or sign in with an account that already belongs to this org.",
+    "zh-CN": "请使用组织邀请，或使用已属于该组织的账户登录。",
+    "reviewedEnglishHash": "1473bb229c6a3cca1ff9f551928ec1271172151b795477fa4e601b593b6ba043"
+  },
+  "cloudAccess.noBoardAccess.title": {
+    "en": "No organization access",
+    "zh-CN": "没有组织访问权限",
+    "reviewedEnglishHash": "c613620672050b5566af83221165515755248727f8c2b7b0f844bf7fea6874b1"
+  }
+}

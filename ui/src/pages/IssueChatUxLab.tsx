@@ -1,3 +1,5 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
 // token-extraction: allowlisted — intentional one-off decoration (DECISION-SHEET.md B1
 // user ruling). The bg-[...gradient...] / shadow-[...] literals in this demo/UX-lab page
 // are deliberate one-off decoration, reverted from --gradient-extract-*/--shadow-extract-*
@@ -141,6 +143,7 @@ function RotatingReasoningDemo({ intervalMs = 2200 }: { intervalMs?: number }) {
 }
 
 export function IssueChatUxLab() {
+  useTranslation();
   const [showComposer, setShowComposer] = useState(true);
 
   return (
@@ -242,7 +245,7 @@ export function IssueChatUxLab() {
             <div className="flex items-center gap-2.5 rounded-lg px-1 py-2">
               <span className="inline-flex items-center gap-2 text-sm font-medium text-foreground/80">
                 <Loader2 className="h-4 w-4 shrink-0 animate-spin text-muted-foreground" />
-                <span className="shimmer-text">Working</span>
+                <span className="shimmer-text">{translateInstant("Working")}</span>
               </span>
               <span className="text-xs text-muted-foreground/60">for 12s</span>
             </div>
@@ -256,8 +259,7 @@ export function IssueChatUxLab() {
                 <span className="flex h-4 w-4 shrink-0 items-center justify-center">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500/70" />
                 </span>
-                Worked
-              </span>
+                {translateInstant("Worked")}</span>
               <span className="text-xs text-muted-foreground/60">for 1 min 24s</span>
             </div>
           </div>

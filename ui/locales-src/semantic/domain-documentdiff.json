@@ -1,0 +1,62 @@
+{
+  "documentDiff.actor.agent": {
+    "en": "agent",
+    "zh-CN": "智能体",
+    "reviewedEnglishHash": "d4f0bc5a29de06b510f9aa428f1eedba926012b591fef7a518e776a7c9bd1824"
+  },
+  "documentDiff.actor.board": {
+    "en": "board",
+    "zh-CN": "董事会",
+    "reviewedEnglishHash": "859169b38185780daa5497983ff20d2994390058d8a71f2847ac7846f970971e"
+  },
+  "documentDiff.actor.system": {
+    "en": "system",
+    "zh-CN": "系统",
+    "reviewedEnglishHash": "bbc5e661e106c6dcd8dc6dd186454c2fcba3c710fb4d8e71a60c93eaf077f073"
+  },
+  "documentDiff.content": {
+    "en": "Content",
+    "zh-CN": "内容",
+    "reviewedEnglishHash": "47bd29075f8b8019f0beec6d86beda7c9bf67aaf05053dcbe0b3bcb63968517f"
+  },
+  "documentDiff.loadingRevisions": {
+    "en": "Loading revisions...",
+    "zh-CN": "正在加载修订...",
+    "reviewedEnglishHash": "c3cd7185442634ec14bef6fe4370995792da47da5acc55af75e870eeaed897a5"
+  },
+  "documentDiff.new": {
+    "en": "New",
+    "zh-CN": "新",
+    "reviewedEnglishHash": "18fdd549b2ed367ac0c74cbec1214644728515b30edbcb78e7d322757a7c8359"
+  },
+  "documentDiff.old": {
+    "en": "Old",
+    "zh-CN": "旧",
+    "reviewedEnglishHash": "bca97160f4e1211fe659338d0a9705a7dff8aa3ea2e1be1cc1958100a33962c2"
+  },
+  "documentDiff.sameRevision": {
+    "en": "Both sides are the same revision.",
+    "zh-CN": "两侧选择的是同一个修订。",
+    "reviewedEnglishHash": "5c3e0d3775b294a351f85d572c38193c67d1fe86183a7cccfa97fe67d450402a"
+  },
+  "documentDiff.selectRevision": {
+    "en": "Select revision",
+    "zh-CN": "选择修订",
+    "reviewedEnglishHash": "4c84315133f7f48d4533a79b568f4081fc2c3e8723e9c5f60c6921c3d0f5f4c6"
+  },
+  "documentDiff.selectTwoRevisions": {
+    "en": "Select two revisions to compare.",
+    "zh-CN": "请选择两个修订进行对比。",
+    "reviewedEnglishHash": "e64fab56b5c2d8b0630b61265ff29744c8cd21ec61b1430f350154d2b1f48573"
+  },
+  "documentDiff.title": {
+    "en": "Diff",
+    "zh-CN": "差异",
+    "reviewedEnglishHash": "7ecf46284588f3fa7e31a578ac1658008c3850edce919d21858a3ee6d2e03fdc"
+  },
+  "documentDiff.viewDiff": {
+    "en": "View diff",
+    "zh-CN": "查看差异",
+    "reviewedEnglishHash": "0e5d6873018e6c694649856f665d50b005c1f80868336f34246baf8237717092"
+  }
+}

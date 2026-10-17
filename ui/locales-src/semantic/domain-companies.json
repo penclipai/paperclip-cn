@@ -1,0 +1,32 @@
+{
+  "companies.agentCount": {
+    "en": "{{count}} agents",
+    "zh-CN": "{{count}} 个智能体",
+    "reviewedEnglishHash": "977a7422900b40a5ade4526c98653a1b04619b8ff81240ead3699dea1b7df70e"
+  },
+  "companies.agentCount_one": {
+    "en": "{{count}} agent",
+    "zh-CN": "{{count}} 个智能体",
+    "reviewedEnglishHash": "fbddbb9eca4b3148dfd4a959da033c74fd47246f4f6cdd2a17be7fba5ddf5645"
+  },
+  "companies.agentCount_other": {
+    "en": "{{count}} agents",
+    "zh-CN": "{{count}} 个智能体",
+    "reviewedEnglishHash": "977a7422900b40a5ade4526c98653a1b04619b8ff81240ead3699dea1b7df70e"
+  },
+  "companies.issueCount": {
+    "en": "{{count}} issues",
+    "zh-CN": "{{count}} 个任务",
+    "reviewedEnglishHash": "30293c03a543ce241c75e76098aaca08f32f48225ccea58ecb56969d87a0e648"
+  },
+  "companies.issueCount_one": {
+    "en": "{{count}} issue",
+    "zh-CN": "{{count}} 个任务",
+    "reviewedEnglishHash": "5722b414dca929156e4a215eceefe7d48211a72cb6f2f731ae910db401a0c0a4"
+  },
+  "companies.issueCount_other": {
+    "en": "{{count}} issues",
+    "zh-CN": "{{count}} 个任务",
+    "reviewedEnglishHash": "30293c03a543ce241c75e76098aaca08f32f48225ccea58ecb56969d87a0e648"
+  }
+}

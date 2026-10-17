@@ -1,0 +1,857 @@
+{
+  "companySettings.addEnvironment": {
+    "en": "Add environment",
+    "zh-CN": "添加环境",
+    "reviewedEnglishHash": "dcbe4c44d66b3f6e6b6b7347e1f63a8cfa80257e6ebf9246208714389d0bdf8d"
+  },
+  "companySettings.archiveConfirm": {
+    "en": "Archive company \"{{name}}\"? It will be hidden from the sidebar.",
+    "zh-CN": "确认归档公司“{{name}}”吗？归档后它将从侧边栏中隐藏。",
+    "reviewedEnglishHash": "df1c29283709bf7edc7959646b5fa13516c3120bccaa9d39ed44f8ee328661d8"
+  },
+  "companySettings.archiveError": {
+    "en": "Failed to archive organization",
+    "zh-CN": "组织归档失败",
+    "reviewedEnglishHash": "45dfcd8f4d71ad0c516865e88af5abf9bb4ce44da0995bac8db6d5b7a107fcfa"
+  },
+  "companySettings.archiveOrganization": {
+    "en": "Archive organization",
+    "zh-CN": "归档组织",
+    "reviewedEnglishHash": "00e7fa80dc2b630338313fba546331bfd850736ae9b60d6261461dbd179cb350"
+  },
+  "companySettings.archivedToastTitle": {
+    "en": "{{name}} is archived",
+    "zh-CN": "已归档 {{name}}",
+    "reviewedEnglishHash": "4eb7aba900256f67f4cccf318024cd4f6bcecae2f50715022b76b2ea24c479c8"
+  },
+  "companySettings.attachmentLimitHint": {
+    "en": "Accepted range: 1-{{max}} MiB.",
+    "zh-CN": "可接受范围：1-{{max}} MiB。",
+    "reviewedEnglishHash": "58e903020688cbc12917c4d571a23042a952eff1cc382589cf07fccc3a96cd3e"
+  },
+  "companySettings.attachmentRange": {
+    "en": "Enter a whole number from 1 to",
+    "zh-CN": "请输入 1 到",
+    "reviewedEnglishHash": "a3a0ae4d1421817cb3a613b018c33c0c7711e8f0bafab05facdaa7ba72adbe51"
+  },
+  "companySettings.attachmentRangeError": {
+    "en": "Enter a whole number from 1 to {{max}}.",
+    "zh-CN": "请输入 1 到 {{max}} 之间的整数。",
+    "reviewedEnglishHash": "7d731bbb4808ca16d4cb778e779213a2a487b85feb1b44375e04a9a5d6b3bc32"
+  },
+  "companySettings.backToEnvironments": {
+    "en": "Back to environments",
+    "zh-CN": "返回环境列表",
+    "reviewedEnglishHash": "3e0af89df96f0d06d0178326ceb70aa550cdf31e398fbbb38f6ef159330d09aa"
+  },
+  "companySettings.brandColorHint": {
+    "en": "Sets the hue for the company icon. Leave empty for auto-generated color.",
+    "zh-CN": "设置公司图标的主色调。留空则自动生成颜色。",
+    "reviewedEnglishHash": "c53c9c2302358af2f4def00930181ba14354d5470469202bf74fd6be597e89ca"
+  },
+  "companySettings.companyNameHint": {
+    "en": "The display name for your company.",
+    "zh-CN": "公司的显示名称。",
+    "reviewedEnglishHash": "d3e7cf9fcdbd1d6ff89d5b522aebb35c0db45c89cdb24f71bd0bfb72cb4f477f"
+  },
+  "companySettings.createEnvironment": {
+    "en": "Create environment",
+    "zh-CN": "创建环境",
+    "reviewedEnglishHash": "24b8cf62deb93ec2e58118ae15c5a50cdd5bdc97c58e11c453d8eb540be855a0"
+  },
+  "companySettings.creating": {
+    "en": "Creating...",
+    "zh-CN": "正在创建...",
+    "reviewedEnglishHash": "def70944c9bb9c3b77129e6fc48cfcd043031a86ae747060a3e97985d254c4f2"
+  },
+  "companySettings.customImage.activeTemplate": {
+    "en": "Active template",
+    "zh-CN": "当前模板",
+    "reviewedEnglishHash": "a378e2403355303b3510a24981008d709048d02e88816bf4cdebe788748aebb4"
+  },
+  "companySettings.customImage.browserTerminal": {
+    "en": "Browser terminal",
+    "zh-CN": "浏览器终端",
+    "reviewedEnglishHash": "56091b3f4582b6f90770b9c61d0ab84c989fa6be284a25fb178f2d0104961dbf"
+  },
+  "companySettings.customImage.browserTerminalAria": {
+    "en": "Custom image browser terminal",
+    "zh-CN": "自定义镜像浏览器终端",
+    "reviewedEnglishHash": "b0cd22fca82da30b74105f64f55ab8104251fec9df5b698f91def2122472edbc"
+  },
+  "companySettings.customImage.captureDescription": {
+    "en": "Capture a custom {{provider}} image with your tools already logged in.",
+    "zh-CN": "捕获一个已登录所需工具的自定义 {{provider}} 镜像。",
+    "reviewedEnglishHash": "cb6e6a0f88693313f04ccfd836baa567a5c993f79d9d4157b9d86d7d1dde179c"
+  },
+  "companySettings.customImage.captureUnavailable": {
+    "en": "Setup capture unavailable",
+    "zh-CN": "无法捕获模板",
+    "reviewedEnglishHash": "03343786294be32183e01ba55939f72ec5da297e181948aec5d6d49b470e8b40"
+  },
+  "companySettings.customImage.captureUnavailableReason": {
+    "en": "This provider advertises setup, but image capture is unavailable.",
+    "zh-CN": "该提供方声明支持设置流程，但不支持镜像捕获。",
+    "reviewedEnglishHash": "7c42ac2de8c109304bc5c748d345b7b6296140b9af338af15e76e37d8465fb84"
+  },
+  "companySettings.customImage.capturedAt": {
+    "en": " · captured {{time}}",
+    "zh-CN": " · 捕获于 {{time}}",
+    "reviewedEnglishHash": "ee4a463661d5129dd697b8036c9559e42a5508e083d892c199da11fa0056c0a1"
+  },
+  "companySettings.customImage.configureImage": {
+    "en": "Configure image",
+    "zh-CN": "配置镜像",
+    "reviewedEnglishHash": "91142ef01b7566a9707c2416fb9f8110ac67c5a72bd5692ac1719f133a118b84"
+  },
+  "companySettings.customImage.connectionUnavailable": {
+    "en": "Connection details are not available yet.",
+    "zh-CN": "连接详情尚不可用。",
+    "reviewedEnglishHash": "e6ab793df901cd5a069f3b91c3d98e8a87a4228ead438a6886697fea99d9f22b"
+  },
+  "companySettings.customImage.description": {
+    "en": "Start a setup sandbox, SSH in to customize the instance, then capture the running machine as a reusable image for future runs.",
+    "zh-CN": "启动一个设置沙箱，通过 SSH 进入并自定义实例，然后把运行中的机器捕获为未来运行可复用的镜像。",
+    "reviewedEnglishHash": "05ed8d78917688c3f1fc2d84ad143c0f76675b3a8158117d7edad7c966c3c5fe"
+  },
+  "companySettings.customImage.disable": {
+    "en": "Disable",
+    "zh-CN": "停用",
+    "reviewedEnglishHash": "b7e3e4aa4257b9a11a82f59faf34c8450ca10d4116885b0a29fedf60842d81d5"
+  },
+  "companySettings.customImage.disconnectTerminal": {
+    "en": "Disconnect",
+    "zh-CN": "断开连接",
+    "reviewedEnglishHash": "acfc5be785a9bb3da11c9f05adb69bd5633096f09002aa44813a1b3207e912ad"
+  },
+  "companySettings.customImage.expiresAt": {
+    "en": " · expires {{time}}",
+    "zh-CN": " · 到期 {{time}}",
+    "reviewedEnglishHash": "06a0fd2ff66d766f6db981dd5d524152f7b8c2652f1ac48dc80ca18d6e4513fc"
+  },
+  "companySettings.customImage.finished": {
+    "en": "Finished",
+    "zh-CN": "已完成",
+    "reviewedEnglishHash": "7804f7a79a9eee323b6e89d3f8287c7d36076f4d76291646295f435b0dec736e"
+  },
+  "companySettings.customImage.lastUsedAt": {
+    "en": " · last used {{time}}",
+    "zh-CN": " · 上次使用 {{time}}",
+    "reviewedEnglishHash": "8ebb538ad1bacf9e8de05b506a546541f6eb40944cda2abf87d501a8ba00f31e"
+  },
+  "companySettings.customImage.loadFailed": {
+    "en": "Template setup could not be loaded.",
+    "zh-CN": "无法加载模板设置。",
+    "reviewedEnglishHash": "2ef6914039ac9414cd1ccfbffab6018e6977689a170afd081910378aa92a2ba3"
+  },
+  "companySettings.customImage.loading": {
+    "en": "Loading template setup...",
+    "zh-CN": "正在加载模板设置...",
+    "reviewedEnglishHash": "b901516e32e1270c01476c8568ef9d041472257fc7131f79ac8eecb3eb64790f"
+  },
+  "companySettings.customImage.notConfigured": {
+    "en": "Not configured",
+    "zh-CN": "未配置",
+    "reviewedEnglishHash": "dd1841d295024256e8884cb898d863cb17333ef927fefae59368238e401c6ef0"
+  },
+  "companySettings.customImage.openTerminal": {
+    "en": "Open terminal",
+    "zh-CN": "打开终端",
+    "reviewedEnglishHash": "acb1f43d2899ca0557a07616ae8687734bd2e905279f7cb24b774c4a9de82725"
+  },
+  "companySettings.customImage.reconnectTerminal": {
+    "en": "Reconnect",
+    "zh-CN": "重新连接",
+    "reviewedEnglishHash": "bf8a9eab9e7e141bfb81f0ca9244a5f68f476ed0b57f03538410417298169d18"
+  },
+  "companySettings.customImage.rollback": {
+    "en": "Rollback",
+    "zh-CN": "回滚",
+    "reviewedEnglishHash": "c591f5574995c7403a2883c4d68c74b4d1e1b12e0a3689d0383ff28887bc0efe"
+  },
+  "companySettings.customImage.setupCancelFailedBody": {
+    "en": "Setup session could not be cancelled.",
+    "zh-CN": "无法取消设置会话。",
+    "reviewedEnglishHash": "ac216c72c5add567a11405870a0bcfa0eb37ac46f46af870791d8362f7682f1d"
+  },
+  "companySettings.customImage.setupCancelFailedTitle": {
+    "en": "Failed to cancel setup",
+    "zh-CN": "取消设置失败",
+    "reviewedEnglishHash": "77dd7d596290c5f763fbbd40925f8f9ca53ab203158f9dfe76eb4af28c6664c2"
+  },
+  "companySettings.customImage.setupCancelledBody": {
+    "en": "The active template was not changed.",
+    "zh-CN": "当前模板未更改。",
+    "reviewedEnglishHash": "f3aacdb57d29be3ea9705894f62a15886f60a3239837969359129ed245804f3a"
+  },
+  "companySettings.customImage.setupCancelledTitle": {
+    "en": "Setup cancelled",
+    "zh-CN": "设置已取消",
+    "reviewedEnglishHash": "cd2153e3f4eaac4305537294b84c8daefc5db97ea493da8f76fede47ded68067"
+  },
+  "companySettings.customImage.setupStartFailedBody": {
+    "en": "Setup session could not be started.",
+    "zh-CN": "无法启动设置会话。",
+    "reviewedEnglishHash": "e0feeb057a9faff3d79c323ea3d6de5fc9dd8284d467d4806e48d8f3d357a19f"
+  },
+  "companySettings.customImage.setupStartFailedTitle": {
+    "en": "Failed to start setup",
+    "zh-CN": "启动设置失败",
+    "reviewedEnglishHash": "7f4748134c7be063c21c6aa305fff7b9e2931af649e23ec8b002feb238806713"
+  },
+  "companySettings.customImage.setupStartedBody": {
+    "en": "Connect details are available while the session is active.",
+    "zh-CN": "会话有效期间可查看连接详情。",
+    "reviewedEnglishHash": "c0d02d0ea59dbdbab73497ab519b711b3c42de02f19db645abb5cf65063c9198"
+  },
+  "companySettings.customImage.setupStartedTitle": {
+    "en": "Setup session started",
+    "zh-CN": "设置会话已启动",
+    "reviewedEnglishHash": "53d6f8907b526cfc936a3af2d85cda19cd3515a408809c5618ddb475d0bce994"
+  },
+  "companySettings.customImage.status.cancelled": {
+    "en": "Setup cancelled",
+    "zh-CN": "设置已取消",
+    "reviewedEnglishHash": "cd2153e3f4eaac4305537294b84c8daefc5db97ea493da8f76fede47ded68067"
+  },
+  "companySettings.customImage.status.capturing": {
+    "en": "Capturing template",
+    "zh-CN": "正在捕获模板",
+    "reviewedEnglishHash": "cff4b878f962f2c2c658452ed62afc596420c395822ab9007adb42c25666dd90"
+  },
+  "companySettings.customImage.status.failed": {
+    "en": "Setup failed",
+    "zh-CN": "设置失败",
+    "reviewedEnglishHash": "54d466a16d8443c4826e1e7c2b2f6faf901cfc1917de3f3a396d7f45e96e7131"
+  },
+  "companySettings.customImage.status.promoted": {
+    "en": "Template captured",
+    "zh-CN": "模板已捕获",
+    "reviewedEnglishHash": "28445ed07a10e8a8c7067f300752809cab5ce74d4f7fd9478826a55c107f2e8a"
+  },
+  "companySettings.customImage.status.starting": {
+    "en": "Setup starting",
+    "zh-CN": "设置启动中",
+    "reviewedEnglishHash": "ede2ceebddd7b0a43b5d019d17a26160c2f09201e8fe3f0339874c2399ed0b3a"
+  },
+  "companySettings.customImage.status.timedOut": {
+    "en": "Setup expired",
+    "zh-CN": "设置已过期",
+    "reviewedEnglishHash": "9e8a4eac9c3673a4c2130676133c9cae825c80e729d72b210597b4e4d8607d4c"
+  },
+  "companySettings.customImage.status.unknown": {
+    "en": "Setup status",
+    "zh-CN": "设置状态",
+    "reviewedEnglishHash": "15050375b85efab602d847e22b7bcf5bdea1f2f697d3502a850659dd08d39fb7"
+  },
+  "companySettings.customImage.status.waitingForUser": {
+    "en": "Setup running",
+    "zh-CN": "设置运行中",
+    "reviewedEnglishHash": "49d492a5d32dbb67de5d4aadbaf651f92860fe15dcd97ed1d87f978f0109e9e2"
+  },
+  "companySettings.customImage.templateCaptureFailedBody": {
+    "en": "Template capture failed.",
+    "zh-CN": "模板捕获失败。",
+    "reviewedEnglishHash": "0e1be98f6b77245912ea672d6c85a8f633c06f4ef615dc7ba79d461fa6ca8b97"
+  },
+  "companySettings.customImage.templateCaptureFailedTitle": {
+    "en": "Failed to capture template",
+    "zh-CN": "捕获模板失败",
+    "reviewedEnglishHash": "bf302545076f3b5e40e1b4574c732f245bb8e7b8f63b8b6dcf8048355ec8082d"
+  },
+  "companySettings.customImage.templateCapturedBody": {
+    "en": "Future runs can use the promoted template.",
+    "zh-CN": "未来运行可使用已提升的模板。",
+    "reviewedEnglishHash": "63d800346fdc9752c6913b2635c5622ebc9c437aabe9f6530fa237ff48d60115"
+  },
+  "companySettings.customImage.templateCapturedTitle": {
+    "en": "Template captured",
+    "zh-CN": "模板已捕获",
+    "reviewedEnglishHash": "28445ed07a10e8a8c7067f300752809cab5ce74d4f7fd9478826a55c107f2e8a"
+  },
+  "companySettings.customImage.templateDisableFailedBody": {
+    "en": "Disable failed.",
+    "zh-CN": "停用失败。",
+    "reviewedEnglishHash": "635cc728f194b5071478c4001fa4b0882cc8917e4ae90d026151c0fe32d2be42"
+  },
+  "companySettings.customImage.templateDisableFailedTitle": {
+    "en": "Failed to disable template",
+    "zh-CN": "停用模板失败",
+    "reviewedEnglishHash": "1a69e3fc3b9a5fc02df42c43644fe7f537391e1c71325dc11da179e1d5309897"
+  },
+  "companySettings.customImage.templateDisabledBody": {
+    "en": "Future runs will use the base provider configuration.",
+    "zh-CN": "未来运行将使用提供方基础配置。",
+    "reviewedEnglishHash": "930d9fd8bfea373524fa5c414b916f5ff3362efcb84d37f479346ebf17ba6df8"
+  },
+  "companySettings.customImage.templateDisabledTitle": {
+    "en": "Template disabled",
+    "zh-CN": "模板已停用",
+    "reviewedEnglishHash": "3cce508cd55f7915deada2ff272aa769409763cc2ebcc62cacccf5f4d8927eaa"
+  },
+  "companySettings.customImage.templateRefTitle": {
+    "en": "Provider {{kind}} ref {{ref}} (Paperclip template {{id}})",
+    "zh-CN": "提供方 {{kind}} 引用 {{ref}}（Paperclip 模板 {{id}}）",
+    "reviewedEnglishHash": "a066ddc4dbd0a50a2a0bb96e683f27db43587d0b2d4e719fe19bc9c5b72d5a25"
+  },
+  "companySettings.customImage.templateRollbackFailedBody": {
+    "en": "Rollback failed.",
+    "zh-CN": "回滚失败。",
+    "reviewedEnglishHash": "0638f6f5421e8d1675ffbfbef80b7f1f436112e7aed185a41d77850c8979acd6"
+  },
+  "companySettings.customImage.templateRollbackFailedTitle": {
+    "en": "Failed to roll back template",
+    "zh-CN": "回滚模板失败",
+    "reviewedEnglishHash": "27866f871ef83495f152b33b35daf4a3c10463ad9f64377949087f1e1823347b"
+  },
+  "companySettings.customImage.templateRolledBackBody": {
+    "en": "Future runs will use the previous template.",
+    "zh-CN": "未来运行将使用上一个模板。",
+    "reviewedEnglishHash": "fc70681e39bd9a37cb89c8c3f6815d88138fbddd1ac715400095e15a967bc0fe"
+  },
+  "companySettings.customImage.templateRolledBackTitle": {
+    "en": "Template rolled back",
+    "zh-CN": "模板已回滚",
+    "reviewedEnglishHash": "3a816611d8b88691224a8c0652c9eb9a18c10a226bd85b3f1b7b3d6002577651"
+  },
+  "companySettings.customImage.templateSetup": {
+    "en": "Template setup",
+    "zh-CN": "模板设置",
+    "reviewedEnglishHash": "5b15507cf524b89369b87837e04dfb65df9f5c26d660422c94863e8c5af7faa9"
+  },
+  "companySettings.customImage.terminalCloseReason.expired": {
+    "en": "Setup session expired.",
+    "zh-CN": "设置会话已过期。",
+    "reviewedEnglishHash": "36ad4c3a14d9c7b93ae2dc21685dfc20f772c0a56fbf5459762d097e5822ff7a"
+  },
+  "companySettings.customImage.terminalCloseReason.server_shutdown": {
+    "en": "Terminal server shut down.",
+    "zh-CN": "终端服务器已关闭。",
+    "reviewedEnglishHash": "7ab611f9da2efb3be039ccf233c4bd7b47f01e85de162f67da76b1d2907edfa5"
+  },
+  "companySettings.customImage.terminalCloseReason.setup_cancelled": {
+    "en": "Setup session cancelled.",
+    "zh-CN": "设置会话已取消。",
+    "reviewedEnglishHash": "ab6f55e2907371b8cb3e990757686908994342a362efa47a067d75e2ec00e6f0"
+  },
+  "companySettings.customImage.terminalCloseReason.setup_finished": {
+    "en": "Setup session finished.",
+    "zh-CN": "设置会话已完成。",
+    "reviewedEnglishHash": "a69d408c86faa39859949adbdacd614579f321e42f6abefb329bb18ded8745fb"
+  },
+  "companySettings.customImage.terminalCloseReason.ssh_closed": {
+    "en": "SSH session closed.",
+    "zh-CN": "SSH 会话已关闭。",
+    "reviewedEnglishHash": "ac420292ce7558d4b0f8ab29dd0fd1fd1dbddde85fa60c5dd61d3e24320f043f"
+  },
+  "companySettings.customImage.terminalCloseReason.unknown": {
+    "en": "Terminal closed.",
+    "zh-CN": "终端已关闭。",
+    "reviewedEnglishHash": "7cc33c4cd416b6bdfbeb9650cc93fbb885b61d70308ca927d9a9b9c5f5f4b9be"
+  },
+  "companySettings.customImage.terminalConnectionFailed": {
+    "en": "Terminal connection failed.",
+    "zh-CN": "终端连接失败。",
+    "reviewedEnglishHash": "66de2537d3cae6468db7ab9994801eaf3a5b2407d7deaeebfd16ffdd26aee7c1"
+  },
+  "companySettings.customImage.terminalOpenFailed": {
+    "en": "Terminal session could not be opened.",
+    "zh-CN": "无法打开终端会话。",
+    "reviewedEnglishHash": "c2791743ff54eaf0b57da3df551c3ecd66e85cfe9f4322e0d46c12bd27da0fdc"
+  },
+  "companySettings.customImage.terminalStatus.closed": {
+    "en": "Closed",
+    "zh-CN": "已关闭",
+    "reviewedEnglishHash": "c21ead0614e7e1b70edb3759e1d19ca1e12e6036980d10bfb73052fb1a018efa"
+  },
+  "companySettings.customImage.terminalStatus.connected": {
+    "en": "Connected",
+    "zh-CN": "已连接",
+    "reviewedEnglishHash": "22965568d22a14ee17af055d2870b50afcfe9fd94a83eec3196e266932297bb2"
+  },
+  "companySettings.customImage.terminalStatus.connecting": {
+    "en": "Connecting",
+    "zh-CN": "连接中",
+    "reviewedEnglishHash": "d403c686f6a1048014bdd230f59963271b0123ea48245754fc9f264b962a2182"
+  },
+  "companySettings.customImage.terminalStatus.error": {
+    "en": "Connection failed",
+    "zh-CN": "连接失败",
+    "reviewedEnglishHash": "596c52f1eb65c1c3c65404e5f75974937fee4fc77d0970abeddf580e7123ce0c"
+  },
+  "companySettings.customImage.terminalStatus.idle": {
+    "en": "Ready to connect",
+    "zh-CN": "可连接",
+    "reviewedEnglishHash": "4aee4d08e6c82f72b3e053da1cbe7d2f72d52653d6d97c63a329bf0c588f277f"
+  },
+  "companySettings.customImage.terminalUnavailable": {
+    "en": "Browser terminal is unavailable in this browser.",
+    "zh-CN": "当前浏览器不可用浏览器终端。",
+    "reviewedEnglishHash": "e4845b904524f8bd668237c89fb151011b8daa28522260654672278bb275ed4d"
+  },
+  "companySettings.customImage.terminalWebsocketFailed": {
+    "en": "Terminal websocket connection failed.",
+    "zh-CN": "终端 WebSocket 连接失败。",
+    "reviewedEnglishHash": "2d5f57adc456f7704136e060ba390bbb524237ad568e937020636f2e072b361a"
+  },
+  "companySettings.customImage.title": {
+    "en": "Custom image",
+    "zh-CN": "自定义镜像",
+    "reviewedEnglishHash": "032747a5d15926e7908f4d625858f3a3bae72914c314c54a004725cb923066bb"
+  },
+  "companySettings.customImage.unsupportedProvider": {
+    "en": "Unsupported provider",
+    "zh-CN": "不支持的提供方",
+    "reviewedEnglishHash": "1609d5fba47cd40f7cbb24d2c38a823223ec3c89831c64faabb98bc1686fb93c"
+  },
+  "companySettings.customImage.unsupportedProviderReason": {
+    "en": "This provider does not advertise interactive template setup.",
+    "zh-CN": "该提供方未声明支持交互式模板设置。",
+    "reviewedEnglishHash": "0c67fa2f0b726b14eaffb7fcb9d15a093832f35caf34561571b71694ef3b55a3"
+  },
+  "companySettings.defaultEnvironment": {
+    "en": "Default",
+    "zh-CN": "默认",
+    "reviewedEnglishHash": "21b111cbfe6e8fca2d181c43f53ad548b22e38aca955b9824706a504b0a07a2d"
+  },
+  "companySettings.defaultEnvironmentHint": {
+    "en": "Agents inherit this execution target unless project, issue, or agent settings choose another.",
+    "zh-CN": "除非项目、任务或智能体设置另选环境，否则智能体会继承此执行目标。",
+    "reviewedEnglishHash": "ec7b34cc149543674fdd8c333bb1faad95462807ab4cb99dacedd6001db4bf4d"
+  },
+  "companySettings.defaultEnvironmentUpdateFailed": {
+    "en": "Failed to update default environment",
+    "zh-CN": "更新默认环境失败",
+    "reviewedEnglishHash": "0239d19d9cf5a8fef9e6e5a4b727e3eec49ae15f6c1e4fd47b3009b5a9d89c66"
+  },
+  "companySettings.defaultEnvironmentUpdateFailedBody": {
+    "en": "Default environment update failed.",
+    "zh-CN": "默认环境更新失败。",
+    "reviewedEnglishHash": "c0105cd921c4283638e6461a9788fd3691793527022e18c9f02a00b5e678d582"
+  },
+  "companySettings.defaultEnvironmentUpdated": {
+    "en": "Default environment updated",
+    "zh-CN": "默认环境已更新",
+    "reviewedEnglishHash": "bd8aa959d567e3051d62b11d9d65f337e797ac237bda1e4cc7ea721cce937e74"
+  },
+  "companySettings.defaultEnvironmentUpdatedBody": {
+    "en": "Agent inheritance now follows the updated instance default.",
+    "zh-CN": "智能体继承关系现在会使用更新后的实例默认环境。",
+    "reviewedEnglishHash": "c394eee3e4dc913c0c7868606133af102cebb8fcfa4d5928047f0ec6045ef515"
+  },
+  "companySettings.descriptionHint": {
+    "en": "Optional description shown in the company profile.",
+    "zh-CN": "显示在公司资料中的可选描述。",
+    "reviewedEnglishHash": "1648f845bc1d996565ae1f3885045bd856ba6cd945a345b6fa873b4b1ddc8520"
+  },
+  "companySettings.draftProbeFailed": {
+    "en": "Draft probe failed",
+    "zh-CN": "草稿探测失败",
+    "reviewedEnglishHash": "a48eacbdcf4315a2f6fad45ac8339d3863e375cef80622b9ab65b972ea68d782"
+  },
+  "companySettings.draftProbePassed": {
+    "en": "Draft probe passed",
+    "zh-CN": "草稿探测通过",
+    "reviewedEnglishHash": "87b2ad505db105c5d1b05337424dea35c92238c8843bac5e45459f05996fdafa"
+  },
+  "companySettings.driver": {
+    "en": "Driver",
+    "zh-CN": "驱动",
+    "reviewedEnglishHash": "9fe4c68ec20dda7c6b1d3f760e5e6af6b9802897cd59f084b99c68b2ac01574c"
+  },
+  "companySettings.editEnvironment": {
+    "en": "Edit environment",
+    "zh-CN": "编辑环境",
+    "reviewedEnglishHash": "05515e83217b83104c9d7a508ab10ee15e39de79f53edf8b7024a29584efaf6c"
+  },
+  "companySettings.editing": {
+    "en": "Editing",
+    "zh-CN": "正在编辑",
+    "reviewedEnglishHash": "fab4539d26e078ca276a7559935cefdc55149ea5815f449139a1419584193cd2"
+  },
+  "companySettings.environmentCreated": {
+    "en": "Environment created",
+    "zh-CN": "环境已创建",
+    "reviewedEnglishHash": "3455fc85b03dbfebde75b95deacff00aeb31ddc3bd0faa292735e52572e48438"
+  },
+  "companySettings.environmentDescriptionHint": {
+    "en": "Optional note about what this machine is for.",
+    "zh-CN": "可选说明这台机器的用途。",
+    "reviewedEnglishHash": "ccd667101d08f7209be825a33ab71cc19436f910a9af92515311bccf7095da34"
+  },
+  "companySettings.environmentDialogDescription": {
+    "en": "Configure a reusable execution target for your agents. Saved changes affect future runs; Paperclip may start fresh sessions or sandbox leases after environment config changes.",
+    "zh-CN": "配置一个可供智能体复用的执行目标。保存后的更改会影响未来运行；环境配置变化后，Paperclip 可能启动新的会话或沙箱租约。",
+    "reviewedEnglishHash": "d5c6e5ed4aacf9830d358481d5a1b02bc33bcba8c5b8de72018aa347850800fe"
+  },
+  "companySettings.environmentDriverHint": {
+    "en": "Local runs on this host. SSH stores a remote machine target. Sandbox uses a configured provider.",
+    "zh-CN": "本地会在此主机运行。SSH 会保存远程机器目标。沙盒会使用已配置的提供方。",
+    "reviewedEnglishHash": "d83feb4b05ab3cc54c942863fd357a7310cdf14052a96edb6bf8c58f8aac45d7"
+  },
+  "companySettings.environmentNameHint": {
+    "en": "Operator-facing name for this execution target.",
+    "zh-CN": "面向操作员显示的执行目标名称。",
+    "reviewedEnglishHash": "f690a96675c452718d69648dbb3a3b9ff62743cd14c9a22dfec16b068b2487eb"
+  },
+  "companySettings.environmentNotFound": {
+    "en": "Environment not found",
+    "zh-CN": "未找到环境",
+    "reviewedEnglishHash": "50b45e7c07b3cdc2e0d866b18d9a21008935e55f9f3916b4d19a88bd161dba97"
+  },
+  "companySettings.environmentNotFoundDescription": {
+    "en": "The environment may have been removed or is not available in this company.",
+    "zh-CN": "该环境可能已被移除，或不属于当前公司。",
+    "reviewedEnglishHash": "ca62b56ea91d77eca3547997dc5446461c75663f0ad5d34f7d04b5e936e4ea01"
+  },
+  "companySettings.environmentProbeFailed": {
+    "en": "Environment probe failed",
+    "zh-CN": "环境探测失败",
+    "reviewedEnglishHash": "faeba0887f20e922a9cd4948c9486de1b0c0e3574b14cd763456af1b58fb4305"
+  },
+  "companySettings.environmentProbeFailedSentence": {
+    "en": "Environment probe failed.",
+    "zh-CN": "环境探测失败。",
+    "reviewedEnglishHash": "f7f3392fcd63d266d9a349329c1277c6a10cb1097ab739fbbd15000d77a74477"
+  },
+  "companySettings.environmentProbePassed": {
+    "en": "Environment probe passed",
+    "zh-CN": "环境探测通过",
+    "reviewedEnglishHash": "5cee157de82b82b424345bf56d809a897b0de874146556fae469e579a583a2d1"
+  },
+  "companySettings.environmentReady": {
+    "en": "{{name}} is ready.",
+    "zh-CN": "{{name}} 已就绪。",
+    "reviewedEnglishHash": "dc0a71177ecbcad587bdd0150bf3e17627835d89d7f2af19944e8b0543609bed"
+  },
+  "companySettings.environmentSaveFailed": {
+    "en": "Environment save failed.",
+    "zh-CN": "环境保存失败。",
+    "reviewedEnglishHash": "eef0b7876dde4a6999a6bad47c2c2a24ff501571e19830a4a858eeaf8f6d27f4"
+  },
+  "companySettings.environmentSupportByAdapter": {
+    "en": "Environment support by adapter",
+    "zh-CN": "按适配器查看环境支持",
+    "reviewedEnglishHash": "d3e21141e20bdff311d1c05359b0ee735ad1f17da2f26fd2f7214399124f871b"
+  },
+  "companySettings.environmentUpdated": {
+    "en": "Environment updated",
+    "zh-CN": "环境已更新",
+    "reviewedEnglishHash": "465743a33e9473f33ab46ffb98dc2a7232ec01a936a8611c9c69ab537cf81897"
+  },
+  "companySettings.environmentVariables": {
+    "en": "Environment variables",
+    "zh-CN": "环境变量",
+    "reviewedEnglishHash": "aac7246f5e97142c3f257b7d8b84976f10c29e1b89804bb9d3eb7c43cc03cb8e"
+  },
+  "companySettings.environmentVariablesHint": {
+    "en": "Injected into runs that resolve through this environment. Use plain values or company secrets.",
+    "zh-CN": "注入到解析到此环境的运行中。可使用明文值或公司密钥。",
+    "reviewedEnglishHash": "2d2d7f4001db08ee2088e92eb1483fc20e8c83d997eb37f55a274eac0986c520"
+  },
+  "companySettings.environments": {
+    "en": "Environments",
+    "zh-CN": "环境",
+    "reviewedEnglishHash": "07437cd651bed86ed83d954361d8e85f2de81677e267224bd85ec2c83349bf96"
+  },
+  "companySettings.environmentsDisabled": {
+    "en": "Enable Environments in instance experimental settings to manage shared execution targets.",
+    "zh-CN": "请先在实例实验设置中启用环境，才能管理共享执行目标。",
+    "reviewedEnglishHash": "e0b9fc5007b3802a1428f77d2f1dc5828348af56be004533180f99b8f2045422"
+  },
+  "companySettings.environmentsHint": {
+    "en": "Environment choices use the same adapter support matrix as agent defaults. SSH environments are available for remote-managed adapters, and sandbox environments run through configured providers.",
+    "zh-CN": "环境选项使用与智能体默认值相同的适配器支持矩阵。SSH 环境可用于远程托管适配器，沙盒环境会通过已配置的提供方运行。",
+    "reviewedEnglishHash": "f87f81603ce5c1eef1260e9363bb4045294efcbfe8bdd4b9b85863592ae9ee3e"
+  },
+  "companySettings.environmentsSelectCompany": {
+    "en": "Select a company context to manage environment secrets and bindings.",
+    "zh-CN": "请选择公司上下文来管理环境密钥和绑定。",
+    "reviewedEnglishHash": "f9490ba2f3e2576effc76b22983576504cf7139c0f8b03891b5a65883e88a4a3"
+  },
+  "companySettings.failedToSaveEnvironment": {
+    "en": "Failed to save environment",
+    "zh-CN": "保存环境失败",
+    "reviewedEnglishHash": "40eb0c9afcc9341f19c6ea42312a065d979aee0fb012ab617e82a5c16a660069"
+  },
+  "companySettings.governance.cap": {
+    "en": "Cap",
+    "zh-CN": "上限",
+    "reviewedEnglishHash": "1257ac04471db97becf0cd70818dbd6e4437f11afefd321065f199a14d986cb9"
+  },
+  "companySettings.governance.capAria": {
+    "en": "Resolver cap for {{kind}}",
+    "zh-CN": "{{kind}} 的处理上限",
+    "reviewedEnglishHash": "dcbc4b6635aa04ad960bcfe981a8586d0aa68cff204a56f8ed854dfa77618c50"
+  },
+  "companySettings.governance.defaultPolicy": {
+    "en": "Default policy",
+    "zh-CN": "默认策略",
+    "reviewedEnglishHash": "8cca8b216a06c5f70be1bfc63e97ef2b793fdf5772a2b2c818a408b00f12d7e1"
+  },
+  "companySettings.governance.defaultPolicyAria": {
+    "en": "Default resolver policy for {{kind}}",
+    "zh-CN": "{{kind}} 的默认处理策略",
+    "reviewedEnglishHash": "e76bb878f4df8432254aa5a8936676b79ff25b03d2da51c2c480c16546138a4e"
+  },
+  "companySettings.governance.kind": {
+    "en": "Kind",
+    "zh-CN": "类型",
+    "reviewedEnglishHash": "f5387f9bb6ed70315a77fdcb9335facc27a9bf241f35955bd2755c55e0c016c7"
+  },
+  "companySettings.governance.kind.ask_user_questions": {
+    "en": "Ask user questions",
+    "zh-CN": "向用户提问",
+    "reviewedEnglishHash": "85f982633587e0c1eafe2c5f2a82800426e783e8a4393531204abd5392f8b9ff"
+  },
+  "companySettings.governance.kind.request_checkbox_confirmation": {
+    "en": "Checkbox confirmations",
+    "zh-CN": "复选框确认",
+    "reviewedEnglishHash": "b7f92c403f79c2e90cdddc0396d6d3e9495b844914a90c5e95a39c83df284261"
+  },
+  "companySettings.governance.kind.request_confirmation": {
+    "en": "Confirmations",
+    "zh-CN": "确认请求",
+    "reviewedEnglishHash": "5dfa99a6fa762317d2573a51f75567281f5460a2521f37713a82f5eac0b22c77"
+  },
+  "companySettings.governance.kind.request_item_verdicts": {
+    "en": "Item verdicts",
+    "zh-CN": "项目裁决",
+    "reviewedEnglishHash": "7023d1056988ae1c0e92e56492056cc349af28f9f74033f16cb39bcb8c02cd42"
+  },
+  "companySettings.governance.kind.suggest_tasks": {
+    "en": "Suggested tasks",
+    "zh-CN": "建议任务",
+    "reviewedEnglishHash": "5addd6fff8dd7969a12d449ba08a6d85be3de71d4b66f8797768be5f7e9da9aa"
+  },
+  "companySettings.governance.option.boardOnly": {
+    "en": "Board only",
+    "zh-CN": "仅董事会",
+    "reviewedEnglishHash": "e17cc76abc4604a7706654218403acdb8acc7b0278c7aa085ffa0051ec1dc8d3"
+  },
+  "companySettings.governance.option.boardOrAgents": {
+    "en": "Board or agents",
+    "zh-CN": "董事会或智能体",
+    "reviewedEnglishHash": "bf44b517e7d8a93c05aa42358e838910519325db58829e62c8a7f6f2d975702c"
+  },
+  "companySettings.governance.option.companyDefault": {
+    "en": "Company default",
+    "zh-CN": "公司默认",
+    "reviewedEnglishHash": "a906ce99232e33c3f9c2837ca80125922ac212f9ee31d1401da8ca79cbc3ba2b"
+  },
+  "companySettings.host": {
+    "en": "Host",
+    "zh-CN": "主机",
+    "reviewedEnglishHash": "4a823118b9ba8baa2f47489c0716f52755368e3e3c2c26d60736ccfa1bb21b5e"
+  },
+  "companySettings.hostHint": {
+    "en": "DNS name or IP address for the remote machine.",
+    "zh-CN": "远程机器的 DNS 名称或 IP 地址。",
+    "reviewedEnglishHash": "f39a101175cec80915f8025ad3e75790e7a07981677e48ead626912138e6f124"
+  },
+  "companySettings.installedSandboxProvidersDescription": {
+    "en": "These are not adapter types. They back the Sandbox driver for adapters that support sandbox execution.",
+    "zh-CN": "它们不是适配器类型，而是为支持沙盒执行的适配器提供 Sandbox 驱动。",
+    "reviewedEnglishHash": "4420a059bfab0233d9bd73302f0ce40ab1d66a0296fdc8121198c535af6ae187"
+  },
+  "companySettings.installedSandboxProvidersLabel": {
+    "en": "Installed sandbox providers",
+    "zh-CN": "已安装的沙盒提供方",
+    "reviewedEnglishHash": "f69085db626bc9521af48227b11115a4a20b87d0519eb57737e14b0cef981ea9"
+  },
+  "companySettings.interactionGovernance": {
+    "en": "Interaction governance",
+    "zh-CN": "交互治理",
+    "reviewedEnglishHash": "55a23137de6cd800fabdc8d7134ac4cabf9e803aa298adec7f4ef08c49e5fc9f"
+  },
+  "companySettings.interactionGovernanceDescription": {
+    "en": "Control who may resolve each kind of thread interaction. Default policy is the resolver policy new interactions request. Cap is the maximum a request may reach. Set Cap to Board only to always require the board. Tool-approval confirmations always stay board-only regardless of these settings.",
+    "zh-CN": "控制每种讨论串交互由谁可以解决。默认策略表示新交互请求的处理策略；上限表示请求最多可提升到的级别。将上限设为“仅董事会”可始终要求董事会处理。无论这些设置如何，工具审批确认始终仅限董事会处理。",
+    "reviewedEnglishHash": "59adb017d90152c8a4aefc7b5a2f3d038d5ed76a5d4bdd9c5c2eb078b503977b"
+  },
+  "companySettings.interactionGovernanceSaveFailed": {
+    "en": "Failed to save interaction governance",
+    "zh-CN": "保存交互治理失败",
+    "reviewedEnglishHash": "d33b037f371764a05a3bae24100afbd74b52d47eb26e988800b7d55ea9d114ca"
+  },
+  "companySettings.knownHosts": {
+    "en": "Known hosts",
+    "zh-CN": "Known hosts",
+    "reviewedEnglishHash": "45d7c9da91c51a7b2c5ae91f158759de80973754c38c6694794d460376517ce3"
+  },
+  "companySettings.knownHostsHint": {
+    "en": "Optional known_hosts block used when strict host key checking is enabled.",
+    "zh-CN": "启用严格主机密钥检查时使用的可选 known_hosts 内容。",
+    "reviewedEnglishHash": "71425df5e1d2239084f21f47c3edaf930cd22501e8716762e85adcd2ab8a1f29"
+  },
+  "companySettings.loadingEnvironment": {
+    "en": "Loading environment...",
+    "zh-CN": "正在加载环境...",
+    "reviewedEnglishHash": "68007c8ac49c89609e636e6f57bae306e4d583731d684138eae13bb3740b29a2"
+  },
+  "companySettings.logoHint": {
+    "en": "Upload a PNG, JPEG, WEBP, GIF, or SVG logo image.",
+    "zh-CN": "上传 PNG、JPEG、WEBP、GIF 或 SVG 格式的徽标图片。",
+    "reviewedEnglishHash": "fd8a49c56c55e970d4a95dd8295b0411991423863d383f2d5ede6ba960e45ce9"
+  },
+  "companySettings.mibUnit": {
+    "en": "MiB",
+    "zh-CN": "MiB",
+    "reviewedEnglishHash": "dea6cb8d5e6496df602a4a3465014249fd62a1d63ff784287d5647ccc0f31701"
+  },
+  "companySettings.noCompanySelectedBody": {
+    "en": "No company selected. Select a company from the switcher above.",
+    "zh-CN": "未选择公司。请从上方切换器中选择一个公司。",
+    "reviewedEnglishHash": "26afbd8c4e591013148c3eee17b332c99036da480c14fbf61f21806de579c27f"
+  },
+  "companySettings.noEnvironmentSelected": {
+    "en": "No environment selected",
+    "zh-CN": "尚未选择环境",
+    "reviewedEnglishHash": "120394a1e181555636de0f443f40e76c21c71f7945d34abffa1e01d8d3365655"
+  },
+  "companySettings.noEnvironments": {
+    "en": "No environments saved for this company yet.",
+    "zh-CN": "此公司尚未保存环境。",
+    "reviewedEnglishHash": "01621e8c0f3066d7ef583ddbd4b1dda60afa5f7b69b7004d164aaa8fc26311bf"
+  },
+  "companySettings.noSavedSecret": {
+    "en": "No saved secret",
+    "zh-CN": "未选择已保存密钥",
+    "reviewedEnglishHash": "b39f5a0e038e6c7846a3cbd9e104c6e521ddf2f7f9c596c38495b183b5474293"
+  },
+  "companySettings.port": {
+    "en": "Port",
+    "zh-CN": "端口",
+    "reviewedEnglishHash": "72e9a59f5a1d6289dbacb35df897d6c007c55a27e77018455c37e7b372668475"
+  },
+  "companySettings.portHint": {
+    "en": "Defaults to 22.",
+    "zh-CN": "默认 22。",
+    "reviewedEnglishHash": "2bc6266df8b689d0cf2f31b844adb7f8dcb40356e50d2b10413630b0d693254b"
+  },
+  "companySettings.privateKey": {
+    "en": "Private key",
+    "zh-CN": "私钥",
+    "reviewedEnglishHash": "477bf990a2b3a4898342fd9de89c586d2bdd683b37dabbbc36013748d43009f8"
+  },
+  "companySettings.privateKeyHint": {
+    "en": "Optional PEM private key. Leave blank to rely on the server's SSH agent or default keychain.",
+    "zh-CN": "可选 PEM 私钥。留空则依赖服务端 SSH agent 或默认密钥链。",
+    "reviewedEnglishHash": "f2710c55a2fec80af97cb629287f6041c15a6136d5c8ef8845f4788eac80dab7"
+  },
+  "companySettings.provider": {
+    "en": "Provider",
+    "zh-CN": "提供方",
+    "reviewedEnglishHash": "472590ae974d4c1f44b3780df0b152d9119f076c61bfb3e8cb6affd7889ac0a8"
+  },
+  "companySettings.remoteWorkspacePath": {
+    "en": "Remote workspace path",
+    "zh-CN": "远程工作区路径",
+    "reviewedEnglishHash": "386e8a50fe467952a81436a30e6d08ce85c29c6a175632d8d94c59991eee5807"
+  },
+  "companySettings.remoteWorkspacePathHint": {
+    "en": "Absolute path that Paperclip will verify during SSH connection tests.",
+    "zh-CN": "Paperclip CN 会在 SSH 连接测试期间验证的绝对路径。",
+    "reviewedEnglishHash": "5cfbe08c617144c2fb0203199d1266b7f92e55c8e922426314e6a1614b79728d"
+  },
+  "companySettings.requireBoardApprovalHint": {
+    "en": "New agent hires stay pending until approved by board.",
+    "zh-CN": "新雇佣的智能体会保持待批准状态，直到董事会批准。",
+    "reviewedEnglishHash": "67728aa69055ee8393fc142b092a47d340e2d52f73b7f0fe138a3692ea9f649c"
+  },
+  "companySettings.runsOnThisPaperclipHost": {
+    "en": "Runs on this Paperclip host.",
+    "zh-CN": "在当前 Paperclip CN 主机上运行。",
+    "reviewedEnglishHash": "9dbf3809a61bf1d56eb20e9af9aadf2effe711804486937a38fcb0bef3efceb0"
+  },
+  "companySettings.sandbox": {
+    "en": "Sandbox",
+    "zh-CN": "沙盒",
+    "reviewedEnglishHash": "67fc62497e85d81bc54ea07aa87dca6868cd470e95d7281155a8eb532ce60009"
+  },
+  "companySettings.sandboxNoExtraFields": {
+    "en": "This provider has no extra configuration fields.",
+    "zh-CN": "此提供方没有额外配置字段。",
+    "reviewedEnglishHash": "5cf76d0741bb16dd2a6d72b2d23d068cb66bc14cee634f888e07fd5598bbd02f"
+  },
+  "companySettings.sandboxProviderHint": {
+    "en": "Sandbox plugin provider used to create isolated execution targets.",
+    "zh-CN": "用于创建隔离执行目标的沙盒插件提供方。",
+    "reviewedEnglishHash": "5aaa99b30b900615e3d3fffa3a4ca9269854c62431e407e2f7c5ab94d3be3de9"
+  },
+  "companySettings.sandboxViaPlugin": {
+    "en": "Sandbox via plugin",
+    "zh-CN": "插件沙盒",
+    "reviewedEnglishHash": "245572e70e6b981b263120638bc080579064a38788d7cbe59c51af1cfca2a60d"
+  },
+  "companySettings.saveEnvironment": {
+    "en": "Save environment",
+    "zh-CN": "保存环境",
+    "reviewedEnglishHash": "71d5bfde6e0419df110458704c5dc58c392e45b3f67224033d5e1cda2d01052d"
+  },
+  "companySettings.selectCompanyToCreateEnvironments": {
+    "en": "Select a company to create environments",
+    "zh-CN": "请选择公司后再创建环境",
+    "reviewedEnglishHash": "80be232de212a3b3d4aff48564932cf70c1eef976fcbcd54392aa775a2140f4a"
+  },
+  "companySettings.selectCompanyToTestEnvironments": {
+    "en": "Select a company to test environments",
+    "zh-CN": "请选择公司后再测试环境",
+    "reviewedEnglishHash": "204e4d253c0889b9d0f9070276434949868cbe6e24475f03e5d19de07a464489"
+  },
+  "companySettings.sshHostFallback": {
+    "en": "SSH host",
+    "zh-CN": "SSH 主机",
+    "reviewedEnglishHash": "7e873f334e843a4333ee12e07ab75771bacfe377678a221e9ee0cb685d79dda1"
+  },
+  "companySettings.sshUserFallback": {
+    "en": "user",
+    "zh-CN": "用户",
+    "reviewedEnglishHash": "04f8996da763b7a969b1028ee3007569eaf3a635486ddab211d512c85b9df8fb"
+  },
+  "companySettings.strictHostKeyChecking": {
+    "en": "Strict host key checking",
+    "zh-CN": "严格主机密钥检查",
+    "reviewedEnglishHash": "843373bb0a7955cfe878ef2b5ced6c3472e39985d56c180e5979b1fb8f44523a"
+  },
+  "companySettings.strictHostKeyCheckingHint": {
+    "en": "Keep this on unless you deliberately want probe-time host key acceptance disabled.",
+    "zh-CN": "除非你明确想在探测时禁用主机密钥校验，否则请保持开启。",
+    "reviewedEnglishHash": "91a5d02d0d389d3e1874ddb10ff74002e236c22f1894cd429def5c85e97af51d"
+  },
+  "companySettings.switchedOrganizationToast": {
+    "en": "Switched to {{name}}.",
+    "zh-CN": "已切换到 {{name}}。",
+    "reviewedEnglishHash": "d5152e978de5c58c77e8002abfe4e18da90133cf175105b312c35af1f0f97e54"
+  },
+  "companySettings.testConnection": {
+    "en": "Test connection",
+    "zh-CN": "测试连接",
+    "reviewedEnglishHash": "5bcf311b19d80c5645ce05f5fd36fc449412a6571ceb229fd483e9c415865912"
+  },
+  "companySettings.testDraft": {
+    "en": "Test draft",
+    "zh-CN": "测试草稿",
+    "reviewedEnglishHash": "58cff078c0e3ef018fabfb158d00daecfae31dfdcc729d8530bb257074f1a302"
+  },
+  "companySettings.testProvider": {
+    "en": "Test provider",
+    "zh-CN": "测试提供方",
+    "reviewedEnglishHash": "351b52698a788d2e59c63ce093067c8486781eba9fa768e6756c5c837cde41de"
+  },
+  "companySettings.unarchiveFromList": {
+    "en": "You can unarchive it from this list.",
+    "zh-CN": "可在此列表中取消归档。",
+    "reviewedEnglishHash": "00af8c1eaa3d4592d8ff93dddf3742d160a99d1b7ef567fe3f51a65dff4e013e"
+  },
+  "companySettings.username": {
+    "en": "Username",
+    "zh-CN": "用户名",
+    "reviewedEnglishHash": "e3b89e9d33f88e523083d8b4436adcc3726c89e97fd3179a2e102d765d1b16ed"
+  },
+  "companySettings.usernameHint": {
+    "en": "SSH login user.",
+    "zh-CN": "SSH 登录用户。",
+    "reviewedEnglishHash": "37dbb95078a817a14be56ab0ec7cbcb671022e5b05d1e07602582a3ef8f7b139"
+  }
+}

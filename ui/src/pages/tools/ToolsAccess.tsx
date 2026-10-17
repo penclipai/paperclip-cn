@@ -1,17 +1,14 @@
-import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Settings2, Wrench } from "lucide-react";
+import { translateInstant } from "@/i18n";
+import { useEffect } from "react";
+import { Wrench } from "lucide-react";
 import { Link, Navigate, useParams } from "@/lib/router";
 import { cn } from "@/lib/utils";
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";
 import { useCompany } from "@/context/CompanyContext";
 import { ProfilesIndex } from "./profiles/ProfilesIndex";
-import { PoliciesTab } from "./PoliciesTab";
-import { RuntimeTab } from "./RuntimeTab";
-import { AuditTab } from "./AuditTab";
 import { GatewaysTab } from "./GatewaysTab";
 import { PasteConfigTab } from "./PasteConfigTab";
-import { RunYourOwnTab } from "./RunYourOwnTab";
 import { SmokeLabTab } from "./SmokeLabTab";
 import {
   ADVANCED_TABS,
@@ -21,77 +18,49 @@ import {
   type ToolTabKey,
 } from "./tool-tabs";
 
-const TOOL_TAB_TRANSLATIONS: Record<ToolTabKey, { key: string; defaultValue: string }> = {
-  "run-your-own": { key: "tools.tabs.runYourOwn", defaultValue: "Run your own" },
-  "paste-config": { key: "tools.tabs.pasteConfig", defaultValue: "Paste a config" },
-  gateways: { key: "tools.tabs.gateways", defaultValue: "Gateways" },
-  profiles: { key: "tools.tabs.profiles", defaultValue: "Profiles" },
-  policies: { key: "tools.tabs.rules", defaultValue: "Rules" },
-  runtime: { key: "tools.tabs.health", defaultValue: "Health" },
-  audit: { key: "tools.tabs.activity", defaultValue: "Activity" },
-  "smoke-lab": { key: "tools.tabs.smokeLab", defaultValue: "Smoke Lab" },
-};
-
 function renderTab(tab: ToolTabKey, companyId: string) {
   switch (tab) {
     case "profiles":
       return <ProfilesIndex companyId={companyId} />;
-    case "policies":
-      return <PoliciesTab companyId={companyId} />;
-    case "runtime":
-      return <RuntimeTab companyId={companyId} />;
-    case "audit":
-      return <AuditTab companyId={companyId} />;
     case "gateways":
       return <GatewaysTab companyId={companyId} />;
     case "smoke-lab":
       return <SmokeLabTab companyId={companyId} />;
     case "paste-config":
-      return <PasteConfigTab companyId={companyId} />;
-    case "run-your-own":
     default:
-      return <RunYourOwnTab companyId={companyId} />;
+      return <PasteConfigTab companyId={companyId} />;
   }
 }
 
 export function ToolsAccess() {
-  const { t } = useTranslation();
+  useTranslation();
   const { selectedCompany, selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const params = useParams<{ tab?: string }>();
-  const activeTab = (TOOL_TABS.find((t) => t.key === params.tab)?.key ?? "run-your-own") as ToolTabKey;
+  const activeTab = (TOOL_TABS.find((t) => t.key === params.tab)?.key ?? "paste-config") as ToolTabKey;
   const advanced = isAdvancedSetupTab(activeTab);
-  const tabTranslation = TOOL_TAB_TRANSLATIONS[activeTab];
-  const tabLabel = t(tabTranslation.key, { defaultValue: tabTranslation.defaultValue });
+  const tabLabel = TOOL_TABS.find((t) => t.key === activeTab)?.label;
 
   useEffect(() => {
     setBreadcrumbs([
-      {
-        label: selectedCompany?.name ?? t("tools.breadcrumbs.company", { defaultValue: "Company" }),
-        href: "/dashboard",
-      },
-      { label: t("tools.breadcrumbs.apps", { defaultValue: "Apps" }), href: "/apps" },
+      { label: selectedCompany?.name ?? translateInstant("Company"), href: "/dashboard" },
+      { label: translateInstant("tools.breadcrumbs.apps"), href: "/apps" },
       ...(advanced
-        ? [{ label: t("tools.advanced.title", { defaultValue: "Advanced setup" }) }]
+        ? [{ label: translateInstant("tools.advanced.title") }]
         : [
-            {
-              label: t("tools.advanced.title", { defaultValue: "Advanced setup" }),
-              href: advancedTabHref("run-your-own"),
-            },
-            { label: tabLabel },
+            { label: translateInstant("tools.advanced.title"), href: advancedTabHref("paste-config") },
+            { label: tabLabel ?? translateInstant("tools.developer.title") },
           ]),
     ]);
     return () => setBreadcrumbs([]);
-  }, [setBreadcrumbs, selectedCompany?.name, advanced, tabLabel, t]);
+  }, [setBreadcrumbs, selectedCompany?.name, advanced, tabLabel]);
 
   if (!selectedCompanyId) {
-    return (
-      <div className="p-6 text-sm text-muted-foreground">
-        {t("tools.advanced.selectCompany", {
-          defaultValue: "Select a company to open advanced setup.",
-        })}
-      </div>
-    );
+    return <div className="p-6 text-sm text-muted-foreground">{translateInstant("Select an organization to open advanced setup.")}</div>;
+  }
+
+  if (params.tab === "run-your-own") {
+    return <Navigate to="/apps" replace />;
   }
 
   // Retired developer tabs (PAP-10915/PAP-10928) — keep old links working.
@@ -99,35 +68,36 @@ export function ToolsAccess() {
     params.tab === "applications" ||
     params.tab === "connections" ||
     params.tab === "overview" ||
-    params.tab === "examples"
+    params.tab === "examples" ||
+    params.tab === "audit"
   ) {
     return <Navigate to="/apps" replace />;
   }
 
+  if (params.tab === "runtime") {
+    return <Navigate to="/apps" replace />;
+  }
+
+  if (params.tab === "policies") {
+    return <Navigate to="/apps/advanced/profiles" replace />;
+  }
+
   if (advanced) {
     // M8a/M8b chrome (PAP-10839 wires): Advanced badge, plain-words subtitle,
-    // and a two-tab switcher. The developer surface stays behind a quiet link.
+    // and a focused setup tab. The developer surface stays behind a quiet link.
     return (
       <div className="mx-auto flex w-full max-w-4xl flex-col gap-5 p-4 sm:p-6">
         <header>
           <div className="flex items-center gap-2.5">
-            <h1 className="text-xl font-bold text-foreground">
-              {t("tools.advanced.title", { defaultValue: "Advanced setup" })}
-            </h1>
+            <h1 className="text-xl font-bold text-foreground">{translateInstant("tools.advanced.title")}</h1>
             <span className="inline-flex items-center rounded-full bg-foreground px-2.5 py-0.5 text-(length:--text-micro) font-bold text-background">
-              {t("tools.advanced.badge", { defaultValue: "Advanced" })}
-            </span>
+              {translateInstant("tools.advanced.badge")}</span>
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
-            {t("tools.advanced.description", {
-              defaultValue:
-                "For tools that aren't in the gallery. You'll need details from the tool's documentation. Most people never need this — if the app you want is in the gallery,",
-            })}{" "}
+            {translateInstant("tools.advanced.description")}{" "}
             <Link to="/apps" className="font-medium text-primary hover:underline">
-              {t("tools.advanced.connectInGallery", { defaultValue: "connect it there instead" })}
-            </Link>
-            .
-          </p>
+              {translateInstant("tools.advanced.connectInGallery")}</Link>
+            {translateInstant(".")}</p>
         </header>
 
         <nav className="flex items-center gap-6 border-b border-border">
@@ -142,9 +112,7 @@ export function ToolsAccess() {
                   : "border-transparent text-muted-foreground hover:text-foreground",
               )}
             >
-              {t(TOOL_TAB_TRANSLATIONS[tab.key].key, {
-                defaultValue: TOOL_TAB_TRANSLATIONS[tab.key].defaultValue,
-              })}
+              {tab.label}
             </Link>
           ))}
         </nav>
@@ -153,35 +121,13 @@ export function ToolsAccess() {
 
         <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <Wrench className="h-3.5 w-3.5" />
-          {t("tools.advanced.lookingForDeveloperTools", {
-            defaultValue: "Looking for the developer surface?",
-          })}{" "}
+          {translateInstant("tools.advanced.lookingForDeveloperTools")}{" "}
           <Link to={advancedTabHref("profiles")} className="font-medium text-primary hover:underline">
-            {t("tools.advanced.openDeveloperTools", { defaultValue: "Open developer tools" })}
-          </Link>
+            {translateInstant("tools.advanced.openDeveloperTools")}</Link>
         </p>
       </div>
     );
   }
 
-  return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 p-4 sm:p-6">
-      <div>
-        <div className="flex items-center gap-2">
-          <Settings2 className="h-5 w-5 text-muted-foreground" />
-          <h1 className="text-xl font-bold text-foreground">
-            {t("tools.developer.title", { defaultValue: "Developer tools" })}
-          </h1>
-        </div>
-        <p className="mt-1.5 max-w-2xl text-sm text-muted-foreground">
-          {t("tools.developer.description", {
-            defaultValue:
-              "Apps is the simple way to connect tools. This Developer area is for wiring your own servers, tokens, and rules by hand — most teams never need it.",
-          })}
-        </p>
-      </div>
-
-      <div className="min-h-(--sz-300px)">{renderTab(activeTab, selectedCompanyId)}</div>
-    </div>
-  );
+  return <div className="max-w-5xl">{renderTab(activeTab, selectedCompanyId)}</div>;
 }

@@ -1,3 +1,5 @@
+import { translateInstant } from "@/i18n";
+import { useTranslation } from "react-i18next";
 import { Database, Gauge, ReceiptText } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
@@ -26,17 +28,15 @@ const SURFACES = [
 ] as const;
 
 export function AccountingModelCard() {
+  useTranslation();
   return (
     <Card className="relative overflow-hidden border-border/70">
       <div className="absolute inset-0 bg-(image:--gradient-extract-3)" />
       <CardHeader className="relative px-5 pt-5 pb-2">
         <CardTitle className="text-sm font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">
-          Accounting model
-        </CardTitle>
+          {translateInstant("Accounting model")}</CardTitle>
         <CardDescription className="max-w-2xl text-sm leading-6">
-          Paperclip now separates request-level inference usage from account-level finance events.
-          That keeps provider reporting honest when the biller is OpenRouter, Cloudflare, Bedrock, or another intermediary.
-        </CardDescription>
+          {translateInstant("Paperclip now separates request-level inference usage from account-level finance events. That keeps provider reporting honest when the biller is OpenRouter, Cloudflare, Bedrock, or another intermediary.")}</CardDescription>
       </CardHeader>
       <CardContent className="relative grid gap-3 px-5 pb-5 md:grid-cols-3">
         {SURFACES.map((surface) => {

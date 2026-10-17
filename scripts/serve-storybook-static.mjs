@@ -1,11 +1,13 @@
 #!/usr/bin/env node
-// Tiny dependency-free static file server for the built Storybook
-// (ui/storybook-static). Used by the visual snapshot suite's webServer so we
-// don't add an http-server dependency.
+// Built Storybook plus the real, public on-demand avatar endpoint.
+// Uses an isolated disposable cache; no company database or credentials.
+import { createRequire } from "node:module";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { createServer } from "node:http";
 import { createReadStream, existsSync, statSync } from "node:fs";
 import { extname, join, normalize, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const root = resolve(
   fileURLToPath(new URL(".", import.meta.url)),
@@ -54,8 +56,20 @@ const MIME = {
   ".mp4": "video/mp4",
 };
 
+const serverRequire = createRequire(new URL("../server/package.json", import.meta.url));
+const { register } = await import(pathToFileURL(serverRequire.resolve("tsx/esm/api")).href);
+register();
+const express = serverRequire("express");
+const { agentAvatarRoutes } = await import("../server/src/routes/agent-avatars.ts");
+const { createAgentAvatarService } = await import("../server/src/services/agent-avatars.ts");
+const { createLocalDiskStorageProvider } = await import("../server/src/storage/local-disk-provider.ts");
+const cache = await mkdtemp(join(tmpdir(), "paperclip-storybook-avatars-"));
+const avatars = createAgentAvatarService(createLocalDiskStorageProvider(cache));
+const api = express();
+api.use("/api", agentAvatarRoutes(avatars).router);
 const server = createServer((req, res) => {
   const url = new URL(req.url ?? "/", `http://localhost:${port}`);
+  if (url.pathname.startsWith("/api/agent-avatars/")) { api(req, res); return; }
   let filePath = normalize(join(root, decodeURIComponent(url.pathname)));
   if (!filePath.startsWith(root)) {
     res.writeHead(403).end("forbidden");
@@ -78,3 +92,12 @@ const server = createServer((req, res) => {
 server.listen(port, () => {
   console.log(`storybook-static served at http://localhost:${port}`);
 });
+
+async function shutdown() {
+  server.close();
+  server.closeAllConnections();
+  await avatars.close();
+  await rm(cache, { recursive: true, force: true });
+}
+process.once("SIGTERM", shutdown);
+process.once("SIGINT", shutdown);
