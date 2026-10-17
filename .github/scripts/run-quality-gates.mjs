@@ -20,6 +20,7 @@ import { checkReleaseBootstrap } from './check-pr-release-bootstrap.mjs';
 import { checkCoauthors, fetchAllPullRequestCommits } from './check-pr-coauthors.mjs';
 
 const COMMENT_SIGNATURE = '— commitperclip';
+const CN_COMMENT_MARKER = '<!-- commitperclip-quality-gates:v1 -->';
 const LEGACY_COMMENT_AUTHORS = new Set(['commitperclip[bot]', 'commitperclip']);
 
 function trustedCommentAuthors(expectedCommentAuthor) {
@@ -32,9 +33,12 @@ function trustedCommentAuthors(expectedCommentAuthor) {
   throw new Error('ERROR: QUALITY_COMMENT_AUTHOR is not trusted');
 }
 
-function buildComment(author, failures, informational) {
+export function buildComment(author, failures, informational, expectedCommentAuthor) {
+  const trailer = expectedCommentAuthor === 'github-actions[bot]'
+    ? `${COMMENT_SIGNATURE}\n${CN_COMMENT_MARKER}`
+    : COMMENT_SIGNATURE;
   if (failures.length === 0 && informational.length === 0) {
-    return `✅ All checks passing — ready for Greptile review and maintainer approval.\n\n${COMMENT_SIGNATURE}`;
+    return `✅ All checks passing — ready for Greptile review and maintainer approval.\n\n${trailer}`;
   }
 
   const lines = [
@@ -54,7 +58,7 @@ function buildComment(author, failures, informational) {
 
   lines.push(
     '\nOnce updated, push a new commit and these checks will re-run automatically.\n',
-    COMMENT_SIGNATURE
+    trailer
   );
 
   return lines.join('\n');
@@ -62,6 +66,7 @@ function buildComment(author, failures, informational) {
 
 export async function findExistingComment(fetchFromGitHub, token, repo, prNumber, expectedCommentAuthor) {
   const authors = trustedCommentAuthors(expectedCommentAuthor);
+  const requiresCnMarker = expectedCommentAuthor === 'github-actions[bot]';
   for (let page = 1; ; page += 1) {
     const comments = await fetchFromGitHub(
       `/repos/${repo}/issues/${prNumber}/comments?per_page=100&page=${page}`,
@@ -70,7 +75,8 @@ export async function findExistingComment(fetchFromGitHub, token, repo, prNumber
 
     const existing = comments.find(
       c => authors.has(c.user.login) &&
-           c.body.includes(COMMENT_SIGNATURE)
+           c.body.includes(COMMENT_SIGNATURE) &&
+           (!requiresCnMarker || c.body.includes(CN_COMMENT_MARKER))
     );
     if (existing) return existing;
 
@@ -162,7 +168,7 @@ async function main() {
   ];
   const allPassed = allFailures.length === 0;
 
-  const commentBody = buildComment(author, allFailures, informational);
+  const commentBody = buildComment(author, allFailures, informational, QUALITY_COMMENT_AUTHOR);
 
   // Post comment if there are failures/informational, or update existing comment
   const existing = await findExistingComment(ghFetch, GH_TOKEN, GH_REPO, prNumber, QUALITY_COMMENT_AUTHOR);

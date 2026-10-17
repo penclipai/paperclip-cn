@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { findExistingComment } from '../run-quality-gates.mjs';
+import { buildComment, findExistingComment } from '../run-quality-gates.mjs';
 
 test('findExistingComment: paginates until it finds the commitperclip comment', async () => {
   const seenPaths = [];
@@ -40,20 +40,35 @@ test('findExistingComment: preserves legacy commitperclip authors by default', a
   assert.equal(comment.id, 2);
 });
 
-test('findExistingComment: accepts only the configured CN GitHub Actions author', async () => {
+test('findExistingComment: CN mode ignores a shared GitHub Actions author with only the old signature', async () => {
+  const comment = await findExistingComment(async () => ([{
+    id: 3,
+    user: { login: 'github-actions[bot]' },
+    body: 'Old status.\n\n— commitperclip',
+  }]), 'token', 'penclipai/paperclip-cn', 164, 'github-actions[bot]');
+
+  assert.equal(comment, null);
+});
+
+test('findExistingComment: finds a generated CN comment only when it has the exclusive marker', async () => {
+  const body = buildComment('chenj', ['Add tests'], [], 'github-actions[bot]');
   const comment = await findExistingComment(async () => ([
     { id: 3, user: { login: 'commitperclip[bot]' }, body: 'Old status.\n\n— commitperclip' },
-    { id: 4, user: { login: 'github-actions[bot]' }, body: 'CN status.\n\n— commitperclip' },
+    { id: 4, user: { login: 'github-actions[bot]' }, body },
   ]), 'token', 'penclipai/paperclip-cn', 164, 'github-actions[bot]');
 
   assert.equal(comment.id, 4);
 });
 
-test('findExistingComment: rejects signed comments from an unexpected author', async () => {
+test('findExistingComment: rejects CN marker-only and wrong-author comments', async () => {
   const comment = await findExistingComment(async () => ([{
     id: 5,
+    user: { login: 'github-actions[bot]' },
+    body: 'Marker without signature.\n\n<!-- commitperclip-quality-gates:v1 -->',
+  }, {
+    id: 6,
     user: { login: 'some-other-bot[bot]' },
-    body: 'Impostor status.\n\n— commitperclip',
+    body: 'Impostor status.\n\n— commitperclip\n<!-- commitperclip-quality-gates:v1 -->',
   }]), 'token', 'penclipai/paperclip-cn', 164, 'github-actions[bot]');
 
   assert.equal(comment, null);

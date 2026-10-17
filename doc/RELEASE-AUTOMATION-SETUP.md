@@ -40,7 +40,9 @@ The workflow selects credentials from a fixed repository name and ID pair:
 - Other repository identities fail before running the review.
 
 Comment updates require the selected bot author and the quality-gate signature.
-This keeps repeated runs on the same PR from creating duplicate status comments.
+CN comments also carry the fixed `<!-- commitperclip-quality-gates:v1 -->`
+marker, so another workflow's GitHub Actions comment is not updated by mistake.
+Repeated runs update the matching quality-gate comment instead of adding copies.
 These review credentials are separate from the npm publication credentials below.
 
 ## 1. Merge the Repo Changes First
