@@ -4,9 +4,10 @@ import { createActionsReader, readSourceVerification, sourceVerificationJob, wai
 
 const sha = "a".repeat(40);
 const workflow = { id: 123, path: ".github/workflows/cloud-readiness.yml" };
+const repository = "penclipai/paperclip-cn";
 const baseRun = {
   id: 456, workflow_id: workflow.id, path: workflow.path, run_attempt: 2,
-  repository: { full_name: "paperclipai/paperclip" }, head_repository: { full_name: "paperclipai/paperclip" },
+  repository: { full_name: repository }, head_repository: { full_name: repository },
   head_sha: sha, head_branch: "master", event: "push", status: "in_progress", conclusion: null,
 };
 const baseJob = { id: 789, name: sourceVerificationJob, run_id: 456, run_attempt: 2, head_sha: sha, status: "completed", conclusion: "success" };
@@ -15,6 +16,7 @@ function fixture({ runs = [baseRun], jobs = [baseJob], current = baseRun, total,
   const calls = [];
   const api = async (path) => {
     calls.push(path);
+    assert.match(path, new RegExp(`^/repos/${repository}/`));
     if (path.endsWith("/workflows/cloud-readiness.yml")) return workflowRecord;
     if (path.includes("/workflows/123/runs?")) return { total_count: total ?? runs.length, workflow_runs: runs };
     if (path.includes("/attempts/")) {
@@ -41,7 +43,8 @@ test("source proof passes while image work is still running, or has failed", asy
 test("only the expected workflow, repository, master push, and full SHA can supply proof", async () => {
   for (const overrides of [
     { workflow_id: 999 }, { path: ".github/workflows/pr.yml" },
-    { repository: { full_name: "other/paperclip" } }, { head_repository: { full_name: "fork/paperclip" } },
+    { repository: { full_name: "paperclipai/paperclip" } }, { repository: { full_name: "other/paperclip" } },
+    { head_repository: { full_name: "paperclipai/paperclip" } }, { head_repository: { full_name: "fork/paperclip" } },
     { head_sha: "b".repeat(40) }, { head_branch: "feature" }, { event: "workflow_dispatch" },
     { run_attempt: undefined }, { run_attempt: 0 },
   ]) {

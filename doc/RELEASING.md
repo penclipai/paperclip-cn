@@ -64,6 +64,11 @@ internal traceability tag.
 ## Core Invariants
 
 - canaries publish from `master`
+- CN canary source verification belongs to `penclipai/paperclip-cn`
+  (repository ID `1192887762`). Both Cloud readiness jobs and the source-proof
+  consumer must use this fixed fork identity. The consumer accepts only a
+  successful verification job for the exact master-push SHA and run attempt;
+  an upstream run or a manual workflow dispatch cannot supply that proof.
 - the canary publisher checks out the exact master push SHA. It verifies the
   repository, event, branch, and checked-out commit before attaching local
   `master` at that same SHA. It never switches to a newer branch tip. The local

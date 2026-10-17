@@ -264,6 +264,10 @@ test("canary branch attachment keeps exact-source checkout and artifact order in
 test("source proof requires every source check and does not wait on image publication", () => {
   const readiness = readWorkflow("cloud-readiness.yml");
   const proof = readiness.split("  source_verified:\n")[1];
+  for (const producer of [jobBlock(readiness, "verify"), proof]) {
+    assert.match(producer, /if: github\.repository == 'penclipai\/paperclip-cn' && github\.repository_id == '1192887762' && github\.ref == 'refs\/heads\/master'/);
+    assert.doesNotMatch(producer, /paperclipai\/paperclip|1170821064/);
+  }
   assert.match(proof, /name: Cloud source verified v1/);
   assert.match(proof, /needs: \[verify\]/);
   assert.match(proof, /node --test scripts\/cloud-source-verification.test.mjs/);

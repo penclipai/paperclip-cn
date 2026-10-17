@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   verify:
-    if: github.repository == 'paperclipai/paperclip' && github.ref == 'refs/heads/master'
+    if: github.repository == 'penclipai/paperclip-cn' && github.repository_id == '1192887762' && github.ref == 'refs/heads/master'
     permissions:
       contents: read
     uses: ./.github/workflows/release-verify.yml
@@ -28,7 +28,7 @@ jobs:
     # any source check fails, is cancelled, or is skipped.
     name: Cloud source verified v1
     needs: [verify]
-    if: github.repository == 'paperclipai/paperclip' && github.ref == 'refs/heads/master'
+    if: github.repository == 'penclipai/paperclip-cn' && github.repository_id == '1192887762' && github.ref == 'refs/heads/master'
     # Bookkeeping must not wait for the AWS builders it observes.
     runs-on: ubuntu-latest
     timeout-minutes: 5

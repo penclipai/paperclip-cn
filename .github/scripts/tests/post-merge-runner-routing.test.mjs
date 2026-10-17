@@ -94,7 +94,7 @@ test("Cloud readiness bookkeeping never waits for the AWS verification fleet", (
     bodies.set(name, body);
     assert.match(body, /^    runs-on: ubuntu-latest$/m);
     assert.doesNotMatch(body, /^ +continue-on-error:|^ +if:.*always\(\)/m);
-    assert.match(body, /^    if: github.repository == 'paperclipai\/paperclip' && github.ref == 'refs\/heads\/master'$/m);
+    assert.match(body, /^    if: github.repository == 'penclipai\/paperclip-cn' && github.repository_id == '1192887762' && github.ref == 'refs\/heads\/master'$/m);
     assert.match(body, /^ +SOURCE_SHA: \$\{\{ github.sha \}\}$/m);
     assert.equal(body.match(/^    needs: (.+)$/m)?.[1] ?? null, needs, `${name} prerequisites`);
   }
