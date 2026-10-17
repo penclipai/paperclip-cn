@@ -20,6 +20,17 @@ import { checkReleaseBootstrap } from './check-pr-release-bootstrap.mjs';
 import { checkCoauthors, fetchAllPullRequestCommits } from './check-pr-coauthors.mjs';
 
 const COMMENT_SIGNATURE = '— commitperclip';
+const LEGACY_COMMENT_AUTHORS = new Set(['commitperclip[bot]', 'commitperclip']);
+
+function trustedCommentAuthors(expectedCommentAuthor) {
+  if (!expectedCommentAuthor || expectedCommentAuthor === 'commitperclip[bot]') {
+    return LEGACY_COMMENT_AUTHORS;
+  }
+  if (expectedCommentAuthor === 'github-actions[bot]') {
+    return new Set(['github-actions[bot]']);
+  }
+  throw new Error('ERROR: QUALITY_COMMENT_AUTHOR is not trusted');
+}
 
 function buildComment(author, failures, informational) {
   if (failures.length === 0 && informational.length === 0) {
@@ -49,7 +60,8 @@ function buildComment(author, failures, informational) {
   return lines.join('\n');
 }
 
-export async function findExistingComment(fetchFromGitHub, token, repo, prNumber) {
+export async function findExistingComment(fetchFromGitHub, token, repo, prNumber, expectedCommentAuthor) {
+  const authors = trustedCommentAuthors(expectedCommentAuthor);
   for (let page = 1; ; page += 1) {
     const comments = await fetchFromGitHub(
       `/repos/${repo}/issues/${prNumber}/comments?per_page=100&page=${page}`,
@@ -57,7 +69,7 @@ export async function findExistingComment(fetchFromGitHub, token, repo, prNumber
     );
 
     const existing = comments.find(
-      c => (c.user.login === 'commitperclip[bot]' || c.user.login === 'commitperclip') &&
+      c => authors.has(c.user.login) &&
            c.body.includes(COMMENT_SIGNATURE)
     );
     if (existing) return existing;
@@ -83,7 +95,7 @@ async function upsertComment(token, repo, prNumber, body, existing) {
 }
 
 async function main() {
-  const { GH_TOKEN, GH_REPO, PR_NUMBER, PR_AUTHOR, PR_BRANCH } = process.env;
+  const { GH_TOKEN, GH_REPO, PR_NUMBER, PR_AUTHOR, PR_BRANCH, QUALITY_COMMENT_AUTHOR } = process.env;
 
   if (!GH_TOKEN || !GH_REPO || !PR_NUMBER) {
     console.error('ERROR: GH_TOKEN, GH_REPO, PR_NUMBER env vars required');
@@ -153,7 +165,7 @@ async function main() {
   const commentBody = buildComment(author, allFailures, informational);
 
   // Post comment if there are failures/informational, or update existing comment
-  const existing = await findExistingComment(ghFetch, GH_TOKEN, GH_REPO, prNumber);
+  const existing = await findExistingComment(ghFetch, GH_TOKEN, GH_REPO, prNumber, QUALITY_COMMENT_AUTHOR);
   if (allFailures.length > 0 || informational.length > 0 || existing) {
     await upsertComment(GH_TOKEN, GH_REPO, prNumber, commentBody, existing);
   }
