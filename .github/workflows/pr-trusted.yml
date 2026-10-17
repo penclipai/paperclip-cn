@@ -427,18 +427,22 @@ jobs:
         shell: pwsh
         run: |
           $store = "$env:PAPERCLIP_NSIS_WORK_DIR\pnpm-store"
-          pnpm install --filter paperclip --filter @penclipai/desktop-electron --frozen-lockfile --ignore-scripts --store-dir $store
+          pnpm install --filter paperclip --filter @penclipai/desktop-electron --filter @penclipai/server --frozen-lockfile --ignore-scripts --store-dir $store
           if ($LASTEXITCODE -ne 0) {
             Write-Host '::notice title=Lockfile::checked-in lockfile is stale for this merge tree; resolving it inline'
-            pnpm install --filter paperclip --filter @penclipai/desktop-electron --resolution-only --ignore-scripts --no-frozen-lockfile --store-dir $store
+            pnpm install --filter paperclip --filter @penclipai/desktop-electron --filter @penclipai/server --resolution-only --ignore-scripts --no-frozen-lockfile --store-dir $store
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-            pnpm install --filter paperclip --filter @penclipai/desktop-electron --frozen-lockfile --ignore-scripts --store-dir $store
+            pnpm install --filter paperclip --filter @penclipai/desktop-electron --filter @penclipai/server --frozen-lockfile --ignore-scripts --store-dir $store
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           }
 
       - name: Test desktop worker shutdown
         shell: pwsh
         run: pnpm --filter @penclipai/desktop-electron run test:run
+
+      - name: Test native PostgreSQL stop on Windows
+        shell: pwsh
+        run: pnpm --filter @penclipai/server exec vitest run src/embedded-postgres-stop.windows.test.ts
 
       - name: Resolve electron-builder's pinned NSIS compiler
         shell: pwsh
@@ -466,6 +470,7 @@ jobs:
           if-no-files-found: warn
           path: |
             ${{ env.PAPERCLIP_NSIS_WORK_DIR }}\evidence
+            ${{ env.PAPERCLIP_NSIS_WORK_DIR }}\tmp\paperclip-native-stop-*
             ${{ env.PAPERCLIP_NSIS_WORK_DIR }}\makensis.json
             ${{ env.PAPERCLIP_NSIS_WORK_DIR }}\makensis-version.txt
           retention-days: 14
