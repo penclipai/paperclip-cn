@@ -56,6 +56,7 @@ describe("AgentContextualSidebar", () => {
     );
 
     expect(markup).toContain("Codex Coder");
+    expect(markup).toContain('aria-label="Codex Coder navigation"');
     expect(markup).toContain('data-show-header="false"');
     expect(markup).toContain("border-r border-border bg-background");
     expect(markup).toContain('data-slot="contextual-sidebar-nav"');
@@ -86,12 +87,36 @@ describe("AgentContextualSidebar", () => {
       );
 
       expect(markup).toContain("运行环境");
+      expect(markup).toContain('aria-label="Agent的导航"');
       expect(markup).toContain("治理");
       expect(markup).toContain("执行框架 / 运行环境");
       expect(markup).toContain("权限 / 信任");
       expect(markup).toContain("Caller override");
       queryClient.clear();
     } finally {
+      await i18n.changeLanguage("en");
+    }
+  });
+
+  it.each([
+    ["en", "Agent navigation"],
+    ["zh-CN", "智能体的导航"],
+  ])("localizes the missing agent name and accessible navigation label in %s", async (language, expectedLabel) => {
+    await i18n.changeLanguage(language);
+    const queryClient = new QueryClient();
+    try {
+      const markup = renderToStaticMarkup(
+        <QueryClientProvider client={queryClient}>
+          <MemoryRouter>
+            <AgentContextualSidebar agentRef="agent" agentId="agent-1" />
+          </MemoryRouter>
+        </QueryClientProvider>,
+      );
+      const container = document.createElement("div");
+      container.innerHTML = markup;
+      expect(container.querySelector("nav")?.getAttribute("aria-label")).toBe(expectedLabel);
+    } finally {
+      queryClient.clear();
       await i18n.changeLanguage("en");
     }
   });

@@ -1,4 +1,9 @@
 {
+  "agentDetail.navigationAriaLabel": {
+    "en": "{{name}} navigation",
+    "zh-CN": "{{name}}的导航",
+    "reviewedEnglishHash": "a42512333dbce8f6f0d4a56671570cbaf0ad0f70fd147c057190c9b5db502271"
+  },
   "agentDetail.runBreadcrumb": {
     "en": "Run {{id}}",
     "zh-CN": "运行 {{id}}",
