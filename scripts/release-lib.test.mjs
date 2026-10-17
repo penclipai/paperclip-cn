@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { chmodSync, copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
 
@@ -32,6 +32,12 @@ const oidcNpmShim = readFileSync(new URL("./npm-publish-oidc.sh", import.meta.ur
 const oidcNpmShimPath = fileURLToPath(new URL("./npm-publish-oidc.sh", import.meta.url));
 const previewFunction = releaseScript.match(/preview_publish_payloads\(\) \{[\s\S]*?\n\}\n\nrelease_info ""/)?.[0]
   ?.replace(/\n\nrelease_info ""$/, "");
+
+function resolvePnpmCliPath(pnpmLauncher, pnpmLauncherSource) {
+  const pnpmCliAbsolutePath = pnpmLauncherSource.match(/(?:^|[\s"])(\/(?:[^\s"]*\/)*pnpm\.cjs)/m)?.[1];
+  const pnpmCliSuffix = pnpmLauncherSource.match(/\$(?:\{)?basedir(?:\})?((?:\/[^"\s]*)pnpm\.cjs)/)?.[1];
+  return pnpmCliAbsolutePath ?? (pnpmCliSuffix && resolve(dirname(pnpmLauncher), `.${pnpmCliSuffix}`));
+}
 
 function workflowVerifyBudget() {
   return {
@@ -280,6 +286,18 @@ test("the controlled OIDC npm shim pins npm 11.18.0 and forwards pnpm publish ar
   assert.match(oidcNpmShim, /^exec npx --yes npm@11\.18\.0 "\$@"$/m);
 });
 
+test("the pnpm launcher resolver preserves its basedir prefix", () => {
+  assert.equal(
+    resolvePnpmCliPath("/opt/pnpm/bin/pnpm", 'exec node /opt/pnpm/lib/pnpm.cjs "$@"'),
+    "/opt/pnpm/lib/pnpm.cjs",
+  );
+  assert.equal(
+    resolvePnpmCliPath("/home/runner/setup-pnpm/pnpm", 'exec "$basedir/../global/pnpm/bin/pnpm.cjs" "$@"'),
+    resolve("/home/runner/setup-pnpm", "../global/pnpm/bin/pnpm.cjs"),
+  );
+  assert.equal(resolvePnpmCliPath("/opt/pnpm/bin/pnpm", "exec pnpm \"$@\""), undefined);
+});
+
 test("pnpm 9 executes the OIDC npm path with its packed manifest and lifecycle ownership intact", {
   skip: process.platform === "win32" && "POSIX executable npm-path integration runs on Ubuntu CI",
 }, () => {
@@ -325,13 +343,14 @@ test("pnpm 9 executes the OIDC npm path with its packed manifest and lifecycle o
     },
   }, null, 2));
   const pnpmLauncher = execFileSync("sh", ["-c", "command -v pnpm"], { encoding: "utf8" }).trim();
-  const pnpmCliPath = readFileSync(pnpmLauncher, "utf8").match(/\/(?:[^\s]+\/)*pnpm\.cjs/)?.[0];
+  const pnpmLauncherSource = readFileSync(pnpmLauncher, "utf8");
+  const pnpmCliPath = resolvePnpmCliPath(pnpmLauncher, pnpmLauncherSource);
   assert.ok(pnpmCliPath, "the POSIX pnpm launcher must resolve to its pnpm.cjs entrypoint");
   const fakeNodePath = join(fakeBinDir, "node");
   copyFileSync(process.execPath, fakeNodePath);
   chmodSync(fakeNodePath, 0o755);
   const pnpmVersion = execFileSync(fakeNodePath, [pnpmCliPath, "--version"], { encoding: "utf8" }).trim();
-  assert.match(pnpmVersion, /^9\./, "this integration fixture must exercise pnpm 9");
+  assert.equal(pnpmVersion, "9.15.4", "this integration fixture must exercise the workflow-pinned pnpm 9.15.4");
 
   // pnpm's runNpm prepends dirname(process.execPath) ahead of the inherited PATH.
   writeExecutable(join(fakeBinDir, "npx"), "#!/usr/bin/env bash\nset -euo pipefail\n[ \"$#\" -ge 5 ]\n[ \"$1\" = \"--yes\" ]\n[ \"$2\" = \"npm@11.18.0\" ]\n[ \"$3\" = \"publish\" ]\n[ \"$4\" = \"--ignore-scripts\" ]\nprintf '%s\\n' \"$@\" > \"$FAKE_NPX_ARGS\"\ncp \"$5\" \"$FAKE_PUBLISHED_ARCHIVE\"\n");
