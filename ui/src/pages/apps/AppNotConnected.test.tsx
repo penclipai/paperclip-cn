@@ -4,6 +4,7 @@ import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import i18n from "@/i18n";
 import { AppNotConnected } from "./AppNotConnected";
 
 const listApplicationsMock = vi.hoisted(() => vi.fn());
@@ -17,6 +18,7 @@ const updateApplicationMock = vi.hoisted(() => vi.fn());
 const mockAgentsList = vi.hoisted(() => vi.fn());
 const mockNavigate = vi.hoisted(() => vi.fn());
 const navigateComponentMock = vi.hoisted(() => vi.fn());
+const setBreadcrumbsMock = vi.hoisted(() => vi.fn());
 const mockParams = vi.hoisted(() => ({ applicationId: "app-1", tab: "permissions" as string | undefined }));
 
 vi.mock("@/api/tools", () => ({
@@ -69,7 +71,7 @@ vi.mock("@/context/CompanyContext", () => ({
 }));
 
 vi.mock("@/context/BreadcrumbContext", () => ({
-  useBreadcrumbs: () => ({ setBreadcrumbs: vi.fn() }),
+  useBreadcrumbs: () => ({ setBreadcrumbs: setBreadcrumbsMock }),
 }));
 
 vi.mock("@/context/ToastContext", () => ({
@@ -429,5 +431,31 @@ describe("AppNotConnected", () => {
     expect(Array.from(container.querySelectorAll("button")).some(
       (button) => button.textContent?.trim() === "Reconnect",
     )).toBe(false);
+  });
+
+  it("refreshes breadcrumb copy on a locale switch without changing the raw application name or route", async () => {
+    await i18n.changeLanguage("en");
+    listApplicationsMock.mockResolvedValue({ applications: [application({ name: "Owner App Ω" })] });
+    listConnectionsMock.mockResolvedValue({ connections: [] });
+
+    try {
+      await renderPage();
+      expect(setBreadcrumbsMock).toHaveBeenLastCalledWith([
+        { label: "Connectors", href: "/apps" },
+        { label: "Owner App Ω", href: "/apps/app/app-1/permissions" },
+        { label: "Permissions" },
+      ]);
+
+      await act(async () => { await i18n.changeLanguage("zh-CN"); });
+      await flushReact();
+
+      expect(setBreadcrumbsMock).toHaveBeenLastCalledWith([
+        { label: "连接器", href: "/apps" },
+        { label: "Owner App Ω", href: "/apps/app/app-1/permissions" },
+        { label: "权限" },
+      ]);
+    } finally {
+      await act(async () => { await i18n.changeLanguage("en"); });
+    }
   });
 });

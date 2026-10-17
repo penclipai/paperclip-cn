@@ -1,10 +1,9 @@
-import { useTranslation } from "react-i18next";
 import { translateInstant } from "@/i18n";
 import { Inbox, ShieldCheck } from "lucide-react";
 
 export const APP_TABS = [
-  { key: "permissions", label: translateInstant("Permissions"), icon: ShieldCheck },
-  { key: "review", label: translateInstant("Review"), icon: Inbox },
+  { key: "permissions", labelKey: "Permissions", icon: ShieldCheck },
+  { key: "review", labelKey: "Review", icon: Inbox },
 ] as const;
 
 export type AppTabKey = (typeof APP_TABS)[number]["key"];
@@ -22,5 +21,5 @@ export function isAppTabKey(value: string | undefined): value is AppTabKey {
 }
 
 export function appTabLabel(tabKey: AppTabKey): string {
-  return APP_TABS.find((tab) => tab.key === tabKey)?.label ?? translateInstant("Permissions");
+  return translateInstant(APP_TABS.find((tab) => tab.key === tabKey)?.labelKey ?? "Permissions");
 }

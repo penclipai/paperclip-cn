@@ -1,4 +1,3 @@
-import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
 import { ChevronLeft } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -32,7 +31,7 @@ type AppDetailSidebarProps =
   | { kind: "application"; applicationId: string };
 
 export function AppDetailSidebar(props: AppDetailSidebarProps) {
-  useTranslation();
+  const { t } = useTranslation();
   const { selectedCompanyId } = useCompany();
   const { isMobile, setSidebarOpen } = useSidebar();
 
@@ -99,7 +98,7 @@ export function AppDetailSidebar(props: AppDetailSidebarProps) {
           className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
         >
           <ChevronLeft className="h-3.5 w-3.5 shrink-0" />
-          <span className="truncate">{translateInstant("All connectors")}</span>
+          <span className="truncate">{t("All connectors")}</span>
         </Link>
         <div className="flex min-w-0 items-center gap-2 px-2 py-1">
           <AppLogo
@@ -120,12 +119,12 @@ export function AppDetailSidebar(props: AppDetailSidebarProps) {
             <SidebarNavItem
               key={tab.key}
               to={tabHref(props, tab.key)}
-              label={poolPluginKey ? "Settings" : tab.label}
+              label={t(poolPluginKey ? "Settings" : tab.labelKey)}
               icon={tab.icon}
               end
               badge={tab.key === "review" && reviewCount > 0 ? reviewCount : undefined}
               badgeTone="danger"
-              badgeLabel="needing review"
+              badgeLabel={t("apps.sidebar.needingReview")}
             />
           ))}
         </div>

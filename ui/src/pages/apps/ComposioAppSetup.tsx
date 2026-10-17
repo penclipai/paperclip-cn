@@ -1,4 +1,3 @@
-import { translateInstant } from "@/i18n";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -16,7 +15,7 @@ export function ComposioAppSetup({ name, toolkit, connections, onClose, onBack, 
   name: string; toolkit: string; connections: ToolConnection[]; onClose: () => void;
   onBack?: () => void; onConnectNew: () => void;
 }) {
-  useTranslation();
+  const { t } = useTranslation();
   const queries = useQueryClient();
   const { userId, settled } = useAccountIdentity();
   const { pushToast } = useToast();
@@ -25,6 +24,7 @@ export function ComposioAppSetup({ name, toolkit, connections, onClose, onBack, 
   const [result, setResult] = useState<ComposioAppSetupResult | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [setupFailed, setSetupFailed] = useState(false);
   const connection = connections.find(candidate => candidate.id === connectionId);
 
   async function submit(input: ComposioAppSetupInput) {
@@ -32,44 +32,47 @@ export function ComposioAppSetup({ name, toolkit, connections, onClose, onBack, 
     setConnectionId(connection.id);
     setBusy(true);
     setError(null);
+    setSetupFailed(false);
     try {
       const next = await toolsApi.setupComposioApp(connection.id, toolkit, input);
       setResult(next);
       await queries.invalidateQueries({ queryKey: queryKeys.tools.composioApps(connection.id), exact: true });
       await queries.invalidateQueries({ queryKey: queryKeys.tools.aggregatorApps(connection.id, userId), exact: true });
       if (next.status === "connected") {
-        pushToast({ title: `${name} is connected through Composio.`, tone: "success" });
+        pushToast({ title: t("aggregatorConnect.composio.connectedToast", { appName: name }), tone: "success" });
         onClose();
       }
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Couldn’t configure this app. Try again.");
+      const message = cause instanceof Error ? cause.message : "";
+      if (message) setError(message);
+      else setSetupFailed(true);
     } finally { setBusy(false); }
   }
 
   return <div className="space-y-4">
     <div className="space-y-2">
-      <Label htmlFor="composio-app-account">{translateInstant("Composio account")}</Label>
+      <Label htmlFor="composio-app-account">{t("aggregatorConnect.composio.accountLabel")}</Label>
       <select id="composio-app-account" value={connectionId} disabled={busy} onChange={event => {
-        setConnectionId(event.target.value); setResult(null); setError(null);
+        setConnectionId(event.target.value); setResult(null); setError(null); setSetupFailed(false);
       }} className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
         {connections.map(candidate => <option key={candidate.id} value={candidate.id}>{candidate.name}</option>)}
-        <option value="__new__">{translateInstant("Connect a new account…")}</option>
+        <option value="__new__">{t("aggregatorConnect.composio.connectNewAccountOption")}</option>
       </select>
     </div>
-    {error ? <p role="alert" className="text-sm text-destructive">{error}</p> : null}
-    {result ? <p role="status" className="text-sm text-muted-foreground">{translateInstant("Finish connecting")}{" "}{name}{" "}{translateInstant("in Composio, then return here.")}</p> : null}
+    {error || setupFailed ? <p role="alert" className="text-sm text-destructive">{error ?? t("aggregatorConnect.composio.setupFailed")}</p> : null}
+    {result ? <p role="status" className="text-sm text-muted-foreground">{t("aggregatorConnect.composio.finishConnecting", { appName: name })}</p> : null}
     {result?.authorizationUrl ? <Button asChild variant="outline" className="w-full">
-      <a href={result.authorizationUrl} target="_blank" rel="noopener noreferrer">{translateInstant("Connect")}{" "}{name}{" "}{translateInstant("in Composio")}<ExternalLink className="size-4" /></a>
+      <a href={result.authorizationUrl} target="_blank" rel="noopener noreferrer">{t("aggregatorConnect.composio.connectInComposio", { appName: name })}<ExternalLink className="size-4" /></a>
     </Button> : null}
     <div className="flex items-center justify-between gap-2">
-      <Button variant="ghost" disabled={busy} onClick={onBack ?? onClose}>{onBack ? translateInstant("Back") : translateInstant("Cancel")}</Button>
+      <Button variant="ghost" disabled={busy} onClick={onBack ?? onClose}>{onBack ? t("common.back") : t("common.cancel")}</Button>
       <div className="flex items-center gap-2">
-      {result && result.status !== "connected" ? <Button variant="ghost" disabled={busy} onClick={() => void submit({ action: "start" })}>{translateInstant("Get a new link")}</Button> : null}
+      {result && result.status !== "connected" ? <Button variant="ghost" disabled={busy} onClick={() => void submit({ action: "start" })}>{t("aggregatorConnect.composio.getNewLink")}</Button> : null}
       <Button disabled={!settled || busy || (!connection && connectionId !== "__new__")} onClick={() => {
         if (connectionId === "__new__") onConnectNew();
         else void submit(result ? { action: "complete" } : { action: "start" });
       }}>
-        {busy ? "Checking…" : connectionId === "__new__" ? "Connect new account" : result ? "I’ve connected it" : translateInstant("common.continue")}
+        {busy ? t("aggregatorConnect.composio.checking") : connectionId === "__new__" ? t("aggregatorConnect.composio.connectNewAccount") : result ? t("aggregatorConnect.composio.connectedAction") : t("common.continue")}
       </Button>
       </div>
     </div>

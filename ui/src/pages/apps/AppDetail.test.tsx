@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getAppStoreDefinition } from "@penclipai/shared";
 import type { AggregatorAppSnapshot, AggregatorAppsResponse } from "@penclipai/shared/aggregator-apps";
+import i18n from "@/i18n";
 import { queryKeys } from "@/lib/queryKeys";
 import { rememberSkillSourceReturn, skillSourceReturnPath } from "@/lib/skill-source-connect-return";
 import { AppDetail } from "./AppDetail";
@@ -48,6 +49,7 @@ const mockParams = vi.hoisted(() => ({ connectionId: "conn-1", tab: "permissions
 const mockSearchParams = vi.hoisted(() => ({ value: new URLSearchParams() }));
 const navigateComponentMock = vi.hoisted(() => vi.fn());
 const navigateTopLevelMock = vi.hoisted(() => vi.fn());
+const setBreadcrumbsMock = vi.hoisted(() => vi.fn());
 
 vi.mock("@/api/tools", () => ({
   toolsApi: {
@@ -169,7 +171,7 @@ vi.mock("@/context/CompanyContext", () => ({
 }));
 
 vi.mock("@/context/BreadcrumbContext", () => ({
-  useBreadcrumbs: () => ({ setBreadcrumbs: vi.fn() }),
+  useBreadcrumbs: () => ({ setBreadcrumbs: setBreadcrumbsMock }),
 }));
 
 const pushToastMock = vi.hoisted(() => vi.fn());
@@ -482,6 +484,32 @@ describe("AppDetail", () => {
     await flushReact();
     return client;
   }
+
+  it("refreshes breadcrumb copy on a locale switch without changing the raw connection name or route", async () => {
+    await act(async () => { await i18n.changeLanguage("en"); });
+    getConnectionMock.mockResolvedValue(connection({ name: "Raw Connection Ω" }));
+    listGalleryMock.mockResolvedValue({ apps: [] });
+
+    try {
+      await renderAppDetail();
+      expect(setBreadcrumbsMock).toHaveBeenLastCalledWith([
+        { label: "Connectors", href: "/apps" },
+        { label: "Raw Connection Ω", href: "/apps/conn-1/permissions" },
+        { label: "Permissions" },
+      ]);
+
+      await act(async () => { await i18n.changeLanguage("zh-CN"); });
+      await flushReact();
+
+      expect(setBreadcrumbsMock).toHaveBeenLastCalledWith([
+        { label: "连接器", href: "/apps" },
+        { label: "Raw Connection Ω", href: "/apps/conn-1/permissions" },
+        { label: "权限" },
+      ]);
+    } finally {
+      await act(async () => { await i18n.changeLanguage("en"); });
+    }
+  });
 
   function useComposioConnection() {
     getConnectionMock.mockResolvedValue(connection({ name: "Composio", authKind: "oauth",

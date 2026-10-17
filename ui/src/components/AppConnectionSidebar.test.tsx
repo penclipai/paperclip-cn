@@ -4,6 +4,7 @@ import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import i18n from "@/i18n";
 import { AppDetailSidebar } from "./AppConnectionSidebar";
 import { aiConnectionRouterAppDefinition } from "@penclipai/shared";
 
@@ -218,6 +219,65 @@ describe("AppConnectionSidebar", () => {
     expect(sidebarNavItemMock).toHaveBeenCalledWith(expect.objectContaining({ to: "/apps/conn-1/permissions", label: "Settings", end: true }));
     expect(container.querySelector("[data-app-logo]")?.getAttribute("data-logo-url")).toBe(entry.branding.logoUrl);
     expect(container.textContent).not.toContain("Review");
+  });
+
+  it("updates sidebar labels in place while preserving raw names and tab routes", async () => {
+    await i18n.changeLanguage("en");
+    mockToolsApi.getConnection.mockResolvedValue(connection({ name: "Raw Connector Ω" }));
+
+    try {
+      await renderSidebar();
+      expect(sidebarNavItemMock).toHaveBeenCalledWith(expect.objectContaining({
+        to: "/apps/conn-1/permissions",
+        label: "Permissions",
+      }));
+      expect(sidebarNavItemMock).toHaveBeenCalledWith(expect.objectContaining({
+        to: "/apps/conn-1/review",
+        label: "Review",
+      }));
+
+      await act(async () => { await i18n.changeLanguage("zh-CN"); });
+      await flushReact();
+
+      expect(container.querySelector("[data-app-logo]")?.getAttribute("data-app-logo")).toBe("Raw Connector Ω");
+      expect(sidebarNavItemMock).toHaveBeenCalledWith(expect.objectContaining({
+        to: "/apps/conn-1/permissions",
+        label: "权限",
+      }));
+      expect(sidebarNavItemMock).toHaveBeenCalledWith(expect.objectContaining({
+        to: "/apps/conn-1/review",
+        label: "审阅",
+      }));
+    } finally {
+      await act(async () => { await i18n.changeLanguage("en"); });
+    }
+  });
+
+  it("updates the connection-pool Settings label without changing its route", async () => {
+    const entry = aiConnectionRouterAppDefinition("example.pool", { name: "AI connection pool", description: "Use saved connections" });
+    await i18n.changeLanguage("en");
+    mockToolsApi.getConnection.mockResolvedValue(connection({ name: "Raw Connector Ω", config: { aiRouter: { pluginKey: "example.pool" } } }));
+    mockToolsApi.listApplications.mockResolvedValue({ applications: [] });
+    mockToolsApi.listGallery.mockResolvedValue({ apps: [entry] });
+
+    try {
+      await renderSidebar();
+      expect(sidebarNavItemMock).toHaveBeenCalledWith(expect.objectContaining({
+        to: "/apps/conn-1/permissions",
+        label: "Settings",
+      }));
+
+      await act(async () => { await i18n.changeLanguage("zh-CN"); });
+      await flushReact();
+
+      expect(container.querySelector("[data-app-logo]")?.getAttribute("data-app-logo")).toBe("Raw Connector Ω");
+      expect(sidebarNavItemMock).toHaveBeenCalledWith(expect.objectContaining({
+        to: "/apps/conn-1/permissions",
+        label: "设置",
+      }));
+    } finally {
+      await act(async () => { await i18n.changeLanguage("en"); });
+    }
   });
 
   it("uses the application key for a customized connection display name", async () => {
