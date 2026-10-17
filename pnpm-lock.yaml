@@ -946,7 +946,7 @@ importers:
     dependencies:
       '@agentclientprotocol/claude-agent-acp':
         specifier: 0.73.0
-        version: 0.73.0(patch_hash=riqgguivxjxydoydnzpedjy5au)(@anthropic-ai/sdk@0.129.0(zod@4.6.6))(@modelcontextprotocol/sdk@1.32.1(zod@4.6.6))
+        version: 0.73.0(patch_hash=riqgguivxjxydoydnzpedjy5au)(@anthropic-ai/sdk@0.129.0(zod@4.4.3))(@modelcontextprotocol/sdk@1.32.1(zod@4.4.3))
       '@agentclientprotocol/codex-acp':
         specifier: 1.6.2
         version: 1.6.2(patch_hash=ilkykmzaax6atpgtip6bxikv6i)
@@ -2215,20 +2215,8 @@ packages:
     cpu: [arm64]
     os: [darwin]
 
-  '@embedded-postgres/darwin-arm64@18.3.0-beta.17':
-    resolution: {integrity: sha512-Pvrej3Xz5flfyVc9mchVfekrKoTJyvPtM3U0vjuXamZkRKmi+inP2zRmnmzYecIVbr7Zhu82xbsCENMXrwMp9Q==}
-    engines: {node: '>=16'}
-    cpu: [arm64]
-    os: [darwin]
-
   '@embedded-postgres/darwin-x64@18.1.0-beta.16':
     resolution: {integrity: sha512-4zHNCscGJt/3pmkpLCuU/IpMJzwENM6OqSHE+WWkOoNqYid49ZnmgB1ltOelgZgRoPRIy/HDEnrMeuVxQHBhEw==}
-    engines: {node: '>=16'}
-    cpu: [x64]
-    os: [darwin]
-
-  '@embedded-postgres/darwin-x64@18.3.0-beta.17':
-    resolution: {integrity: sha512-MVWe+C47pPoMD9LlIWGQkvZ5Xsu3IBo54CYqnIps/Z1byMIUBNc7y/dZ3mfqEwiCbVDVqirG0CU462xnrSEfKA==}
     engines: {node: '>=16'}
     cpu: [x64]
     os: [darwin]
@@ -2239,20 +2227,8 @@ packages:
     cpu: [arm64]
     os: [linux]
 
-  '@embedded-postgres/linux-arm64@18.3.0-beta.17':
-    resolution: {integrity: sha512-hXp7yHJHYWkdjkgF6As8whEHbdYxhBdmXeLpLTw0aiac0O6+0Cbqk3cOR9U+e49oyIpElHVwZUo6OewquSRhSg==}
-    engines: {node: '>=16'}
-    cpu: [arm64]
-    os: [linux]
-
   '@embedded-postgres/linux-arm@18.1.0-beta.16':
     resolution: {integrity: sha512-aB1t95YGnqay8swh70s7zo587Nog90UL9yUYrzMMNMq40Qfrq9aWiBn0+6vCxp1rSFaPyJMPvW62/rIKLFBkKg==}
-    engines: {node: '>=16'}
-    cpu: [arm]
-    os: [linux]
-
-  '@embedded-postgres/linux-arm@18.3.0-beta.17':
-    resolution: {integrity: sha512-Y2vw7p80PO/Ko7CDm8CCpStnNfMe+oc11e0WZtqAVRjxO6H0oic/ehULhUsWU3mZm5jq7wQAv37VMzf4JN+SFQ==}
     engines: {node: '>=16'}
     cpu: [arm]
     os: [linux]
@@ -2263,20 +2239,8 @@ packages:
     cpu: [ia32]
     os: [linux]
 
-  '@embedded-postgres/linux-ia32@18.3.0-beta.17':
-    resolution: {integrity: sha512-hVUOM+7QxkzAIdN3gewfVwL1EpJIx+0qUiNTD8cMqRtaZyU87e4AFIvBS0UiDJ9xzMTVWr/X24wePtbvIbkopg==}
-    engines: {node: '>=16'}
-    cpu: [ia32]
-    os: [linux]
-
   '@embedded-postgres/linux-ppc64@18.1.0-beta.16':
     resolution: {integrity: sha512-wTglX0bZVBretiUJrZUO/EmEP8w7jC+i8ZAEKesHHIqIDXEV2F9l+6aTjWt2wRu5SAJ6gpe2RbcKvJ6x+6m1Qw==}
-    engines: {node: '>=16'}
-    cpu: [ppc64]
-    os: [linux]
-
-  '@embedded-postgres/linux-ppc64@18.3.0-beta.17':
-    resolution: {integrity: sha512-p3/u4YUqSdE2CKUBlC84JGZCi6RnE1fyeLPIIVy2DJUiKtExR5rE3OpDJcVoN40uecYGL+nR4qFocGzDwG1TBw==}
     engines: {node: '>=16'}
     cpu: [ppc64]
     os: [linux]
@@ -2287,20 +2251,8 @@ packages:
     cpu: [x64]
     os: [linux]
 
-  '@embedded-postgres/linux-x64@18.3.0-beta.17':
-    resolution: {integrity: sha512-8orSD6NNopSLtjqir4dWQBrj+g8j1eJjWd9mB60A3xbWMzIBIPQpzT7XzbacW9YFSl/DejOLnRXfff+Wr13Tgw==}
-    engines: {node: '>=16'}
-    cpu: [x64]
-    os: [linux]
-
   '@embedded-postgres/windows-x64@18.1.0-beta.16':
     resolution: {integrity: sha512-v6AXH1zi6YyoqPM6U7mX08prJ33yD9gqsbo3YdtPi8FDx0C/y9sYa3aQVf/3blPJvHyERYbY8fZnYXbb79Lo0Q==}
-    engines: {node: '>=16'}
-    cpu: [x64]
-    os: [win32]
-
-  '@embedded-postgres/windows-x64@18.3.0-beta.17':
-    resolution: {integrity: sha512-kDC5aBsmhWDjeQjj2V4g+Bk+pMeDU27b7l0rBbaKgtt2gsNmCB34ULg/5cqs2kqUKSk/tiGMHKCNE+zQZ+s4rg==}
     engines: {node: '>=16'}
     cpu: [x64]
     os: [win32]
@@ -6311,6 +6263,7 @@ packages:
   '@xmldom/xmldom@0.8.13':
     resolution: {integrity: sha512-KRYzxepc14G/CEpEGc3Yn+JKaAeT63smlDr+vjB8jRfgTBBI9wRj/nkQEO+ucV8p8I9bfKLWp37uHgFrbntPvw==}
     engines: {node: '>=10.0.0'}
+    deprecated: this version has critical issues, please update to the latest version
 
   '@xterm/addon-fit@0.11.0':
     resolution: {integrity: sha512-jYcgT6xtVYhnhgxh3QgYDnnNMYTcf8ElbxxFzX0IZo+vabQqSPAjC3c1wJrKB5E19VwQei89QCiZZP86DCPF7g==}
@@ -7433,10 +7386,6 @@ packages:
 
   embedded-postgres@18.1.0-beta.16:
     resolution: {integrity: sha512-TDp7Ld0h84x5fzIIZFyreYWqZrxUNjuXB6OxqJCmV6PodB2vzQ+1hlL6n4uK1de7bIAxYt5OkDykwcuIONQdQg==}
-    engines: {node: '>=16'}
-
-  embedded-postgres@18.3.0-beta.17:
-    resolution: {integrity: sha512-1biFWyuPVtAV5S9RBgcr4PGuAdNL9WhnNZVQ5Arp3gsB24Ci9X9s/8Z7RFYFSc6tJWcj9kzF55YcDAcr3jLUbQ==}
     engines: {node: '>=16'}
 
   emoji-regex@8.0.0:
@@ -10473,6 +10422,15 @@ snapshots:
 
   '@adobe/css-tools@4.5.0': {}
 
+  '@agentclientprotocol/claude-agent-acp@0.73.0(patch_hash=riqgguivxjxydoydnzpedjy5au)(@anthropic-ai/sdk@0.129.0(zod@4.4.3))(@modelcontextprotocol/sdk@1.32.1(zod@4.4.3))':
+    dependencies:
+      '@agentclientprotocol/sdk': 1.4.0(zod@4.4.3)
+      '@anthropic-ai/claude-agent-sdk': 0.3.286(@anthropic-ai/sdk@0.129.0(zod@4.4.3))(@modelcontextprotocol/sdk@1.32.1(zod@4.4.3))(zod@4.4.3)
+      zod: 4.4.3
+    transitivePeerDependencies:
+      - '@anthropic-ai/sdk'
+      - '@modelcontextprotocol/sdk'
+
   '@agentclientprotocol/claude-agent-acp@0.73.0(patch_hash=riqgguivxjxydoydnzpedjy5au)(@anthropic-ai/sdk@0.129.0(zod@4.6.6))(@modelcontextprotocol/sdk@1.32.1(zod@4.6.6))':
     dependencies:
       '@agentclientprotocol/sdk': 1.4.0(zod@4.4.3)
@@ -10624,6 +10582,21 @@ snapshots:
   '@anthropic-ai/claude-agent-sdk-win32-x64@0.3.286':
     optional: true
 
+  '@anthropic-ai/claude-agent-sdk@0.3.286(@anthropic-ai/sdk@0.129.0(zod@4.4.3))(@modelcontextprotocol/sdk@1.32.1(zod@4.4.3))(zod@4.4.3)':
+    dependencies:
+      '@anthropic-ai/sdk': 0.129.0(zod@4.4.3)
+      '@modelcontextprotocol/sdk': 1.32.1(zod@4.4.3)
+      zod: 4.4.3
+    optionalDependencies:
+      '@anthropic-ai/claude-agent-sdk-darwin-arm64': 0.3.286
+      '@anthropic-ai/claude-agent-sdk-darwin-x64': 0.3.286
+      '@anthropic-ai/claude-agent-sdk-linux-arm64': 0.3.286
+      '@anthropic-ai/claude-agent-sdk-linux-arm64-musl': 0.3.286
+      '@anthropic-ai/claude-agent-sdk-linux-x64': 0.3.286
+      '@anthropic-ai/claude-agent-sdk-linux-x64-musl': 0.3.286
+      '@anthropic-ai/claude-agent-sdk-win32-arm64': 0.3.286
+      '@anthropic-ai/claude-agent-sdk-win32-x64': 0.3.286
+
   '@anthropic-ai/claude-agent-sdk@0.3.286(@anthropic-ai/sdk@0.129.0(zod@4.6.6))(@modelcontextprotocol/sdk@1.32.1(zod@4.6.6))(zod@4.4.3)':
     dependencies:
       '@anthropic-ai/sdk': 0.129.0(zod@4.6.6)
@@ -10638,6 +10611,13 @@ snapshots:
       '@anthropic-ai/claude-agent-sdk-linux-x64-musl': 0.3.286
       '@anthropic-ai/claude-agent-sdk-win32-arm64': 0.3.286
       '@anthropic-ai/claude-agent-sdk-win32-x64': 0.3.286
+
+  '@anthropic-ai/sdk@0.129.0(zod@4.4.3)':
+    dependencies:
+      json-schema-to-ts: 3.1.1
+      standardwebhooks: 1.1.1
+    optionalDependencies:
+      zod: 4.4.3
 
   '@anthropic-ai/sdk@0.129.0(zod@4.6.6)':
     dependencies:
@@ -11694,49 +11674,25 @@ snapshots:
   '@embedded-postgres/darwin-arm64@18.1.0-beta.16':
     optional: true
 
-  '@embedded-postgres/darwin-arm64@18.3.0-beta.17':
-    optional: true
-
   '@embedded-postgres/darwin-x64@18.1.0-beta.16':
-    optional: true
-
-  '@embedded-postgres/darwin-x64@18.3.0-beta.17':
     optional: true
 
   '@embedded-postgres/linux-arm64@18.1.0-beta.16':
     optional: true
 
-  '@embedded-postgres/linux-arm64@18.3.0-beta.17':
-    optional: true
-
   '@embedded-postgres/linux-arm@18.1.0-beta.16':
-    optional: true
-
-  '@embedded-postgres/linux-arm@18.3.0-beta.17':
     optional: true
 
   '@embedded-postgres/linux-ia32@18.1.0-beta.16':
     optional: true
 
-  '@embedded-postgres/linux-ia32@18.3.0-beta.17':
-    optional: true
-
   '@embedded-postgres/linux-ppc64@18.1.0-beta.16':
-    optional: true
-
-  '@embedded-postgres/linux-ppc64@18.3.0-beta.17':
     optional: true
 
   '@embedded-postgres/linux-x64@18.1.0-beta.16':
     optional: true
 
-  '@embedded-postgres/linux-x64@18.3.0-beta.17':
-    optional: true
-
   '@embedded-postgres/windows-x64@18.1.0-beta.16':
-    optional: true
-
-  '@embedded-postgres/windows-x64@18.3.0-beta.17':
     optional: true
 
   '@emnapi/core@1.11.0':
@@ -16397,22 +16353,6 @@ snapshots:
       '@embedded-postgres/linux-ppc64': 18.1.0-beta.16
       '@embedded-postgres/linux-x64': 18.1.0-beta.16
       '@embedded-postgres/windows-x64': 18.1.0-beta.16
-    transitivePeerDependencies:
-      - pg-native
-
-  embedded-postgres@18.3.0-beta.17:
-    dependencies:
-      async-exit-hook: 2.0.1
-      pg: 8.18.0
-    optionalDependencies:
-      '@embedded-postgres/darwin-arm64': 18.3.0-beta.17
-      '@embedded-postgres/darwin-x64': 18.3.0-beta.17
-      '@embedded-postgres/linux-arm': 18.3.0-beta.17
-      '@embedded-postgres/linux-arm64': 18.3.0-beta.17
-      '@embedded-postgres/linux-ia32': 18.3.0-beta.17
-      '@embedded-postgres/linux-ppc64': 18.3.0-beta.17
-      '@embedded-postgres/linux-x64': 18.3.0-beta.17
-      '@embedded-postgres/windows-x64': 18.3.0-beta.17
     transitivePeerDependencies:
       - pg-native
 
