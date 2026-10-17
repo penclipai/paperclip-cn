@@ -39,19 +39,13 @@ test("upstream sync policy admits its generated lockfile and CN workspace filter
   assert.doesNotMatch(trusted, /pnpm --filter @paperclipai\//);
 });
 
-test("only existing canary and stable publishing jobs receive the environment npm token", () => {
-  for (const lane of ["canary", "stable"]) {
+test("CN publishing jobs use OIDC without an environment npm token", () => {
+  for (const lane of ["preview", "canary", "nightly", "beta", "stable"]) {
     const block = job(release, `publish_${lane}`);
-    assert.match(block, new RegExp(`environment: npm-${lane}`));
-    assert.match(block, /registry-url: https:\/\/registry.npmjs.org/);
-    assert.match(block, /run: npm whoami/);
-    assert.equal((block.match(/NODE_AUTH_TOKEN: \$\{\{ secrets\.NPM_TOKEN \}\}/g) ?? []).length, 2);
-    assert.doesNotMatch(block, /id-token: write/);
+    assert.match(block, /id-token: write/);
+    assert.doesNotMatch(block, /NPM_TOKEN|NODE_AUTH_TOKEN|registry-url: https:\/\/registry\.npmjs\.org|always-auth: true/);
   }
-  assert.equal((release.match(/secrets\.NPM_TOKEN/g) ?? []).length, 4);
-  for (const lane of ["preview", "nightly", "beta"]) {
-    assert.doesNotMatch(job(release, `publish_${lane}`), /NPM_TOKEN/);
-  }
+  assert.equal((release.match(/secrets\.NPM_TOKEN/g) ?? []).length, 0);
   for (const lane of ["desktop_stable", "smoke_stable"]) {
     assert.doesNotMatch(job(release, lane), /secrets:\s*inherit|NPM_TOKEN/);
   }

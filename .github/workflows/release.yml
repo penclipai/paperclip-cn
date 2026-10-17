@@ -350,6 +350,7 @@ jobs:
       canary_version: ${{ steps.canary_tag.outputs.version }}
     permissions:
       contents: write
+      id-token: write
       # For the explicit docker.yml dispatch below.
       actions: write
 
@@ -390,16 +391,9 @@ jobs:
         with:
           node-version: 24
           cache: pnpm
-          registry-url: https://registry.npmjs.org
-          always-auth: true
 
       - name: Validate release package manifest
         run: node ./scripts/release-package-map.mjs check
-
-      - name: Verify npm auth
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm whoami
 
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
@@ -427,7 +421,6 @@ jobs:
       - name: Publish canary
         env:
           GITHUB_ACTIONS: "true"
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: ./scripts/release.sh canary --skip-verify
 
       - name: Dump npm debug logs
@@ -1343,6 +1336,7 @@ jobs:
     environment: npm-stable
     permissions:
       contents: write
+      id-token: write
       actions: write
     outputs:
       stable_version: ${{ steps.tag.outputs.version }}
@@ -1365,13 +1359,6 @@ jobs:
         with:
           node-version: 24
           cache: pnpm
-          registry-url: https://registry.npmjs.org
-          always-auth: true
-
-      - name: Verify npm auth
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm whoami
 
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
@@ -1403,7 +1390,6 @@ jobs:
       - name: Publish stable
         env:
           GITHUB_ACTIONS: "true"
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           args=(stable --skip-verify)
           if [ -n "${{ inputs.stable_date }}" ]; then

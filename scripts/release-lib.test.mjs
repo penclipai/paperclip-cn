@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { chmodSync, copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -28,6 +28,8 @@ const repoRoot = toBashPath(fileURLToPath(new URL("..", import.meta.url)).replac
 const releaseWorkflow = readFileSync(new URL("../.github/workflows/release.yml", import.meta.url), "utf8")
   .replace(/\r\n/g, "\n");
 const releaseScript = readFileSync(new URL("./release.sh", import.meta.url), "utf8").replace(/\r\n/g, "\n");
+const oidcNpmShim = readFileSync(new URL("./npm-publish-oidc.sh", import.meta.url), "utf8").replace(/\r\n/g, "\n");
+const oidcNpmShimPath = fileURLToPath(new URL("./npm-publish-oidc.sh", import.meta.url));
 const previewFunction = releaseScript.match(/preview_publish_payloads\(\) \{[\s\S]*?\n\}\n\nrelease_info ""/)?.[0]
   ?.replace(/\n\nrelease_info ""$/, "");
 
@@ -48,6 +50,8 @@ function runPublishHelper({
   distTag = "canary",
   callerPipefail = true,
   publishTool = "pnpm",
+  githubActions = false,
+  nodeAuthToken = "",
   waitForRegistry = false,
   npmVersionExistsAfterChecks = 0,
   verifyAttempts = 1,
@@ -66,6 +70,7 @@ function runPublishHelper({
     join(binDir, "pnpm"),
     `#!/usr/bin/env bash
 set -euo pipefail
+printf 'npm_config_npm_path=%s\\n' "\${npm_config_npm_path:-}" >> "$FAKE_CALL_LOG"
 printf 'pnpm %s\\n' "$*" >> "$FAKE_CALL_LOG"
 case "$PNPM_MODE" in
   success)
@@ -210,6 +215,8 @@ export FAKE_STATE_DIR=${shellQuote(toBashPath(stateDir))}
 export NPM_VERSION_EXISTS=${shellQuote(npmVersionExists ? "true" : "false")}
 export PNPM_MODE=${shellQuote(pnpmMode)}
 export REPO_ROOT=${shellQuote(toBashPath(fixtureDir))}
+export GITHUB_ACTIONS=${shellQuote(githubActions ? "true" : "")}
+export NODE_AUTH_TOKEN=${shellQuote(nodeAuthToken)}
 source "${repoRoot}/scripts/release-lib.sh"
 ${sleepStub}
 ${
@@ -243,6 +250,8 @@ wait_for_npm_package_versions "$VERIFY_ATTEMPTS" "$VERIFY_DELAY_SECONDS" "$PACKA
         CROSS_PACKAGES: (visibilityPackages ?? []).join(" "),
         PNPM_MODE: pnpmMode,
         REPO_ROOT: toBashPath(fixtureDir),
+        GITHUB_ACTIONS: githubActions ? "true" : "",
+        NODE_AUTH_TOKEN: nodeAuthToken,
       },
       stdio: ["ignore", "pipe", "pipe"],
     });
@@ -267,6 +276,136 @@ test("publish_package_to_npm returns after a successful pnpm publish", () => {
   assert.doesNotMatch(result.calls, /--provenance=false/);
 });
 
+test("the controlled OIDC npm shim pins npm 11.18.0 and forwards pnpm publish arguments", () => {
+  assert.match(oidcNpmShim, /^exec npx --yes npm@11\.18\.0 "\$@"$/m);
+});
+
+test("pnpm 9 executes the OIDC npm path with its packed manifest and lifecycle ownership intact", {
+  skip: process.platform === "win32" && "POSIX executable npm-path integration runs on Ubuntu CI",
+}, () => {
+  const fixtureDir = mkdtempSync(join(tmpdir(), "paperclip-oidc-npm-path-"));
+  const fakeBinDir = join(fixtureDir, "runtime-bin");
+  const captureDir = join(fixtureDir, "capture");
+  const archiveDir = join(fixtureDir, "archive");
+  const lifecycleLog = join(fixtureDir, "lifecycle.log");
+  const npxArgs = join(captureDir, "npx-args.log");
+  const publishedArchive = join(captureDir, "published.tgz");
+  mkdirSync(fakeBinDir, { recursive: true });
+  mkdirSync(captureDir);
+  mkdirSync(archiveDir);
+  mkdirSync(join(fixtureDir, "src"));
+  writeFileSync(join(fixtureDir, "src", "index.cjs"), "module.exports = 'source';\n");
+  mkdirSync(join(fixtureDir, "dist"));
+  writeFileSync(join(fixtureDir, "dist", "index.cjs"), "module.exports = 'published';\n");
+  writeFileSync(join(fixtureDir, "lifecycle.cjs"), [
+    "const { appendFileSync } = require('node:fs');",
+    "appendFileSync(process.env.LIFECYCLE_LOG, process.argv[2] + '\\n');",
+    "",
+  ].join("\n"));
+  writeFileSync(join(fixtureDir, "package.json"), JSON.stringify({
+    name: "@penclipai/oidc-npm-path-fixture",
+    version: "1.2.3",
+    main: "src/index.cjs",
+    files: ["src", "dist", "lifecycle.cjs"],
+    scripts: {
+      prepublishOnly: "node lifecycle.cjs prepublishOnly",
+      prepack: "node lifecycle.cjs prepack",
+      prepare: "node lifecycle.cjs prepare",
+      postpack: "node lifecycle.cjs postpack",
+      publish: "node lifecycle.cjs publish",
+      postpublish: "node lifecycle.cjs postpublish",
+    },
+    publishConfig: {
+      access: "public",
+      exports: {
+        ".": "./dist/index.cjs",
+      },
+      main: "dist/index.cjs",
+      tag: "canary",
+    },
+  }, null, 2));
+  const pnpmLauncher = execFileSync("sh", ["-c", "command -v pnpm"], { encoding: "utf8" }).trim();
+  const pnpmCliPath = readFileSync(pnpmLauncher, "utf8").match(/\/(?:[^\s]+\/)*pnpm\.cjs/)?.[0];
+  assert.ok(pnpmCliPath, "the POSIX pnpm launcher must resolve to its pnpm.cjs entrypoint");
+  const fakeNodePath = join(fakeBinDir, "node");
+  copyFileSync(process.execPath, fakeNodePath);
+  chmodSync(fakeNodePath, 0o755);
+  const pnpmVersion = execFileSync(fakeNodePath, [pnpmCliPath, "--version"], { encoding: "utf8" }).trim();
+  assert.match(pnpmVersion, /^9\./, "this integration fixture must exercise pnpm 9");
+
+  // pnpm's runNpm prepends dirname(process.execPath) ahead of the inherited PATH.
+  writeExecutable(join(fakeBinDir, "npx"), "#!/usr/bin/env bash\nset -euo pipefail\n[ \"$#\" -ge 5 ]\n[ \"$1\" = \"--yes\" ]\n[ \"$2\" = \"npm@11.18.0\" ]\n[ \"$3\" = \"publish\" ]\n[ \"$4\" = \"--ignore-scripts\" ]\nprintf '%s\\n' \"$@\" > \"$FAKE_NPX_ARGS\"\ncp \"$5\" \"$FAKE_PUBLISHED_ARCHIVE\"\n");
+
+  execFileSync(fakeNodePath, [pnpmCliPath,
+    "publish",
+    "--no-git-checks",
+    "--tag",
+    "canary",
+    "--access",
+    "public",
+  ], {
+    cwd: fixtureDir,
+    encoding: "utf8",
+    env: {
+      ...process.env,
+      FAKE_NPX_ARGS: npxArgs,
+      FAKE_PUBLISHED_ARCHIVE: publishedArchive,
+      LIFECYCLE_LOG: lifecycleLog,
+      npm_config_npm_path: oidcNpmShimPath,
+    },
+  });
+
+  assert.deepEqual(readFileSync(npxArgs, "utf8").trim().split("\n"), [
+    "--yes",
+    "npm@11.18.0",
+    "publish",
+    "--ignore-scripts",
+    "penclipai-oidc-npm-path-fixture-1.2.3.tgz",
+    "--no-git-checks",
+    "--tag",
+    "canary",
+    "--access",
+    "public",
+  ]);
+  assert.equal(readFileSync(npxArgs, "utf8").includes(oidcNpmShimPath), false);
+  assert.deepEqual(readFileSync(lifecycleLog, "utf8").trim().split("\n"), [
+    "prepublishOnly",
+    "prepack",
+    "prepare",
+    "postpack",
+    "publish",
+    "postpublish",
+  ]);
+  assert.equal(readFileSync(lifecycleLog, "utf8").match(/^prepack$/gm)?.length, 1);
+
+  execFileSync("tar", ["-xzf", publishedArchive, "-C", archiveDir]);
+  const packedManifest = JSON.parse(readFileSync(join(archiveDir, "package", "package.json"), "utf8"));
+  assert.deepEqual(packedManifest.exports, { ".": "./dist/index.cjs" });
+  assert.equal(packedManifest.main, "dist/index.cjs");
+  assert.equal(packedManifest.publishConfig.access, "public");
+  assert.equal(packedManifest.publishConfig.tag, "canary");
+  assert.equal(readFileSync(join(archiveDir, "package", "dist", "index.cjs"), "utf8"), "module.exports = 'published';\n");
+});
+
+test("publish_package_to_npm uses the pinned OIDC npm configuration for an ordinary tokenless GitHub Actions publish", () => {
+  const result = runPublishHelper({ pnpmMode: "success", githubActions: true });
+
+  assert.equal(result.status, 0);
+  assert.match(result.calls, /^npm_config_npm_path=.+\/scripts\/npm-publish-oidc\.sh$/m);
+  assert.match(result.calls, /^pnpm publish --no-git-checks --tag canary --access public$/m);
+  assert.doesNotMatch(result.calls, /^pnpm --npm-path /m);
+  assert.doesNotMatch(result.calls, /^npx /m);
+});
+
+test("publish_package_to_npm keeps the local token path unchanged", () => {
+  const result = runPublishHelper({ pnpmMode: "success", githubActions: true, nodeAuthToken: "local-token" });
+
+  assert.equal(result.status, 0);
+  assert.match(result.calls, /^npm_config_npm_path=$/m);
+  assert.match(result.calls, /^pnpm publish --no-git-checks --tag canary --access public$/m);
+  assert.doesNotMatch(result.calls, /--npm-path/);
+});
+
 test("publish_package_to_npm uses trusted publishing from the bundled staging directory", () => {
   const result = runPublishHelper({ pnpmMode: "success", publishTool: "npm" });
 
@@ -281,6 +420,14 @@ test("publish_package_to_npm uses trusted publishing from the bundled staging di
   );
   assert.doesNotMatch(result.calls, / pack /);
   assert.doesNotMatch(result.calls, /^pnpm publish/m);
+});
+
+test("publish_package_to_npm keeps bundled staging on its existing pinned npm path in GitHub Actions", () => {
+  const result = runPublishHelper({ pnpmMode: "success", publishTool: "npm", githubActions: true });
+
+  assert.equal(result.status, 0);
+  assert.match(result.calls, /^npx --yes npm@11\.18\.0 publish --tag canary --access public --ignore-scripts --loglevel verbose$/m);
+  assert.doesNotMatch(result.calls, /--npm-path/);
 });
 
 test("publish_package_to_npm retries bundled directory tlog failures without provenance", () => {
@@ -303,6 +450,14 @@ test("publish_package_to_npm retries duplicate tlog failures without provenance"
     result.calls,
     /^pnpm publish --no-git-checks --tag canary --access public --provenance=false$/m,
   );
+});
+
+test("publish_package_to_npm keeps the pinned OIDC npm configuration on a provenance retry", () => {
+  const result = runPublishHelper({ pnpmMode: "tlog-then-success", githubActions: true });
+
+  assert.equal(result.status, 0);
+  assert.equal(result.calls.match(/^npm_config_npm_path=.+\/scripts\/npm-publish-oidc\.sh$/gm)?.length, 2);
+  assert.match(result.calls, /^pnpm publish --no-git-checks --tag canary --access public --provenance=false$/m);
 });
 
 test("publish_package_to_npm treats a duplicate tlog failure as complete when npm exposes the version", () => {
