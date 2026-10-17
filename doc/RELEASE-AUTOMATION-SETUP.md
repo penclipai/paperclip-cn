@@ -4,14 +4,12 @@ This document covers the GitHub and npm setup required for the current Paperclip
 
 - automatic canaries from `master`
 - manual stable promotion from a chosen source ref
-- protected environment `NPM_TOKEN` credentials for canary and stable publishing
-- npm trusted publishing via GitHub OIDC for preview, nightly, and beta publishing
+- npm trusted publishing via GitHub OIDC for every CI publish lane
 - protected release infrastructure in a public repository
 
 | Publish jobs | Credential source |
 | --- | --- |
-| Canary and stable | `NPM_TOKEN` in the protected `npm-canary` and `npm-stable` GitHub environments |
-| Preview, nightly, and beta | npm trusted publisher for `penclipai/paperclip-cn`, workflow `release.yml`, through GitHub OIDC |
+| Preview, canary, nightly, beta, and stable | npm trusted publisher for `penclipai/paperclip-cn`, workflow `release.yml`, through GitHub OIDC |
 
 Repo-side files that depend on this setup:
 
@@ -23,6 +21,9 @@ Note:
 - the release workflows intentionally use `pnpm install --no-frozen-lockfile`
 - this matches the repo's current policy where `pnpm-lock.yaml` is refreshed by GitHub automation after manifest changes land on `master`
 - the publish jobs then restore `pnpm-lock.yaml` before running `scripts/release.sh`, so the release script still sees a clean worktree
+- package installation and lifecycle scripts remain on the pinned `pnpm` 9 path; GitHub-hosted publish jobs install pinned npm `11.18.0` only for npm's delegated OIDC trusted-publishing support
+- the release wrapper scopes that delegated npm through the `npm_config_npm_path` setting for each `pnpm` publish command (for example, `npm_config_npm_path="$OIDC_NPM_PATH" pnpm "$@"`); do not append `--npm-path` to a pnpm CLI command, because pnpm 9 forwards that argument and the publish arguments to npm
+- do not manually rewrite package manifests to switch npm clients; the existing release packaging lifecycle continues to own those temporary rewrites
 
 ## PR quality review authentication
 
@@ -56,7 +57,9 @@ Required files:
 
 ## 2. Configure npm Trusted Publishing
 
-Configure this for every public package used by the preview, nightly, or beta publish jobs. Canary and stable use the protected environment tokens described in sections 5 and 6.
+Configure this for every public package used by a CI publish job. All lanes in
+`release.yml` must be covered by one or more npm trusted-publisher
+relationships that match their actual job identity and environment.
 
 At minimum that includes:
 
@@ -73,26 +76,34 @@ For each package:
 2. go to the package settings / publishing access area
 3. add a trusted publisher for the GitHub repository `penclipai/paperclip-cn`
 
-### 2.2. Add one trusted publisher entry per package
+### 2.2. Audit the trusted-publisher relationship for each package
 
-npm currently allows one trusted publisher configuration per package.
+npm supports up to 10 trusted publisher relationships per package. Existing
+relationships are immutable, so first inspect the existing npm-side entries for
+every release-enabled package. Do not assume that there is only one entry, or
+delete, revoke, or recreate an entry solely to make this checklist look uniform.
 
-Configure:
+For a relationship intended to authorize this release workflow, verify the full
+tuple against the actual publishing job:
 
-- workflow: `.github/workflows/release.yml`
+- organization or user: `penclipai`
+- repository: `paperclip-cn`
+- workflow filename: `release.yml` (npm expects the filename, not the path)
+- environment: inspect the actual configured environment value and verify that
+  it covers the required release job; the field is optional, but an empty value
+  must not be assumed to authorize every GitHub environment
+- allowed actions: explicitly allow direct `npm publish`, because
+  `scripts/release.sh` publishes directly. A newly created relationship defaults
+  to staged publishing only and can otherwise stop a multi-package release
+  after its first accepted package.
 
-Repository:
+If a job needs npm dist-tag management, review that separate allowed action as
+well; npm treats it independently from direct publish permission.
 
-- `penclipai/paperclip-cn`
-
-Environment name:
-
-- leave the npm trusted-publisher environment field blank
-
-Why:
-
-- the single `release.yml` workflow handles the preview, nightly, and beta OIDC publish jobs
-- GitHub environments `npm-canary` and `npm-stable` still enforce different approval rules on the GitHub side
+The single `release.yml` workflow handles every CI publish lane through OIDC.
+GitHub environments still enforce their existing approval and branch policies;
+the npm relationship must be checked against each job's actual environment
+rather than relying on a generic empty-environment assumption.
 
 ### 2.2.1. Newly added public packages need a bootstrap phase
 
@@ -110,34 +121,50 @@ Bootstrap sequence for a new package:
 
 1. publish the package once from a trusted maintainer machine using normal npm auth
 2. open that package on npm and add the `penclipai/paperclip-cn` trusted publisher for `.github/workflows/release.yml`
-3. confirm the `npm-canary` and `npm-stable` environment tokens can publish the package
-4. rerun or dry-run the release flow as needed to confirm CI publishing now works
-5. only then enable `"publishFromCi": true`
+3. explicitly allow direct `npm publish` and inspect the environment value against the target release job
+4. confirm the package's `repository.url` exactly identifies `https://github.com/penclipai/paperclip-cn`
+5. complete the first successful OIDC publish within two days of creating the relationship; otherwise npm expires the unvalidated relationship
+6. only then enable `"publishFromCi": true`
 
-PR CI checks changed release-enabled package manifests against npm. The package must support both CI credential paths before enrollment.
+The repository release guard validates the manifest, package identity, and
+internal package graph before publication. It cannot inspect private npm-side
+trusted-publisher relationships. Auditing npm-side relationships for every
+`"publishFromCi": true` package is a separate release prerequisite. The current
+manifest contains 32 such packages; always derive the audit set from the current
+manifest instead of relying on this count.
 
-### 2.3. Verify both CI credential paths
+### 2.3. Verify the CI OIDC publisher
 
 After the workflows are live:
 
-1. confirm a canary publish uses the `npm-canary` environment token
-2. confirm an OIDC publish lane succeeds without receiving `NPM_TOKEN`
-3. run a stable dry-run
-4. confirm an approved stable publish uses the `npm-stable` environment token
+1. audit the npm-side relationship tuple and direct-publish permission for every release-enabled package
+2. confirm every package's `repository.url` exactly identifies the CN fork
+3. confirm a GitHub-hosted canary publish succeeds through OIDC without receiving `NPM_TOKEN`
+4. verify each other enabled publish lane through OIDC while retaining the existing environment approval and branch policies
 
-Keep the canary and stable environment tokens while those jobs require them.
+A repository dry-run or package-map check validates repository-local data; it
+does not prove the npm-side relationship exists, has the needed action, or is
+valid for the job environment. A successful direct OIDC publish is the first
+validation of a newly created relationship.
 
-## 3. Limit npm Token Access
+This migration does not remove existing `NPM_TOKEN` environment settings. Keep
+them untouched until all release-enabled packages have completed successful OIDC
+publishes; remove or rotate them only in a separately approved cleanup change.
 
-Use environment-scoped credentials for the token publish jobs:
+## 3. Preserve Existing npm Token Settings During the OIDC Migration
 
-1. store authorized `NPM_TOKEN` values only in `npm-canary` and `npm-stable`
-2. remove obsolete repository or organization publish secrets after confirming they are unused
-3. keep npm token publishing enabled while canary and stable use it
+CI publishing no longer receives `NPM_TOKEN`; it uses npm trusted publishing
+with an OIDC identity instead. Existing local npm login or token-based access
+still supports the one-time bootstrap publish of a new package.
+
+1. leave existing `NPM_TOKEN` environment settings unchanged while validating the OIDC rollout
+2. do not disable npm token publishing on package settings as part of this rollout
+3. schedule any secret removal, rotation, or npm token-policy change as a separate explicit cleanup after OIDC has succeeded for every release-enabled package
 
 Goal:
 
-- only the canary and stable npm publish jobs receive the environment token
+- no CI publish job needs a persistent npm token
+- local maintainer bootstrap remains possible through normal interactive npm authentication
 
 ## 4. Create GitHub Environments
 
@@ -159,7 +186,6 @@ Path:
 Recommended settings for `npm-canary`:
 
 - environment name: `npm-canary`
-- environment secret: `NPM_TOKEN`, authorized to publish the packages enabled in `scripts/release-package-manifest.json`
 - required reviewers: none
 - wait timer: none
 - deployment branches and tags:
@@ -173,10 +199,10 @@ Reasoning:
 
 The scheduled nightly lane also publishes under `npm-canary`: it is the same
 trust level (fully automated, no human gate), its runs execute on `master` so
-the branch rule is satisfied, and reusing the environment means the nightly
-lane required no new environments and no npm trusted-publisher changes
-(publishing still happens from `release.yml`, see section 2.2).
-The nightly job uses OIDC and does not receive the canary job's `NPM_TOKEN`.
+the branch rule is satisfied, and publishing still happens from `release.yml`
+(see section 2.2). Canary and nightly use OIDC and do not receive `NPM_TOKEN`.
+If this environment already contains an `NPM_TOKEN`, leave it in place during
+the rollout; it is not a release-job input after OIDC is enabled.
 
 ## 5.1. Configure `npm-beta`
 
@@ -207,7 +233,6 @@ The beta job uses OIDC and does not receive `NPM_TOKEN`.
 Recommended settings for `npm-stable`:
 
 - environment name: `npm-stable`
-- environment secret: `NPM_TOKEN`, authorized to publish the packages enabled in `scripts/release-package-manifest.json`
 - required reviewers: at least one maintainer other than the person triggering the workflow when possible
 - prevent self-review: enabled
 - admin bypass: disabled if your team can tolerate it
@@ -220,6 +245,10 @@ Reasoning:
 
 - stable publishes should require an explicit human approval gate
 - the workflow is manual, but the environment should still be the real control point
+
+Stable publishing also uses OIDC and does not receive `NPM_TOKEN`. Preserve an
+existing environment secret during the migration, but do not treat it as a
+workflow input or remove it until the separate cleanup described in section 3.
 
 ## 7. Protect `master`
 
@@ -339,14 +368,18 @@ Use this policy going forward:
 
 ### Trusted publishing fails with an auth error
 
-These checks apply to the preview, nightly, and beta OIDC jobs. For canary or stable, check that the selected GitHub environment has an authorized `NPM_TOKEN` and that npm token publishing is enabled.
+These checks apply to every OIDC publish job, including canary and stable.
 
 Check:
 
 1. the workflow filename on GitHub exactly matches the filename configured in npm
 2. the package has the trusted publisher entry for the correct repository
 3. the job has `id-token: write`
-4. the job's repository is `penclipai/paperclip-cn`
+4. the job runs on a GitHub-hosted runner
+5. the job's repository is `penclipai/paperclip-cn`
+6. every release-enabled package has a repository URL that exactly identifies the CN fork
+7. the npm-side relationship for that package explicitly allows direct `npm publish`
+8. the relationship's environment value covers the publishing job
 
 ### Stable workflow runs but never asks for approval
 

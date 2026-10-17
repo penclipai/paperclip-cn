@@ -352,6 +352,7 @@ package_publish_tool() {
 
 BUNDLED_NPM_PACK_VERSION="10.9.7"
 BUNDLED_NPM_PUBLISH_VERSION="11.18.0"
+OIDC_NPM_PATH="$REPO_ROOT/scripts/npm-publish-oidc.sh"
 
 run_bundled_npm_pack() {
   npx --yes "npm@$BUNDLED_NPM_PACK_VERSION" "$@" --ignore-scripts
@@ -359,6 +360,14 @@ run_bundled_npm_pack() {
 
 run_bundled_npm_publish() {
   npx --yes "npm@$BUNDLED_NPM_PUBLISH_VERSION" "$@" --ignore-scripts --loglevel verbose
+}
+
+run_ordinary_pnpm_publish() {
+  if [ "${GITHUB_ACTIONS:-}" = "true" ] && [ -z "${NODE_AUTH_TOKEN:-}" ]; then
+    npm_config_npm_path="$OIDC_NPM_PATH" pnpm "$@"
+  else
+    pnpm "$@"
+  fi
 }
 
 run_package_publish() {
@@ -376,9 +385,9 @@ run_package_publish() {
   fi
 
   if [ "$disable_provenance" = "true" ]; then
-    pnpm publish --no-git-checks --tag "$dist_tag" --access public --provenance=false
+    run_ordinary_pnpm_publish publish --no-git-checks --tag "$dist_tag" --access public --provenance=false
   else
-    pnpm publish --no-git-checks --tag "$dist_tag" --access public
+    run_ordinary_pnpm_publish publish --no-git-checks --tag "$dist_tag" --access public
   fi
 }
 
