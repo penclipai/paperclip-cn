@@ -7,7 +7,7 @@ The release captain's checklist for every lane. The mechanics live in
 ## Canary (automatic, every `master` push)
 
 - [ ] the push's `Release` run is green (verify + publish)
-- [ ] `npm view paperclipai@canary version` matches the expected canary
+- [ ] `npm view penclip@canary version` matches the expected canary
 - [ ] Docker `:canary` updated (the same push's `Docker` run)
 - [ ] a canary publish failure is a release-infra regression — fix it before
       trusting later promotions
@@ -18,7 +18,7 @@ The release captain's checklist for every lane. The mechanics live in
       job-summary reason (no new candidate / already shipped / red smoke)
 - [ ] the release smoke suite passed against the exact candidate canary
       before anything published
-- [ ] `npm view paperclipai@nightly version` shows the new `-nightly.N`
+- [ ] `npm view penclip@nightly version` shows the new `-nightly.N`
 - [ ] `nightly/v*` tag pushed; `:nightly` image built
 - [ ] on a tag-push rejection (workflows-permission error), follow the
       recovery commands in the job summary
@@ -33,7 +33,7 @@ Happy path:
 - [ ] pick the nightly to promote (empty `source_version` selects the newest)
 - [ ] dispatch `release.yml` with `channel: beta`
 - [ ] approve the `npm-beta` environment gate
-- [ ] `npm view paperclipai@beta version` shows the new `-beta.N`
+- [ ] `npm view penclip@beta version` shows the new `-beta.N`
 - [ ] `beta/v*` tag pushed; `:beta` image built
 - [ ] post-publish smoke (`smoke_beta`) is green
 - [ ] `draft_stable_notes` pushed `release-notes/v<beta-version>`; open the
@@ -60,7 +60,7 @@ Fix path (cherry-picked candidate):
 - [ ] dispatch `release.yml` with `channel: stable` (a dry run first shows
       the resolved version and soak state without publishing)
 - [ ] approve the `npm-stable` environment gate
-- [ ] `npm view paperclipai version` (dist-tag `latest`) shows the stable
+- [ ] `npm view penclip version` (dist-tag `latest`) shows the stable
 - [ ] `vYYYY.MDD.P` tag pushed; GitHub Release created; `:latest` and the
       versioned Docker tags built
 - [ ] if the soak gate was bypassed, `skip_soak_justification` carries a
