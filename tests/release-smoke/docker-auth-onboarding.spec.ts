@@ -96,6 +96,12 @@ async function openOnboarding(page: Page) {
 }
 
 test.describe("Docker authenticated onboarding smoke", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem("paperclip.locale", "en");
+    });
+  });
+
   test("logs in, completes onboarding, and hires the lead agent", async ({
     page,
   }) => {

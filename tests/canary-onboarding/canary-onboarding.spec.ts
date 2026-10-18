@@ -22,6 +22,7 @@ test("the exact published canary installs and reaches Connect a model", async ({
   // this release check must prove that a refetch does not remount the wizard
   // from that old draft and leave the customer on the name screen.
   await page.addInitScript(() => {
+    localStorage.setItem("paperclip.locale", "en");
     localStorage.setItem("paperclip-onboarding-state", JSON.stringify({
       step: 1,
       companyName: "",
