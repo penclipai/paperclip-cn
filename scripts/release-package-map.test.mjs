@@ -6,6 +6,8 @@ import {
   checkConfiguration,
   findUnpublishableWorkspaceEdges,
   getReleasePackages,
+  getReleaseRepositoryIdentity,
+  findReleaseRepositoryIdentityProblems,
 } from "./release-package-map.mjs";
 
 function pkg(name, { publishFromCi, ...deps } = {}) {
@@ -64,6 +66,72 @@ test("release surface includes the CN fork's built-in Hermes adapter", () => {
 
 test("release package configuration validates successfully", () => {
   assert.doesNotThrow(() => checkConfiguration());
+});
+
+test("release package repository identity accepts canonical GitHub HTTPS and git forms", () => {
+  for (const repository of [
+    "https://github.com/penclipai/paperclip-cn",
+    "https://github.com/penclipai/paperclip-cn.git",
+    "git+https://github.com/penclipai/paperclip-cn.git",
+    "git@github.com:penclipai/paperclip-cn.git",
+  ]) {
+    assert.equal(getReleaseRepositoryIdentity(repository), "penclipai/paperclip-cn");
+  }
+});
+
+test("release package repository identity rejects malformed, missing, and non-GitHub values", () => {
+  for (const repository of [
+    undefined,
+    {},
+    "https://example.com/penclipai/paperclip-cn",
+    "git@github.com:penclipai",
+    "https://user:secret@github.com/penclipai/paperclip-cn",
+    "https://github.com:8443/penclipai/paperclip-cn",
+    "https://github.com/penclipai/paperclip-cn?ref=main",
+    "https://github.com/penclipai/paperclip-cn#readme",
+  ]) {
+    assert.throws(() => getReleaseRepositoryIdentity(repository), /repository/);
+  }
+});
+
+test("release package repository guard rejects upstream, wrong-owner, and missing identities", () => {
+  const packages = [
+    pkg("@penclipai/upstream", {
+      publishFromCi: true,
+      repository: "https://github.com/paperclipai/paperclip",
+    }),
+    pkg("@penclipai/wrong-owner", {
+      publishFromCi: true,
+      repository: "https://github.com/example/paperclip-cn",
+    }),
+    pkg("@penclipai/missing", { publishFromCi: true }),
+    pkg("@penclipai/off-train", {
+      publishFromCi: false,
+      repository: "https://github.com/paperclipai/paperclip",
+    }),
+  ];
+
+  const problems = findReleaseRepositoryIdentityProblems(packages, "penclipai/paperclip-cn");
+
+  assert.equal(problems.length, 3);
+  assert.match(problems.join("\n"), /@penclipai\/upstream/);
+  assert.match(problems.join("\n"), /@penclipai\/wrong-owner/);
+  assert.match(problems.join("\n"), /@penclipai\/missing/);
+  assert.doesNotMatch(problems.join("\n"), /@penclipai\/off-train/);
+});
+
+test("release package repository guard anchors CI identity to the CN fork", () => {
+  assert.throws(
+    () => findReleaseRepositoryIdentityProblems([], "paperclipai/paperclip"),
+    /GITHUB_REPOSITORY must be penclipai\/paperclip-cn/,
+  );
+});
+
+test("every CI-published package carries the CN fork repository identity", () => {
+  assert.deepEqual(
+    findReleaseRepositoryIdentityProblems(buildReleasePackagePlan(), "penclipai/paperclip-cn"),
+    [],
+  );
 });
 
 test("guard flags a publishFromCi:true package depending on a publishFromCi:false package", () => {

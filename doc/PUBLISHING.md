@@ -168,14 +168,25 @@ Stable publishes do not create a release commit. Instead:
 
 ## CI publishing credentials
 
-Paperclip CN uses two credential paths in `.github/workflows/release.yml`.
+Paperclip CN uses npm trusted publishing through GitHub OIDC for every CI
+publish lane in `.github/workflows/release.yml`.
 
 That means:
 
-- canary and stable publishing use `NPM_TOKEN` from the protected `npm-canary` and `npm-stable` GitHub environments
-- preview, nightly, and beta publishing use npm trusted publishing through GitHub OIDC
+- preview, canary, nightly, beta, and stable publishing use npm trusted publishing through GitHub OIDC
 - trusted publisher rules must authorize `penclipai/paperclip-cn` and `release.yml`
-- do not disable token publishing or remove the environment tokens while canary and stable use them
+- every publisher runs on a GitHub-hosted runner with `id-token: write`
+- the workflow keeps its pinned `pnpm` 9 install and lifecycle path, then installs pinned npm `11.18.0` only where npm delegated publishing is needed
+- the release wrapper applies the controlled npm shim through `npm_config_npm_path` for each pnpm publish command; it does not pass `--npm-path` as a pnpm CLI argument, which pnpm 9 would forward to npm with the publish arguments
+- existing `NPM_TOKEN` environment settings remain untouched during the migration and are not CI publish inputs; remove or rotate them only in a separate explicit cleanup after OIDC succeeds for every release-enabled package
+
+Each npm trusted-publisher relationship must explicitly allow direct
+`npm publish`: new relationships default to staged publishing only. Inspect the
+relationship's environment value against the actual release job; the optional
+field being empty does not prove that it covers every GitHub environment. npm
+allows up to 10 relationships per package, so audit the existing entries before
+changing any of them. GitHub environments retain their existing approval and
+branch-policy roles.
 
 See [doc/RELEASE-AUTOMATION-SETUP.md](RELEASE-AUTOMATION-SETUP.md) for the GitHub/npm setup steps.
 
@@ -189,9 +200,17 @@ When you add a new public package:
 1. add it to the manifest and decide whether CI should publish it immediately
 2. if CI should publish it, reserve the name on npm with the placeholder bootstrap before merge
 3. if CI should not publish it yet, keep `"publishFromCi": false`
-4. only enable `"publishFromCi": true` after the CI environment tokens can publish that package and its npm trusted publisher is configured
+4. ensure the package's `repository.url` identifies `https://github.com/penclipai/paperclip-cn`
+5. only enable `"publishFromCi": true` after an npm trusted-publisher relationship is configured for the CN fork and `release.yml`, explicitly allows direct `npm publish`, and covers the target job environment
 
-PR CI now checks changed release-enabled package manifests against npm. That catches a missing first-publish bootstrap before the change reaches `master`. When a PR needs this bootstrap, commitperclip also posts an informational notice on the PR naming the exact command, so contributors know a maintainer action is pending rather than something they can fix.
+The repository release guard validates package manifests, package identity, and
+the release dependency graph before any package is published. It does not
+inspect npm package settings. Before a release, audit the npm-side
+trusted-publisher relationships for every `"publishFromCi": true` package; the
+current manifest has 32, but always enumerate the current manifest rather than
+relying on that number. When a PR needs bootstrap work, commitperclip also posts
+an informational notice naming the exact command, so contributors know a
+maintainer action is pending rather than something they can fix.
 
 ### One-time bootstrap sequence for a new package
 
@@ -242,8 +261,11 @@ After the placeholder publish succeeds:
 2. go to `Settings` → `Trusted publishing`
 3. add repository `penclipai/paperclip-cn`
 4. set workflow filename to `release.yml`
-5. keep token publishing enabled and confirm the `npm-canary` and `npm-stable` environment tokens can publish the package
-6. only then set `"publishFromCi": true` in [`scripts/release-package-manifest.json`](../scripts/release-package-manifest.json)
+5. explicitly allow direct `npm publish`; do not rely on the default staged-only action
+6. inspect the environment value against the actual release job instead of assuming an empty value covers all environments
+7. confirm the package's `repository.url` exactly identifies `https://github.com/penclipai/paperclip-cn`
+8. complete the relationship's first successful OIDC publish within two days, before it expires
+9. only then set `"publishFromCi": true` in [`scripts/release-package-manifest.json`](../scripts/release-package-manifest.json)
 
 Once those steps are done, future publishes use the channel's CI credential path described above. The manual step only reserves the name on npm; every real version ships from CI.
 

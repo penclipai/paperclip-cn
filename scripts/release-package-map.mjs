@@ -10,6 +10,7 @@ const manifestPath = join(repoRoot, "scripts", "release-package-manifest.json");
 const roots = ["packages", "server", "ui", "cli"];
 const CHANNEL_ENTRYPOINT_PACKAGE = "penclip";
 const workspacePackageScopes = ["@penclipai/", "@penclipai/"];
+const CANONICAL_RELEASE_REPOSITORY = "penclipai/paperclip-cn";
 
 function normalizeManifestDir(dir) {
   return dir.replaceAll("\\", "/");
@@ -35,6 +36,76 @@ function resolveWorkspaceDependencyTargetName(depName, spec) {
 
 function readJson(filePath) {
   return JSON.parse(readFileSync(filePath, "utf8"));
+}
+
+function getReleaseRepositoryIdentity(repository) {
+  const url = typeof repository === "string" ? repository : repository?.url;
+
+  if (typeof url !== "string" || url.trim().length === 0) {
+    throw new Error("repository must be a non-empty GitHub repository URL.");
+  }
+
+  const normalizedUrl = url.trim()
+    .replace(/^git\+/, "")
+    .replace(/^git@github\.com:/i, "https://github.com/");
+
+  let parsed;
+  try {
+    parsed = new URL(normalizedUrl);
+  } catch {
+    throw new Error(`repository ${JSON.stringify(url)} is not a valid GitHub repository URL.`);
+  }
+
+  if (parsed.protocol !== "https:" || parsed.hostname.toLowerCase() !== "github.com") {
+    throw new Error(`repository ${JSON.stringify(url)} must identify a GitHub repository.`);
+  }
+
+  if (parsed.username || parsed.password || parsed.port || parsed.search || parsed.hash) {
+    throw new Error(`repository ${JSON.stringify(url)} must identify only a GitHub owner/repository pair.`);
+  }
+
+  const path = parsed.pathname.replace(/^\/+|\/+$/g, "").replace(/\.git$/i, "");
+  const parts = path.split("/");
+  if (parts.length !== 2 || parts.some((part) => part.length === 0)) {
+    throw new Error(`repository ${JSON.stringify(url)} must identify an owner/repository pair.`);
+  }
+
+  return parts.join("/").toLowerCase();
+}
+
+function getExpectedReleaseRepository(githubRepository = process.env.GITHUB_REPOSITORY) {
+  const expectedRepository = githubRepository ?? CANONICAL_RELEASE_REPOSITORY;
+  if (expectedRepository.toLowerCase() !== CANONICAL_RELEASE_REPOSITORY) {
+    throw new Error(
+      `GITHUB_REPOSITORY must be ${CANONICAL_RELEASE_REPOSITORY} for Paperclip CN publishing, received ${expectedRepository}.`,
+    );
+  }
+  return CANONICAL_RELEASE_REPOSITORY;
+}
+
+function findReleaseRepositoryIdentityProblems(packages, githubRepository) {
+  const expectedRepository = getExpectedReleaseRepository(githubRepository);
+  const problems = [];
+
+  for (const pkg of packages) {
+    if (!pkg.publishFromCi) continue;
+
+    let actualRepository;
+    try {
+      actualRepository = getReleaseRepositoryIdentity(pkg.pkg.repository);
+    } catch (error) {
+      problems.push(`${pkg.name} (${pkg.dir}) has invalid repository metadata: ${error.message}`);
+      continue;
+    }
+
+    if (actualRepository !== expectedRepository) {
+      problems.push(
+        `${pkg.name} (${pkg.dir}) repository metadata identifies ${actualRepository}, but CI publishes from ${expectedRepository}.`,
+      );
+    }
+  }
+
+  return problems;
 }
 
 function discoverPublicPackages() {
@@ -320,6 +391,11 @@ function checkConfiguration() {
     throw new Error(`no packages are enabled for CI publishing in ${manifestPath}`);
   }
 
+  const repositoryProblems = findReleaseRepositoryIdentityProblems(packages);
+  if (repositoryProblems.length > 0) {
+    throw new Error(`release package repository identity validation failed:\n- ${repositoryProblems.join("\n- ")}`);
+  }
+
   process.stdout.write(
     `Release package manifest OK: ${enabledCount} enabled for CI publish, ${disabledCount} disabled pending bootstrap.\n`,
   );
@@ -369,6 +445,8 @@ export {
   checkConfiguration,
   discoverPublicPackages,
   findUnpublishableWorkspaceEdges,
+  findReleaseRepositoryIdentityProblems,
+  getReleaseRepositoryIdentity,
   getReleasePackages,
   loadReleaseManifest,
 };

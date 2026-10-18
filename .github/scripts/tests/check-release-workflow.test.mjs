@@ -13,13 +13,25 @@ test("canary reuses successful exact-source verification and stable calls the sh
   assert.match(releaseWorkflow, /^  publish_stable:\n[\s\S]*?    needs: \[preflight_stable, verify_stable\]/m);
 });
 
-test("release publish jobs configure npm token auth before publishing", () => {
-  const verifyAuthStepCount = releaseWorkflow.match(/- name: Verify npm auth/g)?.length ?? 0;
-  assert.equal(verifyAuthStepCount, 2);
+test("release publish jobs use GitHub OIDC without registry token injection", () => {
+  const job = (name) => releaseWorkflow.match(new RegExp(`^  ${name}:\\n([\\s\\S]*?)(?=^  [a-z_]+:|$(?![\\s\\S]))`, "m"))?.[1] ?? "";
+  for (const lane of ["preview", "canary", "nightly", "beta", "stable"]) {
+    assert.match(job(`publish_${lane}`), /id-token: write/);
+  }
+  assert.equal((releaseWorkflow.match(/secrets\.NPM_TOKEN/g) ?? []).length, 0);
+  assert.doesNotMatch(releaseWorkflow, /- name: Verify npm auth|npm whoami|registry-url: https:\/\/registry\.npmjs\.org|always-auth: true/);
+});
 
-  const nodeAuthTokenCount = releaseWorkflow.match(/NODE_AUTH_TOKEN: \$\{\{ secrets\.NPM_TOKEN \}\}/g)?.length ?? 0;
-  assert.equal(nodeAuthTokenCount, 4);
-  assert.match(releaseWorkflow, /npm whoami/);
+test("tokenless OIDC leaves canary and stable release gates intact", () => {
+  const job = (name) => releaseWorkflow.match(new RegExp(`^  ${name}:\\n([\\s\\S]*?)(?=^  [a-z_]+:|$(?![\\s\\S]))`, "m"))?.[1] ?? "";
+  for (const lane of ["canary", "stable"]) {
+    const body = job(`publish_${lane}`);
+    assert.match(body, /contents: write/);
+    assert.match(body, /actions: write/);
+    assert.match(body, /GITHUB_ACTIONS: "true"/);
+  }
+  assert.match(job("publish_canary"), /needs: verify_canary/);
+  assert.match(job("publish_stable"), /needs: \[preflight_stable, verify_stable\]/);
 });
 
 test("release publish jobs trigger smoke and desktop follow-ups", () => {
