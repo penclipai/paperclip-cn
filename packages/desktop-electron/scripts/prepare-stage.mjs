@@ -16,6 +16,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { runNodeScript, runPnpm } from "./utils.mjs";
 import { createDetachedDeployWorkspace } from "./detached-deploy-workspace.mjs";
+import { optimizeRuntimePayload } from "./runtime-payload.mjs";
 import { checkCatalog } from "../../../scripts/i18n-catalog.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -539,5 +540,14 @@ for (const { sourceRoot, stagedRoot } of stagedPluginRoots) {
 }
 
 pruneRuntimeNodeModules();
+
+const runtimePayloadOptimization = optimizeRuntimePayload({ runtimeRoot: appRuntimeDir });
+if (runtimePayloadOptimization.supported) {
+  console.log(
+    `[desktop-stage] Optimized ${runtimePayloadOptimization.platform}/${runtimePayloadOptimization.arch} OpenCode payload: saved ${runtimePayloadOptimization.bytesSaved} bytes; portable entry ${runtimePayloadOptimization.portableIsSymlink ? "uses a relative symlink" : "was preserved because its bytes differ from the selected native binary"}.`,
+  );
+} else {
+  console.log(`[desktop-stage] OpenCode payload optimization is not applied for ${runtimePayloadOptimization.platform}/${runtimePayloadOptimization.arch}.`);
+}
 
 console.log("[desktop-stage] Packaged runtime ready in .stage/app-runtime.");

@@ -100,6 +100,10 @@ jobs:
         shell: bash
         run: git checkout -- pnpm-lock.yaml
 
+      - name: Test desktop payload and size budgets
+        shell: bash
+        run: pnpm --filter @penclipai/desktop-electron test:payload
+
       - name: Typecheck desktop package
         shell: bash
         run: pnpm --filter @penclipai/desktop-electron typecheck
@@ -111,6 +115,28 @@ jobs:
           CSC_IDENTITY_AUTO_DISCOVERY: ${{ matrix.platform == 'mac' && 'false' || '' }}
         run: |
           pnpm --filter @penclipai/desktop-electron dist -- --platform "${{ matrix.platform }}" --arch "${{ matrix.arch }}"
+
+      - name: Remove generated staging before installer verification
+        if: matrix.platform != 'win'
+        shell: bash
+        run: |
+          node - <<'NODE'
+          const fs = require("node:fs");
+          const path = require("node:path");
+          const workspace = fs.realpathSync(process.env.GITHUB_WORKSPACE);
+          const stage = path.join(workspace, "packages", "desktop-electron", ".stage");
+          const resolved = fs.realpathSync(stage);
+          if (resolved !== stage || path.relative(workspace, resolved).split(path.sep).join("/") !== "packages/desktop-electron/.stage") {
+            throw new Error("Refusing to remove staging outside this checkout.");
+          }
+          fs.rmSync(stage, { recursive: true, force: true });
+          NODE
+
+      - name: Verify packaged runtime payload
+        id: runtime_payload
+        shell: bash
+        run: |
+          node packages/desktop-electron/scripts/verify-runtime-payload.mjs --manifest packages/desktop-electron/release/desktop-artifacts.json
 
       - name: Read desktop artifact manifest
         id: manifest
@@ -140,83 +166,22 @@ jobs:
           console.log(`app_runtime_files=${manifest.sizeAudit?.appRuntimeFiles ?? ""}`);
           NODE
 
-      - name: Warn on Windows desktop size budget
-        if: matrix.platform == 'win'
+      - name: Upload desktop size audit evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact_name }}-size-audit-${{ matrix.platform }}-${{ matrix.arch }}
+          if-no-files-found: warn
+          path: |
+            packages/desktop-electron/release/desktop-artifacts.json
+            packages/desktop-electron/release/desktop-size-audit-*.json
+            packages/desktop-electron/release/desktop-size-audit-*.md
+
+      - name: Enforce desktop size budget
+        if: steps.runtime_payload.outcome == 'success' && steps.manifest.outcome == 'success'
         shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-          CURRENT_TAG: ${{ inputs.github_release_tag }}
-          CURRENT_BYTES: ${{ steps.manifest.outputs.release_asset_bytes }}
-          APP_RUNTIME_BYTES: ${{ steps.manifest.outputs.app_runtime_bytes }}
-          APP_RUNTIME_FILES: ${{ steps.manifest.outputs.app_runtime_files }}
         run: |
-          node - <<'NODE'
-          const { execFileSync } = require("node:child_process");
-
-          const currentTag = process.env.CURRENT_TAG || "";
-          const currentBytes = Number(process.env.CURRENT_BYTES || 0);
-          const appRuntimeBytes = Number(process.env.APP_RUNTIME_BYTES || 0);
-          const appRuntimeFiles = Number(process.env.APP_RUNTIME_FILES || 0);
-          const installerBudgetDelta = 10 * 1024 * 1024;
-          const appRuntimeByteBudget = 950 * 1024 * 1024;
-          const appRuntimeFileBudget = 50000;
-
-          function warn(message) {
-            console.log(`::warning title=Desktop size budget::${message}`);
-          }
-
-          if (!Number.isFinite(currentBytes) || currentBytes <= 0) {
-            warn("Windows installer size was not available in desktop-artifacts.json.");
-          }
-
-          if (appRuntimeBytes > appRuntimeByteBudget) {
-            warn(`Packaged app-runtime is ${(appRuntimeBytes / 1024 / 1024).toFixed(2)} MiB, above the ${(appRuntimeByteBudget / 1024 / 1024).toFixed(0)} MiB warning budget.`);
-          }
-
-          if (appRuntimeFiles > appRuntimeFileBudget) {
-            warn(`Packaged app-runtime has ${appRuntimeFiles} files, above the ${appRuntimeFileBudget} file warning budget.`);
-          }
-
-          if (!currentTag || !process.env.GH_TOKEN || !currentBytes) {
-            process.exit(0);
-          }
-
-          const releases = JSON.parse(execFileSync("gh", [
-            "release",
-            "list",
-            "--repo",
-            process.env.GITHUB_REPOSITORY,
-            "--limit",
-            "20",
-            "--json",
-            "tagName,isPrerelease,isDraft",
-          ], { encoding: "utf8" }));
-          const previous = releases.find((release) =>
-            release.tagName !== currentTag && !release.isPrerelease && !release.isDraft);
-          if (!previous) {
-            process.exit(0);
-          }
-
-          const release = JSON.parse(execFileSync("gh", [
-            "release",
-            "view",
-            previous.tagName,
-            "--repo",
-            process.env.GITHUB_REPOSITORY,
-            "--json",
-            "assets",
-          ], { encoding: "utf8" }));
-          const previousWinAsset = (release.assets || []).find((asset) =>
-            /-x64\.exe$/i.test(asset.name));
-          if (!previousWinAsset?.size) {
-            process.exit(0);
-          }
-
-          const delta = currentBytes - previousWinAsset.size;
-          if (delta > installerBudgetDelta) {
-            warn(`Windows installer grew by ${(delta / 1024 / 1024).toFixed(2)} MiB versus ${previous.tagName}; threshold is 10 MiB.`);
-          }
-          NODE
+          pnpm --filter @penclipai/desktop-electron audit:size:check
 
       - name: Upload desktop artifact bundle
         uses: actions/upload-artifact@v4

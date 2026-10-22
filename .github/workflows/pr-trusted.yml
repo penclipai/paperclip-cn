@@ -337,6 +337,9 @@ jobs:
       - name: Test desktop smoke authentication isolation
         run: node --test ./packages/desktop-electron/scripts/smoke/desktop-acceptance.test.mjs
 
+      - name: Test desktop runtime payload and size budgets
+        run: pnpm --filter @penclipai/desktop-electron test:payload
+
       - name: Validate release package manifest
         run: node ./scripts/release-package-map.mjs check
 

@@ -19,6 +19,8 @@
     "test:nsis-temp": "node scripts/test-nsis-temp.mjs",
     "prepare:stage": "node scripts/prepare-stage.mjs",
     "audit:size": "node scripts/desktop-size-audit.mjs",
+    "audit:size:check": "node scripts/desktop-size-audit.mjs --check-budget",
+    "test:payload": "node --test scripts/runtime-payload.test.mjs scripts/desktop-size-budget.test.mjs",
     "pack": "node scripts/dist.mjs --dir-only",
     "dist": "node scripts/dist.mjs",
     "dist:win": "node scripts/dist.mjs --platform win --arch x64",
