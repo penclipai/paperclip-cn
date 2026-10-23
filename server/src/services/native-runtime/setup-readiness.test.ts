@@ -67,7 +67,9 @@ describe("Codex selected native account verification", () => {
     else expect(input.reasoningEffort).toBeUndefined();
     await expect(stat(input.runtimeDirectory)).rejects.toThrow();
     expect(execute).not.toHaveBeenCalled();
-  });
+  // The first probe dynamically imports the native executor; a cold Windows
+  // Vitest transform can exceed the normal per-test deadline before the mock.
+  }, 45_000);
   it("rejects a missing local daemon before creating private credential staging", async () => {
     const home = await realpath(await mkdtemp(join(tmpdir(), "native-preflight-daemon-")));
     const auth = '{"tokens":{"account_id":"fixture-account","access_token":"fixture-access"}}';

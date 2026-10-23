@@ -57,7 +57,7 @@ it("restores a missing shim without reinstalling the managed payload", async () 
   });
   vi.mocked(isExecutableFile).mockResolvedValueOnce(false).mockResolvedValueOnce(true);
 
-  const entrypoint = path.join(resolveInstallStorePaths().currentPath, "node_modules", "paperclipai", "dist", "index.js");
+  const entrypoint = path.join(resolveInstallStorePaths().currentPath, "node_modules", "penclip", "dist", "index.js");
   const existsSync = vi.spyOn(fs, "existsSync").mockImplementation((filePath) => filePath === entrypoint);
   try {
     await expect(ensureServiceShim()).resolves.toEqual({ ok: true, installedNow: true });
@@ -86,7 +86,7 @@ it("does not restore a shim when the managed payload smoke check fails", async (
   vi.mocked(isExecutableFile).mockResolvedValue(false);
   vi.mocked(smokePayload).mockRejectedValueOnce(new Error("payload dependency is missing"));
 
-  const entrypoint = path.join(resolveInstallStorePaths().currentPath, "node_modules", "paperclipai", "dist", "index.js");
+  const entrypoint = path.join(resolveInstallStorePaths().currentPath, "node_modules", "penclip", "dist", "index.js");
   const existsSync = vi.spyOn(fs, "existsSync").mockImplementation((filePath) => filePath === entrypoint);
   try {
     await expect(ensureServiceShim()).resolves.toEqual({

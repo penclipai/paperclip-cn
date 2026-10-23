@@ -335,6 +335,21 @@ describe.skipIf(!support.supported)("heartbeat runtime selection boundary", () =
     });
   });
 
+  it("does not overwrite a committed native mode when a legacy selector arrives late", async () => {
+    const { input, run } = await fixture("process");
+    await db.update(heartbeatRuns).set({
+      runtimeMode: "native",
+      runtimeModeResolvedAt: new Date(),
+    }).where(eq(heartbeatRuns.id, run.id));
+
+    await expect(selectHeartbeatRuntime(db, input)).rejects.toThrow("legacy_runtime_mode_conflict");
+    expect(await read(run.id)).toMatchObject({
+      runtimeMode: "native",
+      runtimeModeResolvedAt: expect.any(Date),
+    });
+    expect(input.onNativeOwnershipHeld).not.toHaveBeenCalled();
+  });
+
   it.each([
     ["startup cancellation", { resultJson: { startupCancellation: { beforeRuntimeSelection: true } } }, false],
     ["cancellation request", { resultJson: { cancellation: { reason: "pause" } } }, false],

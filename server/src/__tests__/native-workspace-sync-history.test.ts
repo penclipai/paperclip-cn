@@ -8,6 +8,7 @@ import { heartbeatRuns, type Db } from "@penclipai/db";
 import type { EnvironmentLease } from "@penclipai/shared";
 import type { AdapterSandboxExecutionTarget } from "@penclipai/adapter-utils/execution-target";
 import type { CommandManagedRuntimeRunner } from "@penclipai/adapter-utils/command-managed-runtime";
+import { prepareTestPosixShell } from "@penclipai/adapter-utils/test-fixtures/posix-shell";
 import * as restoreMerge from "@penclipai/adapter-utils/workspace-restore-merge";
 import * as workspaceSeedCache from "@penclipai/adapter-utils/workspace-seed-cache";
 import * as gitWorkspaceSync from "@penclipai/adapter-utils/git-workspace-sync";

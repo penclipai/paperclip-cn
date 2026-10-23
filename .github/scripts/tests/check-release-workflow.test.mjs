@@ -8,9 +8,9 @@ const desktopBuilderConfig = readFileSync("packages/desktop-electron/electron-bu
 test("canary reuses successful exact-source verification and stable calls the shared verifier", () => {
   assert.match(releaseWorkflow, /^  verify_canary:/m);
   assert.match(releaseWorkflow, /run: node scripts\/cloud-source-verification\.mjs "\$SOURCE_SHA"/);
-  assert.match(releaseWorkflow, /^  publish_canary:\n[\s\S]*?    needs: verify_canary/m);
+  assert.match(releaseWorkflow, /^  publish_canary:\n[\s\S]*?    needs: \[verify_canary, release_runner_source, release_runner_binaries\]/m);
   assert.match(releaseWorkflow, /^  verify_stable:\n[\s\S]*?uses: \.\/\.github\/workflows\/release-verify\.yml/m);
-  assert.match(releaseWorkflow, /^  publish_stable:\n[\s\S]*?    needs: \[preflight_stable, verify_stable\]/m);
+  assert.match(releaseWorkflow, /^  publish_stable:\n[\s\S]*?    needs: \[preflight_stable, verify_stable, release_runner_source, release_runner_binaries\]/m);
 });
 
 test("release publish jobs use GitHub OIDC without registry token injection", () => {
@@ -30,8 +30,8 @@ test("tokenless OIDC leaves canary and stable release gates intact", () => {
     assert.match(body, /actions: write/);
     assert.match(body, /GITHUB_ACTIONS: "true"/);
   }
-  assert.match(job("publish_canary"), /needs: verify_canary/);
-  assert.match(job("publish_stable"), /needs: \[preflight_stable, verify_stable\]/);
+  assert.match(job("publish_canary"), /needs: \[verify_canary, release_runner_source, release_runner_binaries\]/);
+  assert.match(job("publish_stable"), /needs: \[preflight_stable, verify_stable, release_runner_source, release_runner_binaries\]/);
 });
 
 test("release publish jobs trigger smoke and desktop follow-ups", () => {

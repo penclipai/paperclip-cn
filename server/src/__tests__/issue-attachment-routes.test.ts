@@ -4,6 +4,7 @@ import express from "express";
 import request from "supertest";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { HttpError } from "../errors.js";
 import type { StorageService } from "../storage/types.js";
 
 const mockIssueService = vi.hoisted(() => ({

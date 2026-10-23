@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { isWorkspacePackage, parseWorkspaceEntries } from '../build-standalone-public-packages.mjs';
@@ -123,7 +123,7 @@ test('native host startup preserves the consumer lock and both executable byte i
     assert.throws(() => assertInstalledNativeConsumerContinuity(before, { ...before, [field]: 'd'.repeat(64) }), new RegExp(field));
     assert.throws(() => assertInstalledNativeConsumerContinuity({ ...before, [field]: '' }, { ...before, [field]: '' }), new RegExp(field));
   }
-  const source = readFileSync(new URL('../verify-grok-npm-install.mjs', import.meta.url), 'utf8');
+  const source = readFileSync(new URL('../verify-grok-npm-install.mjs', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
   const arm = source.split('async function verifyLinuxArmConsumer')[1].split("if (process.argv[2] === '--linux-arm64-consumer')")[0];
   assert.match(arm, /const hostEnv = \{ PATH: .*HOME: home, TMPDIR: hostTmp, LC_ALL: 'C', TZ: 'UTC' \}/);
   assert.match(arm, /execFileSync\(process.execPath, \[file\], \{ cwd: consumer, env: hostEnv/);
@@ -264,7 +264,7 @@ test('the image and Grok downloads start before staging and join without weakeni
 });
 
 test('the bundled-dependency installs run together while the other packages are copied, and pack in order', () => {
-  const source = readFileSync(new URL('../verify-grok-npm-install.mjs', import.meta.url), 'utf8');
+  const source = readFileSync(new URL('../verify-grok-npm-install.mjs', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
   const position = fragment => { const index = source.indexOf(fragment); assert.notEqual(index, -1, `verifier must contain ${fragment}`); return index; };
   // The installs are children of the script's own CLI entry through the helper
   // covered by stage-bundled-packages.test.mjs, never in-process calls.
@@ -288,8 +288,15 @@ test('the bundled-dependency installs run together while the other packages are 
   const checks = position("for (const tarball of tarballs) assertNoBundledCodexPayloads(run('tar', ['-tzf', tarball])");
   const copied = position('for (const tarball of tarballs) {');
   assert.ok(bundledSources < start && start < registered && registered < otherSources && otherSources < join && join < packs && packs < reordered && reordered < checks && checks < copied);
-  const packagingLane = source.slice(position("} else {\nassert.equal(process.platform, 'linux'"));
-  assert.equal(packagingLane.match(/run\('npm', \['pack'/g).length, 1, 'only the lifecycle sentinel is packed in-process in the packaging lane');
+  // `npm pack` moved into the pack-staged-packages owner. The verifier itself
+  // only packs the lifecycle sentinel in-process; package tarballs still go
+  // through the registered prefetch children above.
+  const linuxLane = source.slice(position("} else {\nassert.equal(process.platform, 'linux'"));
+  assert.equal(linuxLane.match(/run\('npm', \['pack'/g).length, 1, 'only the lifecycle sentinel is packed in-process');
+  const packer = readFileSync(new URL('../pack-staged-packages.mjs', import.meta.url), 'utf8');
+  assert.match(packer, /export const PACK_ARGS = \['pack', '--ignore-scripts', '--pack-destination'\]/);
+  assert.match(packer, /startPrefetch\(\{ name: `pack-\$\{index\}`/);
+  assert.doesNotMatch(packer, /run\('npm'/);
   assert.ok(source.includes("destination: join(root, `pack-${index}`)"), 'each pack writes into its own directory');
   // The timing line reports the split staging phase, each install, and the
   // pack step with what the packs would have cost one after another.
@@ -379,7 +386,8 @@ test('the installed Codex probe exercises the public export and rejects incomple
     const index = join(vendor, 'index.mjs'), command = join(wrapper, 'codex.js'), probe = join(root, 'probe.mjs');
     const executable = version => writeFileSync(command, `#!/usr/bin/env node\nif (process.argv[2] !== '--version') process.exit(65);\nconsole.log('codex-cli ${version}');\n`, { mode: 0o755 });
     writeFileSync(probe, installedCodexProbeSource(index, consumer, '0.160.0'));
-    const run = () => spawnSync(process.execPath, [probe], { encoding: 'utf8', timeout: 10_000, env: { PATH: '/usr/bin:/bin', NODE_PATH: '' } });
+    const run = () => spawnSync(process.execPath, [probe], { encoding: 'utf8', timeout: 10_000,
+      env: { PATH: `${dirname(process.execPath)}:/usr/bin:/bin`, NODE_PATH: '' } });
     writeFileSync(index, `export const resolvePinnedCodexCommand = () => ${JSON.stringify(command)};`);
     executable('0.160.0');
     let result = run(); assert.equal(result.status, 0, result.stderr);

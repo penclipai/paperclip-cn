@@ -21,6 +21,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { execFileSync, spawn } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { bindAcpxAgentFiles } from "../drivers/acpx/agent-files-binding.js";
+import { QUALIFIED_ACPX_PROFILES } from "../drivers/acpx/qualified-profiles.js";
 import { resolveRunnerProviderAssetsRoot } from "../drivers/acpx/provider-assets-root.js";
 import { createServer } from "node:http";
 import { tmpdir } from "node:os";
@@ -510,6 +511,7 @@ it("publishes spawned runner ownership before waiting for provider startup", asy
     codexArgs: fakeCodexArgs(stateDirectory),
     stateDirectory,
     onSpawn,
+    observeCredentials: false,
     controlPlaneRegistration: async (authority) => {
       await authority.start();
       return { activate, release: () => undefined };
@@ -527,7 +529,7 @@ it("publishes spawned runner ownership before waiting for provider startup", asy
       startedAt: expect.any(String),
     });
     await expect(bundle.transport.request("thread/read", { threadId: "rejected-duplicate" }))
-      .rejects.toThrow("PRP provider thread is already started");
+      .rejects.toThrow("provider startup ownership remains unadmitted");
     expect(bundle.transport.processInfo?.().pid).toBeGreaterThan(0);
     expect(activate).not.toHaveBeenCalled();
     releaseOwnership();
@@ -4714,6 +4716,7 @@ it.each([
       stateDirectory,
       lifecyclePolicy: { mode: "per_turn" as const, idleTimeoutMs: null },
       readRunnerState,
+      observeCredentials: false,
     };
     const first = createCapabilityRunnerdCodexTransport({
       ...options,
@@ -6253,6 +6256,7 @@ it.each([
       stateDirectory,
       lifecyclePolicy: { mode: "warm", idleTimeoutMs: 60_000 },
       runnerReconnectGraceMs: 5_000,
+      observeCredentials: false,
     });
     const readRunner = async () =>
       JSON.parse(
@@ -7930,81 +7934,6 @@ it("reopens Pi after a completed turn within its cold admission budget during wa
       ).rejects.toThrow("verified process snapshots are supported only on Linux and macOS");
       return;
     }
-    await bundle.transport.request("thread/start", {
-      cwd: root, model: "openrouter/deepseek/deepseek-v4-flash-0731",
-      dynamicTools: codexSemanticToolSpecs(),
-      completionContract: { revision: "warm-pi-contract", criterionIds: [] },
-    });
-    const runnerPid = bundle.evidence().runnerPid;
-    const notifications = bundle.transport.notifications()[Symbol.asyncIterator]();
-    const completeTurn = async () => {
-      await bundle.transport.request("turn/start", { input: [{ type: "text", text: "Complete the fixture turn." }] });
-      for (let index = 0; index < 64; index += 1) {
-        const next = await Promise.race([
-          notifications.next(),
-          new Promise<never>((_, reject) => setTimeout(() => reject(new Error("Fixture completion timed out")), 5_000)),
-        ]);
-        if (next.value?.method === "turn/completed") return;
-      }
-      throw new Error("Fixture turn did not complete");
-    };
-    await completeTurn();
-    const started = Date.now();
-    await bundle.transport.attachRun!({ runId: "run-pi-warm-second", turnId: "turn-pi-warm-second", itemId: "item-pi-warm-second" });
-    expect(Date.now() - started).toBeGreaterThan(30_000);
-    await completeTurn();
-    expect(bundle.evidence()).toMatchObject({ runnerPid, runnerExited: false });
-    const commands = (await readFile(journal, "utf8")).trim().split("\n").map((line) => JSON.parse(line));
-    expect(commands.filter((entry) => entry.event === "spawn")).toHaveLength(2);
-    expect(commands.filter((entry) => entry.command === "session.open")).toHaveLength(2);
-    expect(commands.filter((entry) => entry.resumed)).toHaveLength(1);
-    expect(commands.filter((entry) => entry.command === "turn.start")).toHaveLength(2);
-    expect(commands.filter((entry) => entry.command === "session.close")).toHaveLength(1);
-  } catch (error) {
-    failure = error;
-    throw error;
-  } finally {
-    try {
-      await bundle.transport.close();
-    } catch (cleanupError) {
-      if (failure) throw new AggregateError([failure, cleanupError], "Warm attachment and strict cleanup failed");
-      throw cleanupError;
-    }
-    await rm(root, { recursive: true, force: true });
-  }
-}, 75_000);
-
-it("reopens Pi after a completed turn within its cold admission budget during warm attachment", async () => {
-  const root = await mkdtemp(join(tmpdir(), "runnerd-pi-warm-admission-"));
-  const providerNode = process.platform === "linux" ? join(root, "node") : process.execPath;
-  if (process.platform === "linux") {
-    await cp(process.execPath, providerNode, { dereference: true });
-    await chmod(providerNode, 0o500);
-    expect((await stat(providerNode)).mode & 0o777).toBe(0o500);
-  }
-  const cliRoot = join(root, "dist/cli");
-  await mkdir(cliRoot, { recursive: true, mode: 0o700 });
-  const sidecarPath = join(cliRoot, "acpx-runtime-sidecar.cjs");
-  const journal = join(root, "commands.ndjson");
-  const fixture = await readFile(fileURLToPath(new URL("./fixtures/fake-pi-warm-sidecar.cjs", import.meta.url)), "utf8");
-  await writeFile(sidecarPath, fixture.replace("/* fixture-config */ null", JSON.stringify({ journal, resumeDelayMs: 32_000, commandDigest: QUALIFIED_ACPX_PROFILES.pi.commandDigest })), { mode: 0o600 });
-  const digest = (path: string) => `sha256:${createHash("sha256").update(readFileSync(path)).digest("hex")}`;
-  const bundle = createCapabilityRunnerdCodexTransport({
-    provider: "acpx", acpxAgent: "pi", piThinkingLevel: "low", acpxPermissionMode: "deny-all",
-    runnerBinary: defaultCapabilityRunnerdBinary(), stateDirectory: root, runnerFilesystemRoot: root,
-    providerNodeCommand: providerNode, providerNodeCommandSha256: digest(providerNode),
-    acpxSidecarPath: sidecarPath, acpxSidecarSha256: digest(sidecarPath),
-    providerPackAuthorityDigest: `sha256:${"d".repeat(64)}`,
-    lifecyclePolicy: { mode: "warm", idleTimeoutMs: 60_000 },
-    environment: { PATH: "/usr/bin:/bin" },
-  });
-  bundle.transport.setServerRequestHandler(async () => ({
-    success: true,
-    contentItems: [{ type: "inputText", text: "Completion report accepted." }],
-  }));
-  let failure: unknown;
-  try {
-    await bundle.transport.request("initialize", {});
     await bundle.transport.request("thread/start", {
       cwd: root, model: "openrouter/deepseek/deepseek-v4-flash-0731",
       dynamicTools: codexSemanticToolSpecs(),

@@ -222,6 +222,7 @@ test.describe("Board send delivery refresh", () => {
       async (dismiss) => {
         await dismiss.click();
       },
+      { noWaitAfter: true },
     );
   });
 

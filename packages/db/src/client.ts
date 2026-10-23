@@ -799,6 +799,26 @@ function stripOuterParentheses(value: string): string {
   return normalized;
 }
 
+function normalizeArrayElementSeparators(value: string): string {
+  let normalized = "", quoted = false;
+  for (let index = 0; index < value.length; index += 1) {
+    const character = value[index]!;
+    if (quoted && character === "'" && value[index + 1] === "'") {
+      normalized += "''";
+      index += 1;
+      continue;
+    }
+    if (character === "'") quoted = !quoted;
+    if (!quoted && character === ",") {
+      normalized = normalized.trimEnd() + ",";
+      while (/\s/.test(value[index + 1] ?? "")) index += 1;
+      continue;
+    }
+    normalized += character;
+  }
+  return normalized;
+}
+
 function normalizeIndexPredicate(value: string | null): string | null {
   if (value === null) return null;
   let normalized = stripOuterParentheses(value)
@@ -812,6 +832,11 @@ function normalizeIndexPredicate(value: string | null): string | null {
     // pg_get_indexdef. Normalize both spellings before comparing predicates.
     .replace(/\b([A-Za-z_][A-Za-z0-9_]*)\s+NOT\s+IN\s+\(([^()]*)\)/gi, "$1 <> ALL ARRAY[$2]")
     .replace(/<>\s+ALL\s+\(\s*ARRAY\s*\[([^\]]*)\]\s*\)/gi, "<> ALL ARRAY[$1]")
+    // Likewise, PostgreSQL canonicalizes `IN (...)` as `= ANY (ARRAY[...])`.
+    // The two forms describe the same partial-index predicate.
+    .replace(/\b([A-Za-z_][A-Za-z0-9_]*)\s+IN\s+\(([^()]*)\)/gi, "$1 = ANY ARRAY[$2]")
+    .replace(/=\s+ANY\s+\(\s*ARRAY\s*\[([^\]]*)\]\s*\)/gi, "= ANY ARRAY[$1]")
+    .replace(/\bARRAY\s*\[([^\]]*)\]/gi, (_match, contents: string) => `ARRAY[${normalizeArrayElementSeparators(contents)}]`)
     // PostgreSQL renders the SQL LIKE operator as its internal `~~` token in
     // pg_get_indexdef. This is a direct spelling equivalence, not a broader
     // predicate rewrite.

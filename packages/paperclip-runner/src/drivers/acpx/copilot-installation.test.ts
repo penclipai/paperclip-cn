@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { resolve } from "node:path";
+import { join, resolve } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { build } from "esbuild";
 import { verifyNativeAcpxInstallation } from "./installation-integrity.js";
@@ -89,14 +89,14 @@ describe("Copilot build-owned installation", () => {
   it("admits the current profile with environment launch preparation", () => {
     expect(QUALIFIED_ACPX_PROFILES.copilot.agentProfileVersion).toBe(58);
     expect(QUALIFIED_ACPX_PROFILES.copilot.qualificationStatus).toBeUndefined();
-    expect(QUALIFIED_ACPX_PROFILES.copilot.commandDigest).toBe("sha256:d490dacdab02051d24c84aae49ac6fb12b8226cf8a47b014ec53f3d3a8410a94");
+    expect(QUALIFIED_ACPX_PROFILES.copilot.commandDigest).toBe("sha256:30c761fbcbb87af16b58a2f08b5e4844067758d80e437d758b0adfb6162aaa50");
   });
 
   it("preserves v57 while binding the shared Pi setup and launch repairs in v58", () => {
     const prior = JSON.parse(readFileSync(new URL("../../../test/fixtures/copilot-profile-v57-identity.json", import.meta.url), "utf8"));
     const current = JSON.parse(readFileSync(new URL("../../../test/fixtures/copilot-profile-v58-identity.json", import.meta.url), "utf8"));
     expect(Object.keys(current.declaration).filter(key => current.declaration[key] !== prior.declaration[key]).sort()).toEqual([
-      "agentProfileVersion", "guardedInstallationSourceSha256", "nativeBackendSourceSha256", "profileCompatibilitySourceSha256", "profileInstallationSourceSha256", "providerLaunchSourceSha256", "runtimeHostSourceSha256", "runtimeRequestBridgeSourceSha256", "semanticBridgeSourceSha256", "semanticSidecarSourceSha256",
+      "agentProfileVersion", "assetInstallerSourceSha256", "assetOwnershipSourceSha256", "guardedInstallationSourceSha256", "nativeBackendSourceSha256", "nativeInstructionsSourceSha256", "profileCompatibilitySourceSha256", "profileInstallationSourceSha256", "providerLaunchSourceSha256", "runtimeHostSourceSha256", "runtimeRequestBridgeSourceSha256", "semanticBridgeSourceSha256", "semanticSidecarSourceSha256",
     ]);
     expect(isSupportedAcpxProfileVersion("copilot", 57)).toBe(true);
     expect(current.commandDigest).not.toBe(prior.commandDigest);
@@ -423,7 +423,7 @@ describe("Copilot build-owned installation", () => {
       const result = await verifyCopilotInstallation(QUALIFIED_ACPX_PROFILES.copilot);
       const root = fileURLToPath(new URL(`../../../provider-assets/copilot/${process.platform}-${process.arch}`, import.meta.url));
       expect(verifyNativeAcpxInstallation).toHaveBeenCalledWith({
-        distributionRoot: root, manifestPath: `${root}/.paperclip-copilot-closure.json`,
+        distributionRoot: root, manifestPath: join(root, ".paperclip-copilot-closure.json"),
         expectedClosureSha256: COPILOT_CLOSURE_SHA256[`${process.platform}-${process.arch}` as keyof typeof COPILOT_CLOSURE_SHA256],
         executable: "copilot", fixedArguments: COPILOT_LAUNCH_ARGUMENTS, isolatedCacheEnvironmentName: "COPILOT_PKG_CACHE_HOME",
         copilotDistributionDirectory: "distribution",

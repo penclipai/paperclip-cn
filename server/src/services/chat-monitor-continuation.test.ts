@@ -168,6 +168,7 @@ if (!support.supported) console.warn(`Monitor publication database unavailable: 
     const deps = createHeartbeatQueueTestDependencies(db);
     deps.getAgent.mockImplementation(async id => (await db.select().from(agents).where(eq(agents.id, id)))[0] ?? null);
     deps.instanceSettings.getExperimental.mockImplementation(() => instanceSettingsService(db).getExperimental());
+    deps.instanceSettings.getGeneral.mockImplementation(() => instanceSettingsService(db).getGeneral());
     await db.update(agents).set({ runtimeConfig: { heartbeat: { wakeOnDemand: true } } }).where(eq(agents.id, f.agent.id));
     const queue = createHeartbeatQueue(db, deps);
     expect(await queue.dispatchPendingNativeStatusWakeups({ companyId: f.company.id })).toMatchObject({ dispatched: 1 });

@@ -7103,6 +7103,10 @@ async function spawnLocalRuntimeService(input: StartLocalRuntimeServiceInput): P
       }
       throw new RuntimeServicePortBindCollision(port, exposureCollisionDiagnosis, true);
     }
+    // The listener's owner could not be verified. Cleanup above only touches
+    // this launch, and the caller must retain the typed unknown-state failure
+    // rather than treating the allocated port as generically exhausted.
+    if (err instanceof LocalServiceOwnershipQueryUnavailableError) throw err;
     const deploymentBindConflict = /local_trusted requires server\.bind=loopback/i.test(
       `${failureMessage}\n${serviceOutputExcerpt}`,
     );

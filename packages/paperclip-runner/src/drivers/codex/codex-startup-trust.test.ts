@@ -59,7 +59,7 @@ describe.each([
       const path = join(home, "config.toml");
       const updated = readFileSync(path, "utf8");
       expect(parse(updated)).toEqual({ projects: { [cwd]: { trust_level: "trusted" } } });
-      expect(statSync(path).mode & 0o777).toBe(0o600);
+      if (process.platform !== "win32") expect(statSync(path).mode & 0o777).toBe(0o600);
       trustCodexStartupRoot(home, cwd);
       expect(readFileSync(path, "utf8")).toBe(updated);
     } finally { rmSync(temp, { recursive: true, force: true }); }

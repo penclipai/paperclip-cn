@@ -44,6 +44,10 @@ const EMBEDDED_POSTGRES_TIMEOUT = process.platform === "win32" ? 60_000 : 20_000
 const originalSecretsProviderEnv = process.env.PAPERCLIP_SECRETS_PROVIDER;
 const originalPaperclipApiUrlEnv = process.env.PAPERCLIP_API_URL;
 
+function boardActor(userId: string) {
+  return { userId };
+}
+
 if (!embeddedPostgresSupport.supported) {
   console.warn(
     `Skipping embedded Postgres routines service tests on this host: ${embeddedPostgresSupport.reason ?? "unsupported environment"}`,

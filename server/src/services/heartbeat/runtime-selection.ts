@@ -919,7 +919,11 @@ export async function selectHeartbeatRuntime(db: Db, input: HeartbeatRuntimeSele
       if (!lockedRun) throw new Error("native_runtime_run_missing");
       // Cancellation and runtime selection serialize on this row. A
       // stopped preparation must never create a new native coordinator.
-      if (lockedRun.status !== "running" || lockedRun.resultJson?.startupCancellation) return false;
+      if (
+        lockedRun.status !== "running" ||
+        lockedRun.resultJson?.startupCancellation ||
+        lockedRun.resultJson?.cancellation
+      ) return false;
       if (lockedRun.runtimeMode === "legacy" && lockedRun.controllerBootId &&
           !(await renewLegacyControllerLease(tx as unknown as Db, lockedRun))) {
         onNativeOwnershipHeld();
@@ -1068,14 +1072,38 @@ export async function selectHeartbeatRuntime(db: Db, input: HeartbeatRuntimeSele
       providerResourceDispositionForRun = "keep_running";
       onProviderResourceDisposition(providerResourceDispositionForRun);
     }
-    await measureRunPhase("runtime_selection.run_write", () => db
-
+    const legacySelected = await measureRunTransaction(db, "runtime_selection", async (tx) => {
+      const lockedRun = await measureRunPhase("runtime_selection.row_lock", () => tx
+        .select()
+        .from(heartbeatRuns)
+        .where(eq(heartbeatRuns.id, run.id))
+        .for("update")
+        .limit(1)
+        .then((rows) => rows[0] ?? null));
+      if (!lockedRun) throw new Error("legacy_runtime_run_missing");
+      if (
+        lockedRun.status !== "running" ||
+        lockedRun.resultJson?.startupCancellation ||
+        lockedRun.resultJson?.cancellation
+      ) return false;
+      if (
+        lockedRun.runtimeModeResolvedAt &&
+        lockedRun.runtimeMode !== "legacy"
+      ) {
+        throw new Error("legacy_runtime_mode_conflict");
+      }
+      if (lockedRun.controllerBootId &&
+          !(await renewLegacyControllerLease(tx as unknown as Db, lockedRun))) {
+        onNativeOwnershipHeld();
+        return false;
+      }
+      await measureRunPhase("runtime_selection.run_write", () => tx
       .update(heartbeatRuns)
       .set({
         runtimeMode: "legacy",
         runtimeModeResolverVersion:
-          nativeRuntimeResolution.resolverVersion,
-        runtimeModeReason: nativeRuntimeResolution.reason,
+          lockedRun.runtimeModeResolverVersion ?? nativeRuntimeResolution.resolverVersion,
+        runtimeModeReason: lockedRun.runtimeModeReason ?? nativeRuntimeResolution.reason,
         runtimeModeResolvedAt: sql`coalesce(${heartbeatRuns.runtimeModeResolvedAt}, clock_timestamp())`,
         // Preserve server-owned admission and dispatch evidence on this
         // row; never copy another run's execution profile.
@@ -1088,6 +1116,20 @@ export async function selectHeartbeatRuntime(db: Db, input: HeartbeatRuntimeSele
         updatedAt: new Date(),
       })
       .where(eq(heartbeatRuns.id, run.id)));
+      const persisted = await tx
+        .select({ controllerBootId: heartbeatRuns.controllerBootId })
+        .from(heartbeatRuns)
+        .where(eq(heartbeatRuns.id, run.id))
+        .for("update")
+        .limit(1)
+        .then((rows) => rows[0] ?? null);
+      if (lockedRun.controllerBootId && persisted?.controllerBootId !== legacyControllerBootId) {
+        onNativeOwnershipHeld();
+        return false;
+      }
+      return true;
+    });
+    if (!legacySelected) return { selected: false };
 
   }
   return { selected: true, nativeExecution, nativeRunnerInstanceId, getNativeFreshSessionHandoff, nativeWorkspaceSync };

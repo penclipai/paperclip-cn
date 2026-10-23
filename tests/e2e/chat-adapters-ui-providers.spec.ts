@@ -702,7 +702,7 @@ test.describe.serial("native chat adapter UI", () => {
       if (provider.provider === "slack") {
         await expect(page.getByRole("heading", { name: "Allowed Channels" })).toBeVisible();
         await expect(page.getByRole("button", { name: "Send me a test message" })).toBeVisible();
-        await expect(page.getByRole("link", { name: "Open Slack configuration" })).toBeVisible();
+        await expect(page.getByRole("link", { name: "Open Slack", exact: true })).toBeVisible();
         await expect(page.getByText("Message in a channel", { exact: true })).toHaveCount(0);
         await expect(page.getByText("Agent avatar", { exact: true })).toHaveCount(0);
         await expect(page.getByRole("link", { name: "View message" })).toHaveCount(0);

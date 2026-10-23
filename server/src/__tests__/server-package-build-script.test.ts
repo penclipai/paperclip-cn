@@ -69,7 +69,12 @@ describe("server package build script", () => {
     expect(RUNNER_VENDOR_BUILD_COMMAND).toBe(
       "pnpm --filter @penclipai/paperclip-runner build",
     );
-    expect(packageJson.scripts?.build.startsWith("pnpm run prepare:runner-vendor && ")).toBe(true);
+    expect(packageJson.scripts?.build?.startsWith(
+      "node ../scripts/i18n-catalog.mjs check --root .. && ",
+    )).toBe(true);
+    expect(packageJson.scripts?.build).toContain("pnpm run prepare:runner-vendor");
+    expect(packageJson.scripts?.build.indexOf("pnpm run prepare:runner-vendor"))
+      .toBeLessThan(packageJson.scripts?.build.indexOf(" && tsc") ?? Infinity);
     expect(packageJson.scripts?.build).toContain(
       "node ../scripts/fs-ops.mjs cp --contents ../packages/paperclip-runner/dist dist/vendor/paperclip-runner",
     );

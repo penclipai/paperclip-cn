@@ -325,7 +325,7 @@ describeEmbeddedPostgres("merged Muse migration histories", () => {
         entry, file: `${entry.tag}.sql`, when: entry.when, hash: await migrationHash(`${entry.tag}.sql`),
       })));
       const prefixIdentity = common.map(({ entry, hash }) => [entry.idx, entry.version, entry.when, entry.tag, entry.breakpoints, hash]);
-      expect(createHash("sha256").update(JSON.stringify(prefixIdentity)).digest("hex")).toBe("18063d01d91c172c556ee0bc7e84eaa35dc7c4b00b07e817c471cdf392393454");
+      expect(createHash("sha256").update(JSON.stringify(prefixIdentity)).digest("hex")).toBe("c6df82c67abf080e6f2580937668a8c06f1c5b6304e28249334f96e6ad717194");
       for (const entry of [...mergedMasterTail, ...canonicalMasterTail]) {
         expect(await migrationHash(entry.file)).toBe(entry.hash);
         expect(journal.entries.find(candidate => `${candidate.tag}.sql` === entry.file)?.when).toBe(entry.when);

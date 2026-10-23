@@ -133,6 +133,13 @@ import {
   readCatalogStringList,
   readPortableCatalogProvenance,
 } from "./catalog-provenance.js";
+import {
+  BUNDLED_PAPERCLIP_SKILL_KEY_PREFIX,
+  getBundledPaperclipSkillIdentity,
+  getBundledPaperclipSkillSlugFromKey,
+  isBundledPaperclipSkillSourceForKey,
+  isReservedPaperclipSkillKey,
+} from "./bundled-paperclip-skills.js";
 
 type CompanySkillRow = typeof companySkills.$inferSelect;
 type CompanySkillVersionRow = typeof companySkillVersions.$inferSelect;
@@ -316,7 +323,7 @@ function assertImportedSkillSourceAllowed(skill: ImportedSkill) {
 }
 
 function assertImportedSkillKeyAllowed(skill: ImportedSkill) {
-  if (!skill.key.startsWith("paperclipai/paperclip/")) return;
+  if (!isReservedPaperclipSkillKey(skill.key)) return;
   const metadata = isPlainRecord(skill.metadata) ? skill.metadata : null;
   const sourceKind = asString(metadata?.sourceKind);
   if (sourceKind === "paperclip_bundled") return;
@@ -603,7 +610,7 @@ function uniqueImportedSkillKey(companyId: string, baseSlug: string, usedKeys: S
 }
 
 function buildSkillRuntimeName(key: string, slug: string) {
-  if (key.startsWith("paperclipai/paperclip/")) return slug;
+  if (isReservedPaperclipSkillKey(key)) return slug;
   return `${slug}--${hashSkillValue(key)}`;
 }
 
@@ -653,14 +660,14 @@ function readCanonicalSkillKey(frontmatter: Record<string, unknown>, metadata: R
  * `ensureSkillInventoryCurrent` imports into every company library.
  */
 export const PAPERCLIP_CORE_SKILL_KEYS = [
-  "paperclipai/paperclip/paperclip",
-  "paperclipai/paperclip/paperclip-board",
-  "paperclipai/paperclip/paperclip-converting-plans-to-tasks",
-  "paperclipai/paperclip/paperclip-create-agent",
-  "paperclipai/paperclip/para-memory-files",
+  `${BUNDLED_PAPERCLIP_SKILL_KEY_PREFIX}paperclip`,
+  `${BUNDLED_PAPERCLIP_SKILL_KEY_PREFIX}paperclip-board`,
+  `${BUNDLED_PAPERCLIP_SKILL_KEY_PREFIX}paperclip-converting-plans-to-tasks`,
+  `${BUNDLED_PAPERCLIP_SKILL_KEY_PREFIX}paperclip-create-agent`,
+  `${BUNDLED_PAPERCLIP_SKILL_KEY_PREFIX}para-memory-files`,
 ] as const;
 
-export const ONBOARDING_FIRST_TASK_SKILL_KEY = "paperclipai/paperclip/first-task";
+export const ONBOARDING_FIRST_TASK_SKILL_KEY = `${BUNDLED_PAPERCLIP_SKILL_KEY_PREFIX}first-task`;
 
 function deriveCanonicalSkillKey(
   companyId: string,
@@ -669,11 +676,15 @@ function deriveCanonicalSkillKey(
   const slug = normalizeSkillSlug(input.slug) ?? "skill";
   const metadata = isPlainRecord(input.metadata) ? input.metadata : null;
   const explicitKey = readCanonicalSkillKey({}, metadata);
-  if (explicitKey) return explicitKey;
+  if (explicitKey) {
+    return asString(metadata?.sourceKind) === "paperclip_bundled"
+      ? getBundledPaperclipSkillIdentity(explicitKey) ?? explicitKey
+      : explicitKey;
+  }
 
   const sourceKind = asString(metadata?.sourceKind);
   if (sourceKind === "paperclip_bundled") {
-    return `paperclipai/paperclip/${slug}`;
+    return `${BUNDLED_PAPERCLIP_SKILL_KEY_PREFIX}${slug}`;
   }
 
   const owner = normalizeSkillSlug(asString(metadata?.owner));
@@ -1027,9 +1038,7 @@ function deriveImportedSkillSource(
         : null);
     const [owner, repoName] = (repo ?? "").split("/");
     if (repo && owner && repoName) {
-      const sourceKind = owner === "paperclipai"
-        && repoName === "paperclip"
-        && canonicalKey?.startsWith("paperclipai/paperclip/")
+      const sourceKind = isBundledPaperclipSkillSourceForKey(repo, canonicalKey)
         ? "paperclip_bundled"
         : "github";
       return {
@@ -1331,14 +1340,12 @@ function stableJsonEqual(left: unknown, right: unknown) {
 }
 
 function isPaperclipBundledSkillKey(key: string) {
-  return key.startsWith("paperclipai/paperclip/");
+  return isReservedPaperclipSkillKey(key);
 }
 
 function paperclipBundledFolderCategory(key: string, metadata?: unknown) {
   const keyParts = key.split("/");
-  if (keyParts[0] === "paperclipai" && keyParts[1] === "bundled" && keyParts[2]) {
-    return keyParts[2];
-  }
+  if (keyParts[0] === "paperclipai" && keyParts[1] === "bundled" && keyParts[2]) return keyParts[2];
   if (isPaperclipBundledSkillKey(key)) return "paperclip-core";
   if (isPlainRecord(metadata) && asString(metadata.sourceKind) === "paperclip_bundled") {
     return "paperclip-core";
@@ -3099,7 +3106,9 @@ export function companySkillService(db: Db, options: { actor?: AuthorizationActo
   }
 
   async function ensureBundledSkillReleases(companyId: string, bundledSkills: CompanySkill[]) {
-    const paperclipSkill = bundledSkills.find((skill) => skill.key === "paperclipai/paperclip/paperclip");
+    const paperclipSkill = bundledSkills.find((skill) =>
+      getBundledPaperclipSkillSlugFromKey(skill.key) === "paperclip",
+    );
     if (!paperclipSkill) return;
     for (const release of await readBundledSkillReleaseRegistry()) {
       const fileInventory = serializeVersionFileInventory(
@@ -4449,7 +4458,11 @@ export function companySkillService(db: Db, options: { actor?: AuthorizationActo
       if (diskBytes !== null) {
         const stat = await fs.stat(absolutePath!);
         const currentVersion = process.platform === "win32" ? await getCurrentVersion(skill, database) : null;
-        const previousExecutable = currentVersion?.fileInventory.find((entry) => entry.path === normalizedPath)?.executable;
+        const previousExecutable = currentVersion?.fileInventory.find((entry) => entry.path === normalizedPath)?.executable
+          ?? (currentVersion?.repositorySnapshotId
+            ? (await runtimeVersionInventory(skill.companyId, currentVersion))
+              .find((entry) => entry.path === normalizedPath)?.executable
+            : undefined);
         const file = snapshotFile(
           normalizedPath,
           fileEntry.kind,

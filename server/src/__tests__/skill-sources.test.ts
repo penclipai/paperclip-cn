@@ -17,6 +17,14 @@ import { skillSourceService, type SkillSourceContext } from '../services/skill-s
 import { companySkillService } from '../services/company-skills.js';
 import { skillFileBytes } from '../services/skill-snapshot.js';
 import { deleteCompany } from '../services/company-deletion.js';
+import { prepareTestPosixShell } from '@penclipai/adapter-utils/test-fixtures/posix-shell';
+
+const execFileAsync = promisify(execFile);
+
+function runMaterializedScript(scriptPath: string) {
+  const shell = prepareTestPosixShell({ command: 'sh', args: [scriptPath] });
+  return execFileAsync(shell.command, shell.args, { env: shell.env });
+}
 
 const externalUrl = resolveExternalTestDatabaseUrl('PAPERCLIP_SKILL_SOURCES_TEST_DATABASE_URL');
 const support = externalUrl ? { supported: true } : await getEmbeddedPostgresTestSupport();
@@ -611,7 +619,9 @@ describe.skipIf(!support.supported)('skill source persistence', () => {
       expect(version.fileInventory.find(file => file.path === '.paperclip-repository/shared/check.sh')?.executable).toBe(true);
       const runtime = (await skills.listRuntimeSkillEntries(companyId, { versionSelections: new Map([[copied.key, version.id]]) })).find(entry => entry.key === copied.key)!;
       expect(await fs.readFile(path.join(runtime.source, asset.path))).toEqual(Buffer.from([0, 255, 128]));
-      expect((await fs.stat(path.join(runtime.source, '.paperclip-repository/shared/check.sh'))).mode & 0o111).toBeGreaterThan(0);
+      if (process.platform !== 'win32') {
+        expect((await fs.stat(path.join(runtime.source, '.paperclip-repository/shared/check.sh'))).mode & 0o111).toBeGreaterThan(0);
+      }
     }
     const saved = await skills.createVersion(companyId, main.id, { label: 'Repository checkpoint' });
     expect(saved.repositorySnapshotId).toBe((await skills.getVersion(companyId, main.id, newest.currentVersionId!))?.repositorySnapshotId);

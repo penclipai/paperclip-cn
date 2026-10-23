@@ -67,6 +67,20 @@ describeDatabase("selected runtime skill reconciliation", () => {
     }
   }, 30_000);
 
+  it("canonicalizes legacy bundled metadata to the CN bundled skill identity", async () => {
+    const [imported] = await companySkillService(db).importPackageFiles(companyId, {
+      "legacy/SKILL.md": `---\nname: Legacy bundled skill\nmetadata:\n  sourceKind: paperclip_bundled\n  skillKey: paperclipai/paperclip/legacy-bundled\n---\n\nLegacy bundled content.\n`,
+    });
+
+    expect(imported?.skill).toMatchObject({
+      key: "penclipai/paperclip-cn/legacy-bundled",
+      metadata: {
+        sourceKind: "paperclip_bundled",
+        skillKey: "penclipai/paperclip-cn/legacy-bundled",
+      },
+    });
+  });
+
   it("bounds project-source authorization work without caching changed permissions", async () => {
     const [agent] = await db.insert(agents).values({ companyId, name: "Selected runtime reader", adapterType: "codex_local" }).returning();
     await db.insert(companyMemberships).values({ companyId, principalType: "agent", principalId: agent!.id, membershipRole: "member" });

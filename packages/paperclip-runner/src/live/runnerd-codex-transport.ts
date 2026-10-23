@@ -3873,6 +3873,9 @@ class DurablePrpCodexTransport implements CodexAppServerTransport {
       return { data: data.slice(offset, offset + limit), nextCursor: offset + limit < data.length ? String(offset + limit) : null };
     }
     if (method === "thread/read") {
+      if (!this.#startupComplete && this.#startupOperation !== null) {
+        throw new Error("provider startup ownership remains unadmitted");
+      }
       if (this.#core === null) {
         await this.#trackStartup(() => {
           this.#recoveryTurnBindingPending = true;

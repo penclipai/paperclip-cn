@@ -81,10 +81,6 @@ it("fails closed when the platform cannot atomically open without following syml
 // Production rejects ACPX there, so descriptor-pinning fixtures only apply on
 // platforms where that contract is available.
 describe.runIf(process.platform !== "win32")("ACPX installation integrity", () => {
-// Node cannot atomically pin provider directories or executables on Windows.
-// Production rejects ACPX there, so descriptor-pinning fixtures only apply on
-// platforms where that contract is available.
-describe.runIf(process.platform !== "win32")("ACPX installation integrity", () => {
   it.each([["linux", "x64"], ["linux", "arm64"], ["darwin", "arm64"], ["darwin", "x64"]] as const)(
     "retains Claude executable admission for a published bundle on %s %s", async (os, cpu) => {
       const parent = await realpath(await mkdtemp(join(tmpdir(), "paperclip-claude-npm-admission-")));

@@ -11,8 +11,9 @@ import os from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { agents, authUsers, companies, companyMemberships, createDb, environments, executionWorkspaces, heartbeatRuns, issues, issueAccessGrants, principalPermissionGrants, projects, projectAccessMembers, projectWorkspaces } from "@penclipai/db";
+import { agents, authUsers, companies, companyMemberships, companySecretBindings, createDb, environments, executionWorkspaces, heartbeatRuns, issues, issueAccessGrants, principalPermissionGrants, projects, projectAccessMembers, projectWorkspaces } from "@penclipai/db";
 import { setExpensiveWorkspaceGitExecutor } from "@penclipai/adapter-utils/git-workspace-sync";
+import { prepareTestPosixShell } from "@penclipai/adapter-utils/test-fixtures/posix-shell";
 import { buildProjectMentionHref } from "@penclipai/shared";
 
 import { createWorkspaceGitOperationScheduler, WorkspaceGitScanError } from "../services/workspace-git-operation-scheduler.js";
@@ -23,6 +24,8 @@ import { resolveManagedProjectWorkspaceDir, resolvePaperclipInstanceRoot } from 
 import { accessService } from "../services/access.js";
 import { instanceSettingsService } from "../services/instance-settings.ts";
 import { environmentRuntimeService } from "../services/environment-runtime.js";
+import { secretService } from "../services/secrets.js";
+import { agentCredentialService } from "../services/agent-credentials.js";
 import { findNativeChatWorkspaceScope } from "../services/native-runtime/native-chat-workspace.js";
 import { drainHeartbeatRunsToQuiescence } from "./helpers/drain-heartbeat-runs.js";
 
@@ -35,6 +38,10 @@ vi.mock("../adapters/index.js", () => ({
 
 const support = await getEmbeddedPostgresTestSupport();
 const suite = support.supported ? describe : describe.skip;
+// The adapter registry is mocked below, and codex_local selects the legacy
+// adapter path. Credentials are attached as company secret references so
+// low-trust policy still rejects inline sensitive configuration.
+const legacyCodexFixtureConfig = {};
 
 function mapFakeRemoteTempPaths(value: string): string {
   if (process.platform !== "win32") return value;
@@ -46,6 +53,27 @@ suite("task project repository provisioning", () => {
   let db: ReturnType<typeof createDb>;
   let root: string;
   let heartbeat: ReturnType<typeof heartbeatService>;
+  async function attachLegacyCodexCredential(companyId: string, agentId: string, adapterConfig: Record<string, unknown> = {}) {
+    const secret = await secretService(db).create(companyId, {
+      name: `Fixture Codex credential ${agentId}`,
+      provider: "local_encrypted",
+      value: "fixture-legacy-key",
+    });
+    await db.update(agents).set({
+      adapterConfig: { ...adapterConfig, env: { OPENAI_API_KEY: { type: "secret_ref", secretId: secret.id } } },
+    }).where(eq(agents.id, agentId));
+    const [agent] = await db.select().from(agents).where(eq(agents.id, agentId));
+    await agentCredentialService(db).syncAgentSecretBindings(agent!, db, {});
+    const bindings = await db.select().from(companySecretBindings).where(and(
+      eq(companySecretBindings.companyId, companyId),
+      eq(companySecretBindings.secretId, secret.id),
+      eq(companySecretBindings.targetType, "agent"),
+      eq(companySecretBindings.targetId, agentId),
+      eq(companySecretBindings.configPath, "env.OPENAI_API_KEY"),
+    ));
+    expect(bindings).toHaveLength(1);
+    return bindings[0]!.id;
+  }
   beforeAll(async () => {
     // The managed checkout appends instance, UUID, repository, and clone-suffix
     // components. Keep the Windows fixture prefix short enough for Git's loose
@@ -104,9 +132,19 @@ suite("task project repository provisioning", () => {
     await db.insert(environments).values({ id: environmentId, name: `Email sandbox ${policyOwner}`, driver: "sandbox", status: "active", config: { provider: "fake", image: "fake:test" } });
     await db.insert(agents).values({
       id: agentId, companyId, name: "Email agent", role: "engineer", status: "idle", adapterType: "codex_local",
-      defaultEnvironmentId: environmentId, adapterConfig: {}, runtimeConfig: {},
+      defaultEnvironmentId: environmentId, adapterConfig: legacyCodexFixtureConfig, runtimeConfig: {},
       permissions: policyOwner === "agent" ? { trustPreset: "low_trust_review", authorizationPolicy } : {},
     });
+    const credentialBindingId = await attachLegacyCodexCredential(companyId, agentId);
+    const policyWithCredential = {
+      ...authorizationPolicy,
+      trustBoundary: { ...authorizationPolicy.trustBoundary, allowedSecretBindingIds: [credentialBindingId] },
+    };
+    if (policyOwner === "agent") {
+      await db.update(agents).set({ permissions: { trustPreset: "low_trust_review", authorizationPolicy: policyWithCredential } }).where(eq(agents.id, agentId));
+    } else {
+      await db.update(projects).set({ executionWorkspacePolicy: { authorizationPolicy: policyWithCredential } }).where(eq(projects.id, projectId));
+    }
     // Exercise the real lease and workspace lifecycle with the built-in fake
     // provider, executing its setup commands in a disposable filesystem root.
     const sandboxHeartbeat = heartbeatService(db, { environmentRuntime: {
@@ -148,7 +186,7 @@ suite("task project repository provisioning", () => {
       await drainHeartbeatRunsToQuiescence(db, sandboxHeartbeat);
       const [workspace] = await db.select().from(executionWorkspaces).where(eq(executionWorkspaces.sourceIssueId, issueId));
       expect(workspace).toMatchObject({ companyId, projectId: null, mode: "isolated_workspace", strategyType: "project_primary" });
-      expect(workspace.cwd).toContain(`/isolated-workspaces/${companyId}/${issueId}`);
+      expect(workspace.cwd).toContain(path.join("isolated-workspaces", companyId, issueId));
 
       expect(execute.mock.calls.filter(([input]) => input.runId === run!.id)).toHaveLength(1);
       const call = execute.mock.calls.find(([input]) => input.runId === run!.id)![0];
@@ -167,6 +205,16 @@ suite("task project repository provisioning", () => {
     const [originalAgent] = await db.select().from(agents).where(eq(agents.id, agentId));
     const reassignedAgentId = randomUUID();
     await db.insert(agents).values({ ...originalAgent, id: reassignedAgentId, name: "Next agent", status: "idle" });
+    const reassignedCredentialBindingId = await attachLegacyCodexCredential(companyId, reassignedAgentId);
+    const reassignmentPolicyWithCredential = {
+      ...authorizationPolicy,
+      trustBoundary: { ...authorizationPolicy.trustBoundary, allowedSecretBindingIds: [credentialBindingId, reassignedCredentialBindingId] },
+    };
+    if (policyOwner === "agent") {
+      await db.update(agents).set({ permissions: { trustPreset: "low_trust_review", authorizationPolicy: reassignmentPolicyWithCredential } }).where(eq(agents.id, reassignedAgentId));
+    } else {
+      await db.update(projects).set({ executionWorkspacePolicy: { authorizationPolicy: reassignmentPolicyWithCredential } }).where(eq(projects.id, projectId));
+    }
     await db.update(issues).set({ status: "todo", assigneeAgentId: reassignedAgentId }).where(eq(issues.id, issueIds[0]));
     const reassignedRun = await sandboxHeartbeat.wakeup(reassignedAgentId, { source: "on_demand", triggerDetail: "manual", contextSnapshot: { issueId: issueIds[0], projectId } });
     await vi.waitFor(async () => {
@@ -208,7 +256,8 @@ suite("task project repository provisioning", () => {
         id: randomUUID(), companyId, projectId, name: "Research repository", sourceType: "local_path", cwd: source, isPrimary: true,
       });
     }
-    await db.insert(agents).values({ id: agentId, companyId, name: "Researcher", role: "engineer", status: "idle", adapterType: "codex_local", adapterConfig: {}, runtimeConfig: {}, permissions: {} });
+    await db.insert(agents).values({ id: agentId, companyId, name: "Researcher", role: "engineer", status: "idle", adapterType: "codex_local", adapterConfig: legacyCodexFixtureConfig, runtimeConfig: {}, permissions: {} });
+    await attachLegacyCodexCredential(companyId, agentId);
     await db.insert(issues).values({
       id: issueId, companyId, projectId, title: "Write a report", status: "todo", assigneeAgentId: agentId,
       executionWorkspaceSettings: explicitIsolation === "issue" ? { mode: "isolated_workspace" } : null,
@@ -252,7 +301,8 @@ suite("task project repository provisioning", () => {
     }
     await db.insert(companies).values({ id: companyId, name: "Task cwd", issuePrefix: `W${companyId.slice(0, 6)}`, defaultResponsibleUserId: "responsible-user" });
     await db.insert(companyMemberships).values({ companyId, principalType: "user", principalId: "responsible-user", status: "active", membershipRole: "owner" });
-    await db.insert(agents).values({ id: agentId, companyId, name: "Worker", status: "idle", adapterType: "codex_local", adapterConfig: agentCwd ? { cwd: agentDefaultCwd } : {}, permissions: {} });
+    await db.insert(agents).values({ id: agentId, companyId, name: "Worker", status: "idle", adapterType: "codex_local", adapterConfig: { ...legacyCodexFixtureConfig, ...(agentCwd ? { cwd: agentDefaultCwd } : {}) }, permissions: {} });
+    await attachLegacyCodexCredential(companyId, agentId, agentCwd ? { cwd: agentDefaultCwd } : {});
     await db.insert(issues).values({ id: issueId, companyId, title: "Use task files", status: "todo", assigneeAgentId: agentId,
       assigneeAdapterOverrides: { adapterConfig: { cwd: overrideCwd } },
       workspaceSelection: taskDirectory ? { version: 1, source: "explicit", selection: { kind: "task_directory" } } : null });
@@ -292,7 +342,8 @@ suite("task project repository provisioning", () => {
     await db.insert(companies).values({ id: companyId, name: "Chat files", issuePrefix: `C${companyId.slice(0, 6)}`, defaultResponsibleUserId: "responsible-user" });
     await db.insert(companyMemberships).values({ companyId, principalType: "user", principalId: "responsible-user", status: "active", membershipRole: "owner" });
     await db.insert(projects).values({ id: projectId, companyId, name: "Organization only" });
-    await db.insert(agents).values({ id: agentId, companyId, name: "Chat agent", status: "idle", adapterType: "codex_local", adapterConfig: {}, permissions: {} });
+    await db.insert(agents).values({ id: agentId, companyId, name: "Chat agent", status: "idle", adapterType: "codex_local", adapterConfig: legacyCodexFixtureConfig, permissions: {} });
+    await attachLegacyCodexCredential(companyId, agentId);
     await db.insert(issues).values({ id: issueId, companyId, projectId, title: "Keep chat files", originKind: "chat_channel", status: "todo", assigneeAgentId: agentId,
       workspaceSelection: explicit ? { version: 1, source: "explicit", selection: { kind: "task_directory" } } : null });
     let bindingId: string | undefined;
@@ -324,7 +375,8 @@ suite("task project repository provisioning", () => {
       { id: sourceProjectId, companyId, name: "File source", env: { PROJECT_VALUE: "source", SOURCE_ONLY: "must-not-leak" } },
     ]);
     await db.insert(projectWorkspaces).values({ id: sourceId, companyId, projectId: sourceProjectId, name: "Source", cwd, isPrimary: true });
-    await db.insert(agents).values({ id: agentId, companyId, name: "Worker", status: "idle", adapterType: "codex_local", adapterConfig: {}, permissions: {} });
+    await db.insert(agents).values({ id: agentId, companyId, name: "Worker", status: "idle", adapterType: "codex_local", adapterConfig: legacyCodexFixtureConfig, permissions: {} });
+    await attachLegacyCodexCredential(companyId, agentId);
     await db.insert(issues).values({ id: issueId, companyId, projectId, title: "Use task environment", status: "todo", assigneeAgentId: agentId, executionWorkspaceSettings: { mode: "shared_workspace" },
       projectWorkspaceId: kind === "configured_source" ? sourceId : null,
       workspaceSelection: kind === "default" ? null : { version: 1, source: "explicit", selection: kind === "configured_source"
@@ -357,7 +409,8 @@ suite("task project repository provisioning", () => {
       { id: sourceProjectId, companyId, name: "File source", executionWorkspacePolicy: policy === "source" ? restricted : null },
     ]);
     await db.insert(projectWorkspaces).values({ id: sourceId, companyId, projectId: sourceProjectId, name: "Source", cwd, isPrimary: true });
-    await db.insert(agents).values({ id: agentId, companyId, name: "Worker", status: "idle", adapterType: "codex_local", adapterConfig: {}, permissions: {} });
+    await db.insert(agents).values({ id: agentId, companyId, name: "Worker", status: "idle", adapterType: "codex_local", adapterConfig: legacyCodexFixtureConfig, permissions: {} });
+    await attachLegacyCodexCredential(companyId, agentId);
     await db.insert(issues).values({ id: issueId, companyId, projectId, title: "Do not relax policy", status: "todo", assigneeAgentId: agentId, executionWorkspaceSettings: { mode: "shared_workspace" },
       projectWorkspaceId: selection === "configured_source" ? sourceId : null,
       workspaceSelection: selection === "default" ? null : { version: 1, source: "explicit", selection: selection === "configured_source"
@@ -381,7 +434,8 @@ suite("task project repository provisioning", () => {
       authorizationPolicy: { assignmentPolicy: { mode: "protected" } },
     } });
     await db.insert(projectWorkspaces).values({ id: sourceId, companyId, projectId, name: "Shared source", sourceType: "local_path", cwd, isPrimary: true });
-    await db.insert(agents).values({ id: agentId, companyId, name: "Writer", status: "idle", adapterType: "codex_local", adapterConfig: {}, permissions: {} });
+    await db.insert(agents).values({ id: agentId, companyId, name: "Writer", status: "idle", adapterType: "codex_local", adapterConfig: legacyCodexFixtureConfig, permissions: {} });
+    await attachLegacyCodexCredential(companyId, agentId);
     await db.insert(companyMemberships).values({ companyId, principalType: "agent", principalId: agentId, status: "active", membershipRole: "member" });
     const [grant] = await db.insert(principalPermissionGrants).values({ companyId, principalType: "agent", principalId: agentId,
       permissionKey: "tasks:assign_scope", scope: { projectId, assigneeAgentId: agentId } }).returning();
@@ -431,8 +485,9 @@ suite("task project repository provisioning", () => {
     await db.insert(companyMemberships).values({ companyId, principalType: "user", principalId: "responsible-user", status: "active", membershipRole: "owner" });
     await db.insert(projects).values({ id: projectId, companyId, name: "Ordinary source" });
     await db.insert(projectWorkspaces).values({ id: sourceId, companyId, projectId, name: "Shared source", sourceType: "local_path", cwd, isPrimary: true });
-    await db.insert(agents).values({ id: agentId, companyId, name: "Already assigned", status: "idle", adapterType: "codex_local", adapterConfig: {},
+    await db.insert(agents).values({ id: agentId, companyId, name: "Already assigned", status: "idle", adapterType: "codex_local", adapterConfig: legacyCodexFixtureConfig,
       permissions: protectedEntity === "agent" ? { authorizationPolicy } : {} });
+    await attachLegacyCodexCredential(companyId, agentId);
     await db.insert(issues).values({ id: issueId, companyId, title: "Continue authorized assignment", status: "todo", assigneeAgentId: agentId,
       executionPolicy: protectedEntity === "task" ? { authorizationPolicy } : null,
       projectWorkspaceId: sourceId, executionWorkspaceSettings: { mode: "shared_workspace" },
@@ -465,7 +520,8 @@ suite("task project repository provisioning", () => {
       authorizationPolicy: { assignmentPolicy: { mode: "protected" } },
     } });
     await db.insert(projectWorkspaces).values({ id: sourceId, companyId, projectId, name: "Source", sourceType: "local_path", cwd, isPrimary: true });
-    await db.insert(agents).values({ id: agentId, companyId, name: "Reader", status: "idle", adapterType: "codex_local", adapterConfig: {}, permissions: {} });
+    await db.insert(agents).values({ id: agentId, companyId, name: "Reader", status: "idle", adapterType: "codex_local", adapterConfig: legacyCodexFixtureConfig, permissions: {} });
+    await attachLegacyCodexCredential(companyId, agentId);
     await db.insert(issues).values({ id: issueId, companyId, title: "Use an isolated source", status: "todo", assigneeAgentId: agentId,
       projectWorkspaceId: sourceId, executionWorkspaceSettings: { mode: "isolated_workspace", workspaceStrategy: { type: strategy } },
       workspaceSelection: { version: 1, source: "explicit", selection: { kind: "configured_source", projectWorkspaceId: sourceId, mode: "managed_isolated" } } });
@@ -525,7 +581,8 @@ suite("task project repository provisioning", () => {
         id: randomUUID(), companyId, projectId: privateProjectId, name: "Private parent of occupied target",
         sourceType: "local_path", cwd: path.dirname(occupiedTarget), isPrimary: false,
       });
-      await db.insert(agents).values({ id: agentId, companyId, name: "Isolated reader", status: "idle", adapterType: "codex_local", adapterConfig: {}, permissions: {} });
+      await db.insert(agents).values({ id: agentId, companyId, name: "Isolated reader", status: "idle", adapterType: "codex_local", adapterConfig: legacyCodexFixtureConfig, permissions: {} });
+      await attachLegacyCodexCredential(companyId, agentId);
       if (scenario === "provision_failure") await db.insert(companyMemberships).values({ companyId, principalType: "agent", principalId: agentId, status: "active", membershipRole: "member" });
       await db.insert(issues).values({ id: issueId, companyId, title: "Read isolated source", status: "todo", assigneeAgentId: agentId,
         projectId: scenario === "provision_failure" ? projectId : null,
@@ -610,7 +667,8 @@ suite("task project repository provisioning", () => {
     await db.insert(companyMemberships).values({ companyId, principalType: "user", principalId: "responsible-user", status: "active", membershipRole: "owner" });
     await db.insert(projects).values({ id: projectId, companyId, name: "Source policy" });
     await db.insert(projectWorkspaces).values({ id: sourceId, companyId, projectId, name: "Source", sourceType: "local_path", cwd, isPrimary: true });
-    await db.insert(agents).values({ id: agentId, companyId, name: "Writer", status: "idle", adapterType: "codex_local", adapterConfig: {}, permissions: {} });
+    await db.insert(agents).values({ id: agentId, companyId, name: "Writer", status: "idle", adapterType: "codex_local", adapterConfig: legacyCodexFixtureConfig, permissions: {} });
+    await attachLegacyCodexCredential(companyId, agentId);
     await db.insert(issues).values({ id: issueId, companyId, title: "Continue retained work", status: "todo", assigneeAgentId: agentId,
       projectWorkspaceId: sourceId, executionWorkspaceSettings: { mode: "shared_workspace" },
       workspaceSelection: { version: 1, source: "explicit", selection: { kind: "configured_source", projectWorkspaceId: sourceId, mode: "shared" } } });
@@ -681,7 +739,8 @@ suite("task project repository provisioning", () => {
       { id: randomUUID(), companyId, projectId, name: "Anchor", sourceType: "local_path", cwd: source, isPrimary: true, createdAt: new Date(Date.now() - 1000) },
       { id: randomUUID(), companyId, projectId, name: "Source copy", sourceType: "git_repo", repoUrl: pathToFileURL(source).href, cwd: source, isPrimary: false },
     ]);
-    await db.insert(agents).values({ id: agentId, companyId, name: "Test", role: "engineer", status: "idle", adapterType: "codex_local", adapterConfig: {}, runtimeConfig: {}, permissions: {} });
+    await db.insert(agents).values({ id: agentId, companyId, name: "Test", role: "engineer", status: "idle", adapterType: "codex_local", adapterConfig: legacyCodexFixtureConfig, runtimeConfig: {}, permissions: {} });
+    await attachLegacyCodexCredential(companyId, agentId);
     await db.insert(issues).values({ id: issueId, companyId, projectId, title: "Recover startup and use existing work", status: "todo", assigneeAgentId: agentId });
     let inject = true;
     const canonicalSource = await realpath(source);
@@ -786,7 +845,8 @@ suite("task project repository provisioning", () => {
       await db.insert(companyMemberships).values({ companyId, principalType: "user", principalId: "responsible-user", status: "active", membershipRole: "owner" });
       await db.insert(projects).values({ id: projectId, companyId, name: "Read-only source", executionWorkspacePolicy: { authorizationPolicy: { assignmentPolicy: { mode: "protected" } } } });
       await db.insert(projectWorkspaces).values({ id: sourceId, companyId, projectId, name: "Primary", sourceType: "local_path", cwd: anchor, repoUrl: pathToFileURL(anchor).href, isPrimary: true });
-      await db.insert(agents).values({ id: agentId, companyId, name: "Reader", adapterType: "codex_local", status: "idle", adapterConfig: {}, permissions: {} });
+      await db.insert(agents).values({ id: agentId, companyId, name: "Reader", adapterType: "codex_local", status: "idle", adapterConfig: legacyCodexFixtureConfig, permissions: {} });
+      await attachLegacyCodexCredential(companyId, agentId);
       await db.insert(issues).values({ id: issueId, companyId, title: "Keep task binding", status: "todo", assigneeAgentId: agentId,
         projectWorkspaceId: sourceId, executionWorkspaceSettings: { mode: "isolated_workspace", workspaceStrategy: { type: "git_worktree" } },
         workspaceSelection: { version: 1, source: "explicit", selection: { kind: "configured_source", projectWorkspaceId: sourceId, mode: "managed_isolated" } } });
@@ -872,7 +932,8 @@ suite("task project repository provisioning", () => {
       await db.insert(companyMemberships).values({ companyId, principalType: "user", principalId: "responsible-user", status: "active", membershipRole: "owner" });
       await db.insert(projects).values({ id: projectId, companyId, name: "Public project" });
       await db.insert(projectWorkspaces).values({ id: sourceId, companyId, projectId, name: "URL-only anchor", sourceType: "git_repo", cwd: null, repoUrl: pathToFileURL(source).href, isPrimary: true });
-      await db.insert(agents).values({ id: agentId, companyId, name: "Reader", adapterType: "codex_local", status: "idle", adapterConfig: {}, permissions: {} });
+      await db.insert(agents).values({ id: agentId, companyId, name: "Reader", adapterType: "codex_local", status: "idle", adapterConfig: legacyCodexFixtureConfig, permissions: {} });
+      await attachLegacyCodexCredential(companyId, agentId);
       await db.insert(issues).values({ id: privateIssueId, companyId, title: "Private original", visibility: "private", responsibleUserId: "private-owner" });
       await db.insert(executionWorkspaces).values({ companyId, projectId: null, sourceIssueId: privateIssueId, name: "Private original files",
         mode: "shared_workspace", strategyType: "project_primary", cwd: source, providerType: "local_fs", status: "active" });
@@ -956,7 +1017,8 @@ suite("task project repository provisioning", () => {
     await db.insert(companyMemberships).values({ companyId, principalType: "user", principalId: "responsible-user", status: "active", membershipRole: "owner" });
     await db.insert(projects).values({ id: projectId, companyId, name: "Multi-repo", status: "in_progress" });
     await db.insert(projectWorkspaces).values(repositoryRows);
-    await db.insert(agents).values({ id: agentId, companyId, name: "Test", role: "engineer", status: "idle", adapterType: "codex_local", adapterConfig: {}, runtimeConfig: {}, permissions: {} });
+    await db.insert(agents).values({ id: agentId, companyId, name: "Test", role: "engineer", status: "idle", adapterType: "codex_local", adapterConfig: legacyCodexFixtureConfig, runtimeConfig: {}, permissions: {} });
+    await attachLegacyCodexCredential(companyId, agentId);
     await db.insert(issues).values({ id: issueId, companyId, projectId, title: "Use project repositories", status: "todo", assigneeAgentId: agentId });
     const run = await heartbeat.wakeup(agentId, { source: "on_demand", triggerDetail: "manual", contextSnapshot: { issueId, projectId } });
     expect(run).not.toBeNull();

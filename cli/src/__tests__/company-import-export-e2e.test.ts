@@ -4,7 +4,7 @@ import { createRequire } from "node:module";
 import net from "node:net";
 import os from "node:os";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
@@ -373,7 +373,7 @@ describeEmbeddedPostgres("penclip company import/export e2e", () => {
     const output = { stdout: [] as string[], stderr: [] as string[] };
     const child = spawn(
       process.execPath,
-      ["--import", createRequire(import.meta.url).resolve("tsx"), path.join(repoRoot, "cli/src/index.ts"), "run", "--config", configPath],
+      ["--import", pathToFileURL(createRequire(import.meta.url).resolve("tsx")).href, path.join(repoRoot, "cli/src/index.ts"), "run", "--config", configPath],
       {
         cwd: repoRoot,
         env: createServerEnv(configPath, port, tempDb.connectionString, {
