@@ -23,6 +23,11 @@ on:
         description: Existing GitHub Release tag to upload assets into
         required: false
         type: string
+      target:
+        description: Desktop target to build, or all supported targets
+        required: false
+        type: string
+        default: all
   workflow_dispatch:
     inputs:
       source_ref:
@@ -48,25 +53,48 @@ on:
         description: Existing GitHub Release tag to upload assets into
         required: false
         type: string
+      target:
+        description: Desktop target to build
+        required: true
+        type: choice
+        default: all
+        options: [all, win-x64, mac-x64, mac-arm64, linux-x64]
 
 jobs:
+  resolve_targets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {}
+    outputs:
+      matrix: ${{ steps.targets.outputs.matrix }}
+    steps:
+      - name: Resolve desktop targets
+        id: targets
+        shell: bash
+        env:
+          DESKTOP_TARGET: ${{ inputs.target || 'all' }}
+        run: |
+          node - <<'NODE' >> "$GITHUB_OUTPUT"
+          // desktop-target-matrix:start
+          const targets = {
+            'win-x64': { runner: 'windows-latest', platform: 'win', arch: 'x64' },
+            'mac-x64': { runner: 'macos-15-intel', platform: 'mac', arch: 'x64' },
+            'mac-arm64': { runner: 'macos-latest', platform: 'mac', arch: 'arm64' },
+            'linux-x64': { runner: 'ubuntu-latest', platform: 'linux', arch: 'x64' },
+          };
+          const target = process.env.DESKTOP_TARGET;
+          if (target !== 'all' && !Object.hasOwn(targets, target)) {
+            throw new Error(`Unsupported desktop target: ${target}`);
+          }
+          console.log(`matrix=${JSON.stringify({ include: target === 'all' ? Object.values(targets) : [targets[target]] })}`);
+          // desktop-target-matrix:end
+          NODE
+
   build_desktop_assets:
+    needs: resolve_targets
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - runner: windows-latest
-            platform: win
-            arch: x64
-          - runner: macos-15-intel
-            platform: mac
-            arch: x64
-          - runner: macos-latest
-            platform: mac
-            arch: arm64
-          - runner: ubuntu-latest
-            platform: linux
-            arch: x64
+      matrix: ${{ fromJSON(needs.resolve_targets.outputs.matrix) }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 90
     permissions:
@@ -189,6 +217,18 @@ jobs:
           name: ${{ inputs.artifact_name }}-${{ matrix.platform }}-${{ matrix.arch }}
           if-no-files-found: error
           path: ${{ steps.manifest.outputs.artifact_paths }}
+
+      - name: Preserve built installers after a failed check
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact_name }}-failed-build-${{ matrix.platform }}-${{ matrix.arch }}
+          if-no-files-found: warn
+          retention-days: 7
+          path: |
+            packages/desktop-electron/release/*.dmg
+            packages/desktop-electron/release/*.AppImage
+            packages/desktop-electron/release/*.exe
 
       - name: Upload desktop assets to GitHub Release
         if: inputs.upload_to_release

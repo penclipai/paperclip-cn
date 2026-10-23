@@ -2397,13 +2397,21 @@ pnpm --filter @penclipai/desktop-electron test:payload
 The desktop CI matrix verifies the unpacked application and then mounts the
 final DMG read-only or extracts the final AppImage. Each check uses the actual
 vendored Runner resolver and executes both OpenCode entrypoints with `--version`
-on its Unix host. It then runs `audit:size:check`, which enforces
+on its Unix host. Native module probes run in a child process so their library
+handles close before the verifier unmounts a DMG. Cleanup retries a busy volume
+and can force-detach only its own read-only temporary mount. It then runs
+`audit:size:check`, which enforces
 installer and app-runtime budgets for all four desktop targets. The reviewed
 baselines live in `scripts/desktop-size-budget.mjs` within the desktop package.
 Review measured changes before updating a budget; do not raise a limit simply
 to pass a failed build. JSON and Markdown audit evidence remain available when
 the budget gate fails. A directory-only local package can still use `audit:size`
 without requiring an installer.
+
+Manual desktop workflow runs default to all four targets. Select a single
+`target` to repeat a platform check. A failed check retains any completed
+installer for seven days as a separate diagnostic artifact; it does not pass
+the normal artifact or release-upload gates.
 
 After changing installer packaging, run `pnpm desktop:dist:win`, install the
 resulting NSIS executable, and compare every installed runtime file with
