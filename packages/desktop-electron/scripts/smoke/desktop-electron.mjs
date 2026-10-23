@@ -8,7 +8,6 @@ import process from "node:process";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import net from "node:net";
-import { _electron as electron } from "playwright";
 import { killProcessTree, runPnpm } from "../utils.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -24,6 +23,19 @@ const DEV_PLUGIN_BUILD_FILTERS = [
   "@penclipai/plugin-kitchen-sink-example",
 ];
 const DEV_PLUGIN_SMOKE_PACKAGES = new Set(DEV_PLUGIN_BUILD_FILTERS);
+
+function requireConfiguredSmokeTempDrive() {
+  const requiredDrive = process.env.PAPERCLIP_DESKTOP_SMOKE_REQUIRED_DRIVE?.trim();
+  if (process.platform !== "win32" || !requiredDrive) return;
+  const drive = requiredDrive.replace(/[\\/]+$/, "").toLowerCase();
+  if (!/^[a-z]:$/.test(drive)) {
+    throw new Error(`PAPERCLIP_DESKTOP_SMOKE_REQUIRED_DRIVE must be a Windows drive such as D:, received ${requiredDrive}.`);
+  }
+  const tempDir = path.resolve(os.tmpdir()).toLowerCase();
+  if (!tempDir.startsWith(`${drive}\\`)) {
+    throw new Error(`os.tmpdir() must be on ${requiredDrive} for this desktop smoke run, received ${tempDir}.`);
+  }
+}
 
 function parseArgs(argv) {
   const args = { mode: "dev" };
@@ -80,6 +92,7 @@ function getSplashExpectation(locale, theme) {
 }
 
 async function createSmokeUserDataDir(mode, theme) {
+  requireConfiguredSmokeTempDrive();
   const userDataDir = await fs.promises.mkdtemp(
     path.join(os.tmpdir(), `paperclip-desktop-smoke-${mode}-${theme}-`),
   );
@@ -93,23 +106,26 @@ async function createSmokeUserDataDir(mode, theme) {
   return userDataDir;
 }
 
-function buildLaunchEnv(userDataDir) {
-  const baseEnv = { ...process.env };
-  for (const key of [
+export function buildLaunchEnv(userDataDir, hostEnv = process.env) {
+  const baseEnv = { ...hostEnv };
+  const deniedKeys = new Set([
     "PAPERCLIP_CONFIG",
     "PAPERCLIP_CONTEXT",
     "PAPERCLIP_IN_WORKTREE",
     "PAPERCLIP_WORKTREE_NAME",
     "PAPERCLIP_WORKTREE_COLOR",
     "PAPERCLIP_WORKTREES_DIR",
-  ]) {
-    delete baseEnv[key];
+    "PAPERCLIP_AGENT_JWT_SECRET",
+    "BETTER_AUTH_SECRET",
+  ]);
+  for (const key of Object.keys(baseEnv)) {
+    if (deniedKeys.has(key.toUpperCase())) delete baseEnv[key];
   }
 
   const paperclipHome = path.resolve(userDataDir, "runtime");
   return {
     ...baseEnv,
-    PAPERCLIP_DESKTOP_SMOKE_START_DELAY_MS: process.env.PAPERCLIP_DESKTOP_SMOKE_START_DELAY_MS ?? "1800",
+    PAPERCLIP_DESKTOP_SMOKE_START_DELAY_MS: hostEnv.PAPERCLIP_DESKTOP_SMOKE_START_DELAY_MS ?? "1800",
     PAPERCLIP_DESKTOP_USER_DATA_DIR: userDataDir,
     PAPERCLIP_HOME: paperclipHome,
     PAPERCLIP_CONFIG: path.resolve(paperclipHome, "config.json"),
@@ -134,7 +150,7 @@ function resolveDevLaunchOptions(userDataDir) {
 
   return {
     executablePath: electronBin,
-    args: [path.resolve(packageDir, "dist", "main.js")],
+    args: [`--user-data-dir=${userDataDir}`, path.resolve(packageDir, "dist", "main.js")],
     cwd: packageDir,
     env: {
       ...buildLaunchEnv(userDataDir),
@@ -193,7 +209,7 @@ function resolvePackagedLaunchOptions(userDataDir) {
 
   return {
     executablePath,
-    args: [],
+    args: [`--user-data-dir=${userDataDir}`],
     cwd: path.dirname(executablePath),
     env: buildLaunchEnv(userDataDir),
   };
@@ -629,6 +645,7 @@ async function writeFailureSnapshot(page, artifactDir, locale) {
 }
 
 async function runThemeScenario(mode, theme, artifactDir) {
+  const { _electron: electron } = await import("playwright");
   const userDataDir = await createSmokeUserDataDir(mode, theme);
   const launchOptions = mode === "dev"
     ? resolveDevLaunchOptions(userDataDir)
@@ -820,6 +837,11 @@ async function runThemeScenario(mode, theme, artifactDir) {
   } finally {
     let shutdownError = null;
     try {
+      // This isolated test has finished its assertions; confirm the normal
+      // user-facing quit gate before exercising graceful service cleanup.
+      await electronApp.evaluate(({ dialog }) => {
+        dialog.showMessageBox = async () => ({ response: 1, checkboxChecked: false });
+      });
       await electronApp.close();
       if (serverPort) {
         await waitForPortClosed(serverPort, "desktop control plane");
@@ -862,7 +884,9 @@ async function run() {
   }
 }
 
-void run().catch((error) => {
-  console.error("[desktop-smoke] Failed:", error);
-  process.exitCode = 1;
-});
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  void run().catch((error) => {
+    console.error("[desktop-smoke] Failed:", error);
+    process.exitCode = 1;
+  });
+}

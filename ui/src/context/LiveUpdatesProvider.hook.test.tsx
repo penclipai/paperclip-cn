@@ -172,6 +172,7 @@ describe("LiveUpdatesProvider socket run notification scope", () => {
     container.remove();
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
+    window.desktopShell = undefined;
   });
 
   async function receiveStatus(payload: Record<string, unknown>, createdAt = "2026-09-09T18:00:00.000Z", toastEligible: boolean | undefined = true) {
@@ -318,6 +319,60 @@ describe("LiveUpdatesProvider socket run notification scope", () => {
     });
     await vi.waitFor(() => expect(sockets).toHaveLength(2));
     expect(invalidate).toHaveBeenCalledExactlyOnceWith({ type: "active" }, { cancelRefetch: false });
+  });
+
+  it("keeps the shared socket alive while a desktop window is hidden", async () => {
+    Object.defineProperty(window, "desktopShell", {
+      configurable: true,
+      value: { isDesktop: true },
+    });
+    expect(window.desktopShell?.isDesktop).toBe(true);
+    await receiveStatus({ runId: "other-run", agentId: "other-agent", status: "running" });
+    const visibility = vi.spyOn(document, "visibilityState", "get");
+    await reactAct(async () => {
+      visibility.mockReturnValue("hidden");
+      document.dispatchEvent(new Event("visibilitychange"));
+    });
+    expect(sockets).toHaveLength(1);
+    expect(sockets[0].onmessage).toBeTypeOf("function");
+  });
+
+  it("defers disconnected desktop fallback polling until the window returns", async () => {
+    Object.defineProperty(window, "desktopShell", {
+      configurable: true,
+      value: { isDesktop: true },
+    });
+    await receiveStatus({ runId: "other-run", agentId: "other-agent", status: "running" });
+    const visibility = vi.spyOn(document, "visibilityState", "get");
+    const setInterval = vi.spyOn(window, "setInterval");
+    await reactAct(async () => {
+      visibility.mockReturnValue("hidden");
+      document.dispatchEvent(new Event("visibilitychange"));
+    });
+    const socket = sockets[0] as unknown as { onclose: ((event: CloseEvent) => void) | null };
+    await reactAct(async () => socket.onclose?.(new Event("close") as CloseEvent));
+    expect(setInterval).not.toHaveBeenCalled();
+    await reactAct(async () => {
+      visibility.mockReturnValue("visible");
+      document.dispatchEvent(new Event("visibilitychange"));
+    });
+    expect(setInterval).toHaveBeenCalledOnce();
+  });
+
+  it("sends only metadata after an eligible desktop failure toast is accepted", async () => {
+    const notify = vi.fn().mockResolvedValue(true);
+    Object.defineProperty(window, "desktopShell", {
+      configurable: true,
+      value: { isDesktop: true, notify },
+    });
+    await receiveStatus({ runId: "other-run", agentId: "other-agent", status: "failed", error: "sensitive output" });
+    await vi.waitFor(() => expect(notify).toHaveBeenCalledWith({
+      id: expect.stringMatching(/^heartbeat\.run\.status:/),
+      companyId: "company-1",
+      kind: "run_failed",
+      targetPath: "/agents/other-agent/runs/other-run",
+    }));
+    expect(JSON.stringify(notify.mock.calls)).not.toContain("sensitive output");
   });
 
   it.each(["parent-agent", "child-agent"])("shows an unrelated retryable failure without issueId for %s", async (agentId) => {

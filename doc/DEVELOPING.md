@@ -3252,6 +3252,76 @@ is not a substitute for this boundary: its dependency links can be expanded by
 the NSIS archive and change the installed path lengths. After packaging, check
 the source dependency junctions and imports as well as the packaged runtime.
 
+### Desktop background behavior
+
+The desktop window closes to the system tray by default when a usable tray is
+available. Closing the window keeps the local service and tasks running, including
+provider usage. The first close explains this behavior. Use the tray menu or the
+desktop section in Profile settings to change it or quit. Opening a second instance
+restores the existing window. If a tray cannot be created, closing requests an
+explicit quit instead of leaving an inaccessible background process.
+
+Ready-state quit requests explain their impact and let the user continue running.
+A fresh positive task summary gives a lower bound for the current company only;
+unavailable state is shown as unknown. Confirmation uses the existing graceful
+worker shutdown, with visible progress. It does not introduce a new provider
+cancellation policy: some remote or
+native work may continue and must be reconciled after reopening. Windows session
+ending bypasses the normal hide/confirmation flow without vetoing OS shutdown.
+
+Window bounds, maximized state, and the last safe application pathname are stored
+with theme and tray preferences in `desktop-preferences.json` under the desktop
+user-data directory. Authentication/pairing routes, query strings, and fragments
+are excluded. Restoration clamps the window into a current display's work area.
+On Windows, a bounded native bounds check also compensates for fractional-DPI
+rounding before the window is shown or maximized. It stops when native minimum
+sizes prevent further correction; no background resize polling is introduced.
+
+Important native notifications reuse the existing company-scoped live-event and
+toast eligibility rules. They show only fixed approval/failure/timeout messages
+while the window is hidden or unfocused; titles, errors, comments, and agent output
+stay inside the application. Desktop mode keeps its existing live socket while
+hidden; ordinary Web page visibility behavior is unchanged. Native notification
+support and OS delivery settings vary by platform, desktop environment, and app
+signing, so the in-app inbox remains the place to inspect details.
+
+Native text is authored only in `ui/locales-src/semantic/domain-desktop.json`.
+Run `pnpm i18n:build` after editing reviewed bilingual source. The desktop build
+packages the `desktop.*` subset of the generated catalog as
+`dist/desktop-locales.json`; missing or mismatched messages fail the build.
+
+Run `pnpm smoke:desktop:background` for a focused real Electron lifecycle check.
+It uses an isolated profile and worker on the caller's temporary drive; set
+temporary/home/cache environment paths to the intended test drive before launch.
+For Windows acceptance that must stay on D:, use a dedicated PowerShell session
+with the following environment. The drive guard fails before building or creating
+a profile when the temporary or evidence path is on another drive; the existing
+desktop smoke/acceptance launchers honor the same environment guard.
+
+```powershell
+$desktopSmokeRoot = "D:\paperclip-desktop-smoke"
+New-Item -ItemType Directory -Force -Path "$desktopSmokeRoot\temp", "$desktopSmokeRoot\home", "$desktopSmokeRoot\cache", "$desktopSmokeRoot\home\appdata", "$desktopSmokeRoot\home\localappdata" | Out-Null
+$env:TEMP = $env:TMP = $env:TMPDIR = "$desktopSmokeRoot\temp"
+$env:HOME = $env:USERPROFILE = "$desktopSmokeRoot\home"
+$env:APPDATA = "$desktopSmokeRoot\home\appdata"
+$env:LOCALAPPDATA = "$desktopSmokeRoot\home\localappdata"
+$env:npm_config_cache = "$desktopSmokeRoot\cache"
+$env:PAPERCLIP_DESKTOP_SMOKE_REQUIRED_DRIVE = "D:"
+pnpm smoke:desktop:background --artifact-dir "$desktopSmokeRoot\evidence"
+```
+
+`--skip-build` reuses prepared UI/server
+and desktop outputs. The probe exercises actual window hiding, restoration,
+preferences, restart, and graceful service exit with controlled dialog responses.
+It does not certify physical tray gestures, OS notification display, or real OS
+logoff across all supported platforms.
+
+Real Electron smoke launchers pass the isolated profile through the native
+`--user-data-dir` switch as well as `PAPERCLIP_DESKTOP_USER_DATA_DIR`: bootstrap
+reads Electron's path before the application's override is applied. Their cleanup
+confirms the normal quit dialog inside the isolated test process so unattended
+checks still exercise graceful shutdown after the new user-facing quit gate.
+
 ### Windows desktop installer extraction
 
 The NSIS installer keeps the default 7z archive. The bundled runtime has more

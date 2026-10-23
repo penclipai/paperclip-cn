@@ -3,7 +3,21 @@ import { randomUUID } from "node:crypto";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { promisify } from "node:util";
-import { app, BrowserWindow, ipcMain, Menu, nativeTheme, shell, type WebContents } from "electron";
+import {
+  app,
+  BrowserWindow,
+  dialog,
+  ipcMain,
+  Menu,
+  nativeImage,
+  nativeTheme,
+  Notification,
+  screen,
+  shell,
+  Tray,
+  type IpcMainInvokeEvent,
+  type WebContents,
+} from "electron";
 import { setupTitlebarAndAttachToWindow } from "custom-electron-titlebar/main";
 import {
   DESKTOP_APP_ID,
@@ -14,17 +28,32 @@ import {
   getDesktopWindowBackground,
   isDesktopTheme,
   resolveDesktopAppRoot,
+  normalizeDesktopAppPath,
+  readDesktopPreferences,
   resolveDesktopPreferencesPath,
   resolveDesktopRepoRoot,
   resolveDesktopTheme,
   resolveDesktopUserDataDir,
   resolvePackagedRuntimeRoot,
   resolveTitlebarThemePath,
+  resolveDesktopWindowState,
   shouldOpenExternalNavigation,
   type DesktopMode,
   type DesktopTheme,
+  type DesktopPreferences,
+  writeDesktopPreferences,
   writeDesktopThemePreference,
 } from "./runtime.js";
+import {
+  DesktopExperience,
+  isTrustedDesktopFrame,
+  parseDesktopContext,
+  parseDesktopNotification,
+  publicDesktopPreferences,
+} from "./desktop-experience.js";
+import { desktopNotificationCopy, desktopText } from "./desktop-copy.js";
+import { desktopTrayMenu } from "./desktop-tray-menu.js";
+import { DesktopWindowState } from "./desktop-window-state.js";
 import { createSplashDataUrl, type SplashState } from "./splash.js";
 import { requestWorkerShutdown } from "./worker-shutdown.js";
 
@@ -93,6 +122,17 @@ let shutdownPromise: Promise<void> | null = null;
 let workerStopPromise: Promise<void> | null = null;
 let startupSequence = 0;
 let detachTitlebar: (() => void) | null = null;
+let tray: Tray | null = null;
+let systemSessionEnding = false;
+let userQuitApproved = false;
+let quitConfirmationPromise: Promise<boolean> | null = null;
+const activeNotifications = new Set<Notification>();
+let notificationEpoch = 0;
+const initialDesktopLocale = readDesktopPreferences(desktopPreferencesPath).locale
+  ?? (getLocale().toLowerCase().startsWith("zh") ? "zh-CN" : "en");
+const desktopExperience = new DesktopExperience();
+desktopExperience.setContext({ locale: initialDesktopLocale, companyId: null, activeRuns: null });
+const desktopWindowState = new DesktopWindowState(desktopPreferencesPath);
 let currentDesktopTheme: DesktopTheme = resolveDesktopTheme(
   desktopUserDataDir,
   nativeTheme.shouldUseDarkColors,
@@ -156,7 +196,7 @@ function clearStartupTimers(): void {
 async function loadSplashState(state: SplashState, detail?: string): Promise<void> {
   await ensureWindow().loadURL(
     createSplashDataUrl({
-      locale: getLocale(),
+      locale: desktopLocale(),
       theme: currentDesktopTheme,
       state,
       detail,
@@ -280,14 +320,157 @@ async function loadMainAppUrl(win: BrowserWindow, url: string): Promise<void> {
   emitTitlebarRefresh(win);
 }
 
+function desktopLocale(): "en" | "zh-CN" {
+  return desktopExperience.getContext().locale;
+}
+
+function dismissNativeNotifications(): void {
+  notificationEpoch += 1;
+  for (const notification of activeNotifications) {
+    try {
+      notification.close();
+    } catch {
+      // The platform may already have dismissed this notification.
+    }
+  }
+  activeNotifications.clear();
+}
+
+function preferences(): DesktopPreferences {
+  return readDesktopPreferences(desktopPreferencesPath);
+}
+
+function hasNotificationSupport(): boolean {
+  try {
+    return typeof Notification === "function" && Notification.isSupported();
+  } catch {
+    return false;
+  }
+}
+
+function showWindow(win = ensureWindow()): void {
+  if (win.isMinimized()) win.restore();
+  if (!win.isVisible()) win.show();
+  win.focus();
+}
+
+function sendDesktopNavigation(targetPath: string): void {
+  const normalized = normalizeDesktopAppPath(targetPath);
+  if (!normalized || !mainWindow || mainWindow.isDestroyed()) return;
+  mainWindow.webContents.send("desktop-shell:navigate", normalized);
+}
+
+function rebuildTrayMenu(): void {
+  if (!tray) return;
+  const current = preferences();
+  tray.setContextMenu(Menu.buildFromTemplate(desktopTrayMenu({
+    locale: desktopLocale(),
+    closeToTray: current.closeToTray !== false,
+    notificationsEnabled: current.notificationsEnabled !== false,
+    notificationsSupported: hasNotificationSupport(),
+    open: () => showWindow(),
+    settings: () => { showWindow(); sendDesktopNavigation("/company/settings/instance/profile"); },
+    setPreference: (patch) => { updateShellPreferences(patch); },
+    quit: () => { void requestUserQuit(); },
+  })));
+}
+
+function updateShellPreferences(patch: Pick<DesktopPreferences, "closeToTray" | "notificationsEnabled">) {
+  try {
+    const next = writeDesktopPreferences(desktopPreferencesPath, patch);
+    if (next.notificationsEnabled === false) dismissNativeNotifications();
+    rebuildTrayMenu();
+    return publicDesktopPreferences(next, {
+      trayAvailable: ensureTray(), notificationsSupported: hasNotificationSupport(),
+    });
+  } catch (error) {
+    console.warn("[desktop-main] Failed to persist shell preferences:", error);
+    return null;
+  }
+}
+
+function ensureTray(): boolean {
+  if (tray) return true;
+  if (typeof Tray !== "function") return false;
+  try {
+    const iconPath = desktopMode === "development"
+      ? path.resolve(desktopAppRoot, "assets", "icon.png")
+      : path.resolve(desktopAppRoot, "dist", "icon.png");
+    const icon = nativeImage.createFromPath(iconPath);
+    if (icon.isEmpty()) return false;
+    tray = new Tray(icon);
+    tray.setToolTip(DESKTOP_WINDOW_TITLE);
+    tray.on("click", () => showWindow());
+    tray.on("double-click", () => showWindow());
+    rebuildTrayMenu();
+    return true;
+  } catch (error) {
+    console.warn("[desktop-main] System tray is unavailable:", error);
+    tray = null;
+    return false;
+  }
+}
+
+async function requestUserQuit(): Promise<boolean> {
+  if (appIsQuitting || shutdownPromise) return false;
+  if (quitConfirmationPromise) return quitConfirmationPromise;
+  quitConfirmationPromise = (async () => {
+    showWindow();
+    const activeRuns = desktopExperience.getFreshActiveRuns();
+    const detail = activeRuns === null
+      ? desktopText("desktop.quit.unknownDetail", desktopLocale())
+      : desktopText("desktop.quit.runningDetail", desktopLocale(), { count: activeRuns });
+    const response = await dialog.showMessageBox(ensureWindow(), {
+      type: "warning",
+      buttons: [desktopText("desktop.quit.keepRunning", desktopLocale()), desktopText("desktop.quit.confirm", desktopLocale())],
+      defaultId: 0,
+      cancelId: 0,
+      title: desktopText("desktop.quit.title", desktopLocale()),
+      message: desktopText("desktop.quit.message", desktopLocale()),
+      detail,
+    });
+    if (response.response !== 1) return false;
+    userQuitApproved = true;
+    dismissNativeNotifications();
+    app.quit();
+    return true;
+  })();
+  try {
+    return await quitConfirmationPromise;
+  } catch (error) {
+    console.warn("[desktop-main] Quit confirmation failed:", error);
+    return false;
+  } finally {
+    quitConfirmationPromise = null;
+  }
+}
+
+function isTrustedDesktopSender(event: IpcMainInvokeEvent): boolean {
+  return isTrustedDesktopFrame(event, mainWindow?.webContents, currentAppUrl);
+}
+
 function ensureWindow(): BrowserWindow {
   if (mainWindow) return mainWindow;
 
+  const savedPreferences = preferences();
+  let windowState = resolveDesktopWindowState(savedPreferences.window, [], {
+    x: 0, y: 0, width: 1280, height: 800,
+  });
+  try {
+    const primaryDisplay = screen.getPrimaryDisplay();
+    windowState = resolveDesktopWindowState(
+      savedPreferences.window,
+      screen.getAllDisplays().map((display) => display.workArea),
+      primaryDisplay.workArea,
+    );
+  } catch {
+    // The native screen module is unavailable in the isolated unit-test harness.
+  }
+
   mainWindow = new BrowserWindow({
-    width: 1280,
-    height: 800,
-    minWidth: 800,
-    minHeight: 600,
+    ...windowState.bounds,
+    minWidth: Math.min(800, windowState.bounds.width),
+    minHeight: Math.min(600, windowState.bounds.height),
     show: false,
     autoHideMenuBar: true,
     title: DESKTOP_WINDOW_TITLE,
@@ -310,12 +493,16 @@ function ensureWindow(): BrowserWindow {
   });
 
   attachCustomTitlebar(mainWindow);
+  desktopWindowState.restoreBounds(mainWindow, windowState.bounds);
+
+  if (windowState.maximized) mainWindow.maximize();
 
   mainWindow.once("ready-to-show", () => {
     mainWindow?.show();
   });
 
   mainWindow.on("closed", () => {
+    desktopWindowState.dispose();
     detachTitlebar?.();
     detachTitlebar = null;
     mainWindow = null;
@@ -336,6 +523,53 @@ function ensureWindow(): BrowserWindow {
 
     emitTitlebarRefresh(mainWindow);
   });
+
+  mainWindow.on("move", () => desktopWindowState.scheduleSave(mainWindow!));
+  mainWindow.on("resize", () => desktopWindowState.scheduleSave(mainWindow!));
+  mainWindow.on("close", (event) => {
+    if (mainWindow && !mainWindow.isDestroyed()) desktopWindowState.save(mainWindow);
+    if (appIsQuitting || systemSessionEnding) return;
+    if (preferences().closeToTray === false || !ensureTray()) {
+      event.preventDefault();
+      void requestUserQuit();
+      return;
+    }
+    event.preventDefault();
+    mainWindow?.hide();
+    const current = preferences();
+    if (!current.trayHintShown) {
+      try {
+        writeDesktopPreferences(desktopPreferencesPath, { trayHintShown: true });
+      } catch (error) {
+        console.warn("[desktop-main] Failed to save tray hint preference:", error);
+      }
+      void dialog.showMessageBox({
+        type: "info",
+        buttons: [desktopText("desktop.background.stay", desktopLocale()), desktopText("desktop.background.show", desktopLocale())],
+        defaultId: 0,
+        title: desktopText("desktop.background.title", desktopLocale()),
+        message: desktopText("desktop.background.message", desktopLocale()),
+      }).then((response) => {
+        if (response.response === 1) showWindow();
+      }).catch((error) => {
+        console.warn("[desktop-main] Failed to show background notice:", error);
+      });
+    }
+  });
+  const endSession = () => {
+    systemSessionEnding = true;
+    appIsQuitting = true;
+    if (mainWindow && !mainWindow.isDestroyed()) desktopWindowState.save(mainWindow);
+    dismissNativeNotifications();
+    // Windows does not emit before-quit for session shutdown. Start cleanup
+    // without preventing the event or waiting for our ordinary quit deadline.
+    void stopWorkerProcess().catch((error) => {
+      console.warn("[desktop-main] Session shutdown cleanup failed:", error);
+    });
+  };
+  // A query may be cancelled by another application; only committed session
+  // ending may stop this worker or latch the terminal state.
+  mainWindow.on("session-end", endSession);
 
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     if (shouldOpenExternalNavigation(url, currentAppUrl)) {
@@ -358,6 +592,7 @@ function ensureWindow(): BrowserWindow {
     }
 
     emitNavigationState(mainWindow);
+    desktopWindowState.rememberPath(mainWindow, currentAppUrl);
   });
 
   mainWindow.webContents.on("did-navigate-in-page", () => {
@@ -366,6 +601,7 @@ function ensureWindow(): BrowserWindow {
     }
 
     emitNavigationState(mainWindow);
+    desktopWindowState.rememberPath(mainWindow, currentAppUrl);
   });
 
   mainWindow.webContents.on("did-stop-loading", () => {
@@ -492,7 +728,9 @@ async function startWorkerProcess(reason: string): Promise<void> {
     if (message?.type === "ready") {
       clearStartupTimers();
       currentAppUrl = message.payload.apiUrl.replace(/\/api\/?$/, "");
-      void loadMainAppUrl(ensureWindow(), currentAppUrl).catch((error) => {
+      const restoredPath = normalizeDesktopAppPath(preferences().window?.lastPath);
+      const initialUrl = restoredPath ? new URL(restoredPath, currentAppUrl).toString() : currentAppUrl;
+      void loadMainAppUrl(ensureWindow(), initialUrl).catch((error) => {
         console.warn("[desktop-main] Failed to load desktop app URL:", error);
         void showStartupError(error instanceof Error ? error.message : String(error));
       });
@@ -532,14 +770,6 @@ async function startWorkerProcess(reason: string): Promise<void> {
   console.log(`[desktop-main] Started worker for ${reason}.`);
 }
 
-function focusExistingWindow(): void {
-  const win = ensureWindow();
-  if (win.isMinimized()) {
-    win.restore();
-  }
-  win.focus();
-}
-
 async function terminateApplication(signal: NodeJS.Signals): Promise<void> {
   appIsQuitting = true;
   try {
@@ -555,7 +785,7 @@ if (!app.requestSingleInstanceLock()) {
   app.quit();
 } else {
   app.on("second-instance", () => {
-    focusExistingWindow();
+    showWindow();
   });
 
   app.on("window-all-closed", () => {
@@ -568,13 +798,31 @@ if (!app.requestSingleInstanceLock()) {
       return;
     }
 
+    if (!appIsQuitting && !systemSessionEnding && !userQuitApproved && currentAppUrl) {
+      event.preventDefault();
+      void requestUserQuit().catch((error) => {
+        console.warn("[desktop-main] Quit confirmation failed:", error);
+      });
+      return;
+    }
+
     if (!workerProcess && !workerStopPromise) {
       appIsQuitting = true;
+      dismissNativeNotifications();
       return;
     }
 
     event.preventDefault();
     appIsQuitting = true;
+    dismissNativeNotifications();
+    const win = mainWindow;
+    if (win && !win.isDestroyed()) {
+      desktopWindowState.save(win);
+      showWindow(win);
+      void loadSplashState("stopping").catch((error) => {
+        console.warn("[desktop-main] Failed to display shutdown progress:", error);
+      });
+    }
     shutdownPromise = stopWorkerProcess().then(() => {
       shutdownPromise = null;
       app.quit();
@@ -591,7 +839,7 @@ if (!app.requestSingleInstanceLock()) {
       void startWorkerProcess("activate");
       return;
     }
-    focusExistingWindow();
+    showWindow();
   });
 
   ipcMain.handle("desktop-shell:retry-start", async () => {
@@ -647,6 +895,85 @@ if (!app.requestSingleInstanceLock()) {
       console.warn("[desktop-main] Failed to persist theme preference:", error);
       return false;
     }
+  });
+
+  ipcMain.handle("desktop-shell:get-preferences", (event) => {
+    if (!isTrustedDesktopSender(event)) return null;
+    return publicDesktopPreferences(preferences(), {
+      trayAvailable: ensureTray(),
+      notificationsSupported: hasNotificationSupport(),
+    });
+  });
+
+  ipcMain.handle("desktop-shell:set-preferences", (event, patch: unknown) => {
+    if (!isTrustedDesktopSender(event) || !patch || typeof patch !== "object" || Array.isArray(patch)) return null;
+    const candidate = patch as { closeToTray?: unknown; notificationsEnabled?: unknown };
+    return updateShellPreferences({
+      closeToTray: typeof candidate.closeToTray === "boolean" ? candidate.closeToTray : undefined,
+      notificationsEnabled: typeof candidate.notificationsEnabled === "boolean" ? candidate.notificationsEnabled : undefined,
+    });
+  });
+
+  ipcMain.handle("desktop-shell:set-context", (event, context: unknown) => {
+    if (!isTrustedDesktopSender(event)) return false;
+    const candidate = parseDesktopContext(context);
+    if (!candidate) return false;
+    const priorCompanyId = desktopExperience.getContext().companyId;
+    const priorLocale = desktopExperience.getContext().locale;
+    desktopExperience.setContext(candidate);
+    const contextChanged = priorCompanyId !== candidate.companyId || priorLocale !== candidate.locale;
+    if (priorCompanyId !== candidate.companyId) dismissNativeNotifications();
+    try {
+      if (contextChanged) {
+        writeDesktopPreferences(desktopPreferencesPath, { locale: candidate.locale });
+        rebuildTrayMenu();
+      }
+    } catch (error) {
+      console.warn("[desktop-main] Failed to persist desktop locale:", error);
+    }
+    return true;
+  });
+
+  ipcMain.handle("desktop-shell:notify", (event, request: unknown) => {
+    if (!isTrustedDesktopSender(event)) return false;
+    const normalized = parseDesktopNotification(request);
+    if (!normalized) return false;
+    const win = mainWindow;
+    if (!desktopExperience.shouldDeliverNotification(normalized, {
+      hiddenOrUnfocused: !win || !win.isVisible() || !win.isFocused(),
+      notificationsEnabled: preferences().notificationsEnabled !== false,
+      supported: hasNotificationSupport(),
+    })) return false;
+    try {
+      const epoch = notificationEpoch;
+      const notification = new Notification(desktopNotificationCopy(normalized.kind, desktopLocale()));
+      if (activeNotifications.size >= 20) {
+        const oldest = activeNotifications.values().next().value;
+        if (oldest) { activeNotifications.delete(oldest); oldest.close(); }
+      }
+      activeNotifications.add(notification);
+      notification.on("close", () => activeNotifications.delete(notification));
+      notification.on("failed", () => activeNotifications.delete(notification));
+      notification.on("click", () => {
+        activeNotifications.delete(notification);
+        if (epoch !== notificationEpoch || appIsQuitting || systemSessionEnding
+          || desktopExperience.getContext().companyId !== normalized.companyId
+          || preferences().notificationsEnabled === false) return;
+        showWindow();
+        sendDesktopNavigation(normalized.targetPath);
+      });
+      notification.show();
+      desktopExperience.rememberNotification(normalized.id);
+      return true;
+    } catch (error) {
+      console.warn("[desktop-main] Failed to show native notification:", error);
+      return false;
+    }
+  });
+
+  ipcMain.handle("desktop-shell:quit", async (event) => {
+    if (!isTrustedDesktopSender(event)) return false;
+    return requestUserQuit();
   });
 
   process.once("SIGINT", () => {

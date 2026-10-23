@@ -11,6 +11,7 @@ import { AppErrorBoundary } from "./components/AppErrorBoundary";
 import { SentryGate } from "./components/SentryGate";
 import { CompanyProvider, useCompany } from "./context/CompanyContext";
 import { LiveUpdatesProvider } from "./context/LiveUpdatesProvider";
+import { DesktopBridge } from "./components/DesktopBridge";
 import { BreadcrumbProvider } from "./context/BreadcrumbContext";
 import { PanelProvider } from "./context/PanelContext";
 import { SidebarProvider } from "./context/SidebarContext";
@@ -79,6 +80,7 @@ getOrCreatePaperclipReactRoot(window, rootElement).render(
                 <ToastProvider>
                   <PrimaryAgentProvider>
                   <LiveUpdatesProvider>
+                    <DesktopBridge />
                     <TooltipProvider>
                       <CompanyAwareBreadcrumbProvider>
                         <SidebarProvider>

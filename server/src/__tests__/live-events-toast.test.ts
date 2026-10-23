@@ -1,6 +1,6 @@
 import { createServer } from "node:http";
 import { once } from "node:events";
-import { getTableName, type SQL } from "drizzle-orm";
+import { getTableName, sql, type SQL } from "drizzle-orm";
 import { PgDialect } from "drizzle-orm/pg-core";
 import { activityToastIdentity } from "../realtime/activity-toast-identity.js";
 import { WebSocket } from "ws";
@@ -13,12 +13,20 @@ vi.mock("../realtime/task-toast-eligibility.js", () => ({ taskToastEligible: vi.
 
 vi.mock("../services/authorization.js", () => ({
   authorizationService: () => ({ decide: async ({ resource }: { resource: { issueId: string } }) => ({ allowed: resource.issueId !== "hidden" }) }),
+  approvalReadSqlCondition: async () => sql`true`,
 }));
 vi.mock("../services/heartbeat-run-privacy.js", () => ({ canActorReadHeartbeatRun: async () => false }));
 vi.mock("../services/case-access.js", () => ({
   canActorReadCase: async (_db: unknown, _actor: unknown, record: { id: string }) => record.id !== "hidden-case",
 }));
-function database(onPredicate: (kind: "where" | "join", condition: SQL) => void = () => {}) {
+function database(
+  onPredicate: (kind: "where" | "join", condition: SQL) => void = () => {},
+  rows: {
+    approvals?: Array<{ id: string; status: string }>;
+    memberships?: Array<Record<string, unknown>> | (() => Array<Record<string, unknown>>);
+    approvalLookupFails?: boolean;
+  } = {},
+) {
   return { select: (fields: Record<string, unknown>) => {
     let table = "";
     const query = {
@@ -27,7 +35,12 @@ function database(onPredicate: (kind: "where" | "join", condition: SQL) => void 
       where: (condition: SQL) => { onPredicate("where", condition); return query; },
       limit: async () => {
         if (table === "issues") return [{ id: "task" }];
-        if (table === "company_memberships") return fields.name ? [{ name: "Alex Example", image: "/alex.png" }] : [{ id: "membership" }];
+        if (table === "company_memberships") return fields.name ? [{ name: "Alex Example", image: "/alex.png" }]
+          : typeof rows.memberships === "function" ? rows.memberships() : rows.memberships ?? [{ id: "membership" }];
+        if (table === "approvals") {
+          if (rows.approvalLookupFails) throw new Error("approval lookup unavailable");
+          return rows.approvals ?? [];
+        }
         if (table === "agents") return [{ name: "Coder", appearance: { schemaVersion: 1, characterVersion: "cap-v1", paletteId: "bubblegum-sky" } }];
         return [];
       },
@@ -90,6 +103,112 @@ describe("authenticated activity notifications", () => {
       socket.terminate();
       await new Promise<void>((resolve) => server.close(() => resolve()));
       vi.mocked(taskToastEligible).mockReset().mockResolvedValue(false);
+    }
+  });
+
+  it("marks a readable pending approval for a local board notification without leaking its payload", async () => {
+    vi.mocked(taskToastEligible).mockClear();
+    const server = createServer();
+    setupLiveEventsWebSocketServer(server, database(() => {}, {
+      approvals: [{ id: "approval-pending", status: "pending" }],
+    }) as never, { deploymentMode: "local_trusted" });
+    server.listen(0, "127.0.0.1");
+    await once(server, "listening");
+    const socket = new WebSocket(`ws://127.0.0.1:${(server.address() as { port: number }).port}/api/companies/company/events/ws`);
+    try {
+      await once(socket, "open");
+      const delivery = once(socket, "message");
+      publishLiveEvent({ companyId: "company", type: "activity.logged", payload: {
+        action: "approval.created", entityType: "approval", entityId: "approval-pending",
+        details: { issueId: "private-task", secret: "must-not-reach-client" },
+      } });
+      const [data] = await delivery;
+      expect(JSON.parse(data.toString())).toMatchObject({
+        toastEligible: true,
+        payload: { action: "approval.created", entityType: "approval", entityId: "approval-pending" },
+      });
+      expect(JSON.parse(data.toString()).payload).not.toHaveProperty("details");
+      expect(taskToastEligible).not.toHaveBeenCalled();
+    } finally {
+      socket.terminate();
+      await new Promise<void>(resolve => server.close(() => resolve()));
+    }
+  });
+
+  it("keeps a readable resolved approval synchronized without prompting the board", async () => {
+    const server = createServer();
+    setupLiveEventsWebSocketServer(server, database(() => {}, {
+      approvals: [{ id: "approval-resolved", status: "approved" }],
+    }) as never, { deploymentMode: "local_trusted" });
+    server.listen(0, "127.0.0.1");
+    await once(server, "listening");
+    const socket = new WebSocket(`ws://127.0.0.1:${(server.address() as { port: number }).port}/api/companies/company/events/ws`);
+    try {
+      await once(socket, "open");
+      const delivery = once(socket, "message");
+      publishLiveEvent({ companyId: "company", type: "activity.logged", payload: {
+        action: "approval.created", entityType: "approval", entityId: "approval-resolved",
+      } });
+      const [data] = await delivery;
+      expect(JSON.parse(data.toString())).toMatchObject({
+        toastEligible: false,
+        payload: { action: "approval.created", entityType: "approval", entityId: "approval-resolved" },
+      });
+    } finally {
+      socket.terminate();
+      await new Promise<void>(resolve => server.close(() => resolve()));
+    }
+  });
+
+  it("drops an approval after the socket's membership is revoked", async () => {
+    let memberActive = true;
+    const server = createServer();
+    setupLiveEventsWebSocketServer(server, database(() => {}, {
+      approvals: [{ id: "approval-pending", status: "pending" }],
+      memberships: () => memberActive ? [{ id: "membership" }] : [],
+    }) as never, {
+      deploymentMode: "authenticated",
+      resolveCloudActor: async () => ({ userId: "viewer", companyIds: ["company"] }),
+    });
+    server.listen(0, "127.0.0.1");
+    await once(server, "listening");
+    const socket = new WebSocket(`ws://127.0.0.1:${(server.address() as { port: number }).port}/api/companies/company/events/ws`);
+    const messages: unknown[] = [];
+    socket.on("message", data => messages.push(JSON.parse(data.toString())));
+    try {
+      await once(socket, "open");
+      memberActive = false;
+      publishLiveEvent({ companyId: "company", type: "activity.logged", payload: {
+        action: "approval.created", entityType: "approval", entityId: "approval-pending",
+      } });
+      await new Promise(resolve => setTimeout(resolve, 30));
+      expect(messages).toEqual([]);
+    } finally {
+      socket.terminate();
+      await new Promise<void>(resolve => server.close(() => resolve()));
+    }
+  });
+
+  it("drops an approval lookup failure and continues the socket delivery queue", async () => {
+    const server = createServer();
+    setupLiveEventsWebSocketServer(server, database(() => {}, { approvalLookupFails: true }) as never, { deploymentMode: "local_trusted" });
+    server.listen(0, "127.0.0.1");
+    await once(server, "listening");
+    const socket = new WebSocket(`ws://127.0.0.1:${(server.address() as { port: number }).port}/api/companies/company/events/ws`);
+    try {
+      await once(socket, "open");
+      publishLiveEvent({ companyId: "company", type: "activity.logged", payload: {
+        action: "approval.created", entityType: "approval", entityId: "approval-missing",
+      } });
+      const delivery = once(socket, "message");
+      publishLiveEvent({ companyId: "company", type: "activity.logged", payload: {
+        action: "issue.updated", entityType: "issue", entityId: "visible",
+      } });
+      const [data] = await delivery;
+      expect(JSON.parse(data.toString()).payload).toMatchObject({ action: "issue.updated", entityId: "visible" });
+    } finally {
+      socket.terminate();
+      await new Promise<void>(resolve => server.close(() => resolve()));
     }
   });
 

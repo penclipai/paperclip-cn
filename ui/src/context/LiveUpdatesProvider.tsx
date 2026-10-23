@@ -52,6 +52,7 @@ import { useLocation } from "../lib/router";
 import { agentRouteRef } from "../lib/utils";
 import { buildSameOriginWebSocketUrl } from "../lib/websocket-url";
 import { tryCreateWebSocket } from "../lib/websocket";
+import { translateInstant } from "../i18n";
 
 const TOAST_COOLDOWN_WINDOW_MS = 10_000;
 const TOAST_COOLDOWN_MAX = 3;
@@ -1762,9 +1763,47 @@ function gatedPushToast(
   category: string,
   toast: ToastInput,
 ) {
-  if (shouldSuppressToast(gate, category)) return;
+  if (shouldSuppressToast(gate, category)) return false;
   const id = pushToast(toast);
-  if (id !== null) recordToastHit(gate, category);
+  if (id === null) return false;
+  recordToastHit(gate, category);
+  return true;
+}
+
+type DesktopNotificationKind = "approval" | "run_failed" | "run_timed_out";
+
+function notifyDesktop(
+  kind: DesktopNotificationKind,
+  event: LiveEvent,
+  targetPath: string,
+): void {
+  const notify = window.desktopShell?.notify;
+  if (!notify || !targetPath.startsWith("/")) return;
+  // The native shell owns permission, focus and payload validation. Keep this
+  // boundary deliberately metadata-only: task titles, agent names and errors
+  // stay inside the board toast rather than crossing into the OS notification.
+  void notify({
+    id: `${event.type}:${event.id ?? event.createdAt}`,
+    companyId: event.companyId,
+    kind,
+    targetPath,
+  }).catch(() => undefined);
+}
+
+function buildApprovalToast(payload: Record<string, unknown>): ToastInput | null {
+  const entityType = readString(payload.entityType);
+  const action = readString(payload.action);
+  const approvalId = readString(payload.entityId);
+  if (entityType !== "approval" || action !== "approval.created" || !approvalId) {
+    return null;
+  }
+  return {
+    title: translateInstant("desktopSettings.approvalTitle"),
+    body: translateInstant("desktopSettings.approvalBody"),
+    tone: "info",
+    action: { label: translateInstant("desktopSettings.approvalAction"), href: `/approvals/${approvalId}` },
+    dedupeKey: `approval:${approvalId}`,
+  };
 }
 
 function handleLiveEvent(
@@ -1823,7 +1862,13 @@ function handleLiveEvent(
     if (event.type === "heartbeat.run.status") {
       const toast = buildRunStatusToast(payload, nameOf);
       if (toast && event.toastEligible === true && !suppressRunToast) {
-        gatedPushToast(gate, pushToast, "run-status", toast);
+        const accepted = gatedPushToast(gate, pushToast, "run-status", toast);
+        const status = readString(payload.status);
+        if (accepted && status === "failed") {
+          notifyDesktop("run_failed", event, toast.action?.href ?? "");
+        } else if (accepted && status === "timed_out") {
+          notifyDesktop("run_timed_out", event, toast.action?.href ?? "");
+        }
       }
     }
     return;
@@ -1879,7 +1924,7 @@ function handleLiveEvent(
         expectedCompanyId,
         payload,
         currentActor,
-      ) : null) ?? buildJoinRequestToast(payload);
+      ) : null) ?? (event.toastEligible === true ? buildApprovalToast(payload) : null) ?? buildJoinRequestToast(payload);
     if (
       toast &&
       !shouldSuppressActivityToastForVisibleIssue(
@@ -1888,7 +1933,10 @@ function handleLiveEvent(
         payload,
       )
     ) {
-      gatedPushToast(gate, pushToast, `activity:${action ?? "unknown"}`, toast);
+      const accepted = gatedPushToast(gate, pushToast, `activity:${action ?? "unknown"}`, toast);
+      if (accepted && action === "approval.created") {
+        notifyDesktop("approval", event, toast.action?.href ?? "");
+      }
     }
   }
 }
@@ -1937,6 +1985,7 @@ function closeSocketQuietly(
 
 export const __liveUpdatesTestUtils = {
   buildActivityToast,
+  buildApprovalToast,
   applyRunLifecycleToCompanyLiveRuns,
   buildAgentStatusToast,
   buildRunStatusToast,
@@ -1965,9 +2014,15 @@ function canUseLiveSession(sessionStatus: string, hasSession: boolean, deploymen
 
 export function LiveUpdatesProvider({ children }: { children: ReactNode }) {
   const { visible } = usePageVisibility();
+  const isDesktopShell = window.desktopShell?.isDesktop === true;
+  // Browser tabs deliberately stop live work when hidden. A tray-hidden
+  // desktop window must retain this one socket for background notifications.
+  const socketVisible = isDesktopShell || visible;
   const wasHidden = useRef(!visible);
   const hasOpenedSocket = useRef(false);
   const hasNeededSocketRecovery = useRef(!visible);
+  const pauseDesktopPollingRef = useRef<(() => void) | null>(null);
+  const resumeDesktopPollingRef = useRef<(() => void) | null>(null);
   const { selectedCompanyId, selectedCompany } = useCompany();
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
@@ -2029,15 +2084,23 @@ export function LiveUpdatesProvider({ children }: { children: ReactNode }) {
     };
   }, [currentUserId]);
 
+  // Hiding an Electron window retains the shared socket, but it must not turn
+  // the disconnected WebSocket fallback into background API polling.
   useEffect(() => {
-    if (!visible) {
+    if (!isDesktopShell) return;
+    if (visible) resumeDesktopPollingRef.current?.();
+    else pauseDesktopPollingRef.current?.();
+  }, [isDesktopShell, visible]);
+
+  useEffect(() => {
+    if (!socketVisible) {
       wasHidden.current = true;
       hasNeededSocketRecovery.current = true;
       invalidationBatcher.dispose();
       return;
     }
     if (!canConnectSocket || !liveCompanyId) return;
-    if (wasHidden.current) {
+    if (wasHidden.current && socketVisible) {
       wasHidden.current = false;
       // Reconcile events missed while hidden, including completed runs/issues.
       void queryClient.invalidateQueries({ type: "active" }, { cancelRefetch: false });
@@ -2048,6 +2111,7 @@ export function LiveUpdatesProvider({ children }: { children: ReactNode }) {
     let reconnectTimer: number | null = null;
     let pollTimer: number | null = null;
     let socket: WebSocket | null = null;
+    let resumePollingWhenVisible = false;
 
     const clearReconnect = () => {
       if (reconnectTimer !== null) {
@@ -2065,11 +2129,30 @@ export function LiveUpdatesProvider({ children }: { children: ReactNode }) {
 
     const startPolling = () => {
       if (closed || pollTimer !== null) return;
+      if (isDesktopShell && !getPageVisibility().visible) {
+        resumePollingWhenVisible = true;
+        return;
+      }
+      resumePollingWhenVisible = false;
       // Visible queries still need fresh state when realtime is unavailable.
       pollTimer = window.setInterval(() => {
         void queryClient.invalidateQueries({ type: "active" }, { cancelRefetch: false });
       }, DISCONNECTED_POLL_INTERVAL_MS);
     };
+
+    const pauseDesktopPolling = () => {
+      if (!isDesktopShell) return;
+      if (socket === null) resumePollingWhenVisible = true;
+      stopPolling();
+    };
+
+    const resumeDesktopPolling = () => {
+      if (isDesktopShell && resumePollingWhenVisible && socket === null) {
+        startPolling();
+      }
+    };
+    pauseDesktopPollingRef.current = pauseDesktopPolling;
+    resumeDesktopPollingRef.current = resumeDesktopPolling;
 
     const scheduleReconnect = () => {
       if (closed || reconnectTimer !== null) return;
@@ -2104,6 +2187,7 @@ export function LiveUpdatesProvider({ children }: { children: ReactNode }) {
           return;
         }
         stopPolling();
+        resumePollingWhenVisible = false;
         if (reconnectAttempt > 0) {
           gateRef.current.suppressUntil = Date.now() + RECONNECT_SUPPRESS_MS;
         }
@@ -2123,7 +2207,7 @@ export function LiveUpdatesProvider({ children }: { children: ReactNode }) {
 
       nextSocket.onmessage = (message) => {
         if (closed || socket !== nextSocket) return;
-        if (!getPageVisibility().visible) return;
+        if (!getPageVisibility().visible && !isDesktopShell) return;
         const raw = typeof message.data === "string" ? message.data : "";
         if (!raw) return;
 
@@ -2177,12 +2261,18 @@ export function LiveUpdatesProvider({ children }: { children: ReactNode }) {
       window.clearTimeout(connectTimer);
       clearReconnect();
       stopPolling();
+      if (pauseDesktopPollingRef.current === pauseDesktopPolling) {
+        pauseDesktopPollingRef.current = null;
+      }
+      if (resumeDesktopPollingRef.current === resumeDesktopPolling) {
+        resumeDesktopPollingRef.current = null;
+      }
       const activeSocket = socket;
       socket = null;
       closeSocketQuietly(activeSocket, "provider_unmount");
     };
   }, [
-    visible,
+    socketVisible,
     invalidationBatcher,
     queryClient,
     coalescingClient,

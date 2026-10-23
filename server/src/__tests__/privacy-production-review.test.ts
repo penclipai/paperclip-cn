@@ -11,6 +11,7 @@ import { workspaceOperations, agents, approvals, assets, chatEndpoints, chatExte
 import { authorizationService, canPublishIssueToChatAudience, canActorReadIssuePrivacy, issueReadSqlCondition, canActorReadProjectPrivacy, projectReadSqlCondition, canActorReadApproval, approvalReadSqlCondition, canActorReadExecutionWorkspace, type AuthorizationActor } from "../services/authorization.js";
 
 import { canActorReadWorkspaceOperation } from "../services/heartbeat-run-privacy.js";
+import { decideApprovalEvent } from "../realtime/approval-event-decision.js";
 
 // Production regressions and the approved downward-only sharing contract.
 describe("private task production review", () => {
@@ -418,6 +419,49 @@ describe("private task production review", () => {
     expect(await canActorReadExecutionWorkspace(db, f.actor(f.outsider), workspace.id)).toBe(false);
     await db.delete(issues).where(eq(issues.id, task.id));
     expect(await canActorReadExecutionWorkspace(db, f.actor(f.outsider), workspace.id)).toBe(false);
+  });
+
+  it("projects approval notifications only for a currently readable pending approval", async () => {
+    const f = await fixture();
+    const [task] = await db.insert(issues).values({
+      companyId: f.company.id,
+      title: "Private approval source",
+      visibility: "private",
+      responsibleUserId: f.owner,
+      assigneeAgentId: f.agent.id,
+    }).returning();
+    const [approval] = await db.insert(approvals).values({
+      companyId: f.company.id,
+      type: "hire_agent",
+      status: "pending",
+      payload: { sourceIssueId: task.id, privateInstruction: "do-not-project" },
+    }).returning();
+    const event = (companyId = f.company.id) => ({
+      id: 1,
+      companyId,
+      type: "activity.logged" as const,
+      createdAt: new Date().toISOString(),
+      payload: { action: "approval.created", entityType: "approval", entityId: approval.id },
+    });
+
+    expect(await decideApprovalEvent(db, event(), f.actor(f.owner))).toEqual({ visible: true, toastEligible: true });
+    expect(await decideApprovalEvent(db, event(), f.actor(f.outsider))).toEqual({ visible: false, toastEligible: false });
+    expect(await decideApprovalEvent(db, event(randomUUID()), f.actor(f.owner))).toEqual({ visible: false, toastEligible: false });
+
+    await db.insert(issueAccessGrants).values({ issueId: task.id, subjectType: "user", subjectId: f.outsider, source: "explicit" });
+    expect(await decideApprovalEvent(db, event(), f.actor(f.outsider))).toEqual({ visible: true, toastEligible: true });
+
+    const agentActor: AuthorizationActor = {
+      type: "agent",
+      agentId: f.agent.id,
+      companyId: f.company.id,
+      source: "agent_key",
+      onBehalfOfUserId: f.owner,
+    };
+    expect(await decideApprovalEvent(db, event(), agentActor)).toEqual({ visible: true, toastEligible: false });
+
+    await db.update(approvals).set({ status: "approved" }).where(eq(approvals.id, approval.id));
+    expect(await decideApprovalEvent(db, event(), f.actor(f.owner))).toEqual({ visible: true, toastEligible: false });
   });
 
   it("keeps inline draft images owner-only until publication then follows the task grant", async () => {

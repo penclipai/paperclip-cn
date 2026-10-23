@@ -109,6 +109,7 @@
     "desktop:dist:mac": "pnpm --filter @penclipai/desktop-electron run dist:mac",
     "desktop:dist:linux": "pnpm --filter @penclipai/desktop-electron run dist:linux",
     "smoke:desktop": "node packages/desktop-electron/scripts/smoke/desktop-electron.mjs",
+    "smoke:desktop:background": "node packages/desktop-electron/scripts/smoke/desktop-background.mjs",
     "smoke:desktop:acceptance": "node packages/desktop-electron/scripts/smoke/desktop-acceptance.mjs --scope core",
     "smoke:desktop:acceptance:full": "node packages/desktop-electron/scripts/smoke/desktop-acceptance.mjs --scope full",
     "test:upstream-merge-harness": "node scripts/upstream-merge-harness.mjs",

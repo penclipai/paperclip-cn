@@ -10,6 +10,7 @@ import type { DeploymentMode, LiveEvent } from "@penclipai/shared";
 import type { BetterAuthSessionResult } from "../auth/better-auth.js";
 import { logger } from "../middleware/logger.js";
 import { activityToastIdentity } from "./activity-toast-identity.js";
+import { decideApprovalEvent, isApprovalCreatedEvent } from "./approval-event-decision.js";
 import { taskToastEligible } from "./task-toast-eligibility.js";
 import { subscribeCompanyLiveEvents } from "../services/live-events.js";
 import { trackIdleWork } from "../services/task-admission.js";
@@ -43,6 +44,9 @@ const { WebSocket, WebSocketServer } = require("ws") as {
   WebSocket: { OPEN: number };
   WebSocketServer: new (opts: { noServer: boolean }) => WsServer;
 };
+
+const approvalToastEligible = Symbol("approvalToastEligible");
+type ProjectedLiveEvent = LiveEvent & { [approvalToastEligible]?: boolean };
 
 import { authorizationService, type AuthorizationActor } from "../services/authorization.js";
 import { canActorReadHeartbeatRun } from "../services/heartbeat-run-privacy.js";
@@ -277,6 +281,31 @@ export function setupLiveEventsWebSocketServer(
 
     const access = authorizationService(db);
     async function visibleEvent(event: LiveEvent): Promise<LiveEvent | null> {
+      if (isApprovalCreatedEvent(event)) {
+        try {
+          const decision = await decideApprovalEvent(db, event, context!.actor);
+          if (!decision.visible) return null;
+          // Keep this delivery-only value outside the JSON payload. Every
+          // socket receives its own shallow copy, so another viewer cannot
+          // inherit the board-only notification decision.
+          event = {
+            ...event,
+            // The approval row is the authorization source; its payload is
+            // never part of the real-time projection.
+            payload: {
+              action: event.payload.action,
+              entityType: event.payload.entityType,
+              entityId: event.payload.entityId,
+            },
+            [approvalToastEligible]: decision.toastEligible,
+          } as ProjectedLiveEvent;
+        } catch (err) {
+          // An approval can carry task-derived content. Fail closed without
+          // logging the event payload, and allow the serialized queue to move on.
+          logger.warn({ err, companyId: context!.companyId }, "approval live event visibility check failed");
+          return null;
+        }
+      }
       if (event.payload.entityType === "case" && (typeof event.payload.entityId !== "string"
         || !(await canActorReadCase(db, context!.actor, { id: event.payload.entityId, companyId: event.companyId })))) return null;
       if (context!.actor.source === "local_implicit") {
@@ -356,12 +385,14 @@ export function setupLiveEventsWebSocketServer(
         if (visible) {
           // Relevance is independent of authorization and cache delivery. A
           // failed relevance lookup must keep the authorized update flowing.
-          let toastEligible = false;
-          try {
-            toastEligible = await taskToastEligible(db, visible,
-              context.actor.type === "board" ? context.actor.userId ?? null : null);
-          } catch (err) {
-            logger.warn({ err, companyId: context.companyId }, "task toast eligibility failed");
+          let toastEligible = (visible as ProjectedLiveEvent)[approvalToastEligible] ?? false;
+          if (!isApprovalCreatedEvent(visible)) {
+            try {
+              toastEligible = await taskToastEligible(db, visible,
+                context.actor.type === "board" ? context.actor.userId ?? null : null);
+            } catch (err) {
+              logger.warn({ err, companyId: context.companyId }, "task toast eligibility failed");
+            }
           }
           if (socket.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ ...visible, toastEligible }));
         }
