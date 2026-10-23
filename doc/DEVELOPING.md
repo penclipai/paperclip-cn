@@ -2378,6 +2378,51 @@ retention, or interactive UAC checks.
 Windows uses `normal` compression; record the actual installer size in the
 desktop size audit when comparing releases.
 
+### Desktop runtime payload and size budgets
+
+Desktop staging retains the OpenCode native package selected by the Runner:
+Linux glibc x64 and macOS x64 use their baseline CPU packages, and macOS arm64 uses
+its native package. Other OpenCode variants are removed only from the staged
+runtime. When the portable executable contains the same bytes, staging replaces
+it with a relative symlink to the selected native executable. Its existing
+entrypoint remains available. Linux staging rejects musl or an unknown libc
+before trimming files. Windows payloads and other providers are preserved.
+
+Run the fixture regressions with:
+
+```sh
+pnpm --filter @penclipai/desktop-electron test:payload
+```
+
+The desktop CI matrix verifies the unpacked application and then mounts the
+final DMG read-only or extracts the final AppImage. Each check uses the actual
+vendored Runner resolver and executes both OpenCode entrypoints with `--version`
+on its Unix host. Native module probes run in a child process so their library
+handles close before the verifier unmounts a DMG. Cleanup retries a busy volume
+and can force-detach only its own read-only temporary mount. It then runs
+`audit:size:check`, which enforces
+installer and app-runtime budgets for all four desktop targets. The reviewed
+baselines live in `scripts/desktop-size-budget.mjs` within the desktop package.
+Review measured changes before updating a budget; do not raise a limit simply
+to pass a failed build. JSON and Markdown audit evidence remain available when
+the budget gate fails. A directory-only local package can still use `audit:size`
+without requiring an installer.
+
+Manual desktop workflow runs default to all four targets. Select a single
+`target` to repeat a platform check. A failed check retains any completed
+installer for seven days as a separate diagnostic artifact; it does not pass
+the normal artifact or release-upload gates.
+
+Release uploads require `target=all` and a successful four-target matrix. A
+separate upload job checks each downloaded manifest, version, target, and exact
+installer filename before staging all four installers and regenerating
+`SHA256SUMS.txt`. A failed or missing target prevents the entire upload job.
+For an installer-only repair of an existing release, build with its original
+`release_version`, retain the old installers and checksums, and validate the
+complete replacement cohort before uploading it. GitHub asset replacement is
+not atomic, so preserve those backups until public downloads match the new
+checksums.
+
 After changing installer packaging, run `pnpm desktop:dist:win`, install the
 resulting NSIS executable, and compare every installed runtime file with
 `release/win-unpacked` before testing the installed application. An installer exit

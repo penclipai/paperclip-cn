@@ -23,6 +23,11 @@ on:
         description: Existing GitHub Release tag to upload assets into
         required: false
         type: string
+      target:
+        description: Desktop target to build, or all supported targets
+        required: false
+        type: string
+        default: all
   workflow_dispatch:
     inputs:
       source_ref:
@@ -48,29 +53,62 @@ on:
         description: Existing GitHub Release tag to upload assets into
         required: false
         type: string
+      target:
+        description: Desktop target to build
+        required: true
+        type: choice
+        default: all
+        options: [all, win-x64, mac-x64, mac-arm64, linux-x64]
 
 jobs:
+  resolve_targets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {}
+    outputs:
+      matrix: ${{ steps.targets.outputs.matrix }}
+    steps:
+      - name: Resolve desktop targets
+        id: targets
+        shell: bash
+        env:
+          DESKTOP_TARGET: ${{ inputs.target || 'all' }}
+          UPLOAD_TO_RELEASE: ${{ inputs.upload_to_release }}
+          GITHUB_RELEASE_TAG: ${{ inputs.github_release_tag }}
+        run: |
+          if [ "$UPLOAD_TO_RELEASE" = "true" ] && [ -z "$GITHUB_RELEASE_TAG" ]; then
+            echo "github_release_tag is required when upload_to_release=true." >&2
+            exit 1
+          fi
+          if [ "$UPLOAD_TO_RELEASE" = "true" ] && [ "$DESKTOP_TARGET" != "all" ]; then
+            echo "upload_to_release=true requires target=all." >&2
+            exit 1
+          fi
+          node - <<'NODE' >> "$GITHUB_OUTPUT"
+          // desktop-target-matrix:start
+          const targets = {
+            'win-x64': { runner: 'windows-latest', platform: 'win', arch: 'x64' },
+            'mac-x64': { runner: 'macos-15-intel', platform: 'mac', arch: 'x64' },
+            'mac-arm64': { runner: 'macos-latest', platform: 'mac', arch: 'arm64' },
+            'linux-x64': { runner: 'ubuntu-latest', platform: 'linux', arch: 'x64' },
+          };
+          const target = process.env.DESKTOP_TARGET;
+          if (target !== 'all' && !Object.hasOwn(targets, target)) {
+            throw new Error(`Unsupported desktop target: ${target}`);
+          }
+          console.log(`matrix=${JSON.stringify({ include: target === 'all' ? Object.values(targets) : [targets[target]] })}`);
+          // desktop-target-matrix:end
+          NODE
+
   build_desktop_assets:
+    needs: resolve_targets
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - runner: windows-latest
-            platform: win
-            arch: x64
-          - runner: macos-15-intel
-            platform: mac
-            arch: x64
-          - runner: macos-latest
-            platform: mac
-            arch: arm64
-          - runner: ubuntu-latest
-            platform: linux
-            arch: x64
+      matrix: ${{ fromJSON(needs.resolve_targets.outputs.matrix) }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 90
     permissions:
-      contents: write
+      contents: read
 
     steps:
       - name: Checkout repository
@@ -100,6 +138,10 @@ jobs:
         shell: bash
         run: git checkout -- pnpm-lock.yaml
 
+      - name: Test desktop payload and size budgets
+        shell: bash
+        run: pnpm --filter @penclipai/desktop-electron test:payload
+
       - name: Typecheck desktop package
         shell: bash
         run: pnpm --filter @penclipai/desktop-electron typecheck
@@ -111,6 +153,28 @@ jobs:
           CSC_IDENTITY_AUTO_DISCOVERY: ${{ matrix.platform == 'mac' && 'false' || '' }}
         run: |
           pnpm --filter @penclipai/desktop-electron dist -- --platform "${{ matrix.platform }}" --arch "${{ matrix.arch }}"
+
+      - name: Remove generated staging before installer verification
+        if: matrix.platform != 'win'
+        shell: bash
+        run: |
+          node - <<'NODE'
+          const fs = require("node:fs");
+          const path = require("node:path");
+          const workspace = fs.realpathSync(process.env.GITHUB_WORKSPACE);
+          const stage = path.join(workspace, "packages", "desktop-electron", ".stage");
+          const resolved = fs.realpathSync(stage);
+          if (resolved !== stage || path.relative(workspace, resolved).split(path.sep).join("/") !== "packages/desktop-electron/.stage") {
+            throw new Error("Refusing to remove staging outside this checkout.");
+          }
+          fs.rmSync(stage, { recursive: true, force: true });
+          NODE
+
+      - name: Verify packaged runtime payload
+        id: runtime_payload
+        shell: bash
+        run: |
+          node packages/desktop-electron/scripts/verify-runtime-payload.mjs --manifest packages/desktop-electron/release/desktop-artifacts.json
 
       - name: Read desktop artifact manifest
         id: manifest
@@ -140,83 +204,22 @@ jobs:
           console.log(`app_runtime_files=${manifest.sizeAudit?.appRuntimeFiles ?? ""}`);
           NODE
 
-      - name: Warn on Windows desktop size budget
-        if: matrix.platform == 'win'
+      - name: Upload desktop size audit evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact_name }}-size-audit-${{ matrix.platform }}-${{ matrix.arch }}
+          if-no-files-found: warn
+          path: |
+            packages/desktop-electron/release/desktop-artifacts.json
+            packages/desktop-electron/release/desktop-size-audit-*.json
+            packages/desktop-electron/release/desktop-size-audit-*.md
+
+      - name: Enforce desktop size budget
+        if: steps.runtime_payload.outcome == 'success' && steps.manifest.outcome == 'success'
         shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-          CURRENT_TAG: ${{ inputs.github_release_tag }}
-          CURRENT_BYTES: ${{ steps.manifest.outputs.release_asset_bytes }}
-          APP_RUNTIME_BYTES: ${{ steps.manifest.outputs.app_runtime_bytes }}
-          APP_RUNTIME_FILES: ${{ steps.manifest.outputs.app_runtime_files }}
         run: |
-          node - <<'NODE'
-          const { execFileSync } = require("node:child_process");
-
-          const currentTag = process.env.CURRENT_TAG || "";
-          const currentBytes = Number(process.env.CURRENT_BYTES || 0);
-          const appRuntimeBytes = Number(process.env.APP_RUNTIME_BYTES || 0);
-          const appRuntimeFiles = Number(process.env.APP_RUNTIME_FILES || 0);
-          const installerBudgetDelta = 10 * 1024 * 1024;
-          const appRuntimeByteBudget = 950 * 1024 * 1024;
-          const appRuntimeFileBudget = 50000;
-
-          function warn(message) {
-            console.log(`::warning title=Desktop size budget::${message}`);
-          }
-
-          if (!Number.isFinite(currentBytes) || currentBytes <= 0) {
-            warn("Windows installer size was not available in desktop-artifacts.json.");
-          }
-
-          if (appRuntimeBytes > appRuntimeByteBudget) {
-            warn(`Packaged app-runtime is ${(appRuntimeBytes / 1024 / 1024).toFixed(2)} MiB, above the ${(appRuntimeByteBudget / 1024 / 1024).toFixed(0)} MiB warning budget.`);
-          }
-
-          if (appRuntimeFiles > appRuntimeFileBudget) {
-            warn(`Packaged app-runtime has ${appRuntimeFiles} files, above the ${appRuntimeFileBudget} file warning budget.`);
-          }
-
-          if (!currentTag || !process.env.GH_TOKEN || !currentBytes) {
-            process.exit(0);
-          }
-
-          const releases = JSON.parse(execFileSync("gh", [
-            "release",
-            "list",
-            "--repo",
-            process.env.GITHUB_REPOSITORY,
-            "--limit",
-            "20",
-            "--json",
-            "tagName,isPrerelease,isDraft",
-          ], { encoding: "utf8" }));
-          const previous = releases.find((release) =>
-            release.tagName !== currentTag && !release.isPrerelease && !release.isDraft);
-          if (!previous) {
-            process.exit(0);
-          }
-
-          const release = JSON.parse(execFileSync("gh", [
-            "release",
-            "view",
-            previous.tagName,
-            "--repo",
-            process.env.GITHUB_REPOSITORY,
-            "--json",
-            "assets",
-          ], { encoding: "utf8" }));
-          const previousWinAsset = (release.assets || []).find((asset) =>
-            /-x64\.exe$/i.test(asset.name));
-          if (!previousWinAsset?.size) {
-            process.exit(0);
-          }
-
-          const delta = currentBytes - previousWinAsset.size;
-          if (delta > installerBudgetDelta) {
-            warn(`Windows installer grew by ${(delta / 1024 / 1024).toFixed(2)} MiB versus ${previous.tagName}; threshold is 10 MiB.`);
-          }
-          NODE
+          pnpm --filter @penclipai/desktop-electron audit:size:check
 
       - name: Upload desktop artifact bundle
         uses: actions/upload-artifact@v4
@@ -225,29 +228,80 @@ jobs:
           if-no-files-found: error
           path: ${{ steps.manifest.outputs.artifact_paths }}
 
+      - name: Preserve built installers after a failed check
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact_name }}-failed-build-${{ matrix.platform }}-${{ matrix.arch }}
+          if-no-files-found: warn
+          retention-days: 7
+          path: |
+            packages/desktop-electron/release/*.dmg
+            packages/desktop-electron/release/*.AppImage
+            packages/desktop-electron/release/*.exe
+
+  upload_desktop_assets_to_release:
+    needs: build_desktop_assets
+    if: inputs.upload_to_release && needs.build_desktop_assets.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout release uploader
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          ref: ${{ github.sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      - name: Download Windows installer bundle
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: ${{ inputs.artifact_name }}-win-x64
+          path: desktop-bundles/${{ inputs.artifact_name }}-win-x64
+
+      - name: Download Intel macOS installer bundle
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: ${{ inputs.artifact_name }}-mac-x64
+          path: desktop-bundles/${{ inputs.artifact_name }}-mac-x64
+
+      - name: Download Apple Silicon macOS installer bundle
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: ${{ inputs.artifact_name }}-mac-arm64
+          path: desktop-bundles/${{ inputs.artifact_name }}-mac-arm64
+
+      - name: Download Linux installer bundle
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: ${{ inputs.artifact_name }}-linux-x64
+          path: desktop-bundles/${{ inputs.artifact_name }}-linux-x64
+
+      - name: Validate and prepare release asset cohort
+        shell: bash
+        env:
+          RELEASE_VERSION: ${{ inputs.release_version }}
+          ARTIFACT_PREFIX: ${{ inputs.artifact_name }}
+        run: |
+          node .github/scripts/prepare-desktop-release-assets.mjs \
+            --bundles-dir desktop-bundles \
+            --output-dir release-assets \
+            --release-version "$RELEASE_VERSION" \
+            --artifact-prefix "$ARTIFACT_PREFIX"
+
       - name: Upload desktop assets to GitHub Release
-        if: inputs.upload_to_release
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.github_release_tag }}
+          RELEASE_REPOSITORY: ${{ github.repository }}
         run: |
-          if [ -z "${{ inputs.github_release_tag }}" ]; then
-            echo "github_release_tag is required when upload_to_release=true." >&2
-            exit 1
-          fi
-
-          assets=()
-          while IFS= read -r asset_path; do
-            if [ -n "$asset_path" ]; then
-              assets+=("$asset_path")
-            fi
-          done <<EOF
-          ${{ steps.manifest.outputs.release_asset_paths }}
-          EOF
-
-          if [ "${#assets[@]}" -eq 0 ]; then
-            echo "No desktop release assets were listed in the manifest output." >&2
-            exit 1
-          fi
-
-          gh release upload "${{ inputs.github_release_tag }}" "${assets[@]}" --repo "${{ github.repository }}" --clobber
+          gh release upload "$RELEASE_TAG" release-assets/* --repo "$RELEASE_REPOSITORY" --clobber

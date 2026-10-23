@@ -10,6 +10,8 @@ import {
 } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { evaluateDesktopSizeBudget } from "./desktop-size-budget.mjs";
+import { inspectRuntimePayload } from "./runtime-payload.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const packageDir = path.resolve(__dirname, "..");
@@ -181,10 +183,53 @@ function renderMarkdown(audit) {
     "",
   ];
 
+  if (audit.sizeBudget) {
+    lines.push(
+      "## Reviewed Size Budget",
+      "",
+      audit.sizeBudget.summary,
+      "",
+    );
+  } else if (audit.sizeBudgetError) {
+    lines.push(
+      "## Reviewed Size Budget",
+      "",
+      `Unable to evaluate reviewed size budget: ${audit.sizeBudgetError}`,
+      "",
+    );
+  }
+
+  lines.push("## Runtime Payload Inspection", "");
+  if (audit.runtimePayload) {
+    lines.push(
+      `Supported target: ${audit.runtimePayload.supported ? "yes" : "no"}`,
+      `Selected native package: ${audit.runtimePayload.nativePackage ?? "none"}`,
+      `Portable executable is symlink: ${audit.runtimePayload.portableIsSymlink ? "yes" : "no"}`,
+      `Portable executable matches native: ${audit.runtimePayload.portableMatchesNative === undefined ? "not applicable" : audit.runtimePayload.portableMatchesNative ? "yes" : "no"}`,
+      `Unexpected native packages: ${audit.runtimePayload.unexpectedPackages.length > 0 ? audit.runtimePayload.unexpectedPackages.join(", ") : "none"}`,
+      "",
+    );
+  } else {
+    lines.push(`Unable to inspect runtime payload: ${audit.runtimePayloadError}`, "");
+  }
+
   return `${lines.join("\n")}\n`;
 }
 
+function parseArgs(argv) {
+  const args = { checkBudget: false };
+  for (const arg of argv) {
+    if (arg === "--check-budget") {
+      args.checkBudget = true;
+      continue;
+    }
+    throw new Error(`Unknown argument: ${arg}`);
+  }
+  return args;
+}
+
 function run() {
+  const args = parseArgs(process.argv.slice(2));
   if (!existsSync(manifestPath)) {
     throw new Error(`Desktop artifact manifest not found: ${manifestPath}`);
   }
@@ -230,6 +275,29 @@ function run() {
     largestRuntimeFiles: listLargestFiles(appRuntimePath),
   };
 
+  let runtimePayloadError = null;
+  try {
+    if (!appRuntimePath || !existsSync(appRuntimePath)) {
+      throw new Error(`Desktop app runtime is missing for payload inspection: ${appRuntimePath || "(empty path)"}`);
+    }
+    audit.runtimePayload = inspectRuntimePayload({
+      runtimeRoot: appRuntimePath,
+      platform: manifest.nodePlatform,
+      arch,
+    });
+  } catch (error) {
+    runtimePayloadError = error;
+    audit.runtimePayloadError = error instanceof Error ? error.message : String(error);
+  }
+
+  let budgetEvaluationError = null;
+  try {
+    audit.sizeBudget = evaluateDesktopSizeBudget(audit);
+  } catch (error) {
+    budgetEvaluationError = error;
+    audit.sizeBudgetError = error instanceof Error ? error.message : String(error);
+  }
+
   mkdirSync(releaseDir, { recursive: true });
   writeJson(auditJsonPath, audit);
   writeFileSync(auditMarkdownPath, renderMarkdown(audit), "utf8");
@@ -244,6 +312,10 @@ function run() {
     appRuntimeFiles: audit.appRuntime.files,
     runtimeNodeModulesBytes: audit.runtimeNodeModules.bytes,
     bundledPluginsBytes: audit.bundledPlugins.bytes,
+    budget: audit.sizeBudget ?? null,
+    budgetError: audit.sizeBudgetError ?? null,
+    runtimePayload: audit.runtimePayload ?? null,
+    runtimePayloadError: audit.runtimePayloadError ?? null,
   };
   writeJson(manifestPath, manifest);
 
@@ -252,6 +324,31 @@ function run() {
   );
   console.log(`[desktop-size-audit] Wrote ${auditJsonPath}`);
   console.log(`[desktop-size-audit] Wrote ${auditMarkdownPath}`);
+
+  if (audit.sizeBudget) {
+    console.log(`[desktop-size-budget] ${audit.sizeBudget.summary}`);
+  } else {
+    console.warn(`[desktop-size-budget] Unable to evaluate budget: ${audit.sizeBudgetError}`);
+  }
+  if (audit.runtimePayload) {
+    console.log(
+      `[desktop-runtime-payload] ${platform}/${arch}: supported=${audit.runtimePayload.supported}, native=${audit.runtimePayload.nativePackage ?? "none"}, unexpected=${audit.runtimePayload.unexpectedPackages.join(",") || "none"}.`,
+    );
+  } else {
+    console.warn(`[desktop-runtime-payload] Unable to inspect payload: ${audit.runtimePayloadError}`);
+  }
+
+  if (args.checkBudget) {
+    if (runtimePayloadError) {
+      throw runtimePayloadError;
+    }
+    if (budgetEvaluationError) {
+      throw budgetEvaluationError;
+    }
+    if (!audit.sizeBudget?.ok) {
+      throw new Error(audit.sizeBudget?.summary ?? "Desktop size budget exceeded.");
+    }
+  }
 }
 
 try {
