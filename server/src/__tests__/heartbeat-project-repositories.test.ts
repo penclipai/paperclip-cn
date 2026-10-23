@@ -3,7 +3,7 @@ import request from "supertest";
 import { fileResourceRoutes } from "../routes/file-resources.js";
 import { errorHandler } from "../middleware/index.js";
 import { EMBEDDED_POSTGRES_TEST_TIMEOUT_MS } from "@penclipai/db";
-import { createHash, randomUUID } from "node:crypto";
+import { randomUUID } from "node:crypto";
 import { and, eq } from "drizzle-orm";
 import { execFileSync } from "node:child_process";
 import { mkdtemp, mkdir, writeFile, readFile, realpath, readdir, rename, rm } from "node:fs/promises";
@@ -20,6 +20,7 @@ import { createWorkspaceGitOperationScheduler, WorkspaceGitScanError } from "../
 import { getEmbeddedPostgresTestSupport, startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.js";
 import { heartbeatService } from "../services/heartbeat.ts";
 import { createHeartbeatWorkspaceResolver } from "../services/heartbeat/workspaces.js";
+import { managedProjectCheckoutName } from "../services/managed-project-checkout-name.js";
 import { resolveManagedProjectWorkspaceDir, resolvePaperclipInstanceRoot } from "../home-paths.js";
 import { accessService } from "../services/access.js";
 import { instanceSettingsService } from "../services/instance-settings.ts";
@@ -280,7 +281,7 @@ suite("task project repository provisioning", () => {
         expect(workspace.strategy).toBe("git_worktree");
         expect(execFileSync("git", ["rev-parse", "--is-inside-work-tree"], { cwd: workspace.cwd, encoding: "utf8" }).trim()).toBe("true");
       } else {
-        expect(workspace.cwd).toContain(`/isolated-workspaces/${companyId}/${issueId}`);
+        expect(workspace.cwd).toContain(path.join("isolated-workspaces", companyId, issueId));
 
       }
     }
@@ -869,7 +870,7 @@ suite("task project repository provisioning", () => {
       const repoUrl = scenario === "absolute_path" ? sibling : pathToFileURL(sibling).href;
       const configuredCwd = urlOnly ? null : sibling;
       await db.insert(projectWorkspaces).values({ id: siblingId, companyId, projectId, name: "Late sibling", sourceType: "local_path", cwd: configuredCwd, repoUrl, isPrimary: false });
-      const key = (scenario === "absolute_path" ? "repo-" : "private-sibling-") + createHash("sha256").update(JSON.stringify([siblingId, repoUrl, null, configuredCwd])).digest("hex").slice(0, 12);
+      const key = managedProjectCheckoutName({ id: siblingId, repoUrl, repoRef: null, cwd: configuredCwd });
       const copy = path.join(taskCwd, ".paperclip-repositories", key);
       if (scenario === "existing" || scenario === "occupied") {
         await mkdir(path.dirname(copy), { recursive: true });
@@ -891,7 +892,7 @@ suite("task project repository provisioning", () => {
       app.use("/api", fileResourceRoutes(db));
       app.use(errorHandler);
       const fileUrl = "/api/issues/" + issueId + "/file-resources/content";
-      const relativeFile = path.relative(taskCwd, path.join(copy, "private.txt"));
+      const relativeFile = path.relative(taskCwd, path.join(copy, "private.txt")).split(path.sep).join("/");
       expect((await request(app).get(fileUrl).query({ workspace: "execution", path: relativeFile }).expect(200)).body.content.data).toBe(expectedBytes);
       await db.delete(projectWorkspaces).where(eq(projectWorkspaces.id, siblingId));
       await db.delete(issueAccessGrants).where(eq(issueAccessGrants.issueId, privateIssueId));

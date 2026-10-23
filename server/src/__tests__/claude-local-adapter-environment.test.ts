@@ -501,7 +501,9 @@ describe("claude_local environment diagnostics", () => {
 
       expect(result.checks.some((check) => check.code === "claude_effort_flag_unsupported")).toBe(true);
       expect(result.checks.some((check) => check.code === "claude_hello_probe_passed")).toBe(true);
-      expect(executeCalls.find(call => call.command === "/usr/bin/claude")?.args).not.toContain("--effort");
+      const probeArgs = executeCalls.find(call => call.args?.includes("--print"))?.args;
+      expect(probeArgs).toBeDefined();
+      expect(probeArgs).not.toContain("--effort");
     } finally {
       await fs.rm(root, { recursive: true, force: true });
     }

@@ -280,6 +280,23 @@ describePostgres("heartbeat execution configuration through adapter dispatch", (
 
   it.each(["selected native", "legacy operational"])("retains the cache exclusion for %s skills", async kind => {
     const f = await seed(true);
+    vi.spyOn(aiRuntime, "prepareManagedAiRuntime").mockImplementation(async (_db, input) => {
+      const identity = `fixture-ai:${f.agentId}`;
+      return {
+        sessionIdentity: identity,
+        identity,
+        config: {
+          ...input.config,
+          env: { ...(input.config.env as Record<string, unknown>), OPENAI_API_KEY: f.credential, CODEX_API_KEY: f.credential },
+          managedAiConnection: { provider: "openai", method: "api_key", identity, sessionIdentity: identity },
+        },
+        attribution: { provider: "openai", method: "api_key" },
+        accountName: "Fixture account",
+        accountOwnerUserId: f.userId,
+        home: "fixture-managed-ai-home",
+        cleanup: async () => {},
+      };
+    });
     const selected = await companySkillService(db).createLocalSkill(f.companyId, { name: "Selected lock control" });
     const input = await configuration(
       f,

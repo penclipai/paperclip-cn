@@ -117,7 +117,9 @@ describe("native warm workspace Git history", () => {
       if (change === "plain_nested_commit") {
         const recovered = await nativeWorkspaceSyncInternals.readDescriptor({ runId: "first", reference: first.reference });
         expect(recovered.descriptor.gitSnapshot).toBeNull();
-        expect(recovered.descriptor.repositories?.[0]?.path).toBe(nestedPath);
+        expect(recovered.descriptor.repositories?.[0]?.path).toBe(
+          nestedPath.replaceAll(path.sep, "/"),
+        );
       }
       await first.restoreWorkspace();
       await first.cleanup();

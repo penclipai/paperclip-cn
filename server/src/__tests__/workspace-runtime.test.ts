@@ -7468,7 +7468,7 @@ describeEmbeddedPostgres("workspace runtime service control persistence", () => 
     }
   }, 15_000);
 
-  it("rejects a foreign listener that races onto a reserved HTTPS companion port", async () => {
+  it("rejects a foreign HTTPS companion listener without disturbing it", async () => {
     const fixture = await createRuntimeFixture();
     const cleanupRuntimeHome = await createRuntimeHome();
     const workspace = fixture.workspaces[0]!;
@@ -7513,7 +7513,7 @@ describeEmbeddedPostgres("workspace runtime service control persistence", () => 
     });
 
     try {
-      await expect(startRuntimeServicesForWorkspaceControl({
+      const failure = await startRuntimeServicesForWorkspaceControl({
         db,
         actor: fixture.actor,
         issue: null,
@@ -7521,7 +7521,13 @@ describeEmbeddedPostgres("workspace runtime service control persistence", () => 
         executionWorkspaceId: workspace.id,
         config: httpsRuntimeConfig(command),
         adapterEnv: {},
-      })).rejects.toThrow(/could not bind allocated port/);
+      }).then(() => null, (error: unknown) => error);
+      if (process.platform === "win32") {
+        expect(failure).toBeInstanceOf(LocalServiceOwnershipQueryUnavailableError);
+      } else {
+        expect(failure).toBeInstanceOf(Error);
+        expect((failure as Error).message).toMatch(/could not bind allocated port/);
+      }
       expect(exposeCalls).toBe(0);
       expect(foreignHmr?.listening).toBe(true);
     } finally {
@@ -7895,9 +7901,10 @@ describeEmbeddedPostgres("workspace runtime service control persistence", () => 
     }
   }, 20_000);
 
-  // Exhaustion starts and stops all 32 candidates after ownership fails.
-  // Give their real-process stability checks and verified cleanup bounded headroom.
-  it("does not accept an occupied allocated port when listener ownership is unavailable", async () => {
+  // An unavailable strict ownership query aborts before retry allocation.
+  // The launched child is cleaned up, but an unknown listener is never adopted
+  // or terminated as if it belonged to this runtime.
+  it.skipIf(process.platform !== "win32")("does not accept an occupied allocated port when listener ownership is unavailable", async () => {
 
     const fixture = await createRuntimeFixture();
     const cleanupRuntimeHome = await createRuntimeHome();

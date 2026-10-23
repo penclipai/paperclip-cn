@@ -145,6 +145,18 @@ test("browses passive cases and rolled-up task documents without starting work o
   await testInfo.attach("filtered-cases", { body: await page.screenshot({ fullPage: true }), contentType: "image/png" });
   await list.getByRole("link", { name: /Pacific receipt/ }).click();
   await expect(casePage.getByRole("heading", { name: receipt.title, exact: true })).toBeVisible();
+  // A detail reached from the filtered list keeps that view in its breadcrumb.
+  // An audit link is a separate entrypoint and deliberately has no list query.
+  await page.getByRole("navigation", { name: "Breadcrumb", exact: true }).getByRole("link", { name: "Cases", exact: true }).click();
+  await expect(page).toHaveURL(filteredUrl);
+  await page.reload();
+  await expect(page.getByRole("textbox", { name: "Search cases" })).toHaveValue("Pacific");
+  await page.getByRole("button", { name: /^Filter cases/ }).click();
+  await expect(page.getByLabel("Filter by type", { exact: true })).toHaveText("receipt");
+  await page.keyboard.press("Escape");
+  await expect(list.getByRole("link")).toHaveCount(1);
+  await list.getByRole("link", { name: /Pacific receipt/ }).click();
+  await expect(casePage.getByRole("heading", { name: receipt.title, exact: true })).toBeVisible();
   const fields = page.getByRole("region", { name: "Case details", exact: true });
   await expect(fields.getByText("USD", { exact: true })).toBeVisible();
   await expect(fields.getByText("6", { exact: true })).toBeVisible();
@@ -216,19 +228,8 @@ test("browses passive cases and rolled-up task documents without starting work o
   await testInfo.attach("case-history-in-audit", { body: await page.screenshot({ fullPage: true }), contentType: "image/png" });
   await created.getByRole("link", { name: `${receipt.identifier} · ${receipt.title}`, exact: true }).click();
   await expect(casePage.getByRole("heading", { name: receipt.title, exact: true })).toBeVisible();
-  await page.getByRole("navigation", { name: "Breadcrumb", exact: true }).getByRole("link", { name: "Cases", exact: true }).click();
-  await expect(page).toHaveURL(filteredUrl);
-  await page.reload();
-  await expect(page.getByRole("textbox", { name: "Search cases" })).toHaveValue("Pacific");
-  await page.getByRole("button", { name: /^Filter cases/ }).click();
-  await expect(page.getByLabel("Filter by type", { exact: true })).toHaveText("receipt");
-  await page.keyboard.press("Escape");
-  await expect(list.getByRole("link")).toHaveCount(1);
   await page.setViewportSize({ width: 390, height: 844 });
-  await expect(list.getByRole("link", { name: /Pacific receipt/ })).toBeVisible();
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
-  await list.getByRole("link", { name: /Pacific receipt/ }).click();
-  await expect(casePage.getByRole("heading", { name: receipt.title, exact: true })).toBeVisible();
   await expect(detailTable.getByRole("rowheader", { name: "items.quantity", exact: true })).toBeVisible();
   await expect(detailTable.getByRole("rowheader", { name: "delivery.recipient.name", exact: true })).toBeVisible();
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);

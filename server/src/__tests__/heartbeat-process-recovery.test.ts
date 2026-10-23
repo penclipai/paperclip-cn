@@ -2125,7 +2125,16 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
   });
 
   it("retries a continuation whose controller lease is lost before dispatch instead of blocking the issue", async () => {
-    const { agentId, runId, issueId } = await seedQueuedIssueRunFixture();
+    const { companyId, agentId, runId, issueId } = await seedQueuedIssueRunFixture();
+    const secrets = secretService(db);
+    const apiKey = await secrets.create(companyId, {
+      name: `controller-lease-loss-${randomUUID()}`,
+      provider: "local_encrypted",
+      value: "fixture-controller-lease-loss-key",
+    });
+    const env = { OPENAI_API_KEY: { type: "secret_ref" as const, secretId: apiKey.id } };
+    await secrets.syncEnvBindingsForTarget(companyId, { targetType: "agent", targetId: agentId }, env);
+    await db.update(agents).set({ adapterConfig: { env } }).where(eq(agents.id, agentId));
     const originalWatch = controllerLeases.watchLegacyControllerLease;
     // Expire the claimed lease before workspace preparation renews it, so the
     // real renewal is rejected and the watchdog stops setup before dispatch.
@@ -2179,6 +2188,15 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
 
   it("retries an accepted interaction continuation whose controller lease is lost before dispatch", async () => {
     const { companyId, agentId, runId, wakeupRequestId, issueId } = await seedQueuedIssueRunFixture();
+    const secrets = secretService(db);
+    const apiKey = await secrets.create(companyId, {
+      name: `interaction-controller-lease-loss-${randomUUID()}`,
+      provider: "local_encrypted",
+      value: "fixture-interaction-controller-lease-loss-key",
+    });
+    const env = { OPENAI_API_KEY: { type: "secret_ref" as const, secretId: apiKey.id } };
+    await secrets.syncEnvBindingsForTarget(companyId, { targetType: "agent", targetId: agentId }, env);
+    await db.update(agents).set({ adapterConfig: { env } }).where(eq(agents.id, agentId));
     const interactionId = randomUUID();
     await db.insert(issueThreadInteractions).values({
       id: interactionId,
