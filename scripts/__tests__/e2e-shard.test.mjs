@@ -412,7 +412,7 @@ test("the trusted PR workflow limits full CI to merge-relevant stack layers", ()
   const verify = jobs.get("verify");
   assert.match(
     verify,
-    /^ {4}needs: \[gate, policy, typecheck_release_registry, general_tests, verify_paperclip_runner, build, docker_context_integrity\]$/m,
+    /^ {4}needs:\s*\[\s*gate,\s*policy,\s*typecheck_release_registry,\s*general_tests,\s*verify_paperclip_runner,\s*build,\s*docker_context_integrity,?\s*\]$/m,
   );
   assert.match(verify, /POLICY_RESULT: \$\{\{ needs\.policy\.result \}\}/);
   assert.match(
